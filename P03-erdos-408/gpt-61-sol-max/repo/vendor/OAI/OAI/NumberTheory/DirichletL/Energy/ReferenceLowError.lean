@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorCoefficients
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowError
@@ -15,17 +15,17 @@ open HeckeFamily HeckeDyadic ConcreteTraceCRT
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentOriginalRadialComparison CenteredMomentNaturalFixedRaySource
 open CenteredMomentEnergyReferenceHomogeneousError QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
 
-theorem relative_slot_error {α:Type*}(F:Finset α)
-    (Wslot:ℝ→ℂ)(aslot bslot lo hi bshort:ℝ)(ha:0<aslot)
+
+theorem relative_slot_error  {α}  F 
+     Wslot (aslot bslot lo hi bshort:ℝ)(ha:0<aslot)
     (hs:Function.support Wslot⊆Set.Icc aslot bslot)(hc:Continuous Wslot):
     ∃C:ℝ,0<C ∧ ∀T:Finset α,T⊆F → ∀W:𝓢(ℝ,ℂ),
       Function.support (W:ℝ→ℂ)⊆Set.Iic bshort →
-      ∀(χ:O→Character)(ν:α→Character)(pool:α→Finset (Ideal O))
-        (P σ freq:α→ℝ)(t X K:ℝ)(Φ:𝓢(ℝ,ℂ))(keep:O→Prop),
+      ∀(χ:HeckeFamily.O→Character)(ν:α→Character)(pool:α→Finset (Ideal HeckeFamily.O))
+        (P σ freq:α→ℝ)(t X K:ℝ)(Φ:𝓢(ℝ,ℂ))(keep:HeckeFamily.O→Prop),
       0<X → 0<K → (∀i∈T,0<P i) → (∀i∈T,lo≤σ i) → (∀i∈T,σ i≤hi) →
-      (∀i∈T,∀I∈pool i,Prime I) → (∀z:O,0≤(Φ (‖eisEmbedding z‖^2/K)).re) →
+      (∀i∈T,∀I∈pool i,Prime I) → (∀z:HeckeFamily.O,0≤(Φ (‖eisEmbedding z‖^2/K)).re) →
       radialEnergy (fun z=>polynomial (χ z) false W X 0 t *
         ∏i∈T,naturalSlot (χ z) (pool i)
           (heightCoefficient (fun I=>idealCoeff (ν i) I*
@@ -54,6 +54,6 @@ theorem relative_slot_error {α:Type*}(F:Finset α)
 
 end SevenEighths.CenteredMomentEnergyReferenceLowError
 
-end
+
 
 end OAI

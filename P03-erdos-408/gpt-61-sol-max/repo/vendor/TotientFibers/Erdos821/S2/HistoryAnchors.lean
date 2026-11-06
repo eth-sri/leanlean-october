@@ -21,22 +21,26 @@ namespace MemoryHistory
 
 variable {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n)
 
-def birthBound (_H : MemoryHistory A n) : ℕ := P.allPrimes.card + n * ((J + F.ell) * Fintype.card P.BigGroup)
+def birthBound (_H : MemoryHistory A n)  := P.allPrimes.card + n * ((J + F.ell) * Fintype.card P.BigGroup)
 
 def birthOffset : BirthAddress P (J + F.ell) n H.birthBound → ℤ
   | .inl _ => 0
   | .inr (.inl (i, _, _)) => H.toResiduePath.offset i.succ
   | .inr (.inr (i, _, _)) => H.toResiduePath.offset i
 
-def anchorOffset (p : ℕ) : ℤ :=
+def anchorOffset (p : ℕ)  :=
   if h : ∃ a : BirthAddress P (J + F.ell) n H.birthBound,
       H.addressPerformed H.birthBound a ∧ H.addressValue H.birthBound a = p then
     H.birthOffset (Classical.choose h)
   else 0
 
+section
+variable (hH : H.Valid) (hd : H.DistinctBirths)
+include hH hd
+
 /-- Distinctness makes this choice independent of the witness. -/
-theorem anchorOffset_eq_birth (hH : H.Valid) (hd : H.DistinctBirths)
-    (a : BirthAddress P (J + F.ell) n H.birthBound) (p : ℕ)
+theorem anchorOffset_eq_birth    
+     a   p 
     (ha : H.addressPerformed H.birthBound a) (hp : H.addressValue H.birthBound a = p) :
     H.anchorOffset p = H.birthOffset a := by
   have hx : ∃ a : BirthAddress P (J + F.ell) n H.birthBound,
@@ -50,19 +54,19 @@ theorem anchorOffset_eq_birth (hH : H.Valid) (hd : H.DistinctBirths)
     (Finset.mem_filter.mpr ⟨Finset.mem_univ _, ha⟩) (hs.2.trans hp.symm)
   exact congrArg H.birthOffset he
 
-theorem anchorOffset_initial (hH : H.Valid) (hd : H.DistinctBirths) (g : P.BigGroup) (i : Fin (J + F.ell)) :
+theorem anchorOffset_initial     (g : P.BigGroup)  i  :
     H.anchorOffset ((H.before 0).2.1 g.val i).val = 0 :=
   H.anchorOffset_eq_birth hH hd (.inl (g, i)) _ True.intro rfl
 
 /-- All big active and pending coordinates keep the same unique birth anchor. -/
-def AnchorInvariant (i : Fin (n + 1)) (s : P.MemoryState (J + F.ell)) : Prop :=
+def AnchorInvariant (i : Fin (n + 1)) (s : P.MemoryState (J + F.ell))  :=
   (∀ g : P.BigGroup, ∀ j : Fin (J + F.ell),
     (H.toResiduePath.offset i : ZMod (s.2.1 g.val j).val) =
       (H.anchorOffset (s.2.1 g.val j).val : ZMod (s.2.1 g.val j).val)) ∧
   (∀ g : P.BigGroup, ∀ z ∈ s.2.2 g,
     z.2 = ((H.toResiduePath.offset i - H.anchorOffset z.1.val : ℤ) : ZMod z.1.val))
 
-theorem anchorInvariant_initial (hH : H.Valid) (hd : H.DistinctBirths) : H.AnchorInvariant 0 (H.before 0) := by
+theorem anchorInvariant_initial     : H.AnchorInvariant 0 (H.before 0) := by
   constructor
   · intro g j
     rw [ResiduePath.offset_zero, H.anchorOffset_initial hH hd]
@@ -71,11 +75,13 @@ theorem anchorInvariant_initial (hH : H.Valid) (hd : H.DistinctBirths) : H.Ancho
     have hz' : False := by simp at hz
     exact hz'.elim
 
+end
+
 end MemoryHistory
 
 /-- Structural forward correctness of the residue anchors. No analytic bounds,
 step-size asymptotics, or auxiliary label laws enter this task. -/
-def HistoryAnchorTask : Prop :=
+def HistoryAnchorTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
     (H : MemoryHistory A n), H.Valid → H.DistinctBirths →
       ∀ i, H.AnchorInvariant i (H.before i) ∧ H.AnchorInvariant i (H.after i)

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Comparison.ArcsFourier
 
@@ -22,7 +23,7 @@ open Erdos821.Blueprint.Analytic (e)
 open Erdos821.P5Core (localAdditivePolynomial)
 
 /-- The rational centres `u/r`, `1 ≤ r ≤ R`, `-R ≤ u ≤ 2R`. -/
-private noncomputable def arcCentres (R : ℕ) : Finset ℝ :=
+private noncomputable def arcCentres (R : ℕ)  :=
   ((Finset.Icc 1 R) ×ˢ (Finset.Icc (-(R : ℤ)) (2 * R))).image fun p => (p.2 : ℝ) / p.1
 
 /-- There are at most `4R²` centres. -/
@@ -38,7 +39,7 @@ private theorem card_arcCentres_le (R : ℕ) : ((arcCentres R).card : ℝ) ≤ 4
         nlinarith [show (R : ℝ) ≤ (R : ℝ) ^ 2 by
           rcases Nat.eq_zero_or_pos R with h0 | h0
           · simp [h0]
-          · nlinarith [show (1 : ℝ) ≤ R by exact_mod_cast h0]]
+          bound]
 
 /-- **One shifted bilinear form (S8–S10).** For `j ≥ 4` there is `K > 0` such that: for
 `10 ≤ Y`, `1 ≤ H ≤ Y/10`, `2Y ≤ T₀H`, shifts `n + D_l ∈ s'` (when `c_l ≠ 0`), energies
@@ -47,7 +48,7 @@ private theorem card_arcCentres_le (R : ℕ) : ((arcCentres R).card : ℝ) ≤ 4
 most `Ξ₀ ≥ 0` at every centre,
 `|∑_l c_l ∑_s f_n g_{n + D_l}| ≤ ε √A √B + 4R² √E √B` with
 `E = K (Y Ξ₀ + (1 + T₀H/(2Y))^{4-j} (1/H + 2 log 4Y) A + (H/Y)² A)`. -/
-theorem exists_norm_sum_shift_le (j : ℕ) (hj : 4 ≤ j) :
+theorem exists_norm_sum_shift_le  j  (hj : 4 ≤ j) :
     ∃ K : ℝ, 0 < K ∧ ∀ (Y H T₀ ε A B Ξ₀ : ℝ) (R : ℕ) {Λ : Type} (Ls : Finset Λ) (c : Λ → ℂ)
       (D : Λ → ℕ) (s' : Finset ℕ) (f g : ℕ → ℂ),
       10 ≤ Y → 1 ≤ H → H ≤ Y / 10 → 2 * Y ≤ T₀ * H → 0 ≤ ε → 0 ≤ Ξ₀ →
@@ -70,7 +71,7 @@ theorem exists_norm_sum_shift_le (j : ℕ) (hj : 4 ≤ j) :
   intro Y H T₀ ε A B Ξ₀ R Λ Ls c D s' f g hY hH hHY hT₀ hε hΞ hD hfA hgB hM₁ hMε hΞ₀
   set s := Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊ with hs
   have hY0 : 0 < Y := by linarith
-  have hH0 : 0 < H := by linarith
+  
   have hsupp : ∀ n ∈ s, Y ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * Y := fun n hn =>
     ⟨Nat.ceil_le.1 (Finset.mem_Icc.1 hn).1,
       (Nat.le_floor_iff (by positivity)).1 (Finset.mem_Icc.1 hn).2⟩
@@ -103,7 +104,7 @@ theorem exists_norm_sum_shift_le (j : ℕ) (hj : 4 ≤ j) :
         intervalIntegral.integral_comp_neg (fun t => ‖twistedPoly Y f (-u) r t‖ ^ 2), neg_neg]
       exact mul_le_mul_of_nonneg_left (hΞ₀ r u hr₁ hr₂) (by positivity)
     refine h.trans ?_
-    have hsA : ∑ n ∈ s, ‖f n‖ ^ 2 ≤ A := hfA
+    
     calc K / Y * (∫ t in (-T₀)..T₀,
           ‖∑ n ∈ s, star (f n) * e ((u : ℝ) / r * n) * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2) +
           K * Z * (1 / H + 2 * Real.log (4 * Y)) * ∑ n ∈ s, ‖f n‖ ^ 2 +

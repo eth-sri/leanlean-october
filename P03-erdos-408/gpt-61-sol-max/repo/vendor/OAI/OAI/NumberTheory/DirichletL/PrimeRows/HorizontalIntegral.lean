@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedJoinDecay
 
@@ -6,19 +7,19 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedJoinDecay
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+
 
 lemma continuedRow_horizontal_measurable {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ) (ha1 : 0<a1)
     (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (tx υ r : ℝ) (hr : 0<r) :
+     X Y Z  (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)  tx υ r  (hr : 0<r) :
     Measurable (fun p : ℝ × (ℝ × ℝ)=>continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z
       p.1 υ r ((tx,p.2.1),p.2.2)) := by
   have hR : Continuous (fun t : ℝ=>mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) ((r:ℂ)+t*I)) :=
@@ -45,20 +46,12 @@ lemma continuedRow_horizontal_measurable {K : ℕ}
   unfold continuedRowOnLines continuedPhysicalRowKernel
   apply Measurable.mul
   · apply Measurable.mul
-    · apply Measurable.mul hsource
-      apply Finset.measurable_prod
-      intro i hi
-      apply measurable_const_cpow
-      · exact Complex.ofReal_ne_zero.mpr (elementNorm_pos _
-          (supported_primeGenerator_prime (P i) (outside_prime_supported S hS.bad (P i) (hPS i))).ne_zero).ne'
-      · fun_prop
+    · fun_prop
     · unfold frequencyWeight
-      apply measurable_const_cpow
-      · exact Complex.ofReal_ne_zero.mpr (elementNorm_pos _ u.property.1).ne'
-      · fun_prop
+      fun_prop
   · exact hphysical.const_mul _
 
-lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ) (l r C : ℝ) (hlr : l≤r) (_hC : 0≤C)
+lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ)  l r C  (hlr : l≤r) (_hC : 0≤C)
     (hm : Measurable (Function.uncurry F))
     (hi : ∀v∈Ioc l r,Integrable (F v) (volume.prod volume))
     (hb : ∀v∈Ioc l r,(∫q : ℝ×ℝ,‖F v q‖ ∂volume.prod volume)≤C) :
@@ -93,6 +86,6 @@ lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ) (l r C : ℝ) (hlr 
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

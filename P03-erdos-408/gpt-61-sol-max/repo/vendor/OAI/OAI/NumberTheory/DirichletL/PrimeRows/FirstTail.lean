@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.Product
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstRegion
@@ -12,20 +13,18 @@ open scoped Classical BigOperators
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-local notation "O" => HeckeFamily.O
 
-def firstPrimeDefectBound (eps : ℝ) (P : PrimeIdeal) : ℝ :=
+
+def firstPrimeDefectBound (eps : ℝ) (P : PrimeIdeal)  :=
   240*(P.val.absNorm : ℝ)^(-1-min eps (1/50:ℝ))
 
-theorem firstPrimeDefectBound_nonneg (eps : ℝ) (P : PrimeIdeal) :
+theorem firstPrimeDefectBound_nonneg  eps   P  :
     0≤firstPrimeDefectBound eps P := by unfold firstPrimeDefectBound; positivity
 
-theorem firstPrimeDefectBound_summable (eps : ℝ) (heps : 0<eps) :
+theorem firstPrimeDefectBound_summable  eps  (heps : 0<eps) :
     Summable (firstPrimeDefectBound eps) := by
   have ht : 1<(1+min eps (1/50:ℝ) : ℂ).re := by
-    simp only [Complex.add_re,Complex.one_re,Complex.ofReal_re]
-    have hm : 0<min eps (1/50:ℝ) := lt_min heps (by norm_num)
-    linarith
+    simp_all
   have h := (CubicEisenstein.fullIdealWeight_summable_norm
     (1+min eps (1/50:ℝ) : ℂ) ht).comp_injective
     (Subtype.val_injective : Function.Injective (fun P : PrimeIdeal=>P.val))
@@ -40,22 +39,32 @@ theorem firstPrimeDefectBound_summable (eps : ℝ) (heps : 0<eps) :
   congr 2
   ring
 
-structure FirstTail (eps : ℝ) (S : Finset (Ideal O)) : Prop where
+structure FirstTail (eps : ℝ) (S : Finset (Ideal HeckeFamily.O)) : Prop where
   positive : 0<eps
   norm_four : ∀P : PrimeIdeal,P.val∉S → 4≤P.val.absNorm
   small : (∑' P : {P : PrimeIdeal // P.val∉S},firstPrimeDefectBound eps P.val)≤1/6
 
-theorem FirstTail.summable {eps : ℝ} {S : Finset (Ideal O)} (h : FirstTail eps S) :
+section
+variable {eps : ℝ} {S : Finset (Ideal HeckeFamily.O)} (h : FirstTail eps S)
+include eps S h
+
+theorem FirstTail.summable       :
     Summable (fun P : {P : PrimeIdeal // P.val∉S}=>firstPrimeDefectBound eps P.val) :=
   (firstPrimeDefectBound_summable eps h.positive).subtype _
 
-theorem FirstTail.half {eps : ℝ} {S : Finset (Ideal O)} (h : FirstTail eps S)
+theorem FirstTail.half      
     (P : {P : PrimeIdeal // P.val∉S}) : firstPrimeDefectBound eps P.val≤1/2 := by
   have hh := Summable.le_tsum h.summable P (fun Q _=>firstPrimeDefectBound_nonneg eps Q.val)
   linarith [h.small]
 
-theorem exists_first_cutoff (eps : ℝ) (heps : 0<eps) :
-    ∃N : ℕ,4≤N ∧ ∀S : Finset (Ideal O),
+end
+
+section
+variable (eps : ℝ) (heps : 0<eps)
+include eps heps
+
+theorem exists_first_cutoff     :
+    ∃N : ℕ,4≤N ∧ ∀S : Finset (Ideal HeckeFamily.O),
       (∀P : PrimeIdeal,P.val.absNorm≤N → P.val∈S) → FirstTail eps S := by
   have ht := (tendsto_order.1 (tendsto_tsum_compl_atTop_zero (firstPrimeDefectBound eps))).2
     (1/6) (by norm_num)
@@ -71,21 +80,20 @@ theorem exists_first_cutoff (eps : ℝ) (heps : 0<eps) :
   let inc : T→{P : PrimeIdeal // P∉F} := fun P=>⟨P.val,hnot P⟩
   have hi : Function.Injective inc := by
     intro P Q h
-    exact Subtype.ext (congrArg (fun P : {P : PrimeIdeal // P∉F}=>P.val) h)
+    grind
   refine ⟨heps,?_,?_⟩
   · intro P hP
-    have hn : ¬P.val.absNorm≤N := fun hn=>hP (hS P hn)
-    exact (le_max_left _ _).trans (Nat.le_of_lt (Nat.lt_of_not_ge hn))
+    grind
   · apply le_trans ?_ hF.le
     exact Summable.tsum_le_tsum_of_inj inc hi
       (fun P _=>firstPrimeDefectBound_nonneg eps P.val) (fun _=>le_rfl)
       ((firstPrimeDefectBound_summable eps heps).subtype _)
       ((firstPrimeDefectBound_summable eps heps).subtype _)
 
-theorem exists_both_source_exclusions (eps : ℝ) (heps : 0<eps)
-    (S₀ : Finset (Ideal O)) (hp : ∀P∈S₀,Prime P)
+theorem exists_both_source_exclusions    
+     S₀  (hp : ∀P∈S₀,Prime P)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S₀) :
-    ∃S : Finset (Ideal O),S₀⊆S ∧ SourceExclusions S ∧ FirstTail eps S := by
+    ∃S : Finset (Ideal HeckeFamily.O),S₀⊆S ∧ SourceExclusions S ∧ FirstTail eps S := by
   obtain ⟨N₁,hN₁,hcut₁⟩ := exists_uniform_global_cutoff
   obtain ⟨N₂,hN₂,hcut₂⟩ := exists_first_cutoff eps heps
   let N := max N₁ N₂
@@ -101,6 +109,8 @@ theorem exists_both_source_exclusions (eps : ℝ) (heps : 0<eps)
   refine ⟨S,Finset.subset_union_left,⟨hpS,hbad.trans Finset.subset_union_left,?_⟩,?_⟩
   · exact hcut₁ S (fun P hP=>hcut P (hP.trans (le_max_left _ _)))
   · exact hcut₂ S (fun P hP=>hcut P (hP.trans (le_max_right _ _)))
+
+end
 
 end SevenEighths.ProbeHighRowFamily
 

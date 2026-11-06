@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.CongruenceScalar
 
@@ -13,7 +14,7 @@ open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition
 local notation "O" => ActualEisensteinCubic.O
 
 theorem primePowerGauss_lift_add (p : O) (hp : Prime p)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n k : ℕ) (h : O) :
+     χ   n k   h  :
     primePowerGauss p hp.ne_zero χ (n+k) (p^k*h) =
       (Ideal.absNorm (Ideal.span {p}):ℂ)^k * primePowerGauss p hp.ne_zero χ n h := by
   by_cases hd : p^n ∣ h
@@ -28,7 +29,7 @@ theorem primePowerGauss_lift_add (p : O) (hp : Prime p)
       primePowerGauss_zero_off_support _ _ _ _ _ hd, mul_zero]
 
 theorem gauss_exactQuotient_lift (p : O) (hp : Prime p)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n k : ℕ) (h : O) :
+     χ   n k   h  :
     (if hd : p^k ∣ h then primePowerGauss p hp.ne_zero χ n (exactQuotient h (p^k) hd) else 0) =
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^k)⁻¹ * primePowerGauss p hp.ne_zero χ (n+k) h := by
   have hq : (Ideal.absNorm (Ideal.span {p}):ℂ) ≠ 0 := by
@@ -36,7 +37,7 @@ theorem gauss_exactQuotient_lift (p : O) (hp : Prime p)
   by_cases hd : p^k ∣ h
   · rw [dite_eq_left hd]
     conv_rhs => rw [exactQuotient_spec h (p^k) hd]
-    rw [primePowerGauss_lift_add p hp, ← mul_assoc, inv_mul_cancel₀ (pow_ne_zero _ hq), one_mul]
+    simp_all [primePowerGauss_lift_add]
   · rw [dite_eq_right hd]
     have hnd : ¬p^(n+k) ∣ h := by
       intro he
@@ -44,7 +45,7 @@ theorem gauss_exactQuotient_lift (p : O) (hp : Prime p)
     rw [primePowerGauss_zero_off_support _ _ _ _ _ hnd, mul_zero]
 
 theorem positiveScalar_full_lift (p : O) (hp : Prime p)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n k j : ℕ) (hk : k ≠ 0) :
+     χ   n k j  (hk : k ≠ 0) :
     positiveScalar p hp.ne_zero χ n k j =
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^k)⁻¹ *
         ∑' d : O ⧸ Ideal.span {p^k},
@@ -63,8 +64,8 @@ theorem positiveScalar_full_lift (p : O) (hp : Prime p)
   · rw [dite_eq_right hd] at he ⊢
     linear_combination (χ^k) (Ideal.Quotient.mk _ (representative (p^k) d)) * he
 
-lemma quotientTrace_split_frequency (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
-    (H d v : O) :
+lemma quotientTrace_split_frequency  a b   ha   hb 
+     H d v  :
     quotientTrace (a*b) (mul_ne_zero ha hb) (Ideal.Quotient.mk _ ((H-b*d)*v)) =
       quotientTrace (a*b) (mul_ne_zero ha hb) (Ideal.Quotient.mk _ (H*v)) *
         quotientTrace a ha (Ideal.Quotient.mk _ ((-v)*d)) := by
@@ -73,18 +74,18 @@ lemma quotientTrace_split_frequency (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
   rw [show (H-b*d)*v = H*v+b*((-v)*d) by ring, map_add, AddChar.map_add_eq_mul, hs]
 
 def quotientFourier (p c : O) (hc : c ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (H : O) : ℂ :=
+    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (H : O)  :=
   ∑' d : O ⧸ Ideal.span {c}, χ (Ideal.Quotient.mk _ (representative c d)) *
     quotientTrace c hc (Ideal.Quotient.mk _ (H*representative c d))
 
-lemma quotientFourier_congr (p a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (H : O) (he : a=b) :
+lemma quotientFourier_congr  p a b   ha   hb 
+     χ   H  (he : a=b) :
     quotientFourier p a ha χ H = quotientFourier p b hb χ H := by
   subst b
   rfl
 
-lemma primePowerGauss_eq_quotientFourier (p : O) (hp : p ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n : ℕ) (H : O) :
+lemma primePowerGauss_eq_quotientFourier  p   hp 
+     χ   n   H  :
     primePowerGauss p hp χ n H =
       quotientFourier p (p*p^n) (mul_ne_zero hp (pow_ne_zero _ hp)) χ H := by
   unfold primePowerGauss conductorFourier quotientFourier

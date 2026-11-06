@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorCount
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeScale
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
@@ -15,7 +16,7 @@ open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBa
 open HeckeDetectorWitnessRows HeckeDetectorClassBudget
 
 lemma eventually_all_rpow_ge {P : ℝ→Prop} (hP : ∀ᶠU in atTop,P U)
-    (dmin : ℝ) (hdmin : 0<dmin) :
+     dmin  (hdmin : 0<dmin) :
     ∀ᶠZ : ℝ in atTop,∀d : ℝ,dmin≤d → P (Z^d) := by
   obtain ⟨A,hA⟩ := Filter.eventually_atTop.1 hP
   have hh := (tendsto_rpow_atTop hdmin).eventually (eventually_ge_atTop A)
@@ -23,7 +24,7 @@ lemma eventually_all_rpow_ge {P : ℝ→Prop} (hP : ∀ᶠU in atTop,P U)
   intro d hd
   exact hA _ (hZ.trans (Real.rpow_le_rpow_of_exponent_le hZ1 hd))
 
-lemma source_count_frequency_eventually (n : ℕ) (dmax τ h : ℝ)
+lemma source_count_frequency_eventually  n   dmax τ h 
     (hdmax : 0<dmax) (hτ : 0<τ) (hh : τ<h) :
     ∀ᶠZ : ℝ in atTop,∀d : ℝ,d≤dmax → ∀i : ℕ,i≤n →
       2*Real.pi*((Z^d)^(τ/(2*dmax)))+(3*i:ℕ)*Z^τ≤Z^h := by
@@ -73,7 +74,7 @@ lemma source_dyadic_cost_eventually (dmin dmax loss : ℝ)
   simpa only [mul_div_cancel₀ _ hdmax.ne'] using hh
 
 lemma source_count_prefactor_eventually {Label : Type*} [Fintype Label]
-    (N : ℕ) (dmin dmax logCost heightCost momentCost binWidth K₀ : ℝ)
+     N  (dmin dmax logCost heightCost momentCost binWidth K₀ : ℝ)
     (hdmin : 0<dmin) (hdmax : 0<dmax) (hl : 0<logCost)
     (hh : 0≤heightCost) (_hb : 0<binWidth) :
     ∃K : ℝ,0<K ∧ ∀ᶠZ : ℝ in atTop,∀d : ℝ,dmin≤d → d≤dmax →
@@ -87,8 +88,8 @@ lemma source_count_prefactor_eventually {Label : Type*} [Fintype Label]
   obtain ⟨L,hL,hbound⟩ := source_dyadic_cost_eventually dmin dmax logCost hdmin hdmax hl
   let A : ℝ := (alphabetBound binWidth : ℕ)^N
   let K : ℝ := (Fintype.card Label:ℝ)*L*(384*max 1 K₀)*A
-  have hA : 0≤A := by dsimp [A];positivity
-  have hK : 0≤K := by dsimp [K];positivity
+  
+  
   refine ⟨K+1,by positivity,?_⟩
   filter_upwards [hbound,eventually_ge_atTop (1:ℝ)] with Z hbound hZ
   intro d hd hd' C a ε tstar T allowance i hC ha M H Slot B hslots hbin
@@ -116,6 +117,6 @@ lemma source_count_prefactor_eventually {Label : Type*} [Fintype Label]
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

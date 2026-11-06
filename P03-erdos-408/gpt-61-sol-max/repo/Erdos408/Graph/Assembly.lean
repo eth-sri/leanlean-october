@@ -31,13 +31,11 @@ variable (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ hc₀ hvlo) G
   (block : G.BigGroup → Bool) (Q : ℕ) (h ξ : ℝ)
 
 /-- The terms of all comparison patterns. -/
-noncomputable def famIndex :
-    Finset (Σ _ : Fin B.count, ℤ × CharacterIndex Q × ℤ × CharacterIndex Q) :=
+noncomputable def famIndex  :=
   (Finset.univ.erase raw).sigma fun v => terms (B.pattern v) block Q h ξ
 
 /-- The `ν`-th term of the comparison patterns. -/
-noncomputable def famPoint (ν : Fin (famIndex B raw block Q h ξ).card) :
-    Σ _ : Fin B.count, ℤ × CharacterIndex Q × ℤ × CharacterIndex Q :=
+noncomputable def famPoint (ν : Fin (famIndex B raw block Q h ξ).card)  :=
   ((famIndex B raw block Q h ξ).equivFin.symm ν).val
 
 /-- Summing over the enumerated terms is summing over the comparison patterns
@@ -52,21 +50,25 @@ lemma sum_famPoint {R : Type*} [AddCommMonoid R]
 
 end
 
-/-- Upstream's pairing of endpoints of the position alone is the raw pattern
-pairing plus the pairings of all terms of the comparison patterns. -/
-theorem pairing_eq_family (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ hc₀ hvlo) G J m)
-    (raw : Fin B.count) (block : G.BigGroup → Bool) (Q : ℕ) {h ξ : ℝ} (hξ : 0 < ξ)
-    (hraw : ∀ g, (B.pattern raw).changed g = ∅)
-    (hraw' : ∀ a b u, (B.pattern raw).coefficient a b u = 1)
-    (hcoef : ∀ v, v ≠ raw → ∀ a b u, (B.pattern v).coefficient a b u =
+section
+variable (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ hc₀ hvlo) G J m) (raw : Fin B.count) (block : G.BigGroup → Bool) (Q : ℕ) {h ξ : ℝ} (hξ : 0 < ξ) (hraw : ∀ g, (B.pattern raw).changed g = ∅) (hraw' : ∀ a b u, (B.pattern raw).coefficient a b u = 1) (hcoef : ∀ v, v ≠ raw → ∀ a b u, (B.pattern v).coefficient a b u =
       -((-1 : ℂ) ^ (∑ g, ((B.pattern v).changed g).card)) *
         selectedKernel (B.pattern v) block false Q h ξ
           (selectedProduct (B.pattern v) block false u)
           (selectedEndpoint (B.pattern v) block false b) *
         selectedKernel (B.pattern v) block true Q h ξ
           (selectedProduct (B.pattern v) block true u)
-          (selectedEndpoint (B.pattern v) block true a))
-    (hV : ∀ g, G.V g ≠ 0) (ζ X : ℝ) (S S' : Finset ℕ) (f g : ℕ → ℂ)
+          (selectedEndpoint (B.pattern v) block true a)) (hne : ∀ v, v ≠ raw → ∃ g, ((B.pattern v).changed g).Nonempty) (hV : ∀ g, G.V g ≠ 0)
+
+include hξ hraw hraw' hcoef hV in
+/-- Upstream's pairing of endpoints of the position alone is the raw pattern
+pairing plus the pairings of all terms of the comparison patterns. -/
+theorem pairing_eq_family  
+             
+     
+     
+     
+      (ζ X : ℝ) (S S' : Finset ℕ)  f g 
     (hS : ∀ n ∈ S, X ≤ n ∧ (n : ℝ) < 2 * X) (hg : ∀ n ∉ S', g n = 0) :
     (B.model 1 ζ).pairing X (targets (B.model 1 ζ) S') (extend S f) (fun z => g z.1.toNat) =
       patternPairing G.primes q₀ (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1) ζ S f g +
@@ -92,20 +94,14 @@ theorem pairing_eq_family (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq
     congr 1
     exact funext fun g => (blockSlots_disjoint_union _ block g).2.symm
 
+include hξ hcoef hne hV in
 /-- The term weights of all comparison patterns sum to at most `ξ⁻² Q⁴` times
 the pattern mass. -/
 lemma sum_norm_termWeight_family_le
-    (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ hc₀ hvlo) G J m)
-    (raw : Fin B.count) (block : G.BigGroup → Bool) (Q : ℕ) {h ξ : ℝ} (hξ : 0 < ξ)
-    (hcoef : ∀ v, v ≠ raw → ∀ a b u, (B.pattern v).coefficient a b u =
-      -((-1 : ℂ) ^ (∑ g, ((B.pattern v).changed g).card)) *
-        selectedKernel (B.pattern v) block false Q h ξ
-          (selectedProduct (B.pattern v) block false u)
-          (selectedEndpoint (B.pattern v) block false b) *
-        selectedKernel (B.pattern v) block true Q h ξ
-          (selectedProduct (B.pattern v) block true u)
-          (selectedEndpoint (B.pattern v) block true a))
-    (hne : ∀ v, v ≠ raw → ∃ g, ((B.pattern v).changed g).Nonempty) (hV : ∀ g, G.V g ≠ 0) :
+     
+             
+     
+        :
     ∑ ν, ‖termWeight (B.pattern (famPoint B raw block Q h ξ ν).1) block h
         (famPoint B raw block Q h ξ ν).2‖ ≤
       ξ⁻¹ ^ 2 * (Q : ℝ) ^ 4 * (B.model 1 0).patternMass := by
@@ -124,5 +120,7 @@ lemma sum_norm_termWeight_family_le
   refine mul_le_mul_of_nonneg_left ?_ (by positivity)
   exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
     fun v _ _ => sSup_norm_nonneg (B.pattern v)
+
+end
 
 end Erdos408.Graph

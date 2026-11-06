@@ -11,7 +11,7 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 variable {Nlevel : Eis}
@@ -24,8 +24,8 @@ theorem original_low_member_geometry_uniform
     (s : ∀ i,FixedCuspShape (ControlledStratumArithmetic.fixedCusp (a i) (c₀ i) (mode i))) (hc₀ : ∀ i,c₀ i≠0)
     (hNlevel : ∀ i,(9:Eis)*c₀ i∣Nlevel)
     (hbase : ∀ i,if mode i then ConcretePrimeRowBridge.goodLambda^2∣a i-1 else ConcretePrimeRowBridge.goodLambda^2∣c₀ i-1)
-    (hac : ∀ i,IsCoprime (a i) (c₀ i)) (ρ : ℝ) (hρ : 0<ρ) (η : ℝ) (hηpos : 0<η)
-    (κ δ Lscale Lpool : ℝ) (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool)
+    (hac : ∀ i,IsCoprime (a i) (c₀ i))  ρ  (hρ : 0<ρ)  η  (hηpos : 0<η)
+     κ δ Lscale Lpool  (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool)
     (Lcap saving : ℝ) (hδ : 0<δ) :
     ∃ (degree : ℕ) (C Z₀ : ℝ), 0<C ∧ 1<Z₀ ∧
     ∀ i : γ,
@@ -122,7 +122,7 @@ theorem original_low_member_geometry_uniform
   have hheight : 1≤1+‖θ‖ := by linarith [norm_nonneg θ]
   apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hZpos.le _)
   exact mul_le_mul (hc i) (pow_le_pow_right₀ hheight (hn i)) (by positivity) hCA.le
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

@@ -14,31 +14,31 @@ open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlob
 open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
 open InverseSecondUniformCutoff
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 abbrev exponent := InverseFirstGlobalCaps.dyadicExponent
 
-def columnA (Z : ℝ) (k : SourceIndex) (negative : Bool) : ℝ :=
+def columnA (Z : ℝ) (k : SourceIndex) (negative : Bool)  :=
   exponent Z (k (if negative then 0 else 1))
 
-def columnScale (Z r : ℝ) (k : SourceIndex) (l : ℕ) (negative : Bool) : ℝ :=
+def columnScale (Z r : ℝ) (k : SourceIndex) (l : ℕ) (negative : Bool)  :=
   Z^(r-columnA Z k negative-exponent Z (k 2)-exponent Z l)
 
-def secondCutoff (p : ι→O) (Z M r ell V eta tau window : ℝ) (k : SourceIndex) (l j : ℕ)
-    (negative : Bool) (G E : Finset ι) : ℝ :=
+def secondCutoff (p : ι→ActualEisensteinCubic.O) (Z M r ell V eta tau window : ℝ) (k : SourceIndex) (l j : ℕ)
+    (negative : Bool) (G E : Finset ι)  :=
   uniformSecondRadius p Z (exponent Z (k 3)) eta G E
     (columnScale Z r k l negative*Real.exp window) (firstCellRadius Z M r ell V eta tau k j) (Z^tau)
 
-def source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
-    (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (Z M r ell V eta tau window b : ℝ) :=
+def source (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
+    (pool ) (Q ) (k ) (l j )
+    (negative ) (J ) (lists : σ→Finset ι) (Z M r ell V eta tau window b ) :=
   supportedRetainedSource p (extra negative)
     (InverseFirstGlobalCaps.labelParentCell p pool Q (fun _ _=>1) k l j)
     negative J lists pool (secondCutoff p Z M r ell V eta tau window k l j negative)
     b (columnScale Z r k l negative)
 
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 theorem source_valid (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
@@ -47,16 +47,21 @@ theorem source_valid (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIn
   supported_conditions p hp _ _ (label_parent_valid p pool Q k l j) (fun y _hy=>extra_subset negative y.cube)
     negative J lists pool _ b _
 
-lemma source_frequency_ne_zero (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (Z M r ell V eta tau window b : ℝ) :
+section
+variable (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ) (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (Z M r ell V eta tau window b : ℝ)
+
+lemma source_frequency_ne_zero        
+            :
     ∀x∈source p pool Q k l j negative J lists Z M r ell V eta tau window b,x.second.frequency≠0 :=
   supported_frequency_ne_zero p _ _ negative J lists pool _ b _
 
-lemma source_geometry (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (Z M r ell V eta tau window b : ℝ) :
+lemma source_geometry        
+            :
     ∀x∈source p pool Q k l j negative J lists Z M r ell V eta tau window b,
       primeProductNorm p x.second.sourceCommon*primeProductNorm p x.second.overlap≤b*columnScale Z r k l negative :=
   geometrySource_gate p _ b _
+
+end
 
 include hp in
 theorem source_row_gates (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
@@ -87,8 +92,7 @@ theorem source_outer_caps (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : Sou
     (hgeom : b*columnScale Z r k l negative≤Z^Lcap)
     (hphysical : exponent Z (k 3)+eta+2*Lcol+tau+LY≤Lcap) :
     ∀x∈source p pool Q k l j negative J lists Z M r ell V eta tau window b,
-      ∀i,outerNorms p x i≤Z^Lcap := by
-  exact supported_outer_caps p hp _ _ negative J lists pool Z (exponent Z (k 3)) eta
+      ∀i,outerNorms p x i≤Z^Lcap := supported_outer_caps p hp _ _ negative J lists pool Z (exponent Z (k 3)) eta
     (columnScale Z r k l negative*Real.exp window) (firstCellRadius Z M r ell V eta tau k j)
     tau b (columnScale Z r k l negative) Lcol LY Lcap hZ.le
     (by unfold columnScale;positivity) (by unfold firstCellRadius;exact Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _)

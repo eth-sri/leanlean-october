@@ -10,14 +10,14 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
-variable (H : Ideal Eis) (L : σ→Finset (Ideal Eis))
+variable (H : Ideal ActualEisensteinCubic.O) (L : σ→Finset (Ideal ActualEisensteinCubic.O))
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
 
 include hmax hgood in
-lemma cubeJoined_mark (x : CubeSlotChoices H L) (A : Ideal Eis) :
+lemma cubeJoined_mark (x : CubeSlotChoices H L) (A : Ideal ActualEisensteinCubic.O) :
     (∏ i,if (cubeChoicesJoin H L x i).val∣H^3*A then (1:ℂ) else 0)=
       ∏ i : x.1,if (x.2.2 i).val∣A then (1:ℂ) else 0 := by
   have hs := cube_shifted_mark H A (slotChoiceFamily L hmax hgood (cubeChoicesJoin H L x))
@@ -35,7 +35,7 @@ lemma cubeJoined_mark (x : CubeSlotChoices H L) (A : Ideal Eis) :
   rw [he]
 
 include hmax hgood in
-lemma cubeJoined_completed (x : CubeSlotChoices H L) (Ψ : Eis→*ℂ) (W : ℝ→ℂ) (X : ℝ) :
+lemma cubeJoined_completed (x : CubeSlotChoices H L) (Ψ : ActualEisensteinCubic.O→*ℂ) (W : ℝ→ℂ) (X : ℝ) :
     markedCompletedT Ψ W X
       (fun A => ∏ i,if (cubeChoicesJoin H L x i).val∣H^3*A then (1:ℂ) else 0)=
     markedCompletedT Ψ W X
@@ -47,14 +47,13 @@ lemma cubeJoined_completed (x : CubeSlotChoices H L) (Ψ : Eis→*ℂ) (W : ℝ�
 lemma cubeJoined_coefficient (x : CubeSlotChoices H L) (w : ∀ i,L i→ℂ) :
     (∏ i,w i (cubeChoicesJoin H L x i))=
       (∏ i : {i // i∉x.1},w i.val ⟨(x.2.1 i).val,(Finset.mem_filter.mp (x.2.1 i).property).1⟩)*
-      (∏ i : x.1,w i.val ⟨(x.2.2 i).val,(Finset.mem_filter.mp (x.2.2 i).property).1⟩) := by
-  exact (slot_coefficient_split L x.1 w _ _).trans (mul_comm _ _)
+      (∏ i : x.1,w i.val ⟨(x.2.2 i).val,(Finset.mem_filter.mp (x.2.2 i).property).1⟩) := (slot_coefficient_split L x.1 w _ _).trans (mul_comm _ _)
 
-def cubeAbsorbedCoefficient (w : ∀ i,L i→ℂ) (T : Finset σ) : ℂ :=
+def cubeAbsorbedCoefficient (w : ∀ i,L i→ℂ) (T : Finset σ)  :=
   ∑ b : ∀ i : {i // i∉T},cubeDivList H (L i.val),
     ∏ i : {i // i∉T},w i.val ⟨(b i).val,(Finset.mem_filter.mp (b i).property).1⟩
 
-lemma cubeAbsorbedCoefficient_product (w : ∀ i,L i→ℂ) (T : Finset σ) :
+lemma cubeAbsorbedCoefficient_product  w   T  :
     cubeAbsorbedCoefficient H L w T=
       ∏ i : {i // i∉T},∑ P : cubeDivList H (L i.val),w i.val ⟨P.val,(Finset.mem_filter.mp P.property).1⟩ :=
   (Fintype.prod_sum (fun (i : {i // i∉T}) (P : cubeDivList H (L i.val)) =>
@@ -63,7 +62,7 @@ lemma cubeAbsorbedCoefficient_product (w : ∀ i,L i→ℂ) (T : Finset σ) :
 include hmax hgood
 
 theorem original_cube_shifted_tuple_source (w : ∀ i,L i→ℂ)
-    (Ψ : Eis→*ℂ) (W : ℝ→ℂ) (X : ℝ) :
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (W : ℝ→ℂ) (X : ℝ) :
     (∑ p : ∀ i,L i,(∏ i,w i (p i))*markedCompletedT Ψ W X
       (fun A => ∏ i,if (p i).val∣H^3*A then (1:ℂ) else 0))=
     ∑ T : Finset σ,cubeAbsorbedCoefficient H L w T*

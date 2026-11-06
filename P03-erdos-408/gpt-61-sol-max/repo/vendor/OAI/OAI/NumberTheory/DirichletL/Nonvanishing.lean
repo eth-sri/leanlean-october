@@ -21,7 +21,7 @@ open scoped _root_.DirichletCharacter
 /-- Dirichlet L-functions do not vanish to the right of `7 / 8`, away from the
 principal character's pole at `1`. -/
 theorem LFunction_ne_zero_of_seven_eighths_lt_re
-    {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) {s : ℂ}
+    {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)  {s} 
     (hs : (7 / 8 : ℝ) < s.re) (hpole : ¬ (χ = 1 ∧ s = 1)) :
     _root_.DirichletCharacter.LFunction χ s ≠ 0 :=
   SevenEighths.ProbeFinalAssemblyUnconditional.dirichlet_nonzero

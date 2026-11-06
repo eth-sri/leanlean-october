@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.GramPhysicalScale
 public import OAI.NumberTheory.DirichletL.Detector.GramShell
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramJointProfile
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
@@ -16,9 +17,9 @@ open ConcretePrimeRowBridge UniqueFactorizationMonoid ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
-lemma jointProfile_physicalPoint (W : ℝ→ℂ) (U : SchwartzMap ℝ ℂ)
-    (a b : ℝ) (ha : 0<a) (hab : a<b) (hs : Function.support W⊆Set.Icc a b)
-    (hW : ContDiff ℝ ∞ W) (v T : ℝ) (hT : 0≤T) (N : ℝ) (hN : 0<N) (m : O×O) :
+lemma jointProfile_physicalPoint  W   U 
+     a b   ha   hab   hs 
+     hW   v T   hT   N  (hN : 0<N)  m  :
     ProbeGramJointConstruction.jointProfile W U a b ha hab hs hW v T hT
       (ProbeGramLatticeDecay.physicalPoint N m)=
       shellProfile W v U T (‖eisEmbedding m.1‖^2/N) (‖eisEmbedding m.2‖^2/N) := by
@@ -30,7 +31,7 @@ lemma jointProfile_physicalPoint (W : ℝ→ℂ) (U : SchwartzMap ℝ ℂ)
   rw [h₁,h₂]
   rfl
 
-theorem literal_nonexceptional_source (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
+theorem literal_nonexceptional_source  A B  (hA : 2<A)  a₀ b₀ 
     (ha₀ : 0<a₀) (hab : a₀<b₀) :
     ∃(J : ℕ)(H : Finset (ℕ×ℕ)),
       ∀(W : ℝ→ℂ)(_hs : Function.support W⊆Set.Icc a₀ b₀)(_hW : ContDiff ℝ ∞ W),
@@ -67,7 +68,7 @@ theorem literal_nonexceptional_source (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
       (fun m : O×O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
         shellProfile W v U T (‖eisEmbedding m.1‖^2/N) (‖eisEmbedding m.2‖^2/N)) := by
     funext m
-    rw [jointProfile_physicalPoint W U a₀ b₀ ha₀ hab hs hW v T hT N hN m]
+    solve_by_elim [jointProfile_physicalPoint]
   rw [hfun] at hb
   refine ⟨hb.1,hb.2.trans ?_⟩
   have hm : 0≤min (1:ℝ) (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm (Ideal.span {C})*
@@ -79,6 +80,6 @@ theorem literal_nonexceptional_source (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
   convert hh using 1 ; ring
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

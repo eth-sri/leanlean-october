@@ -31,24 +31,24 @@ open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
 open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
 open CenteredMomentSecondActivePhysicalDictionary
 open CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar
-local notation "O" => HeckeFamily.O
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-theorem original_nonexceptional_energy (lo hi:ι→ℝ)(W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)
+theorem original_nonexceptional_energy (lo hi:ι→ℝ) W  J₁ J₂ 
     (B L Cr δ ε:ℝ)(hB:0≤B)(hL:0≤L)(hCr:0<Cr)(hδ:0<δ)(hε:0<ε) :
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
     ∀s:Input ι,(∀i,s.lo i=lo i)→(∀i,s.hi i=hi i)→
       s.W₁ 0=0→s.W₂ 0=0→0≤sourceRadius s→sourceRadius s≤Z^B→
-    ∀R0 seed:Ideal O,Squarefree seed→seed≠0→
+    ∀R0 seed:Ideal HeckeFamily.O,Squarefree seed→seed≠0→
     let S:=finiteColumns (Fintype.piFinset s.pools)
     let β:=coefficient s R0 seed
     ∃τ:(q:ActiveLabel S β)→Finset (CommonIndex q.val.1 q.val.2)→RayCharacter→Character,
     (∀q U,Family s.η q.val.1 q.val.2
       (commonLabels_supported (activeSource S β) _ _ q.property).1
       (commonLabels_supported (activeSource S β) _ _ q.property).2 U (τ q U)) ∧
-    ∀(χ₀:RayCharacter)(Q:Ideal O)(m:O),Q≤Ideal.span {(72:O)}→
-      m≠0→goodLambda∣m→(2:O)∣m→
+    ∀(χ₀:RayCharacter)(Q:Ideal HeckeFamily.O)(m:HeckeFamily.O),Q≤Ideal.span {(72:HeckeFamily.O)}→
+      m≠0→goodLambda∣m→(2:HeckeFamily.O)∣m→
     ∀Kphys Tsec ξ:ℝ,0<Kphys→frequencyRadius Tsec Z ξ≤Cr*Z^L→
     ∀E₁ E₂:ℝ,0≤E₁→0≤E₂→
     (∀q∈liveLabels s.η S β,∀U:Finset (CommonIndex q.val.1 q.val.2),
@@ -59,7 +59,7 @@ theorem original_nonexceptional_energy (lo hi:ι→ℝ)(W:𝓢(ℝ,ℂ))(J₁ J�
         (partRows false s.η χ₀ Q m q.val.1 q.val.2 U (frequencyRadius Tsec Z ξ)) W Kphys
         (fun i=>(n i:ℤ))≠0→
       ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
+        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal HeckeFamily.O)),
       (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
       ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.1,
       frozenCoefficient b.val q.val.1 R0 s.ν s.W s.P≠0 →
@@ -76,7 +76,7 @@ theorem original_nonexceptional_energy (lo hi:ι→ℝ)(W:𝓢(ℝ,ℂ))(J₁ J�
         (partRows false s.η χ₀ Q m q.val.1 q.val.2 U (frequencyRadius Tsec Z ξ)) W Kphys
         (fun i=>(n i:ℤ))≠0→
       ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
+        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal HeckeFamily.O)),
       (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
       ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.2,
       frozenCoefficient b.val q.val.2 R0 s.ν s.W s.P≠0 →

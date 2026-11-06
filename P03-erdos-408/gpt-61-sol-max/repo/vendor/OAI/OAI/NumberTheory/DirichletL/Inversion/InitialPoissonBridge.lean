@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Detector.GramGcd
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlap
 
@@ -13,21 +16,26 @@ namespace SevenEighths.InverseInitialPoissonBridge
 open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
 open ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson
 open UniqueFactorizationMonoid InverseInitialOverlap
-local notation "Eis" => ActualEisensteinCubic.O
 
-def rowPolynomial (F : Finset (Ideal Eis)) (A : Ideal Eis → ℂ) (u : Eis) : ℂ :=
+
+def rowPolynomial (F : Finset (Ideal ActualEisensteinCubic.O)) (A : Ideal ActualEisensteinCubic.O → ℂ) (u : ActualEisensteinCubic.O)  :=
   ∑ I ∈ F, A I * idealRowHom u I
 
-lemma pool_positive (F : Finset (Ideal Eis)) (hF : ∀ I ∈ F, Admissible I) :
+section
+variable (F : Finset (Ideal ActualEisensteinCubic.O)) (hF : ∀ I ∈ F, Admissible I) {I J : Ideal ActualEisensteinCubic.O} (S : Finset (Ideal ActualEisensteinCubic.O)) {P j : Ideal ActualEisensteinCubic.O} (hP : Admissible P) (hj : j ∣ P) (hS : ∀ n ∈ S, Squarefree n → Supported n) {c : Ideal ActualEisensteinCubic.O} (hc : c ∈ columns S P j)
+
+include hF in
+lemma pool_positive     :
     ∀ I ∈ F, I ≠ 0 := fun I hI => (hF I hI).1
 
-lemma pool_good (F : Finset (Ideal Eis)) (hF : ∀ I ∈ F, Admissible I) :
+include hF in
+lemma pool_good     :
     ∀ I ∈ F, ∀ Q ∈ normalizedFactors I, goodLambda ∉ Q :=
   fun I hI Q hQ => ((hF I hI).2.2 Q hQ).1
 
 theorem idealRowHom_eq_idealSexticRow
-    (F : Finset (Ideal Eis)) (hF : ∀ I ∈ F, Admissible I)
-    {I : Ideal Eis} (hI : I ∈ F) (u : Eis) :
+       
+      (hI : I ∈ F)  u  :
     idealRowHom u I = idealSexticRow F (pool_positive F hF) (pool_good F hF) I u := by
   let : ∀ q : primePool F, q.val.IsMaximal := primePool_maximal F (pool_positive F hF)
   conv_lhs => rw [← idealSupport_product_eq F hI (hF I hI).2.1]
@@ -40,17 +48,15 @@ theorem idealRowHom_eq_idealSexticRow
   exact idealRowHom_prime u q.val (primePool_good F (pool_good F hF) q)
 
 theorem indexed_smoothed_summable {β : Type*} (C : Finset β)
-    (L : β → Ideal Eis) (hL : ∀ c ∈ C, Admissible (L c)) (A : β → ℂ)
-    (Φ : 𝓢(ℝ,ℂ)) (Y : ℝ) (hY : 0 < Y) :
-    Summable (fun u : Eis => Φ (‖eisEmbedding u‖^2/Y) *
+    (L : β → Ideal ActualEisensteinCubic.O) (hL : ∀ c ∈ C, Admissible (L c)) (A : β → ℂ)
+    (Φ : 𝓢(ℝ,ℂ))  Y  (hY : 0 < Y) :
+    Summable (fun u : ActualEisensteinCubic.O => Φ (‖eisEmbedding u‖^2/Y) *
       (‖∑ c ∈ C, A c * idealRowHom u (L c)‖^2 : ℝ)) := by
   let F := C.image L
   have hF : ∀ I ∈ F, Admissible I := by
-    intro I hI
-    obtain ⟨c,hc,rfl⟩ := Finset.mem_image.mp hI
-    exact hL c hc
+    aesop
   let : ∀ q : primePool F, q.val.IsMaximal := primePool_maximal F (pool_positive F hF)
-  have he (u : Eis) : (∑ c ∈ C, A c*idealRowHom u (L c)) =
+  have he (u : ActualEisensteinCubic.O) : (∑ c ∈ C, A c*idealRowHom u (L c)) =
       ∑ c ∈ C, A c*idealSexticRow F (pool_positive F hF) (pool_good F hF) (L c) u := by
     apply Finset.sum_congr rfl
     intro c hc
@@ -59,14 +65,13 @@ theorem indexed_smoothed_summable {β : Type*} (C : Finset β)
     (fun q : primePool F => q.val) (primePool_good F (pool_good F hF))
     C (fun c => idealSupport F (L c)) A Φ Y hY
 
-theorem supported_of_dvd {I J : Ideal Eis} (hI : Supported I) (hJI : J ∣ I) : Supported J := by
-  obtain ⟨K,rfl⟩ := hJI
-  exact (supported_mul_iff J K).mp hI |>.1
+theorem supported_of_dvd   (hI : Supported I) (hJI : J ∣ I) : Supported J := by solve_by_elim [_root_.OAI.SevenEighths.ProbeGramCommon.gram_supported_divisor]
 
-theorem columns_admissible (S : Finset (Ideal Eis)) {P j : Ideal Eis}
-    (hP : Admissible P) (hj : j ∣ P)
-    (hS : ∀ n ∈ S, Squarefree n → Supported n)
-    {c : Ideal Eis} (hc : c ∈ columns S P j) : Admissible c := by
+include hP hj hS hc in
+theorem columns_admissible    
+       
+     
+        : Admissible c := by
   obtain ⟨n,hn,rfl⟩ := Finset.mem_image.mp hc
   obtain ⟨hnS,hns,hg⟩ := mem_original.mp hn
   have hjn : j ∣ n := hg ▸ GCDMonoid.gcd_dvd_left n P
@@ -75,23 +80,24 @@ theorem columns_admissible (S : Finset (Ideal Eis)) {P j : Ideal Eis}
      supported_of_dvd (admissible_supported hP) (idealQuotient_dvd hj)⟩
   exact ⟨hs.1,(column_properties hP.2.1 hj hns hg).1,hs.2⟩
 
-theorem masked_columns_admissible (S : Finset (Ideal Eis)) {P j : Ideal Eis}
-    (hP : Admissible P) (hj : j ∣ P)
-    (hS : ∀ n ∈ S, Squarefree n → Supported n)
-    {c : Ideal Eis} (hc : c ∈ columns S P j) : Admissible (j*c) := by
+include hP hj hS hc in
+theorem masked_columns_admissible    
+       
+     
+        : Admissible (j*c) := by
   have hjA := admissible_of_dvd hP hj
   have hcA := columns_admissible S hP hj hS hc
   have hs := (supported_mul_iff j c).mpr ⟨admissible_supported hjA,admissible_supported hcA⟩
   exact ⟨hs.1,squarefree_mul_iff.mpr
     ⟨((mem_columns hP.2.1 hj).mp hc).2.1.symm.isRelPrime,hjA.2.1,hcA.2.1⟩,hs.2⟩
 
-theorem norm_idealRowHom_four_eq_two (I : Ideal Eis) (hI : Admissible I) (u : Eis) :
+end
+
+theorem norm_idealRowHom_four_eq_two  I  (hI : Admissible I)  u  :
     ‖idealRowHom u I‖^4 = ‖idealRowHom u I‖^2 := by
-  let F : Finset (Ideal Eis) := {I}
+  let F : Finset (Ideal ActualEisensteinCubic.O) := {I}
   have hF : ∀ J ∈ F, Admissible J := by
-    intro J hJ
-    have he : J=I := Finset.mem_singleton.mp hJ
-    simpa only [he] using hI
+    aesop
   rw [idealRowHom_eq_idealSexticRow F hF (Finset.mem_singleton_self I)]
   let : ∀ q : primePool F, q.val.IsMaximal := primePool_maximal F (pool_positive F hF)
   have he := congrArg norm (finiteSquarefreeRow_self_pair
@@ -103,32 +109,35 @@ theorem norm_idealRowHom_four_eq_two (I : Ideal Eis) (hI : Admissible I) (u : Ei
   unfold rowCoprimeMask
   split_ifs <;> norm_num
 
-def heckeIdealCharacter (η : Ideal Eis →* ℂ) (u : Eis) : Ideal Eis →* ℂ :=
+def heckeIdealCharacter (η : Ideal ActualEisensteinCubic.O →* ℂ) (u : ActualEisensteinCubic.O)  :=
   η * (idealRowHom u).toMonoidHom
 
-theorem heckeIdealCharacter_apply (η : Ideal Eis →* ℂ) (u : Eis) (I : Ideal Eis) :
+theorem heckeIdealCharacter_apply  η   u   I  :
     heckeIdealCharacter η u I = η I * idealRowHom u I := rfl
 
-def originalFixedPolynomial (S : Finset (Ideal Eis)) (P j : Ideal Eis)
-    (η : Ideal Eis →* ℂ) (a : Ideal Eis → ℂ) (W : ℝ → ℂ)
-    (Z r z : ℝ) (u : Eis) : ℂ :=
+def originalFixedPolynomial (S : Finset (Ideal ActualEisensteinCubic.O)) (P j : Ideal ActualEisensteinCubic.O)
+    (η : Ideal ActualEisensteinCubic.O →* ℂ) (a : Ideal ActualEisensteinCubic.O → ℂ) (W : ℝ → ℂ)
+    (Z r z : ℝ) (u : ActualEisensteinCubic.O)  :=
   (Z^(-(r+z)/2) : ℝ) * ∑ n ∈ original S P j,
     (moebius n : ℂ) * heckeIdealCharacter η u n * heckeIdealCharacter η u P *
       a n * W ((Ideal.absNorm n : ℝ)/Z^r)
 
-def overlapResidualCoefficient (P j : Ideal Eis) (η : Ideal Eis →* ℂ)
-    (a : Ideal Eis → ℂ) (W : ℝ → ℂ) (Z r z G : ℝ) (c : Ideal Eis) : ℂ :=
+def overlapResidualCoefficient (P j : Ideal ActualEisensteinCubic.O) (η : Ideal ActualEisensteinCubic.O →* ℂ)
+    (a : Ideal ActualEisensteinCubic.O → ℂ) (W : ℝ → ℂ) (Z r z G : ℝ) (c : Ideal ActualEisensteinCubic.O)  :=
   (moebius c : ℂ) * η c * a (reconstruct P j c) *
     W ((((Ideal.absNorm j : ℝ)/Z^G)*((Ideal.absNorm c : ℝ)/Z^(r+z-2*G))) /
       ((Ideal.absNorm (residual P j) : ℝ)/Z^(z-G)))
 
-def overlapPrefactor (P j : Ideal Eis) (η : Ideal Eis →* ℂ) (Z r z G : ℝ) : ℂ :=
+def overlapPrefactor (P j : Ideal ActualEisensteinCubic.O) (η : Ideal ActualEisensteinCubic.O →* ℂ) (Z r z G : ℝ)  :=
   (moebius j : ℂ)*(moebius (residual P j) : ℂ)*(Z^(-G) : ℝ)*η j^2*
     (Z^(-(r+z-2*G)/2) : ℝ)
 
-theorem originalFixedPolynomial_eq (S : Finset (Ideal Eis)) {P j : Ideal Eis}
-    (hP : Squarefree P) (hj : j ∣ P) (η : Ideal Eis →* ℂ)
-    (a : Ideal Eis → ℂ) (W : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (r z G : ℝ) (u : Eis) :
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O)) {P j : Ideal ActualEisensteinCubic.O}
+
+theorem originalFixedPolynomial_eq    
+    (hP : Squarefree P) (hj : j ∣ P)  η 
+     a   W   {Z}  (hZ : 0 < Z)  r z G   u  :
     originalFixedPolynomial S P j η a W Z r z u =
       overlapPrefactor P j η Z r z G * (idealRowHom u j)^2 *
         rowPolynomial (columns S P j) (overlapResidualCoefficient P j η a W Z r z G) u := by
@@ -141,8 +150,8 @@ theorem originalFixedPolynomial_eq (S : Finset (Ideal Eis)) {P j : Ideal Eis}
   intro c hc
   ring
 
-theorem maskedResidual_eq (S : Finset (Ideal Eis)) (P j : Ideal Eis)
-    (A : Ideal Eis → ℂ) (u : Eis) :
+theorem maskedResidual_eq    P j 
+     A   u  :
     (∑ c ∈ columns S P j, A c*idealRowHom u (j*c)) =
       idealRowHom u j * rowPolynomial (columns S P j) A u := by
   simp only [map_mul,rowPolynomial,Finset.mul_sum]
@@ -156,9 +165,9 @@ lemma norm_sq_square_factor (r s : ℂ) (h : ‖r‖^4=‖r‖^2) :
     _ = ‖r‖^4*‖s‖^2 := by simp only [norm_mul,norm_pow]; ring
     _ = ‖r*s‖^2 := by rw [h,norm_mul,mul_pow]
 
-theorem originalFixedPolynomial_norm_sq (S : Finset (Ideal Eis)) {P j : Ideal Eis}
-    (hP : Admissible P) (hj : j ∣ P) (η : Ideal Eis →* ℂ)
-    (a : Ideal Eis → ℂ) (W : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (r z G : ℝ) (u : Eis) :
+theorem originalFixedPolynomial_norm_sq    
+    (hP : Admissible P) (hj : j ∣ P)  η 
+     a   W   {Z}  (hZ : 0 < Z)  r z G   u  :
     ‖originalFixedPolynomial S P j η a W Z r z u‖^2 =
       ‖overlapPrefactor P j η Z r z G‖^2 *
         ‖∑ c ∈ columns S P j, overlapResidualCoefficient P j η a W Z r z G c *
@@ -168,25 +177,32 @@ theorem originalFixedPolynomial_norm_sq (S : Finset (Ideal Eis)) {P j : Ideal Ei
   congr 1
   exact norm_sq_square_factor _ _ (norm_idealRowHom_four_eq_two j (admissible_of_dvd hP hj) u)
 
-def residualNormalizedPolynomial (S : Finset (Ideal Eis)) (P j : Ideal Eis)
-    (η : Ideal Eis →* ℂ) (a : Ideal Eis → ℂ) (W : ℝ → ℂ)
-    (Z r z G : ℝ) (u : Eis) : ℂ :=
+end
+
+def residualNormalizedPolynomial (S : Finset (Ideal ActualEisensteinCubic.O)) (P j : Ideal ActualEisensteinCubic.O)
+    (η : Ideal ActualEisensteinCubic.O →* ℂ) (a : Ideal ActualEisensteinCubic.O → ℂ) (W : ℝ → ℂ)
+    (Z r z G : ℝ) (u : ActualEisensteinCubic.O)  :=
   (Z^(-(r+z-2*G)/2) : ℝ) * ∑ c ∈ columns S P j,
     overlapResidualCoefficient P j η a W Z r z G c * star (idealRowHom u c)
 
-lemma norm_rpow_half_sq {Z : ℝ} (hZ : 0 < Z) (D : ℝ) :
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O)) {P j : Ideal ActualEisensteinCubic.O} (hP : Admissible P) (hj : j ∣ P) (hS : ∀ n ∈ S, Squarefree n → Supported n) (η : Ideal ActualEisensteinCubic.O →* ℂ) (a : Ideal ActualEisensteinCubic.O → ℂ) (W : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (r z G : ℝ) (Φ : 𝓢(ℝ,ℂ)) (Y : ℝ) (hY : 0 < Y)
+
+include hZ in
+lemma norm_rpow_half_sq     (D : ℝ) :
     ‖((Z^(-D/2) : ℝ) : ℂ)‖^2=Z^(-D) := by
   rw [Complex.norm_real,Real.norm_eq_abs,abs_of_pos (Real.rpow_pos_of_pos hZ _),
     ←Real.rpow_natCast,←Real.rpow_mul hZ.le]
   congr 1
   norm_num
 
+include hP hj hS hZ G hY in
 theorem original_fixed_overlap_smoothed_summable
-    (S : Finset (Ideal Eis)) {P j : Ideal Eis} (hP : Admissible P) (hj : j ∣ P)
-    (hS : ∀ n ∈ S, Squarefree n → Supported n) (η : Ideal Eis →* ℂ)
-    (a : Ideal Eis → ℂ) (W : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (r z G : ℝ)
-    (Φ : 𝓢(ℝ,ℂ)) (Y : ℝ) (hY : 0 < Y) :
-    Summable (fun u : Eis => Φ (‖eisEmbedding u‖^2/Y)*
+           
+       
+             
+          :
+    Summable (fun u : ActualEisensteinCubic.O => Φ (‖eisEmbedding u‖^2/Y)*
       (‖originalFixedPolynomial S P j η a W Z r z u‖^2 : ℝ)) := by
   have hs := (indexed_smoothed_summable (columns S P j) (fun c => j*c)
     (fun c hc => masked_columns_admissible S hP hj hS hc)
@@ -198,9 +214,9 @@ theorem original_fixed_overlap_smoothed_summable
   ring
 
 theorem original_normalized_polynomial_hecke_rows
-    (S : Finset (Ideal Eis)) {P : Ideal Eis} (hP : Squarefree P)
-    (η : Ideal Eis →* ℂ) (a : Ideal Eis → ℂ) (W : ℝ → ℂ)
-    {Z : ℝ} (hZ : 0 < Z) (r z : ℝ) (G : Ideal Eis → ℝ) (u : Eis) :
+        (hP : Squarefree P)
+    (η : Ideal ActualEisensteinCubic.O →* ℂ) (a : Ideal ActualEisensteinCubic.O → ℂ) (W : ℝ → ℂ)
+    {Z : ℝ} (hZ : 0 < Z) (r z : ℝ) (G : Ideal ActualEisensteinCubic.O → ℝ)  u  :
     (Z^(-(r+z)/2) : ℝ) * (∑ n ∈ S,
       (moebius n : ℂ)*heckeIdealCharacter η u n*heckeIdealCharacter η u P*
         a n*W ((Ideal.absNorm n : ℝ)/Z^r)) =
@@ -218,22 +234,23 @@ theorem original_normalized_polynomial_hecke_rows
   ring
 
 theorem indexed_conjugate_smoothed_summable {β : Type*} (C : Finset β)
-    (L : β → Ideal Eis) (hL : ∀ c ∈ C, Admissible (L c)) (A : β → ℂ)
-    (Φ : 𝓢(ℝ,ℂ)) (Y : ℝ) (hY : 0 < Y) :
-    Summable (fun u : Eis => Φ (‖eisEmbedding u‖^2/Y) *
+    (L : β → Ideal ActualEisensteinCubic.O) (hL : ∀ c ∈ C, Admissible (L c)) (A : β → ℂ)
+    (Φ : 𝓢(ℝ,ℂ))  Y  (hY : 0 < Y) :
+    Summable (fun u : ActualEisensteinCubic.O => Φ (‖eisEmbedding u‖^2/Y) *
       (‖∑ c ∈ C, A c * star (idealRowHom u (L c))‖^2 : ℝ)) := by
-  have he (u : Eis) : (∑ c ∈ C, A c * star (idealRowHom u (L c))) =
+  have he (u : ActualEisensteinCubic.O) : (∑ c ∈ C, A c * star (idealRowHom u (L c))) =
       star (∑ c ∈ C, star (A c) * idealRowHom u (L c)) := by
     simp only [star_sum,star_mul,star_star,mul_comm]
   simpa only [he,norm_star] using
     indexed_smoothed_summable C L hL (fun c => star (A c)) Φ Y hY
 
+include hP hj hS hZ hY in
 theorem residual_normalized_smoothed_summable
-    (S : Finset (Ideal Eis)) {P j : Ideal Eis} (hP : Admissible P) (hj : j ∣ P)
-    (hS : ∀ n ∈ S, Squarefree n → Supported n) (η : Ideal Eis →* ℂ)
-    (a : Ideal Eis → ℂ) (W : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (r z G : ℝ)
-    (Φ : 𝓢(ℝ,ℂ)) (Y : ℝ) (hY : 0 < Y) :
-    Summable (fun u : Eis => Φ (‖eisEmbedding u‖^2/Y)*
+           
+       
+             
+          :
+    Summable (fun u : ActualEisensteinCubic.O => Φ (‖eisEmbedding u‖^2/Y)*
       (‖residualNormalizedPolynomial S P j η a W Z r z G u‖^2 : ℝ)) := by
   have hs := (indexed_conjugate_smoothed_summable (columns S P j) (fun c => c)
     (fun c hc => columns_admissible S hP hj hS hc)
@@ -243,6 +260,8 @@ theorem residual_normalized_smoothed_summable
   intro u
   rw [residualNormalizedPolynomial,norm_mul,mul_pow,norm_rpow_half_sq hZ,Complex.ofReal_mul]
   ring
+
+end
 
 end SevenEighths.InverseInitialPoissonBridge
 

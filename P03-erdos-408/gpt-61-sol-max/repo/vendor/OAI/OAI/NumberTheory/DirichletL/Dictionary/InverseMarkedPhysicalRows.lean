@@ -29,7 +29,7 @@ local notation "O"=>HeckeFamily.O
     (∑u∈rows.image actualRow,f u)=∑u∈rows,f (actualRow u):=
   Finset.sum_image (fun _u _ _v _ h=>actualRow_injective h)
 
- theorem oriented_child (reverse:Bool)(W:ℝ→ℂ)(v:ℝ):
+ theorem oriented_child  reverse  W  v :
     orientedProfile reverse (childLogTest W v)=
       childLogTest (orientedProfile reverse W) (orientedFrequency reverse v):=by
   cases reverse
@@ -41,19 +41,23 @@ variable {M:Ideal O}[NeZero M]{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 
 omit [NeZero M] in
 theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
-    (selected:Finset Slot)(u:FreeRow):
+     selected  u :
     F.physicalProduct selected u=
       ∏s:selected,HeckePrimeRow.canonicalPrimeAmplitude M H u.val
         (F.profile s) (F.upper s) (U^(F.widths s)) (F.external s):=by
   simp only [Fiber.physicalProduct,physical]
   exact (Finset.prod_coe_sort selected _).symm
 
- theorem fiber_rows_le_deleted_sources
-    (F:Fiber M H Label Slot U a ε tstar T allowance i)(selected:Finset Slot)
-    (W:ℝ→ℂ)(σ freq bW:ℝ)(lower:Slot→ℝ)(hU:1<U)
-    (hW:∀x,W x≠0→x≤bW)
-    (hV:∀s∈selected,∀x,F.profile s x≠0→x∈Set.Icc (lower s) (F.upper s))
-    (hlarge:∀s∈selected,((deletedBase F.rowData).modulus.absNorm:ℝ)<lower s*U^(F.widths s)):
+ section
+variable (F : Fiber M H Label Slot U a ε tstar T allowance i) (selected : Finset Slot) (W : ℝ→ℂ) (σ freq v bW : ℝ) (lower : Slot→ℝ) (hU : 1<U) (hW : ∀x,W x≠0→x≤bW) (hV : ∀s∈selected,∀x,F.profile s x≠0→x∈Set.Icc (lower s) (F.upper s)) (hlarge : ∀s∈selected,((deletedBase F.rowData).modulus.absNorm:ℝ)<lower s*U^(F.widths s))
+
+include hU hW hV hlarge in
+theorem fiber_rows_le_deleted_sources
+      
+        
+     
+     
+     :
     (∑u∈F.rows,‖polynomial (F.family u F.label) true W (U^F.r) σ freq*
       F.physicalProduct selected u‖^2)≤
       ((idealDivisors (∏P∈excluded F.rowData,P)).card:ℝ)*
@@ -106,12 +110,13 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
   rw [hr] at hn
   exact congrArg (fun x:ℝ=>x^2) hn
 
- theorem fiber_child_rows_le_deleted_sources
-    (F:Fiber M H Label Slot U a ε tstar T allowance i)(selected:Finset Slot)
-    (W:ℝ→ℂ)(v bW:ℝ)(lower:Slot→ℝ)(hU:1<U)
-    (hW:∀x,W x≠0→x≤bW)
-    (hV:∀s∈selected,∀x,F.profile s x≠0→x∈Set.Icc (lower s) (F.upper s))
-    (hlarge:∀s∈selected,((deletedBase F.rowData).modulus.absNorm:ℝ)<lower s*U^(F.widths s)):
+ include hU hW hV hlarge in
+theorem fiber_child_rows_le_deleted_sources
+      
+        
+     
+     
+     :
     (∑u∈F.rows,‖polynomial (F.family u F.label) true (childLogTest W v) (U^F.r) 0 0*
       F.physicalProduct selected u‖^2)≤
       ((idealDivisors (∏P∈excluded F.rowData,P)).card:ℝ)*
@@ -128,6 +133,8 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
     exact hx (by simp only [childLogTest,hz,zero_mul])
   have hh:=fiber_rows_le_deleted_sources F selected (childLogTest W v) 0 0 bW lower hU hw hV hlarge
   simpa only [oriented_child,orientedFrequency,neg_zero,ite_self] using hh
+
+end
 
 end SevenEighths.DetectorDictionaryInverseMarkedPhysicalRows
 

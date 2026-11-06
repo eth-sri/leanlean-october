@@ -8,25 +8,25 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+
 
 theorem targetRow_reciprocal_growth (e δ : ℝ) (he : 0<e) (he' : e<1/1000)
-    (hδ : 0<δ) (hδ' : δ≤2) (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) :
+    (hδ : 0<δ) (hδ' : δ≤2)  S   hS  :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow) (x : ℂ),
       HeckeZeroSupremum.beta+8*e≤x.re →
       ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS) x‖≤
-        C*(η.modulus.absNorm:ℝ)^δ*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^δ*(3+|x.im|)^2 := by
+        C*(η.modulus.absNorm:ℝ)^δ*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^δ*(3+|x.im|)^2 := by
   obtain ⟨D,hD,hmain⟩ := HeckeReciprocalGrowth.reciprocal_subpower e (δ/2) he he' (by linarith)
   let A : ℝ := (conductorConstant:ℝ)*((∏P∈S,P).absNorm:ℝ)
   have hA : 0≤A := by dsimp [A];positivity
   refine ⟨D*(2:ℝ)^(δ/2)*(1+A^δ),by positivity,?_⟩
   intro η u x hx
   let q : ℝ := η.modulus.absNorm
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N : ℝ := ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)
   have hq : 0≤q := by dsimp [q];positivity
   have hN : 0≤N := by dsimp [N];positivity
   have hQ : (((targetRow η u).excludePrimes S hS).modulus.absNorm:ℝ)≤A*q*N := by
@@ -62,6 +62,6 @@ theorem targetRow_reciprocal_growth (e δ : ℝ) (he : 0<e) (he' : e<1/1000)
       linarith
 
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

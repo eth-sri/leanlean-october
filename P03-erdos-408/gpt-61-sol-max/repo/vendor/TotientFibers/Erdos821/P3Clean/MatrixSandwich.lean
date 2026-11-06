@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.Sandwich
 
@@ -13,28 +14,27 @@ namespace Erdos821.P3Clean
 
 open Erdos821.Blueprint.Graph
 
-def finiteLinearMap {α β : Type*} [Fintype α] (B : β → α → ℂ) (f : α → ℂ) (y : β) : ℂ :=
+def finiteLinearMap {α β : Type*} [Fintype α] (B : β → α → ℂ) (f : α → ℂ) (y : β)  :=
   ∑ a, B y a * f a
 
 theorem finiteLinearMap_form_entry {α β : Type*} [Fintype α]
     (B : β → α → ℂ) (mass : β → ℝ) (H : β → β → ℂ)
-    (f g : α → ℂ) (y z : β) :
+     f g   y z  :
     (mass y : ℂ) * star (finiteLinearMap B f y) * H y z * finiteLinearMap B g z =
       ∑ a, ∑ b, star (f a) * ((mass y : ℂ) * star (B y a) * H y z * B z b) * g b := by
   simp only [finiteLinearMap, star_sum, star_mul, Finset.mul_sum, Finset.sum_mul]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro a _
-  apply Finset.sum_congr rfl
-  intro b _
-  ring
+  grind
 
-theorem matrixSandwich_form {α β δ : Type*} [Fintype α] [Fintype β] [Fintype δ]
-    (mass : α → ℝ) (targetMass : β → ℝ) (K : α → α → ℂ)
-    (H : δ → β → β → ℂ) (B : δ → β → α → ℂ)
+section
+variable {α β δ : Type*} [Fintype α] [Fintype β] [Fintype δ] (mass : α → ℝ) (targetMass : β → ℝ) (K : α → α → ℂ) (H : δ → β → β → ℂ) (B : δ → β → α → ℂ)
+
+theorem matrixSandwich_form        
+         
+       
     (hentry : ∀ a b, (mass a : ℂ) * K a b =
       ∑ d, ∑ y, ∑ z, (targetMass y : ℂ) * star (B d y a) * H d y z * B d z b)
-    (f g : α → ℂ) :
+     f g  :
     (∑ a, ∑ b, (mass a : ℂ) * star (f a) * K a b * g b) =
       ∑ d, ∑ y, ∑ z, (targetMass y : ℂ) *
         star (finiteLinearMap (B d) f y) * H d y z * finiteLinearMap (B d) g z := by
@@ -68,19 +68,20 @@ theorem matrixSandwich_form {α β δ : Type*} [Fintype α] [Fintype β] [Fintyp
       intro y _
       rw [Finset.sum_comm]
 
-theorem normBound_matrixSandwich {α β δ : Type*} [Fintype α] [Fintype β] [Fintype δ]
-    (mass : α → ℝ) (targetMass : β → ℝ) (K : α → α → ℂ)
-    (H : δ → β → β → ℂ) (B : δ → β → α → ℂ) (C S : ℝ)
+theorem normBound_matrixSandwich        
+         
+         C S 
     (hm : ∀ y, 0 ≤ targetMass y) (hC : 0 ≤ C) (hS : 0 ≤ S)
     (hH : ∀ d, NormBound targetMass (H d) C)
     (hB : ∀ f, (∑ d, ∑ y, targetMass y * ‖finiteLinearMap (B d) f y‖ ^ 2) ≤
       S * ∑ a, mass a * ‖f a‖ ^ 2)
     (hentry : ∀ a b, (mass a : ℂ) * K a b =
       ∑ d, ∑ y, ∑ z, (targetMass y : ℂ) * star (B d y a) * H d y z * B d z b) :
-    NormBound mass K (C * S) := by
-  exact normBound_conditioned_form mass targetMass K H
+    NormBound mass K (C * S) := normBound_conditioned_form mass targetMass K H
     (fun d => finiteLinearMap (B d)) C S hm hC hS hH hB
     (matrixSandwich_form mass targetMass K H B hentry)
+
+end
 
 
 end Erdos821.P3Clean

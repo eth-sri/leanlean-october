@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.ChildRows
 public import OAI.NumberTheory.DirichletL.Hecke.UnitRows
@@ -13,15 +14,15 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentExceptionalPair
 open HeckeFamily CenteredExceptionalProfile CenteredMomentChildRows CenteredMomentFixedRay
 open CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => HeckeFamily.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-theorem idealCoeff_ne_zero_iff (χ : Character) (I : Ideal O) :
+
+
+theorem idealCoeff_ne_zero_iff  χ   I  :
     idealCoeff χ I ≠ 0 ↔ I ≠ ⊥ ∧ IsCoprime I χ.modulus := by
   change (if I = ⊥ then 0 else χ.residue
     (Ideal.Quotient.mk χ.modulus (Submodule.IsPrincipal.generator I))) ≠ 0 ↔ _
   by_cases hI : I = ⊥
-  · simp only [hI,ite_true,ne_eq,not_true_eq_false,false_and]
+  · simp_all
   · rw [ite_eq_right hI]
     have he : χ.residue (Ideal.Quotient.mk χ.modulus (Submodule.IsPrincipal.generator I)) ≠ 0 ↔
         IsUnit (Ideal.Quotient.mk χ.modulus (Submodule.IsPrincipal.generator I)) := MulChar.apply_ne_zero_iff
@@ -29,7 +30,7 @@ theorem idealCoeff_ne_zero_iff (χ : Character) (I : Ideal O) :
     exact he.trans (and_iff_right hI).symm
 
 theorem fixed_primitive_product (χ ψ τ : Character) (h : InducedBy χ ψ)
-    (Q : Ideal O) (hψ : Q ≤ ψ.modulus) (hτ : Q ≤ τ.modulus) :
+     Q  (hψ : Q ≤ ψ.modulus) (hτ : Q ≤ τ.modulus) :
     ∃ ρ : Character, FiniteFourier.IsPrimitiveOnIdeals ρ.residue ∧
       Q ≤ ρ.modulus ∧ InducedBy (χ.product τ) ρ := by
   obtain ⟨ρ,hmod,hprim,hnorm,hmask⟩ := exists_primitive_product_character ψ τ
@@ -50,11 +51,11 @@ theorem fixed_primitive_product (χ ψ τ : Character) (h : InducedBy χ ψ)
     rw [ite_eq_left hc,idealCoeff_product,he,hmask I,ite_eq_left hcψ]
   · have hz : idealCoeff (χ.product τ) I = 0 := by
       by_contra hn
-      exact hc ((idealCoeff_ne_zero_iff (χ.product τ) I).mp hn).2
+      simp_all [idealCoeff_ne_zero_iff]
     rw [hz,ite_eq_right hc]
 
-theorem fixedInducingRow_of_product (η₁ η₂ τ : Character) (Q : Ideal O)
-    (m A z₁ z₂ : O) (hτ : Q ≤ τ.modulus)
+theorem fixedInducingRow_of_product (η₁ η₂ τ : Character)  Q 
+    (m A z₁ z₂ : HeckeFamily.O) (hτ : Q ≤ τ.modulus)
     (he : ∀ n, rowTwist (HeckeRowClosure.elementHom η₂) m 1 (A*z₂) n =
       rowTwist (HeckeRowClosure.elementHom η₁) m 1 (A*z₁) n * elementCoeff τ n)
     (hx : FixedInducingRow η₁ Q m A z₁) : FixedInducingRow η₂ Q m A z₂ := by
@@ -64,14 +65,14 @@ theorem fixedInducingRow_of_product (η₁ η₂ τ : Character) (Q : Ideal O)
   intro n
   rw [elementCoeff_product,hrow n,he n]
 
-def rayRatio (χ ξ : RayCharacter) : Character :=
+def rayRatio (χ ξ : RayCharacter)  :=
   (primaryRayCharacter χ).inverse.product (primaryRayCharacter ξ)
 
-theorem childCharacter_ratio (η : Character) (χ ξ : RayCharacter) (n : O) :
+theorem childCharacter_ratio  η   χ ξ   n  :
     elementCoeff (childCharacter η ξ) n =
       elementCoeff (childCharacter η χ) n * elementCoeff (rayRatio χ ξ) n := by
   simp only [childCharacter,rayRatio,elementCoeff_product,elementCoeff_inverse]
-  by_cases hn : IsUnit (Ideal.Quotient.mk (Ideal.span {(12 : O)}) n)
+  by_cases hn : IsUnit (Ideal.Quotient.mk (Ideal.span {(12 : HeckeFamily.O)}) n)
   · have hχ : elementCoeff (primaryRayCharacter χ) n ≠ 0 :=
       MulChar.apply_ne_zero_iff.mpr hn
     field_simp
@@ -80,12 +81,12 @@ theorem childCharacter_ratio (η : Character) (χ ξ : RayCharacter) (n : O) :
     rw [hz χ,hz ξ]
     ring
 
-def reflectionRatio (χ ξ : RayCharacter) : Character :=
-  (rayRatio χ ξ).product (HeckeUnitRows.character (-1 : Oˣ))
+def reflectionRatio (χ ξ : RayCharacter)  :=
+  (rayRatio χ ξ).product (HeckeUnitRows.character (-1 : HeckeFamily.Oˣ))
 
-theorem reflectionRatio_modulus (χ ξ : RayCharacter) (Q : Ideal O)
-    (hQ : Q ≤ Ideal.span {(72 : O)}) : Q ≤ (reflectionRatio χ ξ).modulus := by
-  change Q ≤ ((Ideal.span {(12 : O)}) ⊓ (Ideal.span {(12 : O)})) ⊓ Ideal.span {(36 : O)}
+theorem reflectionRatio_modulus  χ ξ   Q 
+    (hQ : Q ≤ Ideal.span {(72 : HeckeFamily.O)}) : Q ≤ (reflectionRatio χ ξ).modulus := by
+  change Q ≤ ((Ideal.span {(12 : HeckeFamily.O)}) ⊓ (Ideal.span {(12 : HeckeFamily.O)})) ⊓ Ideal.span {(36 : HeckeFamily.O)}
   refine le_inf (le_inf ?_ ?_) ?_
   · exact hQ.trans (Ideal.span_singleton_le_span_singleton.mpr ⟨6,by norm_num⟩)
   · exact hQ.trans (Ideal.span_singleton_le_span_singleton.mpr ⟨6,by norm_num⟩)

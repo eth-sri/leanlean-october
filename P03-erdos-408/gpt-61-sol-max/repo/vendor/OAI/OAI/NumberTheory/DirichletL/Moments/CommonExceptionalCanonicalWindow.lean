@@ -11,7 +11,7 @@ set_option linter.privateModule false
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
 
@@ -26,12 +26,12 @@ open CenteredMomentSecondHeightFamily CenteredMomentLogDyadic
 open CenteredMomentCommonExceptionalCanonical CenteredMomentSecondCanonical
 open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
 open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
-local notation "O" => HeckeFamily.O
+
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
 end SevenEighths.CenteredMomentCommonExceptionalCanonicalWindow
 
-end
+
 
 end OAI

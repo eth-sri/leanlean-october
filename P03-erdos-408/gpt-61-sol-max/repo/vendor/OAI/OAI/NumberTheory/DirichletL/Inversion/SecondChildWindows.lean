@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
 public import OAI.NumberTheory.DirichletL.Descent.FreshWindows
@@ -13,9 +14,13 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseSecondChildWindows
 open InverseMoment InverseSecondProfileUniform
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
-local notation "O" => ActualEisensteinCubic.O
 
-theorem positive_cutoff (a b : ℝ) (ha : 0<a) (_hab : a≤b) :
+
+section
+variable (a b : ℝ) (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ) (_hm hm : 0≤m) (hs : Function.support g⊆Set.Icc (-m) m) (hc : 1≤c) (hcb : c≤bcap) (_hx hx : 0<x) (hn : positiveSource g c θ x≠0) (ρ B : ℝ) (ha : 0<a)
+
+include ha in
+theorem positive_cutoff     (_hab : a≤b) :
     ∃ w : 𝓢(ℝ,ℂ), HasCompactSupport (w : ℝ→ℂ) ∧
       (∀ x∈Set.Icc a b,w x=1) ∧ tsupport (w : ℝ→ℂ)⊆Set.Icc (a/2) (b+1) := by
   have hKU : Set.Icc a b⊆Set.Ioo (a/2) (b+1) := by
@@ -37,10 +42,11 @@ theorem positive_cutoff (a b : ℝ) (ha : 0<a) (_hab : a≤b) :
   rw [(hone x).mp hx]
   rfl
 
-theorem positiveSource_log_bound (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
-    (_hm : 0≤m) (hs : Function.support g⊆Set.Icc (-m) m)
-    (hc : 1≤c) (hcb : c≤bcap) (_hx : 0<x)
-    (hn : positiveSource g c θ x≠0) : |Real.log x|≤m+Real.log bcap := by
+include _hm hs hc hcb _hx hn in
+theorem positiveSource_log_bound    
+       
+         
+      : |Real.log x|≤m+Real.log bcap := by
   have hc0 : 0<c := zero_lt_one.trans_le hc
   have hgn : g (Real.log x+Real.log c)≠0 := (mul_ne_zero_iff.mp hn).2
   have hh := hs hgn
@@ -49,26 +55,25 @@ theorem positiveSource_log_bound (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
   rw [abs_le]
   constructor <;> linarith [hh.1,hh.2]
 
-theorem positiveSource_ratio_support (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
-    (hm : 0≤m) (hs : Function.support g⊆Set.Icc (-m) m)
-    (hc : 1≤c) (hcb : c≤bcap) (hx : 0<x)
-    (hn : positiveSource g c θ x≠0) :
+include hm hs hc hcb hx hn in
+theorem positiveSource_ratio_support    
+       
+         
+      :
     x∈Set.Icc (Real.exp (-(m+Real.log bcap))) (Real.exp (m+Real.log bcap)) := by
   have hh := (abs_le.mp (positiveSource_log_bound g m bcap c θ x hm hs hc hcb hx hn))
   exact ⟨(Real.le_log_iff_exp_le hx).mp hh.1,(Real.log_le_iff_le_exp hx).mp hh.2⟩
 
-theorem translated_log_bound (a b x ρ B : ℝ) (ha : 0<a)
+include ha in
+theorem translated_log_bound    
     (hx : x∈Set.Icc a b) (hρ : |ρ|≤B) :
     |Real.log x+ρ|≤|Real.log a|+|Real.log b|+B := by
   have hx0 := ha.trans_le hx.1
   have hlo := Real.log_le_log ha hx.1
   have hhi := Real.log_le_log hx0 hx.2
-  have hl : |Real.log x|≤|Real.log a|+|Real.log b| := by
-    rw [abs_le]
-    constructor
-    · linarith [neg_abs_le (Real.log a),abs_nonneg (Real.log b)]
-    · linarith [le_abs_self (Real.log b),abs_nonneg (Real.log a)]
-  exact (abs_add_le _ _).trans (add_le_add hl hρ)
+  grind
+
+end
 
 def outerIndex (i : Fin 4) : Fin 6 := i.castLE (by decide)
 
@@ -141,18 +146,18 @@ theorem fixed_windows (m bcap : ℝ) (lo hi : Fin 4→ℝ) (Bρ : Fin 6→ℝ)
       · exact hblock 3
       · exact hws (subset_tsupport _ hleft)
       · exact hws (subset_tsupport _ hright)
-    exact hVone i _ (translated_log_bound (l i) (u i) (q i) (ρ i) (Bρ i) (hl i) (hq i) (hρ i))
+    solve_by_elim [translated_log_bound]
 
-def actualOuterRatios {ι : Type*} [DecidableEq ι] (p : ι→O)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (G E V B : ℝ) : Fin 4→ℝ :=
+def actualOuterRatios {ι } [DecidableEq ι] (p : ι→ActualEisensteinCubic.O)
+    {Jo Jn } (x : MarkedSecondSource ι Jo Jn) (G E V B : ℝ)  :=
   ![primeProductNorm p x.second.sourceCommon/G,
     ‖ConcreteTraceCRT.eisEmbedding (primeSubsetGenerator (fun i=>Ideal.span {p i}) x.second.divisor)‖^2/E,
     primeProductNorm p x.second.overlap/V,‖ConcreteTraceCRT.eisEmbedding x.second.frequency‖^2/B]
 
-lemma actualRelativeNorm_outer {ι : Type*} [DecidableEq ι] (p : ι→O)
+lemma actualRelativeNorm_outer  {ι}  [DecidableEq ι]  p 
     [∀ i,(Ideal.span {p i}).IsMaximal]
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (Ψ : O→*ℂ) (m : O) (z : SecondRayIndex)
-    (Q₁ Q₂ : Finset ι) (G E V B X : ℝ) (i : Fin 4) :
+     {Jo Jn}  (x : MarkedSecondSource ι Jo Jn)  Ψ   m   z 
+     Q₁ Q₂   G E V B X   i  :
     secondRelativeNorm (secondActualNorms p (secondInheritedProfile p x Ψ m z) Q₁ Q₂)
       G E V B X (outerIndex i)=actualOuterRatios p x G E V B i := by
   fin_cases i <;> rfl
@@ -168,10 +173,10 @@ theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap 
       tsupport (w₁ : ℝ→ℂ)⊆Set.Icc a b ∧ tsupport (w₂ : ℝ→ℂ)⊆Set.Icc a b ∧
       (∀ i,0≤M₀ i) ∧ (∀ i,HasCompactSupport (U₀ i : ℝ→ℂ)) ∧
       (∀ i,Function.support (U₀ i)⊆Set.Icc (-M₀ i) (M₀ i)) ∧
-      ∀ {ι : Type*} [DecidableEq ι] (p : ι→O) (_hp : ∀ i,p i≠0)
+      ∀ {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (_hp : ∀ i,p i≠0)
       [∀ i,(Ideal.span {p i}).IsMaximal]
       {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (pool : Finset ι)
-      (Ψ : O→*ℂ) (m : O) (z : SecondRayIndex) (G E V B X : ℝ)
+      (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex) (G E V B X : ℝ)
       (ρ : Fin 6→ℝ) (c₁ c₂ θ₁ θ₂ : ℝ),
       0<G → 0<E → 0<V → 0<B → 0<X →
       (∀ i,|ρ i|≤Bρ i) → 1≤c₁ → c₁≤bcap → 1≤c₂ → c₂≤bcap →
@@ -191,13 +196,9 @@ theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap 
   let mmax := max m₁ m₂
   have hmmax : 0≤mmax := hm₁.trans (le_max_left _ _)
   have hg₁' : Function.support g₁⊆Set.Icc (-mmax) mmax := by
-    intro x hx
-    have h := hg₁ hx
-    exact ⟨(neg_le_neg (le_max_left _ _)).trans h.1,h.2.trans (le_max_left _ _)⟩
+    grind
   have hg₂' : Function.support g₂⊆Set.Icc (-mmax) mmax := by
-    intro x hx
-    have h := hg₂ hx
-    exact ⟨(neg_le_neg (le_max_right _ _)).trans h.1,h.2.trans (le_max_right _ _)⟩
+    grind
   obtain ⟨w,U,M,a,b,ha,hab,hwc,hws,hM,hUc,hUs,hfresh,hcut⟩ :=
     fixed_windows mmax bcap lo hi Bρ hmmax hcap hlo hhi hBρ
   refine ⟨w,w,U,M,a,b,ha,hab,hwc,hwc,hws,hws,hM,hUc,hUs,?_⟩

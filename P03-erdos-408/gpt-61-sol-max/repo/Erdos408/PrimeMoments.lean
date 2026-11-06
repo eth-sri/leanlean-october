@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.SpareSlot
 
@@ -30,17 +31,21 @@ namespace Erdos408
 
 open Filter Real
 
+section
+variable {n : ℕ} (hn : n ≠ 0) {A : Finset ℕ} (hA : ∀ q ∈ A, q.Prime ∧ q ∣ n) {R : Finset (ℕ × ℕ)} (hRA : R ⊆ A.offDiag) {ℓ : ℝ} (hℓ : log n ≤ ℓ)
+
 /-- `F q ≤ 2 log q`, since `F q ≤ log q / log 2` and `log 2 > 1 / 2`. -/
-private lemma F_le_two_mul_log {q : ℕ} (hq : q ≠ 0) : (F q : ℝ) ≤ 2 * log q := by
+private lemma F_le_two_mul_log  {q}  (hq : q ≠ 0) : (F q : ℝ) ≤ 2 * log q := by
   have h2 : (1 / 2 : ℝ) < log 2 := lt_trans (by norm_num) log_two_gt_d9
   have hlog := log_natCast_nonneg q
   calc (F q : ℝ) ≤ log q / log 2 := F_le_log_div_log_two hq
     _ ≤ 2 * log q := by rw [div_le_iff₀ (by linarith)]; nlinarith
 
+include hn hA hℓ in
 /-- If `A` consists of prime divisors of `n ≠ 0` and `log n ≤ ℓ`, then
 `0 ≤ F n - ∑_A F q ≤ 2 (ℓ - ∑_A log q)`. -/
-private lemma F_sub_sum_le {n : ℕ} (hn : n ≠ 0) {A : Finset ℕ}
-    (hA : ∀ q ∈ A, q.Prime ∧ q ∣ n) {ℓ : ℝ} (hℓ : log n ≤ ℓ) :
+private lemma F_sub_sum_le      
+          :
     0 ≤ (F n : ℝ) - ∑ q ∈ A, (F q : ℝ) ∧
       (F n : ℝ) - ∑ q ∈ A, (F q : ℝ) ≤ 2 * (ℓ - ∑ q ∈ A, log (q : ℝ)) := by
   have hsub : A ⊆ n.primeFactors := fun q hq =>
@@ -59,9 +64,7 @@ private lemma F_sub_sum_le {n : ℕ} (hn : n ≠ 0) {A : Finset ℕ}
       ∑ q ∈ n.primeFactors, u q * g q := by
     intro g
     rw [← Finset.inter_eq_right.2 hsub, ← Finset.sum_ite_mem, ← Finset.sum_sub_distrib]
-    refine Finset.sum_congr rfl fun q _ => ?_
-    simp only [u]
-    split_ifs <;> ring
+    grind
   have hF : (F n : ℝ) = ∑ q ∈ n.primeFactors, n.factorization q * (F q : ℝ) := by
     rw [F_eq_sum_factorization hn]
     push_cast
@@ -89,12 +92,13 @@ private lemma sq_sum_eq (A : Finset ℕ) (g : ℕ → ℝ) :
     Finset.sum_union (Finset.disjoint_diag_offDiag _), Finset.diag, Finset.sum_map]
   simp [sq]
 
+include hn hA hRA hℓ in
 /-- If `A` consists of prime divisors of `n ≠ 0`, `R` of pairs of distinct elements of `A`,
 and `log n ≤ ℓ`, then `F(n)² - ∑_A F(q)² - ∑_R F q F r` lies between `0` and
 `4 (2 ℓ (ℓ - ∑_A log q) + ℓ² - ∑_A (log q)² - ∑_R log q log r)`. -/
-private lemma sq_sub_sum_le {n : ℕ} (hn : n ≠ 0) {A : Finset ℕ}
-    (hA : ∀ q ∈ A, q.Prime ∧ q ∣ n) {R : Finset (ℕ × ℕ)} (hRA : R ⊆ A.offDiag) {ℓ : ℝ}
-    (hℓ : log n ≤ ℓ) :
+private lemma sq_sub_sum_le      
+           
+      :
     0 ≤ (F n : ℝ) ^ 2 - ∑ q ∈ A, (F q : ℝ) ^ 2 - ∑ Q ∈ R, (F Q.1 : ℝ) * F Q.2 ∧
       (F n : ℝ) ^ 2 - ∑ q ∈ A, (F q : ℝ) ^ 2 - ∑ Q ∈ R, (F Q.1 : ℝ) * F Q.2 ≤
         4 * (2 * ℓ * (ℓ - ∑ q ∈ A, log (q : ℝ)) +
@@ -125,14 +129,16 @@ private lemma sq_sub_sum_le {n : ℕ} (hn : n ≠ 0) {A : Finset ℕ}
   have hS : 0 ≤ S := Finset.sum_nonneg fun _ _ => Nat.cast_nonneg _
   have hSl : 0 ≤ Sl := Finset.sum_nonneg fun _ _ => log_natCast_nonneg _
   have hFn : (F n : ℝ) ≤ 2 * log n := F_le_two_mul_log hn
-  have hSln : Sl ≤ log n := by linarith
+  
   have hSlℓ : Sl ^ 2 ≤ ℓ ^ 2 := pow_le_pow_left₀ hSl (by linarith) 2
   constructor
   · nlinarith
   · nlinarith
 
+end
+
 /-- Eventually `c T⁶ ≤ L`, where `L = log y` and `T = log L`. -/
-private lemma eventually_mul_loglog_pow_le (c : ℝ) :
+private lemma eventually_mul_loglog_pow_le  c  :
     ∀ᶠ y : ℝ in atTop, c * log (log y) ^ 6 ≤ log y := by
   have hε : (0 : ℝ) < 1 / (|c| + 1) := by positivity
   filter_upwards [tendsto_log_atTop.eventually ((isLittleO_pow_log_id_atTop (n := 6)).bound hε),
@@ -239,7 +245,7 @@ private lemma spare_slot_two_le (hR : RectangleInput) : ∃ K : ℝ, 0 ≤ K ∧
 
 /-- The scales used below: eventually `y ≥ 3`, `T⁶ ≥ 1`, `c ≤ L T⁻⁶`, `1 ≤ L T⁻⁶`,
 `0 ≤ m ≤ a ≤ 1 / 64` and `T⁻⁷ ≤ T⁻⁶`. -/
-private lemma eventually_scales (c : ℝ) : ∀ᶠ y : ℝ in atTop, 3 ≤ y ∧
+private lemma eventually_scales  c  : ∀ᶠ y : ℝ in atTop, 3 ≤ y ∧
     1 ≤ log (log y) ^ 6 ∧ c ≤ log y / log (log y) ^ 6 ∧ 1 ≤ log y / log (log y) ^ 6 ∧
       0 ≤ mesh y ∧ mesh y ≤ margin y ∧ margin y ≤ 1 / 64 ∧
         1 / log (log y) ^ 7 ≤ 1 / log (log y) ^ 6 := by
@@ -255,7 +261,7 @@ private lemma eventually_scales (c : ℝ) : ∀ᶠ y : ℝ in atTop, 3 ≤ y ∧
     by unfold mesh; positivity, hm.1.trans ?_, ?_, ?_⟩
   · exact one_div_le_one_div_of_le hT6' (pow_le_pow_right₀ (by linarith) (by norm_num))
   · exact one_div_le_one_div_of_le (by norm_num) hT6
-  · exact one_div_le_one_div_of_le hT6' (pow_le_pow_right₀ (by linarith) (by norm_num))
+  gcongr <;> first | assumption | positivity | linarith
 
 /-- Positivity for one prime: `Π log 2y - ∑_p ∑_{q ∈ region₁, q ∣ p - 1} log q ≪ Π L T⁻⁶`,
 since `∑_{q ∣ n} log q ≤ log n < log 2y` while the spare-slot statistic and Mertens' first
@@ -433,8 +439,7 @@ private lemma tail_region₁ : ∃ K : ℝ, 0 ≤ K ∧ ∀ᶠ y : ℝ in atTop,
     mul_le_mul_of_nonneg_right (by linarith) hL
   have key : margin y * log y + E + (log y - U * log y + E) ≤
       5 * log y / log (log y) ^ 6 := by
-    have : 5 * log y / log (log y) ^ 6 = 5 * (log y / log (log y) ^ 6) := by ring
-    linarith
+    grind
   refine ⟨by linarith, ?_⟩
   calc _ = ∑ q ∈ primesIoc 1 (y ^ margin y), g q + ∑ q ∈ primesIoc (y ^ U) y, g q := by ring
     _ ≤ c * (margin y * log y + E) + c * (log y - U * log y + E) := add_le_add hA hB
@@ -442,7 +447,7 @@ private lemma tail_region₁ : ∃ K : ℝ, 0 ≤ K ∧ ∀ᶠ y : ℝ in atTop,
     _ ≤ _ := mul_le_mul_of_nonneg_left key hc
 
 /-- `D(y)` as a sum over the ordered pairs of distinct primes `q, r ≤ y` with `q r ≤ y`. -/
-private lemma harmonicFPair_eq_sum_pairs (y : ℝ) : harmonicFPair y =
+private lemma harmonicFPair_eq_sum_pairs  y  : harmonicFPair y =
     ∑ Q ∈ (primesIoc 1 y ×ˢ primesIoc 1 y).filter
         (fun Q => Q.1 ≠ Q.2 ∧ ((Q.1 * Q.2 : ℕ) : ℝ) ≤ y),
       (F Q.1 : ℝ) * F Q.2 / (Q.1 * Q.2) := by
@@ -484,8 +489,7 @@ private lemma tail_region₂ : ∃ K : ℝ, 0 ≤ K ∧ ∀ᶠ y : ℝ in atTop,
   set m := mesh y
   set c := 1 - a - 3 * m with hc_def
   have hya : (1 : ℝ) ≤ y ^ a := one_le_rpow hy1 ha0
-  have hyay : y ^ a ≤ y := by
-    simpa using rpow_le_rpow_of_exponent_le hy1 (show a ≤ 1 by linarith)
+  
   have hyc : y ^ c ≤ y := by
     simpa using rpow_le_rpow_of_exponent_le hy1 (show c ≤ 1 by linarith)
   have hyc0 : 0 < y ^ c := by positivity
@@ -509,9 +513,6 @@ private lemma tail_region₂ : ∃ K : ℝ, 0 ≤ K ∧ ∀ᶠ y : ℝ in atTop,
   -- the majorant `4 (log q / q) (log r / r)`
   set h : ℕ × ℕ → ℝ := fun Q => 4 * (log (Q.1 : ℝ) / Q.1 * (log (Q.2 : ℝ) / Q.2)) with hh
   have hh0 : ∀ Q, 0 ≤ h Q := fun Q => by
-    simp only [h]
-    have := log_natCast_nonneg Q.1
-    have := log_natCast_nonneg Q.2
     positivity
   have hgh : ∀ Q ∈ PP \ region₂ y, (F Q.1 : ℝ) * F Q.2 / (Q.1 * Q.2) ≤ h Q := by
     intro Q hQ
@@ -523,7 +524,7 @@ private lemma tail_region₂ : ∃ K : ℝ, 0 ≤ K ∧ ∀ᶠ y : ℝ in atTop,
     have h2' : (F Q.2 : ℝ) / Q.2 ≤ 2 * log (Q.2 : ℝ) / Q.2 :=
       div_le_div_of_nonneg_right h2 (Nat.cast_nonneg _)
     have := mul_le_mul h1' h2' (by positivity)
-      (div_nonneg (by linarith [Nat.cast_nonneg (α := ℝ) (F Q.1)]) (Nat.cast_nonneg _))
+      ((by positivity))
     calc (F Q.1 : ℝ) * F Q.2 / (Q.1 * Q.2) = (F Q.1 : ℝ) / Q.1 * (F Q.2 / Q.2) := by
           rw [mul_div_mul_comm]
       _ ≤ 2 * log (Q.1 : ℝ) / Q.1 * (2 * log (Q.2 : ℝ) / Q.2) := this
@@ -588,7 +589,7 @@ private lemma tail_region₂ : ∃ K : ℝ, 0 ≤ K ∧ ∀ᶠ y : ℝ in atTop,
         div_le_div_of_nonneg_left (by positivity) (by positivity) (le_max_right _ _)
       have h2 : y / q / (y ^ c / q) = y / y ^ c := by field_simp
       calc _ ≤ log (y / q / (y ^ c / q)) :=
-            log_le_log (div_pos (by positivity) (lt_of_lt_of_le one_pos (le_max_left _ _))) h1
+            (by gcongr <;> first | assumption | positivity | linarith)
         _ = (1 - c) * log y := by
           rw [h2, log_div (by positivity) hyc0.ne', log_rpow (by linarith)]
           ring
@@ -628,13 +629,12 @@ private lemma tail_region₂ : ∃ K : ℝ, 0 ≤ K ∧ ∀ᶠ y : ℝ in atTop,
   have hE1 : a * log y + E ≤ 2 * X := by linarith
   have hE2 : log y + E ≤ 2 * log y := by linarith
   have hE3 : (1 - c) * log y + E ≤ 5 * X := by
-    have : (1 - c) * log y = a * log y + 3 * (m * log y) := by rw [hc_def]; ring
     linarith
   obtain ⟨hMP0, hMP1⟩ := hMP
   obtain ⟨hMa0, hMa1⟩ := hMa
   have hX0 : 0 ≤ X := by positivity
   have p1 := mul_le_mul hMa1 hMP1 hMP0 (by linarith)
-  have p2 := mul_le_mul hMP1 hMa1 hMa0 (by linarith)
+  
   have p3 := mul_le_mul_of_nonneg_left hE3 hMP0
   have p4 := mul_le_mul_of_nonneg_left hE1 (by linarith : (0 : ℝ) ≤ log y + E)
   have p5 := mul_le_mul_of_nonneg_right hE2 hX0
@@ -752,7 +752,7 @@ private lemma second_moment (hR : RectangleInput) : ∃ K : ℝ, 0 ≤ K ∧ ∀
     ⟨Nat.cast_nonneg _, (F_le_two_mul_log (hreg₁ q hq).1.ne_zero).trans
       (by linarith [log_le_log (by exact_mod_cast (hreg₁ q hq).1.pos) (hreg₁ q hq).2])⟩
   have hN0 : 0 ≤ ((dyadicPrimes y).card : ℝ) := Nat.cast_nonneg _
-  have hZ₁ : 0 ≤ ((dyadicPrimes y).card : ℝ) * log y / log (log y) ^ 6 := by positivity
+  
   have hZ₂ : 0 ≤ ((dyadicPrimes y).card : ℝ) * log y ^ 2 / log (log y) ^ 6 := by positivity
   have hl2 : log (2 * y) = log 2 + log y := log_mul (by norm_num) (by linarith)
   have hl2' : log 2 < 1 := lt_trans log_two_lt_d9 (by norm_num)
@@ -867,16 +867,10 @@ theorem dyadic_moments (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ y : ℝ in Fi
   · calc _ ≤ _ := h₁
       _ ≤ (K₁ + K₂) * (dyadicPrimes y).card * log y / log (log y) ^ 6 := by
         have := mul_nonneg hK₂ hZ₁
-        have e : (K₁ + K₂) * (dyadicPrimes y).card * log y / log (log y) ^ 6 =
-            K₁ * (dyadicPrimes y).card * log y / log (log y) ^ 6 +
-              K₂ * ((dyadicPrimes y).card * log y / log (log y) ^ 6) := by ring
-        linarith
+        grind
   · calc _ ≤ _ := h₂
       _ ≤ (K₁ + K₂) * (dyadicPrimes y).card * log y ^ 2 / log (log y) ^ 6 := by
         have := mul_nonneg hK₁ hZ₂
-        have e : (K₁ + K₂) * (dyadicPrimes y).card * log y ^ 2 / log (log y) ^ 6 =
-            K₁ * ((dyadicPrimes y).card * log y ^ 2 / log (log y) ^ 6) +
-              K₂ * (dyadicPrimes y).card * log y ^ 2 / log (log y) ^ 6 := by ring
-        linarith
+        grind
 
 end Erdos408

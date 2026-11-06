@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Cauchy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open MeasureTheory
 
@@ -29,7 +29,7 @@ theorem common_density_pair {κ α β : Type*}
     (ρ x : κ → ℝ) (η : κ → ℂ)
     (hη : ∀ k ∈ rows, ‖η k‖ ≤ 1)
     (hV₀ : ∀ k ∈ rows, ‖V 0 (ρ k)‖ ≤ 1) (hV₁ : ∀ k ∈ rows, ‖V 1 (x k)‖ ≤ 1)
-    (E : ℝ) (_hE : 0 ≤ E) (J : ℕ)
+     E  (_hE : 0 ≤ E)  J 
     (henergy : ∀ t : ℝ,
       (∑ k ∈ rows, ‖leftColumn S (c k) (V 2) u t‖ *
         ‖rightColumn T (d k) (V 3) v t‖) ≤ E * (1 + ‖t‖) ^ J) :
@@ -72,9 +72,9 @@ theorem common_density_pair {κ α β : Type*}
       norm_integral_le_of_norm_le (hi.const_mul E) (Filter.Eventually.of_forall hpoint)
     _ = _ := integral_const_mul _ _
 
-theorem whole_kernel_paired_row_estimate (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
+theorem whole_kernel_paired_row_estimate  W   V 
     (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
-    (hV : ∀ i y, V i y ≠ 0 → |y| ≤ M i) (A J : ℕ) :
+    (hV : ∀ i y, V i y ≠ 0 → |y| ≤ M i)  A J  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ R : ℝ, 0 < R →
       ∀ {κ α β : Type*} (rows : Finset κ) (S : Finset α) (T : Finset β)
         (c : κ → α → ℂ) (d : κ → β → ℂ) (u : α → ℝ) (v : β → ℝ)
@@ -106,6 +106,6 @@ theorem whole_kernel_paired_row_estimate (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ
 
 end SevenEighths.CenteredMomentExceptionalKernel
 
-end
+
 
 end OAI

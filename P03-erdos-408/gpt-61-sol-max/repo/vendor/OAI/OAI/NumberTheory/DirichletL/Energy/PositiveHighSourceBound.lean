@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.PositiveHighBound
 public import OAI.NumberTheory.DirichletL.Energy.LowBandSubtype
@@ -22,7 +23,7 @@ open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
 open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -34,7 +35,7 @@ def PhysicalHighAt (W:ℝ→ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)
     (haslot:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)
     (a b bΦ Bmask L Lslot rho Mcap κ ξ e Z:ℝ)(ha:0<a)
     (Ψ:(T:Finset α)→𝓢(ℝ,ℂ))(η₀:Character)(Q:Ideal O)
-    (S:Finset (ℕ×ℕ))(J:ℕ)(C:ℝ):Prop:=
+    (S:Finset (ℕ×ℕ))(J:ℕ)(C:ℝ):=
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ freq:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→∀hσlo:∀i,lo≤σ i,∀hσhi:∀i,σ i≤hi,
     0≤height→(∀i,|freq i|≤height)→
@@ -51,7 +52,7 @@ def PhysicalHighAt (W:ℝ→ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)
       C*(p.control S)^2*(1+|t|+height)^J*Z^(state.width+e)
 
 def PositiveHighAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi rho Mcap ε κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
+    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):=
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ v:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→(∀i,lo≤σ i)→(∀i,σ i≤hi)→
     0≤height→(∀i,|v i|≤height)→
@@ -131,14 +132,14 @@ theorem actual_high_stage_from_physical
   have hbase:1≤1+|t|+height:=by linarith [abs_nonneg t]
   have hpow:=pow_le_pow_right₀ hbase (hJJ T)
   have hd:=diagonalControl_nonneg state.radial.profile
-  have hz:0≤Z:=zero_le_one.trans hZ1.le
+  
   apply hh.trans
   gcongr
 
 omit [Fintype α] [DecidableEq α] in
 theorem positive_from_stages
-    (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi rho Mcap e κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(J:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
+     W (bslot a b bΦ Bmask L Lslot lo hi rho Mcap e κ Z:ℝ)
+     η₀  Q  J  S  C 
     (hold:PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z η₀ Q J S C)
     (hlow:PositiveLowAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap e κ Z η₀ Q J S C)
     (hhigh:PositiveHighAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho Mcap e κ Z η₀ Q J S C):

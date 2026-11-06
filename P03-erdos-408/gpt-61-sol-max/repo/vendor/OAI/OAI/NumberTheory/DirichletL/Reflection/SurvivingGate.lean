@@ -11,17 +11,17 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
 universe u
-variable {a c : Eis} {mode : Bool}
+variable {a c : ActualEisensteinCubic.O} {mode : Bool}
 
 theorem actual_surviving_retained_gates
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (kK kP η : ℝ) (hkK : 0<kK) (hkP : 0<kP) (hη : 0<η) :
+     kK kP η  (hkK : 0<kK) (hkP : 0<kP) (hη : 0<η) :
     ∃ Z₀ : ℝ, 1<Z₀ ∧ ∀ {φ : Type u} [Fintype φ],
     ∀ (F : PrimeFamily φ), Pairwise (Function.onFun IsCoprime F.ideal) →
-    ∀ (jF : φ→ℕ) (A : Ideal Eis→Ideal Eis→ℂ) (e : φ→Fin 3)
+    ∀ (jF : φ→ℕ) (A : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ) (e : φ→Fin 3)
       (Z X QK QP δ : ℝ) (i : ℕ×ℕ×ℕ),
       Z₀≤Z → 0<X → 0<QK → 0<QP →
       i∈retainedDyads (familyRawScale F s X QK QP) (16*Z^δ) →
@@ -48,7 +48,7 @@ theorem actual_surviving_retained_gates
   refine ⟨Real.logb_nonneg hz ((one_le_div (hp 1)).mpr hnorm.1),
     Real.logb_nonneg hz ((one_le_div (hp 2)).mpr hnorm.2),hram Z hz2 i.1,?_⟩
   simpa only [one_mul] using hwidth F jF e Z X QK QP δ i hz1 hX hQK hQP hi
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

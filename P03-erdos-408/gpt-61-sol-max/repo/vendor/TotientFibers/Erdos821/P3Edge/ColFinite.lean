@@ -17,7 +17,7 @@ variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
 -- Column valid set is finite via bounded memories.
 lemma col_valid_set_finite (A : Model F P J m) {n : ℕ} (i : Fin n)
-    (t : P.MemoryState (J + F.ell)) :
+     t  :
     Set.Finite {s : P.MemoryState (J + F.ell) | ∃ c : EdgeChoice A s, edgeChoiceValid A .all i s t c} := by
   classical
   let bound : (g : P.BigGroup) → ℕ := fun g => (t.2.2 g).card + (J + F.ell)
@@ -25,7 +25,7 @@ lemma col_valid_set_finite (A : Model F P J m) {n : ℕ} (i : Fin n)
     intro g
     exact finite_multiset_bounded (P.Particle (g : P.Group)) (bound g)
   have hpi : Set.Finite (Set.univ.pi (fun g : P.BigGroup => {z : P.Memory (g : P.Group) | z.card ≤ bound g})) :=
-    Set.Finite.pi (fun g => hmem_fin g)
+    Set.Finite.pi (hmem_fin)
   have hsmall : Set.Finite (Set.univ : Set P.SmallResidues) := Set.finite_univ
   have hlabels : Set.Finite (Set.univ : Set (P.Labels (J + F.ell))) := Set.finite_univ
   have hprod_labels : Set.Finite ((Set.univ : Set (P.Labels (J + F.ell))) ×ˢ (Set.univ.pi (fun g : P.BigGroup => {z : P.Memory (g : P.Group) | z.card ≤ bound g}))) :=

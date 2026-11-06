@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialMarkedInputEnergy
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialTotalFourier
@@ -18,18 +18,18 @@ open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure Invers
 open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
 open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
 open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
-local notation "O"=>ActualEisensteinCubic.O
+
 
 open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
 open MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier
 theorem original_fourier_energy_bound
-    (g:𝓢(ℝ,ℂ))(W:ℝ→ℂ)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
+     g  W (a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
     (hs:Function.support W⊆Set.Icc a₀ b₀)
     (hW:ContDiff ℝ ∞ W)(Φ:𝓢(ℝ,ℂ))
     (hΦ:∀x,0≤(Φ x).re)(hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
     (B₀:ℝ)(hB₀:0≤B₀)(hb:∀x,‖W x‖≤B₀)
     (cap gap eps π η τ loss:ℝ)(hcap:0≤cap)(hgap:0<gap)(heps:0<eps)(hπ:0<π)
-    (hη:0<η)(hηone:η≤1)(hηsmall:η≤gap/50)(hτ:0<τ)(hτsmall:τ≤gap/50)(hloss:0<loss)(K:ℕ):
+    (hη:0<η)(hηone:η≤1)(hηsmall:η≤gap/50)(hτ:0<τ)(hτsmall:τ≤gap/50)(hloss:0<loss) K :
     ∃degree:ℕ,∃Btree:ℝ,1≤Btree ∧
     ∀q:ℕ,q≠0→∃C Z₀:ℝ,0<C ∧ 1<Z₀ ∧
     ∀Z:ℝ,Z₀≤Z→∀Dpool:ℕ,Btree*Z^(cap+1)≤Dpool→
@@ -45,11 +45,11 @@ theorem original_fourier_energy_bound
       (all:Set σ).PairwiseDisjoint lists→(∀i∈all\assigned,1≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,(P.val.absNorm:ℝ)≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,‖coeff i P‖≤1)→
-    ∀(qelem:σ→O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
+    ∀(qelem:σ→ActualEisensteinCubic.O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
       (∀i∈all,0≤z i)→(∀i∈assigned,qelem i≠0)→
       (∀i∈assigned,Function.support (primeW i)⊆Set.Icc (al i) (bl i))→
       (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z^(z i))≠0)→
-    ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
+    ∀Ψ:ActualEisensteinCubic.O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
     ∀(D m r:ℝ),0≤m→m≤cap→-cap≤D→
       (∏i∈assigned,bl i)≤Z^η→
       (∏i∈all\assigned,Hslot i)≤Z^(assignedCenter (all\assigned) z+η)→
@@ -57,7 +57,7 @@ theorem original_fourier_energy_bound
       r+2*assignedCenter all z≤m-2*gap→
       2*r+8*assignedCenter all z≤3*m-2*gap→
       r+assignedCenter all z+7*η≤cap→
-    ∀(rows:Finset O),(∀u∈rows,‖eisEmbedding u‖^2≤Z^m)→
+    ∀(rows:Finset ActualEisensteinCubic.O),(∀u∈rows,‖eisEmbedding u‖^2≤Z^m)→
     ∀(y:σ→primePool F→ℝ)(xj θ:ℝ),
       (∑u∈rows,‖∫t:ℝ,density (frequencyTwist g θ) xj t*
         (((Z^(-D/2):ℝ):ℂ)*inputConjugateRow p hg Finset.univ Ψ
@@ -80,7 +80,7 @@ theorem original_fourier_energy_bound
     qelem z al bl primeW hz hqe hprimeW hprimeLive Ψ hΨ hperiod
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent rows hrows y xj θ
   have hZp:0<Z:=zero_lt_one.trans (hZ₀.trans_le hZ)
-  let φ:O→ℝ→ℂ:=fun u t=>((Z^(-D/2):ℝ):ℂ)*inputConjugateRow p hg Finset.univ Ψ
+  let φ:ActualEisensteinCubic.O→ℝ→ℂ:=fun u t=>((Z^(-D/2):ℝ):ℂ)*inputConjugateRow p hg Finset.univ Ψ
     (assignedElement assigned qelem) 1 1
     (initialTest p (primeMark (all\assigned) lists
       (fun i P=>coeff i P*logPhase (-t) (y i P))) (childLogTest W t) Z D) u
@@ -102,6 +102,6 @@ theorem original_fourier_energy_bound
 
 end SevenEighths.InverseInitialTotalFourier
 
-end
+
 
 end OAI

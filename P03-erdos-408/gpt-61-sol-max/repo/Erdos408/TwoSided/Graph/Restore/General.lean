@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Graph.Restore.Bound
 
@@ -49,12 +50,11 @@ lemma eq_of_invariant_sharedProduct {P : ι → Finset ℕ} {f : ℕ → ℝ}
 /-! ### Indicators -/
 
 /-- `∑_{p ∈ P_g} μ_g(p) = 1`. -/
-private lemma sum_inv_harmonicMass_mul {S : Finset ℕ} (hS : harmonicMass S ≠ 0) :
+private lemma sum_inv_harmonicMass_mul  {S}  (hS : harmonicMass S ≠ 0) :
     ∑ p ∈ S, (harmonicMass S * p)⁻¹ = 1 := by
   simp_rw [mul_inv]
   rw [← mul_sum]
-  have h : ∑ p ∈ S, (p : ℝ)⁻¹ = harmonicMass S := by simp [harmonicMass]
-  rw [h, inv_mul_cancel₀ hS]
+  simp_all [harmonicMass]
 
 /-- The indicator of an existential is at most the sum of the indicators. -/
 private lemma ite_exists_le_sum {α : Type*} (t : Finset α) (R : α → Prop) [DecidablePred R]
@@ -66,7 +66,7 @@ private lemma ite_exists_le_sum {α : Type*} (t : Finset α) (R : α → Prop) [
       _ ≤ ∑ i ∈ t, if R i then 1 else 0 :=
         single_le_sum (f := fun i => if R i then (1 : ℝ) else 0)
           (fun j _ => by split_ifs <;> norm_num) hi
-  · exact sum_nonneg fun i _ => by split_ifs <;> norm_num
+  simp_all
 
 omit [Fintype ι] [DecidableEq ι] in
 /-- The number of `P g`-primes satisfying `R`, weighted by `μ_g ≤ μ₀`. -/
@@ -77,9 +77,13 @@ lemma sum_filter_inv_le {P : ι → Finset ℕ} {μ₀ : ℝ}
   rw [mul_comm, ← nsmul_eq_mul, ← sum_const]
   exact sum_le_sum fun p hp => hμ g p (mem_filter.1 hp).1
 
+section
+variable {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, p.Prime) (hdisj : ∀ g h, g ≠ h → Disjoint (P g) (P h)) (hV : ∀ g, 0 < harmonicMass (P g)) (hq₀ : 0 < q₀) (hq₀₁ : q₀ ≤ 1) {C : ι → Finset (Fin J)} {m₀ : ℕ} (hC : ∀ g, (C g).card ≤ m₀) {μ₀ Ω : ℝ} (hμ₀ : 0 ≤ μ₀) (hμ : ∀ g, ∀ p ∈ P g, (harmonicMass (P g) * p)⁻¹ ≤ μ₀) (S : ι → Finset (Fin J)) {K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ} {κK : ℝ} (hK : ∀ p p' a, ‖K p p' a‖ ≤ κK) (hKpad : ∀ p p' a, K p p' a = K (pad C p) (pad C p') a) {F G : ℕ → ℝ} {Ψ : ℝ → ℝ} {M₀ LF LG Λ₀ : ℝ} (hΨ : ∀ y, |Ψ y| ≤ M₀) (hLF : 0 ≤ LF) (hF : ∀ n, 1 ≤ n → n ≤ ⌊x ^ 2⌋₊ → |F n| ≤ LF)
+
+include hV in
 /-- The mass of the labels with some slot satisfying `R`. -/
-lemma sum_labelMass_mul_ite_exists_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMass (P g))
-    (S : ι → Finset (Fin J)) (R : ι → Fin J → ℕ → Prop) [∀ g i, DecidablePred (R g i)] :
+lemma sum_labelMass_mul_ite_exists_le    
+      (R : ι → Fin J → ℕ → Prop) [∀ g i, DecidablePred (R g i)] :
     ∑ x ∈ auxLabels P S, labelMass P S x *
         (if ∃ g ∈ univ, ∃ i ∈ S g, R g i (x g i) then 1 else 0) ≤
       ∑ g, ∑ i ∈ S g, ∑ p ∈ (P g).filter (R g i), (harmonicMass (P g) * p)⁻¹ := by
@@ -97,10 +101,11 @@ lemma sum_labelMass_mul_ite_exists_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < h
     _ = _ := sum_congr rfl fun g _ => sum_congr rfl fun i hi =>
         sum_labelMass_mul_ite hV' S hi (R g i)
 
+include hV hμ₀ hμ in
 /-- The mass of the shared labels with two coinciding slots in a group. -/
-lemma sum_labelMass_mul_ite_not_injOn_le {P : ι → Finset ℕ}
-    (hV : ∀ g, 0 < harmonicMass (P g)) {μ₀ : ℝ} (hμ₀ : 0 ≤ μ₀)
-    (hμ : ∀ g, ∀ p ∈ P g, (harmonicMass (P g) * p)⁻¹ ≤ μ₀) (S : ι → Finset (Fin J)) :
+lemma sum_labelMass_mul_ite_not_injOn_le  
+         
+        :
     ∑ x ∈ auxLabels P S, labelMass P S x *
         (if ∃ g ∈ univ, ∃ i ∈ S g, ∃ j ∈ S g, i ≠ j ∧ x g i = x g j then 1 else 0) ≤
       μ₀ * ∑ g, ((S g).card : ℝ) ^ 2 := by
@@ -157,11 +162,12 @@ private lemma card_filter_or_le (S : Finset ℕ) (w w' : ℕ) (T : Finset ℕ) :
   exact_mod_cast this
 
 open Classical in
+include hV hC hμ₀ hμ in
 /-- **The unclean mass.** Summed against the masses of the free and the shared labels, the
 indicator of an unclean `(a, s, w)` is at most `μ₀ (s_P J² + J (2Ω + m₀ s_P) + m₀ Ω)`. -/
-lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMass (P g))
-    {C : ι → Finset (Fin J)} {m₀ : ℕ} (hC : ∀ g, (C g).card ≤ m₀) {μ₀ Ω : ℝ}
-    (hμ₀ : 0 ≤ μ₀) (hμ : ∀ g, ∀ p ∈ P g, (harmonicMass (P g) * p)⁻¹ ≤ μ₀) {w : ℕ}
+lemma sum_mass_not_clean_le    
+           
+        {w : ℕ}
     (hΩ₁ : (groupPrimeCount P w : ℝ) ≤ Ω)
     (hΩ₂ : ∀ a ∈ auxLabels P C, (groupPrimeCount P (w + slotProduct C a) : ℝ) ≤ Ω) :
     ∑ a ∈ auxLabels P C, labelMass P C a * ∑ s ∈ auxLabels P (sharedSlots C),
@@ -305,13 +311,14 @@ lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
 
 /-! ### The summands at `(a, s, w)` -/
 
+include hprime hV hq₀ hq₀₁ hK hΨ hLF hF in
 /-- The physical summands at `(a, s, w)`, summed over the unshared parts. -/
-lemma sum_norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, p.Prime)
-    (hV : ∀ g, 0 < harmonicMass (P g)) (hq₀ : 0 < q₀) (hq₀₁ : q₀ ≤ 1)
-    {C : ι → Finset (Fin J)}
-    {K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ} {κK : ℝ}
-    (hK : ∀ p p' a, ‖K p p' a‖ ≤ κK) {F G : ℕ → ℝ} {Ψ : ℝ → ℝ} {M₀ LF LG Λ₀ : ℝ}
-    (hΨ : ∀ y, |Ψ y| ≤ M₀) (hLF : 0 ≤ LF) (hF : ∀ n, 1 ≤ n → n ≤ ⌊x ^ 2⌋₊ → |F n| ≤ LF)
+lemma sum_norm_physTerm_le      
+         
+     
+       
+           
+         
     (hG : ∀ n, |G n| ≤ LG) (hΛ : ∀ n, listWeight P q₀ C n ≤ Λ₀) {a s : ι → Fin J → ℕ}
     (hs : s ∈ auxLabels P (sharedSlots C)) {w : ℕ} (hw : 1 ≤ w) :
     ∑ l ∈ unsharedLists P C, ∑ l' ∈ unsharedLists P C,
@@ -325,7 +332,7 @@ lemma sum_norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ 
   have hLG : 0 ≤ LG := (abs_nonneg _).trans (hG 0)
   have hμs := labelMass_nonneg P (sharedSlots C) s
   have hμa := labelMass_nonneg P C a
-  have hT := targetMass_nonneg hV C
+  
   set c := labelMass P (sharedSlots C) s * labelMass P C a * targetMass P C ^ 2 * κK * M₀ *
     LF * LG / w
   have hc : 0 ≤ c := by positivity
@@ -360,12 +367,13 @@ lemma sum_norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ 
         simp only [c]
         ring
 
+include hV hq₀ hq₀₁ hK hΨ hLF hF in
 /-- The stripped summands at `(a, s, w)`, summed over the unshared parts. -/
-lemma sum_norm_stripTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMass (P g))
-    (hq₀ : 0 < q₀) (hq₀₁ : q₀ ≤ 1) {C : ι → Finset (Fin J)}
-    {K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ} {κK : ℝ}
-    (hK : ∀ p p' a, ‖K p p' a‖ ≤ κK) {F G : ℕ → ℝ} {Ψ : ℝ → ℝ} {M₀ LF LG Λ₀ : ℝ}
-    (hΨ : ∀ y, |Ψ y| ≤ M₀) (hLF : 0 ≤ LF) (hF : ∀ n, 1 ≤ n → n ≤ ⌊x ^ 2⌋₊ → |F n| ≤ LF)
+lemma sum_norm_stripTerm_le      
+         
+       
+           
+         
     (hG : ∀ n, |G n| ≤ LG) (hΛ : ∀ n, listWeight P q₀ C n ≤ Λ₀) (a s : ι → Fin J → ℕ)
     {w : ℕ} (hw : w ∈ Icc 1 ⌊x ^ 2⌋₊) :
     ∑ l ∈ unsharedLists P C, ∑ l' ∈ unsharedLists P C,
@@ -377,14 +385,13 @@ lemma sum_norm_stripTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hV : ∀ g, 
   have hLG : 0 ≤ LG := (abs_nonneg _).trans (hG 0)
   have hμs := labelMass_nonneg P (sharedSlots C) s
   have hμa := labelMass_nonneg P C a
-  have hT := targetMass_nonneg hV C
+  
   set c := labelMass P (sharedSlots C) s * labelMass P C a * targetMass P C ^ 2 * κK * M₀ *
     LF * LG / w
   have hc : 0 ≤ c := by positivity
   set DC := slotProduct C a
-  have hq₁ := zpow_nonneg hq₀.le ((groupPrimeCount P w : ℤ) - ((J + 1) * Fintype.card ι : ℕ))
-  have hq₂ := zpow_nonneg hq₀.le
-    ((groupPrimeCount P (w + DC) : ℤ) - ((J + 1) * Fintype.card ι : ℕ))
+  
+  
   have hcount : ∀ n, ((slotLists P (unsharedSlots C) n).card : ℝ) ≤ listCount P C n := by
     intro n
     unfold listCount
@@ -435,20 +442,21 @@ lemma sum_norm_stripTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hV : ∀ g, 
 /-! ### Lemma G5 for a general pattern -/
 
 open Classical in
+include hprime hdisj hV hq₀ hq₀₁ hC hK hKpad in
 /-- **Lemma G5, explicitly.** For a pattern `(C, K)` with `|C g| ≤ m₀`, a kernel `|K| ≤ κ_K`
 depending only on the unshared parts, `F` and `G` invariant under the group primes, `μ_g ≤ μ₀`,
 `Λ ≤ Λ₀`, `ω ≤ Ω` at both endpoints, and the support of `Ψ(w/(x D_C))` below `x²/D_R`,
 the cutoff pairing is the stripped correlation up to
 `2 B (∑_{w ≤ x²} 1/w) μ₀ (s_P J² + J (2Ω + m₀ s_P) + m₀ Ω)`,
 `B = T² κ_K M₀ L_F L_G Λ₀²`. -/
-theorem norm_physSum_sub_stripSum_le {x q₀ : ℝ} {P : ι → Finset ℕ}
-    (hprime : ∀ g, ∀ p ∈ P g, p.Prime) (hdisj : ∀ g h, g ≠ h → Disjoint (P g) (P h))
-    (hV : ∀ g, 0 < harmonicMass (P g)) (hq₀ : 0 < q₀) (hq₀₁ : q₀ ≤ 1)
-    {C : ι → Finset (Fin J)} {m₀ : ℕ} (hC : ∀ g, (C g).card ≤ m₀)
-    {K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ} {κK : ℝ}
-    (hK : ∀ p p' a, ‖K p p' a‖ ≤ κK)
-    (hKpad : ∀ p p' a, K p p' a = K (pad C p) (pad C p') a)
-    {F G : ℕ → ℝ} {Ψ : ℝ → ℝ} {M₀ LF LG μ₀ Λ₀ Ω : ℝ}
+theorem norm_physSum_sub_stripSum_le    
+       
+         
+         
+       
+     
+     
+        {M₀ LF LG μ₀ Λ₀ Ω : ℝ}
     (hΨ : ∀ y, |Ψ y| ≤ M₀) (hLF : 0 ≤ LF) (hF : ∀ n, 1 ≤ n → n ≤ ⌊x ^ 2⌋₊ → |F n| ≤ LF)
     (hFinv : ∀ p ∈ univ.biUnion P, ∀ n, F (p * n) = F n) (hG : ∀ n, |G n| ≤ LG)
     (hGinv : ∀ p ∈ univ.biUnion P, ∀ n, G (p * n) = G n)
@@ -469,8 +477,8 @@ theorem norm_physSum_sub_stripSum_le {x q₀ : ℝ} {P : ι → Finset ℕ}
   have hκ : 0 ≤ κK := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
   have hM : 0 ≤ M₀ := (abs_nonneg _).trans (hΨ 0)
   have hLG : 0 ≤ LG := (abs_nonneg _).trans (hG 0)
-  have hT := targetMass_nonneg hV C
-  have hB : 0 ≤ B := by positivity
+  
+  
   set Φ : (ι → Fin J → ℕ) → (ι → Fin J → ℕ) → (ι → Fin (J + 1) → ℕ) →
       (ι → Fin (J + 1) → ℕ) → ℕ → ℂ := fun a s l l' w =>
     (if sharedProduct C s * w ≤ N then
@@ -542,6 +550,8 @@ theorem norm_physSum_sub_stripSum_le {x q₀ : ℝ} {P : ι → Finset ℕ}
         exact sum_mass_not_clean_le hV hC hμ₀ hμ (hΩ₁ w hw) fun a ha => hΩ₂ a ha w hw
     _ = _ := by
         rw [← sum_mul, ← mul_sum]
+
+end
 
 end Restore
 

@@ -6,10 +6,10 @@ public import OAI.NumberTheory.DirichletL.Detector.EulerRegion
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 
-theorem unramifiedClosed_open_region_bound (Q : ℝ) (A eta v x w z : ℂ)
+theorem unramifiedClosed_open_region_bound  Q   A eta v x w z 
     (hQ : 4 ≤ Q) (hA : ‖A‖ ≤ 1) (heta : ‖eta‖ ≤ 1) (hv : ‖v‖ ≤ 1)
     (hx : (7/8:ℝ) ≤ x.re) (hw : (9/10:ℝ) ≤ w.re) (hz : (4/25:ℝ) ≤ z.re) :
     ‖unramifiedClosed Q A eta v x w z - 1‖ ≤ 240 * Q ^ (-(17/10:ℝ)) := by
@@ -34,8 +34,7 @@ theorem unramifiedClosed_open_region_bound (Q : ℝ) (A eta v x w z : ℂ)
   have hVh : ‖V‖ ≤ 1/2 := hV.trans (rpow_le_half Q _ hQ (by norm_num))
   have hRh : ‖R‖ ≤ 1/2 := hR.trans (rpow_le_half Q _ hQ (by norm_num))
   have hDh : ‖D‖ ≤ 1/2 := hD.trans (rpow_le_half Q _ hQ (by norm_num))
-  have hWh : ‖W‖ ≤ 1 := by
-    exact hW.trans ((Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : -(9/10:ℝ) ≤ 0)).trans_eq (Real.rpow_zero Q))
+  have hWh : ‖W‖ ≤ 1 := hW.trans ((Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : -(9/10:ℝ) ≤ 0)).trans_eq (Real.rpow_zero Q))
   have hqi : ‖(Q:ℂ)⁻¹‖ ≤ 1 := by
     rw [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hQ0, ← one_div]
     exact (div_le_one hQ0).mpr hQ1
@@ -72,6 +71,6 @@ theorem unramifiedClosed_open_region_bound (Q : ℝ) (A eta v x w z : ℂ)
   nlinarith
 
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

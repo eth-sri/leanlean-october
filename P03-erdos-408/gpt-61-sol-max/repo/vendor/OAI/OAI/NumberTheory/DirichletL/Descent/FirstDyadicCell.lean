@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicRadius
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveParents
@@ -15,18 +16,21 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
 open InverseMomentFirstOriginalProfile
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι]
-variable (p:ι→O)
 
-def firstCellRadius (Z M r ell V eta tau:ℝ)(k:SourceIndex)(j:ℕ):ℝ:=
+variable {ι:Type*}[DecidableEq ι]
+variable (p:ι→ActualEisensteinCubic.O)
+
+def firstCellRadius (Z M r ell V eta tau:ℝ)(k:SourceIndex)(j:ℕ):=
   Z^(firstPhysicalHeight M r ell V (dyadicExponent Z (k 3))
     (dyadicExponent Z (k 2)) (dyadicExponent Z j)+12*eta+tau)
 
-theorem first_dyadic_radius_cell (pool:Finset ι)(Q:Finset (ι→₀ℕ))
-    (k:SourceIndex)(j:ℕ)(x:FirstOriginalOuter ι)
+section
+variable (pool:Finset ι) (Q:Finset (ι→₀ℕ)) (k:SourceIndex) (j:ℕ)
+
+theorem first_dyadic_radius_cell   
+      (x:FirstOriginalOuter ι)
     (hx:x∈refinedOuter p pool Q k (labelGate p j))
-    (Z M r ell V eta tau:ℝ):
+     Z M r ell V eta tau :
     firstDyadicRadius p x.1 x.2.1 x.2.2 Z M r ell V eta tau=
       firstCellRadius Z M r ell V eta tau k j:=by
   rw [refinedOuter_label] at hx
@@ -38,18 +42,16 @@ theorem first_dyadic_radius_cell (pool:Finset ι)(Q:Finset (ι→₀ℕ))
   change dyadIndex (‖eisEmbedding (primeSubsetGenerator (fun i=>Ideal.span {p i}) x.2.2)‖^2)=k 3 at hD
   rw [primeSubsetGenerator_norm_eq_productNorm] at hD
   unfold firstDyadicRadius firstCellRadius firstDyadicExponent
-  rw [hD,hC]
-  change dyadIndex (‖eisEmbedding (jLabel p x.1.support
-    (fun i=>x.1.leftExponent i+x.1.rightExponent i) x.1.leftBit x.1.rightBit)‖^2)=j at hj
-  rw [hj]
+  aesop
 
-theorem first_dyadic_refined_cutoff (pool:Finset ι)(Q:Finset (ι→₀ℕ))
-    (k:SourceIndex)(j:ℕ)(Z M r ell V eta tau:ℝ):
-    ∀x∈refinedOuter p pool Q k (labelGate p j),∀_I:Ideal O,
+theorem first_dyadic_refined_cutoff   
+       Z M r ell V eta tau :
+    ∀x∈refinedOuter p pool Q k (labelGate p j),∀_I:Ideal ActualEisensteinCubic.O,
       firstDyadicRadius p x.1 x.2.1 x.2.2 Z M r ell V eta tau≤
         firstCellRadius Z M r ell V eta tau k j:=by
-  intro x hx I
-  exact (first_dyadic_radius_cell p pool Q k j x hx Z M r ell V eta tau).le
+  grind [first_dyadic_radius_cell]
+
+end
 
 end SevenEighths.InverseMoment
 

@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.S2.HistorySizes
 
 public import Erdos821.S2.MemoryGhost
 public import Erdos821.Blueprint.Graph
@@ -25,19 +28,9 @@ lemma count_eq_card_filter (z : P.Memory g) (u : P.Particle g) :
     rw [Multiset.coe_count]
   rw [hcount]
   let v : List.Vector (P.Particle g) z.card := ⟨z.toList, by rw [hlen]⟩
-  have hvec : v.toList.count u = z.toList.count u := rfl
+  
   have hcard := Fin.card_filter_univ_eq_vector_get_eq_count u v
-  rw [← hvec, ← hcard]
-  have heq : ∀ i : Fin z.card, v.get i = memoryEntry z i := by
-    intro i
-    unfold memoryEntry
-    rfl
-  have hfilter : Finset.univ.filter (fun i : Fin z.card => v.get i = u) =
-      Finset.univ.filter (fun i : Fin z.card => memoryEntry z i = u) := by
-    apply Finset.filter_congr
-    intro i _
-    rw [heq i]
-  rw [hfilter]
+  solve_by_elim
 
 /-- Deletion keeps exactly the unremoved indices. -/
 lemma delete_card (z : P.Memory g) (A : Finset (Fin z.card)) :
@@ -60,19 +53,10 @@ lemma delete_count_eq (s : P.Memory g) (A : Finset (Fin s.card))
     apply Multiset.filter_congr
     intro a _
     exact eq_comm
-  rw [hpred]
-  have h2 : ((((Finset.univ \ A).val).filter (fun i => memoryEntry s i = v)).card)
-      = (((Finset.univ \ A).filter (fun i => memoryEntry s i = v)).card) := by
-    rw [← Finset.filter_val]
-    rfl
-  rw [h2]
+  solve_by_elim
 
 /-- Ordered birth batch has the declared length. -/
-lemma birth_card {b : ℕ} (p : Fin b → P.Prime g) :
-    (zeroBirthBatch (P := P) (g := g) p).card = b := by
-  unfold zeroBirthBatch
-  rw [Multiset.coe_card]
-  simp
+alias birth_card := _root_.Erdos821.S2Core.zeroBirthBatch_card
 
 
 end Erdos821.P3Adj

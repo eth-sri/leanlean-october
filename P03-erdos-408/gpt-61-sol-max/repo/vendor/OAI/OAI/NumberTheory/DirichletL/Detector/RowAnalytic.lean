@@ -13,16 +13,16 @@ open scoped BigOperators Classical
 open MeasureTheory
 namespace SevenEighths.ProbeRow
 open ActualEisensteinCubic CompletedGauss CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
-theorem fullIdealWeight_norm_eq_of_re (s t : ℂ) (h : s.re = t.re) (I : Ideal O) :
+
+theorem fullIdealWeight_norm_eq_of_re  s t  (h : s.re = t.re)  I  :
     ‖fullIdealWeight s I‖ = ‖fullIdealWeight t I‖ := by
   by_cases hI : I = 0
   · simp [hI, fullIdealWeight]
   · exact (norm_fullIdealWeight s ⟨I, hI⟩).trans
       ((by rw [h] : _ = _).trans (norm_fullIdealWeight t ⟨I, hI⟩).symm)
 
-theorem fullIdealWeight_continuous (I : Ideal O) : Continuous (fun t => fullIdealWeight t I) := by
+theorem fullIdealWeight_continuous  I  : Continuous (fun t => fullIdealWeight t I) := by
   by_cases hI : I = 0
   · simp only [hI, fullIdealWeight]
     exact continuous_const
@@ -32,17 +32,22 @@ theorem fullIdealWeight_continuous (I : Ideal O) : Continuous (fun t => fullIdea
     simp only [fullIdealWeight, ite_eq_right hI]
     exact continuous_id.neg.const_cpow (Or.inl hn)
 
-def rowMajorant (σ : ℝ) (p : Ideal O × Ideal O) : ℝ :=
+def rowMajorant (σ : ℝ) (p : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O)  :=
   2 * (‖fullIdealWeight (σ : ℂ) p.1‖ * ‖fullIdealWeight (3 * (σ : ℂ)) p.2‖)
 
-theorem rowMajorant_summable (σ : ℝ) (hσ : 1 < σ) : Summable (rowMajorant σ) := by
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O)) (D : Ideal ActualEisensteinCubic.O) (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (Z : ℝ) (hZ : 0 < Z) (σ : ℝ) (hσ : 1 < σ) (y : ℝ)
+
+include hσ in
+theorem rowMajorant_summable     : Summable (rowMajorant σ) := by
   have h3 : 1 < (3 * (σ : ℂ)).re := by norm_num; linarith
   exact ((fullIdealWeight_summable_norm (σ : ℂ) hσ).mul_of_nonneg
     (fullIdealWeight_summable_norm (3 * (σ : ℂ)) h3)
     (fun _ => norm_nonneg _) (fun _ => norm_nonneg _)).mul_left 2
 
-theorem spectralSummand_vertical_bound (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (σ y : ℝ) (p : Ideal O × Ideal O) :
+include hΨ in
+theorem spectralSummand_vertical_bound    
+           p  :
     ‖spectralSummand S D Ψ ((σ : ℂ) + y * Complex.I) p.1 p.2‖ ≤ rowMajorant σ p := by
   have h1 : ((σ : ℂ) + y * Complex.I).re = (σ : ℂ).re := by simp
   have h3 : (3 * ((σ : ℂ) + y * Complex.I)).re = (3 * (σ : ℂ)).re := by simp
@@ -50,8 +55,9 @@ theorem spectralSummand_vertical_bound (S : Finset (Ideal O)) (D : Ideal O)
     fullIdealWeight_norm_eq_of_re _ _ h3] using
     spectralSummand_norm_le S D Ψ hΨ ((σ : ℂ) + y * Complex.I) p.1 p.2
 
-theorem spectralRow_continuous_vertical (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (σ : ℝ) (hσ : 1 < σ) :
+include hΨ hσ in
+theorem spectralRow_continuous_vertical    
+            :
     Continuous (fun y : ℝ => spectralRow S D Ψ ((σ : ℂ) + y * Complex.I)) := by
   apply continuous_tsum _ (rowMajorant_summable σ hσ)
     (fun p y => spectralSummand_vertical_bound S D Ψ hΨ σ y p)
@@ -60,15 +66,17 @@ theorem spectralRow_continuous_vertical (S : Finset (Ideal O)) (D : Ideal O)
   exact continuous_const.mul ((fullIdealWeight_continuous p.1).comp hc |>.mul
     ((fullIdealWeight_continuous p.2).comp (continuous_const.mul hc)))
 
-theorem spectralRow_vertical_bound (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (σ : ℝ) (hσ : 1 < σ) (y : ℝ) :
+include hΨ hσ in
+theorem spectralRow_vertical_bound    
+              :
     ‖spectralRow S D Ψ ((σ : ℂ) + y * Complex.I)‖ ≤ ∑' p, rowMajorant σ p := by
   have hs := spectralRow_summable S D Ψ hΨ ((σ : ℂ) + y * Complex.I) (by simpa using hσ)
   exact (norm_tsum_le_tsum_norm hs.norm).trans
-    (hs.norm.tsum_le_tsum (fun p => spectralSummand_vertical_bound S D Ψ hΨ σ y p)
+    (hs.norm.tsum_le_tsum (spectralSummand_vertical_bound S D Ψ hΨ σ y)
       (rowMajorant_summable σ hσ))
 
-theorem verticalKernel_norm (Z : ℝ) (hZ : 0 < Z) (σ y : ℝ) :
+include hZ in
+theorem verticalKernel_norm       :
     ‖(Z : ℂ) ^ ((σ : ℂ) + y * Complex.I) *
       Complex.exp (((σ : ℂ) + y * Complex.I) ^ 2)‖ =
       Z ^ σ * Real.exp (σ ^ 2) * Real.exp (-1 * y ^ 2) := by
@@ -81,8 +89,9 @@ theorem verticalKernel_norm (Z : ℝ) (hZ : 0 < Z) (σ y : ℝ) :
     Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero, add_zero]
   ring
 
-theorem spectralRow_vertical_integrable (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (σ : ℝ) (hσ : 1 < σ)
+include hΨ hσ in
+theorem spectralRow_vertical_integrable    
+           
     (Z : ℝ) (hZ : 0 < Z) :
     Integrable (fun y : ℝ => (Z : ℂ) ^ ((σ : ℂ) + y * Complex.I) *
       Complex.exp (((σ : ℂ) + y * Complex.I) ^ 2) *
@@ -102,6 +111,8 @@ theorem spectralRow_vertical_integrable (S : Finset (Ideal O)) (D : Ideal O)
       mul_le_mul_of_nonneg_left (spectralRow_vertical_bound S D Ψ hΨ σ hσ y)
         (mul_nonneg (mul_nonneg (Real.rpow_nonneg hZ.le _) (Real.exp_pos _).le) (Real.exp_pos _).le)
     _ = _ := by ring
+
+end
 
 end SevenEighths.ProbeRow
 end

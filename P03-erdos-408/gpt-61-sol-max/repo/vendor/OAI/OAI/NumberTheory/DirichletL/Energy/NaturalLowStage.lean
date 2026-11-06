@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.NaturalLowPhysical
 public import OAI.NumberTheory.DirichletL.Energy.PositiveLowSourceControlled
@@ -12,7 +13,7 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
@@ -30,9 +31,9 @@ open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
 open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyNaturalLowPhysical CenteredMomentEnergyReferenceLowBands
@@ -84,8 +85,7 @@ theorem actual_low_from_bands
   have hdeg:degree≤Jmerge:=Nat.le_add_right _ _
   have hJ:J≤Jmerge:=Nat.le_add_left _ _
   have halower:a/max 1 b≤a:=by
-    apply (div_le_iff₀ (lt_of_lt_of_le zero_lt_one (le_max_left _ _))).mpr
-    nlinarith [le_max_left (1:ℝ) b]
+    bound
   have hlen:Lgoal≤2*max Lgoal Mparent+r/4:=by
     have hh:=le_max_left Lgoal Mparent
     linarith

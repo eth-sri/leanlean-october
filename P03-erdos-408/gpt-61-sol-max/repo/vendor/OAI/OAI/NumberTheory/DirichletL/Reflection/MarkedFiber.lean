@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedActiveSets
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedLevel
@@ -14,13 +15,13 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [Fintype ι] [Fintype σ]
 
-def joinedInactiveCoefficient (P : PrimeFamily ι) (S : PrimeFamily σ) (j : ι→ℕ) : ι⊕σ→ℂ :=
+def joinedInactiveCoefficient (P : PrimeFamily ι) (S : PrimeFamily σ) (j : ι→ℕ)  :=
   Sum.elim (fun i => if j i=0 then 1-(Ideal.absNorm (P.ideal i):ℂ)⁻¹ else 0)
     (fun i => (Ideal.absNorm (S.ideal i):ℂ)⁻¹)
 
-lemma joined_inactive_weight (P : PrimeFamily ι) (S : PrimeFamily σ)
+lemma joined_inactive_weight (P : PrimeFamily ι)  S 
     (hP : ∀ i, ringChar (Eis⧸P.ideal i)≠2) (hS : ∀ i, ringChar (Eis⧸S.ideal i)≠2)
-    (j : ι→ℕ) (hj : ∀ i, j i<6) (A : Finset (ι⊕σ)) :
+     j  (hj : ∀ i, j i<6)  A  :
     localInactiveWeight (P.sum S).generator (P.sum S).generator_ne_zero
       (mixedPrimeFunction (P.sum S).generator (P.sum S).generator_good
         (Sum.elim j (fun _ => 0)) markedSumSlots) A =
@@ -31,10 +32,7 @@ lemma joined_inactive_weight (P : PrimeFamily ι) (S : PrimeFamily σ)
     | inl i => exact hP i
     | inr i => exact hS i
   have hj' : ∀ i : ι⊕σ, Sum.elim j (fun _ => 0) i<6 := by
-    intro i
-    cases i with
-    | inl i => exact hj i
-    | inr i => norm_num
+    grind
   rw [mixed_inactive_weight (P.sum S) ho _ hj']
   apply Finset.prod_congr (by ext i; simp only [Finset.mem_sdiff,Finset.mem_univ])
   intro i hi

@@ -15,11 +15,11 @@ open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmeti
 open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
 open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
-variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
-def extra (negative : Bool) (c : CubeCoordinates ι) : Finset ι :=
+variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+
+def extra (negative : Bool) (c : CubeCoordinates ι)  :=
   if negative then c.rightExponent.support else c.leftExponent.support
 
 lemma extra_subset (negative : Bool) (c : CubeCoordinates ι) : extra negative c⊆c.support := by
@@ -27,13 +27,13 @@ lemma extra_subset (negative : Bool) (c : CubeCoordinates ι) : extra negative c
   · exact Finset.subset_union_left
   · exact Finset.subset_union_right
 
-lemma dyadic_exponent_nonneg (Z : ℝ) (hZ : 1<Z) (n : ℕ) :
+lemma dyadic_exponent_nonneg  Z  (hZ : 1<Z)  n  :
     0≤InverseFirstGlobalCaps.dyadicExponent Z n :=
   Real.logb_nonneg hZ (by unfold dyadScale;exact one_le_pow₀ (by norm_num : (1:ℝ)≤2))
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
-lemma label_parent_valid (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (k : SourceIndex) (l j : ℕ) :
+lemma label_parent_valid  pool   Q 
+     k   l j  :
     ∀y∈InverseFirstGlobalCaps.labelParentCell p pool Q (fun _ _=>1) k l j,SourceValid p y := by
   intro y hy
   obtain ⟨o,ho,D,hD,hs,rfl⟩ := (InverseFirstGlobalCaps.mem_parentCell p pool Q (fun _ _=>1) k l y).mp

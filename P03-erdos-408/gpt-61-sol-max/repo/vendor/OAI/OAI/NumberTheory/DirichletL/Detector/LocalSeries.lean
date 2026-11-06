@@ -16,7 +16,7 @@ local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
 
-def principalMarkedTerm (eta a X W V : ℂ) (e l k m : ℕ) : ℂ :=
+def principalMarkedTerm (eta a X W V : ℂ) (e l k m : ℕ)  :=
   if e+3*l=0 then 0 else
     weightedScalar (Ideal.absNorm (Ideal.span {p})) eta a
       (primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1)
@@ -58,26 +58,29 @@ lemma primeNorm_ne_zero : (Ideal.absNorm (Ideal.span {p}):ℂ) ≠ 0 := by
 include hc
 
 omit hc in
-@[simp] theorem markedTerm_zero_index (eta a X W V : ℂ) (k m : ℕ) :
+@[simp] theorem markedTerm_zero_index  eta a X W V   k m  :
     principalMarkedTerm p hp hg eta a X W V 0 0 k m = 0 := by
   simp only [principalMarkedTerm, mul_zero, add_zero, ite_true]
 
 omit hc in
-lemma markedTerm_higher_outer (eta a X W V : ℂ) (e l k m : ℕ) :
+lemma markedTerm_higher_outer  eta a X W V   e l k m  :
     principalMarkedTerm p hp hg eta a X W V e l (k+2) m = 0 := by
   unfold principalMarkedTerm
   split_ifs
   · rfl
   · rw [positiveScalar_kge_two p hp, weightedScalar_zero]
 
-lemma markedTerm_odd (eta a X W V : ℂ) (e r k m : ℕ) (he : e ≤ 1) :
+section
+variable (eta a X W V : ℂ) (e r k m d : ℕ)
+
+lemma markedTerm_odd     (he : e ≤ 1) :
     principalMarkedTerm p hp hg eta a X W V e (2*r+1) k m = 0 := by
   unfold principalMarkedTerm
   rw [ite_eq_right (by omega)]
   have hn : e+3*(2*r+1)-1 = 6*r+(e+2) := by omega
   rw [hn, unramified_odd_zero p hp hg hc r m k (e+2) (by omega), weightedScalar_zero]
 
-lemma markedTerm_squarefree_boundary (eta a X W V : ℂ) (r : ℕ) :
+lemma markedTerm_squarefree_boundary     :
     principalMarkedTerm p hp hg eta a X W V 1 (2*r) 0 r =
       evenRatio (Ideal.absNorm (Ideal.span {p})) a X V ^ r * (-eta*X) := by
   unfold principalMarkedTerm
@@ -87,13 +90,13 @@ lemma markedTerm_squarefree_boundary (eta a X W V : ℂ) (r : ℕ) :
     (firstGauss_ne_zero p hp hg hc) (localGamma_conjugate_three_sq p hp hg hc)
     (actualSextic_neg_one_sq _ hg) r
 
-lemma markedTerm_squarefree_boundary_off (eta a X W V : ℂ) (r m : ℕ) (hm : m ≠ r) :
+lemma markedTerm_squarefree_boundary_off     (hm : m ≠ r) :
     principalMarkedTerm p hp hg eta a X W V 1 (2*r) 0 m = 0 := by
   unfold principalMarkedTerm
   rw [ite_eq_right (by omega), show 1+3*(2*r)-1=6*r by omega,
     unramified_squarefree_kzero p hp hg hc, ite_eq_right hm, weightedScalar_zero]
 
-lemma markedTerm_even_bulk (eta a X W V : ℂ) (r d : ℕ) :
+lemma markedTerm_even_bulk     :
     principalMarkedTerm p hp hg eta a X W V 0 (2*r+2) 0 (r+1+d) =
       evenRatio (Ideal.absNorm (Ideal.span {p})) a X V ^ r *
         (evenRatio (Ideal.absNorm (Ideal.span {p})) a X V *
@@ -104,13 +107,13 @@ lemma markedTerm_even_bulk (eta a X W V : ℂ) (r d : ℕ) :
   exact weighted_even_bulk _ _ _ _ _ _ _ _ _ (primeNorm_ne_zero p hp)
     (localGamma_conjugate_three_sq p hp hg hc) (actualSextic_neg_one_sq _ hg) r d
 
-lemma markedTerm_even_bulk_off (eta a X W V : ℂ) (r m : ℕ) (hm : m < r+1) :
+lemma markedTerm_even_bulk_off     (hm : m < r+1) :
     principalMarkedTerm p hp hg eta a X W V 0 (2*r+2) 0 m = 0 := by
   unfold principalMarkedTerm
   rw [ite_eq_right (by omega), show 0+3*(2*r+2)-1=6*r+5 by omega,
     unramified_even_kzero p hp hg hc, ite_eq_right (by omega), weightedScalar_zero]
 
-lemma markedTerm_even_kone (eta a X W V : ℂ) (r : ℕ) :
+lemma markedTerm_even_kone     :
     principalMarkedTerm p hp hg eta a X W V 0 (2*r+2) 1 (r+1) =
       evenRatio (Ideal.absNorm (Ideal.span {p})) a X V ^ r *
         (W*evenRatio (Ideal.absNorm (Ideal.span {p})) a X V) := by
@@ -120,13 +123,13 @@ lemma markedTerm_even_kone (eta a X W V : ℂ) (r : ℕ) :
   exact weighted_even_kone _ _ _ _ _ _ _ _ _ (primeNorm_ne_zero p hp)
     (localGamma_conjugate_three_sq p hp hg hc) (actualSextic_neg_one_sq _ hg) r
 
-lemma markedTerm_even_kone_off (eta a X W V : ℂ) (r m : ℕ) (hm : m ≠ r+1) :
+lemma markedTerm_even_kone_off     (hm : m ≠ r+1) :
     principalMarkedTerm p hp hg eta a X W V 0 (2*r+2) 1 m = 0 := by
   unfold principalMarkedTerm
   rw [ite_eq_right (by omega), show 0+3*(2*r+2)-1=6*r+5 by omega,
     unramified_even_kone p hp hg hc, ite_eq_right hm, weightedScalar_zero]
 
-lemma markedTerm_squarefree_bulk (eta a X W V : ℂ) (r d : ℕ) :
+lemma markedTerm_squarefree_bulk     :
     principalMarkedTerm p hp hg eta a X W V 1 (2*r) 1 (r+1+d) =
       evenRatio (Ideal.absNorm (Ideal.span {p})) a X V ^ r *
         (-eta*((Ideal.absNorm (Ideal.span {p}):ℂ)-1)*X*W*V^(d+1)) := by
@@ -137,11 +140,13 @@ lemma markedTerm_squarefree_bulk (eta a X W V : ℂ) (r d : ℕ) :
     (firstGauss_ne_zero p hp hg hc) (localGamma_conjugate_three_sq p hp hg hc)
     (actualSextic_neg_one_sq _ hg) r d
 
-lemma markedTerm_squarefree_bulk_off (eta a X W V : ℂ) (r m : ℕ) (hm : m < r+1) :
+lemma markedTerm_squarefree_bulk_off     (hm : m < r+1) :
     principalMarkedTerm p hp hg eta a X W V 1 (2*r) 1 m = 0 := by
   unfold principalMarkedTerm
   rw [ite_eq_right (by omega), show 1+3*(2*r)-1=6*r by omega,
     unramified_squarefree_kone p hp hg hc, ite_eq_right (by omega), weightedScalar_zero]
+
+end
 
 end SevenEighths.ProbeEuler
 end

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.RadialMellin
 public import OAI.NumberTheory.DirichletL.Detector.HighAbsolute
@@ -9,18 +10,18 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+
 
 lemma radialFourier_vertical_inverse (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W⊆Set.Icc a b) (σ r : ℝ) (hσ : 0<σ) (hr : 0<r) :
+    (hW : Function.support W⊆Set.Icc a b)  σ r  (hσ : 0<σ) (hr : 0<r) :
     paperRadialFourier W r=verticalIntegral σ (fun z=>(r:ℂ)^(-z)*mellin (paperRadialFourier W) z) := by
   have he := ProbeRadialMellin.radial_mellin_inversion W a b ha hW σ r hσ hr
-  simpa only [mellinInv,verticalIntegral,Complex.real_smul,smul_eq_mul] using he.symm
+  solve_by_elim
 
 lemma radial_sum_exchange {ι : Type*} [Countable ι] (W : SchwartzMap ℝ ℂ)
     (a b : ℝ) (ha : 0<a) (hW : Function.support W⊆Set.Icc a b)
@@ -62,7 +63,7 @@ lemma frequency_rpow_summable (σ : ℝ) (hσ : 1<σ) :
     simp
   simpa only [he,Complex.ofReal_re] using frequencyWeight_summable_norm (σ:ℂ) hσ
 
-theorem actualFrequency_moment_summable (C : CalibrationData) (A s : O)
+theorem actualFrequency_moment_summable (C : CalibrationData) (A s : ActualEisensteinCubic.O)
     (hA : A≠0) (hs : s≠0) (K : ℝ) (hK : 0<K) (σ : ℝ) (hσ : 1<σ) :
     Summable (fun H : NonzeroFrequency=>‖actualCongruenceCoefficient C A s hA H.val‖*
       (K*elementNorm H.val/elementNorm ((C.generator*A)*s))^(-σ)) := by
@@ -91,6 +92,6 @@ theorem actualFrequency_moment_summable (C : CalibrationData) (A s : O)
       (Real.rpow_nonneg (div_pos hK hd).le _)) (Real.rpow_nonneg (by unfold elementNorm;positivity) _)
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

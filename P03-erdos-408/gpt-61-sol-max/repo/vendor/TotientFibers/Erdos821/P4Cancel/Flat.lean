@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Cancel.Symmetrize
 public import Erdos821.P4Probe.RowBridge
@@ -25,9 +26,9 @@ local instance (priority := high) rowSiteDecEq (s M : ℕ) : DecidableEq (RowSit
 
 variable (P : PrimeGroups) (M : ℕ)
 
-abbrev rowCount : ℕ := Fintype.card P.BigGroup
+abbrev rowCount  := Fintype.card P.BigGroup
 
-def rowEquiv : Fin (rowCount P) ≃ P.BigGroup := (Fintype.equivFin P.BigGroup).symm
+def rowEquiv  := (Fintype.equivFin P.BigGroup).symm
 attribute [irreducible] rowEquiv
 
 abbrev rowAlpha : Fin (rowCount P) → Type := fun g => P.Prime (rowEquiv P g).val
@@ -39,62 +40,78 @@ abbrev FlatSample := ProductSample (FlatAlphabet (rowAlpha P) M)
 abbrev flatW : ∀ z : RowSite (rowCount P) M, FlatAlphabet (rowAlpha P) M z → ℝ :=
   flatWeight (rowW P)
 
-def toRows : P.BigLabels M ≃ ProbeSample (rowAlpha P) M :=
+def toRows  :=
   (Equiv.piCongrLeft (fun h : P.BigGroup => Fin M → P.Prime h.val) (rowEquiv P)).symm
 
-def toFlat : P.BigLabels M ≃ FlatSample P M := (toRows P M).trans flattenRows
+def toFlat  := (toRows P M).trans flattenRows
 
 variable {P M}
 
-@[simp] lemma toRows_apply (a : P.BigLabels M) (g : Fin (rowCount P)) (i : Fin M) :
+@[simp] lemma toRows_apply  a   g   i  :
     toRows P M a g i = a (rowEquiv P g) i := by
   simp [toRows, Equiv.piCongrLeft_symm_apply]
 
-@[simp] lemma toRows_symm_apply (x : ProbeSample (rowAlpha P) M) (g : Fin (rowCount P)) :
+@[simp] lemma toRows_symm_apply  x   g  :
     (toRows P M).symm x (rowEquiv P g) = x g := by
   simp [toRows, Equiv.piCongrLeft_apply_apply]
 
-@[simp] lemma toFlat_apply (a : P.BigLabels M) (z : RowSite (rowCount P) M) :
+@[simp] lemma toFlat_apply  a   z  :
     toFlat P M a z = a (rowEquiv P z.1) z.2 := by
   simp [toFlat, flattenRows]
 
-lemma rowW_nonneg (hV : ∀ g, 0 < P.V g) : ∀ g a, 0 ≤ rowW P g a :=
+section
+variable (hV : ∀ g, 0 < P.V g)
+include hV
+
+lemma rowW_nonneg   : ∀ g a, 0 ≤ rowW P g a :=
   fun _ a => (graph_mu_pos P _ (hV _) a).le
 
-lemma rowW_sum (hV : ∀ g, 0 < P.V g) : ∀ g, ∑ a, rowW P g a = 1 :=
+lemma rowW_sum   : ∀ g, ∑ a, rowW P g a = 1 :=
   fun _ => graph_mu_sum P _ (hV _)
 
-lemma flatW_nonneg (hV : ∀ g, 0 < P.V g) : ∀ z a, 0 ≤ flatW P M z a :=
+lemma flatW_nonneg   : ∀ z a, 0 ≤ flatW P M z a :=
   fun z a => rowW_nonneg hV z.1 a
 
-lemma flatW_sum (hV : ∀ g, 0 < P.V g) : ∀ z, ∑ a, flatW P M z a = 1 :=
+lemma flatW_sum   : ∀ z, ∑ a, flatW P M z a = 1 :=
   fun z => rowW_sum hV z.1
 
-lemma rows_weight (a : P.BigLabels M) :
+end
+
+section
+variable (a : P.BigLabels M)
+include a
+
+lemma rows_weight   :
     sampleWeight (rowW P) (toRows P M a) = P.idealMass a := by
   unfold sampleWeight PrimeGroups.idealMass
   simp only [toRows_apply, rowW]
   exact Equiv.prod_comp (rowEquiv P) (fun g => ∏ i, P.mu g.val (a g i))
 
-lemma flat_weight (a : P.BigLabels M) :
+lemma flat_weight   :
     productWeight (flatW P M) (toFlat P M a) = P.idealMass a := by
   rw [← rows_weight a, ← flatWeight_eq]
   rfl
+
+end
 
 /-- A test on big labels, viewed on the flat sample space. -/
 def flatTest (F : P.BigLabels M → ℂ) : FlatSample P M → ℂ :=
   fun x => F ((toFlat P M).symm x)
 
-@[simp] lemma flatTest_toFlat (F : P.BigLabels M → ℂ) (a : P.BigLabels M) :
+@[simp] lemma flatTest_toFlat  F   a  :
     flatTest F (toFlat P M a) = F a := by
   simp [flatTest]
 
-lemma flatTest_of (H : FlatSample P M → ℂ) :
+lemma flatTest_of  H  :
     flatTest (fun a => H (toFlat P M a)) = H := by
   funext x
   simp [flatTest]
 
-lemma flat_sqNorm (F : P.BigLabels M → ℂ) :
+section
+variable (F : P.BigLabels M → ℂ)
+include F
+
+lemma flat_sqNorm   :
     productSqNorm (flatW P M) (flatTest F) = ∑ a, P.idealMass a * ‖F a‖ ^ 2 := by
   unfold productSqNorm
   symm
@@ -102,16 +119,22 @@ lemma flat_sqNorm (F : P.BigLabels M → ℂ) :
     (fun x => productWeight (flatW P M) x * ‖flatTest F x‖ ^ 2)
     (fun a => by rw [flat_weight, flatTest_toFlat])
 
-lemma idealVectorNorm_flat (F : P.BigLabels M → ℂ) :
+lemma idealVectorNorm_flat   :
     idealVectorNorm P M F = Real.sqrt (productSqNorm (flatW P M) (flatTest F)) := by
   rw [flat_sqNorm]
   rfl
+
+end
 
 /-- Mix the coordinates of a flat site set. -/
 def siteMix (T : Finset (RowSite (rowCount P) M)) (a b : P.BigLabels M) : P.BigLabels M :=
   fun h i => if ((rowEquiv P).symm h, i) ∈ T then b h i else a h i
 
-lemma toFlat_mix (T : Finset (RowSite (rowCount P) M)) (a b : P.BigLabels M) :
+section
+variable (T : Finset (RowSite (rowCount P) M))
+include T
+
+lemma toFlat_mix    a b  :
     mixCoords T (toFlat P M a) (toFlat P M b) = toFlat P M (siteMix T a b) := by
   funext z
   by_cases hz : z ∈ T
@@ -122,11 +145,11 @@ lemma toFlat_mix (T : Finset (RowSite (rowCount P) M)) (a b : P.BigLabels M) :
 
 /-- Average over a flat site set, on big labels. -/
 def siteAvg (T : Finset (RowSite (rowCount P) M)) (F : P.BigLabels M → ℂ)
-    (a : P.BigLabels M) : ℂ :=
+    (a : P.BigLabels M)  :=
   ∑ b, (P.idealMass b : ℂ) * F (siteMix T a b)
 
-lemma flat_average (T : Finset (RowSite (rowCount P) M)) (F : P.BigLabels M → ℂ)
-    (a : P.BigLabels M) :
+lemma flat_average    F 
+     a  :
     productAverage (flatW P M) T (flatTest F) (toFlat P M a) = siteAvg T F a := by
   unfold productAverage siteAvg
   symm
@@ -134,11 +157,13 @@ lemma flat_average (T : Finset (RowSite (rowCount P) M)) (F : P.BigLabels M → 
   intro b
   rw [flat_weight, toFlat_mix, flatTest_toFlat]
 
+end
+
 /-- Flat site set of a big-coordinate selection. -/
 def siteSet (S : P.BigGroup → Finset (Fin M)) : Finset (RowSite (rowCount P) M) :=
   Finset.univ.filter (fun z => z.2 ∈ S (rowEquiv P z.1))
 
-lemma siteAvg_siteSet (S : P.BigGroup → Finset (Fin M)) (F : P.BigLabels M → ℂ) :
+lemma siteAvg_siteSet  S   F  :
     siteAvg (siteSet S) F = bigCoordinateAverage P M S F := by
   funext a
   unfold siteAvg bigCoordinateAverage
@@ -162,7 +187,7 @@ lemma siteAvg_empty (hV : ∀ g, 0 < P.V g) (F : P.BigLabels M → ℂ) (a : P.B
 /-- Row symmetry of a big test transports to the flat row world. -/
 lemma rows_symmetric (F : P.BigLabels M → ℂ)
     (hF : ∀ (π : P.BigPermutations M) a, F (P.actBig π a) = F a)
-    (π : Fin (rowCount P) → Equiv.Perm (Fin M)) (x : ProbeSample (rowAlpha P) M) :
+    (π : Fin (rowCount P) → Equiv.Perm (Fin M))  x  :
     F ((toRows P M).symm (fun g i => x g (π g i))) = F ((toRows P M).symm x) := by
   have h : (toRows P M).symm (fun g i => x g (π g i)) =
       P.actBig (fun h => π ((rowEquiv P).symm h)) ((toRows P M).symm x) := by
@@ -175,17 +200,16 @@ lemma rows_symmetric (F : P.BigLabels M → ℂ)
 /-! The two side sets and the tail set, in the exact form of
 `SymmetricFullComponentTask`. -/
 
-def blockSet (block : P.BigGroup → Bool) (side : Bool) : Finset (Fin (rowCount P)) :=
+def blockSet (block : P.BigGroup → Bool) (side : Bool)  :=
   Finset.univ.filter (fun g => block (rowEquiv P g) = side)
 
-def sideSites (m : ℕ) (block : P.BigGroup → Bool) (side : Bool) :
-    Finset (RowSite (rowCount P) M) :=
+def sideSites (m : ℕ) (block : P.BigGroup → Bool) (side : Bool)  :=
   Finset.univ.filter (fun z : RowSite (rowCount P) M => z.1 ∈ blockSet block side ∧ z.2.val < m)
 
-def tailSites (J ell : ℕ) : Finset (RowSite (rowCount P) (J + ell)) :=
+def tailSites (J ell )  :=
   Finset.univ.filter (fun z : RowSite (rowCount P) (J + ell) => J ≤ z.2.val)
 
-lemma blockSet_card (block : P.BigGroup → Bool) (side : Bool) :
+lemma blockSet_card  block   side  :
     (blockSet (P := P) block side).card =
       (Finset.univ.filter (fun g : P.BigGroup => block g = side)).card := by
   unfold blockSet
@@ -195,34 +219,41 @@ lemma blockSet_card (block : P.BigGroup → Bool) (side : Bool) :
   · intro g hg
     exact ⟨(rowEquiv P).symm g, by simpa using hg, by simp⟩
 
-lemma siteSet_tail (J ell : ℕ) :
+lemma siteSet_tail  J ell  :
     siteSet (P := P) (tailCoordinates P J ell) = tailSites J ell := by
   ext z
   simp [siteSet, tailSites, tailCoordinates]
 
 /-- Alternating full component on one side, as a big-label test. -/
 def sideFull (I : Finset (RowSite (rowCount P) M)) (F : P.BigLabels M → ℂ)
-    (a : P.BigLabels M) : ℂ :=
+    (a : P.BigLabels M)  :=
   productFull (flatW P M) I (flatTest F) (toFlat P M a)
 
-lemma flatTest_sideFull (I : Finset (RowSite (rowCount P) M)) (F : P.BigLabels M → ℂ) :
+lemma flatTest_sideFull  I   F  :
     flatTest (sideFull I F) = productFull (flatW P M) I (flatTest F) := by
   unfold sideFull
   exact flatTest_of _
 
-lemma sub_sideFull (hV : ∀ g, 0 < P.V g) (I : Finset (RowSite (rowCount P) M))
-    (F : P.BigLabels M → ℂ) (a : P.BigLabels M) :
+section
+variable (hV : ∀ g, 0 < P.V g)
+include hV
+
+section
+variable (I : Finset (RowSite (rowCount P) M)) (F : P.BigLabels M → ℂ)
+include I F
+
+lemma sub_sideFull    
+      (a : P.BigLabels M) :
     F a - sideFull I F a =
       ∑ U ∈ I.powerset.erase ∅, (-((-1 : ℂ) ^ U.card)) * siteAvg U F a := by
   unfold sideFull productFull
   simp_rw [flat_average]
   rw [← Finset.add_sum_erase _ _ (Finset.empty_mem_powerset I)]
   simp only [Finset.card_empty, pow_zero, one_mul, siteAvg_empty hV]
-  rw [sub_add_cancel_left, ← Finset.sum_neg_distrib]
-  simp only [neg_mul]
+  norm_num
 
-lemma sub_sideFull_norm_le (hV : ∀ g, 0 < P.V g) (I : Finset (RowSite (rowCount P) M))
-    (F : P.BigLabels M → ℂ) :
+lemma sub_sideFull_norm_le    
+      :
     idealVectorNorm P M (fun a => F a - sideFull I F a) ≤ idealVectorNorm P M F := by
   rw [idealVectorNorm_flat, idealVectorNorm_flat]
   apply Real.sqrt_le_sqrt
@@ -233,8 +264,10 @@ lemma sub_sideFull_norm_le (hV : ∀ g, 0 < P.V g) (I : Finset (RowSite (rowCoun
   rw [h]
   exact productFull_complement_sqNorm_le (flatW P M) (flatW_nonneg hV) (flatW_sum hV) I _
 
-lemma tail_sideFull (hV : ∀ g, 0 < P.V g) (J ell : ℕ)
-    (I : Finset (RowSite (rowCount P) (J + ell))) (F : P.BigLabels (J + ell) → ℂ) :
+end
+
+lemma tail_sideFull    J ell 
+     I   F  :
     bigCoordinateAverage P (J + ell) (tailCoordinates P J ell) (sideFull I F) =
       fun a => productProbeProjection (flatW P (J + ell)) (tailSites J ell) I
         (flatTest F) (toFlat P (J + ell) a) := by
@@ -242,6 +275,8 @@ lemma tail_sideFull (hV : ∀ g, 0 < P.V g) (J ell : ℕ)
   rw [← siteAvg_siteSet, siteSet_tail, ← flat_average, flatTest_sideFull]
   unfold productProbeProjection
   rw [productFull_average_commute (flatW P (J + ell)) (flatW_sum hV)]
+
+end
 
 end
 end Erdos821.P4Cancel

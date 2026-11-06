@@ -1,4 +1,5 @@
 module
+import Batteries.Tactic.Alias
 
 public import Erdos821.S2.EdgeTasks
 public import Erdos821.P3Edge.RowBound
@@ -15,7 +16,7 @@ namespace Erdos821.P3Edge
 open Erdos821.Blueprint.Graph
 open Erdos821.S2Core
 
-theorem memoryEdgeAbsoluteTask_holds (F : FixedData) (r : MemoryParameters F) :
+theorem memoryEdgeAbsoluteTask_holds  F   r  :
     MemoryEdgeAbsoluteTask F r := by
   intro m C₁
   obtain ⟨Ca_row, hrow⟩ := row_tsum_le F r m C₁
@@ -41,7 +42,7 @@ theorem memoryEdgeAbsoluteTask_holds (F : FixedData) (r : MemoryParameters F) :
     Real.rpow_le_rpow_of_exponent_le hL1 (le_max_left _ _)
   have hCa_col : (L x) ^ Ca_col ≤ (L x) ^ Ca :=
     Real.rpow_le_rpow_of_exponent_le hL1 (le_max_right _ _)
-  have hVpos : ∀ g : P.Group, 0 < P.V g := fun g => V_pos_of_adm hP g
+  have hVpos : ∀ g : P.Group, 0 < P.V g := V_pos_of_adm hP
   have htilted_nn : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 ≤ tiltedMu F P (N x) g.val p :=
     fun g p => (tiltedMu_pos hL1 hP (N x) rfl hL10 g p).le
   refine ⟨fun s => ⟨row_summable F r A (N x) theta i s, ?_⟩,
@@ -65,7 +66,5 @@ theorem memoryEdgeAbsoluteTask_holds (F : FixedData) (r : MemoryParameters F) :
 end Erdos821.P3Edge
 
 open Erdos821.Blueprint.Graph Erdos821.S2Core Erdos821.P3Edge in
-theorem Erdos821.S2Core.MemoryEdgeAbsoluteTask_proof (F : FixedData) (r : MemoryParameters F) :
-    Erdos821.S2Core.MemoryEdgeAbsoluteTask F r :=
-  memoryEdgeAbsoluteTask_holds F r
+alias Erdos821.S2Core.MemoryEdgeAbsoluteTask_proof := _root_.Erdos821.P3Edge.memoryEdgeAbsoluteTask_holds
 

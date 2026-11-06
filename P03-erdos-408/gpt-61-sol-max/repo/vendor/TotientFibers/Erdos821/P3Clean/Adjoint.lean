@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.Contractions
 
@@ -13,11 +14,11 @@ namespace Erdos821.P3Clean
 
 open Erdos821.Blueprint.Graph
 
-def weightedAdjoint {α : Type*} (mass : α → ℝ) (K : α → α → ℂ) (a b : α) : ℂ :=
+def weightedAdjoint {α : Type*} (mass : α → ℝ) (K : α → α → ℂ) (a b : α)  :=
   ((mass b / mass a : ℝ) : ℂ) * star (K b a)
 
 theorem normBound_weightedAdjoint {α : Type*} (mass : α → ℝ) (K : α → α → ℂ)
-    (C : ℝ) (hm : ∀ a, mass a ≠ 0) (hK : NormBound mass K C) :
+     C  (hm : ∀ a, mass a ≠ 0) (hK : NormBound mass K C) :
     NormBound mass (weightedAdjoint mass K) C := by
   intro s t f g
   have h := hK t s g f
@@ -37,11 +38,7 @@ theorem normBound_weightedAdjoint {α : Type*} (mass : α → ℝ) (K : α → �
     simp only [starRingEnd_apply]
     field_simp [hma]
   rw [hform, norm_star]
-  have heq : C * Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2) *
-      Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) =
-      C * Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) *
-        Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2) := by ring
-  exact h.trans_eq heq
+  grind
 
 
 end Erdos821.P3Clean

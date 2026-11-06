@@ -14,21 +14,21 @@ namespace SevenEighths.InverseInitialEnergyCallerSourceMask
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerGeometry InverseInitialProfile ConcreteTraceCRT
-local notation "Eis"=>ActualEisensteinCubic.O
+
 variable {ι:Type*}[DecidableEq ι]
-  (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def coprimeSource (S:Finset (Source (ι:=ι) 0)) : Finset (Source (ι:=ι) 0) :=
+def coprimeSource (S:Finset (Source (ι:=ι) 0))  :=
   S.filter (fun x=>IsCoprime (sourceIdeal p x.overlap) (sourceIdeal p x.common))
 
 theorem physicalBlock_coprimeSource
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
+     pool  S 
     (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
-    (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(H:Finset ι→ℂ)
-    (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ) :
+     w  Ψ  j  H 
+     W₁ W₂  Φ  Z D m  :
     physicalBlock p hp hcop hg (pointSource pool S) (w∘erasePoint) Ψ j H W₁ W₂ Φ Z D m =
     physicalBlock p hp hcop hg (pointSource pool (coprimeSource p S)) (w∘erasePoint)
       Ψ j H W₁ W₂ Φ Z D m := by
@@ -60,7 +60,7 @@ theorem physicalBlock_coprimeSource
 include hcop in
 theorem retained_child_squarefree
     (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)
-    {x:Source (ι:=ι) 0}(hx:x∈coprimeSource p S)(u:Eisˣ) :
+    {x:Source (ι:=ι) 0}(hx:x∈coprimeSource p S)(u:ActualEisensteinCubic.Oˣ) :
     Squarefree (initialChild (toTuple p (sectorSource u x))).2.1 := by
   obtain ⟨hxs,hcoprime⟩ := Finset.mem_filter.mp hx
   change Squarefree (sourceIdeal p x.divisor*sourceIdeal p x.overlap)
@@ -68,12 +68,12 @@ theorem retained_child_squarefree
   exact squarefree_mul_iff.mpr ⟨hc.isRelPrime,sourceIdeal_squarefree p hcop _,
     sourceIdeal_squarefree p hcop _⟩
 
-def childLabels (S:Finset (Source (ι:=ι) 0)) : Finset (Ideal Eis) :=
+def childLabels (S:Finset (Source (ι:=ι) 0))  :=
   (coprimeSource p S).image (fun x=>sourceIdeal p x.divisor*sourceIdeal p x.overlap)
 
 omit [DecidableEq ι] in
-theorem child_label_mem (S:Finset (Source (ι:=ι) 0))
-    {x:Source (ι:=ι) 0}(hx:x∈coprimeSource p S)(u:Eisˣ) :
+theorem child_label_mem  S 
+    {x:Source (ι:=ι) 0}(hx:x∈coprimeSource p S) u  :
     (initialChild (toTuple p (sectorSource u x))).2.1∈childLabels p S :=
   Finset.mem_image.mpr ⟨x,hx,rfl⟩
 

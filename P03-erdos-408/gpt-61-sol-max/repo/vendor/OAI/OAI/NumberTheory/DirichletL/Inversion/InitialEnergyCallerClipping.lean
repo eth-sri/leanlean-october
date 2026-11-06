@@ -6,23 +6,23 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerPhysical
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss
 namespace SevenEighths.InverseInitialEnergyCallerClipping
 open InverseMoment InverseInitialClippedColumns InverseInitialProfile
-local notation "Eis"=>ActualEisensteinCubic.O
+
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 omit [DecidableEq σ] in
 theorem normalized_energy_clipping
-    (pool:Finset ι)(Ψ:Eis→*ℂ)(m:Eis)(slots:Finset σ)
-    (lists:σ→Finset ι)(a:σ→ι→ℂ)(labels:Finset (Ideal Eis))(rows:Finset Eis)
-    (d:Ideal Eis→ℝ)(w:ℝ→ℂ){Z:ℝ}(hZ:0<Z)(N h F:ℝ) :
+     pool  Ψ  m (slots:Finset σ)
+    (lists:σ→Finset ι)(a:σ→ι→ℂ) labels  rows 
+     d  w  {Z} (hZ:0<Z)(N h F:ℝ) :
     normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows d
       (childLogTest w h) (Z^N) Z F =
     normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows d
@@ -45,6 +45,6 @@ theorem initial_scalar_le (m D B v θ η δ π ε:ℝ)(hδ:δ≤3*η) :
 
 end SevenEighths.InverseInitialEnergyCallerClipping
 
-end
+
 
 end OAI

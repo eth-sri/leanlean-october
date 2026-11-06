@@ -11,15 +11,15 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
 
 theorem hybrid_fixed_square_grid_energy (ε : ℝ) (hε : 0 < ε) :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ K N B L C T : ℝ,
       1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ C → 1 ≤ T →
-    ∀ (t : Ideal Eis), T ≤ (Ideal.absNorm t : ℝ) →
-    ∀ (rows nset Pset : Finset (Ideal Eis)) (D : Finset HybridColumnData)
-      (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ),
+    ∀ (t : Ideal ActualEisensteinCubic.O), T ≤ (Ideal.absNorm t : ℝ) →
+    ∀ (rows nset Pset : Finset (Ideal ActualEisensteinCubic.O)) (D : Finset HybridColumnData)
+      (a : Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n : ℝ) ≤ N) →
       (∀ P ∈ Pset, CubicSieve.Admissible P ∧ L ≤ (Ideal.absNorm P : ℝ) ∧
@@ -47,7 +47,7 @@ theorem hybrid_fixed_square_grid_energy (ε : ℝ) (hε : 0 < ε) :
     intro u hu
     obtain ⟨d, hd, rfl⟩ := Finset.mem_image.mp hu
     exact (hn _ (hD d hd).2.2.2.1).1.2
-  have hterm (v : Ideal Eis × Ideal Eis) (hv : v ∈ hybridDivisorPairPool rows) :
+  have hterm (v : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) (hv : v ∈ hybridDivisorPairPool rows) :
       (∑ k ∈ rows, if v ∈ (idealDivisors k) ×ˢ (idealDivisors k) then
         ‖gridDivisorHybridBlock (hybridGridSupport D) Pset a beta t k v.1 v.2‖ ^ 2 else 0) ≤
       E * (1 / ((Ideal.absNorm v.1 : ℝ) * (Ideal.absNorm v.2 : ℝ))) := by
@@ -83,7 +83,7 @@ theorem hybrid_fixed_square_grid_energy (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left hsum (by positivity)
     _ = _ := by dsimp only [E]; ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

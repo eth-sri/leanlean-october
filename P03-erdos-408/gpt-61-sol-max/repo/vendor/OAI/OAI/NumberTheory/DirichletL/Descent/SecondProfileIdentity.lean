@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FullProfile
 public import OAI.NumberTheory.DirichletL.Descent.Canonical
@@ -13,16 +14,16 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 
 def secondNormProfile (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (V : Fin 6 → ℝ → ℂ) (R : ℝ) (q : Fin 6 → ℝ) : ℂ :=
+    (V : Fin 6 → ℝ → ℂ) (R : ℝ) (q : Fin 6 → ℝ)  :=
   (∏ i, V i (Real.log (q i))) * W₁ (q 0*q 2*q 4) * W₂ (q 0*q 2*q 5) *
     paperRadialFourier Φ (R*q 3/(q 1*(q 2)^2*q 4*q 5)) /
       ((q 1:ℂ)*(q 2:ℂ)*(Real.sqrt (q 4):ℂ)*(Real.sqrt (q 5):ℂ))
 
-lemma secondPoissonProfile_log (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (V : Fin 6 → ℝ → ℂ) (R : ℝ) (q : Fin 6 → ℝ) (hq : ∀ i, 0 < q i) :
+lemma secondPoissonProfile_log  W₁ W₂   Φ 
+     V   R   q  (hq : ∀ i, 0 < q i) :
     secondPoissonProfile W₁ W₂ Φ V R (fun i => Real.log (q i)) =
       secondNormProfile W₁ W₂ Φ V R q := by
   have hleft : (∑ i, secondLeftSlope i * Real.log (q i)) =
@@ -46,9 +47,9 @@ lemma secondPoissonProfile_log (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
   ring
 
 theorem secondSourcePairKernel_profile {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0)
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0)
     (G V N M : Finset ι) (hVN : Disjoint V N) (hVM : Disjoint V M)
-    (e k : Eis) (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Y : ℝ) :
+    (e k : ActualEisensteinCubic.O) (W₁ W₂ : ℝ → ℂ)  Φ   Y  :
     (‖eisEmbedding e‖^2 : ℂ)⁻¹ * secondSourcePairKernel p e k
       (fun U => W₁ (primeProductNorm p G * primeProductNorm p U))
       (fun U => W₂ (primeProductNorm p G * primeProductNorm p U)) Φ Y (V ∪ N) (V ∪ M) =
@@ -62,9 +63,7 @@ theorem secondSourcePairKernel_profile {ι : Type*} [DecidableEq ι]
       Real.sqrt (primeProductNorm p V*primeProductNorm p M) =
       primeProductNorm p V * Real.sqrt (primeProductNorm p N) * Real.sqrt (primeProductNorm p M) := by
     rw [Real.sqrt_mul hV, Real.sqrt_mul hV]
-    calc
-      _ = (Real.sqrt (primeProductNorm p V))^2 * Real.sqrt (primeProductNorm p N) * Real.sqrt (primeProductNorm p M) := by ring
-      _ = _ := by rw [Real.sq_sqrt hV]
+    grind
   unfold secondSourcePairKernel secondNormProfile
   simp only [hs,primeProductNorm_union p V N hVN,primeProductNorm_union p V M hVM,
     Matrix.cons_val_zero,  Fin.isValue, Finset.prod_const_one, one_mul]
@@ -78,10 +77,10 @@ theorem secondSourcePairKernel_profile {ι : Type*} [DecidableEq ι]
   push_cast
   ring_nf
 
-theorem secondNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (G₀ E₀ V₀ K₀ X₀ Y : ℝ)
+theorem secondNormProfile_nominal  W₁ W₂   Φ 
+     G₀ E₀ V₀ K₀ X₀ Y 
     (_hG : 0 < G₀) (hE : 0 < E₀) (hV : 0 < V₀) (hK : 0 < K₀) (hX : 0 < X₀)
-    (q : Fin 6 → ℝ) (hq : ∀ i, 0 < q i) :
+     q  (hq : ∀ i, 0 < q i) :
     secondNormProfile (fun x => W₁ (x/(G₀*V₀*X₀)))
       (fun x => W₂ (x/(G₀*V₀*X₀))) Φ (fun _ _ => 1) Y q =
       ((E₀*V₀*X₀ : ℝ):ℂ)⁻¹ *

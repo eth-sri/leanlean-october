@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Analysis.Divisor
 
@@ -19,13 +20,17 @@ namespace Erdos408.OneSided
 open Finset
 
 /-- The coefficient `c_l = ∑_{mn = l} u_m v_n` of a product of Dirichlet polynomials. -/
-noncomputable def mulCoeff (I₁ I₂ : Finset ℕ) (u v : ℕ → ℂ) (l : ℕ) : ℂ :=
+noncomputable def mulCoeff (I₁ I₂ : Finset ℕ) (u v : ℕ → ℂ) (l : ℕ)  :=
   ∑ mn ∈ I₁ ×ˢ I₂ with mn.1 * mn.2 = l, u mn.1 * v mn.2
 
+section
+variable {I₁ I₂ : Finset ℕ} {N₁ N₂ : ℕ} (hI₁ : ∀ m ∈ I₁, 1 ≤ m ∧ m ≤ N₁) (hI₂ : ∀ n ∈ I₂, 1 ≤ n ∧ n ≤ N₂)
+
+include hI₁ hI₂ in
 /-- The product of two Dirichlet polynomials supported in `[1, N₁]` and `[1, N₂]` is the
 Dirichlet polynomial of length `N₁ N₂` with coefficients `mulCoeff`. -/
-theorem sum_mul_sum_eq {I₁ I₂ : Finset ℕ} {N₁ N₂ : ℕ} (hI₁ : ∀ m ∈ I₁, 1 ≤ m ∧ m ≤ N₁)
-    (hI₂ : ∀ n ∈ I₂, 1 ≤ n ∧ n ≤ N₂) (u v : ℕ → ℂ) (t : ℝ) :
+theorem sum_mul_sum_eq      
+       u v  (t : ℝ) :
     (∑ m ∈ I₁, u m * (m : ℂ) ^ ((t : ℂ) * Complex.I)) *
         (∑ n ∈ I₂, v n * (n : ℂ) ^ ((t : ℂ) * Complex.I)) =
       ∑ l ∈ Icc 1 (N₁ * N₂), mulCoeff I₁ I₂ u v l * (l : ℂ) ^ ((t : ℂ) * Complex.I) := by
@@ -46,19 +51,15 @@ theorem sum_mul_sum_eq {I₁ I₂ : Finset ℕ} {N₁ N₂ : ℕ} (hI₁ : ∀ m
 
 /-- At most `τ(l)` pairs `(m, n)` with `m ≥ 1` have `mn = l ≠ 0`: `m` is a divisor of `l`,
 and it determines `n`. -/
-theorem card_filter_mul_eq_le {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m ∈ I₁, 1 ≤ m) {l : ℕ} (hl : l ≠ 0) :
+theorem card_filter_mul_eq_le   (hI₁ : ∀ m ∈ I₁, 1 ≤ m)  {l}  (hl : l ≠ 0) :
     #{mn ∈ I₁ ×ˢ I₂ | mn.1 * mn.2 = l} ≤ #l.divisors := by
   refine card_le_card_of_injOn Prod.fst (fun mn hmn => ?_) fun mn hmn mn' hmn' h => ?_
-  · rw [mem_coe, mem_filter] at hmn
-    exact Nat.mem_divisors.2 ⟨⟨mn.2, hmn.2.symm⟩, hl⟩
-  · rw [mem_coe, mem_filter, mem_product] at hmn hmn'
-    have h₁ : 0 < mn.1 := hI₁ _ hmn.1.1
-    have h₂ : mn.1 * mn.2 = mn.1 * mn'.2 := by rw [hmn.2, h, hmn'.2]
-    exact Prod.ext h (Nat.eq_of_mul_eq_mul_left h₁ h₂)
+  · aesop
+  aesop
 
 /-- `|c_l| ≤ U V τ(l)` for `l ≠ 0`. -/
-theorem norm_mulCoeff_le {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m ∈ I₁, 1 ≤ m) {u v : ℕ → ℂ} {U V : ℝ}
-    (hU : 0 ≤ U) (hV : 0 ≤ V) (hu : ∀ m ∈ I₁, ‖u m‖ ≤ U) (hv : ∀ n ∈ I₂, ‖v n‖ ≤ V) {l : ℕ}
+theorem norm_mulCoeff_le   (hI₁ : ∀ m ∈ I₁, 1 ≤ m)  {u v}   {U V} 
+    (hU : 0 ≤ U) (hV : 0 ≤ V) (hu : ∀ m ∈ I₁, ‖u m‖ ≤ U) (hv : ∀ n ∈ I₂, ‖v n‖ ≤ V)  {l} 
     (hl : l ≠ 0) :
     ‖mulCoeff I₁ I₂ u v l‖ ≤ U * V * #l.divisors := by
   unfold mulCoeff
@@ -68,19 +69,20 @@ theorem norm_mulCoeff_le {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m ∈ I₁, 1 ≤
         refine sum_le_sum fun mn hmn => ?_
         rw [mem_filter, mem_product] at hmn
         rw [norm_mul]
-        exact mul_le_mul (hu _ hmn.1.1) (hv _ hmn.1.2) (norm_nonneg _) hU
+        bound
     _ = #{mn ∈ I₁ ×ˢ I₂ | mn.1 * mn.2 = l} * (U * V) := by rw [sum_const, nsmul_eq_mul]
     _ ≤ #l.divisors * (U * V) := by
         gcongr
         exact card_filter_mul_eq_le hI₁ hl
     _ = U * V * #l.divisors := by ring
 
+include hI₁ hI₂ in
 /-- PD `maj:product-mean`: for Dirichlet polynomials supported in `[1, N₁]` and `[1, N₂]` with
 coefficients at most `U` and `V`, and `N = N₁ N₂`,
 `∫_a^b |∑ u_m m^{it}|² |∑ v_n n^{it}|² ≤ (b - a + 8N(1 + log N)) U² V² N (1 + log N)³`. -/
-theorem integral_norm_sum_mul_sum_sq_le {I₁ I₂ : Finset ℕ} {N₁ N₂ : ℕ}
-    (hI₁ : ∀ m ∈ I₁, 1 ≤ m ∧ m ≤ N₁) (hI₂ : ∀ n ∈ I₂, 1 ≤ n ∧ n ≤ N₂) {u v : ℕ → ℂ} {U V : ℝ}
-    (hU : 0 ≤ U) (hV : 0 ≤ V) (hu : ∀ m ∈ I₁, ‖u m‖ ≤ U) (hv : ∀ n ∈ I₂, ‖v n‖ ≤ V) {a b : ℝ}
+theorem integral_norm_sum_mul_sum_sq_le    
+        {u v : ℕ → ℂ}  {U V} 
+    (hU : 0 ≤ U) (hV : 0 ≤ V) (hu : ∀ m ∈ I₁, ‖u m‖ ≤ U) (hv : ∀ n ∈ I₂, ‖v n‖ ≤ V)  {a b} 
     (hab : a ≤ b) :
     ∫ t in a..b, ‖(∑ m ∈ I₁, u m * (m : ℂ) ^ ((t : ℂ) * Complex.I)) *
         (∑ n ∈ I₂, v n * (n : ℂ) ^ ((t : ℂ) * Complex.I))‖ ^ 2 ≤
@@ -88,8 +90,8 @@ theorem integral_norm_sum_mul_sum_sq_le {I₁ I₂ : Finset ℕ} {N₁ N₂ : �
         (U ^ 2 * V ^ 2 * ((N₁ * N₂ : ℕ) * (1 + Real.log (N₁ * N₂ : ℕ)) ^ 3)) := by
   simp_rw [sum_mul_sum_eq hI₁ hI₂ u v]
   refine (integral_norm_dirichlet_sq_le _ _ a b).trans ?_
-  have hlog := Real.log_natCast_nonneg (N₁ * N₂)
-  have hab' := sub_nonneg.2 hab
+  
+  
   gcongr
   -- `∑ |c_l|² ≤ U² V² ∑ τ(l)²`
   calc ∑ l ∈ Icc 1 (N₁ * N₂), ‖mulCoeff I₁ I₂ u v l‖ ^ 2
@@ -104,5 +106,7 @@ theorem integral_norm_sum_mul_sum_sq_le {I₁ I₂ : Finset ℕ} {N₁ N₂ : �
     _ ≤ U ^ 2 * V ^ 2 * ((N₁ * N₂ : ℕ) * (1 + Real.log (N₁ * N₂ : ℕ)) ^ 3) := by
         gcongr
         exact sum_card_divisors_sq_le _
+
+end
 
 end Erdos408.OneSided

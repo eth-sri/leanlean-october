@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowGaussEnergy
 
@@ -11,21 +12,20 @@ open scoped Classical
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-def lowGaussColumns (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y) :
-    Finset {I : Id // Supported I} :=
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+def lowGaussColumns (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y)  :=
   ((idealWindow_finite_support W1 hW1 Y hY).preimage
     (f:=fun s : {I : Id // Supported I}=>s.val) Subtype.val_injective.injOn).toFinset
 
-lemma lowGaussColumns_mem (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y)
-    (s : {I : Id // Supported I}) :
+lemma lowGaussColumns_mem  W1   hW1   Y   hY 
+     s  :
     s∈lowGaussColumns W1 hW1 Y hY ↔ W1 ((Ideal.absNorm s.val:ℝ)/Y)≠0 := by
   simp only [lowGaussColumns,Set.Finite.mem_toFinset,Set.mem_preimage,Function.mem_support]
 
-lemma lowRayAmplitude_source_columns (C : CalibrationData) (W1 : ℝ→ℂ)
-    (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (m : O) :
+lemma lowRayAmplitude_source_columns  C   W1 
+     hW1   Y   hY   σ   v   m  :
     lowRayAmplitude C W1 Y σ m v=
       CenteredMomentGaussEnergy.gaussPolynomial (lowGaussColumns W1 hW1 Y hY)
         (fun s=>primaryGenerator s.val)
@@ -39,7 +39,7 @@ lemma lowRayAmplitude_source_columns (C : CalibrationData) (W1 : ℝ→ℂ)
   unfold CenteredMomentGaussEnergy.gaussPolynomial
   exact Finset.sum_congr rfl (fun s _=>lowGaussColumn_row C W1 Y σ v s m)
 
-lemma lowGaussColumns_card (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 1≤Y)
+lemma lowGaussColumns_card  W1   hW1   Y   hY 
     (a b : ℝ) (hW : Function.support W1⊆Set.Icc a b) :
     ((lowGaussColumns W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY)).card:ℝ)≤128*max 1 b*Y := by
   let F := lowGaussColumns W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY)
@@ -55,10 +55,10 @@ lemma lowGaussColumns_card (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : �
   rw [Finset.card_image_of_injective _ Subtype.val_injective] at hh
   simpa only [mul_assoc,F] using hh
 
-lemma lowGaussColumn_norm_bound (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
-    (W1 : ℝ→ℂ) (a b B : ℝ) (ha : 0<a) (hB : 0≤B)
+lemma lowGaussColumn_norm_bound  S   hS 
+     W1  (a b B : ℝ) (ha : 0<a) (hB : 0≤B)
     (hW : Function.support W1⊆Set.Icc a b) (hWB : ∀x,‖W1 x‖≤B)
-    (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (s : {I : Id // Supported I}) :
+     Y  (hY : 0<Y)  σ   v   s  :
     ‖lowGaussColumn (calibrationForSet S hS) W1 Y σ v s‖≤
       B*a^(-(1/2:ℝ))/Y := by
   have hq : (0:ℝ)<Ideal.absNorm s.val := by
@@ -86,7 +86,7 @@ lemma lowGaussColumn_norm_bound (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
   · simp only [norm_zero]
     positivity
 
-theorem lowGaussColumn_l2_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
+theorem lowGaussColumn_l2_bound  a b B  (ha : 0<a) (hB : 0≤B) :
     ∃C : ℝ,0<C ∧ ∀S : Finset Id,∀hS : ∀P∈S,P.IsMaximal,
       ∀W1 : ℝ→ℂ,∀hW1 : HasCompactSupport W1,
       Function.support W1⊆Set.Icc a b → (∀x,‖W1 x‖≤B) →
@@ -101,9 +101,7 @@ theorem lowGaussColumn_l2_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
   have hcoef (s : {I : Id // Supported I}) := lowGaussColumn_norm_bound S hS W1 a b B ha hB hW hWB Y hy σ v s
   calc
     _ ≤ ∑_s∈lowGaussColumns W1 hW1 Y hy,(B*a^(-(1/2:ℝ))/Y)^2 := by
-      apply Finset.sum_le_sum
-      intro s hs
-      exact pow_le_pow_left₀ (norm_nonneg _) (hcoef s) 2
+      bound
     _ = ((lowGaussColumns W1 hW1 Y hy).card:ℝ)*(B*a^(-(1/2:ℝ))/Y)^2 := by simp
     _ ≤ (128*max 1 b*Y)*(B*a^(-(1/2:ℝ))/Y)^2 :=
       mul_le_mul_of_nonneg_right (lowGaussColumns_card W1 hW1 Y hY a b hW) (sq_nonneg _)

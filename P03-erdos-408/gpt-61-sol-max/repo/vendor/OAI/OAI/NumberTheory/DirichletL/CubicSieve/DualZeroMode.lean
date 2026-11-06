@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.MeanSquare.SourceRemainders
 
@@ -10,76 +11,76 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
+ 
 open ConcreteTraceCRT (eisEmbedding)
 open FiniteGaussPhase (canonicalProductGauss_cross_factors)
 
@@ -89,8 +90,8 @@ variable {ι : Type*} [DecidableEq ι]
   (hg : ∀i,lambda∉Ideal.span {p i})
 
 lemma threeGaussRowFactor_empty
-    (B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
-    (C₁ C₂ : Finset ι→ℂ) (d h : O)
+     B   v   ε₁ ε₂ 
+     C₁ C₂   d h 
     (hB : cubeActiveSupport B v ε₁ ε₂=∅) :
     threeGaussRowFactor p hp hcop hg ∅ ∅ B v ε₁ ε₂ C₁ C₂ d h=
       star (C₁ ∅)*C₂ ∅ := by
@@ -105,7 +106,7 @@ end FirstPassCubeLabels
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
@@ -115,8 +116,8 @@ variable {ι : Type*} [DecidableEq ι]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,lambda∉Ideal.span {p i})
 
-lemma canonicalCubeResidual_empty (b : CubeCoordinates ι) (C : Finset ι)
-    (negative : Bool) (Ψ : O→*ℂ) (m f : O) (H : Finset ι→ℂ) :
+lemma canonicalCubeResidual_empty  b   C 
+     negative   Ψ   m f   H  :
     canonicalCubeResidual p hg b C negative Ψ m f H ∅=
       H ((if negative then b.rightDivisor else b.leftDivisor)∪C) := by
   simp [canonicalCubeResidual,originalLabelColumn,multiplicativeCoreColumn,
@@ -124,7 +125,7 @@ lemma canonicalCubeResidual_empty (b : CubeCoordinates ι) (C : Finset ι)
 
 def canonicalCubeDualZero (pool : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
     (Ψ₁ Ψ₂ : O→*ℂ) (m₁ m₂ f : O) (H₁ H₂ : Finset ι→ℂ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
+    (W : 𝓢(ℝ,ℂ)) (K : ℝ)  :=
   canonicalCubeOuter p hp hcop hg b C Ψ₁ Ψ₂ m₁ m₂ f*
     ∑D∈(C∪cubePrincipalSupport b.support b.leftExponent b.rightExponent b.leftBit b.rightBit).powerset,
       (UniqueFactorizationMonoid.moebius (∏i∈D,Ideal.span {p i}):ℂ)/(primeProductNorm p D:ℂ)*
@@ -135,11 +136,15 @@ def canonicalCubeDualZero (pool : Finset ι) (b : CubeCoordinates ι) (C : Finse
         W (fun _=>1) (fun _=>1) 1 1 K
         (primeSubsetGenerator (fun i=>Ideal.span {p i}) D) 0
 
+section
+variable (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+include hinj
+
 theorem canonicalCubeDualZero_eq_density
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (pool : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
-    (Ψ₁ Ψ₂ : O→*ℂ) (m₁ m₂ f : O) (H₁ H₂ : Finset ι→ℂ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+     
+     pool   b   C 
+     Ψ₁ Ψ₂   m₁ m₂ f   H₁ H₂ 
+     W   K  :
     canonicalCubeDualZero p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W K=
       if cubeActiveSupport b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit=∅ then
         canonicalCubeOuter p hp hcop hg b C Ψ₁ Ψ₂ m₁ m₂ f*
@@ -165,11 +170,11 @@ theorem canonicalCubeDualZero_eq_density
   · simp only [mul_zero,Finset.sum_const_zero]
 
 theorem canonicalCubeDualZero_norm_le
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+     
     (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
-    (pool : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
-    (Ψ₁ Ψ₂ : O→*ℂ) (hΨ₁ : ∀u,‖Ψ₁ u‖≤1) (hΨ₂ : ∀u,‖Ψ₂ u‖≤1)
-    (m₁ m₂ f : O) (H₁ H₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+     pool   b   C 
+     Ψ₁ Ψ₂  (hΨ₁ : ∀u,‖Ψ₁ u‖≤1) (hΨ₂ : ∀u,‖Ψ₂ u‖≤1)
+     m₁ m₂ f   H₁ H₂   W   K  :
     ‖canonicalCubeDualZero p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W K‖≤
       if cubeActiveSupport b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit=∅ then
         ‖H₁ (b.rightDivisor∪C)‖*‖H₂ (b.leftDivisor∪C)‖*|K| *‖paperRadialFourier W 0‖ else 0 := by
@@ -185,8 +190,7 @@ theorem canonicalCubeDualZero_norm_le
       abs_of_nonneg (primeDensity_nonneg_le_one (fun i=>Ideal.span {p i}) M).1]
     calc
       _ ≤ 1*(‖H₁ (b.rightDivisor∪C)‖*‖H₂ (b.leftDivisor∪C)‖)*|K| *‖paperRadialFourier W 0‖*
-          ∏i∈M,(1-(1:ℝ)/Ideal.absNorm (Ideal.span {p i})) := by
-        exact mul_le_mul_of_nonneg_right
+          ∏i∈M,(1-(1:ℝ)/Ideal.absNorm (Ideal.span {p i})) := mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right
             (mul_le_mul_of_nonneg_right
               (mul_le_mul_of_nonneg_right
@@ -201,13 +205,15 @@ theorem canonicalCubeDualZero_norm_le
 
 end
 
-open ActualEisensteinCubic
+end
+
+ 
 open FirstPassCubeLabels
 
 theorem boundedPrimeSupports_card_positive {ι : Type*} [DecidableEq ι]
     (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (F : Finset ι) (X : ℝ) (hX : 0<X) :
+    (F : Finset ι)  X  (hX : 0<X) :
     ((boundedPrimeSupports p F X).card:ℝ)≤128*X := by
   by_cases hx : 1≤X
   · exact boundedPrimeSupports_card p hinj F X hx
@@ -221,7 +227,7 @@ theorem boundedPrimeSupports_card_positive {ι : Type*} [DecidableEq ι]
 end SecondPassArithmetic
 
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
+ 
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open SecondPassArithmetic (boundedPrimeSupports boundedPrimeSupports_card_positive
@@ -264,33 +270,13 @@ end FirstPassCubeLabels
 
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-open EisensteinSchwartzPoisson (paperRadialFourier)
 
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
-  (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-  (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
 
-include hinj
-
-include hc
-
-end
-
-end
-
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
-section
+
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -299,7 +285,7 @@ variable {ι : Type*} [DecidableEq ι]
 omit [DecidableEq ι] in
 lemma originalLabelColumn_core_norm_le
     (B : Finset ι) (ε₁ ε₂ : ι→Bool) (negative : Bool)
-    (Ψ : O→*ℂ) (hΨ : ∀u,‖Ψ u‖≤1) (m c f : O) (H : Finset ι→ℂ) (S : Finset ι) :
+    (Ψ : O→*ℂ) (hΨ : ∀u,‖Ψ u‖≤1)  m c f   H   S  :
     ‖originalLabelColumn p hg B ε₁ ε₂ negative (multiplicativeCoreColumn p Ψ m H) c f S‖≤‖H S‖ := by
   have hm (z:O):‖rowCoprimeMask (fun i=>Ideal.span {p i}) S z‖≤1:=by
     unfold rowCoprimeMask;split_ifs <;> simp
@@ -308,8 +294,7 @@ lemma originalLabelColumn_core_norm_le
       (finiteSquarefreeRow_norm_le_one (fun i=>Ideal.span {p i}) hg S z) 4
   simp only [originalLabelColumn,multiplicativeCoreColumn,norm_mul,norm_pow]
   calc
-    _ ≤ 1*‖H S‖*1*1*1 := by
-      exact mul_le_mul
+    _ ≤ 1*‖H S‖*1*1*1 := mul_le_mul
         (mul_le_mul
           (mul_le_mul
             (mul_le_mul_of_nonneg_right
@@ -322,14 +307,12 @@ lemma originalLabelColumn_core_norm_le
 omit [DecidableEq ι] in
 lemma originalLabelColumn_core_test_ne_zero
     (B : Finset ι) (ε₁ ε₂ : ι→Bool) (negative : Bool)
-    (Ψ : O→*ℂ) (m c f : O) (H : Finset ι→ℂ) (S : Finset ι)
+    (Ψ : O→*ℂ) (m c f : O) (H : Finset ι→ℂ)  S 
     (h : originalLabelColumn p hg B ε₁ ε₂ negative
       (multiplicativeCoreColumn p Ψ m H) c f S≠0) : H S≠0 := by
-  intro hz
-  apply h
-  simp only [originalLabelColumn,multiplicativeCoreColumn,hz,mul_zero,zero_mul]
+  simp_all [originalLabelColumn, multiplicativeCoreColumn]
 
-end
+
 
 end SecondPassArithmetic
 

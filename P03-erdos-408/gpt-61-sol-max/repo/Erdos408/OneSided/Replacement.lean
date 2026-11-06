@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Decomposition
 public import Erdos408.OneSided.Goodness.Removal
@@ -33,10 +34,15 @@ open Filter Finset Real
 
 variable {K : ℕ}
 
+section
+variable {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g)
+
+
+include hq hq₁ hCX halo hahi hg in
 /-- Removing the good-state projections changes `⟨f, 𝒯 f⟩` by `O(UV L^{-D'})` for every
 `D'`, where `UV = d₀ Y X`. -/
-theorem eventually_goodness_removal {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hg : 0 < g) (A₀ D' : ℝ) :
+theorem eventually_goodness_removal      
+            (A₀ D' : ℝ) :
     ∃ C₀ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ‖rowPairing q A₀ x d (2 ^ j) (2 ^ k) - pairing q A₀ x d (2 ^ j) (2 ^ k)‖ ≤
         C₀ * (2 ^ k * 2 ^ j * d.X) * Real.log x ^ (-D') := by
@@ -119,7 +125,7 @@ private theorem exp_add_thirty_mul_rpow_le {E L n : ℝ} (hE : 0 < E) (hL : 8 �
     have := Real.log_le_rpow_div hL0.le (show (0 : ℝ) < 1 / 4 by norm_num)
     linarith
   have hn' : n ≤ 2 * L ^ (1 / 2 : ℝ) := by linarith
-  have hn0 : 0 ≤ n := by linarith
+  
   have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
   have hprod : E * n * Real.log L ≤ 8 * E * L ^ (3 / 4 : ℝ) :=
     calc E * n * Real.log L ≤ E * (2 * L ^ (1 / 2 : ℝ)) * (4 * L ^ (1 / 4 : ℝ)) := by
@@ -143,10 +149,11 @@ private theorem exp_add_thirty_mul_rpow_le {E L n : ℝ} (hE : 0 < E) (hL : 8 �
     exact Real.exp_le_exp.2 (by linarith)
   linarith
 
+include hq hq₁ hC hD hCX halo hahi hK hg in
 /-- The determinant moment (PD (4.1)): for `K ≥ K₀`, it is at most `UV L^{-E₀ N}`. -/
-theorem eventually_detMoment {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5)
-    (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g) :
+theorem eventually_detMoment      
+             
+        :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ‖detMoment q (arcExp Dstar C) x d (2 ^ j) (2 ^ k)‖ ≤
         2 ^ k * 2 ^ j * d.X *
@@ -237,11 +244,12 @@ theorem eventually_detMoment {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ 
     _ = UV * (Real.exp (-L ^ (76 / 100 : ℝ)) + 30 * B) := by ring
     _ ≤ UV * L ^ (-(momentPrec Dstar C * ((2 * momentPower x : ℕ) : ℝ))) := by gcongr
 
+include hC hD hCX halo hahi hK hg in
 /-- Interface 2: for `K ≥ K₀`, the Cauchy square and the major sum differ by
 `O(X Y L^{-D₁ - 1})` for every dyadic `Y`. -/
-theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0 < Dstar)
-    (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hK : bandThreshold Dstar C ≤ K)
-    (hg : 0 < g) :
+theorem eventually_replacement      
+           
+      :
     ∃ C₂ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j : ℕ,
       ‖cauchySquare x d (2 ^ j) - majorSquare (arcExp Dstar C) x d (2 ^ j)‖ ≤
         C₂ * d.X * 2 ^ j * Real.log x ^ (-(squarePrec Dstar + 1)) := by
@@ -269,7 +277,7 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
   -- `4C - E₀ = -(D₁ + 2)`
   have hexp : 4 * C - momentPrec Dstar C = -(D₁ + 2) := by
     simp only [momentPrec, D₁]; ring
-  have hP : 0 ≤ L ^ (-(D₁ + 2)) := (rpow_pos_of_pos hL0 _).le
+  
   -- each pad dyad contributes `O(X Y L^{-D₁ - 2})`
   have hterm : ∀ k : ℕ, ‖((2 : ℂ) ^ k)⁻¹ * rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖ ≤
       (|CB| + |CD|) * (d.X * 2 ^ j) * L ^ (-(D₁ + 2)) := by
@@ -277,7 +285,7 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
     have h₁ := hB d hd j k
     have h₂ := hD d hd j k (hM d hd j k)
     rw [hexp] at h₂
-    have hUV : 0 ≤ (2 : ℝ) ^ k * 2 ^ j * d.X := by positivity
+    
     have hrow : ‖rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖ ≤
         (|CB| + |CD|) * ((2 : ℝ) ^ k * 2 ^ j * d.X) * L ^ (-(D₁ + 2)) := by
       calc ‖rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖
@@ -308,7 +316,7 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
       _ ≤ ∑ _k ∈ range (⌊L⌋₊ + 1), (|CB| + |CD|) * (d.X * 2 ^ j) * L ^ (-(D₁ + 2)) :=
           sum_le_sum fun k _ => hterm k
       _ = ((⌊L⌋₊ : ℝ) + 1) * ((|CB| + |CD|) * (d.X * 2 ^ j) * L ^ (-(D₁ + 2))) := by
-          rw [sum_const, card_range, nsmul_eq_mul]; push_cast; ring
+          norm_num
       _ ≤ 2 * L * ((|CB| + |CD|) * (d.X * 2 ^ j) * L ^ (-(D₁ + 2))) := by
           gcongr
   -- `L · L^{-D₁ - 2} = L^{-D₁ - 1}` and `L^{-D₁ - 2} ≤ L^{-D₁ - 1}`
@@ -331,5 +339,7 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
         exact add_le_add this (le_of_eq (by ring))
     _ = (|CA| + 2 * (|CB| + |CD|)) * d.X * 2 ^ j * L ^ (-(D₁ + 1)) := by
         rw [hLpow]; ring
+
+end
 
 end Erdos408.OneSided

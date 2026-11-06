@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.HighKernelGeometry
 
@@ -10,73 +11,73 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+ 
+open scoped       MatrixGroups
 
 section
 open CubicKubota
@@ -89,12 +90,10 @@ lemma continuous_complexSL_coe :
     Continuous (fun g : SL(2,ℂ) => (g : Matrix (Fin 2) (Fin 2) ℂ)) :=
   continuous_subtype_val
 
-lemma continuous_complexSL_mul (g : SL(2,ℂ)) :
+lemma continuous_complexSL_mul  g  :
     Continuous (fun h : SL(2,ℂ) => g*h) := by
   apply Continuous.subtype_mk
-  change Continuous (fun h : SL(2,ℂ) =>
-    (g : Matrix (Fin 2) (Fin 2) ℂ)*(h : Matrix (Fin 2) (Fin 2) ℂ))
-  exact continuous_const.mul continuous_complexSL_coe
+  fun_prop
 
 lemma continuous_coordinateSection : Continuous coordinateSection := by
   apply Continuous.subtype_mk
@@ -122,8 +121,7 @@ lemma continuous_upperCoordinates :
   continuous_hyperbolicProjection.comp continuous_coordinateSection
 
 lemma continuous_translatedUpperCoordinates (g : SL(2,ℂ)) :
-    Continuous (fun w : UpperCoordinates => g • upperPoint w.1.1 w.1.2 w.2) := by
-  exact continuous_hyperbolicProjection.comp
+    Continuous (fun w : UpperCoordinates => g • upperPoint w.1.1 w.1.2 w.2) := continuous_hyperbolicProjection.comp
     ((continuous_complexSL_mul g).comp continuous_coordinateSection)
 
 def integralOrbitRel (H : Subgroup (SL(2,O))) : Setoid HyperbolicSpace where
@@ -139,15 +137,15 @@ def integralOrbitRel (H : Subgroup (SL(2,O))) : Setoid HyperbolicSpace where
       refine ⟨k*h,?_⟩
       simpa only [Subgroup.coe_mul,map_mul,mul_smul,hh] using hk⟩
 
-abbrev IntegralOrbitQuotient (H : Subgroup (SL(2,O))) := Quotient (integralOrbitRel H)
+abbrev IntegralOrbitQuotient (H ) := Quotient (integralOrbitRel H)
 
-def integralOrbitProjection (H : Subgroup (SL(2,O))) :
+def integralOrbitProjection (H ) :
     HyperbolicSpace → IntegralOrbitQuotient H := Quotient.mk _
 
-lemma continuous_integralOrbitProjection (H : Subgroup (SL(2,O))) :
+lemma continuous_integralOrbitProjection  H  :
     Continuous (integralOrbitProjection H) := continuous_quotient_mk'
 
-lemma integralOrbitProjection_eq (H : Subgroup (SL(2,O))) (h : H) (w : HyperbolicSpace) :
+lemma integralOrbitProjection_eq (H : Subgroup (SL(2,O))) (h : H)  w  :
     integralOrbitProjection H (integralComplexMatrix (h:SL(2,O)) • w)=
       integralOrbitProjection H w := by
   apply Eq.symm
@@ -158,26 +156,24 @@ end
 open CubicKubota
 local notation "O" => ActualEisensteinCubic.O
 
-def truncatedFordLift (T : ℝ) (p : truncatedFordBox T) : UpperCoordinates :=
+def truncatedFordLift (T ) (p : truncatedFordBox T) : UpperCoordinates :=
   ⟨p.1,lt_of_lt_of_le (Real.sqrt_pos.mpr (by norm_num : (0:ℝ)<2/3)) p.2.2.1⟩
 
-lemma continuous_truncatedFordLift (T : ℝ) : Continuous (truncatedFordLift T) :=
+lemma continuous_truncatedFordLift  T  : Continuous (truncatedFordLift T) :=
   continuous_subtype_val.subtype_mk _
 
-def fordOrbitChart (H : Subgroup (SL(2,O))) (r : SL(2,O)) (p : UpperCoordinates) :
-    IntegralOrbitQuotient H := integralOrbitProjection H
+def fordOrbitChart (H ) (r : SL(2,O)) (p : UpperCoordinates)  := integralOrbitProjection H
       (integralComplexMatrix r⁻¹ • upperPoint p.1.1 p.1.2 p.2)
 
-lemma continuous_fordOrbitChart (H : Subgroup (SL(2,O))) (r : SL(2,O)) :
+lemma continuous_fordOrbitChart  H   r  :
     Continuous (fordOrbitChart H r) :=
   (continuous_integralOrbitProjection H).comp
     (continuous_translatedUpperCoordinates (integralComplexMatrix r⁻¹))
 
-def compactFordCore (H : Subgroup (SL(2,O))) (S : Finset (SL(2,O))) (T : ℝ) :
-    Set (IntegralOrbitQuotient H) :=
+def compactFordCore (H ) (S : Finset (SL(2,O))) (T : ℝ)  :=
   ⋃r∈S, Set.range (fun p : truncatedFordBox T => fordOrbitChart H r (truncatedFordLift T p))
 
-lemma compactFordCore_isCompact (H : Subgroup (SL(2,O))) (S : Finset (SL(2,O))) (T : ℝ) :
+lemma compactFordCore_isCompact  H   S   T  :
     IsCompact (compactFordCore H S T) := by
   let : CompactSpace (truncatedFordBox T) :=
     isCompact_iff_compactSpace.mp (truncatedFordBox_isCompact T)
@@ -185,8 +181,7 @@ lemma compactFordCore_isCompact (H : Subgroup (SL(2,O))) (S : Finset (SL(2,O))) 
   intro r hr
   exact isCompact_range ((continuous_fordOrbitChart H r).comp (continuous_truncatedFordLift T))
 
-def fordCuspTail (H : Subgroup (SL(2,O))) (r : SL(2,O)) (T : ℝ) :
-    Set (IntegralOrbitQuotient H) :=
+def fordCuspTail (H ) (r : SL(2,O)) (T : ℝ)  :=
   fordOrbitChart H r '' {p : UpperCoordinates | Complex.normSq p.1.1≤1/3 ∧
     Real.sqrt (2/3)≤p.1.2 ∧ T<p.1.2}
 
@@ -227,40 +222,10 @@ end CubicEisenstein
 
 namespace SecondPassArithmetic
 
-section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open MeasureTheory
 
 section
-open ActualEisensteinCubic
-open SecondPassFiber (newLabel newRow)
-open JointLogSeparation (outerWindow)
-
-local instance {ι : Type*} : Nonempty (GlobalSecondData ι) :=
-  ⟨⟨⟨0,0,∅,∅⟩,∅,∅,∅,⟨∅,∅,∅,0⟩⟩⟩
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
-
-end
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (b0Label)
-open SecondPassFiber (newLabel newRow)
-open JointLogSeparation (outerWindow)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
-
-end
-
-section
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProductNorm primeProduct jLabel b0Label cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -272,15 +237,15 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProductNorm primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 
-section
+
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
-end
+
 
 end SecondPassArithmetic
 

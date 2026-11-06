@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Bridge.ConditionalTests
 
@@ -17,34 +18,32 @@ lemma bigAverage_congr_outside (M : ℕ) (S : P.BigGroup → Finset (Fin M))
     (hab : ∀ g i, i ∉ S g → a g i = b g i) :
     bigCoordinateAverage P M S f a = bigCoordinateAverage P M S f b := by
   unfold bigCoordinateAverage
-  apply Finset.sum_congr rfl
-  intro y _
-  congr 2
-  funext g i
-  by_cases hi : i ∈ S g
-  · simp [hi]
-  · simp [hi, hab g i hi]
+  grind
 
-@[simp] lemma labelJoin_slot (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
-    (t : P.BigLabels ell) (g : P.BigGroup) (i : Fin J) :
+section
+variable (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (f : P.BigLabels (J + ell) → ℂ) (s : SharedRows ν) (a a' : SideTuple ν block false) (b b' : SideTuple ν block true) (t : P.BigLabels ell) (g : P.BigGroup)
+
+
+@[simp] lemma labelJoin_slot    
+         
+        (i : Fin J) :
     labelJoin ν block s a b t g (ν.slot i) =
       rowJoin ν block s (tupleRowPartial _ a) (tupleRowPartial _ b) g i := by
   change Fin.addCases (motive := fun _ => P.Prime g.val) (rowJoin ν block s (tupleRowPartial _ a) (tupleRowPartial _ b) g)
     (t g) (Fin.castAdd ell i) = _
   simp
 
-@[simp] lemma labelJoin_tail (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
-    (t : P.BigLabels ell) (g : P.BigGroup) (i : Fin ell) :
+@[simp] lemma labelJoin_tail    
+         
+        (i : Fin ell) :
     labelJoin ν block s a b t g (Fin.natAdd J i) = t g i := by
   change Fin.addCases (motive := fun _ => P.Prime g.val) (rowJoin ν block s (tupleRowPartial _ a) (tupleRowPartial _ b) g)
     (t g) (Fin.natAdd J i) = _
   simp
 
-lemma bigAverage_join_false (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (f : P.BigLabels (J + ell) → ℂ) (s : SharedRows ν)
-    (a a' : SideTuple ν block false) (b : SideTuple ν block true) (t : P.BigLabels ell) :
+lemma bigAverage_join_false    
+       
+          :
     bigCoordinateAverage P (J + ell) (patternSideCoordinates ν block false) f
       (labelJoin ν block s a b t) =
     bigCoordinateAverage P (J + ell) (patternSideCoordinates ν block false) f
@@ -67,9 +66,9 @@ lemma bigAverage_join_false (ν : Pattern P J ell m) (block : P.BigGroup → Boo
   · intro _
     simp only [labelJoin_tail]
 
-lemma bigAverage_join_true (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (f : P.BigLabels (J + ell) → ℂ) (s : SharedRows ν)
-    (a : SideTuple ν block false) (b b' : SideTuple ν block true) (t : P.BigLabels ell) :
+lemma bigAverage_join_true    
+       
+          :
     bigCoordinateAverage P (J + ell) (patternSideCoordinates ν block true) f
       (labelJoin ν block s a b t) =
     bigCoordinateAverage P (J + ell) (patternSideCoordinates ν block true) f
@@ -92,6 +91,8 @@ lemma bigAverage_join_true (ν : Pattern P J ell m) (block : P.BigGroup → Bool
     · simp only [rowJoin, hi, dite_false]
   · intro _
     simp only [labelJoin_tail]
+
+end
 
 end
 end Erdos821.P4Bridge

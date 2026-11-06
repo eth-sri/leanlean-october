@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstMarkedColumns
 public import OAI.NumberTheory.DirichletL.Descent.FirstPhysicalCommon
@@ -11,7 +12,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
+
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -19,7 +20,7 @@ variable {ι : Type*} [DecidableEq ι]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem canonical_residual_mul_test (b : CubeCoordinates ι) (C : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m f : O) (H test : Finset ι→ℂ) (N : Finset ι) :
+    (Ψ : O→*ℂ) (m f : O) (H test : Finset ι→ℂ)  N  :
     canonicalCubeResidual p hg b C negative Ψ m f (fun U=>H U*test U) N =
       canonicalCubeResidual p hg b C negative Ψ m f H N *
         test (((if negative then b.rightDivisor else b.leftDivisor)∪C)∪N) := by
@@ -27,11 +28,11 @@ theorem canonical_residual_mul_test (b : CubeCoordinates ι) (C : Finset ι) (ne
   ring
 
 theorem actual_first_kernel_window_transport
-    (F B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
-    (C₁ C₂ A₁ A₂ : Finset ι→ℂ) (V₁ V₂ : ℝ→ℂ)
+     F B   v   ε₁ ε₂ 
+     C₁ C₂ A₁ A₂   V₁ V₂ 
     (hC₁ : ∀ N∈F.powerset,C₁ N=A₁ N*star (V₁ (columnLog p 1 N)))
     (hC₂ : ∀ N∈F.powerset,C₂ N=A₂ N*V₂ (columnLog p 1 N))
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) (d h : O) :
+     W   K   d h  :
     actualFirstKernel p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W (fun _=>1) (fun _=>1) 1 1 K d h =
     ∑ N∈F.powerset,∑ Q∈F.powerset,if Disjoint N Q then
       canonicalPairMode p hp hcop hg N Q B v ε₁ ε₂ A₁ A₂ W V₁ V₂ 1 1 K d h else 0 := by
@@ -52,7 +53,7 @@ theorem canonical_first_kernel_physical
     (pool : Finset ι) (b : CubeCoordinates ι) (hb : b.Admissible)
     (C : Finset ι) (hC : Disjoint C b.support)
     (Ψ₁ Ψ₂ : O→*ℂ) (m₁ m₂ f : O) (H₁ H₂ : Finset ι→ℂ)
-    (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (d h : O) :
+    (W₁ W₂ : ℝ→ℂ)  Φ   K   d h  :
     let F := pool\(b.support∪C)
     let A₁ := ‖eisEmbedding (aLabel p b.support b.rightBit)‖^2
     let A₂ := ‖eisEmbedding (aLabel p b.support b.leftBit)‖^2
@@ -88,12 +89,12 @@ theorem canonical_first_kernel_physical
     (fun y=>star (W₁ (A₁*primeProductNorm p C*Real.exp y)))
     (fun y=>W₂ (A₂*primeProductNorm p C*Real.exp y))
     (fun N hN=>by simpa only [star_star,ite_true,A₁,B₁] using hwindow true Ψ₁ m₁ H₁ W₁ N hN)
-    (fun N hN=>by simpa only [Bool.false_eq_true,ite_false,A₂,B₂] using hwindow false Ψ₂ m₂ H₂ W₂ N hN)]
+    (fun N hN=>by solve_by_elim)]
   exact actual_first_physical_common p hp hcop hg hinj hc hpr F b.support
     (hdis.mono_right Finset.subset_union_left) _ _ _ B₁ B₂
     (fun x=>star (W₁ x)) W₂ Φ A₁ A₂ (primeProductNorm p C) K d h
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

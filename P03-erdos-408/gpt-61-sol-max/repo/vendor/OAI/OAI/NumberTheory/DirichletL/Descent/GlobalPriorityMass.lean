@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityBranches
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassPrefactor
@@ -7,22 +8,22 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassPrefactor
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource
 open InverseSecondPrincipalCaller InversePrincipalEnergy FirstCauchyArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
     ∃Cb:ℝ,0<Cb ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       {Jo:ℕ}(original:Finset (Source ι Jo))(extra:CubeCoordinates ι→Finset ι)
-      (negative:Bool)(Ψ:O→*ℂ)(m:O)(w:Source ι Jo→ℂ)
+      (negative:Bool)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(w:Source ι Jo→ℂ)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)(B:ℝ),
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,∀k∈lists i,‖a i k‖≤1)→
       (∀u,‖Ψ u‖≤1)→(∀x∈original,‖w x‖≤1)→0≤B→
@@ -38,8 +39,8 @@ theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
   let Cr:ℝ:=Fintype.card (RayCharacter×RayCharacter)
   let Cc:ℝ:=Fintype.card FirstCoreIndex
   refine ⟨(32*512)*Cr*Cc*coefficientBound*Cm^2,by
-    have hr:0<Cr:=by dsimp [Cr];exact_mod_cast Fintype.card_pos
-    have hc:0<Cc:=by dsimp [Cc];exact_mod_cast Fintype.card_pos
+    
+    
     have:=coefficientBound_pos;positivity,?_⟩
   intro ι σ _ _ p hp _ hg hcop Jo original extra negative Ψ m w slots lists a B hslots ha hΨ hw hB U hU0 hU
   let N:=fun x:Source ι Jo=>(primeProductNorm p (wholeExtractedSupport (fun x=>extra x.cube) negative x))^(2*ε)
@@ -87,6 +88,6 @@ theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
       ring
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

@@ -13,7 +13,7 @@ open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSiev
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
-def fullRaySector (N : Eis) (rows : Finset (Ideal Eis)) (r : Eis⧸Ideal.span {N^2}) : Finset (Ideal Eis) :=
+def fullRaySector (N : Eis) (rows : Finset (Ideal Eis)) (r : Eis⧸Ideal.span {N^2})  :=
   rows.filter (fun K => Ideal.Quotient.mk (Ideal.span {N^2}) (primaryGenerator K)=r)
 
 lemma sum_fullRaySectors {M : Type*} [AddCommMonoid M] (N : Eis)
@@ -22,7 +22,7 @@ lemma sum_fullRaySectors {M : Type*} [AddCommMonoid M] (N : Eis)
   Finset.sum_fiberwise rows (fun K => Ideal.Quotient.mk (Ideal.span {N^2}) (primaryGenerator K)) f
 
 theorem full_ray_sector_energy (N : Eis) [Fintype (Eis⧸Ideal.span {N^2})]
-    (rows Pset : Finset (Ideal Eis)) (f : Ideal Eis→Ideal Eis→ℂ) (E : ℝ)
+    (rows Pset : Finset (Ideal Eis)) (f : Ideal Eis→Ideal Eis→ℂ)  E 
     (hE : ∀ r p : Eis⧸Ideal.span {N^2},
       (∑ K∈fullRaySector N rows r, ‖∑ P∈fullRaySector N Pset p,f K P‖^2)≤E) :
     (∑ K∈rows,‖∑ P∈Pset,f K P‖^2)≤(Fintype.card (Eis⧸Ideal.span {N^2}):ℝ)^3*E := by

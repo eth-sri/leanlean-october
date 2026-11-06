@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Cauchy
 public import Erdos408.OneSided.Major.Mellin.Kernel
@@ -31,12 +32,12 @@ namespace Erdos408.OneSided
 open MeasureTheory Real ContDiff Mellin
 
 /-- `ψ_λ(y) = ψ(y) e(λ y)`. -/
-noncomputable def plateauTwist (lam y : ℝ) : ℂ :=
+noncomputable def plateauTwist (lam y : ℝ)  :=
   (plateau y : ℂ) * Complex.exp (2 * π * Complex.I * ((lam * y : ℝ) : ℂ))
 
 /-! ### The twisted plateau -/
 
-private theorem contDiff_plateauTwist (lam : ℝ) : ContDiff ℝ ∞ (plateauTwist lam) :=
+private theorem contDiff_plateauTwist  lam  : ContDiff ℝ ∞ (plateauTwist lam) :=
   (Complex.ofRealCLM.contDiff.comp contDiff_plateau).mul
     (Complex.contDiff_exp.comp (contDiff_const.mul (Complex.ofRealCLM.contDiff.comp
       (contDiff_const.mul contDiff_id))))
@@ -65,13 +66,13 @@ private theorem exists_norm_iteratedFDeriv_plateauTwist_le : ∃ C : ℝ, 0 ≤ 
     _ = 16 * P * (4 * π) ^ 4 * Λ ^ 4 := by ring
 
 /-- The substitution `y = a x`: `∫ g(y) dy = a ∫ g(a x) dx` for `a > 0`. -/
-private theorem integral_eq_mul_integral_comp_mul (g : ℝ → ℂ) {a : ℝ} (ha : 0 < a) :
+private theorem integral_eq_mul_integral_comp_mul (g : ℝ → ℂ)  {a}  (ha : 0 < a) :
     ∫ y, g y = a * ∫ x, g (a * x) := by
   rw [Measure.integral_comp_mul_left, abs_of_pos (inv_pos.2 ha), Complex.real_smul, ← mul_assoc,
     ← Complex.ofReal_mul, mul_inv_cancel₀ ha.ne', Complex.ofReal_one, one_mul]
 
 /-- `((1 + a/(2π))²)⁻¹ ≤ (2π)² ((1 + a)²)⁻¹` for `a ≥ 0`. -/
-private theorem inv_one_add_div_two_pi_sq_le {a : ℝ} (ha : 0 ≤ a) :
+private theorem inv_one_add_div_two_pi_sq_le  {a}  (ha : 0 ≤ a) :
     ((1 + a / (2 * π)) ^ 2)⁻¹ ≤ (2 * π) ^ 2 * ((1 + a) ^ 2)⁻¹ := by
   have hpi : 1 ≤ 2 * π := by linarith [two_le_pi]
   have h : 1 + a ≤ 2 * π * (1 + a / (2 * π)) := by
@@ -131,7 +132,7 @@ theorem exists_plateauTwist_separation : ∃ C₀ : ℝ, ∀ Λ X lam : ℝ, 1 �
       rw [abs_div, abs_of_pos hpi]
     have hb1 := inv_one_add_div_two_pi_sq_le (by positivity : 0 ≤ |τ| / X)
     have hb2 := inv_one_add_div_two_pi_sq_le (abs_nonneg (τ + σ))
-    have hM0 : 0 ≤ M := by positivity
+    
     simp only [hKf, hD, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc0]
     have h : ‖ft2 Φ (τ / (2 * π * X)) ((τ + σ) / (2 * π))‖ ≤
         M * ((2 * π) ^ 2 * ((1 + |τ| / X) ^ 2)⁻¹) * ((2 * π) ^ 2 * ((1 + |τ + σ|) ^ 2)⁻¹) := by
@@ -235,7 +236,7 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
     refine hasCompactSupport_of_lt_abs (R := 4) fun u hu => ?_
     by_contra h
     have h' := lt_of_dyadicBump_ne_zero fun h0 => h (by rw [h0, Complex.ofReal_zero])
-    exact absurd hu (not_lt.2 (abs_le.2 ⟨by linarith, h'.2.le⟩))
+    grind
   obtain ⟨P, hP⟩ := exists_norm_iteratedFDeriv_le (Complex.ofRealCLM.contDiff.comp hηd) hc 2
   have hP0 : 0 ≤ P := (norm_nonneg _).trans (hP 0 (Nat.zero_le _) 0)
   refine ⟨16 * (1 + 2 * (4 * P * (2 * π) ^ 2) * exp 4 ^ 2), fun lam => ?_⟩
@@ -256,7 +257,7 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
           gcongr
           norm_num
       _ = K := by ring
-  have hK0 : 0 ≤ K := (norm_nonneg _).trans (hφM 0 (Nat.zero_le _) 0)
+  
   -- `F(z) = φ(e^z)` is supported in `[-4, 4]` with `|F| ≤ 1` and `|F''| ≤ 2 K e^8`
   set F : ℝ → ℂ := φ ∘ exp with hF
   have hFd : ContDiff ℝ ∞ F := hφd.comp contDiff_exp
@@ -303,7 +304,7 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
     rw [hg]
     refine hI.trans ?_
     have h1 : 1 ≤ (1 + |lam|) ^ 2 := by nlinarith [abs_nonneg lam]
-    have h8 : 0 ≤ 2 * (4 * P * (2 * π) ^ 2) * exp 4 ^ 2 := by positivity
+    
     calc 4 * 4 * (1 + 2 * K * exp 4 ^ 2) =
         16 * (1 + 2 * (4 * P * (2 * π) ^ 2) * exp 4 ^ 2 * (1 + |lam|) ^ 2) := by
           rw [hK]

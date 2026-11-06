@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDeletionDerivative
 open HeckeFamily HeckeDeletionBounds
 
-theorem factor_deriv {N : ℝ} (hN : 0 < N) (a s : ℂ) :
+theorem factor_deriv  {N}  (hN : 0 < N)  a s  :
     deriv (EulerFactors.factor N a) s = a*(N : ℂ)^(-s)*Complex.log (N : ℂ) := by
   have h := (hasDerivAt_const s (1 : ℂ)).sub
     (((hasDerivAt_id s).neg.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hN.ne'))).const_mul a)
@@ -24,8 +24,8 @@ theorem factor_deriv {N : ℝ} (hN : 0 < N) (a s : ℂ) :
       ring
   exact h'.deriv
 
-theorem factor_logDeriv_norm {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
-    {a s : ℂ} (ha : ‖a‖ ≤ 1) (hs : σ ≤ s.re) :
+theorem factor_logDeriv_norm  {σ N}  (hσ : 0 < σ) (hN : 2 ≤ N)
+     {a s}  (ha : ‖a‖ ≤ 1) (hs : σ ≤ s.re) :
     ‖logDeriv (EulerFactors.factor N a) s‖ ≤ localBound σ * Real.log N := by
   have hn0 : 0 < N := by linarith
   have hl : 0 ≤ Real.log N := Real.log_nonneg (by linarith)
@@ -40,8 +40,8 @@ theorem factor_logDeriv_norm {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
     _ ≤ (1*Real.log N)*localBound σ := by gcongr
     _ = _ := by ring
 
-theorem factors_logDeriv_norm (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
-    (ψ : Character) {s : ℂ} (hs : σ ≤ s.re) :
+theorem factors_logDeriv_norm  σ  (hσ : 0 < σ)  M 
+     ψ   {s}  (hs : σ ≤ s.re) :
     ‖logDeriv (HeckeFiniteDeletion.factors M ψ) s‖ ≤
       localBound σ * Real.log ((radical M).absNorm : ℝ) := by
   have hp0 (P : SmoothMobiusCorrection.PrimeIdeal) : 0 < (P.val.absNorm : ℝ) := by
@@ -71,6 +71,6 @@ theorem factors_logDeriv_norm (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
 
 end SevenEighths.HeckeDeletionDerivative
 
-end
+
 
 end OAI

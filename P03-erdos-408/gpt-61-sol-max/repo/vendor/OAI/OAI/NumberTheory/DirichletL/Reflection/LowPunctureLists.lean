@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.PunctureLists
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalPool
@@ -11,30 +12,24 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
-def actualPuncturePrimes (lists : σ→Finset (Ideal Eis)) (m : Eis) : Finset (Ideal Eis) :=
+def actualPuncturePrimes (lists : σ→Finset (Ideal ActualEisensteinCubic.O)) (m : ActualEisensteinCubic.O)  :=
   (Finset.univ.biUnion lists).filter (fun P => m∈P)
 
 omit [DecidableEq σ] in
-lemma actualPuncturePrimes_mem (lists : σ→Finset (Ideal Eis)) (m : Eis)
-    (i : σ) (P : Ideal Eis) (hP : P∈lists i) :
+lemma actualPuncturePrimes_mem (lists : σ→Finset (Ideal ActualEisensteinCubic.O))  m 
+    (i : σ)  P  (hP : P∈lists i) :
     P∈actualPuncturePrimes lists m ↔ m∈P := by
-  simp only [actualPuncturePrimes,Finset.mem_filter]
-  exact and_iff_right (Finset.mem_biUnion.mpr ⟨i,Finset.mem_univ _,hP⟩)
+  grind [actualPuncturePrimes]
 
-lemma puncture_period_coprime (Q : Ideal Eis) (m : Eis) (hQ : Q∣Ideal.span {m})
-    (P : Ideal Eis) (hP : P.IsMaximal) (hm : m∉P) : IsCoprime Q P := by
-  let : P.IsMaximal := hP
-  have hp : ¬P∣Ideal.span {m} := by
-    intro h
-    exact hm ((Ideal.dvd_iff_le.mp h) (Ideal.subset_span (Set.mem_singleton m)))
-  exact (maximal_coprime_of_not_dvd P (Ideal.span {m}) hp).symm.of_isCoprime_of_dvd_left hQ
+lemma puncture_period_coprime (Q : Ideal ActualEisensteinCubic.O) (m : ActualEisensteinCubic.O) (hQ : Q∣Ideal.span {m})
+     P  (hP : P.IsMaximal) (hm : m∉P) : IsCoprime Q P := IsCoprime.of_isCoprime_of_dvd_left (IsCoprime.symm (OAI.SevenEighths.InverseReflectedPhase.maximal_coprime_of_not_dvd P (Ideal.span {m}) fun h => hm (Ideal.dvd_iff_le.mp h (Ideal.subset_span (Set.mem_singleton m))))) hQ
 
-theorem original_completed_actual_puncture_lists (lists : σ→Finset (Ideal Eis))
+theorem original_completed_actual_puncture_lists (lists : σ→Finset (Ideal ActualEisensteinCubic.O))
     (hprime : ∀ i,∀ P∈lists i,Prime P)
-    (Ψ : Eis→*ℂ) (m f z : Eis) (W : ℝ→ℂ) (X : ℝ) (w : ∀ i,lists i→ℂ) :
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m f z : ActualEisensteinCubic.O) (W : ℝ→ℂ) (X : ℝ) (w : ∀ i,lists i→ℂ) :
     (∑ p : ∀ i,lists i,(∏ i,w i (p i))*markedCompletedT
       (rowTwist Ψ m f z) W X
       (fun A => ∏ i,if (p i).val∣A then (1:ℂ) else 0))=

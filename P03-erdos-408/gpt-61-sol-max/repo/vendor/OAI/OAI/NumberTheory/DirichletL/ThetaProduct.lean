@@ -14,7 +14,7 @@ open scoped Topology
 
 namespace SevenEighths.ThetaProduct
 
-theorem rapid_product_sub (f g : ℝ → ℂ) (a b : ℂ)
+theorem rapid_product_sub (f g : ℝ → ℂ)  a b 
     (hf : ∀ r : ℝ, (fun x => f x - a) =O[atTop] (fun x : ℝ => x ^ r))
     (hg : ∀ r : ℝ, (fun x => g x - b) =O[atTop] (fun x : ℝ => x ^ r))
     (r : ℝ) :
@@ -56,9 +56,9 @@ def product (P Q : WeakFEPair ℂ)
   hf_top := rapid_product_sub P.f Q.f P.f₀ Q.f₀ P.hf_top Q.hf_top
   hg_top := rapid_product_sub P.g Q.g P.g₀ Q.g₀ P.hg_top Q.hg_top
 
-theorem rapid_rescale (f : ℝ → ℂ) (a : ℂ)
+theorem rapid_rescale (f : ℝ → ℂ)  a 
     (hf : ∀ r : ℝ, (fun x => f x - a) =O[atTop] (fun x : ℝ => x ^ r))
-    {u : ℝ} (hu : 0 < u) (r : ℝ) :
+     {u}  (hu : 0 < u) (r : ℝ) :
     (fun x => f (u * x) - a) =O[atTop] (fun x : ℝ => x ^ r) := by
   have ht : Tendsto (fun x : ℝ => u * x) atTop atTop :=
     (tendsto_const_mul_atTop_of_pos hu).2 tendsto_id
@@ -94,49 +94,45 @@ def rescale (P : WeakFEPair ℂ)
   hf_top := rapid_rescale P.f P.f₀ P.hf_top hu
   hg_top := rapid_rescale P.g P.g₀ P.hg_top (inv_pos.mpr hu)
 
-def shiftedPair (a b : UnitAddCircle) : WeakFEPair ℂ :=
+def shiftedPair (a b : UnitAddCircle)  :=
   product (HurwitzZeta.hurwitzEvenFEPair a) (HurwitzZeta.hurwitzEvenFEPair b)
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_evenKernel a))
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_cosKernel a))
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_evenKernel b))
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_cosKernel b))
 
-@[simp] theorem shiftedPair_k (a b : UnitAddCircle) : (shiftedPair a b).k = 1 := by
-  norm_num [shiftedPair, product, HurwitzZeta.hurwitzEvenFEPair]
 
-@[simp] theorem shiftedPair_f (a b : UnitAddCircle) (t : ℝ) :
-    (shiftedPair a b).f t =
-      (HurwitzZeta.evenKernel a t : ℂ) * (HurwitzZeta.evenKernel b t : ℂ) := rfl
 
-def scaledEvenPair (a : UnitAddCircle) (u : ℝ) (hu : 0 < u) : WeakFEPair ℂ :=
+
+
+def scaledEvenPair (a : UnitAddCircle) (u : ℝ) (hu : 0 < u)  :=
   rescale (HurwitzZeta.hurwitzEvenFEPair a)
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_evenKernel a))
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_cosKernel a)) u hu
 
-theorem scaledEvenPair_f_continuous (a : UnitAddCircle) (u : ℝ) (hu : 0 < u) :
+theorem scaledEvenPair_f_continuous  a   u   hu  :
     ContinuousOn (scaledEvenPair a u hu).f (Ioi 0) :=
   (Complex.continuous_ofReal.comp_continuousOn
     (HurwitzZeta.continuousOn_evenKernel a)).comp (by fun_prop)
       (fun x hx => mul_pos hu hx)
 
-theorem scaledEvenPair_g_continuous (a : UnitAddCircle) (u : ℝ) (hu : 0 < u) :
+theorem scaledEvenPair_g_continuous  a   u   hu  :
     ContinuousOn (scaledEvenPair a u hu).g (Ioi 0) :=
   (Complex.continuous_ofReal.comp_continuousOn
     (HurwitzZeta.continuousOn_cosKernel a)).comp (by fun_prop)
       (fun x hx => mul_pos (inv_pos.mpr hu) hx)
 
-def rectangularPair (a b : UnitAddCircle) (u v : ℝ) (hu : 0 < u) (hv : 0 < v) :
-    WeakFEPair ℂ :=
+def rectangularPair (a b : UnitAddCircle) (u v : ℝ) (hu : 0 < u) (hv : 0 < v)  :=
   product (scaledEvenPair a u hu) (scaledEvenPair b v hv)
     (scaledEvenPair_f_continuous a u hu) (scaledEvenPair_g_continuous a u hu)
     (scaledEvenPair_f_continuous b v hv) (scaledEvenPair_g_continuous b v hv)
 
-@[simp] theorem rectangularPair_k (a b : UnitAddCircle) (u v : ℝ)
-    (hu : 0 < u) (hv : 0 < v) : (rectangularPair a b u v hu hv).k = 1 := by
+@[simp] theorem rectangularPair_k  a b   u v 
+     hu   hv  : (rectangularPair a b u v hu hv).k = 1 := by
   norm_num [rectangularPair, scaledEvenPair, rescale, product, HurwitzZeta.hurwitzEvenFEPair]
 
-theorem rectangularPair_hasSum (a b u v : ℝ) (hu : 0 < u) (hv : 0 < v)
-    {t : ℝ} (ht : 0 < t) :
+theorem rectangularPair_hasSum  a b u v   hu   hv 
+     {t}  (ht : 0 < t) :
     HasSum (fun n : ℤ × ℤ =>
       (Real.exp (-Real.pi * (u * (n.1 + a) ^ 2 + v * (n.2 + b) ^ 2) * t) : ℂ))
       ((rectangularPair a b u v hu hv).f t) := by

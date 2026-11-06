@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Defs
 public import Mathlib.Algebra.Order.Antidiag.Nat
@@ -32,12 +33,15 @@ noncomputable section
 /-! ### Splitting off the primes of a set -/
 
 /-- `n_P`: the part of `n` made of the primes of `P`, with multiplicity. -/
-def keepPrimes (P : Finset ℕ) (n : ℕ) : ℕ :=
+def keepPrimes (P : Finset ℕ) (n : ℕ)  :=
   ∏ p ∈ n.primeFactors with p ∈ P, p ^ n.factorization p
+
+section
+variable (q : ℕ → Prop) (P : Finset ℕ) (n : ℕ)
 
 /-- A product of prime powers over a filter of the prime factors is the
 `Finsupp` product of the filtered factorization. -/
-private lemma prod_filter_eq_prod (q : ℕ → Prop) [DecidablePred q] (n : ℕ) :
+private lemma prod_filter_eq_prod   [DecidablePred q] (n : ℕ) :
     ∏ p ∈ n.primeFactors with q p, p ^ n.factorization p =
       (n.factorization.filter q).prod fun p k => p ^ k := by
   rw [Finsupp.prod, Finsupp.support_filter, Nat.support_factorization]
@@ -46,36 +50,35 @@ private lemma prod_filter_eq_prod (q : ℕ → Prop) [DecidablePred q] (n : ℕ)
 
 /-- The factorization of a filtered product of prime powers is the filtered
 factorization. -/
-private lemma factorization_prod_filter (q : ℕ → Prop) [DecidablePred q] (n : ℕ) :
+private lemma factorization_prod_filter   [DecidablePred q] (n : ℕ) :
     (∏ p ∈ n.primeFactors with q p, p ^ n.factorization p).factorization =
       n.factorization.filter q := by
   rw [prod_filter_eq_prod]
   refine Nat.prod_pow_factorization_eq_self fun p hp => ?_
-  rw [Finsupp.support_filter, Nat.support_factorization] at hp
-  exact Nat.prime_of_mem_primeFactors (mem_filter.1 hp).1
+  simp_all
 
 /-- The factorization of `n̄` is that of `n` off `P`. -/
-lemma factorization_stripPrimes (P : Finset ℕ) (n : ℕ) :
+lemma factorization_stripPrimes     :
     (stripPrimes P n).factorization = n.factorization.filter (· ∉ P) :=
   factorization_prod_filter _ n
 
 /-- The factorization of `n_P` is that of `n` on `P`. -/
-lemma factorization_keepPrimes (P : Finset ℕ) (n : ℕ) :
+lemma factorization_keepPrimes     :
     (keepPrimes P n).factorization = n.factorization.filter (· ∈ P) :=
   factorization_prod_filter _ n
 
 /-- `n̄` is never zero. -/
-lemma stripPrimes_ne_zero (P : Finset ℕ) (n : ℕ) : stripPrimes P n ≠ 0 :=
+lemma stripPrimes_ne_zero     : stripPrimes P n ≠ 0 :=
   prod_ne_zero_iff.2 fun _ hp =>
     pow_ne_zero _ (Nat.prime_of_mem_primeFactors (mem_filter.1 hp).1).ne_zero
 
 /-- `n_P` is never zero. -/
-lemma keepPrimes_ne_zero (P : Finset ℕ) (n : ℕ) : keepPrimes P n ≠ 0 :=
+lemma keepPrimes_ne_zero     : keepPrimes P n ≠ 0 :=
   prod_ne_zero_iff.2 fun _ hp =>
     pow_ne_zero _ (Nat.prime_of_mem_primeFactors (mem_filter.1 hp).1).ne_zero
 
 /-- `n = n̄ · n_P` for `n ≠ 0`. -/
-lemma stripPrimes_mul_keepPrimes (P : Finset ℕ) {n : ℕ} (hn : n ≠ 0) :
+lemma stripPrimes_mul_keepPrimes    {n}  (hn : n ≠ 0) :
     stripPrimes P n * keepPrimes P n = n := by
   refine Nat.eq_of_factorization_eq
     (mul_ne_zero (stripPrimes_ne_zero P n) (keepPrimes_ne_zero P n)) hn fun p => ?_
@@ -83,6 +86,11 @@ lemma stripPrimes_mul_keepPrimes (P : Finset ℕ) {n : ℕ} (hn : n ≠ 0) :
     factorization_stripPrimes, factorization_keepPrimes, Finsupp.add_apply,
     Finsupp.filter_apply, Finsupp.filter_apply]
   by_cases h : p ∈ P <;> simp [h]
+
+end
+
+section
+variable {P : Finset ℕ} {n e c p d : ℕ} {m : Fin d → ℕ} (hm : ∀ i, m i ≠ 0) {Q : Finset ℕ}
 
 /-- A number whose factorization is supported off `P` (or on `P`) is
 recovered from its factorization filtered accordingly. -/
@@ -105,42 +113,42 @@ private lemma eq_of_factorization_filter {q : ℕ → Prop} [DecidablePred q] {a
 
 /-- If `e` has no prime of `P` and `c` only primes of `P`, then the strip of
 `e c` is `e` and its `P`-part is `c`. -/
-lemma stripPrimes_keepPrimes_mul {P : Finset ℕ} {e c : ℕ} (he : e ≠ 0) (hc : c ≠ 0)
+lemma stripPrimes_keepPrimes_mul     (he : e ≠ 0) (hc : c ≠ 0)
     (heP : ∀ p ∈ e.primeFactors, p ∉ P) (hcP : ∀ p ∈ c.primeFactors, p ∈ P) :
     stripPrimes P (e * c) = e ∧ keepPrimes P (e * c) = c := by
   constructor
   · refine Nat.eq_of_factorization_eq (stripPrimes_ne_zero P _) he fun p => ?_
-    rw [factorization_stripPrimes, eq_of_factorization_filter he hc heP
-      fun p hp h => h (hcP p hp)]
+    grind [factorization_stripPrimes, eq_of_factorization_filter]
   · refine Nat.eq_of_factorization_eq (keepPrimes_ne_zero P _) hc fun p => ?_
     rw [factorization_keepPrimes, mul_comm, eq_of_factorization_filter hc he hcP
-      fun p hp h => heP p hp h]
+      heP]
 
 /-- The prime factors of `n̄` avoid `P`. -/
-lemma not_mem_of_mem_primeFactors_stripPrimes {P : Finset ℕ} {n p : ℕ}
+lemma not_mem_of_mem_primeFactors_stripPrimes    
     (hp : p ∈ (stripPrimes P n).primeFactors) : p ∉ P := by
   rw [← Nat.support_factorization, factorization_stripPrimes, Finsupp.support_filter] at hp
   exact (mem_filter.1 hp).2
 
 /-- The prime factors of `n_P` lie in `P`. -/
-lemma mem_of_mem_primeFactors_keepPrimes {P : Finset ℕ} {n p : ℕ}
+lemma mem_of_mem_primeFactors_keepPrimes    
     (hp : p ∈ (keepPrimes P n).primeFactors) : p ∈ P := by
   rw [← Nat.support_factorization, factorization_keepPrimes, Finsupp.support_filter] at hp
   exact (mem_filter.1 hp).2
 
 /-- The prime factors of a divisor of `n̄` avoid `P`. -/
-lemma not_mem_of_dvd_stripPrimes {P : Finset ℕ} {n e p : ℕ} (he : e ∣ stripPrimes P n)
+lemma not_mem_of_dvd_stripPrimes     (he : e ∣ stripPrimes P n)
     (hp : p ∈ e.primeFactors) : p ∉ P :=
   not_mem_of_mem_primeFactors_stripPrimes
     (Nat.primeFactors_mono he (stripPrimes_ne_zero P n) hp)
 
 /-- The prime factors of a divisor of `n_P` lie in `P`. -/
-lemma mem_of_dvd_keepPrimes {P : Finset ℕ} {n c p : ℕ} (hc : c ∣ keepPrimes P n)
+lemma mem_of_dvd_keepPrimes     (hc : c ∣ keepPrimes P n)
     (hp : p ∈ c.primeFactors) : p ∈ P :=
   mem_of_mem_primeFactors_keepPrimes (Nat.primeFactors_mono hc (keepPrimes_ne_zero P n) hp)
 
+include hm in
 /-- The strip of a product of nonzero factors is the product of the strips. -/
-lemma stripPrimes_prod {P : Finset ℕ} {d : ℕ} {m : Fin d → ℕ} (hm : ∀ i, m i ≠ 0) :
+lemma stripPrimes_prod         :
     ∏ i, stripPrimes P (m i) = stripPrimes P (∏ i, m i) := by
   refine Nat.eq_of_factorization_eq (prod_ne_zero_iff.2 fun i _ => stripPrimes_ne_zero P _)
     (stripPrimes_ne_zero P _) fun p => ?_
@@ -148,9 +156,10 @@ lemma stripPrimes_prod {P : Finset ℕ} {d : ℕ} {m : Fin d → ℕ} (hm : ∀ 
     Nat.factorization_prod fun i _ => hm i, Finsupp.filter_sum]
   simp only [factorization_stripPrimes]
 
+include hm in
 /-- The `P`-part of a product of nonzero factors is the product of the
 `P`-parts. -/
-lemma keepPrimes_prod {P : Finset ℕ} {d : ℕ} {m : Fin d → ℕ} (hm : ∀ i, m i ≠ 0) :
+lemma keepPrimes_prod         :
     ∏ i, keepPrimes P (m i) = keepPrimes P (∏ i, m i) := by
   refine Nat.eq_of_factorization_eq (prod_ne_zero_iff.2 fun i _ => keepPrimes_ne_zero P _)
     (keepPrimes_ne_zero P _) fun p => ?_
@@ -159,22 +168,24 @@ lemma keepPrimes_prod {P : Finset ℕ} {d : ℕ} {m : Fin d → ℕ} (hm : ∀ i
   simp only [factorization_keepPrimes]
 
 /-- Stripping a subset first does not change the strip. -/
-lemma stripPrimes_stripPrimes {P Q : Finset ℕ} (hQP : Q ⊆ P) (n : ℕ) :
+lemma stripPrimes_stripPrimes   (hQP : Q ⊆ P)  n  :
     stripPrimes P (stripPrimes Q n) = stripPrimes P n := by
   refine Nat.eq_of_factorization_eq (stripPrimes_ne_zero P _) (stripPrimes_ne_zero P _)
     fun p => ?_
   rw [factorization_stripPrimes, factorization_stripPrimes, factorization_stripPrimes,
     Finsupp.filter_apply, Finsupp.filter_apply, Finsupp.filter_apply]
-  by_cases h : p ∈ P
-  · simp [h]
-  · have hq : p ∉ Q := fun hq => h (hQP hq)
-    simp [h, hq]
+  grind
+
+end
 
 /-! ### Splitting factorizations -/
 
+section
+variable (P : Finset ℕ) (d : ℕ)
+
 /-- A `d`-fold factorization of `n` is a pair of `d`-fold factorizations of
 `n̄` and of `n_P`. -/
-theorem sum_finMulAntidiag_eq_mul (P : Finset ℕ) (d : ℕ) {n : ℕ} (hn : n ≠ 0)
+theorem sum_finMulAntidiag_eq_mul     {n : ℕ} (hn : n ≠ 0)
     (φ ψ : ℕ → ℝ) :
     ∑ m ∈ Nat.finMulAntidiag d n, ∏ i, φ (stripPrimes P (m i)) * ψ (keepPrimes P (m i)) =
       (∑ e ∈ Nat.finMulAntidiag d (stripPrimes P n), ∏ i, φ (e i)) *
@@ -185,10 +196,7 @@ theorem sum_finMulAntidiag_eq_mul (P : Finset ℕ) (d : ℕ) {n : ℕ} (hn : n �
     (fun ec i => ec.1 i * ec.2 i) ?_ ?_ ?_ ?_ fun _ _ => rfl
   · intro m hm
     have hm' := Nat.ne_zero_of_mem_finMulAntidiag hm
-    have hprod := Nat.prod_eq_of_mem_finMulAntidiag hm
-    simp only [mem_product, Nat.mem_finMulAntidiag]
-    exact ⟨⟨by rw [stripPrimes_prod hm', hprod], stripPrimes_ne_zero P n⟩,
-      by rw [keepPrimes_prod hm', hprod], keepPrimes_ne_zero P n⟩
+    simp_all [stripPrimes_prod, stripPrimes_ne_zero, keepPrimes_prod, keepPrimes_ne_zero]
   · rintro ⟨e, c⟩ hec
     simp only [mem_product, Nat.mem_finMulAntidiag] at hec ⊢
     refine ⟨?_, hn⟩
@@ -203,12 +211,11 @@ theorem sum_finMulAntidiag_eq_mul (P : Finset ℕ) (d : ℕ) {n : ℕ} (hn : n �
         (Nat.ne_zero_of_mem_finMulAntidiag hec.2 i)
         (fun p hp => not_mem_of_dvd_stripPrimes (Nat.dvd_of_mem_finMulAntidiag hec.1 i) hp)
         (fun p hp => mem_of_dvd_keepPrimes (Nat.dvd_of_mem_finMulAntidiag hec.2 i) hp)
-    simp only [Prod.mk.injEq]
-    exact ⟨funext fun i => (h i).1, funext fun i => (h i).2⟩
+    simp_all
 
 /-- There are at most `d^{Ω(n)}` ways to write `n` as a product of `d`
 factors. -/
-theorem card_finMulAntidiag_le (d : ℕ) :
+theorem card_finMulAntidiag_le   :
     ∀ n : ℕ, (Nat.finMulAntidiag d n).card ≤ d ^ ArithmeticFunction.cardFactors n := by
   intro n
   induction n using Nat.strong_induction_on with
@@ -244,6 +251,8 @@ theorem card_finMulAntidiag_le (d : ℕ) :
       _ ≤ d * d ^ ArithmeticFunction.cardFactors m := by
           rw [card_product, card_univ, Fintype.card_fin]
           exact Nat.mul_le_mul_left _ (ih m hlt)
+
+end
 
 end
 

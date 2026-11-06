@@ -16,29 +16,32 @@ open CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomen
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
 open CenteredMomentOriginalChildEnergy
-local notation "O" => ActualEisensteinCubic.O
 
-theorem rowPolynomial_allocation {α γ : Type*} [Fintype γ]
-    (S : Finset α) (a : α → O) (b : γ → ℂ) (d : γ → α → ℂ) (z : O) :
+
+section
+variable {α γ : Type*} [Fintype γ]
+
+theorem rowPolynomial_allocation    
+    (S : Finset α) (a : α → ActualEisensteinCubic.O) (b : γ → ℂ) (d : γ → α → ℂ)  z  :
     rowPolynomial S a (fun i => ∑ B,b B*d B i) z=
       ∑ B,b B*rowPolynomial S a (d B) z := by
   simp only [rowPolynomial,Finset.sum_mul,Finset.mul_sum,mul_assoc]
   exact Finset.sum_comm
 
-def sourceRestrictedEnergy (keep : O → Prop) (Q : Finset (Ideal O)) (c f : Ideal O → ℂ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
+def sourceRestrictedEnergy (keep : ActualEisensteinCubic.O → Prop) (Q : Finset (Ideal ActualEisensteinCubic.O)) (c f : Ideal ActualEisensteinCubic.O → ℂ)
+    (W : 𝓢(ℝ,ℂ)) (K : ℝ)  :=
   restrictedEnergy keep Finset.univ (sourceGenerator Q)
     (fun I : supportedColumns Q => c I*f I) W K
 
-theorem smoothed_restricted_allocation {α γ : Type*} [Fintype γ] (keep : O → Prop)
-    (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i}))
+theorem smoothed_restricted_allocation     (keep : ActualEisensteinCubic.O → Prop)
+    (S : Finset α) (a : α → ActualEisensteinCubic.O) (ha : ∀ i,Supported (Ideal.span {a i}))
     (b : γ → ℂ) (d : γ → α → ℂ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
+     W   K  (hK : 0<K)
+    (hW : ∀ z : ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (restrictedEnergy keep S a (fun i => ∑ B,b B*d B i) W K)≤
       (Fintype.card γ:ℝ)*∑ B,‖b B‖^2*(restrictedEnergy keep S a (d B) W K) := by
-  let u := fun z : O => if keep z then (W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0
-  have hu (z : O) : 0≤u z := by dsimp only [u];split_ifs;exact hW z;exact le_rfl
+  let u := fun z : ActualEisensteinCubic.O => if keep z then (W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0
+  have hu (z : ActualEisensteinCubic.O) : 0≤u z := by dsimp only [u];split_ifs;exact hW z;exact le_rfl
   have hs := restricted_hasSum_weighted keep S a ha (fun i => ∑ B,b B*d B i) W K hK
   rw [← hs.tsum_eq]
   apply Real.tsum_le_of_sum_le (fun z => mul_nonneg (sq_nonneg _) (hu z))
@@ -64,16 +67,18 @@ theorem smoothed_restricted_allocation {α γ : Type*} [Fintype γ] (keep : O �
       exact mul_le_mul_of_nonneg_left
         (finite_weighted_le_restricted keep S a ha (d B) W K hK hW rows) (sq_nonneg _)
 
+end
+
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-theorem original_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem original_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (C R s : Ideal O) (hC : Supported C) (hsC : s∣C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O)
-    (f : Ideal O → ℂ) (keep : O → Prop) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
+    (C R s : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hsC : s∣C)
+     ν   Wslot   P 
+     W₁ W₂   X₁ X₂ Y₁ Y₂   B₁ B₂ 
+     f   keep   W   K  (hK : 0<K)
+    (hW : ∀ z : ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (sourceRestrictedEnergy keep (residualPool C hC.1 (finiteColumns (Fintype.piFinset S)))
       (fun I => if IsCoprime C I then finiteColumnCoefficient (Fintype.piFinset S)
         (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0) f W K)≤
@@ -90,7 +95,7 @@ theorem original_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O
     finiteColumnCoefficient (liveBox S B (allocation_data S C B (Finset.mem_filter.mp B.property).1).1)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂) I*f I
   have he (I : supportedColumns Q) :
-      (if IsCoprime C (I:Ideal O) then finiteColumnCoefficient (Fintype.piFinset S)
+      (if IsCoprime C (I:Ideal ActualEisensteinCubic.O) then finiteColumnCoefficient (Fintype.piFinset S)
         (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0)*f I=
       ∑ B,b B*d B I := by
     rw [original_source_punctured_column S hS hp C R s I hC.1

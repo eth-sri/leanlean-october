@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.CountableSchur
 
@@ -6,7 +7,7 @@ public import Erdos821.S2.CountableSchur
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P3Clean
@@ -14,7 +15,7 @@ namespace Erdos821.P3Clean
 open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 theorem normBound_probability_mixture {α δ : Type*} [Fintype α] [Fintype δ]
-    (mass : α → ℝ) (R : δ → α → α → ℝ) (amplitude : δ → ℝ) (K : α → α → ℂ)
+    (mass : α → ℝ) (R : δ → α → α → ℝ) (amplitude : δ → ℝ)  K 
     (hm : ∀ a, 0 ≤ mass a) (hR : ∀ d a b, 0 ≤ R d a b)
     (ha : ∀ d, 0 ≤ amplitude d)
     (hrow : ∀ d a, (∑ b, R d a b) = 1)
@@ -44,12 +45,7 @@ theorem normBound_probability_mixture {α δ : Type*} [Fintype α] [Fintype δ]
         simp only [Finset.mul_sum]
         rw [Finset.sum_comm]
         apply Finset.sum_congr rfl
-        intro d _
-        apply Finset.sum_congr rfl
-        intro a _
-        calc
-          _ = amplitude d * (mass a * R d a b) := by ring
-          _ = _ := by rw [hrev]
+        grind
       _ = _ := by simp only [hrow, mul_one, Finset.sum_mul]
   simpa only [Real.sqrt_mul_self hC] using hb hr hc
 

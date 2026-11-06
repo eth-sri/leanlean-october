@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.GramCommonActual
 
@@ -6,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCommonActual
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentCommonSupport
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
 
-lemma supported_bezout_inverse (n m a b : O) (hn : Supported (Ideal.span {n}))
+
+lemma supported_bezout_inverse (n m a b : ActualEisensteinCubic.O) (hn : Supported (Ideal.span {n}))
     (hab : a*n+b*m=1) :
     idealRowHom b (Ideal.span {n})=star (idealRowHom m (Ideal.span {n})) := by
   have he : idealRowHom (b*m) (Ideal.span {n})=1 := by
@@ -30,9 +31,9 @@ lemma supported_bezout_inverse (n m a b : O) (hn : Supported (Ideal.span {n}))
   rw [MulChar.star_apply',MulChar.inv_apply_eq_inv']
   exact eq_inv_of_mul_eq_one_left he
 
-theorem actual_common_lift (C n₁ n₂ k : O)
-    (hC : Supported (Ideal.span {C})) (h₁ : Supported (Ideal.span {n₁}))
-    (h₂ : Supported (Ideal.span {n₂}))
+theorem actual_common_lift  C n₁ n₂ k 
+     hC   h₁ 
+     h₂ 
     (hp₁ : ConcretePrimeRowBridge.goodLambda^2∣n₁-1)
     (hp₂ : ConcretePrimeRowBridge.goodLambda^2∣n₂-1) (hn : IsCoprime n₁ n₂) :
     actualCorrelation (C*n₁) (C*n₂) (supported_mul_elements C n₁ hC h₁)
@@ -50,12 +51,9 @@ theorem actual_common_lift (C n₁ n₂ k : O)
   let := finite_quotient_span (supported_element_ne_zero n₁ h₁)
   let : Fintype (ResidueQ n₁) := Fintype.ofFinite _
   have hphase := supported_opposite_phase n₁ n₂ h₁ h₂ hp₁ hp₂ ⟨a,b,hab⟩
-  calc
-    _ = idealRowHom k (Ideal.span {n₁})*star (idealRowHom (-k) (Ideal.span {n₂}))*
-        (idealRowHom n₁ (Ideal.span {n₂})*star (idealRowHom n₂ (Ideal.span {n₁})))*actualCommon C hC n₁ n₂ k := by ring
-    _ = _ := by rw [hphase]
+  grind
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

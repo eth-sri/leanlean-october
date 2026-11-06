@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.GraphSharedPairing
 
@@ -15,10 +16,12 @@ noncomputable section
 
 variable {P : PrimeGroups} {J ell m : ℕ}
 
-local instance sharedProductSiteDecidableEq (P : PrimeGroups) (M : ℕ) :
-    DecidableEq (BigSite P M) := Classical.decEq _
 
-lemma shared_slot_iff (ν : Pattern P J ell m) (g : P.Group) (i : Fin J) :
+
+section
+variable (ν : Pattern P J ell m) (g : P.Group)
+
+lemma shared_slot_iff      i  :
     ν.shared g (ν.slot i) ↔ i ∉ ν.changed g := by
   constructor
   · rintro ⟨j, hj, hn⟩
@@ -28,18 +31,19 @@ lemma shared_slot_iff (ν : Pattern P J ell m) (g : P.Group) (i : Fin J) :
   · intro hn
     exact ⟨i, rfl, hn⟩
 
-lemma shared_castAdd_iff (ν : Pattern P J ell m) (g : P.Group) (i : Fin J) :
+lemma shared_castAdd_iff      i  :
     ν.shared g (Fin.castAdd ell i) ↔ i ∉ ν.changed g := by
-  have hs : ν.slot i = Fin.castAdd ell i := by apply Fin.ext; rfl
-  rw [← hs, shared_slot_iff]
+  solve_by_elim [shared_slot_iff]
 
-lemma not_shared_natAdd (ν : Pattern P J ell m) (g : P.Group) (i : Fin ell) :
+lemma not_shared_natAdd      i  :
     ¬ν.shared g (Fin.natAdd J i) := by
   rintro ⟨j, hj, _⟩
   have he := congrArg Fin.val hj
   change j.val = J + i.val at he
-  have hi := j.isLt
+  
   omega
+
+end
 
 end
 end Erdos821.P4Probe

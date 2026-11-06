@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Phased.Ghost
 
 public import Erdos408.OneSided.Moment.Phased.Edge
 public import Erdos408.OneSided.Moment.Phased.Rows
@@ -37,7 +40,7 @@ open Finset Real
 
 variable {K : ℕ}
 
-section Majorant
+
 
 variable (q x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) (B : ℕ)
 
@@ -45,19 +48,19 @@ open scoped Classical in
 /-- The doubled ghost coefficient: `chainGhostCoef` with the creation coefficient
 `cre(p, ℓ) = -η'_j V(p)/ρ` replaced by `2 cre(p, ℓ)`. -/
 def dblGhostCoef (N j : ℕ) (s : ChainState x d Y d₀ u v r B)
-    (c : (Particle x d → ℕ) × (Particle x d → ℕ)) : ℂ :=
+    (c : (Particle x d → ℕ) × (Particle x d → ℕ))  :=
   ghostCoef (HitsAt x d s.1.1) (fun xp : Particle x d => primeWeight q x d N xp.1.1)
       (-dampDefect q N j / pendingWeight q) ((1 - dampDefect q N j) / pendingWeight q ^ 2)
     (fun xp : Particle x d => 2 * (-dampDefect q N j * primeMass x d xp.1.1 / pendingWeight q))
     B s.2.2 c
 
 /-- The weight `v₀ = 1/(ρ(1 - ρ²))` of the ghost row bound. -/
-def truncV : ℝ := 1 / (pendingWeight q * (1 - pendingWeight q ^ 2))
+def truncV  := 1 / (pendingWeight q * (1 - pendingWeight q ^ 2))
 
 variable {q x d Y d₀ u v r B}
 
 /-- Doubling the creation coefficient multiplies the modulus by `2^{|batch|}`. -/
-theorem norm_dblGhostCoef (N j : ℕ) (s : ChainState x d Y d₀ u v r B) (c : GhostChoice x d) :
+theorem norm_dblGhostCoef  N j   s   c  :
     ‖dblGhostCoef q x d Y d₀ u v r B N j s c‖ =
       2 ^ memSize c.2 * ‖chainGhostCoef q x d Y d₀ u v r B N j s c‖ := by
   by_cases hv : GhostValid (HitsAt x d s.1.1) B s.2.2.1 c
@@ -76,12 +79,11 @@ theorem norm_dblGhostCoef (N j : ℕ) (s : ChainState x d Y d₀ u v r B) (c : G
       refine prod_congr rfl fun xp _ => ?_
       simp only [ghostFactor, mul_pow]
       ring, abs_mul, abs_of_nonneg (pow_nonneg zero_le_two _)]
-  · rw [dblGhostCoef, chainGhostCoef, ghostCoef, ghostCoef, ite_eq_right hv, ite_eq_right hv,
-      norm_zero, mul_zero]
+  simp_all [dblGhostCoef, chainGhostCoef, ghostCoef]
 
 /-- **The inserted factors**: `‖w(s, h)‖ 2^{ghost births} = ∏_j ‖dblGhost_j‖ ∏_j ‖edge_j‖`. -/
-theorem norm_chainWeight_mul_two_pow {A₀ : ℝ} {N : ℕ} (s : ChainState x d Y d₀ u v r B)
-    (h : History x d Y d₀ u v r N) :
+theorem norm_chainWeight_mul_two_pow  {A₀}   {N}   s 
+     h  :
     ‖chainWeight q A₀ s h‖ * 2 ^ ghostBirths x d Y d₀ u v r h =
       (∏ j : Fin (N + 1), ‖dblGhostCoef q x d Y d₀ u v r B N j (chainVisit s h j) (h.1 j)‖) *
         ∏ j : Fin N, ‖chainEdgeCoef q A₀ x d Y d₀ u v r B N
@@ -94,69 +96,34 @@ theorem norm_chainWeight_mul_two_pow {A₀ : ℝ} {N : ℕ} (s : ChainState x d 
 /-! ### Band facts -/
 
 /-- A particle's prime is a band prime. -/
-private theorem fst_mem_bandPrimes' (xp : Particle x d) : xp.1.1 ∈ bandPrimes x d := by
-  obtain ⟨p, hp, hxp⟩ := mem_biUnion.1 xp.2
-  obtain ⟨ℓ, -, hℓ⟩ := mem_image.1 hxp
-  rw [← hℓ]
-  exact hp
+private alias fst_mem_bandPrimes' := _root_.SharedProofs.fst_mem_bandPrimes
 
 /-- The hitting particles have one line per band prime, so a sum over them of a nonnegative
 function of the prime is at most the sum over the band primes. -/
-private theorem sum_hits_le_sum_bandPrimes' (z : ℤ × ℤ) {f : ℕ → ℝ} (hf : ∀ p, 0 ≤ f p) :
-    ∑ xp with HitsAt x d z xp, f xp.1.1 ≤ ∑ p ∈ bandPrimes x d, f p := by
-  rw [← sum_image (f := f) (g := fun xp : Particle x d => xp.1.1)]
-  · exact sum_le_sum_of_subset_of_nonneg
-      (image_subset_iff.2 fun xp _ => fst_mem_bandPrimes' xp) fun p _ _ => hf p
-  · intro xp hxp yp hyp h
-    have hxp' : lineOf xp.1.1 z = xp.1.2 := (mem_filter.1 (mem_coe.1 hxp)).2
-    have hyp' : lineOf yp.1.1 z = yp.1.2 := (mem_filter.1 (mem_coe.1 hyp)).2
-    refine Subtype.ext (Prod.ext h ?_)
-    rw [← hxp', ← hyp']
-    exact congrArg (lineOf · z) h
+private alias sum_hits_le_sum_bandPrimes' := _root_.SharedProofs.sum_hits_le_sum_bandPrimes
 
 /-- With band masses at most `1`, `∑_{p band prime} 1/p ≤ ∑_i V_i ≤ K`. -/
-private theorem sum_one_div_bandPrimes_le' (hV : ∀ i, harmonicMass (band x (d.a i)) ≤ 1) :
-    ∑ p ∈ bandPrimes x d, (1 : ℝ) / p ≤ K :=
-  calc ∑ p ∈ bandPrimes x d, (1 : ℝ) / p
-      ≤ ∑ p ∈ bandPrimes x d, ∑ i, if p ∈ band x (d.a i) then (1 : ℝ) / p else 0 := by
-        refine sum_le_sum fun p hp => ?_
-        obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
-        calc (1 : ℝ) / p = if p ∈ band x (d.a i) then (1 : ℝ) / p else 0 :=
-              (ite_eq_left hpi).symm
-          _ ≤ ∑ i, if p ∈ band x (d.a i) then (1 : ℝ) / p else 0 :=
-              single_le_sum (f := fun i => if p ∈ band x (d.a i) then (1 : ℝ) / p else 0)
-                (fun j _ => by split_ifs <;> positivity) (mem_univ i)
-    _ = ∑ i, ∑ p ∈ bandPrimes x d, if p ∈ band x (d.a i) then (1 : ℝ) / p else 0 := sum_comm
-    _ = ∑ i, harmonicMass (band x (d.a i)) := by
-        refine sum_congr rfl fun i _ => ?_
-        rw [sum_ite_mem, inter_eq_right.2
-          (show band x (d.a i) ⊆ bandPrimes x d from fun p hp => mem_biUnion.2 ⟨i, mem_univ i, hp⟩)]
-        rfl
-    _ ≤ ∑ _i : Fin K, (1 : ℝ) := sum_le_sum fun i _ => hV i
-    _ = K := by simp
+private alias sum_one_div_bandPrimes_le' := _root_.SharedProofs.sum_one_div_bandPrimes_le
 
 /-- The harmonic mass `V(p)` of the bands containing `p` is nonnegative. -/
-private theorem primeMass_nonneg'' (p : ℕ) : 0 ≤ primeMass x d p :=
-  sum_nonneg fun i _ => by
-    split_ifs
-    · exact sum_nonneg fun p _ => by positivity
-    · exact le_rfl
+private alias primeMass_nonneg'' := _root_.SharedProofs.primeMass_nonneg_
+
+section
+variable (hq : 0 < q)
+include hq
 
 /-- `ρ⁴ = √q`. -/
-private theorem pendingWeight_pow_four' (hq : 0 < q) : pendingWeight q ^ 4 = Real.sqrt q := by
-  unfold pendingWeight
-  rw [← Real.rpow_natCast, ← Real.rpow_mul hq.le, Real.sqrt_eq_rpow]
-  norm_num
+private alias pendingWeight_pow_four' := _root_.SharedProofs.pendingWeight_pow_four
+
+section
+variable (hq₁ : q < 1)
+include hq₁
 
 /-- The damping defects are in `[0, 1]`. -/
-private theorem dampDefect_mem_Icc' (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
-    0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
-  unfold dampDefect
-  split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
+private alias dampDefect_mem_Icc' := _root_.SharedProofs.dampDefect_mem_Icc_
 
 /-- `v₀ ≥ 1`. -/
-theorem one_le_truncV (hq : 0 < q) (hq₁ : q < 1) : 1 ≤ truncV q := by
+theorem one_le_truncV     : 1 ≤ truncV q := by
   have hρ0 : 0 < pendingWeight q := Real.rpow_pos_of_pos hq _
   have hρ1 : pendingWeight q < 1 := Real.rpow_lt_one hq.le hq₁ (by norm_num)
   have hρ2 : pendingWeight q ^ 2 < 1 := pow_lt_one₀ hρ0.le hρ1 (by norm_num)
@@ -172,17 +139,17 @@ theorem one_le_truncV (hq : 0 < q) (hq₁ : q < 1) : 1 ≤ truncV q := by
 /-- **The doubled ghost row bound**: against `v₀^{size}` with `v₀ = 1/(ρ(1 - ρ²))`, the doubled
 ghost has row sums at most `exp(v₀ · 4K/ρ)`. The hitting particles carry
 `∑ |2 cre| ν ≤ (4/ρ) ∑_p 1/p ≤ 4K/ρ`, since `V(p) ν(p) ≤ 2/p`. -/
-theorem sum_dblGhostCoef_le (hq : 0 < q) (hq₁ : q < 1) {N : ℕ}
+theorem sum_dblGhostCoef_le      {N} 
     (hν : ∀ p, 0 ≤ primeWeight q x d N p)
     (hVν : ∀ p ∈ bandPrimes x d, primeMass x d p * primeWeight q x d N p ≤ 2 * (1 / p))
-    (hV₁ : ∀ i, harmonicMass (band x (d.a i)) ≤ 1) (j : ℕ) (t : ChainState x d Y d₀ u v r B) :
+    (hV₁ : ∀ i, harmonicMass (band x (d.a i)) ≤ 1)  j   t  :
     ∑ c ∈ multBox B ×ˢ multBox B, ‖dblGhostCoef q x d Y d₀ u v r B N j t c‖ *
         truncV q ^ memSize (chainGhostOut x d Y d₀ u v r B t c).2.2.1 ≤
       Real.exp (truncV q * (4 * K / pendingWeight q)) * truncV q ^ memSize t.2.2.1 := by
   set ρ := pendingWeight q with hρ
   have hρ0 : 0 < ρ := Real.rpow_pos_of_pos hq _
   have hρ1 : ρ < 1 := Real.rpow_lt_one hq.le hq₁ (by norm_num)
-  have hρ2 : ρ ^ 2 < 1 := pow_lt_one₀ hρ0.le hρ1 (by norm_num)
+  
   have hv₀ : 0 < truncV q := lt_of_lt_of_le zero_lt_one (one_le_truncV hq hq₁)
   obtain ⟨hη0, hη1⟩ := dampDefect_mem_Icc' hq hq₁ N j
   -- `0 ≤ surv ≤ ρ²`, since `q_j ≤ √q = ρ⁴`
@@ -199,8 +166,7 @@ theorem sum_dblGhostCoef_le (hq : 0 < q) (hq₁ : q < 1) {N : ℕ}
       unfold dampDefect
       split_ifs <;> linarith
     rw [div_le_iff₀ (by positivity)]
-    calc 1 - dampDefect q N j ≤ ρ ^ 4 := hqj
-      _ = ρ ^ 2 * ρ ^ 2 := by ring
+    linarith
   -- `surv + |del|/v₀ ≤ ρ² + (1/ρ) ρ (1 - ρ²) = 1`
   have hdel : (1 - dampDefect q N j) / ρ ^ 2 + |-dampDefect q N j / ρ| / truncV q ≤ 1 := by
     have h₁ : |-dampDefect q N j / ρ| ≤ 1 / ρ := by
@@ -244,13 +210,16 @@ theorem sum_dblGhostCoef_le (hq : 0 < q) (hq₁ : q < 1) {N : ℕ}
           truncV q ^ memSize t.2.2.1 :=
         ghost_row (fun xp => hν _) hsurv0 hv₀ hdel t.2.2
     _ ≤ Real.exp (truncV q * (4 * K / ρ)) * truncV q ^ memSize t.2.2.1 :=
-        mul_le_mul_of_nonneg_right
-          (Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hcre hv₀.le)) (pow_nonneg hv₀.le _)
+        (by gcongr <;> first | assumption | positivity | linarith)
+
+end
+
+end
 
 /-- **The weighted edge row bound**: an edge stores at most `K` particles, so for `v₀ ≥ 1` a
 bound `R` on its absolute row sums gives the bound `v₀^K R` against `v₀^{size}`. -/
-theorem sum_chainEdgeCoef_weight_le {A₀ v₀ R : ℝ} {N : ℕ} (hv₀ : 1 ≤ v₀)
-    (t : ChainState x d Y d₀ u v r B)
+theorem sum_chainEdgeCoef_weight_le  {A₀ v₀ R}   {N}  (hv₀ : 1 ≤ v₀)
+     t 
     (hR : ∑ c ∈ edgeChoices x d Y d₀ u v r, ‖chainEdgeCoef q A₀ x d Y d₀ u v r B N t c‖ ≤ R) :
     ∑ c ∈ edgeChoices x d Y d₀ u v r, ‖chainEdgeCoef q A₀ x d Y d₀ u v r B N t c‖ *
         v₀ ^ memSize (chainEdgeOut x d Y d₀ u v r B t c).2.2.1 ≤
@@ -274,7 +243,7 @@ open scoped Classical in
 /-- **The truncation majorant**: for caps `B ≤ B'`, if the doubled ghosts and the edges of the
 cap-`B'` chain have row sums at most `R_G` and `R_E` against `v₀^{size}` with `v₀ ≥ 1`, then
 `‖distinctSum(B') - distinctSum(B)‖ 2^{B+1} ≤ 2^{KN} R_G^{N+1} R_E^N ∑_s μ(s) |𝐛(s)|`. -/
-theorem norm_distinctSum_sub_mul_le {A₀ v₀ RG RE : ℝ} {B' N : ℕ} (hB : B ≤ B') (hv₀ : 1 ≤ v₀)
+theorem norm_distinctSum_sub_mul_le {A₀ v₀ RG RE : ℝ}  {B' N}  (hB : B ≤ B') (hv₀ : 1 ≤ v₀)
     (hRG : 0 ≤ RG) (hRE : 0 ≤ RE) (hμ : ∀ s, 0 ≤ chainMeasure q x d Y d₀ u v r B' N s)
     (hG : ∀ (j : ℕ) (t : ChainState x d Y d₀ u v r B'),
       ∑ c ∈ multBox B' ×ˢ multBox B', ‖dblGhostCoef q x d Y d₀ u v r B' N j t c‖ *
@@ -289,7 +258,7 @@ theorem norm_distinctSum_sub_mul_le {A₀ v₀ RG RE : ℝ} {B' N : ℕ} (hB : B
       2 ^ (K * N) * RG ^ (N + 1) * RE ^ N *
         ∑ s, chainMeasure q x d Y d₀ u v r B' N s * ‖chainInit x d Y d₀ u v r B' s‖ := by
   set C := (2 : ℝ) ^ (K * N) * RG ^ (N + 1) * RE ^ N with hC
-  have hC0 : 0 ≤ C := by positivity
+  
   -- the majorant of the histories from one state
   have hrow : ∀ s : ChainState x d Y d₀ u v r B',
       ∑ h ∈ histories x d Y d₀ u v r B' N,
@@ -342,8 +311,7 @@ theorem norm_distinctSum_sub_mul_le {A₀ v₀ RG RE : ℝ} {B' N : ℕ} (hB : B
       calc ‖chainWeight q A₀ s h * chainInit x d Y d₀ u v r B' (chainEnd s h)‖ * 2 ^ (B + 1)
           ≤ ‖chainWeight q A₀ s h‖ * 1 * (2 ^ (K * N) * 2 ^ ghostBirths x d Y d₀ u v r h) := by
             rw [norm_mul]
-            exact mul_le_mul (mul_le_mul_of_nonneg_left hb (norm_nonneg _)) h2 (by positivity)
-              (by positivity)
+            gcongr <;> first | assumption | positivity | linarith
         _ = 2 ^ (K * N) * P h := by
             rw [mul_one, mul_left_comm, norm_chainWeight_mul_two_pow]
     have hX : ‖∑ h ∈ H, chainWeight q A₀ s h * chainInit x d Y d₀ u v r B' (chainEnd s h)‖ *
@@ -393,6 +361,6 @@ theorem norm_distinctSum_sub_mul_le {A₀ v₀ RG RE : ℝ} {B' N : ℕ} (hB : B
     _ = C * ∑ s, chainMeasure q x d Y d₀ u v r B' N s * ‖chainInit x d Y d₀ u v r B' s‖ :=
         (mul_sum _ _ _).symm
 
-end Majorant
+
 
 end Erdos408.OneSided

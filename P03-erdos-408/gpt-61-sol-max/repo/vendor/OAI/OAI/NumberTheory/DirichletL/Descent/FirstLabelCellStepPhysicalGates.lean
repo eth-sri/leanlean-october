@@ -14,19 +14,19 @@ open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlob
 open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
 open InverseSecondUniformCutoff InversePrioritySecondSource
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0)
 
-def parentWeight (l : ℕ) (x : Source ι 0) : ℂ :=
+variable {ι : Type*} [DecidableEq ι]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
+
+def parentWeight (l : ℕ) (x : Source ι 0)  :=
   (‖commonSelector p (fun _=>1) l x.quotientSupport‖:ℂ)
 
-lemma parentWeight_norm (l : ℕ) (x : Source ι 0) : ‖parentWeight p l x‖≤1 := by
+lemma parentWeight_norm  l   x  : ‖parentWeight p l x‖≤1 := by
   simp only [parentWeight,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (norm_nonneg _)]
   simpa using InverseFirstGlobalCaps.commonSelector_norm p (fun _=>1) l x.quotientSupport
 
-lemma secondCutoff_nonneg (Z M r ell V eta tau window : ℝ) (k : SourceIndex) (l j : ℕ)
-    (negative : Bool) (hZ : 0<Z) (G E : Finset ι) :
+lemma secondCutoff_nonneg  Z M r ell V eta tau window   k   l j 
+     negative  (hZ : 0<Z)  G E  :
     0≤secondCutoff p Z M r ell V eta tau window k l j negative G E := by
   apply uniformSecondRadius_nonneg _ _ _ _ _ _ _ _ _ hZ.le
   · unfold firstCellRadius

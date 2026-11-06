@@ -9,24 +9,30 @@ public import Mathlib.Analysis.Complex.LocallyUniformLimit
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeLocal
 
-lemma one_sub_ne_zero_of_norm_le_half (a : ℂ) (ha : ‖a‖ ≤ 1/2) : 1 - a ≠ 0 := by
+section
+variable (a : ℂ) (ha : ‖a‖ ≤ 1/2) (R V qInv K W D : ℂ) (hR : ‖R‖ ≤ 1/2) (Pstar : ℂ) (hV : ‖V‖ ≤ 1/2) (hq : ‖qInv‖ ≤ 1) (hD : ‖D‖ ≤ 1/2)
+
+include ha in
+lemma one_sub_ne_zero_of_norm_le_half     : 1 - a ≠ 0 := by
   intro h
   have : a = 1 := by linear_combination -h
   rw [this, norm_one] at ha
   norm_num at ha
 
-lemma inv_one_sub_norm_le_two (a : ℂ) (ha : ‖a‖ ≤ 1/2) : ‖(1-a)⁻¹‖ ≤ 2 := by
+include ha in
+lemma inv_one_sub_norm_le_two     : ‖(1-a)⁻¹‖ ≤ 2 := by
   have hl := norm_sub_norm_le (1 : ℂ) a
   simp only [norm_one] at hl
   have hd : 0 < ‖1-a‖ := by linarith
   rw [norm_inv, ← one_div, div_le_iff₀ hd]
   linarith
 
-theorem unramified_marked_error_bound (R V qInv K W D : ℂ)
-    (hR : ‖R‖ ≤ 1/2) (hV : ‖V‖ ≤ 1/2) (hq : ‖qInv‖ ≤ 1) (hD : ‖D‖ ≤ 1/2) :
+include hR hV hq hD in
+theorem unramified_marked_error_bound  
+            :
     ‖ProbeEuler.markedFactor R V qInv K (-D + W*R) 1 + D‖ ≤
       12 * ‖R‖ * (1 + ‖W‖) + 4 * ‖K‖ * ‖V‖ := by
   rw [ProbeEuler.unramified_marked_error R V qInv K W D
@@ -57,8 +63,9 @@ theorem unramified_marked_error_bound (R V qInv K W D : ℂ)
         nlinarith [norm_nonneg W]
       nlinarith [mul_le_mul_of_nonneg_left he (norm_nonneg R)]
 
-theorem continuedCorrection_defect_bound (V W D Pstar : ℂ)
-    (hV : ‖V‖ ≤ 1/2) (hD : ‖D‖ ≤ 1/2) :
+include hV hD in
+theorem continuedCorrection_defect_bound  
+        :
     ‖continuedCorrection V W D Pstar - 1‖ ≤
       2 * (‖D‖ * (‖V‖+‖W‖+‖V‖*‖W‖) + ‖V‖*‖W‖ +
         2*(1+‖W‖)*‖Pstar+D‖) := by
@@ -85,7 +92,9 @@ theorem continuedCorrection_defect_bound (V W D Pstar : ℂ)
       exact inv_one_sub_norm_le_two D hD
     _ = _ := by ring
 
-end SevenEighths.ProbeLocal
 end
+
+end SevenEighths.ProbeLocal
+
 
 end OAI

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailAggregate
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
@@ -87,6 +87,6 @@ theorem global_physical_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
         _ = _ := by rw [he₂]
 
 end SevenEighths.InverseMomentGlobalPriorityTail
-end
+
 
 end OAI

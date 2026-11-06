@@ -6,15 +6,19 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedProfileMeasure
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 namespace SevenEighths.CenteredMomentReflectedPairEnergy
 open HeckeFamily FourierBridge CenteredMomentReflectedProfileMeasure
-local notation "O" => HeckeFamily.O
 
-lemma plain_frequency_control (V : ℝ→ℂ) (M X : ℝ) (hX : 0<X)
-    (hV : ∀y,V y≠0 → |y|≤M) (η : Character) :
+
+section
+variable (V : ℝ→ℂ) (M X : ℝ) (hX : 0<X) (hV : ∀y,V y≠0 → |y|≤M) (η : Character)
+include V M X hX hV η
+
+lemma plain_frequency_control      
+        :
     Continuous (fun v : ℝ=>HeckeDyadic.polynomial η false (logWindow V) X 0 (2*Real.pi*v)) ∧
     ∃K : ℝ,∀v : ℝ,‖HeckeDyadic.polynomial η false (logWindow V) X 0 (2*Real.pi*v)‖≤K := by
   let S := HeckeInverseAmplification.scaleSupport (Real.log X) (Real.exp M)
@@ -24,7 +28,7 @@ lemma plain_frequency_control (V : ℝ→ℂ) (M X : ℝ) (hX : 0<X)
     intro hz
     subst I
     simp at hi
-  have hc : ∀I : Ideal O,I≠0 → logWindow V ((I.absNorm:ℝ)/X)≠0 → I∈S := by
+  have hc : ∀I : Ideal HeckeFamily.O,I≠0 → logWindow V ((I.absNorm:ℝ)/X)≠0 → I∈S := by
     have hh := HeckeInverseAmplification.scaleSupport_cover (logWindow V)
       (Real.exp (-M)) (Real.exp M) (Real.log X) (Real.log X) (Real.exp_pos M).le
       (logWindow_support V M hV) le_rfl
@@ -54,15 +58,17 @@ lemma plain_frequency_control (V : ℝ→ℂ) (M X : ℝ) (hX : 0<X)
     intro I hI
     rw [norm_mul,logPhase_norm,mul_one]
 
-lemma plain_density_integrable (V : ℝ→ℂ) (M X : ℝ) (hX : 0<X)
-    (hV : ∀y,V y≠0 → |y|≤M) (η : Character) (density : 𝓢(ℝ,ℂ)) :
+lemma plain_density_integrable      
+        (density : 𝓢(ℝ,ℂ)) :
     Integrable (fun v : ℝ=>density v*HeckeDyadic.polynomial η false (logWindow V) X 0 (2*Real.pi*v)) := by
   obtain ⟨hc,K,hK⟩ := plain_frequency_control V M X hX hV η
   exact (density.integrable (μ:=volume)).mul_bdd hc.aestronglyMeasurable
     (Filter.Eventually.of_forall hK)
 
+end
+
 end SevenEighths.CenteredMomentReflectedPairEnergy
 
-end
+
 
 end OAI

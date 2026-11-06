@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalTransport
 public import OAI.NumberTheory.DirichletL.PrincipalSignalComparison
@@ -62,25 +63,29 @@ lemma active_prime_sum_bound (T : Finset PrimeIdeal) (W : ℝ→ℝ)
         _=(128*d*B*c^(ξ-1))*(P*P^(ξ-1)) := by ring
         _=_ := by rw [heP]
 
-def slotConstant {ι : Type*} (J : Finset ι) (c d B ξ : ℝ) : ℝ :=
+def slotConstant {ι } (J : Finset ι) (c d B ξ : ℝ)  :=
   (3/2)*∏_j∈J,(1+1440*(480:ℝ)^(-(7/8:ℝ)))*(128*d*B*c^(ξ-1))
 
-lemma slotConstant_nonneg {ι : Type*} (J : Finset ι) {c d B ξ : ℝ}
+section
+variable {ι : Type*}
+include ι
+
+lemma slotConstant_nonneg   (J : Finset ι)  {c d B ξ} 
     (hc : 0<c) (hd : c≤d) (hB : 0≤B) : 0≤slotConstant J c d B ξ := by
   have hd0 : 0≤d := hc.le.trans hd
   unfold slotConstant
   apply mul_nonneg (by norm_num)
   exact Finset.prod_nonneg (fun _ _=>by positivity)
 
-theorem window_sharp_bound {ι : Type*} (η : Character) (S : Finset Id)
+theorem window_sharp_bound   (η : Character) (S : Finset Id)
     (hS : CorrectionTail S) (J : Finset ι) (c d B ξ : ℝ)
     (hc : 0<c) (hd : c≤d) (hB : 0≤B) (hξ : ξ≤1)
     (W : ι→ℝ→ℝ) (hW : ∀j∈J,∀x,0≤W j x ∧ W j x≤B)
     (hsupp : ∀j∈J,Function.support (W j)⊆Icc c d)
-    (P : ι→ℝ) (hP : ∀j∈J,0<P j)
+     P  (hP : ∀j∈J,0<P j)
     (hthreshold : ∀j∈J,480≤c*P j)
     (hmod : ∀j∈J,(Ideal.absNorm η.modulus:ℝ)<c*P j)
-    (T : ι→Finset PrimeIdeal) (s w z : ℂ)
+     T   s w z 
     (hs : 7/8≤s.re) (hw : 19/20≤w.re) (hz : z.re=ξ) (hzlo : 33/200≤ξ) :
     ‖globalClosedCorrection η S s w z *
       windowMultiplier η J T (fun j x=>(W j x:ℂ)) P s w z‖≤
@@ -113,17 +118,18 @@ theorem window_sharp_bound {ι : Type*} (η : Character) (S : Finset Id)
     _≤(3/2)*∏j∈J,(1+1440*(480:ℝ)^(-(7/8:ℝ)))*((128*d*B*c^(ξ-1))*(P j)^ξ) := by
       apply mul_le_mul_of_nonneg_left _ (by norm_num)
       apply Finset.prod_le_prod₀
-      · intro j hj; apply mul_nonneg (by positivity);exact Finset.sum_nonneg (fun p _=>by
-          exact mul_nonneg (hW j hj _).1 (Real.rpow_nonneg (Nat.cast_nonneg _) _))
+      · intro j hj; apply mul_nonneg (by positivity);exact Finset.sum_nonneg (fun p _=>mul_nonneg (hW j hj _).1 (Real.rpow_nonneg (Nat.cast_nonneg _) _))
       · intro j hj
         exact mul_le_mul_of_nonneg_left (active_prime_sum_bound (A j) (W j) c d B (P j) ξ
           hc hd hB (hP j hj) (hthreshold j hj) hξ (hW j hj) (hsupp j hj)) (by positivity)
     _=_ := by simp only [slotConstant,←mul_assoc,Finset.prod_mul_distrib]
 
-def scalePower (X Y Z a ξ υ : ℝ) : ℝ :=
+end
+
+def scalePower (X Y Z a ξ υ : ℝ)  :=
   X^(1/2-ξ)*Z^(a+ξ-1)*Y^(υ-1)
 
-lemma scalePower_nonneg {X Y Z a ξ υ : ℝ} (hX : 0≤X) (hY : 0≤Y) (hZ : 0≤Z) :
+lemma scalePower_nonneg  {X Y Z a ξ υ}  (hX : 0≤X) (hY : 0≤Y) (hZ : 0≤Z) :
     0≤scalePower X Y Z a ξ υ := by unfold scalePower;positivity
 
 section Pointwise
@@ -198,7 +204,7 @@ lemma full_sharp_pointwise (hυhi : υ≤2) (hυ1 : υ≠1) (hξ1 : 6*ξ≠1) (p
   have hmass : 0≤∏j∈J,(P j)^ξ := Finset.prod_nonneg (fun j hj=>Real.rpow_nonneg (hP j hj).le _)
   have hslot := slotConstant_nonneg J (ξ:=ξ) hc hd hB
   have hs := scalePower_nonneg (a:=a) (ξ:=ξ) (υ:=υ) hX.le hY.le hZ.le
-  have ht := (height_pos p.1.1).le
+  
   have hv := (height_pos p.1.2).le
   have hu := (height_pos p.2).le
   have hj := (jointHeight_pos p.1.1 p.1.2 p.2).le
@@ -261,7 +267,7 @@ lemma vertical_triple_eq_joint (F : ℂ→ℂ→ℂ→ℂ) (a ξ υ : ℝ)
 
 lemma vertical_pair_eq_joint (F : ℂ→ℂ→ℂ) (a ξ : ℝ)
     (hi : Integrable (fun q : ℝ×ℝ=>F ((a:ℂ)+q.1*I) ((ξ:ℂ)+q.2*I)) (volume.prod volume)) :
-    verticalIntegral a (fun s=>verticalIntegral ξ (fun z=>F s z)) =
+    verticalIntegral a (fun s=>verticalIntegral ξ (F s)) =
     (((1/(2*Real.pi):ℝ):ℂ))^2*
       ∫q : ℝ×ℝ,F ((a:ℂ)+q.1*I) ((ξ:ℂ)+q.2*I) ∂volume.prod volume := by
   rw [integral_prod _ hi]
@@ -270,7 +276,7 @@ lemma vertical_pair_eq_joint (F : ℂ→ℂ→ℂ) (a ξ : ℝ)
 
 lemma normalizer_norm_pos : 0<‖(((1/(2*Real.pi):ℝ):ℂ))‖ := by
   apply norm_pos_iff.mpr
-  exact_mod_cast (one_div_ne_zero (mul_ne_zero (by norm_num : (2:ℝ)≠0) Real.pi_ne_zero))
+  simp_all
 
 section Uniform
 variable {ι : Type*} (η : Character) (S : Finset Id) (hS : SourceExclusions S)
@@ -306,7 +312,7 @@ theorem full_scale_bound (υ : ℝ) (hυ : υ∈Icc (19/20:ℝ) 2) (hυ1 : υ≠
   have hslot := slotConstant_nonneg J (ξ:=ξ) hc hd hB
   have hZA := zBoxAmplitude_nonneg (∏q∈S,q) 1
   have hWA := (wAmplitude_pos (∏q∈S,q) (by norm_num : (1:ℝ)<2)).le
-  have hK : 0≤K := by dsimp [K];positivity
+  
   refine ⟨K+1,by positivity,?_⟩
   intro W hW hsupp P hP hthreshold hmod T hT X Y Z hX hY hZ
   dsimp only
@@ -358,7 +364,7 @@ theorem residue_scale_bound :
   let K := C*slotConstant J c d B ξ*zBoxAmplitude (∏p∈S,p) 1*D
   have hslot := slotConstant_nonneg J (ξ:=ξ) hc hd hB
   have hZA := zBoxAmplitude_nonneg (∏p∈S,p) 1
-  have hK : 0≤K := by dsimp [K];positivity
+  
   refine ⟨K+1,by positivity,?_⟩
   intro W hW hsupp P hP hthreshold hmod T hT X Y Z hX hY hZ
   dsimp only
@@ -462,19 +468,23 @@ theorem residue_vertical_scale_bound :
         ((a:ℂ)+q.1*I) (globalClosedCorrection η S ((a:ℂ)+q.1*I))
         (windowMultiplier η J T (fun j x=>(W j x:ℂ)) P ((a:ℂ)+q.1*I))
         1 ((ξ:ℂ)+q.2*I)*LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+q.2*I))‖ ∂volume.prod volume)) := by
-      apply mul_le_mul (by dsimp [R];linarith [norm_nonneg (HeckeReciprocal.regularizedL (fixedSourcePrincipal S hS.prime) 1)])
+      apply mul_le_mul (by linarith)
         (mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) hk.le) (by positivity) (by positivity)
     _≤(1+‖R‖)*(k*(K/|6*ξ-1| *(scalePower X Y Z a ξ 1*(∏j∈J,(P j)^ξ)))) := by
       gcongr;exact hh.2
     _=_ := by ring
 end Uniform
 
-theorem ordered_remainders_scale_bound {ι : Type*}
+section
+variable {ι : Type*}
+include ι
+
+theorem ordered_remainders_scale_bound  
     (η : Character) (S : Finset Id) (hS : SourceExclusions S)
     (J : Finset ι) (c d B : ℝ) (hc : 0<c) (hd : c≤d) (hB : 0≤B)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (a e : ℝ) (ha : a∈Icc (7/8:ℝ) 2) (hβ : HeckeZeroSupremum.beta<a)
+     a e  (ha : a∈Icc (7/8:ℝ) 2) (hβ : HeckeZeroSupremum.beta<a)
     (he : 0<e) (hehi : e≤5/6) :
     ∃C : ℝ,0<C ∧ ∀(W : ι→ℝ→ℝ),
     (∀j∈J,∀x,0≤W j x ∧ W j x≤B) →
@@ -519,8 +529,12 @@ theorem ordered_remainders_scale_bound {ι : Type*}
     norm_num
     linarith
 
-lemma source_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
-    (hell : ∑j∈J,ell j=1/6) (Z a ξ υ : ℝ) (hZ : 0<Z) :
+section
+variable (J : Finset ι) (ell : ι→ℝ) (hell : ∑j∈J,ell j=1/6)
+include J ell hell
+
+lemma source_scale_identity      
+       Z a ξ υ  (hZ : 0<Z) :
     scalePower (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a ξ υ *
       (∏j∈J,(Z^(ell j))^ξ) =
     Z^(a-11/16+(13/16)*(ξ-1/6)+(23/48)*(υ-1)) := by
@@ -532,26 +546,27 @@ lemma source_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
   congr 1
   ring
 
-lemma source_w_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
-    (hell : ∑j∈J,ell j=1/6) (Z a e : ℝ) (hZ : 0<Z) :
+lemma source_w_scale_identity      
+       Z a e  (hZ : 0<Z) :
     scalePower (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a (1/6+e) (19/20) *
       (∏j∈J,(Z^(ell j))^(1/6+e)) = Z^(a-11/16+(13/16)*e-23/960) := by
   rw [source_scale_identity J ell hell Z a (1/6+e) (19/20) hZ]
   congr 1;ring
 
-lemma source_z_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
-    (hell : ∑j∈J,ell j=1/6) (Z a : ℝ) (hZ : 0<Z) :
+lemma source_z_scale_identity      
+       Z a  (hZ : 0<Z) :
     scalePower (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a (33/200) 1 *
       (∏j∈J,(Z^(ell j))^(33/200:ℝ)) = Z^(a-11/16-13/9600) := by
-  rw [source_scale_identity J ell hell Z a (33/200) 1 hZ]
-  congr 1;ring
+  grind [source_scale_identity]
 
-theorem source_remainders_power_bound {ι : Type*}
+end
+
+theorem source_remainders_power_bound  
     (η : Character) (S : Finset Id) (hS : SourceExclusions S)
     (J : Finset ι) (c d B : ℝ) (hc : 0<c) (hd : c≤d) (hB : 0≤B)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (a e : ℝ) (ha : a∈Icc (7/8:ℝ) 2) (hβ : HeckeZeroSupremum.beta<a)
+     a e  (ha : a∈Icc (7/8:ℝ) 2) (hβ : HeckeZeroSupremum.beta<a)
     (he : 0<e) (hehi : e≤5/6) :
     ∃C : ℝ,0<C ∧ ∀(ell : ι→ℝ),(∑j∈J,ell j=1/6) → ∀(W : ι→ℝ→ℝ),
     (∀j∈J,∀x,0≤W j x ∧ W j x≤B) →
@@ -579,18 +594,26 @@ theorem source_remainders_power_bound {ι : Type*}
   rw [source_w_scale_identity J ell hell Z a e hZ,source_z_scale_identity J ell hell Z a hZ] at hh
   exact hh
 
-lemma source_w_strict_exponent (β e : ℝ) (he : e≤1/1000) :
+end
+
+section
+variable (β e : ℝ) (he : e≤1/1000)
+include β e he
+
+lemma source_w_strict_exponent     :
     (β+e)-11/16+(13/16)*e-23/960≤β-11/16-17/48000 := by linarith
 
-lemma source_z_strict_exponent (β e : ℝ) (he : e≤1/1000) :
+lemma source_z_strict_exponent     :
     (β+e)-11/16-13/9600≤β-11/16-17/48000 := by linarith
+
+end
 
 theorem source_remainders_strict_saving {ι : Type*}
     (η : Character) (S : Finset Id) (hS : SourceExclusions S)
     (J : Finset ι) (c d B : ℝ) (hc : 0<c) (hd : c≤d) (hB : 0≤B)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (e : ℝ) (he : 0<e) (hehi : e≤1/1000)
+     e  (he : 0<e) (hehi : e≤1/1000)
     (ha : HeckeZeroSupremum.beta+e∈Icc (7/8:ℝ) 2) :
     ∃C : ℝ,0<C ∧ ∀(ell : ι→ℝ),(∑j∈J,ell j=1/6) → ∀(W : ι→ℝ→ℝ),
     (∀j∈J,∀x,0≤W j x ∧ W j x≤B) →

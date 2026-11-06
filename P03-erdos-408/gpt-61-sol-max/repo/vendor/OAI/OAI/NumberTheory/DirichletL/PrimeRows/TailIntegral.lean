@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedIntegral
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
@@ -15,7 +15,7 @@ open ProbePhysical ProbeMellinBoundary
 theorem source_profile_arithmetic_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
     (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
     (hW1 : Function.support W1⊆Icc a1 b1)
-    (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
+    (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo)  J N  :
     ∃K : ℝ,0<K ∧ ∀σ∈Icc slo shi,∀ξ∈Icc zlo zhi,∀υ∈Icc wlo whi,
       ∀A : ℝ,0≤A → ∀X Y Z : ℝ,0<X → 0<Y → 0<Z →
       ∀G : HeightSpace→ℂ,AEStronglyMeasurable G heightMeasure →
@@ -66,6 +66,6 @@ theorem source_profile_arithmetic_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

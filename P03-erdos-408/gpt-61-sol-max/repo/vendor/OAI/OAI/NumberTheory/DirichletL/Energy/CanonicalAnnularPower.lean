@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalAmplifiedUniform
 public import OAI.NumberTheory.DirichletL.Energy.AmplifierFamilyAdmission
@@ -41,7 +42,7 @@ open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentReta
 open CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
+
 
 open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
 open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
@@ -49,14 +50,14 @@ open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeT
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
 open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open   CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
+open   CenteredMomentEnergyAllocatedZero
 open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+ 
+ 
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
 open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
@@ -281,14 +282,13 @@ theorem actual_original_subsets_annular_power
     have hd:=elementPool_data _ (fun Q hQ=>(hdata Q hQ).1)
       (fun Q hQ=>(hdata Q hQ).2.1) prime.val prime.property
     have hprime:prime.val≠0:=hd.1.ne_zero
-    have hcop:∀j,∀I∈(activeInput input).slots j,IsCoprime (Ideal.span {prime.val}) I:=by
-      exact CenteredMomentFirstAmplificationChoice.original_slot_coprime (original input (R0*C) seed).active
+    have hcop:∀j,∀I∈(activeInput input).slots j,IsCoprime (Ideal.span {prime.val}) I:=CenteredMomentFirstAmplificationChoice.original_slot_coprime (original input (R0*C) seed).active
         Z sigma (max 1 bslot) eta hZ.le (by positivity) hsep z hz hlen hsupp
         (original input (R0*C) seed).active_slot
         (fun j Q hQ=>input.prime j Q ((original input (R0*C) seed).active_subset _ hQ))
         _ (hdata _ hd.2.1).1 (hdata _ hd.2.1).2.2.1
     have hk:=CenteredMomentFirstAmplificationChoice.errorIndex_cases i
-    have hk':errorIndex i+1=1∨errorIndex i+1=6∨errorIndex i+1=7:=by omega
+    
     have hN:=hυN Aorig (CenteredMomentCommonProfile.liveIndices B.val) prime i χ
     have hvcap:=actual_error_reference_cap τ _ χ prime.val hprime (errorIndex i) hk Z hZ hN
     have hre:=herrorPacket prime i χ Bp

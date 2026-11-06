@@ -21,7 +21,7 @@ variable {P : PrimeGroups} {F : FixedData} {n : ℕ} {rho : ℝ} {i : Fin (n + 1
   {p : Fin b.val → P.Prime g.val}
 
 /-- eta is positive since visitQ < 1. -/
-lemma eta_pos (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : 0 < eta F n i := by
+lemma eta_pos  F   n   i  : 0 < eta F n i := by
   unfold eta
   have hq : visitQ F.q n i < 1 := by
     unfold visitQ
@@ -38,7 +38,7 @@ lemma eta_pos (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : 0 < eta F n i := by
   linarith
 
 /-- visitQ is positive since q > 0. -/
-lemma visitQ_pos (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : 0 < visitQ F.q n i := by
+lemma visitQ_pos (F : FixedData)  n   i  : 0 < visitQ F.q n i := by
   unfold visitQ
   by_cases h : i.val = 0 ∨ i.val = n
   · rw [ite_eq_left h]
@@ -47,8 +47,8 @@ lemma visitQ_pos (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : 0 < visitQ F.q n 
     exact F.q_pos
 
 /-- tiltedMu is positive from V>0 and baseline>0. -/
-lemma tiltedMu_pos {P : PrimeGroups} {F : FixedData} {n : ℕ} {g : P.Group}
-    {q : P.Prime g} (hV : 0 < P.V g)
+lemma tiltedMu_pos  {P}   {F}   {n}   {g} 
+     {q}  (hV : 0 < P.V g)
     (hbase : 0 < baselinePrime F n q.val) :
     0 < tiltedMu F P n g q := by
   unfold tiltedMu
@@ -60,10 +60,10 @@ lemma tiltedMu_pos {P : PrimeGroups} {F : FixedData} {n : ℕ} {g : P.Group}
   · exact hbase
 
 /-- Absolute single weight in positive form. -/
-lemma abs_singleWeight_eq {P : PrimeGroups} (F : FixedData) (n : ℕ) (rho : ℝ)
-    (hrho : 0 < rho) (i : Fin (n + 1)) (g : P.BigGroup)
-    (s0 t0 : P.Memory g.val) (A : Finset (Fin s0.card)) (b : Fin (t0.card + 1))
-    (p : Fin b.val → P.Prime g.val)
+lemma abs_singleWeight_eq {P : PrimeGroups}  F   n   rho 
+    (hrho : 0 < rho)  i   g 
+     s0 t0   A   b 
+     p 
     (hV : 0 < P.V g.val)
     (hbase : ∀ q : P.Prime g.val, 0 < baselinePrime F n q.val) :
     |singleWeight F n rho i g s0 t0 A b p| =

@@ -10,12 +10,12 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
-def cubeBinRows (R : Finset FreeRow) (idx grid : FreeRow→ℕ) (i k : ℕ) : Finset FreeRow :=
+
+def cubeBinRows (R : Finset FreeRow) (idx grid : FreeRow→ℕ) (i k : ℕ)  :=
   R.filter (fun u=>idx u=i ∧ grid u=k)
 
-@[simp] lemma mem_cubeBinRows (R : Finset FreeRow) (idx grid : FreeRow→ℕ) (i k : ℕ) (u : FreeRow) :
+@[simp] lemma mem_cubeBinRows  R   idx grid   i k   u  :
     u∈cubeBinRows R idx grid i k ↔ u∈R ∧ idx u=i ∧ grid u=k := by simp [cubeBinRows]
 
 lemma sum_cubeBinRows (R : Finset FreeRow) (idx grid : FreeRow→ℕ) (n m : ℕ)
@@ -29,10 +29,10 @@ lemma sum_cubeBinRows (R : Finset FreeRow) (idx grid : FreeRow→ℕ) (n m : ℕ
   simpa only [Finset.product_eq_sprod,Finset.sum_product,Prod.mk.injEq,cubeBinRows] using hs
 
 theorem finiteCentralCubeRows_bin_partition {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
+     S   hS   hmax 
+     η   R  (T : Fin K→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→P.val∉S) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z e B : ℝ) (idx grid : FreeRow→ℕ) (n m : ℕ)
+     W0 W1   X Y Z e B   idx grid   n m 
     (hlabel : ∀u∈R,idx u≤n ∧ grid u≤m) :
     finiteCentralCubeRows S hS hmax η R T hT W Yp W0 W1 X Y Z e
       (fun u=>51/100+e*grid u) (fun u=>(3*idx u+1:ℕ)*B)=

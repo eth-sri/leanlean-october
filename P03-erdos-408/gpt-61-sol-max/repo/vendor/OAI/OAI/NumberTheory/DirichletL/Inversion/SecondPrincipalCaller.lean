@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstToSecond
 public import OAI.NumberTheory.DirichletL.Descent.PrincipalChild
@@ -13,15 +14,19 @@ namespace SevenEighths.InverseSecondPrincipalCaller
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge
 open SecondPassIntegration CompletedHeight
 open InverseMoment InversePrincipalEnergy RayFourExpansion
-local notation "Eis" => ActualEisensteinCubic.O
 
-def principalWindow (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t : ℝ) : 𝓢(ℝ,ℂ) :=
+
+def principalWindow (om : 𝓢(ℝ,ℂ)) (a b ) (ha : 0<a)
+    (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t : ℝ)  :=
   if negative then conjugateProfile (uniformTwistedSchwartz om a b ha hs (om.smooth ⊤) t)
   else uniformTwistedSchwartz om a b ha hs (om.smooth ⊤) t
 
-theorem principalWindow_apply (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t x : ℝ) :
+section
+variable (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hs : Function.support om ⊆ Set.Icc a b) (M : ℝ) (hb : b≤Real.exp M) (negative : Bool) (t x : ℝ)
+
+
+theorem principalWindow_apply      
+          :
     principalWindow om a b ha hs negative t x =
       if negative then normTwistedSource (fun y => star (om y)) (-t) x
       else normTwistedSource om t x := by
@@ -29,21 +34,21 @@ theorem principalWindow_apply (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
     conjugateProfile_apply,uniformTwistedSchwartz_apply,normTwistedSource,
     star_mul,logPhase_conjugate,mul_comm]
 
-theorem principalWindow_norm (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t x : ℝ) :
+theorem principalWindow_norm      
+          :
     ‖principalWindow om a b ha hs negative t x‖=‖om x‖ := by
   rw [principalWindow_apply]
   cases negative <;> simp [normTwistedSource,logPhase_norm]
 
-theorem principalWindow_support (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t : ℝ) :
+theorem principalWindow_support      
+          :
     Function.support (principalWindow om a b ha hs negative t) = Function.support om := by
   ext x
   change (_≠0) ↔ (_≠0)
   rw [←norm_ne_zero_iff,principalWindow_norm,norm_ne_zero_iff]
 
-theorem principalWindow_seminorm_zero (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t : ℝ) :
+theorem principalWindow_seminorm_zero      
+          :
     SchwartzMap.seminorm ℝ 0 0 (principalWindow om a b ha hs negative t)=
       SchwartzMap.seminorm ℝ 0 0 om := by
   apply le_antisymm
@@ -56,18 +61,21 @@ theorem principalWindow_seminorm_zero (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a
     simpa only [pow_zero,one_mul,norm_iteratedFDeriv_zero,principalWindow_norm]
       using SchwartzMap.norm_le_seminorm ℝ (principalWindow om a b ha hs negative t) x
 
-theorem principalWindow_upper (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om ⊆ Set.Icc a b) (M : ℝ) (hb : b≤Real.exp M)
-    (negative : Bool) (t x : ℝ) (hx : principalWindow om a b ha hs negative t x≠0) :
+include hb in
+theorem principalWindow_upper      
+         
+        (hx : principalWindow om a b ha hs negative t x≠0) :
     x≤Real.exp M := by
   have hmem : x∈Function.support om := by
     rw [←principalWindow_support om a b ha hs negative t]
     exact hx
   exact (hs hmem).2.trans hb
 
-section Arithmetic
+end
+
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→Eis) (hp : ∀ i,p i≠0)
+  (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0)
 
 include hp in
 
@@ -80,7 +88,7 @@ theorem whole_columnLog (D U : Finset ι) (hDU : Disjoint D U) (X : ℝ) :
 omit [DecidableEq σ] in
 
 theorem primeMark_union_of_lists_disjoint (slots : Finset σ) (lists : σ→Finset ι)
-    (coeff : σ→ι→ℂ) (D U : Finset ι)
+     coeff   D U 
     (hD : ∀ i∈slots,Disjoint (lists i) D) :
     primeMark slots lists coeff (D∪U)=primeMark slots lists coeff U := by
   unfold primeMark
@@ -93,11 +101,11 @@ theorem primeMark_union_of_lists_disjoint (slots : Finset σ) (lists : σ→Fins
 
 include hp in
 
-theorem firstCoreTest_markedRadial (slots : Finset σ) (lists : σ→Finset ι)
-    (coeff : σ→ι→ℂ) (D U : Finset ι) (hDU : Disjoint D U)
+theorem firstCoreTest_markedRadial (slots : Finset σ)  lists 
+     coeff   D U  (hDU : Disjoint D U)
     (hD : ∀ i∈slots,Disjoint (lists i) D)
-    (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hs : Function.support om⊆Set.Icc a b)
-    (negative : Bool) (X t : ℝ) (hX : 0<X) :
+     om   a b   ha   hs 
+     negative   X t  (hX : 0<X) :
     firstCoreTest (primeMark slots lists coeff) (fun u=>om (Real.exp u))
       (columnLog p (primeProductNorm p D*X)) negative (-t) D U =
     markedRadial p slots lists coeff ∅ (principalWindow om a b ha hs negative t) X U := by
@@ -119,21 +127,19 @@ variable [∀ i,(Ideal.span {p i}).IsMaximal]
 
 theorem secondInputCoefficient_overlap_zero
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (Ψ : Eis→*ℂ) (m c d : Eis) (H : Finset ι→ℂ) (D U : Finset ι)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m c d : ActualEisensteinCubic.O) (H : Finset ι→ℂ) (D U : Finset ι)
     (hDU : ¬Disjoint D U) :
     secondInputCoefficient p hg Ψ (m*∏ i∈D,p i) c d H U=0 := by
   rw [secondInputCoefficient_fixed_mask (p := p) (hg := hg),commonProduct_mask p hg hinj]
-  split_ifs with h
-  · exact (hDU h.symm).elim
-  · exact zero_mul _
+  grind
 
 include hp in
 
 theorem firstCoreTest_coefficient (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (slots : Finset σ) (lists : σ→Finset ι) (coeff : σ→ι→ℂ) (D U : Finset ι)
+    (slots : Finset σ)  lists   coeff   D U 
     (hD : ∀ i∈slots,Disjoint (lists i) D)
-    (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hs : Function.support om⊆Set.Icc a b)
-    (negative : Bool) (X t : ℝ) (hX : 0<X) (Ψ : Eis→*ℂ) (m c d : Eis) :
+     om   a b   ha   hs 
+     negative   X t  (hX : 0<X)  Ψ   m c d  :
     secondInputCoefficient p hg Ψ (m*∏ i∈D,p i) c d
       (firstCoreTest (primeMark slots lists coeff) (fun u=>om (Real.exp u))
         (columnLog p (primeProductNorm p D*X)) negative (-t) D) U =
@@ -142,10 +148,9 @@ theorem firstCoreTest_coefficient (hinj : Function.Injective (fun i=>Ideal.span 
   by_cases hd : Disjoint D U
   · unfold secondInputCoefficient
     rw [firstCoreTest_markedRadial p hp slots lists coeff D U hd hD om a b ha hs negative X t hX]
-  · rw [secondInputCoefficient_overlap_zero p hg hinj Ψ m c d _ D U hd,
-      secondInputCoefficient_overlap_zero p hg hinj Ψ m c d _ D U hd]
+  simp_all [secondInputCoefficient_overlap_zero]
 
-end Arithmetic
+
 
 end SevenEighths.InverseSecondPrincipalCaller
 

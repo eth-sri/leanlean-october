@@ -14,11 +14,11 @@ namespace OAI
 namespace SevenEighths.Probe
 noncomputable section
 
-def principalScalar {ι : Type*} (slots : Finset ι) (Z ℓ : ℝ) (S : ι → ℝ) : ℝ :=
+def principalScalar {ι } (slots : Finset ι) (Z ℓ : ℝ) (S : ι → ℝ)  :=
   (-1) ^ slots.card * Z ^ (-ℓ / 6) * ∏ i ∈ slots, S i
 
 theorem principalScalar_ne_zero {ι : Type*} (slots : Finset ι)
-    {Z ℓ : ℝ} {S : ι → ℝ} (hZ : 0 < Z)
+     {Z ℓ}  {S : ι → ℝ} (hZ : 0 < Z)
     (hS : ∀ i ∈ slots, 0 < S i) : principalScalar slots Z ℓ S ≠ 0 := by
   unfold principalScalar
   apply mul_ne_zero

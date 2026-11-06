@@ -15,15 +15,15 @@ open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceRow
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
 open CenteredMomentLiveSupport CenteredMomentLiveDomain CenteredMomentSourceSmoothedAllocation
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-theorem original_source_punctured_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem original_source_punctured_column (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (C R s I : Ideal O) (hC : C≠0) (hI : I≠0) (hsC : s∣C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) :
+     C R s I  (hC : C≠0) (hI : I≠0) (hsC : s∣C)
+     ν   Wslot   P 
+     W₁ W₂   X₁ X₂ Y₁ Y₂   B₁ B₂  :
     (if IsCoprime C I then finiteColumnCoefficient (Fintype.piFinset S)
       (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0)=
       ∑ B : actualAllocations S C,frozenCoefficient B C R ν Wslot P*
@@ -46,8 +46,8 @@ theorem original_source_punctured_column (S : (ι ⊕ Fin 2) → Finset (Ideal O
         ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ hn).2.2
     rw [hz,mul_zero]
 
-def sourceGaussEnergy (Q : Finset (Ideal O)) (c f : Ideal O → ℂ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
+def sourceGaussEnergy (Q : Finset (Ideal ActualEisensteinCubic.O)) (c f : Ideal ActualEisensteinCubic.O → ℂ)
+    (W : 𝓢(ℝ,ℂ)) (K : ℝ)  :=
   gaussEnergy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q)
     (fun I : supportedColumns Q => c I*f I) W K
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P5.Exceptional
 public import Erdos821.P5.DiscreteMoments
@@ -8,14 +9,14 @@ public import Mathlib.Data.Int.Star
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P5Core
 open Blueprint.Analytic
 
 /-- A separated-point estimate loses at most three when sampling closed integer cells. -/
-theorem three_class_sum_bound (E : Finset ℤ) (t : ℤ → ℝ) (v : ℝ → ℝ) (M : ℝ)
+theorem three_class_sum_bound (E : Finset ℤ) (t : ℤ → ℝ) (v : ℝ → ℝ)  M 
     (hcell : ∀ k ∈ E, (k : ℝ) ≤ t k ∧ t k ≤ (k : ℝ) + 1)
     (hbound : ∀ J : Finset ℤ, J ⊆ E →
       (∀ k ∈ J, ∀ l ∈ J, k ≠ l → 1 ≤ |t k - t l|) →
@@ -25,8 +26,7 @@ theorem three_class_sum_bound (E : Finset ℤ) (t : ℤ → ℝ) (v : ℝ → �
   have hparts : ∑ i ∈ Finset.Ico (0 : ℤ) 3,
       ∑ k ∈ E.filter (fun k => k % 3 = i), v (t k) = ∑ k ∈ E, v (t k) := by
     apply Finset.sum_fiberwise_of_maps_to
-    intro k _
-    exact Finset.mem_Ico.mpr ⟨Int.emod_nonneg _ (by norm_num), Int.emod_lt_of_pos _ (by norm_num)⟩
+    grind
   rw [← hparts]
   calc
     _ ≤ ∑ _i ∈ Finset.Ico (0 : ℤ) 3, M := by
@@ -121,13 +121,12 @@ theorem occupied_count_bound
   let N := (s.sup id) ^ m
   let B := 1 + Real.log (2 * Y)
   have hlogY : 0 ≤ Real.log (2 * Y) := Real.log_nonneg (by linarith)
-  have hB : 0 ≤ B := by dsimp [B]; linarith
+  
   have hlogN : 0 ≤ Real.log (2 * N) := nat_log_two_nonneg N
   have hlogNY : Real.log (2 * N) ≤ Real.log (2 * Y) := by
     by_cases hN : N = 0
     · simpa [hN] using hlogY
-    · apply Real.log_le_log (by positivity)
-      exact mul_le_mul_of_nonneg_left hNY (by norm_num)
+    gcongr <;> first | assumption | positivity | linarith
   have hbase : 2 * Tmax + 1 + N * Real.log (2 * N) ≤ 3 * Y * B := by
     have hprod := mul_le_mul hNY hlogNY hlogN (by linarith : 0 ≤ Y)
     dsimp [B]
@@ -145,12 +144,7 @@ theorem occupied_count_bound
       _ ≤ 3 * K * (3 * Y * B) * B ^ 2 *
           Nat.factorial m * (3 / P) ^ m := by
         apply mul_le_mul
-        · apply mul_le_mul_of_nonneg_right _ (by positivity)
-          apply mul_le_mul
-          · exact mul_le_mul_of_nonneg_left hbase (by positivity)
-          · exact hsq
-          · positivity
-          · positivity
+        · gcongr <;> first | assumption | positivity | linarith
         · exact hpoly
         · positivity
         · positivity

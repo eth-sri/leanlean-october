@@ -8,15 +8,18 @@ public import OAI.NumberTheory.DirichletL.Detector.RadialMellin
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentComparisonReflection
 open HeckeFamily HeckePrimitive ActualEisensteinCubic ConcreteTraceCRT
 open EisensteinSchwartzPoisson ConcretePrimeRowBridge GaussGeneratorTransport
 local notation "O" => HeckeFamily.O
-local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
-lemma residue_nontrivial (c : O) (χ : MulChar (O⧸Ideal.span {c}) ℂ) (hχ : χ≠1) :
+
+section
+variable (c : O) (η : Character) (W : ℝ→ℂ) (X : ℝ)
+
+lemma residue_nontrivial   (χ : MulChar (O⧸Ideal.span {c}) ℂ) (hχ : χ≠1) :
     Nontrivial (O⧸Ideal.span {c}) := by
   by_contra h
   have : Subsingleton (O⧸Ideal.span {c}) := not_nontrivial_iff_subsingleton.mp h
@@ -25,18 +28,18 @@ lemma residue_nontrivial (c : O) (χ : MulChar (O⧸Ideal.span {c}) ℂ) (hχ : 
   have hx : x=1 := Subsingleton.elim _ _
   simp [hx]
 
-lemma residue_zero (c : O) [NeZero c] (χ : MulChar (O⧸Ideal.span {c}) ℂ)
-    (hu : ∀u:Oˣ,χ (Ideal.Quotient.mk (Ideal.span {c}) u.val)=1) (hχ : χ≠1) :
+lemma residue_zero   [NeZero c]  χ 
+     hu  (hχ : χ≠1) :
     elementCoeff (character c χ hu) 0=0 := by
   let := residue_nontrivial c χ hχ
   change χ (Ideal.Quotient.mk (Ideal.span {c}) 0)=0
   rw [map_zero,χ.map_zero]
 
-theorem radial_ideal_reindex (η : Character) (W : ℝ→ℂ) (X : ℝ)
+theorem radial_ideal_reindex      
     (hzero : elementCoeff η 0=0)
     (hs : Summable (fun z : O => elementCoeff η z*W (‖eisEmbedding z‖^2/X))) :
     (∑' z : O,elementCoeff η z*W (‖eisEmbedding z‖^2/X))=
-      6*∑' I : NI,idealCoeff η I.val*W ((I.val.absNorm:ℝ)/X) := by
+      6*∑' I : UnrestrictedIdealReindex.NonzeroIdeal,idealCoeff η I.val*W ((I.val.absNorm:ℝ)/X) := by
   have h := UnrestrictedIdealReindex.tsum_unit_invariant_of_zero
     (fun z : O => elementCoeff η z*W (‖eisEmbedding z‖^2/X)) hs
     (by rw [hzero,zero_mul])
@@ -50,7 +53,7 @@ theorem radial_ideal_reindex (η : Character) (W : ℝ→ℂ) (X : ℝ)
   exact (IdealCharacter.ofResidue_of_generator η.modulus η.residue η.unit_trivial
     I.property (span_idealGenerator I.val)).symm
 
-lemma bounded_radial_summable (η : Character) (W : ℝ→ℂ) (X : ℝ)
+lemma bounded_radial_summable      
     (hs : Summable (fun z : O => ‖W (‖eisEmbedding z‖^2/X)‖)) :
     Summable (fun z : O => elementCoeff η z*W (‖eisEmbedding z‖^2/X)) := by
   apply Summable.of_norm
@@ -62,14 +65,14 @@ lemma bounded_radial_summable (η : Character) (W : ℝ→ℂ) (X : ℝ)
   let : Fintype (O⧸η.modulus) := Fintype.ofFinite _
   exact FiniteRayExpansion.norm_char_le_one η.residue _
 
-theorem primitive_plain_reflection (c : O) [NeZero c]
+theorem primitive_plain_reflection   [NeZero c]
     (χ : MulChar (O⧸Ideal.span {c}) ℂ)
     (hu : ∀u:Oˣ,χ (Ideal.Quotient.mk (Ideal.span {c}) u.val)=1)
     (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (hχ : χ≠1)
-    (W : 𝓢(ℝ,ℂ)) (X : ℝ) (hX : 0<X) :
-    (∑' I : NI,idealCoeff (character c χ hu) I.val*W ((I.val.absNorm:ℝ)/X))=
+    (W : 𝓢(ℝ,ℂ))  X  (hX : 0<X) :
+    (∑' I : UnrestrictedIdealReindex.NonzeroIdeal,idealCoeff (character c χ hu) I.val*W ((I.val.absNorm:ℝ)/X))=
       ((X:ℂ)*TraceCharacter.normalizedGauss c χ/(‖eisEmbedding c‖:ℂ))*
-      ∑' I : NI,idealCoeff (character c χ⁻¹ (inverse_unit_trivial c χ hu)) I.val*
+      ∑' I : UnrestrictedIdealReindex.NonzeroIdeal,idealCoeff (character c χ⁻¹ (inverse_unit_trivial c χ hu)) I.val*
         paperRadialFourier W ((I.val.absNorm:ℝ)/(‖eisEmbedding c‖^2/X)) := by
   have hc : 0<‖eisEmbedding c‖ := norm_pos_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))
   have hQ : 0<‖eisEmbedding c‖^2 := sq_pos_of_pos hc
@@ -99,26 +102,26 @@ theorem primitive_plain_reflection (c : O) [NeZero c]
       (bounded_radial_summable _ (paperRadialFourier W) _ hd)] at he'
   linear_combination he'/6
 
-lemma inverse_half_power (X : ℝ) (hX : 0≤X) :
+lemma inverse_half_power   (hX : 0≤X) :
     (X:ℂ)^(-(1/2:ℂ))=(Real.sqrt X:ℂ)⁻¹ := by
   rw [Complex.cpow_neg]
   congr 1
   rw [Real.sqrt_eq_rpow]
   simpa only [Complex.ofReal_div,Complex.ofReal_one,Complex.ofReal_ofNat] using (Complex.ofReal_cpow hX (1/2)).symm
 
-lemma polynomial_plain (η : Character) (W : ℝ→ℂ) (X : ℝ) (hX : 0<X) :
+lemma polynomial_plain       (hX : 0<X) :
     HeckeDyadic.polynomial η false W X 0 0=
-      (Real.sqrt X:ℂ)⁻¹*∑' I : NI,idealCoeff η I.val*W ((I.val.absNorm:ℝ)/X) := by
+      (Real.sqrt X:ℂ)⁻¹*∑' I : UnrestrictedIdealReindex.NonzeroIdeal,idealCoeff η I.val*W ((I.val.absNorm:ℝ)/X) := by
   simp only [HeckeDyadic.polynomial,HeckeDyadic.summand,HeckeDyadic.coefficient,
     Bool.false_eq_true,ite_false,HeckeDyadic.shift,Complex.ofReal_zero,zero_mul,
     sub_zero,neg_zero,Complex.cpow_zero,mul_one,HeckeDyadic.norm]
   rw [inverse_half_power X hX.le]
 
-theorem primitive_normalized_reflection (c : O) [NeZero c]
-    (χ : MulChar (O⧸Ideal.span {c}) ℂ)
-    (hu : ∀u:Oˣ,χ (Ideal.Quotient.mk (Ideal.span {c}) u.val)=1)
+theorem primitive_normalized_reflection   [NeZero c]
+     χ 
+     hu 
     (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (hχ : χ≠1)
-    (W : 𝓢(ℝ,ℂ)) (X : ℝ) (hX : 0<X) :
+    (W : 𝓢(ℝ,ℂ))  X  (hX : 0<X) :
     HeckeDyadic.polynomial (character c χ hu) false W X 0 0=
       TraceCharacter.normalizedGauss c χ*
         HeckeDyadic.polynomial (character c χ⁻¹ (inverse_unit_trivial c χ hu)) false
@@ -139,8 +142,10 @@ theorem primitive_normalized_reflection (c : O) [NeZero c]
     rw [hsq]
   rw [←mul_assoc,hfac,mul_assoc]
 
+end
+
 end SevenEighths.CenteredMomentComparisonReflection
 
-end
+
 
 end OAI

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -25,9 +25,9 @@ theorem global_priority_physical_source
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))
     (negative:Bool)(Ψ:O→*ℂ)(m:O)(ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)
-    (w:Source ι Jo→ℂ)(slots J:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (om:𝓢(ℝ,ℂ))(lo hi:ℝ)(hlo:0<lo)(hs:Function.support om⊆Set.Icc lo hi)
-    (X t Y:ℝ)(hX:0<X)(hY:0<Y)(R:Finset ι→Finset ι→ℝ):
+    (w:Source ι Jo→ℂ)(slots J:Finset σ) lists  a 
+     om  lo hi  hlo  hs 
+     X t Y (hX:0<X)(hY:0<Y) R :
     let parents:=wholeAssignedParents p (fun x=>extra x.cube) original negative J lists
     let Ψ₀:=firstCoreTwist negative (if negative then ray.1 else ray.2) Ψ core
     let V:=principalWindow om lo hi hlo hs negative t
@@ -54,6 +54,6 @@ theorem global_priority_physical_source
     V X Y ray core R (fun _ _=>())
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

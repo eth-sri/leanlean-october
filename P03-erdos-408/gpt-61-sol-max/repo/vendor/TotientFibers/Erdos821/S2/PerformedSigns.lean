@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.Births
 
@@ -42,12 +43,7 @@ theorem performed_value_preserving_sign_sum {α : Type*} [Fintype α] [Decidable
       push Not at hv
       obtain ⟨r, hr, c, hc, he, hrc⟩ := hv
       have hrows : M r = M c := by
-        funext k
-        by_cases hk : k ∈ performed
-        · simp [M, hk, hr, hc, he]
-        · have hrk : r ≠ k := by rintro rfl; exact hk hr
-          have hck : c ≠ k := by rintro rfl; exact hk hc
-          simp [M, hk, hrk, hck]
+        grind
       simp only [show ¬ Set.InjOn value performed from by
         intro h; exact hrc (h hr hc he), ↓reduceIte]
       exact (Matrix.det_zero_of_row_eq hrc hrows).symm
@@ -62,24 +58,19 @@ theorem performed_value_preserving_sign_sum {α : Type*} [Fintype α] [Decidable
         by_contra hn
         have hfix : σ i = i := by simpa only [cond, ite_eq_right hn] using h i
         exact Equiv.Perm.mem_support.mp hi hfix
-      · intro i
-        by_cases hi : i ∈ performed
-        · exact (show σ i ∈ performed ∧ value (σ i) = value i from by
-            simpa only [cond, ite_eq_left hi] using h i).2
-        · have hfix : σ i = i := by simpa only [cond, ite_eq_right hi] using h i
-          rw [hfix]
+      grind
     · rintro ⟨hs, hv⟩ i
       by_cases hi : i ∈ performed
       · have ho : σ i ∈ performed := by
           by_cases hfix : σ i = i
           · simpa only [hfix] using hi
           · exact hs (Equiv.Perm.apply_mem_support.mpr (Equiv.Perm.mem_support.mpr hfix))
-        exact (show cond σ i from by simpa only [cond, ite_eq_left hi] using And.intro ho (hv i))
+        aesop
       · have hfix : σ i = i := Equiv.Perm.notMem_support.mp (fun h => hi (hs h))
         simpa only [cond, ite_eq_right hi] using hfix
   have hentry (σ : Equiv.Perm α) (i : α) :
       M (σ i) i = if cond σ i then (1 : ℤ) else 0 := by
-    by_cases hi : i ∈ performed <;> simp only [M, cond, hi, ↓reduceIte]
+    grind
   have hprod (σ : Equiv.Perm α) :
       (∏ i, M (σ i) i) =
         if σ.support ⊆ performed ∧ ∀ i, value (σ i) = value i then (1 : ℤ) else 0 := by
@@ -87,9 +78,7 @@ theorem performed_value_preserving_sign_sum {α : Type*} [Fintype α] [Decidable
     · have hc := (hcond σ).mpr he
       rw [ite_eq_left he]
       apply Finset.prod_eq_one
-      intro i _
-      rw [hentry]
-      exact ite_eq_left (hc i)
+      simp_all
     · have hc : ¬ ∀ i, cond σ i := fun h => he ((hcond σ).mp h)
       obtain ⟨i, hi⟩ := not_forall.mp hc
       rw [ite_eq_right he]

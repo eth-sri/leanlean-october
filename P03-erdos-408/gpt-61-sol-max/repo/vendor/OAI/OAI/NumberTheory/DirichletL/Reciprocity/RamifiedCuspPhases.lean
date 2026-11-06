@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.CubeResidueStrata
 
@@ -10,77 +11,77 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 namespace CubicKubota
 
-open scoped Classical MatrixGroups BigOperators
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal
+open scoped   MatrixGroups  
+open     CubicEisenstein CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 def actualCubeCuspPhaseSum (A:levelTwo) (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
@@ -89,9 +90,13 @@ def actualCubeCuspPhaseSum (A:levelTwo) (p:Eis) (hp:Prime p) (hprimary:lambda^2�
     let d:=actualCubeCuspData (A:SL(2,Eis)) p (GaussianShiftedPartition.representative (p^3) r) hp hprimary
     w d.exponent * complexCharacter ⟨d.matrix*(A:SL(2,Eis))⁻¹,d.congruent⟩
 
-theorem actualCubeCuspPhaseSum_coprime (A:levelTwo) (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (hA:lambda^2∣((A:SL(2,Eis)) 0 0)-1)
-    (hC:IsCoprime ((A:SL(2,Eis)) 1 0) p) (w:Fin 4→ℂ) :
+section
+variable (A : levelTwo) (p : Eis) (hp : Prime p) (hprimary : lambda^2∣p-1) (hA : lambda^2∣((A:SL(2,Eis)) 0 0)-1)
+
+include hA in
+theorem actualCubeCuspPhaseSum_coprime      
+       
+    (hC:IsCoprime ((A:SL(2,Eis)) 1 0) p)  w  :
     actualCubeCuspPhaseSum A p hp hprimary w =
       w 0*(Ideal.absNorm (Ideal.span {p}):ℂ)^2*((Ideal.absNorm (Ideal.span {p}):ℂ)-1)+w 3 := by
   let e:=cubeResidueStrataEquiv p hp hprimary
@@ -130,9 +135,10 @@ theorem actualCubeCuspPhaseSum_coprime (A:levelTwo) (p:Eis) (hp:Prime p)
         cubeStratumSymbol p ((A:SL(2,Eis)) 1 0) j b) (a := w j)
     _ = _ := cubeStrata_weighted_sum p ((A:SL(2,Eis)) 1 0) hp hprimary hC w
 
-theorem actualCubeCuspPhaseSum_dvd (A:levelTwo) (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (hA:lambda^2∣((A:SL(2,Eis)) 0 0)-1)
-    (hC:p∣((A:SL(2,Eis)) 1 0)) (w:Fin 4→ℂ) :
+include hA in
+theorem actualCubeCuspPhaseSum_dvd      
+       
+    (hC:p∣((A:SL(2,Eis)) 1 0))  w  :
     actualCubeCuspPhaseSum A p hp hprimary w =
       w 0*(Ideal.absNorm (Ideal.span {p}):ℂ)^3 := by
   let d (r:Eis⧸Ideal.span {p^3}):=actualCubeCuspData (A:SL(2,Eis)) p
@@ -141,7 +147,7 @@ theorem actualCubeCuspPhaseSum_dvd (A:levelTwo) (p:Eis) (hp:Prime p)
       w (d r).exponent*complexCharacter ⟨(d r).matrix*(A:SL(2,Eis))⁻¹,(d r).congruent⟩=w 0 := by
     have hj:((d r).exponent:ℕ)=0:=cube_exponent_zero_of_lower_divisible
       (A:SL(2,Eis)) (d r).matrix p _ _ hp hC (d r).first
-    have hj':(d r).exponent=0:=Fin.ext hj
+    
     let N:levelTwo:=⟨(d r).matrix,comparison_levelTwo A (d r).matrix (d r).congruent⟩
     have hphase:=levelTwo_cube_zero_phase A N p
       (GaussianShiftedPartition.representative (p^3) r) hprimary hA
@@ -149,8 +155,7 @@ theorem actualCubeCuspPhaseSum_dvd (A:levelTwo) (p:Eis) (hp:Prime p)
       (by simpa only [hj,pow_zero,one_mul] using (d r).first)
       (by simpa only [hj,Nat.sub_zero] using (d r).lower_eq hp.ne_zero)
       (d r).congruent
-    change w (d r).exponent*complexCharacter ⟨(N:SL(2,Eis))*(A:SL(2,Eis))⁻¹,(d r).congruent⟩=w 0
-    rw [hphase,hj',mul_one]
+    aesop
   calc
     actualCubeCuspPhaseSum A p hp hprimary w = ∑' r:Eis⧸Ideal.span {p^3},w 0 := by
       unfold actualCubeCuspPhaseSum
@@ -162,15 +167,17 @@ theorem actualCubeCuspPhaseSum_dvd (A:levelTwo) (p:Eis) (hp:Prime p)
       rw [←Ideal.span_singleton_pow,map_pow,Nat.cast_pow]
       ring
 
+end
+
 end CubicKubota
 
 namespace CubicEisenstein
 
 section
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped     MatrixGroups Matrix
 
 section
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
+open   CubicKubota   CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "ramLambda" => (omega-1:Eis)
 
@@ -183,34 +190,36 @@ lemma onceCusp_lambda_dvd_trace : ramLambda∣ramifiedTraceLambda := by
   unfold ramifiedTraceLambda
   linear_combination ramified_omega_relation
 
-def onceCuspScale (u:Eisˣ) : Eis := (u:Eis)*ramifiedTraceLambda
+def onceCuspScale (u:Eisˣ)  := (u:Eis)*ramifiedTraceLambda
 
-def onceCuspComplement (u:Eisˣ) : Eis := -(↑u⁻¹:Eis)*ramifiedTraceLambda
+def onceCuspComplement (u:Eisˣ)  := -(↑u⁻¹:Eis)*ramifiedTraceLambda
 
-lemma onceCusp_scale_complement (u:Eisˣ) : onceCuspScale u*onceCuspComplement u=3 := by
+section
+variable (u : Eisˣ)
+
+lemma onceCusp_scale_complement   : onceCuspScale u*onceCuspComplement u=3 := by
   calc
     _ = -((u:Eis)*(↑u⁻¹:Eis))*ramifiedTraceLambda^2 := by
       unfold onceCuspScale onceCuspComplement; ring
     _ = 3 := by simp [ramifiedTraceLambda_square]
 
-lemma onceCusp_scale_ne_zero (u:Eisˣ) : onceCuspScale u≠0 := by
-  intro h
-  have hh:=onceCusp_scale_complement u
-  rw [h,zero_mul] at hh
-  exact (by norm_num : (0:Eis)≠3) hh
+lemma onceCusp_scale_ne_zero   : onceCuspScale u≠0 := by
+  grind [onceCusp_scale_complement]
 
-lemma onceCusp_scale_lambda (u:Eisˣ) : (3:Eis)∣onceCuspScale u*ramLambda := by
+lemma onceCusp_scale_lambda   : (3:Eis)∣onceCuspScale u*ramLambda := by
   refine ⟨(u:Eis)*omega^2,?_⟩
   simp only [onceCuspScale,mul_assoc,onceCusp_trace_lambda]
   ring
 
-lemma onceCusp_complement_lambda (u:Eisˣ) : ramLambda∣onceCuspComplement u :=
+lemma onceCusp_complement_lambda   : ramLambda∣onceCuspComplement u :=
   onceCusp_lambda_dvd_trace.mul_left _
 
-lemma onceCusp_scale_coprime (u:Eisˣ) (d:PrimaryLower) : IsCoprime (onceCuspScale u) d.val := by
+lemma onceCusp_scale_coprime   (d:PrimaryLower) : IsCoprime (onceCuspScale u) d.val := by
   apply (isCoprime_mul_unit_left_left u.isUnit _ _).mpr
   apply (primary_coprime_three d.val (primaryLower_primary d)).symm.of_isCoprime_of_dvd_left
   exact ⟨-ramifiedTraceLambda,by linear_combination ramifiedTraceLambda_square⟩
+
+end
 
 abbrev OnceRamifiedData := Fin 3×UnitLowerData
 
@@ -233,7 +242,7 @@ def onceRamifiedToPrimitive (u:Eisˣ) (p:OnceRamifiedData) : PrimitiveRow := by
     rw [hk,←mul_assoc]
     exact (onceCusp_scale_lambda u).mul_right k
 
-lemma onceRamifiedToPrimitive_bijective (u:Eisˣ) :
+lemma onceRamifiedToPrimitive_bijective  u  :
     Function.Bijective (onceRamifiedToPrimitive u) := by
   constructor
   · rintro ⟨j,a,d,had⟩ ⟨k,b,e,hbe⟩ h
@@ -249,11 +258,7 @@ lemma onceRamifiedToPrimitive_bijective (u:Eisˣ) :
       change omega^j.val*a.val=omega^k.val*b.val
       linear_combination hsub
     have hp:=halfPrimaryFromAssociate_injective hassoc
-    have hj:j=k:=congrArg Prod.fst hp
-    have hab:a=b:=congrArg Prod.snd hp
-    subst k
-    subst b
-    rfl
+    aesop
   · intro r
     obtain ⟨k,hk⟩:=r.2.2.1
     let d:PrimaryLower:=⟨r.val 1,r.2.2.2⟩
@@ -278,14 +283,13 @@ lemma onceRamifiedToPrimitive_bijective (u:Eisˣ) :
     refine ⟨(p.1,⟨p.2,d,hcop⟩),Subtype.ext ?_⟩
     funext i
     fin_cases i
-    · change onceCuspScale u*(omega^p.1.val*p.2.val-d.val)=r.val 0
-      rw [hp,hr]
+    · bound
     · rfl
 
-def onceRamifiedEquiv (u:Eisˣ) : OnceRamifiedData≃PrimitiveRow :=
+def onceRamifiedEquiv (u:Eisˣ)  :=
   Equiv.ofBijective _ (onceRamifiedToPrimitive_bijective u)
 
-lemma onceRamified_row_phase (u:Eisˣ) (p:OnceRamifiedData) :
+lemma onceRamified_row_phase  u   p  :
     (cosetCharacter (primitiveRowEquiv.symm (onceRamifiedEquiv u p)))⁻¹=
       eisEmbedding (symbol (onceCuspScale u*omega^p.1.val) p.2.2.val.val)*
         eisEmbedding (symbol p.2.2.val.val p.2.1.val) := by
@@ -302,7 +306,7 @@ lemma onceRamified_row_phase (u:Eisˣ) (p:OnceRamifiedData) :
 
 end
 
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
+open   CubicKubota   CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 def diagonalPrimitiveMap (u:Eisˣ) (v:PrimitiveRow) : PrimitiveRow :=
@@ -331,7 +335,10 @@ def diagonalPrimitiveEquiv (u:Eisˣ) : PrimitiveRow≃PrimitiveRow where
       simp
     · rfl
 
-lemma rowOperator_unitCuspDiagonal (u:Eisˣ) (v:PrimitiveRow) :
+section
+variable (u : Eisˣ) (g : SL(2,ℂ)) (s : ℂ) (v : PrimitiveRow)
+
+lemma rowOperator_unitCuspDiagonal     :
     rowOperator (integralComplexMatrix (unitCuspDiagonal u))
       (embeddedRow (primitiveRowEquiv.symm v))=
       eisEmbedding (↑u⁻¹:Eis) •
@@ -349,21 +356,18 @@ lemma rowOperator_unitCuspDiagonal (u:Eisˣ) (v:PrimitiveRow) :
     have hu : eisEmbedding (↑u⁻¹ : Eis) * eisEmbedding (u : Eis) = 1 := by
       rw [← map_mul]
       simp
-    calc
-      _ = (eisEmbedding (↑u⁻¹ : Eis) * eisEmbedding (u : Eis)) *
-          (eisEmbedding (v.val 0) * eisEmbedding (u : Eis)) := by rw [hu, one_mul]
-      _ = _ := by ring
+    grind
   · change eisEmbedding (v.val 0) * eisEmbedding (0 : Eis) +
       eisEmbedding (v.val 1) * eisEmbedding (↑u⁻¹ : Eis) =
       eisEmbedding (↑u⁻¹ : Eis) * eisEmbedding (v.val 1)
     simp [mul_comm]
 
-lemma rowEnergy_unit_smul (u:Eisˣ) (v:Fin 2→ℂ) :
+lemma rowEnergy_unit_smul    v  :
     rowEnergy (eisEmbedding (u:Eis) • v)=rowEnergy v := by
   simp only [rowEnergy,Pi.smul_apply,smul_eq_mul,norm_mul,
     GaussGeneratorTransport.norm_eisEmbedding_unit,one_mul]
 
-lemma diagonal_ray_summand (u:Eisˣ) (g:SL(2,ℂ)) (s:ℂ) (v:PrimitiveRow) :
+lemma diagonal_ray_summand         :
     summand (integralComplexMatrix (unitCuspDiagonal u)*g) s (primitiveRowEquiv.symm v)=
       eisEmbedding (symbol ((↑u⁻¹:Eis)^2) (v.val 1))*
         summand g s (primitiveRowEquiv.symm (diagonalPrimitiveEquiv u v)) := by
@@ -384,26 +388,31 @@ lemma diagonal_ray_summand (u:Eisˣ) (g:SL(2,ℂ)) (s:ℂ) (v:PrimitiveRow) :
 
 end
 
-section
-open MeasureTheory
-open scoped BigOperators Classical MatrixGroups Matrix
+end
 
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
+section
+ 
+open scoped     MatrixGroups Matrix
+
+open   CubicKubota   CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
-def affineLowerTerm (q r:Eis) (z:ℂ) (v:ℝ) (s:ℂ) (a d:Eis) : ℂ :=
+def affineLowerTerm (q r:Eis) (z:ℂ) (v:ℝ) (s:ℂ) (a d:Eis)  :=
   (eisEmbedding (symbol r d)*eisEmbedding (symbol d a))*
     ((v/(‖eisEmbedding (q*a)*z+eisEmbedding d‖^2+
       ‖eisEmbedding (q*a)‖^2*v^2):ℝ):ℂ)^s
 
-lemma affineLowerTerm_mul_ray (q r t:Eis) (z:ℂ) (v:ℝ) (s:ℂ) (a d:PrimaryLower) :
+section
+variable (q r t : Eis) (u : Eisˣ) (z : ℂ) (v : ℝ) (hv : 0<v) (s : ℂ)
+
+lemma affineLowerTerm_mul_ray         (a d:PrimaryLower) :
     eisEmbedding (symbol t d.val)*affineLowerTerm q r z v s a.val d.val=
       affineLowerTerm q (t*r) z v s a.val d.val := by
   rw [affineLowerTerm,affineLowerTerm,symbol_mul_numerator _ _ _ (primaryLower_primary d),
     map_mul eisEmbedding (symbol t d.val) (symbol r d.val)]
   ring
 
-lemma onceRamified_summand (u:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (p:OnceRamifiedData) :
+lemma onceRamified_summand            p  :
     summand (integralComplexMatrix (lowerCuspMatrix (onceCuspScale u))*upperSection z v hv) s
       (primitiveRowEquiv.symm (onceRamifiedEquiv u p))=
       affineLowerTerm (onceCuspScale u*omega^p.1.val) (onceCuspScale u*omega^p.1.val)
@@ -429,13 +438,18 @@ lemma onceRamified_summand (u:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (p:OnceRam
     simp only [Complex.ofReal_div,inv_div]
   rw [hi,Complex.inv_cpow_ofReal_nonneg (div_nonneg hp.le hv.le),Complex.cpow_neg]
 
-def diagonalOnceCuspIndex (u t:Eisˣ) : OnceRamifiedData≃CuspCosets :=
+end
+
+def diagonalOnceCuspIndex (u t:Eisˣ)  :=
   (onceRamifiedEquiv t).trans ((diagonalPrimitiveEquiv u).symm.trans primitiveRowEquiv.symm)
 
-def diagonalUnitCuspIndex (u t:Eisˣ) : UnitLowerData≃CuspCosets :=
+def diagonalUnitCuspIndex (u t:Eisˣ)  :=
   (unitLowerEquiv t).trans ((diagonalPrimitiveEquiv u).symm.trans primitiveRowEquiv.symm)
 
-lemma diagonal_once_summand (u t:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (p:OnceRamifiedData) :
+section
+variable (u t : Eisˣ) (z : ℂ) (v : ℝ) (hv : 0<v) (s freq : ℂ)
+
+lemma diagonal_once_summand            p  :
     summand (integralComplexMatrix (unitCuspDiagonal u)*
       (integralComplexMatrix (lowerCuspMatrix (onceCuspScale t))*upperSection z v hv)) s
       (diagonalOnceCuspIndex u t p)=
@@ -444,10 +458,9 @@ lemma diagonal_once_summand (u t:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (p:Once
   change summand _ _ (primitiveRowEquiv.symm
     ((diagonalPrimitiveEquiv u).symm (onceRamifiedEquiv t p)))=_
   rw [diagonal_ray_summand,Equiv.apply_symm_apply,onceRamified_summand]
-  change eisEmbedding (symbol ((↑u⁻¹:Eis)^2) p.2.2.val.val)*affineLowerTerm _ _ _ _ _ _ _=_
-  exact affineLowerTerm_mul_ray _ _ _ _ _ _ p.2.1 p.2.2.val
+  solve_by_elim [affineLowerTerm_mul_ray]
 
-lemma diagonal_unit_summand (u t:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (p:UnitLowerData) :
+lemma diagonal_unit_summand            p  :
     summand (integralComplexMatrix (unitCuspDiagonal u)*
       (integralComplexMatrix (lowerCuspMatrix (t:Eis)))*upperSection z v hv) s
       (diagonalUnitCuspIndex u t p)=
@@ -456,10 +469,9 @@ lemma diagonal_unit_summand (u t:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (p:Unit
   change summand _ _ (primitiveRowEquiv.symm
     ((diagonalPrimitiveEquiv u).symm (unitLowerEquiv t p)))=_
   rw [diagonal_ray_summand,Equiv.apply_symm_apply,unitLower_summand]
-  change eisEmbedding (symbol ((↑u⁻¹:Eis)^2) p.2.val.val)*affineLowerTerm _ _ _ _ _ _ _=_
-  exact affineLowerTerm_mul_ray _ _ _ _ _ _ p.1 p.2.val
+  solve_by_elim [affineLowerTerm_mul_ray]
 
-theorem diagonal_once_eisenstein_rows (u t:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) :
+theorem diagonal_once_eisenstein_rows           :
     eisenstein (integralComplexMatrix (unitCuspDiagonal u)*
       (integralComplexMatrix (lowerCuspMatrix (onceCuspScale t))*upperSection z v hv)) s=
       ∑'p:OnceRamifiedData,affineLowerTerm (onceCuspScale t*omega^p.1.val)
@@ -467,7 +479,7 @@ theorem diagonal_once_eisenstein_rows (u t:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:�
   rw [eisenstein,←(diagonalOnceCuspIndex u t).tsum_eq]
   exact tsum_congr (diagonal_once_summand u t z v hv s)
 
-theorem diagonal_unit_eisenstein_rows (u t:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) :
+theorem diagonal_unit_eisenstein_rows           :
     eisenstein (integralComplexMatrix (unitCuspDiagonal u)*
       (integralComplexMatrix (lowerCuspMatrix (t:Eis)))*upperSection z v hv) s=
       ∑'p:UnitLowerData,affineLowerTerm (t:Eis) ((↑u⁻¹:Eis)^2*(t:Eis))
@@ -475,7 +487,7 @@ theorem diagonal_unit_eisenstein_rows (u t:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:�
   rw [eisenstein,←(diagonalUnitCuspIndex u t).tsum_eq]
   exact tsum_congr (diagonal_unit_summand u t z v hv s)
 
-theorem hasSum_diagonal_once_integrals (u t:Eisˣ) (v:ℝ) (hv:0<v) (s freq:ℂ) (hs:2<s.re) :
+theorem hasSum_diagonal_once_integrals         (hs:2<s.re) :
     HasSum (fun p:OnceRamifiedData=>∫z in periodDomain,
       affineLowerTerm (onceCuspScale t*omega^p.1.val)
         ((↑u⁻¹:Eis)^2*(onceCuspScale t*omega^p.1.val)) z v s p.2.1.val p.2.2.val.val*
@@ -494,18 +506,19 @@ theorem hasSum_diagonal_once_integrals (u t:Eisˣ) (v:ℝ) (hv:0<v) (s freq:ℂ)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+end
 
-open ConcreteTraceCRT EisensteinEmbedding
-local notation "O" => ActualEisensteinCubic.O
+ 
+ 
+
+ 
+
 local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
 local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
   inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
-local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
 
-def eisensteinCoordinateMul (b : ActualEisensteinCubic.O) (x : Fin 2→ℝ) : Fin 2→ℝ :=
+
+def eisensteinCoordinateMul (b : ActualEisensteinCubic.O) (x : Fin 2→ℝ)  :=
   ![(ActualEisensteinCoordinates.coords b).1 • x 0-(ActualEisensteinCoordinates.coords b).2 • x 1,
     (ActualEisensteinCoordinates.coords b).2 • x 0+
       ((ActualEisensteinCoordinates.coords b).1-(ActualEisensteinCoordinates.coords b).2) • x 1]
@@ -518,7 +531,10 @@ def eisensteinTorusMul (b : ActualEisensteinCubic.O) : UnitAddTorus (Fin 2)→+U
   map_zero' := by ext i;fin_cases i <;> simp
   map_add' t s := by ext i;fin_cases i <;> simp [smul_add] <;> abel
 
-lemma eisensteinTorusMul_continuous (b : ActualEisensteinCubic.O) : Continuous (eisensteinTorusMul b) := by
+section
+variable (f : ℂ→ℂ) (hf : Measurable f) (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,f (z+3*eisEmbedding n)=f z) (b : ActualEisensteinCubic.O) (z : ℂ) (hb : b≠0) (w : ℂ)
+
+lemma eisensteinTorusMul_continuous   : Continuous (eisensteinTorusMul b) := by
   apply continuous_pi
   intro i
   fin_cases i
@@ -527,7 +543,7 @@ lemma eisensteinTorusMul_continuous (b : ActualEisensteinCubic.O) : Continuous (
   · change Continuous (fun t : UnitAddTorus (Fin 2) => (ActualEisensteinCoordinates.coords b).2 • t 0+((ActualEisensteinCoordinates.coords b).1-(ActualEisensteinCoordinates.coords b).2) • t 1)
     fun_prop
 
-lemma periodVector_coordinateMul (b : ActualEisensteinCubic.O) (x : Fin 2→ℝ) :
+lemma periodVector_coordinateMul    x  :
     periodVector (eisensteinCoordinateMul b x)=eisEmbedding b*periodVector x := by
   have hb : eisEmbedding b=((ActualEisensteinCoordinates.coords b).1:ℂ)+
       ((ActualEisensteinCoordinates.coords b).2:ℂ)*omega3 := by
@@ -538,24 +554,26 @@ lemma periodVector_coordinateMul (b : ActualEisensteinCubic.O) (x : Fin 2→ℝ)
   push_cast
   linear_combination -(3*((ActualEisensteinCoordinates.coords b).2:ℂ)*(x 1:ℂ))*EisensteinEmbedding.omega3_sq
 
-lemma eisensteinTorusMul_periodTorus (b : ActualEisensteinCubic.O) (z : ℂ) :
+lemma eisensteinTorusMul_periodTorus     :
     eisensteinTorusMul b (periodTorus z)=periodTorus (eisEmbedding b*z) := by
   obtain ⟨x,rfl⟩ := periodVector.surjective z
   rw [←periodVector_coordinateMul,periodTorus_periodVector,periodTorus_periodVector]
   ext i
   fin_cases i <;> rfl
 
-lemma eisensteinTorusMul_surjective (b : ActualEisensteinCubic.O) (hb : b≠0) : Function.Surjective (eisensteinTorusMul b) := by
+include hb in
+lemma eisensteinTorusMul_surjective     : Function.Surjective (eisensteinTorusMul b) := by
   intro t
   refine ⟨periodTorus ((eisEmbedding b)⁻¹*periodSection t),?_⟩
   rw [eisensteinTorusMul_periodTorus,←mul_assoc,mul_inv_cancel₀ (eisEmbedding_ne_zero hb),one_mul,
     periodTorus_section]
 
-theorem eisensteinTorusMul_measurePreserving (b : ActualEisensteinCubic.O) (hb : b≠0) :
+include hb in
+theorem eisensteinTorusMul_measurePreserving     :
     MeasurePreserving (eisensteinTorusMul b) volume volume :=
   AddMonoidHom.measurePreserving (eisensteinTorusMul_continuous b) (eisensteinTorusMul_surjective b hb) rfl
 
-lemma periodTorus_eq_implies_lattice_difference (z w : ℂ) (h : periodTorus z=periodTorus w) :
+lemma periodTorus_eq_implies_lattice_difference   (h : periodTorus z=periodTorus w) :
     ∃n : ActualEisensteinCubic.O,z=w+3*eisEmbedding n := by
   obtain ⟨x,rfl⟩ := periodVector.surjective z
   obtain ⟨y,rfl⟩ := periodVector.surjective w
@@ -572,15 +590,17 @@ lemma periodTorus_eq_implies_lattice_difference (z w : ℂ) (h : periodTorus z=p
   push_cast
   ring
 
-lemma periodic_function_periodSection (f : ℂ→ℂ)
-    (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,f (z+3*eisEmbedding n)=f z) (z : ℂ) :
+include hp in
+lemma periodic_function_periodSection  
+        :
     f (periodSection (periodTorus z))=f z := by
   obtain ⟨n,hn⟩ := periodTorus_eq_implies_lattice_difference (periodSection (periodTorus z)) z
     (periodTorus_section (periodTorus z))
   rw [hn,hp]
 
-theorem period_integral_eisenstein_mul (f : ℂ→ℂ) (hf : Measurable f)
-    (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,f (z+3*eisEmbedding n)=f z) (b : ActualEisensteinCubic.O) (hb : b≠0) :
+include hf hp hb in
+theorem period_integral_eisenstein_mul    
+          :
     (∫z in periodDomain,f (eisEmbedding b*z))=∫z in periodDomain,f z := by
   let F : UnitAddTorus (Fin 2)→ℂ := fun t=>f (periodSection t)
   have hF : Measurable F := hf.comp periodSection_measurableEmbedding.measurable
@@ -591,19 +611,24 @@ theorem period_integral_eisenstein_mul (f : ℂ→ℂ) (hf : Measurable f)
     exact hh.symm
   rw [periodTorus_integral,periodTorus_integral] at hi
   simp only [eisensteinTorusMul_periodTorus,F,periodic_function_periodSection f hp] at hi
-  simp only [Complex.real_smul] at hi
-  exact mul_left_cancel₀ (Complex.ofReal_ne_zero.mpr (show (2/(9*Real.sqrt 3):ℝ)≠0 by positivity)) hi
+  simp_all
+
+end
 
 end CubicEisenstein
 
-open MeasureTheory Filter
-open scoped BigOperators Classical ENNReal
+ 
+open scoped     ENNReal
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT
+ 
 local notation "Eis" => ActualEisensteinCubic.O
 
-theorem finite_index_period_unfold_of_summable (q:Eis) (hq:q≠0) (f:ℂ→ℂ) (hf:Integrable f)
+section
+variable (q : Eis) (hq : q≠0) (f : ℂ→ℂ) (hf : Integrable f)
+
+include hq hf in
+theorem finite_index_period_unfold_of_summable        
     (hsum:Summable (fun n:Eis=>∫z in periodDomain,f (z+3*eisEmbedding n/eisEmbedding q))) :
     (∑'n:Eis,∫z in periodDomain,f (z+3*eisEmbedding n/eisEmbedding q))=
       (Ideal.absNorm (Ideal.span {q}):ℂ)*(∫z:ℂ,f z) := by
@@ -636,7 +661,8 @@ theorem finite_index_period_unfold_of_summable (q:Eis) (hq:q≠0) (f:ℂ→ℂ) 
   change (Fintype.card (Eis⧸Ideal.span {q}):ℂ)=(Nat.card (Eis⧸Ideal.span {q}):ℂ)
   rw [Nat.card_eq_fintype_card]
 
-lemma finite_index_period_lintegral (q:Eis) (hq:q≠0) (f:ℂ→ℝ≥0∞) :
+include hq in
+lemma finite_index_period_lintegral     (f:ℂ→ℝ≥0∞) :
     (∑'n:Eis,∫⁻z in periodDomain,f (z+3*eisEmbedding n/eisEmbedding q))=
       (Ideal.absNorm (Ideal.span {q}):ℝ≥0∞)*(∫⁻z:ℂ,f z) := by
   let : Finite (Eis⧸Ideal.span {q}):=finite_quotient_span hq
@@ -666,7 +692,8 @@ lemma finite_index_period_lintegral (q:Eis) (hq:q≠0) (f:ℂ→ℝ≥0∞) :
   change (Fintype.card (Eis⧸Ideal.span {q}):ℝ≥0∞)=(Nat.card (Eis⧸Ideal.span {q}):ℝ≥0∞)
   rw [Nat.card_eq_fintype_card]
 
-lemma finite_index_period_integrals_summable (q:Eis) (hq:q≠0) (f:ℂ→ℂ) (hf:Integrable f) :
+include hq hf in
+lemma finite_index_period_integrals_summable         :
     Summable (fun n:Eis=>∫z in periodDomain,f (z+3*eisEmbedding n/eisEmbedding q)) := by
   apply Summable.of_enorm
   apply ne_of_lt
@@ -674,11 +701,14 @@ lemma finite_index_period_integrals_summable (q:Eis) (hq:q≠0) (f:ℂ→ℂ) (h
   rw [finite_index_period_lintegral q hq (fun z=>‖f z‖ₑ)]
   exact ENNReal.mul_lt_top (by simp) hf.hasFiniteIntegral
 
-theorem finite_index_period_unfold (q:Eis) (hq:q≠0) (f:ℂ→ℂ) (hf:Integrable f) :
+include hq hf in
+theorem finite_index_period_unfold         :
     (∑'n:Eis,∫z in periodDomain,f (z+3*eisEmbedding n/eisEmbedding q))=
       (Ideal.absNorm (Ideal.span {q}):ℂ)*(∫z:ℂ,f z) :=
   finite_index_period_unfold_of_summable q hq f hf
     (finite_index_period_integrals_summable q hq f hf)
+
+end
 
 end CubicEisenstein
 

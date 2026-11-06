@@ -13,31 +13,31 @@ open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmet
 open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero sourceIdeal_union sourceIdeal_injective sourcePrime source_prime_dvd)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 
 @[ext] structure SecondOriginalSource (ι : Type*) (Jo Jn : ℕ) where
-  q0 : Ideal Eis
-  quotient : Ideal Eis
-  J : Ideal Eis
-  C : Ideal Eis
-  s : Ideal Eis
-  b1 : Ideal Eis
-  A1 : Ideal Eis
-  A2 : Ideal Eis
-  dK : Ideal Eis
-  J2 : Ideal Eis
-  b2 : Ideal Eis
+  q0 : Ideal ActualEisensteinCubic.O
+  quotient : Ideal ActualEisensteinCubic.O
+  J : Ideal ActualEisensteinCubic.O
+  C : Ideal ActualEisensteinCubic.O
+  s : Ideal ActualEisensteinCubic.O
+  b1 : Ideal ActualEisensteinCubic.O
+  A1 : Ideal ActualEisensteinCubic.O
+  A2 : Ideal ActualEisensteinCubic.O
+  dK : Ideal ActualEisensteinCubic.O
+  J2 : Ideal ActualEisensteinCubic.O
+  b2 : Ideal ActualEisensteinCubic.O
   common : Finset ι
   divisor : Finset ι
   overlap : Finset ι
-  frequency : Eis
+  frequency : ActualEisensteinCubic.O
   oldAssigned : Fin Jo → SmoothMobiusCorrection.PrimeIdeal
   newAssigned : Fin Jn → ι
 
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
-def originalSecondTuple {Jo Jn : ℕ} (u v : Eisˣ) (x : SecondOriginalSource ι Jo Jn) : SecondTuple Jo Jn where
+def originalSecondTuple {Jo Jn : ℕ} (u v : ActualEisensteinCubic.Oˣ) (x : SecondOriginalSource ι Jo Jn) : SecondTuple Jo Jn where
   outer := ⟨x.q0,x.quotient,sourceIdeal p (x.common \ x.divisor)⟩
   core := ![x.J,x.C,sourceIdeal p x.divisor,x.s,x.b1,x.A1,x.A2,x.dK]
   commonResidual := sourceIdeal p x.overlap
@@ -61,7 +61,7 @@ structure SecondOriginalValid {Jo Jn : ℕ} (x : SecondOriginalSource ι Jo Jn) 
 
 theorem originalSecondTuple_valid (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    {Jo Jn : ℕ} (u v : Eisˣ) (x : SecondOriginalSource ι Jo Jn) (hx : SecondOriginalValid x) :
+    {Jo Jn : ℕ}  u v  (x : SecondOriginalSource ι Jo Jn) (hx : SecondOriginalValid x) :
     Valid (originalSecondTuple p u v x)
       (secondChild (originalSecondTuple p u v x)).1
       (secondChild (originalSecondTuple p u v x)).2.1
@@ -97,7 +97,7 @@ theorem originalSecondTuple_valid (hp : ∀ i, p i ≠ 0)
 
 theorem originalSecondTuple_injective
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    {Jo Jn : ℕ} (u v : Eisˣ) :
+     {Jo Jn}   u v  :
     Function.Injective (originalSecondTuple (Jo:=Jo) (Jn:=Jn) p u v) := by
   intro x y hxy
   have hi := sourceIdeal_injective p hinj

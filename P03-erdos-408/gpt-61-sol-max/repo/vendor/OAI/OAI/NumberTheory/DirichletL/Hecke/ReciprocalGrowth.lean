@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicActual
 
@@ -11,7 +12,7 @@ open scoped Classical
 namespace SevenEighths.HeckeReciprocalGrowth
 open HeckeFamily HeckeLogarithmic HeckeDeletionBounds
 
-def presentationComplexity (χ : Character) (t : ℝ) : ℝ :=
+def presentationComplexity (χ : Character) (t : ℝ)  :=
   ((radical χ.modulus).absNorm : ℝ)*complexity χ t
 
 theorem reciprocal_subpower (e ε : ℝ)
@@ -27,8 +28,7 @@ theorem reciprocal_subpower (e ε : ℝ)
   obtain ⟨ψ,hp,hn,_,hr⟩ := hreduce χ
   have hc : complexity ψ s.im ≤ complexity χ s.im := by
     unfold complexity
-    have hn' : (ψ.modulus.absNorm : ℝ) ≤ χ.modulus.absNorm := by exact_mod_cast hn
-    gcongr
+    gcongr <;> first | assumption | positivity | linarith
   have hc0 : 0 ≤ complexity ψ s.im :=
     (Real.exp_pos 1).le.trans (complexity_ge_exp ψ s.im)
   have hr0 : 0 ≤ ((radical χ.modulus).absNorm : ℝ) := by positivity
@@ -43,7 +43,7 @@ theorem reciprocal_subpower (e ε : ℝ)
       (Real.rpow_le_rpow (mul_nonneg hr0 hc0) (mul_le_mul_of_nonneg_left hc hr0) hε.le)
       (mul_pos hCd hDp).le
 
-theorem polynomial_reciprocal_bound (χ : Character) (a : ℝ)
+theorem polynomial_reciprocal_bound  χ   a 
     (hβ : HeckeZeroSupremum.beta < a) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ s : ℂ, a ≤ s.re →
       ‖HeckeReciprocal.reciprocal χ s‖ ≤ C*(1+|s.im|^2) := by
@@ -51,9 +51,7 @@ theorem polynomial_reciprocal_bound (χ : Character) (a : ℝ)
   have he : 0<e := lt_min (by norm_num) (by linarith)
   have he' : e<1/1000 := lt_of_le_of_lt (min_le_left _ _) (by norm_num)
   have hmargin : HeckeZeroSupremum.beta+8*e ≤ a := by
-    have hh := min_le_right (1/2000 : ℝ) ((a-HeckeZeroSupremum.beta)/16)
-    change e ≤ (a-HeckeZeroSupremum.beta)/16 at hh
-    linarith
+    grind
   obtain ⟨C,hC,hbound⟩ := reciprocal_subpower e 1 he he' (by norm_num)
   let K : ℝ := C*((radical χ.modulus).absNorm : ℝ)*(2*(χ.modulus.absNorm : ℝ))
   have hK : 0 ≤ K := by dsimp [K]; positivity

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Edge.AuxSum
 public import Erdos821.P3Edge.Analytic
@@ -26,17 +27,18 @@ lemma one_lt_L (hx : 3 ≤ x) : 1 < L x := by
     _ < Real.log 3 := Real.log_lt_log (Real.exp_pos 1) he
     _ ≤ Real.log x := Real.log_le_log (by norm_num) hx
 
-lemma V_pos_of_adm {x : ℝ} (hP : P.Admissible F x) (g : P.Group) : 0 < P.V g :=
+section
+variable {x : ℝ}
+
+lemma V_pos_of_adm   (hP : P.Admissible F x)  g  : 0 < P.V g :=
   lt_of_lt_of_le F.vMin_pos ((hP.2.2.2.2.1 g).1)
 
 /-- Big primes are large: from admissibility. -/
-lemma big_prime_ge {x : ℝ} (hP : P.Admissible F x)
+lemma big_prime_ge   (hP : P.Admissible F x)
     (g : P.BigGroup) (p : P.Prime g.val) : Real.exp ((L x) ^ F.c) ≤ (p.val : ℝ) := by
   have h := hP.2.2.2.2.2 g.val p.val p.property
   -- hP.2.2.2 : ∀ g p, p ∈ primes g → if big g then ... ; g.val has big = true
-  have hb : P.big g.val = true := g.property
-  rw [hb] at h
-  simpa using h.1
+  aesop
 
 /-- `N x + 1` grows at most linearly in `L x` once `1 ≤ L x`. -/
 lemma Nx_add_one_le (hx : 1 ≤ L x) : ((N x + 1 : ℕ) : ℝ) ≤ 5 * L x := by
@@ -53,18 +55,12 @@ lemma Nx_add_one_le (hx : 1 ≤ L x) : ((N x + 1 : ℕ) : ℝ) ≤ 5 * L x := by
     simpa [R] using le_of_lt h
   have hN : ((N x : ℕ) : ℝ) ≤ 4 * L x := by
     have : ((N x : ℕ) : ℝ) = 2 * ((R x : ℕ) : ℝ) := by simp [N]
-    rw [this]
-    calc 2 * ((R x : ℕ) : ℝ) ≤ 2 * ((L x) ^ ((52 : ℝ) / 100) + 1) := by
-            apply mul_le_mul_of_nonneg_left hR (by norm_num)
-      _ ≤ 2 * (L x + 1) := by
-            apply mul_le_mul_of_nonneg_left _ (by norm_num)
-            linarith [hrpow52]
-      _ ≤ 4 * L x := by linarith [hx]
+    grind
   push_cast
   linarith [hN, hx]
 
 /-- Exponential of a positive power dominates: single Taylor term. -/
-lemma exp_ge_pow_div (y : ℝ) (hy : 0 ≤ y) (k : ℕ) :
+lemma exp_ge_pow_div  y  (hy : 0 ≤ y)  k  :
     y ^ k / (k.factorial : ℝ) ≤ Real.exp y := by
   have hnn : ∀ i ∈ Finset.range (k + 1), (0:ℝ) ≤ y ^ i / (i.factorial : ℝ) := by
     intro i _
@@ -76,12 +72,12 @@ lemma exp_ge_pow_div (y : ℝ) (hy : 0 ≤ y) (k : ℕ) :
     _ ≤ Real.exp y := Real.sum_le_exp_of_nonneg hy (k + 1)
 
 /-- Fixed-data constant: how many Taylor terms dominate `L x`. -/
-def taylorTerms (F : FixedData) : ℕ := ⌈2 / F.c⌉₊ + 1
+def taylorTerms (F : FixedData)  := ⌈2 / F.c⌉₊ + 1
 
 lemma taylorTerms_pos_c (F : FixedData) : 0 < F.c :=
   lt_trans (lt_trans F.a_pos F.ab) F.bc
 
-lemma taylorTerms_mul (F : FixedData) :
+lemma taylorTerms_mul  F  :
     2 ≤ F.c * (taylorTerms F : ℝ) := by
   have hc : 0 < F.c := taylorTerms_pos_c F
   unfold taylorTerms
@@ -92,15 +88,13 @@ lemma taylorTerms_mul (F : FixedData) :
   have h3 : F.c * (2 / F.c) = 2 := by field_simp
   calc (2:ℝ) = F.c * (2 / F.c) := h3.symm
     _ ≤ F.c * ((⌈2 / F.c⌉₊ + 1 : ℕ) : ℝ) := by
-        apply mul_le_mul_of_nonneg_left _ (le_of_lt hc)
-        calc (2 / F.c : ℝ) ≤ ((⌈2 / F.c⌉₊ : ℕ) : ℝ) := h1
-          _ ≤ ((⌈2 / F.c⌉₊ + 1 : ℕ) : ℝ) := h2
+        nlinarith
 
 /-- For large `L x`, primes exceed twice the auxiliary sum. -/
 lemma exp_pow_ge_ten_mul (hx : 1 ≤ L x)
     (hL : 10 * ((taylorTerms F).factorial : ℝ) ≤ L x) :
     10 * L x ≤ Real.exp ((L x) ^ F.c) := by
-  have hc : 0 < F.c := taylorTerms_pos_c F
+  
   set k := taylorTerms F with hk
   have hy0 : (0:ℝ) ≤ (L x) ^ F.c := Real.rpow_nonneg (le_trans zero_le_one hx) _
   have hterm := exp_ge_pow_div ((L x) ^ F.c) hy0 k
@@ -115,11 +109,7 @@ lemma exp_pow_ge_ten_mul (hx : 1 ≤ L x)
   have hkpos : (0:ℝ) < (k.factorial : ℝ) := by positivity
   have hLx_pos : 0 < L x := lt_of_lt_of_le zero_lt_one hx
   have hterm2 : (L x) ^ (F.c * k) / (k.factorial : ℝ) ≤ Real.exp ((L x) ^ F.c) := by
-    have h2 : ((L x) ^ F.c) ^ k / (k.factorial : ℝ) ≤ Real.exp ((L x) ^ F.c) := by
-      have h3 := exp_ge_pow_div ((L x) ^ F.c)
-        (Real.rpow_nonneg (le_of_lt hLx_pos) _) k
-      linarith [h3]
-    rwa [hpow] at h2
+    simp_all
   have hstep : (L x) ^ (2:ℝ) / (k.factorial : ℝ) ≤ Real.exp ((L x) ^ F.c) := by
     have hdiv : (L x) ^ (2:ℝ) / (k.factorial : ℝ)
         ≤ (L x) ^ (F.c * k) / (k.factorial : ℝ) := by
@@ -134,18 +124,18 @@ lemma exp_pow_ge_ten_mul (hx : 1 ≤ L x)
     _ ≤ Real.exp ((L x) ^ F.c) := hstep
 
 /-- Auxiliary sum is at most `n+1`. -/
-lemma eta_sum_le (n : ℕ) : ∑ i : Fin (n + 1), eta F n i ≤ ((n + 1 : ℕ) : ℝ) := by
-  have h := Finset.sum_le_card_nsmul Finset.univ (fun i => eta F n i) (1:ℝ)
+lemma eta_sum_le  n  : ∑ i : Fin (n + 1), eta F n i ≤ ((n + 1 : ℕ) : ℝ) := by
+  have h := Finset.sum_le_card_nsmul Finset.univ (eta F n) (1:ℝ)
     (fun i _ => le_of_lt (eta_lt_one F n i))
   simpa [Finset.card_univ] using h
 
 /-- Baseline is at least one half for large `x`. -/
-lemma baseline_ge_half {x : ℝ} (hx1 : 1 ≤ L x)
+lemma baseline_ge_half   (hx1 : 1 ≤ L x)
     (hP : P.Admissible F x) (n : ℕ) (hn : n = N x)
     (hL : 10 * ((taylorTerms F).factorial : ℝ) ≤ L x)
     (g : P.BigGroup) (p : P.Prime g.val) :
     (1:ℝ)/2 ≤ baselinePrime F n p.val := by
-  have hc : 0 < F.c := lt_trans (lt_trans F.a_pos F.ab) F.bc
+  
   have hS : ∑ i : Fin (n + 1), eta F n i ≤ 5 * L x := by
     have h1 : ∑ i : Fin (n + 1), eta F n i ≤ ((n + 1 : ℕ) : ℝ) := eta_sum_le n
     have h2 : ((n + 1 : ℕ) : ℝ) ≤ 5 * L x := by
@@ -155,24 +145,17 @@ lemma baseline_ge_half {x : ℝ} (hx1 : 1 ≤ L x)
   have hexp := exp_pow_ge_ten_mul hx1 hL
   have hppos : 0 < (p.val : ℝ) :=
     lt_of_lt_of_le (Real.exp_pos _) hpge
-  have h2S : 2 * (∑ i : Fin (n + 1), eta F n i) ≤ (p.val : ℝ) := by linarith
+  
   have hSp : (∑ i : Fin (n + 1), eta F n i) / (p.val : ℝ) ≤ 1/2 := by
     rw [div_le_iff₀ hppos]
     linarith
-  have hdiv : ((p.val : ℝ))⁻¹ * (∑ i : Fin (n + 1), eta F n i)
-      = (∑ i : Fin (n + 1), eta F n i) / (p.val : ℝ) := by
-    rw [div_eq_mul_inv, mul_comm]
-  have h2 : (1:ℝ) - 1/2 = 1/2 := by norm_num
-  rw [← h2]
-  unfold baselinePrime
-  rw [hdiv]
-  exact sub_le_sub_left hSp 1
+  grind [eta, baselinePrime]
 
 /-- Tilted densities are positive for large `x`. -/
-lemma tiltedMu_pos {x : ℝ} (hx1 : 1 ≤ L x)
+lemma tiltedMu_pos   (hx1 : 1 ≤ L x)
     (hP : P.Admissible F x) (n : ℕ) (hn : n = N x)
     (hL : 10 * ((taylorTerms F).factorial : ℝ) ≤ L x)
-    (g : P.BigGroup) (p : P.Prime g.val) : 0 < tiltedMu F P n g.val p := by
+    (g : P.BigGroup)  p  : 0 < tiltedMu F P n g.val p := by
   unfold tiltedMu
   apply inv_pos.mpr
   apply mul_pos
@@ -180,16 +163,15 @@ lemma tiltedMu_pos {x : ℝ} (hx1 : 1 ≤ L x)
     · exact V_pos_of_adm hP g.val
     · have h := (P.prime g.val p.val p.property).pos
       exact_mod_cast h
-  · have hb := baseline_ge_half hx1 hP n hn hL g p
-    linarith
+  grind [baseline_ge_half]
 
 /-- Fresh tilted mass per big group is at most two for large `x`. -/
-lemma tiltedMu_sum_le_two {x : ℝ} (hx1 : 1 ≤ L x)
+lemma tiltedMu_sum_le_two   (hx1 : 1 ≤ L x)
     (hP : P.Admissible F x) (n : ℕ) (hn : n = N x)
     (hL : 10 * ((taylorTerms F).factorial : ℝ) ≤ L x)
     (g : P.BigGroup) : ∑ p : P.Prime g.val, tiltedMu F P n g.val p ≤ 2 := by
   have hb : ∀ p : P.Prime g.val, (1:ℝ)/2 ≤ baselinePrime F n p.val :=
-    fun p => baseline_ge_half hx1 hP n hn hL g p
+    baseline_ge_half hx1 hP n hn hL g
   have hinv : ∀ p : P.Prime g.val, (baselinePrime F n p.val)⁻¹ ≤ 2 := by
     intro p
     have hbp : 0 < baselinePrime F n p.val := lt_of_lt_of_le (by norm_num) (hb p)
@@ -210,5 +192,7 @@ lemma tiltedMu_sum_le_two {x : ℝ} (hx1 : 1 ≤ L x)
     _ = 2 := by
         rw [← Finset.sum_mul, mu_sum_eq_one g.val (ne_of_gt (V_pos_of_adm hP g.val)),
           one_mul]
+
+end
 
 end Erdos821.P3Edge

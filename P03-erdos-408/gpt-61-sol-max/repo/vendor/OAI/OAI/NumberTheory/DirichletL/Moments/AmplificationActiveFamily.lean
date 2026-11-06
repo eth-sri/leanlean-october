@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationActiveFactor
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationActiveFamily
@@ -16,11 +16,11 @@ open CenteredMomentAmplificationShortening CenteredMomentAmplificationActiveFact
 open CenteredMomentAmplificationFamilyEnergy CenteredMomentAmplificationSourceDomain
 open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows
 open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
 
- theorem actual_error_energy_active (S : Finset (Ideal O)) (p : O) (hp : Prime p)
-    (hs : Supported (Ideal.span {p})) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6)
-    (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+
+ theorem actual_error_energy_active  S   p   hp 
+    (hs : Supported (Ideal.span {p}))  n  (hn : n=0 ∨ n=5 ∨ n=6)
+     c   W   K  :
     sourceGaussEnergy (residualColumns S p hp (n+1)) c
       (fun I => residualCharacter p (n+1) (primaryGenerator I)) W K=
     sourceGaussEnergy (residualColumns S p hp (n+1)) c
@@ -34,6 +34,6 @@ local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentAmplificationActiveFamily
 
-end
+
 
 end OAI

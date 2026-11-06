@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.RankSummability
 
@@ -16,20 +17,23 @@ open Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-def truncatedHistories (A : Model F P J m) (n B : ℕ) : Finset (MemoryHistory A n) :=
+def truncatedHistories (A : Model F P J m) (n B : ℕ)  :=
   (@Set.toFinite (MemoryHistory A n) {H | H.Truncated B}
     (truncated_history_finite A n B)).toFinset
 
-theorem mem_truncatedHistories (A : Model F P J m) (n B : ℕ) (H : MemoryHistory A n) :
+section
+variable (A : Model F P J m) (n B : ℕ)
+
+theorem mem_truncatedHistories     (H : MemoryHistory A n) :
     H ∈ truncatedHistories A n B ↔ H.Truncated B := by
   simp only [truncatedHistories, Set.Finite.mem_toFinset, Set.mem_ofPred_eq]
 
-def truncatedDistinctMemoryExpression (A : Model F P J m) (n B : ℕ) (rho theta : ℝ) : ℂ :=
+def truncatedDistinctMemoryExpression (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)  :=
   ∑' H : MemoryHistory A n,
     if H.Valid ∧ H.Truncated B ∧ H.DistinctBirths then H.Weight rho theta else 0
 
-theorem truncatedDistinctMemoryExpression_eq_sum (A : Model F P J m) (n B : ℕ)
-    (rho theta : ℝ) :
+theorem truncatedDistinctMemoryExpression_eq_sum    
+     rho theta  :
     truncatedDistinctMemoryExpression A n B rho theta =
       ∑ H ∈ truncatedHistories A n B,
         if H.Valid ∧ H.DistinctBirths then H.Weight rho theta else 0 := by
@@ -37,10 +41,9 @@ theorem truncatedDistinctMemoryExpression_eq_sum (A : Model F P J m) (n B : ℕ)
   rw [tsum_eq_sum (s := truncatedHistories A n B) (fun H hH =>
     ite_eq_right (fun hp => hH ((mem_truncatedHistories A n B H).mpr hp.2.1)))]
   apply Finset.sum_congr rfl
-  intro H hH
-  simp only [(mem_truncatedHistories A n B H).mp hH, true_and]
+  simp_all [mem_truncatedHistories]
 
-theorem lowRankHistoryExpression_eq_sum (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
+theorem lowRankHistoryExpression_eq_sum      rho theta 
     (pi : Finset (Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B))))) :
     lowRankHistoryExpression A n B rho theta pi =
       ∑ H ∈ truncatedHistories A n B,
@@ -50,11 +53,10 @@ theorem lowRankHistoryExpression_eq_sum (A : Model F P J m) (n B : ℕ) (rho the
   rw [tsum_eq_sum (s := truncatedHistories A n B) (fun H hH =>
     ite_eq_right (fun hp => hH ((mem_truncatedHistories A n B H).mpr hp.2.1)))]
   apply Finset.sum_congr rfl
-  intro H hH
-  simp only [(mem_truncatedHistories A n B H).mp hH, true_and]
+  simp_all [mem_truncatedHistories]
 
 theorem weighted_distinct_expansion {A : Model F P J m} {n : ℕ}
-    (H : MemoryHistory A n) (B : ℕ) (hH : H.Truncated B) (w : ℂ) :
+    (H : MemoryHistory A n)  B  (hH : H.Truncated B)  w  :
     (if H.DistinctBirths then w else 0) =
       ∑ pi ∈ Finset.univ.powerset.powerset.filter BirthCollection,
         (birthMobius pi : ℂ) *
@@ -63,8 +65,8 @@ theorem weighted_distinct_expansion {A : Model F P J m} {n : ℕ}
   simpa only [Int.cast_sum, Int.cast_ite, Int.cast_one, Int.cast_zero, Finset.sum_mul,
     ite_mul, mul_ite, one_mul, zero_mul, mul_zero] using he
 
-theorem truncatedDistinctMemoryExpression_rank_expansion (A : Model F P J m) (n B : ℕ)
-    (rho theta : ℝ) :
+theorem truncatedDistinctMemoryExpression_rank_expansion    
+     rho theta  :
     truncatedDistinctMemoryExpression A n B rho theta =
       ∑ pi ∈ Finset.univ.powerset.powerset.filter BirthCollection,
         (birthMobius pi : ℂ) * lowRankHistoryExpression A n B rho theta pi := by
@@ -78,6 +80,8 @@ theorem truncatedDistinctMemoryExpression_rank_expansion (A : Model F P J m) (n 
     exact weighted_distinct_expansion H B ((mem_truncatedHistories A n B H).mp hH)
       (H.Weight rho theta)
   · simp only [hv, false_and, ite_false, mul_zero, Finset.sum_const_zero]
+
+end
 
 
 end Erdos821.S2Core

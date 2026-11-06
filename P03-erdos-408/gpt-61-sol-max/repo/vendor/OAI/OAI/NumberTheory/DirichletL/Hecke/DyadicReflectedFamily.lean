@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ComplexConjugate
 open Complex Set
 namespace SevenEighths.HeckeDyadicReflection
@@ -33,9 +33,9 @@ theorem family_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ η : Character,
   rw [LFunction_principalCharacter η hη,LFunction_principalCharacter η hη] at h
   simpa only [HeckeStripActual.conductor,span_generator] using h
 
-theorem LFunction_eq_of_mask_entire (χ ψ : Character) (hχ : χ.residue≠1)
+theorem LFunction_eq_of_mask_entire  χ ψ  (hχ : χ.residue≠1)
     (hmask : ∀ J : Ideal O, idealCoeff χ J=
-      if IsCoprime J χ.modulus then idealCoeff ψ J else 0) (s : ℂ) :
+      if IsCoprime J χ.modulus then idealCoeff ψ J else 0)  s  :
     LFunction χ s=LFunction ψ s*factors χ.modulus ψ s := by
   have hψ : ψ.residue≠1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
   have ha := LFunction_entire_nonprincipal χ hχ
@@ -73,7 +73,7 @@ theorem original_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ χ ψ : Character,
           ‖factors χ.modulus ψ s‖ := mul_le_mul_of_nonneg_right h (norm_nonneg _)
     _ = _ := by ring
 
-theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
+theorem original_reflected_subpower  ε  (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ χ : Character, χ.residue≠1 →
     ∀ s : ℂ, -(1/10 : ℝ)≤s.re → s.re≤1/2 →
     ‖LFunction χ s‖≤C*(χ.modulus.absNorm : ℝ)^(1/2-s.re)*
@@ -126,6 +126,6 @@ theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
 
 end SevenEighths.HeckeDyadicReflection
 
-end
+
 
 end OAI

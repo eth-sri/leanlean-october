@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Analytic.IntegerKernel
 
@@ -23,7 +24,7 @@ open Filter Finset IntegerKernel
 /-- The growth facts in `L` for the kernel bound: the constants of
 `IntegerKernel.norm_sum_filter_modEq_le` are absorbed into the margin
 `(0.99/128 - 1/150) L ≥ L/1000`. -/
-theorem eventually_kernelGrowth (Cm C K : ℝ) : ∀ᶠ L : ℝ in atTop,
+theorem eventually_kernelGrowth  Cm C K  : ∀ᶠ L : ℝ in atTop,
     1 ≤ L ∧ |Cm| * Real.log L + Real.log 2 ≤ L ∧ 128 * Real.log 3 ≤ L / 2 ∧
       Real.log (|K| + 1) + |C| * (2 * Real.sqrt L) +
           (2 * L ^ (0.47 : ℝ) + |Cm| * Real.log L) / 128 ≤ L / 1000 ∧
@@ -39,10 +40,10 @@ theorem eventually_kernelGrowth (Cm C K : ℝ) : ∀ᶠ L : ℝ in atTop,
     eventually_rpow_le_mul_rpow (a := 0.47) (b := 1) (by norm_num) (ε := 1 / 64000)
       (by norm_num)] with L hL1 hlog h2 h3 hK hsqrt h47
   rw [Real.rpow_one] at hlog h2 h3 hK hsqrt h47
-  have hL0 : 0 < L := by linarith
+  
   have ha := abs_nonneg Cm
   have hc := abs_nonneg C
-  have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
+  
   have hsq : Real.sqrt L = L ^ (1 / 2 : ℝ) := Real.sqrt_eq_rpow L
   -- `|Cm| log L ≤ L/8000` and `|C| √L ≤ L/8000`
   have hCm : |Cm| * Real.log L ≤ L / 8000 := by
@@ -60,7 +61,7 @@ theorem eventually_kernelGrowth (Cm C K : ℝ) : ∀ᶠ L : ℝ in atTop,
         field_simp]
       exact mul_le_of_le_one_left (by positivity) ((div_le_one (by linarith)).2 (by linarith))
     linarith
-  refine ⟨hL1, by linarith, by linarith, by linarith, by linarith⟩
+  grind
 
 /-- The scale condition and the saving of the kernel bound at `H ≥ x^{0.99} e^{-2L^{0.47}}`:
 `3^{128} ≤ H/k` and `K exp(C √(log(k(|u| + 3)))) (H/k)^{-1/128} ≤ x^{-1/150}`. -/
@@ -84,7 +85,7 @@ theorem eventually_kernel_saving (Cm C K : ℝ) (hC : 0 ≤ C) :
     have := Real.log_le_log (by linarith) hkl
     rw [Real.log_rpow hl0] at this
     exact this.trans (mul_le_mul_of_nonneg_right (le_abs_self _) hloglog)
-  have hlogk0 : 0 ≤ Real.log k := Real.log_nonneg hk'
+  
   have hH0 : 0 < H := lt_of_lt_of_le (by positivity) hH
   -- `log H ≥ 0.99 L - 2 L^{0.47}`
   have hlogH : 99 / 100 * l - 2 * l ^ (0.47 : ℝ) ≤ Real.log H := by
@@ -119,8 +120,7 @@ theorem eventually_kernel_saving (Cm C K : ℝ) (hC : 0 ≤ C) :
         calc Real.sqrt (Real.log (k * (|u| + 3))) ≤ Real.sqrt (4 * l) :=
               Real.sqrt_le_sqrt hlogku
           _ = 2 * Real.sqrt l := by
-              rw [Real.sqrt_mul (by norm_num), show (4 : ℝ) = 2 ^ 2 by norm_num,
-                Real.sqrt_sq (by norm_num)]
+              norm_num
       rw [abs_of_nonneg hC]
       exact mul_le_mul_of_nonneg_left this hC
     have hR : (H / k) ^ (-(1 / 128 : ℝ)) = Real.exp (-(ℓ / 128)) := by
@@ -153,9 +153,8 @@ theorem sum_divisors_mul_eq (A : ℕ → ℂ) (D F : Finset ℕ) (f : ℕ → �
     intro n hn
     rw [← Finset.sum_filter]
     refine (Finset.sum_subset (fun d hd => ?_) fun d hdn hdD => ?_).symm
-    · exact Nat.mem_divisors.2 ⟨(Finset.mem_filter.1 hd).2, hF n hn⟩
-    · by_contra hAd
-      exact hdD (Finset.mem_filter.2 ⟨hA d hAd, Nat.dvd_of_mem_divisors hdn⟩)
+    · aesop
+    grind
   rw [Finset.sum_congr rfl fun n hn => by rw [h1 n hn]]
   simp_rw [Finset.sum_mul, ite_mul, zero_mul]
   rw [Finset.sum_comm]
@@ -164,7 +163,7 @@ theorem sum_divisors_mul_eq (A : ℕ → ℂ) (D F : Finset ℕ) (f : ℕ → �
 
 /-- The multiples of `d` in a progression `(lo, hi]`, `n ≡ β`, are `d v` with
 `v ∈ (lo/d, hi/d]`, `v ≡ e β`, for `d e ≡ 1`. -/
-theorem filter_dvd_eq_image {d k e β lo hi : ℕ} (hd : 0 < d) (hde : d * e ≡ 1 [MOD k]) :
+theorem filter_dvd_eq_image  {d k e β lo hi}  (hd : 0 < d) (hde : d * e ≡ 1 [MOD k]) :
     ((Finset.Ioc lo hi).filter (· ≡ β [MOD k])).filter (d ∣ ·) =
       ((Finset.Ioc (lo / d) (hi / d)).filter (· ≡ e * β [MOD k])).image (d * ·) := by
   ext n
@@ -192,15 +191,12 @@ theorem filter_dvd_eq_image {d k e β lo hi : ℕ} (hd : 0 < d) (hde : d * e ≡
       exact h1.trans (by rw [show d * (e * β) = d * e * β by ring]; exact h2)
 
 /-- An inverse of `d` modulo `k` for `d` coprime to `k`. -/
-theorem exists_mul_modEq_one {d k : ℕ} (h : Nat.Coprime d k) : ∃ e, d * e ≡ 1 [MOD k] := by
+theorem exists_mul_modEq_one  {d k}  (h : Nat.Coprime d k) : ∃ e, d * e ≡ 1 [MOD k] := by
   rcases Nat.lt_or_ge 1 k with hk | hk
   · obtain ⟨e, -, he⟩ := Nat.exists_mul_mod_eq_one_of_coprime h hk
     exact ⟨e, by rw [Nat.ModEq, he, Nat.mod_eq_of_lt hk]⟩
   · interval_cases k
-    · exact ⟨1, by
-        rw [Nat.coprime_zero_right] at h
-        subst h
-        rfl⟩
+    · simp_all
     · exact ⟨0, Nat.modEq_one⟩
 
 /-- **E10.2 on an interval.** For `C_m, C₈`, eventually: for a model `A` supported on
@@ -253,8 +249,7 @@ theorem eventually_norm_modelProgression_Ioc_le (Cm C₈ : ℝ) :
     have hHx : x ^ (99 / 100 : ℝ) * Real.exp (-(2 * Real.log x ^ (0.47 : ℝ))) ≤ H := by
       rw [hH, le_div_iff₀ hd', Real.exp_neg, ← div_eq_mul_inv, div_mul_eq_mul_div,
         div_le_iff₀ (Real.exp_pos _)]
-      calc x ^ (99 / 100 : ℝ) * d ≤ R * E := mul_le_mul hR hdE hd'.le hR0.le
-        _ = R * Real.exp (2 * Real.log x ^ (0.47 : ℝ)) := rfl
+      bound
     obtain ⟨hHk, hsv⟩ := hsave H k t hHx hk hkl htx
     have hHA : H ≤ ((lo / d : ℕ) : ℝ) + 1 := by
       rw [hH, div_le_iff₀ hd']

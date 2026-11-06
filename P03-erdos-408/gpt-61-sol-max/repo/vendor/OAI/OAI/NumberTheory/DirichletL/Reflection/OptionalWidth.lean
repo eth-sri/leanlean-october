@@ -10,15 +10,15 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+
 
 theorem original_optional_terminal_saving
-    (J I F B R Q₀ : Ideal O) (hJ : J≠0) (hI : I ≠ 0) (hF : F ≠ 0) (hB : B ≠ 0) (hR : R ≠ 0)
+    (J I F B R Q₀ : Ideal ActualEisensteinCubic.O) (hJ : J≠0) (hI : I ≠ 0) (hF : F ≠ 0) (hB : B ≠ 0) (hR : R ≠ 0)
     (hpower : rowPowerfulPart J=rowPowerfulPart I)
     (hmask : rowMaskPart J (B*F*R)=rowMaskPart I (B*F*R))
-    (A : Finset (FreeReflection.pool J (B*F*R) Q₀))
-    (e : A→Fin 3)
+     A 
+     e 
     (Z F₀ N V M z₀ c cstar O₀ H za Nstar hhat v ell el d η τ π Ck CO CH Cf : ℝ)
     (hZ : 1 < Z) (hCk : 0 < Ck) (hCO : 0 < CO) (hCH : 0 < CH) (hCf : 0 < Cf)
     (hk : (Ideal.absNorm I : ℝ) ≤ Ck * Z ^ M)
@@ -63,7 +63,7 @@ theorem original_optional_terminal_saving
   unfold InverseTerminalWidths.reflectedExponent
   ring
 
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

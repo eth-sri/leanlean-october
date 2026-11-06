@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Arithmetic.SquarefreeDivisors
 
@@ -10,79 +11,79 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
 
-open scoped BigOperators
+ 
 namespace FiniteSieveOperator
 
 variable {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
 
-def operator (A : Matrix m n ℂ) : EuclideanSpace ℂ n →L[ℂ] EuclideanSpace ℂ m :=
+def operator (A : Matrix m n ℂ)  :=
   A.toEuclideanLin.toContinuousLinearMap
 
 omit [DecidableEq m] in
-@[simp] theorem operator_apply (A : Matrix m n ℂ) (x : EuclideanSpace ℂ n) (i : m) :
+@[simp] theorem operator_apply (A : Matrix m n ℂ) (x : EuclideanSpace ℂ n)  i  :
     operator A x i = ∑ j, A i j * x j := rfl
 
 theorem operator_conjTranspose (A : Matrix m n ℂ) :
@@ -189,9 +190,9 @@ theorem energy_bound (A : Matrix m n ℂ) (u : n → ℂ) :
 end FiniteSieveOperator
 
 section
-open scoped BigOperators Classical
+ 
 namespace QuadraticInitialBound
-open ActualEisensteinCubic ConcreteTraceCRT RayFourExpansion
+open     RayFourExpansion
 
 def quadraticMatrix {ι m n : Type*}
     (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -248,9 +249,7 @@ theorem quadratic_matrix_norm_reverse_le
     _ ≤ 512 * ‖FiniteSieveOperator.operator B‖ :=
       mul_le_mul_of_nonneg_right hmass (norm_nonneg _)
     _ = _ := by
-      change 512 * ‖FiniteSieveOperator.operator
-        (quadraticMatrix p hg cols rows).conjTranspose‖ = _
-      rw [FiniteSieveOperator.operator_conjTranspose_norm]
+      solve_by_elim [FiniteSieveOperator.operator, quadraticMatrix, FiniteSieveOperator.operator_conjTranspose_norm]
 
 theorem quadraticSieveNorm_reverse_le
     {ι m n : Type*} [Fintype ι] [DecidableEq ι]
@@ -267,8 +266,8 @@ theorem quadraticSieveNorm_reverse_le
 
 end QuadraticInitialBound
 
-open scoped BigOperators Classical
-open Filter IdealMobiusDivisorSum UniqueFactorizationMonoid
+ 
+open   IdealMobiusDivisorSum  
 
 namespace IdealDivisorBound
 abbrev O := ActualEisensteinCubic.O
@@ -279,7 +278,7 @@ theorem divisor_ne_zero {I J : Ideal O} (hI : I ≠ ⊥) (hJ : J ∈ idealDiviso
   rw [hz, zero_dvd_iff] at hd
   exact hI hd
 
-theorem divisor_card_le_product (I : Ideal O) (hI : I ≠ ⊥) :
+theorem divisor_card_le_product  I  (hI : I ≠ ⊥) :
     (idealDivisors I).card ≤
       ∏ P ∈ primeSupport I, ((normalizedFactors I).count P + 1) := by
   change (idealDivisors I).card ≤
@@ -297,7 +296,7 @@ theorem divisor_card_le_product (I : Ideal O) (hI : I ≠ ⊥) :
       _ = (normalizedFactors K).prod := congrArg Multiset.prod he
       _ = K := Ideal.prod_normalizedFactors_eq_self (divisor_ne_zero hI hK)
 
-theorem linear_le_geometric (b : ℝ) (hb : 1 < b) (n : ℕ) :
+theorem linear_le_geometric  b  (hb : 1 < b) (n : ℕ) :
     (n : ℝ) + 1 ≤ (1 + (b - 1)⁻¹) * b ^ n := by
   have hδ : 0 < b - 1 := sub_pos.mpr hb
   have hn := one_add_mul_sub_le_pow (show (-1 : ℝ) ≤ b by linarith) n
@@ -305,9 +304,7 @@ theorem linear_le_geometric (b : ℝ) (hb : 1 < b) (n : ℕ) :
     apply (le_div_iff₀ hδ).mpr
     linarith
   have h1 : (1 : ℝ) ≤ b ^ n := one_le_pow₀ hb.le
-  calc
-    (n : ℝ) + 1 ≤ b ^ n / (b - 1) + b ^ n := add_le_add hn' h1
-    _ = _ := by ring
+  grind
 
 theorem support_norm_two_le {I P : Ideal O} (hP : P ∈ primeSupport I) :
     2 ≤ Ideal.absNorm P := by
@@ -319,17 +316,16 @@ theorem support_norm_two_le {I P : Ideal O} (hP : P ∈ primeSupport I) :
     intro h
     have ht := Ideal.absNorm_eq_one_iff.mp h
     apply hp.not_isUnit
-    rw [ht]
-    simpa only [Ideal.one_eq_top] using (show IsUnit (1 : Ideal O) from isUnit_one)
+    simp_all
   omega
 
-theorem norm_factor_product (I : Ideal O) (hI : I ≠ ⊥) :
+theorem norm_factor_product  I  (hI : I ≠ ⊥) :
     (∏ P ∈ primeSupport I, (Ideal.absNorm P : ℝ) ^ (normalizedFactors I).count P) =
       Ideal.absNorm I := by
   have he := congrArg (fun J : Ideal O => (Ideal.absNorm J : ℝ))
     (Ideal.prod_normalizedFactors_eq_self hI)
   rw [Finset.prod_multiset_count] at he
-  simpa only [primeSupport, map_prod, map_pow, Nat.cast_prod, Nat.cast_pow] using he
+  simp_all [primeSupport]
 
 theorem ideal_divisor_small_power (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ I : Ideal O, I ≠ ⊥ →
@@ -345,9 +341,7 @@ theorem ideal_divisor_small_power (ε : ℝ) (hε : 0 < ε) :
     exact Real.one_lt_rpow (by norm_num) hε
   let c : ℝ := 1 + (b - 1)⁻¹
   have hc : 1 ≤ c := by
-    dsimp [c]
-    have hi : 0 ≤ (b - 1)⁻¹ := inv_nonneg.mpr (sub_nonneg.mpr hb.le)
-    linarith
+    bound
   refine ⟨c ^ small.card, by positivity, ?_⟩
   intro I hI
   let S := primeSupport I
@@ -364,8 +358,7 @@ theorem ideal_divisor_small_power (ε : ℝ) (hε : 0 < ε) :
       have hl : ((e P + 1 : ℕ) : ℝ) ≤ c * b ^ e P := by
         simpa only [Nat.cast_add, Nat.cast_one, c] using hlin
       apply hl.trans
-      exact mul_le_mul_of_nonneg_left
-        (pow_le_pow_left₀ (by positivity) hbase _) (by positivity)
+      gcongr <;> first | assumption | positivity | linarith
     · rw [ite_eq_right hp, one_mul]
       have hn : N ≤ Ideal.absNorm P := by
         have : ¬ Ideal.absNorm P ≤ N := fun h => hp (by simpa [small] using h)
@@ -406,7 +399,7 @@ end IdealDivisorBound
 end
 
 namespace SecondPassFiber
-open scoped BigOperators Classical
+ 
 open IdealMobiusDivisorSum ConcretePrimeRowBridge
 
 abbrev O := ActualEisensteinCubic.O
@@ -427,23 +420,23 @@ structure Valid (x : OldTuple) (F b0 : Ideal O) (y : O) : Prop where
   d : x.core 7 ∣ F * b0
   row_eq : idealGenerator (x.core 7) * idealGenerator (x.core 2) * x.row = y
 
-def divisorTarget (F b0 : Ideal O) : Ideal O := (F * b0) ^ 2
+def divisorTarget (F b0 : Ideal O)  := (F * b0) ^ 2
 
-def newLabel (x : OldTuple) : Ideal O := x.core 0 * x.core 1 * x.core 2 * x.v
-def newRow (x : OldTuple) : O :=
+def newLabel (x : OldTuple)  := x.core 0 * x.core 1 * x.core 2 * x.v
+def newRow (x : OldTuple)  :=
   idealGenerator (x.core 7) * idealGenerator (x.core 2) * x.row
 
 end SecondPassFiber
 
-open scoped BigOperators Classical
+ 
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
+ 
 
-theorem conductorExponent_val (parityBit ε₁ ε₂ : Bool) :
+theorem conductorExponent_val  parityBit ε₁ ε₂  :
     (conductorExponent parityBit ε₁ ε₂).val = (bit ε₁ + 5 * bit ε₂ + 3 * bit parityBit) % 6 := by
   cases parityBit <;> cases ε₁ <;> cases ε₂ <;> decide
 
-theorem cube_pair_exponent_mod (m₁ m₂ : ℕ) (ε₁ ε₂ : Bool) :
+theorem cube_pair_exponent_mod  m₁ m₂   ε₁ ε₂  :
     (bit ε₁ + 5 * bit ε₂ + 3 * m₁ + 15 * m₂) % 6 =
       (conductorExponent (parity (m₁ + m₂)) ε₁ ε₂).val := by
   have hmod := Nat.mod_lt (m₁ + m₂) (by decide : 0 < 2)
@@ -458,7 +451,7 @@ def cubePairLocal (P : Ideal O) [P.IsMaximal] (hg : lambda ∉ P)
 
 theorem cubePairLocal_eq_character
     (P : Ideal O) [P.IsMaximal] (hg : lambda ∉ P)
-    (m₁ m₂ : ℕ) (ε₁ ε₂ : Bool) (hm : 0 < m₁ + m₂ + bit ε₁ + bit ε₂) (z : O) :
+     m₁ m₂   ε₁ ε₂  (hm : 0 < m₁ + m₂ + bit ε₁ + bit ε₂)  z  :
     cubePairLocal P hg m₁ m₂ ε₁ ε₂ z =
       (canonicalSextic P hg ^ (conductorExponent (parity (m₁ + m₂)) ε₁ ε₂).val)
         (Ideal.Quotient.mk P z) := by
@@ -491,12 +484,12 @@ theorem cubePairLocal_eq_character
     rw [pow_eq_pow_mod _ h6, cube_pair_exponent_mod]
     exact (MulChar.pow_apply_coe _ _ hu.unit).symm
 
-def cubeConductorSupport {κ : Type*} (B : Finset κ) (v₁ v₂ : κ → ℕ)
-    (ε₁ ε₂ : κ → Bool) : Finset κ :=
+def cubeConductorSupport {κ } (B : Finset κ) (v₁ v₂ : κ → ℕ)
+    (ε₁ ε₂ : κ → Bool)  :=
   B.filter (fun j => conductorExponent (parity (v₁ j + v₂ j)) (ε₁ j) (ε₂ j) ≠ 0)
 
-def cubePrincipalSupport {κ : Type*} (B : Finset κ) (v₁ v₂ : κ → ℕ)
-    (ε₁ ε₂ : κ → Bool) : Finset κ :=
+def cubePrincipalSupport {κ } (B : Finset κ) (v₁ v₂ : κ → ℕ)
+    (ε₁ ε₂ : κ → Bool)  :=
   B.filter (fun j => conductorExponent (parity (v₁ j + v₂ j)) (ε₁ j) (ε₂ j) = 0)
 
 def multiplicityRow {κ : Type*} (P : κ → Ideal O) [∀ j, (P j).IsMaximal]
@@ -512,7 +505,7 @@ def cubePairRow {κ : Type*} (P : κ → Ideal O) [∀ j, (P j).IsMaximal]
 
 private theorem row_filter_eq_power_product {κ : Type*}
     (P : κ → Ideal O) [∀ j, (P j).IsMaximal] (hg : ∀ j, lambda ∉ P j)
-    (B : Finset κ) (ε : κ → Bool) (z : O) :
+    (B : Finset κ) (ε : κ → Bool)  z  :
     finiteSquarefreeRow P hg (B.filter fun j => ε j) z =
       ∏ j ∈ B, canonicalSextic (P j) (hg j) (Ideal.Quotient.mk (P j) z) ^ bit (ε j) := by
   simp only [finiteSquarefreeRow, Finset.prod_filter]
@@ -522,7 +515,7 @@ private theorem row_filter_eq_power_product {κ : Type*}
 
 theorem cubePairRow_eq_product {κ : Type*}
     (P : κ → Ideal O) [∀ j, (P j).IsMaximal] (hg : ∀ j, lambda ∉ P j)
-    (B : Finset κ) (v₁ v₂ : κ → ℕ) (ε₁ ε₂ : κ → Bool) (z : O) :
+     B   v₁ v₂   ε₁ ε₂   z  :
     cubePairRow P hg B v₁ v₂ ε₁ ε₂ z =
       ∏ j ∈ B, cubePairLocal (P j) (hg j) (v₁ j) (v₂ j) (ε₁ j) (ε₂ j) z := by
   simp only [cubePairRow, row_filter_eq_power_product, multiplicityRow,
@@ -532,7 +525,7 @@ theorem cubePairRow_eq_product {κ : Type*}
   simp only [cubePairLocal, Nat.mul_comm]
 
 private theorem principal_product_eq_mask {κ : Type*}
-    (P : κ → Ideal O) [∀ j, (P j).IsMaximal] (B : Finset κ) (z : O) :
+    (P : κ → Ideal O) [∀ j, (P j).IsMaximal]  B   z  :
     (∏ j ∈ B, (1 : MulChar (O ⧸ P j) ℂ) (Ideal.Quotient.mk (P j) z)) =
       rowCoprimeMask P B z := by
   by_cases h : ∃ j ∈ B, z ∈ P j
@@ -550,8 +543,8 @@ private theorem principal_product_eq_mask {κ : Type*}
 
 theorem cubePairRow_conductor_selection {κ : Type*}
     (P : κ → Ideal O) [∀ j, (P j).IsMaximal] (hg : ∀ j, lambda ∉ P j)
-    (B : Finset κ) (v₁ v₂ : κ → ℕ) (ε₁ ε₂ : κ → Bool)
-    (hcover : ∀ j ∈ B, 0 < v₁ j + v₂ j + bit (ε₁ j) + bit (ε₂ j)) (z : O) :
+     B   v₁ v₂   ε₁ ε₂ 
+    (hcover : ∀ j ∈ B, 0 < v₁ j + v₂ j + bit (ε₁ j) + bit (ε₂ j))  z  :
     cubePairRow P hg B v₁ v₂ ε₁ ε₂ z =
       rowCoprimeMask P (cubePrincipalSupport B v₁ v₂ ε₁ ε₂) z *
         finiteSexticRow (fun j : cubeConductorSupport B v₁ v₂ ε₁ ε₂ => P j.val)
@@ -563,9 +556,7 @@ theorem cubePairRow_conductor_selection {κ : Type*}
   have hlocal : cubePairRow P hg B v₁ v₂ ε₁ ε₂ z = ∏ j ∈ B, f j := by
     rw [cubePairRow_eq_product]
     apply Finset.prod_congr rfl
-    intro j hj
-    exact cubePairLocal_eq_character (P j) (hg j) (v₁ j) (v₂ j)
-      (ε₁ j) (ε₂ j) (hcover j hj) z
+    solve_by_elim [cubePairLocal_eq_character]
   have hzero : (∏ j ∈ B.filter (fun j => e j = 0), f j) =
       rowCoprimeMask P (cubePrincipalSupport B v₁ v₂ ε₁ ε₂) z := by
     rw [← principal_product_eq_mask]
@@ -577,8 +568,8 @@ theorem cubePairRow_conductor_selection {κ : Type*}
   congr 1
   exact (Finset.prod_coe_sort (s := cubeConductorSupport B v₁ v₂ ε₁ ε₂) (f := f)).symm
 
-open scoped SchwartzMap ContDiff
-open ConcreteTraceCRT
+ 
+ 
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
 end FirstPassCubeLabels

@@ -12,14 +12,14 @@ namespace Erdos821.S2Empty
 
 open Erdos821.Blueprint.Graph
 
-abbrev SmallLabels (P : PrimeGroups) (M : ℕ) :=
+abbrev SmallLabels (P : PrimeGroups) (M ) :=
   (g : P.SmallGroup) → Fin M → P.Prime g.val
 
 abbrev SmallLocalResidues (P : PrimeGroups) (g : P.SmallGroup) :=
   (p : P.Prime g.val) → ZMod p.val
 
-def smallLocalGood {P : PrimeGroups} {M : ℕ} (g : P.SmallGroup)
-    (y : SmallLocalResidues P g) (a : Fin M → P.Prime g.val) : Prop :=
+def smallLocalGood {P } {M } (g )
+    (y : SmallLocalResidues P g) (a : Fin M → P.Prime g.val)  :=
   Function.Injective a ∧ ∀ i, y (a i) = 0
 
 def piProductEquiv {G : Type*} {A B : G → Type*} :
@@ -41,7 +41,7 @@ theorem prod_indicator_forall {G : Type*} [Fintype G] [DecidableEq G]
       simp [hg]
     simp [h, hz]
 
-theorem small_choice_sum_eq_prod (P : PrimeGroups) (M : ℕ) :
+theorem small_choice_sum_eq_prod  P   M  :
     (∑ y : P.SmallResidues, ∑ a : SmallLabels P M,
       if ∀ g : P.SmallGroup, smallLocalGood g (y g) (a g) then (1 : ℝ) else 0) =
     ∏ g : P.SmallGroup,
@@ -49,7 +49,7 @@ theorem small_choice_sum_eq_prod (P : PrimeGroups) (M : ℕ) :
         if smallLocalGood g y a then (1 : ℝ) else 0 := by
   classical
   let A : P.SmallGroup → Type := fun g => Fin M → P.Prime g.val
-  let Y : P.SmallGroup → Type := fun g => SmallLocalResidues P g
+  let Y : P.SmallGroup → Type := SmallLocalResidues P
   let e := piProductEquiv (G := P.SmallGroup) (A := Y) (B := A)
   let fPi : ((g : P.SmallGroup) → Y g) × ((g : P.SmallGroup) → A g) → ℝ :=
     fun z => if ∀ g : P.SmallGroup, smallLocalGood g (z.1 g) (z.2 g) then (1 : ℝ) else 0
@@ -62,8 +62,7 @@ theorem small_choice_sum_eq_prod (P : PrimeGroups) (M : ℕ) :
   calc
     _ = ∑ z : P.SmallResidues × SmallLabels P M, f z.1 z.2 := hpair.symm
     _ = ∑ z : (g : P.SmallGroup) → Y g × A g,
-        if ∀ g : P.SmallGroup, smallLocalGood g (z g).1 (z g).2 then (1 : ℝ) else 0 := by
-      exact Fintype.sum_equiv e fPi _ (by intro z; rfl)
+        if ∀ g : P.SmallGroup, smallLocalGood g (z g).1 (z g).2 then (1 : ℝ) else 0 := Fintype.sum_equiv e fPi _ (by intro z; rfl)
     _ = ∑ z : (g : P.SmallGroup) → Y g × A g,
         ∏ g : P.SmallGroup,
           if smallLocalGood g (z g).1 (z g).2 then (1 : ℝ) else 0 := by
@@ -71,8 +70,7 @@ theorem small_choice_sum_eq_prod (P : PrimeGroups) (M : ℕ) :
       intro z _
       exact prod_indicator_forall _
     _ = ∏ g : P.SmallGroup, ∑ z : Y g × A g,
-        if smallLocalGood g z.1 z.2 then (1 : ℝ) else 0 := by
-      exact sum_pi_prod (fun (g : P.SmallGroup) (z : Y g × A g) =>
+        if smallLocalGood g z.1 z.2 then (1 : ℝ) else 0 := sum_pi_prod (fun (g : P.SmallGroup) (z : Y g × A g) =>
         if smallLocalGood g z.1 z.2 then (1 : ℝ) else 0)
     _ = ∏ g : P.SmallGroup, ∑ a : Fin M → P.Prime g.val,
         ∑ y : SmallLocalResidues P g,

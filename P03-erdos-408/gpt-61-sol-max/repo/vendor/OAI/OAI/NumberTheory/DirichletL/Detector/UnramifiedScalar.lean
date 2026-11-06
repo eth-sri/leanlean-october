@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.ScalarTable
 public import OAI.NumberTheory.DirichletL.Detector.PrimeConstants
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.PrimeConstants
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
@@ -17,7 +18,10 @@ variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
 include hc
 
-theorem unramified_even_kzero (r m : ℕ) :
+section
+variable (r m : ℕ)
+
+theorem unramified_even_kzero   :
     positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) (6*r+5) 0 (6*m) =
       if r+1 ≤ m then
         (Ideal.absNorm (Ideal.span {p}):ℂ)^(6*r+5) * ((Ideal.absNorm (Ideal.span {p}):ℂ)-1)
@@ -27,19 +31,17 @@ theorem unramified_even_kzero (r m : ℕ) :
   by_cases hm : r+1 ≤ m
   · rw [ite_eq_left hm, ite_eq_left (by omega), ite_eq_left (by omega), pow_succ]
     ring
-  · rw [ite_eq_right hm, ite_eq_right (by omega), ite_eq_right (by omega), sub_self]
+  grind
 
-theorem unramified_squarefree_kzero (r m : ℕ) :
+theorem unramified_squarefree_kzero   :
     positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) (6*r) 0 (6*m) =
       if m=r then (Ideal.absNorm (Ideal.span {p}):ℂ)^(6*r) *
         primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 else 0 := by
   rw [positiveScalar_kzero, actualSextic_primePowerGauss_at_pow p hp hg hc,
     ite_eq_right (by omega : ¬6 ∣ 6*r+1), actualSextic_pow_six_mul_add _ hg hc, pow_one]
-  by_cases hm : m=r
-  · rw [ite_eq_left hm, ite_eq_left (by omega)]
-  · rw [ite_eq_right hm, ite_eq_right (by omega)]
+  simp_all
 
-theorem unramified_squarefree_kone (r m : ℕ) :
+theorem unramified_squarefree_kone   :
     positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) (6*r) 1 (6*m) =
       if r<m then
         ((actualSextic (Ideal.span {p}) hg (-1))⁻¹ *
@@ -69,7 +71,7 @@ theorem unramified_odd_zero (r m k : ℕ) (d : ℕ) (hd : d=2 ∨ d=3) :
       ite_eq_right (by rcases hd with rfl | rfl <;> omega), mul_zero]
   · rfl
 
-theorem unramified_even_kone (r m : ℕ) :
+theorem unramified_even_kone   :
     positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) (6*r+5) 1 (6*m) =
       if m=r+1 then (Ideal.absNorm (Ideal.span {p}):ℂ)^(6*r+6) else 0 := by
   rw [positiveScalar_actual_table p hp hg hc, ite_eq_right (by decide : (1:ℕ) ≠ 0)]
@@ -102,7 +104,9 @@ theorem unramified_even_kone (r m : ℕ) :
     · rw [ite_eq_left ⟨rfl, by omega⟩, gaussValuationTable,
         ite_eq_right (by omega : ¬6 ∣ 6*r+5), ite_eq_right (by omega), mul_zero]
 
-end SevenEighths.ProbePrimePower
 end
+
+end SevenEighths.ProbePrimePower
+
 
 end OAI

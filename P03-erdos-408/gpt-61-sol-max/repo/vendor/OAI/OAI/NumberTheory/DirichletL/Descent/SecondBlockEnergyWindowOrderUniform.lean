@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical ContDiff SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -22,7 +22,7 @@ theorem actual_second_fixed_block_recursive_window_order_uniform_types
     (hm₁ : 0≤m₁) (hm₂ : 0≤m₂) (hcap : 1≤bcap)
     (hlo : ∀ i,0<lo i) (hhi : ∀ i,lo i≤hi i) (hB₀ : ∀ i,0≤B₀ i)
     (hg₁ : Function.support g₁⊆Set.Icc (-m₁) m₁)
-    (hg₂ : Function.support g₂⊆Set.Icc (-m₂) m₂) (Aker K : ℕ) (εmass : ℝ) (hεmass : 0 < εmass) :
+    (hg₂ : Function.support g₂⊆Set.Icc (-m₂) m₂)  Aker K   εmass  (hεmass : 0 < εmass) :
     ∃ (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (loFresh hiFresh : ℝ),
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
@@ -111,6 +111,6 @@ theorem actual_second_fixed_block_recursive_window_order_uniform_types
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

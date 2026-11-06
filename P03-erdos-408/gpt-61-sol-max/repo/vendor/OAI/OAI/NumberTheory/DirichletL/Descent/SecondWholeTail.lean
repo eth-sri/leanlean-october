@@ -11,10 +11,10 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
+
 local notation "O" => ActualEisensteinCubic.O
 
-theorem full_second_supported_tail (order : ℕ) :
+theorem full_second_supported_tail  order  :
     ∃ (s : Finset (ℕ × ℕ)) (Ct : ℝ), 0 < Ct ∧
     ∀ {ι : Type*} [DecidableEq ι]
       (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -44,7 +44,7 @@ theorem full_second_supported_tail (order : ℕ) :
     (secondSourceTailCost_bounded_test p hp hg hinj F Ψ hΨ m c d Hcol B Y H lengthScale
       (Ct*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) order hB hY hH (by positivity) hL hcol hsupp)
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

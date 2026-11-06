@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.ConductorBounds
 public import OAI.NumberTheory.DirichletL.CharacterTransport
@@ -19,11 +20,7 @@ theorem FactorsThroughIdeal.bot (χ : MulChar R ℂ) : FactorsThroughIdeal χ �
   have hu1 : (u : R) = 1 := sub_eq_zero.mp hu
   rw [hu1, map_one]
 
-theorem FactorsThroughIdeal.pow {χ : MulChar R ℂ} {I : Ideal R}
-    (hχ : FactorsThroughIdeal χ I) (n : ℕ) : FactorsThroughIdeal (χ ^ n) I := by
-  rw [factorsThroughIdeal_iff] at hχ ⊢
-  intro u hu
-  rw [MulChar.pow_apply_coe, hχ u hu, one_pow]
+
 
 end FiniteConductor
 
@@ -38,32 +35,45 @@ section Transport
 
 variable {A : Type*} [CommRing A]
 
-def quotientCharacter (M : Ideal A) (I : Ideal (A ⧸ M))
+def quotientCharacter (M ) (I : Ideal (A ⧸ M))
     (φ : MulChar ((A ⧸ M) ⧸ I) ℂ) : MulChar (A ⧸ I.comap (Ideal.Quotient.mk M)) ℂ :=
   CharacterTransport.pullback (quotientComapEquiv M I) φ
 
-@[simp] theorem quotientCharacter_mk (M : Ideal A) (I : Ideal (A ⧸ M))
-    (φ : MulChar ((A ⧸ M) ⧸ I) ℂ) (a : A) :
-    quotientCharacter M I φ (Ideal.Quotient.mk _ a) =
-      φ (Ideal.Quotient.mk I (Ideal.Quotient.mk M a)) := rfl
+section
+variable (M : Ideal A) (I : Ideal (A ⧸ M))
+include M I
 
-theorem primitive_quotientCharacter (M : Ideal A) (I : Ideal (A ⧸ M))
-    (φ : MulChar ((A ⧸ M) ⧸ I) ℂ) (hφ : IsPrimitiveOnIdeals φ) :
+section
+variable (φ : MulChar ((A ⧸ M) ⧸ I) ℂ)
+include φ
+
+
+
+theorem primitive_quotientCharacter    
+      (hφ : IsPrimitiveOnIdeals φ) :
     IsPrimitiveOnIdeals (quotientCharacter M I φ) :=
   CharacterTransport.primitive_pullback _ _ hφ
 
-theorem source_le_comap (M : Ideal A) (I : Ideal (A ⧸ M)) :
+end
+
+theorem source_le_comap     :
     M ≤ I.comap (Ideal.Quotient.mk M) := by
   intro a ha
   change Ideal.Quotient.mk M a ∈ I
   rw [Ideal.Quotient.eq_zero_iff_mem.mpr ha]
   exact I.zero_mem
 
+end
+
 end Transport
 
 variable {A : Type*} [CommRing A] [IsDedekindDomain A] [Infinite A]
 
-theorem comap_ne_bot (M : Ideal A) [Finite (A ⧸ M)] (I : Ideal (A ⧸ M)) :
+section
+variable (M : Ideal A) [Finite (A ⧸ M)]
+include M
+
+theorem comap_ne_bot     (I : Ideal (A ⧸ M)) :
     I.comap (Ideal.Quotient.mk M) ≠ ⊥ := by
   let : Finite ((A ⧸ M) ⧸ I) :=
     Finite.of_surjective _ (Ideal.Quotient.mk_surjective (I := I))
@@ -71,11 +81,14 @@ theorem comap_ne_bot (M : Ideal A) [Finite (A ⧸ M)] (I : Ideal (A ⧸ M)) :
     rw [absNorm_comap_eq_quotient_card]
     exact Nat.card_pos
   intro hzero
-  rw [hzero, Ideal.absNorm_bot] at hpos
-  exact (lt_irrefl 0) hpos
+  simp_all
+
+section
+variable (χ : MulChar (A ⧸ M) ℂ)
+include χ
 
 theorem exists_primitive_presentation_above_quotient
-    (M : Ideal A) [Finite (A ⧸ M)] (χ : MulChar (A ⧸ M) ℂ)
+         
     (J : Ideal (A ⧸ M)) (hJ : FactorsThroughIdeal χ J) :
     ∃ (K : Ideal A) (φ : MulChar (A ⧸ K) ℂ),
       M ≤ K ∧ J.comap (Ideal.Quotient.mk M) ≤ K ∧ K ≠ ⊥ ∧
@@ -87,11 +100,10 @@ theorem exists_primitive_presentation_above_quotient
   refine ⟨I.comap (Ideal.Quotient.mk M), quotientCharacter M I ψ,
     source_le_comap M I, Ideal.comap_mono hJI, comap_ne_bot M I,
     primitive_quotientCharacter M I ψ hprimitive, hnorm, ?_⟩
-  intro a
-  simpa only [quotientCharacter_mk] using hmask (Ideal.Quotient.mk M a)
+  solve_by_elim
 
-theorem exists_primitive_presentation (M : Ideal A) [Finite (A ⧸ M)]
-    (χ : MulChar (A ⧸ M) ℂ) :
+theorem exists_primitive_presentation    
+      :
     ∃ (K : Ideal A) (φ : MulChar (A ⧸ K) ℂ),
       M ≤ K ∧ K ≠ ⊥ ∧ IsPrimitiveOnIdeals φ ∧ K.absNorm ≤ M.absNorm ∧
       ∀ a : A, χ (Ideal.Quotient.mk M a) =
@@ -100,6 +112,10 @@ theorem exists_primitive_presentation (M : Ideal A) [Finite (A ⧸ M)]
     exists_primitive_presentation_above_quotient M χ ⊥ (FactorsThroughIdeal.bot χ)
   refine ⟨K, φ, hMK, hK, hprimitive, ?_, hmask⟩
   simpa only [← RingHom.ker_eq_comap_bot, Ideal.mk_ker] using hnorm
+
+end
+
+end
 
 end
 

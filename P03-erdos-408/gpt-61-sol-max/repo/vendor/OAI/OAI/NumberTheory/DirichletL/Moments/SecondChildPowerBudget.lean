@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstChildProfileControl
 public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
@@ -15,11 +16,11 @@ open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEligibleEnergy
 open CenteredMomentFirstChildProfileControl CenteredMomentCommonRadialPointwise
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
 open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform
-local notation "O"=>HeckeFamily.O
+
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 omit [DecidableEq ι] in
-lemma endpoint_product (s : Input ι) (N : ℕ) (b : ℝ) (hb : 1≤b)
+lemma endpoint_product (s : Input ι)  N   b  (hb : 1≤b)
     (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hhi : ∀i,0≤s.hi i) :
     0≤∏i,s.hi i ∧ (∏i,s.hi i)≤b^N := by
   refine ⟨Finset.prod_nonneg (fun i _=>hhi i),?_⟩
@@ -29,7 +30,7 @@ lemma endpoint_product (s : Input ι) (N : ℕ) (b : ℝ) (hb : 1≤b)
     _≤b^N:=pow_le_pow_right₀ hb hc
 
 omit [DecidableEq ι] in
-lemma main_cost (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ)
+lemma main_cost (s : Input ι)  N   b b₁ b₂ A 
     (hb : 1≤b) (h₁ : 1≤b₁) (h₂ : 1≤b₂) (hu : s.upper≤b)
     (hc : Fintype.card ι≤N) (hhi : ∀i,0≤s.hi i)
     (hs₁ : 0≤s.b₁) (hs₂ : 0≤s.b₂) (hb₁ : s.b₁≤b₁) (hb₂ : s.b₂≤b₂)
@@ -42,7 +43,7 @@ lemma main_cost (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ)
     (fun i=>(s.upper_ge i).trans hu) hs₁ hs₂ hb₁ hb₂
   have hp:=profile_cost_bound s N b A hb hu hc hm
   have he : max 1 s.b₁*max 1 s.b₂≤b₁*b₂ :=
-    mul_le_mul (max_le h₁ hb₁) (max_le h₂ hb₂) (by positivity) (by linarith)
+    (by bound)
   have hp' : profileCost s≤(2*(b₁*b₂)*b^N*A^2)*mass s^2 := by
     apply hp.trans
     gcongr
@@ -50,7 +51,7 @@ lemma main_cost (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ)
   convert hh using 1 ; ring
 
 omit [DecidableEq ι] in
-lemma diagonal_cost (s : Input ι) (W₁ W₂ : 𝓢(ℝ,ℂ)) (N : ℕ) (b whi ε : ℝ)
+lemma diagonal_cost (s : Input ι) (W₁ W₂ : 𝓢(ℝ,ℂ))  N  (b whi ε : ℝ)
     (hb : 1≤b) (hu : s.upper≤b) (hc : Fintype.card ι≤N)
     (hhi : ∀i,0≤s.hi i) (hε : 0≤ε) :
     (2*SchwartzMap.seminorm ℝ 0 0 W₁*SchwartzMap.seminorm ℝ 0 0 W₂*mass s)^2*
@@ -65,21 +66,21 @@ lemma diagonal_cost (s : Input ι) (W₁ W₂ : 𝓢(ℝ,ℂ)) (N : ℕ) (b whi 
   convert h using 1 ; ring
 
 omit [DecidableEq ι] in
-lemma tail_cost (s : Input ι) (W₁ W₂ : 𝓢(ℝ,ℂ)) :
+lemma tail_cost (s : Input ι)  W₁ W₂  :
     plainControl s W₁ W₂^2=
       (SchwartzMap.seminorm ℝ 0 0 W₁*SchwartzMap.seminorm ℝ 0 0 W₂)^2*mass s^2 := by
   unfold plainControl mass
   ring
 
-def powers (ε : ℝ) : Fin 4→ℝ := ![1,1/3,ε,0]
+def powers (ε : ℝ)  := ![1,1/3,ε,0]
 
-lemma powers_nonneg (ε : ℝ) (hε : 0≤ε) : ∀j,0≤powers ε j := by
+lemma powers_nonneg  ε  (hε : 0≤ε) : ∀j,0≤powers ε j := by
   intro j
   fin_cases j <;> simp [powers,hε]
 
-def coefficients {wlo whi : ℝ} (N : ℕ) (b b₁ b₂ A : ℝ)
-    (S : Finset (ℕ×ℕ)) (p : Profiles wlo whi) (J : ℕ) (Q : Ideal O)
-    (K t ε seedNorm : ℝ) (a : Fin 4→ℝ) : Fin 4→ℝ :=
+def coefficients {wlo whi } (N : ℕ) (b b₁ b₂ A : ℝ)
+    (S : Finset (ℕ×ℕ)) (p : Profiles wlo whi) (J : ℕ) (Q : Ideal HeckeFamily.O)
+    (K t ε seedNorm : ℝ) (a : Fin 4→ℝ)  :=
   ![a 0*(2*(b₁*b₂)*b^N*A^2)*(b^N*b₁*b₂)/seedNorm,
     a 1*exceptionalConstant N b J Q K*p.control S^2*(1+‖t‖)^(2*J)*A^4/seedNorm,
     a 2*4*(SchwartzMap.seminorm ℝ 0 0 (p.profile 0)*
@@ -87,9 +88,9 @@ def coefficients {wlo whi : ℝ} (N : ℕ) (b b₁ b₂ A : ℝ)
     a 3*(SchwartzMap.seminorm ℝ 0 0 (p.profile 0)*
       SchwartzMap.seminorm ℝ 0 0 (p.profile 1))^2]
 
-def sourceCost {wlo whi : ℝ} (s : Input ι) (S : Finset (ℕ×ℕ))
-    (p : Profiles wlo whi) (J : ℕ) (Q : Ideal O) (K ε seedNorm : ℝ)
-    (a : Fin 4→ℝ) : ℝ :=
+def sourceCost {wlo whi } (s : Input ι) (S : Finset (ℕ×ℕ))
+    (p : Profiles wlo whi) (J : ℕ) (Q : Ideal HeckeFamily.O) (K ε seedNorm : ℝ)
+    (a : Fin 4→ℝ)  :=
     a 0*profileCost s*sourceRadius s/seedNorm+
     a 1*profileFactor S s p J Q K*(CenteredMomentAmplificationChildInput.volume s)^(1/3:ℝ)/seedNorm+
     a 2*(2*SchwartzMap.seminorm ℝ 0 0 (p.profile 0)*
@@ -103,7 +104,7 @@ theorem source_rhs {wlo whi : ℝ} (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ
     (hc : Fintype.card ι≤N) (hhi : ∀i,0≤s.hi i)
     (hs₁ : 0≤s.b₁) (hs₂ : 0≤s.b₂) (hb₁ : s.b₁≤b₁) (hb₂ : s.b₂≤b₂)
     (hm : mass s≤A) (S : Finset (ℕ×ℕ)) (p : Profiles wlo whi)
-    (J : ℕ) (Q : Ideal O) (K ε seedNorm : ℝ) (hK : 0≤K) (hε : 0≤ε)
+    (J : ℕ) (Q : Ideal HeckeFamily.O) (K ε seedNorm : ℝ) (hK : 0≤K) (hε : 0≤ε)
     (hs : 0≤seedNorm) (a : Fin 4→ℝ) (ha : ∀j,0≤a j) :
     sourceCost s S p J Q K ε seedNorm a ≤
       (∑j,coefficients N b b₁ b₂ A S p J Q K s.t ε seedNorm a j*

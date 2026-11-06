@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesBounds
 
@@ -8,15 +9,19 @@ namespace OAI
 
 namespace SevenEighths.HeckeDetectorProfiles
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
-noncomputable section
 
-lemma logSource_support (Ω V T : ℝ → ℂ) (A B C : ℝ) :
+
+lemma logSource_support  Ω V T   A B C  :
     tsupport (logSourceFun Ω V T A B C) ⊆ tsupport Ω :=
   tsupport_mul_subset_left.trans (tsupport_mul_subset_left.trans tsupport_mul_subset_left)
 
-theorem logSource_window_derivatives (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
-    (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω)
-    (L : ℝ) (hL : 0 ≤ L) (K : ℕ) :
+section
+variable (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ) (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω) (L : ℝ) (hL : 0 ≤ L)
+include Ω V T hΩc hΩ L hL
+
+theorem logSource_window_derivatives    
+       
+         K  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ A B D : ℝ, 0 ≤ A → 0 ≤ B → 0 ≤ D →
       ∀ j ≤ K, ∀ y : ℝ, |y| ≤ L →
       ‖iteratedFDeriv ℝ j (logSourceFun Ω V T A B D) y‖ ≤ C := by
@@ -47,9 +52,9 @@ theorem logSource_window_derivatives (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ �
   exact product_derivative_bound _ t ((hΩ.mul hcv).mul he) ht _ CT
     (by dsimp [P]; positivity) hCT K j hj y hsecond (fun q hq => hbT D hD q hq y hy)
 
-theorem logSource_uniform_seminorm (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
-    (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω)
-    (L : ℝ) (hL : 0 ≤ L) (hwindow : tsupport Ω ⊆ Set.Icc (-L) L) (K : ℕ) :
+theorem logSource_uniform_seminorm    
+       
+        (hwindow : tsupport Ω ⊆ Set.Icc (-L) L)  K  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ A B D : ℝ, 0 ≤ A → 0 ≤ B → 0 ≤ D →
       ∀ k j : ℕ, j ≤ K →
       SchwartzMap.seminorm ℝ k j (logSource Ω V T hΩc hΩ (V.smooth ⊤) (T.smooth ⊤) A B D)
@@ -66,10 +71,12 @@ theorem logSource_uniform_seminorm (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ
   have hys : y ∈ tsupport Ω := logSource_support Ω V T A B D
     ((support_iteratedFDeriv_subset j) (by simpa [Function.mem_support] using hz))
   have hy : |y| ≤ L := abs_le.mpr (hwindow hys)
-  exact mul_le_mul (by simpa [Real.norm_eq_abs] using pow_le_pow_left₀ (abs_nonneg y) hy k)
+  exact mul_le_mul (by bound)
     (hb A B D hA hB hD j hj y hy) (norm_nonneg _) (pow_nonneg hL k)
 
 end
+
+
 end SevenEighths.HeckeDetectorProfiles
 
 end OAI

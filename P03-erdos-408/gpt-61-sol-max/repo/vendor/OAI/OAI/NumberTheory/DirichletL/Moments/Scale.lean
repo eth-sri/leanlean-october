@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Moments.Smooth
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentScale
 open CenteredMomentSmooth EisensteinSchwartzPoisson
 
-theorem logarithmic_kernel_argument (K H A B K₀ H₀ A₀ B₀ : ℝ)
+theorem logarithmic_kernel_argument  K H A B K₀ H₀ A₀ B₀ 
     (hK : 0 < K) (hH : 0 < H) (hA : 0 < A) (hB : 0 < B)
     (hK₀ : 0 < K₀) (hH₀ : 0 < H₀) (hA₀ : 0 < A₀) (hB₀ : 0 < B₀) :
     (K₀ * H₀ / (A₀ * B₀)) *
@@ -22,14 +22,14 @@ theorem logarithmic_kernel_argument (K H A B K₀ H₀ A₀ B₀ : ℝ)
     Real.exp_log (div_pos hA hA₀), Real.exp_log (div_pos hB hB₀)]
   field_simp
 
-theorem rootWindow_log_ratio (V : ℝ → ℂ) (A A₀ : ℝ) (hA : 0 < A) (hA₀ : 0 < A₀) :
+theorem rootWindow_log_ratio  V   A A₀  (hA : 0 < A) (hA₀ : 0 < A₀) :
     rootWindow V (Real.log (A / A₀)) =
       (Real.sqrt A₀ : ℂ) * V (Real.log (A / A₀)) / (Real.sqrt A : ℂ) := by
   rw [rootWindow, Real.exp_log (div_pos hA hA₀), Real.sqrt_div hA.le, Complex.ofReal_div]
   field_simp
 
-theorem wholeKernel_actual (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
-    (K H A B K₀ H₀ A₀ B₀ : ℝ)
+theorem wholeKernel_actual  W   V 
+     K H A B K₀ H₀ A₀ B₀ 
     (hK : 0 < K) (hH : 0 < H) (hA : 0 < A) (hB : 0 < B)
     (hK₀ : 0 < K₀) (hH₀ : 0 < H₀) (hA₀ : 0 < A₀) (hB₀ : 0 < B₀) :
     wholeKernel W V (K₀ * H₀ / (A₀ * B₀))
@@ -47,6 +47,6 @@ theorem wholeKernel_actual (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
 
 end SevenEighths.CenteredMomentScale
 
-end
+
 
 end OAI

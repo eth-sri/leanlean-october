@@ -6,20 +6,20 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.RowCount
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
-theorem calibrated_physical_row_dyad (K : ℕ) (e δ a b r B : ℝ)
+
+theorem calibrated_physical_row_dyad  K   e δ a b r B 
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1)
     (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+     S   hS   hmax 
     (hfirst : FirstTail (1/4) S) :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (U : ℝ),1≤U → ∀R : Finset FreeRow,
-      (∀u∈R,u.val≠1 ∧ U≤((Ideal.span {u.val}:Ideal O).absNorm:ℝ) ∧
-        ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤2*U) →
+      (∀u∈R,u.val≠1 ∧ U≤((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ) ∧
+        ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤2*U) →
       ∀(T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S),
       (∀P:(∀i,T i),Function.Injective (fun i=>(P i).val)) →
       ∀(Y : Fin K→ℝ), (∀i,1≤Y i) → ∀(W : Fin K→ℝ→ℂ),
@@ -44,7 +44,7 @@ theorem calibrated_physical_row_dyad (K : ℕ) (e δ a b r B : ℝ)
   let D : ℝ := C*(η.modulus.absNorm:ℝ)^δ*(∏i,(Y i)^r)*(3+|x.im|)^2*(3+|w.im|)^2
   have hYP : 0≤∏i,(Y i)^r := Finset.prod_nonneg fun i _=>Real.rpow_nonneg (by linarith [hY i]) _
   have hD : 0≤D := by dsimp [D];positivity
-  have hF (u : FreeRow) (hu : u∈R) : F u≤D*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(3/5+δ) := by
+  have hF (u : FreeRow) (hu : u∈R) : F u≤D*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^(3/5+δ) := by
     have hh := hmain η u (hR u hu).1 T hT hdis Y hY W hWS hWB x w z hx hxβ hw hz
     apply hh.trans_eq
     dsimp [D]
@@ -63,6 +63,6 @@ theorem calibrated_physical_row_dyad (K : ℕ) (e δ a b r B : ℝ)
   ring
 
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

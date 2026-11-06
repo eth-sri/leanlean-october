@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.RestoreCorrection
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralNormalized
@@ -15,37 +16,36 @@ open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 def centralNormalizedSlot (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z : ℂ) : ℂ :=
+    (hs : Supported P.val) (x w z : ℂ)  :=
   continuedCompensatedLocal η u P hs x w z
     (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w)) /
     supportedCorrection η u P x w z
 
-def repeatedRowPrime (u : FreeRow) (P : PrimeIdeal) : Prop :=
+def repeatedRowPrime (u : FreeRow) (P : PrimeIdeal)  :=
   P.val∣Ideal.span {u.val} ∧ 2≤multiplicity (primaryGenerator P.val) u.val
 
 def centralRegularError (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z : ℂ) : ℂ :=
+    (hs : Supported P.val) (x w z : ℂ)  :=
   if repeatedRowPrime u P then 0 else
     centralNormalizedSlot η u P hs x w z+star (idealRowHom u.val P.val)
 
 def centralRepeatedTerm (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z : ℂ) : ℂ :=
+    (hs : Supported P.val) (x w z : ℂ)  :=
   if repeatedRowPrime u P then centralNormalizedSlot η u P hs x w z else 0
 
-theorem centralNormalizedSlot_split (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z : ℂ) :
+theorem centralNormalizedSlot_split  η   u   P 
+     hs   x w z  :
     centralNormalizedSlot η u P hs x w z=
       -star (idealRowHom u.val P.val)+centralRegularError η u P hs x w z+
         centralRepeatedTerm η u P hs x w z := by
   by_cases hp : repeatedRowPrime u P
   · simp only [centralRegularError,centralRepeatedTerm,ite_eq_left hp,row_phase_ramified u P hp.1,
       star_zero,neg_zero,zero_add]
-  · simp only [centralRegularError,centralRepeatedTerm,ite_eq_right hp]
-    ring
+  simp_all [centralRegularError, centralRepeatedTerm]
 
-theorem central_actual_local_bounds (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hη : IsCoprime P.val η.modulus)
-    (a e : ℝ) (x w z : ℂ) (hQ : (480:ℝ)≤P.val.absNorm)
+theorem central_actual_local_bounds  η   u   P 
+     hs  (hη : IsCoprime P.val η.modulus)
+    (a e : ℝ)  x w z  (hQ : (480:ℝ)≤P.val.absNorm)
     (hsmall : 198*(P.val.absNorm:ℝ)^(-10*e)≤1/2)
     (ha : (51/100:ℝ)≤a) (ha1 : a≤1) (he : 0<e) (he1 : e≤1/1000)
     (hx : x.re=a+16*e) (hw : w.re=1-a-6*e) (hz : z.re=17/50) :
@@ -115,7 +115,7 @@ theorem central_actual_local_bounds (η : Character) (u : FreeRow) (P : PrimeIde
     have hp : ¬repeatedRowPrime u P := fun h=>hd h.1
     refine ⟨hc.symm ▸ hb.1,?_,?_⟩
     · simpa only [centralRegularError,ite_eq_right hp,centralNormalizedSlot,hc,ite_eq_right hd] using hb.2
-    · simp only [centralRepeatedTerm,ite_eq_right hp,norm_zero,le_refl]
+    simp_all [centralRepeatedTerm]
 end SevenEighths.ProbeHighRowFamily
 end
 

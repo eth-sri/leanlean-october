@@ -9,14 +9,14 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma markedCompletedT_zero_punctured (Ψ : Eis→*ℂ) (m f z : Eis)
-    (P : Ideal Eis) (hP : Prime P) (hm : m∈P)
-    (W : ℝ→ℂ) (X : ℝ) (d : Ideal Eis→ℂ) (hd : ∀ A,¬P∣A → d A=0) :
+
+
+lemma markedCompletedT_zero_punctured  Ψ   m f z 
+    (P : Ideal ActualEisensteinCubic.O) (hP : Prime P) (hm : m∈P)
+     W   X   d  (hd : ∀ A,¬P∣A → d A=0) :
     markedCompletedT (rowTwist Ψ m f z) W X d=0 := by
-  have hz (I J : Ideal Eis) : summand (rowTwist Ψ m f z) W X I J*d (I*J^3)=0 := by
+  have hz (I J : Ideal ActualEisensteinCubic.O) : summand (rowTwist Ψ m f z) W X I J*d (I*J^3)=0 := by
     by_cases hdiv : P∣I*J^3
     · rcases hP.dvd_mul.mp hdiv with hI|hJ
       · have hz := CanonicalRowCompletion.columnWeight_zero_of_mask Ψ m f z hP hI hm
@@ -26,7 +26,7 @@ lemma markedCompletedT_zero_punctured (Ψ : Eis→*ℂ) (m f z : Eis)
     · rw [hd _ hdiv,mul_zero]
   simp only [markedCompletedT,hz,tsum_zero]
 
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

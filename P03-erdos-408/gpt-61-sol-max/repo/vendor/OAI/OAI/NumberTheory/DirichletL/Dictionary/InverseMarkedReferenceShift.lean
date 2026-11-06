@@ -13,12 +13,12 @@ open scoped Classical BigOperators Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily HeckeInverseAmplification Filter IdealMobiusDivisorSum
 open DetectorDictionaryInverseRawInitialGates
-local notation "O"=>HeckeFamily.O
 
-def shiftedExponent (_data:RowData)(U r:ℝ)(j:Ideal O) : ℝ :=
+
+def shiftedExponent (_data:RowData)(U r:ℝ)(j:Ideal HeckeFamily.O)  :=
   r-Real.logb U (j.absNorm:ℝ)
 
-theorem marked_shift_eventually (data:RowData)(eta:ℝ)(heta:0<eta) :
+theorem marked_shift_eventually  data  eta (heta:0<eta) :
     ∀ᶠU:ℝ in atTop,1<U ∧
       ∀j∈idealDivisors (∏P∈excluded data,P),∀r:ℝ,
         r-eta≤shiftedExponent data U r j ∧ shiftedExponent data U r j≤r ∧

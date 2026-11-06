@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Analytic.ProxyTwist
 
 public import Erdos408.OneSided.Major.Energy.Average
 public import Erdos408.OneSided.Major.Energy.Isolated
@@ -46,15 +49,15 @@ open Filter Finset Real MeasureTheory
 variable {K : ℕ}
 
 /-- `B_λ(τ) = Y⁻¹ ∑_p η(a/Y) e(-λ a/Y) ∏ V_i⁻¹ χ(a) a^{iτ}`, `a = ∏ p_i`. -/
-def labelPoly (x : ℝ) (d : Data K) (Y lam : ℝ) {k : ℕ} (χ : DirichletCharacter ℂ k)
-    (τ : ℝ) : ℂ :=
+def labelPoly (x : ℝ) (d : Data K) (Y lam : ℝ) {k } (χ : DirichletCharacter ℂ k)
+    (τ : ℝ)  :=
   (Y : ℂ)⁻¹ * ∑ p ∈ d.labels x,
     ((dyadicBump ((∏ i, p i : ℕ) / Y) * (d.bandMass x)⁻¹ : ℝ) : ℂ) *
       Complex.exp (-(2 * π * Complex.I * ((lam * (∏ i, p i : ℕ) / Y : ℝ) : ℂ))) *
       χ (∏ i, p i : ℕ) * ((∏ i, p i : ℕ) : ℂ) ^ ((τ : ℂ) * Complex.I)
 
 /-- `M_α(τ) = H_m⁻¹ ∑_m α_m χ(m) m^{iτ}`. -/
-def markedPoly (d : Data K) {k : ℕ} (χ : DirichletCharacter ℂ k) (τ : ℝ) : ℂ :=
+def markedPoly (d : Data K) {k } (χ : DirichletCharacter ℂ k) (τ : ℝ)  :=
   (d.Hm : ℂ)⁻¹ * ∑ m ∈ d.mRange, d.α m * χ m * (m : ℂ) ^ ((τ : ℂ) * Complex.I)
 
 /-! ### Unimodular phases -/
@@ -74,18 +77,23 @@ private theorem natCast_cpow_mul_ofReal_div_cpow {n : ℕ} (hn : n ≠ 0) {Y : �
   push_cast
   ring
 
-/-- `|y^{iξ}| = 1` for `y > 0`. -/
-private theorem norm_ofReal_cpow_mul_I {y : ℝ} (hy : 0 < y) (ξ : ℝ) :
-    ‖(y : ℂ) ^ ((ξ : ℂ) * Complex.I)‖ = 1 := by
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hy]
-  simp
+section
+variable {g : ℝ → ℂ} (hg : Integrable g) {y : ℝ} (hy : 0 < y)
 
+include hy in
+/-- `|y^{iξ}| = 1` for `y > 0`. -/
+private theorem norm_ofReal_cpow_mul_I     (ξ : ℝ) :
+    ‖(y : ℂ) ^ ((ξ : ℂ) * Complex.I)‖ = 1 := by solve_by_elim [_root_.SharedProofs.shared_norm_ofReal_cpow_mul_I]
+
+include hg hy in
 /-- `ξ ↦ g(ξ) y^{iξ}` is integrable for `g` integrable and `y > 0`. -/
-private theorem integrable_mul_ofReal_cpow {g : ℝ → ℂ} (hg : Integrable g) {y : ℝ} (hy : 0 < y) :
+private theorem integrable_mul_ofReal_cpow         :
     Integrable fun ξ : ℝ => g ξ * (y : ℂ) ^ ((ξ : ℂ) * Complex.I) := by
   refine hg.mul_bdd (c := 1) ?_ (Eventually.of_forall fun ξ => (norm_ofReal_cpow_mul_I hy ξ).le)
   exact (Continuous.const_cpow (by fun_prop)
     (Or.inl (Complex.ofReal_ne_zero.2 hy.ne'))).aestronglyMeasurable
+
+end
 
 /-- `|∑_{n ∈ I} c_n n^{it}| ≤ ∑_{n ∈ I} |c_n|` when `0 ∉ I`. -/
 private theorem norm_sum_mul_natCast_cpow_le {I : Finset ℕ} (hI : ∀ n ∈ I, n ≠ 0) (c : ℕ → ℂ)
@@ -98,24 +106,27 @@ private theorem norm_sum_mul_natCast_cpow_le {I : Finset ℕ} (hI : ∀ n ∈ I,
 /-! ### The label polynomial by dyads of the first band -/
 
 /-- The summand of `B_λ` at a label product `a`: `η(a/Y) V⁻¹ e(-λ a/Y) χ(a) a^{iτ}`. -/
-private def labelTerm (x : ℝ) (d : Data K) (Y lam : ℝ) {k : ℕ}
-    (χ : DirichletCharacter ℂ k) (τ : ℝ) (a : ℕ) : ℂ :=
+private def labelTerm (x : ℝ) (d : Data K) (Y lam : ℝ) {k }
+    (χ : DirichletCharacter ℂ k) (τ : ℝ) (a : ℕ)  :=
   ((dyadicBump (a / Y) * (d.bandMass x)⁻¹ : ℝ) : ℂ) *
     Complex.exp (-(2 * π * Complex.I * ((lam * a / Y : ℝ) : ℂ))) *
     χ a * (a : ℂ) ^ ((τ : ℂ) * Complex.I)
 
 /-- The tuples of primes from the bands after the first. -/
-private def tailLabels (x : ℝ) (d : Data (K + 1)) : Finset (Fin K → ℕ) :=
+private def tailLabels (x : ℝ) (d : Data (K + 1))  :=
   Fintype.piFinset fun i : Fin K => band x (d.a i.succ)
 
 /-- The part of `B_λ` whose prime from the first band lies in `PS`. -/
-private def dyadPoly (x : ℝ) (d : Data (K + 1)) (Y lam : ℝ) {k : ℕ}
-    (χ : DirichletCharacter ℂ k) (PS : Finset ℕ) (τ : ℝ) : ℂ :=
+private def dyadPoly (x : ℝ) (d : Data (K + 1)) (Y lam : ℝ) {k }
+    (χ : DirichletCharacter ℂ k) (PS : Finset ℕ) (τ : ℝ)  :=
   (Y : ℂ)⁻¹ * ∑ q ∈ PS, ∑ r ∈ tailLabels x d, labelTerm x d Y lam χ τ (q * ∏ i, r i)
+
+section
+variable (x : ℝ) (d : Data (K + 1))
 
 /-- Splitting off the first coordinate of a label tuple:
 `∑_p F(∏ p_i) = ∑_{q ∈ 𝒫₀} ∑_r F(q ∏ r_i)`, with `r` running over the later bands. -/
-private theorem sum_labels_succ (x : ℝ) (d : Data (K + 1)) (F : ℕ → ℂ) :
+private theorem sum_labels_succ     (F : ℕ → ℂ) :
     ∑ p ∈ d.labels x, F (∏ i, p i) =
       ∑ q ∈ band x (d.a 0), ∑ r ∈ tailLabels x d, F (q * ∏ i, r i) := by
   have h := Finset.filter_piFinset_eq_map_consEquiv (fun i => band x (d.a i))
@@ -127,7 +138,7 @@ private theorem sum_labels_succ (x : ℝ) (d : Data (K + 1)) (F : ℕ → ℂ) :
   simp [Fin.prod_univ_succ]
 
 /-- `B_λ` is continuous in `τ`, dyad by dyad. -/
-private theorem continuous_dyadPoly (x : ℝ) (d : Data (K + 1)) (Y lam : ℝ) {k : ℕ}
+private theorem continuous_dyadPoly     (Y lam : ℝ) {k : ℕ}
     (χ : DirichletCharacter ℂ k) {PS : Finset ℕ} (hPS : ∀ q ∈ PS, q ≠ 0) :
     Continuous (dyadPoly x d Y lam χ PS) := by
   unfold dyadPoly
@@ -139,13 +150,19 @@ private theorem continuous_dyadPoly (x : ℝ) (d : Data (K + 1)) (Y lam : ℝ) {
   unfold labelTerm
   exact continuous_const.mul h
 
+end
+
+section
+variable {x Y lam : ℝ} {d : Data K} (hY : 0 < Y) {g : ℝ → ℂ} (hgm : ∀ y : ℝ, 0 < y →
+      (dyadicBump y : ℂ) * Complex.exp (-(2 * π * Complex.I * ((lam * y : ℝ) : ℂ))) =
+        ∫ ξ, g ξ * (y : ℂ) ^ ((ξ : ℂ) * Complex.I)) {P : ℝ} (hHm : 0 < d.Hm) {k : ℕ} (χ : DirichletCharacter ℂ k)
+
+include hY hgm in
 /-- The Mellin form of one label term: if `η(y) e(-λy) = ∫ g(ξ) y^{iξ}` for `y > 0`, then the
 term at `a ≥ 1` is `V⁻¹ χ(a) a^{iτ} ∫ g(ξ) (a/Y)^{iξ}`. -/
-private theorem labelTerm_eq_integral {x Y lam : ℝ} {d : Data K} (hY : 0 < Y) {g : ℝ → ℂ}
-    (hgm : ∀ y : ℝ, 0 < y →
-      (dyadicBump y : ℂ) * Complex.exp (-(2 * π * Complex.I * ((lam * y : ℝ) : ℂ))) =
-        ∫ ξ, g ξ * (y : ℂ) ^ ((ξ : ℂ) * Complex.I))
-    {k : ℕ} (χ : DirichletCharacter ℂ k) (τ : ℝ) {a : ℕ} (ha : 0 < a) :
+private theorem labelTerm_eq_integral        
+     
+        (τ : ℝ) {a : ℕ} (ha : 0 < a) :
     labelTerm x d Y lam χ τ a = ((d.bandMass x)⁻¹ : ℂ) * χ a * (a : ℂ) ^ ((τ : ℂ) * Complex.I) *
       ∫ ξ, g ξ * (((a : ℝ) / Y : ℝ) : ℂ) ^ ((ξ : ℂ) * Complex.I) := by
   have ha' : (0 : ℝ) < a := by exact_mod_cast ha
@@ -160,7 +177,7 @@ private theorem labelTerm_eq_integral {x Y lam : ℝ} {d : Data K} (hY : 0 < Y) 
 `b' ≤ 4Y/P`. After Mellin inversion of `η(a/Y) e(-λa/Y)` the sum over `a = q b'` factors as
 `Y^{-iξ} (P P_s) Q`, where `Q = Y⁻¹ V⁻¹ ∑_{b' ≤ 4Y/P} χ(b') b'^{i(τ + ξ)}` has
 `|Q| ≤ (4/P) V⁻¹ ∑_{b'} 1/b' = 4 / (P V₀) ≤ 8 / P`. -/
-private theorem norm_dyadPoly_le {x Y lam P : ℝ} {d : Data (K + 1)} (hY : 0 < Y) (hP : 1 ≤ P)
+private theorem norm_dyadPoly_le   {d : Data (K + 1)} (hY : 0 < Y) (hP : 1 ≤ P)
     (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i))) {PS : Finset ℕ}
     (hPS : ∀ q ∈ PS, q.Prime ∧ P ≤ q ∧ (q : ℝ) < 2 * P) {g : ℝ → ℂ} (hg : Integrable g)
     (hgm : ∀ y : ℝ, 0 < y →
@@ -183,10 +200,7 @@ private theorem norm_dyadPoly_le {x Y lam P : ℝ} {d : Data (K + 1)} (hY : 0 < 
   have hsum : ∑ r ∈ T', ((∏ i, r i : ℕ) : ℝ)⁻¹ = V' := by
     simp only [V', harmonicMass, T', tailLabels]
     rw [prod_univ_sum]
-    refine sum_congr rfl fun r _ => ?_
-    push_cast
-    rw [← prod_inv_distrib]
-    simp [one_div]
+    norm_num
   -- the indicator `[P b' ≤ 4Y]`
   set ind : (Fin K → ℕ) → ℂ := fun r => if P * (∏ i, r i : ℕ) ≤ 4 * Y then 1 else 0
   -- only `P b' ≤ 4Y` contributes
@@ -290,7 +304,7 @@ private theorem norm_dyadPoly_le {x Y lam P : ℝ} {d : Data (K + 1)} (hY : 0 < 
     rw [hfac, hA]
     simp only [norm_mul, norm_inv, Complex.norm_real, he, Real.norm_of_nonneg hY.le,
       Real.norm_of_nonneg hV0.le, Real.norm_of_nonneg hP0.le]
-    have hPs := norm_nonneg (primePoly P PS χ ξ τ)
+    
     calc _ ≤ 1 * (Y⁻¹ * V⁻¹) * (P * ‖primePoly P PS χ ξ τ‖ * (4 * Y / P * V')) := by gcongr
       _ = 4 * ‖primePoly P PS χ ξ τ‖ * (V' / V) := by
           field_simp
@@ -388,8 +402,8 @@ private theorem integral_norm_markedPoly_mul_sq_le {C CX alo ahi g x B : ℝ} {d
           mul_le_mul hN₁ hN₂ (Nat.cast_nonneg _) (by linarith)
       _ = 4 * (d.Hm * d.Hn) := by ring
   have hN1 : (1 : ℝ) ≤ ((N₁ * N₂ : ℕ) : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
-  have hlogN0 : 0 ≤ Real.log ((N₁ * N₂ : ℕ) : ℝ) := Real.log_nonneg hN1
+    bound
+  
   have hlogN : 1 + Real.log ((N₁ * N₂ : ℕ) : ℝ) ≤ 3 * L := by
     have := Real.log_le_log (by linarith) hN
     linarith
@@ -424,7 +438,7 @@ private theorem integral_norm_markedPoly_mul_sq_le {C CX alo ahi g x B : ℝ} {d
       ≤ d.X⁻¹ ^ 2 * ((98 * d.X * L ^ (B + 1)) * (L ^ (4 * C) * (108 * d.X * L ^ 3))) := by
         gcongr
         refine hmean.trans ?_
-        exact mul_le_mul h₁ h₂ (by positivity) (by positivity)
+        gcongr <;> first | assumption | positivity | linarith
     _ = 10584 * (L ^ (B + 1) * L ^ (4 * C) * L ^ (3 : ℝ)) := by
         rw [show (L ^ 3 : ℝ) = L ^ (3 : ℝ) by norm_cast]
         field_simp
@@ -433,16 +447,23 @@ private theorem integral_norm_markedPoly_mul_sq_le {C CX alo ahi g x B : ℝ} {d
         rw [← Real.rpow_add hL0, ← Real.rpow_add hL0, meanExp]
         ring_nf
 
+include hHm in
 /-- `M_α` is continuous in `τ`. -/
-theorem continuous_markedPoly {d : Data K} (hHm : 0 < d.Hm) {k : ℕ}
-    (χ : DirichletCharacter ℂ k) : Continuous (markedPoly d χ) := by
+theorem continuous_markedPoly      
+      : Continuous (markedPoly d χ) := by
   unfold markedPoly
   refine continuous_const.mul (continuous_finsetSum _ fun m hm => ?_)
   have h : 0 < m := lt_of_lt_of_le (Nat.ceil_pos.2 hHm) (mem_Icc.1 hm).1
   exact continuous_const.mul (continuous_natCast_cpow_mul_I h.ne')
 
+end
+
 /-! ### The energy -/
 
+section
+variable {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5)
+
+include hC hD hCX halo hahi in
 /-- `eventually_energy_le` with at least one band. Split the first band into the dyads
 `[P₀ 2^r, P₀ 2^{r + 1})`, `P₀ = exp(L^{a₀})`, `r ≤ R = ⌊L^{a₀} / log 2⌋`, so
 `|B_λ M_α N_β|² ≤ (R + 1) ∑_r |B_λ^{(r)} M_α N_β|²`. For each dyad,
@@ -450,8 +471,8 @@ theorem continuous_markedPoly {d : Data K} (hHm : 0 < d.Hm) {k : ℕ}
 `integral_sq_le_of_le_integral` its energy is at most `64 (∫ |g|)² sup_ξ ∫ |P_s M_α N_β|²`,
 and the isolated energy is `O(L^{-A''})`. With `R + 1 ≤ 3L` and `∫ |g| ≤ 9 |C_g| L^{2A₀}`,
 the total is `O(L^{2 + 4A₀ - A''}) = O(L^{-A' - 2})`. -/
-private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
-    (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) :
+private theorem eventually_energy_le_succ    
+            :
     ∃ C₀ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data (K + 1), Admissible C CX alo ahi g x d →
       TwistBound (arcExp Dstar C) (freqExp Dstar C) (twistExp Dstar C) c₄ x d →
       KernelBound (freqExp Dstar C) cG x d →
@@ -492,8 +513,6 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
   have hX : 0 < d.X := mul_pos (by linarith) (by linarith)
   have hT : 0 ≤ T := by positivity
   have hT2 : T ≤ 2 * d.X * L ^ B := by
-    have h : 0 ≤ d.X * L ^ B := hT
-    rw [mul_assoc]
     linarith
   have hlog : Real.log (4 * d.X) ≤ 2 * L := by
     have h₁ : 4 * d.X ≤ (4 * CX) * x := by
@@ -528,7 +547,7 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
   -- the Mellin transform of `η(y) e(-λ y)`: `∫ |g| ≤ 9 |C_g| L^{2A₀}`
   obtain ⟨gm, hgi, hgn, hgm⟩ := hCg lam
   set Wg := ∫ ξ, ‖gm ξ‖
-  have hWg0 : 0 ≤ Wg := integral_nonneg fun _ => norm_nonneg _
+  
   have hWg : Wg ≤ |Cg| * (9 * L ^ (2 * A₀)) := by
     have hLA : 1 ≤ L ^ A₀ := Real.one_le_rpow hL hA₀
     have h₁ : (1 + |lam|) ^ 2 ≤ 9 * L ^ (2 * A₀) := by
@@ -748,10 +767,11 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
     _ ≤ 46656 * Cg ^ 2 * (10584 + 4 * c₄ ^ 2 * |Ci|) * L ^ (-energyExp Dstar C) := by
         gcongr
 
+include hC hD hCX halo hahi in
 /-- The energy bound: under P4 and (G), for `|λ| ≤ 2L^{A₀}` and characters of modulus at most
 `L^{A₀}`, `∫_{|τ| ≤ XL^B} |B_λ M_α N_β|² ≤ C₀ L^{-A'}`. -/
-theorem eventually_energy_le {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C) (hD : 0 < Dstar)
-    (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) :
+theorem eventually_energy_le      
+          :
     ∃ C₀ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
       TwistBound (arcExp Dstar C) (freqExp Dstar C) (twistExp Dstar C) c₄ x d →
       KernelBound (freqExp Dstar C) cG x d →
@@ -770,12 +790,9 @@ theorem eventually_energy_le {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C) (
       unfold dyadicBump
       rw [smoothTransition.zero_of_nonpos (by linarith),
         smoothTransition.zero_of_nonpos (by linarith), sub_zero]
-    have h : ∀ τ, labelPoly x d (2 ^ j) lam χ₁ τ = 0 := by
-      intro τ
-      unfold labelPoly
-      rw [sum_eq_zero fun p _ => ?_, mul_zero]
-      simp only [Fin.prod_univ_zero, Nat.cast_one, hη, zero_mul, Complex.ofReal_zero]
-    simp [h]
+    simp_all [labelPoly]
   | succ K => exact eventually_energy_le_succ hC hD hCX halo hahi
+
+end
 
 end Erdos408.OneSided

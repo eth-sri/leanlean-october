@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Poisson.OscillatoryGaussian
 
@@ -10,54 +11,54 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
 
-open Filter
+ 
 
 namespace RationalQuant
 
 end RationalQuant
 
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open   RationalPrimeExtraction ShortDraftLatticeCount
 
 namespace RationalPrimeExtraction
 
 end RationalPrimeExtraction
 
-open ActualEisensteinCubic ShortDraftLatticeCount
+ 
 
 namespace RationalPrimeExtraction
 
-open ActualEisensteinCubic ShortDraftLatticeCount
+ 
 
 end RationalPrimeExtraction
 
 namespace OscSpecial
 
-noncomputable def phaseBoundConstant (a b : ℝ) : ℝ :=
+noncomputable def phaseBoundConstant (a b : ℝ)  :=
   2 * (|a - b| + |a| + |b|) + 1
 
-theorem phaseBoundConstant_pos (a b : ℝ) :
+theorem phaseBoundConstant_pos  a b  :
     0 < phaseBoundConstant a b := by
   unfold phaseBoundConstant
   positivity
 
-theorem quadratic_phase_abs_le (a b k l : ℝ) :
+theorem quadratic_phase_abs_le  a b k l  :
     |(a - b) * k ^ 2 + 2 * a * k * l + b * l ^ 2| ≤
       phaseBoundConstant a b * (k ^ 2 + k * l + l ^ 2) := by
   let Q : ℝ := k ^ 2 + k * l + l ^ 2
   have hQ : 0 ≤ Q := by
     dsimp [Q]
-    nlinarith [sq_nonneg (k + l), sq_nonneg k, sq_nonneg l]
+    nlinarith
   have hsum : k ^ 2 + l ^ 2 ≤ 2 * Q := by
     dsimp [Q]
     nlinarith [sq_nonneg (k + l)]
@@ -81,8 +82,7 @@ theorem quadratic_phase_abs_le (a b k l : ℝ) :
             have hh := abs_add_le ((a - b) * k ^ 2) (2 * a * k * l)
             linarith
       _ = _ := by
-        simp [abs_mul,  abs_of_nonneg (sq_nonneg k),
-          abs_of_nonneg (sq_nonneg l)]
+        simp_all
   unfold phaseBoundConstant
   nlinarith [htri, h1, h2, h3, hQ]
 
@@ -90,10 +90,10 @@ end OscSpecial
 
 namespace GaussianMoment
 
-open scoped Topology
-open Filter
+ 
+ 
 
-theorem scaled_moment_vanishes_const (K : ℝ) (hK : 0 < K) :
+theorem scaled_moment_vanishes_const  K  (hK : 0 < K) :
     Tendsto
       (fun η : ℝ => η ^ 3 *
         (∑' z : ℤ × ℤ, RankTwoPoisson.eisQ z * realGauss (K * η) z))
@@ -109,19 +109,15 @@ theorem scaled_moment_vanishes_const (K : ℝ) (hK : 0 < K) :
       exact mul_pos hK hη
   have h := scaled_moment_vanishes.comp hscale
   have h' := h.const_mul (1 / K ^ 3)
-  convert h' using 1
-  · funext η
-    dsimp [Function.comp_def]
-    field_simp [hK.ne']
-  · simp
+  grind
 
 end GaussianMoment
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT  
 
-private theorem breveE_period_div_lam_O (z : O) :
+private theorem breveE_period_div_lam_O  z  :
     ShortDraftTrace.breveE (eisEmbedding z / eisLam) = 1 := by
   let a := (ActualEisensteinCoordinates.coords z).1
   let b := (ActualEisensteinCoordinates.coords z).2
@@ -130,10 +126,10 @@ private theorem breveE_period_div_lam_O (z : O) :
   rw [hz, eisEmbedding_eval]
   exact ConcreteBreveE.breveE_period_coordinates a b
 
-noncomputable def fixedDualPhase (c y : O) : ℂ :=
+noncomputable def fixedDualPhase (c y : O)  :=
   ShortDraftTrace.breveE (eisEmbedding (-(c*y^2)) / eisLam / (4 : ℂ))
 
-theorem fixedDualPhase_period_two (c y w : O) :
+theorem fixedDualPhase_period_two  c y w  :
     fixedDualPhase c (y + 2*w) = fixedDualPhase c y := by
   let d : O := -(c * (y*w+w^2))
   have hO : -(c * (y + 2*w)^2) = -(c*y^2) + 4*d := by
@@ -150,7 +146,7 @@ theorem fixedDualPhase_period_two (c y w : O) :
   unfold fixedDualPhase
   rw [harg, AddChar.map_add_eq_mul, breveE_period_div_lam_O, mul_one]
 
-theorem fixedDualPhase_eq_of_mod_two (c y z : O)
+theorem fixedDualPhase_eq_of_mod_two  c y z 
     (h : Ideal.Quotient.mk (Ideal.span {(2 : O)}) y =
       Ideal.Quotient.mk (Ideal.span {(2 : O)}) z) :
     fixedDualPhase c y = fixedDualPhase c z := by
@@ -158,9 +154,7 @@ theorem fixedDualPhase_eq_of_mod_two (c y z : O)
     (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp h
   obtain ⟨w, hw⟩ := (Ideal.mem_span_singleton).mp hsub
   have hy : y = z + 2*w := by
-    calc
-      y = z+(y-z) := by ring
-      _ = z+2*w := by rw [hw]
+    grind
   rw [hy, fixedDualPhase_period_two]
 
 theorem fixedDualPhase_weighted_partition (c : O) (W : O → ℂ)
@@ -203,13 +197,17 @@ end ActualEisensteinCubic
 
 namespace OscSpecial
 
-open scoped Topology
-open Filter
+ 
+ 
 
-noncomputable def dualScale (η a b : ℝ) : ℝ :=
+noncomputable def dualScale (η a b : ℝ)  :=
   η * q a b / (4 * r η a b)
 
-theorem dualScale_tendsto (a b : ℝ) (hq : 0 < q a b) :
+section
+variable (a b : ℝ) (hq : 0 < q a b)
+include a b hq
+
+theorem dualScale_tendsto     :
     Tendsto (fun η : ℝ => dualScale η a b)
       (𝓝[>] (0 : ℝ)) (𝓝[>] (0 : ℝ)) := by
   have hnum : ContinuousAt (fun η : ℝ => η * q a b) 0 := by fun_prop
@@ -218,8 +216,7 @@ theorem dualScale_tendsto (a b : ℝ) (hq : 0 < q a b) :
       (fun η : ℝ => 4 * (1 + 3 * q a b * η ^ 2 / 16)) 0
     fun_prop
   have hden0 : 4 * r 0 a b ≠ 0 := by simp [r]
-  have hcont : ContinuousAt (fun η : ℝ => dualScale η a b) 0 := by
-    exact hnum.div hden hden0
+  have hcont : ContinuousAt (fun η : ℝ => dualScale η a b) 0 := hnum.div hden hden0
   have hlim : Tendsto (fun η : ℝ => dualScale η a b)
       (𝓝[>] (0 : ℝ)) (𝓝 (0 : ℝ)) := by
     simpa [dualScale] using hcont.tendsto.mono_left nhdsWithin_le_nhds
@@ -233,8 +230,8 @@ theorem dualScale_tendsto (a b : ℝ) (hq : 0 < q a b) :
       positivity
     exact div_pos (mul_pos hη hq) (mul_pos (by norm_num) hr)
 
-theorem abel_mass_dual_scale (a b : ℝ) (hq : 0 < q a b)
-    (F : ℝ → ℂ) (L : ℂ)
+theorem abel_mass_dual_scale    
+    (F : ℝ → ℂ)  L 
     (hF : Tendsto (fun t : ℝ => (t : ℂ) * F t)
       (𝓝[>] (0 : ℝ)) (𝓝 L)) :
     Tendsto (fun η : ℝ => (η : ℂ) * F (dualScale η a b))
@@ -266,6 +263,8 @@ theorem abel_mass_dual_scale (a b : ℝ) (hq : 0 < q a b)
     push_cast
     field_simp [hqC, hrC]
   exact hprod.congr' (heq.mono fun η h => h.symm)
+
+end
 
 end OscSpecial
 

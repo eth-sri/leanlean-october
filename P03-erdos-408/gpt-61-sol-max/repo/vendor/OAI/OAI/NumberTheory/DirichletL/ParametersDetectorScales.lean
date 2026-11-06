@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.ParametersSlotLengths
 
@@ -6,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.ParametersSlotLengths
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.Parameters
 
-theorem exists_detector_scales (R rmin mesh dmin loss ellMin allowance J : ℝ)
+theorem exists_detector_scales  R rmin mesh dmin loss ellMin allowance J 
     (hR : 0≤R) (hr : 0<rmin) (hm : 0<mesh) (hd : 0<dmin)
     (hl : 0<loss) (hell : 0<ellMin) (ha : 0<allowance) (hJ : 0≤J) :
     ∃ε e κ cost τ : ℝ,
@@ -31,7 +32,7 @@ theorem exists_detector_scales (R rmin mesh dmin loss ellMin allowance J : ℝ)
   have hep : e*(10000*(1+R))≤ε := (le_div_iff₀ (by positivity)).mp heb
   have heR : 0≤e*R := mul_nonneg he.le hR
   have hel : e≤ellMin/4 := (min_le_right _ _).trans (min_le_left _ _)
-  have hea : e≤allowance/2 := (min_le_right _ _).trans (min_le_right _ _)
+  
   let κ := ε/1000
   let cost := ε/1000
   have hk : 0<κ := by dsimp [κ]; positivity
@@ -55,6 +56,6 @@ theorem exists_detector_scales (R rmin mesh dmin loss ellMin allowance J : ℝ)
     nlinarith
 end SevenEighths.Parameters
 
-end
+
 
 end OAI

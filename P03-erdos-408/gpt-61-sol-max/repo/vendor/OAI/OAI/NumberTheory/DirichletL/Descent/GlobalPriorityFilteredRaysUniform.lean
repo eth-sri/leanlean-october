@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredRays
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredEnergyUniform
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
@@ -21,7 +22,7 @@ local notation "Eis"=>ActualEisensteinCubic.O
 theorem global_priority_filtered_all_rays_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
-    (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i) (B₀:Fin 6→ℝ) (hB₀:∀i,0≤B₀ i) (K:ℕ) (εmass:ℝ) (hεmass:0<εmass) :
+    (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i) (B₀:Fin 6→ℝ) (hB₀:∀i,0≤B₀ i)  K   εmass  (hεmass:0<εmass) :
     ∃ (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (loFresh hiFresh : ℝ),
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
@@ -115,7 +116,7 @@ theorem global_priority_filtered_all_rays_uniform_types
         wholeRow p hp hcop hg extra pool negative Ψ₀ m slots assigned lists a
           (principalWindow om lo hi hlo hsupport negative t) X Y z x
   have hP:0≤P:=by dsimp [P];positivity
-  have hH:0≤H:=by dsimp [H];positivity
+  
   have hz (z:SecondRayIndex):P*‖S z‖≤C*A*H*‖secondRayCoefficient z‖:=by
     have h:=he p hp hcop hg hpr hinj hc extra pool original hvalid hextra w hwOriginal
       Ψ m ray core slots assigned lists a cutoff z
@@ -134,6 +135,6 @@ theorem global_priority_filtered_all_rays_uniform_types
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

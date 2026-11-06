@@ -9,7 +9,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-noncomputable section
+
 local notation "O" => ActualEisensteinCubic.O
 
 theorem full_second_rapid_correlated_tail (Lcap tau saving : ℝ)
@@ -41,7 +41,7 @@ theorem full_second_rapid_correlated_tail (Lcap tau saving : ℝ)
     hZ hY (zero_le_one.trans hL) hB (mul_nonneg hCt.le (apply_nonneg _ _)) hy hyi hl
   convert hh using 1 ; ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailKernel
 
@@ -6,19 +7,19 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailKern
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open ActualEisensteinCubic ConcreteTraceCRT InverseInitialProfile
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem initial_denominator_bound (C d v n₁ n₂ L : ℝ)
     (hC : 1≤C) (_hd : 0≤d) (hv : 0≤v) (hn₁ : 0≤n₁) (hn₂ : 0≤n₂)
     (hL : 0≤L) (hdL : d≤L) (h₁ : C*v*n₁≤L) (h₂ : C*v*n₂≤L) :
     d*v^2*n₁*n₂≤L^3 := by
-  have h₁' : v*n₁≤L := by nlinarith [mul_nonneg (sub_nonneg.mpr hC) (mul_nonneg hv hn₁)]
-  have h₂' : v*n₂≤L := by nlinarith [mul_nonneg (sub_nonneg.mpr hC) (mul_nonneg hv hn₂)]
+  have h₁' : v*n₁≤L := by nlinarith
+  have h₂' : v*n₂≤L := by nlinarith
   have hh := mul_le_mul h₁' h₂' (mul_nonneg hv hn₂) hL
   have he := mul_le_mul hdL hh (by positivity) hL
   nlinarith
@@ -38,14 +39,14 @@ theorem initial_scalar_bound (Z D m d v n₁ n₂ : ℝ) (hZ : 0<Z)
   congr 1
   ring
 
-theorem physical_frequency_tail_uniform (A : ℕ) :
+theorem physical_frequency_tail_uniform  A  :
     ∃ (s : Finset (ℕ×ℕ)) (C₀ : ℝ), 0<C₀ ∧
     ∀ (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ))
       (Z D m C d v n₁ n₂ L T Γ B₁ B₂ : ℝ),
     0<Z → 1≤C → 1≤d → 1≤v → 1≤n₁ → 1≤n₂ → 1≤L →
     d≤L → C*v*n₁≤L → C*v*n₂≤L → 0≤T → 0≤Γ → 0≤B₁ → 0≤B₂ →
     ‖W₁ (C*v*n₁/Z^D)‖≤B₁ → ‖W₂ (C*v*n₂/Z^D)‖≤B₂ →
-    ∀ (F : Finset O) (a : O→ℂ),
+    ∀ (F : Finset ActualEisensteinCubic.O) (a : ActualEisensteinCubic.O→ℂ),
     (∀h∈F,T≤(Z^m/(d*v^2*n₁*n₂))*‖eisEmbedding h‖^2) →
     (∀h∈F,‖a h‖≤Γ) →
     ‖∑h∈F,a h*physicalKernel W₁ W₂ Φ Z D m
@@ -77,6 +78,6 @@ theorem physical_frequency_tail_uniform (A : ℕ) :
 
 end SevenEighths.InverseInitialHighFrequencyTail
 
-end
+
 
 end OAI

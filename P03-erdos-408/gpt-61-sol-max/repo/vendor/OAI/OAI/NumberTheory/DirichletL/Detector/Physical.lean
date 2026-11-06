@@ -26,23 +26,23 @@ structure CalibrationData where
 
 def elementNorm (a : O) : ℝ := Ideal.absNorm (Ideal.span {a})
 
-def CalibrationData.residueMonoid (C : CalibrationData) : O →* ℂ :=
+def CalibrationData.residueMonoid (C : CalibrationData)  :=
   C.residue.toMonoidHom.comp (Ideal.Quotient.mk (Ideal.span {C.generator})).toMonoidHom
 
-def CalibrationData.Xi (C : CalibrationData) : O →* ℂ :=
+def CalibrationData.Xi (C : CalibrationData)  :=
   C.residueMonoid * (idealRowHom C.generator).toMonoidHom.comp principalIdealHom.toMonoidHom
 
-def CalibrationData.tau (C : CalibrationData) : ℂ :=
+def CalibrationData.tau (C : CalibrationData)  :=
   (∑' d : O ⧸ Ideal.span {C.generator}, C.residue d *
     quotientTrace C.generator C.generator_ne_zero d) /
       (Real.sqrt (elementNorm C.generator) : ℂ)
 
-def sexticGauss (s : O) (hs : s ≠ 0) (h : O) : ℂ :=
+def sexticGauss (s : O) (hs : s ≠ 0) (h : O)  :=
   ∑' d : O ⧸ Ideal.span {s},
     idealRowHom (GaussianShiftedPartition.representative s d) (Ideal.span {s}) *
       quotientTrace s hs (Ideal.Quotient.mk _ h * d)
 
-theorem sexticGauss_coefficient_mk (s : O) (a : O) :
+theorem sexticGauss_coefficient_mk  s   a  :
     idealRowHom (GaussianShiftedPartition.representative s
       (Ideal.Quotient.mk (Ideal.span {s}) a)) (Ideal.span {s}) =
       idealRowHom a (Ideal.span {s}) := by
@@ -50,11 +50,11 @@ theorem sexticGauss_coefficient_mk (s : O) (a : O) :
   apply Ideal.Quotient.eq.mp
   exact GaussianShiftedPartition.representative_spec _ _
 
-def verticalIntegral (σ : ℝ) (F : ℂ → ℂ) : ℂ :=
+def verticalIntegral (σ : ℝ) (F : ℂ → ℂ)  :=
   ((1 / (2 * Real.pi) : ℝ) : ℂ) * ∫ y : ℝ, F ((σ : ℂ) + y * Complex.I)
 
 def markedPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Ideal O) (W₀ W₁ : ℝ → ℂ) (X Y Z : ℝ) : ℂ :=
+    (D : Ideal O) (W₀ W₁ : ℝ → ℂ) (X Y Z : ℝ)  :=
   (Y : ℂ)⁻¹ * ∑' s : {I : Ideal O // Supported I},
     if ∀ p ∈ C.excluded, ¬p ∣ s.val then
       let a := primaryGenerator s.val
@@ -70,10 +70,10 @@ def markedPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
             spectralRow C.excluded D (rowCoefficient η C.Xi a has m) t)
     else 0
 
-def slotProduct {K : ℕ} (p : Fin K → O) (J : Finset (Fin K)) : O := ∏ i ∈ J, p i
+def slotProduct {K } (p : Fin K → O) (J : Finset (Fin K))  := ∏ i ∈ J, p i
 
-def compensatedTuple {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W₀ W₁ : ℝ → ℂ) (p : Fin K → O) (X Y Z : ℝ) : ℂ :=
+def compensatedTuple {K } (η : HeckeFamily.Character) (C : CalibrationData)
+    (W₀ W₁ : ℝ → ℂ) (p : Fin K → O) (X Y Z : ℝ)  :=
   ProbeCompensation.tupleOperation p elementNorm (HeckeFamily.elementCoeff η)
     (fun a => markedPhysicalProbe η C (Ideal.span {a}) W₀ W₁) X Y Z
 
@@ -82,9 +82,9 @@ def compensatedTuple {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData
 
 attribute [local irreducible] markedPhysicalProbe
 
-def compensatedPhysicalProbe {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
+def compensatedPhysicalProbe {K } (η : HeckeFamily.Character) (C : CalibrationData)
     (W₀ W₁ : ℝ → ℂ) (slotPrimes : Fin K → Finset O)
-    (slotWindow : Fin K → ℝ → ℂ) (slotScale : Fin K → ℝ) (X Y Z : ℝ) : ℂ :=
+    (slotWindow : Fin K → ℝ → ℂ) (slotScale : Fin K → ℝ) (X Y Z : ℝ)  :=
   ∑ p : ((i : Fin K) → {a : O // a ∈ slotPrimes i}),
     (∏ i : Fin K, slotWindow i (elementNorm (p i).val / slotScale i)) *
       compensatedTuple η C W₀ W₁ (fun i => (p i).val) X Y Z

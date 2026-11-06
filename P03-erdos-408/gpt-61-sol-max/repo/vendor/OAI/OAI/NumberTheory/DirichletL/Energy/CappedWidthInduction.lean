@@ -23,21 +23,28 @@ local notation "O"=>HeckeFamily.O
 
 open CenteredMomentEnergyWidthInduction (remaining lowerAt lengthAt lowerAt_pos child_support child_length)
 
-def bandWidth (M B ε:ℝ)(k:ℕ):ℝ:=min M (width M B ε k)
-lemma bandWidth_le (M B ε:ℝ)(k:ℕ):bandWidth M B ε k≤M:=min_le_left _ _
-lemma bandWidth_le_schedule (M B ε:ℝ)(k:ℕ):bandWidth M B ε k≤width M B ε k:=min_le_right _ _
-lemma bandWidth_nonneg (M B ε:ℝ)(hM:0≤M)(hB:0≤B)(hε:0<ε)(k:ℕ):
+def bandWidth (M B ε:ℝ)(k:ℕ):=min M (width M B ε k)
+section
+variable (M B ε : ℝ) (hM : 0≤M) (hB : 0≤B) (parent child : ℝ) (hε : 0<ε) (k : ℕ)
+
+
+lemma bandWidth_le   :bandWidth M B ε k≤M:=min_le_left _ _
+lemma bandWidth_le_schedule   :bandWidth M B ε k≤width M B ε k:=min_le_right _ _
+include hM hB hε in
+lemma bandWidth_nonneg      :
     0≤bandWidth M B ε k:=by
   have hr:0<reserve M B ε:=(bounds M B 0 ε hM hB (by norm_num) hε).2.2.2.1
   have hs:0<amplification ε:=(bounds M B 0 ε hM hB (by norm_num) hε).1
   unfold bandWidth width
   positivity
-lemma bandWidth_terminal (M B ε:ℝ)(hM:0≤M)(hB:0≤B)(hε:0<ε):
+include hM hB hε in
+lemma bandWidth_terminal     :
     bandWidth M B ε (count M ε)=M:=by
   have hh: M<width M B ε (count M ε):=
     (bounds M B 0 ε hM hB (by norm_num) hε).2.2.2.2.2.2.2.2.1
   exact min_eq_left hh.le
-lemma actual_child_band (M B ε parent child:ℝ)(hε:0<ε)(k:ℕ)
+include hε in
+lemma actual_child_band    
     (hp:parent≤bandWidth M B ε (k+1))(hc:child≤parent-amplification ε/2):
     child≤bandWidth M B ε k:=by
   have hs:0<amplification ε:=lt_min (by norm_num) (by positivity)
@@ -45,12 +52,14 @@ lemma actual_child_band (M B ε parent child:ℝ)(hε:0<ε)(k:ℕ)
   · have hh:=hp.trans (bandWidth_le M B ε (k+1));linarith
   · exact child_band M B ε parent child k (hp.trans (bandWidth_le_schedule M B ε (k+1))) hc
 
+end
+
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-def CertifiedBand (W:ℝ→ℂ)(bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)(k:ℕ):Prop:=
+def CertifiedBand (W:ℝ→ℂ)(bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)(k:ℕ):=
   ∃degree:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal O,Q≤M→
     internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:O)}→
     ∃Czero Cpositive:ℝ,0<Czero ∧ 0<Cpositive ∧
@@ -95,7 +104,7 @@ theorem certified_floor (W:ℝ→ℂ)(aslot bslot a b radial Bmask L lo hi Mcap 
       hCpositive.le le_rfl hh.2
 
 omit [Fintype α] [DecidableEq α] in
-theorem certified_terminal (W:ℝ→ℂ)(bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)
+theorem certified_terminal  W  bslot a b radial Bmask L lo hi Mcap κ ε 
     (hmask:0≤Bmask)(hMcap:0≤Mcap)(hκ0:0≤κ)(hε:0<ε)
     (h:CertifiedBand (α:=α) M H hH W bslot a b radial Bmask L lo hi Mcap κ ε (count Mcap ε)):
     ∃degree:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal O,Q≤M→

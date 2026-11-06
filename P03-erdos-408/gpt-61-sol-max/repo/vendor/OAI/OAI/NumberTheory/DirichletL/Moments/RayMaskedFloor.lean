@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorSource
 
@@ -23,10 +24,10 @@ variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-theorem natural_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α] (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
+theorem natural_masked_positive_floor  {α}  [Fintype α] [DecidableEq α]  W  (a b : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W)
     (a₀ b₀ ε : ℝ) (ha₀ : 0<a₀) (hb₀ : 0≤b₀) (hε : 0<ε)
-    (L Lslot loss lo hi κ bΦ : ℝ) (hL : 0≤L) (hbΦ : 0≤bΦ) (hLs : 0≤Lslot) (hloss : 0<loss)
+     L Lslot loss lo hi κ bΦ  (hL : 0≤L) (hbΦ : 0≤bΦ) (hLs : 0≤Lslot) (hloss : 0<loss)
     (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
     ∃degree : ℕ,∃S : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧
     ∀η₀ : Character,∀ᶠZ : ℝ in atTop,
@@ -60,8 +61,7 @@ theorem natural_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
     apply Nat.mul_pos
     · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
         (Ideal.span_singleton_eq_bot.not.mpr fixedBadMask_ne_zero))
-    · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr (by norm_num : (72:O)≠0)))
+    norm_num
   refine ⟨J,S,C*Fc^4,by positivity,?_⟩
   intro η₀
   filter_upwards [hbound η₀,eventually_ge_atTop (Fc*bΦ),eventually_ge_atTop (1:ℝ)] with Z hZ hconst hZ1

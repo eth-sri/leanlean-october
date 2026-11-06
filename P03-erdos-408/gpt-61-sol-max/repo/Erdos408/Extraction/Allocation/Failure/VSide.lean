@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Euler
 public import Erdos408.Extraction.Allocation.Failure.USide
@@ -27,15 +28,15 @@ open Finset Real
 noncomputable section
 
 /-- The `u`-side coefficient `α_g(d) = θ c₁ W_g(d) / V_g` of a group. -/
-def sideAlpha (c₁ : ℝ) (g : Finset ℕ) (d : ℕ) : ℝ :=
+def sideAlpha (c₁ : ℝ) (g : Finset ℕ) (d : ℕ)  :=
   chernoffTheta * c₁ * markedWeight {g} (1 / 2) id d / harmonicMass g
 
 /-- The `u`-side model mass `μ_g - e₂,g` of a group, with `π = [p ∤ c] / (p - 1)`. -/
-def sideModel (g : Finset ℕ) (c : ℕ) : ℝ :=
+def sideModel (g : Finset ℕ) (c : ℕ)  :=
   ∑ p ∈ g, modelWeight c p - ∑ K ∈ g.powersetCard 2, ∏ p ∈ K, modelWeight c p
 
 /-- The absolute `u`-side model mass `μ_g + e₂,g` of a group. -/
-def sideModelAbs (g : Finset ℕ) (c : ℕ) : ℝ :=
+def sideModelAbs (g : Finset ℕ) (c : ℕ)  :=
   ∑ p ∈ g, modelWeight c p + ∑ K ∈ g.powersetCard 2, ∏ p ∈ K, modelWeight c p
 
 /-- The facts about one group used on the `v`-side. -/
@@ -50,8 +51,12 @@ section Group
 variable {g : Finset ℕ} (hg : SideGroup g)
 include hg
 
+section
+variable (c : ℕ)
+include c
+
 /-- `μ_g ≤ (100/99) V_g ≤ 1`. -/
-lemma SideGroup.sum_modelWeight_le (c : ℕ) : ∑ p ∈ g, modelWeight c p ≤ 1 := by
+lemma SideGroup.sum_modelWeight_le   : ∑ p ∈ g, modelWeight c p ≤ 1 := by
   have h : ∀ p ∈ g, modelWeight c p ≤ 100 / 99 * ((1 : ℝ) / p) := by
     intro p hp
     have h100 : (100 : ℝ) ≤ p := by exact_mod_cast hg.large p hp
@@ -66,11 +71,11 @@ lemma SideGroup.sum_modelWeight_le (c : ℕ) : ∑ p ∈ g, modelWeight c p ≤ 
     _ ≤ 1 := by have := hg.mass_le; linarith
 
 /-- The model weights of a group are nonnegative. -/
-lemma SideGroup.modelWeight_nonneg (c : ℕ) : ∀ p ∈ g, 0 ≤ modelWeight c p :=
+lemma SideGroup.modelWeight_nonneg   : ∀ p ∈ g, 0 ≤ modelWeight c p :=
   fun p hp => Erdos408.modelWeight_nonneg (hg.prime p hp)
 
 /-- `0 ≤ μ_g - e₂,g ≤ 1`, and `μ_g - e₂,g ≥ μ_g / 2`. -/
-lemma SideGroup.sideModel_mem (c : ℕ) :
+lemma SideGroup.sideModel_mem   :
     0 ≤ sideModel g c ∧ sideModel g c ≤ 1 ∧ (∑ p ∈ g, modelWeight c p) / 2 ≤ sideModel g c := by
   have hμ := hg.sum_modelWeight_le c
   have hμ0 : 0 ≤ ∑ p ∈ g, modelWeight c p := sum_nonneg (hg.modelWeight_nonneg c)
@@ -82,15 +87,21 @@ lemma SideGroup.sideModel_mem (c : ℕ) :
   refine ⟨by nlinarith, by linarith, by nlinarith⟩
 
 /-- `0 ≤ μ_g + e₂,g ≤ 3/2`. -/
-lemma SideGroup.sideModelAbs_le (c : ℕ) : sideModelAbs g c ≤ 3 / 2 := by
+lemma SideGroup.sideModelAbs_le   : sideModelAbs g c ≤ 3 / 2 := by
   have hμ := hg.sum_modelWeight_le c
   have hμ0 : 0 ≤ ∑ p ∈ g, modelWeight c p := sum_nonneg (hg.modelWeight_nonneg c)
   have he2 := sum_powersetCard_two_prod_le g (hg.modelWeight_nonneg c)
   unfold sideModelAbs
   nlinarith
 
+end
+
+section
+variable {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4)
+include c₁ hc₁ hc₁'
+
 /-- `0 ≤ α_g(d) ≤ 1` for `0 ≤ c₁ ≤ 1/4`. -/
-lemma SideGroup.sideAlpha_mem {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4) (d : ℕ) :
+lemma SideGroup.sideAlpha_mem       (d : ℕ) :
     0 ≤ sideAlpha c₁ g d ∧ sideAlpha c₁ g d ≤ 1 := by
   obtain ⟨h1, h2⟩ := markedWeight_half_mem hg.mass_ge d
   have hV := hg.mass_ge
@@ -104,7 +115,7 @@ lemma SideGroup.sideAlpha_mem {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ �
 
 /-- The `u`-side model of a group lies in `[0, 1]`, and is at most `1 - θ c₁ / 5` when exactly
 one prime of `g` divides `d` (with `p ∣ c ↔ p ∣ d` on `g`). -/
-lemma SideGroup.one_sub_sideAlpha_mul_le {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4) {c d : ℕ}
+lemma SideGroup.one_sub_sideAlpha_mul_le       {c d : ℕ}
     (hcd : ∀ p ∈ g, p ∣ c ↔ p ∣ d) :
     0 ≤ 1 - sideAlpha c₁ g d * sideModel g c ∧
       1 - sideAlpha c₁ g d * sideModel g c ≤
@@ -139,13 +150,11 @@ lemma SideGroup.one_sub_sideAlpha_mul_le {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc�
         intro p hp
         have h2 : (2 : ℝ) ≤ p := by exact_mod_cast (hg.prime p hp).two_le
         by_cases hpp : p = p₀
-        · simp only [hpp, ↓reduceIte, sub_self]
-          exact hg.modelWeight_nonneg c p₀ hp₀g
+        · grind [Erdos408.SideGroup.modelWeight_nonneg]
         · have hnd : ¬ p ∣ d := by
             intro hpd
             have : p ∈ g.filter (· ∣ d) := mem_filter.2 ⟨hp, hpd⟩
-            rw [hp₀] at this
-            exact hpp (mem_singleton.1 this)
+            simp_all
           have hnc : ¬ p ∣ c := fun h => hnd ((hcd p hp).1 h)
           simp only [hpp, ↓reduceIte, sub_zero, modelWeight, hnc]
           exact one_div_le_one_div_of_le (by linarith) (by linarith)
@@ -160,13 +169,19 @@ lemma SideGroup.one_sub_sideAlpha_mul_le {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc�
     linarith
   · nlinarith
 
+end
+
 end Group
 
 /-! ### Factoring over the groups -/
 
+section
+variable {𝒢 : Finset (Finset ℕ)} (hdisj : (𝒢 : Set (Finset ℕ)).PairwiseDisjoint id)
+include 𝒢 hdisj
+
 /-- A number whose primes lie in the disjoint groups `𝒢` is the product of its group parts. -/
-lemma prod_keepPrimes_eq {𝒢 : Finset (Finset ℕ)} (hdisj : (𝒢 : Set (Finset ℕ)).PairwiseDisjoint id)
-    {d : ℕ} (hd : d ≠ 0) (hdP : ∀ p ∈ d.primeFactors, p ∈ 𝒢.biUnion id) :
+lemma prod_keepPrimes_eq    
+     {d}  (hd : d ≠ 0) (hdP : ∀ p ∈ d.primeFactors, p ∈ 𝒢.biUnion id) :
     ∏ g ∈ 𝒢, keepPrimes g d = d := by
   refine Nat.eq_of_factorization_eq (prod_ne_zero_iff.2 fun g _ => keepPrimes_ne_zero g d) hd
     fun p => ?_
@@ -180,15 +195,14 @@ lemma prod_keepPrimes_eq {𝒢 : Finset (Finset ℕ)} (hdisj : (𝒢 : Set (Fins
     · intro g hg hne
       have : p ∉ g := fun hpg => disjoint_left.1 (hdisj hg hg₀ hne) hpg hpg₀
       simp [this]
-    · exact fun h => absurd hg₀ h
+    · exact absurd hg₀
   · have : d.factorization p = 0 := Finsupp.notMem_support_iff.1 (by
       rwa [Nat.support_factorization])
-    rw [this]
-    exact sum_eq_zero fun g _ => by split_ifs <;> rfl
+    simp_all
 
 /-- Sums of products over the group parts factor: `∑_{d ∈ D} ∏_g h_g(d_g) ≤ ∏_g ∑_{m} h_g(m)`. -/
-lemma sum_prod_keepPrimes_le {𝒢 : Finset (Finset ℕ)}
-    (hdisj : (𝒢 : Set (Finset ℕ)).PairwiseDisjoint id) {D : Finset ℕ}
+lemma sum_prod_keepPrimes_le  
+      {D : Finset ℕ}
     (hD : ∀ d ∈ D, d ≠ 0 ∧ ∀ p ∈ d.primeFactors, p ∈ 𝒢.biUnion id) (Dg : Finset ℕ → Finset ℕ)
     (hDg : ∀ d ∈ D, ∀ g ∈ 𝒢, keepPrimes g d ∈ Dg g) (h : Finset ℕ → ℕ → ℝ)
     (hh : ∀ g ∈ 𝒢, ∀ m ∈ Dg g, 0 ≤ h g m) :
@@ -209,11 +223,12 @@ lemma sum_prod_keepPrimes_le {𝒢 : Finset (Finset ℕ)}
     _ ≤ ∑ κ ∈ Fintype.piFinset (fun g : 𝒢 => Dg g.1), ∏ g : 𝒢, h g.1 (κ g) := by
         refine sum_le_sum_of_subset_of_nonneg (fun κ hκ => ?_) fun κ hκ _ =>
           prod_nonneg fun g _ => hh g.1 g.2 _ (Fintype.mem_piFinset.1 hκ g)
-        obtain ⟨d, hd, rfl⟩ := mem_image.1 hκ
-        exact Fintype.mem_piFinset.2 fun g => hDg d hd g.1 g.2
+        grind
+
+end
 
 /-- Group parts keep the primes of the group. -/
-lemma primeCount_keepPrimes {g : Finset ℕ} (hg : ∀ p ∈ g, p.Prime) {d : ℕ} (hd : d ≠ 0) :
+lemma primeCount_keepPrimes  {g}  (hg : ∀ p ∈ g, p.Prime)  {d}  (hd : d ≠ 0) :
     primeCount g (keepPrimes g d) = primeCount g d := by
   unfold primeCount
   congr 1

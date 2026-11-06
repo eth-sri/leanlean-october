@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2High.PivotAssignments
 
@@ -17,10 +18,10 @@ local notation "PivotAddrFin" => BirthAddressFin P (J + F.ell) n B
 local notation "PivotAddr" => Erdos821.S2Core.BirthAddress P (J + F.ell) n B
 abbrev PivotBlocks (pi : Finset (Finset PivotAddrFin)) := {C : Finset PivotAddrFin // C ∈ pi}
 
-def performedAddressSet (pi : Finset (Finset PivotAddrFin)) : Finset PivotAddrFin :=
+def performedAddressSet (pi : Finset (Finset PivotAddrFin))  :=
   pi.biUnion id
 
-def blockContaining (pi : Finset (Finset PivotAddrFin))
+def blockContaining (pi )
     (j : PivotAddrFin) (hj : j ∈ performedAddressSet pi) : PivotBlocks pi := by
   classical
   let h := Finset.mem_biUnion.mp hj
@@ -28,9 +29,7 @@ def blockContaining (pi : Finset (Finset PivotAddrFin))
 
 theorem blockContaining_mem (pi : Finset (Finset PivotAddrFin))
     (j : PivotAddrFin) (hj : j ∈ performedAddressSet pi) :
-    j ∈ (blockContaining pi j hj).val := by
-  classical
-  exact (Classical.choose_spec (Finset.mem_biUnion.mp hj)).2
+    j ∈ (blockContaining pi j hj).val := (Classical.choose_spec (Finset.mem_biUnion.mp hj)).right
 
 theorem blockContaining_eq (pi : Finset (Finset PivotAddrFin)) (hpi : BirthCollection pi)
     (j : PivotAddrFin) (hj : j ∈ performedAddressSet pi)

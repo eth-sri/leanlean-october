@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.HeckeExpansion
 public import OAI.NumberTheory.DirichletL.Moments.MobiusRegroup
@@ -11,13 +12,13 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorAllocation
 open IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [DecidableEq ι]
 
-def nonemptySelections (s : Finset ι) : Finset (Finset ι) := s.powerset.erase ∅
+def nonemptySelections (s : Finset ι)  := s.powerset.erase ∅
 
 omit [DecidableEq ι] in
-theorem prime_complement (P : Ideal O) (hP : Prime P) (s : Finset ι) (v : ι → Ideal O) :
+theorem prime_complement (P : Ideal ActualEisensteinCubic.O) (hP : Prime P) (s : Finset ι) (v : ι → Ideal ActualEisensteinCubic.O) :
     (∏ i ∈ s, (1-(if P ∣ v i then (1:ℂ) else 0))) =
       if P ∣ ∏ i ∈ s,v i then 0 else 1 := by
   by_cases h : P ∣ ∏ i ∈ s,v i
@@ -30,8 +31,8 @@ theorem prime_complement (P : Ideal O) (hP : Prime P) (s : Finset ι) (v : ι �
     have hd : ¬P∣v i := fun hh => h ((hP.dvd_finsetProd_iff v).mpr ⟨i,hi,hh⟩)
     simp only [ite_eq_right hd,sub_zero]
 
-theorem prime_factor_allocation (P : Ideal O) (hP : Prime P)
-    (s : Finset ι) (v : ι → Ideal O) :
+theorem prime_factor_allocation (P : Ideal ActualEisensteinCubic.O) (hP : Prime P)
+    (s : Finset ι) (v : ι → Ideal ActualEisensteinCubic.O) :
     (if P ∣ ∏ i ∈ s,v i then (1:ℂ) else 0) =
       ∑ J ∈ nonemptySelections s, (-1:ℂ)^(J.card+1)*
         ∏ i ∈ J, if P ∣ v i then (1:ℂ) else 0 := by
@@ -47,16 +48,10 @@ theorem prime_factor_allocation (P : Ideal O) (hP : Prime P)
   have hn : (∑ J ∈ nonemptySelections s, (-1:ℂ)^(J.card+1)*
       ∏ i ∈ J,if P∣v i then (1:ℂ) else 0) = -(∑ J ∈ nonemptySelections s,f J) := by
     rw [← Finset.sum_neg_distrib]
-    apply Finset.sum_congr rfl
-    intro J hJ
-    dsimp only [f]
-    rw [pow_succ]
-    ring
-  rw [hn]
-  by_cases h : P∣∏ i ∈ s,v i <;> simp only [h,ite_true,ite_false] at he ⊢ <;>
-    linear_combination he
+    grind
+  grind
 
-theorem squarefree_dvd_iff (D I : Ideal O) (hD : Squarefree D) :
+theorem squarefree_dvd_iff  D I  (hD : Squarefree D) :
     D∣I ↔ ∀ P ∈ primeSupport D,P∣I := by
   constructor
   · intro hd P hP
@@ -69,26 +64,29 @@ theorem squarefree_dvd_iff (D I : Ideal O) (hD : Squarefree D) :
     let : Q.IsMaximal := (Ideal.isPrime_of_prime (support_prime hQ)).isMaximal (support_prime hQ).ne_zero
     exact Ideal.isCoprime_of_isMaximal hne
 
-abbrev Allocation (D : Ideal O) (s : Finset ι) :=
+abbrev Allocation (D ) (s : Finset ι) :=
   (P : primeSupport D) → nonemptySelections s
 
-def allocationTerm (D : Ideal O) (s : Finset ι) (v : ι → Ideal O)
-    (a : Allocation D s) : ℂ :=
+def allocationTerm (D ) (s : Finset ι) (v : ι → Ideal ActualEisensteinCubic.O)
+    (a : Allocation D s)  :=
   ∏ P : primeSupport D, (-1:ℂ)^((a P).val.card+1)*
-    ∏ i ∈ (a P).val, if (P:Ideal O)∣v i then (1:ℂ) else 0
+    ∏ i ∈ (a P).val, if (P:Ideal ActualEisensteinCubic.O)∣v i then (1:ℂ) else 0
 
-theorem squarefree_mask_allocation (D : Ideal O) (hD : Squarefree D)
-    (s : Finset ι) (v : ι → Ideal O) :
+section
+variable (D : Ideal ActualEisensteinCubic.O) (hD : Squarefree D) (s : Finset ι)
+
+include hD in
+theorem squarefree_mask_allocation    
+       v  :
     (if D∣∏ i ∈ s,v i then (1:ℂ) else 0) =
       ∑ a : Allocation D s, allocationTerm D s v a := by
   have hprod : (if D∣∏ i ∈ s,v i then (1:ℂ) else 0) =
-      ∏ P : primeSupport D, if (P:Ideal O)∣∏ i ∈ s,v i then (1:ℂ) else 0 := by
+      ∏ P : primeSupport D, if (P:Ideal ActualEisensteinCubic.O)∣∏ i ∈ s,v i then (1:ℂ) else 0 := by
     by_cases hd : D∣∏ i ∈ s,v i
     · rw [ite_eq_left hd]
       symm
       apply Finset.prod_eq_one
-      intro P hP
-      rw [ite_eq_left ((squarefree_dvd_iff _ _ hD).mp hd P P.property)]
+      grind [squarefree_dvd_iff]
     · rw [ite_eq_right hd]
       obtain ⟨P,hP,hnd⟩ := not_forall.mp (fun h => hd ((squarefree_dvd_iff _ _ hD).mpr h))
         |> fun h => by simpa only [not_forall,not_imp] using h
@@ -96,25 +94,26 @@ theorem squarefree_mask_allocation (D : Ideal O) (hD : Squarefree D)
       exact Finset.prod_eq_zero (Finset.mem_univ (⟨P,hP⟩ : primeSupport D)) (by simp only [ite_eq_right hnd])
   rw [hprod]
   have hl (P : primeSupport D) :
-      (if (P:Ideal O)∣∏ i ∈ s,v i then (1:ℂ) else 0) =
+      (if (P:Ideal ActualEisensteinCubic.O)∣∏ i ∈ s,v i then (1:ℂ) else 0) =
       ∑ J : nonemptySelections s, (-1:ℂ)^(J.val.card+1)*
-        ∏ i ∈ J.val, if (P:Ideal O)∣v i then (1:ℂ) else 0 := by
+        ∏ i ∈ J.val, if (P:Ideal ActualEisensteinCubic.O)∣v i then (1:ℂ) else 0 := by
     rw [prime_factor_allocation P (support_prime P.property) s v]
     exact (Finset.sum_coe_sort (nonemptySelections s) (fun J =>
-      (-1:ℂ)^(J.card+1)*∏ i ∈ J,if (P:Ideal O)∣v i then (1:ℂ) else 0)).symm
+      (-1:ℂ)^(J.card+1)*∏ i ∈ J,if (P:Ideal ActualEisensteinCubic.O)∣v i then (1:ℂ) else 0)).symm
   simp_rw [hl]
   exact Fintype.prod_sum _
 
-theorem allocation_card_bound (D : Ideal O) (s : Finset ι) :
+theorem allocation_card_bound     :
     Fintype.card (Allocation D s) ≤ (2^(primeSupport D).card)^s.card := by
   have hc : (nonemptySelections s).card ≤ 2^s.card := by
-    simpa only [nonemptySelections,Finset.card_powerset] using
-      (Finset.card_erase_le (s := s.powerset) (a := (∅:Finset ι)))
+    simp_all [nonemptySelections]
   change Fintype.card (primeSupport D → nonemptySelections s) ≤ _
   simp only [Fintype.card_fun,Fintype.card_coe]
   calc
     _ ≤ (2^s.card)^(primeSupport D).card := Nat.pow_le_pow_left hc _
     _ = _ := by simp only [← pow_mul,Nat.mul_comm]
+
+end
 
 end SevenEighths.CenteredMomentDivisorAllocation
 

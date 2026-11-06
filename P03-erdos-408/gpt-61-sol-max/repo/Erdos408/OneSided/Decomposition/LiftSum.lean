@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Decomposition.Lists
 public import Erdos408.OneSided.Decomposition.Pair
@@ -32,23 +33,23 @@ variable {K : ℕ}
 /-! ### The index set and the terms -/
 
 /-- The probability `∏_c μ(z_c)` of the pads, `μ_i(p) = 1/(p V_i)`. -/
-noncomputable def padWeight (x : ℝ) (d : Data K) {J : ℕ} (z : Fin K × Fin J → ℕ) : ℝ :=
+noncomputable def padWeight (x : ℝ) (d : Data K) {J } (z : Fin K × Fin J → ℕ)  :=
   ∏ c, 1 / ((z c : ℝ) * harmonicMass (band x (d.a c.1)))
 
 /-- The label tuples share no prime. -/
-def Unshared (p p' : Fin K → ℕ) : Prop := ∀ i i', p i ≠ p' i'
+def Unshared (p p' : Fin K → ℕ)  := ∀ i i', p i ≠ p' i'
 
 /-- The pads are distinct and differ from every label of `p` and `p'` in their group. -/
-def GoodPads {J : ℕ} (p p' : Fin K → ℕ) (z : Fin K × Fin J → ℕ) : Prop :=
+def GoodPads {J } (p p' : Fin K → ℕ) (z : Fin K × Fin J → ℕ)  :=
   Function.Injective z ∧ ∀ c, z c ≠ p c.1 ∧ z c ≠ p' c.1
 
 /-- The index `(p, p', z, m, n, r, s)` of the lift. -/
-abbrev LiftIndex (K J : ℕ) :=
+abbrev LiftIndex (K J ) :=
   ((Fin K → ℕ) × (Fin K → ℕ)) × ((Fin K × Fin J → ℕ) × ((ℕ × ℕ) × (ℕ × ℕ)))
 
 open scoped Classical in
 /-- The indices with unshared labels and good pads. -/
-noncomputable def liftIndex (x : ℝ) (d : Data K) : Finset (LiftIndex K (padCount x)) :=
+noncomputable def liftIndex (x ) (d : Data K)  :=
   ((d.labels x ×ˢ d.labels x) ×ˢ (padSet x d (padCount x) ×ˢ
       ((d.mRange ×ˢ d.nRange) ×ˢ (d.mRange ×ˢ d.nRange)))).filter
     fun a => Unshared a.1.1 a.1.2 ∧ GoodPads a.1.1 a.1.2 a.2.1
@@ -60,7 +61,7 @@ def liftDet (p p' : Fin K → ℕ) (m n r s : ℕ) : ℤ :=
 open scoped Classical in
 /-- The term `∏V⁻² ∏μ(z) η(a/Y) η(b/Y) ψ(t/Y) α_m ᾱ_r β_n β̄_s ([t = b - a] - ∫_𝔐 e(θ(t - b + a)))`
 of the weighted coprime-pair error. -/
-noncomputable def liftTerm (A₀ x : ℝ) (d : Data K) (Y : ℝ) {J : ℕ} (a : LiftIndex K J) : ℂ :=
+noncomputable def liftTerm (A₀ x : ℝ) (d : Data K) (Y : ℝ) {J } (a : LiftIndex K J)  :=
   (((d.bandMass x)⁻¹ ^ 2 * padWeight x d a.2.1 * dyadicBump ((∏ i, a.1.1 i : ℕ) / Y) *
       dyadicBump ((∏ i, a.1.2 i : ℕ) / Y) *
       plateau (liftDet a.1.1 a.1.2 a.2.2.1.1 a.2.2.1.2 a.2.2.2.1 a.2.2.2.2 / Y) : ℝ) : ℂ) *
@@ -71,20 +72,20 @@ noncomputable def liftTerm (A₀ x : ℝ) (d : Data K) (Y : ℝ) {J : ℕ} (a : 
           (∏ i, a.1.2 i : ℕ) + (∏ i, a.1.1 i : ℕ))))
 
 /-- The source and target states `((D b m, s), (z, p'))` and `((D a r, n), (z, p))`. -/
-def liftStates {J : ℕ} (a : LiftIndex K J) : ((ℕ × ℕ) × Lists K J) × ((ℕ × ℕ) × Lists K J) :=
+def liftStates {J } (a : LiftIndex K J)  :=
   (((listProd (padList a.2.1 a.1.2) * a.2.2.1.1, a.2.2.2.2), padList a.2.1 a.1.2),
     ((listProd (padList a.2.1 a.1.1) * a.2.2.2.1, a.2.2.1.2), padList a.2.1 a.1.1))
 
 /-- The term of `2^{-k} ⟨f, 𝒯 f⟩_{2^k}` at a pair of states. -/
 noncomputable def stateTerm (q A₀ x : ℝ) (d : Data K) (Y : ℝ) (k : ℕ)
-    (w : ((ℕ × ℕ) × Lists K (padCount x)) × ((ℕ × ℕ) × Lists K (padCount x))) : ℂ :=
+    (w : ((ℕ × ℕ) × Lists K (padCount x)) × ((ℕ × ℕ) × Lists K (padCount x)))  :=
   ((2 : ℂ) ^ k)⁻¹ * (stateMass x d : ℂ) *
     (star (star (d.α (w.1.1.1 / listProd w.1.2)) * d.β w.1.1.2) *
       (rowEntry q A₀ x d Y (2 ^ k) w.1 w.2 *
         (star (d.α (w.2.1.1 / listProd w.2.2)) * d.β w.2.1.2)))
 
 /-- `2^{-k} ⟨f, 𝒯 f⟩_{2^k}` is the sum of `stateTerm` over pairs of states. -/
-theorem inv_mul_rowPairing_eq (q A₀ x : ℝ) (d : Data K) (Y : ℝ) (k : ℕ) :
+theorem inv_mul_rowPairing_eq  q A₀ x  (d : Data K)  Y   k  :
     ((2 : ℂ) ^ k)⁻¹ * rowPairing q A₀ x d Y (2 ^ k) =
       ∑ w ∈ states x d Y (2 ^ k) ×ˢ states x d Y (2 ^ k), stateTerm q A₀ x d Y k w := by
   rw [rowPairing_eq, ← mul_assoc, sum_product, mul_sum]
@@ -93,28 +94,36 @@ theorem inv_mul_rowPairing_eq (q A₀ x : ℝ) (d : Data K) (Y : ℝ) (k : ℕ) 
 
 /-! ### Support facts -/
 
+section
+variable (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data K} {J : ℕ} {z : Fin K × Fin J → ℕ} (hz : z ∈ padSet x d J) (hzinj : Function.Injective z) (hd : Admissible C CX alo ahi g x d) (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m) {p p' : Fin K → ℕ} (hp : p ∈ d.labels x) (i : Fin K) (hp' : p' ∈ d.labels x) (hU : Unshared p p') (ha : 1 < ∏ i, p i) {m n : ℕ} (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) {Y : ℝ} (hY : 0 < Y) {D k : ℕ}
+
+
+include hp in
 /-- The label tuples are primes of their bands. -/
-theorem mem_band_of_mem_labels {x : ℝ} {d : Data K} {p : Fin K → ℕ} (hp : p ∈ d.labels x)
-    (i : Fin K) : p i ∈ band x (d.a i) :=
+theorem mem_band_of_mem_labels        
+      : p i ∈ band x (d.a i) :=
   Fintype.mem_piFinset.1 hp i
 
+include hz in
 /-- The pads are primes of their bands. -/
-theorem mem_band_of_mem_padSet {x : ℝ} {d : Data K} {J : ℕ} {z : Fin K × Fin J → ℕ}
-    (hz : z ∈ padSet x d J) (c : Fin K × Fin J) : z c ∈ band x (d.a c.1) :=
+theorem mem_band_of_mem_padSet        
+       c  : z c ∈ band x (d.a c.1) :=
   Fintype.mem_piFinset.1 hz c
 
+include hz hp in
 /-- The labels of `padList z p` are primes of their bands. -/
-theorem mem_band_padList {x : ℝ} {d : Data K} {J : ℕ} {z : Fin K × Fin J → ℕ}
-    (hz : z ∈ padSet x d J) {p : Fin K → ℕ} (hp : p ∈ d.labels x) (i : Fin K)
+theorem mem_band_padList        
+           
     (h : Fin (J + 1)) : padList z p i h ∈ band x (d.a i) := by
   induction h using Fin.lastCases with
   | last => rw [padList_last]; exact mem_band_of_mem_labels hp i
   | cast h => rw [padList_castSucc]; exact mem_band_of_mem_padSet hz (i, h)
 
+include hz hzinj hp in
 /-- Distinct pads differing from the last labels give lists in `lists`. -/
-theorem padList_mem_lists {x : ℝ} {d : Data K} {J : ℕ} {z : Fin K × Fin J → ℕ}
-    (hz : z ∈ padSet x d J) (hzinj : Function.Injective z) {p : Fin K → ℕ}
-    (hp : p ∈ d.labels x) (hzp : ∀ c, z c ≠ p c.1) : padList z p ∈ lists x d J := by
+theorem padList_mem_lists        
+         
+      (hzp : ∀ c, z c ≠ p c.1) : padList z p ∈ lists x d J := by
   unfold lists
   refine mem_filter.2 ⟨Fintype.mem_piFinset.2 fun i => Fintype.mem_piFinset.2 fun h =>
     mem_band_padList hz hp i h, fun i => ?_⟩
@@ -125,13 +134,14 @@ theorem padList_mem_lists {x : ℝ} {d : Data K} {J : ℕ} {z : Fin K × Fin J �
   · rintro ⟨h, hh⟩
     exact hzp (i, h) hh
 
+include hrough hp hp' hU ha in
 /-- The coprime labels and rough `m, n`: `bmn ≠ ars` once `a > 1`, since `a` is coprime to
 `bmn`. -/
-theorem liftDet_ne_zero {x : ℝ} {d : Data K}
-    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
-    {p p' : Fin K → ℕ} (hp : p ∈ d.labels x) (hp' : p' ∈ d.labels x) (hU : Unshared p p')
-    (ha : 1 < ∏ i, p i) {m n : ℕ} (hm : m ≠ 0) (hmr : IsRough x m) (hn : n ≠ 0)
-    (hnr : IsRough x n) (r s : ℕ) : liftDet p p' m n r s ≠ 0 := by
+theorem liftDet_ne_zero    
+     
+           
+        (hm : m ≠ 0) (hmr : IsRough x m) (hn : n ≠ 0)
+    (hnr : IsRough x n)  r s  : liftDet p p' m n r s ≠ 0 := by
   have hprime : ∀ i, (p i).Prime := fun i => (mem_filter.1 (mem_band_of_mem_labels hp i)).2
   have hprime' : ∀ i, (p' i).Prime := fun i => (mem_filter.1 (mem_band_of_mem_labels hp' i)).2
   -- `a` is coprime to `b`, `m` and `n`
@@ -145,24 +155,23 @@ theorem liftDet_ne_zero {x : ℝ} {d : Data K}
   intro h
   unfold liftDet at h
   have heq : (∏ i, p' i) * m * n = (∏ i, p i) * (r * s) := by
-    rw [sub_eq_zero] at h
-    rw [← mul_assoc]
-    exact_mod_cast h
+    grind
   have hdvd : (∏ i, p i) ∣ (∏ i, p' i) * m * n := ⟨r * s, heq⟩
   have := Nat.Coprime.eq_one_of_dvd ((hab.mul_right (hcop m hm hmr)).mul_right (hcop n hn hnr)) hdvd
   omega
 
+include hd hrough hHm hHn hY in
 /-- A source or target state `((D b m, s), (z, p))` of the lift is a state at the dyad
 `2^k ∋ D`: its position lies in `Ω` by the supports, and it is primitive since every common
 prime of `m` and `s` divides `t ≠ 0` with `|t| < W`. -/
-theorem mem_states_of {C CX alo ahi g x : ℝ} {d : Data K} (hd : Admissible C CX alo ahi g x d)
-    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
-    (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) {Y : ℝ} (hY : 0 < Y) {k : ℕ}
+theorem mem_states_of      
+     
+             
     {z : Fin K × Fin (padCount x) → ℕ}
     (hz : z ∈ padSet x d (padCount x)) (hzinj : Function.Injective z)
     (hD : 2 ^ k ≤ ∏ c, z c ∧ ∏ c, z c < 2 ^ (k + 1)) {p : Fin K → ℕ} (hp : p ∈ d.labels x)
     (hzp : ∀ c, z c ≠ p c.1) (hpY : Y < (∏ i, p i : ℕ) ∧ ((∏ i, p i : ℕ) : ℝ) < 4 * Y)
-    {m s : ℕ} (hm : d.α m ≠ 0) (hs : d.β s ≠ 0) (hsR : s ∈ d.nRange) {t : ℤ} (ht : t ≠ 0)
+     {m s}  (hm : d.α m ≠ 0) (hs : d.β s ≠ 0) (hsR : s ∈ d.nRange) {t : ℤ} (ht : t ≠ 0)
     (htW : |(t : ℝ)| < roughLevel x) (hms : ∀ r : ℕ, r.Prime → r ∣ m → r ∣ s → (r : ℤ) ∣ t) :
     ((listProd (padList z p) * m, s), padList z p) ∈ states x d Y (2 ^ k) := by
   set l := padList z p
@@ -185,7 +194,7 @@ theorem mem_states_of {C CX alo ahi g x : ℝ} {d : Data K} (hd : Admissible C C
     have : ((∏ c, z c : ℕ) : ℝ) < 2 ^ (k + 1) := by exact_mod_cast hD.2
     rw [pow_succ] at this
     linarith
-  have hm2' : (m : ℝ) ≤ 2 * d.Hm := hm2
+  
   unfold states positions
   refine mem_filter.2 ⟨mem_product.2 ⟨mem_filter.2 ⟨mem_product.2 ⟨mem_Icc.2 ⟨?_, ?_⟩, ?_⟩, ?_⟩,
     hl⟩, ?_⟩
@@ -208,20 +217,21 @@ theorem mem_states_of {C CX alo ahi g x : ℝ} {d : Data K} (hd : Admissible C C
 
 
 /-- `∏_c μ(z_c) = D⁻¹ ∏V_i^{-J}`. -/
-theorem padWeight_eq (x : ℝ) (d : Data K) {J : ℕ} (z : Fin K × Fin J → ℕ) :
+theorem padWeight_eq  x  (d : Data K) {J : ℕ} (z : Fin K × Fin J → ℕ) :
     padWeight x d z = ((∏ c, z c : ℕ) : ℝ)⁻¹ * (d.bandMass x)⁻¹ ^ J := by
   simp [padWeight, Data.bandMass, Fintype.prod_prod_type, prod_mul_distrib, prod_inv_distrib,
     prod_pow]
   ring
 
 open scoped Classical in
+include hd hdisj hrough hHm in
 /-- **The terms match.** At an index in the dyad `k` with `α_m, α_r ≠ 0`, the term of the
 weighted coprime-pair error equals the term of `2^{-k} ⟨f, 𝒯 f⟩_{2^k}` at the image. -/
-theorem liftTerm_eq_stateTerm (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data K}
-    (hd : Admissible C CX alo ahi g x d)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
-    (hHm : 0 < d.Hm) (hV : 0 < d.bandMass x) (Y : ℝ) {k : ℕ} {a : LiftIndex K (padCount x)}
+theorem liftTerm_eq_stateTerm      
+     
+     
+     
+      (hV : 0 < d.bandMass x)  Y   {k}  {a : LiftIndex K (padCount x)}
     (ha : a ∈ liftIndex x d) (hk : Nat.log 2 (∏ c, a.2.1 c) = k) (hm : d.α a.2.2.1.1 ≠ 0)
     (hr : d.α a.2.2.2.1 ≠ 0) :
     liftTerm A₀ x d Y a = stateTerm q A₀ x d Y k (liftStates a) := by
@@ -289,7 +299,7 @@ theorem liftTerm_eq_stateTerm (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data 
     Nat.mul_div_cancel_left _ hlpos, Nat.mul_div_cancel_left _ hlpos']
   simp only [padProd_padList, lastProd_padList, hdiv, padWeight_eq, stateMass]
   have hV0 : (d.bandMass x : ℂ) ≠ 0 := by exact_mod_cast hV.ne'
-  have hD0' : ((∏ c, z c : ℕ) : ℂ) ≠ 0 := by exact_mod_cast hD0.ne'
+  
   simp only [star_mul', star_star]
   push_cast
   have h2 : (2 : ℂ) ^ k ≠ 0 := pow_ne_zero _ two_ne_zero
@@ -298,24 +308,32 @@ theorem liftTerm_eq_stateTerm (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data 
   ring
 
 /-- The dyad of the pad product: `2^k ≤ D < 2^{k+1}` for `k = ⌊log₂ D⌋`, `D ≥ 1`. -/
-theorem pow_le_and_lt_of_log_eq {D k : ℕ} (hD : 0 < D) (hk : Nat.log 2 D = k) :
+theorem pow_le_and_lt_of_log_eq   (hD : 0 < D) (hk : Nat.log 2 D = k) :
     2 ^ k ≤ D ∧ D < 2 ^ (k + 1) := by
   subst hk
   exact ⟨Nat.pow_log_le_self 2 hD.ne', Nat.lt_pow_succ_log_self (by norm_num) D⟩
 
+include hd in
 /-- A marked variable in the support of `α` lies in `[H_m, 2H_m]`. -/
-theorem mem_mRange_of_α_ne_zero {C CX alo ahi g x : ℝ} {d : Data K}
-    (hd : Admissible C CX alo ahi g x d) {m : ℕ} (hm : d.α m ≠ 0) : m ∈ d.mRange := by
+theorem mem_mRange_of_α_ne_zero    
+        (hm : d.α m ≠ 0) : m ∈ d.mRange := by
   obtain ⟨h₁, h₂, -, -⟩ := hd.α_supp m hm
   exact mem_Icc.2 ⟨Nat.ceil_le.2 h₁, Nat.le_floor h₂⟩
 
+end
+
 open scoped Classical in
+section
+variable {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ) (hd : Admissible C CX alo ahi g x d) (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m) (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) (hV : 0 < d.bandMass x) {Y : ℝ} (hY : 1 ≤ Y) (hYW : ∀ p ∈ d.labels x, Y < (∏ i, p i : ℕ) → 5 * Y ≤ roughLevel x)
+
+
+include hd hrough hHm hHn hY hYW in
 /-- The image of an index with a nonzero term is a pair of states at the dyad `k`. -/
-theorem liftStates_mem {C CX alo ahi g x : ℝ} {d : Data K} (A₀ : ℝ)
-    (hd : Admissible C CX alo ahi g x d)
-    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
-    (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) {Y : ℝ} (hY : 1 ≤ Y)
-    (hYW : ∀ p ∈ d.labels x, Y < (∏ i, p i : ℕ) → 5 * Y ≤ roughLevel x) {k : ℕ}
+theorem liftStates_mem      
+     
+     
+           
+       {k} 
     {a : LiftIndex K (padCount x)} (ha : a ∈ liftIndex x d)
     (hk : Nat.log 2 (∏ c, a.2.1 c) = k) (hne : liftTerm A₀ x d Y a ≠ 0) :
     liftStates a ∈ states x d Y (2 ^ k) ×ˢ states x d Y (2 ^ k) := by
@@ -368,7 +386,7 @@ theorem liftStates_mem {C CX alo ahi g x : ℝ} {d : Data K} (A₀ : ℝ)
       (dvd_mul_of_dvd_left (dvd_mul_of_dvd_right (Int.natCast_dvd_natCast.2 hlr) _) _)
 
 /-- The change of variables is injective. -/
-theorem liftStates_injOn {x : ℝ} {d : Data K} {a₁ a₂ : LiftIndex K (padCount x)}
+theorem liftStates_injOn     {a₁ a₂ : LiftIndex K (padCount x)}
     (ha₁ : a₁ ∈ liftIndex x d) (ha₂ : a₂ ∈ liftIndex x d) (h : liftStates a₁ = liftStates a₂) :
     a₁ = a₂ := by
   obtain ⟨⟨p₁, p'₁⟩, z₁, ⟨m₁, n₁⟩, r₁, s₁⟩ := a₁
@@ -388,11 +406,12 @@ theorem liftStates_injOn {x : ℝ} {d : Data K} {a₁ a₂ : LiftIndex K (padCou
   rw [Nat.eq_of_mul_eq_mul_left hpos hm, Nat.eq_of_mul_eq_mul_left hpos' hr]
 
 open scoped Classical in
+include hd hdisj in
 /-- The change of variables is onto the pairs of states with a nonzero term, and `α_m, α_r`
 do not vanish at the preimage. -/
-theorem exists_liftStates_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ)
-    (hd : Admissible C CX alo ahi g x d)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (Y : ℝ) {k : ℕ}
+theorem exists_liftStates_eq      
+     
+      (Y : ℝ)  {k} 
     {w : ((ℕ × ℕ) × Lists K (padCount x)) × ((ℕ × ℕ) × Lists K (padCount x))}
     (hw : w ∈ states x d Y (2 ^ k) ×ˢ states x d Y (2 ^ k))
     (hne : stateTerm q A₀ x d Y k w ≠ 0) :
@@ -408,8 +427,7 @@ theorem exists_liftStates_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ
       (∀ i i' h', l' i (Fin.last _) ≠ l i' h') ∧
       (2 : ℝ) ^ k ≤ (padProd l : ℝ) ∧ (padProd l : ℝ) < 2 * 2 ^ k ∧
       (padProd l : ℤ) ∣ det (P₁, P₂) (Q₁, Q₂) := by
-    by_contra hc
-    exact hne (by simp only [stateTerm, rowEntry]; rw [ite_eq_right hc]; simp)
+    grind [stateTerm, rowEntry]
   obtain ⟨hcopy, hban, hD₁, hD₂, -⟩ := hcond
   have hpad : ∏ c : Fin K × Fin (padCount x), l c.1 c.2.castSucc = padProd l := by
     rw [Fintype.prod_prod_type]
@@ -450,14 +468,15 @@ theorem exists_liftStates_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ
 
 /-! ### The lift identity -/
 
+include hd hdisj hrough hHm hHn hV hY hYW in
 /-- **The lift identity at one pad dyad.** The weighted coprime-pair error over the pads
 with `D ∈ [2^k, 2^{k+1})` is `2^{-k} ⟨f, 𝒯 f⟩_{2^k}`. -/
-theorem sum_liftTerm_dyad_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ)
-    (hd : Admissible C CX alo ahi g x d)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
-    (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) (hV : 0 < d.bandMass x) {Y : ℝ} (hY : 1 ≤ Y)
-    (hYW : ∀ p ∈ d.labels x, Y < (∏ i, p i : ℕ) → 5 * Y ≤ roughLevel x) (k : ℕ) :
+theorem sum_liftTerm_dyad_eq      
+     
+     
+     
+             
+       k  :
     ∑ a ∈ (liftIndex x d).filter (fun a => Nat.log 2 (∏ c, a.2.1 c) = k),
         liftTerm A₀ x d Y a = ((2 : ℂ) ^ k)⁻¹ * rowPairing q A₀ x d Y (2 ^ k) := by
   rw [inv_mul_rowPairing_eq]
@@ -475,15 +494,16 @@ theorem sum_liftTerm_dyad_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ
     exact liftTerm_eq_stateTerm q A₀ hd hdisj hrough hHm hV Y (mem_filter.1 ha).1
       (mem_filter.1 ha).2 hm hr
 
+include hd hdisj hrough hHm hHn hV hY hYW in
 /-- **The lift identity.** When every pad product is below `2^{N + 1}`, the weighted
 coprime-pair error is `∑_{k ≤ N} 2^{-k} ⟨f, 𝒯 f⟩_{2^k}`: each pad product lies in exactly one
 dyad. -/
-theorem sum_liftTerm_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ)
-    (hd : Admissible C CX alo ahi g x d)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
-    (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) (hV : 0 < d.bandMass x) {Y : ℝ} (hY : 1 ≤ Y)
-    (hYW : ∀ p ∈ d.labels x, Y < (∏ i, p i : ℕ) → 5 * Y ≤ roughLevel x) {N : ℕ}
+theorem sum_liftTerm_eq      
+     
+     
+     
+             
+       {N} 
     (hN : ∀ z ∈ padSet x d (padCount x), ∏ c, z c < 2 ^ (N + 1)) :
     ∑ a ∈ liftIndex x d, liftTerm A₀ x d Y a =
       ∑ k ∈ range (N + 1), ((2 : ℂ) ^ k)⁻¹ * rowPairing q A₀ x d Y (2 ^ k) := by
@@ -498,10 +518,12 @@ theorem sum_liftTerm_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ)
   exact sum_congr rfl fun k _ =>
     sum_liftTerm_dyad_eq q A₀ hd hdisj hrough hHm hHn hV hY hYW k
 
+end
+
 open scoped Classical in
 /-- The coprime-pair error at fixed label tuples, with the plateau:
 `∑_{m,n,r,s} ψ(t/Y) α_m ᾱ_r β_n β̄_s ([t = b - a] - ∫_𝔐 e(θ(t - b + a)))`. -/
-noncomputable def liftError (A₀ x : ℝ) (d : Data K) (Y : ℝ) (p p' : Fin K → ℕ) : ℂ :=
+noncomputable def liftError (A₀ x : ℝ) (d : Data K) (Y : ℝ) (p p' : Fin K → ℕ)  :=
   ∑ m ∈ d.mRange, ∑ n ∈ d.nRange, ∑ r ∈ d.mRange, ∑ s ∈ d.nRange,
     ((plateau (liftDet p p' m n r s / Y) : ℝ) : ℂ) *
       (d.α m * star (d.α r) * d.β n * star (d.β s) *
@@ -511,7 +533,7 @@ noncomputable def liftError (A₀ x : ℝ) (d : Data K) (Y : ℝ) (p p' : Fin K 
 open scoped Classical in
 /-- The weighted coprime-pair error as an iterated sum: over unshared label tuples, and
 over good pads with weight `∏_c μ(z_c)`. -/
-theorem sum_liftTerm_eq_sum_labels (A₀ x : ℝ) (d : Data K) (Y : ℝ) :
+theorem sum_liftTerm_eq_sum_labels  A₀ x  (d : Data K)  Y  :
     ∑ a ∈ liftIndex x d, liftTerm A₀ x d Y a =
       ((d.bandMass x)⁻¹ ^ 2 : ℝ) * ∑ p ∈ d.labels x, ∑ p' ∈ d.labels x,
         if Unshared p p' then

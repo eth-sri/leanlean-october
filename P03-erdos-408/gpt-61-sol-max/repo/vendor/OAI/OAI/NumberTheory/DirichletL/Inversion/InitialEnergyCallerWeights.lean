@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
@@ -21,7 +21,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 theorem initialColumn_norm_le
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i})≠2)
-    (Ψ : Eis →* ℂ) (j C d h : Eis) (V : Finset ι) :
+     Ψ   j C d h   V  :
     ‖initialColumn p hp hcop hg Ψ j C d h (fun _=>1) V‖ ≤ ‖Ψ (∏ i∈V,p i)‖ := by
   rw [initialColumn_eq_secondPre]
   exact secondPreColumn_norm_le p hp hcop hg hc Ψ (j*C) 1 1 d h V
@@ -29,7 +29,7 @@ theorem initialColumn_norm_le
 omit hp hcop hg in
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem initialBeta_norm_le_one (Ψ : Eis →* ℂ) (hΨ : ∀ n, ‖Ψ n‖≤1)
-    (j : Eis) (G : Finset ι) : ‖initialBeta p Ψ j G‖≤1 := by
+     j   G  : ‖initialBeta p Ψ j G‖≤1 := by
   have hm : ‖rowCoprimeMask (fun i=>Ideal.span {p i}) G j‖≤1 := by
     unfold rowCoprimeMask
     split_ifs <;> norm_num
@@ -41,8 +41,8 @@ theorem initialBeta_norm_le_one (Ψ : Eis →* ℂ) (hΨ : ∀ n, ‖Ψ n‖≤1
 
 theorem outerCoefficient_norm_le
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i})≠2)
-    (Ψ : Eis →* ℂ) (hΨ : ∀ n, ‖Ψ n‖≤1)
-    (j : Eis) (x : Point ι) (ρ : SecondRayIndex) :
+     Ψ  (hΨ : ∀ n, ‖Ψ n‖≤1)
+     j   x   ρ  :
     ‖outerCoefficient p hp hcop hg Ψ j x ρ‖ ≤ ‖secondRayCoefficient ρ‖ := by
   have hβ := initialBeta_norm_le_one p Ψ hΨ j x.common
   have hμ := QuadraticInitialBound.norm_ideal_moebius_le_one (sourceIdeal p x.divisor)
@@ -62,6 +62,6 @@ theorem outerCoefficient_norm_le
 
 end SevenEighths.InverseInitialEnergyCallerWeights
 
-end
+
 
 end OAI

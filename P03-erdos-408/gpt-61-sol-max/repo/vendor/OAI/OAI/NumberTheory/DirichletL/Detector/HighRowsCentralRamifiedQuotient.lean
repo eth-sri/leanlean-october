@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralLower
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
@@ -65,6 +65,6 @@ theorem ramifiedSelected_central_quotient (eta a rho x w z : ℂ) (alpha eps : �
       _=782*Q^(-(1/2:ℝ)) := by nlinarith [hpow]
       _≤_ := mul_le_mul_of_nonneg_right (by norm_num) (Real.rpow_nonneg hQ0.le _)
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

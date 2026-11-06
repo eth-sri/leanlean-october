@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Moments.Basic
@@ -7,18 +8,22 @@ public import OAI.NumberTheory.DirichletL.Moments.Basic
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 open scoped ContDiff
-local notation "O" => ActualEisensteinCubic.O
+
 namespace SevenEighths.CenteredMomentMask
 open ActualEisensteinCubic IdealMobiusDivisorSum
 open UniqueFactorizationMonoid
 
-theorem ideal_coprime_mobius (I R : Ideal O) (hR : R ≠ 0) :
+section
+variable (I R : Ideal ActualEisensteinCubic.O) (hR : R ≠ 0) (D : Ideal ActualEisensteinCubic.O) (hD : D ≠ 0) (f : Ideal ActualEisensteinCubic.O → ℂ)
+
+include hR in
+theorem ideal_coprime_mobius     :
     (if IsCoprime I R then (1 : ℂ) else 0) =
       ∑ D ∈ idealDivisors R, if D ∣ I then (moebius D : ℂ) else 0 := by
-  let G : Ideal O := R ⊔ I
+  let G : Ideal ActualEisensteinCubic.O := R ⊔ I
   have hG : G ≠ 0 := by
     intro hz
     apply hR
@@ -31,38 +36,37 @@ theorem ideal_coprime_mobius (I R : Ideal O) (hR : R ≠ 0) :
   rw [← Finset.sum_filter, hdiv, sum_moebius_divisors G hG]
   simp only [Ideal.isCoprime_iff_sup_eq, G, sup_comm]
 
-theorem tsum_ideal_divisible (D : Ideal O) (hD : D ≠ 0) (f : Ideal O → ℂ) :
-    (∑' I : Ideal O, if D ∣ I then f I else 0) =
-      ∑' J : Ideal O, f (D * J) := by
-  let F : Ideal O → ℂ := fun I => if D ∣ I then f I else 0
-  have hrange : Function.support F ⊆ Set.range (fun J : Ideal O => D * J) := by
+include hD in
+theorem tsum_ideal_divisible       :
+    (∑' I : Ideal ActualEisensteinCubic.O, if D ∣ I then f I else 0) =
+      ∑' J : Ideal ActualEisensteinCubic.O, f (D * J) := by
+  let F : Ideal ActualEisensteinCubic.O → ℂ := fun I => if D ∣ I then f I else 0
+  have hrange : Function.support F ⊆ Set.range (fun J : Ideal ActualEisensteinCubic.O => D * J) := by
     intro I hI
     have hd : D ∣ I := by
-      by_contra hn
-      exact hI (by simp only [F, ite_eq_right hn])
+      aesop
     obtain ⟨J, hJ⟩ := hd
     exact ⟨J, hJ.symm⟩
   have ht := (mul_right_injective₀ hD).tsum_eq hrange
   calc
-    _ = ∑' J : Ideal O, F (D * J) := ht.symm
+    _ = ∑' J : Ideal ActualEisensteinCubic.O, F (D * J) := ht.symm
     _ = _ := by
       apply tsum_congr
       intro J
       simp only [F, dvd_mul_right, ite_true]
 
-theorem masked_ideal_sum_eq (R : Ideal O) (hR : R ≠ 0)
-    (f : Ideal O → ℂ) (hf : Summable f) :
-    (∑' I : Ideal O, (if IsCoprime I R then (1 : ℂ) else 0) * f I) =
-      ∑ D ∈ idealDivisors R, (moebius D : ℂ) * ∑' J : Ideal O, f (D * J) := by
-  have hterm (I : Ideal O) : (if IsCoprime I R then (1 : ℂ) else 0) * f I =
+include hR in
+theorem masked_ideal_sum_eq    
+      (hf : Summable f) :
+    (∑' I : Ideal ActualEisensteinCubic.O, (if IsCoprime I R then (1 : ℂ) else 0) * f I) =
+      ∑ D ∈ idealDivisors R, (moebius D : ℂ) * ∑' J : Ideal ActualEisensteinCubic.O, f (D * J) := by
+  have hterm (I : Ideal ActualEisensteinCubic.O) : (if IsCoprime I R then (1 : ℂ) else 0) * f I =
       ∑ D ∈ idealDivisors R, (moebius D : ℂ) * (if D ∣ I then f I else 0) := by
     rw [ideal_coprime_mobius I R hR, Finset.sum_mul]
-    apply Finset.sum_congr rfl
-    intro D _
-    by_cases h : D ∣ I <;> simp only [h, ite_true, ite_false, zero_mul, mul_zero]
-  have hsum (D : Ideal O) :
-      Summable (fun I : Ideal O => (moebius D : ℂ) * (if D ∣ I then f I else 0)) := by
-    have h := (hf.indicator {I : Ideal O | D ∣ I}).mul_left (moebius D : ℂ)
+    grind
+  have hsum (D : Ideal ActualEisensteinCubic.O) :
+      Summable (fun I : Ideal ActualEisensteinCubic.O => (moebius D : ℂ) * (if D ∣ I then f I else 0)) := by
+    have h := (hf.indicator {I : Ideal ActualEisensteinCubic.O | D ∣ I}).mul_left (moebius D : ℂ)
     simpa only [Set.indicator_apply, Set.mem_ofPred_eq] using h
   simp_rw [hterm]
   rw [Summable.tsum_finsetSum (fun D _ => hsum D)]
@@ -71,11 +75,11 @@ theorem masked_ideal_sum_eq (R : Ideal O) (hR : R ≠ 0)
   rw [tsum_mul_left, tsum_ideal_divisible D (ne_zero_of_dvd_ne_zero hR
     ((mem_idealDivisors hR).mp hD))]
 
-theorem annular_ideal_sum_summable (χ : Ideal O → ℂ) (W : ℝ → ℂ)
+theorem annular_ideal_sum_summable (χ : Ideal ActualEisensteinCubic.O → ℂ) (W : ℝ → ℂ)
     (b X : ℝ) (hX : 0 < X) (hs : Function.support W ⊆ Set.Iic b) :
-    Summable (fun I : Ideal O => χ I * W ((Ideal.absNorm I : ℝ) / X)) := by
+    Summable (fun I : Ideal ActualEisensteinCubic.O => χ I * W ((Ideal.absNorm I : ℝ) / X)) := by
   apply summable_of_hasFiniteSupport
-  apply (Ideal.finite_setOfPred_absNorm_le (S := O) (Nat.ceil (b * X))).subset
+  apply (Ideal.finite_setOfPred_absNorm_le (S := ActualEisensteinCubic.O) (Nat.ceil (b * X))).subset
   intro I hI
   have hw : W ((Ideal.absNorm I : ℝ) / X) ≠ 0 := by
     intro hz
@@ -83,35 +87,32 @@ theorem annular_ideal_sum_summable (χ : Ideal O → ℂ) (W : ℝ → ℂ)
   have hn : (Ideal.absNorm I : ℝ) ≤ b * X := (div_le_iff₀ hX).mp (hs hw)
   exact_mod_cast hn.trans (Nat.le_ceil (b * X))
 
-theorem masked_plain_ideal_sum (R : Ideal O) (hR : R ≠ 0)
-    (χ : Ideal O →* ℂ) (W : ℝ → ℂ) (b X : ℝ) (hX : 0 < X)
+include hR in
+theorem masked_plain_ideal_sum    
+    (χ : Ideal ActualEisensteinCubic.O →* ℂ) (W : ℝ → ℂ) (b X : ℝ) (hX : 0 < X)
     (hs : Function.support W ⊆ Set.Iic b) :
-    (∑' I : Ideal O, (if IsCoprime I R then (1 : ℂ) else 0) *
+    (∑' I : Ideal ActualEisensteinCubic.O, (if IsCoprime I R then (1 : ℂ) else 0) *
         (χ I * W ((Ideal.absNorm I : ℝ) / X))) =
       ∑ D ∈ idealDivisors R, (moebius D : ℂ) * χ D *
-        ∑' J : Ideal O, χ J * W ((Ideal.absNorm J : ℝ) / (X / Ideal.absNorm D)) := by
+        ∑' J : Ideal ActualEisensteinCubic.O, χ J * W ((Ideal.absNorm J : ℝ) / (X / Ideal.absNorm D)) := by
   rw [masked_ideal_sum_eq R hR _ (annular_ideal_sum_summable χ W b X hX hs)]
   apply Finset.sum_congr rfl
   intro D hD
   have hD0 : D ≠ 0 := ne_zero_of_dvd_ne_zero hR ((mem_idealDivisors hR).mp hD)
-  have hnD : (Ideal.absNorm D : ℝ) ≠ 0 := by
-    exact_mod_cast (show Ideal.absNorm D ≠ 0 by
-      intro hz
-      exact hD0 (Ideal.absNorm_eq_zero_iff.mp hz))
-  have hterms (J : Ideal O) :
+  
+  have hterms (J : Ideal ActualEisensteinCubic.O) :
       χ (D * J) * W ((Ideal.absNorm (D * J) : ℝ) / X) =
         χ D * (χ J * W ((Ideal.absNorm J : ℝ) / (X / Ideal.absNorm D))) := by
     rw [map_mul, map_mul, Nat.cast_mul]
-    have harg : (Ideal.absNorm D : ℝ) * Ideal.absNorm J / X =
-        (Ideal.absNorm J : ℝ) / (X / Ideal.absNorm D) := by field_simp
-    rw [harg]
-    ring
+    field_simp <;> ring
   simp_rw [hterms]
   rw [tsum_mul_left]
   ring
 
+end
+
 theorem polynomial_mask_divisor_bound (ε B : ℝ) (hε : 0 < ε) (hB : 0 ≤ B) :
-    ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 1 ≤ Z → ∀ R : Ideal O, R ≠ 0 →
+    ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 1 ≤ Z → ∀ R : Ideal ActualEisensteinCubic.O, R ≠ 0 →
       (Ideal.absNorm R : ℝ) ≤ Z ^ B →
       ((idealDivisors R).card : ℝ) ≤ C * Z ^ ε := by
   let δ := ε / (B + 1)
@@ -134,6 +135,6 @@ theorem polynomial_mask_divisor_bound (ε B : ℝ) (hε : 0 < ε) (hB : 0 ≤ B)
       (Real.rpow_le_rpow_of_exponent_le hZ hexp) hC.le
 
 end SevenEighths.CenteredMomentMask
-end
+
 
 end OAI

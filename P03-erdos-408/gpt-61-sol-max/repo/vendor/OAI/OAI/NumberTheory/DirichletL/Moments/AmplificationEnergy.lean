@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.PrimeElements
 
@@ -14,28 +15,29 @@ open CanonicalQuadraticSieve CenteredMomentGaussEnergy
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationCount
 local notation "O" => ActualEisensteinCubic.O
 
-def eligiblePairs (rows P : Finset O) (allow : O → O → Prop) : Finset (O × O) :=
+def eligiblePairs (rows P : Finset O) (allow : O → O → Prop)  :=
   (rows.product P).filter (fun x => allow x.1 x.2)
 
-def outputRow (x : O × O) : O := x.2^6*x.1
+def outputRow (x : O × O)  := x.2^6*x.1
 
-theorem outputRow_norm (x : O × O) (Z M L : ℝ) (hZ : 0 < Z)
+theorem outputRow_norm  x  (Z M L : ℝ) (hZ : 0 < Z)
     (hh : (Ideal.absNorm (Ideal.span {x.1}) : ℝ) ≤ Z^M)
     (hp : (Ideal.absNorm (Ideal.span {x.2}) : ℝ) ≤ Z^L) :
     (Ideal.absNorm (Ideal.span {outputRow x}) : ℝ) ≤ Z^(M+6*L) := by
   calc
     _ = (Ideal.absNorm (Ideal.span {x.2}) : ℝ)^6 *
         (Ideal.absNorm (Ideal.span {x.1}) : ℝ) := by
-      simp only [outputRow,← Ideal.span_singleton_mul_span_singleton,
-        ← Ideal.span_singleton_pow,map_mul,map_pow,Nat.cast_mul,Nat.cast_pow]
-    _ ≤ (Z^L)^6 * Z^M := mul_le_mul (pow_le_pow_left₀ (Nat.cast_nonneg _) hp 6) hh
-      (Nat.cast_nonneg _) (by positivity)
+      simp_all [outputRow]
+    _ ≤ (Z^L)^6 * Z^M := (by bound)
     _ = Z^(M+6*L) := by
       rw [← Real.rpow_mul_natCast hZ.le,← Real.rpow_add hZ]
       congr 1
       ring
 
-theorem amplified_energy_pushforward (rows P : Finset O) (allow : O → O → Prop)
+section
+variable (rows P : Finset O) (allow : O → O → Prop)
+
+theorem amplified_energy_pushforward    
     (hrows : ∀ h ∈ rows, h ≠ 0) (hp : ∀ p ∈ P, Prime p)
     (hprimary : ∀ p ∈ P, ConcretePrimeRowBridge.goodLambda^2 ∣ p-1)
     (Z ell M L : ℝ) (hZ : 1 < Z) (hell : 0 < ell)
@@ -66,28 +68,30 @@ theorem amplified_energy_pushforward (rows P : Finset O) (allow : O → O → Pr
   · rw [← hxy]
     exact outputRow_norm x Z M L (zero_lt_one.trans hZ) (hhu x.1 hxm.1) (hpu x.2 hxm.2)
 
-theorem sum_eligiblePairs (rows P : Finset O) (allow : O → O → Prop) (f : O → O → ℝ) :
+theorem sum_eligiblePairs     (f : O → O → ℝ) :
     (∑ h ∈ rows, ∑ p ∈ P.filter (allow h), f h p) =
       ∑ x ∈ eligiblePairs rows P allow, f x.1 x.2 := by
   simp only [eligiblePairs,Finset.sum_filter]
   exact (Finset.sum_product rows P (fun x : O × O => if allow x.1 x.2 then f x.1 x.2 else 0)).symm
 
-def errorEnergy {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ) (h p : O) : ℝ :=
+end
+
+def errorEnergy {α } (S : Finset α) (a : α → O)
+    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ) (h p : O)  :=
   ‖amplificationError S a ha c (fun i => multiplicity p (a i)) p 1 h‖^2 +
   ‖amplificationError S a ha c (fun i => multiplicity p (a i)) p 6 h‖^2 +
   ‖amplificationError S a ha c (fun i => multiplicity p (a i)) p 7 h‖^2
 
 theorem gauss_energy_amplification {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (rows P : Finset O) (allow : O → O → Prop)
+     rows P   allow 
     (hrows : ∀ h ∈ rows, h ≠ 0) (hp : ∀ p ∈ P, Prime p)
     (hs : ∀ p ∈ P, Supported (Ideal.span {p}))
     (hg : ∀ p ∈ P, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p})
     (hc : ∀ p ∈ P, ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (hprimary : ∀ p ∈ P, ConcretePrimeRowBridge.goodLambda^2 ∣ p-1)
     (hallow : ∀ h ∈ rows, ∀ p ∈ P, allow h p → ¬p ∣ h)
-    (κ : ℝ) (hκ : 0 < κ) (hsize : ∀ h ∈ rows, κ ≤ (P.filter (allow h)).card)
+     κ  (hκ : 0 < κ) (hsize : ∀ h ∈ rows, κ ≤ (P.filter (allow h)).card)
     (Z ell M L : ℝ) (hZ : 1 < Z) (hell : 0 < ell)
     (hpl : ∀ p ∈ P, Z^ell ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ))
     (hpu : ∀ p ∈ P, (Ideal.absNorm (Ideal.span {p}) : ℝ) ≤ Z^L)

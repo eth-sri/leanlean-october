@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondRetainedAggregate
 public import OAI.NumberTheory.DirichletL.Moments.SecondRetainedRows
@@ -24,32 +25,32 @@ open CenteredMomentSectorLocalization CenteredMomentActiveSource
 open CenteredMomentSecondRetainedAggregate CenteredMomentSecondRetainedRows
 open CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition
 open CenteredMomentSecondPhysicalWindow CenteredMomentSecondPhysicalBlock CenteredMomentSecondWholeKernel
-local notation "O" => ActualEisensteinCubic.O
 
-abbrev ActiveLabel (S : Finset (Ideal O)) (β : Ideal O→ℂ) :=
+
+abbrev ActiveLabel (S ) (β ) :=
   ↥(commonLabels (supportedColumns (activeSource S β)) (supportedColumns (activeSource S β)))
 
-abbrev SourceBlocks (C D : Ideal O) (U : Finset (CommonIndex C D)) (K R H : ℝ) :=
+abbrev SourceBlocks (C D ) (U ) (K R H ) :=
   Blocks (sourceLower C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K)
     (sourceUpper C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K R H)
 
-lemma retainedRows_ne_zero (R : ℝ) (A z : O) (hz : z∈retainedRows R A) : z≠0 := by
+lemma retainedRows_ne_zero (R : ℝ) (A z : ActualEisensteinCubic.O) (hz : z∈retainedRows R A) : z≠0 := by
   have hp := (mem_rowNormDisk.mp hz).1
   intro h
   simp [h] at hp
 
 theorem active_kernel_windows (η : Character)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (H : ℝ)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ)  H 
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
-    (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+    (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D)
     (I : sectorPool C hC.1 (activeSource S β)) (J : sectorPool D hD.1 (activeSource S β))
-    (A h : O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
+     A h  (hA : A≠0) (hh : h≠0)  W   K R  (hK : 0<K) :
     physicalKernel C D W K R (A*h) I J=
       ∑ n : Blocks (sourceLower C D A K) (sourceUpper C D A K R H),
         physicalKernel C D W K R (A*h) I J*
           ((dyadicWeight (n 0) (secondEffectiveScale C D A K)*dyadicWeight (n 1) (normValue h)*
-            dyadicWeight (n 2) (Ideal.absNorm (I:Ideal O):ℝ)*
-            dyadicWeight (n 3) (Ideal.absNorm (J:Ideal O):ℝ):ℝ):ℂ) := by
+            dyadicWeight (n 2) (Ideal.absNorm (I:Ideal ActualEisensteinCubic.O):ℝ)*
+            dyadicWeight (n 3) (Ideal.absNorm (J:Ideal ActualEisensteinCubic.O):ℝ):ℝ):ℂ) := by
   refine (active_physical_kernel_partition η S β H hH C D hC hD I J A h hA W K R hK).trans ?_
   apply Finset.sum_congr rfl
   intro n hn
@@ -57,11 +58,11 @@ theorem active_kernel_windows (η : Character)
     (sectorPool_supported C hC.1 _ I) (sectorPool_supported D hD.1 _ J)
     A h hA hh W K R hK (fun i=>n i)).symm
 
-theorem sector_finite_blocks (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (H : ℝ)
+theorem sector_finite_blocks  η   t 
+     S   β   H 
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
-    (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (U : Finset (CommonIndex C D)) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
+     C D   hC   hD 
+     U   W   K R  (hK : 0<K) :
     let A:=commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U
     (∑h∈retainedRows R A,if canonicalPartition C D U (nonunitFrequencyGenerator C D U*h) then
       sectorFrequency η t (activeSource S β) β C D hC hD (physicalKernel C D W K R) (A*h) else 0)=
@@ -89,9 +90,9 @@ theorem sector_finite_blocks (η : Character) (t : ℝ)
       (retainedRows_ne_zero R _ h hh) W K R hK,Finset.mul_sum]
   · simp only [hp,ite_false,Finset.sum_const_zero]
 
-theorem original_secondRetainedEnergy_blocks (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (W : 𝓢(ℝ,ℂ))
-    (K Tsec Z ξ H : ℝ) (hK : 0<K)
+theorem original_secondRetainedEnergy_blocks  η   t 
+     S   β   W 
+     K Tsec Z ξ H  (hK : 0<K)
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H) :
     secondRetainedEnergy η t S β W K Tsec Z ξ=
       ∑p : ActiveLabel S β,heightCoeff η t p.val.1*star (heightCoeff η t p.val.2)*
@@ -112,9 +113,9 @@ theorem original_secondRetainedEnergy_blocks (η : Character) (t : ℝ)
   apply Finset.sum_congr rfl
   intro U hU
   rw [actual_GV_finite_rows]
-  exact sector_finite_blocks η t S β H hH _ _ _ _ U W K _ hK
+  solve_by_elim [sector_finite_blocks]
 
-lemma common_height_norm_le_one (η : Character) (t : ℝ) (C D : Ideal O)
+lemma common_height_norm_le_one  η   t   C D 
     (hC : C≠0) (hD : D≠0) :
     ‖heightCoeff η t C*star (heightCoeff η t D)‖≤1 := by
   rw [norm_mul,norm_star]

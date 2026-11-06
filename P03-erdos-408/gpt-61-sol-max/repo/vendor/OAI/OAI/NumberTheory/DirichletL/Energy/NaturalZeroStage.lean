@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Energy.StageMonotonicity
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
@@ -22,7 +22,7 @@ open CenteredMomentEnergyFirstLiveAdmission CenteredMomentNaturalFixedRaySource
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_zero_stage

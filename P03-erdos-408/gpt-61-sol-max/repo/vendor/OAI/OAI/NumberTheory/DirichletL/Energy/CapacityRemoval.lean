@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.RelativeCapacityRemoval
 public import OAI.NumberTheory.DirichletL.Energy.State
@@ -51,13 +52,11 @@ theorem selected_eq_positive (J : Finset ι) (η : Character) (m A z : O)
   have hp : (∏i:J,normalizedSlot η m A z (S i) (β i) t (P i))=
       ∏i∈J,normalizedSlot η m A z (S i) (β i) t (P i) :=
     Finset.prod_coe_sort J (fun i=>normalizedSlot η m A z (S i) (β i) t (P i))
-  unfold selectedProduct at hh ⊢
-  rw [hp] at hh
-  exact hh
+  grind [selectedProduct, hh]
 
 theorem unit_puncture_energy (η : Character) (t : ℝ) (W₁ W₂ : ℝ→ℂ)
-    (S : ι→Finset (Ideal O)) (β : ι→Ideal O→ℂ) (P : ι→ℝ) (X₁ X₂ : ℝ)
-    (keep : O→Prop) (hz : ∀z,keep z→z≠0) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) :
+    (S : ι→Finset (Ideal O))  β   P   X₁ X₂ 
+     keep  (hz : ∀z,keep z→z≠0)  Φ   K  :
     energy η (fixedBadMask*ConcretePrimeRowBridge.idealGenerator 1) 1 t W₁ W₂ S β P X₁ X₂ keep Φ K=
       energy η fixedBadMask 1 t W₁ W₂ S β P X₁ X₂ keep Φ K := by
   unfold energy
@@ -68,7 +67,7 @@ theorem unit_puncture_energy (η : Character) (t : ℝ) (W₁ W₂ : ℝ→ℂ)
     rw [natural_unit_mask_positive (naturalRow η z (hz z hk))]
   · simp only [ite_eq_right hk]
 
-theorem eventual_row_conductor (bΦ Mrow : ℝ) (hb : 0≤bΦ) :
+theorem eventual_row_conductor  bΦ Mrow  (hb : 0≤bΦ) :
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀Bmask:ℝ,∀s:NaturalState Z Bmask bΦ,
       s.rowWidth≤Mrow → ∀q:ℝ,(s.character.modulus.absNorm:ℝ)≤Z^q →
       ∀z:O,∀hz:z≠0,s.radial.profile (‖eisEmbedding z‖^2/s.radial.scale)≠0 →
@@ -85,15 +84,14 @@ theorem eventual_row_conductor (bΦ Mrow : ℝ) (hb : 0≤bΦ) :
     Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)
   apply he.trans
   calc
-    _≤Z*Z^(Mrow+q):=mul_le_mul hF hm (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
-      (zero_lt_one.trans hZ).le
+    _≤Z*Z^(Mrow+q):=(by bound)
     _=Z^(Mrow+q+1):=by
       conv_rhs => rw [Real.rpow_add (zero_lt_one.trans hZ),Real.rpow_one]
       ring
 
 lemma state_unit_nonexceptional {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
-    (hpuncture : s.puncture=1) (Q : Ideal O) (hQ : s.fixedModulus=Q)
-    (z : O) (hk : s.radial.keep z) : ¬FixedInducingRow s.character Q fixedBadMask 1 z := by
+    (hpuncture : s.puncture=1)  Q  (hQ : s.fixedModulus=Q)
+     z  (hk : s.radial.keep z) : ¬FixedInducingRow s.character Q fixedBadMask 1 z := by
   intro hh
   apply s.nonexceptional z hk
   rw [hQ,hpuncture]
@@ -107,13 +105,17 @@ local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZer
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 include hH
 
+section
+variable (W : ι→ℝ→ℂ) (a b : ι→ℝ) (ha : ∀i,0<a i) (hWs : ∀i,Function.support (W i)⊆Set.Icc (a i) (b i)) (hW : ∀i,ContDiff ℝ ∞ (W i)) (Mrow bΦ Lmod Lslot ε lo hi κ : ℝ) (hbΦ : 0≤bΦ) (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hε : 0<ε) (hbeta : (51/100:ℝ)≤HeckeZeroSupremum.beta) (hκ : 2*HeckeZeroSupremum.beta-1≤κ)
+include W a b ha hWs hW Mrow bΦ Lmod Lslot ε lo hi κ hbΦ hLm hLs hε hbeta hκ
+
 theorem actual_state_capacity_removal
-    (W : ι→ℝ→ℂ) (a b : ι→ℝ) (ha : ∀i,0<a i)
-    (hWs : ∀i,Function.support (W i)⊆Set.Icc (a i) (b i))
-    (hW : ∀i,ContDiff ℝ ∞ (W i))
-    (Mrow bΦ Lmod Lslot ε lo hi κ : ℝ) (hbΦ : 0≤bΦ)
-    (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hε : 0<ε)
-    (hbeta : (51/100:ℝ)≤HeckeZeroSupremum.beta) (hκ : 2*HeckeZeroSupremum.beta-1≤κ) :
+         
+     
+     
+       
+         
+        :
     ∃degree:ℕ,∃C:ℝ,0<C ∧ ∀ν:ι→Character,∃Z₀:ℝ,1<Z₀ ∧
     ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤mesh →
       (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
@@ -186,12 +188,12 @@ theorem actual_state_capacity_removal
   · simp only [ite_eq_right hk,mul_zero,le_refl]
 
 theorem actual_relative_state_capacity_removal
-    (W : ι→ℝ→ℂ) (a b : ι→ℝ) (ha : ∀i,0<a i)
-    (hWs : ∀i,Function.support (W i)⊆Set.Icc (a i) (b i))
-    (hW : ∀i,ContDiff ℝ ∞ (W i))
-    (Mrow bΦ Lmod Lslot ε lo hi κ : ℝ) (hbΦ : 0≤bΦ)
-    (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hε : 0<ε)
-    (hbeta : (51/100:ℝ)≤HeckeZeroSupremum.beta) (hκ : 2*HeckeZeroSupremum.beta-1≤κ) :
+         
+     
+     
+       
+         
+        :
     ∃degree:ℕ,∃C:ℝ,0<C ∧ ∀η₀:Character,∀θ:ι→RayQuotient.Characters M H,
     let ν:=fun i=>relativeCharacter M H hH η₀ (θ i);
     ∃Z₀:ℝ,1<Z₀ ∧
@@ -228,6 +230,8 @@ theorem actual_relative_state_capacity_removal
     (inf_le_left.trans hQM)
     (fun i=>relativeCharacter_fixedQ M H hH η₀ (θ i) (internalQ Q η₀)
       (inf_le_left.trans hQM) inf_le_right)
+
+end
 
 end SevenEighths.CenteredMomentEnergyCapacityRemoval
 

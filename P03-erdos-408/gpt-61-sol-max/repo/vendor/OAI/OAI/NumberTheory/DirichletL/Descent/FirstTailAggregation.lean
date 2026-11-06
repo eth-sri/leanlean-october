@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeCanonicalTail
 public import OAI.NumberTheory.DirichletL.Descent.CubeSupportNorm
@@ -22,16 +23,16 @@ variable {ι:Type*} [DecidableEq ι]
 
 def firstLocalPhysicalTail (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset ι)
     (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂ f:O) (H₁ H₂:Finset ι→ℂ) (W:𝓢(ℝ,ℂ))
-    (K:ℝ) (T:Finset ι→Finset O) (D:Finset ι):ℂ :=
+    (K:ℝ) (T:Finset ι→Finset O) (D:Finset ι) :=
   ∑'h:{h:O // h∉T D},actualFirstKernel p hp hcop hg (pool\(b.support∪C)) b.support
     (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit
     (canonicalCubeResidual p hg b C true Ψ₁ m₁ f H₁)
     (canonicalCubeResidual p hg b C false Ψ₂ m₂ f H₂) W (fun _=>1) (fun _=>1) 1 1 K
     (primeSubsetGenerator (fun i=>Ideal.span {p i}) D) h.val
 
-theorem cube_tail_support_test (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset ι)
-    (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂ f:O) (H₁ H₂:Finset ι→ℂ) (W:𝓢(ℝ,ℂ))
-    (K L:ℝ) (T:Finset ι→Finset O)
+theorem cube_tail_support_test  pool   b   C 
+     Ψ₁ Ψ₂   m₁ m₂ f   H₁ H₂   W 
+    (K L:ℝ)  T 
     (hs:∀U,H₁ U≠0→primeProductNorm p U≤L) (hC:¬primeProductNorm p C≤L) :
     canonicalCubeDualTail p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W K T=0 := by
   have hz (U:Finset ι):H₁ ((b.rightDivisor∪C)∪U)=0:=by
@@ -39,7 +40,7 @@ theorem cube_tail_support_test (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset
     exact hC ((primeProductNorm_mono p hp
       (Finset.Subset.trans Finset.subset_union_right Finset.subset_union_left)).trans (hs _ h))
   have hcoef (U:Finset ι):canonicalCubeResidual p hg b C true Ψ₁ m₁ f H₁ U=0:=by
-    simp only [canonicalCubeResidual,originalLabelColumn,multiplicativeCoreColumn,ite_true,hz,mul_zero,zero_mul]
+    simp_all [canonicalCubeResidual, originalLabelColumn, multiplicativeCoreColumn]
   simp only [canonicalCubeDualTail,actualFirstKernel,threeGaussRowFactor,hcoef,mul_zero,
     star_zero,zero_mul,ite_self,Finset.sum_const_zero,tsum_zero]
 

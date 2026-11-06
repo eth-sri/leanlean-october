@@ -11,11 +11,11 @@ open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
 
-lemma nonzero_tsum_indicator (f : O→ℂ) :
-    (∑'k : O,if k=0 then 0 else f k)=∑'k : GramFrequency,f k.val := by
-  rw [←tsum_subtype_eq_of_support_subset (s:={k : O | k≠0}) (by
+
+lemma nonzero_tsum_indicator (f : ActualEisensteinCubic.O→ℂ) :
+    (∑'k : ActualEisensteinCubic.O,if k=0 then 0 else f k)=∑'k : GramFrequency,f k.val := by
+  rw [←tsum_subtype_eq_of_support_subset (s:={k : ActualEisensteinCubic.O | k≠0}) (by
     intro k hk hz
     subst k
     exact hk (by simp))]
@@ -29,9 +29,9 @@ def gramFrequencyNeg : GramFrequency≃GramFrequency where
   left_inv k:=Subtype.ext (neg_neg k.val)
   right_inv k:=Subtype.ext (neg_neg k.val)
 
-lemma actual_common_nonzero_tsum (C n₁ n₂ : O)
+lemma actual_common_nonzero_tsum (C n₁ n₂ : ActualEisensteinCubic.O)
     (hC : Supported (Ideal.span {C})) (h₁ : Supported (Ideal.span {n₁})) (h₂ : Supported (Ideal.span {n₂}))
-    (F : O→ℂ) :
+    (F : ActualEisensteinCubic.O→ℂ) :
     (∑'j : GramFrequency,actualCorrelation (C*n₁) (C*n₂)
       (supported_mul_elements C n₁ hC h₁) (supported_mul_elements C n₂ hC h₂) j.val*F j.val)=
       ∑'k : GramFrequency,actualCorrelation (C*n₁) (C*n₂)
@@ -41,7 +41,7 @@ lemma actual_common_nonzero_tsum (C n₁ n₂ : O)
   simp only [mul_ite,mul_zero,mul_eq_zero,hc0,false_or] at hh
   simpa only [nonzero_tsum_indicator] using hh
 
-lemma actual_gcd_nonzero_frequency_source (I J : SupportedIdeal) (U : SchwartzMap ℝ ℂ) (Q : ℝ) :
+lemma actual_gcd_nonzero_frequency_source  I J  (U : SchwartzMap ℝ ℂ)  Q  :
     (∑'h : GramFrequency,actualCorrelation (primaryGenerator I.val) (primaryGenerator J.val)
       ((supported_span_primaryGenerator_iff _).mpr I.property)
       ((supported_span_primaryGenerator_iff _).mpr J.property) (-h.val)*

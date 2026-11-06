@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRawEnergy
 public import OAI.NumberTheory.DirichletL.Moments.RetainedProfile
@@ -12,26 +13,26 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRetainedEnergy
 open CenteredMomentHeckeSlots CenteredMomentHeckeHeight CenteredMomentRetainedProfile
 open CenteredMomentDivisorRawEnergy HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-def positiveSlotRow (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (P : ι → ℝ)
-    (t X₁ X₂ : ℝ) : ℂ :=
+def positiveSlotRow (η : Character) (m A z : ActualEisensteinCubic.O) (W₁ W₂ : ℝ → ℂ)
+    (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (β : ι → Ideal ActualEisensteinCubic.O → ℂ) (P : ι → ℝ)
+    (t X₁ X₂ : ℝ)  :=
   (Real.sqrt (X₁*X₂*∏ i,P i):ℂ)⁻¹ *
     ((rowTwistedSum η m A z W₁ t X₁*rowTwistedSum η m A z W₂ t X₂)*
       ∏ i,rowSlot η m A z (S i) (β i) t)
 
-def retainedPositiveRow (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (P : ι → ℝ)
-    (t X₁ X₂ : ℝ) : ℂ :=
+def retainedPositiveRow (η : Character) (m A z : ActualEisensteinCubic.O) (W₁ W₂ : ℝ → ℂ)
+    (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (β : ι → Ideal ActualEisensteinCubic.O → ℂ) (P : ι → ℝ)
+    (t X₁ X₂ : ℝ)  :=
   positiveSlotRow η m A z (dilated W₁ (clipDilation X₁)) (dilated W₂ (clipDilation X₂))
     S β P t (clippedScale X₁) (clippedScale X₂)
 
 omit [DecidableEq ι] in
-theorem retained_rectangle_raw_energy (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (P : ι → ℝ)
-    (hP : ∀ i,0 < P i) (t X₁ X₂ T : ℝ) (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) (hT : 0 < T) :
+theorem retained_rectangle_raw_energy (η : Character) (m A z : ActualEisensteinCubic.O) (W₁ W₂ : ℝ → ℂ)
+    (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (β : ι → Ideal ActualEisensteinCubic.O → ℂ) (P : ι → ℝ)
+    (hP : ∀ i,0 < P i)  t X₁ X₂ T  (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) (hT : 0 < T) :
     ‖(Real.sqrt (T*∏ i,P i):ℂ)⁻¹*
       ((rowTwistedSum η m A z W₁ t X₁*rowTwistedSum η m A z W₂ t X₂)*
         ∏ i,rowSlot η m A z (S i) (β i) t)‖^2 =
@@ -45,14 +46,13 @@ theorem retained_rectangle_raw_energy (η : Character) (m A z : O) (W₁ W₂ : 
   field_simp [hp.ne',hT.ne',hc₁.ne',hc₂.ne']
 
 omit [DecidableEq ι] in
-theorem retained_rectangle_uniform_energy (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (P : ι → ℝ)
-    (hP : ∀ i,0 < P i) (b₁ b₂ t X₁ X₂ : ℝ) (hX₁ : 0 < X₁) (hX₂ : 0 < X₂)
+theorem retained_rectangle_uniform_energy (η : Character) (m A z : ActualEisensteinCubic.O) (W₁ W₂ : ℝ → ℂ)
+    (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (β : ι → Ideal ActualEisensteinCubic.O → ℂ) (P : ι → ℝ)
+    (hP : ∀ i,0 < P i)  b₁ b₂ t X₁ X₂  (hX₁ : 0 < X₁) (hX₂ : 0 < X₂)
     (hs₁ : Function.support W₁ ⊆ Set.Iic b₁) (hs₂ : Function.support W₂ ⊆ Set.Iic b₂) :
     ‖positiveSlotRow η m A z W₁ W₂ S β P t X₁ X₂‖^2 ≤
       (max 1 b₁*max 1 b₂)*‖retainedPositiveRow η m A z W₁ W₂ S β P t X₁ X₂‖^2 := by
-  have hB : 0 ≤ max 1 b₁*max 1 b₂ := mul_nonneg
-    (zero_le_one.trans (le_max_left _ _)) (zero_le_one.trans (le_max_left _ _))
+  have hB : 0 ≤ max 1 b₁*max 1 b₂ := (by simp_all)
   by_cases h₁ : X₁*b₁ < 1
   · unfold positiveSlotRow
     rw [strict_subunit_rowTwistedSum_zero η m A z W₁ b₁ t X₁ hX₁ hs₁ h₁,zero_mul,zero_mul,mul_zero,norm_zero,zero_pow (by decide)]
@@ -71,9 +71,9 @@ theorem retained_rectangle_uniform_energy (η : Character) (m A z : O) (W₁ W�
   exact mul_le_mul_of_nonneg_right hr (sq_nonneg _)
 
 omit [DecidableEq ι] in
-theorem centered_to_retained_uniform_energy (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (P : ι → ℝ)
-    (hP : ∀ i,0 < P i) (b₁ b₂ t X₁ X₂ Y₁ Y₂ T : ℝ)
+theorem centered_to_retained_uniform_energy (η : Character) (m A z : ActualEisensteinCubic.O) (W₁ W₂ : ℝ → ℂ)
+    (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (β : ι → Ideal ActualEisensteinCubic.O → ℂ) (P : ι → ℝ)
+    (hP : ∀ i,0 < P i)  b₁ b₂ t X₁ X₂ Y₁ Y₂ T 
     (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂)
     (hX : X₁*X₂=T) (hY : Y₁*Y₂=T)
     (hs₁ : Function.support W₁ ⊆ Set.Iic b₁) (hs₂ : Function.support W₂ ⊆ Set.Iic b₂) :

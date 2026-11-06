@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.RankinLabels
 public import OAI.NumberTheory.DirichletL.Moments.WholeDivisorShell
@@ -15,16 +16,19 @@ open IdealMobiusDivisorSum UniqueFactorizationMonoid
 open CenteredMomentRankinRadical CenteredMomentRankinLabels
 open CenteredMomentDivisorAllocation CenteredMomentWholeDivisorShell
 open CenteredMomentDyadicCount CenteredMomentSectorLocalization
-local notation "O" => ActualEisensteinCubic.O
-abbrev Label := (Ideal O × Ideal O) × Finset (Ideal O)
 
-def Valid (s : Ideal O) (v : Label) : Prop :=
+abbrev Label := (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) × Finset (Ideal ActualEisensteinCubic.O)
+
+def Valid (s : Ideal ActualEisensteinCubic.O) (v : Label)  :=
   v.1.1 ≠ 0 ∧ v.1.2 ≠ 0 ∧ primeSupport v.1.1 = primeSupport v.1.2 ∧
   s ∣ v.1.1 ∧ s ∣ v.1.2 ∧ v.2 ⊆ primeSupport (commonRadical v.1.1 v.1.2)
 
-def weight (v : Label) : ℝ := 1 / Real.sqrt ((v.1.1.absNorm:ℝ)*v.1.2.absNorm)
+def weight (v : Label)  := 1 / Real.sqrt ((v.1.1.absNorm:ℝ)*v.1.2.absNorm)
 
-lemma commonRadical_norm_le (I J : Ideal O) (hI : I≠0) (hJ : J≠0) :
+section
+variable (e Y x y : ℝ) (he : 0<e)
+
+lemma commonRadical_norm_le  I J  (hI : I≠0) (hJ : J≠0) :
     (Ideal.absNorm (commonRadical I J):ℝ) ≤ min (I.absNorm:ℝ) J.absNorm := by
   have hd : commonRadical I J ∣ I ∧ commonRadical I J ∣ J := by
     constructor <;> apply (squarefree_dvd_iff _ _ (commonRadical_squarefree I J)).mpr
@@ -40,14 +44,15 @@ lemma commonRadical_norm_le (I J : Ideal O) (hI : I≠0) (hJ : J≠0) :
   · exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hJ))
       (map_dvd Ideal.absNorm hd.2)
 
-lemma min_le_sqrt_mul (x y : ℝ) (hx : 0≤x) (hy : 0≤y) :
+lemma min_le_sqrt_mul   (hx : 0≤x) (hy : 0≤y) :
     min x y ≤ Real.sqrt (x*y) := by
   apply (Real.le_sqrt (le_min hx hy) (mul_nonneg hx hy)).mpr
   rcases le_total x y with h|h
   · rw [min_eq_left h]; nlinarith
   · rw [min_eq_right h]; nlinarith
 
-lemma shell_scalar (e Y x y : ℝ) (he : 0<e) (hx : 0<x) (hy : 0<y)
+include he in
+lemma shell_scalar     (hx : 0<x) (hy : 0<y)
     (hY : min x y ≤ Y) :
     (2*min x y)^(1+e)/Real.sqrt (x*y) ≤ 2^(1+e)*Y^e := by
   have hm : 0<min x y := lt_min hx hy
@@ -61,8 +66,9 @@ lemma shell_scalar (e Y x y : ℝ) (he : 0<e) (hx : 0<x) (hy : 0<y)
     _ ≤ 2^(1+e)*(Real.sqrt (x*y)*Y^e) := by gcongr
     _ = _ := by ring
 
-theorem shell_bound (e : ℝ) (he : 0<e) :
-    ∃C : ℝ,0<C ∧ ∀(s : Ideal O),Squarefree s → s≠0 →
+include he in
+theorem shell_bound     :
+    ∃C : ℝ,0<C ∧ ∀(s : Ideal ActualEisensteinCubic.O),Squarefree s → s≠0 →
       ∀(S : Finset Label),(∀v∈S,Valid s v) → ∀Y T₁ T₂ : ℝ,
       0<T₁ → 0<T₂ → min T₁ T₂≤Y →
       (∀v∈S,(v.1.1.absNorm:ℝ)≤Y ∧ (v.1.2.absNorm:ℝ)≤Y) →
@@ -100,20 +106,25 @@ theorem shell_bound (e : ℝ) (he : 0<e) :
       rw [show 3*e=e+e+e by ring,Real.rpow_add hY,Real.rpow_add hY]
       ring
 
-def key (v : Label) : ℤ×ℤ := (normKey v.1.1,normKey v.1.2)
-def keys (S : Finset Label) : Finset (ℤ×ℤ) := S.image key
-def shell (S : Finset Label) (n : ℤ×ℤ) : Finset Label := S.filter (fun v=>key v=n)
+end
 
-lemma norm_scale_bounds (I : Ideal O) (hI : I≠0) (Y : ℝ) (hY : (I.absNorm:ℝ)≤Y) :
+def key (v : Label)  := (normKey v.1.1,normKey v.1.2)
+def keys (S : Finset Label)  := S.image key
+def shell (S : Finset Label) (n : ℤ×ℤ)  := S.filter (fun v=>key v=n)
+
+section
+variable (B Z e δ : ℝ) (hB : 0≤B) (hZ : 1≤Z) (S : Finset Label)
+
+lemma norm_scale_bounds  I  (hI : I≠0)  Y  (hY : (I.absNorm:ℝ)≤Y) :
     1≤dyadicScale (normKey I) ∧ dyadicScale (normKey I)≤Y := by
   have hn : 1≤(I.absNorm:ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   have hk : 0≤normKey I := Int.floor_nonneg.mpr
     (Real.logb_nonneg (by norm_num : (1:ℝ)<2) hn)
   refine ⟨?_,((normKey_eq_iff I hI _).mp rfl).1.trans hY⟩
-  simpa only [dyadicScale,zpow_zero] using zpow_le_zpow_right₀ (by norm_num : (1:ℝ)≤2) hk
+  simp_all [dyadicScale]
 
-lemma shell_norm_bounds (S : Finset Label) (n : ℤ×ℤ) (v : Label)
+lemma shell_norm_bounds   (n : ℤ×ℤ) (v : Label)
     (hv : v∈shell S n) (hC : v.1.1≠0) (hD : v.1.2≠0) :
     dyadicScale n.1≤(v.1.1.absNorm:ℝ) ∧ (v.1.1.absNorm:ℝ)<2*dyadicScale n.1 ∧
     dyadicScale n.2≤(v.1.2.absNorm:ℝ) ∧ (v.1.2.absNorm:ℝ)<2*dyadicScale n.2 := by
@@ -122,11 +133,11 @@ lemma shell_norm_bounds (S : Finset Label) (n : ℤ×ℤ) (v : Label)
   have h₂ := (normKey_eq_iff v.1.2 hD n.2).mp (congrArg Prod.snd he)
   exact ⟨h₁.1,h₁.2,h₂⟩
 
-theorem sum_shells (S : Finset Label) (f : Label→ℝ) :
-    (∑v∈S,f v)=∑n∈keys S,∑v∈shell S n,f v := by
-  exact (Finset.sum_fiberwise_of_maps_to (fun v hv=>Finset.mem_image.mpr ⟨v,hv,rfl⟩) _).symm
+theorem sum_shells   (f : Label→ℝ) :
+    (∑v∈S,f v)=∑n∈keys S,∑v∈shell S n,f v := (Finset.sum_fiberwise_of_maps_to (fun v hv=>Finset.mem_image.mpr ⟨v,hv,rfl⟩) _).symm
 
-lemma keys_card_log (B Z : ℝ) (hB : 0≤B) (hZ : 1≤Z) (S : Finset Label)
+include hB hZ in
+lemma keys_card_log        
     (h0 : ∀v∈S,v.1.1≠0 ∧ v.1.2≠0)
     (hN : ∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) :
     ((keys S).card:ℝ)≤(3+B/Real.log 2)^2*(1+Real.log Z)^2 := by
@@ -153,14 +164,15 @@ lemma keys_card_log (B Z : ℝ) (hB : 0≤B) (hZ : 1≤Z) (S : Finset Label)
     _ ≤ ((3+B/Real.log 2)*(1+Real.log Z))^2 := by gcongr
     _ = _ := by ring
 
-theorem polynomial_cap_log_bound (B e : ℝ) (hB : 0≤B) (he : 0<e) :
-    ∃C : ℝ,0<C ∧ ∀Z : ℝ,1≤Z → ∀s : Ideal O,Squarefree s → s≠0 →
+include hB in
+theorem polynomial_cap_log_bound     (he : 0<e) :
+    ∃C : ℝ,0<C ∧ ∀Z : ℝ,1≤Z → ∀s : Ideal ActualEisensteinCubic.O,Squarefree s → s≠0 →
       ∀S : Finset Label,(∀v∈S,Valid s v) →
       (∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) →
       (∑v∈S,weight v)≤C*Z^(3*B*e)*(1+Real.log Z)^2/(s.absNorm:ℝ) := by
   obtain ⟨C,hC,hbound⟩ := shell_bound e he
   let K : ℝ := 3+B/Real.log 2
-  have hK : 0<K := by dsimp [K]; positivity
+  
   refine ⟨C*K^2,by positivity,?_⟩
   intro Z hZ s hs hs0 S hS hN
   have hz : 0<Z := zero_lt_one.trans_le hZ
@@ -171,8 +183,7 @@ theorem polynomial_cap_log_bound (B e : ℝ) (hB : 0≤B) (he : 0<e) :
     obtain ⟨v,hv,hkey⟩ := Finset.mem_image.mp hn
     have hc := norm_scale_bounds v.1.1 (hS v hv).1 (Z^B) (hN v hv).1
     have hm : min (dyadicScale n.1) (dyadicScale n.2)≤Z^B := by
-      have heq : normKey v.1.1=n.1 := congrArg Prod.fst hkey
-      exact (min_le_left _ _).trans (heq ▸ hc.2)
+      bound
     exact hbound s hs hs0 (shell S n) (fun w hw=>hS w (Finset.mem_filter.mp hw).1)
       (Z^B) (dyadicScale n.1) (dyadicScale n.2) (dyadicScale_pos _) (dyadicScale_pos _) hm
       (fun w hw=>hN w (Finset.mem_filter.mp hw).1)
@@ -199,19 +210,18 @@ lemma log_square_subpower (d : ℝ) (hd : 0<d) :
   have hp : 1≤Z^a := Real.one_le_rpow hZ ha.le
   have hl := Real.log_le_rpow_div hz.le ha
   have hh : 1+Real.log Z≤(1+1/a)*Z^a := by
-    calc
-      _ ≤ Z^a+Z^a/a := add_le_add hp hl
-      _ = _ := by ring
+    grind
   calc
     _ ≤ ((1+1/a)*Z^a)^2 := by
-      apply pow_le_pow_left₀ (by linarith [Real.log_nonneg hZ]) hh
+      bound
     _ = (1+1/a)^2*Z^d := by
       rw [mul_pow,←Real.rpow_mul_natCast hz.le]
       congr 2
       dsimp [a]; ring
 
-theorem common_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
-    ∃C : ℝ,0<C ∧ ∀Z : ℝ,2≤Z → ∀s : Ideal O,Squarefree s → s≠0 →
+include hB in
+theorem common_harmonic_mass     (hδ : 0<δ) :
+    ∃C : ℝ,0<C ∧ ∀Z : ℝ,2≤Z → ∀s : Ideal ActualEisensteinCubic.O,Squarefree s → s≠0 →
       ∀S : Finset Label,(∀v∈S,Valid s v) →
       (∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) →
       (∑v∈S,1/Real.sqrt ((v.1.1.absNorm:ℝ)*v.1.2.absNorm))≤C*Z^δ/(s.absNorm:ℝ) := by
@@ -233,8 +243,9 @@ theorem common_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
     _ ≤ C*Z^(3*B*e)*(D*Z^(δ/2))/(s.absNorm:ℝ) := by gcongr; exact hlog Z hZ1
     _ = (C*D)*Z^(3*B*e+δ/2)/(s.absNorm:ℝ) := by rw [Real.rpow_add hz]; ring
     _ ≤ (C*D)*Z^δ/(s.absNorm:ℝ) := by
-      exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow_of_exponent_le hZ1 hbudget) (mul_pos hC hD).le) hsn.le
+      gcongr <;> first | assumption | positivity | linarith
+
+end
 
 end SevenEighths.CenteredMomentCommonHarmonicMass
 

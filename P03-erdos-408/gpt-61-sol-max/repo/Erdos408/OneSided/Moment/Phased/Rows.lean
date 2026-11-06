@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Chain.Births
 
 public import Erdos408.OneSided.Moment.Chain
 
@@ -36,30 +39,30 @@ def presInd (π o : Option ℕ) : ℝ := if π = none ∨ o = π then 1 else 0
 
 /-- The cost of a prescription: the atom `c ν(p)` for a prescribed prime `p`, and `1` when
 nothing is prescribed. -/
-def atomCost (c : ℝ) (ν : ℕ → ℝ) (π : Option ℕ) : ℝ := π.elim 1 fun p => c * ν p
+def atomCost (c : ℝ) (ν : ℕ → ℝ) (π : Option ℕ)  := π.elim 1 fun p => c * ν p
 
 /-- The prescription indicator is nonnegative. -/
-theorem presInd_nonneg (π o : Option ℕ) : 0 ≤ presInd π o := by
+theorem presInd_nonneg  π o  : 0 ≤ presInd π o := by
   unfold presInd
   split_ifs <;> norm_num
 
 /-- The prescription indicator is at most one. -/
-theorem presInd_le_one (π o : Option ℕ) : presInd π o ≤ 1 := by
+theorem presInd_le_one  π o  : presInd π o ≤ 1 := by
   unfold presInd
   split_ifs <;> norm_num
 
 /-- With nothing prescribed the indicator is one. -/
-theorem presInd_none (o : Option ℕ) : presInd none o = 1 :=
+theorem presInd_none  o  : presInd none o = 1 :=
   ite_eq_left (Or.inl rfl)
 
 /-- With the prime `p` prescribed the indicator is `[o = p]`. -/
-theorem presInd_some (p : ℕ) (o : Option ℕ) :
+theorem presInd_some  p   o  :
     presInd (some p) o = if o = some p then 1 else 0 := by
   unfold presInd
   simp
 
 /-- The atom cost is nonnegative. -/
-theorem atomCost_nonneg {c : ℝ} {ν : ℕ → ℝ} (hc : 0 ≤ c) (hν : ∀ p, 0 ≤ ν p) (π : Option ℕ) :
+theorem atomCost_nonneg {c : ℝ} {ν : ℕ → ℝ} (hc : 0 ≤ c) (hν : ∀ p, 0 ≤ ν p)  π  :
     0 ≤ atomCost c ν π := by
   cases π with
   | none => exact zero_le_one
@@ -67,47 +70,43 @@ theorem atomCost_nonneg {c : ℝ} {ν : ℕ → ℝ} (hc : 0 ≤ c) (hν : ∀ p
 
 /-- The atom cost is monotone in the constant. -/
 theorem atomCost_mono {c c' : ℝ} {ν : ℕ → ℝ} (hcc : c ≤ c') (hν : ∀ p, 0 ≤ ν p)
-    (π : Option ℕ) : atomCost c ν π ≤ atomCost c' ν π := by
+     π  : atomCost c ν π ≤ atomCost c' ν π := by
   cases π with
   | none => exact le_rfl
   | some p => exact mul_le_mul_of_nonneg_right hcc (hν p)
 
 /-! ### Row iteration over histories -/
 
-section Rows
+
 
 variable {x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B : ℕ}
 
 /-- The visits of a history after its first edge are the visits of its tail from the state
 after that edge. -/
-private theorem chainVisit_cons_succ {N : ℕ} (s : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d) (e : EdgeChoice x d Y d₀ u v r) (h : History x d Y d₀ u v r N)
-    (j : Fin (N + 1)) :
+private theorem chainVisit_cons_succ  {N}   s 
+     c   e   h 
+     j  :
     chainVisit (N := N + 1) s (Fin.cons c h.1, Fin.cons e h.2) j.succ =
-      chainVisit (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h j := by
-  induction j using Fin.induction with
-  | zero => rfl
-  | succ j ih =>
-    simp only [chainVisit] at ih ⊢
-    rw [Fin.induction_succ, Fin.induction_succ, ← Fin.succ_castSucc, ih]
-    simp
+      chainVisit (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h j := by solve_by_elim [_root_.SharedProofs.shared_chainVisit_cons_succ]
+
+public alias _root_.SharedProofs.chainVisit_cons_succ := chainVisit_cons_succ
+
 
 /-- The end of a history is the end of its tail from the state after its first edge. -/
-private theorem chainEnd_cons {N : ℕ} (s : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d) (e : EdgeChoice x d Y d₀ u v r) (h : History x d Y d₀ u v r N) :
+private theorem chainEnd_cons  {N}   s 
+     c   e   h  :
     chainEnd (N := N + 1) s (Fin.cons c h.1, Fin.cons e h.2) =
-      chainEnd (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h := by
-  rw [chainEnd, ← Fin.succ_last, chainVisit_cons_succ]
-  rfl
+      chainEnd (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h := by solve_by_elim [_root_.SharedProofs.shared_chainEnd_cons]
+
+public alias _root_.SharedProofs.chainEnd_cons := chainEnd_cons
+
 
 /-- A history with no edges is a single ghost choice. -/
 private theorem sum_histories_zero (F : History x d Y d₀ u v r 0 → ℝ) :
     ∑ h ∈ histories x d Y d₀ u v r B 0, F h =
       ∑ c ∈ multBox B ×ˢ multBox B, F (fun _ => c, Fin.elim0) := by
   refine sum_nbij' (fun h => h.1 0) (fun c => (fun _ => c, Fin.elim0)) ?_ ?_ ?_ ?_ ?_
-  · intro h hh
-    simp only [histories, mem_product, Fintype.mem_piFinset] at hh ⊢
-    exact hh.1 0
+  · grind [histories]
   · intro c hc
     simp only [histories, mem_product, Fintype.mem_piFinset] at hc ⊢
     exact ⟨fun _ => hc, fun i => i.elim0⟩
@@ -133,7 +132,7 @@ private theorem sum_histories_succ {N : ℕ} (F : History x d Y d₀ u v r (N + 
     exact ⟨hh.1 0, hh.2 0, fun i => hh.1 _, fun i => hh.2 _⟩
   · intro t ht
     simp only [histories, mem_product, Fintype.mem_piFinset] at ht ⊢
-    exact ⟨fun i => Fin.cases ht.1 ht.2.2.1 i, fun i => Fin.cases ht.2.1 ht.2.2.2 i⟩
+    exact ⟨Fin.cases ht.1 ht.2.2.1, Fin.cases ht.2.1 ht.2.2.2⟩
   · intro h _
     simp
   · intro t _
@@ -145,7 +144,7 @@ private theorem sum_histories_succ {N : ℕ} (F : History x d Y d₀ u v r (N + 
 `E j` whose weighted row sums against `h` are at most `a_j h` and `b_j h`, and for `f ≤ h`,
 `∑_h ∏_j G_j(visit_j, h.1 j) ∏_j E_j(…, h.2 j) f(end(s, h)) ≤ ∏_j a_j ∏_j b_j h(s)`. -/
 theorem sum_history_le_of_rows {h f : ChainState x d Y d₀ u v r B → ℝ} (hf : ∀ t, f t ≤ h t)
-    (N : ℕ) :
+     N  :
     ∀ (G : Fin (N + 1) → ChainState x d Y d₀ u v r B → GhostChoice x d → ℝ)
       (E : Fin N → ChainState x d Y d₀ u v r B → EdgeChoice x d Y d₀ u v r → ℝ)
       (a : Fin (N + 1) → ℝ) (b : Fin N → ℝ),
@@ -229,6 +228,6 @@ theorem sum_history_le_of_rows {h f : ChainState x d Y d₀ u v r B → ℝ} (hf
           simp only [Fin.prod_univ_succ (n := N)]
           ring
 
-end Rows
+
 
 end Erdos408.OneSided

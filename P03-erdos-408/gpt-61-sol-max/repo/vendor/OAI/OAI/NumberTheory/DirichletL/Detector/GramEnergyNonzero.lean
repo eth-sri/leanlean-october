@@ -8,15 +8,15 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGramDiagonal
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT RayFourExpansion
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
 
-lemma original_pair_zero_split (I J : SupportedIdeal) (U : SchwartzMap ℝ ℂ) (Q : ℝ) (hQ : 0<Q) :
-    (∑'h : O,actualCorrelation (primaryGenerator I.val) (primaryGenerator J.val)
+
+lemma original_pair_zero_split (I J : SupportedIdeal) (U : SchwartzMap ℝ ℂ)  Q  (hQ : 0<Q) :
+    (∑'h : ActualEisensteinCubic.O,actualCorrelation (primaryGenerator I.val) (primaryGenerator J.val)
       ((supported_span_primaryGenerator_iff _).mpr I.property)
       ((supported_span_primaryGenerator_iff _).mpr J.property) (-h)*
       paperRadialFourier U (Q*‖eisEmbedding h‖^2/‖eisEmbedding (primaryGenerator I.val*primaryGenerator J.val)‖^2))=
@@ -32,8 +32,8 @@ lemma original_pair_zero_split (I J : SupportedIdeal) (U : SchwartzMap ℝ ℂ) 
   have hh := hs.tsum_eq_add_tsum_ite 0
   simpa only [neg_zero,map_zero,norm_zero,zero_pow (by decide : 2≠0),mul_zero,zero_div,nonzero_tsum_indicator] using hh
 
-theorem original_energy_nonzero (C : CalibrationData) (W : ℝ→ℂ) (hW : HasCompactSupport W)
-    (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (U : SchwartzMap ℝ ℂ) (Q : ℝ) (hQ : 0<Q) :
+theorem original_energy_nonzero  C   W   hW 
+     Y   hY   σ   v   U   Q  (hQ : 0<Q) :
     gaussEnergy (lowGaussColumns W hW Y hY) (fun I=>primaryGenerator I.val)
       (fun I=>(supported_span_primaryGenerator_iff _).mpr I.property)
       (lowGaussColumn C W Y σ v) U Q=
@@ -57,6 +57,6 @@ theorem original_energy_nonzero (C : CalibrationData) (W : ℝ→ℂ) (hW : HasC
   ring
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

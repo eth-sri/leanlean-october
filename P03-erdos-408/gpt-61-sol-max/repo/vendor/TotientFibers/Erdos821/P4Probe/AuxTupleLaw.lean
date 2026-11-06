@@ -23,7 +23,10 @@ local instance auxAnalyticTupleFintype (P : PrimeGroups) (k : P.Group → ℕ) :
     Fintype (Blueprint.Analytic.Tuple (analyticGroups P) k) :=
   inferInstanceAs (Fintype (∀ g : P.Group, Fin (k g) → P.Prime g))
 
-lemma auxSideSets_disjoint (ν : Pattern P J ell m) (block : P.BigGroup → Bool) :
+section
+variable (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
+
+lemma auxSideSets_disjoint     :
     Disjoint (bigFlatSet P J (patternAuxCoordinates ν block false))
       (bigFlatSet P J (patternAuxCoordinates ν block true)) := by
   rw [Finset.disjoint_left]
@@ -42,7 +45,7 @@ lemma auxSideSets_disjoint (ν : Pattern P J ell m) (block : P.BigGroup → Bool
     exact Finset.notMem_empty _ hz
   cases hF.symm.trans hT
 
-lemma bigAux_selected_pair_expect (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
+lemma bigAux_selected_pair_expect    
     (hV : ∀ g, 0 < P.V g)
     (H : Blueprint.Analytic.Tuple (analyticGroups P)
         (selectedCounts (patternAuxCoordinates ν block false)) →
@@ -91,6 +94,8 @@ lemma bigAux_selected_pair_expect (ν : Pattern P J ell m) (block : P.BigGroup �
     (partialProductWeight_rows ST b).trans (rowPartialTuple_weight ST (flatPartialRows ST b)).symm
   exact congrArg (fun r : ℝ => (r : ℂ) * H (eF a) (eT b))
     (congrArg₂ (fun r s : ℝ => r * s) hwF hwT)
+
+end
 
 end
 end Erdos821.P4Probe

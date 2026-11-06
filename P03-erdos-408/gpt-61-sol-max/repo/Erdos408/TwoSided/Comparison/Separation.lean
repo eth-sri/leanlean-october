@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Groups
 public import Erdos408.TwoSided.Setup
@@ -34,9 +35,9 @@ open Filter MeasureTheory
 `∑_a ∏ μ(a) φ(D_A) D_A^{-iσ} φ'(D_B) D_B^{-iσ} ∑_{Y ≤ w ≤ 2Y} 𝒰(w) G(w + D_C) W^{ψ(X_A)}(w + D_C)`,
 with `𝒰 = endpointCoeff … (A ∪ B) (ψ' ∘ X_B) ψ₁ Y σ`. -/
 noncomputable def comparisonBilinear (x q q₀ : ℝ) {r d : ℕ} (a : Fin r → ℝ)
-    (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ) {ι : Type} [Fintype ι] [DecidableEq ι]
-    (P : ι → Finset ℕ) {J : ℕ} (A B : ι → Finset (Fin J)) (φ φ' ψ ψ' : ℕ → ℂ) (G : ℕ → ℝ)
-    (ψ₁ : ℝ → ℂ) (Y σ : ℝ) : ℂ :=
+    (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ) {ι } [Fintype ι] [DecidableEq ι]
+    (P : ι → Finset ℕ) {J } (A B : ι → Finset (Fin J)) (φ φ' ψ ψ' : ℕ → ℂ) (G : ℕ → ℝ)
+    (ψ₁ : ℝ → ℂ) (Y σ : ℝ)  :=
   ∑ l ∈ auxLabels P (fun g => A g ∪ B g),
     ((∏ g, ∏ i ∈ A g ∪ B g, (harmonicMass (P g) * l g i)⁻¹ : ℝ) : ℂ) *
       (φ (slotProduct A l) * (slotProduct A l : ℂ) ^ (-((σ : ℂ) * Complex.I))) *
@@ -54,30 +55,35 @@ noncomputable def comparisonBilinear (x q q₀ : ℝ) {r d : ℕ} (a : Fin r →
 namespace Separation
 
 /-- The points `y_m = a/2 + m a/4` of the partition. -/
-private noncomputable def partPoint (a : ℝ) (m : ℕ) : ℝ :=
+private noncomputable def partPoint (a : ℝ) (m : ℕ)  :=
   a / 2 + m * (a / 4)
 
 /-- The step `S_m(z) = smoothTransition(4(z - y_m)/a)`: `0` for `z ≤ y_m`, `1` from
 `y_m + a/4 = y_{m+1}` on. -/
-private noncomputable def partStep (a : ℝ) (m : ℕ) (z : ℝ) : ℝ :=
+private noncomputable def partStep (a : ℝ) (m : ℕ) (z : ℝ)  :=
   Real.smoothTransition ((z - partPoint a m) / (a / 4))
 
 /-- The piece `η_m = S_m - S_{m+1}` of the partition of unity. -/
-private noncomputable def partBump (a : ℝ) (m : ℕ) (z : ℝ) : ℝ :=
+private noncomputable def partBump (a : ℝ) (m : ℕ) (z : ℝ)  :=
   partStep a m z - partStep a (m + 1) z
 
 /-- The piece `ψ_{1,m}(w) = η_m(y_m w)/(y_m w)`. -/
-private noncomputable def partPiece (a : ℝ) (m : ℕ) (w : ℝ) : ℂ :=
+private noncomputable def partPiece (a : ℝ) (m : ℕ) (w : ℝ)  :=
   ((partBump a m (partPoint a m * w) * (partPoint a m * w)⁻¹ : ℝ) : ℂ)
 
+section
+variable {a : ℝ} (ha : 0 < a) {m : ℕ} {z : ℝ}
+
+include ha in
 /-- `S_m(z) = 0` for `z ≤ y_m`. -/
-private theorem partStep_eq_zero {a : ℝ} (ha : 0 < a) {m : ℕ} {z : ℝ} (hz : z ≤ partPoint a m) :
+private theorem partStep_eq_zero         (hz : z ≤ partPoint a m) :
     partStep a m z = 0 :=
   Real.smoothTransition.zero_of_nonpos (div_nonpos_of_nonpos_of_nonneg (by linarith)
     (by positivity))
 
+include ha in
 /-- `S_m(z) = 1` for `z ≥ y_m + a/4`. -/
-private theorem partStep_eq_one {a : ℝ} (ha : 0 < a) {m : ℕ} {z : ℝ}
+private theorem partStep_eq_one        
     (hz : partPoint a m + a / 4 ≤ z) : partStep a m z = 1 :=
   Real.smoothTransition.one_of_one_le (by rw [le_div_iff₀ (by positivity)]; linarith)
 
@@ -87,27 +93,20 @@ private theorem partPoint_succ (a : ℝ) (m : ℕ) : partPoint a (m + 1) = partP
   push_cast
   ring
 
+include ha in
 /-- `η_m` lives in `(y_m, y_m + a/2)`. -/
-private theorem lt_of_partBump_ne_zero {a : ℝ} (ha : 0 < a) {m : ℕ} {z : ℝ}
+private theorem lt_of_partBump_ne_zero        
     (hz : partBump a m z ≠ 0) : partPoint a m < z ∧ z < partPoint a m + a / 2 := by
-  have hs := partPoint_succ a m
-  by_contra h
-  rcases not_and_or.1 h with h | h
-  · refine hz ?_
-    rw [partBump, partStep_eq_zero ha (not_lt.1 h), partStep_eq_zero ha (by linarith)]
-    norm_num
-  · refine hz ?_
-    rw [partBump, partStep_eq_one ha (by linarith), partStep_eq_one ha (by linarith)]
-    norm_num
+  grind [partPoint_succ, partBump, partStep_eq_zero, partStep_eq_one]
 
+include ha in
 /-- `y_m ≥ a/2`. -/
-private theorem half_le_partPoint {a : ℝ} (ha : 0 < a) (m : ℕ) : a / 2 ≤ partPoint a m := by
-  unfold partPoint
-  have : 0 ≤ (m : ℝ) * (a / 4) := by positivity
-  linarith
+private theorem half_le_partPoint     (m : ℕ) : a / 2 ≤ partPoint a m := by
+  simp_all [partPoint]
 
+include ha in
 /-- `ψ_{1,m}` lives in `[1, 2]`. -/
-private theorem le_of_partPiece_ne_zero {a : ℝ} (ha : 0 < a) {m : ℕ} {w : ℝ}
+private theorem le_of_partPiece_ne_zero       {w : ℝ}
     (hw : partPiece a m w ≠ 0) : 1 ≤ w ∧ w ≤ 2 := by
   have hy := half_le_partPoint ha m
   have hy0 : 0 < partPoint a m := by linarith
@@ -117,21 +116,18 @@ private theorem le_of_partPiece_ne_zero {a : ℝ} (ha : 0 < a) {m : ℕ} {w : �
     simp [partPiece, h]
   obtain ⟨h₁, h₂⟩ := lt_of_partBump_ne_zero ha hb
   constructor
-  · by_contra h
-    have : partPoint a m * w < partPoint a m * 1 := mul_lt_mul_of_pos_left (not_le.1 h) hy0
-    linarith
-  · by_contra h
-    have : partPoint a m * 2 < partPoint a m * w := mul_lt_mul_of_pos_left (not_le.1 h) hy0
-    linarith
+  · nlinarith
+  nlinarith
 
 /-- The steps are smooth. -/
-private theorem contDiff_partStep {a : ℝ} (m : ℕ) :
+private theorem contDiff_partStep   (m : ℕ) :
     ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) (partStep a m) :=
   Real.smoothTransition.contDiff.comp ((contDiff_id.sub contDiff_const).div_const _)
 
+include ha in
 /-- The pieces are smooth: they vanish near `w ≤ 1`, and `w ↦ (y_m w)⁻¹` is smooth on
 `w > 0`. -/
-private theorem contDiff_partPiece {a : ℝ} (ha : 0 < a) (m : ℕ) :
+private theorem contDiff_partPiece     (m : ℕ) :
     ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) (partPiece a m) := by
   have hy0 : 0 < partPoint a m := by linarith [half_le_partPoint ha m]
   have hbump : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) fun w => partBump a m (partPoint a m * w) :=
@@ -150,9 +146,11 @@ private theorem contDiff_partPiece {a : ℝ} (ha : 0 < a) (m : ℕ) :
   · refine hbump.contDiffAt.mul ((contDiff_const.mul contDiff_id).contDiffAt.inv ?_)
     exact (mul_pos hy0 (show (0 : ℝ) < w by linarith)).ne'
 
+end
+
 /-- A smooth function supported in `[1, 2]` has bounded derivatives of every order. -/
 private theorem exists_norm_iteratedDeriv_le {f : ℝ → ℂ} (hf : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) f)
-    (hs : ∀ z, f z ≠ 0 → 1 ≤ z ∧ z ≤ 2) (j : ℕ) :
+    (hs : ∀ z, f z ≠ 0 → 1 ≤ z ∧ z ≤ 2)  j  :
     ∃ C, ∀ z, ‖iteratedDeriv j f z‖ ≤ C := by
   have hc : HasCompactSupport f := HasCompactSupport.intro isCompact_Icc fun z hz => by
     by_contra h
@@ -176,7 +174,7 @@ smooth pieces `ψ_{1,m}` supported in `[1, 2]`, with derivative bounds `M₁`, a
 `S_m(z) = smoothTransition(4(z - y_m)/a)` and `η_m = S_m - S_{m+1}`, supported in
 `[y_m, y_m + a/2] ⊆ [y_m, 2y_m]`; the sum telescopes to `S_0 - S_n = 1` on `[κ⁻¹, κe²]`. Put
 `ψ_{1,m}(z) = η_m(y_m z)/(y_m z)`; the derivative bounds hold by compact support. -/
-theorem exists_partition (κ : ℝ) (hκ : 1 < κ) :
+theorem exists_partition  κ  (hκ : 1 < κ) :
     ∃ (n : ℕ) (ψ₁ : Fin n → ℝ → ℂ) (y : Fin n → ℝ) (M₁ : ℕ → ℝ),
       (∀ m, ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) (ψ₁ m) ∧
         (∀ z, ψ₁ m z ≠ 0 → 1 ≤ z ∧ z ≤ 2) ∧
@@ -201,9 +199,7 @@ theorem exists_partition (κ : ℝ) (hκ : 1 < κ) :
     exact (norm_nonneg _).trans (hC m' j 0)
   · refine le_trans ?_ (half_le_partPoint ha m)
     rw [ha_def, mul_inv]
-    have : (4 : ℝ)⁻¹ ≤ 2⁻¹ := by norm_num
-    calc 4⁻¹ * κ⁻¹ ≤ 2⁻¹ * κ⁻¹ := by gcongr
-      _ = κ⁻¹ / 2 := by ring
+    linarith
   · -- `m < 4b/a`, so `y_m < a/2 + b ≤ 2b`
     have hm : (m : ℝ) + 1 ≤ n := by exact_mod_cast m.2
     have hn' : (n : ℝ) < 4 * b / a + 1 := Nat.ceil_lt_add_one (by positivity)
@@ -211,10 +207,7 @@ theorem exists_partition (κ : ℝ) (hκ : 1 < κ) :
       have : (m : ℝ) < 4 * b / a := by linarith
       rw [lt_div_iff₀ ha] at this
       linarith
-    show partPoint a m ≤ 2 * κ * Real.exp 2
-    unfold partPoint
-    have : a / 2 ≤ b := by linarith
-    nlinarith
+    grind [partPoint, Real.exp]
   · intro z hz₁ hz₂
     have hterm : ∀ m : Fin n, partPiece a m (z / partPoint a m) =
         ((partBump a m z * z⁻¹ : ℝ) : ℂ) := by
@@ -241,8 +234,11 @@ theorem exists_partition (κ : ℝ) (hκ : 1 < κ) :
 
 namespace Separation
 
+section
+variable (c₀ C₀ vlo vhi κ K : ℝ)
+
 /-- Eventually `log κ + K T L^{0.46} ≤ L`. -/
-private theorem eventually_log_add_mul_le (κ K : ℝ) (hK : 0 ≤ K) :
+private theorem eventually_log_add_mul_le   (hK : 0 ≤ K) :
     ∀ᶠ x : ℝ in atTop,
       Real.log κ + K * Real.log (Real.log x) * Real.log x ^ (0.46 : ℝ) ≤ Real.log x := by
   have ho := ((isLittleO_log_rpow_atTop (by norm_num : (0 : ℝ) < 0.54)).bound
@@ -257,7 +253,7 @@ private theorem eventually_log_add_mul_le (κ K : ℝ) (hK : 0 ≤ K) :
   have hsplit : L ^ (0.54 : ℝ) * L ^ (0.46 : ℝ) = L := by
     rw [← Real.rpow_add hL0]
     norm_num
-  have h46 : 0 ≤ L ^ (0.46 : ℝ) := by positivity
+  
   have h₁ : K * Real.log L * L ^ (0.46 : ℝ) ≤ K * (1 / (2 * (K + 1))) * L := by
     calc K * Real.log L * L ^ (0.46 : ℝ)
         ≤ K * (1 / (2 * (K + 1)) * L ^ (0.54 : ℝ)) * L ^ (0.46 : ℝ) := by gcongr
@@ -272,7 +268,7 @@ private theorem eventually_log_add_mul_le (κ K : ℝ) (hK : 0 ≤ K) :
 /-- **U10 for the free labels.** Eventually, for groups as in (6.1) and free slots `C` with at
 most `m₀` slots in each big group and none in the small ones, `κ D_C ≤ x` for every
 auxiliary label. -/
-theorem eventually_mul_slotProduct_le (c₀ C₀ vlo vhi κ : ℝ) (hκ : 0 < κ) (m₀ : ℕ) :
+theorem eventually_mul_slotProduct_le   (hκ : 0 < κ)  m₀  :
     ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
@@ -327,6 +323,8 @@ theorem eventually_mul_slotProduct_le (c₀ C₀ vlo vhi κ : ℝ) (hκ : 0 < κ
   rw [le_div_iff₀ hκ] at this
   linarith
 
+end
+
 /-- `(w/(x D_A D_B))^s = x^{-s} D_A^{-s} D_B^{-s} w^s` for positive `x, D_A, D_B, w`. -/
 private theorem cpow_div_mul_mul {x : ℝ} (hx : 0 < x) {DA DB w : ℕ} (hA : 0 < DA) (hB : 0 < DB)
     (hw : 0 < w) (s : ℂ) :
@@ -354,6 +352,10 @@ private theorem cpow_div_mul_mul {x : ℝ} (hx : 0 < x) {DA DB w : ℕ} (hA : 0 
 
 end Separation
 
+section
+variable (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ) (d : ℕ) (B₀ κ : ℝ) (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (halo : 1 / 10 < alo) (hc : 0 < c) (hκ : 1 < κ) (m₀ : ℕ)
+
+include hκ in
 /-- **The separation (§5.1 steps 1 and 3).** For a partition as in
 `exists_partition`, eventually, for groups as in (6.1), all data, every comparison pattern
 and every `Ψ` supported in `[κ⁻¹, κ]` with a Mellin density `a`,
@@ -361,7 +363,7 @@ and every `Ψ` supported in `[κ⁻¹, κ]` with a Mellin density `a`,
 and `Y_m = y_m x U U'`. On the support, `D_C ∈ [UU', e²UU']` (the cells of `φ, φ'`), so
 `w/Y₀ ∈ [κ⁻¹, κe²]` and `Y₀⁻¹ ∑_m ψ_{1,m}(w/Y_m) = 1/w`; every `w ≤ κ x D_C ≤ x²` (U10); and
 `(w/(x D_C))^{iσ} = x^{-iσ} w^{iσ} D_A^{-iσ} D_B^{-iσ}`. -/
-theorem eventually_strippedComparison_eq (q q₀ c₀ C₀ vlo vhi κ : ℝ) (hκ : 1 < κ) (m₀ : ℕ)
+theorem eventually_strippedComparison_eq      
     {n : ℕ} {ψ₁ : Fin n → ℝ → ℂ} {y : Fin n → ℝ} (hψ₁ : ∀ m z, ψ₁ m z ≠ 0 → 1 ≤ z ∧ z ≤ 2)
     (hy : ∀ m, (4 * κ)⁻¹ ≤ y m ∧ y m ≤ 2 * κ * Real.exp 2)
     (hsum : ∀ z : ℝ, κ⁻¹ ≤ z → z ≤ κ * Real.exp 2 → ∑ m, ψ₁ m (z / y m) = ((z⁻¹ : ℝ) : ℂ)) :
@@ -498,7 +500,7 @@ theorem eventually_strippedComparison_eq (q q₀ c₀ C₀ vlo vhi κ : ℝ) (h�
       dsimp only at hzκ
       rw [div_le_iff₀ (by positivity)] at hzκ
       have hκD := hDle l hl
-      have hκD' : κ * (slotProduct (fun g => A g ∪ B g) l : ℝ) ≤ x := by exact_mod_cast hκD
+      
       refine ⟨Finset.mem_Icc.2 ⟨Nat.ceil_le.2 h1, Nat.le_floor (by linarith)⟩,
         Finset.mem_Icc.2 ⟨?_, Nat.le_floor ?_⟩⟩
       · have : (0 : ℝ) < w := by linarith
@@ -632,6 +634,7 @@ theorem eventually_strippedComparison_eq (q q₀ c₀ C₀ vlo vhi κ : ℝ) (h�
 
 /-! ### The endpoint energies -/
 
+include hq hq₁ hq₀ hq₀₁ hvlo halo hc hκ in
 /-- **The endpoint energies (6.19), pointwise.** For `m₀` and a bound `M₀` of the pieces there
 is `C₅` such that, eventually, for groups as in (6.1), all admissible data, every comparison
 pattern, every piece `|ψ₁| ≤ M₀` supported in `[1, 2]`, every `y₀ ∈ [(4κ)⁻¹, 2κe²]` and every
@@ -639,9 +642,9 @@ pattern, every piece `|ψ₁| ≤ M₀` supported in `[1, 2]`, every `y₀ ∈ [
 `|b₁|, |b₂| ≤ 1`, `|𝒰| ≤ M₀ L^{1 + C_W}` and `|𝒱| ≤ L^{B₀ + C_W}` (crude U7, U9), and
 `#[Y, 2Y] ≤ 2Y` for `Y ≥ 1`; if no label has `φ(D_A) φ'(D_B) ≠ 0`, then `𝔅 = 0`, and
 otherwise `x/(4κe²) ≤ Y` and `2Y ≤ 4κe² x D_C ≤ x²` (U10). -/
-theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ)
-    (CN c : ℝ) (d : ℕ) (B₀ κ : ℝ) (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1)
-    (hvlo : 0 < vlo) (halo : 1 / 10 < alo) (hc : 0 < c) (hκ : 1 < κ) (m₀ : ℕ) (M₀ : ℝ) :
+theorem exists_norm_comparisonBilinear_le    
+                 
+               M₀  :
     ∃ C₅ : ℝ, ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
@@ -657,7 +660,7 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
               comparisonBilinear x q q₀ a u v Bc P A B φ φ' ψ ψ' G ψ₁ (y₀ * (x * U * U')) σ‖ ≤
             Real.log x ^ C₅ := by
   obtain ⟨CW, hW⟩ := exists_norm_markedListWeight_le_rpow q₀ c₀ C₀ vlo vhi hq₀ hq₀₁ hvlo m₀
-  have hκ0 : 0 < κ := by linarith
+  
   refine ⟨2 + 2 * |CW| + |B₀|, ?_⟩
   filter_upwards [hW,
     eventually_abs_centeredCore_le_log q alo ahi K₀ CN c d hq hq₁ halo hc,
@@ -857,5 +860,7 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
         exact hB.trans (mul_le_mul_of_nonneg_right hcardI hBw0)
     _ = 2 * Bw := by field_simp
     _ ≤ _ := hBw
+
+end
 
 end Erdos408.TwoSided

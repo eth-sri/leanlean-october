@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsClosed
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower ProbeEuler
 open CanonicalQuadraticSieve CanonicalRowCompletion ProbeRow CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
-theorem actualSextic_unit_six (p b : O) [(Ideal.span {p}:Ideal O).IsMaximal]
+theorem actualSextic_unit_six  p b  [(Ideal.span {p}:Ideal O).IsMaximal]
     (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
     (hb : IsCoprime b p) :
     (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b))^6=1 := by
@@ -23,6 +23,6 @@ theorem actualSextic_unit_six (p b : O) [(Ideal.span {p}:Ideal O).IsMaximal]
     MulChar.one_apply ((isUnit_quotient_span_iff p b).mpr hb.symm)] using h
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

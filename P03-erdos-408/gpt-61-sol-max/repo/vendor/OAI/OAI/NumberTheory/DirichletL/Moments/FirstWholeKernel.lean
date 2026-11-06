@@ -16,7 +16,7 @@ open CenteredMomentFirstFrequency CenteredMomentFirstColumns CenteredMomentGauss
 open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentPrimitive CenteredMomentScale CenteredMomentSmooth CenteredMomentFirstReduced
 local notation "O" => ActualEisensteinCubic.O
 
-def windows (V : Fin 4 → ℝ → ℂ) (K H A B K₀ H₀ A₀ B₀ : ℝ) : ℂ :=
+def windows (V : Fin 4 → ℝ → ℂ) (K H A B K₀ H₀ A₀ B₀ : ℝ)  :=
   V 0 (Real.log (K/K₀))*V 1 (Real.log (H/H₀))*
     V 2 (Real.log (A/A₀))*V 3 (Real.log (B/B₀))
 
@@ -29,7 +29,7 @@ theorem dilated_frequency_whole_kernel {ι : Type*} [Fintype ι]
     (e a b : O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
     (har : IsCoprime a (b*finitePrimeModulus P)) (hbr : IsCoprime b (finitePrimeModulus P))
     (k : ℝ) (hk : 0<k) (h : O) (hh : h≠0)
-    (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ → ℂ) (K₀ H₀ A₀ B₀ : ℝ)
+    (W : 𝓢(ℝ,ℂ))  V   K₀ H₀ A₀ B₀ 
     (hK₀ : 0<K₀) (hH₀ : 0<H₀) (hA₀ : 0<A₀) (hB₀ : 0<B₀) :
     let r := finitePrimeModulus P
     let ρ := finiteSexticRow P hg j

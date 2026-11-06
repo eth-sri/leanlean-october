@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.PositiveHighParameters
 public import OAI.NumberTheory.DirichletL.Energy.NaturalSourceAdmission
@@ -26,7 +27,7 @@ open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
 open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α]
-local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
+
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -43,12 +44,12 @@ local notation "balancedSource" => balancedInput M H hH η₀ θ W hW aslot bslo
 open CenteredMomentEnergyPositiveHighParameters
 open CenteredMomentEnergyNaturalInputMatches CenteredMomentAmplificationChildInput
 
-theorem fixed_lower_product (N:ℕ)(hN:Fintype.card α≤N) :
+theorem fixed_lower_product  N (hN:Fintype.card α≤N) :
     0<(min 1 aslot)^N*a*a ∧
     (min 1 aslot)^N*a*a≤(∏i,(balancedSource).lo i)*a*a := by
   have hh:=CenteredMomentEnergyOriginalProfileControl.lower_product balancedSource N aslot haslot hN
     (fun _=>le_rfl)
-  exact ⟨by positivity,mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hh ha.le) ha.le⟩
+  aesop
 
 theorem four_upper_scales (κ L:ℝ)(hZ:1<Z)(hw:∀i,0≤w i)(hκ:3/4≤κ)
     (hcap:length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width)(hs:s.width≤L) :

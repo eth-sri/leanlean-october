@@ -8,19 +8,19 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalSourceIndex
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-theorem firstCubePhysicalMode_fixed_pool (pool : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
-    (Ψ₁ Ψ₂ : O→*ℂ) (m₁ m₂ d : O) (H₁ H₂ : Finset ι→ℂ)
-    (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (x : Ideal O×O) :
+theorem firstCubePhysicalMode_fixed_pool  pool   b   C 
+     Ψ₁ Ψ₂   m₁ m₂ d   H₁ H₂ 
+     W₁ W₂   Φ   K   x  :
     firstCubePhysicalMode p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂
       (ConcretePrimeRowBridge.idealGenerator x.1) H₁ H₂ W₁ W₂ Φ K d x.2=
     (K:ℂ)*cubeBaseFactor p hp hg b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit d x.2 *
@@ -44,21 +44,21 @@ theorem firstCubePhysicalMode_fixed_pool (pool : Finset ι) (b : CubeCoordinates
     intro hd
     apply hn
     intro i hi
-    exact Finset.mem_sdiff.mpr ⟨hU hi,fun he=>Finset.disjoint_left.mp hd hi he⟩
+    exact Finset.mem_sdiff.mpr ⟨hU hi,Finset.disjoint_left.mp hd hi⟩
   · intro U hU hn
     apply firstCanonicalCoefficient_zero_overlap p hp hcop hg
     intro hd
     apply hn
     intro i hi
-    exact Finset.mem_sdiff.mpr ⟨hU hi,fun he=>Finset.disjoint_left.mp hd hi he⟩
+    exact Finset.mem_sdiff.mpr ⟨hU hi,Finset.disjoint_left.mp hd hi⟩
 
 theorem original_retained_global_family
-    (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O)) (hlabels : ∀I∈labels,I≠0)
-    (β : Ideal O→(ι→₀ℕ)→ℂ) (Ψ : O→*ℂ) (m : O)
-    (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K Y : ℝ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
+     pool   Q   labels  (hlabels : ∀I∈labels,I≠0)
+     β   Ψ   m 
+     mark   W   Φ   K Y 
+     R 
     (hRY : ∀k∈firstOriginalOuter pool Q,∀f∈labels,R k.1 k.2.1 f k.2.2≤Y)
-    (s : Fin 9→ℝ) (hs : ∀i,0<s i) :
+     s  (hs : ∀i,0<s i) :
     reopenedPhysicalSourceSum pool Q labels β (fun b C I=>
       reopenedPhysicalRetained p hp hcop hg pool b C Ψ m I mark W Φ K (R b C I)) =
     (K:ℂ)*firstFamilyPhysicalRows p hg
@@ -93,7 +93,7 @@ theorem original_retained_global_family
   unfold retainedCubeWeight
   ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

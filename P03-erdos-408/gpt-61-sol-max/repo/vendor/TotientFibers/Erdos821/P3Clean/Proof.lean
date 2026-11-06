@@ -7,13 +7,13 @@ public import Erdos821.P3Clean.EventualComparison
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph Erdos821.P3Clean
 
-theorem MemoryCleanTask_proof (F : FixedData) (r : MemoryParameters F) : MemoryCleanTask F r := by
+theorem MemoryCleanTask_proof  F   r  : MemoryCleanTask F r := by
   obtain ⟨Cs, hclean⟩ := clean_projected_norm F r
   refine ⟨Cs, ?_⟩
   intro m C₁ J C₂ Eid hEid

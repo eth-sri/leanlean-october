@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Descent.Marks
@@ -10,19 +11,17 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid IdealMobiusDivisorSum
 
-theorem ideal_coprime_mobius (K P : Ideal ActualEisensteinCubic.O) (hK : K ≠ 0) :
+theorem ideal_coprime_mobius  K P  (hK : K ≠ 0) :
     (if IsCoprime K P then (1 : ℂ) else 0) =
       ∑ R ∈ idealDivisors K, if R ∣ P then (moebius R : ℂ) else 0 := by
   let G := K ⊔ P
   have hG : G ≠ 0 := by
-    intro hz
-    apply hK
-    exact le_antisymm (show K ≤ 0 from hz ▸ (le_sup_left : K ≤ G)) bot_le
+    aesop
   have hdiv : (idealDivisors K).filter (fun R => R ∣ P) = idealDivisors G := by
     ext R
     simp only [Finset.mem_filter, mem_idealDivisors hK, mem_idealDivisors hG,
@@ -31,7 +30,7 @@ theorem ideal_coprime_mobius (K P : Ideal ActualEisensteinCubic.O) (hK : K ≠ 0
   simp only [Ideal.isCoprime_iff_sup_eq, G]
 
 theorem idealZeroMask_primary_indicator
-    (D B : Ideal ActualEisensteinCubic.O) (hD : D ≠ 0)
+     D B  (hD : D ≠ 0)
     (hB : CompletedGauss.primaryGenerator B ≠ 0) :
     CanonicalQuadraticSieve.idealZeroMask D (CompletedGauss.primaryGenerator B) =
       if IsCoprime B D then 1 else 0 := by
@@ -43,7 +42,7 @@ theorem idealZeroMask_primary_indicator
     CanonicalQuadraticSieve.idealZeroMask_generator_eq_indicator D B hD]
 
 theorem hybrid_quadratic_square_mask
-    (k n b c m h t : Ideal ActualEisensteinCubic.O)
+     k n b c m h t 
     (hk : CanonicalQuadraticSieve.Admissible k)
     (hn : n = c * m) (hb : b = (c * h) * t ^ 2)
     (hct : CompletedGauss.primaryGenerator (c * t) ≠ 0) :
@@ -56,25 +55,24 @@ theorem hybrid_quadratic_square_mask
   rw [isCoprime_comm]
 
 theorem hybrid_double_mask_mobius
-    (k P c : Ideal ActualEisensteinCubic.O) (hk : k ≠ 0) :
+     k P c  (hk : k ≠ 0) :
     (if IsCoprime k (P * c) then (1 : ℂ) else 0) =
       ∑ R ∈ idealDivisors k, ∑ r ∈ idealDivisors k,
         if R ∣ P ∧ r ∣ c then (moebius R : ℂ) * (moebius r : ℂ) else 0 := by
   have hsplit : (if IsCoprime k (P * c) then (1 : ℂ) else 0) =
       (if IsCoprime k P then 1 else 0) * (if IsCoprime k c then 1 else 0) := by
     simp only [IsCoprime.mul_right_iff]
-    by_cases hP : IsCoprime k P <;> by_cases hc : IsCoprime k c <;> simp [hP, hc]
+    grind
   rw [hsplit, ideal_coprime_mobius k P hk, ideal_coprime_mobius k c hk,
     Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro R hR
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
-  intro r hr
-  by_cases hP : R ∣ P <;> by_cases hc : r ∣ c <;> simp [hP, hc]
+  grind
 
 theorem hybrid_column_decomposition
-    (n b : Ideal ActualEisensteinCubic.O) (hn : Squarefree n) (hb : b ≠ 0) :
+     n b  (hn : Squarefree n) (hb : b ≠ 0) :
     ∃ c m h t : Ideal ActualEisensteinCubic.O,
       n = c * m ∧ b = (c * h) * t ^ 2 ∧
       Squarefree c ∧ Squarefree m ∧ Squarefree h ∧
@@ -102,7 +100,7 @@ theorem hybrid_column_decomposition
 
 theorem scaled_product_fiber_card
     (pairs : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O))
-    (B J : Ideal ActualEisensteinCubic.O) (hJ : J ≠ 0) :
+     B J  (hJ : J ≠ 0) :
     ((pairs.filter (fun p => p.2 * (B * p.1) = J)).card) ≤ (idealDivisors J).card := by
   apply Finset.card_le_card_of_injOn Prod.fst
   · intro p hp
@@ -121,7 +119,7 @@ theorem scaled_product_fiber_card
     apply mul_right_cancel₀ hBm
     rw [hep, hpq, heq]
 
-end
+
 
 end SevenEighths.InverseMoment
 

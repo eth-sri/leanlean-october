@@ -10,21 +10,24 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
-noncomputable local instance ramifiedFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
+
+
+variable {ι : Type*} [Fintype ι] {p : ι → ActualEisensteinCubic.O} {N a c : ActualEisensteinCubic.O} {mode : Bool}
+
 
 def ramifiedBlock [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) (u : ActualEisensteinCubic.Oˣ) (m : ℕ) : ℂ :=
   ∏ i ∈ S, unitArgumentFactor (actualSextic (Ideal.span {p i}) (hg i)) (j i)
-    (Ideal.Quotient.mk _ (u.val*λ₀^m))
+    (Ideal.Quotient.mk _ (u.val*ConcretePrimeRowBridge.goodLambda^m))
 
-theorem ramifiedPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (R P F : Finset ι)
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal]
+
+theorem ramifiedPhase_three_blocks  
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (R P F : Finset ι)
     (hRP : Disjoint R P) (hF : Disjoint (R ∪ P) F) (hu : (R ∪ P) ∪ F = Finset.univ)
     (j : ι → ℕ) (hRj : ∀ i ∈ R, j i = 1) (hPj : ∀ i ∈ P, j i = 0)
-    (u : Eisˣ) (m : ℕ) :
+     u   m  :
     ramifiedBranchPhase (fun i => Ideal.span {p i}) hg j u m =
       ramifiedBlock hg (fun _ => 1) R u m * ramifiedBlock hg (fun _ => 0) P u m *
       ramifiedBlock hg j F u m := by
@@ -42,15 +45,15 @@ theorem ramifiedPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
     intro i hi
     rw [hPj i hi]
 
-theorem modelRowPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem modelRowPhase_three_blocks  
     (D : ControlledStratumArithmetic p N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+     s 
+     hp  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hprimary : ∀ i, λ₀^2 ∣ p i-1) (R P F : Finset ι)
+    (hprimary : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)  R P F 
     (hRP : Disjoint R P) (hF : Disjoint (R ∪ P) F) (hu : (R ∪ P) ∪ F = Finset.univ)
-    (j : ι → ℕ) (hRj : ∀ i ∈ R, j i = 1) (hPj : ∀ i ∈ P, j i = 0)
-    (u : Eisˣ) (m : ℕ) :
+     j  (hRj : ∀ i ∈ R, j i = 1) (hPj : ∀ i ∈ P, j i = 0)
+     u   m  :
     D.modelRowPhase s hp hg j u m =
       (residualWithFrozen hp hg c R F * ramifiedBlock hg (fun _ => 1) R
         (sourcePhaseUnit s.index s.phaseUpperUnit u) (sourcePhaseExponent s.index m)) *
@@ -62,6 +65,8 @@ theorem modelRowPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
   rw [activePhase_three_blocks D hp hg hcop hprimary R P F hRP hF hu j hRj hPj,
     ramifiedPhase_three_blocks hg R P F hRP hF hu j hRj hPj]
   ring
+
+end
 
 end
 end SevenEighths.InverseReflectedPhase

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.CubeSource
 
@@ -12,42 +13,39 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGau
 open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_injective)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 
 @[ext] structure MarkedSecondSource (ι : Type*) (Jo Jn : ℕ) where
   cube : CubeCoordinates ι
   firstCommon : Finset ι
   firstDivisor : Finset ι
   second : SecondExpansionData ι
-  quotient : Ideal Eis
+  quotient : Ideal ActualEisensteinCubic.O
   oldAssigned : Fin Jo → SmoothMobiusCorrection.PrimeIdeal
   newAssigned : Fin Jn → ι
 
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
-def markedSecondOriginal {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : SecondOriginalSource ι Jo Jn :=
+def markedSecondOriginal {Jo Jn } (x : MarkedSecondSource ι Jo Jn)  :=
   cubeSecondSource p x.cube.support x.firstCommon x.firstDivisor
     x.second.sourceCommon x.second.divisor x.second.overlap
     x.cube.leftExponent x.cube.rightExponent x.cube.leftBit x.cube.rightBit
     x.quotient x.second.frequency x.oldAssigned x.newAssigned
 
-theorem markedSecondOriginal_injOn (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} :
+section
+variable (hp : ∀ i, p i ≠ 0) (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1) (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} (u v : ActualEisensteinCubic.Oˣ)
+
+
+include hp hinj in
+theorem markedSecondOriginal_injOn  
+        :
     Set.InjOn (markedSecondOriginal (Jo:=Jo) (Jn:=Jn) p) {x | x.cube.Admissible} := by
   intro x hx y hy hxy
   have hc : x.cube = y.cube := by
     apply cubeDivisorKey_injective_on_product p hp hinj hx hy
-    · simpa only [markedSecondOriginal,cubeSecondSource,cubeProductIdeal] using
-        congrArg (fun z : SecondOriginalSource ι Jo Jn => z.b1*z.b2) hxy
-    · funext i
-      fin_cases i
-      · simpa [markedSecondOriginal,cubeSecondSource,cubeDivisorKey] using
-          congrArg SecondOriginalSource.b1 hxy
-      · simpa [markedSecondOriginal,cubeSecondSource,cubeDivisorKey] using
-          congrArg SecondOriginalSource.A1 hxy
-      · simpa [markedSecondOriginal,cubeSecondSource,cubeDivisorKey] using
-          congrArg SecondOriginalSource.A2 hxy
+    · simp_all [markedSecondOriginal, cubeSecondSource, cubeProductIdeal]
+    simp_all [markedSecondOriginal, cubeSecondSource, cubeDivisorKey, SecondOriginalSource.b1, SecondOriginalSource.A1, SecondOriginalSource.A2]
   apply MarkedSecondSource.ext hc
   · exact sourceIdeal_injective p hinj (congrArg SecondOriginalSource.C hxy)
   · exact sourceIdeal_injective p hinj (congrArg SecondOriginalSource.dK hxy)
@@ -60,18 +58,20 @@ theorem markedSecondOriginal_injOn (hp : ∀ i, p i ≠ 0)
   · exact congrArg SecondOriginalSource.oldAssigned hxy
   · exact congrArg SecondOriginalSource.newAssigned hxy
 
-theorem markedSecondTuple_injOn (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} (u v : Eisˣ) :
+include hp hinj in
+theorem markedSecondTuple_injOn  
+          :
     Set.InjOn (fun x : MarkedSecondSource ι Jo Jn => originalSecondTuple p u v (markedSecondOriginal p x))
       {x | x.cube.Admissible} := by
   intro x hx y hy he
   exact markedSecondOriginal_injOn p hp hinj hx hy
     (originalSecondTuple_injective p hinj u v he)
 
-theorem markedSecondOriginal_valid (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
+include hp hpr hcop in
+theorem markedSecondOriginal_valid  
+     
+     
+      (x : MarkedSecondSource ι Jo Jn)
     (hCB : Disjoint x.firstCommon x.cube.support)
     (hD : x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
     (hE : x.second.divisor ⊆ x.second.sourceCommon)
@@ -84,11 +84,12 @@ theorem markedSecondOriginal_valid (hp : ∀ i, p i ≠ 0)
     x.cube.leftExponent x.cube.rightExponent x.cube.leftBit x.cube.rightBit x.cube.support_pos
     x.quotient x.second.frequency x.oldAssigned x.newAssigned hold hnew
 
-theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
+include hp hpr hcop hinj in
+theorem actual_marked_second_source_fiber  
+     
+     
+     
+        (source : Finset (MarkedSecondSource ι Jo Jn))
     (ha : ∀ x ∈ source, x.cube.Admissible)
     (hCB : ∀ x ∈ source, Disjoint x.firstCommon x.cube.support)
     (hD : ∀ x ∈ source, x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
@@ -96,9 +97,9 @@ theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
     (hold : ∀ x ∈ source, ∀ i, (x.oldAssigned i).val ∣
       sourceIdeal p x.cube.support*sourceIdeal p x.firstCommon*x.quotient)
     (hnew : ∀ x ∈ source, ∀ i, x.newAssigned i ∈ x.second.sourceCommon∪x.second.overlap)
-    (γ : OuterTriple) (f : Ideal Eis) (k : Eis)
+     γ   f   k 
     (hf : f ≠ 0) (hq : γ.q0 ≠ 0) (ht : γ.quotient ≠ 0) (hr : γ.residual ≠ 0)
-    (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K) :
+     K  (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K) :
     (source.filter (fun x => secondChild (originalSecondTuple p u v (markedSecondOriginal p x)) = (γ,f,k))).card ≤
       (IdealMobiusDivisorSum.idealDivisors f).card^(9+4*K) *
       (IdealMobiusDivisorSum.idealDivisors γ.q0).card^(5+2*K) *
@@ -124,6 +125,8 @@ theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
   have hb := valid_tuple_card_le_slot_cap (S.image encode) γ f k hf hq ht hr hv K ho hn
   rw [Finset.card_image_iff.mpr hi] at hb
   exact hb
+
+end
 
 end
 end SevenEighths.InverseMoment

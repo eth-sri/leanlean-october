@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalMass
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
@@ -14,10 +14,10 @@ open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRad
 open CenteredMomentCommonExceptionalCost CenteredMomentCommonAllocationSum
 open CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmplitude
 open CenteredMomentCommonExceptionalMass CenteredMomentFiniteProfileExceptional
-local notation "O" => HeckeFamily.O
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι] {wlo whi:ℝ}
-lemma common_pair_profile_bound (Sprofile:Finset (ℕ×ℕ)) (s v:Input ι)(C D R:Ideal O)(hC:C≠0)(hD:D≠0)
-    (B:actualAllocations s.pools C)(E:actualAllocations v.pools D)(p q:Profiles wlo whi)(J:ℕ):
+lemma common_pair_profile_bound (Sprofile:Finset (ℕ×ℕ)) (s v:Input ι) C D R (hC:C≠0)(hD:D≠0)
+     B  E (p q:Profiles wlo whi) J :
     (‖commonScalar s C R B‖*‖commonScalar v D R E‖)*
       profileMass Sprofile (commonData s C R B) (commonData v D R E) p q J≤
         profileMass Sprofile s.toData v.toData p q J*frozenProfile s*frozenProfile v/
@@ -35,7 +35,7 @@ lemma common_pair_profile_bound (Sprofile:Finset (ℕ×ℕ)) (s v:Input ι)(C D 
   convert hh using 1 <;> dsimp only [profileMass,commonData] <;> ring
 
 theorem common_profile_mass (δ:ℝ)(hδ:0<δ):
-    ∃K:ℝ,0<K ∧ ∀(Sprofile:Finset (ℕ×ℕ))(s v:Input ι)(C D R:Ideal O),C≠0 → D≠0 → ∀(p q:Profiles wlo whi)(J:ℕ),
+    ∃K:ℝ,0<K ∧ ∀(Sprofile:Finset (ℕ×ℕ))(s v:Input ι)(C D R:Ideal HeckeFamily.O),C≠0 → D≠0 → ∀(p q:Profiles wlo whi)(J:ℕ),
       (∑B:actualAllocations s.pools C,∑E:actualAllocations v.pools D,
         (‖commonScalar s C R B‖*‖commonScalar v D R E‖)*
           profileMass Sprofile (commonData s C R B) (commonData v D R E) p q J)≤
@@ -64,6 +64,6 @@ theorem common_profile_mass (δ:ℝ)(hδ:0<δ):
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 
-end
+
 
 end OAI

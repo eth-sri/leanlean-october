@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedPhysicalEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -59,6 +59,6 @@ theorem original_reopened_marked_zero_bound (ε : ℝ) (hε : 0<ε) :
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

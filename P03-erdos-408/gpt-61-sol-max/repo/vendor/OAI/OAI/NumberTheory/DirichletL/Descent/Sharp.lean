@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.HybridBound
 public import OAI.NumberTheory.DirichletL.CubicSieve.Sharp
@@ -10,20 +11,24 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
+
+
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+
+theorem hybrid_sharp_cubic_factor     :
     ∃ C : ℝ, 0 < C ∧ ∀ K N B L : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ L →
       (K * N * B) ^ (ε / 2) * CubicSieve.sieveNorm N (2 * L) ≤
         C * (K * N * B * L) ^ ε * (N + L + (N * L) ^ (2 / 3 : ℝ)) := by
   obtain ⟨C, hC, hb⟩ := CubicSieve.sieveNorm_sharp (ε / 2) (by positivity)
   refine ⟨2 * C * (2 : ℝ) ^ (ε / 2), by positivity, ?_⟩
   intro K N B L hK hN hB hL
-  have hK0 : 0 < K := by linarith
-  have hN0 : 0 < N := by linarith
-  have hB0 : 0 < B := by linarith
-  have hL0 : 0 < L := by linarith
+  
+  
+  
+  
   let Q := K * N * B * L
   have hQ0 : 0 < Q := by dsimp only [Q]; positivity
   have hKNB : K * N * B ≤ Q := le_mul_of_one_le_right (by positivity) hL
@@ -45,9 +50,7 @@ theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
   have hcost : (K * N * B) ^ (ε / 2) * (N * L) ^ (ε / 2) ≤ Q ^ ε := by
     calc
       _ ≤ Q ^ (ε / 2) * Q ^ (ε / 2) := by
-        exact mul_le_mul (Real.rpow_le_rpow (by positivity) hKNB (by positivity))
-          (Real.rpow_le_rpow (by positivity) hNL (by positivity))
-          (Real.rpow_nonneg (by positivity) _) (Real.rpow_nonneg hQ0.le _)
+        gcongr <;> first | assumption | positivity | linarith
       _ = _ := by rw [← Real.rpow_add hQ0]; congr 1; ring
   have hh := hb N (2 * L) hN (by linarith)
   calc
@@ -63,10 +66,10 @@ theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
       ring
     _ ≤ _ := by gcongr
 
-theorem hybridRow_energy (ε : ℝ) (hε : 0 < ε) :
+theorem hybridRow_energy     :
     ∃ C : ℝ, 0 < C ∧ ∀ K N B L : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ L →
-    ∀ (rows nset bset Pset : Finset (Ideal Eis))
-      (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ),
+    ∀ (rows nset bset Pset : Finset (Ideal ActualEisensteinCubic.O))
+      (a : Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n : ℝ) ≤ N) →
       (∀ b ∈ bset, primaryGenerator b ≠ 0 ∧ (Ideal.absNorm b : ℝ) ≤ B) →
@@ -85,6 +88,8 @@ theorem hybridRow_energy (ε : ℝ) (hε : 0 < ε) :
   convert hh using 1 <;> ring
 
 end
+
+
 end SevenEighths.InverseMoment
 
 end OAI

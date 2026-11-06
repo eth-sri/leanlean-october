@@ -20,11 +20,14 @@ open CenteredMomentSupport CenteredMomentHeckeColumnWindow
 open CenteredMomentSecondCanonicalLedger CenteredMomentForcing
 open CenteredMomentSecondSectorFrequency CenteredMomentFirstWholeKernel
 open CenteredMomentSmooth
-local notation "O" => ActualEisensteinCubic.O
 
-theorem physicalBlock_effective_window (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
+
+section
+variable (η : Character) (t : ℝ) (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D) (U : Finset (CommonIndex C D)) (R : ℝ) (rows : Finset ActualEisensteinCubic.O) (W : 𝓢(ℝ,ℂ)) (Z x c d g u v f p K H a k₀ h₀ A B : ℝ) (hZ : 1<Z)
+
+theorem physicalBlock_effective_window    
+             
+              (n:Fin 4→ℤ)
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
     secondEffectiveScale C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K
       <dyadicScale (n 0) := by
@@ -39,14 +42,16 @@ theorem physicalBlock_effective_window (η:Character) (t:ℝ)
       (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hw).1).1).1).2
   · exact False.elim (hz rfl)
 
-lemma logb_one_add_sixth (Z x:ℝ) (hZ:1<Z) (hx:0<x) :
+include hZ in
+lemma logb_one_add_sixth     (hx:0<x) :
     Real.logb Z x/6≤Real.logb Z (1+x) := by
   have hp:0≤Real.logb Z (1+x):=Real.logb_nonneg hZ (by linarith)
   have hm:=Real.logb_le_logb_of_le hZ hx (show x≤1+x by linarith)
   linarith
 
-theorem scalar_log_ledger (Z c d g u v f p K H a k₀ h₀ A B:ℝ)
-    (hZ:1<Z) (hc:0<c) (hd:0<d) (hg:0<g) (hu:0<u) (hv:0<v)
+include hZ in
+theorem scalar_log_ledger  
+      (hc:0<c) (hd:0<d) (hg:0<g) (hu:0<u) (hv:0<v)
     (hf:0<f) (hp:0<p) (hK:0<K) (hH:0<H) (ha:0<a)
     (hk₀:0<k₀) (hh₀:0<h₀) (hA:0<A) (hB:0<B)
     (hk:K*g*v/(c*d)≤k₀) (hleft:a*H/c≤A) (hright:a*H/d≤B) :
@@ -73,11 +78,13 @@ theorem scalar_log_ledger (Z c d g u v f p K H a k₀ h₀ A B:ℝ)
     logb_sqrt Z c hc,logb_sqrt Z d hd,logb_sqrt Z A hA,logb_sqrt Z B hB]
   linarith
 
-def forcingNorm (C D:Ideal O) (U:Finset (CommonIndex C D)) : ℝ :=
+end
+
+def forcingNorm (C D) (U:Finset (CommonIndex C D)) : ℝ :=
   Ideal.absNorm (forcingIdeal (fun P:CommonIndex C D=>P.val)
     (leftExponent C D) (rightExponent C D) (nonunitPartitionSet C D U))
 
-def saving (C D:Ideal O) (U:Finset (CommonIndex C D)) (Z:ℝ) : ℝ :=
+def saving (C D) (U:Finset (CommonIndex C D)) (Z:ℝ)  :=
   Real.logb Z (C.absNorm:ℝ)+Real.logb Z (D.absNorm:ℝ)-
     5*Real.logb Z (Ideal.absNorm (Ideal.span {commonFrequencyGenerator C D}):ℝ)/6-
     Real.logb Z (Ideal.absNorm (∏ P:CommonIndex C D,P.val):ℝ)+
@@ -85,15 +92,19 @@ def saving (C D:Ideal O) (U:Finset (CommonIndex C D)) (Z:ℝ) : ℝ :=
     Real.logb Z (Ideal.absNorm (Ideal.span {nonunitFrequencyGenerator C D U}):ℝ)/6+
     Real.logb Z (forcingNorm C D U)/3
 
-def centralPhysicalCost (C D:Ideal O) (U:Finset (CommonIndex C D))
-    (K H:ℝ) (n:Fin 4→ℤ) : ℝ :=
+def centralPhysicalCost (C D) (U:Finset (CommonIndex C D))
+    (K H:ℝ) (n:Fin 4→ℤ)  :=
   (1/H)*outerScalar C D K n*normalizer C D U*
     (dyadicScale (n 1))^(1/6:ℝ)/
       (1+dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3)))*
     (H^2/((C.absNorm:ℝ)*D.absNorm))*(Ideal.absNorm (∏ P:CommonIndex C D,P.val):ℝ)/
     (forcingNorm C D U)^(1/3:ℝ)
 
-lemma common_product_pos (C D:Ideal O) (hC:Supported C) (V:Finset (CommonIndex C D)) :
+section
+variable (η : Character) (t : ℝ) (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D) (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D)) (w : ActualEisensteinCubic.O) (hpart : canonicalPartition C D U w) (hcorr : idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0) (R : ℝ) (rows : Finset ActualEisensteinCubic.O) (hrows : ∀z∈rows,z≠0) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (n : Fin 4→ℤ) (hK : 0<K) (H a Z : ℝ) (hH : 0<H)
+
+include hC in
+lemma common_product_pos     (V:Finset (CommonIndex C D)) :
     (0:ℝ)<Ideal.absNorm (∏P∈V,P.val) := by
   rw [map_prod,Nat.cast_prod]
   apply Finset.prod_pos
@@ -102,11 +113,12 @@ lemma common_product_pos (C D:Ideal O) (hC:Supported C) (V:Finset (CommonIndex C
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
     (commonPrime_supported C D hC P).1)
 
-theorem actual_physical_log_ledger (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
-    (hK:0<K) (H a Z:ℝ) (hH:0<H) (ha:0<a) (hZ:1<Z)
-    (hlower:∀I:Ideal O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
+include hK hH in
+theorem actual_physical_log_ledger    
+             
+               
+          (ha:0<a) (hZ:1<Z)
+    (hlower:∀I:Ideal ActualEisensteinCubic.O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
     Real.logb Z (centralPhysicalCost C D U K H n)≤
       Real.logb Z H/3+5*Real.logb Z K/6-2*Real.logb Z a/3-saving C D U Z := by
@@ -152,8 +164,9 @@ theorem actual_physical_log_ledger (η:Character) (t:ℝ)
   rw [centralPhysicalCost,normalizer,actual_partitionNormalizer C D hC,outerScalar]
   field_simp
 
-lemma centralPhysicalCost_pos (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (U:Finset (CommonIndex C D)) (K H:ℝ) (hK:0<K) (hH:0<H) (n:Fin 4→ℤ) :
+include hC hD in
+lemma centralPhysicalCost_pos      
+        (hK:0<K) (hH:0<H)  n  :
     0<centralPhysicalCost C D U K H n := by
   have hc:(0:ℝ)<C.absNorm:=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC.1)
@@ -169,11 +182,12 @@ lemma centralPhysicalCost_pos (C D:Ideal O) (hC:Supported C) (hD:Supported D)
   unfold centralPhysicalCost outerScalar
   positivity
 
-theorem actual_physical_cost_bound (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
-    (hK:0<K) (H a Z:ℝ) (hH:0<H) (ha:0<a) (hZ:1<Z)
-    (hlower:∀I:Ideal O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
+include hK hH in
+theorem actual_physical_cost_bound    
+             
+               
+          (ha:0<a) (hZ:1<Z)
+    (hlower:∀I:Ideal ActualEisensteinCubic.O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
     centralPhysicalCost C D U K H n≤
       H^(1/3:ℝ)*K^(5/6:ℝ)*a^(-2/3:ℝ)*Z^(-saving C D U Z) := by
@@ -185,14 +199,15 @@ theorem actual_physical_cost_bound (η:Character) (t:ℝ)
     Real.logb_rpow_eq_mul_logb_of_pos ha,Real.logb_rpow (by linarith : 0<Z) hZ.ne']
   linarith
 
-theorem actual_canonical_physical_cost (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
-    (w:O) (hpart:canonicalPartition C D U w)
-    (hcorr:idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0)
-    (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
-    (hK:0<K) (H a Z:ℝ) (hH:0<H) (ha:0<a) (hZ:1<Z)
-    (hlower:∀I:Ideal O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
+include hCD hpart hcorr in
+theorem actual_canonical_physical_cost    
+             
+       
+       
+     
+             n 
+    (hK:0<K)  H a Z  (hH:0<H) (ha:0<a) (hZ:1<Z)
+    (hlower:∀I:Ideal ActualEisensteinCubic.O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
     centralPhysicalCost C D U K H n≤
       H^(1/3:ℝ)*K^(5/6:ℝ)*a^(-2/3:ℝ)*
@@ -202,11 +217,12 @@ theorem actual_canonical_physical_cost (η:Character) (t:ℝ)
   exact (actual_physical_cost_bound η t S β C D hC hD U R rows W K n hK H a Z hH ha hZ hlower hne).trans
     (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)) (by positivity))
 
-theorem physicalBlock_canonical_witness (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
-    (R:ℝ) (rows:Finset O) (hrows:∀z∈rows,z≠0) (W:𝓢(ℝ,ℂ))
-    (K:ℝ) (hK:0<K) (n:Fin 4→ℤ)
+include hCD hrows hK in
+theorem physicalBlock_canonical_witness    
+             
+       
+           
+        (n:Fin 4→ℤ)
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
     ∃z∈rows,canonicalPartition C D U (nonunitFrequencyGenerator C D U*z) ∧
       idealCorrelation C D hC hD
@@ -222,7 +238,7 @@ theorem physicalBlock_canonical_witness (η:Character) (t:ℝ)
     exact hr rfl
   refine ⟨z,hzr,hpart,?_⟩
   intro hc
-  let F:O→Ideal O→Ideal O→ℂ:=fun _ I J=>
+  let F:ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ:=fun _ I J=>
     wholeKernel W (fun _=>CenteredMomentLogDyadic.logAnnulus)
       (dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3)))
       (Real.log (secondEffectiveScale C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K/
@@ -234,12 +250,13 @@ theorem physicalBlock_canonical_witness (η:Character) (t:ℝ)
     (by simpa only [mul_assoc] using hc)
   exact (right_ne_zero_of_mul hz) (by simpa only [sectorFrequency,F] using he)
 
-theorem original_block_physical_cost (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
-    (R:ℝ) (rows:Finset O) (hrows:∀z∈rows,z≠0) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
-    (hK:0<K) (H a Z:ℝ) (hH:0<H) (ha:0<a) (hZ:1<Z)
-    (hlower:∀I:Ideal O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
+include hCD hrows hK in
+theorem original_block_physical_cost    
+             
+       
+               
+       H a Z  (hH:0<H) (ha:0<a) (hZ:1<Z)
+    (hlower:∀I:Ideal ActualEisensteinCubic.O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
     centralPhysicalCost C D U K H n≤
       H^(1/3:ℝ)*K^(5/6:ℝ)*a^(-2/3:ℝ)*
@@ -247,6 +264,8 @@ theorem original_block_physical_cost (η:Character) (t:ℝ)
   obtain ⟨z,hz,hpart,hcorr⟩:=physicalBlock_canonical_witness η t S β C D hC hD hCD U R rows hrows W K hK n hne
   exact actual_canonical_physical_cost η t S β C D hC hD hCD U _ hpart hcorr R rows W K n
     hK H a Z hH ha hZ hlower hne
+
+end
 
 end SevenEighths.CenteredMomentSecondPhysicalLedger
 

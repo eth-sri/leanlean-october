@@ -15,21 +15,27 @@ def localGamma (p : O) (hp : p ≠ 0) [(Ideal.span {p} : Ideal O).IsMaximal]
     (hg : goodLambda ∉ Ideal.span {p}) (r : ℕ) : ℂ :=
   ConcreteBreveE.normalizedTraceGauss p hp (actualSextic (Ideal.span {p}) hg ^ r)
 
-lemma localGamma_norm_one (p : O) (hp : p ≠ 0) [(Ideal.span {p} : Ideal O).IsMaximal]
+lemma localGamma_norm_one  p   hp  [(Ideal.span {p} : Ideal O).IsMaximal]
     (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    (r : ℕ) (hr : r ≠ 0) (hr6 : r < 6) : ‖localGamma p hp hg r‖ = 1 :=
+     r  (hr : r ≠ 0) (hr6 : r < 6) : ‖localGamma p hp hg r‖ = 1 :=
   MixedGaussConversion.norm_localGauss p hp hg hc r hr hr6
 
-lemma actualSextic_six (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) (hc : ringChar (O ⧸ P) ≠ 2) : actualSextic P hg ^ 6 = 1 :=
+section
+variable (P : Ideal O) [P.IsMaximal] (hg : goodLambda ∉ P)
+include P hg
+
+lemma actualSextic_six    
+      (hc : ringChar (O ⧸ P) ≠ 2) : actualSextic P hg ^ 6 = 1 :=
   (actualSextic_pow_eq_one_iff P hg hc 6).mpr (by decide)
 
-lemma actualSextic_neg_one_sq (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) : actualSextic P hg (-1)^2 = 1 := by
+lemma actualSextic_neg_one_sq    
+      : actualSextic P hg (-1)^2 = 1 := by
   rw [← map_pow]
   norm_num
 
-theorem localGamma_one_two_signal (p : O) (hp : p ≠ 0)
+end
+
+theorem localGamma_one_two_signal  p   hp 
     [(Ideal.span {p} : Ideal O).IsMaximal]
     (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (hprimary : goodLambda^2 ∣ p-1) :
@@ -40,22 +46,28 @@ theorem localGamma_one_two_signal (p : O) (hp : p ≠ 0)
     breveGamma1, breveGamma2, MixedGaussConversion.localG, FiniteGaussPhase.angularFactor,
     neg_div] using he
 
-lemma actualSextic_pow_six_mul_add (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) (hc : ringChar (O ⧸ P) ≠ 2) (r j : ℕ) :
+section
+variable (P : Ideal O) [P.IsMaximal] (hg : goodLambda ∉ P) (hc : ringChar (O ⧸ P) ≠ 2)
+include P hg hc
+
+lemma actualSextic_pow_six_mul_add    
+         r j  :
     actualSextic P hg ^ (6*r+j) = actualSextic P hg ^ j := by
   rw [pow_add, pow_mul, actualSextic_six P hg hc, one_pow, one_mul]
 
-lemma actualSextic_fifth_inverse (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) (hc : ringChar (O ⧸ P) ≠ 2) :
+lemma actualSextic_fifth_inverse    
+        :
     actualSextic P hg ^ 5 = (actualSextic P hg)⁻¹ := by
   symm
   apply inv_eq_of_mul_eq_one_right
   rw [← pow_succ']
   exact actualSextic_six P hg hc
 
-lemma primeGauss_inverse_pair (p : O) (hp : p ≠ 0)
+end
+
+lemma primeGauss_inverse_pair  p   hp 
     [(Ideal.span {p} : Ideal O).IsMaximal]
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (hχ : χ ≠ 1) :
+     χ  (hχ : χ ≠ 1) :
     primeGauss p hp χ 1 * primeGauss p hp χ⁻¹ 1 =
       χ (-1) * (Ideal.absNorm (Ideal.span {p}):ℂ) := by
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _

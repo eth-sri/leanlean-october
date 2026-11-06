@@ -1,5 +1,4 @@
 module
-
 public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 public import OAI.NumberTheory.DirichletL.Mellin.ExponentialSmoothing
 public import OAI.NumberTheory.DirichletL.Mellin.LogProfiles
@@ -286,6 +285,3 @@ public import OAI.NumberTheory.DirichletL.GaussSum.ActiveReindexing
 public import OAI.NumberTheory.DirichletL.RowCompletion.ReflectedFibers
 public import OAI.NumberTheory.DirichletL.RowCompletion.BranchDecoding
 public import OAI.NumberTheory.DirichletL.RowCompletion.ZeroFreeRegion
-
-@[expose] public section
-

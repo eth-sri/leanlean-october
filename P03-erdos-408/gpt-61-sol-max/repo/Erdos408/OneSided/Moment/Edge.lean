@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.Chain
 public import Erdos408.OneSided.Moment.Edge.Measure
@@ -42,13 +43,13 @@ variable (q A₀ x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) (B : ℕ)
 
 variable {x d Y d₀ u v r B} in
 /-- The kernel shift `t - b + a` of an edge, with `t = det/D`. -/
-def edgeShift (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : ℤ :=
+def edgeShift (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   edgeDet s c / edgePad s c - (∏ i, edgeSrc s c i (Fin.last _) : ℕ) + (∏ i, (c.2.2.2.1 i).1 : ℕ)
 
 open scoped Classical in
 /-- The real amplitude of the edge coefficient: everything but the kernel
 `[t - b + a = 0] - ∫_𝔐 e(θ(t - b + a))`; zero unless the choice is admissible. -/
-def edgeAmp (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : ℝ :=
+def edgeAmp (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   if EdgeValid x d Y d₀ u v r B s c then
     ((((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
       pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 *
@@ -62,8 +63,8 @@ def edgeAmp (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y 
   else 0
 
 /-- The edge coefficient is the amplitude times the kernel. -/
-theorem chainEdgeCoef_eq (N : ℕ) (s : ChainState x d Y d₀ u v r B)
-    (c : EdgeChoice x d Y d₀ u v r) :
+theorem chainEdgeCoef_eq  N   s 
+     c  :
     chainEdgeCoef q A₀ x d Y d₀ u v r B N s c =
       (edgeAmp q x d Y d₀ u v r B N s c : ℂ) *
         ((if edgeShift s c = 0 then 1 else 0) - arcIntegral A₀ x Y (edgeShift s c)) := by
@@ -75,7 +76,7 @@ theorem chainEdgeCoef_eq (N : ℕ) (s : ChainState x d Y d₀ u v r B)
   · simp [hv]
 
 /-- The edge choices with stored groups `S` and promoted groups `I`. -/
-def edgePartChoices (S I : Finset (Fin K)) : Finset (EdgeChoice x d Y d₀ u v r) :=
+def edgePartChoices (S I : Finset (Fin K))  :=
   (edgeChoices x d Y d₀ u v r).filter fun c =>
     c.2.1 = S ∧ univ.filter (fun i => (c.2.2.2.1 i).2 = true) = I
 
@@ -100,7 +101,7 @@ def edgeComp (N : ℕ) (S I : Finset (Fin K)) :
     (chainEdgeOut x d Y d₀ u v r B)
 
 /-- The edge is the clean edge plus the raw and comparison parts of the dirty pieces. -/
-theorem chainEdge_eq_parts (N : ℕ) (f : ChainState x d Y d₀ u v r B → ℂ) :
+theorem chainEdge_eq_parts  N   f  :
     chainEdge q A₀ x d Y d₀ u v r B N f =
       edgeClean q A₀ x d Y d₀ u v r B N f +
         ∑ SI ∈ (univ : Finset (Finset (Fin K) × Finset (Fin K))).erase (∅, ∅),
@@ -114,8 +115,7 @@ theorem chainEdge_eq_parts (N : ℕ) (f : ChainState x d Y d₀ u v r B → ℂ)
         chainEdgeCoef q A₀ x d Y d₀ u v r B N s c * f (chainEdgeOut x d Y d₀ u v r B s c) := by
     rw [chainEdge, choiceOp, ← sum_fiberwise (edgeChoices x d Y d₀ u v r)
       (fun c => (c.2.1, univ.filter fun i => (c.2.2.2.1 i).2 = true))]
-    refine sum_congr rfl fun SI _ => ?_
-    rw [edgePartChoices, filter_congr fun c _ => Prod.ext_iff]
+    rfl
   -- the clean piece keeps the full kernel; each dirty piece splits into raw and comparison
   rw [hfib, ← add_sum_erase _ _ (mem_univ (∅, ∅))]
   simp only [Pi.add_apply, Finset.sum_apply]
@@ -128,9 +128,13 @@ theorem chainEdge_eq_parts (N : ℕ) (f : ChainState x d Y d₀ u v r B → ℂ)
 
 end Parts
 
+section
+variable {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g)
+
+
 /-- The weighted square norm is the square of a Euclidean norm, with weights `√μ`. -/
 theorem wnormSq_eq_norm_sq {ι : Type*} [Fintype ι] {μ : ι → ℝ} (hμ : ∀ i, 0 ≤ μ i)
-    (g : ι → ℂ) :
+     g  :
     wnormSq μ g =
       ‖(WithLp.toLp 2 fun i => (Real.sqrt (μ i) : ℂ) * g i : EuclideanSpace ℂ ι)‖ ^ 2 := by
   rw [EuclideanSpace.norm_sq_eq, wnormSq]
@@ -177,7 +181,7 @@ theorem NormLe.sum {ι κ γ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ
 
 /-- Norm bounds add: `‖(S + T) f‖ ≤ (a + b) ‖f‖`. -/
 theorem NormLe.add {ι κ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ} {ν : κ → ℝ}
-    (hμ : ∀ i, 0 ≤ μ i) {S T : (κ → ℂ) → ι → ℂ} {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b)
+    (hμ : ∀ i, 0 ≤ μ i) {S T : (κ → ℂ) → ι → ℂ}  {a b}  (ha : 0 ≤ a) (hb : 0 ≤ b)
     (hS : NormLe μ ν S a) (hT : NormLe μ ν T b) :
     NormLe μ ν (fun f => S f + T f) (a + b) := by
   have h := NormLe.sum hμ (univ : Finset Bool) (T := fun k => bif k then S else T)
@@ -187,37 +191,39 @@ theorem NormLe.add {ι κ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ} {
 
 /-- A norm bound can be raised, for a nonnegative input measure. -/
 theorem NormLe.mono {ι κ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ} {ν : κ → ℝ}
-    (hν : ∀ j, 0 ≤ ν j) {T : (κ → ℂ) → ι → ℂ} {a b : ℝ} (ha : 0 ≤ a) (hab : a ≤ b)
+    (hν : ∀ j, 0 ≤ ν j)  {T}  {a b : ℝ} (ha : 0 ≤ a) (hab : a ≤ b)
     (hT : NormLe μ ν T a) : NormLe μ ν T b := fun f =>
   (hT f).trans (mul_le_mul_of_nonneg_right (pow_le_pow_left₀ ha hab 2)
     (sum_nonneg fun j _ => mul_nonneg (hν j) (sq_nonneg _)))
 
+include hq hq₁ hC hD hCX halo hahi hg in
 /-- M6, the clean edge: for `B ≤ L³`, its norm is at most `L^{-G - 1/2}`, uniformly in the root
 box. -/
-theorem eventually_edgeClean_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5)
-    (hg : 0 < g) :
+theorem eventually_edgeClean_normLe      
+             
+      :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
         d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
-        NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
-          (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
+        NormLe (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
+          (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
           (edgeClean q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N)
           (Real.log x ^ (-(edgePrec Dstar C + 1 / 2))) :=
   eventually_cleanOp_normLe hq hq₁ hC hD hCX halo hahi hg
 
+include hq hq₁ hC hD halo hK hg in
 /-- M7, the dirty raw parts: for `K ≥ K₀` and `B ≤ L³`, each has norm at most `L^{-G - 1}`. -/
-theorem eventually_edgeRaw_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (hC : 0 < C) (hD : 0 < Dstar) (halo : 1 / 10 < alo) (hK : bandThreshold Dstar C ≤ K)
-    (hg : 0 < g) :
+theorem eventually_edgeRaw_normLe      
+           
+      :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
         d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
       ∀ S I : Finset (Fin K), (S, I) ≠ (∅, ∅) →
-        NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
-          (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
+        NormLe (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
+          (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
           (edgeRaw q x d (2 ^ j) (2 ^ k) u v r B N S I)
           (Real.log x ^ (-(edgePrec Dstar C + 1))) := by
   -- the raw part is the choice operator of `rawCoef` on the piece (`Moment/Edge/DirtyRaw.lean`)
@@ -225,16 +231,17 @@ theorem eventually_edgeRaw_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (h
     with x hx d hd j k u v r hu _ _ _ _ _ B N hB hN S I hSI
   exact hx d hd j k u v r hu B N hB hN S I hSI
 
+include hq hq₁ halo hg in
 /-- M8, the dirty comparison parts: for `B ≤ L³`, each has norm at most `L^{-G - 1}`. -/
-theorem eventually_edgeComp_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (halo : 1 / 10 < alo) (hg : 0 < g) :
+theorem eventually_edgeComp_normLe      
+        :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
         d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
       ∀ S I : Finset (Fin K), (S, I) ≠ (∅, ∅) →
-        NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
-          (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
+        NormLe (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
+          (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
           (edgeComp q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N S I)
           (Real.log x ^ (-(edgePrec Dstar C + 1))) := by
   -- `edgeComp` is `compOp` of `Moment/Edge/DirtyComp.lean`, with `Y = 2^j ≥ 1`, `d₀ = 2^k > 0`
@@ -273,18 +280,19 @@ private theorem eventually_edgeParts_le (G M : ℝ) :
         mul_le_mul_of_nonneg_left (by linarith) (Real.rpow_nonneg hL0.le _)
     _ = L ^ (-G) := mul_one _
 
+include hq hq₁ hC hD hCX halo hahi hK hg in
 /-- M9 from M6–M8: for `K ≥ K₀` and `B ≤ L³`, the edge has norm at most `L^{-G}`. Split it by
 `chainEdge_eq_parts` into the clean edge and the raw and comparison parts of the `4^K - 1`
 dirty pieces, and add their bounds by Minkowski. -/
-theorem eventually_chainEdge_normLe_of_parts {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q)
-    (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo)
-    (hahi : ahi < 1 / 5) (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g) :
+theorem eventually_chainEdge_normLe_of_parts    
+             
+          :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
         d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
-        NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
-          (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
+        NormLe (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
+          (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
           (chainEdge q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N)
           (Real.log x ^ (-edgePrec Dstar C)) := by
   set G := edgePrec Dstar C
@@ -300,8 +308,8 @@ theorem eventually_chainEdge_normLe_of_parts {q C CX alo ahi Dstar g : ℝ} (hq 
   subst hN
   have hc₁ : 0 ≤ Real.log x ^ (-(G + 1)) := Real.rpow_nonneg hL _
   -- each dirty piece has norm at most `2 L^{-G - 1}`
-  have hdirty : ∀ SI ∈ dirty, NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B _ s)
-      (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B _ s)
+  have hdirty : ∀ SI ∈ dirty, NormLe (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B _)
+      (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B _)
       (fun f => edgeRaw q x d (2 ^ j) (2 ^ k) u v r B _ SI.1 SI.2 f +
         edgeComp q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B _ SI.1 SI.2 f)
       (Real.log x ^ (-(G + 1)) + Real.log x ^ (-(G + 1))) := fun SI hSI =>
@@ -318,5 +326,7 @@ theorem eventually_chainEdge_normLe_of_parts {q C CX alo ahi Dstar g : ℝ} (hq 
       fun f => _ from funext (chainEdge_eq_parts q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B _)]
   exact NormLe.mono hμ' (add_nonneg (Real.rpow_nonneg hL _)
     (mul_nonneg (Nat.cast_nonneg _) (mul_nonneg zero_le_two hc₁))) hfin hsum
+
+end
 
 end Erdos408.OneSided

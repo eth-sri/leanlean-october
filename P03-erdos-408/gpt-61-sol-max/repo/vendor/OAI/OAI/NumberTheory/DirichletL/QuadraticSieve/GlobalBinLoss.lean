@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.HyperbolicVolume
 public import OAI.NumberTheory.DirichletL.CubicSieve.UniformTransfer
@@ -11,73 +12,73 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 namespace CanonicalQuadraticSieve
 
-theorem list_prod_le_power (xs : List ℝ) (U : ℝ) (hU : 0≤U)
+theorem list_prod_le_power (xs : List ℝ)  U  (hU : 0≤U)
     (hxs : ∀x∈xs, 0≤x ∧ x≤U) : xs.prod≤U^xs.length := by
   induction xs with
   | nil => simp
@@ -88,14 +89,14 @@ theorem list_prod_le_power (xs : List ℝ) (U : ℝ) (hU : 0≤U)
     have hp : 0≤xs.prod := List.prod_nonneg (fun y hy => (ht y hy).1)
     exact (mul_le_mul hx.2 (ih ht) hp hU).trans_eq (mul_comm _ _)
 
-theorem list_prod_budget (xs budget : List ℝ) (U : ℝ) (hU : 1≤U)
+theorem list_prod_budget (xs budget : List ℝ)  U  (hU : 1≤U)
     (hbudget : ∀x∈budget, 0≤x ∧ x≤U) (hxs : ∀x∈xs, x∈budget) (hlen : xs.length≤8) :
     xs.prod≤U^8 := by
   apply (list_prod_le_power xs U (by linarith) (fun x hx => hbudget x (hxs x hx))).trans
   exact pow_le_pow_right₀ hU hlen
 
 theorem poisson_nine_terms_box
-    (d lk ln f e vh vz dv uh du lat cd cs ct cp M N T a b eD eS tail U S : ℝ)
+     d lk ln f e vh vz dv uh du lat cd cs ct cp M N T a b eD eS tail U S 
     (hU : 1≤U) (hS : 0≤S)
     (hbudget : ∀x∈([d,lk,ln,f,e,vh,vz,dv,uh,du,lat,cd,cs,ct,cp] : List ℝ), 0≤x ∧ x≤U)
     (hM : 0≤M) (hN : 0≤N) (hT : 1≤T) (ha : 0≤a)
@@ -124,7 +125,7 @@ theorem poisson_nine_terms_box
     simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
   have hc5 : d*ct≤U^8 := by
     have hh := hp [d,ct] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
+    grind
   have hc6 : lk*uh*d*ln^2*f*e≤U^8 := by
     have hh := hp [lk,uh,d,ln,ln,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
     simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
@@ -133,7 +134,7 @@ theorem poisson_nine_terms_box
     simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
   have hc8 : lk*cs≤U^8 := by
     have hh := hp [lk,cs] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
+    grind
   have hc9 : uh*d^2*cp≤U^8 := by
     have hh := hp [uh,d,d,cp] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
     simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
@@ -156,11 +157,11 @@ theorem poisson_nine_terms_box
   have ht9 := mul_le_mul hc9 hb.2 hb.1 hU8
   nlinarith only [ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9, mul_nonneg hU8 hS]
 
-open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
+open   IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
 
 def poissonUnitBudget
     (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
-    {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0<deltaLoss) (ε : ℝ) (hε : 0<ε)
+    {α } (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0<deltaLoss) (ε : ℝ) (hε : 0<ε)
     (G : Ideal O) (K N : ℝ) (W : 𝓢(ℝ,ℂ)) : List ℝ :=
   [(IdealMobiusDivisorSum.idealDivisors G).card,
    (columnDyadicLength K+1:ℕ), (columnDyadicLength N+1:ℕ),
@@ -178,9 +179,9 @@ def poissonUnitBudget
    supportConstant ε hε*N^ε*CP*(K*N)^deltaLoss]
 
 theorem poissonComparisonMajorant_unit_box
-    (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ) (l A : ℕ)
-    {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0<deltaLoss) (ε : ℝ) (hε : 0<ε)
-    (G : Ideal O) (K N M T U S : ℝ) (W : 𝓢(ℝ,ℂ))
+     sD sS sT   CD CS CT CP   l A 
+    {α : ℝ} (hexp : HasSieveExponent α)  deltaLoss   hδ   ε   hε 
+     G   K N M T U S   W 
     (hK : 0≤K) (hN : 0<N) (hM : 0≤M) (hT : 1≤T) (hU : 1≤U) (hS : 0≤S)
     (hbudget : ∀x∈poissonUnitBudget sD sS sT CD CS CT CP hexp deltaLoss hδ ε hε G K N W, 0≤x ∧ x≤U)
     (hMS : M≤S) (hNS : N≤S) (hmid : T*Real.sqrt M*(2*K)^(α-1/2)≤S)
@@ -221,22 +222,14 @@ theorem poissonComparisonMajorant_unit_box
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
+ 
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
-end
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic
+ 
+ 
+ 
 open FirstPassCubeLabels (primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -245,33 +238,28 @@ variable {ι : Type*} [DecidableEq ι]
 
 end SecondPassArithmetic
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
+ 
+open scoped       MatrixGroups Matrix
 
 namespace CubicEisenstein
 
-def matrixGram (g : SL(2,ℂ)) : Matrix (Fin 2) (Fin 2) ℂ :=
+def matrixGram (g : SL(2,ℂ))  :=
   (g : Matrix (Fin 2) (Fin 2) ℂ)*star (g : Matrix (Fin 2) (Fin 2) ℂ)
 
-lemma matrixGram_right_unitary (g k : SL(2,ℂ)) (hk : k∈compactSubgroup) :
+lemma matrixGram_right_unitary  g k  (hk : k∈compactSubgroup) :
     matrixGram (g*k)=matrixGram g := by
   have hku : (k : Matrix (Fin 2) (Fin 2) ℂ)*star (k : Matrix (Fin 2) (Fin 2) ℂ)=1 :=
     Matrix.mem_unitaryGroup_iff.mp hk
   unfold matrixGram
   simp only [Matrix.SpecialLinearGroup.coe_mul,star_mul]
-  calc
-    _ = (g : Matrix (Fin 2) (Fin 2) ℂ)*
-        ((k : Matrix (Fin 2) (Fin 2) ℂ)*star (k : Matrix (Fin 2) (Fin 2) ℂ))*
-        star (g : Matrix (Fin 2) (Fin 2) ℂ) := by noncomm_ring
-    _ = _ := by rw [hku]; simp
+  grind
 
 def hyperbolicGram : HyperbolicSpace → Matrix (Fin 2) (Fin 2) ℂ :=
   Quotient.lift matrixGram (by
     intro g h hgh
     have hk : g⁻¹*h∈compactSubgroup := QuotientGroup.leftRel_apply.mp hgh
     have hh : h=g*(g⁻¹*h) := by group
-    rw [hh]
-    exact (matrixGram_right_unitary g (g⁻¹*h) hk).symm)
+    grind [matrixGram_right_unitary])
 
 lemma hyperbolicGram_continuous : Continuous hyperbolicGram := by
   apply Continuous.quotient_lift
@@ -293,32 +281,21 @@ lemma hyperbolicGram_injective : Function.Injective hyperbolicGram := by
           star ((g⁻¹:SL(2,ℂ)):Matrix (Fin 2) (Fin 2) ℂ)=1 := by
         simpa only [star_mul,star_one] using congrArg star hgi
       simp only [Matrix.SpecialLinearGroup.coe_mul,star_mul]
-      calc
-        _ = ((g⁻¹:SL(2,ℂ)):Matrix (Fin 2) (Fin 2) ℂ)*matrixGram h*
-            star ((g⁻¹:SL(2,ℂ)):Matrix (Fin 2) (Fin 2) ℂ) := by unfold matrixGram; noncomm_ring
-        _ = ((g⁻¹:SL(2,ℂ)):Matrix (Fin 2) (Fin 2) ℂ)*matrixGram g*
-            star ((g⁻¹:SL(2,ℂ)):Matrix (Fin 2) (Fin 2) ℂ) := by rw [hw]
-        _ = (((g⁻¹:SL(2,ℂ)):Matrix (Fin 2) (Fin 2) ℂ)*(g:Matrix (Fin 2) (Fin 2) ℂ))*
-            (star (g:Matrix (Fin 2) (Fin 2) ℂ)*star ((g⁻¹:SL(2,ℂ)):Matrix (Fin 2) (Fin 2) ℂ)) := by
-          unfold matrixGram
-          noncomm_ring
-        _ = 1 := by rw [hgi,hgis]; simp
+      grind [Matrix, matrixGram, star]
 
 instance hyperbolicT2Space : T2Space HyperbolicSpace :=
   T2Space.of_injective_continuous hyperbolicGram_injective hyperbolicGram_continuous
 
-def complexMatrixRow (g : SL(2,ℂ)) (i : Fin 2) : Fin 2 → ℂ := fun j => g i j
+def complexMatrixRow (g : SL(2,ℂ)) (i : Fin 2) : Fin 2 → ℂ := g i
 
-lemma complexMatrixRow_mul (g h : SL(2,ℂ)) (i : Fin 2) :
+lemma complexMatrixRow_mul  g h   i  :
     complexMatrixRow (g*h) i=rowOperator h (complexMatrixRow g i) := by
-  funext j
-  simp only [complexMatrixRow,rowOperator_apply,Matrix.SpecialLinearGroup.coe_mul,
-    Matrix.mul_apply,Matrix.vecMul,dotProduct]
+  rfl
 
-def matrixFrobenius (g : SL(2,ℂ)) : ℝ :=
+def matrixFrobenius (g : SL(2,ℂ))  :=
   rowEnergy (complexMatrixRow g 0)+rowEnergy (complexMatrixRow g 1)
 
-lemma matrixFrobenius_right_unitary (g k : SL(2,ℂ)) (hk : k∈compactSubgroup) :
+lemma matrixFrobenius_right_unitary  g k  (hk : k∈compactSubgroup) :
     matrixFrobenius (g*k)=matrixFrobenius g := by
   simp only [matrixFrobenius,complexMatrixRow_mul,rowEnergy_unitary k hk]
 
@@ -327,8 +304,7 @@ def hyperbolicFrobenius : HyperbolicSpace → ℝ :=
     intro g h hgh
     have hk : g⁻¹*h∈compactSubgroup := QuotientGroup.leftRel_apply.mp hgh
     have hh : h=g*(g⁻¹*h) := by group
-    rw [hh]
-    exact (matrixFrobenius_right_unitary g (g⁻¹*h) hk).symm)
+    grind [matrixFrobenius_right_unitary])
 
 lemma matrixFrobenius_continuous : Continuous matrixFrobenius := by
   have he (i j : Fin 2) : Continuous (fun g : SL(2,ℂ) => g i j) :=

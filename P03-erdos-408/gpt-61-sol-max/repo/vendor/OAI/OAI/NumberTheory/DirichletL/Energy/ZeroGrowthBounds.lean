@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceError
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -18,14 +18,14 @@ open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyZeroReflectionSup
 open CenteredMomentEnergyZeroReferenceError CenteredMomentOriginalRadialComparison
 open CenteredMomentNaturalRowSource
 open CenteredMomentAllocatedNaturalRadial
-local notation "O"=>HeckeFamily.O
+
 
 lemma actual_window_cap (Z b Bmask bΦ Mcap defect xi L Xlong:ℝ)
     (hZ:1<Z)(hb:0<b)(hx:0<Xlong)(hsupport:1≤b*Xlong)
     (hdefect:Real.logb Z (max 1 b)≤defect)
     (hL:Mcap+Bmask+defect+xi≤L)(hL0:0≤L)
     (s:NaturalState Z Bmask bΦ)(hs:s.width≤Mcap)
-    (Dlong:Finset (Ideal O))(hDl:Dlong∈(CompletedGauss.primeSupport s.puncture).powerset):
+    (Dlong:Finset (Ideal HeckeFamily.O))(hDl:Dlong∈(CompletedGauss.primeSupport s.puncture).powerset):
     max 0 (s.width-Real.logb Z (Xlong/((∏P∈Dlong,P).absNorm:ℝ))+xi)≤L:=by
   obtain ⟨hn,hncap⟩:=divisor_norm s Dlong hDl
   have hnp:0<((∏P∈Dlong,P).absNorm:ℝ):=zero_lt_one.trans_le hn
@@ -38,11 +38,11 @@ lemma actual_window_cap (Z b Bmask bΦ Mcap defect xi L Xlong:ℝ)
   rw [Real.logb_div hx.ne' hnp.ne']
   linarith
 
-theorem actual_deleted_short_mass (b:ℝ):
+theorem actual_deleted_short_mass  b :
     ∃C:ℝ,0<C ∧ ∀(Z Bmask bΦ L:ℝ)(s:NaturalState Z Bmask bΦ)
       (W:𝓢(ℝ,ℂ)),Function.support (W:ℝ→ℂ)⊆Set.Iic b→
       ∀t X:ℝ,0<X→X≤Z^L→
-      ∀D:Finset (Ideal O),D∈(CompletedGauss.primeSupport s.puncture).powerset→
+      ∀D:Finset (Ideal HeckeFamily.O),D∈(CompletedGauss.primeSupport s.puncture).powerset→
       radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false W
         (X/((∏P∈D,P).absNorm:ℝ)) 0 t)
         (effectiveState s).radial.keep s.radial.profile s.radial.scale≤
@@ -63,6 +63,6 @@ theorem actual_deleted_short_mass (b:ℝ):
 
 end SevenEighths.CenteredMomentEnergyZeroGrowthBounds
 
-end
+
 
 end OAI

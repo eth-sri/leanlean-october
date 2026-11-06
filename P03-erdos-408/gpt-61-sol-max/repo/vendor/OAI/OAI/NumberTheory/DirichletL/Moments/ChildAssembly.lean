@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.MobiusRegroup
 public import OAI.NumberTheory.DirichletL.Moments.FixedRay
@@ -14,22 +15,22 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentChildAssembly
 open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
 open CenteredMomentFixedRay CenteredMomentMobiusRegroup CenteredMomentRowNorm RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 
-def divisorCoefficient {α : Type*} (L : Ideal O) (a : α → O) (c : α → ℂ)
-    (χ : RayCharacter) (i : α) : ℂ :=
+
+def divisorCoefficient {α : Type*} (L : Ideal ActualEisensteinCubic.O) (a : α → ActualEisensteinCubic.O) (c : α → ℂ)
+    (χ : RayCharacter) (i : α)  :=
   if L ∣ Ideal.span {a i} then c i * rayCharacter χ (a i) else 0
 
-theorem rayCharacter_inverse_star (χ : RayCharacter) (a : O) :
+theorem rayCharacter_inverse_star  χ   a  :
     star (rayCharacter (χ⁻¹) a) = rayCharacter χ a := by
   change star ((χ⁻¹) (Ideal.Quotient.mk _ a)) = χ (Ideal.Quotient.mk _ a)
   rw [MulChar.star_apply', inv_inv]
 
-theorem divisor_pair_separation {α β : Type*} (L : Ideal O) (a : α → O) (b : β → O)
-    (c : α → ℂ) (d : β → ℂ) (D E h : O)
-    (hD : Supported (Ideal.span {D})) (hE : Supported (Ideal.span {E}))
+theorem divisor_pair_separation {α β : Type*}  L  (a : α → ActualEisensteinCubic.O) (b : β → ActualEisensteinCubic.O)
+    (c : α → ℂ) (d : β → ℂ)  D E h 
+     hD   hE 
     (ha : ∀ i, Supported (Ideal.span {a i})) (hb : ∀ j, Supported (Ideal.span {b j}))
-    (i : α) (j : β) (K : ℂ) :
+    (i : α) (j : β)  K  :
     (if L ∣ Ideal.span {a i} ∧ L ∣ Ideal.span {b j} then
       completeSupportExtension D E hD hE h (a i) (b j) * (c i * star (d j)) * K else 0) =
       actualCorrelation D E hD hE h *
@@ -47,8 +48,7 @@ theorem divisor_pair_separation {α β : Type*} (L : Ideal O) (a : α → O) (b 
       apply Finset.sum_congr rfl
       intro ξ _
       ring
-    · simp only [hi,hj,and_false,ite_false,divisorCoefficient,ite_true,zero_mul,star_zero,
-        mul_zero,Finset.sum_const_zero]
+    simp_all [divisorCoefficient]
   · simp only [hi,false_and,ite_false,divisorCoefficient,zero_mul,Finset.sum_const_zero,mul_zero]
 
 theorem pair_ray_fubini {α β γ δ : Type*} [Fintype γ] [Fintype δ]
@@ -69,7 +69,7 @@ theorem pair_ray_fubini {α β γ δ : Type*} [Fintype γ] [Fintype δ]
   simp only [mul_assoc]
 
 theorem finite_correlation_children {α β : Type*} (S : Finset α) (T : Finset β)
-    (D E : O) (a : α → O) (b : β → O)
+    (D E : ActualEisensteinCubic.O) (a : α → ActualEisensteinCubic.O) (b : β → ActualEisensteinCubic.O)
     (hD : Supported (Ideal.span {D})) (hE : Supported (Ideal.span {E}))
     (ha : ∀ i, Supported (Ideal.span {a i})) (hb : ∀ j, Supported (Ideal.span {b j}))
     (hpD : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ D - 1)
@@ -77,7 +77,7 @@ theorem finite_correlation_children {α β : Type*} (S : Finset α) (T : Finset 
     (hpa : ∀ i, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a i - 1)
     (hpb : ∀ j, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ b j - 1)
     (hcopA : ∀ i, IsCoprime (D * E) (a i)) (hcopB : ∀ j, IsCoprime (D * E) (b j))
-    (h : O) (c : α → ℂ) (d : β → ℂ) (K : α → β → ℂ) :
+    (h : ActualEisensteinCubic.O) (c : α → ℂ) (d : β → ℂ) (K : α → β → ℂ) :
     (∑ i ∈ S, ∑ j ∈ T,
       (if IsCoprime (a i) (b j) then
         actualCorrelation (D * a i) (E * b j)

@@ -14,10 +14,9 @@ namespace SevenEighths.CenteredMomentReflectedAnnuli
 open Set EisensteinSchwartzPoisson CenteredMomentSectorLocalization
 open CenteredMomentComparisonReflection LocalLogFourier
 
-def logWindow (v : ℝ) : ℂ := (annulus (Real.exp v) : ℂ)
+def logWindow (v : ℝ)  := (annulus (Real.exp v) : ℂ)
 
-theorem logWindow_smooth : ContDiff ℝ ∞ logWindow :=
-  Complex.ofRealCLM.contDiff.comp (annulus_smooth.comp Real.contDiff_exp)
+
 
 theorem logWindow_support : Function.support logWindow ⊆ Icc (-Real.log 4) 0 := by
   intro v hv
@@ -31,39 +30,20 @@ theorem logWindow_support : Function.support logWindow ⊆ Icc (-Real.log 4) 0 :
   · exact (Real.exp_lt_exp.mp (hl ▸ hlow)).le
   · exact (Real.exp_lt_one_iff.mp hhigh).le
 
-theorem logWindow_compact : HasCompactSupport logWindow :=
-  HasCompactSupport.of_support_subset_isCompact isCompact_Icc logWindow_support
 
-def reflected (W : ℝ→ℂ) (t : ℝ) : ℝ→ℂ :=
-  paperRadialFourier (CompletedHeight.normTwistedSource W t)
 
-theorem reflected_smooth (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (t : ℝ) :
-    ContDiffOn ℝ ∞ (reflected W t) (Ioi 0) := by
-  have he : (CompletedHeight.uniformTwistedSchwartz W a b ha hs hW t : ℝ→ℂ)=
-      CompletedHeight.normTwistedSource W t := by
-    funext x
-    exact CompletedHeight.uniformTwistedSchwartz_apply W a b ha hs hW t x
-  unfold reflected
-  rw [←he]
-  exact paperRadialFourier_contDiffOn _
 
-def annularProfile (F : ℝ→ℂ) (s x : ℝ) : ℂ := (annulus x:ℂ)*F (s*x)
 
-def logProfile (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (s : ℝ) (hs0 : 0<s) (t : ℝ) : 𝓢(ℝ,ℂ) :=
-  positiveLogProfile logWindow (reflected W t) s logWindow_compact logWindow_smooth
-    (reflected_smooth W a b ha hs hW t) hs0
 
-@[simp] theorem logProfile_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (s : ℝ) (hs0 : 0<s) (t v : ℝ) :
-    logProfile W a b ha hs hW s hs0 t v =
-      annularProfile (reflected W t) s (Real.exp v) := rfl
 
-theorem normalized_annular_term (η : HeckeFamily.Character) (F : ℝ→ℂ)
-    (s Y : ℝ) (hs : 0<s) (hY : 0<Y) :
+def annularProfile (F : ℝ→ℂ) (s x : ℝ)  := (annulus x:ℂ)*F (s*x)
+
+
+
+
+
+theorem normalized_annular_term  η   F 
+     s Y  (hs : 0<s) (hY : 0<Y) :
     HeckeDyadic.polynomial η false (fun x=>(annulus (x/s):ℂ)*F x) Y 0 0=
       (Real.sqrt s:ℂ)*HeckeDyadic.polynomial η false (annularProfile F s) (s*Y) 0 0 := by
   rw [polynomial_plain _ _ _ hY,polynomial_plain _ _ _ (mul_pos hs hY)]
@@ -76,15 +56,15 @@ theorem normalized_annular_term (η : HeckeFamily.Character) (F : ℝ→ℂ)
   have hs' : (Real.sqrt s:ℂ)≠0 := by exact_mod_cast (ne_of_gt (Real.sqrt_pos.2 hs))
   field_simp
 
-def annularMass (B : ℕ) (n : ℤ) : ℝ :=
+def annularMass (B : ℕ) (n : ℤ)  :=
   Real.sqrt (dyadicScale n)/(1+dyadicScale n)^B
 
-theorem annularMass_nonneg (B : ℕ) (n : ℤ) : 0≤annularMass B n := by
+theorem annularMass_nonneg  B   n  : 0≤annularMass B n := by
   have hp := dyadicScale_pos n
   unfold annularMass
   positivity
 
-lemma sqrt_nat_pow (x : ℝ) (hx : 0≤x) (j : ℕ) :
+lemma sqrt_nat_pow  x  (hx : 0≤x)  j  :
     Real.sqrt (x^j)=(Real.sqrt x)^j := by
   induction j with
   | zero => simp
@@ -121,8 +101,8 @@ theorem annularMass_upper_bound (B A j : ℕ) (hAB : A+1≤B) :
       simp only [dyadicScale,zpow_natCast,←pow_mul,inv_pow]
       rw [Nat.mul_comm]
 
-lemma nonnegative_geometric_tail (f : ℕ→ℝ) (q : ℝ) (hq0 : 0≤q) (hq1 : q<1)
-    (hf : ∀j,0≤f j) (hb : ∀j,f j≤q^j) (L : ℕ) :
+lemma nonnegative_geometric_tail (f : ℕ→ℝ)  q  (hq0 : 0≤q) (hq1 : q<1)
+    (hf : ∀j,0≤f j) (hb : ∀j,f j≤q^j)  L  :
     Summable (fun j=>f (j+L)) ∧ (∑'j:ℕ,f (j+L))≤q^L/(1-q) := by
   have hg : Summable (fun j:ℕ=>q^(j+L)) := by
     simpa only [pow_add] using (summable_geometric_of_lt_one hq0 hq1).mul_right (q^L)
@@ -132,16 +112,15 @@ lemma nonnegative_geometric_tail (f : ℕ→ℝ) (q : ℝ) (hq0 : 0≤q) (hq1 : 
   rw [tsum_mul_right,tsum_geometric_of_lt_one hq0 hq1]
   ring
 
-theorem annularMass_lower_tail (B L : ℕ) :
+theorem annularMass_lower_tail  B L  :
     Summable (fun j:ℕ=>annularMass B (-((j+L:ℕ):ℤ))) ∧
       (∑'j:ℕ,annularMass B (-((j+L:ℕ):ℤ)))≤
-        (Real.sqrt (1/2:ℝ))^L/(1-Real.sqrt (1/2:ℝ)) := by
-  apply nonnegative_geometric_tail (fun j=>annularMass B (-(j:ℤ)))
+        (Real.sqrt (1/2:ℝ))^L/(1-Real.sqrt (1/2:ℝ)) := nonnegative_geometric_tail (fun j=>annularMass B (-(j:ℤ)))
     (Real.sqrt (1/2:ℝ)) (Real.sqrt_nonneg _)
     (by simpa using (Real.sqrt_lt_sqrt (by norm_num : (0:ℝ)≤1/2) (by norm_num : (1/2:ℝ)<1)))
     (fun j=>annularMass_nonneg _ _) (annularMass_lower_bound B) L
 
-theorem annularMass_upper_tail (B A L : ℕ) (hA : 1≤A) (hAB : A+1≤B) :
+theorem annularMass_upper_tail  B A L  (hA : 1≤A) (hAB : A+1≤B) :
     Summable (fun j:ℕ=>annularMass B ((j+L:ℕ):ℤ)) ∧
       (∑'j:ℕ,annularMass B ((j+L:ℕ):ℤ))≤
         (((2:ℝ)^A)⁻¹)^L/(1-((2:ℝ)^A)⁻¹) := by
@@ -153,7 +132,7 @@ theorem annularMass_upper_tail (B A L : ℕ) (hA : 1≤A) (hAB : A+1≤B) :
     ((2:ℝ)^A)⁻¹ (by positivity) (inv_lt_one_of_one_lt₀ hp)
     (fun j=>annularMass_nonneg _ _) (fun j=>annularMass_upper_bound B A j hAB) L
 
-theorem annularMass_summable (B : ℕ) (hB : 2≤B) : Summable (annularMass B) := by
+theorem annularMass_summable  B  (hB : 2≤B) : Summable (annularMass B) := by
   apply Summable.of_nat_of_neg
   · simpa only [Nat.add_zero] using (annularMass_upper_tail B 1 0 (by omega) hB).1
   · simpa only [Nat.add_zero] using (annularMass_lower_tail B 0).1

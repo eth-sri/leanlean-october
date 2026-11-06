@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Analytic.ProxyTwist
 
 public import Erdos408.OneSided.Major.Characters
 public import Erdos408.OneSided.Major.Energy
@@ -37,50 +40,54 @@ variable {K : ℕ}
 /-! ### Sides and arcs -/
 
 /-- The sides `(p, m, n)` of the major sum: a label tuple and a pair in the ranges. -/
-def sideSet (x : ℝ) (d : Data K) : Finset ((Fin K → ℕ) × ℕ × ℕ) :=
+def sideSet (x : ℝ) (d : Data K)  :=
   d.labels x ×ˢ (d.mRange ×ˢ d.nRange)
 
 /-- The label product `∏ p_i` of a side. -/
-def sideLabel (u : (Fin K → ℕ) × ℕ × ℕ) : ℕ := ∏ i, u.1 i
+def sideLabel (u : (Fin K → ℕ) × ℕ × ℕ)  := ∏ i, u.1 i
 
 /-- The product `(∏ p_i) m n` of a side. -/
-def sideProd (u : (Fin K → ℕ) × ℕ × ℕ) : ℕ := sideLabel u * u.2.1 * u.2.2
+def sideProd (u : (Fin K → ℕ) × ℕ × ℕ)  := sideLabel u * u.2.1 * u.2.2
 
 /-- The coefficient `η(a/Y) ∏ V_i⁻¹ α_m β_n` of a side, `a = ∏ p_i`. -/
-def sideCoeff (x : ℝ) (d : Data K) (Y : ℝ) (u : (Fin K → ℕ) × ℕ × ℕ) : ℂ :=
+def sideCoeff (x : ℝ) (d : Data K) (Y : ℝ) (u : (Fin K → ℕ) × ℕ × ℕ)  :=
   ((dyadicBump (sideLabel u / Y) * (d.bandMass x)⁻¹ : ℝ) : ℂ) * d.α u.2.1 * d.β u.2.2
 
 /-- The arcs `h/k`: `1 ≤ k ≤ L^{A₀}`, `0 ≤ h < k` and `(h, k) = 1`. -/
-def arcSet (A₀ x : ℝ) : Finset (Σ _ : ℕ, ℕ) :=
+def arcSet (A₀ x : ℝ)  :=
   (Icc 1 ⌊Real.log x ^ A₀⌋₊).sigma fun k => (range k).filter fun h => Nat.Coprime h k
 
 /-- The integrand of the major sum at the arc `h/k` and the shift `θ`:
 `∑_{v, u} c_u \bar c_v ψ((N_u - N_v)/Y) e((h/k + θ)(N_u - N_v - a_u + a_v))`. -/
-def arcTerm (x : ℝ) (d : Data K) (Y : ℝ) (k h : ℕ) (θ : ℝ) : ℂ :=
+def arcTerm (x : ℝ) (d : Data K) (Y : ℝ) (k h : ℕ) (θ : ℝ)  :=
   ∑ v ∈ sideSet x d, ∑ u ∈ sideSet x d, sideCoeff x d Y u * star (sideCoeff x d Y v) *
     ((plateau ((((sideProd u : ℤ) - sideProd v : ℤ) : ℝ) / Y) : ℂ) *
       Complex.exp (2 * π * Complex.I * ((((h : ℝ) / k + θ) *
         ((((sideProd u : ℤ) - sideProd v) - sideLabel u + sideLabel v : ℤ) : ℝ) : ℝ) : ℂ)))
 
 /-- The phase `e(h(abc - a)/k)` on `(ℤ/k)³`. -/
-def arcPhase (k h : ℕ) [NeZero k] (A B C : ZMod k) : ℂ :=
+def arcPhase (k h : ℕ) [NeZero k] (A B C : ZMod k)  :=
   (ZMod.toCircle ((h : ZMod k) * (A * B * C - A)) : ℂ)
 
 /-- The separated coefficient `φ_u = c_u e(-λ a/Y) e(h(a m n - a)/k)` of a side. -/
 def sidePhase (x : ℝ) (d : Data K) (Y lam : ℝ) (k h : ℕ) [NeZero k]
-    (u : (Fin K → ℕ) × ℕ × ℕ) : ℂ :=
+    (u : (Fin K → ℕ) × ℕ × ℕ)  :=
   sideCoeff x d Y u * Complex.exp (-(2 * π * Complex.I * ((lam * sideLabel u / Y : ℝ) : ℂ))) *
     arcPhase k h (sideLabel u) u.2.1 u.2.2
 
 /-- The separated polynomial `G(τ) = ∑_u φ_u (N_u/(XY))^{iτ}`. -/
-def sidePoly (x : ℝ) (d : Data K) (Y lam : ℝ) (k h : ℕ) [NeZero k] (τ : ℝ) : ℂ :=
+def sidePoly (x : ℝ) (d : Data K) (Y lam : ℝ) (k h : ℕ) [NeZero k] (τ : ℝ)  :=
   ∑ u ∈ sideSet x d, sidePhase x d Y lam k h u *
     ((sideProd u / (d.X * Y) : ℝ) : ℂ) ^ ((τ : ℂ) * Complex.I)
 
 /-! ### The major sum as a sum over arcs -/
 
+section
+variable (A₀ x : ℝ) (d : Data K) (Y : ℝ) {w : ℝ} (hw : 0 < w) (τ : ℝ)
+
+
 /-- The major sum over pairs of sides, the `v` side outside. -/
-theorem majorSquare_eq_sum_side (A₀ x : ℝ) (d : Data K) (Y : ℝ) :
+theorem majorSquare_eq_sum_side       :
     majorSquare A₀ x d Y = ∑ v ∈ sideSet x d, ∑ u ∈ sideSet x d,
       sideCoeff x d Y u * star (sideCoeff x d Y v) *
         majorWeight A₀ x Y ((sideProd u : ℤ) - sideProd v) (sideLabel v) (sideLabel u) := by
@@ -99,7 +106,7 @@ theorem majorSquare_eq_sum_side (A₀ x : ℝ) (d : Data K) (Y : ℝ) :
 
 /-- Finite sums commute with the arcs and the integral over `θ`. -/
 private theorem sum_sum_mul_sum_integral {ι κ : Type*} (S : Finset ι) (P : Finset κ)
-    (c : ι → ι → ℂ) (f : ι → ι → κ → ℝ → ℂ) (hf : ∀ u v kh, Continuous (f u v kh)) (a b : ℝ) :
+    (c : ι → ι → ℂ) (f : ι → ι → κ → ℝ → ℂ) (hf : ∀ u v kh, Continuous (f u v kh))  a b  :
     ∑ v ∈ S, ∑ u ∈ S, c u v * ∑ kh ∈ P, ∫ θ in a..b, f u v kh θ =
       ∑ kh ∈ P, ∫ θ in a..b, ∑ v ∈ S, ∑ u ∈ S, c u v * f u v kh θ := by
   calc ∑ v ∈ S, ∑ u ∈ S, c u v * ∑ kh ∈ P, ∫ θ in a..b, f u v kh θ
@@ -116,7 +123,7 @@ private theorem sum_sum_mul_sum_integral {ι κ : Type*} (S : Finset ι) (P : Fi
           ((hf u v kh).const_mul _).intervalIntegrable _ _]
 
 /-- The major sum is `∑_{k, h} ∫_{|θ| ≤ 2L^{A₀}/Y}` of the arc term. -/
-theorem majorSquare_eq_sum_arcs (A₀ x : ℝ) (d : Data K) (Y : ℝ) :
+theorem majorSquare_eq_sum_arcs       :
     majorSquare A₀ x d Y = ∑ kh ∈ arcSet A₀ x,
       ∫ θ in (-(2 * Real.log x ^ A₀ / Y))..(2 * Real.log x ^ A₀ / Y),
         arcTerm x d Y kh.1 kh.2 θ := by
@@ -137,25 +144,23 @@ theorem majorSquare_eq_sum_arcs (A₀ x : ℝ) (d : Data K) (Y : ℝ) :
 
 /-! ### Separation of one arc term -/
 
+include hw in
 /-- `|w^{iτ}| = 1` for `w > 0`. -/
-private theorem norm_ofReal_cpow_mul_I {w : ℝ} (hw : 0 < w) (τ : ℝ) :
-    ‖(w : ℂ) ^ ((τ : ℂ) * Complex.I)‖ = 1 := by
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hw]
-  simp
+private theorem norm_ofReal_cpow_mul_I       :
+    ‖(w : ℂ) ^ ((τ : ℂ) * Complex.I)‖ = 1 := by solve_by_elim [_root_.SharedProofs.shared_norm_ofReal_cpow_mul_I]
 
+include hw in
 /-- `\overline{w^{-iτ}} = w^{iτ}` for `w > 0`. -/
-private theorem star_ofReal_cpow_neg_mul_I {w : ℝ} (hw : 0 < w) (τ : ℝ) :
+private theorem star_ofReal_cpow_neg_mul_I       :
     star ((w : ℂ) ^ (((-τ : ℝ) : ℂ) * Complex.I)) = (w : ℂ) ^ ((τ : ℂ) * Complex.I) := by
   have hw' : (w : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 hw.ne'
   rw [Complex.cpow_def_of_ne_zero hw', Complex.cpow_def_of_ne_zero hw', Complex.star_def,
     ← Complex.exp_conj, ← Complex.ofReal_log hw.le]
-  congr 1
-  simp only [map_mul, Complex.conj_ofReal, Complex.conj_I]
-  push_cast
-  ring
+  simp_all
 
+include hw in
 /-- `t ↦ w^{iτ}` is continuous for `w > 0`. -/
-private theorem continuous_ofReal_cpow_mul_I {w : ℝ} (hw : 0 < w) :
+private theorem continuous_ofReal_cpow_mul_I     :
     Continuous fun τ : ℝ => (w : ℂ) ^ ((τ : ℂ) * Complex.I) :=
   (Complex.continuous_ofReal.mul continuous_const).const_cpow
     (Or.inl (Complex.ofReal_ne_zero.2 hw.ne'))
@@ -169,8 +174,8 @@ private theorem arcPhase_natCast (k h : ℕ) [NeZero k] {a m n N : ℕ} (hN : a 
 
 /-- The phase identity of one pair of sides: `φ_u \bar φ_v ψ_λ(X(w_u - w_v))` is
 `c_u \bar c_v ψ((N_u - N_v)/Y) e((h/k + λ/Y)(N_u - N_v - a_u + a_v))`. -/
-private theorem sidePhase_mul_star_mul_plateauTwist (x : ℝ) (d : Data K) {Y : ℝ} (hY : Y ≠ 0)
-    (hX : d.X ≠ 0) (lam : ℝ) (k h : ℕ) [NeZero k] (u v : (Fin K → ℕ) × ℕ × ℕ) :
+private theorem sidePhase_mul_star_mul_plateauTwist      {Y}  (hY : Y ≠ 0)
+    (hX : d.X ≠ 0)  lam   k h  [NeZero k] (u v : (Fin K → ℕ) × ℕ × ℕ) :
     sidePhase x d Y lam k h u * star (sidePhase x d Y lam k h v) *
         plateauTwist lam (d.X * ((sideProd u : ℝ) / (d.X * Y) - (sideProd v : ℝ) / (d.X * Y))) =
       sideCoeff x d Y u * star (sideCoeff x d Y v) *
@@ -206,9 +211,16 @@ private theorem sidePhase_mul_star_mul_plateauTwist (x : ℝ) (d : Data K) {Y : 
   rw [star_mul', star_mul', ← key]
   ring
 
+end
+
+section
+variable {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hX : 0 < d.X) (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) (k h : ℕ)
+
+
+include hY hX in
 /-- One arc term, separated: at `θ = λ/Y` it is `∫ K(q) G(q₁) \bar G(-q₂) dq`, for any kernel
 `K` separating `ψ_λ(X(w - w'))` on `[1, 16]²`. -/
-theorem arcTerm_eq_integral {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hX : 0 < d.X) (k h : ℕ)
+theorem arcTerm_eq_integral          
     [NeZero k] (lam : ℝ) {Kf : ℝ × ℝ → ℂ} (hKi : Integrable Kf)
     (hK : ∀ w w' : ℝ, 1 ≤ w → w ≤ 16 → 1 ≤ w' → w' ≤ 16 →
       plateauTwist lam (d.X * (w - w')) =
@@ -237,7 +249,7 @@ theorem arcTerm_eq_integral {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hX : 0 < d.X)
     refine Finset.sum_congr rfl fun u _ => ?_
     rw [Finset.mul_sum]
     refine Finset.sum_congr rfl fun v hv => ?_
-    rw [star_ofReal_cpow_neg_mul_I (w := (sideProd v : ℝ) / (d.X * Y)) (hw0 v hv)]
+    grind [star_ofReal_cpow_neg_mul_I, sideProd]
   have hFi : ∀ u ∈ sideSet x d, ∀ v ∈ sideSet x d, Integrable (F u v) := by
     intro u hu v hv
     refine hKi.mul_bdd (c := ‖φ u‖ * ‖φ v‖) ?_ (Filter.Eventually.of_forall fun q => ?_)
@@ -277,7 +289,7 @@ theorem arcTerm_eq_integral {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hX : 0 < d.X)
 /-! ### The separated polynomial and characters -/
 
 /-- `(a/b)^{iτ} = a^{iτ} (b^{iτ})⁻¹` for `a, b > 0`. -/
-private theorem ofReal_div_cpow_mul_I {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (τ : ℝ) :
+private theorem ofReal_div_cpow_mul_I  {a b}  (ha : 0 < a) (hb : 0 < b) (τ : ℝ) :
     ((a / b : ℝ) : ℂ) ^ ((τ : ℂ) * Complex.I) =
       (a : ℂ) ^ ((τ : ℂ) * Complex.I) * ((b : ℂ) ^ ((τ : ℂ) * Complex.I))⁻¹ := by
   rw [div_eq_mul_inv, Complex.ofReal_mul,
@@ -310,13 +322,14 @@ private theorem sum_side_eq_mul (x : ℝ) (d : Data K) {Y : ℝ} (hY : Y ≠ 0) 
     Complex.natCast_mul_natCast_cpow]
   ring
 
+include hY hHm hHn in
 /-- The separated polynomial is at most `XY ∑_χ |B_λ^{χ₁} M^{χ₂} N^{χ₃}|`, when the variables
 of every side with `c_u ≠ 0` are units modulo `k`. -/
-theorem norm_sidePoly_le {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hHm : 0 < d.Hm) (hHn : 0 < d.Hn)
-    (k h : ℕ) [NeZero k] (lam : ℝ)
+theorem norm_sidePoly_le          
+      [NeZero k]  lam 
     (hunit : ∀ u ∈ sideSet x d, sideCoeff x d Y u ≠ 0 →
       IsUnit (sideLabel u : ZMod k) ∧ IsUnit (u.2.1 : ZMod k) ∧ IsUnit (u.2.2 : ZMod k))
-    (hpos : ∀ u ∈ sideSet x d, 0 < sideProd u) (τ : ℝ) :
+    (hpos : ∀ u ∈ sideSet x d, 0 < sideProd u)  τ  :
     ‖sidePoly x d Y lam k h τ‖ ≤ d.X * Y *
       ∑ χ : DirichletCharacter ℂ k × DirichletCharacter ℂ k × DirichletCharacter ℂ k,
         ‖labelPoly x d Y lam χ.1 τ * markedPoly d χ.2.1 τ * unmarkedPoly d χ.2.2 τ‖ := by
@@ -360,5 +373,7 @@ theorem norm_sidePoly_le {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hHm : 0 < d.Hm) 
     ring
   rw [norm_mul, hprod, norm_mul, Complex.norm_real, Real.norm_of_nonneg hXY.le]
   exact mul_le_of_le_one_left (by positivity) (hc _ _ _)
+
+end
 
 end Erdos408.OneSided

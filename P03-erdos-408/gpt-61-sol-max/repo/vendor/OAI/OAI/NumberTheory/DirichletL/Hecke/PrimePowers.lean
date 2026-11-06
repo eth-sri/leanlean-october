@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadic
 public import OAI.NumberTheory.DirichletL.PrimeCounting.IdealPrimeMass
@@ -12,7 +13,7 @@ open scoped Classical BigOperators
 namespace SevenEighths.HeckePrimePowers
 open HeckeFamily UniqueFactorizationMonoid
 
-theorem nonprime_primePow_powerful {I : Ideal O} (hpow : IsPrimePow I) (hprime : ¬Prime I) :
+theorem nonprime_primePow_powerful  {I}  (hpow : IsPrimePow I) (hprime : ¬Prime I) :
     CompletedGauss.PowerfulIdeal I := by
   obtain ⟨P,k,hP,hk,rfl⟩ := hpow
   have hk2 : 2≤k := by
@@ -27,25 +28,25 @@ theorem nonprime_primePow_powerful {I : Ideal O} (hpow : IsPrimePow I) (hprime :
   subst Q
   simpa using hk2
 
-def logWeight (I : Ideal O) : ℝ := IdealMangoldt.value I / Real.log (Ideal.absNorm I)
+def logWeight (I : Ideal O)  := IdealMangoldt.value I / Real.log (Ideal.absNorm I)
 
-theorem logWeight_nonneg (I : Ideal O) : 0≤logWeight I :=
+theorem logWeight_nonneg  I  : 0≤logWeight I :=
   div_nonneg (IdealMangoldt.value_nonneg _) (Real.log_natCast_nonneg _)
 
-theorem logWeight_le_one (I : Ideal O) : logWeight I≤1 := by
+theorem logWeight_le_one  I  : logWeight I≤1 := by
   by_cases hlog : Real.log (Ideal.absNorm I)=0
   · simp [logWeight,hlog]
   · apply (div_le_one (lt_of_le_of_ne (Real.log_natCast_nonneg _) (Ne.symm hlog))).mpr
     exact IdealLogDerivative.value_le_log_norm I
 
-theorem logWeight_prime {P : Ideal O} (hP : Prime P) : logWeight P=1 := by
+theorem logWeight_prime  {P}  (hP : Prime P) : logWeight P=1 := by
   have hp2 : (2 : ℝ)≤P.absNorm := by
     exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le ⟨P,hP⟩
   have hp : 0<Real.log (P.absNorm : ℝ) := Real.log_pos (by linarith)
   rw [logWeight, PNT.IdealPrimeMass.value_prime hP, div_self hp.ne']
 
-theorem logWeight_eq_zero {I : Ideal O} (hI : ¬IsPrimePow I) : logWeight I=0 := by
-  simp only [logWeight, IdealMangoldt.value, ite_eq_right hI, zero_div]
+theorem logWeight_eq_zero  {I}  (hI : ¬IsPrimePow I) : logWeight I=0 := by
+  simp_all [logWeight, IdealMangoldt.value]
 
 theorem sum_prime_extraction (χ : Character) (S : Finset (Ideal O)) (f : Ideal O→ℂ) :
     (∑ I∈S, (logWeight I : ℂ)*idealCoeff χ I*f I) -
@@ -56,11 +57,8 @@ theorem sum_prime_extraction (χ : Character) (S : Finset (Ideal O)) (f : Ideal 
   apply Finset.sum_congr rfl
   intro I hI
   by_cases hP : Prime I
-  · simp only [hP, ite_true, not_true_eq_false, and_false, ite_false,
-      logWeight_prime hP, Complex.ofReal_one, one_mul, sub_self]
-  · by_cases hp : IsPrimePow I
-    · simp [hP,hp]
-    · simp [hP,hp,logWeight_eq_zero hp]
+  · simp_all [logWeight_prime]
+  aesop (add safe [IsPrimePow, logWeight_eq_zero])
 
 theorem prime_extraction_error (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ (χ : Character) (S : Finset (Ideal O)) (f : Ideal O→ℂ)
@@ -74,10 +72,7 @@ theorem prime_extraction_error (ε : ℝ) (hε : 0<ε) :
   rw [sum_prime_extraction]
   let A := S.filter (fun I => IsPrimePow I ∧ ¬Prime I)
   have hA : (A.card : ℝ)≤C*X^(1/2+ε) := by
-    apply hcount A X hX
-    intro I hI
-    obtain ⟨hIS,hpow,hprime⟩ := Finset.mem_filter.mp hI
-    exact ⟨nonprime_primePow_powerful hpow hprime,hnorm I hIS⟩
+    grind [nonprime_primePow_powerful]
   apply (norm_sum_le _ _).trans
   calc
     _ ≤ ∑ _I∈A, B := by

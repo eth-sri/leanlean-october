@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedCancellation
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstRegion
@@ -11,11 +12,11 @@ noncomputable section
 namespace SevenEighths.ProbeEuler
 open ProbeLocal
 
-def unramifiedMarked (Q : ℝ) (A eta v x w z : ℂ) : ℂ :=
+def unramifiedMarked (Q : ℝ) (A eta v x w z : ℂ)  :=
   markedFactor (coordR Q A x z) (coordV Q z) (Q:ℂ)⁻¹ (coordK Q eta x w)
     (-coordD Q eta v x+coordW Q v w*coordR Q A x z) 1
 
-lemma unramifiedMarked_selected_error (Q : ℝ) (A eta v x w z : ℂ)
+lemma unramifiedMarked_selected_error  Q   A eta v x w z 
     (hQ : 4≤Q) (hA : ‖A‖≤1) (heta : ‖eta‖≤1) (hv : ‖v‖≤1)
     (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) :
     ‖unramifiedMarked Q A eta v x w z+coordD Q eta v x‖≤28 ∧
@@ -63,11 +64,9 @@ lemma unramifiedMarked_selected_error (Q : ℝ) (A eta v x w z : ℂ)
     apply hE.trans
     nlinarith [mul_le_mul_of_nonneg_left hW (norm_nonneg R)]
   constructor
-  · change ‖unramifiedMarked Q A eta v x w z+D‖≤28
-    linarith
+  · linarith
   · have hh := mul_le_mul_of_nonneg_left hE' (norm_nonneg B)
-    change ‖B‖*‖unramifiedMarked Q A eta v x w z+D‖≤28
-    nlinarith
+    grind
 
 end SevenEighths.ProbeEuler
 end

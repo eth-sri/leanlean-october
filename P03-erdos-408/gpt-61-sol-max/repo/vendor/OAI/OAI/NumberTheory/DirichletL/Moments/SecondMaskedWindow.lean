@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondReducedEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
@@ -17,30 +17,33 @@ open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMom
 open CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedSource
 open CenteredMomentChildAssembly CenteredMomentSmooth CenteredMomentFirstSectors RayFourExpansion
 open CenteredMomentLogDyadic CenteredMomentRowNorm CenteredMomentSourceRow
-local notation "O" => ActualEisensteinCubic.O
 
-theorem masked_divisor_coefficient (η τ : Character) (χ : RayCharacter) (A : O)
-    (C : Ideal O) (hC : Supported C)
-    (hτ : ∀I:Ideal O,Supported I → IsCoprime C I → ∀t:ℝ,
-      heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I))
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (L : Ideal O) (t : ℝ)
-    (I : sectorPool C hC.1 S) :
+
+section
+variable (η τ : Character) (χ : RayCharacter) (A : ActualEisensteinCubic.O) (C : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hτ : ∀I:Ideal ActualEisensteinCubic.O,Supported I → IsCoprime C I → ∀t:ℝ,
+      heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I)) (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (L : Ideal ActualEisensteinCubic.O)
+include η τ χ A C hC hτ S β L
+
+theorem masked_divisor_coefficient      
+       
+     
+           t 
+     I  :
     divisorCoefficient L (sectorElement C hC.1 S)
       (movingCoefficient A (sectorElement C hC.1 S)
         (fun J:sectorPool C hC.1 S=>β (C*J)*heightCoeff η t J)) χ I=
-      (if L∣(I:Ideal O) then β (C*I) else 0)*heightCoeff τ t I := by
-  have hi : IsCoprime C (I:Ideal O) := (Finset.mem_filter.mp I.property).2
+      (if L∣(I:Ideal ActualEisensteinCubic.O) then β (C*I) else 0)*heightCoeff τ t I := by
+  have hi : IsCoprime C (I:Ideal ActualEisensteinCubic.O) := (Finset.mem_filter.mp I.property).2
   rw [divisorCoefficient,movingCoefficient,sectorElement_span,
     hτ I (sectorPool_supported C hC.1 S I) hi t]
   dsimp only [sectorElement]
   split_ifs <;> ring
 
-theorem masked_child_energy (η τ : Character) (χ : RayCharacter) (A : O)
-    (C : Ideal O) (hC : Supported C)
-    (hτ : ∀I:Ideal O,Supported I → IsCoprime C I → ∀t:ℝ,
-      heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I))
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (L : Ideal O) (t : ℝ)
-    (keep : O→Prop) (Φ : 𝓢(ℝ,ℂ)) (H : ℝ) :
+theorem masked_child_energy      
+       
+     
+           t 
+     keep   Φ   H  :
     restrictedEnergy keep Finset.univ (sectorElement C hC.1 S)
       (divisorCoefficient L (sectorElement C hC.1 S)
         (movingCoefficient A (sectorElement C hC.1 S)
@@ -54,29 +57,28 @@ theorem masked_child_energy (η τ : Character) (χ : RayCharacter) (A : O)
   intro z
   rw [sector_rowPolynomial S (fun I=>(if L∣I then β (C*I) else 0)*heightCoeff τ t I) C hC z]
   have hc : (fun I : supportedColumns (residualPool C hC.1 S)=>
-      if IsCoprime C (I:Ideal O) then (if L∣(I:Ideal O) then β (C*I) else 0)*heightCoeff τ t I else 0)=
+      if IsCoprime C (I:Ideal ActualEisensteinCubic.O) then (if L∣(I:Ideal ActualEisensteinCubic.O) then β (C*I) else 0)*heightCoeff τ t I else 0)=
       (fun I : supportedColumns (residualPool C hC.1 S)=>
-        (if IsCoprime C (I:Ideal O) ∧ L∣(I:Ideal O) then β (C*I) else 0)*heightCoeff τ t I) := by
+        (if IsCoprime C (I:Ideal ActualEisensteinCubic.O) ∧ L∣(I:Ideal ActualEisensteinCubic.O) then β (C*I) else 0)*heightCoeff τ t I) := by
     funext I
     split_ifs <;> simp_all
   rw [hc]
 
-theorem original_window_from_masked_source (η τ : Character) (χ : RayCharacter) (A : O)
-    (C : Ideal O) (hC : Supported C)
-    (hτ : ∀I:Ideal O,Supported I → IsCoprime C I → ∀t:ℝ,
-      heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I))
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (L : Ideal O) (keep : O→Prop)
-    (t θ X : ℝ) (hX : 0<X) (J : ℕ)
-    (Φ : 𝓢(ℝ,ℂ)) (H : ℝ) (hH : 0<H)
-    (hΦ : ∀z:O,0≤(Φ (‖ConcreteTraceCRT.eisEmbedding z‖^2/H)).re)
-    (E : ℝ) (hE : 0≤E)
+theorem original_window_from_masked_source      
+       
+     
+           keep 
+     t θ X  (hX : 0<X)  J 
+     Φ   H  (hH : 0<H)
+    (hΦ : ∀z:ActualEisensteinCubic.O,0≤(Φ (‖ConcreteTraceCRT.eisEmbedding z‖^2/H)).re)
+     E  (hE : 0≤E)
     (hsource : ∀v:ℝ,sourceRestrictedEnergy keep (residualPool C hC.1 S)
       (fun I=>if IsCoprime C I ∧ L∣I then β (C*I) else 0)
       (heightCoeff τ v) Φ H≤E*(1+‖v‖)^(2*J)) :
     restrictedEnergy keep Finset.univ (sectorElement C hC.1 S)
       (fun I=>divisorCoefficient L (sectorElement C hC.1 S)
         (movingCoefficient A (sectorElement C hC.1 S) (fun I=>β (C*I)*heightCoeff η t I)) χ I*
-        columnPhase logAnnulus (Real.log ((Ideal.absNorm (I:Ideal O):ℝ)/X)) θ) Φ H≤
+        columnPhase logAnnulus (Real.log ((Ideal.absNorm (I:Ideal ActualEisensteinCubic.O):ℝ)/X)) θ) Φ H≤
       (E*heightCost t θ^(2*J))*(∫w:ℝ,(1+‖w‖)^J*
         ‖columnDensity logAnnulus logAnnulus_compact logAnnulus_smooth w‖)^2 := by
   have hc := funext (masked_divisor_coefficient η τ χ A C hC hτ S β L t)
@@ -86,7 +88,7 @@ theorem original_window_from_masked_source (η τ : Character) (χ : RayCharacte
   rw [hc]
   have hh := restricted_window_energy_from_height keep logAnnulus logAnnulus_compact logAnnulus_smooth J
     Finset.univ (sectorElement C hC.1 S) (sectorElement_supported C hC.1 S)
-    (fun I:sectorPool C hC.1 S=>if L∣(I:Ideal O) then β (C*I) else 0)
+    (fun I:sectorPool C hC.1 S=>if L∣(I:Ideal ActualEisensteinCubic.O) then β (C*I) else 0)
     τ t θ X hX Φ H hH hΦ E hE ?_
   · simpa only [sectorElement_span] using hh
   intro v
@@ -95,8 +97,10 @@ theorem original_window_from_masked_source (η τ : Character) (χ : RayCharacte
   rw [funext (masked_divisor_coefficient η τ χ A C hC hτ S β L v)] at hs
   simpa only [sectorElement_span] using hs
 
+end
+
 end SevenEighths.CenteredMomentSecondMaskedWindow
 
-end
+
 
 end OAI

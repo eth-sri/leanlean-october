@@ -18,7 +18,7 @@ open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
 open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
 open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
 open CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate
-local notation "O"=>HeckeFamily.O
+
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -29,7 +29,7 @@ theorem local_input_tail (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
       ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),s.W₁=W₁→s.W₂=W₂→
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→
-      (∀i,s.hi i≤hi i)→∀(m A:O)(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),
+      (∀i,s.hi i≤hi i)→∀(m A:HeckeFamily.O)(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),
       0<K→volume s.toData≤Z^B→K⁻¹≤Z^B→
       ‖CenteredMomentFirstSectorLocalization.discardedEnergy s.η m A s.t (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) Φ K (volume s.toData) Z ξ‖/volume s.toData≤

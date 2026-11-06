@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Local
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentHeterogeneousCRT
 open CenteredMomentCorrelation
@@ -15,7 +15,7 @@ theorem fullCorrelation_heterogeneous_pi {ι : Type*} [Fintype ι]
     {X Y R : ι → Type*} [∀ i, Fintype (X i)] [∀ i, Fintype (Y i)]
     [∀ i, CommRing (R i)]
     (left : ∀ i, X i → R i) (right : ∀ i, Y i → R i)
-    (f : ∀ i, X i → ℂ) (g : ∀ i, Y i → ℂ) (k : ∀ i, R i) :
+    (f : ∀ i, X i → ℂ) (g : ∀ i, Y i → ℂ)  k  :
     fullCorrelation (fun (x : ∀ i, X i) i => left i (x i)) (fun (y : ∀ i, Y i) i => right i (y i))
         (fun x => ∏ i, f i (x i)) (fun y => ∏ i, g i (y i)) k =
       ∏ i, fullCorrelation (left i) (right i) (f i) (g i) (k i) := by
@@ -54,7 +54,7 @@ theorem fullCorrelation_three_equiv {ι X Y R : Type*} [Fintype ι]
     (li : ∀ i, Xi i → Ri i) (ri : ∀ i, Yi i → Ri i)
     (hl : ∀ x i, eR (left x) i = li i (eX x i))
     (hr : ∀ y i, eR (right y) i = ri i (eY y i))
-    (f : ∀ i, Xi i → ℂ) (g : ∀ i, Yi i → ℂ) (k : R) :
+    (f : ∀ i, Xi i → ℂ) (g : ∀ i, Yi i → ℂ)  k  :
     fullCorrelation left right (fun x => ∏ i, f i (eX x i))
       (fun y => ∏ i, g i (eY y i)) k =
       ∏ i, fullCorrelation (li i) (ri i) (f i) (g i) (eR k i) := by
@@ -74,6 +74,6 @@ theorem fullCorrelation_three_equiv {ι X Y R : Type*} [Fintype ι]
 
 end SevenEighths.CenteredMomentHeterogeneousCRT
 
-end
+
 
 end OAI

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthMoments
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthWindow
@@ -18,19 +18,19 @@ open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
 open CenteredMomentEnergyReferenceLowWindow CenteredMomentEnergyReferenceLowBranchGeometry
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
 
-theorem actual_reflected_window (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
-    (S:Finset (ℕ×ℕ)):
+
+theorem actual_reflected_window  a b (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
+     S :
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃D:ℝ,0<D ∧
-    ∀(bΦ Bmask L Mcap loss Z:ℝ)(Q:Ideal O)(degree:ℕ)(C:ℝ),0≤C→
+    ∀(bΦ Bmask L Mcap loss Z:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(C:ℝ),0≤C→
     ZeroGrowthAt Q a b bΦ Bmask L Mcap loss Z degree S C→0≤Bmask→
     ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→s.width≤Mcap→
     ∀(Wshort:𝓢(ℝ,ℂ)),Function.support (Wshort:ℝ→ℂ)⊆Set.Icc a b→
     ∀xi epsilon Xshort Xlong:ℝ,0≤xi→0≤epsilon→1<Z→
     Real.logb Z (max 1 b)≤epsilon→Mcap+Bmask+epsilon+xi≤L→
     0<Xshort→Xshort≤Xlong→Xshort≤Z^L→1≤b*Xlong→
-    ∀Dshort Dlong:Finset (Ideal O),
+    ∀Dshort Dlong:Finset (Ideal HeckeFamily.O),
     Dshort∈(CompletedGauss.primeSupport s.puncture).powerset→
     Dlong∈(CompletedGauss.primeSupport s.puncture).powerset→
     let Nshort:ℝ:=(∏P∈Dshort,P).absNorm;
@@ -80,6 +80,6 @@ theorem actual_reflected_window (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
   convert hbnd using 1 ; ring
 end SevenEighths.CenteredMomentEnergyZeroGrowthWindow
 
-end
+
 
 end OAI

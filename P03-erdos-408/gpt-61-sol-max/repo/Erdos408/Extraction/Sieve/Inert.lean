@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Extraction.Sieve.Composite
 
 public import Erdos408.Extraction.Sieve.Basic
 public import Erdos408.Extraction.Sieve.Model
@@ -29,40 +32,48 @@ namespace Sieve
 noncomputable section
 
 /-- All band primes of the inert polynomial. -/
-def inertBands (K : ℕ) (CN x : ℝ) : Finset ℕ :=
+def inertBands (K : ℕ) (CN x : ℝ)  :=
   (range K ×ˢ range (inertPerCluster K CN x)).biUnion fun ci =>
     band x (inertExponent K x ci.1 ci.2)
 
 /-- The band part `∏_{p ∈ 𝔅, p ∣ n} p` of `n`. -/
-def bandPart (𝔅 : Finset ℕ) (n : ℕ) : ℕ :=
+def bandPart (𝔅 : Finset ℕ) (n : ℕ)  :=
   ∏ p ∈ 𝔅.filter (· ∣ n), p
 
 /-! ### Bands -/
 
+section
+variable {x a : ℝ} {p : ℕ}
+
 /-- Membership in a band. -/
-lemma mem_band {x a : ℝ} {p : ℕ} :
+lemma mem_band     :
     p ∈ band x a ↔ p.Prime ∧ ⌈exp (Real.log x ^ a)⌉₊ ≤ p ∧ p ≤ ⌊exp (2 * Real.log x ^ a)⌋₊ := by
   simp only [band, mem_filter, mem_Icc]
   tauto
 
 /-- Band primes lie in `[exp(L^a), exp(2 L^a)]`. -/
-lemma le_of_mem_band {x a : ℝ} {p : ℕ} (hp : p ∈ band x a) :
+lemma le_of_mem_band     (hp : p ∈ band x a) :
     exp (Real.log x ^ a) ≤ p ∧ (p : ℝ) ≤ exp (2 * Real.log x ^ a) := by
   obtain ⟨-, h1, h2⟩ := mem_band.1 hp
   exact ⟨Nat.ceil_le.1 h1, (Nat.le_floor_iff (exp_pos _).le).1 h2⟩
 
 /-- Band primes are prime. -/
-lemma prime_of_mem_band {x a : ℝ} {p : ℕ} (hp : p ∈ band x a) : p.Prime :=
+lemma prime_of_mem_band     (hp : p ∈ band x a) : p.Prime :=
   (mem_band.1 hp).1
 
+end
+
+section
+variable {K : ℕ}
+
 /-- The inert band primes are prime. -/
-lemma prime_of_mem_inertBands {K : ℕ} {CN x : ℝ} {p : ℕ} (hp : p ∈ inertBands K CN x) :
+lemma prime_of_mem_inertBands   {CN x : ℝ} {p : ℕ} (hp : p ∈ inertBands K CN x) :
     p.Prime := by
   obtain ⟨_, _, hp⟩ := mem_biUnion.1 hp
   exact prime_of_mem_band hp
 
 /-- Each band lies in the inert band primes. -/
-lemma band_subset_inertBands {K : ℕ} {CN x : ℝ} {c i : ℕ} (hc : c < K)
+lemma band_subset_inertBands    {CN x}   {c i}  (hc : c < K)
     (hi : i < inertPerCluster K CN x) : band x (inertExponent K x c i) ⊆ inertBands K CN x := by
   intro p hp
   unfold inertBands
@@ -72,7 +83,7 @@ lemma band_subset_inertBands {K : ℕ} {CN x : ℝ} {c i : ℕ} (hc : c < K)
 lemma harmonicMass_band_mem : ∃ t₀ : ℝ, ∀ x a : ℝ, t₀ ≤ Real.log x ^ a →
     1 / 2 ≤ harmonicMass (band x a) ∧ harmonicMass (band x a) ≤ 1 := by
   obtain ⟨E, hE, h⟩ := mertens_second
-  have hl2 : 0 < Real.log 2 := log_pos (by norm_num)
+  
   have hl2' : Real.log 2 < 0.6931471808 := log_two_lt_d9
   have hl2'' : 0.6931471803 < Real.log 2 := log_two_gt_d9
   refine ⟨6 * E + 10 * (1 + E) + 4, fun x a ht => ?_⟩
@@ -132,7 +143,7 @@ lemma harmonicMass_band_mem : ∃ t₀ : ℝ, ∀ x a : ℝ, t₀ ≤ Real.log x
     linarith
 
 /-- For large `x`, every band exponent of the inert polynomial lies in `[0.11, 0.2]`. -/
-lemma eventually_inertExponent_mem {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_inertExponent_mem   (hK : 1 ≤ K)  CN  : ∀ᶠ x : ℝ in atTop,
     ∀ c < K, ∀ i < inertPerCluster K CN x,
       11 / 100 ≤ inertExponent K x c i ∧ inertExponent K x c i ≤ 1 / 5 := by
   have hK0 : (0 : ℝ) < K := by exact_mod_cast hK
@@ -151,8 +162,7 @@ lemma eventually_inertExponent_mem {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ 
     have h1 : (inertPerCluster K CN x : ℝ) ≤ ⌈|CN| * logLogLog x / K⌉₊ := by
       exact_mod_cast Nat.ceil_mono (div_le_div_of_nonneg_right
         (mul_le_mul_of_nonneg_right (le_abs_self CN) hs0) hK0.le)
-    have h2 : |CN| * logLogLog x / K = |CN| / K * logLogLog x := by ring
-    linarith
+    grind
   rw [inertExponent]
   have hci : (c : ℝ) * (8 / 100 / K) ≤ 8 / 100 - 8 / 100 / K := by
     rw [show (8 : ℝ) / 100 - 8 / 100 / K = (K - 1) * (8 / 100 / K) by field_simp]
@@ -170,7 +180,7 @@ lemma eventually_inertExponent_mem {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ 
     linarith
 
 /-- Bands whose exponents differ by at least `2 / T` are disjoint. -/
-lemma disjoint_band {x a b : ℝ} (hL : 1 < Real.log x)
+lemma disjoint_band  {x a b}  (hL : 1 < Real.log x)
     (hab : a + 2 / logLog x ≤ b) : Disjoint (band x a) (band x b) := by
   rw [disjoint_left]
   intro p hpa hpb
@@ -193,7 +203,7 @@ lemma disjoint_band {x a b : ℝ} (hL : 1 < Real.log x)
   linarith
 
 /-- The bands of one cluster are pairwise disjoint. -/
-lemma pairwiseDisjoint_cluster {K : ℕ} {CN x : ℝ} (hL : 1 < Real.log x) (c : ℕ) :
+lemma pairwiseDisjoint_cluster    {CN x}  (hL : 1 < Real.log x)  c  :
     ((range (inertPerCluster K CN x) : Finset ℕ) : Set ℕ).PairwiseDisjoint
       fun i => band x (inertExponent K x c i) := by
   have hT : 0 < logLog x := log_pos hL
@@ -206,14 +216,12 @@ lemma pairwiseDisjoint_cluster {K : ℕ} {CN x : ℝ} (hL : 1 < Real.log x) (c :
     have : 0 ≤ 2 / logLog x := by positivity
     nlinarith
   intro i _ j _ hij
-  rcases lt_or_gt_of_ne hij with h | h
-  · exact key i j h
-  · exact (key j i h).symm
+  grind
 
 /-! ### The band part -/
 
 /-- For a set `𝔅` of primes and `p ∈ 𝔅`, `p ∣ bandPart 𝔅 n ↔ p ∣ n`. -/
-lemma dvd_bandPart_iff {𝔅 : Finset ℕ} (h𝔅 : ∀ p ∈ 𝔅, p.Prime) {p : ℕ} (hp : p ∈ 𝔅) (n : ℕ) :
+lemma dvd_bandPart_iff  {𝔅}  (h𝔅 : ∀ p ∈ 𝔅, p.Prime)  {p}  (hp : p ∈ 𝔅)  n  :
     p ∣ bandPart 𝔅 n ↔ p ∣ n := by
   rw [bandPart, (h𝔅 p hp).prime.dvd_finsetProd_iff]
   constructor
@@ -223,21 +231,15 @@ lemma dvd_bandPart_iff {𝔅 : Finset ℕ} (h𝔅 : ∀ p ∈ 𝔅, p.Prime) {p 
   · exact fun h => ⟨p, mem_filter.2 ⟨hp, h⟩, dvd_rfl⟩
 
 /-- For a set `S` of primes, a prime `p` divides `∏ S` iff `p ∈ S`. -/
-lemma dvd_prod_primes_iff {S : Finset ℕ} (hS : ∀ p ∈ S, p.Prime) {p : ℕ} (hp : p.Prime) :
-    p ∣ ∏ q ∈ S, q ↔ p ∈ S := by
-  rw [hp.prime.dvd_finsetProd_iff]
-  constructor
-  · rintro ⟨q, hq, hpq⟩
-    rwa [(Nat.prime_dvd_prime_iff_eq hp (hS q hq)).1 hpq]
-  · exact fun h => ⟨p, h, dvd_rfl⟩
+alias dvd_prod_primes_iff := _root_.Erdos408.Sieve.dvd_prod_primes_iff'
 
 /-- The prime count of a band only sees the primes of the band dividing `n`. -/
-lemma primeCount_congr {G : Finset ℕ} {n m : ℕ} (h : ∀ p ∈ G, p ∣ n ↔ p ∣ m) :
+lemma primeCount_congr  {G}   {n m}  (h : ∀ p ∈ G, p ∣ n ↔ p ∣ m) :
     primeCount G n = primeCount G m := by
   rw [primeCount, primeCount, filter_congr h]
 
 /-- The prime count of a band of primes at a product of primes. -/
-lemma primeCount_prod {G S : Finset ℕ} (hG : ∀ p ∈ G, p.Prime) (hS : ∀ p ∈ S, p.Prime) :
+lemma primeCount_prod  {G S}  (hG : ∀ p ∈ G, p.Prime) (hS : ∀ p ∈ S, p.Prime) :
     primeCount G (∏ p ∈ S, p) = #(S ∩ G) := by
   rw [primeCount, filter_congr fun p hp => dvd_prod_primes_iff hS (hG p hp), filter_mem_eq_inter,
     inter_comm]
@@ -256,19 +258,18 @@ lemma half_zpow_mul_le_one (m : ℕ) : (1 / 2 : ℝ) ^ ((m : ℤ) - 1) * m ≤ 1
     exact_mod_cast this
 
 /-- The single-band weight `q^{ω - 1} ω / V`. -/
-lemma bandWeight_eq (q x a : ℝ) (n : ℕ) : bandWeight q x a n =
+lemma bandWeight_eq  q x a   n  : bandWeight q x a n =
     q ^ ((primeCount (band x a) n : ℤ) - 1) * primeCount (band x a) n /
       harmonicMass (band x a) := by
   simp [bandWeight, markedWeight, mul_div_assoc]
 
 /-- If the band mass is at least `1/2`, then `0 ≤ c_w w ≤ 1` with `c_w = 1/12`. -/
-lemma bandWeight_mem {x a : ℝ} (hV : 1 / 2 ≤ harmonicMass (band x a)) (n : ℕ) :
+lemma bandWeight_mem  {x a}  (hV : 1 / 2 ≤ harmonicMass (band x a))  n  :
     0 ≤ 1 / 12 * bandWeight (1 / 2) x a n ∧ 1 / 12 * bandWeight (1 / 2) x a n ≤ 1 := by
   have hV0 : 0 < harmonicMass (band x a) := by linarith
   rw [bandWeight_eq]
   have h1 := half_zpow_mul_le_one (primeCount (band x a) n)
-  have h0 : 0 ≤ (1 / 2 : ℝ) ^ ((primeCount (band x a) n : ℤ) - 1) * primeCount (band x a) n :=
-    by positivity
+  
   constructor
   · positivity
   · rw [mul_div_assoc', div_le_one hV0]
@@ -283,8 +284,7 @@ lemma one_sub_prod_one_sub_le {ι : Type*} (s : Finset ι) (a : ι → ℝ)
   | insert j s hj ih =>
     rw [prod_insert hj, sum_insert hj]
     have ih := ih fun i hi => ha i (mem_insert_of_mem hi)
-    have hp0 : 0 ≤ ∏ i ∈ s, (1 - a i) := prod_nonneg fun i hi => by
-      linarith [(ha i (mem_insert_of_mem hi)).2]
+    
     have hp1 : ∏ i ∈ s, (1 - a i) ≤ 1 := prod_le_one₀ (fun i hi => by
       linarith [(ha i (mem_insert_of_mem hi)).2]) fun i hi => by
       linarith [(ha i (mem_insert_of_mem hi)).1]
@@ -298,7 +298,7 @@ lemma prod_mem_unit {ι : Type*} (s : Finset ι) (f : ι → ℝ) (hf : ∀ i �
     fun i hi => (hf i hi).2⟩
 
 /-- For large `x`, every band of the inert polynomial has mass in `[1/2, 1]`. -/
-lemma eventually_harmonicMass_inert {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_harmonicMass_inert   (hK : 1 ≤ K)  CN  : ∀ᶠ x : ℝ in atTop,
     ∀ c < K, ∀ i < inertPerCluster K CN x,
       1 / 2 ≤ harmonicMass (band x (inertExponent K x c i)) ∧
         harmonicMass (band x (inertExponent K x c i)) ≤ 1 := by
@@ -310,7 +310,7 @@ lemma eventually_harmonicMass_inert {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ
   exact rpow_le_rpow_of_exponent_le hL (ha c hc i hi).1
 
 /-- For large `x`, `0 ≤ P ≤ 1`. -/
-lemma eventually_inertPoly_mem {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : ℝ in atTop, ∀ n : ℕ,
+lemma eventually_inertPoly_mem   (hK : 1 ≤ K)  CN  : ∀ᶠ x : ℝ in atTop, ∀ n : ℕ,
     0 ≤ inertPoly (1 / 2) (1 / 12) K CN x n ∧ inertPoly (1 / 2) (1 / 12) K CN x n ≤ 1 := by
   filter_upwards [eventually_harmonicMass_inert hK CN] with x hV n
   refine prod_mem_unit _ _ fun c hc => ?_
@@ -321,27 +321,23 @@ lemma eventually_inertPoly_mem {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : 
   constructor <;> linarith [h.1, h.2]
 
 /-- `P(n)` only depends on the band primes dividing `n`. -/
-lemma inertPoly_congr {q cw : ℝ} {K : ℕ} {CN x : ℝ} {n m : ℕ}
+lemma inertPoly_congr  {q cw}   {K}   {CN x}   {n m} 
     (h : ∀ p ∈ inertBands K CN x, p ∣ n ↔ p ∣ m) :
     inertPoly q cw K CN x n = inertPoly q cw K CN x m := by
   unfold inertPoly
   refine prod_congr rfl fun c hc => congrArg (1 - ·) (prod_congr rfl fun i hi => ?_)
   have hsub := band_subset_inertBands (CN := CN) (mem_range.1 hc) (mem_range.1 hi)
-  have hc' : primeCount (band x (inertExponent K x c i)) n =
-      primeCount (band x (inertExponent K x c i)) m :=
-    primeCount_congr fun p hp => h p (hsub hp)
-  rw [bandWeight_eq, bandWeight_eq, hc']
+  grind [primeCount, band, inertExponent, primeCount_congr, bandWeight_eq]
 
 /-- `P(n) = P(bandPart n)`. -/
-lemma inertPoly_bandPart (q cw : ℝ) (K : ℕ) (CN x : ℝ) (n : ℕ) :
+lemma inertPoly_bandPart  q cw   K   CN x   n  :
     inertPoly q cw K CN x n = inertPoly q cw K CN x (bandPart (inertBands K CN x) n) :=
-  inertPoly_congr fun _ hp =>
-    (dvd_bandPart_iff (fun _ h => prime_of_mem_inertBands h) hp n).symm
+  (by grind [inertPoly_congr, dvd_bandPart_iff, prime_of_mem_inertBands])
 
 /-! ### The divisor-model failure of the inert polynomial (E10) -/
 
 /-- `e^{-2t} ≤ 1 - t` for `0 ≤ t ≤ 1/2`. -/
-lemma exp_neg_two_mul_le {t : ℝ} (ht : 0 ≤ t) (ht₁ : t ≤ 1 / 2) : exp (-(2 * t)) ≤ 1 - t := by
+lemma exp_neg_two_mul_le  {t}  (ht : 0 ≤ t) (ht₁ : t ≤ 1 / 2) : exp (-(2 * t)) ≤ 1 - t := by
   have h1 := add_one_le_exp (2 * t)
   have h2 : 1 / (2 * t + 1) ≤ 1 - t := by
     rw [div_le_iff₀ (by linarith)]
@@ -353,7 +349,7 @@ lemma exp_neg_two_mul_le {t : ℝ} (ht : 0 ≤ t) (ht₁ : t ≤ 1 / 2) : exp (-
 
 /-- In the model, the damped band weight of a band `G` with mass `V ∈ [1/2, 1]` has
 `E[1 - c_w w] ≤ exp(-1 / (12 e))`. -/
-lemma modelMean_one_sub_bandWeight_le {G : Finset ℕ} (hG : ∀ p ∈ G, p.Prime)
+lemma modelMean_one_sub_bandWeight_le  {G}  (hG : ∀ p ∈ G, p.Prime)
     (hV : 1 / 2 ≤ harmonicMass G) (hV₁ : harmonicMass G ≤ 1) :
     modelMean G (fun T => 1 - 1 / 12 * ((1 / 2 : ℝ) ^ ((#T : ℤ) - 1) * #T / harmonicMass G)) ≤
       exp (-(1 / (12 * exp 1))) := by
@@ -405,7 +401,7 @@ lemma modelMean_one_sub_bandWeight_le {G : Finset ℕ} (hG : ∀ p ∈ G, p.Prim
 /-- E10: for large `x`, the divisor-model failure of the inert polynomial is
 `M(1 - P) ≤ K exp(-N / (12 e))`, where `N = ⌈C_N s / K⌉` is the number of bands
 per cluster. -/
-lemma eventually_divisorModel_one_sub_inertPoly_le {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) :
+lemma eventually_divisorModel_one_sub_inertPoly_le   (hK : 1 ≤ K)  CN  :
     ∀ᶠ x : ℝ in atTop,
       divisorModel (inertBands K CN x) (fun n => 1 - inertPoly (1 / 2) (1 / 12) K CN x n) ≤
         K * exp (-(inertPerCluster K CN x / (12 * exp 1))) := by
@@ -429,7 +425,7 @@ lemma eventually_divisorModel_one_sub_inertPoly_le {K : ℕ} (hK : 1 ≤ K) (CN 
     have hV' := (hV c (mem_range.1 hc) i (mem_range.1 hi)).1
     have hV0 : 0 < harmonicMass (G c i) := by linarith
     have h1 := half_zpow_mul_le_one #T
-    have h0 : 0 ≤ (1 / 2 : ℝ) ^ ((#T : ℤ) - 1) * #T := by positivity
+    
     have h2 : (1 / 2 : ℝ) ^ ((#T : ℤ) - 1) * #T / harmonicMass (G c i) ≤ 2 := by
       rw [div_le_iff₀ hV0]
       nlinarith
@@ -471,6 +467,8 @@ lemma eventually_divisorModel_one_sub_inertPoly_le {K : ℕ} (hK : 1 ≤ K) (CN 
         rw [prod_const, card_range, ← exp_nat_mul, sum_const, card_range, nsmul_eq_mul]
         congr 2
         ring
+
+end
 
 end
 

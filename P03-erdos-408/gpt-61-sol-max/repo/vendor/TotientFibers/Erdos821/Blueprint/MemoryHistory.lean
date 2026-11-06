@@ -26,7 +26,7 @@ namespace MemoryHistory
 
 variable {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n)
 
-def Valid : Prop :=
+def Valid  :=
   (∀ g, (H.before 0).2.2 g = 0) ∧
   (∀ g, (H.after (Fin.last n)).2.2 g = 0) ∧
   (∀ i, (H.before i).1 = (H.after i).1 ∧
@@ -39,7 +39,7 @@ def initialBirthValues : Multiset ℕ :=
 def ghostBirthValues (i : Fin (n + 1)) : Multiset ℕ :=
   ∑ g : P.BigGroup, ∑ h : Fin ((H.ghost i).2.1 g).val, {((H.ghost i).2.2 g h).val}
 
-def freshTargetSlots (i : Fin n) (g : P.BigGroup) : Finset (Fin (J + F.ell)) :=
+def freshTargetSlots (i : Fin n) (g : P.BigGroup)  :=
   Finset.univ.filter (fun h => ¬ (A.pattern (H.edge i).2.2.1).shared g.val h ∧
     h ∉ (H.edge i).2.2.2.2.2.1 g)
 
@@ -48,12 +48,12 @@ def freshBirthValues (i : Fin n) : Multiset ℕ :=
     {((permuteActive (H.edge i).2.1 (H.before i.succ)).2.1 g.val h).val}
 
 /-- Initial slots, fresh target slots and ghost batches; auxiliary draws are absent. -/
-def birthValues : Multiset ℕ :=
+def birthValues  :=
   H.initialBirthValues + ∑ i, H.ghostBirthValues i + ∑ i, H.freshBirthValues i
 
-def DistinctBirths : Prop := H.birthValues.Nodup
+def DistinctBirths  := H.birthValues.Nodup
 
-def Weight (rho theta : ℝ) : ℂ :=
+def Weight (rho theta : ℝ)  :=
   (P.memoryMass F J n (H.before 0) : ℂ) *
     (∏ i : Fin (n + 1), (ghostChoiceWeight F n rho i (H.ghost i) : ℂ)) *
     (∏ i : Fin n, (edgeSymmetryFactor P (J + F.ell) : ℂ) *
@@ -63,11 +63,11 @@ end MemoryHistory
 
 /-- This is a sum over individual histories, with global birth distinctness
 inside the expansion. Summability must be proved before tsum manipulations. -/
-def distinctMemoryExpression (A : Model F P J m) (n : ℕ) (rho theta : ℝ) : ℂ :=
+def distinctMemoryExpression (A : Model F P J m) (n : ℕ) (rho theta : ℝ)  :=
   ∑' H : MemoryHistory A n, if H.Valid ∧ H.DistinctBirths then H.Weight rho theta else 0
 
 /-- Fixed potential addresses after memory truncation. -/
-abbrev BirthAddress (P : PrimeGroups) (M n B : ℕ) :=
+abbrev BirthAddress (P : PrimeGroups) (M n B ) :=
   (P.BigGroup × Fin M) ⊕ ((Fin n × P.BigGroup × Fin M) ⊕
     (Fin (n + 1) × P.BigGroup × Fin B))
 

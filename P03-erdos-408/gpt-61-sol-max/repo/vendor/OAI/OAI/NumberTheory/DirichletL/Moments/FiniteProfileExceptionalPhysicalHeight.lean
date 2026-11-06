@@ -1,11 +1,12 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonWindow
 
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
@@ -14,7 +15,7 @@ open CenteredMomentCommonRadialData CenteredMomentHeckeWindowEnergy
 open CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmplitude
 universe u
 
-theorem heightCost_phase (t θ:ℝ):
+theorem heightCost_phase  t θ :
     heightCost t θ≤(1+‖t‖)*(1+2*Real.pi)^2*(1+‖θ‖):=by
   have hc:0≤2*Real.pi:=by positivity
   have ht:0≤‖t‖:=norm_nonneg t
@@ -25,7 +26,7 @@ theorem heightCost_phase (t θ:ℝ):
 
 theorem mass_phase {lo hi:ℝ} (R:Finset (ℕ×ℕ))
     {ι κ:Type u}[Fintype ι][Fintype κ][DecidableEq ι][DecidableEq κ]
-    (s:Input ι)(v:Input κ)(p q:Profiles lo hi)(w:ℝ)(J:ℕ):
+    (s:Input ι)(v:Input κ)(p q:Profiles lo hi) w  J :
     mass R s v p q s.t v.t w (-w) J≤
       (1+2*Real.pi)^(4*J)*profileMass R s.toData v.toData p q J*(1+‖w‖)^(2*J):=by
   have hp:=pow_le_pow_left₀ (heightCost_pos s.t w).le (heightCost_phase s.t w) J
@@ -45,11 +46,9 @@ theorem mass_phase {lo hi:ℝ} (R:Finset (ℕ×ℕ))
   rw [hmass]
   apply he.trans_eq
   simp only [profileMass,mul_pow,←pow_mul]
-  rw [show 4*J=2*J+2*J by omega,show 2*J=J+J by omega]
-  simp only [pow_add]
   ring
 end SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
 
-end
+
 
 end OAI

@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Major.Assembly
 
 public import Erdos408.OneSided.Goodness.BadCount
 public import Erdos408.OneSided.Goodness.Targets
@@ -38,53 +41,50 @@ variable {K : ℕ}
 /-! ### Lists -/
 
 /-- The list part of `RowEdge`. -/
-def ListEdge (Y d₀ : ℝ) {J : ℕ} (p p' : Lists K J) : Prop :=
+def ListEdge (Y d₀ : ℝ) {J } (p p' : Lists K J)  :=
   (∀ i (h : Fin J), p' i h.castSucc = p i h.castSucc) ∧
     (∀ i i' h', p' i (Fin.last J) ≠ p i' h') ∧
     d₀ ≤ (padProd p : ℝ) ∧ (padProd p : ℝ) < 2 * d₀ ∧
     Y < (lastProd p : ℝ) ∧ (lastProd p : ℝ) < 4 * Y ∧
     Y < (lastProd p' : ℝ) ∧ (lastProd p' : ℝ) < 4 * Y
 
+section
+variable {x : ℝ} {d : Data K} {Y d₀ : ℝ} (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {J : ℕ} {P Q : ℕ × ℕ} {p p' : Lists K J} (hV : 0 < d.bandMass x) (hY : 0 ≤ Y) (hU : 0 < d₀ * Y * d.Hm)
+
 /-- The list part of an edge. -/
-theorem RowEdge.listEdge {Y d₀ : ℝ} {J : ℕ} {P Q : ℕ × ℕ} {p p' : Lists K J}
+theorem RowEdge.listEdge        
     (h : RowEdge Y d₀ P p Q p') : ListEdge Y d₀ p p' :=
   ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2.2.2.1, h.2.2.2.2.2.2.2.1, h.2.2.2.2.2.2.2.2.1,
     h.2.2.2.2.2.2.2.2.2⟩
 
 /-- Copied pads have the same product. -/
-theorem padProd_eq_of_pads {J : ℕ} {p p' : Lists K J}
+theorem padProd_eq_of_pads    
     (h : ∀ i (h : Fin J), p' i h.castSucc = p i h.castSucc) : padProd p' = padProd p := by
   unfold padProd
-  exact prod_congr rfl fun i _ => prod_congr rfl fun h' _ => h i h'
+  simp_all
 
 /-- `det(Q, P) = -det(P, Q)`. -/
-theorem det_swap (P Q : ℕ × ℕ) : det Q P = -det P Q := by
+theorem det_swap  P Q  : det Q P = -det P Q := by
   unfold det
   ring
 
+include hdisj in
 /-- The list product of a list in `lists` is squarefree, for disjoint bands. -/
-theorem squarefree_listProd {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {J : ℕ}
-    {p : Lists K J} (hp : p ∈ lists x d J) : Squarefree (listProd p) := by
+theorem squarefree_listProd    
+       
+      (hp : p ∈ lists x d J) : Squarefree (listProd p) := by
   have h := squarefree_prod_of_injective
-    (label_injective hdisj (fun i h => lists_slot_mem_band hp i h) (lists_group_injective hp))
+    (label_injective hdisj (lists_slot_mem_band hp) (lists_group_injective hp))
     fun ih => (mem_filter.1 (lists_slot_mem_band hp ih.1 ih.2)).2
   rwa [Fintype.prod_prod_type] at h
 
 /-- `∑_{a ∈ labels} 1/a = ∏_i V_i`. -/
-theorem sum_labels_inv_prod (x : ℝ) (d : Data K) :
-    ∑ t ∈ d.labels x, ((∏ i, t i : ℕ) : ℝ)⁻¹ = d.bandMass x := by
-  unfold Data.labels Data.bandMass harmonicMass
-  simp_rw [one_div]
-  rw [prod_univ_sum (fun i => band x (d.a i)) fun _ q => ((q : ℕ) : ℝ)⁻¹]
-  refine sum_congr rfl fun t _ => ?_
-  push_cast
-  rw [prod_inv_distrib]
+alias sum_labels_inv_prod := _root_.SharedProofs.sum_labels_inv
 
 open scoped Classical in
 /-- With the pads of `p` fixed, the lists `p'` have `∑ 1/a ≤ ∏_i V_i`, where `a` is the
 product of the last slots: `p'` is fixed by its last slots. -/
-theorem sum_inv_lastProd_le {x : ℝ} {d : Data K} {J : ℕ} (p : Lists K J) :
+theorem sum_inv_lastProd_le       (p : Lists K J) :
     ∑ p' ∈ (lists x d J).filter (fun p' => ∀ i (h : Fin J), p' i h.castSucc = p i h.castSucc),
       ((lastProd p' : ℕ) : ℝ)⁻¹ ≤ d.bandMass x := by
   set f : Lists K J → Fin K → ℕ := fun p' i => p' i (Fin.last J)
@@ -112,9 +112,10 @@ theorem sum_inv_lastProd_le {x : ℝ} {d : Data K} {J : ℕ} (p : Lists K J) :
     _ = d.bandMass x := sum_labels_inv_prod x d
 
 open scoped Classical in
+include hV in
 /-- PD `mem:one-edge-label-mass`: `∏ V_i^{-(M + 1)} ∑ 1/(G a) ≤ 1` over the list pairs with
 copied pads, `G` the list product of the source and `a` the last product of the target. -/
-theorem mass_mul_sum_inv_le {x : ℝ} {d : Data K} (hV : 0 < d.bandMass x) (Y d₀ : ℝ) :
+theorem mass_mul_sum_inv_le        Y d₀  :
     stateMass x d * (d.bandMass x)⁻¹ *
       ∑ pp ∈ (lists x d (padCount x) ×ˢ lists x d (padCount x)).filter
         (fun pp => ListEdge Y d₀ pp.1 pp.2),
@@ -152,9 +153,10 @@ theorem mass_mul_sum_inv_le {x : ℝ} {d : Data K} (hV : 0 < d.bandMass x) (Y d�
     _ ≤ 1 := stateMass_mul_sum_inv_listProd_le x d
 
 open scoped Classical in
+include hV in
 /-- The mirror of `mass_mul_sum_inv_le`, with `G` the list product of the target and `b` the
 last product of the source. -/
-theorem mass_mul_sum_inv_le' {x : ℝ} {d : Data K} (hV : 0 < d.bandMass x) (Y d₀ : ℝ) :
+theorem mass_mul_sum_inv_le'        Y d₀  :
     stateMass x d * (d.bandMass x)⁻¹ *
       ∑ pp ∈ (lists x d (padCount x) ×ˢ lists x d (padCount x)).filter
         (fun pp => ListEdge Y d₀ pp.1 pp.2),
@@ -194,15 +196,15 @@ theorem mass_mul_sum_inv_le' {x : ℝ} {d : Data K} (hV : 0 < d.bandMass x) (Y d
 /-! ### Edges -/
 
 /-- The defining properties of a state, on the underlying pair. -/
-theorem mem_states_iff {x : ℝ} {d : Data K} {Y d₀ : ℝ} {y : (ℕ × ℕ) × Lists K (padCount x)} :
+theorem mem_states_iff       {y : (ℕ × ℕ) × Lists K (padCount x)} :
     y ∈ states x d Y d₀ ↔ y.1 ∈ positions d Y d₀ ∧ y.2 ∈ lists x d (padCount x) ∧
       ∀ i h, y.2 i h ∣ y.1.1 := by
-  unfold states
-  rw [mem_filter, mem_product, and_assoc]
+  grind [states]
 
 open scoped Classical in
+include hY hU in
 /-- Comparison part: a source has at most `17 (10Y + 1) (log₂ 16U)^K` targets. -/
-theorem card_targets_le {x : ℝ} {d : Data K} {Y d₀ : ℝ} (hY : 0 ≤ Y) (hU : 0 < d₀ * Y * d.Hm)
+theorem card_targets_le          
     (hV : 0 ≤ d.Hn) {y₁ : (ℕ × ℕ) × Lists K (padCount x)} (hy₁ : y₁ ∈ states x d Y d₀) :
     (#{y₂ ∈ states x d Y d₀ | RowEdge Y d₀ y₁.1 y₁.2 y₂.1 y₂.2} : ℝ) ≤
       17 * (10 * Y + 1) * (Nat.log 2 ⌊16 * (d₀ * Y * d.Hm)⌋₊ ^ K : ℕ) := by
@@ -246,8 +248,9 @@ theorem card_targets_le {x : ℝ} {d : Data K} {Y d₀ : ℝ} (hY : 0 ≤ Y) (hU
     _ ≤ 17 * (10 * Y + 1) * ((Nat.log 2 ⌊16 * U⌋₊ ^ K : ℕ) : ℝ) := by gcongr
 
 open scoped Classical in
+include hY hU in
 /-- Comparison part, reversed: a target has at most `17 (10Y + 1) (log₂ 16U)^K` sources. -/
-theorem card_sources_le {x : ℝ} {d : Data K} {Y d₀ : ℝ} (hY : 0 ≤ Y) (hU : 0 < d₀ * Y * d.Hm)
+theorem card_sources_le          
     (hV : 0 ≤ d.Hn) {y₂ : (ℕ × ℕ) × Lists K (padCount x)} (hy₂ : y₂ ∈ states x d Y d₀) :
     (#{y₁ ∈ states x d Y d₀ | RowEdge Y d₀ y₁.1 y₁.2 y₂.1 y₂.2} : ℝ) ≤
       17 * (10 * Y + 1) * (Nat.log 2 ⌊16 * (d₀ * Y * d.Hm)⌋₊ ^ K : ℕ) := by
@@ -298,28 +301,35 @@ theorem card_sources_le {x : ℝ} {d : Data K} {Y d₀ : ℝ} (hY : 0 ≤ Y) (hU
     _ ≤ 17 * (10 * Y + 1) * ((Nat.log 2 ⌊16 * U⌋₊ ^ K : ℕ) : ℝ) := by gcongr
 
 /-- On a raw edge, `det(P, Q) = D (b - a)`. -/
-theorem det_eq_of_rawEdge {Y d₀ : ℝ} {J : ℕ} {P Q : ℕ × ℕ} {p p' : Lists K J}
+theorem det_eq_of_rawEdge        
     (he : RowEdge Y d₀ P p Q p') (hr : RawEdge P p Q p') :
     det P Q = padProd p * ((lastProd p : ℤ) - lastProd p') := by
   rw [← Int.mul_ediv_cancel' he.2.2.2.2.1]
   unfold RawEdge at hr
   rw [hr]
 
+end
+
+section
+variable {x : ℝ} {d : Data K} (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (Y d₀ : ℝ)
+
+include hdisj in
 /-- With disjoint bands, the last product of a state divides its first coordinate. -/
-theorem lastProd_dvd {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {J : ℕ}
-    {p : Lists K J} (hp : p ∈ lists x d J) {n : ℕ} (hdvd : ∀ i h, p i h ∣ n) :
+theorem lastProd_dvd    
+      {J : ℕ}
+    {p : Lists K J} (hp : p ∈ lists x d J)  {n}  (hdvd : ∀ i h, p i h ∣ n) :
     lastProd p ∣ n := by
-  have h := listProd_dvd_of_dvd hdisj (fun i h => lists_slot_mem_band hp i h)
+  have h := listProd_dvd_of_dvd hdisj (lists_slot_mem_band hp)
     (lists_group_injective hp) hdvd
   rw [listProd_eq_padProd_mul_lastProd] at h
   exact (Dvd.intro_left _ rfl).trans h
 
 open scoped Classical in
+include hdisj in
 /-- Raw part, bad source: the raw edges from bad sources inject, list pair by list pair, into
 the pairs `(P, Q)` with `G ∣ P₁`, `a ∣ Q₁`, `det(P, Q) = D (b - a)` and `P` bad. -/
-theorem card_raw_le {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (Y d₀ : ℝ) :
+theorem card_raw_le    
+        :
     #{yy ∈ states x d Y d₀ ×ˢ states x d Y d₀ | ¬ IsGood x d Y d₀ yy.1.1 yy.1.2 ∧
         RowEdge Y d₀ yy.1.1 yy.1.2 yy.2.1 yy.2.2 ∧ RawEdge yy.1.1 yy.1.2 yy.2.1 yy.2.2} ≤
       ∑ pp ∈ (lists x d (padCount x) ×ˢ lists x d (padCount x)).filter
@@ -341,27 +351,20 @@ theorem card_raw_le {x : ℝ} {d : Data K}
       rw [← hpp]
       refine mem_coe.2 (mem_filter.2 ⟨mem_product.2 ⟨hpos₁, hpos₂⟩, ?_, ?_,
         det_eq_of_rawEdge he hr, hbad⟩)
-      · exact_mod_cast listProd_dvd_of_dvd hdisj (fun i h => lists_slot_mem_band hl₁ i h)
+      · exact_mod_cast listProd_dvd_of_dvd hdisj (lists_slot_mem_band hl₁)
           (lists_group_injective hl₁) hdvd₁
       · exact_mod_cast lastProd_dvd hdisj hl₂ hdvd₂
     · intro yy hyy yy' hyy' heq
-      have hpp := (mem_filter.1 (mem_coe.1 hyy)).2
-      have hpp' := (mem_filter.1 (mem_coe.1 hyy')).2
-      have h₁ : yy.1.1 = yy'.1.1 := (Prod.ext_iff.1 heq).1
-      have h₂ : yy.2.1 = yy'.2.1 := (Prod.ext_iff.1 heq).2
-      rw [← hpp'] at hpp
-      exact Prod.ext (Prod.ext h₁ (Prod.ext_iff.1 hpp).1) (Prod.ext h₂ (Prod.ext_iff.1 hpp).2)
+      grind
   · intro yy hyy
-    obtain ⟨hmem, -, he, -⟩ := mem_filter.1 hyy
-    obtain ⟨h₁, h₂⟩ := mem_product.1 hmem
-    exact mem_filter.2 ⟨mem_product.2 ⟨(mem_states_iff.1 h₁).2.1, (mem_states_iff.1 h₂).2.1⟩,
-      he.listEdge⟩
+    grind [mem_states_iff, Erdos408.OneSided.RowEdge.listEdge]
 
 open scoped Classical in
+include hdisj in
 /-- Raw part, bad target: the same injection with source and target exchanged, into the
 pairs `(Q, P)` with `G' ∣ Q₁`, `b ∣ P₁`, `det(Q, P) = D (a - b)` and `Q` bad. -/
-theorem card_raw_le' {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (Y d₀ : ℝ) :
+theorem card_raw_le'    
+        :
     #{yy ∈ states x d Y d₀ ×ˢ states x d Y d₀ | ¬ IsGood x d Y d₀ yy.2.1 yy.2.2 ∧
         RowEdge Y d₀ yy.1.1 yy.1.2 yy.2.1 yy.2.2 ∧ RawEdge yy.1.1 yy.1.2 yy.2.1 yy.2.2} ≤
       ∑ pp ∈ (lists x d (padCount x) ×ˢ lists x d (padCount x)).filter
@@ -382,28 +385,21 @@ theorem card_raw_le' {x : ℝ} {d : Data K}
       obtain ⟨hpos₂, hl₂, hdvd₂⟩ := mem_states_iff.1 h₂
       rw [← hpp]
       refine mem_coe.2 (mem_filter.2 ⟨mem_product.2 ⟨hpos₂, hpos₁⟩, ?_, ?_, ?_, hbad⟩)
-      · exact_mod_cast listProd_dvd_of_dvd hdisj (fun i h => lists_slot_mem_band hl₂ i h)
+      · exact_mod_cast listProd_dvd_of_dvd hdisj (lists_slot_mem_band hl₂)
           (lists_group_injective hl₂) hdvd₂
       · exact_mod_cast lastProd_dvd hdisj hl₁ hdvd₁
       · rw [det_swap, det_eq_of_rawEdge he hr]
         ring
     · intro yy hyy yy' hyy' heq
-      have hpp := (mem_filter.1 (mem_coe.1 hyy)).2
-      have hpp' := (mem_filter.1 (mem_coe.1 hyy')).2
-      have h₁ : yy.2.1 = yy'.2.1 := (Prod.ext_iff.1 heq).1
-      have h₂ : yy.1.1 = yy'.1.1 := (Prod.ext_iff.1 heq).2
-      rw [← hpp'] at hpp
-      exact Prod.ext (Prod.ext h₂ (Prod.ext_iff.1 hpp).1) (Prod.ext h₁ (Prod.ext_iff.1 hpp).2)
+      grind
   · intro yy hyy
-    obtain ⟨hmem, -, he, -⟩ := mem_filter.1 hyy
-    obtain ⟨h₁, h₂⟩ := mem_product.1 hmem
-    exact mem_filter.2 ⟨mem_product.2 ⟨(mem_states_iff.1 h₁).2.1, (mem_states_iff.1 h₂).2.1⟩,
-      he.listEdge⟩
+    grind [mem_states_iff, Erdos408.OneSided.RowEdge.listEdge]
 
 open scoped Classical in
+include hdisj in
 /-- The bad states inject, list by list, into the positions `P` with `G ∣ P₁` that are bad. -/
-theorem card_bad_le {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (Y d₀ : ℝ) :
+theorem card_bad_le    
+        :
     #{y ∈ states x d Y d₀ | ¬ IsGood x d Y d₀ y.1 y.2} ≤
       ∑ p ∈ lists x d (padCount x),
         #{P ∈ positions d Y d₀ | (listProd p : ℤ) ∣ P.1 ∧ ¬ IsGood x d Y d₀ P p} := by
@@ -415,20 +411,20 @@ theorem card_bad_le {x : ℝ} {d : Data K}
       obtain ⟨hpos, hl, hdvd⟩ := mem_states_iff.1 hst
       rw [← hp]
       refine mem_coe.2 (mem_filter.2 ⟨hpos, ?_, hbad⟩)
-      exact_mod_cast listProd_dvd_of_dvd hdisj (fun i h => lists_slot_mem_band hl i h)
+      exact_mod_cast listProd_dvd_of_dvd hdisj (lists_slot_mem_band hl)
         (lists_group_injective hl) hdvd
     · intro y hy y' hy' heq
-      have hp := (mem_filter.1 (mem_coe.1 hy)).2
-      have hp' := (mem_filter.1 (mem_coe.1 hy')).2
-      exact Prod.ext heq (hp.trans hp'.symm)
+      grind
   · intro y hy
     exact (mem_states_iff.1 (mem_filter.1 hy).1).2.1
+
+end
 
 /-! ### Bad counts at fixed lists -/
 
 /-- The interval bounds of the congruence counts (`exists_card_cong_le`) at the constant
 `C₁`. -/
-def CongBound (C₁ : ℝ) : Prop :=
+def CongBound (C₁ : ℝ)  :=
   ∀ U V : ℝ, 2 ≤ U → 2 ≤ V → ∀ G a : ℕ, Squarefree (G * a) → ∀ z : ℤ, z ≠ 0 →
     IsCoprime z (a : ℤ) → ∀ k : ℤ,
     IntervalBound (rootBox U V) (fun P => (G : ℤ) ∣ P.1 ∧
@@ -447,7 +443,7 @@ theorem exists_congBound : ∃ C₁ : ℝ, 0 ≤ C₁ ∧ CongBound C₁ := by
 
 open scoped Classical in
 /-- The bad-count hypothesis at fixed `x, d, Y, d₀`, from `eventually_card_not_isGood_le`. -/
-def BadCountBound (x alo : ℝ) (d : Data K) (Y d₀ : ℝ) : Prop :=
+def BadCountBound (x alo : ℝ) (d : Data K) (Y d₀ : ℝ)  :=
   ∀ p ∈ lists x d (padCount x), ∀ T : Finset (ℕ × ℕ), (∀ P ∈ T, 0 < P.1) →
     ∀ (Φ : ℕ × ℕ → Prop) [DecidablePred Φ] (A E : ℝ), 0 ≤ A → 0 ≤ E →
       IntervalBound T Φ A E →
@@ -461,28 +457,37 @@ theorem isCoprime_mul_sub {D b a : ℤ} (hD : IsCoprime D a) (hb : IsCoprime b a
   obtain ⟨u, v, h⟩ := hb
   exact ⟨u, v + u, by linear_combination h⟩
 
+section
+variable {z : ℤ} {J : ℕ} {p : Lists K J} {a : ℕ}
+
 /-- `z ≠ 0` when `(z, a) = 1` and `a ≥ 2`. -/
-theorem ne_zero_of_isCoprime {z : ℤ} {a : ℕ} (h : IsCoprime z (a : ℤ)) (ha : 2 ≤ a) : z ≠ 0 := by
+theorem ne_zero_of_isCoprime     (h : IsCoprime z (a : ℤ)) (ha : 2 ≤ a) : z ≠ 0 := by
   rintro rfl
   rw [isCoprime_zero_left, Int.isUnit_iff] at h
   omega
 
 /-- The coprimality of a source list product `G = D b` with a new last product `a`. -/
-theorem isCoprime_of_coprime {J : ℕ} {p : Lists K J} {a : ℕ}
+theorem isCoprime_of_coprime      
     (h : Nat.Coprime (listProd p) a) :
     IsCoprime ((padProd p : ℤ) * ((lastProd p : ℤ) - a)) (a : ℤ) := by
   rw [listProd_eq_padProd_mul_lastProd] at h
   exact isCoprime_mul_sub (Nat.isCoprime_iff_coprime.2 (Nat.Coprime.coprime_mul_right h))
     (Nat.isCoprime_iff_coprime.2 (Nat.Coprime.coprime_mul_left h))
 
+end
+
 open scoped Classical in
+section
+variable {x alo : ℝ} {d : Data K} {Y d₀ C₁ : ℝ} (hC₁ : 0 ≤ C₁) (hC : CongBound C₁) (hB : BadCountBound x alo d Y d₀) (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (hU : 2 ≤ d₀ * Y * d.Hm) (hV : 2 ≤ d.Hn) (hY : 1 ≤ Y) {p p' : Lists K (padCount x)} (hp : p ∈ lists x d (padCount x)) (hp' : p' ∈ lists x d (padCount x)) (he : ListEdge Y d₀ p p')
+
+include hC₁ hC hB hdisj hU hV hp in
 /-- At fixed lists, the bad positions `P` with `G ∣ P₁` number at most
 `90 UV/G · e^{-L^{a₋}/4} + 3 E N`: the congruence count with `a = z = 1`. -/
-theorem card_bad_dvd_le {x alo : ℝ} {d : Data K} {Y d₀ C₁ : ℝ} (hC₁ : 0 ≤ C₁) (hC : CongBound C₁)
-    (hB : BadCountBound x alo d Y d₀)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hU : 2 ≤ d₀ * Y * d.Hm) (hV : 2 ≤ d.Hn) {p : Lists K (padCount x)}
-    (hp : p ∈ lists x d (padCount x)) :
+theorem card_bad_dvd_le          
+     
+     
+         
+      :
     (#{P ∈ positions d Y d₀ | (listProd p : ℤ) ∣ P.1 ∧ ¬ IsGood x d Y d₀ P p} : ℝ) ≤
       90 * (d₀ * Y * d.Hm) * d.Hn / listProd p * Real.exp (-Real.log x ^ alo / 4) +
         3 * (C₁ * (d₀ * Y * d.Hm) * d.Hn * (listProd p : ℝ) ^ 4 *
@@ -495,26 +500,26 @@ theorem card_bad_dvd_le {x alo : ℝ} {d : Data K} {Y d₀ C₁ : ℝ} (hC₁ : 
   have hT : ∀ P ∈ rootBox U d.Hn, 0 < P.1 := fun P hP => by
     have := (mem_rootBox_bounds (by linarith) (by linarith) hP).1
     exact_mod_cast (show (0 : ℝ) < U by linarith).trans_le this
-  have hU0 : 0 < U := by linarith
-  have hV0 : 0 < d.Hn := by linarith
+  
+  
   have hcount := hB p hp (rootBox U d.Hn) hT _ _ _ (by positivity) (by positivity) hI
   rw [positions_eq_rootBox]
   refine (Nat.cast_le.2 (card_le_card fun P hP => ?_)).trans (hcount.trans (le_of_eq ?_))
-  · rw [mem_filter] at hP ⊢
-    exact ⟨hP.1, ⟨hP.2.1, Nat.cast_one (R := ℤ) ▸ one_dvd _⟩, hP.2.2⟩
+  · grind
   · push_cast
     ring
 
 open scoped Classical in
+include hC₁ hC hB hdisj hU hV hY hp hp' he in
 /-- Raw part at a list pair: the pairs `(P, Q)` with `G ∣ P₁`, `a ∣ Q₁`,
 `det(P, Q) = D (b - a)` and `P` bad number at most
 `17 (90 UV/(G a) · e^{-L^{a₋}/4} + 3 |z| E N)`. -/
-theorem card_joint_le {x alo : ℝ} {d : Data K} {Y d₀ C₁ : ℝ} (hC₁ : 0 ≤ C₁) (hC : CongBound C₁)
-    (hB : BadCountBound x alo d Y d₀)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hU : 2 ≤ d₀ * Y * d.Hm) (hV : 2 ≤ d.Hn) (hY : 1 ≤ Y) {p p' : Lists K (padCount x)}
-    (hp : p ∈ lists x d (padCount x)) (hp' : p' ∈ lists x d (padCount x))
-    (he : ListEdge Y d₀ p p') :
+theorem card_joint_le          
+     
+     
+           
+       
+      :
     (#{PQ ∈ positions d Y d₀ ×ˢ positions d Y d₀ | (listProd p : ℤ) ∣ PQ.1.1 ∧
         (lastProd p' : ℤ) ∣ PQ.2.1 ∧
         det PQ.1 PQ.2 = padProd p * ((lastProd p : ℤ) - lastProd p') ∧
@@ -538,8 +543,8 @@ theorem card_joint_le {x alo : ℝ} {d : Data K} {Y d₀ C₁ : ℝ} (hC₁ : 0 
   have hT : ∀ P ∈ rootBox U d.Hn, 0 < P.1 := fun P hP => by
     have := (mem_rootBox_bounds (by linarith) (by linarith) hP).1
     exact_mod_cast (show (0 : ℝ) < U by linarith).trans_le this
-  have hU0 : 0 < U := by linarith
-  have hV0 : 0 < d.Hn := by linarith
+  
+  
   have hA : 0 ≤ 90 * U * d.Hn / ((G : ℝ) * a) := by positivity
   have hE : 0 ≤ 3 * |(z : ℝ)| * (C₁ * U * d.Hn * ((G : ℝ) * a) ^ 4 *
       min U d.Hn ^ (-(1 / 5 : ℝ)) + (16 * U + d.Hn + 2)) := by positivity
@@ -557,10 +562,7 @@ theorem card_joint_le {x alo : ℝ} {d : Data K} {Y d₀ C₁ : ℝ} (hC₁ : 0 
         refine sum_le_sum fun k _ => ?_
         have hI := hC U d.Hn hU hV G a hS z hz hza k
         have h := hB p hp (rootBox U d.Hn) hT _ _ _ hA hE hI
-        refine (Nat.cast_le.2 (card_le_card fun P hP => ?_)).trans (h.trans (le_of_eq ?_))
-        · rw [mem_filter] at hP ⊢
-          exact hP
-        · ring
+        assumption
     _ = _ := by
         have hzr : (z : ℝ) = (padProd p : ℝ) * ((lastProd p : ℝ) - a) := by
           simp only [z]
@@ -571,14 +573,15 @@ theorem card_joint_le {x alo : ℝ} {d : Data K} {Y d₀ C₁ : ℝ} (hC₁ : 0 
         ring
 
 open scoped Classical in
+include hC₁ hC hB hdisj hU hV hY hp hp' he in
 /-- Raw part at a list pair, reversed: the pairs `(Q, P)` with `G' ∣ Q₁`, `b ∣ P₁`,
 `det(Q, P) = D (a - b)` and `Q` bad. -/
-theorem card_joint_le' {x alo : ℝ} {d : Data K} {Y d₀ C₁ : ℝ} (hC₁ : 0 ≤ C₁) (hC : CongBound C₁)
-    (hB : BadCountBound x alo d Y d₀)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hU : 2 ≤ d₀ * Y * d.Hm) (hV : 2 ≤ d.Hn) (hY : 1 ≤ Y) {p p' : Lists K (padCount x)}
-    (hp : p ∈ lists x d (padCount x)) (hp' : p' ∈ lists x d (padCount x))
-    (he : ListEdge Y d₀ p p') :
+theorem card_joint_le'          
+     
+     
+           
+       
+      :
     (#{QP ∈ positions d Y d₀ ×ˢ positions d Y d₀ | (listProd p' : ℤ) ∣ QP.1.1 ∧
         (lastProd p : ℤ) ∣ QP.2.1 ∧
         det QP.1 QP.2 = padProd p * ((lastProd p' : ℤ) - lastProd p) ∧
@@ -599,7 +602,7 @@ theorem card_joint_le' {x alo : ℝ} {d : Data K} {Y d₀ C₁ : ℝ} (hC₁ : 0
     intro i i' h' heq
     refine Fin.lastCases (fun heq => he.2.1 i' i _ heq.symm) (fun h heq => ?_) h' heq
     rw [he.1 i' h] at heq
-    have hinj := label_injective hdisj (fun i h => lists_slot_mem_band hp i h)
+    have hinj := label_injective hdisj (lists_slot_mem_band hp)
       (lists_group_injective hp)
     have := congrArg Prod.snd (hinj (a₁ := (i, Fin.last _)) (a₂ := (i', h.castSucc)) heq)
     exact Fin.castSucc_ne_last h this.symm
@@ -614,8 +617,8 @@ theorem card_joint_le' {x alo : ℝ} {d : Data K} {Y d₀ C₁ : ℝ} (hC₁ : 0
   have hT : ∀ P ∈ rootBox U d.Hn, 0 < P.1 := fun P hP => by
     have := (mem_rootBox_bounds (by linarith) (by linarith) hP).1
     exact_mod_cast (show (0 : ℝ) < U by linarith).trans_le this
-  have hU0 : 0 < U := by linarith
-  have hV0 : 0 < d.Hn := by linarith
+  
+  
   have hA : 0 ≤ 90 * U * d.Hn / ((G : ℝ) * a) := by positivity
   have hE : 0 ≤ 3 * |(z : ℝ)| * (C₁ * U * d.Hn * ((G : ℝ) * a) ^ 4 *
       min U d.Hn ^ (-(1 / 5 : ℝ)) + (16 * U + d.Hn + 2)) := by positivity
@@ -645,6 +648,8 @@ theorem card_joint_le' {x alo : ℝ} {d : Data K} {Y d₀ C₁ : ℝ} (hC₁ : 0
         rw [sum_const, card_range, nsmul_eq_mul, hzr]
         push_cast
         ring
+
+end
 
 /-! ### Sizes -/
 
@@ -678,28 +683,33 @@ theorem listProd_le_exp' {C CX alo ahi g x : ℝ} {d : Data K}
           ← Real.exp_nat_mul, ← Real.exp_nat_mul]
     _ ≤ Real.exp (4 * K * L ^ (1 / 2 : ℝ)) := by
         refine Real.exp_le_exp.2 ?_
-        have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg _
+        
         push_cast
         nlinarith
 
+section
+variable {x : ℝ} {d : Data K} (hL : 1 ≤ Real.log x) (ha : ∀ i, d.a i ≤ 1 / 5) {Y : ℝ} (hY : 1 ≤ Y) (hYE : Y ≤ Real.exp (K * Real.log x ^ (1 / 2 : ℝ)) ^ 4) {J : ℕ} (hJ : J = padCount x) {p : Lists K J} (hp : 0 < listProd p)
+
+include hp in
 /-- The last product divides the list product. -/
-theorem lastProd_le_listProd {J : ℕ} {p : Lists K J} (hp : 0 < listProd p) :
+theorem lastProd_le_listProd       :
     lastProd p ≤ listProd p :=
   Nat.le_of_dvd hp (by rw [listProd_eq_padProd_mul_lastProd]; exact Dvd.intro_left _ rfl)
 
+include hp in
 /-- The pad product divides the list product. -/
-theorem padProd_le_listProd {J : ℕ} {p : Lists K J} (hp : 0 < listProd p) :
+theorem padProd_le_listProd       :
     padProd p ≤ listProd p :=
   Nat.le_of_dvd hp (by rw [listProd_eq_padProd_mul_lastProd]; exact Dvd.intro _ rfl)
 
 /-- `log₂ n ≤ 2 log n` for `n ≥ 1`. -/
-theorem natLog_le_two_mul_log {n : ℕ} (hn : n ≠ 0) : (Nat.log 2 n : ℝ) ≤ 2 * Real.log n := by
+theorem natLog_le_two_mul_log  {n}  (hn : n ≠ 0) : (Nat.log 2 n : ℝ) ≤ 2 * Real.log n := by
   have h := Nat.pow_log_le_self 2 hn
   have h' : ((2 : ℝ)) ^ Nat.log 2 n ≤ n := by exact_mod_cast h
   have hlog := Real.log_le_log (by positivity) h'
   rw [Real.log_pow] at hlog
   have h2 : 1 / 2 < Real.log 2 := by linarith [Real.log_two_gt_d9]
-  have hn0 : 0 ≤ Real.log n := Real.log_natCast_nonneg n
+  
   nlinarith
 
 /-! ### The decomposition -/
@@ -707,7 +717,7 @@ theorem natLog_le_two_mul_log {n : ℕ} (hn : n ≠ 0) : (Nat.log 2 n : ℝ) ≤
 open scoped Classical in
 /-- The bad mass splits into the raw and comparison parts with bad source or bad target. -/
 theorem sum_bad_mul_eq {α : Type*} (s : Finset α) (good : α → Prop) (E R : α → α → Prop)
-    (W κ : ℝ) :
+     W κ  :
     ∑ y₁ ∈ s, ∑ y₂ ∈ s, ((if good y₁ then (0 : ℝ) else 1) + (if good y₂ then 0 else 1)) *
         (if E y₁ y₂ then W * ((if R y₁ y₂ then 1 else 0) + κ) else 0) =
       W * ((#{yy ∈ s ×ˢ s | ¬ good yy.1 ∧ E yy.1 yy.2 ∧ R yy.1 yy.2} : ℝ) +
@@ -726,26 +736,24 @@ theorem sum_bad_mul_eq {α : Type*} (s : Finset α) (good : α → Prop) (E R : 
     refine sum_congr rfl fun y₁ _ => ?_
     by_cases h : good y₁
     · simp [h]
-    · simp only [h, not_false_eq_true, true_and, ↓reduceIte]
-      exact natCast_card_filter _ _
+    simp_all
   have h₄ : ∑ y₂ ∈ s.filter (fun y => ¬ good y), (#{y₁ ∈ s | E y₁ y₂} : ℝ) =
       ∑ y₁ ∈ s, ∑ y₂ ∈ s, if ¬ good y₂ ∧ E y₁ y₂ then 1 else 0 := by
     rw [sum_filter, sum_comm]
     refine sum_congr rfl fun y₂ _ => ?_
     by_cases h : good y₂
     · simp [h]
-    · simp only [h, not_false_eq_true, true_and, ↓reduceIte]
-      exact natCast_card_filter _ _
+    simp_all
   rw [h₁, h₂, h₃, h₄]
   simp only [mul_add, mul_sum, ← sum_add_distrib]
   refine sum_congr rfl fun y₁ _ => sum_congr rfl fun y₂ _ => ?_
-  by_cases h1 : good y₁ <;> by_cases h2 : good y₂ <;> by_cases hE : E y₁ y₂ <;>
-    by_cases hR : R y₁ y₂ <;> simp [h1, h2, hE, hR] <;> ring
+  grind
 
 /-! ### Size bounds in terms of `L^{1/2}` -/
 
+include hL in
 /-- `M^K ≤ exp(K L^{1/2})` for `M = J + 1`. -/
-theorem padCount_pow_le {x : ℝ} (hL : 1 ≤ Real.log x) :
+theorem padCount_pow_le     :
     ((padCount x : ℝ) + 1) ^ K ≤ Real.exp (K * Real.log x ^ (1 / 2 : ℝ)) := by
   rw [Real.exp_nat_mul]
   gcongr
@@ -753,8 +761,9 @@ theorem padCount_pow_le {x : ℝ} (hL : 1 ≤ Real.log x) :
   exact (Nat.floor_le (by positivity)).trans
     (Real.rpow_le_rpow_of_exponent_le hL (by norm_num))
 
+include hL ha in
 /-- `B = exp(2 ∑ L^{a_i}) ≤ exp(2K L^{1/2})` for exponents at most `1/5`. -/
-theorem labelBound_le {x : ℝ} {d : Data K} (hL : 1 ≤ Real.log x) (ha : ∀ i, d.a i ≤ 1 / 5) :
+theorem labelBound_le         :
     labelBound x d ≤ Real.exp (2 * K * Real.log x ^ (1 / 2 : ℝ)) := by
   unfold labelBound
   refine Real.exp_le_exp.2 ?_
@@ -764,14 +773,15 @@ theorem labelBound_le {x : ℝ} {d : Data K} (hL : 1 ≤ Real.log x) (ha : ∀ i
   linarith
 
 /-- `exp(c K L^{1/2}) = t^c` with `t = exp(K L^{1/2})`. -/
-theorem exp_mul_eq_pow (c : ℕ) (y : ℝ) : Real.exp (c * y) = Real.exp y ^ c := by
+theorem exp_mul_eq_pow (c : ℕ)  y  : Real.exp (c * y) = Real.exp y ^ c := by
   rw [← Real.exp_nat_mul]
 
+include hL ha hY hYE hJ in
 /-- `badIntervals ≤ 6 t^{17}` with `t = exp(K L^{1/2})`, when `1 ≤ Y`, `Y` and the list product
 are at most `t^4 = exp(4K L^{1/2})`, and the exponents are at most `1/5`. -/
-theorem badIntervals_le {x : ℝ} {d : Data K} (hL : 1 ≤ Real.log x) (ha : ∀ i, d.a i ≤ 1 / 5)
-    {Y : ℝ} (hY : 1 ≤ Y) (hYE : Y ≤ Real.exp (K * Real.log x ^ (1 / 2 : ℝ)) ^ 4)
-    {J : ℕ} (hJ : J = padCount x) {p : Lists K J}
+theorem badIntervals_le        
+         
+         
     (hG : (listProd p : ℝ) ≤ Real.exp (K * Real.log x ^ (1 / 2 : ℝ)) ^ 4) :
     badIntervals x d Y p ≤ 6 * Real.exp (K * Real.log x ^ (1 / 2 : ℝ)) ^ 17 := by
   subst hJ
@@ -779,7 +789,7 @@ theorem badIntervals_le {x : ℝ} {d : Data K} (hL : 1 ≤ Real.log x) (ha : ∀
   set t := Real.exp (K * u)
   set n := ⌊Y ^ (1 / 5 : ℝ)⌋₊
   have hu : 1 ≤ u := Real.one_le_rpow hL (by norm_num)
-  have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg K
+  
   have ht : 1 ≤ t := Real.one_le_exp (by positivity)
   have hn : (n : ℝ) ≤ t ^ 4 := by
     refine (Nat.floor_le (by positivity)).trans (le_trans ?_ hYE)
@@ -796,8 +806,8 @@ theorem badIntervals_le {x : ℝ} {d : Data K} (hL : 1 ≤ Real.log x) (ha : ∀
     gcongr
     calc (2 : ℝ) ≤ 1 + u := by linarith
       _ ≤ Real.exp u := by linarith [Real.add_one_le_exp u]
-  have hG0 : (0 : ℝ) ≤ listProd p := Nat.cast_nonneg _
-  have ht4 : 1 ≤ t ^ 4 := one_le_pow₀ ht
+  
+  
   have ht8 : 1 ≤ t ^ 8 := one_le_pow₀ ht
   -- the two terms
   have ht₁ : ((padCount x : ℝ) + 1) ^ K * n * (2 * n * listProd p + 1) ≤ 3 * t ^ 17 := by
@@ -808,7 +818,7 @@ theorem badIntervals_le {x : ℝ} {d : Data K} (hL : 1 ≤ Real.log x) (ha : ∀
       _ ≤ 3 * t ^ 17 := by gcongr; norm_num
   have ht₂ : 2 ^ K * labelBound x d * (((padCount x : ℝ) + 1) ^ K * labelBound x d) ^ 2 *
       (2 * listProd p * labelBound x d ^ 2 + 1) ≤ 3 * t ^ 17 := by
-    have hB2 : 1 ≤ (t ^ 2) ^ 2 := one_le_pow₀ (one_le_pow₀ ht)
+    
     calc 2 ^ K * labelBound x d * (((padCount x : ℝ) + 1) ^ K * labelBound x d) ^ 2 *
           (2 * listProd p * labelBound x d ^ 2 + 1)
         ≤ t * t ^ 2 * (t * t ^ 2) ^ 2 * (2 * t ^ 4 * (t ^ 2) ^ 2 + t ^ 4 * (t ^ 2) ^ 2) := by
@@ -818,18 +828,17 @@ theorem badIntervals_le {x : ℝ} {d : Data K} (hL : 1 ≤ Real.log x) (ha : ∀
   unfold badIntervals
   linarith
 
+include hL ha in
 /-- At most `t^4` lists, `t = exp(K L^{1/2})`: there are `∏_i |𝒫_i|^M ≤ exp(2 M ∑ L^{a_i})` of
 them and `M L^{1/5} ≤ 2 L^{1/2}`. -/
-theorem card_lists_le_pow {x : ℝ} {d : Data K} (hL : 1 ≤ Real.log x)
-    (ha : ∀ i, d.a i ≤ 1 / 5) :
+theorem card_lists_le_pow      
+      :
     ((lists x d (padCount x)).card : ℝ) ≤ Real.exp (K * Real.log x ^ (1 / 2 : ℝ)) ^ 4 := by
   set L := Real.log x
   have hcard : (lists x d (padCount x)).card ≤
       ∏ i, (band x (d.a i)).card ^ (padCount x + 1) := by
     refine (card_filter_le _ _).trans (le_of_eq ?_)
-    rw [Fintype.card_piFinset]
-    exact prod_congr rfl fun i _ => by
-      rw [Fintype.card_piFinset, prod_const, card_univ, Fintype.card_fin]
+    simp_all
   have hJ : (padCount x : ℝ) + 1 ≤ 2 * L ^ (1 / 100 : ℝ) := by
     have h₁ : (padCount x : ℝ) ≤ L ^ (1 / 100 : ℝ) := Nat.floor_le (by positivity)
     have h₂ : 1 ≤ L ^ (1 / 100 : ℝ) := Real.one_le_rpow hL (by norm_num)
@@ -837,7 +846,7 @@ theorem card_lists_le_pow {x : ℝ} {d : Data K} (hL : 1 ≤ Real.log x)
   have hexp : L ^ (1 / 100 : ℝ) * L ^ (1 / 5 : ℝ) ≤ L ^ (1 / 2 : ℝ) := by
     rw [← Real.rpow_add (by linarith)]
     exact Real.rpow_le_rpow_of_exponent_le hL (by norm_num)
-  have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg K
+  
   have h15 : 0 ≤ L ^ (1 / 5 : ℝ) := by positivity
   calc ((lists x d (padCount x)).card : ℝ)
       ≤ ∏ i, ((band x (d.a i)).card : ℝ) ^ (padCount x + 1) := by exact_mod_cast hcard
@@ -856,8 +865,9 @@ theorem card_lists_le_pow {x : ℝ} {d : Data K} (hL : 1 ≤ Real.log x)
         have : ((padCount x : ℝ) + 1) * (2 * L ^ (1 / 5 : ℝ)) ≤ 4 * L ^ (1 / 2 : ℝ) := by nlinarith
         nlinarith
 
+include hL in
 /-- `(2^K)^{M + 1} ≤ t^3` with `t = exp(K L^{1/2})`. -/
-theorem two_pow_pow_le {x : ℝ} (hL : 1 ≤ Real.log x) :
+theorem two_pow_pow_le     :
     ((2 : ℝ) ^ K) ^ (padCount x + 2) ≤ Real.exp (K * Real.log x ^ (1 / 2 : ℝ)) ^ 3 := by
   set L := Real.log x
   have hJ : (padCount x : ℝ) + 2 ≤ 3 * L ^ (1 / 2 : ℝ) := by
@@ -873,13 +883,18 @@ theorem two_pow_pow_le {x : ℝ} (hL : 1 ≤ Real.log x) :
     _ ≤ Real.exp ((3 : ℕ) * (K * L ^ (1 / 2 : ℝ))) := by
         refine Real.exp_le_exp.2 ?_
         push_cast
-        have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg K
+        
         nlinarith
+
+end
 
 /-! ### Asymptotics -/
 
+section
+variable (K) (A₀ c : ℝ)
+
 /-- Eventually `exp(-L^{1/10}/8) ≤ L^{3A₀}`. -/
-theorem eventually_exp_le_rpow (A₀ : ℝ) :
+theorem eventually_exp_le_rpow   :
     ∀ᶠ x : ℝ in atTop, Real.exp (-Real.log x ^ (1 / 10 : ℝ) / 8) ≤ Real.log x ^ (3 * A₀) := by
   filter_upwards [eventually_mul_rpow_mul_exp_le (by norm_num : (0 : ℝ) < 1 / 20) 1 0 (-(3 * A₀)),
     eventually_le_rpow_log (by norm_num : (0 : ℝ) < 1 / 20) 8,
@@ -895,7 +910,7 @@ theorem eventually_exp_le_rpow (A₀ : ℝ) :
   nlinarith
 
 /-- Eventually `(3L)^K ≤ exp(L^{1/10}/8)`. -/
-theorem eventually_pow_le_exp (K : ℕ) :
+theorem eventually_pow_le_exp   :
     ∀ᶠ x : ℝ in atTop, (3 * Real.log x) ^ K ≤ Real.exp (Real.log x ^ (1 / 10 : ℝ) / 8) := by
   filter_upwards [eventually_mul_rpow_mul_exp_le (by norm_num : (0 : ℝ) < 1 / 20) (3 ^ K) K 0,
     eventually_le_rpow_log (by norm_num : (0 : ℝ) < 1 / 20) 8,
@@ -914,7 +929,7 @@ theorem eventually_pow_le_exp (K : ℕ) :
 /-- The error asymptotics: with `t = exp(K L^{1/2})` and `c ≥ 0`, eventually
 `T = c t^{70} exp(-L^{0.99}/5)` satisfies `T ≤ L^{3A₀} exp(-L^{1/5}/8)` and
 `T (3L)^K ≤ exp(-L^{1/5}/8)`. -/
-theorem eventually_error_le (K : ℕ) (A₀ c : ℝ) (hc : 0 ≤ c) :
+theorem eventually_error_le     (hc : 0 ≤ c) :
     ∀ᶠ x : ℝ in atTop,
       c * Real.exp (K * Real.log x ^ (1 / 2 : ℝ)) ^ 70 *
           Real.exp (-Real.log x ^ (99 / 100 : ℝ) / 5) ≤
@@ -930,10 +945,10 @@ theorem eventually_error_le (K : ℕ) (A₀ c : ℝ) (hc : 0 ≤ c) :
   set u := L ^ (1 / 2 : ℝ)
   simp only [neg_neg, Real.rpow_zero, one_mul, mul_one] at hA
   have hu : 1 ≤ u := Real.one_le_rpow hL (by norm_num)
-  have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg K
+  
   have h10 : L ^ (1 / 10 : ℝ) ≤ u := Real.rpow_le_rpow_of_exponent_le hL (by norm_num)
   have h5 : L ^ (1 / 5 : ℝ) ≤ u := Real.rpow_le_rpow_of_exponent_le hL (by norm_num)
-  have h15 : 0 ≤ L ^ (1 / 5 : ℝ) := by positivity
+  
   have h99 : L ^ (99 / 100 : ℝ) = u * L ^ (49 / 100 : ℝ) := by
     rw [← Real.rpow_add (by linarith)]
     norm_num
@@ -956,7 +971,7 @@ theorem eventually_error_le (K : ℕ) (A₀ c : ℝ) (hc : 0 ≤ c) :
           nlinarith
       _ = Real.exp (-u) * Real.exp (-L ^ (1 / 5 : ℝ) / 8) := Real.exp_add _ _
   have hexpu : Real.exp (-u) ≤ 1 := Real.exp_le_one_iff.2 (by linarith)
-  have hE : 0 ≤ Real.exp (-L ^ (1 / 5 : ℝ) / 8) := (Real.exp_pos _).le
+  
   constructor
   · calc c * Real.exp (K * u) ^ 70 * Real.exp (-L ^ (99 / 100 : ℝ) / 5)
         ≤ c * Real.exp (K * u) ^ 70 * Real.exp (-L ^ (99 / 100 : ℝ) / 5) * (3 * L) ^ K :=
@@ -966,6 +981,8 @@ theorem eventually_error_le (K : ℕ) (A₀ c : ℝ) (hc : 0 ≤ c) :
   · calc _ ≤ Real.exp (-u) * Real.exp (-L ^ (1 / 5 : ℝ) / 8) := hkey
       _ ≤ 1 * Real.exp (-L ^ (1 / 5 : ℝ) / 8) := by gcongr
       _ = _ := one_mul _
+
+end
 
 /-! ### Assembly -/
 
@@ -991,7 +1008,7 @@ theorem err_le {U V C₁ s : ℝ} (hU : 1 ≤ U) (hV : 1 ≤ V) :
   nlinarith
 
 /-- `|D (b - a)| ≤ 8 d₀ Y` on a list edge. -/
-theorem abs_padProd_mul_sub_le {Y d₀ : ℝ} {J : ℕ} {p p' : Lists K J}
+theorem abs_padProd_mul_sub_le  {Y d₀}  {J : ℕ} {p p' : Lists K J}
     (he : ListEdge Y d₀ p p') :
     |((padProd p : ℤ) * ((lastProd p : ℤ) - lastProd p') : ℝ)| ≤ 8 * d₀ * Y ∧
       |((padProd p : ℤ) * ((lastProd p' : ℤ) - lastProd p) : ℝ)| ≤ 8 * d₀ * Y := by
@@ -1016,7 +1033,7 @@ theorem abs_padProd_mul_sub_le {Y d₀ : ℝ} {J : ℕ} {p p' : Lists K J}
     _ = 8 * d₀ * Y := by ring
 
 /-- `badIntervals ≥ 0`. -/
-theorem badIntervals_nonneg (x : ℝ) (d : Data K) (Y : ℝ) {J : ℕ} (p : Lists K J) :
+theorem badIntervals_nonneg  x  (d : Data K)  Y  {J : ℕ} (p : Lists K J) :
     0 ≤ badIntervals x d Y p := by
   unfold badIntervals labelBound
   positivity
@@ -1030,9 +1047,9 @@ theorem err_total_le {U V C₁ t z G' N : ℝ} (hU : 1 ≤ U) (hV : 1 ≤ V) (hC
     3 * |z| * (C₁ * U * V * G' ^ 4 * min U V ^ (-(1 / 5 : ℝ)) + (16 * U + V + 2)) * N ≤
       3 * (8 * t ^ 8) * ((C₁ * (t ^ 8) ^ 4 + 19) * (U * V * min U V ^ (-(1 / 5 : ℝ)))) *
         (6 * t ^ 17) := by
-  have hμ : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) := Real.rpow_nonneg (le_min (by linarith) (by linarith)) _
-  have hU0 : 0 ≤ U := by linarith
-  have hV0 : 0 ≤ V := by linarith
+  
+  
+  
   calc 3 * |z| * (C₁ * U * V * G' ^ 4 * min U V ^ (-(1 / 5 : ℝ)) + (16 * U + V + 2)) * N
       ≤ 3 * (8 * t ^ 8) * (C₁ * U * V * (t ^ 8) ^ 4 * min U V ^ (-(1 / 5 : ℝ)) +
           (16 * U + V + 2)) * (6 * t ^ 17) := by gcongr
@@ -1056,10 +1073,10 @@ theorem badMass_final_combine {m W RS RT CS CT nb Λn Λ' Pm Ē P ε Y A e₈ T 
       (3094 + 2 ^ (K + 1) * 748 * 91) * P * A * e₈ := by
   have hY0 : 0 < Y := by linarith
   have hPĒ0 : 0 ≤ 90 * P * ε + Pm * Ē :=
-    add_nonneg (mul_nonneg (mul_nonneg (by norm_num) hP) hε0) (mul_nonneg hPm0 hĒ0)
+    (by positivity)
   have hcA : 0 ≤ 2 ^ K * 748 * A := mul_nonneg (by positivity) hA
   have hWκ : 0 ≤ W * (4 * A / Y) := mul_nonneg hW0 (div_nonneg (by linarith) hY0.le)
-  have hFac : 0 ≤ 17 * (10 * Y + 1) * Λn := mul_nonneg (by linarith) hΛ0
+  
   -- the comparison factor
   have hfac : W * (4 * A / Y) * (17 * (10 * Y + 1) * Λn) ≤ 2 ^ K * 748 * A * Λn := by
     have h₁ : (4 * A / Y) * (17 * (10 * Y + 1)) ≤ 748 * A := by
@@ -1068,8 +1085,7 @@ theorem badMass_final_combine {m W RS RT CS CT nb Λn Λ' Pm Ē P ε Y A e₈ T 
     calc W * (4 * A / Y) * (17 * (10 * Y + 1) * Λn) =
           W * ((4 * A / Y) * (17 * (10 * Y + 1))) * Λn := by ring
       _ ≤ 2 ^ K * (748 * A) * Λn :=
-          mul_le_mul_of_nonneg_right (mul_le_mul hWK h₁ (mul_nonneg (div_nonneg (by linarith)
-            hY0.le) (by linarith)) (by positivity)) hΛ0
+          (by gcongr <;> first | assumption | positivity | linarith)
       _ = 2 ^ K * 748 * A * Λn := by ring
   have hgen : ∀ Z, Z ≤ nb * (17 * (10 * Y + 1) * Λn) →
       m * (W * (4 * A / Y) * Z) ≤ 2 ^ K * 748 * A * (91 * P * e₈) := by
@@ -1085,8 +1101,7 @@ theorem badMass_final_combine {m W RS RT CS CT nb Λn Λ' Pm Ē P ε Y A e₈ T 
             (hΛ0.trans hΛ)) hcA
       _ = 2 ^ K * 748 * A * (P * (90 * (Λ' * ε) + Λ' * T)) := by ring
       _ ≤ 2 ^ K * 748 * A * (P * (90 * e₈ + e₈)) :=
-          mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left (add_le_add (by linarith) hΛT)
-            hP) hcA
+          (by bound)
       _ = 2 ^ K * 748 * A * (91 * P * e₈) := by ring
   have hraw : 1530 * P * ε + 17 * Pm * Ē ≤ 1547 * P * (A * e₈) := by
     have h₁ : 17 * Pm * Ē ≤ 17 * (P * (A * e₈)) := by
@@ -1101,8 +1116,7 @@ theorem badMass_final_combine {m W RS RT CS CT nb Λn Λ' Pm Ē P ε Y A e₈ T 
         ring
     _ ≤ 1547 * P * (A * e₈) + 1547 * P * (A * e₈) +
           (2 ^ K * 748 * A * (91 * P * e₈) + 2 ^ K * 748 * A * (91 * P * e₈)) :=
-        add_le_add (add_le_add (hRS.trans hraw) (hRT.trans hraw))
-          (add_le_add (hgen _ hCS) (hgen _ hCT))
+        (by grind)
     _ = (3094 + 2 ^ (K + 1) * 748 * 91) * P * A * e₈ := by ring
 
 /-- `log 16 ≤ 3`. -/
@@ -1121,25 +1135,20 @@ theorem natCast_le_sq (n : ℕ) : (n : ℝ) ≤ (n : ℝ) ^ 2 := by
 /-- `6 + 16 K u + 2 c ≤ u² = L` once `u ≥ 16K + 6 + 2c ≥ 1` with `c ≥ 0`. -/
 theorem affine_le_sq {u L K c : ℝ} (hu1 : 1 ≤ u) (huu : u * u = L) (hK : 0 ≤ K) (hc : 0 ≤ c)
     (h : 16 * K + 6 + 2 * c ≤ u) : 6 + 16 * K * u + 2 * c ≤ L := by
-  have h₂ : (16 * K + 6 + 2 * c) * 1 ≤ (16 * K + 6 + 2 * c) * u :=
-    mul_le_mul_of_nonneg_left hu1 (by positivity)
-  have h₃ : (16 * K + 6 + 2 * c) * u ≤ u * u := mul_le_mul_of_nonneg_right h (by linarith)
   nlinarith
 
 /-- `C₁ t^{32} + 19 ≤ (C₁ + 19) t^{32}` for `t ≥ 1`. -/
-theorem add_le_mul_pow (C₁ : ℝ) {t : ℝ} (ht : 1 ≤ t) :
+theorem add_le_mul_pow (C₁ : ℝ)  {t}  (ht : 1 ≤ t) :
     C₁ * (t ^ 8) ^ 4 + 19 ≤ (C₁ + 19) * t ^ 32 := by
   have h₁ : (1 : ℝ) ≤ t ^ 32 := one_le_pow₀ ht
-  have h₂ : (t ^ 8) ^ 4 = t ^ 32 := by rw [← pow_mul]
-  rw [h₂]
-  linarith [mul_le_mul_of_nonneg_left h₁ (by norm_num : (0 : ℝ) ≤ 19)]
+  grind
 
 open scoped Classical in
 /-- **The bad mass** (`eventually_badMass_le` with `badMass` unfolded): the absolute row mass of
 `𝒯` on pairs with a bad source or a bad target is at most `C₀ UV L^{3A₀} exp(-L^{a₋}/8)`,
 where `UV = d₀ Y X`. -/
-theorem eventually_stateMass_mul_sum_le {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hg : 0 < g) (A₀ : ℝ) :
+theorem eventually_stateMass_mul_sum_le  {q C CX alo ahi g}  (hq : 0 < q) (hq₁ : q < 1)
+    (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hg : 0 < g)  A₀  :
     ∃ C₀ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       stateMass x d * ∑ s : State x d (2 ^ j) (2 ^ k), ∑ s' : State x d (2 ^ j) (2 ^ k),
         ((if IsGood x d (2 ^ j) (2 ^ k) s.1.1 s.1.2 then 0 else 1) +
@@ -1250,7 +1259,7 @@ theorem eventually_stateMass_mul_sum_le {q C CX alo ahi g : ℝ} (hq : 0 < q) (h
     rwa [one_div, inv_pow, inv_inv] at this
   set St := states x d Y d₀ with hSt
   set κ := 4 * L ^ (3 * A₀) / Y with hκ
-  have hκ0 : 0 ≤ κ := by positivity
+  
   set RS := (#{yy ∈ St ×ˢ St | ¬ IsGood x d Y d₀ yy.1.1 yy.1.2 ∧
     RowEdge Y d₀ yy.1.1 yy.1.2 yy.2.1 yy.2.2 ∧ RawEdge yy.1.1 yy.1.2 yy.2.1 yy.2.2} : ℝ)
   set RT := (#{yy ∈ St ×ˢ St | ¬ IsGood x d Y d₀ yy.2.1 yy.2.2 ∧

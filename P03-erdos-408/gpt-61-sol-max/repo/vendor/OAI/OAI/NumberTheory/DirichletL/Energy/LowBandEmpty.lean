@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowEmpty
 
@@ -23,7 +24,7 @@ variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 omit [Fintype α] [DecidableEq α] in
 theorem positive_low_zero
     (Wslot:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
+     η₀  Q  degree  S  C 
     (h:PositiveLowAt (α:=α) M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z η₀ Q degree S C):
     ZeroLowAt (internalQ Q η₀) a b bΦ Bmask L Mcap ε Z degree S C:=by
   intro s hQ hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂ hsmall
@@ -46,10 +47,8 @@ theorem positive_low_zero
         HeckePrimeAnnular.annularWeight Wslot (Z^(w i)) (w i) (w i) I)
       (fun i=>Z^(w i)) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale=
       s.plainEnergy p t X₁ X₂:=by
-    simp only [T,energy,positiveSlotRow,NaturalState.plainEnergy,Finset.univ_eq_empty,
-      Finset.prod_empty,mul_one]
-  rw [hid] at hh
-  simpa only [add_zero,Real.norm_eq_abs] using hh
+    rfl
+  simp_all
 
 end SevenEighths.CenteredMomentEnergyLowBandEmpty
 

@@ -16,8 +16,8 @@ attribute [local instance] Classical.propDecidable
 namespace Erdos821.S2
 
 /-- §1 logarithmic scales. -/
-def L (x : ℝ) : ℝ := Real.log x
-def T (x : ℝ) : ℝ := Real.log (L x)
+def L (x : ℝ)  := Real.log x
+
 
 structure FixedData where
   a : ℝ
@@ -53,13 +53,13 @@ structure PrimeGroups where
 namespace PrimeGroups
 variable (P : PrimeGroups)
 abbrev Group := Fin P.count
-abbrev Prime (g : P.Group) := {p : ℕ // p ∈ P.primes g}
-def omegaGroup (g : P.Group) (n : ℤ) : ℕ := (P.primes g |>.filter (fun p : ℕ => (p : ℤ) ∣ n)).card
-def omega (n : ℤ) : ℕ := ∑ g, P.omegaGroup g n
+abbrev Prime (g ) := {p : ℕ // p ∈ P.primes g}
+
+
 
 abbrev BigGroup := {g : P.Group // P.big g = true}
-abbrev BigLabels (M : ℕ) := (g : P.BigGroup) → Fin M → P.Prime g.val
-abbrev BigAux (J : ℕ) := (g : P.BigGroup) → Fin J → P.Prime g.val
+abbrev BigLabels (M ) := (g : P.BigGroup) → Fin M → P.Prime g.val
+abbrev BigAux (J ) := (g : P.BigGroup) → Fin J → P.Prime g.val
 
 end PrimeGroups
 
@@ -102,23 +102,22 @@ end PrimeGroups
 
 namespace PrimeGroups
 variable (P : PrimeGroups)
-instance primeNeZero (g : P.Group) (p : P.Prime g) : NeZero p.val :=
-  ⟨(P.prime g p.val p.property).ne_zero⟩
+
 
 end PrimeGroups
 
 /-- Birth collections are disjoint nonsingleton blocks of potential addresses. -/
-def BirthCollection {a : ℕ} (π : Finset (Finset (Fin a))) : Prop :=
+def BirthCollection {a } (π : Finset (Finset (Fin a)))  :=
   (∀ B ∈ π, 2 ≤ B.card) ∧ (π : Set (Finset (Fin a))).Pairwise Disjoint
 
 /-- Equality rank adds |B|-1 separately for each block. -/
-def birthRank {a : ℕ} (π : Finset (Finset (Fin a))) : ℕ := ∑ B ∈ π, (B.card - 1)
+def birthRank {a } (π : Finset (Finset (Fin a)))  := ∑ B ∈ π, (B.card - 1)
 
-def birthMobius {a : ℕ} (π : Finset (Finset (Fin a))) : ℤ :=
+def birthMobius {a } (π : Finset (Finset (Fin a)))  :=
   ∏ B ∈ π, (-1 : ℤ) ^ (B.card - 1) * (Nat.factorial (B.card - 1) : ℤ)
 
-def birthEvent {a : ℕ} (performed : Finset (Fin a)) (value : Fin a → ℕ)
-    (π : Finset (Finset (Fin a))) : Prop :=
+def birthEvent {a } (performed : Finset (Fin a)) (value : Fin a → ℕ)
+    (π : Finset (Finset (Fin a)))  :=
   ∀ B ∈ π, B ⊆ performed ∧ ∀ i ∈ B, ∀ j ∈ B, value i = value j
 
 end Erdos821.S2

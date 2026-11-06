@@ -7,16 +7,16 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+
 
 theorem calibrated_physicalRow_w_growth (eps : ℝ)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
-    (hmax : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S)
-    (η : Character) (u : FreeRow) (hu : u.val≠1) (x z : ℂ)
+     S   hS  (hfirst : FirstTail eps S)
+     hmax   T   hT 
+     η   u  (hu : u.val≠1)  x z 
     (hx : (7/8:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
     (hxw : 1+eps≤x.re+1/2) :
     ∃C : ℝ,0<C ∧ ∀w : ℂ,(1/2:ℝ)≤w.re →
@@ -24,7 +24,7 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
         physicalCompensatedRow S hS T hT η u x w z‖≤C*(3+|w.im|)^2 := by
   obtain ⟨Cn,hCn,hn⟩ := calibrated_numerator_positive_growth (1/2) 1 (by norm_num) (by norm_num) S hS hmax
   obtain ⟨Ch,hCh,hh⟩ := unselectedCorrection_first_subpower 1 (by norm_num)
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N : ℝ := ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)
   let A : T→ℝ := fun P=>961*((P.val.val.absNorm:ℝ)^(1/2:ℝ)+1)
   let L : ℝ := ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖*
     ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖
@@ -84,6 +84,6 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
     _ ≤ (1+C)*(3+|w.im|)^2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg _)
 
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

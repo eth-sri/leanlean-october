@@ -12,74 +12,74 @@ namespace SecondPassArithmetic
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+ 
 section
-open ActualEisensteinCubic
+ 
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstCauchyArithmetic (activeGaussRowFactor)
@@ -90,7 +90,7 @@ theorem masked_pair_second_poisson {ι : Type*} [DecidableEq ι]
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (M S T : Finset ι) (hd : Disjoint S T)
-    (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y) :
+    (W : 𝓢(ℝ, ℂ))  Y  (hY : 0 < Y) :
     let n := ∏ i : activeSupport T S, p i.val
     (∑' z : O, rowCoprimeMask (fun i => Ideal.span {p i}) M z *
       (star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg T z) *
@@ -156,9 +156,9 @@ theorem masked_pair_second_poisson {ι : Type*} [DecidableEq ι]
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
+ 
+ 
+ 
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
@@ -171,7 +171,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 def secondGaussTerm (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O) (H₁ H₂ : Finset ι → ℂ)
-    (S T : Finset ι) : ℂ :=
+    (S T : Finset ι)  :=
   star (supportMobius (fun i => Ideal.span {p i}) S *
     secondInputCoefficient p hg Ψ₁ (m * (e * r)) c d H₁ S) *
   (supportMobius (fun i => Ideal.span {p i}) T *
@@ -180,48 +180,18 @@ def secondGaussTerm (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
 end
 
-section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
 
-section
-open ActualEisensteinCubic
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
 
-end
-
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
-open FirstPassCubeLabels (primeProductNorm_pos)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-
-section
-
-open scoped BigOperators Classical
-open ActualEisensteinCubic
-open SecondPassFiber (OldTuple newLabel newRow Valid)
-
-end
-
-open scoped BigOperators Classical
-open ActualEisensteinCubic
+ 
+ 
 open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
-theorem exists_label_unit (f : O) (I : Ideal O) (hf : Ideal.span {f} = I) :
+
+theorem exists_label_unit  f   I  (hf : Ideal.span {f} = I) :
     ∃ u : Oˣ, f = (u : O) * idealGenerator I := by
   have hs : Ideal.span {idealGenerator I} = Ideal.span {f} := (span_idealGenerator I).trans hf.symm
   obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hs
@@ -233,7 +203,7 @@ variable {ι : Type*} [DecidableEq ι]
   (hg : ∀ i, lambda ∉ Ideal.span {p i})
 
 def fixedChildRow (F : Finset ι) (Ψ : O →* ℂ) (m : O)
-    (H : Finset ι → ℂ) (f y : O) : ℂ :=
+    (H : Finset ι → ℂ) (f y : O)  :=
   ∑ N ∈ F.powerset, secondChildColumn p hp hcop hg Ψ m f y H N
 
 end SecondPassArithmetic

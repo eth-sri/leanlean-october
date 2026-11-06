@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.LogParameters
 public import Mathlib.MeasureTheory.Function.Floor
@@ -12,36 +13,44 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set   MeasureTheory
 
 open scoped Topology ContDiff
 
 open Asymptotics
 
-open Asymptotics
+ 
 
-open Asymptotics
+ 
 
 open scoped Classical
 
-open scoped ContDiff
+ 
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution   Pointwise
 
 open scoped ComplexConjugate
 
-open Filter Topology
+open Filter  
 
-open Complex Filter Topology
+open Complex    
 
-open Complex Filter Topology Set MeasureTheory Asymptotics
+ 
 
-noncomputable def discrepancyTail (A : ℝ → ℂ) (u : ℝ) (s : ℂ) : ℂ :=
+noncomputable def discrepancyTail (A : ℝ → ℂ) (u : ℝ) (s : ℂ)  :=
   ∫ t in Ioi u, A t * (t:ℂ)^(-(s+1))
 
-lemma discrepancyTail_integrable {A : ℝ → ℂ} {u D : ℝ} (hu : 0 < u) (hD : 0 ≤ D)
+section
+variable {A : ℝ → ℂ}
+include A
+
+section
+variable {u D : ℝ} (hu : 0 < u)
+include u D hu
+
+lemma discrepancyTail_integrable       (hD : 0 ≤ D)
     (hA : Measurable A) (hbound : ∀ t, u < t → ‖A t‖ ≤ D) {s : ℂ} (hs : 0 < s.re) :
     IntegrableOn (fun t => A t * (t:ℂ)^(-(s+1))) (Ioi u) := by
   have hp : (-(s+1)).re < -1 := by simp only [neg_re,add_re,one_re]; linarith
@@ -52,8 +61,8 @@ lemma discrepancyTail_integrable {A : ℝ → ℂ} {u D : ℝ} (hu : 0 < u) (hD 
   rw [norm_mul, Real.norm_eq_abs, abs_of_nonneg (mul_nonneg hD (norm_nonneg _))]
   exact mul_le_mul_of_nonneg_right (hbound t ht) (norm_nonneg _)
 
-lemma discrepancyTail_norm_le {A : ℝ → ℂ} {u D : ℝ} (hu : 0 < u) (_hD : 0 ≤ D)
-    (_hA : Measurable A) (hbound : ∀ t, u < t → ‖A t‖ ≤ D) {s : ℂ} (hs : 0 < s.re) :
+lemma discrepancyTail_norm_le       (_hD : 0 ≤ D)
+    (_hA : Measurable A) (hbound : ∀ t, u < t → ‖A t‖ ≤ D)  {s}  (hs : 0 < s.re) :
     ‖discrepancyTail A u s‖ ≤ D * u^(-s.re)/s.re := by
   have hi := (integrableOn_Ioi_rpow_of_lt (by linarith : -s.re-1 < -1) hu).const_mul D
   calc
@@ -69,7 +78,9 @@ lemma discrepancyTail_norm_le {A : ℝ → ℂ} {u D : ℝ} (hu : 0 < u) (_hD : 
       rw [integral_const_mul,integral_Ioi_rpow_of_lt (by linarith : -s.re-1 < -1) hu]
       ring_nf
 
-lemma discrepancyTail_eq_mellin {A : ℝ → ℂ} {u : ℝ} (hu : 0 ≤ u) (s : ℂ) :
+end
+
+lemma discrepancyTail_eq_mellin    {u}  (hu : 0 ≤ u)  s  :
     discrepancyTail A u s = mellin ((Ioi u).indicator A) (-s) := by
   rw [mellin]
   simp_rw [←Set.indicator_smul]
@@ -79,13 +90,10 @@ lemma discrepancyTail_eq_mellin {A : ℝ → ℂ} {u : ℝ} (hu : 0 ≤ u) (s : 
   unfold discrepancyTail
   apply setIntegral_congr_fun measurableSet_Ioi
   intro t ht
-  simp only [smul_eq_mul]
-  rw [mul_comm]
-  congr 2
   ring
 
-lemma discrepancyTail_differentiableAt {A : ℝ → ℂ} {u D : ℝ} (hu : 0 < u) (hD : 0 ≤ D)
-    (hA : Measurable A) (hbound : ∀ t, u < t → ‖A t‖ ≤ D) {s : ℂ} (hs : 0 < s.re) :
+lemma discrepancyTail_differentiableAt   {u D : ℝ} (hu : 0 < u) (hD : 0 ≤ D)
+    (hA : Measurable A) (hbound : ∀ t, u < t → ‖A t‖ ≤ D)  {s}  (hs : 0 < s.re) :
     DifferentiableAt ℂ (discrepancyTail A u) s := by
   let B := (Ioi u).indicator A
   have hm : Measurable B := hA.indicator measurableSet_Ioi
@@ -111,11 +119,13 @@ lemma discrepancyTail_differentiableAt {A : ℝ → ℂ} {u D : ℝ} (hu : 0 < u
   rw [he]
   exact hd.comp s differentiableAt_id.neg
 
+end
+
 open Finset
 
-lemma periodic_sum_norm_le {f : ℕ → ℂ} {q : ℕ} (hq : 0 < q)
+lemma periodic_sum_norm_le {f : ℕ → ℂ}  {q}  (hq : 0 < q)
     (hp : ∀ n, f (q+n) = f n) (hz : ∑ n ∈ range q, f n = 0)
-    (hb : ∀ n, ‖f n‖ ≤ 1) (N : ℕ) : ‖∑ n ∈ range N, f n‖ ≤ q := by
+    (hb : ∀ n, ‖f n‖ ≤ 1)  N  : ‖∑ n ∈ range N, f n‖ ≤ q := by
   induction N using Nat.strong_induction_on with
   | h N ih =>
     by_cases hN : N < q
@@ -126,11 +136,14 @@ lemma periodic_sum_norm_le {f : ℕ → ℂ} {q : ℕ} (hq : 0 < q)
         _ ≤ q := by exact_mod_cast hN.le
     · have he : q+(N-q) = N := Nat.add_sub_of_le (not_lt.mp hN)
       rw [←he, sum_range_add, hz, zero_add]
-      simp_rw [hp]
-      exact ih _ (Nat.sub_lt (lt_of_lt_of_le hq (not_lt.mp hN)) hq)
+      grind
 
-lemma char_sum_range_zero {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
-    (hχ : χ ≠ 1) : ∑ n ∈ range q, χ (n : ZMod q) = 0 := by
+section
+variable {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q} (hχ : χ ≠ 1)
+include q χ hχ
+
+lemma char_sum_range_zero      
+      : ∑ n ∈ range q, χ (n : ZMod q) = 0 := by
   rw [←Fin.sum_univ_eq_sum_range]
   have he := (ZMod.finEquiv q).toEquiv.sum_comp χ
   cases q with
@@ -146,8 +159,8 @@ lemma char_sum_range_zero {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
         exact Fin.cast_val_eq_self i
       _ = 0 := hz
 
-lemma char_sum_Icc_norm_le {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
-    (hχ : χ ≠ 1) (N : ℕ) : ‖∑ n ∈ Icc 1 N, χ (n : ZMod q)‖ ≤ q+1 := by
+lemma char_sum_Icc_norm_le      
+      (N : ℕ) : ‖∑ n ∈ Icc 1 N, χ (n : ZMod q)‖ ≤ q+1 := by
   have hr := periodic_sum_norm_le (NeZero.pos q)
     (f := fun n => χ (n : ZMod q)) (by intro n; simp)
     (char_sum_range_zero hχ) (fun n => χ.norm_le_one _) (N+1)
@@ -161,26 +174,34 @@ lemma char_sum_Icc_norm_le {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
     _ ≤ ‖χ (0 : ZMod q) + ∑ n ∈ Icc 1 N, χ (n : ZMod q)‖ + ‖χ 0‖ := norm_sub_le _ _
     _ ≤ q+1 := add_le_add hr (χ.norm_le_one _)
 
-noncomputable def seriesDiscrepancy (f : ℕ → ℂ) (c : ℂ) (t : ℝ) : ℂ :=
+end
+
+noncomputable def seriesDiscrepancy (f : ℕ → ℂ) (c : ℂ) (t : ℝ)  :=
   (∑ n ∈ Icc 1 ⌊t⌋₊, f n) - c*t
 
-lemma measurable_seriesDiscrepancy (f : ℕ → ℂ) (c : ℂ) :
-    Measurable (seriesDiscrepancy f c) := by
-  exact ((measurable_of_countable (fun N : ℕ => ∑ n ∈ Icc 1 N, f n)).comp
+lemma measurable_seriesDiscrepancy  f   c  :
+    Measurable (seriesDiscrepancy f c) := ((measurable_of_countable (fun N : ℕ => ∑ n ∈ Icc 1 N, f n)).comp
     Nat.measurable_floor).sub (measurable_const.mul Complex.continuous_ofReal.measurable)
 
-noncomputable def regularSeries (f : ℕ → ℂ) (c : ℂ) (s : ℂ) : ℂ :=
+noncomputable def regularSeries (f : ℕ → ℂ) (c : ℂ) (s : ℂ)  :=
   c+s*discrepancyTail (seriesDiscrepancy f c) 1 s
 
-lemma regularSeries_differentiableAt {f : ℕ → ℂ} {c : ℂ} {D : ℝ} (hD : 0 ≤ D)
-    (hb : ∀ t, 1 < t → ‖seriesDiscrepancy f c t‖ ≤ D) {s : ℂ} (hs : 0 < s.re) :
-    DifferentiableAt ℂ (regularSeries f c) s := by
-  exact (differentiableAt_const c).add (differentiableAt_id.mul
+section
+variable {f : ℕ → ℂ}
+include f
+
+section
+variable {c : ℂ} {D : ℝ}
+include c D
+
+lemma regularSeries_differentiableAt       (hD : 0 ≤ D)
+    (hb : ∀ t, 1 < t → ‖seriesDiscrepancy f c t‖ ≤ D)  {s}  (hs : 0 < s.re) :
+    DifferentiableAt ℂ (regularSeries f c) s := (differentiableAt_const c).add (differentiableAt_id.mul
     (discrepancyTail_differentiableAt zero_lt_one hD (measurable_seriesDiscrepancy f c) hb hs))
 
-lemma regularSeries_eq_LSeries_sub {f : ℕ → ℂ} {c : ℂ} {D : ℝ}
+lemma regularSeries_eq_LSeries_sub      
     (hf : ∀ n, ‖f n‖ ≤ 1) (hD : 0 ≤ D)
-    (hb : ∀ t, 1 < t → ‖seriesDiscrepancy f c t‖ ≤ D) {s : ℂ} (hs : 1 < s.re) :
+    (hb : ∀ t, 1 < t → ‖seriesDiscrepancy f c t‖ ≤ D)  {s}  (hs : 1 < s.re) :
     regularSeries f c s = LSeries f s - c/(s-1) := by
   have hO : (fun n => ∑ k ∈ Icc 1 n, ‖f k‖) =O[atTop] (fun n => (n:ℝ)^(1:ℝ)) := by
     refine isBigO_iff.mpr ⟨1, .of_forall (fun n => ?_)⟩
@@ -202,28 +223,31 @@ lemma regularSeries_eq_LSeries_sub {f : ℕ → ℂ} {c : ℂ} {D : ℝ}
       rw [←Complex.cpow_add _ _ ht0]
       congr 1
       ring
-    dsimp [seriesDiscrepancy]
-    rw [sub_mul, mul_assoc c, ht1]
-    ring
+    grind [seriesDiscrepancy]
   have hs0 : s-1 ≠ 0 := by intro h; have := congrArg Complex.re h; simp at this; linarith
   have hv : ∫ t in Ioi (1:ℝ), (t:ℂ)^(-s) = 1/(s-1) := by
     rw [integral_Ioi_cpow_of_lt (by simpa using neg_lt_neg hs : (-s).re < -1) zero_lt_one]
     simp only [ofReal_one, one_cpow]
-    have he : -s+1 = -(s-1) := by ring
-    rw [he, neg_div_neg_eq]
+    grind
   rw [setIntegral_congr_fun measurableSet_Ioi he,
     integral_add hiA (hi.const_mul c), integral_const_mul, hv]
   dsimp [regularSeries,discrepancyTail]
   field_simp [hs0]
   ring
 
-lemma sum_Icc_zero_eq {f : ℕ → ℂ} (hf : f 0 = 0) (N : ℕ) :
+end
+
+section
+variable (hf : f 0 = 0)
+include hf
+
+lemma sum_Icc_zero_eq      N  :
     ∑ k ∈ Icc 0 N, f k = ∑ k ∈ Icc 1 N, f k := by
   rw [←Finset.insert_Icc_add_one_left_eq_Icc (Nat.zero_le N)]
   simp [hf]
 
-lemma weighted_sum_abel {f : ℕ → ℂ} (hf : f 0 = 0) {N : ℕ} (hN : 1 ≤ N)
-    {s : ℂ} (hs : 0 < s.re) :
+lemma weighted_sum_abel      {N}  (hN : 1 ≤ N)
+     {s}  (hs : 0 < s.re) :
     ∑ n ∈ Icc 1 N, f n * (n:ℂ)^(-s) =
       (∑ n ∈ Icc 1 N, f n)*(N:ℂ)^(-s) +
         s*∫ t in (1:ℝ)..N, (∑ n ∈ Icc 1 ⌊t⌋₊, f n)*(t:ℂ)^(-(s+1)) := by
@@ -262,7 +286,11 @@ lemma weighted_sum_abel {f : ℕ → ℂ} (hf : f 0 = 0) {N : ℕ} (hN : 1 ≤ N
   rw [ha]
   ring
 
-lemma cpow_sub_eq_mul_intervalIntegral {N : ℝ} (hN : 1 ≤ N) (s : ℂ) :
+end
+
+end
+
+lemma cpow_sub_eq_mul_intervalIntegral {N : ℝ} (hN : 1 ≤ N)  s  :
     (N:ℂ)^(1-s)-1 = (1-s)*∫ t in (1:ℝ)..N, (t:ℂ)^(-s) := by
   by_cases hs : s = 1
   · subst s
@@ -270,13 +298,15 @@ lemma cpow_sub_eq_mul_intervalIntegral {N : ℝ} (hN : 1 ≤ N) (s : ℂ) :
   · have hn : (0:ℝ) ∉ Set.uIcc 1 N := by rw [Set.uIcc_of_le hN]; simp
     rw [integral_cpow (.inr ⟨by simpa using hs,hn⟩)]
     simp only [Complex.ofReal_one,one_cpow]
-    have he : -s+1 = 1-s := by ring
-    rw [he]
-    field_simp
+    grind
 
-lemma regularSeries_cutoff {f : ℕ → ℂ} {c : ℂ} {D : ℝ} (hf : f 0 = 0)
+section
+variable {f : ℕ → ℂ}
+include f
+
+lemma regularSeries_cutoff    {c}  {D : ℝ} (hf : f 0 = 0)
     (hD : 0 ≤ D) (hb : ∀ t, 1 < t → ‖seriesDiscrepancy f c t‖ ≤ D)
-    {N : ℕ} (hN : 1 ≤ N) {s : ℂ} (hs : 0 < s.re) :
+     {N}  (hN : 1 ≤ N)  {s}  (hs : 0 < s.re) :
     regularSeries f c s = (∑ n ∈ Icc 1 N, f n*(n:ℂ)^(-s)) -
       seriesDiscrepancy f c N * (N:ℂ)^(-s) +
       s*discrepancyTail (seriesDiscrepancy f c) N s -
@@ -304,9 +334,7 @@ lemma regularSeries_cutoff {f : ℕ → ℂ} {c : ℂ} {D : ℝ} (hf : f 0 = 0)
     apply intervalIntegral.integral_congr
     intro t ht
     rw [Set.uIcc_of_le hNR] at ht
-    dsimp [seriesDiscrepancy]
-    rw [sub_mul,mul_assoc c,hp t ht]
-    ring
+    grind [seriesDiscrepancy]
   have hab := weighted_sum_abel hf hN hs
   rw [hint, ←htail] at hab
   have hpow : (N:ℂ)*(N:ℂ)^(-s) = (N:ℂ)^(1-s) := by
@@ -318,11 +346,10 @@ lemma regularSeries_cutoff {f : ℕ → ℂ} {c : ℂ} {D : ℝ} (hf : f 0 = 0)
   dsimp [regularSeries,discrepancyTail]
   rw [hab]
   simp only [seriesDiscrepancy,Nat.floor_natCast,Complex.ofReal_natCast]
-  rw [sub_mul,mul_assoc c,hpow,sub_eq_iff_eq_add.mp hc]
-  ring
+  grind
 
-lemma sum_cpow_norm_le {f : ℕ → ℂ} (hf : ∀ n, ‖f n‖ ≤ 1) {ε : ℝ} (hε : 0 < ε)
-    {s : ℂ} (hs : 1-ε ≤ s.re) {N : ℕ} (_hN : 1 ≤ N) :
+lemma sum_cpow_norm_le   (hf : ∀ n, ‖f n‖ ≤ 1) {ε : ℝ} (hε : 0 < ε)
+    {s : ℂ} (hs : 1-ε ≤ s.re)  {N}  (_hN : 1 ≤ N) :
     ‖∑ n ∈ Icc 1 N, f n*(n:ℂ)^(-s)‖ ≤
       (∑' n : ℕ, (n:ℝ)^(-1-ε)) * (N:ℝ)^(2*ε) := by
   have hsumm : Summable (fun n : ℕ => (n:ℝ)^(-1-ε)) :=
@@ -349,6 +376,8 @@ lemma sum_cpow_norm_le {f : ℕ → ℂ} (hf : ∀ n, ‖f n‖ ≤ 1) {ε : ℝ
     _ ≤ _ := mul_le_mul_of_nonneg_right (hsumm.sum_le_tsum _ (fun n _ => Real.rpow_nonneg n.cast_nonneg _))
       (Real.rpow_nonneg N.cast_nonneg _)
 
+end
+
 lemma norm_intervalIntegral_cpow_le {ε N : ℝ} (hε : 0 < ε) (hN : 1 ≤ N)
     {s : ℂ} (hs : 1-ε ≤ s.re) :
     ‖∫ t in (1:ℝ)..N, (t:ℂ)^(-s)‖ ≤ N^ε/ε := by
@@ -365,10 +394,10 @@ lemma norm_intervalIntegral_cpow_le {ε N : ℝ} (hε : 0 < ε) (hN : 1 ≤ N)
       simp [he]
     _ ≤ _ := div_le_div_of_nonneg_right (by linarith) hε.le
 
-lemma regularSeries_norm_cutoff {f : ℕ → ℂ} {c : ℂ} {D ε : ℝ}
+lemma regularSeries_norm_cutoff  {f}   {c}  {D ε : ℝ}
     (hf0 : f 0 = 0) (hf : ∀ n, ‖f n‖ ≤ 1) (hc : ‖c‖ ≤ 1) (hD : 0 ≤ D)
     (hb : ∀ t, 1 ≤ t → ‖seriesDiscrepancy f c t‖ ≤ D)
-    (hε : 0 < ε) (hε1 : ε ≤ 1/2) {N : ℕ} (hN : 1 ≤ N) {s : ℂ}
+    (hε : 0 < ε) (hε1 : ε ≤ 1/2) {N : ℕ} (hN : 1 ≤ N)  {s} 
     (hs : 1-ε ≤ s.re) (hNs : D*(1+‖s‖) ≤ N) :
     ‖regularSeries f c s‖ ≤ ((∑' n : ℕ, (n:ℝ)^(-1-ε))+2+1/ε)*(N:ℝ)^(2*ε) := by
   have hNR : (1:ℝ) ≤ N := by exact_mod_cast hN
@@ -427,7 +456,7 @@ lemma regularSeries_norm_cutoff {f : ℕ → ℂ} {c : ℂ} {D ε : ℝ}
         linarith [div_le_div_of_nonneg_right hp hε.le]
     _ = _ := by ring
 
-lemma regularSeries_norm_small_power {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1/2) :
+lemma regularSeries_norm_small_power  {ε}  (hε : 0 < ε) (hε1 : ε ≤ 1/2) :
     ∃ K : ℝ, 0 < K ∧ ∀ (f : ℕ → ℂ) (c : ℂ) (D : ℝ),
       f 0 = 0 → (∀ n, ‖f n‖ ≤ 1) → ‖c‖ ≤ 1 → 0 ≤ D →
       (∀ t, 1 ≤ t → ‖seriesDiscrepancy f c t‖ ≤ D) →
@@ -435,8 +464,6 @@ lemma regularSeries_norm_small_power {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1/
       ‖regularSeries f c s‖ ≤ K*((D+1)*(‖s‖+2))^(2*ε) := by
   let K₀ := (∑' n : ℕ, (n:ℝ)^(-1-ε))+2+1/ε
   have hK₀ : 0 < K₀ := by
-    have ht : 0 ≤ ∑' n : ℕ, (n:ℝ)^(-1-ε) := tsum_nonneg (fun n => Real.rpow_nonneg n.cast_nonneg _)
-    dsimp [K₀]
     positivity
   refine ⟨K₀*2^(2*ε), by positivity, ?_⟩
   intro f c D hf0 hf hc hD hb s hs
@@ -457,32 +484,37 @@ lemma regularSeries_norm_small_power {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1/
       (Real.rpow_le_rpow N.cast_nonneg hN2 (by positivity)) hK₀.le
     _ = _ := by rw [Real.mul_rpow (by norm_num) (by linarith : 0 ≤ B)]; ring
 
-def positiveCoefficients (f : ℕ → ℂ) (n : ℕ) : ℂ := if n = 0 then 0 else f n
+def positiveCoefficients (f : ℕ → ℂ) (n : ℕ)  := if n = 0 then 0 else f n
 
-lemma positiveCoefficients_zero (f : ℕ → ℂ) : positiveCoefficients f 0 = 0 := by simp [positiveCoefficients]
+lemma positiveCoefficients_zero  f  : positiveCoefficients f 0 = 0 := by simp [positiveCoefficients]
 
-lemma positiveCoefficients_norm_le {f : ℕ → ℂ} (hf : ∀ n, ‖f n‖ ≤ 1) (n : ℕ) :
+lemma positiveCoefficients_norm_le  {f}  (hf : ∀ n, ‖f n‖ ≤ 1)  n  :
     ‖positiveCoefficients f n‖ ≤ 1 := by
   by_cases hn : n=0 <;> simp [positiveCoefficients,hn,hf]
 
-lemma sum_positiveCoefficients (f : ℕ → ℂ) (N : ℕ) :
+section
+variable (f : ℕ → ℂ)
+include f
+
+lemma sum_positiveCoefficients    N  :
     ∑ n ∈ Icc 1 N, positiveCoefficients f n = ∑ n ∈ Icc 1 N, f n := by
   apply sum_congr rfl
-  intro n hn
-  simp [positiveCoefficients,show n ≠ 0 from Nat.ne_of_gt (mem_Icc.mp hn).1]
+  grind [positiveCoefficients]
 
-lemma LSeries_positiveCoefficients (f : ℕ → ℂ) (s : ℂ) :
+lemma LSeries_positiveCoefficients    s  :
     LSeries (positiveCoefficients f) s = LSeries f s := by
   apply LSeries_congr
   intro n hn
   simp [positiveCoefficients,hn]
 
+end
+
 lemma discrepancy_character_bound {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
     (hχ : χ ≠ 1) (t : ℝ) :
     ‖seriesDiscrepancy (positiveCoefficients (fun n => χ (n : ZMod q))) 0 t‖ ≤ q+1 := by
-  simpa [seriesDiscrepancy,sum_positiveCoefficients] using char_sum_Icc_norm_le hχ ⌊t⌋₊
+  simp_all [seriesDiscrepancy, sum_positiveCoefficients, char_sum_Icc_norm_le]
 
-lemma discrepancy_constant_bound {t : ℝ} (ht : 1 ≤ t) :
+lemma discrepancy_constant_bound  {t}  (ht : 1 ≤ t) :
     ‖seriesDiscrepancy (positiveCoefficients (fun _ => 1)) 1 t‖ ≤ 1 := by
   simp only [seriesDiscrepancy,sum_positiveCoefficients,Finset.sum_const,nsmul_eq_mul,
     mul_one,Nat.card_Icc,Nat.add_sub_cancel,one_mul]
@@ -512,7 +544,11 @@ lemma regularSeries_character_eq {q : ℕ} [NeZero q] {χ : DirichletCharacter �
   exact hfrac.eqOn_of_preconnected_of_eventuallyEq hL (convex_halfSpace_re_gt 0).isPreconnected
     (show (2:ℂ) ∈ {s:ℂ | 0<s.re} by norm_num) he hs
 
-lemma LFunction_norm_small_power {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1/2) :
+section
+variable {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1/2)
+include ε hε hε1
+
+lemma LFunction_norm_small_power       :
     ∃ K : ℝ, 0 < K ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q), χ ≠ 1 →
       ∀ s : ℂ, 1-ε ≤ s.re →
       ‖χ.LFunction s‖ ≤ K*((q+2)*(‖s‖+2))^(2*ε) := by
@@ -520,12 +556,9 @@ lemma LFunction_norm_small_power {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1/2) :
   refine ⟨K,hK,fun q _ χ hχ s hs => ?_⟩
   have he := h _ 0 (q+1) (positiveCoefficients_zero _) (positiveCoefficients_norm_le (fun n => χ.norm_le_one _))
     (by simp) (by positivity) (fun t _ => discrepancy_character_bound hχ t) s hs
-  rw [regularSeries_character_eq hχ (by linarith)] at he
-  convert he using 1
-  congr 3
-  ring
+  grind [regularSeries_character_eq]
 
-lemma regularSeries_deriv_norm_small_power {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1/2) :
+lemma regularSeries_deriv_norm_small_power       :
     ∃ K : ℝ, 0 < K ∧ ∀ (f : ℕ → ℂ) (c : ℂ) (D : ℝ),
       f 0 = 0 → (∀ n, ‖f n‖ ≤ 1) → ‖c‖ ≤ 1 → 0 ≤ D →
       (∀ t, 1 ≤ t → ‖seriesDiscrepancy f c t‖ ≤ D) →
@@ -562,6 +595,8 @@ lemma regularSeries_deriv_norm_small_power {ε : ℝ} (hε : 0 < ε) (hε1 : ε 
   have hder := Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hε2 hd hbnd
   convert hder using 1
   ring
+
+end
 
 end LargePrimeGaps
 

@@ -11,27 +11,27 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows CompletedHeight
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
 variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def coefficient (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ) (negative : Bool)
-    (x : OriginalIndex ι) : Finset ι→ℂ :=
+def coefficient (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (mark : (ι→₀ℕ)→Finset ι→ℂ) (negative : Bool)
+    (x : OriginalIndex ι)  :=
   firstCanonicalCoefficient p hp hcop hg x.1.1 x.1.2.1 negative Ψ m (divisorElement p x.1)
     (mark (if negative then x.1.1.rightExponent else x.1.1.leftExponent)) x.2
 
-def weight (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ) (Ψ : O→*ℂ) (m : O)
-    (x : OriginalIndex ι) : ℂ :=
+def weight (β : Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)
+    (R : CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→Finset ι→ℝ) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
+    (x : OriginalIndex ι)  :=
   retainedCubeWeight p hp hcop hg x.1.1 x.1.2.1 Ψ Ψ m m
     (divisorElement p x.1) (firstOriginalWeight p β R x.1) x.2
 
-def sourceSummand (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ) (Ψ : O→*ℂ) (m : O)
+def sourceSummand (β : Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)
+    (R : CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→Finset ι→ℝ) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
     (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ)
-    (x : OriginalIndex ι) (j : FirstCommonIndex ι) : ℂ :=
+    (x : OriginalIndex ι) (j : FirstCommonIndex ι)  :=
   weight p hp hcop hg β R Ψ m x *
     firstCommonWeight p hg (coefficient p hp hcop hg Ψ m mark true x)
       (coefficient p hp hcop hg Ψ m mark false x) x.2.2 j *
@@ -39,10 +39,10 @@ def sourceSummand (β : Ideal O→(ι→₀ℕ)→ℂ)
       (firstCommonNorms p (leftNorm p x) (rightNorm p x) (commonNorm p x) (activeNorm p x)
         (divisorElement p x.1) x.2.2 j)
 
-theorem original_retained_sum (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ) (Ψ : O→*ℂ) (m : O)
-    (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K Y : ℝ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ) (s : Fin 9→ℝ) (hs : ∀i,0<s i) :
+theorem original_retained_sum  pool   Q 
+     labels   β   Ψ   m 
+     mark   W   Φ   K Y 
+     R   s  (hs : ∀i,0<s i) :
     originalRetainedFamily p hp hcop hg pool Q labels β Ψ m mark W Φ K Y R s=
       ∑x∈firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y,
         ∑j∈firstCommonIndices pool,sourceSummand p hp hcop hg β R Ψ m mark W Φ K x j := by

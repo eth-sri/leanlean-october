@@ -18,11 +18,11 @@ variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-theorem actual_phase_bins_on_cube (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (hmax : ∀P∈S,P.IsMaximal)
-    (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A) (hAB : A≤B)
+theorem actual_phase_bins_on_cube  S   hS 
+    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)  hmax 
+     W   A B  (hA : 0<A) (hAB : A≤B)
     (hWs : Function.support W⊆Ioo A B) (hW : ContDiff ℝ ∞ W)
-    (R dmin dmax rmin τ ε e κ cost mesh δ ν : ℝ) (n : ℕ)
+    (R dmin dmax rmin τ ε e κ cost mesh δ ν : ℝ)  n 
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hrmin : 0<rmin)
     (hτ : 0<τ) (hε : 0<ε) (he : 0<e) (he' : e<1/1000)
     (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ)

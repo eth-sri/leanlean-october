@@ -32,7 +32,7 @@ theorem separateSector_product (M f r r₀ P P₀ : Eis)
 theorem controlled_bad_phase_eq {ι κ : Type*} [Fintype ι] [Fintype κ]
     {p : ι → Eis} {p₀ : κ → Eis} {N a c : Eis} {mode : Bool}
     (D : ControlledStratumArithmetic p N a c mode)
-    (D₀ : ControlledStratumArithmetic p₀ N a c mode) (hc : c ≠ 0)
+    (D₀ : ControlledStratumArithmetic p₀ N a c mode)  hc 
     (hbad : ramifiedTraceLambda^3*c ∣ N)
     (hr : N ∣ (∏ i, p i)-(∏ i, p₀ i))
     (hd : N ∣ D.matrix (fun _ => 1) 1 1 - D₀.matrix (fun _ => 1) 1 1) :

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Setup
 
@@ -44,44 +45,24 @@ theorem sum_auxLabels_union (P : ι → Finset ℕ) {J : ℕ} {A B : ι → Fins
   · intro p hp
     obtain ⟨h₁, h₂⟩ := Finset.mem_product.1 hp
     rw [mem_auxLabels] at h₁ h₂ ⊢
-    intro g i
-    by_cases hA : i ∈ A g
-    · simpa [hA] using h₁ g i
-    · simpa [hA] using h₂ g i
+    grind
   · intro l hl
     rw [mem_auxLabels] at hl
     refine Finset.mem_product.2 ⟨mem_auxLabels.2 fun g i => ?_, mem_auxLabels.2 fun g i => ?_⟩
-    · by_cases hA : i ∈ A g
-      · simpa [hA] using hl g i
-      · simp [hA]
-    · by_cases hB : i ∈ B g
-      · simpa [hB] using hl g i
-      · simp [hB]
+    · grind
+    grind
   · intro p hp
     obtain ⟨h₁, h₂⟩ := Finset.mem_product.1 hp
     rw [mem_auxLabels] at h₁ h₂
     refine Prod.ext (funext fun g => funext fun i => ?_) (funext fun g => funext fun i => ?_)
-    · by_cases hA : i ∈ A g
-      · simp [hA]
-      · have h := h₁ g i
-        rw [ite_eq_right hA, Finset.mem_singleton] at h
-        simp [hA, h]
+    · grind
     · by_cases hB : i ∈ B g
       · have hA : i ∉ A g := Finset.disjoint_right.1 (hAB g) hB
         simp [hA, hB]
-      · have h := h₂ g i
-        rw [ite_eq_right hB, Finset.mem_singleton] at h
-        simp [hB, h]
+      grind
   · intro l hl
     rw [mem_auxLabels] at hl
-    refine funext fun g => funext fun i => ?_
-    by_cases hA : i ∈ A g
-    · simp [hA]
-    · by_cases hB : i ∈ B g
-      · simp [hA, hB]
-      · have h := hl g i
-        rw [ite_eq_right (by simp [hA, hB] : i ∉ A g ∪ B g), Finset.mem_singleton] at h
-        simp [hA, hB, h]
+    grind
   · intro p _
     have hA : slotProduct A (fun g i => if i ∈ A g then p.1 g i else p.2 g i) =
         slotProduct A p.1 :=
@@ -117,7 +98,7 @@ private theorem sum_mul_eq_sum_image {Λ : Type*} (S : Finset Λ) (w : Λ → �
 
 /-- **Two boxes.** A sum over integers whose nonzero terms lie in `[U, 4U]` is the sum over
 `[U, 2U]` plus the sum over `(2U, 4U]`. -/
-private theorem sum_eq_add_filter_of_support (s : Finset ℤ) (f : ℤ → ℂ) (U : ℝ)
+private theorem sum_eq_add_filter_of_support (s : Finset ℤ) (f : ℤ → ℂ)  U 
     (hf : ∀ z ∈ s, f z ≠ 0 → U ≤ (z : ℝ) ∧ (z : ℝ) ≤ 4 * U) :
     ∑ z ∈ s, f z = ∑ z ∈ s.filter (fun z : ℤ => U ≤ (z : ℝ) ∧ (z : ℝ) ≤ 2 * U), f z +
       ∑ z ∈ s.filter (fun z : ℤ => 2 * U < (z : ℝ) ∧ (z : ℝ) ≤ 4 * U), f z := by
@@ -126,31 +107,20 @@ private theorem sum_eq_add_filter_of_support (s : Finset ℤ) (f : ℤ → ℂ) 
     Finset.filter_filter]
   congr 1
   · refine Finset.sum_congr (Finset.filter_congr fun z _ => ?_) fun _ _ => rfl
-    constructor
-    · rintro ⟨⟨h₁, -⟩, h₂⟩
-      exact ⟨h₁, h₂⟩
-    · rintro ⟨h₁, h₂⟩
-      exact ⟨⟨h₁, by linarith⟩, h₂⟩
+    grind
   · refine Finset.sum_congr (Finset.filter_congr fun z _ => ?_) fun _ _ => rfl
-    constructor
-    · rintro ⟨⟨-, h₁⟩, h₂⟩
-      exact ⟨lt_of_not_ge h₂, h₁⟩
-    · rintro ⟨h₁, h₂⟩
-      have : 0 ≤ U := by linarith
-      exact ⟨⟨by linarith, h₂⟩, not_le.2 h₁⟩
+    grind
 
 /-- **Lower scale.** For a free label of `C` and slots `S ⊆ C` with a slot in a big group,
 `D_S ≥ exp(L^{0.39})`. -/
 theorem le_slotProduct {c₀ C₀ vlo vhi x : ℝ} {P : ι → Finset ℕ} {big : Finset ι}
     (hadm : GroupAdmissible c₀ C₀ vlo vhi x P big) {J : ℕ} {C S : ι → Finset (Fin J)}
-    (hC : ∀ g ∉ big, C g = ∅) (hS : ∀ g, S g ⊆ C g) {l : ι → Fin J → ℕ}
+    (hC : ∀ g ∉ big, C g = ∅) (hS : ∀ g, S g ⊆ C g)  {l} 
     (hl : l ∈ auxLabels P C) {g : ι} {i : Fin J} (hi : i ∈ S g) :
     Real.exp (Real.log x ^ (0.39 : ℝ)) ≤ slotProduct S l := by
   have hiC := hS g hi
   have hg : g ∈ big := by
-    by_contra hg
-    rw [hC g hg] at hiC
-    exact Finset.notMem_empty i hiC
+    grind
   have hl' := mem_auxLabels.1 hl
   have hmem : l g i ∈ P g := by simpa [hiC] using hl' g i
   have hp := hadm.2.2.2.2.2.2.2.1 g hg hmem
@@ -166,7 +136,7 @@ theorem le_slotProduct {c₀ C₀ vlo vhi x : ℝ} {P : ι → Finset ℕ} {big 
 /-- **Upper scale.** Eventually, for a free label of `C` and slots `S ⊆ C`, at most `m₀` in
 each big group and none in the small groups, `D_S ≤ exp(L^{0.465})`:
 `D_S ≤ exp(m₀ C₀ T L^{0.46})`. -/
-theorem eventually_slotProduct_le (c₀ C₀ vlo vhi : ℝ) (m₀ : ℕ) :
+theorem eventually_slotProduct_le  c₀ C₀ vlo vhi   m₀  :
     ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
@@ -185,9 +155,7 @@ theorem eventually_slotProduct_le (c₀ C₀ vlo vhi : ℝ) (m₀ : ℕ) :
   have hslot : ∀ g, ∀ i ∈ S g, (l g i : ℝ) ≤ Real.exp (L ^ (0.46 : ℝ)) := by
     intro g i hi
     have hg : g ∈ big := by
-      by_contra hg
-      rw [hC g hg] at hi
-      exact Finset.notMem_empty i hi
+      grind
     have hmem : l g i ∈ P g := by simpa [hSC g hi] using hl' g i
     have hp := hadm.2.2.2.2.2.2.2.1 g hg hmem
     simp only [primesIcc, Finset.mem_filter, Finset.mem_Icc] at hp
@@ -217,7 +185,7 @@ theorem eventually_slotProduct_le (c₀ C₀ vlo vhi : ℝ) (m₀ : ℕ) :
     Real.norm_of_nonneg (Real.rpow_nonneg hL0.le _)] at hx
   refine hprod.trans ?_
   rw [Finset.prod_pow_eq_pow_sum, ← Real.exp_nat_mul, Real.exp_le_exp]
-  have hm : 0 ≤ (m₀ : ℝ) * |C₀| := by positivity
+  
   have hlog : (m₀ * |C₀|) * Real.log L ≤ L ^ (0.005 : ℝ) := by
     have h := mul_le_mul_of_nonneg_left hx (show (0 : ℝ) ≤ m₀ * |C₀| + 1 by positivity)
     rw [← mul_assoc, mul_one_div_cancel (by positivity), one_mul] at h
@@ -231,7 +199,7 @@ theorem eventually_slotProduct_le (c₀ C₀ vlo vhi : ℝ) (m₀ : ℕ) :
 
 /-- The phase `e(-θ n v)` of the bilinear multiplier, in the form of `exists_minorArc_bound`
 with `k = 1`. -/
-noncomputable def bilinearPhase (θ : ℝ) (n v : ℤ) : ℂ :=
+noncomputable def bilinearPhase (θ : ℝ) (n v : ℤ)  :=
   Complex.exp (2 * Real.pi * (-((1 : ℤ) : ℝ) * θ * n * v : ℝ) * Complex.I)
 
 /-- **The bilinear multiplier on four boxes (S6–S7).** Let two independent free products have

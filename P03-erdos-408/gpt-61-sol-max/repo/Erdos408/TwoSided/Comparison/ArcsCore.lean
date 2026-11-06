@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.PrimeGaps.DyadicMeans
 
 public import Erdos408.TwoSided.Comparison.ArcsBound
 public import Erdos408.TwoSided.Comparison.ArcsLabels
@@ -22,7 +25,7 @@ namespace Erdos408.TwoSided.Arcs
 open Filter
 
 /-- For `0 ≤ a < b`, eventually `c₁ L^a + c₂ ≤ L^b`. -/
-theorem eventually_add_le_rpow {a b : ℝ} (c₁ c₂ : ℝ) (ha : 0 ≤ a) (hab : a < b) :
+theorem eventually_add_le_rpow {a b : ℝ}  c₁ c₂  (ha : 0 ≤ a) (hab : a < b) :
     ∀ᶠ L : ℝ in atTop, c₁ * L ^ a + c₂ ≤ L ^ b := by
   filter_upwards [(tendsto_rpow_atTop (sub_pos.2 hab)).eventually_ge_atTop (|c₁| + |c₂|),
     eventually_ge_atTop 1] with L h₁ hL
@@ -37,6 +40,9 @@ theorem eventually_add_le_rpow {a b : ℝ} (c₁ c₂ : ℝ) (ha : 0 ≤ a) (hab
     mul_le_mul_of_nonneg_right h₁ (by linarith)
   linarith
 
+section
+variable {t : Finset ℕ} {h : ℕ → ℂ} {a b x q q₀ L B₀ CW Y T Q H T₀ κ K₃ Ξ₀ CA A₀ : ℝ}
+
 /-- `|n^{-iσ}| ≤ 1`, including `n = 0`. -/
 theorem norm_natCast_cpow_neg_le_one (n : ℕ) (σ : ℝ) :
     ‖(n : ℂ) ^ (-((σ : ℂ) * Complex.I))‖ ≤ 1 := by
@@ -48,20 +54,17 @@ theorem norm_natCast_cpow_neg_le_one (n : ℕ) (σ : ℝ) :
     simp
 
 /-- `∑_t |h|² ≤ |t| b²` when `|h| ≤ b` on `t`. -/
-private theorem sum_norm_sq_le_card_mul {t : Finset ℕ} {h : ℕ → ℂ} {b : ℝ}
+private theorem sum_norm_sq_le_card_mul      
     (hb : ∀ n ∈ t, ‖h n‖ ≤ b) : ∑ n ∈ t, ‖h n‖ ^ 2 ≤ t.card * b ^ 2 := by
   have := Finset.sum_le_card_nsmul t (fun n => ‖h n‖ ^ 2) (b ^ 2) fun n hn =>
     pow_le_pow_left₀ (norm_nonneg _) (hb n hn) 2
   rwa [nsmul_eq_mul] at this
 
 /-- `√(a + b) ≤ √a + √b`. -/
-private theorem sqrt_add_le {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
-    Real.sqrt (a + b) ≤ Real.sqrt a + Real.sqrt b := by
-  rw [Real.sqrt_le_left (by positivity)]
-  nlinarith [Real.sq_sqrt ha, Real.sq_sqrt hb, Real.sqrt_nonneg a, Real.sqrt_nonneg b]
+private alias sqrt_add_le := _root_.OAI.LargePrimeGaps.sqrt_add_le_sqrt_add_sqrt
 
 /-- `|[⌈Y⌉, ⌊2Y⌋]| ≤ 2Y + 1`. -/
-private theorem card_Icc_ceil_floor_le {Y : ℝ} (hY : 0 ≤ Y) :
+private theorem card_Icc_ceil_floor_le   (hY : 0 ≤ Y) :
     ((Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊).card : ℝ) ≤ 2 * Y + 1 := by
   rw [Nat.card_Icc]
   have h₁ : ⌊2 * Y⌋₊ + 1 - ⌈Y⌉₊ ≤ ⌊2 * Y⌋₊ + 1 := Nat.sub_le _ _
@@ -71,10 +74,10 @@ private theorem card_Icc_ceil_floor_le {Y : ℝ} (hY : 0 ≤ Y) :
 
 /-- **(6.19) for the first endpoint.** `∑_{Y ≤ w ≤ 2Y} |𝒰(w)|² ≤ Y L^{2C_W + 3}` from
 `|ψ₁| ≤ M₀`, `|F| ≤ L` (crude U7) and `|W| ≤ L^{C_W}` (U9), once `3M₀² ≤ L`. -/
-theorem sum_norm_endpointCoeff_sq_le {x q q₀ : ℝ} {r d : ℕ} (a : Fin r → ℝ)
+theorem sum_norm_endpointCoeff_sq_le   {r d : ℕ} (a : Fin r → ℝ)
     (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ) {ι : Type} [Fintype ι] [DecidableEq ι]
     (P : ι → Finset ℕ) {J : ℕ} (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ)
-    (ψ₁ : ℝ → ℂ) {Y σ L CW M0 : ℝ} (hL : 0 < L) (hY : 1 ≤ Y) (hYx : 2 * Y ≤ x ^ 3)
+     ψ₁  {Y σ L CW M0 : ℝ} (hL : 0 < L) (hY : 1 ≤ Y) (hYx : 2 * Y ≤ x ^ 3)
     (hM : 3 * M0 ^ 2 ≤ L) (hψ : ∀ z, ‖ψ₁ z‖ ≤ M0)
     (hF : ∀ n : ℕ, 1 ≤ n → (n : ℝ) ≤ x ^ 3 → |centeredCore x q a u v Bc n| ≤ L)
     (hW : ∀ n, ‖markedListWeight P q₀ (unsharedSlots C) b n‖ ≤ L ^ CW) :
@@ -116,7 +119,7 @@ theorem sum_norm_endpointCoeff_sq_le {x q q₀ : ℝ} {r d : ℕ} (a : Fin r →
 
 /-- **(6.19) for the second endpoint.** `∑_{0 ≤ w ≤ 3Y} |G(w) W(w)|² ≤ Y L^{2B₀ + 2C_W + 1}`
 from `0 ≤ G ≤ L^{B₀}` and `|W| ≤ L^{C_W}`, once `4 ≤ L`. -/
-theorem sum_norm_second_sq_le {L B₀ CW Y : ℝ} (hL : 4 ≤ L) (hY : 1 ≤ Y) (G : ℕ → ℝ)
+theorem sum_norm_second_sq_le   (hL : 4 ≤ L) (hY : 1 ≤ Y) (G : ℕ → ℝ)
     (W : ℕ → ℂ) (hG : ∀ n, 0 ≤ G n ∧ G n ≤ L ^ B₀) (hW : ∀ n, ‖W n‖ ≤ L ^ CW) :
     ∑ w ∈ Finset.Icc 0 ⌊3 * Y⌋₊, ‖(G w : ℂ) * W w‖ ^ 2 ≤ Y * L ^ (2 * B₀ + 2 * CW + 1) := by
   have hL0 : 0 < L := by linarith
@@ -142,7 +145,7 @@ theorem sum_norm_second_sq_le {L B₀ CW Y : ℝ} (hL : 4 ≤ L) (hY : 1 ≤ Y) 
         ring
 
 /-- `√(Y L^c) = √Y L^{c/2}`. -/
-private theorem sqrt_mul_rpow {Y L : ℝ} (hY : 0 ≤ Y) (hL : 0 < L) (c : ℝ) :
+private theorem sqrt_mul_rpow  {Y L}  (hY : 0 ≤ Y) (hL : 0 < L) (c : ℝ) :
     Real.sqrt (Y * L ^ c) = Real.sqrt Y * L ^ (c / 2) := by
   rw [Real.sqrt_mul hY, Real.sqrt_eq_rpow (L ^ c), ← Real.rpow_mul hL.le]
   ring_nf
@@ -188,10 +191,7 @@ theorem div_le_of_arcs {N Y L Kmin K₃ Am Am' A₀ CA CB Carc Ξ₀ E : ℝ} {R
     refine (sqrt_add_le hΞ (by positivity)).trans (add_le_add le_rfl ?_)
     rw [Real.sqrt_mul (by norm_num), show -(2 * A₀) = -A₀ * 2 by ring, Real.rpow_mul hL0.le,
       Real.rpow_two, Real.sqrt_sq hA0]
-    have : Real.sqrt 2 ≤ 2 := by
-      rw [Real.sqrt_le_left (by norm_num)]
-      norm_num
-    exact mul_le_mul_of_nonneg_right this hA0
+    bound
   have hR2 : (R : ℝ) ^ 2 ≤ L ^ (2 * Carc) := by
     rw [mul_comm, Real.rpow_mul hL0.le, Real.rpow_two]
     exact pow_le_pow_left₀ (Nat.cast_nonneg _) hR 2
@@ -227,13 +227,13 @@ theorem div_le_of_arcs {N Y L Kmin K₃ Am Am' A₀ CA CB Carc Ξ₀ E : ℝ} {R
 
 /-- **The weighted tail.** If `L ≤ T`, `0 ≤ Q ≤ L²` and `C_A + 2A_e + 2 ≤ m`, then
 `(1 + T)^{-m} Q L^{C_A} ≤ L^{-2A_e}`. -/
-private theorem inv_pow_mul_le {L T Q CA A₀ : ℝ} {m : ℕ} (hL : 1 ≤ L) (hT : L ≤ T) (hQ : 0 ≤ Q)
+private theorem inv_pow_mul_le   {m : ℕ} (hL : 1 ≤ L) (hT : L ≤ T) (hQ : 0 ≤ Q)
     (hQL : Q ≤ L ^ 2) (hm : CA + 2 * A₀ + 2 ≤ m) :
     ((1 + T) ^ m)⁻¹ * Q * L ^ CA ≤ L ^ (-(2 * A₀)) := by
   have hL0 : 0 < L := by linarith
   have h₁ : ((1 + T) ^ m)⁻¹ ≤ L ^ (-(m : ℝ)) := by
     rw [Real.rpow_neg hL0.le, Real.rpow_natCast]
-    exact inv_anti₀ (by positivity) (pow_le_pow_left₀ hL0.le (by linarith) m)
+    bound
   calc ((1 + T) ^ m)⁻¹ * Q * L ^ CA ≤ L ^ (-(m : ℝ)) * L ^ (2 : ℝ) * L ^ CA := by
         rw [Real.rpow_two]
         gcongr
@@ -251,7 +251,7 @@ private theorem sq_mul_rpow_le {H Y x κ L CA A₀ : ℝ} (hx : 0 < x) (hL : 0 <
   have hsq : (H / Y) ^ 2 ≤ 16 * κ ^ 2 / x ^ 2 := by
     calc (H / Y) ^ 2 ≤ (4 * κ / x) ^ 2 := pow_le_pow_left₀ hHY hHY' 2
       _ = 16 * κ ^ 2 / x ^ 2 := by ring
-  have hp : 0 ≤ L ^ (-(2 * A₀)) := by positivity
+  
   calc (H / Y) ^ 2 * L ^ CA ≤ 16 * κ ^ 2 / x ^ 2 * (L ^ (CA + 2 * A₀) * L ^ (-(2 * A₀))) := by
         rw [hsplit]
         gcongr
@@ -383,7 +383,7 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
 `H/Y ≤ 4κ/x` and `j - 4 ≥ C_A + 2A_e + 2`, the energy of S8–S10 is
 `E ≤ K₃ Y (Ξ₀ + 2L^{-2A_e})`: the main term `K₃ Y Ξ₀`, the weighted tail and the additive
 term `(H/Y)² A`. -/
-theorem energy_le {x L Y H T₀ κ K₃ Ξ₀ CA A₀ : ℝ} {j : ℕ} (hx0 : 0 < x) (hLx : Real.log x = L)
+theorem energy_le    {j}  (hx0 : 0 < x) (hLx : Real.log x = L)
     (hL7 : 7 ≤ L) (hY1 : 1 ≤ Y) (hY_hi : Y ≤ x * Real.exp (L ^ (0.47 : ℝ))) (hH1 : 1 ≤ H)
     (hT₀H : 2 * Y * L ≤ T₀ * H) (hm : CA + 2 * A₀ + 2 ≤ ((j - 4 : ℕ) : ℝ))
     (hHY4 : H / Y ≤ 4 * κ / x) (hκx : 16 * κ ^ 2 ≤ x) (hLx' : L ^ (CA + 2 * A₀) ≤ x)
@@ -425,5 +425,7 @@ theorem energy_le {x L Y H T₀ κ K₃ Ξ₀ CA A₀ : ℝ} {j : ℕ} (hx0 : 0 
   have h₁ := mul_le_mul_of_nonneg_left hZ hY0.le
   have h₂ := mul_le_mul_of_nonneg_left hHq hY0.le
   linarith
+
+end
 
 end Erdos408.TwoSided.Arcs

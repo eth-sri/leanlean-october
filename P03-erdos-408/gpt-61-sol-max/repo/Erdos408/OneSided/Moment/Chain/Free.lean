@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.Chain
 public import Mathlib.Algebra.Field.ZMod
@@ -35,7 +36,7 @@ open scoped Matrix
 
 variable {K : ℕ}
 
-section Free
+
 
 variable (q A₀ x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) (B : ℕ)
 
@@ -55,12 +56,11 @@ def freeChoices : Finset (FreeChoice x d Y d₀ u v r) :=
 variable {x d Y d₀ u v r B}
 
 /-- The edge choice with the free choice `c`, the stored groups `St` and the flags `fl`. -/
-def toEdge (c : FreeChoice x d Y d₀ u v r) (St : Finset (Fin K)) (fl : Fin K → Bool) :
-    EdgeChoice x d Y d₀ u v r :=
+def toEdge (c : FreeChoice x d Y d₀ u v r) (St : Finset (Fin K)) (fl : Fin K → Bool)  :=
   (c.1, St, c.2.1, fun i => (c.2.2.1 i, fl i), c.2.2.2)
 
 /-- The edge choice with the free choice `c`, nothing stored and nothing promoted. -/
-abbrev toEdge₀ (c : FreeChoice x d Y d₀ u v r) : EdgeChoice x d Y d₀ u v r :=
+abbrev toEdge₀ (c : FreeChoice x d Y d₀ u v r)  :=
   toEdge c ∅ fun _ => false
 
 /-- The position and the lists of a chain state, as a line-free state. -/
@@ -72,7 +72,7 @@ def chainFree (s : ChainState x d Y d₀ u v r B) : FreeState x d Y d₀ u v r :
 variable (x d Y d₀ u v r B) in
 /-- The restrictions of `EdgeValid` that do not involve the memory: valid target lists, the
 cross-edge ban, the pad dyad, `D ∣ det`, and goodness at both ends. -/
-def FreeValid (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : Prop :=
+def FreeValid (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   edgeTgt s c ∈ lists x d (padCount x) ∧
     (∀ i i' h, (c.2.2.2.1 i).1 ≠ s.2.1.1 i' h) ∧
     d₀ ≤ (edgePad s c : ℝ) ∧ (edgePad s c : ℝ) < 2 * d₀ ∧ (edgePad s c : ℤ) ∣ edgeDet s c ∧
@@ -83,27 +83,27 @@ def FreeValid (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v
 
 variable (x d Y d₀ u v r B) in
 /-- The restrictions of `EdgeValid` that involve the memory. -/
-def MemValid (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : Prop :=
+def MemValid (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   (∀ i, (c.2.2.2.1 i).2 = true → ∃ xp : Particle x d, xp.1 = edgePromoted c i ∧
       1 ≤ s.2.2.1 xp) ∧
     (∀ i ∈ c.2.1, edgeStored s c i ∈ particles x d) ∧
     edgeMem s c ∈ memStates B
 
 /-- `EdgeValid` splits into its free and memory restrictions. -/
-theorem edgeValid_iff (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) :
+theorem edgeValid_iff  s   c  :
     EdgeValid x d Y d₀ u v r B s c ↔
       FreeValid x d Y d₀ u v r B s c ∧ MemValid x d Y d₀ u v r B s c := by
   simp only [EdgeValid, FreeValid, MemValid, and_assoc]
 
 /-- The free restrictions do not see the stored groups or the flags. -/
-theorem freeValid_toEdge (s : ChainState x d Y d₀ u v r B) (c : FreeChoice x d Y d₀ u v r)
-    (St : Finset (Fin K)) (fl : Fin K → Bool) :
+theorem freeValid_toEdge  s   c 
+     St   fl  :
     FreeValid x d Y d₀ u v r B s (toEdge c St fl) ↔ FreeValid x d Y d₀ u v r B s (toEdge₀ c) :=
   Iff.rfl
 
 /-- The free restrictions only see the position and the lists. -/
-theorem freeValid_congr {s s' : ChainState x d Y d₀ u v r B} (h₁ : s'.1 = s.1) (h₂ : s'.2.1 = s.2.1)
-    (c : EdgeChoice x d Y d₀ u v r) :
+theorem freeValid_congr  {s s'}  (h₁ : s'.1 = s.1) (h₂ : s'.2.1 = s.2.1)
+     c  :
     FreeValid x d Y d₀ u v r B s' c ↔ FreeValid x d Y d₀ u v r B s c := by
   have ht : edgeTgt s' c = edgeTgt s c := by
     unfold edgeTgt edgeSrc
@@ -111,7 +111,7 @@ theorem freeValid_congr {s s' : ChainState x d Y d₀ u v r B} (h₁ : s'.1 = s.
   simp only [FreeValid, ht, edgeSrc, edgePad, edgeDet, h₁, h₂]
 
 /-- The line-free kernel `(d₀/D) η(b/Y) η(a/Y) ψ(t/Y) {[t = b - a] - ∫_𝔐 e(θ(t - b + a))}`. -/
-def freeKernel (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : ℂ :=
+def freeKernel (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   ((d₀ / edgePad s c * dyadicBump ((∏ i, edgeSrc s c i (Fin.last _) : ℕ) / Y) *
       dyadicBump ((∏ i, (c.2.2.2.1 i).1 : ℕ) / Y) *
       plateau ((edgeDet s c / edgePad s c : ℤ) / Y) : ℝ) : ℂ) *
@@ -122,7 +122,7 @@ def freeKernel (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u 
 
 open scoped Classical in
 /-- The coefficient `M!^{-2K} ∏_i V_i⁻¹ κ` of a free choice; zero unless it is admissible. -/
-def freeCoef (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : ℂ :=
+def freeCoef (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   if FreeValid x d Y d₀ u v r B s c then
     (((((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 * (d.bandMass x)⁻¹ : ℝ) : ℂ) *
       freeKernel A₀ s c
@@ -139,8 +139,7 @@ theorem freeCoef_congr {s s' : ChainState x d Y d₀ u v r B} (h₁ : s'.1 = s.1
 
 open scoped Classical in
 /-- The target of a free choice, as a line-free state (the source if it is not admissible). -/
-def freeOut (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) :
-    FreeState x d Y d₀ u v r :=
+def freeOut (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   if h : FreeValid x d Y d₀ u v r B s c then
     ⟨(c.2.2.1, edgeTgt s c), by
       classical
@@ -188,11 +187,11 @@ theorem sum_freeSymOp_mul (a : FreeState x d Y d₀ u v r) (H : FreeState x d Y 
   rw [← sum_filter, himage, sum_image fun σ _ σ' _ h => hinj h, mul_sum]
 
 /-- The lists `p` with the last slot of each group replaced by the new labels. -/
-def replaceLast {J : ℕ} (p : Lists K J) (lab : Fin K → ℕ) : Lists K J :=
+def replaceLast {J } (p : Lists K J) (lab : Fin K → ℕ) : Lists K J :=
   fun i h => if h = Fin.last _ then lab i else p i h
 
 /-- A line-free state from a position and valid lists. -/
-def mkFree (z : ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r)) (l : Lists K (padCount x))
+def mkFree (z : ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r)) (l )
     (hl : l ∈ lists x d (padCount x)) : FreeState x d Y d₀ u v r :=
   ⟨(z, l), by
     classical
@@ -219,7 +218,7 @@ theorem sum_rowOp_mul (A₀ : ℝ) (m : FreeState x d Y d₀ u v r)
     funext i h
     induction h using Fin.lastCases with
     | last => simp [replaceLast]
-    | cast h => simp [replaceLast, (Fin.castSucc_lt_last h).ne, hc i h]
+    | cast h => simp_all [replaceLast]
   rw [← sum_product']
   refine sum_bij_ne_zero (fun k _ _ => (k.1.1, fun i => k.1.2 i (Fin.last _))) ?_ ?_ ?_ ?_
   · intro k _ _
@@ -254,14 +253,13 @@ theorem comp_perm_mem_lists_iff {J : ℕ} (l : Lists K J) (σ : Fin K → Equiv.
   constructor
   · rintro ⟨h₁, h₂⟩
     refine ⟨fun i h => by simpa using h₁ i ((σ i).symm h), fun i => ?_⟩
-    have := (h₂ i).comp (σ i).symm.injective
-    simpa [Function.comp_def] using this
+    simp_all
   · rintro ⟨h₁, h₂⟩
     exact ⟨fun i h => h₁ i _, fun i => (h₂ i).comp (σ i).injective⟩
 
 /-- A sandwich `𝒢 S T S 𝒢` with diagonal `𝒢` applied to a vector. -/
 theorem sum_diagonal_sandwich_mul {ι : Type*} [Fintype ι] [DecidableEq ι] (g : ι → ℂ)
-    (S T : Matrix ι ι ℂ) (F : ι → ℂ) (a : ι) :
+    (S T : Matrix ι ι ℂ) (F : ι → ℂ)  a  :
     ∑ b, (Matrix.diagonal g * S * T * S * Matrix.diagonal g) a b * F b =
       g a * ∑ m, S a m * ∑ k, T m k * ∑ b, S k b * (g b * F b) := by
   have hD : Matrix.diagonal g *ᵥ F = fun b => g b * F b :=
@@ -273,7 +271,7 @@ theorem sum_diagonal_sandwich_mul {ι : Type*} [Fintype ι] [DecidableEq ι] (g 
 
 open scoped Classical in
 /-- The goodness indicator of a line-free state. -/
-theorem goodOp_apply (a b : FreeState x d Y d₀ u v r) :
+theorem goodOp_apply  a b  :
     (freeRootModel d Y d₀ u v r).goodOp x d Y d₀ a b =
       if a = b then (if GoodFirst Y d₀ (tau r (complement a.1.1.1) / tau r a.1.1.1) a.1.2 ∧
         GoodSecond x d d₀ (tau r (complement a.1.1.1) / tau r a.1.1.1) a.1.2 then 1 else 0)
@@ -398,17 +396,17 @@ theorem sum_edgeOp_mul_eq (s : ChainState x d Y d₀ u v r B) (F : FreeState x d
 
 /-- With disjoint bands, the mass `V(p)` of a prime of `𝒫_i` is `V_i`. -/
 theorem primeMass_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    {i : Fin K} {p : ℕ} (hp : p ∈ band x (d.a i)) :
+     {i}   {p}  (hp : p ∈ band x (d.a i)) :
     primeMass x d p = harmonicMass (band x (d.a i)) := by
   rw [primeMass, sum_eq_single i, ite_eq_left hp]
   · intro j _ hji
     exact ite_eq_right fun hpj => disjoint_left.1 (hdisj j i hji) hpj hp
-  · exact fun h => absurd (mem_univ i) h
+  · exact absurd (mem_univ i)
 
 variable (x d) in
 /-- The memory weight of the new label of group `i`, with its `V_i⁻¹` moved to the free
 coefficient: `S(x)` for a promotion and `V_i ν(p) = ((p + 1) b'_p)⁻¹` for a fresh prime. -/
-def memLabelWeight (N : ℕ) (S : Particle x d → ℕ) (c : EdgeChoice x d Y d₀ u v r) (i : Fin K) : ℝ :=
+def memLabelWeight (N : ℕ) (S : Particle x d → ℕ) (c : EdgeChoice x d Y d₀ u v r) (i : Fin K)  :=
   if (c.2.2.2.1 i).2 then
     ∑ xp : Particle x d, if xp.1 = edgePromoted c i then (S xp : ℝ) else 0
   else (((c.2.2.2.1 i).1 + 1 : ℝ) * baseline q N (c.2.2.2.1 i).1)⁻¹
@@ -416,7 +414,7 @@ def memLabelWeight (N : ℕ) (S : Particle x d → ℕ) (c : EdgeChoice x d Y d�
 open scoped Classical in
 /-- The memory part of the edge coefficient: `ρ^{hits(S, z)} ρ^{hits(S', z')} ∏_i` (label
 weight), zero unless the memory restrictions hold. -/
-def memEdgeCoef (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : ℝ :=
+def memEdgeCoef (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   if MemValid x d Y d₀ u v r B s c then
     pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 *
       pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) *
@@ -425,9 +423,9 @@ def memEdgeCoef (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x 
 
 /-- The chain edge coefficient is the free coefficient times the memory part. -/
 theorem chainEdgeCoef_eq_mul (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (N : ℕ) (s : ChainState x d Y d₀ u v r B)
-    (c : FreeChoice x d Y d₀ u v r) (hc : c ∈ freeChoices x d Y d₀ u v r)
-    (St : Finset (Fin K)) (fl : Fin K → Bool) :
+     N   s 
+     c  (hc : c ∈ freeChoices x d Y d₀ u v r)
+     St   fl  :
     chainEdgeCoef q A₀ x d Y d₀ u v r B N s (toEdge c St fl) =
       freeCoef A₀ s (toEdge₀ c) * (memEdgeCoef q N s (toEdge c St fl) : ℂ) := by
   classical
@@ -481,8 +479,8 @@ theorem freeOut_congr {s s' : ChainState x d Y d₀ u v r B} (h₁ : s'.1 = s.1)
   rfl
 
 /-- On an admissible choice, the free part of the chain output is the free output. -/
-theorem chainFree_chainEdgeOut (s : ChainState x d Y d₀ u v r B) (c : FreeChoice x d Y d₀ u v r)
-    (St : Finset (Fin K)) (fl : Fin K → Bool)
+theorem chainFree_chainEdgeOut  s   c 
+     St   fl 
     (h : EdgeValid x d Y d₀ u v r B s (toEdge c St fl)) :
     chainFree (chainEdgeOut x d Y d₀ u v r B s (toEdge c St fl)) = freeOut s (toEdge₀ c) := by
   have hf : FreeValid x d Y d₀ u v r B s (toEdge₀ c) := ((edgeValid_iff s _).1 h).1
@@ -492,7 +490,7 @@ theorem chainFree_chainEdgeOut (s : ChainState x d Y d₀ u v r B) (c : FreeChoi
 /-! ### Lines along an admissible edge -/
 
 /-- A prime dividing `det(z, z')` for primitive `z, z'` gives them the same line. -/
-theorem lineOf_eq_of_dvd_det {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ} (hz : Int.gcd z.1 z.2 = 1)
+theorem lineOf_eq_of_dvd_det {p : ℕ} (hp : p.Prime)  {z z'}  (hz : Int.gcd z.1 z.2 = 1)
     (hz' : Int.gcd z'.1 z'.2 = 1) (hdvd : (p : ℤ) ∣ z.1 * z'.2 - z.2 * z'.1) :
     lineOf p z = lineOf p z' := by
   have : Fact p.Prime := ⟨hp⟩
@@ -501,10 +499,8 @@ theorem lineOf_eq_of_dvd_det {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ} (hz : 
     rintro ⟨h₁, h₂⟩
     obtain ⟨a, b, hab⟩ := Int.isCoprime_iff_gcd_eq_one.2 h
     have h' := congrArg (Int.cast : ℤ → ZMod p) hab
-    push_cast at h'
-    rw [h₁, h₂] at h'
-    simp at h'
-  have hval (w : ZMod p) : w.val ≠ p := (ZMod.val_lt w).ne
+    grind
+  
   have hd : (z.1 : ZMod p) * z'.2 - z.2 * z'.1 = 0 := by
     have := (ZMod.intCast_zmod_eq_zero_iff_dvd _ p).2 hdvd
     push_cast at this
@@ -513,34 +509,27 @@ theorem lineOf_eq_of_dvd_det {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ} (hz : 
   by_cases h₁ : (z.1 : ZMod p) = 0 <;> by_cases h₁' : (z'.1 : ZMod p) = 0
   · simp [h₁, h₁']
   · -- `z₂ z'₁ = 0` with `z₂ ≠ 0` forces `z'₁ = 0`
-    have h₂ : (z.2 : ZMod p) ≠ 0 := fun h => hne hz ⟨h₁, h⟩
-    rw [h₁, zero_mul, zero_sub, neg_eq_zero] at hd
-    exact absurd ((mul_eq_zero.1 hd).resolve_left h₂) h₁'
-  · have h₂' : (z'.2 : ZMod p) ≠ 0 := fun h => hne hz' ⟨h₁', h⟩
-    rw [h₁', mul_zero, sub_zero] at hd
-    exact absurd ((mul_eq_zero.1 hd).resolve_right h₂') h₁
-  · simp only [h₁, h₁', ite_false]
-    congr 1
-    field_simp
-    linear_combination -hd
+    grind
+  · grind
+  grind
 
 /-- The target lists consist of the pads of the reordered source and the new labels. -/
 theorem mem_edgeTgt_iff (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)
-    (p : ℕ) : (∃ i h, edgeTgt s c i h = p) ↔
+     p  : (∃ i h, edgeTgt s c i h = p) ↔
       (∃ i, ∃ h : Fin (padCount x), edgeSrc s c i h.castSucc = p) ∨ ∃ i, (c.2.2.2.1 i).1 = p := by
   constructor
   · rintro ⟨i, h, rfl⟩
     simp only [edgeTgt]
     induction hk : c.2.2.2.2 i h using Fin.lastCases with
     | last => exact Or.inr ⟨i, by simp⟩
-    | cast k => exact Or.inl ⟨i, k, by simp [(Fin.castSucc_lt_last k).ne]⟩
+    | cast k => aesop
   · rintro (⟨i, k, rfl⟩ | ⟨i, rfl⟩)
     · refine ⟨i, (c.2.2.2.2 i).symm k.castSucc, ?_⟩
       simp [edgeTgt, (Fin.castSucc_lt_last k).ne]
     · refine ⟨i, (c.2.2.2.2 i).symm (Fin.last _), ?_⟩
       simp [edgeTgt]
 
-section Admissible
+
 
 variable {s : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
   (hv : FreeValid x d Y d₀ u v r B s c)
@@ -603,8 +592,8 @@ theorem enter_iff (p : ℕ) :
   · rintro ⟨i, rfl⟩
     exact ⟨fun ⟨i', h', hp⟩ => hv.2.1 i i' h' hp.symm, (mem_edgeTgt_iff s c _).2 (Or.inr ⟨i, rfl⟩)⟩
 
-end Admissible
 
-end Free
+
+
 
 end Erdos408.OneSided

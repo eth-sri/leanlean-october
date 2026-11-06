@@ -11,18 +11,18 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 abbrev HighIdeal := (Id×Id)×(Id×Id)
 
-def highIdeals (v : PrimeIdeal→₀HighValuation) : HighIdeal :=
+def highIdeals (v : PrimeIdeal→₀HighValuation)  :=
   ((idealFromValuations (v.mapRange (fun b=>b.1.1) rfl),
     idealFromValuations (v.mapRange (fun b=>b.1.2) rfl)),
    (idealFromValuations (v.mapRange (fun b=>b.2.1) rfl),
     idealFromValuations (v.mapRange (fun b=>b.2.2) rfl)))
 
-lemma highIdeals_eq_equiv (v : PrimeIdeal→₀HighValuation) :
+lemma highIdeals_eq_equiv  v  :
     highIdeals v =
       (((highValuationEquiv.symm v).1.1.val,(highValuationEquiv.symm v).1.2.val),
        ((highValuationEquiv.symm v).2.1.val,(highValuationEquiv.symm v).2.2.val)) := by
@@ -48,11 +48,11 @@ lemma highIdeals_zero : highIdeals 0=1 := by
   simp only [highIdeals,Finsupp.mapRange_zero,idealFromValuations_zero]
   rfl
 
-lemma highIdeals_single (P : PrimeIdeal) (b : HighValuation) :
+lemma highIdeals_single  P   b  :
     highIdeals (Finsupp.single P b)=((P.val^b.1.1,P.val^b.1.2),(P.val^b.2.1,P.val^b.2.2)) := by
   simp only [highIdeals,Finsupp.mapRange_single,idealFromValuations_single]
 
-lemma highIdeals_add (v w : PrimeIdeal→₀HighValuation) :
+lemma highIdeals_add  v w  :
     highIdeals (v+w)=highIdeals v*highIdeals w := by
   have hproj (f : HighValuation→ℕ) (hf0 : f 0=0) (hf : ∀a b,f (a+b)=f a+f b) :
       (v+w).mapRange f hf0=v.mapRange f hf0+w.mapRange f hf0 := by
@@ -63,7 +63,7 @@ lemma highIdeals_add (v w : PrimeIdeal→₀HighValuation) :
     hproj (fun b=>b.2.2) rfl (fun _ _=>rfl),idealFromValuations_add]
   rfl
 
-lemma prime_coprime_highIdeals (P : PrimeIdeal) (v : PrimeIdeal→₀HighValuation)
+lemma prime_coprime_highIdeals (P : PrimeIdeal)  v 
     (hv : v P=0) : IsCoprime P.val
       ((highIdeals v).1.1*(highIdeals v).1.2*(highIdeals v).2.1*(highIdeals v).2.2) := by
   have hc (f : HighValuation→ℕ) (hf0 : f 0=0) :
@@ -73,20 +73,20 @@ lemma prime_coprime_highIdeals (P : PrimeIdeal) (v : PrimeIdeal→₀HighValuati
   exact ((hc _ rfl).mul_right (hc _ rfl)).mul_right (hc _ rfl) |>.mul_right (hc _ rfl)
 
 def highValuationTerm (η : HeckeFamily.Character) (x w z : ℂ)
-    (v : PrimeIdeal→₀HighValuation) : ℂ :=
+    (v : PrimeIdeal→₀HighValuation)  :=
   bareIdealHighSummand η 1 x w z (highIdeals v).1.1 (highIdeals v).1.2
     (highIdeals v).2.1 (highIdeals v).2.2
 
 def highPrimeTerm (η : HeckeFamily.Character) (x w z : ℂ)
-    (P : PrimeIdeal) (b : HighValuation) : ℂ :=
+    (P : PrimeIdeal) (b : HighValuation)  :=
   bareIdealHighSummand η 1 x w z (P.val^b.1.1) (P.val^b.1.2) (P.val^b.2.1) (P.val^b.2.2)
 
-lemma highPrimeTerm_zero (η : HeckeFamily.Character) (x w z : ℂ) (P : PrimeIdeal) :
+lemma highPrimeTerm_zero  η   x w z   P  :
     highPrimeTerm η x w z P 0=1 := by
   simp only [highPrimeTerm,Prod.fst_zero,Prod.snd_zero,pow_zero,bareIdealHighSummand_one]
 
-theorem highValuationTerm_eq_prod (η : HeckeFamily.Character) (x w z : ℂ)
-    (v : PrimeIdeal→₀HighValuation) :
+theorem highValuationTerm_eq_prod  η   x w z 
+     v  :
     highValuationTerm η x w z v=v.prod (highPrimeTerm η x w z) := by
   induction v using Finsupp.induction with
   | zero =>
@@ -106,7 +106,7 @@ theorem highValuationTerm_eq_prod (η : HeckeFamily.Character) (x w z : ℂ)
     rw [highIdeals_add,highIdeals_single]
     exact bareIdealHighSummand_mul η x w z _ _ _ _ _ _ _ _ hpow
 
-theorem highValuationTerm_summable_norm (η : HeckeFamily.Character) (x w z : ℂ)
+theorem highValuationTerm_summable_norm  η   x w z 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     Summable (fun v : PrimeIdeal→₀HighValuation=>‖highValuationTerm η x w z v‖) :=
   (bareIdealHighSummand_summable η 1 x w z hx hw hz).norm.comp_injective highIdeals_injective

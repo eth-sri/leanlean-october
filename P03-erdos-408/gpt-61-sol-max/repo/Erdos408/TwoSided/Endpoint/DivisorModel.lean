@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Groups
 public import Erdos408.TwoSided.Endpoint.DivisorModel.Lists
@@ -28,9 +29,9 @@ open Filter
 (a) `A_d ≠ 0` only for squarefree `d ≤ exp(2L^{0.47})` whose primes are active or band
 primes; (b) `∑_d |A_d|/d ≤ L^{C₈}`; (c) for every `R ≥ 1`,
 `∑_{R < n ≤ 2R} |H(n) - ∑_{d ∣ n} A_d|² ≤ C_N R L^{-N}`. -/
-def DivisorModel (x q q₀ : ℝ) {r : ℕ} (a : Fin r → ℝ) {ι : Type} [Fintype ι] [DecidableEq ι]
-    (P : ι → Finset ℕ) {M : ℕ} (S : ι → Finset (Fin M)) (b : (ι → Fin M → ℕ) → ℂ)
-    (C₈ CN : ℝ) (N : ℕ) (A : ℕ → ℂ) : Prop :=
+def DivisorModel (x q q₀ : ℝ) {r : ℕ} (a : Fin r → ℝ) {ι } [Fintype ι] [DecidableEq ι]
+    (P : ι → Finset ℕ) {M } (S : ι → Finset (Fin M)) (b : (ι → Fin M → ℕ) → ℂ)
+    (C₈ CN : ℝ) (N : ℕ) (A : ℕ → ℂ)  :=
   (∀ d, A d ≠ 0 → Squarefree d ∧ (d : ℝ) ≤ Real.exp (2 * Real.log x ^ (0.47 : ℝ)) ∧
       ∀ p ∈ d.primeFactors, p ∈ Finset.univ.biUnion P ∨ ∃ i, p ∈ band x (a i)) ∧
     ∑ d ∈ Finset.Icc 1 ⌊Real.exp (2 * Real.log x ^ (0.47 : ℝ))⌋₊, ‖A d‖ / d ≤
@@ -59,7 +60,7 @@ of steps 3, 4 and 6 hold. -/
 theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀)
     (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) {ι : Type} [Fintype ι] [DecidableEq ι]
     {P : ι → Finset ℕ} {r : ℕ} {a : Fin r → ℝ} {M : ℕ} {S : ι → Finset (Fin M)}
-    {b : (ι → Fin M → ℕ) → ℂ} {m₀ : ℕ} (C₈ CNN : ℝ) (N h₀ : ℕ)
+    {b : (ι → Fin M → ℕ) → ℂ} {m₀ : ℕ}  C₈ CNN  (N h₀ : ℕ)
     (hL0 : 0 ≤ Real.log x) (hPd : ∀ g h, g ≠ h → Disjoint (P g) (P h))
     (hGd : ∀ i j, i ≠ j → Disjoint (band x (a i)) (band x (a j)))
     (hQd : Disjoint (univ.biUnion fun i => band x (a i)) (univ.biUnion P))
@@ -177,8 +178,8 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
   · -- (c) mean square
     intro R₀ hR₀
     set Cx : ℝ := 2 ^ r * B ^ ((m₀ + 1) * Fintype.card ι) with hCx
-    have hB1 : 1 ≤ B := le_max_left _ _
-    have hCx0 : 0 ≤ Cx := by positivity
+    
+    
     -- the pointwise error
     have hpt : ∀ n ∈ Ioc ⌊R₀⌋₊ ⌊2 * R₀⌋₊,
         ‖(markedWeight univ q (fun i => band x (a i)) n : ℂ) * markedListWeight P q₀ S b n -
@@ -189,7 +190,7 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
         have := (mem_Ioc.1 hn).1
         omega
       rw [hH n]
-      have h1 := norm_listForm_sub_le (hR := hRQ) (fun p hp => hprime p hp) c hw1 h₀ hn0
+      have h1 := norm_listForm_sub_le (hR := hRQ) (hprime) c hw1 h₀ hn0
       rw [show (∑ j ∈ J, if R j ⊆ divs Q n then ‖c j‖ else 0) = _ from
         sum_norm_mul hQd hRB hRP (fun _ => bandCoeff G) (groupCoeff P S b) n] at h1
       have hB' := sum_norm_bandCoeff_le hGd (fun i => (hVB i).1) n
@@ -203,9 +204,7 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
       have hS0 : 0 ≤ ∑ j ∈ groupLists P S,
           (if groupRep S j ⊆ divs QP n then ‖groupCoeff P S b j‖ else 0) :=
         sum_nonneg fun _ _ => by positivity
-      have hSB0 : 0 ≤ ∑ β ∈ Fintype.piFinset G,
-          (if univ.image β ⊆ divs QB n then ‖bandCoeff G‖ else 0) :=
-        sum_nonneg fun _ _ => by positivity
+      
       -- `S 4^{|D|} ≤ C_x 2^{(m₀+3)|D|}`
       have hkey₁ : ∀ t : ℝ, t ^ r * t ^ u * (B ^ Fintype.card ι * t ^ v) ^ (m₀ + 1) *
           (t ^ 2) ^ (u + v) = t ^ r * B ^ ((m₀ + 1) * Fintype.card ι) *
@@ -247,12 +246,11 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
         ≤ ∑ n ∈ Ioc ⌊R₀⌋₊ ⌊2 * R₀⌋₊, Cx ^ 2 / 4 ^ h₀ * ((4 : ℝ) ^ (m₀ + 3)) ^ #(divs Q n) :=
           sum_le_sum hpt
       _ ≤ ∑ n ∈ Ioc 0 ⌊2 * R₀⌋₊, Cx ^ 2 / 4 ^ h₀ * ((4 : ℝ) ^ (m₀ + 3)) ^ #(divs Q n) :=
-          sum_le_sum_of_subset_of_nonneg (Ioc_subset_Ioc_left (Nat.zero_le _))
-            fun _ _ _ => by positivity
+          (by gcongr <;> first | assumption | positivity | linarith)
       _ = Cx ^ 2 / 4 ^ h₀ * ∑ n ∈ Ioc 0 ⌊2 * R₀⌋₊, ((4 : ℝ) ^ (m₀ + 3)) ^ #(divs Q n) := by
           rw [mul_sum]
       _ ≤ Cx ^ 2 / 4 ^ h₀ * (⌊2 * R₀⌋₊ * ∏ p ∈ Q, (1 + (4 ^ (m₀ + 3) - 1) / (p : ℝ))) :=
-          mul_le_mul_of_nonneg_left (sum_pow_card_divs_le (fun p hp => hprime p hp) hz _)
+          mul_le_mul_of_nonneg_left (sum_pow_card_divs_le (hprime) hz _)
             (by positivity)
       _ ≤ Cx ^ 2 / 4 ^ h₀ *
             (2 * R₀ * Real.exp ((4 ^ (m₀ + 3) - 1) * (r + Fintype.card ι * vhi))) := by
@@ -295,8 +293,7 @@ theorem meanSquare_numeric {L κ₁ κ₂ B C₀ vhi : ℝ} {r m₀ c h₀ N : �
     rw [Nat.cast_mul, Nat.cast_add_one, hκ₂]
     linarith
   have hz1 : (0 : ℝ) ≤ 4 ^ (m₀ + 3) - 1 := by
-    have : (1 : ℝ) ≤ 4 ^ (m₀ + 3) := one_le_pow₀ (by norm_num)
-    linarith
+    bound
   have hE : Real.exp ((4 ^ (m₀ + 3) - 1) * (r + c * vhi)) ≤
       Real.exp ((4 ^ (m₀ + 3) - 1) * κ₁ * T) := by
     rw [mul_assoc]
@@ -311,7 +308,7 @@ theorem meanSquare_numeric {L κ₁ κ₂ B C₀ vhi : ℝ} {r m₀ c h₀ N : �
   have hl2 : Real.log 2 < 1 := by
     rw [Real.log_lt_iff_lt_exp two_pos]
     linarith [Real.exp_one_gt_d9]
-  have hCx0 : 0 ≤ 2 ^ r * B ^ ((m₀ + 1) * c) := by positivity
+  
   have hsq : Real.exp (κ₂ * T) ^ 2 = Real.exp (2 * κ₂ * T) := by
     rw [← Real.exp_nat_mul]
     ring_nf
@@ -349,9 +346,9 @@ The proof is `DivModel.divisorModel_of_facts`: the list forms
 `DivModel.markedWeight_eq_listForm` and `DivModel.markedListWeight_eq_listForm`, their product
 `DivModel.listForm_mul`, the truncation bounds `DivModel.norm_listForm_sub_le` and
 `DivModel.sum_norm_truncModel_div_le`, and (6.27) as `DivModel.sum_pow_card_divs_le`. -/
-theorem exists_divisorModel (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN : ℝ)
+theorem exists_divisorModel  q q₀ c₀ C₀ vlo vhi alo ahi   K₀   CN 
     (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo)
-    (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (m₀ : ℕ) :
+    (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5)  m₀  :
     ∃ C₈ : ℝ, ∀ N : ℕ, ∃ CNN : ℝ, ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
@@ -365,7 +362,7 @@ theorem exists_divisorModel (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ
   set κ₂ : ℝ := Real.log 2 + 2 * (m₀ + 1) * |C₀| * Real.log B with hκ₂
   refine ⟨2 * |C₀| * |vhi| + 2, fun N => ⟨1, ?_⟩⟩
   have hB1 : 1 ≤ B := le_max_left _ _
-  have hlogB : 0 ≤ Real.log B := Real.log_nonneg hB1
+  
   filter_upwards [OneSided.eventually_harmonicMass_band halo.le,
     Real.tendsto_log_atTop.eventually_ge_atTop 1, Sieve.tendsto_logLog.eventually_ge_atTop 1,
     Sieve.eventually_mul_logLogLog_le (K₀ + |CN|),
@@ -396,7 +393,7 @@ theorem exists_divisorModel (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ
   have hsT : 0 ≤ Real.log T := Real.log_nonneg hT1
   have hrT : (r : ℝ) ≤ T := by
     have h₁ : CN * Real.log T ≤ |CN| * Real.log T := mul_le_mul_of_nonneg_right (le_abs_self _) hsT
-    have h₂ := hs
+    
     have : (0 : ℝ) ≤ K₀ := Nat.cast_nonneg _
     nlinarith [abs_nonneg CN]
   -- the primes: sizes and disjointness

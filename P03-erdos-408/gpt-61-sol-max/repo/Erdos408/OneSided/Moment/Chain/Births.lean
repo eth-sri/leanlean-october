@@ -1,4 +1,6 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
 
 public import Erdos408.OneSided.Moment.Chain
 
@@ -32,7 +34,7 @@ open Finset
 
 variable {K : ℕ}
 
-section Births
+
 
 variable (q A₀ x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) (B : ℕ)
 
@@ -58,12 +60,12 @@ theorem birthsDistinct_iff_nodup {α : Type*} [Fintype α] (β : α → Option �
       · simp [optBirth, hp, Ne.symm hp]
   rw [Multiset.nodup_iff_count_le_one]
   simp only [hcount, card_le_one, mem_filter, mem_univ, true_and, BirthsDistinct]
-  exact ⟨fun h p a ha a' ha' => h a a' p ha ha', fun h a a' p ha ha' => h p a ha a' ha'⟩
+  grind
 
 variable {x d}
 
 /-- The primes of a ghost batch, with multiplicity. -/
-def batchBirths (n : Particle x d → ℕ) : Multiset ℕ :=
+def batchBirths (n : Particle x d → ℕ)  :=
   ∑ xp : Particle x d, Multiset.replicate (n xp) xp.1.1
 
 variable {Y d₀ u v r}
@@ -73,18 +75,18 @@ def freshBirths (c : EdgeChoice x d Y d₀ u v r) : Multiset ℕ :=
   ∑ i, if (c.2.2.2.1 i).2 then 0 else {(c.2.2.2.1 i).1}
 
 /-- The initial labels. -/
-def initBirths {J : ℕ} (act : Lists K J) : Multiset ℕ := ∑ i, ∑ k, {act i k}
+def initBirths {J } (act : Lists K J) : Multiset ℕ := ∑ i, ∑ k, {act i k}
 
 /-- The births of a history after its start: its ghost batches and its fresh labels. -/
-def newBirths {N : ℕ} (h : History x d Y d₀ u v r N) : Multiset ℕ :=
+def newBirths {N } (h : History x d Y d₀ u v r N)  :=
   ∑ j, batchBirths (h.1 j).2 + ∑ j, freshBirths (h.2 j)
 
 /-- The sorted batch lists the primes of the batch. -/
-theorem coe_batchPrimes (n : Particle x d → ℕ) : (batchPrimes x d n : Multiset ℕ) = batchBirths n :=
+theorem coe_batchPrimes  n  : (batchPrimes x d n : Multiset ℕ) = batchBirths n :=
   Multiset.sort_eq _ _
 
 /-- The length of a batch is its total multiplicity. -/
-theorem length_batchPrimes (n : Particle x d → ℕ) :
+theorem length_batchPrimes  n  :
     (batchPrimes x d n).length = ∑ xp, n xp := by
   rw [← Multiset.coe_card, coe_batchPrimes, batchBirths, Multiset.card_sum]
   simp
@@ -124,14 +126,14 @@ theorem birthsDistinct_iff {N : ℕ} (s : ChainState x d Y d₀ u v r B)
 /-- On a history of nonzero weight every ghost choice is valid, so every batch fits into its
 `B` addresses. -/
 theorem length_batchPrimes_le {N : ℕ} {s : ChainState x d Y d₀ u v r B}
-    {h : History x d Y d₀ u v r N} (hw : chainWeight q A₀ s h ≠ 0) (j : Fin (N + 1)) :
+    {h : History x d Y d₀ u v r N} (hw : chainWeight q A₀ s h ≠ 0)  j  :
     (batchPrimes x d (h.1 j).2).length ≤ B := by
   classical
   have hg : chainGhostCoef q x d Y d₀ u v r B N j (chainVisit s h j) (h.1 j) ≠ 0 :=
     fun h0 => hw (by rw [chainWeight, prod_eq_zero (mem_univ j) h0, zero_mul])
   have hv : GhostValid (HitsAt x d (chainVisit s h j).1.1) B (chainVisit s h j).2.2.1 (h.1 j) := by
     by_contra hv
-    exact hg (by rw [chainGhostCoef, ghostCoef, ite_eq_right hv])
+    simp_all [chainGhostCoef, ghostCoef]
   rw [length_batchPrimes]
   refine le_trans (sum_le_sum fun xp _ => ?_) hv.2.2
   exact Nat.le_add_left _ _
@@ -155,41 +157,43 @@ def distinctFold (N : ℕ) : ℕ → ℕ → ChainState x d Y d₀ u v r B → M
           (Bn + batchBirths g.2 + freshBirths c)
 
 /-- The weight of a history with the ghost indices shifted by `t`. -/
-def offsetWeight (M t : ℕ) {N : ℕ} (s : ChainState x d Y d₀ u v r B)
-    (h : History x d Y d₀ u v r N) : ℂ :=
+def offsetWeight (M t : ℕ) {N } (s : ChainState x d Y d₀ u v r B)
+    (h : History x d Y d₀ u v r N)  :=
   (∏ j : Fin (N + 1), chainGhostCoef q x d Y d₀ u v r B M (j + t) (chainVisit s h j) (h.1 j)) *
     ∏ j : Fin N, chainEdgeCoef q A₀ x d Y d₀ u v r B M
       (chainGhostOut x d Y d₀ u v r B (chainVisit s h j.castSucc) (h.1 j.castSucc)) (h.2 j)
 
 /-- The visits of a history after its first edge are the visits of its tail. -/
-private theorem chainVisit_cons_succ {N : ℕ} (s : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d) (e : EdgeChoice x d Y d₀ u v r) (h : History x d Y d₀ u v r N)
-    (j : Fin (N + 1)) :
+private theorem chainVisit_cons_succ  {N}   s 
+     c   e   h 
+     j  :
     chainVisit (N := N + 1) s (Fin.cons c h.1, Fin.cons e h.2) j.succ =
       chainVisit (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h j := by
   induction j using Fin.induction with
   | zero => rfl
   | succ j ih =>
-    simp only [chainVisit] at ih ⊢
-    rw [Fin.induction_succ, Fin.induction_succ, ← Fin.succ_castSucc, ih]
-    simp
+    simp_all [chainVisit]
+
+public alias _root_.SharedProofs.shared_chainVisit_cons_succ := chainVisit_cons_succ
+
 
 /-- The end of a history is the end of its tail. -/
-private theorem chainEnd_cons {N : ℕ} (s : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d) (e : EdgeChoice x d Y d₀ u v r) (h : History x d Y d₀ u v r N) :
+private theorem chainEnd_cons  {N}   s 
+     c   e   h  :
     chainEnd (N := N + 1) s (Fin.cons c h.1, Fin.cons e h.2) =
       chainEnd (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h := by
   rw [chainEnd, ← Fin.succ_last, chainVisit_cons_succ]
   rfl
+
+public alias _root_.SharedProofs.shared_chainEnd_cons := chainEnd_cons
+
 
 /-- A history with no edges is a single ghost choice. -/
 private theorem sum_histories_zero (F : History x d Y d₀ u v r 0 → ℂ) :
     ∑ h ∈ histories x d Y d₀ u v r B 0, F h =
       ∑ c ∈ multBox B ×ˢ multBox B, F (fun _ => c, Fin.elim0) := by
   refine sum_nbij' (fun h => h.1 0) (fun c => (fun _ => c, Fin.elim0)) ?_ ?_ ?_ ?_ ?_
-  · intro h hh
-    simp only [histories, mem_product, Fintype.mem_piFinset] at hh ⊢
-    exact hh.1 0
+  · grind [histories]
   · intro c hc
     simp only [histories, mem_product, Fintype.mem_piFinset] at hc ⊢
     exact ⟨fun _ => hc, fun i => i.elim0⟩
@@ -200,6 +204,9 @@ private theorem sum_histories_zero (F : History x d Y d₀ u v r 0 → ℂ) :
   · intro h _
     congr 1
     exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
+
+public alias _root_.SharedProofs.shared_sum_histories_zero := sum_histories_zero
+
 
 /-- A history with `N + 1` edges is a first ghost choice, a first edge choice, and a history
 with `N` edges. -/
@@ -215,7 +222,7 @@ private theorem sum_histories_succ {N : ℕ} (F : History x d Y d₀ u v r (N + 
     exact ⟨hh.1 0, hh.2 0, fun i => hh.1 _, fun i => hh.2 _⟩
   · intro t ht
     simp only [histories, mem_product, Fintype.mem_piFinset] at ht ⊢
-    exact ⟨fun i => Fin.cases ht.1 ht.2.2.1 i, fun i => Fin.cases ht.2.1 ht.2.2.2 i⟩
+    exact ⟨Fin.cases ht.1 ht.2.2.1, Fin.cases ht.2.1 ht.2.2.2⟩
   · intro h _
     simp
   · intro t _
@@ -223,9 +230,12 @@ private theorem sum_histories_succ {N : ℕ} (F : History x d Y d₀ u v r (N + 
   · intro h _
     simp
 
+public alias _root_.SharedProofs.shared_sum_histories_succ := sum_histories_succ
+
+
 open scoped Classical in
 /-- `distinctFold` is the history sum restricted to births that are distinct and avoid `Bn`. -/
-theorem distinctFold_eq_sum (N : ℕ) :
+theorem distinctFold_eq_sum  N  :
     ∀ (n t : ℕ) (s : ChainState x d Y d₀ u v r B) (Bn : Multiset ℕ),
       distinctFold q A₀ Y d₀ u v r B N n t s Bn =
         ∑ h ∈ histories x d Y d₀ u v r B n, offsetWeight q A₀ B N t s h *
@@ -271,7 +281,7 @@ theorem distinctFold_eq_sum (N : ℕ) :
 
 open scoped Classical in
 /-- The distinct-birth history sum through the running form. -/
-theorem distinctSum_eq_sum_distinctFold (N : ℕ) :
+theorem distinctSum_eq_sum_distinctFold  N  :
     distinctSum q A₀ x d Y d₀ u v r B N =
       ∑ s, (chainMeasure q x d Y d₀ u v r B N s : ℂ) * chainInit x d Y d₀ u v r B s *
         distinctFold q A₀ Y d₀ u v r B N N 0 s (initBirths s.2.1.1) := by
@@ -288,6 +298,6 @@ theorem distinctSum_eq_sum_distinctFold (N : ℕ) :
   · rw [birthsDistinct_iff B s h (length_batchPrimes_le q A₀ B h0)]
     split_ifs <;> simp
 
-end Births
+
 
 end Erdos408.OneSided

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionApproximation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformRetainedEnergy
 open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson CenteredMomentScaleSupremum
@@ -18,11 +18,15 @@ open CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalizat
 open CenteredMomentUniformReflectionApproximation CenteredMomentReflectedUniformPair
 open CenteredMomentReflectedNormalization
 
-lemma twisted_zero (W:ℝ→ℂ) : CompletedHeight.normTwistedSource W 0=W := by
+section
+variable (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (epsilon : ℝ) (hepsilon : 0<epsilon) (B J : ℕ)
+
+
+lemma twisted_zero  W  : CompletedHeight.normTwistedSource W 0=W := by
   funext x
   simp [CompletedHeight.normTwistedSource,FourierBridge.logPhase]
 
-lemma normalized_zero (G:𝓢(ℝ,ℂ)) (B:ℕ) (s:ℝ) :
+lemma normalized_zero      s  :
     normalizedReflected CenteredMomentReflectedAnnuli.logWindow G B 0 s 0=
       (fun x=>(annulus x:ℂ)*((1+s)^B:ℂ)*paperRadialFourier G (s*x)) := by
   funext x
@@ -30,13 +34,14 @@ lemma normalized_zero (G:𝓢(ℝ,ℂ)) (B:ℕ) (s:ℝ) :
   push_cast
   rfl
 
-lemma retained_zero (χ ψ:Character) (G:𝓢(ℝ,ℂ)) (X R:ℝ) :
+lemma retained_zero      X R  :
     retainedOriginal χ ψ G X R 0=retainedSchwartz χ ψ G X R := by
   unfold retainedOriginal retainedSchwartz
   rw [twisted_zero]
 
-theorem actual_retained_uniform_energy (epsilon : ℝ)
-    (hepsilon : 0<epsilon) (B J : ℕ) (hB : 2≤B) :
+include hepsilon in
+theorem actual_retained_uniform_energy  
+        (hB : 2≤B) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type}[Fintype ι],
       ∀(G : ι→𝓢(ℝ,ℂ))(χ ψ : ι→Character)(P : ι→ℂ)(X R ly omega : ι→ℝ)
         (Wshort : ℝ→ℂ)(c d lo hi low high D E Rcap : ℝ),
@@ -82,8 +87,10 @@ theorem actual_retained_uniform_energy (epsilon : ℝ)
   simp only [retained_zero,P',Nat.mul_zero,pow_zero,mul_one,←mul_assoc] at hfinal
   convert hfinal using 1 ; ring
 
+end
+
 end SevenEighths.CenteredMomentUniformRetainedEnergy
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.CycleFibers
 public import Erdos821.S2.PerformedSigns
@@ -13,12 +14,15 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2
 
-lemma birthMobius_eq_sign_mul_factorials {a : ℕ} (π : Finset (Finset (Fin a))) :
+section
+variable {a : ℕ} (π : Finset (Finset (Fin a)))
+
+lemma birthMobius_eq_sign_mul_factorials     :
     birthMobius π = (-1 : ℤ) ^ birthRank π *
       ∏ B ∈ π, ((B.card - 1).factorial : ℤ) := by
   simp only [birthMobius, Finset.prod_mul_distrib, Finset.prod_pow_eq_pow_sum, birthRank]
 
-lemma permutationsWithBlocks_sign_sum {a : ℕ} (π : Finset (Finset (Fin a)))
+lemma permutationsWithBlocks_sign_sum    
     (hπ : BirthCollection π) :
     (∑ σ ∈ permutationsWithBlocks π, (Equiv.Perm.sign σ : ℤ)) = birthMobius π := by
   have hs (σ : Equiv.Perm (Fin a)) (hσ : σ ∈ permutationsWithBlocks π) :
@@ -33,9 +37,11 @@ lemma permutationsWithBlocks_sign_sum {a : ℕ} (π : Finset (Finset (Fin a)))
       simp only [Nat.cast_prod]
       exact mul_comm _ _
 
+end
+
 /-- Distinctness is an exact sum over disjoint nonsingleton blocks.
 Unperformed addresses contribute no block conditions. -/
-theorem distinct_birth_expansion (a : ℕ) (performed : Finset (Fin a)) (value : Fin a → ℕ) :
+theorem distinct_birth_expansion (a : ℕ) (performed : Finset (Fin a))  value  :
     (if Set.InjOn value performed then (1 : ℤ) else 0) =
       ∑ π ∈ Finset.univ.powerset.powerset.filter BirthCollection,
         if birthEvent performed value π then birthMobius π else 0 := by
@@ -73,11 +79,7 @@ theorem distinct_birth_expansion (a : ℕ) (performed : Finset (Fin a)) (value :
   calc
     _ = ∑ σ : Equiv.Perm (Fin a), term σ := by
       refine (performed_value_preserving_sign_sum performed value).trans ?_
-      apply Finset.sum_congr rfl
-      intro σ _
-      by_cases h : σ.support ⊆ performed ∧ ∀ i, value (σ i) = value i
-      · simp only [term, ite_eq_left h]
-      · simp only [term, ite_eq_right h]
+      grind
     _ = ∑ π ∈ C,
         ∑ σ ∈ Finset.univ.filter (fun σ => cycleBirthBlocks σ = π), term σ :=
       (Finset.sum_fiberwise_of_maps_to hmap term).symm

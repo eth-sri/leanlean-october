@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceDegree
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceDegree
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
@@ -23,8 +24,7 @@ theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
   let C := 1 + ∑ z ∈ S, c z
   have hc (z) : 0 ≤ c z := by dsimp [c]; positivity
   have hC : 0 < C := by
-    have := Finset.sum_nonneg (fun z (_ : z∈S) => hc z)
-    dsimp [C]; linarith
+    positivity
   refine ⟨S.sup Prod.snd,T,C,hC,?_⟩
   intro g t
   have hder (z) (hz : z ∈ S) : derivativeSeminormSum g z.1 z.2 ≤
@@ -34,7 +34,7 @@ theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
         apply Finset.sum_le_sum
         intro i hi
         apply Seminorm.le_finset_sup_apply (p := schwartzSeminormFamily ℝ ℝ ℂ) (i := (z.1,i))
-        exact Finset.mem_biUnion.mpr ⟨z,hz,Finset.mem_image.mpr ⟨i,hi,rfl⟩⟩
+        grind
       _ = _ := by simp
   apply Seminorm.finset_sup_apply_le (by positivity)
   intro z hz
@@ -93,6 +93,6 @@ theorem normPowerProfile_source_control (a b : ℝ) (ha : 0 < a)
     _ = _ := by ring
 end SevenEighths.CenteredMomentFiniteProfileExceptional
 
-end
+
 
 end OAI

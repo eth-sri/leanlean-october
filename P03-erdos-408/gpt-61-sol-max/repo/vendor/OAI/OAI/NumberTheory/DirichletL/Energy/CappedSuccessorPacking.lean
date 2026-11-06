@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.StageMonotonicity
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -21,12 +21,12 @@ open CenteredMomentEnergyPositiveHighSourceBound CenteredMomentNaturalFixedRaySo
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem certified_from_stages
-    (W:ℝ→ℂ)(bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)
-    (ha:0<a)(hmask:0≤Bmask)(hMcap:0≤Mcap)(hκ:0≤κ)(hε:0<ε)(k:ℕ)
+     W  bslot a b radial Bmask L lo hi Mcap κ ε 
+    (ha:0<a)(hmask:0≤Bmask)(hMcap:0≤Mcap)(hκ:0≤κ)(hε:0<ε) k 
     (ez el eh:ℝ)
     (hez:ez≤stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
     (hel:el≤stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
@@ -24,11 +25,7 @@ lemma pow_groups_le_rpow (C : ℝ) (hC : 0 < C) (cardGroups : ℕ) (C0 L K : ℝ
       have h1 : C ^ ((cardGroups : ℝ)) = Real.exp (Real.log C * (cardGroups : ℝ)) :=
         (Real.rpow_def_of_pos hC _).symm ▸ rfl
       -- Actually rpow_def: C^(card:ℝ) (rpow) = exp(log C * card). And rpow_natCast: C^(card:ℝ) (rpow) = C^card (Nat pow). Good!
-      have h2 : C ^ ((cardGroups : ℝ)) = C ^ cardGroups := Real.rpow_natCast C cardGroups
-      rw [h2] at h1
-      -- h1 : C^card (Nat) = exp(...)? Wait h1 after rw? Let's be careful:
-      -- h1 originally: C^(card:ℝ) (rpow) = exp(...). h2: C^(card:ℝ) (rpow) = C^card (Nat). So rw h2 at h1 replaces LHS rpow with Nat pow? Actually h1 LHS is rpow, h2 LHS is rpow, RHS Nat pow. rw h2 at h1 replaces rpow in h1 with Nat pow, giving Nat pow = exp. Good!
-      exact h1
+      simp_all
     have hLpow_eq : L ^ K = Real.exp (K * Real.log L) := by
       have h1 : L ^ K = Real.exp (Real.log L * K) := Real.rpow_def_of_pos hLpos K
       rw [mul_comm] at h1
@@ -37,12 +34,10 @@ lemma pow_groups_le_rpow (C : ℝ) (hC : 0 < C) (cardGroups : ℕ) (C0 L K : ℝ
     rw [hCpow_eq, hLpow_eq]
     apply Real.exp_le_exp.mpr
     -- Need log C * card ≤ K * log L
-    have h1 : Real.log C * (cardGroups : ℝ) ≤ Real.log C * (C0 * Real.log L) := by
-      apply mul_le_mul_of_nonneg_left hcard hlogC_nonneg
+    have h1 : Real.log C * (cardGroups : ℝ) ≤ Real.log C * (C0 * Real.log L) := mul_le_mul_of_nonneg_left hcard hlogC_nonneg
     have h2 : Real.log C * (C0 * Real.log L) = (C0 * Real.log C) * Real.log L := by
       ring_nf
-    have h3 : (C0 * Real.log C) * Real.log L ≤ K * Real.log L := by
-      apply mul_le_mul_of_nonneg_right hK hlogL_nonneg
+    have h3 : (C0 * Real.log C) * Real.log L ≤ K * Real.log L := mul_le_mul_of_nonneg_right hK hlogL_nonneg
     linarith
   · -- C < 1 (with 0<C<1), bound LHS ≤1 ≤ RHS (since K≥0, L>1 ⇒ L^K ≥1)
     push Not at hC1

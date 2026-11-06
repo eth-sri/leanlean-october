@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondSectorColumns
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
@@ -16,14 +16,14 @@ open CenteredMomentSecondSectorColumns CenteredMomentFirstSectorTransform IdealM
 open CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors CenteredMomentLiveDomain
 open CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
 open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentChildAssembly
-local notation "O"=>ActualEisensteinCubic.O
 
-theorem columns_gauss_polynomial_filter (Q C:Ideal O)(hC:Supported C)(S:Finset (Ideal O))
-    (f:Ideal O→ℂ)(z:O):
+
+theorem columns_gauss_polynomial_filter (Q C:Ideal ActualEisensteinCubic.O)(hC:Supported C)(S:Finset (Ideal ActualEisensteinCubic.O))
+    (f:Ideal ActualEisensteinCubic.O→ℂ) z :
     gaussPolynomial Finset.univ (element Q C hC.1 S) (element_supported Q C hC.1 S)
       (fun a=>f a) z=
     gaussPolynomial Finset.univ (sourceGenerator (residualPool C hC.1 S))
-      (sourceGenerator_supported _) (fun I=>if IsCoprime Q (I:Ideal O) then f I else 0) z:=by
+      (sourceGenerator_supported _) (fun I=>if IsCoprime Q (I:Ideal ActualEisensteinCubic.O) then f I else 0) z:=by
   rw [source_gaussPolynomial (residualPool C hC.1 S)
     (fun I=>if IsCoprime Q I then f I else 0) z,supported_residualPool C hC S]
   have he (a:columns Q C hC.1 S):
@@ -40,7 +40,7 @@ theorem columns_gauss_polynomial_filter (Q C:Ideal O)(hC:Supported C)(S:Finset (
   split_ifs <;> simp
 
 variable {ι:Type*}[Fintype ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
 
 end SevenEighths.CenteredMomentFirstPhysicalSource
 

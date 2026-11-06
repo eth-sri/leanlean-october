@@ -9,9 +9,9 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge JointLogSeparation
-noncomputable section
 
-theorem inverseNormWindow_contDiff (V : ℝ → ℂ) (hV : ContDiff ℝ ∞ V) :
+
+theorem inverseNormWindow_contDiff  V  (hV : ContDiff ℝ ∞ V) :
     ContDiff ℝ ∞ (inverseNormWindow V) := by
   unfold inverseNormWindow
   have hn : ∀ y : ℝ, (Real.exp y : ℂ) ≠ 0 := by
@@ -20,7 +20,7 @@ theorem inverseNormWindow_contDiff (V : ℝ → ℂ) (hV : ContDiff ℝ ∞ V) :
   simpa only [div_eq_mul_inv, Pi.inv_apply, Function.comp_apply, Complex.ofRealCLM_apply] using
     hV.mul ((Complex.ofRealCLM.contDiff.comp Real.contDiff_exp).inv hn)
 
-theorem inverseRootWindow_contDiff (V : ℝ → ℂ) (hV : ContDiff ℝ ∞ V) :
+theorem inverseRootWindow_contDiff  V  (hV : ContDiff ℝ ∞ V) :
     ContDiff ℝ ∞ (inverseRootWindow V) := by
   unfold inverseRootWindow
   have hs : ContDiff ℝ ∞ (fun y : ℝ => Real.sqrt (Real.exp y)) :=
@@ -31,19 +31,19 @@ theorem inverseRootWindow_contDiff (V : ℝ → ℂ) (hV : ContDiff ℝ ∞ V) :
   simpa only [div_eq_mul_inv, Pi.inv_apply, Function.comp_apply, Complex.ofRealCLM_apply] using
     hV.mul ((Complex.ofRealCLM.contDiff.comp hs).inv hn)
 
-theorem inverseNormWindow_compact (V : ℝ → ℂ) (hV : HasCompactSupport V) :
+theorem inverseNormWindow_compact  V  (hV : HasCompactSupport V) :
     HasCompactSupport (inverseNormWindow V) := by
   apply hV.mono
   intro y hy
   exact (div_ne_zero_iff.mp hy).1
 
-theorem inverseRootWindow_compact (V : ℝ → ℂ) (hV : HasCompactSupport V) :
+theorem inverseRootWindow_compact  V  (hV : HasCompactSupport V) :
     HasCompactSupport (inverseRootWindow V) := by
   apply hV.mono
   intro y hy
   exact (div_ne_zero_iff.mp hy).1
 
-theorem secondRootWindows_smooth_compact (V : Fin 6 → ℝ → ℂ)
+theorem secondRootWindows_smooth_compact  V 
     (hV : ∀ i, ContDiff ℝ ∞ (V i)) (hS : ∀ i, HasCompactSupport (V i)) :
     ∀ i, ContDiff ℝ ∞ (secondRootWindows V i) ∧ HasCompactSupport (secondRootWindows V i) := by
   intro i
@@ -52,7 +52,7 @@ theorem secondRootWindows_smooth_compact (V : Fin 6 → ℝ → ℂ)
     | exact ⟨inverseNormWindow_contDiff _ (hV _), inverseNormWindow_compact _ (hS _)⟩
     | exact ⟨inverseRootWindow_contDiff _ (hV _), inverseRootWindow_compact _ (hS _)⟩
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

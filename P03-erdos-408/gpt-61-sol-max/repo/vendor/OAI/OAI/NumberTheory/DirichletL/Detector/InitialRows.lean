@@ -11,17 +11,20 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def highRowOnLines (η : HeckeFamily.Character) (S : Finset Id) (C : CalibrationData) (D : Id)
-    (σ υ ξ : ℝ) (u : NonzeroFrequency) (t : HeightSpace) : ℂ :=
+    (σ υ ξ : ℝ) (u : NonzeroFrequency) (t : HeightSpace)  :=
   star (C.residueMonoid u.val)*frequencyWeight ((ξ:ℂ)+t.1.2*Complex.I) u*
     markedIdealHighSeries S D η u.val ((σ:ℂ)+t.1.1*Complex.I)
       ((υ:ℂ)+t.2*Complex.I) ((ξ:ℂ)+t.1.2*Complex.I)
 
-lemma highRowOnLines_eq_tsum (η : HeckeFamily.Character) (S : Finset Id) (C : CalibrationData) (D : Id)
-    (σ υ ξ : ℝ) (u : NonzeroFrequency) (t : HeightSpace) :
+section
+variable (η : HeckeFamily.Character) (S : Finset Id) (C : CalibrationData) (D : Id) (σ υ ξ : ℝ) (hσ : 3/2<σ) (hυ : 2<υ) (hξ : 1/6<ξ) (u : NonzeroFrequency) (t : HeightSpace)
+
+lemma highRowOnLines_eq_tsum        
+          :
     highRowOnLines η S C D σ υ ξ u t=
       ∑'q : (Id×Id)×(Id×Id),initialHighOnLines S D η (fun H=>star (C.residueMonoid H.val))
         σ υ ξ (u,q) t := by
@@ -31,13 +34,15 @@ lemma highRowOnLines_eq_tsum (η : HeckeFamily.Character) (S : Finset Id) (C : C
       ((σ:ℂ)+t.1.1*Complex.I) ((υ:ℂ)+t.2*Complex.I) ((ξ:ℂ)+t.1.2*Complex.I)
       q.1.1 q.1.2 q.2.1 q.2.2)).symm
 
-lemma initialHighMajorant_row_summable (σ υ ξ : ℝ) (hσ : 3/2<σ) (hυ : 2<υ) (hξ : 1/6<ξ)
-    (u : NonzeroFrequency) : Summable (fun q : (Id×Id)×(Id×Id)=>initialHighMajorant σ υ ξ (u,q)) := by
+include hσ hυ hξ in
+lemma initialHighMajorant_row_summable        
+      : Summable (fun q : (Id×Id)×(Id×Id)=>initialHighMajorant σ υ ξ (u,q)) := by
   unfold initialHighMajorant
   exact (highAbsoluteMajorant_summable (σ:ℂ) (υ:ℂ) (ξ:ℂ) hσ hυ hξ).mul_left ‖frequencyWeight (ξ:ℂ) u‖
 
-lemma highRowOnLines_continuous (η : HeckeFamily.Character) (S : Finset Id) (C : CalibrationData) (D : Id)
-    (σ υ ξ : ℝ) (hσ : 3/2<σ) (hυ : 2<υ) (hξ : 1/6<ξ) (u : NonzeroFrequency) :
+include hσ hυ hξ in
+lemma highRowOnLines_continuous        
+              :
     Continuous (highRowOnLines η S C D σ υ ξ u) := by
   change Continuous (fun t=>highRowOnLines η S C D σ υ ξ u t)
   simp_rw [highRowOnLines_eq_tsum]
@@ -47,8 +52,9 @@ lemma highRowOnLines_continuous (η : HeckeFamily.Character) (S : Finset Id) (C 
   intro q
   exact initialHighOnLines_continuous S D η _ σ υ ξ (u,q)
 
-lemma highRowOnLines_bound (η : HeckeFamily.Character) (S : Finset Id) (C : CalibrationData) (D : Id)
-    (σ υ ξ : ℝ) (hσ : 3/2<σ) (hυ : 2<υ) (hξ : 1/6<ξ) (u : NonzeroFrequency) (t : HeightSpace) :
+include hσ hυ hξ in
+lemma highRowOnLines_bound        
+                :
     ‖highRowOnLines η S C D σ υ ξ u t‖≤
       ‖frequencyWeight (ξ:ℂ) u‖*(∑'q : (Id×Id)×(Id×Id),highAbsoluteMajorant (σ:ℂ) (υ:ℂ) (ξ:ℂ) q) := by
   rw [highRowOnLines_eq_tsum]
@@ -60,6 +66,8 @@ lemma highRowOnLines_bound (η : HeckeFamily.Character) (S : Finset Id) (C : Cal
   apply (norm_tsum_le_tsum_norm hs).trans
   have he := hs.tsum_le_tsum hb hm
   simpa only [initialHighMajorant,tsum_mul_left] using he
+
+end
 
 lemma highRows_counting_product_integrable {ρ : Type*} [Countable ρ]
     [MeasurableSpace ρ] [MeasurableSingletonClass ρ]

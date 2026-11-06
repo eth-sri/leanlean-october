@@ -48,32 +48,32 @@ open Finset Real
 
 variable {K : ℕ}
 
-section Chain
+
 
 variable (q A₀ x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) (B : ℕ)
 
 /-- The particles `(p, ℓ)`: a band prime `p` and a line `ℓ ≤ p`. -/
-def particles : Finset (ℕ × ℕ) :=
+def particles  :=
   (bandPrimes x d).biUnion fun p => (range (p + 1)).image fun ℓ => (p, ℓ)
 
 /-- The particle type. -/
 abbrev Particle := ↥(particles x d)
 
 /-- The harmonic mass of the band containing `p` (for disjoint bands, `V_i` when `p ∈ 𝒫_i`). -/
-def primeMass (p : ℕ) : ℝ :=
+def primeMass (p : ℕ)  :=
   ∑ i, if p ∈ band x (d.a i) then harmonicMass (band x (d.a i)) else 0
 
 /-- The baseline `b'_p = 1 - (p + 1)⁻¹ ∑_{j ≤ N} η'_j`. -/
-def baseline (N p : ℕ) : ℝ := 1 - ((p : ℝ) + 1)⁻¹ * ∑ j ∈ range (N + 1), dampDefect q N j
+def baseline (N p : ℕ)  := 1 - ((p : ℝ) + 1)⁻¹ * ∑ j ∈ range (N + 1), dampDefect q N j
 
 /-- The birth weight `ν(p) = 1 / (V(p) (p + 1) b'_p)`. -/
-def primeWeight (N p : ℕ) : ℝ := 1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p)
+def primeWeight (N p : ℕ)  := 1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p)
 
 /-- The pending weight `ρ = q^{1/8}`: `0 < ρ < 1` and `ρ² > √q`. -/
-def pendingWeight : ℝ := q ^ (1 / 8 : ℝ)
+def pendingWeight  := q ^ (1 / 8 : ℝ)
 
 /-- The memory cap: with distinct births no more particles than band primes are pending. -/
-def memCap : ℕ := (bandPrimes x d).card
+def memCap  := (bandPrimes x d).card
 
 /-- The chain states: a position, active lists, and a memory of size at most `B`. -/
 abbrev ChainState :=
@@ -81,16 +81,16 @@ abbrev ChainState :=
     MemState (Particle x d) B
 
 /-- The measure of a chain state: `∏_{i,h} ν(act_{i,h})` times the memory weight. -/
-def chainMeasure (N : ℕ) (s : ChainState x d Y d₀ u v r B) : ℝ :=
+def chainMeasure (N : ℕ) (s : ChainState x d Y d₀ u v r B)  :=
   (∏ i, ∏ h, primeWeight q x d N (s.2.1.1 i h)) *
     memWeight (fun xp : Particle x d => primeWeight q x d N xp.1.1) s.2.2.1
 
 /-- The number of pending particles hitting `z`, with multiplicity. -/
-def pendingHits (z : ℤ × ℤ) (S : Particle x d → ℕ) : ℕ :=
+def pendingHits (z : ℤ × ℤ) (S : Particle x d → ℕ)  :=
   ∑ xp, if lineOf xp.1.1 z = xp.1.2 then S xp else 0
 
 /-- The particle hits the position `z`: its line is `[z]_p`. -/
-def HitsAt (z : ℤ × ℤ) (xp : Particle x d) : Prop := lineOf xp.1.1 z = xp.1.2
+def HitsAt (z : ℤ × ℤ) (xp : Particle x d)  := lineOf xp.1.1 z = xp.1.2
 
 instance (z : ℤ × ℤ) : DecidablePred (HitsAt x d z) := fun _ => inferInstanceAs (Decidable (_ = _))
 
@@ -99,7 +99,7 @@ open scoped Classical in
 `surv = q_j/ρ²`, `cre(p, ℓ) = -η'_j V(p)/ρ` and particle measure `ν(p)`; zero unless the choice
 is admissible. -/
 def chainGhostCoef (N j : ℕ) (s : ChainState x d Y d₀ u v r B)
-    (c : (Particle x d → ℕ) × (Particle x d → ℕ)) : ℂ :=
+    (c : (Particle x d → ℕ) × (Particle x d → ℕ))  :=
   ghostCoef (HitsAt x d s.1.1) (fun xp : Particle x d => primeWeight q x d N xp.1.1)
       (-dampDefect q N j / pendingWeight q) ((1 - dampDefect q N j) / pendingWeight q ^ 2)
     (fun xp : Particle x d => -dampDefect q N j * primeMass x d xp.1.1 / pendingWeight q)
@@ -107,7 +107,7 @@ def chainGhostCoef (N j : ℕ) (s : ChainState x d Y d₀ u v r B)
 
 /-- The output of a ghost choice: delete `D` and create the batch. -/
 def chainGhostOut (s : ChainState x d Y d₀ u v r B)
-    (c : (Particle x d → ℕ) × (Particle x d → ℕ)) : ChainState x d Y d₀ u v r B :=
+    (c : (Particle x d → ℕ) × (Particle x d → ℕ))  :=
   (s.1, s.2.1, ghostOut (HitsAt x d s.1.1) B s.2.2 c)
 
 /-- An edge choice: the source symmetrization, the stored groups, the target, a new label
@@ -136,13 +136,12 @@ def edgeTgt (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r
   if h' = Fin.last _ then (c.2.2.2.1 i).1 else edgeSrc s c i h'
 
 /-- The particle promoted in group `i`: the new label with its line at the target. -/
-def edgePromoted (c : EdgeChoice x d Y d₀ u v r) (i : Fin K) : ℕ × ℕ :=
+def edgePromoted (c : EdgeChoice x d Y d₀ u v r) (i : Fin K)  :=
   ((c.2.2.2.1 i).1, lineOf (c.2.2.2.1 i).1 c.2.2.1.1)
 
 /-- The particle stored from group `i`: the unshared source prime with its line at the
 source. -/
-def edgeStored (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) (i : Fin K) :
-    ℕ × ℕ :=
+def edgeStored (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) (i : Fin K)  :=
   (edgeSrc s c i (Fin.last _), lineOf (edgeSrc s c i (Fin.last _)) s.1.1)
 
 open scoped Classical in
@@ -153,11 +152,11 @@ def edgeMem (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r
     (c.2.1.filter fun i => edgeStored s c i = xp.1).card
 
 /-- The pad product `D` of the edge. -/
-def edgePad (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : ℕ :=
+def edgePad (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   ∏ i, ∏ h : Fin (padCount x), edgeSrc s c i h.castSucc
 
 /-- The determinant `det(z, z')`. -/
-def edgeDet (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : ℤ :=
+def edgeDet (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   s.1.1.1 * c.2.2.1.1.2 - s.1.1.2 * c.2.2.1.1.1
 
 end Edge
@@ -170,7 +169,7 @@ end Edge
 * every promoted particle is pending and hits the target, and every stored particle is a
   particle;
 * the new memory respects the cap. -/
-def EdgeValid (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : Prop :=
+def EdgeValid (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   edgeTgt s c ∈ lists x d (padCount x) ∧
     (∀ i i' h, (c.2.2.2.1 i).1 ≠ s.2.1.1 i' h) ∧
     d₀ ≤ (edgePad s c : ℝ) ∧ (edgePad s c : ℝ) < 2 * d₀ ∧ (edgePad s c : ℤ) ∣ edgeDet s c ∧
@@ -191,7 +190,7 @@ open scoped Classical in
   `t = det/D`.
 
 It is zero unless the choice is admissible. -/
-def chainEdgeCoef (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : ℂ :=
+def chainEdgeCoef (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   if EdgeValid x d Y d₀ u v r B s c then
     let D := edgePad s c
     let b := ∏ i, edgeSrc s c i (Fin.last _)
@@ -210,8 +209,7 @@ def chainEdgeCoef (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice 
 
 open scoped Classical in
 /-- The output of an edge choice. -/
-def chainEdgeOut (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) :
-    ChainState x d Y d₀ u v r B :=
+def chainEdgeOut (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   if h : EdgeValid x d Y d₀ u v r B s c then
     (c.2.2.1, ⟨edgeTgt s c, h.1⟩, ⟨edgeMem s c, h.2.2.2.2.2.2.2.2.2⟩)
   else s
@@ -232,41 +230,40 @@ abbrev GhostChoice := (Particle x d → ℕ) × (Particle x d → ℕ)
 
 /-- A history of `𝒢₀ ℰ 𝒢₁ ⋯ ℰ 𝒢_N`: a ghost choice at each visit and an edge choice at each
 edge. -/
-abbrev History (N : ℕ) := (Fin (N + 1) → GhostChoice x d) × (Fin N → EdgeChoice x d Y d₀ u v r)
+abbrev History (N ) := (Fin (N + 1) → GhostChoice x d) × (Fin N → EdgeChoice x d Y d₀ u v r)
 
 /-- The histories whose choices are drawn from the choice sets of the operators. -/
-def histories (N : ℕ) : Finset (History x d Y d₀ u v r N) :=
+def histories (N ) : Finset (History x d Y d₀ u v r N) :=
   Fintype.piFinset (fun _ => multBox B ×ˢ multBox B) ×ˢ
     Fintype.piFinset fun _ => edgeChoices x d Y d₀ u v r
 
 variable {x d Y d₀ u v r B} in
 /-- The state at visit `j` of the history `h` from `s`, before its ghost. -/
-def chainVisit {N : ℕ} (s : ChainState x d Y d₀ u v r B) (h : History x d Y d₀ u v r N) :
+def chainVisit {N } (s : ChainState x d Y d₀ u v r B) (h : History x d Y d₀ u v r N) :
     Fin (N + 1) → ChainState x d Y d₀ u v r B :=
   Fin.induction s fun j t =>
     chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B t (h.1 j.castSucc)) (h.2 j)
 
 variable {x d Y d₀ u v r B} in
 /-- The final state of the history `h` from `s`. -/
-def chainEnd {N : ℕ} (s : ChainState x d Y d₀ u v r B) (h : History x d Y d₀ u v r N) :
-    ChainState x d Y d₀ u v r B :=
+def chainEnd {N } (s : ChainState x d Y d₀ u v r B) (h : History x d Y d₀ u v r N)  :=
   chainGhostOut x d Y d₀ u v r B (chainVisit s h (Fin.last N)) (h.1 (Fin.last N))
 
 variable {x d Y d₀ u v r B} in
 /-- The weight of the history `h` from `s`: the product of its ghost and edge
 coefficients. -/
-def chainWeight {N : ℕ} (s : ChainState x d Y d₀ u v r B) (h : History x d Y d₀ u v r N) : ℂ :=
+def chainWeight {N } (s : ChainState x d Y d₀ u v r B) (h : History x d Y d₀ u v r N)  :=
   (∏ j : Fin (N + 1), chainGhostCoef q x d Y d₀ u v r B N j (chainVisit s h j) (h.1 j)) *
     ∏ j : Fin N, chainEdgeCoef q A₀ x d Y d₀ u v r B N
       (chainGhostOut x d Y d₀ u v r B (chainVisit s h j.castSucc) (h.1 j.castSucc)) (h.2 j)
 
 /-- The birth addresses: the initial slots, the label of each group at each edge, and the
 first `B` batch indices of each ghost. -/
-abbrev BirthAddr (N : ℕ) :=
+abbrev BirthAddr (N ) :=
   (Fin K × Fin (padCount x + 1)) ⊕ (Fin N × Fin K) ⊕ (Fin (N + 1) × Fin B)
 
 /-- The primes of a ghost batch, with multiplicity, in increasing order. -/
-def batchPrimes (n : Particle x d → ℕ) : List ℕ :=
+def batchPrimes (n : Particle x d → ℕ)  :=
   (∑ xp : Particle x d, Multiset.replicate (n xp) xp.1.1).sort (· ≤ ·)
 
 variable {x d Y d₀ u v r B} in
@@ -282,11 +279,11 @@ open scoped Classical in
 /-- The history sum `∑_s μ(s) 𝐛(s) ∑_h w(s, h) 𝐛(end(s, h))` over the histories with distinct
 births, with memory cap `B`; here `𝐛` is `chainInit`, the indicator of `e₁` with empty
 memory. -/
-def distinctSum (N : ℕ) : ℂ :=
+def distinctSum (N : ℕ)  :=
   ∑ s, (chainMeasure q x d Y d₀ u v r B N s : ℂ) * chainInit x d Y d₀ u v r B s *
     ∑ h ∈ (histories x d Y d₀ u v r B N).filter (fun h => BirthsDistinct (births s h)),
       chainWeight q A₀ s h * chainInit x d Y d₀ u v r B (chainEnd s h)
 
-end Chain
+
 
 end Erdos408.OneSided

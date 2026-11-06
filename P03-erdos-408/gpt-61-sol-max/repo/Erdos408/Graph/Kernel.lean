@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Graph.Pattern
 public import Mathlib.Analysis.Complex.Polynomial.Basic
@@ -33,17 +34,19 @@ variable {G : PrimeGroups} {J m : ℕ}
 /-! ### The two blocks -/
 
 /-- The block of a group: upstream's block for big groups, `true` otherwise. -/
-def side (block : G.BigGroup → Bool) (g : G.Group) : Bool :=
+def side (block : G.BigGroup → Bool) (g : G.Group)  :=
   if hg : G.big g = true then block ⟨g, hg⟩ else true
 
 /-- The changed slots of `ν` in the groups of block `s`. -/
-def blockSlots (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bool) (g : G.Group) :
-    Finset (Fin J) :=
+def blockSlots (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bool) (g : G.Group)  :=
   if side block g = s then ν.changed g else ∅
+
+section
+variable (ν : Pattern G J 1 m) (block : G.BigGroup → Bool)
 
 /-- The products over big groups of block `s` are slot products over
 `blockSlots`. -/
-lemma prod_block_eq (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bool)
+lemma prod_block_eq      s 
     (x : Fin G.count → Fin J → ℕ) :
     ∏ g : G.BigGroup, ∏ i : Fin J, (if block g = s ∧ i ∈ ν.changed g.val then x g i else 1) =
       slotProduct (blockSlots ν block s) x := by
@@ -64,18 +67,16 @@ lemma prod_block_eq (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bo
 
 /-- Upstream's selected product of the auxiliary labels is the slot product of
 their trimmed values. -/
-lemma selectedProduct_eq (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bool)
+lemma selectedProduct_eq      s 
     (u : G.Aux J) :
     selectedProduct ν block s (fun g => u g.val) =
       slotProduct (blockSlots ν block s) (trim ν.changed u) := by
   rw [selectedProduct, ← prod_block_eq]
   refine Finset.prod_congr rfl fun g _ => Finset.prod_congr rfl fun i _ => ?_
-  by_cases h : block g = s ∧ i ∈ ν.changed g.val
-  · rw [ite_eq_left h, ite_eq_left h, trim, ite_eq_left h.2]
-  · rw [ite_eq_right h, ite_eq_right h]
+  simp_all [trim]
 
 /-- Upstream's selected endpoint is the slot product of the label values. -/
-lemma selectedEndpoint_eq (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bool)
+lemma selectedEndpoint_eq      s 
     (a : G.Labels (J + 1)) :
     selectedEndpoint ν block s (G.restrictBig a) =
       slotProduct (blockSlots ν block s) fun h i => vals a h i.castSucc := by
@@ -83,7 +84,7 @@ lemma selectedEndpoint_eq (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (
   rfl
 
 /-- The block slots are disjoint and cover the changed slots. -/
-lemma blockSlots_disjoint_union (ν : Pattern G J 1 m) (block : G.BigGroup → Bool)
+lemma blockSlots_disjoint_union    
     (g : G.Group) :
     Disjoint (blockSlots ν block false g) (blockSlots ν block true g) ∧
       blockSlots ν block false g ∪ blockSlots ν block true g = ν.changed g := by
@@ -93,7 +94,7 @@ lemma blockSlots_disjoint_union (ν : Pattern G J 1 m) (block : G.BigGroup → B
 
 /-- The cells of mass at least `ξ` for the selected product of block `s`. -/
 noncomputable def goodCells (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bool)
-    (h ξ : ℝ) : Finset ℤ :=
+    (h ξ : ℝ)  :=
   (Finset.univ.image fun u : G.BigAux J => cell h (selectedProduct ν block s u)).filter
     fun j => ξ ≤ selectedCellMass ν block s h j
 
@@ -117,8 +118,8 @@ lemma sum_bigAuxMass (ν : Pattern G J 1 m) (hV : ∀ g, G.V g ≠ 0) :
         exact inv_mul_cancel₀ (hV g.val)
 
 /-- The selected cell masses are nonnegative. -/
-lemma selectedCellMass_nonneg (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bool)
-    (h : ℝ) (j : ℤ) : 0 ≤ selectedCellMass ν block s h j := by
+lemma selectedCellMass_nonneg      s 
+     h   j  : 0 ≤ selectedCellMass ν block s h j := by
   refine Finset.sum_nonneg fun u _ => ?_
   split_ifs
   · exact Finset.prod_nonneg fun g _ => Finset.prod_nonneg fun i _ =>
@@ -126,16 +127,16 @@ lemma selectedCellMass_nonneg (ν : Pattern G J 1 m) (block : G.BigGroup → Boo
   · exact le_rfl
 
 /-- A cell of positive mass is the cell of some selected product. -/
-lemma mem_image_of_selectedCellMass_pos {ν : Pattern G J 1 m} {block : G.BigGroup → Bool}
-    {s : Bool} {h : ℝ} {j : ℤ} (hj : 0 < selectedCellMass ν block s h j) :
+lemma mem_image_of_selectedCellMass_pos {ν : Pattern G J 1 m}  {block} 
+     {s}   {h}   {j}  (hj : 0 < selectedCellMass ν block s h j) :
     j ∈ Finset.univ.image fun u : G.BigAux J => cell h (selectedProduct ν block s u) := by
   by_contra hc
   refine hj.ne' (Finset.sum_eq_zero fun u _ => ite_eq_right fun hu => hc ?_)
   exact Finset.mem_image.mpr ⟨u, Finset.mem_univ _, hu⟩
 
 /-- There are at most `ξ⁻¹` good cells. -/
-lemma card_goodCells_le (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bool)
-    {h ξ : ℝ} (hξ : 0 < ξ) (hV : ∀ g, G.V g ≠ 0) :
+lemma card_goodCells_le      s 
+     {h ξ}  (hξ : 0 < ξ) (hV : ∀ g, G.V g ≠ 0) :
     ((goodCells ν block s h ξ).card : ℝ) ≤ ξ⁻¹ := by
   -- the cell masses over the image of the selected product sum to one
   have hsum : ∑ j ∈ Finset.univ.image (fun u : G.BigAux J => cell h (selectedProduct ν block s u)),
@@ -157,17 +158,17 @@ lemma card_goodCells_le (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s 
 /-! ### The cell-character expansion -/
 
 /-- The auxiliary factor of a kernel term: `[D > 0, cell D = j] χ̄(D)`. -/
-noncomputable def cellTest (h : ℝ) {Q : ℕ} (j : ℤ) (χ : CharacterIndex Q) (n : ℕ) : ℂ :=
+noncomputable def cellTest (h : ℝ) {Q } (j : ℤ) (χ : CharacterIndex Q) (n : ℕ)  :=
   if 0 < n ∧ cell h n = j then star (charValue χ n) else 0
 
 /-- The mark factor of a kernel term: `[cell X = j] χ(X)`. -/
-noncomputable def cellMark (h : ℝ) {Q : ℕ} (j : ℤ) (χ : CharacterIndex Q) (n : ℕ) : ℂ :=
+noncomputable def cellMark (h : ℝ) {Q } (j : ℤ) (χ : CharacterIndex Q) (n : ℕ)  :=
   if cell h n = j then charValue χ n else 0
 
 /-- For `D > 0`, the selected kernel is the sum over good cells `j` and
 characters `χ` of `v_j⁻¹ [cell D = j] χ̄(D) [cell X = j] χ(X)`. -/
-lemma selectedKernel_eq_sum (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bool)
-    (Q : ℕ) {h ξ : ℝ} (hξ : 0 < ξ) {D : ℕ} (hD : 0 < D) (X : ℕ) :
+lemma selectedKernel_eq_sum      s 
+     Q   {h ξ}  (hξ : 0 < ξ)  {D}  (hD : 0 < D)  X  :
     selectedKernel ν block s Q h ξ D X =
       ∑ j ∈ goodCells ν block s h ξ, ∑ χ ∈ primitiveCharacters Q,
         ((selectedCellMass ν block s h j)⁻¹ : ℂ) * (cellTest h j χ D * cellMark h j χ X) := by
@@ -191,7 +192,7 @@ lemma selectedKernel_eq_sum (ν : Pattern G J 1 m) (block : G.BigGroup → Bool)
     · simp [h₁]
 
 /-- A cell of log-width `h ≤ 1` lies in `[U, eU]`, `U = e^{jh}`. -/
-lemma mem_cell {h : ℝ} (hh₀ : 0 < h) (hh₁ : h ≤ 1) {n : ℕ} (hn : 0 < n) {j : ℤ}
+lemma mem_cell  {h}  (hh₀ : 0 < h) (hh₁ : h ≤ 1)  {n}  (hn : 0 < n)  {j} 
     (hj : cell h n = j) :
     Real.exp (j * h) ≤ n ∧ (n : ℝ) ≤ Real.exp 1 * Real.exp (j * h) := by
   have h₁ := Int.floor_le (Real.log n / h)
@@ -208,7 +209,7 @@ lemma mem_cell {h : ℝ} (hh₀ : 0 < h) (hh₁ : h ≤ 1) {n : ℕ} (hn : 0 < n
       _ = Real.exp 1 * Real.exp (j * h) := Real.exp_add _ _
 
 /-- The auxiliary factor is bounded by one. -/
-lemma norm_cellTest_le (h : ℝ) {Q : ℕ} (j : ℤ) (χ : CharacterIndex Q) (n : ℕ) :
+lemma norm_cellTest_le  h  {Q : ℕ}  j  (χ : CharacterIndex Q)  n  :
     ‖cellTest h j χ n‖ ≤ 1 := by
   unfold cellTest charValue
   split_ifs
@@ -217,7 +218,7 @@ lemma norm_cellTest_le (h : ℝ) {Q : ℕ} (j : ℤ) (χ : CharacterIndex Q) (n 
   · simp
 
 /-- The mark factor is bounded by one. -/
-lemma norm_cellMark_le (h : ℝ) {Q : ℕ} (j : ℤ) (χ : CharacterIndex Q) (n : ℕ) :
+lemma norm_cellMark_le  h  {Q : ℕ}  j  (χ : CharacterIndex Q)  n  :
     ‖cellMark h j χ n‖ ≤ 1 := by
   unfold cellMark charValue
   split_ifs
@@ -225,7 +226,7 @@ lemma norm_cellMark_le (h : ℝ) {Q : ℕ} (j : ℤ) (χ : CharacterIndex Q) (n 
   · simp
 
 /-- There are at most `Q²` primitive characters of modulus at most `Q`. -/
-lemma card_primitiveCharacters_le (Q : ℕ) : (primitiveCharacters Q).card ≤ Q ^ 2 := by
+lemma card_primitiveCharacters_le  Q  : (primitiveCharacters Q).card ≤ Q ^ 2 := by
   calc (primitiveCharacters Q).card ≤ Fintype.card (CharacterIndex Q) :=
         (Finset.card_filter_le _ _).trans_eq Finset.card_univ
     _ = ∑ r : Fin Q, Fintype.card (DirichletCharacter ℂ (r.val + 1)) := Fintype.card_sigma
@@ -239,9 +240,9 @@ lemma card_primitiveCharacters_le (Q : ℕ) : (primitiveCharacters Q).card ≤ Q
 
 /-- On the diagonal `D = X` in a good cell, the selected kernel has norm at
 least `v_j⁻¹`: the character of modulus `1` contributes `1`. -/
-lemma inv_le_norm_selectedKernel (ν : Pattern G J 1 m) (block : G.BigGroup → Bool)
-    (s : Bool) {Q : ℕ} (hQ : 0 < Q) {h ξ : ℝ} {j : ℤ} (hj : j ∈ goodCells ν block s h ξ)
-    {D : ℕ} (hD : cell h D = j) :
+lemma inv_le_norm_selectedKernel    
+     s   {Q}  (hQ : 0 < Q)  {h ξ}   {j}  (hj : j ∈ goodCells ν block s h ξ)
+     {D}  (hD : cell h D = j) :
     (selectedCellMass ν block s h j)⁻¹ ≤ ‖selectedKernel ν block s Q h ξ D D‖ := by
   unfold selectedKernel
   dsimp only
@@ -267,7 +268,7 @@ lemma inv_le_norm_selectedKernel (ν : Pattern G J 1 m) (block : G.BigGroup → 
 
 /-- For a comparison pattern of upstream's residual form, each pair of good
 cells has `v_j⁻¹ v_{j'}⁻¹` at most the supremum of the coefficient. -/
-lemma inv_mul_inv_le_sSup (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) {Q : ℕ}
+lemma inv_mul_inv_le_sSup     {Q : ℕ}
     (hQ : 0 < Q) {h ξ : ℝ} (hJ : 0 < J)
     (hcoef : ∀ a b u, ν.coefficient a b u =
       -((-1 : ℂ) ^ (∑ g, (ν.changed g).card)) *
@@ -275,7 +276,7 @@ lemma inv_mul_inv_le_sSup (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) {
           (selectedEndpoint ν block false b) *
         selectedKernel ν block true Q h ξ (selectedProduct ν block true u)
           (selectedEndpoint ν block true a))
-    {j j' : ℤ} (hj : j ∈ goodCells ν block false h ξ) (hj' : j' ∈ goodCells ν block true h ξ) :
+     {j j'}  (hj : j ∈ goodCells ν block false h ξ) (hj' : j' ∈ goodCells ν block true h ξ) :
     (selectedCellMass ν block false h j)⁻¹ * (selectedCellMass ν block true h j')⁻¹ ≤
       sSup (Set.range fun z : G.BigLabels (J + 1) × G.BigLabels (J + 1) × G.BigAux J =>
         ‖ν.coefficient z.1 z.2.1 z.2.2‖) := by
@@ -304,5 +305,7 @@ lemma inv_mul_inv_le_sSup (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) {
       (inv_le_norm_selectedKernel ν block true hQ hj' hu₂)
       (inv_nonneg.mpr (selectedCellMass_nonneg ν block true h j')) (norm_nonneg _)
   exact hval.trans (le_csSup (Set.finite_range _).bddAbove ⟨(e, e, u), rfl⟩)
+
+end
 
 end Erdos408.Graph

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawBranches
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ComplexConjugate Topology ContDiff
 open Filter
 
@@ -28,10 +28,14 @@ variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
-theorem source_slot_coefficient (S:ProbeFinalAssembly.SourceData D)
-    (F:Fiber M H Label Slot U a ε tstar T allowance i)
-    (hprofile:∀s x,F.profile s x=S.W x)(η:Character)(s:Slot)
-    (hreal:(F.external s).re=17/50)(hU:0<U)(I:Ideal O):
+section
+variable (S:ProbeFinalAssembly.SourceData D) (F:Fiber M H Label Slot U a ε tstar T allowance i) (hprofile:∀s x,F.profile s x=S.W x)
+include S F hprofile
+
+theorem source_slot_coefficient  
+     
+     (η:Character) s 
+    (hreal:(F.external s).re=17/50)(hU:0<U) I :
     idealCoeff η.inverse I*slotWindow F s ((I.absNorm:ℝ)/(U^(F.widths s)))=
       idealCoeff η.inverse I*annularWeight (fun x=>conj (S.W x))
         (U^(F.widths s)) (33/50) (-(F.external s).im) I := by
@@ -41,14 +45,14 @@ theorem source_slot_coefficient (S:ProbeFinalAssembly.SourceData D)
   norm_num at he
   simpa only [physicalSlotCoefficient,slotWindow,hprofile] using he
 
-theorem retained_eq_initial_energy (S:ProbeFinalAssembly.SourceData D)
-    (F:Fiber M H Label Slot U a ε tstar T allowance i)
-    (hprofile:∀s x,F.profile s x=S.W x)(hupper:∀s,F.upper s=2)
-    (η:Character)(Q:Ideal O)(selected:Finset Slot)
+theorem retained_eq_initial_energy  
+     
+     (hupper:∀s,F.upper s=2)
+     η  Q (selected:Finset Slot)
     (hreal:∀s∈selected,(F.external s).re=17/50)
-    (Φ:𝓢(ℝ,ℂ))(bΦ δ:ℝ)(hU:1≤U)(hδ:0≤δ)
-    (hs:Function.support (Φ:ℝ→ℂ)⊆Set.Iic bΦ)(hp:∀x,0≤(Φ x).re)
-    (hη:(η.modulus.absNorm:ℝ)≤U^δ)(j k:ℕ)(σ t:ℝ):
+     Φ  bΦ δ  hU  hδ 
+     hs  hp 
+     hη  j k  σ t :
     let state:=initialState η Q Φ bΦ U δ hU hδ hs hp hη
     retainedSourceEnergy state.radial.keep F η selected j k σ t Φ=
       energy state.character state.mask 1 0
@@ -75,20 +79,28 @@ theorem retained_eq_initial_energy (S:ProbeFinalAssembly.SourceData D)
     detectorProfiles,reduceIte,Fin.one_eq_zero_iff]
   norm_num
 
-theorem plain_length_eq [NeZero M]
-    (F:Fiber M H Label Slot U a ε tstar T allowance i)(hU:1<U):
+end
+
+section
+variable [NeZero M] (F:Fiber M H Label Slot U a ε tstar T allowance i) (hU:1<U)
+include F hU
+
+theorem plain_length_eq  
+      :
     length U (U^F.m)=F.m := by
   have hm:0≤F.m:=(F.lengths hU).2.2.2.2
   rw [length,max_eq_right (Real.one_le_rpow hU.le hm),
     Real.logb_rpow (zero_lt_one.trans hU) hU.ne']
 
-theorem marked_capacity [NeZero M]
-    (F:Fiber M H Label Slot U a ε tstar T allowance i)(hU:1<U)
-    (selected:Finset Slot)(κ δ:ℝ)(hδ:0≤δ)
+theorem marked_capacity  
+      
+    (selected:Finset Slot) κ δ (hδ:0≤δ)
     (hcap:2*F.m+6*κ*(∑s∈selected,F.widths s)≤1):
     length U (U^F.m)+length U (U^F.m)+6*κ*(∑s:selected,F.widths s.val)≤1+δ := by
   rw [plain_length_eq F hU,Finset.sum_coe_sort]
   linarith
+
+end
 
 theorem source_batch_marked_initial (S:ProbeFinalAssembly.SourceData D):
     ∃bΦ:ℝ,0<bΦ ∧ ∀η:Character,∀δ:ℝ,0<δ→
@@ -155,6 +167,6 @@ theorem source_batch_marked_initial (S:ProbeFinalAssembly.SourceData D):
 
 end SevenEighths.CenteredMomentDetectorPlainMarkedState
 
-end
+
 
 end OAI

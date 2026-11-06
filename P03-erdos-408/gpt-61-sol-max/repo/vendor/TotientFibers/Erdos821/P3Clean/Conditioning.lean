@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Descent.FirstPriorityEnergy
 
 public import Erdos821.P3Clean.Damping
 public import Erdos821.P3Clean.SmallFibres
@@ -17,12 +20,7 @@ namespace Erdos821.P3Clean
 open Erdos821.Blueprint.Graph
 
 theorem norm_sum_sq_le_card {α : Type*} (s : Finset α) (f : α → ℂ) :
-    ‖∑ a ∈ s, f a‖ ^ 2 ≤ (s.card : ℝ) * ∑ a ∈ s, ‖f a‖ ^ 2 := by
-  calc
-    _ ≤ (∑ a ∈ s, ‖f a‖) ^ 2 := (sq_le_sq₀ (norm_nonneg _)
-      (Finset.sum_nonneg (fun _ _ => norm_nonneg _))).mpr (norm_sum_le _ _)
-    _ ≤ _ := by
-      simpa using Finset.sum_mul_sq_le_sq_mul_sq s (fun _ => (1 : ℝ)) (fun a => ‖f a‖)
+    ‖∑ a ∈ s, f a‖ ^ 2 ≤ (s.card : ℝ) * ∑ a ∈ s, ‖f a‖ ^ 2 := by solve_by_elim [_root_.OAI.SevenEighths.InverseMoment.priority_norm_sum_sq]
 
 theorem conditioning_normSq_bound {α β : Type*} [Fintype β]
     (s : Finset α) (projection : α → β) (u : β → ℂ) (C : ℝ)
@@ -61,7 +59,7 @@ theorem small_conditioning_multiplier_uniform (F : FixedData) :
   intro M z V hMz hV
   have hq : F.q ^ ((z - M : ℕ) : ℝ) ≤ F.q ^ (((z - M : ℕ) : ℝ) / 2) := by
     apply Real.rpow_le_rpow_of_exponent_ge F.q_pos F.q_lt.le
-    have hh : (0 : ℝ) ≤ ((z - M : ℕ) : ℝ) := Nat.cast_nonneg _
+    
     linarith
   have hVpos : 0 < V := F.vMin_pos.trans_le hV
   rw [← Nat.cast_sub hMz]
@@ -96,7 +94,7 @@ theorem small_prefix_multiplier_uniform (F : FixedData) :
   · have hzero := Finset.not_nonempty_iff_eq_empty.mp hs
     simpa only [hzero, Finset.card_empty, Nat.cast_zero, mul_zero, zero_mul] using hC.le
 
-def normalizedSmallCoefficient (F : FixedData) (J : ℕ) (V : ℝ) (z : ℕ) : ℝ :=
+def normalizedSmallCoefficient (F : FixedData) (J : ℕ) (V : ℝ) (z : ℕ)  :=
   Real.sqrt (V ^ (-(F.ell : ℤ)) * F.q ^ ((z : ℝ) - ((J + F.ell : ℕ) : ℝ)))
 
 end Erdos821.P3Clean

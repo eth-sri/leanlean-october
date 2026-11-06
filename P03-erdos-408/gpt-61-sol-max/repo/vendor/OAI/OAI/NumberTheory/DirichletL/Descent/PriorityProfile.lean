@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondBlockEnergy
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityPhysical
@@ -14,17 +15,21 @@ namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseSecondPrincipalCaller InverseSecondProfileUniform
 open FourierBridge CompletedHeight SecondPassIntegration
-local notation "O" => ActualEisensteinCubic.O
 
-def priorityLogWindow (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a)
-    (hs:Function.support om⊆Set.Icc a b) (negative:Bool):𝓢(ℝ,ℂ) :=
+
+def priorityLogWindow (om:𝓢(ℝ,ℂ)) (a b) (ha:0<a)
+    (hs:Function.support om⊆Set.Icc a b) (negative:Bool) :=
   if negative then conjugateProfile (CubicReflectionKernel.logSchwartz om a b ha hs (om.smooth ⊤))
   else CubicReflectionKernel.logSchwartz om a b ha hs (om.smooth ⊤)
 
-def priorityHeight (negative:Bool) (t:ℝ):ℝ := if negative then -t else t
+def priorityHeight (negative:Bool) (t:ℝ) := if negative then -t else t
 
-theorem priorityLogWindow_support (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a)
-    (hs:Function.support om⊆Set.Icc a b) (negative:Bool) :
+section
+variable (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a) (hs:Function.support om⊆Set.Icc a b) (negative:Bool)
+include om a b ha hs negative
+
+theorem priorityLogWindow_support      
+        :
     Function.support (priorityLogWindow om a b ha hs negative)⊆
       Set.Icc (-(|Real.log a|+|Real.log b|)) (|Real.log a|+|Real.log b|) := by
   intro y hy
@@ -35,12 +40,10 @@ theorem priorityLogWindow_support (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a)
   have hlo:=Real.log_le_log ha hh.1
   have hhi:=Real.log_le_log (Real.exp_pos y) hh.2
   rw [Real.log_exp] at hlo hhi
-  constructor
-  · linarith [neg_abs_le (Real.log a),abs_nonneg (Real.log b)]
-  · linarith [le_abs_self (Real.log b),abs_nonneg (Real.log a)]
+  grind
 
-theorem principalWindow_positiveSource (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a)
-    (hs:Function.support om⊆Set.Icc a b) (negative:Bool) (t x:ℝ) (hx:0<x) :
+theorem principalWindow_positiveSource      
+         t x  (hx:0<x) :
     principalWindow om a b ha hs negative t x =
       positiveSource (priorityLogWindow om a b ha hs negative) 1 (priorityHeight negative t) x := by
   rw [principalWindow_apply]
@@ -48,18 +51,24 @@ theorem principalWindow_positiveSource (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a)
     positiveSource,Real.log_one,add_zero,conjugateProfile_apply,CubicReflectionKernel.logSchwartz_apply,
     Real.exp_log hx,normTwistedSource]
 
-theorem positiveSource_conjugate_one (g:𝓢(ℝ,ℂ)) (t x:ℝ) :
+end
+
+theorem positiveSource_conjugate_one  g   t x  :
     star (positiveSource (conjugateProfile g) 1 (-t) x)=positiveSource g 1 t x := by
   simp only [positiveSource,Real.log_one,add_zero,conjugateProfile_apply,star_mul,star_star,
     logPhase_conjugate,neg_neg,mul_comm]
 
-theorem actualSecondProfileRow_congr_positive {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (pool:Finset ι) (x:SecondProfileData ι) (slots₁ slots₂:Finset σ)
-    (lists₁ lists₂:σ→Finset ι) (a₁ a₂:σ→ι→ℂ)
-    (W₁ W₂ V₁ V₂:ℝ→ℂ) (Φ:𝓢(ℝ,ℂ)) (Y X:ℝ) (hX:0<X)
+section
+variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ] (p:ι→ActualEisensteinCubic.O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal] (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i}))) (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i}) (pool:Finset ι) (x:SecondProfileData ι) (slots₁ slots₂:Finset σ) (lists₁ lists₂:σ→Finset ι) (a₁ a₂:σ→ι→ℂ)
+include ι σ p hp hcop hg pool x slots₁ slots₂ lists₁ lists₂ a₁ a₂
+
+theorem actualSecondProfileRow_congr_positive      
+         
+     
+     
+         
+       
+     W₁ W₂ V₁ V₂   Φ   Y X  (hX:0<X)
     (h₁:∀t,0<t→W₁ t=V₁ t) (h₂:∀t,0<t→W₂ t=V₂ t) :
     actualSecondProfileRow p hp hcop hg pool x slots₁ slots₂ lists₁ lists₂ a₁ a₂ W₁ W₂ Φ Y X =
       actualSecondProfileRow p hp hcop hg pool x slots₁ slots₂ lists₁ lists₂ a₁ a₂ V₁ V₂ Φ Y X := by
@@ -81,14 +90,14 @@ theorem actualSecondProfileRow_congr_positive {ι σ:Type*} [DecidableEq ι] [De
     h₂ _ (div_pos (mul_pos (mul_pos (primeProductNorm_pos p hp _) (primeProductNorm_pos p hp _))
       (primeProductNorm_pos p hp _)) hX)]
 
-theorem actual_priority_profile_common {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (pool:Finset ι) (x:SecondProfileData ι) (slots₁ slots₂:Finset σ)
-    (lists₁ lists₂:σ→Finset ι) (a₁ a₂:σ→ι→ℂ)
-    (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo) (hs:Function.support om⊆Set.Icc lo hi)
-    (negative:Bool) (t:ℝ) (Φ:𝓢(ℝ,ℂ)) (Y X:ℝ) (hX:0<X) :
+theorem actual_priority_profile_common      
+         
+     
+     
+         
+       
+     om   lo hi   hlo   hs 
+     negative   t   Φ   Y X  (hX:0<X) :
     let g:=priorityLogWindow om lo hi hlo hs negative
     let θ:=priorityHeight negative t
     actualSecondProfileRow p hp hcop hg pool x slots₁ slots₂ lists₁ lists₂ a₁ a₂
@@ -101,8 +110,9 @@ theorem actual_priority_profile_common {ι σ:Type*} [DecidableEq ι] [Decidable
   · intro y hy
     rw [positiveSource_conjugate_one]
     exact principalWindow_positiveSource om lo hi hlo hs negative t y hy
-  · intro y hy
-    exact principalWindow_positiveSource om lo hi hlo hs negative t y hy
+  solve_by_elim [principalWindow_positiveSource]
+
+end
 
 end SevenEighths.InverseMoment
 

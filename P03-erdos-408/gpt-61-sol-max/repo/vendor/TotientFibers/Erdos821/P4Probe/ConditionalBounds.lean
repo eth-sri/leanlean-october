@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.Probability
 
@@ -10,7 +11,7 @@ open scoped BigOperators
 namespace Erdos821.P4Probe
 
 lemma weighted_error_sum_bound {ι : Type*} [Fintype ι]
-    (w a b : ι → ℝ) (unit error : ι → ℂ) (ε : ℝ)
+    (w a b : ι → ℝ) (unit error : ι → ℂ)  ε 
     (hw : ∀ i, 0 ≤ w i) (ha : ∀ i, 0 ≤ a i) (hb : ∀ i, 0 ≤ b i)
     (hu : ∀ i, ‖unit i‖ ≤ 1) (hε : 0 ≤ ε)
     (he : ∀ i, ‖error i‖ ≤ ε * Real.sqrt (a i) * Real.sqrt (b i)) :
@@ -26,7 +27,7 @@ lemma weighted_error_sum_bound {ι : Type*} [Fintype ι]
         _ ≤ w i * ‖unit i‖ * (ε * Real.sqrt (a i) * Real.sqrt (b i)) :=
           mul_le_mul_of_nonneg_left (he i) (mul_nonneg (hw i) (norm_nonneg _))
         _ ≤ w i * 1 * (ε * Real.sqrt (a i) * Real.sqrt (b i)) :=
-          mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (hu i) (hw i)) (by positivity)
+          (by bound)
         _ = _ := by ring
     _ = ε * ∑ i, w i * Real.sqrt (a i) * Real.sqrt (b i) := (Finset.mul_sum ..).symm
     _ ≤ ε * (Real.sqrt (∑ i, w i * a i) * Real.sqrt (∑ i, w i * b i)) :=

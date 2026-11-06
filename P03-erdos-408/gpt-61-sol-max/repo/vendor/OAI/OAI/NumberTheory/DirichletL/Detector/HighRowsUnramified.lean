@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsActual
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsActual
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
@@ -14,7 +15,7 @@ local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
-lemma rowMarkedTerm_unramified (eta a X W V rho : ℂ) (e l k m : ℕ) :
+lemma rowMarkedTerm_unramified  eta a X W V rho   e l k m  :
     rowMarkedTerm p hp hg eta a X W V rho 0 e l k m=
       principalMarkedTerm p hp hg (eta/rho) (a/rho^3) X (rho*W) V e l k m := by
   unfold rowMarkedTerm principalMarkedTerm
@@ -22,19 +23,12 @@ lemma rowMarkedTerm_unramified (eta a X W V rho : ℂ) (e l k m : ℕ) :
   · rfl
   · simp only [zero_add,rowWeightedScalar_parameters]
 
-lemma rowMarkedSeries_unramified (eta a X W V rho : ℂ) :
+lemma rowMarkedSeries_unramified  eta a X W V rho  :
     rowMarkedSeries p hp hg eta a X W V rho 0=
       principalMarkedSeries p hp hg (eta/rho) (a/rho^3) X (rho*W) V := by
   unfold rowMarkedSeries principalMarkedSeries rowInner principalInner
   apply Finset.sum_congr rfl
-  intro e he
-  apply tsum_congr
-  intro l
-  apply tsum_congr
-  intro k
-  apply tsum_congr
-  intro m
-  exact rowMarkedTerm_unramified p hp hg eta a X W V rho e.val l k m
+  simp_all [rowMarkedTerm_unramified]
 
 include hc in
 lemma rowClosedMarked_unramified (eta a X W V rho : ℂ) (hρ : rho^6=1)
@@ -89,6 +83,6 @@ theorem sourceRowSeries_unramified_euler (eta a rho x w z : ℂ) (hρ : rho^6=1)
   ; ring
 
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

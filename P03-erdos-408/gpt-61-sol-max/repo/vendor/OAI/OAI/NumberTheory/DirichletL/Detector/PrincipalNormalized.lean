@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolThresholds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators Topology ContDiff
 open Complex Filter
 namespace SevenEighths.ProbePrincipalNormalized
@@ -16,7 +16,7 @@ open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
 open PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual ProbeRaySlots
 local notation "Id" => Ideal HeckeFamily.O
 
-lemma normalized_error (A R F N : ℂ) (c d v : ℝ)
+lemma normalized_error (A R F N : ℂ)  c d v 
     (hc : 0≤c) (hA : ‖A-R‖≤c) (hN : ‖N⁻¹‖≤v)
     (hR : ‖R/N-F‖≤d) : ‖A/N-F‖≤c*v+d := by
   calc
@@ -39,7 +39,7 @@ theorem actual_ray_principal_comparison {K : ℕ}
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hr0 : ∀y,(W0 y).im=0) (hr1 : ∀y,(W1 y).im=0)
     (hp0 : ∀y,0≤(W0 y).re) (hp1 : ∀y,0≤(W1 y).re) (hn0 : W0≠0) (hn1 : W1≠0)
-    (e nu : ℝ) (he : 0<e) (hehi : e≤1/1000) (hnu : 0<nu)
+     e nu  (he : 0<e) (hehi : e≤1/1000) (hnu : 0<nu)
     (ha : 7/8<HeckeZeroSupremum.beta+e) (ha2 : HeckeZeroSupremum.beta+e≤2) :
     letI : NeZero (∏p∈S,p) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
     ∃C : ℝ,0<C ∧ ∀ᶠZ : ℝ in atTop,
@@ -114,6 +114,6 @@ theorem actual_ray_principal_comparison {K : ℕ}
         C*Z^(HeckeZeroSupremum.beta-11/16+e-(7/8)*ellMin) := by gcongr
     _ = _ := by ring
 end SevenEighths.ProbePrincipalNormalized
-end
+
 
 end OAI

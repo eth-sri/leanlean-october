@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.BilinearRestrictions
 public import Erdos821.S34.ProductSupport
@@ -10,11 +11,11 @@ set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint.Analytic
 
 theorem atom_cap_on_range (G : PrimeGroups) (k : Fin G.size → ℕ)
-    (s : Finset (Tuple G k)) (U H : ℝ) (hU : 0 < U) (hH : 0 ≤ H)
+    (s : Finset (Tuple G k))  U H  (hU : 0 < U) (hH : 0 ≤ H)
     (hlo : ∀ z ∈ s, U / 2 ≤ (product G k z : ℝ))
     (hρ : ∀ n : ℕ, 0 < n → rho G k n ≤ H / n) :
     ∀ n ∈ s.image (fun z => (product G k z : ℤ)),
@@ -30,9 +31,9 @@ theorem atom_cap_on_range (G : PrimeGroups) (k : Fin G.size → ℕ)
     _ ≤ H / (U / 2) := div_le_div_of_nonneg_left hH (by linarith) (hlo z hz)
     _ = _ := by field_simp
 
-theorem probability_bilinear_dyads (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (s : Finset (Tuple G a)) (t : Finset (Tuple G b))
-    (f : Tuple G a → ℂ) (g : Tuple G b → ℂ) (U V H θ η ζ : ℝ) (u : ℤ) (r : ℕ)
+theorem probability_bilinear_dyads  G   a b 
+     s   t 
+     f   g  (U V H θ η ζ : ℝ) (u : ℤ)  r 
     (hU : 1 ≤ U) (hV : 1 ≤ V) (hH : 0 ≤ H) (hr : 1 ≤ r)
     (hu : Nat.Coprime u.natAbs r) (hθ : θ = (u : ℝ) / r + η)
     (hη : |η| ≤ (r : ℝ) ^ (-2 : ℤ))
@@ -55,15 +56,11 @@ theorem probability_bilinear_dyads (G : PrimeGroups) (a b : Fin G.size → ℕ)
   have hp (z : Tuple G a) (hz : z ∈ s) :
       U / 2 ≤ ((product G a z : ℤ) : ℝ) ∧ ((product G a z : ℤ) : ℝ) ≤ U / 2 + 4 * U := by
     norm_cast
-    constructor
-    · exact (hs z hz).1
-    · linarith [(hs z hz).2]
+    grind
   have hq (z : Tuple G b) (hz : z ∈ t) :
       V / 2 ≤ ((product G b z : ℤ) : ℝ) ∧ ((product G b z : ℤ) : ℝ) ≤ V / 2 + 4 * V := by
     norm_cast
-    constructor
-    · exact (ht z hz).1
-    · linarith [(ht z hz).2]
+    grind
   have hb := bilinear_reduction_restricted (tupleWeight G a) (tupleWeight G b) hwa hwb
     (fun X => (product G a X : ℤ)) (fun Y => (product G b Y : ℤ)) f' g' s t
     U V (U / 2) (V / 2) θ η u r (2 * H / U) (2 * H / V)
@@ -90,5 +87,5 @@ theorem probability_bilinear_dyads (G : PrimeGroups) (a b : Fin G.size → ℕ)
     simp only [weightedFrameNorm, tupleNorm, g', norm_mul, Erdos821.P5Core.norm_mellin, mul_one]
   rwa [hf, hg] at hb
 
-end
+
 end Erdos821.S34Core

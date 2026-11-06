@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialZeroMode
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialZeroMode
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
@@ -14,18 +15,22 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
 open InverseInitialRayAttachment FirstCauchyArithmetic
 local notation "O"=>ActualEisensteinCubic.O
-local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
+
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,λ₀∉Ideal.span {p i})(hinj:Function.Injective (fun i=>Ideal.span {p i}))
-  (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)(hpr:∀i,λ₀^2∣p i-1)
+  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})(hinj:Function.Injective (fun i=>Ideal.span {p i}))
+  (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)(hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
 
 include hinj hc hpr
 
+section
+variable (pool : Finset ι) (Ψ : O→*ℂ) (j : O) (σ : Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ) (G U T E : Finset ι)
+
+
 theorem physical_zero_off_diagonal
-    (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)
-    (G U T E:Finset ι)(hGU:Disjoint G U)(hGT:Disjoint G T)(hUT:Disjoint U T)(hne:U≠T):
+          
+     (hGU:Disjoint G U)(hGT:Disjoint G T)(hUT:Disjoint U T)(hne:U≠T):
     initialPhysicalMode p hp hcop hg Ψ j σ W Φ Z D m G U T E 0=0 := by
   rw [←normalized_overlap_mode p hp hcop hg hinj hc hpr Ψ j σ W Φ Z D m
     G U T E hGU hGT hUT 0,
@@ -33,8 +38,8 @@ theorem physical_zero_off_diagonal
   simp
 
 theorem physical_zero_empty
-    (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)
-    (G E:Finset ι):
+          
+     :
     initialPhysicalMode p hp hcop hg Ψ j σ W Φ Z D m G ∅ ∅ E 0=
     ((Z^(-D):ℝ):ℂ)*(Z^m:ℝ)*paperRadialFourier Φ 0*
       ((‖secondInputCoefficient p hg Ψ j 1 1 (fun _=>1) G‖^2:ℝ):ℂ)*
@@ -52,13 +57,13 @@ theorem physical_zero_empty
   simp only [overlapPairWeight,hcoef,hμ,one_mul,Finset.union_empty]
   have hempty:activeSupport (∅:Finset ι) ∅=∅:=by simp [activeSupport]
   let:IsEmpty (activeSupport (∅:Finset ι) ∅):=⟨fun ⟨x,hx⟩=>by
-    simp only [activeSupport,Finset.sdiff_self,Finset.union_self,Finset.notMem_empty] at hx⟩
+    simp_all⟩
   simp only [Fintype.prod_empty,map_one,norm_one,Complex.ofReal_one,div_one,map_zero,norm_zero,
     zero_pow (by decide:2≠0),mul_zero,zero_div,mul_one]
   ring
 
 theorem physical_zero_sum
-    (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ):
+           :
     (∑G∈pool.powerset,∑U∈(pool\G).powerset,∑T∈(pool\G).powerset,
       if Disjoint U T then ∑E∈G.powerset,
         initialPhysicalMode p hp hcop hg Ψ j σ W Φ Z D m G U T E 0 else 0)=
@@ -92,17 +97,17 @@ theorem physical_zero_sum
     · apply Finset.sum_eq_zero
       intro E hE
       have hneq:U≠T:=by
-        intro he
-        subst T
-        exact hne (by simpa using Finset.disjoint_iff_inter_eq_empty.mp hUT)
+        grind
       exact physical_zero_off_diagonal p hp hcop hg hinj hc hpr Ψ j σ W Φ Z D m G U T E
         (Finset.disjoint_of_subset_right (Finset.mem_powerset.mp hU) Finset.disjoint_sdiff)
         (Finset.disjoint_of_subset_right (Finset.mem_powerset.mp hT) Finset.disjoint_sdiff) hUT hneq
     · rfl
   · simp
 
+end
+
 end SevenEighths.InverseInitialZeroMode
 
-end
+
 
 end OAI

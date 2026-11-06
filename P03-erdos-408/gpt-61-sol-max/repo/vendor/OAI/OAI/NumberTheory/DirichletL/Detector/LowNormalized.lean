@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff
 open Filter
 namespace SevenEighths.ProbePhysical
@@ -75,6 +75,6 @@ theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
       ring
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

@@ -11,22 +11,22 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open SevenEighths.InverseSecondFibers IdealMobiusDivisorSum CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-def secondLabelEnergy (K : ℕ) (labels : Finset (Ideal Eis)) (rows : Finset Eis)
-    (F : SecondChild → ℂ) (γ : OuterTriple) : ℝ :=
+
+def secondLabelEnergy (K : ℕ) (labels : Finset (Ideal ActualEisensteinCubic.O)) (rows : Finset ActualEisensteinCubic.O)
+    (F : SecondChild → ℂ) (γ : OuterTriple)  :=
   ∑ f ∈ labels, ((idealDivisors f).card : ℝ)^(9+4*K) *
     ∑ k ∈ rows, ‖F (γ,f,k)‖^2
 
-lemma secondLabelEnergy_nonneg (K : ℕ) (labels : Finset (Ideal Eis)) (rows : Finset Eis)
-    (F : SecondChild → ℂ) (γ : OuterTriple) : 0 ≤ secondLabelEnergy K labels rows F γ := by
+lemma secondLabelEnergy_nonneg  K   labels   rows 
+     F   γ  : 0 ≤ secondLabelEnergy K labels rows F γ := by
   unfold secondLabelEnergy; positivity
 
 def secondCanonicalPolynomial {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-    (pool : Finset ι) (Ψ : OuterTriple → Eis →* ℂ) (puncture : OuterTriple → Eis)
+    (pool : Finset ι) (Ψ : OuterTriple → ActualEisensteinCubic.O →* ℂ) (puncture : OuterTriple → ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (W : OuterTriple → ℝ → ℂ) (X : ℝ) (c : SecondChild) : ℂ :=
   finiteCanonicalMarkedRow p hp hcop hg pool (Ψ c.1) (puncture c.1)

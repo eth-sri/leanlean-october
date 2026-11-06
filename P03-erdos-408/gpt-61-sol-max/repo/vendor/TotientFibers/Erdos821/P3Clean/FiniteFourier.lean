@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.Contractions
 public import Mathlib.Analysis.Fourier.FiniteAbelian.PontryaginDuality
@@ -15,10 +16,14 @@ namespace Erdos821.P3Clean
 
 variable {G : Type*} [AddCommGroup G] [Fintype G]
 
-def finiteFourier (f : G → ℂ) (ψ : AddChar G ℂ) : ℂ :=
+def finiteFourier (f : G → ℂ) (ψ : AddChar G ℂ)  :=
   ∑ r : G, star (ψ r) * f r
 
-theorem character_orthogonality (r s : G) :
+section
+variable (H f g : G → ℂ) (d : G) (ψ : AddChar G ℂ)
+
+
+theorem character_orthogonality  r s  :
     (∑ ψ : AddChar G ℂ, ψ r * star (ψ s)) =
       if r = s then (Fintype.card G : ℂ) else 0 := by
   classical
@@ -26,7 +31,7 @@ theorem character_orthogonality (r s : G) :
     ← AddChar.map_neg_eq_inv, ← AddChar.map_add_eq_mul]
   simpa only [← sub_eq_add_neg, sub_eq_zero] using AddChar.sum_apply_eq_ite (r - s)
 
-theorem finiteFourier_inner (f g : G → ℂ) :
+theorem finiteFourier_inner   :
     (∑ ψ : AddChar G ℂ, star (finiteFourier f ψ) * finiteFourier g ψ) =
       (Fintype.card G : ℂ) * ∑ r : G, star (f r) * g r := by
   classical
@@ -52,14 +57,14 @@ theorem finiteFourier_inner (f g : G → ℂ) :
       simp only [character_orthogonality, mul_ite, mul_zero]
       simp [mul_comm, mul_left_comm]
 
-theorem finiteFourier_parseval (f : G → ℂ) :
+theorem finiteFourier_parseval   :
     (∑ ψ : AddChar G ℂ, ‖finiteFourier f ψ‖ ^ 2) =
       (Fintype.card G : ℝ) * ∑ r : G, ‖f r‖ ^ 2 := by
   have h := finiteFourier_inner f f
   simp only [Complex.star_def, Complex.conj_mul', ← Complex.ofReal_natCast] at h
   exact_mod_cast h
 
-theorem finiteFourier_translate (f : G → ℂ) (d : G) (ψ : AddChar G ℂ) :
+theorem finiteFourier_translate       :
     finiteFourier (fun r => f (r + d)) ψ = ψ d * finiteFourier f ψ := by
   classical
   unfold finiteFourier
@@ -68,9 +73,7 @@ theorem finiteFourier_translate (f : G → ℂ) (d : G) (ψ : AddChar G ℂ) :
     rw [AddChar.map_add_eq_mul, star_mul]
     have hψ : ψ d * star (ψ d) = 1 := by
       simp [Complex.mul_conj', ψ.norm_apply]
-    calc
-      _ = (ψ d * star (ψ d)) * (star (ψ r) * f (r + d)) := by rw [hψ, one_mul]
-      _ = _ := by ring
+    grind
   simp_rw [h]
   rw [← Finset.mul_sum]
   congr 1
@@ -78,7 +81,7 @@ theorem finiteFourier_translate (f : G → ℂ) (d : G) (ψ : AddChar G ℂ) :
     (fun r => star (ψ (r + d)) * f (r + d))
     (fun r => star (ψ r) * f r) (fun _ => rfl)
 
-theorem finiteFourier_convolution (H g : G → ℂ) (ψ : AddChar G ℂ) :
+theorem finiteFourier_convolution     :
     finiteFourier (fun r => ∑ d : G, H d * g (r + d)) ψ =
       (∑ d : G, H d * ψ d) * finiteFourier g ψ := by
   classical
@@ -98,7 +101,7 @@ theorem finiteFourier_convolution (H g : G → ℂ) (ψ : AddChar G ℂ) :
   rw [h, finiteFourier_translate]
   ring
 
-theorem finiteFourier_convolution_form (H f g : G → ℂ) :
+theorem finiteFourier_convolution_form   :
     (∑ ψ : AddChar G ℂ,
       star (finiteFourier f ψ) * (∑ d : G, H d * ψ d) * finiteFourier g ψ) =
       (Fintype.card G : ℂ) *
@@ -106,6 +109,8 @@ theorem finiteFourier_convolution_form (H f g : G → ℂ) :
   have h := finiteFourier_inner f (fun r => ∑ d : G, H d * g (r + d))
   simp only [finiteFourier_convolution, Finset.mul_sum] at h
   simpa only [Finset.mul_sum, Finset.sum_mul, mul_assoc] using h
+
+end
 
 
 

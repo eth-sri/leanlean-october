@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedRestriction
 
@@ -9,14 +10,14 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
 omit [Fintype ι] in
 lemma mixed_inactive_coefficient (P : PrimeFamily ι)
     (hodd : ∀ i, ringChar (Eis⧸P.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
-    (S : Finset ι) (i : ι) :
+     S   i  :
     finiteAdditiveFourierCoeff (quotientTrace (P.generator i) (P.generator_ne_zero i))
       (mixedPrimeFunction P.generator P.generator_good j S i) 0 =
     if i∈S then (Ideal.absNorm (P.ideal i):ℂ)⁻¹
@@ -36,19 +37,15 @@ lemma mixed_inactive_coefficient (P : PrimeFamily ι)
       (P.generator_good i) ho (j i) (hj i),P.generator_span]
 
 lemma mixed_inactive_weight (P : PrimeFamily ι)
-    (hodd : ∀ i, ringChar (Eis⧸P.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
-    (S A : Finset ι) :
+    (hodd : ∀ i, ringChar (Eis⧸P.ideal i)≠2)  j  (hj : ∀ i, j i<6)
+     S A  :
     localInactiveWeight P.generator P.generator_ne_zero
       (mixedPrimeFunction P.generator P.generator_good j S) A =
     ∏ i∈(Finset.univ:Finset ι)\A,
       if i∈S then (Ideal.absNorm (P.ideal i):ℂ)⁻¹
-        else if j i=0 then 1-(Ideal.absNorm (P.ideal i):ℂ)⁻¹ else 0 := by
-  unfold localInactiveWeight
-  apply Finset.prod_congr rfl
-  intro i hi
-  exact mixed_inactive_coefficient P hodd j hj S i
+        else if j i=0 then 1-(Ideal.absNorm (P.ideal i):ℂ)⁻¹ else 0 := Finset.prod_congr rfl fun i hi => OAI.SevenEighths.InverseReflectedPhase.mixed_inactive_coefficient P hodd j hj S i
 
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

@@ -10,93 +10,93 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 namespace SecondPassArithmetic
 
 section
 
-open scoped BigOperators Classical
-open MeasureTheory
+ 
+ 
 
 section
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (cubeOddSupport coreRayCoefficient coreRayTwist dilatedCoreRow
   b0Label jLabel columnLog )
 open FirstCauchyArithmetic (supportMobius supportConjugateSum)
 open RayFourExpansion (RayCharacter crossCoeff)
 open FourierBridge (logPhase)
 
-lemma sideRayMonoid_norm_le_one (negative : Bool) (χ : RayCharacter) (a : O) :
+lemma sideRayMonoid_norm_le_one  negative   χ   a  :
     ‖sideRayMonoid negative χ a‖ ≤ 1 := by
   cases negative <;> simp only [sideRayMonoid, Bool.false_eq_true, ite_false, ite_true,
     conjugateRayMonoid_apply, rayMonoid_apply, norm_star]
   all_goals exact FiniteRayExpansion.norm_char_le_one _ _
 
-lemma firstCoreTwist_norm_le (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ)
-    (r : FirstCoreIndex) (a : O) :
+lemma firstCoreTwist_norm_le  negative   χ   Ψ 
+     r   a  :
     ‖firstCoreTwist negative χ Ψ r a‖ ≤ ‖Ψ a‖ := by
   have hc : ‖coreRayTwist negative r.1 r.2.2 a‖ ≤ 1 := by
     change ‖RayFourExpansion.rayCharacter (FirstPassCubeLabels.coreRayCharacter negative r.1 r.2.2) a‖ ≤ 1
@@ -113,8 +113,8 @@ variable {ι : Type*} [DecidableEq ι]
 
 omit [DecidableEq ι] in
 theorem firstCoreOuter_norm_le
-    (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (Ψ : O →* ℂ) (m : O) (D : Finset ι) (r : FirstCoreIndex) :
+     B   v   ε₁ ε₂ 
+     negative   Ψ   m   D   r  :
     ‖firstCoreOuter p hg B v ε₁ ε₂ negative Ψ m D r‖ ≤
       ‖coreRayCoefficient p (cubeOddSupport B v ε₁ ε₂) negative r.1 r.2.1 r.2.2‖ *
         ‖Ψ (∏ i ∈ D, p i)‖ := by
@@ -137,8 +137,8 @@ theorem firstCoreOuter_norm_le
 
 omit [DecidableEq ι] in
 theorem firstCoreOuter_mass
-    (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (Ψ : O →* ℂ) (m : O) (D : Finset ι)
+     B   v   ε₁ ε₂ 
+     negative   Ψ   m   D 
     (hΨ : ‖Ψ (∏ i ∈ D, p i)‖ ≤ 1) :
     (∑ r : FirstCoreIndex, ‖firstCoreOuter p hg B v ε₁ ε₂ negative Ψ m D r‖) ≤ 32 * 512 := by
   calc
@@ -155,9 +155,9 @@ theorem firstCoreOuter_mass
 theorem dilatedCoreRow_sq_le_input_family
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
-    (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ) (m : O)
-    (H : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (c d : O) (t : ℝ) (z : O)
+     F D B   v   ε₁ ε₂ 
+     negative   χ   Ψ   m 
+     H   V   y   c d   t   z 
     (hΨ : ‖Ψ (∏ i ∈ D, p i)‖ ≤ 1) :
     ‖dilatedCoreRow p hp hcop hg F D B v ε₁ ε₂ negative χ
       (multiplicativeCoreColumn p Ψ m H) V y c d t z‖ ^ 2 ≤
@@ -178,14 +178,14 @@ theorem dilatedCoreRow_sq_le_input_family
 def firstCoreInputRow (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ) (m : O)
     (H : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (c d : O)
-    (r : FirstCoreIndex) (t : ℝ) (z : O) : ℂ :=
+    (r : FirstCoreIndex) (t : ℝ) (z : O)  :=
   inputConjugateRow p hg (F \ D) (firstCoreTwist negative χ Ψ r)
     (m * b0Label p B v ε₁ ε₂) (c * jLabel p B v ε₁ ε₂) d
     (firstCoreTest H V y negative t D) (if negative then -z else z)
 
 end
 
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (cubeOddSupport coreRayCoefficient dilatedCoreRow b0Label jLabel
   columnLog )
 open RayFourExpansion (RayCharacter crossCoeff)
@@ -197,7 +197,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (b0Label jLabel)
 open RayFourExpansion (RayCharacter)
 open ConcreteTraceCRT (eisEmbedding)
@@ -210,7 +210,7 @@ theorem firstCoreInputRow_smoothed_sign
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ) (m : O)
     (H : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (c d : O)
-    (r : FirstCoreIndex) (t : ℝ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) :
+    (r : FirstCoreIndex) (t : ℝ) (W : 𝓢(ℝ, ℂ))  Y  :
     (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / Y) *
       (↑(‖firstCoreInputRow p hg F D B v ε₁ ε₂ negative χ Ψ m H V y c d r t z‖ ^ 2) : ℂ)) =
     ∑' z : O, W (‖eisEmbedding z‖ ^ 2 / Y) *
@@ -226,13 +226,13 @@ theorem firstCoreInputRow_smoothed_sign
           (firstCoreTest H V y true t D) z‖ ^ 2) : ℂ))
 
 theorem firstCoreInputRow_smoothed_second_poisson
-    (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+     hp 
+     hinj 
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ) (m : O)
-    (H : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (c d : O)
-    (r : FirstCoreIndex) (t : ℝ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y) :
+     F D B   v   ε₁ ε₂ 
+     negative   χ   Ψ   m 
+     H   V   y   c d 
+     r   t   W   Y  (hY : 0 < Y) :
     (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / Y) *
       (↑(‖firstCoreInputRow p hg F D B v ε₁ ε₂ negative χ Ψ m H V y c d r t z‖ ^ 2) : ℂ)) =
     ∑ G ∈ (F \ D).powerset, ∑ U ∈ ((F \ D) \ G).powerset, ∑ V' ∈ ((F \ D) \ G).powerset,
@@ -249,22 +249,22 @@ theorem firstCoreInputRow_smoothed_second_poisson
 
 end SecondPassArithmetic
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+ 
+ 
 namespace JointLogSeparation
 
 abbrev Frequency := ℝ × ℝ × ℝ
 
-def tripleCoefficient (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (t : Frequency) : ℂ :=
+def tripleCoefficient (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (t : Frequency)  :=
   b₁ t.1 * (b₂ t.2.1 * b₃ t.2.2)
 
 end JointLogSeparation
 
 namespace SecondPassIntegration
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
+open   SecondPassArithmetic JointLogSeparation
 open FirstPassCubeLabels (columnLog)
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -273,12 +273,12 @@ variable {ι : Type*} [DecidableEq ι]
 
 end SecondPassIntegration
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+ 
+ 
 namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
+open   SecondPassArithmetic JointLogSeparation
 open SecondPassFiber (OldTuple newLabel newRow Valid)
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]

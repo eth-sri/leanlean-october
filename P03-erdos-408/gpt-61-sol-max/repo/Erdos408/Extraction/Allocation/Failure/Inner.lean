@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Failure.Reduction
 
@@ -27,20 +28,25 @@ open Finset Real
 noncomputable section
 
 /-- The `v`-side factor `Φ_F(d) = ∏_{g ∈ F} (1 - θ c₁ / 5 [ω_g(d) = 1])`. -/
-def loneFactor (c₁ : ℝ) (F : Finset (Finset ℕ)) (d : ℕ) : ℝ :=
+def loneFactor (c₁ : ℝ) (F : Finset (Finset ℕ)) (d : ℕ)  :=
   ∏ g ∈ F, (1 - chernoffTheta * c₁ / 5 * (if primeCount g d = 1 then 1 else 0))
 
+section
+variable {F : Finset (Finset ℕ)} (hF : ∀ g ∈ F, SideGroup g) {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4)
+
+include hF hc₁ hc₁' in
 /-- The model product is at most `Φ_F(d)` when `p ∣ c ↔ p ∣ d` on the groups. -/
-lemma prod_model_le_loneFactor {F : Finset (Finset ℕ)} (hF : ∀ g ∈ F, SideGroup g) {c₁ : ℝ}
-    (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4) {c d : ℕ} (hcd : ∀ g ∈ F, ∀ p ∈ g, p ∣ c ↔ p ∣ d) :
+lemma prod_model_le_loneFactor      
+         {c d}  (hcd : ∀ g ∈ F, ∀ p ∈ g, p ∣ c ↔ p ∣ d) :
     ∏ g ∈ F, (1 - sideAlpha c₁ g d * (∑ p ∈ g, modelWeight c p -
       ∑ K ∈ g.powersetCard 2, ∏ p ∈ K, modelWeight c p)) ≤ loneFactor c₁ F d :=
   prod_le_prod₀ (fun g hg => ((hF g hg).one_sub_sideAlpha_mul_le hc₁ hc₁' (hcd g hg)).1)
     fun g hg => ((hF g hg).one_sub_sideAlpha_mul_le hc₁ hc₁' (hcd g hg)).2
 
+include hF hc₁ hc₁' in
 /-- The absolute model product is at most `(5/2)^{|F|}`. -/
-lemma prod_model_abs_le {F : Finset (Finset ℕ)} (hF : ∀ g ∈ F, SideGroup g) {c₁ : ℝ}
-    (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4) (d c : ℕ) :
+lemma prod_model_abs_le      
+         d c  :
     ∏ g ∈ F, (1 + |sideAlpha c₁ g d| * (∑ p ∈ g, modelWeight c p +
       ∑ K ∈ g.powersetCard 2, ∏ p ∈ K, modelWeight c p)) ≤ (5 / 2) ^ F.card := by
   rw [← prod_const]
@@ -60,13 +66,15 @@ lemma prod_model_abs_le {F : Finset (Finset ℕ)} (hF : ∀ g ∈ F, SideGroup g
     rw [abs_of_nonneg h1]
     linarith
 
+end
+
 /-- The free-factor sum at fixed `d` and `r`. -/
 theorem sum_free_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) {F : Finset (Finset ℕ)}
     (hF : ∀ g ∈ F, SideGroup g) (hFS : ∀ g ∈ F, g ⊆ S)
     (hdisj : (F : Set (Finset ℕ)).PairwiseDisjoint id) {c₁ : ℝ} (hc₁ : 0 ≤ c₁)
     (hc₁' : c₁ ≤ 1 / 4) {d r : ℕ} (hd : 1 ≤ d) (hr : 1 ≤ r) (hrS : ∀ p ∈ S, ¬ p ∣ r) (R : ℕ)
     {A B : ℕ} (hA : 1 ≤ A) {w : ℕ → ℝ} (hw0 : ∀ e, 0 ≤ w e)
-    (hw : ∀ e, A < e → w (e + 1) ≤ w e) {K : ℝ} (hK0 : 0 ≤ K)
+    (hw : ∀ e, A < e → w (e + 1) ≤ w e)  {K}  (hK0 : 0 ≤ K)
     (hK : ∀ e ∈ Ioc A B, w (A + 1) ≤ K * w e)
     (hδ : 2 * (∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p) * K /
       ∏ p ∈ S, (1 - (1 : ℝ) / p) ≤ 1 / 2) :
@@ -80,13 +88,13 @@ theorem sum_free_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) {F : Finset (Fi
   set Pi := ∏ p ∈ S, (1 - (1 : ℝ) / p)
   set N := ((S.powerset.filter (·.card ≤ R + 1)).card : ℝ)
   set S0 := ∑ a ∈ Ioc A B, (if ∀ p ∈ S, ¬ p ∣ a then w a else 0)
-  have hε0 : 0 ≤ ε := sum_nonneg fun u _ => prod_nonneg fun p _ => by positivity
+  
   have hPi0 : 0 < Pi := prod_pos fun p hp => by
     have : (2 : ℝ) ≤ p := by exact_mod_cast (hS p hp).two_le
     have : (1 : ℝ) / p < 1 := by rw [div_lt_one (by linarith)]; linarith
     linarith
   have hS00 : 0 ≤ S0 := sum_nonneg fun a _ => by split_ifs <;> simp [hw0 a]
-  have hcard0 : 0 ≤ ∏ g ∈ F, ((lowSubsets g).card : ℝ) := prod_nonneg fun _ _ => by positivity
+  
   have hE0 : 0 ≤ 4 * N * w (A + 1) := mul_nonneg (by positivity) (hw0 _)
   have hδ0 : 0 ≤ 8 * ε * K / Pi := by positivity
   have hloneF0 : 0 ≤ loneFactor c₁ F d := prod_nonneg fun g _ => by
@@ -128,7 +136,7 @@ theorem sum_free_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) {F : Finset (Fi
 
 /-- The total free weight: `S_∅ ≤ W (B (Π + 2ε) + N)` when `w ≤ W` on `(A, B]`. -/
 lemma sum_rough_weight_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (R : ℕ) {A B : ℕ}
-    {w : ℕ → ℝ} {W : ℝ} (hwW : ∀ e ∈ Ioc A B, w e ≤ W) (hW : 0 ≤ W) :
+    {w : ℕ → ℝ}  {W}  (hwW : ∀ e ∈ Ioc A B, w e ≤ W) (hW : 0 ≤ W) :
     ∑ a ∈ Ioc A B, (if ∀ p ∈ S, ¬ p ∣ a then w a else 0) ≤
       W * ((B : ℝ) * (∏ p ∈ S, (1 - (1 : ℝ) / p) +
           2 * ∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p) +
@@ -150,15 +158,10 @@ lemma sum_rough_weight_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (R : ℕ)
       W * (((Ioc A B).filter fun e => ∀ p ∈ S, ¬ p ∣ e).card : ℝ) := by
     rw [card_eq_sum_ones, Nat.cast_sum, Nat.cast_one, mul_sum, sum_filter]
     refine sum_le_sum fun a ha => ?_
-    split_ifs
-    · rw [mul_one]
-      exact hwW a ha
-    · exact le_rfl
+    grind
   refine hle.trans (mul_le_mul_of_nonneg_left ?_ hW)
   have hB : (B : ℝ) - A ≤ B := by linarith [(Nat.cast_nonneg A : (0 : ℝ) ≤ A)]
-  have hBA : 0 ≤ (B : ℝ) - A := by
-    rw [sub_nonneg]
-    exact_mod_cast hAB
+  
   have hPi : 0 ≤ ∏ p ∈ S, (1 - (1 : ℝ) / p) := prod_nonneg fun p hp => by
     have : (2 : ℝ) ≤ p := by exact_mod_cast (hS p hp).two_le
     have : (1 : ℝ) / p ≤ 1 := by rw [div_le_one (by linarith)]; linarith

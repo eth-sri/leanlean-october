@@ -22,16 +22,15 @@ open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyWidthSchedule CenteredMomentDetectorPlainMomentParameters
 open CenteredMomentDetectorEnergyInitialState CenteredMomentNaturalFixedRaySource
 open ProbeDetectorPlainMarkedFineField ProbeDetectorPlainUnmarkedField
-local notation "O"=>HeckeFamily.O
 
-def detectorMesh (Δ t:ℝ):ℝ:=fineMesh 2 0 1 (3/4+2*Δ) (t/4)
 
-lemma detectorMesh_pos {Δ t:ℝ}(hΔ:0<Δ)(ht:0<t):0<detectorMesh Δ t:=by
-  exact (bounds 2 (finalSourceCap 2 0 1 (t/4)) (3/4+2*Δ) (t/4)
+def detectorMesh (Δ t:ℝ):=fineMesh 2 0 1 (3/4+2*Δ) (t/4)
+
+lemma detectorMesh_pos  {Δ t} (hΔ:0<Δ)(ht:0<t):0<detectorMesh Δ t:=(bounds 2 (finalSourceCap 2 0 1 (t/4)) (3/4+2*Δ) (t/4)
     (by norm_num) (sourceCap_nonneg 2 0 1 (by norm_num) (by norm_num) _)
     (by linarith) (by positivity)).2.2.2.2.1
 
-def DetectorCertifiedBands:Prop:=
+def DetectorCertifiedBands:=
   ∀_hβ:(7/8:ℝ)<HeckeZeroSupremum.beta,
   ∀D:HighData (HeckeZeroSupremum.beta-7/8),
     (∀j,D.ell j≤detectorMesh (HeckeZeroSupremum.beta-7/8) D.t/200)→
@@ -40,7 +39,11 @@ def DetectorCertifiedBands:Prop:=
       2 (1/4) (9/4) bΦ 0 1 (33/50) (33/50) 2 (kappaPlain D) (stageError D)
       (count 2 (stageError D))
 
-theorem plain_inputs {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
+section
+variable {Δ:ℝ} {D:HighData Δ} (F:SourceData D)
+include Δ D F
+
+theorem plain_inputs    
     (hcert:∀bΦ:ℝ,0<bΦ→CertifiedBand (α:=Fin D.N) F.modulus ⊤ le_top
       (fun x=>conj (F.W x)) 2 (1/4) (9/4) bΦ 0 1 (33/50) (33/50) 2
       (kappaPlain D) (stageError D) (count 2 (stageError D))):
@@ -81,7 +84,7 @@ theorem plain_inputs {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
     obtain ⟨Cz,Cp,hCz,hCp,h⟩:=h η₀
     exact ⟨Cz,hCz,h.mono (fun U h=>h.1)⟩
 
-theorem source_moments {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
+theorem source_moments    
     (counts:CountParameters F.modulus ⊤ D.t)(mesh:ℝ)(hmesh:0<mesh)
     (hfine:∀j,D.ell j≤mesh/200)
     (hpositive:PositiveFineSourceInput F mesh)
@@ -106,12 +109,9 @@ theorem source_moments {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
   let height:ℝ:=Z^(2*τ)
   have hh:0≤height:=Real.rpow_nonneg hZ.le _
   have hbase:1≤1+height:=by linarith
-  have hCi':Ci*(1+height)^Ji≤(Ci+Cm+Cu)*(1+height)^(Ji+Jm+Ju):=by
-    apply mul_le_mul (by linarith) (pow_le_pow_right₀ hbase (by omega)) (by positivity) (by positivity)
-  have hCm':Cm*(1+height)^Jm≤(Ci+Cm+Cu)*(1+height)^(Ji+Jm+Ju):=by
-    apply mul_le_mul (by linarith) (pow_le_pow_right₀ hbase (by omega)) (by positivity) (by positivity)
-  have hCu':Cu*(1+height)^Ju≤(Ci+Cm+Cu)*(1+height)^(Ji+Jm+Ju):=by
-    apply mul_le_mul (by linarith) (pow_le_pow_right₀ hbase (by omega)) (by positivity) (by positivity)
+  have hCi':Ci*(1+height)^Ji≤(Ci+Cm+Cu)*(1+height)^(Ji+Jm+Ju):=mul_le_mul (by linarith) (pow_le_pow_right₀ hbase (by omega)) (by positivity) (by positivity)
+  have hCm':Cm*(1+height)^Jm≤(Ci+Cm+Cu)*(1+height)^(Ji+Jm+Ju):=mul_le_mul (by linarith) (pow_le_pow_right₀ hbase (by omega)) (by positivity) (by positivity)
+  have hCu':Cu*(1+height)^Ju≤(Ci+Cm+Cu)*(1+height)^(Ji+Jm+Ju):=mul_le_mul (by linarith) (pow_le_pow_right₀ hbase (by omega)) (by positivity) (by positivity)
   simp only [Real.rpow_natCast]
   intro rows d a hd hdmax ha hamax hrows i z hz hzim q B hB hdata hreverse hslots hwidth
     hprofile hupper hexternal hslotMesh hbinWidth hfamily bin label left right hne
@@ -139,7 +139,13 @@ theorem source_moments {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
     exact (hunmarked j k hjk σ hσ t ht).1.trans
       (mul_le_mul_of_nonneg_right hCu' (Real.rpow_nonneg hU _))
 
-theorem fine_moments_of_certified (h:DetectorCertifiedBands):FineMomentInput:=by
+end
+
+section
+variable (h:DetectorCertifiedBands)
+include h
+
+theorem fine_moments_of_certified  :FineMomentInput:=by
   intro hβ
   let Δ:=HeckeZeroSupremum.beta-7/8
   have hΔ:0<Δ:=by dsimp [Δ];linarith
@@ -148,14 +154,16 @@ theorem fine_moments_of_certified (h:DetectorCertifiedBands):FineMomentInput:=by
   obtain ⟨hp,hz⟩:=plain_inputs F (h hβ D hfine F)
   exact source_moments F counts (detectorMesh Δ D.t) (detectorMesh_pos hΔ D.t_pos) hfine hp hz
 
-theorem chosen_moments_of_certified (h:DetectorCertifiedBands):ChosenMomentInput:=
+theorem chosen_moments_of_certified  :ChosenMomentInput:=
   chosen_input_of_fine (fine_moments_of_certified h)
 
-theorem dirichlet_of_certified (h:DetectorCertifiedBands)(q:ℕ)(hq:q≠0)
-    (χ:DirichletCharacter ℂ q)(s:ℂ)(hs:(7/8:ℝ)<s.re)(hexc:¬(χ=1 ∧ s=1)):
+theorem dirichlet_of_certified  (q:ℕ)(hq:q≠0)
+    (χ:DirichletCharacter ℂ q) s (hs:(7/8:ℝ)<s.re)(hexc:¬(χ=1 ∧ s=1)):
     letI:NeZero q:=⟨hq⟩
     DirichletCharacter.LFunction χ s≠0:=
   dirichlet_of_chosen_moments (chosen_moments_of_certified h) q hq χ s hs hexc
+
+end
 
 end SevenEighths.ProbeFinalAssemblyCertifiedBands
 

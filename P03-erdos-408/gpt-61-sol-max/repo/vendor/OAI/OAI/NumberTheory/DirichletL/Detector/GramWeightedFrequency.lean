@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalBlock
 
@@ -6,36 +7,36 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalBlock
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma min_product_amplification (L T : ℝ) (hL : 0≤L) (hT : 0≤T) (A : ℕ) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+lemma min_product_amplification (L T : ℝ) (hL : 0≤L) (hT : 0≤T)  A  :
     min 1 ((L*T)^A)≤(1+T)^A*min 1 (L^A) := by
   by_cases h : L^A≤1
   · rw [min_eq_right h]
     apply (min_le_right _ _).trans
     rw [mul_pow,mul_comm]
-    exact mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hT (by linarith) _) (pow_nonneg hL _)
+    bound
   · rw [min_eq_left (le_of_not_ge h),mul_one]
-    exact (min_le_left _ _).trans (one_le_pow₀ (by linarith))
+    bound
 
-lemma frequencyScale_ratio (C : SupportedIdeal) (k : GramFrequency) (Y Q : ℝ) :
+lemma frequencyScale_ratio (C : SupportedIdeal) (k : GramFrequency)  Y Q  :
     frequencyScale C k.val Y Q=(Ideal.absNorm (Ideal.span {k.val}):ℝ)/((Y^2/Q)/Ideal.absNorm C.val) := by
   rw [frequencyScale,ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span,div_div_eq_mul_div]
   simp only [div_eq_mul_inv,mul_inv_rev,inv_inv]
   ring
 
-theorem canonical_nonexceptional_weighted (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
+theorem canonical_nonexceptional_weighted  A  (hA : 2<A)  a₀ b₀ 
     (ha₀ : 0<a₀) (hab : a₀<b₀) :
     ∃(J : ℕ)(H₀ : Finset (ℕ×ℕ)),
       ∀(W : ℝ→ℂ)(_hs : Function.support W⊆Set.Icc a₀ b₀)(_hW : ContDiff ℝ ∞ W),
       ∃K : ℝ,0<K ∧ ∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
       (C : SupportedIdeal)(k : GramFrequency),¬ExceptionalFrequency S hS C k→
-      ∀(d : O)(U : SchwartzMap ℝ ℂ)(v H N : ℝ),0<H→0<N→
+      ∀(d : ActualEisensteinCubic.O)(U : SchwartzMap ℝ ℂ)(v H N : ℝ),0<H→0<N→
         ‖canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖≤
         K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J*
           (Ideal.absNorm C.val:ℝ)*N^2*
@@ -69,6 +70,6 @@ theorem canonical_nonexceptional_weighted (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
     _=_ := rfl
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

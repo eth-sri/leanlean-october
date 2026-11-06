@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.FixedTuples
 public import OAI.NumberTheory.DirichletL.Descent.Dyadic
@@ -11,29 +12,25 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
-def activeTupleDyad (tuples : Finset (σ→Ideal Eis)) (H : ℝ)
-    (i : Fin (columnDyadicLength H+1)) : Finset (σ→Ideal Eis) :=
+def activeTupleDyad (tuples : Finset (σ→Ideal ActualEisensteinCubic.O)) (H )
+    (i : Fin (columnDyadicLength H+1))  :=
   tuples.filter fun p => divisorDyadicLabel H (slotTupleProduct p)=i
 
 omit [DecidableEq σ] in
-lemma activeTupleDyad_bounds (tuples : Finset (σ→Ideal Eis)) (H : ℝ)
+lemma activeTupleDyad_bounds (tuples : Finset (σ→Ideal ActualEisensteinCubic.O)) (H : ℝ)
     (hn : ∀ p∈tuples,1≤(Ideal.absNorm (slotTupleProduct p):ℝ) ∧ (Ideal.absNorm (slotTupleProduct p):ℝ)≤H)
-    (i : Fin (columnDyadicLength H+1)) (p : σ→Ideal Eis) (hp : p∈activeTupleDyad tuples H i) :
+    (i : Fin (columnDyadicLength H+1)) (p : σ→Ideal ActualEisensteinCubic.O) (hp : p∈activeTupleDyad tuples H i) :
     divisorDyadicScale i.val≤(Ideal.absNorm (slotTupleProduct p):ℝ) ∧
       (Ideal.absNorm (slotTupleProduct p):ℝ)≤2*divisorDyadicScale i.val := by
   obtain ⟨hpt,he⟩ := Finset.mem_filter.mp hp
   have hh := divisorDyadicLabel_bounds H (slotTupleProduct p) (hn p hpt).1 (hn p hpt).2
-  rw [he] at hh
-  constructor
-  · exact max_le (hn p hpt).1 hh.1.le
-  · have ht : (2:ℝ)^i.val/2≤divisorDyadicScale i.val := le_max_right _ _
-    linarith [hh.2]
+  grind [divisorDyadicScale]
 
 omit [DecidableEq σ] in
-lemma activeTupleDyad_scale_le (tuples : Finset (σ→Ideal Eis)) (H : ℝ)
+lemma activeTupleDyad_scale_le (tuples : Finset (σ→Ideal ActualEisensteinCubic.O)) (H : ℝ)
     (hn : ∀ p∈tuples,1≤(Ideal.absNorm (slotTupleProduct p):ℝ) ∧ (Ideal.absNorm (slotTupleProduct p):ℝ)≤H)
     (i : Fin (columnDyadicLength H+1)) (hi : (activeTupleDyad tuples H i).Nonempty) :
     divisorDyadicScale i.val≤H := by
@@ -41,9 +38,9 @@ lemma activeTupleDyad_scale_le (tuples : Finset (σ→Ideal Eis)) (H : ℝ)
   exact (activeTupleDyad_bounds tuples H hn i p hp).1.trans (hn p (Finset.mem_filter.mp hp).1).2
 
 omit [DecidableEq σ] in
-lemma slotTupleProduct_norm_bound (L : σ→Finset (Ideal Eis)) (H : σ→ℝ)
+lemma slotTupleProduct_norm_bound (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (H : σ→ℝ)
     (hzero : ∀ i,∀ P∈L i,P≠0) (hH : ∀ i,∀ P∈L i,(Ideal.absNorm P:ℝ)≤H i)
-    (p : σ→Ideal Eis) (hp : ∀ i,p i∈L i) :
+    (p : σ→Ideal ActualEisensteinCubic.O) (hp : ∀ i,p i∈L i) :
     1≤(Ideal.absNorm (slotTupleProduct p):ℝ) ∧ (Ideal.absNorm (slotTupleProduct p):ℝ)≤∏ i,H i := by
   have hn : slotTupleProduct p≠0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hzero i _ (hp i))
   refine ⟨QuadraticMainBoundary.norm_one_le hn,?_⟩

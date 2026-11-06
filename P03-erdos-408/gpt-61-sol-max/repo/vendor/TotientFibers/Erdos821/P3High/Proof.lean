@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3High.Assignments
 public import Erdos821.S2Gpar.GhostAnalyticParameters
@@ -28,7 +29,7 @@ open Erdos821.Blueprint.Graph hiding BirthAddress EdgeChoice GhostChoice MemoryH
 open Erdos821.S2Core Erdos821.P3Lowrank Erdos821.S2High
 
 /-- The scalar absorption into `L ^ (Ch * (N + 1))`. -/
-theorem scalar_absorb (ℓ CG Cv Ca IBM X : ℝ) (N : ℕ) (hℓ : 2 ≤ ℓ) (hCG : 0 ≤ CG)
+theorem scalar_absorb (ℓ CG Cv Ca IBM X : ℝ)  N  (hℓ : 2 ≤ ℓ) (hCG : 0 ≤ CG)
     (hCGle : CG ≤ ℓ ^ Cv) (hIBM0 : 0 ≤ IBM) (hIBM : IBM ≤ 2) (hX : 0 ≤ X) :
     CG ^ (N + 1) * (ℓ ^ Ca) ^ N * IBM * X ≤
       ℓ ^ ((Cv + max Ca 0 + 1) * ((N + 1 : ℕ) : ℝ)) * X := by
@@ -56,11 +57,10 @@ theorem scalar_absorb (ℓ CG Cv Ca IBM X : ℝ) (N : ℕ) (hℓ : 2 ≤ ℓ) (h
   have hB0 : 0 ≤ (ℓ ^ Ca) ^ N := pow_nonneg (Real.rpow_nonneg hℓ0.le _) _
   calc CG ^ (N + 1) * (ℓ ^ Ca) ^ N * IBM
       ≤ (ℓ ^ Cv) ^ (N + 1) * (ℓ ^ (max Ca 0)) ^ (N + 1) * ℓ ^ (N + 1) := by
-        apply mul_le_mul (mul_le_mul h1 h2 hB0 hA0) h3 hIBM0
-        exact mul_nonneg hA0 (pow_nonneg (Real.rpow_nonneg hℓ0.le _) _)
+        bound
 
 /-- The high-rank task, given the empty-boundary mass estimate. -/
-theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
+theorem highRank_of_boundary  F   r 
     (hBd : EmptyBoundaryMassTask) : HighRankMemoryTask F r := by
   intro hGR hEA m C₁
   obtain ⟨Cv, hCv0, xG, hxG⟩ := Erdos821.S2Gpar.GhostAnalyticParametersTask_proof F r
@@ -87,10 +87,8 @@ theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
   obtain ⟨hN, h2, hL2⟩ := hx₁ x hx1'
   have hL2' : (2 : ℝ) ≤ L x := hL2
   set E : ℝ := Real.exp ((L x) ^ F.c) with hEdef
-  have hE0 : 0 < E := Real.exp_pos _
+  
   have hcut : ((N x : ℕ) + 1 : ℝ) ≤ E / 2 := by
-    have : ((N x : ℕ) : ℝ) + 1 ≤ (1 / 2) * Real.exp ((L x) ^ F.c) := hN
-    rw [hEdef]
     linarith
   have h1E : (1 : ℝ) ≤ F.vMin / (4 * (J : ℝ) + 4) * E := by
     have h2' := h2

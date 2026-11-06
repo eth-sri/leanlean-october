@@ -10,21 +10,24 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 variable {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-lemma finite_weighted_truncation {α β : Type*} [Fintype α]
-    (f : α→β→ℂ) (w : α→ℂ) (J : Finset β)
+section
+variable {α β : Type*} [Fintype α] (f : α→β→ℂ) (w : α→ℂ) (J : Finset β)
+
+lemma finite_weighted_truncation    
+         
     (hf : ∀ p, Summable (f p)) :
     (∑' i,∑ p,w p*f p i)-(∑ i∈J,∑ p,w p*f p i)=
       ∑ p,w p*((∑' i,f p i)-∑ i∈J,f p i) := by
   rw [Summable.tsum_finsetSum (fun p _ => (hf p).mul_left (w p)),Finset.sum_comm]
   simp only [tsum_mul_left,←Finset.mul_sum,mul_sub,Finset.sum_sub_distrib]
 
-lemma finite_weighted_truncation_norm {α β : Type*} [Fintype α]
-    (f : α→β→ℂ) (w : α→ℂ) (J : Finset β) (E : ℝ)
+lemma finite_weighted_truncation_norm    
+           E 
     (hf : ∀ p, Summable (f p)) (hw : ∀ p,‖w p‖≤1)
     (he : ∀ p, ‖(∑' i,f p i)-∑ i∈J,f p i‖≤E) :
     ‖(∑' i,∑ p,w p*f p i)-(∑ i∈J,∑ p,w p*f p i)‖≤Fintype.card α*E := by
@@ -38,8 +41,10 @@ lemma finite_weighted_truncation_norm {α β : Type*} [Fintype α]
       exact (mul_le_mul_of_nonneg_right (hw p) (norm_nonneg _)).trans (by simpa using he p)
     _ = _ := by simp
 
+end
+
 theorem original_family_row_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
     ∃ (degree : ℕ) (C : ℝ), 0<C ∧
     ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ]
       (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
@@ -108,7 +113,7 @@ theorem original_family_row_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
   apply mul_le_mul_of_nonneg_right
   · exact_mod_cast (Fintype.card_subtype_le (fun P : Pset => IsCoprime K P.val)).trans_eq (Fintype.card_coe Pset)
   · positivity
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

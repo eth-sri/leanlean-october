@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalDyadicCount
 public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstTailScale
@@ -8,17 +9,17 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicCount
 open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale
 open CenteredMomentCanonicalFirst CenteredMomentSectorLocalization
 open CenteredMomentSourceInputFirstTailUniform
-local notation "O"=>ActualEisensteinCubic.O
 
-lemma local_frequency_radius_cap (I J:Ideal O)(E:Finset (CommonIndex I J))
-    (K V Z B ξ:ℝ)(hK:0<K)(hV:0≤V)(hZ:1≤Z)
+
+lemma local_frequency_radius_cap (I J:Ideal ActualEisensteinCubic.O)(E:Finset (CommonIndex I J))
+     K V Z B ξ (hK:0<K)(hV:0≤V)(hZ:1≤Z)
     (hVcap:V≤Z^B)(hKcap:K⁻¹≤Z^B):
     frequencyRadius (firstNominalScale I J (∏P∈E,P.val) K V) Z ξ≤Z^(3*B+ξ/2) := by
   have hz:0<Z:=zero_lt_one.trans_le hZ
@@ -39,7 +40,7 @@ lemma local_frequency_radius_cap (I J:Ideal O)(E:Finset (CommonIndex I J))
 theorem original_local_blocks_subpower (B Hcap ξ ε:ℝ)
     (hB:0≤B)(hHcap:0≤Hcap)(hξ:0≤ξ)(hε:0<ε):
     ∃C₀:ℝ,0<C₀ ∧ ∀ᶠZ:ℝ in Filter.atTop,
-      ∀(C D:Ideal O),C≠0→D≠0→∀(E:Finset (CommonIndex C D))(K V H:ℝ),
+      ∀(C D:Ideal ActualEisensteinCubic.O),C≠0→D≠0→∀(E:Finset (CommonIndex C D))(K V H:ℝ),
       0<K→0≤V→0<H→V≤Z^B→K⁻¹≤Z^B→H≤Z^Hcap→
       (Fintype.card (Blocks (effectiveScale C D E K)
         (frequencyRadius (firstNominalScale C D (∏P∈E,P.val) K V) Z ξ)
@@ -56,8 +57,12 @@ theorem original_local_blocks_subpower (B Hcap ξ ε:ℝ)
 open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
 open CenteredMomentExceptionalAmplitudePair
 
-lemma input_radius_cap {ι:Type*}[Fintype ι][DecidableEq ι]
-    (hi:ι→ℝ)(b₁ b₂ B Z:ℝ)(s:Input ι)
+section
+variable {ι:Type*} [Fintype ι] [DecidableEq ι] (hi:ι→ℝ)
+include ι hi
+
+lemma input_radius_cap    
+     (b₁ b₂ B Z:ℝ)(s:Input ι)
     (hhi:∀i,|s.hi i|≤hi i)(hb₁:|s.b₁|≤b₁)(hb₂:|s.b₂|≤b₂)
     (hZ:1≤Z)(hfixed:(∏i,hi i)*b₁*b₂≤Z)
     (hV:volume s.toData≤Z^B):sourceRadius s≤Z^(B+1) := by
@@ -72,19 +77,18 @@ lemma input_radius_cap {ι:Type*}[Fintype ι][DecidableEq ι]
   have hp0:0≤∏i,hi i:=Finset.prod_nonneg (fun i _=>(abs_nonneg _).trans (hhi i))
   have hbound:|(∏i,s.hi i)*s.b₁*s.b₂|≤(∏i,hi i)*b₁*b₂:=by
     simp only [abs_mul]
-    exact mul_le_mul (mul_le_mul hprod hb₁ (abs_nonneg _) hp0) hb₂
-      (abs_nonneg _) (mul_nonneg hp0 hb₁0)
+    bound
   have hcoeff:(∏i,s.hi i)*s.b₁*s.b₂≤Z:=
     (le_abs_self _).trans (hbound.trans hfixed)
   calc
     _≤Z*Z^B:=mul_le_mul hcoeff hV hVol.le (zero_le_one.trans hZ)
     _=Z^(B+1):=by rw [Real.rpow_add_one (ne_of_gt (zero_lt_one.trans_le hZ))];ring
 
-theorem original_input_local_blocks_subpower {ι:Type*}[Fintype ι][DecidableEq ι]
-    (hi:ι→ℝ)(b₁ b₂ B ξ ε:ℝ)(hB:0≤B)(hξ:0≤ξ)(hε:0<ε):
+theorem original_input_local_blocks_subpower    
+     (b₁ b₂ B ξ ε:ℝ)(hB:0≤B)(hξ:0≤ξ)(hε:0<ε):
     ∃C₀:ℝ,0<C₀ ∧ ∀ᶠZ:ℝ in Filter.atTop,
       ∀s:Input ι,(∀i,|s.hi i|≤hi i)→|s.b₁|≤b₁→|s.b₂|≤b₂→0<sourceRadius s→
-      ∀(C D:Ideal O),C≠0→D≠0→∀(E:Finset (CommonIndex C D))(K:ℝ),
+      ∀(C D:Ideal ActualEisensteinCubic.O),C≠0→D≠0→∀(E:Finset (CommonIndex C D))(K:ℝ),
       0<K→volume s.toData≤Z^B→K⁻¹≤Z^B→
       (Fintype.card (Blocks (effectiveScale C D E K)
         (frequencyRadius (firstNominalScale C D (∏P∈E,P.val) K (volume s.toData)) Z ξ)
@@ -98,8 +102,10 @@ theorem original_input_local_blocks_subpower {ι:Type*}[Fintype ι][DecidableEq 
   exact hcount C D hC hD E K _ _ hK (volume_pos s.toData).le hH hV hKi
     (input_radius_cap hi b₁ b₂ B Z s hhi hb₁ hb₂ hZ hfixed hV)
 
+end
+
 end SevenEighths.CenteredMomentFirstPhysicalDyadicCount
 
-end
+
 
 end OAI

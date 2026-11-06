@@ -8,24 +8,24 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileScales
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform CompletedHeight
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
 variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem original_retained_joint_profile_bound (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
-    (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hsom : Function.support om⊆Set.Icc a b)
-    (Φ : 𝓢(ℝ,ℂ)) (K Y X theta : ℝ) (hX : 0<X)
-    (reference : Fin 9→ℝ) (href : ∀i,0<reference i) :
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)
+    (cutoff : CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→Finset ι→ℝ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
+    (om : 𝓢(ℝ,ℂ))  a b   ha   hsom 
+     Φ   K Y X theta  (hX : 0<X)
+     reference  (href : ∀i,0<reference i) :
     let source := firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y
     let W := fun y=>normTwistedSource om theta (y/X)
     let term := sourceSummand p hp hcop hg β cutoff Ψ m mark W Φ K
@@ -45,6 +45,6 @@ theorem original_retained_joint_profile_bound (pool : Finset ι) (Q : Finset (ι
     Φ K Y X theta hX k.1 k.2.1 (labelGate p k.2.2) (physicalScales X k.1 k.2.1) (physicalScales_pos X hX k.1 k.2.1) hp₁ hp₂]
 
 end SevenEighths.InverseMomentFirstOriginalProfile
-end
+
 
 end OAI

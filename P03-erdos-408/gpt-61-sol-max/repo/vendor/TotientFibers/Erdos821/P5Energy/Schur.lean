@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P5Energy.Mellin
 
@@ -15,24 +16,22 @@ open MeasureTheory
 namespace Erdos821.P5Energy
 open Blueprint.Analytic
 
-theorem inv_scale_le_omega (h : ℝ) (N : ℕ) (x : ℝ) :
+theorem inv_scale_le_omega  h   N   x  :
     ((1 + |h * x / (2 * Real.pi)|) ^ N)⁻¹ ≤ (2 * Real.pi) ^ N * omega h N x := by
   have hpi1 : 1 ≤ 2 * Real.pi := by linarith [Real.pi_gt_three]
   have hscale : (1 + |h * x|) ^ N ≤ (2 * Real.pi) ^ N * (1 + |h * x / (2 * Real.pi)|) ^ N := by
     rw [← mul_pow]
     apply pow_le_pow_left₀ (by positivity)
     have : |h * x| = 2 * Real.pi * |h * x / (2 * Real.pi)| := by
-      rw [abs_div, abs_of_pos (by positivity : (0:ℝ) < 2 * Real.pi)]
-      field_simp
-    rw [this]
-    nlinarith [abs_nonneg (h * x / (2 * Real.pi))]
+      grind
+    grind
   unfold omega
   have hp1 : 0 < (1 + |h * x|) ^ N := by positivity
   have hp2 : 0 < (1 + |h * x / (2 * Real.pi)|) ^ N := by positivity
   rw [← div_eq_mul_inv, inv_le_iff_one_le_mul₀ hp2, div_mul_eq_mul_div, le_div_iff₀ hp1]
   linarith
 
-theorem ampE_le_omega (N : ℕ) : ∃ B : ℝ, 0 < B ∧ ∀ h t u : ℝ, u ≤ 2 →
+theorem ampE_le_omega  N  : ∃ B : ℝ, 0 < B ∧ ∀ h t u : ℝ, u ≤ 2 →
     ‖ampE h t u‖ ≤ B * omega h N t := by
   obtain ⟨B, hB, hamp⟩ := amp_iter_bound_le_two N
   refine ⟨B * (2 * Real.pi) ^ N, by positivity, ?_⟩
@@ -48,16 +47,16 @@ theorem logCompactWeight_integrable : Integrable logCompactWeight :=
   logCompactWeight_contDiff.continuous.integrable_of_hasCompactSupport
     logCompactWeight_hasCompactSupport
 
-theorem logCutoff_nonneg (u : ℝ) : 0 ≤ logCutoff u := logCutoffBump.nonneg
+theorem logCutoff_nonneg  u  : 0 ≤ logCutoff u := logCutoffBump.nonneg
 
 /-- Integrand of the log-coordinate amplitude transform. -/
-def EE (h : ℝ) (P : ℝ → ℂ) (u t : ℝ) : ℂ := ampE h t u * P t
+def EE (h : ℝ) (P : ℝ → ℂ) (u t : ℝ)  := ampE h t u * P t
 
 /-- Weighted density in the Schur bound. -/
-def FF (h : ℝ) (N : ℕ) (P : ℝ → ℂ) (t : ℝ) : ℝ := omega h N t ^ 2 * ‖P t‖ ^ 2
+def FF (h : ℝ) (N : ℕ) (P : ℝ → ℂ) (t : ℝ)  := omega h N t ^ 2 * ‖P t‖ ^ 2
 
 /-- The weighted energy bound in log coordinates. -/
-theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
+theorem weighted_energy_bound  N  (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
     ∀ (h : ℝ), 0 < h → ∀ (P : ℝ → ℂ) (S : ℝ), Continuous P → (∀ t, ‖P t‖ ≤ S) →
       (∫ u : ℝ, logCutoff u * Real.exp (-u) * ‖∫ t : ℝ, ampE h t u * P t‖ ^ 2) ≤
         C * ∫ t : ℝ, omega h N t * ‖P t‖ ^ 2 := by
@@ -92,7 +91,7 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
       w u * (I u * conj (I u)) := by
     intro u
     rw [Complex.mul_conj, Complex.normSq_eq_norm_sq]
-    simp only [w, logCompactWeight, Complex.ofReal_mul, Complex.ofReal_pow, Complex.ofReal_exp]
+    simp_all [logCompactWeight]
   -- Step 2: the square as a double integral
   have hsq : ∀ u, I u * conj (I u) = ∫ p : ℝ × ℝ, E u p.1 * conj (E u p.2) := by
     intro u
@@ -110,12 +109,7 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
       exact (homega.mul_prod homega).const_mul _
     refine hmaj.mono' ?_ (Filter.Eventually.of_forall fun q => ?_)
     · apply Continuous.aestronglyMeasurable
-      simp only [f3]
-      have h1 : Continuous (fun q : ℝ × (ℝ × ℝ) => E q.1 q.2.1) :=
-        hEc.comp (f := fun q : ℝ × (ℝ × ℝ) => (q.1, q.2.1)) (by fun_prop)
-      have h2 : Continuous (fun q : ℝ × (ℝ × ℝ) => E q.1 q.2.2) :=
-        hEc.comp (f := fun q : ℝ × (ℝ × ℝ) => (q.1, q.2.2)) (by fun_prop)
-      exact (hwc.comp continuous_fst).mul (h1.mul (Complex.continuous_conj.comp h2))
+      fun_prop
     · simp only [Function.uncurry, f3, norm_mul, Complex.norm_conj]
       by_cases hw0 : w q.1 = 0
       · rw [hw0, norm_zero, zero_mul, zero_mul]
@@ -143,8 +137,7 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
     simp_rw [hkey, hsq]
     calc (∫ u, w u * ∫ p : ℝ × ℝ, E u p.1 * conj (E u p.2)) = ∫ u, ∫ p, f3 u p := by
           congr 1; funext u; rw [← integral_const_mul]
-      _ = ∫ p, ∫ u, f3 u p := by
-          exact integral_integral_swap hint3
+      _ = ∫ p, ∫ u, f3 u p := integral_integral_swap hint3
       _ = _ := by congr 1; funext p; exact hinner p
   -- Step 5: Schur majorant
   have hFint : Integrable F := by
@@ -196,8 +189,8 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
     rw [norm_mul, norm_mul, Complex.norm_conj]
     have hMp := hM h p.1 p.2
     have hk := kern_nonneg (p.1 - p.2)
-    have ha := mul_nonneg (norm_nonneg (P p.1)) (omega_nonneg h N p.1)
-    have hb := mul_nonneg (norm_nonneg (P p.2)) (omega_nonneg h N p.2)
+    
+    
     have hamgm : (‖P p.1‖ * omega h N p.1) * (‖P p.2‖ * omega h N p.2) ≤
         ((‖P p.1‖ * omega h N p.1) ^ 2 + (‖P p.2‖ * omega h N p.2) ^ 2) / 2 := by
       nlinarith [sq_nonneg (‖P p.1‖ * omega h N p.1 - ‖P p.2‖ * omega h N p.2)]

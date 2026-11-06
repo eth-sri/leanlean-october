@@ -7,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedSeparation
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
 open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 open CanonicalCubeSeparation JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
+
 
 theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
-    (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
     (Q : Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→₀ℕ))
-    (Ψ : O→*ℂ) (m f z : O) (W : ℝ→ℂ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m f z : ActualEisensteinCubic.O) (W : ℝ→ℂ)
     (a b : ℝ) (ha : 0<a) (hb : 0≤b) (hs : Function.support W⊆Set.Icc a b)
     (hW : ContDiff ℝ ∞ W) (V : 𝓢(ℝ,ℂ))
     (hV : ∀ u,|u|≤columnWindowRadius a b→V u=1)
@@ -26,8 +26,8 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
     (hn : ∀ v∈Q,B≤(Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v):ℝ))
     (hn' : ∀ v∈Q,(Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v):ℝ)≤Real.exp 1*B)
     (slots : Finset σ)
-    (lists : σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (weights : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
+     lists 
+     weights  :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
     letI : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
@@ -67,7 +67,7 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
   rw [hc']
   ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.PositiveLowBandSource
 public import OAI.NumberTheory.DirichletL.Energy.BandMonotonicity
@@ -9,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Energy.LowBandEmpty
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -21,9 +22,9 @@ open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
 open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyPositiveLowBandSource (PhysicalLowAt)
@@ -66,8 +67,7 @@ theorem actual_low_stages_from_physical
     ; ring
   have hprev:Cprevious≤Cfixed*(Cm+1):=by
     rw [heq]
-    have hh:0≤Cfixed*(Cphysical+1):=by positivity
-    linarith
+    bound
   have hold':PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z η₀ Q
       J (insert (0,0) S) (Cfixed*(Cm+1)):=
     positiveAt_transport (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z

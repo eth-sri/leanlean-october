@@ -43,7 +43,7 @@ open Filter Real
 /-- E4–E5: the composite sum and the proxy sum differ by `O(x L^{-1-c'})`,
 uniformly in `2 ≤ j ≤ J_c`, the admissible slots, coefficients `0 ≤ 𝔟 ≤ 1`,
 and cutoffs in the class. -/
-theorem eventually_compositeSum_sub_proxySum (h₁ : OneSidedTypeII) (q cw : ℝ) (hq : 0 < q)
+theorem eventually_compositeSum_sub_proxySum (h₁ : OneSidedTypeII)  q cw  (hq : 0 < q)
     (hq₁ : q < 1) (hcw : 0 < cw) (hcw₁ : cw ≤ (1 - q) ^ 2 / 3) :
     ∃ K₀ : ℕ, ∀ K : ℕ, K₀ ≤ K → ∀ (CN c Ch Cj κ CΦ : ℝ) (M : ℕ → ℝ), 0 < c → 1 < κ →
       ∃ C c' : ℝ, 0 < c' ∧ ∀ᶠ x : ℝ in atTop,

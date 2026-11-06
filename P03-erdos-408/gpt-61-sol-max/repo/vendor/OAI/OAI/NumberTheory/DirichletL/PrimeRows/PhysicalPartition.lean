@@ -12,20 +12,24 @@ open scoped Classical BigOperators
 open Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CompletedGauss CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
 
-def physicalRowValue {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+
+def physicalRowValue {K } (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (T : Fin K→Finset PrimeIdeal) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (u : FreeRow) : ℂ :=
+    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (u : FreeRow)  :=
   ∑P : (∀i,T i),(∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Yp i))*
     rowIntegral η S (calibrationForSet S hmax) (fun i=>primaryGenerator (P i).val.val) W0 W1 X Y Z u
 
-theorem physicalRowValue_summable {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
-    (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+section
+variable {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) (η : Character) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ) (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) (X Y Z L U : ℝ)
+
+include hT ha0 ha1 hW0 hW1 in
+theorem physicalRowValue_summable      
+         
+       
+           
+       
+      (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     Summable (physicalRowValue S hmax η T W Yp W0 W1 X Y Z) := by
   have hs (P : ∀i,T i) : Summable (fun u : FreeRow=>
       (∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Yp i))*
@@ -40,13 +44,14 @@ theorem physicalRowValue_summable {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P�
     | @insert P F hP ih => simpa only [Finset.sum_insert hP] using (hs P).add ih
   exact hh Finset.univ
 
-theorem canonical_physical_probe_partition {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
-    (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z L U : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (hL : 1≤L) (hLU : L≤U) :
+include hS hT ha0 ha1 hW0 hW1 in
+theorem canonical_physical_probe_partition  
+         
+         
+       
+           
+       
+      (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (hL : 1≤L) (hLU : L≤U) :
     compensatedPhysicalProbe η (calibrationForSet S hmax) W0 W1
       (fun i=>canonicalSlotSupport (T i)) W Yp X Y Z=
       (∑P : (∀i,T i),(∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Yp i))*
@@ -72,6 +77,8 @@ theorem canonical_physical_probe_partition {K : ℕ}
   congr 1
   · dsimp [f,physicalRowValue]
     simp only [rowIntegral_principal]
+
+end
 
 end SevenEighths.ProbeHighRowFamily
 

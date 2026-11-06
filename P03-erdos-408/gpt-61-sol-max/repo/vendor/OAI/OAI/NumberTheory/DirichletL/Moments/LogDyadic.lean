@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 public import OAI.NumberTheory.DirichletL.Moments.SecondWholeKernel
@@ -20,7 +21,7 @@ theorem logAnnulus_smooth : ContDiff ℝ ∞ logAnnulus :=
 
 theorem logAnnulus_support : Function.support logAnnulus ⊆ Set.Icc (-Real.log 4) 0 := by
   intro x hx
-  have hn : annulus (Real.exp x)≠0 := by simpa only [Function.mem_support,logAnnulus,ne_eq,Complex.ofReal_eq_zero] using hx
+  have hn : annulus (Real.exp x)≠0 := by simp_all [logAnnulus]
   have hlo : 1/4<Real.exp x := lt_of_not_ge (fun h=>hn (annulus_zero_low _ h))
   have hhi : Real.exp x<1 := lt_of_not_ge (fun h=>hn (annulus_zero_high _ h))
   constructor
@@ -31,19 +32,17 @@ theorem logAnnulus_support : Function.support logAnnulus ⊆ Set.Icc (-Real.log 
   · exact (Real.exp_lt_one_iff.mp hhi).le
 
 theorem logAnnulus_compact : HasCompactSupport logAnnulus :=
-  HasCompactSupport.intro (isCompact_Icc) (fun x hx=>by
-    by_contra hn
-    exact hx (logAnnulus_support hn))
+  HasCompactSupport.intro CompactIccSpace.isCompact_Icc fun x hx => Decidable.byContradiction fun hn => hx (OAI.SevenEighths.CenteredMomentLogDyadic.logAnnulus_support hn)
 
-theorem logAnnulus_norm (x : ℝ) : ‖logAnnulus x‖≤1 := by
+theorem logAnnulus_norm  x  : ‖logAnnulus x‖≤1 := by
   rw [logAnnulus,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (annulus_bounds _).1]
   exact (annulus_bounds _).2
 
-theorem logAnnulus_log (q H : ℝ) (hq : 0<q) (hH : 0<H) :
+theorem logAnnulus_log  q H  (hq : 0<q) (hH : 0<H) :
     logAnnulus (Real.log (q/H))=(annulus (q/H):ℂ) := by
   rw [logAnnulus,Real.exp_log (div_pos hq hH)]
 
-theorem actual_dyadic_log_window (n : ℤ) (q : ℝ) (hq : 0<q) :
+theorem actual_dyadic_log_window  n   q  (hq : 0<q) :
     (dyadicWeight n q:ℂ)=logAnnulus (Real.log (q/dyadicScale n)) := by
   rw [logAnnulus_log q _ hq (dyadicScale_pos n)];rfl
 
@@ -53,9 +52,7 @@ theorem actual_product_windows (k H a b : ℝ)
       dyadicWeight (n 2) a*dyadicWeight (n 3) b:ℝ):ℂ)=
       windows (fun _=>logAnnulus) k H a b
         (dyadicScale (n 0)) (dyadicScale (n 1)) (dyadicScale (n 2)) (dyadicScale (n 3)) := by
-  simp only [Complex.ofReal_mul,actual_dyadic_log_window (n 0) k hk,
-    actual_dyadic_log_window (n 1) H hH,actual_dyadic_log_window (n 2) a ha,
-    actual_dyadic_log_window (n 3) b hb,windows]
+  simp_all [actual_dyadic_log_window, windows]
 
 end SevenEighths.CenteredMomentLogDyadic
 

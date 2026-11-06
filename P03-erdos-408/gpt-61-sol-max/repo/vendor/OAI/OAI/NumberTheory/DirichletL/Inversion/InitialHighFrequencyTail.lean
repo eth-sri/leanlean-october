@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailFiber
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailAggregate
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailAggr
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
@@ -15,7 +16,7 @@ open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithm
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 local notation "O"=>ActualEisensteinCubic.O
 
-theorem original_physical_tail (A : ℕ) :
+theorem original_physical_tail  A  :
     ∃ (s : Finset (ℕ×ℕ)) (C₀ : ℝ), 0<C₀ ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
       (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -47,9 +48,9 @@ theorem original_physical_tail (A : ℕ) :
     Z D m L T Γ B₁ B₂ hZ hL hT hΓ hB₁ hB₂ hW₁ hW₂ pool S w hvalid hw hpool hnorm hleft hright htail
   let R : ℝ := Z^(m-D)*B₁*B₂*(C₀*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ)/
     ((min 1 (Z^m/L^3))^2*(1+T)^A)
-  have hR : 0≤R := by dsimp [R]; positivity
+  
   let B : ℝ := Γ*(128*L)^2*R
-  have hB : 0≤B := by dsimp [B]; positivity
+  
   have hkey (k) (hk : k∈sourceKeys S) (ρ : SecondRayIndex) :
       ‖∑h∈sourceFrequencies S k,
         w (sourcePoint k h)*physicalTerm p hp hcop hg Ψ j (primeMark slots lists a)
@@ -87,6 +88,6 @@ theorem original_physical_tail (A : ℕ) :
 
 end SevenEighths.InverseInitialHighFrequencyTail
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+import Batteries.Tactic.Alias
 
 public import Erdos408.OneSided.Moment.Chain
 public import Erdos408.OneSided.Moment.Edge
@@ -42,7 +43,7 @@ variable (q A₀ x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) (B : ℕ)
 
 /-- The phased ghost coefficient: the ghost coefficient times `∏_k ψ_k(k-th batch prime)`. -/
 def phasedGhostCoef (N j : ℕ) (ψ : Fin B → Option ℕ → ℂ) (s : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d) : ℂ :=
+    (c : GhostChoice x d)  :=
   chainGhostCoef q x d Y d₀ u v r B N j s c * ∏ k : Fin B, ψ k (batchPrimes x d c.2)[k.1]?
 
 /-- The phased ghost `𝒢^ψ_j`. -/
@@ -54,7 +55,7 @@ def phasedGhost (N j : ℕ) (ψ : Fin B → Option ℕ → ℂ) :
 /-- The phased edge coefficient: the edge coefficient times `∏_i ψ_i(fresh label of group i)`,
 with `none` for a promoted label. -/
 def phasedEdgeCoef (N : ℕ) (ψ : Fin K → Option ℕ → ℂ) (s : ChainState x d Y d₀ u v r B)
-    (c : EdgeChoice x d Y d₀ u v r) : ℂ :=
+    (c : EdgeChoice x d Y d₀ u v r)  :=
   chainEdgeCoef q A₀ x d Y d₀ u v r B N s c *
     ∏ i, ψ i (if (c.2.2.2.1 i).2 then none else some (c.2.2.2.1 i).1)
 
@@ -66,8 +67,8 @@ def phasedEdge (N : ℕ) (ψ : Fin K → Option ℕ → ℂ) :
 
 /-- `𝒢^ψ₀ ℰ^ψ 𝒢^ψ₁ ⋯ ℰ^ψ 𝒢^ψ_N` applied to `f`, each operation with the phases of its own
 addresses. -/
-def phasedProduct (N : ℕ) (ψ : BirthAddr (K := K) x B N → Option ℕ → ℂ)
-    (f : ChainState x d Y d₀ u v r B → ℂ) : ChainState x d Y d₀ u v r B → ℂ :=
+def phasedProduct (N ) (ψ : BirthAddr (K := K) x B N → Option ℕ → ℂ)
+    (f : ChainState x d Y d₀ u v r B → ℂ)  :=
   (List.finRange N).foldr
     (fun (j : Fin N) g =>
       phasedGhost q x d Y d₀ u v r B N j (fun k => ψ (.inr (.inr (j.castSucc, k))))
@@ -77,8 +78,8 @@ def phasedProduct (N : ℕ) (ψ : BirthAddr (K := K) x B N → Option ℕ → �
 /-- The phased history expansion:
 `𝒢^ψ₀ ℰ^ψ ⋯ 𝒢^ψ_N f (s) = ∑_h w(s, h) ∏_{a not initial} ψ_a(β_a(s, h)) f(end(s, h))`. The
 initial addresses carry no operation; their phases multiply the initial vector. -/
-theorem phasedProduct_eq_sum_history (N : ℕ) (ψ : BirthAddr (K := K) x B N → Option ℕ → ℂ)
-    (f : ChainState x d Y d₀ u v r B → ℂ) (s : ChainState x d Y d₀ u v r B) :
+theorem phasedProduct_eq_sum_history  N   ψ 
+     f   s  :
     phasedProduct q A₀ x d Y d₀ u v r B N ψ f s =
       ∑ h ∈ histories x d Y d₀ u v r B N, chainWeight q A₀ s h *
         (∏ a : (Fin N × Fin K) ⊕ (Fin (N + 1) × Fin B), ψ (.inr a) (births s h (.inr a))) *
@@ -96,13 +97,13 @@ end Phased
 
 /-- M4, the ghost: for `B ≤ L³`, every phased ghost with multipliers of modulus at most one
 has norm at most `C₀` for the chain measure. -/
-theorem exists_phasedGhost_normLe {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
+theorem exists_phasedGhost_normLe  {q C CX alo ahi g}  (hq : 0 < q) (hq₁ : q < 1)
     (halo : 1 / 10 < alo) :
     ∃ C₀ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
       ∀ (Y d₀ u v r : ℝ) (B N j : ℕ), (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
       ∀ ψ : Fin B → Option ℕ → ℂ, (∀ k o, ‖ψ k o‖ ≤ 1) →
-        NormLe (fun s => chainMeasure q x d Y d₀ u v r B N s)
-          (fun s => chainMeasure q x d Y d₀ u v r B N s)
+        NormLe (chainMeasure q x d Y d₀ u v r B N)
+          (chainMeasure q x d Y d₀ u v r B N)
           (phasedGhost q x d Y d₀ u v r B N j ψ) C₀ := by
   obtain ⟨C₀, hC₀⟩ := exists_ghostChoiceOp_normLe (K := K) (C := C) (CX := CX) (ahi := ahi)
     (g := g) hq hq₁ halo
@@ -117,15 +118,15 @@ theorem exists_phasedGhost_normLe {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ :
 
 /-- M4, the crude edge: for `B ≤ L³`, every phased edge with multipliers of modulus at most
 one has norm at most `L^{C_e}` for the chain measure, uniformly in the root box. -/
-theorem exists_phasedEdge_normLe {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q) (hq₁ : q < 1)
+theorem exists_phasedEdge_normLe  {q C CX alo ahi g A₀}  (hq : 0 < q) (hq₁ : q < 1)
     (halo : 1 / 10 < alo) (hg : 0 < g) :
     ∃ Ce : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
         d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
       ∀ ψ : Fin K → Option ℕ → ℂ, (∀ i o, ‖ψ i o‖ ≤ 1) →
-        NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
-          (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
+        NormLe (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
+          (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
           (phasedEdge q A₀ x d (2 ^ j) (2 ^ k) u v r B N ψ) (Real.log x ^ Ce) := by
   obtain ⟨Ce, hCe⟩ := exists_edgeChoiceOp_normLe (K := K) (C := C) (CX := CX) (ahi := ahi)
     A₀ hq hq₁ halo hg
@@ -141,36 +142,11 @@ theorem exists_phasedEdge_normLe {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q) (hq�
 
 /-- M9, the signed edge: for `K ≥ K₀` and `B ≤ L³`, the edge has norm at most `L^{-G}` for the
 chain measure, uniformly in the root box. -/
-theorem eventually_chainEdge_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5)
-    (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
-      ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
-        NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
-          (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
-          (chainEdge q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N)
-          (Real.log x ^ (-edgePrec Dstar C)) :=
-  eventually_chainEdge_normLe_of_parts hq hq₁ hC hD hCX halo hahi hK hg
+alias eventually_chainEdge_normLe := _root_.Erdos408.OneSided.eventually_chainEdge_normLe_of_parts
 
 open scoped Classical in
 /-- M10, high rank: for `B ≤ L³`, the absolute history sum constrained by a block system of
 rank `r` is at most `L^{C₁(N+1)} (C₁ exp(-L^{α₋}))^r`. -/
-theorem exists_realized_history_le {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (halo : 1 / 10 < alo) :
-    ∃ C₁ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
-      ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
-      ∀ 𝒞 ∈ blockSystems (BirthAddr (K := K) x B N),
-        ∑ s, chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s *
-            ‖chainInit x d (2 ^ j) (2 ^ k) u v r B s‖ *
-          ∑ h ∈ histories x d (2 ^ j) (2 ^ k) u v r B N,
-            ‖chainWeight q A₀ s h‖ * ‖chainInit x d (2 ^ j) (2 ^ k) u v r B (chainEnd s h)‖ *
-              ∏ C ∈ 𝒞, (if BlockRealized (births s h) C then 1 else 0) ≤
-          Real.log x ^ (C₁ * (N + 1)) *
-            (C₁ * Real.exp (-Real.log x ^ alo)) ^ blockRank 𝒞 :=
-  exists_realized_history_le_aux hq hq₁ halo
+alias exists_realized_history_le := _root_.Erdos408.OneSided.exists_realized_history_le_aux
 
 end Erdos408.OneSided

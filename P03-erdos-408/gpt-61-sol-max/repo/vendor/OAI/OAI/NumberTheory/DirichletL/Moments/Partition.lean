@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.ProductCRT
 
@@ -15,7 +16,7 @@ section Domain
 variable {A : Type*} [CommRing A]
 theorem fullModulusCorrelation_swap (u v h : A)
     [Fintype (Residue u)] [Fintype (Residue v)]
-    (χ : MulChar (Residue u) ℂ) (ψ : MulChar (Residue v) ℂ) :
+     χ   ψ  :
     fullModulusCorrelation u v χ ψ h = star (fullModulusCorrelation v u ψ χ (-h)) := by
   simp only [fullModulusCorrelation, fullCorrelation, star_sum]
   rw [Finset.sum_comm]
@@ -31,7 +32,7 @@ theorem fullModulusCorrelation_swap (u v h : A)
   simp only [scaledResidue_congruence]
   by_cases hc : u * v ∣ v * x - u * y - h
   · simp only [hc, he.mp hc, ite_true, star_mul, star_star]
-  · simp only [hc, (not_congr he).mp hc, ite_false, star_zero]
+  simp_all
 end Domain
 
 open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve
@@ -40,8 +41,8 @@ open CenteredMomentProductCRT
 open ConcretePrimeRowBridge hiding O
 local notation "O" => ActualEisensteinCubic.O
 
-theorem actualCorrelation_norm_swap (u v : O)
-    (hu : Supported (Ideal.span {u})) (hv : Supported (Ideal.span {v})) (h : O) :
+theorem actualCorrelation_norm_swap  u v 
+     hu   hv   h  :
     ‖actualCorrelation u v hu hv h‖ = ‖actualCorrelation v u hv hu (-h)‖ := by
   let := finite_quotient_span (supported_element_ne_zero u hu)
   let := finite_quotient_span (supported_element_ne_zero v hv)
@@ -50,27 +51,31 @@ theorem actualCorrelation_norm_swap (u v : O)
   change ‖fullModulusCorrelation u v _ _ h‖ = ‖fullModulusCorrelation v u _ _ (-h)‖
   rw [fullModulusCorrelation_swap, norm_star]
 
-theorem prime_power_norm_le_min (p : O) [(Ideal.span {p}).IsMaximal]
-    (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    {c d : ℕ} (hc : 1 ≤ c) (hd : 1 ≤ d) (k : O) :
+section
+variable (p : O) [(Ideal.span {p}).IsMaximal] (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p}) (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2) {c d : ℕ} (hc : 1 ≤ c) (hd : 1 ≤ d) (k : O)
+include p hp hg hchar c d hc hd k
+
+theorem prime_power_norm_le_min    
+       
+     
+            :
     ‖actualCorrelation (p ^ c) (p ^ d) (supported_power p hp c) (supported_power p hp d)
       (p ^ min c d * k)‖ ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ) ^ min c d := by
   rcases lt_trichotomy c d with hcd | heq | hdc
   · have he : c + (d - c) = d := Nat.add_sub_of_le hcd.le
     have h := unequal_prime_power_norm_le p hp hg hc (show 1 ≤ d - c by omega) (-k)
     rw [actualCorrelation_norm_swap]
-    simpa only [← pow_add, he, min_eq_left hcd.le, mul_neg] using h
+    grind
   · subst d
     simpa only [min_self] using equal_prime_power_norm_le p hp hg hchar hc k
   · have he : d + (c - d) = c := Nat.add_sub_of_le hdc.le
     have h := unequal_prime_power_norm_le p hp hg hd (show 1 ≤ c - d by omega) k
-    simpa only [← pow_add, he, min_eq_right hdc.le] using h
+    grind
 
-theorem prime_power_partition_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
-    (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    {c d : ℕ} (hc : 1 ≤ c) (hd : 1 ≤ d) (k : O) (save : Prop) [Decidable save]
+theorem prime_power_partition_norm_le    
+       
+     
+             save  [Decidable save]
     (hsave : save → c = d ∧ ¬ 6 ∣ c ∧ ¬ p ∣ k) :
     ‖actualCorrelation (p ^ c) (p ^ d) (supported_power p hp c) (supported_power p hp d)
       (p ^ min c d * k)‖ ≤
@@ -81,7 +86,9 @@ theorem prime_power_partition_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
     exact (equal_prime_power_unit_norm p hp hg hchar hc hc6 k hk).le
   · simpa only [ite_eq_right hs, Nat.sub_zero] using prime_power_norm_le_min p hp hg hchar hc hd k
 
-section Product
+end
+
+
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem supported_product (a : ι → O) (ha : ∀ i, Supported (Ideal.span {a i})) :
@@ -101,23 +108,31 @@ theorem supported_product (a : ι → O) (ha : ∀ i, Supported (Ideal.span {a i
       exact supported_mul_elements _ _ (ha i) ih
   exact hs Finset.univ
 
-def partitionNormalizer (p : ι → O) (c d : ι → ℕ) (U : Finset ι) : ℝ :=
+def partitionNormalizer (p : ι → O) (c d : ι → ℕ) (U : Finset ι)  :=
   ∏ i, (Ideal.absNorm (Ideal.span {p i}) : ℝ) ^ (min (c i) (d i) - if i ∈ U then 1 else 0)
 
-def dividedFrequency (p : ι → O) (c d : ι → ℕ) (w : O) (i : ι) : O :=
+def dividedFrequency (p : ι → O) (c d : ι → ℕ) (w : O) (i : ι)  :=
   cofactor (fun j => p j ^ min (c j) (d j)) i * w
 
-theorem commonFrequency_factor (p : ι → O) (c d : ι → ℕ) (w : O) (i : ι) :
+section
+variable (p : ι → O)
+include p
+
+theorem commonFrequency_factor    c d   w   i  :
     (∏ j, p j ^ min (c j) (d j)) * w = p i ^ min (c i) (d i) * dividedFrequency p c d w i := by
   rw [dividedFrequency, ← mul_assoc, factor_mul_cofactor (fun j => p j ^ min (c j) (d j)) i]
 
-theorem actual_partition_norm_le (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, Supported (Ideal.span {p i}))
-    (hg : ∀ i, goodLambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hcop : Pairwise (Function.onFun IsCoprime p))
-    (c d : ι → ℕ) (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i)
-    (U : Finset ι) (w : O)
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal] (hp : ∀ i, Supported (Ideal.span {p i})) (hg : ∀ i, goodLambda ∉ Ideal.span {p i}) (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (hcop : Pairwise (Function.onFun IsCoprime p)) (c d : ι → ℕ) (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i) (U : Finset ι)
+include hp hg hchar hcop c d hc hd U
+
+theorem actual_partition_norm_le    
+     
+     
+     
+     
+         
+       w 
     (hU : ∀ i ∈ U, c i = d i ∧ ¬ 6 ∣ c i ∧ ¬ p i ∣ dividedFrequency p c d w i) :
     ‖actualCorrelation (∏ i, p i ^ c i) (∏ i, p i ^ d i)
       (supported_product _ (fun i => supported_power (p i) (hp i) (c i)))
@@ -148,14 +163,14 @@ theorem actual_partition_norm_le (p : ι → O) [∀ i, (Ideal.span {p i}).IsMax
   exact prime_power_partition_norm_le (p i) (hp i) (hg i) (hchar i) (hc i) (hd i)
     (dividedFrequency p c d w i) (i ∈ U) (hU i)
 
-theorem normalized_partition_norm_le_one (p : ι → O)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, Supported (Ideal.span {p i}))
-    (hg : ∀ i, goodLambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hcop : Pairwise (Function.onFun IsCoprime p))
-    (c d : ι → ℕ) (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i)
-    (U : Finset ι) (part : O → Prop) (w : O)
+theorem normalized_partition_norm_le_one  
+     
+     
+     
+     
+     
+         
+      (part : O → Prop)  w 
     (hpart : part w → ∀ i ∈ U, c i = d i ∧ ¬ 6 ∣ c i ∧ ¬ p i ∣ dividedFrequency p c d w i) :
     ‖if part w then
       actualCorrelation (∏ i, p i ^ c i) (∏ i, p i ^ d i)
@@ -175,7 +190,11 @@ theorem normalized_partition_norm_le_one (p : ι → O)
     exact (div_le_one hN).mpr (actual_partition_norm_le p hp hg hchar hcop c d hc hd U w (hpart hw))
   · simp only [ite_eq_right hw, norm_zero, zero_le_one]
 
-end Product
+end
+
+end
+
+
 
 end SevenEighths.CenteredMomentPartition
 

@@ -14,7 +14,7 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 variable {Nlevel : Eis}
@@ -28,7 +28,7 @@ theorem low_fixed_member_geometry_uniform
     (hNlevel : ∀ i,(9:Eis)*c₀ i∣Nlevel)
     (hbase : ∀ i,if mode i then ConcretePrimeRowBridge.goodLambda^2∣a i-1 else ConcretePrimeRowBridge.goodLambda^2∣c₀ i-1)
     (hac : ∀ i,IsCoprime (a i) (c₀ i))
-    (Q : Ideal Eis) (hQ : Q≠0) (Ck η : ℝ) (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) :
+     Q  (hQ : Q≠0)  Ck η  (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) :
     ∃ (degree : ℕ) (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
     ∀ i : γ,
       let a := a i
@@ -144,7 +144,7 @@ theorem low_fixed_member_geometry_uniform
   apply (hD θ r aw hqk hqp hKn hPn hr haw).trans
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact Real.rpow_le_rpow_of_exponent_le hz.le (by linarith)
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

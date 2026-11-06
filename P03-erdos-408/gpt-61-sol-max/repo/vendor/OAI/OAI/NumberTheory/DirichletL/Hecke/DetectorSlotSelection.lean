@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountCrossing
 
@@ -6,15 +7,23 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountCrossing
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorSlotSelection
 
-theorem whole_slots {α : Type*} (s : Finset α) (w g : α→ℝ) (G mesh : ℝ)
-    (hG : 0≤G) (hmesh : 0≤mesh)
-    (hw : ∀ i∈s, 0≤w i) (hwm : ∀ i∈s, w i≤mesh)
+section
+variable {α : Type*} (s : Finset α) (w g : α→ℝ)
+include α s w g
+
+section
+variable (G mesh : ℝ) (hG : 0≤G) (hmesh : 0≤mesh) (hw : ∀ i∈s, 0≤w i) (hwm : ∀ i∈s, w i≤mesh)
+include G mesh hG hmesh hw hwm
+
+theorem whole_slots        
+       
+       
     (hg : ∀ i∈s, 0≤g i) (hgG : ∀ i∈s, g i≤G)
-    (q z : ℝ) (hq : 0≤q) (hqG : q≤G) (hz : 0≤z)
+     q z  (hq : 0≤q) (hqG : q≤G) (hz : 0≤z)
     (hzs : z≤∑ i∈s, w i) (hmean : q*(∑ i∈s, w i)≤∑ i∈s, w i*g i) :
     ∃ T : Finset α, T⊆s ∧ (∑ i∈T, w i)≤z ∧ q*z-G*mesh≤∑ i∈T, w i*g i := by
   classical
@@ -71,21 +80,19 @@ theorem whole_slots {α : Type*} (s : Finset α) (w g : α→ℝ) (G mesh : ℝ)
           · have hqq' : 0≤q-q' := by linarith
             have h1 := mul_le_mul_of_nonneg_left hzs hqq'
             rw [hsum] at h1
-            change (q-q')*z≤(q-q')*(w a+W) at h1
-            nlinarith
+            grind
         linarith
     · have he : s=∅ := Finset.not_nonempty_iff_eq_empty.mp hs
       subst s
-      have hz0 : z=0 := by simpa using le_antisymm hzs hz
+      
       refine ⟨∅,Finset.empty_subset _,by simpa using hz,?_⟩
-      simp only [Finset.sum_empty,hz0,mul_zero,zero_sub]
-      exact neg_nonpos.mpr (mul_nonneg hG hmesh)
+      nlinarith
 
-theorem whole_positive_slots {α : Type*} (s : Finset α) (w g : α→ℝ) (G mesh : ℝ)
-    (hG : 0≤G) (hmesh : 0≤mesh)
-    (hw : ∀ i∈s, 0≤w i) (hwm : ∀ i∈s, w i≤mesh)
+theorem whole_positive_slots        
+       
+       
     (hgG : ∀ i∈s, g i≤G)
-    (q z : ℝ) (hq : 0≤q) (hqG : q≤G) (hz : 0≤z)
+     q z  (hq : 0≤q) (hqG : q≤G) (hz : 0≤z)
     (hzs : z≤∑ i∈s, w i) (hmean : q*(∑ i∈s, w i)≤∑ i∈s, w i*max (g i) 0) :
     ∃ T : Finset α, T⊆s ∧ (∀ i∈T, 0<g i) ∧
       (∑ i∈T, w i)≤z ∧ q*z-G*mesh≤∑ i∈T, w i*g i := by
@@ -102,15 +109,15 @@ theorem whole_positive_slots {α : Type*} (s : Finset α) (w g : α→ℝ) (G me
         _ = ∑ i∈P, w i*max (g i) 0 := by
           symm
           apply Finset.sum_subset hPT
-          intro i hi hn
-          have hg : g i≤0 := le_of_not_gt (fun h => hn (Finset.mem_filter.mpr ⟨hi,h⟩))
-          rw [max_eq_right hg,mul_zero]
+          grind
         _ = _ := Finset.sum_congr rfl (fun i hi => by
           rw [max_eq_left (Finset.mem_filter.mp hi).2.le])
     rwa [he] at hTgain
 
-theorem selected_product_spike {α : Type*} (s : Finset α) (w g : α→ℝ)
-    (U δ mesh q z : ℝ) (hU : 1≤U) (hδ : 0≤δ) (hmesh : 0≤mesh)
+end
+
+theorem selected_product_spike      
+     U δ mesh q z  (hU : 1≤U) (hδ : 0≤δ) (hmesh : 0≤mesh)
     (hw : ∀ i∈s, 0≤w i) (hwm : ∀ i∈s, w i≤mesh)
     (hg : ∀ i∈s, g i≤δ/2) (hq : 0≤q) (hqδ : q≤δ/2) (hz : 0≤z)
     (hzs : z≤∑ i∈s, w i) (hmean : q*(∑ i∈s, w i)≤∑ i∈s, w i*max (g i) 0)
@@ -136,8 +143,10 @@ theorem selected_product_spike {α : Type*} (s : Finset α) (w g : α→ℝ)
       (fun i hi => hQ i (hTs hi) (hTpos i hi))
     _ = _ := by rw [norm_prod,Finset.prod_pow]
 
+end
+
 end SevenEighths.HeckeDetectorSlotSelection
 
-end
+
 
 end OAI

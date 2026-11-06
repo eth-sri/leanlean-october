@@ -31,7 +31,7 @@ noncomputable section
 /-- The conclusion of `TwoSidedCorrelation` for large `x`, after its
 premises. -/
 def TwoSidedBody (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ) (d : ℕ) (B₀ κ CΨ : ℝ)
-    (M : ℕ → ℝ) (A Cstar x : ℝ) : Prop :=
+    (M : ℕ → ℝ) (A Cstar x : ℝ)  :=
   ∀ (Sg Bg : Finset (Finset ℕ)) (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ)
     (Bc : (Fin d → ℕ) → ℝ) (G : ℕ → ℝ) (Ψ : ℝ → ℝ),
     Disjoint Sg Bg → (Sg ∪ Bg : Set (Finset ℕ)).PairwiseDisjoint id →
@@ -78,8 +78,8 @@ lemma IntegerKernelBound.mono {x Cm κ κ' : ℝ} (h : IntegerKernelBound x Cm �
 
 /-- `TwoSidedCorrelation` with its premises discharged by
 `eventually_primeTwistBound` and `eventually_integerKernelBound`. -/
-theorem exists_twoSidedBody (h₂ : TwoSidedCorrelation) (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ)
-    (K₀ : ℕ) (CN c : ℝ) (d : ℕ) (B₀ κ CΨ : ℝ) (M : ℕ → ℝ) (A : ℝ) (hq : 0 < q) (hq₁ : q < 1)
+theorem exists_twoSidedBody (h₂ : TwoSidedCorrelation)  q q₀ c₀ C₀ vlo vhi alo ahi 
+     K₀   CN c   d   B₀ κ CΨ   M   A  (hq : 0 < q) (hq₁ : q < 1)
     (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (hc₀ : 0 < c₀) (hvlo : 0 < vlo) (halo : 1 / 10 < alo)
     (hal : alo ≤ ahi) (hahi : ahi < 1 / 5) (hc : 0 < c) (hd : d ≤ 2) (hκ : 1 < κ) :
     ∃ Cstar : ℝ, ∀ᶠ x : ℝ in atTop,
@@ -96,13 +96,13 @@ theorem exists_twoSidedBody (h₂ : TwoSidedCorrelation) (q q₀ c₀ C₀ vlo v
 /-! ### The terms of the signed expansion -/
 
 /-- The bands of the monomial `S`, enumerated by `Fin |S|`. -/
-def monomialExponents (K : ℕ) (x : ℝ) (S : Finset (ℕ × ℕ)) (i : Fin S.card) : ℝ :=
+def monomialExponents (K : ℕ) (x : ℝ) (S : Finset (ℕ × ℕ)) (i : Fin S.card)  :=
   inertExponent K x (S.equivFin.symm i).1.1 (S.equivFin.symm i).1.2
 
 /-- One term of the signed expansion: the two-sided correlation sum of the
 active set `Act`, the bands of the monomial `S` and the core `G`. -/
-def twoSidedSum (q : ℝ) (K : ℕ) (x κ : ℝ) (Φ : ℝ → ℝ) (S : Finset (ℕ × ℕ)) {k : ℕ}
-    (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) (G : ℕ → ℝ) (Act : Finset (Finset ℕ)) : ℝ :=
+def twoSidedSum (q : ℝ) (K : ℕ) (x κ : ℝ) (Φ : ℝ → ℝ) (S : Finset (ℕ × ℕ)) {k }
+    (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) (G : ℕ → ℝ) (Act : Finset (Finset ℕ))  :=
   ∑ w ∈ Finset.Icc 1 ⌊κ * x⌋₊,
     (fun y => y * Φ y) (w / x) / w *
       (markedWeight Finset.univ q (fun i => band x (monomialExponents K x S i)) w *
@@ -111,7 +111,7 @@ def twoSidedSum (q : ℝ) (K : ℕ) (x κ : ℝ) (Φ : ℝ → ℝ) (S : Finset 
       G (w + 1) * markedWeight Act (1 / 2) id w * markedWeight Act (1 / 2) id (w + 1)
 
 /-- The facts about the inert bands at a large `x` (`eventually_inertBands`). -/
-def BandFacts (K : ℕ) (CN x : ℝ) : Prop :=
+def BandFacts (K : ℕ) (CN x : ℝ)  :=
   (∀ p ∈ range K ×ˢ range (inertPerCluster K CN x),
       11 / 100 ≤ inertExponent K x p.1 p.2 ∧ inertExponent K x p.1 p.2 ≤ 39 / 200) ∧
     (∀ p ∈ range K ×ˢ range (inertPerCluster K CN x),
@@ -127,9 +127,9 @@ theorem abs_twoSidedSum_le {q c₂ c B₀ κ CΦ A Cstar x γ CN : ℝ} {K d j :
     (hgroups : GroupFacts x) (hbands : BandFacts K CN x) (hx : 1 < x) (hT : 1 ≤ logLog x)
     (hγ : 1 ≤ x ^ γ) (hj : 1 ≤ j) (hκ : 1 < κ) {u v : Fin (d + 1) → ℝ}
     (hadm : AdmissibleSlots c x u v) {B : (Fin d → ℕ) → ℝ} (hB : ∀ Q, 0 ≤ B Q ∧ B Q ≤ 1)
-    {Φ : ℝ → ℝ} (hΦ : IsCutoff κ CΦ M x Φ) {Act : Finset (Finset ℕ)}
+     {Φ}  (hΦ : IsCutoff κ CΦ M x Φ)  {Act} 
     (hAct : Act ⊆ candidateGroups x) (hS₁ : c₂ * logLog x ≤ (Act ∩ smallGroups x).card)
-    (hS₂ : c₂ * logLog x ≤ (Act ∩ bigGroups x).card) {S : Finset (ℕ × ℕ)}
+    (hS₂ : c₂ * logLog x ≤ (Act ∩ bigGroups x).card)  {S} 
     (hS : S ⊆ range K ×ˢ range (inertPerCluster K CN x)) :
     |twoSidedSum q K x κ Φ S u v B (fun n => min (proxyCore x γ j n) (Real.log x ^ B₀)) Act| ≤
       Cstar * Real.log x ^ (-A) := by
@@ -150,8 +150,7 @@ theorem abs_twoSidedSum_le {q c₂ c B₀ κ CΦ A Cstar x γ CN : ℝ} {K d j :
   have h := hbody (Act ∩ smallGroups x) (Act ∩ bigGroups x) S.card (monomialExponents K x S) u v
     B (fun n => min (proxyCore x γ j n) (Real.log x ^ B₀)) (fun y => y * Φ y)
     (disjoint_of_subset_left inter_subset_right (disjoint_of_subset_right inter_subset_right hdisj))
-    (by
-      exact (pairwiseDisjoint_candidateGroups hL1).subset
+    ((pairwiseDisjoint_candidateGroups hL1).subset
         (by rw [← coe_union]; exact coe_subset.2 hsub))
     (by simpa [logLog] using hS₁)
     (by

@@ -37,7 +37,7 @@ theorem card_primeFactors_le {n : ℕ} (hn : 1 ≤ n) :
 /-- `|∑_{Q ∈ ∏ F_i, ∏ Q ∣ n} B(Q)| ≤ ω(n)^d` for prime slots `F_i`, `|B| ≤ 1` and `n ≥ 1`:
 every entry of such a `Q` is a prime factor of `n`. -/
 theorem abs_sum_filter_prod_dvd_le {d : ℕ} (F : Fin d → Finset ℕ)
-    (hF : ∀ i, ∀ p ∈ F i, p.Prime) (Bc : (Fin d → ℕ) → ℝ) (hBc : ∀ Q, |Bc Q| ≤ 1) {n : ℕ}
+    (hF : ∀ i, ∀ p ∈ F i, p.Prime) (Bc : (Fin d → ℕ) → ℝ) (hBc : ∀ Q, |Bc Q| ≤ 1)  {n} 
     (hn : 1 ≤ n) :
     |∑ Q ∈ (Fintype.piFinset F) with ∏ i, Q i ∣ n, Bc Q| ≤ (#n.primeFactors : ℝ) ^ d := by
   have hsub : (Fintype.piFinset F).filter (fun Q => ∏ i, Q i ∣ n) ⊆

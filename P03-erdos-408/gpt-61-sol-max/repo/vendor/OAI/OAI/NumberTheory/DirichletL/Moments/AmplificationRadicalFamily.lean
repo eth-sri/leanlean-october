@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplificationChoice
 public import OAI.NumberTheory.DirichletL.Moments.RadicalFamily
@@ -29,12 +30,16 @@ open CenteredMomentSectorLocalization CenteredMomentAmplificationEligibility
 local notation "O"=>ActualEisensteinCubic.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-def radicalBound (η:Character)(m p:O)(k:ℕ):ℕ :=
+def radicalBound (η:Character)(m p:O)(k:ℕ) :=
   η.modulus.absNorm*(Ideal.span {m}).absNorm*(Ideal.span {(72:O)}).absNorm*
     (if k=0 then 1 else (Ideal.span {p}).absNorm)
 
-theorem radicalBound_error_power (η:Character)(m p:O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)
-    (n:ℕ)(hn:n=0∨n=5∨n=6):
+section
+variable (η:Character)
+include η
+
+theorem radicalBound_error_power   m p (hp:p≠0) Z (hZ:1<Z)
+     n (hn:n=0∨n=5∨n=6):
     (radicalBound η m p (errorMovingExponent n):ℝ)=
       ((η.modulus.absNorm:ℝ)*(Ideal.span {m}).absNorm*(Ideal.span {(72:O)}).absNorm)*
         Z^(errorMoving p Z (n+1)):=by
@@ -46,8 +51,8 @@ theorem radicalBound_error_power (η:Character)(m p:O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)
     Nat.cast_one,Real.rpow_zero,mul_one]
   all_goals rw [hpow]; rfl
 
-theorem exists_radical_row (η:Character)(m p:O)(hm:m≠0)
-    (hs:Supported (Ideal.span {p}))(hmLam:goodLambda∣m)(hm2:(2:O)∣m)(k:ℕ):
+theorem exists_radical_row   m p (hm:m≠0)
+    (hs:Supported (Ideal.span {p}))(hmLam:goodLambda∣m)(hm2:(2:O)∣m) k :
     ∃τ:Character,τ.modulus.absNorm≤radicalBound η m p k ∧
       ∀n:O,elementCoeff τ n=rowTwist (elementHom η) m 1 (p^(2*k)) n:=by
   by_cases hk:k=0
@@ -63,8 +68,8 @@ theorem exists_radical_row (η:Character)(m p:O)(hm:m≠0)
     · simpa [radicalBound,hk] using hN
     · simpa using hτ
 
-theorem exists_radical_height (η:Character)(χ:RayCharacter)(m p:O)(hm:m≠0)
-    (hs:Supported (Ideal.span {p}))(hmLam:goodLambda∣m)(hm2:(2:O)∣m)(k:ℕ):
+theorem exists_radical_height   χ  m p (hm:m≠0)
+    (hs:Supported (Ideal.span {p}))(hmLam:goodLambda∣m)(hm2:(2:O)∣m) k :
     ∃τ:Character,τ.modulus.absNorm≤radicalBound (childCharacter η χ) m p k ∧
       ∀I:Ideal O,Supported I→∀t:ℝ,
         heightCoeff τ t I=rowWeight η m 1 1 t I*idealRowHom (p^(2*k)) I*
@@ -81,9 +86,13 @@ theorem exists_radical_height (η:Character)(χ:RayCharacter)(m p:O)(hm:m≠0)
   simp only [mul_one]
   ring
 
-theorem exists_radical_family (η:Character)(m p:O)(hm:m≠0)
+section
+variable (m p:O) (hm:m≠0)
+include m p hm
+
+theorem exists_radical_family    
     (hs:Supported (Ideal.span {p}))(hpp:goodLambda^2∣p-1)
-    (hmLam:goodLambda∣m)(hm2:(2:O)∣m)(k:ℕ):
+    (hmLam:goodLambda∣m)(hm2:(2:O)∣m) k :
     ∃τ:RayCharacter→Character,
       (∀χ,(τ χ).modulus.absNorm≤radicalBound (childCharacter η χ) m p k) ∧
       ∀I:Ideal O,Supported I→∀t:ℝ,
@@ -103,10 +112,10 @@ theorem exists_radical_family (η:Character)(m p:O)(hm:m≠0)
   rw [hτ χ I hI t]
   ring
 
-theorem exists_actual_error_family (η:Character)(m p:O)
-    (hm:m≠0)(hp:Prime p)(hs:Supported (Ideal.span {p}))
+theorem exists_actual_error_family   
+      hp (hs:Supported (Ideal.span {p}))
     (hpp:goodLambda^2∣p-1)(hmLam:goodLambda∣m)(hm2:(2:O)∣m)
-    (n:ℕ)(hn:n=0∨n=5∨n=6):
+     n (hn:n=0∨n=5∨n=6):
     ∃τ:RayCharacter→Character,
       (∀χ,(τ χ).modulus.absNorm≤radicalBound (childCharacter η χ) m p (errorMovingExponent n)) ∧
       ∀(S:Finset (Ideal O))(C:Ideal O),C≠0→∀(β:Ideal O→ℂ)(t:ℝ)
@@ -125,12 +134,20 @@ theorem exists_actual_error_family (η:Character)(m p:O)
   exact amplification_family_energy η m p (errorMovingExponent n) τ hτ
     (residualColumns S p hp (n+1)) C hC β t W K hK hW
 
-theorem original_errors_to_children {ι : Type*} [Fintype ι] (η : Character) (m p : O)
-    (hm : m≠0) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hPid : Prime (Ideal.span {p})) (hs : Supported (Ideal.span {p}))
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
-    (hpp : goodLambda^2 ∣ p-1) (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
-    (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6) :
+end
+
+end
+
+section
+variable {ι : Type*} [Fintype ι] (η : Character) (m p : O) (hm : m≠0) (hp : Prime p) [(Ideal.span {p}).IsMaximal] (hPid : Prime (Ideal.span {p})) (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hpp : goodLambda^2 ∣ p-1) (hmLam : goodLambda∣m) (hm2 : (2:O)∣m) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6)
+include ι η m p hm hp hPid hs hg hc hpp hmLam hm2 n hn
+
+theorem original_errors_to_children        
+         
+       
+       
+         
+        :
     ∃ τ : RayCharacter → Character,
       (∀ χ,(τ χ).modulus.absNorm≤radicalBound (childCharacter η χ) m p (errorMovingExponent n)) ∧
       ∀ (S : (ι ⊕ Fin 2) → Finset (Ideal O)),
@@ -201,12 +218,12 @@ theorem original_errors_to_children {ι : Type*} [Fintype ι] (η : Character) (
   rw [←Finset.mul_sum]
   ring
 
-theorem exists_original_error_ball_family {ι : Type*} [Fintype ι]
-    (η : Character) (m p : O) (hm : m≠0) (hp : Prime p)
-    [(Ideal.span {p}).IsMaximal] (hPid : Prime (Ideal.span {p}))
-    (hs : Supported (Ideal.span {p})) (hg : goodLambda∉Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hpp : goodLambda^2∣p-1)
-    (hmLam : goodLambda∣m) (hm2 : (2:O)∣m) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6) :
+theorem exists_original_error_ball_family    
+           
+       
+       
+       
+            :
     ∃ τ : RayCharacter → Character,
       (∀ χ,(τ χ).modulus.absNorm≤radicalBound (childCharacter η χ) m p (errorMovingExponent n)) ∧
       ∀ (D : OriginalData ι),
@@ -235,13 +252,11 @@ theorem exists_original_error_ball_family {ι : Type*} [Fintype ι]
       (fun h hh => dyad_ball_majorant Z hZ j _
         (hsigma.trans (errorGain_bounds D0 cLog sigma Z p (n+1) hsigma).1)
         h (Finset.mem_filter.mp hh).1)
-    rw [OriginalData.coefficient_eq]
-    dsimp only at hfull
-    dsimp only [OriginalData.childEnergy,OriginalData.coefficient,OriginalData.beta,
-      OriginalData.columns,OriginalData.profile]
-    exact hfull
+    assumption
   · rw [Finset.not_nonempty_iff_eq_empty.mp he,Finset.sum_empty]
     exact D.childEnergy_nonneg τ p n t T _ hT.le hK
+
+end
 
 end SevenEighths.CenteredMomentAmplificationRadicalFamily
 

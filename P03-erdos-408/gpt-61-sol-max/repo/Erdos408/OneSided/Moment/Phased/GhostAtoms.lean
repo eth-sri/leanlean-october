@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Chain.GhostStage
 
 public import Erdos408.OneSided.Moment.Phased.Rows
 
@@ -25,7 +28,7 @@ coordinate costs one atom `|cre| ν v₀ ≤ c ν(p)`.
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos408.OneSided
 
@@ -38,7 +41,7 @@ section Generic
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
 /-- The tail of the exponential series: `∑_{n ≤ B, n ≥ m} e^n / n! ≤ e^m exp(e)`. -/
-theorem sum_exp_tail_le {B m : ℕ} {e : ℝ} (he : 0 ≤ e) :
+theorem sum_exp_tail_le  {B m}  {e : ℝ} (he : 0 ≤ e) :
     ∑ n ∈ range (B + 1), e ^ n / n.factorial * (if m ≤ n then 1 else 0) ≤ e ^ m * Real.exp e := by
   set g : ℕ → ℝ := fun k => e ^ k / k.factorial with hg
   have hg0 : ∀ k, 0 ≤ g k := fun k => by positivity
@@ -58,9 +61,7 @@ theorem sum_exp_tail_le {B m : ℕ} {e : ℝ} (he : 0 ≤ e) :
       ∑ k ∈ range (B + 1), g k := by
     simp only [ite_mul, one_mul, zero_mul]
     rw [← sum_filter, ← sum_image (g := fun n => n - m) (f := g) fun n hn n' hn' h => by
-      rw [mem_coe, mem_filter] at hn hn'
-      simp only at h
-      omega]
+      grind]
     refine sum_le_sum_of_subset_of_nonneg (fun k hk => ?_) fun k _ _ => hg0 k
     obtain ⟨n, hn, rfl⟩ := mem_image.1 hk
     simp only [mem_filter, mem_range] at hn ⊢
@@ -76,7 +77,7 @@ omit [Fintype X] [DecidableEq X] in
 /-- The per-particle sum with at least `m` births: the binomial theorem in the first variable
 and the tail of the exponential series in the second. For a particle that cannot hit, only
 `(0, 0)` survives. -/
-theorem sum_binom_exp_req_le {B s m : ℕ} {a b e : ℝ} (P : Prop) [Decidable P] (ha : 0 ≤ a)
+theorem sum_binom_exp_req_le  {B s m}  {a b e : ℝ}  P  [Decidable P] (ha : 0 ≤ a)
     (hb : 0 ≤ b) (he : 0 ≤ e) (hab : a + b ≤ 1) (hs : s ≤ B) (hP : ¬P → s = 0) :
     ∑ d ∈ range (B + 1), ∑ n ∈ range (B + 1),
         (if d ≤ s ∧ (P ∨ n = 0) then
@@ -92,8 +93,7 @@ theorem sum_binom_exp_req_le {B s m : ℕ} {a b e : ℝ} (P : Prop) [Decidable P
           ∑ n ∈ range (B + 1), e ^ n / n.factorial * (if m ≤ n then 1 else 0) := by
       intro d _
       rw [mul_sum]
-      refine sum_congr rfl fun n _ => ?_
-      split_ifs <;> ring
+      norm_num
     rw [sum_congr rfl h₁, ← sum_mul]
     -- the binomial theorem
     have h₂ : ∑ d ∈ range (B + 1), (if d ≤ s then s.choose d * a ^ d * b ^ (s - d) else 0) =
@@ -125,7 +125,7 @@ variable {hit : X → Prop} [DecidablePred hit] {ν : X → ℝ} {del surv : ℝ
 births of each particle `x`, the weighted row sums are at most
 `∏_{x hit} (|cre x| ν x v₀)^{m x} exp(v₀ ∑_{hits} |cre| ν) v₀^{size(S)}`. -/
 theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (hv₀ : 0 < v₀)
-    (hdel : surv + |del| / v₀ ≤ 1) (m : X → ℕ) {B : ℕ} (S : MemState X B) :
+    (hdel : surv + |del| / v₀ ≤ 1) (m : X → ℕ)  {B}   S  :
     ∑ c ∈ multBox B ×ˢ multBox B,
         ‖ghostCoef hit ν del surv cre B S c‖ * (∏ x, if m x ≤ c.2 x then (1 : ℝ) else 0) *
           v₀ ^ memSize (ghostOut hit B S c).1 ≤
@@ -169,7 +169,7 @@ theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ
       rw [ite_eq_left (show c.1 x ≤ hitPart hit S.1 x ∧ (hit x ∨ c.2 x = 0) from ⟨hd, hn⟩)]
       obtain ⟨r, hr⟩ : ∃ r, S.1 x = r + c.1 x := ⟨S.1 x - c.1 x, by omega⟩
       rw [hr, show r + c.1 x - c.1 x + c.2 x = r + c.2 x by omega, pow_add, pow_add]
-      have hv : v₀ ≠ 0 := hv₀.ne'
+      
       simp only [div_pow, mul_pow]
       field_simp
     · rw [ghostCoef, ite_eq_right hc, norm_zero, zero_mul, zero_mul]
@@ -218,7 +218,7 @@ end Generic
 
 /-- If a list takes the value `p` at every index of `T`, then `p` occurs at least `|T|`
 times. -/
-theorem card_le_count_of_getElem {p : ℕ} :
+theorem card_le_count_of_getElem  {p}  :
     ∀ (l : List ℕ) (T : Finset ℕ), (∀ k ∈ T, l[k]? = some p) → T.card ≤ l.count p
   | [], T, hT => by
     have hT0 : T = ∅ := eq_empty_of_forall_notMem fun k hk => by simpa using hT k hk
@@ -226,36 +226,26 @@ theorem card_le_count_of_getElem {p : ℕ} :
   | a :: l, T, hT => by
     -- the indices after the head shift down by one
     have hT' : ∀ k ∈ (T.erase 0).image (· - 1), l[k]? = some p := by
-      intro k hk
-      obtain ⟨k₀, hk₀, rfl⟩ := mem_image.1 hk
-      obtain ⟨hk₀0, hk₀T⟩ := mem_erase.1 hk₀
-      have := hT k₀ hk₀T
-      obtain ⟨j, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hk₀0
-      simpa using this
+      grind
     have hinj : Set.InjOn (· - 1) ((T.erase 0 : Finset ℕ) : Set ℕ) := fun k hk k' hk' h => by
-      rw [mem_coe, mem_erase] at hk hk'
-      simp only at h
-      omega
+      grind
     have ih := card_le_count_of_getElem l _ hT'
     rw [card_image_of_injOn hinj] at ih
     rw [List.count_cons]
     by_cases h0 : 0 ∈ T
-    · have ha : a = p := by simpa using hT 0 h0
-      have := card_erase_add_one h0
-      simp only [ha, beq_self_eq_true, ite_true]
-      omega
+    · grind
     · rw [erase_eq_of_notMem h0] at ih
       omega
 
 variable {K : ℕ}
 
-section Chain
+
 
 variable {q x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B : ℕ}
 
 /-- The batch primes count the created particles of each prime:
 `#{p in the batch} = ∑_{x : x.prime = p} n(x)`. -/
-theorem count_batchPrimes (n : Particle x d → ℕ) (p : ℕ) :
+theorem count_batchPrimes  n   p  :
     (batchPrimes x d n).count p = ∑ xp : Particle x d, if xp.1.1 = p then n xp else 0 := by
   rw [batchPrimes, ← Multiset.coe_count, Multiset.sort_eq, Multiset.count_sum']
   exact sum_congr rfl fun xp _ => Multiset.count_replicate _ _ _
@@ -263,14 +253,12 @@ theorem count_batchPrimes (n : Particle x d → ℕ) (p : ℕ) :
 /-- Two particles hitting the same position with the same prime are equal: the line of a
 hitting particle is `[z]_p`. -/
 theorem hitsAt_eq_of_prime {z : ℤ × ℤ} {xp yp : Particle x d} (hx : HitsAt x d z xp)
-    (hy : HitsAt x d z yp) (h : xp.1.1 = yp.1.1) : xp = yp := by
-  refine Subtype.ext (Prod.ext h ?_)
-  rw [← hx, ← hy, h]
+    (hy : HitsAt x d z yp) (h : xp.1.1 = yp.1.1) : xp = yp := by solve_by_elim [_root_.Erdos408.OneSided.eq_of_hitsAt]
 
 /-- For a valid ghost choice, the batch contains each prime with the multiplicity of the
 hitting particle of that prime, or not at all. -/
 theorem count_batchPrimes_of_valid {z : ℤ × ℤ} {S : Particle x d → ℕ}
-    {c : GhostChoice x d} (hc : GhostValid (HitsAt x d z) B S c) (p : ℕ) :
+    {c : GhostChoice x d} (hc : GhostValid (HitsAt x d z) B S c)  p  :
     (batchPrimes x d c.2).count p ≤ 0 ∨
       ∃ xp, HitsAt x d z xp ∧ xp.1.1 = p ∧ (batchPrimes x d c.2).count p = c.2 xp := by
   rw [count_batchPrimes]
@@ -301,7 +289,7 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
       |-dampDefect q N j / pendingWeight q| / v₀ ≤ 1)
     (hc₀ : ∀ xp : Particle x d, |-dampDefect q N j * primeMass x d xp.1.1 / pendingWeight q| *
       primeWeight q x d N xp.1.1 * v₀ ≤ c₀ * primeWeight q x d N xp.1.1)
-    (π : Fin B → Option ℕ) (t : ChainState x d Y d₀ u v r B) :
+    (π : Fin B → Option ℕ)  t  :
     ∑ c ∈ multBox B ×ˢ multBox B, ‖chainGhostCoef q x d Y d₀ u v r B N j t c‖ *
         (∏ k : Fin B, presInd (π k) (batchPrimes x d c.2)[k.1]?) *
         v₀ ^ memSize (chainGhostOut x d Y d₀ u v r B t c).2.2.1 ≤
@@ -406,8 +394,7 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
           (Real.exp (v₀ * ∑ xp with HitsAt x d z xp, |cre xp| * ν xp.1.1) *
             v₀ ^ memSize t.2.2.1) :=
           ghost_row_req (fun xp => hν _) hsurv hv₀ hdel m t.2.2
-      _ ≤ _ := mul_le_mul_of_nonneg_right hconv
-          (mul_nonneg (Real.exp_pos _).le (pow_nonneg hv₀.le _))
+      _ ≤ _ := (by gcongr <;> first | assumption | positivity | linarith)
   · -- some prescribed prime has no hitting particle, so every valid choice misses it
     push Not at hall
     obtain ⟨k₀, p, hk₀, hp⟩ := hall
@@ -424,6 +411,6 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
     · change ‖ghostCoef (HitsAt x d z) _ _ _ _ B t.2.2 c‖ * _ * _ = 0
       rw [ghostCoef, ite_eq_right hc, norm_zero, zero_mul, zero_mul]
 
-end Chain
+
 
 end Erdos408.OneSided

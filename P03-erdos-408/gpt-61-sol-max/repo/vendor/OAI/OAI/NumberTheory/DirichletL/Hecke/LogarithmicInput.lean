@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.PrincipalStrip
 
@@ -15,10 +16,14 @@ open HeckeFamily
 def regular (η : Character) (s : ℂ) : ℂ :=
   if η.residue = 1 then HeckePrincipalStrip.sourceNormalized η s else LFunction η s
 
-theorem regular_eq_nonprincipal (η : Character) (hη : η.residue ≠ 1) :
+section
+variable (η : Character) {σ : ℝ} (hσ : 1 < σ) {s : ℂ}
+
+
+theorem regular_eq_nonprincipal   (hη : η.residue ≠ 1) :
     regular η = LFunction η := by funext s; simp [regular, hη]
 
-theorem regular_differentiableAt (η : Character) {s : ℂ} (hs : 0 < s.re) :
+theorem regular_differentiableAt     (hs : 0 < s.re) :
     DifferentiableAt ℂ (regular η) s := by
   have hplus : s+1 ≠ 0 := by
     intro h
@@ -33,7 +38,7 @@ theorem regular_differentiableAt (η : Character) {s : ℂ} (hs : 0 < s.re) :
   · rw [regular_eq_nonprincipal η hη]
     exact LFunction_entire_nonprincipal η hη s
 
-theorem regular_ne_zero (η : Character) {s : ℂ}
+theorem regular_ne_zero    
     (hs : HeckeZeroSupremum.beta < s.re) : regular η s ≠ 0 := by
   have hs0 : 0 < s.re := by linarith [HeckeZeroSupremum.half_le_beta]
   have h0 : s ≠ 0 := by intro h; simp [h] at hs0
@@ -53,7 +58,7 @@ theorem regular_ne_zero (η : Character) {s : ℂ}
   · rw [regular_eq_nonprincipal η hη]
     exact HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt η hs (Or.inr hη)
 
-theorem principal_regular_factor_bound {s : ℂ} (hs : 0 ≤ s.re) :
+theorem principal_regular_factor_bound   (hs : 0 ≤ s.re) :
     ‖s-1‖ ≤ ‖s+1‖ := by
   have he : ‖s+1‖^2 - ‖s-1‖^2 = 4*s.re := by
     simp only [Complex.sq_norm, Complex.normSq_apply, Complex.add_re, Complex.add_im,
@@ -61,8 +66,9 @@ theorem principal_regular_factor_bound {s : ℂ} (hs : 0 ≤ s.re) :
     ring
   nlinarith [norm_nonneg (s-1), norm_nonneg (s+1)]
 
-theorem regular_norm_le (η : Character) {σ : ℝ} (hσ : 1 < σ)
-    {s : ℂ} (hs : σ ≤ s.re) : ‖regular η s‖ ≤ HeckeReciprocalBound.bound σ := by
+include hσ in
+theorem regular_norm_le      
+      (hs : σ ≤ s.re) : ‖regular η s‖ ≤ HeckeReciprocalBound.bound σ := by
   by_cases hη : η.residue = 1
   · have h0 : s ≠ 0 := by intro h; simp [h] at hs; linarith
     have h1 : s ≠ 1 := by intro h; simp [h] at hs; linarith
@@ -78,6 +84,8 @@ theorem regular_norm_le (η : Character) {σ : ℝ} (hσ : 1 < σ)
   · rw [regular_eq_nonprincipal η hη]
     exact HeckeStripActual.LFunction_norm_le η hσ hs
 
+end
+
 def uniformConstant : ℝ :=
   108*((1+HeckeStrip.leftConstant)*HeckeReciprocalBound.bound (11/10))
 
@@ -87,12 +95,17 @@ theorem uniformConstant_nonneg : 0 ≤ uniformConstant := by
   unfold uniformConstant
   positivity
 
-theorem modulus_norm_ge_one (η : Character) : 1 ≤ (η.modulus.absNorm : ℝ) := by
+section
+variable (η : Character) (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (a e t : ℝ)
+
+
+theorem modulus_norm_ge_one   : 1 ≤ (η.modulus.absNorm : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr η.modulus_ne_bot)
 
-theorem regular_strip_bound (η : Character)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (z : ℂ)
+include hp in
+theorem regular_strip_bound  
+       z 
     (hz : z ∈ HeckeStrip.closedStrip) :
     ‖regular η z‖ ≤ uniformConstant * (η.modulus.absNorm : ℝ)^(3/5 : ℝ) *
       (3+|z.im|)^2 := by
@@ -106,8 +119,9 @@ theorem regular_strip_bound (η : Character)
     unfold uniformConstant
     gcongr ; norm_num
 
-theorem regular_right_growth (η : Character)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) {z : ℂ}
+include hp in
+theorem regular_right_growth  
+       {z} 
     (hz : -(1/10 : ℝ) ≤ z.re) :
     ‖regular η z‖ ≤ uniformConstant * (η.modulus.absNorm : ℝ)^(3/5 : ℝ) *
       (3+|z.im|)^2 := by
@@ -122,10 +136,10 @@ theorem regular_right_growth (η : Character)
       Real.one_le_rpow (modulus_norm_ge_one η) (by norm_num)
     have hT : 1 ≤ (3+|z.im|)^2 := by nlinarith [abs_nonneg z.im]
     exact hC.trans ((le_mul_of_one_le_right uniformConstant_nonneg hQ).trans
-      (le_mul_of_one_le_right (mul_nonneg uniformConstant_nonneg (by linarith : 0 ≤ (η.modulus.absNorm : ℝ)^(3/5 : ℝ))) hT))
+      ((by bound)))
 
-theorem regular_ne_zero_on_disk (η : Character) (a e t : ℝ)
-    (ha : HeckeZeroSupremum.beta ≤ a) (he : 0 < e) {z : ℂ}
+theorem regular_ne_zero_on_disk    
+    (ha : HeckeZeroSupremum.beta ≤ a) (he : 0 < e)  {z} 
     (hz : z ∈ Metric.ball ((2 : ℂ)+t*Complex.I) (2-a-2*e)) :
     regular η z ≠ 0 := by
   apply regular_ne_zero η
@@ -136,7 +150,7 @@ theorem regular_ne_zero_on_disk (η : Character) (a e t : ℝ)
   norm_num [Complex.sub_re, Complex.add_re, Complex.mul_re] at hr hrl
   linarith
 
-theorem reciprocal_norm_le_regular_inverse (η : Character) {s : ℂ}
+theorem reciprocal_norm_le_regular_inverse    {s} 
     (hs : HeckeZeroSupremum.beta < s.re) :
     ‖HeckeReciprocal.reciprocal η s‖ ≤ ‖(regular η s)⁻¹‖ := by
   have hs0 : 0 < s.re := by linarith [HeckeZeroSupremum.half_le_beta]
@@ -162,11 +176,12 @@ theorem reciprocal_norm_le_regular_inverse (η : Character) {s : ℂ}
     apply mul_le_of_le_one_left (norm_nonneg _)
     rw [norm_div]
     exact (div_le_one (norm_pos_iff.mpr hp)).mpr (principal_regular_factor_bound hs0.le)
-  · simp only [HeckeReciprocal.reciprocal, regular, ite_eq_right hη, le_refl]
+  simp_all [HeckeReciprocal.reciprocal, regular]
 
-theorem regular_disk_growth (η : Character)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (a e t : ℝ)
-    (ha : (1/2 : ℝ) ≤ a) (he : 0 ≤ e) {z : ℂ}
+include hp in
+theorem regular_disk_growth  
+       
+    (ha : (1/2 : ℝ) ≤ a) (he : 0 ≤ e)  {z} 
     (hz : z ∈ Metric.closedBall ((2 : ℂ)+t*Complex.I) (2-a-2*e)) :
     ‖regular η z‖ ≤ (4*uniformConstant) * (η.modulus.absNorm : ℝ)^(3/5 : ℝ) *
       (3+|t|)^2 := by
@@ -192,6 +207,8 @@ theorem regular_disk_growth (η : Character)
     _ ≤ uniformConstant*(η.modulus.absNorm : ℝ)^(3/5 : ℝ)*(4*(3+|t|)^2) :=
       mul_le_mul_of_nonneg_left hsq (mul_nonneg uniformConstant_nonneg (Real.rpow_nonneg (by positivity) _))
     _ = _ := by ring
+
+end
 
 end SevenEighths.HeckeLogarithmicInput
 

@@ -7,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalSmallTail
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+
 
 theorem canonical_small_original_tail (K : ℕ) (e δ a b B : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2)
     (ha : 0<a) (hb : 0<b) (hB : 0≤B) (hβ : (7/8:ℝ)≤HeckeZeroSupremum.beta)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
@@ -35,8 +35,8 @@ theorem canonical_small_original_tail (K : ℕ) (e δ a b B : ℝ)
   intro η Z hZ T hT hdis length hl0 hl W hWS hWB
   let L := Z^(1/100:ℝ)
   have hrows (n : ℕ) (hn : n∈smallDyadicIndices L) (u : FreeRow) (hu : u∈smallDyadicRows L n) :
-      u.val≠1 ∧ (2:ℝ)^n≤((Ideal.span {u.val}:Ideal O).absNorm:ℝ) ∧
-        ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤2*(2:ℝ)^n := by
+      u.val≠1 ∧ (2:ℝ)^n≤((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ) ∧
+        ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤2*(2:ℝ)^n := by
     have hh := mem_dyadicRows.mp (mem_smallDyadicRows.mp hu).1
     exact ⟨hh.1,by simpa only [one_mul,rowNorm] using hh.2.1,by simpa only [one_mul,rowNorm] using hh.2.2.le⟩
   have hbnd := hmain η Z hZ (smallDyadicIndices L) (fun n hn=>mem_smallDyadicIndices.mp hn)
@@ -53,7 +53,7 @@ theorem canonical_small_original_tail (K : ℕ) (e δ a b B : ℝ)
 theorem canonical_large_original_tail (K : ℕ) (δ a b B ζ saving : ℝ)
     (hδ : 0<δ) (hδ' : δ≤1) (hζ : 0<ζ)
     (ha : 0<a) (hb : 0<b) (hB : 0≤B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
@@ -78,6 +78,6 @@ theorem canonical_large_original_tail (K : ℕ) (δ a b B ζ saving : ℝ)
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

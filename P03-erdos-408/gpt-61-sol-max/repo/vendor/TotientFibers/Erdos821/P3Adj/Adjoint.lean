@@ -1,4 +1,6 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
 
 public import Erdos821.P3Adj.Factor
 public import Erdos821.P3Adj.Single
@@ -19,7 +21,7 @@ open Erdos821.S2Core
 variable {P : PrimeGroups} {g : P.BigGroup}
 
 /-- Fiber vanishes outside the deletion image. -/
-lemma fiberA_card_eq_zero_of_not_mem (s u : P.Memory g.val)
+lemma fiberA_card_eq_zero_of_not_mem  s u 
     (h : u ∉ Finset.image (fun A : Finset (Fin s.card) => deleteMemoryIndices s A)
       (Finset.univ.filter (fun A => A ⊆ zeroMemoryIndices s))) :
     (fiberA (P := P) (g := g) s u).card = 0 := by
@@ -27,16 +29,7 @@ lemma fiberA_card_eq_zero_of_not_mem (s u : P.Memory g.val)
   have hpos : 0 < (fiberA (P := P) (g := g) s u).card :=
     Nat.pos_of_ne_zero hne
   obtain ⟨A, hA⟩ := Finset.card_pos.mp hpos
-  have hmem : A ⊆ zeroMemoryIndices s ∧ deleteMemoryIndices s A = u := by
-    simpa only [fiberA, Finset.mem_filter, Finset.mem_univ, true_and] using hA
-  have hA_mem : A ∈ Finset.univ.filter (fun A : Finset (Fin s.card) => A ⊆ zeroMemoryIndices s) :=
-    Finset.mem_filter.mpr ⟨Finset.mem_univ A, hmem.1⟩
-  have hu : deleteMemoryIndices s A ∈ Finset.image
-      (fun A : Finset (Fin s.card) => deleteMemoryIndices s A)
-      (Finset.univ.filter (fun A => A ⊆ zeroMemoryIndices s)) :=
-    Finset.mem_image_of_mem _ hA_mem
-  rw [hmem.2] at hu
-  exact h hu
+  grind [zeroMemoryIndices, deleteMemoryIndices, fiberA, Finset.image]
 
 /-- Single-group mass-kernel reversal. -/
 lemma single_mass_kernel_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
@@ -97,7 +90,7 @@ theorem GhostAdjointTask_proof : Erdos821.S2Core.GhostAdjointTask := by
   have hrho : 0 < r.rho := r.rho_pos
   have hVbig : ∀ g : P.BigGroup, 0 < P.V g.val := fun g => hV g.val
   have hbase_big : ∀ (g : P.BigGroup) (q : P.Prime g.val), 0 < baselinePrime F n q.val :=
-    fun g q => hbase g q
+    hbase
   by_cases hcoord : s.1 = t.1 ∧ s.2.1 = t.2.1
   · have hker_st := globalKernel_eq_prod F J n r.rho d i s t hcoord
     have hcoord_symm : t.1 = s.1 ∧ t.2.1 = s.2.1 := ⟨hcoord.1.symm, hcoord.2.symm⟩
@@ -140,14 +133,11 @@ theorem GhostAdjointTask_proof : Erdos821.S2Core.GhostAdjointTask := by
           Finset.prod_eq_zero (Finset.mem_univ g0) hker_st0
         have hprod_ts0 : (∏ g : P.BigGroup, singleKernel F n r.rho d i g (t.2.2 g) (s.2.2 g)) = 0 :=
           Finset.prod_eq_zero (Finset.mem_univ g0) hker_ts0
-        rw [hmass_s, hmass_t, hker_st, hker_ts, hprod_st0, hprod_ts0]
-        ring
+        grind
       · push Not at hmismatch
         have hagree_all : ∀ (g : P.BigGroup) (v : P.Particle g.val),
             ¬ isZeroParticle v → (s.2.2 g).count v = (t.2.2 g).count v := by
-          intro g v hv
-          by_contra hne
-          exact hne (hmismatch g v hv)
+          assumption
         have hPerGroup : ∀ g : P.BigGroup,
             P.groupMemoryMass F n g.val (s.2.2 g) *
               singleKernel F n r.rho d i g (s.2.2 g) (t.2.2 g) =
@@ -188,44 +178,18 @@ theorem GhostAdjointTask_proof : Erdos821.S2Core.GhostAdjointTask := by
           rw [Finset.prod_mul_distrib]
         rw [hL, hR1, hR2] at hProd
         rw [hmass_s, hmass_t, hker_st, hker_ts, hRevProd]
-        have hC : (Fintype.card P.SmallResidues : ℝ)⁻¹ *
-            (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) *
-            (∏ g : P.BigGroup, ∏ k, tiltedMu F P n g.val (s.2.1 g.val k)) =
-            (Fintype.card P.SmallResidues : ℝ)⁻¹ *
-            (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) *
-            (∏ g : P.BigGroup, ∏ k, tiltedMu F P n g.val (s.2.1 g.val k)) := rfl
+        
         linear_combination
           ((Fintype.card P.SmallResidues : ℝ)⁻¹ *
             (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) *
             (∏ g : P.BigGroup, ∏ k, tiltedMu F P n g.val (s.2.1 g.val k))) * hProd
-    · have hsmall_t : ¬ P.smallPhysical t.1 t.2.1 := by
-        rw [← hcoord.1, ← hcoord.2]
-        exact hsmall
-      have hmass_s0 : P.memoryMass F J n s = 0 := by
-        unfold PrimeGroups.memoryMass
-        rw [ite_eq_right hsmall]
-      have hmass_t0 : P.memoryMass F J n t = 0 := by
-        unfold PrimeGroups.memoryMass
-        rw [ite_eq_right hsmall_t]
-      rw [hmass_s0, hmass_t0]
-      ring
-  · have hcoord_symm : ¬ (t.1 = s.1 ∧ t.2.1 = s.2.1) := by
-      rintro ⟨h1, h2⟩
-      exact hcoord ⟨h1.symm, h2.symm⟩
-    have hker_st0 : absoluteScaledMemoryGhostKernel F J n r.rho d i s t = 0 := by
-      unfold absoluteScaledMemoryGhostKernel
-      rw [ite_eq_right hcoord]
-    have hker_ts0 : absoluteScaledMemoryGhostKernel F J n r.rho d i t s = 0 := by
-      unfold absoluteScaledMemoryGhostKernel
-      rw [ite_eq_right hcoord_symm]
-    rw [hker_st0, hker_ts0]
-    ring
+    grind [PrimeGroups.memoryMass]
+  grind [absoluteScaledMemoryGhostKernel]
 
 
 end Erdos821.P3Adj
 
-theorem Erdos821.S2Core.GhostAdjointTask_proof : Erdos821.S2Core.GhostAdjointTask :=
-  Erdos821.P3Adj.GhostAdjointTask_proof
+alias Erdos821.S2Core.GhostAdjointTask_proof := _root_.Erdos821.P3Adj.GhostAdjointTask_proof
 
 
 

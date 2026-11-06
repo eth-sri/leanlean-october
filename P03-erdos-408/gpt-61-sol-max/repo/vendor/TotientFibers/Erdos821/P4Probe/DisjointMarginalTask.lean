@@ -13,7 +13,7 @@ namespace Erdos821.P4Probe
 /-- Independence of two disjoint coordinate restrictions of a finite
 product law. Integrate unused coordinates by their normalized mass, then
 split the selected union into S and T. No positivity is needed. -/
-def DisjointMarginalTask : Prop :=
+def DisjointMarginalTask  :=
   ∀ (ι : Type) [Fintype ι] (α : ι → Type) [∀ i, Fintype (α i)]
     (w : ∀ i, α i → ℝ) (S T : Finset ι),
     (∀ i, ∑ x, w i x = 1) → Disjoint S T →

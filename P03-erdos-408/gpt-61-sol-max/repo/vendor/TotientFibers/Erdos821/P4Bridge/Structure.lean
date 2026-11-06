@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Bridge.Sites
 public import Erdos821.P4Bridge.Support
@@ -21,10 +22,9 @@ abbrev SideRows (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (side : B
   BigRowPartial (patternAuxCoordinates ν block side)
 
 lemma mem_sideRows (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (side : Bool) (g : P.BigGroup) (i : Fin J) :
+     side  (g : P.BigGroup) (i : Fin J) :
     i ∈ patternAuxCoordinates ν block side g ↔ block g = side ∧ i ∈ ν.changed g.val := by
-  unfold patternAuxCoordinates
-  by_cases hb : block g = side <;> simp [hb]
+  grind [patternAuxCoordinates]
 
 def rowJoin (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (s : SharedRows ν) (a : SideRows ν block false) (b : SideRows ν block true) :
@@ -34,46 +34,38 @@ def rowJoin (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     else b g ⟨i, (mem_sideRows ν block true g i).mpr ⟨by cases h : block g <;> simp_all, hi⟩⟩
   else s g ⟨i, by simp [sharedRows, hi]⟩
 
-@[simp] lemma rowJoin_shared (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideRows ν block false) (b : SideRows ν block true)
-    (g : P.BigGroup) (i : {i // i ∈ sharedRows ν g}) :
+section
+variable (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (s : SharedRows ν) (a : SideRows ν block false) (b : SideRows ν block true) (g : P.BigGroup)
+
+
+@[simp] lemma rowJoin_shared    
+         
+      (i : {i // i ∈ sharedRows ν g}) :
     rowJoin ν block s a b g i.val = s g i := by
-  have hi : i.val ∉ ν.changed g.val := by simpa [sharedRows] using i.property
-  simp [rowJoin, hi]
+  grind [sharedRows, rowJoin]
 
-@[simp] lemma rowJoin_false (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideRows ν block false) (b : SideRows ν block true)
-    (g : P.BigGroup) (i : {i // i ∈ patternAuxCoordinates ν block false g}) :
+@[simp] lemma rowJoin_false    
+         
+      (i : {i // i ∈ patternAuxCoordinates ν block false g}) :
     rowJoin ν block s a b g i.val = a g i := by
-  have hi := (mem_sideRows ν block false g i.val).mp i.property
-  simp [rowJoin, hi.1, hi.2]
+  grind [mem_sideRows, rowJoin]
 
-@[simp] lemma rowJoin_true (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideRows ν block false) (b : SideRows ν block true)
-    (g : P.BigGroup) (i : {i // i ∈ patternAuxCoordinates ν block true g}) :
+@[simp] lemma rowJoin_true    
+         
+      (i : {i // i ∈ patternAuxCoordinates ν block true g}) :
     rowJoin ν block s a b g i.val = b g i := by
-  have hi := (mem_sideRows ν block true g i.val).mp i.property
-  simp [rowJoin, hi.1, hi.2]
+  grind [mem_sideRows, rowJoin]
+
+end
 
 def rowSplit (ν : Pattern P J ell m) (block : P.BigGroup → Bool) :
     P.BigLabels J ≃ SharedRows ν × SideRows ν block false × SideRows ν block true where
   toFun u := (fun g i => u g i.val, (fun g i => u g i.val), fun g i => u g i.val)
   invFun z := rowJoin ν block z.1 z.2.1 z.2.2
   left_inv u := by
-    funext g i
-    dsimp only
-    unfold rowJoin
-    dsimp only
-    split_ifs <;> rfl
+    grind [rowJoin]
   right_inv z := by
-    apply Prod.ext
-    · funext g i
-      exact rowJoin_shared ν block z.1 z.2.1 z.2.2 g i
-    · apply Prod.ext
-      · funext g i
-        exact rowJoin_false ν block z.1 z.2.1 z.2.2 g i
-      · funext g i
-        exact rowJoin_true ν block z.1 z.2.1 z.2.2 g i
+    simp_all
 
 def rowWeight (S : P.BigGroup → Finset (Fin J)) (x : BigRowPartial S) : ℝ :=
   ∏ g, ∏ i, P.mu g.val (x g i)
@@ -81,7 +73,12 @@ def rowWeight (S : P.BigGroup → Finset (Fin J)) (x : BigRowPartial S) : ℝ :=
 def rowProduct (S : P.BigGroup → Finset (Fin J)) (x : BigRowPartial S) : ℕ :=
   ∏ g, ∏ i, (x g i).val
 
-lemma rowWeight_sum (hV : ∀ g, 0 < P.V g) (S : P.BigGroup → Finset (Fin J)) :
+section
+variable (hV : ∀ g, 0 < P.V g) (S : P.BigGroup → Finset (Fin J)) (x : BigRowPartial S)
+
+
+include hV in
+lemma rowWeight_sum     :
     ∑ x : BigRowPartial S, rowWeight S x = 1 := by
   unfold rowWeight
   trans ∏ g : P.BigGroup, ∑ x : {i // i ∈ S g} → P.Prime g.val,
@@ -95,21 +92,24 @@ lemma rowWeight_sum (hV : ∀ g, 0 < P.V g) (S : P.BigGroup → Finset (Fin J)) 
       P.mu g.val x)).symm
   · simp only [graph_mu_sum P g.val (hV g.val), Finset.prod_const_one]
 
-lemma rowWeight_pos (hV : ∀ g, 0 < P.V g) (S : P.BigGroup → Finset (Fin J))
-    (x : BigRowPartial S) : 0 < rowWeight S x := by
+include hV in
+lemma rowWeight_pos    
+      : 0 < rowWeight S x := by
   apply Finset.prod_pos
   intro g _
   apply Finset.prod_pos
   intro i _
   exact graph_mu_pos P g.val (hV g.val) _
 
-lemma rowProduct_pos (S : P.BigGroup → Finset (Fin J)) (x : BigRowPartial S) :
+lemma rowProduct_pos     :
     0 < rowProduct S x := by
   apply Finset.prod_pos
   intro g _
   apply Finset.prod_pos
   intro i _
   exact (P.prime g.val _ (x g i).property).pos
+
+end
 
 lemma row_split_product {R : Type*} [CommMonoid R] (ν : Pattern P J ell m)
     (block : P.BigGroup → Bool) (v : P.BigGroup → Fin J → R) :
@@ -151,15 +151,19 @@ def labelJoin (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (t : P.BigLabels ell) : P.BigLabels (J + ell) :=
   (labelSplit ν block).symm ((s, a, b), t)
 
-lemma idealMass_rowSplit (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (u : P.BigLabels J) :
+section
+variable (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (u : P.BigLabels J)
+
+
+lemma idealMass_rowSplit    
+      :
     P.idealMass u = rowWeight (sharedRows ν) ((rowSplit ν block u).1) *
       rowWeight (patternAuxCoordinates ν block false) ((rowSplit ν block u).2.1) *
       rowWeight (patternAuxCoordinates ν block true) ((rowSplit ν block u).2.2) :=
   row_split_product ν block (fun g i => P.mu g.val (u g i))
 
-lemma idealMass_prefixSplit (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (u : P.BigLabels J) :
+lemma idealMass_prefixSplit    
+      :
     P.idealMass u = rowWeight (sharedRows ν) ((prefixSplit ν block u).1) *
       Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block false)
         ((prefixSplit ν block u).2.1) *
@@ -174,21 +178,16 @@ lemma idealMass_prefixSplit (ν : Pattern P J ell m) (block : P.BigGroup → Boo
   rw [rowPartialTuple_weight, rowPartialTuple_weight]
   rfl
 
-lemma idealMass_labelJoin (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
+lemma idealMass_labelJoin    
     (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
     (t : P.BigLabels ell) :
     P.idealMass (labelJoin ν block s a b t) = rowWeight (sharedRows ν) s *
       Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block false) a *
       Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block true) b * P.idealMass t := by
   rw [idealMass_split, idealMass_prefixSplit ν block]
-  have he := (labelSplit ν block).apply_symm_apply ((s, a, b), t)
-  change ((prefixSplit ν block) ((splitBigLabels P J ell (labelJoin ν block s a b t)).1),
-    (splitBigLabels P J ell (labelJoin ν block s a b t)).2) = ((s, a, b), t) at he
-  have hp : (prefixSplit ν block) ((splitBigLabels P J ell
-      (labelJoin ν block s a b t)).1) = (s, a, b) := congrArg Prod.fst he
-  have ht : (splitBigLabels P J ell (labelJoin ν block s a b t)).2 = t :=
-    congrArg Prod.snd he
-  rw [hp, ht]
+  simp_all [labelSplit, prefixSplit, splitBigLabels, labelJoin, Prod.fst, Prod.snd]
+
+end
 
 end
 end Erdos821.P4Bridge

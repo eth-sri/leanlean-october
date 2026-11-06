@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.Row
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalCoefficient
@@ -11,17 +12,17 @@ noncomputable section
 namespace SevenEighths.ProbeRow
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
 
-def baseRowCoefficient (η : HeckeFamily.Character) (Xi : O →* ℂ)
-    (s : O) (hs : Supported (Ideal.span {s})) : O →* ℂ :=
+
+def baseRowCoefficient (η : HeckeFamily.Character) (Xi : ActualEisensteinCubic.O →* ℂ)
+    (s ) (hs : Supported (Ideal.span {s}))  :=
   targetMonoid η * InitialMeanSquare.conjugateMonoid Xi * reciprocityPhaseMonoid s hs
 
-lemma spectralSummand_mul_fixed_twist (S : Finset (Ideal O)) (D I J : Ideal O)
-    (φ Ψ : O →* ℂ) (t : ℂ) :
+lemma spectralSummand_mul_fixed_twist  S   D I J 
+     φ Ψ   t  :
     spectralSummand S D (φ*Ψ) t I J =
       φ (completedIndex I J) * spectralSummand S D Ψ t I J := by
-  have hc (η : O →* ℂ) : cubeWeight η J =
+  have hc (η : ActualEisensteinCubic.O →* ℂ) : cubeWeight η J =
       star (FiniteGaussPhase.angularFactor (primaryGenerator J))^3 *
         η (primaryGenerator J)^3 / (Ideal.absNorm J:ℂ) := rfl
   unfold spectralSummand
@@ -29,9 +30,9 @@ lemma spectralSummand_mul_fixed_twist (S : Finset (Ideal O)) (D I J : Ideal O)
   simp only [columnWeight, MonoidHom.mul_apply, map_mul, map_pow, mul_pow, completedIndex]
   ring
 
-theorem spectralSummand_row_separation (S : Finset (Ideal O)) (D I J : Ideal O)
-    (η : HeckeFamily.Character) (Xi : O →* ℂ) (s : O)
-    (hs : Supported (Ideal.span {s})) (m : O) (t : ℂ) :
+theorem spectralSummand_row_separation  S   D I J 
+     η   Xi   s 
+     hs   m   t  :
     spectralSummand S D (rowCoefficient η Xi s hs m) t I J =
       idealRowHom m (Ideal.span {completedIndex I J}) *
         spectralSummand S D (baseRowCoefficient η Xi s hs) t I J := by
@@ -43,14 +44,11 @@ theorem spectralSummand_row_separation (S : Finset (Ideal O)) (D I J : Ideal O)
   rw [hr, spectralSummand_mul_fixed_twist]
   rfl
 
-theorem spectralSummand_zero_completedIndex (S : Finset (Ideal O)) (D I J : Ideal O)
-    (Ψ : O →* ℂ) (t : ℂ) (hz : completedIndex I J=0) :
+theorem spectralSummand_zero_completedIndex  S   D I J 
+     Ψ   t  (hz : completedIndex I J=0) :
     spectralSummand S D Ψ t I J=0 := by
   rcases mul_eq_zero.mp hz with hI | hJ
-  · have hg : squarefreeGaussCoefficient I=0 := by
-      unfold squarefreeGaussCoefficient
-      rw [dite_eq_right (by simp [hI])]
-    simp only [spectralSummand, columnWeight, hg, zero_mul, zero_div, mul_zero]
+  · simp_all [squarefreeGaussCoefficient, spectralSummand, columnWeight]
   · have hJ' : primaryGenerator J=0 := (pow_eq_zero_iff (by decide : 3≠0)).mp hJ
     have hc : cubeWeight Ψ J=0 := by
       change star (FiniteGaussPhase.angularFactor (primaryGenerator J))^3 *

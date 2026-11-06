@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.CycleCounts
 public import Erdos821.S2.CycleSigns
@@ -13,35 +14,49 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2
 
-abbrev CycleChoices {a : ℕ} (π : Finset (Finset (Fin a))) :=
+abbrev CycleChoices {a } (π : Finset (Finset (Fin a))) :=
   (B : π) → {c : Equiv.Perm (Fin a) // c ∈ cyclesOn B.val}
 
-lemma cycleChoice_spec {a : ℕ} {π : Finset (Finset (Fin a))}
-    (τ : CycleChoices π) (B : π) : (τ B).val.IsCycle ∧ (τ B).val.support = B.val :=
+section
+variable {a : ℕ}
+include a
+
+section
+variable {π : Finset (Finset (Fin a))}
+include π
+
+lemma cycleChoice_spec    
+    (τ : CycleChoices π)  B  : (τ B).val.IsCycle ∧ (τ B).val.support = B.val :=
   (Finset.mem_filter.mp (τ B).property).2
 
-def cycleSelection {a : ℕ} {π : Finset (Finset (Fin a))} (τ : CycleChoices π) :
-    Finset (Equiv.Perm (Fin a)) := Finset.univ.image (fun B : π => (τ B).val)
+def cycleSelection {a } {π : Finset (Finset (Fin a))} (τ : CycleChoices π)  := Finset.univ.image (fun B : π => (τ B).val)
 
-lemma cycleSelection_disjoint {a : ℕ} {π : Finset (Finset (Fin a))}
-    (hπ : BirthCollection π) (τ : CycleChoices π) :
+section
+variable (hπ : BirthCollection π)
+include hπ
+
+section
+variable (τ : CycleChoices π)
+include τ
+
+lemma cycleSelection_disjoint    
+        :
     (cycleSelection τ : Set (Equiv.Perm (Fin a))).Pairwise Equiv.Perm.Disjoint := by
   intro c hc d hd hcd
   obtain ⟨B, _, rfl⟩ := Finset.mem_image.mp hc
   obtain ⟨C, _, rfl⟩ := Finset.mem_image.mp hd
   have hBC : B.val ≠ C.val := by
-    intro h
-    exact hcd (congrArg (fun B : π => (τ B).val) (Subtype.ext h))
+    grind
   apply Equiv.Perm.disjoint_iff_disjoint_support.mpr
   rw [(cycleChoice_spec τ B).2, (cycleChoice_spec τ C).2]
   exact hπ.2 B.property C.property hBC
 
-def cycleProduct {a : ℕ} {π : Finset (Finset (Fin a))}
-    (hπ : BirthCollection π) (τ : CycleChoices π) : Equiv.Perm (Fin a) :=
+def cycleProduct {a } {π : Finset (Finset (Fin a))}
+    (hπ : BirthCollection π) (τ : CycleChoices π)  :=
   (cycleSelection τ).noncommProd id ((cycleSelection_disjoint hπ τ).mono' fun _ _ h => h.commute)
 
-lemma cycleProduct_factors {a : ℕ} {π : Finset (Finset (Fin a))}
-    (hπ : BirthCollection π) (τ : CycleChoices π) :
+lemma cycleProduct_factors    
+        :
     (cycleProduct hπ τ).cycleFactorsFinset = cycleSelection τ := by
   apply Equiv.Perm.cycleFactorsFinset_eq_finset.mpr
   constructor
@@ -50,8 +65,8 @@ lemma cycleProduct_factors {a : ℕ} {π : Finset (Finset (Fin a))}
     exact (cycleChoice_spec τ B).1
   · exact ⟨cycleSelection_disjoint hπ τ, rfl⟩
 
-lemma cycleProduct_blocks {a : ℕ} {π : Finset (Finset (Fin a))}
-    (hπ : BirthCollection π) (τ : CycleChoices π) :
+lemma cycleProduct_blocks    
+        :
     cycleBirthBlocks (cycleProduct hπ τ) = π := by
   unfold cycleBirthBlocks
   rw [cycleProduct_factors]
@@ -60,17 +75,19 @@ lemma cycleProduct_blocks {a : ℕ} {π : Finset (Finset (Fin a))}
   · intro hB
     obtain ⟨c, hc, rfl⟩ := Finset.mem_image.mp hB
     obtain ⟨C, _, rfl⟩ := Finset.mem_image.mp hc
-    simpa only [(cycleChoice_spec τ C).2] using C.property
+    simp_all [cycleChoice_spec]
   · intro hB
     let C : π := ⟨B, hB⟩
     exact Finset.mem_image.mpr ⟨(τ C).val,
       Finset.mem_image.mpr ⟨C, Finset.mem_univ _, rfl⟩, (cycleChoice_spec τ C).2⟩
 
-lemma cycleProduct_injective {a : ℕ} {π : Finset (Finset (Fin a))}
-    (hπ : BirthCollection π) : Function.Injective (cycleProduct hπ) := by
+end
+
+lemma cycleProduct_injective    
+      : Function.Injective (cycleProduct hπ) := by
   intro τ τ' h
   have hsets : cycleSelection τ = cycleSelection τ' := by
-    rw [← cycleProduct_factors hπ τ, ← cycleProduct_factors hπ τ', h]
+    grind [cycleProduct_factors]
   funext B
   apply Subtype.ext
   have hc : (τ B).val ∈ cycleSelection τ' := by
@@ -84,14 +101,12 @@ lemma cycleProduct_injective {a : ℕ} {π : Finset (Finset (Fin a))}
   subst C
   exact hC.symm
 
-lemma exists_cycleChoices {a : ℕ} {π : Finset (Finset (Fin a))}
-    (hπ : BirthCollection π) (σ : Equiv.Perm (Fin a))
+lemma exists_cycleChoices    
+      (σ : Equiv.Perm (Fin a))
     (hσ : cycleBirthBlocks σ = π) : ∃ τ : CycleChoices π, cycleProduct hπ τ = σ := by
   have hex : ∀ B : π, ∃ c : Equiv.Perm (Fin a),
       c ∈ σ.cycleFactorsFinset ∧ c.support = B.val := by
-    intro B
-    have hB : B.val ∈ cycleBirthBlocks σ := by rw [hσ]; exact B.property
-    exact Finset.mem_image.mp hB
+    grind [cycleBirthBlocks]
   choose c hc hs using hex
   let τ : CycleChoices π := fun B => ⟨c B, Finset.mem_filter.mpr
     ⟨Finset.mem_univ _, (Equiv.Perm.mem_cycleFactorsFinset_iff.mp (hc B)).1, hs B⟩⟩
@@ -109,11 +124,14 @@ lemma exists_cycleChoices {a : ℕ} {π : Finset (Finset (Fin a))}
   apply Equiv.Perm.cycleFactorsFinset_injective
   exact (cycleProduct_factors hπ τ).trans hsel
 
-def permutationsWithBlocks {a : ℕ} (π : Finset (Finset (Fin a))) :
-    Finset (Equiv.Perm (Fin a)) := Finset.univ.filter (fun σ => cycleBirthBlocks σ = π)
+end
+
+end
+
+def permutationsWithBlocks {a } (π : Finset (Finset (Fin a)))  := Finset.univ.filter (fun σ => cycleBirthBlocks σ = π)
 
 /-- The fiber over a block collection has exactly the product of cycle factorials. -/
-theorem permutationsWithBlocks_card {a : ℕ} (π : Finset (Finset (Fin a)))
+theorem permutationsWithBlocks_card   (π : Finset (Finset (Fin a)))
     (hπ : BirthCollection π) :
     (permutationsWithBlocks π).card = ∏ B ∈ π, (B.card - 1).factorial := by
   have himage : Finset.univ.image (cycleProduct hπ) = permutationsWithBlocks π := by
@@ -134,8 +152,9 @@ theorem permutationsWithBlocks_card {a : ℕ} (π : Finset (Finset (Fin a)))
       apply Finset.prod_congr rfl
       intro B _
       exact cyclesOn_card B.val (hπ.1 B.val B.property)
-    _ = ∏ B ∈ π, (B.card - 1).factorial := by
-      exact Finset.prod_coe_sort π (fun B => (B.card - 1).factorial)
+    _ = ∏ B ∈ π, (B.card - 1).factorial := Finset.prod_coe_sort π (fun B => (B.card - 1).factorial)
+
+end
 
 
 end Erdos821.S2

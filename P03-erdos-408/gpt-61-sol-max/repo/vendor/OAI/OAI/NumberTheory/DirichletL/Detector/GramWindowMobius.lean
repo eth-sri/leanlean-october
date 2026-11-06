@@ -8,14 +8,14 @@ public import OAI.NumberTheory.DirichletL.Detector.GramShell
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
 open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
 variable {ι : Type*} [Fintype ι]
 
 lemma primary_norm (I : SupportedIdeal) :
@@ -23,7 +23,7 @@ lemma primary_norm (I : SupportedIdeal) :
   rw [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span,
     (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).1]
 
-lemma shell_dilated_column (D I : SupportedIdeal) (N : ℝ) :
+lemma shell_dilated_column  D I   N  :
     (Ideal.absNorm (supportedIdealProduct D I).val:ℝ)/N=
       ‖eisEmbedding (primaryGenerator I.val)‖^2/(N/Ideal.absNorm D.val) := by
   rw [primary_norm,supported_dilation_norm,Nat.cast_mul]
@@ -41,17 +41,17 @@ lemma shell_window_support (W : ℝ→ℂ) (hW : HasCompactSupport W) (N : ℝ) 
     simpa only [lowGaussColumns_mem,not_not] using h
 
 theorem original_window_mobius_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaximal)
-    (hbad : fixedBadPrimes⊆S) (σ : RayRing) (C k : O) (hC : λ₀^2∣C-1)
-    (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
-    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,λ₀∉P i) (c : ι→ℕ)
-    (W : ℝ→ℂ) (hW : HasCompactSupport W) (N : ℝ) (hN : 0<N)
-    (U : SchwartzMap ℝ ℂ) (v T : ℝ) :
+    (hbad : fixedBadPrimes⊆S) (σ : RayRing) (C k : ActualEisensteinCubic.O) (hC : ConcretePrimeRowBridge.goodLambda^2∣C-1)
+    (u : ActualEisensteinCubic.Oˣ) (a b : ℕ) (r : ActualEisensteinCubic.O) (hr : Supported (Ideal.span {r}))
+    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉P i)  c 
+     W   hW   N   hN 
+     U   v T  :
     (∑I∈lowGaussColumns W hW N hN,∑J∈lowGaussColumns W hW N hN,
       if IsCoprime I.val J.val then
         jointExtension S hS σ C k u a b r hr P hg c (primaryGenerator I.val) (primaryGenerator J.val)*
           shellProfile W v U T ((Ideal.absNorm I.val:ℝ)/N) ((Ideal.absNorm J.val:ℝ)/N) else 0)=
       ∑D∈divisorPool (lowGaussColumns W hW N hN) Subtype.val,(moebius D:ℂ)*
-        ∑'n : O,∑'m : O,
+        ∑'n : ActualEisensteinCubic.O,∑'m : ActualEisensteinCubic.O,
           jointExtension S hS σ C k u a b r hr P hg c (primaryGenerator D*n) (primaryGenerator D*m)*
             shellProfile W v U T (‖eisEmbedding n‖^2/(N/Ideal.absNorm D))
               (‖eisEmbedding m‖^2/(N/Ideal.absNorm D)) := by
@@ -70,7 +70,7 @@ theorem original_window_mobius_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
   congr 1
   let D₀ := poolDivisor F D
   have hd : D₀.val=D := poolDivisor_val F D hD
-  have hdp : λ₀^2∣primaryGenerator D₀.val-1 :=
+  have hdp : ConcretePrimeRowBridge.goodLambda^2∣primaryGenerator D₀.val-1 :=
     (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ D₀.property)).2
   have he := jointExtension_ideal_lattice S hS hbad σ C k (primaryGenerator D₀.val)
     (primary_product C _ hC hdp) u a b r hr P hg c
@@ -82,6 +82,6 @@ theorem original_window_mobius_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
   rw [hd]
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

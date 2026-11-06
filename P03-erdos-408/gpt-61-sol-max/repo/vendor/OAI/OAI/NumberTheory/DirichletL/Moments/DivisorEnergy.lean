@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorExtraction
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorEnergy
 open IdealMobiusDivisorSum CenteredMomentDivisorAllocation
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι α ρ : Type*} [DecidableEq ι]
 
-theorem allocation_card_small_power (N : ℕ) (hN : 0 < N) (ε : ℝ) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ (D : Ideal O), D ≠ 0 → ∀ s : Finset ι, s.card ≤ N →
+theorem allocation_card_small_power  N  (hN : 0 < N) (ε : ℝ) (hε : 0 < ε) :
+    ∃ C : ℝ, 0 < C ∧ ∀ (D : Ideal ActualEisensteinCubic.O), D ≠ 0 → ∀ s : Finset ι, s.card ≤ N →
       (Fintype.card (Allocation D s):ℝ) ≤ C*(Ideal.absNorm D:ℝ)^ε := by
   have hNr : (0:ℝ) < N := by exact_mod_cast hN
   obtain ⟨C,hC,hb⟩ := SquarefreeDivisorBound.prime_support_subsets_bound
@@ -33,6 +33,6 @@ theorem allocation_card_small_power (N : ℕ) (hN : 0 < N) (ε : ℝ) (hε : 0 <
 
 end SevenEighths.CenteredMomentDivisorEnergy
 
-end
+
 
 end OAI

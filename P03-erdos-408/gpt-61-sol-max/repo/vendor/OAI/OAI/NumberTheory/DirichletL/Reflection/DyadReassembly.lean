@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.DyadSelection
 public import OAI.NumberTheory.DirichletL.Reflection.InactiveRows
@@ -11,7 +12,7 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 
 lemma dependent_sum_filter_partition {α β A : Type*} [Fintype β] [DecidableEq β] [AddCommMonoid A]
     (T : Finset α) (label : α→β) (f : T→A) :
@@ -22,17 +23,13 @@ lemma dependent_sum_filter_partition {α β A : Type*} [Fintype β] [DecidableEq
     _ = ∑ p∈T,g p := by
       symm
       rw [←Finset.sum_coe_sort T]
-      apply Finset.sum_congr rfl
-      intro p hp
-      simp only [g,dite_eq_left p.property]
+      grind
     _ = ∑ j,∑ p∈T.filter (fun p => label p=j),g p := h.symm
     _ = _ := by
       apply Finset.sum_congr rfl
       intro j hj
       rw [←Finset.sum_coe_sort]
-      apply Finset.sum_congr rfl
-      intro p hp
-      simp only [g,dite_eq_left (Finset.mem_filter.mp p.property).1]
+      grind
 
 theorem dependent_partition_energy {α β ι κ : Type*} [Fintype ι] [Fintype κ] [DecidableEq ι] [DecidableEq κ]
     (rows : Finset α) (tuples : Finset β) (rowLabel : α→ι) (slotLabel : β→κ)
@@ -66,9 +63,9 @@ theorem dependent_partition_energy {α β ι κ : Type*} [Fintype ι] [Fintype �
     _ = _ := by rw [Finset.mul_sum]
 
 variable {φ σ : Type*} [Fintype φ] [Fintype σ]
-variable {N a c : Eis} {mode : Bool}
-variable (G : PrimeFamily φ) (rows : Finset (Ideal Eis)) (hrows : ∀ K∈rows,Admissible K)
-    (tuples : Finset (σ→Ideal Eis)) (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
+variable {N a c : ActualEisensteinCubic.O} {mode : Bool}
+variable (G : PrimeFamily φ) (rows : Finset (Ideal ActualEisensteinCubic.O)) (hrows : ∀ K∈rows,Admissible K)
+    (tuples : Finset (σ→Ideal ActualEisensteinCubic.O)) (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
     (hgood : ∀ p∈tuples,∀ i,ConcretePrimeRowBridge.goodLambda∉p i) (Hrow Hslot : ℝ)
 variable (C : ∀ i : Fin (columnDyadicLength Hrow+1),∀ j : Fin (columnDyadicLength Hslot+1),
     ∀ K : divisorDyadicBin rows Hrow i,∀ p : activeTupleDyad tuples Hslot j,
@@ -76,9 +73,9 @@ variable (C : ∀ i : Fin (columnDyadicLength Hrow+1),∀ j : Fin (columnDyadicL
       ControlledStratumArithmetic (G.reflected K.val (hrows K.val (divisorDyadicBin_subset rows Hrow i K.property))
         (memberTupleFamily tuples hmax hgood ⟨p.val,activeTupleDyad_subset tuples Hslot j p.property⟩)).generator N a c mode)
 variable (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (jF : φ→ℕ) (W : ℝ→ℂ) (θ X : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ)
+    (jF : φ→ℕ) (W : ℝ→ℂ) (θ X : ℝ) (r : Ideal ActualEisensteinCubic.O→ℂ) (aw : (σ→Ideal ActualEisensteinCubic.O)→ℂ)
 
-def dyadicPhysicalTerm (K : rows) (p : tuples) : ℂ :=
+def dyadicPhysicalTerm (K : rows) (p : tuples)  :=
   if hp:IsCoprime K.val (slotTupleProduct p.val) then
     r K.val*aw p.val*mixedReflectedValue
       (dyadicTupleControlled G rows hrows tuples hmax hgood Hrow Hslot C K p hp) s
@@ -104,7 +101,7 @@ lemma dyadicPhysicalTerm_at (i : Fin (columnDyadicLength Hrow+1))
   · rw [dyadicTupleControlled_at]
   · rfl
 
-theorem dyadic_physical_energy (E : ℝ)
+theorem dyadic_physical_energy  E 
     (hE : ∀ i : Fin (columnDyadicLength Hrow+1),∀ j : Fin (columnDyadicLength Hslot+1),
       (∑ K : rows.filter (fun K => divisorDyadicLabel Hrow K=i),
         ‖∑ p : tuples.filter (fun p => divisorDyadicLabel Hslot (slotTupleProduct p)=j),

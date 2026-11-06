@@ -14,22 +14,22 @@ open Set
 namespace SevenEighths.DetectorDictionaryInverseUniform
 open HeckeInverseAmplification HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
 
-def sourceOperator (scaled : Bool) : 𝓢(ℝ,ℂ)→L[ℝ]𝓢(ℝ,ℂ) :=
+def sourceOperator (scaled : Bool)  :=
   if scaled then scaleCLM else ContinuousLinearMap.id ℝ _
 
-def inverseDetectorSchwartz (reverse : Bool) (n : ℕ) (R σ t : ℝ) : 𝓢(ℝ,ℂ) :=
+def inverseDetectorSchwartz (reverse : Bool) (n : ℕ) (R σ t : ℝ)  :=
   inverseSchwartz reverse n cutoff positiveAnnular (1/4) (9/4) (by norm_num)
     (cutoff.smooth ⊤) positiveAnnular_smooth positiveAnnular_support R σ t
 
-lemma inverseDetectorSchwartz_apply (reverse : Bool) (n : ℕ) (R σ t x : ℝ) :
+lemma inverseDetectorSchwartz_apply  reverse   n   R σ t x  :
     inverseDetectorSchwartz reverse n R σ t x=
       twistProfile (baseProfile reverse n cutoff positiveAnnular R) σ t x :=
   inverseSchwartz_apply _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-def inverseDetectorTest (scaled reverse : Bool) (n : ℕ) (R σ t : ℝ) : 𝓢(ℝ,ℂ) :=
+def inverseDetectorTest (scaled reverse : Bool) (n : ℕ) (R σ t : ℝ)  :=
   sourceOperator scaled (inverseDetectorSchwartz reverse n R σ t)
 
-lemma inverseDetectorTest_apply (scaled reverse : Bool) (n : ℕ) (R σ t x : ℝ) :
+lemma inverseDetectorTest_apply  scaled reverse   n   R σ t x  :
     inverseDetectorTest scaled reverse n R σ t x=
       if scaled then scaleProfile (twistProfile (baseProfile reverse n cutoff positiveAnnular R) σ t) x
       else twistProfile (baseProfile reverse n cutoff positiveAnnular R) σ t x := by

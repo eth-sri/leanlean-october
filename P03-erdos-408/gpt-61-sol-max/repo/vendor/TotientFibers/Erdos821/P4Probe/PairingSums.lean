@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.RawAssembly
 
@@ -13,9 +14,17 @@ open Blueprint.Graph
 
 noncomputable section
 
-lemma idealFullPair_sum_source {P : PrimeGroups} {M : ℕ} {ι : Type*}
-    (K : P.BigLabels M → P.BigLabels M → ℂ) (V : Finset ι)
-    (c : ι → ℂ) (f : ι → P.BigLabels M → ℂ) (g : P.BigLabels M → ℂ) :
+section
+variable {P : PrimeGroups} {M : ℕ}
+include P M
+
+section
+variable {ι : Type*} (K : P.BigLabels M → P.BigLabels M → ℂ) (V : Finset ι) (c : ι → ℂ)
+include ι K V c
+
+lemma idealFullPair_sum_source      
+       
+      (f : ι → P.BigLabels M → ℂ)  g  :
     idealFullPair K (fun a => ∑ i ∈ V, c i * f i a) g =
       ∑ i ∈ V, star (c i) * idealFullPair K (f i) g := by
   unfold idealFullPair
@@ -30,18 +39,11 @@ lemma idealFullPair_sum_source {P : PrimeGroups} {M : ℕ} {ι : Type*}
       exact Finset.sum_comm
     _ = ∑ i ∈ V, ∑ a, ∑ b, term a b i := Finset.sum_comm
     _ = _ := by
-      apply Finset.sum_congr rfl
-      intro i _
-      apply Finset.sum_congr rfl
-      intro a _
-      apply Finset.sum_congr rfl
-      intro b _
-      dsimp [term]
-      ring
+      grind
 
-lemma idealFullPair_sum_target {P : PrimeGroups} {M : ℕ} {ι : Type*}
-    (K : P.BigLabels M → P.BigLabels M → ℂ) (V : Finset ι)
-    (c : ι → ℂ) (f : P.BigLabels M → ℂ) (g : ι → P.BigLabels M → ℂ) :
+lemma idealFullPair_sum_target      
+       
+      (f : P.BigLabels M → ℂ) (g : ι → P.BigLabels M → ℂ) :
     idealFullPair K f (fun b => ∑ i ∈ V, c i * g i b) =
       ∑ i ∈ V, c i * idealFullPair K f (g i) := by
   unfold idealFullPair
@@ -56,21 +58,16 @@ lemma idealFullPair_sum_target {P : PrimeGroups} {M : ℕ} {ι : Type*}
       exact Finset.sum_comm
     _ = ∑ i ∈ V, ∑ a, ∑ b, term a b i := Finset.sum_comm
     _ = _ := by
-      apply Finset.sum_congr rfl
-      intro i _
-      apply Finset.sum_congr rfl
-      intro a _
-      apply Finset.sum_congr rfl
-      intro b _
-      dsimp [term]
-      ring
+      grind
 
-lemma idealFullPair_sub_source {P : PrimeGroups} {M : ℕ}
+end
+
+lemma idealFullPair_sub_source    
     (K : P.BigLabels M → P.BigLabels M → ℂ) (f h g : P.BigLabels M → ℂ) :
     idealFullPair K (fun a => f a - h a) g = idealFullPair K f g - idealFullPair K h g := by
   simp [idealFullPair, star_sub, mul_sub, sub_mul, Finset.sum_sub_distrib]
 
-lemma idealFullPair_sum_both {P : PrimeGroups} {M : ℕ} {ι κ : Type*}
+lemma idealFullPair_sum_both     {ι κ : Type*}
     (K : P.BigLabels M → P.BigLabels M → ℂ) (V : Finset ι) (W : Finset κ)
     (c : ι → ℂ) (d : κ → ℂ)
     (f : ι → P.BigLabels M → ℂ) (g : κ → P.BigLabels M → ℂ) :
@@ -84,10 +81,12 @@ lemma idealFullPair_sum_both {P : PrimeGroups} {M : ℕ} {ι κ : Type*}
   intro j _
   ring
 
-lemma idealFullPair_sub_target {P : PrimeGroups} {M : ℕ}
+lemma idealFullPair_sub_target    
     (K : P.BigLabels M → P.BigLabels M → ℂ) (f g h : P.BigLabels M → ℂ) :
     idealFullPair K f (fun b => g b - h b) = idealFullPair K f g - idealFullPair K f h := by
   simp [idealFullPair, mul_sub, Finset.sum_sub_distrib]
+
+end
 
 end
 end Erdos821.P4Probe

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerPool
 public import OAI.NumberTheory.DirichletL.Inversion.InitialRawDictionary
@@ -14,19 +15,17 @@ open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeR
 open SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialRayAttachment
 open SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialKernelBridge SevenEighths.InverseInitialEnergyCallerPool
 namespace SevenEighths.InverseInitialEnergyCallerWindow
-local notation "Eis" => ActualEisensteinCubic.O
 
-def originalSource (Z r b : ℝ) : Finset (Ideal Eis) :=
+
+def originalSource (Z r b : ℝ)  :=
   (idealsUpTo ⌈Z^r*b⌉₊).filter Supported
 
-theorem originalSource_supported (Z r b : ℝ) :
-    ∀n∈originalSource Z r b,Squarefree n→Supported n := by
-  intro n hn _
-  exact (Finset.mem_filter.mp hn).2
+theorem originalSource_supported  Z r b  :
+    ∀n∈originalSource Z r b,Squarefree n→Supported n := fun n hn a => (Finset.mem_filter.mp hn).right
 
-theorem residual_window_eq (W : ℝ→ℂ) {P j c : Ideal Eis}
+theorem residual_window_eq  W   {P j c} 
     (hP : Squarefree P) (hj : j∣P) (hc : residual P j∣c)
-    (Z r z G : ℝ) (hZ : 0<Z) :
+     Z r z G  (hZ : 0<Z) :
     residualOverlapWindow P j W Z z G ((c.absNorm:ℝ)/Z^(r+z-2*G)) =
       W (((reconstruct P j c).absNorm:ℝ)/Z^r) := by
   unfold residualOverlapWindow
@@ -34,7 +33,7 @@ theorem residual_window_eq (W : ℝ→ℂ) {P j c : Ideal Eis}
 
 theorem reconstructed_mem_originalSource
     (W : ℝ→ℂ) (Z r z G b : ℝ) (hZ : 0<Z) (hW : ∀x,W x≠0→x≤b)
-    {P j c : Ideal Eis} (hP : Admissible P) (hj : j∣P)
+     {P j c}  (hP : Admissible P) (hj : j∣P)
     (hc : Admissible c) (hPc : residual P j∣c)
     (hlive : residualOverlapWindow P j W Z z G ((c.absNorm:ℝ)/Z^(r+z-2*G))≠0) :
     reconstruct P j c∈originalSource Z r b := by

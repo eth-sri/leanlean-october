@@ -15,7 +15,7 @@ namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-def AbsoluteClosedRootTask : Prop :=
+def AbsoluteClosedRootTask  :=
   HistoryStructureProofs → SpanGhostWeightTask → SpanMarkWeightTask → SpanSumTask →
   ResidueFactorizationTask →
   ∀ (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m), 0 < n →

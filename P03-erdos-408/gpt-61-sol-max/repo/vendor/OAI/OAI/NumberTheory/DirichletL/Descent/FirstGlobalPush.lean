@@ -11,12 +11,11 @@ open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
-local notation "Eis"=>ActualEisensteinCubic.O
+
 variable {ι κ:Type*} [DecidableEq ι] [DecidableEq κ]
 
-def firstGlobalRetainedSource (p:ι→Eis) (outer:Finset κ)
-    (labels:κ→Finset (Ideal Eis)) (cube:κ→CubeCoordinates ι) (Y:ℝ):
-    Finset (Σ _ : κ,Ideal Eis×Eis):=
+def firstGlobalRetainedSource (p:ι→ActualEisensteinCubic.O) (outer:Finset κ)
+    (labels:κ→Finset (Ideal ActualEisensteinCubic.O)) (cube:κ→CubeCoordinates ι) (Y:ℝ):=
   outer.sigma (fun k=>firstRetainedSource p (labels k) (cube k) Y)
 
 end SevenEighths.InverseMoment

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalDyads
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalEnergyUniformDegree
@@ -10,14 +11,14 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_dyadic_geometry_uniform_uniform_degree
     (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (L cstar η : ℝ)
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     L cstar η 
     (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η) (hη1 : η≤1) (hηc : η≤cstar/100000) :
     ∃ (degree : ℕ), ∀ {Nlevel : Eis}, ∀
     {γ : Type*} [Fintype γ] (a c₀ : γ→Eis) (mode : γ→Bool)
@@ -79,7 +80,7 @@ theorem canonical_dyadic_geometry_uniform_uniform_degree
   let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
   let jF := fun b : A => completedLocalExponent J F b.val.val
   have hz : 1<Z := lt_of_lt_of_le hZ₀ hZ
-  have hzp : 0<Z := lt_trans zero_lt_one hz
+  
   have hrowNorm : ∀ K∈rows,1≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤Hrow :=
     fun K hK => original_residual_norm_bounds parents J (B*F*R) hbad (Z^M) hparents K (hsub hK)
   have htupleNorm : ∀ p∈tuples,1≤(Ideal.absNorm (slotTupleProduct p):ℝ) ∧
@@ -114,7 +115,7 @@ theorem canonical_dyadic_geometry_uniform_uniform_degree
       exact one_le_mul_of_one_le_of_one_le
         (QuadraticMainBoundary.norm_one_le (rowPowerfulPart_ne_zero I))
         (QuadraticMainBoundary.norm_one_le (squarefreeMaskPart_ne_zero (rowSimplePart I) (B*F*R)))
-    have hs := hKlower.trans (hres.trans hIn)
+    
     linarith
   have hPupper : (2*divisorDyadicScale j.val)/2≤Z^z₀ := by
     convert activeTupleDyad_scale_le tuples Hslot htupleNorm j hj using 1 ; dsimp [Hslot] ; ring
@@ -152,7 +153,7 @@ theorem canonical_dyadic_geometry_uniform_uniform_degree
     (fun K hK => hr K (divisorDyadicBin_subset rows Hrow i hK))
     (fun p hp => haw p (activeTupleDyad_subset tuples Hslot j hp))
   exact hb
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

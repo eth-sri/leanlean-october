@@ -11,18 +11,18 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonRawScale
 open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [Fintype ι]
 
-def frozenScale (B : Tuple ι) (P : ι → ℝ) (i : ι) : ℝ :=
+def frozenScale (B : Tuple ι) (P : ι → ℝ) (i : ι)  :=
   if B (Sum.inl i)=1 then 1 else P i
 
-def plainNorm (B : Tuple ι) : ℝ :=
+def plainNorm (B : Tuple ι)  :=
   (Ideal.absNorm (B (Sum.inr 0)):ℝ)*Ideal.absNorm (B (Sum.inr 1))
 
-def rawReduction (B : Tuple ι) (P : ι → ℝ) : ℝ := plainNorm B*∏ i,frozenScale B P i
+def rawReduction (B : Tuple ι) (P : ι → ℝ)  := plainNorm B*∏ i,frozenScale B P i
 
-def remainingRaw (B : Tuple ι) (T : ℝ) (P : ι → ℝ) : ℝ :=
+def remainingRaw (B : Tuple ι) (T : ℝ) (P : ι → ℝ)  :=
   (T/plainNorm B)*∏ i : liveIndices B,P i
 
 omit [Fintype ι] in
@@ -38,10 +38,14 @@ theorem frozenScale_pos (B : Tuple ι) (P : ι → ℝ) (hP : ∀ i,0<P i) (i : 
   · exact zero_lt_one
   · exact hP i
 
-theorem rawReduction_pos (B : Tuple ι) (hB : ∀ i,B i≠0) (P : ι → ℝ) (hP : ∀ i,0<P i) :
+section
+variable (B : Tuple ι) (hB _hB : ∀ i,B i≠0) (B₁ B₂ : Ideal ActualEisensteinCubic.O) (_hB₁ : B₁≠0) (_hB₂ : B₂≠0) (T : ℝ) (C R : Ideal ActualEisensteinCubic.O) (hprod : finiteTupleProduct B=C) (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ) (hP : ∀ i,0<P i) (a b : ℝ) (ha : 0<a) (hW : ∀ i,Function.support (Wslot i)⊆Set.Icc a b) (hne : frozenCoefficient B C R ν Wslot P≠0)
+
+include hB hP in
+theorem rawReduction_pos         :
     0<rawReduction B P := mul_pos (plainNorm_pos B hB) (Finset.prod_pos (fun i _ => frozenScale_pos B P hP i))
 
-theorem slot_scale_split (B : Tuple ι) (P : ι → ℝ) :
+theorem slot_scale_split     :
     (∏ i,frozenScale B P i)*(∏ i : liveIndices B,P i)=∏ i,P i := by
   rw [Finset.prod_coe_sort (liveIndices B) P]
   rw [← Finset.prod_filter_mul_prod_filter_not Finset.univ (fun i => B (Sum.inl i)=1) P]
@@ -50,7 +54,8 @@ theorem slot_scale_split (B : Tuple ι) (P : ι → ℝ) :
   simp only [Finset.prod_const_one,one_mul]
   ring
 
-theorem raw_scale_identity (B : Tuple ι) (hB : ∀ i,B i≠0) (T : ℝ) (P : ι → ℝ) :
+include hB in
+theorem raw_scale_identity         :
     remainingRaw B T P*rawReduction B P=T*∏ i,P i := by
   unfold remainingRaw rawReduction
   have h := slot_scale_split B P
@@ -59,8 +64,9 @@ theorem raw_scale_identity (B : Tuple ι) (hB : ∀ i,B i≠0) (T : ℝ) (P : ι
       field_simp [(plainNorm_pos B hB).ne']
     _ = _ := by rw [h]
 
-theorem remainingRaw_source (B : Tuple ι) (_hB : ∀ i,B i≠0)
-    (B₁ B₂ : Ideal O) (_hB₁ : B₁≠0) (_hB₂ : B₂≠0) (T : ℝ) (P : ι → ℝ) :
+include _hB _hB₁ _hB₂ in
+theorem remainingRaw_source    
+              :
     remainingRaw B (T/((Ideal.absNorm B₁:ℝ)*Ideal.absNorm B₂)) P=
       (T/((Ideal.absNorm (B₁*B (Sum.inr 0)):ℝ)*Ideal.absNorm (B₂*B (Sum.inr 1))))*
         ∏ i : liveIndices B,P i := by
@@ -68,25 +74,27 @@ theorem remainingRaw_source (B : Tuple ι) (_hB : ∀ i,B i≠0)
   simp only [map_mul,Nat.cast_mul]
   ring
 
-theorem product_norm (B : Tuple ι) :
+theorem product_norm   :
     (Ideal.absNorm (finiteTupleProduct B):ℝ)=plainNorm B*∏ i,(Ideal.absNorm (B (Sum.inl i)):ℝ) := by
   simp only [finiteTupleProduct,Fintype.prod_sum_type,Fin.prod_univ_two,map_mul,map_prod,
     Nat.cast_mul,Nat.cast_prod,plainNorm]
   ring
 
-theorem frozen_window_ne_zero (B : Tuple ι) (C R : Ideal O) (ν : ι → Ideal O → ℂ)
-    (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (hne : frozenCoefficient B C R ν Wslot P≠0) (i : ι) (hi : B (Sum.inl i)≠1) :
+include hne in
+theorem frozen_window_ne_zero      
+       
+       i  (hi : B (Sum.inl i)≠1) :
     Wslot i ((Ideal.absNorm (B (Sum.inl i)):ℝ)/P i)≠0 := by
   have hp := (mul_ne_zero_iff.mp hne).1
   have hx := Finset.prod_ne_zero_iff.mp hp i (Finset.mem_filter.mpr ⟨Finset.mem_univ _,hi⟩)
   exact (mul_ne_zero_iff.mp hx).2
 
-theorem actual_reduction_norm (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O)
-    (hprod : finiteTupleProduct B=C) (ν : ι → Ideal O → ℂ)
-    (Wslot : ι → ℝ → ℂ) (P : ι → ℝ) (hP : ∀ i,0<P i)
-    (a b : ℝ) (ha : 0<a) (hW : ∀ i,Function.support (Wslot i)⊆Set.Icc a b)
-    (hne : frozenCoefficient B C R ν Wslot P≠0) :
+include hB hprod hP ha hW hne in
+theorem actual_reduction_norm      
+       
+         
+         
+      :
     (min 1 a)^Fintype.card ι*rawReduction B P≤(Ideal.absNorm C:ℝ) ∧
       (Ideal.absNorm C:ℝ)≤(max 1 b)^Fintype.card ι*rawReduction B P := by
   have hi (i : ι) : min 1 a*frozenScale B P i≤(Ideal.absNorm (B (Sum.inl i)):ℝ) ∧
@@ -113,6 +121,8 @@ theorem actual_reduction_norm (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O
     simp only [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ] at hh
     have hh' := mul_le_mul_of_nonneg_left hh (plainNorm_pos B hB).le
     simpa only [rawReduction,mul_left_comm,mul_assoc] using hh'
+
+end
 
 end SevenEighths.CenteredMomentCommonRawScale
 

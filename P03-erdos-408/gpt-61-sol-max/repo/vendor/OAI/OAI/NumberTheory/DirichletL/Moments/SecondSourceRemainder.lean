@@ -53,7 +53,7 @@ open CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentRankinRadical
 open CenteredMomentSecondExceptionalCommonSaving
 open ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation
 open CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
-local notation "O" => HeckeFamily.O
+
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
@@ -77,16 +77,16 @@ theorem original_source_remainder (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
     (ε δ θ B ξ saving:ℝ)(hε:0<ε)(hδ:0<δ)(hθ:0<θ)(hB:0≤B)(hξ:0<ξ):
     ∃J:ℕ,∃Sprofile SΦ:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧
       ∃Cexc Cdiag Ctail:ℝ,0≤Cexc ∧ 0<Cdiag ∧ 0<Ctail ∧
-      ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} →
+      ∀Q:Ideal HeckeFamily.O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:HeckeFamily.O)} →
       ∃Kc:ℝ,0<Kc ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s:Input ι)(p:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
       (∀i,1≤s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
-      ∀(R0 seed:Ideal O),R0≠0 → Squarefree seed → seed≠0 →
+      ∀(R0 seed:Ideal HeckeFamily.O),R0≠0 → Squarefree seed → seed≠0 →
       0≤sourceRadius s → sourceRadius s≤Z^B →
       (s.η.modulus.absNorm:ℝ)≤Z^B → (R0.absNorm:ℝ)≤Z^B →
       let S:=finiteColumns (Fintype.piFinset s.pools)
       let β:=coefficient s R0 seed
-      ∀χ₀:RayCharacter,∀m:O,m≠0 → goodLambda∣m → (2:O)∣m →
+      ∀χ₀:RayCharacter,∀m:HeckeFamily.O,m≠0 → goodLambda∣m → (2:HeckeFamily.O)∣m →
       ∀(Tsec Kphys:ℝ),0<Kphys → volume s.toData≤Z^B → Tsec≤Z^B →
       (volume s.toData)^2/Kphys≤Tsec →
       let R:=frequencyRadius Tsec Z ξ
@@ -145,8 +145,7 @@ theorem original_source_remainder (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
   calc
     _≤(‖((Kphys:ℂ)*paperRadialFourier W 0)*sourceSecondZero S β s.η s.t‖+
       ‖partEnergy true s.η χ₀ Q m s.t S β W Kphys Tsec Z ξ (sourceRadius s)‖+
-      ‖secondDiscardedEnergy s.η s.t S β W Kphys Tsec Z ξ‖)/volume s.toData:=by
-      exact div_le_div_of_nonneg_right ((norm_add_le _ _).trans
+      ‖secondDiscardedEnergy s.η s.t S β W Kphys Tsec Z ξ‖)/volume s.toData:=div_le_div_of_nonneg_right ((norm_add_le _ _).trans
         (add_le_add (norm_add_le _ _) le_rfl)) (CenteredMomentExceptionalAmplitudePair.volume_pos s.toData).le
     _=_:=by rw [add_div,add_div]
     _≤_:=by

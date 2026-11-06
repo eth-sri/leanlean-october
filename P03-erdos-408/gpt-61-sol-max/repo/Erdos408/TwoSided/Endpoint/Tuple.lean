@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.Factor
 public import Erdos408.TwoSided.Endpoint.Tuple.General
@@ -86,8 +87,8 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
   have hL1 : 1 ≤ L := le_trans (by linarith [pow_pos (by norm_num : (0 : ℝ) < 4) d]) hL
   have hL0 : 0 < L := by linarith
   have hx0 : 0 < x := by linarith
-  have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hY₁
-  have hT₀0 : 0 ≤ x * L ^ (Cm + 2) := by positivity
+  
+  
   -- the tuple coefficient `c(u) = 𝒲(u) 𝒜_B(u) W_{S'}^b(u)`
   set cf : ℕ → ℂ := fun n => ((markedWeight Finset.univ q (fun i => band x (a i)) n *
       weightedSlotCount x u v Bc n : ℝ) : ℂ) *

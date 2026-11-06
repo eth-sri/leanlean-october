@@ -11,12 +11,12 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss SmoothMobiusCorrection
-local notation "O" => ActualEisensteinCubic.O
 
-def primeDefectBound (P : PrimeIdeal) : ℝ :=
+
+def primeDefectBound (P : PrimeIdeal)  :=
   240 * (Ideal.absNorm P.val : ℝ) ^ (-(363/200:ℝ))
 
-def smallPrimeSet (N : ℕ) : Finset (Ideal O) :=
+def smallPrimeSet (N : ℕ) : Finset (Ideal ActualEisensteinCubic.O) :=
   (Ideal.finite_setOfPred_absNorm_le N).toFinset.filter Prime
 
 lemma mem_smallPrimeSet (N : ℕ) (P : PrimeIdeal) :

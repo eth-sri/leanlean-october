@@ -35,15 +35,20 @@ def toValidHistory (h : HistoryStructureProofs)
     (c : SpanConfiguration A n) : ValidDistinctHistory A n :=
   ⟨c.history, c.history_valid h.edgeMemory hk, c.history_distinct h.births hk⟩
 
-theorem toValidHistory_injective (h : HistoryStructureProofs)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k) :
+section
+variable (h : HistoryStructureProofs) (hn : 0 < n) (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
+
+
+theorem toValidHistory_injective  
+      :
     Function.Injective (toValidHistory (n := n) h hk) := by
   intro c d he
   exact history_injective (A := A) (n := n)
     (congrArg (fun H : ValidDistinctHistory A n => H.val) he)
 
-theorem toValidHistory_surjective (h : HistoryStructureProofs) (hn : 0 < n)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k) :
+include hn in
+theorem toValidHistory_surjective    
+      :
     Function.Surjective (toValidHistory (n := n) h hk) := by
   intro H
   obtain ⟨S, hS, hy, sigma, he⟩ := h.reconstruction h.classification h.anchors
@@ -54,18 +59,24 @@ theorem toValidHistory_surjective (h : HistoryStructureProofs) (hn : 0 < n)
   refine ⟨c, Subtype.ext ?_⟩
   exact he.symm
 
+end
+
 def historyEquiv (h : HistoryStructureProofs) (hn : 0 < n)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k) :
-    SpanConfiguration A n ≃ ValidDistinctHistory A n :=
+    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)  :=
   Equiv.ofBijective (toValidHistory h hk)
     ⟨toValidHistory_injective h hk, toValidHistory_surjective h hn hk⟩
 
 end SpanConfiguration
 
-theorem distinctMemoryExpression_eq_configurations (h : HistoryStructureProofs)
-    (A : Model F P J m) (n : ℕ) (hn : 0 < n)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (rho theta : ℝ) :
+section
+variable (h : HistoryStructureProofs) (A : Model F P J m) (n : ℕ) (hn : 0 < n) (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k) (rho theta : ℝ)
+
+
+include h hn hk in
+theorem distinctMemoryExpression_eq_configurations  
+         
+     
+      :
     distinctMemoryExpression A n rho theta =
       ∑ c : SpanConfiguration A n, c.history.Weight rho theta := by
   rw [distinctMemoryExpression_eq_finite_sum]
@@ -73,10 +84,11 @@ theorem distinctMemoryExpression_eq_configurations (h : HistoryStructureProofs)
     (fun c => c.history.Weight rho theta) (fun H => H.val.Weight rho theta)
     (fun _ => rfl)).symm
 
-theorem distinctMemoryExpression_eq_lifespans (h : HistoryStructureProofs)
-    (A : Model F P J m) (n : ℕ) (hn : 0 < n)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (rho theta : ℝ) :
+include h hn hk in
+theorem distinctMemoryExpression_eq_lifespans  
+         
+     
+      :
     distinctMemoryExpression A n rho theta =
       ∑ Q : {Q : ResiduePath A n // Q.Valid},
         ∑ S : {S : LifespanAssignment P n // Q.val.lifespanValid S},
@@ -94,6 +106,8 @@ theorem distinctMemoryExpression_eq_lifespans (h : HistoryStructureProofs)
   intro y _
   simpa only [ResiduePath.reconstructedHistory, ResiduePath.reconstructedGhostChoice] using
     (Q.val.reconstructedHistory S.val S.property y.val).reorderBatches_weight_sum rho theta
+
+end
 
 
 end Erdos821.S2Core

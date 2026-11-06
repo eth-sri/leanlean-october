@@ -6,44 +6,46 @@ public import OAI.NumberTheory.DirichletL.Detector.PairPhase
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhase
 open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CubicEisenstein
 open CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
 
-lemma reciprocitySign_star (a b : O) : star (reciprocitySign a b)=reciprocitySign a b := by
+
+section
+variable (a b c n d m : ActualEisensteinCubic.O)
+
+lemma reciprocitySign_star   : star (reciprocitySign a b)=reciprocitySign a b := by
   simp only [reciprocitySign, star_intCast]
 
-lemma sexticPair_mul_left (a b c : O) :
+lemma sexticPair_mul_left   :
     sexticPair (a*b) c = sexticPair a c * sexticPair b c := by
   simp only [sexticPair, ← Ideal.span_singleton_mul_span_singleton, map_mul,
     idealRowHom_argument_mul]
   ring
 
-lemma sexticPair_mul_right (a b c : O) :
+lemma sexticPair_mul_right   :
     sexticPair a (b*c) = sexticPair a b * sexticPair a c := by
   simp only [sexticPair, ← Ideal.span_singleton_mul_span_singleton, map_mul,
     idealRowHom_argument_mul]
   ring
 
-lemma sexticPair_cube_left (a b : O) : sexticPair (a^3) b=sexticPair a b^3 := by
+lemma sexticPair_cube_left   : sexticPair (a^3) b=sexticPair a b^3 := by
   rw [show a^3=a*a*a by ring, sexticPair_mul_left, sexticPair_mul_left]
   ring
 
-lemma sexticPair_cube_right (a b : O) : sexticPair a (b^3)=sexticPair a b^3 := by
+lemma sexticPair_cube_right   : sexticPair a (b^3)=sexticPair a b^3 := by
   rw [show b^3=b*b*b by ring, sexticPair_mul_right, sexticPair_mul_right]
   ring
 
-theorem sexticPair_cube_supported (a b : O)
+theorem sexticPair_cube_supported  
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
     (hpa : goodLambda^2∣a-1) (hpb : goodLambda^2∣b-1) (hcop : IsCoprime a b) :
     sexticPair a b^3 = reciprocitySign a b := by
   have hr : idealRowHom b (Ideal.span {a}) =
       reciprocitySign a b * idealRowHom a (Ideal.span {b}) :=
     idealRowHom_primary_reciprocity a b hpa hpb ha hb
-  have hc : IsCoprime (Ideal.span {b}:Ideal O) (Ideal.span {a}) := by
-    exact (Ideal.isCoprime_span_singleton_iff b a).mpr hcop.symm
+  have hc : IsCoprime (Ideal.span {b}:Ideal ActualEisensteinCubic.O) (Ideal.span {a}) := (Ideal.isCoprime_span_singleton_iff b a).mpr hcop.symm
   have h6 := idealRowHom_sixth_mask a (Ideal.span {b}) hb
   rw [idealRowHom_argument_pow _ _ _ hb, ite_eq_left hc] at h6
   have h2 := reciprocitySign_sq a b (supported_residue_odd a ha) (supported_residue_odd b hb)
@@ -54,7 +56,7 @@ theorem sexticPair_cube_supported (a b : O)
       ring
     _ = _ := by rw [h6,mul_one,pow_succ,h2,one_mul]
 
-theorem completed_cubic_cross_cancel (c n d m : O)
+theorem completed_cubic_cross_cancel  
     (hc : Supported (Ideal.span {c})) (hn : Supported (Ideal.span {n}))
     (hd : Supported (Ideal.span {d})) (hm : Supported (Ideal.span {m}))
     (hpc : goodLambda^2∣c-1) (hpn : goodLambda^2∣n-1)
@@ -99,7 +101,9 @@ theorem completed_cubic_cross_cancel (c n d m : O)
       (EisensteinEPrimaryPhase.odd_mul _ _ (supported_residue_odd d hd)
         (odd_residue_pow m (supported_residue_odd m hm) 3)))
 
-end SevenEighths.ProbePhase
 end
+
+end SevenEighths.ProbePhase
+
 
 end OAI

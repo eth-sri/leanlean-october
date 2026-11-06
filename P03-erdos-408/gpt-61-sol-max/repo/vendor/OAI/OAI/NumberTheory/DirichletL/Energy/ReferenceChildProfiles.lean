@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceChild
 
@@ -18,11 +19,11 @@ open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
 open CenteredMomentOriginalRadialComparison CenteredMomentFiniteProfileExceptional
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 open CenteredMomentLattice CenteredMomentRetainedProfile
-local notation "O"=>HeckeFamily.O
 
-def reflectionProfiles {a b:ℝ}(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
+
+def reflectionProfiles {a b}(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     (W:𝓢(ℝ,ℂ))(hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b)
-    (j k:Fin 2)(v t:ℝ):Profiles a b:=
+    (j k:Fin 2)(v t:ℝ):=
   independentProfiles ha (derivativeChoice (annulusSeed a b hlo hhi).profile j)
     (derivativeChoice W k)
     (derivativeChoice_support _ _ _ (annulusSeed a b hlo hhi).support j)
@@ -31,9 +32,9 @@ def reflectionProfiles {a b:ℝ}(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
 theorem reflected_child_ray_energy {α:Type*}[Fintype α][DecidableEq α]
     {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     (W:𝓢(ℝ,ℂ))(hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b)
-    (F:Finset α)(pool:α→Finset (Ideal O))(ν:α→Character)(Wslot:α→ℝ→ℂ)(P σ freq:α→ℝ)
+    (F:Finset α)(pool:α→Finset (Ideal HeckeFamily.O))(ν:α→Character)(Wslot:α→ℝ→ℂ)(P σ freq:α→ℝ)
     (hp:∀i∈F,∀I∈pool i,Prime I)(hP:∀i∈F,0<P i)
-    (j k:Fin 2)(v t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂):
+     j k  v t X₁ X₂ (hX₁:0<X₁)(hX₂:0<X₂):
     radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false
       (scaleTest (fun y:ℝ=>(annulus y:ℂ)) j) X₁ 0 (-2*Real.pi*v) *
       polynomial (naturalCharacter s.character z) false (scaleTest W k) X₂ 0 t *
@@ -56,7 +57,7 @@ theorem reflected_child_ray_energy {α:Type*}[Fintype α][DecidableEq α]
     funext annulusTemplate_apply
   simpa only [derivativeChoice_apply,he,reflectionProfiles] using hh
 
-theorem independent_profile_control (a b:ℝ)(ha:0<a)(S:Finset (ℕ×ℕ)):
+theorem independent_profile_control  a b  ha  S :
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),∀hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b,
       ∀hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b,∀t₁ t₂:ℝ,
@@ -78,10 +79,9 @@ theorem independent_profile_control (a b:ℝ)(ha:0<a)(S:Finset (ℕ×ℕ)):
   simp only [Profiles.control,independentProfiles,show (1:Fin 2)≠0 by decide,ite_true,ite_false]
   apply (mul_le_mul h₁' h₂' (apply_nonneg _ _)
     (mul_nonneg (mul_nonneg hC.le (sourceControl_nonneg _ _)) (by positivity))).trans_eq
-  rw [show (1+‖t₁‖+‖t₂‖)^(2*n)=((1+‖t₁‖+‖t₂‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
-lemma derivative_choice_control (S:Finset (ℕ×ℕ)):
+lemma derivative_choice_control  S :
     ∃T:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧ ∀W:𝓢(ℝ,ℂ),∀j:Fin 2,
       sourceControl S (derivativeChoice W j)≤C*sourceControl T W:=by
   obtain ⟨T,C,hC,hc⟩:=scale_source_control S
@@ -97,8 +97,8 @@ lemma derivative_choice_control (S:Finset (ℕ×ℕ)):
   · simp only [derivativeChoice,ite_eq_right hj]
     exact (hc W).trans (mul_le_mul (by linarith) h₂ (sourceControl_nonneg _ _) (by positivity))
 
-theorem reflected_profile_control (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
-    (S:Finset (ℕ×ℕ)):
+theorem reflected_profile_control  a b  ha  hlo  hhi 
+     S :
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀W:𝓢(ℝ,ℂ),∀hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b,
       ∀j k:Fin 2,∀v t:ℝ,

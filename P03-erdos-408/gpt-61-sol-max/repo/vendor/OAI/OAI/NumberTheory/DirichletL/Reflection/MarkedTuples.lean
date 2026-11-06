@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.ActualSelected
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalWeights
@@ -11,7 +12,7 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 lemma sum_subtype_dite_decidable {α : Type*} [Fintype α] (p : α→Prop) [DecidablePred p]
     (f : ∀ x,p x→ℂ) :
@@ -21,8 +22,7 @@ lemma sum_subtype_dite_decidable {α : Type*} [Fintype α] (p : α→Prop) [Deci
     apply Finset.sum_eq_zero
     intro x hx
     exact dite_eq_right x.property
-  rw [hz,add_zero] at hh
-  simpa only [Subtype.property,dite_eq_left] using hh
+  grind
 
 variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
@@ -106,7 +106,7 @@ theorem actual_marked_tuple_reflection
   apply Finset.sum_congr rfl
   intro p hp
   ring
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

@@ -7,9 +7,13 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.FullNorm
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-noncomputable section
 
-lemma cube_scale_power (M T a : ℝ) (hT : 0 < T) (hTM : T ≤ M) (ha : (1/3 : ℝ) ≤ a) :
+
+section
+variable (M N W U T a X Y ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N) (hW : 1 ≤ W) (hU : 0 ≤ U) (hT : 0 < T) (hTM : T ≤ M) (hWT : W^2*U ≤ T) (hWcube : W^3 ≤ T) (hX : 1 ≤ X) (hY : 1 ≤ Y) (hXY : X*Y^2 ≤ M) (hξ : 1 ≤ ξ)
+
+include hT hTM in
+lemma cube_scale_power       (ha : (1/3 : ℝ) ≤ a) :
     (M/T)^(1/3 : ℝ) * T^a ≤ M^a := by
   have hM : 0 < M := hT.trans_le hTM
   have hbase : 1 ≤ M/T := (one_le_div hT).mpr hTM
@@ -19,8 +23,9 @@ lemma cube_scale_power (M T a : ℝ) (hT : 0 < T) (hTM : T ≤ M) (ha : (1/3 : �
     _ = M^a := by
       rw [Real.div_rpow hM.le hT.le, div_mul_cancel₀ _ (Real.rpow_pos_of_pos hT a).ne']
 
-lemma extracted_monomial_le (W U T a : ℝ) (hW : 1 ≤ W) (hU : 0 ≤ U)
-    (hWT : W^2*U ≤ T) (ha : (1/2 : ℝ) ≤ a) : W*U^a ≤ T^a := by
+include hW hU hWT in
+lemma extracted_monomial_le      
+      (ha : (1/2 : ℝ) ≤ a) : W*U^a ≤ T^a := by
   have hW0 : 0 ≤ W := by linarith
   have hw : W ≤ (W^2)^a := by
     rw [← Real.rpow_natCast_mul hW0]
@@ -31,16 +36,17 @@ lemma extracted_monomial_le (W U T a : ℝ) (hW : 1 ≤ W) (hU : 0 ≤ U)
     _ = (W^2*U)^a := (Real.mul_rpow (sq_nonneg _) hU).symm
     _ ≤ T^a := Real.rpow_le_rpow (mul_nonneg (sq_nonneg _) hU) hWT (by linarith)
 
-lemma extracted_linear_le (W T : ℝ) (hW : 0 ≤ W) (hWT : W^3 ≤ T) :
+lemma extracted_linear_le   (hW : 0 ≤ W) (hWT : W^3 ≤ T) :
     W ≤ T^(1/3 : ℝ) := by
   have hh := Real.rpow_le_rpow (pow_nonneg hW 3) hWT (by norm_num : (0 : ℝ) ≤ 1/3)
   rw [← Real.rpow_natCast_mul hW] at hh
   norm_num at hh
   exact hh
 
-lemma extraction_selected_shape (M N W U T ξ : ℝ) (hN : 0 ≤ N)
-    (hW : 1 ≤ W) (hU : 0 ≤ U) (hT : 0 < T) (hTM : T ≤ M)
-    (hWT : W^2*U ≤ T) (hWcube : W^3 ≤ T) (hξ : 1 ≤ ξ) :
+include hN hW hU hT hTM hWT hWcube hξ in
+lemma extraction_selected_shape    
+           
+          :
     (M/T)^(1/3 : ℝ) * W * (U^ξ + N + (U*N)^(2/3 : ℝ)) ≤
       M^ξ + M^(1/3 : ℝ)*N + (M*N)^(2/3 : ℝ) := by
   have hM0 : 0 < M := hT.trans_le hTM
@@ -69,8 +75,9 @@ lemma extraction_selected_shape (M N W U T ξ : ℝ) (hN : 0 ≤ N)
         (Real.rpow_nonneg hN _)
   nlinarith
 
-theorem extraction_min_shape (M N X Y ξ : ℝ) (hN : 0 ≤ N)
-    (hX : 1 ≤ X) (hY : 1 ≤ Y) (hXY : X*Y^2 ≤ M) (hξ : 1 ≤ ξ) :
+include hN hX hY hXY hξ in
+theorem extraction_min_shape    
+            :
     (M/(X*Y^2))^(1/3 : ℝ) *
       min (Y*(X^ξ + N + (X*N)^(2/3 : ℝ))) (X*(Y^ξ + N + (Y*N)^(2/3 : ℝ))) ≤
       M^ξ + M^(1/3 : ℝ)*N + (M*N)^(2/3 : ℝ) := by
@@ -91,7 +98,8 @@ theorem extraction_min_shape (M N X Y ξ : ℝ) (hN : 0 ≤ N)
       (by nlinarith [mul_nonneg (sub_nonneg.mpr hxy) (mul_nonneg hX0.le hY0.le)])
       (by nlinarith [sq_le_sq₀ hX0.le hY0.le |>.mpr hxy]) hξ
 
-lemma cubic_cross_shape_absorb (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N)
+include hM hN in
+lemma cubic_cross_shape_absorb      
     (hξ : (4/3 : ℝ) ≤ ξ) :
     (M*N)^(2/3 : ℝ) ≤ M^(1/3 : ℝ)*N + M^ξ := by
   have hM0 : 0 < M := by linarith
@@ -125,8 +133,9 @@ lemma cubic_cross_shape_absorb (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N)
         ring
       _ ≤ M^ξ := Real.rpow_le_rpow_of_exponent_le hM hξ
 
-theorem extraction_min_two_power (M N X Y ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N)
-    (hX : 1 ≤ X) (hY : 1 ≤ Y) (hXY : X*Y^2 ≤ M) (hξ : (4/3 : ℝ) ≤ ξ) :
+include hM hN hX hY hXY in
+theorem extraction_min_two_power      
+          (hξ : (4/3 : ℝ) ≤ ξ) :
     (M/(X*Y^2))^(1/3 : ℝ) *
       min (Y*(X^ξ + N + (X*N)^(2/3 : ℝ))) (X*(Y^ξ + N + (Y*N)^(2/3 : ℝ))) ≤
       2*(M^(1/3 : ℝ)*N + M^ξ) := by
@@ -135,6 +144,8 @@ theorem extraction_min_two_power (M N X Y ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N
   linarith
 
 end
+
+
 end SevenEighths.CubicSieve
 
 end OAI

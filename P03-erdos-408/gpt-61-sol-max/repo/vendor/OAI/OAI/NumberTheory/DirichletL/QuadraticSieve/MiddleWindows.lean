@@ -12,76 +12,76 @@ namespace CanonicalQuadraticSieve
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 section
 
-open scoped BigOperators Classical SchwartzMap
+ 
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open     EisensteinSchwartzPoisson
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -99,8 +99,12 @@ variable {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < de
 
 include hD₁ hD₂ hB hN hD₁N hD₂N hM hS hT hr hl hri hrows ha hb
 
+section
+variable (hU : 0 ≤ U) (W : 𝓢(ℝ, ℂ)) (F : ℝ) (hF : 0 < F) (P : Ideal O → m → Prop)
+
+include hU in
 theorem HasSieveExponent.original_middle_window
-    (hU : 0 ≤ U) (W : 𝓢(ℝ, ℂ)) (P : Ideal O → m → Prop)
+         
     (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hP : ∀ (D : S) (E : T) i, P (D.val * E.val) i →
@@ -139,8 +143,9 @@ theorem HasSieveExponent.original_middle_window
     have h4 := (divisorExponentConstant_pos hexp deltaLoss hδ).le
     positivity
 
+include hU hF in
 theorem HasSieveExponent.dual_middle_window
-    (hU : 0 ≤ U) (W : 𝓢(ℝ, ℂ)) (F : ℝ) (hF : 0 < F) (P : Ideal O → m → Prop)
+             
     (hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hP : ∀ (D : S) (E : T) i, P (D.val * E.val) i →
@@ -182,8 +187,10 @@ theorem HasSieveExponent.dual_middle_window
 
 end
 
+end
+
 section
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FourierBridge
+open     EisensteinSchwartzPoisson FourierBridge
 
 theorem large_principal_scale_shape (X N Q D V : ℝ) (hD : 0 < D)
     (hcut : X * N ≤ V * D) :
@@ -198,7 +205,7 @@ variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
 
 def principalCorrectionAt (S T : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M : ℝ) : ℝ :=
+    (a : n → ℂ) (b : p → ℂ) (M : ℝ)  :=
   ∑ D : S, ∑ E : T, ∑ i,
     (Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ)) /
       ((Ideal.absNorm D.val : ℝ) * (Ideal.absNorm E.val : ℝ))) *
@@ -265,7 +272,7 @@ theorem HasSieveExponent.large_principal_correction {α : ℝ} (hexp : HasSieveE
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open     EisensteinSchwartzPoisson
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -396,7 +403,7 @@ theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponen
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open     EisensteinSchwartzPoisson
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -519,8 +526,8 @@ theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α
 
 end
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+ 
+open     EisensteinSchwartzPoisson
 
 theorem norm_double_sum_real_factor {n p : Type*} [Fintype n] [Fintype p]
     (u : n → p → ℂ) (z : ℂ) (c : ℝ) (hc : 0 ≤ c) :
@@ -532,7 +539,7 @@ variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
 
 def originalPrincipalKernel (W : 𝓢(ℝ, ℂ)) (rows : m → Ideal O) (M : ℝ) (h : O)
-    (d : Ideal O) (i : m) : ℂ :=
+    (d : Ideal O) (i : m)  :=
   ((Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ)) / (Ideal.absNorm d : ℝ) : ℝ) : ℂ) *
     paperRadialFourier W (Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ)) *
       ‖eisEmbedding h‖ ^ 2 / (Ideal.absNorm d : ℝ))

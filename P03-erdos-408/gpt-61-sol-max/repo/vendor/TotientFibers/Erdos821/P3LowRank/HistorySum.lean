@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.LowRankTask
 public import Erdos821.P3Tail.MemoryTail
@@ -23,20 +24,20 @@ open Erdos821.Blueprint.Graph Erdos821.S2Core
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
 /-- The finite bounded state type. -/
-abbrev bmsFintype (P : PrimeGroups) (M B : ℕ) : Fintype (BoundedMemoryState P M B) :=
+abbrev bmsFintype (P ) (M B )  :=
   @Fintype.ofFinite _ (bounded_memoryState_finite P M B)
 
-abbrev ghostChoiceFintype {M : ℕ} (s t : P.MemoryState M) : Fintype (GhostChoice s t) :=
+abbrev ghostChoiceFintype {M } (s t : P.MemoryState M) : Fintype (GhostChoice s t) :=
   inferInstance
 
-abbrev edgeChoiceFintype (A : Model F P J m) (s : P.MemoryState (J + F.ell)) :
+abbrev edgeChoiceFintype (A : Model F P J m) (s ) :
     Fintype (EdgeChoice A s) :=
   inferInstance
 
 attribute [local instance] bmsFintype ghostChoiceFintype edgeChoiceFintype
 
 /-- The history determined by bounded states and local choices. -/
-def mkH {A : Model F P J m} {n B : ℕ} (d : BoundedHistoryData A n B) : MemoryHistory A n :=
+def mkH {A : Model F P J m} {n B } (d : BoundedHistoryData A n B) : MemoryHistory A n :=
   ⟨fun i => (d.1 i).val, fun i => (d.2.1 i).val, d.2.2.1, d.2.2.2⟩
 
 theorem mkH_truncated {A : Model F P J m} {n B : ℕ} (d : BoundedHistoryData A n B) :
@@ -51,7 +52,10 @@ def truncEquiv (A : Model F P J m) (n B : ℕ) :
   left_inv _ := rfl
   right_inv _ := rfl
 
-theorem tsum_trunc (A : Model F P J m) (n B : ℕ) (f : MemoryHistory A n → ℂ)
+section
+variable (A : Model F P J m) (n B : ℕ)
+
+theorem tsum_trunc     (f : MemoryHistory A n → ℂ)
     (hf : ∀ H, ¬ H.Truncated B → f H = 0) :
     ∑' H, f H = ∑ d : BoundedHistoryData A n B, f (mkH d) := by
   have hs : Function.support f ⊆ {H : MemoryHistory A n | H.Truncated B} := by
@@ -62,20 +66,20 @@ theorem tsum_trunc (A : Model F P J m) (n B : ℕ) (f : MemoryHistory A n → �
   rfl
 
 /-- Product of the local multipliers along a history. -/
-def localFactor (A : Model F P J m) (n : ℕ)
+def localFactor (A : Model F P J m) (n )
     (Φ0 : P.MemoryState (J + F.ell) → ℂ)
     (φG : Fin (n + 1) → (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℂ)
     (φE : Fin n → (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℂ)
-    (H : MemoryHistory A n) : ℂ :=
+    (H : MemoryHistory A n)  :=
   Φ0 (H.before 0) * (∏ i, φG i (H.before i) (H.after i) (H.ghost i)) *
     ∏ i, φE i (H.after i.castSucc) (H.before i.succ) (H.edge i)
 
 /-- Exact choice expansion for one fixed state path. -/
-theorem choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
-    (Φ0 : P.MemoryState (J + F.ell) → ℂ)
-    (φG : Fin (n + 1) → (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℂ)
+theorem choice_sum (A : Model F P J m)  n   rho theta 
+     Φ0 
+     φG 
     (φE : Fin n → (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℂ)
-    (bf af : Fin (n + 1) → P.MemoryState (J + F.ell)) :
+     bf af  :
     ∑ c1 : (i : Fin (n + 1)) → GhostChoice (bf i) (af i),
       ∑ c2 : (i : Fin n) → EdgeChoice A (af i.castSucc),
         (if (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid then
@@ -180,7 +184,7 @@ theorem choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
 
 /-- Bilinear bounds on the full state type restrict to the finite kept subtype. -/
 theorem finNormBound_of_normBound {α : Type*} (keep : α → Prop) [Fintype {x // keep x}]
-    (mass : α → ℝ) (K : α → α → ℂ) (C : ℝ) (h : NormBound mass (projectKernel keep K) C) :
+    (mass : α → ℝ) (K : α → α → ℂ)  C  (h : NormBound mass (projectKernel keep K) C) :
     FinNormBound (fun s : {x // keep x} => mass s.val) (fun s t => K s.val t.val) C := by
   intro f g
   let S : Finset α := Finset.univ.map (Function.Embedding.subtype keep)
@@ -194,7 +198,7 @@ theorem finNormBound_of_normBound {α : Type*} (keep : α → Prop) [Fintype {x 
   simp only [S, Finset.sum_map, Function.Embedding.coe_subtype, hf', hg', hp] at h1
   exact h1
 
-theorem boundary_sum_le (A : Model F P J m) (n B : ℕ) :
+theorem boundary_sum_le     :
     ∑ s : BoundedMemoryState P (J + F.ell) B,
       (if ∀ g, s.val.2.2 g = 0 then P.memoryMass F J n s.val else 0) ≤
         initialMemoryBoundaryMass A n := by
@@ -214,15 +218,15 @@ theorem boundary_sum_le (A : Model F P J m) (n B : ℕ) :
         obtain ⟨s, hs, rfl⟩ := hx
         exact hs
 
-theorem star_ite_mul (p : Prop) [Decidable p] (x : ℝ) (z : ℂ) :
+theorem star_ite_mul  p  [Decidable p] (x : ℝ)  z  :
     (x : ℂ) * star (if p then star z else 0) = if p then (x : ℂ) * z else 0 := by
   split_ifs <;> simp
 
 /-- The literal truncated-history sum with arbitrary local multipliers. -/
-theorem local_history_bound (A : Model F P J m) (n B : ℕ) (rho theta CG : ℝ) (c : Fin n → ℝ)
-    (Φ0 : P.MemoryState (J + F.ell) → ℂ)
-    (φG : Fin (n + 1) → (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℂ)
-    (φE : Fin n → (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℂ)
+theorem local_history_bound     (rho theta CG : ℝ) (c : Fin n → ℝ)
+     Φ0 
+     φG 
+     φE 
     (hmass : ∀ s, 0 ≤ P.memoryMass F J n s) (hCG : 0 ≤ CG) (hc : ∀ i, 0 ≤ c i)
     (hΦ0 : ∀ s, ‖Φ0 s‖ ≤ 1)
     (hG : ∀ i, NormBound (P.memoryMass F J n)
@@ -274,9 +278,7 @@ theorem local_history_bound (A : Model F P J m) (n B : ℕ) (rho theta CG : ℝ)
     by_cases hs : ∀ g, s.val.2.2 g = 0
     · simp only [f, ite_eq_left hs, norm_star]
       have h1 : ‖Φ0 s.val‖ ^ 2 ≤ 1 := by
-        have := hΦ0 s.val
-        have h0 := norm_nonneg (Φ0 s.val)
-        nlinarith
+        bound
       calc mass' s * ‖Φ0 s.val‖ ^ 2 ≤ mass' s * 1 := mul_le_mul_of_nonneg_left h1 (hmass' s)
         _ = _ := mul_one _
     · simp only [f, ite_eq_right hs, norm_zero]
@@ -298,5 +300,7 @@ theorem local_history_bound (A : Model F P J m) (n B : ℕ) (rho theta CG : ℝ)
     _ = M * CG ^ (n + 1) * ∏ i, c i := by
         rw [mul_assoc (CG ^ (n + 1) * ∏ i, c i), Real.mul_self_sqrt hM]
         ring
+
+end
 
 end Erdos821.P3Lowrank

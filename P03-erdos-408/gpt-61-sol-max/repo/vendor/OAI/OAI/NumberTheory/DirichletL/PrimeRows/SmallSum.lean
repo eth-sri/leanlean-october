@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.SmallDyad
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SmallDyad
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 
@@ -19,8 +20,7 @@ lemma small_dyadic_square_sum : ∃C : ℝ,0<C ∧ ∀H : ℝ,0<H → ∀F : Fin
   have hpoint (n : ℕ) (hn : n∈F) : ((2:ℝ)^n)^(2:ℝ)≤8*CompletedDyadic.kernelTerm H⁻¹ 2 3 n := by
     have hd : 0<1+H⁻¹*(2:ℝ)^n := by positivity
     have hu : H⁻¹*(2:ℝ)^n≤1 := by
-      rw [mul_comm,←div_eq_mul_inv]
-      exact (div_le_one hH).mpr (hF n hn)
+      bound
     have hh : (1+H⁻¹*(2:ℝ)^n)^3≤(2:ℝ)^3 := pow_le_pow_left₀ hd.le (by linarith) 3
     unfold CompletedDyadic.kernelTerm
     norm_num only [Real.rpow_natCast,Real.rpow_ofNat]
@@ -38,6 +38,6 @@ lemma small_dyadic_square_sum : ∃C : ℝ,0<C ∧ ∀H : ℝ,0<H → ∀F : Fin
     _ = _ := by rw [Real.inv_rpow hH.le,Real.rpow_neg hH.le,inv_inv];ring
 
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

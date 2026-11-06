@@ -5,6 +5,7 @@ Authors: Adam Benenson
 -/
 
 module
+public import Mathlib.Tactic
 
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.MeasureTheory.Function.LpSpace.Basic
@@ -47,7 +48,7 @@ variable {p : ℝ≥0∞} [Fact (1 ≤ p)]
 variable {s : Set α} (hs : MeasurableSet s)
 
 /-- Extend an Lp function from a restricted measure by zero outside the set. -/
-noncomputable def extendByZeroFun (f : Lp E p (μ.restrict s)) : Lp E p μ :=
+noncomputable def extendByZeroFun (f : Lp E p (μ.restrict s))  :=
   let hf : MemLp (fun x : α => f x) p (μ.restrict s) := Lp.memLp f
   let hfi : MemLp (s.indicator fun x : α => f x) p μ :=
     (memLp_indicator_iff_restrict (μ := μ) (p := p) (s := s) (f := fun x : α => f x) hs).2 hf
@@ -67,8 +68,7 @@ noncomputable def extendByZeroₗ : Lp E p (μ.restrict s) →ₗ[ℝ] Lp E p μ
     -- Prove equality by comparing pointwise representatives.
     refine Lp.ext ?_
     have h_add_restrict :
-        (fun x : α => (f + g) x) =ᵐ[μ.restrict s] fun x : α => f x + g x := by
-      exact (Lp.coeFn_add (μ := μ.restrict s) f g)
+        (fun x : α => (f + g) x) =ᵐ[μ.restrict s] fun x : α => f x + g x := (Lp.coeFn_add (μ := μ.restrict s) f g)
     have h_add_on :
         ∀ᵐ x : α ∂μ, x ∈ s → (f + g) x = f x + g x :=
       (ae_restrict_iff' (μ := μ) (s := s) hs).1 h_add_restrict
@@ -81,47 +81,13 @@ noncomputable def extendByZeroₗ : Lp E p (μ.restrict s) →ₗ[ℝ] Lp E p μ
       , h_add_on
       ] with x hfg hf hg hadd hsum
     by_cases hx : x ∈ s
-    · have hsum' := hsum hx
-      have hadd' :
-          extendByZeroFun (μ := μ) (p := p) (s := s) hs f x +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g x =
-            (extendByZeroFun (μ := μ) (p := p) (s := s) hs f +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g) x := by
-        simpa [Pi.add_apply] using hadd.symm
-      calc
-        extendByZeroFun (μ := μ) (p := p) (s := s) hs (f + g) x
-            = s.indicator (fun x : α => (f + g) x) x := hfg
-        _ = (f + g) x := by simp [Set.indicator_of_mem, hx]
-        _ = f x + g x := hsum'
-        _ = s.indicator (fun x : α => f x) x + s.indicator (fun x : α => g x) x := by
-            simp [Set.indicator_of_mem, hx]
-        _ = extendByZeroFun (μ := μ) (p := p) (s := s) hs f x +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g x := by
-            simp [hf, hg]
-        _ = (extendByZeroFun (μ := μ) (p := p) (s := s) hs f +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g) x := hadd'
-    · have hadd' :
-          extendByZeroFun (μ := μ) (p := p) (s := s) hs f x +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g x =
-            (extendByZeroFun (μ := μ) (p := p) (s := s) hs f +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g) x := by
-        simpa [Pi.add_apply] using hadd.symm
-      calc
-        extendByZeroFun (μ := μ) (p := p) (s := s) hs (f + g) x
-            = s.indicator (fun x : α => (f + g) x) x := hfg
-        _ = 0 := by simp [Set.indicator_of_notMem, hx]
-        _ = extendByZeroFun (μ := μ) (p := p) (s := s) hs f x +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g x := by
-            -- both summands are zero off `s`
-            simp [Set.indicator_of_notMem, hx, hf, hg]
-        _ = (extendByZeroFun (μ := μ) (p := p) (s := s) hs f +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g) x := hadd'
+    · simp_all
+    simp_all
   map_smul' c f := by
     classical
     refine Lp.ext ?_
     have h_smul_restrict :
-        (fun x : α => (c • f) x) =ᵐ[μ.restrict s] fun x : α => c • f x := by
-      exact (Lp.coeFn_smul (μ := μ.restrict s) c f)
+        (fun x : α => (c • f) x) =ᵐ[μ.restrict s] fun x : α => c • f x := (Lp.coeFn_smul (μ := μ.restrict s) c f)
     have h_smul_on :
         ∀ᵐ x : α ∂μ, x ∈ s → (c • f) x = c • f x :=
       (ae_restrict_iff' (μ := μ) (s := s) hs).1 h_smul_restrict
@@ -145,26 +111,7 @@ noncomputable def extendByZeroₗ : Lp E p (μ.restrict s) →ₗ[ℝ] Lp E p μ
         _ = c • s.indicator (fun x : α => f x) x := by simp [Set.indicator_of_mem, hx]
         _ = c • extendByZeroFun (μ := μ) (p := p) (s := s) hs f x := by simp [hf]
         _ = (c • extendByZeroFun (μ := μ) (p := p) (s := s) hs f) x := hsmul'
-    · have hsmul' :
-          c • extendByZeroFun (μ := μ) (p := p) (s := s) hs f x =
-            (c • extendByZeroFun (μ := μ) (p := p) (s := s) hs f) x := by
-        simpa [Pi.smul_apply] using hsmul.symm
-      calc
-        extendByZeroFun (μ := μ) (p := p) (s := s) hs (c • f) x
-            = s.indicator (fun x : α => (c • f) x) x := hcf
-        _ = 0 := by simp [Set.indicator_of_notMem, hx]
-        _ = (c • extendByZeroFun (μ := μ) (p := p) (s := s) hs f) x := by
-            have hf0 :
-                extendByZeroFun (μ := μ) (p := p) (s := s) hs f x = 0 := by
-              simpa [Set.indicator_of_notMem, hx] using hf
-            have hcx :
-                (c • extendByZeroFun (μ := μ) (p := p) (s := s) hs f) x = 0 := by
-              calc
-                (c • extendByZeroFun (μ := μ) (p := p) (s := s) hs f) x =
-                    c • extendByZeroFun (μ := μ) (p := p) (s := s) hs f x := by
-                      simpa [Pi.smul_apply] using hsmul
-                _ = 0 := by simp [hf0]
-            simpa using hcx.symm
+    simp_all
 
 /-- Extension-by-zero as a linear isometry. -/
 noncomputable def extendByZeroₗᵢ : Lp E p (μ.restrict s) →ₗᵢ[ℝ] Lp E p μ where
@@ -180,8 +127,7 @@ noncomputable def extendByZeroₗᵢ : Lp E p (μ.restrict s) →ₗᵢ[ℝ] Lp 
     have hnorm_out :
         ‖extendByZeroₗ (μ := μ) (p := p) (s := s) hs f‖ =
           ENNReal.toReal (eLpNorm (s.indicator fun x : α => f x) p μ) := by
-      dsimp [extendByZeroₗ, extendByZeroFun]
-      simp [norm_toLp (f := s.indicator (fun x : α => f x)) hfi]
+      simp_all [extendByZeroₗ, extendByZeroFun]
     -- Rewrite the `eLpNorm` of the indicator as a restricted `eLpNorm`.
     have hnorm_restrict :
         eLpNorm (s.indicator fun x : α => f x) p μ =
@@ -191,12 +137,11 @@ noncomputable def extendByZeroₗᵢ : Lp E p (μ.restrict s) →ₗᵢ[ℝ] Lp 
     -- Combine with the definition of the `Lp` norm on the restricted space.
     simp [hnorm_out, hnorm_restrict, norm_def]
 
-lemma extendByZeroₗᵢ_ae_eq (f : Lp E p (μ.restrict s)) :
+lemma extendByZeroₗᵢ_ae_eq  f  :
     ((extendByZeroₗᵢ (μ := μ) (p := p) (s := s) hs) f : α → E) =ᵐ[μ]
       s.indicator fun x : α => f x := by
   -- Unfold to the underlying `extendByZeroFun` and use the defining AE equality.
-  simpa [extendByZeroₗᵢ, extendByZeroₗ] using
-    (extendByZeroFun_coe (μ := μ) (p := p) (s := s) hs f)
+  simp_all [extendByZeroₗᵢ, extendByZeroₗ, extendByZeroFun_coe]
 
 end
 

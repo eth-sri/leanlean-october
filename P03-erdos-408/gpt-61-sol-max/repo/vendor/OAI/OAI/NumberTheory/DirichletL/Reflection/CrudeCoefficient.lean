@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.KernelBaseline
 public import OAI.NumberTheory.DirichletL.Descent.MarkedPhase
@@ -10,15 +11,14 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve LocalReflectionBrackets InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma norm_bracket_le_card {F : Type*} [Field F] [Fintype F]
-    (χ : MulChar F ℂ) (j : ℕ) (x : F) : ‖bracket χ j x‖≤(Fintype.card F:ℝ) := by
+lemma norm_bracket_le_card  {F}  [Field F] [Fintype F]
+     χ   j  (x : F) : ‖bracket χ j x‖≤(Fintype.card F:ℝ) := by
   have hq : (1:ℝ)≤Fintype.card F := by exact_mod_cast Fintype.card_pos_iff.mpr ⟨(0:F)⟩
   have hr : 1≤rootCard F := by
-    unfold rootCard
-    exact (Real.le_sqrt (by norm_num) (by positivity)).mpr (by simpa using hq)
+    simp_all [rootCard]
   have hi : (rootCard F)⁻¹≤1 := (inv_le_one₀ rootCard_pos).mpr hr
   by_cases hj4 : j=4
   · subst j
@@ -36,10 +36,15 @@ lemma norm_bracket_le_card {F : Type*} [Field F] [Fintype F]
 
 variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 
-lemma mixedActiveBracket_crude_norm (G : PrimeFamily ι)
-    (D : ControlledStratumArithmetic G.generator N a c mode)
-    (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
-    (S : Finset ι) (i : ι) (x : Eis) :
+section
+variable (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0) (hN : (9:Eis)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6) (S : Finset ι)
+
+
+include hchar hj in
+lemma mixedActiveBracket_crude_norm  
+     
+         
+       i   x  :
     ‖mixedActiveBracket G.generator_ne_zero G.generator_good j S D i x‖≤(Ideal.absNorm (G.ideal i):ℝ) := by
   rw [mixedActiveBracket_eq_signed]
   have hn : ‖(if i∈S then (-1:ℂ) else 1)‖=1 := by split_ifs <;> simp
@@ -58,12 +63,13 @@ lemma mixedActiveBracket_crude_norm (G : PrimeFamily ι)
     rw [Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card]
   rw [he,G.generator_span]
 
-lemma literal_mixed_coefficient_crude (G : PrimeFamily ι)
-    (D : ControlledStratumArithmetic G.generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (hN : (9:Eis)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
-    (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
-    (S : Finset ι) (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) :
+include hN hbase hchar hj in
+lemma literal_mixed_coefficient_crude  
+     
+       
+       
+         
+       u   m   n b  :
     ‖s.amplitude u m n b *
       (star D.fixedFactor*ShortDraftCusp.A4BadPhase c hc (D.matrix (fun _ => 1) 1 1) D.U (s.modelDualNumerator u m n b))*
       ∏ i, mixedActiveBracket G.generator_ne_zero G.generator_good j S D i (s.modelDualNumerator u m n b)‖≤
@@ -75,6 +81,8 @@ lemma literal_mixed_coefficient_crude (G : PrimeFamily ι)
   exact Finset.prod_le_prod₀ (fun i hi => norm_nonneg _) (fun i hi => mixedActiveBracket_crude_norm G D hchar j hj S i _)
 
 end
+
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Analysis.SpecialFunctions.Complex.CircleAddChar
@@ -38,7 +39,7 @@ open Finset
 
 /-- The Kloosterman sum `K_m(h, k) = ∑_{y ∈ (ℤ/m)^×} e((h y + k y⁻¹)/m)`, over the
 representatives `0 ≤ y < m` coprime to `m`. -/
-noncomputable def kloosterman (m h k : ℕ) : ℂ :=
+noncomputable def kloosterman (m h k : ℕ)  :=
   ∑ y ∈ (Finset.range m).filter (Nat.Coprime · m),
     Complex.exp (2 * Real.pi * Complex.I *
       (((h * y + k * ((y : ZMod m)⁻¹).val : ℕ) : ℝ) / m))
@@ -145,7 +146,7 @@ theorem natCast_mul_eq_zero_iff (n : ℕ) (C : ZMod m) :
   rw [← ZMod.natCast_eq_zero_iff, Nat.cast_mul, ZMod.natCast_zmod_val]
 
 /-- At most `m / d` residues mod `m` have a representative divisible by `d ∣ m`. -/
-theorem card_filter_dvd_val_le {d : ℕ} (hd : d ∣ m) :
+theorem card_filter_dvd_val_le  {d}  (hd : d ∣ m) :
     #{A : ZMod m | d ∣ A.val} ≤ m / d := by
   calc #{A : ZMod m | d ∣ A.val}
       ≤ #((range (m / d)).image fun j => ((d * j : ℕ) : ZMod m)) := by
@@ -229,7 +230,7 @@ theorem card_filter_cubic_le :
   refine (card_le_mul_card_image_of_maps_to (f := L)
     (t := {v : ZMod m × ZMod m × ZMod m | v.1 * v.2.1 * v.2.2 = 0}) (fun x hx => ?_) 2
     (fun v _ => ?_)).trans (Nat.mul_le_mul_left _ card_filter_mul_mul_eq_zero_le)
-  · exact mem_filter.2 ⟨mem_univ _, (mem_filter.1 hx).2⟩
+  · aesop
   -- a fibre injects into `{t : 2 t = 0}` through `x ↦ x.1 - x₀.1`
   by_cases hv : ∃ x₀, L x₀ = v
   · obtain ⟨x₀, rfl⟩ := hv
@@ -250,8 +251,7 @@ theorem card_filter_cubic_le :
       · linear_combination h.1 - h1
       · linear_combination h'.1 + h1
   · simp only [not_exists] at hv
-    rw [filter_false_of_mem fun x _ => hv x, card_empty]
-    exact Nat.zero_le _
+    simp_all
 
 /-- At most `(h, k, m)` residues `C` mod `m` satisfy `h C = k C = 0`. -/
 theorem card_filter_mul_eq_zero_and_le (h k : ℕ) :
@@ -268,7 +268,7 @@ theorem card_filter_mul_eq_zero_and_le (h k : ℕ) :
 variable (m) in
 /-- `T_m`: the number of unit quadruples `((y₁, y₂), (z₁, z₂))` mod `m` with
 `y₁ + y₂ = z₁ + z₂` and `y₁⁻¹ + y₂⁻¹ = z₁⁻¹ + z₂⁻¹`. -/
-noncomputable def quadCount : ℕ :=
+noncomputable def quadCount  :=
   #{q : ((ZMod m)ˣ × (ZMod m)ˣ) × ((ZMod m)ˣ × (ZMod m)ˣ) |
     (q.1.1 : ZMod m) + q.1.2 = q.2.1 + q.2.2 ∧
       ((q.1.1⁻¹ : (ZMod m)ˣ) : ZMod m) + ↑q.1.2⁻¹ = ↑q.2.1⁻¹ + ↑q.2.2⁻¹}
@@ -303,11 +303,14 @@ theorem quadCount_le : quadCount m ≤ 2 * (m * m.divisors.card) ^ 2 := by
 
 variable (m) in
 /-- The Kloosterman sum over `ZMod m`: `∑_{u ∈ (ℤ/m)^×} e((a u + b u⁻¹)/m)`. -/
-noncomputable def kloostermanZMod (a b : ZMod m) : ℂ :=
+noncomputable def kloostermanZMod (a b : ZMod m)  :=
   ∑ u : (ZMod m)ˣ, ZMod.stdAddChar (a * (u : ZMod m) + b * ((u⁻¹ : (ZMod m)ˣ) : ZMod m))
 
+section
+variable (h k : ℕ)
+
 /-- The `range`-based Kloosterman sum agrees with the sum over the units of `ZMod m`. -/
-theorem kloosterman_eq_kloostermanZMod (h k : ℕ) :
+theorem kloosterman_eq_kloostermanZMod   :
     kloosterman m h k = kloostermanZMod m h k := by
   rw [kloosterman, kloostermanZMod]
   symm
@@ -374,7 +377,7 @@ theorem sum_norm_kloostermanZMod_pow_four :
 /-! ### The orbit bound -/
 
 /-- `K_m(a s, b s⁻¹) = K_m(a, b)` for a unit `s`: substitute `u ↦ s u`. -/
-theorem kloostermanZMod_mul_units (a b : ZMod m) (s : (ZMod m)ˣ) :
+theorem kloostermanZMod_mul_units  a b  (s : (ZMod m)ˣ) :
     kloostermanZMod m (a * s) (b * ↑s⁻¹) = kloostermanZMod m a b := by
   refine Fintype.sum_equiv (Equiv.mulLeft s) _ _ fun u => ?_
   simp only [Equiv.coe_mulLeft, mul_inv_rev, Units.val_mul]
@@ -383,7 +386,7 @@ theorem kloostermanZMod_mul_units (a b : ZMod m) (s : (ZMod m)ˣ) :
 
 /-- **The orbit bound** `φ(m) |K_m(h, k)|⁴ ≤ (h, k, m) ∑_{a, b} |K_m(a, b)|⁴`: the sum is
 constant on the orbit `s ↦ (h s, k s⁻¹)`, whose fibres have at most `(h, k, m)` points. -/
-theorem totient_mul_norm_pow_four_le (h k : ℕ) :
+theorem totient_mul_norm_pow_four_le   :
     (m.totient : ℝ) * ‖kloostermanZMod m h k‖ ^ 4 ≤
       (Nat.gcd (Nat.gcd h k) m : ℝ) *
         ∑ a : ZMod m, ∑ b : ZMod m, ‖kloostermanZMod m a b‖ ^ 4 := by
@@ -404,9 +407,7 @@ theorem totient_mul_norm_pow_four_le (h k : ℕ) :
       · linear_combination e₁
       · linear_combination (-((s : ZMod m) * s₀)) * e₂ + (k * s₀ : ZMod m) * hs -
           (k * s : ZMod m) * hs₀
-    · simp only [not_exists] at hp
-      rw [filter_false_of_mem fun s _ => hp s, card_empty]
-      exact Nat.zero_le _
+    simp_all
   have hF : ∀ p, 0 ≤ F p := fun p => by positivity
   calc (m.totient : ℝ) * ‖kloostermanZMod m h k‖ ^ 4 = ∑ s, F (f s) := by
         simp only [F, f, kloostermanZMod_mul_units, sum_const, card_univ,
@@ -420,7 +421,7 @@ theorem totient_mul_norm_pow_four_le (h k : ℕ) :
         rw [← smul_sum, nsmul_eq_mul, Fintype.sum_prod_type]
 
 /-- `|K_m(h, k)|⁴ ≤ 2 (h, k, m) m³ τ(m)³`. -/
-theorem norm_kloostermanZMod_pow_four_le (h k : ℕ) :
+theorem norm_kloostermanZMod_pow_four_le   :
     ‖kloostermanZMod m h k‖ ^ 4 ≤
       2 * (Nat.gcd (Nat.gcd h k) m : ℝ) * (m : ℝ) ^ 3 * (m.divisors.card : ℝ) ^ 3 := by
   set K := ‖kloostermanZMod m h k‖
@@ -439,6 +440,8 @@ theorem norm_kloostermanZMod_pow_four_le (h k : ℕ) :
     _ ≤ (m.divisors.card : ℝ) *
           (g * ((m : ℝ) ^ 2 * (2 * (m * (m.divisors.card : ℝ)) ^ 2))) := by gcongr
     _ = m * (2 * g * (m : ℝ) ^ 3 * (m.divisors.card : ℝ) ^ 3) := by ring
+
+end
 
 end Residues
 

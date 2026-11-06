@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Fourier.LogDensity
 public import OAI.NumberTheory.DirichletL.CubicSieve.TwistedProfiles
@@ -11,80 +12,80 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
+open     ConcretePrimeRowBridge CompletedGauss
 open IdealMobiusDivisorSum QuadraticMainBoundary QuadraticMainOperatorBound IdealCoprimeSieveOperator
 
 theorem normalizedPair_boundary_term
-    (I J H D E : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hray : columnRay I = columnRay J) (hH : Supported H) (K : ℝ) (a b : ℂ) :
+     I J H D E  (hI : Admissible I) (hJ : Admissible J)
+    (hray : columnRay I = columnRay J) (hH : Supported H)  K   a b  :
     (star a * b) * ((UniqueFactorizationMonoid.moebius E : ℂ) *
       normalizedIdealPair I J (H * D * E) * (cutoffDifference K H D : ℂ)) =
     (UniqueFactorizationMonoid.moebius E : ℂ) * mainWeight K H D E *
@@ -107,8 +108,8 @@ theorem normalizedPair_boundary_term
     canonical_quadraticRow_star I hI]
   ring
 
-def actualPrincipalDifference {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (a : n → ℂ) (G : Ideal O) (K : ℝ) : ℂ :=
+def actualPrincipalDifference {n } [Fintype n]
+    (cols : n → Ideal O) (a : n → ℂ) (G : Ideal O) (K : ℝ)  :=
   ∑ j, ∑ k, if IsCoprime (cols j) (cols k) then
     star (a j) * a k *
       (normalizedPairPartial (cols j) (cols k) K * normalizedPairDivisors (cols j) (cols k) G -
@@ -118,10 +119,10 @@ def actualPrincipalDifference {n : Type*} [Fintype n]
 theorem actualPrincipalDifference_bound
     {n : Type*} [Fintype n] [DecidableEq n]
     (cols : n → Ideal O) (hinj : Function.Injective cols)
-    (N : ℝ) (hN : 0 ≤ N) (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
-    (hray : ∀ j k, columnRay (cols j) = columnRay (cols k)) (a : n → ℂ)
-    (G : Ideal O) (hG : Squarefree G) (hbad : ∀ P ∈ fixedBadPrimes, P ∣ G)
-    (K : ℝ) (hK : 0 < K) (ε : ℝ) (hε : 0 < ε) :
+     N  (hN : 0 ≤ N) (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
+    (hray : ∀ j k, columnRay (cols j) = columnRay (cols k))  a 
+     G  (hG : Squarefree G) (hbad : ∀ P ∈ fixedBadPrimes, P ∣ G)
+     K  (hK : 0 < K)  ε   hε  :
     ‖actualPrincipalDifference cols a G K‖ ≤
       ((idealDivisors G).card : ℝ) ^ 2 *
         ((1 / Real.sqrt K) * sieveNorm K N * (supportConstant ε hε * N ^ ε) * ∑ j, ‖a j‖ ^ 2) := by
@@ -178,14 +179,19 @@ theorem actualPrincipalDifference_bound
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open     EisensteinSchwartzPoisson
 
-def middleRatio (B b D₁ d D₂ e : ℝ) : ℝ := Real.sqrt (B / b) * (D₁ / d) * (D₂ / e)
+def middleRatio (B b D₁ d D₂ e : ℝ)  := Real.sqrt (B / b) * (D₁ / d) * (D₂ / e)
 
-theorem middleRatio_bounds (B b D₁ d D₂ e : ℝ)
-    (hB : 0 < B) (hb : B / 2 ≤ b ∧ b ≤ B)
-    (hD₁ : 0 < D₁) (hd : D₁ ≤ d ∧ d ≤ 2 * D₁)
-    (hD₂ : 0 < D₂) (he : D₂ ≤ e ∧ e ≤ 2 * D₂) :
+section
+variable (M B b D₁ d D₂ e q : ℝ) (hM : 0 < M) (hB : 0 < B) (hb : B / 2 ≤ b ∧ b ≤ B) (hD₁ : 0 < D₁) (hd : D₁ ≤ d ∧ d ≤ 2 * D₁) (hD₂ : 0 < D₂) (he : D₂ ≤ e ∧ e ≤ 2 * D₂)
+
+
+include hB hb hD₁ hd hD₂ he in
+theorem middleRatio_bounds  
+       
+       
+        :
     1 / 4 ≤ middleRatio B b D₁ d D₂ e ∧ middleRatio B b D₁ d D₂ e ≤ 2 := by
   have hb0 : 0 < b := by linarith
   have hd0 : 0 < d := hD₁.trans_le hd.1
@@ -213,7 +219,7 @@ theorem middleRatio_bounds (B b D₁ d D₂ e : ℝ)
   · nlinarith [mul_le_mul hu1 hvw1 (by norm_num : (0 : ℝ) ≤ 1 / 4) (Real.sqrt_nonneg (B / b))]
   · nlinarith [mul_le_mul hu2 hvw2 (mul_nonneg hv0 hw0) (by norm_num : (0 : ℝ) ≤ 2)]
 
-theorem middleRatio_log_bound (r : ℝ) (hr : (1 / 4 : ℝ) ≤ r ∧ r ≤ 2) : |Real.log r| ≤ 4 := by
+theorem middleRatio_log_bound  r  (hr : (1 / 4 : ℝ) ≤ r ∧ r ≤ 2) : |Real.log r| ≤ 4 := by
   have hr0 : 0 < r := by linarith
   have hi : r⁻¹ ≤ 4 := by
     have h : (1 : ℝ) / r ≤ 4 := (div_le_iff₀ hr0).mpr (by linarith)
@@ -223,31 +229,28 @@ theorem middleRatio_log_bound (r : ℝ) (hr : (1 / 4 : ℝ) ≤ r ∧ r ≤ 2) :
   rw [Real.log_inv] at h₂
   exact abs_le.mpr ⟨by linarith, by linarith⟩
 
-theorem middleRatio_argument (M B b D₁ d D₂ e q : ℝ)
-    (hM : 0 < M) (hB : 0 < B) (hb : B / 2 ≤ b ∧ b ≤ B)
-    (hD₁ : 0 < D₁) (hd : D₁ ≤ d ∧ d ≤ 2 * D₁)
-    (hD₂ : 0 < D₂) (he : D₂ ≤ e ∧ e ≤ 2 * D₂) :
+include hM hB hb hD₁ hd hD₂ he in
+theorem middleRatio_argument  
+         
+       
+        :
     (Real.sqrt (M / B) * q / (D₁ * D₂)) * Real.exp (Real.log (middleRatio B b D₁ d D₂ e)) =
       Real.sqrt (M / b) * q / (d * e) := by
   have hb0 : 0 < b := by linarith
-  have hd0 : 0 < d := hD₁.trans_le hd.1
-  have he0 : 0 < e := hD₂.trans_le he.1
+  
+  
   have hr : 0 < middleRatio B b D₁ d D₂ e := by
-    have hh := middleRatio_bounds B b D₁ d D₂ e hB hb hD₁ hd hD₂ he
-    linarith
+    grind [middleRatio_bounds]
   rw [Real.exp_log hr]
   have hs : Real.sqrt (M / B) * Real.sqrt (B / b) = Real.sqrt (M / b) := by
     rw [← Real.sqrt_mul (div_nonneg hM.le hB.le)]
     congr 1
     field_simp
-  unfold middleRatio
-  calc
-    _ = (Real.sqrt (M / B) * Real.sqrt (B / b)) * q / (d * e) := by
-      field_simp
+  grind [middleRatio, Real.sqrt, q]
 
-    _ = _ := by rw [hs]
+end
 
-theorem actual_middle_radial_block_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
+theorem actual_middle_radial_block_bound (W : 𝓢(ℝ, ℂ))  A  :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ {m n p : Type*} [Fintype m] [Fintype n] [Fintype p]
         [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -296,7 +299,7 @@ theorem actual_middle_radial_block_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
 end CanonicalQuadraticSieve
 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (columnLog primeProductNorm b0Label jLabel)
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
@@ -310,9 +313,9 @@ end SecondPassArithmetic
 
 namespace SecondPassIntegration
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
+ 
+ 
+open   SecondPassArithmetic JointLogSeparation
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -321,11 +324,11 @@ variable {ι : Type*} [DecidableEq ι]
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
+ 
 open ConcreteTraceCRT (eisEmbedding)
 open FirstCauchyArithmetic (supportMobius)
 
@@ -335,7 +338,7 @@ variable {ι : Type*} [DecidableEq ι]
   (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
 def residualPairWeight (Ψ₁ Ψ₂ : O →* ℂ) (m c d : O)
-    (H₁ H₂ : Finset ι → ℂ) (S T : Finset ι) : ℂ :=
+    (H₁ H₂ : Finset ι → ℂ) (S T : Finset ι)  :=
   star (supportMobius (fun i => Ideal.span {p i}) S * secondInputCoefficient p hg Ψ₁ m c d H₁ S) *
     (supportMobius (fun i => Ideal.span {p i}) T * secondInputCoefficient p hg Ψ₂ m c d H₂ T)
 
@@ -368,7 +371,7 @@ theorem residualSecondMode_tail_eq (F G : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ)
   · simp [hd]
 
 def residualTailCost (F G : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ)
-    (m c d : O) (H₁ H₂ : Finset ι → ℂ) (e : O) (Y H : ℝ) (A : ℕ) (P : ℝ) : ℝ :=
+    (m c d : O) (H₁ H₂ : Finset ι → ℂ) (e : O) (Y H : ℝ) (A : ℕ) (P : ℝ)  :=
   ∑ S ∈ (F\G).powerset, ∑ T ∈ (F\G).powerset, if Disjoint S T then
     let n := ∏ i : activeSupport T S, p i.val
     let scale := Y / (‖eisEmbedding e‖^2 * ‖eisEmbedding n‖^2)
@@ -378,7 +381,7 @@ def residualTailCost (F G : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ)
 
 end
 
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -387,7 +390,7 @@ variable {ι : Type*} [DecidableEq ι]
   (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
-theorem primeProductNorm_eq_ideal_norm (S : Finset ι) :
+theorem primeProductNorm_eq_ideal_norm  S  :
     primeProductNorm p S = (Ideal.absNorm (∏ i ∈ S, Ideal.span {p i}) : ℝ) := by
   rw [primeProductNorm, ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span,
     FiniteGaussPhase.span_finset_prod]
@@ -411,7 +414,7 @@ theorem primeProductNorm_mono {S T : Finset ι} (hST : S ⊆ T) :
   exact le_mul_of_one_le_right (FirstPassCubeLabels.primeProductNorm_pos p hp S).le
     (primeProductNorm_ge_one p hp _)
 
-def boundedPrimeSupports (F : Finset ι) (X : ℝ) : Finset (Finset ι) :=
+def boundedPrimeSupports (F : Finset ι) (X : ℝ)  :=
   F.powerset.filter (fun S => primeProductNorm p S ≤ X)
 
 include hinj in

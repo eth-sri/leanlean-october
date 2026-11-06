@@ -12,13 +12,13 @@ open scoped BigOperators Classical
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 open JointLogSeparation IdealMobiusDivisorSum InverseInitialClippedColumns
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma child_ball_neg (R : ℝ) (k : Eis) :
+
+lemma child_ball_neg  R   k  :
     -k ∈ nonzeroChildFrequencyBall 1 R ↔ k ∈ nonzeroChildFrequencyBall 1 R := by
   simp only [mem_nonzeroChildFrequencyBall _ one_ne_zero,one_mul,map_neg,norm_neg]
 
-lemma child_ball_sum_neg {β : Type*} [AddCommMonoid β] (R : ℝ) (F : Eis → β) :
+lemma child_ball_sum_neg {β : Type*} [AddCommMonoid β] (R : ℝ) (F : ActualEisensteinCubic.O → β) :
     ∑ k ∈ nonzeroChildFrequencyBall 1 R,F (-k) =
       ∑ k ∈ nonzeroChildFrequencyBall 1 R,F k := by
   apply Finset.sum_bij (fun k _ => -k)
@@ -32,30 +32,35 @@ lemma child_ball_sum_neg {β : Type*} [AddCommMonoid β] (R : ℝ) (F : Eis → 
     rfl
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def secondLabelWeight (K : ℕ) (f : Ideal Eis) : ℝ := ((idealDivisors f).card : ℝ)^(9+4*K)
+def secondLabelWeight (K : ℕ) (f : Ideal ActualEisensteinCubic.O)  := ((idealDivisors f).card : ℝ)^(9+4*K)
 
+section
+variable (K : ℕ) (labels : Finset (Ideal ActualEisensteinCubic.O)) (rows : Finset ActualEisensteinCubic.O) (R : ℝ) (γ : OuterTriple) (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex) (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ) (ω : ℝ → ℂ) (Z N V : ℝ) (hZ : 0 < Z) (t : Frequency × (Fin 6 → ℝ))
+
+
+include hZ in
 theorem second_left_normalized_energy
-    (K : ℕ) (labels : Finset (Ideal Eis)) (rows : Finset Eis) (γ : OuterTriple)
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
-    (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (ω : ℝ → ℂ) (Z N V : ℝ) (hZ : 0 < Z) (t : Frequency × (Fin 6 → ℝ)) :
+           
+           
+         
+            :
     secondLabelEnergy K labels rows (secondModeLeft p hp hcop hg pool Ψ m z slots lists a ω (Z^N) t) γ =
       Z^(max 0 N+V) * normalizedColumnEnergy p hp hcop hg pool (secondRayMinus Ψ z)
         (actualSecondInheritedPuncture m γ) slots lists a labels rows (secondLabelWeight K)
         (clippedTest ω (Z^(max 0 N-N)) (-(profileHeight secondLeftSlope secondRightSlope secondKernelSlope t.1 t.2) 4))
-        (Z^(max 0 N)) Z (max 0 N+V) := by
-  exact initial_columnEnergy_clipping_normalized p hp hcop hg pool (secondRayMinus Ψ z)
+        (Z^(max 0 N)) Z (max 0 N+V) := initial_columnEnergy_clipping_normalized p hp hcop hg pool (secondRayMinus Ψ z)
     (actualSecondInheritedPuncture m γ) slots lists a labels rows (secondLabelWeight K) ω hZ N V _
 
+include hZ in
 theorem second_right_normalized_energy
-    (K : ℕ) (labels : Finset (Ideal Eis)) (R : ℝ) (γ : OuterTriple)
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
-    (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (ω : ℝ → ℂ) (Z N V : ℝ) (hZ : 0 < Z) (t : Frequency × (Fin 6 → ℝ)) :
+           
+           
+         
+            :
     secondLabelEnergy K labels (nonzeroChildFrequencyBall 1 R)
       (secondModeRight p hp hcop hg pool Ψ m z slots lists a ω (Z^N) t) γ =
       Z^(max 0 N+V) * normalizedColumnEnergy p hp hcop hg pool (secondRayPlus Ψ z)
@@ -80,12 +85,14 @@ theorem second_right_normalized_energy
     (actualSecondInheritedPuncture m γ) slots lists a labels (nonzeroChildFrequencyBall 1 R)
     (secondLabelWeight K) ω hZ N V _
 
+end
+
 omit [DecidableEq σ] in
 theorem normalized_child_energy_radical_puncture
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
+     pool   Ψ   m 
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis) (D : Ideal Eis → ℝ)
-    (W : ℝ → ℂ) (X Z F : ℝ) :
+     labels   rows   D 
+     W   X Z F  :
     normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows D W X Z F =
     normalizedColumnEnergy p hp hcop hg pool Ψ
       (ConcretePrimeRowBridge.idealGenerator (Ideal.span {m}).radical)

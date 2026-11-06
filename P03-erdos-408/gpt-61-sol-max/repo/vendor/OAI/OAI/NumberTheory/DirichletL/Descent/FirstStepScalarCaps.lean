@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicRadius
 
 namespace OAI
 
-noncomputable section
+
 
 namespace SevenEighths.InverseMoment
 
- theorem first_step_scalar_caps (Z A M r ell V delta aa bb rr t j eta tau window b:ℝ)
+ theorem first_step_scalar_caps  Z A M r ell V delta aa bb rr t j eta tau window b 
     (hZ:1<Z)(hA:0≤A)(hM:0≤M)(hMcap:M≤A)(hr: -1≤r)(hrcap:r≤A)
     (hell:0≤ell)(hellcap:ell≤A)(hV:0≤V)(hVcap:V≤A)
     (hd:0≤delta)(hdcap:delta≤A)(haa:0≤aa)(haacap:aa≤A)
@@ -67,6 +67,6 @@ theorem first_step_scalar_losses (A r ell aa bb rr t eta pi em ed:ℝ)
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

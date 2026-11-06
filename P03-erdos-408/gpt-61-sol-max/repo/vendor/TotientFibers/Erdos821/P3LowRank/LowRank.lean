@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3LowRank.Fourier
 public import Erdos821.P3LowRank.HistorySum
@@ -35,35 +36,35 @@ def initVal {M n B : ℕ} : BirthAddress P M n B → P.MemoryState M → ℕ
   | .inl (g, h), s => (s.2.1 g.val h).val
   | _, _ => 0
 
-def ghostPerf {M n B : ℕ} (x : BirthAddress P M n B) {s t : P.MemoryState M}
-    (c : GhostChoice s t) : Prop :=
+def ghostPerf {M n B } (x : BirthAddress P M n B) {s t : P.MemoryState M}
+    (c : GhostChoice s t)  :=
   match x with
   | .inr (.inr (_, g, h)) => h.val < (c.2.1 g).val
   | _ => False
 
-def ghostVal {M n B : ℕ} (x : BirthAddress P M n B) {s t : P.MemoryState M}
-    (c : GhostChoice s t) : ℕ :=
+def ghostVal {M n B } (x : BirthAddress P M n B) {s t : P.MemoryState M}
+    (c : GhostChoice s t)  :=
   match x with
   | .inr (.inr (_, g, h)) =>
       if hh : h.val < (c.2.1 g).val then (c.2.2 g ⟨h.val, hh⟩).val else 0
   | _ => 0
 
-def edgePerf (A : Model F P J m) {n B : ℕ} (x : BirthAddress P (J + F.ell) n B)
-    {s : P.MemoryState (J + F.ell)} (c : EdgeChoice A s) : Prop :=
+def edgePerf (A : Model F P J m) {n B } (x : BirthAddress P (J + F.ell) n B)
+    {s } (c : EdgeChoice A s)  :=
   match x with
   | .inr (.inl (_, g, h)) =>
       h ∈ Finset.univ.filter (fun h => ¬ (A.pattern c.2.2.1).shared g.val h ∧
         h ∉ c.2.2.2.2.2.1 g)
   | _ => False
 
-def edgeVal (A : Model F P J m) {n B : ℕ} (x : BirthAddress P (J + F.ell) n B)
-    {s : P.MemoryState (J + F.ell)} (t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) : ℕ :=
+def edgeVal (A : Model F P J m) {n B } (x : BirthAddress P (J + F.ell) n B)
+    {s } (t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)  :=
   match x with
   | .inr (.inl (_, g, h)) => ((permuteActive c.2.1 t).2.1 g.val h).val
   | _ => 0
 
 /-- The enumeration of addresses used by `performedFin` and `valueFin`. -/
-def addrIdx (P : PrimeGroups) (M n B : ℕ) :
+def addrIdx (P ) (M n B ) :
     Fin (Fintype.card (BirthAddress P M n B)) → BirthAddress P M n B :=
   (Fintype.equivFin _).symm
 
@@ -71,14 +72,14 @@ section Local
 
 variable {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n) (B : ℕ)
 
-theorem loc_init (x : BirthAddress P (J + F.ell) n B) (hx : addrLoc x = .inl ()) :
+theorem loc_init  x  (hx : addrLoc x = .inl ()) :
     H.addressPerformed B x ∧ H.addressValue B x = initVal x (H.before 0) := by
   rcases x with ⟨g, h⟩ | ⟨i, g, h⟩ | ⟨i, g, h⟩
   · exact ⟨trivial, rfl⟩
   · simp [addrLoc] at hx
   · simp [addrLoc] at hx
 
-theorem loc_ghost (x : BirthAddress P (J + F.ell) n B) (i : Fin (n + 1))
+theorem loc_ghost  x   i 
     (hx : addrLoc x = .inr (.inr i)) :
     (H.addressPerformed B x ↔ ghostPerf x (H.ghost i)) ∧
       H.addressValue B x = ghostVal x (H.ghost i) := by
@@ -89,16 +90,14 @@ theorem loc_ghost (x : BirthAddress P (J + F.ell) n B) (i : Fin (n + 1))
     subst hx
     exact ⟨Iff.rfl, rfl⟩
 
-theorem loc_edge (x : BirthAddress P (J + F.ell) n B) (i : Fin n)
+theorem loc_edge  x   i 
     (hx : addrLoc x = .inr (.inl i)) :
     (H.addressPerformed B x ↔ edgePerf A x (H.edge i)) ∧
       H.addressValue B x = edgeVal A x (H.before i.succ) (H.edge i) := by
   rcases x with ⟨g, h⟩ | ⟨i', g, h⟩ | ⟨i', g, h⟩
   · simp [addrLoc] at hx
   · simp only [addrLoc, Sum.inr.injEq, Sum.inl.injEq] at hx
-    subst hx
-    refine ⟨?_, rfl⟩
-    simp only [MemoryHistory.addressPerformed, MemoryHistory.freshTargetSlots, edgePerf]
+    aesop
   · simp [addrLoc] at hx
 
 end Local
@@ -108,34 +107,34 @@ variable (A : Model F P J m) (n B : ℕ)
 /-- Initial-slot multipliers: a function of the initial boundary state. -/
 def initF (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → Prop → ℕ → ℂ)
     (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B))))
-    (s : P.MemoryState (J + F.ell)) : ℂ :=
+    (s : P.MemoryState (J + F.ell))  :=
   ∏ j ∈ U.filter (fun j => addrLoc (addrIdx P (J + F.ell) n B j) = .inl ()),
     w j True (initVal (addrIdx P (J + F.ell) n B j) s)
 
 /-- Ghost-address multipliers: a function of the original ghost choice. -/
 def ghostF (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → Prop → ℕ → ℂ)
     (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B))))
-    (i : Fin (n + 1)) (s t : P.MemoryState (J + F.ell)) (c : GhostChoice s t) : ℂ :=
+    (i : Fin (n + 1)) (s t : P.MemoryState (J + F.ell)) (c : GhostChoice s t)  :=
   ∏ j ∈ U.filter (fun j => addrLoc (addrIdx P (J + F.ell) n B j) = .inr (.inr i)),
     w j (ghostPerf (addrIdx P (J + F.ell) n B j) c) (ghostVal (addrIdx P (J + F.ell) n B j) c)
 
 /-- Fresh-address multipliers: a function of the birth edge's choice and target. -/
 def edgeF (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → Prop → ℕ → ℂ)
     (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B))))
-    (i : Fin n) (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) : ℂ :=
+    (i : Fin n) (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)  :=
   ∏ j ∈ U.filter (fun j => addrLoc (addrIdx P (J + F.ell) n B j) = .inr (.inl i)),
     w j (edgePerf A (addrIdx P (J + F.ell) n B j) c)
       (edgeVal A (addrIdx P (J + F.ell) n B j) t c)
 
 theorem mem_performedFin (H : MemoryHistory A n)
-    (j : Fin (Fintype.card (BirthAddress P (J + F.ell) n B))) :
+     j  :
     j ∈ H.performedFin B ↔ H.addressPerformed B (addrIdx P (J + F.ell) n B j) := by
   simp [MemoryHistory.performedFin, addrIdx]
 
 /-- The product over the support factors through the local operations. -/
-theorem phi_factor (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → Prop → ℕ → ℂ)
-    (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B))))
-    (H : MemoryHistory A n) :
+theorem phi_factor  w 
+     U 
+     H  :
     ∏ j ∈ U, w j (j ∈ H.performedFin B) (H.valueFin B j) =
       localFactor A n (initF n B w U) (ghostF n B w U) (edgeF A n B w U) H := by
   rw [← Finset.prod_fiberwise U (fun j => addrLoc (addrIdx P (J + F.ell) n B j)),
@@ -148,7 +147,7 @@ theorem phi_factor (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → 
     have hl := (Finset.mem_filter.mp hj).2
     have hloc := loc_init H B _ hl
     have hp : (j ∈ H.performedFin B) = True :=
-      propext ⟨fun _ => trivial, fun _ => (mem_performedFin A n B H j).mpr hloc.1⟩
+      (by simp_all [mem_performedFin])
     rw [hp]
     exact congrArg _ hloc.2
   have h2 : ∀ i : Fin (n + 1),
@@ -183,20 +182,17 @@ theorem phi_factor (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → 
   simp only [h2, h3, localFactor]
   ring
 
-theorem addressValue_lt (H : MemoryHistory A n) (x : BirthAddress P (J + F.ell) n B) :
+theorem addressValue_lt (H : MemoryHistory A n)  x  :
     H.addressValue B x < P.allPrimes.sup id + 1 := by
   have hp : ∀ (g : P.Group) (p : P.Prime g), p.val < P.allPrimes.sup id + 1 := fun g p =>
     Nat.lt_succ_of_le (Finset.le_sup (f := id) (group_prime_mem_all g p))
   rcases x with ⟨g, h⟩ | ⟨i, g, h⟩ | ⟨i, g, h⟩
   · exact hp _ _
   · exact hp _ _
-  · simp only [MemoryHistory.addressValue]
-    split_ifs
-    · exact hp _ _
-    · omega
+  grind [MemoryHistory.addressValue]
 
 /-- Edges carrying a fresh address of the support. -/
-def affected (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B)))) : Finset (Fin n) :=
+def affected (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B))))  :=
   Finset.univ.filter (fun i => ∃ j ∈ U, addrLoc (addrIdx P (J + F.ell) n B j) = .inr (.inl i))
 
 theorem card_affected_le (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B)))) :
@@ -213,8 +209,8 @@ theorem card_affected_le (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.e
         exact Finset.mem_image.mpr ⟨j, hj, hl⟩
     _ ≤ U.card := Finset.card_image_le
 
-theorem edgeF_unaffected (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → Prop → ℕ → ℂ)
-    (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B)))) (i : Fin n)
+theorem edgeF_unaffected  w 
+     U   i 
     (hi : i ∉ affected (F := F) (J := J) n B U) :
     edgeF A n B w U i = fun _ _ _ => 1 := by
   funext s t c
@@ -241,7 +237,7 @@ theorem Erdos821.S2Core.LowRankMemoryTask_proof : Erdos821.S2Core.LowRankMemoryT
   let c : Fin n → ℝ := fun i => if i ∈ Aff then CA else CE
   let LF : Ξ → MemoryHistory A n → ℂ := fun ξ =>
     localFactor A n (initF n B (mm ξ) U) (ghostF n B (mm ξ) U) (edgeF A n B (mm ξ) U)
-  have hcardC : (Fintype.card Ξ : ℂ) ≠ 0 := by exact_mod_cast hcard.ne'
+  
   -- Step 1: the frozen expression is an average of local-multiplier history sums.
   have hexpr : lowRankHistoryExpression A n B rho theta pi =
       (Fintype.card Ξ : ℂ)⁻¹ * ∑ ξ, ∑ d : BoundedHistoryData A n B,

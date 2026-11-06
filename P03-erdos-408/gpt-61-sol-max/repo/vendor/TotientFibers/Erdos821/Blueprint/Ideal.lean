@@ -16,31 +16,31 @@ structure Family (F : FixedData) (P : PrimeGroups) (J m : ℕ) where
   count : ℕ
   pattern : Fin count → Pattern P J F.ell m
 
-def Family.model {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+def Family.model {F } {P } {J m }
     (B : Family F P J m) (k : ℤ) (ζ : ℝ) : Model F P J m :=
   { patternCount := B.count, pattern := B.pattern, k := k, zeta := ζ }
 
-def intervalBigGroups (P : PrimeGroups) : Prop :=
+def intervalBigGroups (P : PrimeGroups)  :=
   ∀ g : P.BigGroup, ∃ lo hi : ℝ, ∀ p : ℕ,
     p ∈ P.primes g.val ↔ p.Prime ∧ lo ≤ (p : ℝ) ∧ (p : ℝ) ≤ hi
 
-def selectedProduct {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (u : P.BigAux J) : ℕ :=
+def selectedProduct {P } {J ell m } (ν : Pattern P J ell m)
+    (block : P.BigGroup → Bool) (side : Bool) (u : P.BigAux J)  :=
   ∏ g : P.BigGroup, ∏ i : Fin J,
     if block g = side ∧ i ∈ ν.changed g.val then (u g i).val else 1
 
-def selectedEndpoint {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (a : P.BigLabels (J + ell)) : ℕ :=
+def selectedEndpoint {P } {J ell m } (ν : Pattern P J ell m)
+    (block : P.BigGroup → Bool) (side : Bool) (a : P.BigLabels (J + ell))  :=
   ∏ g : P.BigGroup, ∏ i : Fin J,
     if block g = side ∧ i ∈ ν.changed g.val then (a g (ν.slot i)).val else 1
 
-def selectedCellMass {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (h : ℝ) (j : ℤ) : ℝ :=
+def selectedCellMass {P } {J ell m } (ν : Pattern P J ell m)
+    (block : P.BigGroup → Bool) (side : Bool) (h : ℝ) (j : ℤ)  :=
   ∑ u : P.BigAux J, if Analytic.cell h (selectedProduct ν block side u) = j
     then ν.bigAuxMass u else 0
 
-def selectedKernel {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (Q : ℕ) (h ξ : ℝ) (D X : ℕ) : ℂ :=
+def selectedKernel {P } {J ell m } (ν : Pattern P J ell m)
+    (block : P.BigGroup → Bool) (side : Bool) (Q : ℕ) (h ξ : ℝ) (D X : ℕ)  :=
   let v := selectedCellMass ν block side h (Analytic.cell h X)
   if Analytic.cell h D = Analytic.cell h X ∧ ξ ≤ v then
     (v : ℂ)⁻¹ * ∑ χ ∈ Analytic.primitiveCharacters Q,
@@ -48,8 +48,8 @@ def selectedKernel {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J ell m)
   else 0
 
 /-- Explicit shape of all signed comparison coefficients; two nonempty blocks. -/
-def Family.Residual {F : FixedData} {P : PrimeGroups} {J m : ℕ}
-    (B : Family F P J m) (Q : ℕ) (h ξ : ℝ) : Prop :=
+def Family.Residual {F } {P } {J m }
+    (B : Family F P J m) (Q : ℕ) (h ξ : ℝ)  :=
   ∃ raw : Fin B.count, ∃ block : P.BigGroup → Bool,
     (∀ g, (B.pattern raw).changed g = ∅) ∧
     (∀ a b u, (B.pattern raw).coefficient a b u = 1) ∧
@@ -66,7 +66,7 @@ def Family.Residual {F : FixedData} {P : PrimeGroups} {J m : ℕ}
           selectedKernel ν block true Q h ξ (selectedProduct ν block true u)
             (selectedEndpoint ν block true a))
 
-def IdealConstruction : Prop :=
+def IdealConstruction  :=
   ∀ F : FixedData, ∀ E C₄ : ℝ, 0 < E → 0 ≤ C₄ →
     ∃ m J₀ : ℕ, ∃ C₁ qexp hexp ξexp : ℝ,
       0 < qexp ∧ 0 < hexp ∧ 0 < ξexp ∧
@@ -82,7 +82,7 @@ def IdealConstruction : Prop :=
 end Erdos821.Blueprint.Graph
 namespace Erdos821.Blueprint
 
-def ComparisonEstimate : Prop :=
+def ComparisonEstimate  :=
   ∀ (P : Analytic.Geometry) (m : ℕ) (A C₄ : ℝ), 0 < A → 0 ≤ C₄ →
     ∃ qexp hexp ξexp : ℝ, 0 < qexp ∧ 0 < hexp ∧ 0 < ξexp ∧
       ∀ᶠ x in atTop, ∀ G : Analytic.PrimeGroups, Analytic.Admissible P x G →

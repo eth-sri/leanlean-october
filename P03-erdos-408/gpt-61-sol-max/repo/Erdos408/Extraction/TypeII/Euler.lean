@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.NumberTheory.EulerProduct.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
@@ -32,20 +33,25 @@ noncomputable def cmul (loc : ℕ → ℝ) : ℕ →* ℝ where
     simp only [mul_eq_zero, hm, hn, or_self, ite_false, Nat.factorization_mul hm hn]
     exact Finsupp.prod_add_index' (fun _ => pow_zero _) fun _ _ _ => pow_add _ _ _
 
-theorem cmul_apply {loc : ℕ → ℝ} {n : ℕ} (hn : n ≠ 0) :
+section
+variable {loc : ℕ → ℝ} (h0 : ∀ p, p.Prime → 0 ≤ loc p) (θ : ℝ) {loc' : ℕ → ℝ} {n : ℕ} (hn : n ≠ 0) {p : ℕ}
+
+include hn in
+theorem cmul_apply       :
     cmul loc n = n.factorization.prod fun p e => loc p ^ e := by
   simp [cmul, hn]
 
-theorem cmul_prime_pow (loc : ℕ → ℝ) {p : ℕ} (hp : p.Prime) (e : ℕ) :
+theorem cmul_prime_pow  loc   {p}  (hp : p.Prime)  e  :
     cmul loc (p ^ e) = loc p ^ e := by
   rw [cmul_apply (pow_ne_zero _ hp.ne_zero), hp.factorization_pow]
   exact Finsupp.prod_single_index (pow_zero _)
 
-theorem cmul_prime (loc : ℕ → ℝ) {p : ℕ} (hp : p.Prime) : cmul loc p = loc p := by
+theorem cmul_prime  loc   {p}  (hp : p.Prime) : cmul loc p = loc p := by
   simpa using cmul_prime_pow loc hp 1
 
+include h0 in
 /-- `cmul loc` is nonnegative when `loc` is nonnegative at the primes. -/
-theorem cmul_nonneg {loc : ℕ → ℝ} (h0 : ∀ p, p.Prime → 0 ≤ loc p) (n : ℕ) :
+theorem cmul_nonneg      n  :
     0 ≤ cmul loc n := by
   by_cases hn : n = 0
   · simp [cmul, hn]
@@ -54,42 +60,45 @@ theorem cmul_nonneg {loc : ℕ → ℝ} (h0 : ∀ p, p.Prime → 0 ≤ loc p) (n
     pow_nonneg (h0 p (Nat.prime_of_mem_primeFactors (Nat.support_factorization n ▸ hp))) _
 
 /-- `cmul` of a pointwise product of prime weights is the product. -/
-theorem cmul_mul_loc (loc loc' : ℕ → ℝ) (n : ℕ) :
+theorem cmul_mul_loc  loc loc'   n  :
     cmul (fun p => loc p * loc' p) n = cmul loc n * cmul loc' n := by
   by_cases hn : n = 0
   · simp [cmul, hn]
   rw [cmul_apply hn, cmul_apply hn, cmul_apply hn, ← Finsupp.prod_mul]
   exact Finsupp.prod_congr fun p _ => mul_pow _ _ _
 
+include hn in
 /-- `n = ∏_{p^e ∥ n} p^e` in `ℝ`. -/
-theorem natCast_eq_factorization_prod {n : ℕ} (hn : n ≠ 0) :
+theorem natCast_eq_factorization_prod     :
     (n : ℝ) = n.factorization.prod fun p e => (p : ℝ) ^ e := by
   conv_lhs => rw [← Nat.prod_factorization_pow_eq_self hn]
   rw [Finsupp.prod, Finsupp.prod, Nat.cast_prod]
   push_cast
   rfl
 
+include hn in
 /-- `n^θ` is completely multiplicative: `cmul (p ↦ p^θ) n = n^θ`. -/
-theorem cmul_rpow (θ : ℝ) {n : ℕ} (hn : n ≠ 0) :
+theorem cmul_rpow       :
     cmul (fun p => (p : ℝ) ^ θ) n = (n : ℝ) ^ θ := by
   rw [cmul_apply hn, natCast_eq_factorization_prod hn, Finsupp.prod, Finsupp.prod,
     ← Real.finsetProd_rpow _ _ (fun p _ => by positivity)]
   exact prod_congr rfl fun p _ => (Real.rpow_pow_comm (Nat.cast_nonneg p) θ _)
 
+include hn in
 /-- `1/n` is completely multiplicative. -/
-theorem cmul_inv {n : ℕ} (hn : n ≠ 0) : cmul (fun p => (p : ℝ)⁻¹) n = (n : ℝ)⁻¹ := by
+theorem cmul_inv     : cmul (fun p => (p : ℝ)⁻¹) n = (n : ℝ)⁻¹ := by
   have h := cmul_rpow (-1) hn
   simp only [Real.rpow_neg_one] at h
   exact h
 
+include hn in
 /-- `f(n) / n` for a completely multiplicative `f`. -/
-theorem cmul_div {loc : ℕ → ℝ} {n : ℕ} (hn : n ≠ 0) :
+theorem cmul_div       :
     cmul loc n / n = cmul (fun p => loc p / p) n := by
-  rw [div_eq_mul_inv, ← cmul_inv hn, ← cmul_mul_loc]
-  rfl
+  grind [cmul_inv, cmul_mul_loc]
 
 /-- `cmul loc n` only depends on `loc` at the prime factors of `n`. -/
-theorem cmul_congr {loc loc' : ℕ → ℝ} {n : ℕ} (h : ∀ p ∈ n.primeFactors, loc p = loc' p) :
+theorem cmul_congr     (h : ∀ p ∈ n.primeFactors, loc p = loc' p) :
     cmul loc n = cmul loc' n := by
   by_cases hn : n = 0
   · simp [cmul, hn]
@@ -98,18 +107,17 @@ theorem cmul_congr {loc loc' : ℕ → ℝ} {n : ℕ} (h : ∀ p ∈ n.primeFact
     rw [h p (Nat.support_factorization n ▸ hp)]
 
 /-- `cmul loc n = 0` when `loc` vanishes at a prime factor of `n`. -/
-theorem cmul_eq_zero {loc : ℕ → ℝ} {n p : ℕ} (hp : p ∈ n.primeFactors) (h : loc p = 0) :
+theorem cmul_eq_zero     (hp : p ∈ n.primeFactors) (h : loc p = 0) :
     cmul loc n = 0 := by
   have hn : n ≠ 0 := (Nat.mem_primeFactors.1 hp).2.2
   rw [cmul_apply hn, Finsupp.prod]
   refine Finset.prod_eq_zero (Nat.support_factorization n ▸ hp) ?_
-  rw [h, zero_pow]
-  exact ((Nat.prime_of_mem_primeFactors hp).factorization_pos_of_dvd hn
-    (Nat.dvd_of_mem_primeFactors hp)).ne'
+  aesop
 
+include h0 in
 /-- The Euler-product bound `∑_{m ≤ N} cmul loc m ≤ ∏_{p ≤ N} (1 - loc p)⁻¹`. -/
-theorem sum_cmul_le_prod {loc : ℕ → ℝ} (h0 : ∀ p, p.Prime → 0 ≤ loc p)
-    (h1 : ∀ p, p.Prime → loc p < 1) (N : ℕ) :
+theorem sum_cmul_le_prod    
+    (h1 : ∀ p, p.Prime → loc p < 1)  N  :
     ∑ m ∈ Icc 1 N, cmul loc m ≤ ∏ p ∈ (range (N + 1)).filter Nat.Prime, (1 - loc p)⁻¹ := by
   have hnorm : ∀ {p : ℕ}, p.Prime → ‖cmul loc p‖ < 1 := fun {p} hp => by
     rw [cmul_prime loc hp, Real.norm_of_nonneg (h0 p hp)]
@@ -134,6 +142,8 @@ theorem sum_cmul_le_prod {loc : ℕ → ℝ} (h0 : ∀ p, p.Prime → 0 ≤ loc 
     rfl
   rw [hs]
   exact sum_le_hasSum s (fun m _ => cmul_nonneg h0 m) hsum
+
+end
 
 /-- `∏ (1 - y_p)⁻¹ ≤ exp(2 ∑ y_p)` when `0 ≤ y_p ≤ 1/2`. -/
 theorem prod_inv_one_sub_le_exp {ι : Type*} (S : Finset ι) (y : ι → ℝ)

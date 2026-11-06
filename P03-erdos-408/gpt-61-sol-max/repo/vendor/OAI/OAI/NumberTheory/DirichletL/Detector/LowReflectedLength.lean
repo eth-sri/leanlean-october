@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowReflectedExponent
 
@@ -9,7 +10,7 @@ namespace OAI
 namespace SevenEighths.ProbeLowReflected
 open InverseTerminalWidths
 
-theorem compensated_reflected_exponent_with_length (d ell₀ O₀ H A₀ N₀ S₀ B₀ za v ell el θ ε : ℝ)
+theorem compensated_reflected_exponent_with_length  d ell₀ O₀ H A₀ N₀ S₀ B₀ za v ell el θ ε 
     (hd : 0≤d) (_hd1 : d≤1/6) (hε : 0≤ε)
     (hO : -ε≤O₀) (hH : H≤(5/6-2*d)-O₀+ε)
     (hA : 2*A₀≤O₀+ε) (hN : 0≤N₀) (hNA : N₀≤A₀)
@@ -26,25 +27,9 @@ theorem compensated_reflected_exponent_with_length (d ell₀ O₀ H A₀ N₀ S�
   have hmax : max H (v+ell)≤H+10*ε := max_le (by linarith) hcol
   have hk := le_max_left 0 (Td-v-3*ell-el)
   by_cases hu : hybridSaving v za=za
-  · unfold reflectedExponent
-    rw [hu]
-    change O₀/2+max H (v+ell)-S₀-B₀+za-za-ell-2*el/3-max 0 (Td-v-3*ell-el)/2≤_
-    linarith
+  · grind [reflectedExponent, max]
   · have hhalf := hybrid_half_with_error hv hε hu
-    have hquarter := retained_kernel_quarter Td (v+3*ell+el)
-    have hcharge : Td/4-17*ε/12≤
-        hybridSaving v za+ell+2*el/3+max 0 (Td-v-3*ell-el)/2 := by
-      have heq : Td-(v+3*ell+el)=Td-v-3*ell-el := by ring
-      rw [heq] at hquarter
-      linarith
-    have hbound : reflectedExponent O₀ H S₀ B₀ za v ell el Td≤
-        O₀/2+H-S₀-B₀+za-Td/4+(10+17/12)*ε := by
-      unfold reflectedExponent
-      linarith
-    change reflectedExponent O₀ H S₀ B₀ za v ell el Td≤_
-    apply hbound.trans
-    dsimp [Td]
-    linarith
+    grind [hybridSaving, max, reflectedExponent]
 
 end SevenEighths.ProbeLowReflected
 

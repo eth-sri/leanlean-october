@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.NaturalSourceAdmission
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroBalancedAdmission
@@ -21,7 +21,7 @@ variable {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(p:Profiles a b)(ha:0<
 variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 local notation "inp"=>CenteredMomentEnergyZeroReferencePhysical.balancedInput s p ha t X₁ X₂ hX₁ hX₂
 
-theorem four_upper_scales (Mcap Lgoal:ℝ)(hZ:1<Z)(hL:0≤Lgoal)
+theorem four_upper_scales  Mcap Lgoal (hZ:1<Z)(hL:0≤Lgoal)
     (hs:s.width≤Mcap)(hc₁:X₁≤Z^Lgoal)(hc₂:X₂≤Z^Lgoal) :
     (inp).X₁≤Z^(max Mcap (2*Lgoal)) ∧
     (inp).X₂≤Z^(max Mcap (2*Lgoal)) ∧
@@ -45,6 +45,6 @@ theorem four_upper_scales (Mcap Lgoal:ℝ)(hZ:1<Z)(hL:0≤Lgoal)
 
 end SevenEighths.CenteredMomentEnergyZeroBalancedAdmission
 
-end
+
 
 end OAI

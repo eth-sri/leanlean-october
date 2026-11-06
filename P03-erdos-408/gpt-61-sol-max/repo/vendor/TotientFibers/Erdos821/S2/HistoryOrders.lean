@@ -29,15 +29,15 @@ def reorderBatches (sigma : H.BatchOrders) : MemoryHistory A n where
   ghost := fun i => reorderGhostChoice (H.ghost i) (sigma i)
   edge := H.edge
 
-theorem reorderBatches_valid (sigma : H.BatchOrders) :
+theorem reorderBatches_valid  sigma  :
     (H.reorderBatches sigma).Valid ↔ H.Valid := by
   simp only [Valid, reorderBatches, reorderGhostChoice_valid]
 
-theorem reorderBatches_weight (rho theta : ℝ) (sigma : H.BatchOrders) :
+theorem reorderBatches_weight  rho theta   sigma  :
     (H.reorderBatches sigma).Weight rho theta = H.Weight rho theta := by
   simp only [Weight, reorderBatches, reorderGhostChoice_weight]
 
-theorem reorderBatches_birthValues (sigma : H.BatchOrders) :
+theorem reorderBatches_birthValues  sigma  :
     (H.reorderBatches sigma).birthValues = H.birthValues := by
   have hg (i : Fin (n + 1)) :
       (H.reorderBatches sigma).ghostBirthValues i = H.ghostBirthValues i := by
@@ -49,12 +49,12 @@ theorem reorderBatches_birthValues (sigma : H.BatchOrders) :
   rw [Finset.sum_congr rfl (fun i _ => hg i)]
   rfl
 
-theorem reorderBatches_distinct (sigma : H.BatchOrders) :
+theorem reorderBatches_distinct  sigma  :
     (H.reorderBatches sigma).DistinctBirths ↔ H.DistinctBirths := by
   unfold DistinctBirths
   rw [H.reorderBatches_birthValues]
 
-theorem reorderBatches_projection (sigma : H.BatchOrders) :
+theorem reorderBatches_projection  sigma  :
     (H.reorderBatches sigma).toResiduePath = H.toResiduePath := rfl
 
 theorem reorderBatches_injective
@@ -78,7 +78,7 @@ theorem batchOrders_card :
       ∏ i : Fin (n + 1), ∏ g : P.BigGroup, ((H.ghost i).2.1 g).val.factorial := by
   simp [BatchOrders, Fintype.card_pi, Fintype.card_perm]
 
-theorem reorderBatches_weight_sum (rho theta : ℝ) :
+theorem reorderBatches_weight_sum  rho theta  :
     (∑ sigma : H.BatchOrders, (H.reorderBatches sigma).Weight rho theta) =
       ((∏ i : Fin (n + 1), ∏ g : P.BigGroup,
         ((H.ghost i).2.1 g).val.factorial : ℕ) : ℂ) * H.Weight rho theta := by

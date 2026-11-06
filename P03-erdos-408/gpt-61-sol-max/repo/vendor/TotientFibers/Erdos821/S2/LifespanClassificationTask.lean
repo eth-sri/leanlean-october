@@ -14,7 +14,7 @@ open Erdos821.Blueprint.Graph
 /-- The structural anchor theorem is an explicit input. The task reconstructs
 all pending memories; coefficients, analytic estimates and permutations of ghost
 batches are left to the lead's weighted fiber identity. -/
-def LifespanClassificationTask : Prop :=
+def LifespanClassificationTask  :=
   HistoryAnchorTask →
     ∀ (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
       (H : MemoryHistory A n), H.Valid → H.DistinctBirths →

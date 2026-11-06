@@ -16,11 +16,11 @@ variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-def sourceConductorConstant (S : Finset (Ideal O)) (η : Character) : ℕ :=
+def sourceConductorConstant (S : Finset (Ideal O)) (η : Character)  :=
   conductorConstant*(∏P∈S,P).absNorm*(η.modulus.absNorm+1)+conductorConstant*M.absNorm
 
-theorem source_ray_conductor (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (η : Character) (u : FreeRow) (j : Sum Bool (RayQuotient.Characters M H)) :
+theorem source_ray_conductor  S   hS 
+     η   u   j  :
     (sourceDetectorFamily S hS η u (rayCubeFamily M H hH u) j).modulus.absNorm≤
       sourceConductorConstant M S η*(Ideal.span {u.val}:Ideal O).absNorm := by
   cases j with
@@ -43,7 +43,7 @@ theorem source_ray_conductor (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     omega
 
 theorem source_ray_nonprincipal_eventually (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (η : Character) (d : ℝ) (hd : 0<d) :
+    (hmax : ∀P∈S,P.IsMaximal)  η  (d : ℝ) (hd : 0<d) :
     ∀ᶠ Z : ℝ in atTop,∀U : ℝ,∀u∈rowBand (Z^d) U,
       (calibrationForSet S hmax).residueMonoid u.val≠0 →
       ∀j,(sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u) j).residue≠1 := by
@@ -59,8 +59,8 @@ theorem source_ray_nonprincipal_eventually (S : Finset (Ideal O)) (hS : SourceEx
     | true => exact calibrated_row_nonprincipal S hS.prime hmax hS.bad u (mem_rowBand.mp hu).1 hc
   | inr θ => exact hray u hnorm hs H hH θ
 
-theorem source_ray_conductor_eventually (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (η : Character) (ν : ℝ) (hν : 0<ν) :
+theorem source_ray_conductor_eventually  S   hS 
+     η   ν  (hν : 0<ν) :
     ∀ᶠ Z : ℝ in atTop,∀(u : FreeRow) (d : ℝ),rowNorm u≤Z^(d-ν) →
       ∀j,((sourceDetectorFamily S hS η u (rayCubeFamily M H hH u) j).modulus.absNorm:ℝ)≤Z^d := by
   have hh := HeckeDyadic.constant_absorbed_eventually (sourceConductorConstant M S η:ℝ) ν hν

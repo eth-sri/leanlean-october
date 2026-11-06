@@ -6,17 +6,17 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamilyUniform
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondExceptionalSourceCaps
 open HeckeFamily CenteredMomentSecondExceptionalFamily
 open CenteredMomentSecondExceptionalFamilyUniform
-local notation "O" => HeckeFamily.O
+
 
 theorem eventually_source_caps :
-    ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀(η:Character)(R0:Ideal O)(H R B:ℝ),
+    ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀(η:Character)(R0:Ideal HeckeFamily.O)(H R B:ℝ),
       0≤B → 0≤H → 0≤R → (η.modulus.absNorm:ℝ)≤Z^B →
       (R0.absNorm:ℝ)≤Z^B → H≤Z^B → R≤Z^B →
       H≤Z^(5*B+1) ∧
@@ -43,6 +43,6 @@ theorem eventually_source_caps :
 
 end SevenEighths.CenteredMomentSecondExceptionalSourceCaps
 
-end
+
 
 end OAI

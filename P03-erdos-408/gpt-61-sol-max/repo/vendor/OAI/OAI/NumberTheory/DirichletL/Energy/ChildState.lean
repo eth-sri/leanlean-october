@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Energy.AmplifiedChildWidth
 
 public import OAI.NumberTheory.DirichletL.Energy.State
 public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalChosenBlock
@@ -19,16 +21,12 @@ open CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth
 open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
 open CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization
 open CenteredMomentCanonicalFirst
-local notation "O" => HeckeFamily.O
 
-lemma ball_support : Function.support (ballProfile:ℝ→ℂ)⊆Set.Iic (2:ℝ):=by
-  intro x hx
-  by_cases h:0≤x
-  · exact (CenteredMomentAmplifiedRetainedRadius.ballProfile_support_upper x h hx).le
-  · exact (lt_of_not_ge h).le.trans (by norm_num)
 
-lemma canonical_mask_nonexceptional (τ:Character)(Q R:Ideal O)(hR:R≠0)
-    (n:Fin 4→ℤ)(z:O)(hz:(canonicalRadial τ Q n).keep z):
+alias ball_support := _root_.OAI.SevenEighths.CenteredMomentEnergyAmplifiedChildWidth.ball_support
+
+lemma canonical_mask_nonexceptional  τ  Q R (hR:R≠0)
+    (n:Fin 4→ℤ) z (hz:(canonicalRadial τ Q n).keep z):
     ¬CenteredExceptionalProfile.FixedInducingRow τ Q
       (fixedBadMask*ConcretePrimeRowBridge.idealGenerator R) 1 z:=by
   intro hh
@@ -37,7 +35,7 @@ lemma canonical_mask_nonexceptional (τ:Character)(Q R:Ideal O)(hR:R≠0)
     (ConcretePrimeRowBridge.idealGenerator_ne_zero R hR) one_ne_zero hz.1
     (dvd_mul_right _ _) (dvd_mul_left _ _)).mp hh)
 
-def canonicalState (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
+def canonicalState (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal HeckeFamily.O)
     (hR:R≠0)(hRN:(R.absNorm:ℝ)≤Z^Bmask)(n:Fin 4→ℤ)
     (hn:1≤dyadicScale (n 1)):NaturalState Z Bmask 2 where
   character:=τ
@@ -60,13 +58,13 @@ def canonicalState (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
   row_ne_zero:=fun _ hz=>hz.1
   nonexceptional:=canonical_mask_nonexceptional τ Q R hR n
 
-lemma canonicalState_width (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
-    (hR:R≠0)(hRN:(R.absNorm:ℝ)≤Z^Bmask)(n:Fin 4→ℤ)(hn:1≤dyadicScale (n 1)):
+lemma canonicalState_width  Z Bmask  hZ  τ  Q R 
+     hR  hRN  n  hn :
     (canonicalState Z Bmask hZ τ Q R hR hRN n hn).width=
       Real.logb Z (dyadicScale (n 1))+Real.logb Z (τ.modulus.absNorm:ℝ):=rfl
 
-lemma canonicalState_power (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
-    (hR:R≠0)(hRN:(R.absNorm:ℝ)≤Z^Bmask)(n:Fin 4→ℤ)(hn:1≤dyadicScale (n 1)):
+lemma canonicalState_power  Z Bmask  hZ  τ  Q R 
+     hR  hRN  n  hn :
     Z^(canonicalState Z Bmask hZ τ Q R hR hRN n hn).width=
       (τ.modulus.absNorm:ℝ)*dyadicScale (n 1):=by
   rw [canonicalState_width,Real.rpow_add (zero_lt_one.trans hZ),
@@ -75,11 +73,11 @@ lemma canonicalState_power (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
       exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr τ.modulus_ne_bot))]
   ring
 
-section Actual
-variable {η:Character}{C D:Ideal O}{hC:Supported C}{hD:Supported D}
+
+variable {η:Character}{C D:Ideal HeckeFamily.O}{hC:Supported C}{hD:Supported D}
   {U:Finset (CommonIndex C D)}{τ:RayCharacter→Character}
   (h:Family η C D hC hD U τ)
-  (t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)(radius:ℝ)(rows:Finset O)
+  (t:ℝ)(S:Finset (Ideal HeckeFamily.O))(β:Ideal HeckeFamily.O→ℂ)(radius:ℝ)(rows:Finset HeckeFamily.O)
   (W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(n:Fin 4→ℤ)
   (hne:physicalBlock η t S β C D hC hD U radius rows W K n≠0)
 
@@ -90,7 +88,7 @@ lemma actual_dyad_ge_one : 1≤dyadicScale (n 1):=by
     radius rows W K n hne
   exact (normValue_ge_one z hz0).trans (dyadicRows_norm rows n z hz).2.le
 
-end Actual
+
 end SevenEighths.CenteredMomentEnergyChildState
 
 end

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondActualWidth
@@ -16,10 +16,10 @@ open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit Centered
 open CenteredMomentSecondCanonicalLedger CenteredMomentSecondRadicalBudget CenteredMomentSecondHeightFamily
 open CenteredMomentSectorLocalization CenteredMomentSupport CenteredMomentDescentLedger
 open CenteredMomentPartitionNorm CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 
-theorem actual_common_log_ge_unit (C D : Ideal O) (hC : Supported C)
-    (U : Finset (CommonIndex C D)) (Z : ℝ) (hZ : 1<Z) :
+
+theorem actual_common_log_ge_unit (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C)
+    (U : Finset (CommonIndex C D))  Z  (hZ : 1<Z) :
     Real.logb Z ((∏P∈U,P.val).absNorm:ℝ)≤Real.logb Z (normValue (commonFrequencyGenerator C D)) := by
   have hh:=common_log_ge_unit (commonPrime C D) (commonPrime_supported C D hC)
     (leftExponent C D) (rightExponent C D) (leftExponent_pos C D) (rightExponent_pos C D) U Z hZ
@@ -28,6 +28,6 @@ theorem actual_common_log_ge_unit (C D : Ideal O) (hC : Supported C)
 
 end SevenEighths.CenteredMomentSecondActualWidth
 
-end
+
 
 end OAI

@@ -11,22 +11,30 @@ open scoped BigOperators Classical
 open MeasureTheory
 namespace SevenEighths.ProbeRow
 open ActualEisensteinCubic CompletedGauss CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
-theorem spectralSummand_norm_eq_of_re (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (s t : ℂ) (h : s.re = t.re) (I J : Ideal O) :
+
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O)) (D : Ideal ActualEisensteinCubic.O) (Ψ : ActualEisensteinCubic.O →* ℂ)
+include S D Ψ
+
+theorem spectralSummand_norm_eq_of_re    
+       s t  (h : s.re = t.re)  I J  :
     ‖spectralSummand S D Ψ s I J‖ = ‖spectralSummand S D Ψ t I J‖ := by
   have h3 : (3 * s).re = (3 * t).re := by simp [Complex.mul_re, h]
   simp only [spectralSummand, norm_mul, fullIdealWeight_norm_eq_of_re _ _ h,
     fullIdealWeight_norm_eq_of_re _ _ h3]
 
-def mellinSummand (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (σ Z : ℝ) (p : Ideal O × Ideal O) (y : ℝ) : ℂ :=
+def mellinSummand (S : Finset (Ideal ActualEisensteinCubic.O)) (D : Ideal ActualEisensteinCubic.O) (Ψ : ActualEisensteinCubic.O →* ℂ)
+    (σ Z : ℝ) (p : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) (y : ℝ)  :=
   (Z : ℂ) ^ ((σ : ℂ) + y * Complex.I) * Complex.exp (((σ : ℂ) + y * Complex.I) ^ 2) *
     spectralSummand S D Ψ ((σ : ℂ) + y * Complex.I) p.1 p.2
 
-theorem mellinSummand_norm (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (σ Z : ℝ) (hZ : 0 < Z) (p : Ideal O × Ideal O) (y : ℝ) :
+section
+variable (σ Z : ℝ) (hZ : 0 < Z) (p : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O)
+include σ Z hZ p
+
+theorem mellinSummand_norm      
+           y  :
     ‖mellinSummand S D Ψ σ Z p y‖ =
       (Z ^ σ * Real.exp (σ ^ 2) * ‖spectralSummand S D Ψ (σ : ℂ) p.1 p.2‖) *
         Real.exp (-1 * y ^ 2) := by
@@ -35,8 +43,8 @@ theorem mellinSummand_norm (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ
     spectralSummand_norm_eq_of_re S D Ψ _ (σ : ℂ) (by simp)]
   ring
 
-theorem mellinSummand_integrable (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (σ Z : ℝ) (hZ : 0 < Z) (p : Ideal O × Ideal O) :
+theorem mellinSummand_integrable      
+          :
     Integrable (mellinSummand S D Ψ σ Z p) := by
   have hc : Continuous (fun y : ℝ => (σ : ℂ) + y * Complex.I) := by fun_prop
   have ht : Continuous (fun y : ℝ => spectralSummand S D Ψ
@@ -49,32 +57,36 @@ theorem mellinSummand_integrable (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O �
     (hk.mul ht).aestronglyMeasurable
   exact Filter.Eventually.of_forall (fun y => (mellinSummand_norm S D Ψ σ Z hZ p y).le)
 
-theorem mellinSummand_integral_norm (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (σ Z : ℝ) (hZ : 0 < Z) (p : Ideal O × Ideal O) :
+theorem mellinSummand_integral_norm      
+          :
     (∫ y : ℝ, ‖mellinSummand S D Ψ σ Z p y‖) =
       ‖spectralSummand S D Ψ (σ : ℂ) p.1 p.2‖ *
         (Z ^ σ * Real.exp (σ ^ 2) * ∫ y : ℝ, Real.exp (-1 * y ^ 2)) := by
   simp only [mellinSummand_norm S D Ψ σ Z hZ, integral_const_mul]
   ring
 
-theorem spectralRow_integral_eq_tsum (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (σ : ℝ) (hσ : 1 < σ)
+end
+
+theorem spectralRow_integral_eq_tsum    
+      (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (σ : ℝ) (hσ : 1 < σ)
     (Z : ℝ) (hZ : 0 < Z) :
     (∫ y : ℝ, (Z : ℂ) ^ ((σ : ℂ) + y * Complex.I) *
       Complex.exp (((σ : ℂ) + y * Complex.I) ^ 2) *
       spectralRow S D Ψ ((σ : ℂ) + y * Complex.I)) =
       ∑' p, ∫ y : ℝ, mellinSummand S D Ψ σ Z p y := by
-  let : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-  let : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
+  let : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
+  let : Countable (Ideal ActualEisensteinCubic.O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
   have hs : Summable (fun p => ∫ y : ℝ, ‖mellinSummand S D Ψ σ Z p y‖) := by
     simp only [mellinSummand_integral_norm S D Ψ σ Z hZ]
     exact (spectralRow_summable S D Ψ hΨ (σ : ℂ) hσ).norm.mul_right _
   rw [integral_tsum_of_summable_integral_norm
-    (fun p => mellinSummand_integrable S D Ψ σ Z hZ p) hs]
+    (mellinSummand_integrable S D Ψ σ Z hZ) hs]
   apply integral_congr_ae
   apply Filter.Eventually.of_forall
   intro y
   simp only [mellinSummand, tsum_mul_left, spectralRow]
+
+end
 
 end SevenEighths.ProbeRow
 end

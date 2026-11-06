@@ -10,14 +10,14 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem original_sector_retained_energy_uniform_degree
-    (ε : ℝ) (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (ρ : ℝ) (hρ : 0<ρ) (η : ℝ) (hηpos : 0<η) :
+     ε  (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+    (ρ : ℝ) (hρ : 0<ρ)  η  (hηpos : 0<η) :
     ∃ (degree : ℕ), ∀ {Nlevel a c₀ : Eis} {mode : Bool}
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c₀ mode)) (hc₀ : c₀≠0)
     (_hNlevel : (9:Eis)*c₀∣Nlevel)
@@ -100,7 +100,7 @@ theorem original_sector_retained_energy_uniform_degree
   apply hh.trans_eq
   push_cast
   ring
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

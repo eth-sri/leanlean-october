@@ -5,6 +5,7 @@ Authors: Adam Benenson
 -/
 
 module
+public import Mathlib.Tactic
 
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.H1
 public import Mathlib.Analysis.Calculus.FDeriv.Add
@@ -39,28 +40,23 @@ namespace Euclidean
 open scoped ENNReal MeasureTheory Topology
 open MeasureTheory
 
-section Topology
 
-variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
 
-end Topology
 
-section Measure
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
 
 /-- Borel σ-algebra on the model space `E`. -/
 local instance instMeasurableSpaceTranslation : MeasurableSpace E := borel E
 local instance instBorelSpaceTranslation : BorelSpace E := ⟨rfl⟩
-local instance instOpensMeasurableSpaceTranslation : OpensMeasurableSpace E := by
-  infer_instance
+
 local instance instMeasurableAddTranslation : MeasurableAdd E := by
   infer_instance
 
 variable (μ : Measure E) [μ.IsAddRightInvariant]
 
 /-- Translation on `L²` as a linear isometry, under an additive right-invariant measure. -/
-noncomputable def translateL2 {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] (a : E) :
+noncomputable def translateL2 {F } [NormedAddCommGroup F] [NormedSpace ℝ F] (a : E) :
     (E →₂[μ] F) →ₗᵢ[ℝ] (E →₂[μ] F) := by
   classical
   simpa using
@@ -68,18 +64,13 @@ noncomputable def translateL2 {F : Type*} [NormedAddCommGroup F] [NormedSpace �
       (μ := μ) (μb := μ) (f := fun x : E => x + a) (MeasureTheory.measurePreserving_add_right μ a))
 
 omit [InnerProductSpace ℝ E] [CompleteSpace E] in
-lemma translateL2_ae_eq {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] (a : E)
-    (g : E →₂[μ] F) :
-    (translateL2 (μ := μ) (F := F) a g : E → F) =ᵐ[μ] fun x => (g : E → F) (x + a) := by
-  classical
-  -- Reduce to `Lp.coeFn_compMeasurePreserving`.
-  exact
-    (MeasureTheory.Lp.coeFn_compMeasurePreserving (g := (g : MeasureTheory.Lp F (2 : ENNReal) μ))
-      (hf := MeasureTheory.measurePreserving_add_right μ a))
+lemma translateL2_ae_eq  {F}  [NormedAddCommGroup F] [NormedSpace ℝ F]  a 
+     g  :
+    (translateL2 (μ := μ) (F := F) a g : E → F) =ᵐ[μ] fun x => (g : E → F) (x + a) := MeasureTheory.Lp.coeFn_compMeasurePreserving g (MeasureTheory.measurePreserving_add_right μ a)
 
 variable [IsFiniteMeasureOnCompacts μ]
 
-end Measure
+
 
 end Euclidean
 end Sobolev

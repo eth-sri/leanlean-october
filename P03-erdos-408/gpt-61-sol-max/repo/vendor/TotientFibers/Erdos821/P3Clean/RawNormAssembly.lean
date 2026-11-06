@@ -24,29 +24,29 @@ local instance assemblyLabelsDecidableEq (P : PrimeGroups) (M : ℕ) :
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-abbrev BetweenState (P : PrimeGroups) (M B : ℕ) := P.BigLabels M × CutPendingState P B
+abbrev BetweenState (P ) (M B ) := P.BigLabels M × CutPendingState P B
 
-abbrev CoordinateState (P : PrimeGroups) (M B : ℕ) := SmallLabels P M × BetweenState P M B
+abbrev CoordinateState (P ) (M B ) := SmallLabels P M × BetweenState P M B
 
-def betweenMass (F : FixedData) (n : ℕ) {M B : ℕ} (a : BetweenState P M B) : ℝ :=
+def betweenMass (F : FixedData) (n : ℕ) {M B } (a : BetweenState P M B)  :=
   tiltedIdealMass F n a.1 * pendingMass F n a.2.val
 
-def coordinateMass (F : FixedData) (J n B : ℕ) (a : CoordinateState P (J + F.ell) B) : ℝ :=
+def coordinateMass (F : FixedData) (J n B : ℕ) (a : CoordinateState P (J + F.ell) B)  :=
   fibreMass (fun y => smallArrayStates P (J + F.ell) y.2.val.1)
     (smallMarkMass P (J + F.ell)) (betweenMass F n) a
 
-def coordinateRawKernel (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool) {B : ℕ}
-    (a b : CoordinateState P (J + F.ell) B) : ℂ :=
+def coordinateRawKernel (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool) {B }
+    (a b : CoordinateState P (J + F.ell) B)  :=
   rawCleanKernel A n theta forward
     (a.2.2.val.1, joinLabels a.1 a.2.1, a.2.2.val.2)
     (b.2.2.val.1, joinLabels b.1 b.2.1, b.2.2.val.2)
 
-def cutoffConditionedKernel (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool) {B : ℕ}
-    (d : SmallLabels P J) (a b : BetweenState P (J + F.ell) B) : ℂ :=
+def cutoffConditionedKernel (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool) {B }
+    (d : SmallLabels P J) (a b : BetweenState P (J + F.ell) B)  :=
   conditionedKernel A n theta forward d (a.1, a.2.val) (b.1, b.2.val)
 
-theorem coordinateMass_eq_memoryMass (F : FixedData) (J n B : ℕ)
-    (a : CoordinateState P (J + F.ell) B) :
+theorem coordinateMass_eq_memoryMass  F   J n B 
+     a  :
     coordinateMass F J n B a =
       P.memoryMass F J n ((cutoffStateCoordinates P (J + F.ell) B).symm a).val := by
   change coordinateMass F J n B a =
@@ -55,7 +55,7 @@ theorem coordinateMass_eq_memoryMass (F : FixedData) (J n B : ℕ)
   unfold coordinateMass fibreMass betweenMass
   split_ifs <;> ring
 
-theorem clean_norm_from_entry (F : FixedData) :
+theorem clean_norm_from_entry  F  :
     ∃ Cs : ℝ, ∀ (x : ℝ) (P : PrimeGroups), P.Admissible F x → 0 < L x →
       ∀ (J n B : ℕ) [Fintype (CutPendingState P B)]
         (K : CoordinateState P (J + F.ell) B → CoordinateState P (J + F.ell) B → ℂ)

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Detector.EulerCoordinates
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 
 lemma rpow_le_half (Q a : ℝ) (hQ : 4 ≤ Q) (ha : a ≤ -(1/2)) : Q^a ≤ 1/2 := by
@@ -18,7 +18,7 @@ lemma rpow_le_half (Q a : ℝ) (hQ : 4 ≤ Q) (ha : a ≤ -(1/2)) : Q^a ≤ 1/2 
     _ = (Real.sqrt Q)⁻¹ := by rw [Real.rpow_neg hQ0.le, ← Real.sqrt_eq_rpow]
     _ ≤ 1/2 := by rw [← one_div, div_le_iff₀ hs]; nlinarith [Real.sqrt_nonneg Q]
 
-theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
+theorem unramifiedClosed_second_region_bound  Q   A eta v x w z 
     (hQ : 4 ≤ Q) (hA : ‖A‖ ≤ 1) (heta : ‖eta‖ ≤ 1) (hv : ‖v‖ ≤ 1)
     (hx : (7/8:ℝ) ≤ x.re) (hw : (19/20:ℝ) ≤ w.re) (hz : (33/200:ℝ) ≤ z.re) :
     ‖unramifiedClosed Q A eta v x w z - 1‖ ≤ 240 * Q ^ (-(363/200:ℝ)) := by
@@ -43,8 +43,7 @@ theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
   have hVh : ‖V‖ ≤ 1/2 := hV.trans (rpow_le_half Q _ hQ (by norm_num))
   have hRh : ‖R‖ ≤ 1/2 := hR.trans (rpow_le_half Q _ hQ (by norm_num))
   have hDh : ‖D‖ ≤ 1/2 := hD.trans (rpow_le_half Q _ hQ (by norm_num))
-  have hWh : ‖W‖ ≤ 1 := by
-    exact hW.trans ((Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : -(19/20:ℝ) ≤ 0)).trans_eq (Real.rpow_zero Q))
+  have hWh : ‖W‖ ≤ 1 := hW.trans ((Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : -(19/20:ℝ) ≤ 0)).trans_eq (Real.rpow_zero Q))
   have hqi : ‖(Q:ℂ)⁻¹‖ ≤ 1 := by
     rw [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hQ0, ← one_div]
     exact (div_le_one hQ0).mpr hQ1
@@ -81,6 +80,6 @@ theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
   nlinarith
 
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

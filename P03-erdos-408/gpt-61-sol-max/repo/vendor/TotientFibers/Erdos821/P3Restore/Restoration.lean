@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.RestorationTask
 public import Erdos821.S2.ActualGhostNorms
@@ -24,8 +25,7 @@ theorem normBound_mono {α : Type*} {mass : α → ℝ} {K : α → α → ℂ} 
     (hK : NormBound mass K C) (hCC : C ≤ C') : NormBound mass K C' := by
   intro s t f g
   refine (hK s t f g).trans ?_
-  exact mul_le_mul_of_nonneg_right
-    (mul_le_mul_of_nonneg_right hCC (Real.sqrt_nonneg _)) (Real.sqrt_nonneg _)
+  bound
 
 theorem birthAddress_card_le (P : PrimeGroups) (J ell n B : ℕ) (ℓ C0 : ℝ)
     (hℓ : 4 ≤ ℓ) (hJ : (J : ℝ) + ell + 1 ≤ ℓ) (hC0 : 0 < C0)
@@ -44,8 +44,7 @@ theorem birthAddress_card_le (P : PrimeGroups) (J ell n B : ℕ) (ℓ C0 : ℝ)
       ((n : ℝ) + 1) * (Fintype.card P.BigGroup : ℝ) * (((J : ℝ) + ell) + B) := by ring
   rw [heq]
   calc ((n : ℝ) + 1) * (Fintype.card P.BigGroup : ℝ) * (((J : ℝ) + ell) + B)
-      ≤ (3 * ℓ) * (C0 * Real.log ℓ) * (2 * ℓ ^ 2) := by
-        apply mul_le_mul (mul_le_mul hn hb hb0 (by linarith)) hJB (by positivity)
+      ≤ (3 * ℓ) * (C0 * Real.log ℓ) * (2 * ℓ ^ 2) := mul_le_mul (mul_le_mul hn hb hb0 (by linarith)) hJB (by positivity)
           (mul_nonneg (by linarith) (mul_nonneg hC0.le hT))
     _ = (6 * C0 * Real.log ℓ) * ℓ ^ 3 := by ring
     _ ≤ ℓ * ℓ ^ 3 := mul_le_mul_of_nonneg_right h6 (by positivity)
@@ -58,7 +57,7 @@ namespace Erdos821.S2Core
 open Erdos821.Blueprint.Graph
 open Erdos821.P3Restore
 
-theorem RestoredMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
+theorem RestoredMemoryNormTask_proof  F   r  :
     RestoredMemoryNormTask F r := by
   intro hGA hBd hAbs hRare hClean hContr hLR hHR E hE
   obtain ⟨Cv, hCv, xg, hGx⟩ := hGA
@@ -205,13 +204,11 @@ theorem RestoredMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
   · intro π hπ _
     have h := hLR F P J m (N x) (memoryCutoff x) A r.rho theta
       CG ((L x) ^ (-G)) ((L x) ^ Ca') hCG0 hCEpos hCECA hmass
-      (fun i phi hphi => actual_projected_ghost_norm F J (N x) (memoryCutoff x) r hV hb hmu
-        i phi hphi)
-      hedge (fun i => hCx x hxc P hP A hA hk0 hk hId theta i) π hπ
+      (actual_projected_ghost_norm F J (N x) (memoryCutoff x) r hV hb hmu)
+      hedge (hCx x hxc P hP A hA hk0 hk hId theta) π hπ
     have hQ : 0 ≤ CG ^ (N x + 1) *
         ((L x) ^ (-G)) ^ (N x) * ((L x) ^ Ca' / (L x) ^ (-G)) ^ (2 * birthRank π) :=
-      mul_nonneg (mul_nonneg (pow_nonneg hCG0 _) (pow_nonneg hCEpos.le _))
-        (pow_nonneg (div_nonneg (Real.rpow_nonneg hℓ0.le _) hCEpos.le) _)
+      (by positivity)
     calc _ ≤ _ := h
       _ = initialMemoryBoundaryMass A (N x) *
           (CG ^ (N x + 1) *

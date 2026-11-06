@@ -11,7 +11,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
 open JointLogSeparation FourierBridge MeasureTheory
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 open InverseMomentFirstProfileUniform InverseAmbientProfileTower
 theorem actual_first_moving_family_two_energies_uniform
@@ -20,7 +20,7 @@ theorem actual_first_moving_family_two_energies_uniform
     (hM : ∀ i,0 ≤ M₀ i) (hB₀ : ∀ i,0 ≤ B₀ i)
     (hU : ∀ i,Function.support (U₀ i) ⊆ Set.Icc (-M₀ i) (M₀ i))
     (hg₁ : Function.support g₁ ⊆ Set.Icc (-m₁) m₁)
-    (hg₂ : Function.support g₂ ⊆ Set.Icc (-m₂) m₂) (Aker J : ℕ) :
+    (hg₂ : Function.support g₂ ⊆ Set.Icc (-m₂) m₂)  Aker J  :
     ∃ Cprofile : ℝ,0 ≤ Cprofile ∧ ∀ {ι κ : Type*} [DecidableEq ι] (p : ι → Eis) (_hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal]
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -63,8 +63,7 @@ theorem actual_first_moving_family_two_energies_uniform
   intro ι κ _ p hp _ hg source F selector C₁ C₂ w ω₁ ω₂ ρ c₁ c₂ θ₁ θ₂
     A₁ A₂ C R K L hK d h s hpos hs hρ hc₁ hc₂ hc₁b hc₂b hL
     hω₁ hω₂ hcut B₁ B₂ hB₁ hB₂ hleft hright
-  have hRad : 0 < K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8) := by
-    exact div_pos (mul_pos hK (hs 6))
+  have hRad : 0 < K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8) := div_pos (mul_pos hK (hs 6))
       (mul_pos (mul_pos (mul_pos (mul_pos (hs 3) (hs 4)) (sq_pos_of_pos (hs 5))) (hs 7)) (hs 8))
   obtain ⟨b₃,hb₃⟩ := hmeasure (K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8)) hRad
   obtain ⟨hsep,hWeighted,hMoment⟩ := hb₃ ρ c₁ c₂ θ₁ θ₂ L hρ hc₁ hc₂ hc₁b hc₂b hL
@@ -123,7 +122,7 @@ theorem first_global_retained_push_uniform (ε:ℝ)(hε:0<ε):
     (d k) (labels k) (a k) Γ Y hΓ hY (hs k hk) (hn k hk) (ha k hk)
     negative (H k) (selector k) ω X t hX
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

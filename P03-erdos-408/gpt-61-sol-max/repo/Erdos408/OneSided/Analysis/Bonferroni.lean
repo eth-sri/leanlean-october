@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.BigOperators.Ring.Finset
 public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
@@ -28,25 +29,24 @@ variable {ι : Type*} [DecidableEq ι]
 /-- The elementary symmetric polynomial satisfies the Pascal recurrence when a variable is
 inserted. -/
 private lemma sum_powersetCard_succ_insert (s : Finset ι) (a : ι) (ha : a ∉ s) (x : ι → ℝ)
-    (T : ℕ) :
+     T  :
     ∑ I ∈ (insert a s).powersetCard (T + 1), ∏ i ∈ I, x i =
       ∑ I ∈ s.powersetCard (T + 1), ∏ i ∈ I, x i + x a * ∑ I ∈ s.powersetCard T, ∏ i ∈ I, x i := by
   rw [powersetCard_succ_insert ha, sum_union, sum_image, mul_sum]
   · refine congrArg _ (sum_congr rfl fun I hI => ?_)
-    rw [prod_insert fun h => ha ((mem_powersetCard.1 hI).1 h)]
+    grind
   · intro I hI J hJ h
     have hI' : a ∉ I := fun h => ha ((mem_powersetCard.1 hI).1 h)
     have hJ' : a ∉ J := fun h => ha ((mem_powersetCard.1 hJ).1 h)
     rw [← erase_insert hI', ← erase_insert hJ']
     exact congrArg (·.erase a) h
   · refine disjoint_left.2 fun I hI hI' => ?_
-    obtain ⟨J, -, rfl⟩ := mem_image.1 hI'
-    exact ha ((mem_powersetCard.1 hI).1 (mem_insert_self a J))
+    grind
 
 omit [DecidableEq ι] in
 /-- Summing over subsets of size `< T` is summing over the sizes `k < T` of the sum over subsets
 of size `k`. -/
-private lemma sum_powerset_filter_card_lt (s : Finset ι) (f : Finset ι → ℝ) (T : ℕ) :
+private lemma sum_powerset_filter_card_lt (s : Finset ι) (f : Finset ι → ℝ)  T  :
     ∑ I ∈ s.powerset with #I < T, f I = ∑ k ∈ range T, ∑ I ∈ s.powersetCard k, f I := by
   rw [← sum_fiberwise_of_maps_to (g := card) (t := range T)
     (fun I hI => mem_range.2 (mem_filter.1 hI).2)]
@@ -56,11 +56,15 @@ private lemma sum_powerset_filter_card_lt (s : Finset ι) (f : Finset ι → ℝ
   have := mem_range.1 hk
   omega
 
+section
+variable (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈ s, 0 ≤ x i ∧ x i ≤ 1) (T : ℕ)
+include s x hx T
+
 /-- The signed Bonferroni sandwich in terms of the elementary symmetric polynomials
 `e_k(x) = ∑_{|I| = k} ∏_{i ∈ I} x_i`: the error `(-1)^T (∏_i (1 - x_i) - ∑_{k < T} (-1)^k e_k)`
 lies in `[0, e_T]`. -/
-private lemma signed_bonferroni (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈ s, 0 ≤ x i ∧ x i ≤ 1)
-    (T : ℕ) :
+private lemma signed_bonferroni      
+      :
     0 ≤ (-1) ^ T * (∏ i ∈ s, (1 - x i) -
         ∑ k ∈ range T, (-1) ^ k * ∑ I ∈ s.powersetCard k, ∏ i ∈ I, x i) ∧
       (-1) ^ T * (∏ i ∈ s, (1 - x i) -
@@ -117,8 +121,8 @@ private lemma signed_bonferroni (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈
 
 /-- **Bonferroni**: for `x_i ∈ [0, 1]`,
 `|∏_i (1 - x_i) - ∑_{|I| < T} (-1)^{|I|} ∏_{i ∈ I} x_i| ≤ ∑_{|I| = T} ∏_{i ∈ I} x_i`. -/
-theorem abs_prod_one_sub_sub_le (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈ s, 0 ≤ x i ∧ x i ≤ 1)
-    (T : ℕ) :
+theorem abs_prod_one_sub_sub_le      
+      :
     |∏ i ∈ s, (1 - x i) -
         ∑ I ∈ s.powerset with #I < T, (-1) ^ #I * ∏ i ∈ I, x i| ≤
       ∑ I ∈ s.powersetCard T, ∏ i ∈ I, x i := by
@@ -136,6 +140,8 @@ theorem abs_prod_one_sub_sub_le (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈
     _ = _ := abs_of_nonneg h0
     _ ≤ _ := h1
 
+end
+
 omit [DecidableEq ι] in
 /-- The first two terms of the binomial expansion bound `(σ + y)^(n+1)` from below. -/
 private lemma pow_succ_add_mul_le_add_pow (σ y : ℝ) (hσ : 0 ≤ σ) (hy : 0 ≤ y) (n : ℕ) :
@@ -143,7 +149,7 @@ private lemma pow_succ_add_mul_le_add_pow (σ y : ℝ) (hσ : 0 ≤ σ) (hy : 0 
   induction n with
   | zero => simp
   | succ n ih =>
-    have hσn : 0 ≤ σ ^ n := pow_nonneg hσ n
+    
     calc σ ^ (n + 1 + 1) + ((n + 1 : ℕ) + 1) * σ ^ (n + 1) * y
         ≤ (σ + y) * (σ ^ (n + 1) + (n + 1) * σ ^ n * y) := by
           have : 0 ≤ (n + 1) * σ ^ n * y * y := by positivity
@@ -164,7 +170,7 @@ theorem sum_powersetCard_prod_le (s : Finset ι) (x : ι → ℝ) (hx : ∀ i �
     cases T with
     | zero => simp
     | succ T =>
-      simp [powersetCard_eq_empty.2 (show #(∅ : Finset ι) < T + 1 by simp)]
+      positivity
   | insert a s ha ih =>
     have hx' : ∀ i ∈ s, 0 ≤ x i := fun i hi => hx i (mem_insert_of_mem hi)
     have hxa : 0 ≤ x a := hx a (mem_insert_self a s)

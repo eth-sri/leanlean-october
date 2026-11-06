@@ -1,4 +1,6 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
 
 public import Erdos408.OneSided.Major.Arcs
 public import Erdos408.OneSided.Major.Regions
@@ -23,7 +25,7 @@ After the separation (`Major/Arcs.lean`) the arc term is `∫ K(q) G(q₁) \bar 
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos408.OneSided
 
@@ -43,8 +45,11 @@ private theorem norm_natCast_cpow_mul_I_le (n : ℕ) (τ : ℝ) :
   · rw [Complex.norm_natCast_cpow_of_pos hn]
     simp
 
+public alias _root_.SharedProofs.shared_norm_natCast_cpow_mul_I_le := norm_natCast_cpow_mul_I_le
+
+
 /-- `η(a/Y) ≤ 4Y/a`, since `η(a/Y) = 0` unless `a < 4Y`. -/
-private theorem dyadicBump_div_le {a Y : ℝ} (ha : 0 ≤ a) (hY : 0 < Y) :
+private theorem dyadicBump_div_le  {a Y}  (ha : 0 ≤ a) (hY : 0 < Y) :
     dyadicBump (a / Y) ≤ 4 * Y / a := by
   by_cases h : dyadicBump (a / Y) = 0
   · rw [h]
@@ -55,18 +60,22 @@ private theorem dyadicBump_div_le {a Y : ℝ} (ha : 0 ≤ a) (hY : 0 < Y) :
   calc dyadicBump (a / Y) ≤ 1 := dyadicBump_le_one _
     _ ≤ 4 * Y / a := by rw [le_div_iff₀ ha']; linarith
 
+section
+variable (x : ℝ) (d : Data K)
+
 /-- `∑_p 1/∏ p_i = ∏ V_i` over the label tuples. -/
-private theorem sum_labels_inv (x : ℝ) (d : Data K) :
+private theorem sum_labels_inv     :
     ∑ p ∈ d.labels x, ((∏ i, p i : ℕ) : ℝ)⁻¹ = d.bandMass x := by
   unfold Data.bandMass Data.labels harmonicMass
   rw [Finset.prod_univ_sum]
-  refine Finset.sum_congr rfl fun p _ => ?_
-  rw [Nat.cast_prod, ← Finset.prod_inv_distrib]
-  simp only [one_div]
+  simp_all
+
+public alias _root_.SharedProofs.sum_labels_inv := sum_labels_inv
+
 
 /-- `|B_λ(τ)| ≤ 4`. -/
-private theorem norm_labelPoly_le (x : ℝ) (d : Data K) {Y : ℝ} (hY : 0 < Y) (lam : ℝ) {k : ℕ}
-    (χ : DirichletCharacter ℂ k) (τ : ℝ) : ‖labelPoly x d Y lam χ τ‖ ≤ 4 := by
+private theorem norm_labelPoly_le      {Y}  (hY : 0 < Y)  lam  {k : ℕ}
+    (χ : DirichletCharacter ℂ k)  τ  : ‖labelPoly x d Y lam χ τ‖ ≤ 4 := by
   have hV : 0 ≤ d.bandMass x :=
     Finset.prod_nonneg fun i _ => Finset.sum_nonneg fun p _ => by positivity
   unfold labelPoly
@@ -96,13 +105,10 @@ private theorem norm_labelPoly_le (x : ℝ) (d : Data K) {Y : ℝ} (hY : 0 < Y) 
         rw [← Finset.mul_sum, sum_labels_inv]
         field_simp
     _ ≤ 4 := by
-        rcases hV.eq_or_lt with h | h
-        · rw [← h, inv_zero, zero_mul]
-          norm_num
-        · rw [inv_mul_cancel₀ h.ne', mul_one]
+        bound
 
 /-- `B_λ` is continuous: the label products are nonzero. -/
-private theorem continuous_labelPoly (x : ℝ) (d : Data K) (Y lam : ℝ) {k : ℕ}
+private theorem continuous_labelPoly      Y lam  {k : ℕ}
     (χ : DirichletCharacter ℂ k) : Continuous (labelPoly x d Y lam χ) := by
   unfold labelPoly
   refine continuous_const.mul (continuous_finsetSum _ fun p hp =>
@@ -110,9 +116,11 @@ private theorem continuous_labelPoly (x : ℝ) (d : Data K) (Y lam : ℝ) {k : �
   rw [Finset.prod_ne_zero_iff]
   exact fun i _ => (TypeII.band_prime (Fintype.mem_piFinset.1 hp i)).ne_zero
 
+end
+
 /-- `|M_α(τ)| ≤ H_m⁻¹ ∑_m |α_m|`. -/
 private theorem norm_markedPoly_le {d : Data K} (hHm : 0 < d.Hm) {k : ℕ}
-    (χ : DirichletCharacter ℂ k) (τ : ℝ) :
+    (χ : DirichletCharacter ℂ k)  τ  :
     ‖markedPoly d χ τ‖ ≤ d.Hm⁻¹ * ∑ m ∈ d.mRange, ‖d.α m‖ := by
   unfold markedPoly
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hHm.le]
@@ -127,7 +135,7 @@ private theorem norm_markedPoly_le {d : Data K} (hHm : 0 < d.Hm) {k : ℕ}
 
 /-- `|N_β(τ)| ≤ H_n⁻¹ ∑_n |β_n|`. -/
 private theorem norm_unmarkedPoly_le {d : Data K} (hHn : 0 < d.Hn) {k : ℕ}
-    (ψ : DirichletCharacter ℂ k) (τ : ℝ) :
+    (ψ : DirichletCharacter ℂ k)  τ  :
     ‖unmarkedPoly d ψ τ‖ ≤ d.Hn⁻¹ * ∑ n ∈ d.nRange, ‖d.β n‖ := by
   unfold unmarkedPoly
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hHn.le]
@@ -147,8 +155,8 @@ length `N ≤ 4X`: `maj:product-mean` (`integral_norm_sum_mul_sum_sq_le`) gives
 `X⁻² (b - a + 96 X L) L^{4C} (108 X L³)`. -/
 theorem integral_norm_labelPoly_mul_sq_le {C CX alo ahi g x : ℝ} {d : Data K}
     (hd : Admissible C CX alo ahi g x d) (hx : 1 ≤ x) (hL : 1 ≤ Real.log x)
-    (hlog : Real.log (4 * d.X) ≤ 2 * Real.log x) {Y : ℝ} (hY : 0 < Y) (lam : ℝ) {k : ℕ}
-    (χ₁ χ₂ χ₃ : DirichletCharacter ℂ k) {a b : ℝ} (hab : a ≤ b) :
+    (hlog : Real.log (4 * d.X) ≤ 2 * Real.log x)  {Y}  (hY : 0 < Y)  lam  {k : ℕ}
+    (χ₁ χ₂ χ₃ : DirichletCharacter ℂ k)  {a b}  (hab : a ≤ b) :
     ∫ τ in a..b, ‖labelPoly x d Y lam χ₁ τ * markedPoly d χ₂ τ * unmarkedPoly d χ₃ τ‖ ^ 2 ≤
       165888 * Real.log x ^ meanExp C * (1 + (b - a) / d.X) := by
   set L := Real.log x
@@ -225,8 +233,8 @@ theorem integral_norm_labelPoly_mul_sq_le {C CX alo ahi g x : ℝ} {d : Data K}
           mul_le_mul hN₁ hN₂ (Nat.cast_nonneg _) (by linarith)
       _ = 4 * (d.Hm * d.Hn) := by ring
   have hN1 : (1 : ℝ) ≤ ((N₁ * N₂ : ℕ) : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
-  have hlogN0 : 0 ≤ Real.log ((N₁ * N₂ : ℕ) : ℝ) := Real.log_nonneg hN1
+    bound
+  
   have hlogN : 1 + Real.log ((N₁ * N₂ : ℕ) : ℝ) ≤ 3 * L := by
     have := Real.log_le_log (by linarith) hN
     linarith
@@ -275,7 +283,7 @@ theorem integral_norm_labelPoly_mul_sq_le {C CX alo ahi g x : ℝ} {d : Data K}
 
 /-- `∫_a^b (∑_i f_i)² ≤ |s| ∑_i ∫_a^b f_i²`, by Cauchy's inequality at each point. -/
 private theorem intervalIntegral_sq_sum_le {ι : Type*} (s : Finset ι) {f : ι → ℝ → ℝ}
-    (hf : ∀ i, Continuous (f i)) {a b : ℝ} (hab : a ≤ b) :
+    (hf : ∀ i, Continuous (f i))  {a b}  (hab : a ≤ b) :
     ∫ τ in a..b, (∑ i ∈ s, f i τ) ^ 2 ≤ #s * ∑ i ∈ s, ∫ τ in a..b, f i τ ^ 2 := by
   have h₁ : Continuous fun τ => (∑ i ∈ s, f i τ) ^ 2 :=
     (continuous_finsetSum _ fun i _ => hf i).pow 2
@@ -297,8 +305,8 @@ private theorem intervalIntegral_sq_sum_le {ι : Type*} (s : Finset ι) {f : ι 
 have energy at most `E` on `[-T, T]` and mean values `M (1 + |I|/X)`. With `n` the number of
 character triples, the arc term is at most
 `c (XY)² π ((ε n² E + ε⁻¹ n² M (1 + 2T/X))/2 + 8 n² M X / T)`. -/
-theorem norm_arcTerm_le {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hHm : 0 < d.Hm) (hHn : 0 < d.Hn)
-    (k h : ℕ) [NeZero k] (lam : ℝ) {Kf : ℝ × ℝ → ℂ} {c T M E ε : ℝ} (hKi : Integrable Kf)
+theorem norm_arcTerm_le  {x Y}  {d : Data K} (hY : 0 < Y) (hHm : 0 < d.Hm) (hHn : 0 < d.Hn)
+     k h  [NeZero k]  lam  {Kf : ℝ × ℝ → ℂ}  {c T M E ε}  (hKi : Integrable Kf)
     (hKb : ∀ τ σ : ℝ, ‖Kf (τ, σ)‖ ≤ c * ((1 + |τ| / d.X) ^ 2)⁻¹ * ((1 + |τ + σ|) ^ 2)⁻¹)
     (hK : ∀ w w' : ℝ, 1 ≤ w → w ≤ 16 → 1 ≤ w' → w' ≤ 16 →
       plateauTwist lam (d.X * (w - w')) =
@@ -345,7 +353,7 @@ theorem norm_arcTerm_le {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hHm : 0 < d.Hm) (
     rw [Finset.card_univ, Fintype.card_prod, Fintype.card_prod, hn]
     push_cast
     ring
-  have hn0 : 0 ≤ n := by positivity
+  
   -- the energy and the mean values of `g²`
   have hEg : ∫ τ in (-T)..T, g τ ^ 2 ≤ n ^ 2 * E := by
     refine (intervalIntegral_sq_sum_le _ (fun χ => (hQc χ).norm) (by linarith)).trans ?_

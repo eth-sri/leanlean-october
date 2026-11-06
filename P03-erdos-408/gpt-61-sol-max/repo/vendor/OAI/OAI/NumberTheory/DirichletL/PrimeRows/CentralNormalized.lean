@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralQuotient
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeLocal
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 
-theorem actual_central_unramified_normalized (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hn : ¬P.val∣Ideal.span {u.val}) (hη : IsCoprime P.val η.modulus)
-    (a e : ℝ) (x w z : ℂ) (hQ : (480:ℝ)≤P.val.absNorm)
+theorem actual_central_unramified_normalized  η   u   P 
+     hs  (hn : ¬P.val∣Ideal.span {u.val}) (hη : IsCoprime P.val η.modulus)
+    (a e : ℝ)  x w z  (hQ : (480:ℝ)≤P.val.absNorm)
     (ha : (51/100:ℝ)≤a) (ha1 : a≤1) (he : 0<e) (he1 : e≤1/1000)
     (hx : x.re=a+16*e) (hw : w.re=1-a-6*e) (hz : z.re=17/50) :
     1/2≤‖idealUnramifiedCorrection η u P x w z‖ ∧
@@ -37,6 +37,6 @@ theorem actual_central_unramified_normalized (η : Character) (u : FreeRow) (P :
     rw [continuedCompensatedLocal_unramified η u P hs hn x w z hV hR]
     exact unramifiedSelected_central_quotient _ a e _ _ _ x w z hQ ha ha1 he he1 hA heta hv hx hw hz
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

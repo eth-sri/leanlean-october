@@ -13,9 +13,13 @@ open Blueprint.Graph P4Probe
 noncomputable section
 variable {P : PrimeGroups} {J ell m : ℕ}
 
-lemma rawPrefixKernel_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
+section
+variable (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
+include ν block
+
+lemma rawPrefixKernel_join    
     (s s' : SharedRows ν) (a a' : SideTuple ν block false) (b b' : SideTuple ν block true)
-    (t t' : P.BigLabels ell) (θ ζ : ℝ) :
+     t t'   θ ζ  :
     rawPrefixKernel P J ell θ ζ (labelJoin ν block s a b t) (labelJoin ν block s' a' b' t') =
       if (s, a, b) = (s', a', b') then
         (P.idealMass t' : ℂ) * imaginaryPower
@@ -37,8 +41,8 @@ lemma rawPrefixKernel_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool
   rw [hprod]
   split_ifs <;> simp
 
-lemma rawFullPair_states (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (θ ζ : ℝ) (f g : P.BigLabels (J + ell) → ℂ) :
+lemma rawFullPair_states    
+     θ ζ   f g  :
     idealFullPair (rawPrefixKernel P J ell θ ζ) f g =
       ∑ s : SharedRows ν, ∑ a : SideTuple ν block false, ∑ b : SideTuple ν block true,
         ∑ t : P.BigLabels ell, ∑ t' : P.BigLabels ell,
@@ -73,8 +77,12 @@ lemma rawFullPair_states (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
   simp only [Complex.ofReal_mul]
   ring
 
-lemma conditionalF_eq_tail (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (hV : ∀ g, 0 < P.V g) (f : P.BigLabels (J + ell) → ℂ)
+section
+variable (hV : ∀ g, 0 < P.V g)
+include hV
+
+lemma conditionalF_eq_tail    
+      (f : P.BigLabels (J + ell) → ℂ)
     (hf : ∀ s a a' b t, f (labelJoin ν block s a b t) = f (labelJoin ν block s a' b t))
     (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true) :
     conditionalF ν block f s b = ∑ t : P.BigLabels ell,
@@ -86,8 +94,8 @@ lemma conditionalF_eq_tail (ν : Pattern P J ell m) (block : P.BigGroup → Bool
   simp_rw [hf s _ a b, Complex.ofReal_mul, mul_assoc, ← Finset.mul_sum]
   rw [← Finset.sum_mul, hs, one_mul]
 
-lemma conditionalG_eq_tail (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (hV : ∀ g, 0 < P.V g) (g : P.BigLabels (J + ell) → ℂ)
+lemma conditionalG_eq_tail    
+      (g : P.BigLabels (J + ell) → ℂ)
     (hg : ∀ s a b b' t, g (labelJoin ν block s a b t) = g (labelJoin ν block s a b' t))
     (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true) :
     conditionalG ν block g s a = ∑ t : P.BigLabels ell,
@@ -99,8 +107,8 @@ lemma conditionalG_eq_tail (ν : Pattern P J ell m) (block : P.BigGroup → Bool
   simp_rw [hg s a _ b, Complex.ofReal_mul, mul_assoc, ← Finset.mul_sum]
   rw [← Finset.sum_mul, hs, one_mul]
 
-def rawConditional (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (C : ℕ) (θ ζ : ℝ)
-    (f : SideTuple ν block true → ℂ) (g : SideTuple ν block false → ℂ) : ℂ :=
+def rawConditional (ν : Pattern P J ell m) (block ) (C : ℕ) (θ ζ : ℝ)
+    (f : SideTuple ν block true → ℂ) (g : SideTuple ν block false → ℂ)  :=
   Blueprint.Analytic.expect (analyticGroups P) (sideCounts ν block true) fun b =>
     Blueprint.Analytic.expect (analyticGroups P) (sideCounts ν block false) fun a =>
       star (f b) * g a *
@@ -111,8 +119,8 @@ def rawConditional (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (C : �
         Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block false) a *
         Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block true) b))
 
-lemma rawFullPair_conditional (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (hV : ∀ g, 0 < P.V g) (θ ζ : ℝ) (f g : P.BigLabels (J + ell) → ℂ)
+lemma rawFullPair_conditional    
+       θ ζ   f g 
     (hf : ∀ s a a' b t, f (labelJoin ν block s a b t) = f (labelJoin ν block s a' b t))
     (hg : ∀ s a b b' t, g (labelJoin ν block s a b t) = g (labelJoin ν block s a b' t)) :
     idealFullPair (rawPrefixKernel P J ell θ ζ) f g =
@@ -142,6 +150,10 @@ lemma rawFullPair_conditional (ν : Pattern P J ell m) (block : P.BigGroup → B
   apply Finset.sum_congr rfl
   intro t _
   ring
+
+end
+
+end
 
 end
 end Erdos821.P4Bridge

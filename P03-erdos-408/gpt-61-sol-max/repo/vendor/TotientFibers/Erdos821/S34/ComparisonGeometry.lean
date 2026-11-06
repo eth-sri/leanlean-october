@@ -12,10 +12,10 @@ namespace Erdos821.S34Core
 noncomputable section
 open Blueprint.Analytic
 
-def atomExponent (P : Geometry) (m : ℕ) : ℝ :=
+def atomExponent (P : Geometry) (m : ℕ)  :=
   P.C₀ * (Real.log (Nat.factorial m) + m * Real.log (max 1 P.vmin⁻¹))
 
-theorem atomExponent_nonneg (P : Geometry) (m : ℕ) : 0 ≤ atomExponent P m := by
+theorem atomExponent_nonneg  P   m  : 0 ≤ atomExponent P m := by
   have hfac : (1 : ℝ) ≤ Nat.factorial m := by exact_mod_cast Nat.factorial_pos m
   have hf := Real.log_nonneg hfac
   have hm := Real.log_nonneg (le_max_left (1 : ℝ) P.vmin⁻¹)
@@ -29,7 +29,7 @@ theorem eventually_cell_width (hexp : ℝ) (hh : 0 < hexp) :
   filter_upwards [ht.eventually (eventually_lt_nhds hlog2), hL.eventually_gt_atTop 0] with x hx hLx
   exact ⟨Real.rpow_pos_of_pos hLx _, hx.le⟩
 
-theorem eventually_big_prime_power (P : Geometry) (q : ℝ) :
+theorem eventually_big_prime_power  P  (q : ℝ) :
     ∀ᶠ x in atTop, ∀ G : PrimeGroups, Admissible P x G →
       ∀ g ∈ G.big, ∀ p ∈ G.primes g, L x ^ q < (p : ℝ) := by
   have hc : 0 < P.c := by rcases P.ordered with ⟨ha, hab, hbc, hcd, hd⟩; linarith
@@ -41,7 +41,7 @@ theorem eventually_big_prime_power (P : Geometry) (q : ℝ) :
   have he := Real.exp_pos (L x ^ P.c)
   linarith [hbound.1]
 
-theorem eventually_dyad_denominator_log (P : Geometry) (m : ℕ) :
+theorem eventually_dyad_denominator_log  P   m  :
     ∀ᶠ x in atTop, ∀ G : PrimeGroups, Admissible P x G →
       ∀ a b, bigSlots G a m → bigSlots G b m →
       ∀ (X : Tuple G a) (Y : Tuple G b) (r : ℝ), 1 ≤ r →
@@ -59,11 +59,9 @@ theorem eventually_dyad_denominator_log (P : Geometry) (m : ℕ) :
   let V := dyadScale (dyadIndex (product G b Y))
   have hU : 0 < U := dyadScale_pos _
   have hV : 0 < V := dyadScale_pos _
-  have hlogU : Real.log U ≤ (m : ℝ) * P.C₀ * T x * L x ^ P.d := by
-    exact (Real.log_le_log hU (product_in_dyad _ (tuple_product_pos G a X)).1).trans
+  have hlogU : Real.log U ≤ (m : ℝ) * P.C₀ * T x * L x ^ P.d := (Real.log_le_log hU (product_in_dyad _ (tuple_product_pos G a X)).1).trans
       (log_product_bounds P x G hLp.le hG a m ha X).2
-  have hlogV : Real.log V ≤ (m : ℝ) * P.C₀ * T x * L x ^ P.d := by
-    exact (Real.log_le_log hV (product_in_dyad _ (tuple_product_pos G b Y)).1).trans
+  have hlogV : Real.log V ≤ (m : ℝ) * P.C₀ * T x * L x ^ P.d := (Real.log_le_log hV (product_in_dyad _ (tuple_product_pos G b Y)).1).trans
       (log_product_bounds P x G hLp.le hG b m hb Y).2
   have hlog2 : Real.log 2 ≤ 1 := by
     have ht := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 2)

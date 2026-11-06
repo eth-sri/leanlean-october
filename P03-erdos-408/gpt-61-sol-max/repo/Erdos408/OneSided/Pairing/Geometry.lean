@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Cauchy
 public import Erdos408.OneSided.Lift
@@ -30,10 +31,15 @@ variable {K : ℕ}
 /-! ### Slope cells -/
 
 /-- The slope cell `⌊κ P₂ / P₁⌋`. -/
-noncomputable def slopeCell (κ : ℝ) (P : ℕ × ℕ) : ℤ := ⌊(P.2 : ℝ) / P.1 * κ⌋
+noncomputable def slopeCell (κ : ℝ) (P : ℕ × ℕ)  := ⌊(P.2 : ℝ) / P.1 * κ⌋
 
+section
+variable {U H : ℝ} (hU : 0 < U) (hH : 0 < H) {P Q : ℕ × ℕ}
+
+
+include hH in
 /-- The slopes of `P` and `Q`, scaled by `U²/H`, differ by `|det(P, Q)| U² / (H P₁ Q₁)`. -/
-theorem slope_sub_slope {U H : ℝ} (hH : 0 < H) {P Q : ℕ × ℕ} (hP : 0 < (P.1 : ℝ))
+theorem slope_sub_slope       (hP : 0 < (P.1 : ℝ))
     (hQ : 0 < (Q.1 : ℝ)) :
     (Q.2 : ℝ) / Q.1 * (U ^ 2 / H) - (P.2 : ℝ) / P.1 * (U ^ 2 / H) =
       (det P Q : ℝ) * U ^ 2 / (H * (P.1 * Q.1)) := by
@@ -41,9 +47,10 @@ theorem slope_sub_slope {U H : ℝ} (hH : 0 < H) {P Q : ℕ × ℕ} (hP : 0 < (P
   push_cast
   field_simp
 
+include hU hH in
 /-- Positions with `|det(P, Q)| ≤ 10H` and `P₁, Q₁ ≥ U` lie in cells at distance at most
 `10`. -/
-theorem abs_slopeCell_sub_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) {P Q : ℕ × ℕ}
+theorem abs_slopeCell_sub_le        
     (hP : U ≤ P.1) (hQ : U ≤ Q.1) (hdet : |(det P Q : ℝ)| ≤ 10 * H) :
     |slopeCell (U ^ 2 / H) P - slopeCell (U ^ 2 / H) Q| ≤ 10 := by
   have hP₀ : 0 < (P.1 : ℝ) := hU.trans_le hP
@@ -69,9 +76,10 @@ theorem abs_slopeCell_sub_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) {P Q : ℕ ×
   rw [abs_le]
   constructor <;> omega
 
+include hU hH in
 /-- A slope cell holds at most `17 (512H + 1)` primitive positions with `P₁ ∈ [U, 16U]`. -/
-theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ × ℕ))
-    (hS : ∀ P ∈ S, U ≤ P.1 ∧ (P.1 : ℝ) ≤ 16 * U ∧ Nat.Coprime P.1 P.2) (j : ℤ) :
+theorem card_slopeCell_le       (S : Finset (ℕ × ℕ))
+    (hS : ∀ P ∈ S, U ≤ P.1 ∧ (P.1 : ℝ) ≤ 16 * U ∧ Nat.Coprime P.1 P.2)  j  :
     ((S.filter fun P => slopeCell (U ^ 2 / H) P = j).card : ℝ) ≤ 17 * (512 * H + 1) := by
   set T := S.filter fun P => slopeCell (U ^ 2 / H) P = j with hT
   rcases T.eq_empty_or_nonempty with hT₀ | ⟨P₀, hP₀⟩
@@ -131,8 +139,7 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
     have hP₀ne : (P₀.1 : ℤ) ≠ 0 := by
       have : P₀.1 ≠ 0 := by
         intro h0
-        rw [h0, Nat.cast_zero] at hP₀pos
-        exact lt_irrefl _ hP₀pos
+        simp_all
       exact_mod_cast this
     have hlin : (P₀.1 : ℤ) * (P.2 - P'.2) = (P.1 - P'.1) * P₀.2 := by
       unfold det at hd
@@ -156,32 +163,36 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
   calc (T.card : ℝ) ≤ ((2 * n + 1) * 17 : ℕ) := by exact_mod_cast hcard
     _ ≤ 17 * (512 * H + 1) := by push_cast; linarith
 
+end
+
 /-! ### Support of the operators -/
 
 /-- A nonzero entry of a product comes from nonzero entries of the factors. -/
 private theorem exists_ne_zero_of_mul_apply_ne_zero {ι : Type*} [Fintype ι]
-    {M N : Matrix ι ι ℂ} {a c : ι} (h : (M * N) a c ≠ 0) : ∃ b, M a b ≠ 0 ∧ N b c ≠ 0 := by
+    {M N : Matrix ι ι ℂ}  {a c}  (h : (M * N) a c ≠ 0) : ∃ b, M a b ≠ 0 ∧ N b c ≠ 0 := by
   rw [Matrix.mul_apply] at h
   obtain ⟨b, -, hb⟩ := exists_ne_zero_of_sum_ne_zero h
   exact ⟨b, left_ne_zero_of_mul hb, right_ne_zero_of_mul hb⟩
 
 variable {q A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ}
 
+section
+variable {s t s' : State x d Y d₀}
+
+
 /-- `𝒢` is diagonal. -/
-private theorem eq_of_goodOp_ne_zero {s t : State x d Y d₀} (h : goodOp x d Y d₀ s t ≠ 0) :
+private theorem eq_of_goodOp_ne_zero   (h : goodOp x d Y d₀ s t ≠ 0) :
     s = t := by
   by_contra hst
   exact h (Matrix.diagonal_apply_ne _ hst)
 
 /-- `𝒮` preserves positions. -/
-private theorem pos_eq_of_symOp_ne_zero {s t : State x d Y d₀} (h : symOp x d Y d₀ s t ≠ 0) :
+private theorem pos_eq_of_symOp_ne_zero   (h : symOp x d Y d₀ s t ≠ 0) :
     s.1.1 = t.1.1 := by
-  unfold symOp at h
-  by_contra hst
-  exact h (ite_eq_right fun hc => hst hc.1)
+  grind [symOp]
 
 /-- A nonzero entry of `𝒜` comes from a nonzero entry of `𝒯` between the same positions. -/
-theorem exists_rowOp_ne_zero {s s' : State x d Y d₀} (h : edgeOp q A₀ x d Y d₀ s s' ≠ 0) :
+theorem exists_rowOp_ne_zero   (h : edgeOp q A₀ x d Y d₀ s s' ≠ 0) :
     ∃ t t', t.1.1 = s.1.1 ∧ t'.1.1 = s'.1.1 ∧ rowOp q A₀ x d Y d₀ t t' ≠ 0 := by
   unfold edgeOp at h
   obtain ⟨b₄, h₄, hg₄⟩ := exists_ne_zero_of_mul_apply_ne_zero h
@@ -192,8 +203,15 @@ theorem exists_rowOp_ne_zero {s s' : State x d Y d₀} (h : edgeOp q A₀ x d Y 
   · rw [← pos_eq_of_symOp_ne_zero hs₁, eq_of_goodOp_ne_zero hg₁]
   · rw [pos_eq_of_symOp_ne_zero hs₃, eq_of_goodOp_ne_zero hg₄]
 
+end
+
+section
+variable (hY : 0 < Y) {t t' : State x d Y d₀} (h : rowOp q A₀ x d Y d₀ t t' ≠ 0)
+
+
+include h in
 /-- The conditions and cutoffs of a nonzero entry of `𝒯`. -/
-theorem rowOp_ne_zero {t t' : State x d Y d₀} (h : rowOp q A₀ x d Y d₀ t t' ≠ 0) :
+theorem rowOp_ne_zero     :
     d₀ ≤ (padProd t.1.2 : ℝ) ∧ (padProd t.1.2 : ℝ) < 2 * d₀ ∧
       (padProd t.1.2 : ℤ) ∣ det t.1.1 t'.1.1 ∧ dyadicBump (lastProd t.1.2 / Y) ≠ 0 ∧
       plateau ((det t.1.1 t'.1.1 / padProd t.1.2 : ℤ) / Y) ≠ 0 := by
@@ -205,10 +223,11 @@ theorem rowOp_ne_zero {t t' : State x d Y d₀} (h : rowOp q A₀ x d Y d₀ t t
     right_ne_zero_of_mul (left_ne_zero_of_mul (left_ne_zero_of_mul (left_ne_zero_of_mul h₁))),
     right_ne_zero_of_mul (left_ne_zero_of_mul h₁)⟩
 
+include hY h in
 /-- A nonzero entry of `𝒯` has `|det(P, Q)| < 10 d₀ Y`: the plateau gives `|t| < 5Y` for
 `t = det(P, Q) / D`, and `D < 2 d₀`. -/
-theorem abs_det_lt_of_rowOp_ne_zero (hY : 0 < Y) {t t' : State x d Y d₀}
-    (h : rowOp q A₀ x d Y d₀ t t' ≠ 0) : |(det t.1.1 t'.1.1 : ℝ)| < 10 * (d₀ * Y) := by
+theorem abs_det_lt_of_rowOp_ne_zero    
+      : |(det t.1.1 t'.1.1 : ℝ)| < 10 * (d₀ * Y) := by
   obtain ⟨-, hD₂, hdvd, -, hψ⟩ := rowOp_ne_zero h
   set D := padProd t.1.2
   set τ := det t.1.1 t'.1.1 / D
@@ -222,7 +241,7 @@ theorem abs_det_lt_of_rowOp_ne_zero (hY : 0 < Y) {t t' : State x d Y d₀}
   have hdet : (det t.1.1 t'.1.1 : ℝ) = D * τ := by
     exact_mod_cast (Int.mul_ediv_cancel' hdvd).symm
   rw [hdet, abs_mul, Nat.abs_cast]
-  have hD₀ : (0 : ℝ) ≤ D := Nat.cast_nonneg _
+  
   nlinarith [abs_nonneg (τ : ℝ)]
 
 /-- The list product is the pad product times the product of the last slots. -/
@@ -232,15 +251,18 @@ theorem listProd_eq_padProd_mul_lastProd {J : ℕ} (p : Lists K J) :
   rw [← prod_mul_distrib]
   exact prod_congr rfl fun i _ => Fin.prod_univ_castSucc _
 
+include hY h in
 /-- A nonzero entry of `𝒯` has `d₀ Y` below the list product of its source: `D ≥ d₀` and
 `η(b/Y) ≠ 0` gives `b > Y`. -/
-theorem le_listProd_of_rowOp_ne_zero (hY : 0 < Y) {t t' : State x d Y d₀}
-    (h : rowOp q A₀ x d Y d₀ t t' ≠ 0) : d₀ * Y ≤ listProd t.1.2 := by
+theorem le_listProd_of_rowOp_ne_zero    
+      : d₀ * Y ≤ listProd t.1.2 := by
   obtain ⟨hD₁, -, -, hη, -⟩ := rowOp_ne_zero h
   have hb : Y < lastProd t.1.2 := by
     have h₁ := (lt_of_dyadicBump_ne_zero hη).1
     rwa [one_lt_div hY] at h₁
   rw [listProd_eq_padProd_mul_lastProd, Nat.cast_mul]
   exact mul_le_mul hD₁ hb.le hY.le (Nat.cast_nonneg _)
+
+end
 
 end Erdos408.OneSided

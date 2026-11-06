@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Single
 
@@ -39,8 +40,12 @@ theorem proxies_eq_zero (hx : 1 < x) (hγ : 0 ≤ γ) {m : ℕ} (hm : (m : ℝ) 
     · exact not_lt.2 ((show ((candidateStrip x m : ℕ) : ℝ) ≤ m by
         exact_mod_cast stripPrimes_le _ hm0).trans hm)
 
+section
+variable (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hγ1 : γ ≤ 1) (hj : 1 ≤ j)
+
+include hx hL hγ hj in
 /-- `|a_j^0 - a_j| ≤ g/(D γ L)`. -/
-theorem abs_proxy_sub_le (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hj : 1 ≤ j) (m : ℕ) :
+theorem abs_proxy_sub_le          m  :
     |unstrippedProxy x γ j m - strippedProxy x γ j m| ≤
       dampedWeight x j m / (dampedDensity x j * (γ * Real.log x)) := by
   obtain ⟨h0, h1⟩ := unstrippedProxy_le hx hL hγ hj m
@@ -55,9 +60,10 @@ theorem abs_proxy_sub_le (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hj
   rw [abs_le]
   constructor <;> linarith
 
+include hx hL hγ hγ1 hj in
 /-- Above the threshold strip, `|δ(m)| ≤ (g(m)/D) log(m/m̄) / (γ² L^{1.9})`. -/
-theorem abs_proxy_sub_le_log (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hγ1 : γ ≤ 1)
-    (hj : 1 ≤ j) {m : ℕ} (hm : γ * Real.log x + Real.log x ^ (9 / 10 : ℝ) < Real.log m) :
+theorem abs_proxy_sub_le_log        
+      {m : ℕ} (hm : γ * Real.log x + Real.log x ^ (9 / 10 : ℝ) < Real.log m) :
     |unstrippedProxy x γ j m - strippedProxy x γ j m| ≤
       dampedWeight x j m / dampedDensity x j *
         (Real.log m - Real.log (candidateStrip x m)) /
@@ -79,7 +85,7 @@ theorem abs_proxy_sub_le_log (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
     exact_mod_cast Nat.one_le_iff_ne_zero.2 this
   have hmbm : (mb : ℝ) ≤ m := by exact_mod_cast stripPrimes_le _ hm0
   have hlogmb : Real.log mb ≤ Real.log m := Real.log_le_log (by linarith) hmbm
-  have hlogmb0 : 0 ≤ Real.log mb := Real.log_nonneg hmb1
+  
   have hL19 : Real.log x ^ (19 / 10 : ℝ) ≤ Real.log x ^ (2 : ℕ) := by
     rw [← Real.rpow_natCast]
     exact Real.rpow_le_rpow_of_exponent_le hL (by norm_num)
@@ -101,9 +107,7 @@ theorem abs_proxy_sub_le_log (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
         dampedWeight x j m / (dampedDensity x j * Real.log mb) =
         -(dampedWeight x j m / dampedDensity x j * (Real.log m - Real.log mb) /
           (Real.log m * Real.log mb)) := by
-      have hlogm0 : Real.log m ≠ 0 := by linarith
-      field_simp
-      ring
+      grind
     rw [heq, abs_neg, abs_of_nonneg (by
       have : 0 ≤ Real.log m - Real.log mb := by linarith
       positivity)]
@@ -140,6 +144,8 @@ theorem abs_proxy_sub_le_log (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
           nlinarith
       _ ≤ _ := by gcongr
 
+end
+
 end Pointwise
 
 /-! ### Counting the proxy weights -/
@@ -149,25 +155,31 @@ section Count
 variable {x γ : ℝ} {j : ℕ}
 
 /-- The envelope `W(m) = [x^γ < m] g(m) / (D γ L)` of both proxies. -/
-noncomputable def proxyEnv (x γ : ℝ) (j m : ℕ) : ℝ :=
+noncomputable def proxyEnv (x γ : ℝ) (j m : ℕ)  :=
   (if x ^ γ < m then dampedWeight x j m else 0) / (dampedDensity x j * (γ * Real.log x))
 
-theorem proxyEnv_nonneg (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hj : 1 ≤ j) (m : ℕ) :
+section
+variable {A₁ c₃ θ : ℝ} (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hj : 1 ≤ j) (m : ℕ)
+
+include hL hγ hj in
+theorem proxyEnv_nonneg         :
     0 ≤ proxyEnv x γ j m := by
   have := dampedDensity_pos hL hj
   have := dampedWeight_nonneg x j m
   unfold proxyEnv
   split_ifs <;> positivity
 
-theorem proxyEnv_le (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hj : 1 ≤ j) (m : ℕ) :
+include hL hγ hj in
+theorem proxyEnv_le         :
     proxyEnv x γ j m ≤ dampedWeight x j m / (dampedDensity x j * (γ * Real.log x)) := by
   have := dampedDensity_pos hL hj
   have := dampedWeight_nonneg x j m
   unfold proxyEnv
   exact div_le_div_of_nonneg_right (by split_ifs <;> linarith) (by positivity)
 
+include hL hγ hj in
 /-- `∑_{m ≤ N} W(m)/m ≤ ∏_{Y < p ≤ N} (1 - 1/p)⁻¹`. -/
-theorem sum_proxyEnv_div_le (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hj : 1 ≤ j)
+theorem sum_proxyEnv_div_le      
     (hY : 1 ≤ (∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (γ * Real.log x))
     (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x) {N : ℕ}
     (hYN : proxyCutoff x ≤ N) {w : ℕ → ℝ} (hw : ∀ m, w m ≤ proxyEnv x γ j m) :
@@ -175,7 +187,7 @@ theorem sum_proxyEnv_div_le (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hj : 1 ≤ j
       ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ := by
   obtain ⟨hPi, hPiD⟩ := prod_le_dampedDensity hL hj
   have hD := dampedDensity_pos hL hj
-  have hγL : 0 < γ * Real.log x := by positivity
+  
   set ν := (dampedDensity x j * (γ * Real.log x))⁻¹ with hν
   have hterm : ∀ m ∈ Icc 1 N, w m * cmul (fun p => (p : ℝ)⁻¹) m ≤
       ν * (dampedWeight x j m / m) := by
@@ -203,17 +215,13 @@ theorem sum_proxyEnv_div_le (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hj : 1 ≤ j
         mul_le_mul_of_nonneg_left hsum (by positivity)
     _ = (∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹) /
           ((∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (γ * Real.log x)) := by
-        have key : ∀ a b c d : ℝ, b ≠ 0 → (a * b * c)⁻¹ * (b * d) = d / (a * c) := by
-          intro a b c d hb
-          rw [div_eq_mul_inv, mul_inv, mul_inv, mul_inv]
-          field_simp
-        rw [hν, dampedDensity]
-        exact key _ _ _ _ hPc.ne'
+        grind [dampedDensity]
     _ ≤ ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ := div_le_self hPP hY
 
+include hL hγ hj in
 /-- The count `∑_{m ≤ w} W(m) ≤ c w / (γ L)`, from the rough-count bound for `g_j`. -/
-theorem sum_proxyEnv_count_le {A₁ c₃ θ : ℝ} (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
-    (hj : 1 ≤ j) (hA₁ : 0 < A₁) (hc₃ : 0 < c₃) (hθ : 0 < θ)
+theorem sum_proxyEnv_count_le      
+      (hA₁ : 0 < A₁) (hc₃ : 0 < c₃) (hθ : 0 < θ)
     (hlogY : 0 < Real.log (proxyCutoff x))
     (hPiY : c₃ / Real.log (proxyCutoff x) ≤ ∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p))
     (hG : ∀ W : ℕ, ∑ m ∈ Icc 1 W, dampedWeight x j m ≤
@@ -221,19 +229,17 @@ theorem sum_proxyEnv_count_le {A₁ c₃ θ : ℝ} (hL : 1 ≤ Real.log x) (hγ 
         (W : ℝ) ^ θ * ∏ p ∈ candidatePrimes x, (1 - (p : ℝ) ^ (-θ))⁻¹)
     (hsmall : ∀ w : ℝ, x ^ γ ≤ w → w ^ θ * ∏ p ∈ candidatePrimes x, (1 - (p : ℝ) ^ (-θ))⁻¹ ≤
       c₃ / Real.log (proxyCutoff x) * w)
-    (N : ℕ) (w : ℝ) (hw : 0 ≤ w) :
+    (N : ℕ)  w  (hw : 0 ≤ w) :
     ∑ m ∈ Icc 1 N, (if (m : ℝ) ≤ w then proxyEnv x γ j m else 0) ≤
       (A₁ / c₃ + 1) / (γ * Real.log x) * w := by
   obtain ⟨hPi, hPiD⟩ := prod_le_dampedDensity hL hj
   have hD := dampedDensity_pos hL hj
-  have hγL : 0 < γ * Real.log x := by positivity
-  have hEnv0 := proxyEnv_nonneg hL hγ hj
+  
+  
   by_cases hwγ : w < x ^ γ
   · -- below `x^γ` the envelope vanishes
     refine le_trans (le_of_eq (sum_eq_zero fun m _ => ?_)) (by positivity)
-    split_ifs with h
-    · unfold proxyEnv; rw [ite_eq_right (by linarith), zero_div]
-    · rfl
+    grind [proxyEnv]
   push Not at hwγ
   set W := ⌊w⌋₊
   have hWw : (W : ℝ) ≤ w := Nat.floor_le hw
@@ -289,6 +295,8 @@ theorem sum_proxyEnv_count_le {A₁ c₃ θ : ℝ} (hL : 1 ≤ Real.log x) (hγ 
     _ = (A₁ / c₃ + 1) / (γ * Real.log x) * w * (dampedDensity x j * (γ * Real.log x)) := by
         field_simp
 
+end
+
 end Count
 
 /-! ### The log density of `δ` -/
@@ -314,14 +322,13 @@ theorem sum_dyadic_le {N K' : ℕ} {y cW : ℝ} (hy : 0 < y) {W : ℕ → ℝ}
         rcases Nat.eq_zero_or_pos k with h0 | h0
         · rw [h0, pow_zero, one_mul]; exact h1
         · have := Nat.find_min hex (show k - 1 < k by omega)
-          push Not at this
-          rwa [show k - 1 + 1 = k by omega] at this
+          grind
       have hkK : k < K' := by
         by_contra hK
         push Not at hK
         have : (2 : ℝ) ^ K' * y ≤ 2 ^ k * y := by gcongr; norm_num
         linarith
-      have hm0 : (0 : ℝ) < m := by linarith
+      
       calc W m / m ≤ W m / (2 ^ k * y) :=
             div_le_div_of_nonneg_left (hW0 m) (by positivity) hk2.le
         _ = (if (m : ℝ) ≤ 2 ^ (k + 1) * y then W m else 0) / (2 ^ k * y) := by
@@ -341,14 +348,18 @@ theorem sum_dyadic_le {N K' : ℕ} {y cW : ℝ} (hy : 0 < y) {W : ℕ → ℝ}
           _ = 2 * cW * (2 ^ k * y) := by ring
     _ = 2 * cW * K' := by rw [sum_const, card_range, nsmul_eq_mul]; ring
 
-/-- The log density of `δ = a_j^0 - a_j`. -/
-theorem sum_abs_delta_le {x γ : ℝ} {j N K' : ℕ} {c₃ cW SP : ℝ} (hx : 1 < x)
-    (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hγ1 : γ ≤ 1) (hj : 1 ≤ j)
-    (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x)
-    (hYN : proxyCutoff x ≤ N) (hc₃ : 0 < c₃) (hlogY : 0 < Real.log (proxyCutoff x))
-    (hPiY : c₃ / Real.log (proxyCutoff x) ≤ ∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p))
-    (hcount : ∀ w : ℝ, 0 ≤ w → ∑ m ∈ Icc 1 N, (if (m : ℝ) ≤ w then proxyEnv x γ j m else 0) ≤
+section
+variable {x γ : ℝ} {j N K' : ℕ} {c₃ : ℝ} {r : ℕ} {SΨ cW SP : ℝ} (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hγ1 : γ ≤ 1) (hj : 1 ≤ j) (hY : 1 ≤ (∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (γ * Real.log x)) (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x) (hYN : proxyCutoff x ≤ N) (hc₃ : 0 < c₃) (hlogY : 0 < Real.log (proxyCutoff x)) (hPiY : c₃ / Real.log (proxyCutoff x) ≤ ∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) (Ψ : ℕ → ℝ) (hΨ0 : ∀ h, N < h → Ψ h = 0) (hΨ : ∀ h, |Ψ h| ≤ SΨ) (hcW : 0 ≤ cW) (hcount : ∀ w : ℝ, 0 ≤ w → ∑ m ∈ Icc 1 N, (if (m : ℝ) ≤ w then proxyEnv x γ j m else 0) ≤
       cW * w)
+
+include hx hL hγ hγ1 hj hYP hYN hc₃ hlogY hPiY hcount in
+/-- The log density of `δ = a_j^0 - a_j`. -/
+theorem sum_abs_delta_le        
+           
+     
+         
+     
+     
     (hSP : ∑ p ∈ candidatePrimes x, Real.log p / p ≤ SP)
     (hK' : Real.exp (Real.log x ^ (9 / 10 : ℝ)) ≤ 2 ^ K') :
     ∑ m ∈ Icc 1 N, |unstrippedProxy x γ j m - strippedProxy x γ j m| / m ≤
@@ -356,7 +367,7 @@ theorem sum_abs_delta_le {x γ : ℝ} {j N K' : ℕ} {c₃ cW SP : ℝ} (hx : 1 
         (Real.log (proxyCutoff x) / c₃) / (γ ^ 2 * Real.log x ^ (19 / 10 : ℝ)) := by
   have hD := dampedDensity_pos hL hj
   obtain ⟨hPi, hPiD⟩ := prod_le_dampedDensity hL hj
-  have hL0 : 0 < Real.log x := by linarith
+  
   have hden : 0 < γ ^ 2 * Real.log x ^ (19 / 10 : ℝ) := by positivity
   have hxγ0 : 0 < x ^ γ := by positivity
   set Q := (dampedDensity x j * (γ ^ 2 * Real.log x ^ (19 / 10 : ℝ)))⁻¹ with hQ
@@ -470,14 +481,14 @@ theorem sum_abs_delta_le {x γ : ℝ} {j N K' : ℕ} {c₃ cW SP : ℝ} (hx : 1 
 
 /-! ### One telescoping step of E5 -/
 
+include hL hγ hj hY hYP hYN hΨ0 hΨ hcW hcount in
 /-- One step of E5: the companion is counted with its first factor, which gives `1/L`. -/
-theorem abs_strip_step_le {x γ : ℝ} {j N r : ℕ} {SΨ cW : ℝ} (hL : 1 ≤ Real.log x)
-    (hγ : 0 < γ) (hj : 1 ≤ j)
-    (hY : 1 ≤ (∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (γ * Real.log x))
-    (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x) (hYN : proxyCutoff x ≤ N)
-    (Ψ : ℕ → ℝ) (hΨ0 : ∀ h, N < h → Ψ h = 0) (hΨ : ∀ h, |Ψ h| ≤ SΨ) (hcW : 0 ≤ cW)
-    (hcount : ∀ w : ℝ, 0 ≤ w → ∑ m ∈ Icc 1 N, (if (m : ℝ) ≤ w then proxyEnv x γ j m else 0) ≤
-      cW * w)
+theorem abs_strip_step_le        
+       
+     
+       
+           
+     
     (U : Fin (r + 1) → ℕ → ℝ) (hU0 : ∀ k m, 0 ≤ U k m) (hU : ∀ k m, U k m ≤ proxyEnv x γ j m) :
     |∑ m₀ ∈ Icc 1 N, ∑ m' ∈ Fintype.piFinset (fun _ : Fin (r + 1) => Icc 1 N),
         Ψ (m₀ * ∏ k, m' k) * (unstrippedProxy x γ j m₀ - strippedProxy x γ j m₀) *
@@ -539,5 +550,7 @@ theorem abs_strip_step_le {x γ : ℝ} {j N r : ℕ} {SΨ cW : ℝ} (hL : 1 ≤ 
     _ ≤ ∑ m₀ ∈ Icc 1 N, SΨ * cW * N * P₁ ^ r *
           (|unstrippedProxy x γ j m₀ - strippedProxy x γ j m₀| / m₀) := sum_le_sum hinner
     _ = _ := by rw [mul_sum]
+
+end
 
 end Erdos408.TypeII

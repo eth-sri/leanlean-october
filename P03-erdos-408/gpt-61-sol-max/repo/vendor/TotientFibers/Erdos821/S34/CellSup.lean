@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Char.Basic
 public import Erdos821.S34.CharacterTasks
@@ -34,16 +35,14 @@ theorem cell_kernel_sup_proof : Erdos821.Blueprint.Analytic.cell_kernel_sup_stat
           apply Finset.sum_le_sum
           intro χ _
           rw [norm_mul, norm_star]
-          simpa only [one_mul] using mul_le_mul (hchar Q χ D) (hchar Q χ X)
-            (norm_nonneg _) (by norm_num : (0 : ℝ) ≤ 1)
+          bound
         _ = ((primitiveCharacters Q).card : ℝ) := by simp
         _ ≤ (Q : ℝ) ^ 2 := by exact_mod_cast hcount
     rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hν]
     calc
       _ ≤ (cellMass G k h (cell h X))⁻¹ * (Q : ℝ) ^ 2 :=
         mul_le_mul_of_nonneg_left hs (inv_nonneg.mpr hν.le)
-      _ ≤ ξ⁻¹ * (Q : ℝ) ^ 2 := mul_le_mul_of_nonneg_right
-        (by simpa only [one_div] using one_div_le_one_div_of_le hξ hc.2) (sq_nonneg _)
+      _ ≤ ξ⁻¹ * (Q : ℝ) ^ 2 := (by bound)
       _ = _ := by ring
   · simp only [norm_zero]
     positivity

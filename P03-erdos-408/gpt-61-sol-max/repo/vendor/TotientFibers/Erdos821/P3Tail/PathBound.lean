@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.BigOperators.Fin
 public import Mathlib.Analysis.Normed.Order.Lattice
@@ -43,12 +44,15 @@ theorem fiber_step {α β : Type*} [DecidableEq α] (w K : α → ℝ) (C M ws :
 
 /-- Ghost kernels on `(before i, after i)`, edge kernels on `(after i, before (i+1))`,
 and the weight at the final state. -/
-def pathWeight {α : Type*} (w : α → ℝ) (n : ℕ) (G : Fin (n + 1) → α → α → ℝ)
-    (E : Fin n → α → α → ℝ) (z : Fin (n + 1) → α × α) : ℝ :=
+def pathWeight {α } (w : α → ℝ) (n ) (G : Fin (n + 1) → α → α → ℝ)
+    (E : Fin n → α → α → ℝ) (z : Fin (n + 1) → α × α)  :=
   (∏ i, G i (z i).1 (z i).2) * (∏ i : Fin n, E i (z i.castSucc).2 (z i.succ).1) *
     w (z (Fin.last n)).2
 
-theorem pathWeight_succ {α : Type*} (w : α → ℝ) (n : ℕ) (G : Fin (n + 2) → α → α → ℝ)
+section
+variable {α : Type*} (w : α → ℝ)
+
+theorem pathWeight_succ      n  (G : Fin (n + 2) → α → α → ℝ)
     (E : Fin (n + 1) → α → α → ℝ) (z : Fin (n + 2) → α × α) :
     pathWeight w (n + 1) G E z =
       G 0 (z 0).1 (z 0).2 * (E 0 (z 0).2 (z 1).1 *
@@ -60,7 +64,7 @@ theorem pathWeight_succ {α : Type*} (w : α → ℝ) (n : ℕ) (G : Fin (n + 2)
   simp only [Fin.tail, Fin.succ_last, Fin.castSucc_zero, Fin.succ_zero_eq_one, hc]
   ring
 
-theorem path_bound {α : Type*} (w : α → ℝ) (hw : ∀ t, 0 ≤ w t) (CG CE : ℝ)
+theorem path_bound     (hw : ∀ t, 0 ≤ w t)  CG CE 
     (hCG : 0 ≤ CG) (hCE : 0 ≤ CE) :
     ∀ (n : ℕ) (G : Fin (n + 1) → α → α → ℝ) (E : Fin n → α → α → ℝ),
       (∀ i s t, 0 ≤ G i s t) → (∀ i s t, 0 ≤ E i s t) →
@@ -88,8 +92,7 @@ theorem path_bound {α : Type*} (w : α → ℝ) (hw : ∀ t, 0 ≤ w t) (CG CE 
             rw [Finset.mem_filter] at ha hb
             funext i
             have hi : i = 0 := Subsingleton.elim _ _
-            subst hi
-            exact Prod.ext ((hS a ha.1).trans (hS b hb.1).symm) (ha.2.trans hb.2.symm)
+            grind
           calc ∑ z ∈ S.filter (fun z : Fin 1 → α × α => (z 0).2 = t), w (z 0).2
               = ∑ z ∈ S.filter (fun z : Fin 1 → α × α => (z 0).2 = t), w t := by
                 apply Finset.sum_congr rfl
@@ -146,10 +149,11 @@ theorem path_bound {α : Type*} (w : α → ℝ) (hw : ∀ t, 0 ≤ w t) (CG CE 
               intro y hy
               obtain ⟨z, hz, rfl⟩ := Finset.mem_image.1 hy
               exact (Finset.mem_filter.1 hz).2)
-          calc _ ≤ CG ^ (n + 1) * CE ^ n * (CE * w t) := h2
-            _ = CG ^ (n + 1) * CE ^ n * CE * w t := by ring)
+          grind)
       calc _ ≤ CG ^ (n + 1) * CE ^ n * CE * (CG * w s) := hstep
         _ = CG ^ (n + 1 + 1) * CE ^ (n + 1) * w s := by ring
+
+end
 
 
 end Erdos821.P3Tail

@@ -12,17 +12,17 @@ open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CompletedDyadic
 open CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 noncomputable local instance dualQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
 
 def mixedSmoothedValue (D : ControlledStratumArithmetic p N a0 c0 mode)
     [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
-    (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
+    (hN : (9 : Eis) * c0 ∣ N) (hr : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (∏ i, p i) - 1)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a0 - 1 else ConcretePrimeRowBridge.goodLambda ^ 2 ∣ c0 - 1)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))
-    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (j : ι → ℕ) (S : Finset ι) (W : ℝ → ℂ) (X : ℝ) : ℂ :=
   ∑ v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ,
     fullLocalFourierWeight hp (mixedPrimeFunction p hg j S) v *
@@ -31,7 +31,7 @@ def mixedSmoothedValue (D : ControlledStratumArithmetic p N a0 c0 mode)
 def mixedReflectedValue (D : ControlledStratumArithmetic p N a0 c0 mode)
     [∀ i, (Ideal.span {p i}).IsMaximal]
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))
-    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (j : ι → ℕ) (S : Finset ι) (W : ℝ → ℂ) (X : ℝ) : ℂ :=
   fixedRadialCoefficientScalar * s.stratumShapeFactor (c0 * ∏ i, p i) *
     ∑' t : ThetaFullIndex,
@@ -49,15 +49,15 @@ def mixedReflectedValue (D : ControlledStratumArithmetic p N a0 c0 mode)
 
 theorem mixed_smoothed_eq_reflected (D : ControlledStratumArithmetic p N a0 c0 mode)
     [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
-    (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))
-    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0)
+     hN  (hr : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (∏ i, p i) - 1)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a0 - 1 else ConcretePrimeRowBridge.goodLambda ^ 2 ∣ c0 - 1)
+     s 
+     hp   hc0 
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (j : ι → ℕ) (hj : ∀ i, j i < 6) (S : Finset ι)
-    (W : ℝ → ℂ) (lo hi : ℝ) (hlo : 0 < lo) (hsupp : Function.support W ⊆ Set.Icc lo hi)
-    (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0 < X) :
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+     j  (hj : ∀ i, j i < 6)  S 
+     W  (lo hi : ℝ) (hlo : 0 < lo) (hsupp : Function.support W ⊆ Set.Icc lo hi)
+    (hW : ContDiff ℝ ∞ W)  X  (hX : 0 < X) :
     mixedSmoothedValue D hN hr hbase s hp hc0 hg j S W X =
       mixedReflectedValue D s hp hc0 hg j S W X := by
   have hden : c0 * (∏ i, p i) ≠ 0 :=

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondPunctureBudget
 
@@ -10,9 +11,9 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+
+
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
   (hp : ∀ i, p i ≠ 0)
 
 include hp in
@@ -53,7 +54,7 @@ variable [∀ i, (Ideal.span {p i}).IsMaximal]
 include hp in
 
 theorem actual_second_q0_power_bound
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : Eisˣ)
+    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : ActualEisensteinCubic.Oˣ)
     (Z ell R j eta : ℝ) (hZ : 0 < Z)
     (h1 : ‖eisEmbedding (primeProduct p x.cube.support x.cube.leftExponent)‖^2 ≤ Z^(ell+eta))
     (h2 : ‖eisEmbedding (primeProduct p x.cube.support x.cube.rightExponent)‖^2 ≤ Z^(ell+eta))
@@ -70,21 +71,19 @@ theorem actual_second_q0_power_bound
       Z^((R+eta)/2) := by
     apply (sq_le_sq₀ (norm_nonneg _) (Real.rpow_pos_of_pos hZ _).le).mp
     rw [←Real.rpow_mul_natCast hZ.le]
-    norm_num
-    simpa only [primeProductNorm,map_prod,norm_prod] using hactive
+    grind [primeProductNorm]
   change (Ideal.absNorm (Ideal.span {(b0Label p x.cube.support
     (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)}) : ℝ) ≤ _
   rw [←eisEmbedding_norm_sq_eq_absNorm_span]
   apply hb.trans
   calc
     _ ≤ (Z^(ell+eta)*Z^((R+eta)/2))/Z^(j-eta) :=
-      div_le_div₀ (by positivity) (mul_le_mul_of_nonneg_left ha (by positivity))
-        (Real.rpow_pos_of_pos hZ _) hJ
+      (by gcongr <;> first | assumption | positivity | linarith)
     _ = Z^((ell+eta)+(R+eta)/2-(j-eta)) := by
       rw [←Real.rpow_add hZ,←Real.rpow_sub hZ]
     _ = _ := by congr 1; ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

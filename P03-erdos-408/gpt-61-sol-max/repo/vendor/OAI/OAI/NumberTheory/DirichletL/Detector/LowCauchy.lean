@@ -12,20 +12,20 @@ open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 
-def lowNumeratorWeight (C : CalibrationData) (Ω : ℝ→ℂ) (X Y : ℝ) (m : O) (v : ℝ) : ℂ :=
+
+def lowNumeratorWeight (C : CalibrationData) (Ω : ℝ→ℂ) (X Y : ℝ) (m : ActualEisensteinCubic.O) (v : ℝ)  :=
   Ω (elementNorm m/lowPhysicalScale C X Y)*C.residueMonoid m*
     ((elementNorm m/lowPhysicalScale C X Y:ℝ):ℂ)^(-((v:ℂ)*Complex.I))
 
-lemma lowOuterCutoff_norm (a b x : ℝ) : ‖lowOuterCutoff a b x‖≤1 := by
+lemma lowOuterCutoff_norm  a b x  : ‖lowOuterCutoff a b x‖≤1 := by
   rw [lowOuterCutoff,norm_mul,Complex.norm_real,Complex.norm_real,
     Real.norm_eq_abs,Real.norm_eq_abs,
     abs_of_nonneg (Real.smoothTransition.nonneg _),abs_of_nonneg (Real.smoothTransition.nonneg _)]
   exact (mul_le_of_le_one_left (Real.smoothTransition.nonneg _) (Real.smoothTransition.le_one _)).trans (Real.smoothTransition.le_one _)
 
-lemma lowNumeratorWeight_norm (C : CalibrationData) (Ω : ℝ→ℂ)
-    (hΩ : ∀x,‖Ω x‖≤1) (hΩ0 : Ω 0=0) (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (m : O) (v : ℝ) :
+lemma lowNumeratorWeight_norm  C   Ω 
+    (hΩ : ∀x,‖Ω x‖≤1) (hΩ0 : Ω 0=0)  X Y  (hX : 0<X) (hY : 0<Y)  m   v  :
     ‖lowNumeratorWeight C Ω X Y m v‖≤1 := by
   by_cases hm : m=0
   · simp [lowNumeratorWeight,hm,elementNorm,hΩ0]

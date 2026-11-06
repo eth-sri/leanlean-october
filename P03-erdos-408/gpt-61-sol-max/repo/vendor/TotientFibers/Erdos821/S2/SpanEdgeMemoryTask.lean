@@ -13,7 +13,7 @@ open Erdos821.Blueprint.Graph
 
 /-- Source stores, surviving old memory and promotions give exactly the
 pending set before the next ghost. Numerical coincidences are retained by indices. -/
-def SpanEdgeMemoryTask : Prop :=
+def SpanEdgeMemoryTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
     (Q : ResiduePath A n) (S : LifespanAssignment P n), Q.Valid → Q.lifespanValid S →
     (∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k) →

@@ -18,7 +18,7 @@ local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
-def quotientSupport (y : SecondParentSource ι Jo) : Finset ι :=
+def quotientSupport (y : SecondParentSource ι Jo)  :=
   Function.extend (sourceIdeal p) id (fun _=>∅) y.quotient
 
 theorem quotientSupport_parent (hinj : Function.Injective (fun i=>Ideal.span {p i}))
@@ -32,12 +32,12 @@ theorem quotientSupport_attach (hinj : Function.Injective (fun i=>Ideal.span {p 
   quotientSupport_parent p hinj q.1
 
 def residualLists (negative : Bool) (lists : σ→Finset ι)
-    (y : SecondParentSource ι Jo) (i : σ) : Finset ι :=
+    (y : SecondParentSource ι Jo) (i : σ)  :=
   lists i \ (((if negative then y.cube.rightDivisor else y.cube.leftDivisor)∪y.firstCommon)∪
     quotientSupport p y)
 
 omit [DecidableEq σ] [∀ i,(Ideal.span {p i}).IsMaximal] in
-theorem residualLists_disjoint (negative : Bool) (lists : σ→Finset ι)
+theorem residualLists_disjoint  negative  (lists : σ→Finset ι)
     (y : SecondParentSource ι Jo) (i : σ) :
     Disjoint (residualLists p negative lists y i) (quotientSupport p y) := by
   apply Finset.disjoint_left.mpr
@@ -47,7 +47,7 @@ theorem residualLists_disjoint (negative : Bool) (lists : σ→Finset ι)
 def retainedPool (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
     (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ)
     (label : SecondParentSource ι Jo→Finset ι→SecondExpansionData ι→κ)
-    (residual : Finset ι) (j : κ) : Finset (MarkedSecondSource ι Jo 0) :=
+    (residual : Finset ι) (j : κ)  :=
   attachedSecondFamily parents (fun y=>secondDyadicSector pool (secondVariableCutoff p y (R y))
     residual (label y) j)
 
@@ -55,7 +55,7 @@ omit [∀ i,(Ideal.span {p i}).IsMaximal] in
 theorem mem_retainedPool (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
     (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ)
     (label : SecondParentSource ι Jo→Finset ι→SecondExpansionData ι→κ)
-    (residual : Finset ι) (j : κ) (x : MarkedSecondSource ι Jo 0) :
+     residual   j  (x : MarkedSecondSource ι Jo 0) :
     x∈retainedPool p pool parents R label residual j ↔
       secondParentOf x∈parents ∧ x.second∈secondDyadicSector pool
         (secondVariableCutoff p (secondParentOf x) (R (secondParentOf x))) residual
@@ -69,7 +69,7 @@ def parentPoisson (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (pool : Finset ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (ω : ℝ→ℂ) (X t Y : ℝ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
-    (y : SecondParentSource ι Jo) : ℂ :=
+    (y : SecondParentSource ι Jo)  :=
   firstFreshSecondPoisson p hp hg hinj pool (quotientSupport p y) y.cube.support
     (fun i=>y.cube.leftExponent i+y.cube.rightExponent i) y.cube.leftBit y.cube.rightBit negative
     (if negative then r.1 else r.2) Ψ m
@@ -78,7 +78,7 @@ def parentPoisson (hinj : Function.Injective (fun i=>Ideal.span {p i}))
 
 def retainedRow (pool : Finset ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (V : ℝ→ℂ) (X Y : ℝ) (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0) : ℂ :=
+    (V : ℝ→ℂ) (X Y : ℝ) (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0)  :=
   actualSecondSignedWeight p hp hcop hg Ψ
     (m*ConcretePrimeRowBridge.idealGenerator x.quotient) ray x *
     actualSecondProfileRow p hp hcop hg pool (secondInheritedProfile p x Ψ m ray)
@@ -92,10 +92,10 @@ theorem parentPoisson_full [Fintype κ]
     (y : SecondParentSource ι Jo) (pool : Finset ι)
     (hq : y.quotient=sourceIdeal p (quotientSupport p y))
     (negative : Bool) (Ψ : O→*ℂ) (m : O)
-    (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo) (hs : Function.support om⊆Set.Icc lo hi)
-    (X t Y : ℝ) (hX : 0<X) (hY : 0<Y) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
-    (R : Finset ι→Finset ι→ℝ) (label : Finset ι→SecondExpansionData ι→κ) :
+    (slots J : Finset σ)  lists   a 
+     om   lo hi   hlo   hs 
+     X t Y  (hX : 0<X) (hY : 0<Y)  r   core 
+     R   label  :
     let Ψ₀ := firstCoreTwist negative (if negative then r.1 else r.2) Ψ core
     let V := principalWindow om lo hi hlo hs negative t
     let H := markedRadial p (slots\J) (residualLists p negative lists y) a ∅ V X

@@ -14,15 +14,15 @@ namespace SevenEighths.ProbeCentralAllSlots
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion ProbeCentralRepeatedProduct
 open ProbeCentralRepeatedSubset ProbeCentralBranchProduct
-local notation "O" => HeckeFamily.O
 
-def phaseSlot (u : FreeRow) (T : Finset PrimeIdeal) (W : ℝ→ℂ) (Y : ℝ) (z : ℂ) : ℂ :=
+
+def phaseSlot (u : FreeRow) (T : Finset PrimeIdeal) (W : ℝ→ℂ) (Y : ℝ) (z : ℂ)  :=
   ∑P:T,W ((P.val.val.absNorm:ℝ)/Y)*(P.val.val.absNorm:ℂ)^(z-1)*(-star (idealRowHom u.val P.val.val))
 
-theorem actual_three_branch_slots (N : ℕ) (e eps c d B : ℝ)
+theorem actual_three_branch_slots  N   e eps c d B 
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps)
     (hc : 0<c) (hd : 0<d) (hB : 0≤B) :
-    ∃C : ℝ,0<C ∧ ∀(S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+    ∃C : ℝ,0<C ∧ ∀(S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
       (hmax : ∀P∈S,P.IsMaximal),fixedBadPrimes⊆S →
     ∀(u : FreeRow),u.val≠1 → ∀{ι : Type*} [Fintype ι] (η : Character) (twists : ι→Character)
       (T0 a : ℝ) (i : ℕ),2<T0 → 51/100≤a → a≤1 →
@@ -40,13 +40,13 @@ theorem actual_three_branch_slots (N : ℕ) (e eps c d B : ℝ)
         ‖∏j,∑P:T j,W j ((P.val.val.absNorm:ℝ)/Y j)*(P.val.val.absNorm:ℂ)^(z-1)*
           centralNormalizedSlot η u P.val (hs j P.val P.property) x w z‖ ≤
         C*rowCost S hS u a e eps ((3*i+2:ℕ)*T0)*
-          ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(eps*(N+1))*(∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j) := by
+          ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^(eps*(N+1))*(∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j) := by
   obtain ⟨Cr,hCr,hregular⟩ := central_regular_slot_sum eps c d B heps hc hd hB
   obtain ⟨Ct,hCt,hrepeated⟩ := actual_repeated_subset N e eps c d B he he1 heps hc hd hB
   refine ⟨Ct*(Cr+2)^N,by positivity,?_⟩
   intro S hS hmax hbad u hu ι _ η twists T0 a i hT0 ha ha1 hbin T hs hdis hη hQ hsmall W Y hY hWS hW x w z hx hw hz hwi p hp hphase
   let L := ‖star ((calibrationForSet S hmax).residueMonoid u.val)*HeckeOrigin.continued (rowCharacter S hS u) w‖
-  let U : ℝ := (Ideal.span {u.val}:Ideal O).absNorm
+  let U : ℝ := (Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm
   let R := Ct*rowCost S hS u a e eps ((3*i+2:ℕ)*T0)*U^eps
   let A : Fin N→ℂ := fun j=>phaseSlot u (T j) (W j) (Y j) z
   let E : Fin N→ℂ := fun j=>∑P:T j,W j ((P.val.val.absNorm:ℝ)/Y j)*(P.val.val.absNorm:ℂ)^(z-1)*

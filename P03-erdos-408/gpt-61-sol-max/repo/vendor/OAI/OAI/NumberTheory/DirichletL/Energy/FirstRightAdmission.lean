@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.FirstLiveAdmission
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedRightTransport
@@ -34,16 +35,20 @@ open CenteredMomentEnergyFirstLiveAdmission CenteredMomentFirstMixedRightTranspo
 local notation "O" => HeckeFamily.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-lemma main_radius_right (C D : Ideal O) (E : Finset (CommonIndex C D))
-    (K V Z σ δ reserve : ℝ) :
+lemma main_radius_right  C D   E 
+     K V Z σ δ reserve  :
     columnMainRadius C D E K V Z σ δ reserve true =
       mainRadius D C (swapSubset C D E) K V Z σ δ reserve := by
   simp only [columnMainRadius, columnIdeal, oppositeIdeal, ite_true,
     mainRadius, swapSubset_generator, nominal_swap]
 
-theorem eventually_right_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
-    (hb : 1 ≤ b) (hb₁ : 1 ≤ b₁) (hb₂ : 1 ≤ b₂)
-    (hl : 0 < l) (ha : 0 < a) (hA : 0 ≤ A) (hP : 0 ≤ P) :
+section
+variable (N : ℕ) (b b₁ b₂ l a A P : ℝ) (hb : 1 ≤ b) (hb₁ : 1 ≤ b₁) (hb₂ : 1 ≤ b₂) (hl : 0 < l) (ha : 0 < a) (hA : 0 ≤ A) (hP : 0 ≤ P)
+include N b b₁ b₂ l a A P hb hb₁ hb₂ hl ha hA hP
+
+theorem eventually_right_main_packet    
+         
+            :
     ∀ᶠ Z : ℝ in atTop, 1 < Z ∧ ∀ {ι : Type*} [Fintype ι] [DecidableEq ι],
       ∀ s : Input ι, Fintype.card ι ≤ N → Endpoints b b₁ b₂ s → l ≤ s.lower →
       (∀ x, s.W₁ x ≠ 0 → a ≤ x) → (∀ x, s.W₂ x ≠ 0 → a ≤ x) →
@@ -97,9 +102,9 @@ theorem eventually_right_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
   rw [main_radius_right] at hr
   exact hr
 
-theorem eventually_right_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
-    (hb : 1 ≤ b) (hb₁ : 1 ≤ b₁) (hb₂ : 1 ≤ b₂)
-    (hl : 0 < l) (ha : 0 < a) (hA : 0 ≤ A) (hP : 0 ≤ P) :
+theorem eventually_right_error_packet    
+         
+            :
     ∀ᶠ Z : ℝ in atTop, 1 < Z ∧ ∀ {ι : Type*} [Fintype ι] [DecidableEq ι],
       ∀ s : Input ι, Fintype.card ι ≤ N → Endpoints b b₁ b₂ s → l ≤ s.lower →
       (∀ x, s.W₁ x ≠ 0 → a ≤ x) → (∀ x, s.W₂ x ≠ 0 → a ≤ x) →
@@ -171,8 +176,7 @@ theorem eventually_right_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
   have hz₂ := lower_profile_zero s.W₂ a ha hW₂
   have hcdata := actual_common_gates s R seed0 hseed hz₁ hz₂ C D hlabel
   have hCN := hcdata.2.2.2.2.2.1.trans hH
-  have hJN : (D.absNorm : ℝ) ≤ Z^(A+1) := by
-    exact hcdata.2.2.2.2.2.2.trans hH
+  
   have hd := elementPool_data _
     (fun Q hQ => (primePool_data M H Sbad hbad (1/2) 1 (Z^(σ/3)) Q hQ).1)
     (fun Q hQ => (primePool_data M H Sbad hbad (1/2) 1 (Z^(σ/3)) Q hQ).2) p hp
@@ -203,6 +207,8 @@ theorem eventually_right_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
     A 0 P (3*A+3+σ/3) ξ hKe hξ hz₁ hz₂ hV hKeInv hRN hv hlive
   exact ⟨ready_mono _ _ Ke Z ξ _ _ hz.le (error_exponent_le A P σ ξ hA hP hσ1 hξ1) hr,
     error_lower_support N l a hl ha s hc hs hW₁ hW₂ D R innerL B F.right t _ k Bp υ v⟩
+
+end
 
 end SevenEighths.CenteredMomentEnergyFirstRightAdmission
 

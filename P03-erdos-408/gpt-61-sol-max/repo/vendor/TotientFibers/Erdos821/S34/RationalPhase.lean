@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import Erdos821.P4Rat.RationalFourier
 
 public import Erdos821.S34.LogMultiplier
 public import Erdos821.P5.Basic
@@ -8,12 +10,12 @@ public import Erdos821.P5.Basic
 set_option autoImplicit false
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint.Analytic
 
-theorem norm_e (t : ℝ) : ‖e t‖ = 1 := by simp [e, Complex.norm_exp]
+alias norm_e := _root_.Erdos821.P4Rat.rf_e_norm
 
-theorem rational_phase_split (n θ β ζ : ℝ) (u : ℤ) (r : ℕ)
+theorem rational_phase_split  n θ β ζ  (u : ℤ) (r : ℕ)
     (hn : 0 < n) (hθ : θ = (u : ℝ) / r + β) :
     mellin n ζ * e (θ * n) = logMultiplier ζ β (Real.log n) * e ((u : ℝ) * n / r) := by
   unfold Blueprint.Analytic.mellin e logMultiplier unitPhase
@@ -23,5 +25,5 @@ theorem rational_phase_split (n θ β ζ : ℝ) (u : ℤ) (r : ℕ)
   push_cast
   ring
 
-end
+
 end Erdos821.S34Core

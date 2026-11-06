@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Comparison.Arcs
 public import Erdos408.TwoSided.Endpoint
@@ -129,7 +130,7 @@ theorem exists_comparison_bound
     have e₁ : L ^ Ccost * L ^ (-(A'' + KΨ + Ccost)) = L ^ (-(A'' + KΨ)) := by
       rw [← Real.rpow_add hL0]
       ring_nf
-    have hp : 0 ≤ L ^ (-(A'' + KΨ)) := by positivity
+    
     calc Karc * (L ^ (-(A'' + KΨ)) + L ^ Ccost * (Real.sqrt (CE * L ^ (-(2 * (A'' + KΨ +
           Ccost)))) + L ^ (-(A'' + KΨ + Ccost))))
         ≤ |Karc| * (L ^ (-(A'' + KΨ)) + L ^ Ccost * (Real.sqrt |CE| *

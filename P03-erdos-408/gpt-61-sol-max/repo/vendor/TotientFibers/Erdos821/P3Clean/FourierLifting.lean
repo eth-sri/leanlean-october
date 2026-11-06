@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.FiniteFourier
 
@@ -15,13 +16,17 @@ open Erdos821.Blueprint.Graph
 
 variable {α G : Type*} [Fintype α] [AddCommGroup G] [Fintype G]
 
-def fourierFibre (H : α → α → G → ℂ) (ψ : AddChar G ℂ) (a b : α) : ℂ :=
+def fourierFibre (H : α → α → G → ℂ) (ψ : AddChar G ℂ) (a b : α)  :=
   ∑ d : G, H a b d * ψ d
 
-def translationLift (H : α → α → G → ℂ) (a b : α × G) : ℂ :=
+def translationLift (H : α → α → G → ℂ) (a b : α × G)  :=
   H a.1 b.1 (b.2 - a.2)
 
-theorem weighted_fourier_parseval (mass : α → ℝ) (f : α × G → ℂ) :
+section
+variable (mass : α → ℝ) (H : α → α → G → ℂ) (f g : α × G → ℂ)
+
+
+theorem weighted_fourier_parseval     :
     (∑ ψ : AddChar G ℂ, ∑ a : α,
       mass a * ‖finiteFourier (fun r => f (a, r)) ψ‖ ^ 2) =
       (Fintype.card G : ℝ) * ∑ a : α, ∑ r : G, mass a * ‖f (a, r)‖ ^ 2 := by
@@ -31,8 +36,8 @@ theorem weighted_fourier_parseval (mass : α → ℝ) (f : α × G → ℂ) :
   rw [← Finset.mul_sum, finiteFourier_parseval, ← Finset.mul_sum]
   ring
 
-theorem weighted_fourier_form (mass : α → ℝ) (H : α → α → G → ℂ)
-    (f g : α × G → ℂ) :
+theorem weighted_fourier_form    
+      :
     (∑ ψ : AddChar G ℂ, ∑ a : α, ∑ b : α,
       (mass a : ℂ) * star (finiteFourier (fun r => f (a, r)) ψ) *
         fourierFibre H ψ a b * finiteFourier (fun r => g (b, r)) ψ) =
@@ -55,14 +60,10 @@ theorem weighted_fourier_form (mass : α → ℝ) (H : α → α → G → ℂ)
       rw [finiteFourier_convolution_form]
     _ = _ := by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro r _
-      apply Finset.sum_congr rfl
-      intro d _
       ring
 
-theorem translationLift_form (mass : α → ℝ) (H : α → α → G → ℂ)
-    (f g : α × G → ℂ) :
+theorem translationLift_form    
+      :
     (∑ a : α × G, ∑ b : α × G,
       (mass a.1 : ℂ) * star (f a) * translationLift H a b * g b) =
       ∑ a : α, ∑ b : α, ∑ r : G, ∑ d : G,
@@ -81,7 +82,7 @@ theorem translationLift_form (mass : α → ℝ) (H : α → α → G → ℂ)
   intro d
   simp
 
-theorem normBound_translationLift (mass : α → ℝ) (H : α → α → G → ℂ) (C : ℝ)
+theorem normBound_translationLift     (C : ℝ)
     (hm : ∀ a, 0 ≤ mass a) (hC : 0 ≤ C)
     (hH : ∀ ψ : AddChar G ℂ, NormBound mass (fourierFibre H ψ) C) :
     NormBound (fun a : α × G => mass a.1) (translationLift H) C := by
@@ -100,14 +101,13 @@ theorem normBound_translationLift (mass : α → ℝ) (H : α → α → G → �
   have heq (U V : ℝ) : C * (Real.sqrt (Fintype.card G : ℝ) * Real.sqrt U) *
       (Real.sqrt (Fintype.card G : ℝ) * Real.sqrt V) =
       (Fintype.card G : ℝ) * (C * Real.sqrt U * Real.sqrt V) := by
-    calc
-      _ = (Real.sqrt (Fintype.card G : ℝ)) ^ 2 *
-          (C * Real.sqrt U * Real.sqrt V) := by ring
-      _ = _ := by rw [hr]
+    grind
   rw [heq] at h
   have hh := le_of_mul_le_mul_left h hn
   rw [translationLift_form]
   simpa only [Fintype.sum_prod_type] using hh
+
+end
 
 
 end Erdos821.P3Clean

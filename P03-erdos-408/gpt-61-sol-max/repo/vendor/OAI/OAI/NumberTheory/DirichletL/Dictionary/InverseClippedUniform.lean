@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseUniformSource
 public import OAI.NumberTheory.DirichletL.Descent.ClippedEnergy
@@ -17,9 +18,12 @@ namespace SevenEighths.DetectorDictionaryInverseClippedUniform
 open DetectorDictionaryInverseUniform HeckeInverseAmplification
 open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier
 open ActualEisensteinCubic CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
 
-theorem source_support (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) :
+
+section
+variable (scaled reverse : Bool) (n : ℕ)
+
+theorem source_support      U tstar r σ t  :
     Function.support (inverseSourceSchwartz scaled reverse n U tstar r σ t : ℝ→ℂ) ⊆
       Set.Icc (1/4 : ℝ) (9/4) := by
   let W := inverseDetectorSchwartz reverse n (U^r/U^tstar) σ t
@@ -55,21 +59,19 @@ theorem exists_reference_window :
       ∀x∈Set.Icc (1/9 : ℝ) (9/4), w x = 1 := by
   obtain ⟨w,hc,hone,hs⟩ := InverseSecondChildWindows.positive_cutoff
     (1/9 : ℝ) (9/4) (by norm_num) (by norm_num)
-  refine ⟨w,hc,?_,hone⟩
-  convert hs using 1
-  norm_num
+  grind
 
-def referenceWindow : 𝓢(ℝ,ℂ) := Classical.choose exists_reference_window
+def referenceWindow  := Classical.choose exists_reference_window
 
 theorem referenceWindow_support : tsupport (referenceWindow : ℝ→ℂ) ⊆
     Set.Icc (1/18 : ℝ) (13/4) :=
   (Classical.choose_spec exists_reference_window).2.1
 
-theorem referenceWindow_one (x : ℝ) (hx : x∈Set.Icc (1/9 : ℝ) (9/4)) :
+theorem referenceWindow_one  x  (hx : x∈Set.Icc (1/9 : ℝ) (9/4)) :
     referenceWindow x = 1 :=
   (Classical.choose_spec exists_reference_window).2.2 x hx
 
-theorem referenceWindow_agrees (scaled reverse : Bool) (n : ℕ) (U tstar r σ t c y : ℝ)
+theorem referenceWindow_agrees      U tstar r σ t c y 
     (hc : 1≤c) (hcb : c≤9/4) (hy : 0<y) :
     referenceWindow y * inverseSourceSchwartz scaled reverse n U tstar r σ t (c*y) =
       inverseSourceSchwartz scaled reverse n U tstar r σ t (c*y) := by
@@ -80,17 +82,17 @@ theorem referenceWindow_agrees (scaled reverse : Bool) (n : ℕ) (U tstar r σ t
     constructor <;> nlinarith [hs.1,hs.2]
   rw [referenceWindow_one y hh,one_mul]
 
-def logSource (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) : 𝓢(ℝ,ℂ) :=
+def logSource (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ)  :=
   CubicReflectionKernel.logPullbackCLM (1/4) (9/4)
     (inverseSourceSchwartz scaled reverse n U tstar r σ t)
 
-theorem logSource_apply (scaled reverse : Bool) (n : ℕ) (U tstar r σ t x : ℝ) :
+theorem logSource_apply      U tstar r σ t x  :
     logSource scaled reverse n U tstar r σ t x =
       inverseSourceSchwartz scaled reverse n U tstar r σ t (Real.exp x) :=
   CubicReflectionKernel.logPullbackCLM_eq_actual _ _ (by norm_num) _
     (source_support scaled reverse n U tstar r σ t) x
 
-theorem logSource_eq_logSchwartz (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) :
+theorem logSource_eq_logSchwartz      U tstar r σ t  :
     logSource scaled reverse n U tstar r σ t =
       CubicReflectionKernel.logSchwartz (inverseSourceSchwartz scaled reverse n U tstar r σ t)
         (1/4) (9/4) (by norm_num) (source_support scaled reverse n U tstar r σ t)
@@ -98,14 +100,16 @@ theorem logSource_eq_logSchwartz (scaled reverse : Bool) (n : ℕ) (U tstar r σ
   ext x
   rw [logSource_apply,CubicReflectionKernel.logSchwartz_apply]
 
-def familyDensity (scaled reverse : Bool) (n : ℕ) (U tstar r σ t c v : ℝ) : ℂ :=
+def familyDensity (scaled reverse : Bool) (n : ℕ) (U tstar r σ t c v : ℝ)  :=
   density (logSource scaled reverse n U tstar r σ t) (Real.log c) v
 
-theorem familyDensity_norm (scaled reverse : Bool) (n : ℕ) (U tstar r σ t c v : ℝ) :
+theorem familyDensity_norm      U tstar r σ t c v  :
     ‖familyDensity scaled reverse n U tstar r σ t c v‖ =
       ‖(𝓕 (logSource scaled reverse n U tstar r σ t)) v‖ := density_norm _ _ _
 
-theorem familyDensity_moment (J : ℕ) :
+
+end
+theorem familyDensity_moment  J  :
     ∃K : ℕ, ∃C : ℝ, 0<C ∧ ∀scaled reverse : Bool, ∀n : ℕ, n≤2 →
       ∀U : ℝ, 0<U → ∀tstar r : ℝ, ∀σ∈Set.Icc (0 : ℝ) 1, ∀t c : ℝ,
       (∫v : ℝ, (1+‖v‖)^J * ‖familyDensity scaled reverse n U tstar r σ t c v‖) ≤
@@ -125,8 +129,7 @@ theorem familyDensity_moment (J : ℕ) :
   intro scaled reverse n hn U hU tstar r σ hσ t c
   let W := inverseSourceSchwartz scaled reverse n U tstar r σ t
   let g := logSource scaled reverse n U tstar r σ t
-  have hb : S.sup (schwartzSeminormFamily ℝ ℝ ℂ) g ≤ A*B*(1+‖t‖)^K := by
-    exact (hop W).trans ((mul_le_mul_of_nonneg_left
+  have hb : S.sup (schwartzSeminormFamily ℝ ℝ ℂ) g ≤ A*B*(1+‖t‖)^K := (hop W).trans ((mul_le_mul_of_nonneg_left
       (hsource scaled reverse n hn U hU tstar r σ hσ t) hA.le).trans_eq (by ring))
   have hs (i : ℕ) (hi : i≤J+p) :
       (SchwartzMap.seminorm ℝ 0 i) g + (SchwartzMap.seminorm ℝ p i) g ≤
@@ -155,13 +158,13 @@ theorem familyDensity_moment (J : ℕ) :
   dsimp [C]
   exact mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
-section Rows
+
 variable {ι ρ : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-end Rows
+
 
 end SevenEighths.DetectorDictionaryInverseClippedUniform
 

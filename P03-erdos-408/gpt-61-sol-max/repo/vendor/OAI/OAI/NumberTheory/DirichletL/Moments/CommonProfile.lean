@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.CommonPrimeSlots
 public import OAI.NumberTheory.DirichletL.Moments.SourceProfileMass
@@ -13,22 +14,27 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentCommonProfile
 open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
 open CenteredMomentCommonPrimeSlots CenteredMomentCommonAllocationBox
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [Fintype ι]
 
-def liveIndices (B : Tuple ι) : Finset ι := Finset.univ.filter (fun i => B (Sum.inl i)=1)
+def liveIndices (B : Tuple ι)  := Finset.univ.filter (fun i => B (Sum.inl i)=1)
 
 def remainingTuple (B u : Tuple ι) : Tuple (liveIndices B) :=
   Sum.elim (fun i => u (Sum.inl i.val)) (fun j => u (Sum.inr j))
 
-@[simp] theorem remainingTuple_slot (B u : Tuple ι) (i : liveIndices B) :
+section
+variable (B u : Tuple ι) (C R s : Ideal ActualEisensteinCubic.O) (hB : finiteTupleProduct B=C) (hsC : s∣C) (hf : ∀ i,B (Sum.inl i)≠1 → u (Sum.inl i)=1)
+
+
+@[simp] theorem remainingTuple_slot    i  :
     remainingTuple B u (Sum.inl i)=u (Sum.inl i.val) := rfl
 
-@[simp] theorem remainingTuple_plain (B u : Tuple ι) (j : Fin 2) :
+@[simp] theorem remainingTuple_plain    j  :
     remainingTuple B u (Sum.inr j)=u (Sum.inr j) := rfl
 
-theorem remaining_product (B u : Tuple ι)
-    (hf : ∀ i,B (Sum.inl i)≠1 → u (Sum.inl i)=1) :
+include hf in
+theorem remaining_product  
+      :
     finiteTupleProduct u=finiteTupleProduct (remainingTuple B u) := by
   simp only [finiteTupleProduct,Fintype.prod_sum_type,Fin.prod_univ_two,remainingTuple,
     Sum.elim_inl,Sum.elim_inr]
@@ -36,14 +42,12 @@ theorem remaining_product (B u : Tuple ι)
   congr 1
   symm
   apply Finset.prod_subset (Finset.filter_subset _ _)
-  intro i hi hnot
-  apply hf i
-  intro hBi
-  exact hnot (Finset.mem_filter.mpr ⟨Finset.mem_univ _,hBi⟩)
+  simp_all
 
-theorem slot_profiles_split (B u : Tuple ι)
-    (hf : ∀ i,B (Sum.inl i)≠1 → u (Sum.inl i)=1)
-    (β : ι → Ideal O → ℂ) :
+include hf in
+theorem slot_profiles_split  
+     
+    (β : ι → Ideal ActualEisensteinCubic.O → ℂ) :
     (∏ i,β i (B (Sum.inl i)*u (Sum.inl i)))=
       (∏ i∈Finset.univ.filter (fun i => B (Sum.inl i)≠1),β i (B (Sum.inl i)))*
         ∏ i : liveIndices B,β i.val (u (Sum.inl i.val)) := by
@@ -52,17 +56,16 @@ theorem slot_profiles_split (B u : Tuple ι)
     (fun i => β i (B (Sum.inl i)*u (Sum.inl i))),mul_comm]
   apply congrArg₂ (·*·)
   · apply Finset.prod_congr rfl
-    intro i hi
-    rw [hf i (Finset.mem_filter.mp hi).2,mul_one]
+    simp_all
   · apply Finset.prod_congr rfl
-    intro i hi
-    rw [(Finset.mem_filter.mp hi).2,one_mul]
+    simp_all
 
-theorem profile_common_allocation (B u : Tuple ι) (C R s : Ideal O)
-    (hB : finiteTupleProduct B=C) (hsC : s∣C)
-    (hf : ∀ i,B (Sum.inl i)≠1 → u (Sum.inl i)=1)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) :
+include hB hsC hf in
+theorem profile_common_allocation    
+       
+     
+     ν   Wslot   P 
+     W₁ W₂   X₁ X₂ Y₁ Y₂   B₁ B₂  :
     profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s (fun i => B i*u i)=
       ((∏ i∈Finset.univ.filter (fun i => B (Sum.inl i)≠1),
           ν i (B (Sum.inl i))*Wslot i ((Ideal.absNorm (B (Sum.inl i)):ℝ)/P i))*
@@ -83,6 +86,8 @@ theorem profile_common_allocation (B u : Tuple ι) (C R s : Ideal O)
     by_cases hu : IsCoprime (finiteTupleProduct (remainingTuple B u)) R <;>
     simp_all only [true_and,false_and,ite_true,ite_false,mul_zero,zero_mul,mul_one]
   ring
+
+end
 
 end SevenEighths.CenteredMomentCommonProfile
 

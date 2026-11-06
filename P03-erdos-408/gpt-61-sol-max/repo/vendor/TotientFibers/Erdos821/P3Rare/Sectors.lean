@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P3Restore.Restoration
 
 public import Erdos821.P3Rare.Base
 public import Erdos821.P3Edge.LargeX
@@ -26,19 +29,23 @@ open Erdos821.Blueprint.Graph
 open Erdos821.S2Core
 
 
+section
+variable {α Ω κ : Type*} [Fintype Ω] [Fintype κ] (mass w : α → ℝ) (keep : α → Prop) (K : κ → Ω → α → α → ℝ) (bad : κ → α → Ω → Prop) (R C : κ → ℝ) (B : ℕ) (hm : ∀ a, 0 ≤ mass a) (hw : ∀ a, 0 < w a) (hK : ∀ j ω a b, 0 ≤ K j ω a b) (hR : ∀ j, 0 ≤ R j) (hC : ∀ j, 0 ≤ C j) (hD : 0 < (Fintype.card Ω : ℝ)) (hrow : ∀ j a ω t, ∑ b ∈ t, K j ω a b * w b ≤ R j * w a) (hcol : ∀ j b ω s, ∑ a ∈ s, mass a * K j ω a b * w a ≤ C j * mass b * w b)
+include α Ω κ mass w keep K bad R C B hm hw hK hR hC hD hrow hcol
+
 /-- Projected sparse-row context Schur bound; the zero-support hypothesis is
 only required on retained sources. -/
 theorem normBound_sum_projected_contexts_sparseRows'
-    {α Ω κ : Type*} [Fintype Ω] [Fintype κ]
-    (mass w : α → ℝ) (keep : α → Prop)
-    (K : κ → Ω → α → α → ℝ) (bad : κ → α → Ω → Prop)
-    (R C : κ → ℝ) (B : ℕ)
-    (hm : ∀ a, 0 ≤ mass a) (hw : ∀ a, 0 < w a)
-    (hK : ∀ j ω a b, 0 ≤ K j ω a b)
-    (hR : ∀ j, 0 ≤ R j) (hC : ∀ j, 0 ≤ C j)
-    (hD : 0 < (Fintype.card Ω : ℝ))
-    (hrow : ∀ j a ω t, ∑ b ∈ t, K j ω a b * w b ≤ R j * w a)
-    (hcol : ∀ j b ω s, ∑ a ∈ s, mass a * K j ω a b * w a ≤ C j * mass b * w b)
+         
+       
+       
+       
+       
+     
+       
+     
+     
+     
     (hbad : ∀ j a, (Finset.univ.filter (fun ω => keep a ∧ bad j a ω)).card ≤ B)
     (hzero : ∀ j a ω, keep a → ¬ bad j a ω → ∀ b, K j ω a b = 0) :
     NormBound mass
@@ -51,8 +58,7 @@ theorem normBound_sum_projected_contexts_sparseRows'
     if keep a ∧ keep b then K j ω a b else 0
   let bad' : κ → α → Ω → Prop := fun j a ω => keep a ∧ bad j a ω
   have hK' : ∀ j ω a b, 0 ≤ K' j ω a b := by
-    intro j ω a b
-    by_cases h : keep a ∧ keep b <;> simp [K', h, hK]
+    grind
   have hrow' : ∀ j a ω t, ∑ b ∈ t, K' j ω a b * w b ≤ R j * w a := by
     intro j a ω t
     by_cases ha : keep a
@@ -65,10 +71,10 @@ theorem normBound_sum_projected_contexts_sparseRows'
     · simpa [K', hb, Finset.sum_filter] using hcol j b ω (s.filter keep)
     · simpa [K', hb] using mul_nonneg (mul_nonneg (hC j) (hm b)) (hw b).le
   have hbadConverted : ∀ j a,
-      (@Finset.filter Ω (fun ω => bad' j a ω)
+      (@Finset.filter Ω (bad' j a)
         (fun ω => Classical.propDecidable (bad' j a ω)) Finset.univ).card ≤ B := by
     intro j a
-    have hf : (@Finset.filter Ω (fun ω => bad' j a ω)
+    have hf : (@Finset.filter Ω (bad' j a)
         (fun ω => Classical.propDecidable (bad' j a ω)) Finset.univ) =
         Finset.univ.filter (fun ω => keep a ∧ bad j a ω) := by
       ext ω
@@ -76,29 +82,23 @@ theorem normBound_sum_projected_contexts_sparseRows'
     rw [hf]
     exact hbad j a
   have hzero' : ∀ j a ω, ¬ bad' j a ω → ∀ b, K' j ω a b = 0 := by
-    intro j a ω hnot b
-    by_cases ha : keep a
-    · have hnb : ¬ bad j a ω := fun h => hnot (show keep a ∧ bad j a ω from ⟨ha, h⟩)
-      by_cases hb : keep b
-      · simp [K', ha, hb, hzero j a ω ha hnb b]
-      · simp [K', ha, hb]
-    · simp [K', ha]
+    grind
   simpa [K'] using normBound_sum_contexts_sparseRows mass w K' bad' R C B
     hm hw hK' hR hC hD hrow' hcol' hbadConverted hzero'
 
 /-- Projected sparse-column context Schur bound; the zero-support hypothesis
 is only required on retained targets. -/
 theorem normBound_sum_projected_contexts_sparseCols'
-    {α Ω κ : Type*} [Fintype Ω] [Fintype κ]
-    (mass w : α → ℝ) (keep : α → Prop)
-    (K : κ → Ω → α → α → ℝ) (bad : κ → α → Ω → Prop)
-    (R C : κ → ℝ) (B : ℕ)
-    (hm : ∀ a, 0 ≤ mass a) (hw : ∀ a, 0 < w a)
-    (hK : ∀ j ω a b, 0 ≤ K j ω a b)
-    (hR : ∀ j, 0 ≤ R j) (hC : ∀ j, 0 ≤ C j)
-    (hD : 0 < (Fintype.card Ω : ℝ))
-    (hrow : ∀ j a ω t, ∑ b ∈ t, K j ω a b * w b ≤ R j * w a)
-    (hcol : ∀ j b ω s, ∑ a ∈ s, mass a * K j ω a b * w a ≤ C j * mass b * w b)
+         
+       
+       
+       
+       
+     
+       
+     
+     
+     
     (hbad : ∀ j b, (Finset.univ.filter (fun ω => keep b ∧ bad j b ω)).card ≤ B)
     (hzero : ∀ j b ω, keep b → ¬ bad j b ω → ∀ a, K j ω a b = 0) :
     NormBound mass
@@ -111,8 +111,7 @@ theorem normBound_sum_projected_contexts_sparseCols'
     if keep a ∧ keep b then K j ω a b else 0
   let bad' : κ → α → Ω → Prop := fun j b ω => keep b ∧ bad j b ω
   have hK' : ∀ j ω a b, 0 ≤ K' j ω a b := by
-    intro j ω a b
-    by_cases h : keep a ∧ keep b <;> simp [K', h, hK]
+    grind
   have hrow' : ∀ j a ω t, ∑ b ∈ t, K' j ω a b * w b ≤ R j * w a := by
     intro j a ω t
     by_cases ha : keep a
@@ -125,10 +124,10 @@ theorem normBound_sum_projected_contexts_sparseCols'
     · simpa [K', hb, Finset.sum_filter] using hcol j b ω (s.filter keep)
     · simpa [K', hb] using mul_nonneg (mul_nonneg (hC j) (hm b)) (hw b).le
   have hbadConverted : ∀ j b,
-      (@Finset.filter Ω (fun ω => bad' j b ω)
+      (@Finset.filter Ω (bad' j b)
         (fun ω => Classical.propDecidable (bad' j b ω)) Finset.univ).card ≤ B := by
     intro j b
-    have hf : (@Finset.filter Ω (fun ω => bad' j b ω)
+    have hf : (@Finset.filter Ω (bad' j b)
         (fun ω => Classical.propDecidable (bad' j b ω)) Finset.univ) =
         Finset.univ.filter (fun ω => keep b ∧ bad j b ω) := by
       ext ω
@@ -136,63 +135,59 @@ theorem normBound_sum_projected_contexts_sparseCols'
     rw [hf]
     exact hbad j b
   have hzero' : ∀ j b ω, ¬ bad' j b ω → ∀ a, K' j ω a b = 0 := by
-    intro j b ω hnot a
-    by_cases hb : keep b
-    · have hnb : ¬ bad j b ω := fun h => hnot (show keep b ∧ bad j b ω from ⟨hb, h⟩)
-      by_cases ha : keep a
-      · simp [K', ha, hb, hzero j b ω hb hnb a]
-      · simp [K', ha, hb]
-    · simp [K', hb]
+    grind
   simpa [K'] using normBound_sum_contexts_sparseCols mass w K' bad' R C B
     hm hw hK' hR hC hD hrow' hcol' hbadConverted hzero'
 
-theorem promotionContextKernel_nonneg {F : FixedData} {P : PrimeGroups}
-    {J m n : ℕ} (A : Model F P J m) (r : MemoryParameters F) (theta : ℝ) (i : Fin n)
-    (ctx : EdgeTransferContext A) (O : OmissionChoices P (J + F.ell) F.ell)
-    (s t : P.MemoryState (J + F.ell)) :
+end
+
+section
+variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} (A : Model F P J m)
+include F P J m n A
+
+section
+variable (r : MemoryParameters F) (theta : ℝ) (i : Fin n)
+include r theta i
+
+section
+variable (ctx : EdgeTransferContext A) (O : OmissionChoices P (J + F.ell) F.ell) (s t : P.MemoryState (J + F.ell))
+include ctx O s t
+
+theorem promotionContextKernel_nonneg    
+             
+       
+      :
     0 ≤ promotionContextKernel A r theta i ctx O s t := by
   unfold promotionContextKernel
   apply mul_nonneg
   · exact mul_nonneg (Nat.cast_nonneg _) (edgeSymmetryFactor_nonneg P _)
-  · apply Finset.sum_nonneg
-    intro a _
-    apply Finset.sum_nonneg
-    intro b _
-    apply Finset.sum_nonneg
-    intro c _
-    dsimp only
-    split_ifs
-    · exact norm_nonneg _
-    · exact le_rfl
+  positivity
 
-theorem storeOnlyContextKernel_nonneg {F : FixedData} {P : PrimeGroups}
-    {J m n : ℕ} (A : Model F P J m) (r : MemoryParameters F) (theta : ℝ) (i : Fin n)
-    (ctx : EdgeTransferContext A) (O : OmissionChoices P (J + F.ell) F.ell)
-    (s t : P.MemoryState (J + F.ell)) :
+theorem storeOnlyContextKernel_nonneg    
+             
+       
+      :
     0 ≤ storeOnlyContextKernel A r theta i ctx O s t := by
   unfold storeOnlyContextKernel
   apply mul_nonneg
   · exact mul_nonneg (Nat.cast_nonneg _) (edgeSymmetryFactor_nonneg P _)
-  · apply Finset.sum_nonneg
-    intro a _
-    apply Finset.sum_nonneg
-    intro b _
-    apply Finset.sum_nonneg
-    intro c _
-    dsimp only
-    split_ifs
-    · exact norm_nonneg _
-    · exact le_rfl
+  positivity
+
+end
+
+section
+variable (keep : P.MemoryState (J + F.ell) → Prop) (mass w : P.MemoryState (J + F.ell) → ℝ) (R C : EdgeTransferContext A → ℝ) (B : ℕ) (hm : ∀ s, 0 ≤ mass s) (hw : ∀ s, 0 < w s) (hD : 0 < (Fintype.card (OmissionChoices P (J + F.ell) F.ell) : ℝ)) (hR : ∀ ctx, 0 ≤ R ctx) (hC : ∀ ctx, 0 ≤ C ctx)
+include keep mass w R C B hm hw hD hR hC
 
 theorem promotionOmissionAverage_projectedNormBound'
-    {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    (A : Model F P J m) (r : MemoryParameters F) (theta : ℝ) (i : Fin n)
-    (keep : P.MemoryState (J + F.ell) → Prop)
-    (mass w : P.MemoryState (J + F.ell) → ℝ)
-    (R C : EdgeTransferContext A → ℝ) (B : ℕ)
-    (hm : ∀ s, 0 ≤ mass s) (hw : ∀ s, 0 < w s)
-    (hD : 0 < (Fintype.card (OmissionChoices P (J + F.ell) F.ell) : ℝ))
-    (hR : ∀ ctx, 0 ≤ R ctx) (hC : ∀ ctx, 0 ≤ C ctx)
+         
+           
+     
+     
+       
+       
+     
+       
     (hrow : ∀ ctx O s T,
       ∑ t ∈ T, promotionContextKernel A r theta i ctx O s t * w t ≤ R ctx * w s)
     (hcol : ∀ ctx O t S,
@@ -212,10 +207,9 @@ theorem promotionOmissionAverage_projectedNormBound'
       P.MemoryState (J + F.ell) → ℝ := fun ctx O s t =>
     promotionContextKernel A r theta i ctx O s t
   let bad : EdgeTransferContext A → P.MemoryState (J + F.ell) → Ω → Prop :=
-    fun ctx s O => promotionContextBadOmission A i ctx s O
+    promotionContextBadOmission A i
   have hK' : ∀ ctx O s t, 0 ≤ K ctx O s t := by
-    intro ctx O s t
-    exact promotionContextKernel_nonneg A r theta i ctx O s t
+    solve_by_elim [promotionContextKernel_nonneg]
   have hrow' : ∀ ctx s O T, ∑ t ∈ T, K ctx O s t * w t ≤ R ctx * w s := by
     intro ctx s O T
     simpa [K] using hrow ctx O s T
@@ -249,14 +243,14 @@ theorem promotionOmissionAverage_projectedNormBound'
   simpa only [hEq] using hbase S T f g
 
 theorem storeOnlyOmissionAverage_projectedNormBound'
-    {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    (A : Model F P J m) (r : MemoryParameters F) (theta : ℝ) (i : Fin n)
-    (keep : P.MemoryState (J + F.ell) → Prop)
-    (mass w : P.MemoryState (J + F.ell) → ℝ)
-    (R C : EdgeTransferContext A → ℝ) (B : ℕ)
-    (hm : ∀ s, 0 ≤ mass s) (hw : ∀ s, 0 < w s)
-    (hD : 0 < (Fintype.card (OmissionChoices P (J + F.ell) F.ell) : ℝ))
-    (hR : ∀ ctx, 0 ≤ R ctx) (hC : ∀ ctx, 0 ≤ C ctx)
+         
+           
+     
+     
+       
+       
+     
+       
     (hrow : ∀ ctx O s T,
       ∑ t ∈ T, storeOnlyContextKernel A r theta i ctx O s t * w t ≤ R ctx * w s)
     (hcol : ∀ ctx O t S,
@@ -276,10 +270,9 @@ theorem storeOnlyOmissionAverage_projectedNormBound'
       P.MemoryState (J + F.ell) → ℝ := fun ctx O s t =>
     storeOnlyContextKernel A r theta i ctx O s t
   let bad : EdgeTransferContext A → P.MemoryState (J + F.ell) → Ω → Prop :=
-    fun ctx t O => storeOnlyContextBadOmission A i ctx t O
+    storeOnlyContextBadOmission A i
   have hK' : ∀ ctx O s t, 0 ≤ K ctx O s t := by
-    intro ctx O s t
-    exact storeOnlyContextKernel_nonneg A r theta i ctx O s t
+    solve_by_elim [storeOnlyContextKernel_nonneg]
   have hrow' : ∀ ctx s O T, ∑ t ∈ T, K ctx O s t * w t ≤ R ctx * w s := by
     intro ctx s O T
     simpa [K] using hrow ctx O s T
@@ -312,13 +305,17 @@ theorem storeOnlyOmissionAverage_projectedNormBound'
   intro S T f g
   simpa only [hEq] using hbase S T f g
 
+end
+
+end
+
 /-- Projected dirty edge kernel from projected sector bounds. -/
-theorem normBound_projected_dirty_of_sectorBounds {F : FixedData}
-    {P : PrimeGroups} {J m n : ℕ} (A : Model F P J m) (rho theta : ℝ)
-    (i : Fin n) (phi : (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℂ)
+theorem normBound_projected_dirty_of_sectorBounds  
+           rho theta 
+     i  (phi : (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℂ)
     (hphi : ∀ s t c, ‖phi s t c‖ ≤ 1)
     (mass : P.MemoryState (J + F.ell) → ℝ) (keep : P.MemoryState (J + F.ell) → Prop)
-    (c₁ c₂ : ℝ) (hmass : ∀ s, 0 ≤ mass s)
+     c₁ c₂  (hmass : ∀ s, 0 ≤ mass s)
     (hprom : NormBound mass
       (projectKernel keep (fun s t => (promotionOmissionAverageKernel A rho theta i s t : ℂ))) c₁)
     (hstore : NormBound mass
@@ -362,11 +359,9 @@ theorem normBound_projected_dirty_of_sectorBounds {F : FixedData}
   · rw [e₂]
     exact hstore
 
+end
+
 theorem normBound_mono' {α : Type*} {mass : α → ℝ} {K : α → α → ℂ} {c c' : ℝ}
-    (h : NormBound mass K c) (hc : c ≤ c') : NormBound mass K c' := by
-  intro S T f g
-  refine le_trans (h S T f g) ?_
-  exact mul_le_mul_of_nonneg_right
-    (mul_le_mul_of_nonneg_right hc (Real.sqrt_nonneg _)) (Real.sqrt_nonneg _)
+    (h : NormBound mass K c) (hc : c ≤ c') : NormBound mass K c' := by solve_by_elim [_root_.Erdos821.P3Restore.normBound_mono]
 
 end Erdos821.P3Rare

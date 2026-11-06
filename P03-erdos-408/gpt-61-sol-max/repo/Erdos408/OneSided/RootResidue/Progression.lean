@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Analysis.Divisor
 public import Mathlib.Analysis.PSeries
@@ -27,23 +28,26 @@ open Finset
 
 /-! ### Progressions -/
 
+section
+variable {α β : ℝ}
+
 /-- `n ∈ [⌈α⌉, ⌈β⌉)` exactly when `α ≤ n < β`. -/
-theorem mem_Ico_ceil {α β : ℝ} {n : ℕ} : n ∈ Ico ⌈α⌉₊ ⌈β⌉₊ ↔ α ≤ n ∧ (n : ℝ) < β := by
+theorem mem_Ico_ceil    {n}  : n ∈ Ico ⌈α⌉₊ ⌈β⌉₊ ↔ α ≤ n ∧ (n : ℝ) < β := by
   rw [mem_Ico, Nat.ceil_le, Nat.lt_ceil]
 
 /-- `⌈z⌉₊ < z + 1` for `z > -1`. -/
-theorem natCeil_lt_add_one {z : ℝ} (hz : -1 < z) : (⌈z⌉₊ : ℝ) < z + 1 := by
+theorem natCeil_lt_add_one  {z}  (hz : -1 < z) : (⌈z⌉₊ : ℝ) < z + 1 := by
   rcases le_total 0 z with h | h
   · exact Nat.ceil_lt_add_one h
   · rw [Nat.ceil_eq_zero.2 h, Nat.cast_zero]
     linarith
 
 /-- The progression `{c ∈ [α, β) : c ≡ r (mod q)}`, as the image of `j ↦ r + q j`. -/
-noncomputable def prog (α β : ℝ) (q r : ℕ) : Finset ℕ :=
+noncomputable def prog (α β : ℝ) (q r : ℕ)  :=
   (Ico ⌈(α - r) / q⌉₊ ⌈(β - r) / q⌉₊).image fun j => r + q * j
 
 /-- `c ∈ prog α β q r` exactly when `c ≡ r (mod q)` and `α ≤ c < β`. -/
-theorem mem_prog {α β : ℝ} {q r c : ℕ} (hq : 0 < q) (hr : r < q) :
+theorem mem_prog    {q r c}  (hq : 0 < q) (hr : r < q) :
     c ∈ prog α β q r ↔ c % q = r ∧ α ≤ c ∧ (c : ℝ) < β := by
   have hq' : (0 : ℝ) < q := Nat.cast_pos.2 hq
   rw [prog, mem_image]
@@ -67,7 +71,7 @@ theorem mem_prog {α β : ℝ} {q r c : ℕ} (hq : 0 < q) (hr : r < q) :
     · rw [← h₁, Nat.mod_add_div]
 
 /-- `|#prog α β q r - (β - α)/q| ≤ 1` for `0 ≤ α ≤ β` and `r < q`. -/
-theorem abs_card_prog_sub_le {α β : ℝ} {q r : ℕ} (hq : 0 < q) (hr : r < q) (hα : 0 ≤ α)
+theorem abs_card_prog_sub_le    {q r}  (hq : 0 < q) (hr : r < q) (hα : 0 ≤ α)
     (hαβ : α ≤ β) : |(#(prog α β q r) : ℝ) - (β - α) / q| ≤ 1 := by
   have hq' : (0 : ℝ) < q := Nat.cast_pos.2 hq
   set x := (α - r) / q
@@ -83,14 +87,12 @@ theorem abs_card_prog_sub_le {α β : ℝ} {q r : ℕ} (hq : 0 < q) (hr : r < q)
   rw [hcard, Nat.cast_sub (Nat.ceil_mono hxy), hyx, abs_le]
   have h₁ := Nat.le_ceil x
   have h₂ := Nat.le_ceil y
-  have h₃ := natCeil_lt_add_one hx
-  have h₄ := natCeil_lt_add_one (hx.trans_le hxy)
-  constructor <;> linarith
+  grind [natCeil_lt_add_one]
 
 /-- The `x ∈ [α, β)` with `x ≡ w (mod S)` and `l ∣ x`, for `(l, S) = 1`, form one progression
 mod `S l` (CRT), so there are `(β - α)/(S l) + O(1)` of them. -/
-theorem abs_card_modEq_dvd_sub_le {α β : ℝ} (hα : 0 ≤ α) (hαβ : α ≤ β) {S l : ℕ} (hS : 0 < S)
-    (hl : 0 < l) (hlS : l.Coprime S) (w : ℕ) :
+theorem abs_card_modEq_dvd_sub_le   (hα : 0 ≤ α) (hαβ : α ≤ β)  {S l}  (hS : 0 < S)
+    (hl : 0 < l) (hlS : l.Coprime S)  w  :
     |(#{x ∈ Ico ⌈α⌉₊ ⌈β⌉₊ | x ≡ w [MOD S] ∧ l ∣ x} : ℝ) - (β - α) / (S * l : ℕ)| ≤ 1 := by
   have hq : 0 < S * l := Nat.mul_pos hS hl
   set z := (Nat.chineseRemainder hlS.symm w 0 : ℕ)
@@ -108,14 +110,14 @@ theorem abs_card_modEq_dvd_sub_le {α β : ℝ} (hα : 0 ≤ α) (hαβ : α ≤
       · rintro ⟨h₁, h₂⟩
         exact ⟨h₁.trans hz.1, h₂.trans hz.2⟩
     rw [hiff]
-    exact ⟨fun ⟨h₁, h₂⟩ => ⟨h₂, h₁⟩, fun ⟨h₁, h₂⟩ => ⟨h₂, h₁⟩⟩
+    solve_by_elim
   rw [hset]
   exact abs_card_prog_sub_le hq (Nat.mod_lt _ hq) hα hαβ
 
 /-! ### Coprime counts -/
 
 /-- `∑_{d ∣ n} μ(d) = [n = 1]`. -/
-theorem sum_divisors_moebius (n : ℕ) :
+theorem sum_divisors_moebius  n  :
     ∑ d ∈ n.divisors, (ArithmeticFunction.moebius d : ℝ) = if n = 1 then 1 else 0 := by
   have h := congrArg (fun f : ArithmeticFunction ℤ => (f n : ℝ))
     ArithmeticFunction.moebius_mul_coe_zeta
@@ -124,7 +126,7 @@ theorem sum_divisors_moebius (n : ℕ) :
   exact h
 
 /-- Möbius inversion of coprimality: `[(c, u) = 1] = ∑_{l ∣ u, l ∣ c} μ(l)` for `u ≠ 0`. -/
-theorem coprime_indicator_eq {u : ℕ} (hu : u ≠ 0) (c : ℕ) :
+theorem coprime_indicator_eq  {u}  (hu : u ≠ 0)  c  :
     (if c.Coprime u then (1 : ℝ) else 0) =
       ∑ l ∈ u.divisors with l ∣ c, (ArithmeticFunction.moebius l : ℝ) := by
   have hdiv : (Nat.gcd c u).divisors = {l ∈ u.divisors | l ∣ c} := by
@@ -135,11 +137,11 @@ theorem coprime_indicator_eq {u : ℕ} (hu : u ≠ 0) (c : ℕ) :
   rw [← hdiv, sum_divisors_moebius]
 
 /-- The Euler factor `∑_{l ∣ u, (l, S) = 1} μ(l)/l = ∏_{p ∣ u, p ∤ S}(1 - 1/p)`. -/
-noncomputable def eulerFactor (S u : ℕ) : ℝ :=
+noncomputable def eulerFactor (S u : ℕ)  :=
   ∑ l ∈ u.divisors with l.Coprime S, (ArithmeticFunction.moebius l : ℝ) / l
 
 /-- `|∑_{l ∣ u, (l, S) = 1} μ(l)/l| ≤ τ(u)`. -/
-theorem abs_eulerFactor_le (S u : ℕ) : |eulerFactor S u| ≤ u.divisors.card := by
+theorem abs_eulerFactor_le  S u  : |eulerFactor S u| ≤ u.divisors.card := by
   calc |eulerFactor S u| ≤ ∑ l ∈ u.divisors with l.Coprime S,
         |(ArithmeticFunction.moebius l : ℝ) / l| := abs_sum_le_sum_abs _ _
     _ ≤ ∑ l ∈ u.divisors with l.Coprime S, (1 : ℝ) := sum_le_sum fun l hl => ?_
@@ -149,15 +151,14 @@ theorem abs_eulerFactor_le (S u : ℕ) : |eulerFactor S u| ≤ u.divisors.card :
     rw [abs_div, Nat.abs_cast]
     have : |(ArithmeticFunction.moebius l : ℝ)| ≤ 1 := by
       exact_mod_cast ArithmeticFunction.abs_moebius_le_one
-    exact (div_le_div_of_nonneg_right this (by linarith)).trans
-      ((div_le_one (by linarith)).2 hl1)
+    exact (by bound)
   · rw [sum_const, nsmul_eq_mul, mul_one]
     exact_mod_cast card_filter_le _ _
 
 /-- **The coprime count.** If `w` is a unit mod `(u, S)`, the `c ∈ [α, β)` with
 `c ≡ w (mod S)` and `(c, u) = 1` number `(β - α)/S · eulerFactor S u + O(τ(u))`. -/
-theorem abs_card_coprime_sub_le {α β : ℝ} (hα : 0 ≤ α) (hαβ : α ≤ β) {S u : ℕ} (hS : 0 < S)
-    (hu : 0 < u) {w : ℕ} (hw : w.Coprime (Nat.gcd u S)) :
+theorem abs_card_coprime_sub_le   (hα : 0 ≤ α) (hαβ : α ≤ β)  {S u}  (hS : 0 < S)
+    (hu : 0 < u)  {w}  (hw : w.Coprime (Nat.gcd u S)) :
     |(#{c ∈ Ico ⌈α⌉₊ ⌈β⌉₊ | c ≡ w [MOD S] ∧ c.Coprime u} : ℝ) -
         (β - α) / S * eulerFactor S u| ≤ u.divisors.card := by
   set I := Ico ⌈α⌉₊ ⌈β⌉₊
@@ -192,15 +193,11 @@ theorem abs_card_coprime_sub_le {α β : ℝ} (hα : 0 ≤ α) (hαβ : α ≤ �
       ∑ l ∈ u.divisors with l.Coprime S, (ArithmeticFunction.moebius l : ℝ) * N l := by
     rw [sum_filter]
     refine sum_congr rfl fun l hl => ?_
-    by_cases hlS : l.Coprime S
-    · rw [ite_eq_left_iff.2 fun h => absurd hlS h]
-    · rw [ite_eq_right_iff.2 fun h => absurd h hlS, hzero l hl hlS, mul_zero]
+    simp_all
   have hmain : (β - α) / S * eulerFactor S u = ∑ l ∈ u.divisors with l.Coprime S,
       (ArithmeticFunction.moebius l : ℝ) * ((β - α) / (S * l : ℕ)) := by
     rw [eulerFactor, mul_sum]
-    refine sum_congr rfl fun l _ => ?_
-    push_cast
-    ring
+    grind
   rw [hinv, hrestrict, hmain, ← sum_sub_distrib]
   calc |∑ l ∈ u.divisors with l.Coprime S, ((ArithmeticFunction.moebius l : ℝ) * N l -
         (ArithmeticFunction.moebius l : ℝ) * ((β - α) / (S * l : ℕ)))|
@@ -221,14 +218,14 @@ theorem abs_card_coprime_sub_le {α β : ℝ} (hα : 0 ≤ α) (hαβ : α ≤ �
 /-! ### The average of the Euler factor -/
 
 /-- The terms `[(l, S) = 1] μ(l)/l²` of the coprime density. -/
-noncomputable def densityTerm (S l : ℕ) : ℝ :=
+noncomputable def densityTerm (S l : ℕ)  :=
   if l.Coprime S then (ArithmeticFunction.moebius l : ℝ) / l ^ 2 else 0
 
 /-- The coprime density `∑_{(l, S) = 1} μ(l)/l² = c₂ ∏_{p ∣ S}(1 - p^{-2})⁻¹`. -/
-noncomputable def coprimeDensity (S : ℕ) : ℝ := ∑' l : ℕ, densityTerm S l
+noncomputable def coprimeDensity (S : ℕ)  := ∑' l : ℕ, densityTerm S l
 
 /-- `|[(l, S) = 1] μ(l)/l²| ≤ 1/l²`. -/
-theorem abs_densityTerm_le (S l : ℕ) : |densityTerm S l| ≤ ((l : ℝ) ^ 2)⁻¹ := by
+theorem abs_densityTerm_le  S l  : |densityTerm S l| ≤ ((l : ℝ) ^ 2)⁻¹ := by
   unfold densityTerm
   split_ifs
   · rw [abs_div, abs_of_nonneg (by positivity : (0 : ℝ) ≤ (l : ℝ) ^ 2), div_eq_mul_inv]
@@ -239,12 +236,12 @@ theorem abs_densityTerm_le (S l : ℕ) : |densityTerm S l| ≤ ((l : ℝ) ^ 2)�
     positivity
 
 /-- The terms of the coprime density are summable. -/
-theorem summable_densityTerm (S : ℕ) : Summable (densityTerm S) :=
+theorem summable_densityTerm  S  : Summable (densityTerm S) :=
   Summable.of_norm_bounded (Real.summable_nat_pow_inv.2 one_lt_two) fun l => by
     rw [Real.norm_eq_abs]; exact abs_densityTerm_le S l
 
 /-- The tail bound `|∑_{l ≥ K} [(l, S) = 1] μ(l)/l²| ≤ 2/K`. -/
-theorem abs_coprimeDensity_sub_le (S : ℕ) {K : ℕ} (hK : 0 < K) :
+theorem abs_coprimeDensity_sub_le  S   {K}  (hK : 0 < K) :
     |coprimeDensity S - ∑ l ∈ range K, densityTerm S l| ≤ 2 / K := by
   set g : ℕ → ℝ := fun i => (((i + K : ℕ) : ℝ) ^ 2)⁻¹
   have hg0 : ∀ i, 0 ≤ g i := fun i => by positivity
@@ -256,7 +253,7 @@ theorem abs_coprimeDensity_sub_le (S : ℕ) {K : ℕ} (hK : 0 < K) :
     refine le_trans (le_of_eq ?_) h
     have hI : Ioo (K - 1) (K + n) = Ico K (K + n) := by ext; simp only [mem_Ioo, mem_Ico]; omega
     rw [hI, sum_Ico_eq_sum_range, Nat.add_sub_cancel_left]
-    exact sum_congr rfl fun i _ => by simp only [g]; push_cast; ring
+    grind
   have hgs : Summable g := summable_of_sum_range_le hg0 hpart
   have htail : Summable fun i => densityTerm S (i + K) :=
     (summable_nat_add_iff K).2 (summable_densityTerm S)
@@ -265,15 +262,14 @@ theorem abs_coprimeDensity_sub_le (S : ℕ) {K : ℕ} (hK : 0 < K) :
         simpa only [Real.norm_eq_abs] using norm_tsum_le_tsum_norm htail.norm
     _ ≤ ∑' i, g i := by
         refine htail.abs.tsum_le_tsum (fun i => ?_) hgs
-        have := abs_densityTerm_le S (i + K)
-        simpa only [g] using this
+        solve_by_elim [abs_densityTerm_le]
     _ ≤ 2 / K := Real.tsum_le_of_sum_range_le hg0 hpart
 
 /-- **The Euler average.** For `1 ≤ α ≤ β`,
 `∑_{u ∈ [α, β), u ≡ w (S)} eulerFactor S u = (β - α)/S · coprimeDensity S + O(log β)`:
 expand the factor and count the `u` in each progression `u ≡ w (S)`, `l ∣ u`. -/
-theorem abs_sum_eulerFactor_sub_le {α β : ℝ} (hα : 1 ≤ α) (hαβ : α ≤ β) {S : ℕ} (hS : 0 < S)
-    (w : ℕ) :
+theorem abs_sum_eulerFactor_sub_le   (hα : 1 ≤ α) (hαβ : α ≤ β)  {S}  (hS : 0 < S)
+     w  :
     |∑ u ∈ Ico ⌈α⌉₊ ⌈β⌉₊ with u ≡ w [MOD S], eulerFactor S u -
         (β - α) / S * coprimeDensity S| ≤ 3 + Real.log (β + 1) := by
   set I := Ico ⌈α⌉₊ ⌈β⌉₊
@@ -302,8 +298,7 @@ theorem abs_sum_eulerFactor_sub_le {α β : ℝ} (hα : 1 ≤ α) (hαβ : α �
       constructor
       · rintro ⟨⟨hlu, -⟩, hlS⟩
         exact ⟨⟨⟨Nat.pos_of_dvd_of_pos hlu hu1, (Nat.le_of_dvd hu1 hlu).trans huN.le⟩, hlS⟩, hlu⟩
-      · rintro ⟨⟨-, hlS⟩, hlu⟩
-        exact ⟨⟨hlu, by omega⟩, hlS⟩
+      grind
     rw [sum_congr rfl hu, sum_comm]
     refine sum_congr rfl fun l _ => ?_
     rw [← sum_filter, sum_const, nsmul_eq_mul, mul_comm, filter_filter]
@@ -312,21 +307,16 @@ theorem abs_sum_eulerFactor_sub_le {α β : ℝ} (hα : 1 ≤ α) (hαβ : α �
       (β - α) / S * ∑ l ∈ range (N + 1), densityTerm S l := by
     have hL : ∑ l ∈ range (N + 1), densityTerm S l = ∑ l ∈ L, densityTerm S l := by
       refine (sum_subset (fun l hl => ?_) fun l _ hl => ?_).symm
-      · have := mem_Icc.1 (mem_filter.1 hl).1
-        exact mem_range.2 (by omega)
+      · grind
       · unfold densityTerm
         split_ifs with hlS
         · have hl0 : l = 0 := by
-            by_contra h0
-            exact hl (mem_filter.2 ⟨mem_Icc.2 ⟨Nat.pos_of_ne_zero h0,
-              by have := mem_range.1 ‹l ∈ range (N + 1)›; omega⟩, hlS⟩)
+            grind
           simp [hl0]
         · rfl
     rw [hL, mul_sum]
     refine sum_congr rfl fun l hl => ?_
-    rw [densityTerm, ite_eq_left_iff.2 fun h => absurd (mem_filter.1 hl).2 h]
-    push_cast
-    ring
+    grind [densityTerm, absurd]
   -- step 3: the progression counts, and the tail of the density
   have hcount : |∑ l ∈ L, (ArithmeticFunction.moebius l : ℝ) / l *
       (C l - (β - α) / (S * l : ℕ))| ≤ 1 + Real.log (β + 1) := by
@@ -346,8 +336,7 @@ theorem abs_sum_eulerFactor_sub_le {α β : ℝ} (hα : 1 ≤ α) (hαβ : α �
           sum_le_sum_of_subset_of_nonneg (filter_subset _ _) fun _ _ _ => by positivity
       _ ≤ 1 + Real.log N := sum_Icc_inv_le N
       _ ≤ 1 + Real.log (β + 1) := by
-          have : (0 : ℝ) < N := by exact_mod_cast hN1
-          gcongr
+          bound
   have htail : |(β - α) / S * (∑ l ∈ range (N + 1), densityTerm S l - coprimeDensity S)| ≤ 2 := by
     have h := abs_coprimeDensity_sub_le S (Nat.succ_pos N)
     rw [abs_sub_comm] at h
@@ -371,5 +360,7 @@ theorem abs_sum_eulerFactor_sub_le {α β : ℝ} (hα : 1 ≤ α) (hαβ : α �
   rw [hsplit]
   refine (abs_add_le _ _).trans ?_
   linarith
+
+end
 
 end Erdos408.OneSided.RootResidue

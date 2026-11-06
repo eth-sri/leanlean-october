@@ -7,18 +7,21 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
-lemma continuedPhysicalRowKernel_eq_calibratedTuple {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (hW : ∀i,W i (((P i).val.absNorm:ℝ)/Yp i)=1) (x w z : ℂ) :
+
+section
+variable {K : ℕ} (e σ υ r : ℝ) (he : 0<e) (he' : e<1/1000) (hσ : (7/8:ℝ)≤σ) (hσβ : HeckeZeroSupremum.beta+8*e≤σ) (hυ : (1/2:ℝ)≤υ) (hr : (17/50:ℝ)≤r) (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) (hfirst : FirstTail (1/4) S) (P : Fin K→PrimeIdeal) (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S) (η : Character)
+
+lemma continuedPhysicalRowKernel_eq_calibratedTuple  
+         
+           u 
+     W0 W1   X Y Z  (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
+    (hW : ∀i,W i (((P i).val.absNorm:ℝ)/Yp i)=1)  x w z  :
     continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z x w z=
       sourceMellinWeight W0 W1 X Y Z x w z*frequencyWeight z ⟨u.val,u.property.1⟩*
         calibratedTupleValue S hS hmax η u P hPS W Yp x w z := by
@@ -30,16 +33,17 @@ lemma continuedPhysicalRowKernel_eq_calibratedTuple {K : ℕ}
   simp only [hW,one_mul,hnorm]
   ring
 
-theorem continuedPhysicalRowKernel_integrable {K : ℕ}
-    (e σ υ r : ℝ) (he : 0<e) (he' : e<1/1000)
-    (hσ : (7/8:ℝ)≤σ) (hσβ : HeckeZeroSupremum.beta+8*e≤σ)
-    (hυ : (1/2:ℝ)≤υ) (hr : (17/50:ℝ)≤r)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (hfirst : FirstTail (1/4) S) (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
-    (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
+include he he' hσ hσβ hυ hr hfirst hP in
+theorem continuedPhysicalRowKernel_integrable  
+         
+       
+       
+         
+         
+        (u : FreeRow) (hu : u.val≠1)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+     X Y Z  (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     Integrable (fun p : HeightSpace=>continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z
       ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)) heightMeasure := by
   let W : Fin K→ℝ→ℂ := fun _ y=>if y=1 then 1 else 0
@@ -65,7 +69,7 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
   have hWeq (i : Fin K) : W i (((P i).val.absNorm:ℝ)/Yp i)=1 := by
     have hn : Yp i≠0 := by linarith [hYp i]
     simp [W,Yp,div_self hn]
-  let U : ℝ := (Ideal.span {u.val}:Ideal O).absNorm
+  let U : ℝ := (Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm
   have hU : 1≤U := by
     dsimp [U]
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
@@ -74,8 +78,8 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) hr (by norm_num) hσ hσβ hυ
     S hS hmax hfirst W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
   have hR (v : FreeRow) (hv : v∈({u}:Finset FreeRow)) :
-      v.val≠1 ∧ U≤((Ideal.span {v.val}:Ideal O).absNorm:ℝ) ∧
-      ((Ideal.span {v.val}:Ideal O).absNorm:ℝ)≤2*U := by
+      v.val≠1 ∧ U≤((Ideal.span {v.val}:Ideal HeckeFamily.O).absNorm:ℝ) ∧
+      ((Ideal.span {v.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤2*U := by
     have hvu := Finset.mem_singleton.mp hv
     subst v
     exact ⟨hu,le_rfl,by change U≤2*U;linarith⟩
@@ -106,7 +110,9 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
           ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I))) (Finset.mem_univ P0)
   exact hh
 
-end SevenEighths.ProbeHighRowFamily
 end
+
+end SevenEighths.ProbeHighRowFamily
+
 
 end OAI

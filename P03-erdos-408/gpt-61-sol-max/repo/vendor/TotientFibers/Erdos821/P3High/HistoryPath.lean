@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.HighRankTask
 public import Erdos821.P3LowRank.LowRank
@@ -31,31 +32,31 @@ attribute [local instance] bmsFintype ghostChoiceFintype edgeChoiceFintype
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
 /-- Absolute ghost kernel with a real multiplier on each local choice. -/
-def ghostK (F : FixedData) (J n : ℕ) (rho : ℝ) (i : Fin (n + 1))
+def ghostK (F : FixedData) (J n ) (rho : ℝ) (i : Fin (n + 1))
     (φ : (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℝ)
-    (s t : P.MemoryState (J + F.ell)) : ℝ :=
+    (s t : P.MemoryState (J + F.ell))  :=
   if s.1 = t.1 ∧ s.2.1 = t.2.1 then
     ∑ c : GhostChoice s t, if ghostChoiceValid c then |ghostChoiceWeight F n rho i c| * φ s t c
       else 0
   else 0
 
 /-- Absolute edge kernel with a real multiplier on each local choice. -/
-def edgeK (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
+def edgeK (A : Model F P J m) (n ) (rho theta : ℝ) (i : Fin n)
     (φ : (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℝ)
-    (s t : P.MemoryState (J + F.ell)) : ℝ :=
+    (s t : P.MemoryState (J + F.ell))  :=
   edgeSymmetryFactor P (J + F.ell) * ∑ c : EdgeChoice A s,
     if edgeChoiceValid A .all i s t c then
       ‖edgeChoiceCoefficient A n rho theta i s t c‖ * φ s t c else 0
 
-def localFactorR (A : Model F P J m) (n : ℕ)
+def localFactorR (A : Model F P J m) (n )
     (Φ0 : P.MemoryState (J + F.ell) → ℝ)
     (φG : Fin (n + 1) → (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℝ)
     (φE : Fin n → (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℝ)
-    (H : MemoryHistory A n) : ℝ :=
+    (H : MemoryHistory A n)  :=
   Φ0 (H.before 0) * (∏ i, φG i (H.before i) (H.after i) (H.ghost i)) *
     ∏ i, φE i (H.after i.castSucc) (H.before i.succ) (H.edge i)
 
-theorem norm_weight_eq {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n) (rho theta : ℝ) :
+theorem norm_weight_eq {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n)  rho theta  :
     ‖H.Weight rho theta‖ = |P.memoryMass F J n (H.before 0)| *
       (∏ i, |ghostChoiceWeight F n rho i (H.ghost i)|) *
       ∏ i, (edgeSymmetryFactor P (J + F.ell) *
@@ -64,12 +65,15 @@ theorem norm_weight_eq {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n) (rh
   simp only [S2Core.MemoryHistory.Weight, norm_mul, norm_prod, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (edgeSymmetryFactor_nonneg P (J + F.ell))]
 
+section
+variable (A : Model F P J m)
+
 /-- Exact absolute choice expansion for one fixed state path. -/
-theorem abs_choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
-    (Φ0 : P.MemoryState (J + F.ell) → ℝ)
-    (φG : Fin (n + 1) → (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℝ)
+theorem abs_choice_sum    n   rho theta 
+     Φ0 
+     φG 
     (φE : Fin n → (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℝ)
-    (bf af : Fin (n + 1) → P.MemoryState (J + F.ell)) :
+     bf af  :
     ∑ c1 : (i : Fin (n + 1)) → GhostChoice (bf i) (af i),
       ∑ c2 : (i : Fin n) → EdgeChoice A (af i.castSucc),
         (if (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid then
@@ -172,7 +176,7 @@ theorem abs_choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
   simp only [hG, hE]
   ring
 
-theorem tsum_truncR (A : Model F P J m) (n B : ℕ) (f : MemoryHistory A n → ℝ)
+theorem tsum_truncR   (n B : ℕ) (f : MemoryHistory A n → ℝ)
     (hf : ∀ H, ¬ H.Truncated B → f H = 0) :
     ∑' H, f H = ∑ d : BoundedHistoryData A n B, f (mkH d) := by
   have hs : Function.support f ⊆ {H : MemoryHistory A n | H.Truncated B} := by
@@ -183,9 +187,9 @@ theorem tsum_truncR (A : Model F P J m) (n B : ℕ) (f : MemoryHistory A n → �
   rfl
 
 /-- The bounded history sum is the real path sum of the multiplied absolute kernels. -/
-theorem history_sum_eq (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
-    (Φ0 : P.MemoryState (J + F.ell) → ℝ)
-    (φG : Fin (n + 1) → (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℝ)
+theorem history_sum_eq    n B   rho theta 
+     Φ0 
+     φG 
     (φE : Fin n → (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℝ) :
     (∑ d : BoundedHistoryData A n B,
       (if (mkH d).Valid then ‖(mkH d).Weight rho theta‖ * localFactorR A n Φ0 φG φE (mkH d)
@@ -204,29 +208,27 @@ theorem history_sum_eq (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
   apply Finset.sum_congr rfl
   intro a _
   rw [Fintype.sum_prod_type]
-  exact abs_choice_sum A n rho theta Φ0 φG φE (fun i => (b i).val) (fun i => (a i).val)
+  solve_by_elim [abs_choice_sum]
 
-theorem ghostK_nonneg (F : FixedData) (J n : ℕ) (rho : ℝ) (i : Fin (n + 1))
+theorem ghostK_nonneg (F : FixedData)  J n   rho   i 
     (φ : (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℝ)
     (hφ : ∀ s t c, 0 ≤ φ s t c) (s t : P.MemoryState (J + F.ell)) :
     0 ≤ ghostK F J n rho i φ s t := by
   unfold ghostK
   split_ifs
   · exact Finset.sum_nonneg fun c _ => by
-      split_ifs
-      · exact mul_nonneg (abs_nonneg _) (hφ s t c)
-      · exact le_rfl
+      bound
   · exact le_rfl
 
-theorem edgeK_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
+theorem edgeK_nonneg    n   rho theta   i 
     (φ : (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℝ)
     (hφ : ∀ s t c, 0 ≤ φ s t c) (s t : P.MemoryState (J + F.ell)) :
     0 ≤ edgeK A n rho theta i φ s t := by
   unfold edgeK
   apply mul_nonneg (edgeSymmetryFactor_nonneg P (J + F.ell))
   exact Finset.sum_nonneg fun c _ => by
-    split_ifs
-    · exact mul_nonneg (norm_nonneg _) (hφ s t c)
-    · exact le_rfl
+    bound
+
+end
 
 end Erdos821.P3High

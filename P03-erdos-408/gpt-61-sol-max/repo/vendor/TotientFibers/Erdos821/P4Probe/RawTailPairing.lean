@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.RawAssembly
 public import Erdos821.P4Probe.BigDuality
@@ -14,18 +15,25 @@ open Blueprint.Graph
 
 noncomputable section
 
-def tailCoordinates (P : PrimeGroups) (J ell : ℕ) : P.BigGroup → Finset (Fin (J + ell)) :=
+def tailCoordinates (P : PrimeGroups) (J ell ) : P.BigGroup → Finset (Fin (J + ell)) :=
   fun _ => Finset.univ.filter (fun i => J ≤ i.val)
 
-lemma tailMix_prefix (P : PrimeGroups) (J ell : ℕ) (a y : P.BigLabels (J + ell)) :
+section
+variable (P : PrimeGroups) (J ell : ℕ)
+include P J ell
+
+lemma tailMix_prefix     (a y : P.BigLabels (J + ell)) :
     (splitBigLabels P J ell (fun g i =>
       if i ∈ tailCoordinates P J ell g then y g i else a g i)).1 =
         (splitBigLabels P J ell a).1 := by
-  funext g i
-  simp [splitBigLabels, tailCoordinates, not_le_of_gt i.isLt]
+  grind [splitBigLabels, tailCoordinates]
 
-lemma tailAverage_prefix_function (P : PrimeGroups) (J ell : ℕ)
-    (hV : ∀ g, 0 < P.V g) (F : P.BigLabels J → ℂ) :
+section
+variable (hV : ∀ g, 0 < P.V g)
+include hV
+
+lemma tailAverage_prefix_function    
+      (F : P.BigLabels J → ℂ) :
     bigCoordinateAverage P (J + ell) (tailCoordinates P J ell)
       (fun a => F ((splitBigLabels P J ell a).1)) =
         fun a => F ((splitBigLabels P J ell a).1) := by
@@ -36,16 +44,16 @@ lemma tailAverage_prefix_function (P : PrimeGroups) (J ell : ℕ)
     exact_mod_cast idealMass_sum P (J + ell) hV
   rw [← Finset.sum_mul, ht, one_mul]
 
-def rawPrefixDensity (P : PrimeGroups) (J ell : ℕ) (θ ζ : ℝ)
-    (a b : P.BigLabels (J + ell)) : ℂ :=
+def rawPrefixDensity (P : PrimeGroups) (J ell ) (θ ζ : ℝ)
+    (a b : P.BigLabels (J + ell))  :=
   if (splitBigLabels P J ell a).1 = (splitBigLabels P J ell b).1 then
     (P.idealMass ((splitBigLabels P J ell a).1) : ℂ)⁻¹ *
       imaginaryPower (prefixProduct ((splitBigLabels P J ell a).1)) ζ *
       phase (θ * prefixProduct ((splitBigLabels P J ell a).1))
   else 0
 
-lemma rawPrefixKernel_eq_targetMass (P : PrimeGroups) (J ell : ℕ)
-    (hV : ∀ g, 0 < P.V g) (θ ζ : ℝ) (a b : P.BigLabels (J + ell)) :
+lemma rawPrefixKernel_eq_targetMass    
+       θ ζ   a b  :
     rawPrefixKernel P J ell θ ζ a b = (P.idealMass b : ℂ) * rawPrefixDensity P J ell θ ζ a b := by
   by_cases hp : (splitBigLabels P J ell a).1 = (splitBigLabels P J ell b).1
   · have hμ : (P.idealMass ((splitBigLabels P J ell a).1) : ℂ) ≠ 0 := by
@@ -56,8 +64,12 @@ lemma rawPrefixKernel_eq_targetMass (P : PrimeGroups) (J ell : ℕ)
     field_simp
   · simp [rawPrefixKernel, rawTransition, rawPrefixDensity, hp]
 
-lemma rawFullPair_tail_average (F : FixedData) (P : PrimeGroups) (J m : ℕ)
-    (hV : ∀ g, 0 < P.V g) (θ ζ : ℝ) (f g : P.BigLabels (J + F.ell) → ℂ) :
+end
+
+end
+
+lemma rawFullPair_tail_average  F   P   J m 
+    (hV : ∀ g, 0 < P.V g)  θ ζ   f g  :
     idealFullPair (((rawFamily F P J m).model 1 ζ).idealRaw θ) f g =
       idealFullPair (((rawFamily F P J m).model 1 ζ).idealRaw θ)
         (bigCoordinateAverage P (J + F.ell) (tailCoordinates P J F.ell) f)
@@ -89,8 +101,7 @@ lemma rawFullPair_tail_average (F : FixedData) (P : PrimeGroups) (J m : ℕ)
     _ = _ := by
       have hd : rawPrefixKernel P J F.ell θ ζ =
           fun a b => (P.idealMass b : ℂ) * rawPrefixDensity P J F.ell θ ζ a b := by
-        funext a b
-        exact rawPrefixKernel_eq_targetMass P J F.ell hV θ ζ a b
+        grind [rawPrefixKernel_eq_targetMass]
       rw [hd]
       exact (idealFullPair_target_average P (J + F.ell) (tailCoordinates P J F.ell)
         _ ht _ g).symm

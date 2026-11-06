@@ -15,17 +15,17 @@ open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorDyadicBridge Four
 open CenteredMomentScaleSupremum (scaleTest scaleTest_continuous scaleTest_support)
 open HeckeInverseAmplification (scaleProfile scaleProfile_continuous scaleProfile_support
   scale_normalization scaleSupport scaleSupport_cover)
-def frequencyScaleSum (χ : Character) (inv : Bool) (W : ℝ→ℂ) (freq : ℝ) (S : Finset (Ideal O)) (l : ℝ) : ℂ :=
+def frequencyScaleSum (χ : Character) (inv : Bool) (W : ℝ→ℂ) (freq : ℝ) (S : Finset (Ideal O)) (l : ℝ)  :=
   Complex.exp (-(l : ℂ)/2)*∑ J∈S,
     (coefficient χ inv J*logPhase (freq/(2*Real.pi)) (Real.log (J.absNorm : ℝ)))*W ((J.absNorm : ℝ)*Real.exp (-l))
 
-theorem frequencyScaleSum_continuous (χ : Character) (inv : Bool) (W : ℝ→ℂ) (freq : ℝ) (S : Finset (Ideal O))
+theorem frequencyScaleSum_continuous  χ   inv   W   freq   S 
     (hW : Continuous W) : Continuous (frequencyScaleSum χ inv W freq S) := by
   unfold frequencyScaleSum
   fun_prop
 
-theorem frequencyScaleSum_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ) (freq : ℝ) (S : Finset (Ideal O))
-    (hW : Differentiable ℝ W) (l : ℝ) :
+theorem frequencyScaleSum_deriv  χ   inv   W   freq   S 
+    (hW : Differentiable ℝ W)  l  :
     HasDerivAt (frequencyScaleSum χ inv W freq S) (frequencyScaleSum χ inv (scaleProfile W) freq S l) l := by
   have hE : HasDerivAt (fun t : ℝ => Complex.exp (-(t : ℂ)/2))
       (Complex.exp (-(l : ℂ)/2)*(-(1 : ℂ)/2)) l := by
@@ -57,7 +57,7 @@ theorem frequencyScaleSum_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ) (f
     push_cast
     ring
 
-lemma ratio_frequency_phase (x l freq : ℝ) (hx : 0<x) :
+lemma ratio_frequency_phase  x l freq  (hx : 0<x) :
     (((x/Real.exp l : ℝ):ℂ)^(-shift 0 freq))=
       logPhase (freq/(2*Real.pi)) (-l)*logPhase (freq/(2*Real.pi)) (Real.log x) := by
   have ht : 2*Real.pi*(freq/(2*Real.pi))=freq := by field_simp
@@ -67,8 +67,8 @@ lemma ratio_frequency_phase (x l freq : ℝ) (hx : 0<x) :
   rw [←hh,Real.log_div hx.ne' (Real.exp_pos l).ne',Real.log_exp]
   rw [show Real.log x-l=(-l)+Real.log x by ring,logPhase_add]
 
-theorem frequencyScaleSum_eq_polynomial (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (freq : ℝ) (S : Finset (Ideal O)) (l : ℝ)
+theorem frequencyScaleSum_eq_polynomial  χ   inv   W 
+     freq   S   l 
     (hc : ∀J : Ideal O,J≠0 → W ((J.absNorm : ℝ)/Real.exp l)≠0 → J∈S) :
     polynomial χ inv W (Real.exp l) 0 freq=
       logPhase (freq/(2*Real.pi)) (-l)*frequencyScaleSum χ inv W freq S l := by
@@ -87,8 +87,8 @@ theorem frequencyScaleSum_eq_polynomial (χ : Character) (inv : Bool) (W : ℝ�
   rw [ratio_frequency_phase _ l freq hpos,Real.exp_neg,div_eq_mul_inv]
   ring
 
-theorem frequencyScaleSum_norm (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (freq : ℝ) (S : Finset (Ideal O)) (l : ℝ)
+theorem frequencyScaleSum_norm  χ   inv   W 
+     freq   S   l 
     (hc : ∀J : Ideal O,J≠0 → W ((J.absNorm : ℝ)/Real.exp l)≠0 → J∈S) :
     ‖frequencyScaleSum χ inv W freq S l‖=‖polynomial χ inv W (Real.exp l) 0 freq‖ := by
   rw [frequencyScaleSum_eq_polynomial χ inv W freq S l hc,norm_mul,logPhase_norm,one_mul]
@@ -117,8 +117,7 @@ theorem paired_rowwise_scales {ι : Type*} (rows : Finset ι)
   have eqV (i : ι) (k : Fin 2) (y : ℝ) (hy : y∈Icc low high) :=
     frequencyScaleSum_norm (ψ i) false (scaleTest V k) (freq₂ i) T y
       (scaleSupport_cover _ c d high y hd (scaleTest_support V c d hVs k) hy.2)
-  have hc (j k : Fin 2) (i : ι) : Continuous (Function.uncurry (F j k i)) := by
-    exact (((frequencyScaleSum_continuous (χ i) false _ (freq₁ i) S (scaleTest_continuous W hW j)).comp
+  have hc (j k : Fin 2) (i : ι) : Continuous (Function.uncurry (F j k i)) := (((frequencyScaleSum_continuous (χ i) false _ (freq₁ i) S (scaleTest_continuous W hW j)).comp
       continuous_fst).mul ((frequencyScaleSum_continuous (ψ i) false _ (freq₂ i) T
       (scaleTest_continuous V hV k)).comp continuous_snd)).mul continuous_const
   have hx (k : Fin 2) (i : ι) (x y : ℝ) :

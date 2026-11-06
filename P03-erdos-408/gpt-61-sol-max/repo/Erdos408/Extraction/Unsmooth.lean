@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Extraction.Allocation.Asymptotics
 
 public import Erdos408.Extraction.Sieve
 public import Erdos408.Mertens
@@ -41,7 +44,7 @@ namespace Unsmooth
 /-! ### The upper cutoff -/
 
 /-- Every derivative of the smooth transition is bounded. -/
-lemma exists_abs_iteratedDeriv_smoothTransition_le (r : ℕ) :
+lemma exists_abs_iteratedDeriv_smoothTransition_le  r  :
     ∃ K : ℝ, ∀ y, |iteratedDeriv r smoothTransition y| ≤ K := by
   have hcont : Continuous (iteratedDeriv r smoothTransition) :=
     smoothTransition.contDiff.continuous_iteratedDeriv r (by exact_mod_cast le_top)
@@ -67,16 +70,19 @@ lemma exists_abs_iteratedDeriv_smoothTransition_le (r : ℕ) :
   simp
 
 /-- A bound `K_r` for the `r`-th derivative of the smooth transition. -/
-noncomputable def transitionBound (r : ℕ) : ℝ :=
+noncomputable def transitionBound (r : ℕ)  :=
   (exists_abs_iteratedDeriv_smoothTransition_le r).choose
 
+section
+variable (r : ℕ)
+
 /-- The `r`-th derivative of the smooth transition is at most `K_r`. -/
-lemma abs_iteratedDeriv_smoothTransition_le (r : ℕ) (y : ℝ) :
+lemma abs_iteratedDeriv_smoothTransition_le    y  :
     |iteratedDeriv r smoothTransition y| ≤ transitionBound r :=
   (exists_abs_iteratedDeriv_smoothTransition_le r).choose_spec y
 
 /-- The `r`-th derivative of `t ↦ S(W t + a)` is `W^r S^{(r)}(W t + a)`. -/
-lemma iteratedDeriv_smoothTransition_affine (r : ℕ) (W a : ℝ) :
+lemma iteratedDeriv_smoothTransition_affine    W a  :
     iteratedDeriv r (fun t => smoothTransition (W * t + a)) =
       fun t => W ^ r * iteratedDeriv r smoothTransition (W * t + a) := by
   rw [iteratedDeriv_comp_const_mul (f := fun z => smoothTransition (z + a))
@@ -84,12 +90,17 @@ lemma iteratedDeriv_smoothTransition_affine (r : ℕ) (W a : ℝ) :
   funext t
   rw [iteratedDeriv_comp_add_const]
 
+end
+
 /-- The upper cutoff `Φ_W(t) = S(W (t - 1) + 2) - S(W (t - 2))` of the dyad `(1, 2]`. -/
-noncomputable def upperCutoff (W t : ℝ) : ℝ :=
+noncomputable def upperCutoff (W t : ℝ)  :=
   smoothTransition (W * (t - 1) + 2) - smoothTransition (W * (t - 2))
 
+section
+variable (W : ℝ)
+
 /-- The upper cutoff in affine form. -/
-lemma upperCutoff_eq (W : ℝ) :
+lemma upperCutoff_eq   :
     upperCutoff W =
       (fun t => smoothTransition (W * t + (2 - W))) -
         fun t => smoothTransition (W * t + -(2 * W)) := by
@@ -98,12 +109,18 @@ lemma upperCutoff_eq (W : ℝ) :
   ring_nf
 
 /-- The upper cutoff is smooth. -/
-lemma contDiff_upperCutoff (W : ℝ) : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) (upperCutoff W) := by
+lemma contDiff_upperCutoff   : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) (upperCutoff W) := by
   unfold upperCutoff
   fun_prop
 
+end
+
+section
+variable {W t : ℝ} (hW : 0 < W)
+
+include hW in
 /-- The upper cutoff is `1` on `[1 - 1/W, 2]`. -/
-lemma upperCutoff_eq_one {W t : ℝ} (hW : 0 < W) (h₁ : 1 - 1 / W ≤ t) (h₂ : t ≤ 2) :
+lemma upperCutoff_eq_one     (h₁ : 1 - 1 / W ≤ t) (h₂ : t ≤ 2) :
     upperCutoff W t = 1 := by
   have hW' : W * (1 / W) = 1 := by field_simp
   have h₁' := mul_le_mul_of_nonneg_left h₁ hW.le
@@ -111,8 +128,9 @@ lemma upperCutoff_eq_one {W t : ℝ} (hW : 0 < W) (h₁ : 1 - 1 / W ≤ t) (h₂
     smoothTransition.zero_of_nonpos (mul_nonpos_of_nonneg_of_nonpos hW.le (by linarith))]
   norm_num
 
+include hW in
 /-- The upper cutoff takes values in `[0, 1]`. -/
-lemma upperCutoff_mem_Icc {W : ℝ} (hW : 0 < W) (t : ℝ) :
+lemma upperCutoff_mem_Icc      t  :
     0 ≤ upperCutoff W t ∧ upperCutoff W t ≤ 1 := by
   rcases le_or_gt t 2 with ht | ht
   · rw [upperCutoff,
@@ -123,8 +141,9 @@ lemma upperCutoff_mem_Icc {W : ℝ} (hW : 0 < W) (t : ℝ) :
     constructor <;> linarith [smoothTransition.nonneg (W * (t - 2)),
       smoothTransition.le_one (W * (t - 2))]
 
+include hW in
 /-- The upper cutoff vanishes outside `(1 - 2/W, 2 + 1/W)`. -/
-lemma mem_Ioo_of_upperCutoff_ne_zero {W t : ℝ} (hW : 0 < W) (h : upperCutoff W t ≠ 0) :
+lemma mem_Ioo_of_upperCutoff_ne_zero     (h : upperCutoff W t ≠ 0) :
     1 - 2 / W < t ∧ t < 2 + 1 / W := by
   have hW₁ : W * (1 / W) = 1 := by field_simp
   have hW₂ : W * (2 / W) = 2 := by field_simp
@@ -138,12 +157,13 @@ lemma mem_Ioo_of_upperCutoff_ne_zero {W t : ℝ} (hW : 0 < W) (h : upperCutoff W
       smoothTransition.zero_of_nonpos (mul_nonpos_of_nonneg_of_nonpos hW.le (by linarith)),
       sub_zero]
   · have ht' := mul_le_mul_of_nonneg_left ht hW.le
-    have h1W : 0 < 1 / W := by positivity
+    
     rw [upperCutoff, smoothTransition.one_of_one_le (by nlinarith),
       smoothTransition.one_of_one_le (by nlinarith), sub_self]
 
+include hW in
 /-- The `r`-th derivative of the upper cutoff is at most `2 K_r W^r`. -/
-lemma abs_iteratedDeriv_upperCutoff_le {W : ℝ} (hW : 0 < W) (r : ℕ) (t : ℝ) :
+lemma abs_iteratedDeriv_upperCutoff_le      r   t  :
     |iteratedDeriv r (upperCutoff W) t| ≤ 2 * transitionBound r * W ^ r := by
   rw [upperCutoff_eq, iteratedDeriv_sub (by fun_prop) (by fun_prop),
     iteratedDeriv_smoothTransition_affine, iteratedDeriv_smoothTransition_affine, ← mul_sub,
@@ -154,9 +174,11 @@ lemma abs_iteratedDeriv_upperCutoff_le {W : ℝ} (hW : 0 < W) (r : ℕ) (t : ℝ
     (iteratedDeriv r smoothTransition (W * t + -(2 * W)))
   nlinarith [pow_pos hW r]
 
+end
+
 /-- With `W = T⁴⁰⁰`, the upper cutoff lies in the cutoff class with `κ = 3` and
 `C_Φ = 400`. -/
-lemma isCutoff_upperCutoff {x : ℝ} (hT : 3 ≤ logLog x) :
+lemma isCutoff_upperCutoff  {x}  (hT : 3 ≤ logLog x) :
     IsCutoff 3 400 (fun r => 2 * transitionBound r) x (upperCutoff (logLog x ^ 400)) := by
   have hW : 3 ≤ logLog x ^ 400 :=
     hT.trans (le_self_pow₀ (by linarith) (by norm_num))
@@ -165,8 +187,7 @@ lemma isCutoff_upperCutoff {x : ℝ} (hT : 3 ≤ logLog x) :
     fun r t => ?_⟩
   · obtain ⟨h₁, h₂⟩ := mem_Ioo_of_upperCutoff_ne_zero hW0 ht
     have : 1 / logLog x ^ 400 ≤ 1 / 3 := one_div_le_one_div_of_le (by norm_num) hW
-    have h2 : 2 / logLog x ^ 400 = 2 * (1 / logLog x ^ 400) := by ring
-    constructor <;> linarith
+    grind
   · rw [show (400 : ℝ) * r = ((400 * r : ℕ) : ℝ) by push_cast; ring, Real.rpow_natCast,
       pow_mul]
     exact abs_iteratedDeriv_upperCutoff_le hW0 r t
@@ -194,22 +215,28 @@ lemma exists_abs_psi_sub_le : ∃ c > (0 : ℝ), c ≤ 1 ∧ ∃ C ≥ (0 : ℝ)
       mul_le_mul (le_max_left _ _) (Real.rpow_le_rpow_of_exponent_le (by linarith)
         (by linarith [min_le_left c 1])) (by positivity) (le_max_right _ _)
 
+section
+variable {a b : ℝ} (ha : 1 ≤ a) (hab : a ≤ b)
+
+include hab in
 /-- `ψ(b) - ψ(a)` is the sum of `Λ` over `(a, b]`. -/
-lemma psi_sub_psi {a b : ℝ} (hab : a ≤ b) :
+lemma psi_sub_psi     :
     ψ b - ψ a = ∑ n ∈ Finset.Ioc ⌊a⌋₊ ⌊b⌋₊, ArithmeticFunction.vonMangoldt n := by
   rw [psi, psi, ← Finset.sum_Ioc_consecutive _ (Nat.zero_le ⌊a⌋₊) (Nat.floor_le_floor hab)]
   ring
 
+include hab in
 /-- `θ(b) - θ(a)` is the sum of `log p` over the primes of `(a, b]`. -/
-lemma theta_sub_theta {a b : ℝ} (hab : a ≤ b) :
+lemma theta_sub_theta     :
     θ b - θ a = ∑ p ∈ primesIoc a b, Real.log p := by
   have h := Finset.sum_Ioc_consecutive (fun p ↦ if p.Prime then Real.log p else 0)
     (Nat.zero_le ⌊a⌋₊) (Nat.floor_le_floor hab)
   simp only [theta, primesIoc, Finset.sum_filter] at *
   linarith
 
+include hab in
 /-- The primes of `(a, b]` have `∑ log p ≤ ψ(b) - ψ(a)`. -/
-lemma sum_log_primesIoc_le_psi_sub {a b : ℝ} (hab : a ≤ b) :
+lemma sum_log_primesIoc_le_psi_sub     :
     ∑ p ∈ primesIoc a b, Real.log p ≤ ψ b - ψ a := by
   rw [psi_sub_psi hab, primesIoc]
   calc ∑ p ∈ (Finset.Ioc ⌊a⌋₊ ⌊b⌋₊).filter Nat.Prime, Real.log p
@@ -219,12 +246,15 @@ lemma sum_log_primesIoc_le_psi_sub {a b : ℝ} (hab : a ≤ b) :
     _ ≤ _ := Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _) fun _ _ _ =>
         ArithmeticFunction.vonMangoldt_nonneg
 
+include ha hab in
 /-- An interval `(a, b]` with `1 ≤ a` has `π(b) - π(a) ≤ (ψ(b) - ψ(a)) / log a`. -/
-lemma card_primesIoc_mul_log_le {a b : ℝ} (ha : 1 ≤ a) (hab : a ≤ b) :
+lemma card_primesIoc_mul_log_le       :
     ((primesIoc a b).card : ℝ) * Real.log a ≤ ψ b - ψ a := by
   refine le_trans ?_ (sum_log_primesIoc_le_psi_sub hab)
   rw [← nsmul_eq_mul, ← Finset.sum_const]
   exact Finset.sum_le_sum fun p hp => Real.log_le_log (by linarith) (mem_primesIoc.1 hp).2.1.le
+
+end
 
 /-- Primes in short intervals: for `4 ≤ x` and `x/2 ≤ a ≤ b ≤ 3x`, the interval `(a, b]`
 contains at most `(2 / L) ((b - a) + C x^{1-c})` primes. -/
@@ -298,8 +328,7 @@ lemma eventually_card_dyadicPrimes_ge :
   -- the prime powers: `2 √(2x) log (2x) ≤ 8 √x L ≤ x / 4`
   have hsq : √x * √x = x := Real.mul_self_sqrt hx0.le
   have hs2 : √2 ≤ 2 := by
-    have := Real.sq_sqrt (show (0 : ℝ) ≤ 2 by norm_num)
-    nlinarith [Real.sqrt_nonneg 2]
+    simp_all
   have hs2x : √(2 * x) = √2 * √x := Real.sqrt_mul (by norm_num) x
   rw [← Real.sqrt_eq_rpow] at h₂
   have hpp : 2 * √(2 * x) * Real.log (2 * x) ≤ x / 4 := by
@@ -328,10 +357,14 @@ lemma eventually_card_dyadicPrimes_ge :
 
 /-! ### Size of the slot statistic -/
 
+section
+variable {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k : ℕ} (hk : k ≤ 2) {u v : Fin (k + 1) → ℝ}
+
+include hx hε hk in
 /-- An integer `0 < n ≤ x²` is divisible by at most `(2/ε + 1)³` slot tuples whose primes all
 exceed `x^ε`, so the slot count is at most that in modulus. -/
-lemma abs_slotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k : ℕ} (hk : k ≤ 2)
-    {u v : Fin (k + 1) → ℝ} (hu : ∀ i, ε ≤ u i) {B : (Fin k → ℕ) → ℝ} (hB : ∀ Q, |B Q| ≤ 1)
+lemma abs_slotCount_le          
+      (hu : ∀ i, ε ≤ u i) {B : (Fin k → ℕ) → ℝ} (hB : ∀ Q, |B Q| ≤ 1)
     {n : ℕ} (hn₀ : n ≠ 0) (hn : (n : ℝ) ≤ x ^ 2) :
     |slotCount x u v B n| ≤ (2 / ε + 1) ^ 3 := by
   set D := n.primeFactors.filter fun q : ℕ => x ^ ε < (q : ℝ)
@@ -375,15 +408,14 @@ lemma abs_slotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k : ℕ} (hk : 
         rw [Finset.sum_const, nsmul_one]
         exact_mod_cast Finset.card_le_card hsub
     _ = (D.card : ℝ) ^ (k + 1) := by
-        rw [Fintype.card_piFinset, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
-        push_cast
-        rfl
+        simp_all
     _ ≤ (2 / ε + 1) ^ (k + 1) := by gcongr; linarith
     _ ≤ (2 / ε + 1) ^ 3 :=
         pow_le_pow_right₀ (by linarith [show 0 < 2 / ε by positivity]) (by omega)
 
+include hx in
 /-- The slot primes are at most `x`, so `|C_𝔟| ≤ (∑_{p ≤ x} 1/p)^{k+1}`. -/
-lemma abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → ℝ}
+lemma abs_slotMean_le        
     (hu : ∀ i, 0 ≤ u i) (hv : ∑ i, v i ≤ 1) {B : (Fin k → ℕ) → ℝ} (hB : ∀ Q, |B Q| ≤ 1) :
     |slotMean x u v B| ≤ (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) := by
   -- every slot tuple has its primes in `(1, x]`
@@ -418,12 +450,12 @@ lemma abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → �
         exact div_le_div_of_nonneg_right (hB _) this.le
     _ ≤ ∑ Q ∈ Fintype.piFinset (fun _ : Fin (k + 1) => primesIoc 1 x),
           1 / ∏ i, (Q i : ℝ) :=
-        Finset.sum_le_sum_of_subset_of_nonneg hsub fun Q hQ _ => (one_div_pos.2 (hpos Q hQ)).le
+        (by gcongr <;> first | assumption | positivity | linarith)
     _ = (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) := by
         rw [← Fin.prod_const, Finset.prod_univ_sum]
-        refine Finset.sum_congr rfl fun Q _ => ?_
-        rw [one_div, ← Finset.prod_inv_distrib]
-        simp only [one_div]
+        norm_num
+
+end
 
 /-- Mertens' second theorem: `∑_{p ≤ x} 1/p ≤ T + E`. -/
 lemma exists_sum_primesIoc_one_inv_le : ∃ E : ℝ, ∀ x : ℝ, 2 ≤ x →
@@ -449,8 +481,7 @@ lemma exists_sum_primesIoc_one_inv_le : ∃ E : ℝ, ∀ x : ℝ, 2 ≤ x →
   linarith
 
 /-- `T = log log x` tends to infinity. -/
-lemma tendsto_logLog_atTop : Tendsto logLog atTop atTop :=
-  Real.tendsto_log_atTop.comp Real.tendsto_log_atTop
+alias tendsto_logLog_atTop := _root_.Erdos408.tendsto_logLog_atTop
 
 /-- For admissible slots with margin `T⁻²⁰` and `0 < n ≤ x²`, `|f_𝔟(n) - C_𝔟| ≤ 35 T⁶⁰`. -/
 lemma eventually_abs_slotCount_sub_slotMean_le : ∀ᶠ x : ℝ in atTop,
@@ -473,8 +504,7 @@ lemma eventually_abs_slotCount_sub_slotMean_le : ∀ᶠ x : ℝ in atTop,
   -- the harmonic model: `(T + E)^{k+1} ≤ (2T)³ ≤ 8 T⁶⁰`
   have hv₁ : ∑ i, v i ≤ 1 := by linarith
   have h₂ := abs_slotMean_le (x := x) (by linarith) (fun i => hε.le.trans (hu i)) hv₁ hB
-  have hH₀ : 0 ≤ ∑ p ∈ primesIoc 1 x, (1 : ℝ) / p :=
-    Finset.sum_nonneg fun _ _ => by positivity
+  
   have h₂' : (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) ≤ 8 * logLog x ^ 60 := by
     calc (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) ≤ (2 * logLog x) ^ (k + 1) := by
           gcongr
@@ -490,7 +520,7 @@ lemma eventually_abs_slotCount_sub_slotMean_le : ∀ᶠ x : ℝ in atTop,
 /-! ### The endpoint strips -/
 
 /-- `T^n ≤ x^c` for large `x`. -/
-lemma eventually_logLog_pow_le_rpow (n : ℕ) {c : ℝ} (hc : 0 < c) :
+lemma eventually_logLog_pow_le_rpow  n  {c : ℝ} (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop, logLog x ^ n ≤ x ^ c := by
   filter_upwards [(isLittleO_log_rpow_rpow_atTop (n : ℝ) hc).bound one_pos,
     tendsto_logLog_atTop.eventually_ge_atTop 0, eventually_ge_atTop 1] with x hx hT hx₁
@@ -519,8 +549,7 @@ lemma abs_upperCutoff_sub_indicator_le {x W : ℝ} (hW : 4 ≤ W) (hWx : W ≤ x
     rw [ite_eq_left hd, upperCutoff_eq_one hW0, sub_self, abs_zero]
     · positivity
     · rw [le_div_iff₀ hx0]
-      have : (1 - 1 / W) * x = x - x / W := by ring
-      linarith
+      grind
     · rw [div_le_iff₀ hx0]
       linarith
   rw [ite_eq_right hd, sub_zero, abs_of_nonneg (upperCutoff_mem_Icc hW0 _).1]
@@ -580,7 +609,7 @@ theorem rectangleInput_of_oneSidedTypeII_of_twoSidedCorrelation (h₁ : OneSided
   have hL : 0 < L := Real.log_pos (by linarith)
   have hT0 : 0 < T := by linarith
   have hW : 4 ≤ W := hT.trans (le_self_pow₀ (by linarith) (by norm_num))
-  have hτ0 : 0 < τ := by positivity
+  
   -- the smoothed statistic
   have hΦ : |∑ p ∈ A, upperCutoff W (((p : ℝ) - 1) / x) * g p| ≤ x / L * (C₀ * τ) := by
     have h := hsmooth k hk u v B (upperCutoff W) hadm hB (isCutoff_upperCutoff (by linarith))

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstRetainedPhysical
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstRetainedPhysical
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedBlock
@@ -15,10 +16,10 @@ open CenteredMomentFirstRetainedPhysical CenteredMomentFirstCommonFourierTranspo
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
 open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm
 open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSectorLocalization CenteredMomentFirstScale
-local notation "O"=>ActualEisensteinCubic.O
 
-lemma retained_tsum (R:ℝ)(f:O→ℂ):
-    (∑'h:O,(retainedWeight R (normValue h):ℂ)*f h)=
+
+lemma retained_tsum (R:ℝ)(f:ActualEisensteinCubic.O→ℂ):
+    (∑'h:ActualEisensteinCubic.O,(retainedWeight R (normValue h):ℂ)*f h)=
       ∑h∈CenteredMomentSecondRetainedRows.retainedRows R 1,
         (retainedWeight R (normValue h):ℂ)*f h:=by
   apply tsum_eq_sum
@@ -30,9 +31,9 @@ lemma retained_tsum (R:ℝ)(f:O→ℂ):
     simpa only [one_mul] using hn
   simp only [hz,Complex.ofReal_zero,zero_mul]
 
-lemma retainedFourierTerm_finite (a b r:O)(ha:a≠0)(hb:b≠0)(hr:r≠0)
-    (χa:MulChar (Residue a) ℂ)(χb:MulChar (Residue b) ℂ)(G:Residue r→ℂ)
-    (e:O)(E:Ideal O)(W:𝓢(ℝ,ℂ))(K R:ℝ):
+lemma retainedFourierTerm_finite  a b r  ha  hb  hr 
+     χa  χb  G 
+     e  E  W  K R :
     retainedFourierTerm a b r ha hb hr χa χb G e E W K R=
       (UniqueFactorizationMonoid.moebius E:ℂ)*
       ∑h∈CenteredMomentSecondRetainedRows.retainedRows R 1,
@@ -47,15 +48,11 @@ lemma retainedFourierTerm_finite (a b r:O)(ha:a≠0)(hb:b≠0)(hr:r≠0)
   simp_rw [mul_assoc (retainedWeight R (normValue _):ℂ)]
   rw [retained_tsum]
   simp_rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro h hh
-  rw [show (K/normValue e)/normValue (a*(b*r))*normValue h=
-    (K/normValue e)*normValue h/normValue (a*(b*r)) by ring]
-  ring
+  grind
 
 lemma finite_pair_row_sum {α β:Type*}[Fintype α][Fintype β]
-    (rows:Finset O)(p:α→β→Prop)[DecidableRel p]
-    (c:α→β→ℂ)(μ:ℂ)(f:α→β→O→ℂ):
+    (rows:Finset ActualEisensteinCubic.O)(p:α→β→Prop)[DecidableRel p]
+    (c:α→β→ℂ)(μ:ℂ)(f:α→β→ActualEisensteinCubic.O→ℂ):
     (∑a:α,∑b:β,if p a b then c a b*(μ*∑h∈rows,f a b h) else 0)=
       μ*∑h∈rows,∑a:α,∑b:β,if p a b then c a b*f a b h else 0:=by
   have hp (a:α)(b:β):
@@ -76,11 +73,11 @@ lemma finite_pair_row_sum {α β:Type*}[Fintype α][Fintype β]
     _=_:=Finset.sum_comm
 
 theorem fixed_sector_term_block
-    (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
-    (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
+     η  m A  t  S  c 
+     C D  hC  hD  E 
+     W  K X Z ξ :
     (∑a:columns C C hC.1 S,∑b:columns C D hD.1 S,
-      if IsCoprime (a:Ideal O) (b:Ideal O) then
+      if IsCoprime (a:Ideal ActualEisensteinCubic.O) (b:Ideal ActualEisensteinCubic.O) then
         (coefficient η m A t c C a*star (coefficient η m A t c D b))*
           fixedRetainedTerm C D hC (element C C hC.1 S a) (element C D hD.1 S b)
             (element_supported C C hC.1 S a) (element_supported C D hD.1 S b) E W K X Z ξ
@@ -105,19 +102,18 @@ theorem fixed_sector_term_block
   split_ifs <;> ring
 
 theorem fixed_sector_blocks
-    (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
+     η  m A  t  S  c 
+     C D  hC  hD  W  K X Z ξ :
     fixedRetainedSector η m A t S c C D hC hD W K X Z ξ=
       ∑E∈CenteredMomentFirstDiscardedEnergy.inactiveSubsets C D,
         retainedInfiniteBlock η m A t S c C D hC hD E W K
           (frequencyRadius (firstNominalScale C D (∏P∈E,P.val) K X) Z ξ):=by
   unfold fixedRetainedSector
   apply Finset.sum_congr rfl
-  intro E hE
-  exact fixed_sector_term_block η m A t S c C D hC hD E W K X Z ξ
+  solve_by_elim [fixed_sector_term_block]
 
 end SevenEighths.CenteredMomentFirstRetainedBlock
 
-end
+
 
 end OAI

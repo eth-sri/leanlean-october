@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.SpanMarkWeightTask
 
@@ -16,17 +17,17 @@ namespace Erdos821.P3Mark
 open Erdos821.Blueprint.Graph
 open Erdos821.S2Core
 
-theorem tiltedMu_eq_Vinv_mul_charge (F : FixedData) (P : PrimeGroups) (n : ℕ)
-    (g : P.Group) (p : P.Prime g) :
+theorem tiltedMu_eq_Vinv_mul_charge  F   P   n 
+     g   p  :
     tiltedMu F P n g p = (P.V g)⁻¹ * ((p.val * baselinePrime F n p.val : ℝ)⁻¹) := by
-  simp [tiltedMu, mul_inv_rev, mul_assoc, mul_left_comm, mul_comm]
+  grind [tiltedMu]
 
 theorem unsharedTargetSlots_card {P : PrimeGroups} {J ell m : ℕ}
-    (ν : Pattern P J ell m) (g : P.Group) :
+    (ν : Pattern P J ell m)  g  :
     (Finset.univ.filter (fun j : Fin (J + ell) => ¬ν.shared g j)).card = ν.t g := by
   classical
   let U : Finset (Fin (J + ell)) := Finset.univ.filter (fun j => ¬ν.shared g j)
-  let S : Finset (Fin (J + ell)) := Finset.univ.filter (fun j => ν.shared g j)
+  let S : Finset (Fin (J + ell)) := Finset.univ.filter (ν.shared g)
   let R : Finset (Fin J) := Finset.univ \ ν.changed g
   have hslot : Function.Injective ν.slot := by
     intro i j hij
@@ -46,20 +47,20 @@ theorem unsharedTargetSlots_card {P : PrimeGroups} {J ell m : ℕ}
   have hR : R.card + (ν.changed g).card = J := by
     have h := Finset.card_sdiff_add_card_eq_card (Finset.subset_univ (ν.changed g))
     simpa [R] using h
-  rw [hsharedCard] at hpartition
-  change U.card = ν.t g
-  dsimp [Pattern.t]
-  omega
+  grind [Pattern.t]
 
-def freshTargetSlots {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
+def freshTargetSlots {F } {P } {J m n }
     {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (i : Fin n) (g : P.BigGroup) : Finset (Fin (J + F.ell)) :=
+    (i : Fin n) (g : P.BigGroup)  :=
   Finset.univ.filter (fun j => ¬(A.pattern (Q.pattern i)).shared g.val j ∧
     j ∉ Q.promotionSlots S i g)
 
-theorem freshTargetSlots_card {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (i : Fin n) (g : P.BigGroup) :
+section
+variable {F : FixedData} {P : PrimeGroups} {J m M n : ℕ} {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n) (i : Fin n) (g : P.BigGroup) (p : P.Prime g.val) (birth stop : Fin (n + 1)) (hspan : S g p = some (birth, stop))
+
+theorem freshTargetSlots_card      
+         
+        :
     (freshTargetSlots Q S i g).card + (Q.promotionSlots S i g).card =
       (A.pattern (Q.pattern i)).t g.val := by
   classical
@@ -67,8 +68,7 @@ theorem freshTargetSlots_card {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
   let U : Finset (Fin (J + F.ell)) := Finset.univ.filter (fun j => ¬ν.shared g.val j)
   let B := Q.promotionSlots S i g
   have hset : freshTargetSlots Q S i g = U \ B := by
-    ext j
-    simp [freshTargetSlots, U, B, ν, Finset.mem_sdiff, Finset.mem_filter]
+    grind [freshTargetSlots]
   have hsub : B ⊆ U := by
     intro j hj
     have hj' := (Finset.mem_filter.mp hj).2.1
@@ -79,9 +79,9 @@ theorem freshTargetSlots_card {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
     _ = (U \ B).card + B.card := by rw [hset]
     _ = U.card := Finset.card_sdiff_add_card_eq_card hsub
     _ = ν.t g.val := hU
-    _ = (A.pattern (Q.pattern i)).t g.val := by rfl
+    _ = (A.pattern (Q.pattern i)).t g.val := rfl
 
-theorem initialMark_factorization {F : FixedData} {P : PrimeGroups} {M n : ℕ}
+theorem initialMark_factorization      
     (g : P.Group) (a : Fin M → P.Prime g) :
     (∏ j : Fin M, tiltedMu F P n g (a j)) =
       (P.V g) ^ (-(M : ℤ)) *
@@ -89,8 +89,7 @@ theorem initialMark_factorization {F : FixedData} {P : PrimeGroups} {M n : ℕ}
   calc
     _ = ∏ j : Fin M, (P.V g)⁻¹ * ((a j).val * baselinePrime F n (a j).val : ℝ)⁻¹ := by
       apply Finset.prod_congr rfl
-      intro j hj
-      exact tiltedMu_eq_Vinv_mul_charge F P n g (a j)
+      simp_all [tiltedMu_eq_Vinv_mul_charge]
     _ = (P.V g)⁻¹ ^ M *
         (∏ j : Fin M, ((a j).val * baselinePrime F n (a j).val : ℝ)⁻¹) := by
       rw [Finset.prod_mul_distrib]
@@ -100,9 +99,9 @@ theorem initialMark_factorization {F : FixedData} {P : PrimeGroups} {M n : ℕ}
       congr 1
       simp [zpow_neg, zpow_natCast, inv_pow]
 
-theorem edgeFreshMark_factorization {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
+theorem edgeFreshMark_factorization      
     (A : Model F P J m)
-    (Q : ResiduePath A n) (S : LifespanAssignment P n) (i : Fin n) (g : P.BigGroup)
+    (Q : ResiduePath A n)  S   i   g 
     (hV : P.V g.val ≠ 0) :
     (∏ j : Fin (J + F.ell),
       if (A.pattern (Q.pattern i)).shared g.val j ∨ j ∈ Q.promotionSlots S i g then 1
@@ -117,8 +116,7 @@ theorem edgeFreshMark_factorization {F : FixedData} {P : PrimeGroups} {J m n : �
   let U : Finset (Fin (J + F.ell)) := Finset.univ.filter (fun j => ¬ν.shared g.val j)
   let W := freshTargetSlots Q S i g
   have hset : W = U \ B := by
-    ext j
-    simp [freshTargetSlots, U, W, B, ν, Finset.mem_sdiff, Finset.mem_filter]
+    grind [freshTargetSlots, W]
   have hprod :
       (∏ j : Fin (J + F.ell),
         if ν.shared g.val j ∨ j ∈ B then 1 else tiltedMu F P n g.val (Q.target i g.val j)) =
@@ -126,10 +124,7 @@ theorem edgeFreshMark_factorization {F : FixedData} {P : PrimeGroups} {J m n : �
     calc
       _ = ∏ j : Fin (J + F.ell),
           if j ∈ W then tiltedMu F P n g.val (Q.target i g.val j) else 1 := by
-        apply Finset.prod_congr rfl
-        intro j hj
-        by_cases hs : ν.shared g.val j <;> by_cases hb : j ∈ B <;>
-          simp [freshTargetSlots, W, B, ν, hs, hb]
+        grind
       _ = ∏ j ∈ W, tiltedMu F P n g.val (Q.target i g.val j) := by simp
   have htilt :
       (∏ j ∈ W, tiltedMu F P n g.val (Q.target i g.val j)) =
@@ -141,8 +136,7 @@ theorem edgeFreshMark_factorization {F : FixedData} {P : PrimeGroups} {J m n : �
           (P.V g.val)⁻¹ *
             ((Q.target i g.val j).val * baselinePrime F n (Q.target i g.val j).val : ℝ)⁻¹ := by
         apply Finset.prod_congr rfl
-        intro j hj
-        exact tiltedMu_eq_Vinv_mul_charge F P n g.val (Q.target i g.val j)
+        solve_by_elim [tiltedMu_eq_Vinv_mul_charge]
       _ = _ := by
         rw [Finset.prod_mul_distrib]
         simp [Finset.prod_const]
@@ -155,19 +149,14 @@ theorem edgeFreshMark_factorization {F : FixedData} {P : PrimeGroups} {J m n : �
       (P.V g.val) ^ (-((W.card : ℕ) : ℤ)) by simp [zpow_neg, zpow_natCast, inv_pow]]
     rw [← zpow_add₀ hV]
     congr 1
-    have hc : (W.card : ℤ) + (B.card : ℤ) = (ν.t g.val : ℤ) := by exact_mod_cast hcard
     omega
-  rw [hprod, htilt]
-  calc
-    _ = ((P.V g.val)⁻¹ ^ W.card * (P.V g.val) ^ (-((B.card : ℕ) : ℤ))) *
-        (∏ j ∈ W,
-          ((Q.target i g.val j).val * baselinePrime F n (Q.target i g.val j).val : ℝ)⁻¹) := by ring
-    _ = _ := by rw [hpow]
+  grind
 
-theorem spanGhost_product_some {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (g : P.BigGroup) (p : P.Prime g.val) (birth stop : Fin (n + 1))
-    (hspan : S g p = some (birth, stop)) :
+include hspan in
+theorem spanGhost_product_some      
+         
+         
+      :
     (∏ i : Fin (n + 1), Q.spanGhostFactor S i g p) =
       (if birth ∈ Q.activeVisits g p then 1
         else -eta F n birth * ((p.val * baselinePrime F n p.val : ℝ)⁻¹)) *
@@ -187,30 +176,21 @@ theorem spanGhost_product_some {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
     simp only [ResiduePath.pendingBefore, ResiduePath.pendingAfter, hspan,
       ResiduePath.spanAnchor]
     constructor
-    · rintro ⟨⟨hbi, _, hnot⟩, ⟨_, hiz, _⟩, hz⟩
-      exact ⟨hbi, hiz, hnot, hz⟩
+    · aesop
     · rintro ⟨hbi, hiz, hnot, hz⟩
       exact ⟨⟨hbi, le_of_lt hiz, hnot⟩, ⟨le_of_lt hbi, hiz, hnot⟩, hz⟩
   have hbirth (i : Fin (n + 1)) :
       Q.ghostBirthAt g p (S g p) i ↔ i = birth ∧ birth ∉ active := by
     simp only [ResiduePath.ghostBirthAt, hspan]
     constructor
-    · rintro ⟨h, hnot⟩
-      subst i
-      exact ⟨rfl, hnot⟩
-    · rintro ⟨h, hnot⟩
-      subst i
-      exact ⟨rfl, hnot⟩
+    · aesop
+    aesop
   have hstop (i : Fin (n + 1)) :
       Q.ghostStopAt g p (S g p) i ↔ i = stop ∧ stop ∉ active := by
     simp only [ResiduePath.ghostStopAt, hspan]
     constructor
-    · rintro ⟨h, hnot⟩
-      subst i
-      exact ⟨rfl, hnot⟩
-    · rintro ⟨h, hnot⟩
-      subst i
-      exact ⟨rfl, hnot⟩
+    · aesop
+    aesop
   have hpoint (i : Fin (n + 1)) :
       Q.spanGhostFactor S i g p =
         (if i = birth ∧ birth ∉ active then -eta F n birth * charge else 1) *
@@ -219,21 +199,7 @@ theorem spanGhost_product_some {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
             ((Q.offset i - Q.offset birth : ℤ) : ZMod p.val) = 0
           then visitQ F.q n i else 1) := by
     simp only [ResiduePath.spanGhostFactor, hbirth i, hstop i, hbeforeafter i]
-    by_cases hb : i = birth
-    · by_cases hs : i = stop
-      · have hbs : birth = stop := hb.symm.trans hs
-        simp [hb, hbs, charge]
-      · have hne : birth ≠ stop := by
-          intro h
-          exact hs (hb.trans h)
-        simp [hb, hne, charge]
-    · by_cases hs : i = stop
-      · have hne : birth ≠ stop := by
-          intro h
-          exact hb (hs.trans h.symm)
-        have hne' : stop ≠ birth := Ne.symm hne
-        simp [hs, hne']
-      · simp [hb, hs]
+    bound
   have hbprod :
       (∏ i : Fin (n + 1), if i = birth ∧ birth ∉ active then -eta F n birth * charge else 1) =
         if birth ∈ active then 1 else -eta F n birth * charge := by
@@ -293,10 +259,11 @@ theorem spanGhost_product_some {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
     _ = _ := by
       rw [Finset.prod_mul_distrib, Finset.prod_mul_distrib, hbprod, hsprod, hiprod]
 
-theorem spanWeight_some_ghost_scalar {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (g : P.BigGroup) (p : P.Prime g.val) (birth stop : Fin (n + 1))
-    (hspan : S g p = some (birth, stop))
+include hspan in
+theorem spanWeight_some_ghost_scalar      
+         
+         
+     
     (hvalid : Q.spanValid g p (some (birth, stop))) :
     (if birth ∈ Q.activeVisits g p then
         (p.val * baselinePrime F n p.val : ℝ)⁻¹ else 1) *
@@ -326,49 +293,11 @@ theorem spanWeight_some_ghost_scalar {F : FixedData} {P : PrimeGroups} {J m n : 
       simp [hz']
   rw [hghost]
   unfold ResiduePath.spanWeight
-  simp only [hvalid]
-  rw [hinterior]
-  let c : ℝ := (p.val * baselinePrime F n p.val : ℝ)⁻¹
-  have hbirthFactor :
-      (if birth ∈ Q.activeVisits g p then c else 1) *
-        (if birth ∈ Q.activeVisits g p then 1 else -eta F n birth * c) =
-          c * (if birth ∈ Q.activeVisits g p then 1 else -eta F n birth) := by
-    by_cases hb : birth ∈ Q.activeVisits g p <;> simp [hb, c]; ring
-  have hres (i : Fin (n + 1)) :
-      ((Q.offset i - Q.offset birth : ℤ) : ZMod p.val) =
-        ((-Q.offset birth + Q.offset i : ℤ) : ZMod p.val) := by
-    congr 1
-    ring
-  have hprod :
-      Finset.prod I (fun i => 1 - eta F n i *
-        if ((Q.offset i - Q.offset birth : ℤ) : ZMod p.val) = 0 then 1 else 0) =
-      Finset.prod (Finset.univ.filter
-          (fun i => birth < i ∧ i < stop ∧ i ∉ Q.activeVisits g p)) (fun i =>
-        1 - eta F n i *
-          if ((-Q.offset birth + Q.offset i : ℤ) : ZMod p.val) = 0 then 1 else 0) := by
-    apply Finset.prod_congr
-    · simp [I]
-    · intro i hi
-      simp [hres i]
-  calc
-    _ = ((if birth ∈ Q.activeVisits g p then c else 1) *
-          (if birth ∈ Q.activeVisits g p then 1 else -eta F n birth * c)) *
-        ((if stop ∈ Q.activeVisits g p then 1 else -eta F n stop) *
-          Finset.prod I (fun i => 1 - eta F n i *
-            if ((Q.offset i - Q.offset birth : ℤ) : ZMod p.val) = 0 then 1 else 0)) := by ring
-    _ = _ := by
-      rw [hbirthFactor]
-      simp only [ite_true]
-      rw [show c = (p.val : ℝ)⁻¹ * (baselinePrime F n p.val)⁻¹ by
-        dsimp [c]
-        rw [mul_inv_rev]
-        ring]
-      rw [hprod]
-      ring
+  grind
 
-theorem spanWeight_scalarFactor {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (g : P.BigGroup) (p : P.Prime g.val)
+theorem spanWeight_scalarFactor      
+         
+       
     (hvalid : Q.spanValid g p (S g p)) :
     (match S g p with
       | none => (1 : ℝ)
@@ -379,27 +308,29 @@ theorem spanWeight_scalarFactor {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
   classical
   cases hspan : S g p with
   | none =>
-      have hactive : Q.activeVisits g p = ∅ := by
-        simpa [hspan, ResiduePath.spanValid] using hvalid
-      simp [hspan, ResiduePath.spanWeight, ResiduePath.spanGhostFactor, ResiduePath.ghostBirthAt, ResiduePath.ghostStopAt,
-        ResiduePath.pendingBefore, ResiduePath.pendingAfter, hactive]
+      simp_all [ResiduePath.spanValid, ResiduePath.spanWeight, ResiduePath.spanGhostFactor, ResiduePath.ghostBirthAt, ResiduePath.ghostStopAt, ResiduePath.pendingBefore, ResiduePath.pendingAfter]
   | some pair =>
       rcases pair with ⟨birth, stop⟩
       have hvalid' : Q.spanValid g p (some (birth, stop)) := by simpa [hspan] using hvalid
-      simpa [hspan] using
-        spanWeight_some_ghost_scalar Q S g p birth stop hspan hvalid'
+      solve_by_elim [spanWeight_some_ghost_scalar]
 
-theorem activeVisits_iff_label {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (g : P.BigGroup)
-    (p : P.Prime g.val) (i : Fin (n + 1)) :
+theorem activeVisits_iff_label      
+         
+       i  :
     i ∈ Q.activeVisits g p ↔ ∃ j : Fin (J + F.ell), Q.labels i g.val j = p := by
   simp [ResiduePath.activeVisits]
 
-theorem freshTarget_birth_eq {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (hQ : Q.Valid) (hS : Q.lifespanValid S)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (i : Fin n) (g : P.BigGroup) (j : Fin (J + F.ell))
+end
+
+section
+variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n) (hQ : Q.Valid) (hS : Q.lifespanValid S) (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k) (i : Fin n) (g : P.BigGroup) (p : P.Prime g.val)
+
+include hQ hS hk in
+theorem freshTarget_birth_eq      
+         
+       
+     
+         j 
     (hj : j ∈ freshTargetSlots Q S i g) :
     ∃ stop, S g (Q.target i g.val j) = some (i.succ, stop) := by
   classical
@@ -460,9 +391,7 @@ theorem freshTarget_birth_eq {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
     exact hfresh.1 hshared.2.1
   rcases hspan : S g p with _ | ⟨birth, stop⟩
   · have hnone := hS g p
-    rw [hspan] at hnone
-    simp [ResiduePath.spanValid] at hnone
-    exact False.elim ((Finset.ne_empty_of_mem htarget) hnone)
+    grind [ResiduePath.spanValid, False.elim]
   · have hv := hS g p
     rw [hspan] at hv
     have hbounds := hv.2.2.1 i.succ htarget
@@ -474,32 +403,25 @@ theorem freshTarget_birth_eq {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
         simpa using h
       have hlePrevVal : birth.val ≤ i.val := by omega
       have hstopLeVal : i.val + 1 ≤ stop.val := by
-        have h := Fin.le_iff_val_le_val.mp hbounds.2
-        simpa only [Fin.val_succ] using h
+        bound
       have hltStopVal : i.val < stop.val := by omega
-      have hlePrev : birth ≤ i.castSucc := by
-        apply Fin.le_iff_val_le_val.mpr
-        simpa using hlePrevVal
-      have hltStop : i.castSucc < stop := by
-        apply Fin.lt_def.mpr
-        simpa using hltStopVal
+      
+      
       have hpending : Q.pendingAfter g p (some (birth, stop)) i.castSucc := by
-        change birth ≤ i.castSucc ∧ i.castSucc < stop ∧ i.castSucc ∉ Q.activeVisits g p
-        exact ⟨hlePrev, hltStop, hnotPrev⟩
+        solve_by_elim
       have hpendingPrime : p ∈ Q.pendingAfterPrimes S i.castSucc g := by
         apply Finset.mem_filter.mpr
-        refine ⟨Finset.mem_univ _, ?_⟩
-        rw [hspan]
-        exact hpending
+        grind
       have hprom : j ∈ Q.promotionSlots S i g := by
         apply Finset.mem_filter.mpr
         exact ⟨Finset.mem_univ _, ⟨hfresh.1, hpendingPrime⟩⟩
       exact False.elim (hfresh.2 hprom)
 
-theorem active_birth_has_freshTarget {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (hQ : Q.Valid) (hS : Q.lifespanValid S)
-    (i : Fin n) (g : P.BigGroup) (p : P.Prime g.val) (stop : Fin (n + 1))
+include hQ hS in
+theorem active_birth_has_freshTarget      
+         
+       
+          (stop : Fin (n + 1))
     (hspan : S g p = some (i.succ, stop))
     (hactive : i.succ ∈ Q.activeVisits g p) :
     ∃ j, j ∈ freshTargetSlots Q S i g ∧ Q.target i g.val j = p := by
@@ -516,7 +438,7 @@ theorem active_birth_has_freshTarget {F : FixedData} {P : PrimeGroups} {J m n : 
     have hlabel' : Q.labels i.castSucc g.val (Q.sourcePerm i g.val j) = p := by
       simpa [ResiduePath.source, PrimeGroups.act] using hcompat.trans htarget
     have hp : i.castSucc ∈ Q.activeVisits g p :=
-      (activeVisits_iff_label Q g p i.castSucc).2 ⟨Q.sourcePerm i g.val j, hlabel'⟩
+      (by grind [activeVisits_iff_label])
     have hv := hS g p
     rw [hspan] at hv
     have hpos : i.castSucc < i.succ := by
@@ -528,16 +450,16 @@ theorem active_birth_has_freshTarget {F : FixedData} {P : PrimeGroups} {J m n : 
     intro hj
     have hpending := (Finset.mem_filter.mp hj).2.2
     have hmem := (Finset.mem_filter.mp hpending).2
-    rw [htarget, hspan] at hmem
-    simp [ResiduePath.pendingAfter] at hmem
+    simp_all [ResiduePath.pendingAfter]
   refine ⟨j, Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩, htarget⟩
   exact ⟨hnotShared, hnotPromotion⟩
 
-theorem freshTargetSlots_image_eq {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (hQ : Q.Valid) (hS : Q.lifespanValid S)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (i : Fin n) (g : P.BigGroup) :
+include hQ hS hk in
+theorem freshTargetSlots_image_eq      
+         
+       
+     
+        :
     ((freshTargetSlots Q S i g).image (Q.target i g.val)) =
       (Finset.univ.filter (fun p : P.Prime g.val =>
         (∃ stop, S g p = some (i.succ, stop)) ∧ i.succ ∈ Q.activeVisits g p)) := by
@@ -551,17 +473,14 @@ theorem freshTargetSlots_image_eq {F : FixedData} {P : PrimeGroups} {J m n : ℕ
     refine ⟨Finset.mem_univ _, ⟨?_, ?_⟩⟩
     · exact ⟨stop, by simpa [htarget] using hborn⟩
     · simpa [htarget] using Q.target_activeVisit i g j
-  · intro hp
-    obtain ⟨⟨stop, hborn⟩, hactive⟩ := (Finset.mem_filter.mp hp).2
-    obtain ⟨j, hj, htarget⟩ :=
-      active_birth_has_freshTarget Q S hQ hS i g p stop hborn hactive
-    exact Finset.mem_image.mpr ⟨j, hj, htarget⟩
+  grind [active_birth_has_freshTarget]
 
-theorem freshCharge_product_eq {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (hQ : Q.Valid) (hS : Q.lifespanValid S)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (i : Fin n) (g : P.BigGroup) :
+include hQ hS hk in
+theorem freshCharge_product_eq      
+         
+       
+     
+        :
     (∏ j ∈ freshTargetSlots Q S i g,
       ((Q.target i g.val j).val * baselinePrime F n (Q.target i g.val j).val : ℝ)⁻¹) =
     (∏ p : P.Prime g.val,
@@ -581,8 +500,9 @@ theorem freshCharge_product_eq {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
           (∃ stop, S g p = some (i.succ, stop)) ∧ i.succ ∈ Q.activeVisits g p))
         (f := fun p => (p.val * baselinePrime F n p.val : ℝ)⁻¹))
 
-theorem initialCharge_product_eq {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (hQ : Q.Valid) (g : P.BigGroup) :
+include hQ in
+theorem initialCharge_product_eq      
+            :
     (∏ j : Fin (J + F.ell),
       ((Q.labels 0 g.val j).val * baselinePrime F n (Q.labels 0 g.val j).val : ℝ)⁻¹) =
     (∏ p : P.Prime g.val,
@@ -603,24 +523,13 @@ theorem initialCharge_product_eq {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
         (s := Finset.univ.filter (fun p : P.Prime g.val => 0 ∈ Q.activeVisits g p))
         (f := fun p => (p.val * baselinePrime F n p.val : ℝ)⁻¹))
 
-theorem exists_fin_succ_eq {n : ℕ} (b : Fin (n + 1)) (hb : b ≠ 0) :
+theorem exists_fin_succ_eq    b  (hb : b ≠ 0) :
     ∃ i : Fin n, i.succ = b := by
-  have hbval : 0 < b.val := by
-    by_contra h
-    have hz : b.val = 0 := by omega
-    apply hb
-    apply Fin.ext
-    exact hz
-  let i : Fin n := ⟨b.val - 1, by omega⟩
-  refine ⟨i, ?_⟩
-  apply Fin.ext
-  simp only [Fin.val_succ]
-  simp [i]
-  omega
+  simp_all
 
-theorem freshBirthIndicator_product {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (g : P.BigGroup) (p : P.Prime g.val) :
+theorem freshBirthIndicator_product      
+         
+        :
     (∏ i : Fin n,
       if (∃ stop, S g p = some (i.succ, stop) ∧ i.succ ∈ Q.activeVisits g p) then
         (p.val * baselinePrime F n p.val : ℝ)⁻¹ else 1) =
@@ -631,23 +540,16 @@ theorem freshBirthIndicator_product {F : FixedData} {P : PrimeGroups} {J m n : �
   have huniq (i j : Fin n)
       (hi : ∃ stop, S g p = some (i.succ, stop) ∧ i.succ ∈ Q.activeVisits g p)
       (hj : ∃ stop, S g p = some (j.succ, stop) ∧ j.succ ∈ Q.activeVisits g p) : i = j := by
-    obtain ⟨s₁, hs₁, _⟩ := hi
-    obtain ⟨s₂, hs₂, _⟩ := hj
-    have hpair : (i.succ, s₁) = (j.succ, s₂) :=
-      Option.some.inj (hs₁.symm.trans hs₂)
-    have hs : i.succ = j.succ := congrArg Prod.fst hpair
-    apply Fin.ext
-    have hv := congrArg Fin.val hs
-    simp only [Fin.val_succ] at hv
-    omega
+    aesop
   simpa using Fintype.prod_ite_eq_ite_exists
     (fun i : Fin n => ∃ stop, S g p = some (i.succ, stop) ∧
       i.succ ∈ Q.activeVisits g p) huniq
     ((p.val * baselinePrime F n p.val : ℝ)⁻¹)
 
-theorem initialFreshCharge_single_prime {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (hS : Q.lifespanValid S) (g : P.BigGroup) (p : P.Prime g.val) :
+include hS in
+theorem initialFreshCharge_single_prime      
+         
+          :
     (if 0 ∈ Q.activeVisits g p then (p.val * baselinePrime F n p.val : ℝ)⁻¹ else 1) *
       (∏ i : Fin n,
         if (∃ stop, S g p = some (i.succ, stop)) ∧
@@ -662,11 +564,7 @@ theorem initialFreshCharge_single_prime {F : FixedData} {P : PrimeGroups} {J m n
   have hpred (i : Fin n) :
       (∃ stop, S g p = some (i.succ, stop) ∧ i.succ ∈ Q.activeVisits g p) ↔
       (∃ stop, S g p = some (i.succ, stop)) ∧ i.succ ∈ Q.activeVisits g p := by
-    constructor
-    · rintro ⟨stop, hs, ha⟩
-      exact ⟨⟨stop, hs⟩, ha⟩
-    · rintro ⟨⟨stop, hs⟩, ha⟩
-      exact ⟨stop, hs, ha⟩
+    grind
   have hprodOut :
       (∏ i : Fin n,
         if (∃ stop, S g p = some (i.succ, stop)) ∧
@@ -699,22 +597,11 @@ theorem initialFreshCharge_single_prime {F : FixedData} {P : PrimeGroups} {J m n
             i.succ ∈ Q.activeVisits g p) ↔
           birth ≠ 0 ∧ birth ∈ Q.activeVisits g p := by
         constructor
-        · rintro ⟨i, stop', he, hi⟩
-          have hpair : (birth, stop) = (i.succ, stop') :=
-            Option.some.inj (hspan.symm.trans he)
-          have hbirth : birth = i.succ := congrArg Prod.fst hpair
-          refine ⟨?_, ?_⟩
-          · intro hz
-            have hv := congrArg Fin.val hbirth
-            rw [hz] at hv
-            simp only [Fin.val_zero, Fin.val_succ] at hv
-            omega
-          · simpa [hbirth] using hi
+        · grind
         · rintro ⟨hb, hbact⟩
           obtain ⟨i, hi⟩ := exists_fin_succ_eq birth hb
           refine ⟨i, stop, ?_, ?_⟩
-          · exact hspan.trans (congrArg
-              (fun b : Fin (n + 1) => some (b, stop)) hi.symm)
+          · bound
           · simpa [hi] using hbact
       have hborn' :
           (∃ i : Fin n, (∃ stop', some (birth, stop) = some (i.succ, stop')) ∧
@@ -726,22 +613,18 @@ theorem initialFreshCharge_single_prime {F : FixedData} {P : PrimeGroups} {J m n
         · intro h0
           have hle : birth.val ≤ 0 :=
             Fin.le_iff_val_le_val.mp (hvalid.2.2.1 0 h0).1
-          have hval : birth.val = 0 := Nat.eq_zero_of_le_zero hle
-          have hb0 : birth = 0 := Fin.ext hval
-          exact ⟨hb0, by simpa [hb0] using h0⟩
-        · rintro ⟨hb, hbact⟩
-          simpa [hb] using hbact
+          grind
+        grind
       rw [hprod']
       simp only [hzero, hborn']
-      simp
-      by_cases hb : birth ∈ Q.activeVisits g p <;>
-        by_cases hz : birth = 0 <;> simp [hb, hz]
+      grind
 
-theorem initialFreshCharge_product_eq {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
-    {A : Model F P J m} (Q : ResiduePath A n) (S : LifespanAssignment P n)
-    (hQ : Q.Valid) (hS : Q.lifespanValid S)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (g : P.BigGroup) :
+include hQ hS hk in
+theorem initialFreshCharge_product_eq      
+         
+       
+     
+      :
     (∏ j : Fin (J + F.ell),
       ((Q.labels 0 g.val j).val * baselinePrime F n (Q.labels 0 g.val j).val : ℝ)⁻¹) *
       (∏ i : Fin n, ∏ j ∈ freshTargetSlots Q S i g,
@@ -786,6 +669,8 @@ theorem initialFreshCharge_product_eq {F : FixedData} {P : PrimeGroups} {J m n :
       intro p hp
       exact initialFreshCharge_single_prime Q S hS g p
 
+end
+
 theorem SpanMarkWeightTask_proof : Erdos821.S2Core.SpanMarkWeightTask := by
   intro F P J m n A Q S hQ hS hk g hV
   classical
@@ -800,15 +685,7 @@ theorem SpanMarkWeightTask_proof : Erdos821.S2Core.SpanMarkWeightTask := by
   have hinitV :
       (∏ j : Fin (J + F.ell), tiltedMu F P n g.val (Q.labels 0 g.val j)) =
         (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ) * initialCharge := by
-    calc
-      _ = (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ) *
-          (∏ j : Fin (J + F.ell),
-            ((Q.labels 0 g.val j).val * baselinePrime F n
-              (Q.labels 0 g.val j).val : ℝ)⁻¹) :=
-        initialMark_factorization (F := F) (P := P) (M := J + F.ell) (n := n)
-          g.val (fun j => Q.labels 0 g.val j)
-      _ = _ := by
-        congr 1
+    solve_by_elim [initialMark_factorization]
   have hedge (i : Fin n) :
       ((∏ j : Fin (J + F.ell),
         if (A.pattern (Q.pattern i)).shared g.val j ∨ j ∈ Q.promotionSlots S i g then 1
@@ -855,8 +732,7 @@ theorem SpanMarkWeightTask_proof : Erdos821.S2Core.SpanMarkWeightTask := by
       _ = _ := by
         rw [Finset.prod_comm, ← Finset.prod_mul_distrib]
         apply Finset.prod_congr rfl
-        intro p hp
-        exact spanWeight_scalarFactor Q S g p (hS g p)
+        solve_by_elim [spanWeight_scalarFactor]
   calc
     _ = ((P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ) * initialCharge) *
         ((∏ i : Fin n,

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Taylor
 
@@ -99,14 +100,19 @@ end Weights
 /-! ### The summand `Ψ` -/
 
 /-- The summand `Ψ(h) = Φ((h - 1)/x) E(h - 1)`. -/
-noncomputable def cutPsi (Φ : ℝ → ℝ) (E : ℕ → ℝ) (x : ℝ) (h : ℕ) : ℝ :=
+noncomputable def cutPsi (Φ : ℝ → ℝ) (E : ℕ → ℝ) (x : ℝ) (h : ℕ)  :=
   Φ (((h : ℝ) - 1) / x) * E (h - 1)
 
 section Psi
 
 variable {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → ℝ} {E : ℕ → ℝ}
 
-theorem cutPsi_eq_zero (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ) {h : ℕ}
+section
+variable (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ)
+
+
+include hΦ hx hκ in
+theorem cutPsi_eq_zero        {h} 
     (hh : ⌊κ * x + 1⌋₊ < h) : cutPsi Φ E x h = 0 := by
   unfold cutPsi
   by_contra hne
@@ -116,10 +122,11 @@ theorem cutPsi_eq_zero (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ
   have h2 : κ * x + 1 < h := (Nat.floor_lt (by positivity)).1 hh
   linarith
 
+include hΦ hx hκ in
 /-- `|Ψ(h)| ≤ M₀ S_E` when `|E| ≤ S_E` on `[1, x²]`, `κ x ≤ x²` and `κ ≤ x`. -/
-theorem abs_cutPsi_le (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ)
-    (hκx : κ * x ≤ x ^ 2) (hxκ : κ ≤ x) {SE : ℝ} (hSE0 : 0 ≤ SE)
-    (hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 → |E h| ≤ SE) (h : ℕ) :
+theorem abs_cutPsi_le      
+    (hκx : κ * x ≤ x ^ 2) (hxκ : κ ≤ x)  {SE}  (hSE0 : 0 ≤ SE)
+    (hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 → |E h| ≤ SE)  h  :
     |cutPsi Φ E x h| ≤ M 0 * SE := by
   unfold cutPsi
   have hM0 : ∀ y, |Φ y| ≤ M 0 := fun y => by
@@ -134,7 +141,7 @@ theorem abs_cutPsi_le (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ)
   rw [div_le_iff₀ hx] at h2
   have hx1 : 1 ≤ κ⁻¹ * x := by
     rw [← div_eq_inv_mul, le_div_iff₀ hκ]; linarith
-  have hh1 : (1 : ℝ) ≤ (h : ℝ) - 1 := by linarith
+  
   have hh : 2 ≤ h := by
     have : (2 : ℝ) ≤ h := by linarith
     exact_mod_cast this
@@ -143,6 +150,8 @@ theorem abs_cutPsi_le (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ)
   refine mul_le_mul (hM0 _) (hSE _ (by omega) ?_) (abs_nonneg _) hM00
   rw [hcast]
   linarith
+
+end
 
 end Psi
 
@@ -177,9 +186,9 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
   set E := endpoint q cw K CN x u v B
   set α := primeProxyDiff x γ j
   have hx0 : 0 < x := by linarith
-  have hκ0 : 0 < κ := by linarith
-  have hlam1 : 1 ≤ lam := hxγ.trans hlam
-  have hmu1 : 1 ≤ mu := hxγ.trans hmu
+  
+  
+  
   have hM0 : ∀ y, |Φ y| ≤ M 0 := fun y => by simpa using hΦ.2.2.2 0 y
   have hM00 : 0 ≤ M 0 := (abs_nonneg _).trans (hM0 0)
   have hLr : 0 ≤ Real.log x ^ (-12 : ℝ) := Real.rpow_nonneg (Real.log_pos hx).le _
@@ -211,8 +220,7 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
     rw [le_div_iff₀ hx0] at h1
     rw [div_le_iff₀ hx0] at h2
     have h1' : x / κ ≤ lam * mu := by
-      have : x / κ = κ⁻¹ * x := by ring
-      rw [this]; exact h1
+      grind
     have hsq' : 4 * (lam * mu) ≤ x ^ 2 := by linarith
     have hmain := abs_box_main_le hE hbox hδ0 hδ1 hlam hmu hxγ h1' h2 hsq' hj1 hj2 βc hβc
     refine mul_le_mul (hM0 _) (hmain.trans ?_) (abs_nonneg _) hM00
@@ -226,11 +234,9 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
     have hlm : lam < m := (Nat.floor_lt (by linarith)).1 hm1
     have hmn : mu < n := (Nat.floor_lt (by linarith)).1 hn1
     have hm2' : (m : ℝ) ≤ lam * (1 + δ) := (Nat.le_floor_iff' (by
-      have : (0 : ℝ) < m := by linarith
-      exact_mod_cast this.ne')).1 hm2
+      grind)).1 hm2
     have hn2' : (n : ℝ) ≤ mu * (1 + δ) := (Nat.le_floor_iff' (by
-      have : (0 : ℝ) < n := by linarith
-      exact_mod_cast this.ne')).1 hn2
+      grind)).1 hn2
     have hfr := abs_cutoff_freeze_le hΦ hx0 hκ (by linarith) (by linarith) hδ0 hδ1 hlm hm2' hmn
       hn2'
     have hβ0 := (hββ n).1
@@ -307,23 +313,28 @@ theorem sum_cells_variation_le (A : ℕ) (lam : ℕ → ℝ) (hmono : ∀ a, lam
     _ = τ * SE * X * (β n / n) := by ring
 
 /-- The grid `λ_a = x^γ (1 + δ)^a`. -/
-noncomputable def gridPt (x γ δ : ℝ) (a : ℕ) : ℝ := x ^ γ * (1 + δ) ^ a
+noncomputable def gridPt (x γ δ : ℝ) (a : ℕ)  := x ^ γ * (1 + δ) ^ a
 
-theorem gridPt_succ (x γ δ : ℝ) (a : ℕ) : gridPt x γ δ (a + 1) = gridPt x γ δ a * (1 + δ) := by
+theorem gridPt_succ  x γ δ   a  : gridPt x γ δ (a + 1) = gridPt x γ δ a * (1 + δ) := by
   unfold gridPt; ring
 
-theorem gridPt_mono {x γ δ : ℝ} (hx : 0 ≤ x ^ γ) (hδ : 0 ≤ δ) (a : ℕ) :
+theorem gridPt_mono  {x γ δ}  (hx : 0 ≤ x ^ γ) (hδ : 0 ≤ δ)  a  :
     gridPt x γ δ a ≤ gridPt x γ δ (a + 1) := by
   rw [gridPt_succ]
   have : 0 ≤ gridPt x γ δ a := by unfold gridPt; positivity
   nlinarith
 
+section
+variable {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE δ : ℝ} {M : ℕ → ℝ} {Φ : ℝ → ℝ} {k : ℕ} {u v : Fin (k + 1) → ℝ} {B : (Fin k → ℕ) → ℝ} (hE : EndpointData q cw K CN x u v B 𝒩) (hbox : BoxBound q K c Ch Cj κ C₂ x) (hC₂ : 0 ≤ C₂) (hΦ : IsCutoff κ CΦ M x Φ) (hκ : 1 < κ) (hx : 1 < x) (hxκ : κ ≤ x) (hxγ : 1 ≤ x ^ presieveExponent c Ch x)
+
+
+include hE hbox hC₂ hΦ hκ hx hxγ in
 /-- The clipped part of a telescoping step: the boxes of the grid. -/
-theorem abs_clipped_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE δ : ℝ}
-    {M : ℕ → ℝ} {Φ : ℝ → ℝ} {k : ℕ} {u v : Fin (k + 1) → ℝ} {B : (Fin k → ℕ) → ℝ}
-    (hE : EndpointData q cw K CN x u v B 𝒩) (hbox : BoxBound q K c Ch Cj κ C₂ x)
-    (hC₂ : 0 ≤ C₂) (hΦ : IsCutoff κ CΦ M x Φ) (hκ : 1 < κ) (hx : 1 < x)
-    (hxγ : 1 ≤ x ^ presieveExponent c Ch x) (hsq : 4 * (κ * x + 1) ≤ x ^ 2)
+theorem abs_clipped_le      
+             
+       
+           
+      (hsq : 4 * (κ * x + 1) ≤ x ^ 2)
     (hSE0 : 0 ≤ SE)
     (hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 → |endpoint q cw K CN x u v B h| ≤ SE)
     (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1) {A : ℕ}
@@ -359,7 +370,7 @@ theorem abs_clipped_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE 
   have hlam00 : lam 0 = x ^ γ := by simp [lam, gridPt]
   have hlamγ : ∀ a, x ^ γ ≤ lam a := fun a => by
     simp only [lam, gridPt]
-    exact le_mul_of_one_le_right (by linarith) (one_le_pow₀ (by linarith))
+    bound
   -- cut `m₀` and `n` into the cells of the grid
   have hgrid : ∑ m₀ ∈ Icc 1 N, ∑ n ∈ Icc 1 N, cutPsi Φ E x (m₀ * n) * α m₀ * βc n =
       ∑ a ∈ range A, ∑ b ∈ range A, ∑ m₀ ∈ Ioc ⌊lam a⌋₊ ⌊lam (a + 1)⌋₊,
@@ -423,12 +434,13 @@ theorem abs_clipped_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE 
         rw [hlam00] at hvar ⊢
         exact add_le_add le_rfl hvar
 
+include hE hbox hC₂ hΦ hκ hx hxκ hxγ in
 /-- One telescoping step of E4. -/
-theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE δ : ℝ}
-    {M : ℕ → ℝ} {Φ : ℝ → ℝ} {k : ℕ} {u v : Fin (k + 1) → ℝ} {B : (Fin k → ℕ) → ℝ}
-    (hE : EndpointData q cw K CN x u v B 𝒩) (hbox : BoxBound q K c Ch Cj κ C₂ x)
-    (hC₂ : 0 ≤ C₂) (hΦ : IsCutoff κ CΦ M x Φ) (hκ : 1 < κ) (hx : 1 < x) (hxκ : κ ≤ x)
-    (hxγ : 1 ≤ x ^ presieveExponent c Ch x) (hsq : 4 * (κ * x + 1) ≤ x ^ 2)
+theorem abs_single_step_le      
+             
+       
+             
+      (hsq : 4 * (κ * x + 1) ≤ x ^ 2)
     (hSE0 : 0 ≤ SE)
     (hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 → |endpoint q cw K CN x u v B h| ≤ SE)
     (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1) {A : ℕ}
@@ -558,5 +570,7 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
     rw [hconv]
     exact sum_tupleWeight_mul_le (Icc 1 N) hV0 (l := fun p => (p : ℝ)⁻¹)
       (fun p _ => by positivity) _
+
+end
 
 end Erdos408.TypeII

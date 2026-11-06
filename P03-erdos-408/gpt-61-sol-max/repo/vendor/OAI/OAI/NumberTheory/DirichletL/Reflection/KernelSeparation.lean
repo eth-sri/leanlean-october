@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.KernelGeometry
 public import OAI.NumberTheory.DirichletL.Inversion.KernelSourceUniform
@@ -12,27 +13,27 @@ open scoped Classical BigOperators ContDiff SchwartzMap
 open MeasureTheory FourierBridge InverseKernelSourceUniform
 noncomputable section
 
-def kernelCoordinateWeight (w : ℝ→ℂ) (slope Q t q : ℝ) : ℂ :=
+def kernelCoordinateWeight (w : ℝ→ℂ) (slope Q t q : ℝ)  :=
   w (Real.log (q/Q))*logPhase t (slope*Real.log (q/Q))
 
-def kernelDualWeight (windows : Fin 4→ℝ→ℂ) (Qn Qb t n b : ℝ) : ℂ :=
+def kernelDualWeight (windows : Fin 4→ℝ→ℂ) (Qn Qb t n b : ℝ)  :=
   kernelCoordinateWeight (windows 2) 1 Qn t n * kernelCoordinateWeight (windows 3) 3 Qb t b
 
-lemma kernelCoordinateWeight_norm (w : ℝ→ℂ) (slope Q t q : ℝ) :
+lemma kernelCoordinateWeight_norm  w   slope Q t q  :
     ‖kernelCoordinateWeight w slope Q t q‖ = ‖w (Real.log (q/Q))‖ := by
   simp only [kernelCoordinateWeight,norm_mul,logPhase_norm,mul_one]
 
-lemma kernelDualWeight_norm_le_one (windows : Fin 4→ℝ→ℂ)
-    (hw : ∀ i y, ‖windows i y‖≤1) (Qn Qb t n b : ℝ) :
+lemma kernelDualWeight_norm_le_one  windows 
+    (hw : ∀ i y, ‖windows i y‖≤1)  Qn Qb t n b  :
     ‖kernelDualWeight windows Qn Qb t n b‖≤1 := by
   rw [kernelDualWeight,norm_mul,kernelCoordinateWeight_norm,kernelCoordinateWeight_norm]
-  exact (mul_le_of_le_one_left (norm_nonneg _) (hw _ _)).trans (hw _ _)
+  bound
 
-lemma kernelCoordinateWeight_continuous (w : ℝ→ℂ) (slope Q q : ℝ) :
+lemma kernelCoordinateWeight_continuous  w   slope Q q  :
     Continuous (fun t => kernelCoordinateWeight w slope Q t q) :=
   (logPhase_continuous_left _).const_mul _
 
-lemma kernel_mode_separation (windows : Fin 4→ℝ→ℂ) (QK QP Qn Qb k p n b t : ℝ) :
+lemma kernel_mode_separation  windows   QK QP Qn Qb k p n b t  :
     (∏ i, windows i (kernelLogCoordinates QK QP Qn Qb k p n b i) *
       logPhase t (kernelSlope i*kernelLogCoordinates QK QP Qn Qb k p n b i)) =
     kernelCoordinateWeight (windows 0) (-2) QK t k *
@@ -44,10 +45,10 @@ lemma kernel_mode_separation (windows : Fin 4→ℝ→ℂ) (QK QP Qn Qb k p n b 
   ring
 
 theorem reflected_kernel_uniform_separation (a b : ℝ) (ha : 0<a)
-    (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ) (hM : ∀ i, 0≤M i)
+     windows  (M : Fin 4→ℝ) (hM : ∀ i, 0≤M i)
     (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
-    (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a b)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+     W  (hWsupport : Function.support W ⊆ Set.Icc a b)
+    (hW : ContDiff ℝ ∞ W)  J  :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧
       HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ θ C QK QP Qn Qb : ℝ, 0<C → 0<QK → 0<QP → 0<Qn → 0<Qb →

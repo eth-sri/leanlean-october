@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.LowFixedMember
 public import OAI.NumberTheory.DirichletL.Reflection.DyadCompletionEnergy
@@ -10,7 +11,7 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 variable {Nlevel : Eis}
@@ -24,7 +25,7 @@ theorem low_dyadic_geometry_uniform
     (hNlevel : ∀ i,(9:Eis)*c₀ i∣Nlevel)
     (hbase : ∀ i,if mode i then ConcretePrimeRowBridge.goodLambda^2∣a i-1 else ConcretePrimeRowBridge.goodLambda^2∣c₀ i-1)
     (hac : ∀ i,IsCoprime (a i) (c₀ i))
-    (Q : Ideal Eis) (hQ : Q≠0) (Ck η : ℝ) (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) :
+     Q  (hQ : Q≠0)  Ck η  (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) :
     ∃ (degree : ℕ) (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
     ∀ g : γ,∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (J F Q₀ : Ideal Eis)
       (_hJ : J≠0) (_hF : F≠0),
@@ -72,7 +73,7 @@ theorem low_dyadic_geometry_uniform
   let G := (poolPrimeFamily J Q Q₀).restrict A
   let jF := fun b : A => completedLocalExponent J F b.val.val
   have hz : 1<Z := lt_of_lt_of_le hZ₀ hZ
-  have hzp : 0<Z := lt_trans zero_lt_one hz
+  
   have hrowNorm : ∀ K∈rows,1≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤Hrow :=
     fun K hK => original_residual_norm_bounds parents J Q hbad (Ck*Z^(5/6-2*d)) hparents K (hsub hK)
   have htupleNorm : ∀ p∈tuples,1≤(Ideal.absNorm (slotTupleProduct p):ℝ) ∧
@@ -107,7 +108,7 @@ theorem low_dyadic_geometry_uniform
       exact one_le_mul_of_one_le_of_one_le
         (QuadraticMainBoundary.norm_one_le (rowPowerfulPart_ne_zero I))
         (QuadraticMainBoundary.norm_one_le (squarefreeMaskPart_ne_zero (rowSimplePart I) Q))
-    have hs := hKlower.trans (hres.trans hIn)
+    
     linarith
   have hPupper : (2*divisorDyadicScale j.val)/2≤Z^ell0 := by
     convert activeTupleDyad_scale_le tuples Hslot htupleNorm j hj using 1 ; dsimp [Hslot] ; ring
@@ -145,7 +146,7 @@ theorem low_dyadic_geometry_uniform
     (fun K hK => hr K (divisorDyadicBin_subset rows Hrow i hK))
     (fun p hp => haw p (activeTupleDyad_subset tuples Hslot j hp))
   exact hb
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

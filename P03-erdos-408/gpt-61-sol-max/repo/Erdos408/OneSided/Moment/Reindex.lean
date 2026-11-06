@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.Lines
 public import Erdos408.OneSided.RootResidue
@@ -25,7 +26,7 @@ open Finset
 variable {K : ℕ}
 
 /-- The lines of the integer root of `P₀ = (u, v)`: `ℓ_p = [(c, -u)]_p`, `c = rootC u v`. -/
-def rootLines (P₀ : ℕ × ℕ) (p : ℕ) : ℕ :=
+def rootLines (P₀ : ℕ × ℕ) (p : ℕ)  :=
   lineOf p ((rootC P₀.1 P₀.2 : ℤ), -(P₀.1 : ℤ))
 
 namespace Reindex
@@ -35,72 +36,75 @@ open RootResidue
 /-! ### The integer root -/
 
 /-- `g z` for the integer root `g = (u c; v d)` of `P₀ = (u, v)`. -/
-def rootMap (P₀ : ℕ × ℕ) (z : ℤ × ℤ) : ℤ × ℤ :=
+def rootMap (P₀ : ℕ × ℕ) (z : ℤ × ℤ)  :=
   (P₀.1 * z.1 + rootC P₀.1 P₀.2 * z.2, P₀.2 * z.1 + rootD P₀.1 P₀.2 * z.2)
 
 /-- `g⁻¹ w = (d w₁ - c w₂, -v w₁ + u w₂)`. -/
-def rootMapInv (P₀ : ℕ × ℕ) (w : ℤ × ℤ) : ℤ × ℤ :=
+def rootMapInv (P₀ : ℕ × ℕ) (w : ℤ × ℤ)  :=
   (rootD P₀.1 P₀.2 * w.1 - rootC P₀.1 P₀.2 * w.2, -(P₀.2 : ℤ) * w.1 + P₀.1 * w.2)
 
 variable {P₀ : ℕ × ℕ}
 
+section
+variable (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) (z z' : ℤ × ℤ)
+
+
+include hu hco in
 /-- `u d - v c = 1`. -/
-theorem root_det (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) :
+theorem root_det     :
     (P₀.1 : ℤ) * rootD P₀.1 P₀.2 - P₀.2 * rootC P₀.1 P₀.2 = 1 := by
   have h : ((P₀.1 * rootD P₀.1 P₀.2 : ℕ) : ℤ) = (1 + P₀.2 * rootC P₀.1 P₀.2 : ℕ) := by
     rw [mul_rootD hu hco]
   push_cast at h
   linarith
 
+include hu hco in
 /-- `g⁻¹ g z = z`. -/
-theorem rootMapInv_rootMap (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) (z : ℤ × ℤ) :
+theorem rootMapInv_rootMap       :
     rootMapInv P₀ (rootMap P₀ z) = z := by
-  have h := root_det hu hco
-  refine Prod.ext ?_ ?_ <;> simp only [rootMapInv, rootMap]
-  · linear_combination z.1 * h
-  · linear_combination z.2 * h
+  grind [root_det, rootMapInv, rootMap]
 
+include hu hco in
 /-- `g g⁻¹ w = w`. -/
-theorem rootMap_rootMapInv (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) (w : ℤ × ℤ) :
+theorem rootMap_rootMapInv      w  :
     rootMap P₀ (rootMapInv P₀ w) = w := by
-  have h := root_det hu hco
-  refine Prod.ext ?_ ?_ <;> simp only [rootMapInv, rootMap]
-  · linear_combination w.1 * h
-  · linear_combination w.2 * h
+  grind [root_det, rootMapInv, rootMap]
 
+include hu hco in
 /-- `g` maps primitive vectors to primitive vectors. -/
-theorem isCoprime_rootMap (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) {z : ℤ × ℤ}
+theorem isCoprime_rootMap      {z} 
     (hz : IsCoprime z.1 z.2) : IsCoprime (rootMap P₀ z).1 (rootMap P₀ z).2 := by
   obtain ⟨x, y, h⟩ := hz
   refine ⟨x * rootD P₀.1 P₀.2 - y * P₀.2, -x * rootC P₀.1 P₀.2 + y * P₀.1, ?_⟩
-  simp only [rootMap]
-  linear_combination h + (x * z.1 + y * z.2) * root_det hu hco
+  grind [rootMap, root_det]
 
+include hu hco in
 /-- `g⁻¹` maps primitive vectors to primitive vectors. -/
-theorem isCoprime_rootMapInv (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) {w : ℤ × ℤ}
+theorem isCoprime_rootMapInv      {w} 
     (hw : IsCoprime w.1 w.2) : IsCoprime (rootMapInv P₀ w).1 (rootMapInv P₀ w).2 := by
   obtain ⟨x, y, h⟩ := hw
   refine ⟨x * P₀.1 + y * P₀.2, x * rootC P₀.1 P₀.2 + y * rootD P₀.1 P₀.2, ?_⟩
-  simp only [rootMapInv]
-  linear_combination h + (x * w.1 + y * w.2) * root_det hu hco
+  grind [rootMapInv, root_det]
 
+include hu hco in
 /-- `det(g z, g z') = det(z, z')`. -/
-theorem det_rootMap (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) (z z' : ℤ × ℤ) :
+theorem det_rootMap       :
     (rootMap P₀ z).1 * (rootMap P₀ z').2 - (rootMap P₀ z).2 * (rootMap P₀ z').1 =
       z.1 * z'.2 - z.2 * z'.1 := by
-  simp only [rootMap]
-  linear_combination (z.1 * z'.2 - z.2 * z'.1) * root_det hu hco
+  grind [rootMap, root_det]
 
+include hu in
 /-- `u τ(z) = (g z)₁` at the ratio `r = c/u`. -/
-theorem mul_tau (hu : 0 < P₀.1) (z : ℤ × ℤ) :
+theorem mul_tau     :
     (P₀.1 : ℝ) * tau ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) z = (rootMap P₀ z).1 := by
   have hu' : (P₀.1 : ℝ) ≠ 0 := by positivity
   simp only [tau, rootMap]
   push_cast
   field_simp
 
+include hu hco in
 /-- `v τ(z) + z₂/u = (g z)₂` at the ratio `r = c/u`. -/
-theorem mul_tau_add_div (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) (z : ℤ × ℤ) :
+theorem mul_tau_add_div       :
     (P₀.2 : ℝ) * tau ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) z + z.2 / P₀.1 = (rootMap P₀ z).2 := by
   have hu' : (P₀.1 : ℝ) ≠ 0 := by positivity
   have h : (P₀.1 * rootD P₀.1 P₀.2 : ℝ) = 1 + P₀.2 * rootC P₀.1 P₀.2 := by
@@ -110,11 +114,13 @@ theorem mul_tau_add_div (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) (z : ℤ
   field_simp
   linear_combination (-(z.2 : ℝ)) * h
 
+end
+
 /-! ### Divisibility and lines -/
 
 /-- For a prime `p`, a primitive `z` and a primitive row `(a, b)`: `p ∣ a z₁ + b z₂` exactly
 when `[z]_p` is the kernel line `[(b, -a)]_p`. -/
-theorem dvd_iff_lineOf_eq {p : ℕ} (hp : p.Prime) {a b : ℤ} (hab : IsCoprime a b) {z : ℤ × ℤ}
+theorem dvd_iff_lineOf_eq {p : ℕ} (hp : p.Prime)  {a b}  (hab : IsCoprime a b)  {z} 
     (hz : IsCoprime z.1 z.2) : (p : ℤ) ∣ a * z.1 + b * z.2 ↔ lineOf p z = lineOf p (b, -a) := by
   have : Fact p.Prime := ⟨hp⟩
   -- a primitive vector is nonzero modulo `p`
@@ -133,18 +139,10 @@ theorem dvd_iff_lineOf_eq {p : ℕ} (hp : p.Prime) {a b : ℤ} (hab : IsCoprime 
   push_cast
   by_cases h1 : (z.1 : ZMod p) = 0 <;> by_cases h2 : (b : ZMod p) = 0
   · simp [h1, h2]
-  · have h3 : (z.2 : ZMod p) ≠ 0 := fun h3 => hz' ⟨h1, h3⟩
-    simp [h1, h2, h3, (hval _).symm]
-  · have h3 : (a : ZMod p) ≠ 0 := fun h3 => hab' ⟨h3, h2⟩
-    simp [h1, h2, h3, hval]
+  · grind
+  · grind
   · simp only [h1, h2, ite_false, (ZMod.val_injective p).eq_iff]
-    constructor
-    · intro h
-      field_simp
-      linear_combination h
-    · intro h
-      field_simp at h
-      linear_combination h
+    grind
 
 /-! ### Ratios -/
 
@@ -176,9 +174,14 @@ theorem rootRatio_sub_div {n m : ℕ} (hn : 0 < n) {Q₁ Q₂ : ℤ} (h : n * Q�
 
 variable {d : Data K} {Y d₀ : ℝ}
 
+section
+variable (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) {U V : ℝ} (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) {z : ℤ × ℤ} (hz : z ∈ rootPositions (d₀ * Y * d.Hm) d.Hn P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1)) (hP₀ : P₀ ∈ positions d Y d₀) {P : ℕ × ℕ} (hP : P ∈ positions d Y d₀)
+
+
+include hU hV in
 /-- For `U > 0` and `V ≥ 0`, `P ∈ positions` exactly when `P` is primitive and
 `P ∈ [U, 16U] × [V, 2V]`. -/
-theorem mem_positions_iff (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) {P : ℕ × ℕ} :
+theorem mem_positions_iff       :
     P ∈ positions d Y d₀ ↔ P.1.Coprime P.2 ∧ d₀ * Y * d.Hm ≤ P.1 ∧
       (P.1 : ℝ) ≤ 16 * (d₀ * Y * d.Hm) ∧ d.Hn ≤ P.2 ∧ (P.2 : ℝ) ≤ 2 * d.Hn := by
   simp only [positions, mem_filter, mem_product, mem_Icc, Nat.ceil_le,
@@ -186,10 +189,11 @@ theorem mem_positions_iff (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) {P : ℕ 
     Nat.le_floor_iff (by positivity : (0 : ℝ) ≤ 2 * d.Hn)]
   tauto
 
+include hu hco in
 /-- `z ∈ rootPositions` at the integer root of `P₀` exactly when `z` is primitive, lies in the
 square `|z₁|, |z₂| ≤ rootBound`, and `g z ∈ [U, 16U] × [V, 2V]`. -/
-theorem mem_rootPositions_iff {U V : ℝ} (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2)
-    {z : ℤ × ℤ} :
+theorem mem_rootPositions_iff      
+      :
     z ∈ rootPositions U V P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) ↔
       z ∈ Icc (-(rootBound U V : ℤ)) (rootBound U V) ×ˢ
           Icc (-(rootBound U V : ℤ)) (rootBound U V) ∧
@@ -201,20 +205,22 @@ theorem mem_rootPositions_iff {U V : ℝ} (hu : 0 < P₀.1) (hco : P₀.1.Coprim
 theorem natCast_toNat {n : ℤ} (hn : 0 ≤ n) : ((n.toNat : ℕ) : ℝ) = n := by
   exact_mod_cast Int.toNat_of_nonneg hn
 
+include hU hV hu hco hz in
 /-- At a root position, `g z` has positive first and nonnegative second coordinate. -/
-theorem rootMap_pos (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hu : 0 < P₀.1)
-    (hco : P₀.1.Coprime P₀.2) {z : ℤ × ℤ}
-    (hz : z ∈ rootPositions (d₀ * Y * d.Hm) d.Hn P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1)) :
+theorem rootMap_pos      
+       
+      :
     0 < (rootMap P₀ z).1 ∧ 0 ≤ (rootMap P₀ z).2 := by
   obtain ⟨-, -, h₁, -, h₂, -⟩ := (mem_rootPositions_iff hu hco).1 hz
   constructor
   · exact_mod_cast hU.trans_le h₁
   · exact_mod_cast hV.trans h₂
 
+include hU hV hu hco hz in
 /-- `g` maps the root positions into the physical positions. -/
-theorem toNat_rootMap_mem (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hu : 0 < P₀.1)
-    (hco : P₀.1.Coprime P₀.2) {z : ℤ × ℤ}
-    (hz : z ∈ rootPositions (d₀ * Y * d.Hm) d.Hn P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1)) :
+theorem toNat_rootMap_mem      
+       
+      :
     ((rootMap P₀ z).1.toNat, (rootMap P₀ z).2.toNat) ∈ positions d Y d₀ := by
   obtain ⟨-, hg, h₁, h₂, h₃, h₄⟩ := (mem_rootPositions_iff hu hco).1 hz
   obtain ⟨hp₁, hp₂⟩ := rootMap_pos hU hV hu hco hz
@@ -223,9 +229,10 @@ theorem toNat_rootMap_mem (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hu : 0 <
   rw [mem_positions_iff hU hV, natCast_toNat hp₁.le, natCast_toNat hp₂]
   exact ⟨Nat.isCoprime_iff_coprime.1 hc, h₁, h₂, h₃, h₄⟩
 
+include hU hV hP₀ hP in
 /-- `g⁻¹` maps the physical positions into the square `|z₁|, |z₂| ≤ rootBound`. -/
-theorem rootMapInv_mem_square (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn)
-    (hP₀ : P₀ ∈ positions d Y d₀) {P : ℕ × ℕ} (hP : P ∈ positions d Y d₀) :
+theorem rootMapInv_mem_square    
+          :
     rootMapInv P₀ (P.1, P.2) ∈
       Icc (-(rootBound (d₀ * Y * d.Hm) d.Hn : ℤ)) (rootBound (d₀ * Y * d.Hm) d.Hn) ×ˢ
         Icc (-(rootBound (d₀ * Y * d.Hm) d.Hn : ℤ)) (rootBound (d₀ * Y * d.Hm) d.Hn) := by
@@ -244,9 +251,9 @@ theorem rootMapInv_mem_square (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn)
   have hB : 2 * (16 * U + 2 * V + 1) ^ 2 ≤ (rootBound U V : ℝ) := Nat.le_ceil _
   have hP₁0 : (0 : ℝ) ≤ P.1 := by positivity
   have hP₂0 : (0 : ℝ) ≤ P.2 := by positivity
-  have hc0 : (0 : ℝ) ≤ rootC P₀.1 P₀.2 := by positivity
-  have hd0 : (0 : ℝ) ≤ rootD P₀.1 P₀.2 := by positivity
-  have hv0 : (0 : ℝ) ≤ P₀.2 := by positivity
+  
+  
+  
   have h₁ : (rootD P₀.1 P₀.2 : ℝ) * P.1 ≤ (1 + 2 * V) * (16 * U) :=
     mul_le_mul (by linarith) hP₁' hP₁0 (by linarith)
   have h₂ : (rootC P₀.1 P₀.2 : ℝ) * P.2 ≤ (16 * U) * (2 * V) :=
@@ -256,8 +263,8 @@ theorem rootMapInv_mem_square (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn)
   have h₅ : 0 ≤ (rootD P₀.1 P₀.2 : ℝ) * P.1 := by positivity
   have h₆ : 0 ≤ (rootC P₀.1 P₀.2 : ℝ) * P.2 := by positivity
   have h₇ : 0 ≤ (P₀.2 : ℝ) * P.1 := by positivity
-  have h₈ : 0 ≤ (P₀.1 : ℝ) * P.2 := by positivity
-  have hUV : 0 ≤ U * V := by positivity
+  
+  
   simp only [rootMapInv, mem_product, mem_Icc]
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
   all_goals
@@ -265,9 +272,10 @@ theorem rootMapInv_mem_square (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn)
     push_cast
     nlinarith
 
+include hU hV hP₀ hP in
 /-- `g⁻¹` maps the physical positions into the root positions. -/
-theorem rootMapInv_mem (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hP₀ : P₀ ∈ positions d Y d₀)
-    {P : ℕ × ℕ} (hP : P ∈ positions d Y d₀) :
+theorem rootMapInv_mem      
+        :
     rootMapInv P₀ (P.1, P.2) ∈
       rootPositions (d₀ * Y * d.Hm) d.Hn P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) := by
   obtain ⟨hco, hu₁, -⟩ := (mem_positions_iff hU hV).1 hP₀
@@ -282,21 +290,24 @@ theorem rootMapInv_mem (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hP₀ : P�
 
 /-! ### The isomorphism -/
 
+include hU hV hP₀ in
 /-- A physical position has `u > 0`. -/
-theorem pos_of_mem (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hP₀ : P₀ ∈ positions d Y d₀) :
+theorem pos_of_mem       :
     0 < P₀.1 := by
   exact_mod_cast hU.trans_le ((mem_positions_iff hU hV).1 hP₀).2.1
 
+include hP₀ in
 /-- A physical position is primitive. -/
-theorem coprime_of_mem (hP₀ : P₀ ∈ positions d Y d₀) : P₀.1.Coprime P₀.2 :=
+theorem coprime_of_mem   : P₀.1.Coprime P₀.2 :=
   (mem_filter.1 hP₀).2
 
+include hu hco in
 /-- `g⁻¹ P₀ = e₁`. -/
-theorem rootMapInv_self (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) :
+theorem rootMapInv_self     :
     rootMapInv P₀ (P₀.1, P₀.2) = (1, 0) := by
-  refine Prod.ext ?_ ?_ <;> simp only [rootMapInv]
-  · linear_combination root_det hu hco
-  · ring
+  grind [rootMapInv, root_det]
+
+end
 
 /-- `z ↦ g z` from the root positions at the integer root of `P₀` to the physical
 positions. -/
@@ -308,11 +319,9 @@ def rootEquiv (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hP₀ : P₀ ∈ pos
   left_inv z := by
     obtain ⟨h₁, h₂⟩ := rootMap_pos hU hV (pos_of_mem hU hV hP₀) (coprime_of_mem hP₀) z.2
     refine Subtype.ext ?_
-    simp only [Int.toNat_of_nonneg h₁.le, Int.toNat_of_nonneg h₂]
-    exact rootMapInv_rootMap (pos_of_mem hU hV hP₀) (coprime_of_mem hP₀) z.1
+    grind [rootMapInv_rootMap, pos_of_mem, coprime_of_mem]
   right_inv P := by
-    refine Subtype.ext ?_
-    simp only [rootMap_rootMapInv (pos_of_mem hU hV hP₀) (coprime_of_mem hP₀), Int.toNat_natCast]
+    grind [rootMap_rootMapInv, pos_of_mem, coprime_of_mem]
 
 /-- `z ↦ g z` is an isomorphism from the root model at the integer root of `P₀`, with lines
 `ℓ(P₀)`, onto the physical model. -/
@@ -356,15 +365,13 @@ def rootIso (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hP₀ : P₀ ∈ posit
     rw [Int.toNat_of_nonneg h₁.le, Int.toNat_of_nonneg h₂, det_rootMap hu hco]
     -- `det(z, w_z) = gcd(z₁, z₂) = 1`
     have h := Int.gcd_eq_gcd_ab z.1 z.2
-    rw [hg, Nat.cast_one] at h
-    simp only [complement]
-    linear_combination -h
+    simp_all [complement]
 
 end Reindex
 
 /-- **RR1**: the determinant moment is the sum over physical positions of the root moments at
 their integer roots. -/
-theorem detMoment_eq_sum_rootMoment (q A₀ x : ℝ) {d : Data K} {Y d₀ : ℝ}
+theorem detMoment_eq_sum_rootMoment  q A₀ x  {d : Data K}  {Y d₀} 
     (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) :
     detMoment q A₀ x d Y d₀ =
       ∑ P₀ ∈ positions d Y d₀, rootMoment q A₀ x d Y d₀ P₀.1 P₀.2
@@ -376,8 +383,7 @@ theorem detMoment_eq_sum_rootMoment (q A₀ x : ℝ) {d : Data K} {Y d₀ : ℝ}
   -- `e₁ = g⁻¹ P₀` is a root position
   have h : ((1 : ℤ), (0 : ℤ)) ∈
       rootPositions (d₀ * Y * d.Hm) d.Hn P₀.1.1 P₀.1.2 ((rootC P₀.1.1 P₀.1.2 : ℝ) / P₀.1.1) := by
-    have h := Reindex.rootMapInv_mem hU hV P₀.2 P₀.2
-    rwa [Reindex.rootMapInv_self hu hco] at h
+    grind [Reindex.rootMapInv_mem, Reindex.rootMapInv_self]
   rw [rootMoment, dite_eq_left_of_eq_true (eq_true h)]
   refine Eq.trans ?_ ((Reindex.rootIso hU hV P₀.2).moment_eq q A₀ x d Y d₀ _)
   congr 1

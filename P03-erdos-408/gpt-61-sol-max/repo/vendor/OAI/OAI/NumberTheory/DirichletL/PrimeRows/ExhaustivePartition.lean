@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SmallPartition
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.ProbeHighRowFamily
@@ -58,6 +58,6 @@ theorem nonprincipal_rows_partition (L U : ℝ) (hL : 1≤L) (hLU : L≤U)
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

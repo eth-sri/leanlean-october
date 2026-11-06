@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.S2.MassDecomposition
 
 public import Erdos821.P3Clean.Structure
 
@@ -16,31 +19,33 @@ open Erdos821.Blueprint.Graph
 
 variable {P : PrimeGroups}
 
-abbrev SmallLabels (P : PrimeGroups) (M : ℕ) :=
+abbrev SmallLabels (P : PrimeGroups) (M ) :=
   (g : P.SmallGroup) → Fin M → P.Prime g.val
 
-def restrictSmall {M : ℕ} (a : P.Labels M) : SmallLabels P M := fun g => a g.val
+def restrictSmall {M } (a : P.Labels M) : SmallLabels P M := fun g => a g.val
 
-def joinLabels {M : ℕ} (a : SmallLabels P M) (b : P.BigLabels M) : P.Labels M :=
+def joinLabels {M } (a : SmallLabels P M) (b : P.BigLabels M) : P.Labels M :=
   fun g => if hg : P.big g = true then b ⟨g, hg⟩ else a ⟨g, by
     cases h : P.big g <;> simp_all⟩
 
-theorem joinLabels_small {M : ℕ} (a : SmallLabels P M) (b : P.BigLabels M)
+section
+variable {M : ℕ} (a : SmallLabels P M) (b : P.BigLabels M)
+
+theorem joinLabels_small      
     (g : P.SmallGroup) : joinLabels a b g.val = a g := by
   simp [joinLabels, g.property]
 
-theorem joinLabels_big {M : ℕ} (a : SmallLabels P M) (b : P.BigLabels M)
+theorem joinLabels_big      
     (g : P.BigGroup) : joinLabels a b g.val = b g := by
   simp [joinLabels, g.property]
+
+end
 
 def splitLabels (P : PrimeGroups) (M : ℕ) : P.Labels M ≃ SmallLabels P M × P.BigLabels M where
   toFun a := (restrictSmall a, P.restrictBig a)
   invFun a := joinLabels a.1 a.2
   left_inv := by
-    intro a
-    funext g
-    simp only [joinLabels, restrictSmall, PrimeGroups.restrictBig]
-    split_ifs <;> rfl
+    grind [joinLabels, restrictSmall, PrimeGroups.restrictBig]
   right_inv := by
     intro a
     apply Prod.ext
@@ -51,21 +56,16 @@ def splitLabels (P : PrimeGroups) (M : ℕ) : P.Labels M ≃ SmallLabels P M × 
 
 theorem prod_group_split {R : Type*} [CommMonoid R] (f : P.Group → R) :
     (∏ g : P.Group, f g) =
-      (∏ g : P.SmallGroup, f g.val) * ∏ g : P.BigGroup, f g.val := by
-  classical
-  have h (g : P.Group) : ¬ P.big g = false ↔ P.big g = true := by
-    cases P.big g <;> simp
-  let e : {g : P.Group // ¬ P.big g = false} ≃ P.BigGroup :=
-    Equiv.subtypeEquivRight h
-  have he : (∏ g : {g : P.Group // ¬ P.big g = false}, f g.val) =
-      ∏ g : P.BigGroup, f g.val := Fintype.prod_equiv e _ _ (fun _ => rfl)
-  rw [← Fintype.prod_subtype_mul_prod_subtype (fun g => P.big g = false) f, he]
+      (∏ g : P.SmallGroup, f g.val) * ∏ g : P.BigGroup, f g.val := by solve_by_elim [_root_.Erdos821.S2Core.primeGroups_prod_split]
 
-def smallPrefixProduct {M : ℕ} (J : ℕ) (hJM : J ≤ M) (a : SmallLabels P M) : ℕ :=
+def smallPrefixProduct {M } (J ) (hJM : J ≤ M) (a : SmallLabels P M)  :=
   ∏ g : P.SmallGroup, ∏ j : Fin J, (a g ⟨j.val, lt_of_lt_of_le j.isLt hJM⟩).val
 
-theorem D_split {J ell m : ℕ} (ν : Pattern P J ell m)
-    (a : P.Labels (J + ell)) (u : P.Aux J) :
+section
+variable {J ell m : ℕ} (ν : Pattern P J ell m)
+
+theorem D_split    
+     a   u  :
     ν.D a u = smallPrefixProduct J (Nat.le_add_right J ell) (restrictSmall a) *
       ν.DBig (P.restrictBig a) (fun g => u g.val) := by
   unfold Pattern.D Pattern.DBig smallPrefixProduct
@@ -76,8 +76,8 @@ theorem D_split {J ell m : ℕ} (ν : Pattern P J ell m)
   have hs := ν.small g.val g.property
   simp [hs, Pattern.slot, restrictSmall]
 
-theorem compatible_split {J ell m : ℕ} (ν : Pattern P J ell m)
-    (a b : P.Labels (J + ell)) :
+theorem compatible_split    
+     a b  :
     ν.compatible a b ↔
       (∀ g : P.SmallGroup, ∀ j : Fin J, a g.val (ν.slot j) = b g.val (ν.slot j)) ∧
         ν.matchesBig (P.restrictBig a) (P.restrictBig b) := by
@@ -96,8 +96,8 @@ theorem compatible_split {J ell m : ℕ} (ν : Pattern P J ell m)
       obtain ⟨j, rfl, _⟩ := hi
       exact hs ⟨g, hsmall⟩ j
 
-theorem ban_split {J ell m : ℕ} (ν : Pattern P J ell m)
-    (a b : P.Labels (J + ell)) (u : P.Aux J) :
+theorem ban_split    
+     a b   u  :
     ν.ban a b u ↔ ∀ g : P.BigGroup, ∀ i ∈ ν.changed g.val,
       ∀ j, u g.val i ≠ a g.val j ∧ u g.val i ≠ b g.val j := by
   constructor
@@ -109,5 +109,7 @@ theorem ban_split {J ell m : ℕ} (ν : Pattern P J ell m)
     · have hsmall : P.big g = false := by cases hh : P.big g <;> simp_all
       rw [ν.small g hsmall] at hi
       exact False.elim (Finset.notMem_empty i hi)
+
+end
 
 end Erdos821.P3Clean

@@ -17,34 +17,37 @@ open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
 open CenteredMomentAmplificationShortening CenteredMomentFixedRay
 open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow
 open CenteredMomentSecondChildProfile CenteredMomentSourceRow CenteredMomentChildRows
-local notation "O" => ActualEisensteinCubic.O
 
-def amplificationPhase (p : O) (k : ℕ) (r : RayRing) : ℂ :=
+
+def amplificationPhase (p : ActualEisensteinCubic.O) (k : ℕ) (r : RayRing)  :=
   (QuadraticAllOddCRT.quadraticRaySign (ActualEisensteinCoordinates.residue p)
     (QuadraticGaussRay.residueQuotientFour r):ℂ)^k
 
-theorem amplificationPhase_mk (p u : O) (k : ℕ) :
+section
+variable (η : Character) (m p u : ActualEisensteinCubic.O) (k : ℕ)
+
+theorem amplificationPhase_mk     :
     amplificationPhase p k (Ideal.Quotient.mk _ u)=sexticReciprocityPhase p u^k := by
   simp only [amplificationPhase,QuadraticGaussRay.residueQuotientFour_mk,sexticReciprocityPhase]
 
-theorem amplificationPhase_norm (p : O) (k : ℕ) (r : RayRing) :
+theorem amplificationPhase_norm      r  :
     ‖amplificationPhase p k r‖≤1 := by
   unfold amplificationPhase QuadraticAllOddCRT.quadraticRaySign
   split_ifs <;> cases k <;> simp
 
-theorem amplificationPhase_expansion (p u : O) (k : ℕ)
+theorem amplificationPhase_expansion    
     (hu : Supported (Ideal.span {u})) :
     sexticReciprocityPhase p u^k=
       ∑ χ : RayCharacter,phaseCoeff (amplificationPhase p k) χ*rayCharacter χ u := by
   have he := phase_expansion (amplificationPhase p k) u
   simpa only [supported_rayMask u hu,one_mul,amplificationPhase_mk] using he
 
-theorem original_column_family (η : Character) (m p : O) (k : ℕ)
+theorem original_column_family      
     (τ : RayCharacter → Character)
-    (hτ : ∀ I : Ideal O,Supported I → ∀ t : ℝ,
+    (hτ : ∀ I : Ideal ActualEisensteinCubic.O,Supported I → ∀ t : ℝ,
       rowWeight η m 1 1 t I*residualCharacter p k (primaryGenerator I)=
         ∑ χ : RayCharacter,phaseCoeff (amplificationPhase p k) χ*heightCoeff (τ χ) t I)
-    (C I : Ideal O) (hI : Supported I) (β : Ideal O → ℂ) (t : ℝ) :
+    (C I : Ideal ActualEisensteinCubic.O) (hI : Supported I) (β : Ideal ActualEisensteinCubic.O → ℂ)  t  :
     (β (C*I)*rowWeight η m 1 1 t (C*I))*residualCharacter p k (primaryGenerator I)=
       rowWeight η m 1 1 t C *
         ∑ χ : RayCharacter,phaseCoeff (amplificationPhase p k) χ*(β (C*I)*heightCoeff (τ χ) t I) := by
@@ -53,6 +56,8 @@ theorem original_column_family (η : Character) (m p : O) (k : ℕ)
     _ = rowWeight η m 1 1 t C *
       (β (C*I)*(rowWeight η m 1 1 t I*residualCharacter p k (primaryGenerator I))) := by ring
     _ = _ := by rw [hτ I hI t,Finset.mul_sum];congr 1;apply Finset.sum_congr rfl;intro χ hχ;ring
+
+end
 
 end SevenEighths.CenteredMomentAmplificationFamily
 

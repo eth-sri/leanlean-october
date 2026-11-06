@@ -13,7 +13,7 @@ namespace SevenEighths.CenteredMomentEligibleEnergy
 open HeckeFamily CenteredMomentActiveDivisorShell CenteredMomentActiveAllocation
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
 open CenteredMomentDivisorRowEnergy
-local notation "O" => ActualEisensteinCubic.O
+
 
 structure Data (ι:Type*) [Fintype ι] extends Source ι where
   M : ι→ℝ
@@ -28,30 +28,30 @@ structure Data (ι:Type*) [Fintype ι] extends Source ι where
   Y₁_pos : 0<Y₁
   Y₂_pos : 0<Y₂
   same_product : Y₁*Y₂=X₁*X₂
-  rows : Finset O
-  weight : O→ℝ
+  rows : Finset ActualEisensteinCubic.O
+  weight : ActualEisensteinCubic.O→ℝ
   weight_nonneg : ∀z∈rows,0≤weight z
 
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
-def Data.coefficient (s:Data ι) (i:ι) (I:Ideal O) : ℂ :=
+def Data.coefficient (s:Data ι) (i:ι) (I:Ideal ActualEisensteinCubic.O)  :=
   s.ν i I*s.W i ((Ideal.absNorm I:ℝ)/s.P i)
 
-def Data.energy (s:Data ι) (D:Ideal O) : ℝ :=
+def Data.energy (s:Data ι) (D:Ideal ActualEisensteinCubic.O)  :=
   ∑z∈s.rows,s.weight z*‖(Real.sqrt (s.X₁*s.X₂*∏i,s.P i):ℂ)⁻¹*
     maskedRectangle s.η s.m s.A z s.t s.slots s.coefficient D s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂‖^2
 
-def Data.childEnergy (s:Data ι) (D:Ideal O)
-    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) : ℝ :=
+def Data.childEnergy (s:Data ι) (D)
+    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2)))  :=
   ∑z∈s.rows,s.weight z*
     (‖allocatedPositiveRow s.η s.m s.A z s.t s.slots s.coefficient s.P D a s.W₁ s.W₂ s.X₁ s.X₂‖^2+
      ‖allocatedPositiveRow s.η s.m s.A z s.t s.slots s.coefficient s.P D a s.W₁ s.W₂ s.Y₁ s.Y₂‖^2)
 
-def Data.profileFactor (s:Data ι) : ℝ :=
+def Data.profileFactor (s:Data ι)  :=
   (2*(max 1 s.b₁*max 1 s.b₂))*(∏i,s.M i)^2
 
-lemma Data.child_nonneg (s:Data ι) (D:Ideal O)
-    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) : 0≤s.childEnergy D a :=
+lemma Data.child_nonneg (s:Data ι)  D 
+     a  : 0≤s.childEnergy D a :=
   Finset.sum_nonneg (fun z hz=>mul_nonneg (s.weight_nonneg z hz) (add_nonneg (sq_nonneg _) (sq_nonneg _)))
 
 omit [DecidableEq ι] in
@@ -59,12 +59,12 @@ lemma Data.profile_nonneg (s:Data ι) : 0≤s.profileFactor :=by
   unfold Data.profileFactor
   exact mul_nonneg (by positivity) (sq_nonneg _)
 
-lemma Data.reduction_pos (s:Data ι) (D:Ideal O)
-    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) : 0<formalReductionFactor D a s.P :=
+lemma Data.reduction_pos (s:Data ι)  D 
+     a  : 0<formalReductionFactor D a s.P :=
   mul_pos (selectedNorm_pos D a) (Finset.prod_pos (fun i _=>s.P_pos i))
 
 theorem actual_source_from_children (N:ℕ) (hslots:Fintype.card ι≤N) (ε:ℝ) (hε:0<ε) :
-    ∃C:ℝ,0<C ∧ ∀s:Data ι,∀D:Ideal O,Squarefree D → ∀E:ℝ,0≤E →
+    ∃C:ℝ,0<C ∧ ∀s:Data ι,∀D:Ideal ActualEisensteinCubic.O,Squarefree D → ∀E:ℝ,0≤E →
       (∀a∈s.toSource.active D,s.childEnergy D a≤E) →
       s.energy D≤C*(Ideal.absNorm D:ℝ)^ε*s.profileFactor*E*
         ∑a∈s.toSource.active D,1/formalReductionFactor D a s.P := by

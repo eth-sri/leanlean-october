@@ -24,8 +24,7 @@ open CenteredMomentEnergyBands CenteredMomentSecondHeightFamily
 open CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular
 local notation "O" => HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=
-  CenteredMomentEnergyOriginalSource.energyOriginalSourceDecidableSum
+
 
 section Source
 variable (Q:Ideal O)[NeZero Q]
@@ -37,18 +36,18 @@ variable (w σ freq:ι→ℝ)(hσ:∀i,σ i∈Set.Icc lo hi)
 variable {Z Bmask bΦ a b:ℝ}(state:NaturalState Z Bmask bΦ)(p:Profiles a b)(ha:0<a)
 variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 
-def sourceInput : Input ι :=
+def sourceInput  :=
   input Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs w σ freq hσ
     state p ha t X₁ X₂ X₁ X₂ hX₁ hX₂ hX₁ hX₂ rfl
 
-def zeroSourceInput : Input ι :=
+def zeroSourceInput  :=
   zeroInput (sourceInput Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
     w σ freq hσ state p ha t X₁ X₂ hX₁ hX₂)
     (CenteredMomentDetectorPlainSource.support_zero _ a b ha (p.support 0))
     (CenteredMomentDetectorPlainSource.support_zero _ a b ha (p.support 1))
 end Source
 
-private lemma control_mono {a b:ℝ}(p:Profiles a b)(S:Finset (ℕ×ℕ)):
+private lemma control_mono {a b:ℝ}(p:Profiles a b) S :
     p.control S≤p.control (insert (0,0) S):=by
   unfold Profiles.control
   exact mul_le_mul

@@ -12,15 +12,15 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
+local instance : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : MeasurableSpace FreeRow := ⊤
 local instance : MeasurableSingletonClass FreeRow := ⟨fun _=>trivial⟩
 
-def compensatedRowOnLines {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
-    (C : CalibrationData) (p : Fin K→O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)
-    (u : NonzeroFrequency) (t : HeightSpace) : ℂ :=
+def compensatedRowOnLines {K } (η : HeckeFamily.Character) (S : Finset Id)
+    (C : CalibrationData) (p : Fin K→ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)
+    (u : NonzeroFrequency) (t : HeightSpace)  :=
   sourceMellinWeight W0 W1 X Y Z ((3:ℂ)+t.1.1*Complex.I)
     ((3:ℂ)+t.2*Complex.I) ((2:ℂ)+t.1.2*Complex.I)*
   (∏i,(elementNorm (p i):ℂ)^(((2:ℂ)+t.1.2*Complex.I)-1))*
@@ -28,14 +28,17 @@ def compensatedRowOnLines {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
       indexedCompensatedHigh η S p u.val ((3:ℂ)+t.1.1*Complex.I)
         ((3:ℂ)+t.2*Complex.I) ((2:ℂ)+t.1.2*Complex.I))
 
-lemma compensatedRows_counting_product_integrable {ρ : Type*} [Countable ρ]
-    [MeasurableSpace ρ] [MeasurableSingletonClass ρ]
+section
+variable {ρ : Type*} [Countable ρ] [MeasurableSpace ρ] [MeasurableSingletonClass ρ]
+
+lemma compensatedRows_counting_product_integrable    
+       
     (e : ρ→NonzeroFrequency) (he : Function.Injective e)
     {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id) (C : CalibrationData)
-    (p : Fin K→O) (hp : ∀i,p i≠0) (W0 W1 : SchwartzMap ℝ ℂ)
+    (p : Fin K→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+     X Y Z  (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     Integrable (fun q : ρ×HeightSpace=>compensatedRowOnLines η S C p W0 W1 X Y Z (e q.1) q.2)
       ((Measure.count:Measure ρ).prod heightMeasure) := by
   let F : Finset (Fin K)→ρ×HeightSpace→ℂ := fun J q=>tuplePhysicalScalar η p J*
@@ -64,8 +67,8 @@ lemma compensatedRows_counting_product_integrable {ρ : Type*} [Countable ρ]
     (star (C.residueMonoid (e q.1).val)*frequencyWeight ((2:ℂ)+q.2.1.2*Complex.I) (e q.1))
     W0 W1 X Y Z hX hY hZ _ _ _
 
-lemma counting_product_integral_tsum {ρ : Type*} [Countable ρ]
-    [MeasurableSpace ρ] [MeasurableSingletonClass ρ]
+lemma counting_product_integral_tsum    
+       
     (F : ρ×HeightSpace→ℂ)
     (hF : Integrable F ((Measure.count:Measure ρ).prod heightMeasure)) :
     (∫t,∑'r,F (r,t) ∂heightMeasure)=∑'r,∫t,F (r,t) ∂heightMeasure := by
@@ -77,11 +80,13 @@ lemma counting_product_integral_tsum {ρ : Type*} [Countable ρ]
     _ = ∫q,F q ∂((Measure.count:Measure ρ).prod heightMeasure) := (integral_prod_symm F hF).symm
     _ = _ := by rw [integral_prod F hF,integral_count_eq_tsum _ hF.integral_prod_left]
 
+end
+
 theorem compensatedRowTripleIntegral_eq_tsum {K : ℕ} (η : HeckeFamily.Character)
-    (S : Finset Id) (C : CalibrationData) (p : Fin K→O) (hp : ∀i,p i≠0)
+    (S : Finset Id) (C : CalibrationData) (p : Fin K→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+     X Y Z  (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     compensatedRowTripleIntegral η S C W0 W1 p X Y Z=
       ∑'u : FreeRow,((1/(2*Real.pi):ℝ):ℂ)^3*
         ∫t,compensatedRowOnLines η S C p W0 W1 X Y Z ⟨u.val,u.property.1⟩ t ∂heightMeasure := by

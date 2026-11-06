@@ -6,10 +6,10 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsHolomorphic
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 
-theorem unramifiedClosed_first_region_bound (Q : ℝ) (A eta v x w z : ℂ) (eps : ℝ)
+theorem unramifiedClosed_first_region_bound  Q   A eta v x w z   eps 
     (hQ : 4≤Q) (hA : ‖A‖≤1) (heta : ‖eta‖≤1) (hv : ‖v‖≤1)
     (heps : 0<eps) (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
     (hw : -(1/100:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re) :
@@ -83,6 +83,6 @@ theorem unramifiedClosed_first_region_bound (Q : ℝ) (A eta v x w z : ℂ) (eps
   nlinarith
 
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

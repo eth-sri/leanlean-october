@@ -13,7 +13,7 @@ local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
-def ramifiedClosed (eta a rho x w z : ℂ) (j : ℕ) : ℂ :=
+def ramifiedClosed (eta a rho x w z : ℂ) (j : ℕ)  :=
   1+(1-coordV (Ideal.absNorm (Ideal.span {p})) z)*
     rowClosedMarked p hp hg eta a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z) rho j

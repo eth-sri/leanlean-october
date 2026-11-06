@@ -12,25 +12,25 @@ open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss ProbeCompleted ProbeRow CanonicalQuadraticSieve
 open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+
 
 def transformedSpectralTerm (η : HeckeFamily.Character) (C : CalibrationData)
-    (S : Finset (Ideal O)) (D : Ideal O) (s : O) (hs : Supported (Ideal.span {s}))
-    (W : ℝ → ℂ) (K : ℝ) (t : ℂ) (I J : Ideal O) : ℂ :=
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D : Ideal ActualEisensteinCubic.O) (s ) (hs : Supported (Ideal.span {s}))
+    (W : ℝ → ℂ) (K : ℝ) (t : ℂ) (I J : Ideal ActualEisensteinCubic.O)  :=
   if hA : completedIndex I J≠0 then
     spectralSummand S D (baseRowCoefficient η C.Xi s hs) t I J *
       ((K/elementNorm (C.generator*completedIndex I J):ℝ):ℂ) *
-        ∑' H : O, actualCongruenceCoefficient C (completedIndex I J) s hA H *
+        ∑' H : ActualEisensteinCubic.O, actualCongruenceCoefficient C (completedIndex I J) s hA H *
           paperRadialFourier W (K*elementNorm H/elementNorm ((C.generator*completedIndex I J)*s))
   else 0
 
-theorem physical_spectral_poisson (η : HeckeFamily.Character) (C : CalibrationData)
-    (S : Finset (Ideal O)) (D : Ideal O) (s : O) (hs : Supported (Ideal.span {s}))
-    (W : ℝ → ℂ) (hWc : HasCompactSupport W) (hWs : ContDiff ℝ ∞ W)
-    (K : ℝ) (hK : 0<K) (t : ℂ) (ht : 1<t.re) :
-    (∑' m : O, C.residueMonoid m * sexticGauss s (supportedElement_ne_zero s hs) (-m) *
+theorem physical_spectral_poisson  η   C 
+     S   D   s   hs 
+     W  (hWc : HasCompactSupport W) (hWs : ContDiff ℝ ∞ W)
+     K  (hK : 0<K)  t  (ht : 1<t.re) :
+    (∑' m : ActualEisensteinCubic.O, C.residueMonoid m * sexticGauss s (supportedElement_ne_zero s hs) (-m) *
       W (elementNorm m/K) * spectralRow S D (rowCoefficient η C.Xi s hs m) t) =
-    ∑' p : Ideal O × Ideal O, transformedSpectralTerm η C S D s hs W K t p.1 p.2 := by
+    ∑' p : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O, transformedSpectralTerm η C S D s hs W K t p.1 p.2 := by
   rw [physical_spectral_reopen η C S D s hs W hWc K hK t ht]
   apply tsum_congr
   intro p

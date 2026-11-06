@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalAnnularCommonBound
 
@@ -6,13 +7,17 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalAnnularCommonBoun
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstWindowBudgets
 open CenteredMomentSecondWindowBudget
 
-lemma sqrt_sum_le {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i):
+section
+variable {α:Type*} (s:Finset α) (E:α→ℝ) (hE:∀i∈s,0≤E i)
+include α s E hE
+
+lemma sqrt_sum_le     :
     Real.sqrt (∑i∈s,E i)≤∑i∈s,Real.sqrt (E i):=by
   induction s using Finset.induction_on with
   | empty => simp
@@ -26,10 +31,10 @@ lemma sqrt_sum_le {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i):
       · positivity
       · nlinarith [Real.sq_sqrt he,Real.sq_sqrt hs,
           mul_nonneg (Real.sqrt_nonneg (E a)) (Real.sqrt_nonneg (∑i∈s,E i))]
-    exact hadd.trans (add_le_add le_rfl (ih (fun i hi=>hE i (Finset.mem_insert_of_mem hi))))
+    grind
 
-lemma windowBudget_sum {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i)
-    (J:ℕ)(t:ℝ):
+lemma windowBudget_sum     
+     J  t :
     windowBudget J t (∑i∈s,E i)≤∑i∈s,windowBudget J t (E i):=by
   unfold windowBudget
   rw [←Finset.sum_mul,←Finset.sum_mul]
@@ -37,9 +42,11 @@ lemma windowBudget_sum {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i)
     (mul_le_mul_of_nonneg_right (sqrt_sum_le s E hE) (pow_nonneg (heightEnvelope_pos t).le _))
     (profileMoment_nonneg J)
 
+end
+
 theorem windowBudget_pair_sum {α β:Type*}(s:Finset α)(u:Finset β)
     (E:α→ℝ)(F:β→ℝ)(hE:∀i∈s,0≤E i)(hF:∀j∈u,0≤F j)
-    (J₁ J₂:ℕ)(t:ℝ):
+     J₁ J₂  t :
     windowBudget J₁ t (∑i∈s,E i)*windowBudget J₂ t (∑j∈u,F j)≤
       ∑i∈s,∑j∈u,windowBudget J₁ t (E i)*windowBudget J₂ t (F j):=by
   have hh:=mul_le_mul (windowBudget_sum s E hE J₁ t) (windowBudget_sum u F hF J₂ t)
@@ -54,13 +61,13 @@ open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily C
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
 open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
 open CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentGaussEnergy
-open CenteredMomentLogDyadic CenteredMomentSecondWindowBudget RayFourExpansion CompletedGauss
+open CenteredMomentLogDyadic   RayFourExpansion CompletedGauss
 open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+
 universe u
 
 end SevenEighths.CenteredMomentFirstWindowBudgets
 
-end
+
 
 end OAI

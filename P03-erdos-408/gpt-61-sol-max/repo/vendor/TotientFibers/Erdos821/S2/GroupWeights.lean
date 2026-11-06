@@ -29,15 +29,15 @@ namespace ResiduePath
 variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
   (Q : ResiduePath A n)
 
-def initialBigGroupFactor (g : P.BigGroup) : ℝ :=
+def initialBigGroupFactor (g : P.BigGroup)  :=
   ∏ j : Fin (J + F.ell), tiltedMu F P n g.val (Q.labels 0 g.val j)
 
-def freshBigGroupFactor (S : LifespanAssignment P n) (i : Fin n) (g : P.BigGroup) : ℝ :=
+def freshBigGroupFactor (S : LifespanAssignment P n) (i : Fin n) (g : P.BigGroup)  :=
   ∏ j : Fin (J + F.ell),
     if (A.pattern (Q.pattern i)).shared g.val j ∨ j ∈ Q.promotionSlots S i g then 1
     else tiltedMu F P n g.val (Q.target i g.val j)
 
-theorem all_big_group_weights (hMark : SpanMarkWeightTask) (S : LifespanAssignment P n)
+theorem all_big_group_weights (hMark : SpanMarkWeightTask)  S 
     (hQ : Q.Valid) (hS : Q.lifespanValid S)
     (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
     (hV : ∀ g : P.BigGroup, P.V g.val ≠ 0) :

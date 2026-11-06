@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedNormalizationActual
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedCommonRadius
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedCommonRadius
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedCapacityRadius
@@ -19,22 +20,24 @@ open CenteredMomentFirstCanonicalFamily CenteredMomentSectorLocalization
 open CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT
 open CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplificationChoice
 open CenteredMomentCommonRadiusSaving
-local notation "O"=>HeckeFamily.O
 
-lemma enlarged_gain_extraction (c d w wo sigma branch delta reserve:ℝ)
+
+section
+variable (c d : ℝ) (η τ : Character) (C D : Ideal HeckeFamily.O) (hC : Supported C) (hD : Supported D) (hCD : primeSupport C=primeSupport D) (E : Finset (CommonIndex C D)) (K V Z red w wo sigma branch delta reserve cost gain : ℝ) (hK : 0<K) (hV : 0<V) (hZ : 1<Z) (hred : 0<red) (hcost : 0<cost) (hmod : τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
+      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
+
+lemma enlarged_gain_extraction  
     (_hw:0≤w)(hwo:wo≤2*w):
     -d+max (d-c-2*w+wo) 0+branch*sigma+delta+reserve≤
       -min c d+branch*sigma+delta+reserve := by
-  have h:max (d-c-2*w+wo) 0≤d-min c d:=by
-    apply max_le <;> linarith [min_le_left c d,min_le_right c d]
-  linarith
+  grind
 
-theorem actual_reference_shift (η τ:Character)(C D:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(K V Z red w wo cost gain:ℝ)
-    (hK:0<K)(hV:0<V)(hZ:1<Z)(hred:0<red)(hcost:0<cost)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
+include hC hD hCD w wo gain hK hV hZ hred hcost hmod in
+theorem actual_reference_shift   
+       
+      
+         
+     :
     let c:=Real.logb Z (C.absNorm:ℝ);
     let d:=Real.logb Z (D.absNorm:ℝ);
     let K0:=Real.logb Z (firstNominalScale C D
@@ -58,12 +61,12 @@ theorem actual_reference_shift (η τ:Character)(C D:Ideal O)
   norm_num at hh ⊢
   linarith
 
-theorem actual_main_reference_shift (η τ:Character)(C D:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(K V Z red sigma delta reserve:ℝ)
-    (hK:0<K)(hV:0<V)(hZ:1<Z)(hred:0<red)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
+include hC hD hCD sigma delta reserve hK hV hZ hred hmod in
+theorem actual_main_reference_shift   
+       
+      
+        
+     :
     let c:=Real.logb Z (C.absNorm:ℝ);
     let d:=Real.logb Z (D.absNorm:ℝ);
     let K0:=Real.logb Z (firstNominalScale C D
@@ -86,13 +89,13 @@ theorem actual_main_reference_shift (η τ:Character)(C D:Ideal O)
   norm_num at hg
   linarith
 
-theorem actual_error_reference_shift (η τ:Character)(C D:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(K V Z red sigma delta reserve cost:ℝ)
-    (hK:0<K)(hV:0<V)(hZ:1<Z)(hred:0<red)(hcost:0<cost)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
-    (p:O)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7)(hs:0≤sigma)
+include hC hD hCD delta reserve hK hV hZ hred hcost hmod in
+theorem actual_error_reference_shift   
+       
+      
+         
+     
+     p  k (hk:k=1 ∨ k=6 ∨ k=7)(hs:0≤sigma)
     (hl:sigma/6≤Real.logb Z (normValue p)):
     let c:=Real.logb Z (C.absNorm:ℝ);
     let d:=Real.logb Z (D.absNorm:ℝ);
@@ -124,8 +127,10 @@ theorem actual_error_reference_shift (η τ:Character)(C D:Ideal O)
   simp only [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] at hh ⊢
   linarith
 
+end
+
 end SevenEighths.CenteredMomentFirstAmplifiedCapacityRadius
 
-end
+
 
 end OAI

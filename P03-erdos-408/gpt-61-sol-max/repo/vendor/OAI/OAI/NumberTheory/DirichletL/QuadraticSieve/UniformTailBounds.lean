@@ -6,89 +6,89 @@ public import OAI.NumberTheory.DirichletL.QuadraticSieve.ProductColumns
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
+open   CompletedGauss IdealMobiusDivisorSum
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+ 
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open FirstPassCubeLabels (columnLog primeProductNorm)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
 open JointLogSeparation (frequencyTwist frequencyTwist_apply)
 
-theorem full_uniform_secondPairRadialMode_tail (A : ℕ) :
+theorem full_uniform_secondPairRadialMode_tail  A  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
     ∀ {ι : Type*} [DecidableEq ι]
       (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -140,7 +140,7 @@ theorem full_uniform_secondPairRadialMode_tail (A : ℕ) :
           (scale * ‖eisEmbedding k.val‖^2)‖ := tsum_mul_left
     _ ≤ _ := mul_le_mul_of_nonneg_left (hbound W scale H hscale hH) hc0
 
-theorem full_uniform_secondPairRadialMode_remainder (A : ℕ) :
+theorem full_uniform_secondPairRadialMode_remainder  A  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
     ∀ {ι : Type*} [DecidableEq ι]
       (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -179,7 +179,7 @@ theorem full_uniform_secondPairRadialMode_remainder (A : ℕ) :
         (hs.subtype large)
     _ ≤ _ := hb S T e he W Y H hY hH
 
-theorem full_uniform_residualSecondMode_tail_bound (A : ℕ) :
+theorem full_uniform_residualSecondMode_tail_bound  A  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
     ∀ {ι : Type*} [DecidableEq ι]
       (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -215,7 +215,7 @@ theorem full_uniform_residualSecondMode_tail_bound (A : ℕ) :
     · exact mul_le_mul_of_nonneg_left (hb S T e he W Y H hY hH K (hK S hS T hT hd hw)) (norm_nonneg _)
   · simp [hd]
 
-theorem full_uniform_secondSourceTail_bound (A : ℕ) :
+theorem full_uniform_secondSourceTail_bound  A  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
     ∀ {ι : Type*} [DecidableEq ι]
       (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -258,37 +258,28 @@ theorem full_uniform_secondSourceTail_bound (A : ℕ) :
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
+ 
 namespace InitialMeanSquare
 open IdealMobiusDivisorSum
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
+
+
+ 
 open FirstPassCubeLabels (primeProductNorm)
-open EisensteinSchwartzPoisson (paperRadialFourier)
+
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
 
-end
 
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm)
-
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-
-end
 
 end SecondPassArithmetic
 
-end
+
 
 end OAI

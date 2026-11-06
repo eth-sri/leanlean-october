@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.HeckeDeletionReciprocal
 open HeckeFamily HeckeFiniteDeletion HeckeReciprocal HeckeDeletionBounds
 
-theorem reciprocal_eq_of_mask (χ ψ : Character)
+theorem reciprocal_eq_of_mask  χ ψ 
     (hmask : ∀ I : Ideal O, idealCoeff χ I =
       if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
-    {s : ℂ} (hs : 0 < s.re) :
+     {s}  (hs : 0 < s.re) :
     reciprocal χ s = reciprocal ψ s * (factors χ.modulus ψ s)⁻¹ := by
   by_cases hχ : χ.residue = 1
   · have hψ := (principal_iff_of_mask χ ψ hmask).mp hχ
@@ -47,6 +47,6 @@ theorem exists_primitive_reciprocal_reduction (σ ε : ℝ) (hσ : 0 < σ) (hε 
 
 end SevenEighths.HeckeDeletionReciprocal
 
-end
+
 
 end OAI

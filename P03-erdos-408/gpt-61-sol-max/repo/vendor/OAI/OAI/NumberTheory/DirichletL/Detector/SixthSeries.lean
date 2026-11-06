@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.SixthArray
 
@@ -10,8 +11,8 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve HeckeInverseAmplification ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 abbrev SixthInnerIndex := HeckeInverseAmplification.NonzeroIdeal×((Id×Id)×Id)
 
@@ -25,16 +26,15 @@ def nonzeroLastEquiv : SixthInnerIndex ≃ {p : (Id×Id)×(Id×Id) // p.2.2≠0}
   left_inv _ := rfl
   right_inv _ := rfl
 
-lemma markedIdealHighSummand_last_zero (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) (I J K : Id) :
+lemma markedIdealHighSummand_last_zero  S   D   η 
+     u   x w z   I J K  :
     markedIdealHighSummand S D η u x w z I J K 0=0 := by
   have hz : ¬(Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported (0:Id)) :=
     fun h=>h.2.2.2.2.1 rfl
-  simp only [markedIdealHighSummand,bareIdealHighSummand,bareIdealHighCoefficient,
-    dite_eq_right hz,zero_mul,mul_zero]
+  grind [markedIdealHighSummand, bareIdealHighSummand, bareIdealHighCoefficient]
 
-lemma markedIdealHighSeries_eq_sixth_inner (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) :
+lemma markedIdealHighSeries_eq_sixth_inner  S   D   η 
+     u   x w z  :
     markedIdealHighSeries S D η u x w z=
       ∑'p : SixthInnerIndex,markedIdealHighSummand S D η u x w z p.2.1.1 p.2.1.2 p.2.2 p.1.val := by
   have he := nonzeroLastEquiv.tsum_eq (fun p=>
@@ -48,12 +48,11 @@ lemma markedIdealHighSeries_eq_sixth_inner (S : Finset Id) (D : Id) (η : HeckeF
     (s:={p : (Id×Id)×(Id×Id) | p.2.2≠0})
   intro p hp hz
   apply hp
-  change markedIdealHighSummand S D η u x w z p.1.1 p.1.2 p.2.1 p.2.2=0
-  rw [hz,markedIdealHighSummand_last_zero]
+  grind [markedIdealHighSummand, S, markedIdealHighSummand_last_zero]
 
-theorem rawArithmeticSeries_eq_sixth_high (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+theorem rawArithmeticSeries_eq_sixth_high  S   hS 
     (hprime : ∀P∈S,Prime P) (hbad : fixedBadPrimes⊆S)
-    (D : Id) (η : HeckeFamily.Character) (x w z : ℂ)
+     D   η   x w z 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1<z.re) :
     rawArithmeticSeries S D η (calibrationForSet S hS) x w z=
       ∑'u : FreeRow,star ((calibrationForSet S hS).residueMonoid u.val)*

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.Chain.GhostStage
 
@@ -35,7 +36,7 @@ open Finset
 
 variable {K : ℕ}
 
-section EdgeStage
+
 
 variable (q A₀ x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) (B : ℕ)
 
@@ -49,8 +50,7 @@ theorem sum_finset_prod_decide (H : Fin K → Bool → ℝ) :
   refine sum_congr rfl fun St _ => ?_
   rw [← prod_filter_mul_prod_filter_not univ fun i => i ∈ St]
   congr 1
-  · rw [filter_mem_eq_inter, univ_inter]
-    exact prod_congr rfl fun i hi => by simp [hi]
+  · simp_all
   · rw [show univ.filter (fun i => i ∉ St) = univ \ St by ext; simp]
     exact prod_congr rfl fun i hi => by simp [(mem_sdiff.1 hi).2]
 
@@ -60,21 +60,20 @@ variable {s : ChainState x d Y d₀ u v r B} {c₀ : FreeChoice x d Y d₀ u v r
 
 /-- The prime leaving group `i`: the unshared slot of the reordered source. -/
 abbrev leavePrime (s : ChainState x d Y d₀ u v r B) (c₀ : FreeChoice x d Y d₀ u v r)
-    (i : Fin K) : ℕ :=
+    (i : Fin K)  :=
   edgeSrc s (toEdge₀ c₀) i (Fin.last _)
 
 /-- The leaving primes are in their bands. -/
-theorem leavePrime_mem_band (i : Fin K) : leavePrime s c₀ i ∈ band x (d.a i) :=
+theorem leavePrime_mem_band  i  : leavePrime s c₀ i ∈ band x (d.a i) :=
   mem_band_of_mem_lists s.2.1.2 i _
 
 /-- The entering primes are in their bands. -/
-theorem enterPrime_mem_band (hc₀ : c₀ ∈ freeChoices x d Y d₀ u v r) (i : Fin K) :
+theorem enterPrime_mem_band (hc₀ : c₀ ∈ freeChoices x d Y d₀ u v r)  i  :
     c₀.2.2.1 i ∈ band x (d.a i) := by
-  simp only [freeChoices, mem_product, Fintype.mem_piFinset] at hc₀
-  exact hc₀.2.2.1 i
+  grind [freeChoices]
 
 /-- A prime of the band `𝒫_i` is a band prime. -/
-theorem mem_bandPrimes_of_band {i : Fin K} {p : ℕ} (hp : p ∈ band x (d.a i)) :
+theorem mem_bandPrimes_of_band {i : Fin K}  {p}  (hp : p ∈ band x (d.a i)) :
     p ∈ bandPrimes x d :=
   mem_biUnion.2 ⟨i, mem_univ _, hp⟩
 
@@ -100,8 +99,8 @@ def storePart (s : ChainState x d Y d₀ u v r B) (c₀ : FreeChoice x d Y d₀ 
         (leavePrime_mem_band i))).pos _⟩⟩
 
 /-- The label weight: the memory at the promoted particle, or the birth constant. -/
-theorem memLabelWeight_toEdge (hc₀ : c₀ ∈ freeChoices x d Y d₀ u v r) (N : ℕ)
-    (St : Finset (Fin K)) (fl : Fin K → Bool) (i : Fin K) :
+theorem memLabelWeight_toEdge (hc₀ : c₀ ∈ freeChoices x d Y d₀ u v r)  N 
+     St   fl   i  :
     memLabelWeight q x d N s.2.2.1 (toEdge c₀ St fl) i =
       if fl i then (s.2.2.1 (promPart hc₀ i) : ℝ) else birthConst q N (c₀.2.2.1 i) := by
   classical
@@ -114,7 +113,7 @@ theorem memLabelWeight_toEdge (hc₀ : c₀ ∈ freeChoices x d Y d₀ u v r) (N
     rfl
 
 /-- The memory after the edge. -/
-theorem edgeMem_toEdge (St : Finset (Fin K)) (fl : Fin K → Bool) (xp : Particle x d) :
+theorem edgeMem_toEdge  St   fl   xp  :
     edgeMem s (toEdge c₀ St fl) xp = s.2.2.1 xp -
       (univ.filter fun i => fl i = true ∧
         (c₀.2.2.1 i, lineOf (c₀.2.2.1 i) c₀.2.1.1) = xp.1).card +
@@ -122,7 +121,7 @@ theorem edgeMem_toEdge (St : Finset (Fin K)) (fl : Fin K → Bool) (xp : Particl
   rfl
 
 /-- The fresh labels of the edge. -/
-theorem freshBirths_toEdge (St : Finset (Fin K)) (fl : Fin K → Bool) :
+theorem freshBirths_toEdge  St   fl  :
     freshBirths (toEdge c₀ St fl) = ∑ i, if fl i then 0 else {c₀.2.2.1 i} :=
   rfl
 
@@ -140,7 +139,7 @@ theorem leavePrime_injective : Function.Injective (leavePrime s c₀) := fun i j
 
 include hdisj hc₀ in
 /-- The entering primes are distinct. -/
-theorem enterPrime_injective : Function.Injective fun i => c₀.2.2.1 i := fun i j h =>
+theorem enterPrime_injective : Function.Injective c₀.2.2.1 := fun i j h =>
   eq_of_mem_band hdisj (enterPrime_mem_band hc₀ i) ((show c₀.2.2.1 i = c₀.2.2.1 j from h) ▸
     enterPrime_mem_band hc₀ j)
 
@@ -171,7 +170,7 @@ end Choice
 
 /-! ### The memory after the edge -/
 
-section Memory
+
 
 variable {s : ChainState x d Y d₀ u v r B} {c₀ : FreeChoice x d Y d₀ u v r}
   (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
@@ -180,8 +179,7 @@ variable {s : ChainState x d Y d₀ u v r B} {c₀ : FreeChoice x d Y d₀ u v r
 
 /-- The promotion flags and the births are compatible: a promoted prime is pending at its
 target line, and a fresh prime is unborn. -/
-def EdgeGood (hc₀ : c₀ ∈ freeChoices x d Y d₀ u v r) (Bn : Multiset ℕ) (fl : Fin K → Bool) :
-    Prop :=
+def EdgeGood (hc₀ : c₀ ∈ freeChoices x d Y d₀ u v r) (Bn : Multiset ℕ) (fl : Fin K → Bool)  :=
   ∀ i, (fl i = true → s.2.2.1 (promPart hc₀ i) ≠ 0) ∧ (fl i = false → c₀.2.2.1 i ∉ Bn)
 
 open scoped Classical in
@@ -229,7 +227,7 @@ theorem edgeMem_eq (St : Finset (Fin K)) (fl : Fin K → Bool) (xp : Particle x 
 
 open scoped Classical in
 /-- The multiplicity of `p` among the fresh labels. -/
-theorem count_freshBirths (St : Finset (Fin K)) (fl : Fin K → Bool) (p : ℕ) :
+theorem count_freshBirths  St   fl   p  :
     Multiset.count p (freshBirths (toEdge c₀ St fl)) =
       (univ.filter fun i => fl i = false ∧ c₀.2.2.1 i = p).card := by
   rw [freshBirths_toEdge, Multiset.count_sum', card_eq_sum_ones, sum_filter]
@@ -378,8 +376,8 @@ theorem statusOf_edge (St : Finset (Fin K)) {fl : Fin K → Bool} (hg : EdgeGood
       exact ha ⟨i, (mem_filter.1 hi).2.2⟩
 
 /-- The band primes other than the leaving and the entering ones. -/
-def restPrimes (s : ChainState x d Y d₀ u v r B) (c₀ : FreeChoice x d Y d₀ u v r) : Finset ℕ :=
-  bandPrimes x d \ (univ.image (leavePrime s c₀) ∪ univ.image fun i => c₀.2.2.1 i)
+def restPrimes (s : ChainState x d Y d₀ u v r B) (c₀ : FreeChoice x d Y d₀ u v r)  :=
+  bandPrimes x d \ (univ.image (leavePrime s c₀) ∪ univ.image c₀.2.2.1)
 
 include hdisj hc₀ hv in
 /-- A product over the band primes splits into the other primes, the leaving primes and the
@@ -388,12 +386,12 @@ theorem prod_bandPrimes_split (f : ℕ → ℝ) :
     ∏ p ∈ bandPrimes x d, f p =
       (∏ p ∈ restPrimes s c₀, f p) * (∏ i, f (leavePrime s c₀ i)) * ∏ i, f (c₀.2.2.1 i) := by
   classical
-  have hsub : univ.image (leavePrime s c₀) ∪ (univ.image fun i => c₀.2.2.1 i) ⊆ bandPrimes x d := by
+  have hsub : univ.image (leavePrime s c₀) ∪ (univ.image c₀.2.2.1) ⊆ bandPrimes x d := by
     intro p hp
     rcases mem_union.1 hp with h | h <;> obtain ⟨i, -, rfl⟩ := mem_image.1 h
     · exact mem_bandPrimes_of_band (leavePrime_mem_band i)
     · exact mem_bandPrimes_of_band (enterPrime_mem_band hc₀ i)
-  have hdis : Disjoint (univ.image (leavePrime s c₀)) (univ.image fun i => c₀.2.2.1 i) := by
+  have hdis : Disjoint (univ.image (leavePrime s c₀)) (univ.image c₀.2.2.1) := by
     refine disjoint_left.2 fun p h h' => ?_
     obtain ⟨i, -, rfl⟩ := mem_image.1 h
     obtain ⟨j, -, hj⟩ := mem_image.1 h'
@@ -423,8 +421,7 @@ theorem edge_summand_eq_prod (hB : (bandPrimes x d).card ≤ B) (N t : ℕ)
   by_cases hg : EdgeGood (s := s) hc₀ Bn fl
   · have hc := consistent_edgeMem hdisj hc₀ hv hS St hg
     -- the memory restrictions and the distinctness hold
-    have hm : MemValid x d Y d₀ u v r B s (toEdge c₀ St fl) := by
-      refine ⟨fun i hfi => ⟨promPart hc₀ i, rfl, Nat.one_le_iff_ne_zero.2 ((hg i).1 hfi)⟩,
+    have hm : MemValid x d Y d₀ u v r B s (toEdge c₀ St fl) := ⟨fun i hfi => ⟨promPart hc₀ i, rfl, Nat.one_le_iff_ne_zero.2 ((hg i).1 hfi)⟩,
         fun i _ => (storePart s c₀ i).2, mem_memStates.2 ((memSize_le_card hc).trans hB)⟩
     rw [ite_eq_left hm, ite_eq_left hc.nodup, mul_one, lifeProd,
       prod_bandPrimes_split hdisj hc₀ hv]
@@ -468,14 +465,8 @@ theorem edge_summand_eq_prod (hB : (bandPrimes x d).card ≤ B) (N t : ℕ)
     have hR : (if fl i then (s.2.2.1 (promPart hc₀ i) : ℝ)
         else if c₀.2.2.1 i ∈ Bn then 0 else birthConst q N (c₀.2.2.1 i)) = 0 := by
       cases hfi : fl i
-      · have : c₀.2.2.1 i ∈ Bn := by
-          by_contra h
-          exact hi ⟨fun h' => by simp [hfi] at h', fun _ => h⟩
-        simp [this]
-      · have : s.2.2.1 (promPart hc₀ i) = 0 := by
-          by_contra h
-          exact hi ⟨fun _ => h, fun h' => by simp [hfi] at h'⟩
-        simp [this]
+      · simp_all
+      simp_all
     refine Eq.trans ?_ (mul_eq_zero_of_right _ (prod_eq_zero (mem_univ i) ?_)).symm
     swap
     · rw [hR, zero_mul, mul_zero]
@@ -490,8 +481,7 @@ theorem edge_summand_eq_prod (hB : (bandPrimes x d).card ≤ B) (N t : ℕ)
       rw [ite_eq_right hm, zero_mul, zero_mul]
     · -- a fresh label already born
       have hB' : c₀.2.2.1 i ∈ Bn := by
-        by_contra h
-        exact hi ⟨fun h' => absurd h' hfi, fun _ => h⟩
+        simp_all
       have hnd : ¬(Bn + freshBirths (toEdge c₀ St fl)).Nodup := by
         intro hnd
         have h₁ := Multiset.nodup_iff_count_le_one.1 hnd (c₀.2.2.1 i)
@@ -544,7 +534,7 @@ theorem edge_stage (hB : (bandPrimes x d).card ≤ B) {N t : ℕ} (htN : t < N)
   -- step: the post-ghost product splits the same way
   rw [postProd, prod_bandPrimes_split hdisj hc₀ hv, mul_assoc]
   have hN : t + 1 ≤ N := htN
-  have hA := fun p => activeSet_subset p π
+  
   congr 1
   · -- the other primes are unchanged
     refine prod_congr rfl fun p hp => ?_
@@ -608,9 +598,9 @@ theorem edge_stage (hB : (bandPrimes x d).card ≤ B) {N t : ℕ} (htN : t < N)
       simp only [Nat.cast_zero, zero_add]
       rfl
 
-end Memory
 
 
-end EdgeStage
+
+
 
 end Erdos408.OneSided

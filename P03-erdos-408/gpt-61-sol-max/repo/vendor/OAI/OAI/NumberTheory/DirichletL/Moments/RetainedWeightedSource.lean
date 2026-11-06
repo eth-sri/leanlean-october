@@ -17,18 +17,18 @@ open CenteredMomentOriginalReflectionApproximation CenteredMomentReflectedNormal
 open CenteredMomentReflectedAnnuli CenteredMomentReflectedTruncation
 open CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+
 
 abbrev sourcePrimes (χ ψ : Character) := redundantSet χ.modulus ψ.modulus
 
-def dualScale (χ ψ : Character) (X : ℝ)
-    (D : (sourcePrimes χ ψ).powerset) (H : SmoothIdeal (sourcePrimes χ ψ)) : ℝ :=
+def dualScale (χ ψ ) (X : ℝ)
+    (D : (sourcePrimes χ ψ).powerset) (H : SmoothIdeal (sourcePrimes χ ψ))  :=
   (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈D.val,P):ℝ)/(X*norm H.val)
 
-lemma dualScale_pos (χ ψ : Character) (X : ℝ) (hX : 0<X)
-    (D : (sourcePrimes χ ψ).powerset) (H : SmoothIdeal (sourcePrimes χ ψ)) :
+lemma dualScale_pos  χ ψ   X  (hX : 0<X)
+     D   H  :
     0<dualScale χ ψ X D H := by
-  have hD : (∏P∈D.val,P : Ideal O)≠0 := Finset.prod_ne_zero_iff.mpr (fun P hP=>
+  have hD : (∏P∈D.val,P : Ideal HeckeFamily.O)≠0 := Finset.prod_ne_zero_iff.mpr (fun P hP=>
     (redundantSet_prime χ.modulus ψ.modulus P ((Finset.mem_powerset.mp D.property) hP)).ne_zero)
   have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
@@ -36,8 +36,8 @@ lemma dualScale_pos (χ ψ : Character) (X : ℝ) (hX : 0<X)
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD)
   exact div_pos (mul_pos hQ hd) (mul_pos hX (CenteredMomentReflectionDeletion.norm_pos H.val))
 
-def retainedColumn (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) (hX : 0<X)
-    (B n : ℕ) (P : ℂ) (a : Index (sourcePrimes χ ψ)) : ℂ :=
+def retainedColumn (χ ψ ) (W : ℝ→ℂ) (X R t : ℝ) (hX : 0<X)
+    (B n : ℕ) (P : ℂ) (a : Index (sourcePrimes χ ψ))  :=
   if a.2∈retainedAnnuli R (dualScale χ ψ X a.1.1 a.1.2)
       (dualScale_pos χ ψ X hX a.1.1 a.1.2) then
     HeckeDyadic.polynomial χ.inverse false
@@ -45,9 +45,14 @@ def retainedColumn (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) (hX : 0<X)
       (dyadicScale a.2*dualScale χ ψ X a.1.1 a.1.2) 0 0 * P
   else 0
 
-theorem finiteAnnularColumn_normalized (χ ψ : Character) (W : ℝ→ℂ)
-    (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
-    (D : (sourcePrimes χ ψ).powerset) (H : SmoothIdeal (sourcePrimes χ ψ)) :
+section
+variable (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ) (hs : Summable (fun a : Index (sourcePrimes χ ψ)=>
+      ‖signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
+        retainedColumn χ ψ W X R t hX B n P a‖)) (D : (sourcePrimes χ ψ).powerset)
+
+theorem finiteAnnularColumn_normalized    
+           
+       H  :
     finiteAnnularColumn χ.inverse (paperRadialFourier (CompletedHeight.normTwistedSource W t))
       R (dualScale χ ψ X D H)*P =
     (((1+‖t‖)^n:ℝ):ℂ)*∑'k : ℤ,(annularMass B k:ℂ)*
@@ -61,11 +66,10 @@ theorem finiteAnnularColumn_normalized (χ ψ : Character) (W : ℝ→ℂ)
   rw [retainedColumn,ite_eq_left hk,actual_annular_normalization]
   ring
 
-theorem retainedOriginal_eq_weighted (χ ψ : Character) (W : ℝ→ℂ)
-    (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
-    (hs : Summable (fun a : Index (sourcePrimes χ ψ)=>
-      ‖signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
-        retainedColumn χ ψ W X R t hX B n P a‖)) :
+include hs in
+theorem retainedOriginal_eq_weighted    
+           
+      :
     retainedOriginal χ ψ W X R t*P =
       (((1+‖t‖)^n:ℝ):ℂ)*∑'a : Index (sourcePrimes χ ψ),
         signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
@@ -89,12 +93,11 @@ theorem retainedOriginal_eq_weighted (χ ψ : Character) (W : ℝ→ℂ)
   simp only [mul_assoc,tsum_mul_left]
   ring
 
-theorem retainedOriginal_fiber_summable (χ ψ : Character) (W : ℝ→ℂ)
-    (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
-    (hs : Summable (fun a : Index (sourcePrimes χ ψ)=>
-      ‖signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
-        retainedColumn χ ψ W X R t hX B n P a‖))
-    (D : (sourcePrimes χ ψ).powerset) :
+include hs in
+theorem retainedOriginal_fiber_summable    
+           
+     
+      :
     Summable (fun H : SmoothIdeal (sourcePrimes χ ψ)=>
       ‖(coefficient ψ ψ.inverse (sourcePrimes χ ψ) D.val H*
         finiteAnnularColumn χ.inverse (paperRadialFourier (CompletedHeight.normTwistedSource W t))
@@ -106,6 +109,8 @@ theorem retainedOriginal_fiber_summable (χ ψ : Character) (W : ℝ→ℂ)
   rw [mul_assoc,finiteAnnularColumn_normalized χ ψ W X R t hX B n P D H]
   simp only [signedWeight,mul_assoc,tsum_mul_left]
   ring
+
+end
 
 theorem actual_retained_weighted_energy (ε : ℝ) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*} [Fintype ι],

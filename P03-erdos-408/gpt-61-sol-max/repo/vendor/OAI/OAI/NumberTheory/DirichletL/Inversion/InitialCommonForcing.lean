@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialCommonPool
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
@@ -15,12 +15,12 @@ namespace SevenEighths.InverseInitialCommonForcing
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
 open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
 open InverseInitialEnergyCallerWindow InverseInitialEnergyCallerSelector
-local notation "Eis"=>ActualEisensteinCubic.O
+
 
 theorem common_selector_window
-    (W:ℝ→ℂ)(Z r z G b:ℝ)(hZ:0<Z)(hW:∀x,W x≠0→x≤b)
-    {P j:Ideal Eis}(hP:Admissible P)(hj:j∣P)
-    (F:Finset (Ideal Eis))(hF:∀I∈F,Admissible I)(A:Finset (primePool F)) :
+     W  Z r z G b (hZ:0<Z)(hW:∀x,W x≠0→x≤b)
+     {P j} (hP:Admissible P)(hj:j∣P)
+     F (hF:∀I∈F,Admissible I) A  :
     (if (∏i∈A,i.val)∈columns (originalSource Z r b) P j then
       residualOverlapWindow P j W Z z G (((∏i∈A,i.val).absNorm:ℝ)/Z^(r+z-2*G)) else 0)*
       rowCoprimeMask (fun i:primePool F=>i.val) A (primaryGenerator j) =
@@ -43,6 +43,6 @@ theorem common_selector_window
 
 end SevenEighths.InverseInitialCommonForcing
 
-end
+
 
 end OAI

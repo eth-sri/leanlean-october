@@ -1,4 +1,6 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondTail
 public import OAI.NumberTheory.DirichletL.Moments.FirstTailAggregate
@@ -15,10 +17,10 @@ namespace SevenEighths.CenteredMomentSupportedTailAggregate
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentHeckeColumnWindow
 open CenteredMomentSecondTail CenteredMomentFirstTailAggregate CenteredMomentFirstDiscardedEnergy
 open CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentSecondHeightFamily
-local notation "O" => ActualEisensteinCubic.O
+
 
 private theorem pair_mass {α : Type*} [Fintype α] (c w : α → ℂ) (F : α → α → ℂ)
-    (hw : ∀ i,‖w i‖≤1) (B : ℝ) (_hB : 0≤B)
+    (hw : ∀ i,‖w i‖≤1)  B  (_hB : 0≤B)
     (hF : ∀ i j,c i≠0 → c j≠0 → ‖F i j‖≤B) :
     ‖∑ i,∑ j,((c i*w i)*star (c j*w j))*F i j‖≤(∑ i,‖c i‖)^2*B := by
   have ht (i j : α) : ‖((c i*w i)*star (c j*w j))*F i j‖≤‖c i‖*‖c j‖*B := by
@@ -29,23 +31,26 @@ private theorem pair_mass {α : Type*} [Fintype α] (c w : α → ℂ) (F : α �
     rw [norm_mul,norm_mul,norm_star]
     apply mul_le_mul _ (hF i j hi hj) (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     apply mul_le_mul _ _ (norm_nonneg _) (norm_nonneg _)
-    · rw [norm_mul];exact mul_le_of_le_one_right (norm_nonneg _) (hw i)
-    · rw [norm_mul];exact mul_le_of_le_one_right (norm_nonneg _) (hw j)
+    · simp_all
+    simp_all
   calc
     _ ≤ ∑ i,‖∑ j,((c i*w i)*star (c j*w j))*F i j‖ := norm_sum_le _ _
     _ ≤ ∑ i,∑ j,‖c i‖*‖c j‖*B := Finset.sum_le_sum (fun i _ => (norm_sum_le _ _).trans (Finset.sum_le_sum (fun j _ => ht i j)))
     _ = _ := by rw [pow_two,Finset.sum_mul,Finset.sum_mul];apply Finset.sum_congr rfl;intro i hi;rw [Finset.mul_sum,Finset.sum_mul]
 
-def secondDiscardedEnergy (η : Character) (t : ℝ) (S : Finset (Ideal O))
-    (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
+public alias _root_.SharedProofs.shared_pair_mass := pair_mass
+
+
+def secondDiscardedEnergy (η : Character) (t : ℝ) (S : Finset (Ideal ActualEisensteinCubic.O))
+    (c : Ideal ActualEisensteinCubic.O → ℂ) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ)  :=
   ∑ I : supportedColumns S,∑ J : supportedColumns S,
     ((c I*heightCoeff η t I)*star (c J*heightCoeff η t J))*
       secondDiscardedPair I J (Finset.mem_filter.mp I.property).2
         (Finset.mem_filter.mp J.property).2 W K Tsec Z ξ
 
-theorem second_discarded_energy_bound (Adec : ℕ) :
+theorem second_discarded_energy_bound  Adec  :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ),0<C ∧
-      ∀ (η : Character) (t : ℝ) (S : Finset (Ideal O)) (c : Ideal O → ℂ)
+      ∀ (η : Character) (t : ℝ) (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ)
         (W : 𝓢(ℝ,ℂ)) (K X H Tsec Z Csec ξ : ℝ),0<K → 0<X → 1<Z → 1≤Csec →
       (∀ I∈S,c I≠0 → (Ideal.absNorm I:ℝ)≤Real.exp H*X) →
       X^2/K≤Tsec → (2*H/Real.log Z+Real.log (4*Csec)/Real.log Z<ξ/4) →

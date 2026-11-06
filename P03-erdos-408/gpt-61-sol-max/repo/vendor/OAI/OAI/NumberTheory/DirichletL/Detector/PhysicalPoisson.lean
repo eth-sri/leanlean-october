@@ -13,17 +13,17 @@ open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition ConcreteTrac
 open EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
-lemma sexticGauss_frequency_congr (s : O) (hs : s≠0) (h k : O)
+lemma sexticGauss_frequency_congr  s   hs   h k 
     (he : h-k ∈ (Ideal.span {s}:Ideal O)) : sexticGauss s hs h = sexticGauss s hs k := by
   have hmk := Ideal.Quotient.eq.mpr he
   simp only [sexticGauss, hmk]
 
-def physicalQuotient (C : CalibrationData) (A s : O) (hs : s≠0)
-    (m : O ⧸ Ideal.span {(C.generator*A)*s}) : ℂ :=
+def physicalQuotient (C : CalibrationData) (A s ) (hs : s≠0)
+    (m : O ⧸ Ideal.span {(C.generator*A)*s})  :=
   calibratedNumerator C A (representative ((C.generator*A)*s) m) *
     sexticGauss s hs (-representative ((C.generator*A)*s) m)
 
-lemma physicalQuotient_mk (C : CalibrationData) (A s : O) (hs : s≠0) (m : O) :
+lemma physicalQuotient_mk  C   A s   hs   m  :
     physicalQuotient C A s hs (Ideal.Quotient.mk _ m) =
       calibratedNumerator C A m * sexticGauss s hs (-m) := by
   have hd : (C.generator*A)*s ∣ representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-m :=
@@ -40,9 +40,9 @@ lemma physicalQuotient_mk (C : CalibrationData) (A s : O) (hs : s≠0) (m : O) :
   unfold physicalQuotient
   rw [calibratedNumerator_congr C A _ m hA, sexticGauss_frequency_congr s hs _ (-m) hs']
 
-theorem physical_row_poisson (C : CalibrationData) (A s : O) (hA : A≠0) (hs : s≠0)
-    (W : ℝ → ℂ) (hWc : HasCompactSupport W) (hWs : ContDiff ℝ ∞ W)
-    (K : ℝ) (hK : 0<K) :
+theorem physical_row_poisson  C   A s   hA   hs 
+     W  (hWc : HasCompactSupport W) (hWs : ContDiff ℝ ∞ W)
+     K  (hK : 0<K) :
     (∑' m : O, calibratedNumerator C A m * sexticGauss s hs (-m) * W (elementNorm m/K)) =
       ((K / elementNorm (C.generator*A) : ℝ):ℂ) *
         ∑' H : O, actualCongruenceCoefficient C A s hA H *

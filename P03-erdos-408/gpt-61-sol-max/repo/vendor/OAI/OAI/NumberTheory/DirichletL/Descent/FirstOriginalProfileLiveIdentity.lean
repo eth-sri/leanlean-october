@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
@@ -6,24 +7,24 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform CompletedHeight
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
 variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem original_refined_cell_profile_identity (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
-    (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hsom : Function.support om⊆Set.Icc a b)
-    (Φ : 𝓢(ℝ,ℂ)) (K Y X theta : ℝ) (hX : 0<X)
-    (k : SourceIndex) (l : ℕ) (gate : FirstOriginalOuter ι→Prop) (s : Fin 9→ℝ) (hs : ∀i,0<s i)
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)
+    (cutoff : CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→Finset ι→ℝ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
+    (om : 𝓢(ℝ,ℂ))  a b   ha   hsom 
+     Φ   K Y X theta  (hX : 0<X)
+     k   l   gate   s  (hs : ∀i,0<s i)
     (hleft : s 0*s 2*s 5*s 7=X) (hright : s 1*s 2*s 5*s 8=X) :
     let source := refinedSource p pool Q labels β cutoff Y k gate
     (∑x∈source,∑j∈firstCommonIndices pool,commonSelector p (fun _=>1) l j.2.1*
@@ -33,8 +34,8 @@ theorem original_refined_cell_profile_identity (pool : Finset ι) (Q : Finset (�
       (positiveSource (priorityLogWindow om a b ha hsom true) 1 (-theta))
       (positiveSource (priorityLogWindow om a b ha hsom false) 1 theta) Φ K Y s := by
   intro source
-  let W₁ := fun y=>star (normTwistedSource om theta ((s 0*s 2*s 5*s 7)*y/X))
-  let W₂ := fun y=>normTwistedSource om theta ((s 1*s 2*s 5*s 8)*y/X)
+  
+  
   have he := original_family_profiles p hp hg source pool (fun _=>commonSelector p (fun _=>1) l)
     (coefficient p hp hcop hg Ψ m mark true) (coefficient p hp hcop hg Ψ m mark false)
     (weight p hp hcop hg β cutoff Ψ m) om a b ha hsom Φ
@@ -55,6 +56,6 @@ theorem original_refined_cell_profile_identity (pool : Finset ι) (Q : Finset (�
   ring
 
 end SevenEighths.InverseMomentFirstOriginalProfile
-end
+
 
 end OAI

@@ -17,12 +17,16 @@ open CenteredMomentAmplification CenteredMomentAmplificationLocal CenteredMoment
 open ProbePhysical
 local notation "O" => ActualEisensteinCubic.O
 
-def residualCharacter (p : O) (k : ℕ) (u : O) : ℂ :=
+def residualCharacter (p : O) (k : ℕ) (u : O)  :=
   sexticReciprocityPhase p u ^ k * idealRowHom u (Ideal.span {p}) ^ (2*k)
 
-theorem crossFactor_primary (p u : O) (k : ℕ)
-    (hp : Supported (Ideal.span {p})) (hu : Supported (Ideal.span {u}))
-    (hpp : goodLambda^2 ∣ p-1) (hup : goodLambda^2 ∣ u-1) :
+section
+variable (p u : O) (k : ℕ) (hp : Supported (Ideal.span {p})) (hu : Supported (Ideal.span {u})) (hpp : goodLambda^2 ∣ p-1) (hup : goodLambda^2 ∣ u-1)
+include p u k hp hu hpp hup
+
+theorem crossFactor_primary    
+       
+        :
     idealRowHom u (Ideal.span {p^k}) * idealRowHom (p^k) (Ideal.span {u}) =
       residualCharacter p k u := by
   rw [← Ideal.span_singleton_pow,map_pow,idealRowHom_argument_pow p k _ hu,
@@ -32,10 +36,10 @@ theorem crossFactor_primary (p u : O) (k : ℕ)
   rw [show 2*k=k+k by omega,pow_add]
   ring
 
-theorem gauss_primary_power_product (p u : O) (k : ℕ)
-    (hp : Supported (Ideal.span {p})) (hu : Supported (Ideal.span {u}))
-    (hpp : goodLambda^2 ∣ p-1) (hup : goodLambda^2 ∣ u-1)
-    (hcop : IsCoprime p u) (h : O) :
+theorem gauss_primary_power_product    
+       
+       
+    (hcop : IsCoprime p u)  h  :
     sexticGauss (p^k*u) (mul_ne_zero (pow_ne_zero _ (supportedElement_ne_zero p hp))
       (supportedElement_ne_zero u hu)) h =
       residualCharacter p k u * sexticGauss (p^k) (pow_ne_zero _ (supportedElement_ne_zero p hp)) h *
@@ -43,25 +47,31 @@ theorem gauss_primary_power_product (p u : O) (k : ℕ)
   rw [sexticGauss_coprime_product (p^k) u (supported_power p hp k) hu hcop.pow_left,
     crossFactor_primary p u k hp hu hpp hup]
 
-def primeRoot (p : O) (k : ℕ) : ℂ :=
+end
+
+def primeRoot (p : O) (k : ℕ)  :=
   (Real.sqrt ((Ideal.absNorm (Ideal.span {p}) : ℝ)^k) : ℂ)
 
-theorem primeRoot_sq (p : O) (k : ℕ) :
+theorem primeRoot_sq  p   k  :
     primeRoot p k * primeRoot p k = (Ideal.absNorm (Ideal.span {p}) : ℂ)^k := by
   rw [primeRoot,← Complex.ofReal_mul,Real.mul_self_sqrt (by positivity),Complex.ofReal_pow,
     Complex.ofReal_natCast]
 
-theorem modulusRoot_product (p u : O) (k : ℕ) :
+section
+variable (p u : O)
+include p u
+
+theorem modulusRoot_product    k  :
     (Real.sqrt (Ideal.absNorm (Ideal.span {p^k*u}) : ℝ) : ℂ) =
       primeRoot p k * (Real.sqrt (Ideal.absNorm (Ideal.span {u}) : ℝ) : ℂ) := by
   simp only [← Ideal.span_singleton_mul_span_singleton,← Ideal.span_singleton_pow,
     map_mul,map_pow,Nat.cast_mul,Nat.cast_pow,Real.sqrt_mul (by positivity :
       0 ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ)^k),Complex.ofReal_mul,primeRoot]
 
-theorem gaussRow_shortening (p u : O) (k : ℕ)
-    (hp : Supported (Ideal.span {p})) (hu : Supported (Ideal.span {u}))
+theorem gaussRow_shortening    k 
+     hp   hu 
     (hpp : goodLambda^2 ∣ p-1) (hup : goodLambda^2 ∣ u-1)
-    (hcop : IsCoprime p u) (h : O) :
+    (hcop : IsCoprime p u)  h  :
     gaussRow (p^k*u) (supported_mul_elements _ _ (supported_power p hp k) hu) h =
       residualCharacter p k u *
         (sexticGauss (p^k) (pow_ne_zero _ (supportedElement_ne_zero p hp)) h / primeRoot p k) *
@@ -70,10 +80,10 @@ theorem gaussRow_shortening (p u : O) (k : ℕ)
   rw [gauss_primary_power_product p u k hp hu hpp hup hcop h,modulusRoot_product]
   ring
 
-theorem central_error_shortening (p u : O) (n : ℕ)
-    (hp : Supported (Ideal.span {p})) (hu : Supported (Ideal.span {u}))
+theorem central_error_shortening    n 
+     hp   hu 
     (hpp : goodLambda^2 ∣ p-1) (hup : goodLambda^2 ∣ u-1)
-    (hcop : IsCoprime p u) (h : O) :
+    (hcop : IsCoprime p u)  h  :
     (gaussRow (p^(n+1)*u) (supported_mul_elements _ _ (supported_power p hp (n+1)) hu) h -
       gaussRow (p^(n+1)*u) (supported_mul_elements _ _ (supported_power p hp (n+1)) hu) (p^6*h)) /
         primeRoot p (n+1) =
@@ -90,13 +100,13 @@ theorem central_error_shortening (p u : O) (n : ℕ)
   rw [← primeRoot_sq p (n+1)]
   ring
 
-theorem supported_phase_sq (p u : O) (hp : Supported (Ideal.span {p}))
+theorem supported_phase_sq   (hp : Supported (Ideal.span {p}))
     (hu : Supported (Ideal.span {u})) : sexticReciprocityPhase p u ^ 2 = 1 := by
   unfold sexticReciprocityPhase
   exact_mod_cast QuadraticAllOddCRT.quadraticRaySign_sq _ _
     (supported_residue_odd p hp) (supported_residue_odd u hu)
 
-theorem residualCharacter_moving (p u : O) (k : ℕ)
+theorem residualCharacter_moving    k 
     (hp : Supported (Ideal.span {p})) (hu : Supported (Ideal.span {u}))
     (hpp : goodLambda^2 ∣ p-1) (hup : goodLambda^2 ∣ u-1) :
     residualCharacter p k u = sexticReciprocityPhase p u ^ k *
@@ -105,32 +115,38 @@ theorem residualCharacter_moving (p u : O) (k : ℕ)
     idealRowHom_primary_reciprocity p u hpp hup hp hu,mul_pow,
     pow_mul,supported_phase_sq p u hp hu,one_pow,one_mul]
 
-def errorScalar (p : O) (hp : p ≠ 0) (n : ℕ) (h : O) : ℂ :=
+end
+
+def errorScalar (p : O) (hp : p ≠ 0) (n : ℕ) (h : O)  :=
   centralLocal p hp n h - centralLocal p hp n (p^6*h)
 
-theorem centralLocal_unit_zero (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ) (hn : n ≠ 0)
-    (h : O) (hph : ¬p ∣ h) : centralLocal p hp.ne_zero n h = 0 := by
+section
+variable (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal] (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+include p hp hs hg hc
+
+theorem centralLocal_unit_zero      
+       
+       n  (hn : n ≠ 0)
+     h  (hph : ¬p ∣ h) : centralLocal p hp.ne_zero n h = 0 := by
   unfold centralLocal
   rw [← mul_one h,sexticGauss_unit_scale _ (supported_power p hs (n+1)) h 1
     ((hp.irreducible.coprime_iff_not_dvd.mpr hph).symm.pow_right),
     gauss_prime_power_one p hp hg hc]
   simp only [hn,ite_false,mul_zero,zero_div]
 
-theorem centralLocal_six_zero (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ) (hn5 : n ≠ 5) (hn6 : n ≠ 6)
-    (h : O) (hph : ¬p ∣ h) : centralLocal p hp.ne_zero n (p^6*h) = 0 := by
+theorem centralLocal_six_zero      
+       
+       n  (hn5 : n ≠ 5) (hn6 : n ≠ 6)
+     h  (hph : ¬p ∣ h) : centralLocal p hp.ne_zero n (p^6*h) = 0 := by
   unfold centralLocal
   rw [mul_comm (p^6) h,sexticGauss_unit_scale _ (supported_power p hs (n+1)) h (p^6)
     ((hp.irreducible.coprime_iff_not_dvd.mpr hph).symm.pow_right),
     gauss_prime_power_six p hp hg hc]
   simp only [hn5,hn6,ite_false,mul_zero,zero_div]
 
-theorem errorScalar_norms (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (h : O) (hph : ¬p ∣ h) :
+theorem errorScalar_norms      
+       
+       h  (hph : ¬p ∣ h) :
     ‖errorScalar p hp.ne_zero 0 h‖^2 = (Ideal.absNorm (Ideal.span {p}) : ℝ)⁻¹ ∧
     ‖errorScalar p hp.ne_zero 5 h‖^2 = (1-(Ideal.absNorm (Ideal.span {p}) : ℝ)⁻¹)^2 ∧
     ‖errorScalar p hp.ne_zero 6 h‖^2 = (Ideal.absNorm (Ideal.span {p}) : ℝ)⁻¹ := by
@@ -142,6 +158,8 @@ theorem errorScalar_norms (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
   exact ⟨centralLocal_one_norm_sq p hp hs hg hc h hph,
     centralLocal_six_norm_sq p hp hs hg hc h hph,
     centralLocal_seven_norm_sq p hp hs hg hc h hph⟩
+
+end
 
 end SevenEighths.CenteredMomentAmplificationShortening
 

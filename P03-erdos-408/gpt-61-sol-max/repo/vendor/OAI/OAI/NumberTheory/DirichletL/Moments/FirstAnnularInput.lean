@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildInput
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstAnnularInput
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy
@@ -19,8 +19,8 @@ open CenteredMomentCommonAllocationSum
 
 variable {ι:Type*}[Fintype ι]
 
-theorem normalized_input_coefficient (s:Input ι)(R seed:Ideal HeckeFamily.O)
-    (W:𝓢(ℝ,ℂ))(H:ℝ):
+theorem normalized_input_coefficient (s:Input ι) R seed 
+     W  H :
     (gaussEnergy Finset.univ (sourceGenerator (original s R seed).columns)
       (sourceGenerator_supported (original s R seed).columns)
       ((original s R seed).coefficient s.η fixedBadMask s.t (volume s)) W H).re=
@@ -37,6 +37,6 @@ theorem normalized_input_coefficient (s:Input ι)(R seed:Ideal HeckeFamily.O)
 
 end SevenEighths.CenteredMomentFirstAnnularInput
 
-end
+
 
 end OAI

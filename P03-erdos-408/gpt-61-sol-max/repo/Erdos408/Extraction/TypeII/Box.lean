@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Proxy
 public import Erdos408.Extraction.TypeII.Asymp
@@ -30,7 +31,7 @@ namespace Erdos408.TypeII
 open Filter Real Finset
 
 /-- The bound of `eventually_proxyTwist` (AC1) at one `x`. -/
-def ProxyTwistAt (c Ch Cj A Cm Kan κ x : ℝ) : Prop :=
+def ProxyTwistAt (c Ch Cj A Cm Kan κ x : ℝ)  :=
   ∀ (j : ℕ), 1 ≤ j → (j : ℝ) ≤ Cj * logLogLog x + 1 →
   ∀ H lo hi : ℝ, x ^ presieveExponent c Ch x / 2 ≤ H → H ≤ x ^ Kan → H ≤ lo →
     hi ≤ 2 * H →
@@ -43,11 +44,11 @@ def ProxyTwistAt (c Ch Cj A Cm Kan κ x : ℝ) : Prop :=
       κ * Real.log x ^ (-A)
 
 /-- The statement of `eventually_proxyTwist` (AC1) for fixed `c, C_h, C_j`. -/
-def ProxyTwistPremise (c Ch Cj : ℝ) : Prop :=
+def ProxyTwistPremise (c Ch Cj : ℝ)  :=
   ∀ A Cm Kan : ℝ, ∃ κ : ℝ, ∀ᶠ x : ℝ in atTop, ProxyTwistAt c Ch Cj A Cm Kan κ x
 
 /-- The statement of `eventually_kernel_premise` (AC3). -/
-def KernelPremise : Prop :=
+def KernelPremise  :=
   ∀ CX B : ℝ, ∃ cG : ℝ, ∀ᶠ x : ℝ in atTop,
     ∀ γ Hm Hn : ℝ, Real.log x ^ (-(1 / 100 : ℝ)) ≤ γ → x ^ γ ≤ Hm → x ^ γ ≤ Hn →
       Hm * Hn ≤ CX * x → ∀ Δ : ℝ, 1 ≤ |Δ| → |Δ| ≤ 4 * (Hm * Hn) * Real.log x ^ B + 2 →
@@ -55,11 +56,15 @@ def KernelPremise : Prop :=
           cG * (|Δ|⁻¹ + Real.exp (-Real.log x ^ (0.95 : ℝ)))
 
 /-- The prime-minus-proxy coefficient `[m prime, m > x^γ] - a_j^0(m)`. -/
-noncomputable def primeProxyDiff (x γ : ℝ) (j m : ℕ) : ℝ :=
+noncomputable def primeProxyDiff (x γ : ℝ) (j m : ℕ)  :=
   (if m.Prime ∧ x ^ γ < m then 1 else 0) - unstrippedProxy x γ j m
 
+section
+variable {x x' κ γ : ℝ}
+
+
 /-- `log x'` is within `log κ` of `log x` when `x / κ ≤ x' ≤ κ x`. -/
-theorem abs_log_sub_le {x x' κ : ℝ} (hx : 0 < x) (hκ : 1 < κ) (h1 : x / κ ≤ x')
+theorem abs_log_sub_le   (hx : 0 < x) (hκ : 1 < κ) (h1 : x / κ ≤ x')
     (h2 : x' ≤ κ * x) : |Real.log x' - Real.log x| ≤ Real.log κ := by
   have hκ0 : 0 < κ := by linarith
   have hx' : 0 < x' := lt_of_lt_of_le (by positivity) h1
@@ -73,8 +78,8 @@ theorem abs_log_sub_le {x x' κ : ℝ} (hx : 0 < x) (hκ : 1 < κ) (h1 : x / κ 
     linarith
 
 /-- Rescaling the band exponents by `log L / log log x'` gives the same bands at `x'`. -/
-theorem band_rescale {x x' : ℝ} (hL : 0 < Real.log x) (hL' : 0 < Real.log x')
-    (hT' : Real.log (Real.log x') ≠ 0) (a : ℝ) :
+theorem band_rescale   (hL : 0 < Real.log x) (hL' : 0 < Real.log x')
+    (hT' : Real.log (Real.log x') ≠ 0)  a  :
     band x' (a * (logLog x / Real.log (Real.log x'))) = band x a := by
   have h : Real.log x' ^ (a * (logLog x / Real.log (Real.log x'))) = Real.log x ^ a := by
     rw [Real.rpow_def_of_pos hL', Real.rpow_def_of_pos hL, logLog]
@@ -84,10 +89,10 @@ theorem band_rescale {x x' : ℝ} (hL : 0 < Real.log x) (hL' : 0 < Real.log x')
   rw [h]
 
 /-- `0 ≤ a_j^0 ≤ 1` once `∏_{p ≤ Y} (1 - 1/p) · γ L ≥ 1`. -/
-theorem unstrippedProxy_le_one {x γ : ℝ} (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
-    {j : ℕ} (hj : 1 ≤ j)
+theorem unstrippedProxy_le_one   (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
+     {j}  (hj : 1 ≤ j)
     (hY : 1 ≤ (∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (γ * Real.log x))
-    (n : ℕ) : 0 ≤ unstrippedProxy x γ j n ∧ unstrippedProxy x γ j n ≤ 1 := by
+     n  : 0 ≤ unstrippedProxy x γ j n ∧ unstrippedProxy x γ j n ≤ 1 := by
   obtain ⟨h0, h1⟩ := unstrippedProxy_le hx hL hγ hj n
   refine ⟨h0, h1.trans ?_⟩
   obtain ⟨-, hPiD⟩ := prod_le_dampedDensity hL hj
@@ -104,7 +109,7 @@ theorem unstrippedProxy_le_one {x γ : ℝ} (hx : 1 < x) (hL : 1 ≤ Real.log x)
 
 /-- The prime factors of a number where `[m prime, m > x^γ] - a_j^0(m) ≠ 0` are at least
 `exp(L^{0.28})`. -/
-theorem primeFactors_ge_of_primeProxyDiff {x γ : ℝ} (hL : 1 ≤ Real.log x) {j m : ℕ}
+theorem primeFactors_ge_of_primeProxyDiff   (hL : 1 ≤ Real.log x) {j m : ℕ}
     (hγ : Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ x ^ γ)
     (hY : Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ proxyCutoff x)
     (h : primeProxyDiff x γ j m ≠ 0) :
@@ -129,6 +134,8 @@ theorem primeFactors_ge_of_primeProxyDiff {x γ : ℝ} (hL : 1 ≤ Real.log x) {
           exact hY.trans (hrough p hpm).le
         · exact absurd rfl hg
     · exact absurd rfl h
+
+end
 
 /-- `r^e ≤ 2^{|e|}` for `1/2 ≤ r ≤ 2`. -/
 theorem rpow_le_two_rpow_abs {r : ℝ} (h1 : 1 / 2 ≤ r) (h2 : r ≤ 2) (e : ℝ) :
@@ -158,18 +165,22 @@ section Scale
 
 variable {x x' κ γ : ℝ}
 
+section
+variable (hx : 0 < x) (hL : 0 < Real.log x) (hp1 : Real.log x / 2 ≤ Real.log x') (hp2 : Real.log x' ≤ 2 * Real.log x) {ρ a a' K : ℝ} (hK : 0 < K) (hρ1 : 96 / 100 ≤ ρ)
+
+
+include hx in
 /-- `L/2 ≤ log x' ≤ 2L` when `x' ∈ [x/κ, κx]` and `2 log κ ≤ L`. -/
-theorem log_scale_bounds (hx : 0 < x) (hκ : 1 < κ) (h1 : x / κ ≤ x') (h2 : x' ≤ κ * x)
+theorem log_scale_bounds   (hκ : 1 < κ) (h1 : x / κ ≤ x') (h2 : x' ≤ κ * x)
     (hLκ : 2 * Real.log κ ≤ Real.log x) :
     Real.log x / 2 ≤ Real.log x' ∧ Real.log x' ≤ 2 * Real.log x := by
   have h := abs_log_sub_le hx hκ h1 h2
-  rw [abs_le] at h
-  have := Real.log_nonneg hκ.le
-  constructor <;> linarith
+  grind
 
+include hL hp1 hp2 in
 /-- The rescaling ratio `T / log log x'` lies in `[0.96, 1.02]` when `T ≥ 50`. -/
-theorem ratio_bounds (hL : 0 < Real.log x) (hp1 : Real.log x / 2 ≤ Real.log x')
-    (hp2 : Real.log x' ≤ 2 * Real.log x) (hT : 50 ≤ logLog x) :
+theorem ratio_bounds    
+      (hT : 50 ≤ logLog x) :
     0 < Real.log (Real.log x') ∧ 96 / 100 ≤ logLog x / Real.log (Real.log x') ∧
       logLog x / Real.log (Real.log x') ≤ 102 / 100 := by
   have hLp0 : 0 < Real.log x' := by linarith
@@ -188,16 +199,18 @@ theorem ratio_bounds (hL : 0 < Real.log x) (hp1 : Real.log x / 2 ≤ Real.log x'
   · rw [le_div_iff₀ hTp0]; linarith
   · rw [div_le_iff₀ hTp0]; linarith
 
+include hρ1 in
 /-- The window `[0.11, 0.19]` rescales into `[0.105, 0.195]`. -/
-theorem rescale_window {ρ a : ℝ} (hρ1 : 96 / 100 ≤ ρ) (hρ2 : ρ ≤ 102 / 100)
+theorem rescale_window     (hρ2 : ρ ≤ 102 / 100)
     (ha1 : 11 / 100 ≤ a) (ha2 : a ≤ 19 / 100) :
     21 / 200 ≤ a * ρ ∧ a * ρ ≤ 39 / 200 := by
   constructor
-  · have := mul_le_mul ha1 hρ1 (by norm_num) (by linarith); linarith
-  · have := mul_le_mul ha2 hρ2 (by linarith) (by norm_num); linarith
+  · nlinarith
+  nlinarith
 
+include hK hρ1 in
 /-- The gap `0.04 / K` rescales to at least `0.02 / K`. -/
-theorem rescale_gap {ρ a a' K : ℝ} (hK : 0 < K) (hρ1 : 96 / 100 ≤ ρ)
+theorem rescale_gap      
     (h : a + 4 / 100 / K ≤ a') : a * ρ + 2 / 100 / K ≤ a' * ρ := by
   have h4 : 2 / 100 / K ≤ ρ * (4 / 100 / K) := by
     rw [mul_div_assoc']
@@ -206,8 +219,9 @@ theorem rescale_gap {ρ a a' K : ℝ} (hK : 0 < K) (hρ1 : 96 / 100 ≤ ρ)
   rw [add_mul] at h5
   linarith
 
+include hL hp1 in
 /-- `(log x')^{-1/100} ≤ γ/2`. -/
-theorem log_rpow_le_half (hL : 0 < Real.log x) (hp1 : Real.log x / 2 ≤ Real.log x')
+theorem log_rpow_le_half    
     (hT : 0 < logLog x) (hγ : logLog x ^ (-21 : ℝ) ≤ γ)
     (h1 : logLog x ^ (21 : ℝ) ≤ Real.log x ^ (1 / 200 : ℝ))
     (h2 : Real.log x ^ (1 / 200 : ℝ) ≤ 1 / 4 * Real.log x ^ (1 / 100 : ℝ)) :
@@ -232,17 +246,19 @@ theorem log_rpow_le_half (hL : 0 < Real.log x) (hp1 : Real.log x / 2 ≤ Real.lo
     linarith
   linarith
 
+include hx in
 /-- `x'^{γ/2} ≤ x^γ` for `x' ≤ x²`. -/
-theorem rpow_half_le (hx : 0 < x) (hx' : 0 < x') (hxx : x' ≤ x ^ 2) (hγ : 0 ≤ γ) :
+theorem rpow_half_le   (hx' : 0 < x') (hxx : x' ≤ x ^ 2) (hγ : 0 ≤ γ) :
     x' ^ (γ / 2) ≤ x ^ γ := by
   calc x' ^ (γ / 2) ≤ (x ^ 2) ^ (γ / 2) := Real.rpow_le_rpow hx'.le hxx (by positivity)
     _ = x ^ γ := by
       rw [← Real.rpow_natCast, ← Real.rpow_mul hx.le]; ring_nf
 
+include hL hp2 in
 /-- Primes above `exp(L^{0.28})` exceed the roughness level at `x'`. -/
-theorem roughLevel_lt (hL : 0 < Real.log x) (hp2 : Real.log x' ≤ 2 * Real.log x)
+theorem roughLevel_lt    
     (hLp : 0 < Real.log x')
-    (h24 : Real.log x ^ (24 / 100 : ℝ) ≤ 1 / 2 * Real.log x ^ (28 / 100 : ℝ)) {p : ℝ}
+    (h24 : Real.log x ^ (24 / 100 : ℝ) ≤ 1 / 2 * Real.log x ^ (28 / 100 : ℝ))  {p} 
     (hp : Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ p) : roughLevel x' < p := by
   refine lt_of_lt_of_le ?_ hp
   unfold roughLevel
@@ -263,8 +279,9 @@ theorem roughLevel_lt (hL : 0 < Real.log x) (hp2 : Real.log x' ≤ 2 * Real.log 
     _ = 2 * Real.log x ^ (24 / 100 : ℝ) := by rw [h5]
     _ ≤ Real.log x ^ (28 / 100 : ℝ) := by linarith
 
+include hx hL in
 /-- `exp(L^{0.28}) ≤ x^γ` when `γ ≥ T^{-21}` and `T^{21} ≤ L^{0.72}`. -/
-theorem exp_le_rpow_gamma (hx : 0 < x) (hL : 0 < Real.log x) (hT : 0 < logLog x)
+theorem exp_le_rpow_gamma     (hT : 0 < logLog x)
     (hγ : logLog x ^ (-21 : ℝ) ≤ γ) (h21 : logLog x ^ (21 : ℝ) ≤ Real.log x ^ (72 / 100 : ℝ)) :
     Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ x ^ γ := by
   rw [Real.rpow_def_of_pos hx, Real.exp_le_exp]
@@ -280,8 +297,9 @@ theorem exp_le_rpow_gamma (hx : 0 < x) (hL : 0 < Real.log x) (hT : 0 < logLog x)
     rw [← div_eq_mul_inv]; exact (le_div_iff₀ hT21).2 h1
   linarith
 
+include hL in
 /-- `exp(L^{0.28}) ≤ Y` when `T^{25} ≤ L^{0.72}`. -/
-theorem exp_le_proxyCutoff (hL : 0 < Real.log x) (hT : 0 < logLog x)
+theorem exp_le_proxyCutoff   (hT : 0 < logLog x)
     (h25 : logLog x ^ (25 : ℝ) ≤ Real.log x ^ (72 / 100 : ℝ)) :
     Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ proxyCutoff x := by
   unfold proxyCutoff
@@ -292,6 +310,8 @@ theorem exp_le_proxyCutoff (hL : 0 < Real.log x) (hT : 0 < logLog x)
   calc Real.log x ^ (28 / 100 : ℝ) * logLog x ^ 25
       ≤ Real.log x ^ (28 / 100 : ℝ) * Real.log x ^ (72 / 100 : ℝ) := by gcongr
     _ = Real.log x := by rw [← Real.rpow_add hL]; norm_num
+
+end
 
 /-- `1 ≤ ∏_{p ≤ Y} (1 - 1/p) · γ L` once `c₃ T⁴ ≥ 1`, from Mertens. -/
 theorem one_le_prod_mul {c₃ : ℝ} (hc₃ : 0 < c₃)
@@ -310,7 +330,7 @@ theorem one_le_prod_mul {c₃ : ℝ} (hc₃ : 0 < c₃)
     prod_nonneg fun p hp => by
       have : (2 : ℝ) ≤ p := by exact_mod_cast (mem_primesIcc.1 hp).1.two_le
       rw [sub_nonneg, div_le_one (by linarith)]; linarith
-  have hL0 : 0 < Real.log x := by linarith
+  
   calc (1 : ℝ) ≤ c₃ * logLog x ^ 4 := by rw [div_le_iff₀ hc₃] at hTc; linarith
     _ = c₃ / (Real.log x / logLog x ^ 25) * (logLog x ^ (-21 : ℝ) * Real.log x) := by
         rw [← hγT]; field_simp
@@ -318,14 +338,19 @@ theorem one_le_prod_mul {c₃ : ℝ} (hc₃ : 0 < c₃)
 
 end Scale
 
+section
+variable {c Ch Cj A A₀ B κp κ x x' lam lo hi : ℝ} {j : ℕ} (hκpx : ProxyTwistAt c Ch Cj A (|A₀| + 1) 3 κp x) (hκ : 0 < κ) (hx1 : 1 < x) (hL : 0 < Real.log x) (hL16 : 16 ≤ Real.log x) (hp1 : Real.log x / 2 ≤ Real.log x') (hp2 : Real.log x' ≤ 2 * Real.log x) (hLp1 : 1 ≤ Real.log x') (hLA₀ : 2 ^ |A₀| ≤ Real.log x) (hBx : 2 * κ * 2 ^ |B| * Real.log x ^ |B| ≤ x) (hx2 : x' ≤ κ * x) (hlamx : lam ≤ x ^ (3 : ℝ)) (hH : x ^ presieveExponent c Ch x / 2 ≤ lam) (hlo : lam ≤ lo)
+
+
+include hκpx hκ hx1 hL hp1 hp2 hLp1 hLA₀ hBx hx2 hlamx hH hlo in
 /-- P4 for the box coefficient at the scale `x'`, from AC1 at `x`. -/
-theorem box_P4 {c Ch Cj A A₀ B κp κ : ℝ} {x x' lam lo hi : ℝ} {j : ℕ}
-    (hκpx : ProxyTwistAt c Ch Cj A (|A₀| + 1) 3 κp x) (hκ : 0 < κ) (hx1 : 1 < x)
-    (hL : 0 < Real.log x) (hp1 : Real.log x / 2 ≤ Real.log x')
-    (hp2 : Real.log x' ≤ 2 * Real.log x) (hLp1 : 1 ≤ Real.log x')
-    (hLA₀ : 2 ^ |A₀| ≤ Real.log x) (hBx : 2 * κ * 2 ^ |B| * Real.log x ^ |B| ≤ x)
-    (hx2 : x' ≤ κ * x) (hlamx : lam ≤ x ^ (3 : ℝ))
-    (hH : x ^ presieveExponent c Ch x / 2 ≤ lam) (hlo : lam ≤ lo) (hhi : hi ≤ 2 * lam)
+theorem box_P4      
+         
+       
+       
+       
+       
+        (hhi : hi ≤ 2 * lam)
     (hj1 : 1 ≤ j) (hj2 : (j : ℝ) ≤ Cj * logLogLog x + 1) :
     ∀ (k : ℕ), 1 ≤ k → (k : ℝ) ≤ Real.log x' ^ A₀ → ∀ (χ : DirichletCharacter ℂ k)
       (t : ℝ), |t| ≤ 2 * x' * Real.log x' ^ B →
@@ -382,24 +407,26 @@ theorem box_P4 {c Ch Cj A A₀ B κp κ : ℝ} {x x' lam lo hi : ℝ} {j : ℕ}
     _ ≤ |κp| * (2 ^ |A| * Real.log x' ^ (-A)) := mul_le_mul_of_nonneg_left hLA (abs_nonneg _)
     _ = _ := by ring
 
+include hL16 hp1 in
 /-- `L³ ≤ (log x')⁴` for `log x' ≥ L/2 ≥ 8`. -/
-theorem log_cube_le {x x' : ℝ} (hL16 : 16 ≤ Real.log x) (hp1 : Real.log x / 2 ≤ Real.log x') :
+theorem log_cube_le       :
     Real.log x ^ (3 : ℝ) ≤ Real.log x' ^ (4 : ℝ) := by
   have e3 : Real.log x ^ (3 : ℝ) = Real.log x ^ (3 : ℕ) := by
     exact_mod_cast Real.rpow_natCast (Real.log x) 3
   have e4 : Real.log x' ^ (4 : ℝ) = Real.log x' ^ (4 : ℕ) := by
     exact_mod_cast Real.rpow_natCast (Real.log x') 4
   rw [e3, e4]
-  have hL0 : 0 ≤ Real.log x := by linarith
+  
   have h16 : Real.log x ^ 3 * 16 ≤ Real.log x ^ 3 * Real.log x :=
     mul_le_mul_of_nonneg_left hL16 (by positivity)
-  have hL4 : (Real.log x / 2) ^ 4 = Real.log x ^ 3 * Real.log x / 16 := by ring
+  
   calc Real.log x ^ 3 ≤ (Real.log x / 2) ^ 4 := by
-        rw [hL4, le_div_iff₀ (by norm_num)]; linarith only [h16]
+        linarith
     _ ≤ Real.log x' ^ 4 := pow_le_pow_left₀ (by positivity) hp1 4
 
+include hlo in
 /-- Restricting a sum over `[⌈λ⌉, ⌊2λ⌋]` to `(lo, hi]`. -/
-theorem sum_Icc_ite_Ioc {lam lo hi : ℝ} (hlo : lam ≤ lo) (hhi : hi ≤ 2 * lam) (hlam : 0 ≤ lam)
+theorem sum_Icc_ite_Ioc     (hhi : hi ≤ 2 * lam) (hlam : 0 ≤ lam)
     (f G : ℕ → ℂ) :
     ∑ m ∈ Icc ⌈lam⌉₊ ⌊2 * lam⌋₊, (if m ∈ Ioc ⌊lo⌋₊ ⌊hi⌋₊ then f m else 0) * G m =
       ∑ m ∈ Ioc ⌊lo⌋₊ ⌊hi⌋₊, f m * G m := by
@@ -409,10 +436,12 @@ theorem sum_Icc_ite_Ioc {lam lo hi : ℝ} (hlo : lam ≤ lo) (hhi : hi ≤ 2 * l
     have : lo < m := (Nat.floor_lt (by linarith)).1 h1
     exact mem_Icc.2 ⟨Nat.ceil_le.2 (by linarith), h2.trans (Nat.floor_le_floor (by linarith))⟩
   rw [← sum_subset hsub fun m _ hm => by simp only [hm, ↓reduceIte, zero_mul]]
-  exact sum_congr rfl fun m hm => by simp only [hm, ↓reduceIte]
+  simp_all
+
+end
 
 /-- The conclusion of `typeII_box` at one `x`. -/
-def BoxBound (q : ℝ) (K : ℕ) (c Ch Cj κ C₂ x : ℝ) : Prop :=
+def BoxBound (q : ℝ) (K : ℕ) (c Ch Cj κ C₂ x : ℝ)  :=
   ∀ (a : Fin K → ℝ) (F : ℕ → ℂ) (lam mu lo hi : ℝ) (j : ℕ) (β : ℕ → ℂ),
     (∀ i, 11 / 100 ≤ a i ∧ a i ≤ 19 / 100) →
     (∀ i i' : Fin K, i < i' → a i + 4 / 100 / K ≤ a i') →
@@ -429,7 +458,7 @@ def BoxBound (q : ℝ) (K : ℕ) (c Ch Cj κ C₂ x : ℝ) : Prop :=
       C₂ * (lam * mu) * Real.log x ^ (-12 : ℝ)
 
 /-- `OneSidedTypeII` on one box, with all its premises verified. -/
-theorem typeII_box (h₁ : OneSidedTypeII) {q : ℝ} (hq : 0 < q) (hq₁ : q < 1)
+theorem typeII_box (h₁ : OneSidedTypeII)  {q}  (hq : 0 < q) (hq₁ : q < 1)
     (hKer : KernelPremise) :
     ∃ K₀ : ℕ, ∀ K : ℕ, K₀ ≤ K → ∀ (c Ch Cj κ : ℝ), 0 < c → 1 < κ →
       ProxyTwistPremise c Ch Cj → ∃ C₂ : ℝ, 0 ≤ C₂ ∧ ∀ᶠ x : ℝ in atTop,

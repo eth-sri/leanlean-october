@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Decomposition.Lists
 
 public import Erdos408.OneSided.Model
 
@@ -15,7 +18,7 @@ The damping factors out of the row operation at both ends (`rowOp_eq_damp`).
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos408.OneSided
 
@@ -25,7 +28,7 @@ open scoped Matrix ComplexConjugate
 variable {K : ℕ}
 
 /-- Negating the frequency conjugates the arc integral. -/
-theorem arcIntegral_neg (A₀ x Y : ℝ) (n : ℤ) :
+theorem arcIntegral_neg  A₀ x Y   n  :
     arcIntegral A₀ x Y (-n) = conj (arcIntegral A₀ x Y n) := by
   simp only [arcIntegral, map_sum, ← intervalIntegral.intervalIntegral_conj]
   refine sum_congr rfl fun k _ => sum_congr rfl fun h _ =>
@@ -36,29 +39,30 @@ theorem arcIntegral_neg (A₀ x Y : ℝ) (n : ℤ) :
   push_cast
   ring
 
-/-- The labels of a list are in their bands. -/
-theorem mem_band_of_mem_lists {x : ℝ} {d : Data K} {J : ℕ} {p : Lists K J}
-    (hp : p ∈ lists x d J) (i : Fin K) (h : Fin (J + 1)) : p i h ∈ band x (d.a i) := by
-  classical
-  have hp' := (mem_filter.1 hp).1
-  simp only [Fintype.mem_piFinset] at hp'
-  exact hp' i h
+section
+variable (M : PosModel) {x : ℝ} {d : Data K} {J : ℕ} (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {p : Lists K J} (hp : p ∈ lists x d J) (i : Fin K) {p' : Lists K J}
 
+
+include hp in
+/-- The labels of a list are in their bands. -/
+theorem mem_band_of_mem_lists        
+         h  : p i h ∈ band x (d.a i) := by solve_by_elim [_root_.Erdos408.OneSided.lists_slot_mem_band]
+
+include hp in
 /-- The groups of a list are injective. -/
-theorem injective_of_mem_lists {x : ℝ} {d : Data K} {J : ℕ} {p : Lists K J}
-    (hp : p ∈ lists x d J) (i : Fin K) : Function.Injective (p i) := by
-  classical
-  exact (mem_filter.1 hp).2 i
+theorem injective_of_mem_lists        
+        : Function.Injective (p i) := by solve_by_elim [_root_.Erdos408.OneSided.lists_group_injective]
 
 /-- The lists of a state. -/
-theorem PosModel.mem_lists (M : PosModel) {x : ℝ} {d : Data K} (s : M.State x d) :
+theorem PosModel.mem_lists       (s : M.State x d) :
     s.1.2 ∈ lists x d (padCount x) := by
   classical
   exact (mem_product.1 (mem_filter.1 s.2).1).2
 
+include hdisj in
 /-- With copied pads and disjoint bands, the cross-edge ban only concerns the last slots. -/
-theorem ban_iff_last {x : ℝ} {d : Data K} {J : ℕ}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {p p' : Lists K J}
+theorem ban_iff_last      
+       
     (hp' : p' ∈ lists x d J) (hpad : ∀ i (h : Fin J), p' i h.castSucc = p i h.castSucc) :
     (∀ i i' h', p' i (Fin.last _) ≠ p i' h') ↔
       ∀ i i', p' i (Fin.last _) ≠ p i' (Fin.last _) := by
@@ -73,14 +77,16 @@ theorem ban_iff_last {x : ℝ} {d : Data K} {J : ℕ}
     · exact fun he => Finset.disjoint_left.1 (hdisj i i' hii) (mem_band_of_mem_lists hp' i _)
         (he ▸ mem_band_of_mem_lists hp' i' _)
 
+end
+
 namespace PosModel
 
 variable (M : PosModel) {x : ℝ} {d : Data K}
 
 /-- With an antisymmetric determinant and disjoint bands, the row operation is Hermitian. -/
 theorem star_rowOp (hdet : ∀ P Q, M.det Q P = -M.det P Q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (q A₀ Y d₀ : ℝ)
-    (s s' : M.State x d) : star (M.rowOp q A₀ x d Y d₀ s' s) = M.rowOp q A₀ x d Y d₀ s s' := by
+    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))  q A₀ Y d₀ 
+     s s'  : star (M.rowOp q A₀ x d Y d₀ s' s) = M.rowOp q A₀ x d Y d₀ s s' := by
   classical
   by_cases hpad : ∀ i (h : Fin (padCount x)), s'.1.2 i h.castSucc = s.1.2 i h.castSucc
   · -- step: the reversed edge passes the same restrictions
@@ -117,14 +123,12 @@ theorem star_rowOp (hdet : ∀ P Q, M.det Q P = -M.det P Q)
         Complex.conj_ofReal, map_sub, Complex.conj_conj, apply_ite (starRingEnd ℂ), map_one,
         map_zero]
       congr 2
-      rw [add_comm (((M.bandCount x d s'.1.1 : ℝ) - K * (padCount x + 1)) / 2)]
-      ring
+      grind
     · rw [rowOp, rowOp, ite_eq_right (mt hiff.1 hC), ite_eq_right hC, star_zero]
   · -- step: the pads differ in both directions
     have hpad' : ¬∀ i (h : Fin (padCount x)), s.1.2 i h.castSucc = s'.1.2 i h.castSucc :=
       fun h => hpad fun i k => (h i k).symm
-    rw [rowOp, rowOp, ite_eq_right fun h => hpad' h.1, ite_eq_right fun h => hpad h.1,
-      star_zero]
+    grind [rowOp]
 
 /-- The slot symmetrization is Hermitian. -/
 theorem conjTranspose_symOp : (M.symOp x d)ᴴ = M.symOp x d := by
@@ -144,32 +148,35 @@ theorem conjTranspose_symOp : (M.symOp x d)ᴴ = M.symOp x d := by
   rw [if_congr hiff rfl rfl]
   split_ifs <;> simp
 
-/-- The good-state projection is Hermitian. -/
-theorem conjTranspose_goodOp (Y d₀ : ℝ) : (M.goodOp x d Y d₀)ᴴ = M.goodOp x d Y d₀ := by
-  classical
-  rw [goodOp, Matrix.diagonal_conjTranspose]
-  congr 1
-  funext s
-  rw [Pi.star_apply]
-  split_ifs <;> simp
+section
+variable (hdet : ∀ P Q, M.det Q P = -M.det P Q) (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (q A₀ Y d₀ : ℝ)
 
+
+/-- The good-state projection is Hermitian. -/
+theorem conjTranspose_goodOp   : (M.goodOp x d Y d₀)ᴴ = M.goodOp x d Y d₀ := by
+  simp_all [goodOp]
+
+include hdet hdisj in
 /-- With an antisymmetric determinant and disjoint bands, the row operation is Hermitian. -/
-theorem conjTranspose_rowOp (hdet : ∀ P Q, M.det Q P = -M.det P Q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (q A₀ Y d₀ : ℝ) :
+theorem conjTranspose_rowOp  
+        :
     (M.rowOp q A₀ x d Y d₀)ᴴ = M.rowOp q A₀ x d Y d₀ := by
   ext s s'
   rw [Matrix.conjTranspose_apply, M.star_rowOp hdet hdisj]
 
+include hdet hdisj in
 /-- With an antisymmetric determinant and disjoint bands, `𝒜` is Hermitian. -/
-theorem conjTranspose_edgeOp (hdet : ∀ P Q, M.det Q P = -M.det P Q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (q A₀ Y d₀ : ℝ) :
+theorem conjTranspose_edgeOp  
+        :
     (M.edgeOp q A₀ x d Y d₀)ᴴ = M.edgeOp q A₀ x d Y d₀ := by
   simp only [edgeOp, Matrix.conjTranspose_mul, conjTranspose_goodOp, conjTranspose_symOp,
     M.conjTranspose_rowOp hdet hdisj, mul_assoc]
 
+end
+
 /-- The damping factors out of the row operation: `𝒯_q(s, s') = d(s) 𝒯_1(s, s') d(s')` with
 `d(s) = q^{(ω(P) - KM)/2}`. -/
-theorem rowOp_eq_damp {q : ℝ} (hq : 0 < q) (A₀ Y d₀ : ℝ) (s s' : M.State x d) :
+theorem rowOp_eq_damp  {q}  (hq : 0 < q)  A₀ Y d₀   s s'  :
     M.rowOp q A₀ x d Y d₀ s s' =
       ((q ^ (((M.bandCount x d s.1.1 : ℝ) - K * (padCount x + 1)) / 2) : ℝ) : ℂ) *
         M.rowOp 1 A₀ x d Y d₀ s s' *

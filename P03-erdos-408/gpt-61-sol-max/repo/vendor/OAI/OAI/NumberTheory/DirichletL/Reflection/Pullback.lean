@@ -10,10 +10,10 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-variable {ι κ : Type*} [Fintype ι] [Fintype κ] {p : ι→Eis} {q : κ→Eis}
-    {N a c : Eis} {mode : Bool}
+
+
+variable {ι κ : Type*} [Fintype ι] [Fintype κ] {p : ι→ActualEisensteinCubic.O} {q : κ→ActualEisensteinCubic.O}
+    {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
 omit [Fintype ι] [Fintype κ] in
 lemma pullback_generator_eq (e : κ≃ι) (h : (fun k => p (e k))=q) :
@@ -22,11 +22,10 @@ lemma pullback_generator_eq (e : κ≃ι) (h : (fun k => p (e k))=q) :
   simp only [Equiv.apply_symm_apply]
 
 def pullbackControlled (e : κ≃ι) (h : (fun k => p (e k))=q)
-    (D : ControlledStratumArithmetic q N a c mode) :
-    ControlledStratumArithmetic p N a c mode :=
+    (D : ControlledStratumArithmetic q N a c mode)  :=
   castControlled (pullback_generator_eq e h) (reindexControlled D e.symm)
 
-lemma reindexMarks_symm (e : κ≃ι) (S : Finset ι) :
+lemma reindexMarks_symm (e : κ≃ι)  S  :
     reindexMarks e.symm (reindexMarks e S)=S := by
   ext i
   simp only [mem_reindexMarks,Equiv.apply_symm_apply]
@@ -36,9 +35,9 @@ theorem mixedReflectedValue_pullback
     (e : κ≃ι) (h : (fun k => p (e k))=q)
     (D : ControlledStratumArithmetic q N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i≠0) (hq : ∀ k, q k≠0) (hc : c≠0)
-    (hgp : ∀ i, λ₀∉Ideal.span {p i}) (hgq : ∀ k, λ₀∉Ideal.span {q k})
-    (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) :
+     hp   hq  (hc : c≠0)
+    (hgp : ∀ i, ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i}) (hgq : ∀ k, ConcretePrimeRowBridge.goodLambda∉Ideal.span {q k})
+     j   S   W   X  :
     mixedReflectedValue (pullbackControlled e h D) s hp hc hgp j S W X=
       mixedReflectedValue D s hq hc hgq (fun k => j (e k)) (reindexMarks e S) W X := by
   unfold pullbackControlled

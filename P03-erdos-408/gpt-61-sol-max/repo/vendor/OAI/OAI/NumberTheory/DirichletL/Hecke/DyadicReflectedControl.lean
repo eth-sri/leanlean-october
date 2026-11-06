@@ -6,17 +6,17 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ComplexConjugate
 open Complex Set
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeReciprocalGrowth HeckeDeletionBounds HeckeDyadicReflection
 
-theorem radical_norm_ge_one (M : Ideal O) : 1≤((radical M).absNorm : ℝ) := by
+theorem radical_norm_ge_one  M  : 1≤((radical M).absNorm : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr (radical_ne_zero M))
 
-theorem buffered_reflected_line_control (e ε : ℝ)
+theorem buffered_reflected_line_control  e ε 
     (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι → Character)
       (hχ : ∀ j, (χ j).residue≠1) (T a : ℝ) (i : ℕ),
@@ -91,6 +91,6 @@ theorem original_upper_strip (ε : ℝ) (hε : 0<ε) :
 
 end SevenEighths.HeckeDyadic
 
-end
+
 
 end OAI

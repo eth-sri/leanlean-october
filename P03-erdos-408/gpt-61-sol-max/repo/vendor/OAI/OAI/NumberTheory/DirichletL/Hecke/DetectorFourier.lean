@@ -10,11 +10,11 @@ namespace SevenEighths.HeckeDetectorFourier
 open MeasureTheory
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 open HeckeDetectorProfiles
-noncomputable section
+
 
 theorem uniform_fourier_moment (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
-    (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω)
-    (L : ℝ) (hL : 0 ≤ L) (hwindow : tsupport Ω ⊆ Set.Icc (-L) L) (J : ℕ) :
+     hΩc   hΩ 
+    (L : ℝ) (hL : 0 ≤ L) (hwindow : tsupport Ω ⊆ Set.Icc (-L) L)  J  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ A B D : ℝ, 0 ≤ A → 0 ≤ B → 0 ≤ D →
       (∫ t : ℝ, (1+‖t‖)^J *
         ‖(𝓕 (logSource Ω V T hΩc hΩ (V.smooth ⊤) (T.smooth ⊤) A B D)) t‖) ≤ C := by
@@ -39,8 +39,8 @@ theorem uniform_fourier_moment (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
       linarith)
   simpa only [one_mul] using hh
 
-theorem schwartz_weighted_tail (g : SchwartzMap ℝ ℂ) (J N : ℕ)
-    (R : ℝ) (hR : 0 < R) :
+theorem schwartz_weighted_tail (g : SchwartzMap ℝ ℂ)  J N 
+     R  (hR : 0 < R) :
     R^N*(∫ t : ℝ in {t | R < ‖t‖}, (1+‖t‖)^J*‖(𝓕 g) t‖) ≤
       ∫ t : ℝ, (1+‖t‖)^(J+N)*‖(𝓕 g) t‖ := by
   have hiJ := AnalyticBridge.schwartz_fourier_one_plus_integrable g J
@@ -56,7 +56,7 @@ theorem schwartz_weighted_tail (g : SchwartzMap ℝ ℂ) (J N : ℕ)
       mul_le_mul_of_nonneg_right hp (by positivity)
     _ = _ := by rw [pow_add]; ring
 
-end
+
 end SevenEighths.HeckeDetectorFourier
 
 end OAI

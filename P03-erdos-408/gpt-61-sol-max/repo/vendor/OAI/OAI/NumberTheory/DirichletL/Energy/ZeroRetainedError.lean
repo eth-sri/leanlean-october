@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReflectionSupport
 public import OAI.NumberTheory.DirichletL.Moments.UniformOriginalEnergy
@@ -9,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionErrorMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -21,10 +22,14 @@ open CenteredMomentRadialPolynomialEnergy CenteredMomentEnergyState
 open CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial
 open CenteredMomentNaturalRowSource CenteredMomentFiniteProfileExceptional CenteredMomentLattice
 open CenteredMomentEnergyReferenceHomogeneous CenteredMomentEnergyReferenceReflection
-local notation "O" => HeckeFamily.O
 
-theorem finite_original_error (xi saving Cscale epsilon : ℝ)
-    (hxi : 0<xi)(hscale : 0<Cscale)(hepsilon : 0<epsilon) :
+
+section
+variable (xi saving Cscale epsilon : ℝ) (hxi : 0<xi) (hscale : 0<Cscale) (hepsilon : 0<epsilon)
+
+include hxi hscale hepsilon in
+theorem finite_original_error  
+        :
     ∃H : Finset (ℕ×ℕ),∃C Z₀ : ℝ,0<C ∧ 1<Z₀ ∧
       ∀{ι : Type}[Fintype ι],∀χ : ι→Character,(∀i,(χ i).residue≠1) →
       ∃ψ : ι→Character,
@@ -61,11 +66,12 @@ theorem finite_original_error (xi saving Cscale epsilon : ℝ)
     mul_zero,zero_add] at hh
   exact ⟨hzero,hh⟩
 
-theorem radial_original_error (xi saving Cscale epsilon : ℝ)
-    (hxi : 0<xi)(hscale : 0<Cscale)(hepsilon : 0<epsilon) :
+include hxi hscale hepsilon in
+theorem radial_original_error  
+        :
     ∃H : Finset (ℕ×ℕ),∃C Z₀ : ℝ,0<C ∧ 1<Z₀ ∧
-      ∀(G:O→𝓢(ℝ,ℂ))(χ:O→Character)(P:O→ℂ)(omega:O→ℝ)
-        (keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(K Pbound:ℝ)(Wshort:ℝ→ℂ)
+      ∀(G:HeckeFamily.O→𝓢(ℝ,ℂ))(χ:HeckeFamily.O→Character)(P:HeckeFamily.O→ℂ)(omega:HeckeFamily.O→ℝ)
+        (keep:HeckeFamily.O→Prop)(Φ:𝓢(ℝ,ℂ))(K Pbound:ℝ)(Wshort:ℝ→ℂ)
         (c d Z M along Xshort Src Rcap:ℝ),
       Z₀≤Z → 0<K → (∀z,0≤(Φ (‖eisEmbedding z‖^2/K)).re) →
       (∀z,‖P z‖≤Pbound) → (∀z,keep z → (χ z).residue≠1) →
@@ -89,7 +95,7 @@ theorem radial_original_error (xi saving Cscale epsilon : ℝ)
   apply Real.tsum_le_of_sum_le (fun z=>by split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl)
   intro rows
   let S:=rows.filter keep
-  have hmem(z:↥S):keep (z:O):=(Finset.mem_filter.mp z.property).2
+  have hmem(z:↥S):keep (z:HeckeFamily.O):=(Finset.mem_filter.mp z.property).2
   obtain ⟨ψ,hψ,hf⟩:=hfinite (fun z:↥S=>χ z) (fun z=>hχ z (hmem z))
   let Q(z:↥S):ℂ:=
     (polynomial (χ z) false Wshort Xshort 0 (omega z)*P z)*
@@ -106,8 +112,14 @@ theorem radial_original_error (xi saving Cscale epsilon : ℝ)
     (hshortsum.sum_le_tsum rows (fun z _=>by split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl))
     (by positivity))
 
-theorem natural_original_error (a b bΦ epsilon xi saving:ℝ)
-    (ha:0<a)(hb:0≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi):
+end
+
+section
+variable (χ : HeckeFamily.O→Character) (W : 𝓢(ℝ,ℂ)) (a b bΦ epsilon xi saving : ℝ) (ha : 0<a) (X : ℝ) (hb : 0≤b) (hbΦ : 0<bΦ) (hepsilon : 0<epsilon) (hxi : 0<xi)
+
+include ha hb hbΦ hepsilon hxi in
+theorem natural_original_error  
+         :
     ∃n:ℕ,∃S:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
       ∀(Bmask:ℝ)(state:NaturalState Z Bmask bΦ)(Wlong Wshort:𝓢(ℝ,ℂ)),
@@ -155,20 +167,19 @@ theorem natural_original_error (a b bΦ epsilon xi saving:ℝ)
   have hG:(G:ℝ→ℂ)=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t:=rfl
   simp only [hG,CenteredMomentNaturalMaskedFloor.twist_polynomial _ Wlong a b ha hsLong t,mul_one] at hh
   apply hh.trans_eq
-  dsimp only [Src]
-  rw [show (1+‖t‖)^(2*n)=((1+‖t‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
-theorem short_radial_mass (χ:O→Character)(W:𝓢(ℝ,ℂ))(a b X:ℝ)
-    (hb:0≤b)(hX:0<X)(hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b)
-    (omega:O→ℝ)(keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K):
+include hb in
+theorem short_radial_mass    
+     (hX:0<X)(hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b)
+    (omega:HeckeFamily.O→ℝ) keep  Φ  K (hK:0<K):
     radialEnergy (fun z=>polynomial (χ z) false W X 0 (omega z)) keep Φ K≤
       (128*max 1 b)^2*((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W)^2*
         QuadraticInitialBound.diagonalControl Φ*max 1 K*X:=by
   let A:=((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W)
   let V:=(128*max 1 b*A)^2*X
   have hV:0≤V:=by dsimp [V];positivity
-  have hp(z:O):‖polynomial (χ z) false W X 0 (omega z)‖^2≤V:=by
+  have hp(z:HeckeFamily.O):‖polynomial (χ z) false W X 0 (omega z)‖^2≤V:=by
     have hh:=pow_le_pow_left₀ (norm_nonneg _)
       (CenteredMomentOriginalReflectionErrorMass.plain_polynomial_bound (χ z) W b A X (omega z)
         (apply_nonneg _ _) hX (SchwartzMap.norm_le_seminorm ℝ W) (fun y hy=>(hs hy).2)) 2
@@ -178,7 +189,7 @@ theorem short_radial_mass (χ:O→Character)(W:𝓢(ℝ,ℂ))(a b X:ℝ)
   simp only [mul_one] at hsum
   have hweight:=CenteredMomentAbsoluteEnergy.radial_norm_summable Φ K hK
   have hh:radialEnergy (fun z=>polynomial (χ z) false W X 0 (omega z)) keep Φ K≤
-      (∑'z:O,‖Φ (‖eisEmbedding z‖^2/K)‖)*V:=by
+      (∑'z:HeckeFamily.O,‖Φ (‖eisEmbedding z‖^2/K)‖)*V:=by
     rw [←tsum_mul_right]
     apply hsum.tsum_le_tsum _ (hweight.mul_right V)
     intro z
@@ -191,8 +202,9 @@ theorem short_radial_mass (χ:O→Character)(W:𝓢(ℝ,ℂ))(a b X:ℝ)
   dsimp [V,A]
   ring
 
-theorem natural_original_error_mass (a b bΦ epsilon xi saving:ℝ)
-    (ha:0<a)(hb:0≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi):
+include ha hb hbΦ hepsilon hxi in
+theorem natural_original_error_mass  
+         :
     ∃n:ℕ,∃S:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
       ∀(Bmask:ℝ)(state:NaturalState Z Bmask bΦ)(Wlong Wshort:𝓢(ℝ,ℂ)),
@@ -212,7 +224,7 @@ theorem natural_original_error_mass (a b bΦ epsilon xi saving:ℝ)
   refine ⟨hZ.1,?_⟩
   intro Bmask state Wlong Wshort hsLong hsShort t omega along Xshort hXshort hfar
   have hh:=hZ.2 Bmask state Wlong Wshort hsLong hsShort t omega along Xshort hXshort hfar
-  have he(f:O→ℂ):radialEnergy f (effectiveState state).radial.keep
+  have he(f:HeckeFamily.O→ℂ):radialEnergy f (effectiveState state).radial.keep
       state.radial.profile state.radial.scale=
       radialEnergy f state.radial.keep state.radial.profile state.radial.scale:=
     radialEnergy_effective state.radial f
@@ -224,8 +236,10 @@ theorem natural_original_error_mass (a b bΦ epsilon xi saving:ℝ)
   apply (hh.trans (mul_le_mul_of_nonneg_left hm (by positivity))).trans_eq
   ring
 
+end
+
 end SevenEighths.CenteredMomentEnergyZeroRetainedError
 
-end
+
 
 end OAI

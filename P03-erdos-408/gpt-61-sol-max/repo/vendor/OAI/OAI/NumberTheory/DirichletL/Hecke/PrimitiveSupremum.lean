@@ -10,12 +10,12 @@ noncomputable section
 namespace SevenEighths.HeckePrimitiveSupremum
 open HeckeFamily HeckeZeroSupremum
 
-def primitiveZeroRealParts : Set ℝ :=
+def primitiveZeroRealParts  :=
   {x | ∃ (χ : Character) (s : ℂ), FiniteFourier.IsPrimitiveOnIdeals χ.residue ∧
     (1 / 2 : ℝ) ≤ s.re ∧ s.re ≤ 1 ∧ (s ≠ 1 ∨ χ.residue ≠ 1) ∧
     LFunction χ s = 0 ∧ s.re = x}
 
-def primitiveSetWithSentinel : Set ℝ := insert (1 / 2) primitiveZeroRealParts
+def primitiveSetWithSentinel  := insert (1 / 2) primitiveZeroRealParts
 
 theorem primitiveSet_subset : primitiveSetWithSentinel ⊆ zeroSetWithSentinel := by
   intro x hx
@@ -47,7 +47,7 @@ theorem beta_eq_primitive_supremum : beta = sSup primitiveSetWithSentinel := by
           (le_csSup primitiveSet_bddAbove (Set.mem_insert _ _))
   · exact csSup_le_csSup zeroSet_bddAbove primitiveSet_nonempty primitiveSet_subset
 
-theorem exists_primitive_zero_near_beta {ε : ℝ} (hε : 0 < ε)
+theorem exists_primitive_zero_near_beta  {ε}  (hε : 0 < ε)
     (hsmall : (1 / 2 : ℝ) ≤ beta - ε) :
     ∃ (χ : Character) (s : ℂ), FiniteFourier.IsPrimitiveOnIdeals χ.residue ∧
       (1 / 2 : ℝ) ≤ s.re ∧ s.re ≤ 1 ∧ (s ≠ 1 ∨ χ.residue ≠ 1) ∧

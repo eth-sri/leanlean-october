@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondIdealBlockBound
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
@@ -17,18 +17,18 @@ open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentFirs
 open CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentGaussEnergy
 open CenteredMomentLogDyadic CenteredMomentSecondWindowBudget RayFourExpansion CompletedGauss
 open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSecondIdealBlockBound
-local notation "O"=>ActualEisensteinCubic.O
+
 universe u
 
-theorem fixed_log_block_from_common_energy (W:𝓢(ℝ,ℂ))(decay J₁ J₂:ℕ):
+theorem fixed_log_block_from_common_energy  W  decay J₁ J₂ :
     ∃Cbound:ℝ,0≤Cbound ∧ ∀{ι:Type u}[Fintype ι],∀η:Character,∀s:OriginalData ι,
-    ∀t:ℝ,∀(C D:Ideal O)(hC:Supported C)(hD:Supported D),primeSupport C=primeSupport D→
-    ∀(E:Finset (CommonIndex C D))(rows:Finset O),(∀h∈rows,h≠0)→
+    ∀t:ℝ,∀(C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D),primeSupport C=primeSupport D→
+    ∀(E:Finset (CommonIndex C D))(rows:Finset ActualEisensteinCubic.O),(∀h∈rows,h≠0)→
     ∀K K₀ H₀ A₀ B₀:ℝ,0<K→0<K₀→0<H₀→0<A₀→0<B₀→
     ∀(U:𝓢(ℝ,ℂ))(H:ℝ),0<H→
-    (∀h:O,0≤(U (‖eisEmbedding h‖^2/H)).re)→
+    (∀h:ActualEisensteinCubic.O,0≤(U (‖eisEmbedding h‖^2/H)).re)→
     (∀h∈rows,1≤(U (‖eisEmbedding h‖^2/H)).re)→
-    ∀E₁ E₂:Ideal O→ℝ,
+    ∀E₁ E₂:Ideal ActualEisensteinCubic.O→ℝ,
     (∀L∈divisorPool (Finset.univ:Finset (columns C D hD.1 s.columns))
       (fun b=>Ideal.span {element C D hD.1 s.columns b}),0≤E₁ L)→
     (∀L∈divisorPool (Finset.univ:Finset (columns C D hD.1 s.columns))
@@ -66,6 +66,6 @@ theorem fixed_log_block_from_common_energy (W:𝓢(ℝ,ℂ))(decay J₁ J₂:ℕ
 
 end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
+
 
 end OAI

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowth
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyStageMonotonicity
@@ -19,8 +19,8 @@ open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyPositiveHighSourceBound CenteredMomentEnergyZeroGrowth
 local notation "O"=>HeckeFamily.O
 
-theorem zeroLowAt_transport (Q:Ideal O)(a b radial mask L Mcap eps Z:ℝ)
-    (a' b' radial' mask' L' Mcap' eps':ℝ)
+theorem zeroLowAt_transport  Q (a b radial mask L Mcap eps Z:ℝ)
+     a' b' radial' mask' L' Mcap' eps' 
     (J J':ℕ)(S T:Finset (ℕ×ℕ))(C C':ℝ)
     (hZ:1≤Z)(ha:a≤a')(hb:b'≤b)(hr:radial'≤radial)(hm:mask'≤mask)
     (hL:L'≤L)(hM:Mcap'≤Mcap)(he:eps≤eps')(hJ:J≤J')(hS:S⊆T)
@@ -44,13 +44,13 @@ theorem zeroLowAt_transport (Q:Ideal O)(a b radial mask L Mcap eps Z:ℝ)
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 omit [Fintype α] [DecidableEq α] in
-theorem positiveLowAt_transport (W:ℝ→ℂ)(bslot a b radial mask L Lslot lo hi Mcap eps κ Z:ℝ)
-    (a' b' radial' mask' L' Mcap' eps':ℝ)
-    (η₀:Character)(Q:Ideal O)(J J':ℕ)(S T:Finset (ℕ×ℕ))(C C':ℝ)
+theorem positiveLowAt_transport  W (bslot a b radial mask L Lslot lo hi Mcap eps κ Z:ℝ)
+     a' b' radial' mask' L' Mcap' eps' 
+     η₀  Q (J J':ℕ)(S T:Finset (ℕ×ℕ))(C C':ℝ)
     (hZ:1≤Z)(ha:a≤a')(hb:b'≤b)(hr:radial'≤radial)(hm:mask'≤mask)
     (hL:L'≤L)(hM:Mcap'≤Mcap)(he:eps≤eps')(hJ:J≤J')(hS:S⊆T)
     (hC:0≤C)(hCC:C≤C')
@@ -75,9 +75,9 @@ theorem positiveLowAt_transport (W:ℝ→ℂ)(bslot a b radial mask L Lslot lo h
   gcongr
 
 omit [Fintype α] [DecidableEq α] in
-theorem positiveHighAt_transport (W:ℝ→ℂ)(bslot a b radial mask L Lslot lo hi rho Mcap eps κ Z:ℝ)
-    (a' b' radial' mask' L' rho' Mcap' eps':ℝ)
-    (η₀:Character)(Q:Ideal O)(J J':ℕ)(S T:Finset (ℕ×ℕ))(C C':ℝ)
+theorem positiveHighAt_transport  W (bslot a b radial mask L Lslot lo hi rho Mcap eps κ Z:ℝ)
+     a' b' radial' mask' L' rho' Mcap' eps' 
+     η₀  Q (J J':ℕ)(S T:Finset (ℕ×ℕ))(C C':ℝ)
     (hZ:1≤Z)(ha:a≤a')(hb:b'≤b)(hr:radial'≤radial)(hm:mask'≤mask)
     (hL:L'≤L)(hM:Mcap'≤Mcap)(hrho:rho≤rho')(he:eps≤eps')(hJ:J≤J')(hS:S⊆T)
     (hC:0≤C)(hCC:C≤C')

@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P3LowRank.ChainBound
 
 public import Mathlib.Algebra.BigOperators.Fin
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
@@ -20,8 +23,8 @@ namespace Erdos821.P3High
 variable {β : Type*} [Fintype β]
 
 /-- Ghost kernels on `(b i, a i)`, edges on `(a i, b (i+1))`. -/
-def pathSumR (n : ℕ) (G : Fin (n + 1) → β → β → ℝ) (E : Fin n → β → β → ℝ)
-    (u v : β → ℝ) : ℝ :=
+def pathSumR (n ) (G : Fin (n + 1) → β → β → ℝ) (E : Fin n → β → β → ℝ)
+    (u v : β → ℝ)  :=
   ∑ b : Fin (n + 1) → β, ∑ a : Fin (n + 1) → β,
     u (b 0) * (∏ i, G i (b i) (a i)) * (∏ i : Fin n, E i (a i.castSucc) (b i.succ)) *
       v (a (Fin.last n))
@@ -35,9 +38,7 @@ def tailR : (n : ℕ) → (Fin (n + 1) → β → β → ℝ) → (Fin n → β 
       applyR (E 0) (applyR (G (Fin.succ 0)) (tailR n (fun i => G i.succ) (fun i => E i.succ) v))
 
 theorem sum_fin_consR {M : Type*} [AddCommMonoid M] (n : ℕ) (f : (Fin (n + 1) → β) → M) :
-    ∑ b : Fin (n + 1) → β, f b = ∑ b0 : β, ∑ b' : Fin n → β, f (Fin.cons b0 b') := by
-  rw [← (Fin.consEquiv fun _ => β).sum_comp, Fintype.sum_prod_type]
-  rfl
+    ∑ b : Fin (n + 1) → β, f b = ∑ b0 : β, ∑ b' : Fin n → β, f (Fin.cons b0 b') := by solve_by_elim [_root_.Erdos821.P3Lowrank.sum_fin_cons]
 
 theorem pathSumR_eq : ∀ (n : ℕ) (G : Fin (n + 1) → β → β → ℝ) (E : Fin n → β → β → ℝ)
     (u v : β → ℝ), pathSumR n G E u v = ∑ s, ∑ t, u s * G 0 s t * tailR n G E v t := by
@@ -52,9 +53,7 @@ theorem pathSumR_eq : ∀ (n : ℕ) (G : Fin (n + 1) → β → β → ℝ) (E :
       rw [Fintype.sum_unique]
       rw [sum_fin_consR]
       apply Finset.sum_congr rfl
-      intro t _
-      rw [Fintype.sum_unique]
-      simp [tailR, Fin.last]
+      aesop
   | succ n ih =>
       intro G E u v
       unfold pathSumR
@@ -106,8 +105,7 @@ theorem tailR_bound (w : β → ℝ) :
   intro n
   induction n with
   | zero =>
-      intro G E cG cE _ _ _ _ _ _ v hv0 hvw t
-      simpa [tailR] using And.intro (hv0 t) (hvw t)
+      simp_all [tailR]
   | succ n ih =>
       intro G E cG cE hG hE hcG hcE hGr hEr v hv0 hvw
       have IH := ih (fun i => G i.succ) (fun i => E i.succ) (fun i => cG i.succ)
@@ -160,7 +158,7 @@ theorem pathSumR_le (w : β → ℝ) (n : ℕ)
     (hcG : ∀ i, 0 ≤ cG i) (hcE : ∀ i, 0 ≤ cE i)
     (hGr : ∀ i s, ∑ t, G i s t * w t ≤ cG i * w s)
     (hEr : ∀ i s, ∑ t, E i s t * w t ≤ cE i * w s)
-    (u v : β → ℝ) (hu : ∀ s, 0 ≤ u s) (hv0 : ∀ t, 0 ≤ v t) (hvw : ∀ t, v t ≤ w t) :
+     u v  (hu : ∀ s, 0 ≤ u s) (hv0 : ∀ t, 0 ≤ v t) (hvw : ∀ t, v t ≤ w t) :
     pathSumR n G E u v ≤ (∏ i, cG i) * (∏ i, cE i) * ∑ s, u s * w s := by
   rw [pathSumR_eq]
   have hT := tailR_bound w n G E cG cE hG hE hcG hcE hGr hEr v hv0 hvw

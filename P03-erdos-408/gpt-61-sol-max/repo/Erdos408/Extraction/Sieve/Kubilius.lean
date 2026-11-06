@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Sieve.Composite
 public import Erdos408.Extraction.Sieve.Inert
@@ -37,14 +38,17 @@ namespace Sieve
 noncomputable section
 
 /-- The primes of `𝔅` dividing `u`. -/
-def bandSet (𝔅 : Finset ℕ) (u : ℕ) : Finset ℕ :=
+def bandSet (𝔅 : Finset ℕ) (u : ℕ)  :=
   𝔅.filter (· ∣ u)
 
 /-! ### Counting with large band parts -/
 
+section
+variable {p r d u : ℕ} {𝔅 : Finset ℕ} {m Y : ℝ}
+
 /-- Greedy: a set of numbers in `[1, m]` with product above `Y ≥ 1` has a subset with
 product in `(Y, Y m]`. -/
-lemma exists_subset_prod_mem {m Y : ℝ} (hY : 1 ≤ Y) :
+lemma exists_subset_prod_mem   (hY : 1 ≤ Y) :
     ∀ S : Finset ℕ, (∀ p ∈ S, (p : ℝ) ≤ m) → Y < ∏ p ∈ S, (p : ℝ) →
       ∃ S' ⊆ S, Y < ∏ p ∈ S', (p : ℝ) ∧ ∏ p ∈ S', (p : ℝ) ≤ Y * m := by
   intro S
@@ -53,22 +57,19 @@ lemma exists_subset_prod_mem {m Y : ℝ} (hY : 1 ≤ Y) :
   | insert a S ha ih =>
     intro hS h
     by_cases hS₀ : Y < ∏ p ∈ S, (p : ℝ)
-    · obtain ⟨S', hS', h1, h2⟩ := ih (fun p hp => hS p (mem_insert_of_mem hp)) hS₀
-      exact ⟨S', hS'.trans (subset_insert a S), h1, h2⟩
+    · grind
     · refine ⟨insert a S, le_rfl, h, ?_⟩
       rw [prod_insert ha, mul_comm]
-      have ha' : (a : ℝ) ≤ m := hS a (mem_insert_self a S)
-      exact mul_le_mul (not_lt.1 hS₀) ha' (Nat.cast_nonneg _) (by linarith)
+      bound
 
 /-- There are at most `N / (r d) + 1` numbers `u ≤ N` with `r ∣ u + 1` and `d ∣ u`. -/
-lemma card_filter_dvd_le {r d : ℕ} (hr : 0 < r) (hd : 0 < d) (N : ℕ) :
+lemma card_filter_dvd_le   (hr : 0 < r) (hd : 0 < d)  N  :
     (#((Icc 1 N).filter fun u => r ∣ u + 1 ∧ d ∣ u) : ℝ) ≤ N / ((r * d : ℕ) : ℝ) + 1 := by
   by_cases hrd : Nat.Coprime r d
   · obtain ⟨v, hv⟩ := exists_modEq_iff hr hrd
     rw [filter_congr fun u _ => hv u]
     have h := abs_card_modEq_sub_le (Nat.mul_pos hr hd) v (le_refl 1) (by omega : 1 ≤ N + 1)
-    rw [Nat.add_sub_cancel] at h
-    linarith [(abs_le.1 h).2]
+    grind
   · have : (Icc 1 N).filter (fun u => r ∣ u + 1 ∧ d ∣ u) = ∅ := by
       rw [filter_eq_empty_iff]
       rintro u - ⟨h1, h2⟩
@@ -79,15 +80,15 @@ lemma card_filter_dvd_le {r d : ℕ} (hr : 0 < r) (hd : 0 < d) (N : ℕ) :
     positivity
 
 /-- A prime of `𝔅` dividing `u` does not divide `r` when `r ∣ u + 1`. -/
-lemma not_dvd_of_dvd_succ {p r u : ℕ} (hp : p.Prime) (hr : r ∣ u + 1) (hpu : p ∣ u) : ¬ p ∣ r :=
+lemma not_dvd_of_dvd_succ   (hp : p.Prime) (hr : r ∣ u + 1) (hpu : p ∣ u) : ¬ p ∣ r :=
   fun h => hp.one_lt.ne' (Nat.dvd_one.1 (by
     have := (Nat.dvd_sub (h.trans hr) hpu)
     rwa [show u + 1 - u = 1 by omega] at this))
 
 /-- The `u` with band part above `Y₀` number at most `N / (r ℓ) τ + Y₀ m`, where `τ` is the
 reciprocal mass of the sets with product above `Y₀`. -/
-lemma card_large_bandSet_le {𝔅 : Finset ℕ} {m : ℝ} (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ (p : ℝ) ≤ m)
-    (hm : 1 ≤ m) {N r ℓ : ℕ} (hr : 0 < r) (hℓ : 0 < ℓ) (hℓ𝔅 : ∀ p ∈ 𝔅, ¬ p ∣ ℓ) {Y₀ : ℝ}
+lemma card_large_bandSet_le     (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ (p : ℝ) ≤ m)
+    (hm : 1 ≤ m)  {N r ℓ}  (hr : 0 < r) (hℓ : 0 < ℓ) (hℓ𝔅 : ∀ p ∈ 𝔅, ¬ p ∣ ℓ)  {Y₀} 
     (hY₀ : 1 ≤ Y₀) :
     (#((Icc 1 N).filter fun u => (r ∣ u + 1 ∧ ℓ ∣ u) ∧
         Y₀ < ∏ p ∈ bandSet 𝔅 u, (p : ℝ)) : ℝ) ≤
@@ -136,7 +137,7 @@ lemma card_large_bandSet_le {𝔅 : Finset ℕ} {m : ℝ} (h𝔅 : ∀ p ∈ �
     refine sum_le_sum_of_subset_of_nonneg (fun S hS => ?_) fun S _ _ => ?_
     · obtain ⟨hS𝔅, h, -⟩ := mem_filter.1 hS
       exact mem_filter.2 ⟨hS𝔅, h⟩
-    · exact div_nonneg zero_le_one (prod_nonneg fun p _ => Nat.cast_nonneg p)
+    positivity
   have hN : 0 ≤ N / ((r * ℓ : ℕ) : ℝ) := by positivity
   calc (#((Icc 1 N).filter fun u => (r ∣ u + 1 ∧ ℓ ∣ u) ∧
         Y₀ < ∏ p ∈ bandSet 𝔅 u, (p : ℝ)) : ℝ)
@@ -147,22 +148,24 @@ lemma card_large_bandSet_le {𝔅 : Finset ℕ} {m : ℝ} (h𝔅 : ∀ p ∈ �
         rw [sum_add_distrib, ← mul_sum, sum_const, nsmul_one]
     _ ≤ _ := add_le_add (mul_le_mul_of_nonneg_left hτ hN) hT
 
+end
+
 /-! ### The fibers over band sets -/
 
 /-- The `u ≤ N` with `r ∣ u + 1` and `ℓ ∣ u`. -/
-def progSet (N r ℓ : ℕ) : Finset ℕ :=
+def progSet (N r ℓ : ℕ)  :=
   (Icc 1 N).filter fun u => r ∣ u + 1 ∧ ℓ ∣ u
 
 /-- The weight `N(S)` of the progression with band set exactly `S`. -/
-def fiberSum (𝔅 : Finset ℕ) (N r ℓ : ℕ) (f : ℕ → ℝ) (S : Finset ℕ) : ℝ :=
+def fiberSum (𝔅 : Finset ℕ) (N r ℓ : ℕ) (f : ℕ → ℝ) (S : Finset ℕ)  :=
   ∑ u ∈ (progSet N r ℓ).filter (fun u => bandSet 𝔅 u = S), f u
 
 /-- The model size `X = (r ℓ)⁻¹ ∑ f` of the progression. -/
-def progMain (N r ℓ : ℕ) (f : ℕ → ℝ) : ℝ :=
+def progMain (N r ℓ : ℕ) (f : ℕ → ℝ)  :=
   1 / ((r * ℓ : ℕ) : ℝ) * ∑ u ∈ Icc 1 N, f u
 
 /-- The band primes not dividing `r`. -/
-def bandCoprime (𝔅 : Finset ℕ) (r : ℕ) : Finset ℕ :=
+def bandCoprime (𝔅 : Finset ℕ) (r : ℕ)  :=
   𝔅 \ 𝔅.filter (· ∣ r)
 
 /-- The weighted progression sum is the sum of the fibers. -/
@@ -176,9 +179,12 @@ lemma sum_progSet_eq_sum_fiberSum (𝔅 : Finset ℕ) (N r ℓ : ℕ) (f : ℕ �
   rw [fiberSum, sum_mul]
   exact sum_congr rfl fun u hu => by rw [(mem_filter.1 hu).2]
 
+section
+variable {𝔅 : Finset ℕ}
+
 /-- Sets meeting the primes `p ∣ r` carry no weight. -/
-lemma fiberSum_eq_zero {𝔅 : Finset ℕ} (h𝔅 : ∀ p ∈ 𝔅, p.Prime) {N r ℓ : ℕ} (f : ℕ → ℝ)
-    {S : Finset ℕ} (hS : ¬ S ⊆ bandCoprime 𝔅 r) (hS𝔅 : S ⊆ 𝔅) : fiberSum 𝔅 N r ℓ f S = 0 := by
+lemma fiberSum_eq_zero   (h𝔅 : ∀ p ∈ 𝔅, p.Prime)  {N r ℓ}   f 
+     {S}  (hS : ¬ S ⊆ bandCoprime 𝔅 r) (hS𝔅 : S ⊆ 𝔅) : fiberSum 𝔅 N r ℓ f S = 0 := by
   refine sum_eq_zero fun u hu => ?_
   exfalso
   obtain ⟨hu, hband⟩ := mem_filter.1 hu
@@ -194,7 +200,7 @@ lemma fiberSum_eq_zero {𝔅 : Finset ℕ} (h𝔅 : ∀ p ∈ 𝔅, p.Prime) {N 
   exact not_dvd_of_dvd_succ (h𝔅 p hp𝔅) hru hpu hpr
 
 /-- The model mass of the sets meeting the primes `p ∣ r` is at most `∑_{p ∣ r} 1/p`. -/
-lemma sum_modelWeight_not_subset_le {𝔅 : Finset ℕ} (h𝔅 : ∀ p ∈ 𝔅, 0 < p) (r : ℕ) :
+lemma sum_modelWeight_not_subset_le   (h𝔅 : ∀ p ∈ 𝔅, 0 < p)  r  :
     ∑ S ∈ 𝔅.powerset.filter (fun S => ¬ S ⊆ bandCoprime 𝔅 r), modelWeight 𝔅 S ≤
       ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p := by
   set R := 𝔅.filter (· ∣ r)
@@ -214,20 +220,24 @@ lemma sum_modelWeight_not_subset_le {𝔅 : Finset ℕ} (h𝔅 : ∀ p ∈ 𝔅,
   refine sum_le_sum fun p hp => ?_
   rw [← sum_modelWeight_mem (mem_filter.1 hp).1, ← sum_filter]
   exact sum_le_sum_of_subset_of_nonneg (fun S hS => by
-    obtain ⟨hS1, hS2⟩ := mem_filter.1 hS
-    exact mem_filter.2 ⟨(mem_filter.1 hS1).1, hS2⟩) fun S _ _ => modelWeight_nonneg h𝔅 S
+    grind) fun S _ _ => modelWeight_nonneg h𝔅 S
 
+
+end
 /-! ### The sieve on one fiber -/
 
 /-- `BlockSieve` for the divisibility conditions `p ∣ u` with `g(p) = 1/p`, at fixed
 constants `h₀` and `K`. -/
-def DvdSieve (h₀ : ℕ) (KB : ℝ) : Prop :=
+def DvdSieve (h₀ : ℕ) (KB : ℝ)  :=
   ∀ (objs : Finset ℕ) (wt : ℕ → ℝ) (P : Finset ℕ) (z X : ℝ), (∀ u ∈ objs, 0 ≤ wt u) → 1 ≤ z →
     (∀ p ∈ P, p.Prime ∧ (p : ℝ) ≤ z) → 0 ≤ X → ∀ h : ℕ, Even h → h₀ ≤ h →
     |∑ u ∈ objs.filter (fun u => ∀ p ∈ P, ¬ p ∣ u), wt u - X * ∏ p ∈ P, (1 - 1 / (p : ℝ))| ≤
       KB * exp (-(h : ℝ)) * (X * ∏ p ∈ P, (1 - 1 / (p : ℝ))) +
         KB * ∑ D ∈ P.powerset.filter (fun D => ((∏ p ∈ D, p : ℕ) : ℝ) ≤ z ^ (4 * h + 2)),
           |∑ u ∈ objs.filter (fun u => ∀ p ∈ D, p ∣ u), wt u - X * ∏ p ∈ D, 1 / (p : ℝ)|
+
+section
+variable {S D : Finset ℕ} (hS : ∀ p ∈ S, p.Prime) {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 : Finset ℕ} {m : ℝ} (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ (p : ℝ) ≤ m) (hm : 1 ≤ m) {N r ℓ : ℕ} (hr : 0 < r) (hℓ : 0 < ℓ) (hrℓ : Nat.Coprime r ℓ) (hℓ𝔅 : ∀ p ∈ 𝔅, ¬ p ∣ ℓ) {f : ℕ → ℝ} (hf0 : f 0 = 0) (hf : ∀ u, 0 ≤ f u) {V M₀ : ℝ} (hfM : ∀ u, f u ≤ M₀) {Y₀ : ℝ} {R : ℕ}
 
 /-- `BlockSieve` gives the divisibility sieve. -/
 lemma exists_dvdSieve (h₃ : BlockSieve) : ∃ (h₀ : ℕ) (KB : ℝ), DvdSieve h₀ KB := by
@@ -246,25 +256,28 @@ lemma exists_dvdSieve (h₃ : BlockSieve) : ∃ (h₀ : ℕ) (KB : ℝ), DvdSiev
   simp only at h'
   exact h'.1 h heven hh
 
+include hS in
 /-- A product of primes not dividing `n` is coprime to `n`. -/
-lemma coprime_prod_of_not_dvd {S : Finset ℕ} (hS : ∀ p ∈ S, p.Prime) {n : ℕ}
+lemma coprime_prod_of_not_dvd      {n} 
     (hn : ∀ p ∈ S, ¬ p ∣ n) : Nat.Coprime n (∏ p ∈ S, p) :=
   Nat.Coprime.prod_right fun p hp => ((hS p hp).coprime_iff_not_dvd.2 (hn p hp)).symm
 
+include hS in
 /-- Products over disjoint sets of primes are coprime. -/
-lemma coprime_prod_prod {S D : Finset ℕ} (hS : ∀ p ∈ S, p.Prime) (hD : ∀ p ∈ D, p.Prime)
+lemma coprime_prod_prod     (hD : ∀ p ∈ D, p.Prime)
     (hSD : Disjoint S D) : Nat.Coprime (∏ p ∈ S, p) (∏ p ∈ D, p) :=
   Nat.Coprime.prod_left fun p hp => coprime_prod_of_not_dvd hD fun q hq hqp =>
     disjoint_left.1 hSD hp (by rwa [(Nat.prime_dvd_prime_iff_eq (hD q hq) (hS p hp)).1 hqp] at hq)
 
+include hBS h𝔅 hm hr hℓ hrℓ hℓ𝔅 hf0 hf in
 /-- The sieve on one fiber: for `S` avoiding the primes `p ∣ r`,
 `N(S) = X π'(S) (1 + O(e^{-h})) + O(m^{4h+2} V)` with `π'` the model on the band primes
 coprime to `r`. -/
-lemma abs_fiberSum_sub_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 : Finset ℕ} {m : ℝ}
-    (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ (p : ℝ) ≤ m) (hm : 1 ≤ m) {N r ℓ : ℕ} (hr : 0 < r) (hℓ : 0 < ℓ)
-    (hrℓ : Nat.Coprime r ℓ) (hℓ𝔅 : ∀ p ∈ 𝔅, ¬ p ∣ ℓ) {f : ℕ → ℝ} (hf0 : f 0 = 0)
-    (hf : ∀ u, 0 ≤ f u) {V : ℝ} (hV : ∑ k ∈ Icc 1 N, |f k - f (k - 1)| ≤ V) {h : ℕ}
-    (heven : Even h) (hh : h₀ ≤ h) {S : Finset ℕ} (hS : S ⊆ bandCoprime 𝔅 r) :
+lemma abs_fiberSum_sub_le          
+             
+           
+        (hV : ∑ k ∈ Icc 1 N, |f k - f (k - 1)| ≤ V)  {h} 
+    (heven : Even h) (hh : h₀ ≤ h)  {S}  (hS : S ⊆ bandCoprime 𝔅 r) :
     |fiberSum 𝔅 N r ℓ f S - progMain N r ℓ f * modelWeight (bandCoprime 𝔅 r) S| ≤
       |KB| * exp (-(h : ℝ)) * (progMain N r ℓ f * modelWeight (bandCoprime 𝔅 r) S) +
         |KB| * (m ^ (4 * h + 2) * V) := by
@@ -300,7 +313,7 @@ lemma abs_fiberSum_sub_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅
       · rintro ⟨hp𝔅, hpu⟩
         by_contra hpS
         by_cases hpr : p ∣ r
-        · exact not_dvd_of_dvd_succ (h𝔅p p hp𝔅) hru hpu hpr
+        · grind [not_dvd_of_dvd_succ]
         · exact hP p (mem_sdiff.2 ⟨mem_sdiff.2 ⟨hp𝔅, fun h => hpr (mem_filter.1 h).2⟩, hpS⟩) hpu
       · intro hpS
         exact ⟨(h𝔅' p (hS hpS)).1, (dvd_prod_of_mem _ hpS).trans ((Dvd.intro_left _ rfl).trans hdu)⟩
@@ -377,26 +390,26 @@ lemma abs_fiberSum_sub_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅
 /-! ### The total variation of the band sets -/
 
 /-- The model weight of `S` is at most `1 / ∏ S`. -/
-lemma modelWeight_le_inv_prod {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) (S : Finset ℕ) :
+lemma modelWeight_le_inv_prod  {A}  (hA : ∀ p ∈ A, 0 < p)  S  :
     modelWeight A S ≤ 1 / ∏ p ∈ S, (p : ℝ) := by
   rw [modelWeight, one_div, ← prod_inv_distrib]
   have h1 : ∏ p ∈ A \ S, (1 - (1 : ℝ) / p) ≤ 1 := prod_le_one₀ (fun p hp => by
     have : (1 : ℝ) ≤ p := by exact_mod_cast hA p (mem_sdiff.1 hp).1
     rw [sub_nonneg, div_le_one (by linarith)]
     exact this) fun p _ => by
-      have : 0 ≤ (1 : ℝ) / p := by positivity
-      linarith
+      simp_all
   have h0 : 0 ≤ ∏ p ∈ S, (1 : ℝ) / p := prod_nonneg fun p _ => by positivity
   calc (∏ p ∈ S, (1 : ℝ) / p) * ∏ p ∈ A \ S, (1 - (1 : ℝ) / p) ≤ (∏ p ∈ S, (1 : ℝ) / p) * 1 :=
         mul_le_mul_of_nonneg_left h1 h0
     _ = ∏ p ∈ S, (p : ℝ)⁻¹ := by simp
 
+include hBS h𝔅 hm hr hℓ hrℓ hℓ𝔅 hf0 hf in
 /-- The fibers avoiding the primes `p ∣ r` with `∏ S ≤ Y₀`. -/
-lemma sum_small_fibers_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 : Finset ℕ} {m : ℝ}
-    (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ (p : ℝ) ≤ m) (hm : 1 ≤ m) {N r ℓ : ℕ} (hr : 0 < r) (hℓ : 0 < ℓ)
-    (hrℓ : Nat.Coprime r ℓ) (hℓ𝔅 : ∀ p ∈ 𝔅, ¬ p ∣ ℓ) {f : ℕ → ℝ} (hf0 : f 0 = 0)
-    (hf : ∀ u, 0 ≤ f u) {V : ℝ} (hV : ∑ k ∈ Icc 1 N, |f k - f (k - 1)| ≤ V) {h : ℕ}
-    (heven : Even h) (hh : h₀ ≤ h) {Y₀ : ℝ} (hY₀ : 1 ≤ Y₀) :
+lemma sum_small_fibers_le          
+             
+           
+        (hV : ∑ k ∈ Icc 1 N, |f k - f (k - 1)| ≤ V)  {h} 
+    (heven : Even h) (hh : h₀ ≤ h)  {Y₀}  (hY₀ : 1 ≤ Y₀) :
     ∑ S ∈ 𝔅.powerset.filter (fun S => S ⊆ bandCoprime 𝔅 r ∧ ∏ p ∈ S, (p : ℝ) ≤ Y₀),
         |fiberSum 𝔅 N r ℓ f S - progMain N r ℓ f * modelWeight 𝔅 S| ≤
       progMain N r ℓ f * (|KB| * exp (-(h : ℝ)) + ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p) +
@@ -423,10 +436,8 @@ lemma sum_small_fibers_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅
     have hprod := prod_mem_unit (𝔅.filter (· ∣ r)) (fun p => 1 - (1 : ℝ) / p) fun p hp => by
       have : (1 : ℝ) ≤ p := by exact_mod_cast (h𝔅p p (mem_filter.1 hp).1).one_lt.le
       constructor
-      · rw [sub_nonneg, div_le_one (by linarith)]
-        exact this
-      · have : 0 ≤ (1 : ℝ) / p := by positivity
-        linarith
+      · bound
+      norm_num
     have h1 := one_sub_prod_one_sub_le (𝔅.filter (· ∣ r)) (fun p => (1 : ℝ) / p) fun p hp => by
       have : (1 : ℝ) ≤ p := by exact_mod_cast (h𝔅p p (mem_filter.1 hp).1).one_lt.le
       exact ⟨by positivity, by rw [div_le_one (by linarith)]; exact this⟩
@@ -469,10 +480,11 @@ lemma sum_small_fibers_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅
           (mul_le_mul_of_nonneg_right hQ (by positivity))
     _ = _ := by ring
 
+include h𝔅 hm hr hℓ hℓ𝔅 hf hfM in
 /-- The fibers with `∏ S > Y₀`. -/
-lemma sum_large_fibers_le {𝔅 : Finset ℕ} {m : ℝ} (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ (p : ℝ) ≤ m)
-    (hm : 1 ≤ m) {N r ℓ : ℕ} (hr : 0 < r) (hℓ : 0 < ℓ) (hℓ𝔅 : ∀ p ∈ 𝔅, ¬ p ∣ ℓ) {f : ℕ → ℝ}
-    (hf : ∀ u, 0 ≤ f u) {M₀ : ℝ} (hfM : ∀ u, f u ≤ M₀) {Y₀ : ℝ} (hY₀ : 1 ≤ Y₀) :
+lemma sum_large_fibers_le      
+               
+            (hY₀ : 1 ≤ Y₀) :
     ∑ S ∈ 𝔅.powerset.filter (fun S => S ⊆ bandCoprime 𝔅 r ∧ Y₀ < ∏ p ∈ S, (p : ℝ)),
         |fiberSum 𝔅 N r ℓ f S - progMain N r ℓ f * modelWeight 𝔅 S| ≤
       M₀ * (N / ((r * ℓ : ℕ) : ℝ) *
@@ -506,16 +518,10 @@ lemma sum_large_fibers_le {𝔅 : Finset ℕ} {m : ℝ} (h𝔅 : ∀ p ∈ 𝔅,
       rw [fiberSum, filter_filter]
       congr 1
       ext u
-      simp only [mem_filter]
-      constructor
-      · rintro ⟨h1, h2⟩
-        exact ⟨h1, h2 ▸ hS, h2⟩
-      · rintro ⟨h1, -, h2⟩
-        exact ⟨h1, h2⟩
+      simp_all
     rw [h1]
     exact sum_le_sum_of_subset_of_nonneg (fun u hu => by
-      obtain ⟨h1, h2⟩ := mem_filter.1 hu
-      exact mem_filter.2 ⟨h1, (mem_filter.1 h2).2.2⟩) fun u _ _ => hf u
+      grind) fun u _ _ => hf u
   have hcount := card_large_bandSet_le h𝔅 hm (N := N) hr hℓ hℓ𝔅 hY₀
   have hu : ∑ u ∈ (progSet N r ℓ).filter (fun u => Y₀ < ∏ p ∈ bandSet 𝔅 u, (p : ℝ)), f u ≤
       M₀ * #((progSet N r ℓ).filter (fun u => Y₀ < ∏ p ∈ bandSet 𝔅 u, (p : ℝ))) := by
@@ -532,21 +538,21 @@ lemma sum_large_fibers_le {𝔅 : Finset ℕ} {m : ℝ} (h𝔅 : ∀ p ∈ 𝔅,
     rw [← mul_sum]
     refine mul_le_mul_of_nonneg_left (sum_le_sum_of_subset_of_nonneg (fun S hS => ?_)
       fun S _ _ => by positivity) hX0
-    obtain ⟨h1, -, h2⟩ := mem_filter.1 hS
-    exact mem_filter.2 ⟨h1, h2⟩
+    grind
   calc _ ≤ ∑ S ∈ Q, (fiberSum 𝔅 N r ℓ f S + X * (1 / ∏ p ∈ S, (p : ℝ))) := sum_le_sum hterm
     _ = ∑ S ∈ Q, fiberSum 𝔅 N r ℓ f S + ∑ S ∈ Q, X * (1 / ∏ p ∈ S, (p : ℝ)) := sum_add_distrib
     _ ≤ _ := add_le_add (hfib.trans (hu.trans (mul_le_mul_of_nonneg_left hcount hM0))) hτ
 
+include hBS h𝔅 hm hr hℓ hrℓ hℓ𝔅 hf0 hf in
 /-- The independent divisor model in a progression: for `|Ĥ| ≤ 1`,
 `|∑_{u ≤ N, r ∣ u+1, ℓ ∣ u} f(u) Ĥ(bandSet u) - X M_𝔅(Ĥ)|` is at most
 `X (|K| e^{-h} + 2 ∑_{p ∣ r} 1/p + τ) + Y₀ |K| m^{4h+2} V + M₀ (N τ / (r ℓ) + Y₀ m)`. -/
-lemma abs_sum_bandSet_sub_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 : Finset ℕ} {m : ℝ}
-    (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ (p : ℝ) ≤ m) (hm : 1 ≤ m) {N r ℓ : ℕ} (hr : 0 < r) (hℓ : 0 < ℓ)
-    (hrℓ : Nat.Coprime r ℓ) (hℓ𝔅 : ∀ p ∈ 𝔅, ¬ p ∣ ℓ) {f : ℕ → ℝ} (hf0 : f 0 = 0)
-    (hf : ∀ u, 0 ≤ f u) {M₀ : ℝ} (hfM : ∀ u, f u ≤ M₀) {V : ℝ}
-    (hV : ∑ k ∈ Icc 1 N, |f k - f (k - 1)| ≤ V) {h : ℕ} (heven : Even h) (hh : h₀ ≤ h)
-    {Y₀ : ℝ} (hY₀ : 1 ≤ Y₀) (Ĥ : Finset ℕ → ℝ) (hĤ : ∀ S, |Ĥ S| ≤ 1) :
+lemma abs_sum_bandSet_sub_le          
+             
+           
+        (hfM : ∀ u, f u ≤ M₀)  {V} 
+    (hV : ∑ k ∈ Icc 1 N, |f k - f (k - 1)| ≤ V)  {h}  (heven : Even h) (hh : h₀ ≤ h)
+     {Y₀}  (hY₀ : 1 ≤ Y₀)  Ĥ  (hĤ : ∀ S, |Ĥ S| ≤ 1) :
     |∑ u ∈ progSet N r ℓ, f u * Ĥ (bandSet 𝔅 u) - progMain N r ℓ f * modelMean 𝔅 Ĥ| ≤
       progMain N r ℓ f * (|KB| * exp (-(h : ℝ)) + 2 * ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p +
           ∑ S ∈ 𝔅.powerset.filter (fun S : Finset ℕ => Y₀ < ∏ p ∈ S, (p : ℝ)),
@@ -596,16 +602,13 @@ lemma abs_sum_bandSet_sub_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {�
           exact mul_le_mul_of_nonneg_left (sum_modelWeight_not_subset_le h𝔅0 r) hX0
   have hQ₂ := sum_small_fibers_le hBS h𝔅 hm hr hℓ hrℓ hℓ𝔅 hf0 hf hV heven hh hY₀
   have hQ₃ := sum_large_fibers_le h𝔅 hm (N := N) hr hℓ hℓ𝔅 hf hfM hY₀
-  rw [hsplit] at h1
-  refine h1.trans ?_
-  simp only [g]
-  linarith
+  grind
 
 /-! ### Rankin's bound for the model tail -/
 
 /-- Rankin: the sets of primes `p ≤ m` of `𝔅` with product above `Y₀` have reciprocal mass
 at most `exp(-log Y₀ / log m + e ∑_{p ∈ 𝔅} 1/p)`. -/
-lemma sum_inv_prod_gt_le {𝔅 : Finset ℕ} {m Y₀ : ℝ} (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ (p : ℝ) ≤ m)
+lemma sum_inv_prod_gt_le     (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ (p : ℝ) ≤ m)
     (hm : 1 < m) (hY₀ : 0 < Y₀) :
     ∑ S ∈ 𝔅.powerset.filter (fun S : Finset ℕ => Y₀ < ∏ p ∈ S, (p : ℝ)), 1 / ∏ p ∈ S, (p : ℝ) ≤
       exp (-(Real.log Y₀ / Real.log m) + exp 1 * ∑ p ∈ 𝔅, (1 : ℝ) / p) := by
@@ -638,15 +641,12 @@ lemma sum_inv_prod_gt_le {𝔅 : Finset ℕ} {m Y₀ : ℝ} (h𝔅 : ∀ p ∈ �
     have := add_one_le_exp (exp 1 * (1 / (p : ℝ)))
     have : (p : ℝ) ^ σ / p ≤ exp 1 * (1 / p) := by
       rw [div_eq_mul_one_div]
-      exact mul_le_mul_of_nonneg_right hpm (by have := hp0 p hp; positivity)
+      bound
     linarith
   calc _ ≤ ∑ S ∈ 𝔅.powerset.filter (fun S : Finset ℕ => Y₀ < ∏ p ∈ S, (p : ℝ)),
         Y₀ ^ (-σ) * ∏ p ∈ S, ((p : ℝ) ^ σ / p) := sum_le_sum hterm
     _ ≤ ∑ S ∈ 𝔅.powerset, Y₀ ^ (-σ) * ∏ p ∈ S, ((p : ℝ) ^ σ / p) :=
-        sum_le_sum_of_subset_of_nonneg (filter_subset _ _) fun S hS _ => mul_nonneg
-          (by positivity) (prod_nonneg fun p hp => by
-            have := hp0 p (mem_powerset.1 hS hp)
-            positivity)
+        sum_le_sum_of_subset_of_nonneg (filter_subset _ _) fun S hS _ => (by positivity)
     _ = Y₀ ^ (-σ) * ∏ p ∈ 𝔅, ((p : ℝ) ^ σ / p + 1) := by rw [← mul_sum, hsum]
     _ ≤ Y₀ ^ (-σ) * ∏ p ∈ 𝔅, exp (exp 1 * (1 / p)) :=
         mul_le_mul_of_nonneg_left (prod_le_prod₀ (fun p hp => by
@@ -678,18 +678,19 @@ lemma sum_filter_mul_sum_eq {ι : Type*} (S : Finset ι) (ℓ : ι → ℕ) (b :
         rw [← sum_filter, filter_filter, ← mul_sum]
         rfl
 
+include hBS h𝔅 hm in
 /-- E1 at a fixed scale: summing the model comparison over the moduli `r ≤ R` and the long
 moduli `ℓ_i`. If the relative error is at most `δ` for every `r ≤ R`, the total is at most
 `N M₀ H_R Λ δ + R #S (Y₀ |K| m^{4h+2} V + M₀ Y₀ m)`, where `H_R ≥ ∑_{r ≤ R} 1/r` and
 `Λ ≥ ∑ 1/ℓ_i`. -/
-lemma sum_progression_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 : Finset ℕ} {m : ℝ}
-    (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ (p : ℝ) ≤ m) (hm : 1 ≤ m) {N R : ℕ} {ι : Type*} (S : Finset ι)
+lemma sum_progression_le          
+          {ι : Type*} (S : Finset ι)
     (ℓ : ι → ℕ) (b : ι → ℝ) (hℓ : ∀ i ∈ S, 0 < ℓ i)
     (hrℓ : ∀ r ∈ Icc 1 R, ∀ i ∈ S, Nat.Coprime r (ℓ i)) (hℓ𝔅 : ∀ i ∈ S, ∀ p ∈ 𝔅, ¬ p ∣ ℓ i)
     (hb : ∀ i ∈ S, |b i| ≤ 1) {f : ℕ → ℝ} (hf0 : f 0 = 0) (hf : ∀ u, 0 ≤ f u) {M₀ : ℝ}
     (hfM : ∀ u, f u ≤ M₀) {V : ℝ} (hV : ∑ k ∈ Icc 1 N, |f k - f (k - 1)| ≤ V) {h : ℕ}
     (heven : Even h) (hh : h₀ ≤ h) {Y₀ : ℝ} (hY₀ : 1 ≤ Y₀) (H : ℕ → ℝ)
-    (hH : ∀ n, |H n| ≤ 1) (hHb : ∀ n, H n = H (∏ p ∈ bandSet 𝔅 n, p)) {δ HR Λ : ℝ}
+    (hH : ∀ n, |H n| ≤ 1) (hHb : ∀ n, H n = H (∏ p ∈ bandSet 𝔅 n, p))  {δ HR Λ} 
     (hδ : ∀ r ∈ Icc 1 R, |KB| * exp (-(h : ℝ)) + 2 * ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p +
       2 * ∑ S ∈ 𝔅.powerset.filter (fun S : Finset ℕ => Y₀ < ∏ p ∈ S, (p : ℝ)),
         1 / ∏ p ∈ S, (p : ℝ) ≤ δ)
@@ -701,8 +702,7 @@ lemma sum_progression_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 
   set τ := ∑ S ∈ 𝔅.powerset.filter (fun S : Finset ℕ => Y₀ < ∏ p ∈ S, (p : ℝ)),
     1 / ∏ p ∈ S, (p : ℝ)
   set E₀ := Y₀ * (|KB| * (m ^ (4 * h + 2) * V)) + M₀ * (Y₀ * m)
-  have hτ0 : 0 ≤ τ := sum_nonneg fun S _ => div_nonneg zero_le_one
-    (prod_nonneg fun p _ => Nat.cast_nonneg p)
+  
   -- the bound for one pair `(r, ℓ_i)`
   have hpair : ∀ r ∈ Icc 1 R, ∀ i ∈ S,
       |∑ u ∈ progSet N r (ℓ i), f u * H u -
@@ -725,9 +725,7 @@ lemma sum_progression_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 
           rw [sum_const, Nat.card_Icc, Nat.add_sub_cancel, nsmul_eq_mul]
           push_cast
           field_simp
-    have hX0 : 0 ≤ progMain N r (ℓ i) f := by
-      rw [progMain]
-      exact mul_nonneg (by positivity) (sum_nonneg fun u _ => hf u)
+    
     have hNr : (N : ℝ) / ((r * ℓ i : ℕ) : ℝ) = N * (1 / r) * (1 / ℓ i) := by
       push_cast
       field_simp
@@ -747,11 +745,7 @@ lemma sum_progression_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 
         N * M₀ * (1 / r) * (1 / ℓ i) * δ := by
       rw [← mul_add]
       exact mul_le_mul_of_nonneg_left (by linarith) (by positivity)
-    calc _ ≤ _ := h1
-      _ = progMain N r (ℓ i) f * (|KB| * exp (-(h : ℝ)) +
-          2 * ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p + τ) + M₀ * (N / ((r * ℓ i : ℕ) : ℝ) * τ) +
-          E₀ := by ring
-      _ ≤ _ := by linarith
+    grind
   -- sum over `i` and `r`
   have hr_term : ∀ r ∈ Icc 1 R,
       |∑ u ∈ (Icc 1 N).filter (r ∣ · + 1), f u * (∑ i ∈ S with ℓ i ∣ u, b i) * H u -
@@ -773,9 +767,7 @@ lemma sum_progression_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 
       _ ≤ N * M₀ * (1 / r) * δ * Λ + #S * E₀ := by
           gcongr
       _ = _ := by ring
-  have hE₀ : 0 ≤ E₀ := by
-    have hV0 : 0 ≤ V := (sum_nonneg fun _ _ => abs_nonneg _).trans hV
-    positivity
+  
   have hΛ0 : 0 ≤ Λ := (sum_nonneg fun i _ => by positivity).trans hΛ
   calc _ ≤ ∑ r ∈ Icc 1 R, (N * M₀ * (1 / r) * Λ * δ + #S * E₀) := sum_le_sum hr_term
     _ = N * M₀ * Λ * δ * ∑ r ∈ Icc 1 R, (1 : ℝ) / r + R * #S * E₀ := by
@@ -786,6 +778,8 @@ lemma sum_progression_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 
     _ ≤ N * M₀ * Λ * δ * HR + R * #S * E₀ := by
         gcongr
     _ = _ := by ring
+
+end
 
 end
 

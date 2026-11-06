@@ -8,14 +8,14 @@ public import OAI.NumberTheory.DirichletL.Descent.DescentHeight
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap FourierTransform
 open MeasureTheory FourierBridge
 namespace SevenEighths.InverseInitialOverlapHeight
 open InverseInitialOverlapFourier InverseMoment JointLogSeparation
 
-theorem twisted_polynomial_measure_energy (g:𝓢(ℝ,ℂ))(J:ℕ) :
+theorem twisted_polynomial_measure_energy  g  J  :
     ∃C:ℝ,0≤C ∧ ∀(θ:ℝ),∀{κ:Type*}[Fintype κ](xj:ℝ)(φ:κ→ℝ→ℂ)(E:ℝ),
       0≤E→(∀k,Integrable (fun t=>density (frequencyTwist g θ) xj t*φ k t))→
       (∀t,(∑k,‖φ k t‖^2)≤E*((1+‖t‖)^J)^2)→
@@ -56,6 +56,6 @@ theorem twisted_polynomial_measure_energy (g:𝓢(ℝ,ℂ))(J:ℕ) :
 
 end SevenEighths.InverseInitialOverlapHeight
 
-end
+
 
 end OAI

@@ -10,14 +10,14 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_original_choice_energy_uniform_degree
     (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (L cstar η : ℝ)
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     L cstar η 
     (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η) (hη1 : η≤1) (hηc : η≤cstar/100000) :
     ∃ (degree : ℕ), ∀ {Nlevel : Eis}, ∀
     {γ : Type*} [Fintype γ] (a c₀ : γ→Eis) (mode : γ→Bool)
@@ -155,8 +155,7 @@ theorem canonical_original_choice_energy_uniform_degree
     QuadraticMainBoundary.norm_one_le (squarefreeMaskPart_ne_zero (rowSimplePart J) (B*F*R))
   have hRpos : 0<Hrow := by dsimp [Hrow];positivity
   have hScap : Hslot≤Z^L := Real.rpow_le_rpow_of_exponent_le hz.le hzc
-  have hRcap : Hrow≤Z^L := by
-    exact (div_le_self (Real.rpow_nonneg hzpos.le _) (one_le_mul_of_one_le_of_one_le hp hm')).trans
+  have hRcap : Hrow≤Z^L := (div_le_self (Real.rpow_nonneg hzpos.le _) (one_le_mul_of_one_le_of_one_le hp hm')).trans
       (Real.rpow_le_rpow_of_exponent_le hz.le hMc)
   have hcount := hbins Z Hrow Hslot hz.le hRpos (Real.rpow_pos_of_pos hzpos _) hRcap hScap
   calc
@@ -165,7 +164,7 @@ theorem canonical_original_choice_energy_uniform_degree
     _ = (Cb*C)*(1+‖θ‖)^degree*Z^(cstar/32+(N+V-3*cstar/16-O₀/2)) := by
       rw [Real.rpow_add hzpos];ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hz.le (by linarith)) (by positivity)
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

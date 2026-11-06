@@ -16,18 +16,17 @@ open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 open CubicEisenstein (PrimaryLower primaryLowerIdealEquiv)
 
-def primaryIdealCharacter (c : O) (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) :
-    Ideal O →* ℂ :=
+def primaryIdealCharacter (c : O) (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)  :=
   χ.toMonoidHom.comp ((Ideal.Quotient.mk (Ideal.span {c})).toMonoidHom.comp
     primaryGeneratorHom.toMonoidHom)
 
-@[simp] theorem primaryIdealCharacter_apply (c : O)
-    (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (I : Ideal O) :
+@[simp] theorem primaryIdealCharacter_apply  c 
+     χ   I  :
     primaryIdealCharacter c χ I =
       χ (Ideal.Quotient.mk (Ideal.span {c}) (primaryGenerator I)) := rfl
 
-theorem primaryIdealCharacter_norm_le_one (c : O) (hc : c ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (I : Ideal O) :
+theorem primaryIdealCharacter_norm_le_one  c  (hc : c ≠ 0)
+     χ   I  :
     ‖primaryIdealCharacter c χ I‖ ≤ 1 := by
   let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _

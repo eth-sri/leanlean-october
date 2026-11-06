@@ -26,8 +26,7 @@ structure RemainingP3Proofs : Prop where
   absoluteRoot : AbsoluteClosedRootTask
   crt : Erdos821.Blueprint.Graph.uniform_residue_replacement_statement
 
-theorem concrete_transference_proofs (h : RemainingP3Proofs) : MemoryTransferenceProofs := by
-  exact {
+theorem concrete_transference_proofs (h : RemainingP3Proofs) : MemoryTransferenceProofs := {
     ghostParameters := Erdos821.S2Gpar.GhostAnalyticParametersTask_proof
     emptyBoundary := h.boundary
     nondiv := Erdos821.S2Nondiv.BigPrimeNondivTask_proof

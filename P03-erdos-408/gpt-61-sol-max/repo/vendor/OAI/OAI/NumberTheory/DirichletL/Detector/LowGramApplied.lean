@@ -7,21 +7,21 @@ public import OAI.NumberTheory.DirichletL.Detector.LowSlotPolynomial
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 theorem lowSeparatedIntegrand_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (a b M : ℝ) (ha : 0<a) (hab : a<b) (hM : 0≤M)
-    (W1 : ℝ→ℂ) (hW1c : HasCompactSupport W1) (hW1 : Function.support W1⊆Set.Icc a b)
+     W1  (hW1c : HasCompactSupport W1) (hW1 : Function.support W1⊆Set.Icc a b)
     (hW1s : ContDiff ℝ ∞ W1) (hWM : ∀x,‖W1 x‖≤M)
-    (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (hb₀ : 0<b₀) :
+     a₀ b₀   ha₀   hb₀  :
     ∃J : ℕ,∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal),fixedBadPrimes⊆S→
       ∃K : ℝ,0<K ∧ ∀(W0 : ℝ→ℂ)(X Y : ℝ)(hX : 0<X)(hY : 1≤Y)
-        (B : RayRing→O→ℂ)(v : ℝ),1≤Y^2/lowPhysicalScale (calibrationForSet S hS) X Y→
+        (B : RayRing→ActualEisensteinCubic.O→ℂ)(v : ℝ),1≤Y^2/lowPhysicalScale (calibrationForSet S hS) X Y→
       ‖lowSeparatedIntegrand (calibrationForSet S hS) W0 W1 (lowOuterCutoff a₀ b₀) X Y B v‖≤
         ‖mellin W0 ((v:ℂ)*Complex.I)‖*
         Real.sqrt (K*(1+|v|)^J*(lowPhysicalScale (calibrationForSet S hS) X Y/Y)*
@@ -56,6 +56,6 @@ theorem lowSeparatedIntegrand_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     _=_ := (Finset.mul_sum ..).symm
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

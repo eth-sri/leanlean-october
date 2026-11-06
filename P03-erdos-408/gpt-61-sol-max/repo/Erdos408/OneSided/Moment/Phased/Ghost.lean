@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Phased.Edge
 
 public import Erdos408.OneSided.Moment.Chain
 public import Erdos408.OneSided.Bands
@@ -23,7 +26,7 @@ PD `mem:ghost-norm`).
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos408.OneSided
 
@@ -31,7 +34,7 @@ open Filter Finset Real
 
 variable {K : ℕ}
 
-section Ghost
+
 
 variable {q x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B : ℕ}
 
@@ -39,7 +42,7 @@ variable {q x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B : ℕ}
 are bounded by the ghost coefficients, has norm at most `√(R C)` for the chain measure, once
 `v₀` makes both bases of `ghostOp_normLe` at most one and `R`, `C` bound its row and column
 factors at every position. -/
-theorem normLe_ghostChoiceOp {N j : ℕ} {a : ChainState x d Y d₀ u v r B → GhostChoice x d → ℂ}
+theorem normLe_ghostChoiceOp {N j : ℕ}  {a} 
     (ha : ∀ s c, ‖a s c‖ ≤ ‖chainGhostCoef q x d Y d₀ u v r B N j s c‖)
     (hν : ∀ p, 0 ≤ primeWeight q x d N p)
     (hsurv : 0 ≤ (1 - dampDefect q N j) / pendingWeight q ^ 2) {v₀ R C : ℝ} (hv₀ : 0 < v₀)
@@ -52,8 +55,8 @@ theorem normLe_ghostChoiceOp {N j : ℕ} {a : ChainState x d Y d₀ u v r B → 
         primeWeight q x d N xp.1.1) ≤ R)
     (hC : ∀ z : ℤ × ℤ, Real.exp (v₀ * |-dampDefect q N j / pendingWeight q| *
       ∑ xp with HitsAt x d z xp, primeWeight q x d N xp.1.1) ≤ C) :
-    NormLe (fun s => chainMeasure q x d Y d₀ u v r B N s)
-      (fun s => chainMeasure q x d Y d₀ u v r B N s)
+    NormLe (chainMeasure q x d Y d₀ u v r B N)
+      (chainMeasure q x d Y d₀ u v r B N)
       (choiceOp (multBox B ×ˢ multBox B) a (chainGhostOut x d Y d₀ u v r B))
       (Real.sqrt (R * C)) := by
   classical
@@ -145,76 +148,36 @@ theorem normLe_ghostChoiceOp {N j : ℕ} {a : ChainState x d Y d₀ u v r B → 
 /-! ### The band facts -/
 
 /-- The damping defects are in `[0, 1]`. -/
-private theorem dampDefect_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
-    0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
-  unfold dampDefect
-  split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
+private alias dampDefect_mem_Icc := _root_.SharedProofs.dampDefect_mem_Icc_
 
 /-- For primes `p ≥ 2N + 1`, the baseline is `b'_p ≥ 1/2`: each of the `N + 1` defects is at
 most `1`, and `p + 1 ≥ 2(N + 1)`. -/
-private theorem half_le_baseline {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {N p : ℕ}
-    (hp : 2 * N + 1 ≤ p) : 1 / 2 ≤ baseline q N p := by
-  have hp1 : (0 : ℝ) < p + 1 := by positivity
-  have hNp : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast (show 2 * (N + 1) ≤ p + 1 by omega)
-  -- `∑_{j ≤ N} η'_j ≤ N + 1`
-  have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (N : ℝ) + 1 :=
-    calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
-          sum_le_sum fun j _ => (dampDefect_mem_Icc hq hq₁ N j).2
-      _ = (N : ℝ) + 1 := by simp
-  have h₁ : ((p : ℝ) + 1)⁻¹ * ∑ j ∈ range (N + 1), dampDefect q N j ≤ 1 / 2 := by
-    rw [inv_mul_le_iff₀ hp1]
-    linarith
-  unfold baseline
-  linarith
+private alias half_le_baseline := _root_.SharedProofs.half_le_baseline_
 
 /-- Eventually every band prime is at least `2N + 1` for `N = 2R`: band primes exceed `L`, and
 `2N + 1 ≤ 2 L^{1/2} + 5 ≤ L`. -/
-private theorem eventually_two_mul_add_one_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < alo) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
-      ∀ p ∈ bandPrimes x d, 2 * (2 * momentPower x) + 1 ≤ p := by
-  have hL := (tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 2)).comp Real.tendsto_log_atTop
-  filter_upwards [eventually_rpow_lt_of_mem_band (by linarith : 0 < alo) 1,
-    hL.eventually_ge_atTop 8, Real.tendsto_log_atTop.eventually_gt_atTop 0]
-    with x hbig hs8 hL0 d hd p hp
-  obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
-  have hLp := hbig (d.a i) (hd.window i).1 p hpi
-  rw [Real.rpow_one] at hLp
-  set s := Real.log x ^ (1 / 2 : ℝ) with hs
-  have hs8' : 8 ≤ s := hs8
-  -- `s² = L` and `R < s/2 + 1`
-  have hss : s * s = Real.log x := by
-    rw [hs, ← Real.rpow_add hL0]
-    norm_num
-  have hR : (momentPower x : ℝ) < s / 2 + 1 := by
-    unfold momentPower
-    exact Nat.ceil_lt_add_one (by linarith)
-  have h8 : 8 * s ≤ s * s := mul_le_mul_of_nonneg_right hs8' (by linarith)
-  have : ((2 * (2 * momentPower x) + 1 : ℕ) : ℝ) < p := by
-    push_cast
-    linarith
-  exact_mod_cast this.le
+private alias eventually_two_mul_add_one_le := _root_.SharedProofs.eventually_two_mul_add_one_le_
 
 /-- The harmonic mass is nonnegative. -/
-private theorem harmonicMass_nonneg (S : Finset ℕ) : 0 ≤ harmonicMass S :=
+private theorem harmonicMass_nonneg  S  : 0 ≤ harmonicMass S :=
   sum_nonneg fun p _ => by positivity
+
+
+
 
 /-- A particle's prime is a band prime. -/
 private theorem fst_mem_bandPrimes (xp : Particle x d) : xp.1.1 ∈ bandPrimes x d := by
   obtain ⟨p, hp, hxp⟩ := mem_biUnion.1 xp.2
-  obtain ⟨ℓ, -, hℓ⟩ := mem_image.1 hxp
-  rw [← hℓ]
-  exact hp
+  aesop
+
+public alias _root_.SharedProofs.fst_mem_bandPrimes := fst_mem_bandPrimes
+
 
 /-- The harmonic mass `V(p)` of the bands containing `p` is nonnegative. -/
-private theorem primeMass_nonneg (p : ℕ) : 0 ≤ primeMass x d p :=
-  sum_nonneg fun i _ => by
-    split_ifs
-    · exact harmonicMass_nonneg _
-    · exact le_rfl
+private alias primeMass_nonneg := _root_.SharedProofs.primeMass_nonneg_
 
 /-- With band masses at least `1/2`, a band prime has `V(p) ≥ 1/2`. -/
-private theorem half_le_primeMass (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i))) {p : ℕ}
+private theorem half_le_primeMass (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))  {p} 
     (hp : p ∈ bandPrimes x d) : 1 / 2 ≤ primeMass x d p := by
   obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
   calc 1 / 2 ≤ harmonicMass (band x (d.a i)) := hV i
@@ -225,7 +188,7 @@ private theorem half_le_primeMass (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d
           (mem_univ i)
 
 /-- With band masses at most `1`, `V(p) ≤ K`. -/
-private theorem primeMass_le (hV : ∀ i, harmonicMass (band x (d.a i)) ≤ 1) (p : ℕ) :
+private theorem primeMass_le (hV : ∀ i, harmonicMass (band x (d.a i)) ≤ 1)  p  :
     primeMass x d p ≤ K :=
   calc primeMass x d p ≤ ∑ _i : Fin K, (1 : ℝ) :=
         sum_le_sum fun i _ => by
@@ -234,22 +197,15 @@ private theorem primeMass_le (hV : ∀ i, harmonicMass (band x (d.a i)) ≤ 1) (
           · norm_num
     _ = K := by simp
 
+public alias _root_.SharedProofs.primeMass_le := primeMass_le
+
+
 /-- With baselines at least `1/2` at the band primes, the birth weights are nonnegative. -/
-private theorem primeWeight_nonneg {N : ℕ} (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p)
-    (p : ℕ) : 0 ≤ primeWeight q x d N p := by
-  unfold primeWeight
-  by_cases hp : p ∈ bandPrimes x d
-  · have := hb p hp
-    exact one_div_nonneg.2 (mul_nonneg (mul_nonneg (primeMass_nonneg p) (by positivity))
-      (by linarith))
-  · have h0 : primeMass x d p = 0 :=
-      sum_eq_zero fun i _ => ite_eq_right fun hpi => hp (mem_biUnion.2 ⟨i, mem_univ i, hpi⟩)
-    rw [h0]
-    simp
+private alias primeWeight_nonneg := _root_.SharedProofs.primeWeight_nonneg_
 
 /-- At a band prime, `ν(p) ≤ 4/p` and `V(p) ν(p) ≤ 2/p`. -/
-private theorem primeWeight_le {N : ℕ} (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
-    (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) {p : ℕ} (hp : p ∈ bandPrimes x d) :
+private theorem primeWeight_le  {N}  (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
+    (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p)  {p}  (hp : p ∈ bandPrimes x d) :
     primeWeight q x d N p ≤ 4 * (1 / p) ∧
       primeMass x d p * primeWeight q x d N p ≤ 2 * (1 / p) := by
   have hV₁ := half_le_primeMass hV hp
@@ -262,17 +218,18 @@ private theorem primeWeight_le {N : ℕ} (hV : ∀ i, 1 / 2 ≤ harmonicMass (ba
   · calc 1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p)
         ≤ 1 / (1 / 2 * p * (1 / 2)) :=
           one_div_le_one_div_of_le (by positivity)
-            (mul_le_mul (mul_le_mul hV₁ (by linarith) hp0.le (by linarith)) hb₁ (by norm_num)
-              (mul_nonneg (by linarith) (by linarith)))
+            ((by gcongr <;> first | assumption | positivity | linarith))
       _ = 4 * (1 / p) := by field_simp; norm_num
   · have hV0 : primeMass x d p ≠ 0 := by linarith
     have hb0 : baseline q N p ≠ 0 := by linarith
     calc primeMass x d p * (1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p))
         = 1 / (((p : ℝ) + 1) * baseline q N p) := by field_simp
       _ ≤ 1 / (p * (1 / 2)) :=
-          one_div_le_one_div_of_le (by positivity)
-            (mul_le_mul (by linarith) hb₁ (by norm_num) (by linarith))
+          (by bound)
       _ = 2 * (1 / p) := by field_simp
+
+public alias _root_.SharedProofs.primeWeight_le := primeWeight_le
+
 
 /-- The hitting particles have one line per band prime, so a sum over them of a nonnegative
 function of the prime is at most the sum over the band primes. -/
@@ -284,9 +241,10 @@ private theorem sum_hits_le_sum_bandPrimes (z : ℤ × ℤ) {f : ℕ → ℝ} (h
   · intro xp hxp yp hyp h
     have hxp' : lineOf xp.1.1 z = xp.1.2 := (mem_filter.1 (mem_coe.1 hxp)).2
     have hyp' : lineOf yp.1.1 z = yp.1.2 := (mem_filter.1 (mem_coe.1 hyp)).2
-    refine Subtype.ext (Prod.ext h ?_)
-    rw [← hxp', ← hyp']
-    exact congrArg (lineOf · z) h
+    grind
+
+public alias _root_.SharedProofs.sum_hits_le_sum_bandPrimes := sum_hits_le_sum_bandPrimes
+
 
 /-- With band masses at most `1`, `∑_{p band prime} 1/p ≤ ∑_i V_i ≤ K`. -/
 private theorem sum_one_div_bandPrimes_le (hV : ∀ i, harmonicMass (band x (d.a i)) ≤ 1) :
@@ -309,27 +267,33 @@ private theorem sum_one_div_bandPrimes_le (hV : ∀ i, harmonicMass (band x (d.a
     _ ≤ ∑ _i : Fin K, (1 : ℝ) := sum_le_sum fun i _ => hV i
     _ = K := by simp
 
+public alias _root_.SharedProofs.sum_one_div_bandPrimes_le := sum_one_div_bandPrimes_le
+
+
 /-! ### The ghost bound -/
 
 /-- `ρ⁴ = √q`. -/
-private theorem pendingWeight_pow_four {q : ℝ} (hq : 0 < q) :
+private theorem pendingWeight_pow_four  {q}  (hq : 0 < q) :
     pendingWeight q ^ 4 = Real.sqrt q := by
   unfold pendingWeight
   rw [← Real.rpow_natCast, ← Real.rpow_mul hq.le, Real.sqrt_eq_rpow]
   norm_num
+
+public alias _root_.SharedProofs.pendingWeight_pow_four := pendingWeight_pow_four
+
 
 /-- **The ghost bound on the chain states** (PD `mem:ghost-norm`): there is a `C₀`, depending
 only on `q` and `K`, such that eventually every choice operator with the ghost output and
 coefficients bounded by those of a ghost `𝒢_j` with `N = 2R` has norm at most `C₀` for the
 chain measure. Here `v₀ = (K + 1)/(ρ (1 - ρ²))`, the hitting particles carry
 `∑ |cre| ν ≤ 2K/ρ` and `∑ ν ≤ 4K`, and `|del| ≤ 1/ρ`. -/
-theorem exists_ghostChoiceOp_normLe {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
+theorem exists_ghostChoiceOp_normLe  {q C CX alo ahi g}  (hq : 0 < q) (hq₁ : q < 1)
     (halo : 1 / 10 < alo) :
     ∃ C₀ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
       ∀ (Y d₀ u v r : ℝ) (B j : ℕ) (a : ChainState x d Y d₀ u v r B → GhostChoice x d → ℂ),
         (∀ s c, ‖a s c‖ ≤ ‖chainGhostCoef q x d Y d₀ u v r B (2 * momentPower x) j s c‖) →
-        NormLe (fun s => chainMeasure q x d Y d₀ u v r B (2 * momentPower x) s)
-          (fun s => chainMeasure q x d Y d₀ u v r B (2 * momentPower x) s)
+        NormLe (chainMeasure q x d Y d₀ u v r B (2 * momentPower x))
+          (chainMeasure q x d Y d₀ u v r B (2 * momentPower x))
           (choiceOp (multBox B ×ˢ multBox B) a (chainGhostOut x d Y d₀ u v r B)) C₀ := by
   set ρ := pendingWeight q with hρ
   have hρ0 : 0 < ρ := Real.rpow_pos_of_pos hq _
@@ -371,8 +335,7 @@ theorem exists_ghostChoiceOp_normLe {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
       unfold dampDefect
       split_ifs <;> linarith
     rw [div_le_iff₀ (by positivity)]
-    calc 1 - dampDefect q N j ≤ ρ ^ 4 := hqj
-      _ = ρ ^ 2 * ρ ^ 2 := by ring
+    linarith
   -- `|del| ≤ 1/ρ`, and `|cre| ν ≤ (2/ρ)(1/p)`, `|cre| ≤ K/ρ` at the band primes
   have hdel : |-dampDefect q N j / ρ| ≤ 1 / ρ := by
     rw [abs_div, abs_neg, abs_of_nonneg hη0, abs_of_pos hρ0]
@@ -384,7 +347,7 @@ theorem exists_ghostChoiceOp_normLe {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
       abs_of_pos hρ0]
     ring
   have hη : dampDefect q N j / ρ ≤ 1 / ρ := div_le_div_of_nonneg_right hη1 hρ0.le
-  have hη' : 0 ≤ dampDefect q N j / ρ := div_nonneg hη0 hρ0.le
+  
   refine normLe_ghostChoiceOp ha hν hsurv0 hv₀ ?_ (fun xp => ?_) (fun z => ?_) (fun z => ?_)
   · calc (1 - dampDefect q N j) / ρ ^ 2 + |-dampDefect q N j / ρ| / v₀
         ≤ ρ ^ 2 + 1 / ρ / v₀ := add_le_add hsurv1 (div_le_div_of_nonneg_right hdel hv₀.le)
@@ -427,6 +390,6 @@ theorem exists_ghostChoiceOp_normLe {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
       _ = 4 * ∑ p ∈ bandPrimes x d, (1 : ℝ) / p := (mul_sum _ _ _).symm
       _ ≤ 4 * K := mul_le_mul_of_nonneg_left (sum_one_div_bandPrimes_le hV₁) (by norm_num)
 
-end Ghost
+
 
 end Erdos408.OneSided

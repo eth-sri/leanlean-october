@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Energy.InputParentCapacity
 
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionClipped
 
@@ -6,22 +9,15 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionClipped
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowBranchGeometry
 open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
 open CenteredMomentEnergyReferenceDeletionBudget CenteredMomentEnergyReferenceDeletionCapacity
-local notation "O"=>HeckeFamily.O
 
-lemma length_eq_max_log (Z X:ℝ)(hZ:1<Z)(hX:0<X):
-    length Z X=max 0 (Real.logb Z X):=by
-  by_cases h:1≤X
-  · rw [length,max_eq_right h,max_eq_right (Real.logb_nonneg hZ h)]
-  · have hx:X≤1:=le_of_not_ge h
-    have hl:Real.logb Z X≤0:=by
-      simpa using Real.logb_le_logb_of_le hZ hX hx
-    rw [length,max_eq_left hx,Real.logb_one,max_eq_left hl]
+
+alias length_eq_max_log := _root_.OAI.SevenEighths.CenteredMomentEnergyInputParentCapacity.length_eq_max_log
 
 lemma slot_budgets (M total ell kappa:ℝ)(_hM:0≤M)(hell:0≤ell)(hk:3/4≤kappa)
     (hlarge:5*M/6≤total+ell)(hcap:total+ell+(6*kappa-1)*ell≤M):
@@ -37,20 +33,11 @@ theorem reflected_low (M short along ell z kappa xi reflected:ℝ)
     0<along ∧ reflected+short+z≤16*M/21+xi ∧
       reflected+short+6*kappa*z≤13*M/14+xi:=by
   have haz:0<along:=by
-    by_contra hn
-    have ha:along≤0:=le_of_not_gt hn
-    rw [max_eq_left ha] at hhigh
-    linarith
+    grind
   rw [max_eq_right haz.le] at hhigh
   have hzbudget:(6*kappa-1)*z≤M/6:=
     (mul_le_mul_of_nonneg_left hze (by linarith)).trans hbudget
-  have hzcap:z≤M/21:=hze.trans he
-  refine ⟨haz,?_⟩
-  by_cases hr:0≤M-along+xi
-  · rw [max_eq_right hr] at href
-    constructor <;> nlinarith
-  · rw [max_eq_left (le_of_not_ge hr)] at href
-    constructor <;> nlinarith
+  grind
 
 lemma reflected_low_admissible (M xi short reflected z kappa:ℝ)
     (hxi:xi≤M/14)(ht:reflected+short+z≤16*M/21+xi)
@@ -60,6 +47,6 @@ lemma reflected_low_admissible (M xi short reflected z kappa:ℝ)
 
 end SevenEighths.CenteredMomentEnergyReferenceLowBranchGeometry
 
-end
+
 
 end OAI

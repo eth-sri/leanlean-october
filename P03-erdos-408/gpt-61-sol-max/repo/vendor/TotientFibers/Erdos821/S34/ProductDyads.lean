@@ -13,12 +13,12 @@ namespace Erdos821.S34Core
 noncomputable section
 open Blueprint.Analytic
 
-def dyadIndex (n : ℕ) : ℤ := cell (Real.log 2) n
-def dyadScale (j : ℤ) : ℝ := Real.exp (Real.log 2 * j)
+def dyadIndex (n : ℕ)  := cell (Real.log 2) n
+def dyadScale (j : ℤ)  := Real.exp (Real.log 2 * j)
 
-theorem dyadScale_pos (j : ℤ) : 0 < dyadScale j := Real.exp_pos _
+theorem dyadScale_pos  j  : 0 < dyadScale j := Real.exp_pos _
 
-theorem product_in_dyad (n : ℕ) (hn : 0 < n) :
+theorem product_in_dyad  n  (hn : 0 < n) :
     dyadScale (dyadIndex n) ≤ n ∧ (n : ℝ) < 2 * dyadScale (dyadIndex n) := by
   have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
   have hlow := Int.floor_le (Real.log n / Real.log 2)
@@ -38,7 +38,7 @@ theorem product_in_dyad (n : ℕ) (hn : 0 < n) :
     simpa only [Real.exp_add, Real.exp_log hnR, Real.exp_log (by norm_num : (0 : ℝ) < 2),
       dyadScale, mul_comm] using ht
 
-theorem eventually_product_cell_count (P : Geometry) (m : ℕ) (hexp : ℝ) (hh : 0 < hexp) :
+theorem eventually_product_cell_count  P   m   hexp  (hh : 0 < hexp) :
     ∀ᶠ x in atTop, ∀ G : PrimeGroups, Admissible P x G → ∀ k, bigSlots G k m →
       ((Finset.univ.image (fun z : Tuple G k => cell (L x ^ (-hexp)) (product G k z))).card : ℝ) ≤
         L x ^ (P.d + 1 + hexp) := by
@@ -66,7 +66,7 @@ theorem eventually_product_cell_count (P : Geometry) (m : ℕ) (hexp : ℝ) (hh 
         _ = L x ^ (1 + (P.d + hexp)) := (Real.rpow_add hLpos _ _).symm
         _ = _ := by congr 1; ring
 
-theorem eventually_product_dyad_count (P : Geometry) (m : ℕ) :
+theorem eventually_product_dyad_count  P   m  :
     ∀ᶠ x in atTop, ∀ G : PrimeGroups, Admissible P x G → ∀ k, bigSlots G k m →
       ((Finset.univ.image (fun z : Tuple G k => dyadIndex (product G k z))).card : ℝ) ≤
         L x ^ (P.d + 1) := by
@@ -93,7 +93,7 @@ theorem eventually_product_dyad_count (P : Geometry) (m : ℕ) :
         _ = L x ^ (1 + P.d) := (Real.rpow_add hLpos _ _).symm
         _ = _ := by congr 1; ring
 
-theorem eventually_product_dyad_scale (P : Geometry) (m : ℕ) (A : ℝ) :
+theorem eventually_product_dyad_scale  P   m  (A : ℝ) :
     ∀ᶠ x in atTop, ∀ G : PrimeGroups, Admissible P x G → ∀ k, bigSlots G k m →
       ∀ z : Tuple G k, L x ^ A ≤ dyadScale (dyadIndex (product G k z)) := by
   have hc : 0 < P.c := by have h := P.ordered; linarith [h.1, h.2.1, h.2.2.1]

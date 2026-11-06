@@ -21,7 +21,7 @@ variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 namespace ResiduePath
 
 theorem ghostBatchLabels_injective {A : Model F P J m} {n : ℕ} (Q : ResiduePath A n)
-    (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup) :
+     S   i   g  :
     Function.Injective (Q.ghostBatchLabels S i g) := by
   apply List.nodup_ofFn.mp
   rw [Q.ghostBatchLabels_enumeration]
@@ -29,7 +29,7 @@ theorem ghostBatchLabels_injective {A : Model F P J m} {n : ℕ} (Q : ResiduePat
 
 end ResiduePath
 
-abbrev SpanConfiguration (A : Model F P J m) (n : ℕ) :=
+abbrev SpanConfiguration (A : Model F P J m) (n ) :=
   (Q : {Q : ResiduePath A n // Q.Valid}) ×
     (S : {S : LifespanAssignment P n // Q.val.lifespanValid S}) ×
       (y : {y : P.SmallResidues // Q.val.SmallCompatible y}) ×
@@ -41,21 +41,29 @@ namespace SpanConfiguration
 
 variable {A : Model F P J m} {n : ℕ} (c : SpanConfiguration A n)
 
-def history : MemoryHistory A n :=
+def history  :=
   (c.1.val.reconstructedHistory c.2.1.val c.2.1.property c.2.2.1.val).reorderBatches c.2.2.2
 
-theorem history_valid (hMem : SpanEdgeMemoryTask)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k) :
+section
+variable (hMem : SpanEdgeMemoryTask) (hBirth : SpanBirthTask) (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
+
+
+include hMem hk in
+theorem history_valid  
+      :
     c.history.Valid := by
   apply (MemoryHistory.reorderBatches_valid _ _).mpr
   exact c.1.val.reconstructedHistory_valid hMem c.2.1.val c.1.property c.2.1.property
     hk c.2.2.1.val c.2.2.1.property
 
-theorem history_distinct (hBirth : SpanBirthTask)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k) :
+include hBirth hk in
+theorem history_distinct  
+      :
     c.history.DistinctBirths := by
   apply (MemoryHistory.reorderBatches_distinct _ _).mpr
   exact hBirth F P J m n A c.1.val c.2.1.val c.1.property c.2.1.property hk c.2.2.1.val
+
+end
 
 theorem history_projection : c.history.toResiduePath = c.1.val := by
   unfold history
@@ -82,7 +90,7 @@ theorem history_injective : Function.Injective (history (A := A) (n := n)) := by
   cases hy
   have ho : sigma = tau :=
     MemoryHistory.reorderBatches_injective _
-      (fun i g => q.val.ghostBatchLabels_injective s.val i g) he
+      (q.val.ghostBatchLabels_injective s.val) he
   cases ho
   rfl
 

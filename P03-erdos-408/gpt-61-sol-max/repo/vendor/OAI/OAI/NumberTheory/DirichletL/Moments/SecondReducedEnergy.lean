@@ -1,30 +1,7 @@
 module
-
 public import OAI.NumberTheory.DirichletL.Moments.SecondSixthSource
 public import OAI.NumberTheory.DirichletL.Moments.SecondWindowSource
-
-set_option linter.privateModule false
-
-@[expose] public section
-
 namespace OAI
-
-noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-
 namespace SevenEighths.CenteredMomentSecondReducedEnergy
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondScaled
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentRestrictedEnergy CenteredMomentRestrictedSource CenteredMomentChildAssembly
-open CenteredMomentSmooth CenteredMomentFirstSectors RayFourExpansion CenteredMomentLogDyadic
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource CenteredMomentSecondWindowSource
-local notation "O" => ActualEisensteinCubic.O
-
 end SevenEighths.CenteredMomentSecondReducedEnergy
-
-end
-
 end OAI

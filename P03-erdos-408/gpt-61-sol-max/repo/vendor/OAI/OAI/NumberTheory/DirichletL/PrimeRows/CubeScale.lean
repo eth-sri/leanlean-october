@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalRayCube
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeScale
@@ -7,14 +8,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification
-local notation "O" => HeckeFamily.O
 
-theorem cube_height_budget_eventually (n : ℕ) (τ dmin cost : ℝ)
+
+theorem cube_height_budget_eventually  n   τ dmin cost 
     (hτ : 0<τ) (hc : 0≤cost) (hgap : 2*τ<dmin*cost) :
     ∀ᶠ Z : ℝ in atTop,∀i : ℕ,i≤n → ∀d : ℝ,dmin≤d →
       (3+(3*i+2:ℕ)*Z^τ)^2≤(Z^d)^cost := by
@@ -30,7 +31,7 @@ theorem cube_height_budget_eventually (n : ℕ) (τ dmin cost : ℝ)
     nlinarith
   calc
     _ ≤ ((3*(n:ℝ)+5)*Z^τ)^2 := by
-      apply sq_le_sq₀ (by positivity) (by positivity) |>.mpr hx
+      bound
     _ = (3*(n:ℝ)+5)^2*Z^(2*τ) := by
       rw [mul_pow]
       congr 1
@@ -44,9 +45,9 @@ theorem cube_height_budget_eventually (n : ℕ) (τ dmin cost : ℝ)
       rw [←Real.rpow_mul hZp.le]
       exact Real.rpow_le_rpow_of_exponent_le hZ (mul_le_mul_of_nonneg_right hd hc)
 
-theorem ray_cube_conductor_eventually (M : Ideal O) (ν : ℝ) (hν : 0<ν) :
+theorem ray_cube_conductor_eventually (M : Ideal HeckeFamily.O)  ν  (hν : 0<ν) :
     ∀ᶠ Z : ℝ in atTop,∀(u : FreeRow) (d : ℝ),rowNorm u≤Z^(d-ν) →
-      (conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤Z^d := by
+      (conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤Z^d := by
   have hh := HeckeDyadic.constant_absorbed_eventually
     ((conductorConstant*M.absNorm:ℕ):ℝ) ν hν
   filter_upwards [hh,eventually_gt_atTop (0:ℝ)] with Z hC hZ
@@ -58,6 +59,6 @@ theorem ray_cube_conductor_eventually (M : Ideal O) (ν : ℝ) (hν : 0<ν) :
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

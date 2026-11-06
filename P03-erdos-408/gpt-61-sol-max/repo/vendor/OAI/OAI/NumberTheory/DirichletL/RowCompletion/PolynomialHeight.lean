@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.LogSeparation
 
@@ -10,76 +11,76 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic
+ 
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalCubeSeparation
@@ -88,8 +89,8 @@ end CanonicalRowCompletion
 
 namespace CompletedHeight
 
-open MeasureTheory Filter Set
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff Topology
+ 
+ 
 open FourierBridge JointLogSeparation
 
 def positiveCutoff (a b : ℝ) (ha : 0 < a) : ContDiffBump ((a+max a b)/2) where
@@ -98,14 +99,18 @@ def positiveCutoff (a b : ℝ) (ha : 0 < a) : ContDiffBump ((a+max a b)/2) where
   rIn_pos := by linarith [le_max_left a b]
   rIn_lt_rOut := by linarith
 
-lemma positiveCutoff_one (a b : ℝ) (ha : 0 < a) (x : ℝ) (hx : x∈Icc a b) :
+section
+variable (a b : ℝ) (ha : 0 < a)
+include a b ha
+
+lemma positiveCutoff_one      x  (hx : x∈Icc a b) :
     positiveCutoff a b ha x=1 := by
   apply (positiveCutoff a b ha).one_of_mem_closedBall
   change dist x ((a+max a b)/2) ≤ (max a b-a)/2+a/4
   rw [Real.dist_eq,abs_le]
   constructor <;> linarith [hx.1,hx.2,le_max_right a b]
 
-lemma positiveCutoff_zero (a b : ℝ) (ha : 0 < a) (x : ℝ) (hx : x < a/2) :
+lemma positiveCutoff_zero      x  (hx : x < a/2) :
     positiveCutoff a b ha x=0 := by
   by_contra hn
   have hm : x∈Function.support (positiveCutoff a b ha) := hn
@@ -114,15 +119,15 @@ lemma positiveCutoff_zero (a b : ℝ) (ha : 0 < a) (x : ℝ) (hx : x < a/2) :
   rw [Real.dist_eq,abs_lt] at hm
   linarith [hm.1]
 
-def logCorrection (a b : ℝ) (ha : 0 < a) (x : ℝ) : ℝ :=
+def logCorrection (a b : ℝ) (ha : 0 < a) (x : ℝ)  :=
   positiveCutoff a b ha x*(Real.log x-x)
 
-def patchedLog (a b : ℝ) (ha : 0 < a) (x : ℝ) : ℝ := x+logCorrection a b ha x
+def patchedLog (a b : ℝ) (ha : 0 < a) (x : ℝ)  := x+logCorrection a b ha x
 
-lemma logCorrection_compact (a b : ℝ) (ha : 0 < a) :
+lemma logCorrection_compact     :
     HasCompactSupport (logCorrection a b ha) := (positiveCutoff a b ha).hasCompactSupport.mul_right
 
-lemma logCorrection_smooth (a b : ℝ) (ha : 0 < a) :
+lemma logCorrection_smooth     :
     ContDiff ℝ ∞ (logCorrection a b ha) := by
   rw [contDiff_iff_contDiffAt]
   intro x
@@ -130,17 +135,17 @@ lemma logCorrection_smooth (a b : ℝ) (ha : 0 < a) :
   · subst x
     have he : logCorrection a b ha =ᶠ[𝓝 (0:ℝ)] (fun _=>0) := by
       filter_upwards [isOpen_Iio.mem_nhds (by linarith : (0:ℝ)<a/2)] with y hy
-      simp only [logCorrection,positiveCutoff_zero a b ha y hy,zero_mul]
+      simp_all [logCorrection, positiveCutoff_zero]
     exact contDiffAt_const.congr_of_eventuallyEq he
   · exact (positiveCutoff a b ha).contDiff.contDiffAt.mul
       ((Real.contDiffAt_log.mpr hx).sub contDiffAt_id)
 
-lemma patchedLog_temperate (a b : ℝ) (ha : 0 < a) :
+lemma patchedLog_temperate     :
     Function.HasTemperateGrowth (patchedLog a b ha) :=
   Function.HasTemperateGrowth.id'.add
     ((logCorrection_compact a b ha).hasTemperateGrowth (logCorrection_smooth a b ha))
 
-lemma patchedLog_proper (a b : ℝ) (ha : 0 < a) :
+lemma patchedLog_proper     :
     ∃k : ℕ, ∃C : ℝ, ∀x : ℝ, ‖x‖ ≤ C*(1+‖patchedLog a b ha x‖)^k := by
   obtain ⟨x₀,hx₀⟩ := (logCorrection_smooth a b ha).continuous.norm.exists_forall_ge_of_hasCompactSupport
     (logCorrection_compact a b ha).norm
@@ -153,29 +158,28 @@ lemma patchedLog_proper (a b : ℝ) (ha : 0 < a) :
   simp only [pow_one]
   nlinarith [norm_nonneg (patchedLog a b ha x),norm_nonneg (logCorrection a b ha x₀)]
 
-lemma patchedLog_eq_log (a b : ℝ) (ha : 0 < a) (x : ℝ) (hx : x∈Icc a b) :
+lemma patchedLog_eq_log      x  (hx : x∈Icc a b) :
     patchedLog a b ha x=Real.log x := by
-  simp only [patchedLog,logCorrection,positiveCutoff_one a b ha x hx,one_mul]
-  ring
+  simp_all [patchedLog, logCorrection, positiveCutoff_one]
 
-def sourceTwistCLM (W : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0 < a) :
-    𝓢(ℝ,ℂ) →L[ℝ] 𝓢(ℝ,ℂ) :=
+end
+
+def sourceTwistCLM (W : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0 < a)  :=
   ((SchwartzMap.smulLeftCLM ℂ (W : ℝ→ℂ)).restrictScalars ℝ).comp
     (SchwartzMap.compCLM ℝ (patchedLog_temperate a b ha) (patchedLog_proper a b ha))
 
-lemma sourceTwistCLM_apply (W g : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0 < a) (x : ℝ) :
+lemma sourceTwistCLM_apply  W g   a b   ha   x  :
     sourceTwistCLM W a b ha g x = W x*g (patchedLog a b ha x) := by
   change (SchwartzMap.smulLeftCLM ℂ (W : ℝ→ℂ)
     ((SchwartzMap.compCLM ℝ (patchedLog_temperate a b ha) (patchedLog_proper a b ha)) g)) x = _
   rw [SchwartzMap.smulLeftCLM_apply_apply W.hasTemperateGrowth]
   rfl
 
-def normTwistedSource (W : ℝ→ℂ) (t x : ℝ) : ℂ := logPhase t (Real.log x)*W x
+def normTwistedSource (W : ℝ→ℂ) (t x : ℝ)  := logPhase t (Real.log x)*W x
 
-lemma normTwistedSource_support (W : ℝ→ℂ) (t : ℝ) :
+lemma normTwistedSource_support  W   t  :
     Function.support (normTwistedSource W t) ⊆ Function.support W := by
-  intro x hx hz
-  exact hx (by simp only [normTwistedSource,hz,mul_zero])
+  simp_all [normTwistedSource]
 
 theorem frequencyTwist_finite_bound (g : 𝓢(ℝ,ℂ)) (S : Finset (ℕ×ℕ)) :
     ∃n : ℕ, ∃C : ℝ, 0 < C ∧ ∀t : ℝ,
@@ -220,8 +224,7 @@ theorem normTwistedSource_schwartz (W : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0 < a)
         have hlo := Real.log_le_log ha hxi.1
         have hhi := Real.log_le_log (lt_of_lt_of_le ha hxi.1) hxi.2
         rw [abs_le]
-        constructor <;> dsimp [M] <;> linarith [neg_abs_le (Real.log a),le_abs_self (Real.log b),
-          abs_nonneg (Real.log a),abs_nonneg (Real.log b)]
+        grind
       have hv : V (Real.log x)=1 := hvone _ hlog
       simp only [hv,mul_one,normTwistedSource]
       ring
@@ -237,14 +240,14 @@ end CompletedHeight
 
 namespace LocalLogFourier
 
-open MeasureTheory
-open scoped BigOperators Classical FourierTransform SchwartzMap ContDiff
+ 
+ 
 theorem coupled_positive_log_separation_linear_constant
     {ι : Type*} [Fintype ι]
     (W : ι → ℝ → ℂ) (a M : ι → ℝ)
     (hM : ∀ j, 0 ≤ M j)
     (hWwindow : ∀ j z, W j z ≠ 0 → |z| ≤ M j)
-    (A J : ℕ) :
+     A J  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (F : ℝ → ℂ),
       ContDiffOn ℝ ∞ F (Set.Ioi 0) → ∀ CF : ℝ, 0 ≤ CF →
       (∀ i ≤ J + (volume : Measure ℝ).integrablePower, ∀ x : ℝ, 0 < x →
@@ -379,26 +382,26 @@ end LocalLogFourier
 
 namespace CompletedHeight
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+ 
+ 
 open CompletedGauss
 
 end CompletedHeight
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
+ 
+ 
 namespace CompletedHeight
 open CompletedGauss hiding O
-open ActualEisensteinCubic
+ 
 open CanonicalQuadraticSieve hiding O
 
 end CompletedHeight
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
+ 
+ 
 namespace CompletedHeight
 open CompletedGauss hiding O
-open ActualEisensteinCubic CompletedDyadic
+open   CompletedDyadic
 open CanonicalQuadraticSieve hiding O
 
 end CompletedHeight

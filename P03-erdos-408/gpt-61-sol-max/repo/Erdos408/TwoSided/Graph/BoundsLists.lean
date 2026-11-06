@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Setup
 public import Mathlib.Data.Int.CardIntervalMod
@@ -52,27 +53,27 @@ private theorem card_filter_dvd_Ico_le {a b d : ℕ} (hd : 0 < d) (hab : a ≤ b
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
 
 /-- `#physicalLists(n) ≤ ∏_g ω_g(n)^M`. -/
-theorem card_physicalLists_le (P : ι → Finset ℕ) (M n : ℕ) :
+theorem card_physicalLists_le (P : ι → Finset ℕ)  M n  :
     #(physicalLists P M n) ≤ ∏ g, primeCount (P g) n ^ M := by
   calc #(physicalLists P M n)
       ≤ #(Fintype.piFinset fun g => Fintype.piFinset fun _ : Fin M => (P g).filter (· ∣ n)) := by
         refine card_le_card fun p hp => ?_
         obtain ⟨hp, hdvd⟩ := mem_filter.1 hp
-        rw [Fintype.mem_piFinset] at hp ⊢
-        intro g
-        have hg := hp g
-        rw [Fintype.mem_piFinset] at hg ⊢
-        exact fun i => mem_filter.2 ⟨hg i, (hdvd g).2 i⟩
+        grind
     _ = ∏ g, primeCount (P g) n ^ M := by
         simp [Fintype.card_piFinset, primeCount]
 
 /-- The product `Π(p) = ∏_g ∏_i p_{g,i}` of the labels of a list. -/
-def listProduct {M : ℕ} (p : ι → Fin M → ℕ) : ℕ :=
+def listProduct {M } (p : ι → Fin M → ℕ)  :=
   ∏ g, ∏ i, p g i
 
+section
+variable {P : ι → Finset ℕ} (hdisj : ∀ g h, g ≠ h → Disjoint (P g) (P h)) (hprime : ∀ g, ∀ p ∈ P g, p.Prime)
+include P hdisj hprime
+
 /-- The labels of a physical list are distinct primes dividing `n`, so `Π(p) ∣ n`. -/
-theorem listProduct_dvd {P : ι → Finset ℕ} (hdisj : ∀ g h, g ≠ h → Disjoint (P g) (P h))
-    (hprime : ∀ g, ∀ p ∈ P g, p.Prime) {M n : ℕ} {p : ι → Fin M → ℕ}
+theorem listProduct_dvd    
+      {M n : ℕ} {p : ι → Fin M → ℕ}
     (hp : p ∈ physicalLists P M n) : listProduct p ∣ n := by
   obtain ⟨hmem, hlist⟩ := mem_filter.1 hp
   have hmem' : ∀ g i, p g i ∈ P g := fun g i =>
@@ -91,16 +92,19 @@ theorem listProduct_dvd {P : ι → Finset ℕ} (hdisj : ∀ g h, g ≠ h → Di
   refine Finset.prod_primes_dvd n (fun y hy => ?_) fun y hy => ?_
   · obtain ⟨⟨g, i⟩, -, rfl⟩ := mem_image.1 hy
     exact (hprime g _ (hmem' g i)).prime
-  · obtain ⟨⟨g, i⟩, -, rfl⟩ := mem_image.1 hy
-    exact (hlist g).2 i
+  grind
+
+section
+variable (hV : ∀ g, 0 < harmonicMass (P g)) (M : ℕ) {a b : ℕ} (hab : a ≤ b) {Y : ℝ} (hba : (b : ℝ) - a ≤ Y + 1)
+include hV M a b hab Y hba
 
 /-- **The physical list sum.** Over `[a, b)` with `b - a ≤ Y + 1`,
 `∑_n #lists(n) ∏_g V_g^{-M} ≤ Y + 2 ∏_g (|P_g| V_g⁻¹)^M`: each list `p` is counted at the
 multiples of `Π(p)`, and `∑_p 1/Π(p) = ∏_g V_g^M`. -/
-theorem sum_card_physicalLists_le {P : ι → Finset ℕ}
-    (hdisj : ∀ g h, g ≠ h → Disjoint (P g) (P h)) (hprime : ∀ g, ∀ p ∈ P g, p.Prime)
-    (hV : ∀ g, 0 < harmonicMass (P g)) (M : ℕ) {a b : ℕ} (hab : a ≤ b) {Y : ℝ}
-    (hba : (b : ℝ) - a ≤ Y + 1) :
+theorem sum_card_physicalLists_le  
+       
+             
+      :
     ∑ n ∈ Ico a b, (#(physicalLists P M n) : ℝ) * ∏ g, (harmonicMass (P g))⁻¹ ^ M ≤
       Y + 2 * ∏ g, ((#(P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ M := by
   set U := Fintype.piFinset fun g => Fintype.piFinset fun _ : Fin M => P g
@@ -128,9 +132,7 @@ theorem sum_card_physicalLists_le {P : ι → Finset ℕ}
     have h₁ : ((b : ℝ) - a) / listProduct p ≤ (Y + 1) / listProduct p :=
       div_le_div_of_nonneg_right hba (by linarith)
     have h₂ : (1 : ℝ) / listProduct p ≤ 1 := by rw [div_le_one (by linarith)]; exact hprod
-    rw [add_div] at h₁
-    rw [← div_eq_mul_inv]
-    linarith
+    grind
   -- `∑_p 1/Π(p) = ∏_g V_g^M` and `#U = ∏_g |P_g|^M`
   have hD : ∑ p ∈ U, ∏ g, ∏ i, ((p g i : ℝ))⁻¹ = ∏ g, harmonicMass (P g) ^ M := by
     refine (prod_univ_sum (fun g => Fintype.piFinset fun _ : Fin M => P g)
@@ -156,9 +158,9 @@ theorem sum_card_physicalLists_le {P : ι → Finset ℕ}
 
 /-- **The physical norm on an interval.** If `‖f‖ ≤ B` on `[a, b)` with `b - a ≤ Y + 1`, then
 `physicalNormSq P M [a, b) f ≤ B² (Y + 2 ∏_g (|P_g| V_g⁻¹)^M)`. -/
-theorem physicalNormSq_Ico_le {P : ι → Finset ℕ} (hdisj : ∀ g h, g ≠ h → Disjoint (P g) (P h))
-    (hprime : ∀ g, ∀ p ∈ P g, p.Prime) (hV : ∀ g, 0 < harmonicMass (P g)) (M : ℕ) {a b : ℕ}
-    (hab : a ≤ b) {Y : ℝ} (hba : (b : ℝ) - a ≤ Y + 1) {f : ℕ → ℂ} {B : ℝ}
+theorem physicalNormSq_Ico_le    
+           
+           {f}   {B} 
     (hf : ∀ n ∈ Ico a b, ‖f n‖ ≤ B) :
     physicalNormSq P M (Ico a b) f ≤
       B ^ 2 * (Y + 2 * ∏ g, ((#(P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ M) := by
@@ -169,12 +171,15 @@ theorem physicalNormSq_Ico_le {P : ι → Finset ℕ} (hdisj : ∀ g h, g ≠ h 
           ∏ g, (harmonicMass (P g))⁻¹ ^ M) := by
         refine sum_le_sum fun n hn => ?_
         rw [← mul_assoc]
-        refine mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right ?_ (Nat.cast_nonneg _)) hW
-        exact pow_le_pow_left₀ (norm_nonneg _) (hf n hn) 2
+        bound
     _ ≤ B ^ 2 * (Y + 2 * ∏ g, ((#(P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ M) := by
         rw [← mul_sum]
         exact mul_le_mul_of_nonneg_left (sum_card_physicalLists_le hdisj hprime hV M hab hba)
           (sq_nonneg _)
+
+end
+
+end
 
 /-- A set of primes in `[lo, hi]` has at most `hi` elements. -/
 private theorem card_le_of_subset_primesIcc {S : Finset ℕ} {lo hi : ℝ} (hhi : 0 ≤ hi)
@@ -188,7 +193,7 @@ private theorem card_le_of_subset_primesIcc {S : Finset ℕ} {lo hi : ℝ} (hhi 
 
 /-- Eventually `2 ∏_g (|P_g| V_g⁻¹)^M ≤ √x` for groups as in (6.1): `|P_g| ≤ exp(L^{0.46})`,
 `V_g ≥ v₋` and `s_P ≤ 2C₀T`, while `T L^{0.46} = o(L)`. -/
-theorem eventually_two_mul_prod_card_le_sqrt (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo) (M : ℕ) :
+theorem eventually_two_mul_prod_card_le_sqrt  c₀ C₀ vlo vhi  (hvlo : 0 < vlo)  M  :
     ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
@@ -262,10 +267,10 @@ theorem eventually_two_mul_prod_card_le_sqrt (c₀ C₀ vlo vhi : ℝ) (hvlo : 0
   have hhalf : L ^ (0.5 : ℝ) * L ^ (0.5 : ℝ) = L := by
     rw [← Real.rpow_add hL0]
     norm_num
-  have h5 : 1 ≤ L ^ (0.5 : ℝ) := Real.one_le_rpow hL1 (by norm_num)
+  
   have hkey : Real.log 2 + Real.log E * ((M : ℝ) * (2 * C * T)) ≤ L / 2 := by
     have hlog2 : Real.log 2 ≤ 1 := by linarith [Real.log_two_lt_d9]
-    have hC : 0 ≤ C := le_max_right _ _
+    
     have h₁ : Real.log E ≤ (1 + Real.log β) * L ^ (0.46 : ℝ) := by
       rw [hlogE]
       nlinarith

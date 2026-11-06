@@ -6,18 +6,18 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
 open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
-lemma support_family_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+
+lemma support_family_card {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (S : Finset (Finset ι)) (U : ℝ) (hU : 0<U) (hS : ∀A∈S,primeProductNorm p A≤U) :
+    (S : Finset (Finset ι))  U  (hU : 0<U) (hS : ∀A∈S,primeProductNorm p A≤U) :
     (S.card:ℝ)≤128*U := by
   by_cases h1 : 1≤U
   · have hh := DescentFiberCost.finite_ideal_count_real (S.image (sourceIdeal p)) U h1
@@ -36,8 +36,8 @@ lemma support_family_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,
     simp only [Finset.card_empty, Nat.cast_zero]
     positivity
 
-theorem original_source_card (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
-    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
+theorem original_source_card  Jmax  (eps : ℝ) (heps : 0<eps) :
+    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→ActualEisensteinCubic.O)(_hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(B H V T : ℝ),
@@ -103,6 +103,6 @@ theorem original_source_card (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
     _ = _ := by ring
 
 end SevenEighths.InverseMomentGlobalPrincipalMass
-end
+
 
 end OAI

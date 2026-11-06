@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstCommonSourcePowerBudget
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedAllowance
@@ -16,13 +17,13 @@ open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
 open CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
 open CenteredMomentFirstCommonSourcePowerBudget
-local notation "O"=>HeckeFamily.O
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
-def normalizedPower (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ):ℝ:=
+
+
+def normalizedPower (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ):=
   C^ε*(b^N)^α*E/q*(V/C)^(α-1)*Z^(-allowance)
 
-lemma reference_power_identity (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ)
+lemma reference_power_identity  b V C q Z allowance ε E  N  α 
     (hb:0<b)(hV:0<V)(hC:0<C)(hq:0<q)(hZ:0<Z):
     (q*(V/C)^2*Z^allowance)*normalizedPower b V C q Z allowance ε E N α=
       C^(ε-1)*V*E*(b^N*V/C)^α:=by
@@ -33,17 +34,14 @@ lemma reference_power_identity (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ)
   unfold normalizedPower
   rw [Real.rpow_sub hx,Real.rpow_one,Real.rpow_sub hC,Real.rpow_one,
     show b^N*V/C=b^N*(V/C) by ring,Real.mul_rpow hbN.le hx.le]
-  field_simp
-  calc
-    _ = E*(Z^allowance*Z^(-allowance)):=by ring
-    _ = E:=by rw [hprod,mul_one]
+  grind
 
-theorem common_energy_reference_powers (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<ε):
+theorem common_energy_reference_powers  N  a b ε (ha:0<a)(hb:1≤b)(hε:0<ε):
     ∃Cb:ℝ,0<Cb ∧ ∀{ι:Type*}[Fintype ι],∀s:Input ι,
     Fintype.card ι≤N→a≤s.lower→s.upper≤b→
-    ∀(C R seed:Ideal O)(hC:Supported C),seed∣C→
-    ∀(τ:Character)(t:ℝ)(L:Ideal O)(W:𝓢(ℝ,ℂ))(K Z allowance:ℝ),0<K→0<Z→
-    (∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
+    ∀(C R seed:Ideal HeckeFamily.O)(hC:Supported C),seed∣C→
+    ∀(τ:Character)(t:ℝ)(L:Ideal HeckeFamily.O)(W:𝓢(ℝ,ℂ))(K Z allowance:ℝ),0<K→0<Z→
+    (∀z:HeckeFamily.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
     ∀(n:ℕ)(E α:Fin n→ℝ),(∀j,0≤E j)→(∀j,0≤α j)→
     (∀B:actualAllocations s.pools C,frozenCoefficient B.val C R s.ν s.W s.P≠0→
       childNormalizedGaussSource s C R L B τ t W K≤

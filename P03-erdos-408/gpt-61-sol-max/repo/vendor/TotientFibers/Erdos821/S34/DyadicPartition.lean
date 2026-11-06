@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.MajorDyadic
 public import Erdos821.S34.ProductDyads
@@ -13,15 +14,15 @@ namespace Erdos821.S34Core
 noncomputable section
 open Blueprint.Analytic
 
-def occupiedDyads (G : PrimeGroups) (k : Fin G.size → ℕ) : Finset ℤ :=
+def occupiedDyads (G : PrimeGroups) (k : Fin G.size → ℕ)  :=
   Finset.univ.image (fun z : Tuple G k => dyadIndex (product G k z))
 
-def dyadRestriction (G : PrimeGroups) (k : Fin G.size → ℕ) (j : ℤ)
-    (f : Tuple G k → ℂ) (z : Tuple G k) : ℂ :=
+def dyadRestriction (G ) (k ) (j : ℤ)
+    (f : Tuple G k → ℂ) (z : Tuple G k)  :=
   if dyadIndex (product G k z) = j then f z else 0
 
-theorem dyadRestriction_norm_le (G : PrimeGroups) (k : Fin G.size → ℕ)
-    (j : ℤ) (f : Tuple G k → ℂ) :
+theorem dyadRestriction_norm_le  G   k 
+     j   f  :
     tupleNorm G k (dyadRestriction G k j f) ≤ tupleNorm G k f := by
   unfold tupleNorm
   apply Real.sqrt_le_sqrt
@@ -33,8 +34,8 @@ theorem dyadRestriction_norm_le (G : PrimeGroups) (k : Fin G.size → ℕ)
   · simp only [norm_zero, zero_pow (by norm_num : 2 ≠ 0), mul_zero]
     exact mul_nonneg (Erdos821.S34.Proofs.tupleWeight_nonneg (coreGroups G) k z) (sq_nonneg _)
 
-theorem dyadRestriction_support (G : PrimeGroups) (k : Fin G.size → ℕ)
-    (j : ℤ) (f : Tuple G k → ℂ) (z : Tuple G k) (hne : dyadRestriction G k j f z ≠ 0) :
+theorem dyadRestriction_support  G   k 
+     j  (f : Tuple G k → ℂ)  z  (hne : dyadRestriction G k j f z ≠ 0) :
     dyadScale j ≤ (product G k z : ℝ) ∧ (product G k z : ℝ) ≤ 2 * dyadScale j := by
   have heq : dyadIndex (product G k z) = j := by
     by_contra hn
@@ -67,14 +68,7 @@ theorem scalar_pairing_partition {α β κ η : Type} [Fintype α] [Fintype β]
     _ = ∑ j ∈ Finset.univ.image c, ∑ k ∈ Finset.univ.image d, ∑ x, ∑ y,
         if c x = j ∧ d y = k then (w x : ℂ) * (v y : ℂ) * star (f y) * g x * R x y else 0 := by
       apply Finset.sum_congr rfl
-      intro j _
-      apply Finset.sum_congr rfl
-      intro k _
-      apply Finset.sum_congr rfl
-      intro x _
-      apply Finset.sum_congr rfl
-      intro y _
-      by_cases hc : c x = j <;> by_cases hd : d y = k <;> simp [hc, hd]
+      grind
     _ = ∑ x, ∑ y, ∑ j ∈ Finset.univ.image c, ∑ k ∈ Finset.univ.image d,
         if c x = j ∧ d y = k then (w x : ℂ) * (v y : ℂ) * star (f y) * g x * R x y else 0 :=
       sum_quad_finset_reorder _ _ _ _ _
@@ -87,18 +81,16 @@ theorem scalar_pairing_partition {α β κ η : Type} [Fintype α] [Fintype β]
       have hd := Finset.mem_image_of_mem d (Finset.mem_univ y)
       simp [ite_and, hc, hd]
 
-theorem comparison_dyadic_partition (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ θ ζ : ℝ) (f : Tuple G b → ℂ) (g : Tuple G a → ℂ) :
+theorem comparison_dyadic_partition  G   a b 
+     Q   h ξ θ ζ   f   g  :
     comparisonError G a b Q h ξ θ ζ f g =
       ∑ j ∈ occupiedDyads G a, ∑ k ∈ occupiedDyads G b,
         comparisonError G a b Q h ξ θ ζ (dyadRestriction G b k f) (dyadRestriction G a j g) := by
   simp only [comparison_error_scalar_pairing, occupiedDyads, dyadRestriction]
-  exact scalar_pairing_partition (tupleWeight G a) (tupleWeight G b)
-    (fun X => dyadIndex (product G a X)) (fun Y => dyadIndex (product G b Y)) f g
-    (fun X Y => tuplePhase G a b θ ζ X Y - comparisonScalar G a b Q h ξ θ ζ X Y)
+  solve_by_elim [scalar_pairing_partition, tupleWeight, dyadIndex, product, tuplePhase, comparisonScalar]
 
-theorem comparison_bound_from_dyads (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ θ ζ E : ℝ) (f : Tuple G b → ℂ) (g : Tuple G a → ℂ)
+theorem comparison_bound_from_dyads  G   a b 
+     Q   h ξ θ ζ E   f   g 
     (hE : 0 ≤ E)
     (hdyad : ∀ j ∈ occupiedDyads G a, ∀ k ∈ occupiedDyads G b,
       ‖comparisonError G a b Q h ξ θ ζ (dyadRestriction G b k f) (dyadRestriction G a j g)‖ ≤

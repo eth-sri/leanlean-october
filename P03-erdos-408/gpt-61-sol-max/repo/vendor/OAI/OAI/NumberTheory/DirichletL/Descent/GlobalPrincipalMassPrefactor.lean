@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassSource
 public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
@@ -13,14 +14,14 @@ namespace SevenEighths.InverseMomentGlobalPrincipalMass
 open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
-def physicalPrincipalFactor (Z M r ell V delta A B R j t eta tau eps window : ℝ) : ℝ :=
+
+def physicalPrincipalFactor (Z M r ell V delta A B R j t eta tau eps window : ℝ)  :=
   (Z^(firstKappa M r ell V delta A B R)*Real.exp ((9/2:ℝ)*(eta*Real.log Z)))*
     Z^(firstPhysicalHeight M r ell V delta B j+12*eta+tau)*
     (Z^(r-A-B-t)*Real.exp window)^(1+eps)
 
-lemma physical_principal_exact (Z M r ell V delta A B R j t eta tau eps window loss : ℝ)
+lemma physical_principal_exact  Z M r ell V delta A B R j t eta tau eps window loss 
     (hZ : 0<Z) :
     physicalPrincipalFactor Z M r ell V delta A B R j t eta tau eps window*
       Z^(ell+R/2+B+t+loss)=
@@ -45,8 +46,8 @@ lemma physical_principal_exact (Z M r ell V delta A B R j t eta tau eps window l
   simp only [Real.rpow_add hZ]
   ring
 
-theorem original_physical_weighted_source (Jmax : ℕ) (dsmall : ℝ) (hdsmall : 0<dsmall) :
-    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
+theorem original_physical_weighted_source  Jmax   dsmall  (hdsmall : 0<dsmall) :
+    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→ActualEisensteinCubic.O)(_hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))
@@ -82,7 +83,7 @@ theorem original_physical_weighted_source (Jmax : ℕ) (dsmall : ℝ) (hdsmall :
       Z^(ell+R/2+B+t+loss)) := by ring
     _ = C*(Real.exp (window*(1+eps))*
       Z^(r+3*ell+V-B-j+(33/2:ℝ)*eta+tau+eps*(r-A-B-t)+loss)) := by
-      rw [physical_principal_exact Z M r ell V delta A B R j t eta tau eps window loss hZp]
+      solve_by_elim [physical_principal_exact]
     _ ≤ _ := by
       rw [←mul_assoc]
       apply mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ _) (by positivity)

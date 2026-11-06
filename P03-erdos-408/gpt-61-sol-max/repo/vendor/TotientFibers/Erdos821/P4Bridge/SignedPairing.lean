@@ -12,8 +12,8 @@ open Blueprint.Graph P4Probe
 noncomputable section
 variable {P : PrimeGroups} {J ell m : ℕ}
 
-lemma unsignedFullPair_states (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (hV : ∀ g, 0 < P.V g) (Q : ℕ) (h ξ θ ζ : ℝ)
+lemma unsignedFullPair_states (ν : Pattern P J ell m)  block 
+    (hV : ∀ g, 0 < P.V g)  Q   h ξ θ ζ 
     (f g : P.BigLabels (J + ell) → ℂ) :
     idealFullPair (unsignedKernel ν block Q h ξ θ ζ) f g =
       ∑ s : SharedRows ν, ∑ a : SideTuple ν block false, ∑ b : SideTuple ν block true,
@@ -53,9 +53,9 @@ lemma unsignedFullPair_states (ν : Pattern P J ell m) (block : P.BigGroup → B
   simp only [Complex.ofReal_mul]
   ring
 
-lemma unsignedFullPair_conditional (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (hV : ∀ g, 0 < P.V g) (Q : ℕ) (h ξ θ ζ : ℝ)
-    (f g : P.BigLabels (J + ell) → ℂ) :
+lemma unsignedFullPair_conditional (ν : Pattern P J ell m)  block 
+    (hV : ∀ g, 0 < P.V g)  Q   h ξ θ ζ 
+     f g  :
     idealFullPair (unsignedKernel ν block Q h ξ θ ζ) f g =
       ∑ s : SharedRows ν, (rowWeight (sharedRows ν) s : ℂ) *
         Blueprint.Analytic.mellin (rowProduct (sharedRows ν) s) ζ *

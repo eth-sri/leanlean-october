@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.ClosedRecursion
 
@@ -10,76 +11,76 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+ 
+open scoped       InnerProductSpace
 
 section
 
@@ -97,7 +98,10 @@ lemma ker_orthogonal_restriction_injective (T : E→L[ℂ]F) :
   apply (inner_self_eq_zero (𝕜 := ℂ)).mp
   exact T.ker.inner_right_of_mem_orthogonal hu u.2
 
-lemma ker_orthogonal_restriction_range (T : E→L[ℂ]F) :
+section
+variable (T : E→L[ℂ]F) (K : E→L[ℂ]G) (hK : IsCompactOperator K) (A B : ℝ) (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2)
+
+lemma ker_orthogonal_restriction_range   :
     Set.range (T.domRestrict T.kerᗮ)=Set.range T := by
   let : CompleteSpace T.ker := T.isClosed_ker.completeSpace_coe
   apply Set.Subset.antisymm
@@ -110,22 +114,26 @@ lemma ker_orthogonal_restriction_range (T : E→L[ℂ]F) :
     have hz : T (T.ker.starProjection u)=0 := T.ker.starProjection_apply_mem u
     rw [hz,sub_zero]
 
-lemma ker_orthogonal_restriction_antilipschitz (T : E→L[ℂ]F) (K : E→L[ℂ]G)
-    (hK : IsCompactOperator K) (A B : ℝ)
-    (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) :
+include hK hest in
+lemma ker_orthogonal_restriction_antilipschitz    
+       
+      :
     ∃D : NNReal,AntilipschitzWith D (T.domRestrict T.kerᗮ) := by
   let : CompleteSpace T.kerᗮ := T.ker.isClosed_orthogonal.completeSpace_coe
   apply antilipschitz_of_injective_compact_estimate (T.domRestrict T.kerᗮ)
     (K.domRestrict T.kerᗮ) (hK.comp_clm T.kerᗮ.subtypeL) A B
       (fun u => hest u) (ker_orthogonal_restriction_injective T)
 
-lemma closed_range_of_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ]G)
-    (hK : IsCompactOperator K) (A B : ℝ)
-    (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) : IsClosed (Set.range T) := by
+include hK hest in
+lemma closed_range_of_compact_estimate    
+       
+      : IsClosed (Set.range T) := by
   let : CompleteSpace T.kerᗮ := T.ker.isClosed_orthogonal.completeSpace_coe
   obtain ⟨D,hD⟩ := ker_orthogonal_restriction_antilipschitz T K hK A B hest
   rw [←ker_orthogonal_restriction_range T]
   exact hD.isClosed_range (T.domRestrict T.kerᗮ).uniformContinuous
+
+end
 
 lemma selfAdjoint_range_eq_ker_orthogonal (T : E→L[ℂ]E) (hT : IsSelfAdjoint T)
     (hrange : IsClosed (Set.range T)) : T.range=T.kerᗮ := by
@@ -167,7 +175,10 @@ def kernelSpectralFormOperator (z : ℂ) : KernelEnergyGraph→L[ℂ]KernelEnerg
   ContinuousLinearMap.id ℂ KernelEnergyGraph-
     (z+1)•(kernelEnergyMass.adjoint.comp kernelEnergyMass)
 
-lemma kernelSpectralFormOperator_inner (z : ℂ) (u : KernelEnergyGraph) :
+section
+variable (z : ℂ) (m g n t k spectralParam : ℝ) (K : Set KernelQuotient) (hK : MeasurableSet K) (C : ℝ) (_hn : 0≤n) (_ht : 0≤t) (hspectralParam : 0≤spectralParam) (hspectralParamone : spectralParam<1) (hC : 0≤C)
+
+lemma kernelSpectralFormOperator_inner   (u : KernelEnergyGraph) :
     inner ℂ u (kernelSpectralFormOperator z u)=
       ((‖kernelEnergyGradient u‖^2:ℝ):ℂ)-z*((‖kernelEnergyMass u‖^2:ℝ):ℂ) := by
   change inner ℂ u (u-(z+1)•kernelEnergyMass.adjoint (kernelEnergyMass u))=_
@@ -176,12 +187,12 @@ lemma kernelSpectralFormOperator_inner (z : ℂ) (u : KernelEnergyGraph) :
   simp only [RCLike.ofReal_eq_complex_ofReal,←Complex.ofReal_pow,kernelEnergyGraph_norm_sq,Complex.ofReal_add]
   ring
 
-lemma kernelSpectralFormOperator_selfAdjoint (spectralParam : ℝ) :
+lemma kernelSpectralFormOperator_selfAdjoint   :
     IsSelfAdjoint (kernelSpectralFormOperator (spectralParam:ℂ)) := by
   apply ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mpr
   apply (LinearMap.isSymmetric_iff_inner_map_self_real _).mpr
   intro u
-  have hh := kernelSpectralFormOperator_inner (spectralParam:ℂ) u
+  
   have hr : inner ℂ (kernelSpectralFormOperator (spectralParam:ℂ) u) u=
       (((‖kernelEnergyGradient u‖^2-spectralParam*‖kernelEnergyMass u‖^2):ℝ):ℂ) := by
     rw [←inner_conj_symm,kernelSpectralFormOperator_inner]
@@ -190,8 +201,9 @@ lemma kernelSpectralFormOperator_selfAdjoint (spectralParam : ℝ) :
     inner ℂ (kernelSpectralFormOperator (spectralParam:ℂ) u) u
   rw [hr,Complex.conj_ofReal]
 
-lemma scalar_compact_energy_estimate (m g n t k spectralParam C : ℝ)
-    (_hn : 0≤n) (_ht : 0≤t) (hspectralParam : 0≤spectralParam) (hspectralParamone : spectralParam<1) (hC : 0≤C)
+include _hn _ht hspectralParam hspectralParamone hC in
+lemma scalar_compact_energy_estimate  
+             
     (hspace : n^2=m^2+g^2) (hcore : m^2≤g^2+C*k^2)
     (hform : g^2-spectralParam*m^2≤n*t) :
     n^2≤(4/(1-spectralParam)^2)*t^2+(4*C/(1-spectralParam))*k^2 := by
@@ -208,8 +220,9 @@ lemma scalar_compact_energy_estimate (m g n t k spectralParam C : ℝ)
   rw [he]
   exact (le_div_iff₀ (sq_pos_of_pos hd)).mpr (by nlinarith [hsq])
 
+include hC in
 lemma kernelSpectralFormOperator_compact_estimate
-    (K : Set KernelQuotient) (hK : MeasurableSet K) (C : ℝ) (hC : 0≤C)
+           
     (hcore : ∀u : KernelEnergyGraph,‖kernelEnergyMass u‖^2≤‖kernelEnergyGradient u‖^2+
       C*‖kernelEnergyMassRestriction K hK u‖^2)
     (spectralParam : ℝ) (hspectralParam : 0≤spectralParam) (hspectralParamone : spectralParam<1) (u : KernelEnergyGraph) :
@@ -223,7 +236,8 @@ lemma kernelSpectralFormOperator_compact_estimate
   simpa only [RCLike.re_to_complex,Complex.sub_re,Complex.mul_re,Complex.ofReal_re,
     Complex.ofReal_im,mul_zero,sub_zero] using hh
 
-lemma kernelSpectralFormOperator_solution_graph (z : ℂ) (F : KernelQuotientL2)
+set_option maxHeartbeats 1000000 in
+lemma kernelSpectralFormOperator_solution_graph   (F : KernelQuotientL2)
     (v : KernelEnergyGraph) (hv : kernelSpectralFormOperator z v=kernelVariationalSolution F) :
     (kernelEnergyMass v,F+z•kernelEnergyMass v)∈kernelEnergyLaplacian.graph := by
   rw [kernelEnergyLaplacian_graph,mem_kernelLaplacianGraph]
@@ -238,7 +252,7 @@ lemma kernelSpectralFormOperator_solution_graph (z : ℂ) (F : KernelQuotientL2)
   change kernelEnergyMass (kernelEnergyMass.adjoint (F+(z+1)•kernelEnergyMass v))=kernelEnergyMass v
   rw [hv']
 
-lemma kernelSpectralFormOperator_of_domain (z : ℂ) (u : kernelEnergyLaplacian.domain) :
+lemma kernelSpectralFormOperator_of_domain   (u : kernelEnergyLaplacian.domain) :
     kernelSpectralFormOperator z (kernelVariationalSolution (kernelEnergyLaplacian u+u))=
       kernelVariationalSolution (kernelEnergyLaplacian u-z•(u:KernelQuotientL2)) := by
   have hu : kernelEnergyMass (kernelVariationalSolution (kernelEnergyLaplacian u+u))=u :=
@@ -250,7 +264,7 @@ lemma kernelSpectralFormOperator_of_domain (z : ℂ) (u : kernelEnergyLaplacian.
   rw [add_smul,one_smul]
   abel
 
-theorem kernelSpectralFormOperator_isFredholm (spectralParam : ℝ)
+theorem kernelSpectralFormOperator_isFredholm  
     (hzero : 0≤spectralParam) (hone : spectralParam<1) :
     (kernelSpectralFormOperator (spectralParam:ℂ)).IsFredholm := by
   obtain ⟨K,hK,C,hC,hcompact,hcoercive⟩ := kernel_global_exterior_coercivity
@@ -259,6 +273,8 @@ theorem kernelSpectralFormOperator_isFredholm (spectralParam : ℝ)
     (kernelEnergyMassRestriction K hK.measurableSet) hcompact
     (4/(1-spectralParam)^2) (4*C/(1-spectralParam))
     (kernelSpectralFormOperator_compact_estimate K hK.measurableSet C hC hcoercive spectralParam hzero hone)
+
+end
 
 theorem kernel_theta_spectral_fredholm :
     (kernelSpectralFormOperator (8/9:ℂ)).IsFredholm := by
@@ -280,17 +296,14 @@ theorem cubeLogRange_sq_small_power (b ε : ℝ) (_hb : 0≤b) (hε : 0<ε) :
   have hB0 : 0<B:=zero_lt_one.trans_le hB
   have hδ : 0<deltaLoss:=by dsimp [deltaLoss];positivity
   have hlogB : 0≤Real.log B:=Real.log_nonneg hB
-  have hC₀ : 0<C₀:=by dsimp [C₀];positivity
+  
   refine ⟨C₀^2,by positivity,?_⟩
   intro X Z hX hZ hXZ
   have hZ0 : 0<Z:=zero_lt_one.trans_le hZ
   have hZ3 : 1≤Z^3:=one_le_pow₀ hZ
   have hY : 1≤B*Z^3:=one_le_mul_of_one_le_of_one_le hB hZ3
   have hxY : max 1 (b*X)≤B*Z^3 := by
-    apply max_le hY
-    calc
-      b*X ≤ B*X:=mul_le_mul_of_nonneg_right (le_max_right _ _) hX
-      _ ≤ B*Z^3:=mul_le_mul_of_nonneg_left hXZ hB0.le
+    bound
   have hcard : ((cubeLogRange b X).card:ℝ)≤1+Real.log B+3*Real.log Z := by
     rw [cubeLogRange_card,Nat.cast_add,Nat.cast_one]
     have hlog:=normLogBin_le_log_upper (max 1 (b*X)) (B*Z^3)
@@ -318,16 +331,16 @@ theorem cubeLogRange_sq_small_power (b ε : ℝ) (_hb : 0≤b) (hε : 0<ε) :
 end CanonicalRowCompletion
 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+ 
 open ConcreteTraceCRT (eisEmbedding)
 
 end SecondPassArithmetic
 
 namespace CanonicalRowCompletion
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic
+ 
+ 
+ 
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
@@ -337,13 +350,13 @@ open FirstPassCubeLabels (columnLog)
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+ 
 namespace CompletedGauss
-open ActualEisensteinCubic
+ 
 
 end CompletedGauss
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic
+ 
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
@@ -352,10 +365,10 @@ open ConcreteTraceCRT (eisEmbedding)
 
 end CanonicalRowCompletion
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
+ 
+ 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic
+ 
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O

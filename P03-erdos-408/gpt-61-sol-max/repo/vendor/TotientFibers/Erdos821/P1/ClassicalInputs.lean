@@ -1,4 +1,5 @@
 module
+import Batteries.Tactic.Alias
 
 public import Erdos821.P1.PrimeProgressions
 public import Erdos821.P1.Mertens
@@ -15,8 +16,7 @@ namespace Erdos821.P1
 
 theorem classical_inputs_of_harmonic
     (harmonic : Erdos821.Blueprint.HarmonicCharacters) :
-    Erdos821.Blueprint.ClassicalInputs := by
-  exact ⟨prime_progressions_proof, mertens_proof, harmonic,
+    Erdos821.Blueprint.ClassicalInputs := ⟨prime_progressions_proof, mertens_proof, harmonic,
     Erdos821.Blueprint.DivisorMoments_proof,
     Erdos821.Classical.blueprint_meanSquares,
     multiplicative_large_sieve_proof,
@@ -31,5 +31,4 @@ theorem classical_inputs_proof : Erdos821.Blueprint.ClassicalInputs :=
 end Erdos821.P1
 
 /-- §1 classical inputs, assembled from the eight proved fields. -/
-theorem Erdos821.Blueprint.classical_inputs : Erdos821.Blueprint.ClassicalInputs :=
-  Erdos821.P1.classical_inputs_proof
+alias Erdos821.Blueprint.classical_inputs := _root_.Erdos821.P1.classical_inputs_proof

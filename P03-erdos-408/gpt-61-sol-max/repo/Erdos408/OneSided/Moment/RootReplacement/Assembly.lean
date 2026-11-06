@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.RootReplacement.Boundary
 public import Erdos408.OneSided.Moment.RootReplacement.Mass
@@ -24,22 +25,28 @@ open Finset Real
 
 variable {K : ℕ}
 
+section
+variable (x : ℝ) (d : Data K)
+
+
 /-- The line average is additive over finite sums. -/
-theorem lineAverage_sum (x : ℝ) (d : Data K) {ι : Type*} (s : Finset ι)
+theorem lineAverage_sum     {ι : Type*} (s : Finset ι)
     (F : ι → (ℕ → ℕ) → ℂ) :
     lineAverage x d (fun ℓ => ∑ i ∈ s, F i ℓ) = ∑ i ∈ s, lineAverage x d (F i) := by
   simp only [lineAverage, mul_sum]
   rw [sum_comm]
 
 /-- The line average commutes with constant factors. -/
-theorem lineAverage_const_mul (x : ℝ) (d : Data K) (c : ℂ) (F : (ℕ → ℕ) → ℂ) :
+theorem lineAverage_const_mul      c   F  :
     lineAverage x d (fun ℓ => c * F ℓ) = c * lineAverage x d F := by
   simp only [lineAverage, ← mul_sum]
   ring
 
+end
+
 /-- The per-configuration difference `D(ω)`: the normalized root sum of `A(ω, ·) F_ω` over
 the positions, minus `c₂` times its Riemann sum at the cube corners. -/
-def confDiff (q x : ℝ) (d : Data K) (Y d₀ : ℝ) (n : ℕ) (ω : Conf x d Y d₀) : ℂ :=
+def confDiff (q x : ℝ) (d : Data K) (Y d₀ ) (n : ℕ) (ω : Conf x d Y d₀)  :=
   ((d₀ * Y * d.Hm * d.Hn : ℝ) : ℂ)⁻¹ * ∑ P₀ ∈ positions d Y d₀,
       (confInd x d Y d₀ ω P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) : ℂ) *
         ∏ p ∈ bandPrimes x d, (confLineFactor q p ω (rootLines P₀ p) : ℂ) -
@@ -48,9 +55,14 @@ def confDiff (q x : ℝ) (d : Data K) (Y d₀ : ℝ) (n : ℕ) (ω : Conf x d Y 
         (i.2.2 / n) : ℂ) *
         lineAverage x d (fun ℓ => ∏ p ∈ bandPrimes x d, (confLineFactor q p ω (ℓ p) : ℂ)))
 
+section
+variable {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm)
+
+
+include hq hU in
 /-- The normalized moment minus the Riemann sum is `∑_ω c(ω) D(ω)`. -/
-theorem sub_eq_sum_confDiff {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ : ℝ}
-    (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hR : 0 < momentPower x)
+theorem sub_eq_sum_confDiff        
+      (hV : 0 ≤ d.Hn) (hR : 0 < momentPower x)
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (n : ℕ) :
     ((d₀ * Y * d.Hm * d.Hn : ℝ) : ℂ)⁻¹ * detMoment q A₀ x d Y d₀ -
         (primitiveDensity : ℂ) * (((n : ℂ) ^ 3)⁻¹ * ∑ i ∈ cubeIndices n,
@@ -64,14 +76,14 @@ theorem sub_eq_sum_confDiff {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ :
   simp only [confDiff, mul_sub, sum_sub_distrib, mul_sum]
   congr 1
   · rw [sum_comm]
-    exact sum_congr rfl fun _ _ => sum_congr rfl fun _ _ => by ring
+    ring
   · rw [sum_comm]
-    exact sum_congr rfl fun _ _ => sum_congr rfl fun _ _ => by ring
+    grind
 
 /-- A configuration that is not live has `D(ω) = 0`: the roots of the positions and the cube
 corners lie in the root box. -/
-theorem confDiff_eq_zero_of_not_live (q x : ℝ) (d : Data K) {Y d₀ : ℝ}
-    (hU : 0 < d₀ * Y * d.Hm) (hV : 0 < d.Hn) {n : ℕ} (hn : 1 ≤ n) (ω : Conf x d Y d₀)
+theorem confDiff_eq_zero_of_not_live  q x  (d : Data K)  {Y d₀} 
+    (hU : 0 < d₀ * Y * d.Hm) (hV : 0 < d.Hn)  {n}  (hn : 1 ≤ n) (ω : Conf x d Y d₀)
     (hω : ¬ ConfLive ω) : confDiff q x d Y d₀ n ω = 0 := by
   simp only [ConfLive, not_exists, not_and, not_not] at hω
   have hn₀ : (0 : ℝ) < n := by exact_mod_cast hn
@@ -108,13 +120,14 @@ theorem confDiff_eq_zero_of_not_live (q x : ℝ) (d : Data K) {Y d₀ : ℝ}
   rw [confDiff, sum_eq_zero hpos, sum_eq_zero hcube, mul_zero, mul_zero, mul_zero, sub_zero]
 
 open scoped Classical in
+include hq hU in
 /-- **Assembly**: if the live coefficients have mass at most `M` and every live configuration
 with `c(ω) ≠ 0` has per-configuration error at most `ε`, then the normalized moment is within
 `M ε` of `c₂` times the Riemann sum. -/
-theorem norm_sub_le_of_conf {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ : ℝ}
-    (hU : 0 < d₀ * Y * d.Hm) (hV : 0 < d.Hn) (hR : 0 < momentPower x)
+theorem norm_sub_le_of_conf        
+      (hV : 0 < d.Hn) (hR : 0 < momentPower x)
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {n : ℕ} (hn : 1 ≤ n)
-    {M ε : ℝ} (hε : 0 ≤ ε)
+     {M ε}  (hε : 0 ≤ ε)
     (hM : ∑ ω ∈ univ.filter (fun ω : Conf x d Y d₀ => ConfLive ω),
       ‖confCoeff A₀ x d Y d₀ ω‖ ≤ M)
     (hD : ∀ ω : Conf x d Y d₀, ConfLive ω → confCoeff A₀ x d Y d₀ ω ≠ 0 →
@@ -144,5 +157,7 @@ theorem norm_sub_le_of_conf {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ :
     _ ≤ M * ε := by
         rw [← sum_mul]
         exact mul_le_mul_of_nonneg_right hM hε
+
+end
 
 end Erdos408.OneSided

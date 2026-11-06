@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Edge.Gram
 
 public import Mathlib.Algebra.Field.ZMod
 public import Mathlib.NumberTheory.DiophantineApproximation.Basic
@@ -31,7 +34,7 @@ congruence `A · z ≡ 0 (mod p)`, hence `m ≡ c₀ t (mod p)` or `p ∣ t`. In
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos408.OneSided
 
@@ -39,16 +42,21 @@ open Finset Real
 
 /-! ### The circle distance -/
 
+section
+variable {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0 < q') (hcop : IsCoprime a' q') (hη : |q' * β - a'| ≤ η) (hδ : 0 ≤ δ) {α U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) (hgood : ∀ l : ℕ, 1 ≤ l → (l : ℝ) ≤ Y ^ (1 / 5 : ℝ) →
+      Y ^ (-(7 / 10 : ℝ)) < circleDist (l * α)) {p : ℕ}
+
 /-- `‖t‖ ≤ |t - n|` for every integer `n`. -/
-private theorem circleDist_le_abs_sub' (t : ℝ) (n : ℤ) : circleDist t ≤ |t - n| := round_le t n
+private alias circleDist_le_abs_sub' := _root_.Erdos408.OneSided.circleDist_le_abs_sub
 
 /-! ### Counting small multiples -/
 
+include hq hcop hη hδ in
 /-- **One block**: if `|q' β - a'| ≤ η` with `(a', q') = 1`, then at most `2q'(δ + η) + 1`
 integers `t ∈ [t₀, t₀ + q')` have `‖t β‖ ≤ δ`. The map `t ↦ t a' - q' round(t β)` is injective
 on the block, and `|t a' - q' round(t β) + t₀ (q' β - a')| ≤ q'(δ + η)`. -/
-theorem card_block_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0 < q') (hcop : IsCoprime a' q')
-    (hη : |q' * β - a'| ≤ η) (hδ : 0 ≤ δ) (t₀ : ℤ) (T : Finset ℤ)
+theorem card_block_le          
+        (t₀ : ℤ) (T : Finset ℤ)
     (hT : ∀ t ∈ T, t₀ ≤ t ∧ t < t₀ + q' ∧ circleDist (t * β) ≤ δ) :
     (T.card : ℝ) ≤ 2 * q' * (δ + η) + 1 := by
   have hη0 : 0 ≤ η := (abs_nonneg _).trans hη
@@ -60,8 +68,7 @@ theorem card_block_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0 < q') (hcop
     intro t ht
     obtain ⟨h₁, h₂, h₃⟩ := hT t ht
     have hs0 : (0 : ℝ) ≤ t - t₀ := by
-      have : (t₀ : ℝ) ≤ t := by exact_mod_cast h₁
-      linarith
+      simp_all
     have hsq : (t : ℝ) - t₀ ≤ q' := by
       have : (t : ℝ) < t₀ + q' := by exact_mod_cast h₂
       linarith
@@ -76,8 +83,7 @@ theorem card_block_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0 < q') (hcop
           rw [abs_mul, abs_mul, abs_of_nonneg hs0, Nat.abs_cast]
           rfl
       _ ≤ q' * δ + q' * η :=
-          add_le_add (mul_le_mul_of_nonneg_left h₃ (Nat.cast_nonneg _))
-            (mul_le_mul hsq hη (abs_nonneg _) (Nat.cast_nonneg _))
+          (by bound)
       _ = R := by rw [hR]; ring
   -- `g` is injective on the block
   have hinj : Set.InjOn g T := by
@@ -117,11 +123,12 @@ theorem card_block_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0 < q') (hcop
         linarith
     _ = 2 * q' * (δ + η) + 1 := by rw [hR]; ring
 
+include hq hcop hη hδ in
 /-- **The small multiples**: if `|q' β - a'| ≤ η` with `(a', q') = 1`, then at most
 `(2M/q' + 1)(2q'(δ + η) + 1)` integers `|t| ≤ M` have `‖t β‖ ≤ δ`: split `[-M, M]` into
 `⌊2M/q'⌋ + 1` blocks of length `q'`. -/
-theorem card_filter_circleDist_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0 < q')
-    (hcop : IsCoprime a' q') (hη : |q' * β - a'| ≤ η) (hδ : 0 ≤ δ) (M : ℕ) :
+theorem card_filter_circleDist_le        
+          (M : ℕ) :
     (((Icc (-(M : ℤ)) M).filter fun t : ℤ => circleDist ((t : ℝ) * β) ≤ δ).card : ℝ) ≤
       (2 * M / q' + 1) * (2 * q' * (δ + η) + 1) := by
   have hη0 : 0 ≤ η := (abs_nonneg _).trans hη
@@ -134,12 +141,7 @@ theorem card_filter_circleDist_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0
     obtain ⟨h₁, h₂⟩ := mem_Icc.1 (mem_filter.1 ht).1
     have h0 : 0 ≤ (t + M) / q' := Int.ediv_nonneg (by omega) hq'.le
     have hle : (t + M) / q' ≤ ((2 * M : ℕ) : ℤ) / q' := Int.ediv_le_ediv hq' (by push_cast; omega)
-    rw [mem_range, hnb, Nat.lt_succ_iff]
-    have : (((t + M) / q').toNat : ℤ) ≤ ((2 * M / q' : ℕ) : ℤ) := by
-      rw [Int.toNat_of_nonneg h0]
-      push_cast
-      exact_mod_cast hle
-    exact_mod_cast this
+    grind
   -- each fiber is a block
   have hblock : ∀ b ∈ range nb, ((T.filter fun t => f t = b).card : ℝ) ≤
       2 * q' * (δ + η) + 1 := by
@@ -150,13 +152,10 @@ theorem card_filter_circleDist_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0
     obtain ⟨h₁, -⟩ := mem_Icc.1 hIcc
     have h0 : 0 ≤ (t + M) / q' := Int.ediv_nonneg (by omega) hq'.le
     have hb : (t + M) / q' = b := by
-      have := congrArg (fun n : ℕ => (n : ℤ)) hfb
-      simp only [hf, Int.toNat_of_nonneg h0] at this
-      exact this
+      grind
     have hlow := Int.ediv_mul_le (t + M) hq'.ne'
     have hhigh := Int.lt_ediv_add_one_mul_self (t + M) hq'
-    rw [hb] at hlow hhigh
-    refine ⟨by linarith, by linarith, hcd⟩
+    grind
   have hsum := card_eq_sum_card_fiberwise hmaps
   have hnb' : (nb : ℝ) ≤ 2 * M / q' + 1 := by
     rw [hnb]
@@ -173,21 +172,21 @@ theorem card_filter_circleDist_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0
 
 /-! ### The rational approximation -/
 
+include hY hgood in
 /-- **The approximation from test (i)**: if `‖l α‖ > Y^{-0.7}` for `1 ≤ l ≤ Y^{0.2}`, then
 `β = (c₀ + α)/p` has an approximation `|q' β - a'| ≤ 1/q'` with `(a', q') = 1` and
 `Y^{0.2} < q' ≤ p Y^{0.7} + 1`. Dirichlet with denominators at most `n = ⌈p Y^{0.7}⌉` gives
 `|q' β - a'| ≤ 1/(n + 1)`, so `‖q' α‖ ≤ p |q' β - a'| < Y^{-0.7}`. -/
-theorem exists_approx_of_good {α Y : ℝ} (hY : 1 ≤ Y)
-    (hgood : ∀ l : ℕ, 1 ≤ l → (l : ℝ) ≤ Y ^ (1 / 5 : ℝ) →
-      Y ^ (-(7 / 10 : ℝ)) < circleDist (l * α))
-    {p : ℕ} (hp : 0 < p) (c₀ : ℤ) :
+theorem exists_approx_of_good    
+     
+      (hp : 0 < p) (c₀ : ℤ) :
     ∃ a' : ℤ, ∃ q' : ℕ, 0 < q' ∧ IsCoprime a' q' ∧
       |q' * ((c₀ + α) / p) - a'| ≤ 1 / q' ∧ Y ^ (1 / 5 : ℝ) < q' ∧
         (q' : ℝ) ≤ p * Y ^ (7 / 10 : ℝ) + 1 := by
   set β := (c₀ + α) / p with hβ
   have hp' : (0 : ℝ) < p := by exact_mod_cast hp
   have hY0 : 0 < Y := by linarith
-  have hY7 : 0 < Y ^ (7 / 10 : ℝ) := Real.rpow_pos_of_pos hY0 _
+  
   set n := ⌈(p : ℝ) * Y ^ (7 / 10 : ℝ)⌉₊ with hn
   have hn0 : 0 < n := Nat.ceil_pos.2 (by positivity)
   have hnle : (p : ℝ) * Y ^ (7 / 10 : ℝ) ≤ n := Nat.le_ceil _
@@ -243,7 +242,7 @@ theorem exists_approx_of_good {α Y : ℝ} (hY : 1 ≤ Y)
 /-- **A line is a congruence**: for a prime `p` and a line `ℓ`, there is an integer linear form
 `A`, not zero mod `p`, with `p ∣ A · z` whenever `[z]_p = ℓ`. For `ℓ < p` it is
 `ℓ z₁ - z₂`, and for `ℓ ≥ p` it is `z₁`. -/
-theorem exists_lineForm {p : ℕ} (hp : p.Prime) (ℓ : ℕ) :
+theorem exists_lineForm   (hp : p.Prime)  ℓ  :
     ∃ A₁ A₂ : ℤ, ¬ ((p : ℤ) ∣ A₁ ∧ (p : ℤ) ∣ A₂) ∧
       ∀ z : ℤ × ℤ, lineOf p z = ℓ → (p : ℤ) ∣ A₁ * z.1 + A₂ * z.2 := by
   have hF : Fact p.Prime := ⟨hp⟩
@@ -256,13 +255,7 @@ theorem exists_lineForm {p : ℕ} (hp : p.Prime) (ℓ : ℕ) :
     split_ifs at hz with h0
     · omega
     · rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
-      have hℓ' : ((ℓ : ℕ) : ZMod p) = (z.2 : ZMod p) * (z.1 : ZMod p)⁻¹ := by
-        rw [← hz, ZMod.natCast_zmod_val]
-      have hcast : (((ℓ : ℤ) * z.1 + -1 * z.2 : ℤ) : ZMod p) =
-          ((ℓ : ℕ) : ZMod p) * (z.1 : ZMod p) - (z.2 : ZMod p) := by
-        push_cast
-        ring
-      rw [hcast, hℓ', mul_assoc, inv_mul_cancel₀ h0, mul_one, sub_self]
+      aesop
   · refine ⟨1, 0, fun h => hp1 h.1, fun z hz => ?_⟩
     unfold lineOf at hz
     split_ifs at hz with h0
@@ -272,11 +265,12 @@ theorem exists_lineForm {p : ℕ} (hp : p.Prime) (ℓ : ℕ) :
 
 /-! ### The line count -/
 
+include hU hY in
 /-- **The line count** (PD `mem:line-count`, without the lattice shape): let `w` be a position
 of the root box, `α = D τ(w_w)/τ(w)` with `‖l α‖ > Y^{-0.7}` for `1 ≤ l ≤ Y^{0.2}` (test (i)),
 and `p ∤ D` a prime. Then at most `2^13 (Y/p + Y^{0.8})` positions `z` of the box have
 `det(w, z) = D t` with `|t| ≤ M ≤ 6Y` and `[z]_p = ℓ`. -/
-theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w : ℤ × ℤ}
+theorem card_filter_line_le       {w : ℤ × ℤ}
     (hw : w ∈ rootPositions U V u v r) {D : ℕ}
     (hgood : ∀ l : ℕ, 1 ≤ l → (l : ℝ) ≤ Y ^ (1 / 5 : ℝ) →
       Y ^ (-(7 / 10 : ℝ)) < circleDist (l * D * (tau r (complement w) / tau r w)))
@@ -451,7 +445,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
           _ ≤ 16 / p := div_le_div_of_nonneg_right hs₂ hp'.le
       · -- `(2M/q' + 1)(32 q'/p + 3) ≤ 384 Y/p + 103 Y^{0.8}`
         have hq' : (0 : ℝ) < q' := by exact_mod_cast hq0
-        have hY15 : 0 < Y ^ (1 / 5 : ℝ) := Real.rpow_pos_of_pos hY0 _
+        
         have hexp : 2 * (q' : ℝ) * (16 / p + 1 / q') + 1 = 32 * q' / p + 3 := by
           field_simp
           ring
@@ -506,5 +500,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
         have : 0 ≤ Y / p := by positivity
         have : 384 * Y / p = 384 * (Y / p) := by ring
         nlinarith
+
+end
 
 end Erdos408.OneSided

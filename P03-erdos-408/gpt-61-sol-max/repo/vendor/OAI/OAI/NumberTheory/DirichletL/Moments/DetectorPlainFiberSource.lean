@@ -31,11 +31,10 @@ def plainProfile (F:Fiber M H Label Slot U a ε tstar T allowance i)
   twistProfile (orientedProfile F.reverse ((logProfile^[j]) positiveAnnular)) σ
     (orientedFrequency F.reverse t)
 
-def slotWindow (F:Fiber M H Label Slot U a ε tstar T allowance i)(s:Slot)(x:ℝ):ℂ:=
+def slotWindow (F:Fiber M H Label Slot U a ε tstar T allowance i)(s:Slot)(x:ℝ):=
   conj (F.profile s x*(x:ℂ)^(F.external s-1))
 
-def fiberPool (F:Fiber M H Label Slot U a ε tstar T allowance i)(selected:Finset Slot):
-    Finset (CenteredMomentAddedZeroUniform.Tuple selected):=
+def fiberPool (F:Fiber M H Label Slot U a ε tstar T allowance i)(selected:Finset Slot):=
   completePool (fun s:selected=>primePool M H (F.upper s.val) (U^(F.widths s.val)))
     (9/4) (9/4) (U^F.m) (U^F.m)
 
@@ -47,7 +46,7 @@ def fiberCoefficient (F:Fiber M H Label Slot U a ε tstar T allowance i)
       (plainProfile F j σ t) (plainProfile F k σ t) (U^F.m) (U^F.m) 1 1 1)
 
 theorem detector_row_eq_source (F:Fiber M H Label Slot U a ε tstar T allowance i)
-    (η:Character)(selected:Finset Slot)(j k:ℕ)(σ t:ℝ)(u:FreeRow)(hU:0<U):
+     η (selected:Finset Slot) j k  σ t  u (hU:0<U):
     detectorPositiveRow F η selected j k σ t u=
       (Real.sqrt ((U^F.m)*(U^F.m)*∏s:selected,U^(F.widths s.val)):ℂ)⁻¹*
       ∑I∈finiteColumns (fiberPool F selected),fiberCoefficient F η selected j k σ t I*
@@ -65,16 +64,16 @@ theorem detector_row_eq_source (F:Fiber M H Label Slot U a ε tstar T allowance 
   rw [rowMaskElement_eq_fixed]
   exact he
 
-def radialMajorant : 𝓢(ℝ,ℂ):=
+def radialMajorant :=
   Classical.choose DetectorDictionaryInverseRawRealRadial.exists_real_raw_radial_majorant
 
 lemma radialMajorant_compact : HasCompactSupport (radialMajorant:ℝ→ℂ):=
   (Classical.choose_spec DetectorDictionaryInverseRawRealRadial.exists_real_raw_radial_majorant).1
 
-lemma radialMajorant_nonneg (x:ℝ):0≤(radialMajorant x).re:=
+lemma radialMajorant_nonneg  x :0≤(radialMajorant x).re:=
   (Classical.choose_spec DetectorDictionaryInverseRawRealRadial.exists_real_raw_radial_majorant).2.1 x
 
-lemma radialMajorant_one (x:ℝ)(hx:x∈Set.Icc (0:ℝ) 1):radialMajorant x=1:=
+lemma radialMajorant_one  x (hx:x∈Set.Icc (0:ℝ) 1):radialMajorant x=1:=
   (Classical.choose_spec DetectorDictionaryInverseRawRealRadial.exists_real_raw_radial_majorant).2.2.2 x hx
 
 end SevenEighths.CenteredMomentDetectorPlainFiberSource

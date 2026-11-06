@@ -10,13 +10,16 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma secondSourcePairKernel_mark_factors {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (e k : Eis)
+
+
+section
+variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] (p : ι → ActualEisensteinCubic.O)
+
+lemma secondSourcePairKernel_mark_factors      
+       e k 
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
-    (A₁ A₂ : Finset ι) (H₁ H₂ : Finset ι → ℂ) (W : 𝓢(ℝ,ℂ)) (Y : ℝ) (S T : Finset ι) :
+     A₁ A₂   H₁ H₂   W   Y   S T  :
     secondSourcePairKernel p e k
       (fun U => primeMark slots₁ lists₁ a₁ (A₁ ∪ U)*H₁ U)
       (fun U => primeMark slots₂ lists₂ a₂ (A₂ ∪ U)*H₂ U) W Y S T =
@@ -25,13 +28,13 @@ lemma secondSourcePairKernel_mark_factors {ι σ : Type*} [DecidableEq ι] [Deci
   simp only [secondSourcePairKernel,star_mul]
   ring
 
-theorem secondChildKernelPair_whole_profile {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem secondChildKernelPair_whole_profile      
+      (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-    (F G V A₁ A₂ : Finset ι) (Ψ₁ Ψ₂ : Eis →* ℂ) (m r c d e k : Eis)
+    (F G V A₁ A₂ : Finset ι) (Ψ₁ Ψ₂ : ActualEisensteinCubic.O →* ℂ) (m r c d e k : ActualEisensteinCubic.O)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
-    (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Y : ℝ) :
+    (W₁ W₂ : ℝ → ℂ)  Φ   Y  :
     (‖eisEmbedding e‖^2 : ℂ)⁻¹ * secondChildKernelPair p hp hcop hg F V Ψ₁ Ψ₂
       m r c d e k (-k)
       (secondSourcePairKernel p e k
@@ -63,6 +66,8 @@ theorem secondChildKernelPair_whole_profile {ι σ : Type*} [DecidableEq ι] [De
   ring
 
 end
+
+
 end SevenEighths.InverseMoment
 
 end OAI

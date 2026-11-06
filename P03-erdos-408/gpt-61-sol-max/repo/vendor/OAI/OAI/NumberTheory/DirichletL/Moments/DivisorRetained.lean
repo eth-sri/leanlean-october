@@ -14,23 +14,23 @@ namespace SevenEighths.CenteredMomentDivisorRetained
 open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
 open CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy
 open CenteredMomentRetainedEnergy CenteredMomentDivisorRowEnergy HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-def allocatedPositiveRow (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (P : ι → ℝ)
-    (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ : ℝ) : ℂ :=
+def allocatedPositiveRow (η : Character) (m A z : ActualEisensteinCubic.O) (t : ℝ)
+    (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (β : ι → Ideal ActualEisensteinCubic.O → ℂ) (P : ι → ℝ)
+    (D ) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
+    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ : ℝ)  :=
   retainedPositiveRow η m A z W₁ W₂ (fun i : liveIndices D a => S i)
     (fun i : liveIndices D a => β i) (fun i : liveIndices D a => P i) t
     (X₁/Ideal.absNorm (selectedPlain D a 0)) (X₂/Ideal.absNorm (selectedPlain D a 1))
 
-theorem allocated_to_retained_energy (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
-    (β : ι → Ideal O → ℂ) (M P : ι → ℝ) (hM : ∀ i,0 ≤ M i) (hP : ∀ i,0 < P i)
+theorem allocated_to_retained_energy (η : Character) (m A z : ActualEisensteinCubic.O) (t : ℝ)
+    (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀ i,∀ I∈S i,Prime I)
+    (β : ι → Ideal ActualEisensteinCubic.O → ℂ) (M P : ι → ℝ) (hM : ∀ i,0 ≤ M i) (hP : ∀ i,0 < P i)
     (hβ : ∀ i,∀ I∈S i,‖β i I‖ ≤ M i)
-    (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
-    (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ T : ℝ)
+     D   a 
+     W₁ W₂   b₁ b₂ X₁ X₂ Y₁ Y₂ T 
     (hW₁ : Function.support W₁ ⊆ Set.Iic b₁) (hW₂ : Function.support W₂ ⊆ Set.Iic b₂)
     (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂)
     (hX : X₁*X₂=T) (hY : Y₁*Y₂=T) :

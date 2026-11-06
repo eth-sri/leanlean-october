@@ -11,7 +11,7 @@ noncomputable section
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 open ProbeEuler ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+
 
 lemma supported_primeGenerator_prime (P : PrimeIdeal) (hs : Supported P.val) :
     Prime (primaryGenerator P.val) := by
@@ -19,19 +19,19 @@ lemma supported_primeGenerator_prime (P : PrimeIdeal) (hs : Supported P.val) :
   rw [span_primaryGenerator_of_supported P.val hs]
   exact Ideal.isPrime_of_prime P.property
 
-lemma targetMonoid_primaryGenerator (η : HeckeFamily.Character) (I : Ideal O) (hs : Supported I) :
+lemma targetMonoid_primaryGenerator  η   I  (hs : Supported I) :
     targetMonoid η (primaryGenerator I)=HeckeFamily.idealCoeff η I := by
   calc
     _ = HeckeFamily.idealCoeff η (Ideal.span {primaryGenerator I}) :=
       (HeckeFamily.idealCoeff_span η (supported_primaryGenerator_ne_zero I hs)).symm
     _ = _ := by rw [span_primaryGenerator_of_supported I hs]
 
-def idealClosedCorrection (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
+def idealClosedCorrection (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ)  :=
   unramifiedClosed (Ideal.absNorm P.val) (actualAPhase η (primaryGenerator P.val))
     (HeckeFamily.idealCoeff η P.val) 1 x w z
 
-theorem idealHighLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+theorem idealHighLocalFactor_rational  η   P 
+    (hs : Supported P.val)  x w z  (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     let Q : ℝ := Ideal.absNorm P.val
     idealHighLocalFactor η P.val x w z =
       (1-HeckeFamily.idealCoeff η P.val*(Q:ℂ)^(-x)) /
@@ -39,7 +39,7 @@ theorem idealHighLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeIde
   let p := primaryGenerator P.val
   have hp : Prime p := supported_primeGenerator_prime P hs
   have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  let : (Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
   have hg := supported_prime_data p hp hsp
   have hprimary := (primaryGenerator_spec P.val (supported_primaryGenerator_ne_zero P.val hs)).2

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondCanonicalLedger
 
@@ -14,12 +15,16 @@ open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrime
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
 open CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentPartitionNorm
 open CenteredMomentSupport CenteredMomentSupportedCorrelation CenteredMomentUnequal
-local notation "O" => ActualEisensteinCubic.O
 
-theorem actual_unequal_min_six (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) (w : O)
+
+section
+variable (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D) (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
+include C D hC hD hCD
+
+theorem actual_unequal_min_six      
+      (w : ActualEisensteinCubic.O)
     (hne : idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0)
-    (P : CommonIndex C D) (hneq : leftExponent C D P≠rightExponent C D P) :
+     P  (hneq : leftExponent C D P≠rightExponent C D P) :
     6∣min (leftExponent C D P) (rightExponent C D P) := by
   let (P : CommonIndex C D) : (Ideal.span {commonPrime C D P}).IsMaximal := by
     rw [commonPrime_span C D hC P];infer_instance
@@ -37,15 +42,15 @@ theorem actual_unequal_min_six (C D : Ideal O) (hC : Supported C) (hD : Supporte
     (by rw [commonPrime_span C D hC P];exact common_odd C D hC P)
     _ _ (leftExponent_pos C D P) (rightExponent_pos C D P) hneq _ hl
 
-def fixedExponent (C D : Ideal O) (U : Finset (CommonIndex C D)) (P : CommonIndex C D) : ℕ :=
+def fixedExponent (C D ) (U : Finset (CommonIndex C D)) (P : CommonIndex C D)  :=
   min (leftExponent C D P) (rightExponent C D P)+if P∈nonunitPartitionSet C D U then 1 else 0
 
-def fixedActiveSet (C D : Ideal O) (U : Finset (CommonIndex C D)) : Finset (CommonIndex C D) :=
+def fixedActiveSet (C D ) (U : Finset (CommonIndex C D))  :=
   Finset.univ.filter (fun P=>¬6∣fixedExponent C D U P)
 
-theorem fixedActiveSet_subset (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (U : Finset (CommonIndex C D)) (w : O)
+theorem fixedActiveSet_subset      
+     
+     U  (w : ActualEisensteinCubic.O)
     (hne : idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0) :
     fixedActiveSet C D U⊆U∪nonunitPartitionSet C D U := by
   intro P hP
@@ -58,9 +63,10 @@ theorem fixedActiveSet_subset (C D : Ideal O) (hC : Supported C) (hD : Supported
     exact hV (Finset.mem_sdiff.mpr ⟨Finset.mem_filter.mpr ⟨Finset.mem_univ _,he⟩,hU⟩)
   rw [fixedExponent,ite_eq_right hV,add_zero] at ha
   by_cases hc : leftExponent C D P=rightExponent C D P
-  · rw [hc,min_self] at ha
-    exact heq ⟨hc,by simpa only [hc] using ha⟩
-  · exact ha (actual_unequal_min_six C D hC hD hCD w hne P hc)
+  · simp_all
+  solve_by_elim [actual_unequal_min_six]
+
+end
 
 end SevenEighths.CenteredMomentSecondMovingSupport
 

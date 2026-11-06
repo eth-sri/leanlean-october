@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.RankCount
 public import Erdos821.Blueprint.Graph
@@ -18,7 +19,7 @@ namespace Erdos821.P3Restore
 open Erdos821.Blueprint.Graph
 
 /-- The rank-r absolute Möbius count, in the blueprint names and as a real bound. -/
-theorem rank_coefficient_real (a r : ℕ) :
+theorem rank_coefficient_real  a r  :
     (∑ π ∈ (Finset.univ.powerset.powerset.filter
         (fun π : Finset (Finset (Fin a)) => BirthCollection π)).filter
           (fun π => birthRank π = r),
@@ -35,7 +36,7 @@ theorem norm_birthMobius {a : ℕ} (π : Finset (Finset (Fin a))) :
   rw [Complex.norm_intCast, Nat.cast_natAbs, Int.cast_abs]
 
 /-- Split the Möbius-weighted rank expansion at rank `r0`. -/
-theorem rank_sum_bound {a : ℕ} (low : Finset (Finset (Fin a)) → ℂ) (X Y Z q : ℝ) (r0 : ℕ)
+theorem rank_sum_bound {a : ℕ} (low : Finset (Finset (Fin a)) → ℂ)  X Y Z q   r0 
     (hX : 0 ≤ X) (hY : 0 ≤ Y) (hZ : 0 ≤ Z) (hq : 0 ≤ q) (hV : (a : ℝ) ^ 2 * q < 1)
     (hlow : ∀ π : Finset (Finset (Fin a)), BirthCollection π → birthRank π < r0 →
       ‖low π‖ ≤ X * Y ^ birthRank π)
@@ -52,20 +53,14 @@ theorem rank_sum_bound {a : ℕ} (low : Finset (Finset (Fin a)) → ℂ) (X Y Z 
   let f : ℕ → ℝ := fun r => if r < r0 then X * Y ^ r else Z * q ^ r
   have hf0 : ∀ r, 0 ≤ f r := by
     intro r
-    simp only [f]
-    split_ifs
-    · exact mul_nonneg hX (pow_nonneg hY _)
-    · exact mul_nonneg hZ (pow_nonneg hq _)
+    positivity
   have hterm : ∀ π ∈ 𝒞, ‖(birthMobius π : ℂ) * low π‖ ≤
       ((birthMobius π).natAbs : ℝ) * f (birthRank π) := by
     intro π hπ
     have hbc : BirthCollection π := (Finset.mem_filter.mp hπ).2
     rw [norm_mul, norm_birthMobius]
     apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
-    simp only [f]
-    split_ifs with h
-    · exact hlow π hbc h
-    · exact hhigh π hbc
+    grind
   set t := 𝒞.image birthRank with ht
   have hfib : ∑ π ∈ 𝒞, ((birthMobius π).natAbs : ℝ) * f (birthRank π) =
       ∑ r ∈ t, (∑ π ∈ 𝒞.filter (fun π => birthRank π = r),
@@ -79,7 +74,7 @@ theorem rank_sum_bound {a : ℕ} (low : Finset (Finset (Fin a)) → ℂ) (X Y Z 
     intro π hπ
     rw [(Finset.mem_filter.mp hπ).2]
   have hcount : ∀ r, ∑ π ∈ 𝒞.filter (fun π => birthRank π = r),
-      ((birthMobius π).natAbs : ℝ) ≤ (a : ℝ) ^ (2 * r) := fun r => rank_coefficient_real a r
+      ((birthMobius π).natAbs : ℝ) ≤ (a : ℝ) ^ (2 * r) := rank_coefficient_real a
   have hM1 : 1 ≤ M := le_max_left _ _
   have hlowsum : ∑ r ∈ t.filter (· < r0), (a : ℝ) ^ (2 * r) * f r ≤ r0 * X * M ^ r0 := by
     have hle : ∀ r ∈ t.filter (· < r0), (a : ℝ) ^ (2 * r) * f r ≤ X * M ^ r0 := by

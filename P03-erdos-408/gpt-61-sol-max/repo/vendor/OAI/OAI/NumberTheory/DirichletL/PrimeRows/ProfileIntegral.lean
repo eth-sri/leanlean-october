@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.InitialScales
 
@@ -6,20 +7,18 @@ public import OAI.NumberTheory.DirichletL.Detector.InitialScales
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open ProbePhysical ProbeMellinBoundary
 
-lemma two_height_bound (t v w : ℝ) :
+lemma two_height_bound  t v w  :
     (3+|t|)^2*(3+|w|)^2≤81*jointHeight t v w^4 := by
   have ht : 3+|t|≤3*jointHeight t v w := by
-    unfold jointHeight
-    linarith [abs_nonneg t,abs_nonneg v,abs_nonneg w]
+    grind [jointHeight]
   have hw : 3+|w|≤3*jointHeight t v w := by
-    unfold jointHeight
-    linarith [abs_nonneg t,abs_nonneg v,abs_nonneg w]
+    grind [jointHeight]
   calc
     _ ≤ (3*jointHeight t v w)^2*(3*jointHeight t v w)^2 := by gcongr
     _ = _ := by ring
@@ -76,6 +75,6 @@ theorem source_profile_integral_bound (W0 W1 : SchwartzMap ℝ ℂ)
     _ = _ := by ring
 
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

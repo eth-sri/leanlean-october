@@ -14,7 +14,7 @@ open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompleti
 open ConcretePrimeRowBridge CenteredMomentRestrictedEnergy CenteredMomentChildRows RayFourExpansion
 local notation "O" => HeckeFamily.O
 
-def unitCharacter : Character := Character.ofResidue ⊤ top_ne_bot 1 (by
+def unitCharacter  := Character.ofResidue ⊤ top_ne_bot 1 (by
   intro u
   exact MulChar.one_apply (IsUnit.map (Ideal.Quotient.mk ⊤) u.isUnit))
 
@@ -23,13 +23,17 @@ theorem unitCharacter_primitive : FiniteFourier.IsPrimitiveOnIdeals unitCharacte
   intro I hI
   exact (hI (Subsingleton.elim _ _)).elim
 
-theorem unitCharacter_ideal (I:Ideal O) (hI:I≠0) : idealCoeff unitCharacter I=1 := by
+section
+variable (η χ : Character) (Q : Ideal O) (m A z : O) (hrow : ∀n:O,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n) (hχ : χ.residue=1)
+
+theorem unitCharacter_ideal  I  (hI:I≠0) : idealCoeff unitCharacter I=1 := by
   rw [←span_idealGenerator I,idealCoeff_span _ (idealGenerator_ne_zero I hI)]
   change (1:MulChar (O⧸(⊤:Ideal O)) ℂ) (Ideal.Quotient.mk _ (idealGenerator I))=1
   rw [show Ideal.Quotient.mk (⊤:Ideal O) (idealGenerator I)=1 from Subsingleton.elim _ _]
   exact map_one _
 
-theorem principal_inducedBy_unit (χ:Character) (hχ:χ.residue=1) : InducedBy χ unitCharacter := by
+include hχ in
+theorem principal_inducedBy_unit     : InducedBy χ unitCharacter := by
   intro I
   by_cases hI:I=0
   · subst I
@@ -45,15 +49,19 @@ theorem principal_inducedBy_unit (χ:Character) (hχ:χ.residue=1) : InducedBy �
     · rw [ite_eq_right hc]
       exact MulChar.map_nonunit _ (fun h=>hc ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp h))
 
-theorem principal_row_fixed (η χ:Character) (Q:Ideal O) (m A z:O)
-    (hrow:∀n:O,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)
-    (hχ:χ.residue=1) : FixedInducingRow η Q m A z :=
+include hrow hχ in
+theorem principal_row_fixed      
+     
+      : FixedInducingRow η Q m A z :=
   ⟨χ,unitCharacter,unitCharacter_primitive,principal_inducedBy_unit χ hχ,le_top,hrow⟩
 
-theorem actual_row_nonprincipal (η χ:Character) (Q:Ideal O) (m A z:O)
-    (hrow:∀n:O,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)
+include hrow in
+theorem actual_row_nonprincipal      
+     
     (hex:¬FixedInducingRow η Q m A z) : χ.residue≠1 :=
   fun h=>hex (principal_row_fixed η χ Q m A z hrow h)
+
+end
 
 end SevenEighths.CenteredMomentNonprincipalGate
 

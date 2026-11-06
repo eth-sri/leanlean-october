@@ -16,7 +16,7 @@ def retainedPair (a b:ℝ)(ha:0<a)(p:Profiles a b)
   profile:=fun i=>(sourcePlain a b ha (p.profile i) (p.support i)).profile (U i) (hU i) t
   support:=fun i=>sourcePlain_support a b ha (p.profile i) (p.support i) (U i) (hU i) t
 
-theorem retained_pair_control (a b:ℝ)(ha:0<a)(S:Finset (ℕ×ℕ)):
+theorem retained_pair_control  a b  ha  S :
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀p:Profiles a b,∀U:Fin 2→ℝ,∀hU:∀i,0<U i,∀t:ℝ,
       (retainedPair a b ha p U hU t).control S≤

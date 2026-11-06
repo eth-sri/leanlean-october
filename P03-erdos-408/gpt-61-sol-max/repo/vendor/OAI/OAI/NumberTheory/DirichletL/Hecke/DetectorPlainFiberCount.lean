@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorInverseFiberCount
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorPlainFiberCount
@@ -74,6 +74,6 @@ theorem plain_fiber_count {Row Label Slot : Type*}
 
 end SevenEighths.HeckeDetectorPlainFiberCount
 
-end
+
 
 end OAI

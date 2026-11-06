@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.Lines
 public import Erdos408.OneSided.Moment.RootReplacement.Assembly
@@ -38,11 +39,11 @@ open Filter Finset Real
 variable {K : ℕ}
 
 /-- The number `n = ⌈m_*^{1/40}⌉` of grid steps per unit, `m_* = min(H_m, H_n)`. -/
-def gridSteps (d : Data K) : ℕ := ⌈min d.Hm d.Hn ^ (1 / 40 : ℝ)⌉₊
+def gridSteps (d : Data K)  := ⌈min d.Hm d.Hn ^ (1 / 40 : ℝ)⌉₊
 
 /-- The Riemann sum `n⁻³ ∑_cubes 𝔼_ℓ rootMoment(ϱ_Q, ℓ)` over the lower corners
 `ϱ_Q = (U(1 + i₁/n), V(1 + i₂/n), i₃/n)`, with `U = d₀ Y H_m`, `V = H_n`. -/
-def rootRiemannSum (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) : ℂ :=
+def rootRiemannSum (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ)  :=
   ((gridSteps d : ℂ) ^ 3)⁻¹ * ∑ i₁ ∈ range (15 * gridSteps d), ∑ i₂ ∈ range (gridSteps d),
     ∑ i₃ ∈ range (gridSteps d),
       lineAverage x d fun ℓ => rootMoment q A₀ x d Y d₀
@@ -50,8 +51,8 @@ def rootRiemannSum (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) : ℂ :=
         (i₃ / gridSteps d) ℓ
 
 /-- PD Lemma 3.4 (root replacement), with the budgets of blueprint §5.4. -/
-theorem eventually_root_replacement {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hg : 0 < g) (A₀ : ℝ) :
+theorem eventually_root_replacement  {q C CX alo ahi g}  (hq : 0 < q) (hq₁ : q < 1)
+    (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hg : 0 < g)  A₀  :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ‖(((2 : ℝ) ^ k * 2 ^ j * d.X : ℝ) : ℂ)⁻¹ * detMoment q A₀ x d (2 ^ j) (2 ^ k) -
           (primitiveDensity : ℂ) * rootRiemannSum q A₀ x d (2 ^ j) (2 ^ k)‖ ≤
@@ -88,7 +89,7 @@ theorem eventually_root_replacement {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
     have h2 := Real.add_one_le_exp (L ^ (99 / 100 : ℝ))
     linarith
   have hY1 : (1 : ℝ) ≤ 2 ^ k * 2 ^ j :=
-    one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by norm_num)) (one_le_pow₀ (by norm_num))
+    (by bound)
   have hmU : m ≤ 2 ^ k * 2 ^ j * d.Hm :=
     (min_le_left _ _).trans (le_mul_of_one_le_left (by linarith [min_le_left d.Hm d.Hn]) hY1)
   have hmV : m ≤ d.Hn := min_le_right _ _

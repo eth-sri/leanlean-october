@@ -8,15 +8,19 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.OriginalHeightTail
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
-lemma height_slab_partial_integrable (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
-    (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure) :
+
+section
+variable (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H) (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure)
+include f H hH hf
+
+lemma height_slab_partial_integrable      
+      :
     Integrable (fun q : ℝ×ℝ=>∫x : ℝ in -H..H,f ((x,q.1),q.2)) (volume.prod volume) := by
   let E : Set HeightSpace := {t | |t.1.1|≤H}
   have hE : MeasurableSet E := measurableSet_le (by fun_prop) measurable_const
@@ -36,25 +40,27 @@ lemma height_slab_partial_integrable (f : HeightSpace→ℂ) (H : ℝ) (hH : 0�
       intervalIntegral.integral_of_le (by linarith)]
   exact heq ▸ hj
 
-lemma height_slab_integral_pair (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
-    (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure) :
+lemma height_slab_integral_pair      
+      :
     (∫p : HeightSpace in {t : HeightSpace | |t.1.1|≤H},f p ∂heightMeasure)=
       ∫q : ℝ×ℝ,(∫x : ℝ in -H..H,f ((x,q.1),q.2)) ∂volume.prod volume := by
   rw [height_slab_integral_wzx f H hH hf]
   exact (integral_prod_symm _ (height_slab_partial_integrable f H hH hf)).symm
+
+end
 
 variable {ι : Type*} [Fintype ι]
 
 theorem rowIntegral_central_decomposition {K : ℕ}
     (e a B H : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000)
     (ha : (51/100:ℝ)≤a) (haTop : a≤1) (hB : 2<B) (hH0 : 0≤H) (hH : H≤(3*i+2:ℕ)*B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
     (hPS : ∀j,(P j).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
     (hbin : detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+     X Y Z  (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     let k := fun σ p=>continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ (1-a-6*e) (17/50) p
     let E : Set HeightSpace := {t | |t.1.1|≤H}
     IntegrableOn (k (a+16*e)) E heightMeasure ∧
@@ -108,6 +114,6 @@ theorem rowIntegral_central_decomposition {K : ℕ}
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

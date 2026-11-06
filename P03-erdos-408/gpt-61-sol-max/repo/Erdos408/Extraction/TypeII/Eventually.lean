@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Assembly
 
@@ -21,18 +22,18 @@ theorem eventually_le_log_rpow (a C : ℝ) (ha : 0 < a) :
   tendsto_log_atTop.eventually ((tendsto_rpow_atTop ha).eventually_ge_atTop C)
 
 /-- The cluster layout: `2 (|C_N| s + 2) K ≤ 0.04 T`. -/
-theorem eventually_lay (K : ℕ) (CN : ℝ) :
+theorem eventually_lay (K : ℕ)  CN  :
     ∀ᶠ x : ℝ in atTop, 2 * (|CN| * logLogLog x + 2) * K ≤ 4 / 100 * logLog x := by
   filter_upwards [eventually_sq_le_logLog (50 * K * (|CN| + 2)) 1 one_pos,
     eventually_le_logLogLog 0] with x hx hs
-  have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg K
+  
   have h1 : |CN| * logLogLog x + 2 ≤ (|CN| + 2) * (logLogLog x ^ 2 + 1) := by
     nlinarith [abs_nonneg CN, sq_nonneg (logLogLog x - 1)]
   have h2 := mul_le_mul_of_nonneg_left h1 (show 0 ≤ 50 * (K : ℝ) by positivity)
   nlinarith
 
 /-- Band primes are below the slots: `exp(2 L^{0.19}) ≤ x^{c/T²⁰}`. -/
-theorem eventually_small (c : ℝ) (hc : 0 < c) :
+theorem eventually_small  c  (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop, Real.exp (2 * Real.log x ^ (19 / 100 : ℝ)) ≤ x ^ (c / logLog x ^ 20) := by
   filter_upwards [eventually_logLog_rpow_le 20 (1 / 100) (by norm_num),
     eventually_log_rpow_le_mul (20 / 100) 1 (c / 2) (by norm_num) (by positivity),
@@ -51,7 +52,7 @@ theorem eventually_small (c : ℝ) (hc : 0 < c) :
   nlinarith
 
 /-- `1/c₃ ≤ T⁴`. -/
-theorem eventually_Tc (c₃ : ℝ) (hc₃ : 0 < c₃) :
+theorem eventually_Tc  c₃  (hc₃ : 0 < c₃) :
     ∀ᶠ x : ℝ in atTop, 1 / c₃ ≤ logLog x ^ (4 : ℕ) := by
   filter_upwards [eventually_le_logLog ((1 / c₃) ^ (1 / 4 : ℝ) + 1)] with x hx
   have h1 : (1 / c₃) ^ (1 / 4 : ℝ) ≤ logLog x := by linarith
@@ -60,7 +61,7 @@ theorem eventually_Tc (c₃ : ℝ) (hc₃ : 0 < c₃) :
     _ ≤ logLog x ^ (4 : ℕ) := pow_le_pow_left₀ (by positivity) h1 _
 
 /-- `2 b (s + 1) + 4 ≤ L^{1/2}`. -/
-theorem eventually_jY (b : ℝ) (hb : 0 ≤ b) :
+theorem eventually_jY  b  (hb : 0 ≤ b) :
     ∀ᶠ x : ℝ in atTop, 2 * (b * (logLogLog x + 1)) + 4 ≤ Real.log x ^ (1 / 2 : ℝ) := by
   filter_upwards [eventually_sq_le_logLog (4 * b + 4) 1 one_pos,
     eventually_logLog_rpow_le 1 (1 / 2) (by norm_num), eventually_le_logLogLog 0,
@@ -72,7 +73,7 @@ theorem eventually_jY (b : ℝ) (hb : 0 ≤ b) :
   linarith
 
 /-- `C ≤ L / T^{25}`. -/
-theorem eventually_le_div (C : ℝ) :
+theorem eventually_le_div  C  :
     ∀ᶠ x : ℝ in atTop, C ≤ Real.log x / logLog x ^ 25 := by
   filter_upwards [eventually_logLog_rpow_le 25 (1 / 2) (by norm_num),
     eventually_le_log_rpow (1 / 2) C (by norm_num), eventually_le_log 1,
@@ -89,7 +90,7 @@ theorem eventually_le_div (C : ℝ) :
     linarith
 
 /-- `C ≤ T^{-21} L`. -/
-theorem eventually_le_gammaL (C : ℝ) :
+theorem eventually_le_gammaL  C  :
     ∀ᶠ x : ℝ in atTop, C ≤ logLog x ^ (-21 : ℝ) * Real.log x := by
   filter_upwards [eventually_logLog_rpow_le 21 (1 / 2) (by norm_num),
     eventually_le_log_rpow (1 / 2) C (by norm_num), eventually_le_log 1,
@@ -106,7 +107,7 @@ theorem eventually_le_gammaL (C : ℝ) :
     linarith
 
 /-- `L³ ≤ κ x`. -/
-theorem eventually_L3 (κ : ℝ) (hκ : 0 < κ) :
+theorem eventually_L3  κ  (hκ : 0 < κ) :
     ∀ᶠ x : ℝ in atTop, Real.log x ^ 3 ≤ κ * x := by
   filter_upwards [eventually_mul_log_rpow_le (1 / κ) 3 1 one_pos, eventually_ge_atTop 1]
     with x hx hx1
@@ -115,7 +116,7 @@ theorem eventually_L3 (κ : ℝ) (hκ : 0 < κ) :
   linarith
 
 /-- `⌊κ x + 1⌋ + 1 ≤ x²`. -/
-theorem eventually_N2 (κ : ℝ) (hκ : 0 < κ) :
+theorem eventually_N2  κ  (hκ : 0 < κ) :
     ∀ᶠ x : ℝ in atTop, (⌊κ * x + 1⌋₊ : ℝ) + 1 ≤ x ^ 2 := by
   filter_upwards [eventually_ge_atTop (κ + 2)] with x hx
   have h1 := Nat.floor_le (show 0 ≤ κ * x + 1 by nlinarith)
@@ -123,7 +124,7 @@ theorem eventually_N2 (κ : ℝ) (hκ : 0 < κ) :
 
 /-- The Rankin comparison
 `2e (log(L^{0.45}/log 2) + E/log 2 + 1/2) + log(L/T²⁵/c₃) ≤ T^{-21} L^{0.55}`. -/
-theorem eventually_rank (E c₃ : ℝ) (hc₃ : 0 < c₃) :
+theorem eventually_rank  E c₃  (hc₃ : 0 < c₃) :
     ∀ᶠ x : ℝ in atTop, 2 * Real.exp 1 * (Real.log (Real.log x ^ (45 / 100 : ℝ) / Real.log 2) +
         E / Real.log 2 + 1 / 2) + Real.log (Real.log x / logLog x ^ 25 / c₃) ≤
       logLog x ^ (-21 : ℝ) * Real.log x ^ (55 / 100 : ℝ) := by
@@ -146,9 +147,7 @@ theorem eventually_rank (E c₃ : ℝ) (hc₃ : 0 < c₃) :
   have hA : Real.log (L ^ (45 / 100 : ℝ) / Real.log 2) ≤ T + 1 := by
     rw [Real.log_div (by positivity) hl2.ne', Real.log_rpow hL0]
     have hTL : Real.log L = T := rfl
-    rw [hTL]
-    have : (45 / 100 : ℝ) * T ≤ T := by nlinarith
-    linarith
+    grind
   have hB : Real.log (L / T ^ 25 / c₃) ≤ T + |Real.log c₃| := by
     have hT25 : 1 ≤ T ^ 25 := one_le_pow₀ hT
     have hpos : 0 < L / T ^ 25 / c₃ := by positivity
@@ -159,7 +158,7 @@ theorem eventually_rank (E c₃ : ℝ) (hc₃ : 0 < c₃) :
       _ ≤ T + |Real.log c₃| := by linarith [neg_abs_le (Real.log c₃)]
   have hE : E / Real.log 2 ≤ |E| / Real.log 2 :=
     div_le_div_of_nonneg_right (le_abs_self E) hl2.le
-  have he : 0 < Real.exp 1 := Real.exp_pos 1
+  
   have hLHS : 2 * Real.exp 1 * (Real.log (L ^ (45 / 100 : ℝ) / Real.log 2) + E / Real.log 2 +
       1 / 2) + Real.log (L / T ^ 25 / c₃) ≤ D * T := by
     have h1' : Real.log (L ^ (45 / 100 : ℝ) / Real.log 2) + E / Real.log 2 + 1 / 2 ≤
@@ -177,14 +176,14 @@ theorem eventually_rank (E c₃ : ℝ) (hc₃ : 0 < c₃) :
       rw [← Real.rpow_one_add' hT0.le (by norm_num)]; norm_num
     have e2 : L ^ (5 / 100 : ℝ) * L ^ (1 / 2 : ℝ) ≤ L ^ (55 / 100 : ℝ) := by
       rw [← Real.rpow_add hL0]; norm_num
-    have hD0 : 0 ≤ D := by rw [hD]; positivity
+    
     calc D * T * T ^ (21 : ℝ) = D * T ^ (22 : ℝ) := by rw [mul_assoc, e]
       _ ≤ L ^ (5 / 100 : ℝ) * L ^ (1 / 2 : ℝ) := mul_le_mul h2 h1 (by positivity) (by positivity)
       _ ≤ L ^ (55 / 100 : ℝ) := e2
   linarith
 
 /-- `b (s + 1) + 1 ≤ L^{1/200}`. -/
-theorem eventually_F3 (b : ℝ) (hb : 0 ≤ b) :
+theorem eventually_F3  b  (hb : 0 ≤ b) :
     ∀ᶠ x : ℝ in atTop, b * (logLogLog x + 1) + 1 ≤ Real.log x ^ (1 / 200 : ℝ) := by
   filter_upwards [eventually_exp_le_log_rpow (2 * b + 2) (1 / 200) (by norm_num),
     eventually_le_logLogLog 0] with x hx hs
@@ -194,7 +193,7 @@ theorem eventually_F3 (b : ℝ) (hb : 0 ≤ b) :
   linarith [Real.add_one_le_exp ((2 * b + 2) * (logLogLog x ^ 2 + 1))]
 
 /-- Every field of `LargeX` holds for large `x`. -/
-theorem eventually_largeX {q : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ c₃ C₁r E₂ L₀ EM1 EM2 : ℝ}
+theorem eventually_largeX  {q}   {K}   {CN c Ch Cj κ CΦ C₂ c₃ C₁r E₂ L₀ EM1 EM2} 
     (hc : 0 < c) (hκ : 1 < κ) (hc₃ : 0 < c₃)
     (hbox : ∀ᶠ x : ℝ in atTop, BoxBound q K c Ch Cj κ C₂ x) :
     ∀ᶠ x : ℝ in atTop, LargeX q K CN c Ch Cj κ CΦ C₂ c₃ C₁r E₂ L₀ EM1 EM2 x := by

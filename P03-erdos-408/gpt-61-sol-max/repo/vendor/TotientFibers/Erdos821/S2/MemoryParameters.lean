@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.Blueprint.Graph
 
@@ -6,7 +7,7 @@ public import Erdos821.Blueprint.Graph
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos821.Blueprint.Graph
 
@@ -37,8 +38,7 @@ theorem memory_parameters_exist_proof : Erdos821.Blueprint.Graph.memory_paramete
   have hv1 : 1 < v := by dsimp only [v]; linarith
   have hv0 : 0 < v := lt_trans zero_lt_one hv1
   have hcross : delta * (rho * v) = 2 * M + 2 * (rho * delta) := by
-    dsimp only [v]
-    field_simp [ne_of_gt hrho0, ne_of_gt hd0]; ring
+    grind
   have hfrac : 2 * M / (rho * v) < delta := by
     apply (div_lt_iff₀ (mul_pos hrho0 hv0)).mpr
     rw [hcross]
@@ -62,17 +62,13 @@ theorem memory_parameters_exist_proof : Erdos821.Blueprint.Graph.memory_paramete
     · exact F.q_pos.le
     · exact ha0.le
   have hq'a : q' ≤ a := by
-    rcases hq' with rfl | rfl
-    · exact hqa
-    · exact le_rfl
+    bound
   have hnum : 2 * M * (1 - q') ≤ 2 * M := by
-    simpa only [mul_one] using
-      mul_le_mul_of_nonneg_left (sub_le_self 1 hq0) (mul_nonneg (by norm_num) hM0.le)
+    simp_all
   rw [hrhosq]
   calc
     q' / b + 2 * M * (1 - q') / (rho * v) ≤ a / b + 2 * M / (rho * v) :=
-      add_le_add (div_le_div_of_nonneg_right hq'a hb0.le)
-        (div_le_div_of_nonneg_right hnum (mul_pos hrho0 hv0).le)
+      (by bound)
     _ < a / b + delta := by linarith
     _ = 1 := by dsimp only [delta]; ring
 

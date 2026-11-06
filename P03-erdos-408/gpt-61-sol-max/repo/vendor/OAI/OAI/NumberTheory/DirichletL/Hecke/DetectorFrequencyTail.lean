@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorFrequency
 
 namespace OAI
 
-noncomputable section
+
 open scoped Topology
 open Filter
 namespace SevenEighths.HeckeDetectorFrequency
@@ -45,6 +45,6 @@ theorem exists_frequency_tail_order (τ : ℝ) (hτ : 0 < τ) :
 
 end SevenEighths.HeckeDetectorFrequency
 
-end
+
 
 end OAI

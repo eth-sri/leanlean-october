@@ -13,7 +13,7 @@ namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-def RestoredMemoryNormTask (F : FixedData) (r : MemoryParameters F) : Prop :=
+def RestoredMemoryNormTask (F ) (r : MemoryParameters F)  :=
   GhostAnalyticParametersTask F r → EmptyBoundaryMassTask →
   MemoryEdgeAbsoluteTask F r → MemoryRareTask F r → MemoryCleanTask F r →
   WholeEdgeContractionTask F r → LowRankMemoryTask → HighRankMemoryTask F r →

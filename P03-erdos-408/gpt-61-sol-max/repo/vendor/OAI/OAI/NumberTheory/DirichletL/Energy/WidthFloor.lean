@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Energy.FirstGaussianProfileWeights
 
 public import OAI.NumberTheory.DirichletL.Energy.WidthSchedule
 public import OAI.NumberTheory.DirichletL.Energy.Bands
@@ -7,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Energy.Bands
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
@@ -18,16 +20,11 @@ open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
 open QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
-private lemma control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(h:S⊆T):
-    p.control S≤p.control T:=by
-  unfold Profiles.control
-  exact mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 0))
-    (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 1))
-    (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
+private alias control_mono := _root_.SharedProofs.control_mono
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_joint_floor (Mcap B κ ε:ℝ)(hMcap:0≤Mcap)(hB:0≤B)

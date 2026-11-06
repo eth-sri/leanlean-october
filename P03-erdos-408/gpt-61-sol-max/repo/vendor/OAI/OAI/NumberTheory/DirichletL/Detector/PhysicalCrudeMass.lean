@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowActualEnergies
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowActualEnergies
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
@@ -19,7 +20,7 @@ lemma calibration_elementNorm_ge_one (C : CalibrationData) : 1≤elementNorm C.g
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
     (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero))
 
-lemma sexticGauss_norm_le (s : O) (hs : s≠0) (m : O) : ‖sexticGauss s hs m‖≤elementNorm s := by
+lemma sexticGauss_norm_le  s   hs   m  : ‖sexticGauss s hs m‖≤elementNorm s := by
   let := finite_quotient_span hs
   let : Fintype (O⧸Ideal.span {s}) := Fintype.ofFinite _
   rw [sexticGauss,tsum_fintype]
@@ -31,8 +32,8 @@ lemma sexticGauss_norm_le (s : O) (hs : s≠0) (m : O) : ‖sexticGauss s hs m�
       exact idealRowHom_norm _ _)
     _ = _ := by simp [elementNorm,Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card]
 
-lemma physicalRowWeight_arithmetic_form (C : CalibrationData) (W0 W1 : ℝ→ℂ)
-    (X Y : ℝ) (r : PhysicalRowIndex) :
+lemma physicalRowWeight_arithmetic_form  C   W0 W1 
+     X Y   r  :
     physicalRowWeight C W0 W1 X Y r=
       (Y:ℂ)⁻¹*W1 ((Ideal.absNorm r.1.val:ℝ)/Y)*lowArithmeticCoefficient C r.1*
         (Real.sqrt (elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X):ℂ)⁻¹*
@@ -44,10 +45,10 @@ lemma physicalRowWeight_arithmetic_form (C : CalibrationData) (W0 W1 : ℝ→ℂ
   simp only [div_eq_mul_inv,mul_inv_rev]
   ring
 
-lemma physicalRowWeight_crude_point (C : CalibrationData) (W0 W1 : ℝ→ℂ)
-    (B0 B1 : ℝ) (hB0 : 0≤B0) (hB1 : 0≤B1)
+lemma physicalRowWeight_crude_point  C   W0 W1 
+     B0 B1  (hB0 : 0≤B0) (hB1 : 0≤B1)
     (hW0 : ∀x,‖W0 x‖≤B0) (hW1 : ∀x,‖W1 x‖≤B1)
-    (X Y : ℝ) (hX : 1≤X) (hY : 0<Y) (r : PhysicalRowIndex) :
+     X Y  (hX : 1≤X) (hY : 0<Y)  r  :
     ‖physicalRowWeight C W0 W1 X Y r‖≤B0*B1*‖C.tau‖⁻¹/Y := by
   have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
@@ -85,7 +86,7 @@ lemma physicalRowWeight_crude_point (C : CalibrationData) (W0 W1 : ℝ→ℂ)
         (Real.sqrt (Ideal.absNorm r.1.val:ℝ))⁻¹*(Ideal.absNorm r.1.val:ℝ)) := by ring
     _ ≤ _ := mul_le_of_le_one_right (by positivity) hrad
 
-lemma lowNumeratorRows_card (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 1≤Q) :
+lemma lowNumeratorRows_card  a b   ha   hb   Q   hQ  :
     ((lowNumeratorRows a b ha hb Q (lt_of_lt_of_le zero_lt_one hQ)).card:ℝ)≤256*max 1 b*Q := by
   have hscale : 1≤2*max 1 b*Q := by nlinarith [le_max_left 1 b]
   have hh := DescentFiberCost.finite_element_count_real (lowNumeratorRows a b ha hb Q (lt_of_lt_of_le zero_lt_one hQ)) _ hscale
@@ -98,15 +99,15 @@ lemma lowNumeratorRows_card (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 1�
       exact hn.trans (by gcongr;exact le_max_right _ _))
   convert hh using 1 ; ring
 
-lemma lowPhysicalScale_ge_one (C : CalibrationData) (X Y : ℝ) (hX : 1≤X) (hY : 1≤Y) :
+lemma lowPhysicalScale_ge_one  C   X Y  (hX : 1≤X) (hY : 1≤Y) :
     1≤lowPhysicalScale C X Y :=
   one_le_mul_of_one_le_of_one_le
     (one_le_mul_of_one_le_of_one_le (calibration_elementNorm_ge_one C) hX) hY
 
-lemma physicalRowWeight_source_rectangle (C : CalibrationData) (W0 W1 : ℝ→ℂ)
+lemma physicalRowWeight_source_rectangle  C   W0 W1 
     (hW1c : HasCompactSupport W1) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
-    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (r : PhysicalRowIndex)
+     X Y  (hX : 0<X) (hY : 0<Y)  r 
     (hr : r∉(lowGaussColumns W1 hW1c Y hY) ×ˢ
       (lowNumeratorRows (a0*a1) (max 1 (b0*b1)) (mul_pos ha0 ha1)
         (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) (lowPhysicalScale C X Y)
@@ -119,12 +120,11 @@ lemma physicalRowWeight_source_rectangle (C : CalibrationData) (W0 W1 : ℝ→�
     have hz : lowOuterCutoff (a0*a1) (max 1 (b0*b1)) (elementNorm r.2/lowPhysicalScale C X Y)=0 := by
       simpa only [lowNumeratorRows_mem,not_not] using hm
     rw [physicalRowWeight_insert_cutoff C W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y hY r]
-    change lowOuterCutoff _ _ (elementNorm r.2/lowPhysicalScale C X Y)*_=0
-    rw [hz,zero_mul]
+    grind [lowOuterCutoff, elementNorm, lowPhysicalScale]
   · apply physicalRowWeight_outer_zero
     simpa only [lowGaussColumns_mem,not_not] using hs
 
-theorem physicalRowWeight_source_mass (a0 b0 a1 b1 B0 B1 : ℝ)
+theorem physicalRowWeight_source_mass  a0 b0 a1 b1 B0 B1 
     (ha0 : 0<a0) (ha1 : 0<a1) (hB0 : 0≤B0) (hB1 : 0≤B1) :
     ∃K : ℝ,0<K ∧ ∀S : Finset Id,∀hS : ∀P∈S,P.IsMaximal,
       ∀W0 W1 : ℝ→ℂ,∀_hW1c : HasCompactSupport W1,
@@ -151,17 +151,16 @@ theorem physicalRowWeight_source_mass (a0 b0 a1 b1 B0 B1 : ℝ)
     simpa only [C,calibrationForSet_tau_norm,inv_one,mul_one] using h
   have hF : (F.card:ℝ)≤128*max 1 b1*Y := lowGaussColumns_card W1 hW1c Y hY a1 b1 hW1
   have hR : (R.card:ℝ)≤256*max 1 (b0*b1)*Q := by
-    simpa only [R,max_eq_right (le_max_left 1 (b0*b1))] using lowNumeratorRows_card (a0*a1) (max 1 (b0*b1)) (mul_pos ha0 ha1)
-      (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) Q hQ
+    grind [lowNumeratorRows_card, max]
   rw [tsum_eq_sum (s:=F×ˢR) hzero]
   calc
     _ ≤ ∑_r∈F×ˢR,B0*B1/Y := Finset.sum_le_sum (fun r _=>hpoint r)
     _ = (F.card:ℝ)*(R.card:ℝ)*(B0*B1/Y) := by simp [Finset.card_product,mul_assoc]
     _ ≤ (128*max 1 b1*Y)*(256*max 1 (b0*b1)*Q)*(B0*B1/Y) := by gcongr
     _ = (32768*max 1 b1*max 1 (b0*b1)*B0*B1)*Q := by field_simp;ring
-    _ ≤ K*Q := mul_le_mul_of_nonneg_right (by dsimp only [K];linarith) (le_trans zero_le_one hQ)
+    _ ≤ K*Q := (by linarith)
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

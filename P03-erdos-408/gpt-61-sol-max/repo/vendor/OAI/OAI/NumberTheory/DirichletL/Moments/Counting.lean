@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.Cancellation
 
@@ -6,27 +7,26 @@ public import OAI.NumberTheory.DirichletL.Moments.Cancellation
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
-local notation "O" => ActualEisensteinCubic.O
+
 namespace SevenEighths.CenteredMomentCounting
 open CenteredMomentPrimary
 open QuadraticInitialBound
 
-theorem norm_tsum_ideal_ball (f : Ideal O → ℂ) (H M : ℝ)
+theorem norm_tsum_ideal_ball (f : Ideal ActualEisensteinCubic.O → ℂ)  H M 
     (hH : 0 ≤ H) (hM : 0 ≤ M) (hzero : f ⊥ = 0)
     (hbound : ∀ I, ‖f I‖ ≤ M)
     (hsupport : ∀ I, f I ≠ 0 → (Ideal.absNorm I : ℝ) ≤ H) :
-    ‖∑' I : Ideal O, f I‖ ≤ 128 * M * H := by
+    ‖∑' I : Ideal ActualEisensteinCubic.O, f I‖ ≤ 128 * M * H := by
   classical
   have hfinite : (Function.support f).Finite := by
-    apply (Ideal.finite_setOfPred_absNorm_le (S := O) (Nat.ceil H)).subset
+    apply (Ideal.finite_setOfPred_absNorm_le (S := ActualEisensteinCubic.O) (Nat.ceil H)).subset
     intro I hI
     exact_mod_cast (hsupport I hI).trans (Nat.le_ceil H)
   let S := hfinite.toFinset
-  have hmem (I : Ideal O) : I ∈ S ↔ f I ≠ 0 := hfinite.mem_toFinset
-  have htsum : (∑' I : Ideal O, f I) = ∑ I ∈ S, f I := by
-    exact tsum_eq_sum (fun I hI => not_ne_iff.mp (mt (hmem I).mpr hI))
+  have hmem (I : Ideal ActualEisensteinCubic.O) : I ∈ S ↔ f I ≠ 0 := hfinite.mem_toFinset
+  have htsum : (∑' I : Ideal ActualEisensteinCubic.O, f I) = ∑ I ∈ S, f I := tsum_eq_sum (fun I hI => not_ne_iff.mp (mt (hmem I).mpr hI))
   rw [htsum]
   by_cases hS : S.Nonempty
   · obtain ⟨I, hI⟩ := hS
@@ -58,11 +58,9 @@ theorem norm_linear_coefficient_le (S : ℝ → ℂ) (v : ℂ) (C E : ℝ) (hE :
   have heq : X * (‖v‖ - C) = E + 1 := div_mul_cancel₀ _ hδ.ne'
   have h := norm_le_norm_sub_add ((X : ℂ) * v) (S X)
   rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg hX.le, norm_sub_rev] at h
-  have ha := habsolute X hX
-  have hb := herror X hX
-  nlinarith
+  grind
 
 end SevenEighths.CenteredMomentCounting
-end
+
 
 end OAI

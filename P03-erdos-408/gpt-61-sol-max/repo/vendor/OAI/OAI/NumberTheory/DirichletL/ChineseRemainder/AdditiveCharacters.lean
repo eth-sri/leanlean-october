@@ -1,4 +1,6 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
 
 public import OAI.NumberTheory.DirichletL.Mellin.LogProfiles
 
@@ -8,31 +10,28 @@ namespace OAI
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 
 namespace ShortDraftCRT
 
-open AddChar
+ 
 
 variable {K : Type*} [Field K]
 
-theorem addChar_crt_pair (ψ : AddChar K ℂ) (m n u v z : K)
+theorem addChar_crt_pair (ψ : AddChar K ℂ)  m n u v z 
     (hm : m ≠ 0) (hn : n ≠ 0) (hbez : u * n + v * m = 1) :
     ψ (z / (m * n)) = ψ (u * z / m) * ψ (v * z / n) := by
   rw [← map_add_eq_mul]
   congr 1
-  calc
-    z / (m * n) = z * (u * n + v * m) / (m * n) := by rw [hbez, mul_one]
-    _ = u * z / m + v * z / n := by
-      field_simp
+  grind
 
 theorem normalized_crt_pair {R : Type*} [CommRing R]
     (ι : R →+* K) (ψ : AddChar K ℂ)
-    (lam c₀ r d x u w : R)
+     lam c₀ r d x u w 
     (hlam : ι lam ≠ 0) (hc₀ : ι c₀ ≠ 0) (hr : ι r ≠ 0)
     (hbez : u * r + (lam ^ 3 * w) * c₀ = 1) :
     ψ (-(ι d * (ι x / ι lam ^ 4)) / (ι c₀ * ι r)) =
@@ -72,10 +71,10 @@ include hω hconj
 
 omit hconj in
 private lemma lam_ne_zero : (1 + 2 * ω : ℂ) ≠ 0 := by
-  intro h
-  have hw : ω = -(1 : ℂ) / 2 := by linear_combination h / 2
-  rw [hw] at hω
-  norm_num at hω
+  grind
+
+public alias _root_.SharedProofs.shared_lam_ne_zero := lam_ne_zero
+
 
 private lemma conj_lam : conj (1 + 2 * ω) = -(1 + 2 * ω) := by
   rw [map_add, map_one, map_mul, map_ofNat, hconj]
@@ -91,11 +90,7 @@ theorem trace_div_lam (a b : ℤ) :
   have hl := lam_ne_zero ω hω
   simp only [map_div₀, map_add, map_intCast, map_mul, hconj,
     conj_lam ω hω hconj]
-  rw [div_neg, ← sub_eq_add_neg, ← sub_div]
-  calc
-    ((a : ℂ) + (b : ℂ) * ω - ((a : ℂ) + (b : ℂ) * ω ^ 2)) /
-        (1 + 2 * ω) = (b : ℂ) * (ω - ω ^ 2) / (1 + 2 * ω) := by ring
-    _ = (b : ℂ) := by rw [omega_sub_square ω hω]; field_simp
+  grind
 
 theorem trace_character_period (a b : ℤ) :
     Complex.exp (2 * Real.pi * Complex.I *
@@ -109,7 +104,7 @@ theorem trace_character_period (a b : ℤ) :
 
 end Generic
 
-noncomputable def ω₃ : ℂ := ((-1 : ℂ) + (Real.sqrt 3 : ℝ) * Complex.I) / 2
+noncomputable def ω₃  := ((-1 : ℂ) + (Real.sqrt 3 : ℝ) * Complex.I) / 2
 
 theorem omega_sq : ω₃ ^ 2 = -ω₃ - 1 := by
   have hs : (Real.sqrt 3 : ℝ) ^ 2 = 3 := Real.sq_sqrt (by norm_num)
@@ -150,27 +145,25 @@ noncomputable def breveE : AddChar ℂ ℂ where
     rw [harg, Complex.exp_add]
 
 theorem breveE_period_lam (a b : ℤ) :
-    breveE (((a : ℂ) + (b : ℂ) * ω₃) / (1 + 2 * ω₃)) = 1 := by
-  exact eisenstein_trace_period a b
+    breveE (((a : ℂ) + (b : ℂ) * ω₃) / (1 + 2 * ω₃)) = 1 := eisenstein_trace_period a b
 
 private theorem lam_eq_sqrt3_mul_I :
     1 + 2 * ω₃ = (Real.sqrt 3 : ℝ) * Complex.I := by
   unfold ω₃
   ring
 
-private theorem sub_conj_eq (z : ℂ) :
+private theorem sub_conj_eq  z  :
     z - conj z = 2 * (z.im : ℂ) * Complex.I := by
   apply Complex.ext
   · simp [Complex.mul_re]
   · simp [Complex.mul_im]
     ring
 
-theorem breveE_div_lam_eq_e (z : ℂ) :
+theorem breveE_div_lam_eq_e  z  :
     breveE (z / (1 + 2 * ω₃)) =
       Complex.exp (4 * Real.pi * Complex.I * (z.im / Real.sqrt 3)) := by
   have hs : (Real.sqrt 3 : ℝ) ≠ 0 := ne_of_gt (Real.sqrt_pos.2 (by norm_num))
-  have hl : ((Real.sqrt 3 : ℝ) : ℂ) * Complex.I ≠ 0 :=
-    mul_ne_zero (by exact_mod_cast hs) Complex.I_ne_zero
+  
   change Complex.exp (2 * Real.pi * Complex.I *
     (z / (1 + 2 * ω₃) + conj (z / (1 + 2 * ω₃)))) = _
   rw [lam_eq_sqrt3_mul_I]

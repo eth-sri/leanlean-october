@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3High.GhostRelabel
 
@@ -29,23 +30,18 @@ attribute [local instance] bmsFintype
 
 variable {F : FixedData} {P : PrimeGroups}
 
-theorem smallPhysical_relabel {M : ℕ} (y : P.SmallResidues) (a : P.Labels M) (g : P.BigGroup)
-    (h : Fin M) (p : P.Prime g.val) :
+theorem smallPhysical_relabel {M : ℕ}  y  (a : P.Labels M)  g 
+    (h : Fin M)  p  :
     P.smallPhysical y (relabelLabels a g h p) ↔ P.smallPhysical y a := by
   unfold PrimeGroups.smallPhysical
   apply forall_congr'
   intro g'
   have hne : g'.val ≠ g.val := by
-    intro he
-    have h1' := g'.property
-    have h2' := g.property
-    rw [he] at h1'
-    rw [h1'] at h2'
-    exact Bool.false_ne_true h2'
+    aesop
   rw [relabelLabels_ne_group a g h p g'.val hne]
 
-theorem tilted_prod_relabel_all (F : FixedData) (n : ℕ) {M : ℕ} (a : P.Labels M)
-    (g : P.BigGroup) (h : Fin M) (p : P.Prime g.val) :
+theorem tilted_prod_relabel_all  F   n   {M}   a 
+     g   h   p  :
     (∏ g' : P.BigGroup, ∏ i : Fin M, tiltedMu F P n g'.val (relabelLabels a g h p g'.val i)) *
       tiltedMu F P n g.val (a g.val h) =
     (∏ g' : P.BigGroup, ∏ i : Fin M, tiltedMu F P n g'.val (a g'.val i)) *
@@ -67,8 +63,11 @@ theorem tilted_prod_relabel_all (F : FixedData) (n : ℕ) {M : ℕ} (a : P.Label
   rw [Fintype.prod_prod_type, Fintype.prod_prod_type] at key
   exact key
 
-theorem memoryMass_relabel (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F.ell))
-    (g : P.BigGroup) (h : Fin (J + F.ell)) (p : P.Prime g.val) :
+section
+variable (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F.ell))
+
+theorem memoryMass_relabel      
+     g   h   p  :
     P.memoryMass F J n (relabelState g h p z) * tiltedMu F P n g.val (z.2.1 g.val h) =
       P.memoryMass F J n z * tiltedMu F P n g.val p := by
   have hiff : P.smallPhysical (relabelState g h p z).1 (relabelState g h p z).2.1 ↔
@@ -77,37 +76,32 @@ theorem memoryMass_relabel (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F
   split_ifs with h1 h2 h2
   · simp only [relabelState]
     have key := tilted_prod_relabel_all F n z.2.1 g h p
-    calc (Fintype.card P.SmallResidues : ℝ)⁻¹ *
-          (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) *
-          (∏ g' : P.BigGroup, ∏ i, tiltedMu F P n g'.val (relabelLabels z.2.1 g h p g'.val i)) *
-          (∏ g : P.BigGroup, P.groupMemoryMass F n g.val (z.2.2 g)) *
-          tiltedMu F P n g.val (z.2.1 g.val h)
-        = ((∏ g' : P.BigGroup, ∏ i, tiltedMu F P n g'.val (relabelLabels z.2.1 g h p g'.val i)) *
-            tiltedMu F P n g.val (z.2.1 g.val h)) *
-          ((Fintype.card P.SmallResidues : ℝ)⁻¹ *
-            (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) *
-            (∏ g : P.BigGroup, P.groupMemoryMass F n g.val (z.2.2 g))) := by ring
-      _ = _ := by rw [key]; ring
+    grind
   · exact absurd (hiff.mp h1) h2
   · exact absurd (hiff.mpr h2) h1
   · rw [zero_mul, zero_mul]
 
 /-- Initial boundary term: empty memory and absolute mass. -/
-def initTerm (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F.ell)) : ℝ :=
+def initTerm (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F.ell))  :=
   if ∀ g, z.2.2 g = 0 then |P.memoryMass F J n z| else 0
 
-theorem initTerm_nonneg (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F.ell)) :
+theorem initTerm_nonneg       :
     0 ≤ initTerm F J n z := by
   unfold initTerm
   split_ifs
   · exact abs_nonneg _
   · exact le_rfl
 
-theorem init_single (F : FixedData) (J n B : ℕ)
+end
+
+section
+variable (F : FixedData) (J n B : ℕ)
+
+theorem init_single    
     (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
     (hmass1 : ∀ g : P.BigGroup, 1 ≤ ∑ p : P.Prime g.val, tiltedMu F P n g.val p)
     (Q : P.MemoryState (J + F.ell) → Prop) (x : P.BigGroup × Fin (J + F.ell))
-    (hQ : ∀ p z, Q (relabelState x.1 x.2 p z) ↔ Q z) (vx : ℕ) :
+    (hQ : ∀ p z, Q (relabelState x.1 x.2 p z) ↔ Q z)  vx  :
     ∑ z : BoundedMemoryState P (J + F.ell) B,
         (if Q z.val ∧ (z.val.2.1 x.1.val x.2).val = vx then initTerm F J n z.val else 0) ≤
       muHat F P n x.1 vx * ∑ z : BoundedMemoryState P (J + F.ell) B,
@@ -127,8 +121,7 @@ theorem init_single (F : FixedData) (J n B : ℕ)
   swap
   · have hz : ∀ z : BoundedMemoryState P (J + F.ell) B,
         ¬ (Q z.val ∧ (z.val.2.1 g.val h).val = vx) := by
-      rintro z ⟨-, he⟩
-      exact hvx (he ▸ (z.val.2.1 g.val h).property)
+      grind
     rw [Finset.sum_eq_zero fun z _ => ite_eq_right (hz z)]
     exact hRHS0
   let α : P.Prime g.val := ⟨vx, hvx⟩
@@ -141,10 +134,7 @@ theorem init_single (F : FixedData) (J n B : ℕ)
       ∑ z ∈ T, initTerm F J n z.val := by
     rw [Finset.sum_filter]
     apply Finset.sum_congr rfl
-    intro z _
-    by_cases hc : Q z.val ∧ z.val.2.1 g.val h = α
-    · rw [ite_eq_left ⟨hc.1, congrArg Subtype.val hc.2⟩, ite_eq_left hc]
-    · rw [ite_eq_right (fun h' => hc ⟨h'.1, Subtype.ext h'.2⟩), ite_eq_right hc]
+    grind
   have hS : (∑ z : BoundedMemoryState P (J + F.ell) B,
       (if Q z.val then initTerm F J n z.val else 0)) = ∑ z ∈ S, initTerm F J n z.val :=
     (Finset.sum_filter _ _).symm
@@ -187,11 +177,9 @@ theorem init_single (F : FixedData) (J n B : ℕ)
         exact hM.symm
       · have hem' : ¬ ∀ g', (relabelState g h p z.val).2.2 g' = 0 := hem
         rw [ite_eq_right hem, ite_eq_right hem', zero_mul, zero_mul])
-  rw [hLHS, hS, hmu]
-  calc _ ≤ tiltedMu F P n g.val α / 1 * ∑ z ∈ S, initTerm F J n z.val := key
-    _ = _ := by ring
+  grind
 
-theorem init_slots (F : FixedData) (J n B : ℕ)
+theorem init_slots    
     (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
     (hmass1 : ∀ g : P.BigGroup, 1 ≤ ∑ p : P.Prime g.val, tiltedMu F P n g.val p)
     (vals : P.BigGroup × Fin (J + F.ell) → ℕ) :
@@ -248,7 +236,9 @@ theorem init_slots (F : FixedData) (J n B : ℕ)
             mul_le_mul_of_nonneg_left ih hm0
         _ = _ := by rw [Finset.prod_insert hy]; ring
 
-theorem initTerm_sum_le {J m : ℕ} (A : Model F P J m) (n B : ℕ) :
+end
+
+theorem initTerm_sum_le {J m : ℕ} (A : Model F P J m)  n B  :
     ∑ z : BoundedMemoryState P (J + F.ell) B, initTerm F J n z.val ≤
       initialMemoryBoundaryMass A n := by
   let T := (Finset.univ.filter (fun s : BoundedMemoryState P (J + F.ell) B =>

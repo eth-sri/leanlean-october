@@ -10,13 +10,13 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.HeckeFamily
 
-def Character.product (χ ψ : Character) : Character :=
+def Character.product (χ ψ : Character)  :=
   Character.ofResidue (χ.modulus ⊓ ψ.modulus)
     (Ideal.inf_ne_bot_of_ne_bot χ.modulus_ne_bot ψ.modulus_ne_bot)
     (ResidueCharacter.product χ.modulus ψ.modulus χ.residue ψ.residue)
     (ResidueCharacter.product_global_units _ _ _ _ χ.unit_trivial ψ.unit_trivial)
 
-theorem elementCoeff_product (χ ψ : Character) (z : O) :
+theorem elementCoeff_product  χ ψ   z  :
     elementCoeff (χ.product ψ) z = elementCoeff χ z * elementCoeff ψ z :=
   ResidueCharacter.product_mk _ _ _ _ z
 
@@ -29,9 +29,8 @@ def Character.inverse (χ : Character) : Character where
   period_pos := χ.period_pos
   period_mem := χ.period_mem
 
-theorem elementCoeff_inverse (χ : Character) (z : O) :
-    elementCoeff χ.inverse z = (elementCoeff χ z)⁻¹ := by
-  exact MulChar.inv_apply_eq_inv' _ _
+theorem elementCoeff_inverse  χ   z  :
+    elementCoeff χ.inverse z = (elementCoeff χ z)⁻¹ := MulChar.inv_apply_eq_inv' _ _
 
 def Character.power (χ : Character) (n : ℕ) : Character where
   modulus := χ.modulus
@@ -47,7 +46,7 @@ def Character.power (χ : Character) (n : ℕ) : Character where
   period_pos := χ.period_pos
   period_mem := χ.period_mem
 
-theorem elementCoeff_power_of_unit (χ : Character) (n : ℕ) (z : O)
+theorem elementCoeff_power_of_unit  χ   n   z 
     (hz : IsUnit (Ideal.Quotient.mk χ.modulus z)) :
     elementCoeff (χ.power n) z = elementCoeff χ z ^ n := by
   change (χ.residue ^ n) (Ideal.Quotient.mk χ.modulus z) = _

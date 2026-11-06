@@ -14,11 +14,11 @@ namespace SevenEighths.InverseInitialDyadicAssembly
 open InverseInitialProfile CenteredMomentSectorLocalization CenteredMomentDyadicCount
 open Filter
 
-def retainedWindows (a b:Fin 4→ℝ)(Z D m L:ℝ) : Finset (Windows a b) :=
+def retainedWindows (a b)(Z D m L:ℝ) : Finset (Windows a b) :=
   Finset.univ.filter (fun k=>radialCenter m (exponent Z (k 3).val)
     (exponent Z (k 1).val) D (exponent Z (k 0).val)≤L)
 
-def tailWindows (a b:Fin 4→ℝ)(Z D m L:ℝ) : Finset (Windows a b) :=
+def tailWindows (a b)(Z D m L:ℝ) : Finset (Windows a b) :=
   Finset.univ.filter (fun k=>L<radialCenter m (exponent Z (k 3).val)
     (exponent Z (k 1).val) D (exponent Z (k 0).val))
 
@@ -30,7 +30,12 @@ theorem window_sum_split (a b:Fin 4→ℝ)(Z D m L:ℝ)(f:Windows a b→ℂ) :
       (fun k=>radialCenter m (exponent Z (k 3).val) (exponent Z (k 1).val) D
         (exponent Z (k 0).val)≤L) f).symm
 
-theorem retained_exponents_eventually (b R Λ:ℝ)(hb:0<b)(hR:0≤R)(hΛ:0≤Λ) :
+section
+variable (b R Λ ε : ℝ) (hb : 0<b) (hR : 0≤R) (hΛ : 0≤Λ)
+
+
+include hb hR hΛ in
+theorem retained_exponents_eventually      :
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀D m L T:ℝ,D≤R→0≤m→L≤Λ→0<T→
       ∀k∈retainedWindows (fun _=>1) (physicalCaps b Z D T) Z D m L,
         ∀i,exponent Z (k i).val∈Set.Icc 0 (3*R+Λ+1) := by
@@ -56,7 +61,7 @@ theorem retained_exponents_eventually (b R Λ:ℝ)(hb:0<b)(hR:0≤R)(hΛ:0≤Λ)
   · change exponent Z (k 3).val∈Set.Icc 0 (3*R+Λ+1)
     exact ⟨h3,by linarith [h0.1,h1.2]⟩
 
-theorem retained_card_of_exponents (a b:Fin 4→ℝ)(Z D m L A:ℝ)(hZ:1<Z)
+theorem retained_card_of_exponents  a b  Z D m L A (hZ:1<Z)
     (he:∀k∈retainedWindows a b Z D m L,∀i,exponent Z (k i).val∈Set.Icc 0 A) :
     (retainedWindows a b Z D m L).card≤
       Fintype.card (Windows (fun _=>1) (fun _=>Z^A)) := by
@@ -79,7 +84,8 @@ theorem retained_card_of_exponents (a b:Fin 4→ℝ)(Z D m L A:ℝ)(hZ:1<Z)
     simpa only [f] using congrArg Subtype.val (congrFun h i)
   simpa only [Fintype.card_coe] using Fintype.card_le_of_injective f hf
 
-theorem retained_card_subpower (b R Λ ε:ℝ)(hb:0<b)(hR:0≤R)(hΛ:0≤Λ)(hε:0<ε) :
+include hb hR hΛ in
+theorem retained_card_subpower     (hε:0<ε) :
     ∃A:ℝ,0<A ∧ ∀ᶠZ:ℝ in atTop,
       ∀D m L T:ℝ,D≤R→0≤m→L≤Λ→0<T→
         ((retainedWindows (fun _=>1) (physicalCaps b Z D T) Z D m L).card:ℝ)≤A*Z^ε := by
@@ -96,6 +102,8 @@ theorem retained_card_subpower (b R Λ ε:ℝ)(hb:0<b)(hR:0≤R)(hΛ:0≤Λ)(hε
       (Fintype.card (Windows (fun _=>1) (fun _=>Z^(3*R+Λ+1))):ℝ)).trans
     (hc (fun _=>1) (fun _=>Z^(3*R+Λ+1)) (by intro i; norm_num)
       (fun _=>hp) (by intro i; simp))
+
+end
 
 end SevenEighths.InverseInitialDyadicAssembly
 

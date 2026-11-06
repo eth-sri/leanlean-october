@@ -1,4 +1,8 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P3Adj.Weight
+import Erdos821.P3Rows.GhostRows
 
 public import Erdos821.P3Clean.Laws
 public import Erdos821.Leaves.Arith
@@ -7,32 +11,24 @@ public import Erdos821.Leaves.Arith
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
 open Erdos821.Blueprint.Graph
 
-theorem visitQ_pos (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : 0 < visitQ F.q n i := by
-  unfold visitQ
-  split_ifs
-  · exact Real.sqrt_pos.mpr F.q_pos
-  · exact F.q_pos
+alias visitQ_pos := _root_.Erdos821.P3Adj.visitQ_pos
 
-theorem visitQ_lt_one (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : visitQ F.q n i < 1 := by
-  unfold visitQ
-  split_ifs
-  · simpa only [Real.sqrt_one] using Real.sqrt_lt_sqrt F.q_pos.le F.q_lt
-  · exact F.q_lt
+alias visitQ_lt_one := _root_.Erdos821.S2Core.visitQ_lt_one
 
-theorem eta_nonneg (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : 0 ≤ eta F n i :=
+theorem eta_nonneg  F   n   i  : 0 ≤ eta F n i :=
   sub_nonneg.mpr (visitQ_lt_one F n i).le
 
-theorem eta_le_one (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : eta F n i ≤ 1 :=
+theorem eta_le_one  F   n   i  : eta F n i ≤ 1 :=
   sub_le_self 1 (visitQ_pos F n i).le
 
-theorem eta_sum_bounds (F : FixedData) (n : ℕ) :
+theorem eta_sum_bounds  F   n  :
     0 ≤ (∑ i : Fin (n + 1), eta F n i) ∧
       (∑ i : Fin (n + 1), eta F n i) ≤ (n + 1 : ℕ) := by
   refine ⟨Finset.sum_nonneg (fun i _ => eta_nonneg F n i), ?_⟩
@@ -40,7 +36,7 @@ theorem eta_sum_bounds (F : FixedData) (n : ℕ) :
     _ ≤ ∑ _ : Fin (n + 1), (1 : ℝ) := Finset.sum_le_sum (fun i _ => eta_le_one F n i)
     _ = _ := by simp
 
-theorem baselinePrime_bounds (F : FixedData) (n p : ℕ) (hp : 0 < p)
+theorem baselinePrime_bounds  F   n p  (hp : 0 < p)
     (hn : 2 * (n + 1) ≤ p) :
     0 < baselinePrime F n p ∧ 1 ≤ (baselinePrime F n p)⁻¹ ∧
       (baselinePrime F n p)⁻¹ ≤ 1 + 2 * ((n + 1 : ℕ) : ℝ) / p := by
@@ -55,11 +51,10 @@ theorem baselinePrime_bounds (F : FixedData) (n p : ℕ) (hp : 0 < p)
     simp only [div_eq_mul_inv, mul_comm]
   rw [heq]
   refine ⟨h.1, h.2.1, h.2.2.trans ?_⟩
-  simpa only [add_comm] using add_le_add_left (div_le_div_of_nonneg_right
-    (mul_le_mul_of_nonneg_left he1 (by norm_num : (0 : ℝ) ≤ 2)) hpR.le) 1
+  gcongr <;> first | assumption | positivity | linarith
 
-theorem tiltedMu_eq_mu_mul (F : FixedData) (P : PrimeGroups) (n : ℕ)
-    (g : P.Group) (p : P.Prime g) :
+theorem tiltedMu_eq_mu_mul  F   P   n 
+     g   p  :
     tiltedMu F P n g p = P.mu g p * (baselinePrime F n p.val)⁻¹ := by
   unfold tiltedMu PrimeGroups.mu
   rw [mul_inv_rev]

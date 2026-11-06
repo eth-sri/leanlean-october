@@ -16,7 +16,7 @@ open Erdos821.Blueprint.Graph
 
 /-- Source §2 ghost joint-integral / adjoint identity, with numerical multiplicities.
 The scale is one normally and two in the memory-tail majorant. -/
-def GhostAdjointTask : Prop :=
+def GhostAdjointTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J n : ℕ) (r : MemoryParameters F),
     (∀ g, 0 < P.V g) →
     (∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val) →
@@ -28,7 +28,7 @@ def GhostAdjointTask : Prop :=
 
 /-- Absolute ghost row bounds for both factorial adjoint directions.
 Convergence is part of the task; divergent real tsums must not supply a bound. -/
-def GhostRowsTask : Prop :=
+def GhostRowsTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J n : ℕ) (r : MemoryParameters F),
     (∀ g, 0 < P.V g ∧ P.V g ≤ F.vMax) →
     (∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val) →
@@ -47,7 +47,7 @@ def GhostRowsTask : Prop :=
 
 /-- Source §2 endpoint consequence on the literal physical kernels.
 Both premises are arguments, not uses of their unproved blueprint declarations. -/
-def PairingFromMomentTask : Prop :=
+def PairingFromMomentTask  :=
   AbsolutePhysicalBounds → TransferenceEstimate → TransferencePairing
 
 end Erdos821.S2Core

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.GaussSum.GaussianDualLimit
 
@@ -10,19 +11,19 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT  
 
 theorem breveE_real_trace_div (r : ℝ) (u v : ℤ) :
     ShortDraftTrace.breveE
@@ -42,7 +43,7 @@ theorem breveE_real_trace_div (r : ℝ) (u v : ℤ) :
   congr 1
   ring
 
-theorem breveE_real_trace_of_O (r : ℝ) (z : O) :
+theorem breveE_real_trace_of_O (r : ℝ)  z  :
     ShortDraftTrace.breveE (eisEmbedding z / eisLam / (r : ℂ)) =
       Complex.exp (2 * Real.pi * Complex.I *
         ((ActualEisensteinCoordinates.coords z).2 : ℂ) / (r : ℂ)) := by
@@ -53,14 +54,22 @@ theorem breveE_real_trace_of_O (r : ℝ) (z : O) :
 
 end ActualEisensteinCubic
 namespace SqrtBranch
-open Complex
+ 
 
-private theorem arg_ne_pi_of_re_pos {a : ℂ} (ha : 0 < a.re) : a.arg ≠ Real.pi := by
+section
+variable {a : ℂ}
+include a
+
+private theorem arg_ne_pi_of_re_pos   (ha : 0 < a.re) : a.arg ≠ Real.pi := by
   intro h
   have := (Complex.arg_eq_pi_iff.mp h).1
   linarith
 
-theorem cpow_half_product {a : ℂ} {r : ℝ} (ha : 0 < a.re) (hr : 0 < r) :
+section
+variable {r : ℝ} (ha : 0 < a.re) (hr : 0 < r)
+include r ha hr
+
+theorem cpow_half_product         :
     a ^ (1 / 2 : ℂ) * (((r : ℂ) / a) ^ (1 / 2 : ℂ)) =
       (r : ℂ) ^ (1 / 2 : ℂ) := by
   have ha0 : a ≠ 0 := by
@@ -80,11 +89,14 @@ theorem cpow_half_product {a : ℂ} {r : ℝ} (ha : 0 < a.re) (hr : 0 < r) :
   rw [Complex.ofReal_log hr.le]
   ring
 
-theorem prefactor_product {a : ℂ} {r : ℝ} (ha : 0 < a.re) (hr : 0 < r) :
+theorem prefactor_product         :
     (1 / a ^ (1 / 2 : ℂ)) * (1 / (((r : ℂ) / a) ^ (1 / 2 : ℂ))) =
       1 / ((r : ℂ) ^ (1 / 2 : ℂ)) := by
-  simpa [div_eq_mul_inv, mul_inv_rev, mul_comm] using
-    congrArg (fun z : ℂ => z⁻¹) (cpow_half_product ha hr)
+  grind [cpow_half_product]
+
+end
+
+end
 
 end SqrtBranch
 
@@ -94,7 +106,7 @@ end PowerExtraction
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT  
 
 theorem actual_fiber_gaussian_eq_shifted
     (a b x y m n : ℤ)
@@ -137,10 +149,10 @@ end ActualEisensteinCubic
 
 namespace EisensteinAbelFiber
 
-open scoped Topology
-open Filter
+ 
+ 
 
-theorem shifted_gaussian_mass (x y : ℝ) :
+theorem shifted_gaussian_mass  x y  :
     Tendsto (fun t : ℝ => (t : ℂ) *
       (∑' z : ℤ × ℤ, RankTwoEisShift.shifted t x y z))
       (𝓝[>] (0 : ℝ)) (𝓝 (((2 / Real.sqrt 3 : ℝ) : ℂ))) := by
@@ -157,16 +169,7 @@ theorem shifted_gaussian_mass (x y : ℝ) :
           (1 / (((3 * t / 4 : ℝ) : ℂ) ^ (1 / 2 : ℂ))) *
           (∑' z : ℤ × ℤ,
             RankTwoLimit.dualTerm (4 / (3 * t)) x y z)) = _
-    calc
-      (t : ℂ) * ((1 / (t : ℂ) ^ (1 / 2 : ℂ)) *
-          (1 / (((3 * t / 4 : ℝ) : ℂ) ^ (1 / 2 : ℂ))) *
-          (∑' z : ℤ × ℤ,
-            RankTwoLimit.dualTerm (4 / (3 * t)) x y z)) =
-        (((t : ℂ) * (1 / (t : ℂ) ^ (1 / 2 : ℂ))) *
-          (1 / (((3 * t / 4 : ℝ) : ℂ) ^ (1 / 2 : ℂ)))) *
-          (∑' z : ℤ × ℤ,
-            RankTwoLimit.dualTerm (4 / (3 * t)) x y z) := by ring
-      _ = _ := by rw [hpre]
+    grind
   have hlim := (RankTwoLimit.dual_sum_tendsto_one_small_t x y).const_mul
     (((2 / Real.sqrt 3 : ℝ) : ℂ))
   have heq : (fun t : ℝ => (t : ℂ) *
@@ -177,8 +180,8 @@ theorem shifted_gaussian_mass (x y : ℝ) :
     exact hpoint t ht
   simpa using hlim.congr' heq.symm
 
-theorem scaled_shifted_gaussian_mass (q : ℝ) (hq : 0 < q)
-    (x y : ℝ) :
+theorem scaled_shifted_gaussian_mass  q  (hq : 0 < q)
+     x y  :
     Tendsto (fun η : ℝ => (η : ℂ) *
       (∑' z : ℤ × ℤ, RankTwoEisShift.shifted (η*q) x y z))
       (𝓝[>] (0 : ℝ))
@@ -210,10 +213,10 @@ namespace ActualEisensteinCubic
 
 section
 
-open scoped Topology
-open Filter EisensteinEmbedding ConcreteTraceCRT Complex
+ 
+open   EisensteinEmbedding ConcreteTraceCRT  
 
-theorem actual_fiber_gaussian_mass (a b x y : ℤ)
+theorem actual_fiber_gaussian_mass  a b x y 
     (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
     Tendsto (fun η : ℝ => (η : ℂ) *
       (∑' z : ℤ × ℤ,
@@ -242,7 +245,7 @@ end
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT  
 
 def latticeCoordEquiv : O ≃ ℤ × ℤ where
   toFun := ActualEisensteinCoordinates.coords
@@ -314,7 +317,7 @@ theorem exp_imag_diff_le (u v : ℝ) :
   simpa only [Real.norm_eq_abs] using
     (Real.norm_exp_I_mul_ofReal_sub_one_le (x := u - v))
 
-theorem exp_imag_denominator_error (θ A η : ℝ) (hA : 0 ≤ A) :
+theorem exp_imag_denominator_error  θ A η  (hA : 0 ≤ A) :
     ‖Complex.exp (Complex.I * ((θ / (1 + A * η ^ 2) : ℝ) : ℂ)) -
       Complex.exp (Complex.I * (θ : ℂ))‖ ≤
       |θ| * (A * η ^ 2) := by
@@ -328,8 +331,7 @@ theorem exp_imag_denominator_error (θ A η : ℝ) (hA : 0 ≤ A) :
       ring
     rw [heq, abs_mul, abs_neg, abs_of_nonneg (div_nonneg (by linarith) hrpos.le)]
   have hfrac : (r - 1) / r ≤ r - 1 := by
-    apply (div_le_iff₀ hrpos).mpr
-    nlinarith [mul_nonneg (sub_nonneg.mpr hr) (sub_nonneg.mpr hr)]
+    bound
   have hbound := exp_imag_diff_le (θ / r) θ
   dsimp [r] at hbound ⊢
   calc
@@ -338,18 +340,16 @@ theorem exp_imag_denominator_error (θ A η : ℝ) (hA : 0 ≤ A) :
         |θ / (1 + A * η ^ 2) - θ| := hbound
     _ = |θ| * (((1 + A * η ^ 2) - 1) / (1 + A * η ^ 2)) := hdiff
     _ ≤ |θ| * (A * η ^ 2) := by
-      have hfrac' := hfrac
-      dsimp [r] at hfrac'
-      nlinarith [mul_nonneg (abs_nonneg θ) (sub_nonneg.mpr hfrac')]
+      bound
 
 end GaussianPhasePointwise
 
 namespace ActualEisensteinCubic
 
-open scoped Topology
-open Filter EisensteinEmbedding ConcreteTraceCRT Complex
+ 
+open   EisensteinEmbedding ConcreteTraceCRT  
 
-theorem actual_O_fiber_gaussian_mass (c r : O) (hc : c ≠ 0) :
+theorem actual_O_fiber_gaussian_mass  c r  (hc : c ≠ 0) :
     let a := (ActualEisensteinCoordinates.coords c).1
     let b := (ActualEisensteinCoordinates.coords c).2
     Tendsto (fun η : ℝ => (η : ℂ) *
@@ -381,7 +381,7 @@ theorem actual_O_fiber_gaussian_mass (c r : O) (hc : c ≠ 0) :
       ActualEisensteinCoordinates.eval z.1 z.2 := rfl
   simpa only [W, hceq, hreq, happly] using hsum
 
-theorem original_abel_gauss_limit (c : O) (hc : c ≠ 0) :
+theorem original_abel_gauss_limit  c   hc  :
     letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
     letI : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
     let a := (ActualEisensteinCoordinates.coords c).1
@@ -413,9 +413,7 @@ theorem original_abel_gauss_limit (c : O) (hc : c ≠ 0) :
       Tendsto (fun η : ℝ => (η : ℂ) *
         (∑' w : O, W η (GaussianShiftedPartition.representative c r + c*w)))
         (𝓝[>] (0 : ℝ)) (𝓝 K) := by
-    simpa only [K, a, b, W] using
-      actual_O_fiber_gaussian_mass c
-        (GaussianShiftedPartition.representative c r) hc
+    solve_by_elim [actual_O_fiber_gaussian_mass, GaussianShiftedPartition.representative]
   have hsum : Tendsto (fun η : ℝ =>
       ∑ r : O ⧸ Ideal.span {c}, ψ (r ^ 2) *
         ((η : ℂ) * (∑' w : O, W η

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionApproximation
 public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionEnergy
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformOriginalEnergy
 open HeckeFamily CenteredMomentUniformReflectionApproximation CenteredMomentNaturalPrimitive
@@ -33,7 +34,7 @@ theorem actual_original_energy_to_retained (xi saving L Cscale ε : ℝ)
   refine ⟨ψ,fun i=>⟨hp i,hnψ i,hcap i⟩,?_⟩
   intro W X P D Z Rcap hD hZ hR hX hWD hmod hsource
   let B := C*D*Rcap^ε*Z^(-saving)
-  have hB : 0≤B := by dsimp [B];positivity
+  
   have herr (i : ι) :
       ‖HeckeDyadic.polynomial (χ i) false (W i) (X i) 0 0-
         G i*retainedSchwartz (χ i) (ψ i) (W i) (X i) (Z^(xi/2))‖≤B := by
@@ -75,6 +76,6 @@ theorem actual_original_energy_to_retained (xi saving L Cscale ε : ℝ)
 
 end SevenEighths.CenteredMomentUniformOriginalEnergy
 
-end
+
 
 end OAI

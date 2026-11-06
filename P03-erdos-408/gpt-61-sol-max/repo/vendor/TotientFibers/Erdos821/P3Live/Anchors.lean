@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.S2.PrimeIndices
 
 public import Erdos821.S2.HistoryAnchors
 public import Erdos821.S2.HistoryProjection
@@ -22,9 +25,13 @@ open Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
+section
+variable {n : ℕ} {A : Model F P J m} (H : MemoryHistory A n) {M : ℕ} (delta : ℤ) {g : P.Group} {b : ℕ} (p : Fin b → P.Prime g) (a : Fin M → P.Prime g) (B : Finset (Fin M)) (w : P.Memory g) (z : P.Particle g) (hH : H.Valid) (hd : H.DistinctBirths) (i : Fin (n + 1))
+
+
 /-- Permuting active slots reindexes the anchor condition bijectively; pending is unchanged. -/
-theorem anchorInvariant_permute {n : ℕ} {A : Model F P J m} (H : MemoryHistory A n)
-    (i : Fin (n + 1)) (s : P.MemoryState (J + F.ell)) (π : P.Permutations (J + F.ell)) :
+theorem anchorInvariant_permute      
+       s   π  :
     H.AnchorInvariant i s ↔ H.AnchorInvariant i (permuteActive π s) := by
   constructor
   · rintro ⟨hact, hpend⟩
@@ -48,8 +55,8 @@ theorem anchorInvariant_permute {n : ℕ} {A : Model F P J m} (H : MemoryHistory
       exact hpend g z hz
 
 /-- Membership in a zero-residue birth batch is an explicit birth index. -/
-theorem zeroBirthBatch_mem {g : P.Group} {b : ℕ} (p : Fin b → P.Prime g)
-    (z : P.Particle g) : z ∈ zeroBirthBatch p ↔ ∃ h : Fin b, z = ⟨p h, 0⟩ := by
+theorem zeroBirthBatch_mem      
+      : z ∈ zeroBirthBatch p ↔ ∃ h : Fin b, z = ⟨p h, 0⟩ := by
   constructor
   · intro hz
     simp only [zeroBirthBatch, Multiset.mem_coe, List.mem_ofFn] at hz
@@ -60,57 +67,41 @@ theorem zeroBirthBatch_mem {g : P.Group} {b : ℕ} (p : Fin b → P.Prime g)
     exact ⟨h, rfl⟩
 
 /-- Stored slots contribute exactly the zero-residue particles at those slots. -/
-theorem storedMemory_mem {M : ℕ} {g : P.Group} (a : Fin M → P.Prime g)
-    (B : Finset (Fin M)) (z : P.Particle g) :
+theorem storedMemory_mem      
+        :
     z ∈ storedMemory a B ↔ ∃ k ∈ B, z = ⟨a k, 0⟩ := by
   constructor
   · intro hz
     simp only [storedMemory, Multiset.mem_coe, List.mem_map] at hz
     obtain ⟨k, hk, hkz⟩ := hz
-    have hkB : k ∈ B := by
-      have : k ∈ B.toList := by
-        simpa using hk
-      simpa [Finset.mem_toList] using this
-    exact ⟨k, hkB, hkz.symm⟩
+    aesop
   · rintro ⟨k, hkB, rfl⟩
     simp only [storedMemory, Multiset.mem_coe, List.mem_map]
-    exact ⟨k, by simpa [Finset.mem_toList] using hkB, rfl⟩
+    aesop
 
 /-- Translation preserves the prime and adds `delta` to the residue. -/
-theorem translateMemory_mem (delta : ℤ) {g : P.Group} (w : P.Memory g)
-    (z : P.Particle g) : z ∈ translateMemory delta w ↔ ∃ w0 ∈ w, translateParticle delta w0 = z := by
+theorem translateMemory_mem      
+      : z ∈ translateMemory delta w ↔ ∃ w0 ∈ w, translateParticle delta w0 = z := by
   simp only [translateMemory, Multiset.mem_map]
 
 /-- Every indexed particle occurs in its multiset. -/
-theorem anchorsMemoryEntry_mem {g : P.Group} (z : P.Memory g) (k : Fin z.card) :
-    memoryEntry z k ∈ z := by
-  have hget : z.toList.get ⟨k.val, by simp⟩ ∈ z.toList :=
-    List.get_mem _ _
-  have hmem : memoryEntry z k ∈ z.toList := hget
-  have hcoe : memoryEntry z k ∈ ((z.toList : List (P.Particle g)) : Multiset (P.Particle g)) :=
-    Multiset.mem_coe.mpr hmem
-  have heq : ((z.toList : List (P.Particle g)) : Multiset (P.Particle g)) = z :=
-    Multiset.coe_toList z
-  rw [heq] at hcoe
-  exact hcoe
+theorem anchorsMemoryEntry_mem   (z : P.Memory g) (k : Fin z.card) :
+    memoryEntry z k ∈ z := by solve_by_elim [_root_.Erdos821.S2Core.memoryEntry_mem]
 
 /-- A shared prime divides `D`, so the edge displacement vanishes modulo that prime. -/
 theorem edgeDelta_cast_zero (A : Model F P J m)
-    (ν : Pattern P J F.ell m) (forward : Bool) (a : P.Labels (J + F.ell)) (u : P.Aux J)
-    (p : ℕ) (hdvd : p ∣ ν.D a u) : ((edgeDelta A ν forward a u : ℤ) : ZMod p) = 0 := by
+    (ν : Pattern P J F.ell m)  forward  (a : P.Labels (J + F.ell)) (u : P.Aux J)
+     p  (hdvd : p ∣ ν.D a u) : ((edgeDelta A ν forward a u : ℤ) : ZMod p) = 0 := by
   have hD : ((ν.D a u : ℕ) : ZMod p) = 0 := by
     obtain ⟨k, hk⟩ := hdvd
     rw [hk, Nat.cast_mul, ZMod.natCast_self, zero_mul]
-  have hDz : (((ν.D a u : ℕ) : ℤ) : ZMod p) = 0 := by
-    rw [Int.cast_natCast, hD]
-  unfold edgeDelta
-  split
-  · rw [Int.cast_mul, hDz, mul_zero]
-  · rw [Int.cast_neg, Int.cast_mul, hDz, mul_zero, neg_zero]
+  
+  simp_all [edgeDelta]
 
+include hH in
 /-- The residue-path step equals the raw edge displacement on permuted labels. -/
-theorem residue_step_eq_delta {n : ℕ} {A : Model F P J m} (H : MemoryHistory A n)
-    (hH : H.Valid) (i : Fin n) :
+theorem residue_step_eq_delta      
+       i  :
     H.toResiduePath.step i =
       edgeDelta A (A.pattern (H.edge i).2.2.1) (edgeForward i)
         ((permuteActive (H.edge i).1 (H.after i.castSucc)).2.1) (H.edge i).2.2.2.1 := by
@@ -120,19 +111,21 @@ theorem residue_step_eq_delta {n : ℕ} {A : Model F P J m} (H : MemoryHistory A
     (hH.2.2.1 i.castSucc).2.1
   rw [hEq]
 
+include hH in
 /-- Offset recurrence with the actual edge displacement. -/
-theorem offset_succ_eq_delta {n : ℕ} {A : Model F P J m} (H : MemoryHistory A n)
-    (hH : H.Valid) (i : Fin n) :
+theorem offset_succ_eq_delta      
+       i  :
     H.toResiduePath.offset i.succ =
       H.toResiduePath.offset i.castSucc +
         edgeDelta A (A.pattern (H.edge i).2.2.1) (edgeForward i)
           ((permuteActive (H.edge i).1 (H.after i.castSucc)).2.1) (H.edge i).2.2.2.1 := by
   rw [← residue_step_eq_delta H hH i, residuePath_offset_succ]
 
+include hH hd in
 /-- Edge carries the anchor forward: shared slots use vanishing displacement,
 promotions use the zero-residue check, fresh slots are new births. -/
-theorem anchor_edge_forward {n : ℕ} {A : Model F P J m} (H : MemoryHistory A n)
-    (hH : H.Valid) (hd : H.DistinctBirths) (i : Fin n)
+theorem anchor_edge_forward      
+        (i : Fin n)
     (hInv : H.AnchorInvariant i.castSucc (H.after i.castSucc)) :
     H.AnchorInvariant i.succ (H.before i.succ) := by
   -- permuted source/target and raw validity
@@ -176,10 +169,7 @@ theorem anchor_edge_forward {n : ℕ} {A : Model F P J m} (H : MemoryHistory A n
           exact hIff.mpr hShared
         have hDeltaZero : ((edgeDelta A ν (edgeForward i) ss.2.1 u : ℤ) :
             ZMod ((tt.2.1 g.val j).val)) = 0 := by
-          have hDvd2 : ((tt.2.1 g.val j).val) ∣ ν.D ss.2.1 u := hdvd
-          have hz := edgeDelta_cast_zero A ν (edgeForward i) ss.2.1 u
-            ((tt.2.1 g.val j).val) hDvd2
-          exact hz
+          solve_by_elim [edgeDelta_cast_zero, edgeForward]
         have hSrc := hactS g j
         -- transport source invariant to target prime
         rw [hEqPrime] at hSrc
@@ -190,9 +180,7 @@ theorem anchor_edge_forward {n : ℕ} {A : Model F P J m} (H : MemoryHistory A n
           have hInt : H.toResiduePath.offset i.succ =
               H.toResiduePath.offset i.castSucc +
                 edgeDelta A ν (edgeForward i) ss.2.1 u := by
-            have ho := hOffset
-            -- hOffset uses ss.2.1 via let; unfold lets (defeq)
-            exact ho
+            assumption
           rw [hInt, Int.cast_add]
         rw [hDeltaZero, add_zero] at hOff
         rw [hOff]
@@ -271,8 +259,7 @@ theorem anchor_edge_forward {n : ℕ} {A : Model F P J m} (H : MemoryHistory A n
             H.anchorOffset ((translateParticle (edgeDelta A ν (edgeForward i) ss.2.1 u) w).1.val) : ℤ) :
             ZMod (((translateParticle (edgeDelta A ν (edgeForward i) ss.2.1 u) w).1.val))))
         -- translate preserves prime, adds delta to residue (definitional)
-        have hPrime : ((translateParticle (edgeDelta A ν (edgeForward i) ss.2.1 u) w).1.val) =
-            (w.1.val) := rfl
+        
         have hRes : ((translateParticle (edgeDelta A ν (edgeForward i) ss.2.1 u) w).2) =
             w.2 + ((edgeDelta A ν (edgeForward i) ss.2.1 u : ℤ) : ZMod (w.1.val)) := rfl
         -- rewrite goal using prime preservation (defeq, but make explicit)
@@ -315,8 +302,7 @@ theorem anchor_edge_forward {n : ℕ} {A : Model F P J m} (H : MemoryHistory A n
               (⟨ss.2.1 g.val k, 0⟩ : P.Particle g.val)).1.val))))
         have hActK := hactS g k
         -- anchor of stored prime equals source offset
-        have hPrimeStore : ((translateParticle (edgeDelta A ν (edgeForward i) ss.2.1 u)
-            (⟨ss.2.1 g.val k, 0⟩ : P.Particle g.val)).1.val) = ((ss.2.1 g.val k).val) := rfl
+        
         have hResStore : (translateParticle (edgeDelta A ν (edgeForward i) ss.2.1 u)
             (⟨ss.2.1 g.val k, 0⟩ : P.Particle g.val)).2 =
             ((edgeDelta A ν (edgeForward i) ss.2.1 u : ℤ) : ZMod ((ss.2.1 g.val k).val)) := by
@@ -354,9 +340,10 @@ theorem anchor_edge_forward {n : ℕ} {A : Model F P J m} (H : MemoryHistory A n
         exact hEq
   exact (anchorInvariant_permute H i.succ _ πt).mpr hTT
 
+include hH hd in
 /-- Ghost keeps active labels and offset; pending splits into survivors plus zero-residue births. -/
-theorem anchor_ghost_forward {n : ℕ} {A : Model F P J m} (H : MemoryHistory A n)
-    (hH : H.Valid) (hd : H.DistinctBirths) (i : Fin (n + 1))
+theorem anchor_ghost_forward      
+         
     (hInv : H.AnchorInvariant i (H.before i)) : H.AnchorInvariant i (H.after i) := by
   obtain ⟨hactB, hpendB⟩ := hInv
   have hActEq : (H.before i).2.1 = (H.after i).2.1 := (hH.2.2.1 i).2.1
@@ -404,13 +391,14 @@ theorem anchor_ghost_forward {n : ℕ} {A : Model F P J m} (H : MemoryHistory A 
           rw [dite_eq_left h0.isLt]
         have hEq2 := H.anchorOffset_eq_birth hH hd a _ haPerf haVal
         -- birthOffset for ghost address is offset i
-        have hBirthOff : H.birthOffset a = H.toResiduePath.offset i := rfl
-        rw [hEq2, hBirthOff]
+        assumption
       -- residue is 0 = offset - anchor
       show (0 : ZMod ((((H.ghost i).2.2 g h0).val))) =
         (((H.toResiduePath.offset i - H.anchorOffset ((((H.ghost i).2.2 g h0).val)) : ℤ) :
           ZMod ((((H.ghost i).2.2 g h0).val))))
       simp [hAnchor]
+
+end
 
 /-- Every valid distinct-birth history keeps all big anchors at their birth offsets. -/
 theorem HistoryAnchorTask_proof : HistoryAnchorTask := by
@@ -420,8 +408,6 @@ theorem HistoryAnchorTask_proof : HistoryAnchorTask := by
     have hBefore0 : H.AnchorInvariant 0 (H.before 0) := H.anchorInvariant_initial hH hd
     exact ⟨hBefore0, anchor_ghost_forward H hH hd 0 hBefore0⟩
   | succ i ih =>
-    have hBeforeSucc : H.AnchorInvariant i.succ (H.before i.succ) :=
-      anchor_edge_forward H hH hd i ih.2
-    exact ⟨hBeforeSucc, anchor_ghost_forward H hH hd i.succ hBeforeSucc⟩
+    simp_all [anchor_edge_forward, anchor_ghost_forward]
 
 end Erdos821.S2Core

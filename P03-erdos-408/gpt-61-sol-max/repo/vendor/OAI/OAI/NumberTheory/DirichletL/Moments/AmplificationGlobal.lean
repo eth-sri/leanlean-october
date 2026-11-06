@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationLocal
 public import OAI.NumberTheory.DirichletL.Moments.GaussEnergy
@@ -19,10 +20,10 @@ local notation "O" => ActualEisensteinCubic.O
 
 theorem full_column_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ)
+    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)  n 
     (hn1 : n ≠ 1) (hn6 : n ≠ 6) (hn7 : n ≠ 7)
-    (a : O) (ha : Supported (Ideal.span {a})) (hcop : IsCoprime p a)
-    (h : O) (hph : ¬p ∣ h) :
+     a   ha  (hcop : IsCoprime p a)
+     h  (hph : ¬p ∣ h) :
     sexticGauss (p^n*a) (mul_ne_zero (pow_ne_zero _ hp.ne_zero) (supported_element_ne_zero a ha))
       (p^6*h) =
     sexticGauss (p^n*a) (mul_ne_zero (pow_ne_zero _ hp.ne_zero) (supported_element_ne_zero a ha)) h := by
@@ -37,20 +38,20 @@ theorem full_column_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal
       mul_comm (p^6) h,gauss_prime_power_unchanged p hp hs hg hc n
         (by omega) (by omega) (by omega) h hph]
 
-def amplificationError {α : Type*} (S : Finset α) (a : α → O)
+def amplificationError {α } (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (ν : α → ℕ) (p : O) (k : ℕ) (h : O) : ℂ :=
+    (ν : α → ℕ) (p : O) (k : ℕ) (h : O)  :=
   ∑ i ∈ S, if ν i = k then c i *
     (gaussRow (a i) (ha i) h - gaussRow (a i) (ha i) (p^6*h)) else 0
 
 theorem polynomial_amplification {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+     p  (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
     (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (ν : α → ℕ) (r : α → O) (hr : ∀ i, Supported (Ideal.span {r i}))
     (hfactor : ∀ i ∈ S, a i = p^(ν i)*r i)
-    (hcop : ∀ i ∈ S, IsCoprime p (r i)) (h : O) (hph : ¬p ∣ h) :
+    (hcop : ∀ i ∈ S, IsCoprime p (r i))  h  (hph : ¬p ∣ h) :
     gaussPolynomial S a ha c h = gaussPolynomial S a ha c (p^6*h) +
       amplificationError S a ha c ν p 1 h + amplificationError S a ha c ν p 6 h +
       amplificationError S a ha c ν p 7 h := by
@@ -58,31 +59,26 @@ theorem polynomial_amplification {α : Type*} (S : Finset α) (a : α → O)
   apply Finset.sum_congr rfl
   intro i hi
   by_cases h1 : ν i = 1
-  · simp only [h1,ite_true,show ¬(1:ℕ)=6 by decide,show ¬(1:ℕ)=7 by decide,ite_false]
-    ring
+  · grind
   · by_cases h6 : ν i = 6
-    · simp only [h6,ite_true,show ¬(6:ℕ)=1 by decide,show ¬(6:ℕ)=7 by decide,ite_false]
-      ring
+    · grind
     · by_cases h7 : ν i = 7
-      · simp only [h7,ite_true,show ¬(7:ℕ)=1 by decide,show ¬(7:ℕ)=6 by decide,ite_false]
-        ring
+      · grind
       · simp only [h1,h6,h7,ite_false,add_zero]
         congr 1
         unfold gaussRow
         congr 1
-        have he := full_column_unchanged p hp hs hg hc (ν i) h1 h6 h7
-          (r i) (hr i) (hcop i hi) h hph
-        simpa only [hfactor i hi] using he.symm
+        simp_all [full_column_unchanged]
 
-def primeRemainder (p : O) (hp : Prime p) (a : O) (ha : a ≠ 0) : O :=
+def primeRemainder (p : O) (hp : Prime p) (a : O) (ha : a ≠ 0)  :=
   Classical.choose ((FiniteMultiplicity.of_prime_left hp ha).exists_eq_pow_mul_and_not_dvd)
 
-theorem primeRemainder_spec (p : O) (hp : Prime p) (a : O) (ha : a ≠ 0) :
+theorem primeRemainder_spec  p   hp   a   ha  :
     a = p^(multiplicity p a)*primeRemainder p hp a ha ∧ ¬p ∣ primeRemainder p hp a ha :=
   Classical.choose_spec ((FiniteMultiplicity.of_prime_left hp ha).exists_eq_pow_mul_and_not_dvd)
 
-theorem primeRemainder_supported (p : O) (hp : Prime p) (a : O)
-    (ha : Supported (Ideal.span {a})) :
+theorem primeRemainder_supported  p   hp   a 
+     ha  :
     Supported (Ideal.span {primeRemainder p hp a (supported_element_ne_zero a ha)}) := by
   have hs := ha
   rw [(primeRemainder_spec p hp a (supported_element_ne_zero a ha)).1,
@@ -91,9 +87,9 @@ theorem primeRemainder_supported (p : O) (hp : Prime p) (a : O)
 
 theorem polynomial_amplification_actual {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+     p  (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (h : O) (hph : ¬p ∣ h) :
+    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)  h  (hph : ¬p ∣ h) :
     gaussPolynomial S a ha c h = gaussPolynomial S a ha c (p^6*h) +
       amplificationError S a ha c (fun i => multiplicity p (a i)) p 1 h +
       amplificationError S a ha c (fun i => multiplicity p (a i)) p 6 h +
@@ -101,7 +97,7 @@ theorem polynomial_amplification_actual {α : Type*} (S : Finset α) (a : α →
   apply polynomial_amplification S a ha c p hp hs hg hc _
     (fun i => primeRemainder p hp (a i) (supported_element_ne_zero _ (ha i)))
     (fun i => primeRemainder_supported p hp (a i) (ha i))
-  · exact fun i _ => (primeRemainder_spec p hp (a i) (supported_element_ne_zero _ (ha i))).1
+  · grind [primeRemainder_spec]
   · exact fun i _ => hp.irreducible.coprime_iff_not_dvd.mpr
       (primeRemainder_spec p hp (a i) (supported_element_ne_zero _ (ha i))).2
   · exact hph
@@ -136,11 +132,11 @@ theorem eligible_pool_average {β : Type*} (P : Finset β) (hP : P.Nonempty)
 
 theorem polynomial_pool_bound {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (P : Finset O) (hP : P.Nonempty) (hp : ∀ p ∈ P, Prime p)
+     P  (hP : P.Nonempty) (hp : ∀ p ∈ P, Prime p)
     (hs : ∀ p ∈ P, Supported (Ideal.span {p}))
     (hgood : ∀ p ∈ P, goodLambda ∉ Ideal.span {p})
     (hc : ∀ p ∈ P, ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    (h : O) (hph : ∀ p ∈ P, ¬p ∣ h) :
+     h  (hph : ∀ p ∈ P, ¬p ∣ h) :
     ‖gaussPolynomial S a ha c h‖^2 ≤ (4 / (P.card : ℝ)) *
       ∑ p ∈ P, (‖gaussPolynomial S a ha c (p^6*h)‖^2 +
         ‖amplificationError S a ha c (fun i => multiplicity p (a i)) p 1 h‖^2 +

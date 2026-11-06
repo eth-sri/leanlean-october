@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityZeroPhysical
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityAggregate
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailPhysical
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -29,9 +30,9 @@ theorem global_priority_slice_full_tail
     (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι)
     (original:Finset (Source ι Jo)) (w:Source ι Jo→ℂ) (negative:Bool) (Ψ:Eis→*ℂ) (m:Eis)
     (ray:RayCharacter×RayCharacter) (core:FirstCoreIndex)
-    (slots assigned:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ)
-    (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo) (hs:Function.support om⊆Set.Icc lo hi)
-    (X t Y:ℝ) (hX:0<X) (hY:0<Y) (R:Finset ι→Finset ι→ℝ):
+    (slots assigned:Finset σ)  lists   a 
+     om   lo hi   hlo   hs 
+     X t Y  (hX:0<X) (hY:0<Y)  R :
     let V:=principalWindow om lo hi hlo hs negative t
     let Ψ₀:=firstCoreTwist negative (if negative then ray.1 else ray.2) Ψ core
     let parents:=wholeAssignedParents p (fun x=>extra x.cube) original negative assigned lists
@@ -57,13 +58,11 @@ theorem global_priority_slice_full_tail
       ∑x∈original,‖globalPriorityOuter p hg negative Ψ m ray core w x‖*
         ‖primeMark assigned lists a (wholeExtractedSupport (fun x=>extra x.cube) negative x)‖^2*‖H x‖:=by
     apply (norm_sum_le _ _).trans
-    apply Finset.sum_le_sum
-    intro x hx
-    rw [norm_mul,norm_mul,Complex.norm_real,Real.norm_of_nonneg (sq_nonneg _)]
+    norm_num
   exact (norm_add_le _ _).trans (add_le_add ((norm_add_le _ _).trans (add_le_add (hn _) (le_refl _))) (le_refl _))
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

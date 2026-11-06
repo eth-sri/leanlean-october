@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.GreenIntegrals
 
@@ -10,80 +11,85 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+ 
+ 
 
 end CubicEisenstein
 
 namespace CanonicalQuadraticSieve
 
-theorem symmetric_truncation_scales (X₀ X T : ℝ) (hX₀ : 0 < X₀)
-    (hlo : X₀/2 ≤ X) (hhi : X ≤ 2*X₀) (hT : 4 ≤ T) :
+section
+variable (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 < X₀) (hlo : X₀/2 ≤ X) (hhi : X ≤ 2*X₀) (hT : 4 ≤ T)
+
+
+include hX₀ hlo hhi hT in
+theorem symmetric_truncation_scales    
+          :
     0 < X ∧ 0 < X₀/T ∧ X₀/T ≤ X ∧ X ≤ T*X₀ ∧ 0 ≤ T^4 := by
   have hT0 : 0 < T := by linarith
   have hX : 0 < X := by linarith
@@ -92,8 +98,9 @@ theorem symmetric_truncation_scales (X₀ X T : ℝ) (hX₀ : 0 < X₀)
     nlinarith
   · nlinarith
 
-theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 < X₀)
-    (hlo : X₀/2 ≤ X) (hhi : X ≤ 2*X₀) (hT : 4 ≤ T) :
+include hX₀ hlo hhi hT in
+theorem symmetric_truncation_scalar_bound      
+          :
     ((X₀/T)/X)^(m+3) + 1/(1+(T*X₀)/X)^(m+3) +
       (X/(X₀/T))/((min 1 (X/(T*X₀)))^2*(1+X*T^4/(T*X₀))^(m+3)) ≤
       (2 : ℝ)^(m+10)/T^m := by
@@ -113,8 +120,7 @@ theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 
       _ = 2/T := by field_simp
   have hpow : (2/T)^(m+3) ≤ (2 : ℝ)^(m+3)/T^m := by
     rw [div_pow]
-    exact div_le_div_of_nonneg_left (by positivity) (pow_pos hT0 m)
-      (pow_le_pow_right₀ hT1 (by omega : m ≤ m+3))
+    gcongr <;> first | assumption | positivity | linarith
   have h₁ : ((X₀/T)/X)^(m+3) ≤ (2 : ℝ)^(m+3)/T^m :=
     (pow_le_pow_left₀ (by positivity) hratio _).trans hpow
   have h₂ : 1/(1+(T*X₀)/X)^(m+3) ≤ (2 : ℝ)^(m+3)/T^m := by
@@ -139,8 +145,7 @@ theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 
     linarith
   have hden : (1/(2*T))^2*T^(m+3) ≤
       (min 1 (X/(T*X₀)))^2*(1+X*T^4/(T*X₀))^(m+3) := by
-    exact mul_le_mul (pow_le_pow_left₀ (by positivity) hmin 2)
-      (pow_le_pow_left₀ hT0.le hfreq (m+3)) (by positivity) (by positivity)
+    gcongr <;> first | assumption | positivity | linarith
   have h₃ : (X/(X₀/T))/((min 1 (X/(T*X₀)))^2*(1+X*T^4/(T*X₀))^(m+3)) ≤ 8/T^m := by
     calc
       _ ≤ (2*T)/((1/(2*T))^2*T^(m+3)) :=
@@ -156,17 +161,19 @@ theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 
     _ = (2*(2 : ℝ)^(m+3)+8)/T^m := by ring
     _ ≤ _ := div_le_div_of_nonneg_right hc (by positivity)
 
+end
+
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (columnLog primeProductNorm)
 
-def SecondSourceSupport {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (X M : ℝ) (x : SecondExpansionData ι) : Prop :=
+def SecondSourceSupport {ι } [DecidableEq ι]
+    (p : ι → O) (X M : ℝ) (x : SecondExpansionData ι)  :=
   Disjoint x.sourceCommon x.overlap ∧
     primeProductNorm p x.sourceCommon * primeProductNorm p x.overlap ≤ X * Real.exp M
 
@@ -179,18 +186,24 @@ variable {ι : Type*} [DecidableEq ι]
 end
 section
 
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
-def normLogBin (u : ℝ) : ℕ := ⌊Real.log u⌋₊
-def normLogScale (j : ℕ) : ℝ := Real.exp (j : ℝ)
+def normLogBin (u : ℝ)  := ⌊Real.log u⌋₊
+def normLogScale (j : ℕ)  := Real.exp (j : ℝ)
 
-lemma normLogScale_pos (j : ℕ) : 0 < normLogScale j := Real.exp_pos _
-lemma normLogScale_ge_one (j : ℕ) : 1 ≤ normLogScale j :=
+section
+variable (j : ℕ)
+
+
+lemma normLogScale_pos   : 0 < normLogScale j := Real.exp_pos _
+lemma normLogScale_ge_one   : 1 ≤ normLogScale j :=
   Real.one_le_exp (by positivity)
 
-lemma normLogBin_scale_bounds (u : ℝ) (hu : 1 ≤ u) :
+end
+
+lemma normLogBin_scale_bounds  u  (hu : 1 ≤ u) :
     normLogScale (normLogBin u) ≤ u ∧
       u ≤ normLogScale (normLogBin u) * Real.exp 1 := by
   have hu0 : 0 < u := by linarith
@@ -200,41 +213,32 @@ lemma normLogBin_scale_bounds (u : ℝ) (hu : 1 ≤ u) :
   · have h := Real.exp_le_exp.mpr (Nat.lt_floor_add_one (Real.log u)).le
     simpa only [Real.exp_log hu0, Real.exp_add, normLogScale, normLogBin] using h
 
-lemma normLogBin_mono {u v : ℝ} (hu : 0 < u) (huv : u ≤ v) :
+lemma normLogBin_mono  {u v}  (hu : 0 < u) (huv : u ≤ v) :
     normLogBin u ≤ normLogBin v := Nat.floor_mono (Real.log_le_log hu huv)
 
 abbrev SecondLogIndex := ℕ × ℕ × ℕ
 
-def secondLogE (j : SecondLogIndex) : ℝ := normLogScale j.1
-def secondLogV (j : SecondLogIndex) : ℝ := normLogScale j.2.1
-def secondLogK (j : SecondLogIndex) : ℝ := normLogScale j.2.2
+def secondLogE (j : SecondLogIndex)  := normLogScale j.1
+def secondLogV (j : SecondLogIndex)  := normLogScale j.2.1
+def secondLogK (j : SecondLogIndex)  := normLogScale j.2.2
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
 
-def secondLogIndex (D : Finset ι) (x : SecondExpansionData ι) : SecondLogIndex :=
+def secondLogIndex (D : Finset ι) (x : SecondExpansionData ι)  :=
   (normLogBin (primeProductNorm p x.divisor), normLogBin (primeProductNorm p x.overlap),
     normLogBin (‖eisEmbedding (actualSecondRow p D x.divisor x.frequency)‖^2))
 
-lemma element_norm_ge_one (a : O) (ha : a ≠ 0) : 1 ≤ ‖eisEmbedding a‖^2 := by
+lemma element_norm_ge_one  a  (ha : a ≠ 0) : 1 ≤ ‖eisEmbedding a‖^2 := by
   rw [eisEmbedding_norm_sq_eq_absNorm_span]
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (show Ideal.absNorm (Ideal.span {a}) ≠ 0 by
     rw [ne_eq, Ideal.absNorm_eq_zero_iff, Ideal.span_singleton_eq_bot]
     exact ha)
 
 end
-section
 
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm jLabel)
-open ConcreteTraceCRT (eisEmbedding)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-
-end
-
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -242,11 +246,11 @@ variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
 
 def secondSupportedSector (F : Finset ι) (K : Finset ι → Finset ι → Finset O)
-    (R : Finset ι) (X M : ℝ) : Finset (SecondExpansionData ι) :=
+    (R : Finset ι) (X M : ℝ)  :=
   (secondExpansionSector F (fun G E => (K G E).erase 0) R).filter (SecondSourceSupport p X M)
 
 def secondLogSector (D F : Finset ι) (K : Finset ι → Finset ι → Finset O)
-    (R : Finset ι) (X M : ℝ) (j : SecondLogIndex) : Finset (SecondExpansionData ι) :=
+    (R : Finset ι) (X M : ℝ) (j : SecondLogIndex)  :=
   (secondSupportedSector p F K R X M).filter (fun x => secondLogIndex p D x = j)
 
 end SecondPassArithmetic

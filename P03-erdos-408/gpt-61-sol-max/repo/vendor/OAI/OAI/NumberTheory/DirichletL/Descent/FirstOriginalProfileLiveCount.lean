@@ -6,17 +6,17 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLivePartit
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels InverseMomentFirstChildWindows InverseSecondSourceBlocks
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem liveJointKeys_card (S : Finset (OriginalIndex ι)) (pool : Finset ι)
-    (term : OriginalIndex ι→FirstCommonIndex ι→ℂ) (B : ℕ)
+    (term : OriginalIndex ι→FirstCommonIndex ι→ℂ)  B 
     (hcap : ∀x∈S,∀j∈firstCommonIndices pool,term x j≠0→
       (∀i,sourceIndex (originalNorms p) x i≤B) ∧
       dyadIndex (primeProductNorm p j.2.1)≤B ∧
@@ -41,7 +41,7 @@ theorem liveJointKeys_card (S : Finset (OriginalIndex ι)) (pool : Finset ι)
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem liveJointKeys_card_of_norm_cap (S : Finset (OriginalIndex ι)) (pool : Finset ι)
-    (term : OriginalIndex ι→FirstCommonIndex ι→ℂ) (R : ℝ)
+    (term : OriginalIndex ι→FirstCommonIndex ι→ℂ)  R 
     (hcap : ∀x∈S,∀j∈firstCommonIndices pool,term x j≠0→
       (∀i,0<originalNorms p x i ∧ originalNorms p x i≤R) ∧
       (0<primeProductNorm p j.2.1 ∧ primeProductNorm p j.2.1≤R) ∧
@@ -55,6 +55,6 @@ theorem liveJointKeys_card_of_norm_cap (S : Finset (OriginalIndex ι)) (pool : F
   exact ⟨fun i=>hm _ (h₁ i).1 (h₁ i).2,hm _ h₂.1 h₂.2,hm _ h₃.1 h₃.2⟩
 
 end SevenEighths.InverseMomentFirstOriginalProfile
-end
+
 
 end OAI

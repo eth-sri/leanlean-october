@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.VaughanIdentity
 
@@ -10,27 +11,27 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set   MeasureTheory
 
 open scoped Topology ContDiff
 
 open Asymptotics
 
-open Asymptotics
+ 
 
-open Asymptotics
+ 
 
 open scoped Classical
 
-open scoped ContDiff
+ 
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution   Pointwise
 
 open scoped ComplexConjugate
 
-theorem sequenceSize_le_of_norm_le {N : ℕ} (a : Fin N→ℂ) {A : ℝ}
+theorem sequenceSize_le_of_norm_le {N : ℕ} (a : Fin N→ℂ)  {A} 
     (hA : 0 ≤ A) (ha : ∀ n,‖a n‖ ≤ A) : sequenceSize a ≤ Real.sqrt N*A := by
   have hh : sequenceSize a^2 ≤ (N:ℝ)*A^2 := by
     rw [sequenceSize_sq]
@@ -47,7 +48,10 @@ noncomputable def vaughanFirstSequence (V M : ℕ) : Fin M→ℂ :=
 noncomputable def vaughanSecondSequence (U N : ℕ) : Fin N→ℂ :=
   fun n=>(vaughanSecondCoefficient U n.val:ℂ)
 
-theorem vaughanFirstSequence_norm_le (V M : ℕ) (m : Fin M) :
+section
+variable (Q : ℕ) {q : ℕ} (X U V M N k : ℕ) (f g : ArithmeticFunction ℝ) (χ : DirichletCharacter ℂ q)
+
+theorem vaughanFirstSequence_norm_le    m  :
     ‖vaughanFirstSequence V M m‖ ≤ 1 := by
   unfold vaughanFirstSequence
   split_ifs
@@ -55,24 +59,24 @@ theorem vaughanFirstSequence_norm_le (V M : ℕ) (m : Fin M) :
     exact_mod_cast (ArithmeticFunction.abs_moebius_le_one (n:=m.val))
   · simp
 
-theorem vaughanFirstSequence_size_le (V M : ℕ) :
+theorem vaughanFirstSequence_size_le   :
     sequenceSize (vaughanFirstSequence V M) ≤ Real.sqrt M := by
   simpa only [mul_one] using sequenceSize_le_of_norm_le (vaughanFirstSequence V M)
     zero_le_one (vaughanFirstSequence_norm_le V M)
 
-theorem vaughanSecondSequence_norm_le (U N : ℕ) (n : Fin N) :
+theorem vaughanSecondSequence_norm_le    n  :
     ‖vaughanSecondSequence U N n‖ ≤ Real.log N := by
   rw [vaughanSecondSequence,Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (vaughanSecondCoefficient_nonneg _ _)]
   exact (vaughanSecondCoefficient_le_log _ _).trans (log_nat_monotone n.isLt.le)
 
-theorem vaughanSecondSequence_size_le (U N : ℕ) :
+theorem vaughanSecondSequence_size_le   :
     sequenceSize (vaughanSecondSequence U N) ≤ Real.sqrt N*Real.log N := by
   apply sequenceSize_le_of_norm_le _ _ (vaughanSecondSequence_norm_le U N)
   simpa using log_nat_monotone (Nat.zero_le N)
 
-theorem vaughan_typeII_block_mean (Q X U V M N k : ℕ) (hk : N ≤ 2^k)
-    (p : Fin M→Prop) (r : Fin N→Prop) :
+theorem vaughan_typeII_block_mean   (hk : N ≤ 2^k)
+     p   r  :
     primitiveCharacterMean Q (fun _ χ=>‖triangularCharacterSum
       (sequenceMask p (vaughanFirstSequence V M))
       (sequenceMask r (vaughanSecondSequence U N)) (fun m=>X/m.val+1) χ‖) ≤
@@ -91,20 +95,14 @@ theorem vaughan_typeII_block_mean (Q X U V M N k : ℕ) (hk : N ≤ 2^k)
   · exact mul_nonneg hC (Real.sqrt_nonneg _)
 
 theorem sum_Icc_one_eq_range_of_zero {E : Type*} [AddCommMonoid E]
-    (F : ℕ→E) (hF : F 0=0) (N : ℕ) :
+    (F : ℕ→E) (hF : F 0=0)  N  :
     (∑ n∈Finset.Icc 1 N,F n)=∑ n∈Finset.range (N+1),F n := by
   apply Finset.sum_subset
-  · intro n hn
-    have h:=Finset.mem_Icc.mp hn
-    exact Finset.mem_range.mpr (by omega)
-  · intro n hn hn'
-    have h:=Finset.mem_range.mp hn
-    have hh:¬(1 ≤ n ∧ n ≤ N):=by simpa using hn'
-    have he:n=0:=by omega
-    simpa [he] using hF
+  · grind
+  simp_all
 
 theorem sum_range_filter_prefix {E : Type*} [AddCommMonoid E]
-    (F : ℕ→E) {N K : ℕ} (hK : K ≤ N) :
+    (F : ℕ→E)  {N K}  (hK : K ≤ N) :
     (∑ n∈Finset.range (N+1),if n<K+1 then F n else 0)=
       ∑ n∈Finset.range (K+1),F n := by
   rw [←Finset.sum_filter]
@@ -113,8 +111,8 @@ theorem sum_range_filter_prefix {E : Type*} [AddCommMonoid E]
   simp only [Finset.mem_filter,Finset.mem_range]
   omega
 
-theorem arithmeticCharacterSum_convolution_triangular {q : ℕ} (X : ℕ)
-    (f g : ArithmeticFunction ℝ) (χ : DirichletCharacter ℂ q) :
+theorem arithmeticCharacterSum_convolution_triangular    
+        :
     arithmeticCharacterSum X (f*g) χ=
       triangularCharacterSum (fun m:Fin (X+1)=>(f m.val:ℂ))
         (fun n:Fin (X+1)=>(g n.val:ℂ)) (fun m=>X/m.val+1) χ := by
@@ -144,7 +142,7 @@ theorem arithmeticCharacterSum_convolution_triangular {q : ℕ} (X : ℕ)
   intro n _
   split_ifs <;> ring
 
-theorem vaughan_typeII_exact {q : ℕ} (X U V : ℕ) (χ : DirichletCharacter ℂ q) :
+theorem vaughan_typeII_exact       :
     arithmeticCharacterSum X
       ((ArithmeticFunction.moebius-arithmeticCutoff V ArithmeticFunction.moebius)*
         vaughanSecondCoefficient U) χ=
@@ -159,11 +157,13 @@ theorem vaughan_typeII_exact {q : ℕ} (X U V : ℕ) (χ : DirichletCharacter �
   · simp [vaughanFirstSequence,hm,not_lt_of_ge hm]
   · simp [vaughanFirstSequence,hm,lt_of_not_ge hm]
 
-noncomputable def arithmeticL1 (X : ℕ) (f : ArithmeticFunction ℝ) : ℝ :=
+end
+
+noncomputable def arithmeticL1 (X : ℕ) (f : ArithmeticFunction ℝ)  :=
   ∑ n∈Finset.Icc 1 X,|f n|
 
-theorem arithmeticCharacterSum_le_l1 {q : ℕ} (X : ℕ)
-    (f : ArithmeticFunction ℝ) (χ : DirichletCharacter ℂ q) :
+theorem arithmeticCharacterSum_le_l1 {q : ℕ}  X 
+     f  (χ : DirichletCharacter ℂ q) :
     ‖arithmeticCharacterSum X f χ‖ ≤ arithmeticL1 X f := by
   apply (norm_sum_le _ _).trans
   apply Finset.sum_le_sum
@@ -171,7 +171,10 @@ theorem arithmeticCharacterSum_le_l1 {q : ℕ} (X : ℕ)
   rw [norm_mul,Complex.norm_real,Real.norm_eq_abs]
   exact mul_le_of_le_one_right (abs_nonneg _) (χ.norm_le_one _)
 
-theorem arithmeticL1_cutoff_le (X D : ℕ) (f : ArithmeticFunction ℝ) {A : ℝ}
+section
+variable {q : ℕ} (hq : 1 < q) {χ : DirichletCharacter ℂ q} (hχ : χ.IsPrimitive) (X D U V n : ℕ) (f g : ArithmeticFunction ℝ)
+
+theorem arithmeticL1_cutoff_le      {A} 
     (hA : 0 ≤ A) (hf : ∀ n∈Finset.Icc 1 D,|f n| ≤ A) :
     arithmeticL1 X (arithmeticCutoff D f) ≤ (D:ℝ)*A := by
   have he : arithmeticL1 X (arithmeticCutoff D f)=
@@ -182,9 +185,7 @@ theorem arithmeticL1_cutoff_le (X D : ℕ) (f : ArithmeticFunction ℝ) {A : ℝ
     split_ifs <;> simp
   rw [he]
   have hs : (Finset.Icc 1 X).filter (fun n=>n ≤ D) ⊆ Finset.Icc 1 D := by
-    intro n hn
-    obtain ⟨hn,hnD⟩:=Finset.mem_filter.mp hn
-    exact Finset.mem_Icc.mpr ⟨(Finset.mem_Icc.mp hn).1,hnD⟩
+    grind
   calc
     _ ≤ ∑ _n∈(Finset.Icc 1 X).filter (fun n=>n ≤ D),A :=
       Finset.sum_le_sum (fun n hn=>hf n (hs hn))
@@ -193,21 +194,22 @@ theorem arithmeticL1_cutoff_le (X D : ℕ) (f : ArithmeticFunction ℝ) {A : ℝ
       apply mul_le_mul_of_nonneg_right _ hA
       exact_mod_cast (by simpa using Finset.card_le_card hs)
 
-theorem arithmeticCharacterSum_log_convolution_bound {q : ℕ} (hq : 1 < q)
-    {χ : DirichletCharacter ℂ q} (hχ : χ.IsPrimitive) (X : ℕ) (f : ArithmeticFunction ℝ) :
+include hq hχ in
+theorem arithmeticCharacterSum_log_convolution_bound    
+            :
     ‖arithmeticCharacterSum X (f*ArithmeticFunction.log) χ‖ ≤
       arithmeticL1 X f*(2*Real.log (X+1:ℕ)*(Real.sqrt q*(harmonic q:ℝ))) := by
   rw [arithmeticCharacterSum_convolution]
   have he (d : ℕ) : (∑ n∈Finset.Icc 1 (X/d),
       (ArithmeticFunction.log n:ℂ)*χ (n:ZMod q))=
-      ∑ n∈Finset.range (X/d+1),(Real.log n:ℂ)*χ (n:ZMod q) := by
-    exact sum_Icc_one_eq_range_of_zero _ (by simp) _
+      ∑ n∈Finset.range (X/d+1),(Real.log n:ℂ)*χ (n:ZMod q) := sum_Icc_one_eq_range_of_zero _ (by simp) _
   simp only [he]
   have h:=primitive_typeI_log_bound hq hχ X X (fun d=>(f d:ℂ))
   simpa only [arithmeticL1,Complex.norm_real,Real.norm_eq_abs] using h
 
-theorem arithmeticCharacterSum_zeta_convolution_bound {q : ℕ} (hq : 1 < q)
-    {χ : DirichletCharacter ℂ q} (hχ : χ.IsPrimitive) (X : ℕ) (f : ArithmeticFunction ℝ) :
+include hq hχ in
+theorem arithmeticCharacterSum_zeta_convolution_bound    
+            :
     ‖arithmeticCharacterSum X (f*(ArithmeticFunction.zeta:ArithmeticFunction ℝ)) χ‖ ≤
       arithmeticL1 X f*(Real.sqrt q*(harmonic q:ℝ)) := by
   rw [arithmeticCharacterSum_convolution]
@@ -224,7 +226,7 @@ theorem arithmeticCharacterSum_zeta_convolution_bound {q : ℕ} (hq : 1 < q)
   have h:=primitive_typeI_bound hq hχ X X (fun d=>(f d:ℂ))
   simpa only [arithmeticL1,Complex.norm_real,Real.norm_eq_abs] using h
 
-theorem arithmeticCutoff_mul_support (U V n : ℕ) (f g : ArithmeticFunction ℝ)
+theorem arithmeticCutoff_mul_support    
     (hn : U*V < n) : (arithmeticCutoff U f*arithmeticCutoff V g) n=0 := by
   rw [ArithmeticFunction.mul_apply]
   apply Finset.sum_eq_zero
@@ -237,7 +239,7 @@ theorem arithmeticCutoff_mul_support (U V n : ℕ) (f g : ArithmeticFunction ℝ
     · simp [arithmeticCutoff_apply,h2]
   · simp [arithmeticCutoff_apply,h1]
 
-theorem vaughanShortCoefficient_abs_le (U V n : ℕ) :
+theorem vaughanShortCoefficient_abs_le   :
     |(arithmeticCutoff V (ArithmeticFunction.moebius:ArithmeticFunction ℝ)*
       arithmeticCutoff U ArithmeticFunction.vonMangoldt) n| ≤ Real.log n := by
   rw [ArithmeticFunction.mul_apply]
@@ -266,14 +268,11 @@ theorem vaughanShortCoefficient_abs_le (U V n : ℕ) :
       rw [Nat.sum_divisorsAntidiagonal' (fun _ d=>ArithmeticFunction.vonMangoldt d),
         ArithmeticFunction.vonMangoldt_sum]
 
-theorem arithmeticCutoff_eq_of_support (D : ℕ) (f : ArithmeticFunction ℝ)
+theorem arithmeticCutoff_eq_of_support    
     (hf : ∀ n,D<n→f n=0) : arithmeticCutoff D f=f := by
-  ext n
-  by_cases hn:n ≤ D
-  · simp [arithmeticCutoff_apply,hn]
-  · simp [arithmeticCutoff_apply,hn,hf n (lt_of_not_ge hn)]
+  aesop
 
-theorem vonMangoldt_cutoff_l1 (X U : ℕ) :
+theorem vonMangoldt_cutoff_l1   :
     arithmeticL1 X (arithmeticCutoff U ArithmeticFunction.vonMangoldt) ≤ (U:ℝ)*Real.log U := by
   apply arithmeticL1_cutoff_le
   · simpa using log_nat_monotone (Nat.zero_le U)
@@ -281,7 +280,7 @@ theorem vonMangoldt_cutoff_l1 (X U : ℕ) :
     rw [abs_of_nonneg ArithmeticFunction.vonMangoldt_nonneg]
     exact ArithmeticFunction.vonMangoldt_le_log.trans (log_nat_monotone (Finset.mem_Icc.mp hn).2)
 
-theorem moebius_cutoff_l1 (X V : ℕ) :
+theorem moebius_cutoff_l1   :
     arithmeticL1 X (arithmeticCutoff V (ArithmeticFunction.moebius:ArithmeticFunction ℝ)) ≤ V := by
   have h:=arithmeticL1_cutoff_le X V (ArithmeticFunction.moebius:ArithmeticFunction ℝ)
     zero_le_one (fun n _=>by
@@ -289,7 +288,7 @@ theorem moebius_cutoff_l1 (X V : ℕ) :
       exact_mod_cast (ArithmeticFunction.abs_moebius_le_one (n:=n)))
   simpa only [mul_one] using h
 
-theorem vaughanShortCoefficient_l1 (X U V : ℕ) :
+theorem vaughanShortCoefficient_l1   :
     arithmeticL1 X (arithmeticCutoff V (ArithmeticFunction.moebius:ArithmeticFunction ℝ)*
       arithmeticCutoff U ArithmeticFunction.vonMangoldt) ≤ (V*U:ℕ)*Real.log (V*U:ℕ) := by
   let f:=arithmeticCutoff V (ArithmeticFunction.moebius:ArithmeticFunction ℝ)*
@@ -303,8 +302,9 @@ theorem vaughanShortCoefficient_l1 (X U V : ℕ) :
   · intro n hn
     exact (vaughanShortCoefficient_abs_le U V n).trans (log_nat_monotone (Finset.mem_Icc.mp hn).2)
 
-theorem primitive_vaughan_bound {q : ℕ} (hq : 1 < q)
-    {χ : DirichletCharacter ℂ q} (hχ : χ.IsPrimitive) (X U V : ℕ) :
+include hq hχ in
+theorem primitive_vaughan_bound    
+          :
     ‖arithmeticCharacterSum X ArithmeticFunction.vonMangoldt χ‖ ≤
       (U:ℝ)*Real.log U+
       (V:ℝ)*(2*Real.log (X+1:ℕ)*(Real.sqrt q*(harmonic q:ℝ)))+
@@ -314,7 +314,7 @@ theorem primitive_vaughan_bound {q : ℕ} (hq : 1 < q)
   have hH : 0 ≤ (harmonic q:ℝ) := by exact_mod_cast (harmonic_pos (by omega : q≠0)).le
   have hK : 0 ≤ Real.sqrt q*(harmonic q:ℝ) := mul_nonneg (Real.sqrt_nonneg _) hH
   have hL : 0 ≤ (2:ℝ)*Real.log (X+1:ℕ)*(Real.sqrt q*(harmonic q:ℝ)) :=
-    mul_nonneg (mul_nonneg (by norm_num) (Real.log_nonneg (by exact_mod_cast (show 1 ≤ X+1 by omega)))) hK
+    (by positivity)
   have h0 := (arithmeticCharacterSum_le_l1 X (arithmeticCutoff U ArithmeticFunction.vonMangoldt) χ).trans
     (vonMangoldt_cutoff_l1 X U)
   have h1 := (arithmeticCharacterSum_log_convolution_bound hq hχ X
@@ -331,21 +331,25 @@ theorem primitive_vaughan_bound {q : ℕ} (hq : 1 < q)
   apply add_le_add _ h2
   exact (norm_add_le _ _).trans (add_le_add h0 h1)
 
-noncomputable def hyperbolaBlock {q : ℕ} (X D E : ℕ)
-    (a b : ℕ→ℂ) (χ : DirichletCharacter ℂ q) : ℂ :=
+end
+
+noncomputable def hyperbolaBlock {q } (X D E : ℕ)
+    (a b : ℕ→ℂ) (χ : DirichletCharacter ℂ q)  :=
   ∑ m∈Finset.Ico D E,a m*χ (m:ZMod q)*
     (∑ n∈Finset.range (X/m+1),b n*χ (n:ZMod q))
 
-theorem hyperbolaBlock_eq_triangle {q : ℕ} (X D E : ℕ) (hD : 0 < D)
-    (a b : ℕ→ℂ) (χ : DirichletCharacter ℂ q) :
+section
+variable {q : ℕ} (Q X U V D E k : ℕ) (hD : 0 < D) (hE : X+1 ≤ E) (a b : ℕ→ℂ) (hb : b 0=0) (χ : DirichletCharacter ℂ q)
+
+include hD in
+theorem hyperbolaBlock_eq_triangle      
+        :
     hyperbolaBlock X D E a b χ=
       triangularCharacterSum (sequenceMask (fun m:Fin E=>D ≤ m.val) (fun m=>a m.val))
         (fun n:Fin (X/D+1)=>b n.val) (fun m=>X/m.val+1) χ := by
   classical
   have hf : (Finset.range E).filter (fun m=>D ≤ m)=Finset.Ico D E := by
-    ext m
-    simp only [Finset.mem_filter,Finset.mem_range,Finset.mem_Ico]
-    omega
+    aesop
   have he : triangularCharacterSum
       (sequenceMask (fun m:Fin E=>D ≤ m.val) (fun m=>a m.val))
       (fun n:Fin (X/D+1)=>b n.val) (fun m=>X/m.val+1) χ=
@@ -376,7 +380,7 @@ theorem hyperbolaBlock_eq_triangle {q : ℕ} (X D E : ℕ) (hD : 0 < D)
     split_ifs <;> ring
   · simp [hm]
 
-theorem sum_Ico_one_pow_two {A : Type*} [AddCommMonoid A] (F : ℕ→A) (k : ℕ) :
+theorem sum_Ico_one_pow_two {A : Type*} [AddCommMonoid A] (F : ℕ→A)  k  :
     (∑ m∈Finset.Ico 1 (2^k),F m)=
       ∑ j∈Finset.range k,∑ m∈Finset.Ico (2^j) (2^(j+1)),F m := by
   induction k with
@@ -384,9 +388,10 @@ theorem sum_Ico_one_pow_two {A : Type*} [AddCommMonoid A] (F : ℕ→A) (k : ℕ
   | succ k ih =>
     rw [Finset.sum_range_succ,←ih,Finset.sum_Ico_consecutive]
     · exact one_le_pow₀ (by omega)
-    · exact pow_le_pow_right₀ (by omega) (Nat.le_succ k)
+    bound
 
-theorem vaughan_hyperbolaBlock_mean (Q X U V D E k : ℕ) (hD : 0 < D)
+include hD in
+theorem vaughan_hyperbolaBlock_mean    
     (hk : X/D+1 ≤ 2^k) :
     primitiveCharacterMean Q (fun _ χ=>‖hyperbolaBlock X D E
       (fun m=>if V < m then (ArithmeticFunction.moebius m:ℂ) else 0)
@@ -412,23 +417,20 @@ theorem vaughan_hyperbolaBlock_mean (Q X U V D E k : ℕ) (hD : 0 < D)
   rw [he]
   exact h
 
-theorem hyperbolaBlock_extend {q : ℕ} (X E : ℕ) (hE : X+1 ≤ E)
-    (a b : ℕ→ℂ) (hb : b 0=0) (χ : DirichletCharacter ℂ q) :
+include hE hb in
+theorem hyperbolaBlock_extend      
+          :
     hyperbolaBlock X 1 (X+1) a b χ=hyperbolaBlock X 1 E a b χ := by
   unfold hyperbolaBlock
   apply Finset.sum_subset
-  · intro m hm
-    exact Finset.mem_Ico.mpr ⟨(Finset.mem_Ico.mp hm).1,
-      ((Finset.mem_Ico.mp hm).2).trans_le hE⟩
+  · gcongr <;> first | assumption | positivity | linarith
   · intro m hm hm'
     have hx : X < m := by
-      have h:=Finset.mem_Ico.mp hm
-      have hh : ¬(1 ≤ m ∧ m < X+1) := by simpa only [Finset.mem_Ico] using hm'
-      omega
+      simp_all
     simp [Nat.div_eq_of_lt hx,hb]
 
-theorem arithmeticCharacterSum_convolution_dyadic {q : ℕ} (X k : ℕ)
-    (hk : X+1 ≤ 2^k) (f g : ArithmeticFunction ℝ) (χ : DirichletCharacter ℂ q) :
+theorem arithmeticCharacterSum_convolution_dyadic    
+    (hk : X+1 ≤ 2^k)  f g  (χ : DirichletCharacter ℂ q) :
     arithmeticCharacterSum X (f*g) χ=
       ∑ j∈Finset.range k,hyperbolaBlock X (2^j) (2^(j+1))
         (fun m=>(f m:ℂ)) (fun n=>(g n:ℂ)) χ := by
@@ -439,12 +441,11 @@ theorem arithmeticCharacterSum_convolution_dyadic {q : ℕ} (X k : ℕ)
     unfold hyperbolaBlock
     rw [show Finset.Ico 1 (X+1)=Finset.Icc 1 X by ext m; simp]
     apply Finset.sum_congr rfl
-    intro m _
-    rw [sum_Icc_one_eq_range_of_zero (fun n=>(g n:ℂ)*χ (n:ZMod q)) (by simp)]
+    simp_all [sum_Icc_one_eq_range_of_zero, ZMod]
   rw [he,hyperbolaBlock_extend X (2^k) hk _ _ (by simp)]
   exact sum_Ico_one_pow_two _ k
 
-theorem vaughan_typeII_dyadic {q : ℕ} (X U V k : ℕ) (hk : X+1 ≤ 2^k)
+theorem vaughan_typeII_dyadic     (hk : X+1 ≤ 2^k)
     (χ : DirichletCharacter ℂ q) :
     arithmeticCharacterSum X
       ((ArithmeticFunction.moebius-arithmeticCutoff V ArithmeticFunction.moebius)*
@@ -463,6 +464,8 @@ theorem vaughan_typeII_dyadic {q : ℕ} (X U V k : ℕ) (hk : X+1 ≤ 2^k)
     · simp [hm,not_lt_of_ge hm]
     · simp [hm,lt_of_not_ge hm]
   rw [hf]
+
+end
 
 end LargePrimeGaps
 

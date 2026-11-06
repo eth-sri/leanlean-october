@@ -22,7 +22,7 @@ variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def modeCoefficient (Ψ:Eis→*ℂ)(j:Eis)(Z D B v θ H:ℝ)
-    (x:Source (ι:=ι) 0)(ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) : ℂ :=
+    (x:Source (ι:=ι) 0)(ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ))  :=
   outerCoefficient p hp hcop hg Ψ j (sourcePoint x ∅ ∅) ρ *
     secondOuterPhase (profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2)
       (relativeLog (coordinates p (sourcePoint x ∅ ∅)) Z D B v θ H)
@@ -30,7 +30,7 @@ def modeCoefficient (Ψ:Eis→*ℂ)(j:Eis)(Z D B v θ H:ℝ)
 def allocatedMode (u:Eisˣ)(pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)
     (slots J₁ J₂:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (ω₁ ω₂:ℝ→ℂ)(Z D B v θ H:ℝ)
-    (x:Source (ι:=ι) 0)(ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) : ℂ :=
+    (x:Source (ι:=ι) 0)(ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ))  :=
   let height := profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2
   modeCoefficient p hp hcop hg Ψ j Z D B v θ H x ρ z *
     (star (primeMark J₁ lists a (x.common∪x.overlap))*primeMark J₂ lists a (x.common∪x.overlap))*
@@ -46,8 +46,8 @@ theorem rowMode_eq_allocations
     (x:Source (ι:=ι) 0)(hdiv:x.divisor⊆x.common)(u:Eisˣ)
     (hu:unitSector p hp hpr (sourcePoint x ∅ ∅)=u)
     (pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)(slots:Finset σ)
-    (lists:σ→Finset ι)(a:σ→ι→ℂ)(ω₁ ω₂:ℝ→ℂ)(Z D B v θ H:ℝ)
-    (ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) :
+     lists  a  ω₁ ω₂  Z D B v θ H 
+     ρ  z  :
     rowMode p hp hcop hg hpr pool Ψ j slots lists a ω₁ ω₂ Z D B v θ H x ρ z=
       ∑J₁∈slots.powerset,∑J₂∈slots.powerset,
         allocatedMode p hp hcop hg u pool Ψ j slots J₁ J₂ lists a ω₁ ω₂
@@ -67,8 +67,8 @@ theorem rowMode_eq_allocations
 
 theorem modeCoefficient_norm_le
     (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
-    (Ψ:Eis→*ℂ)(hΨ:∀n,‖Ψ n‖≤1)(j:Eis)(Z D B v θ H:ℝ)
-    (x:Source (ι:=ι) 0)(ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) :
+    (Ψ:Eis→*ℂ)(hΨ:∀n,‖Ψ n‖≤1) j  Z D B v θ H 
+     x  ρ  z  :
     ‖modeCoefficient p hp hcop hg Ψ j Z D B v θ H x ρ z‖≤‖secondRayCoefficient ρ‖ := by
   simp only [modeCoefficient,norm_mul,secondOuterPhase_norm,mul_one]
   exact InverseInitialEnergyCallerWeights.outerCoefficient_norm_le p hp hcop hg hc Ψ hΨ j _ ρ

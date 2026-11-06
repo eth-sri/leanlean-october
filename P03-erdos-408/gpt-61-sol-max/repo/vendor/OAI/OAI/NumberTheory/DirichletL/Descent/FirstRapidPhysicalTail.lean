@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstSourceTail
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -75,6 +75,6 @@ theorem first_whole_cube_rapid_physical_tail (ε:ℝ) (hε:0<ε)
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

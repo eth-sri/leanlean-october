@@ -11,10 +11,10 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
 
-def centralRowScalar (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
+
+def centralRowScalar (S ) (hS : SourceExclusions S)
+    (hmax : ∀P∈S,P.IsMaximal) (η : Character) (u : FreeRow) (x w z : ℂ)  :=
   (star ((calibrationForSet S hmax).residueMonoid u.val)*
     (LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
       HeckeOrigin.continued (rowCharacter S hS.prime u) w*
@@ -22,10 +22,10 @@ def centralRowScalar (S : Finset (Ideal O)) (hS : SourceExclusions S)
     continuedCorrection S hS η u x w z
 
 theorem calibratedTupleValue_central {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (u : FreeRow) (P : Fin K→PrimeIdeal)
+     S   hS   hmax 
+     η   u  (P : Fin K→PrimeIdeal)
     (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
-    (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (a e : ℝ) (x w z : ℂ)
+    (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (a e : ℝ)  x w z 
     (htail : FirstTail (4*e) S) (ha : (51/100:ℝ)≤a) (ha1 : a≤1)
     (he : 0<e) (he1 : e≤1/1000) (hx : x.re=a+16*e)
     (hw : w.re=1-a-6*e) (hz : z.re=17/50)
@@ -55,11 +55,11 @@ theorem calibratedTupleValue_central {K : ℕ}
   field_simp
 
 theorem calibrated_prime_slots_separate {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (u : FreeRow) (T : Fin K→Finset PrimeIdeal)
     (hPS : ∀i P,P∈T i→P.val∉S)
     (hdis : ∀P:(∀i,T i),Function.Injective (fun i=>(P i).val))
-    (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (a e : ℝ) (x w z : ℂ)
+     W   Y  (a e : ℝ)  x w z 
     (htail : FirstTail (4*e) S) (ha : (51/100:ℝ)≤a) (ha1 : a≤1)
     (he : 0<e) (he1 : e≤1/1000) (hx : x.re=a+16*e)
     (hw : w.re=1-a-6*e) (hz : z.re=17/50)

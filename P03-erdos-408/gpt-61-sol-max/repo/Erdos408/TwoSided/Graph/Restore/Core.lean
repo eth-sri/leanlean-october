@@ -52,7 +52,7 @@ lemma groupAdmissible_facts {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fintype ι]
 /-! ### U8 and the invariance of the clipped core -/
 
 /-- Eventually `2 L^{1/5} < L^{0.27}` and `exp(L^{0.46}) ≤ x^{c/T^{20}}`. -/
-lemma eventually_band_lt_and_le_slot {c : ℝ} (hc : 0 < c) :
+lemma eventually_band_lt_and_le_slot  {c}  (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop, 1 ≤ Real.log x ∧
       2 * Real.log x ^ (1 / 5 : ℝ) < Real.log x ^ (0.27 : ℝ) ∧
       Real.exp (Real.log x ^ (0.46 : ℝ)) ≤ x ^ (c / Real.log (Real.log x) ^ 20) := by
@@ -94,8 +94,8 @@ lemma eventually_band_lt_and_le_slot {c : ℝ} (hc : 0 < c) :
 
 /-- **U8.** Eventually, for an active prime `p` and every `n`, `F(p n) = F(n)`: active
 primes lie above the bands and below the slots. -/
-theorem eventually_centeredCore_mul_prime (q c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ)
-    (d : ℕ) (hahi : ahi < 1 / 5) (hc : 0 < c) :
+theorem eventually_centeredCore_mul_prime  q c₀ C₀ vlo vhi alo ahi   K₀   CN c 
+     d  (hahi : ahi < 1 / 5) (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →

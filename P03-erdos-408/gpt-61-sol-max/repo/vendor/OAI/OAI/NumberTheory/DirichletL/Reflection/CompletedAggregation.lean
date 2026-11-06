@@ -10,13 +10,13 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
 
 theorem completed_representative_aggregation (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
-    ∃ C : ℝ,0<C ∧ ∀ (Z : ℝ),2≤Z → ∀ (parents : Finset (Ideal Eis)) (Q : Ideal Eis),
+    ∃ C : ℝ,0<C ∧ ∀ (Z : ℝ),2≤Z → ∀ (parents : Finset (Ideal ActualEisensteinCubic.O)) (Q : Ideal ActualEisensteinCubic.O),
       (∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z^L) → Q≠0 → (Ideal.absNorm Q:ℝ)≤Z^L →
-      ∀ (E : ℝ) (f : Ideal Eis→ℝ),0≤E →
+      ∀ (E : ℝ) (f : Ideal ActualEisensteinCubic.O→ℝ),0≤E →
       (∀ J∈parents,(∑ I∈representativeRowFiber parents J Q,f I)≤
         E*(Ideal.absNorm (rowPowerfulPart J):ℝ)^(-(1/2:ℝ))) →
       (∑ I∈parents,f I)≤C*Z^ε*E := by
@@ -25,7 +25,7 @@ theorem completed_representative_aggregation (L ε : ℝ) (hL : 0≤L) (hε : 0<
   intro Z hZ parents Q hparents hQ hQN E f hE hf
   have hb := hbudget Z hZ parents Q hparents hQ hQN
   simp only [neg_div] at hb
-  have hblocks (A T : Ideal Eis) : (∑ I∈completedRowFiber parents Q A T,f I)≤
+  have hblocks (A T : Ideal ActualEisensteinCubic.O) : (∑ I∈completedRowFiber parents Q A T,f I)≤
       E*(Ideal.absNorm A:ℝ)^(-(1/2:ℝ)) := by
     by_cases he : (completedRowFiber parents Q A T).Nonempty
     · obtain ⟨J,hJ⟩ := he
@@ -47,7 +47,7 @@ theorem completed_representative_aggregation (L ε : ℝ) (hL : 0≤L) (hε : 0<
       intro A hA
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_right hb hE
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

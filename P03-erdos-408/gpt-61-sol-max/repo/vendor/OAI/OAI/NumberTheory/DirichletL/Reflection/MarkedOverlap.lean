@@ -9,17 +9,17 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma freePrimeRow_zero_at_prime (I Q : Ideal Eis) (hI : Supported I)
-    (P : FreePrimeIndex I Q) (n : Eis) (hn : n∈P.val.val) : freePrimeRow I hI Q n=0 := by
+
+
+lemma freePrimeRow_zero_at_prime  I Q   hI 
+    (P : FreePrimeIndex I Q)  n  (hn : n∈P.val.val) : freePrimeRow I hI Q n=0 := by
   unfold freePrimeRow
   change (∏ p : FreePrimeIndex I Q, _)=0
   apply Finset.prod_eq_zero (Finset.mem_univ P)
   rw [Ideal.Quotient.eq_zero_iff_mem.mpr hn,MulChar.map_zero]
 
-lemma primaryGenerator_mem_of_ideal_dvd (P A : Ideal Eis) (hPA : P∣A) : primaryGenerator A∈P := by
+lemma primaryGenerator_mem_of_ideal_dvd (P A : Ideal ActualEisensteinCubic.O) (hPA : P∣A) : primaryGenerator A∈P := by
   by_cases hz : primaryGenerator A=0
   · rw [hz]
     exact Ideal.zero_mem _
@@ -27,9 +27,13 @@ lemma primaryGenerator_mem_of_ideal_dvd (P A : Ideal Eis) (hPA : P∣A) : primar
   have ha : primaryGenerator A∈A := ((primaryGenerator_spec A hz).1.le) ha0
   exact (Ideal.dvd_iff_le.mp hPA) ha
 
-lemma free_row_whole_mark_overlap {σ : Type*} [Fintype σ]
-    (I Q : Ideal Eis) (hI : Supported I) (S : PrimeFamily σ)
-    (P : FreePrimeIndex I Q) (i : σ) (heq : S.ideal i=P.val.val) (A : Ideal Eis) :
+section
+variable {σ : Type*} [Fintype σ] (I Q : Ideal ActualEisensteinCubic.O) (hI : Supported I) (S : PrimeFamily σ) (P : FreePrimeIndex I Q) (i : σ) (heq : S.ideal i=P.val.val)
+include σ I Q hI S P i heq
+
+lemma free_row_whole_mark_overlap    
+         
+           A  :
     freePrimeRow I hI Q (primaryGenerator A)*
       (∏ j, if S.ideal j∣A then (1:ℂ) else 0)=0 := by
   by_cases hd : S.ideal i∣A
@@ -41,15 +45,15 @@ lemma free_row_whole_mark_overlap {σ : Type*} [Fintype σ]
       rw [ite_eq_right hd]
     rw [hz,mul_zero]
 
-theorem markedCompletedT_free_overlap_zero {σ : Type*} [Fintype σ]
-    (I Q : Ideal Eis) (hI : Supported I) (S : PrimeFamily σ)
-    (P : FreePrimeIndex I Q) (i : σ) (heq : S.ideal i=P.val.val)
-    (φ : Eis→*ℂ) (W : ℝ→ℂ) (X : ℝ) :
+theorem markedCompletedT_free_overlap_zero    
+         
+         
+     φ   W   X  :
     markedCompletedT (φ*freePrimeRow I hI Q) W X
       (fun A => ∏ j, if S.ideal j∣A then (1:ℂ) else 0)=0 := by
   unfold markedCompletedT
   calc
-    _ = ∑' n : Ideal Eis, ∑' b : Ideal Eis, (0:ℂ) := by
+    _ = ∑' n : Ideal ActualEisensteinCubic.O, ∑' b : Ideal ActualEisensteinCubic.O, (0:ℂ) := by
       apply tsum_congr
       intro n
       apply tsum_congr
@@ -66,6 +70,8 @@ theorem markedCompletedT_free_overlap_zero {σ : Type*} [Fintype σ]
     _ = 0 := by simp
 
 end
+
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.ProductConditioning
 
@@ -13,7 +14,7 @@ namespace Erdos821.P3Clean
 
 open Erdos821.Blueprint.Graph Erdos821.S2Core
 
-theorem normalizedSmallCoefficient_factor (F : FixedData) (J : ℕ) (V : ℝ) (z : ℕ)
+theorem normalizedSmallCoefficient_factor  F   J   V   z 
     (hV : 0 ≤ V) :
     normalizedSmallCoefficient F J V z =
       Real.sqrt (V ^ (-(F.ell : ℤ))) * F.q ^ (((z : ℝ) - ((J + F.ell : ℕ) : ℝ)) / 2) := by
@@ -24,7 +25,10 @@ theorem normalizedSmallCoefficient_factor (F : FixedData) (J : ℕ) (V : ℝ) (z
   congr 2
   ring
 
-theorem productSmallCoefficient_factor (F : FixedData) (P : PrimeGroups) (J : ℕ)
+section
+variable (F : FixedData) (P : PrimeGroups) (J : ℕ)
+
+theorem productSmallCoefficient_factor      
     (z : P.SmallGroup → ℕ) (hV : ∀ g : P.SmallGroup, 0 ≤ P.V g.val) :
     (∏ g : P.SmallGroup, normalizedSmallCoefficient F J (P.V g.val) (z g)) =
       Real.sqrt (smallTargetFactor (P := P) F) *
@@ -41,8 +45,8 @@ theorem productSmallCoefficient_factor (F : FixedData) (P : PrimeGroups) (J : �
   rw [he]
   rfl
 
-theorem smallArrayCoefficient_factor (F : FixedData) (P : PrimeGroups) (J : ℕ)
-    (y : P.SmallResidues) (hV : ∀ g : P.SmallGroup, 0 ≤ P.V g.val) :
+theorem smallArrayCoefficient_factor      
+     y  (hV : ∀ g : P.SmallGroup, 0 ≤ P.V g.val) :
     smallArrayCoefficient F P J y =
       (Real.sqrt (smallTargetFactor (P := P) F) : ℂ) * (smallDamping F J y : ℂ) := by
   have hcoef : smallArrayCoefficient F P J y =
@@ -61,15 +65,15 @@ theorem smallArrayCoefficient_factor (F : FixedData) (P : PrimeGroups) (J : ℕ)
   unfold smallDamping smallOmega
   simp only [Nat.cast_sum, Nat.cast_add]
 
-def smallMarkMass (P : PrimeGroups) (M : ℕ) : ℝ :=
+def smallMarkMass (P : PrimeGroups) (M : ℕ)  :=
   ∏ g : P.SmallGroup, (P.V g.val) ^ (-(M : ℤ))
 
 def physicalSmallCoefficient (F : FixedData) (P : PrimeGroups) (J : ℕ)
-    (y : P.SmallResidues) : ℂ :=
+    (y : P.SmallResidues)  :=
   (Real.sqrt (smallMarkMass P (J + F.ell)) : ℂ) * smallArrayCoefficient F P J y
 
-theorem physicalSmallCoefficient_joint (F : FixedData) (P : PrimeGroups) (J : ℕ)
-    (y z : P.SmallResidues) (hV : ∀ g : P.SmallGroup, 0 ≤ P.V g.val) :
+theorem physicalSmallCoefficient_joint      
+     y z  (hV : ∀ g : P.SmallGroup, 0 ≤ P.V g.val) :
     star (physicalSmallCoefficient F P J y) * physicalSmallCoefficient F P J z =
       (smallMarkMass P (J + F.ell) * smallTargetFactor (P := P) F *
         smallDamping F J y * smallDamping F J z : ℝ) := by
@@ -85,12 +89,10 @@ theorem physicalSmallCoefficient_joint (F : FixedData) (P : PrimeGroups) (J : �
         (Real.sqrt (smallTargetFactor (P := P) F) * smallDamping F J z)) =
         smallMarkMass P (J + F.ell) * smallTargetFactor (P := P) F *
           smallDamping F J y * smallDamping F J z := by
-    calc
-      _ = (Real.sqrt (smallMarkMass P (J + F.ell))) ^ 2 *
-          (Real.sqrt (smallTargetFactor (P := P) F)) ^ 2 *
-          smallDamping F J y * smallDamping F J z := by ring
-      _ = _ := by rw [Real.sq_sqrt hm, Real.sq_sqrt ht]
+    grind
   exact congrArg Complex.ofReal heq
+
+end
 
 
 end Erdos821.P3Clean

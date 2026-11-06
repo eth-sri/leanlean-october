@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.IdealFactorization
 public import Mathlib.Analysis.Normed.Group.Tannery
@@ -7,7 +8,7 @@ public import Mathlib.Analysis.Normed.Group.Tannery
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators Topology
 open Filter
 namespace SevenEighths.ProbeEulerFinsupp
@@ -49,8 +50,7 @@ lemma finitePi {α β : Type*} [Fintype α] (f : α→β→ℂ)
   have hd (v : Fin (Fintype.card α)→β) :
       (∏ i,f i (d v i))=∏ j,f (e.symm j) (v j) := by
     apply Fintype.prod_equiv e
-    intro i
-    simp only [d,Equiv.arrowCongr_apply,Equiv.symm_symm,Equiv.refl_apply,e.symm_apply_apply,Function.comp_apply]
+    grind
   constructor
   · rw [←d.summable_iff]
     simpa only [Function.comp_def,hd] using h.1
@@ -61,7 +61,11 @@ lemma finitePi {α β : Type*} [Fintype α] (f : α→β→ℂ)
 
 variable {α β : Type*} [AddCommMonoid β]
 
-lemma finiteEuler (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
+section
+variable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
+include f h0
+
+lemma finiteEuler    
     (hf : ∀a,Summable (fun b=>‖f a b‖)) (S : Finset α) :
     (∑' v : {v : α→₀β // (v.support:Set α)⊆S},v.val.prod f)=
       ∏ a∈S,∑' b,f a b := by
@@ -76,7 +80,7 @@ lemma finiteEuler (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
   rw [(finitePi (fun a:S=>f a.val) (fun a=>hf a.val)).2]
   exact Finset.prod_coe_sort S (fun a=>∑' b,f a b)
 
-theorem hasProd_of_summable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
+theorem hasProd_of_summable    
     (hs : Summable (fun v : α→₀β=>‖v.prod f‖)) :
     HasProd (fun a=>∑' b,f a b) (∑' v : α→₀β,v.prod f) := by
   have hf (a : α) : Summable (fun b=>‖f a b‖) := by
@@ -90,22 +94,18 @@ theorem hasProd_of_summable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
       filter_upwards [eventually_ge_atTop v.support] with S hS
       simp only [ite_eq_left hS]
     · apply Filter.Eventually.of_forall
-      intro S v
-      split_ifs
-      · exact le_rfl
-      · simpa only [norm_zero] using norm_nonneg (v.prod f)
+      aesop
   have he (S : Finset α) : (∑' v : α→₀β,if v.support⊆S then v.prod f else 0)=
       ∏a∈S,∑' b,f a b := by
     rw [←finiteEuler f h0 hf S]
     trans ∑' v : α→₀β, {v : α→₀β | (v.support:Set α)⊆S}.indicator (fun v=>v.prod f) v
-    · apply tsum_congr
-      intro v
-      simp only [Set.indicator,Set.mem_ofPred_eq,Finset.coe_subset]
+    · simp_all [Set.indicator]
     · exact (tsum_subtype {v : α→₀β | (v.support:Set α)⊆S} (fun v=>v.prod f)).symm
-  change Tendsto (fun S : Finset α=>∏a∈S,∑' b,f a b) atTop _
-  simpa only [he] using ht
+  aesop
+
+end
 
 end SevenEighths.ProbeEulerFinsupp
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowGramApplied
 
@@ -6,16 +7,16 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGramApplied
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma low_mellin_sqrt_weight_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W⊆Set.Icc a b) (hWs : ContDiff ℝ ∞ W) (J : ℕ) :
+    (hW : Function.support W⊆Set.Icc a b) (hWs : ContDiff ℝ ∞ W)  J  :
     ∃C : ℝ,0<C ∧ ∀v : ℝ,
       ‖mellin W ((v:ℂ)*Complex.I)‖*Real.sqrt ((1+|v|)^J)≤C/(1+v^2) := by
   obtain ⟨C,hC,hb⟩ := CubicReflectionKernel.compact_source_mellin_strip_decay W a b ha hW hWs 0 0 (J+2)
@@ -33,13 +34,13 @@ lemma low_mellin_sqrt_weight_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
 
 theorem lowSeparatedIntegral_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (a b M : ℝ) (ha : 0<a) (hab : a<b) (hM : 0≤M)
-    (W1 : ℝ→ℂ) (hW1c : HasCompactSupport W1) (hW1 : Function.support W1⊆Set.Icc a b)
+     W1  (hW1c : HasCompactSupport W1) (hW1 : Function.support W1⊆Set.Icc a b)
     (hW1s : ContDiff ℝ ∞ W1) (hWM : ∀x,‖W1 x‖≤M)
-    (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (hb₀ : 0<b₀)
-    (W0 : ℝ→ℂ) (a0 b0 : ℝ) (ha0 : 0<a0)
+     a₀ b₀   ha₀   hb₀ 
+     W0  (a0 b0 : ℝ) (ha0 : 0<a0)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW0s : ContDiff ℝ ∞ W0) :
     ∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal),fixedBadPrimes⊆S→
-      ∃C : ℝ,0<C ∧ ∀(X Y : ℝ)(hX : 0<X)(hY : 1≤Y)(B : RayRing→O→ℂ),
+      ∃C : ℝ,0<C ∧ ∀(X Y : ℝ)(hX : 0<X)(hY : 1≤Y)(B : RayRing→ActualEisensteinCubic.O→ℂ),
         1≤Y^2/lowPhysicalScale (calibrationForSet S hS) X Y→
       ‖∫v : ℝ,lowSeparatedIntegrand (calibrationForSet S hS) W0 W1
         (lowOuterCutoff a₀ b₀) X Y B v‖≤
@@ -58,9 +59,9 @@ theorem lowSeparatedIntegral_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   let Q := lowPhysicalScale (calibrationForSet S hS) X Y
   have hQ : 0<Q := lowPhysicalScale_pos _ X Y hX (lt_of_lt_of_le zero_lt_one hY)
   let A := (Q/Y)*(1+(Y^2/Q)^(1/6:ℝ)+(Y^2/Q)^2/Y)*Y^δ
-  have hA : 0≤A := by dsimp [A]; positivity
+  
   let E := ∑σ : RayRing,Real.sqrt (∑m∈lowNumeratorRows a₀ b₀ ha₀ hb₀ Q hQ,‖B σ m‖^2)
-  have hE : 0≤E := Finset.sum_nonneg (fun _ _=>Real.sqrt_nonneg _)
+  
   have hh (v : ℝ) : ‖lowSeparatedIntegrand (calibrationForSet S hS) W0 W1
       (lowOuterCutoff a₀ b₀) X Y B v‖≤(CM*Real.sqrt K*Real.sqrt A*E)*(1+v^2)⁻¹ := by
     have hg := hgram W0 X Y hX hY B v hP
@@ -79,6 +80,6 @@ theorem lowSeparatedIntegral_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   convert hi using 1 ;ring
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

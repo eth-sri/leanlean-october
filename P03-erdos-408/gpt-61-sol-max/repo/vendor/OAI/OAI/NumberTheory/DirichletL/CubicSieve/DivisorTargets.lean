@@ -6,84 +6,89 @@ public import OAI.NumberTheory.DirichletL.Eisenstein.SmoothTests
 
 namespace OAI
 
-noncomputable section
+
 
 namespace SecondPassArithmetic
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 section
 
-open scoped BigOperators Classical
+ 
 
 section
-open ActualEisensteinCubic
+ 
 
-lemma parity_pair_norm_bounds (s u : Ideal O) (B : ℝ) (hB : 0<B)
+section
+variable (s u : Ideal O) (S : Finset (Ideal O × Ideal O)) (B H : ℝ) (hB : 0<B) (hH : 0≤H) (hS : ∀ x∈S,x.1≠0 ∧ x.2≠0 ∧ (Ideal.absNorm x.2 : ℝ)^2*Ideal.absNorm x.1≤B^2)
+
+
+include hB in
+lemma parity_pair_norm_bounds      
     (hs : s≠0) (hu : u≠0)
     (h : (Ideal.absNorm u : ℝ)^2*Ideal.absNorm s≤B^2) :
     (Ideal.absNorm s : ℝ)≤B^2 ∧ (Ideal.absNorm u : ℝ)≤B/Real.sqrt (Ideal.absNorm s) := by
@@ -99,9 +104,10 @@ lemma parity_pair_norm_bounds (s u : Ideal O) (B : ℝ) (hB : 0<B)
     simpa only [mul_pow,Real.sq_sqrt hs0.le] using h
   nlinarith [mul_nonneg (Nat.cast_nonneg (Ideal.absNorm u)) hsqrt.le]
 
-lemma parity_pair_fiber_count (S : Finset (Ideal O × Ideal O)) (B : ℝ) (hB : 0<B)
-    (hS : ∀ x∈S,x.1≠0 ∧ x.2≠0 ∧ (Ideal.absNorm x.2 : ℝ)^2*Ideal.absNorm x.1≤B^2)
-    (s : Ideal O) (hs : s∈S.image Prod.fst) :
+include hB hS in
+lemma parity_pair_fiber_count      
+     
+     s  (hs : s∈S.image Prod.fst) :
     ((S.filter (fun x => x.1=s)).card : ℝ)≤128*B/Real.sqrt (Ideal.absNorm s) := by
   obtain ⟨x,hx,hxs⟩ := Finset.mem_image.mp hs
   have hnx := parity_pair_norm_bounds x.1 x.2 B hB (hS x hx).1 (hS x hx).2.1 (hS x hx).2.2
@@ -123,9 +129,10 @@ lemma parity_pair_fiber_count (S : Finset (Ideal O × Ideal O)) (B : ℝ) (hB : 
   rw [Finset.card_image_iff.mpr hi] at hcount
   simpa only [mul_div_assoc] using hcount
 
-theorem parity_ideal_pair_count (S : Finset (Ideal O × Ideal O)) (B H : ℝ)
-    (hB : 0<B) (hH : 0≤H)
-    (hS : ∀ x∈S,x.1≠0 ∧ x.2≠0 ∧ (Ideal.absNorm x.2 : ℝ)^2*Ideal.absNorm x.1≤B^2)
+include hB hH hS in
+theorem parity_ideal_pair_count    
+       
+     
     (hactive : ∀ x∈S,(Ideal.absNorm x.1 : ℝ)≤H^2) :
     (S.card : ℝ)≤16384*Real.exp 1*B*H*(normLogBin (B^2)+1 : ℝ) := by
   let A := S.image Prod.fst
@@ -149,7 +156,7 @@ theorem parity_ideal_pair_count (S : Finset (Ideal O × Ideal O)) (B H : ℝ)
     nlinarith [Real.sq_sqrt hs0.le]
   calc
     _ ≤ ∑s∈A,128*B/Real.sqrt (Ideal.absNorm s) :=
-      Finset.sum_le_sum (fun s hs => parity_pair_fiber_count S B hB hS s hs)
+      Finset.sum_le_sum (parity_pair_fiber_count S B hB hS)
     _ ≤ ∑s∈A,(128*B*H)*(1/(Ideal.absNorm s : ℝ)) := by
       apply Finset.sum_le_sum
       intro s hs
@@ -161,7 +168,9 @@ theorem parity_ideal_pair_count (S : Finset (Ideal O × Ideal O)) (B H : ℝ)
         (fun s hs => (hA s hs).2.1)) (by positivity)
     _ = _ := by ring
 
-open ActualEisensteinCubic
+end
+
+ 
 open FirstPassCubeLabels (primeProductNorm primeProduct aLabel squarefreeLabel cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 open IdealMobiusDivisorSum (idealDivisors)
@@ -171,7 +180,7 @@ variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 omit [∀ (i : ι), (span {p i}).IsMaximal] in
-theorem cubeParityKey_norm_product (x : CubeCoordinates ι) :
+theorem cubeParityKey_norm_product  x  :
     (Ideal.absNorm (cubeParityKey p x).2 : ℝ)^2*Ideal.absNorm (cubeParityKey p x).1 =
       ‖eisEmbedding (primeProduct p x.support x.leftExponent)‖^2*
         ‖eisEmbedding (primeProduct p x.support x.rightExponent)‖^2 := by
@@ -275,15 +284,9 @@ theorem cube_coordinates_parity_count (ε : ℝ) (hε : 0<ε) :
 
 end
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct cubeActiveSupport)
-open ConcreteTraceCRT (eisEmbedding)
-open IdealMobiusDivisorSum (idealDivisors)
 
-end
 
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProductNorm cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -292,21 +295,21 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic
+ 
+ 
 open FirstPassCubeLabels (primeProductNorm primeProduct cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 
-section
+
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
-end
+
 
 end SecondPassArithmetic
 
-end
+
 
 end OAI

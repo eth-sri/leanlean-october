@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LiftedFourier
 public import OAI.NumberTheory.DirichletL.Detector.Physical
@@ -13,11 +14,11 @@ namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein GaussianShiftedPartition ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
 
-def rawFourier (a : O) (ha : a≠0) (F : (O ⧸ Ideal.span {a}) → ℂ) (H : O) : ℂ :=
+def rawFourier (a : O) (ha : a≠0) (F : (O ⧸ Ideal.span {a}) → ℂ) (H : O)  :=
   ∑' m : O ⧸ Ideal.span {a}, F m * quotientTrace a ha (Ideal.Quotient.mk _ H * m)
 
-theorem rawFourier_exactQuotient (a s : O) (ha : a≠0) (hs : s≠0)
-    (F : (O ⧸ Ideal.span {a}) → ℂ) (H : O) :
+theorem rawFourier_exactQuotient  a s   ha   hs 
+     F   H  :
     conductorFourier a s ha hs F H =
       (Ideal.absNorm (Ideal.span {s}):ℂ) *
         (if h : s∣H then rawFourier a ha F (exactQuotient H s h) else 0) := by
@@ -30,12 +31,12 @@ theorem rawFourier_exactQuotient (a s : O) (ha : a≠0) (hs : s≠0)
     exact h (conductorFourier_support a s ha hs F H hn)
 
 def congruenceCoefficient (a s : O) (ha : a≠0)
-    (F : (O ⧸ Ideal.span {a}) → ℂ) (χ : (O ⧸ Ideal.span {s}) → ℂ) (H : O) : ℂ :=
+    (F : (O ⧸ Ideal.span {a}) → ℂ) (χ : (O ⧸ Ideal.span {s}) → ℂ) (H : O)  :=
   ∑' d : O ⧸ Ideal.span {s}, χ d *
     (if h : s ∣ H-a*representative s d then
       rawFourier a ha F (exactQuotient (H-a*representative s d) s h) else 0)
 
-lemma trace_split_product (a s : O) (ha : a≠0) (hs : s≠0) (H m d : O) :
+lemma trace_split_product  a s   ha   hs   H m d  :
     quotientTrace (a*s) (mul_ne_zero ha hs) (Ideal.Quotient.mk _ (H*m)) *
       quotientTrace s hs (Ideal.Quotient.mk _ ((-m)*d)) =
     quotientTrace (a*s) (mul_ne_zero ha hs) (Ideal.Quotient.mk _ ((H-a*d)*m)) := by
@@ -44,13 +45,13 @@ lemma trace_split_product (a s : O) (ha : a≠0) (hs : s≠0) (H m d : O) :
   simpa only [mul_comm s a] using he.symm
 
 def fullFourier (a s : O) (ha : a≠0) (hs : s≠0)
-    (F : (O ⧸ Ideal.span {a}) → ℂ) (χ : (O ⧸ Ideal.span {s}) → ℂ) (H : O) : ℂ :=
+    (F : (O ⧸ Ideal.span {a}) → ℂ) (χ : (O ⧸ Ideal.span {s}) → ℂ) (H : O)  :=
   ∑' m : O ⧸ Ideal.span {a*s}, F (conductorReduction a s m) *
     rawFourier s hs χ (-representative (a*s) m) *
     quotientTrace (a*s) (mul_ne_zero ha hs) (Ideal.Quotient.mk _ H*m)
 
-theorem fullFourier_eq_congruence (a s : O) (ha : a≠0) (hs : s≠0)
-    (F : (O ⧸ Ideal.span {a}) → ℂ) (χ : (O ⧸ Ideal.span {s}) → ℂ) (H : O) :
+theorem fullFourier_eq_congruence  a s   ha   hs 
+     F   χ   H  :
     fullFourier a s ha hs F χ H =
       (Ideal.absNorm (Ideal.span {s}):ℂ) * congruenceCoefficient a s ha F χ H := by
   let : Finite (O ⧸ Ideal.span {a*s}) := finite_quotient_span (mul_ne_zero ha hs)
@@ -75,8 +76,8 @@ theorem fullFourier_eq_congruence (a s : O) (ha : a≠0) (hs : s≠0)
       ring
     _ = _ := by rw [rawFourier_exactQuotient]; ring
 
-theorem rawFourier_norm_le (a : O) (ha : a≠0) (F : (O ⧸ Ideal.span {a}) → ℂ)
-    (hF : ∀ m, ‖F m‖≤1) (H : O) :
+theorem rawFourier_norm_le  a   ha   F 
+    (hF : ∀ m, ‖F m‖≤1)  H  :
     ‖rawFourier a ha F H‖ ≤ (Ideal.absNorm (Ideal.span {a}):ℝ) := by
   let := finite_quotient_span ha
   let : Fintype (O ⧸ Ideal.span {a}) := Fintype.ofFinite _
@@ -86,14 +87,12 @@ theorem rawFourier_norm_le (a : O) (ha : a≠0) (F : (O ⧸ Ideal.span {a}) → 
       norm_sum_le _ _
     _ ≤ ∑ _m : O ⧸ Ideal.span {a}, (1:ℝ) := by
       apply Finset.sum_le_sum
-      intro m hm
-      rw [norm_mul, AddChar.norm_apply, mul_one]
-      exact hF m
+      simp_all
     _ = _ := by simp [Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
 
-theorem congruenceCoefficient_norm_le (a s : O) (ha : a≠0) (hs : s≠0)
-    (F : (O ⧸ Ideal.span {a}) → ℂ) (χ : (O ⧸ Ideal.span {s}) → ℂ)
-    (hF : ∀ m, ‖F m‖≤1) (hχ : ∀ d, ‖χ d‖≤1) (H : O) :
+theorem congruenceCoefficient_norm_le  a s   ha  (hs : s≠0)
+     F   χ 
+    (hF : ∀ m, ‖F m‖≤1) (hχ : ∀ d, ‖χ d‖≤1)  H  :
     ‖congruenceCoefficient a s ha F χ H‖ ≤
       (Ideal.absNorm (Ideal.span {s}):ℝ) * (Ideal.absNorm (Ideal.span {a}):ℝ) := by
   let := finite_quotient_span hs

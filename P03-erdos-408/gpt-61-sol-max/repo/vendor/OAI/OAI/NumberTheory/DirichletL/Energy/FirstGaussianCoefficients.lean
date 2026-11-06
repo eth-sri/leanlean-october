@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedFourCoefficients
 public import OAI.NumberTheory.DirichletL.Moments.SecondSourceSeededPowerDescent
@@ -15,24 +16,27 @@ open HeckeFamily CenteredMomentFiniteProfileExceptional
 open CenteredMomentSecondChildPowerBudget CenteredMomentSecondSourceSeededPowerDescent
 open CenteredMomentSecondSourcePowerDescent CenteredMomentSecondWindowBudget
 open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentSourceInputTailUniform
-local notation "O"=>HeckeFamily.O
+
 
 def fixedFactors (Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed:ℝ)
-    (J:ℕ)(Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ)):Fin 4→ℝ:=
+    (J:ℕ)(Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ)):=
   ![Cm*Z^(2*delta+epsilon)*cost*Ebase*heightEnvelope t^(J+J)*profileMoment J*profileMoment J,
     Ce*Z^(2*epsilon+2*delta+2*(5*B+1)*theta)*loFloor^(-2/3:ℝ),
     Cd*‖EisensteinSchwartzPoisson.paperRadialFourier W 0‖,
     Ct*Sf.sup (schwartzSeminormFamily ℝ ℝ ℂ) W/seed]
 
-lemma coefficients_mul {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
-    (p:Profiles a b)(J:ℕ)(Q:Ideal O)(K t epsilon seed:ℝ)(f g:Fin 4→ℝ):
+section
+variable {a b:ℝ} (N:ℕ) (upper b1 b2 A:ℝ) (Sp:Finset (ℕ×ℕ))
+
+lemma coefficients_mul     
+    (p:Profiles a b)(J:ℕ)(Q:Ideal HeckeFamily.O)(K t epsilon seed:ℝ)(f g:Fin 4→ℝ):
     ∀j,CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed (fun j=>f j*g j) j=
       CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed f j*g j:=by
   intro j
   fin_cases j <;> simp [CenteredMomentSecondChildPowerBudget.coefficients] <;> ring
 
-lemma coefficients_mono {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
-    (p:Profiles a b)(J:ℕ)(Q:Ideal O)(K t epsilon seed:ℝ)(f g:Fin 4→ℝ)
+lemma coefficients_mono     
+    (p:Profiles a b) J  Q  K t epsilon seed  f g 
     (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤K)(hseed:0≤seed)
     (hfg:∀j,f j≤g j):
     ∀j,CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed f j≤
@@ -51,9 +55,8 @@ lemma coefficients_mono {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ)
   · gcongr
   · gcongr
 
-theorem seeded_factors_main (Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
-    ell deficit paid r loProduct wlo loFloor seed:ℝ)(J:ℕ)
-    (Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ))
+theorem seeded_factors_main  Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase ell deficit paid r loProduct wlo loFloor seed  J 
+     Sf  W 
     (_hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤radius)
     (hlo:0<loFloor)(hloProduct:loFloor≤loProduct*wlo*wlo):
     let E:=Ebase*Z^(ell+deficit/6+paid);
@@ -82,11 +85,11 @@ theorem seeded_factors_main (Cm Ce Cd Ct Z epsilon delta theta B saving radius t
   · simp only [seededFactors,physicalFactors,fixedFactors,mainPowers,Fin.isValue,Matrix.cons_val,Fin.reduceFinMk]
     exact le_of_eq (by ring)
 
-theorem main_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
-    (p:Profiles a b)(Jprofile:ℕ)(Q:Ideal O)(Kfix:ℝ)
+theorem main_coefficients     
+    (p:Profiles a b) Jprofile  Q  Kfix 
     (Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
-      ell deficit paid r loProduct wlo loFloor seed:ℝ)(J:ℕ)
-    (Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ))
+      ell deficit paid r loProduct wlo loFloor seed:ℝ) J 
+     Sf  W 
     (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤Kfix)(hseed:0≤seed)
     (hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤radius)
     (hlo:0<loFloor)(hloProduct:loFloor≤loProduct*wlo*wlo):
@@ -105,11 +108,11 @@ theorem main_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×�
   intro j
   exact (hh j).trans_eq (coefficients_mul N upper b1 b2 A Sp p Jprofile Q Kfix t epsilon seed _ _ j)
 
-theorem error_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
-    (profiles:Profiles a b)(Jprofile:ℕ)(Q:Ideal O)(Kfix:ℝ)(prime:O)(k:ℕ)
+theorem error_coefficients     
+    (profiles:Profiles a b) Jprofile  Q  Kfix  prime  k 
     (Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
-      deficit paid r loProduct wlo loFloor seed:ℝ)(J:ℕ)
-    (Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ))
+      deficit paid r loProduct wlo loFloor seed:ℝ) J 
+     Sf  W 
     (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤Kfix)(hseed:0≤seed)
     (hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤radius)
     (hlo:0<loFloor)(hloProduct:loFloor≤loProduct*wlo*wlo):
@@ -132,9 +135,9 @@ theorem error_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×�
       (CenteredMomentFirstAmplificationChoice.errorRemoval prime Z k) deficit paid saving r j=
       errorPowers prime k q Z radius deficit paid saving r j:=by
     fin_cases j <;> rfl
-  have hhj:=hh j
-  rw [hid] at hhj
-  simpa only [mul_assoc] using hhj
+  grind
+
+end
 
 end SevenEighths.CenteredMomentEnergyFirstGaussianCoefficients
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.SeedDefects
 
@@ -10,80 +11,83 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+ 
 
 section
 variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
   [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
 include hinj
 
-theorem primeIdealProduct_emultiplicity (S : Finset ι) (v : ι → ℕ) (i : ι) :
+section
+variable (S B C : Finset ι) (v w : ι → ℕ)
+
+theorem primeIdealProduct_emultiplicity     (i : ι) :
     emultiplicity (P i) (∏ j ∈ S, P j ^ v j) = if i ∈ S then (v i : ℕ∞) else 0 := by
   have hp (j : ι) : Prime (P j) := Ideal.prime_of_isPrime (NeZero.ne (P j)) inferInstance
   rw [Finset.emultiplicity_prod (hp i)]
@@ -102,11 +106,11 @@ theorem primeIdealProduct_emultiplicity (S : Finset ι) (v : ι → ℕ) (i : ι
     exact hz j (fun he => hi (he ▸ hj))
 
 theorem primeIdealProduct_exponents_eq
-    (B C : Finset ι) (v w : ι → ℕ)
+       
     (hv : ∀ i, i ∉ B → v i = 0) (hw : ∀ i, i ∉ C → w i = 0)
     (heq : (∏ i ∈ B, P i ^ v i) = ∏ i ∈ C, P i ^ w i) : v = w := by
   funext i
-  have he := congrArg (fun I => emultiplicity (P i) I) heq
+  have he := congrArg (emultiplicity (P i)) heq
   rw [primeIdealProduct_emultiplicity P hinj,primeIdealProduct_emultiplicity P hinj] at he
   have hB : (if i ∈ B then (v i : ℕ∞) else 0) = (v i : ℕ∞) := by
     by_cases h : i ∈ B <;> simp [h,hv i]
@@ -114,6 +118,8 @@ theorem primeIdealProduct_exponents_eq
     by_cases h : i ∈ C <;> simp [h,hw i]
   rw [hB,hC] at he
   exact_mod_cast he
+
+end
 
 end
 
@@ -130,15 +136,15 @@ theorem primeProduct_span_exponents_eq {ι : Type*} [DecidableEq ι]
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem divisor_dyadic_sum_le (S T : Finset (Ideal O)) (N : ℝ)
-    (f : Ideal O → Ideal O → ℝ) (C : ℝ) (hC : 0 ≤ C)
+    (f : Ideal O → Ideal O → ℝ)  C  (hC : 0 ≤ C)
     (hb : ∀ j k : Fin (columnDyadicLength N + 1),
       (divisorDyadicBin S N j).Nonempty → (divisorDyadicBin T N k).Nonempty →
       (∑ D ∈ divisorDyadicBin S N j, ∑ E ∈ divisorDyadicBin T N k, f D E) ≤ C) :
@@ -153,7 +159,7 @@ theorem divisor_dyadic_sum_le (S T : Finset (Ideal O)) (N : ℝ)
       by_cases hS : (divisorDyadicBin S N j).Nonempty
       · by_cases hT : (divisorDyadicBin T N k).Nonempty
         · exact hb j k hS hT
-        · simpa only [Finset.not_nonempty_iff_eq_empty.mp hT, Finset.sum_empty, Finset.sum_const_zero] using hC
+        simp_all
       · simpa only [Finset.not_nonempty_iff_eq_empty.mp hS, Finset.sum_empty] using hC
     _ = _ := by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, pow_two]; ring
 
@@ -172,7 +178,7 @@ def largePrincipalWindow (S T : Finset (Ideal O))
 omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 lemma largePrincipalWindow_le (S T : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (P : Ideal O → m → Prop) :
+     a   b   M   P  :
     largePrincipalWindow S T rows left right a b M P ≤
       principalCorrectionAt S T rows left right a b M := by
   classical
@@ -189,10 +195,14 @@ lemma largePrincipalWindow_le (S T : Finset (Ideal O))
   intro i _
   split_ifs <;> first | exact le_rfl | positivity
 
-theorem HasSieveExponent.large_principal_window {α : ℝ} (hexp : HasSieveExponent α)
-    (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O))
-    (D₁ D₂ B N M V : ℝ) (hD₁ : 1 ≤ D₁) (hD₂ : 1 ≤ D₂) (hB : 1 ≤ B) (hN : 1 ≤ N)
-    (hM : 0 < M) (hV : 0 ≤ V) (hD₁N : D₁ ≤ N) (hD₂N : D₂ ≤ N)
+section
+variable {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O)) (D₁ D₂ B N M V : ℝ) (hD₁ : 1 ≤ D₁) (hD₂ : 1 ≤ D₂) (hB : 1 ≤ B) (hN : 1 ≤ N) (hM : 0 < M) (hV : 0 ≤ V)
+
+include hD₁ hD₂ hB hN hM hV in
+theorem HasSieveExponent.large_principal_window    
+             
+             
+        (hD₁N : D₁ ≤ N) (hD₂N : D₂ ≤ N)
     (hS : ∀ D ∈ S, D₁ ≤ (Ideal.absNorm D : ℝ) ∧ (Ideal.absNorm D : ℝ) ≤ 2*D₁)
     (hT : ∀ E ∈ T, D₂ ≤ (Ideal.absNorm E : ℝ) ∧ (Ideal.absNorm E : ℝ) ≤ 2*D₂)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
@@ -200,7 +210,7 @@ theorem HasSieveExponent.large_principal_window {α : ℝ} (hexp : HasSieveExpon
     (hrows : ∀ i, Admissible (rows i) ∧ B/2 ≤ (Ideal.absNorm (rows i):ℝ) ∧ (Ideal.absNorm (rows i):ℝ) ≤ B)
     (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j):ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k):ℝ) ≤ N)
-    (a : n → ℂ) (b : p → ℂ) (P : Ideal O → m → Prop)
+     a   b   P 
     (hP : ∀ D ∈ S, ∀ E ∈ T, ∀ i, P (D*E) i →
       Real.sqrt (M/B)*N ≤ (V/4)*(Ideal.absNorm (D*E):ℝ)) :
     largePrincipalWindow S T rows left right a b M P ≤
@@ -235,9 +245,10 @@ theorem HasSieveExponent.large_principal_window {α : ℝ} (hexp : HasSieveExpon
     have hd := (divisorExponentConstant_pos hexp deltaLoss hδ).le
     positivity
 
-theorem HasSieveExponent.large_principal_pool {α : ℝ} (hexp : HasSieveExponent α)
-    (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O))
-    (B N M V : ℝ) (hB : 1 ≤ B) (hN : 1 ≤ N) (hM : 0 < M) (hV : 0 ≤ V)
+include hB hN hM hV in
+theorem HasSieveExponent.large_principal_pool    
+             
+             
     (hS : ∀ D ∈ S, 1 ≤ (Ideal.absNorm D:ℝ) ∧ (Ideal.absNorm D:ℝ) ≤ N)
     (hT : ∀ E ∈ T, 1 ≤ (Ideal.absNorm E:ℝ) ∧ (Ideal.absNorm E:ℝ) ≤ N)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
@@ -245,7 +256,7 @@ theorem HasSieveExponent.large_principal_pool {α : ℝ} (hexp : HasSieveExponen
     (hrows : ∀ i, Admissible (rows i) ∧ B/2 ≤ (Ideal.absNorm (rows i):ℝ) ∧ (Ideal.absNorm (rows i):ℝ) ≤ B)
     (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j):ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k):ℝ) ≤ N)
-    (a : n → ℂ) (b : p → ℂ) (P : Ideal O → m → Prop)
+     a   b   P 
     (hP : ∀ D ∈ S, ∀ E ∈ T, ∀ i, P (D*E) i →
       Real.sqrt (M/B)*N ≤ (V/4)*(Ideal.absNorm (D*E):ℝ)) :
     largePrincipalWindow S T rows left right a b M P ≤
@@ -268,7 +279,9 @@ theorem HasSieveExponent.large_principal_pool {α : ℝ} (hexp : HasSieveExponen
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+end
+
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem finite_principal_triangle
@@ -314,7 +327,7 @@ def largePrincipalProductAt (K : Finset (Ideal O))
 omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 lemma largePrincipalProductAt_le_window (K S T : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (P : Ideal O → m → Prop)
+     a   b   M   P 
     (hleft : ∀ j, left j ≠ 0) (hright : ∀ k, right k ≠ 0)
     (hS : ∀ j D, D ∣ left j → D ∈ S) (hT : ∀ k E, E ∣ right k → E ∈ T) :
     largePrincipalProductAt K rows left right a b M P ≤
@@ -346,7 +359,7 @@ lemma largePrincipalProductAt_le_window (K S T : Finset (Ideal O))
 omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 lemma principalDivisorCorrection_le_product (K : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (P : Ideal O → m → Prop)
+     a   b   M   P 
     (hleft : ∀ j, left j ≠ 0) (hright : ∀ k, right k ≠ 0)
     (hK : ∀ j k d, d ∣ left j*right k → d ∈ K) :
     ‖principalDivisorCorrection rows left right a b M P‖ ≤
@@ -394,7 +407,7 @@ theorem HasSieveExponent.principal_divisor_correction {α : ℝ} (hexp : HasSiev
     (hrows : ∀ i, Admissible (rows i) ∧ B/2 ≤ (Ideal.absNorm (rows i):ℝ) ∧ (Ideal.absNorm (rows i):ℝ) ≤ B)
     (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j):ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k):ℝ) ≤ N)
-    (a : n → ℂ) (b : p → ℂ) (P : Ideal O → m → Prop)
+     a   b   P 
     (hP : ∀ d i, P d i → Real.sqrt (M/B)*N ≤ (V/4)*(Ideal.absNorm d:ℝ)) :
     ‖principalDivisorCorrection rows left right a b M P‖ ≤
       ((columnDyadicLength N+1:ℕ):ℝ)^2 *
@@ -423,11 +436,11 @@ theorem HasSieveExponent.principal_divisor_correction {α : ℝ} (hexp : HasSiev
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
+ 
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProduct aLabel b0Label jLabel cubeActiveSupport primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -440,31 +453,34 @@ open ConcreteTraceCRT (eisEmbedding)
 namespace CubeCoordinates
 variable {ι : Type*} [DecidableEq ι]
 
-def support (x : CubeCoordinates ι) : Finset ι :=
+def support (x : CubeCoordinates ι)  :=
   x.leftExponent.support ∪ x.rightExponent.support
 
-def leftBit (x : CubeCoordinates ι) (i : ι) : Bool := decide (i ∈ x.leftDivisor)
-def rightBit (x : CubeCoordinates ι) (i : ι) : Bool := decide (i ∈ x.rightDivisor)
+def leftBit (x : CubeCoordinates ι) (i : ι)  := decide (i ∈ x.leftDivisor)
+def rightBit (x : CubeCoordinates ι) (i : ι)  := decide (i ∈ x.rightDivisor)
 
-def Admissible (x : CubeCoordinates ι) : Prop :=
+def Admissible (x : CubeCoordinates ι)  :=
   x.leftDivisor ⊆ x.support ∧ x.rightDivisor ⊆ x.support
 
-theorem support_pos (x : CubeCoordinates ι) (i : ι) (hi : i ∈ x.support) :
-    0 < x.leftExponent i+x.rightExponent i := by
-  simp only [support,Finset.mem_union,Finsupp.mem_support_iff] at hi
-  omega
+section
+variable (p : ι → O) (x : CubeCoordinates ι) (i : ι) (hx : x.Admissible)
 
-theorem left_off (x : CubeCoordinates ι) (i : ι) (hi : i ∉ x.support) :
+theorem support_pos     (hi : i ∈ x.support) :
+    0 < x.leftExponent i+x.rightExponent i := by
+  grind [support]
+
+theorem left_off     (hi : i ∉ x.support) :
     x.leftExponent i=0 := by
   by_contra hv
   exact hi (Finset.mem_union_left _ (Finsupp.mem_support_iff.mpr hv))
 
-theorem right_off (x : CubeCoordinates ι) (i : ι) (hi : i ∉ x.support) :
+theorem right_off     (hi : i ∉ x.support) :
     x.rightExponent i=0 := by
   by_contra hv
   exact hi (Finset.mem_union_right _ (Finsupp.mem_support_iff.mpr hv))
 
-theorem aLabel_left (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible) :
+include hx in
+theorem aLabel_left       :
     aLabel p x.support x.leftBit = ∏ i ∈ x.leftDivisor,p i := by
   simp only [aLabel,primeProduct,leftBit,FirstPassCubeLabels.bit,decide_eq_true_eq]
   simp_rw [apply_ite, pow_one, pow_zero]
@@ -475,7 +491,8 @@ theorem aLabel_left (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible) 
     exact and_iff_right_of_imp (fun hi => hx.1 hi)
   rw [he]
 
-theorem aLabel_right (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible) :
+include hx in
+theorem aLabel_right       :
     aLabel p x.support x.rightBit = ∏ i ∈ x.rightDivisor,p i := by
   simp only [aLabel,primeProduct,rightBit,FirstPassCubeLabels.bit,decide_eq_true_eq]
   simp_rw [apply_ite, pow_one, pow_zero]
@@ -486,21 +503,18 @@ theorem aLabel_right (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible)
     exact and_iff_right_of_imp (fun hi => hx.2 hi)
   rw [he]
 
+end
+
 end CubeCoordinates
 
-@[ext] structure GlobalSecondData (ι : Type*) where
-  cube : CubeCoordinates ι
-  firstCommon : Finset ι
-  common : Finset ι
-  firstDivisor : Finset ι
-  source : SecondExpansionData ι
+
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
 
 end
 
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProduct aLabel)
 
 variable {ι : Type*} [DecidableEq ι]

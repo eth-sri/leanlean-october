@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
 public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstTailScale
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstTailScale
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
@@ -19,9 +20,9 @@ open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
 open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
 open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
 open CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate
-local notation "O"=>HeckeFamily.O
+
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
 
 lemma choose_first_tail_order (B ξ saving:ℝ)(hB:0≤B)(hξ:0<ξ):
     ∃Adec:ℕ,∀(HN Z V Tsec:ℝ),1≤Z→0<V→V≤Z^B→0<Tsec→Tsec≤Z^B→
@@ -38,9 +39,7 @@ lemma choose_first_tail_order (B ξ saving:ℝ)(hB:0≤B)(hξ:0<ξ):
   have hd:=reciprocal_cutoff_bound Z (ξ/4) Adec hz
   calc
     _≤(Z^B)^2*((1+Real.exp (2*HN))^2*(Z^B)^2)*Z^(-(ξ/4)*(Adec:ℝ)):=by
-      apply mul_le_mul _ hd (by positivity) (by positivity)
-      apply mul_le_mul (pow_le_pow_left₀ hV.le hVcap 2) hk
-        (inv_nonneg.mpr (sq_nonneg _)) (by positivity)
+      gcongr <;> first | assumption | positivity | linarith
     _=(1+Real.exp (2*HN))^2*Z^(4*B-(ξ/4)*(Adec:ℝ)):=by
       rw [←Real.rpow_mul_natCast hz.le]
       norm_num only [Nat.cast_ofNat]

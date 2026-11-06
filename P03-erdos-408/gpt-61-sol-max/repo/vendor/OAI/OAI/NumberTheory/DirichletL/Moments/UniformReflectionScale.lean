@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.OneReflectionScaleEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 namespace SevenEighths.CenteredMomentUniformReflectionScale
 open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson
@@ -15,7 +15,7 @@ open CenteredMomentSectorLocalization CenteredMomentScaleSupremum
 open CenteredMomentOneReflectionScaleEnergy CenteredMomentUniformReflectionProfile
 open CenteredMomentReflectedNormalization
 
-theorem actual_rowwise_scales (A J : ℕ) :
+theorem actual_rowwise_scales  A J  :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type}[Fintype ι],
       ∀(G : ι→𝓢(ℝ,ℂ))(χ : ι→Character)(P : ι→ℂ)
       (s lx ly omega : ι→ℝ)(Wshort : ℝ→ℂ)(c d lo hi low high D E : ℝ),
@@ -74,6 +74,6 @@ theorem actual_rowwise_scales (A J : ℕ) :
 
 end SevenEighths.CenteredMomentUniformReflectionScale
 
-end
+
 
 end OAI

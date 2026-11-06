@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2High.PivotMoments
 
@@ -18,7 +19,7 @@ def birthAddressGroup {P : PrimeGroups} {M n B : ℕ} :
 
 theorem addressValue_mem_group {F : FixedData} {P : PrimeGroups} {J m n B : ℕ}
     {A : Model F P J m} (H : Erdos821.S2Core.MemoryHistory A n)
-    (a : Erdos821.S2Core.BirthAddress P (J + F.ell) n B)
+     a 
     (hperf : H.addressPerformed B a) :
     H.addressValue B a ∈ P.primes (birthAddressGroup a).val := by
   cases a with
@@ -36,13 +37,7 @@ theorem addressValue_mem_group {F : FixedData} {P : PrimeGroups} {J m n B : ℕ}
           simp [Erdos821.S2Core.MemoryHistory.addressValue, hh, birthAddressGroup]
 
 theorem big_groups_eq_of_common_prime {P : PrimeGroups} (g h : P.BigGroup) (p : ℕ)
-    (hg : p ∈ P.primes g.val) (hh : p ∈ P.primes h.val) : g = h := by
-  by_contra hne
-  have hval : g.val ≠ h.val := by
-    intro he
-    apply hne
-    exact Subtype.ext he
-  exact (Finset.disjoint_left.mp (P.disjoint g.val h.val hval) hg) hh
+    (hg : p ∈ P.primes g.val) (hh : p ∈ P.primes h.val) : g = h := Decidable.byContradiction fun hne => Finset.disjoint_left.mp (P.disjoint ↑g ↑h fun he => hne (Subtype.ext he)) hg hh
 
 
 end Erdos821.S2High

@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicBridge
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentTwistedReflection
 open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
 open CenteredMomentReflectionDeletion EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
 
-lemma polynomial_twisted_source (χ : Character) (W : ℝ→ℂ) (X t : ℝ) (hX : 0<X) :
+
+lemma polynomial_twisted_source  χ   W   X t  (hX : 0<X) :
     HeckeDyadic.polynomial χ false W X 0 (2*Real.pi*t)=
       HeckeDyadic.polynomial χ false (CompletedHeight.normTwistedSource W t) X 0 0 := by
   unfold HeckeDyadic.polynomial
@@ -33,6 +33,6 @@ lemma polynomial_twisted_source (χ : Character) (W : ℝ→ℂ) (X t : ℝ) (hX
 
 end SevenEighths.CenteredMomentTwistedReflection
 
-end
+
 
 end OAI

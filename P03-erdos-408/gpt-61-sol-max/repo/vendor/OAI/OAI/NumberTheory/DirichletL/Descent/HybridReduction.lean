@@ -10,14 +10,14 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
 
 theorem finite_inverse_cubic_energy
-    (Jset Pset : Finset (Ideal Eis)) (N L : ℝ)
+    (Jset Pset : Finset (Ideal ActualEisensteinCubic.O)) (N L : ℝ)
     (hJ : ∀ J ∈ Jset, CubicSieve.Admissible J ∧ (Ideal.absNorm J : ℝ) ≤ N)
     (hP : ∀ P ∈ Pset, CubicSieve.Admissible P ∧ (Ideal.absNorm P : ℝ) ≤ L)
-    (a : Ideal Eis → ℂ) :
+    (a : Ideal ActualEisensteinCubic.O → ℂ) :
     (∑ J ∈ Jset, ‖∑ P ∈ Pset, a P * inverseCubicKernel P J‖ ^ 2) ≤
       CubicSieve.sieveNorm N L * ∑ P ∈ Pset, ‖a P‖ ^ 2 := by
   let A : Matrix Jset Pset ℂ := fun J P => CubicSieve.idealKernel P.val J.val
@@ -46,14 +46,18 @@ theorem finite_inverse_cubic_energy
     Finset.sum_coe_sort Pset (fun P => ‖a P‖ ^ 2)] at he'
   exact he'
 
-theorem hybrid_quadratic_reduction (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+
+theorem hybrid_quadratic_reduction     :
     ∃ C : ℝ, 0 < C ∧ ∀ K X : ℝ, 1 ≤ K → 1 ≤ X →
-    ∀ (rows : Finset (Ideal Eis)) (pairs : Finset (Ideal Eis × Ideal Eis)),
+    ∀ (rows : Finset (Ideal ActualEisensteinCubic.O)) (pairs : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O)),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ p ∈ pairs, Squarefree (p.1 * p.2) ∧ (Ideal.absNorm (p.1 * p.2) : ℝ) ≤ X) →
-    ∀ (B mBad : Ideal Eis) (cset : Ideal Eis → Finset (Ideal Eis))
-      (Pset : Finset (Ideal Eis)) (coef : Ideal Eis → Ideal Eis → ℂ)
-      (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ) (Cbound : ℝ),
+    ∀ (B mBad : Ideal ActualEisensteinCubic.O) (cset : Ideal ActualEisensteinCubic.O → Finset (Ideal ActualEisensteinCubic.O))
+      (Pset : Finset (Ideal ActualEisensteinCubic.O)) (coef : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ)
+      (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ) (Cbound : ℝ),
       (∀ p ∈ pairs, ((cset p.1).card : ℝ) ≤ Cbound) →
       (∀ p ∈ pairs, ∀ c ∈ cset p.1, ‖beta c p.1 p.2‖ ≤ 1) →
       (∑ k ∈ rows, ‖∑ p ∈ pairs,
@@ -66,15 +70,14 @@ theorem hybrid_quadratic_reduction (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, hC, hquadratic⟩ := quadratic_squarefree_product_energy_fixed_factor ε hε
   refine ⟨C, hC, ?_⟩
   intro K X hK hX rows pairs hrows hpairs B mBad cset Pset coef beta Cbound hcount hbeta
-  let F (p : Ideal Eis × Ideal Eis) (c : Ideal Eis) :=
+  let F (p : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) (c : Ideal ActualEisensteinCubic.O) :=
     ∑ P ∈ Pset, coef p.2 P * inverseCubicKernel P (c * (mBad * p.1))
   have he := hquadratic K X hK hX rows pairs hrows hpairs B
     (fun p => ∑ c ∈ cset p.1, beta c p.1 p.2 * F p c)
   apply he.trans
-  have hlocal (p : Ideal Eis × Ideal Eis) (hp : p ∈ pairs) :
+  have hlocal (p : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) (hp : p ∈ pairs) :
       ‖∑ c ∈ cset p.1, beta c p.1 p.2 * F p c‖ ^ 2 ≤
-        Cbound * ∑ c ∈ cset p.1, ‖F p c‖ ^ 2 := by
-    exact (bounded_finset_coefficient_sum_sq (cset p.1)
+        Cbound * ∑ c ∈ cset p.1, ‖F p c‖ ^ 2 := (bounded_finset_coefficient_sum_sq (cset p.1)
       (fun c => beta c p.1 p.2) (F p) (hbeta p hp)).trans
         (mul_le_mul_of_nonneg_right (hcount p hp) (Finset.sum_nonneg fun _ _ => sq_nonneg _))
   calc
@@ -84,24 +87,24 @@ theorem hybrid_quadratic_reduction (ε : ℝ) (hε : 0 < ε) :
       positivity
     _ = _ := by rw [← Finset.mul_sum]; simp only [F]; ring
 
-theorem cubic_product_row_bound_of_sieve (ε : ℝ) (hε : 0 < ε) :
+theorem cubic_product_row_bound_of_sieve     :
     ∃ D : ℝ, 0 < D ∧ ∀ N : ℝ, 1 ≤ N →
-    ∀ (pairs : Finset (Ideal Eis × Ideal Eis)) (Jset Pset : Finset (Ideal Eis))
-      (mBad : Ideal Eis) (S : ℝ),
+    ∀ (pairs : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O)) (Jset Pset : Finset (Ideal ActualEisensteinCubic.O))
+      (mBad : Ideal ActualEisensteinCubic.O) (S : ℝ),
       (∀ p ∈ pairs, p.2 * (mBad * p.1) ∈ Jset) →
       (∀ J ∈ Jset, CubicSieve.Admissible J ∧ (Ideal.absNorm J : ℝ) ≤ N) →
-      (∀ a : Ideal Eis → ℂ,
+      (∀ a : Ideal ActualEisensteinCubic.O → ℂ,
         (∑ J ∈ Jset, ‖∑ P ∈ Pset, a P * inverseCubicKernel P J‖ ^ 2) ≤
           S * ∑ P ∈ Pset, ‖a P‖ ^ 2) →
-      ∀ a : Ideal Eis → ℂ,
+      ∀ a : Ideal ActualEisensteinCubic.O → ℂ,
         (∑ p ∈ pairs, ‖∑ P ∈ Pset,
           a P * inverseCubicKernel P (p.2 * (mBad * p.1))‖ ^ 2) ≤
           D * N ^ ε * S * ∑ P ∈ Pset, ‖a P‖ ^ 2 := by
   obtain ⟨D, hD, hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power ε hε
   refine ⟨D, hD, ?_⟩
   intro N hN pairs Jset Pset mBad S hmap hJset hcubic a
-  let E (J : Ideal Eis) := ‖∑ P ∈ Pset, a P * inverseCubicKernel P J‖ ^ 2
-  have hfiber (J : Ideal Eis) (hJ : J ∈ Jset) :
+  let E (J : Ideal ActualEisensteinCubic.O) := ‖∑ P ∈ Pset, a P * inverseCubicKernel P J‖ ^ 2
+  have hfiber (J : Ideal ActualEisensteinCubic.O) (hJ : J ∈ Jset) :
       (∑ _p ∈ pairs with _p.2 * (mBad * _p.1) = J, (1 : ℝ)) ≤ D * N ^ ε := by
     have hJ0 := (hJset J hJ).1.1.ne_zero
     have hc : ((pairs.filter (fun p => p.2 * (mBad * p.1) = J)).card : ℝ) ≤
@@ -121,14 +124,14 @@ theorem cubic_product_row_bound_of_sieve (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left (hcubic a) (by positivity)
     _ = _ := by ring
 
-theorem cubic_product_row_sieve_norm (ε : ℝ) (hε : 0 < ε) :
+theorem cubic_product_row_sieve_norm     :
     ∃ D : ℝ, 0 < D ∧ ∀ N L : ℝ, 1 ≤ N →
-    ∀ (pairs : Finset (Ideal Eis × Ideal Eis)) (Jset Pset : Finset (Ideal Eis))
-      (mBad : Ideal Eis),
+    ∀ (pairs : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O)) (Jset Pset : Finset (Ideal ActualEisensteinCubic.O))
+      (mBad : Ideal ActualEisensteinCubic.O),
       (∀ p ∈ pairs, p.2 * (mBad * p.1) ∈ Jset) →
       (∀ J ∈ Jset, CubicSieve.Admissible J ∧ (Ideal.absNorm J : ℝ) ≤ N) →
       (∀ P ∈ Pset, CubicSieve.Admissible P ∧ (Ideal.absNorm P : ℝ) ≤ L) →
-      ∀ a : Ideal Eis → ℂ,
+      ∀ a : Ideal ActualEisensteinCubic.O → ℂ,
         (∑ p ∈ pairs, ‖∑ P ∈ Pset,
           a P * inverseCubicKernel P (p.2 * (mBad * p.1))‖ ^ 2) ≤
           D * N ^ ε * CubicSieve.sieveNorm N L * ∑ P ∈ Pset, ‖a P‖ ^ 2 := by
@@ -138,14 +141,14 @@ theorem cubic_product_row_sieve_norm (ε : ℝ) (hε : 0 < ε) :
   exact hb N hN pairs Jset Pset mBad (CubicSieve.sieveNorm N L) hmap hJ
     (finite_inverse_cubic_energy Jset Pset N L hJ hP) a
 
-theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
+theorem hybrid_fixed_block_sieve_norm     :
     ∃ C : ℝ, 0 < C ∧ ∀ K X N L : ℝ, 1 ≤ K → 1 ≤ X → 1 ≤ N →
-    ∀ (rows : Finset (Ideal Eis)) (pairs cubicPairs : Finset (Ideal Eis × Ideal Eis))
-      (Hset Jset Pset : Finset (Ideal Eis)),
+    ∀ (rows : Finset (Ideal ActualEisensteinCubic.O)) (pairs cubicPairs : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O))
+      (Hset Jset Pset : Finset (Ideal ActualEisensteinCubic.O)),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ p ∈ pairs, Squarefree (p.1 * p.2) ∧ (Ideal.absNorm (p.1 * p.2) : ℝ) ≤ X) →
-    ∀ (B mBad : Ideal Eis) (cset : Ideal Eis → Finset (Ideal Eis))
-      (coef : Ideal Eis → Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
+    ∀ (B mBad : Ideal ActualEisensteinCubic.O) (cset : Ideal ActualEisensteinCubic.O → Finset (Ideal ActualEisensteinCubic.O))
+      (coef : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ)
       (Cbound Ebound : ℝ), 0 ≤ Cbound →
       (∀ p ∈ pairs, ((cset p.1).card : ℝ) ≤ Cbound) →
       (∀ p ∈ pairs, ∀ c ∈ cset p.1, ‖beta c p.1 p.2‖ ≤ 1) →
@@ -166,7 +169,7 @@ theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
   refine ⟨Cq * D, mul_pos hCq hD, ?_⟩
   intro K X N L hK hX hN rows pairs cubicPairs Hset Jset Pset hrows hpairs
     B mBad cset coef beta Cbound Ebound hCbound hcount hbeta hH hmc hmap hJ hP hcoef
-  let E (h m c : Ideal Eis) := ‖∑ P ∈ Pset,
+  let E (h m c : Ideal ActualEisensteinCubic.O) := ‖∑ P ∈ Pset,
     coef h P * inverseCubicKernel P (c * (mBad * m))‖ ^ 2
   have hnorm : 0 ≤ CubicSieve.sieveNorm N L := sq_nonneg _
   have he := hquad K X hK hX rows pairs hrows hpairs B mBad cset Pset coef beta
@@ -195,6 +198,8 @@ theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
       ring
 
 end
+
+
 end SevenEighths.InverseMoment
 
 end OAI

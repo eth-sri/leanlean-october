@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedFourier
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialResidualTupleEnergy
@@ -18,7 +18,7 @@ open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure Invers
 open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
 open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
 open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
-local notation "O"=>ActualEisensteinCubic.O
+
 
 open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
 open MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier
@@ -33,7 +33,7 @@ theorem original_residual_tuple_energy
     (hΦ:∀x,0≤(Φ x).re)(hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
     (B₀:ℝ)(hB₀:0≤B₀)(hb:∀x,‖W x‖≤B₀)
     (cap gap eps π η τ loss:ℝ)(hcap:0≤cap)(hgap:0<gap)(heps:0<eps)(hπ:0<π)
-    (hη:0<η)(hηone:η≤1)(hηsmall:η≤gap/50)(hτ:0<τ)(hτsmall:τ≤gap/50)(hloss:0<loss)(K:ℕ):
+    (hη:0<η)(hηone:η≤1)(hηsmall:η≤gap/50)(hτ:0<τ)(hτsmall:τ≤gap/50)(hloss:0<loss) K :
     ∃degree:ℕ,∃Btree:ℝ,1≤Btree ∧
     ∀q:ℕ,q≠0→∃C Z₀:ℝ,0<C ∧ 1<Z₀ ∧
     ∀Z:ℝ,Z₀≤Z→∀Dpool:ℕ,Btree*Z^(cap+1)≤Dpool→
@@ -45,15 +45,15 @@ theorem original_residual_tuple_energy
     let _hcop:=poolPrimary_coprime F hF;
     let _hg:=poolPrimary_good F hF;
     ∀{σ:Type}[DecidableEq σ](all assigned:Finset σ),assigned⊆all→all.card≤K→
-    ∀(L:σ→Finset (Ideal O))(Hslot:σ→ℝ)(coeff:σ→Ideal O→ℂ),
+    ∀(L:σ→Finset (Ideal ActualEisensteinCubic.O))(Hslot:σ→ℝ)(coeff:σ→Ideal ActualEisensteinCubic.O→ℂ),
       (all:Set σ).PairwiseDisjoint L→(∀i∈all\assigned,1≤Hslot i)→
       (∀i∈all\assigned,∀P∈L i,(P.absNorm:ℝ)≤Hslot i)→
       (∀i∈all\assigned,∀P∈L i,‖coeff i P‖≤1)→
-    ∀(qelem:σ→O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
+    ∀(qelem:σ→ActualEisensteinCubic.O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
       (∀i∈all,0≤z i)→(∀i∈assigned,qelem i≠0)→
       (∀i∈assigned,Function.support (primeW i)⊆Set.Icc (al i) (bl i))→
       (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z^(z i))≠0)→
-    ∀χ:Ideal O→*ℂ,(∀u,‖elementCharacter χ u‖≤1)→
+    ∀χ:Ideal ActualEisensteinCubic.O→*ℂ,(∀u,‖elementCharacter χ u‖≤1)→
       FactorsModulo (fixedBaseConductor q) (elementCharacter χ)→
       (∀c,¬outside (reflectionExcludedPrimes q) c→χ c=0)→
     ∀(D m r:ℝ),0≤m→m≤cap→-cap≤D→
@@ -63,8 +63,8 @@ theorem original_residual_tuple_energy
       r+2*assignedCenter all z≤m-2*gap→
       2*r+8*assignedCenter all z≤3*m-2*gap→
       r+assignedCenter all z+7*η≤cap→
-    ∀(rows:Finset O),(∀u∈rows,‖eisEmbedding u‖^2≤Z^m)→
-    ∀(j:Ideal O),Admissible j→Ideal.span {assignedElement assigned qelem}=j→
+    ∀(rows:Finset ActualEisensteinCubic.O),(∀u∈rows,‖eisEmbedding u‖^2≤Z^m)→
+    ∀(j:Ideal ActualEisensteinCubic.O),Admissible j→Ideal.span {assignedElement assigned qelem}=j→
     ∀(lo hi:σ→ℝ)(jlo jhi:ℝ),
       ((j.absNorm:ℝ)/Z^(assignedCenter assigned z))∈Set.Icc jlo jhi→
       (∀i∈all\assigned,∀P∈L i,Prime P)→
@@ -119,7 +119,7 @@ theorem original_residual_tuple_energy
     linarith
   have hgj:Ideal.span {primaryGenerator j}=Ideal.span {assignedElement assigned qelem}:=
     (primaryGenerator_spec j (primaryGenerator_admissible j hj)).1.trans hspan.symm
-  have hid (u:O):
+  have hid (u:ActualEisensteinCubic.O):
       (∑t∈(all\assigned).pi L,(∏i∈(all\assigned).attach,coeff i.val (t i.val i.property))*
         residualNormalizedPolynomial (originalSource Z r bo)
           (j*survivingProduct (all\assigned) t) j χ (fun _=>1)
@@ -151,6 +151,6 @@ theorem original_residual_tuple_energy
 
 end SevenEighths.InverseInitialResidualTupleEnergy
 
-end
+
 
 end OAI

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawBranches
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorCountFromMoments
@@ -14,13 +14,13 @@ open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBr
 open HeckeDetectorRowCount
 
 theorem count_from_raw_moments
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+     M  [NeZero M]  H 
     (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O))
     (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ)
     (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀ y,0≤φ y) (hφne : φ≠0)
     (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
     (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀ y,φ y≤B₀)
-    (εm : ℝ) (hεm : 0<εm) :
+     εm  (hεm : 0<εm) :
     ∃ c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
       ∀ (a ε tstar T allowance Δ ν C height : ℝ) (i : ℕ),
       1<U → 51/100<a → 2*a-1≤5/6 → 0≤ε → ε≤1/1000 →
@@ -53,8 +53,7 @@ theorem count_from_raw_moments
   obtain ⟨hconst,hconstP,hconstI,hconstI0⟩ := fiberConstant_bounds C height K₀ hC hh hK
   have promote (C' p q : ℝ) (hC' : C'≤fiberConstant C height K₀)
       (hb : (F.rows.card : ℝ)≤C'*U^p) (hpq : p≤q) :
-      (F.rows.card : ℝ)≤fiberConstant C height K₀*U^q := by
-    exact hb.trans ((mul_le_mul_of_nonneg_right hC' (Real.rpow_nonneg hUp.le _)).trans
+      (F.rows.card : ℝ)≤fiberConstant C height K₀*U^q := hb.trans ((mul_le_mul_of_nonneg_right hC' (Real.rpow_nonneg hUp.le _)).trans
       (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hU.le hpq) hconst))
   have hi0 := hamp F.rows F.family a ε tstar T allowance i hU ha'
     (fun u => (F.witness u).toWitness) F.label F.left F.right F.fixed_label F.fixed_left F.fixed_right
@@ -97,6 +96,6 @@ theorem count_from_raw_moments
 
 end SevenEighths.HeckeDetectorCountFromMoments
 
-end
+
 
 end OAI

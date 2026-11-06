@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.LogarithmicControl
 public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicInput
@@ -13,13 +14,13 @@ open Set Metric
 namespace SevenEighths.HeckeLogarithmic
 open HeckeFamily HeckeLogarithmicInput
 
-def complexity (η : Character) (t : ℝ) : ℝ :=
+def complexity (η : Character) (t : ℝ)  :=
   2*(η.modulus.absNorm : ℝ)*(3+|t|)^2
 
-theorem complexity_ge_exp (η : Character) (t : ℝ) : Real.exp 1 ≤ complexity η t :=
+theorem complexity_ge_exp  η   t  : Real.exp 1 ≤ complexity η t :=
   LogarithmicControl.conductor_height_scale_ge_exp _ t (modulus_norm_ge_one η)
 
-theorem regular_disk_differentiable (η : Character) {a e t : ℝ}
+theorem regular_disk_differentiable  η  {a e t : ℝ}
     (ha : (1/2 : ℝ) ≤ a) (he : 0 < e) :
     DifferentiableOn ℂ (regular η) (ball ((2 : ℂ)+t*Complex.I) (2-a-2*e)) := by
   intro z hz
@@ -47,7 +48,7 @@ theorem exists_uniform_polynomial_exponent :
       gcongr
       exact mul_nonneg (by norm_num) uniformConstant_nonneg
     _ = (2*uniformConstant)*complexity η t := by unfold complexity; ring
-    _ ≤ (complexity η t)^M := by simpa only [Real.rpow_one] using hb _ (complexity_ge_exp η t)
+    _ ≤ (complexity η t)^M := by simp_all [complexity_ge_exp]
 
 theorem disk_control_of_euler_log (e A ε : ℝ)
     (he : 0 < e) (he' : e < 1/1000) (hA : 1 ≤ A) (hε : 0 < ε) :

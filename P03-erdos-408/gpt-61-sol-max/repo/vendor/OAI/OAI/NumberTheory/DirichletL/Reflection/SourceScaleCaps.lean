@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.TailAbsorption
 
@@ -9,22 +10,24 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma familyRawScale_inverse {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
-    (F : PrimeFamily φ) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (X QK QP : ℝ) :
+
+
+section
+variable {φ : Type*} [Fintype φ] {a c : ActualEisensteinCubic.O} {mode : Bool} (F : PrimeFamily φ) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
+
+lemma familyRawScale_inverse        
+       
+     X QK QP  :
     (familyRawScale F s X QK QP)⁻¹=
       (27*(sourceCuspScale s.index)^2*(Ideal.absNorm (Ideal.span {c}):ℝ)^2)*
         (Ideal.absNorm (∏ i,F.ideal i):ℝ)^2*QK^2*QP^2*X⁻¹ := by
   unfold familyRawScale actualKernelCoefficient fixedKernelCoefficient
   simp only [ramifiedScale,pow_zero,map_mul,map_one,Nat.cast_mul,Nat.cast_one,one_pow,mul_one]
-  simp only [div_eq_mul_inv,mul_inv_rev,inv_inv,mul_pow]
-  ring
+  grind
 
-lemma familyRawScale_inverse_cap {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
-    (F : PrimeFamily φ) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
+lemma familyRawScale_inverse_cap        
+       
     (Z X QK QP Lcap : ℝ) (hZ : 0<Z) (hX : 0<X) (hK : 0≤QK) (hP : 0≤QP)
     (hFcap : (Ideal.absNorm (∏ i,F.ideal i):ℝ)≤Z^Lcap)
     (hKcap : QK≤Z^Lcap) (hPcap : QP≤Z^Lcap) (hXcap : X⁻¹≤Z^Lcap) :
@@ -40,8 +43,10 @@ lemma familyRawScale_inverse_cap {φ : Type*} [Fintype φ] {a c : Eis} {mode : B
       congr 2
       ring
 
+end
+
 theorem geometry_source_scale_cap {γ : Type*} [Fintype γ]
-    (a c : γ→Eis) (mode : γ→Bool)
+    (a c : γ→ActualEisensteinCubic.O) (mode : γ→Bool)
     (s : ∀ i,FixedCuspShape (ControlledStratumArithmetic.fixedCusp (a i) (c i) (mode i))) :
     ∃ Z₀ : ℝ,1<Z₀ ∧ ∀ i : γ,∀ {φ : Type*} [Fintype φ] (F : PrimeFamily φ),
       ∀ Z X QK QP Lcap : ℝ,Z₀≤Z → 0<X → 0≤QK → 0≤QP →
@@ -65,7 +70,7 @@ theorem geometry_source_scale_cap {γ : Type*} [Fintype γ]
   calc
     _ ≤ Z*Z^(7*Lcap) := mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hzpos.le _)
     _ = _ := by rw [Real.rpow_add hzpos,Real.rpow_one];ring
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

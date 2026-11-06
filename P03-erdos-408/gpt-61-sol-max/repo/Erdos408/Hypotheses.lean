@@ -58,46 +58,46 @@ open Filter
 namespace Erdos408
 
 /-- The roughness level `W = exp(L^{0.24})`. -/
-noncomputable def roughLevel (x : ℝ) : ℝ :=
+noncomputable def roughLevel (x : ℝ)  :=
   Real.exp (Real.log x ^ (0.24 : ℝ))
 
 /-- `n` is rough: every prime factor exceeds `W`. -/
-def IsRough (x : ℝ) (n : ℕ) : Prop :=
+def IsRough (x : ℝ) (n : ℕ)  :=
   ∀ p ∈ n.primeFactors, roughLevel x < p
 
 /-- The band of primes `exp(L^a) ≤ p ≤ exp(2 L^a)`. -/
-noncomputable def band (x a : ℝ) : Finset ℕ :=
+noncomputable def band (x a : ℝ)  :=
   (Finset.Icc ⌈Real.exp (Real.log x ^ a)⌉₊ ⌊Real.exp (2 * Real.log x ^ a)⌋₊).filter Nat.Prime
 
 /-- The number of primes of `S` dividing `n`. -/
-def primeCount (S : Finset ℕ) (n : ℕ) : ℕ :=
+def primeCount (S : Finset ℕ) (n : ℕ)  :=
   (S.filter (· ∣ n)).card
 
 /-- The harmonic mass `∑_{p ∈ S} 1 / p`. -/
-noncomputable def harmonicMass (S : Finset ℕ) : ℝ :=
+noncomputable def harmonicMass (S : Finset ℕ)  :=
   ∑ p ∈ S, (1 : ℝ) / p
 
 /-- The marked weight `q^{ω(n) - |s|} ∏_{i ∈ s} ω_i(n) / V_i` of a family of
 prime groups, where `ω_i(n)` counts the primes of group `i` dividing `n` and
 `ω = ∑ ω_i`. This is PD (3.4) for the bands and the weight `W₁` of PD
 (6.2) for the active groups. -/
-noncomputable def markedWeight {ι : Type*} (s : Finset ι) (q : ℝ) (G : ι → Finset ℕ)
-    (n : ℕ) : ℝ :=
+noncomputable def markedWeight {ι } (s : Finset ι) (q : ℝ) (G : ι → Finset ℕ)
+    (n : ℕ)  :=
   q ^ ((∑ i ∈ s, primeCount (G i) n : ℕ) - s.card : ℤ) *
     ∏ i ∈ s, (primeCount (G i) n : ℝ) / harmonicMass (G i)
 
 /-- `n_*`: `n` with its prime factors in `P` removed, with multiplicity. -/
-noncomputable def stripPrimes (P : Finset ℕ) (n : ℕ) : ℕ :=
+noncomputable def stripPrimes (P : Finset ℕ) (n : ℕ)  :=
   ∏ p ∈ n.primeFactors with p ∉ P, p ^ n.factorization p
 
 /-- The primes in `[a, b]`. -/
-noncomputable def primesIcc (a b : ℝ) : Finset ℕ :=
+noncomputable def primesIcc (a b : ℝ)  :=
   (Finset.Icc ⌈a⌉₊ ⌊b⌋₊).filter Nat.Prime
 
 /-- The analytic premise replacing PD (6.38): twisted prime sums over
 intervals `I ⊂ [H, 2H]` with `exp(L / T²²) ≤ H ≤ x`, for characters of
 modulus at most `L^{C_m}` and `L^E ≤ |u| ≤ x³`, are at most `κ L^{-A}`. -/
-def PrimeTwistBound (x A E Cm κ : ℝ) : Prop :=
+def PrimeTwistBound (x A E Cm κ : ℝ)  :=
   ∀ H lo hi : ℝ, Real.exp (Real.log x / Real.log (Real.log x) ^ 22) ≤ H → H ≤ x →
     H ≤ lo → hi ≤ 2 * H →
     ∀ (k : ℕ), 1 ≤ k → (k : ℝ) ≤ Real.log x ^ Cm → ∀ (χ : DirichletCharacter ℂ k) (u : ℝ),
@@ -110,7 +110,7 @@ def PrimeTwistBound (x A E Cm κ : ℝ) : Prop :=
 with `exp(L / T²²) ≤ H ≤ x`, residue classes of modulus at most `L^{C_m}`, and
 `1 ≤ |u| ≤ x³`, the integer kernel satisfies
 `H⁻¹ |∑_{n ∈ I, n ≡ a} n^{iu}| ≤ κ ((1 + |u|)⁻¹ + exp(-L^{0.95}))`. -/
-def IntegerKernelBound (x Cm κ : ℝ) : Prop :=
+def IntegerKernelBound (x Cm κ : ℝ)  :=
   ∀ H lo hi : ℝ, Real.exp (Real.log x / Real.log (Real.log x) ^ 22) ≤ H → H ≤ x →
     H ≤ lo → hi ≤ 2 * H →
     ∀ (k a : ℕ), 1 ≤ k → (k : ℝ) ≤ Real.log x ^ Cm → ∀ u : ℝ, 1 ≤ |u| → |u| ≤ x ^ 3 →
@@ -192,7 +192,7 @@ spaced at least `g` apart, and let `γ ≥ L^{-1/100}`, `H_m, H_n ≥ x^γ` with
 `H_n⁻¹ |∑_{H_n ≤ n ≤ 2H_n} n^{iΔ}| ≤ c_G (|Δ|⁻¹ + exp(-L^{0.95}))` for
 `1 ≤ |Δ| ≤ 4 X L^B + 2`. Then
 `|∑ α_m β_n F(mn - 1) 𝒲(mn - 1)| ≤ C₁ X L^{-D_*}`. -/
-def OneSidedTypeII : Prop :=
+def OneSidedTypeII  :=
   ∀ (q C Dstar CX alo ahi : ℝ), 0 < q → q < 1 → 0 < C → 0 < Dstar → 1 ≤ CX →
     1 / 10 < alo → alo ≤ ahi → ahi < 1 / 5 →
     ∃ (K₀ : ℕ) (A₀ B A : ℝ), ∀ K : ℕ, K₀ ≤ K → ∀ g c₄ cG : ℝ, 0 < g → ∃ C₁ : ℝ,
@@ -219,37 +219,37 @@ def OneSidedTypeII : Prop :=
             C₁ * (Hm * Hn) * Real.log x ^ (-Dstar)
 
 /-- The number `ω(n)` of group primes dividing `n`. -/
-def groupPrimeCount {ι : Type*} [Fintype ι] (P : ι → Finset ℕ) (n : ℕ) : ℕ :=
+def groupPrimeCount {ι } [Fintype ι] (P : ι → Finset ℕ) (n : ℕ)  :=
   ∑ g, primeCount (P g) n
 
 /-- The marks of the physical states at `n` (WD Definition 3.3): ordered lists
 of `M` distinct primes of each group `P g`, all dividing `n`. -/
-noncomputable def physicalLists {ι : Type*} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
-    (M n : ℕ) : Finset (ι → Fin M → ℕ) :=
+noncomputable def physicalLists {ι } [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
+    (M n : ℕ)  :=
   (Fintype.piFinset fun g => Fintype.piFinset fun _ : Fin M => P g).filter fun p =>
     ∀ g, Function.Injective (p g) ∧ ∀ i, p g i ∣ n
 
 /-- The squared physical norm `∑_n |f(n)|² · #lists(n) · ∏_g V_g^{-M}` of a
 function of the position alone, over positions in `S`. -/
-noncomputable def physicalNormSq {ι : Type*} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
-    (M : ℕ) (S : Finset ℕ) (f : ℕ → ℂ) : ℝ :=
+noncomputable def physicalNormSq {ι } [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
+    (M : ℕ) (S : Finset ℕ) (f : ℕ → ℂ)  :=
   ∑ n ∈ S, ‖f n‖ ^ 2 * (physicalLists P M n).card * ∏ g, (harmonicMass (P g))⁻¹ ^ M
 
 /-- The auxiliary free labels of a pattern with free slots `C g ⊆ Fin J`: a
 prime of `P g` in each slot of `C g`, and `1` in every other slot. -/
-noncomputable def auxLabels {ι : Type*} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) {J : ℕ}
-    (C : ι → Finset (Fin J)) : Finset (ι → Fin J → ℕ) :=
+noncomputable def auxLabels {ι } [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) {J }
+    (C : ι → Finset (Fin J))  :=
   Fintype.piFinset fun g => Fintype.piFinset fun i => if i ∈ C g then P g else {1}
 
 /-- The edge product `D = D_R D_C`: the shared source labels in the first `J`
 slots outside `C g`, and the auxiliary labels in the slots of `C g`. -/
-def edgeProduct {ι : Type*} [Fintype ι] {J : ℕ} (C : ι → Finset (Fin J))
-    (p : ι → Fin (J + 1) → ℕ) (a : ι → Fin J → ℕ) : ℕ :=
+def edgeProduct {ι } [Fintype ι] {J } (C : ι → Finset (Fin J))
+    (p : ι → Fin (J + 1) → ℕ) (a : ι → Fin J → ℕ)  :=
   ∏ g, ∏ i, if i ∈ C g then a g i else p g i.castSucc
 
 /-- The product of the labels of `a` in the slots `A g`. -/
-def slotProduct {ι : Type*} [Fintype ι] {J : ℕ} (A : ι → Finset (Fin J))
-    (a : ι → Fin J → ℕ) : ℕ :=
+def slotProduct {ι } [Fintype ι] {J } (A : ι → Finset (Fin J))
+    (a : ι → Fin J → ℕ)  :=
   ∏ g, ∏ i ∈ A g, a g i
 
 /-- The pairing `⟨f, 𝒜_ν g⟩` of one pattern of the physical operator (WD
@@ -263,10 +263,10 @@ other first `J` slots, with coefficient `∏_g V_g^{-t_g}`, `t_g = |C g| + 1`.
 The multiplier is `K(p, p', a) D^{iζ} q₀^{(ω(n) - Ms)/2} q₀^{(ω(n + D) - Ms)/2}`,
 with `s` the number of groups. For such endpoints the slot symmetrizations of
 the printed operator drop out. -/
-noncomputable def patternPairing {ι : Type*} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
-    (q₀ : ℝ) {J : ℕ} (C : ι → Finset (Fin J))
+noncomputable def patternPairing {ι } [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
+    (q₀ : ℝ) {J } (C : ι → Finset (Fin J))
     (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ) (ζ : ℝ)
-    (S : Finset ℕ) (f g : ℕ → ℂ) : ℂ :=
+    (S : Finset ℕ) (f g : ℕ → ℂ)  :=
   ∑ n ∈ S, ∑ p ∈ physicalLists P (J + 1) n, ∑ a ∈ auxLabels P C,
     ∑ p' ∈ (physicalLists P (J + 1) (n + edgeProduct C p a)).filter (fun p' =>
         ∀ h, (∀ i, i ∉ C h → p' h i.castSucc = p h i.castSucc) ∧
@@ -354,7 +354,7 @@ even `h`, the weight avoiding all bad conditions is
 `X ∏ (1 - g(p)) (1 + O(e^{-h})) + O(∑_{∏ D ≤ z^{4h+2}} |r(D)|)`, and for
 `h = 2` it is at most a fixed constant times `X ∏ (1 - g(p))` plus the same
 remainder sum. The constants depend only on `η₀, C₀`. -/
-def BlockSieve : Prop :=
+def BlockSieve  :=
   ∀ η₀ C₀ : ℝ, 0 < η₀ → ∃ (h₀ : ℕ) (K : ℝ),
     ∀ {ι : Type} (objs : Finset ι) (wt : ι → ℝ) (P : Finset ℕ) (z X : ℝ)
       (bad : ℕ → ι → Prop) [∀ p i, Decidable (bad p i)] (g : ℕ → ℝ),

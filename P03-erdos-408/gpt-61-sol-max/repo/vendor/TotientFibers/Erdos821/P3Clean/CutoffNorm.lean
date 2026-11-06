@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.SmallAverage
 public import Erdos821.P3Clean.ConditionedNorm
@@ -69,8 +70,7 @@ theorem clean_projected_norm (F : FixedData) (r : MemoryParameters F) :
     unfold projectKernel
     rw [memoryEdgeKernel_rho]
     rw [memoryEdgeKernel_clean]
-    by_cases hs : P.memorySize s ≤ B <;> by_cases ht : P.memorySize t ≤ B <;>
-      simp [hs, ht]
+    norm_num
   rw [he] at h
   exact h
 

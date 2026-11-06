@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
-theorem cube_height_power_eventually (n : ℕ) (τ p loss : ℝ)
+
+theorem cube_height_power_eventually  n  (τ p loss : ℝ)
     (hτ : 0<τ) (hp : 0≤p) (hgap : τ*p<loss) :
     ∀ᶠ Z : ℝ in atTop,∀i : ℕ,i≤n → (3+(3*i+2:ℕ)*Z^τ)^p≤Z^loss := by
   have hh := HeckeDyadic.constant_absorbed_eventually ((3*(n:ℝ)+5)^p)
@@ -34,6 +34,6 @@ theorem cube_height_power_eventually (n : ℕ) (τ p loss : ℝ)
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

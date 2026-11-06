@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.TwoSided
 
@@ -25,24 +26,24 @@ noncomputable section
 
 /-- The pairs `(P, Q)`: a retained pattern `P` and a set `Q ⊆ 𝒞 ∖ P` of
 expanded failure factors. -/
-def patternIndex (c₂ x : ℝ) : Finset (Σ _ : Finset (Finset ℕ), Finset (Finset ℕ)) :=
+def patternIndex (c₂ x : ℝ)  :=
   ((candidateGroups x).powerset.filter (ManySuccesses c₂ x)).sigma
     fun P => (candidateGroups x \ P).powerset
 
 /-- The monomials `(U, S)` of the inert polynomial. -/
-def monomialIndex (K : ℕ) (CN x : ℝ) : Finset (Σ _ : Finset ℕ, Finset (ℕ × ℕ)) :=
+def monomialIndex (K : ℕ) (CN x : ℝ)  :=
   (range K).powerset.sigma fun U => (U ×ˢ range (inertPerCluster K CN x)).powerset
 
 /-- The coefficient `(-1)^{|Q|} c₁^{|P ∪ Q|} (-1)^{|U| + |S|} c_w^{|S|}` of a
 term. -/
 def expansionCoeff (c₁ cw : ℝ) (i : Σ _ : Finset (Finset ℕ), Finset (Finset ℕ))
-    (m : Σ _ : Finset ℕ, Finset (ℕ × ℕ)) : ℝ :=
+    (m : Σ _ : Finset ℕ, Finset (ℕ × ℕ))  :=
   (-1) ^ i.2.card * c₁ ^ (i.1 ∪ i.2).card * ((-1) ^ (m.1.card + m.2.card) * cw ^ m.2.card)
 
 /-- The signed expansion of the clipped-core sum on the retained patterns. -/
-theorem sum_mul_successProb_eq (q cw : ℝ) (hq : q ≠ 0) (K : ℕ) (CN : ℝ) {x : ℝ} (hx : 0 < x)
-    (κ : ℝ) (Φ : ℝ → ℝ) {k : ℕ} (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) (G : ℕ → ℝ)
-    (c₁ c₂ : ℝ) :
+theorem sum_mul_successProb_eq  q cw  (hq : q ≠ 0)  K   CN   {x}  (hx : 0 < x)
+     κ   Φ  {k : ℕ} (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ)  G 
+     c₁ c₂  :
     ∑ w ∈ Icc 1 ⌊κ * x⌋₊,
         Φ (w / x) * endpoint q cw K CN x u v B w * G (w + 1) * successProb c₁ c₂ x w =
       ∑ i ∈ patternIndex c₂ x, ∑ m ∈ monomialIndex K CN x,
@@ -80,7 +81,7 @@ theorem sum_mul_successProb_eq (q cw : ℝ) (hq : q ≠ 0) (K : ℕ) (CN : ℝ) 
   rfl
 
 /-- There are at most `4^{|𝒞|}` pairs `(P, Q)`. -/
-lemma card_patternIndex_le (c₂ x : ℝ) :
+lemma card_patternIndex_le  c₂ x  :
     (patternIndex c₂ x).card ≤ 4 ^ (candidateGroups x).card := by
   rw [patternIndex, card_sigma]
   calc ∑ P ∈ (candidateGroups x).powerset.filter (ManySuccesses c₂ x),
@@ -94,7 +95,7 @@ lemma card_patternIndex_le (c₂ x : ℝ) :
         norm_num
 
 /-- There are at most `2^K 2^{K N/K}` monomials. -/
-lemma card_monomialIndex_le (K : ℕ) (CN x : ℝ) :
+lemma card_monomialIndex_le  K   CN x  :
     (monomialIndex K CN x).card ≤ 2 ^ K * 2 ^ (K * inertPerCluster K CN x) := by
   rw [monomialIndex, card_sigma]
   calc ∑ U ∈ (range K).powerset, (U ×ˢ range (inertPerCluster K CN x)).powerset.card
@@ -105,21 +106,23 @@ lemma card_monomialIndex_le (K : ℕ) (CN x : ℝ) :
         simpa using card_le_card (mem_powerset.1 hU)
     _ = _ := by rw [sum_const, card_powerset, card_range, smul_eq_mul]
 
+section
+variable {c₁ cw c₂ x : ℝ} {K : ℕ} {CN : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1) (hcw : 0 ≤ cw) (hcw' : cw ≤ 1)
+
+include hc₁ hc₁' hcw hcw' in
 /-- With `0 ≤ c₁, c_w ≤ 1`, the coefficients are at most `1`. -/
-lemma abs_expansionCoeff_le {c₁ cw : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1) (hcw : 0 ≤ cw)
-    (hcw' : cw ≤ 1) (i : Σ _ : Finset (Finset ℕ), Finset (Finset ℕ))
-    (m : Σ _ : Finset ℕ, Finset (ℕ × ℕ)) : |expansionCoeff c₁ cw i m| ≤ 1 := by
+lemma abs_expansionCoeff_le        
+       i 
+     m  : |expansionCoeff c₁ cw i m| ≤ 1 := by
   simp only [expansionCoeff, abs_mul, abs_pow, abs_neg, abs_one, one_pow, one_mul,
     abs_of_nonneg hc₁, abs_of_nonneg hcw]
-  have h1 := pow_le_one₀ (n := (i.1 ∪ i.2).card) hc₁ hc₁'
-  have h2 := pow_le_one₀ (n := m.2.card) hcw hcw'
-  have h3 : 0 ≤ cw ^ m.2.card := by positivity
-  nlinarith
+  bound
 
+include hc₁ hc₁' hcw hcw' in
 /-- The signed expansion is at most the number of terms times `x C* L^{-A}`. -/
-theorem abs_sum_expansion_le {c₁ cw c₂ x : ℝ} {K : ℕ} {CN : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1)
-    (hcw : 0 ≤ cw) (hcw' : cw ≤ 1) (hx : 0 ≤ x) {F : (Σ _ : Finset (Finset ℕ), Finset (Finset ℕ)) →
-      (Σ _ : Finset ℕ, Finset (ℕ × ℕ)) → ℝ} {R : ℝ}
+theorem abs_sum_expansion_le          
+        (hx : 0 ≤ x) {F : (Σ _ : Finset (Finset ℕ), Finset (Finset ℕ)) →
+      (Σ _ : Finset ℕ, Finset (ℕ × ℕ)) → ℝ}  {R} 
     (hF : ∀ i ∈ patternIndex c₂ x, ∀ m ∈ monomialIndex K CN x, |F i m| ≤ R) :
     |∑ i ∈ patternIndex c₂ x, ∑ m ∈ monomialIndex K CN x, expansionCoeff c₁ cw i m * x * F i m| ≤
       (patternIndex c₂ x).card * (monomialIndex K CN x).card * (x * R) := by
@@ -131,9 +134,11 @@ theorem abs_sum_expansion_le {c₁ cw c₂ x : ℝ} {K : ℕ} {CN : ℝ} (hc₁ 
   rw [abs_mul, abs_mul, abs_of_nonneg hx]
   have h1 := abs_expansionCoeff_le hc₁ hc₁' hcw hcw' i m
   have h2 := hF i hi m hm
-  have hR : 0 ≤ R := (abs_nonneg _).trans h2
+  
   calc |expansionCoeff c₁ cw i m| * x * |F i m| ≤ 1 * x * R := by gcongr
     _ = x * R := by ring
+
+end
 
 end
 

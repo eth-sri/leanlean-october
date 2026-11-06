@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Unsmooth
 public import Erdos408.OneSided.Bands
@@ -23,7 +24,7 @@ open Filter Finset
 
 /-- **U6.** Eventually `|C_B / V| ≤ L^{d+3}` for admissible slots, `|B| ≤ 1` and `V ≥ v₋`:
 `|C_B| ≤ (∑_{p ≤ x} 1/p)^{d+1} ≤ (2L)^{d+1}`. -/
-theorem eventually_abs_slotMean_div_le (c vlo : ℝ) (d : ℕ) (hc : 0 < c) (hvlo : 0 < vlo) :
+theorem eventually_abs_slotMean_div_le  c vlo   d  (hc : 0 < c) (hvlo : 0 < vlo) :
     ∀ᶠ x : ℝ in atTop, ∀ (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ),
       AdmissibleSlots c x u v → (∀ Q, |Bc Q| ≤ 1) → ∀ V : ℝ, vlo ≤ V →
         |slotMean x u v Bc / V| ≤ Real.log x ^ ((d + 3 : ℕ) : ℝ) := by
@@ -93,23 +94,26 @@ theorem eventually_coprime (Cm : ℝ) :
   refine Nat.coprime_of_dvd fun p hpr hpd hpk => ?_
   have hk0 : k ≠ 0 := by omega
   have hpk' : (p : ℝ) ≤ k := by exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero hk0) hpk
-  have := hp p (Nat.mem_primeFactors.2 ⟨hpr, hpd, hd⟩)
-  linarith
+  grind
+
+section
+variable {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fintype ι] [DecidableEq ι] {P : ι → Finset ℕ} {big : Finset ι} (hadm : GroupAdmissible c₀ C₀ vlo vhi x P big)
+include c₀ C₀ vlo vhi x ι P big hadm
 
 /-- The primes of a small group lie in `[exp(L^{0.27}), exp(L^{0.36})]`. -/
-theorem mem_smallGroup_bounds {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fintype ι] [DecidableEq ι]
-    {P : ι → Finset ℕ} {big : Finset ι} (hadm : GroupAdmissible c₀ C₀ vlo vhi x P big)
-    {gs : ι} (hgs : gs ∉ big) :
+theorem mem_smallGroup_bounds        
+         
+     {gs}  (hgs : gs ∉ big) :
     ∀ p ∈ P gs, p.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ p ∧
       (p : ℝ) ≤ Real.exp (Real.log x ^ (0.36 : ℝ)) := fun _ hp =>
   mem_primesIcc.1 (hadm.2.2.2.2.2.2.1 gs hgs hp)
 
 /-- Every active or band prime is at least `exp(L^{1/10})`. -/
-theorem exp_le_of_mem_active_or_band {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fintype ι]
-    [DecidableEq ι] {P : ι → Finset ℕ} {big : Finset ι}
-    (hadm : GroupAdmissible c₀ C₀ vlo vhi x P big) {K₀ : ℕ} {CN alo ahi : ℝ} {r : ℕ}
+theorem exp_le_of_mem_active_or_band      
+         
+      {K₀ : ℕ} {CN alo ahi : ℝ} {r : ℕ}
     {a : Fin r → ℝ} (hin : InertAdmissible K₀ CN alo ahi x a) (halo : 1 / 10 ≤ alo)
-    (hL : 1 ≤ Real.log x) {p : ℕ} (hp : p ∈ Finset.univ.biUnion P ∨ ∃ i, p ∈ band x (a i)) :
+    (hL : 1 ≤ Real.log x)  {p}  (hp : p ∈ Finset.univ.biUnion P ∨ ∃ i, p ∈ band x (a i)) :
     Real.exp (Real.log x ^ (1 / 10 : ℝ)) ≤ p := by
   have hpow : ∀ e : ℝ, 1 / 10 ≤ e →
       Real.exp (Real.log x ^ (1 / 10 : ℝ)) ≤ Real.exp (Real.log x ^ e) := fun e he =>
@@ -121,5 +125,7 @@ theorem exp_le_of_mem_active_or_band {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fi
       exact (hpow 0.39 (by norm_num)).trans this
     · exact (hpow 0.27 (by norm_num)).trans (mem_smallGroup_bounds hadm hg p hpg).2.1
   · exact (hpow (a i) (halo.trans (hin.2.1 i).1)).trans (OneSided.exp_le_of_mem_band hp)
+
+end
 
 end Erdos408.TwoSided.ConstHigh

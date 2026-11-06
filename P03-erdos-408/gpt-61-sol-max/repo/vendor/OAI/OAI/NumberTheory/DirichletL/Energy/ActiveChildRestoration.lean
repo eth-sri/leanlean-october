@@ -19,14 +19,14 @@ open CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
 open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
 open CenteredMomentRadialEligibleEnergy CenteredMomentCommonMaskEnergy
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-local notation "O"=>HeckeFamily.O
+
 variable {α:Type*}[Fintype α]
 local instance {β:Type*}:DecidableEq β:=Classical.decEq _
 
-theorem allocated_row_active (s:Input α)(C R:Ideal O)
-    (B:actualAllocations (activeInput s).pools C)(τ:Character)(v:ℝ)
-    (D:Ideal O)(a:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (z:O)(W₁ W₂:ℝ→ℂ)(X₁ X₂:ℝ):
+theorem allocated_row_active (s:Input α)(C R:Ideal HeckeFamily.O)
+    (B:actualAllocations (activeInput s).pools C) τ  v 
+     D  a 
+     z  W₁ W₂  X₁ X₂ :
     let d : CenteredMomentEligibleEnergy.Data (CenteredMomentCommonProfile.liveIndices B.val) :=
       commonData (withHeight (activeInput s) τ v) C R
         ⟨B.val, by simpa only [withHeight, Input.pools] using B.property⟩
@@ -54,16 +54,16 @@ theorem allocated_row_active (s:Input α)(C R:Ideal O)
   congr 2
   apply Finset.prod_congr rfl
   intro i _
-  have hz (f : Ideal O → ℂ) : heightCoefficient f 0 = f := by
+  have hz (f : Ideal HeckeFamily.O → ℂ) : heightCoefficient f 0 = f := by
     funext I
     simp [heightCoefficient]
   simpa only [hz] using rowSlot_active s i.val.val τ
     (CenteredMomentSecondHeightFamily.fixedBadMask * idealGenerator (R * C)) 1 z v 0
 
-theorem child_energy_active (s:Input α)(C R:Ideal O)
-    (B:actualAllocations (activeInput s).pools C)(τ:Character)(v:ℝ)
-    (D:Ideal O)(a:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (rad:Radial):
+theorem child_energy_active (s:Input α)(C R:Ideal HeckeFamily.O)
+    (B:actualAllocations (activeInput s).pools C) τ  v 
+     D  a 
+     rad :
     let d : CenteredMomentEligibleEnergy.Data (CenteredMomentCommonProfile.liveIndices B.val) :=
       commonData (withHeight (activeInput s) τ v) C R
         ⟨B.val, by simpa only [withHeight, Input.pools] using B.property⟩

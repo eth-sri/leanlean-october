@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.Fourier.FourierTransformDeriv
 public import Mathlib.Analysis.Fourier.Inversion
@@ -32,13 +33,13 @@ namespace Erdos408.OneSided
 open MeasureTheory
 
 /-- The Fourier transform `ft f ξ = ∫ e(-x ξ) f(x) dx`. -/
-noncomputable def ft (f : ℝ → ℂ) (ξ : ℝ) : ℂ :=
+noncomputable def ft (f : ℝ → ℂ) (ξ : ℝ)  :=
   ∫ x : ℝ, Complex.exp (-(2 * Real.pi * Complex.I * (x : ℂ) * (ξ : ℂ))) * f x
 
 /-! ### Auxiliary lemmas -/
 
 /-- `ft` is Mathlib's Fourier transform `𝓕` on `ℝ`. -/
-theorem ft_eq_fourier (f : ℝ → ℂ) : ft f = FourierTransform.fourier f := by
+theorem ft_eq_fourier  f  : ft f = FourierTransform.fourier f := by
   funext ξ
   rw [Real.fourier_real_eq_integral_exp_smul, ft]
   congr 1 with x
@@ -47,7 +48,7 @@ theorem ft_eq_fourier (f : ℝ → ℂ) : ft f = FourierTransform.fourier f := b
   ring_nf
 
 /-- Mathlib's inverse Fourier transform `𝓕⁻` on `ℝ`, written out as `∫ e(x ξ) g(ξ) dξ`. -/
-theorem fourierInv_eq_integral (g : ℝ → ℂ) (x : ℝ) :
+theorem fourierInv_eq_integral (g : ℝ → ℂ)  x  :
     FourierTransformInv.fourierInv g x =
       ∫ ξ : ℝ, Complex.exp (2 * Real.pi * Complex.I * (x : ℂ) * (ξ : ℂ)) * g ξ := by
   rw [Real.fourierInv_eq']
@@ -56,21 +57,26 @@ theorem fourierInv_eq_integral (g : ℝ → ℂ) (x : ℝ) :
   push_cast
   ring_nf
 
+section
+variable {f g : ℝ → ℂ} (hf : ContDiff ℝ 2 f) {R M M₀ M₂ : ℝ} (hR : 0 ≤ R) (hsupp : ∀ x, R < |x| → f x = 0)
+
+include hsupp in
 /-- A function vanishing outside `[-R, R]` has compact support. -/
-theorem hasCompactSupport_of_lt_abs {f : ℝ → ℂ} {R : ℝ} (hsupp : ∀ x, R < |x| → f x = 0) :
+theorem hasCompactSupport_of_lt_abs       :
     HasCompactSupport f := by
   refine HasCompactSupport.intro (isCompact_closedBall 0 R) fun x hx => hsupp x ?_
   simpa [Real.norm_eq_abs] using hx
 
+include hsupp in
 /-- The derivatives of a function vanishing outside `[-R, R]` also vanish outside `[-R, R]`. -/
-theorem iteratedDeriv_eq_zero_of_lt_abs {f : ℝ → ℂ} {R : ℝ}
-    (hsupp : ∀ x, R < |x| → f x = 0) (k : ℕ) : ∀ x, R < |x| → iteratedDeriv k f x = 0 := by
+theorem iteratedDeriv_eq_zero_of_lt_abs    
+       k  : ∀ x, R < |x| → iteratedDeriv k f x = 0 := by
   intro x hx
   -- the closed support lies in `[-R, R]`
   have hts : tsupport f ⊆ Metric.closedBall 0 R := by
     refine closure_minimal (fun y hy => ?_) Metric.isClosed_closedBall
     by_contra h
-    exact hy (hsupp y (by simpa [Real.norm_eq_abs] using h))
+    simp_all
   have hx' : x ∉ tsupport f := fun h => by
     have := hts h
     simp [Real.norm_eq_abs] at this
@@ -80,16 +86,15 @@ theorem iteratedDeriv_eq_zero_of_lt_abs {f : ℝ → ℂ} {R : ℝ}
   rw [iteratedDeriv_eq_iteratedFDeriv, this]
   rfl
 
+include hR in
 /-- The trivial bound `|ft g ξ| ≤ 2 R M` for `g` supported in `[-R, R]` with `|g| ≤ M`. -/
-theorem norm_ft_le {g : ℝ → ℂ} {R M : ℝ} (hR : 0 ≤ R) (hsupp : ∀ x, R < |x| → g x = 0)
-    (hM : ∀ x, ‖g x‖ ≤ M) (ξ : ℝ) : ‖ft g ξ‖ ≤ 2 * R * M := by
+theorem norm_ft_le       (hsupp : ∀ x, R < |x| → g x = 0)
+    (hM : ∀ x, ‖g x‖ ≤ M)  ξ  : ‖ft g ξ‖ ≤ 2 * R * M := by
   -- restrict the integral to `[-R, R]`
   have hI : ft g ξ = ∫ x in Set.Icc (-R) R,
       Complex.exp (-(2 * Real.pi * Complex.I * (x : ℂ) * (ξ : ℂ))) * g x := by
     rw [ft, setIntegral_eq_integral_of_forall_compl_eq_zero fun x hx => ?_]
-    rw [hsupp x ?_, mul_zero]
-    by_contra h
-    exact hx (abs_le.1 (not_lt.1 h))
+    grind
   rw [hI]
   refine (norm_setIntegral_le_of_norm_le_const (C := M) (by simp) fun x _ => ?_).trans
     (le_of_eq ?_)
@@ -102,8 +107,8 @@ theorem norm_ft_le {g : ℝ → ℂ} {R M : ℝ} (hR : 0 ≤ R) (hsupp : ∀ x, 
 
 /-- Decay of the transform: `(2π|ξ|)^k |ft f ξ| ≤ 2 R M` for `f` of class `C^k`, supported in
 `[-R, R]`, with `|f^{(k)}| ≤ M`. -/
-theorem norm_ft_mul_le {f : ℝ → ℂ} {k : ℕ} (hf : ContDiff ℝ k f) {R M : ℝ} (hR : 0 ≤ R)
-    (hsupp : ∀ x, R < |x| → f x = 0) (hM : ∀ x, ‖iteratedDeriv k f x‖ ≤ M) (ξ : ℝ) :
+theorem norm_ft_mul_le   {k : ℕ} (hf : ContDiff ℝ k f)  {R M}  (hR : 0 ≤ R)
+    (hsupp : ∀ x, R < |x| → f x = 0) (hM : ∀ x, ‖iteratedDeriv k f x‖ ≤ M)  ξ  :
     (2 * Real.pi * |ξ|) ^ k * ‖ft f ξ‖ ≤ 2 * R * M := by
   -- the derivatives are continuous with compact support, hence integrable
   have hint : ∀ n : ℕ, n ≤ (k : ℕ∞) → Integrable (iteratedDeriv n f) := fun n hn =>
@@ -112,14 +117,14 @@ theorem norm_ft_mul_le {f : ℝ → ℂ} {k : ℕ} (hf : ContDiff ℝ k f) {R M 
   -- differentiating `k` times multiplies the transform by `(2πiξ)^k`
   have hk := congrFun (Real.fourier_iteratedDeriv (N := k) hf hint le_rfl) ξ
   calc (2 * Real.pi * |ξ|) ^ k * ‖ft f ξ‖ = ‖ft (iteratedDeriv k f) ξ‖ := by
-        rw [ft_eq_fourier, ft_eq_fourier, hk, norm_smul, norm_pow]
-        simp [abs_of_pos Real.pi_pos]
+        simp_all [ft_eq_fourier]
     _ ≤ 2 * R * M := norm_ft_le hR (iteratedDeriv_eq_zero_of_lt_abs hsupp k) hM ξ
 
+include hf hR hsupp in
 /-- For `f` of class `C²` supported in `[-R, R]` with `|f| ≤ M₀` and `|f''| ≤ M₂`, the
 transform is integrable and `∫ |ft f| ≤ 4 R (M₀ + M₂)`. -/
-theorem integral_norm_ft_le {f : ℝ → ℂ} (hf : ContDiff ℝ 2 f) {R M₀ M₂ : ℝ} (hR : 0 ≤ R)
-    (hsupp : ∀ x, R < |x| → f x = 0) (hM₀ : ∀ x, ‖f x‖ ≤ M₀)
+theorem integral_norm_ft_le        
+      (hM₀ : ∀ x, ‖f x‖ ≤ M₀)
     (hM₂ : ∀ x, ‖iteratedDeriv 2 f x‖ ≤ M₂) :
     Integrable (ft f) ∧ ∫ ξ : ℝ, ‖ft f ξ‖ ≤ 4 * R * (M₀ + M₂) := by
   have hfi : Integrable f :=
@@ -152,9 +157,10 @@ theorem integral_norm_ft_le {f : ℝ → ℂ} (hf : ContDiff ℝ 2 f) {R M₀ M�
   rw [integral_const_mul, hgI]
   nlinarith
 
+include hf hsupp in
 /-- Fourier inversion for compactly supported `C²` functions: `f(x) = ∫ e(x ξ) ft f ξ dξ`. -/
-theorem ft_inversion {f : ℝ → ℂ} (hf : ContDiff ℝ 2 f) {R : ℝ}
-    (hsupp : ∀ x, R < |x| → f x = 0) (x : ℝ) :
+theorem ft_inversion      
+      (x : ℝ) :
     ∫ ξ : ℝ, Complex.exp (2 * Real.pi * Complex.I * (x : ℂ) * (ξ : ℂ)) * ft f ξ = f x := by
   -- enlarge the support radius to make it nonnegative
   have hsupp' : ∀ x, max R 0 < |x| → f x = 0 := fun x hx =>
@@ -170,5 +176,7 @@ theorem ft_inversion {f : ℝ → ℂ} (hf : ContDiff ℝ 2 f) {R : ℝ}
   have hFi := (integral_norm_ft_le hf (le_max_right R 0) hsupp' hM₀ hM₂).1
   rw [ft_eq_fourier] at hFi
   rw [← fourierInv_eq_integral, ft_eq_fourier, hfc.fourierInv_fourier_eq hfi hFi]
+
+end
 
 end Erdos408.OneSided

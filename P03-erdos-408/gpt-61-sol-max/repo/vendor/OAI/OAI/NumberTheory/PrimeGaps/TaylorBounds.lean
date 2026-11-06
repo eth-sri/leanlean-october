@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.DirichletGrowth
 public import Mathlib.Analysis.Complex.TaylorSeries
@@ -11,39 +12,42 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set   MeasureTheory
 
 open scoped Topology ContDiff
 
 open Asymptotics
 
-open Asymptotics
+ 
 
-open Asymptotics
+ 
 
 open scoped Classical
 
-open scoped ContDiff
+ 
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution   Pointwise
 
 open scoped ComplexConjugate
 
-open Filter Topology
+open Filter  
 
-open Complex Filter Topology
+open Complex    
 
-open Complex Filter Topology Set MeasureTheory Asymptotics
+ 
 
 open Finset
 
-open Complex Filter Topology Finset
+ 
 
-lemma power_series_tail_bound {a : ℕ → ℝ} {M r z : ℝ} (_hM : 0 ≤ M)
+section
+variable {a : ℕ → ℝ} {R M r z : ℝ}
+
+lemma power_series_tail_bound     (_hM : 0 ≤ M)
     (hr : 0 < r) (hz : 0 ≤ z) (hzr : z < r)
-    (hb : ∀ n, |a n| ≤ M/r^n) (N : ℕ) :
+    (hb : ∀ n, |a n| ≤ M/r^n)  N  :
     |∑' n : ℕ, a (n+N)*z^(n+N)| ≤ M*(z/r)^N/(1-z/r) := by
   have hρ : 0 ≤ z/r := div_nonneg hz hr.le
   have hρ1 : z/r < 1 := (div_lt_one hr).mpr hzr
@@ -61,7 +65,7 @@ lemma power_series_tail_bound {a : ℕ → ℝ} {M r z : ℝ} (_hM : 0 ≤ M)
     _ ≤ ∑' n : ℕ, (M*(z/r)^N)*(z/r)^n := hn.tsum_le_tsum hbound hg
     _ = _ := by rw [tsum_mul_left,tsum_geometric_of_lt_one hρ hρ1]; rfl
 
-lemma residue_lower_bound_of_taylor {a : ℕ → ℝ} {R M r z : ℝ} {N : ℕ}
+lemma residue_lower_bound_of_taylor      {N} 
     (hM : 0 ≤ M) (hr : 0 < r) (hz : 1 < z) (hzr : z < r)
     (hb : ∀ n, |a n| ≤ M/r^n) (ha0 : 1-R ≤ a 0)
     (ha : ∀ n, -R ≤ a n) (hN : 1 ≤ N)
@@ -104,16 +108,19 @@ lemma residue_lower_bound_of_taylor {a : ℕ → ℝ} {R M r z : ℝ} {N : ℕ}
   rw [hid] at hv
   linarith
 
-noncomputable def signedTaylorCoeff (H : ℂ → ℂ) (n : ℕ) : ℝ :=
+end
+
+noncomputable def signedTaylorCoeff (H : ℂ → ℂ) (n : ℕ)  :=
   (((-1:ℂ)^n)*(n.factorial:ℂ)⁻¹*iteratedDeriv n H 2).re
 
-lemma signedTaylorCoeff_hasSum {H : ℂ → ℂ} {r z : ℝ}
+section
+variable {H : ℂ → ℂ} {r z M : ℝ}
+
+lemma signedTaylorCoeff_hasSum    
     (hf : DifferentiableOn ℂ H (Metric.ball 2 r)) (hz : |z| < r) :
     HasSum (fun n => signedTaylorCoeff H n*z^n) (H ((2-z:ℝ):ℂ)).re := by
   have hmem : ((2-z:ℝ):ℂ) ∈ Metric.ball (2:ℂ) r := by
-    rw [Metric.mem_ball,dist_eq_norm]
-    have he : ((2-z:ℝ):ℂ)-(2:ℂ) = -(z:ℂ) := by push_cast; ring
-    simpa [he,Complex.norm_real,Real.norm_eq_abs] using hz
+    simp_all
   have hs := (Complex.hasSum_taylorSeries_on_ball hf hmem).map Complex.reCLM Complex.continuous_re
   change HasSum (fun n => ((n.factorial:ℂ)⁻¹ *
     ((((2-z:ℝ):ℂ)-2)^n * iteratedDeriv n H 2)).re) (H ((2-z:ℝ):ℂ)).re at hs
@@ -128,9 +135,9 @@ lemma signedTaylorCoeff_hasSum {H : ℂ → ℂ} {r z : ℝ}
   simp only [←Complex.ofReal_pow,Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,
     mul_zero,sub_zero]
 
-lemma signedTaylorCoeff_norm_bound {H : ℂ → ℂ} {r M : ℝ} (hr : 0 < r)
+lemma signedTaylorCoeff_norm_bound     (hr : 0 < r)
     (hf : DiffContOnCl ℂ H (Metric.ball 2 r))
-    (hb : ∀ s ∈ Metric.sphere 2 r, ‖H s‖ ≤ M) (n : ℕ) :
+    (hb : ∀ s ∈ Metric.sphere 2 r, ‖H s‖ ≤ M)  n  :
     |signedTaylorCoeff H n| ≤ M/r^n := by
   have hder := Complex.norm_iteratedDeriv_le_of_forall_mem_sphere_norm_le n hr hf hb
   have hfact : (n.factorial:ℝ) ≠ 0 := by positivity
@@ -140,7 +147,9 @@ lemma signedTaylorCoeff_norm_bound {H : ℂ → ℂ} {r M : ℝ} (hr : 0 < r)
     _ ≤ (n.factorial:ℝ)⁻¹*((n.factorial:ℝ)*M/r^n) := by gcongr
     _ = _ := by field_simp
 
-lemma signedTaylorCoeff_pole (R : ℝ) (n : ℕ) :
+end
+
+lemma signedTaylorCoeff_pole (R : ℝ)  n  :
     signedTaylorCoeff (fun s : ℂ => (R:ℂ)/(s-1)) n = R := by
   unfold signedTaylorCoeff
   simp only [div_eq_mul_inv,iteratedDeriv_const_mul_field]
@@ -152,13 +161,11 @@ lemma signedTaylorCoeff_pole (R : ℝ) (n : ℕ) :
   have hf : (n.factorial:ℂ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
   have hp : (-1:ℂ)^n*(-1:ℂ)^n = 1 := by rw [←mul_pow]; simp
   have he : (-1:ℂ)^n*(n.factorial:ℂ)⁻¹*((R:ℂ)*((-1:ℂ)^n*n.factorial)) = R := by
-    calc
-      _ = ((-1:ℂ)^n*(-1:ℂ)^n)*(R:ℂ)*((n.factorial:ℂ)⁻¹*n.factorial) := by ring
-      _ = _ := by rw [hp,inv_mul_cancel₀ hf]; ring
+    grind
   rw [he,Complex.ofReal_re]
 
-lemma signedTaylorCoeff_sub {F G : ℂ → ℂ} (hF : AnalyticAt ℂ F 2)
-    (hG : AnalyticAt ℂ G 2) (n : ℕ) :
+lemma signedTaylorCoeff_sub  {F G}  (hF : AnalyticAt ℂ F 2)
+    (hG : AnalyticAt ℂ G 2)  n  :
     signedTaylorCoeff (fun s => F s-G s) n = signedTaylorCoeff F n-signedTaylorCoeff G n := by
   unfold signedTaylorCoeff
   have hd := iteratedDeriv_sub (n:=n) hF.contDiffAt hG.contDiffAt
@@ -166,8 +173,12 @@ lemma signedTaylorCoeff_sub {F G : ℂ → ℂ} (hF : AnalyticAt ℂ F 2)
   rw [hd,mul_sub,Complex.sub_re]
 
 open scoped ComplexOrder in
-lemma signedTaylorCoeff_LSeries_nonneg {a : ℕ → ℂ} (ha : ∀ n, 0 ≤ a n)
-    (hc : LSeries.abscissaOfAbsConv a < (2:ℝ)) (n : ℕ) :
+section
+variable {H : ℂ → ℂ} {a : ℕ → ℂ} {R : ℝ} (ha : ∀ n, 0 ≤ a n) (ha1 : 1 ≤ a 1) (hc : LSeries.abscissaOfAbsConv a < (2:ℝ))
+
+include ha hc in
+lemma signedTaylorCoeff_LSeries_nonneg    
+       n  :
     0 ≤ signedTaylorCoeff (LSeries a) n := by
   have h := LSeries.iteratedDeriv_alternating ha hc n
   have hf : (0:ℝ) ≤ (n.factorial:ℝ)⁻¹ := by positivity
@@ -179,8 +190,9 @@ lemma signedTaylorCoeff_LSeries_nonneg {a : ℕ → ℂ} (ha : ∀ n, 0 ≤ a n)
   simpa using mul_nonneg hf hr
 
 open scoped ComplexOrder in
-lemma LSeries_two_re_ge_one {a : ℕ → ℂ} (ha : ∀ n, 0 ≤ a n)
-    (ha1 : 1 ≤ a 1) (hc : LSeries.abscissaOfAbsConv a < (2:ℝ)) :
+include ha ha1 hc in
+lemma LSeries_two_re_ge_one    
+        :
     1 ≤ (LSeries a 2).re := by
   have hs : LSeriesSummable a 2 := LSeriesSummable_of_abscissaOfAbsConv_lt_re (by simpa using hc)
   have hl := hs.le_tsum 1 (fun n _ => LSeries.term_nonneg (ha n) 2)
@@ -189,9 +201,10 @@ lemma LSeries_two_re_ge_one {a : ℕ → ℂ} (ha : ∀ n, 0 ≤ a n)
   exact (Complex.le_def.mp (ha1.trans hl)).1
 
 open scoped ComplexOrder in
-lemma signedTaylorCoeff_regular_nonneg {H : ℂ → ℂ} {a : ℕ → ℂ} {R : ℝ}
-    (ha : ∀ n, 0 ≤ a n) (ha1 : 1 ≤ a 1)
-    (hc : LSeries.abscissaOfAbsConv a < (2:ℝ))
+include ha ha1 hc in
+lemma signedTaylorCoeff_regular_nonneg      
+       
+     
     (he : H =ᶠ[𝓝 (2:ℂ)] fun s => LSeries a s-(R:ℂ)/(s-1)) :
     1-R ≤ (H 2).re ∧ ∀ n, -R ≤ signedTaylorCoeff H n := by
   have hL : AnalyticAt ℂ (LSeries a) 2 := LSeries_analyticOnNhd a 2 (by simpa using hc)
@@ -206,8 +219,9 @@ lemma signedTaylorCoeff_regular_nonneg {H : ℂ → ℂ} {a : ℕ → ℂ} {R : 
     unfold signedTaylorCoeff
     rw [he.iteratedDeriv_eq]
     change -R ≤ signedTaylorCoeff (fun s => LSeries a s-(R:ℂ)/(s-1)) n
-    rw [signedTaylorCoeff_sub hL hP,signedTaylorCoeff_pole]
-    linarith [signedTaylorCoeff_LSeries_nonneg ha hc n]
+    simp_all [signedTaylorCoeff_sub, signedTaylorCoeff_pole, signedTaylorCoeff_LSeries_nonneg]
+
+end
 
 lemma residue_polynomial_lower {a : ℕ → ℝ} {R A Q z ε : ℝ}
     (hA : 0 ≤ A) (hQ : 2 ≤ Q) (hQA : 12*A ≤ Q)
@@ -225,8 +239,7 @@ lemma residue_polynomial_lower {a : ℕ → ℝ} {R A Q z ε : ℝ}
   have hNlo : 60*Real.log Q ≤ (N:ℝ) := Nat.le_ceil _
   have hNhi : (N:ℝ) < 60*Real.log Q+1 := Nat.ceil_lt_add_one (by positivity)
   have hN : 1 ≤ N := by
-    have : 0 < (N:ℝ) := lt_of_lt_of_le (by positivity) hNlo
-    exact_mod_cast (show 1 ≤ N from Nat.one_le_iff_ne_zero.mpr (by exact_mod_cast this.ne'))
+    aesop
   have hρ : 0 ≤ z/(3/2) := by positivity
   have hρ1 : z/(3/2) ≤ 5/6 := by linarith
   have hlogρ : Real.log (5/6:ℝ) ≤ -(1/6:ℝ) := by
@@ -283,22 +296,27 @@ lemma residue_polynomial_lower {a : ℕ → ℝ} {R A Q z ε : ℝ}
   apply (div_le_iff₀ (by positivity : (0:ℝ) < 2*z)).mpr
   nlinarith
 
-open Complex Filter Topology Finset Set MeasureTheory
+ 
 
 noncomputable def zetaRegular : ℂ → ℂ :=
   regularSeries (positiveCoefficients (fun _ => 1)) 1
 
-lemma zetaRegular_differentiableAt {s : ℂ} (hs : 0 < s.re) :
+section
+variable {f : ℕ → ℂ} {c : ℂ} {D : ℝ} (hD : 0 ≤ D) (hb : ∀ t, 1 < t → ‖seriesDiscrepancy f c t‖ ≤ D) {s : ℂ} (hs : 0 < s.re)
+
+include hs in
+lemma zetaRegular_differentiableAt     :
     DifferentiableAt ℂ zetaRegular s :=
   regularSeries_differentiableAt zero_le_one (fun _ ht => discrepancy_constant_bound ht.le) hs
 
-lemma zetaRegular_eq_of_one_lt_re {s : ℂ} (hs : 1 < s.re) :
+lemma zetaRegular_eq_of_one_lt_re   (hs : 1 < s.re) :
     zetaRegular s = riemannZeta s-1/(s-1) := by
   rw [zetaRegular,regularSeries_eq_LSeries_sub (positiveCoefficients_norm_le (by simp))
     zero_le_one (fun _ ht => discrepancy_constant_bound ht.le) hs,LSeries_positiveCoefficients]
   rw [show (fun _ : ℕ => (1:ℂ)) = 1 from rfl,LSeries_one_eq_riemannZeta hs]
 
-lemma poleRemovedZeta_eq {s : ℂ} (hs : 0 < s.re) :
+include hs in
+lemma poleRemovedZeta_eq     :
     DirichletCharacter.LFunctionTrivChar₁ 1 s = (s-1)*zetaRegular s+1 := by
   have hF : AnalyticOnNhd ℂ (DirichletCharacter.LFunctionTrivChar₁ 1) {s : ℂ | 0 < s.re} :=
     fun z _ => (DirichletCharacter.differentiable_LFunctionTrivChar₁ 1).analyticAt z
@@ -319,18 +337,17 @@ lemma poleRemovedZeta_eq {s : ℂ} (hs : 0 < s.re) :
   exact hF.eqOn_of_preconnected_of_eventuallyEq hG (convex_halfSpace_re_gt 0).isPreconnected
     (show (2:ℂ) ∈ {s : ℂ | 0 < s.re} by norm_num) he hs
 
-lemma zetaRegular_eq {s : ℂ} (hs : 0 < s.re) (hs1 : s ≠ 1) :
+include hs in
+lemma zetaRegular_eq     (hs1 : s ≠ 1) :
     zetaRegular s = riemannZeta s-1/(s-1) := by
   have h := poleRemovedZeta_eq hs
   rw [DirichletCharacter.LFunctionTrivChar₁,Function.update_of_ne hs1,
     DirichletCharacter.LFunctionTrivChar,DirichletCharacter.LFunction_modOne_eq] at h
-  have hn : s-1 ≠ 0 := sub_ne_zero.mpr hs1
-  apply (mul_left_cancel₀ hn)
-  rw [mul_sub,mul_div_cancel₀ _ hn]
-  linear_combination -h
+  grind
 
-lemma regularSeries_norm_simple {f : ℕ → ℂ} {c : ℂ} {D : ℝ} (hD : 0 ≤ D)
-    (hb : ∀ t, 1 < t → ‖seriesDiscrepancy f c t‖ ≤ D) {s : ℂ} (hs : 0 < s.re) :
+include hD hb hs in
+lemma regularSeries_norm_simple        
+          :
     ‖regularSeries f c s‖ ≤ ‖c‖+‖s‖*D/s.re := by
   have h := discrepancyTail_norm_le zero_lt_one hD (measurable_seriesDiscrepancy f c) hb hs
   simp only [Real.one_rpow,mul_one] at h
@@ -339,7 +356,13 @@ lemma regularSeries_norm_simple {f : ℕ → ℂ} {c : ℂ} {D : ℝ} (hD : 0 �
     _ ≤ ‖c‖+‖s‖*(D/s.re) := by rw [norm_mul]; gcongr
     _ = _ := by ring
 
-lemma closedBall_two_re_norm {s : ℂ} (hs : s ∈ Metric.closedBall 2 (7/4:ℝ)) :
+end
+
+section
+variable {s : ℂ} (hs : s ∈ Metric.closedBall 2 (7/4:ℝ))
+
+include hs in
+lemma closedBall_two_re_norm     :
     (1/4:ℝ) ≤ s.re ∧ ‖s‖ ≤ 4 := by
   have hd := Metric.mem_closedBall.mp hs
   have hr := Complex.re_le_norm ((2:ℂ)-s)
@@ -348,7 +371,8 @@ lemma closedBall_two_re_norm {s : ℂ} (hs : s ∈ Metric.closedBall 2 (7/4:ℝ)
   norm_num at hr hn
   constructor <;> linarith
 
-lemma zetaRegular_norm_le_seventeen {s : ℂ} (hs : s ∈ Metric.closedBall 2 (7/4:ℝ)) :
+include hs in
+lemma zetaRegular_norm_le_seventeen     :
     ‖zetaRegular s‖ ≤ 17 := by
   obtain ⟨hre,hnorm⟩ := closedBall_two_re_norm hs
   have hp : 0 < s.re := by linarith
@@ -358,8 +382,10 @@ lemma zetaRegular_norm_le_seventeen {s : ℂ} (hs : s ∈ Metric.closedBall 2 (7
   have hq : ‖s‖/s.re ≤ 16 := (div_le_iff₀ hp).mpr (by linarith)
   linarith
 
+end
+
 lemma LFunction_norm_polynomial {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
-    (hχ : χ ≠ 1) {s : ℂ} (hs : s ∈ Metric.closedBall 2 (7/4:ℝ)) :
+    (hχ : χ ≠ 1)  {s}  (hs : s ∈ Metric.closedBall 2 (7/4:ℝ)) :
     ‖χ.LFunction s‖ ≤ 16*((q:ℝ)+1) := by
   obtain ⟨hre,hnorm⟩ := closedBall_two_re_norm hs
   have hp : 0 < s.re := by linarith
@@ -371,11 +397,15 @@ lemma LFunction_norm_polynomial {q : ℕ} [NeZero q] {χ : DirichletCharacter �
   apply (div_le_iff₀ hp).mpr
   nlinarith [Nat.cast_nonneg (α:=ℝ) q]
 
-noncomputable def regularizedZetaProduct (P : ℂ → ℂ) (s : ℂ) : ℂ :=
+noncomputable def regularizedZetaProduct (P : ℂ → ℂ) (s : ℂ)  :=
   zetaRegular s*P s+dslope P 1 s
 
-lemma regularizedZetaProduct_differentiableOn {P : ℂ → ℂ}
-    (hP : DifferentiableOn ℂ P {s : ℂ | 0 < s.re}) :
+section
+variable {P : ℂ → ℂ} {B : ℝ} (hP : DifferentiableOn ℂ P {s : ℂ | 0 < s.re})
+
+include hP in
+lemma regularizedZetaProduct_differentiableOn  
+      :
     DifferentiableOn ℂ (regularizedZetaProduct P) {s : ℂ | 0 < s.re} := by
   have hs : {s : ℂ | 0 < s.re} ∈ 𝓝 (1:ℂ) :=
     (continuous_re.isOpen_preimage _ isOpen_Ioi).mem_nhds (by norm_num)
@@ -384,13 +414,14 @@ lemma regularizedZetaProduct_differentiableOn {P : ℂ → ℂ}
     fun s hs => (zetaRegular_differentiableAt hs).differentiableWithinAt
   exact (hz.mul hP).add hd
 
-lemma regularizedZetaProduct_eq {P : ℂ → ℂ} {s : ℂ} (hs : 0 < s.re) (hs1 : s ≠ 1) :
+lemma regularizedZetaProduct_eq    {s}  (hs : 0 < s.re) (hs1 : s ≠ 1) :
     regularizedZetaProduct P s = riemannZeta s*P s-P 1/(s-1) := by
   rw [regularizedZetaProduct,zetaRegular_eq hs hs1,dslope_of_ne P hs1,slope_def_field]
   ring
 
-lemma regularizedZetaProduct_bound {P : ℂ → ℂ} {B : ℝ}
-    (hP : DifferentiableOn ℂ P {s : ℂ | 0 < s.re}) (_hB : 0 ≤ B)
+include hP in
+lemma regularizedZetaProduct_bound    
+      (_hB : 0 ≤ B)
     (hb : ∀ s ∈ Metric.closedBall (2:ℂ) (7/4:ℝ), ‖P s‖ ≤ B) :
     DiffContOnCl ℂ (regularizedZetaProduct P) (Metric.ball 2 (3/2:ℝ)) ∧
       ∀ s ∈ Metric.closedBall (2:ℂ) (3/2:ℝ), ‖regularizedZetaProduct P s‖ ≤ 21*B := by
@@ -436,16 +467,22 @@ lemma regularizedZetaProduct_bound {P : ℂ → ℂ} {B : ℝ}
       _ ≤ 17*B+4*B := by rw [norm_mul]; gcongr; exact zetaRegular_norm_le_seventeen hs'; exact hb s hs'; exact hdslope s hs
       _ = _ := by ring
 
-open Complex Finset ArithmeticFunction
+end
+
+open     ArithmeticFunction
 
 open scoped ComplexOrder
 
-def PrimePowerEq (p : ℕ) (f g : ArithmeticFunction ℂ) : Prop :=
+def PrimePowerEq (p : ℕ) (f g : ArithmeticFunction ℂ)  :=
   ∀ k : ℕ, f (p^k) = g (p^k)
 
-lemma PrimePowerEq.refl (p : ℕ) (f : ArithmeticFunction ℂ) : PrimePowerEq p f f := fun _ => rfl
+lemma PrimePowerEq.refl  p   f  : PrimePowerEq p f f := fun _ => rfl
 
-lemma PrimePowerEq.mul {p : ℕ} (hp : p.Prime) {f f' g g' : ArithmeticFunction ℂ}
+section
+variable {q p : ℕ} (χ : DirichletCharacter ℂ q) (hp : p.Prime) {f f' g g' : ArithmeticFunction ℂ} (k : ℕ)
+
+include hp in
+lemma PrimePowerEq.mul      
     (hf : PrimePowerEq p f f') (hg : PrimePowerEq p g g') : PrimePowerEq p (f*g) (f'*g') := by
   intro k
   simp only [ArithmeticFunction.mul_apply]
@@ -457,50 +494,56 @@ lemma PrimePowerEq.mul {p : ℕ} (hp : p.Prime) {f f' g g' : ArithmeticFunction 
     (Nat.snd_mem_divisors_of_mem_antidiagonal hx)).1
   rw [hxi,hxj,hf,hg]
 
-lemma primePower_zeta {p : ℕ} (hp : p.Prime) (k : ℕ) :
+include hp in
+lemma primePower_zeta       :
     (ArithmeticFunction.zeta : ArithmeticFunction ℂ) (p^k) = 1 := by
   simp [hp.ne_zero]
 
-lemma primePower_one {p : ℕ} (hp : p.Prime) (k : ℕ) :
+include hp in
+lemma primePower_one       :
     (1 : ArithmeticFunction ℂ) (p^k) = (0:ℂ)^k := by
   cases k with
   | zero => simp
   | succ k =>
-    have hn : p^(k+1) ≠ 1 := by
-      have h : 1 < p^(k+1) := one_lt_pow₀ hp.one_lt (by omega)
-      omega
+    
     simp [hp.ne_one]
 
-lemma primePower_character {q p : ℕ} (χ : DirichletCharacter ℂ q) (hp : p.Prime) (k : ℕ) :
+include hp in
+lemma primePower_character         :
     toArithmeticFunction (χ ·) (p^k) = χ (p : ZMod q)^k := by
   simp [toArithmeticFunction,hp.ne_zero]
 
-lemma arithmetic_convolution_nonneg {f g : ArithmeticFunction ℂ}
-    (hf : ∀ n, 0 ≤ f n) (hg : ∀ n, 0 ≤ g n) (n : ℕ) : 0 ≤ (f*g) n := by
+lemma arithmetic_convolution_nonneg  
+    (hf : ∀ n, 0 ≤ f n) (hg : ∀ n, 0 ≤ g n)  n  : 0 ≤ (f*g) n := by
   rw [ArithmeticFunction.mul_apply]
   exact Finset.sum_nonneg (fun x _ => mul_nonneg (hf x.1) (hg x.2))
 
-noncomputable def biquadraticCoefficients {q r : ℕ}
-    (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) : ArithmeticFunction ℂ :=
+end
+
+noncomputable def biquadraticCoefficients {q r }
+    (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r)  :=
   ArithmeticFunction.zeta * toArithmeticFunction (χ ·) * toArithmeticFunction (ψ ·) *
     (toArithmeticFunction (χ ·)).pmul (toArithmeticFunction (ψ ·))
 
-lemma biquadraticCoefficients_multiplicative {q r : ℕ}
-    (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) :
-    (biquadraticCoefficients χ ψ).IsMultiplicative := by
-  exact ((isMultiplicative_zeta.natCast.mul (DirichletCharacter.isMultiplicative_toArithmeticFunction χ)).mul
+section
+variable {q r p : ℕ} (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) (hp : p.Prime)
+
+lemma biquadraticCoefficients_multiplicative  
+        :
+    (biquadraticCoefficients χ ψ).IsMultiplicative := ((isMultiplicative_zeta.natCast.mul (DirichletCharacter.isMultiplicative_toArithmeticFunction χ)).mul
     (DirichletCharacter.isMultiplicative_toArithmeticFunction ψ)).mul
     ((DirichletCharacter.isMultiplicative_toArithmeticFunction χ).pmul (DirichletCharacter.isMultiplicative_toArithmeticFunction ψ))
 
-lemma biquadraticCoefficients_comm {q r : ℕ}
-    (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) :
+lemma biquadraticCoefficients_comm  
+        :
     biquadraticCoefficients χ ψ = biquadraticCoefficients ψ χ := by
   unfold biquadraticCoefficients
   rw [ArithmeticFunction.pmul_comm]
   ring
 
-lemma biquadratic_prime_zero {q r p : ℕ}
-    (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) (hp : p.Prime)
+include hp in
+lemma biquadratic_prime_zero  
+         
     (hχ : χ (p : ZMod q) = 0) :
     PrimePowerEq p (biquadraticCoefficients χ ψ) ψ.zetaMul := by
   have hf : PrimePowerEq p (toArithmeticFunction (χ ·)) 1 := by
@@ -514,8 +557,9 @@ lemma biquadratic_prime_zero {q r p : ℕ}
     (PrimePowerEq.refl p (toArithmeticFunction (ψ ·))) |>.mul hp hh
   simpa only [mul_one,biquadraticCoefficients,DirichletCharacter.zetaMul] using h
 
-lemma biquadratic_prime_one {q r p : ℕ}
-    (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) (hp : p.Prime)
+include hp in
+lemma biquadratic_prime_one  
+         
     (hχ : χ (p : ZMod q) = 1) :
     PrimePowerEq p (biquadraticCoefficients χ ψ) (ψ.zetaMul*ψ.zetaMul) := by
   have hf : PrimePowerEq p (toArithmeticFunction (χ ·)) ArithmeticFunction.zeta := by
@@ -524,7 +568,7 @@ lemma biquadratic_prime_one {q r p : ℕ}
   have hh : PrimePowerEq p ((toArithmeticFunction (χ ·)).pmul (toArithmeticFunction (ψ ·)))
       (toArithmeticFunction (ψ ·)) := by
     intro k
-    rw [ArithmeticFunction.pmul_apply,primePower_character χ hp,hχ,one_pow,one_mul]
+    simp_all [primePower_character]
   have h := ((PrimePowerEq.refl p (ArithmeticFunction.zeta : ArithmeticFunction ℂ)).mul hp hf).mul hp
     (PrimePowerEq.refl p (toArithmeticFunction (ψ ·))) |>.mul hp hh
   have he : (ArithmeticFunction.zeta : ArithmeticFunction ℂ)*ArithmeticFunction.zeta*
@@ -533,13 +577,14 @@ lemma biquadratic_prime_one {q r p : ℕ}
     ring
   simpa only [he,biquadraticCoefficients] using h
 
-lemma biquadratic_prime_neg_one {q r p : ℕ}
-    (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) (hp : p.Prime)
+include hp in
+lemma biquadratic_prime_neg_one  
+         
     (hχ : χ (p : ZMod q) = -1) (hψ : ψ (p : ZMod r) = -1) :
     PrimePowerEq p (biquadraticCoefficients χ ψ) (χ.zetaMul*χ.zetaMul) := by
   have hg : PrimePowerEq p (toArithmeticFunction (ψ ·)) (toArithmeticFunction (χ ·)) := by
     intro k
-    rw [primePower_character ψ hp,primePower_character χ hp,hχ,hψ]
+    simp_all [primePower_character]
   have hh : PrimePowerEq p ((toArithmeticFunction (χ ·)).pmul (toArithmeticFunction (ψ ·)))
       ArithmeticFunction.zeta := by
     intro k
@@ -553,8 +598,8 @@ lemma biquadratic_prime_neg_one {q r p : ℕ}
     ring
   simpa only [he,biquadraticCoefficients] using h
 
-lemma biquadraticCoefficients_nonneg {q r : ℕ} {χ : DirichletCharacter ℂ q}
-    {ψ : DirichletCharacter ℂ r} (hχ : χ^2=1) (hψ : ψ^2=1) (n : ℕ) :
+lemma biquadraticCoefficients_nonneg   {χ : DirichletCharacter ℂ q}
+    {ψ : DirichletCharacter ℂ r} (hχ : χ^2=1) (hψ : ψ^2=1)  n  :
     0 ≤ biquadraticCoefficients χ ψ n := by
   have hp (p : ℕ) (hp : p.Prime) (k : ℕ) : 0 ≤ biquadraticCoefficients χ ψ (p^k) := by
     rcases MulChar.isQuadratic_iff_sq_eq_one.mpr hχ (p:ZMod q) with h0|h1|hm
@@ -577,6 +622,8 @@ lemma biquadraticCoefficients_nonneg {q r : ℕ} {χ : DirichletCharacter ℂ q}
   · simpa only [(biquadraticCoefficients_multiplicative χ ψ).multiplicative_factorization _ hn,
       Finsupp.prod, Nat.support_factorization] using
       Finset.prod_nonneg (fun p hp' => hp p (Nat.prime_of_mem_primeFactors hp') _)
+
+end
 
 end LargePrimeGaps
 

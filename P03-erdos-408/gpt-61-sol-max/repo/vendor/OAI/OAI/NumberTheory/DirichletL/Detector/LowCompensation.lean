@@ -12,31 +12,31 @@ open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted CanonicalRowCompletion RayFourExpansion ProbeRow CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def lowMarkedInverseRow (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (D : Id) (T t : ℝ) (σ : RayRing) (m : O) : ℂ :=
+    (hS : ∀P∈S,P.IsMaximal) (D : Id) (T t : ℝ) (σ : RayRing) (m : ActualEisensteinCubic.O)  :=
   ∑χ : RayCharacter,correctionCoeff χ*
     InverseMoment.markedCompletedT
       (rowTwist (physicalRayPeriodicBase η S hS σ χ) (calibrationForSet S hS).generator 1 m)
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) T
       (fun A=>if D∣A then (1:ℂ) else 0)
 
-lemma lowMarkedInverseRow_eq (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) (D : Id) (T t : ℝ) (hT : 0<T)
-    (σ : RayRing) (m : O) :
+lemma lowMarkedInverseRow_eq  η   S 
+     hS  (hbad : fixedBadPrimes⊆S)  D   T t  (hT : 0<T)
+     σ   m  :
     correctedCompletedT S D (physicalRayRowMonoid η (calibrationForSet S hS) σ m)
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) T=
         lowMarkedInverseRow η S hS D T t σ m :=
   physicalRayRow_eq_periodic_inverse η S hS hbad σ m D _ (gaussianFixedWindow_twist_compact t) T hT
 
-theorem compensationRowTest_low_separated {K : ℕ} (η : HeckeFamily.Character)
-    (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+theorem compensationRowTest_low_separated {K : ℕ}  η 
+     S   hS  (hbad : fixedBadPrimes⊆S)
+     W0 W1   a0 b0 a1 b1  (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
-    (hWs : ContDiff ℝ ∞ W0) (p : Fin K→O) (hp : ∀i,p i≠0) (J : Finset (Fin K))
-    (X Y T t : ℝ) (hX : 0<X) (hY : 0<Y) (hT : 0<T) :
+    (hWs : ContDiff ℝ ∞ W0) (p : Fin K→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) (J : Finset (Fin K))
+     X Y T t  (hX : 0<X) (hY : 0<Y) (hT : 0<T) :
     compensationRowTest η (calibrationForSet S hS) W0 W1 p J X Y T t=
       (Real.sqrt (lowPhysicalScale (calibrationForSet S hS)
         (X/elementNorm (slotProduct p J)) (Y/elementNorm (slotProduct p J))):ℂ)⁻¹*(1/(2*Real.pi):ℂ)*

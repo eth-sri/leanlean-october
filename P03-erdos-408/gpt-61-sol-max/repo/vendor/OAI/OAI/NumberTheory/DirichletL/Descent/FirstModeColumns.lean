@@ -12,12 +12,12 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels FourierBridge JointLogSeparation
 open MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-def firstCoordinates (a : Fin 7 → ℝ) (x y : ℝ) : Fin 9 → ℝ :=
+
+def firstCoordinates (a : Fin 7 → ℝ) (x y : ℝ)  :=
   ![a 0,a 1,a 2,a 3,a 4,a 5,a 6,x,y]
 
-def firstOuterPhase (h : Fin 9 → ℝ) (a : Fin 7 → ℝ) : ℂ :=
+def firstOuterPhase (h : Fin 9 → ℝ) (a : Fin 7 → ℝ)  :=
   ∏ i : Fin 7, logPhase (h ⟨i.val, by omega⟩) (a i)
 
 theorem first_mode_split (a : Fin 7 → ℝ) (x y : ℝ)
@@ -31,7 +31,7 @@ theorem first_mode_split (a : Fin 7 → ℝ) (x y : ℝ)
   ring
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 

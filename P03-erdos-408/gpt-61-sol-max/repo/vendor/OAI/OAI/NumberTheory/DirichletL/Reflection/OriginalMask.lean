@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalTransport
 
@@ -9,10 +10,10 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma maximal_coprime_iff_ne (P Q : Ideal Eis) [P.IsMaximal] [Q.IsMaximal] :
+
+
+lemma maximal_coprime_iff_ne (P Q : Ideal ActualEisensteinCubic.O) [P.IsMaximal] [Q.IsMaximal] :
     IsCoprime P Q ↔ P≠Q := by
   constructor
   · intro h he
@@ -20,8 +21,8 @@ lemma maximal_coprime_iff_ne (P Q : Ideal Eis) [P.IsMaximal] [Q.IsMaximal] :
     exact (show P.IsPrime from inferInstance).ne_top (by simpa using h.sup_eq)
   · exact Ideal.isCoprime_of_isMaximal
 
-variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
-variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
+variable {σ : Type*} [Fintype σ] {m f z : ActualEisensteinCubic.O} (D : GoodMaskRowData m f z)
+variable (R I F Q₀ : Ideal ActualEisensteinCubic.O) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hm : m≠0) (hf : Ideal.span {f}=F) (hz : Ideal.span {z}=I)
     (hbad : ∀ P∈fixedBadPrimes, P∣Ideal.span {m}*F)
     (hcop : IsCoprime Q₀ (rowResidualPart I (Ideal.span {m}*F)))
@@ -47,12 +48,10 @@ theorem original_slot_mask_iff (S : PrimeFamily σ) :
       intro t ht
       apply Ideal.isCoprime_of_isMaximal
       have hh := h (E (Sum.inl a)) t
-      rw [D.primeFiberEquiv_val R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inl a)] at hh
-      exact hh.symm
+      solve_by_elim
     · intro b t
       have hh := h (E (Sum.inr b)) t
-      rw [D.primeFiberEquiv_val R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inr b)] at hh
-      exact hh
+      assumption
   · rintro ⟨hrow,hfixed⟩ P t
     obtain ⟨x,rfl⟩ := (E).surjective P
     cases x with
@@ -62,9 +61,8 @@ theorem original_slot_mask_iff (S : PrimeFamily σ) :
         (Finset.dvd_prod_of_mem S.ideal (Finset.mem_univ t))
       exact ((maximal_coprime_iff_ne _ _).mp hc).symm
     | inr b =>
-      rw [D.primeFiberEquiv_val R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inr b)]
-      exact hfixed b t
-end
+      solve_by_elim
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

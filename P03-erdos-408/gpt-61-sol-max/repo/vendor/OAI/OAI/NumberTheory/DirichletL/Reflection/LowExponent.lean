@@ -12,17 +12,17 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {a c₀ : Eis} {mode : Bool}
+
+
+variable {a c₀ : ActualEisensteinCubic.O} {mode : Bool}
 
 theorem original_surviving_low_exponent
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c₀ mode)) (hc₀ : c₀≠0)
-    (kK kP η : ℝ) (hkK : 0<kK) (hkP : 0<kP) (hη : 0<η) :
+     kK kP η  (hkK : 0<kK) (hkP : 0<kP) (hη : 0<η) :
     ∃ Z₀ : ℝ,1<Z₀ ∧
-    ∀ (J I F Q Q₀ : Ideal Eis) (_hJ : J≠0) (_hI : I≠0) (_hQ : Q≠0),
+    ∀ (J I F Q Q₀ : Ideal ActualEisensteinCubic.O) (_hJ : J≠0) (_hI : I≠0) (_hQ : Q≠0),
       rowPowerfulPart J=rowPowerfulPart I → rowMaskPart J Q=rowMaskPart I Q →
-    ∀ (A : Finset (FreeReflection.pool J Q Q₀)) (e : A→Fin 3) (column : Ideal Eis→Ideal Eis→ℂ)
+    ∀ (A : Finset (FreeReflection.pool J Q Q₀)) (e : A→Fin 3) (column : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ)
       (Z O₀ H za Nstar d ell0 shift δ π Ck CO CH X QK QP ε Lscale Lrow Lslot : ℝ) (i : ℕ×ℕ×ℕ),
       Z₀≤Z → 0<Ck → 0<CO → 0<CH → 0<X → 0<QK → 0<QP →
       (Ideal.absNorm I:ℝ)≤Ck*Z^(5/6-2*d) →
@@ -94,7 +94,7 @@ theorem original_surviving_low_exponent
   · dsimp only [terminalDualWidth] at hwidth
     rw [hNs,←frozenExtracted_eq_ideal,←frozenExtracted_eq_ideal] at hwidth
     linarith
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

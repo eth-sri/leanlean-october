@@ -15,19 +15,19 @@ open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentRestrictedSou
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
 open CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentRestrictedEnergy
-local notation "O" => ActualEisensteinCubic.O
+
 
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-theorem normalized_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem normalized_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (C R s : Ideal O) (hC : Supported C) (hsC : s∣C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O)
-    (Traw : ℝ) (hTraw : 0<Traw) (hP : ∀ i,0<P i)
-    (f : Ideal O → ℂ) (keep : O → Prop) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
+    (C R s : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hsC : s∣C)
+     ν   Wslot   P 
+     W₁ W₂   X₁ X₂ Y₁ Y₂   B₁ B₂ 
+     Traw  (hTraw : 0<Traw) (hP : ∀ i,0<P i)
+     f   keep   W   K  (hK : 0<K)
+    (hW : ∀ z : ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (sourceRestrictedEnergy keep (residualPool C hC.1 (finiteColumns (Fintype.piFinset S)))
       (fun I => if IsCoprime C I then finiteColumnCoefficient (Fintype.piFinset S)
         (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0) f W K)/(Traw*∏ i,P i)≤

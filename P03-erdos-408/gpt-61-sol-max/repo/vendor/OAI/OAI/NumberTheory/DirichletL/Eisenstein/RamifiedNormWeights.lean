@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.ConjugateProfiles
 
@@ -10,75 +11,75 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 
 namespace CubicEisenstein
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open     CubicJacobiGlobal
 
 private def predicateFiberEquiv {R S : Type*} (f : R → S) (P : S → Prop) :
     {x : R // P (f x)} ≃ Σ y : {y : S // P y}, {x : R // f x=y.1} where
@@ -86,27 +87,31 @@ private def predicateFiberEquiv {R S : Type*} (f : R → S) (P : S → Prop) :
   invFun y := ⟨y.2.1,by rw [y.2.2]; exact y.1.2⟩
   left_inv x := rfl
   right_inv y := by
-    rcases y with ⟨⟨y,hy⟩,x,hx⟩
-    dsimp at hx
-    cases hx
-    rfl
+    bound
 
-private def predicateKernelEquiv {R S : Type*} [AddGroup R] [AddGroup S]
-    (f : R →+ S) (hf : Function.Surjective f) (P : S → Prop) :
-    {x : R // P (f x)} ≃ {y : S // P y} × f.ker :=
+private def predicateKernelEquiv {R S } [AddGroup R] [AddGroup S]
+    (f : R →+ S) (hf : Function.Surjective f) (P : S → Prop)  :=
   (predicateFiberEquiv f P).trans
     ((Equiv.sigmaCongrRight (fun y : {y : S // P y} =>
       AddMonoidHom.fiberEquivKerOfSurjective hf y.1)).trans (Equiv.sigmaEquivProd _ _))
 
-lemma card_ring_eq_card_mul_kernel {R S : Type*} [Ring R] [Ring S]
+section
+variable {R S : Type*}
+include R S
+
+lemma card_ring_eq_card_mul_kernel   [Ring R] [Ring S]
     (f : R →+* S) (hf : Function.Surjective f) :
     Nat.card R=Nat.card S*Nat.card f.toAddMonoidHom.ker := by
   have h := Nat.card_congr (predicateKernelEquiv f.toAddMonoidHom hf (fun _ => True))
   simpa only [Nat.card_prod,Nat.card_congr (Equiv.subtypeUnivEquiv (fun _ => True.intro))] using h
 
-lemma card_units_eq_card_mul_kernel {R S : Type*} [CommRing R] [CommRing S]
-    (f : R →+* S) (hf : Function.Surjective f)
-    (hunit : ∀x, IsUnit (f x) ↔ IsUnit x) :
+section
+variable [CommRing R] [CommRing S] (f : R →+* S) (hf : Function.Surjective f) (hunit : ∀x, IsUnit (f x) ↔ IsUnit x)
+include f hf hunit
+
+lemma card_units_eq_card_mul_kernel      
+       
+      :
     Nat.card Rˣ=Nat.card Sˣ*Nat.card f.toAddMonoidHom.ker := by
   let e : Rˣ ≃ {x : R // IsUnit (f x)} :=
     (unitsSubtypeEquiv R).trans (Equiv.subtypeEquivRight (fun x => (hunit x).symm))
@@ -116,14 +121,22 @@ lemma card_units_eq_card_mul_kernel {R S : Type*} [CommRing R] [CommRing S]
     _ = Nat.card {y : S // IsUnit y} * Nat.card f.toAddMonoidHom.ker := Nat.card_prod _ _
     _ = _ := by rw [← Nat.card_congr (unitsSubtypeEquiv S)]
 
-lemma card_units_mul_card_target {R S : Type*} [CommRing R] [CommRing S]
-    (f : R →+* S) (hf : Function.Surjective f)
-    (hunit : ∀x, IsUnit (f x) ↔ IsUnit x) :
+lemma card_units_mul_card_target      
+       
+      :
     Nat.card S*Nat.card Rˣ=Nat.card R*Nat.card Sˣ := by
   rw [card_units_eq_card_mul_kernel f hf hunit,card_ring_eq_card_mul_kernel f hf]
   ring
 
-theorem idealTotient_pow_succ (I : Ideal O) (hI : I ≠ 0) (n : ℕ) :
+end
+
+end
+
+section
+variable (I : Ideal O) (hI : I ≠ 0)
+include I hI
+
+theorem idealTotient_pow_succ      n  :
     idealTotient (I^(n+1))=Ideal.absNorm I^n*idealTotient I := by
   let f : (O ⧸ I^(n+1)) →+* (O ⧸ I) :=
     Ideal.Quotient.factor (Ideal.pow_le_self (Nat.succ_ne_zero n))
@@ -141,11 +154,13 @@ theorem idealTotient_pow_succ (I : Ideal O) (hI : I ≠ 0) (n : ℕ) :
     _ = Ideal.absNorm I^(n+1)*idealTotient I := h
     _ = _ := by ring
 
-theorem idealTotient_cube (I : Ideal O) (hI : I ≠ 0) :
+theorem idealTotient_cube     :
     idealTotient (I^3)=Ideal.absNorm I^2*idealTotient I :=
   idealTotient_pow_succ I hI 2
 
-theorem card_admissible_cube_product (n : ℕ) (a : O) (ha : a ≠ 0)
+end
+
+theorem card_admissible_cube_product  n   a  (ha : a ≠ 0)
     (hcop : IsCoprime a (3:O)) :
     Nat.card (AdmissibleResidue (lambda^(3*n)*a^3)) =
       3^(3*n)*Ideal.absNorm (Ideal.span {a})^2*idealTotient (Ideal.span {a}) := by
@@ -154,10 +169,14 @@ theorem card_admissible_cube_product (n : ℕ) (a : O) (ha : a ≠ 0)
   ring
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid
+ 
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors sum_moebius_divisors)
 
-lemma isUnit_quotient_iff_sup (I : Ideal O) (x : O) :
+section
+variable (I : Ideal O)
+include I
+
+lemma isUnit_quotient_iff_sup   (x : O) :
     IsUnit (Ideal.Quotient.mk I x) ↔ I ⊔ Ideal.span {x}=⊤ := by
   constructor
   · intro hx
@@ -165,7 +184,7 @@ lemma isUnit_quotient_iff_sup (I : Ideal O) (x : O) :
     obtain ⟨b,rfl⟩ := Ideal.Quotient.mk_surjective b
     have hI : x*b-1 ∈ I := by
       apply Ideal.Quotient.eq_zero_iff_mem.mp
-      simpa only [map_sub,map_mul,map_one,sub_eq_zero] using hb
+      aesop
     apply (Ideal.eq_top_iff_one _).mpr
     have hx' : x*b ∈ I ⊔ Ideal.span {x} :=
       (le_sup_right : Ideal.span {x} ≤ I ⊔ Ideal.span {x})
@@ -181,17 +200,12 @@ lemma isUnit_quotient_iff_sup (I : Ideal O) (x : O) :
     have hh := congrArg (Ideal.Quotient.mk I) hab
     simpa only [map_add,map_mul,map_one,ha0,zero_add] using hh
 
-lemma residue_unit_mobius (I : Ideal O) (hI : I ≠ 0) (r : O ⧸ I) :
+lemma residue_unit_mobius   (hI : I ≠ 0) (r : O ⧸ I) :
     (if IsUnit r then (1:ℂ) else 0) =
       ∑ J ∈ idealDivisors I, if Quotient.out r ∈ J then (moebius J:ℂ) else 0 := by
   let G : Ideal O := I ⊔ Ideal.span {Quotient.out r}
   have hG : G ≠ 0 := by
-    intro hG
-    apply hI
-    apply le_antisymm _ bot_le
-    calc
-      I ≤ G := le_sup_left
-      _ = ⊥ := hG
+    aesop
   have hdiv : (idealDivisors I).filter (fun J => Quotient.out r ∈ J)=idealDivisors G := by
     ext J
     simp only [Finset.mem_filter,mem_idealDivisors hI,mem_idealDivisors hG,
@@ -202,12 +216,14 @@ lemma residue_unit_mobius (I : Ideal O) (hI : I ≠ 0) (r : O ⧸ I) :
     exact isUnit_quotient_iff_sup I (Quotient.out r)
   simp only [hu]
 
-lemma sum_indicator_const {R : Type*} [Fintype R] (P : R → Prop) (z : ℂ) :
+end
+
+lemma sum_indicator_const {R : Type*} [Fintype R] (P : R → Prop)  z  :
     (∑ r : R, if P r then z else 0)=(Nat.card {r : R // P r}:ℂ)*z := by
   rw [← Finset.sum_filter]
   simp only [Finset.sum_const,nsmul_eq_mul,Nat.card_eq_fintype_card,Fintype.card_subtype]
 
-lemma card_quotient_multiples (I J : Ideal O) (hI : I ≠ 0) (hIJ : I ≤ J) :
+lemma card_quotient_multiples  I J  (hI : I ≠ 0) (hIJ : I ≤ J) :
     (Nat.card {r : O ⧸ I // Quotient.out r ∈ J}:ℂ)=
       (Ideal.absNorm I:ℂ)/(Ideal.absNorm J:ℂ) := by
   let f : (O ⧸ I) →+* (O ⧸ J) := Ideal.Quotient.factor hIJ
@@ -231,7 +247,7 @@ lemma card_quotient_multiples (I J : Ideal O) (hI : I ≠ 0) (hIJ : I ≤ J) :
     (Nat.mul_comm _ _).trans hcard.symm
   exact_mod_cast hh
 
-theorem idealTotient_moebius (I : Ideal O) (hI : I ≠ 0) :
+theorem idealTotient_moebius  I  (hI : I ≠ 0) :
     (idealTotient I:ℂ)=(Ideal.absNorm I:ℂ)*
       ∑ J ∈ idealDivisors I, (moebius J:ℂ)/(Ideal.absNorm J:ℂ) := by
   let : Finite (O ⧸ I) := I.finiteQuotientOfFreeOfNeBot hI
@@ -264,14 +280,14 @@ theorem idealTotient_moebius (I : Ideal O) (hI : I ≠ 0) :
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid CompletedGauss
+open         CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 
 def unramifiedNormWeight (s : ℂ) : Ideal O →*₀ ℂ where
   toFun I := if primaryGenerator I=0 then 0 else (Ideal.absNorm I:ℂ)^(-s)
   map_zero' := by simp
   map_one' := by
-    rw [primaryGenerator_one,ite_eq_right one_ne_zero,map_one,Nat.cast_one,Complex.one_cpow]
+    norm_num
   map_mul' I J := by
     by_cases hI : primaryGenerator I=0
     · simp [primaryGenerator_mul,hI]
@@ -280,11 +296,17 @@ def unramifiedNormWeight (s : ℂ) : Ideal O →*₀ ℂ where
     simp only [primaryGenerator_mul,mul_eq_zero,hI,hJ,false_or,ite_false,map_mul,Nat.cast_mul]
     exact Complex.natCast_mul_natCast_cpow _ _ _
 
-lemma unramifiedNormWeight_of_good (s : ℂ) (I : Ideal O) (hI : primaryGenerator I ≠ 0) :
+section
+variable (s : ℂ) (I : Ideal O)
+include s I
+
+lemma unramifiedNormWeight_of_good     (hI : primaryGenerator I ≠ 0) :
     unramifiedNormWeight s I=(Ideal.absNorm I:ℂ)^(-s) := ite_eq_right hI
 
-lemma unramifiedNormWeight_of_bad (s : ℂ) (I : Ideal O) (hI : primaryGenerator I=0) :
+lemma unramifiedNormWeight_of_bad     (hI : primaryGenerator I=0) :
     unramifiedNormWeight s I=0 := ite_eq_left hI
+
+end
 
 lemma primaryGenerator_injective_good :
     Function.Injective (fun I : GoodIdeal => primaryGenerator I.1) := by
@@ -308,7 +330,7 @@ lemma norm_unramifiedNormWeight (s : ℂ) (I : GoodIdeal) :
   simp only [Complex.neg_re,Nat.cast_ofNat]
   ring
 
-theorem unramifiedNormWeight_summable_norm (s : ℂ) (hs : 1<s.re) :
+theorem unramifiedNormWeight_summable_norm  s  (hs : 1<s.re) :
     Summable (fun I : Ideal O => ‖unramifiedNormWeight s I‖) := by
   have hlat := (summable_embedding_rpow (-2*s.re) (by linarith)).comp_injective
     primaryGenerator_injective_good
@@ -327,24 +349,32 @@ lemma norm_ideal_moebius_le_one (I : Ideal O) : ‖(moebius I:ℂ)‖≤1 := by
   · simp [hI.moebius_eq]
   · simp [moebius_of_not_squarefree hI]
 
-lemma moebius_unramifiedNormWeight_summable_norm (s : ℂ) (hs : 1<s.re) :
+lemma moebius_unramifiedNormWeight_summable_norm  s  (hs : 1<s.re) :
     Summable (fun I : Ideal O => ‖(moebius I:ℂ)*unramifiedNormWeight s I‖) := by
   apply (unramifiedNormWeight_summable_norm s hs).of_nonneg_of_le (fun _ => norm_nonneg _)
   intro I
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (norm_ideal_moebius_le_one I)
 
-def unramifiedIdealZeta (s : ℂ) : ℂ := ∑' I : Ideal O, unramifiedNormWeight s I
+def unramifiedIdealZeta (s : ℂ)  := ∑' I : Ideal O, unramifiedNormWeight s I
 
-def unramifiedMobiusSeries (s : ℂ) : ℂ :=
+def unramifiedMobiusSeries (s : ℂ)  :=
   ∑' I : Ideal O, (moebius I:ℂ)*unramifiedNormWeight s I
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid CompletedGauss
+open         CompletedGauss
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors sum_moebius_divisors)
 
-theorem unramifiedMobiusSeries_mul_zeta (s : ℂ) (hs : 1<s.re) :
+section
+variable (s : ℂ)
+include s
+
+section
+variable (hs : 1<s.re)
+include hs
+
+theorem unramifiedMobiusSeries_mul_zeta     :
     unramifiedMobiusSeries s*unramifiedIdealZeta s=1 := by
   let F : Ideal O × Ideal O → ℂ := fun p =>
     (moebius p.1:ℂ)*unramifiedNormWeight s (p.1*p.2)
@@ -369,9 +399,7 @@ theorem unramifiedMobiusSeries_mul_zeta (s : ℂ) (hs : 1<s.re) :
           simp only [F,p.2]
         _ = _ := by
           rw [mulFiber_moebius_sum B hB]
-          split_ifs with hB1
-          · subst B; simp only [map_one,mul_one]
-          · simp only [zero_mul]
+          bound
   have hsum := hF.hasSum.tsum_fiberwise (fun p : Ideal O × Ideal O => p.1*p.2)
   change HasSum (fun B : Ideal O => ∑' p : MulFiber B,F p.1) (∑' p,F p) at hsum
   simp_rw [hfiber] at hsum
@@ -388,21 +416,19 @@ theorem unramifiedMobiusSeries_mul_zeta (s : ℂ) (hs : 1<s.re) :
       ring
     _ = 1 := hFone
 
-theorem unramifiedIdealZeta_ne_zero (s : ℂ) (hs : 1<s.re) : unramifiedIdealZeta s ≠ 0 := by
+theorem unramifiedIdealZeta_ne_zero     : unramifiedIdealZeta s ≠ 0 := by
   intro hz
   have h := unramifiedMobiusSeries_mul_zeta s hs
   rw [hz,mul_zero] at h
   exact zero_ne_one h
 
-theorem unramifiedMobiusSeries_eq_inv (s : ℂ) (hs : 1<s.re) :
+theorem unramifiedMobiusSeries_eq_inv     :
     unramifiedMobiusSeries s=(unramifiedIdealZeta s)⁻¹ := by
-  have h := unramifiedMobiusSeries_mul_zeta s hs
-  calc
-    _ = (unramifiedMobiusSeries s*unramifiedIdealZeta s)*(unramifiedIdealZeta s)⁻¹ := by
-      field_simp [unramifiedIdealZeta_ne_zero s hs]
-    _ = _ := by rw [h,one_mul]
+  grind [unramifiedMobiusSeries_mul_zeta, unramifiedMobiusSeries, unramifiedIdealZeta, unramifiedIdealZeta_ne_zero]
 
-lemma unramifiedNormWeight_shift (s : ℂ) (I : Ideal O) :
+end
+
+lemma unramifiedNormWeight_shift    I  :
     unramifiedNormWeight (s-1) I=(Ideal.absNorm I:ℂ)*unramifiedNormWeight s I := by
   by_cases hg : primaryGenerator I=0
   · rw [unramifiedNormWeight_of_bad _ I hg,unramifiedNormWeight_of_bad _ I hg,mul_zero]
@@ -411,7 +437,9 @@ lemma unramifiedNormWeight_shift (s : ℂ) (I : Ideal O) :
       (Ideal.absNorm_eq_zero_iff.not.mpr (primaryGenerator_ne_zero_ideal I hg))
     rw [show -(s-1)=(1:ℂ)+(-s) by ring,Complex.cpow_add _ _ hn,Complex.cpow_one]
 
-lemma mulFiber_totient_sum (B : Ideal O) (hB : B ≠ 0) :
+end
+
+lemma mulFiber_totient_sum  B  (hB : B ≠ 0) :
     (∑' p : MulFiber B,(moebius p.1.1:ℂ)*(Ideal.absNorm p.1.2:ℂ))=(idealTotient B:ℂ) := by
   let e := mulFiberDivisorEquiv B hB
   have hp (p : MulFiber B) :
@@ -446,10 +474,14 @@ lemma mulFiber_totient_sum (B : Ideal O) (hB : B ≠ 0) :
         (fun D => (moebius D:ℂ)/(Ideal.absNorm D:ℂ))).symm
     _ = _ := (idealTotient_moebius B hB).symm
 
-def unramifiedTotientSeries (s : ℂ) : ℂ :=
+def unramifiedTotientSeries (s : ℂ)  :=
   ∑' I : Ideal O,(idealTotient I:ℂ)*unramifiedNormWeight s I
 
-theorem unramifiedTotientSeries_product (s : ℂ) (hs : 2<s.re) :
+section
+variable (s : ℂ) (hs : 2<s.re)
+include s hs
+
+theorem unramifiedTotientSeries_product     :
     unramifiedTotientSeries s=unramifiedMobiusSeries s*unramifiedIdealZeta (s-1) := by
   have hs1 : 1<s.re := by linarith
   have hs2 : 1<(s-1).re := by simp only [Complex.sub_re,Complex.one_re]; linarith
@@ -487,39 +519,40 @@ theorem unramifiedTotientSeries_product (s : ℂ) (hs : 2<s.re) :
           (unramifiedNormWeight_summable_norm (s-1) hs2)]
       exact tsum_congr (fun p => (heq p).symm)
 
-theorem unramifiedTotientSeries_quotient (s : ℂ) (hs : 2<s.re) :
+theorem unramifiedTotientSeries_quotient     :
     unramifiedTotientSeries s=unramifiedIdealZeta (s-1)/unramifiedIdealZeta s := by
-  rw [unramifiedTotientSeries_product s hs,unramifiedMobiusSeries_eq_inv s (by linarith),div_eq_mul_inv]
-  ring
+  grind [unramifiedTotientSeries_product, unramifiedMobiusSeries_eq_inv]
 
-lemma idealTotient_le_absNorm (I : Ideal O) (hI : I ≠ 0) :
+end
+
+lemma idealTotient_le_absNorm  I  (hI : I ≠ 0) :
     idealTotient I ≤ Ideal.absNorm I := by
   let : Finite (O ⧸ I) := I.finiteQuotientOfFreeOfNeBot hI
   change Nat.card (O ⧸ I)ˣ ≤ Nat.card (O ⧸ I)
   exact Nat.card_le_card_of_injective (Units.val : (O ⧸ I)ˣ → O ⧸ I) Units.val_injective
 
-theorem unramifiedTotientSeries_summable_norm (s : ℂ) (hs : 2<s.re) :
+theorem unramifiedTotientSeries_summable_norm  s  (hs : 2<s.re) :
     Summable (fun I : Ideal O => ‖(idealTotient I:ℂ)*unramifiedNormWeight s I‖) := by
   have hs1 : 1<(s-1).re := by simp only [Complex.sub_re,Complex.one_re]; linarith
   apply (unramifiedNormWeight_summable_norm (s-1) hs1).of_nonneg_of_le
     (fun _ => norm_nonneg _)
   intro I
   by_cases hI : I=0
-  · subst I; simp only [map_zero,mul_zero,norm_zero,le_refl]
+  · bound
   · rw [norm_mul,Complex.norm_natCast,unramifiedNormWeight_shift,norm_mul,Complex.norm_natCast]
     exact mul_le_mul_of_nonneg_right (Nat.cast_le.mpr (idealTotient_le_absNorm I hI)) (norm_nonneg _)
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss QuadraticSquarefreeKernel
+open     CompletedGauss QuadraticSquarefreeKernel
 
 theorem originalPairLow_squarefree_tsum
-    (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (W : SchwartzMap ℝ ℂ) (M K : ℝ) (hM : 0 < M) :
+     I J  (hI : Admissible I) (hJ : Admissible J)
+    (W : SchwartzMap ℝ ℂ)  M K  (hM : 0 < M) :
     (∑' lengthScale : Ideal O, originalPairLow I J W M K lengthScale) =
       ∑' B : {B : Ideal O // Admissible B},
         if (Ideal.absNorm B.val : ℝ) ≤ K then
@@ -583,9 +616,9 @@ theorem originalPairLow_squarefree_tsum
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
+open     ConcretePrimeRowBridge CompletedGauss
 
-theorem idealZeroMask_span_eq (D : Ideal O) (x y : O) (hxy : Ideal.span {x} = Ideal.span {y}) :
+theorem idealZeroMask_span_eq  D   x y  (hxy : Ideal.span {x} = Ideal.span {y}) :
     idealZeroMask D x = idealZeroMask D y := by
   have hm (P : Ideal O) : x ∈ P ↔ y ∈ P := by
     constructor
@@ -596,7 +629,11 @@ theorem idealZeroMask_span_eq (D : Ideal O) (x y : O) (hxy : Ideal.span {x} = Id
   unfold idealZeroMask
   simp_rw [hm]
 
-theorem idealZeroMask_mul (I J : Ideal O) (hI : I ≠ 0) (hJ : J ≠ 0) (z : O) :
+section
+variable (I J : Ideal O)
+include I J
+
+theorem idealZeroMask_mul   (hI : I ≠ 0) (hJ : J ≠ 0)  z  :
     idealZeroMask (I * J) z = idealZeroMask I z * idealZeroMask J z := by
   have he : (∃ P ∈ UniqueFactorizationMonoid.normalizedFactors (I * J), z ∈ P) ↔
       (∃ P ∈ UniqueFactorizationMonoid.normalizedFactors I, z ∈ P) ∨
@@ -608,7 +645,7 @@ theorem idealZeroMask_mul (I J : Ideal O) (hI : I ≠ 0) (hJ : J ≠ 0) (z : O) 
   by_cases h₁ : ∃ P ∈ UniqueFactorizationMonoid.normalizedFactors I, z ∈ P <;>
     by_cases h₂ : ∃ P ∈ UniqueFactorizationMonoid.normalizedFactors J, z ∈ P <;> simp [h₁, h₂]
 
-theorem jointMask_generator (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (lengthScale : Ideal O) :
+theorem jointMask_generator   (hI : Admissible I) (hJ : Admissible J)  lengthScale  :
     rowCoprimeMask (fun P : gcdMaskPrimes (I * J) => P.val) Finset.univ (idealGenerator lengthScale) =
       if Supported lengthScale then idealZeroMask I (primaryGenerator lengthScale) * idealZeroMask J (primaryGenerator lengthScale) else 0 := by
   rw [gcdMaskPrimes_mask, idealZeroMask_mul I J hI.1 hJ.1, badPrime_mask, span_idealGenerator]
@@ -616,16 +653,15 @@ theorem jointMask_generator (I J : Ideal O) (hI : Admissible I) (hJ : Admissible
   · rw [ite_eq_left hL, ite_eq_left hL, one_mul]
     have hs : Ideal.span {idealGenerator lengthScale} = Ideal.span {primaryGenerator lengthScale} :=
       (span_idealGenerator lengthScale).trans (primaryGenerator_spec lengthScale (supported_primaryGenerator_ne_zero lengthScale hL)).1.symm
-    rw [idealZeroMask_span_eq I _ _ hs, idealZeroMask_span_eq J _ _ hs]
+    grind [idealZeroMask_span_eq, I]
   · simp only [ite_eq_right hL, zero_mul]
 
-theorem jointMask_zero (I J : Ideal O) :
+theorem jointMask_zero   :
     rowCoprimeMask (fun P : gcdMaskPrimes (I * J) => P.val) Finset.univ 0 = 0 := by
   rw [gcdMaskPrimes_mask, badPrime_mask]
-  have h : ¬Supported (Ideal.span {(0 : O)}) := by
-    intro h
-    exact h.1 (by simp)
-  rw [ite_eq_right h, zero_mul]
+  simp_all [Supported, Ideal.span, O]
+
+end
 
 end CanonicalQuadraticSieve
 

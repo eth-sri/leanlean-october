@@ -11,14 +11,14 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+
 variable {ι : Type*} [Fintype ι]
 
-def finiteCentralCubeRows {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+def finiteCentralCubeRows {K } (S ) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow)
     (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i → P.val∉S)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ) (W0 W1 : SchwartzMap ℝ ℂ)
-    (X Y Z e : ℝ) (a H : FreeRow→ℝ) : ℂ :=
+    (X Y Z e : ℝ) (a H : FreeRow→ℝ)  :=
   ∑u∈R,∑P:(∀i,T i),(∏i,W i (((P i).val.val.absNorm:ℝ)/Yp i))*
     centralCubeIntegral S hS hmax (fun i=>(P i).val) (fun i=>hT i _ (P i).property)
       η u W0 W1 X Y Z (a u) e (H u)
@@ -26,12 +26,12 @@ def finiteCentralCubeRows {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusion
 theorem finite_cube_arbitrary_saving (K : ℕ) (τ saving b ζ A : ℝ)
     (hτ : 0<τ) (hb : 0<b) (hζ : ζ≤1/48) (hA : 0≤A)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
     ∃C : ℝ,0≤C ∧ ∀(η : Character) (Z : ℝ),1≤Z → ∀R : Finset FreeRow,
-      (∀u∈R,u.val≠1 ∧ ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤Z^((13/16:ℝ)+ζ)) →
+      (∀u∈R,u.val≠1 ∧ ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤Z^((13/16:ℝ)+ζ)) →
       ∀(T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i → P.val∉S),
       (∀P:(∀i,T i),Function.Injective (fun i=>(P i).val)) →
       ∀length : Fin K→ℝ,(∑j,length j)=(1/6:ℝ) →
@@ -90,8 +90,7 @@ theorem finite_cube_arbitrary_saving (K : ℕ) (τ saving b ζ A : ℝ)
       rw [←mul_sub,norm_mul]
       exact mul_le_mul (hw P) (herr u hu P) (norm_nonneg _) (pow_nonneg hA _)
     _ = (R.card:ℝ)*(Fintype.card (∀j,T j):ℝ)*(A^K*E) := by simp;ring
-    _ ≤ (128*Z)*((128*b)^K*Z)*(A^K*E) := by
-      exact mul_le_mul_of_nonneg_right (mul_le_mul hcR hcT (Nat.cast_nonneg _) (by positivity)) (mul_nonneg (pow_nonneg hA _) hE)
+    _ ≤ (128*Z)*((128*b)^K*Z)*(A^K*E) := mul_le_mul_of_nonneg_right (mul_le_mul hcR hcT (Nat.cast_nonneg _) (by positivity)) (mul_nonneg (pow_nonneg hA _) hE)
     _ = _ := by
       have hz : Z^2*Z^(-(saving+2))=Z^(-saving) := by
         rw [←Real.rpow_two,←Real.rpow_add hZ0]

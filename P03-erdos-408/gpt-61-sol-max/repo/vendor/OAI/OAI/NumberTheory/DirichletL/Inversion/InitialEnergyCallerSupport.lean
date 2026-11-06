@@ -6,15 +6,15 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerAssigned
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
 open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 open SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns
 namespace SevenEighths.InverseInitialEnergyCallerSupport
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
   (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
 
 include hp in
@@ -22,10 +22,10 @@ include hp in
 theorem actual_sector_energy {J : ℕ}
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (S : Finset (Source (ι:=ι) J)) (u : Eisˣ)
+    (S : Finset (Source (ι:=ι) J)) (u : ActualEisensteinCubic.Oˣ)
     (hdiv : ∀ x ∈ S, x.divisor ⊆ x.common)
     (hsupport : ∀ x ∈ S, ∀i,x.assigned i∈x.common∪x.overlap)
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis)
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (rows : Finset ActualEisensteinCubic.O)
     (hlabels : ∀ f ∈ labels, f ≠ 0)
     (hchild : ∀ x ∈ S,
       (initialChild (toTuple p (sectorSource u x))).2.1 ∈ labels ∧
@@ -40,7 +40,7 @@ theorem actual_sector_energy {J : ℕ}
     intro y hy
     obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hy
     exact sourceTuple_valid p hp hpr x.common x.divisor x.overlap
-      ((u:Eis)^5*x.frequency) x.assigned (hdiv x hx) (hsupport x hx)
+      ((u:ActualEisensteinCubic.O)^5*x.frequency) x.assigned (hdiv x hx) (hsupport x hx)
   have hc : ∀ y ∈ T, (initialChild y).2.1 ∈ labels ∧ (initialChild y).2.2 ∈ rows := by
     intro y hy
     obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hy
@@ -51,8 +51,7 @@ theorem actual_sector_energy {J : ℕ}
   rw [show initialQuotientSet T = quotientSet p S from
     quotientSet_eq_initial p hp S u hdiv] at he
   have hs : (∑ y ∈ T, ‖F (initialChild y)‖^2) =
-      ∑ x ∈ S, ‖F (initialChild (toTuple p (sectorSource u x)))‖^2 := by
-    exact Finset.sum_image (fun x _ y _ he => sectorSource_injective u (toTuple_injective p hinj he))
+      ∑ x ∈ S, ‖F (initialChild (toTuple p (sectorSource u x)))‖^2 := Finset.sum_image (fun x _ y _ he => sectorSource_injective u (toTuple_injective p hinj he))
   rw [hs] at he
   exact he
 
@@ -61,10 +60,10 @@ include hp in
 theorem actual_sector_signed_pair {J : ℕ}
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (S : Finset (Source (ι:=ι) J)) (u : Eisˣ)
+    (S : Finset (Source (ι:=ι) J)) (u : ActualEisensteinCubic.Oˣ)
     (hdiv : ∀ x ∈ S, x.divisor ⊆ x.common)
     (hsupport : ∀ x ∈ S, ∀i,x.assigned i∈x.common∪x.overlap)
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis)
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (rows : Finset ActualEisensteinCubic.O)
     (hlabels : ∀ f ∈ labels, f ≠ 0)
     (hchild : ∀ x ∈ S,
       (initialChild (toTuple p (sectorSource u x))).2.1 ∈ labels ∧
@@ -98,6 +97,6 @@ theorem actual_sector_signed_pair {J : ℕ}
 
 end SevenEighths.InverseInitialEnergyCallerSupport
 
-end
+
 
 end OAI

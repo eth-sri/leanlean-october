@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformOriginalEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformOriginalComparison
@@ -69,6 +69,6 @@ theorem actual_original_comparison (epsilon Cscale xi saving L : ℝ)
 
 end SevenEighths.CenteredMomentUniformOriginalComparison
 
-end
+
 
 end OAI

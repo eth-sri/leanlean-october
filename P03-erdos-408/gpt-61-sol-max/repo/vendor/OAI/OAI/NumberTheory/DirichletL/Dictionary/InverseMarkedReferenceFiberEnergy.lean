@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceDeletedEnergy
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPhysicalRows
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPhysicalRows
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
@@ -22,7 +23,7 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     (S:ProbeFinalAssembly.SourceData D)
     (W:ℝ→ℂ)(ao bo:ℝ)(hao:0<ao)(hab:ao≤bo)
     (hsW:Function.support W⊆Set.Icc ao bo)(hW:ContDiff ℝ ∞ W)
-    (εm:ℝ)(hεm:0<εm)(K:ℕ):
+    (εm:ℝ)(hεm:0<εm) K :
     ∃degree:ℕ,∀data:RowData,∃C U₀:ℝ,0<C ∧ 1<U₀ ∧
     ∀U:ℝ,U₀≤U →
     ∀(M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)
@@ -40,9 +41,7 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   have hsor (b:Bool):Function.support (orientedProfile b W)⊆Set.Icc ao bo := by
     cases b
     · exact hsW
-    · intro x hx
-      apply hsW
-      simpa [orientedProfile] using hx
+    simp_all [orientedProfile]
   have hWor (b:Bool):ContDiff ℝ ∞ (orientedProfile b W) := by
     cases b
     · exact hW
@@ -131,6 +130,6 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
+
 
 end OAI

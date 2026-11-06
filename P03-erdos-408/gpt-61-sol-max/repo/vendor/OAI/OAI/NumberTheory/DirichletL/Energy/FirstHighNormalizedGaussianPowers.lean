@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstHighFourCoefficients
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstHighNormalizedGaussianPowers
@@ -19,7 +19,7 @@ open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
 open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedAllowance
 open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstCommonReferencePower
 local notation "O"=>HeckeFamily.O
-local notation "Ray"=>RayFourExpansion.RayCharacter
+
 
 open CenteredMomentEnergyFirstHighFourCoefficients
 
@@ -42,20 +42,20 @@ theorem actual_high_normalized_four_powers
     let K0:=nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z;
     let Kmain:=mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ)) K0
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve;
-    let Kerror:=fun (p:elementPool P)(i:Fin 3)(_:Ray)=>
+    let Kerror:=fun (p:elementPool P)(i:Fin 3)(_:RayFourExpansion.RayCharacter)=>
       errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ)) K0
         (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve p (errorIndex i+1);
     let alpha:=CenteredMomentSecondChildPowerBudget.powers eps;
     let amain:=fun j=>H j*mainPowers (τ.modulus.absNorm:ℝ) Z Kmain (sigma/3)
       (Mdecl-M0) paid saving (Mwidth/4-Real.logb Z (C.absNorm:ℝ)) j;
-    let aerror:=fun (p:elementPool P)(i:Fin 3)(χ:Ray)(j:Fin 4)=>
+    let aerror:=fun (p:elementPool P)(i:Fin 3)(χ:RayFourExpansion.RayCharacter)(j:Fin 4)=>
       H j*errorPowers p (errorIndex i+1) (τ.modulus.absNorm:ℝ) Z (Kerror p i χ)
         (Mdecl-M0) paid saving (Mwidth/4-Real.logb Z (C.absNorm:ℝ)-errorRemoval p Z (errorIndex i+1)) j;
     (∑j:Fin 4,normalizedPower upper V (C.absNorm:ℝ) (τ.modulus.absNorm:ℝ) Z
       (allowance C D Z) eps
       (sourceCoefficients P ((Mamp+2*sigma)/(sigma/6)) amain aerror alpha j) N (alpha j))≤
       (C.absNorm:ℝ)^eps*∑j:Fin 4,(upper^N)^(alpha j)*
-        (56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card Ray:ℝ))*H j*
+        (56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card RayFourExpansion.RayCharacter:ℝ))*H j*
           Z^(Mdecl-M0+lossVector sigma delta reserve paid eps Mcap saving j+primeLoss)) := by
   dsimp only
   have hq:=norm_pos τ.modulus τ.modulus_ne_bot
@@ -85,6 +85,6 @@ theorem actual_high_normalized_four_powers
 
 end SevenEighths.CenteredMomentEnergyFirstHighNormalizedGaussianPowers
 
-end
+
 
 end OAI

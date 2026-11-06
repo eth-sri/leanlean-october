@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessArithmetic
 
@@ -11,21 +12,24 @@ open scoped BigOperators Classical
 namespace SevenEighths.HeckeDetectorPartition
 open DyadicTransfer
 
-theorem partition (V : ℝ → ℂ)
-    (hsmall : ∀ y : ℝ, 0 ≤ y → y ≤ 1 → V y = 1)
-    (hlarge : ∀ y : ℝ, 2 ≤ y → V y = 0)
+section
+variable (V : ℝ → ℂ) (hsmall : ∀ y : ℝ, 0 ≤ y → y ≤ 1 → V y = 1) (hlarge : ∀ y : ℝ, 2 ≤ y → V y = 0)
+
+include hsmall hlarge in
+theorem partition  
+     
+     
     (n J : ℕ) (hn : 1 ≤ n) (hJ : (n : ℝ) ≤ (2 : ℝ)^J) :
     (∑ j ∈ Finset.range (J+1), annularCutoff V ((n : ℝ)/(2 : ℝ)^j)) = 1 := by
   rw [partial_partition]
   rw [hsmall _ (by positivity) ((div_le_one (by positivity)).mpr hJ)]
-  rw [hlarge _ (by exact_mod_cast (show 2 ≤ 2*n by omega))]
-  ring
+  simp_all
 
 theorem finite_pair_reassembly {A : Type*} (S : Finset A) (a : A → ℂ)
-    (n m : A → ℕ) (V : ℝ → ℂ)
+    (n m : A → ℕ)  V 
     (hsmall : ∀ y : ℝ, 0 ≤ y → y ≤ 1 → V y = 1)
     (hlarge : ∀ y : ℝ, 2 ≤ y → V y = 0)
-    (J K : ℕ)
+     J K 
     (hn : ∀ p ∈ S, 1 ≤ n p ∧ (n p : ℝ) ≤ (2 : ℝ)^J)
     (hm : ∀ p ∈ S, 1 ≤ m p ∧ (m p : ℝ) ≤ (2 : ℝ)^K) :
     (∑ p ∈ S, a p) =
@@ -54,20 +58,17 @@ theorem finite_pair_reassembly {A : Type*} (S : Finset A) (a : A → ℂ)
       rw [← Finset.mul_sum, partition V hsmall hlarge (n p) J (hn p hp).1 (hn p hp).2,
         mul_one]
 
-theorem annular_support (V : ℝ → ℂ)
-    (hsmall : ∀ y : ℝ, 0 ≤ y → y ≤ 1 → V y = 1)
-    (hlarge : ∀ y : ℝ, 2 ≤ y → V y = 0)
-    (x : ℝ) (hx : 0 ≤ x) (j : ℕ)
+include hsmall hlarge in
+theorem annular_support  
+     
+     
+     x  (hx : 0 ≤ x)  j 
     (hne : annularCutoff V (x/(2 : ℝ)^j) ≠ 0) :
     (2 : ℝ)^j / 2 < x ∧ x < 2*(2 : ℝ)^j := by
   have hp : 0 < (2 : ℝ)^j := by positivity
   have hy : 0 ≤ x/(2 : ℝ)^j := div_nonneg hx hp.le
   have hlo : 1/2 < x/(2 : ℝ)^j := by
-    by_contra h
-    have hh := le_of_not_gt h
-    apply hne
-    rw [annularCutoff, hsmall _ hy (by linarith), hsmall _ (by positivity) (by linarith)]
-    ring
+    grind [annularCutoff]
   have hhi : x/(2 : ℝ)^j < 2 := by
     by_contra h
     apply hne
@@ -77,26 +78,33 @@ theorem annular_support (V : ℝ → ℂ)
     linarith
   · exact (div_lt_iff₀ hp).mp hhi
 
-def length (X : ℝ) : ℕ := ⌈Real.logb 2 X⌉₊
+end
 
-theorem norm_le_last_scale (X : ℝ) (hX : 0 < X) : X ≤ (2 : ℝ)^(length X) := by
+def length (X : ℝ)  := ⌈Real.logb 2 X⌉₊
+
+section
+variable (X : ℝ)
+
+theorem norm_le_last_scale   (hX : 0 < X) : X ≤ (2 : ℝ)^(length X) := by
   have h := (Real.logb_le_iff_le_rpow (by norm_num : (1 : ℝ) < 2) hX).mp
     (Nat.le_ceil (Real.logb 2 X))
   simpa only [Real.rpow_natCast, length] using h
 
-theorem length_bound (X : ℝ) (hX : 1 ≤ X) :
+theorem length_bound   (hX : 1 ≤ X) :
     (length X : ℝ) + 1 < Real.logb 2 X + 2 := by
   have hlog : 0 ≤ Real.logb 2 X := Real.logb_nonneg (by norm_num) hX
   have h := Nat.ceil_lt_add_one hlog
   change (⌈Real.logb 2 X⌉₊ : ℝ) + 1 < _
   linarith
 
+end
+
 theorem pair_scale_bounds (V T : ℝ → ℂ)
     (hsmall : ∀ y : ℝ, 0 ≤ y → y ≤ 1 → V y = 1)
     (hlarge : ∀ y : ℝ, 2 ≤ y → V y = 0)
     (hterm : ∀ y : ℝ, 2 ≤ y → T y = 0)
     (x y D U : ℝ) (hx : 0 ≤ x) (hy : 0 ≤ y) (hD : 0 < D) (hU : 0 < U)
-    (j k : ℕ)
+     j k 
     (hj : annularCutoff V (x/(2 : ℝ)^j) ≠ 0)
     (hk : annularCutoff V (y/(2 : ℝ)^k) ≠ 0)
     (hfirst : V (x/D) ≠ 0)
@@ -106,8 +114,8 @@ theorem pair_scale_bounds (V T : ℝ → ℂ)
       (2 : ℝ)^j*(2 : ℝ)^k < 8*U := by
   obtain ⟨hjlo,hjhi⟩ := annular_support V hsmall hlarge x hx j hj
   obtain ⟨hklo,hkhi⟩ := annular_support V hsmall hlarge y hy k hk
-  have hJ : 0 < (2 : ℝ)^j := by positivity
-  have hK : 0 < (2 : ℝ)^k := by positivity
+  
+  
   have hxd : x < 2*D := by
     by_contra h
     apply hfirst
@@ -136,17 +144,17 @@ theorem pair_scale_bounds (V T : ℝ → ℂ)
   constructor <;> linarith
 
 def pairCoefficient (χ : HeckeFamily.Character) (V T : ℝ → ℂ)
-    (D Y U : ℝ) (s : ℂ) (p : Ideal HeckeFamily.O × Ideal HeckeFamily.O) : ℂ :=
+    (D Y U : ℝ) (s : ℂ) (p : Ideal HeckeFamily.O × Ideal HeckeFamily.O)  :=
   (UniqueFactorizationMonoid.moebius p.1 : ℂ) * V ((Ideal.absNorm p.1 : ℝ)/D) *
     IdealEuler.weighted (HeckeFamily.idealCoeff χ) s (p.1*p.2) *
     Complex.exp (-((Ideal.absNorm (p.1*p.2) : ℝ) : ℂ)/(Y : ℂ)) *
     (1-V (2*(Ideal.absNorm (p.1*p.2) : ℝ)/D)) * T ((Ideal.absNorm (p.1*p.2) : ℝ)/U)
 
-theorem actual_pair_reassembly (χ : HeckeFamily.Character) (V T : ℝ → ℂ)
+theorem actual_pair_reassembly  χ   V T 
     (hsmall : ∀ y : ℝ, 0 ≤ y → y ≤ 1 → V y = 1)
     (hlarge : ∀ y : ℝ, 2 ≤ y → V y = 0)
-    (D Y U X Z : ℝ) (hX : 0 < X) (hZ : 0 < Z) (s : ℂ)
-    (S : Finset (Ideal HeckeFamily.O × Ideal HeckeFamily.O))
+     D Y U X Z  (hX : 0 < X) (hZ : 0 < Z)  s 
+     S 
     (hS : ∀ p ∈ S, p.1 ≠ 0 ∧ p.2 ≠ 0 ∧
       (Ideal.absNorm p.1 : ℝ) ≤ X ∧ (Ideal.absNorm p.2 : ℝ) ≤ Z) :
     (∑ p ∈ S, pairCoefficient χ V T D Y U s p) =
@@ -174,7 +182,7 @@ theorem exists_large_pair (J K : ℕ) (F : ℕ → ℕ → ℂ) :
   calc
     _ = ‖∑ q ∈ S, F q.1 q.2‖ := by rw [Finset.sum_product]
     _ ≤ ∑ q ∈ S, ‖F q.1 q.2‖ := norm_sum_le _ _
-    _ ≤ ∑ q ∈ S, ‖F p.1 p.2‖ := Finset.sum_le_sum (fun q hq => hmax q hq)
+    _ ≤ ∑ q ∈ S, ‖F p.1 p.2‖ := Finset.sum_le_sum (hmax)
     _ = _ := by simp [S, Finset.card_product, mul_assoc]
 
 end SevenEighths.HeckeDetectorPartition

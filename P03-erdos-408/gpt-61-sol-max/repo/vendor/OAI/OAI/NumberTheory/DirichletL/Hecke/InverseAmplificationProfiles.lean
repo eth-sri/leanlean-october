@@ -13,15 +13,15 @@ open Set Filter Complex
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic
 
-def twistProfile (W : ℝ→ℂ) (σ freq x : ℝ) : ℂ := W x*(x : ℂ)^(-shift σ freq)
+def twistProfile (W : ℝ→ℂ) (σ freq x : ℝ)  := W x*(x : ℂ)^(-shift σ freq)
 
-theorem twistProfile_support (W : ℝ→ℂ) (σ freq : ℝ) :
+theorem twistProfile_support  W   σ freq  :
     Function.support (twistProfile W σ freq)⊆Function.support W := by
   intro x hx hw
   exact hx (by simp [twistProfile,hw])
 
-theorem polynomial_twistProfile (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (D σ freq : ℝ) :
+theorem polynomial_twistProfile  χ   inv   W 
+     D σ freq  :
     polynomial χ inv (twistProfile W σ freq) D 0 0=polynomial χ inv W D σ freq := by
   unfold polynomial
   congr 1
@@ -29,7 +29,7 @@ theorem polynomial_twistProfile (χ : Character) (inv : Bool) (W : ℝ→ℂ)
   intro J
   simp [summand,twistProfile,HeckeDyadic.shift,mul_assoc]
 
-theorem twistProfile_smooth (W : ℝ→ℂ) (σ freq a b : ℝ) (ha : 0<a)
+theorem twistProfile_smooth  W  (σ freq a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) :
     ContDiff ℝ ∞ (twistProfile W σ freq) := by
   apply contDiff_iff_contDiffAt.mpr

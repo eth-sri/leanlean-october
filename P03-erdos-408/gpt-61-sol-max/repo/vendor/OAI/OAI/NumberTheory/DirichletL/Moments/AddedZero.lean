@@ -27,12 +27,12 @@ lemma supported_one_ideal : Supported (1 : Ideal O) := by
 lemma supported_one_element : Supported (Ideal.span {(1 : O)}) := by
   simpa only [Ideal.span_singleton_one, Ideal.one_eq_top] using supported_one_ideal
 
-def tupleProduct {r : ℕ} (v : Fin r → Ideal O) : Ideal O := ∏ i, v i
+def tupleProduct {r } (v : Fin r → Ideal O)  := ∏ i, v i
 
-def originalCoefficient (N : ℕ) (c : O) (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
+def originalCoefficient (N ) (c : O) (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (R : Ideal O) (t : ℝ) (ν : Fin N → Ideal O → ℂ)
     (Wslot : Fin N → ℝ → ℂ) (P : Fin N → ℝ) (W₁ W₂ : ℝ → ℂ)
-    (X₁ X₂ Y₁ Y₂ : ℝ) (b₁ b₂ s : Ideal O) (v : Fin (N + 2) → Ideal O) : ℂ :=
+    (X₁ X₂ Y₁ Y₂ : ℝ) (b₁ b₂ s : Ideal O) (v : Fin (N + 2) → Ideal O)  :=
   (∏ j : Fin N, ν j (v (j.castAdd 2)) *
       Wslot j ((Ideal.absNorm (v (j.castAdd 2)) : ℝ) / P j)) *
     idealWeight c χ R t (tupleProduct v) *

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.IdealMultiplier
 
@@ -16,9 +17,14 @@ open Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-theorem idealMultiplierRaw_norm_le_average (A : Model F P J m) (theta delta : ℝ)
-    (w : Fin A.patternCount → P.BigLabels (J + F.ell) → P.BigLabels (J + F.ell) → P.BigAux J → ℂ)
-    (hw : ∀ v a b, (∑ u : P.BigAux J, (A.pattern v).bigAuxMass u * ‖w v a b u‖) ≤ delta)
+section
+variable (A : Model F P J m) (theta delta : ℝ) (hd : 0 ≤ delta) (w : Fin A.patternCount → P.BigLabels (J + F.ell) → P.BigLabels (J + F.ell) → P.BigAux J → ℂ) (hw : ∀ v a b, (∑ u : P.BigAux J, (A.pattern v).bigAuxMass u * ‖w v a b u‖) ≤ delta)
+
+
+include hw in
+theorem idealMultiplierRaw_norm_le_average    
+     
+     
     (a b : P.BigLabels (J + F.ell)) :
     ‖idealMultiplierRaw A theta w a b‖ ≤
       ∑ v : Fin A.patternCount, (delta * patternAmplitude A v) *
@@ -51,9 +57,10 @@ theorem idealMultiplierRaw_norm_le_average (A : Model F P J m) (theta delta : �
       _ = _ := by ring
   · simp only [ite_eq_right h, Finset.sum_const_zero, norm_zero, mul_zero, le_refl]
 
-theorem normBound_idealMultiplierRaw_average (A : Model F P J m) (theta delta : ℝ) (hd : 0 ≤ delta)
-    (w : Fin A.patternCount → P.BigLabels (J + F.ell) → P.BigLabels (J + F.ell) → P.BigAux J → ℂ)
-    (hw : ∀ v a b, (∑ u : P.BigAux J, (A.pattern v).bigAuxMass u * ‖w v a b u‖) ≤ delta)
+include hd hw in
+theorem normBound_idealMultiplierRaw_average      
+     
+     
     (hV : ∀ g : P.BigGroup, P.V g.val ≠ 0) :
     NormBound P.idealMass (idealMultiplierRaw A theta w) (delta * A.patternMass) := by
   let R (v : Fin A.patternCount) (a b : P.BigLabels (J + F.ell)) : ℝ :=
@@ -67,23 +74,23 @@ theorem normBound_idealMultiplierRaw_average (A : Model F P J m) (theta delta : 
     split_ifs
     · exact freshMass_nonneg (A.pattern v) b
     · exact le_refl 0
-  have hrow (v : Fin A.patternCount) (a : P.BigLabels (J + F.ell)) : (∑ b, R v a b) = 1 := by
-    exact bigFreshMass_row_sum (A.pattern v) (fun g p => P.mu g.val p)
+  have hrow (v : Fin A.patternCount) (a : P.BigLabels (J + F.ell)) : (∑ b, R v a b) = 1 := bigFreshMass_row_sum (A.pattern v) (fun g p => P.mu g.val p)
       (fun g => mu_sum g.val (hV g)) a
   have hrev (v : Fin A.patternCount) (a b : P.BigLabels (J + F.ell)) :
       P.idealMass a * R v a b = P.idealMass b * R v b a := by
     have hs : (A.pattern v).matchesBig a b ↔ (A.pattern v).matchesBig b a := by
-      unfold Pattern.matchesBig
-      exact forall_congr' (fun g => forall_congr' (fun i => imp_congr_right (fun _ => eq_comm)))
+      grind [Pattern.matchesBig]
     by_cases h : (A.pattern v).matchesBig a b
     · simp only [R, ite_eq_left h, ite_eq_left (hs.mp h)]
       exact bigFreshMass_reversal (A.pattern v) (fun g p => P.mu g.val p) a b h
-    · simp only [R, ite_eq_right h, ite_eq_right (fun hh => h (hs.mpr hh)), mul_zero]
+    grind
   have h := normBound_probability_mixture P.idealMass R (fun v => delta * patternAmplitude A v)
     (idealMultiplierRaw A theta w) hm hR
     (fun v => mul_nonneg hd (patternAmplitude_nonneg A v)) hrow hrev
     (idealMultiplierRaw_norm_le_average A theta delta w hw)
   simpa only [← Finset.mul_sum, sum_patternAmplitude] using h
+
+end
 
 
 end Erdos821.P3Clean

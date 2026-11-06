@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.KernelDyadicSupport
 public import Erdos821.S34.LogMultiplier
@@ -11,14 +12,18 @@ set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint.Analytic
 
-theorem dyadic_log_multiplier_error (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ U V S β ζ : ℝ) (hh : 0 < h) (hh2 : h ≤ Real.log 2)
-    (hU : 0 < U) (hV : 0 < V) (hS : 0 ≤ S) (hβ : |β| * (U * V) ≤ 2 * S)
-    (X D : Tuple G a) (Y E : Tuple G b)
-    (hX : U ≤ (product G a X : ℝ) ∧ (product G a X : ℝ) ≤ 2 * U)
+section
+variable (G : PrimeGroups) (a b : Fin G.size → ℕ) (Q : ℕ) (h ξ U V S β ζ : ℝ) (u : ℤ) (r : ℕ) (hh : 0 < h) (hh2 : h ≤ Real.log 2) (hξ : 0 < ξ) (hU : 0 < U) (hV : 0 < V) (hS : 0 ≤ S) (hβ : |β| * (U * V) ≤ 2 * S) (X D : Tuple G a) (Y E : Tuple G b) (hX : U ≤ (product G a X : ℝ) ∧ (product G a X : ℝ) ≤ 2 * U)
+
+include hh hh2 hU hV hS hβ hX in
+theorem dyadic_log_multiplier_error    
+           
+           
+       
+     
     (hY : V ≤ (product G b Y : ℝ) ∧ (product G b Y : ℝ) ≤ 2 * V)
     (hK : cellKernel G a Q h ξ (product G a D) (product G a X) ≠ 0)
     (hH : cellKernel G b Q h ξ (product G b E) (product G b Y) ≠ 0) :
@@ -47,11 +52,7 @@ theorem dyadic_log_multiplier_error (G : PrimeGroups) (a b : Fin G.size → ℕ)
     rw [Real.log_mul (ppos a D).ne' (ppos b E).ne', Real.log_mul (ppos a X).ne' (ppos b Y).ne']
     have hlA := (kernel_log_localization G a Q h ξ hh _ _ hK).le
     have hlB := (kernel_log_localization G b Q h ξ hh _ _ hH).le
-    calc
-      _ = |(Real.log (product G a D) - Real.log (product G a X)) +
-        (Real.log (product G b E) - Real.log (product G b Y))| := by congr 1; ring
-      _ ≤ _ := abs_add_le _ _
-      _ ≤ 2 * h := by linarith
+    grind
   have hcoeff : |ζ| + 2 * Real.pi * |β| * Real.exp (Real.log (16 * (U * V))) ≤
       |ζ| + 64 * Real.pi * S := by
     rw [Real.exp_log htop]
@@ -61,12 +62,13 @@ theorem dyadic_log_multiplier_error (G : PrimeGroups) (a b : Fin G.size → ℕ)
   have he := mul_le_mul hcoeff hlogdist (abs_nonneg _) (by positivity : 0 ≤ |ζ| + 64 * Real.pi * S)
   exact ht.trans (by convert he using 1; ring)
 
-theorem dyadic_multiplier_freeze (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ U V S β ζ : ℝ) (u : ℤ) (r : ℕ)
-    (hh : 0 < h) (hh2 : h ≤ Real.log 2) (hξ : 0 < ξ)
-    (hU : 0 < U) (hV : 0 < V) (hS : 0 ≤ S) (hβ : |β| * (U * V) ≤ 2 * S)
-    (X : Tuple G a) (Y : Tuple G b)
-    (hX : U ≤ (product G a X : ℝ) ∧ (product G a X : ℝ) ≤ 2 * U)
+include hh hh2 hξ hU hV hS hβ hX in
+theorem dyadic_multiplier_freeze    
+           
+         
+           
+       
+     
     (hY : V ≤ (product G b Y : ℝ) ∧ (product G b Y : ℝ) ≤ 2 * V) :
     ‖expect G a (fun D => expect G b (fun E =>
       cellKernel G a Q h ξ (product G a D) (product G a X) *
@@ -99,4 +101,6 @@ theorem dyadic_multiplier_freeze (G : PrimeGroups) (a b : Fin G.size → ℕ)
   · ring
 
 end
+
+
 end Erdos821.S34Core

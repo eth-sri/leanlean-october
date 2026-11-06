@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorNormalized
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicActual
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicActual
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.HeckeDetectorSaturation
@@ -58,8 +59,7 @@ lemma normalized_product_lower (U r m σ a ε K A B : ℝ)
   have hLq : L*U^q≤1 := by
     calc
       _ ≤ U^ε*U^((1-2*σ)*(r+m))*U^q := by
-        apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hUp.le _)
-        exact mul_le_mul_of_nonneg_right hcost (Real.rpow_nonneg hUp.le _)
+        bound
       _ = U^(ε+(1-2*σ)*(r+m)+q) := by rw [←Real.rpow_add hUp,←Real.rpow_add hUp]
       _ ≤ U^0 := Real.rpow_le_rpow_of_exponent_le hU.le (by
         dsimp [q]
@@ -121,6 +121,6 @@ theorem actual_saturation (R dmax τ ε e κ η Clower : ℝ)
 
 end SevenEighths.HeckeDetectorSaturation
 
-end
+
 
 end OAI

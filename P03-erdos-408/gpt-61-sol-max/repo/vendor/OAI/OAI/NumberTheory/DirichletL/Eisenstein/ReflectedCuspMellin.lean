@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.SourceBesselExpansion
 public import OAI.NumberTheory.DirichletL.Eisenstein.InverseCuspCoordinates
@@ -14,89 +15,95 @@ namespace CubicEisenstein
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 section
-open Filter MeasureTheory Asymptotics
-open scoped BigOperators Classical Topology
+ 
+ 
 
-def reflectedCuspProfile (A : ℂ) (Q : ℝ) (g : ℝ→ℂ) (v : ℝ) : ℂ :=
+def reflectedCuspProfile (A : ℂ) (Q : ℝ) (g : ℝ→ℂ) (v : ℝ)  :=
   A*((v:ℂ)^(-2:ℂ)*g ((Q*v)⁻¹))
 
-lemma reflectedCuspProfile_mellin (g : ℝ→ℂ) (A s : ℂ) (Q : ℝ) (hQ : 0<Q) :
+section
+variable (f g : ℝ→ℂ) (A s : ℂ) (Q decayF decayG : ℝ) (hQ : 0<Q)
+
+
+include hQ in
+lemma reflectedCuspProfile_mellin         :
     mellin (reflectedCuspProfile A Q g) s=
       A*(Q:ℂ)^(2-s)*mellin g (2-s) := by
   unfold reflectedCuspProfile
   have hh := cusp_mellin_reflection g A (s/2) Q hQ
-  simpa only [show (2*(s/2):ℂ)=s by ring,reflectedCuspProfile] using hh
+  grind
 
-lemma reflectedCuspProfile_mellinConvergent (g : ℝ→ℂ) (A s : ℂ) (Q : ℝ)
-    (hQ : 0<Q) (hg : MellinConvergent g (2-s)) :
+include hQ in
+lemma reflectedCuspProfile_mellinConvergent      
+      (hg : MellinConvergent g (2-s)) :
     MellinConvergent (reflectedCuspProfile A Q g) s := by
   unfold reflectedCuspProfile
   have hinv : MellinConvergent (fun t : ℝ=>g t⁻¹) (s-2) := by
@@ -111,7 +118,8 @@ lemma reflectedCuspProfile_mellinConvergent (g : ℝ→ℂ) (A s : ℂ) (Q : ℝ
     (s := s) (a := -2)).mpr (by simpa only [sub_eq_add_neg] using hscale)
   simpa only [reflectedCuspProfile,smul_eq_mul] using hpow.const_smul A
 
-lemma cusp_truncation_reflection_ae (f g : ℝ→ℂ) (A : ℂ) (Q : ℝ) (hQ : 0<Q)
+include hQ in
+lemma cusp_truncation_reflection_ae        
     (hfg : ∀v : ℝ,0<v→f v=reflectedCuspProfile A Q g v) :
     f =ᵐ[volume.restrict (Set.Ioi 0)]
       (fun v=>truncatedCuspProfile 1 f v+
@@ -122,16 +130,11 @@ lemma cusp_truncation_reflection_ae (f g : ℝ→ℂ) (A : ℂ) (Q : ℝ) (hQ : 
   have hrel : 1/Q<(Q*v)⁻¹ ↔ v<1 := by
     rw [inv_eq_one_div,div_lt_div_iff₀ hQ (mul_pos hQ hv)]
     constructor <;> intro hh <;> nlinarith
-  by_cases hhi : 1<v
-  · have hlo : ¬1/Q<(Q*v)⁻¹ := fun hh=>not_lt_of_ge hhi.le (hrel.mp hh)
-    simp only [truncatedCuspProfile,ite_eq_left hhi,reflectedCuspProfile,ite_eq_right hlo,
-      mul_zero,add_zero]
-  · have hlo : 1/Q<(Q*v)⁻¹ := hrel.mpr (lt_of_le_of_ne (le_of_not_gt hhi) hv1)
-    simp only [truncatedCuspProfile,ite_eq_right hhi,reflectedCuspProfile,ite_eq_left hlo,zero_add]
-    exact hfg v hv
+  grind [truncatedCuspProfile, reflectedCuspProfile]
 
-theorem cusp_mellin_entire (f g : ℝ→ℂ) (A : ℂ) (Q decayF decayG : ℝ)
-    (hQ : 0<Q) (hdecayF : 0<decayF) (hdecayG : 0<decayG)
+include hQ in
+theorem cusp_mellin_entire      
+      (hdecayF : 0<decayF) (hdecayG : 0<decayG)
     (hf : ContinuousOn f (Set.Ioi 0)) (hg : ContinuousOn g (Set.Ioi 0))
     (hfbound : f =O[atTop] (fun v : ℝ=>Real.exp (-decayF*v)))
     (hgbound : g =O[atTop] (fun v : ℝ=>Real.exp (-decayG*v)))
@@ -171,21 +174,28 @@ theorem cusp_mellin_entire (f g : ℝ→ℂ) (A : ℂ) (Q decayF decayG : ℝ)
 
 end
 
+end
+
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+ 
+ 
+ 
 
 section
 local notation "O" => ActualEisensteinCubic.O
 namespace SubexponentialBesselCoefficients
 variable (coeff : SubexponentialBesselCoefficients)
 
-def directionalTerm (h : ActualEisensteinCubic.O) (v : ℝ) (z direction : ℂ) : ℂ :=
+def directionalTerm (h : ActualEisensteinCubic.O) (v : ℝ) (z direction : ℂ)  :=
   horizontalPhaseMultiplier (cuspFrequency h) direction*coeff.term h (v,z)
 
-lemma term_horizontal_hasDerivAt (h : ActualEisensteinCubic.O) (v : ℝ) (hv : 0<v)
-    (z direction : ℂ) (t : ℝ) :
+section
+variable (h : ActualEisensteinCubic.O) (a b : ℝ) (ha : 0<a) (hab : a≤b) (constant : ℂ) (v : ℝ) (hv : 0<v) (z direction : ℂ) (t : ℝ)
+
+
+include hv in
+lemma term_horizontal_hasDerivAt      
+        :
     HasDerivAt (fun x : ℝ => coeff.term h (v,z+(x:ℂ)*direction))
       (coeff.directionalTerm h v (z+(t:ℂ)*direction) direction) t := by
   have hh := (brevePhase_hasDerivAt (cuspFrequency h) z direction t).const_mul
@@ -200,8 +210,9 @@ lemma term_horizontal_hasDerivAt (h : ActualEisensteinCubic.O) (v : ℝ) (hv : 0
   rw [directionalTerm,coeff.term_eq_amplitude v hv h]
   ring
 
-lemma directionalTerm_slab_bound (a b : ℝ) (ha : 0<a) (hab : a≤b)
-    (direction : ℂ) :
+include ha hab in
+lemma directionalTerm_slab_bound      
+      :
     ∃C : ℝ,0≤C ∧ ∀(h : ActualEisensteinCubic.O)(v : ℝ)(z : ℂ),v∈Set.Icc a b →
       ‖coeff.directionalTerm h v z direction‖≤
         C*(‖cuspFrequency h‖*Real.exp (-(Real.pi*a)*‖cuspFrequency h‖)) := by
@@ -216,15 +227,17 @@ lemma directionalTerm_slab_bound (a b : ℝ) (ha : 0<a) (hab : a≤b)
         (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-lemma directionalTerm_summable (v : ℝ) (hv : 0<v) (z direction : ℂ) :
+include hv in
+lemma directionalTerm_summable       :
     Summable (fun h : ActualEisensteinCubic.O => coeff.directionalTerm h v z direction) := by
   obtain ⟨C,hC,hbound⟩ := coeff.directionalTerm_slab_bound v v hv le_rfl direction
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun h => norm_nonneg _) (fun h => hbound h v z ⟨le_rfl,le_rfl⟩)
   exact (summable_norm_mul_exp_neg_cuspFrequency (Real.pi*v) (mul_pos Real.pi_pos hv)).mul_left C
 
-lemma series_horizontal_hasDerivAt (v : ℝ) (hv : 0<v)
-    (z direction : ℂ) (t : ℝ) :
+include hv in
+lemma series_horizontal_hasDerivAt    
+        :
     HasDerivAt (fun x : ℝ => coeff.series (v,z+(x:ℂ)*direction))
       (∑'h : ActualEisensteinCubic.O,coeff.directionalTerm h v (z+(t:ℂ)*direction) direction) t := by
   obtain ⟨C,hC,hbound⟩ := coeff.directionalTerm_slab_bound v v hv le_rfl direction
@@ -234,14 +247,16 @@ lemma series_horizontal_hasDerivAt (v : ℝ) (hv : 0<v)
   exact hasDerivAt_tsum hs (fun h x => coeff.term_horizontal_hasDerivAt h v hv z direction x)
     (fun h x => hbound h v (z+(x:ℂ)*direction) ⟨le_rfl,le_rfl⟩) hz t
 
-lemma fullFunction_horizontal_hasDerivAt (constant : ℂ) (v : ℝ) (hv : 0<v)
-    (z direction : ℂ) (t : ℝ) :
+lemma fullFunction_horizontal_hasDerivAt      
+        :
     HasDerivAt (fun x : ℝ => coeff.fullFunction constant (upperPoint (z+(x:ℂ)*direction) v hv))
       (∑'h : ActualEisensteinCubic.O,coeff.directionalTerm h v (z+(t:ℂ)*direction) direction) t := by
   have hh := (coeff.series_horizontal_hasDerivAt v hv z direction t).const_add
     (constant*(v:ℂ)^(2/3:ℂ))
   simpa only [fullFunction,function,
     hyperbolicHeight_upperPoint,hyperbolicHorizontal_upperPoint] using hh
+
+end
 
 end SubexponentialBesselCoefficients
 end
@@ -250,7 +265,12 @@ local notation "O" => ActualEisensteinCubic.O
 namespace SubexponentialBesselCoefficients
 variable (coeff : SubexponentialBesselCoefficients)
 
-lemma term_cusp_bound (a : ℝ) (ha : 0<a) :
+section
+variable (constant : ℂ) (a : ℝ) (ha : 0<a) (direction : ℂ)
+
+
+include ha in
+lemma term_cusp_bound     :
     ∃C : ℝ,0≤C ∧ ∀(h : ActualEisensteinCubic.O)(v : ℝ)(z : ℂ),a≤v →
       ‖coeff.term h (v,z)‖≤C*v*Real.exp (-(Real.pi*v)*‖cuspFrequency h‖) := by
   have hd : 0<‖(3:ℂ)*ConcreteTraceCRT.eisLam‖ := norm_pos_iff.mpr
@@ -287,7 +307,8 @@ lemma term_cusp_bound (a : ℝ) (ha : 0<a) :
       apply Real.exp_le_exp.mpr
       nlinarith [mul_le_mul_of_nonneg_left hav (mul_pos Real.pi_pos hr).le]
 
-lemma directionalTerm_cusp_majorant (a : ℝ) (ha : 0<a) (direction : ℂ) :
+include ha in
+lemma directionalTerm_cusp_majorant       :
     ∃D : ℝ,0≤D ∧ ∀(h : ActualEisensteinCubic.O)(v : ℝ)(z : ℂ),a≤v →
       ‖coeff.directionalTerm h v z direction‖≤
         (D*v*Real.exp (-(2*residualCuspDecayRate)*v))*
@@ -322,7 +343,8 @@ lemma directionalTerm_cusp_majorant (a : ℝ) (ha : 0<a) (direction : ℂ) :
       gcongr
     _ = _ := by ring
 
-lemma directionalSeries_cusp_decay (a : ℝ) (ha : 0<a) (direction : ℂ) :
+include ha in
+lemma directionalSeries_cusp_decay       :
     ∃C : ℝ,0≤C ∧ ∀(v : ℝ)(z : ℂ),a≤v →
       ‖∑'h : ActualEisensteinCubic.O,coeff.directionalTerm h v z direction‖≤
         C*Real.exp (-residualCuspDecayRate*v) := by
@@ -344,10 +366,10 @@ lemma directionalSeries_cusp_decay (a : ℝ) (ha : 0<a) (direction : ℂ) :
       mul_le_mul_of_nonneg_left (norm_mul_exp_neg_bound (2*residualCuspDecayRate) v
         (mul_pos (by norm_num) residualCuspDecayRate_pos)) (mul_nonneg hD hS)
     _ = _ := by
-      rw [show -((2*residualCuspDecayRate)/2)*v=-residualCuspDecayRate*v by ring]
       ring
 
-theorem fullFunction_wirtingerBar_cusp_decay (constant : ℂ) (a : ℝ) (ha : 0<a) :
+include ha in
+theorem fullFunction_wirtingerBar_cusp_decay       :
     ∃C : ℝ,0≤C ∧ ∀(v : ℝ)(hv : 0<v)(z : ℂ),a≤v →
       ‖horizontalWirtingerBar (fun w => coeff.fullFunction constant (upperPoint w v hv)) z‖≤
         C*Real.exp (-residualCuspDecayRate*v) := by
@@ -373,13 +395,15 @@ theorem fullFunction_wirtingerBar_cusp_decay (constant : ℂ) (a : ℝ) (ha : 0<
       exact add_le_add (hbound1 v z hav) (hboundI v z hav)
     _ = _ := by ring
 
+end
+
 end SubexponentialBesselCoefficients
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
-open Finset AddChar MulChar EisensteinEmbedding
+ 
+open scoped       MatrixGroups
+ 
 
 section
 local notation "O" => ActualEisensteinCubic.O
@@ -400,21 +424,24 @@ lemma spatialComplexSplit_symm_differentiable : Differentiable ℝ spatialComple
       fun_prop
     · change Differentiable ℝ (fun q : ℝ × ℂ => q.2.im)
       fun_prop
-    · change Differentiable ℝ (fun q : ℝ × ℂ => q.1)
-      fun_prop
+    simp_all
   exact hlin.comp hcoords
 
 namespace SubexponentialBesselCoefficients
 variable (coeff : SubexponentialBesselCoefficients)
 
-lemma fullFunction_euclidean_differentiableAt (constant : ℂ) (p : EuclideanSpatial) (hp : 0<p 2) :
+section
+variable (constant : ℂ) (g : SL(2,ℂ))
+
+
+lemma fullFunction_euclidean_differentiableAt    p  (hp : 0<p 2) :
     DifferentiableAt ℝ (fun q : EuclideanSpatial => coeff.fullFunction constant (euclideanToHyperbolic q)) p := by
   have hh := (coeff.fullFunction_cusp_differentiableAt constant (spatialComplexSplit p) hp).comp p
     spatialComplexSplit_differentiable.differentiableAt
   simpa only [Function.comp_def,cuspCoordinateLift,spatialComplexSplit.symm_apply_apply] using hh
 
-lemma fullFunction_translate_cusp_differentiableAt (constant : ℂ) (g : SL(2,ℂ))
-    (p : ℝ × ℂ) (hp : 0<p.1) :
+lemma fullFunction_translate_cusp_differentiableAt    
+     p  (hp : 0<p.1) :
     DifferentiableAt ℝ (fun q : ℝ × ℂ => coeff.fullFunction constant (g • cuspCoordinateLift q)) p := by
   have hx : 0<(spatialComplexSplit.symm p) 2 := by
     rw [spatialComplexSplit_symm_eq]
@@ -425,25 +452,27 @@ lemma fullFunction_translate_cusp_differentiableAt (constant : ℂ) (g : SL(2,�
       hA.differentiableAt).comp p spatialComplexSplit_symm_differentiable.differentiableAt
   simpa only [Function.comp_def,euclideanAction,euclideanToHyperbolic_coordinates,cuspCoordinateLift] using hh
 
-lemma fullFunction_translate_split_differentiableAt (constant : ℂ) (g : SL(2,ℂ))
-    (p : ℂ × ℝ) (hp : 0<p.2) :
+lemma fullFunction_translate_split_differentiableAt    
+     p  (hp : 0<p.2) :
     DifferentiableAt ℝ
       (fun q : ℂ × ℝ => coeff.fullFunction constant (g • cuspCoordinateLift (q.2,q.1))) p := by
   have hswap : DifferentiableAt ℝ (fun q : ℂ × ℝ => (q.2,q.1)) p :=
     differentiableAt_snd.prodMk differentiableAt_fst
   exact (coeff.fullFunction_translate_cusp_differentiableAt constant g (p.2,p.1) hp).comp p hswap
 
+end
+
 end SubexponentialBesselCoefficients
 
 lemma cubicSourceResidualFunction_translate_split_differentiableAt (g : SL(2,ℂ))
-    (p : ℂ × ℝ) (hp : 0<p.2) :
+     p  (hp : 0<p.2) :
     DifferentiableAt ℝ
       (fun q : ℂ × ℝ => cubicSourceResidualFunction (g • cuspCoordinateLift (q.2,q.1))) p := by
   rw [cubicSourceResidualFunction_eq_bessel]
   exact sourceBesselCoefficients.fullFunction_translate_split_differentiableAt
     ((3*(Real.pi:ℂ))*constantArithmeticResidue) g p hp
 
-lemma cubicSourceResidualFunction_wirtingerBar_cusp_decay (a : ℝ) (ha : 0<a) :
+lemma cubicSourceResidualFunction_wirtingerBar_cusp_decay  a  (ha : 0<a) :
     ∃C : ℝ,0≤C ∧ ∀(v : ℝ)(hv : 0<v)(z : ℂ),a≤v →
       ‖horizontalWirtingerBar (fun w => cubicSourceResidualFunction (upperPoint w v hv)) z‖≤
         C*Real.exp (-residualCuspDecayRate*v) := by
@@ -454,7 +483,7 @@ end
 
 local notation "O" => ActualEisensteinCubic.O
 
-lemma horizontalPhaseMultiplier_wirtingerZ (freq : ℂ) :
+lemma horizontalPhaseMultiplier_wirtingerZ  freq  :
     (1/2:ℂ)*(horizontalPhaseMultiplier freq 1-
       Complex.I*horizontalPhaseMultiplier freq Complex.I)=2*Real.pi*Complex.I*freq := by
   simp only [horizontalPhaseMultiplier,mul_one,star_mul,Complex.star_def,
@@ -463,7 +492,7 @@ lemma horizontalPhaseMultiplier_wirtingerZ (freq : ℂ) :
   norm_num [Complex.I_sq,Complex.I_pow_three]
   ring
 
-lemma horizontalWirtingerBar_star (f : ℂ→ℂ) (z : ℂ) :
+lemma horizontalWirtingerBar_star  f   z  :
     horizontalWirtingerBar (fun w => star (f w)) z=star (horizontalWirtingerZ f z) := by
   unfold horizontalWirtingerBar horizontalWirtingerZ
   rw [deriv.star,deriv.star]
@@ -472,7 +501,11 @@ lemma horizontalWirtingerBar_star (f : ℂ→ℂ) (z : ℂ) :
 namespace SubexponentialBesselCoefficients
 variable (coeff : SubexponentialBesselCoefficients)
 
-lemma fullFunction_wirtingerZ (constant : ℂ) (v : ℝ) (hv : 0<v) (z : ℂ) :
+section
+variable (constant : ℂ)
+
+
+lemma fullFunction_wirtingerZ    v   hv   z  :
     horizontalWirtingerZ (fun w => coeff.fullFunction constant (upperPoint w v hv)) z=
       ∑'h : ActualEisensteinCubic.O,(2*Real.pi*Complex.I*cuspFrequency h)*coeff.term h (v,z) := by
   have h1 := (coeff.fullFunction_horizontal_hasDerivAt constant v hv z 1 0).deriv
@@ -483,11 +516,9 @@ lemma fullFunction_wirtingerZ (constant : ℂ) (v : ℝ) (hv : 0<v) (z : ℂ) :
   have hsI := (coeff.directionalTerm_summable v hv z Complex.I).mul_left Complex.I
   rw [←tsum_mul_left,←hs1.tsum_sub hsI,←tsum_mul_left]
   apply tsum_congr
-  intro h
-  unfold directionalTerm
-  linear_combination coeff.term h (v,z)*horizontalPhaseMultiplier_wirtingerZ (cuspFrequency h)
+  grind [directionalTerm, horizontalPhaseMultiplier_wirtingerZ, cuspFrequency]
 
-lemma fullFunction_wirtingerZ_cusp_decay (constant : ℂ) (a : ℝ) (ha : 0<a) :
+lemma fullFunction_wirtingerZ_cusp_decay    a  (ha : 0<a) :
     ∃C : ℝ,0≤C ∧ ∀(v : ℝ)(hv : 0<v)(z : ℂ),a≤v →
       ‖horizontalWirtingerZ (fun w => coeff.fullFunction constant (upperPoint w v hv)) z‖≤
         C*Real.exp (-residualCuspDecayRate*v) := by
@@ -513,30 +544,32 @@ lemma fullFunction_wirtingerZ_cusp_decay (constant : ℂ) (a : ℝ) (ha : 0<a) :
       exact add_le_add (hbound1 v z hav) (hboundI v z hav)
     _ = _ := by ring
 
+end
+
 end SubexponentialBesselCoefficients
 
-lemma cubicSourceResidualFunction_wirtingerZ_cusp_decay (a : ℝ) (ha : 0<a) :
+lemma cubicSourceResidualFunction_wirtingerZ_cusp_decay  a  (ha : 0<a) :
     ∃C : ℝ,0≤C ∧ ∀(v : ℝ)(hv : 0<v)(z : ℂ),a≤v →
       ‖horizontalWirtingerZ (fun w => cubicSourceResidualFunction (upperPoint w v hv)) z‖≤
         C*Real.exp (-residualCuspDecayRate*v) := by
   rw [cubicSourceResidualFunction_eq_bessel]
   exact sourceBesselCoefficients.fullFunction_wirtingerZ_cusp_decay _ a ha
 
-def cubicSourceConjugateFunction (w : HyperbolicSpace) : ℂ := star (cubicSourceResidualFunction w)
+def cubicSourceConjugateFunction (w : HyperbolicSpace)  := star (cubicSourceResidualFunction w)
 
 lemma cubicSourceConjugateFunction_translate_split_differentiableAt (g : SL(2,ℂ))
-    (p : ℂ × ℝ) (hp : 0<p.2) :
+     p  (hp : 0<p.2) :
     DifferentiableAt ℝ
       (fun q : ℂ × ℝ => cubicSourceConjugateFunction (g • cuspCoordinateLift (q.2,q.1))) p :=
   (cubicSourceResidualFunction_translate_split_differentiableAt g p hp).star
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
-open Finset AddChar MulChar EisensteinEmbedding
+ 
+open scoped       MatrixGroups
+ 
 
-lemma horizontalWirtingerBar_translate (f : ℂ→ℂ) (a : ℂ) :
+lemma horizontalWirtingerBar_translate  f   a  :
     horizontalWirtingerBar (fun z=>f (z+a)) 0=horizontalWirtingerBar f a := by
   unfold horizontalWirtingerBar
   simp only [zero_add]
@@ -549,8 +582,8 @@ lemma horizontalWirtingerBar_translate (f : ℂ→ℂ) (a : ℂ) :
   rw [h1,hI]
 
 lemma cuspDerivative_of_transform (f : HyperbolicSpace→ℂ) (g H : SL(2,ℂ))
-    (κ : ℂ) (htransform : ∀w,f (g•w)=κ*f (H•w)) (hc : g 1 0≠0)
-    (v : ℝ) (hv : 0<v)
+     κ  (htransform : ∀w,f (g•w)=κ*f (H•w)) (hc : g 1 0≠0)
+     v   hv 
     (hD : DifferentiableAt ℝ
       (fun q : ℂ × ℝ=>f (H•cuspCoordinateLift (q.2,q.1)))
       (-g 1 1/g 1 0,1/(‖g 1 0‖^2*v))) :

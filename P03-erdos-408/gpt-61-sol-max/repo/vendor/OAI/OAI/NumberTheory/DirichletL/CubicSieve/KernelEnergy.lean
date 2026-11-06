@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.IdealQuotients
 
@@ -12,76 +13,76 @@ namespace FirstPassCubeLabels
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
+ 
+ 
 
 section
-open ActualEisensteinCubic
+ 
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
@@ -101,7 +102,7 @@ def actualFirstKernel {ι : Type*} [DecidableEq ι]
 end
 
 section
-open ActualEisensteinCubic
+ 
 open FirstCauchyArithmetic (supportMobius supportRay supportConjugateSum)
 open RayFourExpansion (RayCharacter)
 
@@ -109,10 +110,9 @@ section Local
 variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
   (hg : ∀ i, lambda ∉ P i)
 
-theorem row_union (S T : Finset ι) (hd : Disjoint S T) (a : O) :
+theorem row_union  S T  (hd : Disjoint S T)  a  :
     finiteSquarefreeRow P hg (S ∪ T) a =
-      finiteSquarefreeRow P hg S a * finiteSquarefreeRow P hg T a := by
-  exact Finset.prod_union hd
+      finiteSquarefreeRow P hg S a * finiteSquarefreeRow P hg T a := Finset.prod_union hd
 
 include hg in
 theorem mask_union (S T : Finset ι) (hd : Disjoint S T) (a : O) :
@@ -120,7 +120,7 @@ theorem mask_union (S T : Finset ι) (hd : Disjoint S T) (a : O) :
   simp only [← row_sixth P hg, row_union P hg S T hd, mul_pow]
 
 omit [DecidableEq ι] in
-theorem row_four_star (S : Finset ι) (f h : O) :
+theorem row_four_star  S   f h  :
     finiteSquarefreeRow P hg S f ^ 4 * star (finiteSquarefreeRow P hg S h) =
       star (finiteSquarefreeRow P hg S (h * f ^ 2)) := by
   have hf : star (finiteSquarefreeRow P hg S (f ^ 2)) =
@@ -133,22 +133,22 @@ theorem row_four_star (S : Finset ι) (f h : O) :
         simpa only [pow_one] using row_power_mul_mask_power P hg S f 4 1 (by decide)
   rw [finiteSquarefreeRow_mul, star_mul, hf]
 
-def beforeDilationLabel {κ : Type*} (p : κ → O) (B : Finset κ)
-    (v : κ → ℕ) (ε₁ ε₂ : κ → Bool) (side : Bool) (c d f : O) (S : Finset ι) : ℂ :=
+def beforeDilationLabel {κ } (p : κ → O) (B : Finset κ)
+    (v : κ → ℕ) (ε₁ ε₂ : κ → Bool) (side : Bool) (c d f : O) (S : Finset ι)  :=
   finiteSquarefreeRow P hg S c ^ 4 * finiteSquarefreeRow P hg S d *
     (rowCoprimeMask P S (cubeRadical p B) *
       finiteSquarefreeRow P hg S (aLabel p B (if side then ε₂ else ε₁)) ^ 4 *
       finiteSquarefreeRow P hg S (crtLabel p B v ε₁ ε₂ side)) *
     finiteSquarefreeRow P hg S f ^ 4
 
-def afterDilationLabel {κ : Type*} (p : κ → O) (B : Finset κ)
-    (v : κ → ℕ) (ε₁ ε₂ : κ → Bool) (c d : O) (S : Finset ι) : ℂ :=
+def afterDilationLabel {κ } (p : κ → O) (B : Finset κ)
+    (v : κ → ℕ) (ε₁ ε₂ : κ → Bool) (c d : O) (S : Finset ι)  :=
   finiteSquarefreeRow P hg S (c * jLabel p B v ε₁ ε₂) ^ 4 *
     finiteSquarefreeRow P hg S d * rowCoprimeMask P S (b0Label p B v ε₁ ε₂)
 
 theorem beforeDilationLabel_union {κ : Type*} (p : κ → O) (B : Finset κ)
-    (v : κ → ℕ) (ε₁ ε₂ : κ → Bool) (side : Bool) (c d f : O)
-    (S T : Finset ι) (hd : Disjoint S T) :
+    (v : κ → ℕ) (ε₁ ε₂ : κ → Bool)  side   c d f 
+     S T  (hd : Disjoint S T) :
     beforeDilationLabel P hg p B v ε₁ ε₂ side c d f (S ∪ T) =
       beforeDilationLabel P hg p B v ε₁ ε₂ side c d f S *
       beforeDilationLabel P hg p B v ε₁ ε₂ side c d f T := by
@@ -157,7 +157,7 @@ theorem beforeDilationLabel_union {κ : Type*} (p : κ → O) (B : Finset κ)
 
 omit [DecidableEq ι] in
 theorem beforeDilationLabel_norm_le_one {κ : Type*} (p : κ → O) (B : Finset κ)
-    (v : κ → ℕ) (ε₁ ε₂ : κ → Bool) (side : Bool) (c d f : O) (S : Finset ι) :
+    (v : κ → ℕ) (ε₁ ε₂ : κ → Bool)  side   c d f   S  :
     ‖beforeDilationLabel P hg p B v ε₁ ε₂ side c d f S‖ ≤ 1 := by
   have hm : ‖rowCoprimeMask P S (cubeRadical p B)‖ ≤ 1 := by
     unfold rowCoprimeMask
@@ -171,7 +171,7 @@ theorem beforeDilationLabel_norm_le_one {κ : Type*} (p : κ → O) (B : Finset 
 omit [DecidableEq ι] in
 theorem beforeDilationLabel_star_row {κ : Type*} (p : κ → O) (B : Finset κ)
     (v : κ → ℕ) (ε₁ ε₂ : κ → Bool) (hv : ∀ j ∈ B, 0 < v j)
-    (side : Bool) (c d f h : O) (S : Finset ι) :
+     side   c d f h   S  :
     beforeDilationLabel P hg p B v ε₁ ε₂ side c d f S *
       star (finiteSquarefreeRow P hg S h) =
     afterDilationLabel P hg p B v ε₁ ε₂ c d S *
@@ -192,8 +192,8 @@ end Local
 theorem rayIdealRow_eq_supportRow {ι : Type*} [DecidableEq ι] (p : ι → O)
     [∀ i, (Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (F D : Finset ι)
-    (C : Finset ι → ℂ) (negative : Bool) (χ : RayCharacter) (h : O) :
+    (hg : ∀ i, lambda ∉ Ideal.span {p i})  F D 
+     C   negative   χ   h  :
     rayIdealRow p hg F C negative χ D h =
     supportConjugateSum (fun i => Ideal.span {p i}) hg (F \ D)
       (fun U => (if negative then star (supportRay p χ U) else supportRay p χ U) * C (D ∪ U)) h := by
@@ -212,10 +212,10 @@ def dilatedRayColumn {ι κ : Type*} [DecidableEq ι] (p : ι → O)
 theorem rayIdealRow_beforeDilation {ι κ : Type*} [DecidableEq ι] (p : ι → O)
     [∀ i, (Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (F D : Finset ι)
-    (C : Finset ι → ℂ) (negative : Bool) (χ : RayCharacter)
+    (hg : ∀ i, lambda ∉ Ideal.span {p i})  F D 
+     C   negative   χ 
     (q : κ → O) (B : Finset κ) (v : κ → ℕ) (ε₁ ε₂ : κ → Bool)
-    (hv : ∀ j ∈ B, 0 < v j) (side : Bool) (c d f h : O) :
+    (hv : ∀ j ∈ B, 0 < v j)  side   c d f h  :
     rayIdealRow p hg F
       (fun S => C S * beforeDilationLabel (fun i => Ideal.span {p i}) hg q B v ε₁ ε₂ side c d f S)
       negative χ D h =
@@ -227,8 +227,7 @@ theorem rayIdealRow_beforeDilation {ι κ : Type*} [DecidableEq ι] (p : ι → 
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro U hU
-  have hd : Disjoint D U := by
-    exact Finset.disjoint_left.mpr (fun i hiD hiU =>
+  have hd : Disjoint D U := Finset.disjoint_left.mpr (fun i hiD hiU =>
       (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hU) hiU)).2 hiD)
   dsimp only
   rw [beforeDilationLabel_union _ hg q B v ε₁ ε₂ side c d f D U hd]
@@ -267,12 +266,16 @@ def cubeCoreCoefficient {ι : Type*} [DecidableEq ι]
       MixedCrossSeparation.columnG p hp hcop hg S * C S *
       (V (y S) * FourierBridge.logPhase t (-(y S)))
 
-theorem cubeLogCoefficient_originalLabel {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (B : Finset ι)
-    (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (negative : Bool)
-    (C : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (t : ℝ) (c d f : O) (S : Finset ι) :
+section
+variable {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+include ι p hp
+
+theorem cubeLogCoefficient_originalLabel    
+         
+     hcop 
+    (hg : ∀ i, lambda ∉ Ideal.span {p i})  B 
+     v   ε₁ ε₂   negative 
+     C   V   y   t   c d f   S  :
     cubeLogCoefficient p hp hcop hg B v ε₁ ε₂ negative
       (originalLabelColumn p hg B ε₁ ε₂ negative C c f) V y t d S =
     cubeCoreCoefficient p hp hcop hg B v ε₁ ε₂ negative C V y t S *
@@ -284,14 +287,14 @@ theorem cubeLogCoefficient_originalLabel {ι : Type*} [DecidableEq ι]
       originalLabelColumn, beforeDilationLabel, Bool.false_eq_true, ite_false, ite_true,
       finiteSquarefreeRow_mul, mul_pow] <;> ring
 
-theorem rayIdealRow_cube_labels {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem rayIdealRow_cube_labels    
+         
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (F D B : Finset ι)
-    (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ j ∈ B, 0 < v j)
-    (negative : Bool) (χ : RayCharacter) (C : Finset ι → ℂ) (V : ℝ → ℂ)
-    (y : Finset ι → ℝ) (t : ℝ) (c d f h : O) :
+     hcop 
+    (hg : ∀ i, lambda ∉ Ideal.span {p i})  F D B 
+     v   ε₁ ε₂  (hv : ∀ j ∈ B, 0 < v j)
+     negative   χ   C   V 
+     y   t   c d f h  :
     rayIdealRow p hg F
       (cubeLogCoefficient p hp hcop hg B v ε₁ ε₂ negative
         (originalLabelColumn p hg B ε₁ ε₂ negative C c f) V y t d) negative χ D h =
@@ -302,26 +305,30 @@ theorem rayIdealRow_cube_labels {ι : Type*} [DecidableEq ι]
       (originalLabelColumn p hg B ε₁ ε₂ negative C c f) V y t d =
     fun S => cubeCoreCoefficient p hp hcop hg B v ε₁ ε₂ negative C V y t S *
       beforeDilationLabel (fun i => Ideal.span {p i}) hg p B v ε₁ ε₂ negative c d f S := by
-    funext S
-    exact cubeLogCoefficient_originalLabel p hp hcop hg B v ε₁ ε₂ negative C V y t c d f S
-  rw [he]
-  exact rayIdealRow_beforeDilation p hinj hg F D _ negative χ p B v ε₁ ε₂ hv negative c d f h
+    aesop (add safe [cubeLogCoefficient_originalLabel])
+  simp_all [rayIdealRow_beforeDilation]
 
 end
 
-open ActualEisensteinCubic
+end
+
+ 
 open ConcreteTraceCRT (eisEmbedding)
 
 end
 
 section
-open scoped BigOperators Classical
-open ActualEisensteinCubic
+ 
+ 
 open RayFourExpansion (RayCharacter crossCoeff)
 
-theorem blockRow_norm_le_one {ι : Type*} (p : ι → O)
+section
+variable {ι : Type*}
+include ι
+
+theorem blockRow_norm_le_one   (p : ι → O)
     [∀ i, (Ideal.span {p i}).IsMaximal] (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (S : Finset ι) (e : ι → ℕ) (a : O) : ‖blockRow p hg S e a‖ ≤ 1 := by
+    (S : Finset ι) (e : ι → ℕ)  a  : ‖blockRow p hg S e a‖ ≤ 1 := by
   rw [blockRow_eq_product, norm_prod]
   calc
     _ ≤ ∏ i ∈ S, (1 : ℝ) := by
@@ -331,12 +338,12 @@ theorem blockRow_norm_le_one {ι : Type*} (p : ι → O)
       exact FiniteRayExpansion.norm_char_le_one _ _
     _ = 1 := by simp
 
-theorem cubeBaseFactor_norm_le_one {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem cubeBaseFactor_norm_le_one   [DecidableEq ι]
+    (p : ι → O)  hp  [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (d h : O) :
+     B   v   ε₁ ε₂   d h  :
     ‖cubeBaseFactor p hp hg B v ε₁ ε₂ d h‖ ≤ 1 := by
   have he : ∀ i ∈ cubeActiveSupport B v ε₁ ε₂,
       (conductorExponent (parity (v i)) (ε₁ i) (ε₂ i)).val ≠ 0 := by
@@ -349,9 +356,11 @@ theorem cubeBaseFactor_norm_le_one {ι : Type*} [DecidableEq ι]
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
+end
+
+ 
+ 
+ 
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FourierBridge (logPhase)

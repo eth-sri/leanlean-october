@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P3Restore.Restoration
 
 public import Erdos821.P4Probe.CostParameters
 
@@ -15,12 +18,9 @@ open Blueprint.Graph
 noncomputable section
 
 lemma normBound_mono {α : Type*} (mass : α → ℝ) (K : α → α → ℂ)
-    {C D : ℝ} (hK : NormBound mass K C) (hCD : C ≤ D) : NormBound mass K D := by
-  intro s t f g
-  exact (hK s t f g).trans (mul_le_mul_of_nonneg_right
-    (mul_le_mul_of_nonneg_right hCD (Real.sqrt_nonneg _)) (Real.sqrt_nonneg _))
+    {C D : ℝ} (hK : NormBound mass K C) (hCD : C ≤ D) : NormBound mass K D := by solve_by_elim [_root_.Erdos821.P3Restore.normBound_mono]
 
-lemma eventual_group_bounds (F : FixedData) :
+lemma eventual_group_bounds  F  :
     ∀ᶠ x : ℝ in atTop, 2 ≤ L x ∧
       ∀ P : PrimeGroups, P.Admissible F x →
         3 ≤ Fintype.card P.BigGroup ∧
@@ -51,10 +51,7 @@ theorem symmetricProbeTask_of_finite (hsym : SymmetricFullComponentTask)
   let A : ℝ := E + 2 + (m : ℝ) * F.C₀ * Real.log 3
   have hC₀ : 0 < F.C₀ := F.C₀_pos
   have hA : 0 < A := by
-    have : 0 ≤ (m : ℝ) * F.C₀ * Real.log 3 :=
-      mul_nonneg (by positivity) (Real.log_nonneg (by norm_num))
-    dsimp [A]
-    linarith
+    positivity
   obtain ⟨q, h, ξ, hq, hh, hξ, hcomp⟩ :=
     localComparison_of_estimate F m A C₄ hA hC₄ hc
   let J₀ := m + (m + F.ell) * (m + F.ell - 1)

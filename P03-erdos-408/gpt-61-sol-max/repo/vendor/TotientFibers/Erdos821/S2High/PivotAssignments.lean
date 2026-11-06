@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2High.PivotAddresses
 
@@ -12,30 +13,28 @@ open Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m n B : ℕ} {A : Model F P J m}
 
-abbrev BirthAddressFin (P : PrimeGroups) (M n B : ℕ) :=
+abbrev BirthAddressFin (P ) (M n B ) :=
   Fin (Fintype.card (Erdos821.S2Core.BirthAddress P M n B))
 
-def blockPivotIndex (pi : Finset (Finset (BirthAddressFin P (J + F.ell) n B)))
-    (hpi : BirthCollection pi) (C : {C : Finset (BirthAddressFin P (J + F.ell) n B) // C ∈ pi}) :
-    BirthAddressFin P (J + F.ell) n B :=
+def blockPivotIndex (pi )
+    (hpi : BirthCollection pi) (C : {C : Finset (BirthAddressFin P (J + F.ell) n B) // C ∈ pi})  :=
   birthBlockPivot C.val (Finset.card_pos.mp (by
     have hcard := hpi.1 C.val C.property
     omega))
 
-def blockPivotGroup (pi : Finset (Finset (BirthAddressFin P (J + F.ell) n B)))
-    (hpi : BirthCollection pi) (C : {C : Finset (BirthAddressFin P (J + F.ell) n B) // C ∈ pi}) :
-    P.BigGroup :=
+def blockPivotGroup (pi )
+    (hpi : BirthCollection pi) (C : {C : Finset (BirthAddressFin P (J + F.ell) n B) // C ∈ pi})  :=
   birthAddressGroup ((Fintype.equivFin
     (Erdos821.S2Core.BirthAddress P (J + F.ell) n B)).symm (blockPivotIndex pi hpi C))
 
-def PivotAssignment (pi : Finset (Finset (BirthAddressFin P (J + F.ell) n B)))
-    (hpi : BirthCollection pi) :=
+def PivotAssignment (pi )
+    (hpi ) :=
   (C : {C : Finset (BirthAddressFin P (J + F.ell) n B) // C ∈ pi}) →
     P.Prime (blockPivotGroup pi hpi C)
 
 def PivotCompatible (H : Erdos821.S2Core.MemoryHistory A n)
     (pi : Finset (Finset (BirthAddressFin P (J + F.ell) n B)))
-    (hpi : BirthCollection pi) (values : PivotAssignment pi hpi) : Prop :=
+    (hpi ) (values : PivotAssignment pi hpi)  :=
   ∀ C : {C : Finset (BirthAddressFin P (J + F.ell) n B) // C ∈ pi},
     ∀ j ∈ C.val,
       H.addressPerformed B ((Fintype.equivFin
@@ -54,8 +53,7 @@ theorem birthEvent_iff_exists_pivotAssignment
   · intro he
     let values : PivotAssignment pi hpi := fun C =>
       ⟨H.valueFin B (blockPivotIndex pi hpi C), by
-        have hpivotMem : blockPivotIndex pi hpi C ∈ C.val := by
-          exact birthBlockPivot_mem _ _
+        have hpivotMem : blockPivotIndex pi hpi C ∈ C.val := birthBlockPivot_mem _ _
         have hperf : blockPivotIndex pi hpi C ∈ H.performedFin B :=
           (he C.val C.property).1 hpivotMem
         have haddr : H.addressPerformed B ((Fintype.equivFin
@@ -75,9 +73,7 @@ theorem birthEvent_iff_exists_pivotAssignment
       simpa [Erdos821.S2Core.MemoryHistory.performedFin] using hperf
     have hEq : H.valueFin B j = H.valueFin B (blockPivotIndex pi hpi C) :=
       (he C.val C.property).2 j hj (blockPivotIndex pi hpi C) hpivotMem
-    refine ⟨haddr, ?_⟩
-    change H.valueFin B j = H.valueFin B (blockPivotIndex pi hpi C)
-    exact hEq
+    solve_by_elim
   · rintro ⟨values, hv⟩
     intro C hC
     constructor

@@ -7,15 +7,15 @@ public import OAI.NumberTheory.DirichletL.Detector.HighExcludedLocal
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-theorem excludedIdealHighSeries_row_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
-    (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+theorem excludedIdealHighSeries_row_hasProd  S  (hS : ∀P∈S,Prime P)
+     η   u   x w z 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     HasProd (fun P : PrimeIdeal=>∑' b : HighValuation,
       markedIdealHighSummand S 1 η u x w z (P.val^b.1.1) (P.val^b.1.2) (P.val^b.2.1) (P.val^b.2.2))
@@ -36,6 +36,6 @@ theorem excludedIdealHighSeries_row_hasProd (S : Finset Id) (hS : ∀P∈S,Prime
   · exact (markedIdealHighSummand_summable S 1 η u x w z hx hw hz).norm
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

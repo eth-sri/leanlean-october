@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Failure.Final
 public import Erdos408.Extraction.Allocation.Failure.GroupBounds
@@ -19,7 +20,7 @@ namespace Erdos408
 
 open Finset Filter Real
 
-noncomputable section
+
 
 /-- For large `x`, every candidate group satisfies `SideGroup`. -/
 lemma eventually_sideGroup : ∀ᶠ x : ℝ in atTop, ∀ g ∈ candidateGroups x, SideGroup g := by
@@ -34,8 +35,11 @@ lemma eventually_sideGroup : ∀ᶠ x : ℝ in atTop, ∀ g ∈ candidateGroups 
   have : (100 : ℝ) ≤ p := by linarith
   exact_mod_cast this
 
+section
+variable {c : ℝ} (hc : 0 < c) (Ch : ℝ)
+
 /-- At most `b` primes in `[a, b]` for `a ≥ 1`. -/
-lemma card_primesIcc_le' {a b : ℝ} (ha : 1 ≤ a) (hb : 0 ≤ b) : ((primesIcc a b).card : ℝ) ≤ b := by
+lemma card_primesIcc_le'  {a b}  (ha : 1 ≤ a) (hb : 0 ≤ b) : ((primesIcc a b).card : ℝ) ≤ b := by
   have h1 : (primesIcc a b).card ≤ ⌊b⌋₊ := by
     refine (card_filter_le _ _).trans ?_
     rw [Nat.card_Icc]
@@ -46,7 +50,7 @@ lemma card_primesIcc_le' {a b : ℝ} (ha : 1 ≤ a) (hb : 0 ≤ b) : ((primesIcc
 
 /-- For large `x`, the candidate primes lie below `Y` and `X = ⌊κ x⌋ + 1`, and each group has at
 most `exp(L^{0.46})` primes. -/
-lemma eventually_groups_small (κ : ℝ) (hκ : 1 < κ) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_groups_small  κ  (hκ : 1 < κ) : ∀ᶠ x : ℝ in atTop,
     (∀ g ∈ candidateGroups x, g ⊆ primesIcc 2 (proxyCutoff x) ∧
       (g.card : ℝ) ≤ Real.exp (Real.log x ^ (46 / 100 : ℝ))) ∧
     (∀ p ∈ candidatePrimes x, p ≤ ⌊κ * x⌋₊ + 1) ∧ x ≤ ((⌊κ * x⌋₊ + 1 : ℕ) : ℝ) ∧
@@ -103,25 +107,25 @@ lemma eventually_groups_small (κ : ℝ) (hκ : 1 < κ) : ∀ᶠ x : ℝ in atTo
     have : (p : ℝ) ≤ ((⌊κ * x⌋₊ + 1 : ℕ) : ℝ) := h2.trans (hY.trans (hYx.trans hxX))
     exact_mod_cast this
 
+include hc in
 /-- For large `x`, `0 < γ ≤ 1` and `1/γ ≤ C_γ T^{21}`. -/
-lemma eventually_presieveExponent {c : ℝ} (hc : 0 < c) (Ch : ℝ) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_presieveExponent       : ∀ᶠ x : ℝ in atTop,
     0 < presieveExponent c Ch x ∧ presieveExponent c Ch x ≤ 1 ∧
       1 / presieveExponent c Ch x ≤ 4 * (8 * |Ch| + 11) / c * logLog x ^ 21 := by
   filter_upwards [eventually_le_logLog (c + 1)] with x hT
   have hT1 : 1 ≤ logLog x := by linarith
   obtain ⟨h0, h1⟩ := presieveExponent_facts (Ch := Ch) hc hT1
   refine ⟨h0, ?_, h1⟩
-  have hden : 1 ≤ 4 * (sieveDepth Ch x : ℝ) + 3 := by
-    have : (0 : ℝ) ≤ sieveDepth Ch x := Nat.cast_nonneg _
-    linarith
+  
   have hT20 : c ≤ logLog x ^ 20 := by
     have : logLog x ≤ logLog x ^ 20 := le_self_pow₀ hT1 (by norm_num)
     linarith
   rw [presieveExponent, div_div, div_div, div_le_one (by positivity)]
   nlinarith
 
+include hc in
 /-- For large `x`, `D_j γ L ≥ 1` for every `j ≥ 1`. -/
-lemma eventually_one_le_dampedDensity_mul {c : ℝ} (hc : 0 < c) (Ch : ℝ) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_one_le_dampedDensity_mul       : ∀ᶠ x : ℝ in atTop,
     ∀ j : ℕ, 1 ≤ j → 1 ≤ dampedDensity x j * (presieveExponent c Ch x * Real.log x) := by
   obtain ⟨C₁, hC₁, hprod⟩ := exists_prod_one_sub_ge
   set Cγ := 4 * (8 * |Ch| + 11) / c
@@ -135,7 +139,7 @@ lemma eventually_one_le_dampedDensity_mul {c : ℝ} (hc : 0 < c) (Ch : ℝ) : �
   set T := logLog x
   set γ := presieveExponent c Ch x
   have hT1 : 1 ≤ T := by linarith [div_pos hCγ hC₁]
-  have hL0 : 0 < L := by linarith
+  
   have hlogY : Real.log (proxyCutoff x) = L / T ^ 25 := by rw [proxyCutoff, log_exp]
   have hPi : C₁ / (L / T ^ 25) ≤ ∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p) := by
     rw [← hlogY]; exact hprod _ hY2
@@ -159,6 +163,8 @@ lemma eventually_one_le_dampedDensity_mul {c : ℝ} (hc : 0 < c) (Ch : ℝ) : �
     _ ≤ dampedDensity x j * (γ * L) := by
         gcongr
         exact (dampedDensity_pos x hj).le
+
+end
 
 /-- For large `x`, `κ_j^j ∏_{p ∈ P} (1 - 1/p)⁻¹ ≤ 2` for every `j ≥ 1`. -/
 lemma eventually_candKappa_pow_mul_le : ∀ᶠ x : ℝ in atTop, ∀ j : ℕ, 1 ≤ j →
@@ -187,7 +193,7 @@ lemma eventually_candKappa_pow_mul_le : ∀ᶠ x : ℝ in atTop, ∀ j : ℕ, 1 
       _ ≤ Real.exp (-(L ^ (28 / 100 : ℝ))) * (1 / p) :=
           mul_le_mul_of_nonneg_right h2 (by positivity)
   have hL2 : L ^ (-(2 : ℝ)) = 1 / L ^ 2 := by
-    rw [rpow_neg hL0.le, show (2 : ℝ) = ((2 : ℕ) : ℝ) by norm_num, rpow_natCast, one_div]
+    simp_all
   rw [hL2] at hexp
   have hfin : 2 * ∑ p ∈ candidatePrimes x, (1 : ℝ) / p ^ 2 ≤ Real.log 2 := by
     have h1 : ∑ p ∈ candidatePrimes x, (1 : ℝ) / p ^ 2 ≤ 1 / L ^ 2 * (6 * L) := by
@@ -205,12 +211,16 @@ lemma eventually_candKappa_pow_mul_le : ∀ᶠ x : ℝ in atTop, ∀ j : ℕ, 1 
         exp_le_exp.2 hfin
     _ = 2 := exp_log (by norm_num)
 
+section
+variable {c : ℝ} (hc : 0 < c) (Ch κ : ℝ) (hκ : 1 < κ) {B₀ T a Cj x : ℝ} (hs : 0 ≤ logLogLog x) (hB₀ : 1 ≤ B₀) (hT : 1 ≤ T) (ha : 0 < a) {j : ℕ}
+
 /-- `L = e^T`. -/
-lemma exp_logLog {x : ℝ} (hx : 0 < Real.log x) : Real.exp (logLog x) = Real.log x := by
+lemma exp_logLog   (hx : 0 < Real.log x) : Real.exp (logLog x) = Real.log x := by
   rw [logLog, exp_log hx]
 
+include hκ in
 /-- `log X ≤ 2 L` for `X = ⌊κ x⌋ + 1` and large `x`. -/
-lemma eventually_log_le_two_mul (κ : ℝ) (hκ : 1 < κ) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_log_le_two_mul     : ∀ᶠ x : ℝ in atTop,
     Real.log (((⌊κ * x⌋₊ + 1 : ℕ) : ℝ)) ≤ 2 * Real.log x := by
   filter_upwards [eventually_ge_atTop (κ + 1)] with x hx
   have hx0 : 0 < x := by linarith
@@ -222,9 +232,10 @@ lemma eventually_log_le_two_mul (κ : ℝ) (hκ : 1 < κ) : ∀ᶠ x : ℝ in at
   calc Real.log (((⌊κ * x⌋₊ + 1 : ℕ) : ℝ)) ≤ Real.log (x ^ 2) := Real.log_le_log hX0 hX
     _ = 2 * Real.log x := by rw [Real.log_pow]; norm_num
 
+include hc hκ in
 /-- For large `x`, the relative error `δ = 8 ε K / Π (5/2)^n` at depth `R = ⌈6 T⌉` is at most
 `e^{-T}` for every `n ≤ T`. -/
-lemma eventually_delta_le {c : ℝ} (hc : 0 < c) (Ch κ : ℝ) (hκ : 1 < κ) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_delta_le         : ∀ᶠ x : ℝ in atTop,
     ∀ n : ℕ, (n : ℝ) ≤ logLog x →
       8 * (∑ u ∈ (primesIcc 2 (proxyCutoff x)).powersetCard (⌈6 * logLog x⌉₊ + 1),
           ∏ p ∈ u, (1 : ℝ) / p) *
@@ -250,7 +261,7 @@ lemma eventually_delta_le {c : ℝ} (hc : 0 < c) (Ch κ : ℝ) (hκ : 1 < κ) : 
   set R := ⌈6 * T⌉₊
   have hL0 : 0 < L := by linarith
   have hLT : Real.exp T = L := exp_logLog hL0
-  have hT0 : 0 < T := by linarith
+  
   have hlogY : Real.log (proxyCutoff x) = L / T ^ 25 := by rw [proxyCutoff, log_exp]
   -- `ε ≤ e^{8 (T + |C_S|)} / e^{12 T}`
   have hSsum : ∑ p ∈ S, (1 : ℝ) / p ≤ T + |CS| := by
@@ -275,8 +286,7 @@ lemma eventually_delta_le {c : ℝ} (hc : 0 < c) (Ch κ : ℝ) (hκ : 1 < κ) : 
       Real.exp (8 * (T + |CS|)) / Real.exp (12 * T) :=
     (sum_powersetCard_le_exp S R).trans (div_le_div₀ (exp_pos _).le
       (exp_le_exp.2 (by linarith)) (exp_pos _) h8)
-  have hε0 : 0 ≤ ∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p :=
-    sum_nonneg fun u _ => prod_nonneg fun p _ => by positivity
+  
   -- `K ≤ 2 C_γ T^{21}`
   have hγC' : 1 / γ ≤ Cγ * T ^ 21 := hγC
   have hK : Real.log (((⌊κ * x⌋₊ + 1 : ℕ) : ℝ)) / (γ * L) ≤ 2 * Cγ * T ^ 21 := by
@@ -286,8 +296,7 @@ lemma eventually_delta_le {c : ℝ} (hc : 0 < c) (Ch κ : ℝ) (hκ : 1 < κ) : 
       linarith
     have h2 : 2 * L * 1 ≤ 2 * L * (Cγ * T ^ 21 * γ) := mul_le_mul_of_nonneg_left h1 (by positivity)
     nlinarith
-  have hK0 : 0 ≤ Real.log (((⌊κ * x⌋₊ + 1 : ℕ) : ℝ)) / (γ * L) :=
-    div_nonneg (Real.log_natCast_nonneg _) (by positivity)
+  
   -- `1/Π ≤ L / C₁`
   have hPi : C₁ / (L / T ^ 25) ≤ ∏ p ∈ S, (1 - (1 : ℝ) / p) := by
     rw [← hlogY]; exact hprod _ hY2
@@ -342,28 +351,29 @@ lemma eventually_delta_le {c : ℝ} (hc : 0 < c) (Ch κ : ℝ) (hκ : 1 < κ) : 
         rw [← hLT, ← exp_add]
         ring_nf
 
+include hs in
 /-- `j ≤ J_c` gives `j ≤ (|C_j| + 1)(s + 1)`. -/
-lemma natCast_le_of_le_compositeCutoff {Cj x : ℝ} (hs : 0 ≤ logLogLog x) {j : ℕ}
+lemma natCast_le_of_le_compositeCutoff      
     (hj : j ≤ compositeCutoff Cj x) : (j : ℝ) ≤ (|Cj| + 1) * (logLogLog x + 1) := by
   have h1 : (j : ℝ) ≤ ⌈Cj * logLogLog x⌉₊ := by exact_mod_cast hj
   have h2 : (⌈Cj * logLogLog x⌉₊ : ℝ) ≤ max (Cj * logLogLog x) 0 + 1 :=
     (Nat.cast_le.2 (Nat.ceil_mono (le_max_left _ 0))).trans
       (Nat.ceil_lt_add_one (le_max_right _ _)).le
   have h3 : max (Cj * logLogLog x) 0 ≤ |Cj| * logLogLog x :=
-    max_le ((le_abs_self (Cj * logLogLog x)).trans (by rw [abs_mul, abs_of_nonneg hs]))
-      (by positivity)
+    (by bound)
   nlinarith [abs_nonneg Cj]
 
+include hB₀ hT ha in
 /-- The power bound: `(B₀ T^{46})^j ≤ e^{a T/4}` when `j ≤ (|C_j| + 1)(s + 1)` and
 `D (s + 1)³ ≤ T`. -/
-lemma pow_le_exp_of_cube {B₀ T a Cj : ℝ} (hB₀ : 1 ≤ B₀) (hT : 1 ≤ T) (ha : 0 < a) {j : ℕ}
+lemma pow_le_exp_of_cube          
     (hj : (j : ℝ) ≤ (|Cj| + 1) * (Real.log T + 1))
     (hcube : 4 * (|Cj| + 1) * (Real.log B₀ + 46) / a * (Real.log T + 1) ^ 3 ≤ T) :
     (B₀ * T ^ 46) ^ j ≤ Real.exp (a * T / 4) := by
   set s := Real.log T
   have hs0 : 0 ≤ s := Real.log_nonneg hT
   have hlB : 0 ≤ Real.log B₀ := Real.log_nonneg hB₀
-  have hT0 : 0 < T := by linarith
+  
   have hBT : Real.log (B₀ * T ^ 46) ≤ (Real.log B₀ + 46) * (s + 1) := by
     rw [Real.log_mul (by positivity) (by positivity), Real.log_pow]
     push_cast
@@ -380,7 +390,7 @@ lemma pow_le_exp_of_cube {B₀ T a Cj : ℝ} (hB₀ : 1 ≤ B₀) (hT : 1 ≤ T)
   have h4 : (|Cj| + 1) * (s + 1) * ((Real.log B₀ + 46) * (s + 1)) =
       a / 4 * (4 * (|Cj| + 1) * (Real.log B₀ + 46) / a * (s + 1) ^ 2) := by
     field_simp
-  have hD : 0 ≤ 4 * (|Cj| + 1) * (Real.log B₀ + 46) / a := by positivity
+  
   have h5 : a / 4 * (4 * (|Cj| + 1) * (Real.log B₀ + 46) / a * (s + 1) ^ 2) ≤
       a / 4 * (4 * (|Cj| + 1) * (Real.log B₀ + 46) / a * (s + 1) ^ 3) := by
     gcongr
@@ -388,9 +398,15 @@ lemma pow_le_exp_of_cube {B₀ T a Cj : ℝ} (hB₀ : 1 ≤ B₀) (hT : 1 ≤ T)
     mul_le_mul_of_nonneg_left hcube (by positivity)
   linarith
 
+end
+
+section
+variable {Pi Sr lX lY γ L T C₁ Cγ B₀ : ℝ} (hC₁ : 0 < C₁) (hγ0 : 0 < γ) (hL0 : 0 < L) (hT : 1 ≤ T) (hlY : lY = L / T ^ 25) (hPi : C₁ / lY ≤ Pi) (hSr : Sr ≤ (lX / lY) ^ 2 * Real.exp 1) (hSr0 : 0 ≤ Sr) (hlX0 : 0 ≤ lX) (hlX : lX ≤ 2 * L) (hγC : 1 / γ ≤ Cγ * T ^ 21) {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 1 < κ)
+
+include hγ0 hL0 hT hγC in
 /-- `2/(γ L) ≤ B₀ T^{46} / L` when `1/γ ≤ C_γ T^{21}` and `2 C_γ ≤ B₀`. -/
-lemma two_div_le_of {γ L T Cγ B₀ : ℝ} (hγ0 : 0 < γ) (hL0 : 0 < L) (hT : 1 ≤ T)
-    (hγC : 1 / γ ≤ Cγ * T ^ 21) (hB : 2 * Cγ ≤ B₀) : 2 / (γ * L) ≤ B₀ * T ^ 46 / L := by
+lemma two_div_le_of        
+      (hB : 2 * Cγ ≤ B₀) : 2 / (γ * L) ≤ B₀ * T ^ 46 / L := by
   have h1 : 2 / (γ * L) = 2 * (1 / γ) / L := by field_simp
   rw [h1]
   refine div_le_div_of_nonneg_right ?_ hL0.le
@@ -404,23 +420,18 @@ lemma two_div_le_of {γ L T Cγ B₀ : ℝ} (hγ0 : 0 < γ) (hL0 : 0 < L) (hT : 
     _ = 2 * Cγ * T ^ 21 := by ring
     _ ≤ B₀ * T ^ 21 := by gcongr
     _ ≤ B₀ * T ^ 46 := by
-        have : T ^ 21 ≤ T ^ 46 := pow_le_pow_right₀ hT (by norm_num)
-        have : 0 ≤ B₀ := by linarith
-        gcongr
+        gcongr <;> first | assumption | positivity | linarith
 
+include hC₁ hγ0 hL0 hT hlY hPi hSr hSr0 hlX0 hlX hγC in
 /-- The bound `H ≤ B₀ T^{46}` for one free factor, as real arithmetic. -/
-lemma free_factor_le_of {Pi Sr lX lY γ L T C₁ Cγ B₀ : ℝ} (hC₁ : 0 < C₁) (hγ0 : 0 < γ)
-    (hL0 : 0 < L) (hT : 1 ≤ T) (hlY : lY = L / T ^ 25) (hPi : C₁ / lY ≤ Pi)
-    (hSr : Sr ≤ (lX / lY) ^ 2 * Real.exp 1) (hSr0 : 0 ≤ Sr) (hlX0 : 0 ≤ lX) (hlX : lX ≤ 2 * L)
-    (hγC : 1 / γ ≤ Cγ * T ^ 21) (hB : 4 * Real.exp 1 * Cγ / C₁ ≤ B₀) :
+lemma free_factor_le_of      
+           
+           
+      (hB : 4 * Real.exp 1 * Cγ / C₁ ≤ B₀) :
     1 / (Pi * (γ * L)) * Sr ≤ B₀ * T ^ 46 := by
   have hlY0 : 0 < lY := by rw [hlY]; positivity
   have hPi0 : 0 < Pi := lt_of_lt_of_le (by positivity) hPi
-  have hCγ : 0 ≤ Cγ := by
-    have : 0 < 1 / γ := by positivity
-    by_contra h
-    push Not at h
-    nlinarith [pow_pos (show 0 < T by linarith) 21]
+  
   have h1 : 1 / (Pi * (γ * L)) ≤ lY / (C₁ * (γ * L)) := by
     rw [div_le_div_iff₀ (by positivity) (by positivity), one_mul]
     rw [div_le_iff₀ hlY0] at hPi
@@ -437,9 +448,10 @@ lemma free_factor_le_of {Pi Sr lX lY γ L T C₁ Cγ B₀ : ℝ} (hC₁ : 0 < C�
         ring
     _ ≤ B₀ * T ^ 46 := by gcongr
 
+include hc hκ in
 /-- For large `x`, the free core factors cost at most `e^{a T / 4}`:
 `(2/(γ L)) H^{j-1} ≤ e^{a T/4} / L` for `j ≤ J_c`. -/
-lemma eventually_free_factors_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 1 < κ) {a : ℝ}
+lemma eventually_free_factors_le          {a} 
     (ha : 0 < a) : ∀ᶠ x : ℝ in atTop, ∀ j' : ℕ, j' + 1 ≤ compositeCutoff Cj x →
       2 / (presieveExponent c Ch x * Real.log x) *
         (1 / ((∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) *
@@ -473,8 +485,7 @@ lemma eventually_free_factors_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 
     rw [div_le_one hlogY0, hlogY, le_div_iff₀ (by positivity)]
     have h1 : 2 * E * logLog x ^ 25 ≤ logLog x * logLog x ^ 25 :=
       mul_le_mul_of_nonneg_right (by linarith) (by positivity)
-    have h2 : logLog x * logLog x ^ 25 = logLog x ^ 26 := by ring
-    exact h1.trans (le_of_eq_of_le h2 hT26')
+    grind
   have hSr : ∑ a ∈ (Icc 1 (⌊κ * x⌋₊ + 1)).filter (IsYRough (proxyCutoff x)), (1 : ℝ) / a ≤
       (Real.log ((⌊κ * x⌋₊ + 1 : ℕ) : ℝ) / Real.log (proxyCutoff x)) ^ 2 * Real.exp 1 := by
     have heq : Real.exp (2 * (Real.log (Real.log ((⌊κ * x⌋₊ + 1 : ℕ) : ℝ) /
@@ -509,7 +520,7 @@ lemma eventually_free_factors_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 
 
 /-- The rounding bound as real arithmetic: with `M = L^{0.46}`, the rounding term is at most
 `X e^{-T} / L` once `16 C_γ ≤ T³`, `T + 16 ≤ M` and `6 C_γ T^{22} M ≤ L`. -/
-lemma err_le_of {N Cnt Xr A1 lX L T lY M γ Cγ R1 : ℝ} {k : ℕ} (hXr : 0 ≤ Xr) (hT : 1 ≤ T)
+lemma err_le_of {N Cnt Xr A1 lX L T lY M γ Cγ R1 : ℝ}  {k}  (hXr : 0 ≤ Xr) (hT : 1 ≤ T)
     (hLT : Real.exp T = L) (hN : N ≤ Real.exp (R1 * (lY + 1)))
     (hCnt0 : 0 ≤ Cnt) (hCnt : Cnt ≤ Real.exp (2 * T * (M + 1))) (hA1 : 0 < A1)
     (hA : Real.exp (γ * L) ≤ A1) (hlX : 0 ≤ lX) (hlog : (1 + lX) ^ k ≤ Real.exp (T * (T + 2)))
@@ -518,9 +529,9 @@ lemma err_le_of {N Cnt Xr A1 lX L T lY M γ Cγ R1 : ℝ} {k : ℕ} (hXr : 0 ≤
     (h3 : 6 * Cγ * T ^ 22 * M ≤ L) :
     N * (2 + 4 * Cnt) * (Xr / A1 * (1 + lX) ^ k) ≤ Xr * Real.exp (-T) / L := by
   have hL0 : 0 < L := by rw [← hLT]; exact exp_pos T
-  have hT0 : 0 < T := by linarith
+  
   have hM0 : 0 ≤ M := by linarith
-  have hlY0 : 0 ≤ lY := by rw [hlY]; positivity
+  
   -- `2 + 4 Cnt ≤ 6 e^{2T(M+1)}`
   have hC6 : 2 + 4 * Cnt ≤ 6 * Real.exp (2 * T * (M + 1)) := by
     have : 1 ≤ Real.exp (2 * T * (M + 1)) := one_le_exp (by positivity)
@@ -531,8 +542,8 @@ lemma err_le_of {N Cnt Xr A1 lX L T lY M γ Cγ R1 : ℝ} {k : ℕ} (hXr : 0 ≤
   have hprod : N * (2 + 4 * Cnt) * (Xr / A1 * (1 + lX) ^ k) ≤
       Real.exp (R1 * (lY + 1)) * (6 * Real.exp (2 * T * (M + 1))) *
         (Xr * Real.exp (-(γ * L)) * Real.exp (T * (T + 2))) := by
-    have hpow0 : 0 ≤ (1 + lX) ^ k := pow_nonneg (by linarith) k
-    have hA0 : 0 ≤ Xr / A1 := div_nonneg hXr hA1.le
+    
+    
     gcongr
   refine hprod.trans ?_
   -- the exponent
@@ -548,12 +559,10 @@ lemma err_le_of {N Cnt Xr A1 lX L T lY M γ Cγ R1 : ℝ} {k : ℕ} (hXr : 0 ≤
       rw [div_le_div_iff₀ (by positivity) (by positivity)]
       have : 16 * Cγ * T ^ 21 ≤ T ^ 24 := by
         have := mul_le_mul_of_nonneg_right h1 (show 0 ≤ T ^ 21 by positivity)
-        calc 16 * Cγ * T ^ 21 ≤ T ^ 3 * T ^ 21 := this
-          _ = T ^ 24 := by ring
+        grind
       nlinarith
     have e4 : 3 * T * M ≤ L / (2 * (Cγ * T ^ 21)) := by
       rw [le_div_iff₀ (by positivity)]
-      have : 6 * Cγ * T ^ 22 * M = 3 * T * M * (2 * (Cγ * T ^ 21)) := by ring
       linarith
     have e5 : L / (2 * (Cγ * T ^ 21)) + L / (2 * (Cγ * T ^ 21)) = L / (Cγ * T ^ 21) := by
       field_simp
@@ -585,9 +594,10 @@ lemma err_le_of {N Cnt Xr A1 lX L T lY M γ Cγ R1 : ℝ} {k : ℕ} (hXr : 0 ≤
   rw [mul_div_assoc]
   exact mul_le_mul_of_nonneg_left h6 hXr
 
+include hc hκ in
 /-- For large `x`, the rounding term of a family with at most `T` groups of at most
 `exp(L^{0.46})` primes each is at most `X e^{-T} / L`, for `j ≤ J_c`. -/
-lemma eventually_err_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 1 < κ) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_err_le         : ∀ᶠ x : ℝ in atTop,
     ∀ j' : ℕ, j' + 1 ≤ compositeCutoff Cj x → ∀ F : Finset (Finset ℕ),
       (F.card : ℝ) ≤ logLog x → (∀ g ∈ F, (g.card : ℝ) ≤ Real.exp (Real.log x ^ (46 / 100 : ℝ))) →
       (((primesIcc 2 (proxyCutoff x)).powerset.filter (·.card ≤ ⌈6 * logLog x⌉₊ + 1)).card : ℝ) *
@@ -608,7 +618,7 @@ lemma eventually_err_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 1 < κ) :
   obtain ⟨-, -, hxX, hYx, hY2⟩ := hsmall
   have hL0 : 0 < Real.log x := by linarith
   have hT1 : 1 ≤ logLog x := by linarith
-  have hT0 : 0 < logLog x := by linarith
+  
   have hLT : Real.exp (logLog x) = Real.log x := exp_logLog hL0
   have hs0 : 0 ≤ logLogLog x := Real.log_nonneg hT1
   have hlogY : Real.log (proxyCutoff x) = Real.log x / logLog x ^ 25 := by
@@ -672,7 +682,7 @@ lemma eventually_err_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 1 < κ) :
       nlinarith
     calc (1 + Real.log (((⌊κ * x⌋₊ + 1 : ℕ) : ℝ))) ^ (j' + 1)
         ≤ Real.exp (logLog x + 2) ^ (j' + 1) :=
-          pow_le_pow_left₀ (by linarith [Real.log_natCast_nonneg (⌊κ * x⌋₊ + 1)]) h1 _
+          (by gcongr <;> first | assumption | positivity | linarith)
       _ = Real.exp (((j' + 1 : ℕ) : ℝ) * (logLog x + 2)) := by rw [Real.exp_nat_mul]
       _ ≤ _ := exp_le_exp.2 (by nlinarith)
   have hR1 : (((⌈6 * logLog x⌉₊ + 1 : ℕ) : ℝ)) ≤ 8 * logLog x := by
@@ -717,5 +727,7 @@ lemma eventually_err_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 1 < κ) :
   exact key
 
 end
+
+
 
 end Erdos408

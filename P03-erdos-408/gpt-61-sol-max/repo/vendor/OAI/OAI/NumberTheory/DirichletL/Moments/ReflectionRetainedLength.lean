@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionLength
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedTruncation
@@ -7,21 +8,21 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedTruncation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 open Filter
 namespace SevenEighths.CenteredMomentReflectionRetainedLength
 open CenteredMomentComparisonReflection CenteredMomentReflectedTruncation
 open CenteredMomentSectorLocalization
 
-lemma retained_scale_lower (R Y : ℝ) (hY : 0<Y) (n : ℤ)
+lemma retained_scale_lower (R Y : ℝ) (hY : 0<Y)  n 
     (hn : n∈retainedAnnuli R Y hY) : 1≤dyadicScale n*Y := by
   obtain ⟨hr,q,hq,hne⟩ := (retainedAnnuli_mem R Y hY n).mp hn
   have hs := (dyadicWeight_support n hne).2.le
   have hh := mul_le_mul_of_nonneg_right (hq.trans hs) hY.le
   simpa only [inv_mul_cancel₀ hY.ne'] using hh
 
-theorem eventually_actual_retained_length (C box xi : ℝ) (hC : 0<C)
+theorem eventually_actual_retained_length  C box xi  (hC : 0<C)
     (hbox : 1≤box) (hxi : 0<xi) :
     ∀ᶠ Z : ℝ in atTop,1<Z ∧ ∀(M a Q R d h : ℝ),
       0<Q → 0<d → Q*R≤C*Z^M → d≤R → 1≤h →
@@ -47,9 +48,7 @@ theorem eventually_actual_retained_length (C box xi : ℝ) (hC : 0<C)
   have hraw := reflected_scale_bound Z M a xi C Q R d h (dyadicScale n)
     hZ hC.le hQ.le hd.le (dyadicScale_pos n).le hcap hdR hh hs
   have hb : 1≤box*(dyadicScale n*(Q*d/(Z^a*h))) := by
-    calc
-      (1:ℝ)=1*1 :=by ring
-      _≤_ :=mul_le_mul hbox hlo zero_le_one (by linarith)
+    bound
   refine ⟨hlo,Real.logb_nonneg hZ hb,?_⟩
   apply (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le hb)).mpr
   calc
@@ -60,6 +59,6 @@ theorem eventually_actual_retained_length (C box xi : ℝ) (hC : 0<C)
 
 end SevenEighths.CenteredMomentReflectionRetainedLength
 
-end
+
 
 end OAI

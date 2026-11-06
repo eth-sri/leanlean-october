@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountCrossing
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCount
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCount
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckeDetectorRowCount
 
 theorem count_bound_of_source_branches (B C U δ x Δ t r m ε ν γ : ℝ)
@@ -37,7 +38,7 @@ theorem count_bound_of_source_branches (B C U δ x Δ t r m ε ν γ : ℝ)
     dsimp [target]
     have hcγ : (5/6-δ)*γ≤γ := by nlinarith [mul_nonneg hδ hγ]
     nlinarith
-  have hr1' : r<1 := lt_of_not_ge hr1
+  
   have hmax : max 1 ((1+5*r)/6)=1 := max_eq_left (by linarith)
   rw [hmax] at hI0
   by_cases hrc : crossing x t≤r
@@ -47,10 +48,7 @@ theorem count_bound_of_source_branches (B C U δ x Δ t r m ε ν γ : ℝ)
       have hv : 2*δ*ν≤6*ν := by nlinarith [mul_nonneg (sub_nonneg.mpr hδ') hν]
       dsimp [target]
       linarith
-    · apply promote _ (hI (hcross.1.trans hrc) hr1' (lt_of_not_ge hcap))
-      have hs := hchoose.2 hrc
-      dsimp [target]
-      linarith
+    grind
   have hrc' : r≤crossing x t := (lt_of_not_ge hrc).le
   by_cases hm : 1/2≤m
   · apply promote _ hP0
@@ -77,6 +75,6 @@ theorem count_bound_of_source_branches (B C U δ x Δ t r m ε ν γ : ℝ)
 
 end SevenEighths.HeckeDetectorRowCount
 
-end
+
 
 end OAI

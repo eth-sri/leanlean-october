@@ -12,7 +12,7 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
@@ -21,10 +21,10 @@ open CanonicalCoefficientClass ConcreteTraceCRT InverseInitialRayAttachment Inve
 open InverseInitialOverlapFourier InverseInitialConjugateEnergy InverseInitialQuotientGeometry
 open InverseInitialEnergyCallerWindow InverseInitialPoissonBridge InverseInitialPhysicalMeasure
 open InverseInitialMarkedAssignedGeometry DetectorDictionaryInverseRawConjugateGates
-local notation "O"=>HeckeFamily.O
+
 
 private theorem assigned_admissible {ι:Type}[Fintype ι][DecidableEq ι]
-    (L:ι→Finset (Ideal O))(hp:∀i,∀P∈L i,Prime P)
+    (L:ι→Finset (Ideal HeckeFamily.O))(hp:∀i,∀P∈L i,Prime P)
     (hs:∀i,∀P∈L i,Supported P)
     (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
     (J:Finset ι)(x:Assigned L J):Admissible (assignedIdeal L J x) := by
@@ -35,15 +35,15 @@ private theorem assigned_admissible {ι:Type}[Fintype ι][DecidableEq ι]
     (fun he=>hij (Subtype.ext he))
 
 theorem original_source_energy
-    (W:ℝ→ℂ)(ao bo:ℝ)(hao:0<ao)(hab:ao≤bo)
+     W (ao bo:ℝ)(hao:0<ao)(hab:ao≤bo)
     (hsW:Function.support W⊆Set.Icc ao bo)(hW:ContDiff ℝ ∞ W)
     (gap eps π eta τ loss:ℝ)(hgap:0<gap)(heps:0<eps)(hπ:0<π)
     (heta:0<eta)(hetaone:eta≤1)(hetagap:eta≤gap/50)
-    (hτ:0<τ)(hτgap:τ≤gap/50)(hloss:0<loss)(K:ℕ):
+    (hτ:0<τ)(hτgap:τ≤gap/50)(hloss:0<loss) K :
     ∃degree:ℕ,∀q:ℕ,q≠0→∃C U₀:ℝ,0<C ∧ 1<U₀ ∧
     ∀U:ℝ,U₀≤U→(2:ℝ)^K≤U^eta→
     ∀{ι:Type}[Fintype ι][DecidableEq ι],Fintype.card ι≤K→
-    ∀(L:ι→Finset (Ideal O))(ell:ι→ℝ)(coeff:ι→Ideal O→ℂ),
+    ∀(L:ι→Finset (Ideal HeckeFamily.O))(ell:ι→ℝ)(coeff:ι→Ideal HeckeFamily.O→ℂ),
       (∀i,0≤ell i)→(∀i,∀P∈L i,Prime P)→
       (∀i,∀P∈L i,Supported P)→
       (((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)→
@@ -53,7 +53,7 @@ theorem original_source_energy
     ∀(primeW:ι→ℝ→ℂ),
       (∀i,Function.support (primeW i)⊆Set.Icc (1:ℝ) 2)→
       (∀i,∀P∈L i,primeW i ((P.absNorm:ℝ)/U^(ell i))≠0)→
-    ∀χ:Ideal O→*ℂ,(∀I,‖χ I‖≤1)→
+    ∀χ:Ideal HeckeFamily.O→*ℂ,(∀I,‖χ I‖≤1)→
       FactorsModulo (fixedBaseConductor q) (elementCharacter (conjugateIdealCharacter χ))→
       (∀I,¬InverseInitialExcludedPool.outside (reflectionExcludedPrimes q) I→
         conjugateIdealCharacter χ I=0)→
@@ -61,7 +61,7 @@ theorem original_source_energy
       (∀J:Finset ι,-2≤r+(∑i,ell i)-2*(∑i∈J,ell i))→
       r+2*(∑i,ell i)≤m-2*gap→2*r+8*(∑i,ell i)≤3*m-2*gap→
       r+(∑i,ell i)+7*eta≤2→
-    ∀rows:Finset O,(∀u∈rows,‖eisEmbedding u‖^2≤U^m)→∀θ:ℝ,
+    ∀rows:Finset HeckeFamily.O,(∀u∈rows,‖eisEmbedding u‖^2≤U^m)→∀θ:ℝ,
       (∑u∈rows,‖∑x:Tuple L,(∏i,coeff i (x i).val)*
         originalTotalPolynomial (originalSource U r bo) (∏i,(x i).val) χ (fun _=>1)
           (childLogTest W θ) U r (∑i,ell i) u‖^2)≤
@@ -87,7 +87,7 @@ theorem original_source_energy
   have hUone:1<U:=hU₀.trans_le hU
   have hUpos:0<U:=zero_lt_one.trans hUone
   have hscale (i:ι):0<U^(ell i):=Real.rpow_pos_of_pos hUpos _
-  have hnorm (i:ι)(P:Ideal O)(hP:P∈L i):(P.absNorm:ℝ)≤2*U^(ell i):=
+  have hnorm (i:ι)(P:Ideal HeckeFamily.O)(hP:P∈L i):(P.absNorm:ℝ)≤2*U^(ell i):=
     (div_le_iff₀ (hscale i)).mp (hratio i P hP).2
   let E:ℝ:=C*U^(m+15*eta+π+eps+loss)*((1+‖θ‖)^degree)^2
   have hE:0≤E:=by dsimp [E];positivity
@@ -138,6 +138,6 @@ theorem original_source_energy
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
+
 
 end OAI

@@ -1,4 +1,6 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
 
 public import OAI.NumberTheory.DirichletL.Inversion.SecondProfileUniform
 
@@ -15,44 +17,52 @@ open SevenEighths.InverseAmbientProfileTower
 namespace SevenEighths.InverseMomentFirstProfileUniform
 
 def rooted (g : 𝓢(ℝ, ℂ)) (M a : ℝ)
-    (hg : Function.support g ⊆ Set.Icc (-M) M) : 𝓢(ℝ, ℂ) :=
+    (hg : Function.support g ⊆ Set.Icc (-M) M)  :=
   InverseClippingProfiles.rootSchwartz g M 0 1 0 a 0 zero_lt_one (by simp) hg
 
-@[simp] theorem rooted_apply (g : 𝓢(ℝ, ℂ)) (M a : ℝ)
-    (hg : Function.support g ⊆ Set.Icc (-M) M) (y : ℝ) :
-    rooted g M a hg y = (Real.exp (a*y) : ℂ)*g y := by
-  simp [rooted, InverseClippingProfiles.rootedWindow, InverseClippingProfiles.logWindow]
+section
+variable (g : 𝓢(ℝ, ℂ)) (M a : ℝ)
 
-theorem rooted_support (g : 𝓢(ℝ, ℂ)) (M a : ℝ)
-    (hg : Function.support g ⊆ Set.Icc (-M) M) :
+@[simp] theorem rooted_apply    
+     hg   y  :
+    rooted g M a hg y = (Real.exp (a*y) : ℂ)*g y := by
+  simp [rooted, InverseClippingProfiles.rootSchwartz, InverseClippingProfiles.rootedWindow, InverseClippingProfiles.logWindow]
+
+theorem rooted_support    
+     hg  :
     Function.support (rooted g M a hg) ⊆ Set.Icc (-M) M := by
   intro y hy
   exact hg (by simpa using hy)
 
-def translated (g : 𝓢(ℝ, ℂ)) (ρ : ℝ) : 𝓢(ℝ, ℂ) :=
+end
+
+def translated (g : 𝓢(ℝ, ℂ)) (ρ : ℝ)  :=
   SchwartzMap.compSubConstCLM ℂ (-ρ) g
 
-@[simp] theorem translated_apply (g : 𝓢(ℝ, ℂ)) (ρ y : ℝ) :
+@[simp] theorem translated_apply  g   ρ y  :
     translated g ρ y = g (y+ρ) := by simp [translated]
 
-theorem fourier_translated (g : 𝓢(ℝ, ℂ)) (ρ t : ℝ) :
+theorem fourier_translated  g   ρ t  :
     (𝓕 (translated g ρ)) t = logPhase t ρ * (𝓕 g) t := by
   rw [SchwartzMap.fourier_coe]
   have he : (translated g ρ : ℝ → ℂ) = fun y => g (y+ρ) := by ext y; simp
   rw [he, InverseClippingProfiles.fourier_translate, ← SchwartzMap.fourier_coe]
 
-def normalization (ρ : Fin 9 → ℝ) (c₁ c₂ L : ℝ) : ℝ :=
+def normalization (ρ : Fin 9 → ℝ) (c₁ c₂ L : ℝ)  :=
   Real.exp (-(9/2:ℝ)*L - ∑ i, InverseClippingProfiles.firstBalancedSlope i*ρ i +
     (Real.log c₁+Real.log c₂)/2)
 
 def density (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ))
-    (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ) (p : Ambient (Fin 9)) : ℂ :=
+    (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ) (p : Ambient (Fin 9))  :=
   (normalization ρ c₁ c₂ L : ℂ) *
     fullProfileDensity (fun i => translated (g i) (ρ i))
       (𝓕 (clippedTwist g₁ c₁ θ₁)) (𝓕 (clippedTwist g₂ c₂ θ₂)) b₃ p
 
-theorem density_formula (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ))
-    (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ) (p : Ambient (Fin 9)) :
+section
+variable (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ)) (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ)
+
+theorem density_formula    
+         p  :
     density g g₁ g₂ b₃ ρ c₁ c₂ θ₁ θ₂ L p =
       (normalization ρ c₁ c₂ L : ℂ) *
         (sourceDensity g₁ c₁ θ₁ p.1.1 * (sourceDensity g₂ c₂ θ₂ p.1.2.1 * b₃ p.1.2.2)) *
@@ -61,16 +71,10 @@ theorem density_formula (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(�
     fourier_translated, fourier_clippedTwist]
   ring
 
-private theorem fourier_twist (g : 𝓢(ℝ, ℂ)) (θ t : ℝ) :
-    (𝓕 (frequencyTwist g θ)) t = (𝓕 g) (t-θ) := by
-  rw [SchwartzMap.fourier_coe]
-  have he : (frequencyTwist g θ : ℝ → ℂ) = fun y => logPhase θ y * g y := by
-    ext y
-    exact frequencyTwist_apply g θ y
-  rw [he, InverseClippingProfiles.fourier_phase_shift, ← SchwartzMap.fourier_coe]
+private alias fourier_twist := _root_.SharedProofs.fourier_twist
 
-theorem density_norm (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ))
-    (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ) (p : Ambient (Fin 9)) :
+theorem density_norm    
+         p  :
     ‖density g g₁ g₂ b₃ ρ c₁ c₂ θ₁ θ₂ L p‖ = normalization ρ c₁ c₂ L *
       ‖twistedFullDensity g g₁ g₂ b₃ (θ₁,θ₂) p‖ := by
   rw [density_formula]
@@ -80,8 +84,8 @@ theorem density_norm (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, 
     tripleCoefficient, coordinateDensity, fourier_twist]
   ring
 
-theorem normalization_bound (B : Fin 9 → ℝ) (b : ℝ)
-    (ρ : Fin 9 → ℝ) (c₁ c₂ L : ℝ) (hρ : ∀ i, |ρ i| ≤ B i)
+theorem normalization_bound (B : Fin 9 → ℝ)  b 
+     ρ   c₁ c₂ L  (hρ : ∀ i, |ρ i| ≤ B i)
     (hc₁ : 0 < c₁) (hc₂ : 0 < c₂) (hc₁b : c₁ ≤ b) (hc₂b : c₂ ≤ b) (hL : 0 ≤ L) :
     normalization ρ c₁ c₂ L ≤
       Real.exp ((∑ i, |InverseClippingProfiles.firstBalancedSlope i| *B i)+Real.log b) := by
@@ -100,8 +104,8 @@ theorem normalization_bound (B : Fin 9 → ℝ) (b : ℝ)
   have h2 := Real.log_le_log hc₂ hc₂b
   linarith
 
-theorem density_weighted_integrable (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ))
-    (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ) (J : ℕ) :
+theorem density_weighted_integrable    
+         J  :
     Integrable (fun p : Ambient (Fin 9) => ambientWeight J p *
       ‖density g g₁ g₂ b₃ ρ c₁ c₂ θ₁ θ₂ L p‖) := by
   simp_rw [density_norm]
@@ -113,7 +117,7 @@ theorem density_weighted_integrable (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ b�
   ring
 
 private theorem radial_common_box (Φ : 𝓢(ℝ, ℂ)) (M : Fin 9 → ℝ)
-    (hM : ∀ i, 0 ≤ M i) (A J : ℕ) :
+    (hM : ∀ i, 0 ≤ M i)  A J  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ R : ℝ, 0 < R → ∃ b₃ : 𝓢(ℝ, ℂ),
       (∀ (V : Fin 9 → ℝ → ℂ), (∀ i y, V i y ≠ 0 → |y| ≤ M i) →
         ∀ y : Fin 9 → ℝ,
@@ -146,14 +150,12 @@ private theorem radial_common_box (Φ : 𝓢(ℝ, ℂ)) (M : Fin 9 → ℝ)
 
 theorem translated_box (g : 𝓢(ℝ, ℂ)) (M B ρ : ℝ)
     (hg : Function.support g ⊆ Set.Icc (-M) M) (hρ : |ρ| ≤ B)
-    {y : ℝ} (hy : translated g ρ y ≠ 0) : |y| ≤ M+B := by
+     {y}  (hy : translated g ρ y ≠ 0) : |y| ≤ M+B := by
   have h := hg (show g (y+ρ) ≠ 0 from by simpa only [translated_apply] using hy)
-  have hr := abs_le.mp hρ
-  apply abs_le.mpr
-  constructor <;> linarith [h.1,h.2,hr.1,hr.2]
+  grind
 
-theorem density_weighted_integral (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ))
-    (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ) (J : ℕ) :
+theorem density_weighted_integral    
+         J  :
     (∫ p : Ambient (Fin 9), ambientWeight J p *
       ‖density g g₁ g₂ b₃ ρ c₁ c₂ θ₁ θ₂ L p‖) = normalization ρ c₁ c₂ L *
         (∫ t : ℝ, (1+‖t‖)^J * ‖(𝓕 (frequencyTwist g₁ θ₁)) t‖) *
@@ -175,8 +177,10 @@ theorem density_weighted_integral (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃
   rw [tripleCoefficient_weighted_integral]
   ring
 
+end
+
 def profile (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, ℂ))
-    (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ R L : ℝ) (y : Fin 9 → ℝ) : ℂ :=
+    (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ R L : ℝ) (y : Fin 9 → ℝ)  :=
   (normalization ρ c₁ c₂ L : ℂ) *
     ((∏ i, translated (g i) (ρ i) (y i)) *
       clippedTwist g₁ c₁ θ₁ (∑ i, firstLeftSlope i*y i) *
@@ -184,9 +188,9 @@ def profile (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, ℂ))
       paperRadialFourier Φ (R*Real.exp (∑ i, firstKernelSlope i*y i)))
 
 theorem common_measure (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, ℂ))
-    (M B : Fin 9 → ℝ) (b : ℝ)
+    (M B : Fin 9 → ℝ)  b 
     (hM : ∀ i, 0 ≤ M i) (hB : ∀ i, 0 ≤ B i)
-    (hg : ∀ i, Function.support (g i) ⊆ Set.Icc (-M i) (M i)) (A J : ℕ) :
+    (hg : ∀ i, Function.support (g i) ⊆ Set.Icc (-M i) (M i))  A J  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ R : ℝ, 0 < R → ∃ b₃ : 𝓢(ℝ, ℂ),
       ∀ (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ),
       (∀ i, |ρ i| ≤ B i) → 0 < c₁ → 0 < c₂ → c₁ ≤ b → c₂ ≤ b → 0 ≤ L →
@@ -239,7 +243,7 @@ theorem common_measure (g : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, 
     convert hh using 1 <;>
       (dsimp only [InverseClippingProfiles.momentOrder, E, D]; ring)
 
-theorem balanced_exponential_identity (ρ y : Fin 9 → ℝ) (c₁ c₂ L : ℝ) :
+theorem balanced_exponential_identity  ρ y   c₁ c₂ L  :
     normalization ρ c₁ c₂ L *
       (∏ i, Real.exp (InverseClippingProfiles.firstBalancedSlope i*(y i+ρ i))) *
       Real.exp (-(1/2:ℝ)*((∑ i, firstLeftSlope i*y i)+Real.log c₁)) *
@@ -253,16 +257,19 @@ theorem balanced_exponential_identity (ρ y : Fin 9 → ℝ) (c₁ c₂ L : ℝ)
     Fin.sum_univ_succ]
   ring
 
-def positiveSource (g : 𝓢(ℝ, ℂ)) (c θ x : ℝ) : ℂ :=
+def positiveSource (g : 𝓢(ℝ, ℂ)) (c θ x : ℝ)  :=
   logPhase θ (Real.log x)*g (Real.log x+Real.log c)
 
+section
+variable (U : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, ℂ))
+
 theorem balanced_profile_identity
-    (U : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, ℂ))
+       
     (M : Fin 9 → ℝ) (m₁ m₂ : ℝ)
     (hU : ∀ i, Function.support (U i) ⊆ Set.Icc (-M i) (M i))
-    (h₁ : Function.support g₁ ⊆ Set.Icc (-m₁) m₁)
-    (h₂ : Function.support g₂ ⊆ Set.Icc (-m₂) m₂)
-    (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ R L : ℝ) (y : Fin 9 → ℝ) :
+     h₁ 
+     h₂ 
+     ρ   c₁ c₂ θ₁ θ₂ R L   y  :
     profile (fun i => rooted (U i) (M i) (InverseClippingProfiles.firstBalancedSlope i) (hU i))
       (rooted g₁ m₁ (-(1/2:ℝ)) h₁) (rooted g₂ m₂ (-(1/2:ℝ)) h₂)
       Φ ρ c₁ c₂ θ₁ θ₂ R L y =
@@ -283,12 +290,12 @@ theorem balanced_profile_identity
     paperRadialFourier Φ (R*Real.exp (∑ i, firstKernelSlope i*y i)) * he
 
 theorem first_profile_common_measure
-    (U : Fin 9 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, ℂ))
+       
     (M B : Fin 9 → ℝ) (m₁ m₂ b : ℝ)
     (hM : ∀ i, 0 ≤ M i) (hB : ∀ i, 0 ≤ B i)
     (hU : ∀ i, Function.support (U i) ⊆ Set.Icc (-M i) (M i))
-    (h₁ : Function.support g₁ ⊆ Set.Icc (-m₁) m₁)
-    (h₂ : Function.support g₂ ⊆ Set.Icc (-m₂) m₂) (A J : ℕ) :
+     h₁ 
+     h₂   A J  :
     let G := fun i => rooted (U i) (M i) (InverseClippingProfiles.firstBalancedSlope i) (hU i)
     let f₁ := rooted g₁ m₁ (-(1/2:ℝ)) h₁
     let f₂ := rooted g₂ m₂ (-(1/2:ℝ)) h₂
@@ -323,6 +330,8 @@ theorem first_profile_common_measure
   intro y
   rw [← balanced_profile_identity U g₁ g₂ Φ M m₁ m₂ hU h₁ h₂]
   exact h.1 y
+
+end
 
 end SevenEighths.InverseMomentFirstProfileUniform
 

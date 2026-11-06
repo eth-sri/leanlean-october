@@ -10,18 +10,18 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 variable {Nlevel a c₀ : Eis} {mode : Bool}
 
 theorem original_low_sector_literal_energy
-    (ε : ℝ) (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     ε  (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c₀ mode)) (hc₀ : c₀≠0)
     (hNlevel : (9:Eis)*c₀∣Nlevel)
     (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c₀-1)
-    (hac : IsCoprime a c₀) (ρ : ℝ) (hρ : 0<ρ) (η : ℝ) (hηpos : 0<η) :
+    (hac : IsCoprime a c₀) (ρ : ℝ) (hρ : 0<ρ)  η  (hηpos : 0<η) :
     ∃ (degree : ℕ) (C Z₀ : ℝ), 0<C ∧ 1<Z₀ ∧
     ∀ {σ : Type v} [Fintype σ], ∀ (J I F Q Q₀ : Ideal Eis) (_hJ : J≠0) (_hI : I≠0) (_hQ : Q≠0),
       rowPowerfulPart J=rowPowerfulPart I → rowMaskPart J Q=rowMaskPart I Q →
@@ -103,11 +103,10 @@ theorem original_low_sector_literal_energy
           (ramifiedWidth Z i.1) (terminalDualWidth Z H za Nstar G.ideal j e)+
           ε*(H+Real.logb Z (((2:ℝ)^i.2.2)/Ideal.absNorm (frozenExtracted G j e 1))+
             Real.logb Z (((2:ℝ)^i.2.1)/Ideal.absNorm (frozenExtracted G j e 2))+za)+η/2))*(C₀*(1+‖θ‖)^degree)^2 := by dsimp [Kc,G,j];ring
-    _ ≤ Kc*(Cb*(Ideal.absNorm (∏ b,G.ideal b):ℝ)^ρ*Z^((5/6-2*d)+200*η+π-O₀/2))*(C₀*(1+‖θ‖)^degree)^2 := by
-      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb hKc.le) (sq_nonneg _)
+    _ ≤ Kc*(Cb*(Ideal.absNorm (∏ b,G.ideal b):ℝ)^ρ*Z^((5/6-2*d)+200*η+π-O₀/2))*(C₀*(1+‖θ‖)^degree)^2 := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb hKc.le) (sq_nonneg _)
     _ = (Kc*Cb*C₀^2)*(1+‖θ‖)^(degree*2)*(Ideal.absNorm (∏ b,G.ideal b):ℝ)^ρ*Z^((5/6-2*d)+200*η+π-O₀/2) := by rw [mul_pow,←pow_mul];ring
     _ ≤ _ := by gcongr;linarith
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

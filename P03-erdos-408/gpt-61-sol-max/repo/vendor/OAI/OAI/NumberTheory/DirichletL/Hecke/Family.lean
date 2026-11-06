@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.Theta
 public import Mathlib.NumberTheory.NumberField.Cyclotomic.Three
@@ -19,9 +20,9 @@ abbrev O := NumberField.RingOfIntegers K
 
 instance : IsCyclotomicExtension {3} ℚ K := CyclotomicField.isCyclotomicExtension 3 ℚ
 
-def omega : O := (IsCyclotomicExtension.zeta_spec 3 ℚ K).toInteger
+def omega  := (IsCyclotomicExtension.zeta_spec 3 ℚ K).toInteger
 
-def coordinateElement (x y : ℤ) : O := (x : O) + (y : O) * omega
+def coordinateElement (x y : ℤ)  := (x : O) + (y : O) * omega
 
 structure Character where
   modulus : Ideal O
@@ -32,7 +33,7 @@ structure Character where
   period_pos : 0 < period
   period_mem : (period : O) ∈ modulus
 
-def Character.ofResidue (M : Ideal O) (hM : M ≠ ⊥)
+def Character.ofResidue (M ) (hM : M ≠ ⊥)
     (χ : MulChar (O ⧸ M) ℂ)
     (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk M (u : O)) = 1) : Character := by
   letI : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient hM
@@ -45,37 +46,38 @@ def Character.ofResidue (M : Ideal O) (hM : M ≠ ⊥)
     period := Fintype.card (O ⧸ M)
     period_pos := Fintype.card_pos
     period_mem := Ideal.Quotient.eq_zero_iff_mem.mp (by
-      simpa only [map_natCast] using Nat.cast_card_eq_zero (O ⧸ M)) }
+      simp_all) }
 
 instance (χ : Character) : NeZero χ.period := ⟨Nat.ne_of_gt χ.period_pos⟩
 
-def elementCoeff (χ : Character) (z : O) : ℂ := χ.residue (Ideal.Quotient.mk χ.modulus z)
+def elementCoeff (χ : Character) (z : O)  := χ.residue (Ideal.Quotient.mk χ.modulus z)
 
-def coefficients (χ : Character) (a : Fin χ.period × Fin χ.period) : ℂ :=
+def coefficients (χ : Character) (a : Fin χ.period × Fin χ.period)  :=
   elementCoeff χ (coordinateElement a.1 a.2)
 
-@[simp] theorem elementCoeff_one (χ : Character) : elementCoeff χ 1 = 1 := by
+section
+variable (χ : Character)
+
+@[simp] theorem elementCoeff_one   : elementCoeff χ 1 = 1 := by
   simp [elementCoeff]
 
-theorem elementCoeff_mul (χ : Character) (z w : O) :
+theorem elementCoeff_mul    z w  :
     elementCoeff χ (z * w) = elementCoeff χ z * elementCoeff χ w := by
   simp [elementCoeff, map_mul]
 
-theorem elementCoeff_unit_mul (χ : Character) (u : Oˣ) (z : O) :
+theorem elementCoeff_unit_mul   (u : Oˣ)  z  :
     elementCoeff χ ((u : O) * z) = elementCoeff χ z := by
-  rw [elementCoeff_mul]
-  have hu : elementCoeff χ (u : O) = 1 := χ.unit_trivial u
-  rw [hu, one_mul]
+  simp_all [elementCoeff, O, OAI.SevenEighths.HeckeFamily.Character.unit_trivial]
 
-theorem quotient_period (χ : Character) :
+theorem quotient_period   :
     Ideal.Quotient.mk χ.modulus (χ.period : O) = 0 :=
   Ideal.Quotient.eq_zero_iff_mem.mpr χ.period_mem
 
-theorem elementCoeff_add_period_mul (χ : Character) (z w : O) :
+theorem elementCoeff_add_period_mul    z w  :
     elementCoeff χ (z + (χ.period : O) * w) = elementCoeff χ z := by
   simp [elementCoeff, map_add, map_mul, quotient_period χ]
 
-theorem periodicCoeff_eq_elementCoeff (χ : Character) (n : ℤ × ℤ) :
+theorem periodicCoeff_eq_elementCoeff    n  :
     HeckeTheta.periodicCoeff (coefficients χ) n =
       elementCoeff χ (coordinateElement n.1 n.2) := by
   obtain ⟨p, rfl⟩ := (HeckeTheta.residueEquiv χ.period).symm.surjective n
@@ -94,10 +96,12 @@ theorem periodicCoeff_eq_elementCoeff (χ : Character) (n : ℤ × ℤ) :
 
 def continuedLattice (χ : Character) : ℂ → ℂ := HeckeTheta.latticeL (coefficients χ)
 
-theorem continuedLattice_differentiableAt (χ : Character) {s : ℂ}
+theorem continuedLattice_differentiableAt    {s} 
     (hs₀ : s ≠ 0) (hs₁ : s ≠ 1 ∨ ∑ a, (coefficients χ) a = 0) :
     DifferentiableAt ℂ (continuedLattice χ) s :=
   HeckeTheta.latticeL_differentiableAt (coefficients χ) hs₀ hs₁
+
+end
 
 end SevenEighths.HeckeFamily
 

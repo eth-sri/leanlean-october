@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 public import Mathlib.Data.Fintype.BigOperators
@@ -21,19 +22,26 @@ open Finset
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
+section
+variable {f : ι → ℝ} (h0 : ∀ e, 0 ≤ f e) (h1 : ∀ e, f e ≤ 1)
+
+include h0 h1 in
 /-- A product of factors in `[0, 1]` is at most any one of them. -/
-theorem prod_le_of_mem_of_le_one {f : ι → ℝ} (h0 : ∀ e, 0 ≤ f e) (h1 : ∀ e, f e ≤ 1) (c : ι) :
+theorem prod_le_of_mem_of_le_one       (c : ι) :
     ∏ e, f e ≤ f c := by
   rw [← mul_prod_erase univ f (mem_univ c)]
   exact mul_le_of_le_one_right (h0 c) (prod_le_one₀ (fun e _ => h0 e) fun e _ => h1 e)
 
+include h0 h1 in
 /-- A product of factors in `[0, 1]` is at most the product of any two of them. -/
-theorem prod_le_mul_of_le_one {f : ι → ℝ} (h0 : ∀ e, 0 ≤ f e) (h1 : ∀ e, f e ≤ 1) {c c' : ι}
+theorem prod_le_mul_of_le_one       {c c' : ι}
     (hcc : c ≠ c') : ∏ e, f e ≤ f c * f c' := by
   rw [← mul_prod_erase univ f (mem_univ c),
     ← mul_prod_erase _ f (mem_erase.2 ⟨hcc.symm, mem_univ c'⟩), ← mul_assoc]
   exact mul_le_of_le_one_right (mul_nonneg (h0 c) (h0 c'))
     (prod_le_one₀ (fun e _ => h0 e) fun e _ => h1 e)
+
+end
 
 variable {S : ι → Finset ℕ} {w : ι → ℕ → ℝ}
 
@@ -52,7 +60,7 @@ theorem sum_piFinset_prod_ite (T : ι → ℕ → Prop) [∀ e, DecidablePred (T
 omit [Fintype ι] [DecidableEq ι] in
 /-- A coordinatewise restricted mass lies in `[0, 1]`. -/
 theorem sum_ite_mem_Icc (hw0 : ∀ e, ∀ y ∈ S e, 0 ≤ w e y) (hw : ∀ e, ∑ y ∈ S e, w e y = 1)
-    (T : ι → ℕ → Prop) [∀ e, DecidablePred (T e)] (e : ι) :
+    (T : ι → ℕ → Prop) [∀ e, DecidablePred (T e)]  e  :
     0 ≤ ∑ y ∈ S e, (if T e y then w e y else 0) ∧
       ∑ y ∈ S e, (if T e y then w e y else 0) ≤ 1 := by
   refine ⟨sum_nonneg fun y hy => ?_, (hw e).symm ▸ sum_le_sum fun y hy => ?_⟩
@@ -63,20 +71,21 @@ theorem sum_ite_mem_Icc (hw0 : ∀ e, ∀ y ∈ S e, 0 ≤ w e y) (hw : ∀ e, �
     · exact le_rfl
     · exact hw0 e y hy
 
+section
+variable (hw0 : ∀ e, ∀ y ∈ S e, 0 ≤ w e y) (hw : ∀ e, ∑ y ∈ S e, w e y = 1) {ε : ℝ} (hε0 : 0 ≤ ε) (hε : ∀ e, ∀ y ∈ S e, w e y ≤ ε)
+
+include hw0 hw hε0 hε in
 /-- A prescribed value at one coordinate has probability at most `ε`. -/
-theorem sum_piFinset_ite_eq_le (hw0 : ∀ e, ∀ y ∈ S e, 0 ≤ w e y)
-    (hw : ∀ e, ∑ y ∈ S e, w e y = 1) {ε : ℝ} (hε0 : 0 ≤ ε) (hε : ∀ e, ∀ y ∈ S e, w e y ≤ ε)
-    (c : ι) (v : ℕ) :
+theorem sum_piFinset_ite_eq_le  
+           
+     c   v  :
     ∑ z ∈ Fintype.piFinset S, (if z c = v then ∏ e, w e (z e) else 0) ≤ ε := by
   -- the indicator is the product of the coordinatewise indicators
   have hterm : ∀ z : ι → ℕ, (if z c = v then ∏ e, w e (z e) else 0) =
       ∏ e, (if (e = c → z e = v) then w e (z e) else 0) := by
     intro z
     by_cases hz : z c = v
-    · rw [ite_eq_left hz]
-      refine prod_congr rfl fun e _ => (ite_eq_left ?_).symm
-      rintro rfl
-      exact hz
+    · simp_all
     · rw [ite_eq_right hz]
       exact (prod_eq_zero (mem_univ c) (ite_eq_right fun h => hz (h rfl))).symm
   simp_rw [hterm]
@@ -85,14 +94,13 @@ theorem sum_piFinset_ite_eq_le (hw0 : ∀ e, ∀ y ∈ S e, 0 ≤ w e y)
   refine (prod_le_of_mem_of_le_one (fun e => (hI e).1) (fun e => (hI e).2) c).trans ?_
   simp only [forall_const]
   rw [sum_ite_eq']
-  split_ifs with hv
-  · exact hε c v hv
-  · exact hε0
+  bound
 
+include hw0 hw hε in
 /-- A coincidence of two coordinates has probability at most `ε`. -/
-theorem sum_piFinset_ite_eq_eq_le (hw0 : ∀ e, ∀ y ∈ S e, 0 ≤ w e y)
-    (hw : ∀ e, ∑ y ∈ S e, w e y = 1) {ε : ℝ} (hε : ∀ e, ∀ y ∈ S e, w e y ≤ ε)
-    {c c' : ι} (hcc : c ≠ c') :
+theorem sum_piFinset_ite_eq_eq_le  
+         
+     {c c'}  (hcc : c ≠ c') :
     ∑ z ∈ Fintype.piFinset S, (if z c = z c' then ∏ e, w e (z e) else 0) ≤ ε := by
   -- split by the common value `v`
   have hsplit : ∀ z ∈ Fintype.piFinset S, (if z c = z c' then ∏ e, w e (z e) else 0) =
@@ -105,11 +113,7 @@ theorem sum_piFinset_ite_eq_eq_le (hw0 : ∀ e, ∀ y ∈ S e, 0 ≤ w e y)
       by_cases hv : v = z c
       · subst hv
         by_cases hzz : z c = z c'
-        · rw [ite_eq_left rfl, ite_eq_left hzz]
-          refine prod_congr rfl fun e _ => ite_eq_left ?_
-          rintro (rfl | rfl)
-          · rfl
-          · exact hzz.symm
+        · grind
         · rw [ite_eq_left rfl, ite_eq_right hzz]
           exact prod_eq_zero (mem_univ c')
             (ite_eq_right fun h => hzz (h (Or.inr rfl)).symm)
@@ -131,9 +135,9 @@ theorem sum_piFinset_ite_eq_eq_le (hw0 : ∀ e, ∀ y ∈ S e, 0 ≤ w e y)
         rw [sum_ite_eq' (S c), ite_eq_left hv]
         refine mul_le_mul_of_nonneg_left ?_ (hw0 c v hv)
         rw [sum_ite_eq']
-        split_ifs with hv'
-        · exact hε c' v hv'
-        · exact (hw0 c v hv).trans (hε c v hv)
+        grind
     _ = ε := by rw [← sum_mul, hw c, one_mul]
+
+end
 
 end Erdos408.OneSided

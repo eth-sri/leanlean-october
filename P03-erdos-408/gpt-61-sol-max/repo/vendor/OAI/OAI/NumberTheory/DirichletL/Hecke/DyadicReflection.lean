@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.Presentation
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicBounded
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicBounded
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Set Complex
 namespace SevenEighths.HeckeDyadicReflection
@@ -15,10 +16,10 @@ open HeckeFamily HeckePrimitive HeckeStripActual
 
 variable (c : O) [NeZero c]
 
-theorem functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O))=1)
+theorem functional_equation  χ 
+     hu 
     (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (hχ : χ≠1)
-    {s : ℂ} (hs : s.re<1) :
+     {s}  (hs : s.re<1) :
     LFunction (character c χ hu) s = TraceCharacter.normalizedGauss c χ *
       (HeckeStrip.completionScale (conductor c) : ℂ)^(1-2*s) *
       (Complex.Gamma (1-s)/Complex.Gamma s) *
@@ -44,14 +45,7 @@ theorem functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     rw [←Complex.cpow_add _ _ ha]
     congr 1
     ring
-  rw [div_eq_mul_inv]
-  calc
-    _ = TraceCharacter.normalizedGauss c χ *
-        ((HeckeStrip.completionScale (conductor c) : ℂ)^(-s)*
-          (HeckeStrip.completionScale (conductor c) : ℂ)^(1-s)) *
-        (Complex.Gamma (1-s)*(Complex.Gamma s)⁻¹) *
-        LFunction (character c χ⁻¹ (inverse_unit_trivial c χ hu)) (1-s) := by ring
-    _ = _ := by rw [hpow]
+  grind
 
 theorem gamma_real_ratio_bound : ∃ C : ℝ, 0<C ∧
     ∀ x ∈ Icc (-(1/10 : ℝ)) (1/2), Real.Gamma (1-x)/Real.Gamma (x+2)≤C := by
@@ -59,9 +53,9 @@ theorem gamma_real_ratio_bound : ∃ C : ℝ, 0<C ∧
       (Icc (-(1/10 : ℝ)) (1/2)) := by
     intro x hx
     have hnum : DifferentiableAt ℝ Real.Gamma (1-x) :=
-      Real.differentiableAt_Gamma (by intro n hn; have hnn := Nat.cast_nonneg (α:=ℝ) n; linarith [hx.2])
+      Real.differentiableAt_Gamma (by grind)
     have hden : DifferentiableAt ℝ Real.Gamma (x+2) :=
-      Real.differentiableAt_Gamma (by intro n hn; have hnn := Nat.cast_nonneg (α:=ℝ) n; linarith [hx.1])
+      Real.differentiableAt_Gamma (by grind)
     exact ((hnum.continuousAt.comp (g := Real.Gamma) (f := fun y : ℝ => 1-y) (show ContinuousAt (fun y : ℝ => 1-y) x by fun_prop)).div
       (hden.continuousAt.comp (g := Real.Gamma) (f := fun y : ℝ => y+2) (show ContinuousAt (fun y : ℝ => y+2) x by fun_prop))
       (Real.Gamma_pos_of_pos (show 0<x+2 by linarith [hx.1])).ne').continuousWithinAt
@@ -86,8 +80,7 @@ theorem gamma_ratio_strip_bound : ∃ C : ℝ, 0<C ∧ ∀ s : ℂ,
   rw [hnum,hden] at hb
   have hreal' := hreal s.re ⟨hl,hr⟩
   have hb' : ‖Complex.Gamma (1-s)/Complex.Gamma (s+2)‖≤C := by
-    apply hb.trans
-    convert hreal' using 1; congr 1 <;> ring_nf
+    grind
   have heq : Complex.Gamma (1-s)/Complex.Gamma s =
       (∏ k ∈ Finset.range 2, (s+k))*(Complex.Gamma (1-s)/Complex.Gamma (s+2)) := by
     rw [div_eq_mul_inv,CubicReflectionKernel.inverse_Gamma_shift s 2]
@@ -153,6 +146,6 @@ theorem primitive_reflected_bound : ∃ C : ℝ, 0<C ∧
 
 end SevenEighths.HeckeDyadicReflection
 
-end
+
 
 end OAI

@@ -18,7 +18,7 @@ open CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 
 def ZeroLowAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
-    (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
+    (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):=
   ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→s.width≤M→
   ∀p:Profiles a b,∀t X₁ X₂:ℝ,0<X₁→0<X₂→X₁≤Z^L→X₂≤Z^L→
     length Z X₁+length Z X₂≤5*s.width/6→
@@ -31,7 +31,7 @@ local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 def PositiveLowAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
+    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):=
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ v:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→(∀i,lo≤σ i)→(∀i,σ i≤hi)→
     0≤height→(∀i,|v i|≤height)→

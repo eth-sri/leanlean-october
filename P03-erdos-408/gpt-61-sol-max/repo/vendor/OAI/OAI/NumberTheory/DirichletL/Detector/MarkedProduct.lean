@@ -7,16 +7,20 @@ public import OAI.NumberTheory.DirichletL.Detector.SourceExclusions
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ProbeEuler ProbeEulerFinsupp
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma source_idealHighLocalFactor_ne_zero (S : Finset Id) (hS : SourceExclusions S)
-    (η : HeckeFamily.Character) (P : PrimeIdeal) (hP : P.val∉S) (x w z : ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+section
+variable (S : Finset Id) (hS : SourceExclusions S) (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : HeckeFamily.Character) (P : PrimeIdeal) (hP : P.val∉S) (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re)
+
+include hS hP hx hw hz in
+lemma source_idealHighLocalFactor_ne_zero    
+           
+          :
     idealHighLocalFactor η P.val x w z≠0 := by
   rw [idealHighLocalFactor_rational η P (outside_prime_supported S hS.bad P hP) x w z hx hw hz]
   have hQ : (1:ℝ)<Ideal.absNorm P.val := by
@@ -41,9 +45,10 @@ lemma source_idealHighLocalFactor_ne_zero (S : Finset Id) (hS : SourceExclusions
   · exact factor_ne_zero_of_defect _ ((idealClosedCorrection_bound η P (hS.tail.norm_four P hP)
       x w z (by linarith) (by linarith) (by linarith)).trans (hS.tail.half ⟨P,hP⟩))
 
-theorem markedIdealHighSeries_eq_product (S : Finset Id) (hS : SourceExclusions S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : HeckeFamily.Character) (x w z : ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+include hS hT hx hw hz in
+theorem markedIdealHighSeries_eq_product    
+           
+          :
     markedIdealHighSeries S (∏P∈T,P.val) η 1 x w z=
       markedIdealHighSeries S 1 η 1 x w z *
         ∏P∈T,idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z := by
@@ -73,7 +78,9 @@ theorem markedIdealHighSeries_eq_product (S : Finset Id) (hS : SourceExclusions 
     exact (heq P).symm
   exact (markedIdealHighSeries_hasProd S hS.prime T η x w z hx hw hz).unique he'
 
-end SevenEighths.ProbePhysical
 end
+
+end SevenEighths.ProbePhysical
+
 
 end OAI

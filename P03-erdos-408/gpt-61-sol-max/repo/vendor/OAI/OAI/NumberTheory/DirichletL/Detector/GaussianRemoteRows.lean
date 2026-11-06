@@ -12,31 +12,34 @@ open scoped Classical SchwartzMap
 open MeasureTheory CompletedGauss FourierBridge
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-def gaussianCompletedFamilyIntegral {α ι : Type*} [Fintype ι]
-    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→O→*ℂ)
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+def gaussianCompletedFamilyIntegral {α ι } [Fintype ι]
+    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→ActualEisensteinCubic.O→*ℂ)
     (W : ι→ℝ→ℂ) (q : α→ι→ℝ) (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (T Z : ℝ) : ℂ :=
+    (hV : HasCompactSupport (V:ℝ→ℂ)) (T Z : ℝ)  :=
   ∫t : ℝ,(∑k∈F,a k*correctedCompletedT S (D k) (Ψ k)
     (CompletedHeight.normTwistedSource gaussianFixedWindow t) T*
     (∏i,W i (q k i)*logPhase (-t) (Real.log (q k i))))*gaussianJointDensity V hV (T/Z) t
 
-def gaussianCompletedFamilyMass {α ι : Type*} [Fintype ι]
-    (F : Finset α) (a : α→ℂ) (W : ι→ℝ→ℂ) (q : α→ι→ℝ) : ℝ :=
+def gaussianCompletedFamilyMass {α ι } [Fintype ι]
+    (F : Finset α) (a : α→ℂ) (W : ι→ℝ→ℂ) (q : α→ι→ℝ)  :=
   ∑k∈F,‖a k‖*∏i,‖W i (q k i)‖
 
-lemma gaussianCompletedFamilyMass_nonneg {α ι : Type*} [Fintype ι]
-    (F : Finset α) (a : α→ℂ) (W : ι→ℝ→ℂ) (q : α→ι→ℝ) :
+section
+variable {α ι : Type*} [Fintype ι] (F : Finset α) (a : α→ℂ)
+
+lemma gaussianCompletedFamilyMass_nonneg    
+        (W : ι→ℝ→ℂ)  q  :
     0≤gaussianCompletedFamilyMass F a W q := by
   unfold gaussianCompletedFamilyMass
   positivity
 
-lemma gaussianCompletedFamily_integrable {α ι : Type*} [Fintype ι]
-    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→O→*ℂ)
-    (W : ι→ℝ→ℂ) (q : α→ι→ℝ) (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (T Z : ℝ) (hT : 0<T) :
+lemma gaussianCompletedFamily_integrable    
+        (S : Finset Id) (D : α→Id) (Ψ : α→ActualEisensteinCubic.O→*ℂ)
+    (W : ι→ℝ→ℂ) (q : α→ι→ℝ)  V 
+     hV   T Z  (hT : 0<T) :
     Integrable (fun t : ℝ=>(∑k∈F,a k*correctedCompletedT S (D k) (Ψ k)
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) T*
       (∏i,W i (q k i)*logPhase (-t) (Real.log (q k i))))*gaussianJointDensity V hV (T/Z) t) := by
@@ -44,9 +47,11 @@ lemma gaussianCompletedFamily_integrable {α ι : Type*} [Fintype ι]
     (gaussianJointDensity V hV (T/Z)) S (D k) (Ψ k) T hT).const_mul (a k))
   simpa only [Finset.sum_mul,mul_assoc] using hh
 
+end
+
 theorem gaussianCompletedFamily_crude :
     ∃C : ℝ,0<C ∧ ∀{α ι : Type*} [Fintype ι],∀F : Finset α,∀a : α→ℂ,
-      ∀S : Finset Id,∀D : α→Id,∀Ψ : α→O→*ℂ,
+      ∀S : Finset Id,∀D : α→Id,∀Ψ : α→ActualEisensteinCubic.O→*ℂ,
       (∀k∈F,∀n,‖Ψ k n‖≤1)→∀W : ι→ℝ→ℂ,∀q : α→ι→ℝ,
       ∀V : SchwartzMap ℝ ℂ,∀hV : HasCompactSupport (V:ℝ→ℂ),∀T Z : ℝ,0<T→
       ‖gaussianCompletedFamilyIntegral F a S D Ψ W q V hV T Z‖≤
@@ -83,10 +88,10 @@ theorem gaussianCompletedFamily_crude :
       integral_mono hf.norm ((gaussianJointDensity V hV (T/Z)).integrable.norm.const_mul _) hp
     _ = _ := by simp only [integral_const_mul,gaussianJointMoment,pow_zero,one_mul]
 
-theorem gaussianCompletedFamily_remote (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (N : ℕ) :
+theorem gaussianCompletedFamily_remote  V 
+     hV   N  :
     ∃C : ℝ,0<C ∧ ∀{α ι : Type*} [Fintype ι],∀F : Finset α,∀a : α→ℂ,
-      ∀S : Finset Id,∀D : α→Id,∀Ψ : α→O→*ℂ,
+      ∀S : Finset Id,∀D : α→Id,∀Ψ : α→ActualEisensteinCubic.O→*ℂ,
       (∀k∈F,∀n,‖Ψ k n‖≤1)→∀W : ι→ℝ→ℂ,∀q : α→ι→ℝ,
       ∀Z A : ℝ,0<Z→1≤A→
       Summable (fun j : ℕ=>if (2:ℝ)^j/Z≤A⁻¹ ∨ A≤(2:ℝ)^j/Z then

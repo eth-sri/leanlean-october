@@ -18,13 +18,13 @@ open CenteredMomentSourceSecondZeroEnergy CenteredMomentCommonRadialData
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass
 open CenteredMomentExceptionalAmplitudePair CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
+
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-theorem actual_second_zero (N:ℕ)(ε:ℝ)(hε:0<ε):
+theorem actual_second_zero  N (ε:ℝ)(hε:0<ε):
     ∃C:ℝ,0<C ∧ ∀{ι:Type*}[Fintype ι][DecidableEq ι],Fintype.card ι≤N →
       ∀(a b:ℝ),0<a → 0≤b → ∀(s:Input ι)(p:Profiles a b),
-      s.W₁=p.profile 0 → s.W₂=p.profile 1 → ∀(R seed:Ideal O),seed≠0 →
+      s.W₁=p.profile 0 → s.W₂=p.profile 1 → ∀(R seed:Ideal HeckeFamily.O),seed≠0 →
       ∀κ:ℂ,
       ‖κ*sourceSecondZero (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) s.η s.t‖/volume s.toData≤

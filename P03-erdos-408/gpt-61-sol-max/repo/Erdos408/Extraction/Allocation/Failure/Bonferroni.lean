@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Defs
 
@@ -26,8 +27,11 @@ variable {α : Type*} [DecidableEq α]
 
 /-! ### Pointwise -/
 
+section
+variable (n : ℕ) (s S : Finset α) (R : ℕ) (u : Finset α) (hu : u ⊆ S) (x : α → ℝ)
+
 /-- The alternating sum of a row of binomials, truncated at `R`, written over all of the row. -/
-private lemma sum_range_choose_ite_eq (n R : ℕ) :
+private lemma sum_range_choose_ite_eq   :
     ∑ m ∈ range (n + 1), (n.choose m : ℝ) * (if m ≤ R then (-1 : ℝ) ^ m else 0) =
       ∑ m ∈ range (R + 1), (-1 : ℝ) ^ m * n.choose m := by
   have h1 : ∑ m ∈ range (n + 1), (n.choose m : ℝ) * (if m ≤ R then (-1 : ℝ) ^ m else 0) =
@@ -39,15 +43,12 @@ private lemma sum_range_choose_ite_eq (n R : ℕ) :
       ∑ m ∈ range (n + R + 2), (n.choose m : ℝ) * (if m ≤ R then (-1 : ℝ) ^ m else 0) := by
     refine (sum_congr rfl fun m hm => ?_).trans
       (sum_subset (range_subset_range.2 (by omega)) fun m hm hm' => ?_)
-    · rw [mem_range] at hm
-      rw [ite_eq_left (by omega)]
-      ring
-    · rw [mem_range] at hm'
-      rw [ite_eq_right (by omega), mul_zero]
+    · grind
+    grind
   rw [h1, h2]
 
 /-- Pointwise Bonferroni: `|[s = ∅] - ∑_{u ⊆ s, |u| ≤ R} (-1)^{|u|}| ≤ #{u ⊆ s : |u| = R + 1}`. -/
-lemma abs_ite_sub_sum_powerset_le (s : Finset α) (R : ℕ) :
+lemma abs_ite_sub_sum_powerset_le     :
     |(if s = ∅ then (1 : ℝ) else 0) - ∑ u ∈ s.powerset with u.card ≤ R, (-1 : ℝ) ^ u.card| ≤
       (s.powersetCard (R + 1)).card := by
   rw [sum_filter, sum_powerset_apply_card (fun m => if m ≤ R then (-1 : ℝ) ^ m else 0)]
@@ -63,16 +64,16 @@ lemma abs_ite_sub_sum_powerset_le (s : Finset α) (R : ℕ) :
         (-1 : ℝ) ^ R * n.choose R := by exact_mod_cast h
     rw [h', zero_sub, abs_neg, abs_mul, abs_pow, abs_neg, abs_one, one_pow, one_mul,
       Nat.abs_cast, Nat.choose_succ_succ]
-    push_cast
-    linarith [(Nat.cast_nonneg (n.choose (R + 1)) : (0 : ℝ) ≤ _)]
+    simp_all
 
 /-! ### Averaging over the product measure -/
 
+include hu in
 /-- The product measure of the subsets containing `u` is `∏_{i ∈ u} x_i`. -/
-lemma sum_powerset_prod_mul_ite_subset (S u : Finset α) (hu : u ⊆ S) (x : α → ℝ) :
+lemma sum_powerset_prod_mul_ite_subset       :
     ∑ T ∈ S.powerset, (∏ i ∈ T, x i) * (∏ i ∈ S \ T, (1 - x i)) * (if u ⊆ T then 1 else 0) =
       ∏ i ∈ u, x i := by
-  have h := prod_add (fun i => x i) (fun i => (1 - x i) * (if i ∈ u then 0 else 1)) S
+  have h := prod_add (x) (fun i => (1 - x i) * (if i ∈ u then 0 else 1)) S
   have hl : ∏ i ∈ S, (x i + (1 - x i) * (if i ∈ u then 0 else 1)) =
       ∏ i ∈ S, (if i ∈ u then x i else 1) :=
     prod_congr rfl fun i _ => by split_ifs <;> ring
@@ -84,18 +85,11 @@ lemma sum_powerset_prod_mul_ite_subset (S u : Finset α) (hu : u ⊆ S) (x : α 
   rw [show (∏ i ∈ S \ T, if i ∈ u then (0 : ℝ) else 1) =
       ∏ i ∈ S \ T, if i ∉ u then (1 : ℝ) else 0 from prod_congr rfl fun i _ => by
         split_ifs <;> simp_all, prod_ite_zero, prod_const_one]
-  congr 1
-  apply propext
-  constructor
-  · intro h' i hi hiu
-    exact (mem_sdiff.1 hi).2 (h' hiu)
-  · intro h' i hi
-    by_contra hiT
-    exact h' i (mem_sdiff.2 ⟨hu hi, hiT⟩) hi
+  grind
 
 /-- Bonferroni for products: with `0 ≤ x_i ≤ 1`,
 `|∏ (1 - x_i) - ∑_{u ⊆ S, |u| ≤ R} (-1)^{|u|} x^u| ≤ ∑_{|u| = R + 1} x^u`. -/
-lemma abs_prod_one_sub_sub_sum_le (S : Finset α) (R : ℕ) (x : α → ℝ)
+lemma abs_prod_one_sub_sub_sum_le      
     (hx : ∀ i ∈ S, 0 ≤ x i ∧ x i ≤ 1) :
     |∏ i ∈ S, (1 - x i) - ∑ u ∈ S.powerset with u.card ≤ R, (-1 : ℝ) ^ u.card * ∏ i ∈ u, x i| ≤
       ∑ u ∈ S.powersetCard (R + 1), ∏ i ∈ u, x i := by
@@ -123,12 +117,9 @@ lemma abs_prod_one_sub_sub_sum_le (S : Finset α) (R : ℕ) (x : α → ℝ)
       _ = _ := sum_congr rfl fun T hT => by
           have hTS := mem_powerset.1 hT
           have hfilt : (S.powerset.filter P).filter (· ⊆ T) = T.powerset.filter P := by
-            ext u
-            simp only [mem_filter, mem_powerset]
-            exact ⟨fun h => ⟨h.2, h.1.2⟩, fun h => ⟨⟨h.1.trans hTS, h.2⟩, h.1⟩⟩
+            grind
           rw [← hfilt, Finset.sum_filter (fun u : Finset α => u ⊆ T), mul_sum]
-          refine sum_congr rfl fun u _ => ?_
-          split_ifs <;> ring
+          grind
   have h2 := hswap (fun u => u.card ≤ R) fun u => (-1 : ℝ) ^ u.card
   have h3 := hswap (fun u => u.card = R + 1) fun _ => (1 : ℝ)
   simp only [one_mul, sum_const] at h3
@@ -139,12 +130,14 @@ lemma abs_prod_one_sub_sub_sum_le (S : Finset α) (R : ℕ) (x : α → ℝ)
   have := abs_ite_sub_sum_powerset_le T R
   rwa [powersetCard_eq_filter] at this
 
+end
+
 /-! ### Rankin's bound and small cases -/
 
 omit [DecidableEq α] in
 /-- Rankin's bound: `∑_{|u| = k} x^u ≤ z^{-k} ∏ (1 + z x_i)` for `x ≥ 0`, `z > 0`. -/
 lemma sum_powersetCard_prod_le (S : Finset α) (k : ℕ) {x : α → ℝ} (hx : ∀ i ∈ S, 0 ≤ x i)
-    {z : ℝ} (hz : 0 < z) :
+     {z}  (hz : 0 < z) :
     ∑ u ∈ S.powersetCard k, ∏ i ∈ u, x i ≤ (∏ i ∈ S, (1 + z * x i)) / z ^ k := by
   rw [le_div_iff₀ (pow_pos hz k), prod_one_add, sum_mul]
   calc ∑ u ∈ S.powersetCard k, (∏ i ∈ u, x i) * z ^ k
@@ -156,8 +149,11 @@ lemma sum_powersetCard_prod_le (S : Finset α) (k : ℕ) {x : α → ℝ} (hx : 
           fun u hu _ =>
           prod_nonneg fun i hi => mul_nonneg hz.le (hx i (mem_powerset.1 hu hi))
 
+section
+variable (S : Finset α)
+
 /-- `∑_{|u| = 2} x^u ≤ (∑ x_i)² / 2` for `x ≥ 0`. -/
-lemma sum_powersetCard_two_prod_le (S : Finset α) {x : α → ℝ} (hx : ∀ i ∈ S, 0 ≤ x i) :
+lemma sum_powersetCard_two_prod_le   {x : α → ℝ} (hx : ∀ i ∈ S, 0 ≤ x i) :
     ∑ u ∈ S.powersetCard 2, ∏ i ∈ u, x i ≤ (∑ i ∈ S, x i) ^ 2 / 2 := by
   induction S using Finset.induction_on with
   | empty =>
@@ -166,7 +162,7 @@ lemma sum_powersetCard_two_prod_le (S : Finset α) {x : α → ℝ} (hx : ∀ i 
   | insert a S ha ih =>
     have hxS : ∀ i ∈ S, 0 ≤ x i := fun i hi => hx i (mem_insert_of_mem hi)
     have hxa : 0 ≤ x a := hx a (mem_insert_self a S)
-    have hS0 : 0 ≤ ∑ i ∈ S, x i := sum_nonneg hxS
+    
     rw [powersetCard_succ_insert ha, sum_insert ha]
     have hu := sum_union_inter (s₁ := S.powersetCard 2)
       (s₂ := (S.powersetCard 1).image (insert a)) (f := fun u => ∏ i ∈ u, x i)
@@ -174,30 +170,23 @@ lemma sum_powersetCard_two_prod_le (S : Finset α) {x : α → ℝ} (hx : ∀ i 
       prod_nonneg fun i hi => hx i (mem_powerset.1 hu hi)
     have hinter : 0 ≤ ∑ u ∈ S.powersetCard 2 ∩ (S.powersetCard 1).image (insert a),
         ∏ i ∈ u, x i := sum_nonneg fun u hu => by
-      obtain ⟨-, hu⟩ := mem_inter.1 hu
-      obtain ⟨v, hv, rfl⟩ := mem_image.1 hu
-      exact hnn _ (mem_powerset.2 (insert_subset_insert a
-        (mem_powersetCard.1 hv).1))
+      grind
     have himg : ∑ u ∈ (S.powersetCard 1).image (insert a), ∏ i ∈ u, x i ≤
         x a * ∑ i ∈ S, x i := by
       refine (sum_image_le_of_nonneg fun u hu => ?_).trans (le_of_eq ?_)
-      · obtain ⟨v, hv, rfl⟩ := mem_image.1 hu
-        exact hnn _ (mem_powerset.2 (insert_subset_insert a
-          (mem_powersetCard.1 hv).1))
+      · grind
       · rw [powersetCard_one, sum_map, mul_sum]
         refine sum_congr rfl fun i hi => ?_
         simp only [Function.Embedding.coeFn_mk]
-        rw [prod_insert fun h => ha (by rwa [← mem_singleton.1 h] at hi), prod_singleton]
+        grind
     nlinarith [ih hxS]
 
 /-- `#{u ⊆ S : |u| ≤ m} ≤ (|S| + 1)^m`. -/
-lemma card_filter_powerset_card_le (S : Finset α) (m : ℕ) :
+lemma card_filter_powerset_card_le   (m : ℕ) :
     (S.powerset.filter (·.card ≤ m)).card ≤ (S.card + 1) ^ m := by
   have hsub : S.powerset.filter (·.card ≤ m) ⊆ (range (m + 1)).biUnion (S.powersetCard ·) := by
     intro u hu
-    obtain ⟨hu, hm⟩ := mem_filter.1 hu
-    exact mem_biUnion.2 ⟨u.card, mem_range.2 (by omega),
-      mem_powersetCard.2 ⟨mem_powerset.1 hu, rfl⟩⟩
+    simp_all
   refine (card_le_card hsub).trans (card_biUnion_le.trans ?_)
   rw [add_pow]
   refine sum_le_sum fun k hk => ?_
@@ -205,5 +194,7 @@ lemma card_filter_powerset_card_le (S : Finset α) (m : ℕ) :
   have h1 : 1 ≤ m.choose k := Nat.choose_pos (by have := mem_range.1 hk; omega)
   calc S.card.choose k ≤ S.card ^ k := Nat.choose_le_pow _ _
     _ ≤ S.card ^ k * m.choose k := Nat.le_mul_of_pos_right _ h1
+
+end
 
 end Erdos408

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Bands
 public import Erdos408.OneSided.Moment.PathExpansion.Hermitian
@@ -26,7 +27,7 @@ product `D`, other promoted primes `Z` and fresh primes `T` has a target `z'` wi
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos408.OneSided
 
@@ -36,9 +37,14 @@ variable {K : ℕ}
 
 /-! ### Lines and determinants -/
 
+section
+variable {p : ℕ} (hp : p.Prime) {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < U) (hu : 0 < u) {z z' z₁ z₂ : ℤ × ℤ} (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+
+
+include hp in
 /-- Two positions with the same projective line at a prime `p` have determinant divisible by
 `p`. -/
-theorem dvd_det_of_lineOf_eq {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ}
+theorem dvd_det_of_lineOf_eq      
     (h : lineOf p z = lineOf p z') : (p : ℤ) ∣ z.1 * z'.2 - z.2 * z'.1 := by
   have := Fact.mk hp
   rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
@@ -47,22 +53,21 @@ theorem dvd_det_of_lineOf_eq {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ}
   by_cases h₁ : (z.1 : ZMod p) = 0 <;> by_cases h₂ : (z'.1 : ZMod p) = 0
   · rw [h₁, h₂]
     ring
-  · simp only [h₁, h₂, ↓reduceIte] at h
-    exact absurd h (ZMod.val_lt _).ne'
-  · simp only [h₁, h₂, ↓reduceIte] at h
-    exact absurd h (ZMod.val_lt _).ne
+  · grind
+  · grind
   · simp only [h₁, h₂, ↓reduceIte] at h
     have h' := ZMod.val_injective p h
     field_simp at h'
     linear_combination -h'
 
+include hU hu in
 /-- **The anchor separation** (PD `mem:anchor-congruence`, pairwise): let `z, z_1, z_2` lie in
 the root box, with `z` primitive. If `det(z, z_k) = P - p n_k` for a prime `p ∤ P`, and
 `p ∣ det(z_1, z_2)` (the two targets have the same line at `p`), then
 `‖(n_1 - n_2) r_z‖ ≤ 15/p` with `r_z = τ(w_z)/τ(z)`. In the basis `(z, w_z)` the targets are
 `z_k = α_k z + det(z, z_k) w_z`, the line condition gives `p ∣ α_1 - α_2`, and
 `τ(z_1)/τ(z), τ(z_2)/τ(z) ∈ [1/16, 16]`. -/
-theorem circleDist_le_of_anchor {U V u v r : ℝ} (hU : 0 < U) (hu : 0 < u) {z z₁ z₂ : ℤ × ℤ}
+theorem circleDist_le_of_anchor        
     (hz : z ∈ rootPositions U V u v r) (hz₁ : z₁ ∈ rootPositions U V u v r)
     (hz₂ : z₂ ∈ rootPositions U V u v r) {p : ℕ} (hp : p.Prime) {P n₁ n₂ : ℤ}
     (hP : ¬ (p : ℤ) ∣ P) (h₁ : z.1 * z₁.2 - z.2 * z₁.1 = P - p * n₁)
@@ -78,15 +83,13 @@ theorem circleDist_le_of_anchor {U V u v r : ℝ} (hU : 0 < U) (hu : 0 < u) {z z
   -- `det(z, w_z) = gcd(z₁, z₂) = 1`
   have hw : z.1 * w.2 - z.2 * w.1 = 1 := by
     have := Int.gcd_eq_gcd_ab z.1 z.2
-    rw [hgcd] at this
-    simp only [hwdef, complement]
-    linear_combination -this
+    simp_all [complement]
   -- the coordinates `α_k = det(z_k, w_z)` along `z`
   set α₁ := z₁.1 * w.2 - z₁.2 * w.1 with hα₁
   set α₂ := z₂.1 * w.2 - z₂.2 * w.1 with hα₂
   have hpl : z₁.1 * z₂.2 - z₁.2 * z₂.1 =
       α₁ * (z.1 * z₂.2 - z.2 * z₂.1) - (z.1 * z₁.2 - z.2 * z₁.1) * α₂ := by
-    linear_combination (-(z₁.1 * z₂.2 - z₁.2 * z₂.1)) * hw
+    grind
   -- the line condition: `p ∣ P (α₁ - α₂)`, so `p ∣ α₁ - α₂`
   have hpα : (p : ℤ) ∣ α₁ - α₂ := by
     have hPα : (p : ℤ) ∣ P * (α₁ - α₂) := by
@@ -102,9 +105,7 @@ theorem circleDist_le_of_anchor {U V u v r : ℝ} (hU : 0 < U) (hu : 0 < u) {z z
       ((z.1 * y.2 - z.2 * y.1 : ℤ) : ℝ) * tau r w := by
     intro y
     have hw' : (z.1 : ℝ) * w.2 - z.2 * w.1 = 1 := by exact_mod_cast hw
-    unfold tau
-    push_cast
-    linear_combination (-(y.1 : ℝ) - r * y.2) * hw'
+    grind [tau]
   have hτ₁ := hτ z₁
   have hτ₂ := hτ z₂
   rw [h₁] at hτ₁
@@ -140,10 +141,11 @@ theorem circleDist_le_of_anchor {U V u v r : ℝ} (hU : 0 < U) (hu : 0 < u) {z z
 
 /-! ### Prime factorization -/
 
+include hdisj in
 /-- **Products of band primes**: if `f i, g i` are both `1` or both primes of the band of
 group `i`, with disjoint bands, then `∏ f = ∏ g` forces `f = g`. -/
-theorem eq_of_prod_eq_of_band {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {f g : Fin K → ℕ}
+theorem eq_of_prod_eq_of_band    
+      {f g : Fin K → ℕ}
     (hfg : ∀ i, (f i = 1 ∧ g i = 1) ∨ (f i ∈ band x (d.a i) ∧ g i ∈ band x (d.a i)))
     (h : ∏ i, f i = ∏ i, g i) : f = g := by
   funext i
@@ -162,31 +164,29 @@ theorem eq_of_prod_eq_of_band {x : ℝ} {d : Data K}
       rw [hfj, hij]
 
 /-- The omission product times the omitted labels is the full product. -/
-theorem omitProd_mul_prod {J : ℕ} (p : Lists K J) (o : Fin K → Fin (J + 1)) :
+theorem omitProd_mul_prod   (p : Lists K J) (o : Fin K → Fin (J + 1)) :
     omitProd p o * ∏ i, p i (o i) = listProd p := by
   unfold omitProd listProd
   rw [← prod_mul_distrib]
   exact prod_congr rfl fun i _ => prod_erase_mul _ _ (mem_univ _)
 
 /-- The full product of valid lists is positive. -/
-theorem listProd_pos_of_mem_lists {x : ℝ} {d : Data K} {J : ℕ} {p : Lists K J}
+theorem listProd_pos_of_mem_lists       {p : Lists K J}
     (hp : p ∈ lists x d J) :
     0 < listProd p :=
   prod_pos fun i _ => prod_pos fun h _ =>
     (TypeII.band_prime (mem_band_of_mem_lists hp i h)).pos
 
+include hdisj in
 /-- With disjoint bands, the omission product of valid lists determines the omission tuple. -/
-theorem omitProd_injective {x : ℝ} {d : Data K} {J : ℕ}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {p : Lists K J}
+theorem omitProd_injective      
+      {p : Lists K J}
     (hp : p ∈ lists x d J) {o o' : Fin K → Fin (J + 1)} (h : omitProd p o = omitProd p o') :
     o = o' := by
   have h₁ := omitProd_mul_prod p o
   have h₂ := omitProd_mul_prod p o'
   have hD : 0 < omitProd p o := by
-    rcases Nat.eq_zero_or_pos (omitProd p o) with h0 | h0
-    · rw [h0, zero_mul] at h₁
-      exact absurd h₁.symm (listProd_pos_of_mem_lists hp).ne'
-    · exact h0
+    grind [omitProd, absurd, listProd_pos_of_mem_lists]
   have hb' : ∏ i, p i (o i) = ∏ i, p i (o' i) := by
     rw [h] at h₁
     exact Nat.eq_of_mul_eq_mul_left (h ▸ hD) (h₁.trans h₂.symm)
@@ -203,20 +203,19 @@ theorem eq_of_mul_eq_of_coprime {D₁ D₂ Z₁ Z₂ P : ℕ} (h : D₁ * Z₁ =
   have h₁ : D₁ ∣ D₂ := (hZ₂.coprime_dvd_right hD₁).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _)
   have h₂ : D₂ ∣ D₁ := (hZ₁.coprime_dvd_right hD₂).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _)
   have hD := Nat.dvd_antisymm h₁ h₂
-  refine ⟨hD, ?_⟩
-  rw [hD] at h
-  exact Nat.eq_of_mul_eq_mul_left (hD ▸ hpos) h
+  aesop
 
 /-! ### Uniqueness of the omission tuple -/
 
+include hU hu hdisj in
 /-- **The anchor uniqueness** (PD §4, dirty raw edges): fix a source position `z` in the box
 with lists `p`, a nonempty set `I` of promoted groups with `i_* = max I`, a fresh draw `T`
 passing the phase separation of the second good-state test, and a promoted prime `p_*` of the
 band `i_*` banned from the source lists. Then two raw dirty edges with omission tuples `o_k`,
 other promoted primes `Z_k` (banned from the source lists) and targets `z_k` with the same line
 at `p_*` have `o₁ = o₂` and `Z₁ = Z₂`. -/
-theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < U) (hu : 0 < u)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem anchor_unique          
+     
     {p : Lists K J} (hp : p ∈ lists x d J) {z : ℤ × ℤ} (hz : z ∈ rootPositions U V u v r)
     {I : Finset (Fin K)} (hI : I.Nonempty) {T : Fin K → ℕ}
     (hsep : Separated x d d₀ I (I.max' hI) (tau r (complement z) / tau r z) p T)
@@ -249,10 +248,7 @@ theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < 
       z.1 * y.2 - z.2 * y.1 =
         (omitProd p o : ℤ) * ((∏ i, p i (o i) : ℕ) - (ps * (∏ j, Z j) * ∏ j, T j : ℕ)) →
       z.1 * y.2 - z.2 * y.1 = P - ps * ((omitProd p o * (∏ j, Z j) * ∏ j, T j : ℕ) : ℤ) := by
-    intro o Z y hy
-    rw [hy, hPdef, ← omitProd_mul_prod p o]
-    push_cast
-    ring
+    grind [omitProd_mul_prod]
   have hanc := circleDist_le_of_anchor hU hu hz hz₁ hz₂ hpsp hP (hform o₁ Z₁ z₁ hdet₁)
     (hform o₂ Z₂ z₂ hdet₂) (dvd_det_of_lineOf_eq hpsp hline)
   -- `15/p_* < 100 e^{-L^{a_{i_*}}}`
@@ -298,5 +294,7 @@ theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < 
   split_ifs at h₁ h₂
   · exact Or.inr ⟨h₁, h₂⟩
   · exact Or.inl ⟨mem_singleton.1 h₁, mem_singleton.1 h₂⟩
+
+end
 
 end Erdos408.OneSided

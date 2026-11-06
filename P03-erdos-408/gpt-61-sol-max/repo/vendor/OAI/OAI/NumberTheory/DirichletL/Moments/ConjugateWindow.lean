@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.CubicSieve.ConjugateProfiles
 
 public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 
@@ -6,27 +9,20 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentConjugateWindow
 open FourierBridge CenteredMomentSmooth
 
-theorem star_logPhase (t u : ℝ) : star (logPhase t u)=logPhase (-t) u := by
-  simp only [logPhase,Complex.star_def,← Complex.exp_conj,map_mul,
-    Complex.conj_ofReal,Complex.conj_I]
-  congr 1
-  push_cast
-  ring
+theorem star_logPhase  t u  : star (logPhase t u)=logPhase (-t) u := by solve_by_elim [_root_.OAI.SecondPassIntegration.logPhase_conjugate]
 
-theorem star_columnPhase (V : ℝ → ℂ) (u t : ℝ) :
+theorem star_columnPhase  V   u t  :
     star (columnPhase V u t)=columnPhase (fun x => star (V x)) u (-t) := by
-  rw [columnPhase,star_mul,star_logPhase,columnPhase,mul_comm]
-  congr 1
-  simp only [rootWindow,Complex.star_def,map_div₀,Complex.conj_ofReal]
+  simp_all [columnPhase, star_logPhase, rootWindow]
 
 end SevenEighths.CenteredMomentConjugateWindow
 
-end
+
 
 end OAI

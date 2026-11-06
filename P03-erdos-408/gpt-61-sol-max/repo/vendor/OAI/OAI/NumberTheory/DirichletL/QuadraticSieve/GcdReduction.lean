@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Fourier.TupleWeights
 
@@ -10,91 +11,97 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
+open   CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
 
-def gcdPool {n : Type*} [Fintype n] (cols : n → Ideal O) : Finset (Ideal O) :=
+def gcdPool {n } [Fintype n] (cols : n → Ideal O)  :=
   Finset.univ.image (fun p : n × n => gcd (cols p.1) (cols p.2))
 
-theorem mem_gcdPool {n : Type*} [Fintype n] (cols : n → Ideal O) (j k : n) :
+section
+variable {n : Type*} [Fintype n] (cols : n → Ideal O)
+include n cols
+
+theorem mem_gcdPool        j k  :
     gcd (cols j) (cols k) ∈ gcdPool cols :=
   Finset.mem_image.mpr ⟨(j, k), Finset.mem_univ _, rfl⟩
 
-theorem gcdPool_ne_zero {n : Type*} [Fintype n] (cols : n → Ideal O)
-    (hcols : ∀ j, cols j ≠ 0) (D : Ideal O) (hD : D ∈ gcdPool cols) : D ≠ 0 := by
+theorem gcdPool_ne_zero      
+    (hcols : ∀ j, cols j ≠ 0)  D  (hD : D ∈ gcdPool cols) : D ≠ 0 := by
   obtain ⟨⟨j, k⟩, _, rfl⟩ := Finset.mem_image.mp hD
   intro h
   have hd := gcd_dvd_left (cols j) (cols k)
   rw [h, zero_dvd_iff] at hd
   exact hcols j hd
 
+end
+
 theorem energy_eq_gcd_blocks {m n : Type*} [Fintype m] [Fintype n]
-    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ) :
+    (rows : m → Ideal O) (cols : n → Ideal O)  a  :
     ((∑ i, ‖∑ j, quadraticRow (cols j) (primaryGenerator (rows i)) * a j‖ ^ 2 : ℝ) : ℂ) =
       ∑ D ∈ gcdPool cols, gcdBlock D rows cols a := by
   have hp (i : m) (j k : n) : (∑ D ∈ gcdPool cols, gcdTerm D rows cols a i j k) =
@@ -126,11 +133,11 @@ end CanonicalQuadraticSieve
 
 namespace FiniteSieveRestriction
 
-def sectorCoefficient {n r : Type*} [DecidableEq r] (σ : n → r) (c : r) (a : n → ℂ) (j : n) : ℂ :=
+def sectorCoefficient {n r : Type*} [DecidableEq r] (σ : n → r) (c : r) (a : n → ℂ) (j : n)  :=
   if σ j = c then a j else 0
 
 theorem sectorCoefficient_energy {n r : Type*} [Fintype n] [Fintype r] [DecidableEq r]
-    (σ : n → r) (a : n → ℂ) :
+    (σ : n → r)  a  :
     (∑ c, ∑ j, ‖sectorCoefficient σ c a j‖ ^ 2) = ∑ j, ‖a j‖ ^ 2 := by
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
@@ -149,18 +156,13 @@ private theorem norm_sum_square_card {r : Type*} [Fintype r] (f : r → ℂ) :
   exact hh.trans (by simpa using h)
 
 theorem sector_energy_bound {m n r : Type*} [Fintype m] [Fintype n] [Fintype r] [DecidableEq r]
-    (A : Matrix m n ℂ) (σ : n → r) (a : n → ℂ) :
+    (A : Matrix m n ℂ) (σ : n → r)  a  :
     (∑ i, ‖∑ j, A i j * a j‖ ^ 2) ≤
       (Fintype.card r : ℝ) * ∑ c, ∑ i, ‖∑ j, A i j * sectorCoefficient σ c a j‖ ^ 2 := by
   have hi (i : m) : (∑ j, A i j * a j) = ∑ c, ∑ j, A i j * sectorCoefficient σ c a j := by
     rw [Finset.sum_comm]
     apply Finset.sum_congr rfl
-    intro j _
-    rw [← Finset.mul_sum, Finset.sum_eq_single (σ j)]
-    · simp [sectorCoefficient]
-    · intro c hc hne
-      simp [sectorCoefficient, Ne.symm hne]
-    · simp
+    simp_all [sectorCoefficient]
   calc
     _ ≤ ∑ i, (Fintype.card r : ℝ) * ∑ c, ‖∑ j, A i j * sectorCoefficient σ c a j‖ ^ 2 := by
       apply Finset.sum_le_sum
@@ -171,19 +173,19 @@ theorem sector_energy_bound {m n r : Type*} [Fintype m] [Fintype n] [Fintype r] 
 end FiniteSieveRestriction
 
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
+open   CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
 open FiniteSieveRestriction
 
-def columnRay (I : Ideal O) : EisensteinEPrimaryPhase.Coord := ActualEisensteinCoordinates.residue (primaryGenerator I)
+def columnRay (I : Ideal O)  := ActualEisensteinCoordinates.residue (primaryGenerator I)
 
-def rayGcdBlock {m n : Type*} [Fintype m] [Fintype n]
+def rayGcdBlock {m n } [Fintype m] [Fintype n]
     (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord)
-    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ) : ℂ :=
+    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ)  :=
   gcdBlock D rows cols (sectorCoefficient (fun j => columnRay (cols j)) c a)
 
 theorem rayGcdBlock_eq {m n : Type*} [Fintype m] [Fintype n]
     (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord)
-    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ) :
+    (rows : m → Ideal O) (cols : n → Ideal O)  a  :
     rayGcdBlock D c rows cols a = ∑ i, ∑ j, ∑ k,
       if gcd (cols j) (cols k) = D ∧ columnRay (cols j) = c ∧ columnRay (cols k) = c then
         star (quadraticRow (cols j) (primaryGenerator (rows i)) * a j) *
@@ -192,13 +194,7 @@ theorem rayGcdBlock_eq {m n : Type*} [Fintype m] [Fintype n]
   apply Finset.sum_congr rfl
   intro i _
   apply Finset.sum_congr rfl
-  intro j _
-  apply Finset.sum_congr rfl
-  intro k _
-  by_cases hg : gcd (cols j) (cols k) = D <;>
-    by_cases hj : columnRay (cols j) = c <;> by_cases hk : columnRay (cols k) = c <;>
-      simp only [hg, hj, hk, ↓reduceIte, true_and, false_and, and_false,
-        mul_zero, zero_mul, star_zero]
+  grind
 
 end CanonicalQuadraticSieve
 
@@ -208,23 +204,27 @@ end FiniteSieveOperator
 
 namespace CanonicalQuadraticSieve
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
+open   CompletedGauss FiniteSieveOperator
 open IdealCoprimeSieveOperator DivisorBlockCauchy
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
+ 
 
-def weightedGcdBlock {m n : Type*} [Fintype m] [Fintype n]
-    (D : Ideal O) (rows : m → Ideal O) (cols : n → Ideal O) (w : m → ℂ) (a : n → ℂ) : ℂ :=
+def weightedGcdBlock {m n } [Fintype m] [Fintype n]
+    (D : Ideal O) (rows : m → Ideal O) (cols : n → Ideal O) (w : m → ℂ) (a : n → ℂ)  :=
   ∑ i, w i * ∑ j, ∑ k, gcdTerm D rows cols a i j k
 
-theorem highKernel_weightedGcdBlock_bound {m n : Type*} [Fintype m] [Fintype n]
-    [DecidableEq m] [DecidableEq n]
-    (ε : ℝ) (hε : 0 < ε) (D : Ideal O) (hD : D ≠ 0)
+section
+variable {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n] (ε : ℝ) (hε : 0 < ε)
+include m n ε hε
+
+theorem highKernel_weightedGcdBlock_bound      
+       
+        (D : Ideal O) (hD : D ≠ 0)
     (rows : m → Ideal O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
-    (M N K : ℝ) (hN : 1 ≤ N) (hrows : ∀ i, rows i ∈ highKernelRange M K)
+     M N K  (hN : 1 ≤ N) (hrows : ∀ i, rows i ∈ highKernelRange M K)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
-    (w : m → ℂ) (W : ℝ) (hW : 0 ≤ W) (hw : ∀ i, ‖w i‖ ≤ W) (a : n → ℂ) :
+     w   W  (hW : 0 ≤ W) (hw : ∀ i, ‖w i‖ ≤ W)  a  :
     ‖weightedGcdBlock D rows cols w a‖ ≤ W * highKernelNorm M (N / (Ideal.absNorm D : ℝ)) K *
       (supportConstant ε hε * N ^ ε) * ∑ j, ‖if D ∣ cols j then a j else 0‖ ^ 2 := by
   let v : m → ℂ := fun i => w i *
@@ -259,15 +259,15 @@ theorem highKernel_weightedGcdBlock_bound {m n : Type*} [Fintype m] [Fintype n]
       (mul_nonneg (supportConstant_pos ε hε).le (Real.rpow_nonneg (by linarith) _)))
     (Finset.sum_nonneg (fun _ _ => sq_nonneg _))
 
-theorem highKernel_large_weighted_gcd_blocks {m n : Type*} [Fintype m] [Fintype n]
-    [DecidableEq m] [DecidableEq n]
-    (ε : ℝ) (hε : 0 < ε) (S : Finset (Ideal O)) (G : ℝ) (hG : 0 < G)
+theorem highKernel_large_weighted_gcd_blocks      
+       
+        (S : Finset (Ideal O)) (G : ℝ) (hG : 0 < G)
     (hS : ∀ D ∈ S, G ≤ (Ideal.absNorm D : ℝ))
     (rows : m → Ideal O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
-    (M N K : ℝ) (hN : 1 ≤ N) (hrows : ∀ i, rows i ∈ highKernelRange M K)
+     M N K  (hN : 1 ≤ N) (hrows : ∀ i, rows i ∈ highKernelRange M K)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
-    (w : m → ℂ) (W : ℝ) (hW : 0 ≤ W) (hw : ∀ i, ‖w i‖ ≤ W) (a : n → ℂ) :
+     w   W  (hW : 0 ≤ W) (hw : ∀ i, ‖w i‖ ≤ W)  a  :
     (∑ D ∈ S, ‖weightedGcdBlock D rows cols w a‖) ≤
       W * highKernelNorm M (N / G) K * (supportConstant ε hε * divisorConstant ε hε) *
         (N ^ ε) ^ 2 * ∑ j, ‖a j‖ ^ 2 := by
@@ -296,6 +296,8 @@ theorem highKernel_large_weighted_gcd_blocks {m n : Type*} [Fintype m] [Fintype 
         (mul_nonneg (mul_nonneg hW hB) hfac)
     _ = _ := by ring
 
+end
+
 end CanonicalQuadraticSieve
 
 namespace FiniteSieveRestriction
@@ -313,20 +315,24 @@ theorem sector_weighted_energy_bound {m n r : Type*} [Fintype m] [Fintype n] [Fi
     _ = _ := by
       simp only [Finset.mul_sum]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro c _
-      apply Finset.sum_congr rfl
-      intro i _
-      ring
+      grind
 end FiniteSieveRestriction
 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
+open   CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
 
-theorem weighted_energy_eq_gcd_blocks {m n : Type*} [Fintype m] [Fintype n]
-    (rows : m → Ideal O) (cols : n → Ideal O) (v : m → ℝ) (a : n → ℂ) :
+section
+variable {m n : Type*} [Fintype m] [Fintype n]
+include m n
+
+section
+variable (rows : m → Ideal O) (cols : n → Ideal O) (v : m → ℝ)
+include rows cols v
+
+theorem weighted_energy_eq_gcd_blocks      
+           a  :
     ((∑ i, v i * ‖∑ j, quadraticRow (cols j) (primaryGenerator (rows i)) * a j‖ ^ 2 : ℝ) : ℂ) =
       ∑ D ∈ gcdPool cols, weightedGcdBlock D rows cols (fun i => (v i : ℂ)) a := by
   have hi (i : m) : ((‖∑ j, quadraticRow (cols j) (primaryGenerator (rows i)) * a j‖ ^ 2 : ℝ) : ℂ) =
@@ -335,8 +341,8 @@ theorem weighted_energy_eq_gcd_blocks {m n : Type*} [Fintype m] [Fintype n]
   simp only [Complex.ofReal_sum, Complex.ofReal_mul, hi, Finset.mul_sum, weightedGcdBlock]
   rw [Finset.sum_comm]
 
-theorem weighted_energy_le_gcd_blocks {m n : Type*} [Fintype m] [Fintype n]
-    (rows : m → Ideal O) (cols : n → Ideal O) (v : m → ℝ) (hv : ∀ i, 0 ≤ v i) (a : n → ℂ) :
+theorem weighted_energy_le_gcd_blocks      
+          (hv : ∀ i, 0 ≤ v i)  a  :
     (∑ i, v i * ‖∑ j, quadraticRow (cols j) (primaryGenerator (rows i)) * a j‖ ^ 2) ≤
       ∑ D ∈ gcdPool cols, ‖weightedGcdBlock D rows cols (fun i => (v i : ℂ)) a‖ := by
   have he := congrArg norm (weighted_energy_eq_gcd_blocks rows cols v a)
@@ -344,14 +350,16 @@ theorem weighted_energy_le_gcd_blocks {m n : Type*} [Fintype m] [Fintype n]
   rw [he]
   exact norm_sum_le _ _
 
-theorem highKernel_weighted_energy_gcd_reduction {m n : Type*} [Fintype m] [Fintype n]
+end
+
+theorem highKernel_weighted_energy_gcd_reduction      
     [DecidableEq m] [DecidableEq n]
     (ε : ℝ) (hε : 0 < ε) (G : ℝ) (hG : 0 < G)
     (rows : m → Ideal O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (M N K : ℝ) (hN : 1 ≤ N) (hrows : ∀ i, rows i ∈ highKernelRange M K)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
-    (v : m → ℝ) (W : ℝ) (hW : 0 ≤ W) (hv : ∀ i, 0 ≤ v i ∧ v i ≤ W) (a : n → ℂ) :
+    (v : m → ℝ)  W  (hW : 0 ≤ W) (hv : ∀ i, 0 ≤ v i ∧ v i ≤ W)  a  :
     (∑ i, v i * ‖∑ j, quadraticRow (cols j) (primaryGenerator (rows i)) * a j‖ ^ 2) ≤
       (∑ D ∈ (gcdPool cols).filter (fun D => (Ideal.absNorm D : ℝ) ≤ G),
         ‖weightedGcdBlock D rows cols (fun i => (v i : ℂ)) a‖) +
@@ -364,9 +372,11 @@ theorem highKernel_weighted_energy_gcd_reduction {m n : Type*} [Fintype m] [Fint
     rows cols hr hc M N K hN hrows hcols (fun i => (v i : ℂ)) W hW
     (fun i => by simpa only [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hv i).1] using (hv i).2) a))
 
-def weightedRayGcdBlock {m n : Type*} [Fintype m] [Fintype n]
+end
+
+def weightedRayGcdBlock {m n } [Fintype m] [Fintype n]
     (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord)
-    (rows : m → Ideal O) (cols : n → Ideal O) (v : m → ℝ) (a : n → ℂ) : ℂ :=
+    (rows : m → Ideal O) (cols : n → Ideal O) (v : m → ℝ) (a : n → ℂ)  :=
   weightedGcdBlock D rows cols (fun i => (v i : ℂ))
     (sectorCoefficient (fun j => columnRay (cols j)) c a)
 
@@ -375,9 +385,9 @@ theorem highKernel_weighted_energy_ray_gcd_reduction {m n : Type*} [Fintype m] [
     (ε : ℝ) (hε : 0 < ε) (G : ℝ) (hG : 0 < G)
     (rows : m → Ideal O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
-    (M N K : ℝ) (hN : 1 ≤ N) (hrows : ∀ i, rows i ∈ highKernelRange M K)
+     M N K  (hN : 1 ≤ N) (hrows : ∀ i, rows i ∈ highKernelRange M K)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
-    (v : m → ℝ) (W : ℝ) (hW : 0 ≤ W) (hv : ∀ i, 0 ≤ v i ∧ v i ≤ W) (a : n → ℂ) :
+     v   W  (hW : 0 ≤ W) (hv : ∀ i, 0 ≤ v i ∧ v i ≤ W)  a  :
     (∑ i, v i * ‖∑ j, quadraticRow (cols j) (primaryGenerator (rows i)) * a j‖ ^ 2) ≤
       16 * ((∑ c : EisensteinEPrimaryPhase.Coord,
         ∑ D ∈ (gcdPool cols).filter (fun D => (Ideal.absNorm D : ℝ) ≤ G), ‖weightedRayGcdBlock D c rows cols v a‖) +
@@ -404,7 +414,7 @@ theorem highKernel_weighted_energy_ray_gcd_reduction {m n : Type*} [Fintype m] [
 
 end
 
-open ActualEisensteinCubic CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
+open   CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
 
 end CanonicalQuadraticSieve
 

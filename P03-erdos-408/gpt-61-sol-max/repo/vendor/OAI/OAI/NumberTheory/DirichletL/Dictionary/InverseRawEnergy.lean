@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawFourier
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
@@ -16,9 +17,9 @@ open InverseInitialOverlapFourier FourierBridge HeckeInverseAmplification
 
 theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
     (χ : ι→Character) (inv : Bool) (A : ι→ℂ)
-    (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
-    (hs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (Wref : ℝ→ℂ) (b c θ D E : ℝ) (J : ℕ) (hc : 0<c) (hD : 0<D) (hE : 0≤E)
+     W   lo hi   hlo 
+     hs   hW 
+    (Wref : ℝ→ℂ) (b c θ D E : ℝ)  J  (hc : 0<c) (hD : 0<D) (hE : 0≤E)
     (hWref : ∀x,Wref x≠0 → x≤b)
     (hagree : ∀y,0<y → Wref y*W (c*y)=W (c*y))
     (he : ∀s, (∑i∈rows,‖polynomial (χ i) inv (childLogTest Wref s) D 0 0*A i‖^2)
@@ -61,10 +62,10 @@ theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
   rw [Finset.sum_coe_sort rows (fun i=>‖polynomial (χ i) inv (clippedTest W c θ) D 0 0*A i‖^2)] at hh
   simpa only [B,density_norm,g] using hh
 
-theorem rawMoment_reference (data : RowData)
-    (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
-    (hs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (Wref : ℝ→ℂ) (b c κ C : ℝ) (J : ℕ) (hC : 0≤C)
+theorem rawMoment_reference  data 
+     W   lo hi   hlo 
+     hs   hW 
+    (Wref : ℝ→ℂ) (b c κ C : ℝ)  J  (hC : 0≤C)
     (hWref : ∀x,Wref x≠0 → x≤b)
     (hagree : ∀y,0<y → Wref y*W y=W y)
     (he : ∀s,RawMoment data (childLogTest Wref s) c κ (C*(1+‖s‖)^(2*J))) :
@@ -76,7 +77,7 @@ theorem rawMoment_reference (data : RowData)
     (by positivity) hWref (by simpa only [one_mul] using hagree) (by
       intro s
       have hb:=he s H D hH hD hHD rows hrows
-      simpa only [mul_one,one_mul,mul_assoc,mul_left_comm,mul_comm] using hb)
+      grind)
   have heq : clippedTest W 1 0=W := by
     funext x
     simp [clippedTest,childLogTest,logPhase]
@@ -85,6 +86,6 @@ theorem rawMoment_reference (data : RowData)
 
 end SevenEighths.DetectorDictionaryInverseRawFourier
 
-end
+
 
 end OAI

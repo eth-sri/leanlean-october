@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationMask
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Complex
 namespace SevenEighths.HeckeInverseAmplification
@@ -14,8 +14,8 @@ open HeckeFamily HeckeDyadic
 
 theorem prime_column_energy (χ ψ : Character) (P : SmoothMobiusCorrection.PrimeIdeal)
     (hm : idealCoeff ψ=IdealEuler.deletePrimes {P} (idealCoeff χ))
-    (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hWs : Function.support W⊆Icc a b)
-    (hW : ContDiff ℝ ∞ W) (D σ freq : ℝ) (hD : 0<D) :
+     W  (a b : ℝ) (ha : 0<a) (hWs : Function.support W⊆Icc a b)
+    (hW : ContDiff ℝ ∞ W)  D σ freq  (hD : 0<D) :
     ‖polynomial χ true W D σ freq‖^2≤
       2*(‖polynomial ψ true W D σ freq‖^2+
         ‖polynomial ψ true W (D/(P.val.absNorm : ℝ)) σ freq‖^2) := by
@@ -46,6 +46,6 @@ theorem prime_column_energy (χ ψ : Character) (P : SmoothMobiusCorrection.Prim
 
 end SevenEighths.HeckeInverseAmplification
 
-end
+
 
 end OAI

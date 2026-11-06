@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.Fibers
 public import Mathlib.Algebra.BigOperators.Group.Finset.Sigma
@@ -10,7 +11,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 
 open scoped BigOperators
-noncomputable section
+
 
 theorem bounded_finset_coefficient_sum_sq {C : Type*} (s : Finset C)
     (b f : C → ℂ) (hb : ∀ c ∈ s, ‖b c‖ ≤ 1) :
@@ -24,8 +25,7 @@ theorem bounded_finset_coefficient_sum_sq {C : Type*} (s : Finset C)
 theorem bounded_coefficient_sum_sq {C : Type*} [Fintype C]
     (b f : C → ℂ) (hb : ∀ c, ‖b c‖ ≤ 1) :
     ‖∑ c, b c * f c‖ ^ 2 ≤ (Fintype.card C : ℝ) * ∑ c, ‖f c‖ ^ 2 := by
-  classical
-  simpa using bounded_finset_coefficient_sum_sq Finset.univ b f (by simpa using hb)
+  solve_by_elim [bounded_finset_coefficient_sum_sq, Finset.univ]
 
 theorem positive_triple_enlarge {M H C : Type*}
     [DecidableEq M] [DecidableEq H] [DecidableEq C]
@@ -44,10 +44,7 @@ theorem positive_triple_enlarge {M H C : Type*}
       rfl
     exact hi.injective
   have hmapped : ((pairs.sigma (fun p => cset p.1)).image f) ⊆ hs ×ˢ mc := by
-    intro u hu
-    obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hu
-    have hp' := Finset.mem_sigma.mp hp
-    exact Finset.mem_product.mpr ⟨hh p.1 hp'.1, hm p.1 hp'.1 p.2 hp'.2⟩
+    grind
   have hb := Finset.sum_le_sum_of_injOn f hf.injOn hmapped
     (f := fun p : Σ _p : M × H, C => E p.1.2 p.1.1 p.2)
     (g := fun u : H × (M × C) => E u.1 u.2.1 u.2.2)
@@ -56,7 +53,7 @@ theorem positive_triple_enlarge {M H C : Type*}
 
 theorem column_fiber_sieve {K X Y : Type*} [DecidableEq X] [DecidableEq Y]
     (rows : Finset K) (source : Finset X) (target : Finset Y)
-    (φ : X → Y) (q : K → Y → ℂ) (a : X → ℂ) (Q D : ℝ) (hQ : 0 ≤ Q)
+    (φ : X → Y) (q : K → Y → ℂ) (a : X → ℂ)  Q D  (hQ : 0 ≤ Q)
     (hφ : ∀ x ∈ source, φ x ∈ target)
     (hfiber : ∀ y ∈ target, ((source.filter (fun x => φ x = y)).card : ℝ) ≤ D)
     (hsieve : ∀ f : Y → ℂ,
@@ -89,11 +86,9 @@ theorem column_fiber_sieve {K X Y : Type*} [DecidableEq X] [DecidableEq Y]
     simpa only [one_mul, f] using hf
   simp_rw [he]
   exact (hsieve f).trans (by
-    calc
-      _ ≤ Q * (D * ∑ x ∈ source, ‖a x‖ ^ 2) := mul_le_mul_of_nonneg_left hf' hQ
-      _ = _ := by ring)
+    nlinarith)
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

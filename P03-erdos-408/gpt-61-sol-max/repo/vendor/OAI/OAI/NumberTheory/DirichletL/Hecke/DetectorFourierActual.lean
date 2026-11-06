@@ -13,22 +13,22 @@ open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 open HeckeFamily HeckeDetectorProfiles
 noncomputable section
 
-def inverseCoefficient (χ : Character) (V W : ℝ → ℂ) (Dstar D : ℝ) (s : ℂ) (I : Ideal O) : ℂ :=
+def inverseCoefficient (χ : Character) (V W : ℝ → ℂ) (Dstar D : ℝ) (s : ℂ) (I : Ideal O)  :=
   (UniqueFactorizationMonoid.moebius I : ℂ)*IdealEuler.weighted (idealCoeff χ) s I*
     V ((Ideal.absNorm I : ℝ)/Dstar)*W ((Ideal.absNorm I : ℝ)/D)
 
-def plainCoefficient (χ : Character) (W : ℝ → ℂ) (N : ℝ) (s : ℂ) (I : Ideal O) : ℂ :=
+def plainCoefficient (χ : Character) (W : ℝ → ℂ) (N : ℝ) (s : ℂ) (I : Ideal O)  :=
   IdealEuler.weighted (idealCoeff χ) s I*W ((Ideal.absNorm I : ℝ)/N)
 
-lemma scaled_exp_log_product (x y D N R : ℝ) (hx : 0 < x) (hy : 0 < y)
+lemma scaled_exp_log_product  x y D N R  (hx : 0 < x) (hy : 0 < y)
     (hD : 0 < D) (hN : 0 < N) :
     (D*N/R)*Real.exp (Real.log (x/D)+Real.log (y/N)) = x*y/R := by
   rw [Real.exp_add, Real.exp_log (div_pos hx hD), Real.exp_log (div_pos hy hN)]
   field_simp
 
-theorem actual_pair_profile (χ : Character) (Ω V T W₁ W₂ : ℝ → ℂ)
-    (Dstar D N Y U : ℝ) (hD : 0 < D) (hN : 0 < N) (s : ℂ)
-    (I J : Ideal O) (hI : I ≠ 0) (hJ : J ≠ 0)
+theorem actual_pair_profile  χ   Ω V T W₁ W₂ 
+     Dstar D N Y U  (hD : 0 < D) (hN : 0 < N)  s 
+     I J  (hI : I ≠ 0) (hJ : J ≠ 0)
     (hΩ : W₁ ((Ideal.absNorm I : ℝ)/D) ≠ 0 → W₂ ((Ideal.absNorm J : ℝ)/N) ≠ 0 →
       Ω (Real.log ((Ideal.absNorm I : ℝ)/D)+Real.log ((Ideal.absNorm J : ℝ)/N)) = 1) :
     HeckeDetectorPartition.pairCoefficient χ V T Dstar Y U s (I,J)*

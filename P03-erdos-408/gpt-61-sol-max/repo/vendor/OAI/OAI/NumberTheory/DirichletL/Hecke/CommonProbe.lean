@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.SignalIdentity
 public import OAI.NumberTheory.DirichletL.Hecke.PrimitiveSupremum
@@ -14,7 +15,7 @@ open scoped Classical
 namespace SevenEighths.HeckeCommonProbe
 open HeckeFamily HeckeZeroSupremum
 
-def PrimitiveContract (ω σ : ℝ) : Prop :=
+def PrimitiveContract (ω σ : ℝ)  :=
   ∀ η : Character, FiniteFourier.IsPrimitiveOnIdeals η.residue →
     ∃ (χ : Character) (H : ℂ → ℂ) (J : ℝ → ℂ),
       (∀ I, idealCoeff χ I = if IsCoprime I χ.modulus then idealCoeff η I else 0) ∧
@@ -24,11 +25,15 @@ def PrimitiveContract (ω σ : ℝ) : Prop :=
       (fun x => J x - HeckeSignal.signal χ H (-11/16) x) =O[atTop]
         (fun x : ℝ => x^(beta-11/16-σ))
 
-def UniformCommonProbe : Prop :=
+def UniformCommonProbe  :=
   7/8 < beta → ∃ ω σ : ℝ,
     0 < ω ∧ ω < beta-7/8 ∧ 0 < σ ∧ PrimitiveContract ω σ
 
-theorem beta_le_seven_eighths (h : UniformCommonProbe) : beta ≤ 7/8 := by
+section
+variable (h : UniformCommonProbe)
+include h
+
+theorem beta_le_seven_eighths   : beta ≤ 7/8 := by
   by_contra hn
   obtain ⟨ω, σ, hω0, hω, hσ, hcontract⟩ := h (lt_of_not_ge hn)
   have hmargin := Supremum.continuationMargin_pos hω hσ
@@ -48,19 +53,20 @@ theorem beta_le_seven_eighths (h : UniformCommonProbe) : beta ≤ 7/8 := by
   · convert hJ using 1; ring_nf
   · convert herr using 1; ring_nf
 
-theorem hecke_ne_zero_of_common_probe (h : UniformCommonProbe)
-    (χ : Character) (s : ℂ) (hs : (7/8 : ℝ) < s.re)
-    (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : LFunction χ s ≠ 0 := by
-  exact LFunction_ne_zero_of_beta_lt χ ((beta_le_seven_eighths h).trans_lt hs) hpole
+theorem hecke_ne_zero_of_common_probe  
+     χ   s  (hs : (7/8 : ℝ) < s.re)
+    (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : LFunction χ s ≠ 0 := OAI.SevenEighths.HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt χ (LE.le.trans_lt (OAI.SevenEighths.HeckeCommonProbe.beta_le_seven_eighths h) hs) hpole
 
-theorem dirichlet_of_common_probe (h : UniformCommonProbe) (q : ℕ) (hq : q ≠ 0)
-    (χ : DirichletCharacter ℂ q) (s : ℂ) (hs : (7/8 : ℝ) < s.re)
+theorem dirichlet_of_common_probe   (q : ℕ) (hq : q ≠ 0)
+    (χ : DirichletCharacter ℂ q)  s  (hs : (7/8 : ℝ) < s.re)
     (hexc : ¬ (χ = 1 ∧ s = 1)) :
     letI : NeZero q := ⟨hq⟩
     DirichletCharacter.LFunction χ s ≠ 0 := by
   let : NeZero q := ⟨hq⟩
   exact HeckeDirichlet.dirichlet_seven_eighths_of_hecke
     (hecke_ne_zero_of_common_probe h) χ s hs hexc
+
+end
 
 end SevenEighths.HeckeCommonProbe
 

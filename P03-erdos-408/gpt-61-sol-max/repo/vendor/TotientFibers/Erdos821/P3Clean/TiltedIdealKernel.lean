@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.TwistedKernel
 public import Erdos821.P3Clean.PermutationSplit
@@ -19,7 +20,7 @@ open Erdos821.Blueprint.Graph
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
 def tiltedBannedRaw (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
-    (a b : P.BigLabels (J + F.ell)) : ℂ :=
+    (a b : P.BigLabels (J + F.ell))  :=
   ∑ v : Fin A.patternCount, ∑ u : P.BigAux J,
     if (A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u then
       ( (A.pattern v).bigAuxMass u * tiltedFreshMass F n (A.pattern v) b : ℝ) *
@@ -27,25 +28,35 @@ def tiltedBannedRaw (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
         phase (theta * ((A.pattern v).DBig a u : ℝ)) else 0
 
 def tiltedBannedKernel (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
-    (a b : P.BigLabels (J + F.ell)) : ℂ :=
+    (a b : P.BigLabels (J + F.ell))  :=
   bigSymmetryFactor P (J + F.ell) *
     ∑ p : P.BigPermutations (J + F.ell), ∑ q : P.BigPermutations (J + F.ell),
       tiltedBannedRaw A n theta forward (P.actBig p a) (P.actBig q b)
 
-theorem phase_add (s t : ℝ) : phase (s + t) = phase s * phase t := by
+section
+variable (s t a : ℝ)
+
+
+theorem phase_add   : phase (s + t) = phase s * phase t := by
   unfold phase
   rw [← Complex.exp_add]
   congr 1
   push_cast
   ring
 
-theorem phase_combine (s t a : ℝ) : phase (s * a) * phase (t * a) = phase ((s + t) * a) := by
+theorem phase_combine   : phase (s * a) * phase (t * a) = phase ((s + t) * a) := by
   rw [← phase_add]
   congr 1
   ring
 
-theorem bigStep_real (A : Model F P J m) (ν : Pattern P J F.ell m) (forward : Bool)
-    (d : SmallLabels P J) (a : P.BigLabels (J + F.ell)) (u : P.BigAux J) :
+end
+
+section
+variable (A : Model F P J m) (ν : Pattern P J F.ell m) (forward : Bool) (d : SmallLabels P J) (a b : P.BigLabels (J + F.ell)) (u : P.BigAux J)
+
+
+theorem bigStep_real      
+          :
     (bigStep A ν forward d a u : ℝ) =
       (((if forward then A.k else -A.k) * (prefixPrimeProduct J d : ℤ) : ℤ) : ℝ) *
         (ν.DBig a u : ℝ) := by
@@ -53,8 +64,8 @@ theorem bigStep_real (A : Model F P J m) (ν : Pattern P J F.ell m) (forward : B
   push_cast
   ring
 
-theorem DBig_eq_of_matches (ν : Pattern P J F.ell m) (a b : P.BigLabels (J + F.ell))
-    (u : P.BigAux J) (h : ν.matchesBig a b) : ν.DBig a u = ν.DBig b u := by
+theorem DBig_eq_of_matches    
+      (h : ν.matchesBig a b) : ν.DBig a u = ν.DBig b u := by
   unfold Pattern.DBig
   apply Finset.prod_congr rfl
   intro g _
@@ -64,9 +75,9 @@ theorem DBig_eq_of_matches (ν : Pattern P J F.ell m) (a b : P.BigLabels (J + F.
   · simp only [ite_eq_left hi]
   · simp only [ite_eq_right hi, h g (ν.slot i) ⟨i, rfl, hi⟩]
 
-theorem regularCycleKernel_ideal_frequency (A : Model F P J m) (n B : ℕ)
-    [Fintype (CutPendingState P B)] (theta : ℝ) (forward : Bool) (d : SmallLabels P J)
-    (psi : AddChar (PendingCycle P B) ℂ) :
+theorem regularCycleKernel_ideal_frequency    n B 
+    [Fintype (CutPendingState P B)]  theta   forward   d 
+     psi  :
     ∃ theta' : ℝ, ∀ a b : P.BigLabels (J + F.ell),
       fourierFibre (regularCycleKernel A n B theta forward d) psi a b =
         smallSignedCoefficient A forward d * tiltedBannedRaw A n theta' forward a b := by
@@ -87,14 +98,10 @@ theorem regularCycleKernel_ideal_frequency (A : Model F P J m) (n B : ℕ)
         phase ((theta * base + t) * ((A.pattern v).DBig a u : ℝ)) := by
       rw [← mul_assoc]
       exact phase_combine _ _ _
-    calc
-      _ = smallSignedCoefficient A forward d *
-          (((A.pattern v).bigAuxMass u * tiltedFreshMass F n (A.pattern v) b : ℝ) *
-            bigSignedCoefficient A (A.pattern v) forward a b u *
-            (phase (theta * (base * ((A.pattern v).DBig a u : ℝ))) *
-              phase (t * ((A.pattern v).DBig a u : ℝ)))) := by ring
-      _ = _ := by rw [hp]
+    grind
   · simp only [ite_eq_right h, mul_zero]
+
+end
 
 
 end Erdos821.P3Clean

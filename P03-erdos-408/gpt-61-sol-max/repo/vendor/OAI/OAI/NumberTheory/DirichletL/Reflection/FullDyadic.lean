@@ -16,7 +16,7 @@ variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 def literalDyadicBlock (G : PrimeFamily ι)
     (D : ControlledStratumArithmetic G.generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) (u : Eisˣ) (i : ℕ×ℕ×ℕ) : ℂ :=
+    (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) (u : Eisˣ) (i : ℕ×ℕ×ℕ)  :=
   ∑ n : dualIdealDyad i.2.2, ∑ b : dualIdealDyad i.2.1,
     literalRawSeries G D s hc j S W X
       (u,i.1,⟨n.val,((mem_dualIdealDyad _ _).mp n.property).1⟩,
@@ -26,9 +26,9 @@ theorem mixedReflectedValue_eq_dyadic (G : PrimeFamily ι)
     (D : ControlledStratumArithmetic G.generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
     (hN : (9:Eis)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
-    (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
-    (S : Finset ι) (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
-    (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0<X) :
+    (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2)  j  (hj : ∀ i, j i<6)
+     S   W  (lo hi : ℝ) (hlo : 0<lo)
+    (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)  X  (hX : 0<X) :
     mixedReflectedValue D s G.generator_ne_zero hc G.generator_good j S W X=
       fixedRadialCoefficientScalar*s.stratumShapeFactor (c*∏ i,G.generator i)*
         ∑' u : Eisˣ, ∑' i : ℕ×ℕ×ℕ, literalDyadicBlock G D s hc j S W X u i := by

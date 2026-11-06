@@ -7,18 +7,18 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedIntegralEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
 open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 open CanonicalCubeSeparation JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
+
 
 theorem markedReopenedCubeBin_energy
     {σ : Type*} [DecidableEq σ]
-    (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes ⊆ S) (hSp : ∀P∈S,Prime P)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (hbad : fixedBadPrimes ⊆ S) (hSp : ∀P∈S,Prime P)
     (Q : Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D) →₀ ℕ))
-    (labels : Finset (Ideal O)) (Ψ : O →* ℂ) (m : O) (W : ℝ → ℂ)
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (W : ℝ → ℂ)
     (a b : ℝ) (ha : 0 < a) (hb : 0≤b) (hs : Function.support W ⊆ Set.Icc a b)
     (hW : ContDiff ℝ ∞ W) (V : 𝓢(ℝ,ℂ))
     (hV : ∀ u, |u| ≤ columnWindowRadius a b → V u = 1)
@@ -27,8 +27,8 @@ theorem markedReopenedCubeBin_energy
     (hn : ∀ v ∈ Q, B ≤ (Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v) : ℝ))
     (hn' : ∀ v ∈ Q, (Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v) : ℝ) ≤ Real.exp 1*B)
     (slots : Finset σ)
-    (lists : σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (weights : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
+     lists 
+     weights  :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
     letI : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
@@ -70,7 +70,7 @@ theorem markedReopenedCubeBin_energy
     (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Q labels β n (fun v T=>primeMark slots lists weights (T∪v.support)) Ψ m
     (reopeningCoefficient W a b ha hs hW) V B ell K E d hB hell hK hE hbound
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

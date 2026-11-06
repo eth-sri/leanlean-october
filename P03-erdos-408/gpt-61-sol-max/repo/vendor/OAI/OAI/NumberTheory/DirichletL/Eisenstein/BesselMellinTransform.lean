@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Eisenstein.SourceProjection
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.CuspAverage
 
@@ -10,99 +13,110 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+ 
+ 
+ 
 
-lemma schlafliBesselK_cubic_scaled_mellin_integrable (s : ℂ) (c : ℝ)
-    (hs : 1/3<s.re) (hc : 0<c) :
+section
+variable (s : ℂ) (c : ℝ) (hs : 1/3<s.re) (hc : 0<c)
+
+include hs hc in
+lemma schlafliBesselK_cubic_scaled_mellin_integrable    
+        :
     IntegrableOn (fun v : ℝ => (v:ℂ)^(s-1)*schlafliBesselK (1/3) (c*v))
       (Set.Ioi 0) volume := by
-  have hb : MellinConvergent (fun v => schlafliBesselK (1/3) v) s := by
+  have hb : MellinConvergent (schlafliBesselK (1/3)) s := by
     simpa only [MellinConvergent,smul_eq_mul] using schlafliBesselK_cubic_mellin_integrable s hs
   have hh := (MellinConvergent.comp_mul_left
-    (f := fun v => schlafliBesselK (1/3) v) (s := s) hc).mpr hb
+    (f := schlafliBesselK (1/3)) (s := s) hc).mpr hb
   simpa only [MellinConvergent,smul_eq_mul] using hh
 
-lemma schlafliBesselK_cubic_scaled_mellin (s : ℂ) (c : ℝ)
-    (hs : 1/3<s.re) (hc : 0<c) :
+include hs hc in
+lemma schlafliBesselK_cubic_scaled_mellin    
+        :
     (∫v : ℝ in Set.Ioi 0,(v:ℂ)^(s-1)*schlafliBesselK (1/3) (c*v)) =
       (c:ℂ)^(-s)*((2:ℂ)^(s-2)*Complex.Gamma ((s-1/3)/2)*Complex.Gamma ((s+1/3)/2)) := by
-  have hh := mellin_comp_mul_left (fun v => schlafliBesselK (1/3) v) s hc
+  have hh := mellin_comp_mul_left (schlafliBesselK (1/3)) s hc
   simp only [mellin,smul_eq_mul] at hh
   rw [schlafliBesselK_cubic_mellin s hs] at hh
   exact hh
 
-lemma source_cubic_bessel_mellin_integrable (s freq : ℂ)
-    (hs : -(1/3)<s.re) (hfreq : freq≠0) :
+end
+
+section
+variable (s freq : ℂ) (hs : -(1/3)<s.re) (hfreq : freq≠0)
+
+include hs hfreq in
+lemma source_cubic_bessel_mellin_integrable  
+        :
     IntegrableOn (fun v : ℝ => (v:ℂ)^(2*s)*
       schlafliBesselK (1/3) (4*Real.pi*‖freq‖*v)) (Set.Ioi 0) volume := by
   have hc : 0<4*Real.pi*‖freq‖ := by positivity
@@ -110,8 +124,9 @@ lemma source_cubic_bessel_mellin_integrable (s freq : ℂ)
   simpa only [show (2*s+1:ℂ)-1=2*s by ring] using
     schlafliBesselK_cubic_scaled_mellin_integrable (2*s+1) (4*Real.pi*‖freq‖) ht hc
 
-theorem source_cubic_bessel_mellin (s freq : ℂ)
-    (hs : -(1/3)<s.re) (hfreq : freq≠0) :
+include hs hfreq in
+theorem source_cubic_bessel_mellin  
+        :
     (∫v : ℝ in Set.Ioi 0,(v:ℂ)^(2*s)*schlafliBesselK (1/3) (4*Real.pi*‖freq‖*v)) =
       ((2:ℂ)^(2*s-1)*Complex.Gamma (s+1/3)*Complex.Gamma (s+2/3))/
         ((4*Real.pi*‖freq‖:ℝ):ℂ)^(2*s+1) := by
@@ -125,16 +140,18 @@ theorem source_cubic_bessel_mellin (s freq : ℂ)
   rw [hh]
   ring
 
+end
+
 end CubicEisenstein
 
-open scoped BigOperators Classical
+ 
 
 namespace ShortDraftCRT
 
 section
 variable {R : Type*} [CommRing R]
 
-theorem exists_fixed_completion (M c r a d0 : R)
+theorem exists_fixed_completion  M c r a d0 
     (hfixed : c∣a*d0-1) (hr : IsCoprime r (M*c)) (ha : IsCoprime a r) :
     ∃b d : R,a*d-b*(c*r)=1 ∧ M*c∣d-d0 := by
   have hcr : IsCoprime c r := hr.of_mul_right_right.symm
@@ -186,14 +203,13 @@ theorem fixed_completion_congr (M c r r0 a a0 b b0 d d0 : R)
 
 end
 
-open scoped BigOperators Classical Matrix
+open scoped     Matrix
 
 variable {R : Type*} [CommRing R] [IsDomain R]
 
 omit [IsDomain R] in
 lemma quotient_eq_of_dvd_sub (M x y : R) (h : M ∣ x-y) :
-    Ideal.Quotient.mk (Ideal.span {M}) x = Ideal.Quotient.mk (Ideal.span {M}) y := by
-  exact Ideal.Quotient.eq.mpr (Ideal.mem_span_singleton.mpr h)
+    Ideal.Quotient.mk (Ideal.span {M}) x = Ideal.Quotient.mk (Ideal.span {M}) y := Ideal.Quotient.eq.mpr (Ideal.mem_span_singleton.mpr h)
 
 theorem fixed_completion_matrix_congr (M c r r0 a a0 b b0 d d0 : R)
     (hc : c≠0) (hr : IsCoprime M r)
@@ -237,24 +253,23 @@ theorem exists_fixed_matrix_completion (M c a0 r0 d0 b0 : R)
 
 end ShortDraftCRT
 
-open scoped BigOperators Classical
+ 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open     CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
-def conductorReduction (a b:Eis):
-    (Eis⧸Ideal.span {a*b})→+*(Eis⧸Ideal.span {a}):=
+def conductorReduction (a b:Eis):=
   Ideal.Quotient.factor (Ideal.span_singleton_le_span_singleton.mpr (dvd_mul_right a b))
 
-lemma conductorReduction_surjective (a b:Eis):Function.Surjective (conductorReduction a b):=
+lemma conductorReduction_surjective  a b :Function.Surjective (conductorReduction a b):=
   Ideal.Quotient.factor_surjective _
 
-def quotientTrace (c:Eis) (hc:c≠0):AddChar (Eis⧸Ideal.span {c}) ℂ:=
+def quotientTrace (c:Eis) (hc:c≠0):=
   eisTraceModChar ShortDraftTrace.breveE ConcreteBreveE.breveE_period_coordinates c hc
 
-lemma quotientTrace_mk (c:Eis) (hc:c≠0) (x:Eis):
+lemma quotientTrace_mk  c   hc   x :
     quotientTrace c hc (Ideal.Quotient.mk _ x)=residueAdditive (3*x) c 1:=by
   simp only [quotientTrace,eisTraceModChar,IdealGaussCRT.traceModChar_mk]
   unfold residueAdditive cuspFrequency
@@ -263,12 +278,15 @@ lemma quotientTrace_mk (c:Eis) (hc:c≠0) (x:Eis):
   ring
 
 def conductorFourier (a b:Eis) (ha:a≠0) (hb:b≠0)
-    (F:(Eis⧸Ideal.span {a})→ℂ) (h:Eis):ℂ:=
+    (F:(Eis⧸Ideal.span {a})→ℂ) (h:Eis):=
   ∑'x:Eis⧸Ideal.span {a*b},F (conductorReduction a b x)*
     quotientTrace (a*b) (mul_ne_zero ha hb) (Ideal.Quotient.mk _ h*x)
 
-lemma conductorFourier_shift (a b:Eis) (ha:a≠0) (hb:b≠0)
-    (F:(Eis⧸Ideal.span {a})→ℂ) (h t:Eis):
+section
+variable (a b k : Eis) (ha : a≠0) (hb : b≠0) (F : (Eis⧸Ideal.span {a})→ℂ) (h t : Eis)
+
+lemma conductorFourier_shift      
+       :
     conductorFourier a b ha hb F h=
       quotientTrace (a*b) (mul_ne_zero ha hb) (Ideal.Quotient.mk _ (h*a*t))*
         conductorFourier a b ha hb F h:=by
@@ -292,8 +310,8 @@ lemma conductorFourier_shift (a b:Eis) (ha:a≠0) (hb:b≠0)
   rw [he]
   ring
 
-theorem conductorFourier_support (a b:Eis) (ha:a≠0) (hb:b≠0)
-    (F:(Eis⧸Ideal.span {a})→ℂ) (h:Eis)
+theorem conductorFourier_support      
+       
     (hF:conductorFourier a b ha hb F h≠0):b∣h:=by
   have hphase (t:Eis):
       quotientTrace (a*b) (mul_ne_zero ha hb) (Ideal.Quotient.mk _ (h*a*t))=1:=by
@@ -304,12 +322,13 @@ theorem conductorFourier_support (a b:Eis) (ha:a≠0) (hb:b≠0)
     apply GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive (a*b) (mul_ne_zero ha hb) hn
     ext x
     obtain ⟨t,rfl⟩:=Ideal.Quotient.mk_surjective x
-    simpa only [AddChar.mulShift_apply,←map_mul,AddChar.one_apply,quotientTrace] using hphase t
+    solve_by_elim
   have hd:a*b∣h*a:=Ideal.mem_span_singleton.mp (Ideal.Quotient.eq_zero_iff_mem.mp hz)
   have hd':a*b∣a*h:=by simpa only [mul_comm h a] using hd
   exact (mul_dvd_mul_iff_left ha).mp hd'
 
-lemma conductorReduction_kernel_card (a b:Eis) (ha:a≠0) (_hb:b≠0):
+include ha in
+lemma conductorReduction_kernel_card     (_hb:b≠0):
     Nat.card (conductorReduction a b).toAddMonoidHom.ker=Ideal.absNorm (Ideal.span {b}):=by
   have hc:=card_ring_eq_card_mul_kernel (conductorReduction a b)
     (conductorReduction_surjective a b)
@@ -324,18 +343,10 @@ lemma conductorReduction_kernel_card (a b:Eis) (ha:a≠0) (_hb:b≠0):
 
 private theorem finite_tsum_conductor_pullback {R S:Type*} [AddGroup R] [AddGroup S]
     [Finite R] [Finite S] (f:R→+S) (hf:Function.Surjective f) (F:S→ℂ):
-    (∑'x:R,F (f x))=(Nat.card f.ker:ℂ)*∑'y:S,F y:=by
-  let:Fintype R:=Fintype.ofFinite _
-  let:Fintype S:=Fintype.ofFinite _
-  let:Fintype f.ker:=Fintype.ofFinite _
-  rw [tsum_fintype,tsum_fintype,←Fintype.sum_fiberwise' f F]
-  have hc (y:S):Fintype.card {x:R//f x=y}=Fintype.card f.ker:=
-    Fintype.card_congr (AddMonoidHom.fiberEquivKerOfSurjective hf y)
-  simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,hc,Nat.card_eq_fintype_card]
-  rw [Finset.mul_sum]
+    (∑'x:R,F (f x))=(Nat.card f.ker:ℂ)*∑'y:S,F y:= by solve_by_elim [_root_.SharedProofs.shared_finite_tsum_comp_addHom]
 
-lemma quotientTrace_conductor_scale (a b k:Eis) (ha:a≠0) (hb:b≠0)
-    (x:Eis⧸Ideal.span {a*b}):
+lemma quotientTrace_conductor_scale      
+     x :
     quotientTrace (a*b) (mul_ne_zero ha hb) (Ideal.Quotient.mk _ (b*k)*x)=
       quotientTrace a ha (Ideal.Quotient.mk _ k*conductorReduction a b x):=by
   obtain ⟨d,rfl⟩:=Ideal.Quotient.mk_surjective x
@@ -349,8 +360,8 @@ lemma quotientTrace_conductor_scale (a b k:Eis) (ha:a≠0) (hb:b≠0)
   have hbe:=eisEmbedding_ne_zero hb
   field_simp
 
-theorem conductorFourier_lift (a b:Eis) (ha:a≠0) (hb:b≠0)
-    (F:(Eis⧸Ideal.span {a})→ℂ) (k:Eis):
+theorem conductorFourier_lift      
+       k :
     conductorFourier a b ha hb F (b*k)=
       (Ideal.absNorm (Ideal.span {b}):ℂ)*
         ∑'x:Eis⧸Ideal.span {a},F x*quotientTrace a ha (Ideal.Quotient.mk _ k*x):=by
@@ -371,12 +382,14 @@ theorem conductorFourier_lift (a b:Eis) (ha:a≠0) (hb:b≠0)
       exact he
 
 end
+
+end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open     CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma cubicSymbol_pow_denominator (x p:Eis) (n:ℕ):
+lemma cubicSymbol_pow_denominator  x p   n :
     symbol x (p^n)=(symbol x p)^n:=by
   induction n with
   | zero=>simp
@@ -404,13 +417,16 @@ def primeCubicMulChar (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
     rw [symbol_prime p hp hprimary,primeValue_eq _ hg,
       GaussianShiftedPartition.representative_spec,MulChar.map_nonunit _ hx,map_zero]
 
-lemma primeCubicMulChar_mk (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (x:Eis):
+section
+variable (p : Eis) (hp : Prime p) (hprimary : lambda^2∣p-1) (c : Eis) (hc : c≠0) (n : ℕ) (h d : Eis)
+
+lemma primeCubicMulChar_mk        x :
     primeCubicMulChar p hp hprimary (Ideal.Quotient.mk _ x)=eisEmbedding (symbol x p):=by
   change eisEmbedding (symbol (GaussianShiftedPartition.representative p
     (Ideal.Quotient.mk _ x)) p)=_
   rw [symbol_congr (gaussRep_mk_congr p x)]
 
-lemma quotientTrace_mk_product (c:Eis) (hc:c≠0) (h d:Eis):
+lemma quotientTrace_mk_product      :
     quotientTrace c hc (Ideal.Quotient.mk _ h*Ideal.Quotient.mk _ d)=
       residueAdditive (3*h) c d:=by
   rw [←map_mul,quotientTrace_mk]
@@ -419,8 +435,8 @@ lemma quotientTrace_mk_product (c:Eis) (hc:c≠0) (h d:Eis):
   congr 1
   ring
 
-lemma conductorReduction_prime_power_unit (p:Eis) (n:ℕ)
-    (x:Eis⧸Ideal.span {p*p^n}):
+lemma conductorReduction_prime_power_unit    
+     x :
     IsUnit (conductorReduction p (p^n) x)↔IsUnit x:=by
   obtain ⟨d,rfl⟩:=Ideal.Quotient.mk_surjective x
   change IsUnit (Ideal.Quotient.mk (Ideal.span {p}) d)↔
@@ -428,8 +444,8 @@ lemma conductorReduction_prime_power_unit (p:Eis) (n:ℕ)
   rw [isUnit_quotient_span_iff,isUnit_quotient_span_iff,←pow_succ',
     IsCoprime.pow_left_iff (Nat.succ_pos n)]
 
-theorem cubicUnitGaussSum_prime_power_fourier (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (n:ℕ) (h:Eis):
+theorem cubicUnitGaussSum_prime_power_fourier    
+         :
     cubicUnitGaussSum h (p^(n+1))=
       conductorFourier p (p^n) hp.ne_zero (pow_ne_zero _ hp.ne_zero)
         (fun x=>(primeCubicMulChar p hp hprimary^(n+1)) x) h:=by
@@ -460,19 +476,22 @@ theorem cubicUnitGaussSum_prime_power_fourier (p:Eis) (hp:Prime p)
   rw [MulChar.pow_apply' _ (Nat.succ_ne_zero n),primeCubicMulChar_mk,
     quotientTrace_mk_product,←pow_succ',cubicSymbol_pow_denominator,map_pow]
 
-theorem cubicUnitGaussSum_prime_power_support (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (n:ℕ) (h:Eis)
+include hp hprimary in
+theorem cubicUnitGaussSum_prime_power_support    
+         
     (hne:cubicUnitGaussSum h (p^(n+1))≠0):p^n∣h:=by
   rw [cubicUnitGaussSum_prime_power_fourier p hp hprimary n h] at hne
-  exact conductorFourier_support p (p^n) hp.ne_zero (pow_ne_zero _ hp.ne_zero) _ h hne
+  solve_by_elim [conductorFourier_support]
+
+end
 
 def primeCubicGauss (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
     (e:ℕ) (h:Eis):ℂ:=
   ∑'x:Eis⧸Ideal.span {p},(primeCubicMulChar p hp hprimary^e) x*
     quotientTrace p hp.ne_zero (Ideal.Quotient.mk _ h*x)
 
-theorem cubicUnitGaussSum_prime_power_lift (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (n:ℕ) (h:Eis):
+theorem cubicUnitGaussSum_prime_power_lift  p   hp 
+    (hprimary:lambda^2∣p-1)  n   h :
     cubicUnitGaussSum (p^n*h) (p^(n+1))=
       (Ideal.absNorm (Ideal.span {p}):ℂ)^n*primeCubicGauss p hp hprimary (n+1) h:=by
   rw [cubicUnitGaussSum_prime_power_fourier p hp hprimary n,
@@ -484,10 +503,13 @@ theorem cubicUnitGaussSum_prime_power_lift (p:Eis) (hp:Prime p)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open     CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma primeCubicMulChar_cube (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
+section
+variable (p : Eis) (hp : Prime p) (hprimary : lambda^2∣p-1) (e : ℕ) (he : 3∣e) (h : Eis)
+
+lemma primeCubicMulChar_cube      :
     primeCubicMulChar p hp hprimary^3=1:=by
   apply DFunLike.ext
   intro x
@@ -498,7 +520,7 @@ lemma primeCubicMulChar_cube (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
     exact (MulChar.one_apply_coe hx.unit).symm
   · rw [MulChar.map_nonunit _ hx,MulChar.map_nonunit _ hx]
 
-lemma primeCubicMulChar_ne_one (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
+lemma primeCubicMulChar_ne_one      :
     primeCubicMulChar p hp hprimary≠1:=by
   let:(Ideal.span {p}:Ideal Eis).IsMaximal:=
     PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
@@ -521,33 +543,33 @@ lemma primeCubicMulChar_ne_one (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
     simpa only [hoc,map_one] using he
   · rw [MulChar.map_nonunit _ hx,MulChar.map_nonunit _ hx]
 
-lemma primeCubicMulChar_order (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
+lemma primeCubicMulChar_order      :
     orderOf (primeCubicMulChar p hp hprimary)=3:=by
   have hd:=orderOf_dvd_of_pow_eq_one (primeCubicMulChar_cube p hp hprimary)
   rcases (Nat.dvd_prime Nat.prime_three).mp hd with h1|h3
-  · exact False.elim (primeCubicMulChar_ne_one p hp hprimary (orderOf_eq_one_iff.mp h1))
+  · simp_all [False.elim, primeCubicMulChar_ne_one]
   · exact h3
 
-lemma primeCubicMulChar_pow_eq_one (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (e:ℕ):
+lemma primeCubicMulChar_pow_eq_one        :
     primeCubicMulChar p hp hprimary^e=1↔3∣e:=by
   rw [←orderOf_dvd_iff_pow_eq_one,primeCubicMulChar_order]
 
-lemma primeCubicGauss_mod_three (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (e:ℕ) (h:Eis):
+lemma primeCubicGauss_mod_three          :
     primeCubicGauss p hp hprimary e h=primeCubicGauss p hp hprimary (e%3) h:=by
   unfold primeCubicGauss
   have he:=pow_mod_orderOf (primeCubicMulChar p hp hprimary) e
   rw [primeCubicMulChar_order] at he
   rw [he]
 
-lemma primeCubicGauss_eq_gaussSum (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
-    (e:ℕ) (h:Eis) [Fintype (Eis⧸Ideal.span {p})]:
+lemma primeCubicGauss_eq_gaussSum      
+        [Fintype (Eis⧸Ideal.span {p})]:
     primeCubicGauss p hp hprimary e h=
       gaussSum (primeCubicMulChar p hp hprimary^e)
         ((quotientTrace p hp.ne_zero).mulShift (Ideal.Quotient.mk _ h)):=by
   simp only [primeCubicGauss,tsum_fintype,gaussSum,AddChar.mulShift_apply]
 
-theorem primeCubicGauss_of_dvd (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
-    (e:ℕ) (h:Eis) (hph:p∣h):
+theorem primeCubicGauss_of_dvd      
+        (hph:p∣h):
     primeCubicGauss p hp hprimary e h=
       if 3∣e then (Ideal.absNorm (Ideal.span {p}):ℂ)-1 else 0:=by
   let:(Ideal.span {p}:Ideal Eis).IsMaximal:=
@@ -563,8 +585,9 @@ theorem primeCubicGauss_of_dvd (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
     rfl
   · exact gaussSum_one_right (fun hχ=>he ((primeCubicMulChar_pow_eq_one p hp hprimary e).mp hχ))
 
-theorem primeCubicGauss_trivial_nonzero (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
-    (e:ℕ) (he:3∣e) (h:Eis) (hph:¬p∣h):
+include he in
+theorem primeCubicGauss_trivial_nonzero      
+          (hph:¬p∣h):
     primeCubicGauss p hp hprimary e h=-1:=by
   let:(Ideal.span {p}:Ideal Eis).IsMaximal:=
     PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
@@ -576,8 +599,8 @@ theorem primeCubicGauss_trivial_nonzero (p:Eis) (hp:Prime p) (hprimary:lambda^2�
   rw [primeCubicGauss_eq_gaussSum,(primeCubicMulChar_pow_eq_one p hp hprimary e).mpr he]
   exact gaussSum_one_left (GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp.ne_zero hh)
 
-theorem primeCubicGauss_one_mul_two (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
-    (h:Eis) (hph:¬p∣h):
+theorem primeCubicGauss_one_mul_two      
+      (hph:¬p∣h):
     primeCubicGauss p hp hprimary 1 h*primeCubicGauss p hp hprimary 2 h=
       (Ideal.absNorm (Ideal.span {p}):ℂ):=by
   let:(Ideal.span {p}:Ideal Eis).IsMaximal:=
@@ -599,10 +622,12 @@ theorem primeCubicGauss_one_mul_two (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-
   simpa only [primeCubicGauss_eq_gaussSum,pow_one,Nat.reduceSub,
     Nat.card_eq_fintype_card] using he
 
-lemma primeCubicGauss_one_eq (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (h:Eis):
+lemma primeCubicGauss_one_eq        :
     primeCubicGauss p hp hprimary 1 h=cubicUnitGaussSum h p:=by
   have he:=cubicUnitGaussSum_prime_power_lift p hp hprimary 0 h
-  simpa only [pow_zero,one_mul,pow_one,Nat.zero_add] using he.symm
+  simp_all
+
+end
 
 end CubicEisenstein
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Cauchy
 public import Erdos408.OneSided.Decomposition.Lists
@@ -38,8 +39,7 @@ variable {K : ℕ}
 /-- The support of `𝒯` from `(P, p)` to `(Q, p')`: the pads are copied, the new labels avoid
 the source labels, `D ∈ [d₀, 2d₀)` divides `det(P, Q)`, `|det(P, Q)/D| < 5Y`, and the last
 products `b` and `a` lie in `(Y, 4Y)`. -/
-def RowEdge (Y d₀ : ℝ) {J : ℕ} (P : ℕ × ℕ) (p : Lists K J) (Q : ℕ × ℕ) (p' : Lists K J) :
-    Prop :=
+def RowEdge (Y d₀ : ℝ) {J } (P : ℕ × ℕ) (p : Lists K J) (Q : ℕ × ℕ) (p' : Lists K J)  :=
   (∀ i (h : Fin J), p' i h.castSucc = p i h.castSucc) ∧
     (∀ i i' h', p' i (Fin.last J) ≠ p i' h') ∧
     d₀ ≤ (padProd p : ℝ) ∧ (padProd p : ℝ) < 2 * d₀ ∧ (padProd p : ℤ) ∣ det P Q ∧
@@ -48,11 +48,15 @@ def RowEdge (Y d₀ : ℝ) {J : ℕ} (P : ℕ × ℕ) (p : Lists K J) (Q : ℕ �
     Y < (lastProd p' : ℝ) ∧ (lastProd p' : ℝ) < 4 * Y
 
 /-- The raw condition `det(P, Q)/D = b - a`. -/
-def RawEdge {J : ℕ} (P : ℕ × ℕ) (p : Lists K J) (Q : ℕ × ℕ) (p' : Lists K J) : Prop :=
+def RawEdge {J } (P : ℕ × ℕ) (p : Lists K J) (Q : ℕ × ℕ) (p' : Lists K J)  :=
   det P Q / padProd p = (lastProd p : ℤ) - lastProd p'
 
+section
+variable {q A₀ x : ℝ} (hq : 0 < q) (hq₁ : q ≤ 1) (hL : 0 < Real.log x) {d : Data K} (hV : 0 < d.bandMass x) {Y d₀ : ℝ} (hY : 0 < Y) (hd₀ : 0 < d₀) (s s' : State x d Y d₀) {U V : ℝ} (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {J : ℕ} (p : Lists K J) {n : ℕ} (hn : n ≠ 0)
+
+
 /-- A state has at least `K M` band primes in `P₁`: its labels. -/
-theorem le_bandCount {x : ℝ} {d : Data K} {Y d₀ : ℝ} (s : State x d Y d₀) :
+theorem le_bandCount         :
     K * (padCount x + 1) ≤ bandCount x d s.1.1.1 := by
   obtain ⟨-, hband, hinj, hdvd⟩ := state_props s
   unfold bandCount
@@ -60,9 +64,7 @@ theorem le_bandCount {x : ℝ} {d : Data K} {Y d₀ : ℝ} (s : State x d Y d₀
     intro i
     unfold primeCount
     have hsub : univ.image (s.1.2 i) ⊆ (band x (d.a i)).filter (· ∣ s.1.1.1) := by
-      intro r hr
-      obtain ⟨h, -, rfl⟩ := mem_image.1 hr
-      exact mem_filter.2 ⟨hband i h, hdvd i h⟩
+      grind
     have := card_le_card hsub
     rwa [card_image_of_injective _ (hinj i), card_univ, Fintype.card_fin] at this
   calc K * (padCount x + 1) = ∑ _i : Fin K, (padCount x + 1) := by
@@ -70,11 +72,12 @@ theorem le_bandCount {x : ℝ} {d : Data K} {Y d₀ : ℝ} (s : State x d Y d₀
     _ ≤ _ := sum_le_sum fun i _ => h i
 
 open scoped Classical in
+include hq hq₁ hL hV hY hd₀ in
 /-- An entry of `𝒯` is at most `∏ V_i^{-1} ([t = b - a] + 4 L^{3A₀}/Y)` on its support, and
 zero off it. -/
-theorem norm_rowOp_le {q A₀ x : ℝ} (hq : 0 < q) (hq₁ : q ≤ 1) (hL : 0 < Real.log x)
-    {d : Data K} (hV : 0 < d.bandMass x) {Y d₀ : ℝ} (hY : 0 < Y) (hd₀ : 0 < d₀)
-    (s s' : State x d Y d₀) :
+theorem norm_rowOp_le        
+             
+      :
     ‖rowOp q A₀ x d Y d₀ s s'‖ ≤
       if RowEdge Y d₀ s.1.1 s.1.2 s'.1.1 s'.1.2 then
         (d.bandMass x)⁻¹ * ((if RawEdge s.1.1 s.1.2 s'.1.1 s'.1.2 then 1 else 0) +
@@ -119,12 +122,11 @@ theorem norm_rowOp_le {q A₀ x : ℝ} (hq : 0 < q) (hq₁ : q ≤ 1) (hL : 0 < 
       dyadicBump (lastProd s'.1.2 / Y) * plateau ((t : ℝ) / Y) *
       q ^ (((bandCount x d s.1.1.1 : ℝ) - K * (padCount x + 1)) / 2 +
         ((bandCount x d s'.1.1.1 : ℝ) - K * (padCount x + 1)) / 2)| ≤ (d.bandMass x)⁻¹ := by
-    have hW : 0 ≤ (d.bandMass x)⁻¹ := inv_nonneg.2 hV.le
+    
     have hdD : d₀ / D ≤ 1 := (div_le_one hD0).2 hD₁
     have hψ0 : 0 ≤ plateau ((t : ℝ) / Y) := smoothTransition.nonneg _
     have hψ1 : plateau ((t : ℝ) / Y) ≤ 1 := smoothTransition.le_one _
-    have hq0 := Real.rpow_nonneg hq.le (((bandCount x d s.1.1.1 : ℝ) - K * (padCount x + 1)) / 2 +
-        ((bandCount x d s'.1.1.1 : ℝ) - K * (padCount x + 1)) / 2)
+    
     have hq1 := Real.rpow_le_one hq.le hq₁ hdamp
     have hb0 := dyadicBump_nonneg (lastProd s.1.2 / Y)
     have hb1 := dyadicBump_le_one (lastProd s.1.2 / Y)
@@ -150,8 +152,8 @@ theorem norm_rowOp_le {q A₀ x : ℝ} (hq : 0 < q) (hq₁ : q ≤ 1) (hL : 0 < 
 /-- A source `P` has at most `17 (10Y + 1)` target positions `Q` with `D ∣ det(P, Q)` and
 `|det(P, Q)/D| < 5Y`: `Q ↦ (det(P, Q)/D, ⌊Q₁/P₁⌋)` is injective, since `det(P, Q)` fixes
 `Q₁ mod P₁` and then `Q₂`. -/
-theorem card_det_le {U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V) {P : ℕ × ℕ} (hP : U ≤ P.1)
-    (hP0 : 0 < P.1) (hcop : Nat.Coprime P.1 P.2) (D : ℕ) {Y : ℝ} (hY : 0 ≤ Y) :
+theorem card_det_le   (hU : 0 ≤ U) (hV : 0 ≤ V)  {P}  (hP : U ≤ P.1)
+    (hP0 : 0 < P.1) (hcop : Nat.Coprime P.1 P.2) (D : ℕ)  {Y}  (hY : 0 ≤ Y) :
     (#{Q ∈ rootBox U V | (D : ℤ) ∣ det P Q ∧ |((det P Q / D : ℤ) : ℝ)| < 5 * Y} : ℝ) ≤
       17 * (10 * Y + 1) := by
   set m := ⌊5 * Y⌋₊
@@ -179,7 +181,7 @@ theorem card_det_le {U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V) {P : ℕ × ℕ} (
     have ht : det P Q / D = det P Q' / D := congrArg Prod.fst hf
     have hq : Q.1 / P.1 = Q'.1 / P.1 := congrArg Prod.snd hf
     have hdet : det P Q = det P Q' := by
-      rw [← Int.mul_ediv_cancel' hdvd, ← Int.mul_ediv_cancel' hdvd', ht]
+      simp_all
     unfold det at hdet
     -- `P₁ ∣ Q₁ - Q₁'`, and `Q₁, Q₁'` have the same quotient by `P₁`
     have hdvd₁ : (P.1 : ℤ) ∣ P.2 * ((Q.1 : ℤ) - Q'.1) := ⟨Q.2 - Q'.2, by linear_combination -hdet⟩
@@ -228,16 +230,18 @@ theorem card_det_le {U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V) {P : ℕ × ℕ} (
 
 /-! ### Target lists -/
 
+include hn in
 /-- At most `log₂ n` primes divide `n ≠ 0`: their product divides `n`. -/
-theorem card_primeFactors_le_log {n : ℕ} (hn : n ≠ 0) : n.primeFactors.card ≤ Nat.log 2 n := by
+theorem card_primeFactors_le_log     : n.primeFactors.card ≤ Nat.log 2 n := by
   refine Nat.le_log_of_pow_le one_lt_two ?_
   calc 2 ^ n.primeFactors.card ≤ ∏ r ∈ n.primeFactors, r :=
         pow_card_le_prod _ _ _ fun r hr => (Nat.prime_of_mem_primeFactors hr).two_le
     _ ≤ n := Nat.le_of_dvd (Nat.pos_of_ne_zero hn) (Nat.prod_primeFactors_dvd n)
 
+include hn in
 /-- The lists with the pads of `p` whose last labels are primes dividing `n ≠ 0` number at
 most `(log₂ n)^K`: they are fixed by their last labels. -/
-theorem card_lists_dvd_le {x : ℝ} {d : Data K} {J : ℕ} (p : Lists K J) {n : ℕ} (hn : n ≠ 0) :
+theorem card_lists_dvd_le             :
     #{p' ∈ lists x d J | (∀ i (h : Fin J), p' i h.castSucc = p i h.castSucc) ∧
       ∀ i, p' i (Fin.last J) ∣ n} ≤ Nat.log 2 n ^ K := by
   set F : Finset (Lists K J) :=
@@ -266,7 +270,7 @@ theorem card_lists_dvd_le {x : ℝ} {d : Data K} {J : ℕ} (p : Lists K J) {n : 
 /-! ### Pairs with a fixed determinant -/
 
 /-- With `c` the root of `P`, `P₁ ∣ Q₁ - det(P, Q) c`. -/
-theorem dvd_sub_det_mul_rootC {P Q : ℕ × ℕ} (hP0 : 0 < P.1) (hcop : Nat.Coprime P.1 P.2) :
+theorem dvd_sub_det_mul_rootC  {P Q}  (hP0 : 0 < P.1) (hcop : Nat.Coprime P.1 P.2) :
     (P.1 : ℤ) ∣ Q.1 - det P Q * rootC P.1 P.2 := by
   obtain ⟨w, hw⟩ := RootResidue.dvd_rootC_mul_add_one hP0 hcop
   refine ⟨Q.1 * w - Q.2 * rootC P.1 P.2, ?_⟩
@@ -277,8 +281,8 @@ theorem dvd_sub_det_mul_rootC {P Q : ℕ × ℕ} (hP0 : 0 < P.1) (hcop : Nat.Cop
 /-- The pairs `(P, Q)` of the box with `G ∣ P₁`, `a ∣ Q₁`, `det(P, Q) = z` and `B P` inject into
 the `(P, k)` with `0 ≤ k ≤ 16`, `G ∣ P₁`, `a ∣ z c + (k - ⌊z r⌋) P₁` and `B P`:
 `Q₁ = z c + (k - ⌊z r⌋) P₁` with `Q₁/P₁ = z r + k - ⌊z r⌋ ∈ (0, 16]`. -/
-theorem card_pairs_le {U V : ℝ} (hU : 0 < U) (hV : 0 ≤ V) (G a : ℕ) (z : ℤ)
-    (B : ℕ × ℕ → Prop) [DecidablePred B] :
+theorem card_pairs_le   (hU : 0 < U) (hV : 0 ≤ V) (G a : ℕ)  z 
+     B  [DecidablePred B] :
     #{PQ ∈ rootBox U V ×ˢ rootBox U V | (G : ℤ) ∣ PQ.1.1 ∧ (a : ℤ) ∣ PQ.2.1 ∧
         det PQ.1 PQ.2 = z ∧ B PQ.1} ≤
       ∑ k ∈ range 17, #{P ∈ rootBox U V | ((G : ℤ) ∣ P.1 ∧
@@ -330,10 +334,7 @@ theorem card_pairs_le {U V : ℝ} (hU : 0 < U) (hV : 0 ≤ V) (G a : ℕ) (z : �
     have h16 : z₁ + ⌊(z : ℝ) * rootRatio PQ.1⌋ ≤ 16 := by
       have : ((z₁ + ⌊(z : ℝ) * rootRatio PQ.1⌋ : ℤ) : ℝ) ≤ 16 := by push_cast; linarith
       exact_mod_cast this
-    have hk : ((k PQ : ℕ) : ℤ) = z₁ + ⌊(z : ℝ) * rootRatio PQ.1⌋ := Int.toNat_of_nonneg h0
-    refine ⟨hk, by omega, ?_⟩
-    rw [hk, hQ]
-    ring
+    grind
   have hmaps : ∀ PQ ∈ F, f PQ ∈ T := by
     intro PQ hPQ
     obtain ⟨-, hk17, hQ⟩ := hkey PQ hPQ
@@ -375,17 +376,18 @@ theorem squarefree_prod_of_injective {ι : Type*} [Fintype ι] {f : ι → ℕ}
     fun i _ => (hp i).prime.squarefree
   exact Nat.coprime_iff_isRelPrime.1 ((Nat.coprime_primes (hp i) (hp j)).2 (hf.ne hij))
 
+include hdisj in
 /-- The labels of a source and the new labels of a target are distinct primes, so
 `G a = listProd p · lastProd p'` is squarefree. -/
-theorem squarefree_listProd_mul_lastProd {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {J : ℕ}
+theorem squarefree_listProd_mul_lastProd    
+       
     {p p' : Lists K J} (hp : p ∈ lists x d J) (hp' : p' ∈ lists x d J)
     (hban : ∀ i i' h', p' i (Fin.last J) ≠ p i' h') :
     Squarefree (listProd p * lastProd p') := by
   set f : (Fin K × Fin (J + 1)) ⊕ Fin K → ℕ :=
     Sum.elim (fun ih => p ih.1 ih.2) fun i => p' i (Fin.last J)
   have hf : Function.Injective f := by
-    have hinj := label_injective hdisj (fun i h => lists_slot_mem_band hp i h)
+    have hinj := label_injective hdisj (lists_slot_mem_band hp)
       (lists_group_injective hp)
     rintro (⟨i, h⟩ | i) (⟨i', h'⟩ | i') heq
     · exact congrArg Sum.inl (hinj heq)
@@ -402,5 +404,7 @@ theorem squarefree_listProd_mul_lastProd {x : ℝ} {d : Data K}
     · exact (mem_filter.1 (lists_slot_mem_band hp' i _)).2
   have := squarefree_prod_of_injective hf hprime
   rwa [Fintype.prod_sum_type, Fintype.prod_prod_type] at this
+
+end
 
 end Erdos408.OneSided

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceChildProfiles
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceChildProfiles
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowControl
@@ -18,8 +19,8 @@ lemma height_product (v t H:ℝ)(hH:0≤H):
   simp only [Real.norm_eq_abs]
   nlinarith [abs_nonneg v,abs_nonneg t]
 
-theorem reflected_child_control (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
-    (S:Finset (ℕ×ℕ))(degree:ℕ):
+theorem reflected_child_control  a b  ha  hlo  hhi 
+     S  degree :
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃D:ℝ,0<D ∧
       ∀W:𝓢(ℝ,ℂ),∀hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b,
       ∀j k:Fin 2,∀v t height:ℝ,0≤height →
@@ -38,12 +39,10 @@ theorem reflected_child_control (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
       (mul_le_mul_of_nonneg_left hgrowth (mul_nonneg hD.le (sourceControl_nonneg _ _)))) 2
   apply (mul_le_mul_of_nonneg_right hprof (by positivity)).trans_eq
   simp only [mul_pow] at *
-  rw [pow_add,show (1+|t|+height)^(2*n)=((1+|t|+height)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul],
-    show (1+‖v‖)^(2*n)=((1+‖v‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
 end SevenEighths.CenteredMomentEnergyReferenceLowControl
 
-end
+
 
 end OAI

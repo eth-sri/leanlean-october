@@ -7,15 +7,15 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseAssignedCount
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily DetectorDictionaryInverseAssignedCount
-local notation "O"=>HeckeFamily.O
 
-private theorem sum_tuple_real {ι:Type*}[Fintype ι](L:ι→Finset (Ideal O))
-    (f:(ι→Ideal O)→ℝ) :
+
+private theorem sum_tuple_real {ι:Type*}[Fintype ι](L:ι→Finset (Ideal HeckeFamily.O))
+    (f:(ι→Ideal HeckeFamily.O)→ℝ) :
     (∑q:Tuple L,f (fun i=>(q i).val))=∑q∈assignedTuples L,f q := by
   symm
   apply Finset.sum_bij (fun q hq i=>⟨q i,(mem_assignedTuples L q).mp hq i⟩)
@@ -35,9 +35,9 @@ variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 omit [Fintype ι] in
 theorem assignedMass_sum_le (K:ℕ){b U:ℝ}(hb:1≤b)(hU:1≤U)
-    (L:ι→Finset (Ideal O))(J:Finset ι)(hJ:J.card≤K)(ell:ι→ℝ)
+    (L:ι→Finset (Ideal HeckeFamily.O))(J:Finset ι)(hJ:J.card≤K)(ell:ι→ℝ)
     (hL:∀i∈J,∀P∈L i,P≠0 ∧ (P.absNorm:ℝ)≤b*U^(ell i))
-    (coeff:ι→Ideal O→ℂ)(hc:∀i∈J,∀P∈L i,‖coeff i P‖≤1) :
+    (coeff:ι→Ideal HeckeFamily.O→ℂ)(hc:∀i∈J,∀P∈L i,‖coeff i P‖≤1) :
     (∑x:Assigned L J,assignedMass L J x coeff U (∑i∈J,ell i))≤assignedConstant K b := by
   have he:=assigned_sum_normalized_le K hb hU (by simpa using hJ)
     (fun i:↥J=>ell i) (fun i:↥J=>L i)
@@ -50,10 +50,15 @@ theorem assignedMass_sum_le (K:ℕ){b U:ℝ}(hb:1≤b)(hU:1≤U)
   ext x
   simp
 
-theorem all_assignedMass_sum_le (K:ℕ){b U:ℝ}(hb:1≤b)(hU:1≤U)
-    (hK:Fintype.card ι≤K)(L:ι→Finset (Ideal O))(ell:ι→ℝ)
-    (hL:∀i,∀P∈L i,P≠0 ∧ (P.absNorm:ℝ)≤b*U^(ell i))
-    (coeff:ι→Ideal O→ℂ)(hc:∀i,∀P∈L i,‖coeff i P‖≤1) :
+section
+variable (K : ℕ) {b U : ℝ} (hb : 1≤b) (hU : 1≤U) (hK : Fintype.card ι≤K) (S : Finset (Ideal HeckeFamily.O)) (L : ι→Finset (Ideal HeckeFamily.O)) (hp : ∀i,∀P∈L i,Prime P) (hdis : ((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L) (ell : ι→ℝ) (hL : ∀i,∀P∈L i,P≠0 ∧ (P.absNorm:ℝ)≤b*U^(ell i)) (coeff : ι→Ideal HeckeFamily.O→ℂ) (hc : ∀i,∀P∈L i,‖coeff i P‖≤1)
+
+
+include hb hU hK hL hc in
+theorem all_assignedMass_sum_le     
+       
+     
+       :
     (∑J∈Finset.univ.powerset,∑x:Assigned L J,assignedMass L J x coeff U (∑i∈J,ell i))≤
       (2:ℝ)^K*assignedConstant K b := by
   calc
@@ -67,15 +72,16 @@ theorem all_assignedMass_sum_le (K:ℕ){b U:ℝ}(hb:1≤b)(hU:1≤U)
     _≤_:=mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hK)
       (assignedConstant_pos K hb).le
 
-theorem original_energy_with_assigned_count (K:ℕ){b U:ℝ}(hb:1≤b)(hU:1≤U)
-    (hK:Fintype.card ι≤K)(S:Finset (Ideal O))(L:ι→Finset (Ideal O))
-    (hp:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)(ell:ι→ℝ)
-    (hL:∀i,∀P∈L i,P≠0 ∧ (P.absNorm:ℝ)≤b*U^(ell i))
-    (coeff:ι→Ideal O→ℂ)(hc:∀i,∀P∈L i,‖coeff i P‖≤1)(η:Ideal O→*ℂ)
+include hb hU hK hp hdis hL hc in
+theorem original_energy_with_assigned_count     
+       
+     
+      
+     
+      (η:Ideal HeckeFamily.O→*ℂ)
     (hj:∀J:Finset ι,∀x:Assigned L J,CanonicalQuadraticSieve.Admissible (assignedIdeal L J x))
     (hη:∀J:Finset ι,∀x:Assigned L J,‖η (assignedIdeal L J x)‖≤1)
-    (W:ℝ→ℂ)(r z:ℝ)(rows:Finset O)(w:O→ℝ)(hw:∀u,0≤w u)(E:ℝ)(hE:0≤E)
+    (W:ℝ→ℂ)(r z:ℝ)(rows:Finset HeckeFamily.O)(w:HeckeFamily.O→ℝ)(hw:∀u,0≤w u) E (hE:0≤E)
     (hres:∀J:Finset ι,∀x:Assigned L J,
       (∑u∈rows,w u*‖remainingPolynomial S L J x coeff η W U r z (∑i∈J,ell i) u‖^2)≤E) :
     (∑u∈rows,w u*‖∑q:Tuple L,(∏i,coeff i (q i).val)*
@@ -90,8 +96,10 @@ theorem original_energy_with_assigned_count (K:ℕ){b U:ℝ}(hb:1≤b)(hU:1≤U)
       (fun x _=>assignedMass_nonneg L J x coeff U (∑i∈J,ell i) hU0)))
   exact all_assignedMass_sum_le K hb hU hK L ell hL coeff hc
 
+end
+
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
+
 
 end OAI

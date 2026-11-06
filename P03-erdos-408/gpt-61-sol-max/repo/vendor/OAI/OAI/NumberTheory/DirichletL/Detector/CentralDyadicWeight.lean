@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.CentralCubeNorm
 public import OAI.NumberTheory.DirichletL.Detector.CentralExponent
@@ -16,7 +17,7 @@ lemma dyadic_weighted_rows_card (α r C U B : ℝ) (hC : 0≤C) (hU : 0<U)
     (R : Finset FreeRow) (hcard : (R.card:ℝ)≤B)
     (hR : ∀u∈R,U≤rowNorm u ∧ rowNorm u≤2*U)
     (F : FreeRow→ℝ) (hF : ∀u∈R,F u≤C*rowNorm u^α)
-    (z : ℂ) (hz : z.re=r) :
+     z  (hz : z.re=r) :
     (∑u∈R,‖frequencyWeight z ⟨u.val,u.property.1⟩‖*F u)≤
       B*C*ProbeSelectedPrimeSums.annularPower 1 2 (α-r)*U^(α-r) := by
   have hA := ProbeSelectedPrimeSums.annularPower_nonneg 1 2 (α-r) (by norm_num)
@@ -41,16 +42,15 @@ lemma dyadic_weighted_rows_card (α r C U B : ℝ) (hC : 0≤C) (hU : 0<U)
       mul_le_mul_of_nonneg_right hcard (by positivity)
     _ = _ := by ring
 
-lemma annular_power_uniform (p pmax : ℝ) (hp : p≤pmax) :
+lemma annular_power_uniform  p pmax  (hp : p≤pmax) :
     ProbeSelectedPrimeSums.annularPower 1 2 p≤max 1 ((2:ℝ)^pmax) := by
   unfold ProbeSelectedPrimeSums.annularPower
-  rw [Real.one_rpow]
-  exact max_le_max le_rfl (Real.rpow_le_rpow_of_exponent_le (by norm_num) hp)
+  bound
 
-def mixedSourceExponent (a v d R q : ℝ) : ℝ :=
+def mixedSourceExponent (a v d R q : ℝ)  :=
   ProbeCentralExponent.sourceExponent a v R q+(d-v)*R
 
-lemma mixed_source_slack (a v d R q μ Rmax : ℝ)
+lemma mixed_source_slack  a v d R q μ Rmax 
     (hR : 0≤R) (hRmax : R≤Rmax) (hμ : 0≤μ) (hd : d-v≤μ) :
     mixedSourceExponent a v d R q≤ProbeCentralExponent.sourceExponent a v R q+μ*Rmax := by
   have h1 := mul_le_mul_of_nonneg_right hd hR

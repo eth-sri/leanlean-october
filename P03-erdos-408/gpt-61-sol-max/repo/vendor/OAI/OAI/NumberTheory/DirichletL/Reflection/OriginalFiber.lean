@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedFiber
 
@@ -9,7 +10,7 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
@@ -54,12 +55,9 @@ theorem original_fiber_inactive_sum (S : PrimeFamily σ)
   congr 2
   apply Finset.prod_congr (by ext b; simp only [Finset.mem_sdiff,Finset.mem_univ])
   intro b hb
-  rw [D.primeFiberEquiv_exponent R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inr b)]
-  change (if completedLocalExponent R F b.val=0 then
-    1-(Ideal.absNorm (E (Sum.inr b)).val.val:ℂ)⁻¹ else 0)=_
-  rw [D.primeFiberEquiv_val R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inr b)]
+  erw [D.primeFiberEquiv_exponent R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inr b)]
   rfl
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

@@ -23,12 +23,12 @@ local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
-def sourceMomentConductorBound (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(η:Character):ℝ:=
+def sourceMomentConductorBound (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(η:Character):=
   1+∑j:Sum Bool (RayQuotient.Characters M H),
     ((baseCharacter (sourceMomentData M H hH S hS η j)).modulus.absNorm:ℝ)
 
-theorem sourceMomentConductor_le (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(η:Character)
-    (j:Sum Bool (RayQuotient.Characters M H)):
+theorem sourceMomentConductor_le  S  hS  η 
+     j :
     ((baseCharacter (sourceMomentData M H hH S hS η j)).modulus.absNorm:ℝ)<
       sourceMomentConductorBound M H hH S hS η:=by
   have hh:=Finset.single_le_sum (fun k (_:k∈(Finset.univ:Finset (Sum Bool (RayQuotient.Characters M H))))=>

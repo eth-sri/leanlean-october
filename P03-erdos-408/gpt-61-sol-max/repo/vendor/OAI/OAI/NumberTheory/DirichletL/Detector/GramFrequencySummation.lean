@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Detector.LowGramExceptional
@@ -11,13 +12,13 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.ProbeGramFrequencySummation
-local notation "O" => ActualEisensteinCubic.O
 
-def frequencyNorm (k : O) : ℝ := Ideal.absNorm (Ideal.span {k})
 
-lemma frequencyNorm_nonneg (k : O) : 0 ≤ frequencyNorm k := Nat.cast_nonneg _
+def frequencyNorm (k : ActualEisensteinCubic.O) : ℝ := Ideal.absNorm (Ideal.span {k})
 
-lemma frequencyNorm_one_le (k : O) (hk : k ≠ 0) : 1 ≤ frequencyNorm k := by
+lemma frequencyNorm_nonneg  k  : 0 ≤ frequencyNorm k := Nat.cast_nonneg _
+
+lemma frequencyNorm_one_le  k  (hk : k ≠ 0) : 1 ≤ frequencyNorm k := by
   unfold frequencyNorm
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
     (Ideal.span_singleton_eq_bot.not.mpr hk))
@@ -77,7 +78,7 @@ theorem finite_weighted_of_count {α : Type*} (E : Finset α) (q : α → ℝ)
     (by norm_num : (1/2:ℝ)<1)]
   ring
 
-theorem nonzero_frequency_count (E : Finset O) (R : ℝ) (hR : 0 < R)
+theorem nonzero_frequency_count (E : Finset ActualEisensteinCubic.O)  R  (hR : 0 < R)
     (hE : ∀ k∈E, k≠0) (hN : ∀ k∈E, frequencyNorm k≤R) :
     (E.card:ℝ) ≤ 128*R := by
   by_cases hr : 1≤R
@@ -85,16 +86,12 @@ theorem nonzero_frequency_count (E : Finset O) (R : ℝ) (hR : 0 < R)
     intro k hk
     simpa only [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span,frequencyNorm]
       using hN k hk
-  · have he : E=∅ := Finset.eq_empty_iff_forall_notMem.mpr (by
-      intro k hk
-      have hh := frequencyNorm_one_le k (hE k hk)
-      have hb := hN k hk
-      linarith)
+  · have he : E=∅ := (by grind [frequencyNorm_one_le])
     rw [he,Finset.card_empty,Nat.cast_zero]
     positivity
 
 theorem frequency_weighted_sum :
-    ∃ K : ℝ, 0<K ∧ ∀ (E : Finset O) (H : ℝ), 0<H →
+    ∃ K : ℝ, 0<K ∧ ∀ (E : Finset ActualEisensteinCubic.O) (H : ℝ), 0<H →
       (∀ k∈E,k≠0) →
       ∑ k∈E,(1+frequencyNorm k/H)^(-2:ℝ) ≤ K*H := by
   refine ⟨512,by norm_num,?_⟩
@@ -108,7 +105,7 @@ theorem frequency_weighted_sum :
   exact hh
 
 theorem exceptional_frequency_weighted_sum (ε : ℝ) (hε : 0<ε) :
-    ∃ K : ℝ, 0<K ∧ ∀ G : Ideal O, G≠0 → ∀ (E : Finset O) (H : ℝ), 0<H →
+    ∃ K : ℝ, 0<K ∧ ∀ G : Ideal ActualEisensteinCubic.O, G≠0 → ∀ (E : Finset ActualEisensteinCubic.O) (H : ℝ), 0<H →
       (∀ k∈E,k≠0) →
       (∀ k∈E,∀ P∉IdealMobiusDivisorSum.primeSupport G,
         CenteredExceptionalCount.valuation (Ideal.span {k}) P % 6=0) →

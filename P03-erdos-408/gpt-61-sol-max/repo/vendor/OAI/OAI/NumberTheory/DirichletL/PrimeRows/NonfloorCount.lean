@@ -8,21 +8,25 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralMixedMargins
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
 open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
 
+section
+variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O)) (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ) (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀y,0≤φ y) (hφne : φ≠0) (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀) (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀y,φ y≤B₀) (εm : ℝ) (hεm : 0<εm)
+include M H hH S φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB εm hεm
+
 theorem balanced_adaptive_count_from_raw_moments
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O))
-    (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ)
-    (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀y,0≤φ y) (hφne : φ≠0)
-    (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
-    (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀y,φ y≤B₀)
-    (εm : ℝ) (hεm : 0<εm) :
+         
+       
+         
+         
+           
+       
+        :
     ∃c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠU : ℝ in atTop,
       ∀(a ε T allowance Δ ν C height q : ℝ) (i : ℕ),
       1<U → 51/100<a → 2*a-1≤5/6 → 0≤ε → ε≤1/1000 →
@@ -60,13 +64,13 @@ theorem balanced_adaptive_count_from_raw_moments
   exact hc'
 
 theorem high_adaptive_count_from_raw_moments
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O))
-    (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ)
-    (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀ y,0≤φ y) (hφne : φ≠0)
-    (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
-    (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀ y,φ y≤B₀)
-    (εm : ℝ) (hεm : 0<εm) :
+         
+       
+         
+         
+           
+       
+        :
     ∃ c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
       ∀ (a ε T allowance Δ C height q : ℝ) (i : ℕ),
       1<U → 5/6<2*a-1 → a≤1 → 0≤ε → ε≤1/1000 → 0≤C → 0≤height →
@@ -85,8 +89,10 @@ theorem high_adaptive_count_from_raw_moments
   rw [cutoff_eq_high (2*a-1) q ha]
   exact hcount a ε T allowance Δ C height i hU ha.le ha' hε hε' hC hh hf
 
+end
+
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

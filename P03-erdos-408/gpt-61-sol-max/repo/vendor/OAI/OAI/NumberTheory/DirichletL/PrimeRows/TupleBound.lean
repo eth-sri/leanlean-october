@@ -7,16 +7,16 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.TupleFactor
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
 open CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
 
-theorem continued_selected_tuple_with_correction (K : ℕ) (δ a b r B : ℝ)
+
+theorem continued_selected_tuple_with_correction  K  (δ a b r B : ℝ)
     (hδ : 0<δ) (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B) :
-    ∃C : ℝ,0<C ∧ ∀(eps : ℝ) (S : Finset (Ideal O)) (hS : SourceExclusions S)
+    ∃C : ℝ,0<C ∧ ∀(eps : ℝ) (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
       (_hfirst : FirstTail eps S) (η : Character) (u : FreeRow)
       (T : Fin K→Finset PrimeIdeal)
       (hT : ∀i P,P∈T i→Supported P.val ∧ (4:ℝ)≤P.val.absNorm)
@@ -31,12 +31,12 @@ theorem continued_selected_tuple_with_correction (K : ℕ) (δ a b r B : ℝ)
           continuedCompensatedLocal η u (P i).val (hT i (P i).val (P i).property).1 x w z
             (star (idealCoeff η (P i).val.val)*((P i).val.val.absNorm:ℂ)^x)
             (((P i).val.val.absNorm:ℂ)^(-w))‖)
-      ≤C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^δ*∏i,(Y i)^r := by
+      ≤C*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^δ*∏i,(Y i)^r := by
   obtain ⟨C₁,hC₁,hmain⟩ := continued_selected_tuple_bound K (δ/2) a b r B (by linarith) ha hb hr hB
   obtain ⟨C₂,hC₂,hcorr⟩ := unselectedCorrection_first_subpower (δ/2) (by linarith)
   refine ⟨C₂*C₁,mul_pos hC₂ hC₁,?_⟩
   intro eps S hS hfirst η u T hT Y hY W hWS hWB x w z hx hw hz hxw
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N : ℝ := ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)
   have hN : 0<N := by
     dsimp [N]
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
@@ -68,6 +68,6 @@ theorem continued_selected_tuple_with_correction (K : ℕ) (δ a b r B : ℝ)
         _ = _ := by rw [hp]
 
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

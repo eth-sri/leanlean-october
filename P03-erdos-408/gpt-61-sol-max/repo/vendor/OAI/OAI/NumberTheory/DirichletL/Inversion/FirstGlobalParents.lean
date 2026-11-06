@@ -16,7 +16,7 @@ open FirstCauchyArithmetic RayFourExpansion InverseMoment
 open InverseFirstPriorityParents InverseMomentWholePriorityParents
 open InverseWholePriorityValidSource InversePrioritySecondSource
 open InverseInitialArithmetic (sourceIdeal)
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def ofOriginal (k : FirstOriginalOuter ι) : Source ι 0 where
@@ -41,11 +41,11 @@ omit [DecidableEq ι] in
 theorem ofOriginal_injective : Function.Injective (ofOriginal (ι:=ι)) :=
   Function.LeftInverse.injective toOriginal_ofOriginal
 
-def originalOuterSource (pool : Finset ι) (Q : Finset (ι→₀ℕ)) : Finset (Source ι 0) :=
+def originalOuterSource (pool : Finset ι) (Q : Finset (ι→₀ℕ))  :=
   (firstOriginalOuter pool Q).image ofOriginal
 
 def originalSelector (selector : FirstOriginalOuter ι→Finset ι→ℂ)
-    (x : Source ι 0) (D : Finset ι) : ℂ := selector (toOriginal x) D
+    (x : Source ι 0) (D : Finset ι)  := selector (toOriginal x) D
 
 omit [DecidableEq ι] in
 @[simp] theorem originalSelector_ofOriginal (selector : FirstOriginalOuter ι→Finset ι→ℂ)
@@ -53,17 +53,13 @@ omit [DecidableEq ι] in
     originalSelector selector (ofOriginal k) D=selector k D := by
   simp only [originalSelector,toOriginal_ofOriginal]
 
-omit [DecidableEq ι] in
-@[simp] theorem originalSelector_ofOriginal_fun (selector : FirstOriginalOuter ι→Finset ι→ℂ)
-    (k : FirstOriginalOuter ι) : originalSelector selector (ofOriginal k)=selector k :=
-  funext (originalSelector_ofOriginal selector k)
 
 def originalParentSource (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (selector : FirstOriginalOuter ι→Finset ι→ℂ) : Finset (Source ι 0) :=
+    (selector : FirstOriginalOuter ι→Finset ι→ℂ)  :=
   globalParentSource (originalOuterSource pool Q) pool (originalSelector selector)
 
-theorem mem_originalParentSource (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (selector : FirstOriginalOuter ι→Finset ι→ℂ) (x : Source ι 0) :
+theorem mem_originalParentSource  pool   Q 
+     selector  (x : Source ι 0) :
     x∈originalParentSource pool Q selector ↔
       ∃k∈firstOriginalOuter pool Q,∃D∈pool.powerset,
         selector k D≠0 ∧ fillFirstQuotient (ofOriginal k) D=x := by
@@ -75,8 +71,8 @@ theorem mem_originalParentSource (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   · rintro ⟨k,hk,D,hD,hs,he⟩
     exact ⟨ofOriginal k,⟨k,hk,rfl⟩,D,⟨hD,by simpa using hs⟩,he⟩
 
-theorem original_fill_valid (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (k : FirstOriginalOuter ι) (hk : k∈firstOriginalOuter pool Q) (D : Finset ι) :
+theorem original_fill_valid (p : ι→ActualEisensteinCubic.O) (pool : Finset ι) (Q : Finset (ι→₀ℕ))
+     k  (hk : k∈firstOriginalOuter pool Q)  D  :
     SourceValid p (fillFirstQuotient (ofOriginal k) D) := by
   obtain ⟨hb,hC,hE⟩:=(mem_firstOriginalOuter pool Q k).mp hk
   refine ⟨reopenedCubeFamily_admissible Q k.1 hb,?_,?_,?_⟩
@@ -86,7 +82,7 @@ theorem original_fill_valid (p : ι→O) (pool : Finset ι) (Q : Finset (ι→�
       (Finset.union_subset_union_right (Finset.filter_subset _ _))
   · exact fun i=>Fin.elim0 i
 
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 

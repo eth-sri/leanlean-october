@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualEnergy
 
@@ -10,14 +11,17 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic CoprimeMobiusExtension
 open RayFourExpansion MixedCrossSeparation
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 
-theorem first_coprime_coupled_reindex {ι : Type*} [DecidableEq ι]
+section
+variable {ι : Type*} [DecidableEq ι]
+
+theorem first_coprime_coupled_reindex    
     (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
     (hprime : ∀ i, Prime (P i)) (hinj : Function.Injective P)
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ P i) (B : Finset ι)
-    (C₁ C₂ : Finset ι → ℂ) (H : Finset ι → Finset ι → ℂ) (h : Eis) :
+    (C₁ C₂ : Finset ι → ℂ) (H : Finset ι → Finset ι → ℂ)  h  :
     (∑ S ∈ B.powerset, ∑ T ∈ B.powerset, if Disjoint S T then
       H S T * star (supportMobius P S * C₁ S * star (finiteSquarefreeRow P hg S h)) *
         (supportMobius P T * C₂ T * star (finiteSquarefreeRow P hg T h)) else 0) =
@@ -53,20 +57,14 @@ theorem first_coprime_coupled_reindex {ι : Type*} [DecidableEq ι]
   simp only [star_mul,star_star,star_supportMobius]
   have hm := supportMobius_sq P hprime hinj D
   have hz := finiteSquarefreeRow_self_pair P hg D h
-  calc
-    _ = (supportMobius P D * supportMobius P D) *
-        (star (finiteSquarefreeRow P hg D h)*finiteSquarefreeRow P hg D h) *
-        (H (D ∪ U) (D ∪ V) *
-          (supportMobius P U * star (C₁ (D ∪ U)) * finiteSquarefreeRow P hg U h) *
-          (supportMobius P V * C₂ (D ∪ V) * star (finiteSquarefreeRow P hg V h))) := by ring
-    _ = _ := by rw [hm,hz]; ring
+  grind
 
-theorem first_quadratic_coupled_reindex {ι : Type*} [DecidableEq ι]
+theorem first_quadratic_coupled_reindex    
     (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2) (B : Finset ι)
-    (C₁ C₂ : Finset ι → ℂ) (H : Finset ι → Finset ι → ℂ) (h : Eis) :
+    (C₁ C₂ : Finset ι → ℂ) (H : Finset ι → Finset ι → ℂ)  h  :
     (∑ S ∈ B.powerset, ∑ T ∈ B.powerset, if Disjoint S T then
       H S T * quadraticCrossPhase p hg S T *
         star (supportMobius (fun i => Ideal.span {p i}) S * C₁ S * star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S h)) *
@@ -125,6 +123,8 @@ theorem first_quadratic_coupled_reindex {ι : Type*} [DecidableEq ι]
       exact first_coprime_coupled_reindex P hprime hinj hg B _ _ H h
 
 end
+
+
 end SevenEighths.InverseMoment
 
 end OAI

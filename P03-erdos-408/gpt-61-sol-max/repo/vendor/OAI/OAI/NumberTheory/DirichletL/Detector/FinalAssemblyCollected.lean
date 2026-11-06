@@ -157,7 +157,7 @@ theorem actual_nonfloor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ
         (fun u hu=>⟨(hrows u (hsub hu)).1,(hrows u (hsub hu)).2.1,
           (hrows u (hsub hu)).2.2.1,hgeo.2.2.2.2.2 u (hsubk hu)⟩)
         (fun u hu=>hgeo.2.2.2.2.1 u (hsubk hu)) i (by simpa using Nat.le_of_lt_succ (Finset.mem_range.mp hi))
-        hnext' hcurrent' (fun t ht=>hmom k hk i hi j hj ⟨u,hu⟩ t ht)
+        hnext' hcurrent' (hmom k hk i hi j hj ⟨u,hu⟩)
       exact hbounded.2
     · have he : Rij=∅ := Finset.not_nonempty_iff_eq_empty.mp hne'
       simpa only [F,show cubeBinRows (rows∩dyadicRows 1 k) idx grid i j=∅ from he,
@@ -186,7 +186,7 @@ theorem actual_nonfloor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ
           apply Finset.sum_le_sum
           intro i hi
           rw [Finset.sum_div]
-          exact (norm_sum_le _ _).trans (Finset.sum_le_sum (fun j hj=>hcell k hk i hi j hj))
+          exact (norm_sum_le _ _).trans (Finset.sum_le_sum (hcell k hk i hi))
         _ = _ := by simp;ring
     _ = ((smallDyadicIndices (Z^(13/16+ζ))).card:ℝ)*((n+1:ℕ)*(m+1:ℕ)*D) := by simp
     _ ≤ (Cd*Z^dyadCost)*((n+1:ℕ)*(m+1:ℕ)*D) :=

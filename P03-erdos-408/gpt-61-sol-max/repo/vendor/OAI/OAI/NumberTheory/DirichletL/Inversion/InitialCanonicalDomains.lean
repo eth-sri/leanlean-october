@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindowGeo
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalDomains
@@ -40,10 +40,10 @@ include hp hcop hg in
 theorem actual_window_domains
     (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
-    (ψ:Fin 4→ℝ→ℂ)(lo hi:Fin 4→ℝ)
+     S (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
+     ψ (lo hi:Fin 4→ℝ)
     (hψ:∀i,Function.support (ψ i)⊆Set.Icc (lo i) (hi i))
-    (Z D B v θ H η:ℝ)(hZ:0<Z)(hhi:∀i,hi i≤Z^η):
+     Z D B v θ H η (hZ:0<Z)(hhi:∀i,hi i≤Z^η):
     ∀x∈coprimeSource p (windowSource p S ψ Z D B v θ H),∀u:Oˣ,
       (initialChild (toTuple p (sectorSource u x))).2.1∈idealRange (Z^(θ+v+2*η)) ∧
       (initialChild (toTuple p (sectorSource u x))).2.2∈
@@ -60,6 +60,6 @@ theorem actual_window_domains
 
 end SevenEighths.InverseInitialCanonicalDomains
 
-end
+
 
 end OAI

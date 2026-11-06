@@ -6,17 +6,17 @@ public import OAI.NumberTheory.DirichletL.Moments.RowNorm
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentPlainEnergy
 open CanonicalQuadraticSieve CenteredMomentRowNorm ConcreteTraceCRT
 open CanonicalRowCompletion
-local notation "O" => ActualEisensteinCubic.O
 
-theorem rowEnergy_summable {α : Type*} (S : Finset α) (a : α → O)
+
+theorem rowEnergy_summable {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
-    Summable (fun z : O => ((‖rowPolynomial S a c z‖^2 : ℝ) : ℂ) *
+    (W : 𝓢(ℝ, ℂ))  K  (hK : 0 < K) :
+    Summable (fun z : ActualEisensteinCubic.O => ((‖rowPolynomial S a c z‖^2 : ℝ) : ℂ) *
       W (‖eisEmbedding z‖^2/K)) := by
   have hs (i j : α) := (row_pair_summable (a i) (a j) (ha i) (ha j) W K hK).mul_left
     (c i * star (c j))
@@ -26,6 +26,6 @@ theorem rowEnergy_summable {α : Type*} (S : Finset α) (a : α → O)
 
 end SevenEighths.CenteredMomentPlainEnergy
 
-end
+
 
 end OAI

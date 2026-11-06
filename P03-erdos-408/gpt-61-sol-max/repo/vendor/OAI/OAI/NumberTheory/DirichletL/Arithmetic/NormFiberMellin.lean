@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Mellin.LocalNonvanishing
 
@@ -10,33 +11,33 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
+ 
+ 
 
 namespace ShortDraftLocal
 
 end ShortDraftLocal
 
-open MulChar AddChar
+ 
 
 namespace ActualEisensteinCubic
 
@@ -47,44 +48,51 @@ namespace ShortDraftHeckeBridge
 noncomputable def chiMinusThree : DirichletCharacter ℂ 3 :=
   (quadraticChar (ZMod 3)).ringHomComp (Int.castRingHom ℂ)
 
-noncomputable def baseChangeWeight {q : ℕ}
-    (χ : DirichletCharacter ℂ q) (I : Ideal O) : ℂ :=
+noncomputable def baseChangeWeight {q }
+    (χ : DirichletCharacter ℂ q) (I : Ideal O)  :=
   (UniqueFactorizationMonoid.moebius I : ℂ) * χ (Ideal.absNorm I)
 
-theorem baseChangeWeight_prime {q : ℕ} (χ : DirichletCharacter ℂ q)
-    (P : Ideal O) (hP : Prime P) :
+section
+variable {q : ℕ} (χ : DirichletCharacter ℂ q)
+
+theorem baseChangeWeight_prime    
+     P  (hP : Prime P) :
     baseChangeWeight χ P = -χ (Ideal.absNorm P) := by
   rw [baseChangeWeight, hP.irreducible.moebius_eq]
   norm_num
 
-noncomputable def invCharAF {q : ℕ} (χ : DirichletCharacter ℂ q) : ArithmeticFunction ℂ :=
+noncomputable def invCharAF {q } (χ : DirichletCharacter ℂ q)  :=
   (toArithmeticFunction (χ ·)).pmul (ArithmeticFunction.moebius : ArithmeticFunction ℂ)
 
-theorem invCharAF_apply {q : ℕ} (χ : DirichletCharacter ℂ q)
-    {n : ℕ} (hn : n ≠ 0) :
+theorem invCharAF_apply    
+     {n}  (hn : n ≠ 0) :
     invCharAF χ n = χ n * (ArithmeticFunction.moebius n : ℂ) := by
   change ((toArithmeticFunction (χ ·)).pmul
     (ArithmeticFunction.moebius : ArithmeticFunction ℂ)) n = _
   rw [ArithmeticFunction.pmul_apply]
   simp [toArithmeticFunction, hn]
 
-private theorem invCharAF_mult {q : ℕ} (χ : DirichletCharacter ℂ q) :
-    (invCharAF χ).IsMultiplicative := by
-  exact (χ.isMultiplicative_toArithmeticFunction).pmul
+private theorem invCharAF_mult     :
+    (invCharAF χ).IsMultiplicative := (χ.isMultiplicative_toArithmeticFunction).pmul
     (ArithmeticFunction.isMultiplicative_moebius.intCast)
 
-noncomputable def pairAF {q r : ℕ} (χ : DirichletCharacter ℂ q)
-    (ψ : DirichletCharacter ℂ r) : ArithmeticFunction ℂ :=
+end
+
+noncomputable def pairAF {q r } (χ : DirichletCharacter ℂ q)
+    (ψ : DirichletCharacter ℂ r)  :=
   invCharAF χ * invCharAF ψ
 
-theorem pairAF_mult {q r : ℕ} (χ : DirichletCharacter ℂ q)
-    (ψ : DirichletCharacter ℂ r) :
+section
+variable {q r : ℕ} (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r)
+
+theorem pairAF_mult    
+      :
     (pairAF χ ψ).IsMultiplicative :=
   (invCharAF_mult χ).mul (invCharAF_mult ψ)
 
-theorem pairAF_eq_pairInverseCoeff {q r : ℕ}
-    (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r)
-    (n : ℕ) : pairAF χ ψ n = pairInverseCoeff χ ψ n := by
+theorem pairAF_eq_pairInverseCoeff  
+       
+     n  : pairAF χ ψ n = pairInverseCoeff χ ψ n := by
   rw [pairAF, ← ArithmeticFunction.coe_mul]
   apply congrFun
   exact (LSeries.convolution_congr
@@ -92,13 +100,13 @@ theorem pairAF_eq_pairInverseCoeff {q r : ℕ}
     (fun {k} hk => invCharAF_apply ψ hk))
 
 theorem normFiber_eq_pair_of_prime_powers
-    {q r : ℕ} (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r)
-    (weight : Ideal O → ℂ)
+         
+     weight 
     (hb : (toArithmeticFunction (normFiberCoeff weight)).IsMultiplicative)
     (hlocal : ∀ p k : ℕ, p.Prime →
       (toArithmeticFunction (normFiberCoeff weight)) (p ^ k) =
         pairAF χ ψ (p ^ k))
-    (n : ℕ) (hn : n ≠ 0) :
+     n  (hn : n ≠ 0) :
     normFiberCoeff weight n = pairInverseCoeff χ ψ n := by
   have heq : toArithmeticFunction (normFiberCoeff weight) = pairAF χ ψ :=
     (ArithmeticFunction.IsMultiplicative.eq_iff_eq_on_prime_powers
@@ -110,8 +118,8 @@ theorem normFiber_eq_pair_of_prime_powers
     _ = pairAF χ ψ n := h
     _ = pairInverseCoeff χ ψ n := pairAF_eq_pairInverseCoeff χ ψ n
 
-theorem pairAF_prime {q r : ℕ} (χ : DirichletCharacter ℂ q)
-    (ψ : DirichletCharacter ℂ r) {p : ℕ} (hp : p.Prime) :
+theorem pairAF_prime    
+       {p}  (hp : p.Prime) :
     pairAF χ ψ p = -(χ p + ψ p) := by
   have h1χ : invCharAF χ 1 = 1 := (invCharAF_mult χ).map_one
   have h1ψ : invCharAF ψ 1 = 1 := (invCharAF_mult ψ).map_one
@@ -129,11 +137,11 @@ theorem pairAF_prime {q r : ℕ} (χ : DirichletCharacter ℂ q)
   rw [Finset.sum_insert hnot, Finset.sum_singleton]
   simp [Nat.div_one, Nat.div_self hp.pos, h1χ, h1ψ, hpχ, hpψ]
 
-theorem pairAF_prime_sq {q r : ℕ} (χ : DirichletCharacter ℂ q)
-    (ψ : DirichletCharacter ℂ r) {p : ℕ} (hp : p.Prime) :
+theorem pairAF_prime_sq    
+       {p}  (hp : p.Prime) :
     pairAF χ ψ (p ^ 2) = χ p * ψ p := by
   have h1χ : invCharAF χ 1 = 1 := (invCharAF_mult χ).map_one
-  have h1ψ : invCharAF ψ 1 = 1 := (invCharAF_mult ψ).map_one
+  
   have hpχ : invCharAF χ p = -χ p := by
     rw [invCharAF_apply χ hp.ne_zero, ArithmeticFunction.moebius_apply_prime hp]
     simp
@@ -172,7 +180,9 @@ theorem pairAF_prime_sq {q r : ℕ} (χ : DirichletCharacter ℂ q)
     simp [hpp2]
   rw [Finset.sum_insert hnot1, Finset.sum_insert hnotp, Finset.sum_singleton]
   have hdivp : p ^ 2 / p = p := by simp [pow_two, hp.pos]
-  simp [Nat.div_one, hdivp, h1χ,  hpχ, hpψ, hp2χ, hp2ψ]
+  aesop
+
+end
 
 theorem chiMinusThree_two : chiMinusThree (2 : ℕ) = -1 := by
   have h3 : ringChar (ZMod 3) ≠ 2 := by rw [ZMod.ringChar_zmod_n]; decide
@@ -203,9 +213,9 @@ theorem not_both_principal {q : ℕ} [NeZero q]
   exact chiMinusThree_ne_one hη
 
 end ShortDraftHeckeBridge
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+ 
+ 
+ 
 
 namespace ShortDraftHeckeBridge
 

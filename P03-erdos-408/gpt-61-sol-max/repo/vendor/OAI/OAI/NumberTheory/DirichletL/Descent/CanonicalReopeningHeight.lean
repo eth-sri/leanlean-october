@@ -7,15 +7,15 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.InverseMoment
 open MeasureTheory CanonicalCubeSeparation FourierBridge JointLogSeparation CompletedHeight
 
-theorem reopening_coefficient_twist (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
-    (hs:Function.support W⊆Set.Icc a b)(hW:ContDiff ℝ ∞ W)(theta:ℝ)
-    (hT:ContDiff ℝ ∞ (normTwistedSource W theta)):
+theorem reopening_coefficient_twist  W  a b  ha 
+     hs  hW  theta 
+     hT :
     reopeningCoefficient (normTwistedSource W theta) a b ha
       ((normTwistedSource_support W theta).trans hs) hT=
       𝓕 (frequencyTwist (sourceLogProfile W a b ha hs hW) theta) :=by
@@ -24,8 +24,8 @@ theorem reopening_coefficient_twist (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
   ext x
   simp only [sourceLogProfile_apply,frequencyTwist_apply,normTwistedSource,Real.log_exp]
 
-theorem reopening_twisted_moment (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
-    (hs:Function.support W⊆Set.Icc a b)(hW:ContDiff ℝ ∞ W)(J:ℕ):
+theorem reopening_twisted_moment  W  a b  ha 
+     hs (hW:ContDiff ℝ ∞ W) J :
     ∃C:ℝ,0≤C ∧ ∀theta:ℝ,∀hT:ContDiff ℝ ∞ (normTwistedSource W theta),
       (∫ξ:ℝ,‖reopeningCoefficient (normTwistedSource W theta) a b ha
         ((normTwistedSource_support W theta).trans hs) hT ξ‖*(1+|ξ|)^J)≤
@@ -36,8 +36,8 @@ theorem reopening_twisted_moment (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
   rw [reopening_coefficient_twist W a b ha hs hW theta hT]
   simpa only [Real.norm_eq_abs,mul_comm] using he theta
 
-theorem reopening_twisted_moment_squared (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
-    (hs:Function.support W⊆Set.Icc a b)(hW:ContDiff ℝ ∞ W)(J:ℕ):
+theorem reopening_twisted_moment_squared  W  a b  ha 
+     hs (hW:ContDiff ℝ ∞ W) J :
     ∃C:ℝ,0≤C ∧ ∀theta:ℝ,∀hT:ContDiff ℝ ∞ (normTwistedSource W theta),
       (∫ξ:ℝ,‖reopeningCoefficient (normTwistedSource W theta) a b ha
         ((normTwistedSource_support W theta).trans hs) hT ξ‖*(1+|ξ|)^J)^2≤
@@ -50,6 +50,6 @@ theorem reopening_twisted_moment_squared (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsFamilies
 
@@ -6,22 +7,20 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsFamilies
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
-lemma gaussValuationTable_above (Q G : ℂ) (r n j : ℕ) (hj : n+1≤j) :
+lemma gaussValuationTable_above  Q G   r n j  (hj : n+1≤j) :
     gaussValuationTable Q G r n j=if 6∣r then Q^(n+1)-Q^n else 0 := by
   unfold gaussValuationTable
-  by_cases hd : 6∣r
-  · rw [ite_eq_left hd,ite_eq_left hd,ite_eq_left hj,ite_eq_left (by omega)]
-  · rw [ite_eq_right hd,ite_eq_right hd,ite_eq_right (by omega)]
+  bound
 
 theorem positiveScalar_stable_large (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p})≠2) (n k j j' : ℕ)
+    (hc : ringChar (O ⧸ Ideal.span {p})≠2)  n k j j' 
     (hj : n+1<j) (hj' : n+1<j') :
     positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) n k j=
       positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) n k j' := by
@@ -40,8 +39,13 @@ variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 include hc
 
-theorem rowMarkedTerm_base_tail (eta a X W V rho : ℂ)
-    (j e l k m : ℕ) (ht : 0<e+3*l) (ht6 : e+3*l≤6) :
+section
+variable (eta a X W V rho : ℂ) (hV : ‖V‖<1) (j e l k m : ℕ) (ht : 0<e+3*l) (ht6 : e+3*l≤6)
+
+
+include ht ht6 in
+theorem rowMarkedTerm_base_tail  
+          :
     rowMarkedTerm p hp hg eta a X W V rho j e l k (m+2)=
       rowMarkedTerm p hp hg eta a X W V rho j e l k 2*V^m := by
   unfold rowMarkedTerm
@@ -51,8 +55,9 @@ theorem rowMarkedTerm_base_tail (eta a X W V rho : ℂ)
   rw [pow_add V m 2]
   ring
 
-theorem rowInner_base_rational (eta a X W V rho : ℂ) (hV : ‖V‖<1)
-    (j e l : ℕ) (ht : 0<e+3*l) (ht6 : e+3*l≤6) :
+include hV ht ht6 in
+theorem rowInner_base_rational    
+          :
     rowInner p hp hg eta a X W V rho j e l=
       ∑ k : Fin 2,
         (rowMarkedTerm p hp hg eta a X W V rho j e l k.val 0+
@@ -65,16 +70,15 @@ theorem rowInner_base_rational (eta a X W V rho : ℂ) (hV : ‖V‖<1)
     have ht' : HasSum (fun m=>rowMarkedTerm p hp hg eta a X W V rho j e l k (m+2))
         (rowMarkedTerm p hp hg eta a X W V rho j e l k 2/(1-V)) := by
       have hgeo := (hasSum_geometric_of_norm_lt_one hV).mul_left (rowMarkedTerm p hp hg eta a X W V rho j e l k 2)
-      rw [←div_eq_mul_inv] at hgeo
-      convert hgeo using 1
-      funext m
-      exact rowMarkedTerm_base_tail p hp hg hc eta a X W V rho j e l k m ht ht6
-    have h := ht'.sum_range_add (f:=fun m=>rowMarkedTerm p hp hg eta a X W V rho j e l k m) (k:=2)
+      grind [rowMarkedTerm_base_tail]
+    have h := ht'.sum_range_add (f:=rowMarkedTerm p hp hg eta a X W V rho j e l k) (k:=2)
     simpa only [Finset.sum_range_succ,Finset.sum_range_zero,zero_add] using h.tsum_eq
   rw [rowInner_two,hsum 0,hsum 1]
   simp only [Fin.sum_univ_two,Fin.val_zero,Fin.val_one]
 
-end SevenEighths.ProbeEuler
 end
+
+end SevenEighths.ProbeEuler
+
 
 end OAI

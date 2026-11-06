@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.PrimeRows.CubePrimeBound
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorGlobal
 public import OAI.NumberTheory.DirichletL.Detector.CentralExponent
@@ -7,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralExponent
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
@@ -15,13 +17,11 @@ open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
 open ProbeRaySlots HeckeDetectorPhysicalSelection
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
-theorem globalFloorIntegralPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
+alias globalFloorIntegralPoolOutside := _root_.OAI.SevenEighths.ProbeHighRowFamily.poolOutside
 
 theorem actual_global_floor_cube_norm (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)

@@ -10,12 +10,12 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-noncomputable def theta (n : ℕ) : ℝ := if Nat.Prime n then Real.log n else 0
+noncomputable def theta (n : ℕ)  := if Nat.Prime n then Real.log n else 0
 
 theorem log_pos_of_two_le {X : ℕ} (hX : 2 ≤ X) : 0 < Real.log (X : ℝ) :=
   Real.log_pos (by exact_mod_cast (show 1 < X by omega))
 
-theorem theta_nonneg (n : ℕ) : 0 ≤ theta n := by
+theorem theta_nonneg  n  : 0 ≤ theta n := by
   by_cases hn : Nat.Prime n
   · simp only [theta, ite_eq_left hn]
     exact (log_pos_of_two_le hn.two_le).le

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.ActualDepthBudget
 public import OAI.NumberTheory.DirichletL.Descent.FirstTwoPassLowerRank
@@ -11,10 +12,10 @@ noncomputable section
 
 namespace SevenEighths.InverseMoment
 
-def firstPassEpsilon (F eta:ℝ):ℝ:=eta/(10*F+32)
-def sourceMassEpsilon (F eta:ℝ):ℝ:=2*eta/(20*(3*F+16)+30)
+def firstPassEpsilon (F eta:ℝ):=eta/(10*F+32)
+def sourceMassEpsilon (F eta:ℝ):=2*eta/(20*(3*F+16)+30)
 
-theorem actual_step_parameters (F eta r ell epsChild:ℝ)
+theorem actual_step_parameters  F eta r ell epsChild 
     (hF:0≤F)(heta:0<eta)(heta1:eta≤1)(hr:r≤F)(hell:ell≤F)(heps:0≤epsChild):
     0<firstPassEpsilon F eta ∧ 0<sourceMassEpsilon F eta ∧
     6*eta≤8*eta ∧
@@ -45,22 +46,20 @@ theorem actual_recursion_parameters (Mcap Fcap c eps:ℝ)(_hM:0≤Mcap)(_hF:0≤
   have hd:0<cutoff:=by dsimp[cutoff];positivity
   let depth:=actualDepth Mcap (cutoff/2)
   let D:ℝ:=(depth:ℝ)+1
-  have hD:0<D:=by dsimp[D];positivity
+  
   let eta:=min 1 (min (cutoff/32) (min (c/200000) (min (c/(28*D)) (min (1/(30*D)) (eps/(800*D))))))
   have he:0<eta:=by dsimp[eta];positivity
   have he1:eta≤1:=min_le_left _ _
   have he2:eta≤cutoff/32:=(min_le_right _ _).trans (min_le_left _ _)
   have he3:eta≤c/200000:=(min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _))
-  have he4:eta≤c/(28*D):=(min_le_right _ _).trans ((min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _)))
+  have he4:eta≤c/(28*D):=(by grind)
   have he5:eta≤1/(30*D):=(min_le_right _ _).trans ((min_le_right _ _).trans ((min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _))))
-  have he6:eta≤eps/(800*D):=(min_le_right _ _).trans ((min_le_right _ _).trans ((min_le_right _ _).trans ((min_le_right _ _).trans (min_le_right _ _))))
+  have he6:eta≤eps/(800*D):=(by grind)
   refine ⟨cutoff,eta,hd,he,he1,he2,by dsimp[cutoff];linarith,by linarith,?_⟩
   have h4:eta*(28*D)≤c:=(le_div_iff₀ (by positivity)).mp he4
   have h5:eta*(30*D)≤1:=(le_div_iff₀ (by positivity)).mp he5
   have h6:eta*(800*D)≤eps:=(le_div_iff₀ (by positivity)).mp he6
-  have hn:(depth:ℝ)*eta≤D*eta:=mul_le_mul_of_nonneg_right (by dsimp[D];linarith) he.le
-  change (depth:ℝ)*7*eta≤c/2 ∧ (depth:ℝ)*15*eta≤1 ∧ (depth:ℝ)*100*eta≤eps/4
-  constructor <;> first | nlinarith | constructor <;> nlinarith
+  grind
 
 end SevenEighths.InverseMoment
 

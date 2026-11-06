@@ -21,11 +21,11 @@ open CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockAggregate
 open CenteredMomentActiveSource CenteredMomentSupportedCorrelation CenteredMomentFirstSectors
 open CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentExceptionalAmplitudePair
 open CenteredMomentSectorLocalization CenteredMomentRankinRadical
-local notation "O"=>ActualEisensteinCubic.O
+
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-abbrev Labels (s:Input ι)(R seed:Ideal O):=
+abbrev Labels (s:Input ι)(R seed):=
   ActiveLabel (finiteColumns (Fintype.piFinset s.pools))
     (CenteredMomentOriginalCommonHarmonic.coefficient s R seed)
 

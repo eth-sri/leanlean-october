@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.SourceCoefficient
 public import OAI.NumberTheory.DirichletL.Detector.FrequencySupport
@@ -10,10 +11,10 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeRow ProbePhase
-local notation "O" => ActualEisensteinCubic.O
+
 
 def calibratedHighCoefficient (C : CalibrationData) (η : HeckeFamily.Character)
-    (I : Ideal O) (hI : primaryGenerator I≠0) (A s : O) (hA : A≠0) (H : O) : ℂ :=
+    (I ) (hI : primaryGenerator I≠0) (A s : ActualEisensteinCubic.O) (hA : A≠0) (H : ActualEisensteinCubic.O)  :=
   actualCongruenceCoefficient C A s hA H * idealRowHom C.generator (Ideal.span {s}) /
     ((Real.sqrt (elementNorm C.generator):ℂ)*C.tau*C.residueMonoid s) *
     gaussTwo I hI * star (FiniteGaussPhase.angularFactor A * ProbePhase.G A) *
@@ -21,15 +22,12 @@ def calibratedHighCoefficient (C : CalibrationData) (η : HeckeFamily.Character)
 
 lemma div_mul_frequency_cancel (a b c m : ℂ) (hc : c≠0) :
     c*(a/(b*c)*m)=a/b*m := by
-  simp only [div_eq_mul_inv,mul_inv_rev]
-  calc
-    _ = (c*c⁻¹)*(a*b⁻¹*m) := by ring
-    _ = _ := by rw [mul_inv_cancel₀ hc,one_mul]
+  field_simp <;> ring
 
-theorem calibratedHighCoefficient_eq_bare (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
-    (η : HeckeFamily.Character) (I : Ideal O) (hI : primaryGenerator I≠0)
-    (A s : O) (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : O) :
+theorem calibratedHighCoefficient_eq_bare  S   hS 
+     η   I   hI 
+     A s   hA  (hs : Supported (Ideal.span {s}))
+    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s))  H  :
     calibratedHighCoefficient (calibrationForSet S hS) η I hI A s (supportedElement_ne_zero A hA) H=
       star ((calibrationForSet S hS).residueMonoid H)*
         bareSourceCoefficient η I hI A s (supportedElement_ne_zero A hA) H := by

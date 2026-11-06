@@ -7,28 +7,33 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeExpansion
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonAllocation
 open CenteredMomentSupport CenteredMomentCommonSectors CenteredMomentExtraction
 open CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
 
-theorem extract_coprime_product (C a : Ideal O) (hC : C≠0) (ha : a≠0)
-    (hCa : IsCoprime C a) : supportExtract (C*a) (primeSupport C)=C := by
+
+section
+variable (C a I : Ideal ActualEisensteinCubic.O) (hC : C≠0) (ha : a≠0) (hCa : IsCoprime C a)
+
+include hC ha hCa in
+theorem extract_coprime_product      
+      : supportExtract (C*a) (primeSupport C)=C := by
   rw [supportExtract_mul C a hC ha,
     supportExtract_of_subset C hC _ (Finset.Subset.refl _),
     supportExtract_of_disjoint a _ ((IdealCoprimeSieveOperator.primeSupport_disjoint_iff hC ha).mpr hCa).symm,
     mul_one]
 
-theorem residual_coprime_product (C a : Ideal O) (hC : C≠0) (ha : a≠0)
-    (hCa : IsCoprime C a) : supportResidual (C*a) (primeSupport C)=a := by
+include hC ha hCa in
+theorem residual_coprime_product      
+      : supportResidual (C*a) (primeSupport C)=a := by
   apply mul_left_cancel₀ hC
   have he := support_reconstruct (C*a) (mul_ne_zero hC ha) (primeSupport C)
   rwa [extract_coprime_product C a hC ha hCa] at he
 
-theorem tuple_products {ι : Type*} [Fintype ι] (v : ι → Ideal O) (C a : Ideal O)
+theorem tuple_products {ι : Type*} [Fintype ι] (v : ι → Ideal ActualEisensteinCubic.O)  C a 
     (hC : C≠0) (ha : a≠0) (hCa : IsCoprime C a) (hv : ∏ i,v i=C*a) :
     (∏ i,supportExtract (v i) (primeSupport C))=C ∧
       (∏ i,supportResidual (v i) (primeSupport C))=a := by
@@ -40,13 +45,16 @@ theorem tuple_products {ι : Type*} [Fintype ι] (v : ι → Ideal O) (C a : Ide
   · rw [← supportResidual_prod Finset.univ v (fun i _ => hi i),hv]
     exact residual_coprime_product C a hC ha hCa
 
-theorem residual_factor_coprime (C I : Ideal O) (hC : C≠0) :
+include hC in
+theorem residual_factor_coprime     :
     IsCoprime C (supportResidual I (primeSupport C)) := by
   have hh := extracted_residual_coprime C I (primeSupport C)
   rwa [supportExtract_of_subset C hC _ (Finset.Subset.refl _)] at hh
 
+end
+
 end SevenEighths.CenteredMomentCommonAllocation
 
-end
+
 
 end OAI

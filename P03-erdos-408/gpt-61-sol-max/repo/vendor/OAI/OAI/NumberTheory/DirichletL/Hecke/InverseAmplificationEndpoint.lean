@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.HeckeInverseAmplification
@@ -19,7 +20,7 @@ theorem no_slot_endpoint
     (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀ y, 0≤φ y) (hφne : φ≠0)
     (a b B : ℝ) (ha : 0<a) (hab : a≤b) (hB : 0<B)
     (hφs : Function.support φ⊆Ioo a b) (hφB : ∀ y, φ y≤B)
-    (R ε : ℝ) (hR : 0≤R) (hε : 0<ε) :
+     R ε  (hR : 0≤R) (hε : 0<ε) :
     ∃ c κ K : ℝ, 0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K ∧ ∀ᶠ U : ℝ in atTop,
       ∀ (r : ℝ) (data : RowData) (rows : Finset FreeRow) (W : ℝ→ℂ)
         (wa wb C : ℝ),
@@ -46,7 +47,7 @@ theorem no_slot_endpoint
     hA hbA (by positivity) (by positivity)
   let F := (b*A)^6*((b*A)^6)^κ/A
   let K := (4/d)*F*Klog
-  have hF : 0≤F := by dsimp [F]; positivity
+  
   have hK : 0≤K := by dsimp [K]; positivity
   refine ⟨c,κ,K,hc,hc1,hκ,hK,?_⟩
   filter_upwards [hlog,eventually_ge_atTop (1 : ℝ)] with U hlog hU
@@ -97,6 +98,6 @@ theorem no_slot_endpoint
 
 end SevenEighths.HeckeInverseAmplification
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarBounds
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthReserve
@@ -25,8 +26,8 @@ theorem ledger_bound (Mcap Bmask bΦ L d loss defect xi saving ε:ℝ)
           Z^(-2*saving)*max 1 s.radial.scale*Z^L)≤C*Z^(s.width+ε):=by
   let A:ℝ:=max 1 ((fixedConductorFactor:ℝ)*bΦ)
   let B:ℝ:=1+2*L/d
-  have hA:0<A:=zero_lt_one.trans_le (le_max_left _ _)
-  have hBp:0<B:=by dsimp [B];positivity
+  
+  
   refine ⟨A^d*B+A^(2*d),by positivity,?_⟩
   intro Z hZ s hs
   have hz:0<Z:=zero_lt_one.trans_le hZ
@@ -60,13 +61,10 @@ theorem ledger_bound (Mcap Bmask bΦ L d loss defect xi saving ε:ℝ)
           _=A^(2*d)*(Z^(Bmask*d)*Z^(Mcap*(2*d))*Z^(-2*saving)*Z^s.width*Z^L):=by ring
           _=_:=by simp only [←Real.rpow_add hz];congr 1;congr 1;ring
       _≤_:=mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ (by linarith)) (by positivity)
-  calc
-    _≤A^d*B*Z^(s.width+ε)+A^(2*d)*Z^(s.width+ε):=by
-      simpa only [mul_add] using add_le_add hreflect herr
-    _=_:=by ring
+  grind
 
 end SevenEighths.CenteredMomentEnergyZeroGrowthReserve
 
-end
+
 
 end OAI

@@ -7,19 +7,23 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesChildren
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
 open InverseMoment InverseInitialArithmetic InverseSecondSourceBlocks
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
 
- theorem source_cell_exponent_cap {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hk : ∀x∈source,x.second.frequency≠0) (Z Lcap : ℝ) (hZ : 1<Z)
+
+ section
+variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal] {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (hk : ∀x∈source,x.second.frequency≠0)
+include ι p hp Jo Jn source hk
+
+theorem source_cell_exponent_cap    
+         
+       
+       Z Lcap  (hZ : 1<Z)
     (hnorm : ∀x∈source,∀i,outerNorms p x i≤Z^Lcap)
-    (d : BlockIndex) (hd : d∈keys p source) (i : Fin 4) :
+     d  (hd : d∈keys p source)  i  :
     secondCellExponent Z d i≤Lcap := by
   obtain ⟨x,hx⟩ := (mem_keys_iff p source d).mp hd
   have hs : scales d i≤outerNorms p x i := by
@@ -28,10 +32,10 @@ local notation "O" => ActualEisensteinCubic.O
   rw [second_cell_scale_rpow Z d i hZ]
   exact hs.trans (hnorm x (cell_subset p source d hx) i)
 
-theorem source_cell_mass_gate {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hk : ∀x∈source,x.second.frequency≠0)
+theorem source_cell_mass_gate    
+         
+       
+     
     (Z Lcap ell Ractive j t eta eps pi : ℝ) (hZ : 1<Z) (hj : 0≤j) (heps : 0≤eps)
     (hnorm : ∀x∈source,∀i,outerNorms p x i≤Z^Lcap)
     (hbudget : eps*(ell+Ractive/2+t+Lcap+11*eta/2)≤pi) :
@@ -44,7 +48,9 @@ theorem source_cell_mass_gate {ι : Type*} [DecidableEq ι]
     secondCount ell Ractive j t (secondCellExponent Z d 0) (secondCellExponent Z d 1)+11*eta/2≤
       ell+Ractive/2+t+Lcap+11*eta/2 by unfold secondCount; linarith) heps) hbudget
 
-end SevenEighths.InverseMomentGlobalRetainedGates
 end
+
+end SevenEighths.InverseMomentGlobalRetainedGates
+
 
 end OAI

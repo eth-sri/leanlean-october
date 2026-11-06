@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Telescope
 
@@ -17,32 +18,34 @@ namespace Erdos408.TypeII
 open Finset Real
 
 /-- The bound `S_B` for the centred slot statistic on `[1, x²]`. -/
-noncomputable def slotBound (c E₂ x : ℝ) : ℝ :=
+noncomputable def slotBound (c E₂ x : ℝ)  :=
   (2 * logLog x ^ 20 / c + 1) ^ 3 + (logLog x + E₂ + 1) ^ 3
 
 /-- The bound `𝒩` for the remainders. -/
-noncomputable def normBound (q : ℝ) (K : ℕ) (CN c E₂ x : ℝ) : ℝ :=
+noncomputable def normBound (q : ℝ) (K : ℕ) (CN c E₂ x : ℝ)  :=
   (2 / (1 - q)) ^ (K * inertPerCluster K CN x) * slotBound c E₂ x
 
 /-- The bound for the endpoint `P (f_𝔟 - C_𝔟)`. -/
-noncomputable def endBound (q : ℝ) (K : ℕ) (CN c E₂ x : ℝ) : ℝ :=
+noncomputable def endBound (q : ℝ) (K : ℕ) (CN c E₂ x : ℝ)  :=
   2 ^ (K * inertPerCluster K CN x) * (2 / (1 - q)) ^ K * normBound q K CN c E₂ x
 
-theorem slotBound_pos {c E₂ x : ℝ} (hc : 0 < c) (hE₂ : 0 ≤ E₂) (hT : 0 ≤ logLog x) :
+theorem slotBound_pos  {c E₂ x}  (hc : 0 < c) (hE₂ : 0 ≤ E₂) (hT : 0 ≤ logLog x) :
     1 ≤ slotBound c E₂ x := by
   unfold slotBound
-  have h1 : 1 ≤ (2 * logLog x ^ 20 / c + 1) ^ 3 := one_le_pow₀ (by
-    have : 0 ≤ 2 * logLog x ^ 20 / c := by positivity
-    linarith)
+  have h1 : 1 ≤ (2 * logLog x ^ 20 / c + 1) ^ 3 := (by bound)
   have h2 : 0 ≤ (logLog x + E₂ + 1) ^ 3 := by positivity
   linarith
 
+section
+variable {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw₁ : cw ≤ 1) {K : ℕ} (hK : 1 ≤ K) {CN c E₂ x : ℝ} (hx : 2 ≤ x) (hc : 0 < c) (hT : 0 < logLog x) (hE₂ : ∀ y : ℝ, 2 ≤ y → ∑ p ∈ primesIoc 1 y, (1 : ℝ) / p ≤ logLog y + E₂) (hE₂0 : 0 ≤ E₂) {k : ℕ} (hk : k ≤ 2) {u v : Fin (k + 1) → ℝ} {B : (Fin k → ℕ) → ℝ} (hadm : AdmissibleSlots c x u v) (hB : ∀ Q, 0 ≤ B Q ∧ B Q ≤ 1) (hE : EndpointData q cw K CN x u v B (normBound q K CN c E₂ x)) (hV : ∀ a : ℝ, 1 / 10 ≤ a → 1 / 2 ≤ harmonicMass (band x a)) {h : ℕ} (h1 : 1 ≤ h) (hh : (h : ℝ) ≤ x ^ 2)
+
+include hx hc hT hE₂ hE₂0 hk hadm hB h1 hh in
 /-- `|f_𝔟(h) - C_𝔟| ≤ S_B` on `[1, x²]`. -/
-theorem abs_slot_sub_le {c E₂ x : ℝ} (hx : 2 ≤ x) (hc : 0 < c) (hT : 0 < logLog x)
-    (hE₂ : ∀ y : ℝ, 2 ≤ y → ∑ p ∈ primesIoc 1 y, (1 : ℝ) / p ≤ logLog y + E₂) (hE₂0 : 0 ≤ E₂)
-    {k : ℕ} (hk : k ≤ 2) {u v : Fin (k + 1) → ℝ} {B : (Fin k → ℕ) → ℝ}
-    (hadm : AdmissibleSlots c x u v) (hB : ∀ Q, 0 ≤ B Q ∧ B Q ≤ 1) {h : ℕ} (h1 : 1 ≤ h)
-    (hh : (h : ℝ) ≤ x ^ 2) : |slotCount x u v B h - slotMean x u v B| ≤ slotBound c E₂ x := by
+theorem abs_slot_sub_le        
+       
+           
+           
+      : |slotCount x u v B h - slotMean x u v B| ≤ slotBound c E₂ x := by
   have hf0 := slotCount_nonneg (x := x) u v (fun Q => (hB Q).1) h
   have hC0 := slotMean_nonneg (x := x) u v (fun Q => (hB Q).1)
   have hx1 : (1 : ℝ) < x := by linarith
@@ -69,9 +72,10 @@ theorem abs_slot_sub_le {c E₂ x : ℝ} (hx : 2 ≤ x) (hc : 0 < c) (hT : 0 < l
   rw [abs_le]
   constructor <;> linarith
 
+include hq hq₁ hcw hcw₁ hK hc in
 /-- The endpoint data at `x`. -/
-theorem endpointData_of {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw₁ : cw ≤ 1)
-    {K : ℕ} (hK : 1 ≤ K) {CN c E₂ x : ℝ} (hc : 0 < c) (hx : 2 ≤ x) (hL : 1 < Real.log x)
+theorem endpointData_of          
+            (hx : 2 ≤ x) (hL : 1 < Real.log x)
     (hT : 0 < logLog x)
     (hlay : 2 * ((inertPerCluster K CN x : ℝ) + 1) * K ≤ 4 / 100 * logLog x)
     (hV : ∀ a : ℝ, 1 / 10 ≤ a → 1 / 2 ≤ harmonicMass (band x a))
@@ -86,7 +90,7 @@ theorem endpointData_of {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ c
   logLog_pos := hT
   layout := hlay
   small a ha p hp i := by
-    have hL0 : 0 < Real.log x := by linarith
+    
     have h1 : Real.log x ^ a ≤ Real.log x ^ (19 / 100 : ℝ) :=
       Real.rpow_le_rpow_of_exponent_le hL.le ha
     refine (band_le hp).trans ?_
@@ -110,12 +114,13 @@ theorem endpointData_of {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ c
     have h3 : 0 ≤ (2 / (1 - q)) ^ (K * inertPerCluster K CN x) := by positivity
     exact mul_le_mul_of_nonneg_left (abs_slot_sub_le hx hc hT hE₂ hE₂0 hk hadm hB h1 hh) h3
 
+include hq₁ hE hV h1 hh in
 /-- `|P (f_𝔟 - C_𝔟)| ≤ 2^{K N'} (2/(1-q))^K 𝒩` on `[1, x²]`. -/
-theorem abs_endpoint_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c E₂ x : ℝ} {k : ℕ}
-    {u v : Fin (k + 1) → ℝ} {B : (Fin k → ℕ) → ℝ}
-    (hE : EndpointData q cw K CN x u v B (normBound q K CN c E₂ x))
-    (hV : ∀ a : ℝ, 1 / 10 ≤ a → 1 / 2 ≤ harmonicMass (band x a)) {h : ℕ} (h1 : 1 ≤ h)
-    (hh : (h : ℝ) ≤ x ^ 2) :
+theorem abs_endpoint_le          
+       
+     
+         
+      :
     |endpoint q cw K CN x u v B h| ≤ endBound q K CN c E₂ x := by
   have hq := hE.q_pos
   rw [endpoint_eq_sum q cw hq.ne' K CN x u v B]
@@ -152,5 +157,7 @@ theorem abs_endpoint_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c E₂ x : �
           have : 0 < 1 - q := by linarith
           positivity)
     _ = endBound q K CN c E₂ x := by unfold endBound; ring
+
+end
 
 end Erdos408.TypeII

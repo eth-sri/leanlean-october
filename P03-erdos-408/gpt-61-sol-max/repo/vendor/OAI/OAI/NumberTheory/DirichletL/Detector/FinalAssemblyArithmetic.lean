@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorArithmetic
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyClass
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyClass
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeFinalAssembly
@@ -16,7 +17,7 @@ open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
 open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem actual_nonfloor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss : ℝ)
@@ -76,7 +77,7 @@ theorem actual_nonfloor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmi
       φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB
       εm Δ ν logCost heightCost momentCost hεm hΔ hΔ1 hν hlog hMomentHeight counts
   let cardCost : ℝ := (HeckeDetectorClassBudget.alphabetBound mesh:ℝ)^N
-  have hcardCost : 0≤cardCost := by dsimp [cardCost];positivity
+  
   refine ⟨(cardCost+1)*C,by positivity,?_⟩
   intro η
   filter_upwards [hclass η,eventually_gt_atTop (1:ℝ)] with Z hclass hZ

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.RieszBounds
 public import Mathlib.Analysis.MellinInversion
@@ -14,7 +15,7 @@ open Complex Real Set MeasureTheory Filter Topology
 
 noncomputable def rieszKernel : ℝ → ℂ := (Ioc 0 1).indicator (fun t => 1-(t:ℂ))
 
-lemma hasMellin_rieszKernel {s : ℂ} (hs : 0<s.re) :
+lemma hasMellin_rieszKernel  {s}  (hs : 0<s.re) :
     HasMellin rieszKernel s (1/(s*(s+1))) := by
   have h₀ := hasMellin_one_Ioc hs
   have h₁ := hasMellin_cpow_Ioc 1 (by simp; linarith : 0<s.re+(1:ℂ).re)
@@ -27,19 +28,24 @@ lemma hasMellin_rieszKernel {s : ℂ} (hs : 0<s.re) :
   rw [he] at hh
   have hs0 : s≠0 := by intro h; simp [h] at hs
   have hs1 : s+1≠0 := by intro h; have := congrArg Complex.re h; simp at this; linarith
-  have heval : 1/s-1/(s+1)=1/(s*(s+1)) := by field_simp; ring
-  rwa [heval] at hh
+  grind
 
-lemma rieszKernel_eq_max {x : ℝ} (hx : 0<x) : rieszKernel x=(max (1-x) 0:ℝ) := by
+section
+variable {x : ℝ} (hx : 0<x)
+include x hx
+
+lemma rieszKernel_eq_max     : rieszKernel x=(max (1-x) 0:ℝ) := by
   by_cases hx1 : x≤1
   · simp [rieszKernel,Set.mem_Ioc,hx,hx1]
   · simp [rieszKernel,Set.mem_Ioc,hx,hx1,max_eq_right (by linarith : 1-x≤(0:ℝ))]
 
-lemma rieszKernel_continuousAt {x : ℝ} (hx : 0<x) : ContinuousAt rieszKernel x := by
+lemma rieszKernel_continuousAt     : ContinuousAt rieszKernel x := by
   have he : rieszKernel =ᶠ[𝓝 x] (fun x : ℝ => ((max (1-x) 0:ℝ):ℂ)) := by
     filter_upwards [Ioi_mem_nhds hx] with y hy
     exact rieszKernel_eq_max hy
   exact (show ContinuousAt (fun x : ℝ => ((max (1-x) 0:ℝ):ℂ)) x by fun_prop).congr he.symm
+
+end
 
 lemma rieszDenominator_bound {s : ℂ} (hs : 1≤ s.re) :
     ‖1/(s*(s+1))‖≤2/(1+s.im^2) := by
@@ -54,7 +60,7 @@ lemma rieszDenominator_bound {s : ℂ} (hs : 1≤ s.re) :
   apply (div_le_div_iff₀ (by positivity : 0<‖s‖*‖s+1‖) (by positivity : 0<1+s.im^2)).mpr
   nlinarith
 
-lemma rieszDenominator_verticalIntegrable {σ : ℝ} (hσ : 1≤σ) :
+lemma rieszDenominator_verticalIntegrable  {σ}  (hσ : 1≤σ) :
     VerticalIntegrable (fun s : ℂ => 1/(s*(s+1))) σ := by
   have hne (t : ℝ) : (σ:ℂ)+(t:ℂ)*I≠0 := by
     intro h
@@ -67,16 +73,14 @@ lemma rieszDenominator_verticalIntegrable {σ : ℝ} (hσ : 1≤σ) :
     simp at this
     linarith
   have hm : Continuous (fun t : ℝ => 1/(((σ:ℂ)+t*I)*((σ:ℂ)+t*I+1))) := by
-    apply Continuous.div continuous_const (by fun_prop)
-    intro t
-    exact mul_ne_zero (hne t) (hne1 t)
+    fun_prop (disch := aesop)
   apply (integrable_inv_one_add_sq.const_mul 2).mono' hm.aestronglyMeasurable
   filter_upwards [] with t
   have hb := rieszDenominator_bound (s:=(σ:ℂ)+t*I) (by simpa using hσ)
   simpa only [Complex.add_im,Complex.ofReal_im,Complex.mul_im,Complex.I_re,mul_zero,
     Complex.ofReal_re,Complex.I_im,mul_one,add_zero,zero_add,div_eq_mul_inv] using hb
 
-lemma rieszKernel_mellinInv {σ x : ℝ} (hσ : 1≤σ) (hx : 0<x) :
+lemma rieszKernel_mellinInv  {σ x}  (hσ : 1≤σ) (hx : 0<x) :
     mellinInv σ (fun s : ℂ => 1/(s*(s+1))) x=rieszKernel x := by
   have hσ0 : (0:ℝ)<σ := by linarith
   have hm (t : ℝ) : mellin rieszKernel (σ+t*I)=1/((σ+t*I)*(σ+t*I+1)) :=
@@ -89,19 +93,16 @@ lemma rieszKernel_mellinInv {σ x : ℝ} (hσ : 1≤σ) (hx : 0<x) :
     (rieszKernel_continuousAt hx)]
   simp only [mellinInv,hm]
 
-open Complex Filter Topology
+ 
 
-lemma principal_logRiesz_bound (n : ℕ) :
+lemma principal_logRiesz_bound  n  :
     ∃ D : ℝ, 0 < D ∧ ∀ σ t : ℝ, 1 ≤ σ → σ ≤ 2 →
         ‖iteratedDeriv n (logRiesz (poleRemovedL (1:DirichletCharacter ℂ 1))) (σ+I*t)‖ ≤
           D*(|t|+2)^(-(3/2:ℝ)) := by
   let ε : ℝ := 1/(4*(n+1:ℕ))
   have hε : 0 < ε := by dsimp [ε]; positivity
   have hε1 : ε ≤ 1 := by
-    dsimp [ε]
-    apply (div_le_one (by positivity : 0 < 4*((n+1:ℕ):ℝ))).mpr
-    have hn : (1:ℝ) ≤ (n+1:ℕ) := by exact_mod_cast (Nat.succ_pos n)
-    linarith
+    bound
   obtain ⟨c,hc,hl⟩ := principal_strip_lower hε hε1
   obtain ⟨K₀,hK₀,hb⟩ := principal_deriv_growth hε hε1
   let K := 3*K₀*3^ε
@@ -158,7 +159,7 @@ lemma principal_logRiesz_bound (n : ℕ) :
   field_simp
   rw [←ht]
 
-lemma primitive_logRiesz_bound (n : ℕ) :
+lemma primitive_logRiesz_bound  n  :
     ∃ D : ℝ, 0 < D ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q),
       χ.IsPrimitive → ∀ σ t : ℝ, 1 ≤ σ → σ ≤ 2 →
         ‖iteratedDeriv n (logRiesz (poleRemovedL χ)) (σ+I*t)‖ ≤
@@ -183,10 +184,10 @@ lemma primitive_logRiesz_bound (n : ℕ) :
   · have hb := h₀ q χ hχp hχ σ t hσ hσ2
     simp only [poleRemovedL,hχ,ite_false]
     apply hb.trans
-    exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity)) (by positivity)
+    bound
 
 lemma logRiesz_poleRemoved_analyticAt {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
-    {s : ℂ} (hs : 1 ≤ s.re) : AnalyticAt ℂ (logRiesz (poleRemovedL χ)) s := by
+     {s}  (hs : 1 ≤ s.re) : AnalyticAt ℂ (logRiesz (poleRemovedL χ)) s := by
   have h₀ : s≠0 := by intro h; simp [h] at hs; norm_num at hs
   have h₁ : s+1≠0 := by
     intro h
@@ -196,18 +197,26 @@ lemma logRiesz_poleRemoved_analyticAt {q : ℕ} [NeZero q] (χ : DirichletCharac
   exact (primeLogDerivativeRegular_analyticAt χ (poleRemovedL_ne_zero χ hs)).div
     (analyticAt_id.mul (analyticAt_id.add analyticAt_const)) (mul_ne_zero h₀ h₁)
 
-open Complex Filter Topology MeasureTheory
+ 
 
 open scoped FourierTransform
 
-lemma analyticAt_iteratedDeriv_local {f : ℂ → ℂ} {z : ℂ} (h : AnalyticAt ℂ f z) (n : ℕ) :
+section
+variable {f : ℂ → ℂ}
+include f
+
+lemma analyticAt_iteratedDeriv_local    {z}  (h : AnalyticAt ℂ f z)  n  :
     AnalyticAt ℂ (iteratedDeriv n f) z := by
   induction n with
   | zero => simpa using h
   | succ n ih => rw [iteratedDeriv_succ]; exact ih.deriv
 
-lemma vertical_contDiff {f : ℂ → ℂ} {z a : ℂ}
-    (hf : ∀ t : ℝ, AnalyticAt ℂ f (z+a*t)) :
+section
+variable {z a : ℂ} (hf : ∀ t : ℝ, AnalyticAt ℂ f (z+a*t))
+include z a hf
+
+lemma vertical_contDiff    
+      :
     ContDiff ℝ ⊤ (fun t : ℝ => f (z+a*t)) := by
   rw [contDiff_iff_contDiffAt]
   intro t
@@ -215,8 +224,8 @@ lemma vertical_contDiff {f : ℂ → ℂ} {z a : ℂ}
   exact ((hf t).contDiffAt.restrict_scalars ℝ).comp t
     (contDiffAt_const.add (contDiffAt_const.mul hr))
 
-lemma vertical_iteratedDeriv {f : ℂ → ℂ} {z a : ℂ}
-    (hf : ∀ t : ℝ, AnalyticAt ℂ f (z+a*t)) (n : ℕ) :
+lemma vertical_iteratedDeriv    
+       n  :
     iteratedDeriv n (fun t : ℝ => f (z+a*t)) =
       fun t : ℝ => a^n * iteratedDeriv n f (z+a*t) := by
   induction n with
@@ -230,26 +239,39 @@ lemma vertical_iteratedDeriv {f : ℂ → ℂ} {z a : ℂ}
     rw [iteratedDeriv_succ]
     simpa only [Function.comp_def,pow_succ,mul_assoc,mul_comm,mul_left_comm] using hd.deriv
 
-noncomputable def decayMajorant (t : ℝ) : ℝ := (1+|t|)^(-(3/2:ℝ))
+end
+
+end
+
+noncomputable def decayMajorant (t : ℝ)  := (1+|t|)^(-(3/2:ℝ))
 
 lemma decayMajorant_integrable : Integrable decayMajorant := by
   change Integrable (fun t : ℝ => (1+|t|)^(-(3/2:ℝ)))
   simpa only [Real.norm_eq_abs] using
     (integrable_one_add_norm (E:=ℝ) (by norm_num : (Module.finrank ℝ ℝ:ℝ) < 3/2))
 
-lemma integrable_of_decay_bound {g : ℝ → ℂ} {M : ℝ} (hg : Continuous g)
-    (hb : ∀ t, ‖g t‖ ≤ M*decayMajorant t) : Integrable g := by
-  exact (decayMajorant_integrable.const_mul M).mono' hg.aestronglyMeasurable (Filter.Eventually.of_forall hb)
+section
+variable {g : ℝ → ℂ}
+include g
 
-lemma integral_norm_le_of_decay_bound {g : ℝ → ℂ} {M : ℝ} (hg : Continuous g)
-    (hb : ∀ t, ‖g t‖ ≤ M*decayMajorant t) :
+section
+variable {M : ℝ} (hg : Continuous g) (hb : ∀ t, ‖g t‖ ≤ M*decayMajorant t)
+include M hg hb
+
+lemma integrable_of_decay_bound      
+      : Integrable g := (decayMajorant_integrable.const_mul M).mono' hg.aestronglyMeasurable (Filter.Eventually.of_forall hb)
+
+lemma integral_norm_le_of_decay_bound      
+      :
     ∫ t, ‖g t‖ ≤ M*(∫ t, decayMajorant t) := by
   rw [←integral_const_mul]
   exact integral_mono (integrable_of_decay_bound hg hb).norm
     (decayMajorant_integrable.const_mul M) hb
 
-lemma fourierInv_decay {g : ℝ → ℂ} (hg : ContDiff ℝ ⊤ g)
-    (hi : ∀ n : ℕ, Integrable (iteratedDeriv n g)) (n : ℕ) {M u : ℝ}
+end
+
+lemma fourierInv_decay   (hg : ContDiff ℝ ⊤ g)
+    (hi : ∀ n : ℕ, Integrable (iteratedDeriv n g))  n   {M u} 
     (hb : (∫ t, ‖iteratedDeriv n g t‖) ≤ M) (hu : 0 < |u|) :
     ‖𝓕⁻ g u‖ ≤ M/|u|^n := by
   have he := congrFun (Real.fourier_iteratedDeriv (N:=⊤) (hg.of_le le_top) (fun n _ => hi n) (n:=n) (by simp)) (-u)
@@ -270,14 +292,20 @@ lemma fourierInv_decay {g : ℝ → ℂ} (hg : ContDiff ℝ ⊤ g)
     exact le_mul_of_one_le_left hu.le hπ
   nlinarith [mul_le_mul_of_nonneg_right hpow (norm_nonneg (𝓕 g (-u)))]
 
-open Complex Real Set MeasureTheory Filter Topology
 
-lemma mellinInv_const_mul (σ : ℝ) (f : ℂ → ℂ) (a : ℂ) (x : ℝ) :
+end
+ 
+
+lemma mellinInv_const_mul (σ : ℝ) (f : ℂ → ℂ)  a  (x : ℝ) :
     mellinInv σ (fun s => a*f s) x=a*mellinInv σ f x := by
   simp [mellinInv,smul_eq_mul,Complex.real_smul,mul_left_comm,integral_const_mul,mul_assoc]
 
-lemma mellinInv_term_riesz {σ y : ℝ} (hσ : 1≤σ) (hy : 0<y)
-    (a : ℕ → ℂ) (n : ℕ) :
+section
+variable {σ y : ℝ}
+include σ y
+
+lemma mellinInv_term_riesz   (hσ : 1≤σ) (hy : 0<y)
+     a   n  :
     mellinInv σ (fun s => LSeries.term a s n/(s*(s+1))) y=
       if n=0 then 0 else a n*rieszKernel ((n:ℝ)*y) := by
   by_cases hn : n=0
@@ -295,7 +323,7 @@ lemma mellinInv_term_riesz {σ y : ℝ} (hσ : 1≤σ) (hy : 0<y)
   simp only [Complex.ofReal_natCast,Complex.cpow_neg]
   ring
 
-lemma riesz_inverse_integrand_norm {σ y : ℝ} (hy : 0<y) (a : ℕ → ℂ) (n : ℕ) (t : ℝ) :
+lemma riesz_inverse_integrand_norm   (hy : 0<y)  a   n  (t : ℝ) :
     ‖(y:ℂ)^(-((σ:ℂ)+t*I))*(LSeries.term a ((σ:ℂ)+t*I) n/(((σ:ℂ)+t*I)*((σ:ℂ)+t*I+1)))‖=
       (y^(-σ)*‖LSeries.term a (σ:ℂ) n‖)*‖1/(((σ:ℂ)+t*I)*((σ:ℂ)+t*I+1))‖ := by
   simp only [norm_mul,norm_div,norm_one,Complex.norm_cpow_eq_rpow_re_of_pos hy,
@@ -303,8 +331,12 @@ lemma riesz_inverse_integrand_norm {σ y : ℝ} (hy : 0<y) (a : ℕ → ℂ) (n 
     Complex.I_re,Complex.I_im,mul_zero,zero_mul,sub_self,add_zero,LSeries.norm_term_eq]
   ring
 
-lemma riesz_inverse_integrand_summable {σ y : ℝ} (hσ : 1≤σ) (hy : 0<y)
-    (a : ℕ → ℂ) (ha : LSeriesSummable a (σ:ℂ)) :
+section
+variable (hσ : 1≤σ) (hy : 0<y) (a : ℕ → ℂ) (ha : LSeriesSummable a (σ:ℂ))
+include hσ hy a ha
+
+lemma riesz_inverse_integrand_summable      
+        :
     (∀ n : ℕ, Integrable (fun t : ℝ => (y:ℂ)^(-((σ:ℂ)+t*I))*
         (LSeries.term a ((σ:ℂ)+t*I) n/(((σ:ℂ)+t*I)*((σ:ℂ)+t*I+1))))) ∧
     Summable (fun n : ℕ => ∫ t : ℝ, ‖(y:ℂ)^(-((σ:ℂ)+t*I))*
@@ -325,7 +357,7 @@ lemma riesz_inverse_integrand_summable {σ y : ℝ} (hσ : 1≤σ) (hy : 0<y)
       apply continuous_const.div
       · exact (show Continuous (fun t : ℝ => (σ:ℂ)+t*I) by fun_prop).const_cpow
           (.inl (Nat.cast_ne_zero.mpr hn))
-      · intro t; exact Complex.cpow_ne_zero_iff.mpr (.inl (Nat.cast_ne_zero.mpr hn))
+      simp_all
   have hnorm (n : ℕ) : Integrable (fun t : ℝ => ‖(y:ℂ)^(-((σ:ℂ)+t*I))*
       (LSeries.term a ((σ:ℂ)+t*I) n/(((σ:ℂ)+t*I)*((σ:ℂ)+t*I+1)))‖) := by
     simp_rw [riesz_inverse_integrand_norm hy]
@@ -334,8 +366,8 @@ lemma riesz_inverse_integrand_summable {σ y : ℝ} (hσ : 1≤σ) (hy : 0<y)
   simp_rw [riesz_inverse_integrand_norm hy,integral_const_mul]
   exact (ha.norm.mul_left (y^(-σ))).mul_right _
 
-lemma mellinInv_LSeries_riesz {σ y : ℝ} (hσ : 1≤σ) (hy : 0<y)
-    (a : ℕ → ℂ) (ha : LSeriesSummable a (σ:ℂ)) :
+lemma mellinInv_LSeries_riesz      
+        :
     mellinInv σ (fun s => LSeries a s/(s*(s+1))) y=
       ∑' n : ℕ, if n=0 then 0 else a n*rieszKernel ((n:ℝ)*y) := by
   obtain ⟨hi,hs⟩ := riesz_inverse_integrand_summable hσ hy a ha
@@ -347,10 +379,14 @@ lemma mellinInv_LSeries_riesz {σ y : ℝ} (hσ : 1≤σ) (hy : 0<y)
   intro n
   exact mellinInv_term_riesz hσ hy a n
 
-noncomputable def rieszSum (a : ℕ → ℂ) (x : ℝ) : ℂ :=
+end
+
+end
+
+noncomputable def rieszSum (a : ℕ → ℂ) (x : ℝ)  :=
   ∑ n∈Finset.Ioc 0 ⌊x⌋₊, a n*(1-(n:ℂ)/(x:ℂ))
 
-lemma rieszKernel_tsum_eq {x : ℝ} (hx : 0<x) (a : ℕ → ℂ) :
+lemma rieszKernel_tsum_eq  {x}  (hx : 0<x)  a  :
     (∑' n : ℕ, if n=0 then 0 else a n*rieszKernel ((n:ℝ)*(1/x)))=rieszSum a x := by
   classical
   rw [tsum_eq_sum (s:=Finset.Ioc 0 ⌊x⌋₊)]
@@ -369,23 +405,22 @@ lemma rieszKernel_tsum_eq {x : ℝ} (hx : 0<x) (a : ℕ → ℂ) :
     by_cases hn0 : n=0
     · simp [hn0]
     have hnx : x<(n:ℝ) := by
-      have hnot : ¬n≤⌊x⌋₊ := by intro h; exact hn (Finset.mem_Ioc.mpr ⟨Nat.pos_of_ne_zero hn0,h⟩)
+      have hnot : ¬n≤⌊x⌋₊ := by grind
       exact lt_of_not_ge (fun h => hnot ((Nat.le_floor_iff hx.le).mpr h))
     have hm1 : ¬(n:ℝ)*(1/x)≤1 := by rw [mul_one_div]; exact not_le.mpr ((lt_div_iff₀ hx).mpr (by simpa using hnx))
-    rw [ite_eq_right hn0,rieszKernel,
-      Set.indicator_of_notMem (show (n:ℝ)*(1/x)∉Ioc (0:ℝ) 1 from fun h => hm1 h.2),mul_zero]
+    simp_all [rieszKernel]
 
 lemma rieszSum_mellinInv {σ x : ℝ} (hσ : 1≤σ) (hx : 0<x)
-    (a : ℕ → ℂ) (ha : LSeriesSummable a (σ:ℂ)) :
+     a  (ha : LSeriesSummable a (σ:ℂ)) :
     mellinInv σ (fun s => LSeries a s/(s*(s+1))) (1/x)=rieszSum a x := by
   rw [mellinInv_LSeries_riesz hσ (one_div_pos.mpr hx) a ha,rieszKernel_tsum_eq hx]
 
-open Complex Real Set MeasureTheory Filter Topology
+ 
 
-noncomputable def poleRieszKernel (y : ℝ) : ℂ :=
+noncomputable def poleRieszKernel (y : ℝ)  :=
   (1/2:ℂ)*((y:ℂ)^(-1:ℂ)*rieszKernel y-rieszKernel y)
 
-lemma hasMellin_poleRieszKernel {s : ℂ} (hs : 1<s.re) :
+lemma hasMellin_poleRieszKernel  {s}  (hs : 1<s.re) :
     HasMellin poleRieszKernel s (1/((s-1)*s*(s+1))) := by
   have h₀ := hasMellin_rieszKernel (s:=s) (by linarith)
   have h₁ := hasMellin_rieszKernel (s:=s+(-1)) (by simp; linarith)
@@ -406,19 +441,17 @@ lemma hasMellin_poleRieszKernel {s : ℂ} (hs : 1<s.re) :
     field_simp [hs0,hs1,hs2]
     ring
   rw [he] at hhalf
-  change HasMellin (fun t : ℝ => (1/2:ℂ)*((t:ℂ)^(-1:ℂ)*rieszKernel t-rieszKernel t)) s _
-  simpa only [smul_eq_mul] using hhalf
+  assumption
 
-lemma poleRieszKernel_continuousAt {y : ℝ} (hy : 0<y) :
+lemma poleRieszKernel_continuousAt  {y}  (hy : 0<y) :
     ContinuousAt poleRieszKernel y := by
   apply continuousAt_const.mul
   apply ContinuousAt.sub _ (rieszKernel_continuousAt hy)
   apply ContinuousAt.mul _ (rieszKernel_continuousAt hy)
   simp only [Complex.cpow_neg_one]
-  have hr : ContinuousAt (fun t : ℝ => (t:ℂ)) y := Complex.continuous_ofReal.continuousAt
-  exact hr.inv₀ (Complex.ofReal_ne_zero.mpr hy.ne')
+  fun_prop (disch := aesop)
 
-lemma poleRiesz_verticalIntegrable {σ : ℝ} (hσ : 1<σ) :
+lemma poleRiesz_verticalIntegrable  {σ}  (hσ : 1<σ) :
     VerticalIntegrable (fun s : ℂ => 1/((s-1)*s*(s+1))) σ := by
   have hn (t : ℝ) : ((σ:ℂ)+t*I-1)*((σ:ℂ)+t*I)*((σ:ℂ)+t*I+1)≠0 := by
     apply mul_ne_zero
@@ -433,12 +466,12 @@ lemma poleRiesz_verticalIntegrable {σ : ℝ} (hσ : 1<σ) :
   filter_upwards [] with t
   rw [norm_div,norm_one,norm_mul,norm_mul]
   have hl : σ-1 ≤ ‖(σ:ℂ)+t*I-1‖ := by simpa using Complex.re_le_norm ((σ:ℂ)+t*I-1)
-  have hn0 : 0<‖(σ:ℂ)+t*I-1‖ := lt_of_lt_of_le (by linarith) hl
+  
   have hh : 1/‖(σ:ℂ)+t*I-1‖ ≤ 1/(σ-1) := one_div_le_one_div_of_le (by linarith) hl
   simpa only [norm_div,norm_one,norm_mul,div_eq_mul_inv,mul_inv_rev,norm_inv,mul_assoc,mul_comm,mul_left_comm,one_mul,mul_one]
     using mul_le_mul_of_nonneg_right hh (norm_nonneg (1/(((σ:ℂ)+t*I)*((σ:ℂ)+t*I+1))))
 
-lemma poleRiesz_mellinInv {σ y : ℝ} (hσ : 1<σ) (hy : 0<y) :
+lemma poleRiesz_mellinInv  {σ y}  (hσ : 1<σ) (hy : 0<y) :
     mellinInv σ (fun s : ℂ => 1/((s-1)*s*(s+1))) y=poleRieszKernel y := by
   have hm (t : ℝ) : mellin poleRieszKernel (σ+t*I)=1/((σ+t*I-1)*(σ+t*I)*(σ+t*I+1)) :=
     (hasMellin_poleRieszKernel (by simpa using hσ)).2
@@ -450,7 +483,7 @@ lemma poleRiesz_mellinInv {σ y : ℝ} (hσ : 1<σ) (hy : 0<y) :
     (hasMellin_poleRieszKernel (by simpa using hσ)).1 hf (poleRieszKernel_continuousAt hy)]
   simp only [mellinInv,hm]
 
-lemma poleRieszKernel_inv {x : ℝ} (hx : 1≤x) :
+lemma poleRieszKernel_inv  {x}  (hx : 1≤x) :
     poleRieszKernel (1/x)=((x/2-1+1/(2*x):ℝ):ℂ) := by
   have hx0 : 0<x := by linarith
   have hy : 0<1/x := one_div_pos.mpr hx0
@@ -462,7 +495,11 @@ lemma poleRieszKernel_inv {x : ℝ} (hx : 1≤x) :
   field_simp
   ring
 
-lemma mellinInv_integrable {σ y : ℝ} (hy : 0<y) {f : ℂ → ℂ}
+section
+variable {σ y : ℝ} (hy : 0<y)
+include σ y hy
+
+lemma mellinInv_integrable     {f : ℂ → ℂ}
     (hf : VerticalIntegrable f σ) :
     Integrable (fun t : ℝ => (y:ℂ)^(-((σ:ℂ)+t*I))*f ((σ:ℂ)+t*I)) := by
   have he : Continuous (fun t : ℝ => -((σ:ℂ)+t*I)) := by fun_prop
@@ -474,15 +511,17 @@ lemma mellinInv_integrable {σ y : ℝ} (hy : 0<y) {f : ℂ → ℂ}
     Complex.add_re,Complex.ofReal_re,Complex.mul_re,Complex.ofReal_im,Complex.I_re,Complex.I_im,
     mul_zero,zero_mul,sub_self,add_zero,le_refl]
 
-lemma mellinInv_add_of_verticalIntegrable {σ y : ℝ} (hy : 0<y) {f g : ℂ → ℂ}
+lemma mellinInv_add_of_verticalIntegrable     {f g : ℂ → ℂ}
     (hf : VerticalIntegrable f σ) (hg : VerticalIntegrable g σ) :
     mellinInv σ (fun s => f s+g s) y=mellinInv σ f y+mellinInv σ g y := by
   simp only [mellinInv,smul_eq_mul,Complex.real_smul,mul_add]
   rw [integral_add (mellinInv_integrable hy hf) (mellinInv_integrable hy hg),mul_add]
 
-open Complex Real Set MeasureTheory Filter Topology
+end
 
-open scoped FourierTransform
+ 
+
+ 
 
 end LargePrimeGaps
 

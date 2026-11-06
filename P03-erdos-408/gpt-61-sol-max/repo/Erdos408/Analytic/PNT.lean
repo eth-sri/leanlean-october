@@ -1,4 +1,8 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Analytic.IntegerKernel
+import Erdos408.Analytic.PrimeTwist
 
 public import Erdos408.Analytic.Core
 public import Erdos408.Hypotheses
@@ -47,14 +51,17 @@ open Complex ArithmeticFunction DirichletCharacter
 /-- The integrand `-(L'/L)(s, χ) x^s / (s (s + 1))` of the smoothed explicit
 formula. -/
 noncomputable def perronIntegrand {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N) (x : ℝ)
-    (s : ℂ) : ℂ :=
+    (s : ℂ)  :=
   -(deriv (LFunction χ) s / LFunction χ s) * ((x : ℂ) ^ s / (s * (s + 1)))
 
 open MeasureTheory Set LSeries
 open scoped LSeries.notation
 
+section
+variable {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N)
+
 /-- On `re s > 1`, `-(L'/L)(s, χ)` is the L-series of `χ Λ`. -/
-theorem neg_logDeriv_LFunction_eq {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N) {s : ℂ}
+theorem neg_logDeriv_LFunction_eq       {s : ℂ}
     (hs : 1 < s.re) :
     -(deriv (LFunction χ) s / LFunction χ s) = LSeries (↗χ * ↗Λ) s := by
   rw [deriv_LFunction_eq_deriv_LSeries χ hs, LFunction_eq_LSeries χ hs,
@@ -62,8 +69,8 @@ theorem neg_logDeriv_LFunction_eq {N : ℕ} [NeZero N] (χ : DirichletCharacter 
 
 /-- On `re s = 2`, the terms of the L-series of `χ Λ` are dominated by those of `Λ`
 at `2`. -/
-theorem norm_term_twist_vonMangoldt_le {N : ℕ} (χ : DirichletCharacter ℂ N) {s : ℂ}
-    (hs : s.re = 2) (n : ℕ) : ‖term (↗χ * ↗Λ) s n‖ ≤ ‖term ↗Λ 2 n‖ := by
+theorem norm_term_twist_vonMangoldt_le {N : ℕ} (χ : DirichletCharacter ℂ N)  {s} 
+    (hs : s.re = 2)  n  : ‖term (↗χ * ↗Λ) s n‖ ≤ ‖term ↗Λ 2 n‖ := by
   rw [norm_term_eq, norm_term_eq, hs, show (2 : ℂ).re = 2 by simp]
   split_ifs
   · rfl
@@ -76,7 +83,7 @@ theorem summable_norm_term_vonMangoldt : Summable fun n ↦ ‖term ↗Λ 2 n‖
   summable_norm_iff.mpr (LSeriesSummable_vonMangoldt (by norm_num))
 
 /-- On `re s = 2`, `‖(L'/L)(s, χ)‖ ≤ ∑ Λ(n) / n²`. -/
-theorem norm_neg_logDeriv_LFunction_le {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N)
+theorem norm_neg_logDeriv_LFunction_le      
     {s : ℂ} (hs : s.re = 2) :
     ‖-(deriv (LFunction χ) s / LFunction χ s)‖ ≤ ∑' n, ‖term ↗Λ 2 n‖ := by
   have hle := norm_term_twist_vonMangoldt_le χ hs
@@ -87,22 +94,10 @@ theorem norm_neg_logDeriv_LFunction_le {N : ℕ} [NeZero N] (χ : DirichletChara
     (Summable.tsum_le_tsum hle hsum summable_norm_term_vonMangoldt)
 
 /-- On `re s = 2`, `‖x^s / (s (s + 1))‖ ≤ x² / t²` with `t = im s`. -/
-theorem norm_perron_f_le {x : ℝ} (hx : 0 < x) {t : ℝ} (ht : t ≠ 0) :
-    ‖Perron.f x ((2 : ℝ) + t * I)‖ ≤ x ^ 2 / t ^ 2 := by
-  set s : ℂ := (2 : ℝ) + t * I
-  have hs : ‖s‖ * ‖s + 1‖ = ‖s * (s + 1)‖ := (norm_mul _ _).symm
-  have h1 : |t| ≤ ‖s‖ := by simpa [s] using abs_im_le_norm s
-  have h2 : |t| ≤ ‖s + 1‖ := by simpa [s] using abs_im_le_norm (s + 1)
-  have h3 : t ^ 2 ≤ ‖s * (s + 1)‖ := by
-    rw [← hs, ← sq_abs]
-    nlinarith [abs_nonneg t]
-  rw [Perron.f, norm_div, norm_cpow_eq_rpow_re_of_pos hx]
-  simp only [s, add_re, ofReal_re, mul_re, ofReal_im, I_re, I_im, mul_zero, mul_one, sub_zero,
-    add_zero, Real.rpow_two]
-  gcongr
+alias norm_perron_f_le := _root_.Erdos408.PrimeTwist.norm_perron_f_le
 
 /-- On `re s = 2`, the Perron integrand is dominated by `x^s / (s (s + 1))`. -/
-theorem norm_perronIntegrand_le {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N) (x t : ℝ) :
+theorem norm_perronIntegrand_le       (x t : ℝ) :
     ‖perronIntegrand χ x ((2 : ℝ) + t * I)‖ ≤
       (∑' n, ‖term ↗Λ 2 n‖) * ‖Perron.f x ((2 : ℝ) + t * I)‖ := by
   rw [perronIntegrand, norm_mul]
@@ -110,7 +105,7 @@ theorem norm_perronIntegrand_le {N : ℕ} [NeZero N] (χ : DirichletCharacter �
   exact norm_neg_logDeriv_LFunction_le χ (by simp)
 
 /-- The Perron integrand is integrable on the line `re s = 2`. -/
-theorem integrable_perronIntegrand {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N) {x : ℝ}
+theorem integrable_perronIntegrand       {x : ℝ}
     (hx : 0 < x) : Integrable fun t : ℝ ↦ perronIntegrand χ x ((2 : ℝ) + t * I) := by
   have hf : Integrable fun t : ℝ ↦ Perron.f x ((2 : ℝ) + t * I) :=
     Perron.isIntegrable hx (by norm_num) (by norm_num)
@@ -127,53 +122,20 @@ theorem integrable_perronIntegrand {N : ℕ} [NeZero N] (χ : DirichletCharacter
     (Filter.Eventually.of_forall fun t ↦ norm_perronIntegrand_le χ x t)
 
 /-- Each term of the L-series times `x^s / (s (s + 1))` is a Perron kernel at `x / n`. -/
-theorem term_mul_perron_f_eq (f : ℕ → ℂ) {x : ℝ} (hx : 0 < x) {n : ℕ} (hn : n ≠ 0) (s : ℂ) :
-    term f s n * Perron.f x s = f n * Perron.f (x / n) s := by
-  have h := Perron.f_mul_eq_f hx (Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn)) s
-  rw [ofReal_natCast, cpow_neg] at h
-  rw [term_of_ne_zero hn, ← h]
-  ring
+alias term_mul_perron_f_eq := _root_.Erdos408.PrimeTwist.term_mul_perron_f_eq
 
 /-- The line integral of the Perron kernel at `y > 1` is `2π (1 - 1/y)`. -/
-theorem integral_perron_f_of_one_lt {y : ℝ} (hy : 1 < y) :
-    ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I) = 2 * Real.pi * (1 - 1 / y) := by
-  have h := Perron.formulaGtOne (σ := 2) hy (by norm_num)
-  rw [VerticalIntegral', VerticalIntegral, smul_eq_mul, smul_eq_mul] at h
-  have hπ : (2 * Real.pi : ℂ) ≠ 0 := by simp [Real.pi_ne_zero]
-  change 1 / (2 * Real.pi * I) * (I * ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I)) = _ at h
-  generalize ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I) = J at h ⊢
-  rw [← h]
-  field_simp
+alias integral_perron_f_of_one_lt := _root_.Erdos408.IntegerKernel.integral_perron_f_of_one_lt
 
 /-- The line integral of the Perron kernel at `0 < y < 1` vanishes. -/
-theorem integral_perron_f_of_lt_one {y : ℝ} (hy0 : 0 < y) (hy : y < 1) :
-    ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I) = 0 := by
-  have h := Perron.formulaLtOne (σ := 2) hy0 hy (by norm_num)
-  rw [VerticalIntegral, smul_eq_mul] at h
-  simpa using h
+alias integral_perron_f_of_lt_one := _root_.Erdos408.IntegerKernel.integral_perron_f_of_lt_one
 
 /-- A function bounded by `B / t²` on `(T, ∞)` has integral there of norm at most `B / T`. -/
-theorem norm_setIntegral_Ioi_le {g : ℝ → ℂ} {B T : ℝ} (hT : 0 < T)
-    (hg : IntegrableOn g (Ioi T)) (hgB : ∀ t, T < t → ‖g t‖ ≤ B / t ^ 2) :
-    ‖∫ t in Ioi T, g t‖ ≤ B / T := by
-  have hrpow : IntegrableOn (fun t : ℝ ↦ t ^ (-2 : ℝ)) (Ioi T) :=
-    integrableOn_Ioi_rpow_of_lt (by norm_num) hT
-  have hle : ∀ t ∈ Ioi T, ‖g t‖ ≤ B * t ^ (-2 : ℝ) := by
-    intro t ht
-    have ht0 : 0 < t := hT.trans ht
-    rw [Real.rpow_neg ht0.le, Real.rpow_two, ← div_eq_mul_inv]
-    exact hgB t ht
-  calc ‖∫ t in Ioi T, g t‖
-      ≤ ∫ t in Ioi T, ‖g t‖ := norm_integral_le_integral_norm _
-    _ ≤ ∫ t in Ioi T, B * t ^ (-2 : ℝ) :=
-        setIntegral_mono_on hg.norm (hrpow.const_mul B) measurableSet_Ioi hle
-    _ = B / T := by
-        rw [integral_const_mul, integral_Ioi_rpow_of_lt (by norm_num) hT]
-        norm_num [Real.rpow_neg_one, div_eq_mul_inv]
+alias norm_setIntegral_Ioi_le := _root_.Erdos408.PrimeTwist.norm_setIntegral_Ioi_le
 
 /-- The smoothed Perron formula: the vertical integral of `perronIntegrand` on
 `re s = 2` is `2πi` times the weighted sum. -/
-theorem verticalIntegral_perronIntegrand {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N)
+theorem verticalIntegral_perronIntegrand      
     {x : ℝ} (hx : 1 < x) (hxN : ∀ m : ℕ, (m : ℝ) ≠ x) :
     VerticalIntegral (perronIntegrand χ x) 2 =
       2 * Real.pi * I * ∑ m ∈ Finset.Icc 1 ⌊x⌋₊, (Λ m : ℂ) * χ m * (1 - m / x) := by
@@ -234,6 +196,8 @@ theorem verticalIntegral_perronIntegrand {N : ℕ} [NeZero N] (χ : DirichletCha
     Finset.sum_congr rfl (fun n hn ↦ ite_eq_left hn), ← Finset.mul_sum]
   ring
 
+end
+
 /-- Truncating the vertical integral at height `T` costs `O(x² / T)`. -/
 theorem exists_norm_verticalIntegral_sub_le :
     ∃ C : ℝ, ∀ {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N) {x T : ℝ}, 1 ≤ x → 1 ≤ T →
@@ -260,8 +224,7 @@ theorem exists_norm_verticalIntegral_sub_le :
   have hlower : ‖∫ t in Iic (-T), F t‖ ≤ A * x ^ 2 / T := by
     rw [← integral_comp_neg_Ioi]
     refine norm_setIntegral_Ioi_le hT0 hF_int.comp_neg.integrableOn fun t ht ↦ ?_
-    rw [← neg_sq t]
-    exact hF_le (-t) (neg_ne_zero.mpr (hT0.trans ht).ne')
+    grind
   rw [verticalIntegral_split_three (-T) T hF_int, add_right_comm, add_sub_cancel_right]
   calc ‖I • (∫ t in Iic (-T), F t) + I • ∫ t in Ici T, F t‖
       ≤ ‖∫ t in Iic (-T), F t‖ + ‖∫ t in Ici T, F t‖ := by
@@ -289,11 +252,11 @@ lemma one_add_abs_im_sq_le_norm_mul {s : ℂ} (hs : 1 / 16 ≤ s.re) :
   have h₅ : 1 + |s.im| ≤ 32 * ‖s‖ := by linarith
   have h₆ : 1 + |s.im| ≤ 2 * ‖s + 1‖ := by linarith
   calc (1 + |s.im|) ^ 2 ≤ (32 * ‖s‖) * (2 * ‖s + 1‖) := by
-        rw [sq]; exact mul_le_mul h₅ h₆ (by positivity) (by positivity)
+        rw [sq]; bound
     _ = 64 * ‖s * (s + 1)‖ := by rw [norm_mul]; ring
 
 /-- To the right of `1/16`, `‖x^s / (s (s + 1))‖ ≤ 64 x^{re s} / (1 + |im s|)²`. -/
-lemma norm_cpow_div_le {x : ℝ} (hx : 0 < x) {s : ℂ} (hs : 1 / 16 ≤ s.re) :
+lemma norm_cpow_div_le {x : ℝ} (hx : 0 < x)  {s}  (hs : 1 / 16 ≤ s.re) :
     ‖(x : ℂ) ^ s / (s * (s + 1))‖ ≤ 64 * x ^ s.re / (1 + |s.im|) ^ 2 := by
   have h := one_add_abs_im_sq_le_norm_mul hs
   have hpos : 0 < ‖s * (s + 1)‖ := by
@@ -304,25 +267,16 @@ lemma norm_cpow_div_le {x : ℝ} (hx : 0 < x) {s : ℂ} (hs : 1 / 16 ≤ s.re) :
   linarith
 
 /-- Off the real axis, `‖x^s / (s (s + 1))‖ ≤ x^{re s} / (im s)²`. -/
-lemma norm_cpow_div_le_of_im_ne_zero {x : ℝ} (hx : 0 < x) {s : ℂ} (hs : s.im ≠ 0) :
-    ‖(x : ℂ) ^ s / (s * (s + 1))‖ ≤ x ^ s.re / s.im ^ 2 := by
-  have h₁ : |s.im| ≤ ‖s‖ := abs_im_le_norm s
-  have h₃ : |(s + 1).im| ≤ ‖s + 1‖ := abs_im_le_norm _
-  simp only [add_im, one_im, add_zero] at h₃
-  have h : s.im ^ 2 ≤ ‖s * (s + 1)‖ := by
-    rw [norm_mul, ← sq_abs, sq]
-    exact mul_le_mul h₁ h₃ (abs_nonneg _) (norm_nonneg _)
-  have hpos : 0 < s.im ^ 2 := by positivity
-  rw [norm_div, norm_cpow_eq_rpow_re_of_pos hx]
-  exact div_le_div_of_nonneg_left (Real.rpow_nonneg hx.le _) hpos h
+lemma norm_cpow_div_le_of_im_ne_zero {x : ℝ} (hx : 0 < x)  {s}  (hs : s.im ≠ 0) :
+    ‖(x : ℂ) ^ s / (s * (s + 1))‖ ≤ x ^ s.re / s.im ^ 2 := by solve_by_elim [_root_.Erdos408.IntegerKernel.norm_perron_f_le_of_im]
 
 /-- `1 + log (|t| + 3) ≤ 5 (1 + |t|)^{1/2}`. -/
-lemma one_add_log_le_rpow (t : ℝ) :
+lemma one_add_log_le_rpow  t  :
     1 + Real.log (|t| + 3) ≤ 5 * (1 + |t|) ^ (1 / 2 : ℝ) := by
   have hu : 1 ≤ 1 + |t| := by linarith [abs_nonneg t]
   have h₁ : Real.log (|t| + 3) ≤ Real.log 3 + Real.log (1 + |t|) := by
     rw [← Real.log_mul (by norm_num) (by linarith)]
-    exact Real.log_le_log (by positivity) (by linarith [abs_nonneg t])
+    bound
   have h₂ : Real.log 3 ≤ 2 := by
     have := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 3)
     linarith
@@ -333,12 +287,7 @@ lemma one_add_log_le_rpow (t : ℝ) :
 
 /-- A horizontal segment integral is at most the length times a pointwise bound. -/
 lemma norm_hIntegral_le {F : ℂ → ℂ} {a b y C : ℝ} (hab : a ≤ b)
-    (hF : ∀ σ ∈ Set.Icc a b, ‖F (σ + y * I)‖ ≤ C) : ‖HIntegral F a b y‖ ≤ C * (b - a) := by
-  have h := intervalIntegral.norm_integral_le_of_norm_le_const (C := C)
-    (f := fun σ : ℝ ↦ F (σ + y * I)) fun σ hσ ↦ by
-      rw [Set.uIoc_of_le hab] at hσ
-      exact hF σ (Set.Ioc_subset_Icc_self hσ)
-  rwa [abs_of_nonneg (by linarith)] at h
+    (hF : ∀ σ ∈ Set.Icc a b, ‖F (σ + y * I)‖ ≤ C) : ‖HIntegral F a b y‖ ≤ C * (b - a) := by solve_by_elim [_root_.Erdos408.PrimeTwist.norm_hIntegral_le]
 
 /-- A vertical segment integral is at most `c ∫ (1 + |t|)^{-3/2} dt` when the integrand is
 dominated by `c (1 + |t|)^{-3/2}`. -/
@@ -373,10 +322,10 @@ open scoped LSeries.notation
 /-- **Borel–Carathéodory near `s = 1`.** If `g` is entire and zero-free on `re s > 7/8`,
 at most `M` on `29/32 < re s < 4`, `|im s| < 3`, and at least `1/2` on `re s = 2`,
 `|im s| ≤ 1`, then `‖g'/g‖ ≤ 8832 log (2M)` on `15/16 ≤ re s ≤ 2`, `|im s| ≤ 1`. -/
-lemma norm_logDeriv_le_of_near_one {g : ℂ → ℂ} {M : ℝ} (hg : Differentiable ℂ g)
+lemma norm_logDeriv_le_of_near_one {g : ℂ → ℂ}  {M}  (hg : Differentiable ℂ g)
     (hg₀ : ∀ w : ℂ, 7 / 8 < w.re → g w ≠ 0)
     (hM : ∀ w : ℂ, 29 / 32 < w.re → w.re < 4 → |w.im| < 3 → ‖g w‖ ≤ M)
-    (hm : ∀ t : ℝ, |t| ≤ 1 → 1 / 2 ≤ ‖g (2 + t * I)‖) {z : ℂ} (hz₁ : 15 / 16 ≤ z.re)
+    (hm : ∀ t : ℝ, |t| ≤ 1 → 1 / 2 ≤ ‖g (2 + t * I)‖)  {z}  (hz₁ : 15 / 16 ≤ z.re)
     (hz₂ : z.re ≤ 2) (hz : |z.im| ≤ 1) :
     ‖deriv g z / g z‖ ≤ 8832 * Real.log (2 * M) := by
   set c : ℂ := 2 + z.im * I
@@ -397,8 +346,7 @@ lemma norm_logDeriv_le_of_near_one {g : ℂ → ℂ} {M : ℝ} (hg : Differentia
   have hgc : 1 / 2 ≤ ‖g c‖ := hm z.im hz
   have hgc₀ : g c ≠ 0 := norm_pos_iff.mp (by linarith)
   have hMc : ‖g c‖ ≤ M := by
-    obtain ⟨h₁, h₂, h₃⟩ := hball c hcb
-    exact hM c h₁ h₂ h₃
+    grind
   -- a holomorphic logarithm of `g / g c` on the ball
   obtain ⟨h, hh, he, hh₀⟩ := exists_holomorphic_log (c := c) (R := 35 / 32) (by norm_num)
     (hg.differentiableOn.div_const (g c))
@@ -470,8 +418,11 @@ lemma differentiable_zetaReg : Differentiable ℂ zetaReg := by
 noncomputable def trivReg (k : ℕ) : ℂ → ℂ :=
   fun s ↦ (∏ p ∈ k.primeFactors, (1 - (p : ℂ) ^ (-s))) * zetaReg s
 
+section
+variable {k : ℕ} [NeZero k] {s : ℂ}
+
 /-- Away from `s = 1`, `trivReg k s = (s - 1) L(s, χ₀)`. -/
-lemma trivReg_eq {k : ℕ} [NeZero k] {s : ℂ} (hs : s ≠ 1) :
+lemma trivReg_eq       (hs : s ≠ 1) :
     trivReg k s = (s - 1) * LFunction (1 : DirichletCharacter ℂ k) s := by
   have h := LFunctionTrivChar_eq_mul_riemannZeta (N := k) hs
   simp only [LFunctionTrivChar] at h
@@ -479,16 +430,14 @@ lemma trivReg_eq {k : ℕ} [NeZero k] {s : ℂ} (hs : s ≠ 1) :
   ring
 
 /-- `(s - 1) L(s, χ₀)` is entire. -/
-lemma differentiable_trivReg (k : ℕ) : Differentiable ℂ (trivReg k) := by
+lemma differentiable_trivReg  k  : Differentiable ℂ (trivReg k) := by
   intro s
   refine DifferentiableAt.mul (DifferentiableAt.fun_finsetProd fun p hp ↦ ?_)
     (differentiable_zetaReg s)
-  have hp₀ : (p : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (Nat.prime_of_mem_primeFactors hp).ne_zero
-  exact (differentiableAt_neg_iff.mpr differentiableAt_id).const_cpow (Or.inl hp₀)
-    |>.const_sub 1
+  fun_prop (disch := aesop)
 
 /-- On `re s ≥ 0`, the Euler factors at the primes dividing `k` have product at most `k`. -/
-lemma norm_prod_one_sub_le {k : ℕ} [NeZero k] {s : ℂ} (hs : 0 ≤ s.re) :
+lemma norm_prod_one_sub_le       (hs : 0 ≤ s.re) :
     ‖∏ p ∈ k.primeFactors, (1 - (p : ℂ) ^ (-s))‖ ≤ k := by
   rw [norm_prod]
   calc ∏ p ∈ k.primeFactors, ‖1 - (p : ℂ) ^ (-s)‖
@@ -506,7 +455,7 @@ lemma norm_prod_one_sub_le {k : ℕ} [NeZero k] {s : ℂ} (hs : 0 ≤ s.re) :
         exact_mod_cast Nat.le_of_dvd (NeZero.pos k) (Nat.prod_primeFactors_dvd k)
 
 /-- `(s - 1) L(s, χ₀)` has no zeros on `re s > 7/8`. -/
-lemma trivReg_ne_zero {k : ℕ} [NeZero k] {s : ℂ} (hs : 7 / 8 < s.re) : trivReg k s ≠ 0 := by
+lemma trivReg_ne_zero       (hs : 7 / 8 < s.re) : trivReg k s ≠ 0 := by
   rcases ne_or_eq s 1 with h | rfl
   · rw [trivReg_eq h]
     exact mul_ne_zero (sub_ne_zero.mpr h)
@@ -515,12 +464,10 @@ lemma trivReg_ne_zero {k : ℕ} [NeZero k] {s : ℂ} (hs : 7 / 8 < s.re) : trivR
     refine Finset.prod_ne_zero_iff.mpr fun p hp ↦ ?_
     have hp := Nat.prime_of_mem_primeFactors hp
     rw [cpow_neg_one, sub_ne_zero]
-    intro h
-    have : (1 : ℂ) = p := by simpa using congrArg (·⁻¹) h
-    exact hp.one_lt.ne (by exact_mod_cast this)
+    aesop
 
 /-- Away from `s = 1`, `L'/L(s, χ₀) = g'/g(s) - 1/(s - 1)` for `g = trivReg k`. -/
-lemma logDeriv_LFunction_one_eq {k : ℕ} [NeZero k] {s : ℂ} (hs : s ≠ 1)
+lemma logDeriv_LFunction_one_eq       (hs : s ≠ 1)
     (hL : LFunction (1 : DirichletCharacter ℂ k) s ≠ 0) :
     deriv (LFunction (1 : DirichletCharacter ℂ k)) s / LFunction (1 : DirichletCharacter ℂ k) s =
       deriv (trivReg k) s / trivReg k s - 1 / (s - 1) := by
@@ -532,12 +479,12 @@ lemma logDeriv_LFunction_one_eq {k : ℕ} [NeZero k] {s : ℂ} (hs : s ≠ 1)
     ((hasDerivAt_id s).sub_const 1).mul
       (differentiableAt_LFunction 1 s (Or.inl hs)).hasDerivAt
   rw [hev.deriv_eq, hd.deriv, trivReg_eq hs]
-  have hs' : s - 1 ≠ 0 := sub_ne_zero.mpr hs
-  field_simp
-  ring
+  grind
+
+end
 
 /-- `log (k (|t| + 3)) ≤ 6 k (1 + |t|)^{1/2}`. -/
-lemma log_mul_le_mul_rpow {k : ℝ} (hk : 1 ≤ k) (t : ℝ) :
+lemma log_mul_le_mul_rpow  {k}  (hk : 1 ≤ k)  t  :
     Real.log (k * (|t| + 3)) ≤ 6 * k * (1 + |t|) ^ (1 / 2 : ℝ) := by
   have h₁ := one_add_log_le_rpow t
   have h₂ : Real.log k ≤ k := (Real.log_le_sub_one_of_pos (by linarith)).trans (by linarith)
@@ -651,9 +598,7 @@ theorem exists_norm_logDeriv_le_left : ∃ A : ℝ, ∀ (k : ℕ) [NeZero k]
     calc _ ≤ ‖deriv (trivReg k) s / trivReg k s‖ + ‖1 / (s - 1)‖ := norm_sub_le _ _
       _ ≤ 8832 * (2 * ((36 * |C₂| + |M₀| + 1) * k)) + 16 := by linarith
       _ ≤ (8832 * 16 + A₁) * k := by
-          have : (16 : ℝ) ≤ 16 * k := by linarith
-          simp only [A₁]
-          nlinarith
+          linarith
   · -- `g = L(s, χ)` is entire
     have hM : ∀ w : ℂ, 29 / 32 < w.re → w.re < 4 → |w.im| < 3 →
         ‖LFunction χ w‖ ≤ 8 * k := by
@@ -689,7 +634,7 @@ section Smoothed
 open Complex ArithmeticFunction DirichletCharacter
 
 /-- The rectangle integral recovers the right edge from the other three. -/
-lemma vIntegral_eq_rectangleIntegral (F : ℂ → ℂ) (U : ℝ) :
+lemma vIntegral_eq_rectangleIntegral (F : ℂ → ℂ)  U  :
     VIntegral F 2 (-U) U = RectangleIntegral F (15 / 16 - U * I) (2 + U * I) -
       HIntegral F (15 / 16) 2 (-U) + HIntegral F (15 / 16) 2 U +
         VIntegral F (15 / 16) (-U) U := by
@@ -765,15 +710,13 @@ theorem rectangleIntegral_perronIntegrand {k : ℕ} [NeZero k] (χ : DirichletCh
       have hs₁' : s ≠ 1 := hs₁
       have hL : LFunction (1 : DirichletCharacter ℂ k) s ≠ 0 :=
         LFunction_ne_zero_of_seven_eighths_lt_re 1 hs' fun h ↦ hs₁' h.2
-      have hsub : s - 1 ≠ 0 := sub_ne_zero.mpr hs₁'
+      
       simp only [Pi.sub_apply, perronIntegrand, H, logDeriv_LFunction_one_eq hs₁' hL,
         dslope_of_ne _ hs₁', slope_def_field]
-      change -(deriv g s / g s - 1 / (s - 1)) * K s - K 1 / (s - 1) = _
-      field_simp
-      ring
+      grind
     have h := ResidueTheoremOnRectangleWithSimplePole hre him hnhds hH hpart
     rw [RectangleIntegral', smul_eq_mul] at h
-    have hπ : (2 * Real.pi * I : ℂ) ≠ 0 := by simp [Real.pi_ne_zero, I_ne_zero]
+    
     have hK1 : K 1 = x / 2 := by simp [K]; ring
     rw [← hK1, ← h]
     field_simp
@@ -798,7 +741,7 @@ theorem exists_norm_smoothed_sub_le : ∃ B : ℝ, ∀ (k : ℕ) [NeZero k]
   obtain ⟨C₂, hC₂⟩ := norm_logDeriv_LFunction_le
   obtain ⟨A, hA⟩ := exists_norm_logDeriv_le_left
   set I₀ := ∫ t : ℝ, (1 + |t|) ^ (-(3 / 2) : ℝ)
-  have hI₀ : 0 ≤ I₀ := MeasureTheory.integral_nonneg fun t ↦ by positivity
+  
   refine ⟨|C₁| + 12 * |C₂| + 64 * |A| * I₀, ?_⟩
   intro k _ χ x hx hxN
   set U := x ^ 2 with hUdef
@@ -993,7 +936,7 @@ theorem sum_vonMangoldt_mul_char_sub_le : ∃ c > (0 : ℝ), ∃ C : ℝ, ∀ (k
   have hy₀ : 0 < y := by linarith
   -- powers of `r = y^{1/64}`
   set r := y ^ (1 / 64 : ℝ) with hr
-  have hr₀ : 0 < r := Real.rpow_pos_of_pos hy₀ _
+  
   have hr₁ : 1 ≤ r := Real.one_le_rpow (by linarith) (by norm_num)
   have hpow : ∀ n : ℕ, y ^ ((n : ℝ) / 64) = r ^ n := fun n ↦ by
     rw [hr, ← Real.rpow_natCast, ← Real.rpow_mul hy₀.le]
@@ -1049,9 +992,7 @@ theorem sum_vonMangoldt_mul_char_sub_le : ∃ c > (0 : ℝ), ∃ C : ℝ, ∀ (k
             (if χ = 1 then (z : ℂ) / 2 else 0)) := by
       rw [mul_sub, Finset.mul_sum]
       congr 1
-      · refine Finset.sum_congr rfl fun n _ ↦ ?_
-        simp only [a]
-        field_simp
+      · field_simp <;> ring
       · simp only [I₁]
         split_ifs <;> ring
     rw [heq, norm_mul, norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)]
@@ -1125,7 +1066,7 @@ theorem sum_vonMangoldt_mul_char_sub_le : ∃ c > (0 : ℝ), ∃ C : ℝ, ∀ (k
   -- dividing by `h ≥ r^62`
   have hfinal : ‖S - I₁ * y‖ ≤ C₀ * k * r ^ 63 := by
     refine le_of_mul_le_mul_left (hmain.trans ?_) hh₀
-    have hB₀ : 0 ≤ |B| * k := by positivity
+    
     have e₁ : 32 * |B| * k * r ^ 124 ≤ h * (32 * |B| * k * r ^ 63) := by
       have : r ^ 124 ≤ r ^ 62 * r ^ 63 := by
         rw [← pow_add]; exact pow_le_pow_right₀ hr₁ (by norm_num)

@@ -11,38 +11,38 @@ namespace Erdos821.P4Probe
 
 noncomputable section
 
-abbrev ProbeSample {s : ℕ} (α : Fin s → Type) (M : ℕ) :=
+abbrev ProbeSample {s } (α : Fin s → Type) (M ) :=
   ∀ g, Fin M → α g
 
-def sampleWeight {s M : ℕ} {α : Fin s → Type}
-    (w : ∀ g, α g → ℝ) (x : ProbeSample α M) : ℝ :=
+def sampleWeight {s M } {α : Fin s → Type}
+    (w : ∀ g, α g → ℝ) (x : ProbeSample α M)  :=
   ∏ g, ∏ i, w g (x g i)
 
 def sampleSqNorm {s M : ℕ} {α : Fin s → Type} [∀ g, Fintype (α g)]
-    (w : ∀ g, α g → ℝ) (f : ProbeSample α M → ℂ) : ℝ :=
+    (w : ∀ g, α g → ℝ) (f : ProbeSample α M → ℂ)  :=
   ∑ x, sampleWeight w x * ‖f x‖ ^ 2
 
-def replaceCoords {s M : ℕ} {α : Fin s → Type}
+def replaceCoords {s M } {α : Fin s → Type}
     (I : Finset (Fin s × Fin M)) (x y : ProbeSample α M) : ProbeSample α M :=
   fun g i => if (g, i) ∈ I then y g i else x g i
 
 def averageCoords {s M : ℕ} {α : Fin s → Type} [∀ g, Fintype (α g)]
     (w : ∀ g, α g → ℝ) (I : Finset (Fin s × Fin M))
-    (f : ProbeSample α M → ℂ) (x : ProbeSample α M) : ℂ :=
+    (f : ProbeSample α M → ℂ) (x : ProbeSample α M)  :=
   ∑ y, (sampleWeight w y : ℂ) * f (replaceCoords I x y)
 
 /-- Projection onto components involving every coordinate in I, after
 averaging the disjoint tail. This is ∏(1-E_i) E_tail, expressed finitely. -/
 def fullProbeComponent {s M : ℕ} {α : Fin s → Type} [∀ g, Fintype (α g)]
     (w : ∀ g, α g → ℝ) (tail I : Finset (Fin s × Fin M))
-    (f : ProbeSample α M → ℂ) (x : ProbeSample α M) : ℂ :=
+    (f : ProbeSample α M → ℂ) (x : ProbeSample α M)  :=
   ∑ U ∈ I.powerset, (-1 : ℂ) ^ U.card * averageCoords w (tail ∪ U) f x
 
 /-- Pure finite weighted symmetry estimate used at eq:ideal-full-component.
 All labels in a row have the same probability law. The source vector may
 couple every row; resolve joint cardinality tuples rather than assuming it
 is a tensor product. Genuine scalar Hoeffding bounds are in S34/Hoeffding. -/
-def SymmetricFullComponentTask : Prop :=
+def SymmetricFullComponentTask  :=
   ∀ (s J ell m : ℕ) (α : Fin s → Type) [∀ g, Fintype (α g)]
     (w : ∀ g, α g → ℝ) (block : Finset (Fin s))
     (f : ProbeSample α (J + ell) → ℂ),

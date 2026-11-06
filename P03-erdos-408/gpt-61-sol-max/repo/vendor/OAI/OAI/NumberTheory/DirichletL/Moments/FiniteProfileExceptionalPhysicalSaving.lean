@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBudget
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPhysicalSaving
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalAllowance
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
@@ -20,18 +21,18 @@ open CenteredMomentSecondPhysicalLedger CenteredMomentSecondPhysicalBlock
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst
 open CenteredMomentSectorLocalization CenteredMomentFirstCanonicalAllowance
 open CenteredMomentRankinRadical
-local notation "O"=>HeckeFamily.O
+
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
 theorem original_budget_physical_saving_full
-    {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q C D:Ideal O)(hC:Supported C)(hD:Supported D)
-    (hCD:primeSupport C=primeSupport D)(U:Finset (CommonIndex C D))
-    (K Z ε δ θ r Kphys a:ℝ)(n:Fin 4→ℤ)(hK:0≤K)(hZ:1<Z)
+    {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi) J  Q C D (hC:Supported C)(hD:Supported D)
+    (hCD:primeSupport C=primeSupport D) U 
+     K Z ε δ θ r Kphys a  n (hK:0≤K)(hZ:1<Z)
     (hKphys:0<Kphys)(ha:0<a)
-    (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-    (R:ℝ)(rows:Finset O)(hrows:∀z∈rows,z≠0)(W:𝓢(ℝ,ℂ))
-    (hlower:∀I:Ideal O,β I≠0→a*volume s.toData≤(Ideal.absNorm I:ℝ))
+    (η:Character)(t:ℝ)(S:Finset (Ideal HeckeFamily.O))(β:Ideal HeckeFamily.O→ℂ)
+    (R:ℝ)(rows:Finset HeckeFamily.O)(hrows:∀z∈rows,z≠0)(W:𝓢(ℝ,ℂ))
+    (hlower:∀I:Ideal HeckeFamily.O,β I≠0→a*volume s.toData≤(Ideal.absNorm I:ℝ))
     (hne:physicalBlock η t S β C D hC hD U R rows W Kphys n≠0) :
     (1/volume s.toData)*outerScalar C D Kphys n*normalizer C D U*
       sourceBudget Sprofile s p J Q C D U K Z ε δ θ r 1 (Real.logb Z (dyadicScale (n 1)))/
@@ -58,7 +59,7 @@ theorem original_budget_physical_saving_full
     (mul_nonneg (profileFactor_nonneg Sprofile s p J Q K hK) (Real.rpow_nonneg (by linarith) _))
     (Real.rpow_nonneg (by positivity) _)
   have hv:=volume_pos s.toData
-  have hz:0<Z:=zero_lt_one.trans hZ
+  
   have hE:0≤E:=by dsimp [E];positivity
   rw [central_sourceBudget_exact Sprofile s p J Q C D hC hD U K Z ε δ θ r Kphys n hZ,
     common_ideal_product]
@@ -75,6 +76,6 @@ theorem original_budget_physical_saving_full
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
 
-end
+
 
 end OAI

@@ -18,7 +18,7 @@ variable {α : Type*} [Fintype α] [DecidableEq α]
 -- Finite set of multisets of fixed card over a finite alphabet.
 
 -- Multiset factorial denominator.
-def multFact (z : Multiset α) : ℝ :=
+def multFact (z : Multiset α)  :=
   ∏ u ∈ z.toFinset, ((z.count u).factorial : ℝ)
 
 omit [Fintype α] in

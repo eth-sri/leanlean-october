@@ -11,17 +11,24 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open CanonicalQuadraticSieve FiniteSieveRestriction
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-def cubicColumnLabel {n : Type*} (cols : n → Ideal O) (N : ℝ) (j : n) :
-    Fin (columnDyadicLength N + 1) := divisorDyadicLabel N (cols j)
 
-abbrev CubicColumnShell {n : Type*} (cols : n → Ideal O) (N : ℝ)
-    (l : Fin (columnDyadicLength N + 1)) := {j : n // cubicColumnLabel cols N j = l}
+def cubicColumnLabel {n : Type*} (cols : n → Ideal ActualEisensteinCubic.O) (N ) (j : n)  := divisorDyadicLabel N (cols j)
 
-lemma cubicColumnShell_bounds {n : Type*} (cols : n → Ideal O) (N : ℝ)
-    (hc : ∀ j, Admissible (cols j)) (hn : ∀ j, (Ideal.absNorm (cols j) : ℝ) ≤ N)
-    (l : Fin (columnDyadicLength N + 1)) (j : CubicColumnShell cols N l) :
+abbrev CubicColumnShell {n } (cols ) (N )
+    (l ) := {j : n // cubicColumnLabel cols N j = l}
+
+section
+variable {n : Type*}
+include n
+
+section
+variable (cols : n → Ideal ActualEisensteinCubic.O) (N : ℝ) (hc : ∀ j, Admissible (cols j)) (hn : ∀ j, (Ideal.absNorm (cols j) : ℝ) ≤ N) (l : Fin (columnDyadicLength N + 1)) (j : CubicColumnShell cols N l)
+include cols N hc hn l j
+
+lemma cubicColumnShell_bounds      
+       
+        :
     (2 : ℝ)^l.val/2 ≤ (Ideal.absNorm (cols j.val) : ℝ) ∧
       (Ideal.absNorm (cols j.val) : ℝ) ≤ (2 : ℝ)^l.val := by
   have hp : 1 ≤ (Ideal.absNorm (cols j.val) : ℝ) := by
@@ -33,25 +40,31 @@ lemma cubicColumnShell_bounds {n : Type*} (cols : n → Ideal O) (N : ℝ)
   rw [hj] at hb
   exact ⟨hb.1.le,hb.2⟩
 
-lemma cubicColumnShell_scale_le {n : Type*} (cols : n → Ideal O) (N : ℝ)
-    (hc : ∀ j, Admissible (cols j)) (hn : ∀ j, (Ideal.absNorm (cols j) : ℝ) ≤ N)
-    (l : Fin (columnDyadicLength N + 1)) (j : CubicColumnShell cols N l) :
+lemma cubicColumnShell_scale_le      
+       
+        :
     (2 : ℝ)^l.val ≤ 2*N := by
   have hh := (cubicColumnShell_bounds cols N hc hn l j).1
   linarith [hn j.val]
 
-lemma cubicColumnShell_energy {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (N : ℝ) (a : n → ℂ) :
+end
+
+section
+variable [Fintype n] (cols : n → Ideal ActualEisensteinCubic.O) (N : ℝ) (a : n → ℂ)
+include cols N a
+
+lemma cubicColumnShell_energy    
+          :
     (∑ l : Fin (columnDyadicLength N + 1), ∑ j : CubicColumnShell cols N l, ‖a j.val‖^2) =
       ∑ j, ‖a j‖^2 := Fintype.sum_fiberwise (cubicColumnLabel cols N) (fun j => ‖a j‖^2)
 
-theorem cubic_energy_column_shells {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (N : ℝ) (a : n → ℂ) (R : Finset O) :
+theorem cubic_energy_column_shells    
+           R  :
     (∑ z ∈ R, ‖∑ j, cubicRow (cols j) z * a j‖^2) ≤
       (columnDyadicLength N + 1 : ℝ) *
         ∑ l : Fin (columnDyadicLength N + 1), ∑ z ∈ R,
           ‖∑ j : CubicColumnShell cols N l, cubicRow (cols j.val) z * a j.val‖^2 := by
-  have hp (z : O) : ‖∑ j, cubicRow (cols j) z*a j‖^2 ≤
+  have hp (z : ActualEisensteinCubic.O) : ‖∑ j, cubicRow (cols j) z*a j‖^2 ≤
       (columnDyadicLength N + 1 : ℝ)*∑ l : Fin (columnDyadicLength N + 1),
         ‖∑ j : CubicColumnShell cols N l, cubicRow (cols j.val) z*a j.val‖^2 := by
     rw [← Fintype.sum_fiberwise (cubicColumnLabel cols N) (fun j => cubicRow (cols j) z*a j)]
@@ -71,6 +84,10 @@ theorem cubic_energy_column_shells {n : Type*} [Fintype n]
           ‖∑ j : CubicColumnShell cols N l, cubicRow (cols j.val) z*a j.val‖^2 :=
       Finset.sum_le_sum (fun z hz => hp z)
     _ = _ := by rw [← Finset.mul_sum, Finset.sum_comm]
+
+end
+
+end
 
 end
 end SevenEighths.CubicSieve

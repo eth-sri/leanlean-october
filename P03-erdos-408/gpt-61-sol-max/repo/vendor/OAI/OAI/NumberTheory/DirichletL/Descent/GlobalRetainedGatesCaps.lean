@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRadius
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
@@ -14,9 +14,9 @@ open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseIniti
 open InverseSecondUniformCutoff
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
@@ -27,8 +27,7 @@ lemma uniform_radius_cap (G E : Finset ι) (hEG : E⊆G)
       Z^(delta+eta+2*Lcol+tau+LY) := by
   have hr : primeProductNorm p E/primeProductNorm p G≤1 :=
     (div_le_one (primeProductNorm_pos p hp G)).mpr (primeProductNorm_mono p hp hEG)
-  have hr0 : 0≤primeProductNorm p E/primeProductNorm p G := by
-    exact div_nonneg (primeProductNorm_pos p hp E).le (primeProductNorm_pos p hp G).le
+  have hr0 : 0≤primeProductNorm p E/primeProductNorm p G := div_nonneg (primeProductNorm_pos p hp E).le (primeProductNorm_pos p hp G).le
   have hs : (primeProductNorm p E/primeProductNorm p G)^2≤1 := pow_le_one₀ hr0 hr
   unfold uniformSecondRadius
   rw [div_eq_mul_inv]
@@ -41,7 +40,7 @@ lemma uniform_radius_cap (G E : Finset ι) (hEG : E⊆G)
       norm_num
       ring
 
-lemma bare_frequency_norm_le (a k : O) (ha : a≠0) :
+lemma bare_frequency_norm_le  a k  (ha : a≠0) :
     ‖eisEmbedding k‖^2≤‖eisEmbedding (a*k)‖^2 := by
   have hh := element_norm_ge_one a ha
   rw [map_mul,norm_mul,mul_pow]
@@ -78,6 +77,6 @@ theorem supported_outer_caps
         (Real.rpow_le_rpow_of_exponent_le hZ hphysical)))
 
 end SevenEighths.InverseMomentGlobalRetainedGates
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.MarkedEuler
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsLocal
@@ -11,19 +12,27 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open ActualEisensteinCubic ProbeEulerFinsupp ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-def excludedRowArray (S : Finset Id) (η : HeckeFamily.Character) (u : O) (x w z : ℂ) (a : HighIdeal) : ℂ :=
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+def excludedRowArray (S : Finset Id) (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (x w z : ℂ) (a : HighIdeal)  :=
   markedIdealHighSummand S 1 η u x w z a.1.1 a.1.2 a.2.1 a.2.2
 
-lemma excludedRowArray_one (S : Finset Id) (hS : ∀P∈S,Prime P)
-    (η : HeckeFamily.Character) (u : O) (x w z : ℂ) : excludedRowArray S η u x w z 1=1 := by
+section
+variable (S : Finset Id) (hS : ∀P∈S,Prime P)
+include S hS
+
+section
+variable (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (x w z : ℂ)
+include η u x w z
+
+lemma excludedRowArray_one    
+          : excludedRowArray S η u x w z 1=1 := by
   simp only [excludedRowArray,Prod.fst_one,Prod.snd_one,markedIdealHighSummand,
     highIdealMask_unmarked_one S hS,bareIdealHighSummand_row_one,one_mul]
 
-lemma excludedRowArray_mul (S : Finset Id) (hS : ∀P∈S,Prime P)
-    (η : HeckeFamily.Character) (u : O) (x w z : ℂ) (a b : HighIdeal)
+lemma excludedRowArray_mul    
+           a b 
     (hc : IsCoprime (a.1.1*a.1.2*a.2.1*a.2.2) (b.1.1*b.1.2*b.2.1*b.2.2)) :
     excludedRowArray S η u x w z (a*b)=excludedRowArray S η u x w z a*excludedRowArray S η u x w z b := by
   simp only [excludedRowArray,Prod.fst_mul,Prod.snd_mul,markedIdealHighSummand,
@@ -31,33 +40,37 @@ lemma excludedRowArray_mul (S : Finset Id) (hS : ∀P∈S,Prime P)
     bareIdealHighSummand_row_mul η u x w z _ _ _ _ _ _ _ _ hc]
   ring
 
-def excludedRowPrimeTerm (S : Finset Id) (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
-    (P : PrimeIdeal) (b : HighValuation) : ℂ :=
+def excludedRowPrimeTerm (S : Finset Id) (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (x w z : ℂ)
+    (P : PrimeIdeal) (b : HighValuation)  :=
   excludedRowArray S η u x w z ((P.val^b.1.1,P.val^b.1.2),(P.val^b.2.1,P.val^b.2.2))
 
-lemma excludedRowArray_prod (S : Finset Id) (hS : ∀P∈S,Prime P)
-    (η : HeckeFamily.Character) (u : O) (x w z : ℂ) (v : PrimeIdeal→₀HighValuation) :
+lemma excludedRowArray_prod    
+           v  :
     excludedRowArray S η u x w z (highIdeals v)=v.prod (excludedRowPrimeTerm S η u x w z) :=
   highArray_val_prod _ (excludedRowArray_one S hS η u x w z) (excludedRowArray_mul S hS η u x w z) v
 
-lemma markedRowArray_val (S : Finset Id) (hS : ∀P∈S,Prime P) (T : Finset PrimeIdeal)
-    (η : HeckeFamily.Character) (u : O) (x w z : ℂ) (v : PrimeIdeal→₀HighValuation) :
+end
+
+section
+variable (T : Finset PrimeIdeal) (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (x w z : ℂ)
+include T η u x w z
+
+lemma markedRowArray_val      
+           v  :
     markedIdealHighSummand S (∏P∈T,P.val) η u x w z
       (highIdeals v).1.1 (highIdeals v).1.2 (highIdeals v).2.1 (highIdeals v).2.2=
         markedArray T completedValuationMark (excludedRowPrimeTerm S η u x w z) v := by
   rw [markedIdealHighSummand_mark,markedArray,completedValuationMark_product]
-  change _*excludedRowArray S η u x w z (highIdeals v)=_
-  rw [excludedRowArray_prod S hS]
+  solve_by_elim [highIdeals, excludedRowArray_prod]
 
-theorem markedRowSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
-    (T : Finset PrimeIdeal) (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+theorem markedRowSeries_hasProd    
+           
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     HasProd (fun P : PrimeIdeal=>∑'b : HighValuation,
       markedLocal T completedValuationMark (excludedRowPrimeTerm S η u x w z) P b)
       (markedIdealHighSeries S (∏P∈T,P.val) η u x w z) := by
   have h0 (P : PrimeIdeal) : excludedRowPrimeTerm S η u x w z P 0=1 := by
-    simp only [excludedRowPrimeTerm,Prod.fst_zero,Prod.snd_zero,pow_zero]
-    exact excludedRowArray_one S hS η u x w z
+    solve_by_elim [excludedRowArray_one]
   have hs := (markedIdealHighSummand_summable S 1 η u x w z hx hw hz).norm.comp_injective highIdeals_injective
   change Summable (fun v=>‖excludedRowArray S η u x w z (highIdeals v)‖) at hs
   simp only [excludedRowArray_prod S hS] at hs
@@ -79,6 +92,10 @@ theorem markedRowSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
     refine ⟨highValuationEquiv b,?_⟩
     rw [highIdeals_eq_equiv,highValuationEquiv.symm_apply_apply]
   simpa only [hsum] using he
+
+end
+
+end
 
 end SevenEighths.ProbeHighRowFamily
 end

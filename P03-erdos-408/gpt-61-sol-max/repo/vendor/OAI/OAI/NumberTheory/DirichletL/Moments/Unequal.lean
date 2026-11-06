@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Fourier
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentUnequal
 open CenteredMomentCorrelation CenteredMomentCommonSupport
@@ -16,7 +16,11 @@ open CenteredMomentCorrelation CenteredMomentCommonSupport
 section Domain
 variable {A : Type*} [CommRing A] [IsDomain A]
 
-theorem divisor_congruence (v t k : A) (hv : v ≠ 0)
+section
+variable (v t k : A) (hv : v ≠ 0)
+include v t k hv
+
+theorem divisor_congruence    
     (x : Residue (v * t)) (y : Residue v) :
     scaledResidue (v * t) v ((v * t) * v) rfl x -
       scaledResidue v (v * t) ((v * t) * v) (mul_comm _ _) y =
@@ -30,9 +34,13 @@ theorem divisor_congruence (v t k : A) (hv : v ≠ 0)
     show v * x - (v * t) * y - v * k = v * (x - (t * y + k)) by ring]
   exact mul_dvd_mul_iff_left hv
 
-theorem fullCorrelation_divisor (v t k : A) (hv : v ≠ 0)
-    [Fintype (Residue (v * t))] [Fintype (Residue v)]
-    (χu : MulChar (Residue (v * t)) ℂ) (χv : MulChar (Residue v) ℂ) :
+section
+variable [Fintype (Residue (v * t))] [Fintype (Residue v)] (χu : MulChar (Residue (v * t)) ℂ) (χv : MulChar (Residue v) ℂ)
+include χu χv
+
+theorem fullCorrelation_divisor    
+       
+        :
     fullModulusCorrelation (v * t) v χu χv (v * k) =
       ∑ y : Residue v, χu (scaledResidue v t (v * t) rfl y + Ideal.Quotient.mk _ k) *
         star (χv y) := by
@@ -41,9 +49,9 @@ theorem fullCorrelation_divisor (v t k : A) (hv : v ≠ 0)
   rw [Finset.sum_comm]
   simp only [Finset.sum_ite_eq', Finset.mem_univ, ite_true]
 
-theorem fullCorrelation_divisor_constant (v t k : A) (hv : v ≠ 0)
-    [Fintype (Residue (v * t))] [Fintype (Residue v)]
-    (χu : MulChar (Residue (v * t)) ℂ) (χv : MulChar (Residue v) ℂ)
+theorem fullCorrelation_divisor_constant    
+       
+       
     (hχ : ∀ y : Residue v,
       χu (scaledResidue v t (v * t) rfl y + Ideal.Quotient.mk _ k) = χu (Ideal.Quotient.mk _ k)) :
     fullModulusCorrelation (v * t) v χu χv (v * k) =
@@ -51,6 +59,10 @@ theorem fullCorrelation_divisor_constant (v t k : A) (hv : v ≠ 0)
   rw [fullCorrelation_divisor v t k hv χu χv]
   simp_rw [hχ]
   rw [← Finset.mul_sum, star_sum]
+
+end
+
+end
 
 omit [IsDomain A] in
 theorem divisor_lift_constant (p v t k : A) (hpt : p ∣ t)
@@ -83,7 +95,7 @@ theorem lifted_character_sum_zero (p v : A) (hpv : p ∣ v)
 theorem fullCorrelation_divisor_eq_zero (p v t k : A) (hv : v ≠ 0)
     (hpv : p ∣ v) (hpt : p ∣ t)
     [Fintype (Residue p)] [Fintype (Residue (v * t))] [Fintype (Residue v)]
-    (χu : MulChar (Residue (v * t)) ℂ) (χv : MulChar (Residue v) ℂ)
+     χu   χv 
     (ψu ψv : MulChar (Residue p) ℂ) (hψv : ψv ≠ 1)
     (hu : ∀ x : A, χu (Ideal.Quotient.mk _ x) = ψu (Ideal.Quotient.mk _ x))
     (hv' : ∀ x : A, χv (Ideal.Quotient.mk _ x) = ψv (Ideal.Quotient.mk _ x)) :
@@ -93,28 +105,36 @@ theorem fullCorrelation_divisor_eq_zero (p v t k : A) (hv : v ≠ 0)
     lifted_character_sum_zero p v hpv χv ψv hψv hv', star_zero, mul_zero]
 
 end Domain
-section Eisenstein
+
 open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
 open CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
 open ConcretePrimeRowBridge hiding O
 local notation "O" => ActualEisensteinCubic.O
 
-theorem supported_power (p : O) (hp : Supported (Ideal.span {p})) (i : ℕ) :
+section
+variable (p : O)
+include p
+
+theorem supported_power   (hp : Supported (Ideal.span {p}))  i  :
     Supported (Ideal.span {p ^ i}) := by
   rw [← Ideal.span_singleton_pow]
   exact supported_pow hp i
 
-theorem supported_power_character_mk (p : O) [ (Ideal.span {p}).IsMaximal]
-    (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    {i : ℕ} (hi : 1 ≤ i) (x : O) :
+section
+variable [ (Ideal.span {p}).IsMaximal] (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
+include hp hg
+
+theorem supported_power_character_mk    
+       
+     {i}  (hi : 1 ≤ i)  x  :
     supportedModulusCharacter (p ^ i) (supported_power p hp i) (Ideal.Quotient.mk _ x) =
       (actualSextic (Ideal.span {p}) hg ^ i) (Ideal.Quotient.mk _ x) := by
   rw [supportedModulusCharacter_mk, ← Ideal.span_singleton_pow, map_pow,
     idealRowHom_prime x (Ideal.span {p}) hg, MulChar.pow_apply' _ (by omega)]
 
-theorem supported_product_power_character_mk (p : O) [(Ideal.span {p}).IsMaximal]
-    (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    {j d : ℕ} (hj : 1 ≤ j) (x : O) :
+theorem supported_product_power_character_mk    
+       
+     {j d}  (hj : 1 ≤ j)  x  :
     supportedModulusCharacter (p ^ j * p ^ d)
       (supported_mul_elements _ _ (supported_power p hp j) (supported_power p hp d))
       (Ideal.Quotient.mk _ x) =
@@ -122,10 +142,10 @@ theorem supported_product_power_character_mk (p : O) [(Ideal.span {p}).IsMaximal
   rw [supportedModulusCharacter_mk, ← pow_add, ← Ideal.span_singleton_pow, map_pow,
     idealRowHom_prime x (Ideal.span {p}) hg, MulChar.pow_apply' _ (by omega)]
 
-theorem unequal_prime_power_zero_of_not_six (p : O) [(Ideal.span {p}).IsMaximal]
-    (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
+theorem unequal_prime_power_zero_of_not_six    
+       
     (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    {j d : ℕ} (hj : 1 ≤ j) (hd : 1 ≤ d) (hj6 : ¬ 6 ∣ j) (k : O) :
+     {j d}  (hj : 1 ≤ j) (hd : 1 ≤ d) (hj6 : ¬ 6 ∣ j)  k  :
     actualCorrelation (p ^ j * p ^ d) (p ^ j)
       (supported_mul_elements _ _ (supported_power p hp j) (supported_power p hp d))
       (supported_power p hp j) (p ^ j * k) = 0 := by
@@ -148,9 +168,13 @@ theorem unequal_prime_power_zero_of_not_six (p : O) [(Ideal.span {p}).IsMaximal]
     hχ (supported_product_power_character_mk p hp hg hj)
     (supported_power_character_mk p hp hg hj)
 
-theorem unequal_prime_power_factor (p : O) [(Ideal.span {p}).IsMaximal]
-    (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    {j d : ℕ} (hj : 1 ≤ j) (hd : 1 ≤ d) (k : O) :
+section
+variable {j d : ℕ} (hj : 1 ≤ j) (hd : 1 ≤ d) (k : O)
+include j d hj hd k
+
+theorem unequal_prime_power_factor    
+       
+            :
     actualCorrelation (p ^ j * p ^ d) (p ^ j)
       (supported_mul_elements _ _ (supported_power p hp j) (supported_power p hp d))
       (supported_power p hp j) (p ^ j * k) =
@@ -171,9 +195,9 @@ theorem unequal_prime_power_factor (p : O) [(Ideal.span {p}).IsMaximal]
   rw [supported_product_power_character_mk p hp hg hj k] at h
   simpa only [actualCorrelation, supportedCorrelation, tsum_fintype] using h
 
-theorem unequal_prime_power_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
-    (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    {j d : ℕ} (hj : 1 ≤ j) (hd : 1 ≤ d) (k : O) :
+theorem unequal_prime_power_norm_le    
+       
+            :
     ‖actualCorrelation (p ^ j * p ^ d) (p ^ j)
       (supported_mul_elements _ _ (supported_power p hp j) (supported_power p hp d))
       (supported_power p hp j) (p ^ j * k)‖ ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ) ^ j := by
@@ -196,10 +220,16 @@ theorem unequal_prime_power_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
         Ideal.span_singleton_pow]
       simp [Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
 
-end Eisenstein
+end
+
+end
+
+end
+
+
 
 end SevenEighths.CenteredMomentUnequal
 
-end
+
 
 end OAI

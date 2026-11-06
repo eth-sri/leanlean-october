@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstTerms
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsRamified
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsRamified
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
@@ -15,17 +16,25 @@ local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
-lemma first_region_V_half (Q : ℝ) (hQ : 4≤Q) (z : ℂ) (hz : (17/50:ℝ)≤z.re) :
+section
+variable (Q : ℝ) (hQ : 4≤Q) (a x z : ℂ) (ha : ‖a‖≤1) (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
+
+
+include hQ hz in
+lemma first_region_V_half         :
     ‖coordV Q z‖≤1/2 := by
   rw [coordV_norm Q (by linarith)]
   exact rpow_le_half Q _ hQ (by linarith)
 
-lemma first_region_R_half (Q : ℝ) (hQ : 4≤Q) (a x z : ℂ) (ha : ‖a‖≤1)
-    (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re) :
+include hQ ha hx hz in
+lemma first_region_R_half        
+        :
     ‖evenRatio Q a ((Q:ℂ)^(-x)) (coordV Q z)‖≤1/2 := by
   rw [evenRatio_eq_coordR Q (by linarith)]
-  apply (coordR_norm_le Q (by linarith) (a^2) x z (by simpa only [norm_pow] using pow_le_one₀ (norm_nonneg a) ha)).trans
+  apply (coordR_norm_le Q (by linarith) (a^2) x z (by simp_all)).trans
   exact rpow_le_half Q _ hQ (by linarith)
+
+end
 
 include hc in
 lemma rowBaseFinite_first_region (eta a rho x w z : ℂ)
@@ -101,6 +110,6 @@ theorem ramifiedClosed_first_region_bound (eta a rho x w z : ℂ)
   linarith
 
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

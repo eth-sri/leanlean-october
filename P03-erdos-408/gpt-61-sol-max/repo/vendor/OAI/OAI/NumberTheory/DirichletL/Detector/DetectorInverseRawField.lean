@@ -1,4 +1,5 @@
 module
+import Batteries.Tactic.Alias
 
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawReference
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawUniform
@@ -18,13 +19,9 @@ open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
 open HeckeDetectorInverseFiberCount DetectorDictionaryInverseClippedUniform
 open ProbeHighRowFamily ProbeFinalAssembly
 
-private theorem raw_mono (data:RowData)(W:ℝ→ℂ)(c κ A B:ℝ)
-    (hAB:A≤B)(h:RawMoment data W c κ A):RawMoment data W c κ B:=by
-  intro H D hH hD hcap rows hrows
-  apply (h H D hH hD hcap rows hrows).trans
-  gcongr
+private alias raw_mono := _root_.SharedProofs.rawMoment_mono
 
-theorem fixed_raw_profiles (c κ:ℝ)(hc:0<c)(hκ:0<κ):
+theorem fixed_raw_profiles  c κ (hc:0<c)(hκ:0<κ):
     ∃J:ℕ,∀data:RowData,∃C:ℝ,0<C ∧
       ∀reverse:Bool,∀n:ℕ,n≤2→∀U:ℝ,0<U→∀tstar r:ℝ,
       ∀s∈Set.Icc (0:ℝ) 1,∀height t:ℝ,0≤height→t∈Set.Icc (-height) height→

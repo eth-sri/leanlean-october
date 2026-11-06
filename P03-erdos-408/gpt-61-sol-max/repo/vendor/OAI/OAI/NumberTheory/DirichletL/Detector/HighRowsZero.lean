@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsPrime
 
@@ -14,10 +15,10 @@ local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p})
 
-def rowZeroIndexTerm (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ) (j k m : ℕ) : ℂ :=
+def rowZeroIndexTerm (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ) (j k m : ℕ)  :=
   (if k=0 then 1 else (χ^k) (Ideal.Quotient.mk _ (p^(j+6*m))))*W^k*V^m
 
-theorem sourceRowTerm_zero (eta a rho x w z : ℂ) (j k m : ℕ) :
+theorem sourceRowTerm_zero  eta a rho x w z   j k m  :
     sourceRowTerm p hp hg eta a rho x w z j 0 0 k m=
       rowZeroIndexTerm p (actualSextic (Ideal.span {p}) hg)
         (rho*((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)))
@@ -30,8 +31,8 @@ theorem sourceRowTerm_zero (eta a rho x w z : ℂ) (j k m : ℕ) :
   ring
 
 omit [(Ideal.span {p}).IsMaximal] in
-lemma rowZeroIndex_zero (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ)
-    (j : ℕ) (hV : ‖V‖<1) :
+lemma rowZeroIndex_zero  χ   W V 
+     j  (hV : ‖V‖<1) :
     HasSum (fun m=>rowZeroIndexTerm p χ W V j 0 m) (1/(1-V)) := by
   simpa only [rowZeroIndexTerm,ite_true,pow_zero,one_mul,one_div] using
     hasSum_geometric_of_norm_lt_one hV
@@ -54,8 +55,7 @@ theorem rowZeroIndexSeries_eq (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : �
   · rw [ite_eq_right hj,add_zero]
     rw [tsum_eq_single 0]
     · exact (rowZeroIndex_zero p χ W V j hV).tsum_eq
-    · intro k hk
-      simp only [rowZeroIndex_pos_ramified p hp χ W V j k _ hj hk,tsum_zero]
+    simp_all [rowZeroIndex_pos_ramified]
 
 end SevenEighths.ProbeEuler
 end

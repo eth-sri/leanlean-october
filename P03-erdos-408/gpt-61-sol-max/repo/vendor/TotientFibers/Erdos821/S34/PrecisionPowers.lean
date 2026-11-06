@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.BilinearDecayArithmetic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
@@ -10,23 +11,28 @@ set_option autoImplicit false
 namespace Erdos821.S34Core
 noncomputable section
 
-def comparisonPowerQ (B κ d : ℝ) : ℝ := 2 * (B + κ + 10) + d + 3
-def comparisonPowerH (B q C₄ : ℝ) : ℝ := 5 * q + C₄ + B + 20
-def comparisonPowerXi (B d h : ℝ) : ℝ := 2 * B + d + 1 + h + 20
-def comparisonPowerD (B q ξ : ℝ) : ℝ := B + ξ + 3 * q + 20
+def comparisonPowerQ (B κ d : ℝ)  := 2 * (B + κ + 10) + d + 3
+def comparisonPowerH (B q C₄ : ℝ)  := 5 * q + C₄ + B + 20
+def comparisonPowerXi (B d h : ℝ)  := 2 * B + d + 1 + h + 20
+def comparisonPowerD (B q ξ : ℝ)  := B + ξ + 3 * q + 20
 
-theorem rpow_nat_pow (L a : ℝ) (n : ℕ) (hL : 0 ≤ L) :
+section
+variable (L C a : ℝ) (n : ℕ) (hL : 0 ≤ L) (b q K B κ d U V r : ℝ)
+
+include hL in
+theorem rpow_nat_pow       :
     (L ^ a) ^ n = L ^ ((n : ℝ) * a) := by
   rw [← Real.rpow_natCast, ← Real.rpow_mul hL]
   congr 1
   ring
 
-theorem sqrt_rpow (L a : ℝ) (hL : 0 ≤ L) : Real.sqrt (L ^ a) = L ^ (a / 2) := by
+include hL in
+theorem sqrt_rpow     : Real.sqrt (L ^ a) = L ^ (a / 2) := by
   rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hL]
   congr 1
   ring
 
-theorem rpow_cost_absorption (L C a b : ℝ) (hL : 1 ≤ L) (hC : C ≤ L) (hab : b + 1 ≤ a) :
+theorem rpow_cost_absorption   (hL : 1 ≤ L) (hC : C ≤ L) (hab : b + 1 ≤ a) :
     C * L ^ b ≤ L ^ a := by
   have hp : 0 < L := by linarith
   calc
@@ -37,15 +43,15 @@ theorem rpow_cost_absorption (L C a b : ℝ) (hL : 1 ≤ L) (hC : C ≤ L) (hab 
         _ = _ := (Real.rpow_add hp _ _).symm
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hL hab
 
-theorem floor_rpow_bounds (L q : ℝ) (hL : 0 < L) (hpow : 2 ≤ L ^ q) :
+theorem floor_rpow_bounds   (hL : 0 < L) (hpow : 2 ≤ L ^ q) :
     0 < (⌊L ^ q⌋₊ : ℝ) ∧ L ^ q / 2 ≤ (⌊L ^ q⌋₊ : ℝ) ∧ (⌊L ^ q⌋₊ : ℝ) ≤ L ^ q := by
   have hfloor := Nat.lt_floor_add_one (L ^ q)
-  have hnonneg : (0 : ℝ) ≤ (⌊L ^ q⌋₊ : ℝ) := Nat.cast_nonneg _
+  
   have hlow : L ^ q / 2 ≤ (⌊L ^ q⌋₊ : ℝ) := by linarith
   refine ⟨?_, hlow, Nat.floor_le (Real.rpow_nonneg hL.le _)⟩
   linarith
 
-theorem minor_power_precision (L K B κ d U V r : ℝ)
+theorem minor_power_precision  
     (hL : 2 ≤ L) (hK : 0 < K) (hKL : 60 * K ≤ L)
     (hB : 0 ≤ B) (hκ : 0 ≤ κ) (hd : 0 ≤ d)
     (hU : L ^ comparisonPowerQ B κ d ≤ U) (hV : L ^ comparisonPowerQ B κ d ≤ V)
@@ -80,9 +86,7 @@ theorem minor_power_precision (L K B κ d U V r : ℝ)
     have hqeq : d + 1 - q = -2 * (B + κ + 11) := by dsimp [q, comparisonPowerQ]; ring
     rw [Real.rpow_sub hLp] at hUdiv
     have hsEq : L ^ (d + 1) / L ^ q = L ^ (-2 * (B + κ + 11)) := by rw [← Real.rpow_sub hLp, hqeq]
-    rw [hsEq] at hminor hUdiv
-    rw [hqeq] at hcomp
-    linarith
+    grind
   have hs5 : Real.sqrt 5 ≤ 3 := by nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 5), Real.sqrt_nonneg 5]
   have hroot : Real.sqrt (bilinearDecay U V r) ≤ 3 * L ^ (-(B + κ + 11)) := by
     calc
@@ -101,10 +105,10 @@ theorem minor_power_precision (L K B κ d U V r : ℝ)
         rw [← Real.rpow_add hLp]
         congr 1
         ring
-      calc
-        _ = 60 * K * (L ^ κ * L ^ (-(B + κ + 11))) := by ring
-        _ = _ := by rw [he]
+      grind
     _ ≤ _ := rpow_cost_absorption L (60 * K) (-B - 2) (-B - 11) hL1 hKL (by linarith)
+
+end
 
 end
 end Erdos821.S34Core

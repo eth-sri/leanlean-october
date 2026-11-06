@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapFourier
 public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
@@ -8,16 +9,20 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.InverseMoment
 open InverseInitialClippedColumns InverseInitialOverlapFourier SecondPassIntegration JointLogSeparation
 open ActualEisensteinCubic FirstPassCubeLabels CompletedGauss
-local notation "O"=>ActualEisensteinCubic.O
 
-theorem clipped_fixed_window (W:ℝ→ℂ) (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
+
+section
+variable (W:ℝ→ℂ)
+include W
+
+theorem clipped_fixed_window   (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
     (hW:Function.support W⊆Set.Icc lo hi):
     ∃(wFresh:𝓢(ℝ,ℂ))(af bf:ℝ),0<af ∧ af≤bf ∧ HasCompactSupport (wFresh:ℝ→ℂ) ∧
       tsupport (wFresh:ℝ→ℂ)⊆Set.Icc af bf ∧
@@ -38,12 +43,11 @@ theorem clipped_fixed_window (W:ℝ→ℂ) (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
       lo≤c*y:=hw.1
       _≤y*b:=by nlinarith
   have hyhi:y≤hi:=le_trans (by nlinarith) hw.2
-  have hyB:y≤B:=by dsimp [B];linarith [le_abs_self hi]
-  rw [hone y ⟨hay,hyB⟩,one_mul]
+  grind
 
-theorem clipped_test_fourier (W:ℝ→ℂ) (lo hi:ℝ) (hlo:0<lo)
-    (hs:Function.support W⊆Set.Icc lo hi) (hW:ContDiff ℝ ∞ W)
-    (wFresh:ℝ→ℂ)(c θ y:ℝ)(hc:0<c)(hy:0<y)(hwFresh:wFresh y*W (c*y)=W (c*y)):
+theorem clipped_test_fourier    lo hi   hlo 
+     hs   hW 
+     wFresh  c θ y (hc:0<c)(hy:0<y)(hwFresh:wFresh y*W (c*y)=W (c*y)):
     clippedTest W c θ y =
       ∫t:ℝ,density (CubicReflectionKernel.logSchwartz W lo hi hlo hs hW) (Real.log c) t *
         childLogTest wFresh (θ+t) y:=by
@@ -66,19 +70,23 @@ theorem clipped_test_fourier (W:ℝ→ℂ) (lo hi:ℝ) (hlo:0<lo)
         simp only [g,CubicReflectionKernel.logSchwartz_apply,Real.exp_add,Real.exp_log hc,Real.exp_log hy]
   rw [hi']
   unfold clippedTest childLogTest
-  calc
-    W (c*y)*logPhase θ (Real.log y)=(wFresh y*W (c*y))*logPhase θ (Real.log y):=by rw [hwFresh]
-    _= _:=by ring
+  grind
+
+end
 
 variable {ι σ:Type*}[DecidableEq ι]
-  (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
+section
+variable (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1) (pool:Finset ι) (Ψ:ActualEisensteinCubic.O→*ℂ) (m f k:ActualEisensteinCubic.O) (slots:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ)
+include hpr pool Ψ m f k slots lists a
+
 theorem canonical_clipped_mode_integrable
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(Ψ:O→*ℂ)(m f k:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (g:𝓢(ℝ,ℂ))(wFresh:ℝ→ℂ)(c θ X:ℝ):
+     
+          
+     g  wFresh  c θ X :
     Integrable (fun t:ℝ=>density g (Real.log c) t*
       finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a (childLogTest wFresh (θ+t)) X):=by
   simp_rw [finiteCanonicalMarkedRow_actual_columns p hp hcop hg hpr]
@@ -93,10 +101,10 @@ theorem canonical_clipped_mode_integrable
   ring
 
 theorem canonical_clipped_fourier
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(Ψ:O→*ℂ)(m f k:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (W:ℝ→ℂ)(lo hi:ℝ)(hlo:0<lo)(hs:Function.support W⊆Set.Icc lo hi)(hW:ContDiff ℝ ∞ W)
-    (wFresh:ℝ→ℂ)(c θ X:ℝ)(hc:0<c)(hX:0<X)(hwFresh:∀y,0<y→wFresh y*W (c*y)=W (c*y)):
+     
+          
+     W  lo hi  hlo  hs  hW 
+     wFresh  c θ X (hc:0<c)(hX:0<X)(hwFresh:∀y,0<y→wFresh y*W (c*y)=W (c*y)):
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a (clippedTest W c θ) X=
       ∫t:ℝ,density (CubicReflectionKernel.logSchwartz W lo hi hlo hs hW) (Real.log c) t *
         finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a (childLogTest wFresh (θ+t)) X:=by
@@ -123,8 +131,10 @@ theorem canonical_clipped_fourier
   filter_upwards with t
   ring
 
+end
+
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

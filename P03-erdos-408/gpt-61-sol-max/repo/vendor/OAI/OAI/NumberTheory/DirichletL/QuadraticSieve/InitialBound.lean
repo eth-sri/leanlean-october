@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.PrimeRows.IdealGenerators
 
 public import OAI.NumberTheory.DirichletL.Mellin.CompactWeights
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.CoefficientCancellation
@@ -11,89 +14,97 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace QuadraticInitialBound
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open     EisensteinSchwartzPoisson
 
 def quadraticRow {α : Type*} (P : α → Ideal O) [∀ i, (P i).IsMaximal]
     (hg : ∀ i, lambda ∉ P i) (S : Finset α) (z : O) : ℂ :=
   (finiteSquarefreeRow P hg S z) ^ 3
 
-theorem quadraticRow_eq_canonical {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S : Finset α) (z : O) :
+section
+variable {α : Type*}
+include α
+
+section
+variable (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hg : ∀ i, lambda ∉ P i) (S : Finset α) (z : O)
+include P hg S z
+
+theorem quadraticRow_eq_canonical  
+       
+          :
     quadraticRow P hg S z =
       finiteSexticRow (fun i : S => P i.val) (fun i => hg i.val) (fun _ => 3) z := by
   simp only [quadraticRow, finiteSexticRow, finiteSquarefreeRow,
     MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), Finset.prod_pow]
   rw [Finset.prod_coe_sort (s := S) (f := fun i => canonicalSextic (P i) (hg i) (Ideal.Quotient.mk (P i) z))]
 
-theorem quadraticRow_star {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S : Finset α) (z : O) :
+theorem quadraticRow_star  
+       
+          :
     star (quadraticRow P hg S z) = quadraticRow P hg S z := by
   rw [quadraticRow_eq_canonical]
   simp only [finiteSexticRow, star_prod]
@@ -102,15 +113,25 @@ theorem quadraticRow_star {α : Type*}
   rw [canonicalSextic_pow_three_quadratic]
   simp only [MulChar.ringHomComp_apply, Int.coe_castRingHom, star_intCast]
 
-theorem quadraticRow_disjoint_union {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S T : Finset α) (hd : Disjoint S T) (z : O) :
+end
+
+section
+variable [DecidableEq α] (P : α → Ideal O) [∀ i, (P i).IsMaximal]
+include P
+
+section
+variable (hg : ∀ i, lambda ∉ P i) (S T : Finset α)
+include hg S T
+
+theorem quadraticRow_disjoint_union    
+       
+        (hd : Disjoint S T) (z : O) :
     quadraticRow P hg (S ∪ T) z = quadraticRow P hg S z * quadraticRow P hg T z := by
   simp only [quadraticRow, finiteSquarefreeRow, Finset.prod_union hd, mul_pow]
 
-theorem quadraticRow_pair_kernel {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S T : Finset α) (z : O) :
+theorem quadraticRow_pair_kernel    
+       
+        (z : O) :
     star (quadraticRow P hg S z) * quadraticRow P hg T z =
       rowCoprimeMask P (S ∩ T) z *
         finiteSexticRow (activePrimes P S T) (fun i => hg i.val) (fun _ => 3) z := by
@@ -120,8 +141,7 @@ theorem quadraticRow_pair_kernel {α : Type*} [DecidableEq α]
     split_ifs <;> simp
   have hd : Disjoint (S \ T) (T \ S) := by
     apply Finset.disjoint_left.mpr
-    intro i hi hj
-    exact (Finset.mem_sdiff.mp hi).2 (Finset.mem_sdiff.mp hj).1
+    simp_all
   simp only [mul_pow, ← star_pow, hm] at h
   change star (quadraticRow P hg S z) * quadraticRow P hg T z =
     rowCoprimeMask P (S ∩ T) z * star (quadraticRow P hg (S \ T) z) *
@@ -129,11 +149,12 @@ theorem quadraticRow_pair_kernel {α : Type*} [DecidableEq α]
   simp only [quadraticRow_star] at h ⊢
   rw [← quadraticRow_eq_canonical]
   change _ = rowCoprimeMask P (S ∩ T) z * quadraticRow P hg ((S \ T) ∪ (T \ S)) z
-  rw [quadraticRow_disjoint_union P hg _ _ hd]
-  simpa only [mul_assoc] using h
+  grind [quadraticRow_disjoint_union]
 
-theorem quadratic_gram_offdiagonal {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
+end
+
+theorem quadratic_gram_offdiagonal    
+        (hinj : Function.Injective P)
     (hg : ∀ i, lambda ∉ P i) (hc : ∀ i, ringChar (O ⧸ P i) ≠ 2)
     (S T : Finset α) (hne : S ≠ T) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     ‖∑' z : O, (star (quadraticRow P hg S z) * quadraticRow P hg T z) *
@@ -146,14 +167,26 @@ theorem quadratic_gram_offdiagonal {α : Type*} [DecidableEq α]
     (activePrimes_pairwise_isCoprime P hinj S T) (fun i => hg i.val)
     (fun i => hc i.val) (fun _ => 3) (fun _ => by decide) (fun _ => by decide) W M hM
 
+end
+
+end
+
 def supportNorm {α : Type*} (P : α → Ideal O) (S : Finset α) : ℝ :=
   Ideal.absNorm (∏ i ∈ S, P i)
 
-theorem supportNorm_nonneg {α : Type*} (P : α → Ideal O) (S : Finset α) :
+section
+variable {α : Type*}
+include α
+
+section
+variable (P : α → Ideal O)
+include P
+
+theorem supportNorm_nonneg     (S : Finset α) :
     0 ≤ supportNorm P S := Nat.cast_nonneg _
 
-theorem two_pow_card_le_supportNorm {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal] (S : Finset α) :
+theorem two_pow_card_le_supportNorm  
+      [∀ i, (P i).IsMaximal] (S : Finset α) :
     (2 : ℝ) ^ S.card ≤ supportNorm P S := by
   have hnorm (i : α) : (2 : ℝ) ≤ Ideal.absNorm (P i) := by
     have h0 : Ideal.absNorm (P i) ≠ 0 := by
@@ -169,8 +202,14 @@ theorem two_pow_card_le_supportNorm {α : Type*}
     _ = ∏ _i ∈ S, (2 : ℝ) := by simp
     _ ≤ _ := Finset.prod_le_prod₀ (fun _ _ => by norm_num) (fun i _ => hnorm i)
 
-theorem divisor_conductor_bound {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal] (S T : Finset α)
+end
+
+section
+variable [DecidableEq α] (P : α → Ideal O) [∀ i, (P i).IsMaximal]
+include P
+
+theorem divisor_conductor_bound    
+        (S T : Finset α)
     (N : ℝ) (hN : 0 ≤ N) (hS : supportNorm P S ≤ N) (hT : supportNorm P T ≤ N) :
     (2 : ℝ) ^ (S ∩ T).card *
       ‖eisEmbedding (finitePrimeModulus (activePrimes P S T))‖ ≤ N := by
@@ -188,8 +227,8 @@ theorem divisor_conductor_bound {α : Type*} [DecidableEq α]
   have hprod := mul_le_mul hS hT (supportNorm_nonneg P T) hN
   nlinarith
 
-theorem quadratic_gram_offdiagonal_of_norm_le {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
+theorem quadratic_gram_offdiagonal_of_norm_le    
+        (hinj : Function.Injective P)
     (hg : ∀ i, lambda ∉ P i) (hc : ∀ i, ringChar (O ⧸ P i) ≠ 2)
     (S T : Finset α) (hne : S ≠ T) (N : ℝ) (hN : 0 ≤ N)
     (hS : supportNorm P S ≤ N) (hT : supportNorm P T ≤ N)
@@ -201,15 +240,23 @@ theorem quadratic_gram_offdiagonal_of_norm_le {α : Type*} [DecidableEq α]
   exact mul_le_mul_of_nonneg_left (divisor_conductor_bound P S T N hN hS hT)
     (pvControl_nonneg W)
 
+end
+
+end
+
 def diagonalControl (W : 𝓢(ℝ, ℂ)) : ℝ :=
   16 * (1 + Real.pi) ^ 2 *
     (Finset.Iic (2, 0)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W
 
-theorem diagonalControl_nonneg (W : 𝓢(ℝ, ℂ)) : 0 ≤ diagonalControl W := by
+section
+variable (W : 𝓢(ℝ, ℂ))
+include W
+
+theorem diagonalControl_nonneg   : 0 ≤ diagonalControl W := by
   unfold diagonalControl
   positivity
 
-theorem radial_weight_lattice_bound (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 1 ≤ M) :
+theorem radial_weight_lattice_bound    M  (hM : 1 ≤ M) :
     (∑' z : O, ‖W (‖eisEmbedding z‖ ^ 2 / M)‖) ≤ diagonalControl W * M := by
   have hMp : 0 < M := by linarith
   let t := M⁻¹
@@ -227,7 +274,7 @@ theorem radial_weight_lattice_bound (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 1 ≤ M
     change (1 + ‖eisEmbedding z‖ ^ 2 / M) ^ 2 * ‖W (‖eisEmbedding z‖ ^ 2 / M)‖ ≤ B at hh
     rw [← div_eq_mul_inv]
     apply (le_div_iff₀ (by positivity)).mpr
-    simpa only [t, div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc] using hh
+    grind
   have hs : Summable (fun z : O => ‖W (‖eisEmbedding z‖ ^ 2 / M)‖) := by
     simpa only [scaledRadialTest_apply] using
       actual_eisenstein_summable_norm (scaledRadialTest W M hMp)
@@ -243,16 +290,22 @@ theorem radial_weight_lattice_bound (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 1 ≤ M
   have hh := mul_le_mul_of_nonneg_left hfinal hMp.le
   simpa only [t, ← mul_assoc, mul_inv_cancel₀ hMp.ne', one_mul, mul_comm] using hh
 
-theorem quadraticRow_norm_le_one {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S : Finset α) (z : O) :
+end
+
+section
+variable {α : Type*} (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hg : ∀ i, lambda ∉ P i)
+include α P hg
+
+theorem quadraticRow_norm_le_one  
+       
+      (S : Finset α) (z : O) :
     ‖quadraticRow P hg S z‖ ≤ 1 := by
   rw [quadraticRow_eq_canonical]
   exact finiteSexticRow_norm_le_one _ _ _ _
 
-theorem quadratic_pair_summable {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S T : Finset α)
+theorem quadratic_pair_summable  
+       
+      (S T : Finset α)
     (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     Summable (fun z : O => (star (quadraticRow P hg S z) * quadraticRow P hg T z) *
       W (‖eisEmbedding z‖ ^ 2 / M)) := by
@@ -267,9 +320,9 @@ theorem quadratic_pair_summable {α : Type*}
     ((mul_le_mul (quadraticRow_norm_le_one P hg S z) (quadraticRow_norm_le_one P hg T z)
       (norm_nonneg _) zero_le_one).trans_eq (one_mul 1))
 
-theorem quadratic_gram_diagonal {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S : Finset α)
+theorem quadratic_gram_diagonal  
+       
+      (S : Finset α)
     (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 1 ≤ M) :
     ‖∑' z : O, (star (quadraticRow P hg S z) * quadraticRow P hg S z) *
         W (‖eisEmbedding z‖ ^ 2 / M)‖ ≤ diagonalControl W * M := by
@@ -286,22 +339,22 @@ theorem quadratic_gram_diagonal {α : Type*}
     ((mul_le_mul (quadraticRow_norm_le_one P hg S z) (quadraticRow_norm_le_one P hg S z)
       (norm_nonneg _) zero_le_one).trans_eq (one_mul 1))
 
-private theorem norm_sq_finite_sum {β : Type*} (C : Finset β) (a r : β → ℂ) :
-    (↑(‖∑ n ∈ C, a n * r n‖ ^ 2) : ℂ) =
-      ∑ n ∈ C, ∑ m ∈ C, (star (a n) * a m) * (star (r n) * r m) := by
-  rw [Complex.sq_norm, Complex.normSq_eq_conj_mul_self]
-  simp only [map_sum, map_mul, starRingEnd_apply]
-  rw [Finset.sum_mul_sum]
-  apply Finset.sum_congr rfl
-  intro n hn
-  apply Finset.sum_congr rfl
-  intro m hm
-  ring
+end
 
-theorem quadratic_mean_summable {α β : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (C : Finset β) (support : β → Finset α) (a : β → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+private alias norm_sq_finite_sum := _root_.SharedProofs.norm_sq_finite_row_sum
+
+section
+variable {α β : Type*}
+include α β
+
+section
+variable (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hg : ∀ i, lambda ∉ P i) (C : Finset β) (support : β → Finset α) (a : β → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M)
+include P hg C support a W M hM
+
+theorem quadratic_mean_summable  
+       
+           
+          :
     Summable (fun z : O => W (‖eisEmbedding z‖ ^ 2 / M) *
       (↑(‖∑ n ∈ C, a n * quadraticRow P hg (support n) z‖ ^ 2) : ℂ)) := by
   have hs := summable_sum (s := C) (fun n hn => summable_sum (s := C) (fun m hm =>
@@ -316,10 +369,10 @@ theorem quadratic_mean_summable {α β : Type*}
   intro m hm
   ring
 
-theorem quadratic_mean_expand {α β : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (C : Finset β) (support : β → Finset α) (a : β → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+theorem quadratic_mean_expand  
+       
+           
+          :
     (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / M) *
       (↑(‖∑ n ∈ C, a n * quadraticRow P hg (support n) z‖ ^ 2) : ℂ)) =
       ∑ n ∈ C, ∑ m ∈ C, (star (a n) * a m) *
@@ -336,11 +389,7 @@ theorem quadratic_mean_expand {α β : Type*}
     rw [norm_sq_finite_sum]
     simp only [Finset.mul_sum]
     apply Finset.sum_congr rfl
-    intro n hn
-    apply Finset.sum_congr rfl
-    intro m hm
-    dsimp [f]
-    ring
+    grind
   rw [tsum_congr heq, Summable.tsum_finsetSum (fun n hn => summable_sum (fun m hm => hf n m))]
   apply Finset.sum_congr rfl
   intro n hn
@@ -349,7 +398,9 @@ theorem quadratic_mean_expand {α β : Type*}
   intro m hm
   exact tsum_mul_left
 
-theorem quadratic_initial_mean_bound {α β : Type*} [DecidableEq α] [DecidableEq β]
+end
+
+theorem quadratic_initial_mean_bound   [DecidableEq α] [DecidableEq β]
     (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
     (hg : ∀ i, lambda ∉ P i) (hc : ∀ i, ringChar (O ⧸ P i) ≠ 2)
     (C : Finset β) (support : β → Finset α)
@@ -390,8 +441,7 @@ theorem quadratic_initial_mean_bound {α β : Type*} [DecidableEq α] [Decidable
     ring
   rw [quadratic_mean_expand P hg C support a W M hMp]
   calc
-    _ ≤ ∑ n ∈ C, ∑ m ∈ C, ‖(star (a n) * a m) * K n m‖ := by
-      exact (norm_sum_le _ _).trans (Finset.sum_le_sum (fun _ _ => norm_sum_le _ _))
+    _ ≤ ∑ n ∈ C, ∑ m ∈ C, ‖(star (a n) * a m) * K n m‖ := (norm_sum_le _ _).trans (Finset.sum_le_sum (fun _ _ => norm_sum_le _ _))
     _ ≤ ∑ n ∈ C, ∑ m ∈ C, ‖a n‖ * ‖a m‖ * ((if n = m then D else 0) + B) := by
       apply Finset.sum_le_sum
       intro n hn
@@ -407,6 +457,8 @@ theorem quadratic_initial_mean_bound {α β : Type*} [DecidableEq α] [Decidable
         Finset.sum_mul_sq_le_sq_mul_sq C (fun n => ‖a n‖) (fun _ => (1 : ℝ))
     _ = _ := by dsimp [D, B]; ring
 
+end
+
 def sieveBump : ContDiffBump (0 : ℝ) where
   rIn := 1
   rOut := 2
@@ -420,9 +472,9 @@ def sieveCutoff : 𝓢(ℝ, ℂ) := by
     Complex.ofRealCLM.contDiff.comp sieveBump.contDiff
   exact hc.toSchwartzMap hs
 
-@[simp] theorem sieveCutoff_apply (t : ℝ) : sieveCutoff t = (sieveBump t : ℂ) := rfl
+@[simp] theorem sieveCutoff_apply  t  : sieveCutoff t = (sieveBump t : ℂ) := rfl
 
-theorem sieveBump_eq_one {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) : sieveBump t = 1 := by
+theorem sieveBump_eq_one  {t}  (ht0 : 0 ≤ t) (ht1 : t ≤ 1) : sieveBump t = 1 := by
   apply sieveBump.one_of_mem_closedBall
   change dist t 0 ≤ 1
   simpa only [dist_zero_right, Real.norm_eq_abs, abs_of_nonneg ht0] using ht1
@@ -462,7 +514,7 @@ theorem quadratic_initial_finite_bound {α β : Type*} [DecidableEq α] [Decidab
     _ ≤ _ := quadratic_initial_mean_bound P hinj hg hc C support hsupp N hN hNorm
       a sieveCutoff M hM
 
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+ 
 open ConcretePrimeRowBridge ShortDraftHeckeBridge
 
 def initialSieveConstant : ℝ :=
@@ -480,7 +532,7 @@ theorem ideal_initial_quadratic_sieve
     (hsq : ∀ I ∈ F, Squarefree I)
     (hchar : ∀ i : primePool F, ringChar (O ⧸ i.val) ≠ 2)
     (N : ℕ) (hN : 1 ≤ N) (hnorm : ∀ I ∈ F, Ideal.absNorm I ≤ N)
-    (a : Ideal O → ℂ) (M : ℝ) (hM : 1 ≤ M) (R : Finset O)
+    (a : Ideal O → ℂ)  M  (hM : 1 ≤ M)  R 
     (hR : ∀ z ∈ R, ‖eisEmbedding z‖ ^ 2 ≤ M) :
     (∑ z ∈ R, ‖∑ I ∈ F, a I * (idealSexticRow F hFpos hFgood I z) ^ 3‖ ^ 2) ≤
       initialSieveConstant * (M + (N : ℝ) ^ 2) * ∑ I ∈ F, ‖a I‖ ^ 2 := by
@@ -523,8 +575,8 @@ theorem ideal_initial_quadratic_sieve
 
 end QuadraticInitialBound
 
-open scoped Classical FourierTransform SchwartzMap ContDiff
-open MeasureTheory
+ 
+ 
 
 namespace CubicReflectionKernel
 
@@ -551,9 +603,7 @@ theorem gammaMultiplier_norm_imaginary (u : ℝ) :
   have hb := Gamma_vertical_ne_zero (5 / 6) u (by norm_num)
   have hca := Gamma_vertical_conj (7 / 6) u
   have hcb := Gamma_vertical_conj (5 / 6) u
-  push_cast at ha hb hca hcb
-  rw [gammaMultiplier, hca, hcb, norm_div, norm_mul, norm_mul, norm_star, norm_star]
-  exact div_self (mul_ne_zero (norm_ne_zero_iff.mpr ha) (norm_ne_zero_iff.mpr hb))
+  simp_all [gammaMultiplier]
 
 theorem Gamma_vertical_continuous (a : ℝ) (ha : 0 < a) :
     Continuous (fun u : ℝ => Complex.Gamma ((a : ℂ) + u * Complex.I)) := by
@@ -566,12 +616,11 @@ theorem Gamma_vertical_continuous (a : ℝ) (ha : 0 < a) :
     simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im,
       Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero, add_zero,
       Complex.neg_re, Complex.natCast_re] at heq
-    have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-    linarith
+    grind
 
 def axisMultiplier (u : ℝ) : ℂ := gammaMultiplier ((2 * Real.pi * u : ℝ) * Complex.I)
 
-theorem axisMultiplier_norm (u : ℝ) : ‖axisMultiplier u‖ = 1 :=
+theorem axisMultiplier_norm  u  : ‖axisMultiplier u‖ = 1 :=
   gammaMultiplier_norm_imaginary _
 
 theorem axisMultiplier_continuous : Continuous axisMultiplier := by
@@ -596,36 +645,48 @@ theorem axisMultiplier_continuous : Continuous axisMultiplier := by
 
 def spectralProfile (logSource : SchwartzMap ℝ ℂ) (u : ℝ) : ℂ := axisMultiplier u * (𝓕 logSource) u
 
-theorem spectralProfile_norm (logSource : SchwartzMap ℝ ℂ) (u : ℝ) :
+section
+variable (logSource : SchwartzMap ℝ ℂ)
+include logSource
+
+theorem spectralProfile_norm    u  :
     ‖spectralProfile logSource u‖ = ‖(𝓕 logSource) u‖ := by
   rw [spectralProfile, norm_mul, axisMultiplier_norm, one_mul]
 
-theorem spectralProfile_continuous (logSource : SchwartzMap ℝ ℂ) : Continuous (spectralProfile logSource) :=
+theorem spectralProfile_continuous   : Continuous (spectralProfile logSource) :=
   axisMultiplier_continuous.mul (𝓕 logSource).continuous
 
-theorem spectralProfile_moment_integrable (logSource : SchwartzMap ℝ ℂ) (j : ℕ) :
+theorem spectralProfile_moment_integrable    j  :
     Integrable (fun u : ℝ => ‖u‖ ^ j * ‖spectralProfile logSource u‖) := by
   simpa only [spectralProfile_norm] using (𝓕 logSource).integrable_pow_mul volume j
 
-theorem spectralProfile_pow_integrable (logSource : SchwartzMap ℝ ℂ) (j : ℕ) :
+theorem spectralProfile_pow_integrable    j  :
     Integrable (fun u : ℝ => u ^ j • spectralProfile logSource u) := by
   apply (spectralProfile_moment_integrable logSource j).mono'
     ((show Continuous (fun u : ℝ => u ^ j • spectralProfile logSource u) by
       exact (continuous_id.pow j).smul (spectralProfile_continuous logSource)).aestronglyMeasurable)
-  exact Filter.Eventually.of_forall (fun u => by simp only [norm_smul, norm_pow, le_rfl])
+  simp_all
+
+end
 
 def reflectedLogProfile (logSource : SchwartzMap ℝ ℂ) : ℝ → ℂ := 𝓕 (spectralProfile logSource)
 
-theorem reflectedLogProfile_smooth (logSource : SchwartzMap ℝ ℂ) :
+section
+variable (logSource : SchwartzMap ℝ ℂ)
+include logSource
+
+theorem reflectedLogProfile_smooth   :
     ContDiff ℝ ∞ (reflectedLogProfile logSource) :=
   Real.contDiff_fourier (fun j _ => spectralProfile_moment_integrable logSource j)
 
-theorem reflectedLogProfile_deriv (logSource : SchwartzMap ℝ ℂ) (j : ℕ) :
+theorem reflectedLogProfile_deriv    j  :
     iteratedDeriv j (reflectedLogProfile logSource) =
       𝓕 (fun u : ℝ => (-2 * Real.pi * Complex.I * u) ^ j * spectralProfile logSource u) := by
   simpa only [reflectedLogProfile, smul_eq_mul] using
     (Real.iteratedDeriv_fourier (N := (⊤ : ℕ∞))
       (fun n _ => spectralProfile_pow_integrable logSource n) (by simp : (j : ℕ∞) ≤ ⊤))
+
+end
 
 end CubicReflectionKernel
 

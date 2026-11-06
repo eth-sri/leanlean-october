@@ -13,34 +13,36 @@ namespace SevenEighths.CenteredMomentSourceLiveColumn
 open CenteredMomentSourceLiveAllocation CenteredMomentRemainingBox CenteredMomentCommonProfile
 open CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentCommonAllocationBox CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-def frozenCoefficient (B : Tuple ι) (C R : Ideal O)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ) : ℂ :=
+def frozenCoefficient (B : Tuple ι) (C R : Ideal ActualEisensteinCubic.O)
+    (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)  :=
   (∏ i∈Finset.univ.filter (fun i => B (Sum.inl i)≠1),
     ν i (B (Sum.inl i))*Wslot i ((Ideal.absNorm (B (Sum.inl i)):ℝ)/P i))*
     (if IsCoprime C R then 1 else 0)
 
-def liveBox (S : (ι ⊕ Fin 2) → Finset (Ideal O)) (B : Tuple ι) (hB : ∀ i,B i≠0) :
-    Finset (Tuple (liveIndices B)) :=
+def liveBox (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O)) (B : Tuple ι) (hB : ∀ i,B i≠0)  :=
   Fintype.piFinset (remainingSets B (fun i => residualPool (B i) (hB i) (S i)))
 
-def liveProfile (B : Tuple ι) (C R : Ideal O)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) :
+def liveProfile (B : Tuple ι) (C R : Ideal ActualEisensteinCubic.O)
+    (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
+    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O) :
     Tuple (liveIndices B) → ℂ :=
   profileCoefficient (R*C) (fun i : liveIndices B => ν i.val)
     (fun i => Wslot i.val) (fun i => P i.val) W₁ W₂ X₁ X₂ Y₁ Y₂
     (B₁*B (Sum.inr 0)) (B₂*B (Sum.inr 1)) 1
 
-theorem residual_source_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+section
+variable (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
+
+theorem residual_source_column  
     (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R s a : Ideal O)
+     B   hB   C R s a 
     (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C) (hsC : s∣C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) :
+     ν   Wslot   P 
+     W₁ W₂   X₁ X₂ Y₁ Y₂   B₁ B₂  :
     (∑ u∈residualBoxes S C B hB,if finiteTupleProduct u=a then
       profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s (fun i => B i*u i) else 0)=
       frozenCoefficient B C R ν Wslot P*
@@ -72,11 +74,11 @@ theorem residual_source_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
       intro v hv
       split_ifs <;> simp)
 
-theorem original_source_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem original_source_column  
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (C R s a : Ideal O) (hC : C≠0) (ha : a≠0) (hCa : IsCoprime C a) (hsC : s∣C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) :
+     C R s a  (hC : C≠0) (ha : a≠0) (hCa : IsCoprime C a) (hsC : s∣C)
+     ν   Wslot   P 
+     W₁ W₂   X₁ X₂ Y₁ Y₂   B₁ B₂  :
     finiteColumnCoefficient (Fintype.piFinset S)
       (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*a)=
       ∑ B : actualAllocations S C,
@@ -97,6 +99,8 @@ theorem original_source_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂
   simp only [finiteColumnCoefficient, Finset.sum_filter] at h
   exact h
+
+end
 
 end SevenEighths.CenteredMomentSourceLiveColumn
 

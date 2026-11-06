@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.RestrictedEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondFamilyTransport
@@ -15,11 +15,15 @@ open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion 
 open CenteredMomentSecondHeightFamily CenteredMomentSecondChildProfile CenteredMomentChildRows
 open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion
 open CenteredExceptionalProfile CenteredMomentRestrictedEnergy RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 
-theorem row_presentation_twist (η τ : Character) (χ : RayCharacter) (A : O)
-    (hτ : ∀ n,elementCoeff τ n=rowTwist (elementHom (childCharacter η χ)) fixedBadMask 1 A n)
-    (z n : O) :
+
+section
+variable (η τ : Character) (χ : RayCharacter) (A : ActualEisensteinCubic.O) (hτ : ∀ n,elementCoeff τ n=rowTwist (elementHom (childCharacter η χ)) fixedBadMask 1 A n)
+include η τ χ A hτ
+
+theorem row_presentation_twist      
+     
+     z n  :
     rowTwist (elementHom τ) fixedBadMask 1 z n=
       rowTwist (elementHom (childCharacter η χ)) fixedBadMask 1 (A*z) n := by
   by_cases hn : Supported (Ideal.span {n})
@@ -34,20 +38,22 @@ theorem row_presentation_twist (η τ : Character) (χ : RayCharacter) (A : O)
     simp only [one_pow,one_mul,mul_one,idealRowHom_argument_mul]
     ring
   · have hmLam : ConcretePrimeRowBridge.goodLambda∣fixedBadMask := dvd_mul_right _ _
-    have hm2 : (2:O)∣fixedBadMask := dvd_mul_left _ _
+    have hm2 : (2:ActualEisensteinCubic.O)∣fixedBadMask := dvd_mul_left _ _
     exact (rowTwist_zero_of_not_supported (elementHom τ) fixedBadMask 1 z n hmLam hm2 hn).trans
       (rowTwist_zero_of_not_supported (elementHom (childCharacter η χ)) fixedBadMask 1 (A*z) n hmLam hm2 hn).symm
 
-theorem fixedInducingRow_transport (η τ : Character) (χ : RayCharacter) (A : O)
-    (hτ : ∀ n,elementCoeff τ n=rowTwist (elementHom (childCharacter η χ)) fixedBadMask 1 A n)
-    (Q : Ideal O) (z : O) :
+theorem fixedInducingRow_transport      
+     
+     Q   z  :
     FixedInducingRow τ Q fixedBadMask 1 z ↔
       FixedInducingRow (childCharacter η χ) Q fixedBadMask A z := by
   unfold FixedInducingRow
   simp only [one_mul,row_presentation_twist η τ χ A hτ]
 
+end
+
 end SevenEighths.CenteredMomentSecondFamilyTransport
 
-end
+
 
 end OAI

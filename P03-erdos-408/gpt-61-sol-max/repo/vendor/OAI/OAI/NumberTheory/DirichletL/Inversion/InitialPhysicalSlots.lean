@@ -16,21 +16,21 @@ local notation "O" => HeckeFamily.O
 
 variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
 
-def livePrimes (V : ℝ→ℂ) (b D : ℝ) : Finset (Ideal O) :=
+def livePrimes (V : ℝ→ℂ) (b D : ℝ)  :=
   ((HeckePrimeAnnular.annulusSet b D).filter
     (fun P=>Prime P ∧ P∈RayQuotient.identityClass M H)).filter
       (fun P=>V ((P.absNorm:ℝ)/D)≠0)
 
 omit [NeZero M] in
-theorem livePrime_data (V : ℝ→ℂ) (a b D : ℝ) (hD : 0<D)
-    (hV : ∀x,V x≠0 → x∈Set.Icc a b) (P : Ideal O) (hp : P∈livePrimes M H V b D) :
+theorem livePrime_data (V : ℝ→ℂ)  a b D  (hD : 0<D)
+    (hV : ∀x,V x≠0 → x∈Set.Icc a b)  P  (hp : P∈livePrimes M H V b D) :
     Prime P ∧ P∈RayQuotient.identityClass M H ∧ a*D≤(P.absNorm:ℝ) ∧ (P.absNorm:ℝ)≤b*D := by
   obtain ⟨hp,hv⟩ := Finset.mem_filter.mp hp
   obtain ⟨_,hp,hr⟩ := Finset.mem_filter.mp hp
   exact ⟨hp,hr,(le_div_iff₀ hD).mp (hV _ hv).1,(div_le_iff₀ hD).mp (hV _ hv).2⟩
 
 omit [NeZero M] in
-theorem amplitude_eq_live (u : O) (V : ℝ→ℂ) (b Z ell : ℝ) (ζ : ℂ) (hZ : 0<Z) :
+theorem amplitude_eq_live (u : O) (V : ℝ→ℂ) (b Z ell : ℝ)  ζ  (hZ : 0<Z) :
     HeckePrimeRow.canonicalPrimeAmplitude M H u V b (Z^ell) ζ=
       ((Z^(-ell/2):ℝ):ℂ)*∑P∈livePrimes M H V b (Z^ell),
         primeProfile V (Z^ell) ζ P*star (CanonicalRowCompletion.idealRowHom u P) := by
@@ -56,7 +56,7 @@ theorem slot_normalization {ι : Type*} [Fintype ι] (Z : ℝ) (hZ : 0<Z) (ell :
 
 omit [NeZero M] in
 theorem amplitude_product_eq_tuples {ι : Type*} [Fintype ι] (u : O)
-    (V : ι→ℝ→ℂ) (b ell : ι→ℝ) (ζ : ι→ℂ) (Z : ℝ) (hZ : 0<Z) :
+    (V : ι→ℝ→ℂ) (b ell : ι→ℝ) (ζ : ι→ℂ)  Z  (hZ : 0<Z) :
     (∏i,HeckePrimeRow.canonicalPrimeAmplitude M H u (V i) (b i) (Z^(ell i)) (ζ i))=
       ((Z^(-(∑i,ell i)/2):ℝ):ℂ)*
         ∑p∈Fintype.piFinset (fun i=>livePrimes M H (V i) (b i) (Z^(ell i))),
@@ -66,7 +66,7 @@ theorem amplitude_product_eq_tuples {ι : Type*} [Fintype ι] (u : O)
   rw [Finset.prod_mul_distrib,slot_normalization Z hZ,conjugate_mark_product]
 
 omit [NeZero M] in
-theorem live_tuple_injective {ι : Type*} [Fintype ι]
+theorem live_tuple_injective  {ι}  [Fintype ι]
     (V : ι→ℝ→ℂ) (a b ell : ι→ℝ) (Z : ℝ) (hZ : 0<Z)
     (hV : ∀i x,V i x≠0 → x∈Set.Icc (a i) (b i))
     (hsep : ∀i j,i≠j → b i*Z^(ell i)<a j*Z^(ell j) ∨

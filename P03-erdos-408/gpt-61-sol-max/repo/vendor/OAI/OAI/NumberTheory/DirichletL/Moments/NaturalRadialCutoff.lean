@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalRowSourceFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentNaturalRadialCutoff
 open HeckeFamily ConcreteTraceCRT CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialTail CenteredMomentOriginalRadialComparison
-local notation "O" => HeckeFamily.O
+
 
 lemma reciprocal_cutoff_bound (Z xi:ℝ) (order:ℕ) (hZ:0<Z) :
     ((1+Z^xi)^order)⁻¹≤Z^(-xi*(order:ℝ)) := by
@@ -28,6 +28,6 @@ lemma reciprocal_cutoff_bound (Z xi:ℝ) (order:ℕ) (hZ:0<Z) :
 
 end SevenEighths.CenteredMomentNaturalRadialCutoff
 
-end
+
 
 end OAI

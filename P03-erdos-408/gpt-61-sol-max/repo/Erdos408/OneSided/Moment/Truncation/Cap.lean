@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Phased.EdgeAtoms
 
 public import Erdos408.OneSided.Moment.Chain
 
@@ -33,23 +36,28 @@ open Finset
 
 variable {K : ℕ}
 
-section Cap
+
 
 variable {q A₀ x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B B' : ℕ}
 
 /-! ### Visits -/
 
+section
+variable {N : ℕ} (s : ChainState x d Y d₀ u v r B) (h : History x d Y d₀ u v r N)
+
 /-- The first visit of a history is its start. -/
-theorem chainVisit_zero {N : ℕ} (s : ChainState x d Y d₀ u v r B)
-    (h : History x d Y d₀ u v r N) : chainVisit s h 0 = s :=
+theorem chainVisit_zero    
+      : chainVisit s h 0 = s :=
   rfl
 
 /-- The visit after an edge is the edge output of the state after the preceding ghost. -/
-theorem chainVisit_succ {N : ℕ} (s : ChainState x d Y d₀ u v r B)
-    (h : History x d Y d₀ u v r N) (j : Fin N) :
+theorem chainVisit_succ    
+      (j : Fin N) :
     chainVisit s h j.succ = chainEdgeOut x d Y d₀ u v r B
       (chainGhostOut x d Y d₀ u v r B (chainVisit s h j.castSucc) (h.1 j.castSucc)) (h.2 j) := by
   simp only [chainVisit, Fin.induction_succ]
+
+end
 
 /-! ### The embedding -/
 
@@ -57,31 +65,34 @@ theorem chainVisit_succ {N : ℕ} (s : ChainState x d Y d₀ u v r B)
 def capEmbed (hB : B ≤ B') (s : ChainState x d Y d₀ u v r B) : ChainState x d Y d₀ u v r B' :=
   (s.1, s.2.1, ⟨s.2.2.1, mem_memStates.2 ((mem_memStates.1 s.2.2.2).trans hB)⟩)
 
+section
+variable (hB : B ≤ B')
+
 /-- The embedding is injective. -/
-theorem capEmbed_injective (hB : B ≤ B') :
+theorem capEmbed_injective   :
     Function.Injective (capEmbed (x := x) (d := d) (Y := Y) (d₀ := d₀) (u := u) (v := v)
       (r := r) hB) := by
   rintro ⟨z, l, S⟩ ⟨z', l', S'⟩ h
   simp only [capEmbed, Prod.mk.injEq] at h
-  obtain ⟨rfl, rfl, h⟩ := h
-  have hS : S = S' := Subtype.ext (Subtype.mk.inj h)
-  rw [hS]
+  simp_all
 
 /-- A state with memory size at most `B` is embedded. -/
-theorem mem_range_capEmbed (hB : B ≤ B') {s : ChainState x d Y d₀ u v r B'}
+theorem mem_range_capEmbed   {s : ChainState x d Y d₀ u v r B'}
     (hs : memSize s.2.2.1 ≤ B) : s ∈ Set.range (capEmbed hB) :=
   ⟨(s.1, s.2.1, ⟨s.2.2.1, mem_memStates.2 hs⟩), rfl⟩
 
 /-- An embedded state has memory size at most `B`. -/
-theorem memSize_capEmbed_le (hB : B ≤ B') (s : ChainState x d Y d₀ u v r B) :
+theorem memSize_capEmbed_le   (s : ChainState x d Y d₀ u v r B) :
     memSize (capEmbed hB s).2.2.1 ≤ B :=
   mem_memStates.1 s.2.2.2
+
+end
 
 /-! ### One ghost step -/
 
 /-- A ghost choice valid for the cap `B` is valid for every larger cap. -/
 theorem GhostValid.mono {X : Type*} [Fintype X] [DecidableEq X] {hit : X → Prop}
-    [DecidablePred hit] {S : X → ℕ} {c : (X → ℕ) × (X → ℕ)} (h : GhostValid hit B S c)
+    [DecidablePred hit]  {S}   {c}  (h : GhostValid hit B S c)
     (hB : B ≤ B') : GhostValid hit B' S c :=
   ⟨h.1, h.2.1, h.2.2.trans hB⟩
 
@@ -93,48 +104,49 @@ theorem GhostValid.memSize_le {X : Type*} [Fintype X] [DecidableEq X] {hit : X �
 
 /-- The memory of a valid ghost output. -/
 theorem ghostOut_val_of_valid {X : Type*} [Fintype X] [DecidableEq X] {hit : X → Prop}
-    [DecidablePred hit] {S : MemState X B} {c : (X → ℕ) × (X → ℕ)}
+    [DecidablePred hit]  {S}   {c} 
     (h : GhostValid hit B S.1 c) : (ghostOut hit B S c).1 = fun x => S.1 x - c.1 x + c.2 x := by
   rw [ghostOut, dite_eq_left h]
 
 /-- An invalid ghost choice leaves the memory unchanged. -/
 theorem ghostOut_val_of_not {X : Type*} [Fintype X] [DecidableEq X] {hit : X → Prop}
-    [DecidablePred hit] {S : MemState X B} {c : (X → ℕ) × (X → ℕ)}
+    [DecidablePred hit]  {S}   {c} 
     (h : ¬ GhostValid hit B S.1 c) : (ghostOut hit B S c).1 = S.1 := by
   rw [ghostOut, dite_eq_right h]
 
 /-- A ghost choice of nonzero coefficient is valid. -/
 theorem ghostValid_of_chainGhostCoef_ne_zero {N j : ℕ} {t : ChainState x d Y d₀ u v r B}
-    {c : GhostChoice x d} (hc : chainGhostCoef q x d Y d₀ u v r B N j t c ≠ 0) :
+     {c}  (hc : chainGhostCoef q x d Y d₀ u v r B N j t c ≠ 0) :
     GhostValid (HitsAt x d t.1.1) B t.2.2.1 c := by
   by_contra hv
-  exact hc (by rw [chainGhostCoef, ghostCoef, ite_eq_right hv])
+  simp_all [chainGhostCoef, ghostCoef]
 
+section
+variable (hB : B ≤ B') (t : ChainState x d Y d₀ u v r B) (c : GhostChoice x d) (hiff : GhostValid (HitsAt x d t.1.1) B' t.2.2.1 c ↔
+      GhostValid (HitsAt x d t.1.1) B t.2.2.1 c) (hc : memSize (chainGhostOut x d Y d₀ u v r B' (capEmbed hB t) c).2.2.1 ≤ B) (N j : ℕ)
+
+include hiff in
 /-- For a ghost choice valid for the cap `B'` exactly when it is valid for the cap `B`, the
 cap-`B'` ghost output of the embedded state is the embedded cap-`B` output. -/
-private theorem chainGhostOut_capEmbed_of_iff (hB : B ≤ B') (t : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d)
-    (hiff : GhostValid (HitsAt x d t.1.1) B' t.2.2.1 c ↔
-      GhostValid (HitsAt x d t.1.1) B t.2.2.1 c) :
+private theorem chainGhostOut_capEmbed_of_iff    
+     
+      :
     chainGhostOut x d Y d₀ u v r B' (capEmbed hB t) c =
       capEmbed hB (chainGhostOut x d Y d₀ u v r B t c) := by
   refine Prod.ext rfl (Prod.ext rfl (Subtype.ext ?_))
   change (ghostOut (HitsAt x d t.1.1) B' (capEmbed hB t).2.2 c).1 =
     (ghostOut (HitsAt x d t.1.1) B t.2.2 c).1
   by_cases hv : GhostValid (HitsAt x d t.1.1) B' t.2.2.1 c
-  · rw [ghostOut_val_of_valid (S := (capEmbed hB t).2.2) hv,
-      ghostOut_val_of_valid (S := t.2.2) (hiff.1 hv)]
-    rfl
-  · rw [ghostOut_val_of_not (S := (capEmbed hB t).2.2) hv,
-      ghostOut_val_of_not (S := t.2.2) (fun h => hv (hiff.2 h))]
-    rfl
+  · simp_all [ghostOut_val_of_valid, capEmbed]
+  simp_all [ghostOut_val_of_not, capEmbed]
 
+include hiff in
 /-- For a ghost choice valid for the cap `B'` exactly when it is valid for the cap `B`, the two
 coefficients agree. -/
-private theorem chainGhostCoef_capEmbed_of_iff (hB : B ≤ B') (t : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d)
-    (hiff : GhostValid (HitsAt x d t.1.1) B' t.2.2.1 c ↔ GhostValid (HitsAt x d t.1.1) B t.2.2.1 c)
-    (N j : ℕ) :
+private theorem chainGhostCoef_capEmbed_of_iff    
+     
+     
+      :
     chainGhostCoef q x d Y d₀ u v r B' N j (capEmbed hB t) c =
       chainGhostCoef q x d Y d₀ u v r B N j t c := by
   by_cases hv : GhostValid (HitsAt x d t.1.1) B' t.2.2.1 c
@@ -146,40 +158,47 @@ private theorem chainGhostCoef_capEmbed_of_iff (hB : B ≤ B') (t : ChainState x
       ite_eq_right (show ¬ GhostValid (HitsAt x d (capEmbed hB t).1.1) B'
         (capEmbed hB t).2.2.1 c from hv), ite_eq_right (fun h => hv (hiff.2 h))]
 
+include hc in
 /-- If the cap-`B'` ghost output of the embedded state has memory size at most `B`, the
 choice is valid for the cap `B'` exactly when it is valid for the cap `B`. -/
-private theorem ghostValid_iff_of_le (hB : B ≤ B') (t : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d)
-    (hc : memSize (chainGhostOut x d Y d₀ u v r B' (capEmbed hB t) c).2.2.1 ≤ B) :
+private theorem ghostValid_iff_of_le    
+     
+      :
     GhostValid (HitsAt x d t.1.1) B' t.2.2.1 c ↔ GhostValid (HitsAt x d t.1.1) B t.2.2.1 c := by
   refine ⟨fun hv => ⟨hv.1, hv.2.1, ?_⟩, fun hv => hv.mono hB⟩
   have h := hc
   change memSize (ghostOut (HitsAt x d t.1.1) B' (capEmbed hB t).2.2 c).1 ≤ B at h
-  rw [ghostOut_val_of_valid (S := (capEmbed hB t).2.2) hv] at h
-  exact h
+  simp_all [ghostOut_val_of_valid, capEmbed]
 
+include hc in
 /-- **The ghost step under the embedding**: if the ghost output of the cap-`B'` chain has
 memory size at most `B`, it is the embedded output of the cap-`B` chain. -/
-theorem chainGhostOut_capEmbed (hB : B ≤ B') (t : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d)
-    (hc : memSize (chainGhostOut x d Y d₀ u v r B' (capEmbed hB t) c).2.2.1 ≤ B) :
+theorem chainGhostOut_capEmbed    
+     
+      :
     chainGhostOut x d Y d₀ u v r B' (capEmbed hB t) c =
       capEmbed hB (chainGhostOut x d Y d₀ u v r B t c) :=
   chainGhostOut_capEmbed_of_iff hB t c (ghostValid_iff_of_le hB t c hc)
 
+include hc in
 /-- If the ghost output of the cap-`B'` chain has memory size at most `B`, the two ghost
 coefficients agree. -/
-theorem chainGhostCoef_capEmbed (hB : B ≤ B') (t : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d)
-    (hc : memSize (chainGhostOut x d Y d₀ u v r B' (capEmbed hB t) c).2.2.1 ≤ B) (N j : ℕ) :
+theorem chainGhostCoef_capEmbed    
+     
+        :
     chainGhostCoef q x d Y d₀ u v r B' N j (capEmbed hB t) c =
       chainGhostCoef q x d Y d₀ u v r B N j t c :=
   chainGhostCoef_capEmbed_of_iff hB t c (ghostValid_iff_of_le hB t c hc) N j
 
+end
+
+section
+variable (hB : B ≤ B') {N j : ℕ} {t : ChainState x d Y d₀ u v r B}
+
 /-- A ghost choice of nonzero coefficient in the cap-`B` chain has an output of memory size at
 most `B` in the cap-`B'` chain. -/
-theorem memSize_chainGhostOut_capEmbed_le (hB : B ≤ B') {N j : ℕ}
-    {t : ChainState x d Y d₀ u v r B} {c : GhostChoice x d}
+theorem memSize_chainGhostOut_capEmbed_le    
+       {c} 
     (hc : chainGhostCoef q x d Y d₀ u v r B N j t c ≠ 0) :
     memSize (chainGhostOut x d Y d₀ u v r B' (capEmbed hB t) c).2.2.1 ≤ B := by
   have hv := ghostValid_of_chainGhostCoef_ne_zero hc
@@ -189,8 +208,8 @@ theorem memSize_chainGhostOut_capEmbed_le (hB : B ≤ B') {N j : ℕ}
 /-! ### One edge step -/
 
 /-- An edge choice admissible for the cap `B` is admissible for the embedded state. -/
-theorem edgeValid_capEmbed (hB : B ≤ B') {t : ChainState x d Y d₀ u v r B}
-    {c : EdgeChoice x d Y d₀ u v r} (h : EdgeValid x d Y d₀ u v r B t c) :
+theorem edgeValid_capEmbed    
+     {c}  (h : EdgeValid x d Y d₀ u v r B t c) :
     EdgeValid x d Y d₀ u v r B' (capEmbed hB t) c :=
   ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2.1, h.2.2.2.2.2.1, h.2.2.2.2.2.2.1,
     h.2.2.2.2.2.2.2.1, h.2.2.2.2.2.2.2.2.1,
@@ -198,17 +217,23 @@ theorem edgeValid_capEmbed (hB : B ≤ B') {t : ChainState x d Y d₀ u v r B}
 
 /-- An edge choice admissible for the embedded state, with a new memory of size at most `B`,
 is admissible for the cap `B`. -/
-theorem edgeValid_of_capEmbed (hB : B ≤ B') {t : ChainState x d Y d₀ u v r B}
-    {c : EdgeChoice x d Y d₀ u v r} (h : EdgeValid x d Y d₀ u v r B' (capEmbed hB t) c)
+theorem edgeValid_of_capEmbed    
+     {c}  (h : EdgeValid x d Y d₀ u v r B' (capEmbed hB t) c)
     (hm : memSize (edgeMem t c) ≤ B) : EdgeValid x d Y d₀ u v r B t c :=
   ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2.1, h.2.2.2.2.2.1, h.2.2.2.2.2.2.1,
     h.2.2.2.2.2.2.2.1, h.2.2.2.2.2.2.2.2.1, mem_memStates.2 hm⟩
 
+end
+
+section
+variable (hB : B ≤ B') (t : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) (hc : memSize (chainEdgeOut x d Y d₀ u v r B' (capEmbed hB t) c).2.2.1 ≤ B)
+
+include hc in
 /-- If the edge output of the cap-`B'` chain has memory size at most `B`, the choice is
 admissible for the cap `B'` exactly when it is admissible for the cap `B`. -/
-private theorem edgeValid_iff_of_le (hB : B ≤ B') (t : ChainState x d Y d₀ u v r B)
-    (c : EdgeChoice x d Y d₀ u v r)
-    (hc : memSize (chainEdgeOut x d Y d₀ u v r B' (capEmbed hB t) c).2.2.1 ≤ B) :
+private theorem edgeValid_iff_of_le    
+     
+      :
     EdgeValid x d Y d₀ u v r B' (capEmbed hB t) c ↔ EdgeValid x d Y d₀ u v r B t c := by
   refine ⟨fun hv => edgeValid_of_capEmbed hB hv ?_, edgeValid_capEmbed hB⟩
   have h := hc
@@ -217,8 +242,8 @@ private theorem edgeValid_iff_of_le (hB : B ≤ B') (t : ChainState x d Y d₀ u
 
 /-- For an edge choice admissible for the embedded state exactly when it is admissible for
 the cap `B`, the outputs correspond and the coefficients agree. -/
-private theorem chainEdge_capEmbed_of_iff (hB : B ≤ B') (t : ChainState x d Y d₀ u v r B)
-    (c : EdgeChoice x d Y d₀ u v r)
+private theorem chainEdge_capEmbed_of_iff    
+     
     (hiff : EdgeValid x d Y d₀ u v r B' (capEmbed hB t) c ↔ EdgeValid x d Y d₀ u v r B t c) :
     chainEdgeOut x d Y d₀ u v r B' (capEmbed hB t) c =
         capEmbed hB (chainEdgeOut x d Y d₀ u v r B t c) ∧
@@ -230,32 +255,32 @@ private theorem chainEdge_capEmbed_of_iff (hB : B ≤ B') (t : ChainState x d Y 
       rfl
     · rw [chainEdgeCoef, chainEdgeCoef, ite_eq_left hv, ite_eq_left (hiff.1 hv)]
       rfl
-  · refine ⟨?_, fun N => ?_⟩
-    · rw [chainEdgeOut, chainEdgeOut, dite_eq_right hv, dite_eq_right (fun h => hv (hiff.2 h))]
-    · rw [chainEdgeCoef, chainEdgeCoef, ite_eq_right hv, ite_eq_right (fun h => hv (hiff.2 h))]
+  simp_all [chainEdgeOut, chainEdgeCoef]
 
+include hc in
 /-- **The edge step under the embedding**: if the edge output of the cap-`B'` chain has
 memory size at most `B`, it is the embedded output of the cap-`B` chain. -/
-theorem chainEdgeOut_capEmbed (hB : B ≤ B') (t : ChainState x d Y d₀ u v r B)
-    (c : EdgeChoice x d Y d₀ u v r)
-    (hc : memSize (chainEdgeOut x d Y d₀ u v r B' (capEmbed hB t) c).2.2.1 ≤ B) :
+theorem chainEdgeOut_capEmbed    
+     
+      :
     chainEdgeOut x d Y d₀ u v r B' (capEmbed hB t) c =
       capEmbed hB (chainEdgeOut x d Y d₀ u v r B t c) :=
   (chainEdge_capEmbed_of_iff (q := 0) (A₀ := 0) hB t c (edgeValid_iff_of_le hB t c hc)).1
 
+include hc in
 /-- If the edge output of the cap-`B'` chain has memory size at most `B`, the two edge
 coefficients agree. -/
-theorem chainEdgeCoef_capEmbed (hB : B ≤ B') (t : ChainState x d Y d₀ u v r B)
-    (c : EdgeChoice x d Y d₀ u v r)
-    (hc : memSize (chainEdgeOut x d Y d₀ u v r B' (capEmbed hB t) c).2.2.1 ≤ B) (N : ℕ) :
+theorem chainEdgeCoef_capEmbed    
+     
+       N  :
     chainEdgeCoef q A₀ x d Y d₀ u v r B' N (capEmbed hB t) c =
       chainEdgeCoef q A₀ x d Y d₀ u v r B N t c :=
   (chainEdge_capEmbed_of_iff hB t c (edgeValid_iff_of_le hB t c hc)).2 N
 
 /-- An edge choice of nonzero coefficient in the cap-`B` chain has an output of memory size at
 most `B` in the cap-`B'` chain. -/
-theorem memSize_chainEdgeOut_capEmbed_le (hB : B ≤ B') {N : ℕ}
-    {t : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
+theorem memSize_chainEdgeOut_capEmbed_le   {N : ℕ}
+    {t : ChainState x d Y d₀ u v r B}  {c} 
     (hc : chainEdgeCoef q A₀ x d Y d₀ u v r B N t c ≠ 0) :
     memSize (chainEdgeOut x d Y d₀ u v r B' (capEmbed hB t) c).2.2.1 ≤ B := by
   have hv : EdgeValid x d Y d₀ u v r B t c := by
@@ -265,21 +290,26 @@ theorem memSize_chainEdgeOut_capEmbed_le (hB : B ≤ B') {N : ℕ}
     ⟨fun _ => hv, edgeValid_capEmbed hB⟩).1]
   exact memSize_capEmbed_le hB _
 
+end
+
 /-! ### Histories -/
 
 variable (B) in
 /-- The history `h` from `s` **stays below `B`**: every visit, and every state after a ghost,
 has memory size at most `B`. -/
-def StaysBelow {N : ℕ} (s : ChainState x d Y d₀ u v r B') (h : History x d Y d₀ u v r N) :
-    Prop :=
+def StaysBelow {N } (s : ChainState x d Y d₀ u v r B') (h : History x d Y d₀ u v r N)  :=
   ∀ j, memSize (chainVisit s h j).2.2.1 ≤ B ∧
     memSize (chainGhostOut x d Y d₀ u v r B' (chainVisit s h j) (h.1 j)).2.2.1 ≤ B
 
+section
+variable (hB : B ≤ B') {N : ℕ} {s : ChainState x d Y d₀ u v r B} {h : History x d Y d₀ u v r N} (hs : StaysBelow B (capEmbed hB s) h) (hw : chainWeight q A₀ s h ≠ 0)
+
+include hs in
 /-- Along a history that stays below `B`, the cap-`B'` chain visits the embedded states of the
 cap-`B` chain. -/
-theorem chainVisit_capEmbed_of_staysBelow (hB : B ≤ B') {N : ℕ}
-    {s : ChainState x d Y d₀ u v r B} {h : History x d Y d₀ u v r N}
-    (hs : StaysBelow B (capEmbed hB s) h) (j : Fin (N + 1)) :
+theorem chainVisit_capEmbed_of_staysBelow    
+       
+      (j : Fin (N + 1)) :
     chainVisit (capEmbed hB s) h j = capEmbed hB (chainVisit s h j) := by
   induction j using Fin.induction with
   | zero => rfl
@@ -291,11 +321,12 @@ theorem chainVisit_capEmbed_of_staysBelow (hB : B ≤ B') {N : ℕ}
       (by have := (hs j.succ).1; rwa [chainVisit_succ, ih, hg] at this)
     rw [chainVisit_succ, chainVisit_succ, ih, hg, he]
 
+include hs in
 /-- Along a history that stays below `B`, the two chains have the same weight and embedded
 ends. -/
-theorem chainWeight_capEmbed_of_staysBelow (hB : B ≤ B') {N : ℕ}
-    {s : ChainState x d Y d₀ u v r B} {h : History x d Y d₀ u v r N}
-    (hs : StaysBelow B (capEmbed hB s) h) :
+theorem chainWeight_capEmbed_of_staysBelow    
+       
+      :
     chainWeight q A₀ (capEmbed hB s) h = chainWeight q A₀ s h ∧
       chainEnd (capEmbed hB s) h = capEmbed hB (chainEnd s h) := by
   have hv := chainVisit_capEmbed_of_staysBelow hB hs
@@ -309,8 +340,7 @@ theorem chainWeight_capEmbed_of_staysBelow (hB : B ≤ B') {N : ℕ}
   · rw [chainWeight, chainWeight]
     refine congrArg₂ (· * ·) ?_ ?_
     · refine prod_congr rfl fun j _ => ?_
-      rw [hv j]
-      exact chainGhostCoef_capEmbed hB _ _ (hc j) _ _
+      simp_all [chainGhostCoef_capEmbed]
     · refine prod_congr rfl fun j _ => ?_
       rw [hg j.castSucc]
       refine chainEdgeCoef_capEmbed hB _ (h.2 j) ?_ N
@@ -319,22 +349,24 @@ theorem chainWeight_capEmbed_of_staysBelow (hB : B ≤ B') {N : ℕ}
   · unfold chainEnd
     exact hg (Fin.last N)
 
+include hw in
 /-- A history of nonzero weight in the cap-`B` chain has nonzero coefficients. -/
-theorem coef_ne_zero_of_chainWeight_ne_zero {N : ℕ} {s : ChainState x d Y d₀ u v r B}
-    {h : History x d Y d₀ u v r N} (hw : chainWeight q A₀ s h ≠ 0) :
+theorem coef_ne_zero_of_chainWeight_ne_zero    
+        :
     (∀ j : Fin (N + 1), chainGhostCoef q x d Y d₀ u v r B N j (chainVisit s h j) (h.1 j) ≠ 0) ∧
       ∀ j : Fin N, chainEdgeCoef q A₀ x d Y d₀ u v r B N
         (chainGhostOut x d Y d₀ u v r B (chainVisit s h j.castSucc) (h.1 j.castSucc))
           (h.2 j) ≠ 0 := by
   unfold chainWeight at hw
   rw [mul_ne_zero_iff, prod_ne_zero_iff, prod_ne_zero_iff] at hw
-  exact ⟨fun j => hw.1 j (mem_univ j), fun j => hw.2 j (mem_univ j)⟩
+  simp_all
 
+include hw in
 /-- A history of nonzero weight in the cap-`B` chain stays below `B` in the cap-`B'` chain: by
 induction it visits the embedded states there. -/
-theorem staysBelow_capEmbed_of_ne_zero (hB : B ≤ B') {N : ℕ}
-    {s : ChainState x d Y d₀ u v r B} {h : History x d Y d₀ u v r N}
-    (hw : chainWeight q A₀ s h ≠ 0) : StaysBelow B (capEmbed hB s) h := by
+theorem staysBelow_capEmbed_of_ne_zero    
+       
+      : StaysBelow B (capEmbed hB s) h := by
   obtain ⟨hG, hE⟩ := coef_ne_zero_of_chainWeight_ne_zero hw
   have hv : ∀ j, chainVisit (capEmbed hB s) h j = capEmbed hB (chainVisit s h j) := by
     intro j
@@ -350,11 +382,12 @@ theorem staysBelow_capEmbed_of_ne_zero (hB : B ≤ B') {N : ℕ}
   rw [hv j, chainGhostOut_capEmbed hB _ _ (memSize_chainGhostOut_capEmbed_le hB (hG j))]
   exact ⟨memSize_capEmbed_le hB _, memSize_capEmbed_le hB _⟩
 
+include hw in
 /-- A history of nonzero weight in the cap-`B` chain whose edge choices are drawn from the edge
 choice set is a history of the cap-`B` chain: its ghost choices are valid, so their
 multiplicities are at most `B`. -/
-theorem mem_histories_of_ne_zero {N : ℕ} {s : ChainState x d Y d₀ u v r B}
-    {h : History x d Y d₀ u v r N} (hw : chainWeight q A₀ s h ≠ 0)
+theorem mem_histories_of_ne_zero    
+       
     (hh : ∀ j, h.2 j ∈ edgeChoices x d Y d₀ u v r) : h ∈ histories x d Y d₀ u v r B N := by
   obtain ⟨hG, -⟩ := coef_ne_zero_of_chainWeight_ne_zero hw
   simp only [histories, mem_product, Fintype.mem_piFinset]
@@ -381,26 +414,22 @@ theorem birthsDistinct_comp_iff {α β : Type*} {φ : α → β} (hφ : Function
   constructor
   · intro h a a' p ha ha'
     obtain ⟨c, rfl⟩ : a ∈ Set.range φ := by
-      by_contra hc
-      rw [hb a hc] at ha
-      exact absurd ha (by simp)
+      grind
     obtain ⟨c', rfl⟩ : a' ∈ Set.range φ := by
-      by_contra hc
-      rw [hb a' hc] at ha'
-      exact absurd ha' (by simp)
+      grind
     rw [h c c' p ha ha']
   · intro h c c' p hc hc'
     exact hφ (h _ _ p hc hc')
 
 /-- A ghost batch has as many primes as particles. -/
-theorem batchPrimes_length_eq_memSize (n : Particle x d → ℕ) :
+theorem batchPrimes_length_eq_memSize  n  :
     (batchPrimes x d n).length = memSize n := by
   simp [batchPrimes, memSize, Multiset.card_sum]
 
 /-- When every ghost batch has at most `B` particles, the births of a history are distinct in
 the cap-`B` chain if and only if they are distinct in the cap-`B'` chain: the extra batch
 indices are not performed. -/
-theorem birthsDistinct_capEmbed_iff (hB : B ≤ B') {N : ℕ} (s : ChainState x d Y d₀ u v r B)
+theorem birthsDistinct_capEmbed_iff     (s : ChainState x d Y d₀ u v r B)
     {h : History x d Y d₀ u v r N} (hh : ∀ j, memSize (h.1 j).2 ≤ B) :
     BirthsDistinct (births (capEmbed hB s) h) ↔ BirthsDistinct (births s h) := by
   set φ : BirthAddr (K := K) x B N → BirthAddr (K := K) x B' N :=
@@ -429,12 +458,12 @@ open scoped Classical in
 /-- The inner history sums: from a cap-`B` state, the distinct-birth histories of the cap-`B`
 chain give the distinct-birth histories of the cap-`B'` chain from the embedded state that stay
 below `B`. -/
-theorem sum_histories_capEmbed (hB : B ≤ B') (N : ℕ) (s : ChainState x d Y d₀ u v r B) :
+theorem sum_histories_capEmbed    N   s  :
     ∑ h ∈ (histories x d Y d₀ u v r B N).filter (fun h => BirthsDistinct (births s h)),
         chainWeight q A₀ s h * chainInit x d Y d₀ u v r B (chainEnd s h) =
       ∑ h ∈ ((histories x d Y d₀ u v r B' N).filter
           (fun h => BirthsDistinct (births (capEmbed hB s) h))).filter
-          (fun h => StaysBelow B (capEmbed hB s) h),
+          (StaysBelow B (capEmbed hB s)),
         chainWeight q A₀ (capEmbed hB s) h *
           chainInit x d Y d₀ u v r B' (chainEnd (capEmbed hB s) h) := by
   set F : History x d Y d₀ u v r N → ℂ := fun h =>
@@ -454,13 +483,7 @@ theorem sum_histories_capEmbed (hB : B ≤ B') (N : ℕ) (s : ChainState x d Y d
         chainWeight q A₀ s h * chainInit x d Y d₀ u v r B (chainEnd s h) else 0) = F h := by
     intro h _
     by_cases hw : chainWeight q A₀ s h = 0
-    · rw [hF]
-      dsimp only
-      split_ifs with h₁ h₂ h₂
-      · rw [(chainWeight_capEmbed_of_staysBelow hB h₂.2).1, hw, zero_mul, zero_mul]
-      · rw [hw, zero_mul]
-      · rw [(chainWeight_capEmbed_of_staysBelow hB h₂.2).1, hw, zero_mul]
-      · rfl
+    · simp_all [chainWeight_capEmbed_of_staysBelow]
     · have hs := staysBelow_capEmbed_of_ne_zero hB hw
       obtain ⟨hw', he'⟩ := chainWeight_capEmbed_of_staysBelow (q := q) (A₀ := A₀) hB hs
       have hbatch : ∀ j, memSize (h.1 j).2 ≤ B := fun j =>
@@ -483,9 +506,10 @@ theorem sum_histories_capEmbed (hB : B ≤ B') (N : ℕ) (s : ChainState x d Y d
   · rfl
 
 open scoped Classical in
+include hB in
 /-- **The cap comparison**: for caps `B ≤ B'`, `distinctSum(B') - distinctSum(B)` is the sum
 over the distinct-birth histories of the cap-`B'` chain that do not stay below `B`. -/
-theorem distinctSum_sub_eq (hB : B ≤ B') (N : ℕ) :
+theorem distinctSum_sub_eq    N  :
     distinctSum q A₀ x d Y d₀ u v r B' N - distinctSum q A₀ x d Y d₀ u v r B N =
       ∑ s, (chainMeasure q x d Y d₀ u v r B' N s : ℂ) * chainInit x d Y d₀ u v r B' s *
         ∑ h ∈ ((histories x d Y d₀ u v r B' N).filter
@@ -495,7 +519,7 @@ theorem distinctSum_sub_eq (hB : B ≤ B') (N : ℕ) :
   have hB' : distinctSum q A₀ x d Y d₀ u v r B N =
       ∑ s, (chainMeasure q x d Y d₀ u v r B' N s : ℂ) * chainInit x d Y d₀ u v r B' s *
         ∑ h ∈ ((histories x d Y d₀ u v r B' N).filter
-            (fun h => BirthsDistinct (births s h))).filter (fun h => StaysBelow B s h),
+            (fun h => BirthsDistinct (births s h))).filter (StaysBelow B s),
           chainWeight q A₀ s h * chainInit x d Y d₀ u v r B' (chainEnd s h) := by
     unfold distinctSum
     refine Fintype.sum_of_injective (capEmbed hB) (capEmbed_injective hB) _ _ (fun s hs => ?_)
@@ -512,60 +536,39 @@ theorem distinctSum_sub_eq (hB : B ≤ B') (N : ℕ) :
   unfold distinctSum
   rw [← sum_sub_distrib]
   refine sum_congr rfl fun s _ => ?_
-  rw [← mul_sub, ← sum_filter_add_sum_filter_not _ (fun h => StaysBelow B s h), add_sub_cancel_left]
+  rw [← mul_sub, ← sum_filter_add_sum_filter_not _ (StaysBelow B s), add_sub_cancel_left]
+
+end
 
 /-! ### Memory growth -/
 
 variable (x d Y d₀ u v r) in
 /-- The number of ghost births of a history: the total size of its batches. -/
-def ghostBirths {N : ℕ} (h : History x d Y d₀ u v r N) : ℕ := ∑ j, memSize (h.1 j).2
+def ghostBirths {N } (h : History x d Y d₀ u v r N)  := ∑ j, memSize (h.1 j).2
+
+section
+variable (t : ChainState x d Y d₀ u v r B) {N : ℕ}
 
 /-- A ghost adds at most its batch to the memory. -/
-theorem memSize_chainGhostOut_le_add (t : ChainState x d Y d₀ u v r B) (c : GhostChoice x d) :
+theorem memSize_chainGhostOut_le_add    c  :
     memSize (chainGhostOut x d Y d₀ u v r B t c).2.2.1 ≤ memSize t.2.2.1 + memSize c.2 := by
   by_cases hv : GhostValid (HitsAt x d t.1.1) B t.2.2.1 c
   · simp only [chainGhostOut, ghostOut, hv, dite_true]
     unfold memSize
     rw [← sum_add_distrib]
     exact sum_le_sum fun xp _ => by omega
-  · simp only [chainGhostOut, ghostOut, hv, dite_false]
-    exact Nat.le_add_right _ _
+  simp_all [chainGhostOut, ghostOut]
 
-/-- The stored particles of an edge number at most `K`. -/
-theorem sum_card_stored_le (t : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) :
-    ∑ xp : Particle x d, (c.2.1.filter fun i => edgeStored t c i = xp.1).card ≤ K := by
-  classical
-  simp only [card_filter]
-  rw [sum_comm]
-  calc ∑ i ∈ c.2.1, ∑ xp : Particle x d, (if edgeStored t c i = xp.1 then 1 else 0)
-      ≤ ∑ _i ∈ c.2.1, 1 := by
-        refine sum_le_sum fun i _ => ?_
-        rw [← card_filter]
-        refine card_le_one.2 fun a ha b hb => Subtype.ext ?_
-        rw [← (mem_filter.1 ha).2, ← (mem_filter.1 hb).2]
-    _ = c.2.1.card := by rw [card_eq_sum_ones]
-    _ ≤ K := by
-        have := card_le_univ c.2.1
-        rwa [Fintype.card_fin] at this
+
 
 /-- An edge adds at most `K` particles to the memory. -/
-theorem memSize_chainEdgeOut_le_add (t : ChainState x d Y d₀ u v r B)
-    (c : EdgeChoice x d Y d₀ u v r) :
-    memSize (chainEdgeOut x d Y d₀ u v r B t c).2.2.1 ≤ memSize t.2.2.1 + K := by
-  by_cases hv : EdgeValid x d Y d₀ u v r B t c
-  · simp only [chainEdgeOut, hv, dite_true]
-    calc memSize (edgeMem t c)
-        ≤ ∑ xp, (t.2.2.1 xp + (c.2.1.filter fun i => edgeStored t c i = xp.1).card) :=
-          sum_le_sum fun xp _ => by unfold edgeMem; omega
-      _ ≤ memSize t.2.2.1 + K := by
-          rw [sum_add_distrib]
-          exact Nat.add_le_add_left (sum_card_stored_le t c) _
-  · simp only [chainEdgeOut, hv, dite_false]
-    exact Nat.le_add_right _ _
+theorem memSize_chainEdgeOut_le_add  
+     c  :
+    memSize (chainEdgeOut x d Y d₀ u v r B t c).2.2.1 ≤ memSize t.2.2.1 + K := by solve_by_elim [_root_.Erdos408.OneSided.memSize_chainEdgeOut_le]
 
 /-- The memory size at visit `j` is at most the initial size, `K` per edge so far, and the
 batches so far. -/
-theorem memSize_chainVisit_le {N : ℕ} (s : ChainState x d Y d₀ u v r B)
+theorem memSize_chainVisit_le   (s : ChainState x d Y d₀ u v r B)
     (h : History x d Y d₀ u v r N) (j : Fin (N + 1)) :
     memSize (chainVisit s h j).2.2.1 ≤
       memSize s.2.2.1 + K * j + ∑ i, if i.1 < j.1 then memSize (h.1 i).2 else 0 := by
@@ -599,7 +602,7 @@ theorem memSize_chainVisit_le {N : ℕ} (s : ChainState x d Y d₀ u v r B)
 
 /-- **Leaving the low memories needs ghost births**: a history from an empty memory that does
 not stay below `B` has `B < K N + ∑_j |batch_j|`. -/
-theorem lt_of_not_staysBelow {N : ℕ} {s : ChainState x d Y d₀ u v r B'}
+theorem lt_of_not_staysBelow   {s : ChainState x d Y d₀ u v r B'}
     (hs : memSize s.2.2.1 = 0) {h : History x d Y d₀ u v r N}
     (hh : ¬ StaysBelow B s h) : B < K * N + ghostBirths x d Y d₀ u v r h := by
   unfold StaysBelow at hh
@@ -630,6 +633,8 @@ theorem lt_of_not_staysBelow {N : ℕ} {s : ChainState x d Y d₀ u v r B'}
     rw [hs] at hv
     linarith
 
-end Cap
+end
+
+
 
 end Erdos408.OneSided

@@ -12,12 +12,12 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open MeasureTheory FourierBridge InverseKernelSourceUniform
 open CompletedDyadic ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
-noncomputable section
-universe u
-local notation "Eis" => ActualEisensteinCubic.O
-variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-end
+universe u
+
+variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
+
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

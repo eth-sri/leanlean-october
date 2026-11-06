@@ -4,7 +4,7 @@ public import Erdos821.P5.ExceptionalCount
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 open Filter
 

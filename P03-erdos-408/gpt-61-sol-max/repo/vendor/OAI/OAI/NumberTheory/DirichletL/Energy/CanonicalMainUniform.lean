@@ -29,14 +29,14 @@ open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeT
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
 open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open   CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
+open   CenteredMomentEnergyAllocatedZero
 open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+ 
+ 
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
 open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
@@ -53,13 +53,13 @@ open CanonicalRowCompletion ConcretePrimeRowBridge ActualEisensteinCubic
 open CenteredMomentSecondHeightFamily
 open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
 
-theorem actual_main_uniform_child (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
-    (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a)(L:ℝ)(hL:0≤L)
-    (degree:ℕ)(S:Finset (ℕ×ℕ))(ha:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)
+theorem actual_main_uniform_child  W (aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
+     a b Mslot εmask (hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a) L (hL:0≤L)
+     degree  S (ha:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)
     (hW:ContDiff ℝ ∞ W)(hMcap:0≤Mcap)(hLs:0≤Lslot)(hε:0<εremove)
     (hκsmall:(1/6:ℝ)≤κ)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
     (hκ:2*HeckeZeroSupremum.beta-1≤κ)
-    (N:ℕ)(lower upper a0 BR BC θsource:ℝ)
+     N  lower upper a0 BR BC θsource 
     (hlower:0<lower)(ha0:0<a0)(hθsource:0<θsource):
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∃Z₀:ℝ,1<Z₀ ∧
     ∀θ:α→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →

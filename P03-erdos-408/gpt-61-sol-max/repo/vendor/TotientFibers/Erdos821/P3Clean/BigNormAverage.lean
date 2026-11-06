@@ -22,12 +22,12 @@ def bigPermutationEquiv (p : P.BigPermutations M) : P.BigLabels M ≃ P.BigLabel
   left_inv := by intro a; funext g i; simp [PrimeGroups.actBig]
   right_inv := by intro a; funext g i; simp [PrimeGroups.actBig]
 
-def averageBigKernel (K : P.BigLabels M → P.BigLabels M → ℂ) (a b : P.BigLabels M) : ℂ :=
+def averageBigKernel (K : P.BigLabels M → P.BigLabels M → ℂ) (a b : P.BigLabels M)  :=
   bigSymmetryFactor P M * ∑ p : P.BigPermutations M, ∑ q : P.BigPermutations M,
     K (P.actBig p a) (P.actBig q b)
 
 theorem normBound_averageBigKernel (mass : P.BigLabels M → ℝ)
-    (K : P.BigLabels M → P.BigLabels M → ℂ) (C : ℝ)
+    (K : P.BigLabels M → P.BigLabels M → ℂ)  C 
     (hm : ∀ p : P.BigPermutations M, ∀ a, mass (P.actBig p a) = mass a)
     (hK : NormBound mass K C) : NormBound mass (averageBigKernel K) C := by
   let T := P.BigPermutations M × P.BigPermutations M

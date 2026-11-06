@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarReserve
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyStageReserve
 open CenteredMomentEnergyState CenteredMomentNaturalRowSource
 open CenteredMomentEnergyReferenceScalarReserve
 
-theorem exists_separated_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
+theorem exists_separated_reference_reserve  rho ε Mcap Bmask bΦ 
     (hrho:0<rho)(hε:0<ε)(hM:0≤Mcap)(hB:0≤Bmask):
     ∃d xi saving L C:ℝ,0<d ∧ 0<xi ∧ 0<saving ∧ 0<C ∧
       xi≤rho/100 ∧ Mcap+Bmask+xi≤L ∧
@@ -51,8 +51,7 @@ theorem exists_separated_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
   calc
     _≤Z^e*((s.puncture.radical.absNorm:ℝ)^d*(Z^(s.width+d)+A*Z^(s.width+d)+B)):=by
       convert hh' using 1 ; dsimp [A,B] ; ring
-    _≤Z^e*(C*Z^(s.width+ε)):=by
-      exact hend
+    _≤Z^e*(C*Z^(s.width+ε)):=hend
     _=C*Z^(s.width+e+ε):=by
       rw [mul_left_comm,←Real.rpow_add hz]
       congr 2
@@ -60,6 +59,6 @@ theorem exists_separated_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
 
 end SevenEighths.CenteredMomentEnergyStageReserve
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
@@ -20,10 +21,14 @@ namespace TwoPointCorrelations
 open Complex MeasureTheory Set
 
 /-- The integrable exponential time weight, with angular frequency `ω`. -/
-noncomputable def mrtMeanSquareKernel (T ω t : ℝ) : ℂ :=
+noncomputable def mrtMeanSquareKernel (T ω t : ℝ)  :=
   (Real.exp (-|t| / T) : ℂ) * Complex.exp ((ω * t : ℝ) * Complex.I)
 
-lemma mrtMeanSquareKernel_right {T : ℝ} (ω : ℝ) {t : ℝ} (ht : 0 ≤ t) :
+section
+variable {T : ℝ} (hT : 0 < T) (ω : ℝ) {t : ℝ}
+
+
+lemma mrtMeanSquareKernel_right       (ht : 0 ≤ t) :
     mrtMeanSquareKernel T ω t =
       Complex.exp ((((-(1 / T) : ℝ) : ℂ) + (ω : ℂ) * Complex.I) * t) := by
   simp only [mrtMeanSquareKernel, abs_of_nonneg ht,
@@ -32,7 +37,7 @@ lemma mrtMeanSquareKernel_right {T : ℝ} (ω : ℝ) {t : ℝ} (ht : 0 ≤ t) :
   congr 1
   ring
 
-lemma mrtMeanSquareKernel_left {T : ℝ} (ω : ℝ) {t : ℝ} (ht : t ≤ 0) :
+lemma mrtMeanSquareKernel_left       (ht : t ≤ 0) :
     mrtMeanSquareKernel T ω t =
       Complex.exp ((((1 / T : ℝ) : ℂ) + (ω : ℂ) * Complex.I) * t) := by
   simp only [mrtMeanSquareKernel, abs_of_nonpos ht, neg_neg,
@@ -41,7 +46,8 @@ lemma mrtMeanSquareKernel_left {T : ℝ} (ω : ℝ) {t : ℝ} (ht : t ≤ 0) :
   congr 1
   ring
 
-lemma mrtMeanSquareKernel_integrable {T : ℝ} (hT : 0 < T) (ω : ℝ) :
+include hT in
+lemma mrtMeanSquareKernel_integrable       :
     Integrable (mrtMeanSquareKernel T ω) := by
   have hr : IntegrableOn (mrtMeanSquareKernel T ω) (Ioi 0) := by
     apply (integrableOn_exp_mul_complex_Ioi
@@ -57,8 +63,9 @@ lemma mrtMeanSquareKernel_integrable {T : ℝ} (hT : 0 < T) (ω : ℝ) :
     exact (mrtMeanSquareKernel_left ω ht).symm
   simpa only [Iic_union_Ioi, integrableOn_univ] using hl.union hr
 
+include hT in
 /-- Exact quadratic-decay Fourier transform, without an asymptotic constant. -/
-theorem integral_mrtMeanSquareKernel {T : ℝ} (hT : 0 < T) (ω : ℝ) :
+theorem integral_mrtMeanSquareKernel       :
     (∫ t : ℝ, mrtMeanSquareKernel T ω t) =
       ((2 * T / (1 + T ^ 2 * ω ^ 2) : ℝ) : ℂ) := by
   have hi := mrtMeanSquareKernel_integrable hT ω
@@ -88,16 +95,8 @@ theorem integral_mrtMeanSquareKernel {T : ℝ} (hT : 0 < T) (ω : ℝ) :
           (by simpa using one_div_pos.mpr hT) 0
   rw [← integral_add_compl measurableSet_Iic hi, compl_Iic, hl, hr]
   have hTp : (T : ℂ) ≠ 0 := by exact_mod_cast hT.ne'
-  have hp : (((1 / T : ℝ) : ℂ) + (ω : ℂ) * Complex.I) ≠ 0 := by
-    intro h
-    have := congrArg Complex.re h
-    have he : (1 / T : ℝ) = 0 := by simpa using this
-    exact (one_div_pos.mpr hT).ne' he
-  have hm : (((-(1 / T) : ℝ) : ℂ) + (ω : ℂ) * Complex.I) ≠ 0 := by
-    intro h
-    have := congrArg Complex.re h
-    have he : -(1 / T : ℝ) = 0 := by simpa using this
-    exact (neg_lt_zero.mpr (one_div_pos.mpr hT)).ne he
+  
+  
   have hp1 : (1 + (T : ℂ) * (ω : ℂ) * Complex.I) ≠ 0 := by
     intro h
     have := congrArg Complex.re h
@@ -115,6 +114,8 @@ theorem integral_mrtMeanSquareKernel {T : ℝ} (hT : 0 < T) (ω : ℝ) :
   ring_nf
   simp only [Complex.I_sq]
   ring
+
+end
 
 end TwoPointCorrelations
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.TupleMasks
 
@@ -10,16 +11,16 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
-def supportedSlotChoices (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis) (K : Ideal Eis) :=
+def supportedSlotChoices (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (F : φ→Ideal ActualEisensteinCubic.O) (K ) :=
   {p : ∀ i,L i // IsCoprime K (∏ i,(p i).val) ∧ ∀ j i,(p i).val≠F j}
 
-instance supportedSlotChoices_fintype (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis) (K : Ideal Eis) :
+instance supportedSlotChoices_fintype (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (F : φ→Ideal ActualEisensteinCubic.O) (K : Ideal ActualEisensteinCubic.O) :
     Fintype (supportedSlotChoices L F K) := inferInstanceAs (Fintype {_p : ∀ i,L i // _})
 
-def supportedSlotSplit (L : σ→Finset (Ideal Eis)) (T : Finset σ) (F : φ→Ideal Eis) (K : Ideal Eis) :
+def supportedSlotSplit (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (T : Finset σ) (F : φ→Ideal ActualEisensteinCubic.O) (K : Ideal ActualEisensteinCubic.O) :
     supportedSlotChoices L F K ≃
       supportedSlotChoices (fun i : {i // i∉T} => L i.val) F K ×
         supportedSlotChoices (fun i : T => L i.val) F K where
@@ -34,8 +35,8 @@ def supportedSlotSplit (L : σ→Finset (Ideal Eis)) (T : Finset σ) (F : φ→I
     exact (slotChoiceSplit L T).symm_apply_apply p.val
   right_inv q := by
     apply Prod.ext <;> apply Subtype.ext
-    · exact congrArg Prod.snd ((slotChoiceSplit L T).apply_symm_apply (q.2.val,q.1.val))
-    · exact congrArg Prod.fst ((slotChoiceSplit L T).apply_symm_apply (q.2.val,q.1.val))
+    · simp_all
+    simp_all
 
 end
 end SevenEighths.InverseReflectedPhase

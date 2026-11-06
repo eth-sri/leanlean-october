@@ -17,7 +17,7 @@ namespace Erdos408
 /-- Dirichlet L-functions do not vanish to the right of `7 / 8`, away from the
 principal character's pole at `1`. -/
 theorem LFunction_ne_zero_of_seven_eighths_lt_re
-    {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) {s : ℂ}
+    {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)  {s} 
     (hs : (7 / 8 : ℝ) < s.re) (hpole : ¬ (χ = 1 ∧ s = 1)) :
     DirichletCharacter.LFunction χ s ≠ 0 :=
   OAI.DirichletCharacter.LFunction_ne_zero_of_seven_eighths_lt_re χ hs hpole

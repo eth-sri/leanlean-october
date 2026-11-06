@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Defs
 
@@ -28,62 +29,70 @@ namespace Sieve
 noncomputable section
 
 /-- The weight `π_A(S) = ∏_{p ∈ S} 1/p ∏_{p ∈ A \ S} (1 - 1/p)` of `S ⊆ A`. -/
-def modelWeight (A S : Finset ℕ) : ℝ :=
+def modelWeight (A S : Finset ℕ)  :=
   (∏ p ∈ S, (1 : ℝ) / p) * ∏ p ∈ A \ S, (1 - (1 : ℝ) / p)
 
 /-- The model mean `E_A[f] = ∑_{S ⊆ A} π_A(S) f(S)`. -/
-def modelMean (A : Finset ℕ) (f : Finset ℕ → ℝ) : ℝ :=
+def modelMean (A : Finset ℕ) (f : Finset ℕ → ℝ)  :=
   ∑ S ∈ A.powerset, modelWeight A S * f S
 
 /-- The independent divisor model mean `M_A(H) = E_A[S ↦ H(∏ S)]` of an
 arithmetic function. -/
-def divisorModel (A : Finset ℕ) (H : ℕ → ℝ) : ℝ :=
+def divisorModel (A : Finset ℕ) (H : ℕ → ℝ)  :=
   modelMean A fun S => H (∏ p ∈ S, p)
 
 /-! ### Basic properties -/
 
 /-- The model weights are nonnegative when every element of `A` is positive. -/
-lemma modelWeight_nonneg {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) (S : Finset ℕ) :
+lemma modelWeight_nonneg  {A}  (hA : ∀ p ∈ A, 0 < p)  S  :
     0 ≤ modelWeight A S := by
   refine mul_nonneg (prod_nonneg fun p _ => by positivity) (prod_nonneg fun p hp => ?_)
   have hp1 : (1 : ℝ) ≤ p := by exact_mod_cast hA p (mem_sdiff.1 hp).1
   rw [sub_nonneg, div_le_one (by linarith)]
   exact hp1
 
+section
+variable (A : Finset ℕ) (c : ℝ) (f g : Finset ℕ → ℝ)
+
 /-- The model weights sum to one. -/
-lemma sum_modelWeight (A : Finset ℕ) : ∑ S ∈ A.powerset, modelWeight A S = 1 := by
+lemma sum_modelWeight   : ∑ S ∈ A.powerset, modelWeight A S = 1 := by
   have h := prod_add (fun p : ℕ => (1 : ℝ) / p) (fun p => 1 - (1 : ℝ) / p) A
   simp only [add_sub_cancel, prod_const_one] at h
   exact h.symm
 
 /-- The mean over the empty set is the value at `∅`. -/
-lemma modelMean_empty (f : Finset ℕ → ℝ) : modelMean ∅ f = f ∅ := by
+lemma modelMean_empty   : modelMean ∅ f = f ∅ := by
   simp [modelMean, modelWeight]
 
 /-- The model mean only sees the values on subsets of `A`. -/
-lemma modelMean_congr {A : Finset ℕ} {f g : Finset ℕ → ℝ} (h : ∀ S ⊆ A, f S = g S) :
+lemma modelMean_congr  {A}   {f g}  (h : ∀ S ⊆ A, f S = g S) :
     modelMean A f = modelMean A g :=
   sum_congr rfl fun S hS => by rw [h S (mem_powerset.1 hS)]
 
 /-- The mean of a constant. -/
-lemma modelMean_const (A : Finset ℕ) (c : ℝ) : modelMean A (fun _ => c) = c := by
+lemma modelMean_const     : modelMean A (fun _ => c) = c := by
   rw [modelMean, ← sum_mul, sum_modelWeight, one_mul]
 
 /-- The model mean is additive. -/
-lemma modelMean_add (A : Finset ℕ) (f g : Finset ℕ → ℝ) :
+lemma modelMean_add     :
     modelMean A (fun S => f S + g S) = modelMean A f + modelMean A g := by
   simp only [modelMean, mul_add, sum_add_distrib]
 
 /-- The model mean commutes with scalars. -/
-lemma modelMean_mul_left (A : Finset ℕ) (c : ℝ) (f : Finset ℕ → ℝ) :
+lemma modelMean_mul_left       :
     modelMean A (fun S => c * f S) = c * modelMean A f := by
   simp only [modelMean, mul_sum]
   exact sum_congr rfl fun S _ => by ring
 
 /-- The model mean commutes with subtraction. -/
-lemma modelMean_sub (A : Finset ℕ) (f g : Finset ℕ → ℝ) :
+lemma modelMean_sub     :
     modelMean A (fun S => f S - g S) = modelMean A f - modelMean A g := by
   simp only [modelMean, mul_sub, sum_sub_distrib]
+
+end
+
+section
+variable {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {B U : Finset ℕ} (hUA : U ⊆ A) {f g : Finset ℕ → ℝ} {R S : Finset ℕ}
 
 /-- The model mean of a finite sum. -/
 lemma modelMean_sum {ι : Type*} (A : Finset ℕ) (I : Finset ι) (f : ι → Finset ℕ → ℝ) :
@@ -91,20 +100,23 @@ lemma modelMean_sum {ι : Type*} (A : Finset ℕ) (I : Finset ι) (f : ι → Fi
   simp only [modelMean, mul_sum]
   exact sum_comm
 
+include hA in
 /-- The model mean is monotone. -/
-lemma modelMean_mono {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {f g : Finset ℕ → ℝ}
+lemma modelMean_mono      
     (h : ∀ S ⊆ A, f S ≤ g S) : modelMean A f ≤ modelMean A g :=
   sum_le_sum fun S hS => mul_le_mul_of_nonneg_left (h S (mem_powerset.1 hS))
     (modelWeight_nonneg hA S)
 
+include hA in
 /-- The model mean of a nonnegative function is nonnegative. -/
-lemma modelMean_nonneg {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {f : Finset ℕ → ℝ}
+lemma modelMean_nonneg      
     (h : ∀ S ⊆ A, 0 ≤ f S) : 0 ≤ modelMean A f := by
   have := modelMean_mono hA (f := fun _ => 0) h
   rwa [modelMean_const] at this
 
+include hA in
 /-- The model mean of a function at most one is at most one. -/
-lemma modelMean_le_one {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {f : Finset ℕ → ℝ}
+lemma modelMean_le_one      
     (h : ∀ S ⊆ A, f S ≤ 1) : modelMean A f ≤ 1 := by
   have := modelMean_mono hA (g := fun _ => 1) h
   rwa [modelMean_const] at this
@@ -112,7 +124,7 @@ lemma modelMean_le_one {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {f : Finset �
 /-! ### The product structure -/
 
 /-- Adding one prime `b ∉ A`: `E_{A ∪ {b}}[f] = (1 - 1/b) E_A[f] + (1/b) E_A[f(· ∪ {b})]`. -/
-lemma modelMean_insert {A : Finset ℕ} {b : ℕ} (hb : b ∉ A) (f : Finset ℕ → ℝ) :
+lemma modelMean_insert    {b}  (hb : b ∉ A)  f  :
     modelMean (insert b A) f =
       (1 - (1 : ℝ) / b) * modelMean A f + (1 : ℝ) / b * modelMean A fun T => f (insert b T) := by
   rw [modelMean, sum_powerset_insert hb, modelMean, modelMean, mul_sum, mul_sum]
@@ -121,18 +133,16 @@ lemma modelMean_insert {A : Finset ℕ} {b : ℕ} (hb : b ∉ A) (f : Finset ℕ
     have hbT : b ∉ T := fun h => hb (mem_powerset.1 hT h)
     have : insert b A \ T = insert b (A \ T) := by
       rw [insert_sdiff_of_notMem _ hbT]
-    rw [modelWeight, modelWeight, this, prod_insert (fun h => hb (mem_sdiff.1 h).1)]
-    ring
+    grind [modelWeight]
   · refine sum_congr rfl fun T hT => ?_
     have hbT : b ∉ T := fun h => hb (mem_powerset.1 hT h)
     have : insert b A \ insert b T = A \ T := by
       rw [insert_sdiff_insert, sdiff_insert_of_notMem hb]
-    rw [modelWeight, modelWeight, this, prod_insert hbT]
-    ring
+    grind [modelWeight]
 
 /-- The product rule (Fubini): for disjoint `A` and `B`,
 `E_{A ∪ B}[f] = E_A[S ↦ E_B[T ↦ f(S ∪ T)]]`. -/
-lemma modelMean_union {A B : Finset ℕ} (hAB : Disjoint A B) (f : Finset ℕ → ℝ) :
+lemma modelMean_union   (hAB : Disjoint A B)  f  :
     modelMean (A ∪ B) f = modelMean A fun S => modelMean B fun T => f (S ∪ T) := by
   induction B using Finset.induction_on generalizing f with
   | empty =>
@@ -140,14 +150,12 @@ lemma modelMean_union {A B : Finset ℕ} (hAB : Disjoint A B) (f : Finset ℕ �
   | insert b B hbB ih =>
     have hbA : b ∉ A := fun h => disjoint_left.1 hAB h (mem_insert_self b B)
     have hAB' : Disjoint A B := disjoint_of_subset_right (subset_insert b B) hAB
-    have hb : b ∉ A ∪ B := by simp [hbA, hbB]
-    rw [union_insert, modelMean_insert hb, ih hAB', ih hAB']
-    simp only [modelMean_insert hbB, union_insert]
-    rw [modelMean_add, modelMean_mul_left, modelMean_mul_left]
+    simp_all [modelMean_insert, modelMean_add, modelMean_mul_left]
 
+include hUA in
 /-- The marginal: if `f(S)` depends only on `S ∩ U` with `U ⊆ A`, then
 `E_A[f] = E_U[f]`. -/
-lemma modelMean_eq_of_subset {A U : Finset ℕ} (hUA : U ⊆ A) {f : Finset ℕ → ℝ}
+lemma modelMean_eq_of_subset      
     (hf : ∀ S ⊆ A, f S = f (S ∩ U)) : modelMean A f = modelMean U f := by
   have hA : A = U ∪ (A \ U) := (union_sdiff_of_subset hUA).symm
   rw [hA, modelMean_union disjoint_sdiff]
@@ -193,7 +201,7 @@ lemma modelMean_prod {ι : Type*} [DecidableEq ι] (I : Finset ι) (B : ι → F
 /-! ### Two explicit means -/
 
 /-- `E_A[t^{|S|}] = ∏_{p ∈ A} (1 - (1 - t)/p)`. -/
-lemma modelMean_pow_card (A : Finset ℕ) (t : ℝ) :
+lemma modelMean_pow_card  A   t  :
     modelMean A (fun S => t ^ #S) = ∏ p ∈ A, (1 - (1 - t) / p) := by
   have h := prod_add (fun p : ℕ => t * ((1 : ℝ) / p)) (fun p => 1 - (1 : ℝ) / p) A
   rw [modelMean]
@@ -203,9 +211,10 @@ lemma modelMean_pow_card (A : Finset ℕ) (t : ℝ) :
     ring
   · exact prod_congr rfl fun p _ => by ring
 
+include hA in
 /-- The marked count `|S| t^{|S| - 1}` has mean at least
 `(∑_{p ∈ A} 1/p) ∏_{p ∈ A} (1 - (1 - t)/p)` for `0 ≤ t ≤ 1`. -/
-lemma le_modelMean_card_mul_zpow {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {t : ℝ} (ht : 0 ≤ t)
+lemma le_modelMean_card_mul_zpow     {t : ℝ} (ht : 0 ≤ t)
     (ht₁ : t ≤ 1) :
     (∑ p ∈ A, (1 : ℝ) / p) * ∏ p ∈ A, (1 - (1 - t) / p) ≤
       modelMean A (fun S => t ^ ((#S : ℤ) - 1) * #S) := by
@@ -255,7 +264,7 @@ lemma le_modelMean_card_mul_zpow {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {t :
 /-! ### Marginals -/
 
 /-- The probability that a given `p ∈ A` divides is `1/p`. -/
-lemma sum_modelWeight_mem {A : Finset ℕ} {p : ℕ} (hp : p ∈ A) :
+lemma sum_modelWeight_mem    {p}  (hp : p ∈ A) :
     ∑ S ∈ A.powerset with p ∈ S, modelWeight A S = 1 / p := by
   have h : ∑ S ∈ A.powerset with p ∈ S, modelWeight A S =
       modelMean A fun S => if p ∈ S then 1 else 0 := by
@@ -266,28 +275,19 @@ lemma sum_modelWeight_mem {A : Finset ℕ} {p : ℕ} (hp : p ∈ A) :
     rw [modelMean_congr (g := fun _ => (0 : ℝ)) fun S hS =>
       ite_eq_right fun h => notMem_erase p A (hS h)]
     exact modelMean_const _ 0
-  rw [h0, modelMean_congr (g := fun _ => (1 : ℝ)) fun T _ => ite_eq_left (mem_insert_self p T),
-    modelMean_const]
-  ring
+  simp_all [modelMean_const]
 
 /-- Removing primes `R ⊆ A`: for `S ⊆ A \ R`, `π_A(S) = π_{A \ R}(S) ∏_{p ∈ R} (1 - 1/p)`. -/
-lemma modelWeight_sdiff {A R S : Finset ℕ} (hRA : R ⊆ A) (hS : S ⊆ A \ R) :
+lemma modelWeight_sdiff   (hRA : R ⊆ A) (hS : S ⊆ A \ R) :
     modelWeight A S = modelWeight (A \ R) S * ∏ p ∈ R, (1 - (1 : ℝ) / p) := by
   have h : A \ S = ((A \ R) \ S) ∪ R := by
-    ext p
-    simp only [mem_sdiff, mem_union]
-    constructor
-    · rintro ⟨hA, hS'⟩
-      by_cases hR : p ∈ R
-      · exact Or.inr hR
-      · exact Or.inl ⟨⟨hA, hR⟩, hS'⟩
-    · rintro (⟨⟨hA, -⟩, hS'⟩ | hR)
-      · exact ⟨hA, hS'⟩
-      · exact ⟨hRA hR, fun h => (mem_sdiff.1 (hS h)).2 hR⟩
+    grind
   have hd : Disjoint ((A \ R) \ S) R := disjoint_left.2 fun p hp hR =>
     (mem_sdiff.1 (mem_sdiff.1 hp).1).2 hR
   rw [modelWeight, modelWeight, h, prod_union hd]
   ring
+
+end
 
 end
 

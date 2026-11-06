@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondCellPhysical
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
@@ -21,7 +21,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 theorem actual_priority_cell_recursive_window_order_uniform_types
     (om Φ:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
-    (B₀:Fin 6→ℝ) (hB₀:∀i,0≤B₀ i) (Aker K:ℕ) (εmass:ℝ) (hεmass:0<εmass) :
+    (B₀:Fin 6→ℝ) (hB₀:∀i,0≤B₀ i)  Aker K   εmass  (hεmass:0<εmass) :
     ∃ (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (loFresh hiFresh : ℝ),
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
@@ -128,6 +128,6 @@ theorem actual_priority_cell_recursive_window_order_uniform_types
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

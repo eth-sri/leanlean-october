@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.ConjugateCuspProfiles
 public import OAI.NumberTheory.DirichletL.Eisenstein.CuspDilation
@@ -11,74 +12,74 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
-open scoped Classical MatrixGroups
+open scoped   MatrixGroups
 
 namespace EisensteinCuspModThree
 
@@ -87,14 +88,14 @@ local notation "O" => ActualEisensteinCubic.O
 open ActualEisensteinCoordinates (eval coords eval_coords unique_coordinates eval_mul)
 
 abbrev Pair := ZMod 3 × ZMod 3
-def add (x y : Pair) : Pair := (x.1+y.1,x.2+y.2)
-def neg (x : Pair) : Pair := (-x.1,-x.2)
-def sub (x y : Pair) : Pair := add x (neg y)
-def mul (x y : Pair) : Pair := (x.1*y.1-x.2*y.2,x.1*y.2+x.2*y.1-x.2*y.2)
-def scalar (a : ZMod 3) (x : Pair) : Pair := (a*x.1,a*x.2)
+def add (x y : Pair)  := (x.1+y.1,x.2+y.2)
+def neg (x : Pair)  := (-x.1,-x.2)
+def sub (x y : Pair)  := add x (neg y)
+def mul (x y : Pair)  := (x.1*y.1-x.2*y.2,x.1*y.2+x.2*y.1-x.2*y.2)
+def scalar (a : ZMod 3) (x : Pair)  := (a*x.1,a*x.2)
 def residue (x : ActualEisensteinCubic.O) : Pair := ((coords x).1,(coords x).2)
 
-lemma residue_eval (a b : ℤ) : residue (eval a b)=((a:ZMod 3),(b:ZMod 3)) := by
+lemma residue_eval  a b  : residue (eval a b)=((a:ZMod 3),(b:ZMod 3)) := by
   have h := unique_coordinates (eval_coords (eval a b))
   exact Prod.ext (congrArg (fun n : ℤ => (n:ZMod 3)) h.1)
     (congrArg (fun n : ℤ => (n:ZMod 3)) h.2)
@@ -105,7 +106,7 @@ lemma residue_intCast (a : ℤ) : residue (a:ActualEisensteinCubic.O)=((a:ZMod 3
 lemma residue_zero : residue (0:ActualEisensteinCubic.O)=(0,0) := by simpa using residue_intCast 0
 lemma residue_one : residue (1:ActualEisensteinCubic.O)=(1,0) := by simpa using residue_intCast 1
 
-lemma residue_add (x y : ActualEisensteinCubic.O) : residue (x+y)=add (residue x) (residue y) := by
+lemma residue_add  x y  : residue (x+y)=add (residue x) (residue y) := by
   have he : x+y=eval ((coords x).1+(coords y).1) ((coords x).2+(coords y).2) := by
     nth_rw 1 [←eval_coords x,←eval_coords y]
     simp only [eval,Int.cast_add]
@@ -113,7 +114,7 @@ lemma residue_add (x y : ActualEisensteinCubic.O) : residue (x+y)=add (residue x
   rw [he,residue_eval]
   simp [residue,add]
 
-lemma residue_neg (x : ActualEisensteinCubic.O) : residue (-x)=neg (residue x) := by
+lemma residue_neg  x  : residue (-x)=neg (residue x) := by
   have he : -x=eval (-(coords x).1) (-(coords x).2) := by
     nth_rw 1 [←eval_coords x]
     simp only [eval,Int.cast_neg]
@@ -121,17 +122,17 @@ lemma residue_neg (x : ActualEisensteinCubic.O) : residue (-x)=neg (residue x) :
   rw [he,residue_eval]
   simp [residue,neg]
 
-lemma residue_sub (x y : ActualEisensteinCubic.O) : residue (x-y)=sub (residue x) (residue y) := by
+lemma residue_sub  x y  : residue (x-y)=sub (residue x) (residue y) := by
   rw [sub_eq_add_neg,residue_add,residue_neg]
   rfl
 
-lemma residue_mul (x y : ActualEisensteinCubic.O) : residue (x*y)=mul (residue x) (residue y) := by
+lemma residue_mul  x y  : residue (x*y)=mul (residue x) (residue y) := by
   calc
     residue (x*y)=residue (eval (coords x).1 (coords x).2*eval (coords y).1 (coords y).2) := by
       rw [eval_coords,eval_coords]
     _ = _ := by rw [eval_mul,residue_eval]; simp [residue,mul]
 
-lemma residue_eq_implies_three_dvd {x y : ActualEisensteinCubic.O} (h : residue x=residue y) : (3:ActualEisensteinCubic.O)∣x-y := by
+lemma residue_eq_implies_three_dvd  {x y}  (h : residue x=residue y) : (3:ActualEisensteinCubic.O)∣x-y := by
   have h1 : (3:ℤ)∣(coords x).1-(coords y).1 :=
     (ZMod.intCast_eq_intCast_iff_dvd_sub (coords y).1 (coords x).1 3).mp
       (congrArg Prod.fst h).symm
@@ -148,11 +149,11 @@ lemma residue_eq_implies_three_dvd {x y : ActualEisensteinCubic.O} (h : residue 
   push_cast
   ring
 
-lemma residue_mul_intCast (a : ℤ) (x : ActualEisensteinCubic.O) : residue ((a:ActualEisensteinCubic.O)*x)=scalar (a:ZMod 3) (residue x) := by
+lemma residue_mul_intCast (a : ℤ)  x  : residue ((a:ActualEisensteinCubic.O)*x)=scalar (a:ZMod 3) (residue x) := by
   rw [residue_mul,residue_intCast]
   simp [mul,scalar]
 
-def primitive (a c : Pair) : Prop := ¬(a.1+a.2=0 ∧ c.1+c.2=0)
+def primitive (a c : Pair)  := ¬(a.1+a.2=0 ∧ c.1+c.2=0)
 instance primitive_decidable (a c : Pair) : Decidable (primitive a c) := inferInstanceAs
   (Decidable (¬(a.1+a.2=0 ∧ c.1+c.2=0)))
 
@@ -166,12 +167,12 @@ lemma first_column_primitive (M : SL(2,ActualEisensteinCubic.O)) : primitive (re
   exact primitive_of_determinant _ _ _ _ hh
 
 def omegaPower (k : Fin 3) : Pair := if k=0 then (1,0) else if k=1 then (0,1) else (-1,-1)
-def unitPair (u : Fin 2 × Fin 3) : Pair := scalar ((-1:ZMod 3)^u.1.val) (omegaPower u.2)
+def unitPair (u : Fin 2 × Fin 3)  := scalar ((-1:ZMod 3)^u.1.val) (omegaPower u.2)
 def cuspPair (j : Fin 3) : Pair := if j=0 then (0,0) else if j=1 then (0,1) else (-1,-1)
 
-def columnTop (g : SL(2,ZMod 3)) (j : Fin 3) (u : Fin 2 × Fin 3) : Pair :=
+def columnTop (g : SL(2,ZMod 3)) (j : Fin 3) (u : Fin 2 × Fin 3)  :=
   mul (add (g 0 0,0) (scalar (g 0 1) (cuspPair j))) (unitPair u)
-def columnBottom (g : SL(2,ZMod 3)) (j : Fin 3) (u : Fin 2 × Fin 3) : Pair :=
+def columnBottom (g : SL(2,ZMod 3)) (j : Fin 3) (u : Fin 2 × Fin 3)  :=
   mul (add (g 1 0,0) (scalar (g 1 1) (cuspPair j))) (unitPair u)
 
 theorem primitive_column_three_cusps : ∀a c : Pair, primitive a c →
@@ -181,16 +182,16 @@ theorem primitive_column_three_cusps : ∀a c : Pair, primitive a c →
 
 end
 
-open scoped Classical MatrixGroups Matrix
+open scoped     Matrix
 
 local notation "O" => ActualEisensteinCubic.O
 local notation "ζ" => ActualEisensteinCubic.omega
 open CubicKubota CubicEisenstein
 
-def unitRepresentative (u : Fin 2 × Fin 3) : ActualEisensteinCubic.Oˣ :=
+def unitRepresentative (u : Fin 2 × Fin 3)  :=
   (-1:ActualEisensteinCubic.Oˣ)^u.1.val*CubicRamified.omega_isUnit.unit^u.2.val
 
-lemma unitRepresentative_value (u : Fin 2 × Fin 3) :
+lemma unitRepresentative_value  u  :
     (unitRepresentative u:ActualEisensteinCubic.O)=(-1:ActualEisensteinCubic.O)^u.1.val*ζ^u.2.val := by
   simp [unitRepresentative]
 
@@ -205,26 +206,26 @@ lemma residue_omega_sq : residue (ζ^2)=(-1,-1) := by
   rw [pow_two,residue_mul,residue_omega]
   norm_num [mul]
 
-lemma unitRepresentative_residue (u : Fin 2 × Fin 3) :
+lemma unitRepresentative_residue  u  :
     residue (unitRepresentative u:ActualEisensteinCubic.O)=unitPair u := by
   rw [unitRepresentative_value]
   rcases u with ⟨i,j⟩
   fin_cases i <;> fin_cases j <;>
     norm_num [unitPair,omegaPower,scalar,residue_one,residue_neg,residue_omega,residue_omega_sq,neg]
 
-def cuspParameter (j : Fin 3) : ActualEisensteinCubic.O := if j=0 then 0 else if j=1 then ζ else ζ^2
-def cuspRepresentative (j : Fin 3) : SL(2,ActualEisensteinCubic.O) := lowerCuspMatrix (cuspParameter j)
+def cuspParameter (j : Fin 3)  := if j=0 then 0 else if j=1 then ζ else ζ^2
+def cuspRepresentative (j : Fin 3)  := lowerCuspMatrix (cuspParameter j)
 
-lemma cuspParameter_residue (j : Fin 3) : residue (cuspParameter j)=cuspPair j := by
+lemma cuspParameter_residue  j  : residue (cuspParameter j)=cuspPair j := by
   fin_cases j <;> simp [cuspParameter,cuspPair,residue_zero,residue_omega,residue_omega_sq]
 
 def unitDiagonal (u : ActualEisensteinCubic.Oˣ) : SL(2,ActualEisensteinCubic.O) :=
   ⟨!![(u:ActualEisensteinCubic.O),0;0,(↑u⁻¹:ActualEisensteinCubic.O)],by simp [Matrix.det_fin_two]⟩
 
-def columnRepresentative (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3) : SL(2,ActualEisensteinCubic.O) :=
+def columnRepresentative (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3)  :=
   rationalEmbedding r*cuspRepresentative j*unitDiagonal (unitRepresentative u)
 
-lemma columnRepresentative_entry (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3) (i : Fin 2) :
+lemma columnRepresentative_entry  r   j   u   i  :
     columnRepresentative r j u i 0=
       ((r i 0:ActualEisensteinCubic.O)+(r i 1:ActualEisensteinCubic.O)*cuspParameter j)*(unitRepresentative u:ActualEisensteinCubic.O) := by
   change (((r : Matrix (Fin 2) (Fin 2) ℤ).map (Int.castRingHom O) *
@@ -232,13 +233,13 @@ lemma columnRepresentative_entry (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3
     !![(unitRepresentative u : O), 0; 0, (↑(unitRepresentative u)⁻¹ : O)]) i 0 = _
   simp [Matrix.mul_apply, Fin.sum_univ_two]
 
-lemma columnRepresentative_top_residue (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3) :
+lemma columnRepresentative_top_residue  r   j   u  :
     residue (columnRepresentative r j u 0 0)=columnTop (rationalReductionThree r) j u := by
   rw [columnRepresentative_entry,residue_mul,residue_add,residue_intCast,
     residue_mul_intCast,cuspParameter_residue,unitRepresentative_residue]
   rfl
 
-lemma columnRepresentative_bottom_residue (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3) :
+lemma columnRepresentative_bottom_residue  r   j   u  :
     residue (columnRepresentative r j u 1 0)=columnBottom (rationalReductionThree r) j u := by
   rw [columnRepresentative_entry,residue_mul,residue_add,residue_intCast,
     residue_mul_intCast,cuspParameter_residue,unitRepresentative_residue]
@@ -252,7 +253,7 @@ lemma same_column_quotient_lower_zero (M N : SL(2,ActualEisensteinCubic.O))
   rw [h0,h1]
   ring
 
-theorem three_cusp_decomposition (M : SL(2,ActualEisensteinCubic.O)) :
+theorem three_cusp_decomposition  M  :
     ∃G : levelTwo, ∃j : Fin 3, ∃T : SL(2,ActualEisensteinCubic.O),
       T 1 0=0 ∧ IsUnit (T 0 0) ∧ IsUnit (T 1 1) ∧
         M=(G:SL(2,ActualEisensteinCubic.O))*cuspRepresentative j*T := by
@@ -295,28 +296,28 @@ theorem three_cusp_decomposition (M : SL(2,ActualEisensteinCubic.O)) :
 end EisensteinCuspModThree
 
 namespace CubicEisenstein
-open MeasureTheory Filter
-open scoped BigOperators Classical MatrixGroups
+ 
+ 
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open     CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 abbrev PrimaryCoprimeDenominator (a : PrimaryLower) := {d:PrimaryLower//IsCoprime a.val d.val}
 
-def primaryDenominatorFromCoprime (a : PrimaryLower) (x : CoprimeElement a.val) :
+def primaryDenominatorFromCoprime (a ) (x : CoprimeElement a.val) :
     PrimaryCoprimeDenominator a := by
   refine ⟨⟨a.val+3*x.val,?_⟩,?_⟩
   · convert dvd_add a.2 (dvd_mul_right (3:Eis) x.val) using 1 ;ring
   · apply (isCoprime_right_congr_of_dvd a.val (a.val+3*x.val) (3*x.val) ⟨1,by ring⟩).mpr
     exact (primary_coprime_three a.val (primaryLower_primary a)).mul_right x.2
 
-lemma primaryDenominatorFromCoprime_bijective (a : PrimaryLower) :
+lemma primaryDenominatorFromCoprime_bijective  a  :
     Function.Bijective (primaryDenominatorFromCoprime a) := by
   constructor
   · intro x y h
     apply Subtype.ext
     have he := congrArg (fun d : PrimaryCoprimeDenominator a => d.val.val) h
     change a.val+3*x.val=a.val+3*y.val at he
-    exact mul_left_cancel₀ (by norm_num : (3:Eis)≠0) (add_left_cancel he)
+    simp_all
   · intro d
     have hdiv : (3:Eis)∣d.val.val-a.val := by
       simpa only [sub_sub_sub_cancel_right] using dvd_sub d.val.2 a.2
@@ -329,36 +330,32 @@ lemma primaryDenominatorFromCoprime_bijective (a : PrimaryLower) :
     refine ⟨⟨x,hcop⟩,Subtype.ext (Subtype.ext ?_)⟩
     exact hd.symm
 
-def primaryDenominatorEquiv (a : PrimaryLower) : CoprimeElement a.val≃PrimaryCoprimeDenominator a :=
+def primaryDenominatorEquiv (a )  :=
   Equiv.ofBijective _ (primaryDenominatorFromCoprime_bijective a)
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical
+ 
+ 
 
 namespace CubicEisenstein
 
-section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
 
-end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical MatrixGroups
+ 
+ 
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open     CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CubicEisenstein
 
-open scoped Classical MatrixGroups
+ 
 namespace CubicKubota
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal CubicRamified
+open     CubicEisenstein CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma levelTwo_entry_integer (g : levelTwo) (i j : Fin 2) :
+lemma levelTwo_entry_integer (g : levelTwo)  i j  :
     (3:Eis)∣((g:SL(2,Eis)) i j-((levelTwoRight g) i j:ℤ)) := by
   have he : Matrix.SpecialLinearGroup.map (n:=Fin 2)
       (Ideal.Quotient.mk (Ideal.span {(3:Eis)})) (g:SL(2,Eis)) =

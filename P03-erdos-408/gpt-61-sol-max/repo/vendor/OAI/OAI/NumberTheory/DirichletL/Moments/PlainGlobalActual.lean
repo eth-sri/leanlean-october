@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.PlainGlobalBound
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
@@ -7,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open Set Complex
 namespace SevenEighths.CenteredMomentPlainGlobalActual
 open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalBound
 
- theorem global_polynomial_bound (a b:ℝ)(ha:0<a):
+ theorem global_polynomial_bound  a b (ha:0<a):
     ∃S:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
     ∀W:SchwartzMap ℝ ℂ,Function.support (W:ℝ→ℂ)⊆Icc a b→
     ∀χ:Character,χ.residue≠1→∀D freq:ℝ,1≤D→
@@ -25,8 +26,7 @@ open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalBound
   let E:=HeckeReciprocalBound.bound 2
   have hE:0≤E:=tsum_nonneg (fun _=>norm_nonneg _)
   let C:ℝ:=Cm*(Cg*(Real.pi+3)+E*Real.pi)/(2*Real.pi)
-  have hC:0<C:=div_pos (mul_pos hCm (add_pos_of_pos_of_nonneg
-    (mul_pos hCg (by positivity)) (mul_nonneg hE Real.pi_pos.le))) (by positivity)
+  have hC:0<C:=(by positivity)
   refine ⟨S,C,hC,?_⟩
   intro W hWs χ hχ D freq hD
   let Q:ℝ:=χ.modulus.absNorm
@@ -79,6 +79,6 @@ open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalBound
 
 end SevenEighths.CenteredMomentPlainGlobalActual
 
-end
+
 
 end OAI

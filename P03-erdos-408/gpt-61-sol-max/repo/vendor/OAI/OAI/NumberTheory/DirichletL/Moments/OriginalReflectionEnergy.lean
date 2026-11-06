@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionApproximatio
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.CenteredMomentOriginalReflectionEnergy
 open HeckeFamily CenteredMomentOriginalReflectionApproximation CenteredMomentNaturalPrimitive
@@ -18,6 +18,6 @@ lemma norm_sq_comparison (a b : ℂ) : ‖a‖^2≤2*‖b‖^2+2*‖a-b‖^2 := 
 
 end SevenEighths.CenteredMomentOriginalReflectionEnergy
 
-end
+
 
 end OAI

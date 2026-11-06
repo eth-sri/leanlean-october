@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Moments.SecondDescent
 
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalKernel
 public import OAI.NumberTheory.DirichletL.Moments.SecondIdealBlockBound
@@ -7,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondIdealBlockBound
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalKernel
@@ -16,15 +19,19 @@ open CenteredMomentSupportedCorrelation CenteredMomentChildAssembly
 open CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm
 open CenteredMomentSmooth CenteredMomentCauchy CenteredMomentPlainChildEnergy
 open CenteredMomentSecondScaled CenteredMomentExceptionalKernel RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 
-theorem whole_kernel_divisor_pair (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ)
-    (M : Fin 4→ℝ) (hM : ∀i,0≤M i)
-    (hV : ∀i y,V i y≠0→|y|≤M i) (A J : ℕ) :
+
+section
+variable (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ) (hM : ∀i,0≤M i) (hV : ∀i y,V i y≠0→|y|≤M i) (A decay J : ℕ)
+
+include hM hV in
+theorem whole_kernel_divisor_pair    
+       
+        :
     ∃C:ℝ,0≤C ∧ ∀R:ℝ,0<R →
-      ∀{α β:Type*}(Ls:Finset (Ideal O))(rows:Finset O)(S:Finset α)(T:Finset β)
-        (a:α→O)(b:β→O)(c:Ideal O→α→ℂ)(d:Ideal O→β→ℂ)
-        (u:α→ℝ)(v:β→ℝ)(ρ x:O→ℝ)(η:O→ℂ),
+      ∀{α β:Type*}(Ls:Finset (Ideal ActualEisensteinCubic.O))(rows:Finset ActualEisensteinCubic.O)(S:Finset α)(T:Finset β)
+        (a:α→ActualEisensteinCubic.O)(b:β→ActualEisensteinCubic.O)(c:Ideal ActualEisensteinCubic.O→α→ℂ)(d:Ideal ActualEisensteinCubic.O→β→ℂ)
+        (u:α→ℝ)(v:β→ℝ)(ρ x:ActualEisensteinCubic.O→ℝ)(η:ActualEisensteinCubic.O→ℂ),
       (∀z∈rows,‖η z‖≤1) → (∀z∈rows,‖V 0 (ρ z)‖≤1) →
       (∀z∈rows,‖V 1 (x z)‖≤1) → ∀E:ℝ,0≤E →
       (∀t:ℝ,(∑L∈Ls,‖(UniqueFactorizationMonoid.moebius L:ℂ)‖*
@@ -46,7 +53,7 @@ theorem whole_kernel_divisor_pair (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ)
     (fun k hk=>hη k.2 (Finset.mem_product.mp hk).2)
     (fun k hk=>hV₀ k.2 (Finset.mem_product.mp hk).2)
     (fun k hk=>hV₁ k.2 (Finset.mem_product.mp hk).2) E hE
-  have hl (L:Ideal O)(z:O)(t:ℝ):
+  have hl (L:Ideal ActualEisensteinCubic.O)(z:ActualEisensteinCubic.O)(t:ℝ):
       leftColumn S (fun i=>(UniqueFactorizationMonoid.moebius L:ℂ)*(c L i*idealRowHom z (Ideal.span {a i})))
         (V 2) u t=(UniqueFactorizationMonoid.moebius L:ℂ)*
           rowPolynomial S a (fun i=>c L i*columnPhase (V 2) (u i) t) z := by
@@ -77,19 +84,14 @@ theorem whole_kernel_divisor_pair (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ)
   intro j hj
   ring
 
-private theorem weighted_norm_sum {α:Type*} (S:Finset α)(a f:α→ℂ)
-    (r:ℝ)(hr:0≤r)(B:α→ℝ)(hB:∀i∈S,r*‖f i‖≤B i):
-    r*‖∑i∈S,a i*f i‖≤∑i∈S,‖a i‖*B i:=by
-  calc
-    _≤r*∑i∈S,‖a i*f i‖:=mul_le_mul_of_nonneg_left (norm_sum_le _ _) hr
-    _=∑i∈S,‖a i‖*(r*‖f i‖):=by simp only [Finset.mul_sum,norm_mul];congr 1;funext i;ring
-    _≤_:=Finset.sum_le_sum (fun i hi=>mul_le_mul_of_nonneg_left (hB i hi) (norm_nonneg _))
+private alias weighted_norm_sum := _root_.SharedProofs.weighted_norm_sum
 
-theorem whole_kernel_actual_second_pair (W : 𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
-    (M:Fin 4→ℝ)(hM:∀i,0≤M i)(hV:∀i y,V i y≠0→|y|≤M i)(A J:ℕ):
+include hM hV in
+theorem whole_kernel_actual_second_pair   
+        :
     ∃C:ℝ,0≤C ∧ ∀R:ℝ,0<R →
-      ∀{α β:Type*}(rows:Finset O)(S:Finset α)(T:Finset β)
-        (D E A₀:O)(a:α→O)(b:β→O)
+      ∀{α β:Type*}(rows:Finset ActualEisensteinCubic.O)(S:Finset α)(T:Finset β)
+        (D E A₀:ActualEisensteinCubic.O)(a:α→ActualEisensteinCubic.O)(b:β→ActualEisensteinCubic.O)
         (hD:Supported (Ideal.span {D}))(hE:Supported (Ideal.span {E}))
         (ha:∀i,Supported (Ideal.span {a i}))(hb:∀j,Supported (Ideal.span {b j})),
       (ConcretePrimeRowBridge.goodLambda^2∣D-1) →
@@ -97,7 +99,7 @@ theorem whole_kernel_actual_second_pair (W : 𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
       (∀i,ConcretePrimeRowBridge.goodLambda^2∣a i-1) →
       (∀j,ConcretePrimeRowBridge.goodLambda^2∣b j-1) →
       (∀i,IsCoprime (D*E) (a i)) → (∀j,IsCoprime (D*E) (b j)) →
-      ∀(q:O→ℂ)(c:α→ℂ)(d:β→ℂ)(u:α→ℝ)(v:β→ℝ)(ρ x:O→ℝ),
+      ∀(q:ActualEisensteinCubic.O→ℂ)(c:α→ℂ)(d:β→ℂ)(u:α→ℝ)(v:β→ℝ)(ρ x:ActualEisensteinCubic.O→ℝ),
       (∀z∈rows,‖q z*actualCorrelation D E hD hE (A₀*z)‖≤1) →
       (∀z∈rows,‖V 0 (ρ z)‖≤1) → (∀z∈rows,‖V 1 (x z)‖≤1) →
       ∀E0:ℝ,0≤E0 →
@@ -175,9 +177,9 @@ open CenteredMomentLogDyadic CenteredMomentSupport CenteredMomentRestrictedEnerg
 open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization
 open CenteredMomentChildRows CenteredExceptionalProfile
 
-theorem exceptional_rows_pair (η:Character)(χ₀ χ ξ:RayCharacter)(Q:Ideal O)
-    (hQ:Q≤Ideal.span {(72:O)})(m A:O)(hmLam:ConcretePrimeRowBridge.goodLambda∣m)
-    (hm2:(2:O)∣m)(rows:Finset O)
+theorem exceptional_rows_pair (η:Character)(χ₀ χ ξ:RayCharacter)(Q:Ideal ActualEisensteinCubic.O)
+    (hQ:Q≤Ideal.span {(72:ActualEisensteinCubic.O)})(m A:ActualEisensteinCubic.O)(hmLam:ConcretePrimeRowBridge.goodLambda∣m)
+    (hm2:(2:ActualEisensteinCubic.O)∣m)(rows:Finset ActualEisensteinCubic.O)
     (hrows:∀z∈rows,FixedInducingRow (childCharacter η χ₀) Q m A z):
     (∀z∈rows,FixedInducingRow (childCharacter η χ) Q m A z) ∧
     (∀z∈rows,FixedInducingRow (childCharacter η (ξ⁻¹)) Q m A (-z)):=by
@@ -192,15 +194,16 @@ theorem exceptional_rows_pair (η:Character)(χ₀ χ ξ:RayCharacter)(Q:Ideal O
     exact CenteredMomentExceptionalReflection.fixedInducingRow_reflected
       η χ₀ (ξ⁻¹) Q hQ m A z hmLam hm2 (hrows z hz)
 
-theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
+include W decay J in
+theorem actual_exceptional_block_bound   :
     ∃B:ℝ,0≤B ∧ ∀r:ℝ,0<r →
-      ∀(η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-        (C D:Ideal O)(hC:Supported C)(hD:Supported D),
+      ∀(η:Character)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))(β:Ideal ActualEisensteinCubic.O→ℂ)
+        (C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D),
       primeSupport C=primeSupport D →
-      ∀(U:Finset (CommonIndex C D))(R:ℝ)(rows:Finset O)
-        (ρ x:O→ℝ)(u:sectorPool C hC.1 S→ℝ)(v:sectorPool D hD.1 S→ℝ)
-        (Q:Ideal O)(m:O)(χ₀:RayCharacter),
-      Q≤Ideal.span {(72:O)} → ConcretePrimeRowBridge.goodLambda∣m → (2:O)∣m →
+      ∀(U:Finset (CommonIndex C D))(R:ℝ)(rows:Finset ActualEisensteinCubic.O)
+        (ρ x:ActualEisensteinCubic.O→ℝ)(u:sectorPool C hC.1 S→ℝ)(v:sectorPool D hD.1 S→ℝ)
+        (Q:Ideal ActualEisensteinCubic.O)(m:ActualEisensteinCubic.O)(χ₀:RayCharacter),
+      Q≤Ideal.span {(72:ActualEisensteinCubic.O)} → ConcretePrimeRowBridge.goodLambda∣m → (2:ActualEisensteinCubic.O)∣m →
       let A:=commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U
       let c:=fun I:sectorPool C hC.1 S=>β (C*I)*heightCoeff η t I
       let d:=fun I:sectorPool D hD.1 S=>β (D*I)*heightCoeff η t I
@@ -210,7 +213,7 @@ theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
         (∀z∈rows,FixedInducingRow (childCharacter η χ) Q m A z) →
         (∀z∈rows,FixedInducingRow (childCharacter η (ξ⁻¹)) Q m A (-z)) →
         ∀w:ℝ,
-        (∑L∈divisorPool Finset.univ (fun I:sectorPool D hD.1 S=>(I:Ideal O)),
+        (∑L∈divisorPool Finset.univ (fun I:sectorPool D hD.1 S=>(I:Ideal ActualEisensteinCubic.O)),
           ‖(UniqueFactorizationMonoid.moebius L:ℂ)‖*∑z∈rows,
           ‖rowPolynomial Finset.univ (sectorElement C hC.1 S)
             (fun I=>divisorCoefficient L (sectorElement C hC.1 S)
@@ -221,7 +224,7 @@ theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
           ≤E*(1+‖w‖)^J) →
       (1+r)^decay*‖∑z∈rows,retainedScalar C D U R z*
         ∑I:sectorPool C hC.1 S,∑J:sectorPool D hD.1 S,
-          (if IsCoprime (I:Ideal O) (J:Ideal O) then
+          (if IsCoprime (I:Ideal ActualEisensteinCubic.O) (J:Ideal ActualEisensteinCubic.O) then
             idealCorrelation (C*I) (D*J)
               ((supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 S I⟩)
               ((supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 S J⟩) (A*z) else 0)*
@@ -250,7 +253,7 @@ theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
     (fun z _=>actual_retained_scalar_norm C D hC hD hCD U R z)
     (fun z _=>logAnnulus_norm _) (fun z _=>logAnnulus_norm _) E hE
   have hh:∀χ ξ:RayCharacter,∀w:ℝ,
-      (∑L∈divisorPool Finset.univ (fun I:sectorPool D hD.1 S=>(I:Ideal O)),
+      (∑L∈divisorPool Finset.univ (fun I:sectorPool D hD.1 S=>(I:Ideal ActualEisensteinCubic.O)),
         ‖(UniqueFactorizationMonoid.moebius L:ℂ)‖*∑z∈rows,
         ‖rowPolynomial Finset.univ (sectorElement C hC.1 S)
           (fun I=>divisorCoefficient L (sectorElement C hC.1 S)
@@ -267,15 +270,17 @@ theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
   have he':=he (by simpa only [sectorElement_span] using hh)
   have hcop (I:sectorPool C hC.1 S)(J:sectorPool D hD.1 S):
       IsCoprime (sectorElement C hC.1 S I) (sectorElement D hD.1 S J) ↔
-        IsCoprime (I:Ideal O) (J:Ideal O):=by
+        IsCoprime (I:Ideal ActualEisensteinCubic.O) (J:Ideal ActualEisensteinCubic.O):=by
     rw [←Ideal.isCoprime_span_singleton_iff,sectorElement_span,sectorElement_span]
   have hcop' (I:sectorPool C hC.1 S)(J:sectorPool D hD.1 S):
-      IsCoprime (primaryGenerator (I:Ideal O)) (primaryGenerator (J:Ideal O)) ↔
-        IsCoprime (I:Ideal O) (J:Ideal O):=hcop I J
+      IsCoprime (primaryGenerator (I:Ideal ActualEisensteinCubic.O)) (primaryGenerator (J:Ideal ActualEisensteinCubic.O)) ↔
+        IsCoprime (I:Ideal ActualEisensteinCubic.O) (J:Ideal ActualEisensteinCubic.O):=hcop I J
   simpa only [sectorElement_span,idealCorrelation,primaryGenerator_mul,sectorElement,hcop'] using he'
+
+end
 
 end SevenEighths.CenteredMomentSecondExceptionalKernel
 
-end
+
 
 end OAI

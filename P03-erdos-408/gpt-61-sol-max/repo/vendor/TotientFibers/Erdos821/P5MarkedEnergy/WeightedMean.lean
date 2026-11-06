@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P5Energy.Additive
 
 public import Erdos821.P5.Basic
 public import Erdos821.Classical.DirichletMean
@@ -18,38 +21,36 @@ namespace Erdos821.P5Marked
 open Blueprint.Analytic
 
 /-- The quadratic decay weight `(1+|h t|)⁻²`. -/
-def wt (h t : ℝ) : ℝ := ((1 + |h * t|) ^ 2)⁻¹
+def wt (h t : ℝ)  := ((1 + |h * t|) ^ 2)⁻¹
 
-theorem wt_nonneg (h t : ℝ) : 0 ≤ wt h t := by unfold wt; positivity
+theorem wt_nonneg  h t  : 0 ≤ wt h t := by unfold wt; positivity
 
-theorem continuous_wt (h : ℝ) : Continuous (wt h) := by
+theorem continuous_wt  h  : Continuous (wt h) := by
   unfold wt
   apply Continuous.inv₀ (by fun_prop)
   intro t; positivity
 
-theorem wt_le_inv_one_add_sq (h t : ℝ) : wt h t ≤ (1 + (h * t) ^ 2)⁻¹ := by
+theorem wt_le_inv_one_add_sq  h t  : wt h t ≤ (1 + (h * t) ^ 2)⁻¹ := by
   unfold wt
   apply inv_anti₀ (by positivity)
   nlinarith [sq_abs (h * t), abs_nonneg (h * t)]
 
-theorem wt_le_of_le_abs (h t d : ℝ) (hd : 0 ≤ d) (hdt : d ≤ |h * t|) :
+theorem wt_le_of_le_abs  h t d  (hd : 0 ≤ d) (hdt : d ≤ |h * t|) :
     wt h t ≤ ((1 + d) ^ 2)⁻¹ := by
   unfold wt
-  apply inv_anti₀ (by positivity)
-  have : 1 + d ≤ 1 + |h * t| := by linarith
-  nlinarith
+  bound
 
-theorem integrable_inv_one_add_sq_mul {h : ℝ} (hh : h ≠ 0) :
+theorem integrable_inv_one_add_sq_mul  {h}  (hh : h ≠ 0) :
     Integrable (fun t : ℝ => (1 + (h * t) ^ 2)⁻¹) :=
   integrable_inv_one_add_sq.comp_mul_left' hh
 
-theorem integral_inv_one_add_sq_mul {h : ℝ} (hh : 0 < h) :
+theorem integral_inv_one_add_sq_mul  {h}  (hh : 0 < h) :
     ∫ t : ℝ, (1 + (h * t) ^ 2)⁻¹ = Real.pi / h := by
   have := Measure.integral_comp_mul_left (fun x : ℝ => (1 + x ^ 2)⁻¹) h
   rw [this, integral_univ_inv_one_add_sq, abs_of_pos (inv_pos.mpr hh), smul_eq_mul]
   field_simp
 
-theorem intervalIntegral_inv_one_add_sq_mul {h : ℝ} (hh : 0 < h) (T : ℝ) :
+theorem intervalIntegral_inv_one_add_sq_mul  {h}  (hh : 0 < h)  T  :
     ∫ t in (-T)..T, (1 + (h * t) ^ 2)⁻¹ = 2 * Real.arctan (h * T) / h := by
   have := intervalIntegral.integral_comp_mul_left (fun x : ℝ => (1 + x ^ 2)⁻¹)
     (a := -T) (b := T) hh.ne'
@@ -57,18 +58,15 @@ theorem intervalIntegral_inv_one_add_sq_mul {h : ℝ} (hh : 0 < h) (T : ℝ) :
   field_simp
   ring
 
-theorem norm_dp_le_sum (s : Finset ℕ) (g : ℕ → ℂ) (t : ℝ) :
-    ‖dp s g t‖ ≤ ∑ n ∈ s, ‖g n‖ := by
-  unfold dp
-  refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun n _ => ?_)
-  rw [norm_mul, P5Core.norm_mellin, mul_one]
+theorem norm_dp_le_sum  s   g   t  :
+    ‖dp s g t‖ ≤ ∑ n ∈ s, ‖g n‖ := by solve_by_elim [_root_.Erdos821.P5Energy.norm_dp_le]
 
-theorem sum_norm_sq_le_card (s : Finset ℕ) (g : ℕ → ℂ) :
+theorem sum_norm_sq_le_card  s   g  :
     (∑ n ∈ s, ‖g n‖) ^ 2 ≤ (s.card : ℝ) * sqNorm s g := by
   unfold sqNorm
   exact sq_sum_le_card_mul_sum_sq
 
-theorem sum_inv_succ_sq_le_two (n : ℕ) :
+theorem sum_inv_succ_sq_le_two  n  :
     ∑ m ∈ Finset.range n, (((m : ℝ) + 1) ^ 2)⁻¹ ≤ 2 := by
   have key : ∀ n : ℕ, ∑ m ∈ Finset.range (n + 1), (((m : ℝ) + 1) ^ 2)⁻¹ ≤
       2 - ((n : ℝ) + 1)⁻¹ := by
@@ -77,7 +75,7 @@ theorem sum_inv_succ_sq_le_two (n : ℕ) :
     | zero => norm_num
     | succ k ih =>
       rw [Finset.sum_range_succ]
-      have hk : (0 : ℝ) ≤ k := Nat.cast_nonneg k
+      
       have h1 : (((k + 1 : ℕ) : ℝ) + 1) = (k : ℝ) + 2 := by push_cast; ring
       rw [h1]
       have hstep : (((k : ℝ) + 2) ^ 2)⁻¹ ≤ ((k : ℝ) + 1)⁻¹ - ((k : ℝ) + 2)⁻¹ := by
@@ -114,7 +112,7 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
   have hNlog := nat_mul_log_nonneg' N
   have hDc : Continuous D := (P5Core.continuous_dp s g).comp (continuous_id.add continuous_const)
   have hDle : ∀ t, ‖D t‖ ≤ M := fun t => norm_dp_le_sum s g _
-  have hM0 : 0 ≤ M := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+  
   have hM2 : M ^ 2 ≤ N * q := by
     have := sum_norm_sq_le_card s g
     simpa [s, Nat.card_Icc] using this
@@ -191,7 +189,7 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
   have hpiece : ∀ k : ℕ, ∫ t in (a k)..(a (k + 1)), f t ≤ sk k * B := by
     intro k
     have hak : a k ≤ a (k + 1) := by
-      simp only [a]; apply div_le_div_of_nonneg_right _ hh.le; push_cast; linarith
+      bound
     have hw : ∀ t ∈ Set.Icc (a k) (a (k + 1)), f t ≤ sk k * ‖D t‖ ^ 2 := by
       intro t ht
       apply mul_le_mul_of_nonneg_right _ (by positivity)
@@ -208,7 +206,7 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
           have := ht.2; simp only [a] at this
           rw [le_div_iff₀ hh] at this; push_cast at this; linarith
         rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]
-        have hk'' : ((k : ℝ) + 1) ≤ n := by exact_mod_cast hk'
+        
         rw [Nat.cast_one]
         calc (n : ℝ) - 1 - k ≤ -(h * t) := by linarith
           _ ≤ |h * t| := neg_le_abs _

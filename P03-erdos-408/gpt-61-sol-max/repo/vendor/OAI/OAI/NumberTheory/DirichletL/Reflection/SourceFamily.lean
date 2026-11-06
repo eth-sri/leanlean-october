@@ -11,7 +11,7 @@ open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 
 def SourcePair (rows Pset : Finset (Ideal Eis)) :=
   {x : rows × Pset // IsCoprime x.1.val x.2.val}
@@ -22,10 +22,10 @@ theorem exists_source_pair_templates (F : PrimeFamily φ)
     (rows Pset : Finset (Ideal Eis)) (S : Ideal Eis → PrimeFamily σ)
     (hrows : ∀ K ∈ rows, Admissible K)
     (hprod : ∀ P ∈ Pset, (∏ i, (S P).ideal i)=P)
-    (N a c : Eis) (mode : Bool)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hc : c ≠ 0) (hN : (9:Eis)*c ∣ N)
-    (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) (hac : IsCoprime a c)
+     N a c   mode 
+     s 
+     hc  (hN : (9:Eis)*c ∣ N)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) (hac : IsCoprime a c)
     (hF : Pairwise (Function.onFun IsCoprime F.ideal))
     (hNF : ∀ f, IsCoprime (Ideal.span {N}) (F.ideal f))
     (hrowcop : ∀ K ∈ rows, (∀ f, IsCoprime (F.ideal f) K) ∧ IsCoprime (Ideal.span {N}) K)

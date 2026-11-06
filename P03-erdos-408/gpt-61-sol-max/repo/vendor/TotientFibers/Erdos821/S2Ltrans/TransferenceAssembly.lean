@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.TransferenceAssemblyTask
 public import Erdos821.S2.MemoryParameters
@@ -9,7 +10,7 @@ public import Erdos821.P3Edge.Absolute
 
 @[expose] public section
 
-noncomputable section
+section
 
 open Filter
 open Erdos821.Blueprint.Graph hiding absoluteMemoryEdgeKernel absoluteMemoryGhostKernel
@@ -102,7 +103,7 @@ theorem LocalTransferenceAssemblyTask_proof :
   let CE : ℝ := (L x) ^ Ca
   have hCGnn : 0 ≤ CG := by dsimp [CG]; positivity
   have hCEnn : 0 ≤ CE := by dsimp [CE]; positivity
-  have hCEpos : 0 < CE := by dsimp [CE]; exact Real.rpow_pos_of_pos hLpos _
+  
   have hCGscale : CG ≤ (L x) ^ Cv := by dsimp [CG]; exact hCGscale
   have hCEscale : CE ≤ (L x) ^ max Ca 0 := by
     dsimp [CE]
@@ -118,8 +119,7 @@ theorem LocalTransferenceAssemblyTask_proof :
     exact ⟨hrows.1, hrows.2.1⟩
   have hEdgeWB : ∀ (i : Fin n), WeightedBounds (P.memoryMass F J n) (P.memoryWeight r.v)
       (fun s t => (Erdos821.S2Core.absoluteMemoryEdgeKernel A n r.rho 0 i .all s t : ℂ)) CE := by
-    intro i
-    simpa [n, CE] using hEdge x hxEdge P hP A hPattern 0 i
+    solve_by_elim
   have hERows : ∀ (i : Fin n) (s : P.MemoryState (J + F.ell)),
       Summable (fun t => Erdos821.S2Core.absoluteMemoryEdgeKernel A n r.rho 0 i .all s t *
         P.memoryWeight r.v t) ∧
@@ -158,12 +158,10 @@ theorem LocalTransferenceAssemblyTask_proof :
       positivity
     calc
       _ ≤ ((L x) ^ Cv) ^ (n + 1) * CE ^ n *
-          Erdos821.S2Core.initialMemoryBoundaryMass A n := by
-        exact mul_le_mul_of_nonneg_right
+          Erdos821.S2Core.initialMemoryBoundaryMass A n := mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right hCGpow (pow_nonneg hCEnn _)) hMassNonneg
       _ ≤ ((L x) ^ Cv) ^ (n + 1) * ((L x) ^ max Ca 0) ^ n *
-          Erdos821.S2Core.initialMemoryBoundaryMass A n := by
-        exact mul_le_mul_of_nonneg_right
+          Erdos821.S2Core.initialMemoryBoundaryMass A n := mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_left hCEpow (pow_nonneg (Real.rpow_nonneg hLpos.le _) _))
           hMassNonneg
       _ ≤ ((L x) ^ Cv) ^ (n + 1) * ((L x) ^ max Ca 0) ^ n *
@@ -178,8 +176,7 @@ theorem LocalTransferenceAssemblyTask_proof :
         rw [← Real.rpow_add hLpos, ← Real.rpow_add hLpos]
       _ ≤ (L x) ^ (Cpath * ((n + 1 : ℕ) : ℝ)) := by
         apply Real.rpow_le_rpow_of_exponent_le hLone
-        have hnle : (n : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by
-          exact_mod_cast Nat.le_succ n
+        
         dsimp [Cpath]
         push_cast
         nlinarith [mul_nonneg hCaPos (Nat.cast_nonneg n)]
@@ -212,10 +209,7 @@ theorem LocalTransferenceAssemblyTask_proof :
                   linarith
           _ = (-Acrt + 2 * Cpath) * (n : ℝ) := by ring
           _ ≤ -(E + 1) * (n : ℝ) := by
-            have hcoef : -Acrt + 2 * Cpath ≤ -(E + 1) := by
-              dsimp [Acrt]
-              linarith
-            exact mul_le_mul_of_nonneg_right hcoef (Nat.cast_nonneg n)
+            linarith
 
   have hreplacement : ∀ Q : Erdos821.S2Core.ResiduePath A (2 * R x), Q.Valid →
       |((dyad X).card : ℝ)⁻¹ * ∑ z ∈ dyad X,
@@ -255,13 +249,7 @@ theorem LocalTransferenceAssemblyTask_proof :
         congr 1
         ring
   have hMomentFinal : A.averagedMoment (R x) X ≤ (L x) ^ (-E * (n : ℝ)) := by
-    calc
-      A.averagedMoment (R x) X ≤ (L x) ^ (-(E + 1) * (n : ℝ)) +
-          epsilon * (L x) ^ (Cpath * ((n + 1 : ℕ) : ℝ)) := hMoment
-      _ ≤ 2 * (L x) ^ (-(E + 1) * (n : ℝ)) := by
-        have := hError
-        linarith
-      _ ≤ (L x) ^ (-E * (n : ℝ)) := hTwoScale
+    linarith
   have hdec : (52 : ℝ) / 100 = (0.52 : ℝ) := by norm_num
   simpa [Model.averageMoment, Model.averagedMoment, R, N, dyad, hdec,
     div_eq_mul_inv, mul_comm, n] using hMomentFinal

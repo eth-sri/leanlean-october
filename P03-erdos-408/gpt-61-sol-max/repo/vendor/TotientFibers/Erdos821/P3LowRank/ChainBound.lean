@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Analysis.Complex.Basic
@@ -15,26 +16,34 @@ namespace Erdos821.P3Lowrank
 variable {β : Type*} [Fintype β]
 
 /-- Weighted `ℓ²` norm on a finite type. -/
-def wnorm (mass : β → ℝ) (h : β → ℂ) : ℝ := Real.sqrt (∑ s, mass s * ‖h s‖ ^ 2)
+def wnorm (mass : β → ℝ) (h : β → ℂ)  := Real.sqrt (∑ s, mass s * ‖h s‖ ^ 2)
 
 /-- Kernel application; the kernel already contains the target integration. -/
 def applyK (K : β → β → ℂ) (h : β → ℂ) : β → ℂ := fun s => ∑ t, K s t * h t
 
 /-- Bilinear operator-norm bound on the whole finite type. -/
-def FinNormBound (mass : β → ℝ) (K : β → β → ℂ) (C : ℝ) : Prop :=
+def FinNormBound (mass : β → ℝ) (K : β → β → ℂ) (C : ℝ)  :=
   ∀ f g : β → ℂ, ‖∑ a, ∑ b, (mass a : ℂ) * star (f a) * K a b * g b‖ ≤
     C * wnorm mass f * wnorm mass g
 
-theorem wnorm_nonneg (mass : β → ℝ) (h : β → ℂ) : 0 ≤ wnorm mass h := Real.sqrt_nonneg _
+section
+variable (mass : β → ℝ)
+include mass
 
-theorem wnorm_sq (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (h : β → ℂ) :
+theorem wnorm_nonneg    h  : 0 ≤ wnorm mass h := Real.sqrt_nonneg _
+
+section
+variable (hm : ∀ s, 0 ≤ mass s)
+include hm
+
+theorem wnorm_sq      h  :
     wnorm mass h ^ 2 = ∑ s, mass s * ‖h s‖ ^ 2 := by
   unfold wnorm
   rw [Real.sq_sqrt]
   exact Finset.sum_nonneg fun s _ => mul_nonneg (hm s) (sq_nonneg _)
 
-theorem applyK_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (K : β → β → ℂ) (C : ℝ)
-    (hC : 0 ≤ C) (hK : FinNormBound mass K C) (h : β → ℂ) :
+theorem applyK_bound      K   C 
+    (hC : 0 ≤ C) (hK : FinNormBound mass K C)  h  :
     wnorm mass (applyK K h) ≤ C * wnorm mass h := by
   set x := applyK K h with hx
   have heq : ((∑ s, mass s * ‖x s‖ ^ 2 : ℝ) : ℂ) =
@@ -47,9 +56,6 @@ theorem applyK_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (K : β → 
           rw [mul_assoc, Complex.star_def, Complex.conj_mul']
       _ = _ := by
           rw [hxa, Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro b _
-          rw [← hxa]
           ring
   have hle : wnorm mass x ^ 2 ≤ C * wnorm mass x * wnorm mass h := by
     rw [wnorm_sq mass hm x]
@@ -68,8 +74,12 @@ theorem applyK_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (K : β → 
       nlinarith
     exact le_of_mul_le_mul_left this hpos
 
+end
+
+end
+
 /-- Sum over alternating state paths: ghost kernels on `(b i, a i)`, edges on `(a i, b (i+1))`. -/
-def pathSum (n : ℕ) (G : Fin (n + 1) → β → β → ℂ) (E : Fin n → β → β → ℂ) (u v : β → ℂ) : ℂ :=
+def pathSum (n ) (G : Fin (n + 1) → β → β → ℂ) (E : Fin n → β → β → ℂ) (u v : β → ℂ)  :=
   ∑ b : Fin (n + 1) → β, ∑ a : Fin (n + 1) → β,
     u (b 0) * (∏ i, G i (b i) (a i)) * (∏ i : Fin n, E i (a i.castSucc) (b i.succ)) *
       v (a (Fin.last n))
@@ -98,9 +108,7 @@ theorem pathSum_eq : ∀ (n : ℕ) (G : Fin (n + 1) → β → β → ℂ) (E : 
       rw [Fintype.sum_unique]
       rw [sum_fin_cons]
       apply Finset.sum_congr rfl
-      intro t _
-      rw [Fintype.sum_unique]
-      simp [tailVec, Fin.last]
+      aesop
   | succ n ih =>
       intro G E u v
       unfold pathSum
@@ -133,13 +141,13 @@ theorem pathSum_eq : ∀ (n : ℕ) (G : Fin (n + 1) → β → β → ℂ) (E : 
       rw [hih]
       congr 1
       simp only [tailVec, applyK, Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro s' _
-      apply Finset.sum_congr rfl
-      intro t' _
       ring
 
-theorem tailVec_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) (hCG : 0 ≤ CG) :
+section
+variable (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) (hCG : 0 ≤ CG)
+include mass hm CG hCG
+
+theorem tailVec_bound         :
     ∀ (n : ℕ) (G : Fin (n + 1) → β → β → ℂ) (E : Fin n → β → β → ℂ) (c : Fin n → ℝ),
       (∀ i, 0 ≤ c i) → (∀ i, FinNormBound mass (G i) CG) →
       (∀ i, FinNormBound mass (E i) (c i)) → ∀ v : β → ℂ,
@@ -156,7 +164,7 @@ theorem tailVec_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) 
       set w := tailVec n (fun i => G i.succ) (fun i => E i.succ) v
       have h2 := applyK_bound mass hm (G (Fin.succ 0)) CG hCG (hG _) w
       have h3 := applyK_bound mass hm (E 0) (c 0) (hc 0) (hE 0) (applyK (G (Fin.succ 0)) w)
-      have hprod : 0 ≤ ∏ i : Fin n, c i.succ := Finset.prod_nonneg fun i _ => hc i.succ
+      
       change wnorm mass (applyK (E 0) (applyK (G (Fin.succ 0)) w)) ≤ _
       rw [Fin.prod_univ_succ]
       calc wnorm mass (applyK (E 0) (applyK (G (Fin.succ 0)) w))
@@ -166,10 +174,10 @@ theorem tailVec_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) 
             mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left h1 hCG) (hc 0)
         _ = _ := by ring
 
-theorem pathSum_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) (hCG : 0 ≤ CG)
+theorem pathSum_bound        
     (n : ℕ) (G : Fin (n + 1) → β → β → ℂ) (E : Fin n → β → β → ℂ) (c : Fin n → ℝ)
     (hc : ∀ i, 0 ≤ c i) (hG : ∀ i, FinNormBound mass (G i) CG)
-    (hE : ∀ i, FinNormBound mass (E i) (c i)) (f v : β → ℂ) :
+    (hE : ∀ i, FinNormBound mass (E i) (c i))  f v  :
     ‖pathSum n G E (fun s => (mass s : ℂ) * star (f s)) v‖ ≤
       CG ^ (n + 1) * (∏ i, c i) * wnorm mass f * wnorm mass v := by
   rw [pathSum_eq]
@@ -180,5 +188,7 @@ theorem pathSum_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) 
     _ ≤ CG * wnorm mass f * (CG ^ n * (∏ i, c i) * wnorm mass v) :=
         mul_le_mul_of_nonneg_left h2 (mul_nonneg hCG hf)
     _ = _ := by ring
+
+end
 
 end Erdos821.P3Lowrank

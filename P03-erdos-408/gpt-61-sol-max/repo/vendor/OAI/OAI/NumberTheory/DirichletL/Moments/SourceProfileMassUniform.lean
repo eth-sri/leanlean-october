@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceProfileMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceProfileMassUniform
@@ -16,7 +16,7 @@ local notation "O" => ActualEisensteinCubic.O
 
 theorem profile_mass_explicit {ι : Type*} [Fintype ι]
     (Wslot : ι → ℝ → ℂ) (W₁ W₂ : ℝ → ℂ)
-    (b D : ι → ℝ) (b₁ b₂ D₁ D₂ : ℝ)
+    (b D : ι → ℝ)  b₁ b₂ D₁ D₂ 
     (hb : ∀ j,0≤b j) (hb₁ : 0≤b₁) (hb₂ : 0≤b₂)
     (hD : ∀ j,0≤D j) (hD₁ : 0≤D₁) (hD₂ : 0≤D₂)
     (hzSlot : ∀ j,Wslot j 0=0) (hz₁ : W₁ 0=0) (hz₂ : W₂ 0=0)
@@ -24,11 +24,11 @@ theorem profile_mass_explicit {ι : Type*} [Fintype ι]
     (hs₁ : ∀ x,W₁ x≠0→x≤b₁) (hs₂ : ∀ x,W₂ x≠0→x≤b₂)
     (hbound : ∀ j x,‖Wslot j x‖≤D j)
     (hbound₁ : ∀ x,‖W₁ x‖≤D₁) (hbound₂ : ∀ x,‖W₂ x‖≤D₂)
-    (R : Ideal O) (ν : ι → Ideal O → ℂ) (hν : ∀ j I,‖ν j I‖≤1)
-    (P : ι → ℝ) (X₁ X₂ Y₁ Y₂ T : ℝ) (B₁ B₂ s : Ideal O)
+     R   ν  (hν : ∀ j I,‖ν j I‖≤1)
+     P   X₁ X₂ Y₁ Y₂ T   B₁ B₂ s 
     (hP : ∀ j,0<P j) (hX₁ : 0<X₁) (hX₂ : 0<X₂) (hY₁ : 0<Y₁) (hY₂ : 0<Y₂)
     (hB₁ : B₁≠0) (hB₂ : B₂≠0) (hX : X₁*X₂=T) (hY : Y₁*Y₂=T)
-    (S : Finset (Tuple ι)) :
+     S  :
     (∑v∈S,‖profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s v‖)≤
       (2*128^(Fintype.card ι+2)*(∏j,D j)*D₁*D₂*(∏j,b j)*b₁*b₂)*
         (T/((Ideal.absNorm B₁:ℝ)*Ideal.absNorm B₂))*(∏j,P j) := by
@@ -61,6 +61,6 @@ theorem profile_mass_explicit {ι : Type*} [Fintype ι]
 
 end SevenEighths.CenteredMomentSourceProfileMassUniform
 
-end
+
 
 end OAI

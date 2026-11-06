@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.GaussNormalization
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationFamilyEnergy
@@ -18,16 +18,16 @@ open CenteredMomentAmplificationShortening CenteredMomentAmplificationFamily
 open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow
 open CenteredMomentSourceRow CenteredMomentChildRows CenteredMomentOriginalChildEnergy
 open CenteredMomentGaussEnergy CenteredMomentSourceSmoothedAllocation CenteredMomentGaussNormalization
-local notation "O" => ActualEisensteinCubic.O
 
-theorem amplification_family_energy (η : Character) (m p : O) (k : ℕ)
+
+theorem amplification_family_energy (η : Character) (m p : ActualEisensteinCubic.O) (k : ℕ)
     (τ : RayCharacter → Character)
-    (hτ : ∀ I : Ideal O,Supported I → ∀ t : ℝ,
+    (hτ : ∀ I : Ideal ActualEisensteinCubic.O,Supported I → ∀ t : ℝ,
       rowWeight η m 1 1 t I*residualCharacter p k (primaryGenerator I)=
         ∑ χ : RayCharacter,phaseCoeff (amplificationPhase p k) χ*heightCoeff (τ χ) t I)
-    (Q : Finset (Ideal O)) (C : Ideal O) (hC : C≠0) (β : Ideal O → ℂ) (t : ℝ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
+    (Q : Finset (Ideal ActualEisensteinCubic.O)) (C : Ideal ActualEisensteinCubic.O) (hC : C≠0) (β : Ideal ActualEisensteinCubic.O → ℂ)  t 
+     W   K  (hK : 0<K)
+    (hW : ∀ z : ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (sourceGaussEnergy Q (fun I => β (C*I)*rowWeight η m 1 1 t (C*I))
       (fun I => residualCharacter p k (primaryGenerator I)) W K).re≤
       16*∑ χ : RayCharacter,
@@ -62,6 +62,6 @@ theorem amplification_family_energy (η : Character) (m p : O) (k : ℕ)
 
 end SevenEighths.CenteredMomentAmplificationFamilyEnergy
 
-end
+
 
 end OAI

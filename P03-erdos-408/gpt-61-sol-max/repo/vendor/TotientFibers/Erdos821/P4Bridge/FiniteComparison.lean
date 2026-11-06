@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.FinitePairing
 public import Erdos821.P4Probe.ConditionalBounds
@@ -24,21 +25,17 @@ lemma weighted_mean_sq_le {A : Type*} [Fintype A] (w : A → ℝ)
   nlinarith [norm_nonneg (∑ a, (w a : ℂ) * f a), Real.sqrt_nonneg (∑ a, w a * ‖f a‖ ^ 2)]
 
 lemma sum_pair_factor {A B : Type*} [Fintype A] [Fintype B]
-    (w : A → ℝ) (v : B → ℝ) (f : A → ℂ) (g : B → ℂ) (K : ℂ) :
+    (w : A → ℝ) (v : B → ℝ) (f : A → ℂ) (g : B → ℂ)  K  :
     (∑ a, ∑ b, ((w a * v b : ℝ) : ℂ) * star (f a) * g b * K) =
       star (∑ a, (w a : ℂ) * f a) * (∑ b, (v b : ℂ) * g b) * K := by
   simp only [star_sum, star_mul, Complex.star_def, Complex.conj_ofReal,
     Finset.sum_mul, Finset.mul_sum, Complex.ofReal_mul]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro a _
-  apply Finset.sum_congr rfl
-  intro b _
-  ring
+  grind
 
 lemma sum_four_factor {A T B U : Type*} [Fintype A] [Fintype T] [Fintype B] [Fintype U]
     (w : A → ℝ) (wt : T → ℝ) (v : B → ℝ) (vu : U → ℝ)
-    (f : A → T → ℂ) (g : B → U → ℂ) (K : ℂ) :
+    (f : A → T → ℂ) (g : B → U → ℂ)  K  :
     (∑ a, ∑ t, ∑ b, ∑ u,
       ((w a * wt t * v b * vu u : ℝ) : ℂ) * star (f a t) * g b u * K) =
       star (∑ a, ∑ t, ((w a * wt t : ℝ) : ℂ) * f a t) *

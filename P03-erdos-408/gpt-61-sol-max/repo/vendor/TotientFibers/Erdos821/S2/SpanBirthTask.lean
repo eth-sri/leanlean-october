@@ -11,7 +11,7 @@ namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-def SpanBirthTask : Prop :=
+def SpanBirthTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
     (Q : ResiduePath A n) (S : LifespanAssignment P n),
     Q.Valid → ∀ hS : Q.lifespanValid S,

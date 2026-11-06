@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.ConditionedKernel
 
@@ -14,21 +15,23 @@ open Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-abbrev PendingCycle (P : PrimeGroups) (B : ℕ) :=
+abbrev PendingCycle (P ) (B ) :=
   TranslationCycle (pendingTranslationEquiv (P := P) B 1)
 
-def dilationCycleStep (A : Model F P J m) (B : ℕ) (forward : Bool)
-    (d : SmallLabels P J) : PendingCycle P B :=
+def dilationCycleStep (A : Model F P J m) (B ) (forward : Bool)
+    (d : SmallLabels P J)  :=
   ((if forward then A.k else -A.k) * (prefixPrimeProduct J d : ℤ)) •
     cycleStep (pendingTranslationEquiv (P := P) B 1)
 
-def cycleDisplacement (A : Model F P J m) (B : ℕ) (ν : Pattern P J F.ell m)
-    (forward : Bool) (d : SmallLabels P J) (a : P.BigLabels (J + F.ell)) (u : P.BigAux J) :
-    PendingCycle P B :=
+def cycleDisplacement (A : Model F P J m) (B ) (ν : Pattern P J F.ell m)
+    (forward : Bool) (d : SmallLabels P J) (a : P.BigLabels (J + F.ell)) (u : P.BigAux J)  :=
   (ν.DBig a u) • dilationCycleStep A B forward d
 
-theorem cycleDisplacement_act (A : Model F P J m) (B : ℕ) (ν : Pattern P J F.ell m)
-    (forward : Bool) (d : SmallLabels P J) (a : P.BigLabels (J + F.ell)) (u : P.BigAux J) :
+section
+variable (A : Model F P J m) (B : ℕ)
+
+theorem cycleDisplacement_act     (ν : Pattern P J F.ell m)
+     forward  (d : SmallLabels P J) (a : P.BigLabels (J + F.ell)) (u : P.BigAux J) :
     cycleAct (pendingTranslationEquiv (P := P) B 1)
       (cycleDisplacement A B ν forward d a u) = pendingTranslationEquiv B (bigStep A ν forward d a u) := by
   unfold cycleDisplacement dilationCycleStep
@@ -40,13 +43,13 @@ theorem cycleDisplacement_act (A : Model F P J m) (B : ℕ) (ν : Pattern P J F.
   rw [he]
   exact (pendingTranslationEquiv_zpow B (bigStep A ν forward d a u)).symm
 
-theorem cycleDisplacement_character (A : Model F P J m) (B : ℕ)
+theorem cycleDisplacement_character    
     [Fintype (CutPendingState P B)] (forward : Bool) (d : SmallLabels P J)
     (psi : AddChar (PendingCycle P B) ℂ) :
     ∃ theta : ℝ, ∀ (ν : Pattern P J F.ell m) (a : P.BigLabels (J + F.ell)) (u : P.BigAux J),
-      psi (cycleDisplacement A B ν forward d a u) = phase (theta * (ν.DBig a u : ℝ)) := by
-  obtain ⟨theta, ht⟩ := character_nsmul_phase psi (dilationCycleStep A B forward d)
-  exact ⟨theta, fun ν a u => ht (ν.DBig a u)⟩
+      psi (cycleDisplacement A B ν forward d a u) = phase (theta * (ν.DBig a u : ℝ)) := Exists.casesOn (Erdos821.P3Clean.character_nsmul_phase psi (Erdos821.P3Clean.dilationCycleStep A B forward d)) fun theta ht => Exists.intro theta fun ν a u => ht (ν.DBig a u)
+
+end
 
 
 end Erdos821.P3Clean

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Model
 
@@ -23,10 +24,14 @@ namespace Erdos408.OneSided
 
 open Finset
 
+section
+variable {U V u v r : ℝ} (hU : 0 < U) {w : ℤ × ℤ} (hw : w ∈ rootPositions U V u v r) (n : ℤ)
+include U V u v r hU w hw n
+
 /-- **The neighbor count** (PD `mem:neighbor`): for a position `w` of the root box with
 `U > 0` and a value `n`, at most `16` positions `z` of the box have `det(w, z) = n`. -/
-theorem card_filter_det_le {U V u v r : ℝ} (hU : 0 < U) {w : ℤ × ℤ}
-    (hw : w ∈ rootPositions U V u v r) (n : ℤ) :
+theorem card_filter_det_le      
+        :
     ((rootPositions U V u v r).filter fun z => w.1 * z.2 - w.2 * z.1 = n).card ≤ 16 := by
   unfold rootPositions at hw
   rw [mem_filter] at hw
@@ -35,10 +40,7 @@ theorem card_filter_det_le {U V u v r : ℝ} (hU : 0 < U) {w : ℤ × ℤ}
   obtain ⟨α, β, hαβ⟩ := Int.isCoprime_iff_gcd_eq_one.2 hgcd
   have hbox : ∀ z ∈ (rootPositions U V u v r).filter fun z => w.1 * z.2 - w.2 * z.1 = n,
       U ≤ u * tau r z ∧ u * tau r z ≤ 16 * U ∧ w.1 * z.2 - w.2 * z.1 = n := by
-    intro z hz
-    unfold rootPositions at hz
-    simp only [mem_filter] at hz
-    exact ⟨hz.1.2.2.1, hz.1.2.2.2.1, hz.2⟩
+    simp_all [rootPositions]
   calc _ ≤ (Icc (1 : ℤ) 16).card := by
         refine card_le_card_of_injOn (fun z => ⌊u * tau r z / U⌋) (fun z hz => ?_)
           (fun z hz z' hz' h => ?_)
@@ -55,34 +57,33 @@ theorem card_filter_det_le {U V u v r : ℝ} (hU : 0 < U) {w : ℤ × ℤ}
           have hlt := Int.abs_sub_lt_one_of_floor_eq_floor h
           set m := α * (z.1 - z'.1) + β * (z.2 - z'.2) with hm
           have hm₁ : z.1 - z'.1 = m * w.1 := by
-            linear_combination (-(z.1 - z'.1)) * hαβ + β * (hzn' - hzn)
+            grind
           have hm₂ : z.2 - z'.2 = m * w.2 := by
-            linear_combination (-(z.2 - z'.2)) * hαβ + α * (hzn - hzn')
+            grind
           have htau : u * tau r z - u * tau r z' = m * (u * tau r w) := by
             have h₁ : (z.1 : ℝ) - z'.1 = m * w.1 := by exact_mod_cast hm₁
             have h₂ : (z.2 : ℝ) - z'.2 = m * w.2 := by exact_mod_cast hm₂
-            unfold tau
-            linear_combination u * h₁ + u * r * h₂
+            grind [tau]
           have hm0 : m = 0 := by
             by_contra hm0
             have h1m : (1 : ℝ) ≤ |(m : ℝ)| := by exact_mod_cast Int.one_le_abs hm0
             rw [← sub_div, abs_div, abs_of_pos hU, div_lt_one hU, htau, abs_mul,
               abs_of_pos (hU.trans_le hwU)] at hlt
             nlinarith
-          rw [hm0, zero_mul, sub_eq_zero] at hm₁ hm₂
-          exact Prod.ext hm₁ hm₂
+          grind
     _ = 16 := by simp
 
 /-- **The neighbor count** with the fixed position second: at most `16` positions `z` of the
 box have `det(z, w) = n`. -/
-theorem card_filter_det_le' {U V u v r : ℝ} (hU : 0 < U) {w : ℤ × ℤ}
-    (hw : w ∈ rootPositions U V u v r) (n : ℤ) :
+theorem card_filter_det_le'      
+        :
     ((rootPositions U V u v r).filter fun z => z.1 * w.2 - z.2 * w.1 = n).card ≤ 16 := by
   calc _ = ((rootPositions U V u v r).filter fun z => w.1 * z.2 - w.2 * z.1 = -n).card := by
         congr 1
-        refine filter_congr fun z _ => ?_
-        constructor <;> intro h <;> linear_combination -h
+        grind
     _ ≤ 16 := card_filter_det_le hU hw (-n)
+
+end
 
 /-- **The sum over the neighbors**: if every fiber of `e` on `T` has at most `16` points, then
 `∑_{z ∈ T, D ∣ e(z)} g(e(z)/D) ≤ 16 ∑_{|t| ≤ M} g(t)` for `g ≥ 0` vanishing outside
@@ -105,10 +106,7 @@ theorem sum_dvd_le_of_card_le {α : Type*} {T : Finset α} {e : α → ℤ}
       by_cases hg₀ : g t₀ = 0
       · rw [hg₀]
         exact hnn
-      · calc g t₀ = if e z = D * t₀ then g t₀ else 0 := (ite_eq_left ht₀).symm
-          _ ≤ ∑ t ∈ Icc (-(M : ℤ)) M, if e z = D * t then g t else 0 :=
-            single_le_sum (f := fun t => if e z = D * t then g t else 0)
-              (fun t _ => by split_ifs; exacts [hg t, le_rfl]) (hgM t₀ hg₀)
+      simp_all [Icc]
     · exact hnn
   calc ∑ z ∈ T, (if (D : ℤ) ∣ e z then g (e z / D) else 0)
       ≤ ∑ z ∈ T, ∑ t ∈ Icc (-(M : ℤ)) M, if e z = D * t then g t else 0 :=

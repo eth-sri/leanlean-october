@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Failure.Coins
 public import Erdos408.Extraction.Allocation.Failure.Sieve
@@ -31,68 +32,58 @@ noncomputable section
 lemma sum_lowSubsets_eq_add (g : Finset ℕ) (f : Finset ℕ → ℝ) :
     ∑ K ∈ lowSubsets g, f K = f ∅ + ∑ p ∈ g, f {p} + ∑ K ∈ g.powersetCard 2, f K := by
   have hsplit : lowSubsets g = (g.powersetCard 0 ∪ g.powersetCard 1) ∪ g.powersetCard 2 := by
-    ext K
-    simp only [lowSubsets, mem_filter, mem_powerset, mem_union, mem_powersetCard]
-    by_cases h : K ⊆ g
-    · simp only [h, true_and]
-      omega
-    · simp [h]
+    grind [lowSubsets]
   have hd1 : Disjoint (g.powersetCard 0) (g.powersetCard 1) := by
-    rw [disjoint_left]
-    intro K h1 h2
-    have := (mem_powersetCard.1 h1).2
-    have := (mem_powersetCard.1 h2).2
-    omega
+    simp_all
   have hd2 : Disjoint (g.powersetCard 0 ∪ g.powersetCard 1) (g.powersetCard 2) := by
     rw [disjoint_left]
-    intro K h1 h2
-    have := (mem_powersetCard.1 h2).2
-    rcases mem_union.1 h1 with h | h <;> have := (mem_powersetCard.1 h).2 <;> omega
+    simp_all
   rw [hsplit, sum_union hd2, sum_union hd1, powersetCard_zero, sum_singleton, powersetCard_one,
     sum_map]
   rfl
 
 /-- The model weight `π_p = [p ∤ c] / (p - 1)`. -/
-def modelWeight (c p : ℕ) : ℝ :=
+def modelWeight (c p : ℕ)  :=
   if p ∣ c then 0 else 1 / ((p : ℝ) - 1)
 
 /-- The model weights are nonnegative. -/
-lemma modelWeight_nonneg {c p : ℕ} (hp : p.Prime) : 0 ≤ modelWeight c p := by
+lemma modelWeight_nonneg  {c p}  (hp : p.Prime) : 0 ≤ modelWeight c p := by
   unfold modelWeight
   have : (2 : ℝ) ≤ p := by exact_mod_cast hp.two_le
   split_ifs
   · exact le_rfl
   · exact one_div_nonneg.2 (by linarith)
 
+section
+variable (g : Finset ℕ) (α : ℝ) (π : ℕ → ℝ)
+
 /-- The model sum over the expansion of one group. -/
-lemma sum_lowSubsets_lowCoeff_mul_prod (g : Finset ℕ) (α : ℝ) (π : ℕ → ℝ) :
+lemma sum_lowSubsets_lowCoeff_mul_prod       :
     ∑ K ∈ lowSubsets g, lowCoeff α K.card * ∏ p ∈ K, π p =
       1 - α * (∑ p ∈ g, π p - ∑ K ∈ g.powersetCard 2, ∏ p ∈ K, π p) := by
   rw [sum_lowSubsets_eq_add]
   have h2 : ∀ K ∈ g.powersetCard 2, lowCoeff α K.card * ∏ p ∈ K, π p = α * ∏ p ∈ K, π p := by
-    intro K hK
-    rw [(mem_powersetCard.1 hK).2]
-    simp [lowCoeff]
+    aesop
   rw [sum_congr rfl h2, ← mul_sum]
   simp [lowCoeff, ← mul_sum]
   ring
 
 /-- The absolute model sum over the expansion of one group. -/
-lemma sum_lowSubsets_abs_lowCoeff_mul_prod (g : Finset ℕ) (α : ℝ) (π : ℕ → ℝ) :
+lemma sum_lowSubsets_abs_lowCoeff_mul_prod       :
     ∑ K ∈ lowSubsets g, |lowCoeff α K.card| * ∏ p ∈ K, π p =
       1 + |α| * (∑ p ∈ g, π p + ∑ K ∈ g.powersetCard 2, ∏ p ∈ K, π p) := by
   rw [sum_lowSubsets_eq_add]
   have h2 : ∀ K ∈ g.powersetCard 2, |lowCoeff α K.card| * ∏ p ∈ K, π p =
       |α| * ∏ p ∈ K, π p := by
-    intro K hK
-    rw [(mem_powersetCard.1 hK).2]
-    simp [lowCoeff]
+    aesop
   rw [sum_congr rfl h2, ← mul_sum]
   simp [lowCoeff, ← mul_sum, abs_neg]
   ring
 
+end
+
 /-- `|c_α(k)| ≤ 1` for `|α| ≤ 1`. -/
-lemma abs_lowCoeff_le {α : ℝ} (hα : |α| ≤ 1) (k : ℕ) : |lowCoeff α k| ≤ 1 := by
+lemma abs_lowCoeff_le  {α}  (hα : |α| ≤ 1)  k  : |lowCoeff α k| ≤ 1 := by
   unfold lowCoeff
   split_ifs <;> simp [abs_neg, hα]
 
@@ -100,7 +91,7 @@ lemma abs_lowCoeff_le {α : ℝ} (hα : |α| ≤ 1) (k : ℕ) : |lowCoeff α k| 
 theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : Finset (Finset ℕ))
     (hFS : ∀ g ∈ F, g ⊆ S) (hdisj : (F : Set (Finset ℕ)).PairwiseDisjoint id)
     (α : Finset ℕ → ℝ) (hα : ∀ g ∈ F, |α g| ≤ 1) {c : ℕ} (hc : 1 ≤ c) {A B : ℕ} (hA : 1 ≤ A)
-    {w : ℕ → ℝ} (hw0 : ∀ e, 0 ≤ w e) {δ E : ℝ} (hE : 0 ≤ E)
+    {w : ℕ → ℝ} (hw0 : ∀ e, 0 ≤ w e)  {δ E}  (hE : 0 ≤ E)
     (hstar : ∀ U ⊆ S, (∀ p ∈ U, ¬ p ∣ c) →
       |∑ e ∈ Ioc A B, (if (∀ p ∈ S, ¬ p ∣ e) ∧ ∀ p ∈ U, e * c ≡ 1 [MOD p] then w e else 0) -
           (∑ e ∈ Ioc A B, (if ∀ p ∈ S, ¬ p ∣ e then w e else 0)) / ∏ p ∈ U, ((p : ℝ) - 1)| ≤
@@ -117,11 +108,11 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
         E * ∏ g ∈ F, ((lowSubsets g).card : ℝ) := by
   classical
   set S0 := ∑ e ∈ Ioc A B, (if ∀ p ∈ S, ¬ p ∣ e then w e else 0) with hS0
-  have hS00 : 0 ≤ S0 := sum_nonneg fun e _ => by split_ifs <;> simp [hw0 e]
+  
   clear_value S0
   set SU : Finset ℕ → ℝ := fun U =>
     ∑ e ∈ Ioc A B, (if (∀ p ∈ S, ¬ p ∣ e) ∧ ∀ p ∈ U, e * c ≡ 1 [MOD p] then w e else 0)
-  set π : ℕ → ℝ := fun p => modelWeight c p
+  set π : ℕ → ℝ := modelWeight c
   set ι := Fintype.piFinset (fun g : F => lowSubsets g.1)
   have hUS : ∀ κ ∈ ι, (Finset.univ : Finset F).biUnion κ ⊆ S := by
     intro κ hκ p hp
@@ -174,13 +165,9 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
         Nat.ModEq.symm⟩)
     by_cases hr : ∀ p ∈ S, ¬ p ∣ e
     · by_cases hd0 : ∀ p ∈ (Finset.univ : Finset F).biUnion κ, p ∣ e * c - 1
-      · rw [ite_eq_left hr, ite_eq_left hd0, ite_eq_left ⟨hr, hcong.1 hd0⟩]
-        ring
-      · rw [ite_eq_left hr, ite_eq_right hd0, ite_eq_right fun h => hd0 (hcong.2 h.2)]
-        ring
-    · rw [ite_eq_right hr, zero_mul, ite_eq_right (show ¬((∀ p ∈ S, ¬ p ∣ e) ∧
-        ∀ p ∈ (Finset.univ : Finset F).biUnion κ, e * c ≡ 1 [MOD p]) from fun h => hr h.1),
-        mul_zero]
+      · grind
+      grind
+    grind
   rw [sum_congr rfl hexp, sum_comm]
   -- the model sums factor over the groups
   have hdisjκ : ∀ κ ∈ ι, ((Finset.univ : Finset F) : Set F).PairwiseDisjoint κ := by

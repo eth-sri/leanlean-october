@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeCommonProfile
 public import OAI.NumberTheory.DirichletL.PrimeRows.RowCount
@@ -8,19 +9,19 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.ProfileIntegral
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+
 
 theorem actual_common_cube_aggregate_norm (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
     ∃C : ℝ,0<C ∧ ∀{K : ℕ} {ι : Type*} [Fintype ι]
       (e a B H : ℝ) (i : ℕ),0<e → e<1/1000 → 51/100≤a → a≤1 → 2<B → H≤(3*i+2:ℕ)*B →
-    ∀(S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal),
+    ∀(S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal),
     FirstTail (4*e) S → ∀(η : Character) (R : Finset FreeRow), (∀u∈R,u.val≠1) →
     ∀(T : Fin K→Finset PrimeIdeal) (hT : ∀j P,P∈T j→P.val∉S)
       (ψ : FreeRow→ι→Character),
@@ -44,9 +45,9 @@ theorem actual_common_cube_aggregate_norm (W0 W1 : SchwartzMap ℝ ℂ)
     ((17/50:ℂ)+t.1.2*Complex.I)
   let F := E.indicator (fun t=>V t*cubeArithmeticSum S hS hmax η R T hT W Yp a e t)
   let mass : ℝ := A
-  have hm : 0≤mass := hA
+  
   let scale : ℝ := X^(4/25:ℝ)*Z^(a+16*e-33/50)*Y^(-a-6*e)
-  have hs : 0≤scale := by dsimp [scale];positivity
+  
   have hv (t : HeightSpace) : ‖V t‖=scale*‖onLines W0 W1 (a+16*e) (17/50) (1-a-6*e) t‖ := by
     have hxre : (((a+16*e:ℝ):ℂ)+t.1.1*Complex.I).re=a+16*e := by simp
     have hwre : (((1-a-6*e:ℝ):ℂ)+t.2*Complex.I).re=1-a-6*e := by simp
@@ -85,6 +86,6 @@ theorem actual_common_cube_aggregate_norm (W0 W1 : SchwartzMap ℝ ℂ)
     _ = _ := by dsimp [scale,mass];ring
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

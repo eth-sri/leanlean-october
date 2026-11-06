@@ -1,4 +1,5 @@
 module
+import Batteries.Tactic.Alias
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.NormalizedTransport
 
@@ -18,9 +19,7 @@ local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZ
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
-theorem transportSavingPoolOutside (S : Finset (Ideal O)) (K : ℕ) (a b : ℝ) (Y : Fin K→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S a b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S a b (Y j) P).mp hP |>.2.2.2
+alias transportSavingPoolOutside := _root_.OAI.SevenEighths.ProbeHighRowFamily.transportPoolOutside
 
 theorem actual_normalized_probe_transport_saving (K : ℕ) (e δ a b B ζ saving τ ellMin nu : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2) (hζ : 0<ζ) (hζ' : ζ≤1/48) (hτ : 0<τ)
@@ -35,7 +34,7 @@ theorem actual_normalized_probe_transport_saving (K : ℕ) (e δ a b B ζ saving
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
     (hr0 : ∀y,(W0 y).im=0) (hr1 : ∀y,(W1 y).im=0)
     (hp0 : ∀y,0≤(W0 y).re) (hp1 : ∀y,0≤(W1 y).re) (hn0 : W0≠0) (hn1 : W1≠0)
-    (sigma : ℝ) (hsigma : 0<sigma)
+     sigma  (hsigma : 0<sigma)
     (_hgeometric : sigma+8*e+nu≤63/800) (hprincipal : sigma+nu≤17/48000)
     (hwindow : sigma+e≤(7/8)*ellMin) (hlarge : sigma+nu≤saving+3/16) :
     let : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩

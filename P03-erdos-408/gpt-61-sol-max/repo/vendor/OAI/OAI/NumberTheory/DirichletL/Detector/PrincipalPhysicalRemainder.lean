@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.PrincipalRemainderBounds
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalPhysical
@@ -20,7 +20,7 @@ theorem physical_principal_residue_remainder {K : ℕ}
     (c d B : ℝ) (hc : 0<c) (hd : c≤d) (hB : 0≤B)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
-    (e : ℝ) (he : 0<e) (hehi : e≤1/1000)
+     e  (he : 0<e) (hehi : e≤1/1000)
     (ha : 7/8<HeckeZeroSupremum.beta+e) (ha2 : HeckeZeroSupremum.beta+e≤2) :
     letI : NeZero (∏p∈S,p) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
     ∃C : ℝ,0<C ∧ ∀ell : Fin K→ℝ,(∑j,ell j)=1/6 → ∀W : Fin K→ℝ→ℝ,
@@ -69,6 +69,6 @@ theorem physical_principal_residue_remainder {K : ℕ}
   rw [htwo]
   nlinarith
 end SevenEighths.ProbePrincipalPhysical
-end
+
 
 end OAI

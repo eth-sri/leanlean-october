@@ -13,16 +13,16 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth
-local notation "O" => HeckeFamily.O
 
-def centralRemainingScalar (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
+
+def centralRemainingScalar (S ) (hS : SourceExclusions S)
+    (η : Character) (u : FreeRow) (x w z : ℂ)  :=
   LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
     HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x*
     continuedCorrection S hS η u x w z
 
-lemma centralRowScalar_split (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (η : Character) (u : FreeRow) (x w z : ℂ) :
+lemma centralRowScalar_split  S   hS 
+     hmax   η   u   x w z  :
     centralRowScalar S hS hmax η u x w z=
       (star ((calibrationForSet S hmax).residueMonoid u.val)*
         HeckeOrigin.continued (rowCharacter S hS.prime u) w)*
@@ -32,13 +32,13 @@ lemma centralRowScalar_split (S : Finset (Ideal O)) (hS : SourceExclusions S)
 
 theorem centralRemainingScalar_bound (e eps : ℝ)
     (he : 0<e) (he' : e<1/1000) (heps : 0<eps) :
-    ∃C : ℝ,0<C ∧ ∀(S : Finset (Ideal O)) (hS : SourceExclusions S),FirstTail (4*e) S →
+    ∃C : ℝ,0<C ∧ ∀(S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S),FirstTail (4*e) S →
       ∀(η : Character) (u : FreeRow) {ι : Type*} [Fintype ι] (ψ : ι→Character)
       (B a H : ℝ) (i : ℕ),2<B → 51/100≤a → a≤1 → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
       ∀x w z : ℂ,x.re=a+16*e → w.re=1-a-6*e → z.re=17/50 → |x.im|≤H →
       ‖centralRemainingScalar S hS η u x w z‖≤C*
-        ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps*
+        ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^eps*
         (presentationComplexity ((targetRow η u).excludePrimes S hS.prime) H)^eps := by
   obtain ⟨Ch,hCh,hh⟩ := continuedCorrection_first_subpower eps heps
   obtain ⟨Cr,hCr,hr⟩ := buffered_rectangle_reciprocal_bound e eps he he' heps

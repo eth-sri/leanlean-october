@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredAggregate
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredRaysUniform
@@ -10,7 +11,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityPhysical
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
@@ -23,7 +24,7 @@ local notation "Eis"=>ActualEisensteinCubic.O
 theorem global_priority_filtered_aggregate_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
-    (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i) (B₀:Fin 6→ℝ) (hB₀:∀i,0≤B₀ i) (K:ℕ) (εmass:ℝ) (hεmass:0<εmass) :
+    (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i) (B₀:Fin 6→ℝ) (hB₀:∀i,0≤B₀ i)  K   εmass  (hεmass:0<εmass) :
     ∃ (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (loFresh hiFresh : ℝ),
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
@@ -135,7 +136,7 @@ theorem global_priority_filtered_aggregate_uniform_types
       hhib haassigned hρ hL hZ hX hY heta hbin hrows hcube₁ hcube₂ hactive hj hquot hΨ
       ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA' hYe hXe hLe hVe hZ2 hb hthreshold hnorm hgeom hmass hleft hright
   have hZ:1<Z:=(hdata 1 1 ∅ (Finset.empty_subset _)).2.2.2.1
-  have hH:0≤H:=by dsimp [H];positivity
+  
   have hpow:(4:ℝ)^slots.card≤4^K:=pow_le_pow_right₀ (by norm_num) hslots
   let S:(RayCharacter×RayCharacter)→FirstCoreIndex→Finset σ→ℝ:=fun ray core assigned=>‖∑z:SecondRayIndex,(Y:ℂ)*secondRayCoefficient z *
       ∑x∈unifiedSource p pool (InverseMomentWholePriorityParents.wholeAssignedParents p (fun x=>extra x.cube) original negative assigned lists) (fun _=>cutoff),
@@ -148,12 +149,6 @@ theorem global_priority_filtered_aggregate_uniform_types
   calc
     _=(32*512)*(2:ℝ)^slots.card*∑ray:RayCharacter×RayCharacter,∑core:FirstCoreIndex,∑assigned∈slots.powerset,P*S ray core assigned:=by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro ray hr
-      apply Finset.sum_congr rfl
-      intro core hc
-      apply Finset.sum_congr rfl
-      intro assigned ha
       ring
     _≤(32*512)*(2:ℝ)^slots.card*∑_ray:RayCharacter×RayCharacter,∑_core:FirstCoreIndex,∑_assigned∈slots.powerset,H:=by
       apply mul_le_mul_of_nonneg_left _ (by positivity)
@@ -166,6 +161,6 @@ theorem global_priority_filtered_aggregate_uniform_types
     _= _:=by dsimp [Ctot,H];ring
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

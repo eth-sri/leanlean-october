@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalBound
 public import OAI.NumberTheory.DirichletL.ContinuationContour
@@ -14,25 +15,28 @@ open scoped Topology FourierTransform
 namespace SevenEighths.HeckeSignal
 open HeckeFamily Continuation
 
-def quotient (χ : Character) (H : ℂ → ℂ) (s : ℂ) : ℂ :=
+def quotient (χ : Character) (H : ℂ → ℂ) (s : ℂ)  :=
   H s * HeckeReciprocal.reciprocal χ s
 
-def amplitude (χ : Character) (H : ℂ → ℂ) (s : ℂ) : ℂ :=
+def amplitude (χ : Character) (H : ℂ → ℂ) (s : ℂ)  :=
   Complex.exp ((s - 5/6)^2) * quotient χ H s
 
-def signal (χ : Character) (H : ℂ → ℂ) (c : ℝ) (x : ℝ) : ℂ :=
+def signal (χ : Character) (H : ℂ → ℂ) (c : ℝ) (x : ℝ)  :=
   (x : ℂ)^(c : ℂ) * mellinInv (-2) (fun s => amplitude χ H (-s)) x
 
-theorem quotient_differentiableAt (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re}) {s : ℂ} (hs : 1 < s.re) :
+section
+variable (χ : Character) (H : ℂ → ℂ) (c : ℝ) {x : ℝ} (hx : 0 < x)
+
+theorem quotient_differentiableAt    
+    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})  {s}  (hs : 1 < s.re) :
     DifferentiableAt ℂ (quotient χ H) s :=
   (hH.differentiableAt ((Complex.isOpen_re_gt (7/8)).mem_nhds (by linarith : (7/8 : ℝ) < s.re))).mul
     (HeckeReciprocal.reciprocal_differentiableAt χ
       (lt_of_le_of_lt HeckeZeroSupremum.beta_le_one hs))
 
-theorem quotient_bound (χ : Character) (H : ℂ → ℂ)
+theorem quotient_bound    
     (hH : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2)
-    {s : ℂ} (hs : 2 ≤ s.re) :
+     {s}  (hs : 2 ≤ s.re) :
     ‖quotient χ H s‖ ≤ (3/2) * HeckeReciprocalBound.bound 2 := by
   have hn : ‖H s‖ ≤ 3/2 := by
     have h := norm_add_le (H s - 1) (1 : ℂ)
@@ -44,18 +48,20 @@ theorem quotient_bound (χ : Character) (H : ℂ → ℂ)
   exact mul_le_mul hn (HeckeReciprocalBound.reciprocal_norm_le χ (by norm_num) hs)
     (norm_nonneg _) (by norm_num)
 
-theorem normalizedSignal_eq (χ : Character) (H : ℂ → ℂ) (c : ℝ)
-    {x : ℝ} (hx : 0 < x) :
+include hx in
+theorem normalizedSignal_eq      
+        :
     normalizedSignal (signal χ H c) c x =
       mellinInv (-2) (fun s => amplitude χ H (-s)) x := by
   unfold normalizedSignal signal
   simp only [smul_eq_mul, ← mul_assoc]
   rw [Complex.cpow_neg, inv_mul_cancel₀]
   · simp
-  · exact (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [hx.ne'])
+  aesop
 
-theorem signal_eq_contour (χ : Character) (H : ℂ → ℂ) (c : ℝ)
-    {x : ℝ} (hx : 0 < x) :
+include hx in
+theorem signal_eq_contour      
+        :
     signal χ H c x = (1 / (2 * Real.pi) : ℂ) *
       ∫ y : ℝ, gaussianContourIntegrand (quotient χ H) c x ((2 : ℂ) + y * I) := by
   unfold signal mellinInv
@@ -72,14 +78,20 @@ theorem signal_eq_contour (χ : Character) (H : ℂ → ℂ) (c : ℝ)
   · ring_nf
   · exact Complex.ofReal_ne_zero.mpr hx.ne'
 
-def quotientBound : ℝ := (3/2) * HeckeReciprocalBound.bound 2
+end
+
+def quotientBound  := (3/2) * HeckeReciprocalBound.bound 2
 
 theorem quotientBound_nonneg : 0 ≤ quotientBound := by
   unfold quotientBound HeckeReciprocalBound.bound
   positivity
 
-theorem amplitude_continuous_line (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re}) (a : ℝ) (ha : 1 < a) :
+section
+variable (χ : Character) (H : ℂ → ℂ) (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re}) (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2) (a : ℝ)
+
+include hH in
+theorem amplitude_continuous_line    
+        (ha : 1 < a) :
     Continuous (fun y : ℝ => amplitude χ H ((a : ℂ) + y * I)) := by
   apply continuous_iff_continuousAt.mpr
   intro y
@@ -90,7 +102,7 @@ theorem amplitude_continuous_line (χ : Character) (H : ℂ → ℂ)
   have hm : Continuous (fun v : ℝ => (a : ℂ) + v * I) := by fun_prop
   exact hd.continuousAt.comp (f := fun v : ℝ => (a : ℂ) + v * I) hm.continuousAt
 
-theorem amplitude_norm_bound (χ : Character) (H : ℂ → ℂ)
+theorem amplitude_norm_bound    
     (hH : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2)
     (a y : ℝ) (ha : 2 ≤ a) :
     ‖amplitude χ H ((a : ℂ) + y * I)‖ ≤
@@ -104,18 +116,20 @@ theorem amplitude_norm_bound (χ : Character) (H : ℂ → ℂ)
     (mul_le_mul_of_nonneg_left (quotient_bound χ H hH (by simpa using ha))
       (Real.exp_pos _).le) (Real.exp_pos _).le
 
-theorem amplitude_integrable_line (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2)
-    (a : ℝ) (ha : 2 ≤ a) : Integrable (fun y : ℝ => amplitude χ H ((a : ℂ) + y * I)) :=
+include hH hb in
+theorem amplitude_integrable_line    
+     
+     
+      (ha : 2 ≤ a) : Integrable (fun y : ℝ => amplitude χ H ((a : ℂ) + y * I)) :=
   integrable_of_gaussian_bound _ _
     (amplitude_continuous_line χ H hH a (by linarith)).aestronglyMeasurable
     (fun y => amplitude_norm_bound χ H hb a y ha)
 
-theorem contour_shift (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2)
-    (c B : ℝ) (hB : 2 ≤ B) {x : ℝ} (hx : 0 < x) (hx1 : x ≤ 1) :
+include hH hb in
+theorem contour_shift    
+     
+     
+    (c B : ℝ) (hB : 2 ≤ B)  {x}  (hx : 0 < x) (hx1 : x ≤ 1) :
     signal χ H c x = (1 / (2 * Real.pi) : ℂ) *
       ∫ y : ℝ, gaussianContourIntegrand (quotient χ H) c x ((B : ℂ) + y * I) := by
   rw [signal_eq_contour χ H c hx]
@@ -135,22 +149,28 @@ theorem contour_shift (χ : Character) (H : ℂ → ℂ)
     apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
     apply mul_le_mul _ (quotient_bound χ H hb (by simpa using ha.1)) (norm_nonneg _)
       (mul_nonneg (Real.rpow_nonneg hx.le _) (Real.exp_pos _).le)
-    exact mul_le_mul hxpow hexp (Real.exp_pos _).le (Real.rpow_nonneg hx.le _)
+    bound
 
-def endpointConstant (B : ℝ) : ℝ :=
+end
+
+def endpointConstant (B : ℝ)  :=
   ‖(1 / (2 * Real.pi) : ℂ)‖ * Real.exp ((B-5/6)^2) * quotientBound *
     ∫ y : ℝ, Real.exp (-(y^2))
 
-theorem endpointConstant_nonneg (B : ℝ) : 0 ≤ endpointConstant B := by
+section
+variable (χ : Character) (H : ℂ → ℂ) (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re}) (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2) (c B a : ℝ)
+
+theorem endpointConstant_nonneg   : 0 ≤ endpointConstant B := by
   unfold endpointConstant
   have hq := quotientBound_nonneg
-  have hg : 0 ≤ ∫ y : ℝ, Real.exp (-(y^2)) := integral_nonneg (fun _ => (Real.exp_pos _).le)
+  
   positivity
 
-theorem signal_bound_at_zero (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2)
-    (c B : ℝ) (hB : 2 ≤ B) {x : ℝ} (hx : 0 < x) (hx1 : x ≤ 1) :
+include hH hb in
+theorem signal_bound_at_zero    
+     
+     
+      (hB : 2 ≤ B)  {x}  (hx : 0 < x) (hx1 : x ≤ 1) :
     ‖signal χ H c x‖ ≤ endpointConstant B * x^(B+c) := by
   rw [contour_shift χ H hH hb c B hB hx hx1, norm_mul]
   have hg : Integrable (fun y : ℝ => Real.exp (-(y^2))) := by
@@ -167,10 +187,11 @@ theorem signal_bound_at_zero (χ : Character) (H : ℂ → ℂ)
   rw [integral_const_mul] at h
   convert h using 1 ; unfold endpointConstant ; ring
 
-theorem signal_rapidDecayAtZero (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2)
-    (c : ℝ) : RapidDecayAtZero (signal χ H c) := by
+include hH hb in
+theorem signal_rapidDecayAtZero    
+     
+     
+      : RapidDecayAtZero (signal χ H c) := by
   intro R
   let B : ℝ := max 2 (R-c)
   apply IsBigO.of_bound (endpointConstant B)
@@ -182,9 +203,10 @@ theorem signal_rapidDecayAtZero (χ : Character) (H : ℂ → ℂ)
     (mul_le_mul_of_nonneg_left hpow (endpointConstant_nonneg B))
   simpa only [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hx.le R)] using h
 
-theorem amplitude_integrable_reflected (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2) :
+include hH hb in
+theorem amplitude_integrable_reflected    
+     
+      :
     Integrable (fun y : ℝ => amplitude χ H ((2 : ℂ) - 2 * Real.pi * y * I)) := by
   have h := (amplitude_integrable_line χ H hH hb 2 le_rfl).comp_mul_left'
     (neg_ne_zero.mpr (mul_ne_zero (by norm_num : (2 : ℝ) ≠ 0) Real.pi_ne_zero))
@@ -194,8 +216,9 @@ theorem amplitude_integrable_reflected (χ : Character) (H : ℂ → ℂ)
   push_cast
   ring
 
-theorem amplitude_continuous_reflected (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re}) :
+include hH in
+theorem amplitude_continuous_reflected    
+      :
     Continuous (fun y : ℝ => amplitude χ H ((2 : ℂ) - 2 * Real.pi * y * I)) := by
   have h := (amplitude_continuous_line χ H hH 2 (by norm_num)).comp
     (show Continuous (fun y : ℝ => -(2*Real.pi)*y) by fun_prop)
@@ -205,9 +228,10 @@ theorem amplitude_continuous_reflected (χ : Character) (H : ℂ → ℂ)
   push_cast
   ring
 
-theorem signal_continuousOn (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2) (c : ℝ) :
+include hH hb in
+theorem signal_continuousOn    
+     
+        :
     ContinuousOn (signal χ H c) (Ioi 0) := by
   let F : ℝ → ℂ := fun y => amplitude χ H (-(((-2 : ℝ) : ℂ) + 2 * Real.pi * y * I))
   have harg (y : ℝ) : -(((-2 : ℝ) : ℂ) + 2 * Real.pi * y * I) =
@@ -229,18 +253,19 @@ theorem signal_continuousOn (χ : Character) (H : ℂ → ℂ)
   intro x hx
   unfold signal
   rw [mellinInv_eq_fourierInv _ _ hx]
-  simp only [smul_eq_mul, Complex.ofReal_neg, neg_neg, Complex.ofReal_ofNat,
-    F, Pi.mul_apply, Function.comp_apply]
+  aesop
 
-theorem signal_locallyIntegrable (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2) (c : ℝ) :
+include hH hb in
+theorem signal_locallyIntegrable    
+     
+        :
     LocallyIntegrableOn (signal χ H c) (Ioi 0) :=
   (signal_continuousOn χ H hH hb c).locallyIntegrableOn measurableSet_Ioi
 
-theorem signalMellin_eq_amplitude_on_line (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s - 1‖ ≤ 1/2) (c a : ℝ) (ha : a < 2)
+include hH hb in
+theorem signalMellin_eq_amplitude_on_line    
+     
+        (ha : a < 2)
     (htop : signal χ H c =O[atTop] (fun x : ℝ => x^(a+c))) (y : ℝ) :
     signalMellin (signal χ H c) c ((2 : ℂ) - 2 * Real.pi * y * I) =
       amplitude χ H ((2 : ℂ) - 2 * Real.pi * y * I) := by
@@ -250,6 +275,8 @@ theorem signalMellin_eq_amplitude_on_line (χ : Character) (H : ℂ → ℂ)
     (amplitude_integrable_reflected χ H hH hb) (amplitude_continuous_reflected χ H hH)
   intro x hx
   exact normalizedSignal_eq χ H c hx
+
+end
 
 end SevenEighths.HeckeSignal
 

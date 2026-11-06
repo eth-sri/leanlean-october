@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondModeIntegral
 public import OAI.NumberTheory.DirichletL.Descent.SecondVaryingBalanced
@@ -12,26 +13,30 @@ open scoped BigOperators Classical ContDiff
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local instance inverseSecondVaryingPhysicalUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+
+local instance inverseSecondVaryingPhysicalUnits : Fintype ActualEisensteinCubic.Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 universe u₁ u₂
 variable {ι : Type u₁} {σ : Type u₂} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
+section
+variable (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1) {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0)) (hs : ActualSecondSourceConditions p source)
+include hpr Jo source hs
+
 theorem actual_second_varying_modes_common_sectors
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (hs : ActualSecondSourceConditions p source) :
-    ∃ sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ,
-      ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+     
+       
+      :
+    ∃ sector : MarkedSecondSource ι Jo 0 → ActualEisensteinCubic.Oˣ × ActualEisensteinCubic.Oˣ,
+      ∀ (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : MarkedSecondSource ι Jo 0 → σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
         (ω₁ ω₂ : ℝ → ℂ) (G E V B X : ℝ) (t : Frequency × (Fin 6 → ℝ))
         (w : MarkedSecondSource ι Jo 0 → ℂ),
       (∑ x ∈ source,w x * secondSeparatedPair p hp hcop hg pool (secondInheritedProfile p x Ψ m z)
         slots₁ slots₂ (lists₁ x) (lists₂ x) a₁ a₂ ω₁ ω₂ G E V B X t) =
-      ∑ uv : Eisˣ × Eisˣ, ∑ x ∈ secondSourceSector source sector uv, w x *
+      ∑ uv : ActualEisensteinCubic.Oˣ × ActualEisensteinCubic.Oˣ, ∑ x ∈ secondSourceSector source sector uv, w x *
         ∑ J₁ ∈ slots₁.powerset,∑ J₂ ∈ slots₂.powerset,
           secondModeBranch p hp hcop hg x uv.1 uv.2 pool Ψ m z slots₁ slots₂ J₁ J₂ (lists₁ x) (lists₂ x) a₁ a₂
             ω₁ ω₂ G E V B X t := by
@@ -51,11 +56,11 @@ theorem actual_second_varying_modes_common_sectors
     pool Ψ m z slots₁ slots₂ (lists₁ x) (lists₂ x) a₁ a₂ ω₁ ω₂ G E V B X t
 
 theorem actual_second_varying_balanced_profile_children
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (hs : ActualSecondSourceConditions p source) :
-    ∃ sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ,
-      ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+     
+       
+      :
+    ∃ sector : MarkedSecondSource ι Jo 0 → ActualEisensteinCubic.Oˣ × ActualEisensteinCubic.Oˣ,
+      ∀ (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : MarkedSecondSource ι Jo 0 → σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
         (W₁ W₂ ω₁ ω₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (G E V B X Y R L : ℝ)
         (U : Fin 6 → ℝ → ℂ) (density : Frequency × (Fin 6 → ℝ) → ℂ)
@@ -82,7 +87,7 @@ theorem actual_second_varying_balanced_profile_children
             slots₁ slots₂ (lists₁ x) (lists₂ x) a₁ a₂ W₁ W₂ Φ Y (G*V*X))) =
       ((Y : ℂ)*secondRayCoefficient z*((E*V*X : ℝ):ℂ)⁻¹) *
         ∫ t : Frequency × (Fin 6 → ℝ),density t *
-          ∑ uv : Eisˣ × Eisˣ,∑ x ∈ secondSourceSector source sector uv,
+          ∑ uv : ActualEisensteinCubic.Oˣ × ActualEisensteinCubic.Oˣ,∑ x ∈ secondSourceSector source sector uv,
             (w x*actualSecondSignedWeight p hp hcop hg Ψ
               (m*ConcretePrimeRowBridge.idealGenerator x.quotient) z x) *
             ∑ J₁ ∈ slots₁.powerset,∑ J₂ ∈ slots₂.powerset,
@@ -119,8 +124,9 @@ theorem actual_second_varying_balanced_profile_children
       apply congrArg (fun a : ℂ => ((Y:ℂ)*secondRayCoefficient z*((E*V*X:ℝ):ℂ)⁻¹)*a)
       apply integral_congr_ae
       filter_upwards with t
-      apply congrArg (fun a : ℂ => density t*a)
-      exact hsector pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ ω₁ ω₂ G E V B X t _
+      solve_by_elim
+
+end
 
 end
 end SevenEighths.InverseMoment

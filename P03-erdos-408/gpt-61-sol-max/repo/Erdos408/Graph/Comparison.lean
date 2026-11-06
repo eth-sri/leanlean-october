@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Graph.Kernel
 
@@ -29,46 +30,50 @@ variable {G : PrimeGroups} {J m : ℕ}
 
 /-! ### Linearity of `patternPairing` -/
 
+section
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (q₀ : ℝ) {J : ℕ} (C : ι → Finset (Fin J))
+
 /-- `patternPairing` is additive in its kernel. -/
-lemma patternPairing_add {ι : Type*} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
-    (q₀ : ℝ) {J : ℕ} (C : ι → Finset (Fin J))
-    (K K' : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ) (ζ : ℝ)
-    (S : Finset ℕ) (f g : ℕ → ℂ) :
+lemma patternPairing_add        
+         
+    (K K' : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)  ζ 
+     S   f g  :
     patternPairing P q₀ C (fun p p' a => K p p' a + K' p p' a) ζ S f g =
       patternPairing P q₀ C K ζ S f g + patternPairing P q₀ C K' ζ S f g := by
   simp only [patternPairing, mul_add, add_mul, Finset.sum_add_distrib]
 
 /-- `patternPairing` vanishes for the zero kernel. -/
-lemma patternPairing_zero {ι : Type*} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
-    (q₀ : ℝ) {J : ℕ} (C : ι → Finset (Fin J)) (ζ : ℝ) (S : Finset ℕ) (f g : ℕ → ℂ) :
+lemma patternPairing_zero        
+           ζ   S   f g  :
     patternPairing P q₀ C (fun _ _ _ => 0) ζ S f g = 0 := by
   simp [patternPairing]
 
 /-- `patternPairing` is linear in its kernel. -/
-lemma patternPairing_sum {ι : Type*} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
-    (q₀ : ℝ) {J : ℕ} (C : ι → Finset (Fin J)) {α : Type*} (T : Finset α)
-    (K : α → (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ) (ζ : ℝ)
-    (S : Finset ℕ) (f g : ℕ → ℂ) :
+lemma patternPairing_sum        
+          {α : Type*} (T : Finset α)
+    (K : α → (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)  ζ 
+     S   f g  :
     patternPairing P q₀ C (fun p p' a => ∑ τ ∈ T, K τ p p' a) ζ S f g =
       ∑ τ ∈ T, patternPairing P q₀ C (K τ) ζ S f g := by
   induction T using Finset.induction_on with
   | empty => simpa using patternPairing_zero P q₀ C ζ S f g
   | insert τ T hτ ih =>
-    simp_rw [Finset.sum_insert hτ]
-    rw [patternPairing_add, ih]
+    simp_all [patternPairing_add]
+
+end
 
 /-! ### The terms of a comparison pattern -/
 
 /-- The terms of a comparison pattern: a good cell and a character for each
 block. -/
-noncomputable def terms (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (Q : ℕ)
-    (h ξ : ℝ) : Finset (ℤ × CharacterIndex Q × ℤ × CharacterIndex Q) :=
+noncomputable def terms (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (Q )
+    (h ξ : ℝ)  :=
   goodCells ν block false h ξ ×ˢ primitiveCharacters Q ×ˢ goodCells ν block true h ξ ×ˢ
     primitiveCharacters Q
 
 /-- The weight `β = -(-1)^{Σ|C|} v_j⁻¹ v_{j'}⁻¹` of a term. -/
-noncomputable def termWeight (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) {Q : ℕ}
-    (h : ℝ) (τ : ℤ × CharacterIndex Q × ℤ × CharacterIndex Q) : ℂ :=
+noncomputable def termWeight (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) {Q }
+    (h : ℝ) (τ : ℤ × CharacterIndex Q × ℤ × CharacterIndex Q)  :=
   -((-1 : ℂ) ^ (∑ g, (ν.changed g).card)) *
     (((selectedCellMass ν block false h τ.1)⁻¹ : ℝ) *
       ((selectedCellMass ν block true h τ.2.2.1)⁻¹ : ℝ) : ℂ)
@@ -76,9 +81,9 @@ noncomputable def termWeight (ν : Pattern G J 1 m) (block : G.BigGroup → Bool
 /-- The kernel `β φ(D_A) φ'(D_B) ψ(X_A) ψ'(X_B)` of a term, with `A, B` the
 block slots, `D` the auxiliary labels, `X_A` the target and `X_B` the source
 labels. -/
-noncomputable def termKernel (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) {Q : ℕ}
+noncomputable def termKernel (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) {Q }
     (h : ℝ) (τ : ℤ × CharacterIndex Q × ℤ × CharacterIndex Q)
-    (p p' : Fin G.count → Fin (J + 1) → ℕ) (a : Fin G.count → Fin J → ℕ) : ℂ :=
+    (p p' : Fin G.count → Fin (J + 1) → ℕ) (a : Fin G.count → Fin J → ℕ)  :=
   termWeight ν block h τ * cellTest h τ.1 τ.2.1 (slotProduct (blockSlots ν block false) a) *
     cellTest h τ.2.2.1 τ.2.2.2 (slotProduct (blockSlots ν block true) a) *
     cellMark h τ.1 τ.2.1 (slotProduct (blockSlots ν block false) fun g i => p' g i.castSucc) *
@@ -107,7 +112,7 @@ variable {q₀ c₀ C₀ vlo vhi : ℝ} {hq₀ : 0 < q₀} {hq₁ : q₀ < 1} {h
 /-- The pairing of a comparison pattern of upstream's residual form is the sum
 of its term pairings. -/
 theorem rawPairing_comparison (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ hc₀ hvlo) G J m)
-    (ζ : ℝ) (v : Fin B.count) (block : G.BigGroup → Bool) (Q : ℕ) {h ξ : ℝ} (hξ : 0 < ξ)
+     ζ   v   block   Q   {h ξ}  (hξ : 0 < ξ)
     (hcoef : ∀ a b u, (B.pattern v).coefficient a b u =
       -((-1 : ℂ) ^ (∑ g, ((B.pattern v).changed g).card)) *
         selectedKernel (B.pattern v) block false Q h ξ
@@ -116,7 +121,7 @@ theorem rawPairing_comparison (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq�
         selectedKernel (B.pattern v) block true Q h ξ
           (selectedProduct (B.pattern v) block true u)
           (selectedEndpoint (B.pattern v) block true a))
-    (hV : ∀ g, G.V g ≠ 0) (S S' : Finset ℕ) (f g : ℕ → ℂ) (hg : ∀ n ∉ S', g n = 0) :
+    (hV : ∀ g, G.V g ≠ 0)  S S'   f g  (hg : ∀ n ∉ S', g n = 0) :
     rawPairing (B.model 1 ζ) v S S' f g =
       ∑ τ ∈ terms (B.pattern v) block Q h ξ,
         patternPairing G.primes q₀ (B.pattern v).changed (termKernel (B.pattern v) block h τ)
@@ -134,16 +139,19 @@ theorem rawPairing_comparison (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq�
 
 /-! ### The term weights -/
 
+section
+variable (ν : Pattern G J 1 m)
+
 /-- The supremum of a pattern's coefficient is nonnegative. -/
-lemma sSup_norm_nonneg (ν : Pattern G J 1 m) :
+lemma sSup_norm_nonneg   :
     0 ≤ sSup (Set.range fun z : G.BigLabels (J + 1) × G.BigLabels (J + 1) × G.BigAux J =>
       ‖ν.coefficient z.1 z.2.1 z.2.2‖) :=
   Real.sSup_nonneg fun _ ⟨_, hz⟩ => hz ▸ norm_nonneg _
 
 /-- The term weights of a comparison pattern sum to at most `ξ⁻² Q⁴` times its
 supremum. -/
-lemma sum_norm_termWeight_le (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) {Q : ℕ}
-    {h ξ : ℝ} (hξ : 0 < ξ) (hV : ∀ g, G.V g ≠ 0) (hJ : 0 < J)
+lemma sum_norm_termWeight_le    block   {Q} 
+     {h ξ}  (hξ : 0 < ξ) (hV : ∀ g, G.V g ≠ 0) (hJ : 0 < J)
     (hcoef : ∀ a b u, ν.coefficient a b u =
       -((-1 : ℂ) ^ (∑ g, (ν.changed g).card)) *
         selectedKernel ν block false Q h ξ (selectedProduct ν block false u)
@@ -179,5 +187,7 @@ lemma sum_norm_termWeight_le (ν : Pattern G J 1 m) (block : G.BigGroup → Bool
         ((goodCells ν block true h ξ).card * (primitiveCharacters Q).card))
       ≤ ξ⁻¹ * ((Q : ℝ) ^ 2 * (ξ⁻¹ * (Q : ℝ) ^ 2)) := by gcongr
     _ = ξ⁻¹ ^ 2 * (Q : ℝ) ^ 4 := by ring
+
+end
 
 end Erdos408.Graph

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.FullBudget
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalFullUniformDegree
@@ -11,15 +12,15 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem original_sector_full_budget_uniform_degree
-    (ε : ℝ) (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (ρ : ℝ) (hρ : 0<ρ) (η : ℝ) (hηpos : 0<η)
-    (κ δ Lscale Lpool : ℝ) (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool)
+     ε  (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     ρ  (hρ : 0<ρ)  η  (hηpos : 0<η)
+     κ δ Lscale Lpool  (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool)
     (Lcap saving : ℝ) (hδ : 0<δ) :
     ∃ (degree : ℕ), ∀ {Nlevel a c₀ : Eis} {mode : Bool}
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c₀ mode)) (hc₀ : c₀≠0)
@@ -88,7 +89,7 @@ theorem original_sector_full_budget_uniform_degree
   intro hFcap hscap hpool hsmall rows Pset S hrows E hGN hGchar hrowcop hprod hScop hSN hSchar θ r aw hqk hqp hKr hPr hr haw
   let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
   have hz' : 1<Z := lt_of_lt_of_le hZ₀ ((le_max_left _ _).trans hZ)
-  have hzpos : 0<Z := lt_trans zero_lt_one hz'
+  
   have h128 : 128≤Z := (le_max_right _ _).trans hZ
   have hs := henergy J I F B R Q₀ hJ hI hF hB hR hpower hmask A
     Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d π Ck CO CH Cf X QK QP Lrow Lslot
@@ -110,8 +111,7 @@ theorem original_sector_full_budget_uniform_degree
       _ = (2*Ct^2*(1+‖θ‖)^(degreeTail*2))*
           (rows.card*(Pset.card*((Ideal.absNorm (∏ b,G.ideal b):ℝ)*QK*QP)*
             (Z^δ)^(-(Adecay:ℝ))*(familyRawScale G s X QK QP^2)⁻¹)^2) := by rw [pow_mul];ring
-      _ ≤ (2*Ct^2*(1+‖θ‖)^(degreeTail*2))*(cusp^4*Z^(-saving)) := by
-        exact mul_le_mul_of_nonneg_left ht (by positivity)
+      _ ≤ (2*Ct^2*(1+‖θ‖)^(degreeTail*2))*(cusp^4*Z^(-saving)) := mul_le_mul_of_nonneg_left ht (by positivity)
       _ ≤ (2*Ct^2*(1+‖θ‖)^deg)*(cusp^4*Z^(F₀-3*cstar/16-O₀/2)) := by gcongr
       _ = _ := by ring
   have hmain : Cm*(1+‖θ‖)^degree*Z^(F₀-3*cstar/16-O₀/2)≤
@@ -119,7 +119,7 @@ theorem original_sector_full_budget_uniform_degree
   apply (add_le_add hmain htailbound).trans
   have hp : 0≤(1+‖θ‖)^deg*Z^(F₀-3*cstar/16-O₀/2) := by positivity
   nlinarith only [hp]
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

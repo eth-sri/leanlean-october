@@ -12,12 +12,12 @@ namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
-def calibrationGauss (C : CalibrationData) (h : O) : ℂ :=
+def calibrationGauss (C : CalibrationData) (h : O)  :=
   ∑' d : O ⧸ Ideal.span {C.generator}, C.residue d *
     quotientTrace C.generator C.generator_ne_zero
       (Ideal.Quotient.mk (Ideal.span {C.generator}) h * d)
 
-theorem calibrationGauss_one (C : CalibrationData) :
+theorem calibrationGauss_one  C  :
     calibrationGauss C 1 = (Real.sqrt (elementNorm C.generator) : ℂ) * C.tau := by
   have hn : 0 < elementNorm C.generator := by
     unfold elementNorm
@@ -31,7 +31,7 @@ theorem calibrationGauss_one (C : CalibrationData) :
 
 theorem calibrationFromPrimes_gauss {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P)) (h : O) :
+     hcop   h  :
     calibrationGauss (calibrationFromPrimes P hcop) h =
       ((calibrationFromPrimes P hcop).residueMonoid h)⁻¹ *
         calibrationGauss (calibrationFromPrimes P hcop) 1 := by
@@ -55,8 +55,8 @@ theorem calibrationFromPrimes_gauss {ι : Type*} [Fintype ι]
         ψ (Ideal.Quotient.mk (Ideal.span {b}) 1 * d)
   simpa only [tsum_fintype, map_one, one_mul] using ht
 
-theorem calibrationForSet_gauss (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)
-    (h : O) :
+theorem calibrationForSet_gauss  S   hS 
+     h  :
     calibrationGauss (calibrationForSet S hS) h =
       star ((calibrationForSet S hS).residueMonoid h) *
         (Real.sqrt (elementNorm (calibrationForSet S hS).generator) : ℂ) *
@@ -64,8 +64,7 @@ theorem calibrationForSet_gauss (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMa
   let C := calibrationForSet S hS
   let : Finite (O ⧸ Ideal.span {C.generator}) :=
     ConcreteTraceCRT.finite_quotient_span C.generator_ne_zero
-  have hc : star (C.residueMonoid h) = (C.residueMonoid h)⁻¹ := by
-    exact (MulChar.star_apply' C.residue (Ideal.Quotient.mk _ h)).trans
+  have hc : star (C.residueMonoid h) = (C.residueMonoid h)⁻¹ := (MulChar.star_apply' C.residue (Ideal.Quotient.mk _ h)).trans
       (MulChar.inv_apply_eq_inv' _ _)
   have he : calibrationGauss C h = (C.residueMonoid h)⁻¹ * calibrationGauss C 1 := by
     let (P : S) : P.val.IsMaximal := hS P.val P.property
@@ -74,8 +73,8 @@ theorem calibrationForSet_gauss (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMa
   rw [he, calibrationGauss_one, ← hc]
   ring
 
-theorem calibrationForSet_residue_sixth (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)
-    (a : O) (ha : IsCoprime (calibrationForSet S hS).generator a) :
+theorem calibrationForSet_residue_sixth  S   hS 
+     a  (ha : IsCoprime (calibrationForSet S hS).generator a) :
     (calibrationForSet S hS).residueMonoid a ^ 6 = 1 := by
   let C := calibrationForSet S hS
   have hu := (isUnit_quotient_span_iff C.generator a).mpr ha

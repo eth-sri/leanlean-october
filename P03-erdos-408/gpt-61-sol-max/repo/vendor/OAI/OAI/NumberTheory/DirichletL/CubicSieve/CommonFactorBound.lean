@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.QuotientColumns
 public import OAI.NumberTheory.DirichletL.CubicSieve.Recurrence
@@ -12,9 +13,9 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-def frequencyCost (C ε : ℝ) (hε : 0 < ε) (M N : ℝ) : ℝ :=
+
+def frequencyCost (C ε : ℝ) (hε : 0 < ε) (M N : ℝ)  :=
   M * (2/N) * (‖paperRadialFourier rowMajorant 0‖ +
     C * (IdealCoprimeSieveOperator.supportConstant ε hε * N^ε) *
       ∑' l : ℕ, frequencyMajorant M N l)
@@ -23,10 +24,10 @@ theorem cubic_common_factor_frequency_bound :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ {n : Type*} [Fintype n] [DecidableEq n]
         (ε : ℝ) (hε : 0 < ε) (M N : ℝ) (_hM : 0 < M)
-        (cols : n → Ideal O) (_hinj : Function.Injective cols)
+        (cols : n → Ideal ActualEisensteinCubic.O) (_hinj : Function.Injective cols)
         (_hc : ∀ j, Admissible (cols j))
         (_hcols : ∀ j, N/2 ≤ (Ideal.absNorm (cols j) : ℝ) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
-        (a : n → ℂ) (R : Finset O)
+        (a : n → ℂ) (R : Finset ActualEisensteinCubic.O)
         (_hR : ∀ z ∈ R, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M),
         (∑ z ∈ R, ‖∑ j, cubicRow (cols j) z * a j‖^2) ≤
           ∑ D ∈ gcdPool cols, ∑ E ∈ idealDivisors D,
@@ -62,8 +63,8 @@ theorem cubic_common_factor_frequency_bound :
 
 theorem common_factor_uniform_cost {n : Type*} [Fintype n]
     (C ε U M N : ℝ) (hε : 0 < ε) (hU : 0 ≤ U) (hN : 0 ≤ N)
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (hnorm : ∀ j, (Ideal.absNorm (cols j) : ℝ) ≤ N) (a : n → ℂ)
+    (cols : n → Ideal ActualEisensteinCubic.O) (hc : ∀ j, Admissible (cols j))
+    (hnorm : ∀ j, (Ideal.absNorm (cols j) : ℝ) ≤ N)  a 
     (hcost : ∀ D ∈ gcdPool cols, ∀ E ∈ idealDivisors D,
       frequencyCost C ε hε (M/(Ideal.absNorm E : ℝ)) (N/(Ideal.absNorm D : ℝ)) ≤ U) :
     (∑ D ∈ gcdPool cols, ∑ E ∈ idealDivisors D,
@@ -86,8 +87,7 @@ theorem common_factor_uniform_cost {n : Type*} [Fintype n]
       simp only [Finset.mul_sum]
     _ ≤ U*(∑ D ∈ columnDivisorPool cols, ∑ E ∈ idealDivisors D,
         ∑ j, ‖descendedCoefficient D cols a (idealGenerator E) j‖^2) := by
-      apply mul_le_mul_of_nonneg_left _ hU
-      exact Finset.sum_le_sum_of_subset_of_nonneg hsub (fun D hD hnot => by positivity)
+      gcongr <;> first | assumption | positivity | linarith
     _ ≤ U*((DivisorBlockCauchy.divisorConstant ε hε*N^ε)^2*∑ j, ‖a j‖^2) :=
       mul_le_mul_of_nonneg_left he hU
     _ = _ := by ring

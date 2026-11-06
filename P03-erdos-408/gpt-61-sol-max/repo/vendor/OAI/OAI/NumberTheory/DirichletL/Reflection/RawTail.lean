@@ -10,18 +10,18 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff SchwartzMap
 open ActualEisensteinCubic CubicEisenstein CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 
 abbrev RawTailIndex := ℕ×NonzeroDualIdeal×NonzeroDualIdeal
 
-def rawTailWeight (q : ℝ) (x : RawTailIndex) : ℝ :=
+def rawTailWeight (q : ℝ) (x : RawTailIndex)  :=
   ((q^6)⁻¹)^x.1*((Ideal.absNorm x.2.1.val:ℝ)^2)⁻¹*((Ideal.absNorm x.2.2.val:ℝ)^6)⁻¹
 
-lemma rawTailWeight_nonneg (q : ℝ) (x : RawTailIndex) : 0≤rawTailWeight q x := by
+lemma rawTailWeight_nonneg  q   x  : 0≤rawTailWeight q x := by
   unfold rawTailWeight
   positivity
 
-lemma rawTailWeight_summable (q : ℝ) (hq : 1<q) : Summable (rawTailWeight q) := by
+lemma rawTailWeight_summable  q  (hq : 1<q) : Summable (rawTailWeight q) := by
   have hq6 : 1<q^6 := one_lt_pow₀ hq (by norm_num)
   have hg : Summable (fun m : ℕ => ((q^6)⁻¹)^m) :=
     summable_geometric_of_lt_one (by positivity) ((inv_lt_one₀ (by positivity)).mpr hq6)
@@ -31,18 +31,18 @@ lemma rawTailWeight_summable (q : ℝ) (hq : 1<q) : Summable (rawTailWeight q) :
     (fun m => by positivity) (fun IJ => by positivity)
   exact hh.congr (fun x => by simp only [rawTailWeight]; ring)
 
-lemma tail_power_gain (A : ℕ) (T x : ℝ) (hT : 0<T) (hTx : T≤x) :
+lemma tail_power_gain  A  (T x : ℝ) (hT : 0<T) (hTx : T≤x) :
     x^(-((A+2:ℕ):ℝ))≤T^(-(A:ℝ))*(x^2)⁻¹ := by
   have hx : 0<x := lt_of_lt_of_le hT hTx
   rw [show -((A+2:ℕ):ℝ)=-(A:ℝ)+(-2) by push_cast; ring,Real.rpow_add hx]
   rw [show x^(-2:ℝ)=(x^2)⁻¹ by rw [Real.rpow_neg hx.le,Real.rpow_two]]
   exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow_of_nonpos hT hTx (neg_nonpos.mpr (Nat.cast_nonneg A))) (by positivity)
 
-theorem raw_kernel_tail (a b q : ℝ) (ha : 0<a) (hq : 1<q) (A : ℕ) :
+theorem raw_kernel_tail  a b q  (ha : 0<a) (hq : 1<q) (A : ℕ) :
     ∃ (S : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
     ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc a b →
     ∀ (scale ρ B T : ℝ), 0<scale → 0<ρ → 0≤B → 0<T →
-    ∀ (β : ℕ→Ideal Eis→Ideal Eis→ℂ),
+    ∀ (β : ℕ→Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ),
       (∀ m, ∀ I J : NonzeroDualIdeal, ‖β m I.val J.val‖≤B) →
     ∀ cut : RawTailIndex→Prop,
       (∀ x, cut x → T≤scale*(ρ*q^x.1)^3*(Ideal.absNorm x.2.1.val:ℝ)*(Ideal.absNorm x.2.2.val:ℝ)^3) →

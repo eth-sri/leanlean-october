@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.Tuple.Exceptional
 public import Erdos408.TwoSided.Graph.Absolute
@@ -36,7 +37,7 @@ density `a` with `∫ |a| ≤ L^{K_Ψ}`, `Ψ(y) = ∫ a(ξ) y^{2πiξ} dξ` for 
 `T^{C_Ψ j} ≤ L^{j+1}` once `max(C_Ψ, 0) log T ≤ T`. The densities are upstream's
 (`mellinCutoffTask_proof`, from `blueprint_lem_fourier_separation`), transported from
 `Fin 1 → ℝ` frequencies and `ℂ`-valued cutoffs. -/
-theorem exists_mellinCutoff (κ CΨ : ℝ) (M : ℕ → ℝ) (hκ : 1 < κ) :
+theorem exists_mellinCutoff  κ CΨ   M  (hκ : 1 < κ) :
     ∃ Cf KΨ : ℝ, 0 < Cf ∧ ∀ At : ℝ, 0 < At → ∃ KA : ℝ, 0 < KA ∧ ∀ᶠ x : ℝ in atTop,
       ∀ Ψ : ℝ → ℝ, CutoffAdmissible κ CΨ M x Ψ →
         ∃ a : ℝ → ℂ, Integrable a ∧ (∫ ξ, ‖a ξ‖) ≤ Real.log x ^ KΨ ∧
@@ -56,8 +57,7 @@ theorem exists_mellinCutoff (κ CΨ : ℝ) (M : ℕ → ℝ) (hκ : 1 < κ) :
   obtain ⟨a, hai, ha₁, harep, hat⟩ := hx (fun y => (Ψ y : ℂ)) ⟨
     Complex.ofRealCLM.contDiff.comp hsm,
     fun y hy => by
-      obtain ⟨h₁, h₂⟩ := hsupp y (by simpa using Function.mem_support.1 hy)
-      exact ⟨h₁, h₂⟩,
+      solve_by_elim,
     fun k y => by
       rw [InsertionMellin.norm_iteratedDeriv_ofReal hsm]
       exact hder Ψ k y (hbd k y)⟩
@@ -86,7 +86,7 @@ theorem exists_mellinCutoff (κ CΨ : ℝ) (M : ℕ → ℝ) (hκ : 1 < κ) :
 
 /-- The coefficient `β φ(D_A) φ'(D_B) ψ(X_A) ψ'(X_B)` of one comparison pattern, as in
 `GraphTransference`. -/
-def comparisonKernel {ι : Type} [Fintype ι] {J : ℕ} (A B : ι → Finset (Fin J)) (β : ℂ)
+def comparisonKernel {ι : Type} [Fintype ι] {J } (A B : ι → Finset (Fin J)) (β : ℂ)
     (φ φ' ψ ψ' : ℕ → ℂ) :
     (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ :=
   fun p p' a => β * φ (slotProduct A a) * φ' (slotProduct B a) *
@@ -94,8 +94,8 @@ def comparisonKernel {ι : Type} [Fintype ι] {J : ℕ} (A B : ι → Finset (Fi
 
 /-- The comparison coefficient is at most `|β|` when the tests are bounded by `1`. -/
 theorem norm_comparisonKernel_le {ι : Type} [Fintype ι] {J : ℕ} {A B : ι → Finset (Fin J)}
-    {β : ℂ} {φ φ' ψ ψ' : ℕ → ℂ} (h : ∀ n, ‖φ n‖ ≤ 1 ∧ ‖φ' n‖ ≤ 1 ∧ ‖ψ n‖ ≤ 1 ∧ ‖ψ' n‖ ≤ 1)
-    (p p' : ι → Fin (J + 1) → ℕ) (a : ι → Fin J → ℕ) :
+     {β}   {φ φ' ψ ψ'}  (h : ∀ n, ‖φ n‖ ≤ 1 ∧ ‖φ' n‖ ≤ 1 ∧ ‖ψ n‖ ≤ 1 ∧ ‖ψ' n‖ ≤ 1)
+     p p'   a  :
     ‖comparisonKernel A B β φ φ' ψ ψ' p p' a‖ ≤ ‖β‖ := by
   unfold comparisonKernel
   simp only [norm_mul]
@@ -112,9 +112,9 @@ theorem norm_comparisonKernel_le {ι : Type} [Fintype ι] {J : ℕ} {A B : ι �
 `Ψ(n/(xD)) F(n) h(n)/n`, the target endpoint `G(n') h(n')` and `ζ = 0`, over positions
 `n ≤ x²`. The two dampings `h` and the pairing's `√q₀` factors combine to `q₀^{ω - M s_P}`. -/
 noncomputable def cutoffPairing (x q₀ : ℝ) {ι : Type} [Fintype ι] [DecidableEq ι]
-    (P : ι → Finset ℕ) {J : ℕ} (C : ι → Finset (Fin J))
+    (P : ι → Finset ℕ) {J } (C : ι → Finset (Fin J))
     (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
-    (F G : ℕ → ℝ) (Ψ : ℝ → ℝ) : ℂ :=
+    (F G : ℕ → ℝ) (Ψ : ℝ → ℝ)  :=
   ∑ n ∈ Finset.Icc 1 ⌊x ^ 2⌋₊, ∑ p ∈ physicalLists P (J + 1) n, ∑ a ∈ auxLabels P C,
     ∑ p' ∈ (physicalLists P (J + 1) (n + edgeProduct C p a)).filter (fun p' =>
         ∀ h, (∀ i, i ∉ C h → p' h i.castSucc = p h i.castSucc) ∧
@@ -134,8 +134,8 @@ Mellin density `a`, the raw plus comparison cutoff pairings equal
 `ζ = -2πξ`, with `N_F = L`. The dyads `[X, 2X)` partition the support `n ∈ [x/κ, x²]`,
 since `1 ≤ D ≤ x/κ` (U10); for such `n` every target `n + D` lies in `[X, 3X)`; and
 `(n/x)^{2πiξ} D^{-2πiξ} = (n/(xD))^{2πiξ}`. -/
-theorem eventually_cutoffPairing_eq (q₀ c₀ C₀ vlo vhi κ : ℝ) (hq₀ : 0 < q₀) (hκ : 1 < κ)
-    (J : ℕ) :
+theorem eventually_cutoffPairing_eq  q₀ c₀ C₀ vlo vhi κ  (hq₀ : 0 < q₀) (hκ : 1 < κ)
+     J  :
     ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
@@ -204,7 +204,7 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
   have hadm : GroupAdmissible c₀ C₀ vlo vhi x P big :=
     ⟨hdisj, hs₁, hs₂, hb₁, hb₂, hV, hSm, hBg, hBi⟩
   refine ⟨N, Aν, Bν, β, φ, φ', ψ, ψ', U, U',
-    fun ν => ⟨fun g => hp₁ ν g, hp₂ ν, hp₃ ν, hp₄ ν, hp₅ ν, hp₆ ν⟩, hβ, ?_⟩
+    fun ν => ⟨hp₁ ν, hp₂ ν, hp₃ ν, hp₄ ν, hp₅ ν, hp₆ ν⟩, hβ, ?_⟩
   intro r a u v Bc G Ψ hin hsl hBc hco hcu
   obtain ⟨α, hαi, hα₁, hαrep, hαt⟩ := hmelx Ψ hcu
   set F := centeredCore x q a u v Bc
@@ -238,7 +238,7 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
     intro m hm
     obtain ⟨hX₁, hX₂⟩ := mem_dyads hm
     have hX : (0 : ℝ) < 2 ^ m := by positivity
-    have hend := fun ξ => hG1 P big hadm r a u v Bc G hin hsl hBc hco m hm ξ
+    have hend := hG1 P big hadm r a u v Bc G hin hsl hBc hco m hm
     -- inside `|ξ| ≤ L^{C_f}`: the transference
     have hin₁ : ∀ ξ : ℝ, |ξ| ≤ L ^ Cf →
         ‖patternPairing P q₀ (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1)
@@ -290,9 +290,7 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
             add_le_add h₀ ((norm_sum_le _ _).trans (Finset.sum_le_sum fun ν _ => hν ν))
         _ = (1 + ∑ ν, ‖β ν‖) * (2 ^ m * L ^ Cabs) := by
             rw [add_mul, Finset.sum_mul]
-            congr 1
-            · ring
-            · exact Finset.sum_congr rfl fun ν _ => by ring
+            ring
         _ ≤ (L ^ |C₁| + L ^ |C₁|) * (2 ^ m * L ^ |Cabs|) := by
             gcongr
             exact hβ.trans hC₁
@@ -315,7 +313,7 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
   rw [hG2 P big hadm N (fun ν h => Aν ν h ∪ Bν ν h)
     (fun ν => comparisonKernel (Aν ν) (Bν ν) (β ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν)) F G Ψ α
     hcu.2.1 hαi hαrep]
-  have hb₀0 : 0 ≤ b₀ := by positivity
+  
   have e₁ : L * L * L ^ (-A - 2) = L ^ (-A) := by
     have h := Real.rpow_add hL0 (-A - 2) 2
     rw [show -A - 2 + 2 = -A by ring, Real.rpow_two] at h

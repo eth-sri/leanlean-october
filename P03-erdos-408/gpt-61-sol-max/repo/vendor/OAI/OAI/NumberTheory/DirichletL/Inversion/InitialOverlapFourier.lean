@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.DescentProfiles
 public import OAI.NumberTheory.DirichletL.Descent.Marks
@@ -15,23 +16,27 @@ namespace SevenEighths.InverseInitialOverlapFourier
 open InverseMoment
 variable {σ ι : Type*} [DecidableEq σ] [DecidableEq ι]
 
-def density (g : 𝓢(ℝ,ℂ)) (xj t : ℝ) : ℂ := (𝓕 g) t*logPhase t xj
+def density (g : 𝓢(ℝ,ℂ)) (xj t : ℝ)  := (𝓕 g) t*logPhase t xj
 
-theorem density_norm (g : 𝓢(ℝ,ℂ)) (xj t : ℝ) : ‖density g xj t‖=‖(𝓕 g) t‖ := by
+theorem density_norm  g   xj t  : ‖density g xj t‖=‖(𝓕 g) t‖ := by
   simp only [density,norm_mul,logPhase_norm,mul_one]
 
-lemma phase_neg (t x : ℝ) : logPhase (-t) x=logPhase t (-x) := by
+section
+variable (t xj xc y : ℝ) (g : 𝓢(ℝ,ℂ)) (x : ℝ)
+
+
+lemma phase_neg   : logPhase (-t) x=logPhase t (-x) := by
   unfold logPhase
   congr 1
   push_cast
   ring
 
-lemma phase_sub (t xj xc y : ℝ) :
+lemma phase_sub   :
     logPhase t xj*logPhase t xc*logPhase (-t) y=logPhase t (xj+xc-y) := by
   rw [phase_neg,←logPhase_add,←logPhase_add]
   rfl
 
-lemma fourier_phase_integrable (g : 𝓢(ℝ,ℂ)) (x : ℝ) (a : ℂ) :
+lemma fourier_phase_integrable      a  :
     Integrable (fun t:ℝ=>(𝓕 g) t*logPhase t x*a) := by
   have h : Integrable (fun t:ℝ=>(𝓕 g) t*logPhase t x) (volume:Measure ℝ) :=
     (𝓕 g).integrable.mul_bdd (c:=1)
@@ -39,8 +44,14 @@ lemma fourier_phase_integrable (g : 𝓢(ℝ,ℂ)) (x : ℝ) (a : ℂ) :
     (Filter.Eventually.of_forall (fun t=>le_of_eq (logPhase_norm t x)))
   exact h.mul_const a
 
-theorem tuple_mark_phase (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ)
-    (y : σ→ι→ℝ) (A : Finset ι) (t : ℝ) :
+end
+
+section
+variable (g : 𝓢(ℝ,ℂ)) (W : ℝ→ℂ) (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (hs : Function.support W⊆Set.Icc a₀ b₀) (hW : ContDiff ℝ ∞ W) (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ) (hy : ∀i∈I,∀p∈L i,0<y i p) (A : Finset ι) (xj xc : ℝ)
+
+
+theorem tuple_mark_phase      
+         t  :
     primeMark I L (fun i p=>a i p*logPhase (-t) (y i p)) A =
       ∑p∈I.pi L,(∏i∈I.attach,if p i.val i.property∈A then a i.val (p i.val i.property) else 0)*
         logPhase (-t) (∑i∈I.attach,y i.val (p i.val i.property)) := by
@@ -52,9 +63,9 @@ theorem tuple_mark_phase (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ
   intro i hi
   split_ifs <;> simp
 
-theorem overlap_tuple_separation (g : 𝓢(ℝ,ℂ))
-    (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ)
-    (A : Finset ι) (xj xc : ℝ) :
+theorem overlap_tuple_separation  
+           
+        :
     (∑p∈I.pi L,(∏i∈I.attach,if p i.val i.property∈A then a i.val (p i.val i.property) else 0)*
       g (xj+xc-∑i∈I.attach,y i.val (p i.val i.property))) =
       ∫t:ℝ,density g xj t*logPhase t xc*
@@ -83,9 +94,9 @@ theorem overlap_tuple_separation (g : 𝓢(ℝ,ℂ))
   filter_upwards with t
   ring
 
-theorem overlap_mode_integrable (g : 𝓢(ℝ,ℂ))
-    (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ)
-    (A : Finset ι) (xj xc : ℝ) :
+theorem overlap_mode_integrable  
+           
+        :
     Integrable (fun t:ℝ=>density g xj t*logPhase t xc*
       primeMark I L (fun i p=>a i p*logPhase (-t) (y i p)) A) := by
   simp_rw [tuple_mark_phase]
@@ -99,12 +110,13 @@ theorem overlap_mode_integrable (g : 𝓢(ℝ,ℂ))
   rw [←phase_sub]
   ring
 
+include hy in
 theorem actual_overlap_separation
-    (W : ℝ→ℂ) (a₀ b₀ : ℝ) (ha₀ : 0<a₀)
-    (hs : Function.support W⊆Set.Icc a₀ b₀) (hW : ContDiff ℝ ∞ W)
-    (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ)
-    (hy : ∀i∈I,∀p∈L i,0<y i p) (A : Finset ι)
-    (yj yc : ℝ) (hj : 0<yj) (hc : 0<yc) :
+         
+       
+           
+       
+     yj yc  (hj : 0<yj) (hc : 0<yc) :
     (∑p∈I.pi L,(∏i∈I.attach,if p i.val i.property∈A then a i.val (p i.val i.property) else 0)*
       W (yj*yc/(∏i∈I.attach,y i.val (p i.val i.property)))) =
       ∫t:ℝ,density (CubicReflectionKernel.logSchwartz W a₀ b₀ ha₀ hs hW) (Real.log yj) t*
@@ -119,8 +131,9 @@ theorem actual_overlap_separation
   congr 2
   apply Finset.prod_congr rfl
   intro i hi
-  exact (Real.exp_log (hy i.val i.property (p i.val i.property)
-    ((Finset.mem_pi.mp hp) i.val i.property))).symm
+  exact (Real.exp_log ((by simp_all))).symm
+
+end
 
 end SevenEighths.InverseInitialOverlapFourier
 

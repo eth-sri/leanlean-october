@@ -6,14 +6,18 @@ public import OAI.NumberTheory.DirichletL.Moments.RankinCount
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRankinSubset
 open IdealMobiusDivisorSum CenteredMomentRankinCount
-local notation "O" => ActualEisensteinCubic.O
 
-theorem supported_power_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
-    ∃ C : ℝ,0 < C ∧ ∀ (Q : Ideal O),Q ≠ 0 → ∀ S : Finset (Ideal O),
+
+section
+variable (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε)
+include a ε ha hε
+
+theorem supported_power_count       :
+    ∃ C : ℝ,0 < C ∧ ∀ (Q : Ideal ActualEisensteinCubic.O),Q ≠ 0 → ∀ S : Finset (Ideal ActualEisensteinCubic.O),
       (∀ I ∈ S,I ≠ 0) → (∀ I ∈ S,primeSupport I ⊆ primeSupport Q) →
       ∀ X : ℝ,0 < X → (∀ I ∈ S,(Ideal.absNorm I:ℝ) ≤ X) →
       (S.card:ℝ) ≤ C*X^a*(Ideal.absNorm Q:ℝ)^ε := by
@@ -24,9 +28,8 @@ theorem supported_power_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
   have hf : ∀ I ∈ S,primeSupport I ∈ (primeSupport Q).powerset :=
     fun I hI => Finset.mem_powerset.mpr (hs I hI)
   have he := Finset.card_eq_sum_card_fiberwise hf
-  have hfiber (R : Finset (Ideal O)) (hR : R ∈ (primeSupport Q).powerset) :
-      ((S.filter (fun I => primeSupport I=R)).card:ℝ) ≤ C*X^a := by
-    apply hcount R _ (fun P hP => support_prime ((Finset.mem_powerset.mp hR) hP))
+  have hfiber (R : Finset (Ideal ActualEisensteinCubic.O)) (hR : R ∈ (primeSupport Q).powerset) :
+      ((S.filter (fun I => primeSupport I=R)).card:ℝ) ≤ C*X^a := hcount R _ (fun P hP => support_prime ((Finset.mem_powerset.mp hR) hP))
       (fun I hI => hS I (Finset.mem_filter.mp hI).1)
       (fun I hI => (Finset.mem_filter.mp hI).2) X hX
       (fun I hI => hN I (Finset.mem_filter.mp hI).1)
@@ -39,8 +42,8 @@ theorem supported_power_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_right (hsub Q hQ) (mul_nonneg hC.le (Real.rpow_nonneg hX.le _))
     _ = _ := by ring
 
-theorem supported_power_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
-    ∃ C : ℝ,0 < C ∧ ∀ (Q : Ideal O),Q ≠ 0 → ∀ S : Finset (Ideal O × Ideal O),
+theorem supported_power_pair_count       :
+    ∃ C : ℝ,0 < C ∧ ∀ (Q : Ideal ActualEisensteinCubic.O),Q ≠ 0 → ∀ S : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O),
       (∀ v ∈ S,v.1 ≠ 0 ∧ v.2 ≠ 0) →
       (∀ v ∈ S,primeSupport v.1 ⊆ primeSupport Q ∧ primeSupport v.2 ⊆ primeSupport Q) →
       ∀ X Y : ℝ,0 < X → 0 < Y →
@@ -84,8 +87,10 @@ theorem supported_power_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
     _ = C^2*X^a*Y^a*((Ideal.absNorm Q:ℝ)^(ε/2)*(Ideal.absNorm Q:ℝ)^(ε/2)) := by ring
     _ = _ := by rw [← Real.rpow_add hn]; congr 2; ring
 
+end
+
 end SevenEighths.CenteredMomentRankinSubset
 
-end
+
 
 end OAI

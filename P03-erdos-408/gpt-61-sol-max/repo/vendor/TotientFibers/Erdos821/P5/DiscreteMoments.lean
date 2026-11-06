@@ -1,21 +1,19 @@
 module
+import Batteries.Tactic.Alias
+import Erdos821.P5MarkedEnergy.WeightedMean
 
 public import Erdos821.P5.Moments
 public import Erdos821.Classical.DirichletMean
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P5Core
 open Blueprint.Analytic
 
-theorem nat_mul_log_nonneg (N : ℕ) : 0 ≤ (N : ℝ) * Real.log (2 * N) := by
-  by_cases hN : N = 0
-  · simp [hN]
-  · have hN' : (1 : ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN
-    exact mul_nonneg (Nat.cast_nonneg _) (Real.log_nonneg (by linarith))
+alias nat_mul_log_nonneg := _root_.Erdos821.P5Marked.nat_mul_log_nonneg'
 
 /-- P1's discrete mean square applies to every prime-polynomial power with the same K. -/
 theorem discrete_prime_polynomial_moment

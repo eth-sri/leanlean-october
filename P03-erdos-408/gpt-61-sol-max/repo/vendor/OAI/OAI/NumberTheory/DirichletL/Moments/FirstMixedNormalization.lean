@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedCommonRadius
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationErrorEnergy
@@ -7,15 +8,15 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationErrorEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedNormalization
 open CenteredMomentDescentLedger CenteredMomentSectorLocalization
 open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
-local notation "O" => ActualEisensteinCubic.O
 
-theorem exceptional_reference_identity (Z V C D NE NR K Q w wo B j g ell:ℝ)
+
+theorem exceptional_reference_identity  Z V C D NE NR K Q w wo B j g ell 
     (hZ:1<Z)(hV:0<V)(hC:0<C)(hD:0<D)(hE:0<NE)(hR:0<NR)(hK:0<K)(hQ:0<Q):
     let c:=Real.logb Z C;
     let d:=Real.logb Z D;
@@ -25,7 +26,7 @@ theorem exceptional_reference_identity (Z V C D NE NR K Q w wo B j g ell:ℝ)
     (V/C)*Z^(-wo)*(V/C/Z^w)^((1:ℝ)/3)*(Z^(j+g))^((5:ℝ)/6)*Z^(-ell)/
       (Q*(V/C)^2*Z^B)=
       Z^(Real.logb Z V-5*M/6-firstSaving c (d+K0-j) w q wo B g ell):=by
-  have hz:0<Z:=zero_lt_one.trans hZ
+  
   have hzlog:Real.log Z≠0:=ne_of_gt (Real.log_pos hZ)
   dsimp only
   apply Real.log_injOn_pos
@@ -38,7 +39,7 @@ theorem exceptional_reference_identity (Z V C D NE NR K Q w wo B j g ell:ℝ)
     field_simp
     ; ring
 
-theorem actual_error_weight (p:O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)(k:ℕ)
+theorem actual_error_weight  p (hp:p≠0) Z (hZ:1<Z) k 
     (hk:k=1 ∨ k=6 ∨ k=7):
     localErrorCost p (k-1)≤Z^(-errorMoving p Z k):=by
   have hn:1≤normValue p:=normValue_ge_one p hp
@@ -57,6 +58,6 @@ theorem actual_error_weight (p:O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)(k:ℕ)
 
 end SevenEighths.CenteredMomentFirstMixedNormalization
 
-end
+
 
 end OAI

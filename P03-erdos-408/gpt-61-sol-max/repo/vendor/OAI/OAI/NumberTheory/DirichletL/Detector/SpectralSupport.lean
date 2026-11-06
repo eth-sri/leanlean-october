@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalMellinCoefficient
 public import OAI.NumberTheory.DirichletL.Detector.RadialSpectral
@@ -7,15 +8,19 @@ public import OAI.NumberTheory.DirichletL.Detector.RadialSpectral
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 open ProbeCompleted ProbeRow SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
 
-lemma supported_of_source_exclusions (S : Finset (Ideal O))
-    (hbad : fixedBadPrimes⊆S) (I : Ideal O) (hI : I≠0)
+
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O)) (hbad : fixedBadPrimes⊆S)
+include S hbad
+
+lemma supported_of_source_exclusions  
+       I  (hI : I≠0)
     (hS : ∀P∈S,¬P∣I) : Supported I := by
   refine ⟨hI,?_⟩
   intro P hP
@@ -25,8 +30,8 @@ lemma supported_of_source_exclusions (S : Finset (Ideal O))
   intro hb
   exact hS P (hbad hb) (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hP)
 
-lemma spectralSummand_support (S : Finset (Ideal O)) (hbad : fixedBadPrimes⊆S)
-    (D I J : Ideal O) (Ψ : O→*ℂ) (t : ℂ)
+lemma spectralSummand_support    
+    (D I J : Ideal ActualEisensteinCubic.O) (Ψ : ActualEisensteinCubic.O→*ℂ) (t : ℂ)
     (h : spectralSummand S D Ψ t I J≠0) :
     Squarefree I ∧ Supported I ∧ Supported J := by
   have hI : I≠0 := by
@@ -39,7 +44,7 @@ lemma spectralSummand_support (S : Finset (Ideal O)) (hbad : fixedBadPrimes⊆S)
     exact h (by simp [spectralSummand])
   have hsf : Squarefree I := by
     by_contra hn
-    exact h (by simp [spectralSummand,columnWeight,squarefreeGaussCoefficient,hn])
+    simp_all [spectralSummand, columnWeight, squarefreeGaussCoefficient]
   have hm := spectralSummand_mask_nonzero S D I J Ψ t h
   have hex : ∀P∈S,¬P∣I*J^3 := by
     unfold completedMask at hm
@@ -53,7 +58,9 @@ lemma spectralSummand_support (S : Finset (Ideal O)) (hbad : fixedBadPrimes⊆S)
   · intro P hP hd
     exact hex P hP (dvd_mul_of_dvd_right (hd.trans (dvd_pow_self J (by decide : 3≠0))) _)
 
-end SevenEighths.ProbePhysical
 end
+
+end SevenEighths.ProbePhysical
+
 
 end OAI

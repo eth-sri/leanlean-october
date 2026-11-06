@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Edge.Core
 
 public import Erdos408.OneSided.Moment.RootReplacement.Config
 
@@ -19,7 +22,7 @@ differ by at most `10 H / U²`, and `z_{j,2} = det(g e₁, g z_j)` is at most `2
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos408.OneSided
 
@@ -29,8 +32,12 @@ variable {K : ℕ}
 
 /-! ### Nonzero entries of the operators -/
 
+section
+variable {J : ℕ} (p p' : Lists K J) (M : PosModel) {q A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ} (hY : 0 < Y) (hd₀ : 0 < d₀) {s s' : M.State x d} (hHm : 0 < d.Hm) (hR : 0 < momentPower x) {ω : Conf x d Y d₀} (hc : confCoeff A₀ x d Y d₀ ω ≠ 0)
+
+
 /-- The dyadic bump vanishes at `y ≤ 1`. -/
-theorem one_lt_of_dyadicBump_ne_zero {y : ℝ} (h : dyadicBump y ≠ 0) : 1 < y := by
+theorem one_lt_of_dyadicBump_ne_zero  {y}  (h : dyadicBump y ≠ 0) : 1 < y := by
   by_contra hy
   push Not at hy
   exact h (by
@@ -38,36 +45,32 @@ theorem one_lt_of_dyadicBump_ne_zero {y : ℝ} (h : dyadicBump y ≠ 0) : 1 < y 
       Real.smoothTransition.zero_of_nonpos (by linarith), sub_zero])
 
 /-- The plateau vanishes at `|t| ≥ 5`. -/
-theorem abs_lt_of_plateau_ne_zero {t : ℝ} (h : plateau t ≠ 0) : |t| < 5 := by
-  by_contra ht
-  push Not at ht
-  exact h (Real.smoothTransition.zero_of_nonpos (by linarith))
+theorem abs_lt_of_plateau_ne_zero {t : ℝ} (h : plateau t ≠ 0) : |t| < 5 := by solve_by_elim [_root_.SharedProofs.permuted_abs_lt_five_of_plateau_ne_zero]
 
 /-- The product of all labels is the pad product times the last-slot product. -/
-theorem listProd_eq_padProd_mul_lastProd {J : ℕ} (p : Lists K J) :
+theorem listProd_eq_padProd_mul_lastProd     :
     listProd p = padProd p * lastProd p := by
   simp only [listProd, padProd, lastProd, ← prod_mul_distrib, Fin.prod_univ_castSucc]
 
 /-- The product of all labels is invariant under reordering each group. -/
-theorem listProd_comp_perm {J : ℕ} (p p' : Lists K J) (σ : Fin K → Equiv.Perm (Fin (J + 1)))
+theorem listProd_comp_perm     (σ : Fin K → Equiv.Perm (Fin (J + 1)))
     (h : ∀ i, p' i = p i ∘ σ i) : listProd p' = listProd p := by
   refine prod_congr rfl fun i _ => ?_
   rw [h i]
   exact Equiv.prod_comp (σ i) (p i)
 
 /-- A nonzero entry of the slot symmetrization keeps the position and reorders the lists. -/
-theorem PosModel.symOp_ne_zero_imp (M : PosModel) {x : ℝ} {d : Data K} {s s' : M.State x d}
+theorem PosModel.symOp_ne_zero_imp        
     (h : M.symOp x d s s' ≠ 0) :
     s.1.1 = s'.1.1 ∧
-      ∃ σ : Fin K → Equiv.Perm (Fin (padCount x + 1)), ∀ i, s'.1.2 i = s.1.2 i ∘ σ i := by
-  unfold PosModel.symOp at h
-  exact (ite_ne_right_iff.1 h).1
+      ∃ σ : Fin K → Equiv.Perm (Fin (padCount x + 1)), ∀ i, s'.1.2 i = s.1.2 i ∘ σ i := (ite_ne_right_iff.mp h).left
 
+include hY hd₀ in
 /-- A nonzero entry of the row operation has pad product `D ≥ d₀`, determinant below
 `10 d₀ Y` (as `D < 2 d₀` divides it and the plateau forces `|det / D| < 5 Y`), and last-slot
 product above `Y` (by the bump). -/
-theorem PosModel.rowOp_ne_zero_imp (M : PosModel) {q A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ}
-    (hY : 0 < Y) (hd₀ : 0 < d₀) {s s' : M.State x d} (h : M.rowOp q A₀ x d Y d₀ s s' ≠ 0) :
+theorem PosModel.rowOp_ne_zero_imp        
+          (h : M.rowOp q A₀ x d Y d₀ s s' ≠ 0) :
     d₀ ≤ (padProd s.1.2 : ℝ) ∧ |(M.det s.1.1 s'.1.1 : ℝ)| < 10 * d₀ * Y ∧
       Y < lastProd s.1.2 := by
   unfold PosModel.rowOp at h
@@ -95,7 +98,7 @@ theorem PosModel.rowOp_ne_zero_imp (M : PosModel) {q A₀ x : ℝ} {d : Data K} 
     _ = 10 * d₀ * Y := by ring
 
 /-- A nonzero entry of `𝒮 𝒯 𝒮` passes through a nonzero entry of each factor. -/
-theorem exists_of_confKernel_ne_zero {A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ}
+theorem exists_of_confKernel_ne_zero      
     {s s' : (squareModel d Y d₀).State x d} (h : confKernel A₀ x d Y d₀ s s' ≠ 0) :
     ∃ t t', (squareModel d Y d₀).symOp x d s t ≠ 0 ∧
       (squareModel d Y d₀).rowOp 1 A₀ x d Y d₀ t t' ≠ 0 ∧
@@ -117,7 +120,7 @@ most `10 H` have `|det(P₀, P_j)| ≤ 2560 N H`: consecutive slopes differ by a
 theorem abs_det_le_of_consecutive {N : ℕ} {U H : ℝ} (hU : 0 < U) (hH : 0 ≤ H)
     (A B : Fin (N + 1) → ℝ) (hA : ∀ j, U ≤ A j ∧ A j ≤ 16 * U)
     (hdet : ∀ j : Fin N, |A j.castSucc * B j.succ - B j.castSucc * A j.succ| ≤ 10 * H)
-    (j : Fin (N + 1)) : |A 0 * B j - B 0 * A j| ≤ 2560 * N * H := by
+     j  : |A 0 * B j - B 0 * A j| ≤ 2560 * N * H := by
   have hApos : ∀ j, 0 < A j := fun j => hU.trans_le (hA j).1
   -- step: the slopes move by at most `10 H / U²` per edge
   have hslope : ∀ n (hn : n < N + 1),
@@ -141,11 +144,7 @@ theorem abs_det_le_of_consecutive {N : ℕ} {U H : ℝ} (hU : 0 < U) (hH : 0 ≤
         calc |B ⟨n + 1, hn⟩ * A ⟨n, by omega⟩ - A ⟨n + 1, hn⟩ * B ⟨n, by omega⟩| * U ^ 2
             ≤ 10 * H * U ^ 2 := by
               gcongr
-              calc |B ⟨n + 1, hn⟩ * A ⟨n, by omega⟩ - A ⟨n + 1, hn⟩ * B ⟨n, by omega⟩|
-                  = |A ⟨n, by omega⟩ * B ⟨n + 1, hn⟩ - B ⟨n, by omega⟩ * A ⟨n + 1, hn⟩| := by
-                    congr 1
-                    ring
-                _ ≤ 10 * H := hd
+              grind
           _ ≤ 10 * H * (A ⟨n + 1, hn⟩ * A ⟨n, by omega⟩) := by gcongr
       calc |B ⟨n + 1, hn⟩ / A ⟨n + 1, hn⟩ - B 0 / A 0|
           ≤ |B ⟨n + 1, hn⟩ / A ⟨n + 1, hn⟩ - B ⟨n, by omega⟩ / A ⟨n, by omega⟩| +
@@ -160,17 +159,18 @@ theorem abs_det_le_of_consecutive {N : ℕ} {U H : ℝ} (hU : 0 < U) (hH : 0 ≤
     field_simp
   rw [hid, abs_mul, abs_of_pos (mul_pos h0 hjpos)]
   have hs := hslope j j.isLt
-  have hs₀ : 0 ≤ (j : ℝ) * (10 * H / U ^ 2) := by positivity
+  
   calc A 0 * A j * |B j / A j - B 0 / A 0| ≤ (16 * U) * (16 * U) * (j * (10 * H / U ^ 2)) :=
         mul_le_mul (mul_le_mul (hA 0).2 (hA j).2 hjpos.le (by linarith)) hs (abs_nonneg _)
           (by positivity)
     _ = 2560 * j * H := by field_simp; ring
     _ ≤ 2560 * N * H := by gcongr
 
+include hY hd₀ hR hc in
 /-- `c(ω) ≠ 0` forces the start `z₀ = e₁`, consecutive determinants below `10 d₀ Y`, and
 `d₀ ≤ ∏ labels`, `Y < ∏ labels` for the labels of the first state. -/
-theorem confCoeff_ne_zero_imp {A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ} (hY : 0 < Y) (hd₀ : 0 < d₀)
-    (hR : 0 < momentPower x) {ω : Conf x d Y d₀} (hc : confCoeff A₀ x d Y d₀ ω ≠ 0) :
+theorem confCoeff_ne_zero_imp          
+          :
     (ω 0).1.1.1 = (1, 0) ∧
       (∀ j : Fin (2 * momentPower x),
         |(((ω j.castSucc).1.1.1.1 * (ω j.succ).1.1.1.2 -
@@ -209,11 +209,12 @@ theorem confCoeff_ne_zero_imp {A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ} (hY : 0
         rintro h0; rw [h0, Nat.cast_zero] at hb; linarith)
     constructor <;> nlinarith
 
+include hY hd₀ hHm hR hc in
 /-- **The tube** (`det:tube`): a live configuration with `c(ω) ≠ 0` has
 `|z_{j,2}| ≤ 2560 N H` and `|z_{j,1}| ≤ 2560 N H + 16` at every visit, `H = d₀ Y`. -/
-theorem tube_of_live {A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ} (hY : 0 < Y) (hd₀ : 0 < d₀)
-    (hHm : 0 < d.Hm) (hR : 0 < momentPower x) {ω : Conf x d Y d₀}
-    (hc : confCoeff A₀ x d Y d₀ ω ≠ 0) (hω : ConfLive ω) (j : Fin (2 * momentPower x + 1)) :
+theorem tube_of_live          
+         
+      (hω : ConfLive ω)  j  :
     |((ω j).1.1.1.2 : ℝ)| ≤ 2560 * (2 * momentPower x) * (d₀ * Y) ∧
       |((ω j).1.1.1.1 : ℝ)| ≤ 2560 * (2 * momentPower x) * (d₀ * Y) + 16 := by
   classical
@@ -271,5 +272,7 @@ theorem tube_of_live {A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ} (hY : 0 < Y) (hd
         rw [abs_of_pos hτ₀]
         linarith
     _ = 2560 * (2 * momentPower x) * (d₀ * Y) + 16 := by ring
+
+end
 
 end Erdos408.OneSided

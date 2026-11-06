@@ -12,7 +12,7 @@ namespace Erdos821.P5Mellin
 
 open Erdos821.Blueprint.Analytic
 
-noncomputable section
+
 
 theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
   intro hFourier C lo hi bounds hC hlo hlohi hbounds
@@ -20,7 +20,7 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
   have hR : 0 < R := by
     dsimp [R]
     positivity
-  let bounds₁ : ℕ → ℝ := fun j => piExpCompDerivativeConstant hi bounds j
+  let bounds₁ : ℕ → ℝ := piExpCompDerivativeConstant hi bounds
   have hbounds₁ : ∀ j, 0 ≤ bounds₁ j := by
     intro j
     exact piExpCompDerivativeConstant_nonneg hi bounds hbounds j
@@ -94,6 +94,6 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
       rw [show e (∑ i, ξ i * y i) = mellin t (2 * Real.pi * ξ 0) by
         simpa [y] using mellinCharacter_eq_fourier ξ t]
 
-end
+
 end Erdos821.P5Mellin
 

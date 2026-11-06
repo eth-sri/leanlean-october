@@ -25,7 +25,7 @@ theorem primeGroups_prod_split {R : Type*} [CommMonoid R] (P : PrimeGroups)
   rw [hc] at he
   exact he.symm
 
-theorem markMass_split (P : PrimeGroups) (M : ℕ) :
+theorem markMass_split (P : PrimeGroups)  M  :
     P.markMass M = (∏ g : P.SmallGroup, (P.V g.val) ^ (-(M : ℤ))) *
       ∏ g : P.BigGroup, (P.V g.val) ^ (-(M : ℤ)) :=
   primeGroups_prod_split P _
@@ -41,8 +41,8 @@ theorem physicalTargetMass_split {F : FixedData} {P : PrimeGroups} {J m : ℕ}
   intro g _
   simp only [Pattern.t, nu.small g.val g.property, Finset.card_empty, Nat.add_zero]
 
-theorem memoryMass_empty {F : FixedData} {P : PrimeGroups} (J n : ℕ)
-    (y : P.SmallResidues) (a : P.Labels (J + F.ell)) :
+theorem memoryMass_empty {F : FixedData} {P : PrimeGroups}  J n 
+     y   a  :
     P.memoryMass F J n (y, a, fun _ => 0) =
       if P.smallPhysical y a then
         (Fintype.card P.SmallResidues : ℝ)⁻¹ *
@@ -56,7 +56,7 @@ namespace ResiduePath
 variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
   (Q : ResiduePath A n)
 
-theorem stateBefore_initial (S : LifespanAssignment P n) (y : P.SmallResidues) :
+theorem stateBefore_initial  S   y  :
     Q.stateBefore S y 0 = (y, Q.labels 0, fun _ => 0) := by
   apply Prod.ext
   · change translateSmallResidues (Q.offset 0) y = y
@@ -66,7 +66,7 @@ theorem stateBefore_initial (S : LifespanAssignment P n) (y : P.SmallResidues) :
     · funext g
       exact Q.memoryBefore_zero S g
 
-theorem reconstructed_initial_mass (S : LifespanAssignment P n) (y : P.SmallResidues)
+theorem reconstructed_initial_mass  S   y 
     (hy : Q.SmallCompatible y) :
     P.memoryMass F J n (Q.stateBefore S y 0) =
       (Fintype.card P.SmallResidues : ℝ)⁻¹ *

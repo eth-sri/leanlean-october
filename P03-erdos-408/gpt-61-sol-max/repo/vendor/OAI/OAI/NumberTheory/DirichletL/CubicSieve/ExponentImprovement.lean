@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.FullImprovement
 public import OAI.NumberTheory.DirichletL.HeathBrownIteration
@@ -11,9 +12,13 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 noncomputable section
 
-def enlargementExponent (ξ : ℝ) : ℝ := (6*ξ-5)/(3*ξ-1)
+def enlargementExponent (ξ : ℝ)  := (6*ξ-5)/(3*ξ-1)
 
-lemma enlargement_bounds (ξ : ℝ) (hξ : (4/3 : ℝ) ≤ ξ) :
+section
+variable (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) (hξ : (4/3 : ℝ) ≤ ξ)
+
+include hξ in
+lemma enlargement_bounds     :
     1 ≤ enlargementExponent ξ ∧ enlargementExponent ξ ≤ SevenEighths.HeathBrownIteration.step ξ := by
   have hd : 0 < 3*ξ-1 := by linarith
   constructor
@@ -23,24 +28,19 @@ lemma enlargement_bounds (ξ : ℝ) (hξ : (4/3 : ℝ) ≤ ξ) :
   · unfold enlargementExponent SevenEighths.HeathBrownIteration.step
     exact div_le_div_of_nonneg_right (by linarith) hd.le
 
-lemma enlargement_cross_identity (ξ : ℝ) (hξ : (4/3 : ℝ) ≤ ξ) :
+include hξ in
+lemma enlargement_cross_identity     :
     (enlargementExponent ξ+1)*(2/3 : ℝ) = SevenEighths.HeathBrownIteration.step ξ := by
-  have hd : 3*ξ-1 ≠ 0 := by linarith
-  unfold enlargementExponent SevenEighths.HeathBrownIteration.step
-  apply (eq_div_iff hd).mpr
-  have hc := div_mul_cancel₀ (6*ξ-5) hd
-  nlinarith [hc]
+  grind [enlargementExponent, SevenEighths.HeathBrownIteration.step]
 
-lemma enlargement_secondary_identity (ξ : ℝ) (hξ : (4/3 : ℝ) ≤ ξ) :
+include hξ in
+lemma enlargement_secondary_identity     :
     enlargementExponent ξ*(1-ξ)+(2*ξ-1) = SevenEighths.HeathBrownIteration.step ξ := by
-  have hd : 3*ξ-1 ≠ 0 := by linarith
-  unfold enlargementExponent SevenEighths.HeathBrownIteration.step
-  apply (eq_div_iff hd).mpr
-  have hc := div_mul_cancel₀ (6*ξ-5) hd
-  nlinarith [hc]
+  grind [enlargementExponent, SevenEighths.HeathBrownIteration.step]
 
-theorem enlarged_improved_shape (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N)
-    (hξ : (4/3 : ℝ) ≤ ξ) :
+include hM hN hξ in
+theorem enlarged_improved_shape      
+      :
     let T := max M (N^(enlargementExponent ξ))
     T+(T*N)^(2/3 : ℝ)+T^(1-ξ)*N^(2*ξ-1) ≤
       3*(M+N^(SevenEighths.HeathBrownIteration.step ξ)+(M*N)^(2/3 : ℝ)) := by
@@ -60,13 +60,7 @@ theorem enlarged_improved_shape (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N)
     conv_lhs => arg 1; arg 2; rw [← Real.rpow_one N]
     rw [← Real.rpow_add hN0, ← Real.rpow_mul hN0.le, enlargement_cross_identity ξ hξ]
   have htc : (T*N)^(2/3 : ℝ) ≤ (M*N)^(2/3 : ℝ)+N^β := by
-    by_cases hm : M ≤ N^α
-    · dsimp only [T]
-      rw [max_eq_right hm, hnx]
-      exact le_add_of_nonneg_left hcross
-    · dsimp only [T]
-      rw [max_eq_left (le_of_not_ge hm)]
-      exact le_add_of_nonneg_right hNb
+    grind
   have hts : T^(1-ξ)*N^(2*ξ-1) ≤ N^β := by
     have hp := Real.rpow_le_rpow_of_nonpos (Real.rpow_pos_of_pos hN0 α)
       (le_max_right M (N^α)) (show 1-ξ ≤ 0 by linarith)
@@ -75,10 +69,11 @@ theorem enlarged_improved_shape (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N)
         mul_le_mul_of_nonneg_right hp (Real.rpow_nonneg hN0.le _)
       _ = N^β := by
         rw [← Real.rpow_mul hN0.le, ← Real.rpow_add hN0, enlargement_secondary_identity ξ hξ]
-  change T+(T*N)^(2/3 : ℝ)+T^(1-ξ)*N^(2*ξ-1) ≤ 3*(M+N^β+(M*N)^(2/3 : ℝ))
-  linarith
+  grind
 
-theorem HasCubicExponent.improve {ξ : ℝ} (h : HasCubicExponent ξ)
+end
+
+theorem HasCubicExponent.improve  {ξ}  (h : HasCubicExponent ξ)
     (hξ : (4/3 : ℝ) < ξ) (hξ2 : ξ ≤ 2) :
     HasCubicExponent (SevenEighths.HeathBrownIteration.step ξ) := by
   intro ε hε
@@ -93,13 +88,13 @@ theorem HasCubicExponent.improve {ξ : ℝ} (h : HasCubicExponent ξ)
   intro M N hM hN
   let T := max M (N^(enlargementExponent ξ))
   have hT : 1 ≤ T := hM.trans (le_max_left _ _)
-  have hM0 : 0 < M := by linarith
+  
   have hN0 : 0 < N := by linarith
   have hp : N^(7*θ) ≤ (M*N)^ε :=
     (Real.rpow_le_rpow_of_exponent_le hN hθε).trans
       (Real.rpow_le_rpow hN0.le (by nlinarith) hε.le)
   have ht := enlarged_improved_shape M N ξ hM hN hξ.le
-  have hshape : 0 ≤ M+N^(SevenEighths.HeathBrownIteration.step ξ)+(M*N)^(2/3 : ℝ) := by positivity
+  
   calc
     _ ≤ sieveNorm T N := sieveNorm_mono (le_max_left _ _) le_rfl
     _ ≤ elementSieveNorm T N := sieveNorm_le_elementSieveNorm T N

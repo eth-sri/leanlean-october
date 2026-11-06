@@ -9,7 +9,7 @@ public import Erdos821.P3Rows.GhostRows
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.S2Core
@@ -22,8 +22,8 @@ theorem actual_projected_ghost_norm (F : FixedData) (J n B : ℕ) (r : MemoryPar
     (hV : ∀ g, 0 < P.V g ∧ P.V g ≤ F.vMax)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
     (hmu : ∀ g : P.BigGroup, ∑ p : P.Prime g.val, tiltedMu F P n g.val p ≤ 2)
-    (i : Fin (n + 1))
-    (phi : (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℂ)
+     i 
+     phi 
     (hphi : ∀ s t c, ‖phi s t c‖ ≤ 1) :
     NormBound (P.memoryMass F J n)
       (projectKernel (fun s => P.memorySize s ≤ B) (memoryGhostKernel F J n r.rho i phi))

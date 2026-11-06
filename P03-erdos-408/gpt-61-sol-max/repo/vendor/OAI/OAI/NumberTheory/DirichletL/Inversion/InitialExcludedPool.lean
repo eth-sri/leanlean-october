@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCompletePool
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
@@ -13,13 +14,13 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialExcludedPool
 open InverseInitialOverlap InverseInitialCommonTuples InverseInitialCompletePool InverseInitialPoissonBridge
-local notation "O"=>ActualEisensteinCubic.O
 
-def outside (E:Finset (Ideal O))(I:Ideal O):Prop:=∀P∈E,¬P∣I
 
-def originalOutside (A E:Finset (Ideal O)):Finset (Ideal O):=A.filter (outside E)
+def outside (E:Finset (Ideal ActualEisensteinCubic.O))(I:Ideal ActualEisensteinCubic.O):=∀P∈E,¬P∣I
 
-theorem column_outside (A E:Finset (Ideal O)){P j c:Ideal O}
+def originalOutside (A E:Finset (Ideal ActualEisensteinCubic.O)):=A.filter (outside E)
+
+theorem column_outside (A E:Finset (Ideal ActualEisensteinCubic.O)){P j c:Ideal ActualEisensteinCubic.O}
     (hE:∀Q∈E,Prime Q)(hj:j∣P)(hP:outside E P)
     (hA:∀n∈A,outside E n)(hc:c∈columns A P j):outside E c := by
   obtain ⟨n,hn,rfl⟩:=Finset.mem_image.mp hc
@@ -30,18 +31,18 @@ theorem column_outside (A E:Finset (Ideal O)){P j c:Ideal O}
   · exact hA n hnA Q hQ (hn.trans (idealQuotient_dvd hjn))
   · exact hP Q hQ (hpr.trans (idealQuotient_dvd hj))
 
-theorem admissible_mem_excluded_complete (E:Finset (Ideal O)){I:Ideal O}
-    (hI:Admissible I)(hout:outside E I)(D:ℕ)(hD:I.absNorm≤D):
+theorem admissible_mem_excluded_complete  E  {I} 
+    (hI:Admissible I)(hout:outside E I) D (hD:I.absNorm≤D):
     I∈InitialMeanSquare.outsideSquarefreeIdeals E D := by
   apply Finset.mem_filter.mpr
   refine ⟨mem_outsideIdealsUpTo.mpr ⟨?_,hD,hout⟩,hI.2.1⟩
   exact Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI.1)
 
-theorem exists_excluded_complete_pool {κ:Type*}(A E:Finset (Ideal O))(T:Finset κ)
-    (P:κ→Ideal O)(j:Ideal O)(hE:∀Q∈E,Prime Q)
+theorem exists_excluded_complete_pool {κ:Type*} A E (T:Finset κ)
+    (P:κ→Ideal ActualEisensteinCubic.O) j (hE:∀Q∈E,Prime Q)
     (hP:∀k∈T,Admissible (P k))(hj:∀k∈T,j∣P k)
     (hPE:∀k∈T,outside E (P k))
-    (hA:∀n∈A,Squarefree n→Supported n)(bmax Xmax:ℝ)(hb:0≤bmax)(_hX:0≤Xmax):
+    (hA:∀n∈A,Squarefree n→Supported n) bmax Xmax (hb:0≤bmax)(_hX:0≤Xmax):
     ∃D:ℕ,tupleColumns (originalOutside A E) T P j⊆
       InitialMeanSquare.outsideSquarefreeIdeals E D ∧
       ∀b X:ℝ,0≤b→b≤bmax→0≤X→X≤Xmax→b*X≤(D:ℝ) := by
@@ -63,8 +64,7 @@ theorem exists_excluded_complete_pool {κ:Type*}(A E:Finset (Ideal O))(T:Finset 
         (Finset.le_sup (f:=fun k=>(P k).absNorm) hk)).trans (le_max_left _ _))
   · intro b X hb0 hbb hX0 hXX
     apply (mul_le_mul hbb hXX hX0 hb).trans
-    exact (Nat.le_ceil (bmax*Xmax)).trans (by exact_mod_cast (le_max_right
-      (A.sup Ideal.absNorm*T.sup (fun k=>(P k).absNorm)) ⌈bmax*Xmax⌉₊))
+    exact (Nat.le_ceil (bmax*Xmax)).trans (by exact_mod_cast ((by omega)))
 
 end SevenEighths.InverseInitialExcludedPool
 

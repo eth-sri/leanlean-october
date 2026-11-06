@@ -7,16 +7,16 @@ public import OAI.NumberTheory.DirichletL.Detector.GlobalCorrection
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-theorem principalHigh_L_factorization (S : Finset Id) (hS : ∀P∈S,Prime P)
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+theorem principalHigh_L_factorization  S   hS 
     (hgood : ∀P : PrimeIdeal,P.val∉S → Supported P.val) (htail : CorrectionTail S)
-    (η : Character) (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+     η   x w z  (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     markedIdealHighSeries S 1 η 1 x w z =
       LFunction (fixedSourcePrincipal S hS) (6*z) * LFunction (fixedSourcePrincipal S hS) w /
         LFunction (η.excludePrimes S hS) x * globalClosedCorrection η S x w z := by
@@ -47,6 +47,6 @@ theorem principalHigh_L_factorization (S : Finset Id) (hS : ∀P∈S,Prime P)
   exact (excludedIdealHighSeries_hasProd_outside S hS η x w z hx hw hz).unique he'
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

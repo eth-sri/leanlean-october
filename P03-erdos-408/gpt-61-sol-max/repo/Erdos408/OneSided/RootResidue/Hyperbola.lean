@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Analysis.Kloosterman
 public import Erdos408.OneSided.RootResidue.Fourier
@@ -33,7 +34,7 @@ noncomputable def hyperbola (a t c₀ : ZMod n) : Finset (ZMod n × ZMod n) :=
 
 /-- On the hyperbola `x` is a unit and `y = a x⁻¹`: `Ŝ_G(h, k)` is a sum over the units
 `x` with `t x = t c₀`. -/
-theorem pairSum_hyperbola_eq {a : ZMod n} (ha : IsUnit a) (t c₀ h k : ZMod n) :
+theorem pairSum_hyperbola_eq  {a}  (ha : IsUnit a)  t c₀ h k  :
     pairSum (hyperbola n a t c₀) h k = ∑ x : (ZMod n)ˣ,
       if t * (x : ZMod n) = t * c₀ then
         ZMod.stdAddChar (h * (x : ZMod n) + k * a * ((x⁻¹ : (ZMod n)ˣ) : ZMod n))
@@ -43,10 +44,7 @@ theorem pairSum_hyperbola_eq {a : ZMod n} (ha : IsUnit a) (t c₀ h k : ZMod n) 
     (fun x => ((x : ZMod n), a * ((x⁻¹ : (ZMod n)ˣ) : ZMod n))) (fun p hp => ?_)
     (fun x hx => ?_) (fun p hp => ?_) (fun x _ => ?_) (fun p hp => ?_)
   · obtain ⟨h₁, h₂⟩ := (mem_filter.1 hp).2
-    have hu : IsUnit p.1 := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
-    refine mem_filter.2 ⟨mem_univ _, ?_⟩
-    simp only [hu, ↓reduceDIte, IsUnit.unit_spec]
-    exact h₂
+    aesop
   · refine mem_filter.2 ⟨mem_univ _, ?_, (mem_filter.1 hx).2⟩
     rw [mul_left_comm, Units.mul_inv, mul_one]
   · obtain ⟨h₁, -⟩ := (mem_filter.1 hp).2
@@ -63,7 +61,7 @@ theorem pairSum_hyperbola_eq {a : ZMod n} (ha : IsUnit a) (t c₀ h k : ZMod n) 
       mul_one]
 
 /-- `det:CRT-Fourier`: `n Ŝ_G(h, k) = ∑_j e(-j t c₀/n) K_n(h + j t, k a)`. -/
-theorem natCast_mul_pairSum_hyperbola_eq {a : ZMod n} (ha : IsUnit a) (t c₀ h k : ZMod n) :
+theorem natCast_mul_pairSum_hyperbola_eq  {a}  (ha : IsUnit a)  t c₀ h k  :
     (n : ℂ) * pairSum (hyperbola n a t c₀) h k = ∑ j : ZMod n,
       ZMod.stdAddChar (-(j * t * c₀)) * kloostermanZMod n (h + j * t) (k * a) := by
   rw [pairSum_hyperbola_eq ha, mul_sum]

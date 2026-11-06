@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorPhysicalBins
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRelativePrime
@@ -14,14 +15,14 @@ open HeckeFamily HeckePrimeAmplitudeBins
 variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
 
 def physical {Row Slot : Type*} (row : Row→O) (W : Slot→ℝ→ℂ)
-    (b w : Slot→ℝ) (z : Slot→ℂ) (U : ℝ) (u : Row) (s : Slot) : ℂ :=
+    (b w : Slot→ℝ) (z : Slot→ℂ) (U : ℝ) (u : Row) (s : Slot)  :=
   HeckePrimeRow.canonicalPrimeAmplitude M H (row u) (W s) (b s) (U^(w s)) (z s)
 
-def weightedMean {Slot : Type*} (slots : Finset Slot) (w g : Slot→ℝ) : ℝ :=
+def weightedMean {Slot } (slots : Finset Slot) (w g : Slot→ℝ)  :=
   (∑ s∈slots,w s*g s)/(∑ s∈slots,w s)
 
 theorem weightedMean_bounds {Slot : Type*} (slots : Finset Slot) (w g : Slot→ℝ)
-    (δ : ℝ) (hw : ∀ s∈slots,0≤w s) (hL : 0<∑ s∈slots,w s)
+     δ  (hw : ∀ s∈slots,0≤w s) (hL : 0<∑ s∈slots,w s)
     (hg : ∀ s∈slots,0≤g s ∧ g s≤δ/2) :
     0≤weightedMean slots w g ∧ weightedMean slots w g≤δ/2 := by
   constructor
@@ -35,7 +36,7 @@ theorem weightedMean_bounds {Slot : Type*} (slots : Finset Slot) (w g : Slot→�
 omit [NeZero M] in
 theorem select_physical_product {Row Slot : Type*} (rows : Finset Row) (hne : rows.Nonempty)
     (slots : Finset Slot) (row : Row→O) (W : Slot→ℝ→ℂ) (b w g : Slot→ℝ)
-    (zs : Slot→ℂ) (U δ mesh binWidth z : ℝ)
+     zs  (U δ mesh binWidth z : ℝ)
     (hU : 1<U) (hδ : 0≤δ) (hmesh : 0≤mesh) (hbin : 0<binWidth)
     (hw : ∀ s∈slots,0<w s) (hwm : ∀ s∈slots,w s≤mesh)
     (hL : 0<∑ s∈slots,w s) (hz : 0≤z) (hzL : z≤∑ s∈slots,w s)
@@ -55,7 +56,7 @@ theorem select_physical_product {Row Slot : Type*} (rows : Finset Row) (hne : ro
     rw [div_mul_cancel₀ _ hL.ne']
   obtain ⟨selected,hsub,hpositive,hlen,hspike⟩ := common_bin_selection slots w g U δ mesh binWidth
     (weightedMean slots w g) z hU hδ hmesh hbin hw hwm hg hq hqδ hz hzL hm
-  exact ⟨selected,hsub,hpositive,hlen,fun u hu => hspike _ (hbins u hu)⟩
+  grind
 
 end SevenEighths.HeckeDetectorPhysicalSelection
 

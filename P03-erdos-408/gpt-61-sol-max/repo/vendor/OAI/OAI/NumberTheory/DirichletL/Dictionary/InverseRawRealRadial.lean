@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawRadial
 
@@ -6,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawRadial
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawRealRadial
 open InverseInitialConjugateEnergy ConcreteTraceCRT
-local notation "O"=>HeckeFamily.O
+
 
 theorem exists_real_raw_radial_majorant:
     ∃Φ:𝓢(ℝ,ℂ),HasCompactSupport (Φ:ℝ→ℂ) ∧
@@ -39,22 +40,19 @@ theorem exists_real_raw_radial_majorant:
     positivity
   · intro x
     exact Complex.ofReal_im _
-  · intro x hx
-    change (((f x)^2:ℝ):ℂ)=1
-    rw [(hone x).mp hx]
-    norm_num
+  aesop
 
-theorem smoothedEnergy_eq_complex_norm (Φ:𝓢(ℝ,ℂ))
+theorem smoothedEnergy_eq_complex_norm  Φ 
     (hΦ:∀x,0≤(Φ x).re)(hreal:∀x,(Φ x).im=0)
-    (H:ℝ)(hH:0<H)(f:O→ℂ):
+     H (hH:0<H) f :
     smoothedEnergy Φ H f=
-      ‖∑'u:O,Φ (‖eisEmbedding u‖^2/H)*(‖f u‖^2:ℝ)‖:=by
+      ‖∑'u:HeckeFamily.O,Φ (‖eisEmbedding u‖^2/H)*(‖f u‖^2:ℝ)‖:=by
   rw [real_smoothed_sum_eq Φ (fun x _=>hreal x) hH,
     Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (smoothedEnergy_nonneg Φ (fun x _=>hΦ x) hH f)]
 
 end SevenEighths.DetectorDictionaryInverseRawRealRadial
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.LowChoiceEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.InactiveSource
@@ -10,7 +11,7 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 variable {Nlevel : Eis}
@@ -24,7 +25,7 @@ theorem low_original_inactive_energy
     (hNlevel : ∀ i,(9:Eis)*c₀ i∣Nlevel)
     (hbase : ∀ i,if mode i then ConcretePrimeRowBridge.goodLambda^2∣a i-1 else ConcretePrimeRowBridge.goodLambda^2∣c₀ i-1)
     (hac : ∀ i,IsCoprime (a i) (c₀ i))
-    (Q : Ideal Eis) (hQ : Q≠0) (Ck η : ℝ) (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) :
+     Q  (hQ : Q≠0)  Ck η  (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) :
     ∃ (degree : ℕ) (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
     ∀ g : γ,∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (J F Q₀ : Ideal Eis)
       (_hJ : J≠0) (_hF : F≠0),
@@ -119,9 +120,8 @@ theorem low_original_inactive_energy
   have hzpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hZ₀ hZ)
   apply supported_inactive_source_energy rows lists T FF H (fun i P hP => (hprime i P hP).ne_zero)
     hH w hw f (C*(1+‖θ‖)^degree*Z^((5/6-2*d)+505*η-O₀/2)) (by positivity)
-  intro b
-  exact hDb b θ (fun i : T => w i.val) (fun i P => hw i.val P)
-end
+  solve_by_elim
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

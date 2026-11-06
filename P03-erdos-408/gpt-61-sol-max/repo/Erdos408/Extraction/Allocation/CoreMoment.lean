@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Euler
 public import Erdos408.Extraction.Allocation.Decomposition
@@ -33,18 +34,21 @@ open Finset Filter Real
 noncomputable section
 
 /-- `Y`-roughness of `n`: every prime factor exceeds `Y`. -/
-def IsYRough (Y : ℝ) (n : ℕ) : Prop :=
+def IsYRough (Y : ℝ) (n : ℕ)  :=
   ∀ p ∈ n.primeFactors, Y < p
 
 /-- Roughness is decided classically. -/
 instance (Y : ℝ) : DecidablePred (IsYRough Y) := fun _ => Classical.dec _
 
+section
+variable {Y : ℝ}
+
 /-- Divisors of rough numbers are rough. -/
-lemma IsYRough.of_dvd {Y : ℝ} {a b : ℕ} (hb : IsYRough Y b) (hb0 : b ≠ 0) (hab : a ∣ b) :
+lemma IsYRough.of_dvd   {a b : ℕ} (hb : IsYRough Y b) (hb0 : b ≠ 0) (hab : a ∣ b) :
     IsYRough Y a := fun p hp => hb p (Nat.primeFactors_mono hab hb0 hp)
 
 /-- A rough number `n ≠ 0` with `Y ≥ 1` has `Y^{Ω(n)} ≤ n`. -/
-lemma rpow_cardFactors_le {Y : ℝ} (hY : 1 ≤ Y) {n : ℕ} (hn : n ≠ 0) (hr : IsYRough Y n) :
+lemma rpow_cardFactors_le   (hY : 1 ≤ Y)  {n}  (hn : n ≠ 0) (hr : IsYRough Y n) :
     Y ^ ArithmeticFunction.cardFactors n ≤ n := by
   rw [ArithmeticFunction.cardFactors_eq_sum_factorization, Finsupp.sum, ← prod_pow_eq_pow_sum]
   conv_rhs => rw [← Nat.prod_factorization_pow_eq_self hn]
@@ -54,10 +58,12 @@ lemma rpow_cardFactors_le {Y : ℝ} (hY : 1 ≤ Y) {n : ℕ} (hn : n ≠ 0) (hr 
   push_cast
   exact pow_le_pow_left₀ (by linarith) (hr p hp).le _
 
+end
+
 /-! ### The core factors are at most one -/
 
 /-- The candidate factor of `D_j` is at least `1`. -/
-lemma one_le_prod_candidate (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
+lemma one_le_prod_candidate  x  {j : ℕ} (hj : 1 ≤ j) :
     1 ≤ ∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹ := by
   have hj1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by exact_mod_cast hj)
   refine one_le_prod₀ fun p hp => ?_
@@ -68,8 +74,12 @@ lemma one_le_prod_candidate (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
     linarith
   exact one_le_inv₀ (by linarith) |>.2 (by linarith)
 
+section
+variable {x γ : ℝ} (P : Finset ℕ) (Y : ℝ) (m : ℕ) (hx : 1 ≤ Real.log x) (hg : GroupFacts x) (Z : ℕ) {κ E : ℝ} {j : ℕ} (hj : 1 ≤ j) (hγ : 1 ≤ x ^ γ) (hb : ∀ e, coreFactor x γ j e ≤ 1) (v : ℕ) (hM : ∀ y z : ℝ, 2 ≤ y → y ≤ z →
+      |∑ p ∈ primesIoc y z, (1 : ℝ) / p - Real.log (Real.log z / Real.log y)| ≤ E / Real.log y)
+
 /-- For large `x`, every core factor is at most `1`, uniformly in `j ≥ 1`. -/
-lemma eventually_coreFactor_le_one {c : ℝ} (hc : 0 < c) (Ch : ℝ) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_coreFactor_le_one  {c}  (hc : 0 < c)  Ch  : ∀ᶠ x : ℝ in atTop,
     ∀ j : ℕ, 1 ≤ j → ∀ e : ℕ, coreFactor x (presieveExponent c Ch x) j e ≤ 1 := by
   obtain ⟨C₁, hC₁, hprod⟩ := exists_prod_one_sub_ge
   set M := max Ch 0
@@ -93,8 +103,7 @@ lemma eventually_coreFactor_le_one {c : ℝ} (hc : 0 < c) (Ch : ℝ) : ∀ᶠ x 
   have hY2 : 2 ≤ proxyCutoff x := by
     rw [proxyCutoff]
     have := add_one_le_exp (L / T ^ 25)
-    simp only [L, T, logLog] at this hlogY1 ⊢
-    linarith
+    grind
   -- `γ T^{25} ≥ 1 / C₁`
   have hs : logLogLog x ≤ T := by
     have := Real.log_le_sub_one_of_pos hT0
@@ -110,8 +119,8 @@ lemma eventually_coreFactor_le_one {c : ℝ} (hc : 0 < c) (Ch : ℝ) : ∀ᶠ x 
       exact (Nat.ceil_lt_add_one (by positivity)).le
     have h2 : M * logLogLog x ≤ M * T := mul_le_mul_of_nonneg_left hs hM
     linarith
-  have hden : 4 * (sieveDepth Ch x : ℝ) + 3 ≤ (8 * M + 11) * T := by nlinarith
-  have hden0 : 0 < 4 * (sieveDepth Ch x : ℝ) + 3 := by positivity
+  
+  
   have hγT : 1 ≤ C₁ * (γ * T ^ 25) := by
     have hγ : γ * T ^ 25 = c * T ^ 5 / (4 * (4 * (sieveDepth Ch x : ℝ) + 3)) := by
       simp only [γ, presieveExponent, T]
@@ -155,10 +164,11 @@ lemma eventually_coreFactor_le_one {c : ℝ} (hc : 0 < c) (Ch : ℝ) : ∀ᶠ x 
 
 /-! ### The core and the divisor function -/
 
+include hj hγ hb in
 /-- With core factors at most `1`, `G_j(v) ≤ d_j(v̄)` when `v̄` is `Y`-rough,
 and `G_j(v) = 0` otherwise. -/
-lemma proxyCore_le_card {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hγ : 1 ≤ x ^ γ)
-    (hb : ∀ e, coreFactor x γ j e ≤ 1) (v : ℕ) :
+lemma proxyCore_le_card        
+        :
     proxyCore x γ j v ≤ if IsYRough (proxyCutoff x) (candidateStrip x v) then
       ((Nat.finMulAntidiag j (candidateStrip x v)).card : ℝ) else 0 := by
   unfold proxyCore
@@ -186,7 +196,7 @@ lemma proxyCore_le_card {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hγ : 1 ≤ x ^ �
 
 /-- Counting the factorizations of the stripped parts:
 `∑_{v ≤ Z, v̄ rough} d_m(v̄) ≤ Z ∑_{c ≤ Z, P-factored} c⁻¹ (∑_{n ≤ Z rough} n⁻¹)^m`. -/
-theorem sum_card_finMulAntidiag_le (P : Finset ℕ) (Y : ℝ) (m Z : ℕ) :
+theorem sum_card_finMulAntidiag_le       :
     ∑ v ∈ Icc 1 Z, (if IsYRough Y (stripPrimes P v) then
         ((Nat.finMulAntidiag m (stripPrimes P v)).card : ℝ) else 0) ≤
       Z * (∑ c ∈ (Icc 1 Z).filter (· ∈ Nat.factoredNumbers P), (1 : ℝ) / c) *
@@ -274,9 +284,10 @@ theorem sum_card_finMulAntidiag_le (P : Finset ℕ) (Y : ℝ) (m Z : ℕ) :
 
 /-! ### The pointwise split -/
 
+include hj hγ hb in
 /-- Pointwise, `G_j(v)² ≤ [v̄ rough] d_{j²}(v̄) + [v̄ rough, not squarefree] j^{2 Ω(v̄)}`. -/
-lemma proxyCore_sq_le {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hγ : 1 ≤ x ^ γ)
-    (hb : ∀ e, coreFactor x γ j e ≤ 1) (v : ℕ) :
+lemma proxyCore_sq_le        
+        :
     proxyCore x γ j v ^ 2 ≤
       (if IsYRough (proxyCutoff x) (candidateStrip x v) then
         ((Nat.finMulAntidiag (j ^ 2) (candidateStrip x v)).card : ℝ) else 0) +
@@ -304,25 +315,21 @@ lemma proxyCore_sq_le {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hγ : 1 ≤ x ^ γ)
           (j : ℝ) ^ (2 * ArithmeticFunction.cardFactors n) := by
         rw [mul_comm, pow_mul]
         exact pow_le_pow_left₀ (Nat.cast_nonneg _) hd 2
-      have h1 : (0 : ℝ) ≤ ((Nat.finMulAntidiag (j ^ 2) n).card : ℝ) := Nat.cast_nonneg _
+      
       linarith
   · simp only [hr, ↓reduceIte] at hle
     have : proxyCore x γ j v = 0 := le_antisymm hle h0
-    rw [this]
-    simp only [hr, false_and, ↓reduceIte, add_zero]
-    norm_num
+    simp_all
 
 /-- Shifting `w ↦ w + 1` into `[1, M + 1]`. -/
-lemma sum_Icc_succ_le {f : ℕ → ℝ} (hf : ∀ n, 0 ≤ f n) (M : ℕ) :
+lemma sum_Icc_succ_le {f : ℕ → ℝ} (hf : ∀ n, 0 ≤ f n)  M  :
     ∑ w ∈ Icc 1 M, f (w + 1) ≤ ∑ v ∈ Icc 1 (M + 1), f v := by
   rw [← sum_image (g := (· + 1)) (fun a _ b _ h => by simpa using h)]
   refine sum_le_sum_of_subset_of_nonneg (fun v hv => ?_) fun v _ _ => hf v
-  obtain ⟨w, hw, rfl⟩ := mem_image.1 hv
-  rw [mem_Icc] at hw ⊢
-  omega
+  grind
 
 /-- A rough `n ≤ Z` has `j^{2 Ω(n)} ≤ exp(2 log j · log Z / log Y)`. -/
-lemma pow_two_mul_cardFactors_le {Y : ℝ} (hY : 1 < Y) {j n Z : ℕ} (hj : 1 ≤ j) (hn : n ≠ 0)
+lemma pow_two_mul_cardFactors_le  {Y}  (hY : 1 < Y) {j n Z : ℕ} (hj : 1 ≤ j) (hn : n ≠ 0)
     (hnZ : n ≤ Z) (hr : IsYRough Y n) :
     (j : ℝ) ^ (2 * ArithmeticFunction.cardFactors n) ≤
       Real.exp (2 * Real.log j * (Real.log Z / Real.log Y)) := by
@@ -344,8 +351,9 @@ lemma pow_two_mul_cardFactors_le {Y : ℝ} (hY : 1 < Y) {j n Z : ℕ} (hj : 1 �
 
 /-! ### The Euler products -/
 
+include hx hg in
 /-- The reciprocals of the candidate-factored numbers sum to at most `exp(12 T)`. -/
-lemma sum_inv_candidateFactored_le {x : ℝ} (hx : 1 ≤ Real.log x) (hg : GroupFacts x) (Z : ℕ) :
+lemma sum_inv_candidateFactored_le         :
     ∑ c ∈ (Icc 1 Z).filter (· ∈ Nat.factoredNumbers (candidatePrimes x)), (1 : ℝ) / c ≤
       Real.exp (12 * logLog x) := by
   have hfp : (candidatePrimes x).filter Nat.Prime = candidatePrimes x :=
@@ -355,12 +363,12 @@ lemma sum_inv_candidateFactored_le {x : ℝ} (hx : 1 ≤ Real.log x) (hg : Group
   rw [hfp]
   linarith [sum_one_div_candidatePrimes_le hx hg]
 
+include hM in
 /-- The reciprocals of the `Y`-rough numbers up to `Z` sum to at most
 `exp(2 (log (log Z / log Y) + E / log Y))`, given Mertens' second theorem with
 constant `E`. -/
-lemma sum_inv_rough_le {E : ℝ}
-    (hM : ∀ y z : ℝ, 2 ≤ y → y ≤ z →
-      |∑ p ∈ primesIoc y z, (1 : ℝ) / p - Real.log (Real.log z / Real.log y)| ≤ E / Real.log y)
+lemma sum_inv_rough_le  
+     
     {Y : ℝ} {Z : ℕ} (hY : 2 ≤ Y) (hYZ : Y ≤ Z) :
     ∑ n ∈ (Icc 1 Z).filter (IsYRough Y), (1 : ℝ) / n ≤
       Real.exp (2 * (Real.log (Real.log Z / Real.log Y) + E / Real.log Y)) := by
@@ -379,7 +387,7 @@ lemma sum_inv_rough_le {E : ℝ}
 
 /-- The `w ≤ M` with `w + 1` rough and not squarefree in its stripped part are
 multiples of `p²` for primes `Y < p ≤ M + 1`. -/
-lemma card_filter_not_squarefree_le (x : ℝ) (M : ℕ) :
+lemma card_filter_not_squarefree_le  x   M  :
     (((Icc 1 M).filter fun w => IsYRough (proxyCutoff x) (candidateStrip x (w + 1)) ∧
         ¬ Squarefree (candidateStrip x (w + 1))).card : ℝ) ≤
       ∑ p ∈ primesIoc (proxyCutoff x) (M + 1), ((M : ℝ) + 1) / (p * p) := by
@@ -404,7 +412,7 @@ lemma card_filter_not_squarefree_le (x : ℝ) (M : ℕ) :
 
 /-- The scale facts used for the mean square: `Y ≥ 2`, `Y ≤ Z ≤ x L`, and
 `log Z / log Y ≤ 2 T^{25}`, with `Z = ⌊κ x⌋ + 1`. -/
-lemma core_scale_facts {x κ : ℝ} (hx : 1 < x) (hκ : 1 < κ) (hκL : κ + 1 ≤ Real.log x)
+lemma core_scale_facts   (hx : 1 < x) (hκ : 1 < κ) (hκL : κ + 1 ≤ Real.log x)
     (hT : 1 ≤ logLog x) (hL25 : logLog x ^ 25 ≤ Real.log x) :
     2 ≤ proxyCutoff x ∧ proxyCutoff x ≤ ((⌊κ * x⌋₊ + 1 : ℕ) : ℝ) ∧
       ((⌊κ * x⌋₊ + 1 : ℕ) : ℝ) ≤ x * Real.log x ∧
@@ -421,8 +429,7 @@ lemma core_scale_facts {x κ : ℝ} (hx : 1 < x) (hκ : 1 < κ) (hκL : κ + 1 �
   have hY2 : 2 ≤ proxyCutoff x := by
     rw [proxyCutoff]
     have := add_one_le_exp (L / T ^ 25)
-    simp only [L, T, logLog] at this hlogY1 ⊢
-    linarith
+    grind
   have hκx : 0 ≤ κ * x := by positivity
   have hZ1 : κ * x ≤ ((⌊κ * x⌋₊ + 1 : ℕ) : ℝ) := by
     push_cast
@@ -447,10 +454,10 @@ lemma core_scale_facts {x κ : ℝ} (hx : 1 < x) (hκ : 1 < κ) (hκL : κ + 1 �
   rw [hlogY, div_div_eq_mul_div, div_le_iff₀ hL]
   nlinarith
 
+include hM in
 /-- The squarefree part of the mean square: at most `x L^{14}`. -/
-lemma sum_first_le_at {x κ E : ℝ} {j : ℕ}
-    (hM : ∀ y z : ℝ, 2 ≤ y → y ≤ z →
-      |∑ p ∈ primesIoc y z, (1 : ℝ) / p - Real.log (Real.log z / Real.log y)| ≤ E / Real.log y)
+lemma sum_first_le_at    
+     
     (hx : 1 < x) (hκ : 1 < κ) (hκL : κ + 1 ≤ Real.log x) (hT : 1 ≤ logLog x)
     (hL25 : logLog x ^ 25 ≤ Real.log x) (hEL : E ≤ Real.log x / logLog x ^ 25)
     (hgroups : GroupFacts x) (hj : 52 * (j : ℝ) ^ 2 * (logLogLog x + 1) ≤ logLog x) :
@@ -463,7 +470,7 @@ lemma sum_first_le_at {x κ E : ℝ} {j : ℕ}
   set s := logLogLog x
   set Y := proxyCutoff x
   set Z := ⌊κ * x⌋₊ + 1
-  have hx0 : 0 < x := by linarith
+  
   have hL : 0 < L := Real.log_pos hx
   have hs0 : 0 ≤ s := Real.log_nonneg hT
   have hlY : 0 < Real.log Y := by rw [hlogY]; positivity
@@ -485,11 +492,8 @@ lemma sum_first_le_at {x κ E : ℝ} {j : ℕ}
   have hSA0 : 0 ≤ ∑ n ∈ (Icc 1 Z).filter (IsYRough Y), (1 : ℝ) / n :=
     sum_nonneg fun _ _ => by positivity
   have hSC := sum_inv_candidateFactored_le (by
-    have := Real.log_le_sub_one_of_pos hL
-    simp only [T, logLog] at hT
     linarith) hgroups Z
-  have hSC0 : 0 ≤ ∑ c ∈ (Icc 1 Z).filter (· ∈ Nat.factoredNumbers (candidatePrimes x)),
-      (1 : ℝ) / c := sum_nonneg fun _ _ => by positivity
+  
   have hpow : (∑ n ∈ (Icc 1 Z).filter (IsYRough Y), (1 : ℝ) / n) ^ (j ^ 2) ≤ Real.exp T := by
     calc (∑ n ∈ (Icc 1 Z).filter (IsYRough Y), (1 : ℝ) / n) ^ (j ^ 2)
         ≤ Real.exp (52 * (s + 1)) ^ (j ^ 2) := pow_le_pow_left₀ hSA0 hSA _
@@ -519,10 +523,10 @@ lemma sum_first_le_at {x κ E : ℝ} {j : ℕ}
         gcongr
     _ = x * L ^ (14 : ℝ) := by rw [hL14]; ring
 
+include hM in
 /-- The non-squarefree part of the mean square: at most `x`. -/
-lemma sum_second_le_at {x κ E : ℝ} {j : ℕ}
-    (hM : ∀ y z : ℝ, 2 ≤ y → y ≤ z →
-      |∑ p ∈ primesIoc y z, (1 : ℝ) / p - Real.log (Real.log z / Real.log y)| ≤ E / Real.log y)
+lemma sum_second_le_at    
+     
     (hx : 1 < x) (hκ : 1 < κ) (hκL : κ + 1 ≤ Real.log x) (hT : 64 ≤ logLog x)
     (hL52 : logLog x ^ 52 ≤ Real.log x) (hEL : E ≤ Real.log x / logLog x ^ 25)
     (hj1 : 1 ≤ j) (hjT : (j : ℝ) ≤ logLog x) :
@@ -539,7 +543,7 @@ lemma sum_second_le_at {x κ E : ℝ} {j : ℕ}
   set s := logLogLog x
   set Y := proxyCutoff x
   set M := ⌊κ * x⌋₊
-  have hx0 : 0 < x := by linarith
+  
   have hL : 0 < L := Real.log_pos hx
   have hs0 : 0 ≤ s := Real.log_nonneg hT1
   have hsT : s ≤ T := by
@@ -567,7 +571,7 @@ lemma sum_second_le_at {x κ E : ℝ} {j : ℕ}
       refine (pow_two_mul_cardFactors_le (by linarith) hj1 hn0 hnZ h.1).trans (exp_le_exp.2 ?_)
       have hlj : Real.log j ≤ T :=
         (Real.log_le_sub_one_of_pos (by exact_mod_cast hj1)).trans (by linarith)
-      have hlj0 : 0 ≤ Real.log j := Real.log_nonneg (by exact_mod_cast hj1)
+      
       calc 2 * Real.log j * (Real.log ((M + 1 : ℕ) : ℝ) / Real.log Y)
           ≤ 2 * T * (2 * T ^ 25) := by gcongr
         _ = 4 * T ^ 26 := by ring
@@ -611,12 +615,11 @@ lemma sum_second_le_at {x κ E : ℝ} {j : ℕ}
       linarith
     have hT27 : T ^ 27 ≤ L / T ^ 25 := by
       rw [le_div_iff₀ (by positivity)]
-      calc T ^ 27 * T ^ 25 = T ^ 52 := by ring
-        _ ≤ L := hL52
+      linarith
     have hexp : T + 52 * T + 4 * T ^ 26 ≤ T ^ 27 := by
       have h1 : 64 * T ^ 26 ≤ T * T ^ 26 := by gcongr
       have h2 : T ≤ T ^ 26 := le_self_pow₀ hT1 (by norm_num)
-      have h3 : T ^ 27 = T * T ^ 26 := by ring
+      
       linarith
     calc L * (26 * (s + 1)) * B ≤ Real.exp T * Real.exp (52 * T) * B := by
           rw [hLT]
@@ -624,7 +627,7 @@ lemma sum_second_le_at {x κ E : ℝ} {j : ℕ}
       _ = Real.exp (T + 52 * T + 4 * T ^ 26) := by rw [← exp_add, ← exp_add]
       _ ≤ Real.exp (L / T ^ 25) := exp_le_exp.2 (hexp.trans hT27)
       _ = Y := rfl
-  have hB0 : 0 ≤ B := (exp_pos _).le
+  
   calc _ ≤ ∑ w ∈ Icc 1 M,
         (if IsYRough Y (candidateStrip x (w + 1)) ∧ ¬ Squarefree (candidateStrip x (w + 1)) then
           B else 0) := sum_le_sum hterm
@@ -642,9 +645,11 @@ lemma sum_second_le_at {x κ E : ℝ} {j : ℕ}
     _ ≤ x * Y / Y := by gcongr
     _ = x := by field_simp
 
+end
+
 /-- E8 (the core moment bound at `r = 2`): for large `x` and `2 ≤ j ≤ J_c`,
 `∑_{w ≤ κ x} G_j(w + 1)² ≤ x L^{15}`. -/
-theorem eventually_sum_proxyCore_sq_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 1 < κ) :
+theorem eventually_sum_proxyCore_sq_le  {c}  (hc : 0 < c)  Ch Cj κ  (hκ : 1 < κ) :
     ∀ᶠ x : ℝ in atTop, ∀ j : ℕ, 2 ≤ j → j ≤ compositeCutoff Cj x →
       ∑ w ∈ Icc 1 ⌊κ * x⌋₊, proxyCore x (presieveExponent c Ch x) j (w + 1) ^ 2 ≤
         x * Real.log x ^ (15 : ℝ) := by
@@ -682,8 +687,7 @@ theorem eventually_sum_proxyCore_sq_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (
       (Nat.cast_le.2 (Nat.ceil_mono (le_max_left _ 0))).trans
         (Nat.ceil_lt_add_one (le_max_right _ _)).le
     have h3 : max (Cj * s) 0 ≤ |Cj| * s :=
-      max_le ((le_abs_self (Cj * s)).trans (by rw [abs_mul, abs_of_nonneg hs0]))
-        (by positivity)
+      (by bound)
     nlinarith [abs_nonneg Cj]
   have hj52 : 52 * (j : ℝ) ^ 2 * (s + 1) ≤ T := by
     refine le_trans ?_ hcube
@@ -703,10 +707,7 @@ theorem eventually_sum_proxyCore_sq_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (
   have h1 := sum_first_le_at (j := j) hM hx hκ hκL hT1 hL25 hEL hgroups hj52
   have h2 := sum_second_le_at (j := j) hM hx hκ hκL hT64 hL52 hEL hj1 hjT
   have hL15 : L ^ (14 : ℝ) + 1 ≤ L ^ (15 : ℝ) := by
-    have hL2 : 2 ≤ L := by
-      have := Real.log_le_sub_one_of_pos hL
-      simp only [T, logLog] at hT
-      linarith
+    
     have h14 : 1 ≤ L ^ (14 : ℝ) := one_le_rpow (by linarith) (by norm_num)
     rw [show (15 : ℝ) = 14 + 1 by norm_num, rpow_add hL, rpow_one]
     nlinarith

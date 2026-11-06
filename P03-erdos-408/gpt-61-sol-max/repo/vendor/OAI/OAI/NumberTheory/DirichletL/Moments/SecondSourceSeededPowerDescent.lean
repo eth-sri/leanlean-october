@@ -32,15 +32,15 @@ open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
 open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
 open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
 open CenteredMomentSecondActivePhysicalDictionary
-local notation "O" => HeckeFamily.O
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
 
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
 open CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate
 open CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
 
-open CenteredMomentLogDyadic CenteredMomentSecondWindowSource
+open CenteredMomentLogDyadic  
 open MeasureTheory UniqueFactorizationMonoid CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalCost
 
 open CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl
@@ -49,7 +49,7 @@ open CenteredMomentSecondSourcePowerDescent CenteredMomentSourceInputTailSeed
 
 def seededFactors (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t ηNorm E₁ E₂ r
     loProduct wlo seedNorm : ℝ) (J₁ J₂ : ℕ) (SΦ : Finset (ℕ×ℕ))
-    (W : 𝓢(ℝ,ℂ)) : Fin 4→ℝ :=
+    (W : 𝓢(ℝ,ℂ))  :=
   let a:=physicalFactors Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t ηNorm E₁ E₂ r
     loProduct wlo J₁ J₂ SΦ W
   ![a 0,a 1,a 2,a 3/seedNorm]

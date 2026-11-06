@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SlotSums
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
 
-theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<eps)
+
+theorem continued_selected_tuple_bound  K  (eps a b r B : ℝ) (heps : 0<eps)
     (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B) :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow) (T : Fin K→Finset PrimeIdeal)
       (hT : ∀i P,P∈T i→Supported P.val ∧ (4:ℝ)≤P.val.absNorm)
@@ -25,13 +25,13 @@ theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<e
         continuedCompensatedLocal η u (P i).val (hT i (P i).val (P i).property).1 x w z
           (star (idealCoeff η (P i).val.val)*((P i).val.val.absNorm:ℂ)^x)
           (((P i).val.val.absNorm:ℂ)^(-w))‖)
-      ≤C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps*∏i,(Y i)^r := by
+      ≤C*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^eps*∏i,(Y i)^r := by
   let d : ℝ := eps/((K:ℝ)+1)
   have hd : 0<d := div_pos heps (by positivity)
   obtain ⟨C,hC,hmain⟩ := continued_selected_slot_bound d a b r B hd ha hb hr hB
   refine ⟨C^K,pow_pos hC K,?_⟩
   intro η u T hT Y hY W hWS hWB x w z hx hw hz
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N : ℝ := ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)
   have hN : 1≤N := by
     dsimp [N]
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
@@ -57,11 +57,10 @@ theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<e
       · intro i _; exact hmain η u (T i) (hT i) (Y i) (hY i) (W i) (hWS i) (hWB i) x w z hx hw hz
     _ = C^K*(N^d)^K*∏i:Fin K,(Y i)^r := by
       simp only [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_fin]
-    _ ≤ C^K*N^eps*∏i:Fin K,(Y i)^r := by
-      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow (by positivity))
+    _ ≤ C^K*N^eps*∏i:Fin K,(Y i)^r := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow (by positivity))
         (Finset.prod_nonneg fun i _=>Real.rpow_nonneg (by linarith [hY i]) _)
 
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.ActiveReflection
 
@@ -12,7 +13,7 @@ open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota
 open CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 noncomputable local instance controlledField (P : Ideal Eis) [P.IsMaximal] :
     Field (Eis ⧸ P) := Ideal.Quotient.field _
 noncomputable local instance controlledFintype (P : Ideal Eis) [P.IsMaximal] :
@@ -21,12 +22,12 @@ variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool
 
 theorem controlled_phase_product (D : ControlledStratumArithmetic p N a0 c0 mode)
     [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
-    (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
+    (hN : (9 : Eis) * c0 ∣ N) (hr : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (∏ i, p i) - 1)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a0 - 1 else ConcretePrimeRowBridge.goodLambda ^ 2 ∣ c0 - 1)
     (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ) (x : Eis) :
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+     v   x  :
     star (complexCharacter (D.relativeGamma hN hr hbase v)) *
       ShortDraftTrace.breveE (-(eisEmbedding (D.matrix v 1 1) * (eisEmbedding x / eisLam ^ 4)) /
         (eisEmbedding c0 * eisEmbedding (∏ i, p i))) =
@@ -49,17 +50,17 @@ theorem controlled_phase_product (D : ControlledStratumArithmetic p N a0 c0 mode
 
 def fullLocalFourierWeight [∀ i, (Ideal.span {p i}).IsMaximal]
     (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
-    (v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ) : ℂ :=
+    (v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ)  :=
   ∏ i, finiteAdditiveFourierCoeff (quotientTrace (p i) (hp i)) (F i) (v i)
 
 theorem controlled_local_multiplier (D : ControlledStratumArithmetic p N a0 c0 mode)
     [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
-    (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
+    (hN : (9 : Eis) * c0 ∣ N) (hr : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (∏ i, p i) - 1)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a0 - 1 else ConcretePrimeRowBridge.goodLambda ^ 2 ∣ c0 - 1)
     (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ) (x : Eis) :
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+     F   x  :
     (∑ v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ, fullLocalFourierWeight hp F v *
       star (complexCharacter (D.relativeGamma hN hr hbase v)) *
       ShortDraftTrace.breveE (-(eisEmbedding (D.matrix v 1 1) * (eisEmbedding x / eisLam ^ 4)) /
@@ -77,7 +78,7 @@ theorem controlled_local_multiplier (D : ControlledStratumArithmetic p N a0 c0 m
   ring
 
 def mixedActiveBracket [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode)
     (i : ι) (x : Eis) : ℂ :=
   if i ∈ S then
@@ -91,10 +92,10 @@ def mixedActiveBracket [∀ i, (Ideal.span {p i}).IsMaximal]
       bracket (actualSextic (Ideal.span {p i}) (hg i)) (j i) (Ideal.Quotient.mk _ x)
 
 theorem mixedActiveBracket_eq_units [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+     hp  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (j : ι → ℕ) (hj : ∀ i, j i < 6) (S : Finset ι)
-    (D : ControlledStratumArithmetic p N a0 c0 mode) (i : ι) (x : Eis) :
+     j  (hj : ∀ i, j i < 6)  S 
+    (D : ControlledStratumArithmetic p N a0 c0 mode)  i   x  :
     (∑ v : (Eis ⧸ Ideal.span {p i})ˣ,
       finiteAdditiveFourierCoeff (quotientTrace (p i) (hp i)) (mixedPrimeFunction p hg j S i) v *
         frequencyMultiplier (actualSextic (Ideal.span {p i}) (hg i))
@@ -115,12 +116,12 @@ theorem mixedActiveBracket_eq_units [∀ i, (Ideal.span {p i}).IsMaximal]
 
 theorem controlled_mixed_multiplier (D : ControlledStratumArithmetic p N a0 c0 mode)
     [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
-    (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
-    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0)
+    (hN : (9 : Eis) * c0 ∣ N) (hr : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (∏ i, p i) - 1)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a0 - 1 else ConcretePrimeRowBridge.goodLambda ^ 2 ∣ c0 - 1)
+     hp   hc0 
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (j : ι → ℕ) (hj : ∀ i, j i < 6) (S : Finset ι) (x : Eis) :
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+     j  (hj : ∀ i, j i < 6)  S   x  :
     (∑ v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ,
       fullLocalFourierWeight hp (mixedPrimeFunction p hg j S) v *
       star (complexCharacter (D.relativeGamma hN hr hbase v)) *
@@ -131,8 +132,7 @@ theorem controlled_mixed_multiplier (D : ControlledStratumArithmetic p N a0 c0 m
   rw [controlled_local_multiplier D hN hr hbase hp hc0 hcop hg]
   congr 1
   apply Finset.prod_congr rfl
-  intro i hi
-  exact mixedActiveBracket_eq_units hp hg hc j hj S D i x
+  solve_by_elim [mixedActiveBracket_eq_units]
 
 end
 end SevenEighths.InverseMoment

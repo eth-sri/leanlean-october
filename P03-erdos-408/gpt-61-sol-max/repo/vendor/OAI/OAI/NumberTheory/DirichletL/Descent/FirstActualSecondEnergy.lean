@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstRetainedFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstPriorityEnergy
@@ -19,7 +20,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 def firstCanonicalSecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (F : Finset ι) (b : CubeCoordinates ι) (C : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m d : O) (H selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ) : ℝ :=
+    (Ψ : O→*ℂ) (m d : O) (H selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ)  :=
   (32*512)*∑ r : RayCharacter×RayCharacter,∑ D∈F.powerset,
     (‖crossCoeff r.1 r.2‖*‖selector D‖)*∑ core : FirstCoreIndex,
       ‖firstCoreOuter p hg b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit negative Ψ m D core‖ *
@@ -63,8 +64,7 @@ theorem first_retained_actual_second_energy (ε : ℝ) (hε : 0<ε) :
         (multiplicativeCoreColumn p (if negative then Ψ₁ else Ψ₂) (if negative then m₁ else m₂)
           (fun U=>H (((if negative then b.rightDivisor else b.leftDivisor)∪C)∪U)))
         (∏i∈C,p i) d x.1 := by
-    funext x
-    exact firstCanonicalCoefficient_old p hp hcop hg b C negative _ _ d H x
+    rfl
   rw [hcoef]
   exact he
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.Constant.Boxes
 public import Erdos408.TwoSided.Endpoint.Constant.Piece
@@ -24,23 +25,23 @@ namespace Erdos408.TwoSided.ConstHigh
 open Finset MeasureTheory
 
 /-- The bound of one class of a box, `integral_boxSmall_mul_le`. -/
-noncomputable def classBound (x δ θ c C₈ CNN Nexp JB Hc : ℝ) : ℝ :=
+noncomputable def classBound (x δ θ c C₈ CNN Nexp JB Hc : ℝ)  :=
   θ ^ 2 * ((17 + 48 * Real.log x) * (3 * δ * Hc ^ 2)) + 2 * (3 * δ) ^ 2 *
     ((Real.log x ^ C₈) ^ 2 * (2304 / c + 4 * (x ^ (-(1 / 150 : ℝ))) ^ 2 * x ^ (1 / 300 : ℝ)) +
       JB * (Real.log x ^ C₈ * (24 / x ^ (1 / 300 : ℝ) + x ^ (-(1 / 150 : ℝ)))) ^ 2 +
       (17 + 48 * Real.log x) * (CNN * Real.log x ^ (-Nexp)))
 
 /-- The bound of the corner error of a box, `integral_boxErr_le_of_corner`. -/
-noncomputable def errBound (x δ Kc M Hc : ℝ) : ℝ :=
+noncomputable def errBound (x δ Kc M Hc : ℝ)  :=
   3888 * δ ^ 5 * Kc ^ 2 * M ^ 2 * Hc ^ 2 * (66 + 192 * Real.log x)
 
 /-- The bound of one box, `integral_boxSum_le`. -/
-noncomputable def boxBound (x δ θ c C₈ CNN Nexp JB Hc Kc M₀ M₁ : ℝ) (k : ℕ) : ℝ :=
+noncomputable def boxBound (x δ θ c C₈ CNN Nexp JB Hc Kc M₀ M₁ : ℝ) (k : ℕ)  :=
   2 * ((2 * Kc * M₀) ^ 2 * (k * (k * classBound x δ θ c C₈ CNN Nexp JB Hc))) +
     2 * errBound x δ Kc M₁ Hc
 
 /-- The class bound is nonnegative. -/
-theorem classBound_nonneg {x δ θ c C₈ CNN Nexp JB Hc : ℝ} (hx : 1 ≤ x) (hδ : 0 ≤ δ)
+theorem classBound_nonneg  {x δ θ c C₈ CNN Nexp JB Hc}  (hx : 1 ≤ x) (hδ : 0 ≤ δ)
     (hc : 0 < c) (hCNN : 0 ≤ CNN) (hJB : 0 ≤ JB) :
     0 ≤ classBound x δ θ c C₈ CNN Nexp JB Hc := by
   have hL := Real.log_nonneg hx
@@ -50,7 +51,6 @@ theorem classBound_nonneg {x δ θ c C₈ CNN Nexp JB Hc : ℝ} (hx : 1 ≤ x) (
     mul_nonneg hJB (sq_nonneg _)
   have h4 : 0 ≤ (Real.log x ^ C₈) ^ 2 * (2304 / c + 4 * (x ^ (-(1 / 150 : ℝ))) ^ 2 *
       x ^ (1 / 300 : ℝ)) := by
-    have : 0 ≤ x ^ (1 / 300 : ℝ) := Real.rpow_nonneg (by linarith) _
     positivity
   have h5 : 0 ≤ θ ^ 2 * ((17 + 48 * Real.log x) * (3 * δ * Hc ^ 2)) :=
     mul_nonneg (sq_nonneg _) (mul_nonneg h1 (by positivity))
@@ -61,27 +61,34 @@ theorem classBound_nonneg {x δ θ c C₈ CNN Nexp JB Hc : ℝ} (hx : 1 ≤ x) (
   linarith
 
 /-- The corner-error bound is nonnegative. -/
-theorem errBound_nonneg {x δ Kc M Hc : ℝ} (hx : 1 ≤ x) (hδ : 0 ≤ δ) :
+theorem errBound_nonneg  {x δ Kc M Hc}  (hx : 1 ≤ x) (hδ : 0 ≤ δ) :
     0 ≤ errBound x δ Kc M Hc := by
   have hL := Real.log_nonneg hx
   rw [errBound]
   have h1 : 0 ≤ 66 + 192 * Real.log x := by linarith
   have h2 : 0 ≤ 3888 * δ ^ 5 * Kc ^ 2 * M ^ 2 * Hc ^ 2 :=
-    mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) (pow_nonneg hδ 5))
-      (sq_nonneg _)) (sq_nonneg _)) (sq_nonneg _)
+    (by positivity)
   exact mul_nonneg h2 h1
 
-section Fixed
+
 
 variable {x Y σ δ θ T₀ c a b C₈ CNN Nexp JB Hc : ℝ} {h : ℤ} {k : ℕ} {Ps : Finset ℕ}
   {H A₀ : ℕ → ℂ}
 
+section
+variable (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
+include hδ0 hδ
+
+section
+variable (hPs : ∀ p ∈ Ps, p.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ p ∧
+      (p : ℝ) ≤ Real.exp (Real.log x ^ (0.36 : ℝ)))
+include hPs
+
 /-- The primes of a nonempty box `j` lie in `(e^{jδ}, 2e^{jδ}]`, so
 `e^{L^{0.27}}/2 ≤ e^{jδ} ≤ e^{L^{0.36}}`. -/
-theorem boxPrimes_scale (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
-    (hPs : ∀ p ∈ Ps, p.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ p ∧
-      (p : ℝ) ≤ Real.exp (Real.log x ^ (0.36 : ℝ)))
-    {j : ℕ} (hs : (boxPrimes δ Ps j).Nonempty) :
+theorem boxPrimes_scale    
+     
+     {j}  (hs : (boxPrimes δ Ps j).Nonempty) :
     Real.exp (Real.log x ^ (0.27 : ℝ)) / 2 ≤ Real.exp (j * δ) ∧
       Real.exp (j * δ) ≤ Real.exp (Real.log x ^ (0.36 : ℝ)) := by
   obtain ⟨p₀, hp₀⟩ := hs
@@ -94,23 +101,25 @@ theorem boxPrimes_scale (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
     hp₂.trans (mul_le_mul_of_nonneg_right heδ (Real.exp_pos _).le)
   constructor <;> linarith
 
+section
+variable (hδx : 1 ≤ δ * (Real.exp (Real.log x ^ (0.27 : ℝ)) / 2)) {j : ℕ} (hs : (boxPrimes δ Ps j).Nonempty)
+include hδx j hs
+
 /-- A nonempty box `j` has at most `3δ e^{jδ}` primes. -/
-theorem card_boxPrimes_le (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
-    (hPs : ∀ p ∈ Ps, p.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ p ∧
-      (p : ℝ) ≤ Real.exp (Real.log x ^ (0.36 : ℝ)))
-    (hδx : 1 ≤ δ * (Real.exp (Real.log x ^ (0.27 : ℝ)) / 2))
-    {j : ℕ} (hs : (boxPrimes δ Ps j).Nonempty) :
+theorem card_boxPrimes_le    
+     
+     
+        :
     ((boxPrimes δ Ps j).card : ℝ) ≤ 3 * δ * Real.exp (j * δ) := by
   refine (show ((boxPrimes δ Ps j).card : ℝ) ≤ (gridPiece δ j).card by
     exact_mod_cast card_filter_le _ _).trans (card_gridPiece_le hδ0 hδ ?_)
   exact hδx.trans (mul_le_mul_of_nonneg_left (boxPrimes_scale hδ0 hδ hPs hs).1 hδ0)
 
 /-- On a nonempty box the small-prime polynomial is at most `3δ`. -/
-theorem norm_boxSmall_le_three (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
-    (hPs : ∀ p ∈ Ps, p.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ p ∧
-      (p : ℝ) ≤ Real.exp (Real.log x ^ (0.36 : ℝ)))
-    (hδx : 1 ≤ δ * (Real.exp (Real.log x ^ (0.27 : ℝ)) / 2))
-    {j : ℕ} (hs : (boxPrimes δ Ps j).Nonempty) (β : ℕ) (t : ℝ) :
+theorem norm_boxSmall_le_three    
+     
+     
+         β   t  :
     ‖boxSmall σ δ h k Ps j β t‖ ≤ 3 * δ := by
   refine (norm_boxSmall_le j β t).trans ?_
   have h1 := card_boxPrimes_le hδ0 hδ hPs hδx hs
@@ -120,9 +129,13 @@ theorem norm_boxSmall_le_three (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
         mul_le_mul_of_nonneg_right h1 (inv_nonneg.2 h2.le)
     _ = 3 * δ := by field_simp
 
+end
+
+end
+
 /-- The length factor of the mean value theorem at the residual scale `e^{iδ} ≥ T₀`:
 `b - a + 8N(1 + log N) ≤ e^{iδ} (17 + 48L)` for `N = ⌊e^{(i+1)δ}⌋`, `2e^{iδ} ≤ x³`. -/
-theorem length_factor_le (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2) (hba : b - a ≤ T₀) {i : ℕ}
+theorem length_factor_le     (hba : b - a ≤ T₀) {i : ℕ}
     (hT : T₀ ≤ Real.exp (i * δ))
     (hix : 2 * Real.exp (i * δ) ≤ x ^ 3) :
     b - a + 8 * grid δ (i + 1) * (1 + Real.log (grid δ (i + 1))) ≤
@@ -133,13 +146,14 @@ theorem length_factor_le (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2) (hba : b - a ≤
     calc Real.log (grid δ (i + 1)) ≤ Real.log (x ^ 3) :=
           Real.log_le_log (by linarith) (hN2.trans hix)
       _ = 3 * Real.log x := by rw [Real.log_pow]; push_cast; ring
-  have hlog0 := Real.log_nonneg hN1
+  
   have h1 : 8 * (grid δ (i + 1) : ℝ) * (1 + Real.log (grid δ (i + 1))) ≤
       8 * (2 * Real.exp (i * δ)) * (1 + 3 * Real.log x) := by
     gcongr
-  have h2 : 8 * (2 * Real.exp (i * δ)) * (1 + 3 * Real.log x) + Real.exp (i * δ) =
-      Real.exp (i * δ) * (17 + 48 * Real.log x) := by ring
+  
   linarith
+
+end
 
 /-- **E10.2 in a box.** The model part of the residual,
 `|e^{-iδ} ∑_{n ≡ β} (∑_{d ∣ n} A_d) n^{iσ} n^{it}| ≤ L^{C₈} (24/|t| + x^{-1/150})`, at times
@@ -151,7 +165,7 @@ theorem norm_boxResidual_model_le
           (∑ d ∈ n.divisors, A₀ d) * (n : ℂ) ^ ((u : ℂ) * Complex.I)‖ ≤
         Real.log x ^ C₈ * (12 / |u| + x ^ (-(1 / 150 : ℝ))))
     (hx : 1 ≤ x) (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2) (hc : 2 ≤ c) (hσ : |σ| ≤ c / 2)
-    (hT₀ : 2 * T₀ ≤ x ^ 3) {i : ℕ} (hi : x ^ (99 / 100 : ℝ) ≤ Real.exp (i * δ)) (β : ℕ) {t : ℝ}
+    (hT₀ : 2 * T₀ ≤ x ^ 3) {i : ℕ} (hi : x ^ (99 / 100 : ℝ) ≤ Real.exp (i * δ))  β   {t} 
     (ht : c ≤ |t|)
     (ht' : |t| ≤ T₀) :
     ‖boxResidual σ δ k (fun n => ∑ d ∈ n.divisors, A₀ d) i β t‖ ≤
@@ -166,7 +180,7 @@ theorem norm_boxResidual_model_le
     rw [show ((t + σ : ℝ) : ℂ) * Complex.I = (σ : ℂ) * Complex.I + (t : ℂ) * Complex.I by
       push_cast; ring, Complex.cpow_add _ _ hn0, Complex.ofReal_inv]
     ring
-  have hσt : |σ| ≤ |t| / 2 := by linarith
+  
   have hts : |t| / 2 ≤ |t + σ| := by
     have := abs_add_le (t + σ) (-σ)
     rw [add_neg_cancel_right, abs_neg] at this
@@ -219,7 +233,7 @@ theorem setIntegral_boxOrdinary_le
           ‖(∑ p ∈ s, cs p * (p : ℂ) ^ ((t : ℂ) * Complex.I)) *
             ∑ n ∈ Finset.Icc 1 N, cq n * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2 ≤
         θ ^ 2 * ((b - a + 8 * N * (1 + Real.log N)) * ∑ n ∈ Finset.Icc 1 N, ‖cq n‖ ^ 2))
-    (hab : a ≤ b) (hH : ∀ n, ‖H n‖ ≤ Hc) {j i β : ℕ}
+    (hab : a ≤ b) (hH : ∀ n, ‖H n‖ ≤ Hc)  {j i β} 
     (hfac : b - a + 8 * grid δ (i + 1) * (1 + Real.log (grid δ (i + 1))) ≤
       Real.exp (i * δ) * (17 + 48 * Real.log x))
     (hfac0 : 0 ≤ b - a + 8 * grid δ (i + 1) * (1 + Real.log (grid δ (i + 1))))
@@ -272,10 +286,10 @@ theorem setIntegral_boxOrdinary_le
 theorem integral_boxResidual_error_le
     (hmodel : ∀ R : ℝ, 1 ≤ R → ∑ n ∈ Finset.Ioc ⌊R⌋₊ ⌊2 * R⌋₊,
       ‖H n - ∑ d ∈ n.divisors, A₀ d‖ ^ 2 ≤ CNN * R * Real.log x ^ (-Nexp))
-    (hx : 1 < x) (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2) {i : ℕ}
+    (hx : 1 < x) (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)  {i} 
     (hfac : b - a + 8 * grid δ (i + 1) * (1 + Real.log (grid δ (i + 1))) ≤
       Real.exp (i * δ) * (17 + 48 * Real.log x))
-    (hfac0 : 0 ≤ b - a + 8 * grid δ (i + 1) * (1 + Real.log (grid δ (i + 1)))) (β : ℕ) :
+    (hfac0 : 0 ≤ b - a + 8 * grid δ (i + 1) * (1 + Real.log (grid δ (i + 1))))  β  :
     ∫ t in a..b, ‖boxResidual σ δ k (fun n => H n - ∑ d ∈ n.divisors, A₀ d) i β t‖ ^ 2 ≤
       (17 + 48 * Real.log x) * (CNN * Real.log x ^ (-Nexp)) := by
   set S := (gridPiece δ i).filter (· ≡ β [MOD k]) with hS
@@ -285,13 +299,7 @@ theorem integral_boxResidual_error_le
   have hei1 : 1 ≤ ei := Real.one_le_exp (by positivity)
   have hSN : S ⊆ Icc 1 N := (filter_subset _ _).trans (gridPiece_subset_Icc δ i)
   have hLN : 0 < Real.log x ^ (-Nexp) := Real.rpow_pos_of_pos (Real.log_pos hx) _
-  have hCNN : 0 ≤ CNN := by
-    have h1 := hmodel 1 le_rfl
-    have h0 : 0 ≤ ∑ n ∈ Finset.Ioc ⌊(1 : ℝ)⌋₊ ⌊2 * (1 : ℝ)⌋₊,
-        ‖H n - ∑ d ∈ n.divisors, A₀ d‖ ^ 2 := sum_nonneg fun _ _ => sq_nonneg _
-    have h2 := h0.trans h1
-    rw [mul_one] at h2
-    exact nonneg_of_mul_nonneg_left h2 hLN
+  
   have hSsub : S ⊆ Finset.Ioc ⌊ei⌋₊ ⌊2 * ei⌋₊ := by
     intro n hn
     have hn' := (mem_filter.1 hn).1
@@ -312,8 +320,7 @@ theorem integral_boxResidual_error_le
             mul_pow, mul_pow]
           have h1 := IntegerKernel.norm_natCast_cpow_I_mul_le σ n
           have h2 : ‖(n : ℂ) ^ ((σ : ℂ) * Complex.I)‖ ^ 2 ≤ 1 := by
-            have := norm_nonneg ((n : ℂ) ^ ((σ : ℂ) * Complex.I))
-            nlinarith
+            bound
           have h3 : 0 ≤ ei⁻¹ ^ 2 * ‖H n - ∑ d ∈ n.divisors, A₀ d‖ ^ 2 := by positivity
           calc ei⁻¹ ^ 2 * ‖H n - ∑ d ∈ n.divisors, A₀ d‖ ^ 2 *
                 ‖(n : ℂ) ^ ((σ : ℂ) * Complex.I)‖ ^ 2
@@ -366,7 +373,7 @@ theorem integral_boxSmall_mul_le (hab : a ≤ b) (hc : 2 ≤ c)
         JB)
     {j i : ℕ} (hs : (boxPrimes δ Ps j).Nonempty)
     (hr₁ : Y ≤ Real.exp (j * δ) * Real.exp (i * δ))
-    (hr₂ : Real.exp (j * δ) * Real.exp (i * δ) ≤ 2 * Y) (β : ℕ) :
+    (hr₂ : Real.exp (j * δ) * Real.exp (i * δ) ≤ 2 * Y)  β  :
     ∫ t in a..b, ‖boxSmall σ δ h k Ps j β t * boxResidual σ δ k H i β t‖ ^ 2 ≤
       classBound x δ θ c C₈ CNN Nexp JB Hc := by
   rw [classBound]
@@ -378,7 +385,7 @@ theorem integral_boxSmall_mul_le (hab : a ≤ b) (hc : 2 ≤ c)
   set N := grid δ (i + 1) with hN
   set ε := x ^ (-(1 / 150 : ℝ)) with hε
   set X := x ^ (1 / 300 : ℝ) with hX
-  have hx0 : 0 < x := by linarith
+  
   have hL0 : 0 < L := Real.log_pos hx
   have hej0 : 0 < ej := Real.exp_pos _
   have hei0 : 0 < ei := Real.exp_pos _
@@ -404,17 +411,14 @@ theorem integral_boxSmall_mul_le (hab : a ≤ b) (hc : 2 ≤ c)
       exact mul_le_mul_of_nonneg_left h1 hei0.le
     linarith
   -- counts and lengths
-  have hcS : (Sβ.card : ℝ) ≤ 3 * δ * ei := by
-    refine (show (Sβ.card : ℝ) ≤ (gridPiece δ i).card by exact_mod_cast card_filter_le _ _).trans
+  have hcS : (Sβ.card : ℝ) ≤ 3 * δ * ei := (show (Sβ.card : ℝ) ≤ (gridPiece δ i).card by exact_mod_cast card_filter_le _ _).trans
       (card_gridPiece_le hδ0.le hδ (hδx'.trans (mul_le_mul_of_nonneg_left hei₁ hδ0.le)))
-  have hSβ1 : Sβ ⊆ Icc 1 N := (filter_subset _ _).trans (gridPiece_subset_Icc δ i)
+  
   have hfac : b - a + 8 * N * (1 + Real.log N) ≤ ei * (17 + 48 * L) :=
     length_factor_le hδ0.le hδ hba hT₀ei (by linarith)
   have hN1 : (1 : ℝ) ≤ N := by exact_mod_cast one_le_grid hδ0.le (i + 1)
   have hfac0 : 0 ≤ b - a + 8 * N * (1 + Real.log N) := by
-    have := Real.log_nonneg hN1
-    have : 0 ≤ 8 * (N : ℝ) * (1 + Real.log N) := by positivity
-    linarith
+    positivity
   -- the small-prime polynomial is at most `3δ`
   have hAmax : ∀ t, ‖boxSmall σ δ h k Ps j β t‖ ≤ 3 * δ :=
     norm_boxSmall_le_three hδ0.le hδ hPs hδx hs β
@@ -475,13 +479,17 @@ theorem integral_boxSmall_mul_le (hab : a ≤ b) (hc : 2 ≤ c)
     (fun t ht hθ _ => hbad t ht hθ) hME
   simp_rw [hsplit]
   refine hpiece.trans ?_
-  have hG : 0 ≤ (L ^ C₈ * (24 / X + ε)) ^ 2 := sq_nonneg _
-  have hδ2 : 0 ≤ 2 * (3 * δ) ^ 2 := by positivity
+  
+  
   gcongr
+
+section
+variable {κ : ℂ} {ψ : ℝ → ℂ}
+include κ ψ
 
 /-- **The corner error of a relevant box.** For a box with primes and corner
 `r ∈ [Y/4, 2Y]`, `∫_a^b |E_{ji}|² ≤ 3888 δ⁵ K_c² M₁² H_max² (66 + 192L)`. -/
-theorem integral_boxErr_le_of_corner {κ : ℂ} {ψ : ℝ → ℂ} {M Kc : ℝ} (hab : a ≤ b)
+theorem integral_boxErr_le_of_corner     {M Kc : ℝ} (hab : a ≤ b)
     (hba : b - a ≤ T₀) (hx : 1 < x) (hδ0 : 0 < δ) (hδ : δ ≤ 1 / 2)
     (hψ : ∀ y, ψ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) (hψd : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ)
     (hM : ∀ y, ‖iteratedDeriv 1 ψ y‖ ≤ M) (hκ : ‖κ‖ ≤ Kc) (hH : ∀ n, ‖H n‖ ≤ Hc)
@@ -499,13 +507,13 @@ theorem integral_boxErr_le_of_corner {κ : ℂ} {ψ : ℝ → ℂ} {M Kc : ℝ} 
   set ej := Real.exp (j * δ) with hej
   set ei := Real.exp (i * δ) with hei
   set N := grid δ (i + 1) with hN
-  have hx0 : 0 < x := by linarith
+  
   have hL0 : 0 < L := Real.log_pos hx
-  have hej0 : 0 < ej := Real.exp_pos _
+  
   have hei0 : 0 < ei := Real.exp_pos _
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
-  have hKc : 0 ≤ Kc := (norm_nonneg _).trans hκ
-  have hHc : 0 ≤ Hc := (norm_nonneg _).trans (hH 0)
+  
+  
+  
   have hE36 : 0 < Real.exp (L ^ (0.36 : ℝ)) := Real.exp_pos _
   have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hY₁
   obtain ⟨hej₁, hej₂⟩ := boxPrimes_scale hδ0.le hδ hPs hs
@@ -533,13 +541,11 @@ theorem integral_boxErr_le_of_corner {κ : ℂ} {ψ : ℝ → ℂ} {M Kc : ℝ} 
   have hlogN : Real.log N ≤ 3 * L := by
     calc Real.log N ≤ Real.log (x ^ 3) := Real.log_le_log (by linarith) (by linarith)
       _ = 3 * L := by rw [Real.log_pow]; push_cast; ring
-  have hlog0 := Real.log_nonneg hN1
+  
   have hfac : b - a + 8 * N * (1 + Real.log N) ≤ T₀ + 16 * ei * (1 + 3 * L) := by
     have : 8 * (N : ℝ) * (1 + Real.log N) ≤ 8 * (2 * ei) * (1 + 3 * L) := by gcongr
     linarith
-  have hfac0 : 0 ≤ b - a + 8 * N * (1 + Real.log N) := by
-    have : 0 ≤ 8 * (N : ℝ) * (1 + Real.log N) := by positivity
-    linarith
+  
   refine (integral_boxErr_le hab hY0 hδ0.le hδ hψ hψd hM hκ hH j i).trans ?_
   set c₀ := Kc * Y⁻¹ * (12 * δ * M) * Hc with hc₀
   have hT₀0 : 0 ≤ T₀ := (sub_nonneg.2 hab).trans hba
@@ -561,42 +567,46 @@ theorem integral_boxErr_le_of_corner {κ : ℂ} {ψ : ℝ → ℂ} {M Kc : ℝ} 
         ring
 
 open scoped Classical in
-/-- **One box (E6, E7, E10).** Every box `(j, i)` has
-`∫_a^b |T_{ji}|² ≤ 2 (2K_c M₀)² k² · classBound + 2 · errBound`: the boxes without primes or with
-corner outside `[Y/4, 2Y]` vanish; otherwise `T_{ji} = W ∑_β A_β B_β + E_{ji}` with
-`|W| ≤ 2K_c M₀`, and `W = 0` unless `r ∈ [Y, 2Y]`. -/
-theorem integral_boxSum_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ Kc : ℝ} (hab : a ≤ b) (hc : 2 ≤ c)
-    (hint : ∀ t ∈ Set.Icc a b, c ≤ |t| ∧ |t| ≤ T₀) (hba : b - a ≤ T₀) (hσ : |σ| ≤ c / 2)
-    (hx : 1 < x) (hδ0 : 0 < δ) (hδ : δ ≤ 1 / 2)
-    (hψ : ∀ y, ψ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) (hψd : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ)
-    (hM₀ : ∀ y, ‖ψ y‖ ≤ M₀) (hM₁ : ∀ y, ‖iteratedDeriv 1 ψ y‖ ≤ M₁) (hκ : ‖κ‖ ≤ Kc)
-    (hPs : ∀ p ∈ Ps, p.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ p ∧
-      (p : ℝ) ≤ Real.exp (Real.log x ^ (0.36 : ℝ)))
-    (hk : 1 ≤ k) (hH : ∀ n, ‖H n‖ ≤ Hc)
-    (hY₁ : x * Real.exp (Real.log x ^ (0.36 : ℝ)) ≤ Y) (hY₂ : 8 * Y ≤ x ^ 3)
-    (hT₀ : T₀ * Real.exp (Real.log x ^ (0.36 : ℝ)) ≤ Y)
-    (hδx : 1 ≤ δ * (Real.exp (Real.log x ^ (0.27 : ℝ)) / 2)) (hδx' : 4 ≤ δ * x)
-    (hE10 : ∀ (R : ℝ) (β lo hi : ℕ) (u : ℝ), x ^ (99 / 100 : ℝ) ≤ R → R ≤ lo + 1 →
+section
+variable {M₀ M₁ Kc : ℝ} (hab : a ≤ b) (hc : 2 ≤ c) (hint : ∀ t ∈ Set.Icc a b, c ≤ |t| ∧ |t| ≤ T₀) (hba : b - a ≤ T₀) (hσ : |σ| ≤ c / 2) (hx : 1 < x) (hδ0 : 0 < δ) (hδ : δ ≤ 1 / 2) (hψ : ∀ y, ψ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) (hψd : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ) (hM₀ : ∀ y, ‖ψ y‖ ≤ M₀) (hM₁ : ∀ y, ‖iteratedDeriv 1 ψ y‖ ≤ M₁) (hκ : ‖κ‖ ≤ Kc) (hPs : ∀ p ∈ Ps, p.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ p ∧
+      (p : ℝ) ≤ Real.exp (Real.log x ^ (0.36 : ℝ))) (hk : 1 ≤ k) (hH : ∀ n, ‖H n‖ ≤ Hc) (hY₁ : x * Real.exp (Real.log x ^ (0.36 : ℝ)) ≤ Y) (hY₂ : 8 * Y ≤ x ^ 3) (hT₀ : T₀ * Real.exp (Real.log x ^ (0.36 : ℝ)) ≤ Y) (hδx : 1 ≤ δ * (Real.exp (Real.log x ^ (0.27 : ℝ)) / 2)) (hδx' : 4 ≤ δ * x) (hE10 : ∀ (R : ℝ) (β lo hi : ℕ) (u : ℝ), x ^ (99 / 100 : ℝ) ≤ R → R ≤ lo + 1 →
       (hi : ℝ) ≤ 2 * R → 1 ≤ |u| → |u| ≤ x ^ 3 →
       ‖(R : ℂ)⁻¹ * ∑ n ∈ (Finset.Ioc lo hi).filter (· ≡ β [MOD k]),
           (∑ d ∈ n.divisors, A₀ d) * (n : ℂ) ^ ((u : ℂ) * Complex.I)‖ ≤
-        Real.log x ^ C₈ * (12 / |u| + x ^ (-(1 / 150 : ℝ))))
-    (hmodel : ∀ R : ℝ, 1 ≤ R → ∑ n ∈ Finset.Ioc ⌊R⌋₊ ⌊2 * R⌋₊,
-      ‖H n - ∑ d ∈ n.divisors, A₀ d‖ ^ 2 ≤ CNN * R * Real.log x ^ (-Nexp))
-    (hOrd : ∀ (s : Finset ℕ) (cs : ℕ → ℂ) (N : ℕ) (cq : ℕ → ℂ) {a b θ : ℝ}, a ≤ b →
+        Real.log x ^ C₈ * (12 / |u| + x ^ (-(1 / 150 : ℝ)))) (hmodel : ∀ R : ℝ, 1 ≤ R → ∑ n ∈ Finset.Ioc ⌊R⌋₊ ⌊2 * R⌋₊,
+      ‖H n - ∑ d ∈ n.divisors, A₀ d‖ ^ 2 ≤ CNN * R * Real.log x ^ (-Nexp)) (hOrd : ∀ (s : Finset ℕ) (cs : ℕ → ℂ) (N : ℕ) (cq : ℕ → ℂ) {a b θ : ℝ}, a ≤ b →
       ∫ t in {t ∈ Set.Ioc a b | ‖∑ p ∈ s, cs p * (p : ℂ) ^ ((t : ℂ) * Complex.I)‖ ≤ θ},
           ‖(∑ p ∈ s, cs p * (p : ℂ) ^ ((t : ℂ) * Complex.I)) *
             ∑ n ∈ Finset.Icc 1 N, cq n * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2 ≤
-        θ ^ 2 * ((b - a + 8 * N * (1 + Real.log N)) * ∑ n ∈ Finset.Icc 1 N, ‖cq n‖ ^ 2))
-    (hJB : 0 ≤ JB)
-    (hS16 : ∀ (P : ℝ) (s : Finset ℕ) (coeff : ℕ → ℂ),
+        θ ^ 2 * ((b - a + 8 * N * (1 + Real.log N)) * ∑ n ∈ Finset.Icc 1 N, ‖cq n‖ ^ 2)) (hJB : 0 ≤ JB) (hS16 : ∀ (P : ℝ) (s : Finset ℕ) (coeff : ℕ → ℂ),
       Real.exp (Real.log x ^ (0.27 : ℝ)) / 2 ≤ P → P ≤ Real.exp (Real.log x ^ (0.36 : ℝ)) →
       (∀ p ∈ s, p.Prime ∧ P ≤ p ∧ (p : ℝ) ≤ 2 * P) → (∀ p ∈ s, ‖coeff p‖ ≤ 1) →
       (((Finset.Icc (-⌈T₀⌉ - 1) ⌈T₀⌉).filter fun j : ℤ =>
           ∃ t : ℝ, (j : ℝ) ≤ t ∧ t ≤ j + 1 ∧ |t| ≤ T₀ ∧
             θ < ‖(P : ℂ)⁻¹ * ∑ p ∈ s, coeff p * (p : ℂ) ^ ((t : ℂ) * Complex.I)‖).card : ℝ) ≤
         JB)
-    (j i : ℕ) :
+include M₀ M₁ Kc hab hc hint hba hσ hx hδ0 hδ hψ hψd hM₀ hM₁ hκ hPs hk hH hY₁ hY₂ hT₀ hδx hδx' hE10 hmodel hOrd hJB hS16
+
+/-- **One box (E6, E7, E10).** Every box `(j, i)` has
+`∫_a^b |T_{ji}|² ≤ 2 (2K_c M₀)² k² · classBound + 2 · errBound`: the boxes without primes or with
+corner outside `[Y/4, 2Y]` vanish; otherwise `T_{ji} = W ∑_β A_β B_β + E_{ji}` with
+`|W| ≤ 2K_c M₀`, and `W = 0` unless `r ∈ [Y, 2Y]`. -/
+theorem integral_boxSum_le          
+         
+         
+       
+         
+     
+       
+       
+     
+       
+     
+     
+     
+     
+     
+     j i  :
     ∫ t in a..b, ‖boxSum Y σ δ h k Ps κ H ψ j i t‖ ^ 2 ≤
       boxBound x δ θ c C₈ CNN Nexp JB Hc Kc M₀ M₁ k := by
   have hc0 : 0 < c := by linarith
@@ -613,9 +623,7 @@ theorem integral_boxSum_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ Kc : ℝ} (h
   have hEB := errBound_nonneg (Kc := Kc) (M := M₁) (Hc := Hc) hx.le hδ0.le
   have hBB : 0 ≤ boxBound x δ θ c C₈ CNN Nexp JB Hc Kc M₀ M₁ k := by
     rw [boxBound]
-    have : 0 ≤ (2 * Kc * M₀) ^ 2 * (k * (k * classBound x δ θ c C₈ CNN Nexp JB Hc)) := by
-      positivity
-    linarith
+    positivity
   set r := Real.exp (j * δ) * Real.exp (i * δ) with hr
   by_cases hrel : (boxPrimes δ Ps j).Nonempty ∧ Y / 4 ≤ r ∧ r ≤ 2 * Y
   swap
@@ -644,8 +652,8 @@ theorem integral_boxSum_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ Kc : ℝ} (h
     hM₁ hκ hH hPs hY₁ hY₂ hT₀ hδx hδx' hs hr₁ hr₂
   refine add_le_add ?_ (mul_le_mul_of_nonneg_left hErr (by norm_num))
   refine mul_le_mul_of_nonneg_left ?_ (by norm_num)
-  refine (integral_corner_le hab _ _ _ (fun β => continuous_boxSmall j β)
-    (fun β => continuous_boxResidual H i β)).trans ?_
+  refine (integral_corner_le hab _ _ _ (continuous_boxSmall j)
+    (continuous_boxResidual H i)).trans ?_
   by_cases hψr : ψ (r / Y) = 0
   · have hW : boxWeight Y δ κ ψ j i = 0 := by
       rw [boxWeight, ← hr, hψr, mul_zero, zero_mul]
@@ -685,38 +693,22 @@ open scoped Classical in
 /-- **The constant part at high times, for fixed `x` (S19).** With the inputs E7, S16, E10.2
 and E1 at this `x` and a grid reaching `2Y`, the mean square of the constant part over
 `[a, b]` is at most `I⁴ · boxBound`: Cauchy–Schwarz over the `I²` boxes. -/
-theorem integral_twistedPoly_const_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ Kc : ℝ} (hab : a ≤ b) (hc : 2 ≤ c)
-    (hint : ∀ t ∈ Set.Icc a b, c ≤ |t| ∧ |t| ≤ T₀) (hba : b - a ≤ T₀) (hσ : |σ| ≤ c / 2)
-    (hx : 1 < x) (hδ0 : 0 < δ) (hδ : δ ≤ 1 / 2)
-    (hψ : ∀ y, ψ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) (hψd : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ)
-    (hM₀ : ∀ y, ‖ψ y‖ ≤ M₀) (hM₁ : ∀ y, ‖iteratedDeriv 1 ψ y‖ ≤ M₁) (hκ : ‖κ‖ ≤ Kc)
-    (hPs : ∀ p ∈ Ps, p.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ p ∧
-      (p : ℝ) ≤ Real.exp (Real.log x ^ (0.36 : ℝ)))
-    (hk : 1 ≤ k) (hH : ∀ n, ‖H n‖ ≤ Hc)
-    (hY₁ : x * Real.exp (Real.log x ^ (0.36 : ℝ)) ≤ Y) (hY₂ : 8 * Y ≤ x ^ 3)
-    (hT₀ : T₀ * Real.exp (Real.log x ^ (0.36 : ℝ)) ≤ Y)
-    (hδx : 1 ≤ δ * (Real.exp (Real.log x ^ (0.27 : ℝ)) / 2)) (hδx' : 4 ≤ δ * x)
-    (hE10 : ∀ (R : ℝ) (β lo hi : ℕ) (u : ℝ), x ^ (99 / 100 : ℝ) ≤ R → R ≤ lo + 1 →
-      (hi : ℝ) ≤ 2 * R → 1 ≤ |u| → |u| ≤ x ^ 3 →
-      ‖(R : ℂ)⁻¹ * ∑ n ∈ (Finset.Ioc lo hi).filter (· ≡ β [MOD k]),
-          (∑ d ∈ n.divisors, A₀ d) * (n : ℂ) ^ ((u : ℂ) * Complex.I)‖ ≤
-        Real.log x ^ C₈ * (12 / |u| + x ^ (-(1 / 150 : ℝ))))
-    (hmodel : ∀ R : ℝ, 1 ≤ R → ∑ n ∈ Finset.Ioc ⌊R⌋₊ ⌊2 * R⌋₊,
-      ‖H n - ∑ d ∈ n.divisors, A₀ d‖ ^ 2 ≤ CNN * R * Real.log x ^ (-Nexp))
-    (hOrd : ∀ (s : Finset ℕ) (cs : ℕ → ℂ) (N : ℕ) (cq : ℕ → ℂ) {a b θ : ℝ}, a ≤ b →
-      ∫ t in {t ∈ Set.Ioc a b | ‖∑ p ∈ s, cs p * (p : ℂ) ^ ((t : ℂ) * Complex.I)‖ ≤ θ},
-          ‖(∑ p ∈ s, cs p * (p : ℂ) ^ ((t : ℂ) * Complex.I)) *
-            ∑ n ∈ Finset.Icc 1 N, cq n * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2 ≤
-        θ ^ 2 * ((b - a + 8 * N * (1 + Real.log N)) * ∑ n ∈ Finset.Icc 1 N, ‖cq n‖ ^ 2))
-    (hJB : 0 ≤ JB)
-    (hS16 : ∀ (P : ℝ) (s : Finset ℕ) (coeff : ℕ → ℂ),
-      Real.exp (Real.log x ^ (0.27 : ℝ)) / 2 ≤ P → P ≤ Real.exp (Real.log x ^ (0.36 : ℝ)) →
-      (∀ p ∈ s, p.Prime ∧ P ≤ p ∧ (p : ℝ) ≤ 2 * P) → (∀ p ∈ s, ‖coeff p‖ ≤ 1) →
-      (((Finset.Icc (-⌈T₀⌉ - 1) ⌈T₀⌉).filter fun j : ℤ =>
-          ∃ t : ℝ, (j : ℝ) ≤ t ∧ t ≤ j + 1 ∧ |t| ≤ T₀ ∧
-            θ < ‖(P : ℂ)⁻¹ * ∑ p ∈ s, coeff p * (p : ℂ) ^ ((t : ℂ) * Complex.I)‖).card : ℝ) ≤
-        JB)
-    (hx2 : 2 ≤ x) {I : ℕ} (hI : 2 * Y ≤ grid δ I) :
+theorem integral_twistedPoly_const_le          
+         
+         
+       
+         
+     
+       
+       
+     
+       
+     
+     
+     
+     
+     
+    (hx2 : 2 ≤ x)  {I}  (hI : 2 * Y ≤ grid δ I) :
     ∫ t in a..b, ‖twistedPoly Y (fun w => ψ (w / Y) * (w : ℂ) ^ ((σ : ℂ) * Complex.I) * κ *
         ∑ p ∈ Ps.filter (· ∣ w), H (w / p)) h k t‖ ^ 2 ≤
       (I : ℝ) ^ 2 * ((I : ℝ) ^ 2 * boxBound x δ θ c C₈ CNN Nexp JB Hc Kc M₀ M₁ k) := by
@@ -751,6 +743,10 @@ theorem integral_twistedPoly_const_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ K
         push_cast
         ring
 
-end Fixed
+end
+
+end
+
+
 
 end Erdos408.TwoSided.ConstHigh

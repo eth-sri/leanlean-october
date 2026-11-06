@@ -19,7 +19,7 @@ variable (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal](hg:∀i,ConcretePrimeRowB
 def globalPriorityOriginalEnergy (hp:∀i,p i≠0)(hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)
     (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (om:ℝ→ℂ)(X t Y:ℝ):ℝ:=
+    (om:ℝ→ℂ)(X t Y:ℝ):=
   (32*512)*(2:ℝ)^slots.card*∑ray:RayCharacter×RayCharacter,∑core:FirstCoreIndex,∑J∈slots.powerset,
     (∑x∈original,globalPriorityOuter p hg negative Ψ m ray core w x*
       (‖primeMark J lists a (wholeExtractedSupport (fun x=>extra x.cube) negative x)‖^2:ℝ)*
@@ -29,7 +29,7 @@ def globalPriorityOriginalEnergy (hp:∀i,p i≠0)(hinj:Function.Injective (fun 
 def globalPriorityTailAggregate (hp:∀i,p i≠0)(hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)
     (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (V:𝓢(ℝ,ℂ))(X Y:ℝ)(R:Finset ι→Finset ι→ℝ):ℝ:=
+    (V:𝓢(ℝ,ℂ))(X Y:ℝ)(R:Finset ι→Finset ι→ℝ):=
   (32*512)*(2:ℝ)^slots.card*∑ray:RayCharacter×RayCharacter,∑core:FirstCoreIndex,∑J∈slots.powerset,
     ‖∑y∈wholeAssignedParents p (fun x=>extra x.cube) original negative J lists,
       coefficient p J a (globalPriorityOuter p hg negative Ψ m ray core w) y*
@@ -42,9 +42,9 @@ theorem global_priority_three_branches
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)(hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)
-    (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (om:𝓢(ℝ,ℂ))(lo hi:ℝ)(hlo:0<lo)(hs:Function.support om⊆Set.Icc lo hi)
-    (X t Y:ℝ)(hX:0<X)(hY:0<Y)(R:Finset ι→Finset ι→ℝ):
+    (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ) lists  a 
+     om  lo hi  hlo  hs 
+     X t Y (hX:0<X)(hY:0<Y) R :
     let V:=principalWindow om lo hi hlo hs negative t;
     globalPriorityOriginalEnergy p hg hp hinj extra pool original w negative Ψ m slots lists a om X t Y≤
       globalPriorityZeroAggregate p hg extra pool original w negative Ψ m slots lists a V X Y R+

@@ -7,22 +7,22 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGramPoisson
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
 open CenteredMomentCorrelation CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
 
-lemma gcd_generator_left (I J : SupportedIdeal) :
+
+lemma gcd_generator_left  I J  :
     primaryGenerator I.val=primaryGenerator (gcdCommon I J).val*primaryGenerator (gcdLeft I J).val := by
   rw [←primaryGenerator_mul,gcd_common_left]
 
-lemma gcd_generator_right (I J : SupportedIdeal) :
+lemma gcd_generator_right  I J  :
     primaryGenerator J.val=primaryGenerator (gcdCommon I J).val*primaryGenerator (gcdRight I J).val := by
   rw [←primaryGenerator_mul,gcd_common_right]
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

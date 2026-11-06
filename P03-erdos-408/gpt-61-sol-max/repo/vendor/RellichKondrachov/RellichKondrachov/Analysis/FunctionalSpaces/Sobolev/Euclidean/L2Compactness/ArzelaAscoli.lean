@@ -5,6 +5,7 @@ Authors: Adam Benenson
 -/
 
 module
+public import Mathlib.Tactic
 
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.Compactness
 public import Mathlib.Analysis.Normed.Group.Bounded
@@ -42,7 +43,7 @@ open MeasureTheory Set
 
 noncomputable section
 
-section Volume
+
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
 
@@ -51,15 +52,13 @@ local instance instMeasurableSpaceEL2CompactnessArzelaAscoli : MeasurableSpace E
 local instance instBorelSpaceEL2CompactnessArzelaAscoli : BorelSpace E := ⟨rfl⟩
 local instance instOpensMeasurableSpaceEL2CompactnessArzelaAscoli : OpensMeasurableSpace E := by
   infer_instance
-local instance instMeasurableAddEL2CompactnessArzelaAscoli : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegEL2CompactnessArzelaAscoli : MeasurableNeg E := by
-  infer_instance
+
+
 
 variable {K : Set E} {ψ : E → ℝ}
 
 private lemma smoothFun_eq_integral_restrict (hKm : MeasurableSet K)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) (x : E) :
+     u   x  :
     smoothFun (E := E) (K := K) ψ u x =
       ∫ t, u t * ψ (x - t) ∂(volume.restrict K) := by
   classical
@@ -115,9 +114,9 @@ private lemma exists_norm_ψ_bound_on_diffSet (hK : IsCompact K) (hψc : Continu
       exact ⟨hx, ht⟩
     exact hne ⟨(x : E) - t, this⟩
 
-private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
-    (hKm : MeasurableSet K) (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) {R : ℝ}
-    (hRpos : 0 < R) (Cψ : ℝ) (hCψ_nonneg : 0 ≤ Cψ)
+private lemma smoothFun_image_mem_closedBall  hK 
+     hKm   hψc   hψcs   {R} 
+    (hRpos : 0 < R)  Cψ  (hCψ_nonneg : 0 ≤ Cψ)
     (hψ_bound : ∀ x : ↥(Kψ (K := K) (ψ := ψ)), ∀ t : E, t ∈ K → ‖ψ ((x : E) - t)‖ ≤ Cψ) :
     let mK : ℝ :=
       (MeasureTheory.measureUnivNNReal (volume.restrict K)) ^ ((2 : ℝ≥0∞).toReal⁻¹)
@@ -132,9 +131,7 @@ private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
   have : Fact ((volume : Measure E) K < (⊤ : ℝ≥0∞)) := ⟨hμK⟩
   have : IsFiniteMeasure ((volume : Measure E).restrict K) := by infer_instance
   let μ : Measure E := (volume : Measure E).restrict K
-  have hmK : 0 ≤ mK := by
-    have : 0 ≤ (MeasureTheory.measureUnivNNReal (volume.restrict K)) := by simp
-    exact Real.rpow_nonneg this _
+  
   intro f x hfA
   rcases hfA with ⟨u, hu_ball, rfl⟩
   have hu_norm : ‖u‖ ≤ R := by
@@ -198,8 +195,7 @@ private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
     calc
       |smoothFun (E := E) (K := K) ψ u (x : E)|
           ≤ ‖u‖ * ‖kx‖ := habs
-      _ ≤ R * (mK * Cψ) := by
-        exact mul_le_mul hu_norm hkx_norm (norm_nonneg _) hR
+      _ ≤ R * (mK * Cψ) := mul_le_mul hu_norm hkx_norm (norm_nonneg _) hR
   have : dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x) 0 ≤ R * (mK * Cψ) := by
     simpa [smoothBCF_apply (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x,
       dist_eq_norm, Real.norm_eq_abs] using habs'
@@ -207,8 +203,8 @@ private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
 
 /-- Arzelà--Ascoli: smoothing maps `L²(K)` bounded sets into a precompact set
 in `BCF(K + tsupport ψ)`. -/
-private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
-    (hKm : MeasurableSet K) (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) {R : ℝ}
+private lemma uniformEquicontinuous_smoothBCF_closedBall  hK 
+     hKm   hψc   hψcs   {R} 
     (hRpos : 0 < R) (Cψ : ℝ) (hCψ_nonneg : 0 ≤ Cψ)
     (hψ_bound : ∀ x : ↥(Kψ (K := K) (ψ := ψ)), ∀ t : E, t ∈ K → ‖ψ ((x : E) - t)‖ ≤ Cψ) :
     let A : Set (BoundedContinuousFunction (↥(Kψ (K := K) (ψ := ψ))) ℝ) :=
@@ -216,7 +212,7 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
     UniformEquicontinuous ((↑) : A → ↥(Kψ (K := K) (ψ := ψ)) → ℝ) := by
   intro A
   classical
-  have hR : 0 ≤ R := hRpos.le
+  
   have hR0 : R ≠ 0 := ne_of_gt hRpos
   have hμK : (volume : Measure E) K < (⊤ : ℝ≥0∞) := hK.measure_lt_top (μ := (volume : Measure E))
   have : Fact ((volume : Measure E) K < (⊤ : ℝ≥0∞)) := ⟨hμK⟩
@@ -397,8 +393,7 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
         dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x)
             (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u y)
             ≤ ‖u‖ * ‖kx - ky‖ := hdist
-        _ ≤ ‖u‖ * (mK * ε') := by
-          exact mul_le_mul_of_nonneg_left hkdiff (norm_nonneg _)
+        _ ≤ ‖u‖ * (mK * ε') := mul_le_mul_of_nonneg_left hkdiff (norm_nonneg _)
         _ ≤ R * (mK * ε') := by
           have hmKε' : 0 ≤ mK * ε' := mul_nonneg hmK (le_of_lt hε'pos)
           exact mul_le_mul_of_nonneg_right hu_norm hmKε'
@@ -418,8 +413,8 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
       lt_of_le_of_lt hle' hε2lt
     simpa [hu_eq'] using this
 
-theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : MeasurableSet K)
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) {R : ℝ} (hR : 0 ≤ R) :
+theorem smoothBCF_image_closedBall_isCompact  hK   hKm 
+     hψc   hψcs   {R}  (hR : 0 ≤ R) :
     IsCompact
         (closure
           (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs '' Metric.closedBall (0 : _)
@@ -449,9 +444,7 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
     let μ : Measure E := (volume : Measure E).restrict K
     let mK : ℝ :=
       (MeasureTheory.measureUnivNNReal (volume.restrict K)) ^ ((2 : ℝ≥0∞).toReal⁻¹)
-    have hmK : 0 ≤ mK := by
-      have : 0 ≤ (MeasureTheory.measureUnivNNReal (volume.restrict K)) := by simp
-      exact Real.rpow_nonneg this _
+    
     -- Uniform bound on `ψ` over the relevant compact difference set.
     obtain ⟨Cψ, hCψ_nonneg, hψ_bound⟩ :=
       exists_norm_ψ_bound_on_diffSet (E := E) (K := K) (ψ := ψ) hK hψc hψcs
@@ -526,8 +519,7 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
         calc
           |smoothFun (E := E) (K := K) ψ u (x : E)|
               ≤ ‖u‖ * ‖kx‖ := habs
-          _ ≤ R * (mK * Cψ) := by
-            exact mul_le_mul hu_norm hkx_norm (norm_nonneg _) hR
+          _ ≤ R * (mK * Cψ) := mul_le_mul hu_norm hkx_norm (norm_nonneg _) hR
       have : dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x) 0 ≤ R * (mK * Cψ) := by
         simpa [smoothBCF_apply (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x,
           dist_eq_norm, Real.norm_eq_abs] using habs'
@@ -541,9 +533,9 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
     -- Apply Arzelà–Ascoli.
     simpa [A, s] using
       (BoundedContinuousFunction.arzela_ascoli (α := ↥(Kψ (K := K) (ψ := ψ))) (β := ℝ)
-        (s := s) hs A (fun f x hf => in_s f x hf) H)
+        (s := s) hs A (in_s) H)
 
-end Volume
+
 
 end
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.SpectralPoisson
 
@@ -6,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Detector.SpectralPoisson
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss ProbeCompleted ProbeRow CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+
 
 lemma finiteSupport_verticalIntegral {α : Type*} (c : α → ℂ)
     (hc : (Function.support c).Finite) (F : α → ℂ → ℂ) (σ : ℝ)
@@ -32,22 +33,21 @@ lemma finiteSupport_verticalIntegral {α : Type*} (c : α → ℂ)
   ring
 
 theorem inner_mellin_poisson (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Ideal O) (s : O) (hs : Supported (Ideal.span {s}))
+    (D : Ideal ActualEisensteinCubic.O) (s : ActualEisensteinCubic.O) (hs : Supported (Ideal.span {s}))
     (W : ℝ → ℂ) (hWc : HasCompactSupport W) (hWs : ContDiff ℝ ∞ W)
     (K Z : ℝ) (hK : 0<K) (hZ : 0<Z) :
-    (∑' m : O, C.residueMonoid m * (Real.sqrt (elementNorm s):ℂ)⁻¹ *
+    (∑' m : ActualEisensteinCubic.O, C.residueMonoid m * (Real.sqrt (elementNorm s):ℂ)⁻¹ *
       sexticGauss s (supportedElement_ne_zero s hs) (-m) * W (elementNorm m/K) *
       verticalIntegral 4 (fun t => (Z:ℂ)^t * Complex.exp (t^2) *
         spectralRow C.excluded D (rowCoefficient η C.Xi s hs m) t)) =
     verticalIntegral 4 (fun t => (Real.sqrt (elementNorm s):ℂ)⁻¹ *
       ((Z:ℂ)^t * Complex.exp (t^2)) *
-        ∑' p : Ideal O × Ideal O, transformedSpectralTerm η C C.excluded D s hs W K t p.1 p.2) := by
-  let c (m : O) := C.residueMonoid m * (Real.sqrt (elementNorm s):ℂ)⁻¹ *
+        ∑' p : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O, transformedSpectralTerm η C C.excluded D s hs W K t p.1 p.2) := by
+  let c (m : ActualEisensteinCubic.O) := C.residueMonoid m * (Real.sqrt (elementNorm s):ℂ)⁻¹ *
     sexticGauss s (supportedElement_ne_zero s hs) (-m) * W (elementNorm m/K)
   have hc : (Function.support c).Finite := by
     apply (elementWindow_finite_support W hWc K hK).subset
-    intro m hm hz
-    exact hm (by simp only [c, hz, mul_zero])
+    aesop
   rw [← finiteSupport_verticalIntegral c hc
     (fun m t => (Z:ℂ)^t * Complex.exp (t^2) *
       spectralRow C.excluded D (rowCoefficient η C.Xi s hs m) t) 4
@@ -68,6 +68,6 @@ theorem inner_mellin_poisson (η : HeckeFamily.Character) (C : CalibrationData)
   ring
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

@@ -7,29 +7,37 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalCost
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSourceLowerSupport
 open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform
 open CenteredMomentRectangle
-local notation "O" => ActualEisensteinCubic.O
 
-lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
+
+section
+variable {ι:Type*} [Fintype ι]
+include ι
+
+lemma tuple_norm_product     (v:Tuple ι) :
     (Ideal.absNorm (finiteTupleProduct v):ℝ)=
       (∏i,(Ideal.absNorm (v (Sum.inl i)):ℝ))*
       (Ideal.absNorm (v (Sum.inr 0)):ℝ)*(Ideal.absNorm (v (Sum.inr 1)):ℝ) := by
   simp only [finiteTupleProduct,map_prod,Nat.cast_prod,map_mul,Nat.cast_mul,Fintype.prod_sum_type,Fin.prod_univ_two]
   ring
 
- theorem profile_product_lower {ι:Type*} [Fintype ι]
-    (R:Ideal O) (ν:ι→Ideal O→ℂ) (Wslot:ι→ℝ→ℂ) (P a:ι→ℝ)
-    (W₁ W₂:ℝ→ℂ) (a₁ a₂ X₁ X₂ Y₁ Y₂ T:ℝ) (B₁ B₂ s:Ideal O)
-    (hP:∀i,0<P i) (ha:∀i,0≤a i) (ha₁:0≤a₁) (ha₂:0≤a₂)
-    (hX₁:0<X₁) (hX₂:0<X₂) (hY₁:0<Y₁) (hY₂:0<Y₂)
-    (hB₁:B₁≠0) (hB₂:B₂≠0) (hXT:X₁*X₂=T) (hYT:Y₁*Y₂=T)
-    (hs:∀i x,Wslot i x≠0→a i≤x)
-    (hs₁:∀x,W₁ x≠0→a₁≤x) (hs₂:∀x,W₂ x≠0→a₂≤x)
+ section
+variable (R:Ideal ActualEisensteinCubic.O) (ν:ι→Ideal ActualEisensteinCubic.O→ℂ) (Wslot:ι→ℝ→ℂ) (P a:ι→ℝ) (W₁ W₂:ℝ→ℂ) (a₁ a₂ X₁ X₂ Y₁ Y₂ T:ℝ) (B₁ B₂ s:Ideal ActualEisensteinCubic.O) (hP:∀i,0<P i) (ha:∀i,0≤a i) (ha₁:0≤a₁) (ha₂:0≤a₂) (hX₁:0<X₁) (hX₂:0<X₂) (hY₁:0<Y₁) (hY₂:0<Y₂) (hB₁:B₁≠0) (hB₂:B₂≠0) (hXT:X₁*X₂=T) (hYT:Y₁*Y₂=T) (hs:∀i x,Wslot i x≠0→a i≤x) (hs₁:∀x,W₁ x≠0→a₁≤x) (hs₂:∀x,W₂ x≠0→a₂≤x)
+include R ν Wslot P a W₁ W₂ a₁ a₂ X₁ X₂ Y₁ Y₂ T B₁ B₂ s hP ha ha₁ ha₂ hX₁ hX₂ hY₁ hY₂ hB₁ hB₂ hXT hYT hs hs₁ hs₂
+
+theorem profile_product_lower    
+           
+         
+           
+           
+           
+     
+       
     (v:Tuple ι) (hv:profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s v≠0) :
     (∏i,a i)*a₁*a₂*(T/((Ideal.absNorm B₁:ℝ)*Ideal.absNorm B₂))*(∏i,P i)≤
       (Ideal.absNorm (finiteTupleProduct v):ℝ) := by
@@ -45,7 +53,7 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
     apply Finset.prod_le_prod₀ (fun i _=>mul_nonneg (ha i) (hP i).le)
     intro i hi
     exact (le_div_iff₀ (hP i)).mp (hs i _ (hslot i))
-  have hbn (B:Ideal O) (hB:B≠0):(0:ℝ)<Ideal.absNorm B:=by
+  have hbn (B:Ideal ActualEisensteinCubic.O) (hB:B≠0):(0:ℝ)<Ideal.absNorm B:=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hB)
   have hplain:a₁*a₂*T≤(Ideal.absNorm B₁:ℝ)*Ideal.absNorm B₂*
       ((Ideal.absNorm (v (Sum.inr 0)):ℝ)*Ideal.absNorm (v (Sum.inr 1))) := by
@@ -81,15 +89,15 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
   apply (div_le_iff₀ (mul_pos (hbn B₁ hB₁) (hbn B₂ hB₂))).mpr
   convert hp using 1 ; ring
 
- theorem profile_column_lower {ι:Type*} [Fintype ι]
-    (R:Ideal O) (ν:ι→Ideal O→ℂ) (Wslot:ι→ℝ→ℂ) (P a:ι→ℝ)
-    (W₁ W₂:ℝ→ℂ) (a₁ a₂ X₁ X₂ Y₁ Y₂ T:ℝ) (B₁ B₂ s:Ideal O)
-    (hP:∀i,0<P i) (ha:∀i,0≤a i) (ha₁:0≤a₁) (ha₂:0≤a₂)
-    (hX₁:0<X₁) (hX₂:0<X₂) (hY₁:0<Y₁) (hY₂:0<Y₂)
-    (hB₁:B₁≠0) (hB₂:B₂≠0) (hXT:X₁*X₂=T) (hYT:Y₁*Y₂=T)
-    (hs:∀i x,Wslot i x≠0→a i≤x)
-    (hs₁:∀x,W₁ x≠0→a₁≤x) (hs₂:∀x,W₂ x≠0→a₂≤x)
-    (S:Finset (Tuple ι)) (I:Ideal O)
+ theorem profile_column_lower    
+           
+         
+           
+           
+           
+     
+       
+    (S:Finset (Tuple ι)) (I:Ideal ActualEisensteinCubic.O)
     (hI:finiteColumnCoefficient S (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) I≠0) :
     (∏i,a i)*a₁*a₂*(T/((Ideal.absNorm B₁:ℝ)*Ideal.absNorm B₂))*(∏i,P i)≤
       (Ideal.absNorm I:ℝ) := by
@@ -99,8 +107,12 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
     hP ha ha₁ ha₂ hX₁ hX₂ hY₁ hY₂ hB₁ hB₂ hXT hYT hs hs₁ hs₂ v hv0
   simpa only [he] using hh
 
-end SevenEighths.CenteredMomentSourceLowerSupport
+end
 
 end
+
+end SevenEighths.CenteredMomentSourceLowerSupport
+
+
 
 end OAI

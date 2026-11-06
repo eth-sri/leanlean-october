@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceTuples
 
@@ -12,8 +13,8 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGau
 open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero sourceIdeal_union sourceIdeal_injective sourcePrime source_prime_dvd)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
 lemma sourceIdeal_isRadical
@@ -43,7 +44,7 @@ lemma cubeRadical_span_dvd_product (B : Finset ι) (v : ι → ℕ)
 
 theorem cubeSupport_dvd_radical
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (B : Finset ι) (v₁ v₂ : ι → ℕ) (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) :
+     B   v₁ v₂  (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) :
     sourceIdeal p B ∣
       (Ideal.span {primeProduct p B v₁}*Ideal.span {primeProduct p B v₂}).radical := by
   apply Ideal.dvd_iff_le.mpr
@@ -53,7 +54,7 @@ theorem cubeSupport_dvd_radical
   exact cubeRadical_span_dvd_product p B _ hv
 
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
-lemma aLabel_dvd_cubeSupport (B : Finset ι) (ε : ι → Bool) :
+lemma aLabel_dvd_cubeSupport  B   ε  :
     Ideal.span {aLabel p B ε} ∣ sourceIdeal p B := by
   apply span_dvd_of_element_dvd
   unfold aLabel primeProduct
@@ -64,8 +65,8 @@ lemma aLabel_dvd_cubeSupport (B : Finset ι) (ε : ι → Bool) :
 
 theorem firstMask_dvd_cube_radical
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (B C D : Finset ι) (hCB : Disjoint C B) (hD : D ⊆ C∪B)
-    (v₁ v₂ : ι → ℕ) (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) :
+     B C D  (hCB : Disjoint C B) (hD : D ⊆ C∪B)
+     v₁ v₂  (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) :
     sourceIdeal p D ∣ sourceIdeal p C *
       (Ideal.span {primeProduct p B v₁}*Ideal.span {primeProduct p B v₂}).radical := by
   have hd := InverseInitialArithmetic.sourceIdeal_dvd p D (C∪B) hD
@@ -73,7 +74,7 @@ theorem firstMask_dvd_cube_radical
   exact hd.trans (mul_dvd_mul_left _ (cubeSupport_dvd_radical p hcop B v₁ v₂ hv))
 
 def cubeSecondSource {Jo Jn : ℕ} (B C D G E V : Finset ι)
-    (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (t : Ideal Eis) (k : Eis)
+    (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (t : Ideal ActualEisensteinCubic.O) (k : ActualEisensteinCubic.O)
     (oldAssigned : Fin Jo → SmoothMobiusCorrection.PrimeIdeal) (newAssigned : Fin Jn → ι) :
     SecondOriginalSource ι Jo Jn where
   q0 := Ideal.span {b0Label p B (fun i => v₁ i+v₂ i) ε₁ ε₂}
@@ -97,10 +98,10 @@ def cubeSecondSource {Jo Jn : ℕ} (B C D G E V : Finset ι)
 theorem cubeSecondSource_valid (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    {Jo Jn : ℕ} (B C D G E V : Finset ι) (hCB : Disjoint C B)
+    {Jo Jn : ℕ}  B C D G E V  (hCB : Disjoint C B)
     (hD : D ⊆ C∪B) (hE : E ⊆ G)
-    (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i)
-    (t : Ideal Eis) (k : Eis)
+     v₁ v₂   ε₁ ε₂  (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i)
+     t   k 
     (oldAssigned : Fin Jo → SmoothMobiusCorrection.PrimeIdeal) (newAssigned : Fin Jn → ι)
     (hold : ∀ i, (oldAssigned i).val ∣
       Ideal.span {b0Label p B (fun i => v₁ i+v₂ i) ε₁ ε₂} *
@@ -112,12 +113,12 @@ theorem cubeSecondSource_valid (hp : ∀ i, p i ≠ 0)
         Ideal.span {j2Label p B (fun i => v₁ i+v₂ i) ε₁ ε₂} = _
     rw [Ideal.span_singleton_mul_span_singleton,←jLabel_eq_squarefree_mul_j2]
     rfl
-  · have hb := congrArg (fun a : Eis => (Ideal.span {a} : Ideal Eis))
+  · have hb := congrArg (fun a : ActualEisensteinCubic.O => (Ideal.span {a} : Ideal ActualEisensteinCubic.O))
       (cube_pair_product_decomposition p B v₁ v₂ ε₁ ε₂ hv)
     simpa only [cubeSecondSource,pow_two,←Ideal.span_singleton_mul_span_singleton] using hb
   · exact (aLabel_dvd_cubeSupport p B ε₁).trans (cubeSupport_dvd_radical p hcop B v₁ v₂ hv)
   · exact (aLabel_dvd_cubeSupport p B ε₂).trans (cubeSupport_dvd_radical p hcop B v₁ v₂ hv)
-  · exact firstMask_dvd_cube_radical p hcop B C D hCB hD v₁ v₂ hv
+  · solve_by_elim [firstMask_dvd_cube_radical]
   · change primaryGenerator (sourceIdeal p D) ≠ 0
     rw [sourceIdeal_gen p hp hpr]
     exact Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
@@ -127,8 +128,8 @@ theorem cubeSecondSource_valid (hp : ∀ i, p i ≠ 0)
 
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem oldSlot_dvd_reconstructed_support
-    (B C : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (hv : ∀ i ∈ B, 0 < v i) (P t : Ideal Eis)
+    (B C : Finset ι) (v : ι → ℕ)  ε₁ ε₂ 
+    (hv : ∀ i ∈ B, 0 < v i)  P t 
     (hP : P ∣ sourceIdeal p B*sourceIdeal p C*t) :
     P ∣ Ideal.span {b0Label p B v ε₁ ε₂}*
       Ideal.span {jLabel p B v ε₁ ε₂}*sourceIdeal p C*t := by
@@ -140,10 +141,10 @@ theorem oldSlot_dvd_reconstructed_support
 theorem cubeSecondSource_valid_original_slots (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    {Jo Jn : ℕ} (B C D G E V : Finset ι) (hCB : Disjoint C B)
+    {Jo Jn : ℕ}  B C D G E V  (hCB : Disjoint C B)
     (hD : D ⊆ C∪B) (hE : E ⊆ G)
-    (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i)
-    (t : Ideal Eis) (k : Eis)
+     v₁ v₂   ε₁ ε₂  (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i)
+     t   k 
     (oldAssigned : Fin Jo → SmoothMobiusCorrection.PrimeIdeal) (newAssigned : Fin Jn → ι)
     (hold : ∀ i, (oldAssigned i).val ∣ sourceIdeal p B*sourceIdeal p C*t)
     (hnew : ∀ i, newAssigned i ∈ G∪V) :

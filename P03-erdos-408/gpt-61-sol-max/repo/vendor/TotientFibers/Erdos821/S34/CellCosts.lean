@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.CellSup
 public import Erdos821.S34.OwnedLeafProofs
@@ -13,15 +14,16 @@ namespace Erdos821.S34Core
 
 open Blueprint.Analytic
 
-theorem kernel_log_localization (G : PrimeGroups) (k : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ : ℝ) (hh : 0 < h) (D X : ℕ)
+section
+variable (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ) (h ξ : ℝ)
+
+theorem kernel_log_localization    
+        (hh : 0 < h)  D X 
     (hne : cellKernel G k Q h ξ D X ≠ 0) :
     |Real.log D - Real.log X| < h := by
   have heq : cell h D = cell h X := by
     unfold cellKernel at hne
-    split_ifs at hne with hc
-    · exact hc.1
-    · exact False.elim (hne rfl)
+    simp_all
   have hDlo := Int.floor_le (Real.log D / h)
   have hDhi := Int.lt_floor_add_one (Real.log D / h)
   have hXlo := Int.floor_le (Real.log X / h)
@@ -35,8 +37,8 @@ theorem kernel_log_localization (G : PrimeGroups) (k : Fin G.size → ℕ)
   apply abs_lt.mpr
   constructor <;> nlinarith
 
-theorem kernel_l1_bound (G : PrimeGroups) (k : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ : ℝ) (hξ : 0 < ξ) (X : ℕ) :
+theorem kernel_l1_bound    
+        (hξ : 0 < ξ)  X  :
     (∑ D : Tuple G k, tupleWeight G k D * ‖cellKernel G k Q h ξ (product G k D) X‖) ≤
       (Q : ℝ) ^ 2 := by
   let ν := cellMass G k h (cell h X)
@@ -50,7 +52,7 @@ theorem kernel_l1_bound (G : PrimeGroups) (k : Fin G.size → ℕ)
       by_cases hm : cell h (product G k D) = cell h X
       · have hk : cellKernel G k Q h ξ (product G k D) X =
             cellKernel G k Q h ν (product G k D) X := by
-          simp [cellKernel, hm, show ξ ≤ cellMass G k h (cell h X) from hret, ν]
+          grind [cellKernel, cellMass, cell]
         rw [ite_eq_left hm, hk]
         exact cell_kernel_sup_proof G k Q h ν hν (product G k D) X
       · simp [cellKernel, hm]
@@ -66,9 +68,10 @@ theorem kernel_l1_bound (G : PrimeGroups) (k : Fin G.size → ℕ)
         split_ifs <;> ring
       _ = _ := div_mul_cancel₀ _ hν.ne'
   · have hz (D : Tuple G k) : cellKernel G k Q h ξ (product G k D) X = 0 := by
-      simp only [cellKernel]
-      simp only [show ¬ ξ ≤ cellMass G k h (cell h X) from hret, and_false, ite_false]
+      grind [cellKernel, cellMass, cell]
     simp only [hz, norm_zero, mul_zero, Finset.sum_const_zero]
     positivity
+
+end
 
 end Erdos821.S34Core

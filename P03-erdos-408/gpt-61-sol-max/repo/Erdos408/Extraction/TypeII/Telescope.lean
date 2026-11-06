@@ -17,9 +17,12 @@ namespace Erdos408.TypeII
 
 open Finset Real
 
+section
+variable (q cw : ℝ) (K : ℕ) (CN x γ κ : ℝ) (j : ℕ) (Φ : ℝ → ℝ) {k : ℕ} (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ)
+
 /-- The composite sum as a tuple sum over `[1, M]^j` with prime weights. -/
-theorem compositeSum_eq (q cw : ℝ) (K : ℕ) (CN x γ κ : ℝ) (j : ℕ)
-    (Φ : ℝ → ℝ) {k : ℕ} (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) :
+theorem compositeSum_eq        
+            :
     compositeSum q cw K CN x γ κ j Φ u v B =
       ∑ m ∈ Fintype.piFinset (fun _ : Fin j => Icc 1 ⌊κ * x + 1⌋₊),
         cutPsi Φ (endpoint q cw K CN x u v B) x (∏ i, m i) * ∏ i, primeWeight x γ (m i) := by
@@ -60,8 +63,8 @@ theorem compositeSum_eq (q cw : ℝ) (K : ℕ) (CN x γ κ : ℝ) (j : ℕ)
     exact mem_primesIcc.2 ⟨hp, Nat.ceil_le.2 hlt.le, hmi⟩
 
 /-- The proxy sum as a tuple sum. -/
-theorem proxySum_eq (q cw : ℝ) (K : ℕ) (CN x γ κ : ℝ) (j : ℕ) (Φ : ℝ → ℝ) {k : ℕ}
-    (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) :
+theorem proxySum_eq            
+        :
     proxySum q cw K CN x γ κ j Φ u v B =
       ∑ m ∈ Fintype.piFinset (fun _ : Fin j => Icc 1 ⌊κ * x + 1⌋₊),
         cutPsi Φ (endpoint q cw K CN x u v B) x (∏ i, m i) * ∏ i, strippedProxy x γ j (m i) := by
@@ -69,8 +72,10 @@ theorem proxySum_eq (q cw : ℝ) (K : ℕ) (CN x γ κ : ℝ) (j : ℕ) (Φ : �
   push_cast
   rfl
 
+end
+
 /-- Telescoping a difference of tuple sums. -/
-theorem sum_sub_sum_eq_steps (S : Finset ℕ) (Ψ : ℕ → ℝ) (A B : ℕ → ℝ) (r : ℕ) :
+theorem sum_sub_sum_eq_steps (S : Finset ℕ) (Ψ : ℕ → ℝ) (A B : ℕ → ℝ)  r  :
     ∑ m ∈ Fintype.piFinset (fun _ : Fin (r + 1) => S), Ψ (∏ i, m i) * ∏ i, A (m i) -
       ∑ m ∈ Fintype.piFinset (fun _ : Fin (r + 1) => S), Ψ (∏ i, m i) * ∏ i, B (m i) =
       ∑ i : Fin (r + 1), ∑ m₀ ∈ S, ∑ m' ∈ Fintype.piFinset (fun _ : Fin r => S),

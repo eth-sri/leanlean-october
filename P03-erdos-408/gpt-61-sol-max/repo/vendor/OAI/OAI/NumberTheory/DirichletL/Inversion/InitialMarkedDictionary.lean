@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialDetectorSource
 
@@ -6,18 +7,26 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialDetectorSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialMarkedDictionary
 open HeckeFamily HeckeDyadic InverseInitialRawDictionary InverseInitialConjugateEnergy
 open InverseInitialPoissonBridge UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
 
-theorem indexed_mark_initial {ι : Type*} (T : Finset ι) (P : ι→Ideal O) (A : ι→ℂ)
-    (η : Ideal O →* ℂ) (χ : Character) (u : O)
-    (hrow : ∀I,idealCoeff χ I=η I*CanonicalRowCompletion.idealRowHom u I)
-    (W : ℝ→ℂ) (Z r z σ freq : ℝ) (hZ : 0<Z) (S : Finset (Ideal O))
-    (hc : ∀I:Ideal O,I≠0 → W ((I.absNorm:ℝ)/Z^r)≠0 → I∈S) :
+
+section
+variable {ι : Type*}
+include ι
+
+section
+variable (T : Finset ι) (P : ι→Ideal HeckeFamily.O) (A : ι→ℂ) (η : Ideal HeckeFamily.O →* ℂ) (χ : Character) (u : HeckeFamily.O) (hrow : ∀I,idealCoeff χ I=η I*CanonicalRowCompletion.idealRowHom u I) (W : ℝ→ℂ) (Z r z σ freq : ℝ) (hZ : 0<Z) (S : Finset (Ideal HeckeFamily.O)) (hc : ∀I:Ideal HeckeFamily.O,I≠0 → W ((I.absNorm:ℝ)/Z^r)≠0 → I∈S)
+include T P A η χ u hrow W Z r z σ freq hZ S hc
+
+theorem indexed_mark_initial        
+         
+     
+           
+      :
     polynomial χ true W (Z^r) σ freq*(Z^(-z/2):ℝ)*
       (∑i∈T,A i*idealCoeff χ (P i))=
       ∑i∈T,A i*originalTotalPolynomial S (P i) η (fun _=>1)
@@ -35,18 +44,13 @@ theorem indexed_mark_initial {ι : Type*} (T : Finset ι) (P : ι→Ideal O) (A 
   intro I hI
   rw [hrow]
   simp only [heckeIdealCharacter_apply]
-  calc
-    _ = (((Z^(-r/2):ℝ):ℂ)*((Z^(-z/2):ℝ):ℂ))*
-      (A i*((moebius I:ℂ)*(η I*CanonicalRowCompletion.idealRowHom u I)*
-      (η (P i)*CanonicalRowCompletion.idealRowHom u (P i))*
-      twistedProfile W σ freq ((I.absNorm:ℝ)/Z^r))) := by ring
-    _ = _ := by rw [hn];ring
+  grind
 
-theorem indexed_conjugate_mark_norm {ι : Type*} (T : Finset ι) (P : ι→Ideal O) (A : ι→ℂ)
-    (η : Ideal O →* ℂ) (χ : Character) (u : O)
-    (hrow : ∀I,idealCoeff χ I=η I*CanonicalRowCompletion.idealRowHom u I)
-    (W : ℝ→ℂ) (Z r z σ freq : ℝ) (hZ : 0<Z) (S : Finset (Ideal O))
-    (hc : ∀I:Ideal O,I≠0 → W ((I.absNorm:ℝ)/Z^r)≠0 → I∈S)
+theorem indexed_conjugate_mark_norm        
+         
+     
+           
+     
     (hη : ∀i∈T,A i≠0 → η (P i)≠0) :
     ‖polynomial χ true W (Z^r) σ freq*(Z^(-z/2):ℝ)*
       (∑i∈T,A i*star (CanonicalRowCompletion.idealRowHom u (P i)))‖=
@@ -56,16 +60,14 @@ theorem indexed_conjugate_mark_norm {ι : Type*} (T : Finset ι) (P : ι→Ideal
       star (∑i∈T,A i*star (CanonicalRowCompletion.idealRowHom u (P i))) := by
     simp only [star_sum,star_mul,star_star]
     apply Finset.sum_congr rfl
-    intro i hi
-    by_cases ha : A i=0
-    · simp [ha]
-    · rw [hrow]
-      field_simp [hη i hi ha]
+    grind
   rw [←indexed_mark_initial T P (fun i=>star (A i)/η (P i)) η χ u hrow W Z r z σ freq hZ S hc,hm]
   simp only [norm_mul,norm_star]
 
-theorem conjugate_mark_product {ι : Type*} [Fintype ι]
-    (T : ι→Finset (Ideal O)) (A : ι→Ideal O→ℂ) (u : O) :
+end
+
+theorem conjugate_mark_product   [Fintype ι]
+    (T : ι→Finset (Ideal HeckeFamily.O)) (A : ι→Ideal HeckeFamily.O→ℂ)  u  :
     (∏i,∑P∈T i,A i P*star (CanonicalRowCompletion.idealRowHom u P))=
       ∑p∈Fintype.piFinset T,(∏i,A i (p i))*
         star (CanonicalRowCompletion.idealRowHom u (∏i,p i)) := by
@@ -74,8 +76,10 @@ theorem conjugate_mark_product {ι : Type*} [Fintype ι]
   intro p hp
   rw [Finset.prod_mul_distrib,map_prod,star_prod]
 
+end
+
 end SevenEighths.InverseInitialMarkedDictionary
 
-end
+
 
 end OAI

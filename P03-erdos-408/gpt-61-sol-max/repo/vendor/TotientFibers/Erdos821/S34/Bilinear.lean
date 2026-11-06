@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.AdditiveSieve
 
@@ -12,7 +13,7 @@ namespace Erdos821.S34.Proofs
 
 /-- Rational approximation gives circular separation on every integer block
 of diameter at most r/2. This is the spacing input to the additive large sieve. -/
-theorem rational_frequency_separation (α β : ℝ) (u d q : ℤ) (r : ℕ)
+theorem rational_frequency_separation (α β : ℝ) (u d q : ℤ)  r 
     (hr : 1 ≤ r) (hu : Nat.Coprime u.natAbs r)
     (hα : α = (u : ℝ) / r + β) (hβ : |β| ≤ 1 / (r : ℝ) ^ 2)
     (hd : d ≠ 0) (hspan : |(d : ℝ)| ≤ (r : ℝ) / 2) :
@@ -22,8 +23,7 @@ theorem rational_frequency_separation (α β : ℝ) (u d q : ℤ) (r : ℕ)
   have hdabs : d.natAbs < r := by
     have h : |(d : ℝ)| < (r : ℝ) := by linarith
     have hi : |d| < (r : ℤ) := by exact_mod_cast h
-    have hi' : (d.natAbs : ℤ) < r := by simpa only [Int.natCast_natAbs] using hi
-    exact_mod_cast hi'
+    grind
   have hnum : u * d - q * (r : ℤ) ≠ 0 := by
     intro hz
     have hdiv : (r : ℤ) ∣ u * d := ⟨q, by nlinarith [hz]⟩

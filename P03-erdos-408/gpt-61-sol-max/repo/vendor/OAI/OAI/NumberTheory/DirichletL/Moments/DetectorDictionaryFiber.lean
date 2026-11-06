@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryRows
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
@@ -20,7 +21,7 @@ variable {M : Ideal O} {H : Subgroup (O⧸M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
 def detectorPositiveRow (F : Fiber M H Label Slot U a ε tstar T allowance i)
-    (η : Character) (selected : Finset Slot) (j k : ℕ) (σ t : ℝ) (u : FreeRow) : ℂ :=
+    (η : Character) (selected : Finset Slot) (j k : ℕ) (σ t : ℝ) (u : FreeRow)  :=
   positiveSlotRow η rowMaskElement 1 u.val
     (twistProfile (orientedProfile F.reverse ((logProfile^[j]) positiveAnnular)) σ (orientedFrequency F.reverse t))
     (twistProfile (orientedProfile F.reverse ((logProfile^[k]) positiveAnnular)) σ (orientedFrequency F.reverse t))
@@ -29,9 +30,9 @@ def detectorPositiveRow (F : Fiber M H Label Slot U a ε tstar T allowance i)
     (fun s : selected=>U^(F.widths s.val)) 0 (U^F.m) (U^F.m)
 
 theorem fiber_plain_energy_eq (F : Fiber M H Label Slot U a ε tstar T allowance i)
-    (η : Character) (hdata : F.rowData=momentData η)
+     η  (hdata : F.rowData=momentData η)
     (hMm : M≤Ideal.span {rowMaskElement}) (hU : 0<U)
-    (selected : Finset Slot) (j k : ℕ) (σ t : ℝ)
+    (selected : Finset Slot)  j k   σ t 
     (hη : ∀s∈selected,∀J∈primePool M H (F.upper s) (U^(F.widths s)),
       F.profile s ((J.absNorm:ℝ)/(U^(F.widths s)))≠0→IsCoprime J η.modulus) :
     (∑u∈F.rows,‖polynomial (F.family u F.label) false ((logProfile^[j]) positiveAnnular) (U^F.m) σ t*
@@ -52,8 +53,7 @@ theorem fiber_plain_energy_eq (F : Fiber M H Label Slot U a ε tstar T allowance
   have hprod := Finset.prod_coe_sort selected (fun s=>HeckePrimeRow.canonicalPrimeAmplitude M H u.val
     (F.profile s) (F.upper s) (U^(F.widths s)) (F.external s))
   rw [hprod] at he
-  simpa only [detectorPositiveRow,Fiber.physicalProduct,HeckeDetectorPhysicalSelection.physical,
-    Finset.prod_coe_sort] using he
+  assumption
 
 end SevenEighths.CenteredMomentDetectorDictionary
 

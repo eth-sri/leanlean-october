@@ -13,12 +13,12 @@ open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss
 open LocalReflectionBrackets CanonicalRowCompletion
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 noncomputable local instance bracketField (P : Ideal Eis) [P.IsMaximal] : Field (Eis ⧸ P) := Ideal.Quotient.field P
 noncomputable local instance bracketFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 theorem marked_bracket_cube (P : Ideal Eis) [P.IsMaximal]
-    (hg : λ₀ ∉ P) (n b : Eis) :
+    (hg : ConcretePrimeRowBridge.goodLambda ∉ P)  n b  :
     bracket (actualSextic P hg) 0 (Ideal.Quotient.mk P (n*b^3)) =
       (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ)⁻¹ *
       (idealRowHom n P)⁻¹^2 * (if IsCoprime P (Ideal.span {b}) then 1 else 0) := by
@@ -40,9 +40,13 @@ theorem marked_bracket_cube (P : Ideal Eis) [P.IsMaximal]
     SixthPowerAverage.prime_coprime_span_iff]
   by_cases hb : b ∈ P <;> simp [hb]
 
-theorem marked_bracket_product {ι : Type*} [Fintype ι]
-    (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ P i) (n b : Eis) :
+section
+variable {ι : Type*} [Fintype ι] (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal] (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ P i)
+include ι P hg
+
+theorem marked_bracket_product    
+       
+       n b  :
     (∏ i, bracket (actualSextic (P i) (hg i)) 0 (Ideal.Quotient.mk (P i) (n*b^3))) =
       (Real.sqrt (Ideal.absNorm (∏ i, P i) : ℝ) : ℂ)⁻¹ *
       (idealRowHom n (∏ i, P i))⁻¹^2 *
@@ -69,9 +73,9 @@ theorem marked_bracket_product {ι : Type*} [Fintype ι]
       exact Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hi)
   rw [hn,hc,hm]
 
-theorem marked_bracket_hybrid {ι : Type*} [Fintype ι]
-    (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ P i) (n b : Ideal Eis) (hb : primaryGenerator b ≠ 0) :
+theorem marked_bracket_hybrid    
+       
+       n b  (hb : primaryGenerator b ≠ 0) :
     (∏ i, bracket (actualSextic (P i) (hg i)) 0
       (Ideal.Quotient.mk (P i) (primaryGenerator n*(primaryGenerator b)^3))) =
       (Real.sqrt (Ideal.absNorm (∏ i, P i) : ℝ) : ℂ)⁻¹ *
@@ -79,6 +83,8 @@ theorem marked_bracket_hybrid {ι : Type*} [Fintype ι]
       (if IsCoprime (∏ i, P i) b then 1 else 0) := by
   rw [marked_bracket_product,InverseMoment.inverseCubicKernel_eq_inverse_square,
     (primaryGenerator_spec b hb).1]
+
+end
 
 end
 end SevenEighths.InverseReflectedPhase

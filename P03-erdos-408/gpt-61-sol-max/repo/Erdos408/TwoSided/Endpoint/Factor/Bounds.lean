@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Analysis.Divisor
 public import Erdos408.TwoSided.Endpoint.Factor.Identity
@@ -25,8 +26,12 @@ open Filter Finset MeasureTheory
 
 /-! ### U6. The slot mean -/
 
+section
+variable {x : ℝ} (hx : 1 < x)
+include x hx
+
 /-- **U6 (crude form).** `|C_B| ≤ (1 + L)^{k+1}` when `∑ v ≤ 1` and `|B| ≤ 1`. -/
-theorem abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → ℝ}
+theorem abs_slotMean_le     {k : ℕ} {u v : Fin (k + 1) → ℝ}
     (hv : ∑ i, v i ≤ 1) {B : (Fin k → ℕ) → ℝ} (hB : ∀ Q, |B Q| ≤ 1) :
     |slotMean x u v B| ≤ (1 + Real.log x) ^ (k + 1) := by
   have hprimes : ∑ p ∈ primesIoc 1 x, (1 : ℝ) / p ≤ 1 + Real.log x := by
@@ -55,7 +60,7 @@ theorem abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → 
 /-! ### Counting -/
 
 /-- `ω(n) ≤ 4L` for `0 < n ≤ x²`. -/
-theorem card_primeFactors_le_four_mul_log {x : ℝ} (hx : 1 < x) {n : ℕ} (hn : 0 < n)
+theorem card_primeFactors_le_four_mul_log     {n : ℕ} (hn : 0 < n)
     (hnx : (n : ℝ) ≤ x ^ 2) : (n.primeFactors.card : ℝ) ≤ 4 * Real.log x := by
   have hL : 0 < Real.log x := Real.log_pos hx
   have hε : 0 < 1 / (2 * Real.log x) := by positivity
@@ -74,17 +79,15 @@ theorem card_primeFactors_le_four_mul_log {x : ℝ} (hx : 1 < x) {n : ℕ} (hn :
         rw [← Real.exp_nat_mul]; norm_num
       nlinarith [Real.exp_one_lt_d9, Real.exp_pos (1 / 2)]
     linarith
-  rw [hfilt] at h
-  calc (n.primeFactors.card : ℝ) ≤ 2 / (1 / (2 * Real.log x)) := h
-    _ = 4 * Real.log x := by field_simp; ring
+  grind
+
+end
 
 /-- The multiples of `m > 0` in `[1, N]` number at most `N / m`. -/
-theorem card_filter_dvd_le (N : ℕ) {m : ℕ} (hm : 0 < m) :
+theorem card_filter_dvd_le (N : ℕ)  {m}  (hm : 0 < m) :
     (((Icc 1 N).filter (m ∣ ·)).card : ℝ) ≤ N / m := by
   have h : (Icc 1 N).filter (m ∣ ·) = (range N.succ).filter (fun k => k ≠ 0 ∧ m ∣ k) := by
-    ext k
-    simp only [mem_filter, mem_Icc, mem_range]
-    omega
+    grind
   rw [h, Nat.card_multiples', le_div_iff₀ (by exact_mod_cast hm)]
   exact_mod_cast Nat.div_mul_le_self N m
 
@@ -93,8 +96,8 @@ theorem card_filter_dvd_le (N : ℕ) {m : ℕ} (hm : 0 < m) :
 /-- The mean value theorem for `twistedPoly`:
 `∫_{-T}^{T} |Y⁻¹ ∑ c(w) e(hw/k) w^{it}|² ≤ Y⁻² (2T + 8N(1 + log N)) ∑ |c(w)|²`, `N = ⌊2Y⌋`,
 for `Y ≥ 1` and `T ≥ 0`. -/
-theorem integral_norm_twistedPoly_sq_le {Y : ℝ} (hY : 1 ≤ Y) (c : ℕ → ℂ) (h : ℤ) (k : ℕ)
-    {T : ℝ} (hT : 0 ≤ T) :
+theorem integral_norm_twistedPoly_sq_le  {Y}  (hY : 1 ≤ Y)  c   h   k 
+     {T}  (hT : 0 ≤ T) :
     ∫ t in -T..T, ‖twistedPoly Y c h k t‖ ^ 2 ≤
       (Y ^ 2)⁻¹ * ((T - -T + 8 * ⌊2 * Y⌋₊ * (1 + Real.log ⌊2 * Y⌋₊)) *
         ∑ w ∈ Icc ⌈Y⌉₊ ⌊2 * Y⌋₊, ‖c w‖ ^ 2) := by
@@ -134,7 +137,7 @@ theorem integral_norm_twistedPoly_sq_le {Y : ℝ} (hY : 1 ≤ Y) (c : ℕ → �
 /-! ### Growth facts -/
 
 /-- Eventually `K₀ + C_N log T ≤ T`: the number of inert bands is at most `T`. -/
-theorem eventually_inert_le (K₀ : ℕ) (CN : ℝ) :
+theorem eventually_inert_le (K₀ : ℕ)  CN  :
     ∀ᶠ x : ℝ in atTop,
       (K₀ : ℝ) + CN * Real.log (Real.log (Real.log x)) ≤ Real.log (Real.log x) := by
   have hT := Real.tendsto_log_atTop.comp Real.tendsto_log_atTop
@@ -161,7 +164,7 @@ theorem eventually_inert_le (K₀ : ℕ) (CN : ℝ) :
 
 /-- Eventually `2 T²⁰ / c ≤ L`: the slot primes `> x^{c/T²⁰}` dividing `n ≤ x²` number at
 most `L`. -/
-theorem eventually_slot_ratio_le {c : ℝ} (hc : 0 < c) :
+theorem eventually_slot_ratio_le  {c}  (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop, 2 / (c / Real.log (Real.log x) ^ 20) ≤ Real.log x := by
   filter_upwards [((isLittleO_log_rpow_rpow_atTop 20 one_pos).comp_tendsto
       Real.tendsto_log_atTop).bound (half_pos hc),
@@ -171,7 +174,7 @@ theorem eventually_slot_ratio_le {c : ℝ} (hc : 0 < c) :
   have hL0 : 0 < L := by linarith
   have hT : 0 < Real.log L := Real.log_pos hL
   have h20 : Real.log L ^ (20 : ℝ) = Real.log L ^ 20 := by
-    rw [show (20 : ℝ) = ((20 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
+    simp_all
   rw [Real.norm_of_nonneg (Real.rpow_nonneg hT.le _), Real.norm_of_nonneg
     (Real.rpow_nonneg hL0.le _), h20, Real.rpow_one] at h₁
   rw [div_div_eq_mul_div, div_le_iff₀ hc]

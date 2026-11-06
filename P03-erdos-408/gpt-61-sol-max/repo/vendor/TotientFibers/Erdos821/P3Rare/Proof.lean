@@ -1,4 +1,6 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
 
 public import Erdos821.P3Rare.Sectors
 
@@ -17,7 +19,7 @@ namespace Erdos821.P3Rare
 open Erdos821.Blueprint.Graph
 open Erdos821.S2Core
 
-theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
+theorem memoryRareTask_holds  F   r  :
     MemoryRareTask F r := by
   classical
   intro m C₁
@@ -63,13 +65,13 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
     rwa [Real.log_exp] at hlog
   have hVlo : ∀ g : P.Group, F.vMin ≤ P.V g := fun g => (hP.2.2.2.2.1 g).1
   have hVhi : ∀ g : P.Group, P.V g ≤ F.vMax := fun g => (hP.2.2.2.2.1 g).2
-  have hVpos : ∀ g : P.Group, 0 < P.V g := fun g => Erdos821.P3Edge.V_pos_of_adm hP g
+  have hVpos : ∀ g : P.Group, 0 < P.V g := Erdos821.P3Edge.V_pos_of_adm hP
   have hVne : ∀ g : P.Group, P.V g ≠ 0 := fun g => ne_of_gt (hVpos g)
   have htilted_nn : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
       0 ≤ tiltedMu F P (N x) g.val p :=
     fun g p => (Erdos821.P3Edge.tiltedMu_pos hx1 hP (N x) rfl hL10 g p).le
   have htilted_sum : ∀ g : P.BigGroup, ∑ p : P.Prime g.val, tiltedMu F P (N x) g.val p ≤ 2 :=
-    fun g => Erdos821.P3Edge.tiltedMu_sum_le_two hx1 hP (N x) rfl hL10 g
+    Erdos821.P3Edge.tiltedMu_sum_le_two hx1 hP (N x) rfl hL10
   have hcard_big : ((Fintype.card P.BigGroup : ℕ) : ℝ) ≤ F.C₀ * Real.log (L x) := by
     have hle : (P.bigGroups.card : ℝ) ≤ F.C₀ * T x := hP.2.2.2.1
     have hcard_eq : (Fintype.card P.BigGroup : ℝ) = (P.bigGroups.card : ℝ) := by
@@ -107,8 +109,7 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
     ring
   let BP : ℝ := (Fintype.card (P.BigPermutations (J + F.ell)) : ℝ)
   have hBP : 0 < BP := by
-    have : Nonempty (P.BigPermutations (J + F.ell)) := ⟨fun _ => Equiv.refl _⟩
-    exact Nat.cast_pos.mpr Fintype.card_pos
+    positivity
   have haux : ∀ (v : Fin A.patternCount) (u : P.Aux J), 0 ≤ (A.pattern v).auxMass u := by
     intro v u
     unfold Pattern.auxMass
@@ -127,9 +128,8 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
   have hR : ∀ ctx, 0 ≤ R ctx := fun ctx => mul_nonneg (ha ctx) (by linarith)
   have hC : ∀ ctx, 0 ≤ C ctx := fun ctx => mul_nonneg (ha ctx) (by linarith)
   let keep : P.MemoryState (J + F.ell) → Prop := fun s => P.memorySize s ≤ memoryCutoff x
-  have hm : ∀ s : P.MemoryState (J + F.ell), 0 ≤ P.memoryMass F J (N x) s := fun s =>
-    Erdos821.P3Edge.memoryMass_nonneg F J (N x) hVpos htilted_nn s
-  have hw : ∀ s : P.MemoryState (J + F.ell), 0 < P.memoryWeight r.v s := fun s => Erdos821.P3Edge.memoryWeight_pos r s
+  have hm : ∀ s : P.MemoryState (J + F.ell), 0 ≤ P.memoryMass F J (N x) s := Erdos821.P3Edge.memoryMass_nonneg F J (N x) hVpos htilted_nn
+  have hw : ∀ s : P.MemoryState (J + F.ell), 0 < P.memoryWeight r.v s := Erdos821.P3Edge.memoryWeight_pos r
   let Ωc : ℝ := (Fintype.card (OmissionChoices P (J + F.ell) F.ell) : ℝ)
   have hΩ : Ωc = (omissionNumber F P J : ℝ) := by
     simp only [Ωc]
@@ -228,8 +228,7 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
           (Erdos821.P3Edge.patternSup A v * (A.pattern v).auxMass u / BP) =
         Erdos821.P3Edge.patternSup A v * (A.pattern v).auxMass u := by
       intro u
-      change BP * (Erdos821.P3Edge.patternSup A v * (A.pattern v).auxMass u / BP) = _
-      field_simp
+      field_simp <;> ring
     simp_rw [e]
     rw [← Finset.mul_sum, Erdos821.P3Edge.auxMass_sum_eq_one (A.pattern v) hVne, mul_one]
   have hconstP : (∑ ctx : EdgeTransferContext A,
@@ -249,12 +248,11 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
     calc Real.sqrt (Gr * Gc) ≤ Gr * Gc := h1
       _ = CB2 ^ Fintype.card P.BigGroup * CS2 ^ Fintype.card P.SmallGroup := hGG
       _ ≤ (L x) ^ Kbig * (L x) ^ Ksmall :=
-        mul_le_mul hbig_pow hsmall_pow (pow_nonneg (by linarith) _)
-          (Real.rpow_nonneg hLpos.le _)
+        (by gcongr <;> first | assumption | positivity | linarith)
   have hX : X = Real.sqrt (Gr * Gc) * Real.sqrt ((memoryCutoff x : ℝ) / Ωc) := by
     simp only [X]
     rw [Real.sqrt_mul (by linarith)]
-  have hpm0 : 0 ≤ A.patternMass := Erdos821.P3Edge.patternMass_nonneg A
+  
   have hmain : A.patternMass * X ≤
       (L x) ^ (C₁ + Kbig + Ksmall) *
         Real.sqrt ((memoryCutoff x : ℝ) / (omissionNumber F P J : ℝ)) := by
@@ -277,6 +275,4 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
 end Erdos821.P3Rare
 
 open Erdos821.Blueprint.Graph Erdos821.S2Core in
-theorem Erdos821.S2Core.MemoryRareTask_proof (F : FixedData) (r : MemoryParameters F) :
-    Erdos821.S2Core.MemoryRareTask F r :=
-  Erdos821.P3Rare.memoryRareTask_holds F r
+alias Erdos821.S2Core.MemoryRareTask_proof := _root_.Erdos821.P3Rare.memoryRareTask_holds

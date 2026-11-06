@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.GramScaleLoss
 
@@ -6,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Detector.GramScaleLoss
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 open CenteredMomentGaussEnergy EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (a b M₀ : ℝ) (ha : 0<a) (hab : a<b) (hM₀ : 0≤M₀)
-    (W : ℝ→ℂ) (hcompact : HasCompactSupport W) (hs : Function.support W⊆Set.Icc a b)
+     W   hcompact  (hs : Function.support W⊆Set.Icc a b)
     (hW : ContDiff ℝ ∞ W) (hWM : ∀x,‖W x‖≤M₀) :
     ∃J : ℕ,∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal),fixedBadPrimes⊆S→∀U : SchwartzMap ℝ ℂ,
     ∃K : ℝ,0<K ∧ ∀(σ : RayRing)(v Y Q : ℝ)(hY : 1≤Y),0<Q→1≤Y^2/Q→
@@ -42,7 +43,7 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   have hy : 0<Y := lt_of_lt_of_le zero_lt_one hY
   let P := Y^2/Q
   have hp : 1≤P := hP
-  have hp0 : 0<P := lt_of_lt_of_le zero_lt_one hp
+  
   let Z := lowGramZeroMode (calibrationForSet S hS) W hcompact Y hy σ v U Q
   let E := gaussEnergy (lowGaussColumns W hcompact Y hy) (fun I=>primaryGenerator I.val)
     (fun I=>(supported_span_primaryGenerator_iff _).mpr I.property)
@@ -57,9 +58,7 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
       (show 0≤K₁*H₁.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J*(Q/Y) by positivity)
     convert hh using 1 <;> (try dsimp [A₁]) <;> ring
   have henergy : ‖E‖≤A₀*(Q/Y)+A₁*(1+|v|)^J*(Q/Y)*(P^2/Y)*Y^δ+A₂*(Q/Y)*P^(1/6:ℝ) := by
-    have hn' : ‖E-Z‖≤A₁*(1+|v|)^J*(Q/Y)*(P^2/Y)*Y^δ+A₂*(Q/Y)*P^(1/6:ℝ) := by
-      apply hn.trans
-      exact add_le_add hgood (by dsimp [A₂,M,P];ring_nf;exact le_rfl)
+    
     calc
       ‖E‖=‖(E-Z)+Z‖ := by congr 1;ring
       _≤‖E-Z‖+‖Z‖ := norm_add_le _ _
@@ -98,6 +97,6 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     _=_ := by dsimp [B,P];ring
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

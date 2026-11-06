@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.CleanCoefficients
 
@@ -16,35 +17,35 @@ open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-def smallCleanGate (J ell : ℕ) (a c : SmallLabels P (J + ell)) (s t : PendingState P) : Prop :=
+def smallCleanGate (J ell ) (a c : SmallLabels P (J + ell)) (s t : PendingState P)  :=
   a ∈ smallArrayStates P (J + ell) s.1 ∧ c ∈ smallArrayStates P (J + ell) t.1 ∧
     smallArrayPrefix J ell a = smallArrayPrefix J ell c
 
 def bigCleanGate (A : Model F P J m) (ν : Pattern P J F.ell m) (forward : Bool)
     (d0 : SmallLabels P J) (a b : P.BigLabels (J + F.ell)) (u : P.BigAux J)
-    (s t : PendingState P) : Prop :=
+    (s t : PendingState P)  :=
   ν.matchesBig a b ∧ bigBan ν a b u ∧ t = translatePending (bigStep A ν forward d0 a u) s
 
 def bigCleanCoefficient (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
     (ν : Pattern P J F.ell m) (d0 : SmallLabels P J)
-    (a b : P.BigLabels (J + F.ell)) (u : P.BigAux J) : ℂ :=
+    (a b : P.BigLabels (J + F.ell)) (u : P.BigAux J)  :=
   (ν.bigAuxMass u * tiltedFreshMass F n ν b : ℝ) *
     smallSignedCoefficient A forward d0 * bigSignedCoefficient A ν forward a b u *
     phase (theta * (bigStep A ν forward d0 a u : ℝ))
 
 def conditionedPatternEntry (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
     (ν : Pattern P J F.ell m) (d0 : SmallLabels P J)
-    (a b : P.BigLabels (J + F.ell)) (s t : PendingState P) : ℂ :=
+    (a b : P.BigLabels (J + F.ell)) (s t : PendingState P)  :=
   ∑ u : P.BigAux J, if bigCleanGate A ν forward d0 a b u s t then
     bigCleanCoefficient A n theta forward ν d0 a b u else 0
 
 def conditionedKernel (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
     (d0 : SmallLabels P J)
-    (a b : P.BigLabels (J + F.ell) × PendingState P) : ℂ :=
+    (a b : P.BigLabels (J + F.ell) × PendingState P)  :=
   ∑ v : Fin A.patternCount, conditionedPatternEntry A n theta forward (A.pattern v) d0
     a.1 b.1 a.2 b.2
 
-theorem rawEdgeValid_split (A : Model F P J m) (ν : Pattern P J F.ell m) (forward : Bool)
+theorem rawEdgeValid_split (A : Model F P J m) (ν : Pattern P J F.ell m)  forward 
     (a c : SmallLabels P (J + F.ell)) (b d : P.BigLabels (J + F.ell))
     (v : SmallLabels P J) (u : P.BigAux J) (s t : PendingState P) :
     rawEdgeValid A ν forward (joinLabels v u)
@@ -56,10 +57,10 @@ theorem rawEdgeValid_split (A : Model F P J m) (ν : Pattern P J F.ell m) (forwa
   unfold smallCleanGate bigCleanGate
   tauto
 
-theorem rawClean_summand_split (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
-    (ν : Pattern P J F.ell m) (a c : SmallLabels P (J + F.ell))
-    (b d : P.BigLabels (J + F.ell)) (v : SmallLabels P J) (u : P.BigAux J)
-    (s t : PendingState P) (hV : ∀ g : P.SmallGroup, 0 ≤ P.V g.val) :
+theorem rawClean_summand_split (A : Model F P J m)  n   theta   forward 
+    (ν : Pattern P J F.ell m)  a c 
+     b d   v   u 
+     s t  (hV : ∀ g : P.SmallGroup, 0 ≤ P.V g.val) :
     (smallMarkMass P (J + F.ell) : ℂ) *
       (if rawEdgeValid A ν forward (joinLabels v u)
           (s.1, joinLabels a b, s.2) (t.1, joinLabels c d, t.2)
@@ -79,14 +80,8 @@ theorem rawClean_summand_split (A : Model F P J m) (n : ℕ) (theta : ℝ) (forw
       rw [ite_eq_left hs, ite_eq_left hb, ite_eq_left hv, rawCleanCoefficient_join A n theta forward ν a c b d v u s t hV]
       unfold bigCleanCoefficient
       ring
-    · have hv : ¬ rawEdgeValid A ν forward (joinLabels v u)
-          (s.1, joinLabels a b, s.2) (t.1, joinLabels c d, t.2)
-          (emptyTransfer (s.1, joinLabels a b, s.2)) := fun h => hb (hr.mp h).2
-      simp only [ite_eq_left hs, ite_eq_right hb, ite_eq_right hv, mul_zero]
-  · have hv : ¬ rawEdgeValid A ν forward (joinLabels v u)
-        (s.1, joinLabels a b, s.2) (t.1, joinLabels c d, t.2)
-        (emptyTransfer (s.1, joinLabels a b, s.2)) := fun h => hs (hr.mp h).1
-    simp only [ite_eq_right hs, ite_eq_right hv, mul_zero]
+    grind
+  simp_all
 
 theorem sum_aux_split (f : P.Aux J → ℂ) :
     (∑ u : P.Aux J, f u) = ∑ v : SmallLabels P J, ∑ u : P.BigAux J, f (joinLabels v u) := by
@@ -95,9 +90,9 @@ theorem sum_aux_split (f : P.Aux J → ℂ) :
   rw [Fintype.sum_prod_type] at h
   exact h.symm
 
-theorem rawCleanPattern_sum_split (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
-    (ν : Pattern P J F.ell m) (a c : SmallLabels P (J + F.ell))
-    (b d : P.BigLabels (J + F.ell)) (s t : PendingState P)
+theorem rawCleanPattern_sum_split (A : Model F P J m)  n   theta   forward 
+    (ν : Pattern P J F.ell m)  a c 
+     b d   s t 
     (hV : ∀ g : P.SmallGroup, 0 < P.V g.val) :
     (smallMarkMass P (J + F.ell) : ℂ) *
       (∑ u : P.Aux J, if rawEdgeValid A ν forward u
@@ -132,9 +127,9 @@ theorem rawCleanPattern_sum_split (A : Model F P J m) (n : ℕ) (theta : ℝ) (f
       _ = _ := by rw [hsmall, one_mul]
   · simp only [ite_eq_right hs, Finset.sum_const_zero]
 
-theorem rawCleanKernel_coordinates (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
-    (a c : SmallLabels P (J + F.ell)) (b d : P.BigLabels (J + F.ell))
-    (s t : PendingState P) (hV : ∀ g : P.SmallGroup, 0 < P.V g.val) :
+theorem rawCleanKernel_coordinates (A : Model F P J m)  n   theta   forward 
+     a c   b d 
+     s t  (hV : ∀ g : P.SmallGroup, 0 < P.V g.val) :
     (smallMarkMass P (J + F.ell) : ℂ) *
       rawCleanKernel A n theta forward
         (s.1, joinLabels a b, s.2) (t.1, joinLabels c d, t.2) =

@@ -6,25 +6,25 @@ public import OAI.NumberTheory.DirichletL.Detector.CalibrationCRT
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstMixed
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
 open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-local notation "O" => ActualEisensteinCubic.O
 
-theorem frequencyReduction_comp (d n M : O) (hd : d∣n) (hn : n∣M) (x : Residue M) :
+
+theorem frequencyReduction_comp  d n M   hd   hn   x  :
     frequencyReduction d n hd (frequencyReduction n M hn x)=frequencyReduction d M (hd.trans hn) x := by
   obtain ⟨x,rfl⟩ := Ideal.Quotient.mk_surjective x
   simp only [frequencyReduction_mk]
 
-theorem three_factor_mixed_fourier (a b c : O) (ha : a ≠ 0) (hb : b ≠ 0) (hc : c ≠ 0)
+theorem three_factor_mixed_fourier (a b c : ActualEisensteinCubic.O) (ha : a ≠ 0) (hb : b ≠ 0) (hc : c ≠ 0)
     (habc : IsCoprime a (b*c)) (hbc : IsCoprime b c)
     [Fintype (Residue a)] [Fintype (Residue b)] [Fintype (Residue c)]
     [Fintype (Residue (b*c))] [Fintype (Residue (a*(b*c)))]
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) (G : Residue c → ℂ)
-    (h : Residue (a*(b*c))) :
+     h  :
     (∑ x : Residue (a*(b*c)),
       χa (frequencyReduction a (a*(b*c)) (dvd_mul_right _ _) x)*
       χb (frequencyReduction b (a*(b*c)) (dvd_mul_of_dvd_right (dvd_mul_right _ _) _) x)*
@@ -67,6 +67,6 @@ theorem three_factor_mixed_fourier (a b c : O) (ha : a ≠ 0) (hb : b ≠ 0) (hc
 
 end SevenEighths.CenteredMomentFirstMixed
 
-end
+
 
 end OAI

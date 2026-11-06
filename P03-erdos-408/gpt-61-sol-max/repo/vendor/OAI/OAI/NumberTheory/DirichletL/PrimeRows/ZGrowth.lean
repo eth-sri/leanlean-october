@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstWGrowth
 public import OAI.NumberTheory.DirichletL.Hecke.StripActual
@@ -7,22 +8,22 @@ public import OAI.NumberTheory.DirichletL.Hecke.StripActual
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+
 
 theorem physicalRow_first_z_bounded (eps : ℝ)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S)
-    (η : Character) (u : FreeRow) (x w : ℂ)
+     S   hS  (hfirst : FirstTail eps S)
+     T   hT 
+     η   u   x w 
     (hx : (51/100:ℝ)≤x.re) (hw : -(1/100:ℝ)≤w.re)
     (hxw : 1+eps≤x.re+w.re) :
     ∃C : ℝ,0≤C ∧ ∀z : ℂ,(17/50:ℝ)≤z.re →
       ‖physicalCompensatedRow S hS T hT η u x w z‖≤C := by
   obtain ⟨Ch,hCh,hh⟩ := unselectedCorrection_first_subpower 1 (by norm_num)
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N : ℝ := ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)
   let A : T→ℝ := fun P=>selectedFirstBound P.val.val.absNorm x.re
   let L : ℝ := HeckeReciprocalBound.bound 2*
     ‖HeckeOrigin.continued (rowCharacter S hS.prime u) w‖*
@@ -31,7 +32,7 @@ theorem physicalRow_first_z_bounded (eps : ℝ)
   have hL : 0≤L := by dsimp [L];positivity
   have hA (P : T) : 0≤A P := selectedFirstBound_nonneg (P.val.val.absNorm : ℝ) x.re (Nat.cast_nonneg _)
   have hprod : 0≤∏P:T,A P := Finset.prod_nonneg (fun P _=>hA P)
-  have hN : 0≤N := Nat.cast_nonneg _
+  
   refine ⟨L*(Ch*N)*(∏P:T,A P),by positivity,?_⟩
   intro z hz
   have hl : ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖≤HeckeReciprocalBound.bound 2 :=
@@ -53,10 +54,10 @@ theorem physicalRow_first_z_bounded (eps : ℝ)
   rw [mul_assoc L]
   apply mul_le_mul _ (mul_le_mul hh' hg (norm_nonneg _) (by dsimp [N];positivity))
     (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hL
-  exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hl (norm_nonneg _)) (norm_nonneg _)
+  bound
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

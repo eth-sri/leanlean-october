@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicBuffered
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open Set MeasureTheory Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
 
-theorem norm_four_sides (A B C D : ℂ) :
+theorem norm_four_sides  A B C D  :
     ‖A+I*(B-C)+D‖≤‖A‖+‖B‖+‖C‖+‖D‖ := by
   have h₁ := norm_add_le (A+I*(B-C)) D
   have h₂ := norm_add_le A (I*(B-C))
@@ -20,12 +20,16 @@ theorem norm_four_sides (A B C D : ℂ) :
   simp only [norm_mul,norm_I,one_mul] at h₂
   linarith
 
-theorem polynomial_bound_of_rectangle (χ : Character) (hχ : χ.residue≠1)
-    (inverse : Bool) (W : ℝ → ℂ) (a b : ℝ) (ha : 0<a)
-    (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (D σ freq l r T C₂ Cn K : ℝ) (n : ℕ)
-    (hD : 1≤D) (hlr : l≤r) (hr : 1<r+σ) (hT : 0≤T)
-    (hC₂ : 0≤C₂) (hCn : 0≤Cn) (hK : 0≤K)
+section
+variable (χ : Character) (hχ : χ.residue≠1) (inverse : Bool) (W : ℝ → ℂ) (a b : ℝ) (ha : 0<a) (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (D σ freq l r T C₂ Cn K Kc : ℝ) (n : ℕ) (hD : 1≤D) (hlr : l≤r) (hr : 1<r+σ) (hT : 0≤T) (hC₂ : 0≤C₂) (hCn : 0≤Cn)
+
+include hχ ha hWs hW hD hlr hr hT hC₂ hCn in
+theorem polynomial_bound_of_rectangle    
+           
+       
+       
+           
+        (hK : 0≤K)
     (hm₂ : ∀ t : ℝ, (1+|t|)^2*‖mellin W ((l : ℂ)+t*I)‖≤C₂)
     (hmn : ∀ x ∈ Icc l r, ∀ t : ℝ,
       (1+|t|)^(n+2)*‖mellin W ((x : ℂ)+t*I)‖≤Cn)
@@ -65,12 +69,13 @@ theorem polynomial_bound_of_rectangle (χ : Character) (hχ : χ.residue≠1)
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact (norm_four_sides _ _ _ _).trans (by linarith)
 
-theorem polynomial_bound_of_rectangle_split (χ : Character) (hχ : χ.residue≠1)
-    (inverse : Bool) (W : ℝ → ℂ) (a b : ℝ) (ha : 0<a)
-    (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (D σ freq l r T C₂ Cn K Kc : ℝ) (n : ℕ)
-    (hD : 1≤D) (hlr : l≤r) (hr : 1<r+σ) (hT : 0≤T)
-    (hC₂ : 0≤C₂) (hCn : 0≤Cn) (hK : 0≤K) (hKc : 0≤Kc)
+include hχ ha hWs hW hD hlr hr hT hC₂ hCn in
+theorem polynomial_bound_of_rectangle_split    
+           
+       
+       
+           
+        (hK : 0≤K) (hKc : 0≤Kc)
     (hm₂ : ∀ t : ℝ, (1+|t|)^2*‖mellin W ((l : ℂ)+t*I)‖≤C₂)
     (hmn : ∀ x ∈ Icc l r, ∀ t : ℝ,
       (1+|t|)^(n+2)*‖mellin W ((x : ℂ)+t*I)‖≤Cn)
@@ -111,8 +116,10 @@ theorem polynomial_bound_of_rectangle_split (χ : Character) (hχ : χ.residue�
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact (norm_four_sides _ _ _ _).trans (by linarith)
 
+end
+
 end SevenEighths.HeckeDyadic
 
-end
+
 
 end OAI

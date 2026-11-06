@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2High.Baseline
 
@@ -12,11 +13,14 @@ open Erdos821.Blueprint.Graph
 
 variable {P : PrimeGroups} {J ell m : ℕ}
 
-def coefficientSup (ν : Pattern P J ell m) : ℝ :=
+def coefficientSup (ν : Pattern P J ell m)  :=
   sSup (Set.range (fun z : P.BigLabels (J + ell) × P.BigLabels (J + ell) × P.BigAux J =>
     ‖ν.coefficient z.1 z.2.1 z.2.2‖))
 
-theorem coefficientSup_nonneg (ν : Pattern P J ell m) : 0 ≤ coefficientSup ν := by
+section
+variable (ν : Pattern P J ell m)
+
+theorem coefficientSup_nonneg   : 0 ≤ coefficientSup ν := by
   classical
   let α := P.BigLabels (J + ell) × P.BigLabels (J + ell) × P.BigAux J
   by_cases hα : Nonempty α
@@ -42,28 +46,18 @@ def majorantPattern (ν : Pattern P J ell m) : Pattern P J ell m :=
       intro a b u v huv
       rfl }
 
-theorem majorantPattern_sup (ν : Pattern P J ell m) :
+theorem majorantPattern_sup   :
     sSup (Set.range (fun z : P.BigLabels (J + ell) × P.BigLabels (J + ell) × P.BigAux J =>
       ‖(majorantPattern ν).coefficient z.1 z.2.1 z.2.2‖)) = coefficientSup ν := by
   classical
   let α := P.BigLabels (J + ell) × P.BigLabels (J + ell) × P.BigAux J
   have hnonneg := coefficientSup_nonneg ν
-  have hnorm : ‖(coefficientSup ν : ℂ)‖ = coefficientSup ν := by
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hnonneg]
+  
   by_cases hα : Nonempty α
   · let : Nonempty α := hα
     have hRange : Set.range (fun _ : α => ‖(coefficientSup ν : ℂ)‖) =
         {coefficientSup ν} := by
-      apply Set.ext
-      intro y
-      simp only [Set.mem_range, Set.mem_singleton_iff]
-      constructor
-      · rintro ⟨z, rfl⟩
-        exact hnorm
-      · intro hy
-        subst y
-        obtain ⟨z⟩ := hα
-        exact ⟨z, hnorm⟩
+      simp_all
     change sSup (Set.range (fun z : α => ‖(coefficientSup ν : ℂ)‖)) = coefficientSup ν
     rw [hRange]
     simp
@@ -81,7 +75,9 @@ theorem majorantPattern_sup (ν : Pattern P J ell m) :
       sSup (Set.range (fun z : α => ‖ν.coefficient z.1 z.2.1 z.2.2‖))
     rw [hMajRange, hRange]
 
-def majorantModel {F : FixedData} (A : Model F P J m) : Model F P J m :=
+end
+
+def majorantModel {F } (A : Model F P J m)  :=
   { A with pattern := fun i => majorantPattern (A.pattern i) }
 
 theorem majorantModel_patternMass {F : FixedData} (A : Model F P J m) :

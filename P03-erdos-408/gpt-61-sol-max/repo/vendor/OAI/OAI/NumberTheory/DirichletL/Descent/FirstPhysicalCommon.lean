@@ -18,7 +18,7 @@ variable {ι : Type*} [DecidableEq ι]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 def firstCommonCoefficient (C₁ C₂ : Finset ι → ℂ)
-    (r : RayCharacter × RayCharacter) (D U V : Finset ι) (h : Eis) : ℂ :=
+    (r : RayCharacter × RayCharacter) (D U V : Finset ι) (h : Eis)  :=
   star (supportMobius (fun i => Ideal.span {p i}) U *
     (star (supportRay p r.1 (D ∪ U))*C₁ (D ∪ U)) *
       star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg U h)) *
@@ -27,7 +27,7 @@ def firstCommonCoefficient (C₁ C₂ : Finset ι → ℂ)
       star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg V h))
 
 def firstPhysicalCommonRows (F : Finset ι) (C₁ C₂ : Finset ι → ℂ)
-    (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C R K : ℝ) (d h : Eis) : ℂ :=
+    (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C R K : ℝ) (d h : Eis)  :=
   ∑ r : RayCharacter × RayCharacter, crossCoeff r.1 r.2 *
     ∑ D ∈ F.powerset, supportMobius (fun i => Ideal.span {p i}) D *
       rowCoprimeMask (fun i => Ideal.span {p i}) D h *
@@ -41,9 +41,9 @@ theorem actual_first_physical_common
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (F B : Finset ι) (hFB : Disjoint F B)
-    (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (C₁ C₂ : Finset ι → ℂ)
-    (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C K : ℝ) (d h : Eis) :
+     F B  (hFB : Disjoint F B)
+     v   ε₁ ε₂   C₁ C₂ 
+     W₁ W₂   Φ   A₁ A₂ C K   d h  :
     (‖eisEmbedding d‖^2 : ℂ)⁻¹ *
       (∑ N ∈ F.powerset, ∑ P ∈ F.powerset, if Disjoint N P then
         canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ Φ

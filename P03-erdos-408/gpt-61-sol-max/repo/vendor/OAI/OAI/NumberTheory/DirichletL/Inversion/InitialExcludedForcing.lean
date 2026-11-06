@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedOverlap
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
@@ -17,9 +17,9 @@ open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPo
 open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialLargePool
 open InverseInitialExcludedPool InverseInitialExcludedOverlap
 open InverseInitialCommonTuples InverseInitialCommonTransform
-local notation "O"=>ActualEisensteinCubic.O
 
-theorem pool_product_outside (F E:Finset (Ideal O))(hE:∀Q∈E,Prime Q)
+
+theorem pool_product_outside (F E:Finset (Ideal ActualEisensteinCubic.O))(hE:∀Q∈E,Prime Q)
     (hF:∀I∈F,outside E I)(A:Finset (primePool F)):
     outside E (∏i∈A,i.val) := by
   intro Q hQ hd
@@ -28,12 +28,12 @@ theorem pool_product_outside (F E:Finset (Ideal O))(hE:∀Q∈E,Prime Q)
   exact hF I hIF Q hQ (hQi.trans (dvd_of_mem_normalizedFactors hfactor))
 
 theorem residual_excluded_forcing
-    (W:ℝ→ℂ)(Z r z G b:ℝ)(hZ:0<Z)(hW:∀x,W x≠0→x≤b)
-    (E:Finset (Ideal O))(hE:∀Q∈E,Prime Q)
-    {P j:Ideal O}(hP:Admissible P)(hj:j∣P)(hPE:outside E P)
-    (F:Finset (Ideal O))(hF:∀I∈F,Admissible I)(hFE:∀I∈F,outside E I)
+     W  Z r z G b (hZ:0<Z)(hW:∀x,W x≠0→x≤b)
+    (E:Finset (Ideal ActualEisensteinCubic.O))(hE:∀Q∈E,Prime Q)
+     {P j} (hP:Admissible P)(hj:j∣P)(hPE:outside E P)
+     F  hF (hFE:∀I∈F,outside E I)
     (hsub:columns (originalOutside (originalSource Z r b) E) P j⊆F)
-    (η:Ideal O→*ℂ)(hη:∀I,¬outside E I→η I=0)(u:O):
+     η (hη:∀I,¬outside E I→η I=0) u :
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i=>by rw [poolPrimary_span F hF i];infer_instance
     residualNormalizedPolynomial (originalSource Z r b) P j η (fun _=>1) W Z r z G u=
@@ -75,13 +75,13 @@ theorem residual_excluded_forcing
 variable {κ:Type*}
 theorem original_tuples_excluded_input
     (W:ℝ→ℂ)(Z r z G b:ℝ)(hZ:0<Z)(hW:∀x,W x≠0→x≤b)
-    (E:Finset (Ideal O))(hE:∀Q∈E,Prime Q)
-    (T:Finset κ)(P:κ→Ideal O)(j:Ideal O)
+    (E:Finset (Ideal ActualEisensteinCubic.O))(hE:∀Q∈E,Prime Q)
+    (T:Finset κ)(P:κ→Ideal ActualEisensteinCubic.O)(j:Ideal ActualEisensteinCubic.O)
     (hP:∀k∈T,Admissible (P k))(hj:∀k∈T,j∣P k)
     (hPE:∀k∈T,outside E (P k))
-    (F:Finset (Ideal O))(hF:∀I∈F,Admissible I)(hFE:∀I∈F,outside E I)
+    (F:Finset (Ideal ActualEisensteinCubic.O))(hF:∀I∈F,Admissible I)(hFE:∀I∈F,outside E I)
     (hsub:tupleColumns (originalOutside (originalSource Z r b) E) T P j⊆F)
-    (η:Ideal O→*ℂ)(hη:∀I,¬outside E I→η I=0)(a:κ→ℂ)(u:O) :
+    (η:Ideal ActualEisensteinCubic.O→*ℂ)(hη:∀I,¬outside E I→η I=0)(a:κ→ℂ) u  :
     let S := originalSource Z r b
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i=>by rw [poolPrimary_span F hF i];infer_instance
@@ -105,6 +105,6 @@ theorem original_tuples_excluded_input
 
 end SevenEighths.InverseInitialExcludedForcing
 
-end
+
 
 end OAI

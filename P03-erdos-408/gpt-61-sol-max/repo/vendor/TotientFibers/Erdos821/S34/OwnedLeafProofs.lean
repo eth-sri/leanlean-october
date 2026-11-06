@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.Blueprint.Analytic
 public import Erdos821.S34.Hoeffding
@@ -25,6 +26,6 @@ end Erdos821.S34Core
 namespace Erdos821.Blueprint.Analytic
 
 theorem integer_bilinear_proof : Erdos821.Blueprint.Analytic.integer_bilinear_statement :=
-  @Erdos821.S34.Proofs.integer_bilinear
+  Erdos821.S34.Proofs.integer_bilinear
 
 end Erdos821.Blueprint.Analytic

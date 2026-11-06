@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
 
@@ -11,12 +12,12 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialExcludedEnergy
 open HeckeFamily HeckeDyadic InverseInitialExcludedPolynomial
 open IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O"=>HeckeFamily.O
 
-def deletionWeight (χ:Character)(j:Ideal O):ℂ:=
+
+def deletionWeight (χ:Character)(j:Ideal HeckeFamily.O):=
   (moebius j:ℂ)*idealCoeff χ j*(j.absNorm:ℂ)^(-(1/2:ℂ))
 
-theorem deletionWeight_norm_le_one (χ:Character){j:Ideal O}(hj:j≠0):
+theorem deletionWeight_norm_le_one  χ  {j} (hj:j≠0):
     ‖deletionWeight χ j‖≤1 := by
   have hn:1≤(j.absNorm:ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hj)
@@ -34,8 +35,8 @@ theorem deletionWeight_norm_le_one (χ:Character){j:Ideal O}(hj:j≠0):
       (norm_nonneg _) (by positivity)
     _=1:=one_mul _
 
-theorem marked_pointwise (χ:Character)(S:Finset (Ideal O))(hS:∀P∈S,Prime P)
-    (W:ℝ→ℂ)(X σ t b:ℝ)(hX:0<X)(hW:∀x,W x≠0→x≤b)(mark:ℂ):
+theorem marked_pointwise  χ  S  hS 
+     W (X σ t b:ℝ)(hX:0<X)(hW:∀x,W x≠0→x≤b) mark :
     ‖polynomial χ true W X σ t*mark‖^2≤
     ((idealDivisors (∏P∈S,P)).card:ℝ)*
       ∑j∈idealDivisors (∏P∈S,P),
@@ -61,7 +62,7 @@ theorem marked_pointwise (χ:Character)(S:Finset (Ideal O))(hS:∀P∈S,Prime P)
     hh
 
 theorem marked_family {ι:Type*}(rows:Finset ι)(χ:ι→Character)
-    (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(W:ℝ→ℂ)(X σ t b:ℝ)
+    (S:Finset (Ideal HeckeFamily.O))(hS:∀P∈S,Prime P)(W:ℝ→ℂ)(X σ t b:ℝ)
     (hX:0<X)(hW:∀x,W x≠0→x≤b)(mark:ι→ℂ)(weight:ι→ℝ)
     (hw:∀u∈rows,0≤weight u):
     (∑u∈rows,weight u*‖polynomial (χ u) true W X σ t*mark u‖^2)≤
@@ -78,11 +79,7 @@ theorem marked_family {ι:Type*}(rows:Finset ι)(χ:ι→Character)
     _=_:=by
       simp only [Finset.mul_sum]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro j hj
-      apply Finset.sum_congr rfl
-      intro u hu
-      ring
+      grind
 
 end SevenEighths.InverseInitialExcludedEnergy
 

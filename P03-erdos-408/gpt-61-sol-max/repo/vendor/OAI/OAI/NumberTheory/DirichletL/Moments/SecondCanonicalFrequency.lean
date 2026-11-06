@@ -16,14 +16,22 @@ open CenteredMomentPartition CenteredMomentSupport CenteredMomentSupportedCorrel
 open CenteredMomentCorrelation CenteredMomentUnequal
 local notation "O" => ActualEisensteinCubic.O
 
-theorem commonFrequencyGenerator_ne_zero (C D : Ideal O) (hC : Supported C) :
+section
+variable (C D : Ideal O) (hC : Supported C)
+include C D hC
+
+theorem commonFrequencyGenerator_ne_zero     :
     commonFrequencyGenerator C D≠0 := by
   apply Finset.prod_ne_zero_iff.mpr
   intro P hP
   exact pow_ne_zero _ (supported_element_ne_zero _ (commonPrime_supported C D hC P))
 
-theorem commonFrequencyGenerator_dvd (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) :
+section
+variable (hD : Supported D) (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
+include hD hCD
+
+theorem commonFrequencyGenerator_dvd      
+      :
     commonFrequencyGenerator C D∣primaryGenerator C ∧
     commonFrequencyGenerator C D∣primaryGenerator D := by
   rw [←left_generator_product C D hC hCD,←right_generator_product C D hC hD hCD]
@@ -31,9 +39,9 @@ theorem commonFrequencyGenerator_dvd (C D : Ideal O) (hC : Supported C) (hD : Su
   · exact Finset.prod_dvd_prod_of_dvd _ _ (fun P _=>pow_dvd_pow _ (min_le_left _ _))
   · exact Finset.prod_dvd_prod_of_dvd _ _ (fun P _=>pow_dvd_pow _ (min_le_right _ _))
 
-theorem idealCorrelation_zero_outside_common (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (j : O) (hj : ¬commonFrequencyGenerator C D∣j) : idealCorrelation C D hC hD j=0 := by
+theorem idealCorrelation_zero_outside_common      
+     
+     j  (hj : ¬commonFrequencyGenerator C D∣j) : idealCorrelation C D hC hD j=0 := by
   have hd := commonFrequencyGenerator_dvd C D hC hD hCD
   let := finite_quotient_span (supported_primaryGenerator_ne_zero C hC)
   let := finite_quotient_span (supported_primaryGenerator_ne_zero D hD)
@@ -42,16 +50,16 @@ theorem idealCorrelation_zero_outside_common (C D : Ideal O) (hC : Supported C) 
   unfold idealCorrelation actualCorrelation
   exact fullModulusCorrelation_eq_zero_of_common_not_dvd _ _ _ _ _ _ hd.1 hd.2 hj
 
-def canonicalPartition (C D : Ideal O) (U : Finset (CommonIndex C D)) (w : O) : Prop :=
+def canonicalPartition (C D ) (U : Finset (CommonIndex C D)) (w : O)  :=
   actualUnitSet (commonPrime C D) (leftExponent C D) (rightExponent C D) w=U
 
-def canonicalPartitionScalar (C D : Ideal O) (U : Finset (CommonIndex C D)) (w : O) : ℂ :=
+def canonicalPartitionScalar (C D ) (U : Finset (CommonIndex C D)) (w : O)  :=
   if canonicalPartition C D U w then
     (partitionNormalizer (commonPrime C D) (leftExponent C D) (rightExponent C D) U:ℂ)⁻¹ else 0
 
-theorem actual_ideal_partition_scalar (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (U : Finset (CommonIndex C D)) (w : O) :
+theorem actual_ideal_partition_scalar      
+     
+     U   w  :
     ‖canonicalPartitionScalar C D U w*
       idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)‖≤1 := by
   let (P : CommonIndex C D) : (Ideal.span {commonPrime C D P}).IsMaximal := by
@@ -75,6 +83,10 @@ theorem actual_ideal_partition_scalar (C D : Ideal O) (hC : Supported C) (hD : S
   · simpa only [canonicalPartitionScalar,ite_eq_left hw,div_eq_mul_inv,mul_comm,
       idealCorrelation,commonFrequencyGenerator] using hh
   · simp only [canonicalPartitionScalar,ite_eq_right hw,zero_mul,norm_zero,zero_le_one]
+
+end
+
+end
 
 end SevenEighths.CenteredMomentSecondCanonicalFrequency
 

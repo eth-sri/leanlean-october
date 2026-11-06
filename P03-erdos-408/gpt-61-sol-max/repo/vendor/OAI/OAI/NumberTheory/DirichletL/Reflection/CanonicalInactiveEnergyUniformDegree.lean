@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalInactiveEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalChoiceEnergyUniformDegree
@@ -10,14 +11,14 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_original_inactive_energy_uniform_degree
     (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (L cstar η : ℝ)
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     L cstar η 
     (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η) (hη1 : η≤1) (hηc : η≤cstar/100000) :
     ∃ (degree : ℕ), ∀ {Nlevel : Eis}, ∀
     {γ : Type*} [Fintype γ] (a c₀ : γ→Eis) (mode : γ→Bool)
@@ -127,9 +128,8 @@ theorem canonical_original_inactive_energy_uniform_degree
   have hzpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hZ₀ hZ)
   apply supported_inactive_source_energy rows lists T FF H (fun i P hP => (hprime i P hP).ne_zero)
     hH w hw f (C*(1+‖θ‖)^degree*Z^(N+V-cstar/8-O₀/2)) (by positivity)
-  intro b
-  exact hDb b θ (fun i : T => w i.val) (fun i P => hw i.val P)
-end
+  solve_by_elim
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

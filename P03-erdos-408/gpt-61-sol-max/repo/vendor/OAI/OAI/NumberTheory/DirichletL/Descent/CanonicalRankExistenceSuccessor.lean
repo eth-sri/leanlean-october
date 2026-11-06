@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankExistenceData
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankFamilyGates
@@ -7,14 +8,14 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankFamilyGates
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
 open MeasureTheory ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
 open CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase InverseTerminalWidths
 open CanonicalCubeSeparation CompletedHeight InverseMomentFirstSecondHeightCost
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem rank_energy_exists_succ_of_reference
     (n:ℕ)(L cstar cutoff eta:ℝ)(K:ℕ)
@@ -158,8 +159,7 @@ theorem rank_energy_exists_succ_of_reference
     (lift w11 C11 J11 hC11.le hCA11 hj11 m11) (lift w12 C12 J12 hC12.le hCA12 hj12 m12)
     (lift w21 C21 J21 hC21.le hCA21 hj21 m21) (lift w22 C22 J22 hC22.le hCA22 hj22 m22)
   have hnextLoss:rankLoss n eta+62*eta=rankLoss (n+1) eta:=by unfold rankLoss;push_cast;ring
-  have hlongexp:(rankLoss n eta+60*eta)+2*L*firstPassEpsilon L eta+eta≤rankLoss (n+1) eta:=by
-    simpa only [hnextLoss] using hFinal
+  
   have hloss0:0≤rankLoss (n+1) eta:=by unfold rankLoss;positivity
   have hlong:Cb*(1+A)*(1+‖theta‖)^dl*
       Z^(N+V+(rankLoss n eta+60*eta)+2*L*firstPassEpsilon L eta+eta)≤
@@ -185,6 +185,6 @@ theorem rank_energy_exists_succ_of_reference
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

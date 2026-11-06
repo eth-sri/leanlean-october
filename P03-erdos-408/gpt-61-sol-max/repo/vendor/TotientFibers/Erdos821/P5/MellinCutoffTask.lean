@@ -15,7 +15,7 @@ open Blueprint.Analytic
 /-- Logarithmic Fourier inversion of a fixed positive-interval cutoff.
 The cutoff frequency is chosen before the requested tail saving. Keeping
 Fin 1 coordinates avoids an unnecessary measure-transport interface. -/
-def MellinCutoffTask : Prop :=
+def MellinCutoffTask  :=
   Blueprint.FourierSeparation →
   ∀ (C lo hi : ℝ) (bounds : ℕ → ℝ),
     0 < C → 0 < lo → lo < hi → (∀ j, 0 ≤ bounds j) →

@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Extraction.Allocation.Asymptotics
 
 public import Erdos408.Extraction.Defs
 public import Erdos408.Mertens
@@ -31,35 +34,41 @@ namespace Sieve
 /-! ### Asymptotics of `L`, `T` and `s` -/
 
 /-- `T = log log x` tends to infinity. -/
-lemma tendsto_logLog : Tendsto logLog atTop atTop :=
-  tendsto_log_atTop.comp tendsto_log_atTop
+alias tendsto_logLog := _root_.Erdos408.tendsto_logLog_atTop
 
 /-- `s = log log log x` tends to infinity. -/
 lemma tendsto_logLogLog : Tendsto logLogLog atTop atTop :=
   tendsto_log_atTop.comp tendsto_logLog
 
+section
+variable (C : ℝ) {Cj x : ℝ} (hL : 0 < Real.log x) (hT : 0 < logLog x) (a : ℝ) {c Ch : ℝ} (hc : 0 < c) (hCh : 0 < Ch)
+
+include hL in
 /-- `exp T = L`. -/
-lemma exp_logLog {x : ℝ} (hL : 0 < Real.log x) : exp (logLog x) = Real.log x :=
+lemma exp_logLog     : exp (logLog x) = Real.log x :=
   exp_log hL
 
+include hT in
 /-- `s ≤ T`. -/
-lemma logLogLog_le_logLog {x : ℝ} (hT : 0 < logLog x) : logLogLog x ≤ logLog x := by
+lemma logLogLog_le_logLog     : logLogLog x ≤ logLog x := by
   have := log_le_sub_one_of_pos hT
   rw [logLogLog]
   linarith
 
+include hT in
 /-- `T^a = exp (a s)`. -/
-lemma logLog_rpow_eq {x : ℝ} (hT : 0 < logLog x) (a : ℝ) :
+lemma logLog_rpow_eq       :
     logLog x ^ a = exp (a * logLogLog x) := by
   rw [rpow_def_of_pos hT, logLogLog, mul_comm]
 
+include hL in
 /-- `L^a = exp (a T)`. -/
-lemma log_rpow_eq {x : ℝ} (hL : 0 < Real.log x) (a : ℝ) :
+lemma log_rpow_eq       :
     Real.log x ^ a = exp (a * logLog x) := by
   rw [rpow_def_of_pos hL, logLog, mul_comm]
 
 /-- A fixed multiple of a power of `T` is eventually below any larger power. -/
-lemma eventually_mul_rpow_le_rpow (C : ℝ) {a b : ℝ} (hab : a < b) :
+lemma eventually_mul_rpow_le_rpow   {a b : ℝ} (hab : a < b) :
     ∀ᶠ x : ℝ in atTop, C * logLog x ^ a ≤ logLog x ^ b := by
   filter_upwards [tendsto_logLog.eventually
       ((tendsto_rpow_atTop (sub_pos.2 hab)).eventually_ge_atTop C),
@@ -70,8 +79,9 @@ lemma eventually_mul_rpow_le_rpow (C : ℝ) {a b : ℝ} (hab : a < b) :
   rw [this]
   exact mul_le_mul_of_nonneg_right hC (rpow_nonneg hT.le a)
 
+include hc in
 /-- `L^c` eventually dominates any fixed multiple of any power of `T`. -/
-lemma eventually_mul_rpow_le_log_rpow (C a : ℝ) {c : ℝ} (hc : 0 < c) :
+lemma eventually_mul_rpow_le_log_rpow       :
     ∀ᶠ x : ℝ in atTop, C * logLog x ^ a ≤ Real.log x ^ c := by
   filter_upwards [tendsto_logLog.eventually
       ((tendsto_exp_mul_div_rpow_atTop a c hc).eventually_ge_atTop C),
@@ -81,7 +91,7 @@ lemma eventually_mul_rpow_le_log_rpow (C a : ℝ) {c : ℝ} (hc : 0 < c) :
   rwa [le_div_iff₀ (rpow_pos_of_pos hT a)] at hC
 
 /-- `T` eventually dominates any fixed multiple of `s + 1`. -/
-lemma eventually_mul_logLogLog_le (C : ℝ) :
+lemma eventually_mul_logLogLog_le   :
     ∀ᶠ x : ℝ in atTop, C * (logLogLog x + 1) ≤ logLog x := by
   filter_upwards [eventually_mul_rpow_le_rpow (3 * |C|) (show (1 / 2 : ℝ) < 1 by norm_num),
     tendsto_logLog.eventually_ge_atTop 1] with x hC hT1
@@ -104,17 +114,18 @@ lemma eventually_mul_logLogLog_le (C : ℝ) :
 /-! ### The presieve parameters -/
 
 /-- The sieve depth is even. -/
-lemma even_sieveDepth (Ch x : ℝ) : Even (sieveDepth Ch x) :=
+lemma even_sieveDepth  Ch x  : Even (sieveDepth Ch x) :=
   even_two_mul _
 
+include hCh in
 /-- Eventually the depth `h = 2 ⌈C_h s⌉` exceeds any fixed bound, and
 `e^{-h} ≤ T^{-2 C_h}`. -/
-lemma eventually_sieveDepth {Ch : ℝ} (hCh : 0 < Ch) (h₀ : ℕ) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_sieveDepth      h₀  : ∀ᶠ x : ℝ in atTop,
     h₀ ≤ sieveDepth Ch x ∧ 2 ≤ sieveDepth Ch x ∧
       exp (-(sieveDepth Ch x : ℝ)) ≤ logLog x ^ (-(2 * Ch)) := by
   filter_upwards [tendsto_logLogLog.eventually_ge_atTop ((h₀ + 1) / Ch),
     tendsto_logLog.eventually_gt_atTop 0] with x hs hT
-  have hs0 : 0 ≤ logLogLog x := le_trans (by positivity) hs
+  
   have hceil : Ch * logLogLog x ≤ ⌈Ch * logLogLog x⌉₊ := Nat.le_ceil _
   have hh : (2 : ℝ) * (Ch * logLogLog x) ≤ sieveDepth Ch x := by
     rw [sieveDepth]
@@ -133,9 +144,10 @@ lemma eventually_sieveDepth {Ch : ℝ} (hCh : 0 < Ch) (h₀ : ℕ) : ∀ᶠ x : 
   · rw [logLog_rpow_eq hT]
     exact exp_le_exp.2 (by linarith)
 
+include hc hCh in
 /-- The presieve parameters for large `x`: `0 < γ ≤ 1`, `γ⁻¹ ≤ T²²` and
 `γ (4h + 2) ≤ ε / 4`, so that the sieve level `z^{4h+2}` is at most `x^{ε/4}`. -/
-lemma eventually_presieveExponent {c Ch : ℝ} (hc : 0 < c) (hCh : 0 < Ch) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_presieveExponent       : ∀ᶠ x : ℝ in atTop,
     0 < presieveExponent c Ch x ∧ presieveExponent c Ch x ≤ 1 ∧
       1 / presieveExponent c Ch x ≤ logLog x ^ 22 ∧
       presieveExponent c Ch x * (4 * sieveDepth Ch x + 2) ≤ c / logLog x ^ 20 / 4 := by
@@ -150,7 +162,7 @@ lemma eventually_presieveExponent {c Ch : ℝ} (hc : 0 < c) (hCh : 0 < Ch) : ∀
   set T := logLog x
   set h := sieveDepth Ch x
   have hT0 : 0 < T := by linarith
-  have hh0 : (0 : ℝ) ≤ h := Nat.cast_nonneg h
+  
   -- `h ≤ 2 C_h s + 2 ≤ 2 C_h T + 2`
   have hh : (h : ℝ) ≤ 2 * Ch * T + 2 := by
     have hs0 : 0 ≤ logLogLog x := by
@@ -178,8 +190,9 @@ lemma eventually_presieveExponent {c Ch : ℝ} (hc : 0 < c) (hCh : 0 < Ch) : ∀
   · rw [div_mul_eq_mul_div, div_div, div_le_div_iff₀ (by positivity) (by positivity)]
     nlinarith [mul_pos hc hT20]
 
+include hT in
 /-- The composite cutoff satisfies `J_c ≥ C_j s` and `2^{-J_c} ≤ T^{-C_j log 2}`. -/
-lemma two_pow_neg_compositeCutoff_le {Cj x : ℝ} (hT : 0 < logLog x) :
+lemma two_pow_neg_compositeCutoff_le     :
     ((2 : ℝ) ^ compositeCutoff Cj x)⁻¹ ≤ logLog x ^ (-(Cj * Real.log 2)) := by
   have h2 : (2 : ℝ) ^ compositeCutoff Cj x = exp (compositeCutoff Cj x * Real.log 2) := by
     rw [← rpow_natCast, rpow_def_of_pos (by norm_num : (0 : ℝ) < 2), mul_comm]
@@ -189,17 +202,18 @@ lemma two_pow_neg_compositeCutoff_le {Cj x : ℝ} (hT : 0 < logLog x) :
   have hl : 0 < Real.log 2 := log_pos (by norm_num)
   nlinarith
 
+end
+
 /-! ### Mertens' theorems -/
 
 /-- Sums over `primesIoc 1 y` are sums over the primes of `(0, y]`. -/
-lemma sum_primesIoc_one_eq (f : ℕ → ℝ) (y : ℝ) :
+lemma sum_primesIoc_one_eq (f : ℕ → ℝ)  y  :
     ∑ p ∈ primesIoc 1 y, f p = ∑ p ∈ Ioc 0 ⌊y⌋₊ with p.Prime, f p := by
   congr 1
   ext p
   simp only [primesIoc, Nat.floor_one, mem_filter, mem_Ioc]
   constructor
-  · rintro ⟨⟨-, h⟩, hp⟩
-    exact ⟨⟨hp.pos, h⟩, hp⟩
+  · grind
   · rintro ⟨⟨-, h⟩, hp⟩
     exact ⟨⟨hp.one_lt, h⟩, hp⟩
 
@@ -209,8 +223,7 @@ lemma abs_sum_inv_primes_sub_le : ∃ E : ℝ, 0 ≤ E ∧ ∀ y : ℝ, 2 ≤ y 
     |∑ p ∈ primesIoc 1 y, (1 : ℝ) / p - Real.log (Real.log y)| ≤ E := by
   obtain ⟨C, hC⟩ := Mertens.sum_prime_div_eq_log_log
   refine ⟨max C 0, le_max_right _ _, fun y hy => ?_⟩
-  rw [sum_primesIoc_one_eq]
-  exact (hC y hy).trans (le_max_left _ _)
+  simp_all [sum_primesIoc_one_eq]
 
 /-- Mertens' product bound: `∏_{p ≤ y} (1 - 1 / p) ≤ C / log y` for `y ≥ 2`. -/
 lemma prod_one_sub_inv_primes_le : ∃ C : ℝ, 0 < C ∧ ∀ y : ℝ, 2 ≤ y →
@@ -261,9 +274,7 @@ lemma sum_inv_primes_block_le : ∃ C₀ : ℝ, ∀ (P : Finset ℕ), (∀ p ∈
     refine (sum_le_sum_of_subset_of_nonneg hsub' fun p _ _ => by positivity).trans ?_
     rw [sum_pair (by norm_num)]
     have : 0 ≤ E / Real.log 2 := div_nonneg hE hl2.le
-    have : (0.6931471803 : ℝ) < Real.log 2 := log_two_gt_d9
-    norm_num
-    linarith
+    grind
   · have hw0 : 0 < Real.log w := log_pos hw
     have := h w (w ^ 2) hw2 (by nlinarith)
     rw [Real.log_pow, Nat.cast_ofNat, mul_div_assoc, div_self hw0.ne', mul_one] at this
@@ -273,9 +284,9 @@ lemma sum_inv_primes_block_le : ∃ C₀ : ℝ, ∀ (P : Finset ℕ), (∀ p ∈
     linarith
 
 /-- `∑_{p ≤ y} 1 / p ≤ T + E` for `2 ≤ y ≤ x`, where `T = log log x`. -/
-lemma sum_inv_primes_le_logLog {E : ℝ}
+lemma sum_inv_primes_le_logLog  {E} 
     (hE : ∀ y : ℝ, 2 ≤ y → |∑ p ∈ primesIoc 1 y, (1 : ℝ) / p - Real.log (Real.log y)| ≤ E)
-    {x y : ℝ} (hy : 2 ≤ y) (hyx : y ≤ x) :
+     {x y}  (hy : 2 ≤ y) (hyx : y ≤ x) :
     ∑ p ∈ primesIoc 1 y, (1 : ℝ) / p ≤ logLog x + E := by
   have h := (abs_le.1 (hE y hy)).2
   have hly : 0 < Real.log y := log_pos (by linarith)
@@ -286,40 +297,45 @@ lemma sum_inv_primes_le_logLog {E : ℝ}
 /-! ### Size bounds for the slot statistic (E0) -/
 
 /-- Membership in `slotTuples`. -/
-lemma mem_slotTuples {x : ℝ} {k : ℕ} {u v : Fin k → ℝ} {Q : Fin k → ℕ} :
+lemma mem_slotTuples  {x}  {k : ℕ} {u v : Fin k → ℝ} {Q : Fin k → ℕ} :
     Q ∈ slotTuples x u v ↔
       (∀ i, Q i ≤ ⌊x ^ v i⌋₊ ∧ (Q i).Prime ∧ x ^ u i < Q i) ∧ Function.Injective Q := by
   simp [slotTuples]
 
+section
+variable {x : ℝ} (hx : 0 < x) {k : ℕ} (u v : Fin (k + 1) → ℝ) (B B' : (Fin k → ℕ) → ℝ)
+
 /-- The slot count and the harmonic mean are linear in the coefficient. -/
-lemma slotCount_sub {x : ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ) (B B' : (Fin k → ℕ) → ℝ) (n : ℕ) :
+lemma slotCount_sub          n  :
     slotCount x u v (fun Q => B Q - B' Q) n = slotCount x u v B n - slotCount x u v B' n := by
   simp only [slotCount, sum_sub_distrib]
 
 /-- The harmonic mean is linear in the coefficient. -/
-lemma slotMean_sub {x : ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ) (B B' : (Fin k → ℕ) → ℝ) :
+lemma slotMean_sub         :
     slotMean x u v (fun Q => B Q - B' Q) = slotMean x u v B - slotMean x u v B' := by
   simp only [slotMean, sub_div, sum_sub_distrib]
 
 /-- A nonnegative coefficient has a nonnegative slot count. -/
-lemma slotCount_nonneg {x : ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ) {B : (Fin k → ℕ) → ℝ}
-    (hB : ∀ Q, 0 ≤ B Q) (n : ℕ) : 0 ≤ slotCount x u v B n :=
+lemma slotCount_nonneg       {B : (Fin k → ℕ) → ℝ}
+    (hB : ∀ Q, 0 ≤ B Q)  n  : 0 ≤ slotCount x u v B n :=
   sum_nonneg fun _ _ => hB _
 
 /-- A nonnegative coefficient has a nonnegative harmonic mean. -/
-lemma slotMean_nonneg {x : ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ) {B : (Fin k → ℕ) → ℝ}
+lemma slotMean_nonneg       {B : (Fin k → ℕ) → ℝ}
     (hB : ∀ Q, 0 ≤ B Q) : 0 ≤ slotMean x u v B :=
   sum_nonneg fun _ _ => div_nonneg (hB _) (prod_nonneg fun _ _ => Nat.cast_nonneg _)
 
+include hx in
 /-- A slot tuple has product at most `x^{∑ v}`. -/
-lemma prod_le_of_mem_slotTuples {x : ℝ} (hx : 0 < x) {k : ℕ} {u v : Fin k → ℝ}
+lemma prod_le_of_mem_slotTuples       {u v : Fin k → ℝ}
     {Q : Fin k → ℕ} (hQ : Q ∈ slotTuples x u v) : ∏ i, (Q i : ℝ) ≤ x ^ ∑ i, v i := by
   rw [rpow_sum_of_pos hx]
   refine prod_le_prod₀ (fun i _ => Nat.cast_nonneg _) fun i _ => ?_
   exact (Nat.cast_le.2 ((mem_slotTuples.1 hQ).1 i).1).trans (Nat.floor_le (by positivity))
 
+include hx in
 /-- There are at most `x^{∑ v}` slot tuples. -/
-lemma card_slotTuples_le {x : ℝ} (hx : 0 < x) {k : ℕ} (u v : Fin k → ℝ) :
+lemma card_slotTuples_le       (u v : Fin k → ℝ) :
     (#(slotTuples x u v) : ℝ) ≤ x ^ ∑ i, v i := by
   have h1 : #(slotTuples x u v) ≤ ∏ i, #((Iic ⌊x ^ v i⌋₊).filter
       fun q : ℕ => q.Prime ∧ x ^ u i < q) := by
@@ -341,9 +357,15 @@ lemma card_slotTuples_le {x : ℝ} (hx : 0 < x) {k : ℕ} (u v : Fin k → ℝ) 
     _ ≤ ∏ i, x ^ v i := prod_le_prod₀ (fun i _ => Nat.cast_nonneg _) fun i _ => h2 i
     _ = x ^ ∑ i, v i := (rpow_sum_of_pos hx _ _).symm
 
+end
+
+section
+variable {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k : ℕ} {u v : Fin k → ℝ} (hv : ∑ i, v i ≤ 1)
+
+include hx hv in
 /-- If `∑ v ≤ 1`, every slot tuple lies in the primes up to `x`. -/
-lemma mem_piFinset_of_mem_slotTuples {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin k → ℝ}
-    (hv : ∑ i, v i ≤ 1) {Q : Fin k → ℕ} (hQ : Q ∈ slotTuples x u v) :
+lemma mem_piFinset_of_mem_slotTuples        
+      {Q : Fin k → ℕ} (hQ : Q ∈ slotTuples x u v) :
     Q ∈ Fintype.piFinset fun _ => primesIoc 1 x := by
   rw [Fintype.mem_piFinset]
   intro i
@@ -360,9 +382,10 @@ lemma mem_piFinset_of_mem_slotTuples {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin
       _ = x := rpow_one x
   exact mem_primesIoc_one.2 ⟨hp, hle⟩
 
+include hx hv in
 /-- `∑_Q 1 / Q ≤ (∑_{p ≤ x} 1 / p)^{k}` when `∑ v ≤ 1`. -/
-lemma sum_inv_slotTuples_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin k → ℝ}
-    (hv : ∑ i, v i ≤ 1) :
+lemma sum_inv_slotTuples_le        
+      :
     ∑ Q ∈ slotTuples x u v, 1 / ∏ i, (Q i : ℝ) ≤ (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ k := by
   have hsub : slotTuples x u v ⊆ Fintype.piFinset fun _ => primesIoc 1 x :=
     fun Q hQ => mem_piFinset_of_mem_slotTuples hx hv hQ
@@ -376,8 +399,9 @@ lemma sum_inv_slotTuples_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin k → �
     _ = (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ k := by
         rw [prod_const, card_univ, Fintype.card_fin]
 
+include hx hε in
 /-- The number of prime factors of `n ≤ x²` above `x^ε` is at most `2 / ε`. -/
-lemma card_primeFactors_gt_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {n : ℕ} (hn : 0 < n)
+lemma card_primeFactors_gt_le       {n : ℕ} (hn : 0 < n)
     (hnx : (n : ℝ) ≤ x ^ 2) :
     (#(n.primeFactors.filter fun p : ℕ => x ^ ε < (p : ℝ)) : ℝ) ≤ 2 / ε := by
   set P := n.primeFactors.filter fun p : ℕ => x ^ ε < (p : ℝ)
@@ -396,9 +420,10 @@ lemma card_primeFactors_gt_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {n : ℕ}
   rw [le_div_iff₀ hε]
   linarith
 
+include hx hε in
 /-- The slot count at `0 < n ≤ x²` is at most `(2 / ε)^{k+1}` in absolute value, when
 the lower slot endpoints exceed `x^ε` and `|𝔟| ≤ 1`. -/
-lemma abs_slotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k : ℕ} {u v : Fin (k + 1) → ℝ}
+lemma abs_slotCount_le         {u v : Fin (k + 1) → ℝ}
     (hu : ∀ i, ε ≤ u i) {B : (Fin k → ℕ) → ℝ} (hB : ∀ Q, |B Q| ≤ 1) {n : ℕ} (hn : 0 < n)
     (hnx : (n : ℝ) ≤ x ^ 2) : |slotCount x u v B n| ≤ (2 / ε) ^ (k + 1) := by
   set P := n.primeFactors.filter fun p : ℕ => x ^ ε < (p : ℝ)
@@ -422,6 +447,8 @@ lemma abs_slotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k : ℕ} {u v :
     _ = (#P : ℝ) ^ (k + 1) := by rw [Fintype.card_piFinset]; simp
     _ ≤ (2 / ε) ^ (k + 1) := pow_le_pow_left₀ (Nat.cast_nonneg _)
         (card_primeFactors_gt_le hx hε hn hnx) _
+
+end
 
 end Sieve
 

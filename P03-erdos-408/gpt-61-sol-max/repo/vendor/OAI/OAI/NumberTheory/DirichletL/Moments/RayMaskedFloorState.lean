@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloor
 public import OAI.NumberTheory.DirichletL.Energy.State
@@ -21,10 +22,10 @@ variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
-    (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
+theorem exists_positive_floor  {α}  [Fintype α] [DecidableEq α]
+     W  (a b : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W)
-    (a₀ b₀ bΦ Bmask ε Lslot lo hi κ : ℝ)
+     a₀ b₀ bΦ Bmask ε Lslot lo hi κ 
     (ha₀ : 0<a₀) (hb₀ : 0≤b₀) (hbΦ : 0<bΦ) (hmask : 0≤Bmask)
     (hε : 0<ε) (hLs : 0≤Lslot) (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
     ∃degree : ℕ,∃S : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧
@@ -76,7 +77,7 @@ theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
     rw [←Real.rpow_add hZ0]
     exact Real.rpow_le_rpow_of_exponent_le hZ1 hbudget
   have hd := diagonalControl_nonneg s.radial.profile
-  have hc := p.control_nonneg S
+  
   apply hh.trans
   change C*(s.puncture.radical.absNorm:ℝ)^e*diagonalControl s.radial.profile*bΦ^4*
     (p.control S)^2*(1+|t|+T)^J*Z^(s.rowWidth+4*(ε/16)+ε/4+κ*(∑i,w i))≤_

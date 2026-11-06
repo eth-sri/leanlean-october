@@ -11,7 +11,7 @@ namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-def TailAbsorptionTask : Prop :=
+def TailAbsorptionTask  :=
   ∀ Ccap Cpath E : ℝ, 0 < Ccap → 0 ≤ Cpath → 0 < E →
     ∃ x₀ : ℝ, ∀ x ≥ x₀, ∀ cap : ℕ,
       (cap : ℝ) ≤ Ccap * (N x : ℝ) * T x →

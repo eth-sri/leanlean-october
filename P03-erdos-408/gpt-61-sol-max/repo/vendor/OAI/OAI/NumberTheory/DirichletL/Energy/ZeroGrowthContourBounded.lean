@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthConclusion
 public import OAI.NumberTheory.DirichletL.Energy.BackwardSourceRanges
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Energy.BackwardSourceRanges
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -15,7 +16,7 @@ namespace SevenEighths.CenteredMomentEnergyZeroGrowthContourBounded
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalRowSource QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+
 
 private lemma ledger_loss_mono (Z d ell A B P w:ℝ)(hZ:1≤Z)(hd:0≤d)(hell:0≤ell)
     (hA:0≤A)(hB:0≤B)(hP:0≤P):
@@ -28,11 +29,10 @@ private lemma ledger_loss_mono (Z d ell A B P w:ℝ)(hZ:1≤Z)(hd:0≤d)(hell:0�
   calc
     _≤P*(A*(Z^ell*Z^(w+d+d+d))+Z^ell*B):=by
       apply mul_le_mul_of_nonneg_left _ hP
-      exact add_le_add (mul_le_mul_of_nonneg_left hm hA)
-        (le_mul_of_one_le_left hB hp)
+      nlinarith
     _=_:=by ring
 
-theorem bounded_growth_reserve (ε Mcap Bmask bΦ Loriginal:ℝ)
+theorem bounded_growth_reserve  ε Mcap Bmask bΦ Loriginal 
     (hε:0<ε)(hM:0≤Mcap)(hB:0≤Bmask):
     ∃d L saving C:ℝ,0<d ∧ d≤1 ∧ 0<L ∧ 0<saving ∧ 0<C ∧
       L=max Loriginal (Mcap+Bmask+2*d)+1 ∧ Loriginal≤L ∧
@@ -53,19 +53,18 @@ theorem bounded_growth_reserve (ε Mcap Bmask bΦ Loriginal:ℝ)
     have he: d*(8*(Bmask+Mcap+4))≤ε:=
       (le_div_iff₀ (by positivity)).mp hh
     linarith
-  have hL:0<L:=by dsimp only [L];linarith [le_max_right Loriginal (Mcap+Bmask+2*d)]
+  have hL:0<L:=by positivity
   have hs:0<saving:=by dsimp [saving];positivity
   have hmain:d*(Bmask+Mcap+1)+d+d+d≤ε:=by linarith
   have herr:Bmask*d+Mcap*(2*d)-2*saving+L≤ε:=by
-    dsimp only [saving]
-    nlinarith [mul_nonneg hB hd.le,mul_nonneg hM hd.le]
+    linarith
   obtain ⟨C,hC,hbound⟩:=CenteredMomentEnergyZeroGrowthReserve.ledger_bound
     Mcap Bmask bΦ L d d d d saving ε hM hB hL.le hd hmain herr
   refine ⟨d,L,saving,C,hd,hd1,hL,hs,hC,rfl,?_,?_,hbound⟩
   · dsimp only [L];linarith [le_max_left Loriginal (Mcap+Bmask+2*d)]
   · dsimp only [L];linarith [le_max_right Loriginal (Mcap+Bmask+2*d)]
 
-theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Loriginal:ℝ)
+theorem zero_from_growth_additional_loss_bounded  a b bΦ ε Mcap Bmask Loriginal 
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)
     (hε:0<ε)(hM:0≤Mcap)(hB:0≤Bmask):
     ∃d L:ℝ,0<d ∧ d≤1 ∧ 0<L ∧ Loriginal≤L ∧
@@ -73,7 +72,7 @@ theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Lorigina
       L≤max Loriginal (Mcap+Bmask+2)+1 ∧
       ∀S:Finset (ℕ×ℕ),∃J:ℕ,∃U:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀ᶠZ:ℝ in atTop,1<Z ∧
-      ∀(ell:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤ell→0≤K→
+      ∀(ell:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤ell→0≤K→
         ZeroGrowthAt Q a b bΦ Bmask L Mcap ell Z degree S K→
         ZeroAt Q a b bΦ Bmask Loriginal Mcap (ell+ε) Z J U (C*(K+1)):=by
   obtain ⟨d,L,saving,Cledger,hd,hd1,hL,hsaving,hCledger,hLexact,hLoriginal,hroom,hledger⟩:=
@@ -124,6 +123,6 @@ theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Lorigina
 
 end SevenEighths.CenteredMomentEnergyZeroGrowthContourBounded
 
-end
+
 
 end OAI

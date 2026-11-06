@@ -10,14 +10,14 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {φ σ : Type*} [Fintype φ] [Fintype σ]
-variable {N a c : Eis} {mode : Bool}
-variable (G : PrimeFamily φ) (rows : Finset (Ideal Eis)) (hrows : ∀ K∈rows,Admissible K)
-    (tuples : Finset (σ→Ideal Eis)) (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
+variable {N a c : ActualEisensteinCubic.O} {mode : Bool}
+variable (G : PrimeFamily φ) (rows : Finset (Ideal ActualEisensteinCubic.O)) (hrows : ∀ K∈rows,Admissible K)
+    (tuples : Finset (σ→Ideal ActualEisensteinCubic.O)) (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
     (hgood : ∀ p∈tuples,∀ i,ConcretePrimeRowBridge.goodLambda∉p i) (Hrow Hslot : ℝ)
 
-abbrev CellCompletion (i : Fin (columnDyadicLength Hrow+1)) (j : Fin (columnDyadicLength Hslot+1)) :=
+abbrev CellCompletion (i ) (j ) :=
     ∀ K : divisorDyadicBin rows Hrow i,∀ p : activeTupleDyad tuples Hslot j,
       IsCoprime K.val (slotTupleProduct p.val)→
       ControlledStratumArithmetic (G.reflected K.val (hrows K.val (divisorDyadicBin_subset rows Hrow i K.property))
@@ -26,10 +26,10 @@ abbrev CellCompletion (i : Fin (columnDyadicLength Hrow+1)) (j : Fin (columnDyad
 variable (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
     (jF : φ→ℕ) (W : ℝ→ℂ) (X : ℝ)
 
-def cellPhysicalTerm (i : Fin (columnDyadicLength Hrow+1)) (j : Fin (columnDyadicLength Hslot+1))
+def cellPhysicalTerm (i ) (j )
     (D : CellCompletion (N:=N) (a:=a) (c:=c) (mode:=mode) G rows hrows tuples hmax hgood Hrow Hslot i j)
-    (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ)
-    (K : divisorDyadicBin rows Hrow i) (p : activeTupleDyad tuples Hslot j) : ℂ :=
+    (θ : ℝ) (r : Ideal ActualEisensteinCubic.O→ℂ) (aw : (σ→Ideal ActualEisensteinCubic.O)→ℂ)
+    (K : divisorDyadicBin rows Hrow i) (p : activeTupleDyad tuples Hslot j)  :=
     if hp:IsCoprime K.val (slotTupleProduct p.val) then
       r K.val*aw p.val*mixedReflectedValue (D K p hp) s
         (G.reflected K.val (hrows K.val (divisorDyadicBin_subset rows Hrow i K.property))
@@ -42,20 +42,20 @@ theorem physical_dyad_selection_energy (E : ℝ→ℝ) (hE : ∀ θ,0≤E θ)
     (he : ∀ i : Fin (columnDyadicLength Hrow+1),∀ j : Fin (columnDyadicLength Hslot+1),
       (divisorDyadicBin rows Hrow i).Nonempty → (activeTupleDyad tuples Hslot j).Nonempty →
       ∃ D : CellCompletion (N:=N) (a:=a) (c:=c) (mode:=mode) G rows hrows tuples hmax hgood Hrow Hslot i j,
-      ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ),
+      ∀ (θ : ℝ) (r : Ideal ActualEisensteinCubic.O→ℂ) (aw : (σ→Ideal ActualEisensteinCubic.O)→ℂ),
         (∀ K∈rows,‖r K‖≤1) → (∀ p∈tuples,‖aw p‖≤1) →
         (∑ K : divisorDyadicBin rows Hrow i,‖∑ p : activeTupleDyad tuples Hslot j,
           cellPhysicalTerm G rows hrows tuples hmax hgood Hrow Hslot s hc jF W X i j D θ r aw K p‖^2)≤E θ) :
     ∃ D : ∀ i : Fin (columnDyadicLength Hrow+1),∀ j : Fin (columnDyadicLength Hslot+1),
       CellCompletion (N:=N) (a:=a) (c:=c) (mode:=mode) G rows hrows tuples hmax hgood Hrow Hslot i j,
-      ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ),
+      ∀ (θ : ℝ) (r : Ideal ActualEisensteinCubic.O→ℂ) (aw : (σ→Ideal ActualEisensteinCubic.O)→ℂ),
         (∀ K∈rows,‖r K‖≤1) → (∀ p∈tuples,‖aw p‖≤1) →
         (∑ K : rows,‖∑ p : tuples,
           dyadicPhysicalTerm G rows hrows tuples hmax hgood Hrow Hslot D s hc jF W θ X r aw K p‖^2)≤
           (columnDyadicLength Hrow+1:ℝ)*(columnDyadicLength Hslot+1:ℝ)^2*E θ := by
   have hall : ∀ i : Fin (columnDyadicLength Hrow+1),∀ j : Fin (columnDyadicLength Hslot+1),
       ∃ D : CellCompletion (N:=N) (a:=a) (c:=c) (mode:=mode) G rows hrows tuples hmax hgood Hrow Hslot i j,
-      ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ),
+      ∀ (θ : ℝ) (r : Ideal ActualEisensteinCubic.O→ℂ) (aw : (σ→Ideal ActualEisensteinCubic.O)→ℂ),
         (∀ K∈rows,‖r K‖≤1) → (∀ p∈tuples,‖aw p‖≤1) →
         (∑ K : divisorDyadicBin rows Hrow i,‖∑ p : activeTupleDyad tuples Hslot j,
           cellPhysicalTerm G rows hrows tuples hmax hgood Hrow Hslot s hc jF W X i j D θ r aw K p‖^2)≤E θ := by

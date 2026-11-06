@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 open MeasureTheory
 namespace SevenEighths.CenteredMomentUniformReflectionProfile
@@ -15,8 +15,12 @@ open HeckeFamily FourierBridge EisensteinSchwartzPoisson
 open CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
 open CenteredMomentReflectedUniformPair CenteredMomentOneReflectionEnergy
 
-theorem source_separation (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
-    (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ) :
+section
+variable (χ : Character) (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M) (hV : ∀y,V y≠0 → |y|≤M) (hreal : ∀y,conj (V y)=V y) (A J : ℕ) (W : ℝ→ℂ) (X v σ omega : ℝ)
+
+include hM hV in
+theorem source_separation      
+        :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀G : 𝓢(ℝ,ℂ),∀D : ℝ,0<D →
       H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G≤D → ∀s : ℝ,0<s →
       ∃density : 𝓢(ℝ,ℂ),
@@ -39,8 +43,9 @@ theorem source_separation (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
   exact ⟨density,(fun y=>by simpa using hid (fun _ : Unit=>y)),hi,
     hm.trans hconst,fun v=>(hp v).trans hconst⟩
 
-theorem actual_one_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
-    (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ) :
+include hM hV in
+theorem actual_one_uniform      
+        :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type} [Fintype ι],
       ∀(G : ι→𝓢(ℝ,ℂ))(χ : ι→Character)(P : ι→ℂ)(s X : ι→ℝ),
       (∀i,0<s i) → (∀i,0<X i) → ∀D E : ℝ,0<D → 0≤E →
@@ -94,8 +99,9 @@ theorem actual_one_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
   convert hh using 1
   ring
 
-lemma inverse_annular_frequency (χ : Character) (V : ℝ→ℂ)
-    (hreal : ∀y,conj (V y)=V y) (X v : ℝ) (hX : 0<X) :
+include hreal in
+lemma inverse_annular_frequency    
+        (hX : 0<X) :
     HeckeDyadic.polynomial χ.inverse false (logWindow V) X 0 (2*Real.pi*v)=
       conj (HeckeDyadic.polynomial χ false (logWindow V) X 0 (-2*Real.pi*v)) := by
   have hr (x : ℝ) : conj (logWindow V x)=logWindow V x := by
@@ -112,8 +118,9 @@ lemma inverse_annular_frequency (χ : Character) (V : ℝ→ℂ)
   congr 2
   ring
 
-theorem actual_inverse_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
-    (hV : ∀y,V y≠0 → |y|≤M) (hreal : ∀y,conj (V y)=V y) (A J : ℕ) :
+include hM hV hreal in
+theorem actual_inverse_uniform      
+          :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type} [Fintype ι],
       ∀(G : ι→𝓢(ℝ,ℂ))(χ : ι→Character)(P : ι→ℂ)(s X : ι→ℝ),
       (∀i,0<s i) → (∀i,0<X i) → ∀D E : ℝ,0<D → 0≤E →
@@ -135,7 +142,7 @@ theorem actual_inverse_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
       Complex.norm_conj,←norm_mul]
   simpa only [he] using henergy v
 
-lemma polynomial_const_mul (χ : Character) (W : ℝ→ℂ) (X σ omega : ℝ) (c : ℂ) :
+lemma polynomial_const_mul        c  :
     HeckeDyadic.polynomial χ false (fun x=>c*W x) X σ omega=
       c*HeckeDyadic.polynomial χ false W X σ omega := by
   unfold HeckeDyadic.polynomial
@@ -148,8 +155,10 @@ lemma polynomial_const_mul (χ : Character) (W : ℝ→ℂ) (X σ omega : ℝ) (
   rw [he,tsum_mul_left]
   ring
 
+end
+
 end SevenEighths.CenteredMomentUniformReflectionProfile
 
-end
+
 
 end OAI

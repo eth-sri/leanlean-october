@@ -16,19 +16,19 @@ open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
 open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive
 open CenteredMomentRetainedReflection CenteredMomentTwistedReflection
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
 
-def finiteAnnularColumn (η : Character) (F : ℝ→ℂ) (R Y : ℝ) : ℂ :=
+
+def finiteAnnularColumn (η : Character) (F : ℝ→ℂ) (R Y : ℝ)  :=
   if hY : 0<Y then ∑n∈retainedAnnuli R Y hY,(Real.sqrt (dyadicScale n):ℂ)*
     HeckeDyadic.polynomial η false (annularProfile F (dyadicScale n)) (dyadicScale n*Y) 0 0 else 0
 
-lemma finiteAnnularColumn_eq (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
-    (R Y : ℝ) (hY : 0<Y) : finiteAnnularColumn η F R Y=
+lemma finiteAnnularColumn_eq  η   F  (hF : DecayTwo F)
+     R Y  (hY : 0<Y) : finiteAnnularColumn η F R Y=
       HeckeDyadic.polynomial η false (fun x=>(retainedWeight R x:ℂ)*F x) Y 0 0 := by
   rw [finiteAnnularColumn,dite_eq_left hY]
   exact (retained_finite_series η F hF R Y hY).symm
 
-def retainedOriginal (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) : ℂ :=
+def retainedOriginal (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ)  :=
   let S := redundantSet χ.modulus ψ.modulus
   ∑D∈S.powerset,∑'H : SmoothIdeal S,coefficient ψ ψ.inverse S D H*
     finiteAnnularColumn χ.inverse

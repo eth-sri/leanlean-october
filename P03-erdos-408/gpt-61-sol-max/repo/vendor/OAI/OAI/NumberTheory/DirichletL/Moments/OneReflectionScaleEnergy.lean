@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationConjugation
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 open Set MeasureTheory
@@ -29,6 +29,6 @@ lemma annulus_complex_smooth : ContDiff ℝ ∞ (fun x : ℝ=>(annulus x:ℂ)) :
 
 end SevenEighths.CenteredMomentOneReflectionScaleEnergy
 
-end
+
 
 end OAI

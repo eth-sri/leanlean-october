@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.Reindex
 public import Erdos408.OneSided.Moment.RootReplacement.Lines
@@ -32,7 +33,7 @@ variable {K : ℕ}
 
 /-- The integer roots of a box: the primitive `(u, v)` with `u/U ∈ [a₁, b₁)`,
 `v/V ∈ [a₂, b₂)` and `c/u ∈ [a₃, b₃)`, the set counted by `rootCount`. -/
-def boxRoots (U V a₁ b₁ a₂ b₂ a₃ b₃ : ℝ) : Finset (ℕ × ℕ) :=
+def boxRoots (U V a₁ b₁ a₂ b₂ a₃ b₃ : ℝ)  :=
   (Icc ⌈a₁ * U⌉₊ ⌊b₁ * U⌋₊ ×ˢ Icc ⌈a₂ * V⌉₊ ⌊b₂ * V⌋₊).filter fun P =>
     Nat.Coprime P.1 P.2 ∧ (P.1 : ℝ) < b₁ * U ∧ (P.2 : ℝ) < b₂ * V ∧
       a₃ ≤ (rootC P.1 P.2 : ℝ) / P.1 ∧ (rootC P.1 P.2 : ℝ) / P.1 < b₃
@@ -41,7 +42,7 @@ def boxRoots (U V a₁ b₁ a₂ b₂ a₃ b₃ : ℝ) : Finset (ℕ × ℕ) :=
 at scales `U, V ≥ 2`, and every function `G` of the lines at a set `P` of band primes,
 bounded by `M`, the sum of `G(ℓ(P₀))` over the roots of the box is
 `c₂ U V |box| 𝔼_ℓ G` up to `M S⁶ C₀ U V min(U, V)^{-1/5}`, `S = ∏_{p ∈ P} p`. -/
-def RootEquidist (K : ℕ) (C₀ : ℝ) : Prop :=
+def RootEquidist (K : ℕ) (C₀ : ℝ)  :=
   ∀ (x : ℝ) (d : Data K) (U V : ℝ), 2 ≤ U → 2 ≤ V →
     ∀ a₁ b₁ a₂ b₂ a₃ b₃ : ℝ, 1 ≤ a₁ → a₁ ≤ b₁ → b₁ ≤ 16 → 1 ≤ a₂ → a₂ ≤ b₂ → b₂ ≤ 2 →
       0 ≤ a₃ → a₃ ≤ b₃ → b₃ ≤ 1 →
@@ -61,7 +62,7 @@ theorem lineOf_val_eq {S p : ℕ} [NeZero S] (hp : p ∣ S) (u c : ℕ) :
   simp only [ZMod.natCast_val, ZMod.cast_natCast hp]
 
 /-- `|SL₂(ℤ/S)| ≤ S⁴`. -/
-theorem card_SL_le (S : ℕ) [NeZero S] :
+theorem card_SL_le  S  [NeZero S] :
     (Fintype.card (Matrix.SpecialLinearGroup (Fin 2) (ZMod S)) : ℝ) ≤ (S : ℝ) ^ 4 := by
   have h := Fintype.card_le_of_injective _
     (Subtype.val_injective (p := fun A : Matrix (Fin 2) (Fin 2) (ZMod S) => A.det = 1))
@@ -71,7 +72,7 @@ theorem card_SL_le (S : ℕ) [NeZero S] :
   exact_mod_cast h.trans hcard.le
 
 /-- **RR4 with RR5**: root equidistribution holds with some constant `C₀ ≥ 0`. -/
-theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquidist K C₀ := by
+theorem exists_rootEquidist  K  : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquidist K C₀ := by
   obtain ⟨C, hC⟩ := abs_rootCount_sub_le
   refine ⟨max C 0, le_max_right _ _, fun x d U V hU hV a₁ b₁ a₂ b₂ a₃ b₃ ha₁ hab₁ hb₁ ha₂ hab₂
     hb₂ ha₃ hab₃ hb₃ P hP G M hG hM => ?_⟩
@@ -142,8 +143,6 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
   -- step: one root-count error for each of the `|SL₂(ℤ/S)| ≤ S⁴` classes
   set E := max C 0 * U * V * min U V ^ (-(1 / 5 : ℝ))
   have hE : 0 ≤ E := by
-    have : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) := Real.rpow_nonneg (by positivity) _
-    have : 0 ≤ max C 0 := le_max_right _ _
     positivity
   have hterm : ∀ g₀ : Matrix.SpecialLinearGroup (Fin 2) (ZMod S),
       ‖(((rootCount U V a₁ b₁ a₂ b₂ a₃ b₃ S g₀ : ℝ) -
@@ -155,7 +154,6 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
     refine mul_le_mul ((hC U V hU hV S hSsq g₀ a₁ b₁ a₂ b₂ a₃ b₃ ha₁ hab₁ hb₁ ha₂ hab₂ hb₂ ha₃
       hab₃ hb₃).trans ?_) (hM _) (norm_nonneg _) (by positivity)
     have : 0 ≤ U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ)) := by
-      have : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) := Real.rpow_nonneg (by positivity) _
       positivity
     calc C * U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ))
         = C * (U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ))) := by ring

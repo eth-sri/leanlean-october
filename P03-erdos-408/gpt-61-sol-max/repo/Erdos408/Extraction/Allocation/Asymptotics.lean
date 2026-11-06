@@ -21,15 +21,15 @@ lemma tendsto_logLog_atTop : Tendsto logLog atTop atTop :=
   tendsto_log_atTop.comp tendsto_log_atTop
 
 /-- Eventually `T ≥ C`. -/
-lemma eventually_le_logLog (C : ℝ) : ∀ᶠ x : ℝ in atTop, C ≤ logLog x :=
+lemma eventually_le_logLog  C  : ∀ᶠ x : ℝ in atTop, C ≤ logLog x :=
   tendsto_logLog_atTop.eventually_ge_atTop C
 
 /-- Eventually `L ≥ C`. -/
-lemma eventually_le_log (C : ℝ) : ∀ᶠ x : ℝ in atTop, C ≤ Real.log x :=
+lemma eventually_le_log  C  : ∀ᶠ x : ℝ in atTop, C ≤ Real.log x :=
   tendsto_log_atTop.eventually_ge_atTop C
 
 /-- `s = o(T)`: eventually `D s ≤ ε T`. -/
-lemma eventually_mul_logLogLog_le (D : ℝ) {ε : ℝ} (hε : 0 < ε) :
+lemma eventually_mul_logLogLog_le  D   {ε}  (hε : 0 < ε) :
     ∀ᶠ x : ℝ in atTop, D * logLogLog x ≤ ε * logLog x := by
   have h := (isLittleO_log_id_atTop.bound (c := ε / (|D| + 1)) (by positivity))
   filter_upwards [tendsto_logLog_atTop.eventually h, eventually_le_logLog 1] with x hx hT
@@ -80,7 +80,7 @@ lemma eventually_exp_neg_rpow_le {a : ℝ} (ha : 0 < a) (D : ℝ) :
   nlinarith
 
 /-- `s³ = o(T)`: eventually `D (s + 1)³ ≤ T`. -/
-lemma eventually_mul_logLogLog_cube_le (D : ℝ) :
+lemma eventually_mul_logLogLog_cube_le  D  :
     ∀ᶠ x : ℝ in atTop, D * (logLogLog x + 1) ^ 3 ≤ logLog x := by
   filter_upwards [eventually_le_logLog ((125 * |D| + 1) ^ 4)] with x hT
   set T := logLog x

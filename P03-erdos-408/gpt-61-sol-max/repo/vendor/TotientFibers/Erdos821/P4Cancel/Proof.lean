@@ -15,17 +15,16 @@ open Blueprint.Graph P4Probe
 
 noncomputable section
 
-local instance (priority := high) rowSiteDecEq'' (s M : ℕ) : DecidableEq (RowSite s M) :=
-  Classical.decEq _
+
 
 variable {P : PrimeGroups}
 
 /-- `SymmetricFullComponentTask`, transported to big labels: the tail-averaged
 full component of one side of a symmetric test is small. -/
 lemma sideFull_tail_norm (hSFC : SymmetricFullComponentTask) (hV : ∀ g, 0 < P.V g)
-    (J ell m : ℕ) (hm : 1 ≤ m) (hell : 1 ≤ ell) (hmJ : m ≤ J)
+     J ell m  (hm : 1 ≤ m) (hell : 1 ≤ ell) (hmJ : m ≤ J)
     (hcond : (m + ell) * (m + ell - 1) ≤ J + ell)
-    (block : P.BigGroup → Bool) (side : Bool) (F : P.BigLabels (J + ell) → ℂ)
+     block   side   F 
     (hF : ∀ (π : P.BigPermutations (J + ell)) a, F (P.actBig π a) = F a) :
     idealVectorNorm P (J + ell)
         (bigCoordinateAverage P (J + ell) (tailCoordinates P J ell)
@@ -52,11 +51,11 @@ lemma sideFull_tail_norm (hSFC : SymmetricFullComponentTask) (hV : ∀ g, 0 < P.
       (fullProbeComponent (rowW P) (tailSites J ell) (sideSites m block side) f),
     flatSqNorm_eq (rowW P) f, ← blockSet_card]
   have hsym : ∀ (π : Fin (rowCount P) → Equiv.Perm (Fin (J + ell))) x,
-      f (fun g i => x g (π g i)) = f x := fun π x => rows_symmetric F hF π x
+      f (fun g i => x g (π g i)) = f x := rows_symmetric F hF
   exact hSFC (rowCount P) J ell m (rowAlpha P) (rowW P) (blockSet block side) f
     (rowW_nonneg hV) (rowW_sum hV) hm hell hmJ hcond hsym
 
-lemma probeChoice_card_le (m : ℕ) (block : P.BigGroup → Bool) :
+lemma probeChoice_card_le  m   block  :
     (Fintype.card (ProbeChoice P m block) : ℝ) ≤ (3 : ℝ) ^ (m * Fintype.card P.BigGroup) := by
   have h1 : Fintype.card (ProbeChoice P m block) ≤
       Fintype.card (P.BigGroup → Finset (Fin m)) :=
@@ -74,8 +73,7 @@ open Blueprint.Graph Erdos821.P4Cancel
 
 noncomputable section
 
-local instance (priority := high) rowSiteDecEqFinal (s M : ℕ) : DecidableEq (RowSite s M) :=
-  Classical.decEq _
+
 
 theorem FiniteProbeCancellationTask_proof : FiniteProbeCancellationTask := by
   intro hSFC Fd P J m hj block Q h ξ θ ζ ε hV hm hcond hε hLC
@@ -109,9 +107,9 @@ theorem FiniteProbeCancellationTask_proof : FiniteProbeCancellationTask := by
   have hFf : nF ≤ nf := symTest_norm_le hV f
   have hGg : nG ≤ ng := symTest_norm_le hV g
   have hsF : ∀ (π : P.BigPermutations (J + Fd.ell)) a, Fs (P.actBig π a) = Fs a :=
-    fun π a => symTest_invariant f π a
+    symTest_invariant f
   have hsG : ∀ (π : P.BigPermutations (J + Fd.ell)) a, Gs (P.actBig π a) = Gs a :=
-    fun π a => symTest_invariant g π a
+    symTest_invariant g
   -- per-pattern comparison, summed over all probe choices
   have hcmp : ‖idealFullPair Kp Fs Gs - idealFullPair R Fs Gs +
       idealFullPair R (fun a => Fs a - u a) (fun b => Gs b - v b)‖ ≤

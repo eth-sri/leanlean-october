@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.IntegralCover
 
@@ -12,82 +13,82 @@ namespace CubicEisenstein
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise ENNReal InnerProductSpace
-open Finset AddChar MulChar EisensteinEmbedding
+ 
+open scoped       MatrixGroups Pointwise ENNReal InnerProductSpace
+ 
 
 local notation "O" => ActualEisensteinCubic.O
 
-lemma integralCoverSheet_measure (H K : Subgroup (SL(2,ActualEisensteinCubic.O))) (q : IntegralCoverCosets H K)
-    (S : Set (IntegralOrbitQuotient K)) (hS : MeasurableSet S) :
+lemma integralCoverSheet_measure  H K   q 
+     S  (hS : MeasurableSet S) :
     hyperbolicVolume ((integralOrbitProjection K) ⁻¹' S ∩ integralCoverSheet H K q)=
       integralQuotientVolume K S := by
   have he : (integralOrbitProjection K) ⁻¹' S ∩ integralCoverSheet H K q=
@@ -102,8 +103,12 @@ lemma integralCoverSheet_measure (H K : Subgroup (SL(2,ActualEisensteinCubic.O))
   rw [integralQuotientVolume,Measure.map_apply (measurable_integralOrbitProjection K) hS,
     Measure.restrict_apply ((measurable_integralOrbitProjection K) hS)]
 
-theorem integralCoverMap_measure {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K] :
+section
+variable {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
+include H K hHK hK
+
+theorem integralCoverMap_measure  
+          :
     Measure.map (integralCoverMap hHK) (integralQuotientVolume H)=
       (H.relIndex K:ℝ≥0∞) • integralQuotientVolume K := by
   let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
@@ -119,44 +124,50 @@ theorem integralCoverMap_measure {H K : Subgroup (SL(2,ActualEisensteinCubic.O))
   rw [integralCoverDomain,Set.inter_iUnion]
   rw [measure_iUnion]
   · simp_rw [integralCoverSheet_measure H K _ S hS]
-    rw [tsum_fintype]
-    simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul]
-    congr 1
-    rw [Subgroup.relIndex,Subgroup.index,Nat.card_eq_fintype_card]
+    simp_all [Subgroup.relIndex, Subgroup.index]
   · intro q r hqr
     exact (integralCoverSheet_pairwiseDisjoint H K hK hqr).mono Set.inter_subset_right Set.inter_subset_right
   · intro q
     exact ((measurable_integralOrbitProjection K) hS).inter (integralCoverSheet_measurable H K q)
 
-lemma integralCoverMap_measurePreserving {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K] :
+lemma integralCoverMap_measurePreserving  
+          :
     MeasurePreserving (integralCoverMap hHK) (integralQuotientVolume H)
       ((H.relIndex K:ℝ≥0∞) • integralQuotientVolume K) :=
   ⟨integralCoverMap_measurable hHK,integralCoverMap_measure hHK hK⟩
 
 end
 
+end
+
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise ENNReal InnerProductSpace InnerProduct
-open Finset AddChar MulChar EisensteinEmbedding
+ 
+open scoped       MatrixGroups Pointwise ENNReal InnerProductSpace InnerProduct
+ 
 
 section
 local notation "O" => ActualEisensteinCubic.O
 
-abbrev IntegralQuotientL2 (H : Subgroup (SL(2,ActualEisensteinCubic.O))) :=
+abbrev IntegralQuotientL2 (H ) :=
   Lp ℂ 2 (integralQuotientVolume H)
 
 def integralCoverPullback {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K] :
-    IntegralQuotientL2 K→L[ℂ]IntegralQuotientL2 H :=
+    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]  :=
   (Lp.compMeasurePreservingₗᵢ ℂ (integralCoverMap hHK)
     (integralCoverMap_measurePreserving hHK hK)).toContinuousLinearMap.comp
       (dominatedComplexL2 (by simp : (H.relIndex K:ℝ≥0∞)≠⊤) le_rfl)
 
-theorem integralCoverPullback_ae {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
-    (F : IntegralQuotientL2 K) :
+section
+variable {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
+include H K hHK hK
+
+section
+variable (F : IntegralQuotientL2 K)
+include F
+
+theorem integralCoverPullback_ae  
+         
+      :
     integralCoverPullback hHK hK F=ᵐ[integralQuotientVolume H]
       fun q=>F (integralCoverMap hHK q) := by
   have hm := integralCoverMap_measurePreserving hHK hK
@@ -167,9 +178,9 @@ theorem integralCoverPullback_ae {H K : Subgroup (SL(2,ActualEisensteinCubic.O))
   exact (Lp.coeFn_compMeasurePreserving _ hm).trans
     (hm.quasiMeasurePreserving.ae_eq_comp he)
 
-theorem integralCoverPullback_norm_le {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
-    (F : IntegralQuotientL2 K) :
+theorem integralCoverPullback_norm_le  
+         
+      :
     ‖integralCoverPullback hHK hK F‖≤(H.relIndex K:ℝ)^((1:ℝ)/2)*‖F‖ := by
   change ‖Lp.compMeasurePreserving (integralCoverMap hHK)
     (integralCoverMap_measurePreserving hHK hK)
@@ -181,34 +192,37 @@ theorem integralCoverPullback_norm_le {H K : Subgroup (SL(2,ActualEisensteinCubi
       (H.relIndex K:ℝ≥0∞) • integralQuotientVolume K) F
 
 def integralCoverTrace {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K] :
-    IntegralQuotientL2 H→L[ℂ]IntegralQuotientL2 K :=
+    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]  :=
   ContinuousLinearMap.adjoint (integralCoverPullback hHK hK)
 
-theorem integralCoverTrace_pairing {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
-    (F : IntegralQuotientL2 K) (G : IntegralQuotientL2 H) :
+theorem integralCoverTrace_pairing  
+         
+       G  :
     ⟪F,integralCoverTrace hHK hK G⟫_ℂ=⟪integralCoverPullback hHK hK F,G⟫_ℂ :=
   ContinuousLinearMap.adjoint_inner_right _ _ _
 
-theorem integralCoverPullback_opNorm_le {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K] :
+end
+
+theorem integralCoverPullback_opNorm_le  
+          :
     ‖integralCoverPullback hHK hK‖≤(H.relIndex K:ℝ)^((1:ℝ)/2) := by
   apply ContinuousLinearMap.opNorm_le_bound _ (Real.rpow_nonneg (Nat.cast_nonneg _) _)
   exact integralCoverPullback_norm_le hHK hK
 
-theorem integralCoverTrace_opNorm_le {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K] :
+theorem integralCoverTrace_opNorm_le  
+          :
     ‖integralCoverTrace hHK hK‖≤(H.relIndex K:ℝ)^((1:ℝ)/2) := by
   rw [integralCoverTrace,ContinuousLinearMap.adjoint.norm_map]
   exact integralCoverPullback_opNorm_le hHK hK
 
 end
 
+end
+
 local notation "O" => ActualEisensteinCubic.O
 
-def integralCoverFiberPoint (H K : Subgroup (SL(2,ActualEisensteinCubic.O)))
-    (q : IntegralCoverCosets H K) (w : HyperbolicSpace) : IntegralOrbitQuotient H :=
+def integralCoverFiberPoint (H K )
+    (q : IntegralCoverCosets H K) (w : HyperbolicSpace)  :=
   Quotient.liftOn' q (fun r : K=>integralOrbitProjection H (r⁻¹•w)) (by
     intro a b hab
     have hh : b⁻¹*a∈H.subgroupOf K := by
@@ -219,40 +233,54 @@ def integralCoverFiberPoint (H K : Subgroup (SL(2,ActualEisensteinCubic.O)))
     change (b⁻¹*a)•(a⁻¹•w)=b⁻¹•w
     simp only [mul_smul,smul_inv_smul])
 
-lemma integralCoverFiberPoint_mk (H K : Subgroup (SL(2,ActualEisensteinCubic.O)))
-    (r : K) (w : HyperbolicSpace) :
+section
+variable (H K : Subgroup (SL(2,ActualEisensteinCubic.O)))
+include H K
+
+lemma integralCoverFiberPoint_mk  
+    (r : K)  w  :
     integralCoverFiberPoint H K r w=integralOrbitProjection H (r⁻¹•w) := rfl
 
-lemma integralCoverFiberPoint_rep (H K : Subgroup (SL(2,ActualEisensteinCubic.O)))
-    (q : IntegralCoverCosets H K) (w : HyperbolicSpace) :
+section
+variable (q : IntegralCoverCosets H K)
+include q
+
+lemma integralCoverFiberPoint_rep  
+       w  :
     integralCoverFiberPoint H K q w=
       integralOrbitProjection H ((integralCoverRep H K q)⁻¹•w) := by
   conv_lhs => rw [←QuotientGroup.out_eq' q]
   rfl
 
-lemma integralCoverFiberPoint_smul (H K : Subgroup (SL(2,ActualEisensteinCubic.O)))
-    (q : IntegralCoverCosets H K) (k : K) (w : HyperbolicSpace) :
+lemma integralCoverFiberPoint_smul  
+      (k : K)  w  :
     integralCoverFiberPoint H K (k•q) (k•w)=integralCoverFiberPoint H K q w := by
   induction q using Quotient.inductionOn with
   | _ r =>
     change integralOrbitProjection H ((k*r)⁻¹•(k•w))=integralOrbitProjection H (r⁻¹•w)
     rw [mul_inv_rev,mul_smul,inv_smul_smul]
 
-lemma integralCoverFiberPoint_measurable (H K : Subgroup (SL(2,ActualEisensteinCubic.O)))
-    (q : IntegralCoverCosets H K) : Measurable (integralCoverFiberPoint H K q) := by
+lemma integralCoverFiberPoint_measurable  
+      : Measurable (integralCoverFiberPoint H K q) := by
   have he : integralCoverFiberPoint H K q=fun w=>
       integralOrbitProjection H ((integralCoverRep H K q)⁻¹•w) :=
     funext (integralCoverFiberPoint_rep H K q)
   rw [he]
   exact (measurable_integralOrbitProjection H).comp (measurable_const_smul _)
 
+end
+
 def integralCoverTraceLift (H K : Subgroup (SL(2,ActualEisensteinCubic.O))) [H.IsFiniteRelIndex K]
-    (f : IntegralOrbitQuotient H→ℂ) (w : HyperbolicSpace) : ℂ :=
+    (f : IntegralOrbitQuotient H→ℂ) (w : HyperbolicSpace)  :=
   letI : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
   ∑q : IntegralCoverCosets H K,f (integralCoverFiberPoint H K q w)
 
-lemma integralCoverTraceLift_smul (H K : Subgroup (SL(2,ActualEisensteinCubic.O))) [H.IsFiniteRelIndex K]
-    (f : IntegralOrbitQuotient H→ℂ) (k : K) (w : HyperbolicSpace) :
+section
+variable [H.IsFiniteRelIndex K] (f : IntegralOrbitQuotient H→ℂ)
+include f
+
+lemma integralCoverTraceLift_smul    
+      (k : K)  w  :
     integralCoverTraceLift H K f (k•w)=integralCoverTraceLift H K f w := by
   let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
   unfold integralCoverTraceLift
@@ -265,8 +293,8 @@ def integralCoverTraceFunction (H K : Subgroup (SL(2,ActualEisensteinCubic.O))) 
     rintro w u ⟨k,rfl⟩
     exact (integralCoverTraceLift_smul H K f k w).symm)
 
-lemma integralCoverTraceFunction_measurable (H K : Subgroup (SL(2,ActualEisensteinCubic.O))) [H.IsFiniteRelIndex K]
-    (f : IntegralOrbitQuotient H→ℂ) (hf : Measurable f) :
+lemma integralCoverTraceFunction_measurable    
+      (hf : Measurable f) :
     Measurable (integralCoverTraceFunction H K f) := by
   let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
   apply measurable_from_quotient.mpr
@@ -276,25 +304,33 @@ lemma integralCoverTraceFunction_measurable (H K : Subgroup (SL(2,ActualEisenste
 
 end
 
+end
+
+end
+
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise ENNReal
-open Finset AddChar MulChar EisensteinEmbedding
+ 
+open scoped       MatrixGroups Pointwise ENNReal
+ 
 
 local notation "O" => ActualEisensteinCubic.O
 
 def IntegralCoverIntertwines {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) : Prop :=
+    (e : H≃*J) (g : SL(2,ℂ))  :=
   ∀h : H,g*integralComplexMatrix (h:SL(2,ActualEisensteinCubic.O))=
     integralComplexMatrix (e h:SL(2,ActualEisensteinCubic.O))*g
 
-lemma integralCoverIntertwines_action {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
+section
+variable {H J : Subgroup (SL(2,ActualEisensteinCubic.O))} (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
+include H J e g he
+
+lemma integralCoverIntertwines_action  
+         
     (h : H) (w : HyperbolicSpace) : g•(h•w)=(e h)•(g•w) := by
   rw [integralSubgroup_smul,integralSubgroup_smul,←mul_smul,he, mul_smul]
 
-lemma integralCoverIntertwines_inverse {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g) :
+lemma integralCoverIntertwines_inverse  
+          :
     IntegralCoverIntertwines e.symm g⁻¹ := by
   intro j
   have hh := he (e.symm j)
@@ -303,31 +339,31 @@ lemma integralCoverIntertwines_inverse {H J : Subgroup (SL(2,ActualEisensteinCub
   simpa only [mul_assoc,inv_mul_cancel_left,mul_inv_cancel_right,mul_inv_cancel,mul_one] using hh'.symm
 
 def integralConjugateMap {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g) :
+    (e : H≃*J) (g ) (he : IntegralCoverIntertwines e g) :
     IntegralOrbitQuotient H→IntegralOrbitQuotient J :=
   Quotient.map' (fun w=>g•w) (by
     rintro w u ⟨h,rfl⟩
     exact ⟨e h,(integralCoverIntertwines_action e g he h w).symm⟩)
 
-lemma integralConjugateMap_projection {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g) (w : HyperbolicSpace) :
+lemma integralConjugateMap_projection  
+           w  :
     integralConjugateMap e g he (integralOrbitProjection H w)=
       integralOrbitProjection J (g•w) := rfl
 
-lemma integralConjugateMap_measurable {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g) :
+lemma integralConjugateMap_measurable  
+          :
     Measurable (integralConjugateMap e g he) := by
   apply measurable_from_quotient.mpr
   exact (measurable_integralOrbitProjection J).comp (measurable_const_smul g)
 
-lemma integralConjugateMap_continuous {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g) :
+lemma integralConjugateMap_continuous  
+          :
     Continuous (integralConjugateMap e g he) :=
   (continuous_hyperbolic_action g).quotient_map' _
 
-lemma integralConjugateMap_inverse {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
-    (q : IntegralOrbitQuotient H) :
+lemma integralConjugateMap_inverse  
+         
+     q  :
     integralConjugateMap e.symm g⁻¹ (integralCoverIntertwines_inverse e g he)
       (integralConjugateMap e g he q)=q := by
   induction q using Quotient.inductionOn with
@@ -349,9 +385,13 @@ def integralConjugateHomeomorph {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
   continuous_toFun := integralConjugateMap_continuous e g he
   continuous_invFun := integralConjugateMap_continuous e.symm g⁻¹ _
 
-lemma integralConjugate_fundamentalDomain {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
-    (hH : H≤CubicKubota.levelThree) :
+section
+variable (hH : H≤CubicKubota.levelThree)
+include hH
+
+lemma integralConjugate_fundamentalDomain  
+         
+      :
     IsFundamentalDomain J ((fun w : HyperbolicSpace=>g•w) '' hyperbolicFundamentalSet H)
       hyperbolicVolume := by
   apply (hyperbolicFundamentalSet_isFundamentalDomain H hH).image_of_equiv
@@ -364,9 +404,13 @@ lemma integralConjugate_fundamentalDomain {H J : Subgroup (SL(2,ActualEisenstein
   change g•(e.symm j•w)=j•(g•w)
   simpa only [e.apply_symm_apply] using integralCoverIntertwines_action e g he (e.symm j) w
 
-theorem integralConjugateMap_measurePreserving {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
-    (hH : H≤CubicKubota.levelThree) (hJ : J≤CubicKubota.levelThree) :
+section
+variable (hJ : J≤CubicKubota.levelThree)
+include hJ
+
+theorem integralConjugateMap_measurePreserving  
+         
+        :
     MeasurePreserving (integralConjugateMap e g he) (integralQuotientVolume H)
       (integralQuotientVolume J) := by
   refine ⟨integralConjugateMap_measurable e g he,?_⟩
@@ -381,15 +425,15 @@ theorem integralConjugateMap_measurePreserving {H J : Subgroup (SL(2,ActualEisen
   exact integralQuotientVolume_independent J hJ _ (integralConjugate_fundamentalDomain e g he hH)
 
 def integralConjugatePullback {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
+    (e : H≃*J) (g ) (he : IntegralCoverIntertwines e g)
     (hH : H≤CubicKubota.levelThree) (hJ : J≤CubicKubota.levelThree) :
     Lp ℂ 2 (integralQuotientVolume J)→ₗᵢ[ℂ]Lp ℂ 2 (integralQuotientVolume H) :=
   Lp.compMeasurePreservingₗᵢ ℂ (integralConjugateMap e g he)
     (integralConjugateMap_measurePreserving e g he hH hJ)
 
-theorem integralConjugatePullback_ae {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
-    (hH : H≤CubicKubota.levelThree) (hJ : J≤CubicKubota.levelThree)
+theorem integralConjugatePullback_ae  
+         
+       
     (F : Lp ℂ 2 (integralQuotientVolume J)) :
     integralConjugatePullback e g he hH hJ F=ᵐ[integralQuotientVolume H]
       fun q=>F (integralConjugateMap e g he q) :=
@@ -397,18 +441,24 @@ theorem integralConjugatePullback_ae {H J : Subgroup (SL(2,ActualEisensteinCubic
 
 end
 
-section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+end
 
-open ConcreteTraceCRT CubicKubota EisensteinCuspModThree
+end
+
+end
+
+section
+ 
+open scoped       MatrixGroups
+
+open   CubicKubota EisensteinCuspModThree
 local notation "O" => ActualEisensteinCubic.O
 
 lemma scaled_cusp_periodic_upper
-    (F : HyperbolicSpace→ℂ) (v : ℝ) (hv : 0<v)
+    (F : HyperbolicSpace→ℂ)  v   hv 
     (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,
       F (upperPoint (3*(z+3*eisEmbedding n)) v hv)=F (upperPoint (3*z) v hv))
-    (T : SL(2,ActualEisensteinCubic.O)) (hT : T 1 0=0) (n : ActualEisensteinCubic.O) (z : ℂ) :
+     T  (hT : T 1 0=0)  n   z  :
     F (integralComplexMatrix T • upperPoint (3*(z+3*eisEmbedding n)) v hv)=
       F (integralComplexMatrix T • upperPoint (3*z) v hv) := by
   rw [integral_upper_triangular_action T hT,integral_upper_triangular_action T hT]
@@ -423,8 +473,12 @@ lemma scaled_cusp_periodic_upper
   rw [hleft,hright]
   exact hp ((T 0 0)^2*n) _
 
-theorem sourceCusp_scaled_periodic (M : SL(2,ActualEisensteinCubic.O)) (v : ℝ) (hv : 0<v)
-    (n : ActualEisensteinCubic.O) (z : ℂ) :
+section
+variable (M : SL(2,ActualEisensteinCubic.O)) (v : ℝ) (hv : 0<v)
+include M v hv
+
+theorem sourceCusp_scaled_periodic      
+     n   z  :
     cubicSourceResidualFunction (integralComplexMatrix M •
       upperPoint (3*(z+3*eisEmbedding n)) v hv)=
     cubicSourceResidualFunction (integralComplexMatrix M • upperPoint (3*z) v hv) := by
@@ -446,7 +500,7 @@ theorem sourceCusp_scaled_periodic (M : SL(2,ActualEisensteinCubic.O)) (v : ℝ)
           v hv (sourceCuspRepresentative_periodic j v hv) T hT n z)
     _ = _ := (he _).symm
 
-lemma sourceCusp_scaled_continuous (M : SL(2,ActualEisensteinCubic.O)) (v : ℝ) (hv : 0<v) :
+lemma sourceCusp_scaled_continuous       :
     Continuous (fun z : ℂ=>cubicSourceResidualFunction
       (integralComplexMatrix M • upperPoint (3*z) v hv)) := by
   let c : ℂ→UpperCoordinates := fun z=>⟨(3*z,v),hv⟩
@@ -460,14 +514,16 @@ lemma sourceCusp_scaled_continuous (M : SL(2,ActualEisensteinCubic.O)) (v : ℝ)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+end
 
-open ConcreteTraceCRT
+ 
+open scoped       MatrixGroups
+
+ 
 local notation "O" => ActualEisensteinCubic.O
 
 theorem period_integral_eisenstein_affine (f : ℂ→ℂ) (hf : Measurable f)
-    (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,f (z+3*eisEmbedding n)=f z) (b : ActualEisensteinCubic.O) (hb : b≠0) (c : ℂ) :
+    (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,f (z+3*eisEmbedding n)=f z)  b  (hb : b≠0)  c  :
     (∫z in periodDomain,f (eisEmbedding b*z+c))=∫z in periodDomain,f z := by
   have hg : Measurable (fun z : ℂ=>f (z+c)) :=
     hf.comp (continuous_id.add continuous_const).measurable
@@ -477,35 +533,33 @@ theorem period_integral_eisenstein_affine (f : ℂ→ℂ) (hf : Measurable f)
   rw [period_integral_eisenstein_mul (fun z=>f (z+c)) hg hgp b hb]
   simpa only [add_comm] using period_integral_translation f hp c
 
-lemma complex_upper_triangular_bottom_ne_zero (T : SL(2,ℂ)) (hT : T 1 0=0) : T 1 1≠0 := by
+section
+variable (T : SL(2,ℂ)) (hT : T 1 0=0)
+include T hT
+
+lemma complex_upper_triangular_bottom_ne_zero     : T 1 1≠0 := by
   have hdet : T 0 0*T 1 1=1 := by
     simpa only [Matrix.det_fin_two,hT,mul_zero,sub_zero] using T.property
-  intro hz
-  rw [hz,mul_zero] at hdet
-  exact zero_ne_one hdet
+  aesop
 
-lemma complex_upper_triangular_action (T : SL(2,ℂ)) (hT : T 1 0=0)
-    (z : ℂ) (v : ℝ) (hv : 0<v) :
+lemma complex_upper_triangular_action    
+     z   v   hv  :
     T • upperPoint z v hv=
       upperPoint ((T 0 0*z+T 0 1)/T 1 1) (v/‖T 1 1‖^2)
         (div_pos hv (sq_pos_of_ne_zero (norm_ne_zero_iff.mpr
           (complex_upper_triangular_bottom_ne_zero T hT)))) := by
   have hd := complex_upper_triangular_bottom_ne_zero T hT
   have hs : star (T 1 1)≠0 := by
-    intro hz
-    apply hd
-    simpa only [star_star,star_zero] using congrArg star hz
+    simp_all
   have hprod : T 1 1*star (T 1 1)=((‖T 1 1‖^2:ℝ):ℂ) := by
     simpa only [Complex.star_def,Complex.normSq_eq_norm_sq] using Complex.mul_conj (T 1 1)
   rw [mobius_upperPoint]
   apply upperPoint_congr
   · simp only [hT,zero_mul,zero_add,star_zero,mul_zero,add_zero,norm_zero]
-    norm_num only [zero_pow,mul_zero,add_zero]
-    simp only [zero_mul,add_zero]
-    rw [←hprod]
-    field_simp [hd,hs]
-  · simp only [hT,zero_mul,zero_add,norm_zero]
-    norm_num
+    grind
+  simp_all
+
+end
 
 end CubicEisenstein
 

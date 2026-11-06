@@ -14,13 +14,13 @@ open HeckeFamily CenteredMomentHeckeVolume ConcreteTraceCRT EisensteinSchwartzPo
 open IdealMobiusDivisorSum QuadraticInitialBound
 local notation "O" => ActualEisensteinCubic.O
 
-def idealSum (χ : Character) (W : ℝ → ℂ) (X : ℝ) : ℂ :=
+def idealSum (χ : Character) (W : ℝ → ℂ) (X : ℝ)  :=
   ∑' I : Ideal O, idealCoeff χ I*W ((Ideal.absNorm I:ℝ)/X)
 
-def volumeControl (Q : Ideal O) (χ : Character) (W : 𝓢(ℝ,ℂ)) : ℝ :=
+def volumeControl (Q : Ideal O) (χ : Character) (W : 𝓢(ℝ,ℂ))  :=
   ((idealDivisors χ.modulus).card:ℝ)*(Nat.card (O ⧸ Ideal.span {fixedPeriod Q}):ℝ)*pvControl W
 
-lemma volumeControl_nonneg (Q : Ideal O) (χ : Character) (W : 𝓢(ℝ,ℂ)) : 0 ≤ volumeControl Q χ W :=
+lemma volumeControl_nonneg  Q   χ   W  : 0 ≤ volumeControl Q χ W :=
   mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)) (pvControl_nonneg W)
 
 end SevenEighths.CenteredMomentHeckeCancellation

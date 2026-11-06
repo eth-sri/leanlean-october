@@ -7,32 +7,40 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstChildProfileControl
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstErrorAllocationPower
 open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
 open CenteredMomentAmplificationChildInput CenteredMomentFirstChildProfileControl
 open CenteredMomentAmplificationAllocationCost CenteredMomentCommonProfile
-local notation "O" => ActualEisensteinCubic.O
-variable {ι : Type*} [Fintype ι]
-local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
-lemma child_mass_eq (s : Input ι) (Q : Ideal O) (hQ : Q≠0) (k : ℕ)
-    (hslot : ∀i,∀I∈s.slots i,IsCoprime Q I) (R : Ideal O)
-    (B : actualAllocations s.pools (Q^k)) (τ : Character) (t : ℝ) :
+variable {ι : Type*} [Fintype ι]
+
+
+section
+variable (s : Input ι) (Q : Ideal ActualEisensteinCubic.O)
+include s Q
+
+lemma child_mass_eq     (hQ : Q≠0)  k 
+    (hslot : ∀i,∀I∈s.slots i,IsCoprime Q I)  R 
+     B   τ   t  :
     mass (child s (Q^k) R B τ t)=mass s := by
   change (∏i:liveIndices B.val,s.M i.val)=∏i,s.M i
   rw [Finset.prod_coe_sort,prime_slots_live s Q hQ k hslot B]
 
-lemma allocations_card (s : Input ι) (Q : Ideal O) (hQ : Prime Q) (k : ℕ)
-    (hslot : ∀i,∀I∈s.slots i,IsCoprime Q I) :
+section
+variable (hQ : Prime Q) (k : ℕ) (hslot : ∀i,∀I∈s.slots i,IsCoprime Q I)
+include hQ k hslot
+
+lemma allocations_card        
+      :
     Fintype.card (actualAllocations s.pools (Q^k))≤k+1 := by
   simpa only [Fintype.card_coe] using actual_amplification_allocations_card s.pools Q hQ k
     (fun i I hI=>⟨(s.prime i I hI).ne_zero,hslot i I hI⟩)
 
-theorem budget_sum_le (s : Input ι) (Q : Ideal O) (hQ : Prime Q) (k : ℕ)
-    (hslot : ∀i,∀I∈s.slots i,IsCoprime Q I) (R : Ideal O)
+theorem budget_sum_le        
+      (R : Ideal ActualEisensteinCubic.O)
     (τ : actualAllocations s.pools (Q^k)→Character)
     (t : actualAllocations s.pools (Q^k)→ℝ)
     (n : ℕ) (a α : Fin n→ℝ) (ha : ∀j,0≤a j) :
@@ -51,6 +59,10 @@ theorem budget_sum_le (s : Input ι) (Q : Ideal O) (hQ : Prime Q) (k : ℕ)
     _≤((k:ℝ)+1)*((∑j,a j*(volume s/(Q.absNorm:ℝ)^k)^(α j))*mass s^2) :=
       mul_le_mul_of_nonneg_right hc (mul_nonneg hs (sq_nonneg _))
     _=_ := by push_cast;ring
+
+end
+
+end
 
 end SevenEighths.CenteredMomentFirstErrorAllocationPower
 

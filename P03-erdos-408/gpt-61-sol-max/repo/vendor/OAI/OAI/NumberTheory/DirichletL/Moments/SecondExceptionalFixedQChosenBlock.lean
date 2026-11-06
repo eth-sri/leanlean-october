@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalSourceFamily
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalFixedQUniform
@@ -45,7 +46,7 @@ open CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentRankinRadical
 open CenteredMomentSecondExceptionalCommonSaving
 open ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation
 open CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
-local notation "O" => HeckeFamily.O
+
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
@@ -58,16 +59,16 @@ open CenteredMomentFiniteProfileExceptionalPhysical
 theorem chosen_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι→ℝ)(W:𝓢(ℝ,ℂ))
     (ε δ θ B Lbound:ℝ)(hε:0<ε)(hδ:0<δ)(hθ:0<θ)(hB:0≤B)(hL:0≤Lbound):
     ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∃Ck:ℝ,0≤Ck ∧
-      ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} →
+      ∀Q:Ideal HeckeFamily.O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:HeckeFamily.O)} →
       ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s:Input ι)(p:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
       (∀i,1≤s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
-      ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D)(R0 seed:Ideal O),
+      ∀(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)(R0 seed:Ideal HeckeFamily.O),
       R0≠0 → seed∣C → seed∣D → (C.absNorm:ℝ)≤Z^B → (D.absNorm:ℝ)≤Z^B →
       primeSupport C=primeSupport D → ∀U:Finset (CommonIndex C D),
       ∀r:ℝ,Z^r≤s.X₁ → Z^r≤s.X₂ → Z^r≤s.Y₁ → Z^r≤s.Y₂ →
       ∀χ₀:RayCharacter,idealCoeff s.η C≠0 →
-      ∀m:O,m≠0 → goodLambda∣m → (2:O)∣m →
+      ∀m:HeckeFamily.O,m≠0 → goodLambda∣m → (2:HeckeFamily.O)∣m →
       sourceRadius s≤Z^Lbound → ∀(R Kphys:ℝ),0<Kphys →
       (expandedFactor s.η:ℝ)*R0.absNorm*C.absNorm*D.absNorm*(4*R)≤Z^B →
       ∀n:Fin 4→ℤ,
@@ -100,7 +101,7 @@ theorem chosen_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:�
     linarith
   have hz1:s.W₁ 0=0:=by rw [hW1];exact hprofile0 0
   have hz2:s.W₂ 0=0:=by rw [hW2];exact hprofile0 1
-  have hβ:∀I:Ideal O,β I≠0→(I.absNorm:ℝ)≤sourceRadius s:=
+  have hβ:∀I:Ideal HeckeFamily.O,β I≠0→(I.absNorm:ℝ)≤sourceRadius s:=
     fun I hI=>(original_column_norm s R0 seed I hz1 hz2 hI).2
   have hD1:1≤(D.absNorm:ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hD.1)
@@ -111,7 +112,7 @@ theorem chosen_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:�
         (Real.rpow_nonneg (zero_lt_one.trans hZ.1).le _)
   have ha:0<(∏i,s.lo i)*wlo*wlo:=
     mul_pos (mul_pos (Finset.prod_pos (fun i _=>s.lo_pos i)) hwlo) hwlo
-  have hlower (I:Ideal O)(hI:β I≠0):
+  have hlower (I:Ideal HeckeFamily.O)(hI:β I≠0):
       ((∏i,s.lo i)*wlo*wlo)*volume s.toData≤(I.absNorm:ℝ):=by
     have hh:=profile_column_lower R0 s.ν s.W s.P s.lo s.W₁ s.W₂ wlo wlo
       s.X₁ s.X₂ s.Y₁ s.Y₂ (s.X₁*s.X₂) 1 1 seed s.P_pos (fun i=>(s.lo_pos i).le)
@@ -126,12 +127,10 @@ theorem chosen_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:�
     have hp:=profileFactor_nonneg Sprofile s p J Q K hK.le
     have hv:=volume_pos s.toData
     have hZpos:0<Z:=zero_lt_one.trans hZ.1
-    exact mul_nonneg hCk (div_nonneg (mul_nonneg (mul_nonneg (mul_nonneg
-      (mul_nonneg hp (Real.rpow_nonneg hZpos.le _)) (Real.rpow_nonneg hv.le _))
-      (Real.rpow_nonneg hKphys.le _)) (Real.rpow_nonneg ha.le _)) (Nat.cast_nonneg _))
+    exact mul_nonneg hCk (div_nonneg (mul_nonneg ((by positivity)) (Real.rpow_nonneg ha.le _)) (Nat.cast_nonneg _))
   obtain ⟨τ,hτ⟩:=exists_exceptional_family s.η C D hC hD hCD U
   have he:=actual_family_both_rows s.η χ₀ Q hQ72 m hm hml hm2 C D hC hD U τ hτ R
-  have hc (χ ξ:RayCharacter)(z:O)(hz:z∈rows):
+  have hc (χ ξ:RayCharacter)(z:HeckeFamily.O)(hz:z∈rows):
       (expandedConductor (τ χ) R0 C z:ℝ)≤Z^B ∧
       (expandedConductor (reflected (τ ξ)) R0 D z:ℝ)≤Z^B:=by
     have hg:=expanded_conductor_bounds hτ hCD s.t S β R rows W Kphys hKphys n hzero χ ξ R0 z

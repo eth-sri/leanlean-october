@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.Lines
 public import Mathlib.Algebra.Field.ZMod
@@ -31,22 +32,20 @@ variable {K : ℕ}
 open scoped Classical in
 /-- The line assignments at the primes of `Q`: a line `ℓ p ∈ {0, …, p}` for each `p ∈ Q`, and
 `0` elsewhere. -/
-def lineSet (Q : Finset ℕ) : Finset (ℕ → ℕ) :=
+def lineSet (Q : Finset ℕ)  :=
   (Q.pi fun p => range (p + 1)).image fun f p => if h : p ∈ Q then f p h else 0
 
 /-- The line assignments are the line assignments at the band primes. -/
-theorem lineAssignments_eq_lineSet (x : ℝ) (d : Data K) :
+theorem lineAssignments_eq_lineSet  x  (d : Data K) :
     lineAssignments x d = lineSet (bandPrimes x d) := rfl
 
 /-- `ℓ` is a line assignment at the primes of `Q` iff `ℓ p ≤ p` on `Q` and `ℓ p = 0` off `Q`. -/
-theorem mem_lineSet {Q : Finset ℕ} {ℓ : ℕ → ℕ} :
+theorem mem_lineSet  {Q}   {ℓ}  :
     ℓ ∈ lineSet Q ↔ (∀ p ∈ Q, ℓ p ≤ p) ∧ ∀ p ∉ Q, ℓ p = 0 := by
   classical
   rw [lineSet, mem_image]
   constructor
-  · rintro ⟨f, hf, rfl⟩
-    refine ⟨fun p hp => ?_, fun p hp => by simp [hp]⟩
-    simpa [hp, Nat.lt_succ_iff] using mem_pi.1 hf p hp
+  · aesop
   · rintro ⟨h₁, h₂⟩
     refine ⟨fun p _ => ℓ p, mem_pi.2 fun p hp => mem_range.2 (Nat.lt_succ_of_le (h₁ p hp)), ?_⟩
     funext p
@@ -68,8 +67,12 @@ theorem average_comp_eq {α β : Type*} [DecidableEq β] {s : Finset α} {t : Fi
   rw [hs, hsum, Nat.cast_mul, mul_inv, mul_assoc, ← mul_assoc (N : ℂ)⁻¹, inv_mul_cancel₀ hN0',
     one_mul]
 
+section
+variable {R : Type*} [CommRing R]
+include R
+
 /-- The first row of an element of `SL₂(R)` is unimodular. -/
-theorem isCoprime_row {R : Type*} [CommRing R] (g : Matrix.SpecialLinearGroup (Fin 2) R) :
+theorem isCoprime_row     (g : Matrix.SpecialLinearGroup (Fin 2) R) :
     IsCoprime (g 0 0) (g 0 1) := by
   have h := g.2
   rw [Matrix.det_fin_two] at h
@@ -77,7 +80,7 @@ theorem isCoprime_row {R : Type*} [CommRing R] (g : Matrix.SpecialLinearGroup (F
 
 /-- A row `(u, c)` with `a u + b c = 1` is the first row of exactly `|R|` elements of `SL₂(R)`:
 the second rows are `(-b + t u, a + t c)` for `t ∈ R`. -/
-theorem card_filter_row_eq {R : Type*} [CommRing R] [Fintype R] [DecidableEq R] {u c : R}
+theorem card_filter_row_eq     [Fintype R] [DecidableEq R]  {u c} 
     (h : IsCoprime u c) :
     #{g : Matrix.SpecialLinearGroup (Fin 2) R | g 0 0 = u ∧ g 0 1 = c} = Fintype.card R := by
   obtain ⟨a, b, hab⟩ := h
@@ -104,32 +107,35 @@ theorem card_filter_row_eq {R : Type*} [CommRing R] [Fintype R] [DecidableEq R] 
     · simp [i]
       linear_combination -a * hdet + g 1 1 * hab
 
+end
+
 /-- The kernel line `[(c, -u)]_p` of the first row `(u, c)` of `g` modulo `p`. -/
-def matLine {S : ℕ} (p : ℕ) (g : Matrix (Fin 2) (Fin 2) (ZMod S)) : ℕ :=
+def matLine {S } (p : ℕ) (g : Matrix (Fin 2) (Fin 2) (ZMod S))  :=
   lineOf p (((g 0 1).val : ℤ), -((g 0 0).val : ℤ))
 
 /-- The kernel line `[(c, -u)]_p` of a row `z = (u, c)` over `ℤ/p`. -/
-def localLine (p : ℕ) (z : ZMod p × ZMod p) : ℕ :=
+def localLine (p ) (z : ZMod p × ZMod p)  :=
   if z.2 = 0 then p else (-z.1 * z.2⁻¹).val
 
 /-- `matLine` is the local line of the first row reduced modulo `p`. -/
-theorem matLine_eq {S : ℕ} (p : ℕ) (g : Matrix (Fin 2) (Fin 2) (ZMod S)) :
+theorem matLine_eq {S : ℕ}  p  (g : Matrix (Fin 2) (Fin 2) (ZMod S)) :
     matLine p g = localLine p (((g 0 0).val : ZMod p), ((g 0 1).val : ZMod p)) := by
-  simp only [matLine, lineOf, localLine, Int.cast_natCast, Int.cast_neg, neg_mul]
+  simp_all [matLine, lineOf, localLine]
+
+section
+variable {p : ℕ} [NeZero p]
+include p
 
 /-- A local line is at most `p`. -/
-theorem localLine_le {p : ℕ} [NeZero p] (z : ZMod p × ZMod p) : localLine p z ≤ p := by
-  unfold localLine
-  split_ifs
-  · exact le_rfl
-  · exact (ZMod.val_lt _).le
+theorem localLine_le      z  : localLine p z ≤ p := by
+  grind [localLine]
 
 /-- Over `ℤ/p`, each line `l ≤ p` contains exactly `p - 1` nonzero rows. -/
-theorem card_localLine_eq {p : ℕ} [NeZero p] (hp : p.Prime) {l : ℕ} (hl : l ≤ p) :
+theorem card_localLine_eq     (hp : p.Prime)  {l}  (hl : l ≤ p) :
     #{z : ZMod p × ZMod p | z ≠ 0 ∧ localLine p z = l} = p - 1 := by
   have := Fact.mk hp
   have hcard : #(univ.erase (0 : ZMod p)) = p - 1 := by
-    rw [card_erase_of_mem (mem_univ _), card_univ, ZMod.card]
+    simp_all
   rw [← hcard]
   rcases hl.lt_or_eq with hl | hl
   · -- step: for `l < p`, the line consists of the rows `(-l y, y)`, `y ≠ 0`
@@ -149,9 +155,7 @@ theorem card_localLine_eq {p : ℕ} [NeZero p] (hp : p.Prime) {l : ℕ} (hl : l 
         · intro h
           rw [← h]
           linear_combination -z.1 * ZMod.inv_mul_of_unit z.2 hu
-        · intro h
-          rw [h]
-          linear_combination (l : ZMod p) * ZMod.mul_inv_of_unit z.2 hu
+        simp_all
     refine card_nbij' Prod.snd (fun y => (-(l : ZMod p) * y, y)) (fun z hz => ?_)
       (fun y hy => ?_) (fun z hz => ?_) (fun y _ => rfl)
     · exact mem_coe.2 (mem_erase.2 ⟨((hiff z).1 (mem_filter.1 hz).2).1, mem_univ _⟩)
@@ -163,7 +167,7 @@ theorem card_localLine_eq {p : ℕ} [NeZero p] (hp : p.Prime) {l : ℕ} (hl : l 
       intro z
       by_cases hz : z.2 = 0
       · simp only [localLine, hz, ↓reduceIte, and_true, ne_eq]
-        exact not_congr ⟨fun h => by rw [h]; rfl, fun h => Prod.ext h hz⟩
+        aesop
       · simp only [localLine, hz, ↓reduceIte, (ZMod.val_lt _).ne, and_false]
     refine card_nbij' Prod.fst (fun x => (x, 0)) (fun z hz => ?_) (fun x hx => ?_)
       (fun z hz => ?_) (fun x _ => rfl)
@@ -171,19 +175,29 @@ theorem card_localLine_eq {p : ℕ} [NeZero p] (hp : p.Prime) {l : ℕ} (hl : l 
     · exact mem_coe.2 (mem_filter.2 ⟨mem_univ _, (hiff _).2 ⟨ne_of_mem_erase hx, rfl⟩⟩)
     · exact Prod.ext rfl ((hiff z).1 (mem_filter.1 hz).2).2.symm
 
+end
+
 /-- Reduction `ℤ/S → ∏_{p ∈ P} ℤ/p` modulo the primes of `P`, for `S = ∏_{p ∈ P} p`. -/
-def reduce {P : Finset ℕ} {S : ℕ} (hS : ∏ p ∈ P, p = S) : ZMod S →+* ∀ p : P, ZMod p :=
+def reduce {P } {S } (hS : ∏ p ∈ P, p = S) : ZMod S →+* ∀ p : P, ZMod p :=
   RingHom.pi fun p => ZMod.castHom (by rw [← hS]; exact dvd_prod_of_mem (fun p => p) p.2) _
 
+section
+variable {P : Finset ℕ}
+include P
+
 /-- The reduction of `x` modulo `p` is the cast of its representative. -/
-theorem reduce_apply {P : Finset ℕ} {S : ℕ} [NeZero S] (hS : ∏ p ∈ P, p = S) (x : ZMod S)
+theorem reduce_apply    {S}  [NeZero S] (hS : ∏ p ∈ P, p = S) (x : ZMod S)
     (p : P) : reduce hS x p = (x.val : ZMod p) :=
   ZMod.cast_eq_val x
 
+section
+variable (hP : ∀ p ∈ P, p.Prime) {S : ℕ} [NeZero S] (hS : ∏ p ∈ P, p = S)
+include hP S hS
+
 /-- **Chinese remainder theorem**: for `S = ∏_{p ∈ P} p` with `P` a set of primes, the
 reduction `ℤ/S → ∏_{p ∈ P} ℤ/p` is bijective. -/
-theorem bijective_reduce {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) {S : ℕ} [NeZero S]
-    (hS : ∏ p ∈ P, p = S) : Function.Bijective (reduce hS) := by
+theorem bijective_reduce        
+      : Function.Bijective (reduce hS) := by
   have : ∀ p : P, NeZero (p : ℕ) := fun p => ⟨(hP p p.2).ne_zero⟩
   have hinj : Function.Injective (reduce hS) := by
     refine (injective_iff_map_eq_zero _).2 fun x hx => ?_
@@ -198,11 +212,15 @@ theorem bijective_reduce {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) {S : ℕ} 
   exact prod_congr rfl fun p _ => (ZMod.card _).symm
 
 open scoped Classical in
+section
+variable {m : ℕ → ℕ} (hm : ∀ p ∈ P, m p ≤ p)
+include m hm
+
 /-- For every assignment `m` of lines at the primes of `P`, exactly `∏_{p ∈ P} (p - 1)`
 unimodular rows over `ℤ/S` have kernel line `m p` modulo every `p ∈ P`: by the Chinese
 remainder theorem a row is unimodular iff it is nonzero modulo every `p ∈ P`. -/
-theorem card_rows_eq {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) {S : ℕ} [NeZero S]
-    (hS : ∏ p ∈ P, p = S) {m : ℕ → ℕ} (hm : ∀ p ∈ P, m p ≤ p) :
+theorem card_rows_eq        
+          :
     #{r : ZMod S × ZMod S | IsCoprime r.1 r.2 ∧
         ∀ p ∈ P, localLine p ((r.1.val : ZMod p), (r.2.val : ZMod p)) = m p} =
       ∏ p ∈ P, (p - 1) := by
@@ -259,33 +277,33 @@ theorem card_rows_eq {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) {S : ℕ} [NeZ
 
 /-- Every assignment `m` of lines at the primes of `P` is the assignment of kernel lines of
 exactly `S ∏_{p ∈ P} (p - 1)` elements of `SL₂(ℤ/S)`. -/
-theorem card_matLine_eq {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) {S : ℕ} [NeZero S]
-    (hS : ∏ p ∈ P, p = S) {m : ℕ → ℕ} (hm : ∀ p ∈ P, m p ≤ p) :
+theorem card_matLine_eq        
+          :
     #{g : Matrix.SpecialLinearGroup (Fin 2) (ZMod S) | ∀ p ∈ P, matLine p g.1 = m p} =
       S * ∏ p ∈ P, (p - 1) := by
   classical
   rw [← card_rows_eq hP hS hm, mul_comm, ← smul_eq_mul, ← sum_const]
   refine (card_eq_sum_card_fiberwise (f := fun g => (g 0 0, g 0 1)) fun g hg => ?_).trans
     (sum_congr rfl fun r hr => ?_)
-  · exact mem_filter.2 ⟨mem_univ _, isCoprime_row g, fun p hp => by
-      rw [← matLine_eq]; exact (mem_filter.1 hg).2 p hp⟩
+  · simp_all [isCoprime_row, matLine_eq]
   rw [filter_filter]
   refine ((congrArg card (filter_congr fun g _ => ?_)).trans
     (card_filter_row_eq (mem_filter.1 hr).2.1)).trans (ZMod.card S)
   constructor
-  · rintro ⟨-, h⟩
-    rw [← h]
-    exact ⟨rfl, rfl⟩
-  · rintro ⟨h₁, h₂⟩
-    refine ⟨fun p hp => ?_, Prod.ext h₁ h₂⟩
-    rw [matLine_eq, h₁, h₂]
-    exact (mem_filter.1 hr).2.2 p hp
+  · grind
+  simp_all [matLine_eq]
+
+end
+
+end
+
+end
 
 /-- **RR5 (lines)**: for `S = ∏_{p ∈ P} p` with `P` a set of band primes, and `G` depending
 only on the lines at the primes of `P`, the average of `G` at the kernel lines over
 `SL₂(ℤ/S)` is the average over independent uniform lines. -/
-theorem average_matLine_eq_lineAverage (x : ℝ) (d : Data K) {P : Finset ℕ}
-    (hP : P ⊆ bandPrimes x d) (S : ℕ) [NeZero S] (hS : ∏ p ∈ P, p = S) (G : (ℕ → ℕ) → ℂ)
+theorem average_matLine_eq_lineAverage  x  (d : Data K) {P : Finset ℕ}
+    (hP : P ⊆ bandPrimes x d)  S  [NeZero S] (hS : ∏ p ∈ P, p = S)  G 
     (hG : ∀ ℓ ℓ' : ℕ → ℕ, (∀ p ∈ P, ℓ p = ℓ' p) → G ℓ = G ℓ') :
     ((Fintype.card (Matrix.SpecialLinearGroup (Fin 2) (ZMod S)) : ℂ))⁻¹ *
         ∑ g : Matrix.SpecialLinearGroup (Fin 2) (ZMod S), G (fun p => matLine p g.1) =
@@ -298,17 +316,13 @@ theorem average_matLine_eq_lineAverage (x : ℝ) (d : Data K) {P : Finset ℕ}
   set ρ : (ℕ → ℕ) → ℕ → ℕ := fun ℓ p => if p ∈ P then ℓ p else 0
   have hρ : ∀ ℓ, G (ρ ℓ) = G ℓ := fun ℓ => hG _ _ fun p hp => by simp [ρ, hp]
   have hρmem : ∀ ℓ : ℕ → ℕ, (∀ p ∈ P, ℓ p ≤ p) → ρ ℓ ∈ lineSet P := fun ℓ h =>
-    mem_lineSet.2 ⟨fun p hp => by simpa [ρ, hp] using h p hp, fun p hp => by simp [ρ, hp]⟩
+    (by grind [mem_lineSet])
   have hρeq : ∀ ℓ m : ℕ → ℕ, m ∈ lineSet P → (ρ ℓ = m ↔ ∀ p ∈ P, ℓ p = m p) := by
     intro ℓ m hm
     constructor
     · rintro rfl p hp
       simp [ρ, hp]
-    · intro h
-      funext p
-      by_cases hp : p ∈ P
-      · simp [ρ, hp, h p hp]
-      · simp [ρ, hp, (mem_lineSet.1 hm).2 p hp]
+    grind [mem_lineSet]
   -- step: the average over `SL₂(ℤ/S)` is the average over `lineSet P`
   have h₁ : ((Fintype.card (Matrix.SpecialLinearGroup (Fin 2) (ZMod S)) : ℂ))⁻¹ *
       ∑ g : Matrix.SpecialLinearGroup (Fin 2) (ZMod S), G (fun p => matLine p g.1) =
@@ -335,36 +349,14 @@ theorem average_matLine_eq_lineAverage (x : ℝ) (d : Data K) {P : Finset ℕ}
     -- step: the fibre over `m` is a copy of the line assignments off `P`
     refine card_nbij' (fun ℓ p => if p ∈ P then 0 else ℓ p) (fun k p => if p ∈ P then m p else k p)
       (fun ℓ hℓ => ?_) (fun k hk => ?_) (fun ℓ hℓ => ?_) (fun k hk => ?_)
-    · obtain ⟨hℓ, -⟩ := mem_filter.1 hℓ
-      refine mem_coe.2 (mem_lineSet.2 ⟨fun p hp => ?_, fun p hp => ?_⟩)
-      · simp [(mem_sdiff.1 hp).2, (mem_lineSet.1 hℓ).1 p (mem_sdiff.1 hp).1]
-      · by_cases hpP : p ∈ P
-        · simp [hpP]
-        · simp only [hpP, ↓reduceIte]
-          exact (mem_lineSet.1 hℓ).2 p fun h => hp (mem_sdiff.2 ⟨h, hpP⟩)
+    · grind [mem_lineSet]
     · have hk' := mem_lineSet.1 (mem_coe.1 hk)
       refine mem_coe.2 (mem_filter.2 ⟨mem_lineSet.2 ⟨fun p hp => ?_, fun p hp => ?_⟩, ?_⟩)
-      · by_cases hpP : p ∈ P
-        · simpa [hpP] using hm'.1 p hpP
-        · simpa [hpP] using hk'.1 p (mem_sdiff.2 ⟨hp, hpP⟩)
-      · have hpP : p ∉ P := fun h => hp (hP h)
-        simpa [hpP] using hk'.2 p fun h => hp (mem_sdiff.1 h).1
-      · funext p
-        by_cases hpP : p ∈ P
-        · simp [ρ, hpP]
-        · simp [ρ, hpP, hm'.2 p hpP]
-    · obtain ⟨-, hρℓ⟩ := mem_filter.1 (mem_coe.1 hℓ)
-      funext p
-      by_cases hpP : p ∈ P
-      · simp only [hpP, ↓reduceIte]
-        rw [← hρℓ]
-        simp [ρ, hpP]
-      · simp [hpP]
-    · have hk' := mem_lineSet.1 (mem_coe.1 hk)
-      funext p
-      by_cases hpP : p ∈ P
-      · simp [hpP, hk'.2 p fun h => (mem_sdiff.1 h).2 hpP]
-      · simp [hpP]
+      · grind
+      · grind
+      grind
+    · grind
+    grind [mem_lineSet]
   rw [h₁, h₂]
 
 end Erdos408.OneSided

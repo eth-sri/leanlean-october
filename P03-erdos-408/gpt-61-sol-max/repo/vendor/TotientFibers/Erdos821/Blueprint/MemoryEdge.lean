@@ -18,19 +18,19 @@ inductive TransferMode where
   | dirty
   deriving DecidableEq
 
-def translateParticle (delta : ℤ) {g : P.Group} (z : P.Particle g) : P.Particle g :=
+def translateParticle (delta : ℤ) {g } (z : P.Particle g) : P.Particle g :=
   ⟨z.1, z.2 + (delta : ZMod z.1.val)⟩
 
-def translateMemory (delta : ℤ) {g : P.Group} (z : P.Memory g) : P.Memory g :=
+def translateMemory (delta : ℤ) {g } (z : P.Memory g)  :=
   z.map (translateParticle delta)
 
 def translateSmallResidues (delta : ℤ) (y : P.SmallResidues) : P.SmallResidues :=
   fun g p => y g p + (delta : ZMod p.val)
 
-def permuteActive {M : ℕ} (π : P.Permutations M) (s : P.MemoryState M) : P.MemoryState M :=
+def permuteActive {M } (π : P.Permutations M) (s : P.MemoryState M)  :=
   (s.1, P.act π s.2.1, s.2.2)
 
-abbrev TransferChoice {M : ℕ} (s : P.MemoryState M) :=
+abbrev TransferChoice {M } (s : P.MemoryState M) :=
   ((g : P.BigGroup) → Finset (Fin M)) ×
     ((A : (g : P.BigGroup) → Finset (Fin M)) ×
       ((g : P.BigGroup) → (i : {i : Fin M // i ∈ A g}) → Fin (s.2.2 g).card))
@@ -40,44 +40,43 @@ abbrev EdgeChoice (A : Model F P J m) (s : P.MemoryState (J + F.ell)) :=
   P.Permutations (J + F.ell) × P.Permutations (J + F.ell) ×
     Fin A.patternCount × P.Aux J × TransferChoice s
 
-def transferModeAccept {M : ℕ} {s : P.MemoryState M} (mode : TransferMode)
-    (c : TransferChoice s) : Prop :=
+def transferModeAccept {M } {s : P.MemoryState M} (mode : TransferMode)
+    (c : TransferChoice s)  :=
   match mode with
   | .all => True
   | .clean => ∀ g, c.1 g = ∅ ∧ c.2.1 g = ∅
   | .dirty => ∃ g, c.1 g ≠ ∅ ∨ c.2.1 g ≠ ∅
 
-def storedMemory {M : ℕ} {g : P.Group} (a : Fin M → P.Prime g)
+def storedMemory {M } {g } (a : Fin M → P.Prime g)
     (B : Finset (Fin M)) : P.Memory g :=
   (B.toList.map (fun i => (⟨a i, 0⟩ : P.Particle g)) : List (P.Particle g))
 
-def retrievedIndices {M : ℕ} {s : P.MemoryState M} (c : TransferChoice s) (g : P.BigGroup) :
-    Finset (Fin (s.2.2 g).card) := Finset.univ.image (c.2.2 g)
+def retrievedIndices {M } {s : P.MemoryState M} (c : TransferChoice s) (g )  := Finset.univ.image (c.2.2 g)
 
-def edgeForward {n : ℕ} (i : Fin n) : Bool := i.val % 2 == 0
+def edgeForward {n } (i : Fin n)  := i.val % 2 == 0
 
 def edgeDelta (A : Model F P J m) (ν : Pattern P J F.ell m)
-    (forward : Bool) (a : P.Labels (J + F.ell)) (u : P.Aux J) : ℤ :=
+    (forward : Bool) (a : P.Labels (J + F.ell)) (u : P.Aux J)  :=
   if forward then A.k * (ν.D a u : ℤ) else -(A.k * (ν.D a u : ℤ))
 
-def smallOmega (y : P.SmallResidues) : ℕ :=
+def smallOmega (y : P.SmallResidues)  :=
   ∑ g : P.SmallGroup, (Finset.univ.filter (fun p : P.Prime g.val => y g p = 0)).card
 
-def smallDamping (F : FixedData) (J : ℕ) (y : P.SmallResidues) : ℝ :=
+def smallDamping (F : FixedData) (J : ℕ) (y : P.SmallResidues)  :=
   F.q ^ (((smallOmega y : ℝ) - (J + F.ell) * Fintype.card P.SmallGroup) / 2)
 
-def smallTargetFactor (F : FixedData) : ℝ :=
+def smallTargetFactor (F : FixedData)  :=
   ∏ g : P.SmallGroup, (P.V g.val) ^ (-(F.ell : ℤ))
 
 def freshBigFactor (F : FixedData) (n : ℕ) (ν : Pattern P J F.ell m)
     (prom : P.BigGroup → Finset (Fin (J + F.ell)))
-    (a : P.Labels (J + F.ell)) : ℝ :=
+    (a : P.Labels (J + F.ell))  :=
   ∏ g : P.BigGroup, ∏ i : Fin (J + F.ell),
     if ν.shared g.val i ∨ i ∈ prom g then 1 else tiltedMu F P n g.val (a g.val i)
 
 /-- Retrievals refer only to old source indices; stores cannot be promoted here. -/
 def rawEdgeValid (A : Model F P J m) (ν : Pattern P J F.ell m) (forward : Bool)
-    (u : P.Aux J) (s t : P.MemoryState (J + F.ell)) (c : TransferChoice s) : Prop :=
+    (u : P.Aux J) (s t : P.MemoryState (J + F.ell)) (c : TransferChoice s)  :=
   let delta := edgeDelta A ν forward s.2.1 u
   P.smallPhysical s.1 s.2.1 ∧ P.smallPhysical t.1 t.2.1 ∧
   ν.compatible s.2.1 t.2.1 ∧ ν.ban s.2.1 t.2.1 u ∧
@@ -96,15 +95,15 @@ def rawEdgeValid (A : Model F P J m) (ν : Pattern P J F.ell m) (forward : Bool)
 /-- Small endpoints stay physical; big endpoints use fresh/promoted birth weights. -/
 def rawEdgeWeight (_A : Model F P J m) (n : ℕ) (rho : ℝ)
     (ν : Pattern P J F.ell m) (u : P.Aux J)
-    (s t : P.MemoryState (J + F.ell)) (c : TransferChoice s) : ℝ :=
+    (s t : P.MemoryState (J + F.ell)) (c : TransferChoice s)  :=
   ν.auxMass u * freshBigFactor F n ν c.2.1 t.2.1 *
     (∏ g : P.BigGroup, (P.V g.val) ^ (-((c.2.1 g).card : ℤ))) *
     smallTargetFactor (P := P) F * smallDamping F J s.1 * smallDamping F J t.1 *
     rho ^ ((∑ g : P.BigGroup, (zeroMemoryIndices (s.2.2 g)).card) +
       (∑ g : P.BigGroup, (zeroMemoryIndices (t.2.2 g)).card))
 
-def edgeChoiceCoefficient (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) : ℂ :=
+def edgeChoiceCoefficient (A : Model F P J m) (n ) (rho theta : ℝ) (i : Fin n)
+    (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)  :=
   let ss := permuteActive c.1 s
   let tt := permuteActive c.2.1 t
   let ν := A.pattern c.2.2.1
@@ -119,29 +118,29 @@ def edgeChoiceCoefficient (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : F
   (rawEdgeWeight A n rho ν u ss tt transfers : ℂ) * (if forward then z else zr) *
     phase (theta * (edgeDelta A ν forward ss.2.1 u : ℝ))
 
-def edgeChoiceValid (A : Model F P J m) (mode : TransferMode) {n : ℕ} (i : Fin n)
-    (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) : Prop :=
+def edgeChoiceValid (A : Model F P J m) (mode : TransferMode) {n } (i : Fin n)
+    (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)  :=
   rawEdgeValid A (A.pattern c.2.2.1) (edgeForward i) c.2.2.2.1
     (permuteActive c.1 s) (permuteActive c.2.1 t) c.2.2.2.2 ∧
   transferModeAccept mode c.2.2.2.2
 
-def edgeSymmetryFactor (P : PrimeGroups) (M : ℕ) : ℝ :=
+def edgeSymmetryFactor (P : PrimeGroups) (M : ℕ)  :=
   ((Fintype.card (P.Permutations M) : ℝ) ^ (2 : ℕ))⁻¹
 
-def localisedMemoryEdgeKernel (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n) (mode : TransferMode)
+def localisedMemoryEdgeKernel (A : Model F P J m) (n ) (rho theta : ℝ) (i : Fin n) (mode : TransferMode)
     (phi : (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℂ)
-    (s t : P.MemoryState (J + F.ell)) : ℂ :=
+    (s t : P.MemoryState (J + F.ell))  :=
   (edgeSymmetryFactor P (J + F.ell) : ℂ) * ∑ c : EdgeChoice A s,
     if edgeChoiceValid A mode i s t c then edgeChoiceCoefficient A n rho theta i s t c * phi s t c else 0
 
-def absoluteMemoryEdgeKernel (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (mode : TransferMode) (s t : P.MemoryState (J + F.ell)) : ℝ :=
+def absoluteMemoryEdgeKernel (A : Model F P J m) (n ) (rho theta : ℝ) (i : Fin n)
+    (mode : TransferMode) (s t : P.MemoryState (J + F.ell))  :=
   edgeSymmetryFactor P (J + F.ell) * ∑ c : EdgeChoice A s,
     if edgeChoiceValid A mode i s t c then ‖edgeChoiceCoefficient A n rho theta i s t c‖ else 0
 
 /-- The complete edge with its original signed choices. -/
-def memoryEdgeKernel (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (s t : P.MemoryState (J + F.ell)) : ℂ :=
+def memoryEdgeKernel (A : Model F P J m) (n ) (rho theta : ℝ) (i : Fin n)
+    (s t : P.MemoryState (J + F.ell))  :=
   localisedMemoryEdgeKernel A n rho theta i .all (fun _ _ _ => 1) s t
 
 end Erdos821.Blueprint.Graph

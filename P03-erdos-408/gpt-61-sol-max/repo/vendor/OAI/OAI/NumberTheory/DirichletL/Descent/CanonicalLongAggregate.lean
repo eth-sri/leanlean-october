@@ -6,19 +6,19 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongCaller
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem actual_large_bins_aggregate
-    {σ:Type*}[DecidableEq σ](S:Finset (Ideal O))(D:ℕ)
-    (labels:Finset (Ideal O))(Ψ:O→*ℂ)(m:O)(W:ℝ→ℂ)(b X H₀ R Z V E:ℝ)
-    (slots:Finset σ)(lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
+    {σ:Type*}[DecidableEq σ](S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(W:ℝ→ℂ)(b X H₀ R Z V E:ℝ)
+    (slots:Finset σ) lists 
+     a 
     (hbin:∀j∈cubeLogRange b X,
       (progressingCubes S D H₀ (activeCubeLogBin S D b X j)).Nonempty→
       Z^(-V)*rowFamilyEnergy labels (fun I z=>markedReopenedCubeBin S D
@@ -52,6 +52,6 @@ theorem actual_large_bins_aggregate
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

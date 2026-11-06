@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.UniformPhysical
 public import OAI.NumberTheory.DirichletL.Inversion.ReflectedArithmeticHeight
@@ -11,9 +12,9 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 universe u v
 
 theorem surviving_physical_source_energy_type_uniform_uniform_degree
@@ -21,13 +22,13 @@ theorem surviving_physical_source_energy_type_uniform_uniform_degree
     (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ) (hM : ∀ i, 0≤M i)
     (hwindowNorm : ∀ i y, ‖windows i y‖≤1)
     (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
-    (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀) (hW : ContDiff ℝ ∞ W) :
+     W  (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀) (hW : ContDiff ℝ ∞ W) :
     ∃ (degree : ℕ), ∀ {N a c : Eis} {mode : Bool},
     ∃ (C₀ C : ℝ), 0≤C₀ ∧ 0<C ∧
     ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (X Y B L : ℝ), 1≤X → 1≤Y → 1≤B → 1≤L →
     ∀ (F : PrimeFamily φ) (jF : φ→ℕ)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
-      (9:Eis)*c ∣ N → (if mode then λ₀^2∣a-1 else λ₀^2∣c-1) → IsCoprime a c →
+      (9:Eis)*c ∣ N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) → IsCoprime a c →
       Pairwise (Function.onFun IsCoprime F.ideal) →
       (∀ f, IsCoprime (Ideal.span {N}) (F.ideal f)) →
       (∀ f, ringChar (Eis⧸F.ideal f)≠2) → (∀ f, jF f<6) →
@@ -125,7 +126,7 @@ theorem surviving_physical_source_energy_type_uniform_uniform_degree
   have hl1' : (∫ t : ℝ, ‖density t‖)≤C₀*(1+‖θ‖)^degree := by
     simpa only [pow_zero,one_mul] using hl1
   have hsquare : (∫ t : ℝ, ‖density t‖)^2≤(C₀*(1+‖θ‖)^degree)^2 :=
-    (sq_le_sq₀ (integral_nonneg (fun _ => norm_nonneg _)) (by positivity)).mpr hl1'
+    (by gcongr <;> first | assumption | positivity | linarith)
   simp_rw [hidentity]
   rw [Finset.sum_coe_sort rows (fun K : Ideal Eis => ‖(scalar:ℂ)*∫ t : ℝ, density t*∑ e∈branches,
     weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor (actualCuspColumn D0 s hc u m)
@@ -140,7 +141,7 @@ theorem surviving_physical_source_energy_type_uniform_uniform_degree
   have hBq : 0≤extractedDualScale (frozenExtracted F jF e 2) B := le_trans zero_le_one (le_max_left _ _)
   positivity
 
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

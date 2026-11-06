@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.GroupGain
 public import Erdos821.P3Clean.SplitGroups
@@ -19,8 +20,7 @@ open Erdos821.Blueprint.Graph
 local instance (priority := 11000) boolEqDecidable (b c : Bool) : Decidable (b = c) :=
   instDecidableEqBool b c
 
-local instance smallLabelsDecidableEq (P : PrimeGroups) (M : ℕ) :
-    DecidableEq (SmallLabels P M) := Classical.decEq _
+
 
 theorem conditioning_pi_normSq_bound {I : Type*} [Fintype I] [DecidableEq I]
     {α β : I → Type*} [∀ i, Fintype (β i)]
@@ -35,8 +35,7 @@ theorem conditioning_pi_normSq_bound {I : Type*} [Fintype I] [DecidableEq I]
       (dec : DecidablePred (fun (a : ∀ i, α i) => (fun i => projection i (a i)) = d)) :
       @Finset.filter _ (fun (a : ∀ i, α i) => (fun i => projection i (a i)) = d) dec (Fintype.piFinset s) =
         Fintype.piFinset (fun i => (s i).filter (fun a => projection i a = d i)) := by
-    ext a
-    simp only [Finset.mem_filter, Fintype.mem_piFinset, funext_iff, forall_and]
+    grind
   apply conditioning_normSq_bound (Fintype.piFinset s)
     (fun a i => projection i (a i)) (fun _ => ∏ i, u i)
   intro d
@@ -52,19 +51,19 @@ theorem conditioning_pi_normSq_bound {I : Type*} [Fintype I] [DecidableEq I]
         exact hC i (d i)
     _ = _ := by simp
 
-def smallArrayStates (P : PrimeGroups) (M : ℕ) (y : P.SmallResidues) :
+def smallArrayStates (P ) (M ) (y : P.SmallResidues) :
     Finset (SmallLabels P M) :=
   Fintype.piFinset (fun g => Finset.univ.filter
     (fun a : Fin M → P.Prime g.val => Function.Injective a ∧ ∀ i, y g (a i) = 0))
 
-def smallArrayPrefix {P : PrimeGroups} (J ell : ℕ) (a : SmallLabels P (J + ell)) :
+def smallArrayPrefix {P } (J ell ) (a : SmallLabels P (J + ell)) :
     SmallLabels P J := fun g j => a g (Fin.castAdd ell j)
 
-def smallArrayCoefficient (F : FixedData) (P : PrimeGroups) (J : ℕ) (y : P.SmallResidues) : ℂ :=
+def smallArrayCoefficient (F : FixedData) (P : PrimeGroups) (J : ℕ) (y : P.SmallResidues)  :=
   ∏ g : P.SmallGroup, (normalizedSmallCoefficient F J (P.V g.val)
     ((Finset.univ.filter (fun p : P.Prime g.val => y g p = 0)).card) : ℂ)
 
-theorem small_array_conditioning_uniform (F : FixedData) :
+theorem small_array_conditioning_uniform  F  :
     ∃ C : ℝ, 0 < C ∧ ∀ (P : PrimeGroups) (J : ℕ) (y : P.SmallResidues),
       (∀ g : P.SmallGroup, F.vMin ≤ P.V g.val) →
       ∀ f : SmallLabels P (J + F.ell) → ℂ,
@@ -115,7 +114,7 @@ theorem small_array_conditioning_uniform (F : FixedData) :
   simp
 
 
-theorem small_array_conditioning_log_gain (F : FixedData) :
+theorem small_array_conditioning_log_gain  F  :
     ∃ Cs : ℝ, ∀ (x : ℝ) (P : PrimeGroups), P.Admissible F x → 0 < L x →
       ∀ (J : ℕ) (y : P.SmallResidues) (f : SmallLabels P (J + F.ell) → ℂ),
         (∑ d : SmallLabels P J,
@@ -129,11 +128,8 @@ theorem small_array_conditioning_log_gain (F : FixedData) :
   have hV (g : P.SmallGroup) : F.vMin ≤ P.V g.val := (hP.2.2.2.2.1 g.val).1
   have hpow : C ^ Fintype.card P.SmallGroup ≤ (max 1 C) ^ Fintype.card P.SmallGroup :=
     pow_le_pow_left₀ hC.le (le_max_right _ _) _
-  have hg : (max 1 C) ^ Fintype.card P.SmallGroup ≤ (L x) ^ (F.C₀ * Real.log (max 1 C)) := by
-    exact small_group_gain F (max 1 C) (le_max_left _ _) x P hP hL
-  exact (hbound P J y hV f).trans (mul_le_mul_of_nonneg_right
-    (hpow.trans hg)
-    (Finset.sum_nonneg (fun _ _ => sq_nonneg _)))
+  have hg : (max 1 C) ^ Fintype.card P.SmallGroup ≤ (L x) ^ (F.C₀ * Real.log (max 1 C)) := small_group_gain F (max 1 C) (le_max_left _ _) x P hP hL
+  exact (hbound P J y hV f).trans ((by gcongr <;> first | assumption | positivity | linarith))
 
 
 end Erdos821.P3Clean

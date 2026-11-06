@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.FirstDeclaredCapacityLossBudget
 public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Filter
 
@@ -17,7 +18,7 @@ open CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstDeclaredC
 open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
 open CenteredMomentSectorLocalization
 
-theorem eventually_frequency_loss (r:ℝ)(hr:0<r):
+theorem eventually_frequency_loss  r (hr:0<r):
     ∀ᶠ Z:ℝ in atTop,1<Z ∧
       0≤frequencyLoss Z 32 (r/4) ∧ frequencyLoss Z 32 (r/4)≤r/4:=by
   filter_upwards [(Filter.tendsto_atTop.1 (tendsto_rpow_atTop (by positivity:0<r/8))) 128,
@@ -25,13 +26,10 @@ theorem eventually_frequency_loss (r:ℝ)(hr:0<r):
   have hlog:=Real.logb_le_logb_of_le hZ (by norm_num:(0:ℝ)<128) hpow
   rw [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] at hlog
   refine ⟨hZ,frequencyLoss_nonneg Z 32 (r/4) hZ (by norm_num) (by positivity),?_⟩
-  unfold frequencyLoss
-  norm_num only [show (4:ℝ)*32=128 by norm_num]
-  linarith only [hlog]
+  grind [frequencyLoss]
 
 lemma paid_frequency_mono
-    (sigma delta delta' reserveAmp Bcap emask ell er thetaSource thetaClip κ mesh
-      es A saving:ℝ)(hd:delta≤delta')(j:Fin 4):
+     sigma delta delta' reserveAmp Bcap emask ell er thetaSource thetaClip κ mesh es A saving (hd:delta≤delta') j :
     lossVector sigma delta reserveAmp
       (sourcePaid Bcap emask ell er delta reserveAmp thetaSource thetaClip κ mesh)
       es A saving j≤
@@ -42,7 +40,7 @@ lemma paid_frequency_mono
     simp only [lossVector,sourcePaid,Matrix.cons_val,Fin.reduceFinMk] <;>
     linarith only [hd]
 
-theorem actual_frequency_four_budget (M A Bcap Bcommon κ ε:ℝ)
+theorem actual_frequency_four_budget  M A Bcap Bcommon κ ε 
     (hM:0≤M)(hA:0≤A)(hB:0≤Bcap)(hBc:0≤Bcommon)(hκ:0≤κ)(hε:0<ε):
     let r:=reserve M Bcap ε
     let es:=r/(4*(Bcommon+A+1))
@@ -75,11 +73,10 @@ theorem actual_frequency_four_budget (M A Bcap Bcommon κ ε:ℝ)
   have hmono:=paid_frequency_mono (amplification ε) (frequencyLoss Z 32 (r/4)) (r/4)
     (r/4) Bcap em ell (r/4) (r/4) (r/4) κ (mesh M Bcap κ ε) es A
     (2*amplification ε+1) hZ.2.2 j
-  change losses es (r/4) (r/4) Bcap j+_+es*Bcommon+r/4+r/4+highReflection+zeroReflection≤_ at hfixed ⊢
-  linarith only [hfixed,hmono]
+  grind
 
 end SevenEighths.CenteredMomentEnergyFirstActualFrequencyBudget
 
-end
+
 
 end OAI

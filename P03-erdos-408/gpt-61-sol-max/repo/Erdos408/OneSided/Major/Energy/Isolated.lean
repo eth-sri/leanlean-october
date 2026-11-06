@@ -44,7 +44,7 @@ theorem continuous_unmarkedPoly {d : Data K} (hHn : 0 < d.Hn) {k : ℕ}
   exact continuous_const.mul (continuous_natCast_cpow_mul_I h.ne')
 
 /-- `(ξ, t) ↦ P_s(t)` with shift `ξ` is continuous. -/
-theorem continuous_primePoly {P : ℝ} {PS : Finset ℕ} (hPS : ∀ p ∈ PS, p ≠ 0) {k : ℕ}
+theorem continuous_primePoly  {P}   {PS}  (hPS : ∀ p ∈ PS, p ≠ 0) {k : ℕ}
     (χ : DirichletCharacter ℂ k) :
     Continuous fun z : ℝ × ℝ => primePoly P PS χ z.1 z.2 := by
   unfold primePoly
@@ -56,7 +56,7 @@ theorem continuous_primePoly {P : ℝ} {PS : Finset ℕ} (hPS : ∀ p ∈ PS, p 
 integers in `[P, 2P)`. -/
 theorem norm_primePoly_le_two {P : ℝ} (hP : 1 ≤ P) {PS : Finset ℕ}
     (hPS : ∀ p ∈ PS, p.Prime ∧ P ≤ p ∧ (p : ℝ) < 2 * P) {k : ℕ} (χ : DirichletCharacter ℂ k)
-    (ξ t : ℝ) : ‖primePoly P PS χ ξ t‖ ≤ 2 := by
+     ξ t  : ‖primePoly P PS χ ξ t‖ ≤ 2 := by
   have hP0 : 0 < P := by linarith
   -- `|PS| ≤ P + 1`
   have hcard : (#PS : ℝ) ≤ P + 1 := by
@@ -90,7 +90,7 @@ theorem norm_primePoly_le_two {P : ℝ} (hP : 1 ≤ P) {PS : Finset ℕ}
         linarith
 
 /-- `∫_{-T}^T 1_{[m, m + 1]} c ≤ c` for `c ≥ 0`. -/
-theorem integral_indicator_Icc_le {T c : ℝ} (hT : 0 ≤ T) (hc : 0 ≤ c) (m : ℝ) :
+theorem integral_indicator_Icc_le {T c : ℝ} (hT : 0 ≤ T) (hc : 0 ≤ c)  m  :
     ∫ τ in (-T)..T, Set.indicator (Set.Icc m (m + 1)) (fun _ => c) τ ≤ c := by
   rw [intervalIntegral.integral_of_le (by linarith), integral_indicator_const _ measurableSet_Icc,
     measureReal_restrict_apply measurableSet_Icc, smul_eq_mul]

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionEnergy
@@ -18,7 +18,7 @@ open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
 open CenteredMomentCommonMaskRadialEnergy CenteredMomentInductionEnergy
-local notation "O"=>HeckeFamily.O
+
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
@@ -27,7 +27,7 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
       (W₁ W₂:𝓢(ℝ,ℂ)),0<a → 0≤b →
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
-      ∀(pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)
+      ∀(pool:α→Finset (Ideal HeckeFamily.O))(β:α→Ideal HeckeFamily.O→ℂ)(P:α→ℝ)
         (t X₁ X₂ E p:ℝ),
       (∀i,∀I∈pool i,Prime I) → (∀i,0<P i) →
       (∀i,∀I∈pool i,‖β i I‖≤M i) →
@@ -52,11 +52,11 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
   intro Z Bmask bΦ a b s W₁ W₂ ha hb hs₁ hs₂ pool β P t X₁ X₂ E p hp hP hβ hs hX₁ hX₂ hE hple hchildren
   let R:=CompletedGauss.primeSupport s.puncture
   have hR:∀I∈R,Prime I:=support_prime s.puncture
-  let κ:={D:Finset (Ideal O)//D∈R.powerset}×
-    {D:Finset (Ideal O)//D∈R.powerset}×{J:Finset α//J∈(Finset.univ:Finset α).powerset}
-  let cf(z:O)(j:κ):=signedCoefficient (naturalCharacter s.character z) R j.1.val j.2.1.val j.2.2.val
+  let κ:={D:Finset (Ideal HeckeFamily.O)//D∈R.powerset}×
+    {D:Finset (Ideal HeckeFamily.O)//D∈R.powerset}×{J:Finset α//J∈(Finset.univ:Finset α).powerset}
+  let cf(z:HeckeFamily.O)(j:κ):=signedCoefficient (naturalCharacter s.character z) R j.1.val j.2.1.val j.2.2.val
     pool (fun i=>heightCoefficient (β i) t) P
-  let f(z:O)(j:κ):=polynomial (naturalCharacter s.character z) false W₁
+  let f(z:HeckeFamily.O)(j:κ):=polynomial (naturalCharacter s.character z) false W₁
     (X₁/((∏I∈j.1.val,I).absNorm:ℝ)) 0 t *
     polynomial (naturalCharacter s.character z) false W₂
     (X₂/((∏I∈j.2.1.val,I).absNorm:ℝ)) 0 t *
@@ -66,10 +66,10 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
   let q(j:κ):=((∏I∈j.2.1.val,I).absNorm:ℝ)^(p/2)
   have hρ(j:κ):0≤ρ j:=uniformMajorant_nonneg _ _ _ _ _ _ (fun i _=>hM i)
   have hq(j:κ):0≤q j:=Real.rpow_nonneg (Nat.cast_nonneg _) _
-  have hn(D:Finset (Ideal O))(hD:D∈R.powerset):0<((∏I∈D,I).absNorm:ℝ):=by
+  have hn(D:Finset (Ideal HeckeFamily.O))(hD:D∈R.powerset):0<((∏I∈D,I).absNorm:ℝ):=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (Finset.prod_ne_zero_iff.mpr (fun I hi=>(hR I (Finset.mem_powerset.mp hD hi)).ne_zero)))
-  have hcf(z:O)(j:κ):‖cf z j‖≤ρ j:=by
+  have hcf(z:HeckeFamily.O)(j:κ):‖cf z j‖≤ρ j:=by
     apply signedCoefficient_uniform _ R hR _ _ (Finset.mem_powerset.mp j.1.property)
       (Finset.mem_powerset.mp j.2.1.property) _ pool (fun i=>heightCoefficient (β i) t) P bslot M
       (fun i _=>hp i) (fun i _=>hP i) (fun i _=>hM i)
@@ -78,7 +78,7 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
       exact hβ i I hI
     · intro i _ I hI hnz
       exact hs i I hI (left_ne_zero_of_mul hnz)
-  have hsum(j:κ):Summable (fun z:O=>if (effectiveState s).radial.keep z then
+  have hsum(j:κ):Summable (fun z:HeckeFamily.O=>if (effectiveState s).radial.keep z then
       ‖f z j‖^2*(s.radial.profile (‖eisEmbedding z‖^2/s.radial.scale)).re else 0):=by
     obtain ⟨B,hB,hbound⟩:=slots_bounded (Finset.univ\j.2.2.val) pool (fun i=>heightCoefficient (β i) t) P
     exact pair_radial_summable (naturalCharacter s.character)
@@ -99,7 +99,7 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
     exact hh
   have he:=radial_weighted_energy cf f ρ q hρ hq (effectiveState s).radial.keep s.radial.profile
     s.radial.scale E s.radial.nonneg (fun z _=>hcf z) hE hsum hchild
-  have hid(z:O):(∑j:κ,cf z j*f z j)=signedCommonSource s W₁ W₂ pool β P t X₁ X₂ z:=
+  have hid(z:HeckeFamily.O):(∑j:κ,cf z j*f z j)=signedCommonSource s W₁ W₂ pool β P t X₁ X₂ z:=
     triple_sum R.powerset R.powerset (Finset.univ:Finset α).powerset
       (fun D₁ D₂ J=>signedCoefficient (naturalCharacter s.character z) R D₁ D₂ J
         pool (fun i=>heightCoefficient (β i) t) P *
@@ -108,8 +108,7 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
          ∏i∈Finset.univ\J,naturalSlot (naturalCharacter s.character z) (pool i) (heightCoefficient (β i) t) (P i)))
   simp_rw [hid] at he
   rw [←original_energy_eq_signed s W₁ W₂ ha hs₁ hs₂ pool hp β P hP t X₁ X₂ hX₁ hX₂] at he
-  have hm:(∑j:κ,ρ j*q j)≤C*((∏I∈R,I).absNorm:ℝ)^(ε/2):=by
-    exact (triple_sum R.powerset R.powerset (Finset.univ:Finset α).powerset
+  have hm:(∑j:κ,ρ j*q j)≤C*((∏I∈R,I).absNorm:ℝ)^(ε/2):=(triple_sum R.powerset R.powerset (Finset.univ:Finset α).powerset
       (fun D₁ D₂ J=>uniformMajorant R D₁ D₂ J bslot M*((∏I∈D₂,I).absNorm:ℝ)^(p/2))).trans_le
       (hmass R hR (p/2) (by linarith))
   have hr:(((∏I∈R,I).absNorm:ℝ)^(ε/2))^2=(s.puncture.radical.absNorm:ℝ)^ε:=by
@@ -123,6 +122,6 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
 
 end SevenEighths.CenteredMomentEnergyReferenceDeletionEnergy
 
-end
+
 
 end OAI

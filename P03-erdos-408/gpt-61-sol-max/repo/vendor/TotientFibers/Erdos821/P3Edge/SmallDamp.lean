@@ -13,7 +13,7 @@ namespace Erdos821.P3Edge
 open Erdos821.Blueprint.Graph
 open Erdos821.S2Core
 
-lemma smallDamping_le_one {P : PrimeGroups} {F : FixedData} {J : ℕ}
+lemma smallDamping_le_one {P : PrimeGroups}  {F}   {J} 
     (y : P.SmallResidues) (a : P.Labels (J + F.ell))
     (hphys : P.smallPhysical y a) :
     smallDamping F J y ≤ 1 := by

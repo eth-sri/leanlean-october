@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.PlainPositiveEnergy
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskRadialEnergy
@@ -10,7 +11,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentNaturalMaskedFloor
 open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
@@ -20,13 +21,17 @@ open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredExc
 open CenteredMomentCoreFloor CenteredMomentLattice CenteredMomentTwist
 open CenteredMomentAllocatedNaturalSource HeckeInverseAmplification
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
 
-theorem excluded_pair (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) :
+
+section
+variable (χ : Character) (W : 𝓢(ℝ,ℂ)) (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
+
+include ha hb hε in
+theorem excluded_pair         :
     ∃ S : Finset (ℕ×ℕ), ∃ C : ℝ, 0<C ∧
     ∀ (W₁ W₂ : 𝓢(ℝ,ℂ)), Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
-    ∀ (χ : O→Character) (r : Radial) (R : Ideal O) (Q X₁ X₂ : ℝ), R≠0 →
+    ∀ (χ : HeckeFamily.O→Character) (r : Radial) (R : Ideal HeckeFamily.O) (Q X₁ X₂ : ℝ), R≠0 →
       0≤Q → 0<X₁ → 0<X₂ →
       (∀z,r.keep z→(χ z).residue≠1) →
       (∀z,r.keep z→((χ z).modulus.absNorm:ℝ)≤Q) →
@@ -55,7 +60,7 @@ theorem excluded_pair (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) :
       polynomial (excluded (χ z) R) false W₂ X₂ 0 0) r.keep r.profile r.scale ≤ _ at hh
     exact hh.trans_eq (by dsimp [E]; ring)
   · intro D₁ hD₁ D₂ hD₂ J hJ
-    have hn (D : Finset (Ideal O)) (hD : D∈(CompletedGauss.primeSupport R).powerset) :
+    have hn (D : Finset (Ideal HeckeFamily.O)) (hD : D∈(CompletedGauss.primeSupport R).powerset) :
         0<(Ideal.absNorm (∏I∈D,I):ℝ) := by
       exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
         (Finset.prod_ne_zero_iff.mpr (fun I hi=>(support_prime R I (Finset.mem_powerset.mp hD hi)).ne_zero)))
@@ -65,8 +70,8 @@ theorem excluded_pair (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) :
     norm_num only [abs_zero,add_zero,show (3:ℝ)^4=81 by norm_num] at he
     simpa only [Finset.empty_sdiff,Finset.prod_empty,mul_one] using he.trans_eq (by dsimp [E]; ring)
 
-lemma twist_polynomial (χ : Character) (W : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support (W:ℝ→ℂ)⊆Set.Icc a b) (t X : ℝ) :
+lemma twist_polynomial        
+     hs   t X  :
     polynomial χ false (normPowerProfile W a b ha hs (W.smooth ⊤) t) X 0 0 =
       polynomial χ false W X 0 t := by
   have hp : (normPowerProfile W a b ha hs (W.smooth ⊤) t:ℝ→ℂ)=twistProfile W 0 t := by
@@ -78,11 +83,12 @@ lemma twist_polynomial (χ : Character) (W : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<
     ring
   rw [hp,polynomial_twistProfile]
 
-theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) :
+include ha hb hε in
+theorem natural_masked_floor         :
     ∃ n : ℕ, ∃ S : Finset (ℕ×ℕ), ∃ C : ℝ, 0<C ∧
     ∀ (W₁ W₂ : 𝓢(ℝ,ℂ)), Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
-    ∀ (η : Character) (Q R : Ideal O) (r : Radial) (bΦ : ℝ), R≠0 → 0≤bΦ →
+    ∀ (η : Character) (Q R : Ideal HeckeFamily.O) (r : Radial) (bΦ : ℝ), R≠0 → 0≤bΦ →
       Function.support (r.profile:ℝ→ℂ)⊆Set.Iic bΦ →
       (∀z,r.keep z→z≠0) →
       (∀z,r.keep z→¬FixedInducingRow η Q (fixedBadMask*ConcretePrimeRowBridge.idealGenerator R) 1 z) →
@@ -102,18 +108,17 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
     apply Nat.mul_pos
     · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
         (Ideal.span_singleton_eq_bot.not.mpr fixedBadMask_ne_zero))
-    · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr (by norm_num : (72:O)≠0)))
+    norm_num
   refine ⟨4*n,T,C*Ct^4*F^4,by positivity,?_⟩
   intro W₁ W₂ hs₁ hs₂ η Q R r bΦ hR hbΦ hsΦ hz hex Z m q ρ t X₁ X₂ hZ hm hq hscale hρ hX₁ hX₂ hη
   let r' : Radial := {r with keep := fun z=>r.keep z ∧ r.profile (‖eisEmbedding z‖^2/r.scale)≠0}
-  let χ : O→Character := fun z=>if hz:z≠0 then (naturalRow η z hz).character else η
-  have hχ (z:O) (h:r'.keep z) : (χ z).residue≠1 := by
+  let χ : HeckeFamily.O→Character := fun z=>if hz:z≠0 then (naturalRow η z hz).character else η
+  have hχ (z:HeckeFamily.O) (h:r'.keep z) : (χ z).residue≠1 := by
     have hn := hz z h.1
     have hc : χ z=(naturalRow η z hn).character := by simp [χ,hn]
     exact (congrArg (fun ψ : Character=>ψ.residue≠1) hc).mpr
       ((naturalRow η z hn).nonprincipal hn Q R hR (hex z h.1))
-  have hmod (z:O) (h:r'.keep z) : ((χ z).modulus.absNorm:ℝ)≤F*bΦ*Z^(m+q) := by
+  have hmod (z:HeckeFamily.O) (h:r'.keep z) : ((χ z).modulus.absNorm:ℝ)≤F*bΦ*Z^(m+q) := by
     have hn := hz z h.1
     have hh : ((Ideal.span {z}).absNorm:ℝ)≤bΦ*Z^m := by
       rw [←ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span,←hscale]
@@ -170,8 +175,10 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
       (T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₁*T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₂)^2*(1+‖t‖)^(4*n))*(Z^m*(Z^(m+q))^4) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hp (by positivity)
 
+end
+
 end SevenEighths.CenteredMomentNaturalMaskedFloor
 
-end
+
 
 end OAI

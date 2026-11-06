@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.SpanEdgeValidity
 
@@ -29,22 +30,13 @@ def reconstructedHistory (S : LifespanAssignment P n) (hS : Q.lifespanValid S)
     Q.reconstructedTransferChoice S y i⟩
 
 theorem reconstructedHistory_valid (hMem : SpanEdgeMemoryTask)
-    (S : LifespanAssignment P n) (hq : Q.Valid) (hS : Q.lifespanValid S)
+     S  (hq : Q.Valid)  hS 
     (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (y : P.SmallResidues) (hy : Q.SmallCompatible y) :
-    (Q.reconstructedHistory S hS y).Valid := by
-  refine ⟨?_, ?_, ?_, ?_⟩
-  · intro g
-    exact Q.memoryBefore_zero S g
-  · intro g
-    exact Q.memoryAfter_last S g
-  · intro i
-    exact ⟨rfl, rfl, Q.reconstructedGhostChoice_valid S hS y i⟩
-  · intro i
-    exact ⟨Q.reconstructedTransferChoice_valid hMem S hq hS hk y hy i, trivial⟩
+     y  (hy : Q.SmallCompatible y) :
+    (Q.reconstructedHistory S hS y).Valid := ⟨Erdos821.S2Core.ResiduePath.memoryBefore_zero Q S, ⟨Erdos821.S2Core.ResiduePath.memoryAfter_last Q S, ⟨fun i => ⟨rfl, ⟨rfl, Erdos821.S2Core.ResiduePath.reconstructedGhostChoice_valid Q S hS y i⟩⟩, fun i => ⟨Erdos821.S2Core.ResiduePath.reconstructedTransferChoice_valid Q hMem S hq hS hk y hy i, trivial⟩⟩⟩⟩
 
-theorem reconstructedHistory_projection (S : LifespanAssignment P n)
-    (hS : Q.lifespanValid S) (y : P.SmallResidues) :
+theorem reconstructedHistory_projection  S 
+     hS   y  :
     (Q.reconstructedHistory S hS y).toResiduePath = Q := by
   cases Q
   rfl

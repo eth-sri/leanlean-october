@@ -10,25 +10,25 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "Grid" => Finset ((Ideal Eis × Ideal Eis) × Ideal Eis)
 
-def maskedGridHybridRow (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
-    (t k : Ideal Eis) : ℂ :=
+local notation "Grid" => Finset ((Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) × Ideal ActualEisensteinCubic.O)
+
+def maskedGridHybridRow (T : Grid) (Pset : Finset (Ideal ActualEisensteinCubic.O))
+    (a : Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ)
+    (t k : Ideal ActualEisensteinCubic.O)  :=
   ∑ u ∈ T, ∑ P ∈ Pset, (if IsCoprime k (P * u.2) then 1 else 0) *
     (a P / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ) * beta u.2 u.1.1 u.1.2 *
       (quadraticRow k (primaryGenerator (u.1.1 * u.1.2)) * inverseCubicKernel P (u.2 * u.1.1)) *
         (if IsCoprime P (u.1.2 * t) then 1 else 0))
 
-theorem maskedGridHybridRow_mobius (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
-    (t k : Ideal Eis) (hk : k ≠ 0) :
+theorem maskedGridHybridRow_mobius  T   Pset 
+     a   beta 
+     t k  (hk : k ≠ 0) :
     maskedGridHybridRow T Pset a beta t k =
       ∑ D ∈ (idealDivisors k) ×ˢ (idealDivisors k),
         ((moebius D.1 : ℂ) * (moebius D.2 : ℂ)) *
           gridDivisorHybridBlock T Pset a beta t k D.1 D.2 := by
-  have hm (P c : Ideal Eis) :
+  have hm (P c : Ideal ActualEisensteinCubic.O) :
       (if IsCoprime k (P * c) then (1 : ℂ) else 0) =
       ∑ D ∈ (idealDivisors k) ×ˢ (idealDivisors k),
         if D.1 ∣ P ∧ D.2 ∣ c then (moebius D.1 : ℂ) * (moebius D.2 : ℂ) else 0 := by
@@ -54,9 +54,9 @@ theorem maskedGridHybridRow_mobius (T : Grid) (Pset : Finset (Ideal Eis))
   · simp [hrc]
 
 theorem gridDivisorHybridBlock_zero_of_not_coprime
-    (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
-    (t k R r : Ideal Eis) (hRr : ¬ IsCoprime R r)
+     T   Pset 
+     a   beta 
+     t k R r  (hRr : ¬ IsCoprime R r)
     (hP : ∀ P ∈ Pset, primaryGenerator P ≠ 0)
     (hT : ∀ u ∈ T, primaryGenerator (u.2 * u.1.1) ≠ 0) :
     gridDivisorHybridBlock T Pset a beta t k R r = 0 := by
@@ -77,8 +77,8 @@ theorem gridDivisorHybridBlock_zero_of_not_coprime
 
 theorem maskedGridHybridRow_divisor_energy (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K : ℝ, 1 ≤ K →
-    ∀ (rows : Finset (Ideal Eis)) (T : Grid) (Pset : Finset (Ideal Eis))
-      (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ) (t : Ideal Eis),
+    ∀ (rows : Finset (Ideal ActualEisensteinCubic.O)) (T : Grid) (Pset : Finset (Ideal ActualEisensteinCubic.O))
+      (a : Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ) (t : Ideal ActualEisensteinCubic.O),
       (∀ k ∈ rows, k ≠ 0 ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∑ k ∈ rows, ‖maskedGridHybridRow T Pset a beta t k‖ ^ 2) ≤
         C * K ^ ε *
@@ -88,7 +88,7 @@ theorem maskedGridHybridRow_divisor_energy (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, hC, hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power (ε / 2) (by positivity)
   refine ⟨C ^ 2, pow_pos hC 2, ?_⟩
   intro K hK rows T Pset a beta t hrows
-  have he (k : Ideal Eis) (hk : k ∈ rows) :=
+  have he (k : Ideal ActualEisensteinCubic.O) (hk : k ∈ rows) :=
     maskedGridHybridRow_mobius T Pset a beta t k (hrows k hk).1
   simp_rw [Finset.sum_congr rfl (fun k hk => congrArg (fun z : ℂ => ‖z‖ ^ 2) (he k hk))]
   apply finite_expansion_energy rows

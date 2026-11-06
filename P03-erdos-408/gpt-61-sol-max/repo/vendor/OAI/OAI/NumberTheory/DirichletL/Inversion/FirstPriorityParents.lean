@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualPriorityEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSum
@@ -14,7 +15,7 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseFirstPriorityParents
 open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
 open InverseMoment InverseInitialArithmetic
-local notation "O" => ActualEisensteinCubic.O
+
 
 @[ext] structure Source (ι : Type*) (Jo : ℕ) where
   cube : CubeCoordinates ι
@@ -25,10 +26,10 @@ local notation "O" => ActualEisensteinCubic.O
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 
-def extractedSupport (negative : Bool) (x : Source ι Jo) : Finset ι :=
+def extractedSupport (negative : Bool) (x : Source ι Jo)  :=
   ((if negative then x.cube.rightDivisor else x.cube.leftDivisor)∪x.firstCommon)∪x.quotientSupport
 
-variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 def parent (x : Source ι Jo) : SecondParentSource ι Jo where
   cube := x.cube
@@ -65,12 +66,10 @@ def forgetAppended {Jn : ℕ} (x : SecondParentSource ι (Jo+Jn)) : SecondParent
 omit [DecidableEq ι] in
 @[simp] theorem forget_append {Jn : ℕ} (x : SecondParentSource ι Jo)
     (q : Fin Jn→SmoothMobiusCorrection.PrimeIdeal) : forgetAppended (appendParent x q)=x := by
-  apply SecondParentSource.ext <;> try rfl
-  funext i
-  simp only [forgetAppended,appendParent,Fin.addCases_left]
+  simp_all [forgetAppended, appendParent]
 
 omit [DecidableEq ι] in
-theorem appendParent_injective {Jn : ℕ} :
+theorem appendParent_injective  {Jn}  :
     Function.Injective (fun q : SecondParentSource ι Jo × (Fin Jn→SmoothMobiusCorrection.PrimeIdeal)=>
       appendParent q.1 q.2) := by
   intro q r h
@@ -81,7 +80,7 @@ theorem appendParent_injective {Jn : ℕ} :
       congrArg (fun x : SecondParentSource ι (Jo+Jn)=>x.oldAssigned (Fin.natAdd Jo i)) h
 
 def attach (J : Finset σ)
-    (q : Source ι Jo × ((∀ i∈J,ι)×(∀ i∈J,ι))) : SecondParentSource ι (Jo+(J.card+J.card)) :=
+    (q : Source ι Jo × ((∀ i∈J,ι)×(∀ i∈J,ι)))  :=
   appendParent (parent p q.1) (fun i=>sourcePrime p (pairedSlotAssignment J J q.2 i))
 
 omit [DecidableEq σ] in
@@ -103,8 +102,7 @@ omit [DecidableEq ι] [DecidableEq σ] in
     (q : Source ι Jo × ((∀ i∈J,ι)×(∀ i∈J,ι))) :
     forgetAppended (attach p J q)=parent p q.1 := forget_append _ _
 
-def coefficient (J : Finset σ) (a : σ→ι→ℂ) (w : Source ι Jo→ℂ) :
-    SecondParentSource ι (Jo+(J.card+J.card))→ℂ :=
+def coefficient (J : Finset σ) (a : σ→ι→ℂ) (w : Source ι Jo→ℂ)  :=
   Function.extend (attach p J) (fun q=>w q.1*pairedSlotWeight J J a a q.2) (fun _=>0)
 
 omit [DecidableEq σ] in
@@ -122,7 +120,7 @@ structure SourceValid (x : Source ι Jo) : Prop where
     sourceIdeal p x.cube.support*sourceIdeal p x.firstCommon*sourceIdeal p x.quotientSupport
 
 theorem extracted_prime_dvd (x : Source ι Jo) (hx : x.cube.Admissible)
-    (negative : Bool) (i : ι) (hi : i∈extractedSupport negative x) :
+    (negative : Bool)  i  (hi : i∈extractedSupport negative x) :
     (sourcePrime p i).val∣sourceIdeal p x.cube.support*sourceIdeal p x.firstCommon*
       sourceIdeal p x.quotientSupport := by
   obtain hi|hi := Finset.mem_union.mp hi
@@ -141,9 +139,9 @@ def fixedPoint (b : CubeCoordinates ι) (C E : Finset ι)
 
 variable (hp : ∀ i,p i≠0) (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def priorityOuter (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
+def priorityOuter (b : CubeCoordinates ι) (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
     (selector : Finset ι→ℂ) (r : RayFourExpansion.RayCharacter×RayFourExpansion.RayCharacter)
-    (core : FirstCoreIndex) (D : Finset ι) : ℝ :=
+    (core : FirstCoreIndex) (D : Finset ι)  :=
   (‖RayFourExpansion.crossCoeff r.1 r.2‖*‖selector D‖) *
     ‖firstCoreOuter p hg b.support (fun i=>b.leftExponent i+b.rightExponent i)
       b.leftBit b.rightBit negative Ψ m D core‖

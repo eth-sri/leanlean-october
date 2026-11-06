@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.BigAveraging
 public import Erdos821.P4Probe.ProductMarginals
@@ -20,7 +21,7 @@ variable {P : PrimeGroups} {J : ℕ}
 abbrev BigRowPartial (S : P.BigGroup → Finset (Fin J)) :=
   ∀ g : P.BigGroup, {i // i ∈ S g} → P.Prime g.val
 
-def selectedCounts (S : P.BigGroup → Finset (Fin J)) (g : P.Group) : ℕ :=
+def selectedCounts (S : P.BigGroup → Finset (Fin J)) (g : P.Group)  :=
   if hg : P.big g = true then (S ⟨g, hg⟩).card else 0
 
 def rowPartialTuple (S : P.BigGroup → Finset (Fin J)) (x : BigRowPartial S) :
@@ -48,7 +49,7 @@ def rowPartialTupleEquiv (S : P.BigGroup → Finset (Fin J)) :
     · have hi := i.isLt
       simp [selectedCounts, hg] at hi
 
-def selectedRowIndex (S : P.BigGroup → Finset (Fin J)) (g : P.BigGroup) :
+def selectedRowIndex (S : P.BigGroup → Finset (Fin J)) (g ) :
     Fin (selectedCounts S g.val) ≃ {i // i ∈ S g} :=
   (finCongr (by simp [selectedCounts, g.property])).trans (S g).equivFin.symm
 
@@ -68,8 +69,12 @@ def flatSelectedSiteEquiv (S : P.BigGroup → Finset (Fin J)) :
   left_inv _ := rfl
   right_inv _ := rfl
 
-lemma partialProductWeight_rows (S : P.BigGroup → Finset (Fin J))
-    (x : PartialSample (bigFlatSet P J S) (BigAlphabet P J)) :
+section
+variable (S : P.BigGroup → Finset (Fin J))
+include S
+
+lemma partialProductWeight_rows  
+     x  :
     partialProductWeight (bigFlatWeight P J) (bigFlatSet P J S) x =
       ∏ g : P.BigGroup, ∏ i : {i // i ∈ S g}, P.mu g.val (flatPartialRows S x g i) := by
   unfold partialProductWeight
@@ -81,7 +86,11 @@ lemma partialProductWeight_rows (S : P.BigGroup → Finset (Fin J))
       rfl
     _ = _ := Fintype.prod_sigma _
 
-lemma rowPartialTuple_product (S : P.BigGroup → Finset (Fin J)) (x : BigRowPartial S) :
+section
+variable (x : BigRowPartial S)
+include x
+
+lemma rowPartialTuple_product     :
     Blueprint.Analytic.product (analyticGroups P) (selectedCounts S) (rowPartialTuple S x) =
       ∏ g : P.BigGroup, ∏ i : {i // i ∈ S g}, (x g i).val := by
   unfold Blueprint.Analytic.product
@@ -92,8 +101,7 @@ lemma rowPartialTuple_product (S : P.BigGroup → Finset (Fin J)) (x : BigRowPar
     apply Finset.prod_eq_one
     intro g _
     have hk : selectedCounts S g.val = 0 := by simp [selectedCounts, g.property]
-    have : IsEmpty (Fin (selectedCounts S g.val)) := ⟨fun i => by have hi := i.isLt; omega⟩
-    exact Fintype.prod_empty _
+    simp_all
   rw [hempty, mul_one]
   apply Finset.prod_congr rfl
   intro g _
@@ -101,7 +109,7 @@ lemma rowPartialTuple_product (S : P.BigGroup → Finset (Fin J)) (x : BigRowPar
   intro i
   simp [rowPartialTuple, selectedRowIndex, g.property]
 
-lemma rowPartialTuple_weight (S : P.BigGroup → Finset (Fin J)) (x : BigRowPartial S) :
+lemma rowPartialTuple_weight     :
     Blueprint.Analytic.tupleWeight (analyticGroups P) (selectedCounts S) (rowPartialTuple S x) =
       ∏ g : P.BigGroup, ∏ i : {i // i ∈ S g}, P.mu g.val (x g i) := by
   unfold Blueprint.Analytic.tupleWeight
@@ -114,18 +122,25 @@ lemma rowPartialTuple_weight (S : P.BigGroup → Finset (Fin J)) (x : BigRowPart
     apply Finset.prod_eq_one
     intro g _
     have hk : selectedCounts S g.val = 0 := by simp [selectedCounts, g.property]
-    have : IsEmpty (Fin (selectedCounts S g.val)) := ⟨fun i => by have hi := i.isLt; omega⟩
-    exact Fintype.prod_empty _
+    simp_all
   rw [hempty, mul_one]
   apply Finset.prod_congr rfl
   intro g _
   apply Fintype.prod_equiv (selectedRowIndex S g)
   intro i
-  simp [rowPartialTuple, selectedRowIndex, g.property, Blueprint.Analytic.mu, PrimeGroups.mu, one_div]
+  simp [rowPartialTuple, selectedRowIndex, g.property, Blueprint.Analytic.mu, PrimeGroups.mu, one_div, analyticGroups, Blueprint.Analytic.mass, PrimeGroups.V]
 
-lemma partial_expectation_real {ι : Type*} [Fintype ι] {α : ι → Type*}
-    [∀ i, Fintype (α i)] (w : ∀ i, α i → ℝ)
-    (hsum : ∀ i, ∑ a, w i a = 1) (S : Finset ι) (H : PartialSample S α → ℝ) :
+end
+
+end
+
+section
+variable {ι : Type*} [Fintype ι] {α : ι → Type*} [∀ i, Fintype (α i)] (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1) (S : Finset ι)
+include ι α w hsum S
+
+lemma partial_expectation_real      
+       
+        (H : PartialSample S α → ℝ) :
     (∑ y : ProductSample α, productWeight w y * H (fun i => y i.val)) =
       ∑ a : PartialSample S α, partialProductWeight w S a * H a := by
   let e := Equiv.piEquivPiSubtypeProd (fun i => i ∈ S) α
@@ -148,9 +163,9 @@ lemma partial_expectation_real {ι : Type*} [Fintype ι] {α : ι → Type*}
   dsimp [R]
   rw [← Finset.mul_sum, ht, mul_one]
 
-lemma partial_expectation_complex {ι : Type*} [Fintype ι] {α : ι → Type*}
-    [∀ i, Fintype (α i)] (w : ∀ i, α i → ℝ)
-    (hsum : ∀ i, ∑ a, w i a = 1) (S : Finset ι) (H : PartialSample S α → ℂ) :
+lemma partial_expectation_complex      
+       
+        (H : PartialSample S α → ℂ) :
     (∑ y : ProductSample α, (productWeight w y : ℂ) * H (fun i => y i.val)) =
       ∑ a : PartialSample S α, (partialProductWeight w S a : ℂ) * H a := by
   let e := Equiv.piEquivPiSubtypeProd (fun i => i ∈ S) α
@@ -176,12 +191,22 @@ lemma partial_expectation_complex {ι : Type*} [Fintype ι] {α : ι → Type*}
   dsimp [R]
   rw [← Finset.mul_sum, ht, mul_one]
 
-def patternAuxCoordinates {ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (g : P.BigGroup) : Finset (Fin J) :=
+end
+
+def patternAuxCoordinates {ell m } (ν : Pattern P J ell m)
+    (block : P.BigGroup → Bool) (side : Bool) (g : P.BigGroup)  :=
   if block g = side then ν.changed g.val else ∅
 
-lemma selectedProduct_rows {ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (u : P.BigAux J) :
+section
+variable {ell m : ℕ} (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (side : Bool)
+include ell m ν block side
+
+section
+variable (u : P.BigAux J)
+include u
+
+lemma selectedProduct_rows    
+          :
     selectedProduct ν block side u =
       ∏ g : P.BigGroup, ∏ i : {i // i ∈ patternAuxCoordinates ν block side g}, (u g i.val).val := by
   unfold selectedProduct
@@ -189,33 +214,29 @@ lemma selectedProduct_rows {ell m : ℕ} (ν : Pattern P J ell m)
   intro g _
   rw [Finset.prod_coe_sort (patternAuxCoordinates ν block side g) (fun i => (u g i).val)]
   by_cases hg : block g = side
-  · simp only [hg, true_and, patternAuxCoordinates, ite_true]
-    exact (Finset.prod_filter (p := fun i => i ∈ ν.changed g.val)
-      (f := fun i => (u g i).val)).symm.trans (by simp)
+  · simp_all [patternAuxCoordinates]
   · simp [patternAuxCoordinates, hg]
 
-def selectedAuxTuple {ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (u : P.BigAux J) :
-    Blueprint.Analytic.Tuple (analyticGroups P)
-      (selectedCounts (patternAuxCoordinates ν block side)) :=
+def selectedAuxTuple {ell m } (ν : Pattern P J ell m)
+    (block ) (side ) (u : P.BigAux J)  :=
   rowPartialTuple (patternAuxCoordinates ν block side) (fun g i => u g i.val)
 
-def selectedLabelTuple {ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (a : P.BigLabels (J + ell)) :
-    Blueprint.Analytic.Tuple (analyticGroups P)
-      (selectedCounts (patternAuxCoordinates ν block side)) :=
+def selectedLabelTuple {ell m } (ν : Pattern P J ell m)
+    (block ) (side ) (a : P.BigLabels (J + ell))  :=
   rowPartialTuple (patternAuxCoordinates ν block side) (fun g i => a g (ν.slot i.val))
 
-lemma selectedAuxTuple_product {ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (u : P.BigAux J) :
+lemma selectedAuxTuple_product    
+          :
     Blueprint.Analytic.product (analyticGroups P)
       (selectedCounts (patternAuxCoordinates ν block side)) (selectedAuxTuple ν block side u) =
         selectedProduct ν block side u := by
   rw [selectedProduct_rows]
   exact rowPartialTuple_product _ _
 
-lemma selectedLabelTuple_product {ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (a : P.BigLabels (J + ell)) :
+end
+
+lemma selectedLabelTuple_product    
+        (a : P.BigLabels (J + ell)) :
     Blueprint.Analytic.product (analyticGroups P)
       (selectedCounts (patternAuxCoordinates ν block side)) (selectedLabelTuple ν block side a) =
         selectedEndpoint ν block side a := by
@@ -224,8 +245,12 @@ lemma selectedLabelTuple_product {ell m : ℕ} (ν : Pattern P J ell m)
       (selectedAuxTuple ν block side (fun g i => a g (ν.slot i))) = _
   exact selectedAuxTuple_product ν block side _
 
-lemma selectedCellMass_eq {ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (hV : ∀ g, 0 < P.V g) (h : ℝ) (j : ℤ) :
+section
+variable (hV : ∀ g, 0 < P.V g)
+include hV
+
+lemma selectedCellMass_eq    
+           h   j  :
     selectedCellMass ν block side h j =
       Blueprint.Analytic.cellMass (analyticGroups P)
         (selectedCounts (patternAuxCoordinates ν block side)) h j := by
@@ -264,14 +289,18 @@ lemma selectedCellMass_eq {ell m : ℕ} (ν : Pattern P J ell m)
   dsimp only [H]
   split_ifs <;> simp
 
-lemma selectedKernel_eq {ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (hV : ∀ g, 0 < P.V g)
-    (Q : ℕ) (h ξ : ℝ) (D X : ℕ) :
+lemma selectedKernel_eq    
+         
+     Q   h ξ   D X  :
     selectedKernel ν block side Q h ξ D X =
       Blueprint.Analytic.cellKernel (analyticGroups P)
         (selectedCounts (patternAuxCoordinates ν block side)) Q h ξ D X := by
   unfold selectedKernel Blueprint.Analytic.cellKernel
   rw [selectedCellMass_eq ν block side hV]
+
+end
+
+end
 
 end
 end Erdos821.P4Probe

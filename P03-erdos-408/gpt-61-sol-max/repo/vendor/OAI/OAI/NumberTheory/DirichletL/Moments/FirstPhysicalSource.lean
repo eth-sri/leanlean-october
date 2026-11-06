@@ -21,51 +21,63 @@ open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMome
 open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel
 open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
 open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
 
-def columns (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O)):Finset (Ideal O):=
-  (residualPool D hD (supportedColumns S)).filter (fun I=>IsCoprime C I)
 
-lemma column_supported (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))
-    (a:columns C D hD S):Supported (a:Ideal O):=
+def columns (C D:Ideal ActualEisensteinCubic.O)(hD:D≠0)(S:Finset (Ideal ActualEisensteinCubic.O)):=
+  (residualPool D hD (supportedColumns S)).filter (IsCoprime C)
+
+section
+variable (C D:Ideal ActualEisensteinCubic.O)
+include C D
+
+section
+variable (hD:D≠0) (S:Finset (Ideal ActualEisensteinCubic.O)) (a:columns C D hD S)
+include hD S a
+
+lemma column_supported    
+     :Supported (a:Ideal ActualEisensteinCubic.O):=
   residualPool_supported D hD S ⟨a.val,(Finset.mem_filter.mp a.property).1⟩
 
-def element (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):O:=
+def element (C D)(hD)(S)(a:columns C D hD S):=
   CompletedGauss.primaryGenerator a
 
-lemma element_span (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_span     :
     Ideal.span {element C D hD S a}=a:=primary_span_supported a (column_supported C D hD S a)
 
-lemma element_supported (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_supported     :
     Supported (Ideal.span {element C D hD S a}):=by
   rw [element_span];exact column_supported C D hD S a
 
-lemma element_primary (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_primary     :
     goodLambda^2∣element C D hD S a-1:=
   (CompletedGauss.primaryGenerator_spec a (supported_primaryGenerator_ne_zero a
     (column_supported C D hD S a))).2
 
-lemma active_span_dvd (C D:Ideal O)(hC:C≠0)(hD:D≠0)
+end
+
+lemma active_span_dvd  (hC:C≠0)(hD:D≠0)
     (hCD:primeSupport C=primeSupport D):Ideal.span {activeConductor C D}∣C:=by
   have hh:=activeConductor_span_dvd C D
   rw [(fixed_common_parts C D hC hD hCD).1] at hh
   exact hh
 
-lemma element_coprime_active (C D B:Ideal O)(hC:C≠0)(hD:D≠0)(hB:B≠0)
-    (hCD:primeSupport C=primeSupport D)(S:Finset (Ideal O))(a:columns C B hB S):
+end
+
+lemma element_coprime_active  C D B (hC:C≠0)(hD:D≠0) hB 
+    (hCD:primeSupport C=primeSupport D) S  a :
     IsCoprime (element C B hB S a) (activeConductor C D):=by
   rw [←Ideal.isCoprime_span_singleton_iff,element_span]
   exact (Finset.mem_filter.mp a.property).2.symm.of_isCoprime_of_dvd_right (active_span_dvd C D hC hD hCD)
 
-def coefficient (η:Character)(m A:O)(t:ℝ)(c:Ideal O→ℂ)(D:Ideal O)
-    (I:Ideal O):ℂ:=c (D*I)*CenteredMomentHeckeExpansion.rowWeight η m A 1 t I
+def coefficient (η:Character)(m A:ActualEisensteinCubic.O)(t:ℝ)(c:Ideal ActualEisensteinCubic.O→ℂ)(D:Ideal ActualEisensteinCubic.O)
+    (I:Ideal ActualEisensteinCubic.O):=c (D*I)*CenteredMomentHeckeExpansion.rowWeight η m A 1 t I
 
-def inactiveWeight (C D:Ideal O)(E:Finset (CommonIndex C D)):ℂ:=
+def inactiveWeight (C D)(E:Finset (CommonIndex C D)):=
   (UniqueFactorizationMonoid.moebius (∏P∈E,P.val):ℂ)
 
-def block (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
-    (rows:Finset O)(W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)(K K₀ H₀ A₀ B₀:ℝ):ℂ:=
+def block (η:Character)(m A:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))(c:Ideal ActualEisensteinCubic.O→ℂ)
+    (C D)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
+    (rows:Finset ActualEisensteinCubic.O)(W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)(K K₀ H₀ A₀ B₀:ℝ):=
   let e:=primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E
   let k:=K/‖eisEmbedding e‖^2
   let r:=activeConductor C D
@@ -73,7 +85,7 @@ def block (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
     ∑a:columns C C hC.1 S,∑b:columns C D hD.1 S,
       let na:=element C C hC.1 S a
       let nb:=element C D hD.1 S b
-      if IsCoprime (a:Ideal O) (b:Ideal O) then
+      if IsCoprime (a:Ideal ActualEisensteinCubic.O) (b:Ideal ActualEisensteinCubic.O) then
         (tripleRow na nb r (supportedModulusCharacter na (element_supported C C hC.1 S a))
           (supportedModulusCharacter nb (element_supported C D hD.1 S b))⁻¹ (activeFunction C D hC) e *
         ((k/‖eisEmbedding (na*(nb*r))‖^2:ℝ):ℂ)*
@@ -88,17 +100,17 @@ def block (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
         EisensteinSchwartzPoisson.paperRadialFourier W (k*‖eisEmbedding h‖^2/‖eisEmbedding (na*(nb*r))‖^2)
       else 0
 
-def scalar (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))(K A₀ B₀:ℝ):ℂ:=
+def scalar (C D)(hC:Supported C)(E:Finset (CommonIndex C D))(K A₀ B₀:ℝ):=
   let e:=primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E
   let k:=K/‖eisEmbedding e‖^2
   inactiveWeight C D E * ((k:ℂ)*canonicalNormalizedGauss (activePrime C D)
     (activeCoprime C D) (activeGood C D hC) (activeExponent C D)/
       ((‖eisEmbedding (activeConductor C D)‖:ℂ)*(Real.sqrt A₀:ℂ)*(Real.sqrt B₀:ℂ)))
 
-theorem block_eq_whole (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(rows:Finset O)(hrows:∀h∈rows,h≠0)
-    (W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)(K K₀ H₀ A₀ B₀:ℝ)
+theorem block_eq_whole  η  m A  t  S  c 
+     C D  hC  hD (hCD:primeSupport C=primeSupport D)
+     E  rows (hrows:∀h∈rows,h≠0)
+     W  V  K K₀ H₀ A₀ B₀ 
     (hK:0<K)(hK₀:0<K₀)(hH₀:0<H₀)(hA₀:0<A₀)(hB₀:0<B₀):
     let e:=primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E
     let k:=K/‖eisEmbedding e‖^2
@@ -130,9 +142,9 @@ theorem block_eq_whole (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal 
   apply Finset.sum_congr rfl
   intro b hb
   have hcop:IsCoprime (element C C hC.1 S a) (element C D hD.1 S b)↔
-      IsCoprime (a:Ideal O) (b:Ideal O):=by
+      IsCoprime (a:Ideal ActualEisensteinCubic.O) (b:Ideal ActualEisensteinCubic.O):=by
     rw [←Ideal.isCoprime_span_singleton_iff,element_span,element_span]
-  by_cases hab:IsCoprime (a:Ideal O) (b:Ideal O)
+  by_cases hab:IsCoprime (a:Ideal ActualEisensteinCubic.O) (b:Ideal ActualEisensteinCubic.O)
   · simp only [hab,ite_true,hcop]
     have hh:=dilated_frequency_whole_kernel (activePrime C D) (activeCoprime C D)
       (activeGood C D hC) (fun P=>common_odd C D hC P.val) (activeExponent C D)

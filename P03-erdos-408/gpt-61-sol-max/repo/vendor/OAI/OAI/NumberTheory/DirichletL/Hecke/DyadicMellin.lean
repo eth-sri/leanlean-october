@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.Dyadic
 public import OAI.NumberTheory.DirichletL.Hecke.StripActual
@@ -16,11 +17,15 @@ open HeckeFamily
 private instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 private instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
-def twistedCoefficient (χ : Character) (inverse : Bool) (σ freq : ℝ) (I : NonzeroIdeal) : ℂ :=
+def twistedCoefficient (χ : Character) (inverse : Bool) (σ freq : ℝ) (I : NonzeroIdeal)  :=
   coefficient χ inverse I.val * (norm I : ℂ)^(-shift σ freq)
 
-theorem twisted_coefficient_summable (χ : Character) (inverse : Bool) (c σ freq : ℝ)
-    (hc : 1 < c+σ) :
+section
+variable (χ : Character) (inverse : Bool) (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a) (hWs : Function.support W ⊆ Icc a b) (hW : ContDiff ℝ ∞ W) (D c σ freq : ℝ) (hD : 0 < D) (hc : 1 < c+σ)
+
+include hc in
+theorem twisted_coefficient_summable      
+      :
     Summable (fun I : NonzeroIdeal => ‖twistedCoefficient χ inverse σ freq I‖*(norm I)^(-c)) := by
   have hf := (CubicEisenstein.fullIdealWeight_summable_norm ((c+σ : ℝ) : ℂ)
     (by simpa using hc)).comp_injective (Subtype.val_injective : Function.Injective
@@ -45,8 +50,8 @@ theorem twisted_coefficient_summable (χ : Character) (inverse : Bool) (c σ fre
     _ ≤ _ := mul_le_of_le_one_left (Real.rpow_nonneg (norm_pos I).le _)
       (coefficient_norm_le χ inverse I.val)
 
-theorem twisted_series_eq (χ : Character) (inverse : Bool) (σ freq : ℝ)
-    {s : ℂ} (hs : 1 < (s+shift σ freq).re) :
+theorem twisted_series_eq      
+     {s}  (hs : 1 < (s+shift σ freq).re) :
     (∑' I : NonzeroIdeal, twistedCoefficient χ inverse σ freq I*(norm I : ℂ)^(-s)) =
       series χ inverse (s+shift σ freq) := by
   rw [series_eq_tsum χ inverse hs]
@@ -57,8 +62,9 @@ theorem twisted_series_eq (χ : Character) (inverse : Bool) (σ freq : ℝ)
   congr 2
   ring
 
-theorem polynomial_eq_weighted (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
-    (D σ freq : ℝ) (hD : 0 < D) :
+include hD in
+theorem polynomial_eq_weighted      
+        :
     polynomial χ inverse W D σ freq =
       (D : ℂ)^(shift σ freq-(1/2 : ℂ)) *
         ∑' I : NonzeroIdeal, twistedCoefficient χ inverse σ freq I * W (norm I/D) := by
@@ -73,9 +79,10 @@ theorem polynomial_eq_weighted (χ : Character) (inverse : Bool) (W : ℝ → �
   congr 2
   ring
 
-theorem polynomial_mellin (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
-    (a b : ℝ) (ha : 0 < a) (hWs : Function.support W ⊆ Icc a b)
-    (hW : ContDiff ℝ ∞ W) (D c σ freq : ℝ) (hD : 0 < D) (hc : 1 < c+σ) :
+include ha hWs hW hD hc in
+theorem polynomial_mellin      
+         
+            :
     polynomial χ inverse W D σ freq = (1/(2*Real.pi) : ℂ)*∫ t : ℝ,
       mellin W ((c : ℂ)+t*Complex.I) *
         (D : ℂ)^(((c : ℂ)+t*Complex.I)+shift σ freq-(1/2 : ℂ)) *
@@ -94,11 +101,9 @@ theorem polynomial_mellin (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
     rw [← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hD.ne')]
     congr 1
     ring
-  calc
-    _ = mellin W ((c : ℂ)+t*Complex.I) *
-        ((D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I)) *
-          series χ inverse (((c : ℂ)+t*Complex.I)+shift σ freq) := by ring
-    _ = _ := by rw [he]
+  grind
+
+end
 
 end SevenEighths.HeckeDyadic
 

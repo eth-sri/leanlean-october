@@ -17,7 +17,7 @@ variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 def literalRawCoefficient (G : PrimeFamily ι)
     (D : ControlledStratumArithmetic G.generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (j : ι→ℕ) (S : Finset ι) (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) : ℂ :=
+    (j : ι→ℕ) (S : Finset ι) (u : Eisˣ) (m : ℕ) (n b : Ideal Eis)  :=
   if Squarefree n ∧ primaryGenerator n≠0 ∧ primaryGenerator b≠0 then
     (s.amplitude u m n b *
       (star D.fixedFactor*ShortDraftCusp.A4BadPhase c hc (D.matrix (fun _ => 1) 1 1) D.U (s.modelDualNumerator u m n b))*

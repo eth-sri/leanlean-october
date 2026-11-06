@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SourceSupportedTailUniform
 public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
@@ -20,15 +21,15 @@ open CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomen
 open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
 open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
 open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
-local notation "O"=>HeckeFamily.O
+
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-def plainControl (s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)):ℝ:=
+def plainControl (s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)):=
   (∏i,s.M i)*SchwartzMap.seminorm ℝ 0 0 W₁*SchwartzMap.seminorm ℝ 0 0 W₂
 
 omit [DecidableEq ι] in
-lemma plainControl_nonneg (s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)):0≤plainControl s W₁ W₂:=by
+lemma plainControl_nonneg (s:Input ι) W₁ W₂ :0≤plainControl s W₁ W₂:=by
   unfold plainControl
   exact mul_nonneg (mul_nonneg (Finset.prod_nonneg (fun i _=>(s.M_ge_one i).trans' zero_le_one))
     (apply_nonneg _ _)) (apply_nonneg _ _)
@@ -43,7 +44,7 @@ theorem input_mass (hi:ι→ℝ)(whi:ℝ)(hhi:∀i,0≤hi i)(hwhi:0≤whi)
     (he₁:s.W₁=W₁)(he₂:s.W₂=W₂)
     (hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi)
     (hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi)
-    (hshi:∀i,s.hi i≤hi i)(R seed:Ideal O):
+    (hshi:∀i,s.hi i≤hi i) R seed :
     (∑I∈finiteColumns (Fintype.piFinset s.pools),‖coefficient s R seed I‖)≤
       (2*128^(Fintype.card ι+2)*(∏i,hi i)*whi^2)*plainControl s W₁ W₂*volume s.toData:=by
   have hz (i:ι):s.W i 0=0:=by
@@ -77,7 +78,7 @@ lemma input_column_bound (hi:ι→ℝ)(whi:ℝ)
     (he₁:s.W₁=W₁)(he₂:s.W₂=W₂)
     (hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi)
     (hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi)
-    (hshi:∀i,s.hi i≤hi i)(R seed I:Ideal O)(hn:coefficient s R seed I≠0):
+    (hshi:∀i,s.hi i≤hi i)(R seed I:Ideal HeckeFamily.O)(hn:coefficient s R seed I≠0):
     (Ideal.absNorm I:ℝ)≤((∏i,hi i)*whi^2)*volume s.toData:=by
   obtain ⟨v,hv,hv0,hvI⟩:=finiteColumnCoefficient_witness _ _ I hn
   have hz (i:ι):s.W i 0=0:=by
@@ -120,7 +121,7 @@ lemma kernel_inverse_cap (HN Z B Tsec:ℝ)(hZ:1≤Z)(hB:0≤B)(hT:0<Tsec)(hcap:T
   rw [←inv_pow]
   exact (pow_le_pow_left₀ (inv_nonneg.mpr (le_of_lt (lt_min zero_lt_one (kernelReference_pos Tsec HN hT)))) hb 2).trans_eq (mul_pow _ _ _)
 
-lemma eventually_tail_threshold (HN ξ:ℝ)(hξ:0<ξ):
+lemma eventually_tail_threshold  HN ξ (hξ:0<ξ):
     ∀ᶠZ:ℝ in atTop,1<Z ∧ 2*HN/Real.log Z+Real.log (4:ℝ)/Real.log Z<ξ/4:=by
   filter_upwards [eventually_gt_atTop (1:ℝ),
     Real.tendsto_log_atTop.eventually (eventually_gt_atTop ((2*HN+Real.log (4:ℝ))/(ξ/4)))] with Z hZ hlog
@@ -146,9 +147,7 @@ lemma choose_tail_order (B ξ saving:ℝ)(hB:0≤B)(hξ:0<ξ):
   have hd:=reciprocal_cutoff_bound Z (ξ/4) Adec hz
   calc
     _≤(Z^B)^3*((1+Real.exp (2*HN))^2*(Z^B)^2)*Z^(-(ξ/4)*(Adec:ℝ)):=by
-      apply mul_le_mul _ hd (by positivity) (by positivity)
-      apply mul_le_mul (pow_le_pow_left₀ hV.le hVcap 3) hk
-        (inv_nonneg.mpr (sq_nonneg _)) (by positivity)
+      gcongr <;> first | assumption | positivity | linarith
     _=(1+Real.exp (2*HN))^2*Z^(5*B-(ξ/4)*(Adec:ℝ)):=by
       rw [←Real.rpow_mul_natCast hz.le,←Real.rpow_mul_natCast hz.le]
       norm_num only [Nat.cast_ofNat]
@@ -166,7 +165,7 @@ theorem second_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ
       ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),s.W₁=W₁→s.W₂=W₂→
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→
-      (∀i,s.hi i≤hi i)→∀(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K Tsec:ℝ),
+      (∀i,s.hi i≤hi i)→∀(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K Tsec:ℝ),
       0<K→volume s.toData≤Z^B→Tsec≤Z^B→(volume s.toData)^2/K≤Tsec→
       ‖secondDiscardedEnergy s.η s.t (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) Φ K Tsec Z ξ‖/volume s.toData≤
@@ -198,7 +197,7 @@ theorem second_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ
     apply mul_le_mul_of_nonneg_right _ hcontrol
     dsimp [Cmass]
     linarith
-  have hn (I:Ideal O)(_hI:I∈finiteColumns (Fintype.piFinset s.pools))
+  have hn (I:Ideal HeckeFamily.O)(_hI:I∈finiteColumns (Fintype.piFinset s.pools))
       (hI:coefficient s R seed I≠0):(Ideal.absNorm I:ℝ)≤Real.exp HN*V:=
     (input_column_bound hi whi s W₁ W₂ wlo hwlo he₁ he₂ hs₁ hs₂ hshi R seed I hI).trans
       (mul_le_mul_of_nonneg_right hexp hV.le)
@@ -207,7 +206,7 @@ theorem second_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ
   have hsquare:=pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _=>norm_nonneg _)) hm 2
   have hp:0<min 1 (kernelReference Tsec HN):=lt_min zero_lt_one (kernelReference_pos _ _ hT)
   have hzpos:0<Z:=zero_lt_one.trans hZ.1
-  have hzpower:0<Z^(ξ/4):=Real.rpow_pos_of_pos hzpos _
+  
   have hden:0<(min 1 (kernelReference Tsec HN))^2*(1+Z^(ξ/4))^Adec:=by positivity
   have hb:=hdecay HN Z V Tsec hZ.1.le hV hVcap hT hTcap
   calc

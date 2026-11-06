@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Major.Energy.Average
 public import Erdos408.TwoSided.Endpoint.Tuple.Exceptional
@@ -102,10 +103,7 @@ theorem integral_sq_le_of_le_integral_split {a b c M E₁ E₂ R : ℝ} (hab : a
         ((hh.comp continuous_swap).pow 2).aestronglyMeasurable
     · simp only [Function.uncurry, f, Real.norm_eq_abs]
       rw [abs_of_nonneg (mul_nonneg (hw0 _) (sq_nonneg _)), mul_comm (M ^ 2)]
-      gcongr
-      · exact hw0 _
-      · exact hh0 _ _
-      · exact hhM _ _
+      bound
   -- pointwise Cauchy–Schwarz in `ξ`
   have hCS : ∀ τ, F τ ^ 2 ≤ c ^ 2 * W * ∫ ξ, f τ ξ := by
     intro τ

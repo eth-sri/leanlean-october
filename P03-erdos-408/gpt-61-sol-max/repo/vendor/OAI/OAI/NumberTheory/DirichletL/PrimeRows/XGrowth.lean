@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.ZGrowth
 public import OAI.NumberTheory.DirichletL.PrimeRows.ReciprocalGrowth
@@ -7,16 +8,16 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.ReciprocalGrowth
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+
 
 theorem physicalRow_first_x_growth (e eps : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S)
-    (η : Character) (u : FreeRow) (w z : ℂ) (l r : ℝ)
+     S   hS  (hfirst : FirstTail eps S)
+     T   hT 
+     η   u   w z   l r 
     (hl : (51/100:ℝ)≤l) (hlβ : HeckeZeroSupremum.beta+8*e≤l)
     (hw : -(1/100:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re)
     (hlw : 1+eps≤l+w.re) :
@@ -24,16 +25,16 @@ theorem physicalRow_first_x_growth (e eps : ℝ) (he : 0<e) (he' : e<1/1000)
       ‖physicalCompensatedRow S hS T hT η u x w z‖≤C*(3+|x.im|)^2 := by
   obtain ⟨Cr,hCr,hr⟩ := targetRow_reciprocal_growth e 1 he he' (by norm_num) (by norm_num) S hS.prime
   obtain ⟨Ch,hCh,hh⟩ := unselectedCorrection_first_subpower 1 (by norm_num)
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N : ℝ := ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)
   let A : T→ℝ := fun P=>selectedFirstBound P.val.val.absNorm r
   let L : ℝ := ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖*
     ‖HeckeOrigin.continued (rowCharacter S hS.prime u) w‖
   let B : ℝ := Cr*(η.modulus.absNorm:ℝ)*N
   have hL : 0≤L := by dsimp [L];positivity
-  have hB : 0≤B := by dsimp [B,N];positivity
+  
   have hA (P : T) : 0≤A P := selectedFirstBound_nonneg (P.val.val.absNorm : ℝ) r (Nat.cast_nonneg _)
   have hprod : 0≤∏P:T,A P := Finset.prod_nonneg (fun P _=>hA P)
-  have hN : 0≤N := Nat.cast_nonneg _
+  
   refine ⟨L*B*(Ch*N)*(∏P:T,A P),by positivity,?_⟩
   intro x hxl hxr
   have hrec : ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖≤B*(3+|x.im|)^2 := by
@@ -61,6 +62,6 @@ theorem physicalRow_first_x_growth (e eps : ℝ) (he : 0<e) (he' : e<1/1000)
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

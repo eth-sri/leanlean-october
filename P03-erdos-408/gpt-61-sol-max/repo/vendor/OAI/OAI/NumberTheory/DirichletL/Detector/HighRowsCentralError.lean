@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralCancellation
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedUnramified
@@ -7,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedUnramified
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 open ProbeLocal
 
-lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
+lemma central_unramified_error_weights (Q a e : ℝ)  A eta v x w z 
     (hQ : 4≤Q) (ha : (51/100:ℝ)≤a) (ha1 : a≤1) (he : 0<e) (he1 : e≤1/1000)
     (hA : ‖A‖≤1) (heta : ‖eta‖≤1) (hv : ‖v‖≤1)
     (hx : x.re=a+16*e) (hw : w.re=1-a-6*e) (hz : z.re=17/50) :
@@ -97,13 +98,11 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
     rw [←Real.rpow_mul_natCast hQ0.le]
     exact weighted _ _ _ hD (by rw [hx];linarith)
   · have hh := mul_le_mul_of_nonneg_left hE (sq_nonneg L)
-    change L^2*‖unramifiedMarked Q A eta v x w z+D‖≤_
-    nlinarith [hLR,hLKV]
+    grind
   · have hh := mul_le_mul_of_nonneg_left hE (mul_nonneg hL0 (norm_nonneg B))
-    change L*‖B‖*‖unramifiedMarked Q A eta v x w z+D‖≤_
-    nlinarith [hLBR,hLBKV]
+    grind
 
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

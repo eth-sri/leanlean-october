@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.FirstStageLossBudget
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstStageLossBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstDeclaredCapacityLossBudget
@@ -14,14 +15,14 @@ open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
 open CenteredMomentEnergyFirstStageLossBudget
 open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
 
-lemma lossVector_cap (sigma delta reserveAmp paid es M A saving:ℝ)
-    (he:0≤es)(hM:0≤M)(hA:0≤A)(j:Fin 4):
+lemma lossVector_cap  sigma delta reserveAmp paid es M A saving 
+    (he:0≤es)(hM:0≤M)(hA:0≤A) j :
     lossVector sigma delta reserveAmp paid es A saving j≤
       lossVector sigma delta reserveAmp paid es M saving j+es*A:=by
   fin_cases j <;> simp only [lossVector,Matrix.cons_val,Fin.reduceFinMk] <;>
     nlinarith [mul_nonneg he hM,mul_nonneg he hA]
 
-theorem chosen_declared_four_budget (M A Bcap Bcommon κ ε:ℝ)
+theorem chosen_declared_four_budget  M A Bcap Bcommon κ ε 
     (hM:0≤M)(hA:0≤A)(hB:0≤Bcap)(hBc:0≤Bcommon)(hκ:0≤κ)(hε:0<ε):
     let r:=reserve M Bcap ε
     let es:=r/(4*(Bcommon+A+1))
@@ -39,15 +40,14 @@ theorem chosen_declared_four_budget (M A Bcap Bcommon κ ε:ℝ)
   let es:=r/(4*(Bcommon+A+1))
   have hb:=bounds M Bcap κ ε hM hB hκ hε
   have hr:0<r:=hb.2.2.2.1
-  have hs:0<amplification ε:=hb.1
+  
   have hrsmall:r≤amplification ε/100:=min_le_left _ _
-  have hr1:r≤1:=by linarith [hb.2.1]
+  
   have hden:0<4*(Bcommon+A+1):=by positivity
   have hes:0<es:=by dsimp [es];positivity
   have hesle:es≤r/4:=by
     dsimp [es]
-    apply (div_le_iff₀ hden).mpr
-    nlinarith [mul_nonneg hr.le hBc,mul_nonneg hr.le hA]
+    gcongr <;> first | assumption | positivity | linarith
   have hescap:es*A≤r/4:=by
     dsimp [es]
     rw [div_mul_eq_mul_div]
@@ -77,12 +77,10 @@ theorem chosen_declared_four_budget (M A Bcap Bcommon κ ε:ℝ)
   have hc:=lossVector_cap (amplification ε) (r/4) (r/4)
     (sourcePaid Bcap (r/(Bcap+Bcap+1)) ell (r/4) (r/4) (r/4) (r/4) (r/4)
       κ (mesh M Bcap κ ε)) es M A (2*amplification ε+1) hes.le hM hA j
-  have hj:=hh j
-  change losses es (r/4) (r/4) Bcap j+_+es*Bcommon+r/4+r/4+highReflection+zeroReflection≤_
-  linarith only [hj,hc]
+  grind
 
 end SevenEighths.CenteredMomentEnergyFirstDeclaredCapacityLossBudget
 
-end
+
 
 end OAI

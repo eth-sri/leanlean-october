@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.GcdReduction
 
@@ -10,75 +11,75 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
+open   CompletedGauss FiniteSieveOperator
 open IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
 
 def weightedRayGramMatrix {m n : Type*} [Fintype m]
@@ -92,7 +93,7 @@ def weightedRayGramMatrix {m n : Type*} [Fintype m]
 end
 
 section
-open ActualEisensteinCubic CompletedGauss FiniteSieveRestriction
+open   CompletedGauss FiniteSieveRestriction
 open QuadraticSquarefreeKernel
 
 def rayPairValue (N : ℝ) (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord)
@@ -101,8 +102,8 @@ def rayPairValue (N : ℝ) (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord)
     gcdTerm D (fun _ : Unit => I) (fun J : idealRange N => J.val)
       (sectorCoefficient (fun J : idealRange N => columnRay J.val) c a) () J lengthScale
 
-theorem rayPairValue_eq (N : ℝ) (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord)
-    (a : idealRange N → ℂ) (I : Ideal O) :
+theorem rayPairValue_eq  N   D   c 
+     a   I  :
     rayPairValue N D c a I = ∑ J : idealRange N, ∑ lengthScale : idealRange N,
       if gcd J.val lengthScale.val = D ∧ columnRay J.val = c ∧ columnRay lengthScale.val = c then
         star (quadraticRow J.val (primaryGenerator I) * a J) *
@@ -112,7 +113,7 @@ theorem rayPairValue_eq (N : ℝ) (D : Ideal O) (c : EisensteinEPrimaryPhase.Coo
 
 end
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
+open   CompletedGauss FiniteSieveOperator
 
 def highKernelShellRange (M K : ℝ) : Finset (Ideal O) :=
   (highKernelRange M K).filter (fun I => M / 2 < (Ideal.absNorm I : ℝ))
@@ -135,7 +136,7 @@ theorem exists_dyadic_shell (n lengthScale : ℕ) (hn : 1 ≤ n) (hL : (n : ℝ)
 
 end CanonicalQuadraticSieve
 
-open scoped SchwartzMap ContDiff
+ 
 namespace QuadraticInitialBound
 
 def annularSieveBump : ContDiffBump (3 / 4 : ℝ) where
@@ -151,36 +152,41 @@ def annularSieveCutoff : 𝓢(ℝ, ℂ) := by
     Complex.ofRealCLM.contDiff.comp annularSieveBump.contDiff
   exact hc.toSchwartzMap hs
 
-@[simp] theorem annularSieveCutoff_apply (t : ℝ) : annularSieveCutoff t = (annularSieveBump t : ℂ) := rfl
+@[simp] theorem annularSieveCutoff_apply  t  : annularSieveCutoff t = (annularSieveBump t : ℂ) := rfl
 
-theorem annularSieveBump_eq_one {t : ℝ} (ht0 : 1 / 2 ≤ t) (ht1 : t ≤ 1) : annularSieveBump t = 1 := by
+section
+variable {t : ℝ}
+
+theorem annularSieveBump_eq_one   (ht0 : 1 / 2 ≤ t) (ht1 : t ≤ 1) : annularSieveBump t = 1 := by
   apply annularSieveBump.one_of_mem_closedBall
   change dist t (3 / 4) ≤ 1 / 4
   rw [Real.dist_eq, abs_le]
   constructor <;> linarith
 
-theorem annularSieveBump_zero_of_le {t : ℝ} (ht : t ≤ 1 / 4) : annularSieveBump t = 0 := by
+theorem annularSieveBump_zero_of_le   (ht : t ≤ 1 / 4) : annularSieveBump t = 0 := by
   apply annularSieveBump.zero_of_le_dist
   change 1 / 2 ≤ dist t (3 / 4)
   rw [Real.dist_eq, abs_of_nonpos (by linarith)]
   linarith
 
-theorem annularSieveBump_zero_of_ge {t : ℝ} (ht : 5 / 4 ≤ t) : annularSieveBump t = 0 := by
+theorem annularSieveBump_zero_of_ge   (ht : 5 / 4 ≤ t) : annularSieveBump t = 0 := by
   apply annularSieveBump.zero_of_le_dist
   change 1 / 2 ≤ dist t (3 / 4)
   rw [Real.dist_eq, abs_of_nonneg (by linarith)]
   linarith
 
+end
+
 @[simp] theorem annularSieveCutoff_zero : annularSieveCutoff 0 = 0 := by
-  rw [annularSieveCutoff_apply, annularSieveBump_zero_of_le (by norm_num), Complex.ofReal_zero]
+  simp_all [annularSieveBump_zero_of_le]
 
 end QuadraticInitialBound
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
+open   CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
 
 def annularHighWeight (M : ℝ) (I : Ideal O) : ℝ :=
   QuadraticInitialBound.annularSieveBump ((Ideal.absNorm I : ℝ) / M)
@@ -196,28 +202,23 @@ def annularRayGcdBlock (M N K : ℝ) (D : Ideal O) (c : EisensteinEPrimaryPhase.
 
 end
 
-section
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
-open IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
 
-end
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveRestriction
+open   CompletedGauss FiniteSieveRestriction
 open QuadraticSquarefreeKernel
 
-theorem annularHighWeight_eq_zero (M : ℝ) (hM : 0 < M) (I : Ideal O)
+theorem annularHighWeight_eq_zero  M  (hM : 0 < M)  I 
     (hI : 2 * M ≤ (Ideal.absNorm I : ℝ)) : annularHighWeight M I = 0 := by
   have ht : 2 ≤ (Ideal.absNorm I : ℝ) / M := (le_div_iff₀ hM).mpr (by linarith)
   exact QuadraticInitialBound.annularSieveBump_zero_of_ge (by linarith)
 
-theorem annularRayGcdBlock_eq_finite (M N K : ℝ) (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord)
-    (a : idealRange N → ℂ) :
+theorem annularRayGcdBlock_eq_finite  M N K   D   c 
+     a  :
     annularRayGcdBlock M N K D c a =
-      ∑ I : highKernelRange (2 * M) K, (annularHighWeight M I.val : ℂ) * rayPairValue N D c a I.val := by
-  rfl
+      ∑ I : highKernelRange (2 * M) K, (annularHighWeight M I.val : ℂ) * rayPairValue N D c a I.val := rfl
 
-theorem annularRayGcdBlock_eq_tsum (M N K : ℝ) (hM : 0 < M)
-    (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord) (a : idealRange N → ℂ) :
+theorem annularRayGcdBlock_eq_tsum  M N K  (hM : 0 < M)
+     D   c   a  :
     annularRayGcdBlock M N K D c a =
       ∑' I : Ideal O, if Supported I ∧ K < (Ideal.absNorm (squarefreePart I) : ℝ) then
         QuadraticInitialBound.annularSieveCutoff ((Ideal.absNorm I : ℝ) / M) * rayPairValue N D c a I else 0 := by
@@ -250,10 +251,7 @@ end FiniteSieveOperator
 
 namespace CanonicalQuadraticSieve
 
-section
-open FiniteSieveOperator
 
-end
 
 open IdealCoprimeSieveOperator DivisorBlockCauchy
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalVolume
 
@@ -6,18 +7,18 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalVolume
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeTwist
 open CenteredMomentHeckeCancellation CenteredMomentLattice
-local notation "O" => HeckeFamily.O
+
 
 theorem rectangle_source_unit (a b ε B : ℝ)
     (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
     ∃ J : ℕ, ∃ S : Finset (ℕ×ℕ), (0,0)∈S ∧
-      ∀ Q : Ideal O, Q≠0 → ∃ C : ℝ, 0<C ∧
+      ∀ Q : Ideal HeckeFamily.O, Q≠0 → ∃ C : ℝ, 0<C ∧
       ∀ W₁ W₂ : 𝓢(ℝ,ℂ),
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
@@ -26,7 +27,7 @@ theorem rectangle_source_unit (a b ε B : ℝ)
       ∀ Z : ℝ, 1≤Z → ∀ η χ ψ : Character,
       (Ideal.absNorm χ.modulus:ℝ)≤Z^B → Q≤ψ.modulus →
       CenteredExceptionalProfile.InducedBy χ ψ →
-      ∀ m A z : O, ConcretePrimeRowBridge.goodLambda∣m → (2:O)∣m →
+      ∀ m A z : HeckeFamily.O, ConcretePrimeRowBridge.goodLambda∣m → (2:HeckeFamily.O)∣m →
       (∀ n,elementCoeff χ n=CanonicalRowCompletion.rowTwist
         (HeckeRowClosure.elementHom η) m 1 (A*z) n) →
       ∀ t X₁ X₂ Y₁ Y₂ T L : ℝ, 0<L →
@@ -39,7 +40,7 @@ theorem rectangle_source_unit (a b ε B : ℝ)
   intro Q hQ
   obtain ⟨D,hD,hDvol⟩ := hvol Q
   let V := 128*(b+b)
-  have hV : 0≤V := by dsimp [V]; positivity
+  
   refine ⟨1+8*D*V,by positivity,?_⟩
   intro W₁ W₂ hs₁ hs₂ hS₁ hS₂ Z hZ η χ ψ hnorm hQψ hind m A z hml hm2 hrow
     t X₁ X₂ Y₁ Y₂ T L hL hX₁ hX₂ hY₁ hY₂ hpX hpY
@@ -66,7 +67,7 @@ theorem rectangle_source_unit (a b ε B : ℝ)
   have hn := CenteredMoment.normalized_centered_saving _ T L V _ hT (by
     simpa only [mul_one] using hraw)
   have hE := add_le_add (herr W₁ hs₁ hS₁) (herr W₂ hs₂ hS₂)
-  have hr : 0≤Real.sqrt T/L := div_nonneg (Real.sqrt_nonneg _) hL.le
+  
   calc
     _ ≤ _ := hn
     _ ≤ 4*(D*Z^ε*(1+‖t‖)^J+D*Z^ε*(1+‖t‖)^J)*V*(Real.sqrt T/L) := by
@@ -77,6 +78,6 @@ theorem rectangle_source_unit (a b ε B : ℝ)
       linarith
 end SevenEighths.CenteredMomentFiniteProfileExceptional
 
-end
+
 
 end OAI

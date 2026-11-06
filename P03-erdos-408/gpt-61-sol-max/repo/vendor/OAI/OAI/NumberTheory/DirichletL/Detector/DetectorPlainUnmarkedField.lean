@@ -24,7 +24,7 @@ open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFi
 open QuadraticInitialBound
 local notation "O" => HeckeFamily.O
 
-def radialSupportUpper : ℝ := Classical.choose radialMajorant_support_bound
+def radialSupportUpper  := Classical.choose radialMajorant_support_bound
 
 theorem radialSupportUpper_spec : 0<radialSupportUpper ∧
     Function.support (radialMajorant:ℝ→ℂ)⊆Set.Iic radialSupportUpper :=
@@ -55,11 +55,11 @@ theorem retained_unmarked_bound (D:Parameters.HighData Δ)
     {M:Ideal O}[NeZero M]{H:Subgroup (O⧸M)ˣ}{Label:Type*}
     {U a tstar T heightAllowance:ℝ}{i:ℕ}
     (F:Fiber M H Label (Fin D.N) U a D.ε tstar T heightAllowance i)
-    (η:Character)(Q:Ideal O)(hU:1<U)
+     η  Q (hU:1<U)
     (hη:(η.modulus.absNorm:ℝ)≤U^(delta D))
-    (degree:ℕ)(S:Finset (ℕ×ℕ))(A:ℝ)
+    (degree:ℕ) S  A 
     (hzero:ZeroAt Q (1/4) (9/4) radialSupportUpper 0 1 2 (stageError D) U degree S A)
-    (j k:ℕ)(σ t:ℝ):
+     j k  σ t :
     retainedSourceEnergy (initialKeep η Q) F η ∅ j k σ t radialMajorant ≤
       A*diagonalControl radialMajorant*(detectorProfiles F.reverse j k σ t).control S ^2*
         U^(max 1 (2*F.m)+delta D+stageError D) := by

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.Low.Progression
 
@@ -22,25 +23,27 @@ namespace Erdos408.TwoSided.LowFreq
 
 open Finset
 
+section
+variable {Φ E G H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 0 → d ∈ D) (hD : ∀ d ∈ D, 0 < d) {M₀ Y CNN ρ : ℝ} (hM₀ : 0 ≤ M₀) (hρ : 0 ≤ ρ) (hΦ : ∀ w, ‖Φ w‖ ≤ M₀) (hΦs : ∀ w : ℕ, Φ w ≠ 0 → Y < w) {m : ℕ} (hm : 0 < m)
+
+include hA in
 /-- The divisor sum of a model supported on `D`, for `n ≠ 0`. -/
-theorem sum_divisors_eq_sum_filter {A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 0 → d ∈ D)
-    {n : ℕ} (hn : n ≠ 0) :
+theorem sum_divisors_eq_sum_filter      
+     {n}  (hn : n ≠ 0) :
     ∑ d ∈ n.divisors, A d = ∑ d ∈ D, if d ∣ n then A d else 0 := by
   rw [← sum_filter]
   have h₁ : ∑ d ∈ n.divisors, A d = ∑ d ∈ n.divisors ∩ D, A d := by
     refine (sum_subset inter_subset_left fun d hd hd' => ?_).symm
-    by_contra h
-    exact hd' (mem_inter.2 ⟨hd, hA d h⟩)
+    grind
   rw [h₁]
   congr 1
-  ext d
-  simp only [mem_inter, Nat.mem_divisors, mem_filter]
-  tauto
+  grind
 
+include hA hm in
 /-- **Steps 2–3, the algebra.** For `H(mn) = H(n)` and a model supported on `D`,
 `P_m = ∑_d A_d ∑_{w ≤ N, md ∣ w} Φ(w) + ∑_{w ≤ N, m ∣ w} Φ(w) (H - ∑_{d ∣ ·} A_d)(w/m)`. -/
-theorem sum_dvd_eq {Φ H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 0 → d ∈ D) {m : ℕ}
-    (hm : 0 < m) (hH : ∀ n, H (m * n) = H n) (Nw : ℕ) :
+theorem sum_dvd_eq        
+      (hH : ∀ n, H (m * n) = H n)  Nw  :
     ∑ w ∈ (Icc 1 Nw).filter (m ∣ ·), Φ w * H w =
       ∑ d ∈ D, A d * ∑ w ∈ (Icc 1 Nw).filter (m * d ∣ ·), Φ w +
         ∑ w ∈ (Icc 1 Nw).filter (m ∣ ·),
@@ -63,8 +66,7 @@ theorem sum_dvd_eq {Φ H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 
       by_cases hd : m * d ∣ w
       · rw [ite_eq_left ((Nat.dvd_div_iff_mul_dvd hmw).2 hd), ite_eq_left hd]
         ring
-      · rw [ite_eq_right fun h => hd ((Nat.dvd_div_iff_mul_dvd hmw).1 h), ite_eq_right hd]
-        ring
+      simp_all
     rw [sum_congr rfl this]
     ring
   rw [sum_congr rfl hw, sum_add_distrib, sum_comm]
@@ -77,12 +79,13 @@ theorem sum_dvd_eq {Φ H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 
   · exact fun h => h.2
   · exact fun h => ⟨(Dvd.intro d rfl).trans h, h⟩
 
+include hM₀ hρ hΦ hΦs hm in
 /-- **Step 2, the model error.** If `|Φ| ≤ M₀`, `Φ(w) ≠ 0 → Y < w`, `m ≤ Y` and the model
 error `E` has `∑_{R < n ≤ 2R} |E(n)|² ≤ C_N R ρ` at `R = Y/m`, then
 `|∑_{w ≤ 2Y, m ∣ w} Φ(w) E(w/m)| ≤ M₀ √2 √C_N (Y/m) √ρ`. -/
-theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM₀ : 0 ≤ M₀)
-    (hρ : 0 ≤ ρ) (hΦ : ∀ w, ‖Φ w‖ ≤ M₀) (hΦs : ∀ w : ℕ, Φ w ≠ 0 → Y < w) {m : ℕ}
-    (hm : 0 < m) (hmY : (m : ℝ) ≤ Y)
+theorem norm_sum_mul_sub_model_le      
+           
+      (hmY : (m : ℝ) ≤ Y)
     (hE : ∑ n ∈ Ioc ⌊Y / m⌋₊ ⌊2 * (Y / m)⌋₊, ‖E n‖ ^ 2 ≤ CNN * (Y / m) * ρ) :
     ‖∑ w ∈ (Icc 1 ⌊2 * Y⌋₊).filter (m ∣ ·), Φ w * E (w / m)‖ ≤
       M₀ * (Real.sqrt 2 * Real.sqrt CNN * (Y / m) * Real.sqrt ρ) := by
@@ -109,8 +112,7 @@ theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM
     intro w₁ hw₁ w₂ hw₂ h
     have h₁ := (mem_filter.1 (mem_filter.1 hw₁).1).2
     have h₂ := (mem_filter.1 (mem_filter.1 hw₂).1).2
-    simp only at h
-    rw [← Nat.mul_div_cancel' h₁, ← Nat.mul_div_cancel' h₂, h]
+    simp_all
   have himg : F.image (· / m) ⊆ I := by
     intro n hn
     obtain ⟨w, hw, rfl⟩ := mem_image.1 hn
@@ -156,11 +158,12 @@ theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM
     _ ≤ M₀ * ∑ n ∈ I, ‖E n‖ := mul_le_mul_of_nonneg_left h2 hM₀
     _ ≤ _ := mul_le_mul_of_nonneg_left h4 hM₀
 
+include hA hD hM₀ hρ in
 /-- **Steps 2–3 for one modulus.** With the hypotheses of `sum_dvd_eq` and
 `norm_sum_mul_sub_model_le`, `m d` coprime to `k` on the support and `G(0) = 0`,
 `|P_m - κ_{h,k} S Ā / m| ≤ M₀ √2 √C_N (Y/m) √ρ + (∑_{d ∈ D} |A_d|) k TV(G)`. -/
-theorem norm_sum_dvd_sub_le {G H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 0 → d ∈ D)
-    (hD : ∀ d ∈ D, 0 < d) {M₀ Y CNN ρ : ℝ} (hM₀ : 0 ≤ M₀) (hρ : 0 ≤ ρ) {h : ℤ} {k : ℕ}
+theorem norm_sum_dvd_sub_le      
+            {h : ℤ} {k : ℕ}
     (hk : 0 < k) (hG0 : G 0 = 0) (hΦ : ∀ w, ‖G w * LowFreq.addTwist h k w‖ ≤ M₀)
     (hΦs : ∀ w : ℕ, G w * LowFreq.addTwist h k w ≠ 0 → Y < w) {m : ℕ} (hm : 0 < m)
     (hmY : (m : ℝ) ≤ Y) (hH : ∀ n, H (m * n) = H n)
@@ -179,10 +182,7 @@ theorem norm_sum_dvd_sub_le {G H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, 
       ∑ d ∈ D, A d * (twistMean h k * S / (m * d : ℕ)) := by
     rw [mul_sum, sum_div]
     refine sum_congr rfl fun d hd => ?_
-    have hd0 : (d : ℂ) ≠ 0 := by exact_mod_cast (hD d hd).ne'
-    have hm0 : (m : ℂ) ≠ 0 := by exact_mod_cast hm.ne'
-    push_cast
-    field_simp
+    grind
   rw [hmain, add_sub_right_comm, ← sum_sub_distrib]
   refine (norm_add_le _ _).trans ?_
   refine (add_le_add ?_ (norm_sum_mul_sub_model_le hM₀ hρ hΦ hΦs hm hmY hE)).trans_eq
@@ -198,5 +198,7 @@ theorem norm_sum_dvd_sub_le {G H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, 
       have := norm_sum_dvd_twist_sub_le (Nat.mul_pos hm (hD d hd)) hk (hcop d hd hAd) h Nw
         hG0
       exact this
+
+end
 
 end Erdos408.TwoSided.LowFreq

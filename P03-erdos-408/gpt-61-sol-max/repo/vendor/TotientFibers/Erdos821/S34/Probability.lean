@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.Core
 public import Mathlib.Algebra.Order.Star.Real
@@ -30,7 +31,7 @@ theorem norm_weighted_sum_sq {α : Type*} [Fintype α]
 
 theorem finite_collapse_l2 {α β : Type*} [Fintype α] [DecidableEq β]
     (w : α → ℝ) (hw : ∀ x, 0 ≤ w x) (P : α → β) (f : α → ℂ)
-    (s : Finset β) (R : ℝ) (hR : 0 ≤ R)
+     s   R  (hR : 0 ≤ R)
     (hρ : ∀ n ∈ s, (∑ x, if P x = n then w x else 0) ≤ R) :
     (∑ n ∈ s, ‖∑ x, if P x = n then (w x : ℂ) * f x else 0‖ ^ 2) ≤
       R * (∑ x, w x * ‖f x‖ ^ 2) := by
@@ -57,23 +58,19 @@ theorem finite_collapse_l2 {α β : Type*} [Fintype α] [DecidableEq β]
       intro n hn
       exact (hcs n).trans (mul_le_mul_of_nonneg_right (hρ n hn)
         (Finset.sum_nonneg (fun x _ => by
-          split_ifs
-          · exact mul_nonneg (hw x) (sq_nonneg _)
-          · exact le_rfl)))
+          bound)))
     _ = R * (∑ n ∈ s, ∑ x, if P x = n then w x * ‖f x‖ ^ 2 else 0) :=
       (Finset.mul_sum ..).symm
     _ ≤ _ := mul_le_mul_of_nonneg_left henergy hR
 
-theorem mass_nonneg (G : Core.PrimeGroups) (g : Fin G.size) : 0 ≤ Core.mass G g := by
-  exact Finset.sum_nonneg fun _ _ => by positivity
+theorem mass_nonneg  G   g  : 0 ≤ Core.mass G g := Finset.sum_nonneg fun _ _ => by positivity
 
-theorem mu_nonneg (G : Core.PrimeGroups) (g : Fin G.size) (p : ℕ) : 0 ≤ Core.mu G g p := by
+theorem mu_nonneg  G   g   p  : 0 ≤ Core.mu G g p := by
   have h := mass_nonneg G g
   unfold Core.mu
   positivity
 
-theorem tupleWeight_nonneg (G : Core.PrimeGroups) (k : Fin G.size → ℕ) (z : Core.Tuple G k) :
-    0 ≤ Core.tupleWeight G k z := by
-  exact Finset.prod_nonneg fun g _ => Finset.prod_nonneg fun j _ => mu_nonneg G g (z g j).val
+theorem tupleWeight_nonneg  G   k   z  :
+    0 ≤ Core.tupleWeight G k z := Finset.prod_nonneg fun g _ => Finset.prod_nonneg fun j _ => mu_nonneg G g (z g j).val
 
 end Erdos821.S34.Proofs

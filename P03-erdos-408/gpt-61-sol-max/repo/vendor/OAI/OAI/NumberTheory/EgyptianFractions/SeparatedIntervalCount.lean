@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
@@ -6,15 +7,19 @@ public import Mathlib.Analysis.Calculus.Deriv.MeanValue
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped BigOperators
 open Classical
 namespace Problem337
 
+section
+variable (s : Finset ℤ) (f : ℤ → ℝ) (lam u v β L U : ℝ) (hlam : 0 < lam) (huv : u ≤ v) (hβ : 0 ≤ β) (hLU : L ≤ U) (hsep : ∀ i ∈ s, ∀ j ∈ s, i ≤ j → lam * ((j : ℝ) - i) ≤ f j - f i)
+
+include hlam huv hsep in
 /-- Packing bound for integer-indexed values separated at a positive linear rate. -/
-theorem separated_interval_card (s : Finset ℤ) (f : ℤ → ℝ)
-    (lam u v : ℝ) (hlam : 0 < lam) (huv : u ≤ v)
-    (hsep : ∀ i ∈ s, ∀ j ∈ s, i ≤ j → lam * ((j : ℝ) - i) ≤ f j - f i)
+theorem separated_interval_card    
+         
+     
     (hrange : ∀ i ∈ s, u ≤ f i ∧ f i ≤ v) :
     (s.card : ℝ) ≤ (v - u) / lam + 1 := by
   classical
@@ -45,11 +50,12 @@ theorem separated_interval_card (s : Finset ℤ) (f : ℤ → ℝ)
     simp only [hempty, Finset.card_empty, Nat.cast_zero]
     positivity
 
+include hlam hβ hLU hsep in
 /-- The number of separated samples near integers is controlled by the number
 of integer centers and the packing bound in each short interval. -/
-theorem separated_near_integer_card (s : Finset ℤ) (f : ℤ → ℝ)
-    (lam β L U : ℝ) (hlam : 0 < lam) (hβ : 0 ≤ β) (hLU : L ≤ U)
-    (hsep : ∀ i ∈ s, ∀ j ∈ s, i ≤ j → lam * ((j : ℝ) - i) ≤ f j - f i)
+theorem separated_near_integer_card    
+           
+     
     (hrange : ∀ i ∈ s, L ≤ f i ∧ f i ≤ U) :
     ((s.filter fun i => ∃ q : ℤ, |f i - q| ≤ β).card : ℝ) ≤
       (U - L + 2 * β + 1) * (2 * β / lam + 1) := by
@@ -74,8 +80,7 @@ theorem separated_near_integer_card (s : Finset ℤ) (f : ℤ → ℝ)
       hlam (by linarith)
       (fun i hi j hj hij => hsep i (Finset.mem_filter.mp hi).1 j (Finset.mem_filter.mp hj).1 hij)
       (fun i hi => by
-        have h := abs_le.mp (Finset.mem_filter.mp hi).2
-        constructor <;> linarith)
+        grind)
     convert h using 1; ring
   have hcenters : (centers.card : ℝ) ≤ U - L + 2 * β + 1 := by
     have h := separated_interval_card centers (fun q => (q : ℝ)) 1 (L - β) (U + β)
@@ -97,8 +102,10 @@ theorem separated_near_integer_card (s : Finset ℤ) (f : ℤ → ℝ)
     _ ≤ (U - L + 2 * β + 1) * (2 * β / lam + 1) :=
       mul_le_mul_of_nonneg_right hcenters (by positivity)
 
+end
+
 end Problem337
 
-end
+
 
 end OAI

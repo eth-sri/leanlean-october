@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.PositiveHighPhysical
 public import OAI.NumberTheory.DirichletL.Energy.PositiveBalancedAdmission
@@ -9,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
@@ -26,9 +27,9 @@ open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
 open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_high_stage
@@ -85,8 +86,8 @@ theorem actual_high_stage
   have hh:=hstageNow.2 Lgoal Lslot κ (physicalLoss Mglobal B ε k)
     (physicalLoss Mglobal B ε k) (reflectedLoss Mglobal B ε k) η₀ Q
     Clow (Cp*(C₀+C₁+1)) hκ hm.1.le hClow hmass
-    (by exact le_rfl) hm.2.2.2.1 (hm.2.2.1.trans hm.2.2.2.1)
-    (by have hpos:=hm.1.le.trans hm.2.2.2.1;linarith only [hpos,hs]) hlow hp
+    (le_rfl) hm.2.2.2.1 (hm.2.2.1.trans hm.2.2.2.1)
+    (by linarith) hlow hp
   have hconst:Cf*(Clow+Cp*(C₀+C₁+1)+1)≤(Cf*(Cp+1))*(C₀+C₁+Clow+1):=by
     have hh:0≤Cp*Clow:=mul_nonneg hCp.le hClow
     nlinarith only [mul_nonneg hCf.le hh,mul_nonneg hCf.le hC₀,mul_nonneg hCf.le hC₁]
@@ -95,7 +96,7 @@ theorem actual_high_stage
   apply (hh T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hslo hsupper
     p X₁ X₂ hX₁ hX₂ hXcap₁ hXcap₂ hcapacity hlarge).trans
   have hd:=diagonalControl_nonneg state.radial.profile
-  have hp0:=p.control_nonneg U
+  
   have hz:0≤Z:=zero_le_one.trans hphysicalNow.1.le
   gcongr
 

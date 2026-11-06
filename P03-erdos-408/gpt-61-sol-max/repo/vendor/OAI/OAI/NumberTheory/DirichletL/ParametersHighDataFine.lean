@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.ParametersHighData
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.ParametersHighData
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators
 
 namespace SevenEighths.Parameters
@@ -24,7 +25,7 @@ theorem exists_high_data_fine (Δ:ℝ)(hΔ:0<Δ)(mesh:ℝ→ℝ)
   have hsa : small≤allowance := min_le_left _ _
   have hst : small≤t/((N:ℝ)+2000) := min_le_right _ _
   have hst0 : small≤t/2000 := hst.trans
-    (div_le_div_of_nonneg_left ht.le (by norm_num) (by linarith [Nat.cast_nonneg (α:=ℝ) N]))
+    ((by bound))
   let ellMin := (7/8:ℝ)*rmin
   have hmin : 0<ellMin := mul_pos (by norm_num) hr
   obtain ⟨ε,e,κ,cost,τ₀,hε,hε1,hεgap,hεa,he,he1,heell,hea,hκ,hκ1,hcost,
@@ -81,7 +82,7 @@ theorem exists_high_data_fine (Δ:ℝ)(hΔ:0<Δ)(mesh:ℝ→ℝ)
 
 theorem fine_slot_widths {Δ:ℝ}(D:HighData Δ)(mesh:ℝ→ℝ)
     (hmesh:0<mesh D.t)(hfine:∀j,D.ell j≤mesh D.t/200)
-    (d:ℝ)(hd:(1/200:ℝ)≤d)(j:Fin D.N):
+     d (hd:(1/200:ℝ)≤d) j :
     0<D.ell j/d ∧ D.ell j/d≤mesh D.t:=by
   have hd0:0<d:=by linarith
   refine ⟨div_pos (D.slots_bounds j).1 hd0,(div_le_iff₀ hd0).mpr ?_⟩
@@ -90,6 +91,6 @@ theorem fine_slot_widths {Δ:ℝ}(D:HighData Δ)(mesh:ℝ→ℝ)
 
 end SevenEighths.Parameters
 
-end
+
 
 end OAI

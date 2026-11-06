@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.FamilyTail
 public import OAI.NumberTheory.DirichletL.Inversion.ReflectedArithmeticHeight
@@ -10,12 +11,12 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 
 theorem original_family_dyadic_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
     ∃ (degree : ℕ) (C : ℝ), 0<C ∧
     ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ]
       (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ)
@@ -59,14 +60,11 @@ theorem original_family_dyadic_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A
         (literalRawScale (F.reflected K hK S) s X^2)⁻¹ := by
     apply le_trans ?_ hh
     apply le_of_eq
-    congr 1
-    apply tsum_congr
-    intro i
-    by_cases hi : i∈retainedDyads (familyRawScale F s X QK QP) (16*T) <;> simp [hi]
+    ring
   apply hleft.trans
   have hnorm := reflected_norm_le_centers F K hK S QK QP hKr hPr
   gcongr
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

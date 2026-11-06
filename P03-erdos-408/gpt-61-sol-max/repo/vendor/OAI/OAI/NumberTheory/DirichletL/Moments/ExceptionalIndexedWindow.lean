@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWindowPair
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWindowPair
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 
@@ -14,15 +15,15 @@ namespace SevenEighths.CenteredMomentExceptionalIndexedWindow
 open CenteredMomentExceptionalWindowPair CenteredMomentPlainWindowEnergy
 open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow
 open CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+
 
 theorem indexed_plain_window_pair {κ α β:Type*}
-    (rows:Finset κ)(row:κ→O)(S:Finset α)(T:Finset β)(a:α→O)(b:β→O)
+    (rows:Finset κ)(row:κ→ActualEisensteinCubic.O)(S:Finset α)(T:Finset β)(a:α→ActualEisensteinCubic.O)(b:β→ActualEisensteinCubic.O)
     (ha:∀i,CanonicalQuadraticSieve.Supported (Ideal.span {a i}))
     (hb:∀j,CanonicalQuadraticSieve.Supported (Ideal.span {b j}))
-    (c:κ→α→ℂ)(d:κ→β→ℂ)(τ₁ τ₂:Character)(t₁ t₂ θ₁ θ₂ X Y:ℝ)(hX:0<X)(hY:0<Y)
-    (V₁ V₂:ℝ→ℂ)(hc₁:HasCompactSupport V₁)(hc₂:HasCompactSupport V₂)
-    (hs₁:ContDiff ℝ ∞ V₁)(hs₂:ContDiff ℝ ∞ V₂)(J₁ J₂:ℕ)(E:ℝ)(hE:0≤E)
+    (c:κ→α→ℂ)(d:κ→β→ℂ) τ₁ τ₂  t₁ t₂ θ₁ θ₂ X Y (hX:0<X)(hY:0<Y)
+     V₁ V₂  hc₁  hc₂ 
+     hs₁  hs₂  J₁ J₂  E (hE:0≤E)
     (hpair:∀u v:ℝ,(∑z∈rows,
       ‖rowPolynomial S a (fun i=>c z i*heightCoeff τ₁ (t₁+2*Real.pi*(u-θ₁)) (Ideal.span {a i})) (row z)‖*
       ‖rowPolynomial T b (fun j=>d z j*heightCoeff τ₂ (t₂+2*Real.pi*(v-θ₂)) (Ideal.span {b j})) (row z)‖)≤
@@ -67,11 +68,11 @@ theorem indexed_plain_window_pair {κ α β:Type*}
         ring
       _≤(‖columnDensity V₁ hc₁ hs₁ u‖*‖columnDensity V₂ hc₂ hs₂ v‖)*
           (E*(1+‖u‖)^J₁*(1+‖v‖)^J₂):=
-        mul_le_mul_of_nonneg_left (hpair u v) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
+        (by bound)
       _=_:=by ring
 
 end SevenEighths.CenteredMomentExceptionalIndexedWindow
 
-end
+
 
 end OAI

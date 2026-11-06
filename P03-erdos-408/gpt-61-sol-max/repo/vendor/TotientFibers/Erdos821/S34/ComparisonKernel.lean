@@ -16,7 +16,7 @@ open scoped BigOperators Classical
 open Filter
 
 namespace Erdos821.Blueprint.Analytic
-noncomputable section
+
 open Erdos821.S34Core
 
 theorem comparison_kernel_proof : Erdos821.Blueprint.Analytic.comparison_kernel_statement := by
@@ -151,5 +151,5 @@ theorem comparison_kernel_proof : Erdos821.Blueprint.Analytic.comparison_kernel_
   exact hbound.trans (mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right hcost (tuple_norm_nonneg G b f)) (tuple_norm_nonneg G a g))
 
-end
+
 end Erdos821.Blueprint.Analytic

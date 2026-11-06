@@ -11,15 +11,15 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open EisensteinSchwartzPoisson FourierBridge
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
-    (hLr : 0 ≤ Lr) (hLc : 0 ≤ Lc) (A : ℕ) :
+
+
+theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ))  Lr Lc 
+    (hLr : 0 ≤ Lr) (hLc : 0 ≤ Lc)  A  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ R : ℝ, 0 < R →
       ∀ {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
         (ε : ℝ) (hε : 0 < ε) (M N : ℝ) (_hN : 0 ≤ N)
-        (rows : m → O) (cols : n → Ideal O)
+        (rows : m → ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
         (_hr : Function.Injective rows) (_hc : Function.Injective cols)
         (_hrows : ∀ i, rows i ≠ 0 ∧ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ M)
         (_hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
@@ -80,7 +80,7 @@ theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
   have ht := htransfer R hR c x (fun p : n × n => y p.1 + y p.2) H hH hx hyy hphase
   simpa only [Fintype.sum_prod_type, c, H] using ht
 
-end
+
 end SevenEighths.CubicSieve
 
 end OAI

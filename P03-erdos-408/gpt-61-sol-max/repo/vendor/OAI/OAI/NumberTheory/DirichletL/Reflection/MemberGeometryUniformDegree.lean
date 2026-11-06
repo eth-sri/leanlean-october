@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.MemberGeometry
 public import OAI.NumberTheory.DirichletL.Reflection.MemberBudgetUniformDegree
@@ -10,15 +11,15 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem original_member_geometry_uniform_uniform_degree
-    (ε : ℝ) (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (ρ : ℝ) (hρ : 0<ρ) (η : ℝ) (hηpos : 0<η)
-    (κ δ Lscale Lpool : ℝ) (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool)
+     ε  (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     ρ  (hρ : 0<ρ)  η  (hηpos : 0<η)
+     κ δ Lscale Lpool  (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool)
     (Lcap saving : ℝ) (hδ : 0<δ) :
     ∃ (degree : ℕ), ∀ {Nlevel : Eis}, ∀
     {γ : Type*} [Fintype γ] (a c₀ : γ→Eis) (mode : γ→Bool)
@@ -89,7 +90,7 @@ theorem original_member_geometry_uniform_uniform_degree
   have hb (i : γ) := hu (Nlevel:=Nlevel) (a:=a i) (c₀:=c₀ i) (mode:=mode i)
     (s i) (hc₀ i) (hNlevel i) (hbase i) (hac i)
   choose C Z₀ hC hZ₀ henergy using hb
-  let degreeAll := degree
+  
   let CAll := (∑ i,C i)+1
   let ZAll := (∑ i,|Z₀ i|)+2
   have hc (i : γ) : C i≤CAll := by
@@ -126,10 +127,10 @@ theorem original_member_geometry_uniform_uniform_degree
   intro θ r aw hqk hqp hKr hPr hr haw
   apply (hD θ r aw hqk hqp hKr hPr hr haw).trans
   have hZpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hZA hZ)
-  have hheight : 1≤1+‖θ‖ := by linarith [norm_nonneg θ]
+  
   apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hZpos.le _)
   exact mul_le_mul (hc i) (le_refl _) (by positivity) hCA.le
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

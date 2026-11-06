@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 public import Mathlib.Analysis.Complex.Basic
@@ -34,12 +35,12 @@ open Finset
 variable {α β γ δ ι : Type*}
 
 /-- `‖k f‖ ≤ c ‖f‖` for the kernel `k` from `ℓ²(S')` to `ℓ²(S)`. -/
-def KerLe (S : Finset α) (S' : Finset β) (k : α → β → ℂ) (c : ℝ) : Prop :=
+def KerLe (S : Finset α) (S' : Finset β) (k : α → β → ℂ) (c : ℝ)  :=
   ∀ f : β → ℂ, ∑ x ∈ S, ‖∑ y ∈ S', k x y * f y‖ ^ 2 ≤ c ^ 2 * ∑ y ∈ S', ‖f y‖ ^ 2
 
 /-- `‖k f‖_μ ≤ c ‖f‖_ν` for the kernel `k` from `ℓ²(S', ν)` to `ℓ²(S, μ)`. -/
 def WKerLe (S : Finset α) (S' : Finset β) (μ : α → ℝ) (ν : β → ℝ) (k : α → β → ℂ)
-    (c : ℝ) : Prop :=
+    (c : ℝ)  :=
   ∀ f : β → ℂ, ∑ x ∈ S, μ x * ‖∑ y ∈ S', k x y * f y‖ ^ 2 ≤ c ^ 2 * ∑ y ∈ S', ν y * ‖f y‖ ^ 2
 
 /-! ### Cauchy–Schwarz -/
@@ -50,21 +51,26 @@ theorem norm_sum_star_mul_le (S : Finset α) (a b : α → ℂ) :
       Real.sqrt (∑ x ∈ S, ‖a x‖ ^ 2) * Real.sqrt (∑ x ∈ S, ‖b x‖ ^ 2) := by
   refine (norm_sum_le _ _).trans ?_
   calc ∑ x ∈ S, ‖star (a x) * b x‖ = ∑ x ∈ S, ‖a x‖ * ‖b x‖ := by
-        refine sum_congr rfl fun x _ => ?_
-        rw [norm_mul, norm_star]
+        simp_all
     _ ≤ _ := Real.sum_mul_le_sqrt_mul_sqrt _ _ _
 
+section
+variable {A F : ℝ} {S : Finset α} {S' : Finset β} {k k' : α → β → ℂ} {c c' : ℝ} (hk : KerLe S S' k c) (hc : 0 ≤ c)
+
+
+include hc in
 /-- A square bound gives a bound of the square roots. -/
-private theorem sqrt_le_of_sq_le {A F c : ℝ} (hc : 0 ≤ c) (h : A ≤ c ^ 2 * F) :
+private theorem sqrt_le_of_sq_le     (h : A ≤ c ^ 2 * F) :
     Real.sqrt A ≤ c * Real.sqrt F := by
   calc Real.sqrt A ≤ Real.sqrt (c ^ 2 * F) := Real.sqrt_le_sqrt h
     _ = c * Real.sqrt F := by rw [Real.sqrt_mul (sq_nonneg c), Real.sqrt_sq hc]
 
 /-! ### Bilinear form -/
 
+include hk hc in
 /-- A kernel bound gives the bilinear bound `|⟨g, k f⟩| ≤ c ‖g‖ ‖f‖`. -/
-theorem KerLe.bilinear {S : Finset α} {S' : Finset β} {k : α → β → ℂ} {c : ℝ} (hk : KerLe S S' k c)
-    (hc : 0 ≤ c) (f : β → ℂ) (g : α → ℂ) :
+theorem KerLe.bilinear          
+      (f : β → ℂ) (g : α → ℂ) :
     ‖∑ x ∈ S, star (g x) * ∑ y ∈ S', k x y * f y‖ ≤
       c * Real.sqrt (∑ x ∈ S, ‖g x‖ ^ 2) * Real.sqrt (∑ y ∈ S', ‖f y‖ ^ 2) := by
   have h := norm_sum_star_mul_le S g fun x => ∑ y ∈ S', k x y * f y
@@ -74,8 +80,9 @@ theorem KerLe.bilinear {S : Finset α} {S' : Finset β} {k : α → β → ℂ} 
         mul_le_mul_of_nonneg_left h' (Real.sqrt_nonneg _)
     _ = _ := by ring
 
+include hc in
 /-- The bilinear bound `|⟨g, k f⟩| ≤ c ‖g‖ ‖f‖` gives the kernel bound. -/
-theorem kerLe_of_bilinear {S : Finset α} {S' : Finset β} {k : α → β → ℂ} {c : ℝ} (hc : 0 ≤ c)
+theorem kerLe_of_bilinear          
     (h : ∀ (f : β → ℂ) (g : α → ℂ), ‖∑ x ∈ S, star (g x) * ∑ y ∈ S', k x y * f y‖ ≤
       c * Real.sqrt (∑ x ∈ S, ‖g x‖ ^ 2) * Real.sqrt (∑ y ∈ S', ‖f y‖ ^ 2)) :
     KerLe S S' k c := by
@@ -101,28 +108,25 @@ theorem kerLe_of_bilinear {S : Finset α} {S' : Finset β} {k : α → β → �
     rcases (Real.sqrt_nonneg A).eq_or_lt with h0 | hpos
     · rw [← h0]
       exact mul_nonneg hc (Real.sqrt_nonneg _)
-    · have : Real.sqrt A * Real.sqrt A ≤ c * Real.sqrt F * Real.sqrt A := by
-        rw [hsA]
-        linarith
-      exact le_of_mul_le_mul_right this hpos
+    nlinarith
   calc A = Real.sqrt A ^ 2 := (Real.sq_sqrt hA0).symm
     _ ≤ (c * Real.sqrt F) ^ 2 := pow_le_pow_left₀ (Real.sqrt_nonneg _) h2 2
     _ = c ^ 2 * F := by rw [mul_pow, Real.sq_sqrt hF0]
 
 /-! ### Basic operations -/
 
+include hk hc in
 /-- A kernel bound may be enlarged. -/
-theorem KerLe.mono {S : Finset α} {S' : Finset β} {k : α → β → ℂ} {c c' : ℝ} (hk : KerLe S S' k c)
-    (hc : 0 ≤ c) (hcc : c ≤ c') : KerLe S S' k c' := fun f =>
-  (hk f).trans (mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hc hcc 2)
-    (sum_nonneg fun _ _ => sq_nonneg _))
+theorem KerLe.mono          
+      (hcc : c ≤ c') : KerLe S S' k c' := fun f =>
+  (hk f).trans ((by gcongr <;> first | assumption | positivity | linarith))
 
 /-- The zero kernel has norm zero. -/
 theorem kerLe_zero (S : Finset α) (S' : Finset β) : KerLe S S' (fun _ _ => 0) 0 := fun f => by
   simp
 
 /-- Kernel bounds add. -/
-theorem KerLe.add {S : Finset α} {S' : Finset β} {k₁ k₂ : α → β → ℂ} {c₁ c₂ : ℝ}
+theorem KerLe.add     {k₁ k₂ : α → β → ℂ}  {c₁ c₂} 
     (h₁ : KerLe S S' k₁ c₁) (h₂ : KerLe S S' k₂ c₂) (hc₁ : 0 ≤ c₁) (hc₂ : 0 ≤ c₂) :
     KerLe S S' (fun x y => k₁ x y + k₂ x y) (c₁ + c₂) := by
   refine kerLe_of_bilinear (add_nonneg hc₁ hc₂) fun f g => ?_
@@ -139,7 +143,7 @@ theorem KerLe.add {S : Finset α} {S' : Finset β} {k₁ k₂ : α → β → �
   linarith
 
 /-- Kernel bounds add over a finite family (Minkowski). -/
-theorem KerLe.sum {S : Finset α} {S' : Finset β} (s : Finset ι) {k : ι → α → β → ℂ}
+theorem KerLe.sum     (s : Finset ι) {k : ι → α → β → ℂ}
     {c : ι → ℝ} (hk : ∀ i ∈ s, KerLe S S' (k i) (c i)) (hc : ∀ i ∈ s, 0 ≤ c i) :
     KerLe S S' (fun x y => ∑ i ∈ s, k i x y) (∑ i ∈ s, c i) := by
   classical
@@ -151,9 +155,10 @@ theorem KerLe.sum {S : Finset α} {S' : Finset β} (s : Finset ι) {k : ι → �
       fun j hj => hc j (mem_insert_of_mem hj)) (hc i (mem_insert_self i s))
       (sum_nonneg fun j hj => hc j (mem_insert_of_mem hj))
 
+include hk in
 /-- A scalar multiple of a kernel. -/
-theorem KerLe.const_mul {S : Finset α} {S' : Finset β} {k : α → β → ℂ} {c : ℝ}
-    (hk : KerLe S S' k c) (a : ℂ) : KerLe S S' (fun x y => a * k x y) (‖a‖ * c) := fun f => by
+theorem KerLe.const_mul        
+       a  : KerLe S S' (fun x y => a * k x y) (‖a‖ * c) := fun f => by
   calc ∑ x ∈ S, ‖∑ y ∈ S', a * k x y * f y‖ ^ 2
       = ‖a‖ ^ 2 * ∑ x ∈ S, ‖∑ y ∈ S', k x y * f y‖ ^ 2 := by
         rw [mul_sum]
@@ -166,9 +171,10 @@ theorem KerLe.const_mul {S : Finset α} {S' : Finset β} {k : α → β → ℂ}
         mul_le_mul_of_nonneg_left (hk f) (sq_nonneg _)
     _ = (‖a‖ * c) ^ 2 * ∑ y ∈ S', ‖f y‖ ^ 2 := by ring
 
+include hk in
 /-- Multipliers of modulus at most one at both ends do not increase the norm. -/
-theorem KerLe.mul_diag {S : Finset α} {S' : Finset β} {k : α → β → ℂ} {c : ℝ}
-    (hk : KerLe S S' k c) {φ : α → ℂ} {φ' : β → ℂ} (hφ : ∀ x ∈ S, ‖φ x‖ ≤ 1)
+theorem KerLe.mul_diag        
+      {φ : α → ℂ} {φ' : β → ℂ} (hφ : ∀ x ∈ S, ‖φ x‖ ≤ 1)
     (hφ' : ∀ y ∈ S', ‖φ' y‖ ≤ 1) : KerLe S S' (fun x y => φ x * k x y * φ' y) c := fun f => by
   calc ∑ x ∈ S, ‖∑ y ∈ S', φ x * k x y * φ' y * f y‖ ^ 2
       ≤ ∑ x ∈ S, ‖∑ y ∈ S', k x y * (φ' y * f y)‖ ^ 2 := by
@@ -185,19 +191,26 @@ theorem KerLe.mul_diag {S : Finset α} {S' : Finset β} {k : α → β → ℂ} 
         rw [norm_mul, mul_pow]
         exact mul_le_of_le_one_left (sq_nonneg _) (pow_le_one₀ (norm_nonneg _) (hφ' y hy))
 
+include hk in
 /-- A kernel agreeing with a bounded one on the index sets is bounded. -/
-theorem KerLe.congr {S : Finset α} {S' : Finset β} {k k' : α → β → ℂ} {c : ℝ}
-    (hk : KerLe S S' k c) (h : ∀ x ∈ S, ∀ y ∈ S', k x y = k' x y) : KerLe S S' k' c := fun f => by
+theorem KerLe.congr        
+      (h : ∀ x ∈ S, ∀ y ∈ S', k x y = k' x y) : KerLe S S' k' c := fun f => by
   calc ∑ x ∈ S, ‖∑ y ∈ S', k' x y * f y‖ ^ 2 = ∑ x ∈ S, ‖∑ y ∈ S', k x y * f y‖ ^ 2 :=
         sum_congr rfl fun x hx => by rw [sum_congr rfl fun y hy => by rw [← h x hx y hy]]
     _ ≤ _ := hk f
 
+end
+
 /-! ### Embeddings and blocks -/
+
+section
+variable {S : Finset α} {S' : Finset β} {T : Finset γ} {T' : Finset δ} {G : γ → δ → ℂ} {μ : α → ℝ} {ν : β → ℝ} {k : α → β → ℂ} {c R C : ℝ} (hR : 0 ≤ R) (hC : 0 ≤ C) (hμ : ∀ x ∈ S, 0 ≤ μ x) (hrow : ∀ x ∈ S, ∑ y ∈ S', ‖k x y‖ ≤ R) (hν : ∀ y ∈ S', 0 < ν y)
+
 
 /-- **Pulling back along embeddings**: if `e` and `e'` are injective on `S` and `S'` and map
 them into `T` and `T'`, the pulled-back kernel `G(e x, e' y)` has the norm bound of `G`. -/
-theorem KerLe.comp_embed {S : Finset α} {S' : Finset β} {T : Finset γ} {T' : Finset δ}
-    {G : γ → δ → ℂ} {c : ℝ} (hG : KerLe T T' G c) {e : α → γ} {e' : β → δ}
+theorem KerLe.comp_embed        
+        (hG : KerLe T T' G c) {e : α → γ} {e' : β → δ}
     (he : Set.InjOn e S) (he' : Set.InjOn e' S') (hmap : ∀ x ∈ S, e x ∈ T)
     (hmap' : ∀ y ∈ S', e' y ∈ T') : KerLe S S' (fun x y => G (e x) (e' y)) c := by
   classical
@@ -214,15 +227,11 @@ theorem KerLe.comp_embed {S : Finset α} {S' : Finset β} {T : Finset γ} {T' : 
         exact he' hy' hy h
       · rintro rfl
         exact ⟨hy, rfl⟩
-    show ∑ y' ∈ S' with e' y' = e' y, f y' = f y
-    rw [hfib, sum_singleton]
+    simp_all
   have hF0 : ∀ w, w ∉ S'.image e' → F w = 0 := by
-    intro w hw
-    refine sum_eq_zero fun y hy => ?_
-    exact (hw (mem_image.2 ⟨y, (mem_filter.1 hy).1, (mem_filter.1 hy).2⟩)).elim
+    aesop
   have himg : S'.image e' ⊆ T' := fun w hw => by
-    obtain ⟨y, hy, rfl⟩ := mem_image.1 hw
-    exact hmap' y hy
+    grind
   have hsum : ∀ v, ∑ y ∈ S', G v (e' y) * f y = ∑ w ∈ T', G v w * F w := by
     intro v
     rw [← sum_subset himg fun w _ hw => by rw [hF0 w hw, mul_zero], sum_image he']
@@ -231,8 +240,7 @@ theorem KerLe.comp_embed {S : Finset α} {S' : Finset β} {T : Finset γ} {T' : 
     rw [← sum_subset himg fun w _ hw => by rw [hF0 w hw, norm_zero, sq, mul_zero], sum_image he']
     exact sum_congr rfl fun y hy => by rw [hFe y hy]
   have himgS : S.image e ⊆ T := fun v hv => by
-    obtain ⟨x, hx, rfl⟩ := mem_image.1 hv
-    exact hmap x hx
+    grind
   calc ∑ x ∈ S, ‖∑ y ∈ S', G (e x) (e' y) * f y‖ ^ 2
       = ∑ v ∈ S.image e, ‖∑ w ∈ T', G v w * F w‖ ^ 2 := by
         rw [sum_image he]
@@ -244,7 +252,7 @@ theorem KerLe.comp_embed {S : Finset α} {S' : Finset β} {T : Finset γ} {T' : 
 
 /-- **Block decomposition**: if `k(x, y) ≠ 0` only when the labels `κ x` and `κ' y` agree, and
 every block has norm at most `c`, then `k` has norm at most `c`. -/
-theorem KerLe.block [DecidableEq ι] {S : Finset α} {S' : Finset β} {k : α → β → ℂ} {c : ℝ}
+theorem KerLe.block [DecidableEq ι] {S : Finset α} {S' : Finset β} {k : α → β → ℂ}  {c} 
     (κ : α → ι) (κ' : β → ι) (hk : ∀ x ∈ S, ∀ y ∈ S', k x y ≠ 0 → κ x = κ' y)
     (hblock : ∀ i, KerLe (S.filter (κ · = i)) (S'.filter (κ' · = i)) k c) : KerLe S S' k c := by
   intro f
@@ -254,11 +262,7 @@ theorem KerLe.block [DecidableEq ι] {S : Finset α} {S' : Finset β} {k : α �
     intro x hx
     rw [sum_filter]
     refine sum_congr rfl fun y hy => ?_
-    split_ifs with h
-    · rfl
-    · by_cases hz : k x y = 0
-      · rw [hz, zero_mul]
-      · exact (h (hk x hx y hy hz).symm).elim
+    grind
   calc ∑ x ∈ S, ‖∑ y ∈ S', k x y * f y‖ ^ 2
       = ∑ i ∈ I, ∑ x ∈ S.filter (κ · = i), ‖∑ y ∈ S'.filter (κ' · = i), k x y * f y‖ ^ 2 := by
         rw [← sum_fiberwise_of_maps_to (g := κ) (t := I) fun x hx =>
@@ -275,12 +279,13 @@ theorem KerLe.block [DecidableEq ι] {S : Finset α} {S' : Finset β} {k : α �
 
 /-! ### The Schur test -/
 
+include hR hC hμ hrow in
 /-- **The weighted Schur test** with weight one: if the absolute row sums of `k` are at most
 `R` and the absolute column sums against `μ` are at most `C ν`, then `k` has norm at most
 `√(R C)` from `ℓ²(ν)` to `ℓ²(μ)`. -/
-theorem wkerLe_of_schur {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν : β → ℝ} {k : α → β → ℂ}
-    {R C : ℝ} (hR : 0 ≤ R) (hC : 0 ≤ C) (hμ : ∀ x ∈ S, 0 ≤ μ x)
-    (hrow : ∀ x ∈ S, ∑ y ∈ S', ‖k x y‖ ≤ R)
+theorem wkerLe_of_schur          
+           
+     
     (hcol : ∀ y ∈ S', ∑ x ∈ S, μ x * ‖k x y‖ ≤ C * ν y) :
     WKerLe S S' μ ν k (Real.sqrt (R * C)) := by
   intro f
@@ -307,18 +312,18 @@ theorem wkerLe_of_schur {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν :
         rw [mul_sum]
         simp_rw [mul_sum]
         rw [sum_comm]
-        refine sum_congr rfl fun y _ => sum_congr rfl fun x _ => by ring
+        grind
     _ ≤ R * ∑ y ∈ S', ‖f y‖ ^ 2 * (C * ν y) :=
-        mul_le_mul_of_nonneg_left (sum_le_sum fun y hy =>
-          mul_le_mul_of_nonneg_left (hcol y hy) (sq_nonneg _)) hR
+        (by bound)
     _ = R * C * ∑ y ∈ S', ν y * ‖f y‖ ^ 2 := by
         rw [mul_assoc, mul_sum, mul_sum, mul_sum]
         exact sum_congr rfl fun y _ => by ring
 
+include hR hC hrow in
 /-- **The Schur test**: absolute row sums at most `R` and column sums at most `C` give norm at
 most `√(R C)`. -/
-theorem kerLe_of_schur {S : Finset α} {S' : Finset β} {k : α → β → ℂ} {R C : ℝ} (hR : 0 ≤ R)
-    (hC : 0 ≤ C) (hrow : ∀ x ∈ S, ∑ y ∈ S', ‖k x y‖ ≤ R)
+theorem kerLe_of_schur          
+       
     (hcol : ∀ y ∈ S', ∑ x ∈ S, ‖k x y‖ ≤ C) : KerLe S S' k (Real.sqrt (R * C)) := by
   intro f
   have h := wkerLe_of_schur (μ := fun _ : α => (1 : ℝ)) (ν := fun _ : β => (1 : ℝ)) hR hC
@@ -327,7 +332,7 @@ theorem kerLe_of_schur {S : Finset α} {S' : Finset β} {k : α → β → ℂ} 
   simpa using h
 
 /-- The trivial bound: entries of modulus at most `M` give norm at most `M √(|S| |S'|)`. -/
-theorem kerLe_of_norm_le {S : Finset α} {S' : Finset β} {k : α → β → ℂ} {M : ℝ} (hM : 0 ≤ M)
+theorem kerLe_of_norm_le        {M}  (hM : 0 ≤ M)
     (h : ∀ x ∈ S, ∀ y ∈ S', ‖k x y‖ ≤ M) :
     KerLe S S' k (M * Real.sqrt (S.card * S'.card)) := by
   have hk := kerLe_of_schur (k := k) (R := S'.card * M) (C := S.card * M) (by positivity)
@@ -339,10 +344,11 @@ theorem kerLe_of_norm_le {S : Finset α} {S' : Finset β} {k : α → β → ℂ
 
 /-! ### Weights -/
 
+include hμ hν in
 /-- **Conjugation to counting measure**: with `μ ≥ 0` and `ν > 0`, a bound for the kernel
 `√μ(x) k(x, y) / √ν(y)` in `ℓ²` gives the weighted bound for `k`. -/
-theorem wkerLe_of_kerLe {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν : β → ℝ} {k : α → β → ℂ}
-    {c : ℝ} (hμ : ∀ x ∈ S, 0 ≤ μ x) (hν : ∀ y ∈ S', 0 < ν y)
+theorem wkerLe_of_kerLe          
+         
     (hk : KerLe S S' (fun x y => (Real.sqrt (μ x) : ℂ) * k x y / (Real.sqrt (ν y) : ℂ)) c) :
     WKerLe S S' μ ν k c := by
   intro f
@@ -370,10 +376,11 @@ theorem wkerLe_of_kerLe {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν :
   rw [sum_congr rfl e1, ← sum_congr rfl e2]
   exact h
 
+include hμ hν in
 /-- **Conjugation from counting measure**: with `μ, ν > 0`, a weighted bound for `k` gives the
 bound for the kernel `√μ(x) k(x, y) / √ν(y)` in `ℓ²`. -/
-theorem kerLe_of_wkerLe {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν : β → ℝ} {k : α → β → ℂ}
-    {c : ℝ} (hμ : ∀ x ∈ S, 0 ≤ μ x) (hν : ∀ y ∈ S', 0 < ν y) (hk : WKerLe S S' μ ν k c) :
+theorem kerLe_of_wkerLe          
+          (hk : WKerLe S S' μ ν k c) :
     KerLe S S' (fun x y => (Real.sqrt (μ x) : ℂ) * k x y / (Real.sqrt (ν y) : ℂ)) c := by
   intro g
   set f : β → ℂ := fun y => g y / (Real.sqrt (ν y) : ℂ) with hf
@@ -384,9 +391,7 @@ theorem kerLe_of_wkerLe {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν :
     have e : ∑ y ∈ S', (Real.sqrt (μ x) : ℂ) * k x y / (Real.sqrt (ν y) : ℂ) * g y =
         (Real.sqrt (μ x) : ℂ) * ∑ y ∈ S', k x y * f y := by
       rw [mul_sum]
-      refine sum_congr rfl fun y _ => ?_
-      rw [hf]
-      ring
+      grind
     rw [e, norm_mul, mul_pow, Complex.norm_real, Real.norm_of_nonneg (Real.sqrt_nonneg _),
       Real.sq_sqrt (hμ x hx)]
   have e2 : ∀ y ∈ S', ν y * ‖f y‖ ^ 2 = ‖g y‖ ^ 2 := by
@@ -400,15 +405,15 @@ theorem kerLe_of_wkerLe {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν :
   exact h
 
 /-- A kernel vanishing on the index sets has weighted norm at most any `c ≥ 0`. -/
-theorem wkerLe_of_eq_zero {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν : β → ℝ}
-    {k : α → β → ℂ} {c : ℝ} (hν : ∀ y ∈ S', 0 ≤ ν y) (hk : ∀ x ∈ S, ∀ y ∈ S', k x y = 0) :
+theorem wkerLe_of_eq_zero        
+        (hν : ∀ y ∈ S', 0 ≤ ν y) (hk : ∀ x ∈ S, ∀ y ∈ S', k x y = 0) :
     WKerLe S S' μ ν k c := by
   intro f
   calc ∑ x ∈ S, μ x * ‖∑ y ∈ S', k x y * f y‖ ^ 2 = 0 := by
-        refine sum_eq_zero fun x hx => ?_
-        rw [sum_eq_zero fun y hy => by rw [hk x hx y hy, zero_mul]]
-        simp
+        simp_all
     _ ≤ c ^ 2 * ∑ y ∈ S', ν y * ‖f y‖ ^ 2 :=
         mul_nonneg (sq_nonneg c) (sum_nonneg fun y hy => mul_nonneg (hν y hy) (sq_nonneg _))
+
+end
 
 end Erdos408.OneSided

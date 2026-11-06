@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.AbsoluteEnergy
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRetained
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorRetained
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentPositiveSummability
@@ -16,9 +17,12 @@ open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeS
 open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentDivisorRetained
 open CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentDivisorAllocation
 open ConcreteTraceCRT
-local notation "O" => HeckeFamily.O
 
-lemma plain_finite_norm (η:Character) (m A z:O) (t:ℝ) (W:ℝ→ℂ) (b X:ℝ)
+
+section
+variable (η:Character) (m A z:HeckeFamily.O) (t:ℝ)
+
+lemma plain_finite_norm        W   b X 
     (hs:Function.support W⊆Set.Iic b) (hX:0<X) :
     ‖rowTwistedSum η m A z W t X‖≤∑I∈idealBall (b*X),‖W ((Ideal.absNorm I:ℝ)/X)‖ := by
   rw [rowTwistedSum_eq_weight,tsum_eq_sum (s:=idealBall (b*X)) ?_]
@@ -38,32 +42,36 @@ lemma plain_finite_norm (η:Character) (m A z:O) (t:ℝ) (W:ℝ→ℂ) (b X:ℝ)
         exact hI ((mem_idealBall _ _).mpr ⟨h0,hbound⟩)
       rw [hw,mul_zero]
 
-lemma slot_finite_norm (η:Character) (m A z:O) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) :
+lemma slot_finite_norm      
+     S   β  :
     ‖rowSlot η m A z S β t‖≤∑I∈S,‖β I‖ := by
   rw [rowSlot_eq_weight]
   exact finite_hecke_polynomial_norm η m A z t S β
 
-lemma bounded_radial_summable (F:O→ℂ) (B:ℝ) (hF:∀z,‖F z‖≤B)
-    (keep:O→Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
-    Summable (fun z:O=>if keep z then ‖F z‖^2*(Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
+end
+
+lemma bounded_radial_summable (F:HeckeFamily.O→ℂ) (B:ℝ) (hF:∀z,‖F z‖≤B)
+    (keep:HeckeFamily.O→Prop) (Φ:𝓢(ℝ,ℂ))  K  (hK:0<K) :
+    Summable (fun z:HeckeFamily.O=>if keep z then ‖F z‖^2*(Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _)
-    (f:=fun z:O=>B^2*‖Φ (‖eisEmbedding z‖^2/K)‖)
+    (f:=fun z:HeckeFamily.O=>B^2*‖Φ (‖eisEmbedding z‖^2/K)‖)
   · intro z
     split_ifs
     · rw [Real.norm_eq_abs,abs_mul,abs_of_nonneg (sq_nonneg _)]
-      exact mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) (hF z) 2)
-        (Complex.abs_re_le_norm _) (abs_nonneg _) (sq_nonneg _)
+      bound
     · simp only [norm_zero]
       positivity
   · exact (radial_norm_summable Φ K hK).mul_left _
 
-lemma product_bounded {ι:Type*} [Fintype ι]
-    (η:Character) (m A:O) (t:ℝ) (c:ℂ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
+section
+variable {ι:Type*} [Fintype ι] (η:Character) (m A:HeckeFamily.O) (t:ℝ)
+
+lemma product_bounded    
+          (c:ℂ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
     (hs₁:Function.support W₁⊆Set.Iic b₁) (hs₂:Function.support W₂⊆Set.Iic b₂)
-    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→Finset (Ideal O)) (β:ι→Ideal O→ℂ) :
-    ∃B:ℝ,∀z:O,‖c*((rowTwistedSum η m A z W₁ t X₁*
+    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→Finset (Ideal HeckeFamily.O)) (β:ι→Ideal HeckeFamily.O→ℂ) :
+    ∃B:ℝ,∀z:HeckeFamily.O,‖c*((rowTwistedSum η m A z W₁ t X₁*
       rowTwistedSum η m A z W₂ t X₂)*∏i,rowSlot η m A z (S i) (β i) t)‖≤B := by
   refine ⟨‖c‖*((∑I∈idealBall (b₁*X₁),‖W₁ ((Ideal.absNorm I:ℝ)/X₁)‖)*
     (∑I∈idealBall (b₂*X₂),‖W₂ ((Ideal.absNorm I:ℝ)/X₂)‖)*
@@ -78,12 +86,12 @@ lemma product_bounded {ι:Type*} [Fintype ι]
   · positivity
   · positivity
 
- theorem retained_positive_summable {ι:Type*} [Fintype ι]
-    (η:Character) (m A:O) (t:ℝ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
+ theorem retained_positive_summable    
+          (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
     (hs₁:Function.support W₁⊆Set.Iic b₁) (hs₂:Function.support W₂⊆Set.Iic b₂)
-    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→Finset (Ideal O)) (β:ι→Ideal O→ℂ) (P:ι→ℝ)
-    (keep:O→Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
-    Summable (fun z:O=>if keep z then ‖retainedPositiveRow η m A z W₁ W₂ S β P t X₁ X₂‖^2*
+    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→Finset (Ideal HeckeFamily.O)) (β:ι→Ideal HeckeFamily.O→ℂ) (P:ι→ℝ)
+    (keep:HeckeFamily.O→Prop) (Φ:𝓢(ℝ,ℂ))  K  (hK:0<K) :
+    Summable (fun z:HeckeFamily.O=>if keep z then ‖retainedPositiveRow η m A z W₁ W₂ S β P t X₁ X₂‖^2*
       (Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
   unfold retainedPositiveRow positiveSlotRow
   simp_rw [←clipped_rowTwistedSum η m A _ W₁ t X₁ hX₁,
@@ -93,13 +101,15 @@ lemma product_bounded {ι:Type*} [Fintype ι]
     W₁ W₂ b₁ b₂ X₁ X₂ hs₁ hs₂ hX₁ hX₂ S β
   exact bounded_radial_summable _ B hB keep Φ K hK
 
+end
+
 theorem allocated_positive_summable {ι:Type*} [Fintype ι] [DecidableEq ι]
-    (η:Character) (m A:O) (t:ℝ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
+    (η:Character) (m A:HeckeFamily.O) (t:ℝ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
     (hs₁:Function.support W₁⊆Set.Iic b₁) (hs₂:Function.support W₂⊆Set.Iic b₂)
-    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→Finset (Ideal O)) (β:ι→Ideal O→ℂ) (P:ι→ℝ)
-    (D:Ideal O) (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2)))
-    (keep:O→Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
-    Summable (fun z:O=>if keep z then ‖allocatedPositiveRow η m A z t S β P D a W₁ W₂ X₁ X₂‖^2*
+    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→Finset (Ideal HeckeFamily.O)) (β:ι→Ideal HeckeFamily.O→ℂ) (P:ι→ℝ)
+    (D:Ideal HeckeFamily.O) (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2)))
+    (keep:HeckeFamily.O→Prop) (Φ:𝓢(ℝ,ℂ))  K  (hK:0<K) :
+    Summable (fun z:HeckeFamily.O=>if keep z then ‖allocatedPositiveRow η m A z t S β P D a W₁ W₂ X₁ X₂‖^2*
       (Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
   have hN (j:Fin 2):(0:ℝ)<Ideal.absNorm (selectedPlain D a j) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
@@ -110,6 +120,6 @@ theorem allocated_positive_summable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 end SevenEighths.CenteredMomentPositiveSummability
 
-end
+
 
 end OAI

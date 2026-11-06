@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Groups
 
@@ -26,7 +27,7 @@ lemma harmonicMass_dyadicGroup_le : ∃ Y₀ : ℝ, ∀ y : ℝ, Y₀ ≤ y →
     harmonicMass (dyadicGroup y) ≤ 4 / 5 := by
   obtain ⟨E, hE, hM⟩ := mertens_second
   refine ⟨10 * (E + 1) + 4, fun y hy => ?_⟩
-  have hy4 : 4 ≤ y := by linarith
+  
   have hey : 2 ≤ Real.exp y - 1 := by
     have := add_one_le_exp y
     linarith
@@ -82,7 +83,7 @@ lemma eventually_harmonicMass_le : ∀ᶠ x : ℝ in atTop,
 
 /-- A doubling family has at least `(b - a) T / log 2 - 1` groups, given that all its groups
 are nonempty. -/
-lemma card_doublingGroups_ge {x : ℝ} (hx : 1 ≤ Real.log x) {a b : ℝ} (hab : a ≤ b)
+lemma card_doublingGroups_ge  {x}  (hx : 1 ≤ Real.log x)  {a b}  (hab : a ≤ b)
     (hne : ∀ i : ℕ, 2 ^ (i + 1) * Real.log x ^ a ≤ Real.log x ^ b →
       (dyadicGroup (2 ^ i * Real.log x ^ a)).Nonempty) :
     (b - a) * logLog x / Real.log 2 - 1 ≤ ((doublingGroups x a b).card : ℝ) := by
@@ -113,7 +114,7 @@ lemma card_doublingGroups_ge {x : ℝ} (hx : 1 ≤ Real.log x) {a b : ℝ} (hab 
       ((range ⌊z⌋₊).filter (fun i => 2 ^ (i + 1) * Real.log x ^ a ≤ Real.log x ^ b)) := by
     intro i hi i' hi' h
     by_contra hii'
-    have hLa : 0 < Real.log x ^ a := Real.rpow_pos_of_pos hL0 a
+    
     have key : ∀ i i' : ℕ, i < i' → 2 * (2 ^ i * Real.log x ^ a) ≤ 2 ^ i' * Real.log x ^ a := by
       intro i i' hlt
       rw [← mul_assoc, ← pow_succ']
@@ -154,12 +155,10 @@ lemma eventually_card_families_ge : ∀ᶠ x : ℝ in atTop,
       nlinarith [Real.rpow_pos_of_pos hL0 a]
     have hm := (hY₀ _ (hY.trans h1)).1
     rw [nonempty_iff_ne_empty]
-    intro h
-    rw [h, harmonicMass, sum_empty] at hm
-    linarith
+    grind [harmonicMass]
   have hlog2 := log_two_lt_d9
   have hlog2' := log_two_gt_d9
-  have hT0 : 0 ≤ logLog x := by linarith
+  
   constructor
   · have h := card_doublingGroups_ge hx (show (28 / 100 : ℝ) ≤ 35 / 100 by norm_num)
       fun i _ => hne _ (by norm_num) i

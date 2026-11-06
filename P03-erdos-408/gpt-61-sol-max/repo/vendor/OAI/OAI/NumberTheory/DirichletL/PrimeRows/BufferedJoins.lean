@@ -6,22 +6,22 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.HorizontalIntegral
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+
 variable {ι : Type*} [Fintype ι]
 
 theorem buffered_horizontal_join_arbitrary_decay {K : ℕ}
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (N : ℕ) (r : ℝ) (hr : (17/50:ℝ)≤r) :
+     N   r  (hr : (17/50:ℝ)≤r) :
     ∃C : ℝ,0≤C ∧ ∀X Y Z : ℝ,0<X → 0<Y → 0<Z → ∀a B H : ℝ,∀i : ℕ,
       (51/100:ℝ)≤a → a≤1 → 2<B → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
@@ -60,6 +60,6 @@ theorem buffered_horizontal_join_arbitrary_decay {K : ℕ}
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

@@ -11,22 +11,26 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open EisensteinSchwartzPoisson
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-def cubicDualCoefficient {n : Type*} (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (a : n → ℂ) (j : n) : ℂ :=
+
+def cubicDualCoefficient {n : Type*} (cols : n → Ideal ActualEisensteinCubic.O) (hc : ∀ j, Admissible (cols j))
+    (a : n → ℂ) (j : n)  :=
   star (a j * gaussTwo (cols j) (hc j).2) / (‖eisEmbedding (primaryGenerator (cols j))‖ : ℂ)
 
-lemma cubicDualCoefficient_norm_sq {n : Type*}
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j)) (a : n → ℂ) (j : n) :
+section
+variable {n : Type*}
+include n
+
+lemma cubicDualCoefficient_norm_sq  
+    (cols : n → Ideal ActualEisensteinCubic.O) (hc : ∀ j, Admissible (cols j)) (a : n → ℂ) (j : n) :
     ‖cubicDualCoefficient cols hc a j‖ ^ 2 = ‖a j‖ ^ 2 / (Ideal.absNorm (cols j) : ℝ) := by
   simp only [cubicDualCoefficient, norm_div, norm_star, norm_mul, gaussTwo_norm_one _ (hc j),
     mul_one, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _), div_pow,
     primaryGenerator_norm_sq _ (hc j).2]
 
-lemma cubicDualCoefficient_energy {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j)) (a : n → ℂ)
-    (N : ℝ) (hN : 0 < N) (hcols : ∀ j, N / 2 ≤ (Ideal.absNorm (cols j) : ℝ)) :
+lemma cubicDualCoefficient_energy   [Fintype n]
+    (cols : n → Ideal ActualEisensteinCubic.O)  hc   a 
+     N  (hN : 0 < N) (hcols : ∀ j, N / 2 ≤ (Ideal.absNorm (cols j) : ℝ)) :
     (∑ j, ‖cubicDualCoefficient cols hc a j‖ ^ 2) ≤ (2 / N) * ∑ j, ‖a j‖ ^ 2 := by
   rw [Finset.mul_sum]
   apply Finset.sum_le_sum
@@ -37,8 +41,10 @@ lemma cubicDualCoefficient_energy {n : Type*} [Fintype n]
       div_le_div_of_nonneg_left (sq_nonneg _) (by positivity) (hcols j)
     _ = _ := by field_simp
 
-def cubicDualRow {n : Type*} [Fintype n] (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (h : O) : ℂ :=
+end
+
+def cubicDualRow {n } [Fintype n] (cols : n → Ideal ActualEisensteinCubic.O) (hc : ∀ j, Admissible (cols j))
+    (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (h : ActualEisensteinCubic.O)  :=
   ∑ j, ∑ k, if IsCoprime (cols j) (cols k) then
     (star (a j) * a k * (star (gaussTwo (cols j) (hc j).2) * gaussTwo (cols k) (hc k).2) /
       ((‖eisEmbedding (primaryGenerator (cols j))‖ : ℂ) * (‖eisEmbedding (primaryGenerator (cols k))‖ : ℂ))) *
@@ -47,8 +53,8 @@ def cubicDualRow {n : Type*} [Fintype n] (cols : n → Ideal O) (hc : ∀ j, Adm
         ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ))) else 0
 
 lemma cubicDualRow_eq_gram {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j)) (a : n → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (h : O) :
+    (cols : n → Ideal ActualEisensteinCubic.O)  hc   a 
+     W   M   h  :
     cubicDualRow cols hc a W M h =
       ∑ j, ∑ k, (if IsCoprime (cols j) (cols k) then
         star (cubicRow (cols j) h * cubicDualCoefficient cols hc a j) *
@@ -72,10 +78,10 @@ lemma cubicDualRow_eq_gram {n : Type*} [Fintype n]
     ring
   · simp only [ite_eq_right hcop, zero_mul]
 
-lemma cubicRow_zero_of_ne_one (I : Ideal O) (hI : Admissible I) (hI1 : I ≠ 1) :
+lemma cubicRow_zero_of_ne_one  I  (hI : Admissible I) (hI1 : I ≠ 1) :
     cubicRow I 0 = 0 := by
   have hI_top : I ≠ ⊤ := by simpa only [Ideal.one_eq_top] using hI1
-  have hcop : ¬ IsCoprime I (Ideal.span {(0 : O)}) := by
+  have hcop : ¬ IsCoprime I (Ideal.span {(0 : ActualEisensteinCubic.O)}) := by
     simpa only [Ideal.isCoprime_iff_sup_eq, Ideal.span_singleton_zero, sup_bot_eq] using hI_top
   have h := idealSymbol_cube_mask I 0 hI.2
   rw [ite_eq_right hcop] at h

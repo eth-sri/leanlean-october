@@ -1,4 +1,8 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Extraction.Allocation.Asymptotics
+import Erdos408.Extraction.Sieve.Basic
 
 public import Erdos408.Extraction.Defs
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
@@ -18,35 +22,41 @@ namespace Erdos408.TypeII
 
 open Filter Real
 
-theorem tendsto_logLog : Tendsto logLog atTop atTop :=
-  tendsto_log_atTop.comp tendsto_log_atTop
+alias tendsto_logLog := _root_.Erdos408.tendsto_logLog_atTop
 
-theorem tendsto_logLogLog : Tendsto logLogLog atTop atTop :=
-  tendsto_log_atTop.comp tendsto_logLog
+alias tendsto_logLogLog := _root_.Erdos408.Sieve.tendsto_logLogLog
+
+section
+variable {x : ℝ}
 
 /-- `exp s = T` once `T > 0`. -/
-theorem exp_logLogLog {x : ℝ} (h : 0 < logLog x) : Real.exp (logLogLog x) = logLog x :=
+theorem exp_logLogLog   (h : 0 < logLog x) : Real.exp (logLogLog x) = logLog x :=
   Real.exp_log h
 
 /-- `L^ε = exp(ε T)`. -/
-theorem log_rpow_eq_exp {x : ℝ} (h : 0 < Real.log x) (ε : ℝ) :
-    Real.log x ^ ε = Real.exp (ε * logLog x) := by
-  rw [rpow_def_of_pos h, logLog, mul_comm]
+theorem log_rpow_eq_exp   (h : 0 < Real.log x)  ε  :
+    Real.log x ^ ε = Real.exp (ε * logLog x) := by solve_by_elim [_root_.Erdos408.Sieve.log_rpow_eq]
+
+end
 
 /-- Eventually `A ≤ s`. -/
-theorem eventually_le_logLogLog (A : ℝ) : ∀ᶠ x : ℝ in atTop, A ≤ logLogLog x :=
+theorem eventually_le_logLogLog  A  : ∀ᶠ x : ℝ in atTop, A ≤ logLogLog x :=
   tendsto_logLogLog.eventually_ge_atTop A
 
+section
+variable {Ch x : ℝ} (hT : 0 < logLog x) (hs : 0 ≤ logLogLog x) (a b : ℝ) (k : ℕ) (A ε : ℝ) (hab : a < b) (hε : 0 < ε)
+
 /-- Eventually `A ≤ T`. -/
-theorem eventually_le_logLog (A : ℝ) : ∀ᶠ x : ℝ in atTop, A ≤ logLog x :=
+theorem eventually_le_logLog   : ∀ᶠ x : ℝ in atTop, A ≤ logLog x :=
   tendsto_logLog.eventually_ge_atTop A
 
 /-- Eventually `A ≤ L`. -/
-theorem eventually_le_log (A : ℝ) : ∀ᶠ x : ℝ in atTop, A ≤ Real.log x :=
+theorem eventually_le_log   : ∀ᶠ x : ℝ in atTop, A ≤ Real.log x :=
   tendsto_log_atTop.eventually_ge_atTop A
 
+include hε in
 /-- The basic comparison: eventually `A (s² + 1) ≤ ε T`. -/
-theorem eventually_sq_le_logLog (A ε : ℝ) (hε : 0 < ε) :
+theorem eventually_sq_le_logLog     :
     ∀ᶠ x : ℝ in atTop, A * (logLogLog x ^ 2 + 1) ≤ ε * logLog x := by
   have hlim := (tendsto_pow_mul_exp_neg_atTop_nhds_zero 2).comp tendsto_logLogLog
   have hA : 0 < |A| + 1 := by positivity
@@ -67,34 +77,23 @@ theorem eventually_sq_le_logLog (A ε : ℝ) (hε : 0 < ε) :
     nlinarith
   linarith
 
+include hε in
 /-- `exp(A (s² + 1)) ≤ L^ε` eventually. -/
-theorem eventually_exp_le_log_rpow (A ε : ℝ) (hε : 0 < ε) :
+theorem eventually_exp_le_log_rpow     :
     ∀ᶠ x : ℝ in atTop, Real.exp (A * (logLogLog x ^ 2 + 1)) ≤ Real.log x ^ ε := by
   filter_upwards [eventually_sq_le_logLog A ε hε, eventually_le_log 1] with x hx hL
   rw [log_rpow_eq_exp (by linarith)]
   exact Real.exp_le_exp.2 hx
 
-/-- `T^A = exp(A s) ≤ exp(|A| (s² + 1))` once `s ≥ 0`. -/
-theorem logLog_rpow_le_exp {x : ℝ} (hT : 0 < logLog x) (hs : 0 ≤ logLogLog x) (A : ℝ) :
-    logLog x ^ A ≤ Real.exp (|A| * (logLogLog x ^ 2 + 1)) := by
-  rw [rpow_def_of_pos hT]
-  apply Real.exp_le_exp.2
-  rw [show Real.log (logLog x) = logLogLog x from rfl]
-  have h1 : logLogLog x ≤ logLogLog x ^ 2 + 1 := by nlinarith
-  calc logLogLog x * A ≤ logLogLog x * |A| :=
-        mul_le_mul_of_nonneg_left (le_abs_self A) hs
-    _ ≤ (logLogLog x ^ 2 + 1) * |A| := mul_le_mul_of_nonneg_right h1 (abs_nonneg A)
-    _ = _ := mul_comm _ _
 
+include hε in
 /-- `T^A ≤ L^ε` eventually. -/
-theorem eventually_logLog_rpow_le (A ε : ℝ) (hε : 0 < ε) :
-    ∀ᶠ x : ℝ in atTop, logLog x ^ A ≤ Real.log x ^ ε := by
-  filter_upwards [eventually_exp_le_log_rpow |A| ε hε, eventually_le_logLog 1,
-    eventually_le_logLogLog 0] with x hx hT hs
-  exact (logLog_rpow_le_exp (by linarith) hs A).trans hx
+theorem eventually_logLog_rpow_le     :
+    ∀ᶠ x : ℝ in atTop, logLog x ^ A ≤ Real.log x ^ ε := by solve_by_elim [_root_.Erdos408.eventually_logLog_rpow_le]
 
+include hs in
 /-- The sieve depth is at most `2 (|C_h| s + 1)`. -/
-theorem sieveDepth_le {Ch x : ℝ} (hs : 0 ≤ logLogLog x) :
+theorem sieveDepth_le     :
     (sieveDepth Ch x : ℝ) ≤ 2 * (|Ch| * logLogLog x + 1) := by
   unfold sieveDepth
   push_cast
@@ -105,7 +104,7 @@ theorem sieveDepth_le {Ch x : ℝ} (hs : 0 ≤ logLogLog x) :
   linarith
 
 /-- The presieve exponent satisfies `T^{-21} ≤ γ ≤ 1` eventually. -/
-theorem eventually_presieveExponent_bounds (c Ch : ℝ) (hc : 0 < c) :
+theorem eventually_presieveExponent_bounds  c Ch  (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop, logLog x ^ (-21 : ℝ) ≤ presieveExponent c Ch x ∧
       presieveExponent c Ch x ≤ 1 := by
   filter_upwards [eventually_sq_le_logLog (4 * (8 * |Ch| + 11) / c) 1 one_pos,
@@ -115,13 +114,13 @@ theorem eventually_presieveExponent_bounds (c Ch : ℝ) (hc : 0 < c) :
   have hd := sieveDepth_le (Ch := Ch) hs
   have hd0 : (0 : ℝ) ≤ sieveDepth Ch x := Nat.cast_nonneg _
   have hT20 : 0 < logLog x ^ 20 := by positivity
-  have h1T20 : 1 ≤ logLog x ^ 20 := one_le_pow₀ hT
+  
   unfold presieveExponent
   set h : ℝ := (sieveDepth Ch x : ℝ)
-  have hden : 0 < 4 * h + 3 := by linarith
+  
   constructor
   · -- `4h + 3 ≤ 8|C_h| s + 11 ≤ c T / 4`
-    have hs1 : logLogLog x ≤ logLogLog x ^ 2 + 1 := by nlinarith
+    
     have hh : 4 * h + 3 ≤ c * logLog x / 4 := by
       have : 4 * (8 * |Ch| + 11) / c * (logLogLog x ^ 2 + 1) ≤ logLog x := by linarith
       rw [div_mul_eq_mul_div, div_le_iff₀ hc] at this
@@ -150,8 +149,9 @@ theorem eventually_mul_log_rpow_le (C r s : ℝ) (hs : 0 < s) :
     _ ≤ (|C| + 1) * (1 / (|C| + 1) * x ^ s) := by gcongr
     _ = x ^ s := by field_simp
 
+include hab hε in
 /-- `L^a ≤ ε L^b` eventually, for `a < b` and `ε > 0`. -/
-theorem eventually_log_rpow_le_mul (a b ε : ℝ) (hab : a < b) (hε : 0 < ε) :
+theorem eventually_log_rpow_le_mul       :
     ∀ᶠ x : ℝ in atTop, Real.log x ^ a ≤ ε * Real.log x ^ b := by
   have hlim : Tendsto (fun y : ℝ => y ^ (b - a)) atTop atTop := tendsto_rpow_atTop (by linarith)
   filter_upwards [tendsto_log_atTop.eventually (hlim.eventually_ge_atTop (1 / ε)),
@@ -165,8 +165,9 @@ theorem eventually_log_rpow_le_mul (a b ε : ℝ) (hab : a < b) (hε : 0 < ε) :
     rw [div_le_iff₀ hε] at hx; linarith
   nlinarith
 
+include hε in
 /-- The comparison with any fixed power of `s`: eventually `A (s^k + 1) ≤ ε T`. -/
-theorem eventually_pow_le_logLog (k : ℕ) (A ε : ℝ) (hε : 0 < ε) :
+theorem eventually_pow_le_logLog       :
     ∀ᶠ x : ℝ in atTop, A * (logLogLog x ^ k + 1) ≤ ε * logLog x := by
   have hlim := (tendsto_pow_mul_exp_neg_atTop_nhds_zero k).comp tendsto_logLogLog
   have hA : 0 < |A| + 1 := by positivity
@@ -187,11 +188,14 @@ theorem eventually_pow_le_logLog (k : ℕ) (A ε : ℝ) (hε : 0 < ε) :
     nlinarith
   linarith
 
+include hε in
 /-- `exp(A (s^k + 1)) ≤ L^ε` eventually. -/
-theorem eventually_exp_pow_le_log_rpow (k : ℕ) (A ε : ℝ) (hε : 0 < ε) :
+theorem eventually_exp_pow_le_log_rpow       :
     ∀ᶠ x : ℝ in atTop, Real.exp (A * (logLogLog x ^ k + 1)) ≤ Real.log x ^ ε := by
   filter_upwards [eventually_pow_le_logLog k A ε hε, eventually_le_log 1] with x hx hL
   rw [log_rpow_eq_exp (by linarith)]
   exact Real.exp_le_exp.2 hx
+
+end
 
 end Erdos408.TypeII

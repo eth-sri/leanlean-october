@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceDivisors
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBands
@@ -7,40 +8,26 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBands
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceGeometry
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-local notation "O"=>HeckeFamily.O
+
 
 lemma low_or_reflected (M short along xi:ℝ)(hM:0≤M)(hs:short≤M/4)(_hxi:0≤xi)
     (hxiM:xi≤M/6):
     max 0 short+max 0 along≤5*M/6 ∨
       (0<along ∧ max 0 (M-along+xi)+max 0 short≤5*M/6):=by
-  have hs0:max 0 short≤M/4:=max_le (by linarith) hs
-  by_cases hl:max 0 short+max 0 along≤5*M/6
-  · exact Or.inl hl
-  · right
-    have halong:0<along:=by
-      by_contra hn
-      rw [max_eq_left (le_of_not_gt hn)] at hl
-      linarith
-    refine ⟨halong,?_⟩
-    rw [max_eq_right halong.le] at hl
-    rcases le_total 0 (M-along+xi) with hh|hh
-    · rw [max_eq_right hh]
-      linarith
-    · rw [max_eq_left hh]
-      linarith
+  grind
 
 theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (hZ:1<Z)(hB:0≤Bmask)(Mcap L X₁ X₂ xi:ℝ)
     (hwidth:s.width≤Mcap)(hL:Mcap+Bmask+xi≤L)
     (hX₁:0<X₁)(hX₂:0<X₂)(hxi:0≤xi)(hxiM:xi≤s.width/6)
     (hlarge:s.width/4≤Real.logb Z (X₁*X₂))
-    (D₁ D₂:Finset (Ideal O))
+    (D₁ D₂:Finset (Ideal HeckeFamily.O))
     (hD₁:D₁∈(CompletedGauss.primeSupport s.puncture).powerset)
     (hD₂:D₂∈(CompletedGauss.primeSupport s.puncture).powerset):
     let short:=s.width/4-Real.logb Z ((∏P∈D₁,P).absNorm:ℝ);
@@ -56,7 +43,7 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
   obtain ⟨hn₁,hc₁⟩:=divisor_norm s D₁ hD₁
   obtain ⟨hn₂,hc₂⟩:=divisor_norm s D₂ hD₂
   have hl₁:=Real.logb_nonneg hZ hn₁
-  have hl₂:=Real.logb_nonneg hZ hn₂
+  
   have hu₂:Real.logb Z ((∏P∈D₂,P).absNorm:ℝ)≤Bmask:=
     (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le hn₂)).mpr hc₂
   have hM:=s.width_nonneg
@@ -93,6 +80,6 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
 
 end SevenEighths.CenteredMomentEnergyZeroReferenceGeometry
 
-end
+
 
 end OAI

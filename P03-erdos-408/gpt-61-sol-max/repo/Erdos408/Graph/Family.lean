@@ -17,8 +17,8 @@ namespace Erdos408.Graph
 
 /-- The conclusion of `GraphTransference` for the groups `P` with big groups
 `big`, at scale `x`. -/
-def FamilyBound (q₀ : ℝ) (m₀ J : ℕ) (C₁ C E C₃ C₄ x : ℝ) {ι : Type*} [Fintype ι]
-    [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι) : Prop :=
+def FamilyBound (q₀ : ℝ) (m₀ J : ℕ) (C₁ C E C₃ C₄ x : ℝ) {ι } [Fintype ι]
+    [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι)  :=
   ∃ (N : ℕ) (A B : Fin N → ι → Finset (Fin J)) (β : Fin N → ℂ)
     (φ φ' ψ ψ' : Fin N → ℕ → ℂ) (U U' : Fin N → ℝ),
     -- the comparison patterns
@@ -54,7 +54,7 @@ lemma slotProduct_reindex (e : ι ≃ κ) {J : ℕ} (A : κ → Finset (Fin J)) 
 
 /-- `FamilyBound` for the reindexed groups gives it for the original ones. -/
 lemma FamilyBound.reindex (e : ι ≃ κ) {q₀ : ℝ} {m₀ J : ℕ} {C₁ C E C₃ C₄ x : ℝ}
-    {P : ι → Finset ℕ} {big : Finset ι}
+    {P : ι → Finset ℕ}  {big} 
     (h : FamilyBound q₀ m₀ J C₁ C E C₃ C₄ x (fun k => P (e.symm k)) (big.map e.toEmbedding)) :
     FamilyBound q₀ m₀ J C₁ C E C₃ C₄ x P big := by
   obtain ⟨N, A, B, β, φ, φ', ψ, ψ', U, U', h₁, h₂, h₃, h₄, h₅, h₆, h₇, h₈⟩ := h

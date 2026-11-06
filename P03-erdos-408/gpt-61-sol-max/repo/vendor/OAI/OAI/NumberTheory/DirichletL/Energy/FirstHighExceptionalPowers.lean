@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedExceptionalCap
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedCommonRadius
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedNormalizationActual
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstHighExceptionalPowers
@@ -24,28 +25,30 @@ open CenteredMomentDescentLedger CenteredMomentCompleteCommon CenteredMomentCano
 open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentRankinRadical
 open CenteredMomentSecondHeightFamily CenteredMomentAmplificationErrorEnergy
 local notation "O"=>HeckeFamily.O
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
+
 
 open CenteredMomentFirstMixedExceptionalCap CenteredMomentFirstMixedCommonRadius
 
-theorem actual_main_exceptional_uniform_cap (η τ : Character)
-    (I J E : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (hIJ:primeSupport I=primeSupport J)
-    (A : Finset (CommonIndex I J)) (hE:E=Ideal.span {primeSubsetGenerator (fun P:CommonIndex I J=>P.val) A})
-    (K X Z j sigma delta reserve Mdecl : ℝ) (hZ : 1<Z)
-    (hmod : τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+section
+variable (η τ : Character) (I J E : Ideal O) (hI : Supported I) (hJ : Supported J) (hIJ : primeSupport I=primeSupport J) (A : Finset (CommonIndex I J)) (hE : E=Ideal.span {primeSubsetGenerator (fun P:CommonIndex I J=>P.val) A}) (K X Z j sigma delta reserve Mdecl : ℝ) (hZ : 1<Z) (hmod : τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J})
+
+include hI hJ hIJ hE j hZ hmod in
+theorem actual_main_exceptional_uniform_cap  
+         
+     
+       
+       
+     
     (hK:0<K)(hX:0<X)
     (hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mdecl) :
     ((X/(I.absNorm:ℝ))*(X/(I.absNorm:ℝ))^((1:ℝ)/3)*(mainCommonRadius Z (Real.logb Z (J.absNorm:ℝ)) (nominalLog I J E K X Z) (Real.logb Z (I.absNorm:ℝ)) sigma delta reserve)^((5:ℝ)/6)*Z^(-sigma/3)/((τ.modulus.absNorm:ℝ)*(X/(I.absNorm:ℝ))^2*Z^(allowance I J Z)))*Z^(-2*max (Mdecl/4-Real.logb Z (I.absNorm:ℝ)) 0/3)≤
       Z^(Real.logb Z X-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))+4*sigma/3+5*(delta+reserve)/6):=by
   have hz:0<Z:=zero_lt_one.trans hZ
   have hf:=fixed_presentation_log_nonneg Z hZ
-  have hr : 0 ≤ max (Mdecl/4-Real.logb Z (I.absNorm:ℝ)) 0 := le_max_right _ _
+  
   have hrLower:=le_max_left (Mdecl/4-Real.logb Z (I.absNorm:ℝ)) (0:ℝ)
-  have hi : 0 ≤ Real.logb Z (I.absNorm:ℝ) := by
-    apply Real.logb_nonneg hZ
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI.1)
+  
   have hc:=commonPart_of_equal_support I J hI.1 hIJ
   have hd:=commonPart_of_equal_support J I hJ.1 hIJ.symm
   have hs:=actual_main_column_saving η τ fixedBadMask I J E hI hJ A
@@ -69,29 +72,27 @@ theorem actual_main_exceptional_uniform_cap (η τ : Character)
   simp only [nominalLog] at hs ⊢
   linarith
 
-theorem actual_error_exceptional_uniform_cap (η τ : Character)
-    (I J E : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (hIJ:primeSupport I=primeSupport J)
-    (A : Finset (CommonIndex I J)) (hE:E=Ideal.span {primeSubsetGenerator (fun P:CommonIndex I J=>P.val) A})
-    (K X Z j sigma delta reserve Mdecl : ℝ) (hZ : 1<Z)
-    (hmod : τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J})
+include hI hJ hIJ hE j hZ hmod in
+theorem actual_error_exceptional_uniform_cap  
+         
+     
+       
+       
+     
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
-    (p0 : O) (hp0 : p0∈CenteredMomentPrimeElements.elementPool
+     p0  (hp0 : p0∈CenteredMomentPrimeElements.elementPool
       (CenteredMomentPrimePool.primePool M H Sbad (1/2) 1 (Z^(sigma/3))))
-    (k : ℕ) (hk : k=1 ∨ k=6 ∨ k=7)
+     k  (hk : k=1 ∨ k=6 ∨ k=7)
     (hK:0<K)(hX:0<X)
     (hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mdecl) :
     ((X/(I.absNorm:ℝ))*localErrorCost p0 (k-1)*(X/(I.absNorm:ℝ)/(normValue p0)^k)^((1:ℝ)/3)*(errorCommonRadius Z (Real.logb Z (J.absNorm:ℝ)) (nominalLog I J E K X Z) (Real.logb Z (I.absNorm:ℝ)) sigma delta reserve p0 k)^((5:ℝ)/6)/((τ.modulus.absNorm:ℝ)*(X/(I.absNorm:ℝ))^2*Z^(allowance I J Z)))*Z^(-2*max (Mdecl/4-Real.logb Z (I.absNorm:ℝ)-errorRemoval p0 Z k) 0/3)≤
       Z^(Real.logb Z X-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))+3*sigma/2+5*(delta+reserve)/6):=by
   have hz:0<Z:=zero_lt_one.trans hZ
   have hf:=fixed_presentation_log_nonneg Z hZ
-  have hr : 0 ≤ max (Mdecl/4-Real.logb Z (I.absNorm:ℝ)-errorRemoval p0 Z k) 0 := le_max_right _ _
+  
   have hrLower:=le_max_left (Mdecl/4-Real.logb Z (I.absNorm:ℝ)-errorRemoval p0 Z k) (0:ℝ)
-  have hi : 0 ≤ Real.logb Z (I.absNorm:ℝ) := by
-    apply Real.logb_nonneg hZ
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI.1)
+  
   have hc:=commonPart_of_equal_support I J hI.1 hIJ
   have hd:=commonPart_of_equal_support J I hJ.1 hIJ.symm
   have hs:=actual_error_column_saving η τ fixedBadMask I J E hI hJ A
@@ -103,7 +104,7 @@ theorem actual_error_exceptional_uniform_cap (η τ : Character)
     (fun Q hQ=>(primePool_data M H Sbad hbad (1/2) 1 (Z^(sigma/3)) Q hQ).2) p0 hp0
   have hl : 0 ≤ Real.logb Z (normValue p0) :=
     Real.logb_nonneg hZ (normValue_ge_one p0 hp.1.ne_zero)
-  have hw : 0 ≤ errorRemoval p0 Z k := by unfold errorRemoval; positivity
+  
   have he:=actual_error_reference_le η τ I J hI hJ hIJ A K X Z j
     (Real.logb Z (errorCommonRadius Z (Real.logb Z (J.absNorm:ℝ)) (nominalLog I J E K X Z) (Real.logb Z (I.absNorm:ℝ)) sigma delta reserve p0 k)-j) hK hX hZ hmod p0 hp.1.ne_zero k hk
   rw [←hE] at he
@@ -117,6 +118,8 @@ theorem actual_error_exceptional_uniform_cap (η τ : Character)
   apply Real.rpow_le_rpow_of_exponent_le hZ.le
   simp only [nominalLog] at hs ⊢
   linarith
+
+end
 
 end SevenEighths.CenteredMomentEnergyFirstHighExceptionalPowers
 

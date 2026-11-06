@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerReference
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCanonicalEnergy
@@ -9,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialCanonicalState
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialRetainedPhysical
@@ -19,19 +20,19 @@ open CanonicalCoefficientClass ConcreteTraceCRT SecondPassArithmetic FirstPassCu
 open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerModes
 open InverseInitialQuotientGeometry InverseInitialEnergyCallerGeometry InverseInitialCanonicalState
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem retained_physical_bound
-    (W₁ W₂:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
+     W₁ W₂ (a₀ b₀:ℝ)(ha₀:0<a₀)
     (hs₁:Function.support W₁⊆Set.Icc a₀ b₀)(hs₂:Function.support W₂⊆Set.Icc a₀ b₀)
     (hW₁:ContDiff ℝ ∞ W₁)(hW₂:ContDiff ℝ ∞ W₂)
-    (Φ:𝓢(ℝ,ℂ))(Vlog:Fin 6→ℝ→ℂ)(Mlog:Fin 6→ℝ)
+     Φ  Vlog (Mlog:Fin 6→ℝ)
     (hVlog:∀i,ContDiff ℝ ∞ (Vlog i))(hSlog:∀i,HasCompactSupport (Vlog i))
     (hMlog:∀i,0≤Mlog i)(hbox:∀i y,Vlog i y≠0→|y|≤Mlog i)
-    (ω₁ ω₂:ℝ→ℂ)(lo b:ℝ)(hlo:0<lo)(hb:1≤b)
+     ω₁ ω₂ (lo b:ℝ)(hlo:0<lo)(hb:1≤b)
     (hω₁:Function.support ω₁⊆Set.Icc lo b)(hω₂:Function.support ω₂⊆Set.Icc lo b)
     (hd₁:ContDiff ℝ ∞ ω₁)(hd₂:ContDiff ℝ ∞ ω₂)
-    (cap margin eps U π:ℝ)(hcap:0≤cap)(hmargin:0<margin)(heps:0<eps)(hU:0≤U)(hπ:0<π)(K:ℕ):
+     cap margin eps U π (hcap:0≤cap)(hmargin:0<margin)(heps:0<eps)(hU:0≤U)(hπ:0<π) K :
     ∃degree:ℕ,∃Btree:ℝ,1≤Btree ∧ ∀q:ℕ,q≠0→∃C Z₀:ℝ,0<C ∧ 1<Z₀ ∧
     ∀Z:ℝ,Z₀≤Z→∀Dpool:ℕ,Btree*Z^(cap+1)≤Dpool→
     let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) Dpool;
@@ -46,15 +47,15 @@ theorem retained_physical_bound
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,1≤Hslot i)→
       (∀i∈slots,∀P∈lists i,(P.val.absNorm:ℝ)≤Hslot i)→
       (∀i∈slots,∀P∈lists i,‖a i P‖≤1)→∀z:ℝ,0≤z→(∏i∈slots,Hslot i)≤Z^z→
-    ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
+    ∀Ψ:ActualEisensteinCubic.O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
     ∀(S:Finset (Source (ι:=primePool F) 0)),
       (∀x∈S,x.divisor⊆x.common)→(∀x∈S,x.frequency≠0)→
-    ∀(j:O)(D B v θ H R m η:ℝ),R≤U→0≤η→
+    ∀(j:ActualEisensteinCubic.O)(D B v θ H R m η:ℝ),R≤U→0≤η→
     ∀(c₁ c₂ θ₁ θ₂:ℝ),0<c₁→0<c₂→
       BlockSupport p (pointSource Finset.univ S) W₁ W₂ ω₁ ω₂ Vlog Z D B v θ H c₁ c₂ θ₁ θ₂→
       (∀t∈quotientSet p S,(t.absNorm:ℝ)≤Z^R)→
     ∀(w:Source (ι:=primePool F) 0→ℂ),(∀x∈S,‖w x‖≤1)→
-    ∀(labels:Finset (Ideal O))(rows:Finset O),
+    ∀(labels:Finset (Ideal ActualEisensteinCubic.O))(rows:Finset ActualEisensteinCubic.O),
       (∀f∈labels,Admissible f ∧ (f.absNorm:ℝ)≤Z^(θ+v+2*η))→
       rows⊆nonzeroChildFrequencyBall 1 (Z^(θ+H+2*η))→(∀k∈rows,-k∈rows)→
       (∀x∈S,(initialChild (toTuple p (sectorSource
@@ -112,7 +113,6 @@ theorem retained_physical_bound
     (max 0 (columnCenter D B v)+(θ+v)) (C₁+C₂) (eps+4*η) (by positivity) hclip
     (by unfold columnCenter;ring) hReq ?_
   · convert hbound using 1
-    rw [show m+11*η+π+(eps+4*η)=m+15*η+π+eps by ring]
     ring
   · intro s ρ A₁ hA₁ A₂ hA₂ t ht
     obtain ⟨hm,hV,hM,hQ,hnorm,hMc,hFc,hmargin⟩:=hstate t ht
@@ -152,6 +152,6 @@ theorem retained_physical_bound
 
 end SevenEighths.InverseInitialRetainedPhysical
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.CentralRepeatedProduct
 public import OAI.NumberTheory.DirichletL.PrimeRows.RowPartition
@@ -7,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.RowPartition
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbeCentralRepeatedProduct
 open ProbeRowReflectedAllocation ProbeRowRadicalConductor HeckeReciprocalGrowth HeckeDeletionBounds
-local notation "O" => HeckeFamily.O
+
 
 private lemma cost_power_identity (N L A R eps : ℝ) (hN : 0<N) (hL : 0<L) :
     N^A*N^R*L^2*(2*N^2*L^2)^eps=
@@ -26,8 +27,8 @@ private lemma cost_power_identity (N L A R eps : ℝ) (hN : 0<N) (hL : 0<L) :
     _ = _ := by
       rw [←Real.rpow_add hN,←Real.rpow_add hN,←Real.rpow_two L,←Real.rpow_add hL]
 
-theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (e eps : ℝ) (he : 0<e) (heps : 0<eps) :
+theorem central_rowCost_bound  S   hS 
+     e eps  (he : 0<e) (heps : 0<eps) :
     ∃C : ℝ,0<C ∧ ∀(u : FreeRow) (a H : ℝ),51/100≤a → a≤1 → 0≤H →
       rowCost S hS u a e eps H≤
         C*rowNorm u^(a-1/2+12*e+4*eps)*(3+H)^(2+2*eps) := by
@@ -45,7 +46,7 @@ theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   have hn : 0<rowNorm u := zero_lt_one.trans_le (rowNorm_ge_one u)
   have hN : 0<N := mul_pos hFp hn
   have hL : 0<L := by dsimp [L];linarith
-  have hA : 0≤A := by dsimp [A];linarith
+  
   have hR : 0≤R := by dsimp [R];positivity
   have hrad : ((radical (rowCharacter S hS u).modulus).absNorm:ℝ)≤N :=
     original_row_deletion_radical_le S hS u
@@ -56,7 +57,7 @@ theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     calc
       _ ≤ N*(2*N*L^2) := by
         apply mul_le_mul hrad _ (by positivity) hN.le
-        exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hq (by norm_num)) (sq_nonneg L)
+        gcongr <;> first | assumption | positivity | linarith
       _ = _ := by ring
   have hrpow := Real.rpow_le_rpow (show (0:ℝ)≤(radical (rowCharacter S hS u).modulus).absNorm by positivity) hrad hR
   have hcpow := Real.rpow_le_rpow (show 0≤presentationComplexity (rowCharacter S hS u) H by
@@ -78,12 +79,10 @@ theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   calc
     _ = ((2:ℝ)^eps*F^(a-1/2+12*e+4*eps))*rowNorm u^(a-1/2+12*e+4*eps)*L^(2+2*eps) := by ring
     _ ≤ _ := by
-      apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hL.le _)
-      apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hn.le _)
-      exact mul_le_mul_of_nonneg_left hf (Real.rpow_nonneg (by norm_num) _)
+      gcongr <;> first | assumption | positivity | linarith
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

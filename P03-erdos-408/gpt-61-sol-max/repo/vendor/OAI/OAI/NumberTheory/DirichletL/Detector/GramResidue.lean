@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPrimeSeparation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
@@ -69,6 +69,6 @@ theorem exists_nonexceptional_residue (S : Finset Id) (hS : ∀P∈S,P.IsMaximal
     · exact jointExtension_mean_zero S hS σ C k u a b r hr P hg c J p hgp hchar e he hJ hcop d
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.TupleBilinear
 public import Erdos821.S34.KernelDyadicSupport
@@ -10,12 +11,12 @@ set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint.Analytic
 
-theorem dyadic_comparison_bilinear (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ U V H θ η ζ : ℝ) (u : ℤ) (r : ℕ)
-    (f : Tuple G b → ℂ) (g : Tuple G a → ℂ)
+theorem dyadic_comparison_bilinear  G   a b 
+     Q  (h ξ U V H θ η ζ : ℝ) (u : ℤ)  r 
+     f   g 
     (hU : 1 ≤ U) (hV : 1 ≤ V) (hH : 0 ≤ H) (hr : 1 ≤ r)
     (hu : Nat.Coprime u.natAbs r) (hθ : θ = (u : ℝ) / r + η)
     (hη : |η| ≤ (r : ℝ) ^ (-2 : ℤ)) (hh : 0 < h) (hh2 : h ≤ Real.log 2)
@@ -60,21 +61,11 @@ theorem dyadic_comparison_bilinear (G : PrimeGroups) (a b : Fin G.size → ℕ)
       intro X _
       apply Finset.sum_congr rfl
       intro Y _
-      apply Finset.sum_congr rfl
-      intro D _
-      apply Finset.sum_congr rfl
-      intro E _
       ring
     rw [hleft, ht]
     simp only [A, B, cellTransposeApply, expect, Finset.mul_sum, Finset.sum_mul]
     apply Finset.sum_congr rfl
     intro D _
-    apply Finset.sum_congr rfl
-    intro E _
-    apply Finset.sum_congr rfl
-    intro Y _
-    apply Finset.sum_congr rfl
-    intro X _
     ring
   have hg' (X : Tuple G a) (hX : g X ≠ 0) :
       U / 2 ≤ (product G a X : ℝ) ∧ (product G a X : ℝ) ≤ 4 * U := by
@@ -99,8 +90,7 @@ theorem dyadic_comparison_bilinear (G : PrimeGroups) (a b : Fin G.size → ℕ)
   have hAn : tupleNorm G a A ≤ 2 * tupleNorm G a g := hFrameA g
   have hBn : tupleNorm G b B ≤ 2 * tupleNorm G b f := by
     simpa only [B, tupleNorm_star] using hFrameB (fun Y => star (f Y))
-  have hk : 0 ≤ 4 * integerBilinearConstant * H * Real.sqrt (bilinearDecay U V r) := by
-    exact mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) integerBilinearConstant_pos.le) hH) (Real.sqrt_nonneg _)
+  have hk : 0 ≤ 4 * integerBilinearConstant * H * Real.sqrt (bilinearDecay U V r) := mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) integerBilinearConstant_pos.le) hH) (Real.sqrt_nonneg _)
   have hc_bound := hcb.trans (mul_le_mul
     (mul_le_mul_of_nonneg_left hAn hk) hBn (tuple_norm_nonneg G b B)
       (mul_nonneg hk (mul_nonneg (by norm_num) (tuple_norm_nonneg G a g))))
@@ -108,5 +98,5 @@ theorem dyadic_comparison_bilinear (G : PrimeGroups) (a b : Fin G.size → ℕ)
   have hn := (norm_sub_le R C).trans (add_le_add hrb hc_bound)
   convert hn using 1; ring
 
-end
+
 end Erdos821.S34Core

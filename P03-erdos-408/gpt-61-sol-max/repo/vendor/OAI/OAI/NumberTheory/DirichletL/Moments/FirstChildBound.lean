@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Moments.SecondDescent
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstWholeAssembly
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedChild
@@ -7,33 +10,26 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedChild
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstChildBound
 open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstAssembly
 open CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentReflectedChild
 open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSmooth RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 
-private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ)
-    (r : ℝ) (hr : 0 ≤ r) (B : α → ℝ)
-    (hB : ∀ i ∈ S, r*‖f i‖ ≤ B i) :
-    r*‖∑ i ∈ S, a i*f i‖ ≤ ∑ i ∈ S, ‖a i‖*B i := by
-  calc
-    _ ≤ r*∑ i ∈ S, ‖a i*f i‖ := mul_le_mul_of_nonneg_left (norm_sum_le _ _) hr
-    _ = ∑ i ∈ S, ‖a i‖*(r*‖f i‖) := by simp only [Finset.mul_sum,norm_mul]; congr 1; funext i; ring
-    _ ≤ _ := Finset.sum_le_sum (fun i hi => mul_le_mul_of_nonneg_left (hB i hi) (norm_nonneg _))
 
-theorem finite_first_ray_divisor_bound (L : Finset (Ideal O))
-    (F : Ideal O → RayCharacter → RayCharacter → ℂ)
-    (r C : ℝ) (hr : 0 ≤ r) (hC : 0 ≤ C) (B₁ B₂ : Ideal O → ℝ)
+private alias weighted_norm_sum := _root_.SharedProofs.weighted_norm_sum
+
+theorem finite_first_ray_divisor_bound (L : Finset (Ideal ActualEisensteinCubic.O))
+    (F : Ideal ActualEisensteinCubic.O → RayCharacter → RayCharacter → ℂ)
+    (r C : ℝ) (hr : 0 ≤ r) (hC : 0 ≤ C) (B₁ B₂ : Ideal ActualEisensteinCubic.O → ℝ)
     (hB₁ : ∀ I ∈ L, 0 ≤ B₁ I) (hB₂ : ∀ I ∈ L, 0 ≤ B₂ I)
     (hF : ∀ I ∈ L, ∀ χ ξ, r*‖F I χ ξ‖ ≤ C*(B₁ I*B₂ I)) :
     r*‖∑ I ∈ L, (UniqueFactorizationMonoid.moebius I : ℂ)*
       ∑ χ : RayCharacter, ∑ ξ : RayCharacter, pairCoeff (firstPhaseTable) χ ξ * F I χ ξ‖ ≤
       (256*C)*∑ I ∈ L, ‖(UniqueFactorizationMonoid.moebius I : ℂ)‖*(B₁ I*B₂ I) := by
-  have he (I : Ideal O) (hI : I ∈ L) :
+  have he (I : Ideal ActualEisensteinCubic.O) (hI : I ∈ L) :
       r*‖∑ χ : RayCharacter, ∑ ξ : RayCharacter,
         pairCoeff (firstPhaseTable) χ ξ*F I χ ξ‖ ≤ (256*C)*(B₁ I*B₂ I) := by
     calc
@@ -59,13 +55,13 @@ theorem finite_first_ray_divisor_bound (L : Finset (Ideal O))
   intro I hI
   ring
 
-theorem first_row_children {α β : Type*} (rows : Finset O) (S : Finset α) (T : Finset β)
-    (a : α → O) (b : β → O)
+theorem first_row_children {α β : Type*} (rows : Finset ActualEisensteinCubic.O) (S : Finset α) (T : Finset β)
+    (a : α → ActualEisensteinCubic.O) (b : β → ActualEisensteinCubic.O)
     (ha : ∀ i,Supported (Ideal.span {a i})) (hb : ∀ j,Supported (Ideal.span {b j}))
     (hpa : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣a i-1)
     (hpb : ∀ j,ConcretePrimeRowBridge.goodLambda^2∣b j-1)
-    (c : α → ℂ) (d : β → ℂ) (e r : O) (ρ : O → ℂ)
-    (hρ : ∀ x y,ρ (x*y)=ρ x*ρ y) (q : O → ℂ) (K : O → α → β → ℂ) :
+    (c : α → ℂ) (d : β → ℂ) (e r : ActualEisensteinCubic.O) (ρ : ActualEisensteinCubic.O → ℂ)
+    (hρ : ∀ x y,ρ (x*y)=ρ x*ρ y) (q : ActualEisensteinCubic.O → ℂ) (K : ActualEisensteinCubic.O → α → β → ℂ) :
     (∑ z∈rows,q z*∑ i∈S,∑ j∈T,
       ((if IsCoprime (a i) (b j) then originalPhase e r ρ (a i) (b j) else 0)*(c i*star (d j)))*
         (gaussRow (a i) (ha i) z*star (gaussRow (b j) (hb j) (-z)))*K z i j)=
@@ -89,30 +85,26 @@ theorem first_row_children {α β : Type*} (rows : Finset O) (S : Finset α) (T 
   intro ξ hξ
   apply Finset.sum_congr rfl
   intro z hz
-  apply Finset.sum_congr rfl
-  intro i hi
-  apply Finset.sum_congr rfl
-  intro j hj
   ring
 
-theorem whole_kernel_first_child_bound (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ → ℂ)
+theorem whole_kernel_first_child_bound  W   V 
     (M : Fin 4 → ℝ) (hM : ∀ i,0≤M i)
-    (hV : ∀ i y,V i y≠0 → |y|≤M i) (A J₁ J₂ : ℕ) :
+    (hV : ∀ i y,V i y≠0 → |y|≤M i)  A J₁ J₂  :
     ∃ C : ℝ,0≤C ∧ ∀ R : ℝ,0<R →
-      ∀ {α β : Type*} (rows : Finset O) (S : Finset α) (T : Finset β)
-        (a : α → O) (b : β → O)
+      ∀ {α β : Type*} (rows : Finset ActualEisensteinCubic.O) (S : Finset α) (T : Finset β)
+        (a : α → ActualEisensteinCubic.O) (b : β → ActualEisensteinCubic.O)
         (ha : ∀ i,Supported (Ideal.span {a i})) (hb : ∀ j,Supported (Ideal.span {b j})),
       (∀ i,ConcretePrimeRowBridge.goodLambda^2∣a i-1) →
       (∀ j,ConcretePrimeRowBridge.goodLambda^2∣b j-1) →
-      ∀ (c : α → ℂ) (d : β → ℂ) (e r : O) (ρ : O → ℂ),
+      ∀ (c : α → ℂ) (d : β → ℂ) (e r : ActualEisensteinCubic.O) (ρ : ActualEisensteinCubic.O → ℂ),
       (∀ x y,ρ (x*y)=ρ x*ρ y) → ‖ρ e‖≤1 →
-      ∀ (q : O → ℂ) (u : α → ℝ) (v : β → ℝ) (ρ₀ x : O → ℝ),
+      ∀ (q : ActualEisensteinCubic.O → ℂ) (u : α → ℝ) (v : β → ℝ) (ρ₀ x : ActualEisensteinCubic.O → ℝ),
       (∀ z∈rows,‖q z‖≤1) →
       (∀ z∈rows,‖V 0 (ρ₀ z)‖≤1) → (∀ z∈rows,‖V 1 (x z)‖≤1) →
       ∀ (U : 𝓢(ℝ,ℂ)) (K : ℝ),0<K →
-      (∀ z : O,0≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) →
+      (∀ z : ActualEisensteinCubic.O,0≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) →
       (∀ z∈rows,1≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) →
-      ∀ (B₁ B₂ : Ideal O → ℝ),
+      ∀ (B₁ B₂ : Ideal ActualEisensteinCubic.O → ℝ),
       (∀ L∈divisorPool T (fun j => Ideal.span {b j}),0≤B₁ L) →
       (∀ L∈divisorPool T (fun j => Ideal.span {b j}),0≤B₂ L) →
       (∀ L∈divisorPool T (fun j => Ideal.span {b j}),∀ χ : RayCharacter,∀ t : ℝ,
@@ -146,6 +138,6 @@ theorem whole_kernel_first_child_bound (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ �
 
 end SevenEighths.CenteredMomentFirstChildBound
 
-end
+
 
 end OAI

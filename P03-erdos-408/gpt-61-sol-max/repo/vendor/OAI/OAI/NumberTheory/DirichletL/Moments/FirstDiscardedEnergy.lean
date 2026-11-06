@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstDiscarded
 
@@ -15,11 +16,11 @@ open CenteredMomentFirstReduced CenteredMomentSectorLocalization CenteredMomentC
 open CenteredMomentCommonSupport CenteredMomentCanonicalFirst CenteredMomentSupportedCorrelation
 open CenteredMomentFirstScale CenteredMomentFirstDiscarded CenteredMomentActive
 open CenteredMomentCompleteCommon IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
 
-theorem tripleRow_norm_le_one (a b r : O) (ha : a≠0) (hb : b≠0)
-    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
-    (G : Residue r → ℂ) (hG : ∀ x,‖G x‖≤1) (z : O) :
+
+theorem tripleRow_norm_le_one  a b r  (ha : a≠0) (hb : b≠0)
+     χa   χb 
+     G  (hG : ∀ x,‖G x‖≤1)  z  :
     ‖tripleRow a b r χa χb G z‖≤1 := by
   let := finite_quotient_span ha
   let := finite_quotient_span hb
@@ -31,9 +32,9 @@ theorem tripleRow_norm_le_one (a b r : O) (ha : a≠0) (hb : b≠0)
       (QuadraticInitialBound.norm_finite_character_le_one χa _)).trans
       (QuadraticInitialBound.norm_finite_character_le_one χb _))).trans (hG _)
 
-theorem tripleFourier_norm_le_full (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
-    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
-    (G : Residue r → ℂ) (hG : ∀ x,‖G x‖≤1) (h : O) :
+theorem tripleFourier_norm_le_full  a b r   ha   hb   hr 
+     χa   χb 
+     G  (hG : ∀ x,‖G x‖≤1)  h  :
     ‖tripleFourier a b r ha hb hr χa χb G h‖≤normValue (a*(b*r)) := by
   let := finite_quotient_span (mul_ne_zero ha (mul_ne_zero hb hr))
   let : Fintype (Residue (a*(b*r))) := Fintype.ofFinite _
@@ -49,27 +50,25 @@ theorem tripleFourier_norm_le_full (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r
       exact tripleRow_norm_le_one a b r ha hb χa χb G hG z
     _ = _ := by simp [normValue,Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card]
 
-theorem activeFunction_norm_le_one (I J : Ideal O) (hI : CanonicalQuadraticSieve.Supported I)
-    (x : Residue (activeConductor I J)) : ‖activeFunction I J hI x‖≤1 := by
+theorem activeFunction_norm_le_one  I J   hI 
+     x  : ‖activeFunction I J hI x‖≤1 := by
   obtain ⟨z,rfl⟩ := Ideal.Quotient.mk_surjective x
   calc
     _ = ‖finiteSexticRow (activePrime I J) (activeGood I J hI)
         (CenteredMomentCanonicalFirst.activeExponent I J) z‖ :=
-      congrArg norm (principalSexticRow_mk (activePrime I J) (activeCoprime I J)
-        (activeGood I J hI) (CenteredMomentCanonicalFirst.activeExponent I J)
-        (activeConductor I J) (span_finitePrimeModulus _) z)
+      (by rfl)
     _ ≤ 1 := QuadraticInitialBound.finiteSexticRow_norm_le_one _ _ _ z
 
-theorem scaled_discarded_triple_bound (A : ℕ) :
+theorem scaled_discarded_triple_bound  A  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ),0<C ∧
       ∀ (W : 𝓢(ℝ,ℂ)) (Tsec Z Csec H ξ k : ℝ),
       0<Tsec → 1<Z → 1≤Csec → 0<k →
       (2*H/Real.log Z+Real.log (4*Csec)/Real.log Z<ξ/4) →
-      ∀ (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
+      ∀ (a b r : ActualEisensteinCubic.O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
         (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
         (G : Residue r → ℂ), (∀ x,‖G x‖≤1) →
       kernelReference Tsec H≤k/normValue (a*(b*r)) →
-      ‖((k/normValue (a*(b*r)):ℝ):ℂ)*∑' h : O,
+      ‖((k/normValue (a*(b*r)):ℝ):ℂ)*∑' h : ActualEisensteinCubic.O,
         (discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*
           tripleFourier a b r ha hb hr χa χb G h*
           paperRadialFourier W ((k/normValue (a*(b*r)))*normValue h)‖ ≤
@@ -87,9 +86,9 @@ theorem scaled_discarded_triple_bound (A : ℕ) :
   apply (mul_le_mul_of_nonneg_left hh (div_pos hk hN).le).trans_eq
   field_simp
 
-def canonicalDiscardedTerm (I J : Ideal O)
+def canonicalDiscardedTerm (I J )
     (hI : CanonicalQuadraticSieve.Supported I) (hJ : CanonicalQuadraticSieve.Supported J)
-    (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
+    (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ)  :=
   let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
   let a := residualGenerator I J
   let b := residualGenerator J I
@@ -97,16 +96,16 @@ def canonicalDiscardedTerm (I J : Ideal O)
   let k := K/normValue e
   (UniqueFactorizationMonoid.moebius (∏ P∈E,P.val):ℂ)*
     tripleRow a b r (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) e*
-    (((k/normValue (a*(b*r)):ℝ):ℂ)*∑' h : O,
+    (((k/normValue (a*(b*r)):ℝ):ℂ)*∑' h : ActualEisensteinCubic.O,
       (discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*
         tripleFourier a b r (supported_element_ne_zero _ (residualGenerator_supported I J hI))
           (supported_element_ne_zero _ (residualGenerator_supported J I hJ)) (finitePrimeModulus_ne_zero _)
           (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) h*
         paperRadialFourier W ((k/normValue (a*(b*r)))*normValue h))
 
-theorem canonical_kernel_scale (I J : Ideal O)
+theorem canonical_kernel_scale  I J 
     (hI : CanonicalQuadraticSieve.Supported I) (hJ : CanonicalQuadraticSieve.Supported J)
-    (E : Finset (CommonIndex I J)) (K : ℝ) :
+     E   K  :
     (K/normValue (primeSubsetGenerator (fun P : CommonIndex I J => P.val) E))/
       normValue (residualGenerator I J*(residualGenerator J I*activeConductor I J)) =
       K/((Ideal.absNorm (∏ P∈E,P.val):ℝ)*(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ)*
@@ -118,9 +117,9 @@ theorem canonical_kernel_scale (I J : Ideal O)
   congr 1
   ring
 
-theorem canonical_discarded_term_bound (A : ℕ) :
+theorem canonical_discarded_term_bound  A  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ),0<C ∧
-      ∀ (W : 𝓢(ℝ,ℂ)) (I J : Ideal O)
+      ∀ (W : 𝓢(ℝ,ℂ)) (I J : Ideal ActualEisensteinCubic.O)
         (hI : CanonicalQuadraticSieve.Supported I) (hJ : CanonicalQuadraticSieve.Supported J)
         (E : Finset (CommonIndex I J)) (K X HN Tsec Z Csec ξ : ℝ),
       0<K → 0<X → 1<Z → 1≤Csec →
@@ -135,7 +134,7 @@ theorem canonical_discarded_term_bound (A : ℕ) :
   intro W I J hI hJ E K X HN Tsec Z Csec ξ hK hX hZ hCs hi hj hsec hthreshold
   let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
   have he : e≠0 := primeSubsetGenerator_ne_zero _ _
-  have hE : (∏ P∈E,P.val)≠(0:Ideal O) := by
+  have hE : (∏ P∈E,P.val)≠(0:Ideal ActualEisensteinCubic.O) := by
     have hh := Ideal.span_singleton_eq_bot.not.mpr he
     simpa only [e,primeSubsetGenerator,span_idealGenerator,Ideal.zero_eq_bot] using hh
   have hNe : 0<normValue e := norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr he)
@@ -167,10 +166,10 @@ theorem canonical_discarded_term_bound (A : ℕ) :
   rw [one_mul]
   exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hkK (by positivity)) (by positivity)
 
-def inactiveSubsets (I J : Ideal O) : Finset (Finset (CommonIndex I J)) :=
+def inactiveSubsets (I J )  :=
   (principalSupport (Finset.univ : Finset (CommonIndex I J)) (leftExponent I J) (rightExponent I J)).powerset
 
-theorem inactiveSubsets_card (I J : Ideal O) :
+theorem inactiveSubsets_card  I J  :
     (inactiveSubsets I J).card≤2^(primeSupport I).card := by
   rw [inactiveSubsets,Finset.card_powerset]
   apply Nat.pow_le_pow_right (by norm_num)

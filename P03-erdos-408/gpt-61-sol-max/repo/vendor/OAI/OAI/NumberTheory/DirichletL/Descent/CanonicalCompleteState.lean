@@ -7,33 +7,33 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongTotal
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve InverseReflectedPhase InverseTerminalWidths CompletedHeight
 open InverseCanonicalShortAttachment InverseSecondFibers FirstPassCubeLabels SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+
 universe v
 
 theorem actual_complete_state_from_live_bins
-    (lo hi:ℝ)(hlo:0<lo)(hhi:0≤hi)(W:ℝ→ℂ)
+    (lo hi:ℝ)(hlo:0<lo)(hhi:0≤hi) W 
     (hWs:Function.support W⊆Set.Icc lo hi)(hW:ContDiff ℝ ∞ W)
     (L cstar eta eps:ℝ)(hL:0≤L)(hcstar:0<cstar)(heta:0<eta)
-    (heta1:eta≤1)(hetac:eta≤cstar/100000)(heps:0<eps)(rmax K:ℕ) :
+    (heta1:eta≤1)(hetac:eta≤cstar/100000)(heps:0<eps) rmax K  :
     ∃degree:ℕ,∀(q:ℕ)(_hq:q≠0),∃C Z₀:ℝ,0<C ∧ 1<Z₀ ∧
-    ∀{σ:Type v}[DecidableEq σ](m:O),m≠0 → ∀Z N V M z₀ margin cutoff:ℝ,
+    ∀{σ:Type v}[DecidableEq σ](m:ActualEisensteinCubic.O),m≠0 → ∀Z N V M z₀ margin cutoff:ℝ,
       Z₀≤Z → 0≤N → N≤L → 0≤V → V≤L → 0≤M → M≤L → z₀≤L →
       0≤cutoff → cutoff≤L → cutoff≤cstar/200 →
       (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
       CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
-    ∀labels:Finset (Ideal O),(∀I∈labels,Supported I ∧ Squarefree I ∧ (I.absNorm:ℝ)≤Z^V) →
+    ∀labels:Finset (Ideal ActualEisensteinCubic.O),(∀I∈labels,Supported I ∧ Squarefree I ∧ (I.absNorm:ℝ)≤Z^V) →
     ∀D:ℕ,hi*Z^N≤D → ∀slots:Finset σ,slots.card≤rmax →
     ∀(lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D)))(H:σ→ℝ),
       (slots:Set σ).Pairwise (fun i j=>Disjoint (lists i) (lists j)) →
       (∀i∈slots,1≤H i) → (∀i∈slots,∀P∈lists i,(Ideal.absNorm P.val:ℝ)≤H i) → (∏i∈slots,H i)≤Z^z₀ →
-    ∀(Ψ:O→*ℂ),(∀u,‖Ψ u‖≤1) →
+    ∀(Ψ:ActualEisensteinCubic.O→*ℂ),(∀u,‖Ψ u‖≤1) →
       CanonicalCoefficientClass.FactorsModulo (CanonicalCoefficientClass.fixedBaseConductor q) Ψ →
     ∀(theta:ℝ)(a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D)→ℂ),
       (∀i∈slots,∀P∈lists i,‖a i P‖≤1) → ∀E:ℝ,0≤E →
@@ -80,7 +80,7 @@ theorem actual_complete_state_from_live_bins
       ‖markedShortCompletedSum (rowTwist Ψ (m*excludedGenerator S) (idealGenerator I) z)
         test (Z^N) (Z^(cutoff-V)) mark‖^2)≤Cs*(1+‖theta‖)^degree*Z^(N+V-cstar/256) := by
     by_cases hbig:cutoff≤V
-    · have he (I:Ideal O)(z:O):markedShortCompletedSum
+    · have he (I:Ideal ActualEisensteinCubic.O)(z:ActualEisensteinCubic.O):markedShortCompletedSum
           (rowTwist Ψ (m*excludedGenerator S) (idealGenerator I) z) test (Z^N) (Z^(cutoff-V)) mark=0:=
         short_sum_zero_of_label_large _ _ _ _ _ _ _ hZ1 hbig
       simp only [he,norm_zero,zero_pow (by decide:2≠0),Finset.sum_const_zero,mul_zero]
@@ -101,6 +101,6 @@ theorem actual_complete_state_from_live_bins
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

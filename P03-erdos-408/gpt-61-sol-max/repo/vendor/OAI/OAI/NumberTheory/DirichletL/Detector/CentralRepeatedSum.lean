@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.CentralRepeatedProduct
 public import OAI.NumberTheory.DirichletL.Detector.CentralRepeatedChoices
@@ -7,18 +8,18 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralRepeatedChoices
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralRepeatedSum
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve ProbeCentralRepeatedProduct ProbeCentralRepeatedChoices
 open ProbeSelectedPrimeSums
-local notation "O" => HeckeFamily.O
 
-theorem actual_repeated_sum (N : ℕ) (e eps c d B : ℝ)
+
+theorem actual_repeated_sum  N   e eps c d B 
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps)
     (hc : 0<c) (hd : 0<d) (hB : 0≤B) :
-    ∃C : ℝ,0<C ∧ ∀(S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+    ∃C : ℝ,0<C ∧ ∀(S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
       (hmax : ∀P∈S,P.IsMaximal),fixedBadPrimes⊆S →
     ∀(u : FreeRow),u.val≠1 → ∀{ι : Type*} [Fintype ι] (η : Character) (twists : ι→Character)
       (T0 a : ℝ) (i : ℕ),2<T0 → 51/100≤a → a≤1 →
@@ -36,13 +37,13 @@ theorem actual_repeated_sum (N : ℕ) (e eps c d B : ℝ)
         (∏j,∑P:T j,‖W j ((P.val.val.absNorm:ℝ)/Y j)*(P.val.val.absNorm:ℂ)^(z-1)*
           centralRepeatedTerm η u P.val (hs j P.val P.property) x w z‖) ≤
         C*rowCost S hS u a e eps ((3*i+2:ℕ)*T0)*
-          ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps*∏j,(Y j)^(-(4/25:ℝ)) := by
+          ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^eps*∏j,(Y j)^(-(4/25:ℝ)) := by
   obtain ⟨C,hC,hprod⟩ := selected_repeated_product e eps he he1 heps
   obtain ⟨D,hD,hcount⟩ := active_card_subpower N eps heps
   let A := annularPower c d (-(4/25:ℝ))
   let E := (max 1 (812*B*A))^N
   have hA : 0≤A := annularPower_nonneg c d _ hc
-  have hE : 0<E := by dsimp [E];positivity
+  
   refine ⟨D*C*E,by positivity,?_⟩
   intro S hS hmax hbad u hu ι _ η twists T0 a i hT0 ha ha1 hbin k hk T hs hdis hη hQ hsmall W Y hY hWS hW x w z hx hw hz hwi
   let R := rowCost S hS u a e eps ((3*i+2:ℕ)*T0)
@@ -61,7 +62,7 @@ theorem actual_repeated_sum (N : ℕ) (e eps c d B : ℝ)
       (fun j=>hsmall j (P j).val (P j).property) (fun j=>(hp j).1)
       B W Y hB hW x w z hx hw hz hwi
     have hpow : (∏j,((P j).val.val.absNorm:ℝ)^(z.re-1/2))≤A^k*∏j,(Y j)^(-(4/25:ℝ)) := by
-      have hh := Finset.prod_le_prod₀ (s:=Finset.univ) (fun j _=>Real.rpow_nonneg (show (0:ℝ)≤(P j).val.val.absNorm by positivity) (-(4/25:ℝ)))
+      have hh := Finset.prod_le_prod₀ (s:=Finset.univ) (fun j _=>(by positivity))
         (fun j (_:j∈Finset.univ)=>annular_rpow c d (Y j) ((P j).val.val.absNorm:ℝ) (-(4/25:ℝ)) hc hd (hY0 j)
           ((le_div_iff₀ (hY0 j)).mp (hWS j (hp j).2).1)
           ((div_le_iff₀ (hY0 j)).mp (hWS j (hp j).2).2))
@@ -82,11 +83,11 @@ theorem actual_repeated_sum (N : ℕ) (e eps c d B : ℝ)
   simp only [Finset.sum_const,nsmul_eq_mul] at hh
   apply hh.trans
   calc
-    _ ≤ (D*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps)*(C*E*R*∏j,(Y j)^(-(4/25:ℝ))) :=
+    _ ≤ (D*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^eps)*(C*E*R*∏j,(Y j)^(-(4/25:ℝ))) :=
       mul_le_mul_of_nonneg_right (hcount k hk u T W Y) (by positivity)
     _ = _ := by dsimp [R];ring
 end SevenEighths.ProbeCentralRepeatedSum
 
-end
+
 
 end OAI

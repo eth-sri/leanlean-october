@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGaussianRemote
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff SchwartzMap
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma not_lowRemote_bounds (Z ell ε U : ℝ) (hZ : 0<Z)
     (h : ¬lowRemote Z ell ε U) :
@@ -24,12 +24,12 @@ lemma not_lowRemote_bounds (Z ell ε U : ℝ) (hZ : 0<Z)
     exact h.1.le
   · exact h.2.le
 
-theorem low_central_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
-    (a b ε : ℝ) (ha : 0<a) (hε : 0<ε) (hε1 : ε<1)
-    (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
-    (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 M : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+theorem low_central_gaussian_dyads  η   S 
+     hS  (hbad : fixedBadPrimes⊆S)
+     {K}   ell  (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
+     a b ε  (ha : 0<a) (hε : 0<ε) (hε1 : ε<1)
+     V   hV 
+     W0 W1  (a0 b0 a1 b1 M : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hab1 : a1<b1) (hM : 0≤M)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hW0s : ContDiff ℝ ∞ W0) (hW1s : ContDiff ℝ ∞ W1) (hWM : ∀x,‖W1 x‖≤M) :
@@ -86,6 +86,6 @@ theorem low_central_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
           exact Real.rpow_le_rpow_of_exponent_le hZ.1.le (by nlinarith)
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

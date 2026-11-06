@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Statement
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
@@ -22,7 +23,7 @@ namespace Erdos408
 
 /-- The completely additive function with `F 2 = 1` and `F p = F (p - 1)` for
 every odd prime `p`. -/
-noncomputable def F (n : ℕ) : ℕ :=
+noncomputable def F (n : ℕ)  :=
   if n ≤ 1 then 0 else
     ∑ p ∈ n.primeFactors.attach, n.factorization p * if (p : ℕ) = 2 then 1 else F (p - 1)
 termination_by n
@@ -33,7 +34,7 @@ decreasing_by
   omega
 
 /-- Unfolding `F` at `n ≥ 2`. -/
-private theorem F_eq_sum {n : ℕ} (hn : 2 ≤ n) :
+private theorem F_eq_sum  {n}  (hn : 2 ≤ n) :
     F n = ∑ p ∈ n.primeFactors, n.factorization p * if p = 2 then 1 else F (p - 1) := by
   rw [F, ite_eq_right (by omega)]
   exact Finset.sum_attach n.primeFactors fun p =>
@@ -44,14 +45,19 @@ theorem F_one : F 1 = 0 := by
   rw [F]
   simp
 
+section
+variable {m n : ℕ} (hm : m ≠ 0) (hn : n ≠ 0)
+
+
 /-- The value of `F` at a prime. -/
-private theorem F_prime {p : ℕ} (hp : p.Prime) : F p = if p = 2 then 1 else F (p - 1) := by
+private theorem F_prime  {p}  (hp : p.Prime) : F p = if p = 2 then 1 else F (p - 1) := by
   rw [F_eq_sum hp.two_le, hp.primeFactors, Finset.sum_singleton, hp.factorization_self,
     one_mul]
 
+include hn in
 /-- `F n` is the sum of `F q` over the prime factors `q` of `n`, counted with
 multiplicity. -/
-theorem F_eq_sum_factorization {n : ℕ} (hn : n ≠ 0) :
+theorem F_eq_sum_factorization     :
     F n = ∑ q ∈ n.primeFactors, n.factorization q * F q := by
   rcases Nat.lt_or_ge n 2 with h | h
   · obtain rfl : n = 1 := by omega
@@ -59,33 +65,43 @@ theorem F_eq_sum_factorization {n : ℕ} (hn : n ≠ 0) :
   rw [F_eq_sum h]
   exact Finset.sum_congr rfl fun q hq => by rw [F_prime (Nat.prime_of_mem_primeFactors hq)]
 
+include hn in
 /-- `F n` as a `Finsupp.sum` over the factorization of `n`. -/
-private theorem F_eq_finsuppSum {n : ℕ} (hn : n ≠ 0) :
+private theorem F_eq_finsuppSum     :
     F n = n.factorization.sum fun q e => e * F q := by
-  rw [F_eq_sum_factorization hn, Finsupp.sum, Nat.support_factorization]
+  simp_all [F_eq_sum_factorization, Finsupp.sum]
 
+include hm hn in
 /-- `F` is completely additive. -/
-theorem F_mul {m n : ℕ} (hm : m ≠ 0) (hn : n ≠ 0) : F (m * n) = F m + F n := by
+theorem F_mul       : F (m * n) = F m + F n := by
   rw [F_eq_finsuppSum (mul_ne_zero hm hn), Nat.factorization_mul hm hn,
     Finsupp.sum_add_index' (fun _ => zero_mul _) (fun _ _ _ => add_mul _ _ _),
     ← F_eq_finsuppSum hm, ← F_eq_finsuppSum hn]
+
+end
 
 /-- `F 2 = 1`. -/
 theorem F_two : F 2 = 1 := by
   rw [F_prime Nat.prime_two, ite_eq_left rfl]
 
+section
+variable {p : ℕ} (hp : p.Prime) (h2 : p ≠ 2) {n : ℕ} (hn : n ≠ 0)
+
+
+include hp h2 in
 /-- `F p = F (p - 1)` for every odd prime `p`. -/
-theorem F_prime_of_ne_two {p : ℕ} (hp : p.Prime) (h2 : p ≠ 2) : F p = F (p - 1) := by
+theorem F_prime_of_ne_two       : F p = F (p - 1) := by
   rw [F_prime hp, ite_eq_right h2]
 
 /-- `F` of a power. -/
-private theorem F_pow {p : ℕ} (hp : p ≠ 0) (k : ℕ) : F (p ^ k) = k * F p := by
+private theorem F_pow   (hp : p ≠ 0)  k  : F (p ^ k) = k * F p := by
   induction k with
   | zero => simp [F_one]
   | succ k ih => rw [pow_succ, F_mul (pow_ne_zero _ hp) hp, ih]; ring
 
+include hp h2 in
 /-- An odd prime `p` satisfies `F p = 1 + F m` where `p = 2 m + 1`. -/
-private theorem F_odd_prime {p : ℕ} (hp : p.Prime) (h2 : p ≠ 2) :
+private theorem F_odd_prime       :
     1 ≤ (p - 1) / 2 ∧ p = 2 * ((p - 1) / 2) + 1 ∧ F p = 1 + F ((p - 1) / 2) := by
   obtain ⟨m, hm⟩ := hp.odd_of_ne_two h2
   have := hp.two_le
@@ -115,16 +131,16 @@ private theorem induction_on_primes_mul {P : ℕ → Prop} (h1 : P 1)
     exact hmul _ _ hmin.ne_zero hq0
       (hp _ hmin fun m hm hlt => ih m (by omega) hm) (ih _ hq hq0)
 
+include hn in
 /-- The lower bound `log n / log 3 ≤ F n`. -/
-theorem log_div_log_three_le_F {n : ℕ} (hn : n ≠ 0) : Real.log n / Real.log 3 ≤ F n := by
+theorem log_div_log_three_le_F     : Real.log n / Real.log 3 ≤ F n := by
   have h3 : 0 < Real.log 3 := Real.log_pos (by norm_num)
   refine induction_on_primes_mul (P := fun n => Real.log n / Real.log 3 ≤ F n)
     (by simp [F_one]) (fun p hp ih => ?_) (fun a b ha hb iha ihb => ?_) n hn
   · by_cases h2 : p = 2
     · subst h2
       simp only [F_two, Nat.cast_one, Nat.cast_ofNat]
-      rw [div_le_one h3]
-      exact Real.log_le_log (by norm_num) (by norm_num)
+      bound
     obtain ⟨hm1, hpm, hF⟩ := F_odd_prime hp h2
     set m := (p - 1) / 2
     have ihm := ih m (by omega) (by omega)
@@ -140,8 +156,9 @@ theorem log_div_log_three_le_F {n : ℕ} (hn : n ≠ 0) : Real.log n / Real.log 
       Nat.cast_add]
     exact add_le_add iha ihb
 
+include hn in
 /-- The upper bound `F n ≤ log n / log 2`. -/
-theorem F_le_log_div_log_two {n : ℕ} (hn : n ≠ 0) : (F n : ℝ) ≤ Real.log n / Real.log 2 := by
+theorem F_le_log_div_log_two     : (F n : ℝ) ≤ Real.log n / Real.log 2 := by
   have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
   refine induction_on_primes_mul (P := fun n => (F n : ℝ) ≤ Real.log n / Real.log 2)
     (by simp [F_one]) (fun p hp ih => ?_) (fun a b ha hb iha ihb => ?_) n hn
@@ -162,8 +179,9 @@ theorem F_le_log_div_log_two {n : ℕ} (hn : n ≠ 0) : (F n : ℝ) ≤ Real.log
       Nat.cast_add]
     exact add_le_add iha ihb
 
+include hn in
 /-- `F` drops by one under `φ` at even arguments and is unchanged at odd ones. -/
-private theorem F_totient_add {n : ℕ} (hn : n ≠ 0) :
+private theorem F_totient_add     :
     F (Nat.totient n) + (if 2 ∣ n then 1 else 0) = F n := by
   induction n using Nat.recOnPosPrimePosCoprime with
   | prime_pow p k hp hk =>
@@ -172,9 +190,7 @@ private theorem F_totient_add {n : ℕ} (hn : n ≠ 0) :
       F_pow hp.ne_zero]
     by_cases h2 : p = 2
     · subst h2
-      rw [ite_eq_left (dvd_pow_self 2 hk.ne'), F_two]
-      simp only [Nat.reduceSub, F_one]
-      omega
+      grind [F_two, F_one]
     · have hndvd : ¬ 2 ∣ p ^ k := fun h =>
         h2 ((Nat.prime_dvd_prime_iff_eq Nat.prime_two hp).1
           (Nat.prime_two.dvd_of_dvd_pow h)).symm
@@ -198,14 +214,21 @@ private theorem F_totient_add {n : ℕ} (hn : n ≠ 0) :
       omega
     split_ifs at iha ihb ⊢ <;> omega
 
+end
+
+section
+variable {n c : ℕ} (hn : 2 ≤ n) (he : Even n)
+
+
 /-- Iterates of `φ` that reach `1` exactly from step `c ≥ 1` on give `f n = c`. -/
-private theorem f_eq_of_iterate_iff {n c : ℕ} (hc : 1 ≤ c)
+private theorem f_eq_of_iterate_iff   (hc : 1 ≤ c)
     (h : ∀ k, 1 ≤ k → (Nat.totient^[k] n = 1 ↔ c ≤ k)) : f n = c :=
   le_antisymm (Nat.sInf_le ⟨hc, (h c hc).2 le_rfl⟩)
     (le_csInf ⟨c, hc, (h c hc).2 le_rfl⟩ fun k hk => (h k hk.1).1 hk.2)
 
+include hn he in
 /-- For even `n ≥ 2`, `φ^[k] n = 1` exactly when `k ≥ F n`. -/
-private theorem iterate_totient_eq_one_iff_of_even {n : ℕ} (hn : 2 ≤ n) (he : Even n) (k : ℕ) :
+private theorem iterate_totient_eq_one_iff_of_even        k  :
     Nat.totient^[k] n = 1 ↔ F n ≤ k := by
   induction k generalizing n with
   | zero =>
@@ -227,14 +250,16 @@ private theorem iterate_totient_eq_one_iff_of_even {n : ℕ} (hn : 2 ≤ n) (he 
     rw [ih (by omega) (Nat.totient_even h3)]
     omega
 
+include hn he in
 /-- The height of an even `n ≥ 2` is `F n`. -/
-theorem f_eq_F_of_even {n : ℕ} (hn : 2 ≤ n) (he : Even n) : f n = F n := by
+theorem f_eq_F_of_even       : f n = F n := by
   have hF := (iterate_totient_eq_one_iff_of_even hn he 0).not.1
     (by simp only [Function.iterate_zero, id_eq]; omega)
-  exact f_eq_of_iterate_iff (by omega) fun k _ => iterate_totient_eq_one_iff_of_even hn he k
+  grind [f_eq_of_iterate_iff, iterate_totient_eq_one_iff_of_even]
 
+include hn in
 /-- The height of an odd `n ≥ 3` is `F n + 1`. -/
-theorem f_eq_F_add_one_of_odd {n : ℕ} (hn : 2 ≤ n) (ho : Odd n) : f n = F n + 1 := by
+theorem f_eq_F_add_one_of_odd     (ho : Odd n) : f n = F n + 1 := by
   have h3 : 2 < n := by obtain ⟨m, rfl⟩ := ho; omega
   have hF := F_totient_add (show n ≠ 0 by omega)
   rw [ite_eq_right (Nat.not_even_iff_odd.2 ho ∘ even_iff_two_dvd.2), add_zero] at hF
@@ -249,7 +274,7 @@ theorem f_eq_F_add_one_of_odd {n : ℕ} (hn : 2 ≤ n) (ho : Odd n) : f n = F n 
   omega
 
 /-- `f n` and `F n` differ by at most one for `n ≥ 1`. -/
-theorem abs_f_sub_F_le_one {n : ℕ} (hn : 1 ≤ n) : |(f n : ℝ) - F n| ≤ 1 := by
+theorem abs_f_sub_F_le_one   (hn : 1 ≤ n) : |(f n : ℝ) - F n| ≤ 1 := by
   rcases Nat.lt_or_ge n 2 with h | h
   · obtain rfl : n = 1 := by omega
     have : f 1 = 1 :=
@@ -258,5 +283,7 @@ theorem abs_f_sub_F_le_one {n : ℕ} (hn : 1 ≤ n) : |(f n : ℝ) - F n| ≤ 1 
   rcases Nat.even_or_odd n with he | ho
   · simp [f_eq_F_of_even h he]
   · simp [f_eq_F_add_one_of_odd h ho]
+
+end
 
 end Erdos408

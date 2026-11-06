@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Mellin.ExponentialSmoothing
 
@@ -8,7 +9,7 @@ namespace OAI
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 
@@ -23,14 +24,14 @@ variable {R : Type*} [CommRing R] [Fintype R] [DecidableEq R]
 noncomputable local instance : Fintype (MulChar R ℂ) := Fintype.ofFinite _
 
 omit [DecidableEq R] in
-private theorem sum_chars_zero {a : R} (ha : a ≠ 1) :
+private theorem sum_chars_zero  {a}  (ha : a ≠ 1) :
     (∑ χ : MulChar R ℂ, χ a) = 0 := by
   obtain ⟨χ, hχ⟩ := MulChar.exists_apply_ne_one_of_hasEnoughRootsOfUnity R ℂ ha
   refine eq_zero_of_mul_eq_self_left hχ ?_
   simp only [Finset.mul_sum, ← MulChar.mul_apply]
   exact Fintype.sum_bijective _ (Group.mulLeft_bijective χ) _ _ fun χ' => rfl
 
-theorem sum_chars (a : R) :
+theorem sum_chars  a  :
     (∑ χ : MulChar R ℂ, χ a) =
       if a = 1 then (Fintype.card Rˣ : ℂ) else 0 := by
   split_ifs with ha
@@ -61,7 +62,7 @@ namespace FiniteFieldSieve
 
 variable {F : Type*} [Field F] [Fintype F]
 
-theorem primitive_gauss_norm_sq (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+theorem primitive_gauss_norm_sq (χ : MulChar F ℂ)  ψ 
     (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
     ‖gaussSum χ ψ‖ ^ 2 = (Fintype.card F : ℝ) := by
   have h := gaussSum_mul_gaussSum_eq_card hχ hψ
@@ -80,40 +81,26 @@ namespace ProductResidueSieve
 
 variable {R S : Type*} [CommRing R] [CommRing S]
 
-def mulCharProd (χ : MulChar R ℂ) (η : MulChar S ℂ) : MulChar (R × S) ℂ where
-  toFun x := χ x.1 * η x.2
-  map_one' := by simp
-  map_mul' x y := by simp [mul_mul_mul_comm]
-  map_nonunit' x hx := by
-    rw [Prod.isUnit_iff] at hx
-    by_cases h₁ : IsUnit x.1
-    · have h₂ : ¬IsUnit x.2 := by tauto
-      simp [MulChar.map_nonunit η h₂]
-    · simp [MulChar.map_nonunit χ h₁]
 
-def addCharProd (ψ : AddChar R ℂ) (φ : AddChar S ℂ) : AddChar (R × S) ℂ where
-  toFun x := ψ x.1 * φ x.2
-  map_zero_eq_one' := by simp
-  map_add_eq_mul' x y := by
-    simp only [Prod.fst_add, Prod.snd_add, AddChar.map_add_eq_mul]
-    ring
 
-@[simp] theorem mulCharProd_apply (χ : MulChar R ℂ) (η : MulChar S ℂ) (x : R × S) :
-    mulCharProd χ η x = χ x.1 * η x.2 := rfl
 
-@[simp] theorem addCharProd_apply (ψ : AddChar R ℂ) (φ : AddChar S ℂ) (x : R × S) :
-    addCharProd ψ φ x = ψ x.1 * φ x.2 := rfl
+
+
 
 end ProductResidueSieve
 
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 
 open scoped ContDiff
 
 namespace FourierBridge
 
-theorem schwartz_log_inversion (g : 𝓢(ℝ, ℂ)) (y : ℝ) :
+section
+variable (g : 𝓢(ℝ, ℂ)) (J : ℕ) (F : ℝ → ℂ) (R a y u m H : ℝ) (i : ℕ) (CF : ℝ) (A n j : ℕ) (hF : ContDiff ℝ ∞ F) (hR : 0 ≤ R) (hm : 0 < m) (_hH : 0 ≤ H) (hCF : 0 ≤ CF) (hu : 0 ≤ u) (hlower : m * (1 + R) ≤ 1 + u) (hm1 : m ≤ 1) (hH : 1 ≤ H) (ha : |a| ≤ H) (hexp : Real.exp (a * y) ≤ H) (hexpLower : m ≤ Real.exp (a * y)) (hexpUpper : Real.exp (a * y) ≤ H) (hj : j ≤ n) (k : ℕ) (S C : ℝ) (hS : 0 ≤ S)
+
+
+theorem schwartz_log_inversion     :
     g y = ∫ t : ℝ,
       Complex.exp ((↑(2 * Real.pi * inner ℝ t y) * Complex.I)) * (𝓕 g) t := by
   have hinv : (𝓕⁻ (𝓕 g) : 𝓢(ℝ, ℂ)) = g := by simp
@@ -121,7 +108,7 @@ theorem schwartz_log_inversion (g : 𝓢(ℝ, ℂ)) (y : ℝ) :
   rw [SchwartzMap.fourierInv_coe, Real.fourierInv_eq'] at h
   simpa only [smul_eq_mul] using h.symm
 
-theorem fourier_coefficient_moment (g : 𝓢(ℝ, ℂ)) (J : ℕ) :
+theorem fourier_coefficient_moment     :
     ∫ t : ℝ, ‖t‖ ^ J * ‖(𝓕 g) t‖ ≤
       (2 ^ (volume : Measure ℝ).integrablePower *
         ∫ t : ℝ, (1 + ‖t‖) ^ (-(volume : Measure ℝ).integrablePower : ℝ)) *
@@ -129,10 +116,11 @@ theorem fourier_coefficient_moment (g : 𝓢(ℝ, ℂ)) (J : ℕ) :
         (SchwartzMap.seminorm ℝ (J + (volume : Measure ℝ).integrablePower) 0) (𝓕 g)) := by
   simpa using SchwartzMap.integral_pow_mul_iteratedFDeriv_le ℝ volume (𝓕 g) J 0
 
+include hR hH ha hexp in
 theorem exp_argument_derivative_bound
-    (R a y H : ℝ) (i : ℕ)
-    (hR : 0 ≤ R) (hH : 1 ≤ H)
-    (ha : |a| ≤ H) (hexp : Real.exp (a * y) ≤ H)
+       
+       
+       
     (hi : 1 ≤ i) :
     ‖iteratedFDeriv ℝ i (fun z : ℝ => R * Real.exp (a * z)) y‖ ≤
       (H ^ 2 * (1 + R)) ^ i := by
@@ -141,8 +129,7 @@ theorem exp_argument_derivative_bound
   rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_of_nonneg hR,
     abs_of_pos (Real.exp_pos _), abs_pow]
   have hpowH : H ≤ H ^ i := by
-    calc H = H ^ 1 := by ring
-         _ ≤ H ^ i := pow_le_pow_right₀ hH hi
+    bound
   have hpowR : R ≤ (1 + R) ^ i := by
     calc R ≤ 1 + R := by linarith
          _ = (1 + R) ^ 1 := by ring
@@ -152,12 +139,13 @@ theorem exp_argument_derivative_bound
     _ ≤ (1 + R) ^ i * (H ^ i * H ^ i) := by gcongr
     _ = (H ^ 2 * (1 + R)) ^ i := by simp only [mul_pow, pow_two]; ring
 
+include hF hR hH ha hexp hj in
 theorem coupled_factor_derivative_bound
-    (F : ℝ → ℂ) (R a y H CF : ℝ) (A n j : ℕ)
-    (hF : ContDiff ℝ ∞ F)
-    (hR : 0 ≤ R) (hH : 1 ≤ H)
-    (ha : |a| ≤ H) (hexp : Real.exp (a * y) ≤ H)
-    (hj : j ≤ n)
+         
+     
+       
+       
+     
     (_hCF : 0 ≤ CF)
     (hFdecay : ∀ i ≤ n, ∀ u, 0 ≤ u →
       (1 + u) ^ (A + n) * ‖iteratedFDeriv ℝ i F u‖ ≤ CF) :
@@ -171,15 +159,15 @@ theorem coupled_factor_derivative_bound
   · intro i hi
     apply (le_div_iff₀ hden).mpr
     simpa [mul_comm] using hFdecay i (hi.trans hj) _ hu
-  · intro i hi₁ hi₂
-    exact exp_argument_derivative_bound R a y H i hR hH ha hexp hi₁
+  simp_all [exp_argument_derivative_bound]
 
+include hR hm _hH hCF hu hlower hj in
 theorem derivative_scale_absorption
-    (R u m H CF : ℝ) (A n j : ℕ)
-    (hR : 0 ≤ R) (hm : 0 < m)
-    (_hH : 0 ≤ H) (hCF : 0 ≤ CF)
-    (hu : 0 ≤ u) (hlower : m * (1 + R) ≤ 1 + u)
-    (hj : j ≤ n) :
+       
+       
+       
+       
+      :
     m ^ (A + n) * (1 + R) ^ A *
       ((j.factorial : ℝ) * (CF / (1 + u) ^ (A + n)) *
         (H ^ 2 * (1 + R)) ^ j) ≤
@@ -210,14 +198,15 @@ theorem derivative_scale_absorption
     _ ≤ Q := (div_le_iff₀ hden).mpr (by simpa [mul_comm, mul_left_comm, mul_assoc] using hQscale)
     _ = (j.factorial : ℝ) * CF * (H ^ 2) ^ j := rfl
 
+include hF hR hm hm1 hH ha hexpLower hexpUpper hj in
 theorem coupled_factor_uniform_derivative
-    (F : ℝ → ℂ) (R a y m H CF : ℝ) (A n j : ℕ)
-    (hF : ContDiff ℝ ∞ F)
-    (hR : 0 ≤ R) (hm : 0 < m) (hm1 : m ≤ 1)
-    (hH : 1 ≤ H) (ha : |a| ≤ H)
-    (hexpLower : m ≤ Real.exp (a * y))
-    (hexpUpper : Real.exp (a * y) ≤ H)
-    (hj : j ≤ n) (hCF : 0 ≤ CF)
+         
+     
+         
+       
+     
+     
+      (hCF : 0 ≤ CF)
     (hFdecay : ∀ i ≤ n, ∀ u, 0 ≤ u →
       (1 + u) ^ (A + n) * ‖iteratedFDeriv ℝ i F u‖ ≤ CF) :
     m ^ (A + n) * (1 + R) ^ A *
@@ -233,7 +222,7 @@ theorem coupled_factor_uniform_derivative
       hR hm (by linarith) hCF (by positivity) hlower hj)
 
 theorem fourier_seminorm_from_derivative_integrals
-    (g : 𝓢(ℝ, ℂ)) (k : ℕ) :
+        :
     (SchwartzMap.seminorm ℝ k 0) (𝓕 g) ≤
       (2 : ℝ) ^ k *
         ∑ p ∈ Finset.range 1 ×ˢ Finset.range (k + 1),
@@ -253,9 +242,10 @@ theorem fourier_seminorm_from_derivative_integrals
   intro w
   simpa using hpoint' w
 
+include hS in
 theorem uniform_fourier_seminorm_transfer
-    (g : 𝓢(ℝ, ℂ)) (k : ℕ) (S C : ℝ)
-    (hS : 0 ≤ S) (_hC : 0 ≤ C)
+         
+      (_hC : 0 ≤ C)
     (hsource : ∀ i ≤ k,
       S * ((SchwartzMap.seminorm ℝ 0 i) g +
         (SchwartzMap.seminorm ℝ (volume : Measure ℝ).integrablePower i) g) ≤ C) :
@@ -312,9 +302,10 @@ theorem uniform_fourier_seminorm_transfer
         (2 ^ (volume : Measure ℝ).integrablePower *
           ∫ t : ℝ, (1 + ‖t‖) ^ (-(volume : Measure ℝ).integrablePower : ℝ)) * C := rfl
 
+include hS in
 theorem uniform_fourier_coefficient_moment
-    (g : 𝓢(ℝ, ℂ)) (J : ℕ) (S C : ℝ)
-    (hS : 0 ≤ S) (hC : 0 ≤ C)
+         
+      (hC : 0 ≤ C)
     (hsource : ∀ i ≤ J + (volume : Measure ℝ).integrablePower,
       S * ((SchwartzMap.seminorm ℝ 0 i) g +
         (SchwartzMap.seminorm ℝ (volume : Measure ℝ).integrablePower i) g) ≤ C) :
@@ -351,19 +342,27 @@ theorem uniform_fourier_coefficient_moment
         (by simpa [K, V] using hfourier_K)
     _ = _ := by simp [V, K, p, Nat.cast_add]
 
-noncomputable def coefficientMomentBound (J : ℕ) (C : ℝ) : ℝ :=
+end
+
+noncomputable def coefficientMomentBound (J : ℕ) (C : ℝ)  :=
   let p := (volume : Measure ℝ).integrablePower
   let V : ℝ := 2 ^ p * ∫ t : ℝ, (1 + ‖t‖) ^ (-(p : ℝ))
   V * (V * C + (2 : ℝ) ^ (J + p) * (J + p + 1) * V * C)
 
-theorem coefficientMomentBound_nonneg (J : ℕ) (C : ℝ) (hC : 0 ≤ C) :
+section
+variable (g : 𝓢(ℝ, ℂ)) (J : ℕ) (S C : ℝ) (hS : 0 ≤ S) (hC : 0 ≤ C)
+
+
+include hC in
+theorem coefficientMomentBound_nonneg       :
     0 ≤ coefficientMomentBound J C := by
   unfold coefficientMomentBound
   positivity
 
+include hS hC in
 theorem uniform_fourier_one_plus_moment
-    (g : 𝓢(ℝ, ℂ)) (J : ℕ) (S C : ℝ)
-    (hS : 0 ≤ S) (hC : 0 ≤ C)
+         
+       
     (hsource : ∀ i ≤ J + (volume : Measure ℝ).integrablePower,
       S * ((SchwartzMap.seminorm ℝ 0 i) g +
         (SchwartzMap.seminorm ℝ (volume : Measure ℝ).integrablePower i) g) ≤ C) :
@@ -426,15 +425,21 @@ theorem uniform_fourier_one_plus_moment
       · simpa [coefficientMomentBound, b] using hbound0
       · simpa [coefficientMomentBound, b] using hboundJ
 
-noncomputable def logPhase (t y : ℝ) : ℂ :=
+end
+
+noncomputable def logPhase (t y : ℝ)  :=
   Complex.exp (((2 * Real.pi * t * y : ℝ) : ℂ) * Complex.I)
 
-theorem logPhase_add (t u v : ℝ) :
+section
+variable (t u v T : ℝ) (K : ℕ) (hT : 0 ≤ T)
+
+
+theorem logPhase_add   :
     logPhase t (u + v) = logPhase t u * logPhase t v := by
   unfold logPhase
   convert Complex.exp_add _ _ using 1 ; push_cast ; ring_nf
 
-theorem logPhase_zero (t : ℝ) : logPhase t 0 = 1 := by
+theorem logPhase_zero   : logPhase t 0 = 1 := by
   simp [logPhase]
 
 theorem logPhase_sum {ι : Type*} [DecidableEq ι]
@@ -466,7 +471,8 @@ theorem coupled_cutoff_active
       rw [abs_mul]
       exact mul_le_mul_of_nonneg_left (hwindow j (y j) hnonzero) (abs_nonneg _)
 
-theorem exists_complex_smooth_cutoff (T : ℝ) (hT : 0 ≤ T) :
+include hT in
+theorem exists_complex_smooth_cutoff     :
     ∃ V : ℝ → ℂ,
       HasCompactSupport V ∧
       ContDiff ℝ ∞ V ∧
@@ -478,9 +484,7 @@ theorem exists_complex_smooth_cutoff (T : ℝ) (hT : 0 ≤ T) :
   have hU : IsOpen U := isOpen_Ioo
   have hK : IsClosed K := isClosed_Icc
   have hKU : K ⊆ U := by
-    intro s hs
-    rcases hs with ⟨hleft, hright⟩
-    constructor <;> linarith
+    grind
   obtain ⟨f, hf, _, hsupport, hone⟩ :=
     exists_contDiff_support_eq_eq_one_iff (n := ⊤) hU hK hKU
   let V : ℝ → ℂ := fun s => (f s : ℂ)
@@ -491,9 +495,7 @@ theorem exists_complex_smooth_cutoff (T : ℝ) (hT : 0 ≤ T) :
     simp [V, Function.mem_support]
   have hVsupportI : Function.support V ⊆
       Set.Icc (-(T + 1)) (T + 1) := by
-    intro s hs
-    rw [hVsupport, hsupport] at hs
-    exact ⟨hs.1.le, hs.2.le⟩
+    grind
   have hVtsupportI : tsupport V ⊆
       Set.Icc (-(T + 1)) (T + 1) :=
     closure_minimal hVsupportI isClosed_Icc
@@ -504,11 +506,11 @@ theorem exists_complex_smooth_cutoff (T : ℝ) (hT : 0 ≤ T) :
     have hsK : s ∈ K := by simpa [K, abs_le] using hs
     have hfs : f s = 1 := (hone s).mp hsK
     simp [V, hfs]
-  exact ⟨V, hVc, hVs, hone', hVtsupportI,
-    hone' 0 (by simpa using hT)⟩
+  grind
 
+include hT in
 theorem exists_complex_smooth_cutoff_with_derivative_bounds
-    (T : ℝ) (K : ℕ) (hT : 0 ≤ T) :
+          :
     ∃ (V : ℝ → ℂ) (CW : ℝ),
       HasCompactSupport V ∧ ContDiff ℝ ∞ V ∧
       (∀ s, |s| ≤ T → V s = 1) ∧
@@ -538,21 +540,27 @@ theorem exists_complex_smooth_cutoff_with_derivative_bounds
   · exact Real.exp_le_exp.mpr hyupper
   · exact abs_le.mpr ⟨hylower, hyupper⟩
 
+end
+
 noncomputable def schwartzDerivativeDecayConstant
-    (F : 𝓢(ℝ, ℂ)) (M K : ℕ) : ℝ :=
+    (F : 𝓢(ℝ, ℂ)) (M K : ℕ)  :=
   (2 : ℝ) ^ M *
     ∑ i ∈ Finset.range (K + 1),
       ((SchwartzMap.seminorm ℝ 0 i) F +
         (SchwartzMap.seminorm ℝ M i) F)
 
+section
+variable (F : 𝓢(ℝ, ℂ)) (M A K j i : ℕ)
+
+
 theorem schwartzDerivativeDecayConstant_nonneg
-    (F : 𝓢(ℝ, ℂ)) (M K : ℕ) :
+        :
     0 ≤ schwartzDerivativeDecayConstant F M K := by
   unfold schwartzDerivativeDecayConstant
   positivity
 
 theorem schwartz_derivative_decay_finite
-    (F : 𝓢(ℝ, ℂ)) (A K j i : ℕ) (u : ℝ)
+         u 
     (hj : j ≤ K) (hi : i ≤ j) (hu : 0 ≤ u) :
     (1 + u) ^ (A + j) * ‖iteratedFDeriv ℝ i F u‖ ≤
       schwartzDerivativeDecayConstant F (A + K) K := by
@@ -582,7 +590,7 @@ theorem schwartz_derivative_decay_finite
     simpa [N, Real.norm_eq_abs, abs_of_nonneg hu] using
       SchwartzMap.le_seminorm ℝ M i F u
   have hT : N + u ^ M * N ≤ T := add_le_add h0 hM
-  have hTnonneg : 0 ≤ T := by dsimp [T]; positivity
+  
   have hTsum : T ≤ ∑ k ∈ Finset.range (K + 1),
       ((SchwartzMap.seminorm ℝ 0 k) F +
         (SchwartzMap.seminorm ℝ M k) F) := by
@@ -606,6 +614,8 @@ theorem schwartz_derivative_decay_finite
             (SchwartzMap.seminorm ℝ M k) F)) :=
       mul_le_mul_of_nonneg_left hTsum (by positivity)
     _ = schwartzDerivativeDecayConstant F (A + K) K := rfl
+
+end
 
 end FourierBridge
 

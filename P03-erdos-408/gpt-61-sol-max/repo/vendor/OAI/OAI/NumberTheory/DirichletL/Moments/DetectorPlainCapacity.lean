@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainSlotProfile
 
 namespace OAI
 
-noncomputable section
+section
 
 open scoped Classical BigOperators ContDiff ComplexConjugate
 namespace SevenEighths.CenteredMomentDetectorPlainCapacity
@@ -18,8 +18,8 @@ open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSlotProfile
 local notation "O"=>HeckeFamily.O
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
-theorem physical_annular_all (S:ProbeFinalAssembly.SourceData D)(η₀:Character)
-    (P:ℝ)(hP:0<P)(ζ:ℂ)(I:Ideal O):
+theorem physical_annular_all (S:ProbeFinalAssembly.SourceData D) η₀ 
+     P (hP:0<P) ζ  I :
     physicalSlotCoefficient η₀ S.W P ζ I=
       idealCoeff η₀.inverse I*annularWeight (fun x=>conj (S.W x)) P (1-ζ.re) (-ζ.im) I := by
   by_cases hI:I=0
@@ -32,7 +32,7 @@ theorem physical_annular_all (S:ProbeFinalAssembly.SourceData D)(η₀:Character
   · exact physicalSlotCoefficient_annular η₀ S.W P ζ I hI hP
 
 variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 include hH
 

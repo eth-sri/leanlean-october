@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalMainSubsets
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalErrorSubsets
@@ -35,7 +36,7 @@ open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentReta
 open CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
+
 
 open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
 open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
@@ -43,14 +44,14 @@ open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeT
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
 open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open   CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
+open   CenteredMomentEnergyAllocatedZero
 open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+ 
+ 
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
 open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
@@ -80,8 +81,8 @@ open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentFirstAmplifiedF
 open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
 open CenteredMomentFirstAmplificationChoice (errorMoving errorRemoval)
 
-lemma front_mono {a b:ℝ}(p:Profiles a b)(U V:Finset (ℕ×ℕ))(hUV:U⊆V)
-    (J K:ℕ)(hJK:J≤K)(c d C₀ C₁ t height:ℝ)
+lemma front_mono {a b:ℝ}(p:Profiles a b) U V (hUV:U⊆V)
+     J K (hJK:J≤K) c d C₀ C₁ t height 
     (hc:0≤c)(hcd:c≤d)(hC₀:0≤C₀)(hC₁:0≤C₁)(hh:0≤height):
     c*(C₀+C₁+1)*(p.control U)^2*(1+|t|+height)^J≤
       d*(C₀+C₁+1)*(p.control V)^2*(1+|t|+height)^K:=by
@@ -91,7 +92,7 @@ lemma front_mono {a b:ℝ}(p:Profiles a b)(U V:Finset (ℕ×ℕ))(hUV:U⊆V)
       (Seminorm.le_def.mp (Finset.sup_mono hUV) (p.profile 1))
       (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
   have hp0:=p.control_nonneg U
-  have hp1:=p.control_nonneg V
+  
   have ht:(1+|t|+height)^J≤(1+|t|+height)^K:=
     pow_le_pow_right₀ (by linarith [abs_nonneg t]) hJK
   have hd:0≤d:=hc.trans hcd

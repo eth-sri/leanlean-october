@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Defs
 public import Mathlib.Data.Int.CardIntervalMod
@@ -19,8 +20,12 @@ namespace Erdos408
 
 open Finset
 
+section
+variable (V : Finset ℕ) (hV : ∀ p ∈ V, p.Prime) (a : ℕ → ℕ) {M : ℕ} (hM : 0 < M) {A t : ℕ} (hAt : A ≤ t)
+
+include hV in
 /-- CRT for distinct primes: `(∀ p ∈ V, e ≡ a_p [MOD p]) ↔ e ≡ k [MOD ∏_{p ∈ V} p]`. -/
-lemma exists_forall_modEq_iff (V : Finset ℕ) (hV : ∀ p ∈ V, p.Prime) (a : ℕ → ℕ) :
+lemma exists_forall_modEq_iff       :
     ∃ k : ℕ, ∀ e : ℕ, (∀ p ∈ V, e ≡ a p [MOD p]) ↔ e ≡ k [MOD ∏ p ∈ V, p] := by
   induction V using Finset.induction_on with
   | empty => exact ⟨0, fun e => by simp [Nat.modEq_one]⟩
@@ -38,8 +43,9 @@ lemma exists_forall_modEq_iff (V : Finset ℕ) (hV : ∀ p ∈ V, p.Prime) (a : 
     · rintro ⟨h1, h2⟩
       exact ⟨h1.trans hk'q, h2.trans hk'M⟩
 
+include hM hAt in
 /-- A residue class modulo `M ≥ 1` meets `(A, t]` in `(t - A)/M + O(1)` points. -/
-lemma abs_card_filter_modEq_sub_le {M : ℕ} (hM : 0 < M) {A t : ℕ} (hAt : A ≤ t) (k : ℕ) :
+lemma abs_card_filter_modEq_sub_le          k  :
     |((((Ioc A t).filter (· ≡ k [MOD M])).card : ℕ) : ℝ) - ((t : ℝ) - A) / M| ≤ 1 := by
   have h := Nat.Ioc_filter_modEq_card A t hM k
   set α : ℚ := ((A : ℚ) - k) / M
@@ -68,19 +74,18 @@ lemma abs_card_filter_modEq_sub_le {M : ℕ} (hM : 0 < M) {A t : ℕ} (hAt : A �
   push_cast at e1 e2 e3 e4 ⊢
   constructor <;> linarith
 
+include hV hAt in
 /-- A system of congruences modulo the distinct primes of `V` has
 `(t - A)/∏_{p ∈ V} p + O(1)` solutions in `(A, t]`. -/
-lemma abs_card_filter_forall_modEq_sub_le (V : Finset ℕ) (hV : ∀ p ∈ V, p.Prime) (a : ℕ → ℕ)
-    {A t : ℕ} (hAt : A ≤ t) :
+lemma abs_card_filter_forall_modEq_sub_le      
+        :
     |((((Ioc A t).filter fun e => ∀ p ∈ V, e ≡ a p [MOD p]).card : ℕ) : ℝ) -
         ((t : ℝ) - A) / ∏ p ∈ V, (p : ℝ)| ≤ 1 := by
   obtain ⟨k, hk⟩ := exists_forall_modEq_iff V hV a
   have hM : 0 < ∏ p ∈ V, p := prod_pos fun p hp => (hV p hp).pos
   have h := abs_card_filter_modEq_sub_le hM hAt k
-  have hfilt : ((Ioc A t).filter fun e => ∀ p ∈ V, e ≡ a p [MOD p]) =
-      (Ioc A t).filter (· ≡ k [MOD ∏ p ∈ V, p]) := filter_congr fun e _ => hk e
-  rw [hfilt]
-  push_cast at h
-  exact h
+  simp_all
+
+end
 
 end Erdos408

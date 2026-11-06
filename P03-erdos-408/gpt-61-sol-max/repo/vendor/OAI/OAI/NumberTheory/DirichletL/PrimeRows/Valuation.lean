@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsPrime
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRows
@@ -13,23 +14,26 @@ namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification UniqueFactorizationMonoid
 local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 
-def unitPart (u : FreeRow) (p : O) (hp : Prime p) : O :=
+def unitPart (u : FreeRow) (p : O) (hp : Prime p)  :=
   Classical.choose ((FiniteMultiplicity.of_prime_left hp u.property.1).exists_eq_pow_mul_and_not_dvd)
 
-theorem unitPart_spec (u : FreeRow) (p : O) (hp : Prime p) :
+section
+variable (u : FreeRow) (p : O)
+
+theorem unitPart_spec      hp  :
     u.val=p^(multiplicity p u.val)*unitPart u p hp ∧ ¬p∣unitPart u p hp :=
   Classical.choose_spec ((FiniteMultiplicity.of_prime_left hp u.property.1).exists_eq_pow_mul_and_not_dvd)
 
-theorem unitPart_coprime (u : FreeRow) (p : O) (hp : Prime p) : IsCoprime (unitPart u p hp) p :=
+theorem unitPart_coprime      hp  : IsCoprime (unitPart u p hp) p :=
   (hp.irreducible.coprime_iff_not_dvd.mpr (unitPart_spec u p hp).2).symm
 
-theorem unitPart_ne_zero (u : FreeRow) (p : O) (hp : Prime p) : unitPart u p hp≠0 := by
+theorem unitPart_ne_zero      hp  : unitPart u p hp≠0 := by
   intro he
   have hu := (unitPart_spec u p hp).1
   rw [he,mul_zero] at hu
   exact u.property.1 hu
 
-theorem multiplicity_lt_six (u : FreeRow) (p : O) (hp : Prime p) : multiplicity p u.val<6 := by
+theorem multiplicity_lt_six     (hp : Prime p) : multiplicity p u.val<6 := by
   let P : Ideal O := Ideal.span {p}
   have hP0 : P≠0 := Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero
   have hP : Prime P := Ideal.prime_of_isPrime hP0 (Ideal.isPrime_span_singleton_of_prime hp)
@@ -45,18 +49,19 @@ theorem multiplicity_lt_six (u : FreeRow) (p : O) (hp : Prime p) : multiplicity 
     Multiset.count_singleton_self,mul_one] at hf
   omega
 
-theorem canonical_decomposition (u : FreeRow) (p : O) (hp : Prime p) :
+theorem canonical_decomposition      hp  :
     u.val=unitPart u p hp*p^(multiplicity p u.val) ∧
       IsCoprime (unitPart u p hp) p ∧ multiplicity p u.val<6 := by
-  exact ⟨(unitPart_spec u p hp).1.trans (mul_comm _ _),unitPart_coprime u p hp,
-    multiplicity_lt_six u p hp⟩
+  grind [unitPart_spec, unitPart_coprime, multiplicity_lt_six]
 
-theorem idealRowHighLocalFactor_canonical (η : Character) (u : FreeRow) (p : O) (hp : Prime p)
+end
+
+theorem idealRowHighLocalFactor_canonical  η   u   p   hp 
     [(Ideal.span {p}:Ideal O).IsMaximal]
     (hg : ConcretePrimeRowBridge.goodLambda∉Ideal.span {p})
     (hc : ringChar (O ⧸ Ideal.span {p})≠2)
     (hprimary : ConcretePrimeRowBridge.goodLambda^2∣p-1)
-    (hs : CanonicalQuadraticSieve.Supported (Ideal.span {p})) (x w z : ℂ) :
+    (hs : CanonicalQuadraticSieve.Supported (Ideal.span {p}))  x w z  :
     ProbePhysical.idealRowHighLocalFactor η u.val (Ideal.span {p}) x w z=
       ∑ e : Fin 2,∑' l,∑' k,∑' m,
         ProbeEuler.sourceRowTerm p hp hg (ProbeRow.targetMonoid η p) (ProbeEuler.actualACube η p)

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.Contractions
 
@@ -6,7 +7,7 @@ public import Erdos821.P3Clean.Contractions
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P3Clean
@@ -25,7 +26,7 @@ theorem normBound_relabel {α : Type*} (mass : α → ℝ)
     e.symm_apply_apply, d.symm_apply_apply, he, hd] using h
 
 theorem normBound_convex_sum {α β : Type*} [Fintype β]
-    (mass : α → ℝ) (K : β → α → α → ℂ) (w : β → ℝ) (C : ℝ)
+    (mass : α → ℝ) (K : β → α → α → ℂ) (w : β → ℝ)  C 
     (hw : ∀ j, 0 ≤ w j) (hw1 : ∑ j, w j = 1)
     (hK : ∀ j, NormBound mass (K j) C) :
     NormBound mass (fun a b => ∑ j, (w j : ℂ) * K j a b) C := by
@@ -40,13 +41,7 @@ theorem normBound_convex_sum {α β : Type*} [Fintype β]
       ext a
       rw [Finset.sum_comm]
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro j _
-    apply Finset.sum_congr rfl
-    intro a _
-    apply Finset.sum_congr rfl
-    intro b _
-    ring
+    grind
   rw [hform]
   calc
     _ ≤ ∑ j, ‖(w j : ℂ) * ∑ a ∈ s, ∑ b ∈ t,
@@ -56,9 +51,7 @@ theorem normBound_convex_sum {α β : Type*} [Fintype β]
       simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hw _)]
     _ ≤ ∑ j, w j * (C * Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) *
         Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2)) := by
-      apply Finset.sum_le_sum
-      intro j _
-      exact mul_le_mul_of_nonneg_left (hK j s t f g) (hw j)
+      bound
     _ = _ := by rw [← Finset.sum_mul, hw1, one_mul]
 
 

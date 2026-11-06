@@ -25,19 +25,23 @@ def scaledResidue (d a m : A) (hm : m = d * a) :
     rw [hm, ← mul_sub, hz]
     ring)
 
-@[simp] theorem scaledResidue_mk (d a m : A) (hm : m = d * a) (x : A) :
+@[simp] theorem scaledResidue_mk  d a m   hm  (x : A) :
     scaledResidue d a m hm (Ideal.Quotient.mk (Ideal.span {d}) x) =
       Ideal.Quotient.mk (Ideal.span {m}) (a * x) := rfl
 
 def fullModulusCorrelation (u v : A)
     [Fintype (A ⧸ Ideal.span {u})] [Fintype (A ⧸ Ideal.span {v})]
     (χu : MulChar (A ⧸ Ideal.span {u}) ℂ)
-    (χv : MulChar (A ⧸ Ideal.span {v}) ℂ) (j : A) : ℂ :=
+    (χv : MulChar (A ⧸ Ideal.span {v}) ℂ) (j : A)  :=
   fullCorrelation (scaledResidue u v (u * v) rfl)
     (scaledResidue v u (u * v) (mul_comm u v)) χu χv
     (Ideal.Quotient.mk (Ideal.span {u * v}) j)
 
-theorem scaledResidue_congruence (u v x y j : A) :
+section
+variable (u v x y d j : A)
+
+
+theorem scaledResidue_congruence   :
     scaledResidue u v (u * v) rfl (Ideal.Quotient.mk (Ideal.span {u}) x) -
       scaledResidue v u (u * v) (mul_comm u v)
         (Ideal.Quotient.mk (Ideal.span {v}) y) =
@@ -46,12 +50,12 @@ theorem scaledResidue_congruence (u v x y j : A) :
   rw [scaledResidue_mk, scaledResidue_mk, ← map_sub, Ideal.Quotient.eq]
   exact Ideal.mem_span_singleton
 
-theorem fullModulusCorrelation_fourier (u v : A)
+theorem fullModulusCorrelation_fourier  
     [Fintype (A ⧸ Ideal.span {u})] [Fintype (A ⧸ Ideal.span {v})]
     [Fintype (A ⧸ Ideal.span {u * v})]
     (χu : MulChar (A ⧸ Ideal.span {u}) ℂ)
-    (χv : MulChar (A ⧸ Ideal.span {v}) ℂ) (j : A)
-    (ψ : AddChar (A ⧸ Ideal.span {u * v}) ℂ) (hψ : ψ.IsPrimitive) :
+    (χv : MulChar (A ⧸ Ideal.span {v}) ℂ)  j 
+     ψ  (hψ : ψ.IsPrimitive) :
     (∑ h : A ⧸ Ideal.span {u * v},
       fourierSum ψ (scaledResidue u v (u * v) rfl) χu h *
         star (fourierSum ψ (scaledResidue v u (u * v) (mul_comm u v)) χv h) *
@@ -67,10 +71,10 @@ theorem common_divisor_frequency {u v d x y j : A}
   have hdiff := dvd_sub hleft (hprod.trans hcong)
   convert hdiff using 1 ; ring
 
-theorem fullModulusCorrelation_eq_zero_of_common_not_dvd (u v d j : A)
+theorem fullModulusCorrelation_eq_zero_of_common_not_dvd  
     [Fintype (A ⧸ Ideal.span {u})] [Fintype (A ⧸ Ideal.span {v})]
-    (χu : MulChar (A ⧸ Ideal.span {u}) ℂ)
-    (χv : MulChar (A ⧸ Ideal.span {v}) ℂ)
+     χu 
+     χv 
     (hdu : d ∣ u) (hdv : d ∣ v) (hdj : ¬d ∣ j) :
     fullModulusCorrelation u v χu χv j = 0 := by
   unfold fullModulusCorrelation fullCorrelation
@@ -86,6 +90,8 @@ theorem fullModulusCorrelation_eq_zero_of_common_not_dvd (u v d j : A)
     intro h
     exact hdj (common_divisor_frequency hdu hdv ((scaledResidue_congruence u v a b j).mp h))
   exact ite_eq_right hn
+
+end
 
 variable [IsDomain A]
 

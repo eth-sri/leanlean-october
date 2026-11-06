@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.Blueprint.Graph
 public import Erdos821.Blueprint.Analytic
@@ -30,7 +31,7 @@ theorem tilted_density_bound (p e : ℝ) (hp : 0 < p) (he : 0 ≤ e) (he' : 2 * 
     linarith
 
 /-- §2 compatibility of a prime active at both endpoints. -/
-theorem active_both_divides_step (p : ℕ) (n k D : ℤ) (hp : Nat.Prime p)
+theorem active_both_divides_step  p  (n k D : ℤ) (hp : Nat.Prime p)
     (hn : (p : ℤ) ∣ n) (hn' : (p : ℤ) ∣ n + k * D) (hk : ¬ (p : ℤ) ∣ k) :
     (p : ℤ) ∣ D := by
   have hprime : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp
@@ -38,8 +39,6 @@ theorem active_both_divides_step (p : ℕ) (n k D : ℤ) (hp : Nat.Prime p)
   have heq : (n + k * D) - n = k * D := by ring
   rw [heq] at hsub
   rw [Prime.dvd_mul hprime] at hsub
-  rcases hsub with h | h
-  · exact absurd h hk
-  · exact h
+  simp_all
 
 end Erdos821.Blueprint.Graph

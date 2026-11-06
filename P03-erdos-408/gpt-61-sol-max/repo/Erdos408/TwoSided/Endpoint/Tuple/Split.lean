@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Major.Characters
 public import Erdos408.TwoSided.Endpoint.Tuple.Energy
@@ -25,9 +26,12 @@ open Filter Finset MeasureTheory
 
 /-! ### The tuple sum -/
 
+section
+variable {Y : ℝ}
+
 /-- `w ↦ (w/p_s/p_l)` is a bijection from the `w ∈ [⌈Y⌉, ⌊2Y⌋]` with `p_s ∣ w`, `p_l ∣ w/p_s`
 onto the `u ∈ (1, ⌊2Y⌋]` with `p_s p_l u ∈ [⌈Y⌉, ⌊2Y⌋]`, when `p_s p_l < Y`. -/
-theorem sum_filter_dvd_eq {Y : ℝ} {ps pl : ℕ} (hps : 0 < ps) (hpl : 0 < pl)
+theorem sum_filter_dvd_eq   {ps pl : ℕ} (hps : 0 < ps) (hpl : 0 < pl)
     (hY : ((ps * pl : ℕ) : ℝ) < Y) (G : ℕ → ℕ → ℂ) :
     ∑ w ∈ Icc ⌈Y⌉₊ ⌊2 * Y⌋₊, (if ps ∣ w ∧ pl ∣ w / ps then G w (w / ps / pl) else 0) =
       ∑ u ∈ (Ioc 1 ⌊2 * Y⌋₊).filter (fun u => ps * pl * u ∈ Icc ⌈Y⌉₊ ⌊2 * Y⌋₊),
@@ -86,7 +90,7 @@ theorem sum_filter_dvd_eq {Y : ℝ} {ps pl : ℕ} (hps : 0 < ps) (hpl : 0 < pl)
 integers with `p_s p_l < Y`:
 `∑_{w ∈ [⌈Y⌉, ⌊2Y⌋]} ψ₁(w/Y) F(w) ∑_{p_s ∣ w} ∑_{p_l ∣ w/p_s} c(w/p_s/p_l) =
 ∑_{p_s, p_l} ∑_{u ∈ (1, ⌊2Y⌋]} ψ₁(p_s p_l u/Y) F(p_s p_l u) c(u)`. -/
-theorem twistedSum_eq {Y : ℝ} (s sp : Finset ℕ) (hs : ∀ p ∈ s, 0 < p) (hsp : ∀ p ∈ sp, 0 < p)
+theorem twistedSum_eq   (s sp : Finset ℕ) (hs : ∀ p ∈ s, 0 < p) (hsp : ∀ p ∈ sp, 0 < p)
     (hsmall : ∀ ps ∈ s, ∀ pl ∈ sp, ((ps * pl : ℕ) : ℝ) < Y) (ψ₁ : ℝ → ℂ)
     (hψ : ∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) (F cf : ℕ → ℂ) (hY : 0 < Y) :
     ∑ w ∈ Icc ⌈Y⌉₊ ⌊2 * Y⌋₊, ψ₁ (w / Y) * F w *
@@ -109,8 +113,8 @@ theorem twistedSum_eq {Y : ℝ} (s sp : Finset ℕ) (hs : ∀ p ∈ s, 0 < p) (h
         have hw : ps * pl * (w / ps / pl) = w := by
           rw [mul_assoc, Nat.mul_div_cancel' hpl, Nat.mul_div_cancel' hps]
         rw [hw]
-      · rw [ite_eq_right hpl, ite_eq_right fun h => hpl h.2]
-    · exact (sum_eq_zero fun pl _ => ite_eq_right fun h => hps h.1).symm
+      grind
+    simp_all
   simp_rw [h₁]
   rw [sum_comm]
   refine sum_congr rfl fun ps hps => ?_
@@ -133,27 +137,30 @@ theorem twistedSum_eq {Y : ℝ} (s sp : Finset ℕ) (hs : ∀ p ∈ s, 0 < p) (h
       · exact Nat.le_floor (by rwa [div_le_iff₀ hY] at h₂)
     rw [hψ0, zero_mul, zero_mul]
 
+end
+
 /-! ### Boxes, classes and characters -/
 
 /-- The dyadic box of `p ≥ 2`: `p ∈ (2^i, 2^{i+1}]` for `i = boxIndex p`. -/
-def boxIndex (p : ℕ) : ℕ := Nat.log 2 (p - 1)
+def boxIndex (p : ℕ)  := Nat.log 2 (p - 1)
+
+section
+variable {p i N₀ : ℕ}
 
 /-- `boxIndex p = i` iff `p ∈ (2^i, 2^{i+1}]`, for `p ≥ 2`. -/
-theorem boxIndex_eq_iff {p i : ℕ} (hp : 2 ≤ p) : boxIndex p = i ↔ 2 ^ i < p ∧ p ≤ 2 ^ (i + 1) := by
+theorem boxIndex_eq_iff   (hp : 2 ≤ p) : boxIndex p = i ↔ 2 ^ i < p ∧ p ≤ 2 ^ (i + 1) := by
   rw [boxIndex, Nat.log_eq_iff (Or.inr ⟨one_lt_two, by omega⟩)]
-  constructor
-  · rintro ⟨h₁, h₂⟩
-    exact ⟨by omega, by omega⟩
-  · rintro ⟨h₁, h₂⟩
-    exact ⟨by omega, by omega⟩
+  grind
 
 /-- The boxes below `N₀ ≥ 1` cover `[1, 2^{N₀}]`. -/
-theorem boxIndex_lt {p N₀ : ℕ} (hN₀ : 1 ≤ N₀) (hp : p ≤ 2 ^ N₀) : boxIndex p < N₀ := by
+theorem boxIndex_lt   (hN₀ : 1 ≤ N₀) (hp : p ≤ 2 ^ N₀) : boxIndex p < N₀ := by
   rw [boxIndex]
   rcases Nat.eq_zero_or_pos (p - 1) with h | h
   · rw [h, Nat.log_zero_right]
     omega
   · exact Nat.log_lt_of_lt_pow h.ne' (by omega)
+
+end
 
 /-- The index set of boxes, classes and characters. -/
 noncomputable def boxSet (N₀ k : ℕ) :
@@ -161,7 +168,7 @@ noncomputable def boxSet (N₀ k : ℕ) :
   ((range N₀ ×ˢ range N₀) ×ˢ range N₀) ×ˢ ((range k ×ˢ range k) ×ˢ univ)
 
 /-- There are at most `N₀³ k³` boxes, classes and characters. -/
-theorem card_boxSet_le (N₀ k : ℕ) [NeZero k] : #(boxSet N₀ k) ≤ N₀ ^ 3 * k ^ 3 := by
+theorem card_boxSet_le  N₀ k  [NeZero k] : #(boxSet N₀ k) ≤ N₀ ^ 3 * k ^ 3 := by
   rw [boxSet, card_product, card_product, card_product, card_product, card_product,
     card_range, card_range, card_univ]
   have := OneSided.card_dirichletCharacter_le k
@@ -170,8 +177,8 @@ theorem card_boxSet_le (N₀ k : ℕ) [NeZero k] : #(boxSet N₀ k) ≤ N₀ ^ 3
     _ = N₀ ^ 3 * k ^ 3 := by ring
 
 /-- The condition that `(p_s, p_l, u)` lies in the box and classes of `m`. -/
-def InBox {k : ℕ} (m : ((ℕ × ℕ) × ℕ) × ((ℕ × ℕ) × DirichletCharacter ℂ k))
-    (ps pl u : ℕ) : Prop :=
+def InBox {k } (m : ((ℕ × ℕ) × ℕ) × ((ℕ × ℕ) × DirichletCharacter ℂ k))
+    (ps pl u : ℕ)  :=
   (boxIndex ps = m.1.1.1 ∧ ps % k = m.2.1.1) ∧ boxIndex pl = m.1.1.2 ∧
     (boxIndex u = m.1.2 ∧ u % k = m.2.1.2)
 
@@ -181,10 +188,14 @@ instance {k : ℕ} (m : ((ℕ × ℕ) × ℕ) × ((ℕ × ℕ) × DirichletChara
   unfold InBox
   infer_instance
 
+section
+variable {n : ℕ} (hn : 0 < n) {a : ℝ → ℂ} (ha : Integrable a) {ψ₁ : ℝ → ℂ} (hrep : ∀ y : ℝ, 0 < y →
+      ψ₁ y = ∫ ξ, a ξ * (y : ℂ) ^ (((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I)) {Y P V : ℝ} (hY : 0 < Y) (ξ : ℝ) (hP : P ≠ 0) (sP spN uR : Finset ℕ) {k : ℕ} (χ : DirichletCharacter ℂ k) (c : ℕ → ℂ) (τ : ℝ)
+
 /-- The rational phase by boxes, classes and characters: for `p_l` coprime to `k` and
 `p_s, p_l, u` in the boxes below `N₀`,
 `e(h p_s p_l u/k) = ∑_m [(p_s, p_l, u) ∈ m] c_χ(h, αβ) χ(p_l)`. -/
-theorem phase_eq_sum_boxSet {k : ℕ} (hk : 1 ≤ k) (h : ℤ) {N₀ ps pl u : ℕ}
+theorem phase_eq_sum_boxSet   (hk : 1 ≤ k) (h : ℤ)  {N₀ ps pl u} 
     (hps : boxIndex ps < N₀) (hpl : boxIndex pl < N₀) (hu : boxIndex u < N₀)
     (hcop : Nat.Coprime pl k) :
     Erdos821.Blueprint.Analytic.e (h * (ps * pl * u : ℕ) / k) =
@@ -199,11 +210,7 @@ theorem phase_eq_sum_boxSet {k : ℕ} (hk : 1 ≤ k) (h : ℤ) {N₀ ps pl u : �
     simp only [boxSet, InBox, mem_product, mem_range, mem_singleton, mem_univ, and_true]
     have h₁ : ps % k < k := Nat.mod_lt _ (by omega)
     have h₂ : u % k < k := Nat.mod_lt _ (by omega)
-    constructor
-    · rintro ⟨-, ⟨rfl, rfl⟩, rfl, rfl, rfl⟩
-      exact ⟨⟨⟨rfl, rfl⟩, rfl⟩, rfl, rfl⟩
-    · rintro ⟨⟨⟨rfl, rfl⟩, rfl⟩, rfl, rfl⟩
-      exact ⟨⟨⟨⟨hps, hpl⟩, hu⟩, h₁, h₂⟩, ⟨rfl, rfl⟩, rfl, rfl, rfl⟩
+    aesop
   rw [hfil, singleton_product_singleton, singleton_product_singleton,
     singleton_product_singleton, sum_product, sum_singleton, sum_product, sum_singleton]
   rw [← Erdos821.P5Marked.e_eq_sum_cchi k hk h pl (ps % k * (u % k)) hcop]
@@ -219,16 +226,11 @@ theorem phase_eq_sum_boxSet {k : ℕ} (hk : 1 ≤ k) (h : ℤ) {N₀ ps pl u : �
       exact_mod_cast (Nat.mod_add_div a k).symm
     have hb : (b : ℝ) = ((b % k : ℕ) : ℝ) + k * ((b / k : ℕ) : ℝ) := by
       exact_mod_cast (Nat.mod_add_div b k).symm
-    have hn : ((ps * pl * u : ℕ) : ℝ) = (pl : ℝ) * a := by
-      simp only [a]
-      push_cast
-      ring
+    
     have hq : ((h * pl * (((a / k : ℕ) : ℤ) - ((b / k : ℕ) : ℤ)) : ℤ) : ℝ) =
         (h : ℝ) * pl * (((a / k : ℕ) : ℝ) - ((b / k : ℕ) : ℝ)) := by
       simp only [Int.cast_mul, Int.cast_sub, Int.cast_natCast]
-    rw [hq, hn, ha, hab, Nat.cast_mul pl b, hb]
-    field_simp
-    ring
+    grind
   rw [hdecomp, Erdos821.P5Marked.e_periodic]
 
 /-- Splitting a triple sum by boxes, classes and characters. -/
@@ -243,15 +245,12 @@ theorem tripleSum_eq_sum_boxSet {ι : Type*} (M : Finset ι) (C : ι → ℕ →
       ∑ m ∈ M, γ m * (if C m ps pl u then χ m pl * Φ ps pl u else 0) := by
     intro ps pl u
     rw [mul_sum]
-    refine sum_congr rfl fun m _ => ?_
-    split_ifs
-    · ring
-    · ring
+    grind
   calc ∑ ps ∈ s, ∑ pl ∈ sp, ∑ u ∈ U,
         Φ ps pl u * ∑ m ∈ M, (if C m ps pl u then γ m * χ m pl else 0)
       = ∑ ps ∈ s, ∑ pl ∈ sp, ∑ u ∈ U, ∑ m ∈ M,
           γ m * (if C m ps pl u then χ m pl * Φ ps pl u else 0) :=
-        sum_congr rfl fun ps _ => sum_congr rfl fun pl _ => sum_congr rfl fun u _ => h₁ ps pl u
+        (by grind)
     _ = ∑ ps ∈ s, ∑ pl ∈ sp, ∑ m ∈ M, ∑ u ∈ U,
           γ m * (if C m ps pl u then χ m pl * Φ ps pl u else 0) :=
         sum_congr rfl fun ps _ => sum_congr rfl fun pl _ => sum_comm
@@ -271,8 +270,9 @@ theorem ofReal_cpow_mul_I {y : ℝ} (hy : 0 < y) (s : ℝ) :
   push_cast
   ring_nf
 
+include hn hY in
 /-- `(n/Y)^{iξ} n^{iτ} = Y^{-iξ} n^{i(τ + ξ)}` for `n, Y > 0`. -/
-theorem div_cpow_mul_cpow {n : ℕ} (hn : 0 < n) {Y : ℝ} (hY : 0 < Y) (ξ τ : ℝ) :
+theorem div_cpow_mul_cpow           :
     (((n : ℝ) / Y : ℝ) : ℂ) ^ ((ξ : ℂ) * Complex.I) * (n : ℂ) ^ ((τ : ℂ) * Complex.I) =
       (Y : ℂ) ^ (((-ξ : ℝ) : ℂ) * Complex.I) * (n : ℂ) ^ (((τ + ξ : ℝ) : ℂ) * Complex.I) := by
   have hn' : (0 : ℝ) < n := by exact_mod_cast hn
@@ -284,7 +284,7 @@ theorem div_cpow_mul_cpow {n : ℕ} (hn : 0 < n) {Y : ℝ} (hY : 0 < Y) (ξ τ :
   ring
 
 /-- `(∑ f)(z (∑ g)(∑ h)) = ∑∑∑ f (z (g h))`. -/
-theorem sum_mul_mul_sum_mul_sum (A B C : Finset ℕ) (f g h : ℕ → ℂ) (z : ℂ) :
+theorem sum_mul_mul_sum_mul_sum (A B C : Finset ℕ) (f g h : ℕ → ℂ)  z  :
     (∑ a ∈ A, f a) * (z * ((∑ b ∈ B, g b) * ∑ c ∈ C, h c)) =
       ∑ a ∈ A, ∑ b ∈ B, ∑ c ∈ C, f a * (z * (g b * h c)) := by
   rw [Finset.sum_mul]
@@ -293,9 +293,10 @@ theorem sum_mul_mul_sum_mul_sum (A B C : Finset ℕ) (f g h : ℕ → ℂ) (z : 
   refine sum_congr rfl fun b _ => ?_
   rw [Finset.mul_sum, Finset.mul_sum]
 
+include hP in
 /-- The box polynomial as a triple sum: `G(τ) = (YV)⁻¹ ∑ χ(p_l) c_u (p_s p_l u)^{iτ}`. -/
-theorem boxPoly_eq_tripleSum {Y P V : ℝ} (hP : P ≠ 0) (sP spN uR : Finset ℕ) {k : ℕ}
-    (χ : DirichletCharacter ℂ k) (c : ℕ → ℂ) (τ : ℝ) :
+theorem boxPoly_eq_tripleSum        
+          :
     boxPoly Y P V sP spN uR χ c τ =
       (((Y * V)⁻¹ : ℝ) : ℂ) * ∑ ps ∈ sP, ∑ pl ∈ spN, ∑ u ∈ uR,
         χ pl * (c u * ((ps * pl * u : ℕ) : ℂ) ^ ((τ : ℂ) * Complex.I)) := by
@@ -323,15 +324,15 @@ theorem integral_tripleSum {A B C : Finset ℕ} {f : ℕ → ℕ → ℕ → ℝ
   refine sum_congr rfl fun b hb => ?_
   rw [integral_finsetSum _ fun c hc => hf a ha b hb c hc]
 
+include ha hrep hY hP in
 /-- **Separation.** With a Mellin density `a` of `ψ₁`,
 `(YV)⁻¹ ∑ χ(p_l) ψ₁(p_s p_l u/Y) c_u (p_s p_l u)^{i(t + σ)} =
 ∫ a(ξ) Y^{-2πiξ} G(t + σ + 2πξ) dξ`. -/
-theorem boxSum_eq_integral {a : ℝ → ℂ} (ha : Integrable a) {ψ₁ : ℝ → ℂ}
-    (hrep : ∀ y : ℝ, 0 < y →
-      ψ₁ y = ∫ ξ, a ξ * (y : ℂ) ^ (((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I))
-    {Y P V : ℝ} (hY : 0 < Y) (hP : P ≠ 0) {sP spN uR : Finset ℕ} (hsP : ∀ n ∈ sP, 0 < n)
+theorem boxSum_eq_integral      
+     
+          {sP spN uR : Finset ℕ} (hsP : ∀ n ∈ sP, 0 < n)
     (hspN : ∀ n ∈ spN, 0 < n) (huR : ∀ n ∈ uR, 0 < n) {k : ℕ} (χ : DirichletCharacter ℂ k)
-    (c : ℕ → ℂ) (σ t : ℝ) :
+     c   σ t  :
     (((Y * V)⁻¹ : ℝ) : ℂ) * ∑ ps ∈ sP, ∑ pl ∈ spN, ∑ u ∈ uR,
         χ pl * (ψ₁ ((ps * pl * u : ℕ) / Y) *
           (c u * ((ps * pl * u : ℕ) : ℂ) ^ (((t + σ : ℝ) : ℂ) * Complex.I))) =
@@ -386,5 +387,7 @@ theorem boxSum_eq_integral {a : ℝ → ℂ} (ha : Integrable a) {ψ₁ : ℝ �
   push_cast at h₃ ⊢
   rw [show ((t : ℂ) + σ + 2 * Real.pi * ξ) = (t + σ + 2 * Real.pi * ξ) by ring]
   linear_combination ((Y : ℂ)⁻¹ * (V : ℂ)⁻¹ * χ pl * c u * a ξ) * h₃
+
+end
 
 end Erdos408.TwoSided.TupleHigh

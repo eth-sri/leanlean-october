@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.PrincipalSelectorMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseWholePriorityRapidTail
@@ -64,8 +64,7 @@ theorem marked_rapid_tail (Lcap tau saving : ℝ) (hLcap : 0≤Lcap) (htau : 0<t
   calc
     _=(Ct*Cm^2*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)*(SchwartzMap.seminorm ℝ 0 0 om)^2)*
         (L*Z^(-(saving+Lcap))) := by rw [mul_pow,mul_pow,hp];ring
-    _≤_ := by
-      exact mul_le_mul_of_nonneg_left habsorb (by positivity)
+    _≤_ := mul_le_mul_of_nonneg_left habsorb (by positivity)
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -73,6 +72,6 @@ variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 end SevenEighths.InverseWholePriorityRapidTail
 
-end
+
 
 end OAI

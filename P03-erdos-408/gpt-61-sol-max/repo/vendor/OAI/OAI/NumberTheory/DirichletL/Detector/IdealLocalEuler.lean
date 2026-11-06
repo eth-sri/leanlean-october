@@ -15,12 +15,12 @@ open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadra
 open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
 local notation "O" => ActualEisensteinCubic.O
 
-lemma primaryGenerator_prime_power (p : O) (hp : p≠0) (hprimary : goodLambda^2∣p-1) (e : ℕ) :
+lemma primaryGenerator_prime_power  p  (hp : p≠0) (hprimary : goodLambda^2∣p-1)  e  :
     primaryGenerator ((Ideal.span {p})^e)=p^e := by
   rw [primaryGenerator_pow,primaryGenerator_span p hp hprimary]
 
-lemma prime_power_small_squarefree (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (e : ℕ) (he : e≤1) :
+lemma prime_power_small_squarefree  p  (hp : Prime p)
+    [(Ideal.span {p}:Ideal O).IsMaximal]  e  (he : e≤1) :
     Squarefree ((Ideal.span {p})^e) := by
   have hP : Prime (Ideal.span {p}:Ideal O) :=
     Ideal.prime_of_isPrime (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero) inferInstance
@@ -31,7 +31,7 @@ lemma prime_power_small_squarefree (p : O) (hp : Prime p)
 
 theorem bareIdealHighCoefficient_at_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (e l k m : ℕ) (he : e≤1) :
+    (hs : Supported (Ideal.span {p}))  e l k m  (he : e≤1) :
     bareIdealHighCoefficient η 1 ((Ideal.span {p})^e) ((Ideal.span {p})^l)
       ((Ideal.span {p})^k) ((Ideal.span {p})^m) =
     bareSourceCoefficient η (Ideal.span {p^e})
@@ -48,10 +48,10 @@ theorem bareIdealHighCoefficient_at_prime (η : HeckeFamily.Character) (p : O) (
   have hH : (p^m)^6=p^(6*m) := by rw [←pow_mul,Nat.mul_comm m 6]
   simp only [hA,hH,Ideal.span_singleton_pow]
 
-lemma fullIdealWeight_power (s : ℂ) (I : Ideal O) (n : ℕ) :
+lemma fullIdealWeight_power  s   I   n  :
     fullIdealWeight s (I^n)=fullIdealWeight s I^n := (IdealEuler.normWeight s).map_pow I n
 
-lemma prime_spectral_weights (p : O) (hp : p≠0) (e l k m : ℕ) (x w z : ℂ) :
+lemma prime_spectral_weights (p : O) (hp : p≠0) (e l k m : ℕ)  x w z  :
     fullIdealWeight (x+1/2) ((Ideal.span {p})^e) *
       fullIdealWeight (1+3*x) ((Ideal.span {p})^l) *
       fullIdealWeight w ((Ideal.span {p})^k) * fullIdealWeight (6*z) ((Ideal.span {p})^m) =
@@ -66,10 +66,14 @@ lemma prime_spectral_weights (p : O) (hp : p≠0) (e l k m : ℕ) (x w z : ℂ) 
   congr 1
   ring
 
-theorem bareIdealHighSummand_at_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (e l k m : ℕ) (he : e≤1) (x w z : ℂ) :
+section
+variable (η : HeckeFamily.Character) (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p}) (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1) (hs : Supported (Ideal.span {p}))
+include η p hp hg hchar hprimary hs
+
+theorem bareIdealHighSummand_at_prime      
+       
+       
+       e l k m  (he : e≤1)  x w z  :
     bareIdealHighSummand η 1 x w z ((Ideal.span {p})^e) ((Ideal.span {p})^l)
       ((Ideal.span {p})^k) ((Ideal.span {p})^m) =
     sourcePrincipalTerm p hp hg (targetMonoid η p) (actualACube η p) x w z e l k m := by
@@ -81,14 +85,14 @@ theorem bareIdealHighSummand_at_prime (η : HeckeFamily.Character) (p : O) (hp :
   simpa only [mul_assoc] using
     bareSourceCoefficient_weighted_prime η p hp hg hchar hprimary hs e l k m he _ x w z
 
-def idealHighLocalFactor (η : HeckeFamily.Character) (P : Ideal O) (x w z : ℂ) : ℂ :=
+def idealHighLocalFactor (η : HeckeFamily.Character) (P : Ideal O) (x w z : ℂ)  :=
   ∑ e : Fin 2, ∑' l, ∑' k, ∑' m,
     bareIdealHighSummand η 1 x w z (P^e.val) (P^l) (P^k) (P^m)
 
-theorem idealHighLocalFactor_eq_source (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (x w z : ℂ) :
+theorem idealHighLocalFactor_eq_source      
+       
+       
+       x w z  :
     idealHighLocalFactor η (Ideal.span {p}) x w z =
       sourcePrincipalSeries p hp hg (targetMonoid η p) (actualACube η p) x w z := by
   unfold idealHighLocalFactor sourcePrincipalSeries
@@ -102,10 +106,10 @@ theorem idealHighLocalFactor_eq_source (η : HeckeFamily.Character) (p : O) (hp 
   intro m
   exact bareIdealHighSummand_at_prime η p hp hg hchar hprimary hs e.val l k m (by omega) x w z
 
-theorem idealHighLocalFactor_euler_identity (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (x w z : ℂ)
+theorem idealHighLocalFactor_euler_identity      
+       
+       
+       x w z 
     (hV : ‖coordV (Ideal.absNorm (Ideal.span {p})) z‖<1)
     (hR : ‖coordR (Ideal.absNorm (Ideal.span {p})) ((actualACube η p)^2) x z‖<1)
     (hW : ‖coordW (Ideal.absNorm (Ideal.span {p})) 1 w‖<1)
@@ -116,6 +120,8 @@ theorem idealHighLocalFactor_euler_identity (η : HeckeFamily.Character) (p : O)
         unramifiedClosed Q ((actualACube η p)^2) (targetMonoid η p) 1 x w z := by
   rw [idealHighLocalFactor_eq_source η p hp hg hchar hprimary hs]
   exact sourcePrincipalSeries_euler_identity p hp hg hchar _ _ x w z hV hR hW hD
+
+end
 
 end SevenEighths.ProbePhysical
 end

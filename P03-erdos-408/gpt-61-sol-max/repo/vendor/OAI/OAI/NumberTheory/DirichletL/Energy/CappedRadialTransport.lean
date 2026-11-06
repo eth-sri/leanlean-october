@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.CappedWidthInduction
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.CappedWidthInduction
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical
 open Filter
 
@@ -16,11 +17,11 @@ open CenteredMomentEnergyBandMonotonicity
 local notation "O" => HeckeFamily.O
 variable {α : Type*}
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
 
-theorem certified_radial_mono (W : ℝ → ℂ)
-    (bslot a b radialOld radialNew Bmask L lo hi Mcap κ ε : ℝ) (k : ℕ)
+theorem certified_radial_mono  W 
+    (bslot a b radialOld radialNew Bmask L lo hi Mcap κ ε : ℝ)  k 
     (hrad : radialNew ≤ radialOld)
     (h : CertifiedBand (α := α) M H hH W bslot a b radialOld Bmask L lo hi Mcap κ ε k) :
     CertifiedBand (α := α) M H hH W bslot a b radialNew Bmask L lo hi Mcap κ ε k := by
@@ -39,13 +40,12 @@ theorem certified_radial_mono (W : ℝ → ℂ)
       le_rfl le_rfl hrad le_rfl le_rfl le_rfl le_rfl le_rfl (Finset.Subset.refl _)
       hCpositive.le le_rfl hZ.2.2
 
-theorem certified_from_max_two (W : ℝ → ℂ)
-    (bslot a b radial Bmask L lo hi Mcap κ ε : ℝ) (k : ℕ)
+theorem certified_from_max_two  W 
+     bslot a b radial Bmask L lo hi Mcap κ ε   k 
     (h : CertifiedBand (α := α) M H hH W bslot a b (max 2 radial)
       Bmask L lo hi Mcap κ ε k) :
     CertifiedBand (α := α) M H hH W bslot a b radial Bmask L lo hi Mcap κ ε k :=
-  certified_radial_mono (α := α) M H hH W bslot a b (max 2 radial) radial
-    Bmask L lo hi Mcap κ ε k (le_max_right _ _) h
+  OAI.SevenEighths.CenteredMomentEnergyCappedRadialTransport.certified_radial_mono M H hH W bslot a b (Max.max 2 radial) radial Bmask L lo hi Mcap κ ε k (le_max_right 2 radial) h
 
 end SevenEighths.CenteredMomentEnergyCappedRadialTransport
 

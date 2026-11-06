@@ -17,7 +17,7 @@ primes. This holds once the band primes exceed `N = 2R`, which is eventually the
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos408.OneSided
 
@@ -25,13 +25,18 @@ open Filter Finset Real
 
 variable {K : ℕ}
 
-section Measure
+
 
 variable {q x : ℝ} {d : Data K}
 
+section
+variable {C CX alo ahi g : ℝ} (hq : 0 < q) {N p : ℕ} (halo : 1 / 10 < alo)
+
+
+include hq in
 /-- For primes beyond `N`, the baseline `b'_p` is nonnegative: each of the `N + 1` defects is
 at most `1`, and `p + 1 > N + 1`. -/
-private theorem baseline_nonneg (hq : 0 < q) {N p : ℕ} (hp : N < p) : 0 ≤ baseline q N p := by
+private theorem baseline_nonneg     (hp : N < p) : 0 ≤ baseline q N p := by
   have hp1 : (0 : ℝ) < p + 1 := by positivity
   -- `∑_{j ≤ N} η'_j ≤ N + 1 ≤ p + 1`
   have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (p : ℝ) + 1 :=
@@ -49,8 +54,8 @@ private theorem baseline_nonneg (hq : 0 < q) {N p : ℕ} (hp : N < p) : 0 ≤ ba
 
 /-- With nonnegative baselines at the band primes, the birth weights are nonnegative; off the
 band primes `V(p) = 0`. -/
-private theorem primeWeight_nonneg {N : ℕ} (hb : ∀ p ∈ bandPrimes x d, 0 ≤ baseline q N p)
-    (p : ℕ) : 0 ≤ primeWeight q x d N p := by
+private theorem primeWeight_nonneg   (hb : ∀ p ∈ bandPrimes x d, 0 ≤ baseline q N p)
+     p  : 0 ≤ primeWeight q x d N p := by
   have hV : 0 ≤ primeMass x d p :=
     sum_nonneg fun i _ => by
       split_ifs
@@ -64,9 +69,10 @@ private theorem primeWeight_nonneg {N : ℕ} (hb : ∀ p ∈ bandPrimes x d, 0 �
     rw [h0]
     simp
 
+include halo in
 /-- Eventually every band prime exceeds `N = 2R`: band primes exceed `L`, and
 `2R < L^{1/2} + 2 ≤ L`. -/
-private theorem eventually_two_mul_momentPower_lt {C CX alo ahi g : ℝ} (halo : 1 / 10 < alo) :
+private theorem eventually_two_mul_momentPower_lt     :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
       ∀ p ∈ bandPrimes x d, 2 * momentPower x < p := by
   have hL := (tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 2)).comp Real.tendsto_log_atTop
@@ -91,9 +97,10 @@ private theorem eventually_two_mul_momentPower_lt {C CX alo ahi g : ℝ} (halo :
     linarith
   exact_mod_cast this
 
+include hq halo in
 /-- Eventually the chain measure with `N = 2R` is nonnegative. -/
-theorem eventually_chainMeasure_nonneg {C CX alo ahi g : ℝ} (hq : 0 < q)
-    (halo : 1 / 10 < alo) :
+theorem eventually_chainMeasure_nonneg    
+      :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
       ∀ (Y d₀ u v r : ℝ) (B : ℕ) (s : ChainState x d Y d₀ u v r B),
         0 ≤ chainMeasure q x d Y d₀ u v r B (2 * momentPower x) s := by
@@ -102,6 +109,8 @@ theorem eventually_chainMeasure_nonneg {C CX alo ahi g : ℝ} (hq : 0 < q)
   exact mul_nonneg (prod_nonneg fun i _ => prod_nonneg fun h _ => hν _)
     (memWeight_nonneg (fun xp => hν _) _)
 
-end Measure
+end
+
+
 
 end Erdos408.OneSided

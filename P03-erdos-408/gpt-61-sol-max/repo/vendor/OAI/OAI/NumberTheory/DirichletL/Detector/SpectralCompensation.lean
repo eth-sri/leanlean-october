@@ -12,18 +12,22 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def spectralCompensatedHigh (S : Finset Id) (T : Finset PrimeIdeal)
-    (η : HeckeFamily.Character) (x w z : ℂ) (B q : PrimeIdeal→ℂ) : ℂ :=
+    (η : HeckeFamily.Character) (x w z : ℂ) (B q : PrimeIdeal→ℂ)  :=
   ∑J∈T.powerset,(-1:ℂ)^J.card*(∏P∈J,q P)*(∏P∈T\J,B P)*
     markedIdealHighSeries S (∏P∈T\J,P.val) η 1 x w z
 
-theorem spectralCompensatedHigh_eq_product (S : Finset Id) (hS : SourceExclusions S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : HeckeFamily.Character)
-    (x w z : ℂ) (B q : PrimeIdeal→ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+section
+variable (S : Finset Id) (hS : SourceExclusions S) (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : HeckeFamily.Character) (x w z : ℂ) (B q : PrimeIdeal→ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re)
+include S hS T hT η x w z B q hx hw hz
+
+theorem spectralCompensatedHigh_eq_product    
+         
+       
+          :
     spectralCompensatedHigh S T η x w z B q=
       markedIdealHighSeries S 1 η 1 x w z *
         ∏P∈T,(B P*idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z-q P) := by
@@ -35,10 +39,10 @@ theorem spectralCompensatedHigh_eq_product (S : Finset Id) (hS : SourceExclusion
   simp only [mul_div_assoc,Finset.prod_mul_distrib]
   ring
 
-theorem spectralCompensatedHigh_L_factorization (S : Finset Id) (hS : SourceExclusions S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : HeckeFamily.Character)
-    (x w z : ℂ) (B q : PrimeIdeal→ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+theorem spectralCompensatedHigh_L_factorization    
+         
+       
+          :
     spectralCompensatedHigh S T η x w z B q=
       (HeckeFamily.LFunction (fixedSourcePrincipal S hS.prime) (6*z) *
        HeckeFamily.LFunction (fixedSourcePrincipal S hS.prime) w /
@@ -46,6 +50,8 @@ theorem spectralCompensatedHigh_L_factorization (S : Finset Id) (hS : SourceExcl
         ∏P∈T,(B P*idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z-q P) := by
   rw [spectralCompensatedHigh_eq_product S hS T hT η x w z B q hx hw hz,
     source_principalHigh_L_factorization S hS η x w z hx hw hz]
+
+end
 
 end SevenEighths.ProbePhysical
 end

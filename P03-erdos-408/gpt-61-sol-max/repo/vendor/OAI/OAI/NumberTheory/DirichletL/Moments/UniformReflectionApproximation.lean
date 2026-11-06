@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionApproximation
 public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionProfile
@@ -15,9 +16,9 @@ open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
 open CenteredMomentRetainedReflection CenteredMomentOriginalReflectionApproximation
 open CenteredMomentSectorLocalization CenteredMomentNaturalPrimitive
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
 
-theorem discarded_bound (A B : ℕ) (hB : 2≤B) :
+
+theorem discarded_bound  A B  (hB : 2≤B) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀(G : 𝓢(ℝ,ℂ))(χ : Character)(Y R : ℝ),
       0<Y → 0<R →
       ‖HeckeDyadic.polynomial χ false
@@ -27,7 +28,7 @@ theorem discarded_bound (A B : ℕ) (hB : 2≤B) :
   obtain ⟨K,hK,hKb⟩ := plain_rapid_bound B hB
   refine ⟨H,K*D,mul_pos hK hD,?_⟩
   intro G χ Y R hY hR
-  have hG : 0≤H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := apply_nonneg _ _
+  
   have hf : ∀x : ℝ,0<x → x^(B+A)*‖paperRadialFourier G x‖≤
       D*H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := by
     intro x hx
@@ -54,7 +55,7 @@ theorem discarded_negligible (xi saving L Cscale : ℝ)
   obtain ⟨H,C,hC,hbound⟩ := discarded_bound A 2 (by omega)
   refine ⟨H,C*Cscale^(3/2:ℝ),by positivity,?_⟩
   intro G χ Y Z hZ hY hYZ
-  have hG : 0≤H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := apply_nonneg _ _
+  
   have hz : 0<Z := zero_lt_one.trans_le hZ
   have hR : 0<Z^(xi/2) := Real.rpow_pos_of_pos hz _
   have hp : Y^2/Real.sqrt Y≤Cscale^(3/2:ℝ)*Z^(L*(3/2)) := by
@@ -78,10 +79,13 @@ theorem discarded_negligible (xi saving L Cscale : ℝ)
     _≤_ := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hZ (by linarith)) (by positivity)
 
-theorem deleted_discarded_negligible (xi saving L Cscale epsilon : ℝ)
+section
+variable (xi saving L Cscale epsilon : ℝ)
+
+theorem deleted_discarded_negligible  
     (hxi : 0<xi) (hscale : 0<Cscale) (hepsilon : 0<epsilon) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀(G : 𝓢(ℝ,ℂ))
-      (S : Finset (Ideal O))(_hS : ∀P∈S,Prime P)(η ηi χ : Character)(Q X Z : ℝ),
+      (S : Finset (Ideal HeckeFamily.O))(_hS : ∀P∈S,Prime P)(η ηi χ : Character)(Q X Z : ℝ),
       1≤Z → 0<Q → 0<X → Q*(Ideal.absNorm (∏P∈S,P):ℝ)≤Cscale*Z^L*X →
       let F := fun x=>(discardedWeight (Z^(xi/2)) x:ℂ)*paperRadialFourier G x
       (∀D∈S.powerset,Summable (fun I : SmoothIdeal S=>coefficient η ηi S D I*
@@ -97,7 +101,7 @@ theorem deleted_discarded_negligible (xi saving L Cscale epsilon : ℝ)
   refine ⟨H,D*C,mul_pos hD hC,?_⟩
   intro G S hS η ηi χ Q X Z hZ hQ hX hcap
   dsimp only
-  have hG : 0≤H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := apply_nonneg _ _
+  
   have hh := hDb S hS η ηi
     (fun E I=>HeckeDyadic.polynomial χ false
       (fun x=>(discardedWeight (Z^(xi/2)) x:ℂ)*paperRadialFourier G x)
@@ -108,19 +112,19 @@ theorem deleted_discarded_negligible (xi saving L Cscale epsilon : ℝ)
       exact hCb G χ _ Z hZ hy.1 hy.2)
   exact ⟨hh.1,hh.2.trans_eq (by ring)⟩
 
-def retainedSchwartz (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ) : ℂ :=
+def retainedSchwartz (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ)  :=
   let S := redundantSet χ.modulus ψ.modulus
   ∑D∈S.powerset,∑'I : SmoothIdeal S,coefficient ψ ψ.inverse S D I*
     finiteAnnularColumn χ.inverse (paperRadialFourier G) R
       ((ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm I.val))
 
-def discardedSchwartz (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ) : ℂ :=
+def discardedSchwartz (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ)  :=
   let S := redundantSet χ.modulus ψ.modulus
   ∑D∈S.powerset,∑'I : SmoothIdeal S,coefficient ψ ψ.inverse S D I*
     HeckeDyadic.polynomial χ.inverse false (fun x=>(discardedWeight R x:ℂ)*paperRadialFourier G x)
       ((ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm I.val)) 0 0
 
-lemma retainedSchwartz_eq (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ) (hX : 0<X) :
+lemma retainedSchwartz_eq  χ ψ   G   X R  (hX : 0<X) :
     retainedSchwartz χ ψ G X R=
       let S := redundantSet χ.modulus ψ.modulus
       ∑D∈S.powerset,∑'I : SmoothIdeal S,coefficient ψ ψ.inverse S D I*
@@ -138,7 +142,7 @@ lemma retainedSchwartz_eq (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ) (h
   have hI := norm_pos I.val
   rw [finiteAnnularColumn_eq _ _ (reflected_decayTwo G) _ _ (by positivity)]
 
-theorem original_split (χ : Character) (hn : χ.residue≠1) :
+theorem original_split  χ  (hn : χ.residue≠1) :
     ∃(ψ : Character)(g : ℂ),FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧ ψ.residue≠1 ∧ ‖g‖=1 ∧
       ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm ∧
       ∀(G : 𝓢(ℝ,ℂ))(X R : ℝ),0<X →
@@ -150,7 +154,7 @@ theorem original_split (χ : Character) (hn : χ.residue≠1) :
   rw [retainedSchwartz_eq χ ψ G X R hX]
   exact h G X R hX
 
-theorem actual_original_approximation (xi saving L Cscale epsilon : ℝ)
+theorem actual_original_approximation  
     (hxi : 0<xi) (hscale : 0<Cscale) (hepsilon : 0<epsilon) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀χ : Character,χ.residue≠1 →
       ∃(ψ : Character)(g : ℂ),FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧ ψ.residue≠1 ∧ ‖g‖=1 ∧
@@ -177,10 +181,12 @@ theorem actual_original_approximation (xi saving L Cscale epsilon : ℝ)
   rw [hsplit G X (Z^(xi/2)) hX,mul_add,add_sub_cancel_left,norm_mul,hg,one_mul]
   have hb := (hCb G S hS ψ ψ.inverse χ.inverse _ X Z hZ hQ hX hcap').2
   apply hb.trans
-  have hG : 0≤H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := apply_nonneg _ _
+  
   apply mul_le_mul_of_nonneg_right _ (by positivity)
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact Real.rpow_le_rpow (Nat.cast_nonneg _) (radical_le_original χ ψ hcap) hepsilon.le
+
+end
 
 end SevenEighths.CenteredMomentUniformReflectionApproximation
 

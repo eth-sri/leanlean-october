@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.ProbabilityBilinear
 
@@ -8,7 +9,7 @@ set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint.Analytic
 
 theorem restricted_frame_norm_le {α : Type} [Fintype α]
@@ -20,21 +21,21 @@ theorem restricted_frame_norm_le {α : Type} [Fintype α]
   exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) fun x _ _ =>
     mul_nonneg (hw x) (sq_nonneg _)
 
-theorem restricted_fiber_mass_le {α β : Type} [Fintype α] [DecidableEq β]
-    (w : α → ℝ) (hw : ∀ x, 0 ≤ w x) (P : α → β) (s : Finset α) (n : β) :
+section
+variable {α β : Type} [Fintype α]
+
+theorem restricted_fiber_mass_le     [DecidableEq β]
+    (w : α → ℝ) (hw : ∀ x, 0 ≤ w x) (P : α → β) (s : Finset α)  n  :
     (∑ x : ↥s, if P x.val = n then w x.val else 0) ≤
       ∑ x, if P x = n then w x else 0 := by
   rw [Finset.sum_coe_sort s (fun x => if P x = n then w x else 0)]
   apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
-  intro x _ _
-  split_ifs
-  · exact hw x
-  · exact le_rfl
+  grind
 
-theorem bilinear_reduction_restricted {α β : Type} [Fintype α] [Fintype β]
+theorem bilinear_reduction_restricted     [Fintype β]
     (w : α → ℝ) (v : β → ℝ) (hw : ∀ x, 0 ≤ w x) (hv : ∀ y, 0 ≤ v y)
-    (P : α → ℤ) (R : β → ℤ) (f : α → ℂ) (g : β → ℂ)
-    (s : Finset α) (t : Finset β) (U V N M θ η : ℝ) (u : ℤ) (r : ℕ) (H₁ H₂ : ℝ)
+    (P : α → ℤ) (R : β → ℤ)  f   g 
+     s   t  (U V N M θ η : ℝ) (u : ℤ)  r   H₁ H₂ 
     (hU : 1 ≤ U) (hV : 1 ≤ V) (hr : 1 ≤ r) (hu : Nat.Coprime u.natAbs r)
     (hθ : θ = (u : ℝ) / r + η) (hη : |η| ≤ (r : ℝ) ^ (-2 : ℤ))
     (hP : ∀ x ∈ s, N ≤ (P x : ℝ) ∧ (P x : ℝ) ≤ N + 4 * U)
@@ -81,9 +82,10 @@ theorem bilinear_reduction_restricted {α β : Type} [Fintype α] [Fintype β]
   have hleft := mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_left hs hbase) (Real.sqrt_nonneg H₂)
   exact mul_le_mul_of_nonneg_right
-    (mul_le_mul hleft ht (Real.sqrt_nonneg _) (by
-      exact mul_nonneg (mul_nonneg hbase (Real.sqrt_nonneg _)) (Real.sqrt_nonneg _)))
+    (mul_le_mul hleft ht (Real.sqrt_nonneg _) (mul_nonneg (mul_nonneg hbase (Real.sqrt_nonneg _)) (Real.sqrt_nonneg _)))
     (Real.sqrt_nonneg _)
 
 end
+
+
 end Erdos821.S34Core

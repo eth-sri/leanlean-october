@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerAllocatio
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
@@ -37,7 +37,7 @@ theorem actual_allocated_mode_bound
     (hlabels:∀f∈labels,f≠0)(hneg:∀k∈rows,-k∈rows)
     (hchild:∀x∈S,(initialChild (toTuple p (sectorSource u x))).2.1∈labels ∧
       (initialChild (toTuple p (sectorSource u x))).2.2∈rows)
-    (F B₁ B₂:ℝ)
+     F B₁ B₂ 
     (hmoment₁:∀t∈quotientSet p (assignedSource S J₁ J₂ lists lists),
       normalizedColumnEnergy p hp hcop hg pool (secondRayMinus Ψ ρ) (j*primaryGenerator t)
         (slots\J₁) lists a labels rows (fun f=>((idealDivisors f).card:ℝ)^(J₁.card+J₂.card+1))
@@ -74,6 +74,6 @@ theorem actual_allocated_mode_bound
 
 end SevenEighths.InverseInitialEnergyCallerBranch
 
-end
+
 
 end OAI

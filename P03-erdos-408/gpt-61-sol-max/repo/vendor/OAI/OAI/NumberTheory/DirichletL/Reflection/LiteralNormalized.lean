@@ -10,21 +10,21 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 universe u v
 variable {N a c : Eis} {mode : Bool}
 
 theorem sector_normalized_literal_energy
-    (ε : ℝ) (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     ε  (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (η : ℝ) (hη : 0<η) :
+     η  (hη : 0<η) :
     ∃ (degree : ℕ) (C₀ C Z₀ : ℝ), 0≤C₀ ∧ 0<C ∧ 1<Z₀ ∧
     ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ Z : ℝ, Z₀≤Z →
     ∀ (F : PrimeFamily φ) (jF : φ→ℕ),
-      (9:Eis)*c∣N → (if mode then λ₀^2∣a-1 else λ₀^2∣c-1) → IsCoprime a c →
+      (9:Eis)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) → IsCoprime a c →
       Pairwise (Function.onFun IsCoprime F.ideal) →
       (∀ f, IsCoprime (Ideal.span {N}) (F.ideal f)) →
       (∀ f, ringChar (Eis⧸F.ideal f)≠2) → (∀ f,jF f<6) →
@@ -95,7 +95,7 @@ theorem sector_normalized_literal_energy
       (fun P hP => (hPr P hP).2) W θ T r aw]
   rw [he]
   simpa only [Real.sqrt_one,mul_one] using hh
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

@@ -6,20 +6,20 @@ public import OAI.NumberTheory.DirichletL.Energy.AllocatedChildren
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyAllocatedChildren
 open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial
 open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
 open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 open CenteredMomentNaturalRowSource CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
+
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 theorem actual_common_from_energy (b M:α→ℝ)(hM:∀i,0≤M i)(ε:ℝ)(hε:0<ε):
     ∃C₀:ℝ,0<C₀ ∧ ∀s:Input α,(∀i,s.hi i≤b i)→(∀i,s.M i≤M i)→
-    ∀(τ:Character)(v:ℝ)(C R:Ideal O),R≠0→∀B:actualAllocations s.pools C,
-    ∀(L:Ideal O)(a:Allocation L (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2))),
+    ∀(τ:Character)(v:ℝ)(C R:Ideal HeckeFamily.O),R≠0→∀B:actualAllocations s.pools C,
+    ∀(L:Ideal HeckeFamily.O)(a:Allocation L (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2))),
     ∀V₁ V₂:Plain,V₁.W=s.W₁→V₂.W=s.W₂→∀r:Radial,(∀z,r.keep z→z≠0)→
     ∀E₁ E₂:ℝ,0≤E₁→0≤E₂→
     (∀left:Bool,∀D₁∈(CompletedGauss.primeSupport (R*C)).powerset,
@@ -44,6 +44,6 @@ theorem actual_common_from_energy (b M:α→ℝ)(hM:∀i,0≤M i)(ε:ℝ)(hε:0<
 
 end SevenEighths.CenteredMomentEnergyAllocatedChildren
 
-end
+
 
 end OAI

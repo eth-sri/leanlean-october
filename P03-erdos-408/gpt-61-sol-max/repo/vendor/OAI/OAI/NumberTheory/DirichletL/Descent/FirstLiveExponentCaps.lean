@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLiveNorms
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -15,7 +15,7 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
 open InverseMomentFirstOriginalProfile CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+
 
 lemma actual_dyadic_exponent_cap (Z eta x A:ℝ)(hZ:1<Z)(hbin:2≤Z^eta)(hx:1≤x)(hcap:x≤Z^A):
     0≤dyadicExponent Z (dyadIndex x) ∧ dyadicExponent Z (dyadIndex x)≤A:=by
@@ -23,12 +23,12 @@ lemma actual_dyadic_exponent_cap (Z eta x A:ℝ)(hZ:1<Z)(hbin:2≤Z^eta)(hx:1≤
   exact ⟨h.1,(Real.rpow_le_rpow_left_iff hZ).mp (h.2.1.trans hcap)⟩
 
 theorem original_live_exponent_caps {ι:Type}[DecidableEq ι]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))
-    (β:Ideal O→(ι→₀ℕ)→ℂ)(cutoff:CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Ψ:O→*ℂ)(m:O)(mark:(ι→₀ℕ)→Finset ι→ℂ)(om:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
+    (pool:Finset ι)(Q:Finset (ι→₀ℕ)) labels 
+     β  cutoff 
+     Ψ  m  mark  om  Φ 
     (K Z r ell F eta tau theta b:ℝ)(hZ:1<Z)(hbin:2≤Z^eta)
     (hF:0≤F)(hr:r≤F)(hell:ell≤F)(heta:0≤eta)(htau:0≤tau)(hb:b≤Z^eta)
     (hQ:∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta))
@@ -78,6 +78,6 @@ theorem original_live_exponent_caps {ι:Type}[DecidableEq ι]
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

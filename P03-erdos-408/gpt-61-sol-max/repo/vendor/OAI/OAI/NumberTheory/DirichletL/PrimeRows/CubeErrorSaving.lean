@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralErrorSaving
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralCube
@@ -6,25 +7,25 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralCube
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+
 variable {ι : Type*} [Fintype ι]
 
 theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
     (hτ : 0<τ) (hb : 0<b) (hζ : ζ≤1/48)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
     ∃C : ℝ,0≤C ∧ ∀(η : Character) (u : FreeRow),u.val≠1 →
       ∀(P : Fin K→PrimeIdeal),Function.Injective P → ∀hPS : ∀j,(P j).val∉S,
       ∀ψ : ι→Character,∀Z : ℝ,1≤Z →
-      ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤Z^((13/16:ℝ)+ζ) →
+      ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤Z^((13/16:ℝ)+ζ) →
       ∀length : Fin K→ℝ,(∑j,length j)=(1/6:ℝ) →
       (∀j,((P j).val.absNorm:ℝ)≤b*Z^(length j)) →
       ∀a B H : ℝ,∀i : ℕ,(51/100:ℝ)≤a → a≤1 → 2<B → Z^τ≤H → H≤(3*i+2:ℕ)*B →
@@ -34,7 +35,7 @@ theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
         centralCubeIntegral S hS hmax P hPS η u W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a e H‖≤
         C*(η.modulus.absNorm:ℝ)^2*Z^(-saving) := by
   obtain ⟨N,hN⟩ := exists_nat_gt (((17/2:ℝ)+saving)/τ)
-  have hN' : (17/2:ℝ)+saving<τ*N := by exact (div_lt_iff₀ hτ).mp hN |>.trans_eq (mul_comm _ _)
+  have hN' : (17/2:ℝ)+saving<τ*N := (div_lt_iff₀ hτ).mp hN |>.trans_eq (mul_comm _ _)
   obtain ⟨C,hC,hbound⟩ := uniform_original_row_cube_error (ι:=ι) K e he he' S hS hmax hfirst
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 N
   refine ⟨C*(b^K)^3,mul_nonneg hC (pow_nonneg (pow_nonneg hb.le _) _),?_⟩
@@ -64,11 +65,11 @@ theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
       ring
     _ ≤ (C*(b^K)^3*(η.modulus.absNorm:ℝ)^2)*(Z^(17/2:ℝ)/Z^(τ*N)) := by
       apply mul_le_mul_of_nonneg_left _ (by positivity)
-      exact div_le_div_of_nonneg_left (Real.rpow_nonneg hZ0.le _) (Real.rpow_pos_of_pos hZ0 _) hden
+      gcongr <;> first | assumption | positivity | linarith
     _ ≤ _ := mul_le_mul_of_nonneg_left hsave (by positivity)
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

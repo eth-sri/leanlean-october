@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.Blueprint.Analytic
 public import Mathlib.Algebra.Order.Star.Real
@@ -19,29 +20,33 @@ noncomputable section
 
 def coordinateEval : (Fin 1 → ℝ) →L[ℝ] ℝ := ContinuousLinearMap.proj 0
 
-def expCompDerivativeConstant (hi : ℝ) (bounds : ℕ → ℝ) (n : ℕ) : ℝ :=
+def expCompDerivativeConstant (hi : ℝ) (bounds : ℕ → ℝ) (n : ℕ)  :=
   ∑ c : OrderedFinpartition n, bounds c.length * (max 1 hi) ^ n
 
-def piExpCompDerivativeConstant (hi : ℝ) (bounds : ℕ → ℝ) (n : ℕ) : ℝ :=
+def piExpCompDerivativeConstant (hi : ℝ) (bounds : ℕ → ℝ) (n : ℕ)  :=
   expCompDerivativeConstant hi bounds n * ‖coordinateEval‖ ^ n
 
-theorem expCompDerivativeConstant_nonneg (hi : ℝ) (bounds : ℕ → ℝ)
-    (hbounds : ∀ j, 0 ≤ bounds j) (n : ℕ) :
+section
+variable (x C lo hi : ℝ) (bounds : ℕ → ℝ) (Ψ : ℝ → ℂ) (hC : 0 < C) (hbounds : ∀ j, 0 ≤ bounds j) (n : ℕ) (hcut : CutoffBound x C lo hi Ψ bounds) (hL : 1 ≤ L x)
+
+include hbounds in
+theorem expCompDerivativeConstant_nonneg    
+        :
     0 ≤ expCompDerivativeConstant hi bounds n := by
   apply Finset.sum_nonneg
-  intro c hc
-  exact mul_nonneg (hbounds c.length) (pow_nonneg (le_trans (by norm_num) (le_max_left 1 hi)) _)
+  simp_all
 
-theorem piExpCompDerivativeConstant_nonneg (hi : ℝ) (bounds : ℕ → ℝ)
-    (hbounds : ∀ j, 0 ≤ bounds j) (n : ℕ) :
-    0 ≤ piExpCompDerivativeConstant hi bounds n := by
-  exact mul_nonneg (expCompDerivativeConstant_nonneg hi bounds hbounds n)
+include hbounds in
+theorem piExpCompDerivativeConstant_nonneg    
+        :
+    0 ≤ piExpCompDerivativeConstant hi bounds n := mul_nonneg (expCompDerivativeConstant_nonneg hi bounds hbounds n)
     (pow_nonneg (norm_nonneg coordinateEval) _)
 
-theorem exp_comp_iteratedDeriv_bound (x C lo hi : ℝ) (bounds : ℕ → ℝ)
-    (Ψ : ℝ → ℂ) (hC : 0 < C)
-    (hbounds : ∀ j, 0 ≤ bounds j)
-    (hcut : CutoffBound x C lo hi Ψ bounds) (hL : 1 ≤ L x) :
+include hC hbounds hcut hL in
+theorem exp_comp_iteratedDeriv_bound    
+       
+     
+        :
     ∀ n r, ‖iteratedDeriv n (fun u : ℝ => Ψ (Real.exp u)) r‖ ≤
       expCompDerivativeConstant hi bounds n * L x ^ (C * ((n : ℝ) + 1)) := by
   intro n r
@@ -79,9 +84,7 @@ theorem exp_comp_iteratedDeriv_bound (x C lo hi : ℝ) (bounds : ℕ → ℝ)
             by_cases hzero : iteratedDeriv c.length Ψ (Real.exp r) = 0
             · have hnonneg :
                   0 ≤ bounds c.length * H ^ n * L x ^ (C * ((n : ℝ) + 1)) :=
-                mul_nonneg (mul_nonneg (hbounds c.length)
-                  (pow_nonneg (le_trans (by norm_num) hH1) _))
-                  (Real.rpow_nonneg hLpos.le _)
+                (by bound)
               simpa [hzero] using hnonneg
             · have hExpLeH : Real.exp r ≤ H := by
                 by_contra hnot
@@ -122,21 +125,19 @@ theorem exp_comp_iteratedDeriv_bound (x C lo hi : ℝ) (bounds : ℕ → ℝ)
                 _ = ‖∏ j : Fin c.length, iteratedDeriv (c.partSize j) Real.exp r‖ *
                       ‖iteratedDeriv c.length Ψ (Real.exp r)‖ := norm_smul _ _
                 _ ≤ H ^ n * (bounds c.length * L x ^ (C * ((c.length : ℝ) + 1))) :=
-                  mul_le_mul hFactor hDerivativeNorm (norm_nonneg _)
-                    (pow_nonneg (le_trans (by norm_num) hH1) _)
+                  (by bound)
                 _ ≤ H ^ n * (bounds c.length * L x ^ (C * ((n : ℝ) + 1))) :=
-                  mul_le_mul_of_nonneg_left
-                    (mul_le_mul_of_nonneg_left hLogPow (hbounds c.length))
-                    (pow_nonneg (le_trans (by norm_num) hH1) _)
+                  (by bound)
                 _ = bounds c.length * H ^ n * L x ^ (C * ((n : ℝ) + 1)) := by ring
           exact hTermBound
     _ = expCompDerivativeConstant hi bounds n * L x ^ (C * ((n : ℝ) + 1)) := by
       simp only [expCompDerivativeConstant, H]
       rw [Finset.sum_mul]
 
-theorem pi_exp_comp_iteratedFDeriv_bound (x C lo hi : ℝ) (bounds : ℕ → ℝ)
-    (Ψ : ℝ → ℂ) (hC : 0 < C) (hbounds : ∀ j, 0 ≤ bounds j)
-    (hcut : CutoffBound x C lo hi Ψ bounds) (hL : 1 ≤ L x) :
+include hC hbounds hcut hL in
+theorem pi_exp_comp_iteratedFDeriv_bound    
+         
+        :
     ∀ j y, ‖iteratedFDeriv ℝ j
         ((Ψ ∘ Real.exp) ∘ coordinateEval) y‖ ≤
       piExpCompDerivativeConstant hi bounds j * L x ^ (C * ((j : ℝ) + 1)) := by
@@ -159,6 +160,8 @@ theorem pi_exp_comp_iteratedFDeriv_bound (x C lo hi : ℝ) (bounds : ℕ → ℝ
     _ = piExpCompDerivativeConstant hi bounds j * L x ^ (C * ((j : ℝ) + 1)) := by
         simp only [piExpCompDerivativeConstant]
         ring
+
+end
 
 end
 end Erdos821.P5Mellin

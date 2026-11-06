@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorFixedAmplitudeCount
@@ -19,11 +19,14 @@ open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRow
 variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
-lemma fiber_mean_eq (B : Batch M H Label Slot U a ε tstar T allowance i) (q : ℝ)
+section
+variable (B : Batch M H Label Slot U a ε tstar T allowance i)
+
+lemma fiber_mean_eq    q 
     (hq : ∀u∈B.rows,rowMean B.slots U ((2*a-1)/2) B.binWidth B.widths
       (physical M H (fun u : FreeRow=>u.val) B.profile B.upper B.widths B.external U) u=q)
-    (bin : B.Bin) (j : Label) (J K : Fin (dyadicLength U))
-    (hne : (B.fiberRows bin j J K).Nonempty) : (B.fiber bin j J K hne).q=q := by
+     bin   j   J K 
+     hne  : (B.fiber bin j J K hne).q=q := by
   let u := hne.choose
   have hu : u ∈ B.fiberRows bin j J K := hne.choose_spec
   have huR : u∈B.rows := (Finset.mem_filter.mp hu).1
@@ -34,8 +37,8 @@ lemma fiber_mean_eq (B : Batch M H Label Slot U a ε tstar T allowance i) (q : �
   intro s hs
   exact congrArg (fun g=>B.widths s*g) ((B.fiber bin j J K hne).fixed_bin u hu s hs).symm
 
-lemma batch_mean_bounds (B : Batch M H Label Slot U a ε tstar T allowance i)
-    (hne : B.rows.Nonempty) (ha : 1/2≤a) (q : ℝ)
+lemma batch_mean_bounds  
+    (hne : B.rows.Nonempty) (ha : 1/2≤a)  q 
     (hq : ∀u∈B.rows,rowMean B.slots U ((2*a-1)/2) B.binWidth B.widths
       (physical M H (fun u : FreeRow=>u.val) B.profile B.upper B.widths B.external U) u=q) :
     0≤q ∧ q≤(2*a-1)/2 := by
@@ -46,14 +49,16 @@ lemma batch_mean_bounds (B : Batch M H Label Slot U a ε tstar T allowance i)
   intro s hs
   exact HeckePrimeAmplitudeBins.amplitude_bounds _ _ _ _ (by linarith)
 
+end
+
 theorem fixed_amplitude_count_from_raw_moments
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+     M  [NeZero M]  H 
     (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O))
     (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ)
     (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀y,0≤φ y) (hφne : φ≠0)
     (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
     (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀y,φ y≤B₀)
-    (εm : ℝ) (hεm : 0<εm) :
+     εm  (hεm : 0<εm) :
     ∃c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠU : ℝ in atTop,
       ∀(a ε tstar T allowance Δ ν C height q : ℝ) (i : ℕ),
       1<U → 51/100<a → 2*a-1≤5/6 → 0≤ε → ε≤1/1000 →
@@ -85,6 +90,6 @@ theorem fixed_amplitude_count_from_raw_moments
   simpa only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_assoc] using hb
 end SevenEighths.HeckeDetectorFixedAmplitudeCount
 
-end
+
 
 end OAI

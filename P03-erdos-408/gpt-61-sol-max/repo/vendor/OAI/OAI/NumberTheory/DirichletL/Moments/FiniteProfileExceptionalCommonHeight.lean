@@ -17,13 +17,16 @@ open HeckeFamily CenteredMomentAllocatedDetectorAmplitude CenteredMomentFinitePr
 universe u
 
 def mass {lo hi:ℝ} (R:Finset (ℕ×ℕ)) {ι κ:Type u}[Fintype ι][Fintype κ]
-    (s:Input ι)(v:Input κ)(p q:Profiles lo hi)(t₁ t₂ θ₁ θ₂:ℝ)(J:ℕ):ℝ:=
+    (s:Input ι)(v:Input κ)(p q:Profiles lo hi)(t₁ t₂ θ₁ θ₂:ℝ)(J:ℕ):=
   p.control R*q.control R*heightCost t₁ θ₁^J*heightCost t₂ θ₂^J*
     slotControl s.toData*slotControl v.toData*
     Real.sqrt (volume s.toData)*Real.sqrt (volume v.toData)
 
-theorem mass_nonneg {lo hi:ℝ} (R:Finset (ℕ×ℕ)) {ι κ:Type u}[Fintype ι][Fintype κ]
-    (s:Input ι)(v:Input κ)(p q:Profiles lo hi)(t₁ t₂ θ₁ θ₂:ℝ)(J:ℕ):
+section
+variable {lo hi:ℝ} (R:Finset (ℕ×ℕ)) {ι κ:Type u} [Fintype ι] [Fintype κ]
+
+theorem mass_nonneg        
+    (s:Input ι)(v:Input κ)(p q:Profiles lo hi) t₁ t₂ θ₁ θ₂  J :
     0≤mass R s v p q t₁ t₂ θ₁ θ₂ J:=by
   have hp:=Profiles.control_nonneg p R
   have hq:=Profiles.control_nonneg q R
@@ -34,9 +37,9 @@ theorem mass_nonneg {lo hi:ℝ} (R:Finset (ℕ×ℕ)) {ι κ:Type u}[Fintype ι]
   unfold mass
   positivity
 
-theorem shifted_mass {lo hi:ℝ} (R:Finset (ℕ×ℕ))
-    {ι κ:Type u}[Fintype ι][Fintype κ][DecidableEq ι][DecidableEq κ]
-    (s:Input ι)(v:Input κ)(η τ:Character)(p q:Profiles lo hi)(t₁ t₂ θ₁ θ₂ u w:ℝ)(J:ℕ):
+theorem shifted_mass    
+       [DecidableEq ι][DecidableEq κ]
+    (s:Input ι)(v:Input κ) η τ (p q:Profiles lo hi) t₁ t₂ θ₁ θ₂ u w  J :
     profileMass R (withHeight s η (t₁+2*Real.pi*(u-θ₁))).toData
       (withHeight v τ (t₂+2*Real.pi*(w-θ₂))).toData p q J≤
       mass R s v p q t₁ t₂ θ₁ θ₂ J*(1+‖u‖)^J*(1+‖w‖)^J:=by
@@ -56,6 +59,8 @@ theorem shifted_mass {lo hi:ℝ} (R:Finset (ℕ×ℕ))
     ring
   · simp only [mass,mul_pow]
     ring
+
+end
 end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 
 end

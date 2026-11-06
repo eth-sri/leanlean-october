@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawInitialGates
 public import OAI.NumberTheory.DirichletL.Inversion.InitialProfileBounds
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialProfileBounds
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseRawConjugateGates
@@ -16,22 +17,20 @@ open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialConjugateEn
 open InverseInitialRayAttachment InverseInitialExcludedPeriod CanonicalCoefficientClass
 open DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPool
 open InverseInitialExcludedOverlap InverseMoment InverseInitialProfile
-local notation "O"=>HeckeFamily.O
 
-theorem conjugate_element_apply (η:Ideal O→*ℂ)(x:O):
+
+theorem conjugate_element_apply  η  x :
     elementCharacter (conjugateIdealCharacter η) x=star (elementCharacter η x):=rfl
 
-theorem conjugate_element_factors (η:Ideal O→*ℂ)(Q:Ideal O)
+theorem conjugate_element_factors  η  Q 
     (h:FactorsModulo Q (elementCharacter η)):
-    FactorsModulo Q (elementCharacter (conjugateIdealCharacter η)):=by
-  intro x y hxy
-  exact congrArg star (h x y hxy)
+    FactorsModulo Q (elementCharacter (conjugateIdealCharacter η)):=fun x y hxy => congrArg Star.star (h x y hxy)
 
-theorem conjugate_element_norm (η:Ideal O→*ℂ)(x:O):
+theorem conjugate_element_norm  η  x :
     ‖elementCharacter (conjugateIdealCharacter η) x‖=‖elementCharacter η x‖:=by
   rw [conjugate_element_apply,norm_star]
 
-theorem raw_conjugate_base_gates (data:RowData):
+theorem raw_conjugate_base_gates  data :
     deletedPeriod (basePeriod data)≠0 ∧
     reflectionExcludedPrimes (deletedPeriod (basePeriod data))=excluded data ∧
     (∀x,‖elementCharacter (conjugateIdealCharacter
@@ -39,12 +38,9 @@ theorem raw_conjugate_base_gates (data:RowData):
     FactorsModulo (fixedBaseConductor (deletedPeriod (basePeriod data)))
       (elementCharacter (conjugateIdealCharacter (idealCoeff (deletedBase data)).toMonoidHom)):=by
   obtain ⟨hq,he,hn,hp⟩:=raw_base_gates data
-  refine ⟨hq,he,?_,conjugate_element_factors _ _ hp⟩
-  intro x
-  rw [conjugate_element_norm]
-  exact hn x
+  simp_all [conjugate_element_factors, conjugate_element_norm]
 
-theorem raw_conjugate_zero_outside (data:RowData)(I:Ideal O)
+theorem raw_conjugate_zero_outside  data  I 
     (hI:¬outside (excluded data) I):
     conjugateIdealCharacter (idealCoeff (deletedBase data)).toMonoidHom I=0:=by
   change star (idealCoeff (deletedBase data) I)=0
@@ -52,7 +48,7 @@ theorem raw_conjugate_zero_outside (data:RowData)(I:Ideal O)
     deleted_zero_outside (InverseInitialDetectorSource.baseCharacter data)
       (excluded data) (reflectionExcludedPrimes_prime (basePeriod data)) I hI,star_zero]
 
-theorem childLogTest_conjugate (W:ℝ→ℂ)(θ:ℝ):
+theorem childLogTest_conjugate  W  θ :
     (fun x=>star (childLogTest W θ x))=childLogTest (fun x=>star (W x)) (-θ):=by
   funext x
   simp only [childLogTest,star_mul,SecondPassIntegration.logPhase_conjugate]
@@ -60,6 +56,6 @@ theorem childLogTest_conjugate (W:ℝ→ℂ)(θ:ℝ):
 
 end SevenEighths.DetectorDictionaryInverseRawConjugateGates
 
-end
+
 
 end OAI

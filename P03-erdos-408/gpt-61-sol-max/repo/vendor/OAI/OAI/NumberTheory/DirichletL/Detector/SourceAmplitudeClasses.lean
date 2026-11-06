@@ -18,12 +18,12 @@ local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZ
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem actual_source_amplitude_batches (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (η : Character)
-    (dmin dmax τ ε e κ heightCost margin mesh binWidth : ℝ) (I : ℕ)
+     hmax   η 
+    (dmin dmax τ ε e κ heightCost margin mesh binWidth : ℝ)  I 
     (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hdtop : dmax≤37/42) (hτ : 0<τ)
     (hτzero : τ<dmin/2) (hτheight : 4*τ<dmin*heightCost)
     (hε : 0<ε) (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hheightCost : 0≤heightCost)
-    (hmargin : 0<margin) (hm : 0≤mesh) (hb : 0<binWidth)
+    (hmargin : 0<margin) (hm : 0≤mesh)  hb 
     (hbudget : 12*e*((22:ℝ)+2)+8*κ+2*heightCost≤ε/2) :
     ∀ᶠZ : ℝ in atTop,∀d : ℝ,dmin≤d → d≤dmax →
     ∀(U : ℝ) (rows : Finset FreeRow),rows.Nonempty → rows⊆rowBand (Z^(1/100:ℝ)) U →

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.BigOperators.Ring.Finset
 
@@ -34,11 +35,7 @@ def zeroCoordinatesEquiv {α : Type*} [DecidableEq α] {β : α → Type*}
     simp [Equiv.piEquivPiSubtypeProd, ha]
   ⟩
   left_inv x := by
-    apply Subtype.ext
-    funext a
-    by_cases ha : S a
-    · simp [Equiv.piEquivPiSubtypeProd, ha, x.2 a ha]
-    · simp [Equiv.piEquivPiSubtypeProd, ha]
+    aesop
   right_inv z := by
     funext a
     simp [Equiv.piEquivPiSubtypeProd, a.2]

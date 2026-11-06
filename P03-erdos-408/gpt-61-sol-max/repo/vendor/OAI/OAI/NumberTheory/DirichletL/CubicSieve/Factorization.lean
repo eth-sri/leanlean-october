@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.Squarefree.Basic
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -16,38 +17,30 @@ noncomputable section
 variable {M : Type*} [CommMonoidWithZero M] [UniqueFactorizationMonoid M]
   [NormalizationMonoid M] [Subsingleton Mˣ]
 
-def firstPart (x : M) : M :=
+def firstPart (x : M)  :=
   ∏ p ∈ (normalizedFactors x).toFinset.filter
     (fun p => (normalizedFactors x).count p % 3 = 1), p
 
-def secondPart (x : M) : M :=
+def secondPart (x : M)  :=
   ∏ p ∈ (normalizedFactors x).toFinset.filter
     (fun p => (normalizedFactors x).count p % 3 = 2), p
 
-def cubePart (x : M) : M :=
+def cubePart (x : M)  :=
   ∏ p ∈ (normalizedFactors x).toFinset, p ^ ((normalizedFactors x).count p / 3)
 
-theorem count_mod_three (k : ℕ) :
+theorem count_mod_three  k  :
     k = (if k % 3 = 1 then 1 else 0) +
       2 * (if k % 3 = 2 then 1 else 0) + 3 * (k / 3) := by
-  have h := Nat.mod_add_div k 3
-  have hlt := Nat.mod_lt k (by decide : 0 < 3)
-  split_ifs <;> omega
+  grind
 
 omit [Subsingleton Mˣ] in
-private theorem residual_squarefree (x : M) (r : ℕ) :
+private theorem residual_squarefree (x : M)  r  :
     Squarefree (∏ p ∈ (normalizedFactors x).toFinset.filter
-      (fun p => (normalizedFactors x).count p % 3 = r), p) := by
-  apply Finset.squarefree_prod_of_pairwise_isCoprime
-  · intro p hp q hq hpq
-    have hp' : p ∈ normalizedFactors x := Multiset.mem_toFinset.mp (Finset.mem_filter.mp hp).1
-    have hq' : q ∈ normalizedFactors x := Multiset.mem_toFinset.mp (Finset.mem_filter.mp hq).1
-    apply (irreducible_of_normalized_factor p hp').isRelPrime_iff_not_dvd.mpr
-    intro hd
-    exact hpq (normalizedFactors_eq_of_dvd x p hp' q hq' hd)
-  · intro p hp
-    exact (irreducible_of_normalized_factor p
-      (Multiset.mem_toFinset.mp (Finset.mem_filter.mp hp).1)).squarefree
+      (fun p => (normalizedFactors x).count p % 3 = r), p) := Finset.squarefree_prod_of_pairwise_isCoprime
+  (fun ⦃p⦄ hp ⦃q⦄ hq hpq =>
+    have hp' : p ∈ UniqueFactorizationMonoid.normalizedFactors x := Multiset.mem_toFinset.mp (Finset.mem_filter.mp hp).left;
+    (Irreducible.isRelPrime_iff_not_dvd (UniqueFactorizationMonoid.irreducible_of_normalized_factor p hp')).mpr fun hd => hpq (UniqueFactorizationMonoid.normalizedFactors_eq_of_dvd x p hp' q (Multiset.mem_toFinset.mp (Finset.mem_filter.mp hq).left) hd))
+  fun p hp => Irreducible.squarefree (UniqueFactorizationMonoid.irreducible_of_normalized_factor p (Multiset.mem_toFinset.mp (Finset.mem_filter.mp hp).left))
 
 omit [Subsingleton Mˣ] in
 theorem firstPart_squarefree (x : M) : Squarefree (firstPart x) :=

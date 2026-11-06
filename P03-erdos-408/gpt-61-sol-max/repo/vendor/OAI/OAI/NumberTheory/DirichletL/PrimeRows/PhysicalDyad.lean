@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.SourceTransport
 public import OAI.NumberTheory.DirichletL.PrimeRows.SmallDyad
@@ -12,28 +13,28 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
-def finitePhysicalRows {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+
+def finitePhysicalRows {K } (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
-    (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) : ℂ :=
+    (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)  :=
   ∑u∈R,∑P:(∀i,T i),(∏i,W i (((P i).val.val.absNorm:ℝ)/Yp i))*
     rowIntegral η S (calibrationForSet S hmax)
       (fun i=>CompletedGauss.primaryGenerator (P i).val.val) W0 W1 X Y Z u
 
-def weightedRowOnLines {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+def weightedRowOnLines {K } (S ) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z σ υ r : ℝ) (t : HeightSpace) : ℂ :=
+    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z σ υ r : ℝ) (t : HeightSpace)  :=
   sourceMellinWeight W0 W1 X Y Z ((σ:ℂ)+t.1.1*I) ((υ:ℂ)+t.2*I) ((r:ℂ)+t.1.2*I)*
     frequencyWeight ((r:ℂ)+t.1.2*I) ⟨u.val,u.property.1⟩*
     calibratedTupleValue S hS hmax η u P hPS W Yp
       ((σ:ℂ)+t.1.1*I) ((υ:ℂ)+t.2*I) ((r:ℂ)+t.1.2*I)
 
-lemma weightedRowOnLines_eq {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
-    (η : Character) (u : FreeRow) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z σ υ r : ℝ) (t : HeightSpace) :
+lemma weightedRowOnLines_eq {K : ℕ}  S   hS 
+     hmax  (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
+     η   u  (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
+     W0 W1   X Y Z σ υ r   t  :
     weightedRowOnLines S hS hmax P hPS η u W Yp W0 W1 X Y Z σ υ r t=
       (∏i,W i (((P i).val.absNorm:ℝ)/Yp i))*
         continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ υ r t := by
@@ -45,11 +46,11 @@ lemma weightedRowOnLines_eq {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusi
   simp only [hnorm,Finset.prod_mul_distrib]
   ring
 
-section
+
 variable {K : ℕ} (e σ υ r : ℝ) (he : 0<e) (he' : e<1/1000)
     (hσ : (7/8:ℝ)≤σ) (hσβ : HeckeZeroSupremum.beta+8*e≤σ) (hσ3 : σ≤3)
     (hυ : (1/2:ℝ)≤υ) (hυ3 : υ≤3) (hr : (17/50:ℝ)≤r)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S) (η : Character) (R : Finset FreeRow) (hR : ∀u∈R,u.val≠1)
     (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
     (hdis : ∀P:(∀i,T i),Function.Injective (fun i=>(P i).val))
@@ -78,7 +79,7 @@ theorem finitePhysicalRows_eq_integral :
         continuedRowOnLines S hS hmax (fun i=>(P i).val) (fun i=>hT i _ (P i).property)
           η u W0 W1 X Y Z σ υ r t) := by
       funext t
-      exact weightedRowOnLines_eq S hS hmax _ _ η u W Yp W0 W1 X Y Z σ υ r t
+      solve_by_elim [weightedRowOnLines_eq]
     rw [heq]
     exact (hsource u hu P).1.const_mul _
   have hiu (u : FreeRow) (hu : u∈R) : Integrable (fun t=>∑P:(∀i,T i),f u P t) heightMeasure :=
@@ -120,7 +121,7 @@ theorem norm_finitePhysicalRows_le_absolute :
         continuedRowOnLines S hS hmax (fun i=>(P i).val) (fun i=>hT i _ (P i).property)
           η u W0 W1 X Y Z σ υ r t) := by
       funext t
-      exact weightedRowOnLines_eq S hS hmax _ _ η u W Yp W0 W1 X Y Z σ υ r t
+      solve_by_elim [weightedRowOnLines_eq]
     rw [heq]
     exact hi.const_mul _
   let g (t : HeightSpace) := ‖sourceMellinWeight W0 W1 X Y Z
@@ -143,7 +144,7 @@ theorem norm_finitePhysicalRows_le_absolute :
   apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
   exact (norm_integral_le_integral_norm _).trans (integral_mono hi.norm hgi hp)
 
-end
+
 end SevenEighths.ProbeHighRowFamily
 
 end

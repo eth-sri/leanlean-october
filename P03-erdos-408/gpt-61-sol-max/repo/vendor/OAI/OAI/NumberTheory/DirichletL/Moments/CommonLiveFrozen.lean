@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadialSource
@@ -9,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Moments.RadialPointwiseUniform
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonLiveFrozen
@@ -21,31 +22,28 @@ open CenteredMomentCommonRadialPointwise CenteredMomentCommonRawScale CenteredMo
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentFirstSectors CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
 open CenteredMomentRestrictedSourceNormalization CenteredMomentSecondLiveEnergy
-local notation "O" => ActualEisensteinCubic.O
-variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-lemma source_mask_energy (keep:O→Prop) (Q:Finset (Ideal O)) (C L:Ideal O)
-    (c f:Ideal O→ℂ) (W:𝓢(ℝ,ℂ)) (K:ℝ):
+variable {ι:Type*} [Fintype ι] [DecidableEq ι]
+
+
+lemma source_mask_energy (keep:ActualEisensteinCubic.O→Prop) (Q:Finset (Ideal ActualEisensteinCubic.O)) (C L:Ideal ActualEisensteinCubic.O)
+    (c f:Ideal ActualEisensteinCubic.O→ℂ)  W   K :
     CenteredMomentRestrictedSource.sourceRestrictedEnergy keep Q
       (fun I=>if IsCoprime C I ∧ L∣I then c I else 0) f W K =
     CenteredMomentRestrictedSource.sourceRestrictedEnergy keep Q
       (fun I=>if IsCoprime C I then c I else 0)
       (fun I=>(if L∣I then 1 else 0)*f I) W K := by
   unfold CenteredMomentRestrictedSource.sourceRestrictedEnergy
-  congr 1
-  funext I
-  dsimp only
-  by_cases hc:IsCoprime C (I:Ideal O) <;> by_cases hl:L∣(I:Ideal O) <;> simp [hc,hl]
+  grind
 
-theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Supported C)
-    (R seed L:Ideal O) (hseed:seed∣C) :
+theorem original_source_weighted (s:Input ι)  r   C   hC 
+     R seed L  (hseed:seed∣C) :
     sourceEnergy s r C hC R seed L≤((actualAllocations s.pools C).card:ℝ)*
       ∑B:actualAllocations s.pools C,
         (‖frozenCoefficient B.val C R s.ν s.W s.P‖^2/rawReduction B.val s.P)*
           energy (commonData s C R B) r L := by
   have hh:=normalized_restricted_child_energy s.pools s.pools_ne
-    (fun i I hI=>s.prime i I hI) C R seed hC hseed s.ν s.W s.P s.W₁ s.W₂
+    (s.prime) C R seed hC hseed s.ν s.W s.P s.W₁ s.W₂
     s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 (s.X₁*s.X₂) (mul_pos s.X₁_pos s.X₂_pos)
     s.P_pos (fun I=>(if L∣I then 1 else 0)*heightCoeff s.η s.t I)
     r.keep r.profile r.scale r.scale_pos r.nonneg
@@ -61,7 +59,7 @@ theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Support
 
  theorem actual_common_source_pointwise (lo hi:ι→ℝ) (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
     ∃C0:ℝ,0<C0 ∧ ∀(s:Input ι),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
-      ∀(r:Radial) (C:Ideal O) (hC:Supported C) (R seed L:Ideal O),seed∣C → Squarefree L →
+      ∀(r:Radial) (C:Ideal ActualEisensteinCubic.O) (hC:Supported C) (R seed L:Ideal ActualEisensteinCubic.O),seed∣C → Squarefree L →
       ∀E Z:ℝ,0≤E → 1<Z → (Ideal.absNorm C:ℝ)≤Z^B → (Ideal.absNorm L:ℝ)≤Z^B →
       (∀b:actualAllocations s.pools C,frozenCoefficient b.val C R s.ν s.W s.P≠0 → ∀a∈(commonData s C R b).toSource.active L,
         childEnergy (commonData s C R b) r L a≤E) →

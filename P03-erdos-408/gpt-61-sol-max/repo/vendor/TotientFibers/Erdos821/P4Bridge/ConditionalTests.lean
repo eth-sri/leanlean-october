@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Bridge.Properties
 public import Erdos821.P4Bridge.FiniteComparison
@@ -24,20 +25,24 @@ lemma sum_labels {R : Type*} [AddCommMonoid R] (ν : Pattern P J ell m)
       simp only [Equiv.symm_apply_apply]
     _ = _ := by simp only [Fintype.sum_prod_type]; rfl
 
-def conditionalF (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (f : P.BigLabels (J + ell) → ℂ) (s : SharedRows ν) (y : SideTuple ν block true) : ℂ :=
+def conditionalF (ν : Pattern P J ell m) (block )
+    (f : P.BigLabels (J + ell) → ℂ) (s : SharedRows ν) (y : SideTuple ν block true)  :=
   ∑ x : SideTuple ν block false, ∑ t : P.BigLabels ell,
     ((Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block false) x *
       P.idealMass t : ℝ) : ℂ) * f (labelJoin ν block s x y t)
 
-def conditionalG (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (g : P.BigLabels (J + ell) → ℂ) (s : SharedRows ν) (x : SideTuple ν block false) : ℂ :=
+def conditionalG (ν : Pattern P J ell m) (block )
+    (g : P.BigLabels (J + ell) → ℂ) (s : SharedRows ν) (x : SideTuple ν block false)  :=
   ∑ y : SideTuple ν block true, ∑ t : P.BigLabels ell,
     ((Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block true) y *
       P.idealMass t : ℝ) : ℂ) * g (labelJoin ν block s x y t)
 
-lemma conditionalF_energy_le (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (hV : ∀ g, 0 < P.V g) (f : P.BigLabels (J + ell) → ℂ) :
+section
+variable (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (hV : ∀ g, 0 < P.V g)
+include ν block hV
+
+lemma conditionalF_energy_le    
+      (f : P.BigLabels (J + ell) → ℂ) :
     (∑ s, rowWeight (sharedRows ν) s *
       ∑ y, Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block true) y *
         ‖conditionalF ν block f s y‖ ^ 2) ≤ ∑ a, P.idealMass a * ‖f a‖ ^ 2 := by
@@ -66,16 +71,10 @@ lemma conditionalF_energy_le (ν : Pattern P J ell m) (block : P.BigGroup → Bo
       intro s _
       rw [Finset.sum_comm]
       apply Finset.sum_congr rfl
-      intro x _
-      apply Finset.sum_congr rfl
-      intro y _
-      apply Finset.sum_congr rfl
-      intro t _
-      dsimp only [wx, wy]
-      ring
+      grind
 
-lemma conditionalG_energy_le (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (hV : ∀ g, 0 < P.V g) (g : P.BigLabels (J + ell) → ℂ) :
+lemma conditionalG_energy_le    
+      (g : P.BigLabels (J + ell) → ℂ) :
     (∑ s, rowWeight (sharedRows ν) s *
       ∑ x, Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block false) x *
         ‖conditionalG ν block g s x‖ ^ 2) ≤ ∑ a, P.idealMass a * ‖g a‖ ^ 2 := by
@@ -100,16 +99,9 @@ lemma conditionalG_energy_le (ν : Pattern P J ell m) (block : P.BigGroup → Bo
       rw [sum_labels ν block]
       simp only [idealMass_labelJoin]
       simp_rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro s _
-      apply Finset.sum_congr rfl
-      intro x _
-      apply Finset.sum_congr rfl
-      intro y _
-      apply Finset.sum_congr rfl
-      intro t _
-      dsimp only [wx, wy]
-      ring
+      field_simp <;> ring
+
+end
 
 end
 end Erdos821.P4Bridge

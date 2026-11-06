@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SmoothedWindowEnergy
 
 namespace OAI
 
-noncomputable section
+section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceSmoothedAllocation
@@ -15,13 +15,13 @@ open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSmoothedWin
 open CenteredMomentSourceAllocationEnergy CenteredMomentSourceLiveColumn
 open CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
-local notation "O" => ActualEisensteinCubic.O
+
 
 theorem smoothed_allocation_energy {α γ : Type*} [Fintype γ]
-    (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i}))
+    (S : Finset α) (a : α → ActualEisensteinCubic.O) (ha : ∀ i,Supported (Ideal.span {a i}))
     (b : γ → ℂ) (d : γ → α → ℂ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
+     W   K  (hK : 0<K)
+    (hW : ∀ z : ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (gaussEnergy S a ha (fun i => ∑ B,b B*d B i) W K).re≤
       (Fintype.card γ:ℝ)*∑ B,‖b B‖^2*(gaussEnergy S a ha (d B) W K).re := by
   have hs := gaussEnergy_hasSum_re S a ha (fun i => ∑ B,b B*d B i) W K hK
@@ -50,7 +50,7 @@ theorem smoothed_allocation_energy {α γ : Type*} [Fintype γ]
         (finite_weighted_le_gaussEnergy S a ha (d B) W K hK hW rows) (sq_nonneg _)
 
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
+
 
 end SevenEighths.CenteredMomentSourceSmoothedAllocation
 

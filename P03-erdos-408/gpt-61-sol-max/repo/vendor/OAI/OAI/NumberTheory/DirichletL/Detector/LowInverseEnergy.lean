@@ -10,10 +10,10 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open RayFourExpansion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-def lowCorrectionEnergy : ℝ := ∑χ : RayCharacter,‖ProbeCompleted.correctionCoeff χ‖^2
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+def lowCorrectionEnergy  := ∑χ : RayCharacter,‖ProbeCompleted.correctionCoeff χ‖^2
 
 lemma lowCorrectionEnergy_nonneg : 0≤lowCorrectionEnergy :=
   Finset.sum_nonneg (fun _ _=>sq_nonneg _)

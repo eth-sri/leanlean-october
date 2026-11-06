@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Chain.EdgeStage
 
 public import Erdos408.OneSided.Moment.Phased.Edge
 public import Erdos408.OneSided.Moment.Edge.LineCount
@@ -44,14 +47,14 @@ section Coef
 variable (q A₀ x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) (B : ℕ)
 
 /-- The edge choices with stored groups `S` and promoted groups `I` (`edgePartChoices`). -/
-def compChoices (S I : Finset (Fin K)) : Finset (EdgeChoice x d Y d₀ u v r) :=
+def compChoices (S I : Finset (Fin K))  :=
   (edgeChoices x d Y d₀ u v r).filter fun c =>
     c.2.1 = S ∧ univ.filter (fun i => (c.2.2.2.1 i).2 = true) = I
 
 open scoped Classical in
 /-- The comparison coefficient `-w ∫_𝔐 e(θ(t - b + a))`: the coefficient of `edgeComp`, with
 the amplitude `edgeAmp` and the shift `edgeShift` unfolded. -/
-def compCoef (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : ℂ :=
+def compCoef (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   -(((if EdgeValid x d Y d₀ u v r B s c then
     ((((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
       pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 *
@@ -82,10 +85,7 @@ variable {q A₀ x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B N : ℕ}
 /-- The coefficient vanishes off the admissible choices. -/
 theorem compCoef_eq_zero {s : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
     (hv : ¬ EdgeValid x d Y d₀ u v r B s c) : compCoef q A₀ x d Y d₀ u v r B N s c = 0 := by
-  classical
-  unfold compCoef
-  rw [ite_eq_right fun h => absurd h hv]
-  simp
+  simp_all [compCoef]
 
 /-- `η(y) ≠ 0` only for `y < 4`. -/
 theorem lt_four_of_dyadicBump_ne_zero {y : ℝ} (h : dyadicBump y ≠ 0) : y < 4 := by
@@ -97,18 +97,10 @@ theorem lt_four_of_dyadicBump_ne_zero {y : ℝ} (h : dyadicBump y ≠ 0) : y < 4
     sub_self]
 
 /-- `|η| ≤ 1`. -/
-private theorem abs_dyadicBump_le' (y : ℝ) : |dyadicBump y| ≤ 1 := by
-  unfold dyadicBump
-  have h₁ := smoothTransition.nonneg (y - 1)
-  have h₂ := smoothTransition.le_one (y - 1)
-  have h₃ := smoothTransition.nonneg (y / 2 - 1)
-  have h₄ := smoothTransition.le_one (y / 2 - 1)
-  exact abs_le.2 ⟨by linarith, by linarith⟩
+private alias abs_dyadicBump_le' := _root_.SharedProofs.abs_dyadicBump_le
 
 /-- A product of a number at most one and a number in `[0, 1]` is at most one. -/
-private theorem mul_le_one_of_le' {a b : ℝ} (ha : a ≤ 1) (hb0 : 0 ≤ b) (hb : b ≤ 1) :
-    a * b ≤ 1 :=
-  (mul_le_mul_of_nonneg_right ha hb0).trans (by rw [one_mul]; exact hb)
+private alias mul_le_one_of_le' := _root_.SharedProofs.mul_le_one_of_le
 
 /-- A nonzero admissible coefficient has label product `a < 4Y`. -/
 theorem labelProd_lt_of_compCoef_ne_zero {s : ChainState x d Y d₀ u v r B}
@@ -134,10 +126,14 @@ theorem arcIntegral_eq_zero_of_lt_one {A x Y : ℝ} (h : Real.log x ^ A < 1) (n 
   rw [Nat.floor_eq_zero.2 h]
   simp
 
+section
+variable {A₁ : ℝ} (h0 : ∀ n, arcIntegral A₁ x Y n = 0) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)
+include A₁ h0 s c
+
 /-- **The comparison coefficient is a difference of edge coefficients**: at an arc parameter
 `A₁` with no arcs, `-w ∫_𝔐 = ℰ_{A₀} - ℰ_{A₁}`, since `ℰ_A = w ([t - b + a = 0] - ∫_{𝔐_A})`. -/
-theorem compCoef_eq_sub {A₁ : ℝ} (h0 : ∀ n, arcIntegral A₁ x Y n = 0)
-    (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) :
+theorem compCoef_eq_sub    
+        :
     compCoef q A₀ x d Y d₀ u v r B N s c =
       chainEdgeCoef q A₀ x d Y d₀ u v r B N s c - chainEdgeCoef q A₁ x d Y d₀ u v r B N s c := by
   classical
@@ -149,21 +145,31 @@ theorem compCoef_eq_sub {A₁ : ℝ} (h0 : ∀ n, arcIntegral A₁ x Y n = 0)
 
 /-- **The crude coefficient bound**: `|-w ∫_𝔐| ≤ |ℰ_{A₀}| + |ℰ_{A₁}|` for an arc parameter
 `A₁` with no arcs. -/
-theorem norm_compCoef_le_crude {A₁ : ℝ} (h0 : ∀ n, arcIntegral A₁ x Y n = 0)
-    (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) :
+theorem norm_compCoef_le_crude    
+        :
     ‖compCoef q A₀ x d Y d₀ u v r B N s c‖ ≤
       ‖chainEdgeCoef q A₀ x d Y d₀ u v r B N s c‖ +
         ‖chainEdgeCoef q A₁ x d Y d₀ u v r B N s c‖ := by
   rw [compCoef_eq_sub h0]
   exact norm_sub_le _ _
 
+end
+
 open scoped Classical in
+section
+variable (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 0 < Y) (hL : 0 < Real.log x) (hν : ∀ p, 0 ≤ primeWeight q x d N p) {s : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
+include hq hq₁ hd₀ hY hL hν s c
+
+section
+variable (hv : EdgeValid x d Y d₀ u v r B s c)
+include hv
+
 /-- **The coefficient bound** (`mem:major-absolute`): an admissible comparison coefficient is at
 most `M!^{-2K} ∏_i w_i · 4 L^{3A₀}/Y`, and it vanishes unless `det = D t` with `|t| ≤ ⌈5Y⌉`. -/
-theorem norm_compCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 0 < Y)
-    (hL : 0 < Real.log x) (hν : ∀ p, 0 ≤ primeWeight q x d N p)
-    {s : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
-    (hv : EdgeValid x d Y d₀ u v r B s c) :
+theorem norm_compCoef_le        
+       
+       
+      :
     ‖compCoef q A₀ x d Y d₀ u v r B N s c‖ ≤
       (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 * crudeWeight q x d Y d₀ u v r B N s c *
         ((if ∃ t ∈ Icc (-(⌈5 * Y⌉₊ : ℤ)) ⌈5 * Y⌉₊, edgeDet s c = edgePad s c * t then 1 else 0) *
@@ -214,8 +220,7 @@ theorem norm_compCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 0
     have hfac : pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 *
         pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) * (d₀ / (edgePad s c : ℝ)) *
           |dyadicBump ((∏ i, edgeSrc s c i (Fin.last _) : ℕ) / Y)| *
-            |dyadicBump ((∏ i, (c.2.2.2.1 i).1 : ℕ) / Y)| ≤ 1 := by
-      exact mul_le_one_of_le' (mul_le_one_of_le' (mul_le_one_of_le' (mul_le_one_of_le' hp₁
+            |dyadicBump ((∏ i, (c.2.2.2.1 i).1 : ℕ) / Y)| ≤ 1 := mul_le_one_of_le' (mul_le_one_of_le' (mul_le_one_of_le' (mul_le_one_of_le' hp₁
         (pow_nonneg hρ0 _) hp₂) hdD0 hdD1) (abs_nonneg _) hη₁) (abs_nonneg _) hη₂
     calc _ = r₀ * crudeWeight q x d Y d₀ u v r B N s c * ψ *
           (pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 *
@@ -237,10 +242,10 @@ theorem norm_compCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 0
 
 /-- The coefficient bound without the support condition: `|-w ∫_𝔐| ≤ M!^{-2K} ∏_i w_i ·
 4 L^{3A₀}/Y` at an admissible choice. -/
-theorem norm_compCoef_le' (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 0 < Y)
-    (hL : 0 < Real.log x) (hν : ∀ p, 0 ≤ primeWeight q x d N p)
-    {s : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
-    (hv : EdgeValid x d Y d₀ u v r B s c) :
+theorem norm_compCoef_le'        
+       
+       
+      :
     ‖compCoef q A₀ x d Y d₀ u v r B N s c‖ ≤
       (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 * crudeWeight q x d Y d₀ u v r B N s c *
         (4 * Real.log x ^ (3 * A₀) / Y) := by
@@ -252,11 +257,13 @@ theorem norm_compCoef_le' (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 
         mul_le_mul_of_nonneg_right (by split_ifs <;> norm_num) hΩ
     _ = _ := one_mul _
 
+end
+
 /-- The support of the comparison coefficient: it vanishes unless `det = D t` with
 `|t| ≤ ⌈5Y⌉`. -/
-theorem exists_det_of_compCoef_ne_zero (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 0 < Y)
-    (hL : 0 < Real.log x) (hν : ∀ p, 0 ≤ primeWeight q x d N p)
-    {s : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
+theorem exists_det_of_compCoef_ne_zero        
+       
+       
     (h : compCoef q A₀ x d Y d₀ u v r B N s c ≠ 0) :
     ∃ t ∈ Icc (-(⌈5 * Y⌉₊ : ℤ)) ⌈5 * Y⌉₊, edgeDet s c = edgePad s c * t := by
   classical
@@ -267,6 +274,8 @@ theorem exists_det_of_compCoef_ne_zero (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 <
   have := norm_compCoef_le (A₀ := A₀) hq hq₁ hd₀ hY hL hν hv
   rw [ite_eq_right ht, zero_mul, mul_zero] at this
   exact h (norm_le_zero_iff.1 this)
+
+end
 
 /-! ### Lists and products -/
 
@@ -294,14 +303,18 @@ theorem omitProd_last {M : ℕ} (p : Lists K M) (σ : Fin K → Equiv.Perm (Fin 
 /-! ### The row sums of a promoted group -/
 
 open scoped Classical in
+section
+variable (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 1 ≤ Y) (hU : 0 < d₀ * Y * d.Hm) (hL : 0 < Real.log x)
+include hq hq₁ hd₀ hY hU hL
+
 /-- **The small row bound** (PD `mem:comparison-small`): if the group `i₀` is promoted and its
 primes are at least `P`, then for every source the absolute comparison coefficients sum to at
 most `2^K (2B + 4)^K Λ` with `Λ = 4 L^{3A₀}/Y · 2^13 (Y/P + Y^{0.8})`. The promoted particle
 `(p, ℓ)` of `i₀` prescribes `[z']_p = ℓ` with `p ∤ D` (the cross-edge ban), so the targets are
 counted by `card_filter_line_le` at the good source; the other groups are bounded as in the
 crude row bound. -/
-theorem sum_norm_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 1 ≤ Y)
-    (hU : 0 < d₀ * Y * d.Hm) (hL : 0 < Real.log x) (hν : ∀ p, 0 ≤ primeWeight q x d N p)
+theorem sum_norm_compCoef_le_of_mem        
+        (hν : ∀ p, 0 ≤ primeWeight q x d N p)
     (hνi : ∀ i, ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 4)
     (hV : ∀ i, ∀ p ∈ band x (d.a i), 1 / 2 ≤ primeMass x d p)
     {S I : Finset (Fin K)} {i₀ : Fin K} (hi₀ : i₀ ∈ I) {P : ℝ} (hP : 0 < P)
@@ -358,9 +371,7 @@ theorem sum_norm_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
     split_ifs
     exacts [hΨ0 _ _ _, hω0 _]
   have hkern0 : ∀ σ z', 0 ≤ kern σ z' := fun σ z' => by
-    simp only [hkern]
-    split_ifs
-    exacts [hΩ0, le_rfl]
+    positivity
   have hF0 : ∀ σ z' lab, 0 ≤ F σ z' lab := fun σ z' lab =>
     mul_nonneg (mul_nonneg hr0 (prod_nonneg fun i _ => hg0 _ _ _ _)) (hkern0 _ _)
   -- the pointwise bound
@@ -640,8 +651,8 @@ comparison coefficients reaching `s'` sum to at most `3^K (B + 4)^K B Λ μ(s')`
 memory, which prescribes the line of the source; `b ∤ D` since the source lists are lists, so
 the sources are counted by `card_filter_line_le` at the good target. The other groups are
 bounded as in the crude column bound, through the adjoint calculation `crudeWeight_le_col`. -/
-theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 1 ≤ Y)
-    (hU : 0 < d₀ * Y * d.Hm) (hL : 0 < Real.log x)
+theorem sum_col_compCoef_le_of_mem        
+       
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
     (hV : ∀ i, ∀ p ∈ band x (d.a i), 1 / 2 ≤ primeMass x d p)
     (hν : ∀ p, 0 ≤ primeWeight q x d N p)
@@ -758,7 +769,7 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
     dsimp only at hc₁ hv₁ hz₁ htgt₁ hmem₁ hv₂ hz₂ htgt₂ hmem₂
     simp only [hφ, Prod.mk.injEq] at h
     obtain ⟨hσ, hσ', htr, hz⟩ := h
-    have htr' := fun i => congrFun htr i
+    have htr' := congrFun htr
     simp only [Prod.mk.injEq] at htr'
     have hst : c₁.2.1 = c₂.2.1 := Finset.ext fun i => by simpa using (htr' i).1
     have hb : ∀ i, edgeSrc s₁ c₁ i (Fin.last _) = edgeSrc s₂ c₂ i (Fin.last _) :=
@@ -1094,6 +1105,8 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
     _ ≤ ∑ y ∈ Params, F y := sum_le_sum_of_subset_of_nonneg himage fun y _ _ => hF0 y
     _ ≤ _ := hparams
 
+end
+
 end Bounds
 
 /-! ### Band facts -/
@@ -1103,118 +1116,45 @@ section Facts
 variable {q x : ℝ} {d : Data K} {N : ℕ}
 
 /-- A band prime is a band prime of the data. -/
-private theorem mem_bandPrimes_of_mem_band {i : Fin K} {p : ℕ} (hp : p ∈ band x (d.a i)) :
-    p ∈ bandPrimes x d :=
-  mem_biUnion.2 ⟨i, mem_univ i, hp⟩
+private alias mem_bandPrimes_of_mem_band := _root_.Erdos408.OneSided.mem_bandPrimes_of_band
 
 /-- `V(p) ≥ 0`. -/
-private theorem primeMass_nonneg (p : ℕ) : 0 ≤ primeMass x d p :=
-  sum_nonneg fun i _ => by
-    split_ifs
-    · exact sum_nonneg fun p _ => by positivity
-    · exact le_rfl
+private alias primeMass_nonneg := _root_.SharedProofs.primeMass_nonneg_
 
 /-- With band masses at least `1/2`, a prime of a band has `V(p) ≥ 1/2`. -/
-private theorem half_le_primeMass (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i))) {i : Fin K}
-    {p : ℕ} (hp : p ∈ band x (d.a i)) : 1 / 2 ≤ primeMass x d p :=
-  calc 1 / 2 ≤ harmonicMass (band x (d.a i)) := hV i
-    _ = if p ∈ band x (d.a i) then harmonicMass (band x (d.a i)) else 0 := (ite_eq_left hp).symm
-    _ ≤ primeMass x d p :=
-        single_le_sum (f := fun i => if p ∈ band x (d.a i) then harmonicMass (band x (d.a i))
-          else 0) (fun j _ => by
-            split_ifs
-            · exact sum_nonneg fun p _ => by positivity
-            · exact le_rfl) (mem_univ i)
+private alias half_le_primeMass := _root_.SharedProofs.half_le_primeMass_
 
 /-- With baselines at least `1/2` at the band primes, the birth weights are nonnegative. -/
-private theorem primeWeight_nonneg (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (p : ℕ) :
-    0 ≤ primeWeight q x d N p := by
-  unfold primeWeight
-  by_cases hp : p ∈ bandPrimes x d
-  · have := hb p hp
-    exact one_div_nonneg.2 (mul_nonneg (mul_nonneg (primeMass_nonneg p) (by positivity))
-      (by linarith))
-  · have h0 : primeMass x d p = 0 :=
-      sum_eq_zero fun i _ => ite_eq_right fun hpi => hp (mem_bandPrimes_of_mem_band hpi)
-    rw [h0]
-    simp
+private alias primeWeight_nonneg := _root_.SharedProofs.primeWeight_nonneg_
+
+section
+variable (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
+include hV
 
 /-- At a prime of a band, `0 < ν(p) ≤ 4/p`. -/
-private theorem primeWeight_pos_le (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
-    (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) {i : Fin K} {p : ℕ}
-    (hp : p ∈ band x (d.a i)) :
-    0 < primeWeight q x d N p ∧ primeWeight q x d N p ≤ 4 * (1 / p) := by
-  have hV₁ := half_le_primeMass hV hp
-  have hb₁ := hb p (mem_bandPrimes_of_mem_band hp)
-  have hp0 : (0 : ℝ) < p := by exact_mod_cast (TypeII.band_prime hp).pos
-  unfold primeWeight
-  refine ⟨one_div_pos.2 (mul_pos (mul_pos (by linarith) (by positivity)) (by linarith)), ?_⟩
-  calc 1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p)
-      ≤ 1 / (1 / 2 * p * (1 / 2)) :=
-        one_div_le_one_div_of_le (by positivity)
-          (mul_le_mul (mul_le_mul hV₁ (by linarith) hp0.le (by linarith)) hb₁ (by norm_num)
-            (mul_nonneg (by linarith) (by linarith)))
-    _ = 4 * (1 / p) := by field_simp; norm_num
+private alias primeWeight_pos_le := _root_.SharedProofs.primeWeight_pos_le
 
 /-- With band masses in `[1/2, 1]`, the birth weights of a band sum to at most `4`. -/
-private theorem sum_primeWeight_band_le (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
-    (hV₁ : ∀ i, harmonicMass (band x (d.a i)) ≤ 1)
-    (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (i : Fin K) :
-    ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 4 :=
-  calc ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ ∑ p ∈ band x (d.a i), 4 * (1 / (p : ℝ)) :=
-        sum_le_sum fun p hp => (primeWeight_pos_le hV hb hp).2
-    _ = 4 * harmonicMass (band x (d.a i)) := (mul_sum _ _ _).symm
-    _ ≤ 4 * 1 := mul_le_mul_of_nonneg_left (hV₁ i) (by norm_num)
-    _ = 4 := mul_one 4
+private alias sum_primeWeight_band_le := _root_.SharedProofs.sum_primeWeight_band_le
+
+end
+
+section
+variable (hq : 0 < q) (hq₁ : q < 1)
+include hq hq₁
 
 /-- The damping defects are in `[0, 1]`. -/
-private theorem dampDefect_mem_Icc (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
-    0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
-  unfold dampDefect
-  split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
+private alias dampDefect_mem_Icc := _root_.SharedProofs.dampDefect_mem_Icc_
 
 /-- For primes `p ≥ 2N + 1`, the baseline is `b'_p ≥ 1/2`. -/
-private theorem half_le_baseline (hq : 0 < q) (hq₁ : q < 1) {N p : ℕ}
-    (hp : 2 * N + 1 ≤ p) : 1 / 2 ≤ baseline q N p := by
-  have hp1 : (0 : ℝ) < p + 1 := by positivity
-  have hNp : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast (show 2 * (N + 1) ≤ p + 1 by omega)
-  have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (N : ℝ) + 1 :=
-    calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
-          sum_le_sum fun j _ => (dampDefect_mem_Icc hq hq₁ N j).2
-      _ = (N : ℝ) + 1 := by simp
-  have h₁ : ((p : ℝ) + 1)⁻¹ * ∑ j ∈ range (N + 1), dampDefect q N j ≤ 1 / 2 := by
-    rw [inv_mul_le_iff₀ hp1]
-    linarith
-  unfold baseline
-  linarith
+private alias half_le_baseline := _root_.SharedProofs.half_le_baseline_
+
+end
 
 end Facts
 
 /-- Eventually every band prime is at least `2N + 1` for `N = 2R`. -/
-private theorem eventually_two_mul_add_one_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < alo) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
-      ∀ p ∈ bandPrimes x d, 2 * (2 * momentPower x) + 1 ≤ p := by
-  have hL := (tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 2)).comp Real.tendsto_log_atTop
-  filter_upwards [eventually_rpow_lt_of_mem_band (by linarith : 0 < alo) 1,
-    hL.eventually_ge_atTop 8, Real.tendsto_log_atTop.eventually_gt_atTop 0]
-    with x hbig hs8 hL0 d hd p hp
-  obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
-  have hLp := hbig (d.a i) (hd.window i).1 p hpi
-  rw [Real.rpow_one] at hLp
-  set s := Real.log x ^ (1 / 2 : ℝ) with hs
-  have hs8' : 8 ≤ s := hs8
-  have hss : s * s = Real.log x := by
-    rw [hs, ← Real.rpow_add hL0]
-    norm_num
-  have hR : (momentPower x : ℝ) < s / 2 + 1 := by
-    unfold momentPower
-    exact Nat.ceil_lt_add_one (by linarith)
-  have h8 : 8 * s ≤ s * s := mul_le_mul_of_nonneg_right hs8' (by linarith)
-  have : ((2 * (2 * momentPower x) + 1 : ℕ) : ℝ) < p := by
-    push_cast
-    linarith
-  exact_mod_cast this.le
+private alias eventually_two_mul_add_one_le := _root_.SharedProofs.eventually_two_mul_add_one_le_
 
 /-! ### The norm bound -/
 
@@ -1274,15 +1214,15 @@ theorem eventually_compOp_normLe {q C CX alo ahi g A₀ G : ℝ} (hq : 0 < q) (h
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
       ∀ (Y d₀ u v r : ℝ) (B : ℕ), 1 ≤ Y → 0 < d₀ → (B : ℝ) ≤ Real.log x ^ 3 →
       ∀ S I : Finset (Fin K), (S, I) ≠ (∅, ∅) →
-        NormLe (fun s => chainMeasure q x d Y d₀ u v r B (2 * momentPower x) s)
-          (fun s => chainMeasure q x d Y d₀ u v r B (2 * momentPower x) s)
+        NormLe (chainMeasure q x d Y d₀ u v r B (2 * momentPower x))
+          (chainMeasure q x d Y d₀ u v r B (2 * momentPower x))
           (compOp q A₀ x d Y d₀ u v r B (2 * momentPower x) S I)
           (Real.log x ^ (-(G + 1))) := by
   classical
   set Am := max A₀ 0 with hAm
   set E : ℝ := 5 * (6 * (K : ℝ) + 6 * Am + 3 + 2 * |G| + 3) with hE
   set c₁ : ℝ := 180 ^ K * 2 ^ 28 with hc₁
-  have hc₁1 : 1 ≤ c₁ := one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by norm_num)) (by norm_num)
+  
   have hAm0 : 0 ≤ Am := le_max_right _ _
   have hE0 : 0 ≤ E := by rw [hE]; positivity
   filter_upwards [eventually_harmonicMass_band halo.le, eventually_band_disjoint hg,
@@ -1368,7 +1308,7 @@ theorem eventually_compOp_normLe {q C CX alo ahi g A₀ G : ℝ} (hq : 0 < q) (h
   set Λ := 4 * L ^ (3 * A₀) / Y * (2 ^ 13 * (Y / L ^ E + Y ^ (4 / 5 : ℝ))) with hΛ
   have hLA : L ^ (3 * A₀) ≤ L ^ (3 * Am) :=
     Real.rpow_le_rpow_of_exponent_le hL1 (by rw [hAm]; linarith [le_max_left A₀ 0])
-  have hΛ0 : 0 ≤ Λ := by positivity
+  
   have hΛle : Λ ≤ 2 ^ 17 * L ^ (3 * Am) * δ := by
     have hsplit : Λ = 2 ^ 15 * L ^ (3 * A₀) * (1 / L ^ E + 1 / Y ^ (1 / 5 : ℝ)) := by
       rw [hΛ, hYY]
@@ -1383,7 +1323,7 @@ theorem eventually_compOp_normLe {q C CX alo ahi g A₀ G : ℝ} (hq : 0 < q) (h
     rw [Real.rpow_neg_one]
     exact inv_lt_one_of_one_lt₀ (by linarith))
   set κ : ℝ := 16 * (1 + 52 * L ^ (3 * A₀)) + 16 * (1 + 52 * L ^ (3 * (-1 : ℝ))) with hκ
-  have hκ0 : 0 ≤ κ := by positivity
+  
   have hκle : κ ≤ 1696 * L ^ (3 * Am) := by
     have h1 : L ^ (3 * (-1 : ℝ)) ≤ L ^ (3 * Am) :=
       Real.rpow_le_rpow_of_exponent_le hL1 (by linarith)
@@ -1431,7 +1371,7 @@ theorem eventually_compOp_normLe {q C CX alo ahi g A₀ G : ℝ} (hq : 0 < q) (h
             (sum_col_chainEdgeCoef_le hq hq₁ hd₀ hY hU hL0 hdisj' hVp hν hνpos hνi s')
       _ = 3 ^ K * (B + 4) ^ K * κ * chainMeasure q x d Y d₀ u v r B N s' := by rw [hκ]; ring
   -- the weighted Schur test with weight one, and the final comparison
-  have hB0 : (0 : ℝ) ≤ B := Nat.cast_nonneg B
+  
   have hL3 : 1 ≤ L ^ 3 := one_le_pow₀ hL1
   have h2B : 2 * (B : ℝ) + 4 ≤ 6 * L ^ 3 := by linarith
   have hB4 : (B : ℝ) + 4 ≤ 5 * L ^ 3 := by linarith
@@ -1443,8 +1383,8 @@ theorem eventually_compOp_normLe {q C CX alo ahi g A₀ G : ℝ} (hq : 0 < q) (h
         chainEdgeOut x d Y d₀ u v r B s c = s',
           chainMeasure q x d Y d₀ u v r B N s * ‖compCoef q A₀ x d Y d₀ u v r B N s c‖ * 1 ≤
         C' * (chainMeasure q x d Y d₀ u v r B N s' * 1)) →
-      NormLe (fun s => chainMeasure q x d Y d₀ u v r B N s)
-        (fun s => chainMeasure q x d Y d₀ u v r B N s)
+      NormLe (chainMeasure q x d Y d₀ u v r B N)
+        (chainMeasure q x d Y d₀ u v r B N)
         (compOp q A₀ x d Y d₀ u v r B N S I) (L ^ (-(G + 1))) := by
     intro R C' hR hC' hRC hrow hcol f
     have hnorm := normLe_choiceOp (h := fun _ => (1 : ℝ)) (h' := fun _ => (1 : ℝ)) hR hC' hμ0
@@ -1505,7 +1445,7 @@ theorem eventually_compOp_normLe {q C CX alo ahi g A₀ G : ℝ} (hq : 0 < q) (h
       (by positivity) ?_ (hR0 _ (by positivity) hrowc) (hC0 _ fun s' =>
         sum_col_compCoef_le_of_mem hq hq₁ hd₀ hY hU hL0 hdisj' hVp hν hνpos hνi hS
           (by positivity) (hPi i₀) s')
-    have hBL : (B : ℝ) ≤ L ^ 3 := hB
+    
     calc 2 ^ K * (2 * (B : ℝ) + 4) ^ K * κ * (3 ^ K * ((B : ℝ) + 4) ^ K * (B * Λ))
         ≤ 2 ^ K * (6 * L ^ 3) ^ K * (1696 * L ^ (3 * Am)) *
             (3 ^ K * (5 * L ^ 3) ^ K * (L ^ 3 * (2 ^ 17 * L ^ (3 * Am) * δ))) := by

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.Damping
 public import Mathlib.Data.Fintype.CardEmbedding
@@ -17,13 +18,16 @@ open Erdos821.Blueprint.Graph
 
 variable {P : PrimeGroups} {g : P.Group}
 
-def smallPrefixFibre (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
-    (d : Fin J → P.Prime g) : Finset (Fin (J + ell) → P.Prime g) :=
+def smallPrefixFibre (J ell ) (y : (p : P.Prime g) → ZMod p.val)
+    (d : Fin J → P.Prime g)  :=
   Finset.univ.filter (fun a => Function.Injective a ∧ (∀ i, y (a i) = 0) ∧
     ∀ j : Fin J, a (Fin.castAdd ell j) = d j)
 
-theorem smallPrefixFibre_nonempty (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
-    (d : Fin J → P.Prime g) (h : (smallPrefixFibre J ell y d).Nonempty) :
+section
+variable (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val) (d : Fin J → P.Prime g)
+
+theorem smallPrefixFibre_nonempty    
+      (h : (smallPrefixFibre J ell y d).Nonempty) :
     Function.Injective d ∧ (∀ j, y (d j) = 0) ∧
       J + ell ≤ (Finset.univ.filter (fun p : P.Prime g => y p = 0)).card := by
   classical
@@ -46,8 +50,8 @@ theorem smallPrefixFibre_nonempty (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.
     obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hp
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hzero _⟩
 
-theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
-    (d : Fin J → P.Prime g) (hd : Function.Injective d) (hy : ∀ j, y (d j) = 0) :
+theorem smallPrefixFibre_card    
+      (hd : Function.Injective d) (hy : ∀ j, y (d j) = 0) :
     (smallPrefixFibre J ell y d).card ≤
       ((Finset.univ.filter (fun p : P.Prime g => y p = 0)).card - J).descFactorial ell := by
   classical
@@ -79,10 +83,7 @@ theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
         intro i j hij
         obtain ⟨ha, _, _⟩ := (Finset.mem_filter.mp a.property).2
         have hh := ha (congrArg Subtype.val hij)
-        apply Fin.ext
-        have hv := congrArg Fin.val hh
-        simp only [Fin.val_natAdd] at hv
-        omega
+        simp_all
     }
   have hinj : Function.Injective suffix := by
     intro a b hab
@@ -95,6 +96,8 @@ theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
     · exact congrArg Subtype.val (congrArg (fun f : Fin ell ↪ {p // p ∈ B} => f j) hab)
   have hc := Fintype.card_le_of_injective suffix hinj
   simpa only [Fintype.card_coe, Fintype.card_embedding_eq, Fintype.card_fin, hB] using hc
+
+end
 
 
 end Erdos821.P3Clean

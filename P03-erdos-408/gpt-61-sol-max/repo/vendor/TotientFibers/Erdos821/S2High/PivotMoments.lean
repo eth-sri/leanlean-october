@@ -4,7 +4,7 @@ public import Erdos821.S2High.TiltedMass
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.S2High
@@ -15,7 +15,7 @@ open Erdos821.S2Core
 theorem tiltedMu_power_sum_bound (F : FixedData) (P : PrimeGroups) (x : ℝ)
     (n : ℕ) (hP : P.Admissible F x)
     (hcut : (n + 1 : ℝ) ≤ Real.exp ((L x) ^ F.c) / 2)
-    (g : P.BigGroup) (k : ℕ) (hk : 1 ≤ k) :
+    (g : P.BigGroup)  k  (hk : 1 ≤ k) :
     (∑ p : P.Prime g.val, (tiltedMu F P n g.val p) ^ k) ≤
       2 * (2 / (F.vMin * Real.exp ((L x) ^ F.c))) ^ (k - 1) := by
   have hm := tiltedMu_group_mass_bounds F P x n hP hcut g

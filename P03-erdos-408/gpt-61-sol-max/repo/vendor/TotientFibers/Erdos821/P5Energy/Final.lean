@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionEnergy
 
 public import Erdos821.P5Energy.ErrorStep
 public import Mathlib.Analysis.Complex.ExponentialBounds
@@ -7,15 +10,18 @@ public import Mathlib.Analysis.Complex.ExponentialBounds
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators ContDiff
 open MeasureTheory
 
 namespace Erdos821.P5Energy
 open Blueprint.Analytic
 
+section
+variable {s : Finset ℕ} {a : ℕ → ℂ}
+
 /-- The additive convolution vanishes off `[Y/2, 5Y/2]`. -/
-theorem localConvolution_eq_zero_off {s : Finset ℕ} {a : ℕ → ℂ} {Y H v : ℝ}
+theorem localConvolution_eq_zero_off     {Y H v : ℝ}
     (hH : 0 < H) (hHY : H ≤ Y / 10) (hs : ∀ n ∈ s, Y ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * Y)
     (hv : v ∉ Set.Icc (Y / 2) (5 * Y / 2)) : localConvolution s a H v = 0 := by
   unfold localConvolution
@@ -25,17 +31,9 @@ theorem localConvolution_eq_zero_off {s : Finset ℕ} {a : ℕ → ℂ} {Y H v :
   unfold localConvolutionTerm
   rw [localKernel_eq_zero_of_far, Complex.ofReal_zero, mul_zero]
   rw [abs_div, abs_of_pos hH, le_div_iff₀ hH]
-  rw [Set.mem_Icc, not_and_or, not_le, not_le] at hv
-  rcases hv with hv | hv
-  · rw [abs_of_pos (by linarith)]; linarith
-  · rw [abs_of_neg (by linarith)]; linarith
+  grind
 
-theorem norm_sq_le_two (x y : ℂ) : ‖x‖ ^ 2 ≤ 2 * ‖y‖ ^ 2 + 2 * ‖x - y‖ ^ 2 := by
-  have h : ‖x‖ ≤ ‖y‖ + ‖x - y‖ := by
-    calc ‖x‖ = ‖y + (x - y)‖ := by ring_nf
-      _ ≤ ‖y‖ + ‖x - y‖ := norm_add_le _ _
-  have h0 : 0 ≤ ‖x‖ := norm_nonneg _
-  nlinarith [sq_nonneg (‖y‖ - ‖x - y‖)]
+theorem norm_sq_le_two (x y : ℂ) : ‖x‖ ^ 2 ≤ 2 * ‖y‖ ^ 2 + 2 * ‖x - y‖ ^ 2 := by solve_by_elim [_root_.OAI.SevenEighths.CenteredMomentOriginalReflectionEnergy.norm_sq_comparison]
 
 theorem log_range_subset {u : ℝ} (hu : u ∈ Set.uIcc (Real.log (1 / 2)) (Real.log (5 / 2))) :
     |u| ≤ 1 := by
@@ -54,8 +52,8 @@ theorem log_range_subset {u : ℝ} (hu : u ∈ Set.uIcc (Real.log (1 / 2)) (Real
   constructor <;> linarith [hu.1, hu.2]
 
 /-- The log-kernel convolution at `v = Y e^u`, as a Mellin transform in log coordinates. -/
-theorem localLogConvolution_exp {s : Finset ℕ} {a : ℕ → ℂ} {Y H : ℝ} (hY : 0 < Y) (hH : 0 < H)
-    (hns : ∀ n ∈ s, 0 < (n : ℝ)) (u : ℝ) :
+theorem localLogConvolution_exp      {Y H}  (hY : 0 < Y) (hH : 0 < H)
+    (hns : ∀ n ∈ s, 0 < (n : ℝ))  u  :
     localLogConvolution s a H (Y * Real.exp u) =
       ((H / (2 * Real.pi * (Y * Real.exp u)) : ℝ) : ℂ) *
         ∫ t : ℝ, ampE (H / Y) t u * (phase (-(t * Real.log Y)) * dp s a t) := by
@@ -75,7 +73,7 @@ theorem localLogConvolution_exp {s : Finset ℕ} {a : ℕ → ℂ} {Y H : ℝ} (
   unfold ampE amp
   ring
 
-theorem continuous_dp (s : Finset ℕ) (a : ℕ → ℂ) : Continuous (dp s a) := by
+theorem continuous_dp  s   a  : Continuous (dp s a) := by
   unfold dp Blueprint.Analytic.mellin
   fun_prop
 
@@ -83,7 +81,7 @@ theorem logCutoff_hasCompactSupport : HasCompactSupport logCutoff :=
   logCutoffBump.hasCompactSupport
 
 /-- The log-kernel energy on `[Y/2, 5Y/2]` in log coordinates. -/
-theorem logKernel_energy_le {s : Finset ℕ} {a : ℕ → ℂ} {Y H : ℝ} (hY : 0 < Y) (hH : 0 < H)
+theorem logKernel_energy_le      {Y H}  (hY : 0 < Y) (hH : 0 < H)
     (hns : ∀ n ∈ s, 0 < (n : ℝ)) :
     ∫ v in (Y / 2)..(5 * Y / 2), ‖localLogConvolution s a H v‖ ^ 2 ≤
       H ^ 2 / (4 * Real.pi ^ 2 * Y) * ∫ u : ℝ, logCutoff u * Real.exp (-u) *
@@ -140,6 +138,8 @@ theorem logKernel_energy_le {s : Finset ℕ} {a : ℕ → ℂ} {Y H : ℝ} (hY :
   rw [Real.exp_neg]
   field_simp
   ring
+
+end
 
 /-- The local additive-to-Mellin energy bound with explicit constants. -/
 theorem local_mellin_energy (j : ℕ) (hj : 2 ≤ j) : ∃ K : ℝ, 0 < K ∧
@@ -226,8 +226,7 @@ theorem local_mellin_energy (j : ℕ) (hj : 2 ≤ j) : ∃ K : ℝ, 0 < K ∧
         (2 * C / Real.pi ^ 2 + 48 * (L : ℝ) ^ 2 + 1) * (H / Y) ^ 2 * sqNorm s a := by
         apply add_le_add
         · exact mul_le_mul_of_nonneg_right (div_le_div_of_nonneg_right hK1 hY.le) hX0
-        · apply mul_le_mul_of_nonneg_right _ hsq0
-          exact mul_le_mul_of_nonneg_right hK2 (by positivity)
+        bound
 
 end Erdos821.P5Energy
 

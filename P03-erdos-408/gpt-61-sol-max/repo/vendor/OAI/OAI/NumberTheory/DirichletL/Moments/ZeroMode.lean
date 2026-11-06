@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.RowNorm
 public import OAI.NumberTheory.DirichletL.CenteredExceptionalProfile
@@ -17,8 +18,11 @@ open CenteredMomentSupportedCorrelation CenteredMomentFourier
 open UniqueFactorizationMonoid CenteredExceptionalCount CenteredExceptionalProfile
 local notation "O" => ActualEisensteinCubic.O
 
-@[simp] theorem pairResidue_mul (a b : O) (ha : Supported (Ideal.span {a}))
-    (hb : Supported (Ideal.span {b})) (x y : Residue (a * b)) :
+section
+variable (a b : O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b})) (hm : pairFourier a b ha hb 0 ≠ 0) (ε : ℝ) (hε : 0 < ε)
+
+@[simp] theorem pairResidue_mul    
+       x y  :
     pairResidue a b ha hb (x * y) =
       pairResidue a b ha hb x * pairResidue a b ha hb y := by
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
@@ -27,14 +31,15 @@ local notation "O" => ActualEisensteinCubic.O
     idealRowHom_argument_mul, idealRowHom_argument_mul, star_mul]
   ring
 
-@[simp] theorem pairFourier_zero (a b : O) (ha : Supported (Ideal.span {a}))
-    (hb : Supported (Ideal.span {b})) :
+@[simp] theorem pairFourier_zero    
+      :
     pairFourier a b ha hb 0 = ∑' x : Residue (a * b), pairResidue a b ha hb x := by
   simp [pairFourier, quotientTrace]
 
-theorem pairResidue_unit_eq_one_of_mean_ne_zero (a b : O)
-    (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
-    (hm : pairFourier a b ha hb 0 ≠ 0) (u : (Residue (a * b))ˣ) :
+include hm in
+theorem pairResidue_unit_eq_one_of_mean_ne_zero  
+       
+      (u : (Residue (a * b))ˣ) :
     pairResidue a b ha hb u = 1 := by
   let := finite_quotient_span (mul_ne_zero (supported_element_ne_zero a ha)
     (supported_element_ne_zero b hb))
@@ -44,11 +49,12 @@ theorem pairResidue_unit_eq_one_of_mean_ne_zero (a b : O)
       ∑ x : Residue (a * b), pairResidue a b ha hb x := by
     simpa only [Finset.mul_sum, pairResidue_mul] using
       u.mulLeft_bijective.sum_comp (pairResidue a b ha hb)
-  exact (mul_right_cancel₀ hm (he.trans (one_mul _).symm))
+  simp_all
 
-theorem rows_agree_of_mean_ne_zero (a b : O)
-    (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
-    (hm : pairFourier a b ha hb 0 ≠ 0) (n : O)
+include hm in
+theorem rows_agree_of_mean_ne_zero  
+       
+       n 
     (hn : IsCoprime (Ideal.span {n}) (Ideal.span {a} * Ideal.span {b})) :
     idealRowHom n (Ideal.span {a}) = idealRowHom n (Ideal.span {b}) := by
   have hunit : IsUnit (Ideal.Quotient.mk (Ideal.span {a * b}) n) := by
@@ -66,21 +72,22 @@ theorem rows_agree_of_mean_ne_zero (a b : O)
     exact MulChar.one_apply hu
   exact mul_right_cancel₀ (by intro hz; simp [hz] at hj) (he.trans hj.symm)
 
-theorem valuation_profile_of_mean_ne_zero (a b : O)
-    (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
-    (hm : pairFourier a b ha hb 0 ≠ 0) (P : Ideal O) [P.IsMaximal]
+include hm in
+theorem valuation_profile_of_mean_ne_zero  
+       
+      (P : Ideal O) [P.IsMaximal]
     (hg : ConcretePrimeRowBridge.goodLambda ∉ P)
     (hodd : ringChar (O ⧸ P) ≠ 2) :
     valuation (Ideal.span {a}) P % 6 = valuation (Ideal.span {b}) P % 6 := by
   apply valuation_mod_six_of_unit_agreement 1
     (Ideal.span {a} * Ideal.span {b}) _ _ P (mul_ne_zero ha.1 hb.1) ha hb
     hg hodd isCoprime_one_left
-  intro n _ hn
-  exact rows_agree_of_mean_ne_zero a b ha hb hm n hn
+  solve_by_elim [rows_agree_of_mean_ne_zero]
 
-theorem powerful_product_of_mean_ne_zero (a b : O)
-    (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
-    (hm : pairFourier a b ha hb 0 ≠ 0) :
+include hm in
+theorem powerful_product_of_mean_ne_zero  
+       
+      :
     CompletedGauss.PowerfulIdeal (Ideal.span {a} * Ideal.span {b}) := by
   have hs := (supported_mul_iff _ _).mpr ⟨ha, hb⟩
   refine ⟨hs.1, ?_⟩
@@ -93,7 +100,8 @@ theorem powerful_product_of_mean_ne_zero (a b : O)
   unfold valuation at he
   omega
 
-theorem powerful_pair_count (ε : ℝ) (hε : 0 < ε) :
+include hε in
+theorem powerful_pair_count     :
     ∃ C : ℝ, 0 < C ∧ ∀ (S : Finset (Ideal O × Ideal O)) (Y : ℝ), 1 ≤ Y →
       (∀ p ∈ S, CompletedGauss.PowerfulIdeal (p.1 * p.2) ∧
         (Ideal.absNorm (p.1 * p.2) : ℝ) ≤ Y) →
@@ -135,8 +143,8 @@ theorem powerful_pair_count (ε : ℝ) (hε : 0 < ε) :
       congr 2
       ring
 
-theorem pairFourier_zero_norm_le (a b : O) (ha : Supported (Ideal.span {a}))
-    (hb : Supported (Ideal.span {b})) :
+theorem pairFourier_zero_norm_le    
+      :
     ‖pairFourier a b ha hb 0‖ ≤ (Ideal.absNorm (Ideal.span {a * b}) : ℝ) := by
   let := finite_quotient_span (mul_ne_zero (supported_element_ne_zero a ha)
     (supported_element_ne_zero b hb))
@@ -153,8 +161,8 @@ theorem pairFourier_zero_norm_le (a b : O) (ha : Supported (Ideal.span {a}))
         (idealRowHom_norm _ _)
     _ = _ := by simp [Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
 
-theorem scaled_zero_mean_norm_le (a b : O) (ha : Supported (Ideal.span {a}))
-    (hb : Supported (Ideal.span {b})) (K : ℝ) (hK : 0 ≤ K) :
+theorem scaled_zero_mean_norm_le    
+       K  (hK : 0 ≤ K) :
     ‖((K / ‖eisEmbedding (a * b)‖ ^ 2 : ℝ) : ℂ) * pairFourier a b ha hb 0‖ ≤ K := by
   have hn : (0 : ℝ) < Ideal.absNorm (Ideal.span {a * b}) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
@@ -168,7 +176,8 @@ theorem scaled_zero_mean_norm_le (a b : O) (ha : Supported (Ideal.span {a}))
       mul_le_mul_of_nonneg_left (pairFourier_zero_norm_le a b ha hb) (div_nonneg hK hn.le)
     _ = K := div_mul_cancel₀ _ hn.ne'
 
-theorem nonzero_mean_pair_count (ε : ℝ) (hε : 0 < ε) :
+include hε in
+theorem nonzero_mean_pair_count     :
     ∃ C : ℝ, 0 < C ∧ ∀ {α β : Type*} (S : Finset (α × β))
       (a : α → O) (b : β → O)
       (ha : ∀ i, Supported (Ideal.span {a i}))
@@ -194,7 +203,8 @@ theorem nonzero_mean_pair_count (ε : ℝ) (hε : 0 < ε) :
       hN p hp'.1⟩)
   simpa only [ht] using hbound
 
-theorem first_zero_sum_bound (ε : ℝ) (hε : 0 < ε) :
+include hε in
+theorem first_zero_sum_bound     :
     ∃ C : ℝ, 0 < C ∧ ∀ {α β : Type*} (S : Finset (α × β))
       (a : α → O) (b : β → O)
       (ha : ∀ i, Supported (Ideal.span {a i}))
@@ -235,21 +245,29 @@ theorem first_zero_sum_bound (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_right (hc S a b ha hb Y hY hinj hN) (mul_nonneg hB hK)
     _ = C * K * B * Y ^ (1 / 2 + ε) := by ring
 
-def idealColumn (S : Finset (Ideal O)) (I : S) : O :=
+end
+
+def idealColumn (S : Finset (Ideal O)) (I : S)  :=
   ConcretePrimeRowBridge.idealGenerator I.val
 
-@[simp] theorem idealColumn_span (S : Finset (Ideal O)) (I : S) :
+section
+variable (S : Finset (Ideal O)) (hS : ∀ I ∈ S, Supported I) (I : S)
+
+@[simp] theorem idealColumn_span     :
     Ideal.span {idealColumn S I} = I.val :=
   ConcretePrimeRowBridge.span_idealGenerator _
 
-theorem idealColumn_supported (S : Finset (Ideal O))
-    (hS : ∀ I ∈ S, Supported I) (I : S) :
+include hS in
+theorem idealColumn_supported  
+        :
     Supported (Ideal.span {idealColumn S I}) := by
   rw [idealColumn_span]
   exact hS I.val I.property
 
+end
+
 def idealZeroEnergy (S : Finset (Ideal O)) (hS : ∀ I ∈ S, Supported I)
-    (c : Ideal O → ℂ) (K : ℝ) : ℂ :=
+    (c : Ideal O → ℂ) (K : ℝ)  :=
   ∑ I : S, ∑ J : S, (c I.val * star (c J.val)) *
     (((K / ‖eisEmbedding (idealColumn S I * idealColumn S J)‖ ^ 2 : ℝ) : ℂ) *
       pairFourier (idealColumn S I) (idealColumn S J)
@@ -278,7 +296,7 @@ theorem ideal_zero_energy_bound (ε : ℝ) (hε : 0 < ε) :
   have hdPair (p : S × S) (_hp : p ∈ (Finset.univ : Finset (S × S))) :
       ‖c p.1.val * star (c p.2.val)‖ ≤ B ^ 2 := by
     rw [norm_mul, norm_star, pow_two]
-    exact mul_le_mul (hd _ p.1.property) (hd _ p.2.property) (norm_nonneg _) hB
+    bound
   have hh := hc Finset.univ (idealColumn S) (idealColumn S)
     (idealColumn_supported S hS) (idealColumn_supported S hS)
     (fun p : S × S => c p.1.val * star (c p.2.val)) (X ^ 2) K (B ^ 2)

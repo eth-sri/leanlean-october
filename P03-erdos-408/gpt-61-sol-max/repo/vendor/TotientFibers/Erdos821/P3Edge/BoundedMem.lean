@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.BigOperators.Group.Finset.Defs
 public import Mathlib.Basic.Finite.Prod
@@ -12,7 +13,7 @@ attribute [local instance] Classical.propDecidable
 namespace Erdos821.P3Edge
 
 -- Finite set of multisets with bounded card over a finite alphabet.
-lemma finite_multiset_bounded (α : Type*) [Fintype α] [DecidableEq α] (N : ℕ) :
+lemma finite_multiset_bounded  α  [Fintype α] [DecidableEq α]  N  :
     Set.Finite {z : Multiset α | z.card ≤ N} := by
   classical
   -- Work with subtype
@@ -20,7 +21,7 @@ lemma finite_multiset_bounded (α : Type*) [Fintype α] [DecidableEq α] (N : �
   suffices h : Finite S by exact h
   -- Inject counts into finite pi type
   let F := (a : α) → Fin (N + 1)
-  have hF : Fintype F := inferInstance
+  
   have hFinF : Finite F := inferInstance
   let f : S → F := fun z a =>
     ⟨z.val.count a, Nat.lt_succ_of_le (le_trans (Multiset.count_le_card a z.val) z.property)⟩

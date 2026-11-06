@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.LowFrozenEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.CompletedCanonicalEnergy
@@ -13,18 +14,18 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
-theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
-    (F : Ideal Eis) (hF : Squarefree F) (m : Eis) (hm : m≠0)
+theorem low_completed_fiber_energy  Q  (hQ : Q≠0)
+     F  (hF : Squarefree F)  m  (hm : m≠0)
     (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:Eis)∣m)
     (hperiod : Q*Ideal.span {(72:Eis)}∣Ideal.span {m})
     (hbad : ∀ P∈fixedBadPrimes,P∣Ideal.span {m}*F)
     (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (Ck η : ℝ) (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) (rmax : ℕ) :
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     Ck η  (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1)  rmax  :
     ∃ (degree : ℕ) (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
     ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (J : Ideal Eis) (_hJ : J≠0)
       (Z d ell0 shift : ℝ), Z₀≤Z → 0≤d → d≤1/6 → 0≤ell0 → ell0≤1/6-d+η → |shift|≤η →
@@ -92,7 +93,7 @@ theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
   have hz : 1<Z := lt_of_lt_of_le hZ₀ hZ
   have hzp : 0<Z := lt_trans zero_lt_one hz
   let O := normWidth Z (rowPowerfulPart J)
-  have hO : 0≤O := normWidth_nonneg Z hz _ (rowPowerfulPart_ne_zero J)
+  
   have hPowPos : 0<(Ideal.absNorm (rowPowerfulPart J):ℝ) := by
     have := QuadraticMainBoundary.norm_one_le (rowPowerfulPart_ne_zero J)
     linarith
@@ -150,7 +151,7 @@ theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
       (CompletedHeight.normTwistedSource W θ) (Z^(1+ell0+shift))
       (fun A => ∏ i,if (p i).val∣A then (1:ℂ) else 0)‖^2)
   exact hs.symm.trans_le (hbound.trans_eq hR)
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

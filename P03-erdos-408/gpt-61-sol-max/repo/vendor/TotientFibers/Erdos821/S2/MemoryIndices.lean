@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.HistorySizes
 
@@ -16,21 +17,25 @@ open Erdos821.Blueprint.Graph
 
 variable {P : PrimeGroups}
 
-theorem memoryEntry_enumeration {g : P.Group} (z : P.Memory g) :
+section
+variable {g : P.Group} (z : P.Memory g) (B : Finset (Fin z.card)) (w : P.Memory g) (F : FixedData) (n : ℕ) (rho q eta V : ℝ) (hρ : rho ≠ 0) (i : Fin (n + 1)) {M : ℕ} {s t : P.MemoryState M} (c : GhostChoice s t) (hc : ghostChoiceValid c)
+
+
+theorem memoryEntry_enumeration     :
     (Finset.univ : Finset (Fin z.card)).val.map (memoryEntry z) = z := by
   let v : List.Vector (P.Particle g) z.card := ⟨z.toList, Multiset.length_toList z⟩
   have he : memoryEntry z = v.get := by funext i; rfl
   have hl : List.ofFn (memoryEntry z) = z.toList := by
     rw [he, ← List.Vector.toList_ofFn, List.Vector.ofFn_get]
     rfl
-  rw [Finset.val_univ_fin, Multiset.map_coe, ← List.ofFn_eq_map, hl, Multiset.coe_toList]
+  simp_all
 
-theorem deleteMemoryIndices_eq_map {g : P.Group} (z : P.Memory g)
-    (B : Finset (Fin z.card)) :
+theorem deleteMemoryIndices_eq_map    
+      :
     deleteMemoryIndices z B = (Finset.univ \ B).val.map (memoryEntry z) := by
   simp only [deleteMemoryIndices, ← Multiset.map_coe, Finset.coe_toList]
 
-theorem zeroMemoryIndices_card {g : P.Group} (z : P.Memory g) :
+theorem zeroMemoryIndices_card     :
     (zeroMemoryIndices z).card = (z.filter (fun u => u.2 = 0)).card := by
   calc
     _ = (((Finset.univ : Finset (Fin z.card)).val.map (memoryEntry z)).filter
@@ -39,8 +44,8 @@ theorem zeroMemoryIndices_card {g : P.Group} (z : P.Memory g) :
       rfl
     _ = _ := by rw [memoryEntry_enumeration]
 
-theorem zeroMemoryIndices_delete_card {g : P.Group} (z : P.Memory g)
-    (B : Finset (Fin z.card)) (hB : B ⊆ zeroMemoryIndices z) :
+theorem zeroMemoryIndices_delete_card    
+      (hB : B ⊆ zeroMemoryIndices z) :
     (zeroMemoryIndices (deleteMemoryIndices z B)).card =
       (zeroMemoryIndices z).card - B.card := by
   rw [zeroMemoryIndices_card, deleteMemoryIndices_eq_map,
@@ -53,11 +58,11 @@ theorem zeroMemoryIndices_delete_card {g : P.Group} (z : P.Memory g)
   change ((Finset.univ \ B).filter (fun i => (memoryEntry z i).2 = 0)).card = _
   rw [he, Finset.card_sdiff_of_subset hB]
 
-theorem zeroMemoryIndices_add_card {g : P.Group} (z w : P.Memory g) :
+theorem zeroMemoryIndices_add_card     :
     (zeroMemoryIndices (z + w)).card = (zeroMemoryIndices z).card + (zeroMemoryIndices w).card := by
   simp only [zeroMemoryIndices_card, Multiset.filter_add, Multiset.card_add]
 
-theorem zeroMemoryIndices_birth_card {g : P.Group} {b : ℕ} (p : Fin b → P.Prime g) :
+theorem zeroMemoryIndices_birth_card   {b : ℕ} (p : Fin b → P.Prime g) :
     (zeroMemoryIndices (zeroBirthBatch p)).card = b := by
   rw [zeroMemoryIndices_card]
   have he : (zeroBirthBatch p).filter (fun u => u.2 = 0) = zeroBirthBatch p := by
@@ -69,17 +74,19 @@ theorem zeroMemoryIndices_birth_card {g : P.Group} {b : ℕ} (p : Fin b → P.Pr
     rfl
   rw [he, zeroBirthBatch_card]
 
-theorem ghostChoiceValid_zero_card {M : ℕ} {s t : P.MemoryState M}
-    (c : GhostChoice s t) (hc : ghostChoiceValid c) (g : P.BigGroup) :
+include hc in
+theorem ghostChoiceValid_zero_card    
+         g  :
     (zeroMemoryIndices (t.2.2 g)).card =
       (zeroMemoryIndices (s.2.2 g)).card - (c.1 g).card + (c.2.1 g).val := by
   have he := congrArg (fun z => (zeroMemoryIndices z).card) (hc g).2
   simpa only [zeroMemoryIndices_add_card,
     zeroMemoryIndices_delete_card _ _ (hc g).1, zeroMemoryIndices_birth_card] using he.symm
 
+include hρ in
 /-- Local rho factors cancel exactly, including old zero multiplicities. -/
-theorem local_rho_cancellation (rho q eta V : ℝ) (hρ : rho ≠ 0)
-    (Z t b : ℕ) (ht : t ≤ Z) :
+theorem local_rho_cancellation    
+     Z t b  (ht : t ≤ Z) :
     rho ^ Z * (-eta / rho) ^ t * (q / rho ^ (2 : ℕ)) ^ (Z - t) *
       (-eta * V / rho) ^ b * rho ^ (Z - t + b) =
       (-eta) ^ t * q ^ (Z - t) * (-eta * V) ^ b := by
@@ -89,10 +96,11 @@ theorem local_rho_cancellation (rho q eta V : ℝ) (hρ : rho ≠ 0)
   field_simp [hρ]
   ring
 
+include hρ hc in
 /-- The incoming and outgoing edge damping cancels the ghost normalization. -/
-theorem ghostChoiceWeight_rho_cancel (F : FixedData) (n : ℕ) (rho : ℝ) (hρ : rho ≠ 0)
-    (i : Fin (n + 1)) {M : ℕ} {s t : P.MemoryState M} (c : GhostChoice s t)
-    (hc : ghostChoiceValid c) :
+theorem ghostChoiceWeight_rho_cancel        
+           
+      :
     rho ^ (∑ g : P.BigGroup, (zeroMemoryIndices (s.2.2 g)).card) *
       ghostChoiceWeight F n rho i c *
       rho ^ (∑ g : P.BigGroup, (zeroMemoryIndices (t.2.2 g)).card) =
@@ -114,6 +122,8 @@ theorem ghostChoiceWeight_rho_cancel (F : FixedData) (n : ℕ) (rho : ℝ) (hρ 
     _ = _ := by
       rw [hn, local_rho_cancellation rho (visitQ F.q n i) (eta F n i) (P.V g.val) hρ _ _ _ ht]
       ring
+
+end
 
 
 end Erdos821.S2Core

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowGaussianDyad
 
@@ -10,16 +11,16 @@ noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma slotProduct_subtype {K : ℕ} (p : Fin K→O) (J : Finset (Fin K)) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+lemma slotProduct_subtype {K : ℕ} (p : Fin K→ActualEisensteinCubic.O) (J : Finset (Fin K)) :
     slotProduct p J=∏i : J,p i.val := by rw [Finset.prod_coe_sort];rfl
 
 lemma eventually_low_physical_scales {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i)
-    (hsum : ∑i,ell i≤1/6) (b : ℝ) :
+    (hsum : ∑i,ell i≤1/6)  b  :
     ∀ᶠZ : ℝ in Filter.atTop,1<Z ∧
-      ∀(slots : Fin K→Finset O),(∀i x,x∈slots i→x≠0)→
+      ∀(slots : Fin K→Finset ActualEisensteinCubic.O),(∀i x,x∈slots i→x≠0)→
       (∀i x,x∈slots i→elementNorm x≤b*Z^(ell i))→
       ∀(J : Finset (Fin K))(p : ∀i,slots i),
       1≤Z^(17/48:ℝ)/elementNorm (slotProduct (fun i=>(p i).val) J) ∧
@@ -58,13 +59,13 @@ lemma low_remote_power (Z ell ε : ℝ) (N : ℕ) (hZ : 1≤Z) (hell : ell≤1/6
   rw [hsq,hn,show Z*Z^(2*(1+ell))=Z^(1+2*(1+ell)) by rw [Real.rpow_add hz,Real.rpow_one],←Real.rpow_sub hz]
   exact Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
 
-def lowRemote (Z ell ε T : ℝ) : Prop :=
+def lowRemote (Z ell ε T : ℝ)  :=
   T/Z^(1+ell)≤(Z^(ε/2))⁻¹ ∨ Z^(ε/2)≤T/Z^(1+ell)
 
-theorem low_remote_gaussian_dyads (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
-    {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
-    (b ε : ℝ) (hε : 0<ε) (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
-    (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 B0 B1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+theorem low_remote_gaussian_dyads  S   hS 
+     {K}   ell  (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
+     b ε  (hε : 0<ε)  V   hV 
+     W0 W1  (a0 b0 a1 b1 B0 B1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hB0 : 0≤B0) (hB1 : 0≤B1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hWB0 : ∀x,‖W0 x‖≤B0) (hWB1 : ∀x,‖W1 x‖≤B1) :
@@ -114,8 +115,7 @@ theorem low_remote_gaussian_dyads (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
   simp only [←lowCommonDyad_eq_family] at hh
   refine ⟨?_,?_⟩
   · convert hh.1 using 1
-    funext j
-    split_ifs with h <;> simp_all only [ite_true, ite_false]
+    norm_num
   · have hhFinal := hh.2.trans (show _≤C0*Z^(-1:ℝ) from by
       have hm := compensation_scale_mass_bound η (calibrationForSet S hS) ell hell hsum b Z hZ.1.le T hT hnorm J W hW
       calc
@@ -124,9 +124,7 @@ theorem low_remote_gaussian_dyads (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
         _≤_ := mul_le_mul_of_nonneg_left (low_remote_power Z (lowSelectedLength ell J) ε N hZ.1.le
           (by have hb := lowLength_bounds ell hell hsum J;linarith) hN') (by dsimp [C0];positivity))
     convert hhFinal using 1
-    apply tsum_congr
-    intro j
-    split_ifs with h <;> simp_all only [ite_true, ite_false]
+    norm_num
 
 end SevenEighths.ProbePhysical
 end

@@ -12,17 +12,17 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
 
-def actualCubeLength (Z:ℝ)(j:ℕ):ℝ:=Real.logb Z (normLogScale j)
 
-theorem actualCubeLength_power (Z:ℝ)(hZ:1<Z)(j:ℕ) :
+def actualCubeLength (Z:ℝ)(j:ℕ):=Real.logb Z (normLogScale j)
+
+theorem actualCubeLength_power  Z (hZ:1<Z) j  :
     Z^(actualCubeLength Z j)=normLogScale j :=
   Real.rpow_logb (zero_lt_one.trans hZ) (ne_of_gt hZ) (normLogScale_pos j)
 
 theorem actual_long_bin_geometry
-    (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
-    (b Z N V cutoff eta L:ℝ)(j:ℕ)(hZ:1<Z)(hL:1≤L)(heta:eta≤1)
+     S  D (hbad:fixedBadPrimes⊆S)
+     b Z N V cutoff eta L  j (hZ:1<Z)(hL:1≤L)(heta:eta≤1)
     (hV:0≤V)(hparent:N+V≤L)(hb:b≤Z^eta)(hlog:1≤eta*Real.log Z)
     (hne:(progressingCubes S D (Z^(cutoff-V)) (activeCubeLogBin S D b (Z^N) j)).Nonempty) :
     let ell:=actualCubeLength Z j;

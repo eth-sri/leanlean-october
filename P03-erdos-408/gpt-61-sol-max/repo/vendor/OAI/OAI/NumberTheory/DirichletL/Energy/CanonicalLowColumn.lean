@@ -44,7 +44,7 @@ open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentReta
 open CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
+
 
 open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
 open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
@@ -52,14 +52,14 @@ open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeT
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
 open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open   CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
+open   CenteredMomentEnergyAllocatedZero
 open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+ 
+ 
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
 open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
@@ -103,7 +103,7 @@ open CenteredMomentSecondRetainedRows CenteredMomentLogDyadic
 open CenteredMomentEnergyCanonicalAnnularPower CenteredMomentEnergyCanonicalAmplifiedColumn
 open CenteredMomentFirstCommonReferencePower CenteredMomentEnergyFirstLowHomogeneousPowers
 
-lemma source_mass_cap {ι:Type*}[Fintype ι](s:Input ι)(N:ℕ)(Mslot:ℝ)
+lemma source_mass_cap {ι:Type*}[Fintype ι](s:Input ι) N  Mslot 
     (hc:Fintype.card ι≤N)(hM:∀i,s.M i≤Mslot):mass s≤(max 1 Mslot)^N:=by
   calc
     _≤∏i:ι,max 1 Mslot:=by
@@ -113,7 +113,7 @@ lemma source_mass_cap {ι:Type*}[Fintype ι](s:Input ι)(N:ℕ)(Mslot:ℝ)
     _=(max 1 Mslot)^Fintype.card ι:=by simp
     _≤_:=pow_le_pow_right₀ (le_max_left _ _) hc
 
-lemma inherited_height_split (t height:ℝ)(J:ℕ)(hh:0≤height):
+lemma inherited_height_split (t height:ℝ) J (hh:0≤height):
     (1+|t|+height)^J≤(1+height)^J*(1+|t|)^(2*J):=by
   have hbase:1+|t|+height≤(1+height)*(1+|t|):=by
     nlinarith [abs_nonneg t,mul_nonneg hh (abs_nonneg t)]
@@ -272,8 +272,7 @@ theorem actual_admitted_subsets_low_column
   have hchildren (B:actualAllocations src.pools C)
       (hB:frozenCoefficient B.val C R0 src.ν src.W src.P≠0):
       childNormalizedGaussSource src C R0 seed B τ t CenteredMomentFirstAnnularMajorant.profile H0≤
-        (∑j,coeff j*(volume (child src C R0 B τ t))^(powers εsrc j))*mass (child src C R0 B τ t)^2:=by
-    exact henergy Aorig θ εchild C₀ C₁ hC₀ hC₁ hzero hpos w σ freq height mesh
+        (∑j,coeff j*(volume (child src C R0 B τ t))^(powers εsrc j))*mass (child src C R0 B τ t)^2:=henergy Aorig θ εchild C₀ C₁ hC₀ hC₁ hzero hpos w σ freq height mesh
       hmesh hw hwm hweta hwL hσlo hσhi hheight hfreq src hmatch hhi hMs hloSrc hhiSrc
       hcard hlowerSrc hupperSrc hb1 hb2 hb1max hb2max C D R0 hC hD hCD hR0 hRcap hNC E hmod
       K H0 hK hH0 houter hHcap B t hB seed hseed hseedne hseedcap p hp₁ hp₂ hX₁ hX₂ hY₁ hY₂

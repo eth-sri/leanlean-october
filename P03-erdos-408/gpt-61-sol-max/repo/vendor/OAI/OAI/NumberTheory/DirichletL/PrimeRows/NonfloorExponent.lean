@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorSourceCount
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorSourceCount
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeHighRowFamily
 
 lemma adaptive_mixed_saving (N : ℕ) (a q Δ ε εm slotMesh ν ζ μ v d e eps loss mesh overhead saving : ℝ)
@@ -31,18 +32,14 @@ lemma adaptive_mixed_saving (N : ℕ) (a q Δ ε εm slotMesh ν ζ μ v d e eps
   · have hb := balanced_mixed_saving (2*a-1) (q/(2*a-1)) Δ (159*ε+εm+slotMesh+7*ν)
       ζ μ v d (ProbeCentralExponent.realLoss N v e eps loss mesh+overhead) saving
       hδ.le hd hx hx' hΔ hΔ' hl hcount hζ hv hμ hdv (by linarith)
-    rw [haeq,hqeq] at hb
-    simpa only [adaptiveRowExponent,ite_eq_left hd,add_assoc] using hb
+    grind [adaptiveRowExponent]
   · have hhl : 0≤78*ε+εm := by positivity
     have hh := high_mixed_margin (2*a-1) q Δ (78*ε+εm) ζ μ v d
       (le_of_lt (lt_of_not_ge hd)) (by linarith) hq' hhl (by linarith)
       hζ hv hμ hdv
-    rw [haeq] at hh
-    simp only [adaptiveRowExponent,ite_eq_right hd]
-    simp only [add_assoc] at hh ⊢
-    linarith
+    grind [hh, adaptiveRowExponent]
 
-lemma central_class_exponent_identity (N : ℕ) (a v d R q e eps loss mesh overhead : ℝ) :
+lemma central_class_exponent_identity  N   a v d R q e eps loss mesh overhead  :
     ((25/48)*a-181/300+(105/8)*e)+
       (overhead+d*R+v*(a-1/2+12*e+eps*(N+8)-17/50)+loss-2/75+q/6+mesh/6)=
     mixedSourceExponent a v d R q+ProbeCentralExponent.realLoss N v e eps loss mesh+overhead := by
@@ -51,6 +48,6 @@ lemma central_class_exponent_identity (N : ℕ) (a v d R q e eps loss mesh overh
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

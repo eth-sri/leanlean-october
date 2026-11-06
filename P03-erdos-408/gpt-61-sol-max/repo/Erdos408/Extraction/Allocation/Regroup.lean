@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Coefficients
 
@@ -18,8 +19,8 @@ namespace Erdos408
 open Finset
 
 /-- The proxy sum regrouped by `w = ∏ m_i - 1`. -/
-theorem proxySum_eq_sum (q cw : ℝ) (K : ℕ) (CN : ℝ) {x : ℝ} (γ : ℝ) {κ : ℝ} (j : ℕ)
-    {Φ : ℝ → ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) (hx : 0 < x)
+theorem proxySum_eq_sum  q cw   K   CN   {x}   γ   {κ}   j 
+     {Φ}  {k : ℕ} (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) (hx : 0 < x)
     (hκ : 0 < κ) (hsupp : ∀ y, Φ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) :
     proxySum q cw K CN x γ κ j Φ u v B =
       ∑ w ∈ Icc 1 ⌊κ * x⌋₊,
@@ -58,8 +59,7 @@ theorem proxySum_eq_sum (q cw : ℝ) (K : ℕ) (CN : ℝ) {x : ℝ} (γ : ℝ) {
     ext m
     simp only [mem_filter, Nat.mem_finMulAntidiag, box, Fintype.mem_piFinset]
     constructor
-    · rintro ⟨⟨-, -⟩, h⟩
-      exact ⟨by omega, by omega⟩
+    · grind
     · rintro ⟨h, -⟩
       have hm : m ∈ Nat.finMulAntidiag j (w + 1) := Nat.mem_finMulAntidiag.2 ⟨h, by omega⟩
       refine ⟨⟨fun i => mem_Icc.2 ⟨Nat.pos_of_ne_zero (Nat.ne_zero_of_mem_finMulAntidiag hm i),

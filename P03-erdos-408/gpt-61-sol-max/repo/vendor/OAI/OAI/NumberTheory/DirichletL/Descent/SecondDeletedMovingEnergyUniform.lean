@@ -13,9 +13,9 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
-noncomputable section
+section
 local notation "Eis" => ActualEisensteinCubic.O
-local instance inverseSecondDeletedMovingPhysicalUnitsUniform : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+
 open InverseSecondProfileUniform InverseAmbientProfileTower
 theorem actual_second_deleted_moving_physical_recursive_uniform_types
     (U₀ : Fin 6 → 𝓢(ℝ,ℂ)) (g₁ g₂ Φ : 𝓢(ℝ,ℂ))
@@ -23,7 +23,7 @@ theorem actual_second_deleted_moving_physical_recursive_uniform_types
     (hM : ∀ i,0 ≤ M₀ i) (hB₀ : ∀ i,0 ≤ B₀ i)
     (hU : ∀ i,Function.support (U₀ i) ⊆ Set.Icc (-M₀ i) (M₀ i))
     (hg₁ : Function.support g₁ ⊆ Set.Icc (-m₁) m₁)
-    (hg₂ : Function.support g₂ ⊆ Set.Icc (-m₂) m₂) (Aker J : ℕ) :
+    (hg₂ : Function.support g₂ ⊆ Set.Icc (-m₂) m₂)  Aker J  :
     ∃ C : ℝ,0 ≤ C ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → Eis) (hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))

@@ -10,7 +10,7 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
@@ -60,8 +60,8 @@ private theorem original_controlled_source_sum
       ControlledStratumArithmetic (fun i : A => (Pall).generator i.val) N a c mode)
     (hCC : ∀ B T, CC (markedActiveSet E B T)=
       originalChosenControlled D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask S B T (C B T))
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (W : ℝ→ℂ) (X : ℝ) :
+     s   hc 
+     W   X  :
     (∑ A : Finset (FreePrimeIndex D.movingIdeal Q₀⊕σ),
       localInactiveWeight (Pall).generator (Pall).generator_ne_zero
         (mixedPrimeFunction (Pall).generator (Pall).generator_good Jall markedSumSlots) A *
@@ -142,7 +142,7 @@ theorem original_selected_reflected_expansion
   congr 1
   exact original_controlled_source_sum D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask
     S hSodd (C h) (CC h) (hCC h) (G h).shape (G h).denominator_ne_zero W X
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

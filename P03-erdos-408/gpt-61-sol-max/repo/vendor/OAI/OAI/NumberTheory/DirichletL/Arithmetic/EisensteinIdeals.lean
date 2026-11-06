@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 
@@ -8,10 +9,10 @@ namespace OAI
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 
 noncomputable section
@@ -27,23 +28,16 @@ instance : IsCyclotomicExtension {3} ℚ K :=
 instance : IsPrincipalIdealRing O :=
   IsCyclotomicExtension.Rat.three_pid K
 
-def omega : O :=
+def omega  :=
   (IsCyclotomicExtension.zeta_spec 3 ℚ K).toInteger
 
 def lambda : O := omega - 1
 
-def lambdaIdeal : Ideal O := Ideal.span {lambda}
+def lambdaIdeal  := Ideal.span {lambda}
 
-theorem lambda_prime : Prime lambda := by
-  let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
-  exact (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
+theorem lambda_prime : Prime lambda := IsPrimitiveRoot.zeta_sub_one_prime' (IsCyclotomicExtension.zeta_spec 3 ℚ OAI.ActualEisensteinSieve.K)
 
-theorem lambda_maximal : lambdaIdeal.IsMaximal := by
-  have hp : lambdaIdeal.IsPrime :=
-    Ideal.isPrime_span_singleton_of_prime lambda_prime
-  have hne : lambdaIdeal ≠ ⊥ := by
-    exact Ideal.span_singleton_eq_bot.not.mpr lambda_prime.ne_zero
-  exact hp.isMaximal hne
+theorem lambda_maximal : lambdaIdeal.IsMaximal := Ideal.IsPrime.isMaximal (Ideal.isPrime_span_singleton_of_prime OAI.ActualEisensteinSieve.lambda_prime) ((Iff.not Ideal.span_singleton_eq_bot).mpr (Prime.ne_zero OAI.ActualEisensteinSieve.lambda_prime))
 
 theorem lambda_card : Nat.card (O ⧸ lambdaIdeal) = 3 := by
   let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩

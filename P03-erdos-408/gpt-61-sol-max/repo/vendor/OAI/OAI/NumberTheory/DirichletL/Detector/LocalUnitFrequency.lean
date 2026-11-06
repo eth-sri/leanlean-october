@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Moments.Unequal
 
 public import OAI.NumberTheory.DirichletL.Detector.SixthFrequency
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalLocalEuler
@@ -7,30 +10,27 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalLocalEuler
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
 open CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport
 open CenteredMomentSupportedCorrelation ConcretePrimeRowBridge ProbePrimePower ProbeLocal ProbeEuler
-local notation "O" => ActualEisensteinCubic.O
+
 
 lemma finite_fourier_unit_scale {R : Type*} [CommRing R] [Fintype R]
-    (F : R → ℂ) (ψ : AddChar R ℂ) (u : Rˣ) (c : ℂ) (hc : c ≠ 0)
-    (hF : ∀ x, F ((u : R) * x) = c * F x) (H : R) :
+    (F : R → ℂ) (ψ : AddChar R ℂ) (u : Rˣ)  c  (hc : c ≠ 0)
+    (hF : ∀ x, F ((u : R) * x) = c * F x)  H  :
     (∑ x, F x * ψ (((u : R) * H) * x)) = c⁻¹ * ∑ x, F x * ψ (H*x) := by
   have he : (∑ x, F x * ψ (H*x)) = c * ∑ x, F x * ψ (((u : R)*H)*x) := by
     rw [← Equiv.sum_comp u.mulLeft (fun x => F x * ψ (H*x))]
     simp only [Units.mulLeft_apply, hF, Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro x hx
-    rw [show H*((u : R)*x) = ((u : R)*H)*x by ring]
     ring
   rw [he, ← mul_assoc, inv_mul_cancel₀ hc, one_mul]
 
-theorem barePhysicalFourier_unit_frequency (A s : O)
-    (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (b H : O) (hcop : IsCoprime b (A*s)) :
+theorem barePhysicalFourier_unit_frequency  A s 
+     hA   hs 
+     b H  (hcop : IsCoprime b (A*s)) :
     barePhysicalFourier A s (supportedElement_ne_zero A hA)
         (supportedElement_ne_zero s hs) (b*H) =
       ((idealRowHom b (Ideal.span {A}))⁻¹ * idealRowHom b (Ideal.span {s})) *
@@ -45,8 +45,7 @@ theorem barePhysicalFourier_unit_frequency (A s : O)
   have hF (x : Residue (A*s)) :
       movingQuotient A s (supportedElement_ne_zero s hs) ((u : Residue (A*s))*x) =
         (idealRowHom b (Ideal.span {A}) * (idealRowHom b (Ideal.span {s}))⁻¹) *
-          movingQuotient A s (supportedElement_ne_zero s hs) x := by
-    exact movingQuotient_unit_scale A s hs b hcop.of_mul_right_right x
+          movingQuotient A s (supportedElement_ne_zero s hs) x := movingQuotient_unit_scale A s hs b hcop.of_mul_right_right x
   have he := finite_fourier_unit_scale (movingQuotient A s (supportedElement_ne_zero s hs))
     (quotientTrace (A*s) hAs) u _ (mul_ne_zero hcA (inv_ne_zero hcs)) hF
     (Ideal.Quotient.mk _ H)
@@ -58,9 +57,9 @@ theorem barePhysicalFourier_unit_frequency (A s : O)
         quotientTrace (A*s) hAs (Ideal.Quotient.mk _ H*x)
   simpa only [u, residueUnit_coe, map_mul, mul_inv_rev, inv_inv, mul_comm] using he
 
-theorem bareCongruenceCoefficient_unit_frequency (A s : O)
-    (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (b H : O) (hcop : IsCoprime b (A*s)) :
+theorem bareCongruenceCoefficient_unit_frequency  A s 
+     hA  (hs : Supported (Ideal.span {s}))
+     b H  (hcop : IsCoprime b (A*s)) :
     bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) (b*H) =
       ((idealRowHom b (Ideal.span {A}))⁻¹ * idealRowHom b (Ideal.span {s})) *
         bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) H := by
@@ -73,18 +72,16 @@ theorem bareCongruenceCoefficient_unit_frequency (A s : O)
   rw [he]
   ring
 
-lemma supported_element_power (p : O) (hs : Supported (Ideal.span {p})) (n : ℕ) :
-    Supported (Ideal.span {p^n}) := by
-  rw [← Ideal.span_singleton_pow]
-  exact supported_pow hs n
+lemma supported_element_power  p  (hs : Supported (Ideal.span {p}))  n  :
+    Supported (Ideal.span {p^n}) := by solve_by_elim [_root_.OAI.SevenEighths.CenteredMomentUnequal.supported_power]
 
-lemma idealRowHom_prime_power_value (p b : O) [(Ideal.span {p} : Ideal O).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (n : ℕ) :
+lemma idealRowHom_prime_power_value  p b  [(Ideal.span {p} : Ideal ActualEisensteinCubic.O).IsMaximal]
+    (hg : goodLambda ∉ Ideal.span {p})  n  :
     idealRowHom b (Ideal.span {p^n}) =
       (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b))^n := by
   rw [← Ideal.span_singleton_pow, map_pow, idealRowHom_prime _ _ hg]
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicPriorityBudget
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicOriginalBranches
@@ -11,7 +12,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -117,13 +118,10 @@ theorem original_dyadic_full_energy
   have hall:=mul_le_mul_of_nonneg_left he' (Real.rpow_nonneg hz.le (-r-2*ell-V))
   simp only [mul_add] at hall
   apply hall.trans
-  have hr':Z^(-r-2*ell-V)*((Z^M)*‖originalRetainedFamily p hp hcop hg pool Q labels β Ψ m mark W rowMajorant (Z^M) Y cutoff (fun _=>1)‖)≤
-      C*Γ^2*Benergy*(1+‖theta‖)^(2*InverseClippingProfiles.momentOrder J)*Z^((2*Lcap+15*eta+tau)*eps+eps):=by
-    simpa only [mul_assoc] using hret'
-  exact add_le_add (add_le_add hz' hr') htail
+  linarith
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

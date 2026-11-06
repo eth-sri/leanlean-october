@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.WholeDivisorShell
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Filter
 
@@ -17,21 +17,21 @@ open CenteredMomentEligibleEnergy CenteredMomentActiveDivisorShell
 open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
 open CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalSourceShell
 open CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
 lemma weight_nonneg {α κ:Type u} [Fintype α] [Fintype κ] [DecidableEq α] [DecidableEq κ]
-    (s:Source α)(v:Source κ)(D:Ideal O)
-    (a:CenteredMomentDivisorAllocation.Allocation D (Finset.univ:Finset (α⊕Fin 2)))
-    (b:CenteredMomentDivisorAllocation.Allocation D (Finset.univ:Finset (κ⊕Fin 2)))
-    (Z r:ℝ)(hZ:0≤Z):0≤exceptionalWeight s v D a b Z r:=Real.rpow_nonneg hZ _
+    (s:Source α)(v:Source κ) D 
+     a 
+     b 
+     Z r (hZ:0≤Z):0≤exceptionalWeight s v D a b Z r:=Real.rpow_nonneg hZ _
 
  theorem whole_weight_bound (lo hi:ι→ℝ)(B δ:ℝ)(hB:0≤B)(hδ:0<δ):
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(I L:Finset ι)(s:Source I)(v:Source L),
       (∀i:L,v.lo i=lo i) → (∀i:L,v.hi i=hi i) →
-      ∀Ds:Finset (Ideal O),(∀D∈Ds,(moebius D:ℂ)≠0 → (D.absNorm:ℝ)≤Z^B) →
+      ∀Ds:Finset (Ideal HeckeFamily.O),(∀D∈Ds,(moebius D:ℂ)≠0 → (D.absNorm:ℝ)≤Z^B) →
       ∀r:ℝ,(∑D∈Ds,‖(moebius D:ℂ)‖*
         ∑a∈s.active D,∑b∈v.active D,exceptionalWeight s v D a b Z r)≤C*Z^(δ-r):=by
   obtain ⟨Cs,hCs,hshell⟩:=exceptional_shell_subpower lo hi B (δ/2) hB (by linarith)
@@ -64,6 +64,6 @@ lemma weight_nonneg {α κ:Type u} [Fintype α] [Fintype κ] [DecidableEq α] [D
 
 end SevenEighths.CenteredMomentExceptionalWholeSource
 
-end
+
 
 end OAI

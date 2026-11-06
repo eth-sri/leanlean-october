@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.Theta
 
@@ -12,12 +13,15 @@ open scoped Topology BigOperators
 namespace SevenEighths.PeriodicThetaRegularity
 open ThetaProduct EisensteinTheta HeckeTheta
 
-theorem rectangularPair_f_continuous (a b : UnitAddCircle) (u v : ℝ)
-    (hu : 0 < u) (hv : 0 < v) :
+theorem rectangularPair_f_continuous  a b   u v 
+     hu   hv  :
     ContinuousOn (rectangularPair a b u v hu hv).f (Ioi 0) :=
   (scaledEvenPair_f_continuous a u hu).mul (scaledEvenPair_f_continuous b v hv)
 
-theorem pair_f_continuous {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) :
+section
+variable {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
+
+theorem pair_f_continuous       :
     ContinuousOn (pair w).f (Ioi 0) := by
   have h : ContinuousOn (fun t => ∑ p : (Fin N × Fin N) × Fin 2,
       w p.1 * (parityPair p.1.1 p.1.2 N (Nat.cast_pos.mpr (NeZero.pos N)) p.2).f t)
@@ -31,25 +35,27 @@ theorem pair_f_continuous {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) :
   intro t _
   simp only [pair, finitePair, Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
 
-theorem theta_continuous {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) :
+theorem theta_continuous       :
     ContinuousOn (theta w) (Ioi 0) :=
   (pair_f_continuous w).congr (fun _t ht => theta_eq_pair w ht)
 
-theorem theta_rapid {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) (r : ℝ) :
+theorem theta_rapid       (r : ℝ) :
     (fun t => theta w t - w (0,0)) =O[atTop] (fun t : ℝ => t ^ r) := by
   apply ((pair w).hf_top r).congr' _ Filter.EventuallyEq.rfl
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with t ht
   rw [theta_eq_pair w ht, pair_f₀]
 
-theorem scaledTheta_continuous {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
-    (A : ℝ) (hA : 0 < A) :
+theorem scaledTheta_continuous      
+     A  (hA : 0 < A) :
     ContinuousOn (fun t => theta w (A * t)) (Ioi 0) :=
   (theta_continuous w).comp (by fun_prop) (fun t ht => mul_pos hA ht)
 
-theorem scaledTheta_rapid {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
-    (A : ℝ) (hA : 0 < A) (r : ℝ) :
+theorem scaledTheta_rapid      
+     A  (hA : 0 < A) (r : ℝ) :
     (fun t => theta w (A * t) - w (0,0)) =O[atTop] (fun t : ℝ => t ^ r) :=
   rapid_rescale (theta w) (w (0,0)) (theta_rapid w) hA r
+
+end
 
 def primitivePair {N M : ℕ} [NeZero N] [NeZero M]
     (w : Fin N × Fin N → ℂ) (v : Fin M × Fin M → ℂ)
@@ -67,7 +73,7 @@ def primitivePair {N M : ℕ} [NeZero N] [NeZero M]
   hk := zero_lt_one
   hε := hε
   h_feq t ht := by
-    simpa only [mul_one_div, Real.rpow_one, smul_eq_mul] using hfeq t ht
+    aesop
   hf_top := scaledTheta_rapid w A hA
   hg_top := scaledTheta_rapid v A hA
 

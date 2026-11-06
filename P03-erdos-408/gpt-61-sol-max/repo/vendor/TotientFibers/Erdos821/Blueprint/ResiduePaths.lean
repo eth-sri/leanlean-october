@@ -38,20 +38,20 @@ namespace ResiduePath
 
 variable {A : Model F P J m} {n : ℕ} (Q : ResiduePath A n)
 
-def source (i : Fin n) : P.Labels (J + F.ell) := P.act (Q.sourcePerm i) (Q.labels i.castSucc)
-def target (i : Fin n) : P.Labels (J + F.ell) := P.act (Q.targetPerm i) (Q.labels i.succ)
-def step (i : Fin n) : ℤ := edgeDelta A (A.pattern (Q.pattern i)) (edgeForward i) (Q.source i) (Q.free i)
-def offset (i : Fin (n + 1)) : ℤ := ∑ e : Fin n, if e.val < i.val then Q.step e else 0
+def source (i : Fin n)  := P.act (Q.sourcePerm i) (Q.labels i.castSucc)
+def target (i : Fin n)  := P.act (Q.targetPerm i) (Q.labels i.succ)
+def step (i : Fin n)  := edgeDelta A (A.pattern (Q.pattern i)) (edgeForward i) (Q.source i) (Q.free i)
+def offset (i : Fin (n + 1))  := ∑ e : Fin n, if e.val < i.val then Q.step e else 0
 
-def active (i : Fin (n + 1)) : Finset ℕ :=
+def active (i : Fin (n + 1))  :=
   Finset.univ.biUnion (fun g : P.Group => Finset.univ.image (fun h => (Q.labels i g h).val))
 
-def Valid : Prop :=
+def Valid  :=
   (∀ i g, Function.Injective (Q.labels i g)) ∧
   (∀ i, (A.pattern (Q.pattern i)).compatible (Q.source i) (Q.target i) ∧
     (A.pattern (Q.pattern i)).ban (Q.source i) (Q.target i) (Q.free i))
 
-def edgeCoefficient (theta : ℝ) (i : Fin n) : ℂ :=
+def edgeCoefficient (theta : ℝ) (i : Fin n)  :=
   let ν := A.pattern (Q.pattern i)
   let D := ν.D (Q.source i) (Q.free i)
   let uBig : P.BigAux J := fun g => Q.free i g.val
@@ -62,14 +62,14 @@ def edgeCoefficient (theta : ℝ) (i : Fin n) : ℂ :=
   (edgeSymmetryFactor P (J + F.ell) * ν.auxMass (Q.free i) * ν.physicalTargetMass : ℝ) *
     (if edgeForward i then z else zr) * phase (theta * (Q.step i : ℝ))
 
-def Weight (theta : ℝ) : ℂ :=
+def Weight (theta : ℝ)  :=
   (P.markMass (J + F.ell) : ℂ) * (∏ i, Q.edgeCoefficient theta i) *
     (P.residueExpectation n (visitQ F.q n) Q.offset Q.active : ℂ)
 
 end ResiduePath
 
 /-- All orientations, permutations, patterns and free draws remain inside this sum. -/
-def residueExpression (A : Model F P J m) (n : ℕ) (theta : ℝ) : ℂ :=
+def residueExpression (A : Model F P J m) (n : ℕ) (theta : ℝ)  :=
   ∑ Q : ResiduePath A n, if Q.Valid then Q.Weight theta else 0
 
 end Erdos821.Blueprint.Graph

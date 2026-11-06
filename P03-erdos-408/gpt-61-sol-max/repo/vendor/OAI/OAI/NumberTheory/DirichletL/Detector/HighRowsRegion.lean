@@ -7,16 +7,20 @@ public import OAI.NumberTheory.DirichletL.Detector.HighEulerRational
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 open ProbeEuler ProbeRow ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
 
-lemma row_initial_geometric (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p})≠2) (b : O) (hb : IsCoprime b p)
-    (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+section
+variable (η : HeckeFamily.Character) (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+include η p hp hg hc
+
+lemma row_initial_geometric      
+       
+       b  (hb : IsCoprime b p)
+     x w z  (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     let Q : ℝ := Ideal.absNorm (Ideal.span {p})
     let rho := actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b)
     ‖coordV Q z‖<1 ∧ ‖coordR Q ((actualACube η p)^2) x z‖<1 ∧
@@ -40,11 +44,11 @@ lemma row_initial_geometric (η : HeckeFamily.Character) (p : O) (hp : Prime p)
   · apply (coordD_norm_le _ hQ0 _ _ x (targetMonoid_norm_le_one η p) hn).trans_lt
     exact Real.rpow_lt_one_of_one_lt_of_neg hQ1 (by linarith)
 
-theorem idealRowHighLocalFactor_unramified (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (b : O) (hb : IsCoprime b p)
-    (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+theorem idealRowHighLocalFactor_unramified      
+       
+      (hprimary : goodLambda^2∣p-1)
+    (hs : Supported (Ideal.span {p}))  b  (hb : IsCoprime b p)
+     x w z  (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     let Q : ℝ := Ideal.absNorm (Ideal.span {p})
     let rho := actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b)
     idealRowHighLocalFactor η b (Ideal.span {p}) x w z=
@@ -60,7 +64,9 @@ theorem idealRowHighLocalFactor_unramified (η : HeckeFamily.Character) (p : O) 
       _ x w z (actualSextic_unit_six p b hg hc hb) hd.1 hd.2.1 hd.2.2.1
       (one_sub_ne_zero_of_norm_lt_one _ hd.2.2.2)
 
-end SevenEighths.ProbePhysical
 end
+
+end SevenEighths.ProbePhysical
+
 
 end OAI

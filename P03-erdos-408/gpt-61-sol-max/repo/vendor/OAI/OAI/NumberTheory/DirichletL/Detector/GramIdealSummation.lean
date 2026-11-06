@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Foundation
 
@@ -11,16 +12,20 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbeGramCommon
 open ActualEisensteinCubic CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "SupportedIdeal" => {I : Ideal O // Supported I}
+
+local notation "SupportedIdeal" => {I : Ideal ActualEisensteinCubic.O // Supported I}
 
 def gramIdealNorm (I : SupportedIdeal) : ℝ := Ideal.absNorm I.val
 
-lemma gramIdealNorm_pos (I : SupportedIdeal) : 0 < gramIdealNorm I := by
+section
+variable (r : ℝ) (hr : r < -1) (t : ℝ) (ht : 0 < t) (δ Λ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) (hΛ : 0 < Λ) (A : ℕ)
+
+lemma gramIdealNorm_pos  I  : 0 < gramIdealNorm I := by
   unfold gramIdealNorm
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr I.property.1)
 
-theorem supportedIdeal_rpow_summable (r : ℝ) (hr : r < -1) :
+include hr in
+theorem supportedIdeal_rpow_summable     :
     Summable (fun I : SupportedIdeal => gramIdealNorm I ^ r) := by
   have hs := CubicEisenstein.fullIdealWeight_summable_norm ((-r:ℝ):ℂ)
     (by simp only [Complex.ofReal_re]; linarith)
@@ -29,11 +34,10 @@ theorem supportedIdeal_rpow_summable (r : ℝ) (hr : r < -1) :
   apply ht.congr
   intro I
   rw [Function.comp_apply,CubicEisenstein.fullIdealWeight,ite_eq_right I.property.1]
-  have he : (Ideal.absNorm I.val:ℂ) = ((gramIdealNorm I:ℝ):ℂ) := by simp [gramIdealNorm]
-  rw [he,Complex.norm_cpow_eq_rpow_re_of_pos (gramIdealNorm_pos I)]
-  simp only [Complex.neg_re,Complex.ofReal_re,neg_neg]
+  simp_all [Ideal.absNorm, gramIdealNorm, gramIdealNorm_pos]
 
-theorem supportedIdeal_rpow_finite_bound (r : ℝ) (hr : r < -1) :
+include hr in
+theorem supportedIdeal_rpow_finite_bound     :
     ∃ K : ℝ, 0 < K ∧ ∀ F : Finset SupportedIdeal,
       (∑ I ∈ F, gramIdealNorm I ^ r) ≤ K := by
   have hs := supportedIdeal_rpow_summable r hr
@@ -45,7 +49,8 @@ theorem supportedIdeal_rpow_finite_bound (r : ℝ) (hr : r < -1) :
   exact (hs.sum_le_tsum F (fun I _ => Real.rpow_nonneg (gramIdealNorm_pos I).le _)).trans
     (by dsimp [K]; linarith)
 
-lemma ideal_sum_min_power_bound (t : ℝ) (ht : 0 < t) (A : ℕ) (θ : ℝ)
+include ht in
+lemma ideal_sum_min_power_bound       (θ : ℝ)
     (hθ : 0 ≤ θ) (hA : θ ≤ A) : min 1 (t^A) ≤ t^θ := by
   by_cases h : t ≤ 1
   · apply (min_le_right _ _).trans
@@ -53,8 +58,9 @@ lemma ideal_sum_min_power_bound (t : ℝ) (ht : 0 < t) (A : ℕ) (θ : ℝ)
     exact Real.rpow_le_rpow_of_exponent_ge ht h hA
   · exact (min_le_left _ _).trans (Real.one_le_rpow (le_of_not_ge h) hθ)
 
-lemma gram_ideal_term_bound (δ Λ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1)
-    (hΛ : 0 < Λ) (A : ℕ) (hA : 1 ≤ A) (I J : SupportedIdeal) :
+include hδ hδ1 hΛ in
+lemma gram_ideal_term_bound      
+        (hA : 1 ≤ A)  I J  :
     gramIdealNorm I ^ (-2:ℝ) * gramIdealNorm J ^ (-2:ℝ) *
       min 1 ((gramIdealNorm I*gramIdealNorm J/Λ)^A) ≤
       Λ^(-1+δ) * (gramIdealNorm I^(-1-δ) * gramIdealNorm J^(-1-δ)) := by
@@ -76,13 +82,10 @@ lemma gram_ideal_term_bound (δ Λ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1)
     rw [←Real.rpow_add hj]
     congr 1
     ring
-  rw [show -(1-δ) = -1+δ by ring]
-  calc
-    _ = Λ^(-1+δ)*((gramIdealNorm I^(-2:ℝ)*gramIdealNorm I^(1-δ))*
-        (gramIdealNorm J^(-2:ℝ)*gramIdealNorm J^(1-δ))) := by ring
-    _ = _ := by rw [hi',hj']
+  grind
 
-theorem gram_supported_double_sum (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
+include hδ hδ1 in
+theorem gram_supported_double_sum       :
     ∃ K : ℝ, 0 < K ∧ ∀ (A : ℕ), 1 ≤ A → ∀ (Λ : ℝ), 0 < Λ →
       ∀ (F G : Finset SupportedIdeal),
       (∑ I ∈ F, ∑ J ∈ G, gramIdealNorm I^(-2:ℝ) * gramIdealNorm J^(-2:ℝ) *
@@ -108,7 +111,9 @@ theorem gram_supported_double_sum (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
       simpa only [pow_two] using mul_le_mul hF hG hGn hC.le
     _ = _ := by ring
 
-theorem gram_supported_exceptional_sum (ε : ℝ) (_hε : 0 ≤ ε) (hε1 : ε < 1/6) :
+end
+
+theorem gram_supported_exceptional_sum  ε  (_hε : 0 ≤ ε) (hε1 : ε < 1/6) :
     ∃ K : ℝ, 0 < K ∧ ∀ (F G : Finset SupportedIdeal),
       (∑ I ∈ F, ∑ J ∈ G,
         gramIdealNorm I^(-7/6+ε:ℝ)*gramIdealNorm J^(-2:ℝ)) ≤ K := by

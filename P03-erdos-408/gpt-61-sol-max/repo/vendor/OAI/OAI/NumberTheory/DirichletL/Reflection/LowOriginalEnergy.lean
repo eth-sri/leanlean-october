@@ -15,18 +15,18 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
-theorem low_original_completed_energy (Q : Ideal Eis) (hQ : Q≠0)
-    (F : Ideal Eis) (hF : Squarefree F) (m : Eis) (hm : m≠0)
+theorem low_original_completed_energy  Q  (hQ : Q≠0)
+     F  (hF : Squarefree F)  m  (hm : m≠0)
     (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:Eis)∣m)
     (hperiod : Q*Ideal.span {(72:Eis)}∣Ideal.span {m})
     (hbad : ∀ P∈fixedBadPrimes,P∣Ideal.span {m}*F)
     (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (Ck η : ℝ) (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) (rmax : ℕ) :
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     Ck η  (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1)  rmax  :
     ∃ (degree : ℕ) (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
     ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (Z d ell0 shift : ℝ), Z₀≤Z → 0≤d → d≤1/6 → 0≤ell0 → ell0≤1/6-d+η → |shift|≤η →
     ∀ (parents : Finset (Ideal Eis)),(∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Ck*Z^(5/6-2*d)) →
@@ -71,7 +71,7 @@ theorem low_original_completed_energy (Q : Ideal Eis) (hQ : Q≠0)
   exact congrArg (fun z : ℂ => ‖z‖^2) (original_completed_actual_puncture_lists lists hprime Ψ m
     (ConcretePrimeRowBridge.idealGenerator F) (u.val*ConcretePrimeRowBridge.idealGenerator I)
     (CompletedHeight.normTwistedSource W θ) (Z^(1+ell0+shift)) w)
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

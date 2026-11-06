@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.TwoPoint.ShortIntervals.MRTMeanSquareKernel
 public import OAI.NumberTheory.TwoPoint.ShortIntervals.MRTMeanSquareRows
@@ -15,8 +16,8 @@ namespace TwoPointCorrelations
 open Complex MeasureTheory Finset Set
 open scoped BigOperators ComplexConjugate
 
-noncomputable def mrtExponentialPolynomial {ι : Type*} (S : Finset ι)
-    (a : ι → ℂ) (freq : ι → ℝ) (t : ℝ) : ℂ :=
+noncomputable def mrtExponentialPolynomial {ι } (S : Finset ι)
+    (a : ι → ℂ) (freq : ι → ℝ) (t : ℝ)  :=
   ∑ i ∈ S, a i * Complex.exp ((freq i * t : ℝ) * Complex.I)
 
 lemma mrt_phase_pair (x y : ℝ) :
@@ -28,8 +29,16 @@ lemma mrt_phase_pair (x y : ℝ) :
   simp only [map_mul, conj_ofReal, conj_I, ofReal_sub]
   ring
 
-lemma mrt_weighted_square_expansion {ι : Type*} (S : Finset ι)
-    (a : ι → ℂ) (freq : ι → ℝ) (T t : ℝ) :
+section
+variable {ι : Type*} (S : Finset ι)
+include ι S
+
+section
+variable (a : ι → ℂ) (freq : ι → ℝ)
+include a freq
+
+lemma mrt_weighted_square_expansion    
+         T t  :
     ((Real.exp (-|t| / T) * ‖mrtExponentialPolynomial S a freq t‖ ^ 2 : ℝ) : ℂ) =
       ∑ i ∈ S, ∑ j ∈ S,
         (a i * conj (a j)) * mrtMeanSquareKernel T (freq i - freq j) t := by
@@ -42,14 +51,14 @@ lemma mrt_weighted_square_expansion {ι : Type*} (S : Finset ι)
   intro j _
   rw [map_mul]
   have hp := mrt_phase_pair (freq i * t) (freq j * t)
-  have he : (((freq i - freq j) * t : ℝ) : ℂ) * Complex.I =
-      ((freq i * t - freq j * t : ℝ) : ℂ) * Complex.I := by congr 1; push_cast; ring
-  dsimp only [mrtMeanSquareKernel]
-  rw [he, ← hp]
-  ring
+  grind [Complex.I, mrtMeanSquareKernel]
 
-lemma mrt_weighted_square_integrable {ι : Type*} (S : Finset ι)
-    (a : ι → ℂ) (freq : ι → ℝ) {T : ℝ} (hT : 0 < T) :
+section
+variable {T : ℝ} (hT : 0 < T)
+include T hT
+
+lemma mrt_weighted_square_integrable    
+            :
     Integrable (fun t : ℝ => Real.exp (-|t| / T) *
       ‖mrtExponentialPolynomial S a freq t‖ ^ 2) := by
   have hi : Integrable (fun t : ℝ => ∑ i ∈ S, ∑ j ∈ S,
@@ -63,15 +72,14 @@ lemma mrt_weighted_square_integrable {ι : Type*} (S : Finset ι)
       (a i * conj (a j)) * mrtMeanSquareKernel T (freq i - freq j) t) =
       fun t => ((Real.exp (-|t| / T) *
         ‖mrtExponentialPolynomial S a freq t‖ ^ 2 : ℝ) : ℂ) := by
-    funext t
-    exact (mrt_weighted_square_expansion S a freq T t).symm
+    grind [mrt_weighted_square_expansion]
   rw [he] at hi
   simpa only [RCLike.re_to_complex, ofReal_re] using hi.re
 
 /-- Exact finite mean-square formula.  This identity is valid for arbitrary
 real frequencies; separation is needed only for the subsequent bound. -/
-theorem mrt_weighted_mean_square {ι : Type*} (S : Finset ι)
-    (a : ι → ℂ) (freq : ι → ℝ) {T : ℝ} (hT : 0 < T) :
+theorem mrt_weighted_mean_square    
+            :
     (∫ t : ℝ, Real.exp (-|t| / T) * ‖mrtExponentialPolynomial S a freq t‖ ^ 2) =
       ∑ i ∈ S, ∑ j ∈ S, (a i * conj (a j)).re *
         (2 * T / (1 + T ^ 2 * (freq i - freq j) ^ 2)) := by
@@ -98,8 +106,8 @@ theorem mrt_weighted_mean_square {ι : Type*} (S : Finset ι)
   simpa only [ofReal_re, Complex.re_sum, mul_re, ofReal_im, mul_zero, sub_zero] using hr
 
 /-- The exact integral is bounded by the positive kernel quadratic form. -/
-lemma mrt_weighted_mean_square_le {ι : Type*} (S : Finset ι)
-    (a : ι → ℂ) (freq : ι → ℝ) {T : ℝ} (hT : 0 < T) :
+lemma mrt_weighted_mean_square_le    
+            :
     (∫ t : ℝ, Real.exp (-|t| / T) * ‖mrtExponentialPolynomial S a freq t‖ ^ 2) ≤
       ∑ i ∈ S, ∑ j ∈ S, ‖a i‖ * ‖a j‖ *
         (2 * T / (1 + T ^ 2 * (freq i - freq j) ^ 2)) := by
@@ -111,10 +119,14 @@ lemma mrt_weighted_mean_square_le {ι : Type*} (S : Finset ι)
   apply mul_le_mul_of_nonneg_right _ (by positivity)
   simpa only [norm_mul, norm_conj] using Complex.re_le_norm (a i * conj (a j))
 
+end
+
+end
+
 /-- A symmetric positive kernel is bounded on the squared norm by its
 largest row sum.  The numerical row estimate is proved separately. -/
-lemma mrt_symmetric_row_bound {ι : Type*} (S : Finset ι) (K : ι → ι → ℝ)
-    (v : ι → ℝ) (C : ℝ) (hK : ∀ i ∈ S, ∀ j ∈ S, 0 ≤ K i j)
+lemma mrt_symmetric_row_bound     (K : ι → ι → ℝ)
+    (v : ι → ℝ)  C  (hK : ∀ i ∈ S, ∀ j ∈ S, 0 ≤ K i j)
     (hsymm : ∀ i ∈ S, ∀ j ∈ S, K i j = K j i)
     (hrow : ∀ i ∈ S, ∑ j ∈ S, K i j ≤ C) :
     (∑ i ∈ S, ∑ j ∈ S, v i * v j * K i j) ≤ C * ∑ i ∈ S, (v i) ^ 2 := by
@@ -139,37 +151,37 @@ lemma mrt_symmetric_row_bound {ι : Type*} (S : Finset ι) (K : ι → ι → �
       nlinarith [sq_nonneg (v i - v j)]
     _ = _ := he
     _ ≤ ∑ i ∈ S, (v i) ^ 2 * C := by
-      apply sum_le_sum
-      intro i hi
-      exact mul_le_mul_of_nonneg_left (hrow i hi) (sq_nonneg _)
+      bound
     _ = _ := by rw [← sum_mul, mul_comm]
 
-theorem mrt_weighted_mean_square_of_rows {ι : Type*} (S : Finset ι)
-    (a : ι → ℂ) (freq : ι → ℝ) {T C : ℝ} (hT : 0 < T)
+section
+variable (a : ι → ℂ) (freq : ι → ℝ)
+include a freq
+
+theorem mrt_weighted_mean_square_of_rows    
+         {T C}  (hT : 0 < T)
     (hrow : ∀ i ∈ S, (∑ j ∈ S, 2 * T / (1 + T ^ 2 * (freq i - freq j) ^ 2)) ≤ C) :
     (∫ t : ℝ, Real.exp (-|t| / T) * ‖mrtExponentialPolynomial S a freq t‖ ^ 2) ≤
       C * ∑ i ∈ S, ‖a i‖ ^ 2 := by
   apply (mrt_weighted_mean_square_le S a freq hT).trans
   apply mrt_symmetric_row_bound S _ (fun i => ‖a i‖) C
     (fun _ _ _ _ => by positivity) _ hrow
-  intro i _ j _
-  rw [show (freq i - freq j) ^ 2 = (freq j - freq i) ^ 2 by ring]
+  grind
 
-lemma mrtExponentialPolynomial_continuous {ι : Type*} (S : Finset ι)
-    (a : ι → ℂ) (freq : ι → ℝ) : Continuous (mrtExponentialPolynomial S a freq) := by
+lemma mrtExponentialPolynomial_continuous    
+        : Continuous (mrtExponentialPolynomial S a freq) := by
   unfold mrtExponentialPolynomial
   fun_prop
 
-lemma mrt_unweighted_mean_square_le {ι : Type*} (S : Finset ι)
-    (a : ι → ℂ) (freq : ι → ℝ) {T : ℝ} (hT : 0 < T) :
+lemma mrt_unweighted_mean_square_le    
+         {T}  (hT : 0 < T) :
     (∫ t in -T..T, ‖mrtExponentialPolynomial S a freq t‖ ^ 2) ≤
       Real.exp 1 * ∫ t : ℝ, Real.exp (-|t| / T) *
         ‖mrtExponentialPolynomial S a freq t‖ ^ 2 := by
   have hf := (mrtExponentialPolynomial_continuous S a freq).norm.pow 2
   have hi := mrt_weighted_square_integrable S a freq hT
   have hc : Continuous (fun t : ℝ => Real.exp (-|t| / T) *
-      ‖mrtExponentialPolynomial S a freq t‖ ^ 2) := by
-    exact (Real.continuous_exp.comp (continuous_abs.neg.div_const T)).mul hf
+      ‖mrtExponentialPolynomial S a freq t‖ ^ 2) := (Real.continuous_exp.comp (continuous_abs.neg.div_const T)).mul hf
   have hb : -T ≤ T := by linarith
   calc
     _ ≤ ∫ t in -T..T, Real.exp 1 * (Real.exp (-|t| / T) *
@@ -195,9 +207,13 @@ lemma mrt_unweighted_mean_square_le {ι : Type*} (S : Finset ι)
       rw [intervalIntegral.integral_of_le hb]
       exact setIntegral_le_integral hi (Filter.Eventually.of_forall fun t => by positivity)
 
+end
+
+end
+
 /-- The standard Dirichlet-polynomial mean-value bound, with an absolute
 constant and no logarithmic loss.  Arbitrary complex coefficients are allowed. -/
-theorem mrt_dirichlet_mean_square (N : ℕ) (a : ℕ → ℂ) {T : ℝ} (hT : 0 < T) :
+theorem mrt_dirichlet_mean_square (N : ℕ)  a   {T}  (hT : 0 < T) :
     (∫ t in -T..T,
       ‖mrtExponentialPolynomial (Finset.Ioc 0 N) a (fun n => -Real.log (n : ℝ)) t‖ ^ 2) ≤
       8 * Real.exp 1 * (T + (N : ℝ)) * ∑ n ∈ Finset.Ioc 0 N, ‖a n‖ ^ 2 := by

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.LiveClippingDefect
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
@@ -7,14 +8,14 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyDeletedRobustGeometry
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
 open CenteredMomentEnergyLiveClippingDefect
-local notation "O" => HeckeFamily.O
+
 
 theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (hZ:1<Z)(hB:0≤Bmask)(Mcap L X₁ X₂ ell z κ xi e:ℝ)
@@ -23,7 +24,7 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (hκ:3/4≤κ)(hxi:0≤xi)(he:0≤e)(hreserve:xi+11*e/7≤s.width/14)
     (hlarge:5*s.width/6-e≤Real.logb Z (X₁*X₂)+ell)
     (hcap:Real.logb Z (X₁*X₂)+ell+(6*κ-1)*ell≤s.width)
-    (D₁ D₂:Finset (Ideal O))
+    (D₁ D₂:Finset (Ideal HeckeFamily.O))
     (hD₁:D₁∈(CompletedGauss.primeSupport s.puncture).powerset)
     (hD₂:D₂∈(CompletedGauss.primeSupport s.puncture).powerset):
     let short:=s.width/4-Real.logb Z ((∏P∈D₁,P).absNorm:ℝ);
@@ -57,7 +58,7 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
   have hn₂ := (divisor_norm s D₂ hD₂).1
   have hlog₁ := Real.logb_nonneg hZ hn₁
   have hlog₂ := Real.logb_nonneg hZ hn₂
-  have hMcap : 0 ≤ Mcap := s.width_nonneg.trans hwidth
+  
   have hLc : 0 ≤ L := by linarith
   have hslot : 0 ≤ (6*κ-1)*ell := mul_nonneg (by linarith) hell
   dsimp only
@@ -74,7 +75,7 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
   rcases robust_deleted_reference_cases Z s.width X₁ X₂ ell z κ xi e (max 0 (s.width-along+xi))
     hZ s.width_nonneg hX₁ hX₂ hell hz hze hκ hxi he hreserve hlarge hcap D₁ D₂ hp₁ hp₂
     (by rw [halong]) with hc | hc
-  · exact Or.inl (by simpa only [hd₁.2.2, hd₂.2.2] using hc)
+  · grind
   · apply Or.inr
     have hh := robust_reflected_low_admissible s.width xi e _ (max 0 (s.width-along+xi)) z κ
       he hreserve hc.2.1 hc.2.2
@@ -82,6 +83,6 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
 
 end SevenEighths.CenteredMomentEnergyDeletedRobustGeometry
 
-end
+
 
 end OAI

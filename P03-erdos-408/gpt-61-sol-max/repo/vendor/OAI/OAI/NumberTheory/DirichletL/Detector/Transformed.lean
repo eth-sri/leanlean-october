@@ -10,11 +10,11 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+
 
 def poissonPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Ideal O) (W₀ W₁ : ℝ → ℂ) (X Y Z : ℝ) : ℂ :=
-  (Y:ℂ)⁻¹ * ∑' s : {I : Ideal O // Supported I},
+    (D : Ideal ActualEisensteinCubic.O) (W₀ W₁ : ℝ → ℂ) (X Y Z : ℝ)  :=
+  (Y:ℂ)⁻¹ * ∑' s : {I : Ideal ActualEisensteinCubic.O // Supported I},
     if ∀ p∈C.excluded, ¬p∣s.val then
       let a := primaryGenerator s.val
       let has := (supported_span_primaryGenerator_iff s.val).mpr s.property
@@ -22,13 +22,13 @@ def poissonPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
       W₁ (q_s/Y) * CanonicalRowCompletion.idealRowHom C.generator s.val /
         (C.tau*C.residueMonoid a*(Real.sqrt (elementNorm C.generator*q_s*X):ℂ)) *
       verticalIntegral 4 (fun t => (Real.sqrt q_s:ℂ)⁻¹*((Z:ℂ)^t*Complex.exp (t^2)) *
-        ∑' p : Ideal O × Ideal O, transformedSpectralTerm η C C.excluded D a has W₀
+        ∑' p : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O, transformedSpectralTerm η C C.excluded D a has W₀
           (elementNorm C.generator*q_s*X) t p.1 p.2)
     else 0
 
-theorem markedPhysicalProbe_eq_poisson (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Ideal O) (W₀ W₁ : ℝ → ℂ) (hWc : HasCompactSupport W₀)
-    (hWs : ContDiff ℝ ∞ W₀) (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z) :
+theorem markedPhysicalProbe_eq_poisson  η   C 
+     D   W₀ W₁  (hWc : HasCompactSupport W₀)
+    (hWs : ContDiff ℝ ∞ W₀)  X Y Z  (hX : 0<X) (hZ : 0<Z) :
     markedPhysicalProbe η C D W₀ W₁ X Y Z = poissonPhysicalProbe η C D W₀ W₁ X Y Z := by
   unfold markedPhysicalProbe poissonPhysicalProbe
   congr 1

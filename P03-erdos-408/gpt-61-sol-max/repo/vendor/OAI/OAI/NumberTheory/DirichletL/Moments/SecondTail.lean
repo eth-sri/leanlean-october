@@ -14,9 +14,9 @@ namespace SevenEighths.CenteredMomentSecondTail
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss
 open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentSectorLocalization
 open CenteredMomentSupportedCorrelation CenteredMomentSecondWholeKernel
-local notation "O" => ActualEisensteinCubic.O
 
-theorem actual_second_kernel_reference (I J : Ideal O) (hI : I≠0) (hJ : J≠0)
+
+theorem actual_second_kernel_reference (I J : Ideal ActualEisensteinCubic.O) (hI : I≠0) (hJ : J≠0)
     (K X H Tsec : ℝ) (hK : 0<K) (hX : 0<X)
     (hi : (Ideal.absNorm I:ℝ)≤Real.exp H*X) (hj : (Ideal.absNorm J:ℝ)≤Real.exp H*X)
     (hsec : X^2/K≤Tsec) :
@@ -38,18 +38,18 @@ theorem actual_second_kernel_reference (I J : Ideal O) (hI : I≠0) (hJ : J≠0)
       field_simp
     _ ≤ K := (div_le_iff₀ hT).mpr (by simpa only [mul_comm] using (div_le_iff₀ hK).mp hsec)
 
-def secondDiscardedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
+def secondDiscardedPair (I J ) (hI : Supported I) (hJ : Supported J)
+    (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ)  :=
   (K:ℂ)/((Real.sqrt (Ideal.absNorm I:ℝ):ℂ)*(Real.sqrt (Ideal.absNorm J:ℝ):ℂ))*
-    ∑' h : O,(discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*
+    ∑' h : ActualEisensteinCubic.O,(discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*
       actualCorrelation (primaryGenerator I) (primaryGenerator J)
         ((supported_span_primaryGenerator_iff I).mpr hI) ((supported_span_primaryGenerator_iff J).mpr hJ) (-h)*
       paperRadialFourier W (K*‖eisEmbedding h‖^2/
         ‖eisEmbedding (primaryGenerator I*primaryGenerator J)‖^2)
 
-theorem second_discarded_pair_bound (Adec : ℕ) :
+theorem second_discarded_pair_bound  Adec  :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ),0<C ∧
-      ∀ (W : 𝓢(ℝ,ℂ)) (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+      ∀ (W : 𝓢(ℝ,ℂ)) (I J : Ideal ActualEisensteinCubic.O) (hI : Supported I) (hJ : Supported J)
         (K X H Tsec Z Csec ξ : ℝ),0<K → 0<X → 1<Z → 1≤Csec →
       (Ideal.absNorm I:ℝ)≤Real.exp H*X → (Ideal.absNorm J:ℝ)≤Real.exp H*X →
       X^2/K≤Tsec → (2*H/Real.log Z+Real.log (4*Csec)/Real.log Z<ξ/4) →
@@ -64,7 +64,7 @@ theorem second_discarded_pair_bound (Adec : ℕ) :
     hT hZ hCs hthreshold (actual_second_kernel_reference I J hI.1 hJ.1 K X H Tsec hK hX hi hj hsec)
     (primaryGenerator I) (primaryGenerator J)
     ((supported_span_primaryGenerator_iff I).mpr hI) ((supported_span_primaryGenerator_iff J).mpr hJ)
-  have he (h : O) : K*‖eisEmbedding h‖^2/‖eisEmbedding (primaryGenerator I*primaryGenerator J)‖^2=
+  have he (h : ActualEisensteinCubic.O) : K*‖eisEmbedding h‖^2/‖eisEmbedding (primaryGenerator I*primaryGenerator J)‖^2=
       (K/((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)))*normValue h := by
     rw [map_mul,norm_mul,mul_pow,primary_norm_sq I hI,primary_norm_sq J hJ,normValue_eq_embedding]
     ring

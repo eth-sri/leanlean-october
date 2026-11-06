@@ -24,7 +24,7 @@ theorem actual_second_deleted_physical_energy
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
+     {Jo}   source 
     (hs : ActualSecondSourceConditions p source) :
     ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)

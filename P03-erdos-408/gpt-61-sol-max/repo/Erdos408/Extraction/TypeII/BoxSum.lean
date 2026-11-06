@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Grid
 public import Erdos408.Extraction.TypeII.Endpoint
@@ -29,7 +30,7 @@ theorem sum_Icc_ite_Ioc_real {mu δ : ℝ} (hmu : 0 ≤ mu) (hδ : δ ≤ 1) (f 
     have : mu < n := (Nat.floor_lt hmu).1 h1
     exact mem_Icc.2 ⟨Nat.ceil_le.2 this.le, h2.trans (Nat.floor_le_floor (by nlinarith))⟩
   rw [← sum_subset hsub fun n _ hn => by simp only [hn, ↓reduceIte]]
-  exact sum_congr rfl fun n hn => by simp only [hn, ↓reduceIte]
+  simp_all
 
 /-- The data of the endpoint expansion at `x`: the cluster layout, the harmonic masses, small
 band primes, and the bound `𝒩` for the remainders on `[1, x²]`. -/
@@ -64,8 +65,8 @@ theorem abs_box_main_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ C₂ x 𝒩 : ℝ}
   set γ := presieveExponent c Ch x
   set N' := inertPerCluster K CN x
   set 𝒮 := clusterSets K N'
-  have hlam0 : 1 ≤ lam := hxγ.trans hlam
-  have hmu0 : 1 ≤ mu := hxγ.trans hmu
+  
+  
   -- the companion restricted to the `n`-cell
   set βb : ℕ → ℝ := fun n => if n ∈ Ioc ⌊mu⌋₊ ⌊mu * (1 + δ)⌋₊ then βc n else 0 with hβb
   have hn_range : ∀ m ∈ Ioc ⌊lam⌋₊ ⌊lam * (1 + δ)⌋₊, ∀ n ∈ Icc ⌈mu⌉₊ ⌊2 * mu⌋₊,
@@ -75,8 +76,7 @@ theorem abs_box_main_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ C₂ x 𝒩 : ℝ}
     obtain ⟨hn1, hn2⟩ := mem_Icc.1 hn
     have hlm : lam < m := (Nat.floor_lt (by linarith)).1 hm1
     have hm2' : (m : ℝ) ≤ lam * (1 + δ) := (Nat.le_floor_iff' (by
-      have : (0 : ℝ) < m := by linarith
-      exact_mod_cast this.ne')).1 hm2
+      grind)).1 hm2
     have hmun : mu ≤ n := Nat.ceil_le.1 hn1
     have hn2' : (n : ℝ) ≤ 2 * mu := (Nat.le_floor_iff (by linarith)).1 hn2
     have hm2 : 2 ≤ m := by

@@ -8,25 +8,25 @@ public import OAI.NumberTheory.DirichletL.Detector.GramFrequencySummation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma gramFrequency_image_sum (E : Finset GramFrequency) (f : O→ℝ) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+lemma gramFrequency_image_sum (E : Finset GramFrequency) (f : ActualEisensteinCubic.O→ℝ) :
     (∑k∈E.image Subtype.val,f k)=∑k∈E,f k.val :=
   Finset.sum_image (fun _ _ _ _ h=>Subtype.val_injective h)
 
-theorem canonical_nonexceptional_frequency_sum (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
+theorem canonical_nonexceptional_frequency_sum  A  (hA : 2<A)  a₀ b₀ 
     (ha₀ : 0<a₀) (hab : a₀<b₀) :
     ∃(J : ℕ)(H₀ : Finset (ℕ×ℕ)),
       ∀(W : ℝ→ℂ)(_hs : Function.support W⊆Set.Icc a₀ b₀)(_hW : ContDiff ℝ ∞ W),
       ∃K : ℝ,0<K ∧ ∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
       (C : SupportedIdeal)(E : Finset GramFrequency),
       (∀k∈E,¬ExceptionalFrequency S hS C k)→
-      ∀(d : O)(U : SchwartzMap ℝ ℂ)(v H N : ℝ),0<H→0<N→
+      ∀(d : ActualEisensteinCubic.O)(U : SchwartzMap ℝ ℂ)(v H N : ℝ),0<H→0<N→
         ‖∑k∈E,canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖≤
         K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J*
           (Ideal.absNorm C.val:ℝ)*N^2*H*
@@ -60,7 +60,7 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
       ∀(U : SchwartzMap ℝ ℂ)(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
       (C : SupportedIdeal)(E : Finset GramFrequency),
       (∀k∈E,ExceptionalFrequency S hS C k)→
-      ∀(d : O)(v H N : ℝ),0<H→0<N→
+      ∀(d : ActualEisensteinCubic.O)(v H N : ℝ),0<H→0<N→
         ‖∑k∈E,canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖≤
         K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(Ideal.absNorm C.val:ℝ)*N^2*
           ((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val)^ε*H^(1/6:ℝ) := by
@@ -92,6 +92,6 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
     _=_ := by dsimp [V];ring
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

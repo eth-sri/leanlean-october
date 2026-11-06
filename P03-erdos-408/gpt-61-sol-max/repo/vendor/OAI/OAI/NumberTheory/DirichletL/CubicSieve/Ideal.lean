@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.CubicSieve.Algebra
@@ -15,22 +16,22 @@ open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridg
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
-def Admissible (I : Ideal Eis) : Prop := Squarefree I ∧ primaryGenerator I ≠ 0
+def Admissible (I : Ideal Eis)  := Squarefree I ∧ primaryGenerator I ≠ 0
 
-def idealKernel (I J : Ideal Eis) : ℂ :=
+def idealKernel (I J : Ideal Eis)  :=
   eisEmbedding (CubicJacobiGlobal.idealSymbol I (primaryGenerator J))
 
-theorem idealKernel_reciprocity (I J : Ideal Eis)
+theorem idealKernel_reciprocity  I J 
     (hI : primaryGenerator I ≠ 0) (hJ : primaryGenerator J ≠ 0) :
     idealKernel I J = idealKernel J I :=
   congrArg eisEmbedding (CubicJacobiGlobal.idealSymbol_reciprocity I J hI hJ)
 
-theorem idealKernel_norm_le_one (I J : Ideal Eis) : ‖idealKernel I J‖ ≤ 1 := by
+theorem idealKernel_norm_le_one  I J  : ‖idealKernel I J‖ ≤ 1 := by
   rw [idealKernel, ← CanonicalRowCompletion.idealRowHom_square, norm_pow]
   exact (pow_le_pow_left₀ (norm_nonneg _)
     (CanonicalRowCompletion.idealRowHom_norm (primaryGenerator J) I) 2).trans_eq (by norm_num)
 
-theorem idealSymbol_fourth (I : Ideal Eis) (x : Eis) :
+theorem idealSymbol_fourth  I   x  :
     (eisEmbedding (CubicJacobiGlobal.idealSymbol I x)) ^ 4 =
       eisEmbedding (CubicJacobiGlobal.idealSymbol I x) := by
   have hlocal (P : Ideal Eis) :
@@ -58,7 +59,7 @@ theorem idealSymbol_fourth (I : Ideal Eis) (x : Eis) :
   · simpa only [CubicJacobiGlobal.idealSymbol, ite_eq_right hI] using
       hprod (UniqueFactorizationMonoid.normalizedFactors I)
 
-theorem idealSymbol_cube_mask (I : Ideal Eis) (x : Eis)
+theorem idealSymbol_cube_mask  I   x 
     (hI : primaryGenerator I ≠ 0) :
     (eisEmbedding (CubicJacobiGlobal.idealSymbol I x)) ^ 3 =
       if IsCoprime I (Ideal.span {x}) then 1 else 0 := by
@@ -98,8 +99,7 @@ theorem idealSymbol_cube_mask (I : Ideal Eis) (x : Eis)
       have ht := fun Q hQ => hS Q (Multiset.mem_cons_of_mem hQ)
       simp only [Multiset.map_cons, Multiset.prod_cons, map_mul, mul_pow,
         hlocal P hp, ih ht, IsCoprime.mul_left_iff]
-      by_cases hP : IsCoprime P (Ideal.span {x}) <;>
-        by_cases hS : IsCoprime S.prod (Ideal.span {x}) <;> simp [hP, hS]
+      grind
   have hI0 := primaryGenerator_ne_zero_ideal I hI
   have hf : ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I,
       P.IsMaximal ∧ goodLambda ∉ P := by
@@ -110,7 +110,7 @@ theorem idealSymbol_cube_mask (I : Ideal Eis) (x : Eis)
   rw [Ideal.prod_normalizedFactors_eq_self hI0] at h
   simpa only [CubicJacobiGlobal.idealSymbol, ite_eq_right hI0] using h
 
-theorem idealKernel_square_eq_star (I J : Ideal Eis) :
+theorem idealKernel_square_eq_star  I J  :
     idealKernel I J ^ 2 = star (idealKernel I J) :=
   square_eq_star_of_fourth_eq _ (idealSymbol_fourth I (primaryGenerator J))
 
@@ -123,10 +123,10 @@ def idealNumeratorHom (I : Ideal Eis) (hI : primaryGenerator I ≠ 0) : Ideal Ei
     simp only [idealKernel, primaryGenerator_mul,
       CubicJacobiGlobal.idealSymbol_map_mul I hI, map_mul]
 
-def idealRange (X : ℝ) : Finset (Ideal Eis) :=
+def idealRange (X : ℝ)  :=
   (idealsUpTo ⌊X⌋₊).filter Admissible
 
-theorem mem_idealRange {X : ℝ} {I : Ideal Eis} :
+theorem mem_idealRange  {X}   {I}  :
     I ∈ idealRange X ↔ Admissible I ∧ (Ideal.absNorm I : ℝ) ≤ X := by
   rw [idealRange, Finset.mem_filter, mem_idealsUpTo]
   constructor
@@ -142,12 +142,12 @@ theorem mem_idealRange {X : ℝ} {I : Ideal Eis} :
     intro hz
     exact (primaryGenerator_ne_zero_ideal I ha.2) (Ideal.absNorm_eq_zero_iff.mp hz)
 
-def idealMatrix (M N : ℝ) : Matrix (idealRange M) (idealRange N) ℂ :=
+def idealMatrix (M N ) : Matrix (idealRange M) (idealRange N) ℂ :=
   fun I J => idealKernel J.val I.val
 
-def sieveNorm (M N : ℝ) : ℝ := squaredNorm (idealMatrix M N)
+def sieveNorm (M N : ℝ)  := squaredNorm (idealMatrix M N)
 
-theorem sieveNorm_reciprocity (M N : ℝ) : sieveNorm M N = sieveNorm N M := by
+theorem sieveNorm_reciprocity  M N  : sieveNorm M N = sieveNorm N M := by
   apply squaredNorm_reciprocity
   intro I J
   exact idealKernel_reciprocity J.val I.val
@@ -157,7 +157,7 @@ theorem family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
     [DecidableEq m] [DecidableEq n]
     (rows : m → Ideal Eis) (cols : n → Ideal Eis)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
-    (M N : ℝ) (hrows : ∀ i, Admissible (rows i) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ M)
+     M N  (hrows : ∀ i, Admissible (rows i) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ M)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
     squaredNorm (fun i j => idealKernel (cols j) (rows i)) ≤ sieveNorm M N := by
   let r : m → idealRange M := fun i => ⟨rows i, mem_idealRange.mpr (hrows i)⟩

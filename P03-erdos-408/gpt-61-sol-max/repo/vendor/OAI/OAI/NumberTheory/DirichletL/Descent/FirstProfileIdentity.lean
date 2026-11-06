@@ -11,18 +11,18 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 
 def firstNormProfile (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (V : Fin 9 → ℝ → ℂ) (R : ℝ) (q : Fin 9 → ℝ) : ℂ :=
+    (V : Fin 9 → ℝ → ℂ) (R : ℝ) (q : Fin 9 → ℝ)  :=
   (∏ i, V i (Real.log (q i))) * W₁ (q 0*q 2*q 5*q 7) *
     W₂ (q 1*q 2*q 5*q 8) *
     paperRadialFourier Φ (R*q 6/(q 3*q 4*(q 5)^2*q 7*q 8)) /
       ((q 3:ℂ)*(Real.sqrt (q 4):ℂ)*(q 5:ℂ)*
         (Real.sqrt (q 7):ℂ)*(Real.sqrt (q 8):ℂ))
 
-theorem firstPoissonProfile_log (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (V : Fin 9 → ℝ → ℂ) (R : ℝ) (q : Fin 9 → ℝ) (hq : ∀ i, 0 < q i) :
+theorem firstPoissonProfile_log  W₁ W₂   Φ 
+     V   R   q  (hq : ∀ i, 0 < q i) :
     firstPoissonProfile W₁ W₂ Φ V R (fun i => Real.log (q i)) =
       firstNormProfile W₁ W₂ Φ V R q := by
   have hl : (∑ i, firstLeftSlope i * Real.log (q i)) =
@@ -48,12 +48,12 @@ theorem firstPoissonProfile_log (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
   ring
 
 theorem canonicalPairMode_whole_profile {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (p : ι → ActualEisensteinCubic.O)  hp  [∀ i, (Ideal.span {p i}).IsMaximal]
+     hcop 
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-    (N P B : Finset ι) (hNP : Disjoint N P) (hNB : Disjoint N B) (hPB : Disjoint P B)
-    (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (C₁ C₂ : Finset ι → ℂ)
-    (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C K : ℝ) (d h : Eis) :
+     N P B  (hNP : Disjoint N P) (hNB : Disjoint N B) (hPB : Disjoint P B)
+     v   ε₁ ε₂   C₁ C₂ 
+     W₁ W₂   Φ   A₁ A₂ C K   d h  :
     (‖eisEmbedding d‖^2 : ℂ)⁻¹ *
       canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ Φ
         (fun y => W₁ (A₁*C*Real.exp y)) (fun y => W₂ (A₂*C*Real.exp y)) 1 1 K d h =

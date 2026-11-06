@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.Edge.Gram
 public import Mathlib.NumberTheory.DiophantineApproximation.Basic
@@ -32,7 +33,7 @@ namespace Erdos408.OneSided
 open Finset Real
 
 /-- The squared length `(h + l α)² + (l/Y)²` of the image of `(h, l)`. -/
-private def latQ (α Y : ℝ) (h l : ℤ) : ℝ := (h + l * α) ^ 2 + (l / Y) ^ 2
+private def latQ (α Y : ℝ) (h l : ℤ)  := (h + l * α) ^ 2 + (l / Y) ^ 2
 
 /-- A nonzero integer vector has positive image length. -/
 private theorem latQ_pos {α Y : ℝ} (hY : 0 < Y) {h l : ℤ} (hne : (h, l) ≠ (0, 0)) :
@@ -45,8 +46,7 @@ private theorem latQ_pos {α Y : ℝ} (hY : 0 < Y) {h l : ℤ} (hne : (h, l) ≠
     simp only [Int.cast_zero, zero_mul, add_zero, zero_div, ne_eq, OfNat.ofNat_ne_zero,
       not_false_eq_true, zero_pow]
     positivity
-  · have : (l : ℝ) / Y ≠ 0 := div_ne_zero (by exact_mod_cast hl) hY.ne'
-    positivity
+  positivity
 
 /-- A shortest nonzero vector exists. -/
 private theorem exists_latQ_min (α : ℝ) {Y : ℝ} (hY : 0 < Y) :
@@ -132,7 +132,7 @@ private theorem sq_det_le (a b c d : ℝ) : (a * d - b * c) ^ 2 ≤ (a ^ 2 + b ^
 `‖l α‖ > Y^{-0.7}` for `1 ≤ l ≤ Y^{0.2}` (test (i)). Then there are integers
 `h₁ l₂ - l₁ h₂ = 1` and box sides `A' B' ≤ 6c²Y`, `A', B' ≤ Y^{0.9}` such that every integer
 `(h, l)` with `|l| ≤ cY` and `|h + l α| ≤ c` has `|h l₂ - l h₂| ≤ A'` and `|h₁ l - l₁ h| ≤ B'`. -/
-theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
+theorem exists_lattice_box  {α Y c}  (hY : 1 ≤ Y) (hc : 0 < c)
     (hYc : 8 * c ≤ Y ^ (1 / 10 : ℝ))
     (hgood : ∀ l : ℕ, 1 ≤ l → (l : ℝ) ≤ Y ^ (1 / 5 : ℝ) →
       Y ^ (-(7 / 10 : ℝ)) < circleDist (l * α)) :
@@ -198,9 +198,7 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
     have : Λ ≤ 5 / Y := by
       refine hle.trans ?_
       unfold latQ
-      have : (5 : ℝ) / Y = 1 / Y + 4 / Y := by ring
-      rw [this]
-      exact add_le_add h1 h2
+      grind
     rwa [le_div_iff₀ hY0, mul_comm] at this
   -- `Λ ≥ Y^{-1.6} = t^{-16}`, by test (i)
   have hΛlow : 1 ≤ t ^ 16 * Λ := by
@@ -269,15 +267,13 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
     by_contra hg1
     have hg2 : 2 ≤ g := by omega
     have hab : (a, b) ≠ (0, 0) := fun h => by
-      simp only [Prod.mk.injEq] at h
-      exact hv0 (Prod.ext (by change h₁ = 0; rw [ha, h.1, mul_zero])
-        (by change l₁ = 0; rw [hb, h.2, mul_zero]))
+      grind
     have hle := hmin _ hab
     have hscale : Λ = (g : ℝ) ^ 2 * latQ α Y a b := by
       simp only [hΛ, latQ]
       rw [show (h₁ : ℝ) = g * a by exact_mod_cast ha, show (l₁ : ℝ) = g * b by exact_mod_cast hb]
       ring
-    have hpos := latQ_pos hY0 hab (α := α)
+    
     have : (4 : ℝ) ≤ (g : ℝ) ^ 2 := by
       have : (2 : ℝ) ≤ g := by exact_mod_cast hg2
       nlinarith
@@ -288,10 +284,7 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
   set l₂' := Int.gcdA h₁ l₁
   have hdet' : h₁ * l₂' - l₁ * h₂' = 1 := by
     have := Int.gcd_eq_gcd_ab h₁ l₁
-    rw [hprim] at this
-    simp only [h₂', l₂']
-    push_cast at this
-    linarith
+    grind
   set x₁ := (h₁ : ℝ) + l₁ * α with hx₁
   set y₁ := (l₁ : ℝ) / Y with hy₁
   have hΛxy : Λ = x₁ ^ 2 + y₁ ^ 2 := by simp only [hΛ, latQ, x₁, y₁]
@@ -308,18 +301,13 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
   have hip2 : |x₁ * x₂ + y₁ * y₂| ≤ Λ / 2 := by
     have e : x₁ * x₂ + y₁ * y₂ = Λ * (ip / Λ - k) := by
       rw [mul_sub, mul_div_cancel₀ _ hΛ0.ne', hip, hΛxy]
-      simp only [x₂, y₂, h₂, l₂]
-      push_cast
-      ring
+      grind
     rw [e, abs_mul, abs_of_pos hΛ0]
     have := mul_le_mul_of_nonneg_left (abs_sub_round (ip / Λ)) hΛ0.le
     linarith
   have hdetR : x₁ * y₂ - y₁ * x₂ = 1 / Y := by
     have hd : ((h₁ * l₂ - l₁ * h₂ : ℤ) : ℝ) = 1 := by exact_mod_cast hdet
-    push_cast at hd
-    simp only [x₁, y₁, x₂, y₂]
-    field_simp
-    linear_combination hd
+    grind
   -- `Λ |v₂|² ≤ Λ²/4 + 1/Y²` (Lagrange's identity)
   have hv2 : Λ * (x₂ ^ 2 + y₂ ^ 2) ≤ Λ ^ 2 / 4 + 1 / Y ^ 2 := by
     have hL : Λ * (x₂ ^ 2 + y₂ ^ 2) = (x₁ * x₂ + y₁ * y₂) ^ 2 + (x₁ * y₂ - y₁ * x₂) ^ 2 := by
@@ -403,7 +391,7 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
       rw [hm₁, ← sq_le_sq₀ (abs_nonneg _) (by positivity), sq_abs, div_pow, hlam2,
         le_div_iff₀ hΛ0]
       have hcs := sq_det_le X Yc x₂ y₂
-      have hxy : 0 ≤ x₂ ^ 2 + y₂ ^ 2 := by positivity
+      
       calc (Y * (X * y₂ - Yc * x₂)) ^ 2 * Λ = Y ^ 2 * (X * y₂ - Yc * x₂) ^ 2 * Λ := by ring
         _ ≤ Y ^ 2 * ((X ^ 2 + Yc ^ 2) * (x₂ ^ 2 + y₂ ^ 2)) * Λ := by gcongr
         _ ≤ Y ^ 2 * (2 * c ^ 2 * (x₂ ^ 2 + y₂ ^ 2)) * Λ := by gcongr

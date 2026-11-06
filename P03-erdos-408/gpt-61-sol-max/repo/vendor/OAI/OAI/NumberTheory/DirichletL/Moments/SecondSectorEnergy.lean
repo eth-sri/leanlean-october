@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.RestrictedSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSectorEnergy
@@ -17,14 +17,14 @@ open CenteredMomentSecondSectorColumns CenteredMomentSecondHeightFamily
 open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
 open CenteredMomentRestrictedSource CenteredMomentRestrictedDomain CenteredMomentRestrictedEnergy
 open CenteredMomentLiveDomain CenteredMomentFirstSectors RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 
-theorem sector_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (C : Ideal O) (hC : Supported C) (z : O) :
+
+theorem sector_rowPolynomial (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ)
+    (C : Ideal ActualEisensteinCubic.O) (hC : Supported C)  z  :
     rowPolynomial Finset.univ (sectorElement C hC.1 S)
       (fun I : sectorPool C hC.1 S => c I) z=
       rowPolynomial Finset.univ (sourceGenerator (residualPool C hC.1 S))
-        (fun I : supportedColumns (residualPool C hC.1 S) => if IsCoprime C (I:Ideal O) then c I else 0) z := by
+        (fun I : supportedColumns (residualPool C hC.1 S) => if IsCoprime C (I:Ideal ActualEisensteinCubic.O) then c I else 0) z := by
   rw [source_rowPolynomial (residualPool C hC.1 S)
     (fun I => if IsCoprime C I then c I else 0) z]
   unfold rowPolynomial
@@ -37,6 +37,6 @@ theorem sector_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
 
 end SevenEighths.CenteredMomentSecondSectorEnergy
 
-end
+
 
 end OAI

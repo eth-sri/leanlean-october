@@ -10,77 +10,77 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology SchwartzMap LineDeriv ContDiff
+ 
+open scoped         LineDeriv  
 
 structure PositiveChartCutoff where
   func : EuclideanSpatial → ℝ
@@ -88,7 +88,7 @@ structure PositiveChartCutoff where
   compact : HasCompactSupport func
   positive : tsupport func ⊆ {p | 0 < p 2}
 
-lemma kernelChartCutoff_exists (p : EuclideanSpatial) (hp : 0<p 2) :
+lemma kernelChartCutoff_exists  p  (hp : 0<p 2) :
     ∃χ : PositiveChartCutoff, χ.func p=1 ∧ Set.range χ.func ⊆ Set.Icc 0 1 ∧
       Set.InjOn (integralOrbitProjection globalKubotaKernel ∘ euclideanToHyperbolic)
         (tsupport χ.func) := by
@@ -107,15 +107,18 @@ lemma kernelChartCutoff_exists (p : EuclideanSpatial) (hp : 0<p 2) :
     hyperbolicEuclideanCoordinates_toHyperbolic _ (hχ hr).1] using hc
 
 def kernelLocalizedField (χ : PositiveChartCutoff) (f : kernelSmoothTests)
-    (p : EuclideanSpatial) : ℂ := χ.func p • kernelTestField f p
+    (p : EuclideanSpatial)  := χ.func p • kernelTestField f p
 
-lemma kernelLocalizedField_compact (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+section
+variable (χ : PositiveChartCutoff) (f : kernelSmoothTests)
+
+lemma kernelLocalizedField_compact     :
     HasCompactSupport (kernelLocalizedField χ f) := χ.compact.smul_right
 
-lemma kernelLocalizedField_tsupport (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+lemma kernelLocalizedField_tsupport     :
     tsupport (kernelLocalizedField χ f) ⊆ tsupport χ.func := tsupport_smul_subset_left _ _
 
-lemma kernelLocalizedField_smooth (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+lemma kernelLocalizedField_smooth     :
     ContDiff ℝ ∞ (kernelLocalizedField χ f) := by
   rw [contDiff_iff_contDiffAt]
   intro p
@@ -127,11 +130,12 @@ lemma kernelLocalizedField_smooth (χ : PositiveChartCutoff) (f : kernelSmoothTe
     filter_upwards [hz] with q hq
     simp only [kernelLocalizedField,hq,Pi.zero_apply,zero_smul]
 
-def kernelLocalizedSchwartz (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
-    𝓢(EuclideanSpatial,ℂ) :=
+end
+
+def kernelLocalizedSchwartz (χ : PositiveChartCutoff) (f : kernelSmoothTests)  :=
   (kernelLocalizedField_compact χ f).toSchwartzMap (kernelLocalizedField_smooth χ f)
 
-lemma kernelLocalizedSchwartz_coe (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+lemma kernelLocalizedSchwartz_coe  χ   f  :
     (kernelLocalizedSchwartz χ f : EuclideanSpatial → ℂ)=kernelLocalizedField χ f := rfl
 
 def kernelLocalizedH1 (χ : PositiveChartCutoff) (f : kernelSmoothTests) : EuclideanH1 := by
@@ -141,16 +145,20 @@ def kernelLocalizedH1 (χ : PositiveChartCutoff) (f : kernelSmoothTests) : Eucli
   change (g.toLp 2 volume,v)∈euclideanWeakGradientGraph
   exact schwartz_mem_euclideanWeakGradientGraph g
 
-lemma kernelLocalizedH1_embedding (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+section
+variable (χ : PositiveChartCutoff) (f : kernelSmoothTests) (p : EuclideanSpatial) (hp : 0 < p 2)
+
+lemma kernelLocalizedH1_embedding     :
     euclideanH1Embedding (kernelLocalizedH1 χ f)=
       (kernelLocalizedSchwartz χ f).toLp 2 volume := rfl
 
-lemma kernelLocalizedH1_gradient (χ : PositiveChartCutoff) (f : kernelSmoothTests) (j : Fin 3) :
+lemma kernelLocalizedH1_gradient      j  :
     euclideanH1Gradient (kernelLocalizedH1 χ f) j=
       (∂_{euclideanCoordinateVector j} (kernelLocalizedSchwartz χ f)).toLp 2 volume := rfl
 
-lemma kernelLocalizedField_fderiv (χ : PositiveChartCutoff) (f : kernelSmoothTests)
-    (p : EuclideanSpatial) (hp : 0 < p 2) (u : EuclideanSpatial) :
+include hp in
+lemma kernelLocalizedField_fderiv    
+         u  :
     fderiv ℝ (kernelLocalizedField χ f) p u=
       χ.func p • fderiv ℝ (kernelTestField f) p u+
         (fderiv ℝ χ.func p u) • kernelTestField f p := by
@@ -165,8 +173,9 @@ lemma complex_norm_add_sq_le (z w : ℂ) :
   have hn := norm_nonneg (z+w)
   nlinarith [sq_nonneg (‖z‖-‖w‖)]
 
-lemma kernelLocalizedField_energy_bound (χ : PositiveChartCutoff) (f : kernelSmoothTests)
-    (p : EuclideanSpatial) (hp : 0<p 2) :
+include hp in
+lemma kernelLocalizedField_energy_bound    
+        :
     (p 2)^2*(∑j : Fin 3,‖fderiv ℝ (kernelLocalizedField χ f) p
       (EuclideanSpace.basisFun (Fin 3) ℝ j)‖^2) ≤
     2*(χ.func p)^2*kernelTestEnergyDensity f (euclideanToHyperbolic p)+
@@ -199,14 +208,20 @@ lemma kernelLocalizedField_energy_bound (χ : PositiveChartCutoff) (f : kernelSm
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff ENNReal
+end
 
-def kernelEuclideanProjection : EuclideanSpatial → KernelQuotient :=
+ 
+open scoped         ENNReal
+
+def kernelEuclideanProjection  :=
   integralOrbitProjection globalKubotaKernel ∘ euclideanToHyperbolic
 
-lemma euclideanToHyperbolic_measurePreserving_on (S : Set EuclideanSpatial)
-    (hS : MeasurableSet S) (_hpos : S⊆euclideanUpperHalf) :
+section
+variable (S : Set EuclideanSpatial) (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf) (hinj : Set.InjOn kernelEuclideanProjection S) (f : kernelSmoothTests) (b : ℝ) (hb : 0≤b) (hheight : ∀p∈S,p 2≤b) (g : KernelQuotient → ℝ)
+
+include hS in
+lemma euclideanToHyperbolic_measurePreserving_on  
+      (_hpos : S⊆euclideanUpperHalf) :
     MeasurePreserving euclideanToHyperbolic (hyperbolicEuclideanVolume.restrict S)
       (hyperbolicVolume.restrict (hyperbolicEuclideanCoordinates ⁻¹' S)) := by
   have hU : MeasurableSet (hyperbolicEuclideanCoordinates ⁻¹' S) :=
@@ -218,8 +233,9 @@ lemma euclideanToHyperbolic_measurePreserving_on (S : Set EuclideanSpatial)
   rw [hyperbolicVolume,Measure.restrict_map euclideanToHyperbolic_measurable hU,
     Measure.restrict_congr_set hset]
 
-lemma euclideanToHyperbolic_image_positive (S : Set EuclideanSpatial)
-    (hpos : S⊆euclideanUpperHalf) :
+include hpos in
+lemma euclideanToHyperbolic_image_positive  
+      :
     euclideanToHyperbolic '' S=hyperbolicEuclideanCoordinates ⁻¹' S := by
   ext w
   constructor
@@ -228,9 +244,10 @@ lemma euclideanToHyperbolic_image_positive (S : Set EuclideanSpatial)
   · intro hw
     exact ⟨hyperbolicEuclideanCoordinates w,hw,euclideanToHyperbolic_coordinates w⟩
 
-lemma kernelEuclideanProjection_measurePreserving_on (S : Set EuclideanSpatial)
-    (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf)
-    (hinj : Set.InjOn kernelEuclideanProjection S) :
+include hS hpos hinj in
+lemma kernelEuclideanProjection_measurePreserving_on  
+       
+      :
     MeasurePreserving kernelEuclideanProjection (hyperbolicEuclideanVolume.restrict S)
       ((integralQuotientVolume globalKubotaKernel).restrict (kernelEuclideanProjection '' S)) := by
   have hU : MeasurableSet (hyperbolicEuclideanCoordinates ⁻¹' S) :=
@@ -250,9 +267,10 @@ lemma kernelEuclideanProjection_measurePreserving_on (S : Set EuclideanSpatial)
     rfl
   rwa [himage] at hcomp
 
-lemma kernelEuclideanProjection_integral (S : Set EuclideanSpatial)
-    (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf)
-    (hinj : Set.InjOn kernelEuclideanProjection S) (g : KernelQuotient → ℝ)
+include hS hpos hinj in
+lemma kernelEuclideanProjection_integral  
+       
+       
     (hg : AEStronglyMeasurable g (integralQuotientVolume globalKubotaKernel)) :
     (∫p in S,g (kernelEuclideanProjection p)∂hyperbolicEuclideanVolume)=
       ∫q in kernelEuclideanProjection '' S,g q∂integralQuotientVolume globalKubotaKernel := by
@@ -261,16 +279,17 @@ lemma kernelEuclideanProjection_integral (S : Set EuclideanSpatial)
   rw [←hm.map_eq] at hh ⊢
   exact (integral_map hm.measurable.aemeasurable hh).symm
 
-lemma kernelEuclideanProjection_integral_le (S : Set EuclideanSpatial)
-    (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf)
-    (hinj : Set.InjOn kernelEuclideanProjection S) (g : KernelQuotient → ℝ)
+include hS hpos hinj in
+lemma kernelEuclideanProjection_integral_le  
+       
+       
     (hg : Integrable g (integralQuotientVolume globalKubotaKernel)) (hgn : ∀q,0≤g q) :
     (∫p in S,g (kernelEuclideanProjection p)∂hyperbolicEuclideanVolume)≤
       ∫q,g q∂integralQuotientVolume globalKubotaKernel := by
   rw [kernelEuclideanProjection_integral S hS hpos hinj g hg.aestronglyMeasurable]
   exact setIntegral_le_integral hg (Eventually.of_forall hgn)
 
-lemma kernelSmoothTestsToL2_norm_sq (f : kernelSmoothTests) :
+lemma kernelSmoothTestsToL2_norm_sq   :
     ‖kernelSmoothTestsToL2 f‖^2=
       ∫q,‖f.1 q‖^2∂integralQuotientVolume globalKubotaKernel := by
   calc
@@ -285,17 +304,19 @@ lemma kernelSmoothTestsToL2_norm_sq (f : kernelSmoothTests) :
         (((kernelSmoothTests_memLp f).toLp f.1) q)=_
       rw [hq,real_inner_self_eq_norm_sq]
 
-lemma kernelLocalMass_le (S : Set EuclideanSpatial)
-    (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf)
-    (hinj : Set.InjOn kernelEuclideanProjection S) (f : kernelSmoothTests) :
+include hS hpos hinj in
+lemma kernelLocalMass_le  
+       
+        :
     (∫p in S,‖kernelTestField f p‖^2∂hyperbolicEuclideanVolume)≤‖kernelSmoothTestsToL2 f‖^2 := by
   rw [kernelSmoothTestsToL2_norm_sq]
   exact kernelEuclideanProjection_integral_le S hS hpos hinj _
     (kernelSmoothTests_memLp f).norm.integrable_sq (fun _ => sq_nonneg _)
 
-lemma euclideanVolume_le_heightCube_hyperbolic (S : Set EuclideanSpatial)
-    (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf) (b : ℝ) (hb : 0≤b)
-    (hheight : ∀p∈S,p 2≤b) :
+include hS hpos hb hheight in
+lemma euclideanVolume_le_heightCube_hyperbolic  
+           
+      :
     volume.restrict S≤ENNReal.ofReal (b^3) • hyperbolicEuclideanVolume.restrict S := by
   have hw : hyperbolicEuclideanVolume.restrict S=(volume.restrict S).withDensity hyperbolicDensity := by
     rw [hyperbolicEuclideanVolume,MeasureTheory.restrict_withDensity hS,
@@ -316,10 +337,11 @@ lemma euclideanVolume_le_heightCube_hyperbolic (S : Set EuclideanSpatial)
   simpa only [MeasureTheory.withDensity_one,MeasureTheory.withDensity_smul _ hyperbolicDensity_measurable] using
     (MeasureTheory.withDensity_mono hbd)
 
-lemma kernelEuclideanProjection_volume_integral_le (S : Set EuclideanSpatial)
-    (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf)
-    (hinj : Set.InjOn kernelEuclideanProjection S) (b : ℝ) (hb : 0≤b)
-    (hheight : ∀p∈S,p 2≤b) (g : KernelQuotient→ℝ)
+include hS hpos hinj hb hheight in
+lemma kernelEuclideanProjection_volume_integral_le  
+       
+         
+       
     (hg : Integrable g (integralQuotientVolume globalKubotaKernel)) (hgn : ∀q,0≤g q) :
     (∫p in S,g (kernelEuclideanProjection p))≤
       b^3*∫q,g q∂integralQuotientVolume globalKubotaKernel := by
@@ -333,17 +355,16 @@ lemma kernelEuclideanProjection_volume_integral_le (S : Set EuclideanSpatial)
   exact hh.trans (mul_le_mul_of_nonneg_left
     (kernelEuclideanProjection_integral_le S hS hpos hinj g hg hgn) (pow_nonneg hb 3))
 
-end CubicEisenstein
-
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CompletedGauss
-
-section
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
-
 end
 
-open ActualEisensteinCubic CanonicalQuadraticSieve
+end CubicEisenstein
+
+ 
+namespace CompletedGauss
+
+
+
+open   CanonicalQuadraticSieve
 
 structure ReflectedBranchData (levelBound K : ℝ) (I F Q : Ideal O) where
   levelScale : ℝ
@@ -367,7 +388,7 @@ structure ReflectedBranchData (levelBound K : ℝ) (I F Q : Ideal O) where
 
 namespace ReflectedBranchData
 
-def value {levelBound K : ℝ} {I F Q : Ideal O} (d : ReflectedBranchData levelBound K I F Q)
+def value {levelBound K } {I F Q } (d : ReflectedBranchData levelBound K I F Q)
     (W : ℝ→ℂ) (X ρ q : ℝ) (k : idealRange (completedResidualScale K I Q)) : ℂ := by
   letI : ∀p : d.primes,p.val.IsMaximal := d.maximal
   exact ∑'i : ℕ×ℕ×ℕ,reflectedBranchBlock (fun p : d.primes => p.val) d.good
@@ -387,24 +408,24 @@ structure ReflectedFiberData (rays : ℕ) (levelBound K : ℝ) (I F Q : Ideal O)
 
 namespace ReflectedFiberData
 
-def value {rays : ℕ} {levelBound K : ℝ} {I F Q : Ideal O} (d : ReflectedFiberData rays levelBound K I F Q)
-    (W : ℝ→ℂ) (X ρ q : ℝ) (k : idealRange (completedResidualScale K I Q)) : ℂ :=
+def value {rays } {levelBound K } {I F Q } (d : ReflectedFiberData rays levelBound K I F Q)
+    (W : ℝ→ℂ) (X ρ q : ℝ) (k : idealRange (completedResidualScale K I Q))  :=
   ∑b,d.weight b*(d.branch b).value W X ρ q k
 
 end ReflectedFiberData
 
-open ActualEisensteinCubic CanonicalQuadraticSieve
+ 
 
 namespace ReflectedFiberData
 
-def idealValue {rays : ℕ} {levelBound K : ℝ} {I F Q : Ideal O} (d : ReflectedFiberData rays levelBound K I F Q)
-    (W : ℝ→ℂ) (X ρ q : ℝ) (J : Ideal O) : ℂ :=
+def idealValue {rays } {levelBound K } {I F Q } (d : ReflectedFiberData rays levelBound K I F Q)
+    (W : ℝ→ℂ) (X ρ q : ℝ) (J : Ideal O)  :=
   if h : J∈idealRange (completedResidualScale K I Q) then d.value W X ρ q ⟨J,h⟩ else 0
 
 end ReflectedFiberData
 
 def HasExactCompletedModels (rays : ℕ) (rows : Finset (Ideal O))
-    (K X ρ q levelBound : ℝ) (F Q : Ideal O) (W : ℝ→ℂ) (Ψ : Ideal O→O→*ℂ) (lengthScale : ℂ) : Prop :=
+    (K X ρ q levelBound : ℝ) (F Q : Ideal O) (W : ℝ→ℂ) (Ψ : Ideal O→O→*ℂ) (lengthScale : ℂ)  :=
   ∀A∈rows.image rowPowerfulPart,∀T∈rows.image (fun I => rowMaskPart I Q),
     (completedRowFiber rows Q A T).Nonempty →
     ∃I∈completedRowFiber rows Q A T,∃d : ReflectedFiberData rays levelBound K I F Q,

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.DivisorModel.Truncation
 
@@ -28,54 +29,59 @@ variable {ι : Type} [Fintype ι] [DecidableEq ι]
 /-! ### One prime per group -/
 
 /-- The coefficient `∏_i V_i⁻¹` of a list of `𝒲`. -/
-noncomputable def bandCoeff (G : ι → Finset ℕ) : ℂ :=
+noncomputable def bandCoeff (G : ι → Finset ℕ)  :=
   ∏ i, ((harmonicMass (G i))⁻¹ : ℂ)
 
+section
+variable {G : ι → Finset ℕ} (hG : ∀ i j, i ≠ j → Disjoint (G i) (G j)) {β : ι → ℕ} (hβ : β ∈ Fintype.piFinset G)
+
+include hG hβ in
 /-- A list with one prime from each of pairwise disjoint groups is injective. -/
-theorem injective_of_mem_piFinset {G : ι → Finset ℕ}
-    (hG : ∀ i j, i ≠ j → Disjoint (G i) (G j)) {β : ι → ℕ}
-    (hβ : β ∈ Fintype.piFinset G) : Function.Injective β := by
+theorem injective_of_mem_piFinset  
+       
+      : Function.Injective β := by
   intro i j h
   by_contra hij
   exact disjoint_left.1 (hG i j hij) (Fintype.mem_piFinset.1 hβ i)
     (h ▸ Fintype.mem_piFinset.1 hβ j)
 
+include hβ in
 /-- The represented set of a list lies in the union of the groups. -/
-theorem image_subset_biUnion {G : ι → Finset ℕ} {β : ι → ℕ} (hβ : β ∈ Fintype.piFinset G) :
+theorem image_subset_biUnion       :
     univ.image β ⊆ univ.biUnion G := by
-  intro p hp
-  obtain ⟨i, -, rfl⟩ := mem_image.1 hp
-  exact mem_biUnion.2 ⟨i, mem_univ i, Fintype.mem_piFinset.1 hβ i⟩
+  grind
+
+end
 
 /-- The lists represented at `n` are those of the primes dividing `n`. -/
-theorem filter_piFinset_eq (G : ι → Finset ℕ) (n : ℕ) :
+theorem filter_piFinset_eq (G : ι → Finset ℕ)  n  :
     (Fintype.piFinset G).filter (fun β => univ.image β ⊆ divs (univ.biUnion G) n) =
       Fintype.piFinset fun i => (G i).filter (· ∣ n) := by
   ext β
   simp only [mem_filter, Fintype.mem_piFinset, divs, image_subset_iff, mem_univ, true_imp_iff,
     mem_biUnion, true_and]
-  constructor
-  · rintro ⟨h₁, h₂⟩ i
-    exact ⟨h₁ i, (h₂ i).2⟩
-  · intro h
-    exact ⟨fun i => (h i).1, fun i => ⟨⟨i, (h i).1⟩, (h i).2⟩⟩
+  grind
 
 omit [DecidableEq ι] in
 /-- `|D(n)| = ∑_i ω_i(n)` for pairwise disjoint groups. -/
 theorem card_divs_biUnion {G : ι → Finset ℕ} (hG : ∀ i j, i ≠ j → Disjoint (G i) (G j))
-    (n : ℕ) : #(divs (univ.biUnion G) n) = ∑ i, primeCount (G i) n := by
+     n  : #(divs (univ.biUnion G) n) = ∑ i, primeCount (G i) n := by
   rw [divs, filter_biUnion, card_biUnion]
   · rfl
   · intro i _ j _ hij
     exact disjoint_filter_filter (hG i j hij)
 
+section
+variable {G : ι → Finset ℕ} (hG : ∀ i j, i ≠ j → Disjoint (G i) (G j)) (q : ℝ) {w : ℕ → ℂ} (hw : ∀ p ∈ univ.biUnion G, w p = q) (hV : ∀ i, 1 / 2 ≤ harmonicMass (G i)) (n : ℕ)
+
+include hG hw in
 /-- **Step 1 for the bands.** For pairwise disjoint groups and `w = q` on their union,
 `𝒲(n)` is the list form with one prime per group. -/
-theorem markedWeight_eq_listForm {G : ι → Finset ℕ}
-    (hG : ∀ i j, i ≠ j → Disjoint (G i) (G j)) (q : ℝ) {w : ℕ → ℂ}
-    (hw : ∀ p ∈ univ.biUnion G, w p = q) (n : ℕ) :
+theorem markedWeight_eq_listForm  
+         
+        :
     (markedWeight univ q G n : ℂ) =
-      listForm (univ.biUnion G) (Fintype.piFinset G) (fun β => univ.image β)
+      listForm (univ.biUnion G) (Fintype.piFinset G) (univ.image)
         (fun _ => bandCoeff G) w n := by
   set D := divs (univ.biUnion G) n
   -- each represented list contributes `c q^{|D| - |ι|}`
@@ -113,10 +119,11 @@ theorem markedWeight_eq_listForm {G : ι → Finset ℕ}
     rw [hp, prod_eq_zero (mem_univ i) (by rw [hi0, Nat.cast_zero, zero_div])]
     simp
 
+include hG hV in
 /-- The weight sum of the band lists at `n` is `∏_i ω_i(n)/V_i ≤ 2^{|ι|} 2^{|D(n)|}`, for
 `V_i ≥ 1/2`. -/
-theorem sum_norm_bandCoeff_le {G : ι → Finset ℕ} (hG : ∀ i j, i ≠ j → Disjoint (G i) (G j))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (G i)) (n : ℕ) :
+theorem sum_norm_bandCoeff_le    
+        :
     (∑ β ∈ Fintype.piFinset G,
         if univ.image β ⊆ divs (univ.biUnion G) n then ‖bandCoeff G‖ else 0) ≤
       2 ^ Fintype.card ι * 2 ^ #(divs (univ.biUnion G) n) := by
@@ -137,9 +144,10 @@ theorem sum_norm_bandCoeff_le {G : ι → Finset ℕ} (hG : ∀ i j, i ≠ j →
         mul_le_mul h2 h1 (by positivity) (by positivity)
     _ = 2 ^ 1 * 2 ^ primeCount (G i) n := by ring
 
+include hG in
 /-- The mass of the band lists: `∑_β |c| / ∏_i β_i = ∏_i V_i⁻¹ V_i ≤ 1`. -/
-theorem sum_norm_bandCoeff_div_le {G : ι → Finset ℕ}
-    (hG : ∀ i j, i ≠ j → Disjoint (G i) (G j)) :
+theorem sum_norm_bandCoeff_div_le  
+      :
     ∑ β ∈ Fintype.piFinset G, ‖bandCoeff G‖ / ∏ p ∈ univ.image β, (p : ℝ) ≤ 1 := by
   have hV0 : ∀ i, 0 ≤ harmonicMass (G i) := fun i =>
     sum_nonneg fun p _ => by positivity
@@ -150,7 +158,7 @@ theorem sum_norm_bandCoeff_div_le {G : ι → Finset ℕ}
       prod_mul_distrib, div_eq_mul_inv, ← prod_inv_distrib]
     congr 1
     · refine prod_congr rfl fun i _ => ?_
-      rw [norm_inv, Complex.norm_real, Real.norm_of_nonneg (hV0 i)]
+      simp_all
     · simp
   have hpu := (prod_univ_sum G fun i (y : ℕ) => (harmonicMass (G i))⁻¹ * (1 / (y : ℝ))).symm
   beta_reduce at hpu
@@ -160,42 +168,49 @@ theorem sum_norm_bandCoeff_div_le {G : ι → Finset ℕ}
   rw [← mul_sum]
   exact inv_mul_le_one_of_le₀ le_rfl (hV0 i)
 
+end
+
 /-! ### Lists in the slots -/
 
 /-- The lists of `W_S^b`: in each slot of `S g` a prime of `P g`, distinct within the group,
 and `1` in every other slot. -/
-noncomputable def groupLists (P : ι → Finset ℕ) {M : ℕ} (S : ι → Finset (Fin M)) :
-    Finset (ι → Fin M → ℕ) :=
+noncomputable def groupLists (P : ι → Finset ℕ) {M } (S : ι → Finset (Fin M))  :=
   (Fintype.piFinset fun g => Fintype.piFinset fun i => if i ∈ S g then P g else {1}).filter
     fun p => ∀ g, Set.InjOn (p g) (S g)
 
 /-- The represented primes `⋃_g p_g(S g)` of a list. -/
-def groupRep {M : ℕ} (S : ι → Finset (Fin M)) (p : ι → Fin M → ℕ) : Finset ℕ :=
+def groupRep {M } (S : ι → Finset (Fin M)) (p : ι → Fin M → ℕ)  :=
   univ.biUnion fun g => (S g).image (p g)
 
 /-- The coefficient `∏_g V_g^{-|S g|} b(p)` of a list of `W_S^b`. -/
-noncomputable def groupCoeff (P : ι → Finset ℕ) {M : ℕ} (S : ι → Finset (Fin M))
-    (b : (ι → Fin M → ℕ) → ℂ) (p : ι → Fin M → ℕ) : ℂ :=
+noncomputable def groupCoeff (P : ι → Finset ℕ) {M } (S : ι → Finset (Fin M))
+    (b : (ι → Fin M → ℕ) → ℂ) (p : ι → Fin M → ℕ)  :=
   (∏ g, ((harmonicMass (P g))⁻¹ : ℂ) ^ #(S g)) * b p
 
+section
+variable {P : ι → Finset ℕ} (hP : ∀ g h, g ≠ h → Disjoint (P g) (P h)) (q₀ : ℝ) {M m : ℕ} {S : ι → Finset (Fin M)} {p : ι → Fin M → ℕ} (hp : p ∈ groupLists P S) {b : (ι → Fin M → ℕ) → ℂ} {vlo : ℝ} (hvlo : 0 < vlo) (hV : ∀ g, vlo ≤ harmonicMass (P g)) (hS : ∀ g, #(S g) ≤ m + 1) (hV0 : ∀ g, 0 < harmonicMass (P g)) (hb : ∀ p, ‖b p‖ ≤ 1)
+
+include hp in
 /-- A slot of a list holds a prime of its group. -/
-theorem mem_of_mem_groupLists {P : ι → Finset ℕ} {M : ℕ} {S : ι → Finset (Fin M)}
-    {p : ι → Fin M → ℕ} (hp : p ∈ groupLists P S) {g : ι} {i : Fin M} (hi : i ∈ S g) :
+theorem mem_of_mem_groupLists      
+         {g}   {i}  (hi : i ∈ S g) :
     p g i ∈ P g := by
   have := Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 (mem_filter.1 hp).1 g) i
   rwa [ite_eq_left hi] at this
 
+include hp in
 /-- The represented primes lie in the union of the groups. -/
-theorem groupRep_subset {P : ι → Finset ℕ} {M : ℕ} {S : ι → Finset (Fin M)}
-    {p : ι → Fin M → ℕ} (hp : p ∈ groupLists P S) : groupRep S p ⊆ univ.biUnion P := by
+theorem groupRep_subset      
+        : groupRep S p ⊆ univ.biUnion P := by
   intro x hx
   obtain ⟨g, -, hx⟩ := mem_biUnion.1 hx
   obtain ⟨i, hi, rfl⟩ := mem_image.1 hx
   exact mem_biUnion.2 ⟨g, mem_univ g, mem_of_mem_groupLists hp hi⟩
 
+include hP hp in
 /-- The represented primes of a list number `∑_g |S g|`. -/
-theorem card_groupRep {P : ι → Finset ℕ} (hP : ∀ g h, g ≠ h → Disjoint (P g) (P h)) {M : ℕ}
-    {S : ι → Finset (Fin M)} {p : ι → Fin M → ℕ} (hp : p ∈ groupLists P S) :
+theorem card_groupRep      
+          :
     #(groupRep S p) = ∑ g, #(S g) := by
   rw [groupRep, card_biUnion]
   · exact sum_congr rfl fun g _ => card_image_of_injOn ((mem_filter.1 hp).2 g)
@@ -207,7 +222,7 @@ theorem card_groupRep {P : ι → Finset ℕ} (hP : ∀ g h, g ≠ h → Disjoin
       (hj' ▸ mem_of_mem_groupLists hp hj)
 
 /-- The lists represented at `n` are `slotLists P S n`. -/
-theorem filter_groupLists_eq (P : ι → Finset ℕ) {M : ℕ} (S : ι → Finset (Fin M)) (n : ℕ) :
+theorem filter_groupLists_eq (P : ι → Finset ℕ) {M : ℕ} (S : ι → Finset (Fin M))  n  :
     (groupLists P S).filter (fun p => groupRep S p ⊆ divs (univ.biUnion P) n) =
       slotLists P S n := by
   ext p
@@ -223,11 +238,12 @@ theorem filter_groupLists_eq (P : ι → Finset ℕ) {M : ℕ} (S : ι → Finse
     exact mem_filter.2 ⟨groupRep_subset (p := p) (mem_filter.2 ⟨h₁, fun g => (h₂ g).1⟩)
       (mem_biUnion.2 ⟨g, mem_univ g, mem_image_of_mem _ hi⟩), (h₂ g).2 i hi⟩
 
+include hP in
 /-- **Step 1 for the groups.** For pairwise disjoint groups and `w = q₀` on their union,
 `W_S^b(n)` is the list form over `groupLists P S`. -/
-theorem markedListWeight_eq_listForm {P : ι → Finset ℕ}
-    (hP : ∀ g h, g ≠ h → Disjoint (P g) (P h)) (q₀ : ℝ) {M : ℕ} (S : ι → Finset (Fin M))
-    (b : (ι → Fin M → ℕ) → ℂ) {w : ℕ → ℂ} (hw : ∀ p ∈ univ.biUnion P, w p = q₀) (n : ℕ) :
+theorem markedListWeight_eq_listForm  
+          (S : ι → Finset (Fin M))
+    (b : (ι → Fin M → ℕ) → ℂ) {w : ℕ → ℂ} (hw : ∀ p ∈ univ.biUnion P, w p = q₀)  n  :
     markedListWeight P q₀ S b n =
       listForm (univ.biUnion P) (groupLists P S) (groupRep S) (groupCoeff P S b) w n := by
   set D := divs (univ.biUnion P) n
@@ -259,12 +275,13 @@ theorem markedListWeight_eq_listForm {P : ι → Finset ℕ}
     push_cast
     ring
 
+include hvlo hV hS hb in
 /-- The weight sum of the slot lists at `n`: at most `(B^{|ι|} 2^{|D(n)|})^{m+1}` with
 `B = max 1 v₋⁻¹`, for `|S g| ≤ m + 1`, `V_g ≥ v₋ > 0` and `|b| ≤ 1`. -/
-theorem sum_norm_groupCoeff_le {P : ι → Finset ℕ} {M m : ℕ} {S : ι → Finset (Fin M)}
-    {b : (ι → Fin M → ℕ) → ℂ} {vlo : ℝ} (hvlo : 0 < vlo)
-    (hV : ∀ g, vlo ≤ harmonicMass (P g)) (hS : ∀ g, #(S g) ≤ m + 1) (hb : ∀ p, ‖b p‖ ≤ 1)
-    (hP : ∀ g h, g ≠ h → Disjoint (P g) (P h)) (n : ℕ) :
+theorem sum_norm_groupCoeff_le      
+         
+         
+    (hP : ∀ g h, g ≠ h → Disjoint (P g) (P h))  n  :
     (∑ p ∈ groupLists P S,
         if groupRep S p ⊆ divs (univ.biUnion P) n then ‖groupCoeff P S b p‖ else 0) ≤
       ((max 1 vlo⁻¹) ^ Fintype.card ι * 2 ^ #(divs (univ.biUnion P) n)) ^ (m + 1) := by
@@ -291,11 +308,7 @@ theorem sum_norm_groupCoeff_le {P : ι → Finset ℕ} {M m : ℕ} {S : ι → F
       intro p hp
       obtain ⟨hp₁, hp₂⟩ := mem_filter.1 hp
       refine Fintype.mem_piFinset.2 fun g => Fintype.mem_piFinset.2 fun i => ?_
-      have := Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 hp₁ g) i
-      split_ifs with hi
-      · rw [ite_eq_left hi] at this
-        exact mem_filter.2 ⟨this, (hp₂ g).2 i hi⟩
-      · rwa [ite_eq_right hi] at this
+      grind
     refine (card_le_card hsub).trans_eq ?_
     rw [Fintype.card_piFinset]
     refine prod_congr rfl fun g _ => ?_
@@ -327,8 +340,7 @@ theorem sum_norm_groupCoeff_le {P : ι → Finset ℕ} {M m : ℕ} {S : ι → F
           ((inv_le_inv₀ (hV0 g) hvlo).2 (hV g)).trans (le_max_right _ _)
         have hbase : (primeCount (P g) n : ℝ) * (harmonicMass (P g))⁻¹ ≤
             B * 2 ^ primeCount (P g) n := by
-          rw [mul_comm]
-          exact mul_le_mul hinv hω (Nat.cast_nonneg _) (by linarith)
+          nlinarith
         have hone : 1 ≤ B * 2 ^ primeCount (P g) n := by nlinarith
         calc ((primeCount (P g) n : ℝ) * (harmonicMass (P g))⁻¹) ^ #(S g)
             ≤ (B * 2 ^ primeCount (P g) n) ^ #(S g) :=
@@ -338,10 +350,11 @@ theorem sum_norm_groupCoeff_le {P : ι → Finset ℕ} {M m : ℕ} {S : ι → F
         rw [prod_pow, prod_mul_distrib, prod_const, card_univ, prod_pow_eq_pow_sum,
           card_divs_biUnion hP]
 
+include hV0 hb in
 /-- The mass of the slot lists: `∑_p |c_p| / ∏ p ≤ ∏_g (∑_{p ∈ P g} 1/(V_g p))^{|S g|} = 1`,
 for `|b| ≤ 1` and pairwise disjoint groups of positive mass. -/
-theorem sum_norm_groupCoeff_div_le {P : ι → Finset ℕ} {M : ℕ} {S : ι → Finset (Fin M)}
-    {b : (ι → Fin M → ℕ) → ℂ} (hV0 : ∀ g, 0 < harmonicMass (P g)) (hb : ∀ p, ‖b p‖ ≤ 1)
+theorem sum_norm_groupCoeff_div_le      
+         
     (hP : ∀ g h, g ≠ h → Disjoint (P g) (P h)) :
     ∑ p ∈ groupLists P S, ‖groupCoeff P S b p‖ / ∏ x ∈ groupRep S p, (x : ℝ) ≤ 1 := by
   set f : ι → Fin M → ℕ → ℝ := fun g i y => if i ∈ S g then (harmonicMass (P g))⁻¹ / y else 1
@@ -364,9 +377,7 @@ theorem sum_norm_groupCoeff_div_le {P : ι → Finset ℕ} {M : ℕ} {S : ι →
       prod_nonneg fun g _ => pow_nonneg (inv_nonneg.2 (hV0 g).le) _
     have heq : (∏ g, (harmonicMass (P g))⁻¹ ^ #(S g)) / ∏ g, ∏ i ∈ S g, (p g i : ℝ) =
         ∏ g, ∏ i ∈ S g, (harmonicMass (P g))⁻¹ / (p g i : ℝ) := by
-      rw [← prod_div_distrib]
-      refine prod_congr rfl fun g _ => ?_
-      rw [prod_div_distrib, prod_const]
+      norm_num
     rw [hprod, ← heq, groupCoeff, norm_mul, norm_prod]
     have hnorm : ∀ g, ‖((harmonicMass (P g))⁻¹ : ℂ) ^ #(S g)‖ =
         (harmonicMass (P g))⁻¹ ^ #(S g) := fun g => by
@@ -400,6 +411,8 @@ theorem sum_norm_groupCoeff_div_le {P : ι → Finset ℕ} {M : ℕ} {S : ι →
       rw [harmonicMass, mul_sum]
       exact sum_congr rfl fun y _ => by ring]
     exact inv_mul_le_one_of_le₀ le_rfl (hV0 g).le
-  · simp only [f, ite_eq_right hi, sum_singleton, le_refl]
+  grind
+
+end
 
 end Erdos408.TwoSided.DivModel

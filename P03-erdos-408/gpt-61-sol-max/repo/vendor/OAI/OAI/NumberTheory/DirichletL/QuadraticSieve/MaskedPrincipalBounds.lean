@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.CuspIntegration
 
@@ -10,80 +11,80 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem middleTruncation_coprime_common_mask
-    (G C : Ideal O) (hG : Squarefree G) (hC : Squarefree C) (hGC : IsCoprime G C)
-    (W : ℝ → ℂ) (X Y Z lengthScale : ℝ) :
+     G C  (hG : Squarefree G) (hC : Squarefree C) (hGC : IsCoprime G C)
+     W   X Y Z lengthScale  :
     middleTruncation (fun P : primePool {G * C} => P.val) Finset.univ W X Y Z lengthScale =
       ∑ q ∈ idealDivisors G, (UniqueFactorizationMonoid.moebius q : ℂ) *
         middleTruncation (fun P : primePool {C} => P.val) Finset.univ W
@@ -134,7 +135,7 @@ theorem middleTruncation_coprime_common_mask
     ring
   · simp only [hp, ite_false, mul_zero]
 
-theorem sqrt_norm_divisor_scale (M B q : ℝ) (hM : 0 ≤ M) (_hB : 0 ≤ B) (hq : 0 < q) :
+theorem sqrt_norm_divisor_scale  M B q  (hM : 0 ≤ M) (_hB : 0 ≤ B) (hq : 0 < q) :
     Real.sqrt (M / B) / q = Real.sqrt ((M / q ^ 2) / B) := by
   rw [Real.sqrt_div hM, Real.sqrt_div (by positivity : 0 ≤ M / q ^ 2), Real.sqrt_div hM, Real.sqrt_sq hq.le]
   ring
@@ -144,7 +145,7 @@ variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
 
 def originalMaskedTruncatedMiddle (G : Ideal O) (W : 𝓢(ℝ, ℂ))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ) : ℂ :=
+    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ)  :=
   ∑ i, ∑ j, ∑ k, originalTerm rows left right a b 1 1 i j k *
     middleTruncation (fun P : primePool {G * (left j * right k)} => P.val) Finset.univ W
       (Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ))) (Y i) (Z i) lengthScale
@@ -255,9 +256,9 @@ theorem HasSieveExponent.original_masked_truncated_middle {α : ℝ} (hexp : Has
 
 end
 
-open ActualEisensteinCubic IdealMobiusDivisorSum IdealCoprimeSieveOperator
+open   IdealMobiusDivisorSum IdealCoprimeSieveOperator
 
-theorem HasSieveExponent.actual_principal_difference {α : ℝ} (hexp : HasSieveExponent α)
+theorem HasSieveExponent.actual_principal_difference  {α}  (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) :
     ∃ C : ℝ, 0 < C ∧ ∀ {n : Type} [Fintype n] [DecidableEq n]
       (cols : n → Ideal O) (_hinj : Function.Injective cols)
@@ -296,46 +297,41 @@ theorem HasSieveExponent.actual_principal_difference {α : ℝ} (hexp : HasSieve
 end CanonicalQuadraticSieve
 
 namespace ShortDraftDescent
-open MeasureTheory Filter
+ 
 
 end ShortDraftDescent
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic FourierBridge
+open   FourierBridge
 
-def halfShellFactor (N q : ℝ) : ℝ := Real.sqrt (N/2) / Real.sqrt q
+def halfShellFactor (N q : ℝ)  := Real.sqrt (N/2) / Real.sqrt q
 
-lemma halfShellFactor_nonneg (N q : ℝ) : 0 ≤ halfShellFactor N q := by
+lemma halfShellFactor_nonneg  N q  : 0 ≤ halfShellFactor N q := by
   unfold halfShellFactor
   positivity
 
-lemma halfShellFactor_le_one (N q : ℝ) (hq : 0 < q) (h : N/2 ≤ q) :
+lemma halfShellFactor_le_one  N q  (hq : 0 < q) (h : N/2 ≤ q) :
     halfShellFactor N q ≤ 1 := by
   unfold halfShellFactor
-  exact (div_le_one (Real.sqrt_pos.mpr hq)).mpr (Real.sqrt_le_sqrt h)
+  bound
 
-lemma halfShellFactor_pair (M F N i j : ℝ) (hN : 0 < N) (hi : 0 < i) (hj : 0 < j)
+lemma halfShellFactor_pair  M F N i j  (hN : 0 < N) (hi : 0 < i) (hj : 0 < j)
     (hF : 0 < F) :
     (2*M/(F*N))*halfShellFactor N i*halfShellFactor N j =
       M/(Real.sqrt (i*j)*F) := by
   unfold halfShellFactor
   rw [Real.sqrt_mul hi.le]
-  have hs := Real.sq_sqrt (show 0 ≤ N/2 by positivity)
-  have hsi := (Real.sqrt_pos.mpr hi).ne'
-  have hsj := (Real.sqrt_pos.mpr hj).ne'
-  field_simp
-  rw [hs]
-  ring
+  grind
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
 
 def smallPrincipalCorrection (S T : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) : ℝ :=
+    (a : n → ℂ) (b : p → ℂ) (M F : ℝ)  :=
   ∑ D ∈ S, ∑ E ∈ T, ∑ i,
     ‖∑ j, ∑ k, originalTerm rows left right a b D E i j k *
       ((M/(Real.sqrt ((Ideal.absNorm (left j) : ℝ)*(Ideal.absNorm (right k) : ℝ))*F) : ℝ) : ℂ)‖
@@ -344,7 +340,7 @@ omit [Fintype m] [Fintype n] [Fintype p] [DecidableEq m] [DecidableEq n] [Decida
 lemma originalTerm_real_scaling
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (a : n → ℂ) (b : p → ℂ) (u : n → ℝ) (v : p → ℝ)
-    (D E : Ideal O) (i : m) (j : n) (k : p) :
+     D E   i   j   k  :
     originalTerm rows left right (fun j => a j*(u j:ℂ)) (fun k => b k*(v k:ℂ)) D E i j k =
       originalTerm rows left right a b D E i j k * (u j:ℂ) * (v k:ℂ) := by
   unfold originalTerm
@@ -410,7 +406,7 @@ theorem smallPrincipalCorrection_bound
 
 end
 
-open ActualEisensteinCubic
+ 
 
 theorem HasSieveExponent.small_principal_correction {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
@@ -444,10 +440,10 @@ theorem HasSieveExponent.small_principal_correction {α : ℝ} (hexp : HasSieveE
       (dual_middle_scale_shape M F B N (D₁*D₂) U α hM hF (by linarith) (by linarith) hcut)
       (by positivity)
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
-theorem truncationError_symmetric_bound (m : ℕ) :
+theorem truncationError_symmetric_bound  m  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
         (_hinj : Function.Injective P) (S : Finset ι) (W : 𝓢(ℝ, ℂ)) (X₀ X T : ℝ),
@@ -468,7 +464,7 @@ theorem truncationError_symmetric_bound (m : ℕ) :
       mul_le_mul_of_nonneg_left hs (by positivity)
     _ = _ := by ring
 
-theorem primePool_symmetric_error_bound (m : ℕ) :
+theorem primePool_symmetric_error_bound  m  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ (ε : ℝ) (hε : 0 < ε) (G : Ideal O) (_hG : G ≠ 0)
         (W : 𝓢(ℝ, ℂ)) (X₀ X T : ℝ),
@@ -487,8 +483,8 @@ theorem primePool_symmetric_error_bound (m : ℕ) :
   exact div_le_div_of_nonneg_right
     (mul_le_mul_of_nonneg_right (support_card_bound ε hε G hG) (by positivity)) (by positivity)
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+ 
+ 
 
 theorem originalTerm_one_norm_le {m n p : Type*}
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
@@ -553,7 +549,7 @@ theorem finite_ideal_family_card_bound {m : Type*} [Fintype m]
   classical
   have hb := DescentFiberCost.finite_ideal_count_real (Finset.univ.image I) B hB
     (by intro J hJ; obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hJ; exact hzero i)
-    (by intro J hJ; obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hJ; exact hNorm i)
+    (by simp_all)
   simpa only [Finset.card_image_of_injective _ hI, Finset.card_univ] using hb
 
 theorem actual_pair_error_ideal_bound {m n : Type*} [Fintype m] [Fintype n]

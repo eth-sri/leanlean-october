@@ -10,20 +10,19 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff SchwartzMap
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 
-def rawDyadicLabel (x : RawTailIndex) : ℕ×ℕ×ℕ :=
+variable {ι : Type*} [Fintype ι] {N a c : ActualEisensteinCubic.O} {mode : Bool}
+
+def rawDyadicLabel (x : RawTailIndex)  :=
   (x.1,Nat.clog 2 (Ideal.absNorm x.2.2.val),Nat.clog 2 (Ideal.absNorm x.2.1.val))
 
-def rawDyadicCenter (scale : ℝ) (i : ℕ×ℕ×ℕ) : ℝ :=
+def rawDyadicCenter (scale : ℝ) (i : ℕ×ℕ×ℕ)  :=
   scale*(ramifiedScale 1 completedRamifiedStep i.1)^3*(2:ℝ)^i.2.2*((2:ℝ)^i.2.1)^3
 
-lemma rawDyadicCenter_lower (scale : ℝ) (hs : 0≤scale) (x : RawTailIndex) :
+lemma rawDyadicCenter_lower  scale  (hs : 0≤scale)  x  :
     rawDyadicCenter scale (rawDyadicLabel x)/16 ≤
       scale*(ramifiedScale 1 completedRamifiedStep x.1)^3*
-        (Ideal.absNorm x.2.1.val:ℝ)*(Ideal.absNorm x.2.2.val:ℝ)^3 := by
-  exact dyadic_kernel_argument_lower scale 1 completedRamifiedStep hs (by norm_num)
+        (Ideal.absNorm x.2.1.val:ℝ)*(Ideal.absNorm x.2.2.val:ℝ)^3 := dyadic_kernel_argument_lower scale 1 completedRamifiedStep hs (by norm_num)
     (le_trans zero_le_one completedRamifiedStep_gt_one.le) (rawDyadicLabel x)
     ⟨x.2.1.val,(mem_dualIdealDyad _ _).mpr ⟨x.2.1.property,rfl⟩⟩
     ⟨x.2.2.val,(mem_dualIdealDyad _ _).mpr ⟨x.2.2.property,rfl⟩⟩

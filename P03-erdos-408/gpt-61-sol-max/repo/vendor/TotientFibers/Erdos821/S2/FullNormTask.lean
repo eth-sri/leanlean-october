@@ -12,7 +12,7 @@ namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-def UniformTruncatedMemoryEstimate (F : FixedData) (r : MemoryParameters F) : Prop :=
+def UniformTruncatedMemoryEstimate (F ) (r : MemoryParameters F)  :=
   ∀ E : ℝ, 0 < E → ∃ Eid : ℝ, 0 < Eid ∧
     ∀ (m : ℕ) (C₁ : ℝ), ∃ J₀ : ℕ, ∀ J ≥ J₀, ∀ C₂ : ℝ, ∃ x₀ : ℝ,
       ∀ x ≥ x₀, ∀ P : PrimeGroups, P.Admissible F x →
@@ -23,7 +23,7 @@ def UniformTruncatedMemoryEstimate (F : FixedData) (r : MemoryParameters F) : Pr
         ‖truncatedDistinctMemoryExpression A (N x) (memoryCutoff x) r.rho theta‖ ≤
           (L x) ^ (-E * (N x : ℝ))
 
-def UniformFullMemoryEstimate (F : FixedData) (r : MemoryParameters F) : Prop :=
+def UniformFullMemoryEstimate (F ) (r : MemoryParameters F)  :=
   ∀ E : ℝ, 0 < E → ∃ Eid : ℝ, 0 < Eid ∧
     ∀ (m : ℕ) (C₁ : ℝ), ∃ J₀ : ℕ, ∀ J ≥ J₀, ∀ C₂ : ℝ, ∃ x₀ : ℝ,
       ∀ x ≥ x₀, ∀ P : PrimeGroups, P.Admissible F x →
@@ -33,7 +33,7 @@ def UniformFullMemoryEstimate (F : FixedData) (r : MemoryParameters F) : Prop :=
       ∀ theta : ℝ,
         ‖distinctMemoryExpression A (N x) r.rho theta‖ ≤ (L x) ^ (-E * (N x : ℝ))
 
-def FullMemoryNormTask (F : FixedData) (r : MemoryParameters F) : Prop :=
+def FullMemoryNormTask (F ) (r : MemoryParameters F)  :=
   GhostAnalyticParametersTask F r → EmptyBoundaryMassTask → MemoryEdgeAbsoluteTask F r →
     UniformTruncatedMemoryEstimate F r → TailAbsorptionTask → UniformFullMemoryEstimate F r
 

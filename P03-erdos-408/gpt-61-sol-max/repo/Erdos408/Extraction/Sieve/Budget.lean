@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Sieve.Tail
 public import Mathlib.Analysis.Complex.ExponentialBounds
@@ -25,13 +26,13 @@ open Filter Real Finset
 
 namespace Sieve
 
-noncomputable section
+
 
 /-- A term `C T^a A` with saving `A ≤ T^{-b}` and `|C| ≤ T`, `a + 301 ≤ b`, is at
 most `T⁻³⁰⁰`. -/
 lemma le_inv_pow_of_le {T C A : ℝ} {a b : ℕ} (hT : 1 ≤ T) (hC : |C| ≤ T) (hA0 : 0 ≤ A)
     (hA : A ≤ (T ^ b)⁻¹) (hab : a + 301 ≤ b) : C * T ^ a * A ≤ (T ^ 300)⁻¹ := by
-  have hT0 : 0 < T := by linarith
+  
   have h1 : C * T ^ a * A ≤ T * T ^ a * (T ^ b)⁻¹ := by
     have : C * T ^ a ≤ T * T ^ a :=
       mul_le_mul_of_nonneg_right ((le_abs_self C).trans hC) (by positivity)
@@ -46,7 +47,7 @@ lemma le_inv_pow_of_le {T C A : ℝ} {a b : ℕ} (hT : 1 ≤ T) (hC : |C| ≤ T)
 lemma rpow_neg_le_inv_pow {T a : ℝ} {b : ℕ} (hT : 1 ≤ T) (hab : (b : ℝ) ≤ a) :
     T ^ (-a) ≤ (T ^ b)⁻¹ := by
   rw [rpow_neg (by linarith), ← rpow_natCast]
-  exact inv_anti₀ (by positivity) (rpow_le_rpow_of_exponent_le hT hab)
+  bound
 
 /-- The savings of the extraction, for large `x`. -/
 lemma eventually_savings {K : ℕ} (hK : 1 ≤ K) {c c' : ℝ} (hc : 0 < c) (hc' : 0 < c') :
@@ -58,7 +59,7 @@ lemma eventually_savings {K : ℕ} (hK : 1 ≤ K) {c c' : ℝ} (hc : 0 < c) (hc'
       Real.log x / x ^ presieveExponent c 200 x ≤ (logLog x ^ 400)⁻¹ ∧
       Real.log x ^ (-c') ≤ (logLog x ^ 400)⁻¹ ∧
       (compositeCutoff 1001 x : ℝ) ≤ logLog x := by
-  have hK0 : (0 : ℝ) < K := by exact_mod_cast hK
+  
   filter_upwards [tendsto_logLog.eventually_ge_atTop 1,
     eventually_sieveDepth (Ch := 200) (by norm_num) 0,
     eventually_presieveExponent hc (by norm_num : (0 : ℝ) < 200),
@@ -104,7 +105,7 @@ lemma eventually_savings {K : ℕ} (hK : 1 ≤ K) {c c' : ℝ} (hc : 0 < c) (hc'
       rw [one_div, inv_le_iff_one_le_mul₀ hγ0] at hγinv
       have h1 : 2 * T ^ 23 * presieveExponent c 200 x ≤
           Real.log x * presieveExponent c 200 x := mul_le_mul_of_nonneg_right hL23 hγ0.le
-      have h2 : T ^ 23 = T * T ^ 22 := by ring
+      
       nlinarith
     have hz : Real.log x ^ 2 ≤ x ^ presieveExponent c 200 x := by
       rw [rpow_def_of_pos hx0, show Real.log x ^ 2 = exp (2 * T) by
@@ -142,16 +143,9 @@ lemma final_budget {T eh iL Lz j2 e1 Lc J C₂ C₃ C₁₂ C₁₀ : ℝ} (hT :
   have h5' : J * (C₁₂ * Lc) ≤ C₁₂ * T ^ 1 * Lc := by
     rw [pow_one, mul_comm C₁₂ T, mul_assoc]
     exact mul_le_mul_of_nonneg_right hJ (mul_nonneg hC₁₂0 hLc0)
-  have e1' : C₂ * (T ^ 4 * T ^ 22 * eh + T ^ 4 * iL) = C₂ * T ^ 26 * eh + C₂ * T ^ 4 * iL := by
-    ring
-  have e2' : C₃ * (T ^ 62 * Lz + T ^ 62 * T ^ 44 * j2) =
-      C₃ * T ^ 62 * Lz + C₃ * T ^ 106 * j2 := by ring
-  have e3' : T ^ 62 * (C₁₀ * (T ^ 22 * e1 + iL)) = C₁₀ * T ^ 84 * e1 + C₁₀ * T ^ 62 * iL := by
-    ring
-  rw [e1', e2', e3']
-  linarith
+  grind
 
-end
+
 
 end Sieve
 

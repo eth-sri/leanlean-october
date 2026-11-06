@@ -1,10 +1,11 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P5.MomentNumerics
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 open Filter
 
@@ -76,7 +77,7 @@ theorem exceptional_times (a b A : ℝ) (ha : 0 < a) (hab : a < b) (hb : b < 1)
   have hPpos : 0 < P := by linarith
   have hL1 : 1 ≤ L x := by
     have h : (1 : ℝ) ≤ Real.exp 1 := by
-      simpa only [Real.exp_zero] using Real.exp_le_exp.mpr (show (0 : ℝ) ≤ 1 by norm_num)
+      norm_num
     exact h.trans hx.2.1
   have hLpos : 0 < L x := by linarith
   let m := ⌊Real.log Y / Real.log (2 * P)⌋₊

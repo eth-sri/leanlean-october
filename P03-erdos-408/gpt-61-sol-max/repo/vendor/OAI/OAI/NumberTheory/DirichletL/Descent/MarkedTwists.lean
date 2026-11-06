@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.MarkedFourier
 
@@ -9,10 +10,10 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CompletedGauss CanonicalRowCompletion
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-theorem markedCompletedT_monoid (Ψ φ : Eis →* ℂ) (W : ℝ → ℂ) (X : ℝ) :
+
+
+theorem markedCompletedT_monoid  Ψ φ   W   X  :
     markedCompletedT Ψ W X (fun A => φ (primaryGenerator A)) = completedT (φ * Ψ) W X := by
   unfold markedCompletedT completedT
   apply tsum_congr
@@ -24,8 +25,8 @@ theorem markedCompletedT_monoid (Ψ φ : Eis →* ℂ) (W : ℝ → ℂ) (X : �
     show primaryGenerator (J ^ 3) = primaryGenerator J ^ 3 from map_pow primaryGeneratorHom J 3]
   exact mul_comm _ _
 
-theorem whole_prime_mark_eq_mask_complement (p : Eis) (hp : Prime p)
-    (A : Ideal Eis) (hA : primaryGenerator A ≠ 0) :
+theorem whole_prime_mark_eq_mask_complement  p  (hp : Prime p)
+     A  (hA : primaryGenerator A ≠ 0) :
     (if Ideal.span {p} ∣ A then (1 : ℂ) else 0) =
       1 - coprimalityMask p (primaryGenerator A) := by
   have hd : Ideal.span {p} ∣ A ↔ p ∣ primaryGenerator A := by
@@ -40,8 +41,8 @@ theorem whole_prime_mark_eq_mask_complement (p : Eis) (hp : Prime p)
   by_cases h : p ∣ primaryGenerator A <;> simp [hd, h]
 
 theorem markedCompletedT_prime_product_twists {ι : Type*}
-    (S : Finset ι) (p : ι → Eis) (hp : ∀ i ∈ S, Prime (p i))
-    (Ψ : Eis →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
+    (S : Finset ι) (p : ι → ActualEisensteinCubic.O) (hp : ∀ i ∈ S, Prime (p i))
+     Ψ   W  (hW : HasCompactSupport W)  X  (hX : 0 < X) :
     markedCompletedT Ψ W X
       (fun A => ∏ i ∈ S, if Ideal.span {p i} ∣ A then 1 else 0) =
       ∑ T ∈ S.powerset, (-1 : ℂ) ^ T.card *
@@ -56,8 +57,7 @@ theorem markedCompletedT_prime_product_twists {ι : Type*}
     calc
       _ = ∏ i ∈ S, (1 - coprimalityMask (p i) (primaryGenerator A)) := by
         apply Finset.prod_congr rfl
-        intro i hi
-        exact whole_prime_mark_eq_mask_complement (p i) (hp i hi) A hA
+        simp_all [whole_prime_mark_eq_mask_complement]
       _ = _ := by
         rw [Finset.prod_sub]
         simp
@@ -66,7 +66,7 @@ theorem markedCompletedT_prime_product_twists {ι : Type*}
   intro T hT
   rw [markedCompletedT_const_mul, markedCompletedT_monoid]
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

@@ -22,22 +22,22 @@ open CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion
 open CenteredMomentHeckeColumnWindow CenteredMomentSecondWindowBudget
 open CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentMobiusRegroup
 open CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalAnnularCommonBound
-local notation "O"=>ActualEisensteinCubic.O
 
-def pairMajorant {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (b : α→ℝ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
-  ∑i∈S,∑j∈S,b i*b j*‖∑'z:O,(gaussRow (a i) (ha i) z*star (gaussRow (a j) (ha j) z))*
+
+def pairMajorant {α } (S : Finset α) (a : α→ActualEisensteinCubic.O)
+    (ha : ∀i,Supported (Ideal.span {a i})) (b : α→ℝ) (W : 𝓢(ℝ,ℂ)) (K : ℝ)  :=
+  ∑i∈S,∑j∈S,b i*b j*‖∑'z:ActualEisensteinCubic.O,(gaussRow (a i) (ha i) z*star (gaussRow (a j) (ha j) z))*
     W (‖eisEmbedding z‖^2/K)‖
 
-lemma pairMajorant_nonneg {α : Type*} (S : Finset α) (a : α→O)
+lemma pairMajorant_nonneg {α : Type*} (S : Finset α) (a : α→ActualEisensteinCubic.O)
     (ha : ∀i,Supported (Ideal.span {a i})) (b : α→ℝ) (hb : ∀i∈S,0≤b i)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) : 0≤pairMajorant S a ha b W K :=
+     W   K  : 0≤pairMajorant S a ha b W K :=
   Finset.sum_nonneg (fun i hi=>Finset.sum_nonneg (fun j hj=>
     mul_nonneg (mul_nonneg (hb i hi) (hb j hj)) (norm_nonneg _)))
 
-lemma gaussEnergy_pair_bound {α : Type*} (S : Finset α) (a : α→O)
+lemma gaussEnergy_pair_bound {α : Type*} (S : Finset α) (a : α→ActualEisensteinCubic.O)
     (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ) (b : α→ℝ)
-    (hc : ∀i∈S,‖c i‖≤b i) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+    (hc : ∀i∈S,‖c i‖≤b i)  W   K  (hK : 0<K) :
     (gaussEnergy S a ha c W K).re≤pairMajorant S a ha b W K := by
   apply (Complex.re_le_norm _).trans
   rw [gaussEnergy_expand S a ha c W K hK]
@@ -54,18 +54,18 @@ lemma gaussEnergy_pair_bound {α : Type*} (S : Finset α) (a : α→O)
 
 variable {ι : Type*} [Fintype ι]
 
-def coarse (s : OriginalData ι) (C : Ideal O) (hC : Supported C)
-    (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
+def coarse (s : OriginalData ι) (C ) (hC : Supported C)
+    (L : Ideal ActualEisensteinCubic.O) (W : 𝓢(ℝ,ℂ)) (K : ℝ)  :=
   pairMajorant Finset.univ (sourceGenerator (residualPool C hC.1 s.columns))
     (sourceGenerator_supported _) (fun I:supportedColumns (residualPool C hC.1 s.columns)=>
-      ‖if IsCoprime C (I:Ideal O) ∧ L∣(I:Ideal O) then s.beta (C*I) else 0‖) W K
+      ‖if IsCoprime C (I:Ideal ActualEisensteinCubic.O) ∧ L∣(I:Ideal ActualEisensteinCubic.O) then s.beta (C*I) else 0‖) W K
 
-lemma coarse_nonneg (s : OriginalData ι) (C : Ideal O) (hC : Supported C)
-    (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : 0≤coarse s C hC L W K :=
+lemma coarse_nonneg (s : OriginalData ι)  C   hC 
+     L   W   K  : 0≤coarse s C hC L W K :=
   pairMajorant_nonneg _ _ _ _ (fun _ _=>norm_nonneg _) _ _
 
-lemma commonEnergy_coarse (s : OriginalData ι) (C : Ideal O) (hC : Supported C)
-    (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) (τ : Character) (v : ℝ) :
+lemma commonEnergy_coarse (s : OriginalData ι)  C   hC 
+     L   W   K  (hK : 0<K)  τ   v  :
     (commonEnergy s C hC τ v L W K).re≤coarse s C hC L W K := by
   apply gaussEnergy_pair_bound _ _ _ _ _ _ W K hK
   intro I hI
@@ -76,12 +76,12 @@ lemma commonEnergy_coarse (s : OriginalData ι) (C : Ideal O) (hC : Supported C)
 
 universe u
 
-theorem actual_supported_annular_block (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ) :
+theorem actual_supported_annular_block  W   decay J₁ J₂  :
     ∃ Cbound : ℝ, 0≤Cbound ∧ ∀ {ι : Type u} [Fintype ι],
     ∀ (η : Character) (s : OriginalData ι) (t : ℝ)
-      (C D : Ideal O) (hC : Supported C) (hD : Supported D),
+      (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D),
     primeSupport C=primeSupport D → ∀ (E : Finset (CommonIndex C D))
-      (rows : Finset O) (K : ℝ), 0<K → ∀ n : Fin 4→ℤ,
+      (rows : Finset ActualEisensteinCubic.O) (K : ℝ), 0<K → ∀ n : Fin 4→ℤ,
     ∀ Hsource : ℝ,(∀I,s.beta I≠0→(I.absNorm:ℝ)≤Hsource) →
     ∀ E₁ E₂ : ℝ,0≤E₁ → 0≤E₂ →
     (∀ L∈divisorPool (Finset.univ : Finset (columns C D hD.1 s.columns))
@@ -105,17 +105,17 @@ theorem actual_supported_annular_block (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : �
   obtain ⟨Cb,hCb,hbound⟩:=actual_annular_block_from_common_energy W decay J₁ J₂
   refine ⟨Cb,hCb,?_⟩
   intro ι inst η s t C D hC hD hCD E rows K hK n Hsource hβ E₁ E₂ hE₁ hE₂ hleft hright
-  let live (L : Ideal O) : Prop := (L.absNorm:ℝ)≤Hsource/(D.absNorm:ℝ)
+  let live (L : Ideal ActualEisensteinCubic.O) : Prop := (L.absNorm:ℝ)≤Hsource/(D.absNorm:ℝ)
   let U := CenteredMomentFirstAnnularMajorant.profile
   let H := dyadicScale (n 1)
-  let active (L : Ideal O) : Prop := live L ∧ (UniqueFactorizationMonoid.moebius L:ℂ)≠0
-  let F₁ (L : Ideal O) := if active L then E₁/(L.absNorm:ℝ) else coarse s C hC L U H
-  let F₂ (L : Ideal O) := if active L then E₂/(L.absNorm:ℝ) else if live L then coarse s D hD L U H else 0
-  have hF₁ (L : Ideal O) : 0≤F₁ L := by
+  let active (L : Ideal ActualEisensteinCubic.O) : Prop := live L ∧ (UniqueFactorizationMonoid.moebius L:ℂ)≠0
+  let F₁ (L : Ideal ActualEisensteinCubic.O) := if active L then E₁/(L.absNorm:ℝ) else coarse s C hC L U H
+  let F₂ (L : Ideal ActualEisensteinCubic.O) := if active L then E₂/(L.absNorm:ℝ) else if live L then coarse s D hD L U H else 0
+  have hF₁ (L : Ideal ActualEisensteinCubic.O) : 0≤F₁ L := by
     dsimp only [F₁]; split_ifs
     · exact div_nonneg hE₁ (Nat.cast_nonneg _)
     · exact coarse_nonneg _ _ _ _ _ _
-  have hF₂ (L : Ideal O) : 0≤F₂ L := by
+  have hF₂ (L : Ideal ActualEisensteinCubic.O) : 0≤F₂ L := by
     dsimp only [F₂]; split_ifs
     · exact div_nonneg hE₂ (Nat.cast_nonneg _)
     · exact coarse_nonneg _ _ _ _ _ _
@@ -160,13 +160,13 @@ theorem actual_supported_annular_block (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : �
         simp only [F₂,ite_eq_right ha,live,ite_eq_right hl,windowBudget,Real.sqrt_zero,zero_mul,mul_zero]
   exact hh.trans_eq (by rw [he]; ring)
 
-theorem actual_supported_annular_harmonic (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ)
+theorem actual_supported_annular_harmonic  W   decay J₁ J₂ 
     (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
     ∃ Cbound : ℝ, 0<Cbound ∧ ∀ᶠZ : ℝ in atTop,1<Z ∧ ∀ {ι : Type u} [Fintype ι],
     ∀ (η : Character) (s : OriginalData ι) (t : ℝ)
-      (C D : Ideal O) (hC : Supported C) (hD : Supported D),
+      (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D),
     primeSupport C=primeSupport D → ∀ (E : Finset (CommonIndex C D))
-      (rows : Finset O) (K : ℝ), 0<K → ∀ n : Fin 4→ℤ,
+      (rows : Finset ActualEisensteinCubic.O) (K : ℝ), 0<K → ∀ n : Fin 4→ℤ,
     ∀ Hsource : ℝ,(∀I,s.beta I≠0→(I.absNorm:ℝ)≤Hsource) →
     Hsource/(D.absNorm:ℝ)≤Z^B → ∀ E₁ E₂ : ℝ,0≤E₁ → 0≤E₂ →
     (∀ L∈divisorPool (Finset.univ : Finset (columns C D hD.1 s.columns))

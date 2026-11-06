@@ -7,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindow
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialResidualPool
 open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
 open InverseInitialExcludedPool InverseInitialCommonTuples InverseInitialEnergyCallerWindow
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem exists_original_complete_pool {κ:Type*}
-    (q:ℕ)(Z r b cap Btree:ℝ)(hZ:0<Z)(hBtree:0≤Btree)
-    (T:Finset κ)(P:κ→Ideal O)(j:Ideal O)
+     q (Z r b cap Btree:ℝ)(hZ:0<Z)(hBtree:0≤Btree)
+    (T:Finset κ)(P:κ→Ideal ActualEisensteinCubic.O) j 
     (hP:∀k∈T,Admissible (P k))(hj:∀k∈T,j∣P k)
     (hPE:∀k∈T,outside (reflectionExcludedPrimes q) (P k)):
     ∃Dpool:ℕ,Btree*Z^(cap+1)≤Dpool ∧
@@ -30,6 +30,6 @@ theorem exists_original_complete_pool {κ:Type*}
 
 end SevenEighths.InverseInitialResidualPool
 
-end
+
 
 end OAI

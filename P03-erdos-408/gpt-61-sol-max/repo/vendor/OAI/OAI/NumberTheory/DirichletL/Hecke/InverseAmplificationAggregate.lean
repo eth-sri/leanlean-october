@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationFamily
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationScaleSup
@@ -14,7 +15,7 @@ namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic
 abbrev PrimeIdeal := SmoothMobiusCorrection.PrimeIdeal
 
-def primeRowMap (p : FreeRow×PrimeIdeal) : NonzeroElement :=
+def primeRowMap (p : FreeRow×PrimeIdeal)  :=
   amplifiedElement ⟨p.1.val,p.1.property.1⟩ ⟨p.2.val,p.2.property.ne_zero⟩
 
 theorem primeRowMap_injective : Function.Injective primeRowMap := by
@@ -22,12 +23,9 @@ theorem primeRowMap_injective : Function.Injective primeRowMap := by
   have he : rowMap (p.1,⟨p.2.val,p.2.property.ne_zero⟩)=
       rowMap (q.1,⟨q.2.val,q.2.property.ne_zero⟩) := congrArg Subtype.val hpq
   have hh := rowMap_injective he
-  apply Prod.ext
-  · exact congrArg (fun r : FreeRow×NonzeroIdeal => r.1) hh
-  · apply Subtype.ext
-    exact congrArg (fun r : FreeRow×NonzeroIdeal => r.2.val) hh
+  aesop
 
-theorem primeRowMap_norm_bound (p : FreeRow×PrimeIdeal) (U V : ℝ)
+theorem primeRowMap_norm_bound  p  (U V : ℝ)
     (hU : (Ideal.span {p.1.val}).absNorm≤U) (hV : (p.2.val.absNorm : ℝ)≤V) :
     ((Ideal.span {((primeRowMap p).val)}).absNorm : ℝ)≤U*V^6 := by
   have hn := rowMap_norm (p.1,⟨p.2.val,p.2.property.ne_zero⟩)
@@ -37,7 +35,7 @@ theorem primeRowMap_norm_bound (p : FreeRow×PrimeIdeal) (U V : ℝ)
     (by positivity) ((Nat.cast_nonneg _).trans hU)
 
 theorem averaged_energy (data : RowData) (rows : Finset FreeRow) (primes : Finset PrimeIdeal)
-    (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hb : 0≤b)
+     W  (a b : ℝ) (ha : 0<a) (hb : 0≤b)
     (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
     (D U V E : ℝ) (hD : 0<D) (hV : 1≤V)
     (hrows : ∀ u∈rows, ((Ideal.span {u.val}).absNorm : ℝ)≤U)

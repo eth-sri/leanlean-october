@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Hypotheses
 
@@ -19,8 +20,8 @@ namespace Erdos408.Graph
 variable {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
 
 /-- Lists are physical exactly when their transports are. -/
-lemma mem_physicalLists_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) {M n : ℕ}
-    (p : κ → Fin M → ℕ) :
+lemma mem_physicalLists_reindex (e : ι ≃ κ)  P   {M n} 
+     p  :
     p ∈ physicalLists (fun k => P (e.symm k)) M n ↔
       (fun g => p (e g)) ∈ physicalLists P M n := by
   simp only [physicalLists, Finset.mem_filter, Fintype.mem_piFinset]
@@ -30,14 +31,12 @@ lemma mem_physicalLists_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) {M n : �
   · exact (e.forall_congr_right (q := fun k => Function.Injective (p k) ∧ ∀ i, p k i ∣ n)).symm
 
 /-- Auxiliary labels are those of the original groups, transported. -/
-lemma mem_auxLabels_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) {J : ℕ} (C : ι → Finset (Fin J))
+lemma mem_auxLabels_reindex (e : ι ≃ κ)  P  {J : ℕ} (C : ι → Finset (Fin J))
     (a : κ → Fin J → ℕ) :
     a ∈ auxLabels (fun k => P (e.symm k)) (fun k => C (e.symm k)) ↔
       (fun g => a (e g)) ∈ auxLabels P C := by
   simp only [auxLabels, Fintype.mem_piFinset]
-  exact (e.forall_congr_right (q := fun k => ∀ i, a k i ∈
-    if i ∈ C (e.symm k) then P (e.symm k) else {1})).symm.trans
-      (by simp only [Equiv.symm_apply_apply])
+  grind
 
 omit [DecidableEq ι] [DecidableEq κ] in
 /-- The edge product of transported lists. -/
@@ -51,14 +50,14 @@ lemma edgeProduct_reindex (e : ι ≃ κ) {J : ℕ} (C : ι → Finset (Fin J))
 
 omit [DecidableEq ι] [DecidableEq κ] in
 /-- `ω` is unchanged by reindexing. -/
-lemma groupPrimeCount_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) (n : ℕ) :
+lemma groupPrimeCount_reindex (e : ι ≃ κ)  P   n  :
     groupPrimeCount (fun k => P (e.symm k)) n = groupPrimeCount P n := by
   unfold groupPrimeCount
   exact Equiv.sum_comp e.symm fun g => primeCount (P g) n
 
 /-- The physical norm is unchanged by reindexing. -/
-lemma physicalNormSq_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) (M : ℕ) (S : Finset ℕ)
-    (f : ℕ → ℂ) :
+lemma physicalNormSq_reindex (e : ι ≃ κ)  P   M   S 
+     f  :
     physicalNormSq (fun k => P (e.symm k)) M S f = physicalNormSq P M S f := by
   unfold physicalNormSq
   refine Finset.sum_congr rfl fun n _ => ?_
@@ -70,10 +69,10 @@ lemma physicalNormSq_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) (M : ℕ) (
   rw [hcard, Equiv.prod_comp e.symm (fun g => (harmonicMass (P g))⁻¹ ^ M)]
 
 /-- The pattern pairing is unchanged by reindexing. -/
-lemma patternPairing_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) (q₀ : ℝ) {J : ℕ}
+lemma patternPairing_reindex (e : ι ≃ κ)  P   q₀  {J : ℕ}
     (C : ι → Finset (Fin J))
-    (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ) (ζ : ℝ)
-    (S : Finset ℕ) (f g : ℕ → ℂ) :
+    (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)  ζ 
+     S   f g  :
     patternPairing (fun k => P (e.symm k)) q₀ (fun k => C (e.symm k))
         (fun p p' a => K (fun g => p (e g)) (fun g => p' (e g)) fun g => a (e g)) ζ S f g =
       patternPairing P q₀ C K ζ S f g := by

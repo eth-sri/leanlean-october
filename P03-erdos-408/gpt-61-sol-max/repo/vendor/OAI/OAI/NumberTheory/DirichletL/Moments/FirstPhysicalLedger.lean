@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstExtractedLedger
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Filter
 
@@ -16,10 +16,10 @@ namespace SevenEighths.CenteredMomentFirstPhysicalLedger
 open CenteredMomentFirstScale CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
 open CenteredMomentSectorLocalization CenteredMomentFirstExtractedLedger CenteredMomentDescentLedger
 open CanonicalQuadraticSieve CenteredMomentRankinRadical
-local notation "O" => ActualEisensteinCubic.O
 
-theorem nominal_log (I J E : Ideal O) (hE : E≠0)
-    (Z H X : ℝ) (hH : 0<H) (hX : 0<X) :
+
+theorem nominal_log  I J E  (hE : E≠0)
+     Z H X  (hH : 0<H) (hX : 0<X) :
     Real.logb Z (firstNominalScale I J E H X)=
       2*Real.logb Z X-Real.logb Z ((commonPart I J).absNorm:ℝ)-
         Real.logb Z ((commonPart J I).absNorm:ℝ)+
@@ -40,6 +40,6 @@ theorem nominal_log (I J E : Ideal O) (hE : E≠0)
 
 end SevenEighths.CenteredMomentFirstPhysicalLedger
 
-end
+
 
 end OAI

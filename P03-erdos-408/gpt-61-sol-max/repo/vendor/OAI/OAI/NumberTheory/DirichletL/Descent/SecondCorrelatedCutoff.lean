@@ -16,7 +16,7 @@ local notation "O" => ActualEisensteinCubic.O
 theorem second_correlated_column_denominator {ι : Type*} [DecidableEq ι]
     (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
     (G E S T : Finset ι) (hGS : Disjoint G S) (hGT : Disjoint G T)
-    (L : ℝ) (hL : 0 ≤ L)
+     L  (hL : 0 ≤ L)
     (hS : primeProductNorm p (G ∪ S) ≤ L)
     (hT : primeProductNorm p (G ∪ T) ≤ L) :
     (primeProductNorm p E)^2 * (primeProductNorm p S * primeProductNorm p T) ≤
@@ -29,11 +29,11 @@ theorem second_correlated_column_denominator {ι : Type*} [DecidableEq ι]
         field_simp
     _ ≤ _ := mul_le_mul_of_nonneg_left hbound (sq_nonneg _)
 
-def correlatedSecondRadius {ι : Type*} [DecidableEq ι] (p : ι → O)
-    (d : O) (G E : Finset ι) (L Y H : ℝ) : ℝ :=
+def correlatedSecondRadius {ι } [DecidableEq ι] (p : ι → O)
+    (d : O) (G E : Finset ι) (L Y H : ℝ)  :=
   ‖eisEmbedding d‖^2 * (primeProductNorm p E/primeProductNorm p G)^2 * L^2 * H / Y
 
-theorem full_second_correlated_tail (order : ℕ) :
+theorem full_second_correlated_tail  order  :
     ∃ (s : Finset (ℕ × ℕ)) (Ct : ℝ), 0 < Ct ∧
     ∀ {ι : Type*} [DecidableEq ι]
       (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]

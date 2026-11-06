@@ -9,11 +9,11 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open MeasureTheory CanonicalQuadraticSieve CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
 
 theorem common_measure_energy {Ω κ : Type*} [MeasurableSpace Ω] [Fintype κ]
-    (μ : Measure Ω) (b : Ω → ℂ) (φ : κ → Ω → ℂ) (E : ℝ) (hE : 0 ≤ E)
+    (μ : Measure Ω) (b : Ω → ℂ) (φ : κ → Ω → ℂ)  E  (hE : 0 ≤ E)
     (hb : Integrable (fun t => ‖b t‖) μ)
     (hφ : ∀ k, Integrable (fun t => b t * φ k t) μ)
     (hbound : ∀ t, (∑ k, ‖φ k t‖ ^ 2) ≤ E) :
@@ -40,7 +40,7 @@ theorem common_measure_energy {Ω κ : Type*} [MeasurableSpace Ω] [Fintype κ]
   rw [EuclideanSpace.norm_sq_eq, mul_pow, Real.sq_sqrt hE] at hs
   simpa [e, mul_comm] using hs
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

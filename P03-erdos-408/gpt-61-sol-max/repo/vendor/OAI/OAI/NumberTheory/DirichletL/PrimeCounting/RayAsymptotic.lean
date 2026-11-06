@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.RayQuotient
 public import OAI.NumberTheory.DirichletL.IdealLogDerivative
@@ -21,15 +22,15 @@ def principalRegularization (F : ℂ → ℂ) (residue : ℂ) : ℂ → ℂ :=
   Function.update (fun s => (s - 1) * F s) 1 residue
 
 omit [Finite (O ⧸ M)] in
-theorem principalRegularization_eventuallyEq (F : ℂ → ℂ) (residue : ℂ)
-    {s : ℂ} (hs : s ≠ 1) :
+theorem principalRegularization_eventuallyEq  F   residue 
+     {s}  (hs : s ≠ 1) :
     principalRegularization F residue =ᶠ[𝓝 s] (fun z => (z - 1) * F z) := by
   refine eventuallyEq_iff_exists_mem.mpr ?_
   exact ⟨_, isOpen_ne.mem_nhds hs, fun z hz => Function.update_of_ne (Set.mem_ofPred.mp hz) ..⟩
 
 omit [Finite (O ⧸ M)] in
-theorem principalRegularization_analyticAt (F : ℂ → ℂ) (residue : ℂ)
-    {s : ℂ} (hs : s ≠ 1) (hF : AnalyticAt ℂ F s) :
+theorem principalRegularization_analyticAt  F   residue 
+     {s}  (hs : s ≠ 1) (hF : AnalyticAt ℂ F s) :
     AnalyticAt ℂ (principalRegularization F residue) s :=
   ((analyticAt_id.sub analyticAt_const).mul hF).congr
     (principalRegularization_eventuallyEq F residue hs).symm
@@ -45,12 +46,11 @@ theorem principalRegularization_analyticAt_of_local (F R : ℂ → ℂ)
   by_cases hs1 : s = 1
   · subst s
     simp only [principalRegularization, Function.update_self]
-  · rw [principalRegularization, Function.update_of_ne hs1]
-    exact (hs hs1).symm
+  simp_all [principalRegularization]
 
 omit [Finite (O ⧸ M)] in
-theorem principalRegularization_logDeriv (F : ℂ → ℂ) (residue : ℂ)
-    {s : ℂ} (hs : s ≠ 1) (hF : AnalyticAt ℂ F s) (hF0 : F s ≠ 0) :
+theorem principalRegularization_logDeriv  F   residue 
+     {s}  (hs : s ≠ 1) (hF : AnalyticAt ℂ F s) (hF0 : F s ≠ 0) :
     -deriv (principalRegularization F residue) s / principalRegularization F residue s =
       -deriv F s / F s - 1 / (s - 1) := by
   have hd := (principalRegularization_eventuallyEq F residue hs).deriv_eq
@@ -60,7 +60,7 @@ theorem principalRegularization_logDeriv (F : ℂ → ℂ) (residue : ℂ)
   ring
 
 def regularizedFamily (F : rayCharacters M → ℂ → ℂ) (residue : ℂ)
-    (χ : rayCharacters M) : ℂ → ℂ :=
+    (χ : rayCharacters M)  :=
   if χ = 1 then principalRegularization (F χ) residue else F χ
 
 structure AnalyticFamily (F : rayCharacters M → ℂ → ℂ) (residue : ℂ) : Prop where
@@ -73,8 +73,16 @@ structure AnalyticFamily (F : rayCharacters M → ℂ → ℂ) (residue : ℂ) :
   pole_analytic : AnalyticAt ℂ (principalRegularization (F 1) residue) 1
   residue_ne_zero : residue ≠ 0
 
-theorem regularizedFamily_analyticAt {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 ≤ s.re) :
+section
+variable {F : rayCharacters M → ℂ → ℂ} {residue : ℂ} (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ)
+include F residue hF χ s
+
+section
+variable (hs : 1 ≤ s.re)
+include hs
+
+theorem regularizedFamily_analyticAt    
+            :
     AnalyticAt ℂ (regularizedFamily M F residue χ) s := by
   by_cases hχ : χ = 1
   · subst χ
@@ -86,8 +94,8 @@ theorem regularizedFamily_analyticAt {F : rayCharacters M → ℂ → ℂ} {resi
   · rw [regularizedFamily, ite_eq_right hχ]
     exact hF.analytic χ s hs (Or.inl hχ)
 
-theorem regularizedFamily_ne_zero {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 ≤ s.re) :
+theorem regularizedFamily_ne_zero    
+            :
     regularizedFamily M F residue χ s ≠ 0 := by
   by_cases hχ : χ = 1
   · subst χ
@@ -100,24 +108,28 @@ theorem regularizedFamily_ne_zero {F : rayCharacters M → ℂ → ℂ} {residue
   · rw [regularizedFamily, ite_eq_right hχ]
     exact hF.nonzero χ s hs (Or.inl hχ)
 
-theorem regularizedFamily_logDeriv {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 < s.re) :
+end
+
+theorem regularizedFamily_logDeriv    
+          (hs : 1 < s.re) :
     -deriv (regularizedFamily M F residue χ) s / regularizedFamily M F residue χ s =
       -deriv (F χ) s / F χ s - (if χ = 1 then 1 / (s - 1) else 0) := by
   by_cases hχ : χ = 1
   · rw [regularizedFamily, ite_eq_left hχ, ite_eq_left hχ]
-    have hs1 : s ≠ 1 := by intro heq; simp only [heq, Complex.one_re] at hs; linarith
+    have hs1 : s ≠ 1 := by aesop
     exact principalRegularization_logDeriv _ _ hs1
       (hF.analytic χ s hs.le (Or.inr hs1)) (hF.nonzero χ s hs.le (Or.inr hs1))
-  · simp only [regularizedFamily, hχ, ite_false, sub_zero]
+  simp_all [regularizedFamily]
 
-section Quotient
+end
+
+
 
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : globalUnits M ≤ H)
 
-def quotientClassCoeff (n : ℕ) : ℝ := IdealMangoldt.classCoeff (RayQuotient.identityClass M H) n
+def quotientClassCoeff (n : ℕ)  := IdealMangoldt.classCoeff (RayQuotient.identityClass M H) n
 
-theorem quotient_sum_coeff (n : ℕ) :
+theorem quotient_sum_coeff  n  :
     (∑ χ : RayQuotient.Characters M H,
       IdealLogDerivative.coeff (RayQuotient.idealCharacter M H hH χ) n) =
       (RayQuotient.classNumber M H : ℂ) * (quotientClassCoeff M H n : ℂ) := by
@@ -130,9 +142,9 @@ theorem quotient_sum_coeff (n : ℕ) :
   rw [← Finset.mul_sum, RayQuotient.sum_idealCharacters]
   by_cases hI : I ∈ RayQuotient.identityClass M H
   · simp only [hI, ite_true, one_mul, mul_comm]
-  · simp only [hI, ite_false, zero_mul, Complex.ofReal_zero, mul_zero]
+  simp_all
 
-theorem quotient_average_coeff (n : ℕ) :
+theorem quotient_average_coeff  n  :
     (quotientClassCoeff M H n : ℂ) =
       (∑ χ : RayQuotient.Characters M H,
         IdealLogDerivative.coeff (RayQuotient.idealCharacter M H hH χ) n) /
@@ -142,7 +154,7 @@ theorem quotient_average_coeff (n : ℕ) :
     exact_mod_cast (RayQuotient.classNumber_pos M H).ne'
   exact (mul_div_cancel_left₀ _ hc).symm
 
-theorem quotientClassCoeff_LSeries (s : ℂ) (hs : 1 < s.re) :
+theorem quotientClassCoeff_LSeries  s  (hs : 1 < s.re) :
     LSeries (fun n => (quotientClassCoeff M H n : ℂ)) s =
       (∑ χ : RayQuotient.Characters M H,
         LSeries (IdealLogDerivative.coeff (RayQuotient.idealCharacter M H hH χ)) s) /
@@ -158,14 +170,18 @@ theorem quotientClassCoeff_LSeries (s : ℂ) (hs : 1 < s.re) :
   · intro χ _
     exact IdealLogDerivative.coeff_summable _ (RayQuotient.norm_idealCharacter_le_one M H hH χ) s hs
 
-def quotientRemainder (F : rayCharacters M → ℂ → ℂ) (residue : ℂ) (s : ℂ) : ℂ :=
+def quotientRemainder (F : rayCharacters M → ℂ → ℂ) (residue : ℂ) (s : ℂ)  :=
   (∑ χ : RayQuotient.Characters M H,
     -deriv (regularizedFamily M F residue (RayQuotient.toFullRay M H hH χ)) s /
       regularizedFamily M F residue (RayQuotient.toFullRay M H hH χ) s) /
         (RayQuotient.classNumber M H : ℂ)
 
-theorem quotientRemainder_continuousOn {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) :
+section
+variable {F : rayCharacters M → ℂ → ℂ} {residue : ℂ} (hF : AnalyticFamily M F residue)
+include F residue hF
+
+theorem quotientRemainder_continuousOn    
+      :
     ContinuousOn (quotientRemainder M H hH F residue) {s : ℂ | 1 ≤ s.re} := by
   intro s hs
   apply ContinuousAt.continuousWithinAt
@@ -176,8 +192,8 @@ theorem quotientRemainder_continuousOn {F : rayCharacters M → ℂ → ℂ} {re
   exact h.deriv.continuousAt.neg.div h.continuousAt
     (regularizedFamily_ne_zero M hF (RayQuotient.toFullRay M H hH χ) s hs)
 
-theorem quotientRemainder_eqOn {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) :
+theorem quotientRemainder_eqOn    
+      :
     Set.EqOn (quotientRemainder M H hH F residue)
       (fun s => LSeries (fun n => (quotientClassCoeff M H n : ℂ)) s -
         (RayQuotient.classNumber M H : ℂ)⁻¹ / (s - 1)) {s : ℂ | 1 < s.re} := by
@@ -200,6 +216,8 @@ theorem quotientRemainder_eqOn {F : rayCharacters M → ℂ → ℂ} {residue : 
   simp_rw [hlog]
   ring
 
+end
+
 include hH in
 
 theorem quotientClassCoeff_ratio_tendsto {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
@@ -211,10 +229,9 @@ theorem quotientClassCoeff_ratio_tendsto {F : rayCharacters M → ℂ → ℂ} {
     (fun σ hσ => IdealMangoldt.classCoeff_summable_nterm (RayQuotient.identityClass M H) hσ)
     (IdealMangoldt.classCoeff_chebyshev (RayQuotient.identityClass M H))
     (quotientRemainder_continuousOn M H hH hF)
-  simpa only [quotientClassCoeff, Complex.ofReal_inv, Complex.ofReal_natCast]
-    using quotientRemainder_eqOn M H hH hF
+  aesop (add safe [quotientClassCoeff, quotientRemainder_eqOn])
 
-end Quotient
+
 
 end
 end SevenEighths.PNT.RayAsymptotic

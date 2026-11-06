@@ -10,16 +10,16 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
   (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
 include hinj in
 theorem residualPairWeight_bounded_test
-    (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m c d : O)
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m c d : ActualEisensteinCubic.O)
     (Hcol : Finset ι → ℂ) (B : ℝ) (hB : 0 ≤ B)
     (hcol : ∀ U, ‖Hcol U‖ ≤ B) (G S T : Finset ι) :
     ‖residualPairWeight p hg Ψ Ψ m c d
@@ -32,11 +32,16 @@ theorem residualPairWeight_bounded_test
   simpa only [pow_two] using mul_le_mul hS hT (norm_nonneg _) hB
 
 include hp hinj
+section
+variable (F G E : Finset ι) (hEG : E ⊆ G) (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m c d : ActualEisensteinCubic.O) (Hcol : Finset ι → ℂ) (B Y H lengthScale P : ℝ) (A : ℕ) (hB : 0 ≤ B) (hY : 0 < Y) (hH : 0 ≤ H) (hP : 0 ≤ P) (hL : 1 ≤ lengthScale) (hcol : ∀ U, ‖Hcol U‖ ≤ B) (hsupport : ∀ U, Hcol U ≠ 0 → primeProductNorm p U ≤ lengthScale)
+
+
+include hEG hΨ hB hY hH hP hL hcol hsupport in
 theorem residualTailCost_bounded_test
-    (F G E : Finset ι) (hEG : E ⊆ G) (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1)
-    (m c d : O) (Hcol : Finset ι → ℂ) (B Y H lengthScale P : ℝ) (A : ℕ)
-    (hB : 0 ≤ B) (hY : 0 < Y) (hH : 0 ≤ H) (hP : 0 ≤ P) (hL : 1 ≤ lengthScale)
-    (hcol : ∀ U, ‖Hcol U‖ ≤ B) (hsupport : ∀ U, Hcol U ≠ 0 → primeProductNorm p U ≤ lengthScale) :
+           
+           
+             
+        :
     residualTailCost p hg F G Ψ Ψ m c d
       (fun S => Hcol (G∪S))
       (fun S => Hcol (G∪S))
@@ -106,8 +111,7 @@ theorem residualTailCost_bounded_test
           split_ifs <;> positivity
       _ = ((boundedPrimeSupports p (F\G) lengthScale).card : ℝ)^2 * C :=
         sum_pair_indicator (F\G).powerset (fun S => primeProductNorm p S ≤ lengthScale) C
-      _ ≤ (128*lengthScale)^2 * C := by
-        exact mul_le_mul_of_nonneg_right
+      _ ≤ (128*lengthScale)^2 * C := mul_le_mul_of_nonneg_right
           (pow_le_pow_left₀ (by positivity) (boundedPrimeSupports_card p hinj (F\G) lengthScale hL) 2) hC
   · rw [ite_eq_right hG]
     have hz : residualTailCost p hg F G Ψ Ψ m c d
@@ -129,11 +133,12 @@ theorem residualTailCost_bounded_test
       · rw [ite_eq_right hd]
     exact hz.le
 
+include hΨ hB hY hH hP hL hcol hsupport in
 theorem secondSourceTailCost_bounded_test
-    (F : Finset ι) (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1)
-    (m c d : O) (Hcol : Finset ι → ℂ) (B Y H lengthScale P : ℝ) (A : ℕ)
-    (hB : 0 ≤ B) (hY : 0 < Y) (hH : 0 ≤ H) (hP : 0 ≤ P) (hL : 1 ≤ lengthScale)
-    (hcol : ∀ U, ‖Hcol U‖ ≤ B) (hsupport : ∀ U, Hcol U ≠ 0 → primeProductNorm p U ≤ lengthScale) :
+         
+           
+             
+        :
     (∑ G ∈ F.powerset, ∑ E : G.powerset, ‖secondSourceCommonCoefficient p hg Ψ m c d G E.val‖ *
       residualTailCost p hg F G Ψ Ψ m c d
         (fun S => Hcol (G∪S))
@@ -185,6 +190,8 @@ theorem secondSourceTailCost_bounded_test
     _ = _ := by ring
 
 end
+
+
 end SevenEighths.InverseMoment
 
 end OAI

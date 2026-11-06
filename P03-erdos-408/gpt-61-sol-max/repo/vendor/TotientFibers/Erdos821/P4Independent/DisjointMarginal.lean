@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.SelectedTuples
 public import Erdos821.P4Probe.DisjointMarginalTask
@@ -18,33 +19,23 @@ noncomputable section
 variable {ι : Type*} [Fintype ι]
 variable {α : ι → Type*} [∀ i, Fintype (α i)]
 
-def splitPartial (S T : Finset ι) (c : PartialSample (S ∪ T) α) :
+def splitPartial (S T ) (c : PartialSample (S ∪ T) α) :
     PartialSample S α × PartialSample T α :=
   (fun i => c ⟨i.val, Finset.mem_union.mpr (Or.inl i.property)⟩,
    fun i => c ⟨i.val, Finset.mem_union.mpr (Or.inr i.property)⟩)
 
-def joinPartial (S T : Finset ι)
+def joinPartial (S T )
     (a : PartialSample S α) (b : PartialSample T α) : PartialSample (S ∪ T) α :=
   fun i => if hi : i.val ∈ S then a ⟨i.val, hi⟩ else
     b ⟨i.val, by
-      rcases Finset.mem_union.mp i.property with hs | ht
-      · exact False.elim (hi hs)
-      · exact ht⟩
+      aesop⟩
 
 def partialUnionEquiv (S T : Finset ι) (hST : Disjoint S T) :
     PartialSample (S ∪ T) α ≃ PartialSample S α × PartialSample T α where
   toFun := splitPartial S T
   invFun := fun z => joinPartial S T z.1 z.2
   left_inv := by
-    intro c
-    funext i
-    by_cases hi : i.val ∈ S
-    · simp [splitPartial, joinPartial, hi]
-    · have ht : i.val ∈ T := by
-        rcases Finset.mem_union.mp i.property with hs | ht
-        · exact False.elim (hi hs)
-        · exact ht
-      simp [splitPartial, joinPartial, hi]
+    grind [splitPartial, joinPartial, False.elim]
   right_inv := by
     intro z
     rcases z with ⟨a, b⟩
@@ -59,8 +50,8 @@ def partialUnionEquiv (S T : Finset ι) (hST : Disjoint S T) :
 
 omit [Fintype ι] [(i : ι) → Fintype (α i)] in
 lemma partialProductWeight_join (w : ∀ i, α i → ℝ)
-    (S T : Finset ι) (hST : Disjoint S T)
-    (a : PartialSample S α) (b : PartialSample T α) :
+     S T  (hST : Disjoint S T)
+     a   b  :
     partialProductWeight w (S ∪ T) (joinPartial S T a b) =
       partialProductWeight w S a * partialProductWeight w T b := by
   let eS : {i : {i // i ∈ S ∪ T} // i.val ∈ S} ≃ {i // i ∈ S} := {

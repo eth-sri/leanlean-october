@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Groups
 public import Erdos408.OneSided.Bands
@@ -49,7 +50,7 @@ theorem eventually_scales {ahi c : ℝ} (hahi : ahi < 1 / 5) (hc : 0 < c) :
     rw [this]
     exact mul_lt_mul_of_pos_right h₁ (Real.rpow_pos_of_pos hL0 _)
   · have h20 : Real.log L ^ (20 : ℝ) = Real.log L ^ 20 := by
-      rw [show (20 : ℝ) = ((20 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
+      simp_all
     rw [Real.norm_of_nonneg (Real.rpow_nonneg hT.le _),
       Real.norm_of_nonneg (Real.rpow_nonneg hL0.le _), h20] at h₂
     have hT20 : 0 < Real.log L ^ 20 := by positivity
@@ -108,38 +109,42 @@ theorem dvd_div_iff_of_coprime {m k n : ℕ} (hk : k ∣ n) (hmk : Nat.Coprime m
   · rw [Nat.mul_div_cancel_left j hk0, hmk.dvd_mul_left]
 
 /-- Distinct primes are coprime, in the form used with `dvd_div_iff_of_coprime`. -/
-theorem coprime_of_prime_ne {p q : ℕ} (hp : p.Prime) (hq : q.Prime) (hpq : p ≠ q) :
+theorem coprime_of_prime_ne  {p q}  (hp : p.Prime) (hq : q.Prime) (hpq : p ≠ q) :
     Nat.Coprime p q :=
   (Nat.coprime_primes hp hq).2 hpq
 
+section
+variable {ι : Type} [Fintype ι] [DecidableEq ι] {P : ι → Finset ℕ}
+include ι P
+
+section
+variable {M : ℕ} {S : ι → Finset (Fin M)}
+include M S
+
 /-- Membership in the represented lists. -/
-theorem mem_slotLists {ι : Type} [Fintype ι] [DecidableEq ι] {P : ι → Finset ℕ} {M : ℕ}
-    {S : ι → Finset (Fin M)} {n : ℕ} {p : ι → Fin M → ℕ} :
+theorem mem_slotLists          
+       {n}  {p : ι → Fin M → ℕ} :
     p ∈ slotLists P S n ↔ (∀ g i, p g i ∈ if i ∈ S g then P g else {1}) ∧
       ∀ g, Set.InjOn (p g) (S g) ∧ ∀ i ∈ S g, p g i ∣ n := by
   simp only [slotLists, mem_filter, Fintype.mem_piFinset]
 
 /-- The represented lists agree at `m` and `n` when each prime of a group with a slot
 divides both or neither. -/
-theorem slotLists_congr {ι : Type} [Fintype ι] [DecidableEq ι] {P : ι → Finset ℕ} {M : ℕ}
-    {S : ι → Finset (Fin M)} {m n : ℕ} (h : ∀ g, ∀ i ∈ S g, ∀ p ∈ P g, p ∣ m ↔ p ∣ n) :
+theorem slotLists_congr          
+       {m n}  (h : ∀ g, ∀ i ∈ S g, ∀ p ∈ P g, p ∣ m ↔ p ∣ n) :
     slotLists P S m = slotLists P S n := by
-  unfold slotLists
-  refine filter_congr fun p hp => ?_
-  rw [Fintype.mem_piFinset] at hp
-  refine forall_congr' fun g => and_congr_right fun _ => forall₂_congr fun i hi => ?_
-  have hpi := Fintype.mem_piFinset.1 (hp g) i
-  rw [ite_eq_left hi] at hpi
-  exact h g i hi _ hpi
+  grind [slotLists]
+
+end
 
 /-- **E3 (small-prime removal).** If the group `g_s` has the single slot `j`, `b` ignores the
 labels of `g_s` and no `p ∈ P_{g_s}` has `p² ∣ w`, then
 `W_S^b(w) = V_{g_s}⁻¹ ∑_{p_s ∈ P_{g_s}, p_s ∣ w} W_{S'}^b(w / p_s)` with `S' g_s = ∅`. -/
-theorem markedListWeight_eq_removal {ι : Type} [Fintype ι] [DecidableEq ι]
-    {P : ι → Finset ℕ} (hpr : ∀ g, ∀ p ∈ P g, p.Prime)
-    (hdisj : ∀ g h, g ≠ h → Disjoint (P g) (P h)) (q₀ : ℝ) {M : ℕ}
-    (S : ι → Finset (Fin M)) (b : (ι → Fin M → ℕ) → ℂ) (gs : ι) (j : Fin M)
-    (hS : S gs = {j}) (hb : ∀ p p', (∀ g, g ≠ gs → p g = p' g) → b p = b p') {w : ℕ}
+theorem markedListWeight_eq_removal      
+      (hpr : ∀ g, ∀ p ∈ P g, p.Prime)
+    (hdisj : ∀ g h, g ≠ h → Disjoint (P g) (P h))  q₀  {M : ℕ}
+    (S : ι → Finset (Fin M)) (b : (ι → Fin M → ℕ) → ℂ)  gs  (j : Fin M)
+    (hS : S gs = {j}) (hb : ∀ p p', (∀ g, g ≠ gs → p g = p' g) → b p = b p')  {w} 
     (hsq : ∀ p ∈ P gs, ¬ p ^ 2 ∣ w) :
     markedListWeight P q₀ S b w = (((harmonicMass (P gs))⁻¹ : ℝ) : ℂ) *
       ∑ ps ∈ (P gs).filter (· ∣ w),
@@ -170,24 +175,16 @@ theorem markedListWeight_eq_removal {ι : Type} [Fintype ι] [DecidableEq ι]
           rintro rfl
           exact hsq p hp (by rw [pow_two]; exact Nat.mul_dvd_of_dvd_div hdvd hpd)
         exact ⟨hne, hp, hpd.trans (Nat.div_dvd_of_dvd hdvd)⟩
-      · rintro ⟨hne, hp, hpd⟩
-        exact ⟨hp, (dvd_div_iff_of_coprime hdvd
-          (coprime_of_prime_ne (hpr gs p hp) (hpr gs ps hpsP) hne)).2 hpd⟩
+      grind [dvd_div_iff_of_coprime, coprime_of_prime_ne]
     unfold groupPrimeCount
     rw [← add_sum_erase _ _ (mem_univ gs), ← add_sum_erase _ _ (mem_univ gs),
       sum_congr rfl fun g hg => Sieve.primeCount_congr (hother ps hps g (ne_of_mem_erase hg))]
-    have hcard : primeCount (P gs) (w / ps) + 1 = primeCount (P gs) w := by
-      unfold primeCount
-      rw [hgs, card_erase_add_one (mem_filter.2 ⟨hpsP, hdvd⟩)]
-    omega
+    grind [primeCount]
   -- the represented lists of `S'` do not see `p_s`
   have hlists : ∀ ps ∈ F, slotLists P S' (w / ps) = slotLists P S' w := by
     intro ps hps
     refine slotLists_congr fun g i hi p hp => ?_
-    rcases eq_or_ne g gs with rfl | hg
-    · rw [hS'gs] at hi
-      exact absurd hi (notMem_empty i)
-    · exact hother ps hps g hg p hp
+    grind
   -- the slot counts and the normalizations
   have hcard : ∑ g, (S' g).card + 1 = ∑ g, (S g).card := by
     rw [← add_sum_erase _ _ (mem_univ gs), ← add_sum_erase _ _ (mem_univ gs), hS'gs, hS,
@@ -210,14 +207,12 @@ theorem markedListWeight_eq_removal {ι : Type} [Fintype ι] [DecidableEq ι]
       rw [mem_slotLists] at hp
       rw [mem_product]
       refine ⟨mem_filter.2 ⟨?_, (hp.2 gs).2 j hjS⟩, ?_⟩
-      · have := hp.1 gs j
-        rwa [ite_eq_left hjS] at this
+      · grind
       · dsimp only
         rw [mem_slotLists]
         refine ⟨fun g i => ?_, fun g => ?_⟩
         · rcases eq_or_ne g gs with rfl | hg
-          · rw [Function.update_self, hS'gs, ite_eq_right (notMem_empty i)]
-            exact mem_singleton_self 1
+          · grind
           · rw [Function.update_of_ne hg, hS'ne g hg]
             exact hp.1 g i
         · rcases eq_or_ne g gs with rfl | hg
@@ -235,11 +230,7 @@ theorem markedListWeight_eq_removal {ι : Type} [Fintype ι] [DecidableEq ι]
       refine ⟨fun g i => ?_, fun g => ?_⟩
       · rcases eq_or_ne g gs with rfl | hg
         · rw [Function.update_self]
-          rcases eq_or_ne i j with rfl | hij
-          · rw [Function.update_self, ite_eq_left hjS]
-            exact hpsP
-          · rw [Function.update_of_ne hij, ite_eq_right (hnS i hij)]
-            exact mem_singleton_self 1
+          grind
         · rw [Function.update_of_ne hg, ← hS'ne g hg]
           exact hp'.1 g i
       · rcases eq_or_ne g gs with rfl | hg
@@ -258,10 +249,7 @@ theorem markedListWeight_eq_removal {ι : Type} [Fintype ι] [DecidableEq ι]
         funext i
         rcases eq_or_ne i j with rfl | hij
         · rw [Function.update_self]
-        · rw [Function.update_of_ne hij]
-          have := hp.1 g i
-          rw [ite_eq_right (hnS i hij)] at this
-          exact (mem_singleton.1 this).symm
+        grind
       · rw [Function.update_of_ne hg]
     · rintro ⟨ps, p'⟩ hx
       rw [mem_product] at hx
@@ -269,12 +257,8 @@ theorem markedListWeight_eq_removal {ι : Type} [Fintype ι] [DecidableEq ι]
       rw [mem_slotLists] at hp'
       simp only [Function.update_self, Function.update_idem, Prod.mk.injEq, true_and]
       rw [Function.update_eq_self_iff]
-      funext i
-      have := hp'.1 gs i
-      rw [hS'gs, ite_eq_right (notMem_empty i)] at this
-      exact (mem_singleton.1 this).symm
-    · intro p _
-      exact hb _ _ fun g hg => (Function.update_of_ne hg _ _).symm
+      grind
+    grind
   -- assemble
   have hexp : ∀ ps ∈ F, ((groupPrimeCount P (w / ps) : ℤ) - ∑ g, ((S' g).card : ℤ)) =
       (groupPrimeCount P w : ℤ) - ∑ g, ((S g).card : ℤ) := by
@@ -285,14 +269,14 @@ theorem markedListWeight_eq_removal {ι : Type} [Fintype ι] [DecidableEq ι]
   have hterm : ∀ ps ∈ F, markedListWeight P q₀ S' b (w / ps) =
       ((q₀ ^ ((groupPrimeCount P w : ℤ) - ∑ g, ((S g).card : ℤ)) *
         ∏ g, (harmonicMass (P g))⁻¹ ^ (S' g).card : ℝ) : ℂ) * ∑ p ∈ slotLists P S' w, b p := by
-    intro ps hps
-    unfold markedListWeight
-    rw [hexp ps hps, hlists ps hps]
+    grind [markedListWeight]
   rw [sum_congr rfl hterm]
   unfold markedListWeight
   rw [hsum, sum_const, sum_const, hprod]
   push_cast
   ring
+
+end
 
 end FactorAux
 

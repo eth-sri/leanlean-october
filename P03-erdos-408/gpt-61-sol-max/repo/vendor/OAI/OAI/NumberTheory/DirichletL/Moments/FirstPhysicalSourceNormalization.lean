@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourcePool
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
@@ -14,10 +14,10 @@ open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
 open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
 open CenteredMomentFirstReduced
-local notation "O"=>ActualEisensteinCubic.O
 
-theorem scalar_norm (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))
-    (K A₀ B₀:ℝ)(hK:0<K)(_hA₀:0<A₀)(_hB₀:0<B₀):
+
+theorem scalar_norm  C D  hC  E 
+     K A₀ B₀ (hK:0<K)(_hA₀:0<A₀)(_hB₀:0<B₀):
     ‖scalar C D hC E K A₀ B₀‖=
       ‖inactiveWeight C D E‖*K/
         (‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2*
@@ -38,6 +38,6 @@ theorem scalar_norm (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))
 
 end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
+
 
 end OAI

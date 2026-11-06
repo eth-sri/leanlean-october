@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Lift
 
@@ -32,23 +33,27 @@ variable {K : ℕ}
 /-! ### Reordered lists -/
 
 /-- The lists `p` with the list of each group `i` reordered by `σ i`. -/
-def permuteLists {J : ℕ} (p : Lists K J) (σ : Fin K → Equiv.Perm (Fin (J + 1))) :
+def permuteLists {J } (p : Lists K J) (σ : Fin K → Equiv.Perm (Fin (J + 1))) :
     Lists K J :=
   fun i => p i ∘ σ i
 
+section
+variable {x : ℝ} {d : Data K} {Y d₀ r : ℝ} {I : Finset (Fin K)} {i : Fin K} {J : ℕ} (P : ℕ × ℕ) (p : Lists K J) (σ : Fin K → Equiv.Perm (Fin (J + 1)))
+
+
 /-- Reordering by `σ` and then by `σ⁻¹` gives back the lists. -/
-theorem permuteLists_inv {J : ℕ} (p : Lists K J) (σ : Fin K → Equiv.Perm (Fin (J + 1))) :
+theorem permuteLists_inv       :
     permuteLists (permuteLists p σ) σ⁻¹ = p := by
   funext i h
   simp [permuteLists]
 
 /-- The list product does not see the order. -/
-theorem listProd_permuteLists {J : ℕ} (p : Lists K J)
-    (σ : Fin K → Equiv.Perm (Fin (J + 1))) : listProd (permuteLists p σ) = listProd p :=
+theorem listProd_permuteLists    
+      : listProd (permuteLists p σ) = listProd p :=
   prod_congr rfl fun i _ => Equiv.prod_comp (σ i) (p i)
 
 /-- Omitting the slots `o` of the reordered lists omits the slots `σ ∘ o` of `p`. -/
-theorem omitProd_permuteLists {J : ℕ} (p : Lists K J) (σ : Fin K → Equiv.Perm (Fin (J + 1)))
+theorem omitProd_permuteLists      
     (o : Fin K → Fin (J + 1)) :
     omitProd (permuteLists p σ) o = omitProd p fun i => σ i (o i) :=
   prod_congr rfl fun i _ =>
@@ -58,7 +63,7 @@ theorem omitProd_permuteLists {J : ℕ} (p : Lists K J) (σ : Fin K → Equiv.Pe
 
 /-- Test (i) survives a reordering: the omission `o` of the reordered lists is the omission
 `σ ∘ o` of `p`. -/
-theorem GoodFirst.permuteLists {Y d₀ r : ℝ} {J : ℕ} {p : Lists K J}
+theorem GoodFirst.permuteLists     {p : Lists K J}
     (h : GoodFirst Y d₀ r p) (σ : Fin K → Equiv.Perm (Fin (J + 1))) :
     GoodFirst Y d₀ r (permuteLists p σ) := by
   intro o h₁ h₂ l hl₁ hl₂
@@ -66,29 +71,29 @@ theorem GoodFirst.permuteLists {Y d₀ r : ℝ} {J : ℕ} {p : Lists K J}
   exact h _ h₁ h₂ l hl₁ hl₂
 
 /-- Test (i) does not see the order. -/
-theorem goodFirst_permuteLists_iff {Y d₀ r : ℝ} {J : ℕ} (p : Lists K J)
-    (σ : Fin K → Equiv.Perm (Fin (J + 1))) :
+theorem goodFirst_permuteLists_iff      
+      :
     GoodFirst Y d₀ r (permuteLists p σ) ↔ GoodFirst Y d₀ r p :=
   ⟨fun h => permuteLists_inv p σ ▸ h.permuteLists σ⁻¹, fun h => h.permuteLists σ⟩
 
 /-- The separation survives a reordering, as test (i) does. -/
-theorem Separated.permuteLists {x : ℝ} {d : Data K} {d₀ : ℝ} {I : Finset (Fin K)} {i : Fin K}
-    {J : ℕ} {r : ℝ} {p : Lists K J} {T : Fin K → ℕ} (h : Separated x d d₀ I i r p T)
+theorem Separated.permuteLists          
+       {r}  {p : Lists K J} {T : Fin K → ℕ} (h : Separated x d d₀ I i r p T)
     (σ : Fin K → Equiv.Perm (Fin (J + 1))) : Separated x d d₀ I i r (permuteLists p σ) T := by
   intro o o' Z hZ Z' hZ' h₁ h₂ h₁' h₂' hne
   simp only [omitProd_permuteLists] at h₁ h₂ h₁' h₂' hne ⊢
   exact h _ _ Z hZ Z' hZ' h₁ h₂ h₁' h₂' hne
 
 /-- The separation does not see the order. -/
-theorem separated_permuteLists_iff {x : ℝ} {d : Data K} {d₀ : ℝ} {I : Finset (Fin K)}
-    {i : Fin K} {J : ℕ} {r : ℝ} (p : Lists K J) (σ : Fin K → Equiv.Perm (Fin (J + 1)))
+theorem separated_permuteLists_iff        
+         {r}  (p : Lists K J) (σ : Fin K → Equiv.Perm (Fin (J + 1)))
     (T : Fin K → ℕ) :
     Separated x d d₀ I i r (permuteLists p σ) T ↔ Separated x d d₀ I i r p T :=
   ⟨fun h => permuteLists_inv p σ ▸ h.permuteLists σ⁻¹, fun h => h.permuteLists σ⟩
 
 /-- Goodness does not see the order. -/
-theorem isGood_permuteLists_iff {x : ℝ} {d : Data K} {Y d₀ : ℝ} {J : ℕ} (P : ℕ × ℕ)
-    (p : Lists K J) (σ : Fin K → Equiv.Perm (Fin (J + 1))) :
+theorem isGood_permuteLists_iff          
+        :
     IsGood x d Y d₀ P (permuteLists p σ) ↔ IsGood x d Y d₀ P p := by
   classical
   unfold IsGood GoodSecond
@@ -98,17 +103,23 @@ theorem isGood_permuteLists_iff {x : ℝ} {d : Data K} {Y d₀ : ℝ} {J : ℕ} 
     (permuteLists p σ) T) (q := fun T => ¬Separated x d d₀ I (I.max' hI) (rootRatio P) p T)
     fun T _ => not_congr (separated_permuteLists_iff p σ T)]
 
+end
+
 /-! ### Reordered states -/
 
 variable {x : ℝ} {d : Data K} {Y d₀ : ℝ}
 
+section
+variable (s s' : State x d Y d₀)
+
+
 /-- A state's lists have distinct entries in each group. -/
-theorem injective_state_lists (s : State x d Y d₀) (i : Fin K) : Function.Injective (s.1.2 i) :=
+theorem injective_state_lists    i  : Function.Injective (s.1.2 i) :=
   (mem_filter.1 (mem_product.1 (mem_filter.1 s.2).1).2).2 i
 
 /-- Reordering the lists of a state gives a state. -/
-theorem mem_states_permuteLists (s : State x d Y d₀)
-    (σ : Fin K → Equiv.Perm (Fin (padCount x + 1))) :
+theorem mem_states_permuteLists  
+     σ  :
     (s.1.1, permuteLists s.1.2 σ) ∈ states x d Y d₀ := by
   obtain ⟨hs, hdiv⟩ := mem_filter.1 s.2
   obtain ⟨hP, hl⟩ := mem_product.1 hs
@@ -120,7 +131,7 @@ theorem mem_states_permuteLists (s : State x d Y d₀)
 
 /-- The reorderings of `s` are the `((J + 1)!)^K` states `s ∘ σ`: they are distinct, since
 the lists have distinct entries. -/
-theorem card_filter_reorders (s : State x d Y d₀)
+theorem card_filter_reorders  
     [DecidablePred fun s' : State x d Y d₀ => s.1.1 = s'.1.1 ∧
       ∃ σ : Fin K → Equiv.Perm (Fin (padCount x + 1)), ∀ i, s'.1.2 i = s.1.2 i ∘ σ i] :
     (univ.filter fun s' : State x d Y d₀ => s.1.1 = s'.1.1 ∧
@@ -152,13 +163,13 @@ theorem card_filter_reorders (s : State x d Y d₀)
 /-! ### The symmetrization -/
 
 /-- Each row of `𝒮` sums to one. -/
-theorem sum_symOp (s : State x d Y d₀) : ∑ s', symOp x d Y d₀ s s' = 1 := by
+theorem sum_symOp   : ∑ s', symOp x d Y d₀ s s' = 1 := by
   unfold symOp
   rw [sum_ite, sum_const_zero, add_zero, sum_const, card_filter_reorders, nsmul_eq_mul]
   exact mul_inv_cancel₀ (Nat.cast_ne_zero.2 (pow_ne_zero _ (Nat.factorial_ne_zero _)))
 
 /-- `𝒮` is symmetric: reordering by `σ` is undone by `σ⁻¹`. -/
-theorem symOp_comm (s s' : State x d Y d₀) : symOp x d Y d₀ s s' = symOp x d Y d₀ s' s := by
+theorem symOp_comm   : symOp x d Y d₀ s s' = symOp x d Y d₀ s' s := by
   -- `s'` reorders `s` exactly when `s` reorders `s'`
   have hsymm : ∀ s s' : State x d Y d₀, (s.1.1 = s'.1.1 ∧
       ∃ σ : Fin K → Equiv.Perm (Fin (padCount x + 1)), ∀ i, s'.1.2 i = s.1.2 i ∘ σ i) →
@@ -176,8 +187,10 @@ theorem symOp_comm (s s' : State x d Y d₀) : symOp x d Y d₀ s s' = symOp x d
   · exact absurd (hsymm s' s h'') h
   · rfl
 
+end
+
 /-- A vector on states is slot invariant when it does not see the order of the lists. -/
-def SlotInvariant (v : State x d Y d₀ → ℂ) : Prop :=
+def SlotInvariant (v : State x d Y d₀ → ℂ)  :=
   ∀ (s s' : State x d Y d₀) (σ : Fin K → Equiv.Perm (Fin (padCount x + 1))),
     s.1.1 = s'.1.1 → (∀ i, s'.1.2 i = s.1.2 i ∘ σ i) → v s' = v s
 
@@ -185,10 +198,10 @@ def SlotInvariant (v : State x d Y d₀ → ℂ) : Prop :=
 theorem slotInvariant_endVec : SlotInvariant (endVec x d Y d₀) := by
   intro s s' σ h₁ hσ
   have hp : s'.1.2 = permuteLists s.1.2 σ := funext hσ
-  rw [endVec, endVec, hp, listProd_permuteLists, ← h₁]
+  simp_all [endVec, listProd_permuteLists]
 
 /-- `𝒮` fixes a slot-invariant vector: `𝒮 v = v`. -/
-theorem sum_symOp_mul {v : State x d Y d₀ → ℂ} (hv : SlotInvariant v) (s : State x d Y d₀) :
+theorem sum_symOp_mul {v : State x d Y d₀ → ℂ} (hv : SlotInvariant v)  s  :
     ∑ s', symOp x d Y d₀ s s' * v s' = v s := by
   calc ∑ s', symOp x d Y d₀ s s' * v s' = ∑ s', symOp x d Y d₀ s s' * v s := by
         refine sum_congr rfl fun s' _ => ?_
@@ -202,7 +215,7 @@ theorem sum_symOp_mul {v : State x d Y d₀ → ℂ} (hv : SlotInvariant v) (s :
 /-- `𝒮` fixes a slot-invariant vector acting from the left: `⟨u, 𝒮 w⟩ = ⟨u, w⟩` without the
 conjugation, by the symmetry of `𝒮`. -/
 theorem sum_mul_symOp_mulVec {u : State x d Y d₀ → ℂ} (hu : SlotInvariant u)
-    (w : State x d Y d₀ → ℂ) :
+     w  :
     ∑ s, u s * (symOp x d Y d₀ *ᵥ w) s = ∑ s, u s * w s := by
   simp only [Matrix.mulVec, dotProduct, mul_sum]
   rw [sum_comm]

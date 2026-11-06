@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.LevelMoments
 public import Mathlib.Data.Int.Star
@@ -11,13 +12,13 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set   MeasureTheory
 
 open scoped Topology ContDiff
 
-def divisorMultiplicity (k n : ℕ) : ℕ := (ArithmeticFunction.zeta ^ k) n
+def divisorMultiplicity (k n : ℕ)  := (ArithmeticFunction.zeta ^ k) n
 
-theorem divisorMultiplicity_succ (k n : ℕ) :
+theorem divisorMultiplicity_succ  k n  :
     divisorMultiplicity (k+1) n = ∑ d ∈ n.divisors, divisorMultiplicity k d := by
   simp only [divisorMultiplicity, pow_succ, ArithmeticFunction.mul_zeta_apply]
 
@@ -44,13 +45,7 @@ theorem reciprocal_divisor_sum_le (f : ℕ → ℝ) (hf : ∀ n, 0 ≤ f n) (Q :
     obtain ⟨hq',hd'⟩ := Finset.mem_sigma.mp hy
     have hed : d = d' := congrArg Prod.fst he
     have heq : q/d = q'/d' := congrArg Prod.snd he
-    have hdq : d ∣ q := (Nat.mem_divisors.mp hd).1
-    have hdq' : d' ∣ q' := (Nat.mem_divisors.mp hd').1
-    have hqq : q = q' := by
-      rw [← Nat.div_mul_cancel hdq, ← Nat.div_mul_cancel hdq', heq, hed]
-    subst d'
-    subst q'
-    rfl
+    simp_all
   have hsum : (∑ q ∈ Finset.Icc 1 Q, (∑ d ∈ q.divisors, f d) / (q : ℝ)) =
       ∑ x ∈ s, f (e x).1 / (e x).1 / (e x).2 := by
     dsimp only [s]
@@ -75,7 +70,7 @@ theorem reciprocal_divisor_sum_le (f : ℕ → ℝ) (hf : ∀ n, 0 ≤ f n) (Q :
         harmonic_eq_sum_Icc, Rat.cast_sum, Rat.cast_inv, Rat.cast_natCast]
       rw [Finset.sum_comm]
 
-theorem sum_divisorMultiplicity_reciprocal_le (k Q : ℕ) :
+theorem sum_divisorMultiplicity_reciprocal_le  k Q  :
     (∑ q ∈ Finset.Icc 1 Q, (divisorMultiplicity k q : ℝ) / (q : ℝ)) ≤
       (harmonic Q : ℝ) ^ k := by
   induction k with
@@ -92,12 +87,12 @@ theorem sum_divisorMultiplicity_reciprocal_le (k Q : ℕ) :
     rw [pow_succ]
     exact mul_le_mul_of_nonneg_right ih (by
       simp only [harmonic_eq_sum_Icc, Rat.cast_sum, Rat.cast_inv, Rat.cast_natCast]
-      exact Finset.sum_nonneg fun _ _ => inv_nonneg.mpr (Nat.cast_nonneg _))
+      positivity)
 
-noncomputable def residueSlice (f : ℕ → ℝ) (L U q c : ℕ) : ℝ :=
+noncomputable def residueSlice (f : ℕ → ℝ) (L U q c : ℕ)  :=
   ∑ n ∈ (Finset.Ioc L U).filter (fun n => n % q = c), f n
 
-noncomputable def residuePrefix (f : ℕ → ℝ) (Y q c : ℕ) : ℝ :=
+noncomputable def residuePrefix (f : ℕ → ℝ) (Y q c : ℕ)  :=
   residueSlice f 0 Y q c
 
 end LargePrimeGaps

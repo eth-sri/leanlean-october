@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.SelectedPrimeIndexed
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
+
 
 theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
     (hc : 0<c) (hd : 0<d) (hB : 0≤B) :
@@ -24,12 +24,12 @@ theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
       (∀P∈T,198*(P.val.absNorm:ℝ)^(-10*e)≤1/2) →
       (∑P:T,‖W ((P.val.val.absNorm:ℝ)/Y)*(P.val.val.absNorm:ℂ)^(z-1)*
         centralRegularError η u P.val (hT P.val P.property).1 x w z‖)≤
-      C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps*Y^(-(4/25:ℝ)) := by
+      C*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^eps*Y^(-(4/25:ℝ)) := by
   obtain ⟨C,hC,hbound⟩ := ProbeSelectedPrimeSums.weighted_slot_bound_indexed
     eps c d (-(4/25:ℝ)) 1 B 1440 heps hc hd (by norm_num) hB (by norm_num)
   refine ⟨C,hC,?_⟩
   intro η u T hT Y hY W hWS hWB a e x w z ha ha1 he he1 hx hw hz hsmall
-  let f : T→Ideal O := fun P=>P.val.val
+  let f : T→Ideal HeckeFamily.O := fun P=>P.val.val
   have hf : Function.Injective f := fun P Q h=>Subtype.ext (Subtype.ext h)
   let E : T→ℂ := fun P=>centralRegularError η u P.val (hT P.val P.property).1 x w z
   let G : T→ℂ := fun P=>((f P).absNorm:ℂ)^(1/2:ℂ)*E P
@@ -55,8 +55,7 @@ theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
           norm_num
         · simp only [ite_eq_right hp,mul_one]
           rw [mul_left_comm,←Real.rpow_add hQ0]
-          have hh : ((f P).absNorm:ℝ)^((1/2:ℝ)-(51/100:ℝ))≤1 := by
-            exact (Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : (1/2:ℝ)-51/100≤0)).trans_eq (Real.rpow_zero _)
+          have hh : ((f P).absNorm:ℝ)^((1/2:ℝ)-(51/100:ℝ))≤1 := (Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : (1/2:ℝ)-51/100≤0)).trans_eq (Real.rpow_zero _)
           norm_num only [show (1/2:ℝ)+-(51/100:ℝ)=(1/2:ℝ)-(51/100:ℝ) by ring]
           nlinarith
   have hb := hbound f hf (Ideal.span {u.val}) (Ideal.span_singleton_eq_bot.not.mpr u.property.1)
@@ -71,6 +70,6 @@ theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
     rw [show (z - 1 / 2) - 1 + 1 / 2 = z - 1 by ring]
   simpa only [heq] using hb
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

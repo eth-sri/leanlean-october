@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.FrameBridge
 
@@ -8,11 +9,14 @@ set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
-noncomputable section
 
-theorem frame_apply_expansion {α κ γ : Type} [Fintype α] [Fintype γ]
-    [DecidableEq κ] (w : α → ℝ) (c : α → κ) (χ : γ → α → ℂ)
-    (ξ : ℝ) (X : α) (b : γ) (hret : ξ ≤ frameCellMass w c (c X)) :
+
+section
+variable {α κ γ : Type} [Fintype α] [Fintype γ] [DecidableEq κ] (w : α → ℝ) (c : α → κ) (χ : γ → α → ℂ)
+
+theorem frame_apply_expansion      
+           
+     ξ   X   b  (hret : ξ ≤ frameCellMass w c (c X)) :
     frameCellApply w c χ ξ (χ b) X =
       ∑ a, (frameCellMass w c (c X) : ℂ)⁻¹ * χ a X *
         (∑ D, if c D = c X then (w D : ℂ) * star (χ a D) * χ b D else 0) := by
@@ -33,10 +37,10 @@ theorem frame_apply_expansion {α κ γ : Type} [Fintype α] [Fintype γ]
       rw [Finset.sum_comm]
       simp only [Finset.mul_sum]
 
-theorem frame_reproduction {α κ γ : Type} [Fintype α] [Fintype γ]
-    [DecidableEq κ] (w : α → ℝ) (c : α → κ) (χ : γ → α → ℂ)
-    (ξ δ : ℝ) (hξ : 0 < ξ) (hδ : 0 ≤ δ)
-    (hχ : ∀ a x, ‖χ a x‖ ≤ 1) (X : α) (b : γ)
+theorem frame_reproduction      
+           
+     ξ δ  (hξ : 0 < ξ) (hδ : 0 ≤ δ)
+    (hχ : ∀ a x, ‖χ a x‖ ≤ 1)  X   b 
     (hret : ξ ≤ frameCellMass w c (c X))
     (hdiag : (∑ D, if c D = c X then
       (w D : ℂ) * star (χ b D) * χ b D else 0) = (frameCellMass w c (c X) : ℂ))
@@ -49,11 +53,7 @@ theorem frame_reproduction {α κ γ : Type} [Fintype α] [Fintype γ]
   have hν : 0 < ν := hξ.trans_le hret
   have hνC : (ν : ℂ) ≠ 0 := by exact_mod_cast hν.ne'
   have hb : F b = χ b X := by
-    change (ν : ℂ)⁻¹ * χ b X *
-      (∑ D, if c D = c X then (w D : ℂ) * star (χ b D) * χ b D else 0) = χ b X
-    rw [hdiag]
-    change (ν : ℂ)⁻¹ * χ b X * (ν : ℂ) = χ b X
-    field_simp
+    grind
   have heq : frameCellApply w c χ ξ (χ b) X - χ b X = ∑ a ∈ Finset.univ.erase b, F a := by
     rw [frame_apply_expansion w c χ ξ X b hret]
     change (∑ a, F a) - χ b X = _
@@ -73,16 +73,17 @@ theorem frame_reproduction {α κ γ : Type} [Fintype α] [Fintype γ]
           (norm_nonneg _) (by positivity)
         _ ≤ ξ⁻¹ * δ := by
           rw [mul_one]
-          exact mul_le_mul_of_nonneg_right (by
-            simpa only [one_div] using one_div_le_one_div_of_le hξ hret) hδ
+          bound
         _ = _ := by ring
     _ ≤ (Fintype.card γ : ℝ) * δ / ξ := by
       rw [Finset.sum_const, nsmul_eq_mul]
       have hc : ((Finset.univ.erase b).card : ℝ) ≤ (Fintype.card γ : ℝ) := by
-        exact_mod_cast (Finset.card_erase_le (s := Finset.univ) (a := b))
+        norm_num
       calc
         _ ≤ (Fintype.card γ : ℝ) * (δ / ξ) := mul_le_mul_of_nonneg_right hc (div_nonneg hδ hξ.le)
         _ = _ := by ring
 
 end
+
+
 end Erdos821.S34Core

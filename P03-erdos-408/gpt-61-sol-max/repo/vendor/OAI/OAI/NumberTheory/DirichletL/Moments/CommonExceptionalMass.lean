@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalCost
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonExceptionalMass
@@ -14,11 +14,11 @@ open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRad
 open CenteredMomentCommonExceptionalCost CenteredMomentCommonAllocationSum
 open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
 open CenteredMomentAllocatedDetectorAmplitude
-local notation "O" => HeckeFamily.O
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 omit [DecidableEq ι] in
-lemma scalar_profile_volume (s:Input ι)(C R:Ideal O)(hC:C≠0)(B:actualAllocations s.pools C):
+lemma scalar_profile_volume (s:Input ι) C R (hC:C≠0) B :
     ‖commonScalar s C R B‖*slotControl (commonData s C R B)*Real.sqrt (volume (commonData s C R B))≤
       slotControl s.toData*frozenProfile s*Real.sqrt (volume s.toData)/(Ideal.absNorm C:ℝ):=by
   calc
@@ -31,6 +31,6 @@ lemma scalar_profile_volume (s:Input ι)(C R:Ideal O)(hC:C≠0)(B:actualAllocati
 
 end SevenEighths.CenteredMomentCommonExceptionalMass
 
-end
+
 
 end OAI

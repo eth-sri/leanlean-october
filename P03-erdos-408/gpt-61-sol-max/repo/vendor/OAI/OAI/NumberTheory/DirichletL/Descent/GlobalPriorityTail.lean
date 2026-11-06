@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailMass
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailCollapse
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailCollapse
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
@@ -67,7 +68,7 @@ theorem global_parent_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
   let V := principalWindow om lo hi hlo hs negative height
   let Q := (s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*(SchwartzMap.seminorm ℝ 0 0 om)^2
   let T := Ct*Q*Z^(-(saving+13*Lcap))
-  have hT : 0≤T := by dsimp [T,Q];positivity
+  
   have hΨ₀ : ∀u,‖Ψ₀ u‖≤1 := fun u=>(firstCoreTwist_norm_le negative _ Ψ core u).trans (hΨ u)
   have hout (x : Source ι Jo) (hx : x∈source) :
       ‖globalPriorityOuter p hg negative Ψ m ray core w x‖≤coefficientBound := by
@@ -126,6 +127,6 @@ theorem global_parent_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
         _ = _ := by rw [he]
 
 end SevenEighths.InverseMomentGlobalPriorityTail
-end
+
 
 end OAI

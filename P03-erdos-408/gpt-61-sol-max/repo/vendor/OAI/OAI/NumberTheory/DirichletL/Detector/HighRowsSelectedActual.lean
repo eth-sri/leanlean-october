@@ -12,7 +12,7 @@ namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
 
-lemma elementCoeff_zero_or_norm_one (eta : HeckeFamily.Character) (p : O) :
+lemma elementCoeff_zero_or_norm_one  eta   p  :
     HeckeFamily.elementCoeff eta p=0 ∨ ‖HeckeFamily.elementCoeff eta p‖=1 := by
   by_cases h : HeckeFamily.elementCoeff eta p=0
   · exact Or.inl h
@@ -31,10 +31,10 @@ def actualUnramifiedSelected (eta : HeckeFamily.Character) (p u : O)
     (HeckeFamily.elementCoeff eta p)
     (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ u)) x w z
 
-theorem actualUnramifiedSelected_bound (eta : HeckeFamily.Character) (p u : O)
+theorem actualUnramifiedSelected_bound  eta   p u 
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
     (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hu : IsCoprime u p)
-    (hQ : (4:ℝ)≤Ideal.absNorm (Ideal.span {p})) (x w z : ℂ)
+    (hQ : (4:ℝ)≤Ideal.absNorm (Ideal.span {p}))  x w z 
     (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) :
     ‖actualUnramifiedSelected eta p u hg x w z‖≤961 := by
   have hv := Complex.norm_eq_one_of_pow_eq_one (ProbePhysical.actualSextic_unit_six p u hg hc hu) (by decide : (6:ℕ)≠0)

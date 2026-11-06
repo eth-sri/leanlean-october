@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.RawAssembly
 public import Mathlib.Algebra.Order.Chebyshev
@@ -16,20 +17,26 @@ noncomputable section
 
 variable {P : PrimeGroups} {M : ℕ}
 
-lemma actBig_inv_actBig (π : P.BigPermutations M) (a : P.BigLabels M) :
+section
+variable (π ρ : P.BigPermutations M) (a : P.BigLabels M)
+
+
+lemma actBig_inv_actBig     :
     P.actBig π⁻¹ (P.actBig π a) = a := by
   funext g i
   simp [PrimeGroups.actBig]
 
-lemma actBig_actBig_inv (π : P.BigPermutations M) (a : P.BigLabels M) :
+lemma actBig_actBig_inv     :
     P.actBig π (P.actBig π⁻¹ a) = a := by
   funext g i
   simp [PrimeGroups.actBig]
 
-lemma actBig_actBig (π ρ : P.BigPermutations M) (a : P.BigLabels M) :
+lemma actBig_actBig     :
     P.actBig π (P.actBig ρ a) = P.actBig (ρ * π) a := by
   funext g i
   simp [PrimeGroups.actBig]
+
+end
 
 /-- The action of one permutation tuple, as an equivalence of label tuples. -/
 def actEquiv (π : P.BigPermutations M) : P.BigLabels M ≃ P.BigLabels M where
@@ -39,18 +46,22 @@ def actEquiv (π : P.BigPermutations M) : P.BigLabels M ≃ P.BigLabels M where
   right_inv a := actBig_actBig_inv π a
 
 /-- Permutation average of a test. -/
-def symTest (P : PrimeGroups) (M : ℕ) (f : P.BigLabels M → ℂ) (a : P.BigLabels M) : ℂ :=
+def symTest (P : PrimeGroups) (M ) (f : P.BigLabels M → ℂ) (a : P.BigLabels M)  :=
   ((Fintype.card (P.BigPermutations M) : ℂ))⁻¹ * ∑ π : P.BigPermutations M, f (P.actBig π a)
 
-lemma symTest_invariant (f : P.BigLabels M → ℂ) (ρ : P.BigPermutations M)
-    (a : P.BigLabels M) : symTest P M f (P.actBig ρ a) = symTest P M f a := by
+section
+variable (K : P.BigLabels M → P.BigLabels M → ℂ) (hV : ∀ g, 0 < P.V g) (f : P.BigLabels M → ℂ) (ρ : P.BigPermutations M) (a : P.BigLabels M) (g : P.BigLabels M → ℂ)
+
+
+lemma symTest_invariant    
+      : symTest P M f (P.actBig ρ a) = symTest P M f a := by
   unfold symTest
   congr 1
   simp_rw [actBig_actBig]
   exact Fintype.sum_equiv (Equiv.mulLeft ρ) _ _ (fun π => rfl)
 
-lemma pair_transport (K : P.BigLabels M → P.BigLabels M → ℂ)
-    (f g : P.BigLabels M → ℂ) (π τ : P.BigPermutations M) :
+lemma pair_transport  
+       π τ  :
     (∑ a, ∑ b, (P.idealMass a : ℂ) * star (f a) * K (P.actBig π a) (P.actBig τ b) * g b) =
       ∑ a, ∑ b, (P.idealMass a : ℂ) * star (f (P.actBig π⁻¹ a)) * K a b *
         g (P.actBig τ⁻¹ b) := by
@@ -71,7 +82,7 @@ lemma sum4_swap {α β γ δ : Type*} [Fintype α] [Fintype β] [Fintype γ] [Fi
       Finset.sum_congr rfl (fun x _ => Finset.sum_congr rfl (fun a _ => Finset.sum_comm))
     _ = _ := Finset.sum_congr rfl (fun x _ => Finset.sum_comm)
 
-lemma star_symTest (f : P.BigLabels M → ℂ) (a : P.BigLabels M) :
+lemma star_symTest     :
     star (symTest P M f a) =
       ((Fintype.card (P.BigPermutations M) : ℂ))⁻¹ *
         ∑ π : P.BigPermutations M, star (f (P.actBig π a)) := by
@@ -80,8 +91,8 @@ lemma star_symTest (f : P.BigLabels M → ℂ) (a : P.BigLabels M) :
   congr 1
   simp
 
-lemma symmetrized_pair (K : P.BigLabels M → P.BigLabels M → ℂ)
-    (f g : P.BigLabels M → ℂ) :
+lemma symmetrized_pair  
+      :
     idealFullPair (fun a b => ((Fintype.card (P.BigPermutations M) : ℂ) ^ 2)⁻¹ *
         ∑ π : P.BigPermutations M, ∑ τ : P.BigPermutations M,
           K (P.actBig π a) (P.actBig τ b)) f g =
@@ -100,9 +111,6 @@ lemma symmetrized_pair (K : P.BigLabels M → P.BigLabels M → ℂ)
     rw [hc2]
     simp only [Finset.mul_sum, Finset.sum_mul]
     apply Finset.sum_congr rfl; intro a _
-    apply Finset.sum_congr rfl; intro b _
-    apply Finset.sum_congr rfl; intro π _
-    apply Finset.sum_congr rfl; intro τ _
     ring
   have hR : idealFullPair K (symTest P M f) (symTest P M g) =
       ∑ a, ∑ b, ∑ π : P.BigPermutations M, ∑ τ : P.BigPermutations M,
@@ -137,7 +145,8 @@ lemma symmetrized_pair (K : P.BigLabels M → P.BigLabels M → ℂ)
   intro τ
   rfl
 
-lemma symTest_sqNorm_le (hV : ∀ g, 0 < P.V g) (f : P.BigLabels M → ℂ) :
+include hV in
+lemma symTest_sqNorm_le     :
     (∑ a, P.idealMass a * ‖symTest P M f a‖ ^ 2) ≤ ∑ a, P.idealMass a * ‖f a‖ ^ 2 := by
   set N : ℕ := Fintype.card (P.BigPermutations M) with hN
   have hNpos : (0 : ℝ) < N := by
@@ -168,9 +177,7 @@ lemma symTest_sqNorm_le (hV : ∀ g, 0 < P.V g) (f : P.BigLabels M → ℂ) :
     _ = (N : ℝ)⁻¹ * ∑ π : P.BigPermutations M, ∑ a, P.idealMass a * ‖f (P.actBig π a)‖ ^ 2 := by
         simp only [Finset.mul_sum]
         rw [Finset.sum_comm]
-        apply Finset.sum_congr rfl; intro π _
-        apply Finset.sum_congr rfl; intro a _
-        ring
+        grind
     _ = (N : ℝ)⁻¹ * ∑ _π : P.BigPermutations M, ∑ a, P.idealMass a * ‖f a‖ ^ 2 := by
         congr 1
         apply Finset.sum_congr rfl; intro π _
@@ -181,9 +188,12 @@ lemma symTest_sqNorm_le (hV : ∀ g, 0 < P.V g) (f : P.BigLabels M → ℂ) :
         rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, ← hN]
         field_simp
 
-lemma symTest_norm_le (hV : ∀ g, 0 < P.V g) (f : P.BigLabels M → ℂ) :
+include hV in
+lemma symTest_norm_le     :
     idealVectorNorm P M (symTest P M f) ≤ idealVectorNorm P M f :=
   Real.sqrt_le_sqrt (symTest_sqNorm_le hV f)
+
+end
 
 end
 end Erdos821.P4Cancel

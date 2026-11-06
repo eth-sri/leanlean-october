@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceAllocationC
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstCommonSourceBudget
@@ -15,13 +15,13 @@ open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
 open CenteredMomentCommonRawScale CenteredMomentSourceLiveColumn CenteredMomentFirstAllocationGaussEnergy
-local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[Fintype ι]
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
-lemma child_nonneg (s:Input ι)(C R seed:Ideal O)(B:actualAllocations s.pools C)
-    (τ:Character)(t:ℝ)(W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)
-    (hW:∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re):
+variable {ι:Type*}[Fintype ι]
+
+
+lemma child_nonneg (s:Input ι) C R seed  B 
+     τ  t  W  K (hK:0<K)
+    (hW:∀z:ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re):
     0≤childNormalizedGaussSource s C R seed B τ t W K:=by
   rw [←allocated_input_energy s C R seed seed B τ t W K]
   apply div_nonneg
@@ -31,9 +31,9 @@ lemma child_nonneg (s:Input ι)(C R seed:Ideal O)(B:actualAllocations s.pools C)
 
 theorem common_energy_live_allocations (N:ℕ)(a b:ℝ)(ha:0<a)
     (s:Input ι)(hcard:Fintype.card ι≤N)(haS:a≤s.lower)(hbS:s.upper≤b)
-    (C R seed:Ideal O)(hC:Supported C)(hseed:seed∣C)
-    (τ:Character)(t:ℝ)(L:Ideal O)(W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)
-    (hW:∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re):
+     C R seed  hC (hseed:seed∣C)
+     τ  t  L  W  K (hK:0<K)
+    (hW:∀z:ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re):
     (CenteredMomentFirstPhysicalSource.commonEnergy (original s R seed) C hC τ t L W K).re/
       CenteredMomentAmplificationChildInput.volume s≤
     (max 1 b)^N*((actualAllocations s.pools C).card:ℝ)/(C.absNorm:ℝ)*
@@ -74,12 +74,12 @@ theorem common_energy_live_allocations (N:ℕ)(a b:ℝ)(ha:0<a)
         convert mul_le_mul_of_nonneg_right hf hn using 1 ; ring
     _=_:=by rw [←Finset.mul_sum];ring
 
-theorem common_energy_from_live_children (N:ℕ)(a b ε:ℝ)(ha:0<a)(hε:0<ε):
+theorem common_energy_from_live_children  N (a b ε:ℝ)(ha:0<a)(hε:0<ε):
     ∃Cbound:ℝ,0<Cbound ∧ ∀{κ:Type*}[Fintype κ],∀s:Input κ,
     Fintype.card κ≤N → a≤s.lower → s.upper≤b →
-    ∀(C R seed:Ideal O)(hC:Supported C),seed∣C →
-    ∀(τ:Character)(t:ℝ)(L:Ideal O)(W:𝓢(ℝ,ℂ))(K E:ℝ),0<K → 0≤E →
-    (∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
+    ∀(C R seed:Ideal ActualEisensteinCubic.O)(hC:Supported C),seed∣C →
+    ∀(τ:Character)(t:ℝ)(L:Ideal ActualEisensteinCubic.O)(W:𝓢(ℝ,ℂ))(K E:ℝ),0<K → 0≤E →
+    (∀z:ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
     (∀B:actualAllocations s.pools C,frozenCoefficient B.val C R s.ν s.W s.P≠0 →
       childNormalizedGaussSource s C R L B τ t W K≤E*(∏i,(child s C R B τ t).M i)^2)→
     (CenteredMomentFirstPhysicalSource.commonEnergy (original s R seed) C hC τ t L W K).re/

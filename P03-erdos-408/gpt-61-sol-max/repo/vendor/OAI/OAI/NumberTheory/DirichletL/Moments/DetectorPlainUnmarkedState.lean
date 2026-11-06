@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainStateDictionary
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawBranches
@@ -17,20 +18,15 @@ open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainStateDi
 open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainFiberSource
 local notation "O"=>HeckeFamily.O
 
-def allowance (δ m:ℝ):ℝ:=δ+max 0 (2*m-1)
+def allowance (δ m:ℝ):=δ+max 0 (2*m-1)
 
-lemma allowance_nonneg (δ m:ℝ)(hδ:0≤δ):0≤allowance δ m:=
+lemma allowance_nonneg  δ m (hδ:0≤δ):0≤allowance δ m:=
   add_nonneg hδ (le_max_left _ _)
 
-lemma padded_width (δ m:ℝ):1+allowance δ m=max 1 (2*m)+δ:=by
-  unfold allowance
-  by_cases hm:1≤2*m
-  · rw [max_eq_right hm,max_eq_right (by linarith:0≤2*m-1)]
-    ring
-  · rw [max_eq_left (le_of_not_ge hm),max_eq_left (by linarith:2*m-1≤0)]
-    ring
+lemma padded_width  δ m :1+allowance δ m=max 1 (2*m)+δ:=by
+  grind [allowance]
 
-lemma padded_modulus (η:Character)(U δ m:ℝ)(hU:1≤U)
+lemma padded_modulus (η:Character) U δ m (hU:1≤U)
     (hη:(η.modulus.absNorm:ℝ)≤U^δ):
     (η.modulus.absNorm:ℝ)≤U^(allowance δ m):=
   hη.trans (Real.rpow_le_rpow_of_exponent_le hU (le_add_of_nonneg_right (le_max_left _ _)))
@@ -41,16 +37,16 @@ variable {U a ε tstar T heightAllowance:ℝ}{i:ℕ}
 def state (F:Fiber M H Label Slot U a ε tstar T heightAllowance i)
     (η:Character)(Q:Ideal O)(Φ:𝓢(ℝ,ℂ))(bΦ δ:ℝ)
     (hU:1≤U)(hδ:0≤δ)(hs:Function.support (Φ:ℝ→ℂ)⊆Set.Iic bΦ)
-    (hp:∀x,0≤(Φ x).re)(hη:(η.modulus.absNorm:ℝ)≤U^δ):NaturalState U 0 bΦ:=
+    (hp:∀x,0≤(Φ x).re)(hη:(η.modulus.absNorm:ℝ)≤U^δ):=
   initialState η Q Φ bΦ U (allowance δ F.m) hU (allowance_nonneg _ _ hδ) hs hp
     (padded_modulus η U δ F.m hU hη)
 
 omit [NeZero M] in
 theorem actual_source_eq (F:Fiber M H Label Slot U a ε tstar T heightAllowance i)
-    (η:Character)(Q:Ideal O)(Φ:𝓢(ℝ,ℂ))(bΦ δ:ℝ)
-    (hU:1≤U)(hδ:0≤δ)(hs:Function.support (Φ:ℝ→ℂ)⊆Set.Iic bΦ)
-    (hp:∀x,0≤(Φ x).re)(hη:(η.modulus.absNorm:ℝ)≤U^δ)
-    (j k:ℕ)(σ t:ℝ):
+     η  Q  Φ  bΦ δ 
+    (hU:1≤U) hδ  hs 
+     hp (hη:(η.modulus.absNorm:ℝ)≤U^δ)
+     j k  σ t :
     retainedSourceEnergy (initialKeep η Q) F η ∅ j k σ t Φ=
       (state F η Q Φ bΦ δ hU hδ hs hp hη).plainEnergy
         (detectorProfiles F.reverse j k σ t) 0 (U^F.m) (U^F.m):=

@@ -21,7 +21,7 @@ open CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 
-def unitBudgetState {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)(hB:0≤Bmask):
+def unitBudgetState {Z Bmask bΦ}(s:NaturalState Z Bmask bΦ)(hB:0≤Bmask):
     NaturalState Z Bmask bΦ:=
   {unpuncturedState s with
     puncture_bound:=by simpa only [unpuncturedState,map_one,Nat.cast_one] using Real.one_le_rpow s.base_ge_one hB}

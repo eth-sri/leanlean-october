@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorPlainFiberCount
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorNoSlotPlainCount
@@ -20,7 +20,7 @@ theorem no_slot_plain_count {Row Label : Type*}
     (label : Label) (J K : Fin (dyadicLength U))
     (hlabel : ∀ u∈rows,(witness u).label=label)
     (hJ : ∀ u∈rows,(witness u).left=J) (hK : ∀ u∈rows,(witness u).right=K)
-    (εm C height : ℝ) (hC : 0≤C) (hheight : 0≤height)
+     εm C height  (hC : 0≤C) (hheight : 0≤height)
     (hfreq : 2*Real.pi*allowance+(3*i : ℕ)*T≤height)
     (hraw : ∀ j k : ℕ,j+k≤2 → ∀ σ∈Icc (0 : ℝ) 1,∀ freq∈Icc (-height) height,
       ∑ u∈rows,‖polynomial (χ u label) false ((logProfile^[j]) positiveAnnular)
@@ -59,6 +59,6 @@ theorem no_slot_plain_count {Row Label : Type*}
 
 end SevenEighths.HeckeDetectorNoSlotPlainCount
 
-end
+
 
 end OAI

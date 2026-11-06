@@ -21,7 +21,7 @@ variable (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
 variable (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def CanonicalRankMoments (pool:Finset ι)(base:O→*ℂ)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (W:𝓢(ℝ,ℂ))(Z Mmax Fcap z c eps A:ℝ)(K degree:ℕ):Prop :=
+    (W:𝓢(ℝ,ℂ))(Z Mmax Fcap z c eps A:ℝ)(K degree:ℕ) :=
   ∀(Ψ:O→*ℂ),IsBaseRayTwist base Ψ→∀(m:O),m≠0→∀N V M Qwidth:ℝ,
     0≤N→0≤V→0≤M→0≤Qwidth→M≤Mmax→N+V≤Fcap→
     CanonicalMargins (N+V) M Qwidth z c→
@@ -38,8 +38,8 @@ theorem canonical_rank_moments_children
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (pool:Finset ι)(Q:Finset (ι→₀ℕ))(k:SourceIndex)(l j:ℕ)(negative:Bool)
     (base Ψ:O→*ℂ)(hΨ:IsBaseRayTwist base Ψ)(m:O)(hm:m≠0)
-    (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)(ω₁ ω₂:𝓢(ℝ,ℂ))
-    (Z M r ell V eta tau window b cutoff Qwidth z c eps A:ℝ)(K degree:ℕ)
+    (slots:Finset σ) lists  a  ω₁ ω₂ 
+    (Z M r ell V eta tau window b cutoff Qwidth z c eps A:ℝ) K degree 
     (hZ:1<Z)(heta:0≤eta)(hbin:2≤Z^eta)(hell:0≤ell)(hV:0≤V)
     (hb:1≤b)(hbt:b≤Z^(6*eta))(hwindow:Real.exp window≤Z^(4*eta))
     (_hd:0<cutoff)(hterminal:cutoff≤ell+V)(hsmall:eta≤cutoff/16)

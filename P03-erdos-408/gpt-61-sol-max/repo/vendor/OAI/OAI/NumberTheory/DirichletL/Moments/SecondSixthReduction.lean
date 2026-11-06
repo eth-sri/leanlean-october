@@ -15,15 +15,15 @@ open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve 
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
 open CenteredMomentCanonicalFirst CenteredMomentSecondMovingSupport CenteredMomentFixedRowMask
 open CenteredExceptionalProfile CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
 
-def reducedNumerator (C D : Ideal O) (U : Finset (CommonIndex C D)) : O :=
+
+def reducedNumerator (C D ) (U : Finset (CommonIndex C D))  :=
   ∏ P : CommonIndex C D,commonPrime C D P^(fixedExponent C D U P%6)
 
-def sixthFactor (C D : Ideal O) (U : Finset (CommonIndex C D)) : O :=
+def sixthFactor (C D ) (U : Finset (CommonIndex C D))  :=
   ∏ P : CommonIndex C D,commonPrime C D P^(fixedExponent C D U P/6)
 
-theorem fixed_numerator_product (C D : Ideal O) (U : Finset (CommonIndex C D)) :
+theorem fixed_numerator_product  C D   U  :
     commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U=
       ∏ P : CommonIndex C D,commonPrime C D P^fixedExponent C D U P := by
   have hv : nonunitFrequencyGenerator C D U=
@@ -35,7 +35,7 @@ theorem fixed_numerator_product (C D : Ideal O) (U : Finset (CommonIndex C D)) :
   simp only [fixedExponent,pow_add]
   split_ifs <;> simp
 
-theorem fixed_sixth_factorization (C D : Ideal O) (U : Finset (CommonIndex C D)) :
+theorem fixed_sixth_factorization  C D   U  :
     commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U=
       reducedNumerator C D U*(sixthFactor C D U)^6 := by
   rw [fixed_numerator_product,reducedNumerator,sixthFactor,←Finset.prod_pow,←Finset.prod_mul_distrib]
@@ -45,18 +45,18 @@ theorem fixed_sixth_factorization (C D : Ideal O) (U : Finset (CommonIndex C D))
   congr 1
   omega
 
-theorem reducedNumerator_ne_zero (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D)) :
+theorem reducedNumerator_ne_zero  C D  (hC : Supported C)  U  :
     reducedNumerator C D U≠0 :=
   Finset.prod_ne_zero_iff.mpr (fun P _=>pow_ne_zero _
     (supported_element_ne_zero _ (commonPrime_supported C D hC P)))
 
-theorem sixthFactor_ne_zero (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D)) :
+theorem sixthFactor_ne_zero  C D  (hC : Supported C)  U  :
     sixthFactor C D U≠0 :=
   Finset.prod_ne_zero_iff.mpr (fun P _=>pow_ne_zero _
     (supported_element_ne_zero _ (commonPrime_supported C D hC P)))
 
-theorem fixed_sixth_row (η : Character) (m h n : O) (C D : Ideal O)
-    (U : Finset (CommonIndex C D)) :
+theorem fixed_sixth_row  η   m h n   C D 
+     U  :
     rowTwist (elementHom η) m 1
       ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*h) n=
     rowTwist (elementHom η) (m*sixthFactor C D U) 1 (reducedNumerator C D U*h) n := by
@@ -66,9 +66,9 @@ theorem fixed_sixth_row (η : Character) (m h n : O) (C D : Ideal O)
   exact congrArg
     (fun x => elementHom η n * idealRowHom x (Ideal.span {n})) he
 
-theorem fixed_sixth_inducing_iff (η : Character) (Q : Ideal O) (m h : O)
-    (hm : m≠0) (hh : h≠0) (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:O)∣m)
-    (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D)) :
+theorem fixed_sixth_inducing_iff  η   Q   m h 
+    (hm : m≠0) (hh : h≠0) (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m)
+     C D  (hC : Supported C)  U  :
     FixedInducingRow η Q m
       (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) h ↔
       FixedInducingRow η Q m (reducedNumerator C D U) h := by

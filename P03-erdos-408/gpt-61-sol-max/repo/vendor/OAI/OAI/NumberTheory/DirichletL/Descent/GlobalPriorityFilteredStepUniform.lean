@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredStep
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredAggregateUniform
@@ -9,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFullAggregate
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
@@ -25,7 +26,7 @@ theorem global_priority_filtered_physical_step_uniform_types
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
     (window Lcap tau saving:ℝ)(hhi:hi≤Real.exp window)(hLcap:0≤Lcap)(htau:0<tau)
     (Jmax:ℕ)(dsmall:ℝ)(hdsmall:0<dsmall)
-    (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i) (B₀:Fin 6→ℝ) (hB₀:∀i,0≤B₀ i) (K:ℕ) (εmass:ℝ) (hεmass:0<εmass) :
+    (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i) (B₀:Fin 6→ℝ) (hB₀:∀i,0≤B₀ i)  K   εmass  (hεmass:0<εmass) :
     ∃ (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (loFresh hiFresh : ℝ),
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
@@ -145,7 +146,7 @@ theorem global_priority_filtered_physical_step_uniform_types
     hYone hscale hy hyi hx hPcap hcubeCap₁ hcubeCap₂ hactiveCap hcommonCap hquotCap hrad hcutoff
   have hh:=hdata 1 1 ∅ (Finset.empty_subset _)
   obtain ⟨_,hρ,hL,hZ,hX,hY,heta,hbin,_,_,_,_,_,_,hΨall,_,_,_,_,_,_,_,hYe,hXe,hLe,_,hZ2,_,_,_,_,_,_,_⟩:=hh
-  have hz:0<Z:=zero_lt_one.trans hZ
+  
   have haall:∀i∈slots,∀q∈lists i,‖a i q‖≤1:=by
     have hh':=hdata 1 1 slots (Finset.Subset.refl _)
     exact hh'.1
@@ -170,6 +171,6 @@ theorem global_priority_filtered_physical_step_uniform_types
   exact hb'.trans (add_le_add (add_le_add hzbound hrbound) htbound)
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

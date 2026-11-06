@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.GramCommonParam
 
@@ -16,20 +17,16 @@ def bezoutPairEquiv (n₁ n₂ a b : R) (hab : a*n₁+b*n₂=1) : R×R≃R×R wh
   toFun p := (b*p.2+n₁*p.1,-a*p.2+n₂*p.1)
   invFun p := (a*p.1+b*p.2,n₂*p.1-n₁*p.2)
   left_inv p := by
-    apply Prod.ext
-    · dsimp only
-      linear_combination p.1*hab
-    · dsimp only
-      linear_combination p.2*hab
+    grind
   right_inv p := by
-    apply Prod.ext
-    · dsimp only
-      linear_combination p.1*hab
-    · dsimp only
-      linear_combination p.2*hab
+    grind
 
-theorem fullCorrelation_bezout [Fintype R] (n₁ n₂ a b k : R) (hab : a*n₁+b*n₂=1)
-    (f g : R→ℂ) :
+section
+variable [Fintype R] (n₁ n₂ a b k : R) (hab : a*n₁+b*n₂=1) (f g : R→ℂ)
+include n₁ n₂ a b k hab f g
+
+theorem fullCorrelation_bezout      
+      :
     fullCorrelation (fun x=>n₂*x) (fun y=>n₁*y) f g k=
       ∑t : R,f (b*k+n₁*t)*star (g (-a*k+n₂*t)) := by
   unfold fullCorrelation
@@ -46,8 +43,8 @@ theorem fullCorrelation_bezout [Fintype R] (n₁ n₂ a b k : R) (hab : a*n₁+b
   rw [he,Fintype.sum_prod_type]
   simp only [Finset.sum_ite_eq',Finset.mem_univ,ite_true]
 
-theorem fullCorrelation_bezout_norm [Fintype R] (n₁ n₂ a b k : R) (hab : a*n₁+b*n₂=1)
-    (f g : R→ℂ) (hf : ∀x,‖f x‖≤1) (hg : ∀x,‖g x‖≤1) :
+theorem fullCorrelation_bezout_norm      
+      (hf : ∀x,‖f x‖≤1) (hg : ∀x,‖g x‖≤1) :
     ‖fullCorrelation (fun x=>n₂*x) (fun y=>n₁*y) f g k‖≤(Fintype.card R:ℝ) := by
   rw [fullCorrelation_bezout n₁ n₂ a b k hab]
   calc
@@ -56,8 +53,10 @@ theorem fullCorrelation_bezout_norm [Fintype R] (n₁ n₂ a b k : R) (hab : a*n
       apply Finset.sum_le_sum
       intro t ht
       rw [norm_mul,norm_star]
-      exact (mul_le_of_le_one_left (norm_nonneg _) (hf _)).trans (hg _)
+      bound
     _ = _ := by simp
+
+end
 
 end SevenEighths.ProbeGramCommon
 end

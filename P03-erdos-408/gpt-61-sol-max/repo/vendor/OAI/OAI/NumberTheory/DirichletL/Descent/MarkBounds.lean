@@ -9,12 +9,12 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
 
  theorem finite_primeSupport_card {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (U : Finset ι) :
+    (p : ι → ActualEisensteinCubic.O) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))  U  :
     (IdealMobiusDivisorSum.primeSupport (Ideal.span {∏ i ∈ U, p i})).card = U.card := by
   have hc : Pairwise (Function.onFun IsCoprime (fun i : U => Ideal.span {p i.val})) := by
     intro i j hij
@@ -22,9 +22,13 @@ local notation "Eis" => ActualEisensteinCubic.O
   have he := Fintype.card_congr (productPrimeIndexEquiv (fun i : U => p i.val) hc)
   simpa only [Finset.prod_coe_sort, PrimeIndex, Fintype.card_coe, CompletedGauss.primeSupport, IdealMobiusDivisorSum.primeSupport] using he.symm
 
-theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+
+theorem finite_primeMark_small_power     :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+      (p : ι → ActualEisensteinCubic.O) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
       (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
@@ -33,7 +37,7 @@ theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C,hC,hb⟩ := SquarefreeDivisorBound.prime_support_subsets_bound ε hε
   refine ⟨C,hC,?_⟩
   intro ι σ _ _ p hp _ hcop slots lists a hslots ha U
-  have hI : (Ideal.span {∏ i ∈ U, p i} : Ideal Eis) ≠ 0 :=
+  have hI : (Ideal.span {∏ i ∈ U, p i} : Ideal ActualEisensteinCubic.O) ≠ 0 :=
     Ideal.span_singleton_eq_bot.not.mpr (Finset.prod_ne_zero_iff.mpr (fun i hi => hp i))
   have hh := hb (Ideal.span {∏ i ∈ U, p i}) hI
   rw [finite_primeSupport_card p hcop U] at hh
@@ -42,9 +46,9 @@ theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
   rw [hn] at hh
   exact (primeMark_norm_le_divisor_count slots lists a U hslots ha).trans hh
 
-theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
+theorem finite_primeMark_extracted_bound     :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+      (p : ι → ActualEisensteinCubic.O) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
       (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
@@ -53,7 +57,7 @@ theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C,hC,hb⟩ := SquarefreeDivisorBound.prime_support_subsets_bound ε hε
   refine ⟨C,hC,?_⟩
   intro ι σ _ _ p hp _ hcop slots lists a hslots ha A U
-  have hI : (Ideal.span {∏ i ∈ U, p i} : Ideal Eis) ≠ 0 :=
+  have hI : (Ideal.span {∏ i ∈ U, p i} : Ideal ActualEisensteinCubic.O) ≠ 0 :=
     Ideal.span_singleton_eq_bot.not.mpr (Finset.prod_ne_zero_iff.mpr (fun i hi => hp i))
   have hh := hb (Ideal.span {∏ i ∈ U, p i}) hI
   rw [finite_primeSupport_card p hcop U] at hh
@@ -68,6 +72,8 @@ theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
     _ = _ := by ring
 
 end
+
+
 end SevenEighths.InverseMoment
 
 end OAI

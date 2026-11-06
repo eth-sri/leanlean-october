@@ -9,13 +9,13 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
 
-theorem actual_kernel_upper_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
+
+variable {φ : Type*} [Fintype φ] {a c : ActualEisensteinCubic.O} {mode : Bool}
+
+theorem actual_kernel_upper_threshold (F : PrimeFamily φ)  jF   e 
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (m : ℕ) (Z T QK QP Qn Qb kK kP kn kb : ℝ)
+     m   Z T QK QP Qn Qb kK kP kn kb 
     (hT : 0<T) (hK : 0<QK) (hP : 0<QP) (hn : 0<Qn) (hb : 0<Qb)
     (hkK : 0<kK) (hkP : 0<kP) (hkn : 0<kn) (hkb : 0<kb) :
     Real.logb Z (kn*Qn/Ideal.absNorm (frozenExtracted F jF e 1))+
@@ -36,7 +36,7 @@ theorem actual_kernel_upper_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e : 
   norm_num only [Nat.cast_ofNat]
   ring
 
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

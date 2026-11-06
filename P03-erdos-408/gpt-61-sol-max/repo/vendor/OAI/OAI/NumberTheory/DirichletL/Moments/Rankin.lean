@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.DivisorEnergy
 
@@ -11,43 +12,50 @@ open scoped BigOperators Classical
 open Filter
 namespace SevenEighths.CenteredMomentRankin
 open IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
 
-def primeMass (P : Ideal O) (δ : ℝ) : ℝ := ((Ideal.absNorm P:ℝ)^δ-1)⁻¹
 
-theorem prime_norm_ge_two (P : Ideal O) (hp : Prime P) : 2 ≤ Ideal.absNorm P := by
+def primeMass (P : Ideal ActualEisensteinCubic.O) (δ : ℝ)  := ((Ideal.absNorm P:ℝ)^δ-1)⁻¹
+
+section
+variable (P : Ideal ActualEisensteinCubic.O) (hp : Prime P) (δ : ℝ) (hδ : 0 < δ)
+
+include hp in
+theorem prime_norm_ge_two     : 2 ≤ Ideal.absNorm P := by
   have h0 := Ideal.absNorm_eq_zero_iff.not.mpr hp.ne_zero
   have h1 : Ideal.absNorm P ≠ 1 := by
     intro hn
     exact hp.not_isUnit (Ideal.isUnit_iff.mpr (Ideal.absNorm_eq_one_iff.mp hn))
   omega
 
-theorem primeMass_nonneg (P : Ideal O) (hp : Prime P) (δ : ℝ) (hδ : 0 < δ) :
+include hp hδ in
+theorem primeMass_nonneg         :
     0 ≤ primeMass P δ := by
   apply inv_nonneg.mpr
   have hn : (1:ℝ) < Ideal.absNorm P := by exact_mod_cast (prime_norm_ge_two P hp)
   exact (sub_pos.mpr (Real.one_lt_rpow hn hδ)).le
 
-theorem primeMass_le_fixed (P : Ideal O) (hp : Prime P) (δ : ℝ) (hδ : 0 < δ) :
+include hp hδ in
+theorem primeMass_le_fixed         :
     primeMass P δ ≤ ((2:ℝ)^δ-1)⁻¹ := by
   apply inv_anti₀ (sub_pos.mpr (Real.one_lt_rpow (by norm_num) hδ))
   exact sub_le_sub_right (Real.rpow_le_rpow (by norm_num)
     (by exact_mod_cast prime_norm_ge_two P hp) hδ.le) 1
 
-theorem uniform_primeMass_product (δ : ℝ) (hδ : 0 < δ) :
-    ∃ C : ℝ, 0 < C ∧ ∀ S : Finset (Ideal O), (∀ P ∈ S,Prime P) →
+include hδ in
+theorem uniform_primeMass_product     :
+    ∃ C : ℝ, 0 < C ∧ ∀ S : Finset (Ideal ActualEisensteinCubic.O), (∀ P ∈ S,Prime P) →
       (∏ P ∈ S,primeMass P δ) ≤ C := by
   have ht : Tendsto (fun n : ℕ => (n:ℝ)^δ) atTop atTop :=
     (tendsto_rpow_atTop hδ).comp tendsto_natCast_atTop_atTop
   obtain ⟨N,hN⟩ := eventually_atTop.mp (ht.eventually (eventually_ge_atTop (2:ℝ)))
-  let small : Finset (Ideal O) := (Ideal.finite_setOfPred_absNorm_le (S := O) N).toFinset
+  let small : Finset (Ideal ActualEisensteinCubic.O) := (Ideal.finite_setOfPred_absNorm_le (S := ActualEisensteinCubic.O) N).toFinset
   let B : ℝ := max 1 (((2:ℝ)^δ-1)⁻¹)
   have hB : 1 ≤ B := le_max_left _ _
   refine ⟨B^small.card,pow_pos (zero_lt_one.trans_le hB) _,?_⟩
   intro S hp
-  have hs (P : Ideal O) (hP : P ∈ S∩small) : primeMass P δ ≤ B :=
-    (primeMass_le_fixed P (hp P (Finset.mem_inter.mp hP).1) δ hδ).trans (le_max_right _ _)
-  have hl (P : Ideal O) (hP : P ∈ S\small) : primeMass P δ ≤ 1 := by
+  have hs (P : Ideal ActualEisensteinCubic.O) (hP : P ∈ S∩small) : primeMass P δ ≤ B :=
+    (by grind [primeMass_le_fixed])
+  have hl (P : Ideal ActualEisensteinCubic.O) (hP : P ∈ S\small) : primeMass P δ ≤ 1 := by
     have hn : N < Ideal.absNorm P := by
       by_contra hn
       apply (Finset.mem_sdiff.mp hP).2
@@ -73,7 +81,8 @@ theorem uniform_primeMass_product (δ : ℝ) (hδ : 0 < δ) :
   exact (mul_le_mul hleft hright (Finset.prod_nonneg
     (fun P hP => primeMass_nonneg P (hp P (Finset.mem_sdiff.mp hP).1) δ hδ)) (by positivity)).trans_eq (mul_one _)
 
-theorem local_power_sum (P : Ideal O) (hp : Prime P) (δ : ℝ) (hδ : 0 < δ) (K : ℕ) :
+include hp hδ in
+theorem local_power_sum          K  :
     (∑ n ∈ Finset.range K,((Ideal.absNorm P:ℝ)^(n+1))^(-δ)) ≤ primeMass P δ := by
   let q : ℝ := (Ideal.absNorm P:ℝ)^δ
   have hNP : (1:ℝ)<Ideal.absNorm P := by exact_mod_cast prime_norm_ge_two P hp
@@ -93,6 +102,8 @@ theorem local_power_sum (P : Ideal O) (hp : Prime P) (δ : ℝ) (hδ : 0 < δ) (
   apply hsum.trans_eq
   change q⁻¹*(1-q⁻¹)⁻¹=(q-1)⁻¹
   field_simp
+
+end
 
 end SevenEighths.CenteredMomentRankin
 

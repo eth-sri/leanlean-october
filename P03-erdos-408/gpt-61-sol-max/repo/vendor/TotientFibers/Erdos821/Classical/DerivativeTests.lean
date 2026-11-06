@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.Blueprint.Classical
 public import OAI.NumberTheory.EgyptianFractions.DiscreteFirstDerivative
@@ -26,9 +27,9 @@ attribute [local instance] Classical.propDecidable
 namespace Erdos821.Classical.Deriv
 
 /-- The additive character `e(t) = exp(2πit)`. -/
-def e (t : ℝ) : ℂ := Complex.exp (2 * Real.pi * t * Complex.I)
+def e (t : ℝ)  := Complex.exp (2 * Real.pi * t * Complex.I)
 
-private lemma e_eq_phase (t : ℝ) :
+private lemma e_eq_phase  t  :
     e t = OAI.Problem337.ExponentialSum.phase t := by
   unfold e OAI.Problem337.ExponentialSum.phase
   congr 1
@@ -43,20 +44,14 @@ private lemma slope_on_unit_interval (f : ℝ → ℝ) (lo hi x : ℝ)
     exact ⟨hlo.trans hy.1, hy.2.trans hhi⟩
   obtain ⟨c, hc, hderiv⟩ := exists_deriv_eq_slope f (by linarith)
     (hf.continuousOn.mono hsub) (hf.mono (Set.Ioo_subset_Icc_self.trans hsub))
-  refine ⟨c, hc, ?_⟩
-  rw [hderiv]
-  have hx : (x + 1) - x = (1 : ℝ) := by ring
-  rw [hx, div_one]
+  grind
 
 private lemma expSum_int_Icc_eq_range (a b : ℤ) (N : ℕ)
     (hN : (b + 1 - a).toNat = N) (z : ℤ → ℂ) :
     (∑ n ∈ Finset.Icc a b, z n) =
       ∑ i ∈ Finset.range N, z (a + (i : ℤ)) := by
   rw [Int.Icc_eq_finset_map, Finset.sum_map, hN]
-  apply Finset.sum_congr rfl
-  intro i hi
-  simp only [Function.Embedding.trans_apply, Nat.castEmbedding_apply,
-    addLeftEmbedding_apply]
+  rfl
 
 theorem kusmin_landau_part :
     (∃ K : ℝ, 0 < K ∧ ∀ (lo hi lam : ℝ) (j : ℤ) (f : ℝ → ℝ),
@@ -76,11 +71,7 @@ theorem kusmin_landau_part :
           dsimp [N]
           exact Int.toNat_of_nonneg (by omega)
         have hlen : (b + 1 - a).toNat = N + 2 := by
-          have hcast : (((b + 1 - a).toNat : ℕ) : ℤ) = (N + 2 : ℕ) := by
-            rw [Int.toNat_of_nonneg (by omega : 0 ≤ b + 1 - a), Nat.cast_add,
-              Nat.cast_ofNat, hNcast]
-            omega
-          exact_mod_cast hcast
+          omega
         have hloA : lo ≤ (a : ℝ) := by
           dsimp [a]
           exact Int.le_ceil lo
@@ -91,48 +82,29 @@ theorem kusmin_landau_part :
         have hunitBounds (i : ℕ) (hiN : i ≤ N) :
             lo ≤ (a : ℝ) + i ∧ (a : ℝ) + i + 1 ≤ hi := by
           have hik : (a : ℤ) + (i : ℤ) + 1 ≤ b := by
-            have hiInt : (i : ℤ) ≤ N := by exact_mod_cast hiN
+            
             omega
           have hikR : (((a : ℤ) + (i : ℤ) + 1 : ℤ) : ℝ) ≤ (b : ℝ) := by
             exact_mod_cast hik
           push_cast at hikR
-          constructor
-          · have hi0 : (0 : ℝ) ≤ i := Nat.cast_nonneg i
-            linarith
-          · exact hikR.trans hbHi
+          grind
         have hstep (i : ℕ) (hiN : i ≤ N) :
             ∃ c ∈ Set.Ioo ((a : ℝ) + i) ((a : ℝ) + i + 1),
               deriv f c = g (i + 1) - g i := by
           rcases hunitBounds i hiN with ⟨hleft, hright⟩
-          obtain ⟨c, hc, hder⟩ := slope_on_unit_interval f lo hi
-            ((a : ℝ) + i) hdiff hleft hright
-          refine ⟨c, hc, ?_⟩
-          have hg : g (i + 1) - g i =
-              f ((a : ℝ) + i + 1) - f ((a : ℝ) + i) := by
-            dsimp [g]
-            congr 1
-            simp only [Nat.cast_add, Nat.cast_one, add_assoc]
-          rw [hg]
-          exact hder
+          grind [slope_on_unit_interval]
         have hstepI (i : ℕ) (hiN : i ≤ N) :
             ∃ c ∈ Set.Ioo ((a : ℝ) + i) ((a : ℝ) + i + 1),
               deriv f c = g (i + 1) - g i ∧ c ∈ Set.Icc lo hi := by
-          obtain ⟨c, hc, hder⟩ := hstep i hiN
-          rcases hunitBounds i hiN with ⟨hleft, hright⟩
-          refine ⟨c, hc, hder, ?_⟩
-          exact ⟨hleft.trans hc.1.le, hc.2.le.trans hright⟩
+          grind
         have hloStep : ∀ i ≤ N, (j : ℝ) + lam ≤ g (i + 1) - g i := by
           intro i hiN
           obtain ⟨c, hc, hder, hcI⟩ := hstepI i hiN
-          have hh := (hrange c hcI).1
-          rw [← hder]
-          exact hh
+          grind
         have hhiStep : ∀ i ≤ N, g (i + 1) - g i ≤ (j : ℝ) + 1 - lam := by
           intro i hiN
           obtain ⟨c, hc, hder, hcI⟩ := hstepI i hiN
-          have hh := (hrange c hcI).2
-          rw [← hder]
-          exact hh
+          grind
         have hmonoStep :
             MonotoneOn (fun i => g (i + 1) - g i) (Set.Iic N) ∨
               AntitoneOn (fun i => g (i + 1) - g i) (Set.Iic N) := by
@@ -202,8 +174,7 @@ theorem kusmin_landau_part :
           _ ≤ ‖∑ i ∈ Finset.range (N + 1),
                 OAI.Problem337.ExponentialSum.phase (g i)‖ +
                 ‖OAI.Problem337.ExponentialSum.phase (g (N + 1))‖ := norm_add_le _ _
-          _ ≤ 2 / lam + 1 := by
-            exact add_le_add hKL (by simp [OAI.Problem337.ExponentialSum.phase_norm])
+          _ ≤ 2 / lam + 1 := add_le_add hKL (by simp [OAI.Problem337.ExponentialSum.phase_norm])
           _ ≤ 3 / lam := by
             calc
               2 / lam + 1 ≤ 2 / lam + 1 / lam := add_le_add le_rfl hinv
@@ -221,26 +192,23 @@ theorem kusmin_landau_part :
         have hinv : 1 ≤ 1 / lam := by
           apply (le_div_iff₀ hlam).2
           linarith
-        calc
-          1 ≤ 1 / lam := hinv
-          _ ≤ 3 / lam := by
-            apply div_le_div_of_nonneg_right (by norm_num : (1 : ℝ) ≤ 3)
-            positivity
+        grind
     · have he : Finset.Icc a b = ∅ := Finset.Icc_eq_empty (by omega)
       rw [he, Finset.sum_empty, norm_zero]
       positivity
 
-private lemma contDiffAt_deriv_interior {lo hi : ℝ} {f : ℝ → ℝ} {y : ℝ}
-    (hf : ContDiffOn ℝ 2 f (Set.Icc lo hi)) (hy : y ∈ Set.Ioo lo hi) :
-    ContDiffAt ℝ 1 (deriv f) y := by
-  have hyInt : y ∈ interior (Set.Icc lo hi) := by
-    simpa [interior_Icc] using hy
-  have hyNhds : Set.Icc lo hi ∈ nhds y :=
-    Filter.mem_of_superset (isOpen_interior.mem_nhds hyInt) interior_subset
-  exact (hf.contDiffAt hyNhds).derivWithin (by norm_num)
+section
+variable {lo hi : ℝ} {f : ℝ → ℝ} {y : ℝ} (hf : ContDiffOn ℝ 2 f (Set.Icc lo hi)) (hy : y ∈ Set.Ioo lo hi) {x L U : ℝ} (hlo : lo ≤ x) (hhi : x + 2 ≤ hi) {lam A : ℝ}
 
-private lemma hasDerivAt_interior {lo hi : ℝ} {f : ℝ → ℝ} {y : ℝ}
-    (hf : ContDiffOn ℝ 2 f (Set.Icc lo hi)) (hy : y ∈ Set.Ioo lo hi) :
+include hf hy in
+private lemma contDiffAt_deriv_interior      
+        :
+    ContDiffAt ℝ 1 (deriv f) y := by
+  fun_prop (disch := aesop)
+
+include hf hy in
+private lemma hasDerivAt_interior      
+        :
     HasDerivAt f (deriv f y) y := by
   have hyInt : y ∈ interior (Set.Icc lo hi) := by
     simpa [interior_Icc] using hy
@@ -248,26 +216,25 @@ private lemma hasDerivAt_interior {lo hi : ℝ} {f : ℝ → ℝ} {y : ℝ}
     Filter.mem_of_superset (isOpen_interior.mem_nhds hyInt) interior_subset
   exact (hf.contDiffAt hyNhds).differentiableAt (by norm_num) |>.hasDerivAt
 
-private lemma hasDerivAt_deriv_interior {lo hi : ℝ} {f : ℝ → ℝ} {y : ℝ}
-    (hf : ContDiffOn ℝ 2 f (Set.Icc lo hi)) (hy : y ∈ Set.Ioo lo hi) :
+include hf hy in
+private lemma hasDerivAt_deriv_interior      
+        :
     HasDerivAt (deriv f) (iteratedDeriv 2 f y) y := by
   have hh :=
     ((contDiffAt_deriv_interior hf hy).differentiableAt (by norm_num)).hasDerivAt
   simpa [iteratedDeriv_succ, iteratedDeriv_one] using hh
 
-private lemma second_difference_eq_iteratedDeriv {lo hi : ℝ} {f : ℝ → ℝ}
-    (hf : ContDiffOn ℝ 2 f (Set.Icc lo hi)) {x : ℝ}
-    (hlo : lo ≤ x) (hhi : x + 2 ≤ hi) :
+include hf hlo hhi in
+private lemma second_difference_eq_iteratedDeriv    
+       
+        :
     ∃ d ∈ Set.Ioo x (x + 2),
       f (x + 2) - 2 * f (x + 1) + f x = iteratedDeriv 2 f d := by
   let g : ℝ → ℝ := fun y => f (y + 1) - f y
   have hmap0 : Set.Icc x (x + 1) ⊆ Set.Icc lo hi := by
-    intro y hy
-    have hyUpper : y ≤ x + 2 := by linarith [hy.2]
-    exact ⟨hlo.trans hy.1, hyUpper.trans hhi⟩
+    gcongr <;> first | assumption | positivity | linarith
   have hmap1 : ∀ y ∈ Set.Icc x (x + 1), y + 1 ∈ Set.Icc lo hi := by
-    intro y hy
-    exact ⟨by linarith [hlo, hy.1], by linarith [hy.2, hhi]⟩
+    grind
   have hfc : ContinuousOn f (Set.Icc lo hi) := hf.continuousOn
   have hgcont : ContinuousOn g (Set.Icc x (x + 1)) := by
     dsimp [g]
@@ -286,23 +253,15 @@ private lemma second_difference_eq_iteratedDeriv {lo hi : ℝ} {f : ℝ → ℝ}
     exact (hgd y hy).differentiableAt.differentiableWithinAt
   obtain ⟨c, hc, hcg⟩ := exists_deriv_eq_slope g (by linarith : x < x + 1)
     hgcont hgdiff
-  have hc0 : c ∈ Set.Ioo lo hi :=
-    ⟨lt_of_le_of_lt hlo hc.1, lt_of_lt_of_le hc.2 (by linarith [hhi])⟩
-  have hc1 : c + 1 ∈ Set.Ioo lo hi :=
-    ⟨by linarith [hlo, hc.1], lt_of_lt_of_le (by linarith [hc.2]) hhi⟩
+  
+  
   have hgc : deriv g c = deriv f (c + 1) - deriv f c := hgd c hc |>.deriv
   have hfirst : f (x + 2) - 2 * f (x + 1) + f x = deriv g c := by
     have htmp := hcg
     rw [show (x + 1) - x = 1 by ring, div_one] at htmp
-    simp only [g, show x + 1 + 1 = x + 2 by ring] at htmp
-    calc
-      _ = (f (x + 2) - f (x + 1)) - (f (x + 1) - f x) := by ring
-      _ = deriv g c := htmp.symm
+    grind
   have hmapDeriv : Set.Icc c (c + 1) ⊆ Set.Ioo lo hi := by
-    intro y hy
-    refine ⟨lt_of_le_of_lt hlo (lt_of_lt_of_le hc.1 hy.1), ?_⟩
-    have hcEnd : c + 1 < hi := lt_of_lt_of_le (by linarith [hc.2]) hhi
-    exact lt_of_le_of_lt hy.2 hcEnd
+    grind
   have hderivcont : ContinuousOn (deriv f) (Set.Icc c (c + 1)) := by
     intro y hy
     exact (contDiffAt_deriv_interior hf (hmapDeriv hy)).continuousAt.continuousWithinAt
@@ -313,29 +272,23 @@ private lemma second_difference_eq_iteratedDeriv {lo hi : ℝ} {f : ℝ → ℝ}
   obtain ⟨d, hd, hdd⟩ := exists_deriv_eq_slope (deriv f) (by linarith : c < c + 1)
     hderivcont hderivdiff
   have hdd' : deriv (deriv f) d = deriv f (c + 1) - deriv f c := by
-    rw [show (c + 1) - c = 1 by ring, div_one] at hdd
-    exact hdd
+    grind
   have hdGlobal := hmapDeriv ⟨hd.1.le, hd.2.le⟩
   have hderiv2 := (hasDerivAt_deriv_interior hf hdGlobal).deriv
   refine ⟨d, ⟨lt_trans hc.1 hd.1, lt_trans hd.2 (by linarith [hc.2])⟩, ?_⟩
-  calc
-    f (x + 2) - 2 * f (x + 1) + f x = deriv g c := hfirst
-    _ = deriv f (c + 1) - deriv f c := hgc
-    _ = deriv (deriv f) d := hdd'.symm
-    _ = iteratedDeriv 2 f d := hderiv2
+  linarith
 
-private lemma second_difference_bounds_of_contDiff {lo hi : ℝ} {f : ℝ → ℝ}
-    (hf : ContDiffOn ℝ 2 f (Set.Icc lo hi)) {x L U : ℝ}
-    (hlo : lo ≤ x) (hhi : x + 2 ≤ hi)
+include hf hlo hhi in
+private lemma second_difference_bounds_of_contDiff    
+       
+       
     (hbound : ∀ y ∈ Set.Ioo lo hi, L ≤ iteratedDeriv 2 f y ∧
       iteratedDeriv 2 f y ≤ U) :
     L ≤ f (x + 2) - 2 * f (x + 1) + f x ∧
       f (x + 2) - 2 * f (x + 1) + f x ≤ U := by
-  obtain ⟨d, hd, heq⟩ := second_difference_eq_iteratedDeriv hf hlo hhi
-  rw [heq]
-  exact hbound d ⟨lt_of_le_of_lt hlo hd.1, lt_of_lt_of_le hd.2 hhi⟩
+  grind [second_difference_eq_iteratedDeriv]
 
-private lemma discrete_second_derivative_bound_of_contDiff {lo hi x lam A : ℝ}
+private lemma discrete_second_derivative_bound_of_contDiff  
     {f : ℝ → ℝ} (N : ℕ) (hf : ContDiffOn ℝ 2 f (Set.Icc lo hi))
     (hlo : lo ≤ x) (hhi : x + N ≤ hi) (hlam : 0 < lam)
     (hlam1 : lam ≤ 1) (hA : 0 ≤ A)
@@ -353,21 +306,15 @@ private lemma discrete_second_derivative_bound_of_contDiff {lo hi x lam A : ℝ}
       omega
     have hn2R : (n : ℝ) + 2 ≤ (N : ℝ) := by exact_mod_cast hn2
     have hleft : lo ≤ x + (n : ℝ) := by
-      have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+      
       linarith
     have hright : x + (n : ℝ) + 2 ≤ hi := by linarith
     have hlocal : lam ≤ f (x + (n : ℝ) + 2) - 2 * f (x + (n : ℝ) + 1) +
           f (x + (n : ℝ)) ∧
         f (x + (n : ℝ) + 2) - 2 * f (x + (n : ℝ) + 1) +
           f (x + (n : ℝ)) ≤ A * lam :=
-      second_difference_bounds_of_contDiff (L := lam) (U := A * lam) hf hleft hright hbound
-    have hrewrite : d (n + 1) - d n =
-        f (x + (n : ℝ) + 2) - 2 * f (x + (n : ℝ) + 1) + f (x + (n : ℝ)) := by
-      dsimp [d, g]
-      push_cast
-      ring_nf
-    rw [hrewrite]
-    exact hlocal
+      (by solve_by_elim [second_difference_bounds_of_contDiff])
+    grind
   have hsepBoth : ∀ i < N, ∀ j < N, i ≤ j →
       lam * ((j : ℝ) - i) ≤ d j - d i ∧
       d j - d i ≤ A * lam * ((j : ℝ) - i) := by
@@ -376,8 +323,7 @@ private lemma discrete_second_derivative_bound_of_contDiff {lo hi x lam A : ℝ}
       (by
         intro n hn
         have h := hstep n j hj (by
-          have hn' := Finset.mem_Ico.mp hn
-          exact Finset.mem_Ico.mpr ⟨Nat.zero_le _, hn'.2⟩)
+          grind)
         simpa only [mul_assoc] using h)
   have hsep : ∀ i < N, ∀ j < N, i ≤ j →
       lam * ((j : ℝ) - i) ≤ d j - d i := by
@@ -408,12 +354,12 @@ private lemma discrete_second_derivative_bound_of_contDiff {lo hi x lam A : ℝ}
     have hnonneg : 0 ≤ lam * (j : ℝ) := mul_nonneg hlam.le (Nat.cast_nonneg j)
     constructor
     · linarith
-    · calc
-        d j ≤ d 0 + A * lam * (j : ℝ) := by linarith
-        _ ≤ d 0 + A * lam * N := by linarith [hupper]
+    linarith
   simpa only [g, d] using
     (OAI.Problem337.ExponentialSum.discrete_second_derivative_sqrt_bound
       g N lam A (d 0) hlam hlam1 hA hmono hsep hrange)
+
+end
 
 theorem second_derivative_part :
     (∀ C : ℝ, 1 ≤ C → ∃ K : ℝ, 0 < K ∧
@@ -439,16 +385,10 @@ theorem second_derivative_part :
     have hNReal : (N : ℝ) = (b : ℝ) - (a : ℝ) := by
       exact_mod_cast hNInt
     have hlen : (b + 1 - a).toNat = N + 1 := by
-      have hcast : (((b + 1 - a).toNat : ℕ) : ℤ) = ((N + 1 : ℕ) : ℤ) := by
-        rw [Int.toNat_of_nonneg (by omega : 0 ≤ b + 1 - a), Nat.cast_add,
-          Nat.cast_one, hNInt]
-        omega
-      exact_mod_cast hcast
+      omega
     let g : ℕ → ℝ := fun i => f ((a : ℝ) + (i : ℝ))
     have hgcast (i : ℕ) : g i = f (((a + (i : ℤ) : ℤ) : ℝ)) := by
-      dsimp [g]
-      congr 1
-      simp only [Int.cast_add, Int.cast_natCast]
+      aesop
     have hsum :
         (∑ n ∈ Finset.Icc a b, e (f n)) =
           ∑ i ∈ Finset.range (N + 1),
@@ -463,18 +403,15 @@ theorem second_derivative_part :
     have hb : (b : ℝ) ≤ hi := by
       dsimp [b]
       exact Int.floor_le hi
-    have hNle : (N : ℝ) ≤ hi - lo := by
-      rw [hNReal]
-      linarith
-    have hH : 0 ≤ hi - lo := sub_nonneg.mpr hlohi
+    
+    
     have hK : 1 ≤ 6 * C + 16 := by linarith
     have hroot : 0 < Real.sqrt lam := Real.sqrt_pos.mpr hlam
     have hInvNonneg : 0 ≤ (Real.sqrt lam)⁻¹ := by positivity
     let X : ℝ := (hi - lo + 1) * Real.sqrt lam
     let Y : ℝ := (Real.sqrt lam)⁻¹
     have hXnonneg : 0 ≤ X := by
-      dsimp [X]
-      exact mul_nonneg (by linarith) (Real.sqrt_nonneg _)
+      positivity
     have hYnonneg : 0 ≤ Y := hInvNonneg
     by_cases hlam1 : lam ≤ 1
     · have hsle : Real.sqrt lam ≤ 1 := by
@@ -496,14 +433,11 @@ theorem second_derivative_part :
           · dsimp [X]
             linarith
           · positivity
-        rw [hsingle]
-        exact le_trans (le_trans (by simpa [Y] using hInvOne) hYle) hYTarget
+        grind
       · have hNpos : 0 < N := Nat.pos_of_ne_zero hNzero
         have habReal : (a : ℝ) < b := by
-          have : 0 < (N : ℝ) := by exact_mod_cast hNpos
-          rw [hNReal] at this
-          linarith
-        have hlohi : lo < hi := by linarith
+          gcongr <;> first | assumption | positivity | linarith
+        
         have hsecond : ∀ y ∈ Set.Ioo lo hi,
             HasDerivAt (deriv f) (iteratedDeriv 2 f y) y := by
           intro y hy
@@ -553,8 +487,7 @@ theorem second_derivative_part :
           have hcompare : 6 * C * X + 16 * Y ≤
               (6 * C + 16) * (X + Y) := by
             calc
-              _ ≤ (6 * C + 16) * X + (6 * C + 16) * Y := by
-                exact add_le_add
+              _ ≤ (6 * C + 16) * X + (6 * C + 16) * Y := add_le_add
                   (mul_le_mul_of_nonneg_right hcoeffX hXnonneg)
                   (mul_le_mul_of_nonneg_right hcoeffY hYnonneg)
               _ = (6 * C + 16) * (X + Y) := by ring
@@ -611,8 +544,7 @@ theorem second_derivative_part :
           have hcompare : 6 * C * X + 16 * Y ≤
               (6 * C + 16) * (X + Y) := by
             calc
-              _ ≤ (6 * C + 16) * X + (6 * C + 16) * Y := by
-                exact add_le_add
+              _ ≤ (6 * C + 16) * X + (6 * C + 16) * Y := add_le_add
                   (mul_le_mul_of_nonneg_right hcoeffX hXnonneg)
                   (mul_le_mul_of_nonneg_right hcoeffY hYnonneg)
               _ = (6 * C + 16) * (X + Y) := by ring
@@ -631,12 +563,7 @@ theorem second_derivative_part :
             simp [OAI.Problem337.ExponentialSum.phase_norm]
       have hNplus : (N : ℝ) + 1 ≤ hi - lo + 1 := by linarith
       have hXlower : (hi - lo + 1) ≤ X := by
-        dsimp [X]
-        have hbase : 0 ≤ hi - lo + 1 := by linarith
-        calc
-          _ = (hi - lo + 1) * 1 := by ring
-          _ ≤ (hi - lo + 1) * Real.sqrt lam :=
-            mul_le_mul_of_nonneg_left hsge hbase
+        bound
       have hbase : 0 ≤ hi - lo + 1 := by linarith
       have htarget : X ≤ (6 * C + 16) * (X + Y) := by
         have hXY : X ≤ X + Y := by linarith [hYnonneg]
@@ -651,8 +578,7 @@ end Erdos821.Classical.Deriv
 
 namespace Erdos821.Blueprint
 
-theorem DerivativeTests_proof : DerivativeTests := by
-  exact ⟨Erdos821.Classical.Deriv.kusmin_landau_part,
+theorem DerivativeTests_proof : DerivativeTests := ⟨Erdos821.Classical.Deriv.kusmin_landau_part,
     Erdos821.Classical.Deriv.second_derivative_part⟩
 
 end Erdos821.Blueprint

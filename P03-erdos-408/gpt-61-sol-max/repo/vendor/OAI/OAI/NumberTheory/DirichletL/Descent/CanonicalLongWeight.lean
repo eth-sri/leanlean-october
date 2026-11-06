@@ -7,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Descent.TripleMass
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
 open InverseSecondFibers InverseInitialClippedColumns IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
 
-theorem second_label_weight_uniform (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
-    ∃C:ℝ,0<C ∧ ∀(Z V:ℝ),1≤Z→V≤L→∀I:Ideal O,I≠0→
+
+theorem second_label_weight_uniform  K (L eps:ℝ)(hL:0≤L)(heps:0<eps) :
+    ∃C:ℝ,0<C ∧ ∀(Z V:ℝ),1≤Z→V≤L→∀I:Ideal ActualEisensteinCubic.O,I≠0→
       (I.absNorm:ℝ)≤Z^V→secondLabelWeight K I≤C*Z^eps := by
   let delta:=eps/(L+1)
   have hd:0<delta:=div_pos heps (by linarith)
@@ -38,6 +38,6 @@ theorem second_label_weight_uniform (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

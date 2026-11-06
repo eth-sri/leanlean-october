@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstNominal
 public import OAI.NumberTheory.DirichletL.Descent.FirstCoupledReindex
@@ -13,16 +14,14 @@ open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpa
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
-theorem firstNormProfile_common_support (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (A₁ A₂ C D R T H X₁ X₂ K : ℝ) (hT : 0 ≤ T) :
+theorem firstNormProfile_common_support  W₁ W₂   Φ 
+     A₁ A₂ C D R T H X₁ X₂ K  (hT : 0 ≤ T) :
     firstNormProfile W₁ W₂ Φ (fun _ _ => 1) K ![A₁,A₂,C,D,R,1,H,T*X₁,T*X₂] =
       firstNormProfile W₁ W₂ Φ (fun _ _ => 1) K ![A₁,A₂,C,D,R,T,H,X₁,X₂] := by
   have hroot : Real.sqrt (T*X₁)*Real.sqrt (T*X₂) =
       T*Real.sqrt X₁*Real.sqrt X₂ := by
     rw [Real.sqrt_mul hT,Real.sqrt_mul hT]
-    calc
-      _ = (Real.sqrt T)^2*Real.sqrt X₁*Real.sqrt X₂ := by ring
-      _ = _ := by rw [Real.sq_sqrt hT]
+    grind
   unfold firstNormProfile
   simp only [Finset.prod_const_one,one_mul,Matrix.cons_val_zero,
     Fin.isValue,]
@@ -38,14 +37,12 @@ theorem firstNormProfile_common_support (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ
     show K*H/(D*R*(T*X₁)*(T*X₂)) = K*H/(D*R*T^2*X₁*X₂) from by ring]
   have hc : (Real.sqrt (T*X₁):ℂ)*(Real.sqrt (T*X₂):ℂ) =
       (T:ℂ)*(Real.sqrt X₁:ℂ)*(Real.sqrt X₂:ℂ) := by exact_mod_cast hroot
-  rw [show (D:ℂ)*(Real.sqrt R:ℂ)*(Real.sqrt (T*X₁):ℂ)*(Real.sqrt (T*X₂):ℂ) =
-    (D:ℂ)*(Real.sqrt R:ℂ)*((Real.sqrt (T*X₁):ℂ)*(Real.sqrt (T*X₂):ℂ)) from by ring,hc]
-  ring
+  grind
 
 theorem firstNormProfile_actual_common {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) (D U V : Finset ι)
+    (p : ι → Eis) (hp : ∀ i, p i ≠ 0)  D U V 
     (hDU : Disjoint D U) (hDV : Disjoint D V)
-    (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C E R H K : ℝ) :
+     W₁ W₂   Φ   A₁ A₂ C E R H K  :
     firstNormProfile W₁ W₂ Φ (fun _ _ => 1) K
       ![A₁,A₂,C,E,R,1,H,primeProductNorm p (D∪U),primeProductNorm p (D∪V)] =
     firstNormProfile W₁ W₂ Φ (fun _ _ => 1) K
@@ -60,7 +57,7 @@ variable {ι : Type*} [DecidableEq ι]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 def firstCoupledRayColumns (F : Finset ι) (C₁ C₂ : Finset ι → ℂ)
-    (H : Finset ι → Finset ι → ℂ) (h : Eis) : ℂ :=
+    (H : Finset ι → Finset ι → ℂ) (h : Eis)  :=
   ∑ r : RayCharacter × RayCharacter, crossCoeff r.1 r.2 *
     ∑ D ∈ F.powerset, supportMobius (fun i => Ideal.span {p i}) D * rowCoprimeMask (fun i => Ideal.span {p i}) D h *
       ∑ U ∈ (F \ D).powerset, ∑ V ∈ (F \ D).powerset,
@@ -74,9 +71,9 @@ theorem actual_first_gauss_coupled_reindex
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (F B : Finset ι) (hFB : Disjoint F B)
-    (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (C₁ C₂ : Finset ι → ℂ)
-    (H : Finset ι → Finset ι → ℂ) (d h : Eis) :
+     F B  (hFB : Disjoint F B)
+     v   ε₁ ε₂   C₁ C₂ 
+     H   d h  :
     (∑ N ∈ F.powerset, ∑ P ∈ F.powerset, if Disjoint N P then
       H N P * threeGaussRowFactor p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ d h else 0) =
     cubeBaseFactor p hp hg B v ε₁ ε₂ d h *

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.CostGrowth
 public import OAI.NumberTheory.DirichletL.CubicSieve.ColumnShells
@@ -12,17 +13,17 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
 open IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
 open SevenEighths.CubicDyadicDecay
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
+
+
+theorem HasCubicExponent.annular_improved  {ξ}  (h : HasCubicExponent ξ)
     (hξ : (4/3 : ℝ) ≤ ξ) (hξ2 : ξ ≤ 2)
     (θ : ℝ) (hθ : 0 < θ) (hθsmall : θ < 1/2) :
     ∃ K : ℝ, 0 < K ∧ ∀ {n : Type} [Fintype n] [DecidableEq n]
-      (M N : ℝ), 1 ≤ M → 1 ≤ N → ∀ (cols : n → Ideal O), Function.Injective cols →
+      (M N : ℝ), 1 ≤ M → 1 ≤ N → ∀ (cols : n → Ideal ActualEisensteinCubic.O), Function.Injective cols →
       (∀ j, Admissible (cols j)) →
       (∀ j, N/2 ≤ (Ideal.absNorm (cols j) : ℝ) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) →
-      ∀ (a : n → ℂ) (R : Finset O),
+      ∀ (a : n → ℂ) (R : Finset ActualEisensteinCubic.O),
         (∀ z ∈ R, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M) →
         (∑ z ∈ R, ‖∑ j, cubicRow (cols j) z*a j‖^2) ≤
           K*N^(6*θ)*(M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1))*∑ j, ‖a j‖^2 := by
@@ -41,7 +42,7 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     dsimp [H]
     have hs := (IdealCoprimeSieveOperator.supportConstant_pos θ hθ).le
     positivity
-  have hV : 0 < V := by dsimp [V]; positivity
+  
   have hDv : 0 < Dv := DivisorBlockCauchy.divisorConstant_pos θ hθ
   refine ⟨V*Dv^2, by positivity, ?_⟩
   intro n _ _ M N hM hN cols hinj hc hcols a R hR
@@ -51,7 +52,7 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
   have hS : 0 ≤ S := by dsimp [S]; positivity
   let U := V*N^(4*θ)*S
   have hU : 0 ≤ U := by dsimp [U]; positivity
-  have hcost (D : Ideal O) (hD : D ∈ gcdPool cols) (E : Ideal O) (hE : E ∈ idealDivisors D) :
+  have hcost (D : Ideal ActualEisensteinCubic.O) (hD : D ∈ gcdPool cols) (E : Ideal ActualEisensteinCubic.O) (hE : E ∈ idealDivisors D) :
       frequencyCost C θ hθ (M/(Ideal.absNorm E : ℝ)) (N/(Ideal.absNorm D : ℝ)) ≤ U := by
     have hc0 (j : n) : cols j ≠ 0 := primaryGenerator_ne_zero_ideal _ (hc j).2
     have hD0 := gcdPool_ne_zero cols hc0 D hD
@@ -90,7 +91,7 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     _ = (V*Dv^2)*(N^(4*θ)*(N^θ)^2)*S*∑ j, ‖a j‖^2 := by dsimp [U]; ring
     _ = _ := by rw [hp]
 
-end
+
 end SevenEighths.CubicSieve
 
 end OAI

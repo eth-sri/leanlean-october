@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.MemoryEdge
 
@@ -13,7 +14,7 @@ namespace Erdos821.P3Edge
 open Erdos821.Blueprint.Graph
 open Erdos821.S2Core
 
-lemma fresh_sum_eq {α : Type*} [Fintype α] [DecidableEq α] (mu : α → ℝ) (k : ℕ) :
+lemma fresh_sum_eq {α : Type*} [Fintype α] [DecidableEq α] (mu : α → ℝ)  k  :
     ∑ p : Fin k → α, ∏ i, mu (p i) = (∑ a, mu a) ^ k := by
   classical
   have h1 := Finset.prod_univ_sum (fun _ : Fin k => (Finset.univ : Finset α))
@@ -25,9 +26,6 @@ lemma fresh_sum_eq {α : Type*} [Fintype α] [DecidableEq α] (mu : α → ℝ) 
     rw [Fintype.piFinset_univ]
   -- h1 : ∏ i, ∑ j∈univ, mu j = ∑ x∈piFinset, ...
   -- lhs/rhs convert to match h1 (up to ∑ j∈univ vs ∑ j, which are defeq as both sum over univ)
-  have h1' : (∏ _i : Fin k, ∑ _j : α, mu _j)
-      = (∑ x ∈ Fintype.piFinset (fun _ : Fin k => (Finset.univ : Finset α)), ∏ i, mu (x i)) := h1
-  rw [lhs, rhs] at h1'
-  exact h1'.symm
+  grind
 
 end Erdos821.P3Edge

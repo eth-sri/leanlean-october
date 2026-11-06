@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.OwnedLeafProofs
 public import Erdos821.S34.FrameBridge
@@ -12,29 +13,29 @@ namespace Erdos821.S34Core
 noncomputable section
 open Blueprint.Analytic
 
-def integerBilinearConstant : ℝ :=
+def integerBilinearConstant  :=
   Classical.choose (integer_bilinear_proof 4 (by norm_num))
 
 theorem integerBilinearConstant_pos : 0 < integerBilinearConstant :=
   (Classical.choose_spec (integer_bilinear_proof 4 (by norm_num))).1
 
-theorem sum_product_fibers {α β : Type} [Fintype α] [DecidableEq β]
+section
+variable {α β : Type} [Fintype α]
+
+theorem sum_product_fibers     [DecidableEq β]
     (P : α → β) (a : α → ℂ) (F : β → ℂ) :
     (∑ n ∈ Finset.univ.image P, (∑ x, if P x = n then a x else 0) * F n) =
       ∑ x, a x * F (P x) := by
   simp_rw [Finset.sum_mul]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro x _
-  have hp : P x ∈ Finset.univ.image P := Finset.mem_image_of_mem P (Finset.mem_univ x)
-  simp [ite_mul, hp]
+  simp_all
 
 /-- Collapse arbitrary ordered tests to finite integer-product coefficients;
 normalization is not needed for this reduction. -/
-theorem weighted_bilinear_reduction {α β : Type} [Fintype α] [Fintype β]
+theorem weighted_bilinear_reduction     [Fintype β]
     (w : α → ℝ) (v : β → ℝ) (hw : ∀ x, 0 ≤ w x) (hv : ∀ y, 0 ≤ v y)
-    (P : α → ℤ) (R : β → ℤ) (f : α → ℂ) (g : β → ℂ)
-    (U V N M θ η : ℝ) (u : ℤ) (r : ℕ) (H₁ H₂ : ℝ)
+    (P : α → ℤ) (R : β → ℤ)  f   g 
+    (U V N M θ η : ℝ) (u : ℤ)  r   H₁ H₂ 
     (hU : 1 ≤ U) (hV : 1 ≤ V) (hr : 1 ≤ r) (hu : Nat.Coprime u.natAbs r)
     (hθ : θ = (u : ℝ) / r + η) (hη : |η| ≤ (r : ℝ) ^ (-2 : ℤ))
     (hP : ∀ x, N ≤ (P x : ℝ) ∧ (P x : ℝ) ≤ N + 4 * U)
@@ -117,6 +118,8 @@ theorem weighted_bilinear_reduction {α β : Type} [Fintype α] [Fintype β]
     exact mul_nonneg hK.le (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
   have ht := hb.trans (mul_le_mul_of_nonneg_right hn (Real.sqrt_nonneg _))
   convert ht using 1; ring
+
+end
 
 end
 end Erdos821.S34Core

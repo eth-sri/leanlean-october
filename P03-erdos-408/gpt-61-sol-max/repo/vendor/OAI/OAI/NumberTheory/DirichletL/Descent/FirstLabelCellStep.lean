@@ -54,7 +54,7 @@ theorem actual_label_cell_step (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo)
     (window Ltail Lgate tau saving : ℝ) (hhi : hi≤Real.exp window)
     (hLtail : 0≤Ltail) (hLgate : 0≤Lgate) (htau : 0<tau)
     (bcap : ℝ) (hbcap : 1≤bcap) (dsmall : ℝ) (hdsmall : 0<dsmall)
-    (B₀ : Fin 6→ℝ) (hB₀ : ∀i,0≤B₀ i) (K : ℕ) (epsmass : ℝ) (hepsmass : 0<epsmass) :
+    (B₀ : Fin 6→ℝ) (hB₀ : ∀i,0≤B₀ i)  K   epsmass  (hepsmass : 0<epsmass) :
     ∃(ω₁ ω₂ : 𝓢(ℝ,ℂ))(loFresh hiFresh : ℝ),0<loFresh ∧ loFresh≤hiFresh ∧
       HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧

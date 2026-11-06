@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRowwise
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff ComplexConjugate
 open Set Filter
 namespace SevenEighths.HeckeDetectorNoSlotInverseCount
@@ -22,7 +22,7 @@ theorem no_slot_inverse_count
     (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀ y,0≤φ y) (hφne : φ≠0)
     (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
     (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀ y,φ y≤B₀)
-    (R εm : ℝ) (hR : 0≤R) (hεm : 0<εm) :
+     R εm  (hR : 0≤R) (hεm : 0<εm) :
     ∃ c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
       ∀ {Label : Type*} (rows : Finset FreeRow) (χ : FreeRow→Label→Character)
         (a ε tstar T allowance : ℝ) (i : ℕ), 1<U → 1/2≤a →
@@ -93,6 +93,6 @@ theorem no_slot_inverse_count
 
 end SevenEighths.HeckeDetectorNoSlotInverseCount
 
-end
+
 
 end OAI

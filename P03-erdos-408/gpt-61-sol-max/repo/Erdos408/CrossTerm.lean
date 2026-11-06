@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Mertens
 
@@ -48,7 +49,7 @@ private lemma exists_harmonicF_le :
     _ ≤ (log x + E) / log 2 := by gcongr; linarith
 
 /-- First-prime decomposition of `D(x)`, with the diagonal `r = q` removed. -/
-private lemma harmonicFPair_eq_sum_harmonicF (x : ℝ) :
+private lemma harmonicFPair_eq_sum_harmonicF  x  :
     harmonicFPair x = ∑ q ∈ primesIoc 1 x, (F q : ℝ) / q * harmonicF (x / q) -
       ∑ q ∈ primesIoc 1 x, (F q : ℝ) / q *
         if q ∈ primesIoc 1 (x / q) then (F q : ℝ) / q else 0 := by
@@ -62,20 +63,19 @@ private lemma harmonicFPair_eq_sum_harmonicF (x : ℝ) :
   · rw [Finset.erase_eq_of_notMem h, sub_zero]
 
 /-- `u(t) / t` is interval integrable on `[a, b] ⊆ (0, ∞)` for monotone `u`. -/
-private lemma intervalIntegrable_div_of_monotone {u : ℝ → ℝ} (hu : Monotone u) {a b : ℝ}
+private lemma intervalIntegrable_div_of_monotone {u : ℝ → ℝ} (hu : Monotone u)  {a b} 
     (ha : 0 < a) (hb : 0 < b) : IntervalIntegrable (fun t => u t / t) volume a b := by
   simp_rw [div_eq_mul_inv]
   refine hu.intervalIntegrable.mul_continuousOn (continuousOn_inv₀.mono fun t ht => ?_)
   exact (lt_of_lt_of_le (lt_min ha hb) ht.1).ne'
 
 /-- The step `t ↦ [q ≤ t]` is monotone. -/
-private lemma monotone_step (q : ℝ) : Monotone fun t : ℝ => if q ≤ t then (1 : ℝ) else 0 :=
+private lemma monotone_step  q  : Monotone fun t : ℝ => if q ≤ t then (1 : ℝ) else 0 :=
   fun s t hst => by
-    dsimp only
-    split_ifs with h1 h2 h2 <;> first | exact absurd (h1.trans hst) h2 | norm_num
+    grind
 
 /-- `∫_1^x [q ≤ t] dt / t = log (x / q)` for `1 ≤ q ≤ x`. -/
-private lemma integral_step_div {q x : ℝ} (hq : 1 ≤ q) (hqx : q ≤ x) :
+private lemma integral_step_div  {q x}  (hq : 1 ≤ q) (hqx : q ≤ x) :
     ∫ t in (1 : ℝ)..x, (if q ≤ t then (1 : ℝ) else 0) / t = log (x / q) := by
   have hq0 : 0 < q := by linarith
   rw [← intervalIntegral.integral_add_adjacent_intervals
@@ -94,8 +94,12 @@ private lemma integral_step_div {q x : ℝ} (hq : 1 ≤ q) (hqx : q ≤ x) :
   rw [Set.uIcc_of_le hqx] at ht
   simp [ht.1]
 
+section
+variable {x : ℝ} (hx : 1 ≤ x)
+include x hx
+
 /-- Fubini: `∫_1^x B(t) dt / t = ∑_{q ≤ x} (F q / q) log (x / q)`. -/
-private lemma integral_harmonicF_div {x : ℝ} (hx : 1 ≤ x) :
+private lemma integral_harmonicF_div     :
     ∫ t in (1 : ℝ)..x, harmonicF t / t =
       ∑ q ∈ primesIoc 1 x, (F q : ℝ) / q * log (x / q) := by
   have hstep : ∀ t ∈ Set.uIcc 1 x, harmonicF t / t = ∑ q ∈ primesIoc 1 x,
@@ -105,10 +109,9 @@ private lemma integral_harmonicF_div {x : ℝ} (hx : 1 ≤ x) :
     have hP : primesIoc 1 t = (primesIoc 1 x).filter fun q : ℕ => (q : ℝ) ≤ t := by
       ext q
       rw [Finset.mem_filter, mem_primesIoc_one, mem_primesIoc_one]
-      exact ⟨fun h => ⟨⟨h.1, h.2.trans ht.2⟩, h.2⟩, fun h => ⟨h.1.1, h.2⟩⟩
+      grind
     rw [harmonicF, hP, Finset.sum_filter, Finset.sum_div]
-    refine Finset.sum_congr rfl fun q _ => ?_
-    split_ifs <;> ring
+    grind
   rw [intervalIntegral.integral_congr hstep, intervalIntegral.integral_finsetSum
     (f := fun q t => (F q : ℝ) / q * ((if (q : ℝ) ≤ t then (1 : ℝ) else 0) / t))
     fun q _ => (intervalIntegrable_div_of_monotone (monotone_step q) one_pos
@@ -119,7 +122,7 @@ private lemma integral_harmonicF_div {x : ℝ} (hx : 1 ≤ x) :
     integral_step_div (by exact_mod_cast hq.1.one_lt.le) hq.2]
 
 /-- `log t / t` is interval integrable on `[1, x]`. -/
-private lemma intervalIntegrable_log_div {x : ℝ} (hx : 1 ≤ x) :
+private lemma intervalIntegrable_log_div     :
     IntervalIntegrable (fun t => log t / t) volume 1 x := by
   have hpos : ∀ t ∈ Set.uIcc 1 x, t ≠ 0 := fun t ht => by
     rw [Set.uIcc_of_le hx] at ht
@@ -127,7 +130,7 @@ private lemma intervalIntegrable_log_div {x : ℝ} (hx : 1 ≤ x) :
   exact ((continuousOn_log.mono hpos).div continuousOn_id hpos).intervalIntegrable
 
 /-- `∫_1^x log t dt / t = (log x)² / 2`. -/
-private lemma integral_log_div {x : ℝ} (hx : 1 ≤ x) :
+private lemma integral_log_div     :
     ∫ t in (1 : ℝ)..x, log t / t = log x ^ 2 / 2 := by
   have hpos : ∀ t ∈ Set.uIcc 1 x, 0 < t := fun t ht => by
     rw [Set.uIcc_of_le hx] at ht
@@ -140,6 +143,8 @@ private lemma integral_log_div {x : ℝ} (hx : 1 ≤ x) :
     ring
   · exact intervalIntegrable_log_div hx
 
+end
+
 /-- Eventually `(log L)⁵ ≤ √L`. -/
 private lemma eventually_log_pow_le_sqrt : ∀ᶠ L : ℝ in atTop, log L ^ 5 ≤ √L := by
   filter_upwards [(isLittleO_log_rpow_rpow_atTop 5 (by norm_num : (0 : ℝ) < 1 / 2)).bound
@@ -149,12 +154,12 @@ private lemma eventually_log_pow_le_sqrt : ∀ᶠ L : ℝ in atTop, log L ^ 5 �
 
 /-- If `|B(t) - α log t| ≤ M` on `[1, x]`, then
 `|D(x) - α² L² / 2| ≤ |α| M L + M B(x) + B(x) / log 2`. -/
-private lemma abs_harmonicFPair_sub_le {α M x : ℝ} (hx : 1 ≤ x)
+private lemma abs_harmonicFPair_sub_le  {α M x}  (hx : 1 ≤ x)
     (hErr : ∀ t : ℝ, 1 ≤ t → t ≤ x → |harmonicF t - α * log t| ≤ M) :
     |harmonicFPair x - α ^ 2 / 2 * log x ^ 2| ≤
       |α| * (M * log x) + M * harmonicF x + harmonicF x / log 2 := by
   have hx0 : 0 < x := by linarith
-  have hlog2 : 0 < log 2 := log_pos one_lt_two
+  
   -- the main term: `∫_1^x B(t) dt / t = α L² / 2 + O(M L)`
   have hI : |∑ q ∈ primesIoc 1 x, (F q : ℝ) / q * log (x / q) - α * (log x ^ 2 / 2)| ≤
       M * log x := by
@@ -227,7 +232,7 @@ theorem cross_term {α K : ℝ}
         K' * Real.log x ^ 2 / Real.log (Real.log x) ^ 5 := by
   obtain ⟨E, hE, hB⟩ := exists_harmonicF_le
   obtain ⟨y₀, hy₀⟩ := eventually_atTop.1 h
-  have hlog2 : 0 < log 2 := log_pos one_lt_two
+  
   set c₁ := |α| + 1 / log 2
   set c₂ := E / log 2
   set C := c₁ + c₂ + 32 * |K| with hC
@@ -258,7 +263,7 @@ theorem cross_term {α K : ℝ}
   have hT2 : log √L = T / 2 := log_sqrt (by linarith)
   have hT0 : 0 < T := by linarith [log_pos hs1]
   set M := c₁ * √L + c₂ + 32 * |K| * L / T ^ 5 with hM
-  have hM0 : 0 ≤ M := add_nonneg (add_nonneg (mul_nonneg hc₁ (sqrt_nonneg L)) hc₂) (by positivity)
+  
   -- uniform bound `|E| ≤ M` on `[1, x]`, split at `exp √L`
   have hErr : ∀ t : ℝ, 1 ≤ t → t ≤ x → |harmonicF t - α * log t| ≤ M := by
     intro t ht1 htx

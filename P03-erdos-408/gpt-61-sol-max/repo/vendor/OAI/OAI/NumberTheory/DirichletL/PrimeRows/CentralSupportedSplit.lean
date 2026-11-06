@@ -10,31 +10,31 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
-def supportedFloorRows (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
-    (R : Finset FreeRow) (grid : FreeRow→ℕ) : Finset FreeRow :=
+
+def supportedFloorRows (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
+    (R : Finset FreeRow) (grid : FreeRow→ℕ)  :=
   R.filter (fun u=>(calibrationForSet S hmax).residueMonoid u.val≠0 ∧ grid u=0)
 
-def supportedNonfloorRows (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
-    (R : Finset FreeRow) (grid : FreeRow→ℕ) : Finset FreeRow :=
+def supportedNonfloorRows (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
+    (R : Finset FreeRow) (grid : FreeRow→ℕ)  :=
   R.filter (fun u=>(calibrationForSet S hmax).residueMonoid u.val≠0 ∧ grid u≠0)
 
-@[simp] lemma mem_supportedFloorRows (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
-    (R : Finset FreeRow) (grid : FreeRow→ℕ) (u : FreeRow) :
+@[simp] lemma mem_supportedFloorRows  S   hmax 
+     R   grid   u  :
     u∈supportedFloorRows S hmax R grid ↔ u∈R ∧ (calibrationForSet S hmax).residueMonoid u.val≠0 ∧ grid u=0 :=
   Finset.mem_filter
 
-@[simp] lemma mem_supportedNonfloorRows (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
-    (R : Finset FreeRow) (grid : FreeRow→ℕ) (u : FreeRow) :
+@[simp] lemma mem_supportedNonfloorRows  S   hmax 
+     R   grid   u  :
     u∈supportedNonfloorRows S hmax R grid ↔ u∈R ∧ (calibrationForSet S hmax).residueMonoid u.val≠0 ∧ grid u≠0 :=
   Finset.mem_filter
 
 theorem finiteCentralCubeRows_supported_split {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
+     S   hS   hmax 
+     η   R  (T : Fin K→Finset PrimeIdeal)
     (hT : ∀j P,P∈T j→P.val∉S) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z e : ℝ) (grid : FreeRow→ℕ) (H : FreeRow→ℝ) :
+     W0 W1   X Y Z e   grid   H  :
     finiteCentralCubeRows S hS hmax η R T hT W Yp W0 W1 X Y Z e (fun u=>51/100+e*grid u) H=
       finiteCentralCubeRows S hS hmax η (supportedFloorRows S hmax R grid) T hT W Yp W0 W1 X Y Z e (fun _=>51/100) H+
       finiteCentralCubeRows S hS hmax η (supportedNonfloorRows S hmax R grid) T hT W Yp W0 W1 X Y Z e (fun u=>51/100+e*grid u) H := by
@@ -60,7 +60,7 @@ theorem finiteCentralCubeRows_supported_split {K : ℕ}
   have hg := ((mem_supportedFloorRows S hmax R grid u).mp hu).2.2
   simp only [hg,Nat.cast_zero,mul_zero,add_zero]
 
-lemma normalized_nonfloor_error (A F Cfloor Cnon N : ℂ) (E B : ℝ)
+lemma normalized_nonfloor_error (A F Cfloor Cnon N : ℂ)  E B 
     (hE : ‖A/N-F-(Cfloor+Cnon)/N‖≤E) (hB : ‖Cfloor/N‖≤B) :
     ‖A/N-F-Cnon/N‖≤E+B := by
   calc

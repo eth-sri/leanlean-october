@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Foundation
 
@@ -6,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Foundation
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 
-theorem exists_canonical_reference_cutoff (lo hi : ℝ) :
+theorem exists_canonical_reference_cutoff  lo hi  :
     ∃ Vlog : SchwartzMap ℝ ℂ, ∃ Alog : ℝ, 0 < Alog ∧
       Alog = CanonicalCubeSeparation.columnWindowRadius lo hi + 1 ∧
       HasCompactSupport Vlog ∧
@@ -31,7 +32,7 @@ theorem exists_canonical_reference_cutoff (lo hi : ℝ) :
   intro x hx
   exact abs_le.mpr (hvbox (subset_tsupport v hx))
 
-theorem eventually_canonical_reference_gates (hi Alog window eta : ℝ)
+theorem eventually_canonical_reference_gates  hi Alog window eta 
     (heta : 0 < eta) :
     ∃ Z0 : ℝ, 1 < Z0 ∧ ∀ Z : ℝ, Z0 ≤ Z →
       2 ≤ Z ∧ 2 ≤ Z ^ eta ∧ Real.exp 1 ≤ Z ^ eta ∧
@@ -39,8 +40,7 @@ theorem eventually_canonical_reference_gates (hi Alog window eta : ℝ)
       Real.exp Alog ≤ Z ^ eta ∧ Real.exp window ≤ Z ^ eta := by
   let R : ℝ := 2 + |hi| + |Alog| + |window|
   have hR : 1 ≤ R := by
-    dsimp [R]
-    linarith [abs_nonneg hi, abs_nonneg Alog, abs_nonneg window]
+    grind
   refine ⟨2 + Real.exp (R / eta), by linarith [Real.exp_pos (R / eta)], ?_⟩
   intro Z hZ
   have hZtwo : 2 ≤ Z := by linarith [Real.exp_pos (R / eta)]
@@ -57,18 +57,15 @@ theorem eventually_canonical_reference_gates (hi Alog window eta : ℝ)
   refine ⟨hZtwo, (by linarith [Real.add_one_le_exp (1 : ℝ)] : 2 ≤ Real.exp 1).trans
     hexp, hexp, by nlinarith, ?_, ?_, ?_⟩
   · have hhi : hi ≤ R := by
-      dsimp [R]
-      linarith [le_abs_self hi, abs_nonneg Alog, abs_nonneg window]
+      grind
     exact hhi.trans ((by linarith [Real.add_one_le_exp R] : R ≤ Real.exp R).trans hpow)
   · apply (Real.exp_le_exp.mpr ?_).trans hpow
-    dsimp [R]
-    linarith [le_abs_self Alog, abs_nonneg hi, abs_nonneg window]
+    grind
   · apply (Real.exp_le_exp.mpr ?_).trans hpow
-    dsimp [R]
-    linarith [le_abs_self window, abs_nonneg hi, abs_nonneg Alog]
+    grind
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

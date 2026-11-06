@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Graph.BoundsDamping
 public import Erdos408.TwoSided.Graph.Endpoint
@@ -26,8 +27,8 @@ frequency `ζ`, every dyad `X = 2^m`, every `|f| ≤ 1` and every clipped core,
 `GraphBounds.norm_patternPairing_le`, the pairing is at most
 `|S_X| κ_K L^{B₀} (max(1, 1/v₋)^{2M} c²)^{s_P}` with `z^M q₀^{z/2} ≤ c q₀^{M/2}` for all
 `z`, and `|S_X| ≤ L X`, `s_P ≤ 2C₀T`. -/
-theorem exists_norm_patternPairing_le (q₀ c₀ C₀ vlo vhi B₀ : ℝ) (hq₀ : 0 < q₀)
-    (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (J : ℕ) :
+theorem exists_norm_patternPairing_le  q₀ c₀ C₀ vlo vhi B₀  (hq₀ : 0 < q₀)
+    (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo)  J  :
     ∃ Cabs : ℝ, ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
@@ -51,7 +52,7 @@ theorem exists_norm_patternPairing_le (q₀ c₀ C₀ vlo vhi B₀ : ℝ) (hq₀
   set T := Real.log L
   have hX1 : 1 ≤ X := one_le_pow₀ (by norm_num)
   have hL0 : 0 < L := by linarith
-  have hT0 : 0 ≤ T := Real.log_nonneg (by linarith)
+  
   have hκ : 0 ≤ κK := (norm_nonneg _).trans (hK 0 0 0)
   have h := GraphBounds.norm_patternPairing_le P hvlo (fun g => (hP.2.2.2.2.2.1 g).1) hq₀ hq₀₁
     hc hc1 C K hK ζ (dyadSource X) hf (norm_targetEndpoint_le hx1 hq₀₁ hG J X)

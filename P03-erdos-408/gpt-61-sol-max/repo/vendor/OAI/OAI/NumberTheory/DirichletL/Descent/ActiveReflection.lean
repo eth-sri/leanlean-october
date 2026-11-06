@@ -11,15 +11,15 @@ open scoped BigOperators Classical ContDiff
 open CompletedGauss CubicEisenstein CanonicalRowCompletion
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 noncomputable local instance activeReflectionQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 theorem markedCompletedT_fixed_active_strata {ι : Type*} [Fintype ι]
     (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hp : ∀ i, p i ≠ 0) (hprime : ∀ i, Prime (p i))
-    (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι)
+    (hprimary : ∀ i, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ p i - 1)
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι)
     (φ : Eis →* ℂ) (hφnorm : ∀ n, ‖φ n‖ ≤ 1)
     (Q : Ideal Eis) (hφperiod : CanonicalCoefficientClass.FactorsModulo Q φ)
     (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]
@@ -31,9 +31,9 @@ theorem markedCompletedT_fixed_active_strata {ι : Type*} [Fintype ι]
     (call : Eis) (hcall : call ≠ 0) [Fintype (Eis ⧸ Ideal.span {call})]
     (hcallQ : Ideal.span {call} ≤ Ideal.span {(9 : Eis)} *
       ((Q * Ideal.span {∏ i, p i}) * Ideal.span {∏ i ∈ S, p i}))
-    (W : ℝ → ℂ) (hWcompact : HasCompactSupport W)
+     W  (hWcompact : HasCompactSupport W)
     (lo hi : ℝ) (hlo : 0 < lo) (hsupp : Function.support W ⊆ Set.Icc lo hi)
-    (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0 < X) :
+    (hW : ContDiff ℝ ∞ W)  X  (hX : 0 < X) :
     markedCompletedT (φ * unmarkedSexticTwist p hg j S) W X
       (fun A => ∏ i ∈ S, if Ideal.span {p i} ∣ A then 1 else 0) =
       thetaDerivativeScalar⁻¹ * ∑ t : FixedActiveCuspIndex c p,

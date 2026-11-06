@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryProfiles
 
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawUniform
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawFiberSource
@@ -8,7 +11,7 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 
@@ -18,11 +21,11 @@ open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
 open DetectorDictionaryInverseRawFourier InverseInitialClippedColumns
 open InverseInitialOverlapFourier FourierBridge HeckeDetectorRawFiber
 
-private theorem clipped_one_zero (W : ℝ→ℂ) : clippedTest W 1 0=W := by
+private theorem clipped_one_zero  W  : clippedTest W 1 0=W := by
   funext x
   simp [clippedTest,childLogTest,logPhase]
 
-theorem moving_finite_energy (J : ℕ) :
+theorem moving_finite_energy  J  :
     ∃K : ℕ,∃C : ℝ,0<C ∧ ∀{ι : Type*}(rows : Finset ι)
       (χ : ι→Character)(A : ι→ℂ)(D E : ℝ),0<D→0≤E→
     (∀v : ℝ,(∑u∈rows,‖polynomial (χ u) true (childLogTest referenceWindow v) D 0 0*A u‖^2)
@@ -48,22 +51,20 @@ theorem moving_finite_energy (J : ℕ) :
   simp only [familyDensity_norm,logSource_eq_logSchwartz] at hm
   apply hb.trans
   calc
-    _≤E*(B*(1+‖t‖)^K)^2:=mul_le_mul_of_nonneg_left
-      (pow_le_pow_left₀ (integral_nonneg (fun _=>by positivity)) hm 2) hE
+    _≤E*(B*(1+‖t‖)^K)^2:=(by gcongr <;> first | assumption | positivity | linarith)
     _= _:=by rw [mul_pow,←pow_mul];ring_nf
 
-theorem logTest_eq_iterate (W : ℝ→ℂ) (n : ℕ) :
-    logTest W n=(HeckeDetectorRowwisePolynomial.logProfile^[n]) W := by
-  induction n with
-  | zero=>rfl
-  | succ n ih=>rw [logTest,Function.iterate_succ_apply',←ih]
+alias logTest_eq_iterate := _root_.OAI.SevenEighths.CenteredMomentDetectorDictionary.logTest_eq_iterate
 
 section Fiber
 variable {M : Ideal O} {H : Subgroup (O⧸M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
+section
+variable (F : Fiber M H Label Slot U a ε tstar T allowance i)
+
 theorem fiber_inverse_source
-    (F : Fiber M H Label Slot U a ε tstar T allowance i) (n : ℕ) (σ t : ℝ) :
+       n   σ t  :
     (inverseSourceSchwartz false false n U tstar F.r σ t : ℝ→ℂ)=
       twistProfile ((HeckeDetectorRowwisePolynomial.logProfile^[n]) F.inverseProfile) σ t := by
   funext x
@@ -72,8 +73,8 @@ theorem fiber_inverse_source
     inverseSourceSchwartz_apply false false n U tstar F.r σ t x
 
 theorem fiber_inverse_polynomial
-    (F : Fiber M H Label Slot U a ε tstar T allowance i) (selected : Finset Slot)
-    (n : ℕ) (σ t : ℝ) (u : FreeRow) :
+       selected 
+     n   σ t   u  :
     polynomial (F.family u F.label) true
       (inverseSourceSchwartz false false n U tstar F.r σ t) (U^F.r) 0 0*
         F.physicalProduct selected u=
@@ -81,9 +82,11 @@ theorem fiber_inverse_polynomial
       (U^F.r) σ t*F.physicalProduct selected u := by
   rw [fiber_inverse_source,polynomial_twistProfile]
 
+end
+
 end Fiber
 
-theorem fiber_inverse_energy_uniform (J : ℕ) :
+theorem fiber_inverse_energy_uniform  J  :
     ∃K : ℕ,∃C : ℝ,0<C ∧ ∀{M : Ideal O}{H : Subgroup (O⧸M)ˣ}{Label Slot : Type*}
       {U a ε tstar T allowance : ℝ}{i : ℕ}
       (F : Fiber M H Label Slot U a ε tstar T allowance i)(selected : Finset Slot),0<U→
@@ -102,7 +105,7 @@ theorem fiber_inverse_energy_uniform (J : ℕ) :
     (U^F.r) E (Real.rpow_pos_of_pos hU _) hE href false false n hn U hU tstar F.r σ hσ t
   simpa only [fiber_inverse_polynomial] using hh
 
-theorem fiber_inverse_height_uniform (J : ℕ) :
+theorem fiber_inverse_height_uniform  J  :
     ∃K : ℕ,∃C : ℝ,0<C ∧ ∀{M : Ideal O}{H : Subgroup (O⧸M)ˣ}{Label Slot : Type*}
       {U a ε tstar T allowance : ℝ}{i : ℕ}
       (F : Fiber M H Label Slot U a ε tstar T allowance i)(selected : Finset Slot),0<U→
@@ -123,6 +126,6 @@ theorem fiber_inverse_height_uniform (J : ℕ) :
 
 end SevenEighths.DetectorDictionaryInverseMarkedUniform
 
-end
+
 
 end OAI

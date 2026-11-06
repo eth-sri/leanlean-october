@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.RamifiedNormWeights
 
@@ -10,88 +11,96 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
+open     ConcretePrimeRowBridge CompletedGauss
 open EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex
 
-def lowPrincipalIdeal (I J : Ideal O) (W : ℝ → ℂ) (X : ℝ) : ℂ :=
+def lowPrincipalIdeal (I J : Ideal O) (W : ℝ → ℂ) (X : ℝ)  :=
   ∑' A : {A : Ideal O // Supported A},
     (idealZeroMask I (primaryGenerator A.val) * idealZeroMask J (primaryGenerator A.val)) *
       W (((Ideal.absNorm A.val : ℝ) / X) ^ 2)
 
-def lowPrincipalLattice (I J : Ideal O) (W : ℝ → ℂ) (X : ℝ) : ℂ :=
+def lowPrincipalLattice (I J : Ideal O) (W : ℝ → ℂ) (X : ℝ)  :=
   ∑' z : O, rowCoprimeMask (fun P : gcdMaskPrimes (I * J) => P.val) Finset.univ z *
     W ((‖eisEmbedding z‖ ^ 2 / X) ^ 2)
 
-theorem lowPrincipalLattice_eq_six_ideal (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (W : SchwartzMap ℝ ℂ) (X : ℝ) (hX : 0 < X) :
+section
+variable (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (W : SchwartzMap ℝ ℂ)
+include I J hI hJ W
+
+section
+variable (X : ℝ) (hX : 0 < X)
+include X hX
+
+theorem lowPrincipalLattice_eq_six_ideal      
+          :
     lowPrincipalLattice I J W X = 6 * lowPrincipalIdeal I J W X := by
   let R := fun P : gcdMaskPrimes (I * J) => P.val
   let V := quadraticSquareProfile W
@@ -145,15 +154,16 @@ theorem lowPrincipalLattice_eq_six_ideal (I J : Ideal O) (hI : Admissible I) (hJ
   rw [hid] at he
   exact he
 
-theorem lowPrincipalIdeal_eq_lattice (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (W : SchwartzMap ℝ ℂ) (X : ℝ) (hX : 0 < X) :
+theorem lowPrincipalIdeal_eq_lattice      
+          :
     lowPrincipalIdeal I J W X = (6 : ℂ)⁻¹ * lowPrincipalLattice I J W X := by
-  rw [lowPrincipalLattice_eq_six_ideal I J hI hJ W X hX]
-  ring
+  grind [lowPrincipalLattice_eq_six_ideal, I]
+
+end
 
 theorem originalPairLow_principal_lattice
-    (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (W : SchwartzMap ℝ ℂ) (M K : ℝ) (hM : 0 < M) :
+         
+       M K  (hM : 0 < M) :
     (∑' lengthScale : Ideal O, originalPairLow I J W M K lengthScale) =
       ∑' B : {B : Ideal O // Admissible B}, if (Ideal.absNorm B.val : ℝ) ≤ K then
         (quadraticRow I (primaryGenerator B.val) * quadraticRow J (primaryGenerator B.val)) *
@@ -173,19 +183,15 @@ theorem originalPairLow_principal_lattice
     apply tsum_congr
     intro A
     congr 2
-    rw [div_pow, Real.sq_sqrt (div_pos hM hN).le]
-    field_simp
+    grind
   · simp only [ite_eq_right hB]
 
 end
-section
-
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
+
+open     CompletedGauss
 
 theorem tsum_admissible_norm_cutoff (K : ℝ) (f : Ideal O → ℂ) :
     (∑' B : {B : Ideal O // Admissible B}, if (Ideal.absNorm B.val : ℝ) ≤ K then f B.val else 0) =
@@ -194,8 +200,7 @@ theorem tsum_admissible_norm_cutoff (K : ℝ) (f : Ideal O → ℂ) :
     fun B => ⟨B.val, (mem_idealRange.mp B.property).1⟩
   have he : Function.Injective e := by
     intro B C h
-    apply Subtype.ext
-    exact congrArg (fun D : {B : Ideal O // Admissible B} => D.val) h
+    aesop
   let F : {B : Ideal O // Admissible B} → ℂ := fun B =>
     if (Ideal.absNorm B.val : ℝ) ≤ K then f B.val else 0
   have hs : Function.support F ⊆ Set.range e := by
@@ -212,8 +217,8 @@ theorem tsum_admissible_norm_cutoff (K : ℝ) (f : Ideal O → ℂ) :
   exact ite_eq_left (mem_idealRange.mp B.property).2
 
 theorem originalPairLow_principal_finite
-    (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (W : SchwartzMap ℝ ℂ) (M K : ℝ) (hM : 0 < M) :
+     I J  (hI : Admissible I) (hJ : Admissible J)
+    (W : SchwartzMap ℝ ℂ)  M K  (hM : 0 < M) :
     (∑' lengthScale : Ideal O, originalPairLow I J W M K lengthScale) =
       ∑ B : idealRange K,
         (quadraticRow I (primaryGenerator B.val) * quadraticRow J (primaryGenerator B.val)) *
@@ -225,11 +230,11 @@ theorem originalPairLow_principal_finite
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
+ 
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open FirstCauchyArithmetic (activeGaussRowFactor)
 
@@ -240,7 +245,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 theorem activeGaussRowFactor_norm_le_one
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (S T : Finset ι) (e k : O) :
+     S T   e k  :
     ‖activeGaussRowFactor p hp hinj hg S T e k‖ ≤ 1 := by
   have hr (a : O) : ‖finiteSexticRow (activePrimes (fun i => Ideal.span {p i}) S T)
       (fun i => hg i.val) (activeExponent S T) a‖ ≤ 1 := by
@@ -258,28 +263,27 @@ theorem activeGaussRowFactor_norm_le_one
 end
 section
 
-open ActualEisensteinCubic
+ 
 
-def secondExpansionPool {ι : Type*} [DecidableEq ι] (F : Finset ι)
+def secondExpansionPool {ι } [DecidableEq ι] (F : Finset ι)
     (K : Finset ι → Finset ι → Finset O) : Finset (SecondExpansionData ι) :=
   F.powerset.biUnion (fun G => G.powerset.biUnion (fun E =>
     F.powerset.biUnion (fun V => (K G E).image (fun k => ⟨G,E,V,k⟩))))
 
-theorem mem_secondExpansionPool {ι : Type*} [DecidableEq ι] (F : Finset ι)
-    (K : Finset ι → Finset ι → Finset O) (x : SecondExpansionData ι) :
+section
+variable {ι : Type*} [DecidableEq ι] (F : Finset ι) (K : Finset ι → Finset ι → Finset O)
+include ι F K
+
+theorem mem_secondExpansionPool      
+      (x : SecondExpansionData ι) :
     x ∈ secondExpansionPool F K ↔
       x.sourceCommon ⊆ F ∧ x.divisor ⊆ x.sourceCommon ∧ x.overlap ⊆ F ∧
         x.frequency ∈ K x.sourceCommon x.divisor := by
   simp only [secondExpansionPool, Finset.mem_biUnion, Finset.mem_powerset, Finset.mem_image]
-  constructor
-  · rintro ⟨G,hG,E,hE,V,hV,k,hk,hx⟩
-    subst x
-    exact ⟨hG,hE,hV,hk⟩
-  · rintro ⟨hG,hE,hV,hk⟩
-    exact ⟨x.sourceCommon,hG,x.divisor,hE,x.overlap,hV,x.frequency,hk,rfl⟩
+  grind
 
-theorem sum_secondExpansionPool {ι : Type*} [DecidableEq ι] (F : Finset ι)
-    (K : Finset ι → Finset ι → Finset O) (H : SecondExpansionData ι → ℂ) :
+theorem sum_secondExpansionPool      
+      (H : SecondExpansionData ι → ℂ) :
     (∑ x ∈ secondExpansionPool F K, H x) =
       ∑ G ∈ F.powerset, ∑ E ∈ G.powerset, ∑ V ∈ F.powerset, ∑ k ∈ K G E, H ⟨G,E,V,k⟩ := by
   unfold secondExpansionPool
@@ -290,36 +294,21 @@ theorem sum_secondExpansionPool {ι : Type*} [DecidableEq ι] (F : Finset ι)
     · apply Finset.sum_congr rfl
       intro E hE
       rw [Finset.sum_biUnion]
-      · apply Finset.sum_congr rfl
-        intro V hV
-        rw [Finset.sum_image]
-        intro k hk k' hk' heq
-        exact congrArg SecondExpansionData.frequency heq
+      · simp_all
       · intro V hV V' hV' hne
         apply Finset.disjoint_left.mpr
-        intro x hx hx'
-        obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
-        obtain ⟨k',hk',heq⟩ := Finset.mem_image.mp hx'
-        exact hne (congrArg SecondExpansionData.overlap heq).symm
+        aesop
     · intro E hE E' hE' hne
       apply Finset.disjoint_left.mpr
-      intro x hx hx'
-      obtain ⟨V,hV,hx⟩ := Finset.mem_biUnion.mp hx
-      obtain ⟨V',hV',hx'⟩ := Finset.mem_biUnion.mp hx'
-      obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
-      obtain ⟨k',hk',heq⟩ := Finset.mem_image.mp hx'
-      exact hne (congrArg SecondExpansionData.divisor heq).symm
+      grind
   · intro G hG G' hG' hne
     apply Finset.disjoint_left.mpr
-    intro x hx hx'
-    obtain ⟨E,hE,V,hV,hx⟩ := (by simpa only [Finset.mem_biUnion] using hx)
-    obtain ⟨E',hE',V',hV',hx'⟩ := (by simpa only [Finset.mem_biUnion] using hx')
-    obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
-    obtain ⟨k',hk',heq⟩ := Finset.mem_image.mp hx'
-    exact hne (congrArg SecondExpansionData.sourceCommon heq).symm
+    grind
 
-def secondExpansionSector {ι : Type*} [DecidableEq ι] (F : Finset ι)
-    (K : Finset ι → Finset ι → Finset O) (R : Finset ι) : Finset (SecondExpansionData ι) :=
+end
+
+def secondExpansionSector {ι } [DecidableEq ι] (F : Finset ι)
+    (K : Finset ι → Finset ι → Finset O) (R : Finset ι)  :=
   (secondExpansionPool F K).filter (fun x => x.sourceCommon \ x.divisor = R)
 
 theorem sum_secondExpansionSector {ι : Type*} [DecidableEq ι] (F : Finset ι)
@@ -331,11 +320,8 @@ theorem sum_secondExpansionSector {ι : Type*} [DecidableEq ι] (F : Finset ι)
   apply Finset.sum_congr rfl
   intro x hx
   have hR : x.sourceCommon \ x.divisor ∈ F.powerset :=
-    Finset.mem_powerset.mpr ((Finset.sdiff_subset).trans ((mem_secondExpansionPool F K x).mp hx).1)
-  rw [Finset.sum_eq_single_of_mem (x.sourceCommon \ x.divisor) hR]
-  · simp
-  · intro R hR hne
-    simp [Ne.symm hne]
+    (by grind [mem_secondExpansionPool])
+  simp_all
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -343,11 +329,15 @@ variable {ι : Type*} [DecidableEq ι]
   (hg : ∀ i, lambda ∉ Ideal.span {p i})
   (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
+section
+variable (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (K : Finset ι → Finset ι → Finset O)
+include hc hpr F Ψ m c d H W Y K
+
 theorem truncatedSecondSource_eq_expansionPool
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
-    (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (K : Finset ι → Finset ι → Finset O) :
+     
+     
+           
+          :
     truncatedSecondSource p hp hg hinj F Ψ m c d H W Y K =
       ∑ z : SecondRayIndex, secondExpansionSource p hp hcop hg F Ψ m c d z
         (secondExpansionPool F K) H H W Y := by
@@ -372,10 +362,10 @@ theorem truncatedSecondSource_eq_expansionPool
   simp only [mul_assoc]
 
 theorem truncatedSecondSource_eq_fixed_sectors
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
-    (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (K : Finset ι → Finset ι → Finset O) :
+     
+     
+           
+          :
     truncatedSecondSource p hp hg hinj F Ψ m c d H W Y K =
       ∑ z : SecondRayIndex, ∑ R ∈ F.powerset,
         secondExpansionSource p hp hcop hg F Ψ m c d z
@@ -386,14 +376,11 @@ theorem truncatedSecondSource_eq_fixed_sectors
   simp only [secondExpansionSource, sum_secondExpansionSector]
 
 end
-section
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (columnLog jLabel)
 
 end
 
-open ActualEisensteinCubic
+
+ 
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 
 variable {ι : Type*} [DecidableEq ι]

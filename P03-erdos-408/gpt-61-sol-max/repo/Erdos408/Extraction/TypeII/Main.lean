@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Final
 
@@ -14,10 +15,15 @@ namespace Erdos408.TypeII
 
 open Finset Real Filter
 
+section
+variable {EM2 q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ c₃ b CΦ C₂ x : ℝ} {j : ℕ} (hc₃ : 0 < c₃) (hmert : ∀ y : ℝ, 2 ≤ y → c₃ / Real.log y ≤ ∏ p ∈ primesIcc 2 y, (1 - (1 : ℝ) / p)) (hb : 0 ≤ b) (hEM2 : ∀ y z : ℝ, 2 ≤ y → y ≤ z →
+      |∑ p ∈ primesIoc y z, (1 : ℝ) / p - Real.log (Real.log z / Real.log y)| ≤ EM2 / Real.log y) {E₂ : ℝ} {M : ℕ → ℝ} {Φ : ℝ → ℝ} {k : ℕ} {u v : Fin (k + 1) → ℝ} {B : (Fin k → ℕ) → ℝ} (hE : EndpointData q cw K CN x u v B (normBound q K CN c E₂ x)) (hV : ∀ a : ℝ, 1 / 10 ≤ a → 1 / 2 ≤ harmonicMass (band x a)) (hbox : BoxBound q K c Ch Cj κ C₂ x) (hC₂ : 0 ≤ C₂) (hΦ : IsCutoff κ CΦ M x Φ) (hκ : 1 < κ) (hx : 2 ≤ x) (hx4 : 4 * κ + 4 ≤ x)
+
+include hc₃ hmert hκ hx in
 /-- The scale facts at a large `x`. -/
-theorem scaleFacts_of {c Ch κ c₃ : ℝ} {x : ℝ} {j : ℕ} (hc₃ : 0 < c₃)
-    (hmert : ∀ y : ℝ, 2 ≤ y → c₃ / Real.log y ≤ ∏ p ∈ primesIcc 2 y, (1 - (1 : ℝ) / p))
-    (hκ : 1 < κ) (hx : 2 ≤ x) (hL : 16 ≤ Real.log x) (hT : 50 ≤ logLog x)
+theorem scaleFacts_of        
+     
+        (hL : 16 ≤ Real.log x) (hT : 50 ≤ logLog x)
     (hγ : logLog x ^ (-21 : ℝ) ≤ presieveExponent c Ch x)
     (h21 : logLog x ^ (21 : ℝ) ≤ Real.log x ^ (72 / 100 : ℝ))
     (h25 : logLog x ^ (25 : ℝ) ≤ Real.log x ^ (1 / 2 : ℝ))
@@ -36,7 +42,7 @@ theorem scaleFacts_of {c Ch κ c₃ : ℝ} {x : ℝ} {j : ℕ} (hc₃ : 0 < c₃
   have hexpγ := exp_le_rpow_gamma hx0 hL0 hT0 hγ h21
   have hexpY := exp_le_proxyCutoff hL0 hT0 h25'
   have hT25 : T ^ (25 : ℕ) = T ^ (25 : ℝ) := by norm_cast
-  have hlogY : Real.log (proxyCutoff x) = L / T ^ 25 := by unfold proxyCutoff; rw [Real.log_exp]
+  
   -- `L / T^{25} ≥ L^{1/2}`
   have hYL : L ^ (1 / 2 : ℝ) ≤ L / T ^ 25 := by
     rw [le_div_iff₀ (by positivity), hT25]
@@ -53,8 +59,7 @@ theorem scaleFacts_of {c Ch κ c₃ : ℝ} {x : ℝ} {j : ℕ} (hc₃ : 0 < c₃
     rw [Real.exp_lt_exp]
     have h1 : L ^ (45 / 100 : ℝ) < L ^ (1 / 2 : ℝ) :=
       Real.rpow_lt_rpow_of_exponent_lt (by linarith) (by norm_num)
-    have h2 : L ^ (1 / 2 : ℝ) ≤ L / T ^ 25 := hYL
-    exact lt_of_lt_of_le h1 h2
+    grind
   · -- `Y ≤ x^γ`
     have hγT : 1 ≤ γ * T ^ (25 : ℕ) := by
       have h1 := mul_le_mul_of_nonneg_right hγ (show 0 ≤ T ^ (25 : ℕ) by positivity)
@@ -87,12 +92,12 @@ theorem scaleFacts_of {c Ch κ c₃ : ℝ} {x : ℝ} {j : ℕ} (hc₃ : 0 < c₃
       linarith
     linarith
 
+include hb hEM2 hκ hx in
 /-- The factor sums at a large `x`: with `u = L^{1/200}`, the powers of the factor sums are
 at most `u` for every number `R ≤ C_j s + 1` of companion factors. -/
-theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
-    (hEM2 : ∀ y z : ℝ, 2 ≤ y → y ≤ z →
-      |∑ p ∈ primesIoc y z, (1 : ℝ) / p - Real.log (Real.log z / Real.log y)| ≤ EM2 / Real.log y)
-    (hκ : 1 < κ) (hx : 2 ≤ x) (hL : 1 ≤ Real.log x) (hT : 1 ≤ logLog x)
+theorem factor_sums_le      
+     
+        (hL : 1 ≤ Real.log x) (hT : 1 ≤ logLog x)
     (hs : 0 ≤ logLogLog x) (hN2 : ((⌊κ * x + 1⌋₊ : ℕ) : ℝ) ≤ x ^ 2)
     (hsf : ScaleFacts x (presieveExponent c Ch x) 1 ⌊κ * x + 1⌋₊)
     (hγ : logLog x ^ (-21 : ℝ) ≤ presieveExponent c Ch x)
@@ -114,7 +119,7 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
   set s := logLogLog x
   set T := logLog x
   set L := Real.log x
-  have hL0 : 0 < L := by linarith
+  
   have hT0 : 0 < T := by linarith
   have hx0 : 0 < x := by linarith
   have hγ0 : 0 < γ := hsf.gamma_pos
@@ -168,8 +173,7 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
       field_simp
       linarith
     have hq0 : 0 < Real.log N / Real.log (proxyCutoff x) := by
-      have h1 : 0 < Real.log N := Real.log_pos hN1
-      positivity
+      bound
     have := Real.log_le_log hq0 hq
     rw [Real.log_mul (by norm_num) (by positivity), Real.log_pow] at this
     have hs' : Real.log T = s := rfl
@@ -179,7 +183,7 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
   have hR0 : (0 : ℝ) ≤ R := Nat.cast_nonneg R
   have hR1' : (1 : ℝ) ≤ R := by exact_mod_cast hR1
   have hrec0 := recipSum_nonneg x γ N
-  have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  
   have hrec' : recipSum x γ N ≤ Real.log 2 + 25 * s + 1 := by linarith
   have hYR : 2 * (R : ℝ) ≤ proxyCutoff x := by nlinarith
   have hY1' : 2 * (1 : ℝ) ≤ proxyCutoff x := by nlinarith
@@ -188,8 +192,7 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
   have hmono : Real.exp (2 * 1 * (Real.log 2 + 25 * s + 1)) ≤
       Real.exp (2 * R * (Real.log 2 + 25 * s + 1)) := by
     apply Real.exp_le_exp.2
-    have : 0 ≤ Real.log 2 + 25 * s + 1 := by positivity
-    nlinarith
+    gcongr <;> first | assumption | positivity | linarith
   have hhP0 : 0 ≤ highProd x N 1 := highProd_nonneg (by linarith)
   have hhPR0 : 0 ≤ highProd x N R := highProd_nonneg (by linarith)
   refine ⟨?_, ?_, ?_, ?_⟩
@@ -205,15 +208,16 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
       (by push_cast; linarith)).trans hexp
     rwa [pow_one] at this
 
+include hq₁ hE hV hbox hC₂ hΦ hκ hx4 in
 /-- E4 at a large `x`: `|Comp_j - Prox_j^0| ≤ C₄ x L^{-3} u⁴`. -/
-theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ x E₂ : ℝ}
-    {M : ℕ → ℝ} {Φ : ℝ → ℝ} {k : ℕ} {u v : Fin (k + 1) → ℝ} {B : (Fin k → ℕ) → ℝ}
-    (hE : EndpointData q cw K CN x u v B (normBound q K CN c E₂ x))
-    (hV : ∀ a : ℝ, 1 / 10 ≤ a → 1 / 2 ≤ harmonicMass (band x a))
-    (hbox : BoxBound q K c Ch Cj κ C₂ x) (hC₂ : 0 ≤ C₂) (hΦ : IsCutoff κ CΦ M x Φ)
-    (hκ : 1 < κ) (hx4 : 4 * κ + 4 ≤ x) (hL : 1 ≤ Real.log x) (hT : 0 < logLog x)
+theorem final_E4        
+             
+     
+     
+         
+        (hL : 1 ≤ Real.log x) (hT : 0 < logLog x)
     (hN2 : (⌊κ * x + 1⌋₊ : ℝ) + 1 ≤ x ^ 2)
-    (hL3 : Real.log x ^ 3 ≤ κ * x) {r : ℕ}
+    (hL3 : Real.log x ^ 3 ≤ κ * x)  {r} 
     (hsf : ScaleFacts x (presieveExponent c Ch x) (r + 2) ⌊κ * x + 1⌋₊)
     (hj2 : ((r + 2 : ℕ) : ℝ) ≤ Cj * logLogLog x + 1)
     (hSE0 : 0 ≤ endBound q K CN c E₂ x)
@@ -236,7 +240,7 @@ theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ 
   set N := ⌊κ * x + 1⌋₊
   set L := Real.log x
   have hL0 : 0 < L := by linarith
-  have hκ0 : 0 < κ := by linarith
+  
   have hx0 : 0 < x := by linarith
   have hxκ : κ ≤ x := by linarith
   have hκx1 : 1 ≤ κ * x := by nlinarith
@@ -252,8 +256,7 @@ theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ 
   have hA := gridPt_ge hxγ hδ0 hδ1 N
   have hAle : (A : ℝ) ≤ 5 * L ^ 4 := by
     have h1 : (A : ℝ) < 2 * Real.log (N + 1) / δ + 1 := Nat.ceil_lt_add_one
-      (div_nonneg (mul_nonneg (by norm_num) (Real.log_nonneg (by
-        have := Nat.cast_nonneg (α := ℝ) N; linarith))) hδ0.le)
+      (div_nonneg ((by bound)) hδ0.le)
     have h2 : Real.log ((N : ℝ) + 1) ≤ 2 * L := by
       calc Real.log ((N : ℝ) + 1) ≤ Real.log (x ^ 2) := Real.log_le_log (by positivity) hN2
         _ = 2 * L := by rw [Real.log_pow]; push_cast; ring
@@ -280,10 +283,7 @@ theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ 
     have hN0 := hE.norm_pos
     have h2 : (0 : ℝ) < 2 ^ (K * inertPerCluster K CN x) := by positivity
     have h3 := mul_le_mul_of_nonneg_left h1 (mul_pos h2 hN0).le
-    calc 2 ^ (K * inertPerCluster K CN x) * normBound q K CN c E₂ x
-        = 2 ^ (K * inertPerCluster K CN x) * normBound q K CN c E₂ x * 1 := by ring
-      _ ≤ 2 ^ (K * inertPerCluster K CN x) * normBound q K CN c E₂ x * (2 / (1 - q)) ^ K := h3
-      _ = _ := by ring
+    grind
   have hN : (N : ℝ) ≤ 2 * κ * x := by
     have := Nat.floor_le (show 0 ≤ κ * x + 1 by positivity)
     linarith
@@ -291,8 +291,7 @@ theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ 
     rw [div_le_iff₀ hx0]
     have hδx : 1 ≤ κ * x * δ := by
       rw [hδinv, ← div_eq_mul_inv, le_div_iff₀ (by positivity), one_mul]; exact hL3
-    have h1 : 3 * δ ≤ 3 * δ * (κ * x) := le_mul_of_one_le_right (by positivity) hκx1
-    linarith
+    grind
   have hκx : 4 * (κ * x + 1) ≤ 8 * κ * x := by linarith
   have hb4 := bound4_le (A := A) hsf.one_lt hκ hL hu hM0 hM1 hC₂ hSE0 hF1 hF2 hE.norm_pos.le
     hF3 hF4 (by
@@ -312,12 +311,13 @@ theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ 
   push_cast
   ring
 
+include hq₁ hE hV hΦ hκ hx4 in
 /-- E5 at a large `x`: `|Prox_j^0 - Prox_j| ≤ C₅ x L^{-1} L^{-1/10} u⁶`. -/
-theorem final_E5 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ CΦ x E₂ : ℝ}
-    {M : ℕ → ℝ} {Φ : ℝ → ℝ} {k : ℕ} {u v : Fin (k + 1) → ℝ} {B : (Fin k → ℕ) → ℝ}
-    (hE : EndpointData q cw K CN x u v B (normBound q K CN c E₂ x))
-    (hV : ∀ a : ℝ, 1 / 10 ≤ a → 1 / 2 ≤ harmonicMass (band x a)) (hΦ : IsCutoff κ CΦ M x Φ)
-    (hκ : 1 < κ) (hx4 : 4 * κ + 4 ≤ x) (hL : 1 ≤ Real.log x) (hT : 1 ≤ logLog x) {r : ℕ}
+theorem final_E5        
+             
+     
+       
+        (hL : 1 ≤ Real.log x) (hT : 1 ≤ logLog x)  {r} 
     (hsf : ScaleFacts x (presieveExponent c Ch x) (r + 2) ⌊κ * x + 1⌋₊)
     (hγ : logLog x ^ (-21 : ℝ) ≤ presieveExponent c Ch x) (hγ1 : presieveExponent c Ch x ≤ 1)
     {c₃ CW EM1 : ℝ} (hc₃ : 0 < c₃) (hCW : 0 ≤ CW)
@@ -347,7 +347,7 @@ theorem final_E5 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ CΦ x E₂ :
   set T := logLog x
   have hL0 : 0 < L := by linarith
   have hT0 : 0 < T := by linarith
-  have hκ0 : 0 < κ := by linarith
+  
   have hx0 : 0 < x := by linarith
   have hxκ : κ ≤ x := by linarith
   have hκx : κ * x ≤ x ^ 2 := by nlinarith
@@ -414,5 +414,7 @@ theorem final_E5 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ CΦ x E₂ :
     hP0 hPr hP1 hK'le (by positivity) hSP2 hlogY0.le hlogYL hγ2
   refine hE5.trans (le_of_eq_of_le ?_ hb5)
   ring
+
+end
 
 end Erdos408.TypeII

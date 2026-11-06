@@ -25,7 +25,7 @@ open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
 open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
+
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -54,11 +54,10 @@ lemma actual_conductor_scale (hZ:1<Z):
   exact mul_le_mul_of_nonneg_left s.modulus_bound (Real.rpow_nonneg (by linarith) _)
 
 omit [DecidableEq α] in
-lemma balanced_control (N:ℕ)(hN:Fintype.card α≤N)(S:Finset (ℕ×ℕ)):
+lemma balanced_control  N (hN:Fintype.card α≤N) S :
     (plainControl balancedSource (p.profile 0) (p.profile 1))^2≤
       (CenteredMomentEnergyNaturalInputMatches.profileBound W hW aslot bslot lo hi haslot hWs)^(2*N)*
-        (p.control (insert (0,0) S))^2:=by
-  apply plain_control_sq_le balancedSource p S N _
+        (p.control (insert (0,0) S))^2:=plain_control_sq_le balancedSource p S N _
     (CenteredMomentEnergyNaturalInputMatches.profileBound_ge_one W hW aslot bslot lo hi haslot hWs)
     hN (fun _=>le_rfl)
 

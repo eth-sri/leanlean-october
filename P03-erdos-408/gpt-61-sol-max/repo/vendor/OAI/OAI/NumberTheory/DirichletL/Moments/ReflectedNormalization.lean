@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.OneReflectionEnergy
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedAnnuli
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedAnnuli
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentReflectedNormalization
 open HeckeFamily CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
@@ -23,7 +24,7 @@ lemma actual_log_window :
   · rw [annulus_zero_low x (by linarith)]
     rfl
 
-lemma polynomial_const (χ : Character) (W : ℝ→ℂ) (X : ℝ) (c : ℂ) :
+lemma polynomial_const  χ   W   X   c  :
     HeckeDyadic.polynomial χ false (fun x=>c*W x) X 0 0=
       c*HeckeDyadic.polynomial χ false W X 0 0 := by
   unfold HeckeDyadic.polynomial
@@ -35,7 +36,7 @@ lemma polynomial_const (χ : Character) (W : ℝ→ℂ) (X : ℝ) (c : ℂ) :
   simp_rw [he,tsum_mul_left]
   ring
 
-lemma normalized_profile_actual (W : ℝ→ℂ) (B n : ℕ) (s t x : ℝ) :
+lemma normalized_profile_actual  W   B n   s t x  :
     normalizedReflected CenteredMomentReflectedAnnuli.logWindow W B n s t x=
       (heightScale B n s t:ℂ)*CenteredMomentReflectedAnnuli.annularProfile
         (paperRadialFourier (CompletedHeight.normTwistedSource W t)) s x := by
@@ -44,8 +45,8 @@ lemma normalized_profile_actual (W : ℝ→ℂ) (B n : ℕ) (s t x : ℝ) :
   unfold CenteredMomentReflectedAnnuli.annularProfile
   ring
 
-theorem actual_annular_normalization (χ : Character) (W : ℝ→ℂ) (B n : ℕ)
-    (k : ℤ) (t Y : ℝ) :
+theorem actual_annular_normalization  χ   W   B n 
+     k   t Y  :
     (Real.sqrt (dyadicScale k):ℂ)*HeckeDyadic.polynomial χ false
       (CenteredMomentReflectedAnnuli.annularProfile
         (paperRadialFourier (CompletedHeight.normTwistedSource W t)) (dyadicScale k))
@@ -69,10 +70,10 @@ theorem actual_annular_normalization (χ : Character) (W : ℝ→ℂ) (B n : ℕ
   have hc : (((1+‖t‖)^n:ℝ):ℂ)*(CenteredMomentReflectedAnnuli.annularMass B k:ℂ)*
       (heightScale B n (dyadicScale k) t:ℂ)=(Real.sqrt (dyadicScale k):ℂ) := by
     rw [←Complex.ofReal_mul,←Complex.ofReal_mul,hh]
-  rw [←mul_assoc _ (heightScale B n (dyadicScale k) t:ℂ),hc]
+  grind
 
 end SevenEighths.CenteredMomentReflectedNormalization
 
-end
+
 
 end OAI

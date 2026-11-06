@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPhysicalSaving
 
@@ -6,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPhysicalSavin
 
 namespace OAI
 
-noncomputable section
+
 
 namespace SevenEighths.CenteredMomentSecondExceptionalCommonSaving
 open CenteredMomentSecondExceptionalPhysicalSaving
-lemma common_weight_bound (Z c d θ B ε δ r:ℝ)(hZ:1<Z)(hc:1≤c)(hd:1≤d)
+lemma common_weight_bound  Z c d θ B ε δ r (hZ:1<Z)(hc:1≤c)(hd:1≤d)
     (hθ:0≤θ)(hC:c≤Z^B)(hD:d≤Z^B):
     Z^(2*ε+δ-max (r-min (Real.logb Z c) (Real.logb Z d)) 0)*(c*d)^θ*
       Z^(-(Real.logb Z c+Real.logb Z d)/3)≤
@@ -19,8 +20,7 @@ lemma common_weight_bound (Z c d θ B ε δ r:ℝ)(hZ:1<Z)(hc:1≤c)(hd:1≤d)
   have hcd:0≤c*d:=mul_nonneg (zero_le_one.trans hc) (zero_le_one.trans hd)
   have hpow:(c*d)^θ≤Z^(2*B*θ):=by
     calc
-      _≤(Z^B*Z^B)^θ:=Real.rpow_le_rpow hcd
-        (mul_le_mul hC hD (zero_le_one.trans hd) (Real.rpow_nonneg hz.le _)) hθ
+      _≤(Z^B*Z^B)^θ:=(by bound)
       _=Z^(2*B*θ):=by
         rw [←Real.rpow_add hz,←Real.rpow_mul hz.le]
         congr 1;ring
@@ -36,6 +36,6 @@ lemma common_weight_bound (Z c d θ B ε δ r:ℝ)(hZ:1<Z)(hc:1≤c)(hd:1≤d)
     _≤_:=Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)
 end SevenEighths.CenteredMomentSecondExceptionalCommonSaving
 
-end
+
 
 end OAI

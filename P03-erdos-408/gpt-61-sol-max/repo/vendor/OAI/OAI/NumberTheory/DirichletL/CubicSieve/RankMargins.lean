@@ -11,80 +11,80 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 namespace SecondPassArithmetic
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+ 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic
+ 
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
@@ -97,17 +97,17 @@ namespace CompletedHeight
 
 section
 
-open MeasureTheory Filter Set
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff Topology
+ 
+ 
 open FourierBridge JointLogSeparation
 
-def fixedLogReturnCLM (a b : ℝ) (ha : 0 < a) : 𝓢(ℝ,ℂ) →L[ℝ] 𝓢(ℝ,ℂ) :=
+def fixedLogReturnCLM (a b : ℝ) (ha : 0 < a)  :=
   (SchwartzMap.smulLeftCLM ℂ (positiveCutoff a b ha)).comp
     (SchwartzMap.compCLM ℝ
       (patchedLog_temperate (a/2) (max a b+a/2) (by linarith))
       (patchedLog_proper (a/2) (max a b+a/2) (by linarith)))
 
-lemma fixedLogReturnCLM_apply (a b : ℝ) (ha : 0 < a) (g : 𝓢(ℝ,ℂ)) (x : ℝ) :
+lemma fixedLogReturnCLM_apply  a b   ha   g   x  :
     fixedLogReturnCLM a b ha g x = positiveCutoff a b ha x •
       g (patchedLog (a/2) (max a b+a/2) (by linarith) x) := by
   rw [fixedLogReturnCLM,ContinuousLinearMap.comp_apply,
@@ -115,7 +115,7 @@ lemma fixedLogReturnCLM_apply (a b : ℝ) (ha : 0 < a) (g : 𝓢(ℝ,ℂ)) (x : 
       ((positiveCutoff a b ha).hasCompactSupport.hasTemperateGrowth (positiveCutoff a b ha).contDiff)]
   rfl
 
-lemma positiveCutoff_support_bounds (a b : ℝ) (ha : 0 < a) (x : ℝ)
+lemma positiveCutoff_support_bounds (a b : ℝ) (ha : 0 < a)  x 
     (hx : positiveCutoff a b ha x ≠ 0) : x ∈ Icc (a/2) (max a b+a/2) := by
   have hm : x ∈ Function.support (positiveCutoff a b ha) := hx
   rw [(positiveCutoff a b ha).support_eq] at hm
@@ -123,12 +123,12 @@ lemma positiveCutoff_support_bounds (a b : ℝ) (ha : 0 < a) (x : ℝ)
   rw [Real.dist_eq,abs_lt] at hm
   constructor <;> linarith [hm.1,hm.2]
 
-def uniformTwistedSchwartz (W : ℝ→ℂ) (a b : ℝ) (ha : 0 < a)
-    (hs : Function.support W ⊆ Icc a b) (hW : ContDiff ℝ ∞ W) (t : ℝ) : 𝓢(ℝ,ℂ) :=
+def uniformTwistedSchwartz (W : ℝ→ℂ) (a b ) (ha : 0 < a)
+    (hs : Function.support W ⊆ Icc a b) (hW : ContDiff ℝ ∞ W) (t : ℝ)  :=
   fixedLogReturnCLM a b ha (frequencyTwist (CubicReflectionKernel.logSchwartz W a b ha hs hW) t)
 
-lemma uniformTwistedSchwartz_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0 < a)
-    (hs : Function.support W ⊆ Icc a b) (hW : ContDiff ℝ ∞ W) (t x : ℝ) :
+lemma uniformTwistedSchwartz_apply  W   a b   ha 
+     hs   hW   t x  :
     uniformTwistedSchwartz W a b ha hs hW t x = normTwistedSource W t x := by
   rw [uniformTwistedSchwartz,fixedLogReturnCLM_apply,frequencyTwist_apply,
     CubicReflectionKernel.logSchwartz_apply]
@@ -148,26 +148,26 @@ lemma uniformTwistedSchwartz_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0 < a)
 
 end
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+ 
+ 
 open CompletedGauss
 
 end CompletedHeight
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
+ 
+ 
 namespace CompletedHeight
 open CompletedGauss hiding O
-open ActualEisensteinCubic
+ 
 open CanonicalQuadraticSieve hiding O
 
 end CompletedHeight
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
+ 
+ 
 namespace CompletedHeight
 open CompletedGauss hiding O
-open ActualEisensteinCubic CompletedDyadic
+open   CompletedDyadic
 open CanonicalQuadraticSieve hiding O
 
 end CompletedHeight

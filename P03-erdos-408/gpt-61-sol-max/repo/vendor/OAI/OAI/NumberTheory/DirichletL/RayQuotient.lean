@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.RayOrthogonality
 
@@ -31,24 +32,21 @@ def toFullRay : Characters M H →* rayCharacters M where
   map_one' := Subtype.ext rfl
   map_mul' _ _ := Subtype.ext rfl
 
-theorem toFullRay_injective : Function.Injective (toFullRay M H hH) := by
-  intro χ ψ heq
-  exact Subtype.ext (congrArg (fun ρ : rayCharacters M => (ρ : MulChar (A ⧸ M) ℂ)) heq)
 
-@[simp] theorem toFullRay_eq_one (χ : Characters M H) :
+
+@[simp] theorem toFullRay_eq_one  χ  :
     toFullRay M H hH χ = 1 ↔ χ = 1 := by
-  rw [← map_one (toFullRay M H hH)]
-  exact (toFullRay_injective M H hH).eq_iff
+  simp_all [toFullRay]
 
 variable [IsDomain A] [IsPrincipalIdealRing A]
 
-def idealCharacter (χ : Characters M H) : Ideal A →*₀ ℂ :=
+def idealCharacter (χ : Characters M H)  :=
   IdealCharacter.ofResidue M χ (character_unitInvariant M H hH χ)
 
-theorem idealCharacter_eq_fullRay (χ : Characters M H) :
+theorem idealCharacter_eq_fullRay  χ  :
     idealCharacter M H hH χ = RayOrthogonality.idealCharacter M (toFullRay M H hH χ) := rfl
 
-def identityClass : Set (Ideal A) :=
+def identityClass  :=
   {I | I ≠ ⊥ ∧ ∃ a : A, Ideal.span ({a} : Set A) = I ∧
     inUnitSubgroup H (Ideal.Quotient.mk M a)}
 
@@ -71,31 +69,29 @@ theorem identityClass_iff_generator {I : Ideal A} (hI : I ≠ ⊥) :
     rw [hua, ← hq]
     change (Ideal.Quotient.mk M (Submodule.IsPrincipal.generator I)) *
       (w : A ⧸ M) * (w⁻¹ : (A ⧸ M)ˣ) = _
-    rw [mul_assoc, ← Units.val_mul, mul_inv_cancel, Units.val_one, mul_one]
+    simp_all
   · intro h
     exact ⟨hI, _, Ideal.span_singleton_generator I, h⟩
 
-theorem norm_idealCharacter_le_one (χ : Characters M H) (I : Ideal A) :
+theorem norm_idealCharacter_le_one  χ   I  :
     ‖idealCharacter M H hH χ I‖ ≤ 1 :=
   IdealCharacter.norm_ofResidue_le_one M χ _ I
 
-theorem sum_idealCharacters (I : Ideal A) :
+theorem sum_idealCharacters  I  :
     ∑ χ : Characters M H, idealCharacter M H hH χ I =
       if I ∈ identityClass M H then (classNumber M H : ℂ) else 0 := by
   by_cases hI : I = ⊥
   · subst I
     simp [idealCharacter, identityClass]
   · have heq (χ : Characters M H) : idealCharacter M H hH χ I =
-        (χ : MulChar (A ⧸ M) ℂ) (Ideal.Quotient.mk M (Submodule.IsPrincipal.generator I)) := by
-      exact IdealCharacter.ofResidue_of_generator M χ _ hI (Ideal.span_singleton_generator I)
+        (χ : MulChar (A ⧸ M) ℂ) (Ideal.Quotient.mk M (Submodule.IsPrincipal.generator I)) := IdealCharacter.ofResidue_of_generator M χ _ hI (Ideal.span_singleton_generator I)
     simp only [heq, sum_characters, identityClass_iff_generator M H hH hI, classNumber]
 
-theorem average_idealCharacters (I : Ideal A) :
+theorem average_idealCharacters  I  :
     (∑ χ : Characters M H, idealCharacter M H hH χ I) / (classNumber M H : ℂ) =
       if I ∈ identityClass M H then 1 else 0 := by
   rw [sum_idealCharacters]
-  have hn : (classNumber M H : ℂ) ≠ 0 := by exact_mod_cast (classNumber_pos M H).ne'
-  split_ifs <;> simp [hn]
+  bound
 
 end
 end SevenEighths.RayQuotient

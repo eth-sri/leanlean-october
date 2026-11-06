@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalMainHomogeneous
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalMainSeparatedPower
@@ -33,7 +34,7 @@ open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentReta
 open CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
+
 
 open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
 open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
@@ -41,14 +42,14 @@ open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeT
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
 open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open   CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
+open   CenteredMomentEnergyAllocatedZero
 open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+ 
+ 
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
 open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
@@ -192,13 +193,13 @@ theorem actual_original_subsets_main_power
   have hJ:Jj Aorig≤Jheight:=Finset.single_le_sum (fun _ _=>Nat.zero_le _) (Finset.mem_univ Aorig)
   have hz:0<Z:=zero_lt_one.trans (hZ₀.trans_le hZ)
   have hp0:=p.control_nonneg (Uj Aorig)
-  have hp1:=p.control_nonneg Uprofile
+  
   have hh:(1+|t|+height)^(Jj Aorig)≤(1+|t|+height)^Jheight:=
     pow_le_pow_right₀ (by linarith [abs_nonneg t]) hJ
   have hfront:Cj Aorig*(C₀+C₁+1)*(p.control (Uj Aorig))^2*(1+|t|+height)^(Jj Aorig)≤
       Cbound*(C₀+C₁+1)*(p.control Uprofile)^2*(1+|t|+height)^Jheight:=by
     have hc:=hCC Aorig
-    have hc0:0≤Cj Aorig:=(hCj Aorig).le
+    
     gcongr
   apply hg.trans
   apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)

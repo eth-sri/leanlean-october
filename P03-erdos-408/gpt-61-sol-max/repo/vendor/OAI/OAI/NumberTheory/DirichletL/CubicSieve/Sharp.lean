@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.ExponentImprovement
 
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.ExponentImprovement
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-noncomputable section
+
 
 theorem hasCubicExponent_four_thirds : HasCubicExponent (4/3 : ℝ) := by
   intro ε hε
@@ -42,9 +43,7 @@ theorem hasCubicExponent_four_thirds : HasCubicExponent (4/3 : ℝ) := by
         rw [← Real.rpow_add hMN]
         congr 1
         ring
-      calc
-        _ = C*((M*N)^(ε/2)*(M*N)^(ε/2))*(M+N^(4/3 : ℝ)+(M*N)^(2/3 : ℝ)) := by ring
-        _ = _ := by rw [he]
+      grind
 
 lemma four_thirds_le_cross (M N : ℝ) (_hM : 1 ≤ M) (hN : 1 ≤ N) (hNM : N ≤ M) :
     N^(4/3 : ℝ) ≤ (M*N)^(2/3 : ℝ) := by
@@ -64,7 +63,7 @@ theorem sieveNorm_sharp (ε : ℝ) (hε : 0 < ε) :
   intro M N hM hN
   have hM0 : 0 ≤ M := by linarith
   have hN0 : 0 ≤ N := by linarith
-  have hcross : 0 ≤ (M*N)^(2/3 : ℝ) := Real.rpow_nonneg (mul_nonneg hM0 hN0) _
+  
   by_cases hNM : N ≤ M
   · have hh := four_thirds_le_cross M N hM hN hNM
     calc
@@ -85,7 +84,7 @@ theorem sieveNorm_sharp (ε : ℝ) (hε : 0 < ε) :
         mul_le_mul_of_nonneg_left hs (by positivity)
       _ = _ := by rw [mul_comm N M]; ring
 
-end
+
 end SevenEighths.CubicSieve
 
 end OAI

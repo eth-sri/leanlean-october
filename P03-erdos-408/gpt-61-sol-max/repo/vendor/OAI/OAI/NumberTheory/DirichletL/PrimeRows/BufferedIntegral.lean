@@ -7,22 +7,26 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstIntegral
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+
 variable {ι : Type*} [Fintype ι]
 
-lemma rowAmplitudeOnLines_buffered_bound {K : ℕ}
-    (e a B H : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000)
-    (ha : (51/100:ℝ)≤a) (haTop : a≤1) (hB : 2<B) (hH : H≤(3*i+2:ℕ)*B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
-    (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
-    (hbin : detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e)
-    (σ r : ℝ) (hσ : a+16*e≤σ) (hσ2 : σ≤2) (hr : (17/50:ℝ)≤r) :
+section
+variable {K : ℕ} (e a B H : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000) (ha : (51/100:ℝ)≤a) (haTop : a≤1) (hB : 2<B) (hH : H≤(3*i+2:ℕ)*B) (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character) (hbin : detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e)
+include K e a B H i he he' ha haTop hB hH S hS hmax hfirst P hPS η u hu ψ hbin
+
+lemma rowAmplitudeOnLines_buffered_bound  
+           
+           
+         
+         
+           
+     
+     σ r  (hσ : a+16*e≤σ) (hσ2 : σ≤2) (hr : (17/50:ℝ)≤r) :
     ∃C : ℝ,0≤C ∧ ∀t : HeightSpace, |t.1.1|≤H →
       ‖rowAmplitudeOnLines S hS hmax P hPS η u σ (1-a-6*e) r t‖≤C*(3+|t.2|)^2 := by
   obtain ⟨C,hC,hbound⟩ := calibrated_physicalRow_buffered_joint_growth e a B H i he he' ha haTop hB hH S hS hfirst hmax _
@@ -51,17 +55,17 @@ lemma rowAmplitudeOnLines_buffered_bound {K : ℕ}
   simp_rw [hn,hf]
   exact (mul_le_mul_of_nonneg_left hh hA).trans_eq (by ring)
 
-theorem continuedPhysicalRowKernel_buffered_integrable {K : ℕ}
-    (e a B H : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000)
-    (ha : (51/100:ℝ)≤a) (haTop : a≤1) (hB : 2<B) (hH : H≤(3*i+2:ℕ)*B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
-    (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
-    (hbin : detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e)
+theorem continuedPhysicalRowKernel_buffered_integrable  
+           
+           
+         
+         
+           
+     
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (σ r : ℝ) (hσ : a+16*e≤σ) (hσ2 : σ≤2) (hr : (17/50:ℝ)≤r) :
+     X Y Z  (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+     σ r  (hσ : a+16*e≤σ) (hσ2 : σ≤2) (hr : (17/50:ℝ)≤r) :
     IntegrableOn (continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ (1-a-6*e) r)
       {t : HeightSpace | |t.1.1|≤H} heightMeasure := by
   let E : Set HeightSpace := {t | |t.1.1|≤H}
@@ -96,8 +100,10 @@ theorem continuedPhysicalRowKernel_buffered_integrable {K : ℕ}
     · simp only [Set.indicator_of_notMem ht,F,A,mul_zero]
   exact (integrable_indicator_iff hE).mp (heq ▸ hf)
 
+end
+
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

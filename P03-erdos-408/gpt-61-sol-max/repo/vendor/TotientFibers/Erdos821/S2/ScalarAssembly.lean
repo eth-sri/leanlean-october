@@ -18,22 +18,22 @@ namespace ResiduePath
 variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
   (Q : ResiduePath A n)
 
-def ghostFactorial (S : LifespanAssignment P n) : ℝ :=
+def ghostFactorial (S : LifespanAssignment P n)  :=
   ∏ i : Fin (n + 1), ∏ g : P.BigGroup, ((Q.ghostBirthPrimes S i g).card.factorial : ℝ)
 
-def smallEdgeDamping (y : P.SmallResidues) (i : Fin n) : ℝ :=
+def smallEdgeDamping (y : P.SmallResidues) (i : Fin n)  :=
   smallDamping (P := P) F J (translateSmallResidues (Q.offset i.castSucc) y) *
     smallDamping (P := P) F J (translateSmallResidues (Q.offset i.succ) y)
 
-def scalarPathPrefactor (y : P.SmallResidues) : ℝ :=
+def scalarPathPrefactor (y : P.SmallResidues)  :=
   (Fintype.card P.SmallResidues : ℝ)⁻¹ * P.markMass (J + F.ell) *
     (∏ i : Fin n, edgeSymmetryFactor P (J + F.ell) *
       (A.pattern (Q.pattern i)).auxMass (Q.free i) *
       (A.pattern (Q.pattern i)).physicalTargetMass) *
     ∏ i : Fin n, Q.smallEdgeDamping y i
 
-theorem reconstructedRawWeight_one (S : LifespanAssignment P n)
-    (y : P.SmallResidues) (i : Fin n) :
+theorem reconstructedRawWeight_one  S 
+     y   i  :
     Q.reconstructedRawWeight S y 1 i =
       (A.pattern (Q.pattern i)).auxMass (Q.free i) *
         (∏ g : P.BigGroup, Q.freshBigGroupFactor S i g *
@@ -46,8 +46,8 @@ theorem reconstructedRawWeight_one (S : LifespanAssignment P n)
   ring
 
 theorem ghost_weight_factorial_product (hGhost : SpanGhostWeightTask)
-    (S : LifespanAssignment P n) (hS : Q.lifespanValid S)
-    (hV : ∀ g, P.V g ≠ 0) (y : P.SmallResidues) :
+     S   hS 
+    (hV : ∀ g, P.V g ≠ 0)  y  :
     (∏ i : Fin (n + 1), ghostChoiceWeight F n 1 i (Q.reconstructedGhostChoice S hS y i)) *
         Q.ghostFactorial S =
       ∏ i : Fin (n + 1), ∏ g : P.BigGroup, ∏ p : P.Prime g.val, Q.spanGhostFactor S i g p := by
@@ -58,10 +58,10 @@ theorem ghost_weight_factorial_product (hGhost : SpanGhostWeightTask)
   exact hGhost F P J m n A Q S hV hS y i
 
 theorem reconstructedScalarWeight_factorial (hGhost : SpanGhostWeightTask)
-    (hMark : SpanMarkWeightTask) (S : LifespanAssignment P n)
-    (hQ : Q.Valid) (hS : Q.lifespanValid S)
+    (hMark : SpanMarkWeightTask)  S 
+    (hQ : Q.Valid)  hS 
     (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (hV : ∀ g, P.V g ≠ 0) (y : P.SmallResidues) (hy : Q.SmallCompatible y) :
+    (hV : ∀ g, P.V g ≠ 0)  y  (hy : Q.SmallCompatible y) :
     Q.reconstructedScalarWeight S hS y 1 * Q.ghostFactorial S =
       Q.scalarPathPrefactor y *
         ∏ g : P.BigGroup, ∏ p : P.Prime g.val, Q.spanWeight g p (S g p) := by

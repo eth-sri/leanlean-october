@@ -12,10 +12,13 @@ open scoped BigOperators
 
 namespace Erdos821.S2
 
-def cycleBirthBlocks {a : ℕ} (σ : Equiv.Perm (Fin a)) : Finset (Finset (Fin a)) :=
+def cycleBirthBlocks {a } (σ : Equiv.Perm (Fin a))  :=
   σ.cycleFactorsFinset.image Equiv.Perm.support
 
-theorem cycleBirthBlocks_collection {a : ℕ} (σ : Equiv.Perm (Fin a)) :
+section
+variable {a : ℕ} (σ : Equiv.Perm (Fin a))
+
+theorem cycleBirthBlocks_collection     :
     BirthCollection (cycleBirthBlocks σ) := by
   classical
   constructor
@@ -28,7 +31,7 @@ theorem cycleBirthBlocks_collection {a : ℕ} (σ : Equiv.Perm (Fin a)) :
     have hcd : c ≠ d := fun h => hBC (congrArg Equiv.Perm.support h)
     exact (σ.cycleFactorsFinset_pairwise_disjoint hc hd hcd).disjoint_support
 
-theorem cycleBirthBlocks_union {a : ℕ} (σ : Equiv.Perm (Fin a)) :
+theorem cycleBirthBlocks_union     :
     (cycleBirthBlocks σ).biUnion id = σ.support := by
   classical
   ext i
@@ -42,7 +45,7 @@ theorem cycleBirthBlocks_union {a : ℕ} (σ : Equiv.Perm (Fin a)) :
     exact Finset.mem_biUnion.mpr ⟨c.support, Finset.mem_image.mpr ⟨c, hc, rfl⟩, hi⟩
 
 /-- A block event records exactly the supported, value-preserving cycles. -/
-theorem cycleBirthBlocks_event {a : ℕ} (σ : Equiv.Perm (Fin a))
+theorem cycleBirthBlocks_event    
     (performed : Finset (Fin a)) (value : Fin a → ℕ) :
     birthEvent performed value (cycleBirthBlocks σ) ↔
       σ.support ⊆ performed ∧ ∀ i, value (σ i) = value i := by
@@ -87,5 +90,7 @@ theorem cycleBirthBlocks_event {a : ℕ} (σ : Equiv.Perm (Fin a))
           (Equiv.Perm.mem_support.mp hi) (Equiv.Perm.mem_support.mp hj)).exists_nat_pow_eq
       rw [← hn]
       exact (hp n i).symm
+
+end
 
 end Erdos821.S2

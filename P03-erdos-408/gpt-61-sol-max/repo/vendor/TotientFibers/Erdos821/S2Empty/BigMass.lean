@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2Empty.BigTilted
 
@@ -13,7 +14,7 @@ namespace Erdos821.S2Empty
 open Erdos821.Blueprint.Graph
 
 theorem big_tilted_sum_le_inv (F : FixedData) (P : PrimeGroups) (n : ℕ)
-    (g : P.BigGroup) (e : ℝ) (hV : 0 < P.V g.val) (he : e < 1)
+    (g : P.BigGroup)  e  (hV : 0 < P.V g.val) (he : e < 1)
     (hfloor : ∀ p : P.Prime g.val, 1 - e ≤ baselinePrime F n p.val) :
     (∑ p : P.Prime g.val, tiltedMu F P n g.val p) ≤ (1 - e)⁻¹ := by
   classical
@@ -36,8 +37,7 @@ theorem big_tilted_sum_le_inv (F : FixedData) (P : PrimeGroups) (n : ℕ)
       tiltedMu F P n g.val p ≤ P.mu g.val p * (1 - e)⁻¹ := by
     have hp : (p.val : ℝ) ≠ 0 := by
       exact_mod_cast (P.prime g.val p.val p.property).ne_zero
-    have hpPos : 0 < (p.val : ℝ) := by
-      exact_mod_cast (P.prime g.val p.val p.property).pos
+    
     have hbasePos : 0 < baselinePrime F n p.val :=
       lt_of_lt_of_le (by linarith) (hfloor p)
     have hratio : (baselinePrime F n p.val)⁻¹ ≤ (1 - e)⁻¹ :=

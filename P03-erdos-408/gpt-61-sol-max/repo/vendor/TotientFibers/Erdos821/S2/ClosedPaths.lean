@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.PhysicalPathTask
 
@@ -26,16 +27,16 @@ theorem finite_average_product {α β : Type*} [Fintype α] (s : Finset β)
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ} (A : Model F P J m) (n : ℕ)
 
-def closedPathCoefficient (Q : ResiduePath A n) : ℂ :=
+def closedPathCoefficient (Q : ResiduePath A n)  :=
   if Q.Valid ∧ Q.offset (Fin.last n) = 0 then
     (P.markMass (J + F.ell) : ℂ) * ∏ i : Fin n, Q.edgeCoefficient 0 i
   else 0
 
-def closedResidueExpression : ℂ :=
+def closedResidueExpression  :=
   ∑ Q : ResiduePath A n, closedPathCoefficient A n Q *
     (P.residueExpectation n (visitQ F.q n) Q.offset Q.active : ℂ)
 
-def closedAbsoluteResidueExpression : ℝ :=
+def closedAbsoluteResidueExpression  :=
   ∑ Q : ResiduePath A n, ‖closedPathCoefficient A n Q‖ *
     P.residueExpectation n (visitQ F.q n) Q.offset Q.active
 
@@ -45,11 +46,9 @@ theorem closedPhysicalExpression_eq :
         (P.pathFactor n (visitQ F.q n) Q.offset Q.active z : ℂ) := by
   intro z
   apply Finset.sum_congr rfl
-  intro Q _
-  by_cases h : Q.Valid ∧ Q.offset (Fin.last n) = 0 <;>
-    simp [closedPathCoefficient, h]
+  simp_all [Fin.last, closedPathCoefficient]
 
-theorem closed_replacement_bound (X epsilon : ℝ)
+theorem closed_replacement_bound  X epsilon 
     (hreplace : ∀ Q : ResiduePath A n, Q.Valid →
       |((dyad X).card : ℝ)⁻¹ * ∑ z ∈ dyad X,
           P.pathFactor n (visitQ F.q n) Q.offset Q.active z -
@@ -88,10 +87,7 @@ theorem closed_replacement_bound (X epsilon : ℝ)
     _ = epsilon * closedAbsoluteResidueExpression A n := by
       unfold closedAbsoluteResidueExpression
       rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro Q _
-      dsimp only [res]
-      ring
+      grind
 
 
 end Erdos821.S2Core

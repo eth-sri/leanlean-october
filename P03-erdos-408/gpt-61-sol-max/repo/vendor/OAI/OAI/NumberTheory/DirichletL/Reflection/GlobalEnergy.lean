@@ -9,11 +9,11 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-lemma fullRaySector_subset (N : Eis) (rows : Finset (Ideal Eis)) (r : Eis⧸Ideal.span {N^2}) :
+lemma fullRaySector_subset  N   rows   r  :
     fullRaySector N rows r⊆rows := Finset.filter_subset _ _
 
 theorem literal_global_sector_energy [Fintype (Eis⧸Ideal.span {N^2})]
@@ -21,8 +21,8 @@ theorem literal_global_sector_energy [Fintype (Eis⧸Ideal.span {N^2})]
     (S : Ideal Eis→PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
     (D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
       ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property) (S P.val)).generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal Eis→ℂ) (B : ℝ)
+     s   hc 
+     W   θ X   r aw   B 
     (hsector : ∀ r₀ p₀ : Eis⧸Ideal.span {N^2},
       ∃ E : SectorArithmetic (N:=N) F (fullRaySector N rows r₀) (fullRaySector N Pset p₀) S
         (fun K hK => hrows K (fullRaySector_subset N rows r₀ hK)) s hc,
@@ -74,7 +74,7 @@ theorem literal_global_sector_energy [Fintype (Eis⧸Ideal.span {N^2})]
       _ = _ := Finset.sum_coe_sort rows (fun K => ‖∑ P∈Pset,f K P‖^2)
   rw [he]
   exact hh
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

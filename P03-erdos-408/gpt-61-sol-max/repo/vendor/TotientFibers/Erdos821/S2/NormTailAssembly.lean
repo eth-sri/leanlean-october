@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.MemorySplit
 public import Erdos821.S2.MomentCRT
@@ -7,7 +8,7 @@ public import Erdos821.S2.MomentCRT
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.S2Core
@@ -36,19 +37,12 @@ theorem full_memory_norm_le_two (A : Model F P J m) (n B : ℕ)
   have ht : (2 : ℝ) ^
         (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) - (B : ℤ)) *
         CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n ≤ U := by
-    calc
-      _ = (2 : ℝ) ^
-          (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) - (B : ℤ)) *
-          (CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n) := by ring
-      _ ≤ (2 : ℝ) ^
-          (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) - (B : ℤ)) * V :=
-        mul_le_mul_of_nonneg_left hCost hpow
-      _ ≤ U := hGain
+    nlinarith
   exact (distinctMemoryExpression_norm_le_cutoff A n B rho v theta CG CE hv hCG hCE hG hE).trans
     ((add_le_add hTrunc ht).trans_eq (by ring))
 
 theorem averagedMoment_le_of_bounds (hPath : PhysicalPathExpansionTask)
-    (A : Model F P J m) (r : ℕ) (hr : 0 < r) (X epsilon C D : ℝ) (heps : 0 ≤ epsilon)
+    (A : Model F P J m)  r  (hr : 0 < r)  X epsilon C D  (heps : 0 ≤ epsilon)
     (hreplace : ∀ Q : ResiduePath A (2 * r), Q.Valid →
       |((dyad X).card : ℝ)⁻¹ * ∑ z ∈ dyad X,
           P.pathFactor (2 * r) (visitQ F.q (2 * r)) Q.offset Q.active z -

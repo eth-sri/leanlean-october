@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.Constant.Glue
 
@@ -46,11 +47,9 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
   have hMm : MeasurableSet Ms := measurableSet_le continuous_abs.measurable measurable_const
   have hBHm : MeasurableSet BH := (measurableSet_lt measurable_const hA.norm.measurable).inter
     (measurableSet_lt measurable_const continuous_abs.measurable)
-  have hAm0 : 0 ≤ Amax := (norm_nonneg _).trans (hAmax 0)
+  
   have hne : ∀ t ∈ Set.Icc a b, t ≠ 0 := fun t ht h0 => by
-    have := hca t ht
-    rw [h0, abs_zero] at this
-    linarith
+    grind
   -- the pointwise bound
   have hpt : ∀ t ∈ Set.Ioc a b, f t ≤ O.indicator f t + 2 * Amax ^ 2 *
       (1152 * Λ ^ 2 * (t ^ 2)⁻¹ + Ms.indicator (fun _ => 2 * Λ ^ 2 * ε ^ 2) t +
@@ -58,14 +57,14 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
     intro t ht
     have htI : t ∈ Set.Icc a b := Set.Ioc_subset_Icc_self ht
     have ht0 := hne t htI
-    have hct := hca t htI
-    have hat : 0 < |t| := abs_pos.2 ht0
+    
+    
     have hsq : (t ^ 2)⁻¹ = (|t|⁻¹) ^ 2 := by rw [inv_pow, sq_abs]
     have hi1 : 0 ≤ Ms.indicator (fun _ => 2 * Λ ^ 2 * ε ^ 2) t :=
       Set.indicator_nonneg (fun _ _ => by positivity) t
     have hi2 : 0 ≤ BH.indicator (fun _ => G) t := Set.indicator_nonneg (fun _ _ => by positivity) t
-    have hB1 : 0 ≤ ‖B₁ t‖ ^ 2 := by positivity
-    have ht2 : 0 ≤ (t ^ 2)⁻¹ := by positivity
+    
+    
     by_cases hO : t ∈ O
     · rw [Set.indicator_of_mem hO]
       have : 0 ≤ 2 * Amax ^ 2 * (1152 * Λ ^ 2 * (t ^ 2)⁻¹ +
@@ -179,9 +178,7 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
         2 * X * (2 * Λ ^ 2 * ε ^ 2) := mul_le_mul_of_nonneg_right hMvol hm1
     have e3 : volume.real (Set.Ioc a b ∩ BH) * G ≤ 𝒥.card * G :=
       mul_le_mul_of_nonneg_right hBHvol hG0
-    have e4 : 1152 * Λ ^ 2 * (2 / c) + 2 * X * (2 * Λ ^ 2 * ε ^ 2) =
-        Λ ^ 2 * (2304 / c + 4 * ε ^ 2 * X) := by ring
-    linarith
+    grind
   have := mul_le_mul_of_nonneg_left key hA2
   linarith
 

@@ -19,7 +19,7 @@ local notation "O" => HeckeFamily.O
 def normalizedProbe {K : ℕ} (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]
     (H : Subgroup (O ⧸ M)ˣ) (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
     [NeZero (∏P∈S,P)] (ell : Fin K→ℝ) (a b : ℝ) (W : Fin K→ℝ→ℝ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (η : Character) (Z : ℝ) : ℂ :=
+    (W0 W1 : SchwartzMap ℝ ℂ) (η : Character) (Z : ℝ)  :=
   let Yp := fun j=>Z^(ell j)
   let T := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
   compensatedPhysicalProbe η (calibrationForSet S hmax) W0 W1
@@ -59,12 +59,11 @@ theorem normalizedProbe_low {K : ℕ}
   apply isBigO_rpow_of_eventual_norm_bound
   exact ⟨C,hC,hb.mono (fun Z h=>h.2)⟩
 
-theorem actual_source_analytic (S : Finset (Ideal O)) (hS : SourceExclusions S) (η : Character) :
+theorem actual_source_analytic (S : Finset (Ideal O)) (hS : SourceExclusions S)  η  :
     (∀I,idealCoeff (η.excludePrimes S hS.prime) I=
       if IsCoprime I (η.excludePrimes S hS.prime).modulus then idealCoeff η I else 0) ∧
     AnalyticOnNhd ℂ (sourceCorrection η S) {s : ℂ|7/8<s.re} ∧
-    (∀s : ℂ,7/8<s.re→‖sourceCorrection η S s-1‖≤1/2) := by
-  exact ⟨excludePrimes_mask η S hS.prime,
+    (∀s : ℂ,7/8<s.re→‖sourceCorrection η S s-1‖≤1/2) := ⟨excludePrimes_mask η S hS.prime,
     (sourceCorrection_differentiable η S hS).analyticOnNhd (Complex.isOpen_re_gt _),
     sourceCorrection_bound η S hS⟩
 

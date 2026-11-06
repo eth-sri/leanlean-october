@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Bands
 public import Erdos408.OneSided.Lift
@@ -22,7 +23,7 @@ namespace Erdos408.OneSided
 open Filter Finset Real
 
 /-- Eventually `L^c ≥ M`, for `c > 0`. -/
-theorem eventually_le_rpow_log {c : ℝ} (hc : 0 < c) (M : ℝ) :
+theorem eventually_le_rpow_log {c : ℝ} (hc : 0 < c)  M  :
     ∀ᶠ x : ℝ in atTop, M ≤ Real.log x ^ c :=
   ((tendsto_rpow_atTop hc).comp Real.tendsto_log_atTop).eventually_ge_atTop M
 
@@ -69,7 +70,7 @@ theorem eventually_five_mul_exp_le_roughLevel (K : ℕ) :
   nlinarith
 
 /-- Eventually `(17X)^{3/4} e^{2K L^{1/5}} ≤ X` for every `X ≥ x/C_X`. -/
-theorem eventually_rpow_mul_exp_le {CX : ℝ} (hCX : 1 ≤ CX) (K : ℕ) :
+theorem eventually_rpow_mul_exp_le  {CX}  (hCX : 1 ≤ CX) (K : ℕ) :
     ∀ᶠ x : ℝ in atTop, ∀ X : ℝ, x / CX ≤ X →
       (17 * X) ^ (3 / 4 : ℝ) * Real.exp (2 * K * Real.log x ^ (1 / 5 : ℝ)) ≤ X := by
   filter_upwards [eventually_le_rpow_log (by norm_num : (0 : ℝ) < 4 / 5) (16 * K + 1),
@@ -89,9 +90,7 @@ theorem eventually_rpow_mul_exp_le {CX : ℝ} (hCX : 1 ≤ CX) (K : ℕ) :
     norm_num
   have hKL : 16 * K * Real.log x ^ (1 / 5 : ℝ) ≤ Real.log x := by
     have h := mul_le_mul_of_nonneg_left hx (zero_le_one.trans h5)
-    calc 16 * K * Real.log x ^ (1 / 5 : ℝ)
-        ≤ Real.log x ^ (1 / 5 : ℝ) * Real.log x ^ (4 / 5 : ℝ) := by nlinarith
-      _ = Real.log x := hLsplit.symm
+    grind
   -- `17 e^{2K L^{1/5}} ≤ (x/C_X)^{1/4} ≤ X^{1/4}`
   have hquarter : 17 * Real.exp (2 * K * Real.log x ^ (1 / 5 : ℝ)) ≤ X ^ (1 / 4 : ℝ) := by
     calc 17 * Real.exp (2 * K * Real.log x ^ (1 / 5 : ℝ))
@@ -138,7 +137,7 @@ theorem eventually_exp_lt_two_pow (K : ℕ) :
     rw [← Real.rpow_add (by linarith)]
     norm_num
   have h21' := Real.one_le_rpow hL (by norm_num : (0 : ℝ) ≤ 21 / 100)
-  have h15 : 0 ≤ L ^ (1 / 5 : ℝ) := by positivity
+  
   have hle : 2 * K * padCount x * L ^ (1 / 5 : ℝ) ≤ L / 2 := by
     calc 2 * K * padCount x * L ^ (1 / 5 : ℝ) ≤ 2 * K * L ^ (1 / 100 : ℝ) * L ^ (1 / 5 : ℝ) := by
           gcongr

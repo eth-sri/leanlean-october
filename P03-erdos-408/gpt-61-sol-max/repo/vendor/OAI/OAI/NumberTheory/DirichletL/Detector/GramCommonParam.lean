@@ -13,17 +13,17 @@ open CenteredMomentCorrelation
 variable {A : Type*} [CommRing A] [IsDomain A]
 abbrev ResidueQ (a : A) := A⧸Ideal.span {a}
 
-def condition (C n₁ n₂ k : A) (p : ResidueQ (C*n₁) × ResidueQ (C*n₂)) : Prop :=
+def condition (C n₁ n₂ k : A) (p : ResidueQ (C*n₁) × ResidueQ (C*n₂))  :=
   scaledResidue (C*n₁) (C*n₂) ((C*n₁)*(C*n₂)) rfl p.1-
     scaledResidue (C*n₂) (C*n₁) ((C*n₁)*(C*n₂)) (mul_comm _ _) p.2=
     Ideal.Quotient.mk (Ideal.span {(C*n₁)*(C*n₂)}) (C*k)
 
 abbrev Solutions (C n₁ n₂ k : A) := {p : ResidueQ (C*n₁) × ResidueQ (C*n₂) // condition C n₁ n₂ k p}
 
-def leftParam (C n₁ b k : A) (t : ResidueQ C) : ResidueQ (C*n₁) :=
+def leftParam (C n₁ b k : A) (t : ResidueQ C)  :=
   Ideal.Quotient.mk _ (b*k)+scaledResidue C n₁ (C*n₁) rfl t
 
-def rightParam (C n₂ a k : A) (t : ResidueQ C) : ResidueQ (C*n₂) :=
+def rightParam (C n₂ a k : A) (t : ResidueQ C)  :=
   Ideal.Quotient.mk _ (-a*k)+scaledResidue C n₂ (C*n₂) rfl t
 
 omit [IsDomain A] in
@@ -37,7 +37,7 @@ omit [IsDomain A] in
   simp only [rightParam,scaledResidue_mk,map_add]
 
 omit [IsDomain A] in
-lemma param_condition (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (t : ResidueQ C) :
+lemma param_condition (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1)  t  :
     condition C n₁ n₂ k (leftParam C n₁ b k t,rightParam C n₂ a k t) := by
   obtain ⟨t,rfl⟩ := Ideal.Quotient.mk_surjective t
   rw [leftParam_mk,rightParam_mk]
@@ -50,14 +50,19 @@ lemma param_condition (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (t : Resid
 def param (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (t : ResidueQ C) : Solutions C n₁ n₂ k :=
   ⟨(leftParam C n₁ b k t,rightParam C n₂ a k t),param_condition C n₁ n₂ a b k hab t⟩
 
-lemma param_injective (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (hn₁ : n₁≠0) :
+section
+variable (C n₁ n₂ a b k x y : A) (hC : C≠0) (hab : a*n₁+b*n₂=1)
+
+
+lemma param_injective     (hn₁ : n₁≠0) :
     Function.Injective (param C n₁ n₂ a b k hab) := by
   intro t u he
   have hl : leftParam C n₁ b k t=leftParam C n₁ b k u := congrArg (fun p=>p.val.1) he
   apply scaledResidue_injective C n₁ (C*n₁) rfl hn₁
   exact add_left_cancel hl
 
-lemma condition_divided (C n₁ n₂ k x y : A) (hC : C≠0)
+include hC in
+lemma condition_divided    
     (hc : condition C n₁ n₂ k (Ideal.Quotient.mk _ x,Ideal.Quotient.mk _ y)) :
     C*n₁*n₂∣n₂*x-n₁*y-k := by
   unfold condition at hc
@@ -65,7 +70,8 @@ lemma condition_divided (C n₁ n₂ k x y : A) (hC : C≠0)
   have hh : C*(C*n₁*n₂)∣C*(n₂*x-n₁*y-k) := by convert hc using 1 <;> ring
   exact (mul_dvd_mul_iff_left hC).mp hh
 
-lemma param_surjective (C n₁ n₂ a b k : A) (hC : C≠0) (hab : a*n₁+b*n₂=1) :
+include hC in
+lemma param_surjective       :
     Function.Surjective (param C n₁ n₂ a b k hab) := by
   intro p
   obtain ⟨x,hx⟩ := Ideal.Quotient.mk_surjective p.val.1
@@ -96,14 +102,14 @@ lemma param_surjective (C n₁ n₂ a b k : A) (hC : C≠0) (hab : a*n₁+b*n₂
     rw [he]
     exact dvd_mul_of_dvd_right hh _
 
+end
+
 def solutionEquiv (C n₁ n₂ a b k : A) (hC : C≠0) (hn₁ : n₁≠0)
-    (hab : a*n₁+b*n₂=1) : ResidueQ C≃Solutions C n₁ n₂ k :=
+    (hab : a*n₁+b*n₂=1)  :=
   Equiv.ofBijective (param C n₁ n₂ a b k hab)
     ⟨param_injective C n₁ n₂ a b k hab hn₁,param_surjective C n₁ n₂ a b k hC hab⟩
 
-@[simp] lemma solutionEquiv_val (C n₁ n₂ a b k : A) (hC : C≠0) (hn₁ : n₁≠0)
-    (hab : a*n₁+b*n₂=1) (t : ResidueQ C) :
-    (solutionEquiv C n₁ n₂ a b k hC hn₁ hab t).val=(leftParam C n₁ b k t,rightParam C n₂ a k t) := rfl
+
 
 end SevenEighths.ProbeGramCommon
 end

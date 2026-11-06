@@ -12,16 +12,16 @@ namespace SevenEighths.CenteredMomentHeckeHeight
 open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentHeckeTwist
 open CenteredMomentLattice CenteredMomentMask CenteredMomentTwist CenteredMomentHeight
 open QuadraticInitialBound EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
 
-def rowTwistedSum (η : Character) (m A₀ z : O) (W : ℝ → ℂ) (t X : ℝ) : ℂ :=
-  ∑' I : Ideal O, (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*(A₀*z)) I)*
+
+def rowTwistedSum (η : Character) (m A₀ z : ActualEisensteinCubic.O) (W : ℝ → ℂ) (t X : ℝ)  :=
+  ∑' I : Ideal ActualEisensteinCubic.O, (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*(A₀*z)) I)*
     (Ideal.absNorm I:ℂ)^(Complex.I*t)*W ((Ideal.absNorm I:ℝ)/X)
 
-theorem rowTwistedSum_eq (η χ : Character) (m A₀ z : O)
+theorem rowTwistedSum_eq  η χ   m A₀ z 
     (hrow : ∀ n, elementCoeff χ n=CanonicalRowCompletion.rowTwist
       (HeckeRowClosure.elementHom η) m 1 (A₀*z) n)
-    (W : ℝ → ℂ) (t X : ℝ) :
+     W   t X  :
     rowTwistedSum η m A₀ z W t X=twistedIdealSum χ W t X := by
   apply tsum_congr
   intro I

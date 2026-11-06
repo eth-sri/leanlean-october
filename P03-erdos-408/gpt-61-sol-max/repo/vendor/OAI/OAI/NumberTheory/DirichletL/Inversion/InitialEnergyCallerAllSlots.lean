@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerMass
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
@@ -48,7 +48,7 @@ theorem rowMode_sum_allocations
       intro J hJ
       exact Finset.sum_comm
 
-theorem all_slots_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
+theorem all_slots_bound  N  U π (hU:0≤U)(hπ:0<π) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
       (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -126,6 +126,6 @@ theorem all_slots_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
 
 end SevenEighths.InverseInitialEnergyCallerAllSlots
 
-end
+
 
 end OAI

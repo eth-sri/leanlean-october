@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Detector.PrincipalNormalized
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators Topology ContDiff
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
@@ -59,6 +59,6 @@ theorem actual_ray_normalizer_inverse {K : ℕ}
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

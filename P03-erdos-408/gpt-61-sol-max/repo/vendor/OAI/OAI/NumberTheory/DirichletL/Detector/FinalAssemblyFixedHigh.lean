@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyMomentInput
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.ProbeFinalAssembly
@@ -17,7 +17,7 @@ open ProbeMellinBoundary
 
 theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
     (D : HighData (HeckeZeroSupremum.beta-7/8)) (F : SourceData D)
-    (counts : CountParameters F.modulus ⊤ D.t) (τ : ℝ)
+    (counts : CountParameters F.modulus ⊤ D.t)  τ 
     (hτ : 0<τ) (hτd : τ<(1/200:ℝ)/2) (hτcost : 4*τ<(1/200:ℝ)*D.cost)
     (hτt : τ<D.t) (hτ2 : 2*τ≤D.t) (hτeps : τ*(2+4*D.eps)<D.t) :
     ∃C : ℝ,0<C ∧ ∀η : Character,∃Ct : ℝ,0<Ct ∧ ∀ᶠZ : ℝ in atTop,
@@ -97,6 +97,6 @@ theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
 
 end SevenEighths.ProbeFinalAssembly
 
-end
+
 
 end OAI

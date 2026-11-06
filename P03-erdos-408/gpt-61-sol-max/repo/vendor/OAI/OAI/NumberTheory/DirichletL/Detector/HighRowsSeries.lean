@@ -16,7 +16,7 @@ local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
 
-def rowMarkedTerm (eta a X W V rho : ℂ) (j e l k m : ℕ) : ℂ :=
+def rowMarkedTerm (eta a X W V rho : ℂ) (j e l k m : ℕ)  :=
   if e+3*l=0 then 0 else
     rowWeightedScalar (Ideal.absNorm (Ideal.span {p})) eta a
       (primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1)
@@ -37,7 +37,7 @@ theorem rowMarkedTerm_step (eta a X W V rho : ℂ) (hρ : rho^6=1)
   exact rowWeightedScalar_step_two _ _ _ _ _ _ _ _ _ _ _ (primeNorm_ne_zero p hp)
     (localGamma_conjugate_three_sq p hp hg hc) (actualSextic_neg_one_sq _ hg) hρ e l k m
 
-theorem rowMarkedTerm_higher_outer (eta a X W V rho : ℂ) (j e l k m : ℕ) :
+theorem rowMarkedTerm_higher_outer  eta a X W V rho   j e l k m  :
     rowMarkedTerm p hp hg eta a X W V rho j e l (k+2) m=0 := by
   unfold rowMarkedTerm
   split_ifs

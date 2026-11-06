@@ -16,14 +16,14 @@ namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-def lowRankHistoryExpression {F : FixedData} {P : PrimeGroups} {J m : ℕ}
-    (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
-    (pi : Finset (Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B))))) : ℂ :=
+def lowRankHistoryExpression {F } {P } {J m }
+    (A : Model F P J m) (n B ) (rho theta : ℝ)
+    (pi : Finset (Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B)))))  :=
   ∑' H : MemoryHistory A n,
     if H.Valid ∧ H.Truncated B ∧ birthEvent (H.performedFin B) (H.valueFin B) pi then
       H.Weight rho theta else 0
 
-def LowRankMemoryTask : Prop :=
+def LowRankMemoryTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J m n B : ℕ) (A : Model F P J m)
     (rho theta CG CE CA : ℝ), 0 ≤ CG → 0 < CE → CE ≤ CA →
     (∀ s : P.MemoryState (J + F.ell), 0 ≤ P.memoryMass F J n s) →

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FixedRowMask
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
@@ -17,17 +17,17 @@ open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSourceMass
 open CenteredMomentAddedZeroUniform CenteredMomentExceptionalAmplitudePair
 open CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSecondHeightFamily
-local notation "O" => HeckeFamily.O
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 open CenteredMomentCommonExceptionalGates CenteredMomentFiniteProfileExceptional
 variable {wlo whi:ℝ}
 omit [DecidableEq ι] in
-theorem common_admissible (s:Input ι)(p:Profiles wlo whi)(C R Q:Ideal O)(hC:C≠0)(hR:R≠0)
-    (B:actualAllocations s.pools C)(Z width r:ℝ)(hZ:1<Z)(z:O)(hz:z≠0)
+theorem common_admissible (s:Input ι)(p:Profiles wlo whi) C R Q (hC:C≠0)(hR:R≠0)
+     B  Z width r (hZ:1<Z) z (hz:z≠0)
     (hP:∀i,1≤s.P i)(hex:FixedInducingRow s.η Q fixedBadMask 1 z)
-    (hcond:(s.η.modulus.absNorm*(Ideal.span {(fixedBadMask:O)}).absNorm*
-      (Ideal.span {(72:O)}).absNorm*(R.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^width)
+    (hcond:(s.η.modulus.absNorm*(Ideal.span {(fixedBadMask:HeckeFamily.O)}).absNorm*
+      (Ideal.span {(72:HeckeFamily.O)}).absNorm*(R.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^width)
     (hW₁:s.W₁=p.profile 0)(hW₂:s.W₂=p.profile 1)
     (hX₁:Z^r≤s.X₁)(hX₂:Z^r≤s.X₂)(hY₁:Z^r≤s.Y₁)(hY₂:Z^r≤s.Y₂):
     ProfileAdmissible (commonData s C R B) p Q Z width
@@ -46,6 +46,6 @@ theorem common_admissible (s:Input ι)(p:Profiles wlo whi)(C R Q:Ideal O)(hC:C�
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 
-end
+
 
 end OAI

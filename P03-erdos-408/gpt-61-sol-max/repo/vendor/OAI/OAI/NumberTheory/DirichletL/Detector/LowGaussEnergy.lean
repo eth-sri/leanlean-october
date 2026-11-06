@@ -12,18 +12,18 @@ open scoped Classical SchwartzMap
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def lowGaussColumn (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
-    (σ : RayRing) (v : ℝ) (s : {I : Id // Supported I}) : ℂ :=
+    (σ : RayRing) (v : ℝ) (s : {I : Id // Supported I})  :=
   if physicalIdealRay s=σ then
     (Y:ℂ)⁻¹*W1 ((Ideal.absNorm s.val:ℝ)/Y)*lowArithmeticCoefficient C s*
       (((Ideal.absNorm s.val:ℝ)/Y:ℝ):ℂ)^(-(1/2:ℂ)+(v:ℂ)*Complex.I)
   else 0
 
-lemma lowGaussColumn_row (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
-    (σ : RayRing) (v : ℝ) (s : {I : Id // Supported I}) (m : O) :
+lemma lowGaussColumn_row  C   W1   Y 
+     σ   v   s   m  :
     (if physicalIdealRay s=σ then lowAdditiveCoefficient C W1 Y s m v else 0)=
       lowGaussColumn C W1 Y σ v s*
         gaussRow (primaryGenerator s.val) ((supported_span_primaryGenerator_iff s.val).mpr s.property) (-m) := by

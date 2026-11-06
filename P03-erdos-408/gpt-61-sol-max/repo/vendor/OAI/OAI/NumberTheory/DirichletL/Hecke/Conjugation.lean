@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.IdealOperations
 public import OAI.NumberTheory.DirichletL.Hecke.Euler
@@ -7,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.Hecke.Euler
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ComplexConjugate
 open Complex
 namespace SevenEighths.HeckeFamily
 
-theorem idealCoeff_inverse_conj (χ : Character) (J : Ideal O) :
+theorem idealCoeff_inverse_conj  χ   J  :
     idealCoeff χ.inverse J=conj (idealCoeff χ J) := by
   let : Finite (O ⧸ χ.modulus) := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
   by_cases hJ : J=0
@@ -23,7 +24,7 @@ theorem idealCoeff_inverse_conj (χ : Character) (J : Ideal O) :
     idealCoeff_span χ.inverse hg,idealCoeff_span χ hg]
   exact (MulChar.star_apply' χ.residue _).symm
 
-theorem idealTerm_inverse_conj (χ : Character) (s : ℂ) (J : Ideal O) :
+theorem idealTerm_inverse_conj  χ   s   J  :
     idealTerm χ.inverse s J=conj (idealTerm χ (conj s) J) := by
   by_cases hJ : J=0
   · subst J
@@ -32,12 +33,9 @@ theorem idealTerm_inverse_conj (χ : Character) (s : ℂ) (J : Ideal O) :
     exact_mod_cast Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
   have hpow := Complex.cpow_conj ((J.absNorm : ℝ) : ℂ) (conj s)
     (by rw [Complex.arg_ofReal_of_nonneg hN.le]; exact Real.pi_ne_zero.symm)
-  simp only [conj_ofReal, conj_conj] at hpow
-  unfold idealTerm
-  rw [idealCoeff_inverse_conj,map_div₀]
-  congr 1
+  simp_all [idealTerm, idealCoeff_inverse_conj]
 
-theorem LFunction_inverse_conj (χ : Character) (hχ : χ.residue≠1) (s : ℂ) :
+theorem LFunction_inverse_conj  χ  (hχ : χ.residue≠1)  s  :
     LFunction χ.inverse s=conj (LFunction χ (conj s)) := by
   have hi : χ.inverse.residue≠1 := by
     change χ.residue⁻¹≠1
@@ -57,6 +55,6 @@ theorem LFunction_inverse_conj (χ : Character) (hχ : χ.residue≠1) (s : ℂ)
 
 end SevenEighths.HeckeFamily
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialDetectorSource
 public import OAI.NumberTheory.DirichletL.Descent.ClippedEnergy
@@ -7,15 +8,15 @@ public import OAI.NumberTheory.DirichletL.Descent.ClippedEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
 open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge InverseInitialRawDictionary
 open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge JointLogSeparation
 
-private theorem child_cover (Wref : ℝ→ℂ) (b D : ℝ) (hD : 0<D)
-    (hWref : ∀x,Wref x≠0 → x≤b) (s : ℝ) :
+private theorem child_cover  Wref   b D  (hD : 0<D)
+    (hWref : ∀x,Wref x≠0 → x≤b)  s  :
     ∀I : Ideal O,I≠0 → childLogTest Wref s ((I.absNorm:ℝ)/D)≠0 →
       I∈ConcretePrimeRowBridge.idealsUpTo ⌈D*b⌉₊ := by
   intro I hI hi
@@ -23,8 +24,8 @@ private theorem child_cover (Wref : ℝ→ℂ) (b D : ℝ) (hD : 0<D)
   intro hz
   exact hi (by simp [childLogTest,hz])
 
-theorem polynomial_mode_integrable (χ : Character) (inv : Bool)
-    (g : 𝓢(ℝ,ℂ)) (Wref : ℝ→ℂ) (b c θ D : ℝ) (hD : 0<D)
+theorem polynomial_mode_integrable  χ   inv 
+     g   Wref  (b c θ D : ℝ) (hD : 0<D)
     (hWref : ∀x,Wref x≠0 → x≤b) :
     Integrable (fun v:ℝ=>density g (Real.log c) v*
       polynomial χ inv (childLogTest Wref (θ+v)) D 0 0) := by
@@ -42,10 +43,10 @@ theorem polynomial_mode_integrable (χ : Character) (inv : Bool)
   simp only [density,childLogTest,logPhase_add_frequency,logPhase_add]
   ring
 
-theorem polynomial_clipped_fourier (χ : Character) (inv : Bool)
-    (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
-    (hs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (Wref : ℝ→ℂ) (b c θ D : ℝ) (hc : 0<c) (hD : 0<D)
+theorem polynomial_clipped_fourier  χ   inv 
+     W   lo hi   hlo 
+     hs   hW 
+     Wref  (b c θ D : ℝ) (hc : 0<c) (hD : 0<D)
     (hWref : ∀x,Wref x≠0 → x≤b)
     (hagree : ∀y,0<y → Wref y*W (c*y)=W (c*y)) :
     polynomial χ inv (clippedTest W c θ) D 0 0=
@@ -79,8 +80,7 @@ theorem polynomial_clipped_fourier (χ : Character) (inv : Bool)
   apply Finset.sum_congr rfl
   intro I hI
   by_cases hz : I=0
-  · subst I
-    simp only [coefficient_zero,zero_mul,mul_zero,integral_zero]
+  · bound
   have hIp : 0<(I.absNorm:ℝ)/D:=div_pos (by exact_mod_cast (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hz))) hD
   rw [clipped_test_fourier W lo hi hlo hs hW Wref c θ _ hc hIp (hagree _ hIp),
     ←integral_const_mul,←integral_const_mul]
@@ -90,6 +90,6 @@ theorem polynomial_clipped_fourier (χ : Character) (inv : Bool)
 
 end SevenEighths.DetectorDictionaryInverseRawFourier
 
-end
+
 
 end OAI

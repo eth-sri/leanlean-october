@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.Smooth
 
@@ -24,18 +25,18 @@ theorem bounded_row_cauchy {κ : Type*} (rows : Finset κ)
         (mul_le_of_le_one_left (norm_nonneg _) (hw k hk)) (norm_nonneg _)
     _ ≤ _ := Real.sum_mul_le_sqrt_mul_sqrt rows _ _
 
-def leftColumn {α : Type*} (S : Finset α) (c : α → ℂ)
-    (V : ℝ → ℂ) (u : α → ℝ) (t : ℝ) : ℂ :=
+def leftColumn {α } (S : Finset α) (c : α → ℂ)
+    (V : ℝ → ℂ) (u : α → ℝ) (t : ℝ)  :=
   ∑ i ∈ S, c i * columnPhase V (u i) t
 
-def rightColumn {β : Type*} (T : Finset β) (d : β → ℂ)
-    (V : ℝ → ℂ) (v : β → ℝ) (t : ℝ) : ℂ :=
+def rightColumn {β } (T : Finset β) (d : β → ℂ)
+    (V : ℝ → ℂ) (v : β → ℝ) (t : ℝ)  :=
   ∑ j ∈ T, star (d j) * columnPhase V (v j) t
 
 lemma paired_columns_integrable {α β : Type*}
-    (b : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ) (ρ x : ℝ)
+    (b : 𝓢(ℝ, ℂ))  V   ρ x 
     (S : Finset α) (T : Finset β) (c : α → ℂ) (d : β → ℂ)
-    (u : α → ℝ) (v : β → ℝ) (z : ℂ) :
+    (u : α → ℝ) (v : β → ℝ)  z  :
     Integrable (fun t : ℝ => z * (rowPhase V ρ x t *
       leftColumn S c (V 2) u t * rightColumn T d (V 3) v t * b t)) := by
   have hi := integrable_finsetSum S (fun i _ => integrable_finsetSum T
@@ -44,11 +45,7 @@ lemma paired_columns_integrable {α β : Type*}
   funext t
   simp only [leftColumn, rightColumn, Finset.mul_sum, Finset.sum_mul, separatedKernel]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro i hi
-  apply Finset.sum_congr rfl
-  intro j hj
-  ring
+  grind
 
 theorem common_density_cauchy {κ α β : Type*}
     (b : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
@@ -57,7 +54,7 @@ theorem common_density_cauchy {κ α β : Type*}
     (ρ x : κ → ℝ) (η : κ → ℂ)
     (hη : ∀ k ∈ rows, ‖η k‖ ≤ 1)
     (hV₀ : ∀ k ∈ rows, ‖V 0 (ρ k)‖ ≤ 1) (hV₁ : ∀ k ∈ rows, ‖V 1 (x k)‖ ≤ 1)
-    (E : ℝ) (_hE : 0 ≤ E) (J : ℕ)
+     E  (_hE : 0 ≤ E)  J 
     (henergy : ∀ t : ℝ,
       Real.sqrt (∑ k ∈ rows, ‖leftColumn S (c k) (V 2) u t‖ ^ 2) *
         Real.sqrt (∑ k ∈ rows, ‖rightColumn T (d k) (V 3) v t‖ ^ 2) ≤ E * (1 + ‖t‖) ^ J) :
@@ -100,9 +97,9 @@ theorem common_density_cauchy {κ α β : Type*}
       norm_integral_le_of_norm_le (hi.const_mul E) (Filter.Eventually.of_forall hpoint)
     _ = _ := integral_const_mul _ _
 
-theorem whole_kernel_row_estimate (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
+theorem whole_kernel_row_estimate  W   V 
     (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
-    (hV : ∀ i y, V i y ≠ 0 → |y| ≤ M i) (A J : ℕ) :
+    (hV : ∀ i y, V i y ≠ 0 → |y| ≤ M i)  A J  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ R : ℝ, 0 < R →
       ∀ {κ α β : Type*} (rows : Finset κ) (S : Finset α) (T : Finset β)
         (c : κ → α → ℂ) (d : κ → β → ℂ) (u : α → ℝ) (v : β → ℝ)

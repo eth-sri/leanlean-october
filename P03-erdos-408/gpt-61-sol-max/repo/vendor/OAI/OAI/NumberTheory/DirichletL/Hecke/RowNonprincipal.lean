@@ -8,15 +8,18 @@ public import OAI.NumberTheory.DirichletL.Hecke.ExceptionalRows
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeRowNonprincipal
 open HeckeFamily CanonicalRowCompletion CenteredMomentCanonical
 open ConcretePrimeRowBridge hiding O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-theorem nonprincipal_of_local_factor (χ : Character)
-    (Q J P : Ideal O) [P.IsMaximal]
+section
+variable (η χ : Character) (Q J : Ideal O) (m f z : O) (I : Ideal O) (hI : CanonicalQuadraticSieve.Supported I) (hm : m ≠ 0) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m) (u : Oˣ) (a b : ℕ) (r : O) (hr : CanonicalQuadraticSieve.Supported (Ideal.span {r})) (hpr : λ₀ ^ 2 ∣ r - 1) (hx : f ^ 4 * z = (u : O) * λ₀ ^ a * (2 : O) ^ b * r) (hχ : ∀ n, elementCoeff χ n = rowTwist (HeckeRowClosure.elementHom η) m f z n) (hprincipal : χ.residue = 1) (P : Ideal O)
+
+theorem nonprincipal_of_local_factor  
+      [P.IsMaximal]
     (hQ : Q ≤ Ideal.span {λ₀ ^ 2})
     (φ : O →* ℂ) (hφ : CanonicalCoefficientClass.FactorsModulo Q φ)
     (hJ : CanonicalQuadraticSieve.Supported J)
@@ -58,11 +61,12 @@ theorem nonprincipal_of_local_factor (χ : Character)
     rw [hχ, MulChar.one_apply hunit]
   exact hu (hv.symm.trans hv1)
 
-theorem actual_row_nonprincipal (η χ : Character) (m f z : O)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
-    (u : Oˣ) (a b : ℕ) (r : O)
-    (hr : CanonicalQuadraticSieve.Supported (Ideal.span {r}))
-    (hpr : λ₀ ^ 2 ∣ r - 1) (hx : f ^ 4 * z = (u : O) * λ₀ ^ a * (2 : O) ^ b * r)
+include hmLam hm2 hr hpr hx in
+theorem actual_row_nonprincipal    
+       
+         
+     
+       
     (P J : Ideal O) [P.IsMaximal]
     (hg : λ₀ ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
     (hJ : CanonicalQuadraticSieve.Supported J)
@@ -91,8 +95,9 @@ theorem actual_row_nonprincipal (η χ : Character) (m f z : O)
 
 open UniqueFactorizationMonoid in
 
-theorem extract_prime_power (I : Ideal O) (hI : CanonicalQuadraticSieve.Supported I)
-    (P : Ideal O) (hP : P ∈ normalizedFactors I) :
+include hI in
+theorem extract_prime_power    
+      (hP : P ∈ normalizedFactors I) :
     ∃ J : Ideal O, I = P ^ (normalizedFactors I).count P * J ∧
       CanonicalQuadraticSieve.Supported J ∧ IsCoprime J P := by
   let S := (normalizedFactors I).toFinset
@@ -117,14 +122,15 @@ theorem extract_prime_power (I : Ideal O) (hI : CanonicalQuadraticSieve.Supporte
 
 open UniqueFactorizationMonoid in
 
-theorem principal_row_multiplicity (η χ : Character) (m f z : O)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
-    (u : Oˣ) (a b : ℕ) (r : O)
-    (hr : CanonicalQuadraticSieve.Supported (Ideal.span {r}))
-    (hpr : λ₀ ^ 2 ∣ r - 1) (hx : f ^ 4 * z = (u : O) * λ₀ ^ a * (2 : O) ^ b * r)
-    (hχ : ∀ n, elementCoeff χ n = rowTwist (HeckeRowClosure.elementHom η) m f z n)
-    (hprincipal : χ.residue = 1)
-    (P : Ideal O) (hP : P ∈ normalizedFactors (Ideal.span {r}))
+include hmLam hm2 hr hpr hx hχ hprincipal in
+theorem principal_row_multiplicity    
+       
+         
+     
+       
+     
+     
+      (hP : P ∈ normalizedFactors (Ideal.span {r}))
     (hcop : IsCoprime (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)}) P) :
     6 ∣ (normalizedFactors (Ideal.span {r})).count P := by
   by_contra hc6
@@ -137,13 +143,14 @@ theorem principal_row_multiplicity (η χ : Character) (m f z : O)
 
 open UniqueFactorizationMonoid in
 
-theorem principal_row_fixed_support (η χ : Character) (m f z : O)
-    (hm : m ≠ 0) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
-    (u : Oˣ) (a b : ℕ) (r : O)
-    (hr : CanonicalQuadraticSieve.Supported (Ideal.span {r}))
-    (hpr : λ₀ ^ 2 ∣ r - 1) (hx : f ^ 4 * z = (u : O) * λ₀ ^ a * (2 : O) ^ b * r)
-    (hχ : ∀ n, elementCoeff χ n = rowTwist (HeckeRowClosure.elementHom η) m f z n)
-    (hprincipal : χ.residue = 1)
+include hm hmLam hm2 hr hpr hx hχ hprincipal in
+theorem principal_row_fixed_support    
+         
+         
+     
+       
+     
+     
     (hfree : ∀ P ∈ normalizedFactors (Ideal.span {r}),
       (normalizedFactors (Ideal.span {r})).count P < 6) :
     r ∈ HeckeExceptionalRows.rows
@@ -169,8 +176,10 @@ theorem principal_row_fixed_support (η χ : Character) (m f z : O)
   have hd := principal_row_multiplicity η χ m f z hmLam hm2 u a b r hr hpr hx hχ hprincipal P hP hcop
   exact Nat.not_dvd_of_pos_of_lt (Multiset.count_pos.mpr hP) (hfree P hP) hd
 
+end
+
 end SevenEighths.HeckeRowNonprincipal
 
-end
+
 
 end OAI

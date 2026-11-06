@@ -16,14 +16,18 @@ namespace Erdos408.TwoSided.TupleHigh
 
 open MeasureTheory
 
+section
+variable (s : Finset ℕ) (cs : ℕ → ℂ) (N : ℕ) (c : ℕ → ℂ)
+
+
 /-- `t ↦ ∑_{p ∈ s} c_p p^{it}` is measurable (`0^{it}` included). -/
-theorem measurable_dirichletSum (s : Finset ℕ) (c : ℕ → ℂ) :
+theorem measurable_dirichletSum     :
     Measurable fun t : ℝ => ∑ p ∈ s, c p * (p : ℂ) ^ ((t : ℂ) * Complex.I) :=
   Finset.measurable_sum _ fun _ _ =>
     measurable_const.mul (measurable_const.pow (Complex.measurable_ofReal.mul_const _))
 
 /-- `t ↦ ∑_{n ∈ [1, N]} c_n n^{it}` is continuous. -/
-theorem continuous_dirichletSum_Icc (N : ℕ) (c : ℕ → ℂ) :
+theorem continuous_dirichletSum_Icc     :
     Continuous fun t : ℝ => ∑ n ∈ Finset.Icc 1 N, c n * (n : ℂ) ^ ((t : ℂ) * Complex.I) := by
   refine continuous_finsetSum _ fun n hn => continuous_const.mul ?_
   have hn0 : n ≠ 0 := by rw [Finset.mem_Icc] at hn; omega
@@ -32,7 +36,7 @@ theorem continuous_dirichletSum_Icc (N : ℕ) (c : ℕ → ℂ) :
 
 /-- **E7 (ordinary times).** On `{t ∈ (a, b] : |P_s(t)| ≤ θ}`,
 `∫ |P_s Q|² ≤ θ² (b - a + 8N(1 + log N)) ∑ |q_n|²` for `Q(t) = ∑_{n ≤ N} q_n n^{it}`. -/
-theorem setIntegral_ordinary_le (s : Finset ℕ) (cs : ℕ → ℂ) (N : ℕ) (cq : ℕ → ℂ)
+theorem setIntegral_ordinary_le       (cq : ℕ → ℂ)
     {a b θ : ℝ} (hab : a ≤ b) :
     ∫ t in {t ∈ Set.Ioc a b | ‖∑ p ∈ s, cs p * (p : ℂ) ^ ((t : ℂ) * Complex.I)‖ ≤ θ},
         ‖(∑ p ∈ s, cs p * (p : ℂ) ^ ((t : ℂ) * Complex.I)) *
@@ -64,5 +68,7 @@ theorem setIntegral_ordinary_le (s : Finset ℕ) (cs : ℕ → ℂ) (N : ℕ) (c
     rw [integral_const_mul, intervalIntegral.integral_of_le hab]
   exact h₁.trans (h₂.trans (h₃.trans_le (mul_le_mul_of_nonneg_left
     (OneSided.integral_norm_dirichlet_sq_le N cq a b) (sq_nonneg θ))))
+
+end
 
 end Erdos408.TwoSided.TupleHigh

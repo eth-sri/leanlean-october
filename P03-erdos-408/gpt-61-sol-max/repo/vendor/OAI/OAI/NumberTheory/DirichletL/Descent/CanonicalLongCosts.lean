@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalCompleteState
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongGeometry
@@ -7,17 +8,21 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongGeometry
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
 
-theorem actual_long_coefficient_cost (Z ell L epsilon Ccoef:ℝ)
-    (hZ:1≤Z)(hell:ell≤L)(heps:0≤epsilon):
+section
+variable (Z ell N V L epsilon Ccoef C A loss : ℝ) (hZ : 1≤Z) (hell : ell≤L) (heps : 0≤epsilon)
+
+include hZ hell heps in
+theorem actual_long_coefficient_cost  
+       :
     (Ccoef*(Real.exp 1*Z^ell)^epsilon)^2≤
       Ccoef^2*Real.exp (2*epsilon)*Z^(2*L*epsilon) := by
   have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hex:(Real.exp 1)^epsilon=Real.exp epsilon:=by rw [Real.rpow_def_of_pos (Real.exp_pos _),Real.log_exp,one_mul]
+  have hex:(Real.exp 1)^epsilon=Real.exp epsilon:=by simp_all
   have hex2:(Real.exp epsilon)^2=Real.exp (2*epsilon):=by rw [←Real.exp_nat_mul];norm_num
   have hid:(Ccoef*(Real.exp 1*Z^ell)^epsilon)^2=
       Ccoef^2*Real.exp (2*epsilon)*Z^(2*ell*epsilon) := by
@@ -30,8 +35,9 @@ theorem actual_long_coefficient_cost (Z ell L epsilon Ccoef:ℝ)
   apply Real.rpow_le_rpow_of_exponent_le hZ
   nlinarith
 
-theorem actual_long_uniform_parent_cost (Z ell N V L epsilon Ccoef C A loss:ℝ)
-    (hZ:1≤Z)(hell:ell≤L)(heps:0≤epsilon)(hC:0≤C)(hA:0≤A):
+include hZ hell heps in
+theorem actual_long_uniform_parent_cost  
+       (hC:0≤C)(hA:0≤A):
     C*(Ccoef*(Real.exp 1*Z^ell)^epsilon)^2*(1+A)*Z^((N-3*ell)+3*ell+V+loss)≤
       (C*Ccoef^2*Real.exp (2*epsilon))*(1+A)*Z^(N+V+loss+2*L*epsilon) := by
   have hz:0<Z:=zero_lt_one.trans_le hZ
@@ -47,8 +53,10 @@ theorem actual_long_uniform_parent_cost (Z ell N V L epsilon Ccoef C A loss:ℝ)
         (Z^(2*L*epsilon)*Z^((N-3*ell)+3*ell+V+loss)):=by ring
     _=_:=by rw [hpow]
 
+end
+
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

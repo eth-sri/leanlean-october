@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Moments.Basic
@@ -16,8 +17,11 @@ namespace SevenEighths.CenteredMomentLattice
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 open QuadraticInitialBound
 
-theorem radial_zero_mode_error (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t)
-    (A : O → ℂ) (B : ℝ) (hB : 0 ≤ B) (hA : ∀ h, ‖A h‖ ≤ B) :
+section
+variable (W : 𝓢(ℝ, ℂ))
+
+theorem radial_zero_mode_error   (t : ℝ) (ht : 0 < t)
+    (A : O → ℂ)  B  (hB : 0 ≤ B) (hA : ∀ h, ‖A h‖ ≤ B) :
     ‖t • (∑' h : O, A h * paperRadialFourier W (t * ‖eisEmbedding h‖ ^ 2)) -
       t • (A 0 * paperRadialFourier W 0)‖ ≤ B * pvControl W := by
   let F : O → ℂ := fun h => A h * paperRadialFourier W (t * ‖eisEmbedding h‖ ^ 2)
@@ -61,7 +65,7 @@ theorem radial_zero_mode_error (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t)
         ‖paperRadialFourier W (t * ‖eisEmbedding h.val‖ ^ 2)‖) := by ring
     _ ≤ B * pvControl W := mul_le_mul_of_nonneg_left (pv_lattice_bound W t ht) hB
 
-theorem periodic_lattice_volume_error (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X)
+theorem periodic_lattice_volume_error   (X : ℝ) (hX : 0 < X)
     (c : O) (hc : c ≠ 0) (P : O ⧸ Ideal.span {c} → ℂ) :
     letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
     letI : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
@@ -81,10 +85,7 @@ theorem periodic_lattice_volume_error (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X
   have hB : 0 ≤ B := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
   have hA (h : O) : ‖A h‖ ≤ B := by
     apply (norm_sum_le _ _).trans
-    dsimp only [B]
-    apply Finset.sum_le_sum
-    intro r _
-    rw [norm_mul, ψ.norm_apply, mul_one]
+    aesop
   have hA0 : A 0 = ∑ r : O ⧸ Ideal.span {c}, P r := by
     simp only [A, map_zero, zero_mul, AddChar.map_zero_eq_one, mul_one]
   have hnorm : 0 < ‖eisEmbedding c‖ ^ 2 := sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hc))
@@ -94,25 +95,27 @@ theorem periodic_lattice_volume_error (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X
   rw [hA0] at h
   simpa only [A, B, ψ, div_mul_eq_mul_div] using h
 
-theorem logPhase_eq_normPower (t x : ℝ) (hx : 0 < x) :
+end
+
+theorem logPhase_eq_normPower  t x  (hx : 0 < x) :
     FourierBridge.logPhase (t / (2 * Real.pi)) (Real.log x) =
       (x : ℂ) ^ (Complex.I * t) := by
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (ne_of_gt hx))]
   unfold FourierBridge.logPhase
   rw [← Complex.ofReal_log hx.le]
   congr 1
-  have hp : Real.pi ≠ 0 := ne_of_gt Real.pi_pos
+  
   push_cast
   field_simp
 
-def normPowerProfile (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
+def normPowerProfile (W : ℝ → ℂ) (a b ) (ha : 0 < a)
     (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
-    (t : ℝ) : 𝓢(ℝ, ℂ) :=
+    (t : ℝ)  :=
   CompletedHeight.uniformTwistedSchwartz W a b ha hs hW (t / (2 * Real.pi))
 
-theorem normPowerProfile_apply (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
-    (t x : ℝ) :
+theorem normPowerProfile_apply  W   a b   ha 
+     hs   hW 
+     t x  :
     normPowerProfile W a b ha hs hW t x = (x : ℂ) ^ (Complex.I * t) * W x := by
   rw [normPowerProfile, CompletedHeight.uniformTwistedSchwartz_apply]
   unfold CompletedHeight.normTwistedSource

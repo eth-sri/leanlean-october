@@ -7,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
-lemma Xi_apply (C : CalibrationData) (a : O) :
+
+lemma Xi_apply (C : CalibrationData)  a  :
     C.Xi a = C.residueMonoid a * idealRowHom C.generator (Ideal.span {a}) := rfl
 
-theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMaximal)
-    (A s : O) (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : O)
+theorem calibration_coefficient_cancel  S   hS 
+     A s   hA  (hs : Supported (Ideal.span {s}))
+    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s))  H 
     (hH : IsCoprime (calibrationForSet S hS).generator H) :
     let C := calibrationForSet S hS
     actualCongruenceCoefficient C A s (supportedElement_ne_zero A hA) H *
@@ -62,6 +62,6 @@ theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P
   field_simp
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

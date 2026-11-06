@@ -20,7 +20,7 @@ normalized bilinear square is bounded by a fixed multiple of
 L^(2C)*(1/V+1/r+r*log(2r)/(U*V)+log(2r)/U). Superlogarithmic U,V absorb
 the first and last terms, and C' gives any saving in the other terms.
 The upper product bound controls log(2r) by O(log x). -/
-def MinorArcTask : Prop :=
+def MinorArcTask  :=
   (Erdos821.Blueprint.Analytic.integer_bilinear_statement) →
   ∀ (C δ A : ℝ), 0 < C → 0 < δ → 0 < A →
     ∃ Carc K : ℝ, 0 < Carc ∧ 0 < K ∧

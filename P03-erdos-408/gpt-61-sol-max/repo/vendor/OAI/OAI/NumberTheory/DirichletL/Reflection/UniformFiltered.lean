@@ -10,18 +10,22 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 universe u v
 variable {Ω : Type*} [MeasurableSpace Ω] {N a c : Eis} {mode : Bool}
 
-theorem filtered_actual_weighted_reflected_energy_type_uniform (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+
+theorem filtered_actual_weighted_reflected_energy_type_uniform     :
     ∃ C : ℝ, 0 < C ∧ ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (X Y B L : ℝ), 1 ≤ X → 1 ≤ Y → 1 ≤ B → 1 ≤ L →
     ∀ (F : PrimeFamily φ) (jF : φ → ℕ)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
       (hc : c ≠ 0), (9:Eis)*c ∣ N →
-      (if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) → IsCoprime a c →
+      (if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) → IsCoprime a c →
       Pairwise (Function.onFun IsCoprime F.ideal) →
       (∀ f, IsCoprime (Ideal.span {N}) (F.ideal f)) →
       (∀ f, ringChar (Eis ⧸ F.ideal f) ≠ 2) → (∀ f, jF f < 6) →
@@ -72,12 +76,12 @@ theorem filtered_actual_weighted_reflected_energy_type_uniform (ε : ℝ) (hε :
       exact he X Y B L hX hY hB hL F jF e s hc hN hbase hac hF hNF hcharF hj
         G0 D0 u m rows nset bset Pset S r aw w hrows hrowcop hproducts hScop hSN hSchar hn hb hP hr haw hw
 
-theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε : 0 < ε) :
+theorem integrated_filtered_actual_reflected_energy_type_uniform     :
     ∃ C : ℝ, 0 < C ∧ ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (X Y B L : ℝ), 1 ≤ X → 1 ≤ Y → 1 ≤ B → 1 ≤ L →
     ∀ (F : PrimeFamily φ) (jF : φ → ℕ)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
       (hc : c ≠ 0), (9:Eis)*c ∣ N →
-      (if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) → IsCoprime a c →
+      (if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) → IsCoprime a c →
       Pairwise (Function.onFun IsCoprime F.ideal) →
       (∀ f, IsCoprime (Ideal.span {N}) (F.ideal f)) →
       (∀ f, ringChar (Eis ⧸ F.ideal f) ≠ 2) → (∀ f, jF f < 6) →
@@ -162,6 +166,8 @@ theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε
   simpa only [E,mul_assoc] using hh
 
 end
+
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

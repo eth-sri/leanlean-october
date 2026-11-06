@@ -12,13 +12,13 @@ open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+
 
 def continuedMarkedLocal (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
-    (x w z : ℂ) : ℂ :=
+    (x w z : ℂ)  :=
   let p := primaryGenerator P.val
   let hp := supported_primeGenerator_prime P hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  let : (Ideal.span {p}:Ideal HeckeFamily.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   let hsp : Supported (Ideal.span {p}) := (span_primaryGenerator_of_supported P.val hs).symm ▸ hs
   let hg := (supported_prime_data p hp hsp).1
   rowClosedMarked p hp hg (targetMonoid η p) (actualACube η p)
@@ -26,11 +26,11 @@ def continuedMarkedLocal (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : S
     (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ (unitPart u p hp)))
     (multiplicity p u.val)
 
-theorem idealRowMarkedLocalFactor_eq_source (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z : ℂ) :
+theorem idealRowMarkedLocalFactor_eq_source  η   u   P 
+     hs   x w z  :
     let p := primaryGenerator P.val
     let hp := supported_primeGenerator_prime P hs
-    let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+    let : (Ideal.span {p}:Ideal HeckeFamily.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
     let hsp : Supported (Ideal.span {p}) := (span_primaryGenerator_of_supported P.val hs).symm ▸ hs
     let hg := (supported_prime_data p hp hsp).1
     idealRowMarkedLocalFactor η u.val P x w z=
@@ -42,7 +42,7 @@ theorem idealRowMarkedLocalFactor_eq_source (η : Character) (u : FreeRow) (P : 
   let p := primaryGenerator P.val
   have hp : Prime p := supported_primeGenerator_prime P hs
   have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  let : (Ideal.span {p}:Ideal HeckeFamily.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
   have hg := supported_prime_data p hp hsp
   have hprimary := (primaryGenerator_spec P.val (supported_primaryGenerator_ne_zero P.val hs)).2
@@ -70,14 +70,14 @@ theorem idealRowMarkedLocalFactor_eq_source (η : Character) (u : FreeRow) (P : 
       (actualSextic (Ideal.span {p}) hg.1 (Ideal.Quotient.mk _ (unitPart u p hp))) x w z
       (multiplicity p u.val) e.val l k m hzero
 
-theorem continuedMarkedLocal_eq_initial (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z : ℂ)
+theorem continuedMarkedLocal_eq_initial  η   u   P 
+     hs   x w z 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     continuedMarkedLocal η u P hs x w z=idealRowMarkedLocalFactor η u.val P x w z := by
   let p := primaryGenerator P.val
   have hp : Prime p := supported_primeGenerator_prime P hs
   have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  let : (Ideal.span {p}:Ideal HeckeFamily.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
   have hg := supported_prime_data p hp hsp
   have hρ := actualSextic_unit_six p (unitPart u p hp) hg.1 hg.2 (unitPart_coprime u p hp)

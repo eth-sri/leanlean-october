@@ -11,16 +11,16 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
 open JointLogSeparation FourierBridge MeasureTheory
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
 variable {ι κ : Type*} [DecidableEq ι]
-  (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 theorem actual_first_family_two_energies (hp : ∀ i,p i ≠ 0)
     (source : Finset κ) (F : Finset ι) (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)
     (W₁ W₂ ω₁ ω₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (V : Fin 9 → ℝ → ℂ)
-    (A₁ A₂ C R : κ → ℝ) (K L : ℝ) (d h : κ → Eis) (s : Fin 9 → ℝ)
+    (A₁ A₂ C R : κ → ℝ) (K L : ℝ) (d h : κ → ActualEisensteinCubic.O) (s : Fin 9 → ℝ)
     (hpos : ∀ x∈source,0 < A₁ x ∧ 0 < A₂ x ∧ 0 < C x ∧ 0 < R x ∧ d x ≠ 0 ∧ h x ≠ 0)
     (hs : ∀ i,0 < s i) (density : Frequency × (Fin 9 → ℝ) → ℂ) (hDensity : Integrable density)
     (hsep : ∀ y : Fin 9 → ℝ,
@@ -40,7 +40,7 @@ theorem actual_first_family_two_energies (hp : ∀ i,p i ≠ 0)
       selector x j.2.1*firstCommonWeight p hg (C₁ x) (C₂ x) (h x) j ≠ 0 →
       ω₁ (primeProductNorm p j.2.2.1/s 7) ≠ 0 → ω₂ (primeProductNorm p j.2.2.2/s 8) ≠ 0 →
       ∀ i,V i (firstRelativeLog (firstCommonNorms p (A₁ x) (A₂ x) (C x) (R x) (d x) (h x) j) s i) = 1)
-    (J : ℕ) (B₁ B₂ : ℝ) (hB₁ : 0 ≤ B₁) (hB₂ : 0 ≤ B₂)
+     J   B₁ B₂  (hB₁ : 0 ≤ B₁) (hB₂ : 0 ≤ B₂)
     (hWeighted : Integrable (fun z : Frequency × (Fin 9 → ℝ) =>
       tripleHeight J z.1*coordinateHeight J z.2*‖density z‖))
     (hleft : ∀ z : Frequency × (Fin 9 → ℝ),
@@ -71,7 +71,7 @@ theorem actual_first_family_two_energies (hp : ∀ i,p i ≠ 0)
   rw [hn']
   exact mul_le_mul_of_nonneg_left hb (by have := firstRootScale_pos s hs; positivity)
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

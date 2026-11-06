@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CompactProfileFamily
 
@@ -11,10 +12,10 @@ open scoped Classical ContDiff Topology FourierTransform SchwartzMap
 open Set Filter MeasureTheory
 namespace SevenEighths.PrimeLogProfile
 
-def safeInverse (x : ℝ) : ℂ :=
+def safeInverse (x : ℝ)  :=
   (1-QuadraticInitialBound.sieveCutoff (4*x))/(x : ℂ)
 
-theorem safeInverse_eq (x : ℝ) (hx : 1/2≤|x|) : safeInverse x=(x : ℂ)⁻¹ := by
+theorem safeInverse_eq  x  (hx : 1/2≤|x|) : safeInverse x=(x : ℂ)⁻¹ := by
   have hz : QuadraticInitialBound.sieveBump (4*x)=0 := by
     apply QuadraticInitialBound.sieveBump.zero_of_le_dist
     change 2≤dist (4*x) 0
@@ -46,16 +47,20 @@ theorem safeInverse_smooth : ContDiff ℝ ∞ safeInverse := by
     simpa only [div_eq_mul_inv, Pi.inv_apply, Complex.ofRealCLM_apply] using hnum.contDiffAt.mul
       (Complex.ofRealCLM.contDiff.contDiffAt.inv (Complex.ofReal_ne_zero.mpr hx))
 
-def profile (W : ℝ→ℂ) (A y : ℝ) : ℂ :=
+def profile (W : ℝ→ℂ) (A y : ℝ)  :=
   W y * (A : ℂ) * safeInverse (1+A*Real.log y)
 
-theorem profile_support (W : ℝ→ℂ) (A : ℝ) :
+section
+variable (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (A : ℝ)
+
+theorem profile_support     :
     Function.support (profile W A) ⊆ Function.support W := by
   intro y hy hW
   exact hy (by simp [profile,hW])
 
-theorem profile_smooth (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (A : ℝ) :
+include ha hWs hW in
+theorem profile_smooth      
+          :
     ContDiff ℝ ∞ (profile W A) := by
   apply contDiff_iff_contDiffAt.mpr
   intro y
@@ -72,10 +77,16 @@ theorem profile_smooth (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
       (safeInverse_smooth.contDiffAt.comp y
         (contDiffAt_const.add (contDiffAt_const.mul (Real.contDiffAt_log.mpr hy)))))
 
-def logFamily (W : ℝ→ℂ) (p : ℝ×ℝ) (u : ℝ) : ℂ :=
+end
+
+def logFamily (W : ℝ→ℂ) (p : ℝ×ℝ) (u : ℝ)  :=
   Real.exp (-p.2*u) • (W (Real.exp (-u)) * (p.1 : ℂ) * safeInverse (1-p.1*u))
 
-theorem logFamily_smooth (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) :
+section
+variable (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a) (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
+
+include hW in
+theorem logFamily_smooth     :
     ContDiff ℝ ∞ (Function.uncurry (logFamily W)) := by
   change ContDiff ℝ ∞ (fun p : (ℝ×ℝ)×ℝ =>
     Real.exp (-p.1.2*p.2) • (W (Real.exp (-p.2)) * (p.1.1 : ℂ) * safeInverse (1-p.1.1*p.2)))
@@ -84,14 +95,15 @@ theorem logFamily_smooth (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) :
       (Complex.ofRealCLM.contDiff.comp contDiff_fst.fst)).mul
       (safeInverse_smooth.comp (contDiff_const.sub (contDiff_fst.fst.mul contDiff_snd))))
 
-theorem logFamily_eq (W : ℝ→ℂ) (A σ u : ℝ) :
+theorem logFamily_eq    A σ u  :
     logFamily W (A,σ) u = CubicReflectionKernel.mellinLogFamily (profile W A) σ u := by
   simp only [logFamily, CubicReflectionKernel.mellinLogFamily, profile, Real.log_exp]
   congr 3
   ring
 
-theorem logFamily_support (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hWs : Function.support W⊆Icc a b) (p : ℝ×ℝ) :
+include ha hWs in
+theorem logFamily_support      
+       p  :
     Function.support (logFamily W p) ⊆ Icc (-Real.log b) (-Real.log a) := by
   have he : logFamily W p = CubicReflectionKernel.mellinLogFamily (profile W p.1) p.2 := by
     funext u
@@ -99,9 +111,10 @@ theorem logFamily_support (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   rw [he]
   exact CubicReflectionKernel.mellinLogFamily_support _ a b ha ((profile_support W p.1).trans hWs) _
 
-theorem uniform_mellin_decay (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (lo hi : ℝ) (j : ℕ) :
+include ha hWs hW in
+theorem uniform_mellin_decay      
+       
+    (lo hi : ℝ)  j  :
     ∃ C : ℝ, 0<C ∧ ∀ A ∈ Icc (0 : ℝ) 1, ∀ σ ∈ Icc lo hi, ∀ t : ℝ,
       (1+|t|)^j*‖mellin (profile W A) ((σ : ℂ)+t*Complex.I)‖≤C := by
   obtain ⟨C,hC,hb⟩ := CompactProfileFamily.compact_family_fourier_weighted_bound
@@ -130,8 +143,9 @@ theorem uniform_mellin_decay (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
         ‖𝓕 (logFamily W (A,σ)) (t/(2*Real.pi))‖) := by rw [mul_pow,mul_assoc]
     _ ≤ _ := mul_le_mul_of_nonneg_left (hb (A,σ) ⟨hA,hσ⟩ _) (by positivity)
 
-theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
-    (hWs : Function.support W⊆Icc a b) (hP : 0<P)
+include ha hWs in
+theorem profile_eq_log_division      
+      (hP : 0<P)
     (hlarge : 2*(|Real.log a|+|Real.log b|)+1≤Real.log P) :
     profile W (1/Real.log P) = fun y => W y / (Real.log (P*y) : ℂ) := by
   funext y
@@ -143,10 +157,10 @@ theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
     apply abs_le.mpr
     constructor
     · have h := Real.log_le_log ha hs.1
-      linarith [neg_abs_le (Real.log a),abs_nonneg (Real.log b)]
+      grind
     · have h := Real.log_le_log hyp hs.2
-      linarith [le_abs_self (Real.log b),abs_nonneg (Real.log a)]
-  have hp : 0<Real.log P := by linarith [abs_nonneg (Real.log a),abs_nonneg (Real.log b)]
+      grind
+  have hp : 0<Real.log P := by grind
   have hhalf : 1/2≤1+(1/Real.log P)*Real.log y := by
     have he : 1+(1/Real.log P)*Real.log y = (Real.log P+Real.log y)/Real.log P := by field_simp
     rw [he]
@@ -157,11 +171,9 @@ theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
   rw [profile,hi,Real.log_mul (ne_of_gt hP) (ne_of_gt hyp)]
   push_cast
   have hn : (Real.log P : ℂ)≠0 := Complex.ofReal_ne_zero.mpr hp.ne'
-  have hn' : (Real.log P : ℂ)+(Real.log y : ℂ)≠0 := by
-    have : 0<Real.log P+Real.log y := by
-      linarith [(abs_le.mp hlogs).1,abs_nonneg (Real.log a),abs_nonneg (Real.log b)]
-    exact_mod_cast this.ne'
-  field_simp
+  grind
+
+end
 
 end SevenEighths.PrimeLogProfile
 

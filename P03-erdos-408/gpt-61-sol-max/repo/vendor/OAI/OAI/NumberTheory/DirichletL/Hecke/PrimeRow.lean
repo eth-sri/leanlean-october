@@ -12,14 +12,14 @@ noncomputable section
 open scoped Classical ComplexConjugate BigOperators
 namespace SevenEighths.HeckePrimeRow
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
+
+
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
-theorem identityClass_coprime {I : Ideal O} (hI : I∈RayQuotient.identityClass M H) :
+theorem identityClass_coprime  {I}  (hI : I∈RayQuotient.identityClass M H) :
     IsCoprime I M := by
   obtain ⟨hI,a,ha,u,hu,huH⟩ := hI
   rw [←ha]
@@ -34,15 +34,15 @@ theorem identityClass_coprime_larger {I J : Ideal O}
   exact sup_le_sup_left hMJ I
 
 omit [NeZero M] in
-theorem identityClass_prime_good (m : O) (hmLam : λ₀∣m) (hMm : M≤Ideal.span {m})
-    (P : Ideal O) [P.IsMaximal] (hP : P∈RayQuotient.identityClass M H) : λ₀∉P := by
+theorem identityClass_prime_good (m : O) (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hMm : M≤Ideal.span {m})
+    (P : Ideal O) [P.IsMaximal] (hP : P∈RayQuotient.identityClass M H) : ConcretePrimeRowBridge.goodLambda∉P := by
   have hm : m∉P := (SixthPowerAverage.prime_coprime_span_iff P m).mp
     (identityClass_coprime_larger M H hP hMm)
   intro hLam
   obtain ⟨a,rfl⟩ := hmLam
   exact hm (P.mul_mem_right a hLam)
 
-def canonicalPrimeAmplitude (u : O) (W : ℝ→ℂ) (b D : ℝ) (z : ℂ) : ℂ :=
+def canonicalPrimeAmplitude (u : O) (W : ℝ→ℂ) (b D : ℝ) (z : ℂ)  :=
   (D : ℂ)^(-(1/2 : ℂ))*∑ P∈(HeckePrimeAnnular.annulusSet b D).filter
     (fun P => Prime P ∧ P∈RayQuotient.identityClass M H),
     starRingEnd ℂ (idealRowHom u P)*W ((P.absNorm : ℝ)/D)*

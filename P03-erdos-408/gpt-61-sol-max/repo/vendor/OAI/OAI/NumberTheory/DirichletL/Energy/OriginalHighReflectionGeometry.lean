@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
 
@@ -6,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionGeometry
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
 open CenteredMomentEnergyReferenceLowBranchGeometry
-local notation "O"=>HeckeFamily.O
+
 
 lemma original_long_positive (Z M X₁ X₂ ell κ:ℝ)(hZ:1<Z)(hM:0<M)
     (_hX₁:0<X₁)(hX₂:0<X₂)(hell:0≤ell)(hκ:3/4≤κ)
@@ -25,18 +26,15 @@ lemma original_long_positive (Z M X₁ X₂ ell κ:ℝ)(hZ:1<Z)(hM:0<M)
   have hpos:0<length Z X₂:=by linarith [hbudget.1]
   have he:=length_eq_max_log Z X₂ hZ hX₂
   have hl:0<Real.logb Z X₂:=by
-    by_contra hn
-    rw [he,max_eq_left (le_of_not_gt hn)] at hpos
-    exact (lt_irrefl 0) hpos
+    simp_all
   refine ⟨hl,he.trans (max_eq_right hl.le),?_⟩
   by_contra hn
   have hh:=Real.logb_le_logb_of_le hZ hX₂ (le_of_not_ge hn)
   rw [Real.logb_one] at hh
   linarith
 
-lemma deleted_length_le (Z X N:ℝ)(hZ:1<Z)(hX:0<X)(hN:1≤N):
-    length Z (X/N)≤length Z X:=by
-  exact Real.logb_le_logb_of_le hZ (zero_lt_one.trans_le (le_max_left 1 _))
+lemma deleted_length_le  Z X N (hZ:1<Z)(hX:0<X)(hN:1≤N):
+    length Z (X/N)≤length Z X:=Real.logb_le_logb_of_le hZ (zero_lt_one.trans_le (le_max_left 1 _))
     (max_le_max_left 1 (div_le_self hX.le hN))
 
 theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
@@ -47,7 +45,7 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (hshort:length Z X₁≤s.width/4)
     (hlarge:5*s.width/6≤length Z X₁+length Z X₂+ell)
     (hcap:length Z X₁+length Z X₂+6*κ*ell≤s.width)
-    (D₁ D₂:Finset (Ideal O))
+    (D₁ D₂:Finset (Ideal HeckeFamily.O))
     (hD₁:D₁∈(CompletedGauss.primeSupport s.puncture).powerset)
     (hD₂:D₂∈(CompletedGauss.primeSupport s.puncture).powerset):
     let short:=Real.logb Z (X₁/((∏P∈D₁,P).absNorm:ℝ));
@@ -77,7 +75,7 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
       length Z (X₂/((∏P∈D₂,P).absNorm:ℝ)):=by
     rw [length_eq_max_log Z _ hZ hp₂];exact le_max_right _ _
   have hlen₁:=length_nonneg Z X₁ hZ
-  have hlen₂:=length_nonneg Z X₂ hZ
+  
   have hslot:0≤6*κ*ell:=mul_nonneg (by linarith) hell
   have hl:=original_long_positive Z s.width X₁ X₂ ell κ hZ hM hX₁ hX₂ hell hκ hshort hlarge hcap
   have hrange:=divisor_reflection_range s hZ Mcap X₂ hwidth hl.2.2 D₂ hD₂
@@ -105,6 +103,6 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
 
 end SevenEighths.CenteredMomentEnergyOriginalHighReflectionGeometry
 
-end
+
 
 end OAI

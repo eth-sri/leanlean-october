@@ -23,7 +23,7 @@ open CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentEnergyReferencePr
 open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentInductionEnergy CenteredMomentEnergyLiveClippingDefect CenteredMomentRetainedEnergy
-local notation "O"=>HeckeFamily.O
+
 
 def swapProfiles {a b:ℝ}(p:Profiles a b):Profiles a b where
   profile := ![p.profile 1,p.profile 0]
@@ -33,12 +33,16 @@ def swapProfiles {a b:ℝ}(p:Profiles a b):Profiles a b where
     · simpa using p.support 1
     · simpa using p.support 0
 
-lemma swapProfiles_control {a b:ℝ}(p:Profiles a b)(U:Finset (ℕ×ℕ)):
+section
+variable {Z Bmask bΦ a b : ℝ} (s : NaturalState Z Bmask bΦ) (p : Profiles a b)
+
+
+lemma swapProfiles_control    U :
     (swapProfiles p).control U=p.control U:=by
   simp [swapProfiles,Profiles.control,mul_comm]
 
-lemma plainEnergy_swap {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
-    (p:Profiles a b)(t X₁ X₂:ℝ):
+lemma plainEnergy_swap   
+      t X₁ X₂ :
     s.plainEnergy (swapProfiles p) t X₂ X₁=s.plainEnergy p t X₁ X₂:=by
   unfold NaturalState.plainEnergy energy
   apply tsum_congr
@@ -53,12 +57,14 @@ lemma plainEnergy_swap {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
     ring
   rw [hh]
 
+end
+
 theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)
-    (hepsilon:0<epsilon)(hxi:0<xi)(hdefect:0<defect)(S:Finset (ℕ×ℕ)):
+    (hepsilon:0<epsilon)(hxi:0<xi)(hdefect:0<defect) S :
     ∃J:ℕ,∃U:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀ᶠZ:ℝ in atTop,1<Z ∧
-      ∀(Bmask L Mcap loss:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K→
+      ∀(Bmask L Mcap loss:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤K→
       ZeroGrowthAt Q a b bΦ Bmask L Mcap loss Z degree S K→0≤Bmask→
       Mcap+Bmask+defect+xi≤L→Mcap+Bmask+defect≤Lreflect→
       ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→s.width≤Mcap→
@@ -173,15 +179,15 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
         obtain ⟨hNl,_⟩:=divisor_norm s Dl hDl'
         have hpS:0<((∏P∈Ds,P).absNorm:ℝ):=zero_lt_one.trans_le hNs
         have hpL:0<((∏P∈Dl,P).absNorm:ℝ):=zero_lt_one.trans_le hNl
-        have heffective (f:O→ℂ):radialEnergy f (effectiveState s).radial.keep
+        have heffective (f:HeckeFamily.O→ℂ):radialEnergy f (effectiveState s).radial.keep
             s.radial.profile s.radial.scale=radialEnergy f s.radial.keep s.radial.profile s.radial.scale:=
           radialEnergy_effective s.radial f
         simp only [Finset.univ_eq_empty,Finset.empty_sdiff,Finset.prod_empty,mul_one,Real.rpow_one]
-        rw [show (fun z:O=>polynomial (naturalCharacter s.character z) false (p.profile 0)
+        rw [show (fun z:HeckeFamily.O=>polynomial (naturalCharacter s.character z) false (p.profile 0)
               (Xshort/((∏P∈Ds,P).absNorm:ℝ)) 0 t*
             polynomial (naturalCharacter s.character z) false (p.profile 1)
               (Xlong/((∏P∈Dl,P).absNorm:ℝ)) 0 t)=
-            (fun z:O=>polynomial (naturalCharacter s.character z) false (p.profile 1)
+            (fun z:HeckeFamily.O=>polynomial (naturalCharacter s.character z) false (p.profile 1)
               (Xlong/((∏P∈Dl,P).absNorm:ℝ)) 0 t*
             polynomial (naturalCharacter s.character z) false (p.profile 0)
               (Xshort/((∏P∈Ds,P).absNorm:ℝ)) 0 t) by funext z;exact mul_comm _ _]
@@ -218,8 +224,7 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
               (Xshort/((∏P∈Ds,P).absNorm:ℝ)))≤E*Perror:=by
             dsimp only [Perror]
             gcongr
-          have hf:E*Perror≤E*(Pmain+Perror)*((∏P∈Dl,P).absNorm:ℝ):=by
-            exact (mul_le_mul_of_nonneg_left (le_add_of_nonneg_left hPm) hE).trans
+          have hf:E*Perror≤E*(Pmain+Perror)*((∏P∈Dl,P).absNorm:ℝ):=(mul_le_mul_of_nonneg_left (le_add_of_nonneg_left hPm) hE).trans
               (le_mul_of_one_le_right (mul_nonneg hE (add_nonneg hPm hPe)) hNl)
           apply hh.trans
           calc

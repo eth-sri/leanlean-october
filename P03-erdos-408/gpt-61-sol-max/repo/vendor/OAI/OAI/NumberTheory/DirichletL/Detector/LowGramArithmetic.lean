@@ -14,22 +14,22 @@ open ConcreteTraceCRT ProbeRow CanonicalRowCompletion CanonicalQuadraticSieve Co
 open RayFourExpansion InitialMeanSquare SecondPassArithmetic CanonicalCoefficientClass
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-def gramPeriodicMonoid (C : CalibrationData) (B : O) (D : GoodMaskRowData B 1 C.generator) : O→*ℂ :=
+
+def gramPeriodicMonoid (C : CalibrationData) (B ) (D : GoodMaskRowData B 1 C.generator)  :=
   conjugateMonoid C.residueMonoid*actualPeriodicRow 1 B D.numeratorUnit D.numeratorLambda D.numeratorTwo
     D.numeratorGood D.numeratorSupported
 
-lemma gramPeriodicMonoid_norm (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) (n : O) : ‖gramPeriodicMonoid C B D n‖≤1 := by
+lemma gramPeriodicMonoid_norm  C   B 
+     D   n  : ‖gramPeriodicMonoid C B D n‖≤1 := by
   rw [gramPeriodicMonoid,MonoidHom.mul_apply,norm_mul]
   change ‖star (C.residueMonoid n)‖*_≤1
   rw [norm_star]
   exact (mul_le_of_le_one_left (norm_nonneg _) (C.residueMonoid_norm_le_one n)).trans (actualPeriodicRow_norm 1 (fun _=>by simp) B D.numeratorUnit D.numeratorLambda D.numeratorTwo
       D.numeratorGood D.numeratorSupported n)
 
-lemma gramPeriodicMonoid_periodic (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) :
+lemma gramPeriodicMonoid_periodic  C   B 
+     D  :
     FactorsModulo (Ideal.span {C.generator}*calibrationRowModulus C B D) (gramPeriodicMonoid C B D) := by
   have hp := actualPeriodicRow_periodic (1:O→*ℂ) 1 (fun _ _ _=>rfl)
     B D.numeratorUnit D.numeratorLambda D.numeratorTwo D.numeratorGood D.numeratorSupported
@@ -41,8 +41,8 @@ lemma gramPeriodicMonoid_periodic (C : CalibrationData) (B : O)
     exact Ideal.Quotient.eq.mpr (Ideal.mul_le_left hxy)
   · exact hp x y (Ideal.mul_le_right hxy)
 
-lemma gramPeriodicMonoid_zero (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) (n : O) (hn : ¬IsCoprime B n) :
+lemma gramPeriodicMonoid_zero  C   B 
+     D   n  (hn : ¬IsCoprime B n) :
     gramPeriodicMonoid C B D n=0 := by
   have hm : coprimalityMask B n=(0:ℂ) := by change (if IsCoprime B n then (1:ℂ) else 0)=0;rw [ite_eq_right hn]
   change star (C.residueMonoid n)*
@@ -52,9 +52,9 @@ lemma gramPeriodicMonoid_zero (C : CalibrationData) (B : O)
   rw [hm]
   simp
 
-lemma gramPeriodicMonoid_primary (C : CalibrationData) (B : O)
-    (D : GoodMaskRowData B 1 C.generator) (hBL : λ₀∣B) (hB2 : (2:O)∣B)
-    (n : O) (hn : Supported (Ideal.span {n})) (hpn : λ₀^2∣n-1) (hc : IsCoprime B n) :
+lemma gramPeriodicMonoid_primary  C   B 
+     D  (hBL : ConcretePrimeRowBridge.goodLambda∣B) (hB2 : (2:O)∣B)
+     n  (hn : Supported (Ideal.span {n})) (hpn : ConcretePrimeRowBridge.goodLambda^2∣n-1) (hc : IsCoprime B n) :
     gramPeriodicMonoid C B D n=(C.residueMonoid n)⁻¹*idealRowHom C.generator (Ideal.span {n}) := by
   have he := rowTwist_eq_actualPeriodicRow_primary (1:O→*ℂ) B 1 C.generator hBL hB2
     D.numeratorUnit D.numeratorLambda D.numeratorTwo D.numeratorGood D.numeratorSupported
@@ -70,8 +70,8 @@ lemma gramPeriodicMonoid_primary (C : CalibrationData) (B : O)
   change star (C.residue (Ideal.Quotient.mk _ n))=(C.residue (Ideal.Quotient.mk _ n))⁻¹
   rw [MulChar.star_apply',MulChar.inv_apply_eq_inv']
 
-theorem lowArithmeticCoefficient_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
-    (hbad : fixedBadPrimes⊆S) (s : {I : Id // Supported I}) :
+theorem lowArithmeticCoefficient_periodic  S   hS 
+    (hbad : fixedBadPrimes⊆S)  s  :
     lowArithmeticCoefficient (calibrationForSet S hS) s=
       (calibrationForSet S hS).tau⁻¹*
         gramPeriodicMonoid (calibrationForSet S hS) (calibrationForSet S hS).generator

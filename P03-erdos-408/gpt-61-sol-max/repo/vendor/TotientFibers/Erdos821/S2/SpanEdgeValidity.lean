@@ -20,13 +20,13 @@ namespace ResiduePath
 
 variable {A : Model F P J m} {n : ℕ} (Q : ResiduePath A n)
 
-def SmallCompatible (y : P.SmallResidues) : Prop :=
+def SmallCompatible (y : P.SmallResidues)  :=
   ∀ i, P.smallPhysical (translateSmallResidues (Q.offset i) y) (Q.labels i)
 
 theorem reconstructedTransferChoice_valid (hMem : SpanEdgeMemoryTask)
-    (S : LifespanAssignment P n) (hq : Q.Valid) (hS : Q.lifespanValid S)
+     S  (hq : Q.Valid) (hS : Q.lifespanValid S)
     (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (y : P.SmallResidues) (hy : Q.SmallCompatible y) (i : Fin n) :
+     y  (hy : Q.SmallCompatible y)  i  :
     rawEdgeValid A (A.pattern (Q.pattern i)) (edgeForward i) (Q.free i)
       (permuteActive (Q.sourcePerm i) (Q.stateAfter S y i.castSucc))
       (permuteActive (Q.targetPerm i) (Q.stateBefore S y i.succ))

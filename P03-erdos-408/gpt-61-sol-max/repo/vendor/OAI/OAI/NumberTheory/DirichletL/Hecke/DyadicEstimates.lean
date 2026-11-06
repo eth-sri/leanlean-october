@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicContour
 
@@ -6,21 +7,23 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicContour
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
 
-theorem rapid_tail_bound (F : ℝ → ℂ) (C T : ℝ) (n : ℕ) (hC : 0≤C) (hT : 0≤T)
+section
+variable (F : ℝ → ℂ) (χ : Character) (inverse : Bool) (W : ℝ → ℂ) (D r l σ freq C K T : ℝ) (n : ℕ) (hD : 0<D) (hr : 1<r+σ) (hC : 0≤C) (hK : 0≤K) (hT : 0≤T)
+
+include hC hT in
+theorem rapid_tail_bound          
     (hF : ∀ t : ℝ, (1+|t|)^(n+2)*‖F t‖≤C) :
     ‖∫ t : ℝ in (Icc (-T) T)ᶜ, F t‖ ≤ C/(1+T)^n*Real.pi := by
   have hen (t : ℝ) (ht : t ∈ (Icc (-T) T)ᶜ) :
       ‖F t‖≤(C/(1+T)^n)*(1+t^2)⁻¹ := by
     have ht' : T≤|t| := by
-      by_contra h
-      have hab : |t|<T := lt_of_not_ge h
-      exact ht ⟨(abs_lt.mp hab).1.le, (abs_lt.mp hab).2.le⟩
+      grind
     have hp : (1+T)^n*(1+t^2)≤(1+|t|)^(n+2) := by
       rw [pow_add]
       apply mul_le_mul
@@ -42,8 +45,9 @@ theorem rapid_tail_bound (F : ℝ → ℂ) (C T : ℝ) (n : ℕ) (hC : 0≤C) (h
       integral_mono_measure Measure.restrict_le_self (by filter_upwards [] with t; positivity) hint
     _ = _ := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
 
-theorem absolute_tail_bound (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
-    (D r σ freq C T : ℝ) (n : ℕ) (hD : 0<D) (hr : 1<r+σ) (hC : 0≤C) (hT : 0≤T)
+include hD hr hC hT in
+theorem absolute_tail_bound      
+               
     (hm : ∀ t : ℝ, (1+|t|)^(n+2)*‖mellin W ((r : ℂ)+t*I)‖≤C) :
     ‖∫ t : ℝ in (Icc (-T) T)ᶜ, integrand χ inverse W D σ freq ((r : ℂ)+t*I)‖ ≤
       (C*D^(r+σ-1/2)*HeckeReciprocalBound.bound (r+σ))/(1+T)^n*Real.pi := by
@@ -59,11 +63,11 @@ theorem absolute_tail_bound (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
     calc
       _ = ((1+|t|)^(n+2)*‖mellin W ((r : ℂ)+t*I)‖)*D^(r+σ-1/2)*
         ‖series χ inverse ((r : ℂ)+t*I+shift σ freq)‖ := by ring
-      _ ≤ _ := mul_le_mul (mul_le_mul_of_nonneg_right (hm t) (Real.rpow_nonneg hD.le _))
-        hb (norm_nonneg _) (mul_nonneg hC (Real.rpow_nonneg hD.le _))
+      _ ≤ _ := (by bound)
 
-theorem central_segment_bound (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
-    (D l σ freq C K T : ℝ) (hD : 0<D) (hC : 0≤C) (hK : 0≤K) (hT : 0≤T)
+include hD hC hK hT in
+theorem central_segment_bound      
+             
     (hm : ∀ t : ℝ, (1+|t|)^2*‖mellin W ((l : ℂ)+t*I)‖≤C)
     (hs : ∀ t ∈ Icc (-T) T, ‖series χ inverse ((l : ℂ)+t*I+shift σ freq)‖≤K) :
     ‖∫ t : ℝ in -T..T, integrand χ inverse W D σ freq ((l : ℂ)+t*I)‖ ≤
@@ -87,8 +91,10 @@ theorem central_segment_bound (χ : Character) (inverse : Bool) (W : ℝ → ℂ
       integral_mono_measure Measure.restrict_le_self (by filter_upwards [] with t; positivity) hint
     _ = _ := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
 
+end
+
 end SevenEighths.HeckeDyadic
 
-end
+
 
 end OAI

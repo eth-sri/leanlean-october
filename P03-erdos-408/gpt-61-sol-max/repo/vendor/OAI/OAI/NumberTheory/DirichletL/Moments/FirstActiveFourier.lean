@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstReduced
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstReduced
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstActiveFourier
@@ -15,12 +16,16 @@ open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 open CenteredMomentFirstMixed CenteredMomentFirstReduced
 local notation "O" => ActualEisensteinCubic.O
 
-theorem shifted_active_fourier {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
-    (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
-    (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6) (v h : O) :
+section
+variable {ι : Type*} [Fintype ι] (P : ι → Ideal O) [∀ i,(P i).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime P)) (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i) (hchar : ∀ i,ringChar (O ⧸ P i)≠2) (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
+include ι P hcop hg hchar j hj0 hj6
+
+theorem shifted_active_fourier    
+       
+     
+     
+     
+           v h  :
     let r := finitePrimeModulus P
     let G := principalSexticRow P hcop hg j r (span_finitePrimeModulus P)
     (∑' x : Residue r,G (Ideal.Quotient.mk _ v*x)*
@@ -38,18 +43,17 @@ theorem shifted_active_fourier {ι : Type*} [Fintype ι]
     principalSexticRow_mk P hcop hg j (finitePrimeModulus P) (span_finitePrimeModulus P),mul_assoc]
   rw [← Finset.mul_sum,canonical_principal_gauss_transform P hcop hg hchar j hj0 hj6,
     principalSexticRow_mk P hcop hg j (finitePrimeModulus P) (span_finitePrimeModulus P)]
-  change finiteSexticRow P hg j v*(star (finiteSexticRow P hg j h)*canonicalGaussSum P hcop hg j)=_
-  ring
+  rfl
 
-theorem tripleFourier_active {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
-    (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
-    (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
-    (a b : O) (ha : a≠0) (hb : b≠0)
+theorem tripleFourier_active    
+       
+     
+     
+     
+         
+     a b   ha   hb 
     (har : IsCoprime a (b*finitePrimeModulus P)) (hbr : IsCoprime b (finitePrimeModulus P))
-    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) (h : O) :
+     χa   χb   h  :
     let r := finitePrimeModulus P
     let G := principalSexticRow P hcop hg j r (span_finitePrimeModulus P)
     tripleFourier a b r ha hb (finitePrimeModulus_ne_zero P) χa χb G h =
@@ -76,8 +80,10 @@ theorem tripleFourier_active {ι : Type*} [Fintype ι]
   rw [tsum_fintype] at hs
   rw [hs]
 
+end
+
 end SevenEighths.CenteredMomentFirstActiveFourier
 
-end
+
 
 end OAI

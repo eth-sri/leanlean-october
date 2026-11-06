@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P3Edge.NormOsc
 
 public import Erdos821.P3High.RelabelState
 public import Erdos821.S2High.AllowedMass
@@ -34,29 +37,32 @@ attribute [local instance] bmsFintype
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
 /-- Tilted point mass of a natural value in a big group; zero outside the group. -/
-def muHat (F : FixedData) (P : PrimeGroups) (n : ℕ) (g : P.BigGroup) (v : ℕ) : ℝ :=
+def muHat (F : FixedData) (P : PrimeGroups) (n : ℕ) (g : P.BigGroup) (v : ℕ)  :=
   if hv : v ∈ P.primes g.val then tiltedMu F P n g.val ⟨v, hv⟩ else 0
 
-theorem muHat_nonneg (F : FixedData) (P : PrimeGroups) (n : ℕ)
-    (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
-    (g : P.BigGroup) (v : ℕ) : 0 ≤ muHat F P n g v := by
-  unfold muHat
-  split_ifs with hv
-  · exact (hμ g ⟨v, hv⟩).le
-  · exact le_rfl
+section
+variable (F) (P) (n : ℕ) (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p) (g : P.BigGroup)
 
-theorem muHat_of_mem (F : FixedData) (P : PrimeGroups) (n : ℕ) (g : P.BigGroup)
-    (p : P.Prime g.val) : muHat F P n g p.val = tiltedMu F P n g.val p := by
+include hμ in
+theorem muHat_nonneg      
+     
+       v  : 0 ≤ muHat F P n g v := by
+  grind [muHat]
+
+theorem muHat_of_mem        
+     p  : muHat F P n g p.val = tiltedMu F P n g.val p := by
   unfold muHat
   rw [dite_eq_left p.property]
 
-def edgeFresh (A : Model F P J m) {s : P.MemoryState (J + F.ell)} (c : EdgeChoice A s)
-    (x : P.BigGroup × Fin (J + F.ell)) : Prop :=
+end
+
+def edgeFresh (A : Model F P J m) {s } (c : EdgeChoice A s)
+    (x : P.BigGroup × Fin (J + F.ell))  :=
   ¬ (A.pattern c.2.2.1).shared x.1.val x.2 ∧ x.2 ∉ c.2.2.2.2.2.1 x.1
 
-def edgeSlotCond (A : Model F P J m) {s : P.MemoryState (J + F.ell)}
+def edgeSlotCond (A : Model F P J m) {s }
     (vals : P.BigGroup × Fin (J + F.ell) → ℕ) (t : P.MemoryState (J + F.ell))
-    (c : EdgeChoice A s) (x : P.BigGroup × Fin (J + F.ell)) : Prop :=
+    (c : EdgeChoice A s) (x : P.BigGroup × Fin (J + F.ell))  :=
   edgeFresh A c x ∧ ((permuteActive c.2.1 t).2.1 x.1.val x.2).val = vals x
 
 /-- Indicator multiplier constraining the fresh slots `Sl` of one edge. -/
@@ -65,19 +71,18 @@ def edgeMult (A : Model F P J m) (Sl : Finset (P.BigGroup × Fin (J + F.ell)))
     (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℝ :=
   fun _ t c => if ∀ x ∈ Sl, edgeSlotCond A vals t c x then 1 else 0
 
-theorem norm_imaginaryPower (k : ℕ) (ζ : ℝ) : ‖imaginaryPower k ζ‖ = 1 := by
-  unfold imaginaryPower
-  rw [show (ζ : ℂ) * (Real.log k : ℂ) * Complex.I = ((ζ * Real.log k : ℝ) : ℂ) * Complex.I by
-    push_cast; ring]
-  exact Complex.norm_exp_ofReal_mul_I _
+section
+variable (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n) (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)
+
+theorem norm_imaginaryPower  k   ζ  : ‖imaginaryPower k ζ‖ = 1 := by solve_by_elim [_root_.Erdos821.P3Edge.norm_imaginaryPower]
 
 theorem coefficient_le_sup {ell : ℕ} (ν : Pattern P J ell m) (a b : P.BigLabels (J + ell))
     (u : P.BigAux J) : ‖ν.coefficient a b u‖ ≤ coefficientSup ν := by
   unfold coefficientSup
   exact le_csSup (Set.finite_range _).bddAbove ⟨(a, b, u), rfl⟩
 
-theorem norm_coef_major (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) :
+theorem norm_coef_major        
+        :
     ‖edgeChoiceCoefficient (majorantModel A) n rho theta i s t c‖ =
       |rawEdgeWeight A n rho (A.pattern c.2.2.1) c.2.2.2.1 (permuteActive c.1 s)
         (permuteActive c.2.1 t) c.2.2.2.2| * coefficientSup (A.pattern c.2.2.1) := by
@@ -93,8 +98,8 @@ theorem norm_coef_major (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin
     change ‖((coefficientSup (A.pattern c.2.2.1) : ℝ) : ℂ)‖ = _
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hsup]
 
-theorem norm_coef_le_major (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) :
+theorem norm_coef_le_major        
+        :
     ‖edgeChoiceCoefficient A n rho theta i s t c‖ ≤
       ‖edgeChoiceCoefficient (majorantModel A) n rho theta i s t c‖ := by
   rw [norm_coef_major]
@@ -102,13 +107,11 @@ theorem norm_coef_le_major (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : 
   rw [norm_mul, norm_mul, norm_phase, mul_one, Complex.norm_real, Real.norm_eq_abs]
   apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
   split_ifs
-  · rw [norm_mul, norm_imaginaryPower, mul_one]
-    exact coefficient_le_sup _ _ _ _
-  · rw [norm_star, norm_mul, norm_imaginaryPower, mul_one]
-    exact coefficient_le_sup _ _ _ _
+  · simp_all [norm_imaginaryPower, coefficient_le_sup]
+  simp_all [norm_imaginaryPower, coefficient_le_sup]
 
 /-- Replacing a fresh target label by a label outside the ban keeps the raw edge valid. -/
-theorem rawEdgeValid_relabel (A : Model F P J m) (ν : Pattern P J F.ell m) (fwd : Bool)
+theorem rawEdgeValid_relabel   (ν : Pattern P J F.ell m)  fwd 
     (u : P.Aux J) (ss tt : P.MemoryState (J + F.ell)) (tr : TransferChoice ss)
     (g : P.BigGroup) (h : Fin (J + F.ell)) (p : P.Prime g.val)
     (hv : rawEdgeValid A ν fwd u ss tt tr) (hsh : ¬ ν.shared g.val h) (hpr : h ∉ tr.2.1 g)
@@ -166,25 +169,31 @@ theorem rawEdgeValid_relabel (A : Model F P J m) (ν : Pattern P J F.ell m) (fwd
     rw [relabelLabels_of_ne _ g h p g' i.val hx]
     exact b1
 
+end
+
 /-- The edge weight apart from its fresh tilted masses. -/
 def edgeRest (rho : ℝ) (ν : Pattern P J F.ell m) (u : P.Aux J)
-    (ss tt : P.MemoryState (J + F.ell)) (tr : TransferChoice ss) : ℝ :=
+    (ss tt : P.MemoryState (J + F.ell)) (tr : TransferChoice ss)  :=
   ν.auxMass u * (∏ g : P.BigGroup, (P.V g.val) ^ (-((tr.2.1 g).card : ℤ))) *
     smallTargetFactor (P := P) F * smallDamping F J ss.1 * smallDamping F J tt.1 *
     rho ^ ((∑ g : P.BigGroup, (zeroMemoryIndices (ss.2.2 g)).card) +
       (∑ g : P.BigGroup, (zeroMemoryIndices (tt.2.2 g)).card))
 
-theorem rawEdgeWeight_eq (A : Model F P J m) (n : ℕ) (rho : ℝ) (ν : Pattern P J F.ell m)
-    (u : P.Aux J) (ss tt : P.MemoryState (J + F.ell)) (tr : TransferChoice ss) :
+section
+variable (A : Model F P J m) (n : ℕ) (rho : ℝ) (ν : Pattern P J F.ell m) (u : P.Aux J) (ss tt : P.MemoryState (J + F.ell)) (tr : TransferChoice ss) (prom : P.BigGroup → Finset (Fin (J + F.ell))) (a : P.Labels (J + F.ell)) (g : P.BigGroup) (h : Fin (J + F.ell)) (p : P.Prime g.val) (hsh : ¬ ν.shared g.val h)
+
+theorem rawEdgeWeight_eq        
+          :
     rawEdgeWeight A n rho ν u ss tt tr =
       freshBigFactor F n ν tr.2.1 tt.2.1 * edgeRest rho ν u ss tt tr := by
   unfold rawEdgeWeight edgeRest
   ring
 
-theorem freshBigFactor_relabel (n : ℕ) (ν : Pattern P J F.ell m)
-    (prom : P.BigGroup → Finset (Fin (J + F.ell))) (a : P.Labels (J + F.ell))
-    (g : P.BigGroup) (h : Fin (J + F.ell)) (p : P.Prime g.val)
-    (hsh : ¬ ν.shared g.val h) (hpr : h ∉ prom g) :
+include hsh in
+theorem freshBigFactor_relabel    
+       
+         
+      (hpr : h ∉ prom g) :
     freshBigFactor F n ν prom (relabelLabels a g h p) * tiltedMu F P n g.val (a g.val h) =
       freshBigFactor F n ν prom a * tiltedMu F P n g.val p := by
   have key := tilted_prod_relabel F n
@@ -194,10 +203,11 @@ theorem freshBigFactor_relabel (n : ℕ) (ν : Pattern P J F.ell m)
   unfold freshBigFactor
   convert key
 
-theorem rawEdgeWeight_relabel (A : Model F P J m) (n : ℕ) (rho : ℝ) (ν : Pattern P J F.ell m)
-    (u : P.Aux J) (ss tt : P.MemoryState (J + F.ell)) (tr : TransferChoice ss)
-    (g : P.BigGroup) (h : Fin (J + F.ell)) (p : P.Prime g.val)
-    (hsh : ¬ ν.shared g.val h) (hpr : h ∉ tr.2.1 g) :
+include hsh in
+theorem rawEdgeWeight_relabel        
+         
+         
+      (hpr : h ∉ tr.2.1 g) :
     rawEdgeWeight A n rho ν u ss (relabelState g h p tt) tr *
         tiltedMu F P n g.val (tt.2.1 g.val h) =
       rawEdgeWeight A n rho ν u ss tt tr * tiltedMu F P n g.val p := by
@@ -206,33 +216,33 @@ theorem rawEdgeWeight_relabel (A : Model F P J m) (n : ℕ) (rho : ℝ) (ν : Pa
   have hF := freshBigFactor_relabel n ν tr.2.1 tt.2.1 g h p hsh hpr
   change freshBigFactor F n ν tr.2.1 (relabelLabels tt.2.1 g h p) *
       edgeRest rho ν u ss (relabelState g h p tt) tr * tiltedMu F P n g.val (tt.2.1 g.val h) = _
-  rw [hR]
-  calc freshBigFactor F n ν tr.2.1 (relabelLabels tt.2.1 g h p) *
-        edgeRest rho ν u ss tt tr * tiltedMu F P n g.val (tt.2.1 g.val h)
-      = (freshBigFactor F n ν tr.2.1 (relabelLabels tt.2.1 g h p) *
-          tiltedMu F P n g.val (tt.2.1 g.val h)) * edgeRest rho ν u ss tt tr := by ring
-    _ = (freshBigFactor F n ν tr.2.1 tt.2.1 * tiltedMu F P n g.val p) *
-          edgeRest rho ν u ss tt tr := by rw [hF]
-    _ = _ := by ring
+  grind
+
+end
 
 /-- One literal choice term of the majorant absolute edge kernel. -/
-def eterm (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (s : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) (t : P.MemoryState (J + F.ell)) : ℝ :=
+def eterm (A : Model F P J m) (n ) (rho theta : ℝ) (i : Fin n)
+    (s ) (c : EdgeChoice A s) (t : P.MemoryState (J + F.ell))  :=
   if edgeChoiceValid (majorantModel A) .all i s t c then
     ‖edgeChoiceCoefficient (majorantModel A) n rho theta i s t c‖ else 0
 
-theorem eterm_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (s : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) (t : P.MemoryState (J + F.ell)) :
+section
+variable (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n) (B : ℕ) (v : ℝ) (hv : 0 ≤ v) (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p) (hmassJ : ∀ (g : P.BigGroup) (forb : Finset (P.Prime g.val)), forb.card ≤ J →
+      (1 / 2 : ℝ) ≤ ∑ p ∈ Finset.univ.filter (fun p => p ∉ forb), tiltedMu F P n g.val p) (s : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) (t : P.MemoryState (J + F.ell)) (Q : P.MemoryState (J + F.ell) → Prop) (x : P.BigGroup × Fin (J + F.ell)) (Sl : Finset (P.BigGroup × Fin (J + F.ell))) (vals : P.BigGroup × Fin (J + F.ell) → ℕ)
+
+theorem eterm_nonneg        
+          :
     0 ≤ eterm A n rho theta i s c t := by
   unfold eterm
   split_ifs
   · exact norm_nonneg _
   · exact le_rfl
 
-theorem eterm_relabel (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
-    (s : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) (t : P.MemoryState (J + F.ell))
-    (x : P.BigGroup × Fin (J + F.ell)) (p : P.Prime x.1.val) (hfr : edgeFresh A c x)
+include hμ in
+theorem eterm_relabel        
+     
+         
+       p  (hfr : edgeFresh A c x)
     (hval : edgeChoiceValid (majorantModel A) .all i s t c)
     (hban : ∀ j ∈ (A.pattern c.2.2.1).changed x.1.val, c.2.2.2.1 x.1.val j ≠ p) :
     edgeChoiceValid (majorantModel A) .all i s (relabelState x.1 (c.2.1 x.1.val x.2) p t) c ∧
@@ -256,23 +266,17 @@ theorem eterm_relabel (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n
   have hW' := congrArg abs hW
   rw [abs_mul, abs_mul, abs_of_pos (hμ _ _), abs_of_pos (hμ _ _)] at hW'
   change _ * tiltedMu F P n x.1.val (t.2.1 x.1.val (c.2.1 x.1.val x.2)) = _ at hW'
-  calc |rawEdgeWeight A n rho (A.pattern c.2.2.1) c.2.2.2.1 (permuteActive c.1 s)
-          (permuteActive c.2.1 t) c.2.2.2.2| * coefficientSup (A.pattern c.2.2.1) *
-        tiltedMu F P n x.1.val p
-      = (|rawEdgeWeight A n rho (A.pattern c.2.2.1) c.2.2.2.1 (permuteActive c.1 s)
-          (permuteActive c.2.1 t) c.2.2.2.2| * tiltedMu F P n x.1.val p) *
-          coefficientSup (A.pattern c.2.2.1) := by ring
-    _ = _ := by rw [← hW']; ring
+  grind
 
+include hv hμ hmassJ in
 /-- Constraining one more fresh slot, uniformly in a relabelling-invariant constraint `Q`. -/
-theorem edge_single (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n) (B : ℕ) (v : ℝ)
-    (hv : 0 ≤ v)
-    (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
-    (hmassJ : ∀ (g : P.BigGroup) (forb : Finset (P.Prime g.val)), forb.card ≤ J →
-      (1 / 2 : ℝ) ≤ ∑ p ∈ Finset.univ.filter (fun p => p ∉ forb), tiltedMu F P n g.val p)
-    (s : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)
-    (Q : P.MemoryState (J + F.ell) → Prop) (x : P.BigGroup × Fin (J + F.ell))
-    (hQ : ∀ p t, Q (relabelState x.1 (c.2.1 x.1.val x.2) p t) ↔ Q t) (vx : ℕ) :
+theorem edge_single            
+     
+     
+     
+       
+       
+    (hQ : ∀ p t, Q (relabelState x.1 (c.2.1 x.1.val x.2) p t) ↔ Q t)  vx  :
     ∑ t : BoundedMemoryState P (J + F.ell) B,
         (if Q t.val ∧ (edgeFresh A c x ∧ ((permuteActive c.2.1 t.val).2.1 x.1.val x.2).val = vx)
           then eterm A n rho theta i s c t.val * P.memoryWeight v t.val else 0) ≤
@@ -383,14 +387,14 @@ theorem edge_single (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n) 
         ∑ t ∈ S, eterm A n rho theta i s c t.val * P.memoryWeight v t.val := key
     _ = _ := by ring
 
+include hv hμ hmassJ in
 /-- All constrained fresh slots of one edge choice. -/
-theorem edge_slots (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n) (B : ℕ) (v : ℝ)
-    (hv : 0 ≤ v)
-    (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
-    (hmassJ : ∀ (g : P.BigGroup) (forb : Finset (P.Prime g.val)), forb.card ≤ J →
-      (1 / 2 : ℝ) ≤ ∑ p ∈ Finset.univ.filter (fun p => p ∉ forb), tiltedMu F P n g.val p)
-    (s : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)
-    (vals : P.BigGroup × Fin (J + F.ell) → ℕ) :
+theorem edge_slots            
+     
+     
+     
+       
+      :
     ∀ Sl : Finset (P.BigGroup × Fin (J + F.ell)),
     ∑ t : BoundedMemoryState P (J + F.ell) B,
         (if ∀ x ∈ Sl, edgeSlotCond A vals t.val c x
@@ -450,20 +454,20 @@ theorem edge_slots (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n) (
             mul_le_mul_of_nonneg_left ih hm0
         _ = _ := by rw [Finset.prod_insert hy]; ring
 
-theorem absEdge_eq_eterm (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (s t : P.MemoryState (J + F.ell)) :
+theorem absEdge_eq_eterm        
+      :
     absoluteMemoryEdgeKernel (majorantModel A) n rho theta i .all s t =
       edgeSymmetryFactor P (J + F.ell) * ∑ c : EdgeChoice A s, eterm A n rho theta i s c t :=
   rfl
 
+include hv hμ hmassJ in
 /-- The conditional weighted edge row: the constrained slots each cost a tilted point mass. -/
-theorem edge_row_constrained (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n) (B : ℕ)
-    (v : ℝ) (hv : 0 ≤ v)
-    (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
-    (hmassJ : ∀ (g : P.BigGroup) (forb : Finset (P.Prime g.val)), forb.card ≤ J →
-      (1 / 2 : ℝ) ≤ ∑ p ∈ Finset.univ.filter (fun p => p ∉ forb), tiltedMu F P n g.val p)
-    (Sl : Finset (P.BigGroup × Fin (J + F.ell))) (vals : P.BigGroup × Fin (J + F.ell) → ℕ)
-    (s : P.MemoryState (J + F.ell)) :
+theorem edge_row_constrained          
+       
+     
+     
+       
+     s  :
     ∑ t : BoundedMemoryState P (J + F.ell) B,
         edgeK A n rho theta i (edgeMult A Sl vals) s t.val * P.memoryWeight v t.val ≤
       (∏ x ∈ Sl, 2 * muHat F P n x.1 (vals x)) * ∑ t : BoundedMemoryState P (J + F.ell) B,
@@ -485,9 +489,7 @@ theorem edge_row_constrained (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i 
       rw [ite_eq_left hval]
       by_cases hS : ∀ x ∈ Sl, edgeSlotCond A vals t c x
       · rw [ite_eq_left hS, ite_eq_left hS, mul_one]
-        unfold eterm
-        rw [ite_eq_left hval']
-        exact norm_coef_le_major A n rho theta i s t c
+        grind [eterm, norm_coef_le_major]
       · rw [ite_eq_right hS, ite_eq_right hS, mul_zero]
     · rw [ite_eq_right hval]
       split_ifs
@@ -520,10 +522,8 @@ theorem edge_row_constrained (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i 
         simp_rw [absEdge_eq_eterm]
         simp only [Finset.mul_sum, Finset.sum_mul]
         conv_lhs => rw [Finset.sum_comm]
-        apply Finset.sum_congr rfl
-        intro t _
-        apply Finset.sum_congr rfl
-        intro c _
         ring
+
+end
 
 end Erdos821.P3High

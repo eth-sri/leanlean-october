@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondParentRadial
 public import OAI.NumberTheory.DirichletL.Descent.SecondCenterSector
@@ -12,7 +13,7 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers RayFourExpansion
 open InverseInitialArithmetic (sourceIdeal)
 open InversePrincipalEnergy InverseSecondPrincipalCaller
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ] [Fintype κ]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -26,11 +27,11 @@ theorem first_parent_full_second_source
     {Jo : ℕ} (parent : SecondParentSource ι Jo) (F D : Finset ι)
     (hq : parent.quotient = sourceIdeal p D)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
-    (slots : Finset σ) (lists : σ→Finset ι) (coeff : σ→ι→ℂ)
+    (slots : Finset σ)  lists   coeff 
     (hD : ∀ i∈slots,Disjoint (lists i) D)
-    (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hs : Function.support om⊆Set.Icc a b)
-    (X height Y : ℝ) (hX : 0<X) (hY : 0<Y) (core : FirstCoreIndex)
-    (R : Finset ι → Finset ι → ℝ) (label : Finset ι → SecondExpansionData ι → κ) :
+     om   a b   ha   hs 
+     X height Y  (hX : 0<X) (hY : 0<Y)  core 
+     R   label  :
     let Ψ₀ := firstCoreTwist negative χ Ψ core
     let V := principalWindow om a b ha hs negative height
     let H₀ := markedRadial p slots lists coeff ∅ V X
@@ -63,10 +64,9 @@ theorem first_parent_full_second_source
           (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y K :=
       first_fresh_parent_radial_truncated p hp hg hinj hc parent F D hq negative χ Ψ m
         slots lists coeff hD om a b ha hs X height Y hX hY core K
-    _ = _ := congrArg (fun v=>v + secondSourceTail p hp hg hinj F Ψ₀ (secondParentPuncture p m parent)
-        (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y K) hret
+    _ = _ := (by solve_by_elim)
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

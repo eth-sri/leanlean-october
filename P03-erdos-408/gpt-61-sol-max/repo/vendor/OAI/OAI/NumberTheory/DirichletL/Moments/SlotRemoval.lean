@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorSlotSelection
 
@@ -6,20 +7,19 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorSlotSelection
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentSlotRemoval
 
 theorem whole_slot_removal {α : Type*} (s : Finset α) (length : α → ℝ)
-    (η κ F : ℝ) (hη : 0 ≤ η) (hκ : 0 < κ) (hF : 0 ≤ F)
+     η κ F  (hη : 0 ≤ η) (hκ : 0 < κ) (hF : 0 ≤ F)
     (hL : ∀ i ∈ s, 0 ≤ length i) (hmesh : ∀ i ∈ s, length i ≤ η) :
     ∃ R : Finset α, R ⊆ s ∧
       (∑ i ∈ R, length i) ≤ min (∑ i ∈ s, length i) (F/(6*κ)+η) ∧
       (R=s ∨ F ≤ 6*κ*(∑ i ∈ R, length i)) := by
   have hthreshold : 0 ≤ F/(6*κ) := div_nonneg hF (by positivity)
   by_cases htotal : (∑ i ∈ s, length i) ≤ F/(6*κ)
-  · refine ⟨s,Finset.Subset.refl _,le_min le_rfl ?_,Or.inl rfl⟩
-    linarith
+  · grind
   · have htarget : 0 ≤ (∑ i ∈ s, length i)-F/(6*κ) := by linarith
     obtain ⟨T,hTs,hTupper,hTlower⟩ := HeckeDetectorSlotSelection.whole_slots
       s length (fun _ => 1) 1 η (by norm_num) hη hL hmesh
@@ -36,6 +36,6 @@ theorem whole_slot_removal {α : Type*} (s : Finset α) (length : α → ℝ)
 
 end SevenEighths.CenteredMomentSlotRemoval
 
-end
+
 
 end OAI

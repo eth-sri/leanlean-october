@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.Edge.Gram
 public import Erdos408.OneSided.Major.Mellin.Smooth
@@ -37,13 +38,12 @@ open scoped ContDiff
 /-! ### Periods -/
 
 /-- `∫_a^{a+1} e(θ n) dθ = [n = 0]` for an integer `n`. -/
-theorem integral_ephase_period (a : ℝ) (n : ℤ) :
+theorem integral_ephase_period  a  (n : ℤ) :
     ∫ θ in a..a + 1, ephase (θ * n) = if n = 0 then 1 else 0 := by
   split_ifs with hn
   · simp [hn, ephase_zero]
   · have hc : (2 * π * Complex.I * n : ℂ) ≠ 0 :=
-      mul_ne_zero (mul_ne_zero (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.2 Real.pi_ne_zero))
-        Complex.I_ne_zero) (Int.cast_ne_zero.2 hn)
+      (by simp_all)
     have e : ∀ θ : ℝ, ephase (θ * n) = Complex.exp ((2 * π * Complex.I * n) * θ) := by
       intro θ
       rw [ephase]
@@ -56,8 +56,7 @@ theorem integral_ephase_period (a : ℝ) (n : ℤ) :
         Complex.exp (2 * π * Complex.I * n * a) := by
       have := ephase_add (a * n) n
       rw [ephase_intCast, mul_one] at this
-      rw [← e, ← e, show (a + 1) * (n : ℝ) = a * n + n by ring]
-      exact this
+      grind
     rw [h1, sub_self, zero_div]
 
 /-! ### The major arcs -/
@@ -67,7 +66,7 @@ section Arcs
 variable (A₀ x Y : ℝ)
 
 /-- The arc radius `δ = 2 L^{A₀} / Y`. -/
-def arcRadius : ℝ := 2 * Real.log x ^ A₀ / Y
+def arcRadius  := 2 * Real.log x ^ A₀ / Y
 
 /-- The minor-arc weight: one minus the number of arcs `|θ - h/k| ≤ δ` containing `θ`. -/
 def minorWeight (θ : ℝ) : ℝ :=
@@ -84,7 +83,7 @@ theorem measurable_minorWeight : Measurable (minorWeight A₀ x Y) :=
     measurable_const.indicator measurableSet_Icc).const_sub 1
 
 /-- Distinct reduced fractions with denominators at most `Q₀` differ by at least `1/Q₀²`. -/
-private theorem one_div_sq_le_abs_sub {Q₀ k k' h h' : ℕ} (hk : k ∈ Icc 1 Q₀) (hk' : k' ∈ Icc 1 Q₀)
+private theorem one_div_sq_le_abs_sub  {Q₀ k k' h h'}  (hk : k ∈ Icc 1 Q₀) (hk' : k' ∈ Icc 1 Q₀)
     (hh : Nat.Coprime h k) (hh' : Nat.Coprime h' k') (hne : (k, h) ≠ (k', h')) :
     1 / (Q₀ : ℝ) ^ 2 ≤ |(h : ℝ) / k - h' / k'| := by
   rw [mem_Icc] at hk hk'
@@ -97,11 +96,7 @@ private theorem one_div_sq_le_abs_sub {Q₀ k k' h h' : ℕ} (hk : k ∈ Icc 1 Q
     have h1 : k ∣ k' := (Nat.Coprime.symm hh).dvd_of_dvd_mul_left ⟨h', by linarith [he']⟩
     have h2 : k' ∣ k := (Nat.Coprime.symm hh').dvd_of_dvd_mul_left ⟨h, by linarith [he']⟩
     have hkk : k = k' := Nat.dvd_antisymm h1 h2
-    subst hkk
-    have : h = h' := by
-      have := Nat.eq_of_mul_eq_mul_right hk.1 he'
-      exact this
-    exact hne (by rw [this])
+    simp_all
   have h1 : (1 : ℝ) ≤ |((h * k' - h' * k : ℤ) : ℝ)| := by exact_mod_cast Int.one_le_abs hcross
   have e : (h : ℝ) / k - h' / k' = ((h * k' - h' * k : ℤ) : ℝ) / (k * k') := by
     push_cast
@@ -114,11 +109,15 @@ private theorem one_div_sq_le_abs_sub {Q₀ k k' h h' : ℕ} (hk : k ∈ Icc 1 Q
   calc 1 / (Q₀ : ℝ) ^ 2 ≤ 1 / (k * k') := one_div_le_one_div_of_le (by positivity) hQ
     _ ≤ _ := div_le_div_of_nonneg_right h1 (by positivity)
 
+section
+variable (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x ^ A₀) ^ 3 ≤ Y)
+include hP hY
+
 /-- With `Y ≥ 8P³` and `P ≥ 1`, the arcs are disjoint and lie in `(-2δ, 1 - 2δ)`; hence the minor
 weight has modulus at most one, and where it is nonzero on that period, `θ` is at distance more
 than `δ` from every reduced `c/d` with `1 ≤ d ≤ Q₀`. -/
-theorem minorWeight_spec (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x ^ A₀) ^ 3 ≤ Y)
-    (θ : ℝ) :
+theorem minorWeight_spec    
+     θ  :
     |minorWeight A₀ x Y θ| ≤ 1 ∧
       (θ ∈ Set.Ioc (-(2 * arcRadius A₀ x Y)) (-(2 * arcRadius A₀ x Y) + 1) →
         minorWeight A₀ x Y θ ≠ 0 → ∀ (c : ℤ) (d : ℕ), 1 ≤ d → d ≤ ⌊Real.log x ^ A₀⌋₊ →
@@ -138,11 +137,10 @@ theorem minorWeight_spec (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x ^ 
     have e : 4 * δ * (Q₀ : ℝ) ^ 2 = 8 * P * Q₀ ^ 2 / Y := by rw [hδ, arcRadius]; ring
     rw [e, div_le_one hY0]
     have : 8 * P * (Q₀ : ℝ) ^ 2 ≤ 8 * P * P ^ 2 := by gcongr
-    have e2 : 8 * P * P ^ 2 = 8 * P ^ 3 := by ring
+    
     linarith
   have hsep : 2 * δ < 1 / (Q₀ : ℝ) ^ 2 := by
     rw [lt_div_iff₀ (by positivity)]
-    have : 0 < δ * (Q₀ : ℝ) ^ 2 := by positivity
     linarith
   -- the indicators: at most one arc contains `θ`
   set ind : ℕ → ℕ → ℝ := fun k h =>
@@ -245,7 +243,7 @@ theorem minorWeight_spec (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x ^ 
     have hnn : ∀ k h, 0 ≤ ind k h := fun k h => by
       rcases hind01 k h with h0 | h0 <;> norm_num [h0]
     have hle1 : ind d c.toNat ≤ ∑ h ∈ (range d).filter (fun h => Nat.Coprime h d), ind d h :=
-      single_le_sum (f := fun h => ind d h) (fun h _ => hnn d h) hmemf
+      single_le_sum (f := ind d) (fun h _ => hnn d h) hmemf
     have hle2 : ∑ h ∈ (range d).filter (fun h => Nat.Coprime h d), ind d h ≤ N :=
       single_le_sum (f := fun k => ∑ h ∈ (range k).filter (fun h => Nat.Coprime h k), ind k h)
         (fun k _ => sum_nonneg fun h _ => hnn k h) (mem_Icc.2 ⟨hd1, hdQ⟩)
@@ -253,8 +251,8 @@ theorem minorWeight_spec (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x ^ 
 
 /-- **The minor-arc kernel**: with `Y ≥ 8P³` and `P ≥ 1`,
 `[n = 0] - ∫_𝔐 e(θ n) dθ = ∫_{-2δ}^{1-2δ} w(θ) e(θ n) dθ`. -/
-theorem sub_arcIntegral_eq (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x ^ A₀) ^ 3 ≤ Y)
-    (n : ℤ) :
+theorem sub_arcIntegral_eq    
+     n  :
     (if n = 0 then 1 else 0) - arcIntegral A₀ x Y n =
       ∫ θ in -(2 * arcRadius A₀ x Y)..-(2 * arcRadius A₀ x Y) + 1,
         (minorWeight A₀ x Y θ : ℂ) * ephase (θ * n) := by
@@ -271,8 +269,7 @@ theorem sub_arcIntegral_eq (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x 
     have e : 4 * δ * (Q₀ : ℝ) ^ 2 = 8 * P * Q₀ ^ 2 / Y := by rw [hδ, arcRadius]; ring
     rw [e, div_le_one hY0]
     have : 8 * P * (Q₀ : ℝ) ^ 2 ≤ 8 * P * P ^ 2 := by gcongr
-    have e2 : 8 * P * P ^ 2 = 8 * P ^ 3 := by ring
-    linarith
+    grind
   -- each arc lies in the period `(lo, lo + 1]`
   have hsub : ∀ k ∈ Icc 1 Q₀, ∀ h ∈ (range k).filter (fun h => Nat.Coprime h k),
       Set.Icc ((h : ℝ) / k - δ) ((h : ℝ) / k + δ) ⊆ Set.Ioc lo (lo + 1) := by
@@ -290,10 +287,7 @@ theorem sub_arcIntegral_eq (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x 
       have : (k : ℝ) ≤ (Q₀ : ℝ) ^ 2 := by nlinarith
       have : 3 * δ * k ≤ 3 * δ * (Q₀ : ℝ) ^ 2 := by gcongr
       linarith
-    intro θ hθ
-    rw [Set.mem_Icc] at hθ
-    rw [Set.mem_Ioc]
-    constructor <;> linarith
+    grind
   -- the integral of one indicator is the arc integral
   have harc : ∀ k ∈ Icc 1 Q₀, ∀ h ∈ (range k).filter (fun h => Nat.Coprime h k),
       ∫ θ in lo..lo + 1, (((Set.Icc ((h : ℝ) / k - δ) ((h : ℝ) / k + δ)).indicator 1 θ : ℝ) : ℂ) *
@@ -313,9 +307,7 @@ theorem sub_arcIntegral_eq (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x 
       ← intervalIntegral.integral_of_le (by linarith)]
     have e2 := intervalIntegral.integral_comp_add_left (a := -δ) (b := δ)
       (fun θ => ephase (θ * n)) ((h : ℝ) / k)
-    rw [show (h : ℝ) / k + -δ = (h : ℝ) / k - δ by ring] at e2
-    rw [← e2]
-    rfl
+    solve_by_elim
   -- integrability
   have hcont : Continuous fun θ : ℝ => ephase (θ * n) := by
     unfold ephase
@@ -365,8 +357,10 @@ theorem sub_arcIntegral_eq (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x 
   rw [integral_ephase_period, arcIntegral]
   congr 1
   refine sum_congr rfl fun k hk => ?_
-  rw [intervalIntegral.integral_finsetSum (f := fun h θ => term k h θ) fun h _ => hint k h]
+  rw [intervalIntegral.integral_finsetSum (f := term k) fun h _ => hint k h]
   exact sum_congr rfl fun h hh => (harc k hk h hh).symm
+
+end
 
 /-- **Dirichlet approximation on the minor arcs** (PD `mem:dirichlet-minor`): if `θ` is at
 distance more than `δ = 2P/Y` from every reduced `c/d` with `d ≤ Q₀ = ⌊P⌋`, and `|u| ≤ P/2`,
@@ -409,9 +403,8 @@ theorem exists_dirichlet_minor {P Y θ u : ℝ} (hP : 0 < P) (hY : 0 < Y)
     have : (1 : ℤ) ≤ g := by exact_mod_cast hg0
     nlinarith
   have hdQ : d ≤ Q := by
-    have : (d : ℤ) ≤ Q := hdk.trans (by exact_mod_cast hkQ)
-    exact_mod_cast this
-  have hd0' : (0 : ℝ) < d := by exact_mod_cast hd0
+    omega
+  
   have hk0' : (0 : ℝ) < k := by exact_mod_cast hk0
   -- `|ϑ - c/d| = |kϑ - j|/k ≤ 1/(k(Q+1)) ≤ 1/(dQ)`
   have happ : |θ + u / Y - c / d| ≤ 1 / (d * Q) := by
@@ -420,9 +413,7 @@ theorem exists_dirichlet_minor {P Y θ u : ℝ} (hP : 0 < P) (hY : 0 < Y)
       have hkr : (k : ℝ) = g * d := by
         have : (k : ℤ) = g * (d : ℤ) := by rw [hdd]; exact hd'
         exact_mod_cast this
-      rw [hjr, hkr]
-      have : (g : ℝ) ≠ 0 := by exact_mod_cast hg0.ne'
-      field_simp
+      grind
     rw [e, abs_div, abs_of_pos hk0']
     have hdk' : (d : ℝ) ≤ k := by exact_mod_cast hdk
     calc |(k : ℝ) * (θ + u / Y) - j| / k ≤ (1 / ((Q : ℝ) + 1)) / k :=
@@ -448,16 +439,12 @@ theorem exists_dirichlet_minor {P Y θ u : ℝ} (hP : 0 < P) (hY : 0 < Y)
   have h4 : |u / Y| ≤ P / 2 / Y := by
     rw [abs_div, abs_of_pos hY]
     exact div_le_div_of_nonneg_right hu hY.le
-  have : 2 * P / Y = P / Y + P / Y := by ring
-  have : P / 2 / Y < P / Y := by
-    rw [div_lt_div_iff_of_pos_right hY]
-    linarith
-  linarith
+  grind
 
 /-! ### The cutoff in Fourier space -/
 
 /-- The comparison function `g(ξ) = (1 + (2πξ)²)⁻¹`. -/
-def fourierDecay (ξ : ℝ) : ℝ := (1 + (2 * π * ξ) ^ 2)⁻¹
+def fourierDecay (ξ : ℝ)  := (1 + (2 * π * ξ) ^ 2)⁻¹
 
 /-- `g` is integrable with integral `1/2`. -/
 theorem integrable_fourierDecay :
@@ -515,12 +502,10 @@ theorem exists_plateau_fourier :
   · -- `(1 + (2πξ)²) |ψ̂| ≤ 10 (M₀ + M₂)`
     have hpos : 0 < 1 + (2 * π * ξ) ^ 2 := by positivity
     rw [fourierDecay, ← div_eq_mul_inv, le_div_iff₀ hpos]
-    have := h0 ξ
-    have := h2 ξ
-    nlinarith [norm_nonneg (ft f ξ)]
+    grind
   · -- `|ψ̂| ≤ 10 M₄ / s² ≤ (20 M₄ / U) g` with `s = (2πξ)² ≥ U`
     set s := (2 * π * ξ) ^ 2 with hs
-    have hξ : 1 < |ξ| := lt_of_le_of_lt hU hUξ
+    
     have hpi : 1 < 2 * π := by linarith [Real.two_le_pi]
     have hsU : U ≤ s := by
       rw [hs, mul_pow, ← sq_abs ξ]
@@ -529,7 +514,7 @@ theorem exists_plateau_fourier :
       calc U ≤ |ξ| ^ 2 := this
         _ = 1 * |ξ| ^ 2 := (one_mul _).symm
         _ ≤ (2 * π) ^ 2 * |ξ| ^ 2 := mul_le_mul_of_nonneg_right h1 (sq_nonneg _)
-    have hs1 : 1 ≤ s := hU.trans hsU
+    
     have hU0 : 0 < U := by linarith
     have hspos : 0 < s := by linarith
     rw [fourierDecay, ← hs, ← div_eq_mul_inv, le_div_iff₀ (by linarith)]
@@ -542,11 +527,10 @@ theorem exists_plateau_fourier :
       rw [le_div_iff₀ hspos]
       nlinarith
     have e3 : 10 * M₄ / s ≤ 10 * M₄ / U := div_le_div_of_nonneg_left (by positivity) hU0 hsU
-    have hM02 : 0 ≤ 10 * (M₀ + M₂) := by positivity
+    
     have e4 : 20 * M₄ / U ≤ (10 * (M₀ + M₂) + 20 * M₄) / U :=
       div_le_div_of_nonneg_right (by linarith) hU0.le
-    have : 2 * (10 * M₄ / U) = 20 * M₄ / U := by ring
-    linarith
-  · exact fun s => ft_inversion (hf.of_le (by simp)) hsupp s
+    grind
+  · exact ft_inversion (hf.of_le (by simp)) hsupp
 
 end Erdos408.OneSided

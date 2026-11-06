@@ -9,7 +9,7 @@ set_option autoImplicit false
 
 namespace Erdos821.S34Core
 
-theorem scaled_dirichlet_approximation (α Z S : ℝ)
+theorem scaled_dirichlet_approximation  α Z S 
     (hZ : 0 < Z) (hS : 0 < S) (hZS : 1 ≤ Z / S) :
     ∃ (u : ℤ) (r : ℕ) (β : ℝ),
       1 ≤ r ∧ Nat.Coprime u.natAbs r ∧ (r : ℝ) ≤ Z / S ∧
@@ -23,7 +23,7 @@ theorem scaled_dirichlet_approximation (α Z S : ℝ)
   have hNle : (q.den : ℝ) ≤ (N : ℝ) := by exact_mod_cast hqr
   have hNfloor : (N : ℝ) ≤ Z / S := Nat.floor_le (by positivity)
   have hNnext : Z / S < (N : ℝ) + 1 := Nat.lt_floor_add_one _
-  have hcast : (q : ℝ) = (q.num : ℝ) / q.den := by exact Rat.cast_def q
+  have hcast : (q : ℝ) = (q.num : ℝ) / q.den := Rat.cast_def q
   refine ⟨q.num, q.den, α - q, by exact_mod_cast Rat.pos q,
     q.reduced, hNle.trans hNfloor, ?_, ?_, ?_⟩
   · rw [← hcast]

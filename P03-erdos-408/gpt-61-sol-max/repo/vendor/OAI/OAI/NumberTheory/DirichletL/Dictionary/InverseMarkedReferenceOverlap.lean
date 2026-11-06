@@ -12,31 +12,37 @@ open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
 open InverseInitialOverlap UniqueFactorizationMonoid ActualEisensteinCubic CanonicalRowCompletion
-local notation "O"=>HeckeFamily.O
+
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
-def remainingResidual (S:Finset (Ideal O))(L:ι→Finset (Ideal O))(J:Finset ι)
-    (x:Assigned L J)(coeff:ι→Ideal O→ℂ)(η:Ideal O→*ℂ)(a:Ideal O→ℂ)
-    (W:ℝ→ℂ)(Z r z G:ℝ)(u:O) : ℂ :=
+def remainingResidual (S:Finset (Ideal HeckeFamily.O))(L)(J:Finset ι)
+    (x:Assigned L J)(coeff:ι→Ideal HeckeFamily.O→ℂ)(η:Ideal HeckeFamily.O→*ℂ)(a:Ideal HeckeFamily.O→ℂ)
+    (W:ℝ→ℂ)(Z r z G:ℝ)(u:HeckeFamily.O)  :=
   ∑y:Remaining L J,star ((∏i:{i:ι // i∉J},coeff i.val (y i).val)*
     (moebius (remainingIdeal L J y):ℂ))*
     conjugatedResidual S (assignedIdeal L J x*remainingIdeal L J y)
       (assignedIdeal L J x) η a W Z r z G u
 
-theorem assigned_remaining_squarefree (L:ι→Finset (Ideal O))
-    (hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
-    (J:Finset ι)(x:Assigned L J)(y:Remaining L J) :
+section
+variable (S : Finset (Ideal HeckeFamily.O)) (L : ι→Finset (Ideal HeckeFamily.O)) (hprime : ∀i,∀P∈L i,Prime P) (hdis : ((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L) (J : Finset ι) (x : Assigned L J) (coeff : ι→Ideal HeckeFamily.O→ℂ) (η : Ideal HeckeFamily.O→*ℂ) (a : Ideal HeckeFamily.O→ℂ) (W : ℝ→ℂ) (Z r z G : ℝ)
+
+
+include hprime hdis in
+theorem assigned_remaining_squarefree  
+     
+     
+       y  :
     Squarefree (assignedIdeal L J x*remainingIdeal L J y) := by
   rw [←joinTuple_product]
   exact tuple_product_squarefree _ (fun i=>hprime i _ (joinTuple L J x y i).property)
     (tuple_injective L hdis _)
 
-theorem assigned_source_eq_remainingResidual (S:Finset (Ideal O))
-    (L:ι→Finset (Ideal O))(hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
-    (J:Finset ι)(x:Assigned L J)(coeff:ι→Ideal O→ℂ)
-    (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z G:ℝ)(hZ:0<Z)(u:O) :
+include hprime hdis in
+theorem assigned_source_eq_remainingResidual  
+      
+     
+       
+        (hZ:0<Z) u  :
     (∑y:Remaining L J,(∏i:{i:ι // i∉J},coeff i.val (y i).val)*
       originalFixedPolynomial S (assignedIdeal L J x*remainingIdeal L J y)
         (assignedIdeal L J x) η a W Z r z u)=
@@ -52,11 +58,12 @@ theorem assigned_source_eq_remainingResidual (S:Finset (Ideal O))
     InverseInitialOverlap.residual,quotient_mul_cancel (assignedIdeal_ne_zero L hprime J x)]
   ring
 
-theorem original_selected_overlap (S:Finset (Ideal O))
-    (L:ι→Finset (Ideal O))(hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)(coeff:ι→Ideal O→ℂ)
-    (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z:ℝ)(G:Finset ι→ℝ)
-    (hZ:0<Z)(u:O) :
+include hprime hdis in
+theorem original_selected_overlap  
+      
+      
+        (G:Finset ι→ℝ)
+    (hZ:0<Z) u  :
     (∑q:Tuple L,(∏i,coeff i (q i).val)*
       originalTotalPolynomial S (∏i,(q i).val) η a W Z r z u)=
     ∑J∈Finset.univ.powerset,∑x:Assigned L J,
@@ -70,6 +77,8 @@ theorem original_selected_overlap (S:Finset (Ideal O))
   intro x hx
   rw [assigned_source_eq_remainingResidual S L hprime hdis J x coeff η a W Z r z (G J) hZ u]
   ring
+
+end
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 

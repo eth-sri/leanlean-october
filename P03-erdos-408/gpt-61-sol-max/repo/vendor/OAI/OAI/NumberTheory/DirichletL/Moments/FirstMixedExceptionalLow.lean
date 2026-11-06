@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedNormalizationActual
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedExceptionalLow
@@ -24,17 +24,21 @@ open CenteredMomentDescentLedger CenteredMomentCompleteCommon CenteredMomentCano
 open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentRankinRadical
 open CenteredMomentSecondHeightFamily CenteredMomentAmplificationErrorEnergy
 local notation "O"=>HeckeFamily.O
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
+
 
 open CenteredMomentFirstMixedExceptionalCap CenteredMomentFirstMixedCommonRadius
 
-theorem actual_main_exceptional_reference (η τ : Character)
-    (I J E : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (hIJ:primeSupport I=primeSupport J)
-    (A : Finset (CommonIndex I J)) (hE:E=Ideal.span {primeSubsetGenerator (fun P:CommonIndex I J=>P.val) A})
-    (K X Z j sigma delta reserve r : ℝ) (hZ : 1<Z)
-    (hmod : τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+section
+variable (η τ : Character) (I J E : Ideal O) (hI : Supported I) (hJ : Supported J) (hIJ : primeSupport I=primeSupport J) (A : Finset (CommonIndex I J)) (hE : E=Ideal.span {primeSubsetGenerator (fun P:CommonIndex I J=>P.val) A}) (K X Z j sigma delta reserve r : ℝ) (hZ : 1<Z) (hmod : τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J})
+
+include hI hJ hIJ hE j hZ hmod in
+theorem actual_main_exceptional_reference  
+         
+     
+       
+       
+     
     (hK:0<K)(hX:0<X) :
     ((X/(I.absNorm:ℝ))*(X/(I.absNorm:ℝ))^((1:ℝ)/3)*(mainCommonRadius Z (Real.logb Z (J.absNorm:ℝ)) (nominalLog I J E K X Z) (Real.logb Z (I.absNorm:ℝ)) sigma delta reserve)^((5:ℝ)/6)*Z^(-sigma/3)/((τ.modulus.absNorm:ℝ)*(X/(I.absNorm:ℝ))^2*Z^(allowance I J Z)))*Z^(-2*max r 0/3)≤
       Z^(Real.logb Z X-5*(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))/6+4*sigma/3+5*(delta+reserve)/6):=by
@@ -67,18 +71,18 @@ theorem actual_main_exceptional_reference (η τ : Character)
   simp only [nominalLog] at hs ⊢
   linarith
 
-theorem actual_error_exceptional_reference (η τ : Character)
-    (I J E : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (hIJ:primeSupport I=primeSupport J)
-    (A : Finset (CommonIndex I J)) (hE:E=Ideal.span {primeSubsetGenerator (fun P:CommonIndex I J=>P.val) A})
-    (K X Z j sigma delta reserve r : ℝ) (hZ : 1<Z)
-    (hmod : τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J})
+include hI hJ hIJ hE j hZ hmod in
+theorem actual_error_exceptional_reference  
+         
+     
+       
+       
+     
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
-    (p0 : O) (hp0 : p0∈CenteredMomentPrimeElements.elementPool
+     p0  (hp0 : p0∈CenteredMomentPrimeElements.elementPool
       (CenteredMomentPrimePool.primePool M H Sbad (1/2) 1 (Z^(sigma/3))))
-    (k : ℕ) (hk : k=1 ∨ k=6 ∨ k=7)
+     k  (hk : k=1 ∨ k=6 ∨ k=7)
     (hK:0<K)(hX:0<X) :
     ((X/(I.absNorm:ℝ))*localErrorCost p0 (k-1)*(X/(I.absNorm:ℝ)/(normValue p0)^k)^((1:ℝ)/3)*(errorCommonRadius Z (Real.logb Z (J.absNorm:ℝ)) (nominalLog I J E K X Z) (Real.logb Z (I.absNorm:ℝ)) sigma delta reserve p0 k)^((5:ℝ)/6)/((τ.modulus.absNorm:ℝ)*(X/(I.absNorm:ℝ))^2*Z^(allowance I J Z)))*Z^(-2*max r 0/3)≤
       Z^(Real.logb Z X-5*(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))/6+3*sigma/2+5*(delta+reserve)/6):=by
@@ -113,6 +117,8 @@ theorem actual_error_exceptional_reference (η τ : Character)
   apply Real.rpow_le_rpow_of_exponent_le hZ.le
   simp only [nominalLog] at hs ⊢
   linarith
+
+end
 
 end SevenEighths.CenteredMomentFirstMixedExceptionalLow
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstFamilyEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstOldEnergy
@@ -11,7 +12,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion SecondPassArithmetic
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem first_family_original_to_second (ε : ℝ) (hε : 0 < ε) :
@@ -64,15 +65,9 @@ theorem first_family_original_to_second (ε : ℝ) (hε : 0 < ε) :
           (if negative then r.1 else r.2) Ψ m H ω X c d t rows Y hY hnorm (hΨ _)) (by positivity)
     _ = _ := by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro r hr
-      apply Finset.sum_congr rfl
-      intro D hD
-      apply Finset.sum_congr rfl
-      intro core hcore
       ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

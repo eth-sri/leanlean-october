@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.CycleBlocks
 public import Mathlib.GroupTheory.Perm.Cycle.Concrete
@@ -18,7 +19,7 @@ variable {α : Type*} [Fintype α] [DecidableEq α]
 def cyclesOn (B : Finset α) : Finset (Equiv.Perm α) :=
   Finset.univ.filter (fun c => c.IsCycle ∧ c.support = B)
 
-def tailOrders (B : Finset α) (x : α) : Finset (List α) :=
+def tailOrders (B : Finset α) (x : α)  :=
   (B.erase x).toList.permutations.toFinset
 
 omit [Fintype α] in
@@ -38,8 +39,12 @@ lemma tailOrders_properties (B : Finset α) (x : α) (hx : x ∈ B)
     exact Finset.notMem_erase x B hxm
   · rw [hp.length_eq, Finset.length_toList, Finset.card_erase_of_mem hx]
 
-lemma anchoredCycle_properties (B : Finset α) (x : α) (hx : x ∈ B)
-    (hB : 2 ≤ B.card) (l : List α) (hl : l ∈ tailOrders B x) :
+section
+variable (B : Finset α) (x : α) (hx : x ∈ B) (hB : 2 ≤ B.card)
+
+include hx hB in
+lemma anchoredCycle_properties      
+       l  (hl : l ∈ tailOrders B x) :
     (x :: l).Nodup ∧ 2 ≤ (x :: l).length ∧
       (x :: l).formPerm.IsCycle ∧ (x :: l).formPerm.support = B ∧
       (x :: l).formPerm.toList x = x :: l := by
@@ -50,14 +55,12 @@ lemma anchoredCycle_properties (B : Finset α) (x : α) (hx : x ∈ B)
     simp only [List.toFinset_cons, hs, Finset.insert_erase hx]
   refine ⟨hn', hlen', List.isCycle_formPerm hn' hlen', ?_, ?_⟩
   · rw [List.support_formPerm_of_nodup _ hn', hs']
-    intro y hy
-    have := congrArg List.length hy
-    simp only [List.length_cons, List.length_nil] at this
-    omega
+    grind
   · simpa using Equiv.Perm.toList_formPerm_nontrivial (x :: l) hlen' hn'
 
-lemma anchoredCycle_image (B : Finset α) (x : α) (hx : x ∈ B)
-    (hB : 2 ≤ B.card) :
+include hx hB in
+lemma anchoredCycle_image      
+      :
     (tailOrders B x).image (fun l => (x :: l).formPerm) = cyclesOn B := by
   ext c
   constructor
@@ -104,18 +107,18 @@ lemma anchoredCycle_image (B : Finset α) (x : α) (hx : x ∈ B)
         rw [← heq, Equiv.Perm.formPerm_toList, hcyc.cycleOf_eq (Equiv.Perm.mem_support.mp hx')]
       exact Finset.mem_image.mpr ⟨l, hl, hcform⟩
 
-lemma anchoredCycle_injective (B : Finset α) (x : α) (hx : x ∈ B)
-    (hB : 2 ≤ B.card) :
+include hx hB in
+lemma anchoredCycle_injective      
+      :
     Set.InjOn (fun l : List α => (x :: l).formPerm) (tailOrders B x) := by
   intro l hl l' hl' h
   have h1 := (anchoredCycle_properties B x hx hB l hl).2.2.2.2
   have h2 := (anchoredCycle_properties B x hx hB l' hl').2.2.2.2
-  have he := congrArg (fun c : Equiv.Perm α => c.toList x) h
-  rw [h1, h2] at he
-  exact List.cons.inj he |>.2
+  simp_all
 
+include hB in
 /-- There are (|B|-1)! cycles with prescribed support B. -/
-theorem cyclesOn_card (B : Finset α) (hB : 2 ≤ B.card) :
+theorem cyclesOn_card     :
     (cyclesOn B).card = (B.card - 1).factorial := by
   obtain ⟨x, hx⟩ := Finset.card_pos.mp (by omega : 0 < B.card)
   rw [← anchoredCycle_image B x hx hB,
@@ -123,6 +126,8 @@ theorem cyclesOn_card (B : Finset α) (hB : 2 ≤ B.card) :
   unfold tailOrders
   rw [List.toFinset_card_of_nodup (List.nodup_permutations _ (B.erase x).nodup_toList),
     List.length_permutations, Finset.length_toList, Finset.card_erase_of_mem hx]
+
+end
 
 
 end Erdos821.S2

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
@@ -15,25 +16,25 @@ open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 open SevenEighths.InverseInitialPhysicalMeasure SevenEighths.InverseInitialKernelBridge
 open SevenEighths.InverseInitialEnergyCallerFamily SevenEighths.InverseInitialProfile
 namespace SevenEighths.InverseInitialEnergyCallerModes
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem canonicalColumn_marked_sum
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (x : Point ι) (hE : x.divisor⊆x.common)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (j h : Eis)
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (W : ℝ→ℂ) (Z D B v : ℝ) :
+    (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (j h : ActualEisensteinCubic.O)
+    (slots : Finset σ)  lists   a 
+     W   Z D B v  :
     (∑ N∈(F\x.overlap).powerset,
       canonicalColumn p hp hcop hg hpr Ψ j (primeMark slots lists a) x h
         (fun A=>W (columnRatio p A Z D B v)) N) =
       ∑ J∈slots.powerset,primeMark J lists a (x.common∪x.overlap)*
         finiteCanonicalMarkedRow p hp hcop hg F Ψ (j*quotient p x)
           (primaryGenerator (sourceIdeal p x.divisor*sourceIdeal p x.overlap))
-          (primaryGenerator (sourceIdeal p x.divisor)*((unitSector p hp hpr x:Eis)^5*h))
+          (primaryGenerator (sourceIdeal p x.divisor)*((unitSector p hp hpr x:ActualEisensteinCubic.O)^5*h))
           (slots\J) lists a W (Z^(columnCenter D B v)) := by
   have hgen (A : Finset ι) : primaryGenerator (sourceIdeal p A)≠0 := by
     rw [sourceIdeal_gen p hp hpr A]
@@ -50,7 +51,7 @@ theorem canonicalColumn_marked_sum
     apply mul_right_cancel₀ (hgen x.divisor)
     simpa only [Units.val_one,one_mul] using hu.symm
   subst u
-  have he := hsplit F Ψ j ((unitSector p hp hpr x:Eis)^5*h) slots lists a W
+  have he := hsplit F Ψ j ((unitSector p hp hpr x:ActualEisensteinCubic.O)^5*h) slots lists a W
     (Z^(columnCenter D B v))
   simp only [Units.val_one,one_pow,one_mul] at he
   convert he using 1
@@ -69,35 +70,21 @@ def sourcePoint (x : Source (ι:=ι) 0) (N M : Finset ι) : Point ι where
   frequency := x.frequency
 
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
-theorem sourcePoint_outer_phase (x : Source (ι:=ι) 0) (N M : Finset ι)
-    (height : Fin 6→ℝ) (Z D B v θ H : ℝ) :
+theorem sourcePoint_outer_phase  x   N M 
+     height   Z D B v θ H  :
     secondOuterPhase height (relativeLog (coordinates p (sourcePoint x N M)) Z D B v θ H) =
     secondOuterPhase height (relativeLog (coordinates p (sourcePoint x ∅ ∅)) Z D B v θ H) := by
-  have hc₀ : coordinates p (sourcePoint x N M) 0=coordinates p (sourcePoint x ∅ ∅) 0 := by
-    simp [coordinates,physicalCoordinates,sourcePoint]
-  have hc₁ : coordinates p (sourcePoint x N M) 1=coordinates p (sourcePoint x ∅ ∅) 1 := by
-    simp [coordinates,physicalCoordinates,sourcePoint]
-  have hc₂ : coordinates p (sourcePoint x N M) 2=coordinates p (sourcePoint x ∅ ∅) 2 := by
-    simp [coordinates,physicalCoordinates,sourcePoint]
-  have hc₃ : coordinates p (sourcePoint x N M) 3=coordinates p (sourcePoint x ∅ ∅) 3 := by
-    simp [coordinates,physicalCoordinates,sourcePoint]
-  simp [secondOuterPhase,relativeLog,relativeNorm,secondRelativeNorm,hc₀,hc₁,hc₂,hc₃]
+  simp_all [coordinates, sourcePoint, physicalCoordinates, secondOuterPhase, relativeLog, relativeNorm, secondRelativeNorm]
 
 omit [∀ i,(Ideal.span {p i}).IsMaximal] in
 theorem sourcePoint_unitSector
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (x : Source (ι:=ι) 0) (N M : Finset ι) :
+     x   N M  :
     unitSector p hp hpr (sourcePoint x N M)=unitSector p hp hpr (sourcePoint x ∅ ∅) := by
-  have hgen : primaryGenerator (sourceIdeal p x.divisor)≠0 := by
-    rw [sourceIdeal_gen p hp hpr]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
-  apply Units.val_injective
-  apply mul_right_cancel₀ hgen
-  exact (unitSector_spec p hp hpr (sourcePoint x N M)).symm.trans
-    (unitSector_spec p hp hpr (sourcePoint x ∅ ∅))
+  rfl
 
 def markedModeColumn (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (j h : Eis) (x : Source (ι:=ι) 0)
+    (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (j h : ActualEisensteinCubic.O) (x : Source (ι:=ι) 0)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (W : ℝ→ℂ) (Z D B v : ℝ) : ℂ :=
   ∑ J∈slots.powerset,primeMark J lists a (x.common∪x.overlap)*
@@ -105,16 +92,16 @@ def markedModeColumn (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
       (j*quotient p (sourcePoint x ∅ ∅))
       (primaryGenerator (sourceIdeal p x.divisor*sourceIdeal p x.overlap))
       (primaryGenerator (sourceIdeal p x.divisor)*
-        ((unitSector p hp hpr (sourcePoint x ∅ ∅):Eis)^5*h))
+        ((unitSector p hp hpr (sourcePoint x ∅ ∅):ActualEisensteinCubic.O)^5*h))
       (slots\J) lists a W (Z^(columnCenter D B v))
 
 theorem canonicalPairMode_rectangle
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (x : Source (ι:=ι) 0) (hE : x.divisor⊆x.common)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (j : Eis)
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ) (ρ : SecondRayIndex)
-    (z : JointLogSeparation.Frequency × (Fin 6→ℝ)) :
+    (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
+    (slots : Finset σ)  lists   a 
+     ω₁ ω₂   Z D B v θ H   ρ 
+     z  :
     let height := profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2
     (∑ N∈(F\x.overlap).powerset,∑ M∈(F\x.overlap).powerset,
       canonicalPairMode p hp hcop hg hpr Ψ j (primeMark slots lists a) ω₁ ω₂

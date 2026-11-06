@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSource
 
@@ -13,8 +14,7 @@ variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 omit [DecidableEq ι] [DecidableEq σ] in
 lemma indexedSlotAssignment_apply (I : Finset σ) (q : ∀ i ∈ I,ι) (i : σ) (hi : i ∈ I) :
-    indexedSlotAssignment I q (I.equivFin ⟨i,hi⟩) = q i hi := by
-  exact congrArg (fun j : I => q j.val j.property) ((I.equivFin).symm_apply_apply ⟨i,hi⟩)
+    indexedSlotAssignment I q (I.equivFin ⟨i,hi⟩) = q i hi := congrArg (fun j : I => q j.val j.property) ((I.equivFin).symm_apply_apply ⟨i,hi⟩)
 
 def eraseSecondSlots {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : MarkedSecondSource ι Jo 0 where
   cube := x.cube
@@ -32,8 +32,8 @@ omit [DecidableEq ι] in
   funext i
   exact Fin.elim0 i
 
-def assignedSecondCoefficient {Jo : ℕ} (J₁ J₂ : Finset σ) (a₁ a₂ : σ → ι → ℂ)
-    (x : MarkedSecondSource ι Jo (J₁.card+J₂.card)) : ℂ :=
+def assignedSecondCoefficient {Jo } (J₁ J₂ : Finset σ) (a₁ a₂ : σ → ι → ℂ)
+    (x : MarkedSecondSource ι Jo (J₁.card+J₂.card))  :=
   star (slotAssignmentWeight J₁ a₁
     (fun i hi => x.newAssigned (Fin.castAdd J₂.card (J₁.equivFin ⟨i,hi⟩)))) *
     slotAssignmentWeight J₂ a₂
@@ -45,10 +45,12 @@ omit [DecidableEq ι] [DecidableEq σ] in
     (x : MarkedSecondSource ι Jo 0) (q : (∀ i ∈ J₁,ι) × (∀ i ∈ J₂,ι)) :
     assignedSecondCoefficient J₁ J₂ a₁ a₂ (attachPairedSlots J₁ J₂ (x,q)) =
       pairedSlotWeight J₁ J₂ a₁ a₂ q := by
-  simp only [assignedSecondCoefficient,attachPairedSlots,attachSecondSlots,
-    pairedSlotAssignment,Fin.addCases_left,Fin.addCases_right,indexedSlotAssignment_apply,pairedSlotWeight]
+  simp_all [assignedSecondCoefficient, attachPairedSlots, attachSecondSlots, pairedSlotAssignment, indexedSlotAssignment_apply, pairedSlotWeight]
 
-theorem paired_assignment_filter (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι) (A : Finset ι) :
+section
+variable {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0)) (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι)
+
+theorem paired_assignment_filter      A  :
     ((J₁.pi L₁) ×ˢ (J₂.pi L₂)).filter (fun q => ∀ j, pairedSlotAssignment J₁ J₂ q j ∈ A) =
       (J₁.pi (fun i => L₁ i∩A)) ×ˢ (J₂.pi (fun i => L₂ i∩A)) := by
   ext q
@@ -69,8 +71,8 @@ theorem paired_assignment_filter (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Fin
   · intro hq
     obtain ⟨hq₁,hq₂⟩ := Finset.mem_product.mp hq
     refine Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨?_,?_⟩,?_⟩
-    · exact Finset.mem_pi.mpr (fun i hi => (Finset.mem_inter.mp (Finset.mem_pi.mp hq₁ i hi)).1)
-    · exact Finset.mem_pi.mpr (fun i hi => (Finset.mem_inter.mp (Finset.mem_pi.mp hq₂ i hi)).1)
+    · simp_all
+    · simp_all
     · intro j
       refine Fin.addCases (fun k => ?_) (fun k => ?_) j
       · simpa only [pairedSlotAssignment,Fin.addCases_left] using
@@ -78,8 +80,8 @@ theorem paired_assignment_filter (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Fin
       · simpa only [pairedSlotAssignment,Fin.addCases_right] using
           (Finset.mem_inter.mp (indexedSlotAssignment_support J₂ L₂ _ q.2 hq₂ k)).2
 
-theorem assignedSecondSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι)
+theorem assignedSecondSource_sum    
+       
     (F : MarkedSecondSource ι Jo (J₁.card+J₂.card) → ℂ) :
     ∑ x ∈ assignedSecondSource source J₁ J₂ L₁ L₂, F x =
       ∑ y ∈ source, ∑ q ∈
@@ -94,9 +96,9 @@ theorem assignedSecondSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSource
   dsimp only
   rw [paired_assignment_filter]
 
-theorem assignedSecondCoefficient_norm_le_one {Jo : ℕ}
-    (source : Finset (MarkedSecondSource ι Jo 0)) (J₁ J₂ : Finset σ)
-    (L₁ L₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
+theorem assignedSecondCoefficient_norm_le_one  
+       
+      (a₁ a₂ : σ → ι → ℂ)
     (ha₁ : ∀ i ∈ J₁, ∀ p ∈ L₁ i, ‖a₁ i p‖ ≤ 1)
     (ha₂ : ∀ i ∈ J₂, ∀ p ∈ L₂ i, ‖a₂ i p‖ ≤ 1)
     (x : MarkedSecondSource ι Jo (J₁.card+J₂.card))
@@ -106,6 +108,8 @@ theorem assignedSecondCoefficient_norm_le_one {Jo : ℕ}
   rw [assignedSecondCoefficient_attach]
   exact pairedSlotWeight_norm_le_one J₁ J₂ L₁ L₂ a₁ a₂ _ (q₁,q₂)
     (Finset.mem_product.mpr ⟨hq₁,hq₂⟩) ha₁ ha₂
+
+end
 
 end
 end SevenEighths.InverseMoment

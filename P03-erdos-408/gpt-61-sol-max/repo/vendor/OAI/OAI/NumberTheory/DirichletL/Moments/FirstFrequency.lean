@@ -19,13 +19,13 @@ local notation "O" => ActualEisensteinCubic.O
 
 theorem normalized_dilated_frequency {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
+     hcop 
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
     (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
-    (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
-    (e a b : O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+     j  (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
+     e a b   ha   hb 
     (har : IsCoprime a (b*finitePrimeModulus P)) (hbr : IsCoprime b (finitePrimeModulus P))
-    (k : ℝ) (h : O) :
+     k   h  :
     let r := finitePrimeModulus P
     let G := principalSexticRow P hcop hg j r (span_finitePrimeModulus P)
     let ρ := finiteSexticRow P hg j

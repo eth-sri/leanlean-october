@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.AdditiveSieve
 public import Mathlib.Analysis.Fourier.ZMod
@@ -11,32 +12,35 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set   MeasureTheory
 
 open scoped Topology ContDiff
 
 open Asymptotics
 
-open Asymptotics
+ 
 
-open Asymptotics
+ 
 
 open scoped Classical
 
-open scoped ContDiff
+ 
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution   Pointwise
 
 open scoped ComplexConjugate
 
-theorem conj_stdAddChar {q : ℕ} [NeZero q] (a : ZMod q) :
+section
+variable {q : ℕ} [NeZero q]
+
+theorem conj_stdAddChar     (a : ZMod q) :
     conj (ZMod.stdAddChar a)=ZMod.stdAddChar (-a) := by
   rw [ZMod.stdAddChar_apply,ZMod.stdAddChar_apply,AddChar.map_neg_eq_inv]
   exact Circle.coe_inv_eq_conj (ZMod.toCircle a) |>.symm
 
-theorem conj_gaussSum_eq_dft_inverse {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) :
+theorem conj_gaussSum_eq_dft_inverse      χ  :
     conj (gaussSum χ ZMod.stdAddChar)=ZMod.dft (χ⁻¹ : DirichletCharacter ℂ q) 1 := by
   simp only [gaussSum,map_sum,map_mul,ZMod.dft_apply,smul_eq_mul,mul_one]
   apply Finset.sum_congr rfl
@@ -45,7 +49,7 @@ theorem conj_gaussSum_eq_dft_inverse {q : ℕ} [NeZero q] (χ : DirichletCharact
   have h : conj (χ a)=(χ⁻¹) a := MulChar.star_apply' χ a
   rw [h,mul_comm]
 
-theorem primitive_gauss_mul_conjugate {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
+theorem primitive_gauss_mul_conjugate     {χ : DirichletCharacter ℂ q}
     (hχ : χ.IsPrimitive) :
     gaussSum χ ZMod.stdAddChar*conj (gaussSum χ ZMod.stdAddChar)=(q:ℂ) := by
   have hf : ZMod.dft χ=(fun k => χ⁻¹ (-k)*gaussSum χ ZMod.stdAddChar) := by
@@ -58,7 +62,7 @@ theorem primitive_gauss_mul_conjugate {q : ℕ} [NeZero q] {χ : DirichletCharac
   rw [conj_gaussSum_eq_dft_inverse,mul_comm]
   exact hh
 
-theorem primitive_gauss_norm_sq {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
+theorem primitive_gauss_norm_sq     {χ : DirichletCharacter ℂ q}
     (hχ : χ.IsPrimitive) : ‖gaussSum χ ZMod.stdAddChar‖^2=(q:ℝ) := by
   have h := primitive_gauss_mul_conjugate hχ
   rw [Complex.mul_conj,Complex.normSq_eq_norm_sq] at h
@@ -67,12 +71,12 @@ theorem primitive_gauss_norm_sq {q : ℕ} [NeZero q] {χ : DirichletCharacter �
 noncomputable def characterUnitVector {q : ℕ} [NeZero q] (u : (ZMod q)ˣ) :
     EuclideanSpace ℂ (DirichletCharacter ℂ q) := WithLp.toLp 2 (fun χ => χ u)
 
-theorem conj_character_unit {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (u : (ZMod q)ˣ) :
+theorem conj_character_unit     (χ : DirichletCharacter ℂ q) (u : (ZMod q)ˣ) :
     conj (χ u)=χ (u.val⁻¹) := by
   change star (χ (u:ZMod q))=_
   rw [MulChar.star_apply',MulChar.inv_apply,Ring.inverse_unit,ZMod.inv_coe_unit]
 
-theorem inner_characterUnitVector {q : ℕ} [NeZero q] (u v : (ZMod q)ˣ) :
+theorem inner_characterUnitVector     (u v : (ZMod q)ˣ) :
     inner ℂ (characterUnitVector u) (characterUnitVector v)=if u=v then (q.totient:ℂ) else 0 := by
   classical
   simp only [PiLp.inner_apply,RCLike.inner_apply,characterUnitVector]
@@ -85,7 +89,7 @@ theorem inner_characterUnitVector {q : ℕ} [NeZero q] (u v : (ZMod q)ˣ) :
   rw [he,DirichletCharacter.sum_char_inv_mul_char_eq ℂ u.isUnit]
   simp only [Units.val_inj]
 
-theorem character_transform_bound {q : ℕ} [NeZero q] (f : (ZMod q)ˣ→ℂ) :
+theorem character_transform_bound     (f : (ZMod q)ˣ→ℂ) :
     (∑ χ : DirichletCharacter ℂ q,‖∑ u : (ZMod q)ˣ, f u*χ u‖^2)≤
       (q.totient:ℝ)*(∑ u : (ZMod q)ˣ,‖f u‖^2) := by
   classical
@@ -102,10 +106,10 @@ theorem character_transform_bound {q : ℕ} [NeZero q] (f : (ZMod q)ˣ→ℂ) :
   simpa only [WithLp.ofLp_sum,WithLp.ofLp_smul,characterUnitVector,Finset.sum_apply,Pi.smul_apply,
     smul_eq_mul] using h
 
-noncomputable def sequenceCharacterSum {q N : ℕ} (a : Fin N→ℂ) (χ : DirichletCharacter ℂ q) : ℂ :=
+noncomputable def sequenceCharacterSum {q N } (a : Fin N→ℂ) (χ : DirichletCharacter ℂ q)  :=
   ∑ n:Fin N,a n*χ ((n:ℕ):ZMod q)
 
-noncomputable def modularFourierSum {q N : ℕ} [NeZero q] (a : Fin N→ℂ) (u : ZMod q) : ℂ :=
+noncomputable def modularFourierSum {q N : ℕ} [NeZero q] (a : Fin N→ℂ) (u : ZMod q)  :=
   ∑ n:Fin N,a n*ZMod.stdAddChar (((n:ℕ):ZMod q)*u)
 
 theorem primitive_inverse {q : ℕ} {χ : DirichletCharacter ℂ q} (hχ : χ.IsPrimitive) :
@@ -114,7 +118,7 @@ theorem primitive_inverse {q : ℕ} {χ : DirichletCharacter ℂ q} (hχ : χ.Is
   rw [DirichletCharacter.conductor_inv]
   exact hχ
 
-theorem multiply_sum_units {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (f : ZMod q→ℂ) :
+theorem multiply_sum_units     (χ : DirichletCharacter ℂ q) (f : ZMod q→ℂ) :
     (∑ x:ZMod q,χ x*f x)=∑ u:(ZMod q)ˣ,χ u*f u := by
   symm
   apply Fintype.sum_of_injective Units.val Units.val_injective
@@ -177,16 +181,15 @@ theorem primitive_character_energy_le {q N : ℕ} [NeZero q] (a : Fin N→ℂ) :
         rwa [norm_mul,mul_pow,primitive_gauss_norm_sq (primitive_inverse hp)] at h
       _ ≤ ∑ χ:DirichletCharacter ℂ q,‖∑ u:(ZMod q)ˣ,modularFourierSum (q:=q) a (u:ZMod q)*(χ⁻¹) u‖^2 :=
         Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _) (fun _ _ _ => sq_nonneg _)
-      _ = ∑ χ:DirichletCharacter ℂ q,‖∑ u:(ZMod q)ˣ,modularFourierSum (q:=q) a (u:ZMod q)*χ u‖^2 := by
-        exact Fintype.sum_bijective (fun χ : DirichletCharacter ℂ q => χ⁻¹)
+      _ = ∑ χ:DirichletCharacter ℂ q,‖∑ u:(ZMod q)ˣ,modularFourierSum (q:=q) a (u:ZMod q)*χ u‖^2 := Fintype.sum_bijective (fun χ : DirichletCharacter ℂ q => χ⁻¹)
           inv_involutive.bijective _ _ (fun _ => rfl)
       _ ≤ _ := character_transform_bound _
   rw [div_mul_eq_mul_div]
   exact (div_le_iff₀ hφ).mpr (by simpa only [mul_comm] using hs)
 
-noncomputable def unitFrequency {q : ℕ} [NeZero q] (u : (ZMod q)ˣ) : ℚ := (u.val.val:ℚ)/q
+noncomputable def unitFrequency {q : ℕ} [NeZero q] (u : (ZMod q)ˣ)  := (u.val.val:ℚ)/q
 
-theorem unitFrequency_den {q : ℕ} [NeZero q] (u : (ZMod q)ˣ) : (unitFrequency u).den=q := by
+theorem unitFrequency_den     (u : (ZMod q)ˣ) : (unitFrequency u).den=q := by
   have hc : Nat.Coprime u.val.val q := (ZMod.isUnit_iff_coprime _ _).mp
     (by simpa only [ZMod.natCast_zmod_val] using u.isUnit)
   have he : unitFrequency u=Rat.divInt (u.val.val:ℤ) (q:ℤ) := by
@@ -196,14 +199,14 @@ theorem unitFrequency_den {q : ℕ} [NeZero q] (u : (ZMod q)ˣ) : (unitFrequency
   simp only [ite_eq_right (Int.natCast_ne_zero.mpr (NeZero.ne q)), Int.natAbs_natCast,
     Int.gcd_natCast_natCast,hc.symm.gcd_eq_one,Nat.div_one]
 
-theorem unitFrequency_bounds {q : ℕ} [NeZero q] (u : (ZMod q)ˣ) :
+theorem unitFrequency_bounds     (u : (ZMod q)ˣ) :
     0≤unitFrequency u ∧ unitFrequency u<1 := by
   have hq : (0:ℚ)<q := by exact_mod_cast NeZero.pos q
   exact ⟨div_nonneg (Nat.cast_nonneg _) hq.le,(div_lt_one hq).mpr (by exact_mod_cast ZMod.val_lt u.val)⟩
 
-noncomputable def fareyFrequency {Q : ℕ} (x : Σ q:Fin Q,(ZMod (q.val+1))ˣ) : ℚ := unitFrequency x.2
+noncomputable def fareyFrequency {Q } (x : Σ q:Fin Q,(ZMod (q.val+1))ˣ)  := unitFrequency x.2
 
-theorem fareyFrequency_injective (Q : ℕ) :
+theorem fareyFrequency_injective  Q  :
     Function.Injective (fareyFrequency (Q:=Q)) := by
   rintro ⟨q,u⟩ ⟨r,v⟩ he
   have hd := congrArg Rat.den he
@@ -237,7 +240,7 @@ theorem modularFourierSum_eq_bvExp {q N : ℕ} [NeZero q] (a : Fin N→ℂ) (u :
   congr 1
   ring
 
-theorem multiplicative_large_sieve (Q N : ℕ) (a : Fin N→ℂ) :
+theorem multiplicative_large_sieve (Q N : ℕ)  a  :
     (∑ q:Fin Q,((q.val+1:ℕ):ℝ)/((q.val+1).totient:ℝ)*
       (∑ χ∈(Finset.univ : Finset (DirichletCharacter ℂ (q.val+1))).filter (fun χ => χ.IsPrimitive),
         ‖sequenceCharacterSum a χ‖^2))≤
@@ -253,9 +256,7 @@ theorem multiplicative_large_sieve (Q N : ℕ) (a : Fin N→ℂ) :
   have hs : ∀ r∈s,0≤r ∧ r<1 ∧ r.den≤Q := by
     intro r hr
     obtain ⟨⟨q,u⟩,_,rfl⟩ := Finset.mem_image.mp hr
-    exact ⟨(unitFrequency_bounds u).1,(unitFrequency_bounds u).2,by
-      rw [fareyFrequency,unitFrequency_den]
-      omega⟩
+    grind [unitFrequency_bounds, fareyFrequency, unitFrequency_den]
   calc
     _ ≤ ∑ q:Fin Q,∑ u:(ZMod (q.val+1))ˣ,‖modularFourierSum (q:=q.val+1) a (u:ZMod (q.val+1))‖^2 :=
       Finset.sum_le_sum (fun _ _ => primitive_character_energy_le a)
@@ -281,13 +282,13 @@ theorem weighted_sum_mul_sq_le {ι : Type*} (s : Finset ι) (w f g : ι→ℝ)
   · intro i _
     exact le_of_eq (by ring)
 
-noncomputable def primitiveCharacterMean (Q : ℕ)
-    (f : (q:Fin Q)→DirichletCharacter ℂ (q.val+1)→ℝ) : ℝ :=
+noncomputable def primitiveCharacterMean (Q )
+    (f : (q:Fin Q)→DirichletCharacter ℂ (q.val+1)→ℝ)  :=
   ∑ q:Fin Q,((q.val+1:ℕ):ℝ)/((q.val+1).totient:ℝ)*
     ∑ χ∈(Finset.univ : Finset (DirichletCharacter ℂ (q.val+1))).filter (fun χ=>χ.IsPrimitive),f q χ
 
-theorem primitiveCharacterMean_nonneg {Q : ℕ}
-    (f : (q:Fin Q)→DirichletCharacter ℂ (q.val+1)→ℝ)
+theorem primitiveCharacterMean_nonneg  {Q} 
+     f 
     (hf : ∀ q χ,0≤f q χ) : 0≤primitiveCharacterMean Q f := by
   apply Finset.sum_nonneg
   intro q _
@@ -312,17 +313,12 @@ theorem primitiveCharacterMean_cauchy {Q : ℕ}
     apply Finset.sum_congr rfl
     intro q _
     rw [Finset.mul_sum,Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro χ _
-    dsimp [w]
-    split <;> simp_all
+    grind
   have h:=weighted_sum_mul_sq_le Finset.univ w (fun x=>f x.1 x.2) (fun x=>g x.1 x.2)
     (fun x _ => hw x)
-  rw [←hsum (fun q χ=>f q χ*g q χ),←hsum (fun q χ=>f q χ^2),
-    ←hsum (fun q χ=>g q χ^2)]
-  exact h
+  grind
 
-theorem bilinear_multiplicative_large_sieve (Q M N : ℕ) (a : Fin M→ℂ) (b : Fin N→ℂ) :
+theorem bilinear_multiplicative_large_sieve (Q M N : ℕ)  a   b  :
     (primitiveCharacterMean Q (fun _ χ=>‖sequenceCharacterSum a χ*sequenceCharacterSum b χ‖))^2≤
       (((M:ℝ)+(Q:ℝ)^2*(harmonic (Q^2):ℝ))*(∑ m:Fin M,‖a m‖^2))*
       (((N:ℝ)+(Q:ℝ)^2*(harmonic (Q^2):ℝ))*(∑ n:Fin N,‖b n‖^2)) := by
@@ -336,7 +332,7 @@ theorem bilinear_multiplicative_large_sieve (Q M N : ℕ) (a : Fin M→ℂ) (b :
 theorem exponential_kernel_offdiagonal_bound {ι : Type*} [DecidableEq ι] (s : Finset ι) (θ : ι→ℝ)
     {D : ℕ} (hD : 0<D)
     (hsep : ∀ i∈s,∀ j∈s,i≠j→∀ m:ℤ,1/(D:ℝ)≤|θ i-θ j-m|)
-    (N : ℕ) {i : ι} (hi : i∈s) :
+     N   {i}  (hi : i∈s) :
     (∑ j∈s.erase i,‖∑ n∈Finset.range N,bvExp ((n:ℝ)*(θ j-θ i))‖)≤
       (D:ℝ)*(harmonic D:ℝ) := by
   have h:=exponential_kernel_row_bound s θ hD hsep N hi
@@ -345,7 +341,7 @@ theorem exponential_kernel_offdiagonal_bound {ι : Type*} [DecidableEq ι] (s : 
   rw [hd] at h
   linarith
 
-theorem residue_frequency_separation {q : ℕ} [NeZero q] {a b : ZMod q}
+theorem residue_frequency_separation     {a b : ZMod q}
     (hab : a≠b) (m : ℤ) :
     1/(q:ℝ)≤|(a.val:ℝ)/q-(b.val:ℝ)/q-m| := by
   have hz : (a.val:ℤ)-(b.val:ℤ)-m*(q:ℤ)≠0 := by
@@ -365,7 +361,9 @@ theorem residue_frequency_separation {q : ℕ} [NeZero q] {a b : ZMod q}
   simpa only [Int.cast_sub,Int.cast_mul,Int.cast_natCast] using
     div_le_div_of_nonneg_right hnum hq.le
 
-theorem modularFourierSum_one {q N : ℕ} [NeZero q] (u : ZMod q) :
+end
+
+theorem modularFourierSum_one  {q N}  [NeZero q]  u  :
     modularFourierSum (q:=q) (fun _:Fin N=>1) u=
       ∑ n∈Finset.range N,bvExp ((n:ℝ)*((u.val:ℝ)/q)) := by
   unfold modularFourierSum
@@ -384,7 +382,7 @@ theorem modularFourierSum_one {q N : ℕ} [NeZero q] (u : ZMod q) :
   ring
 
 theorem primitive_polya_vinogradov {q : ℕ} (hq : 1<q) {χ : DirichletCharacter ℂ q}
-    (hχ : χ.IsPrimitive) (N : ℕ) :
+    (hχ : χ.IsPrimitive)  N  :
     ‖∑ n:Fin N,χ ((n:ℕ):ZMod q)‖≤Real.sqrt q*(harmonic q:ℝ) := by
   classical
   let : NeZero q := ⟨by omega⟩
@@ -410,7 +408,7 @@ theorem primitive_polya_vinogradov {q : ℕ} (hq : 1<q) {χ : DirichletCharacter
         apply Finset.sum_le_sum
         intro u _
         rw [norm_mul,modularFourierSum_one]
-        exact mul_le_of_le_one_right (norm_nonneg _) ((χ⁻¹).norm_le_one _)
+        bound
       _ = ∑ x∈Finset.univ.image (fun u:(ZMod q)ˣ=>(u:ZMod q)),f x := by
         rw [Finset.sum_image Units.val_injective.injOn]
       _ ≤ ∑ x∈(Finset.univ : Finset (ZMod q)).erase 0,f x :=

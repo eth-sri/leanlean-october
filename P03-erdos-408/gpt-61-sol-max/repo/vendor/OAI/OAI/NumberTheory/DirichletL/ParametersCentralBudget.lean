@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.ParametersDetectorScales
 
@@ -6,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.ParametersDetectorScales
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.Parameters
 
-theorem exists_central_budget (Δ : ℝ) (hΔ : 0<Δ) :
+theorem exists_central_budget  Δ  (hΔ : 0<Δ) :
     ∃ t : ℝ,0<t ∧ t<Δ/4 ∧ t≤1/100000000 ∧
       (0:ℝ)<1/200 ∧ (1/200:ℝ)<1/100 ∧
       (13/16:ℝ)+t+2*t≤7/8 ∧ (7/8:ℝ)≤37/42 ∧ t≤3/16 ∧
@@ -31,19 +32,18 @@ theorem exists_central_budget (Δ : ℝ) (hΔ : 0<Δ) :
   let allowance := t/((N:ℝ)+2000)
   have hden : 0<(N:ℝ)+2000 := by positivity
   have ha : 0<allowance := div_pos ht hden
-  have ha0 : allowance≤t/2000 := div_le_div_of_nonneg_left ht.le (by norm_num) (by linarith [Nat.cast_nonneg (α:=ℝ) N])
+  have ha0 : allowance≤t/2000 := (by bound)
   have hap : allowance*((N:ℝ)+2000)=t := by dsimp [allowance];field_simp
   refine ⟨allowance,ha,?_⟩
   intro ε e eps hε hεa he hea heps hepsa
-  have hεt : 2000*ε≤t := by linarith
-  have het : 2000*e≤t := by linarith
+  
+  
   have hepsN : ((N:ℝ)+2000)*eps≤t := by
     have h := mul_le_mul_of_nonneg_left hepsa hden.le
     nlinarith
-  have heps8 : ((N:ℝ)+8)*eps≤t := by nlinarith
-  constructor <;> nlinarith
+  grind
 end SevenEighths.Parameters
 
-end
+
 
 end OAI

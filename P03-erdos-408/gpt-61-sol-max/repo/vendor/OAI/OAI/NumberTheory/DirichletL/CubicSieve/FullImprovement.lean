@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.AnnularImprovement
 
@@ -10,8 +11,8 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 open CanonicalQuadraticSieve (columnDyadicLength)
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+
 
 lemma improved_shape_shell (M N Y ξ : ℝ) (hM : 0 < M) (hN : 0 < N) (hY : 0 ≤ Y)
     (hYN : Y ≤ 2*N) (hξ : 1 ≤ ξ) (hξ2 : ξ ≤ 2) :
@@ -49,7 +50,7 @@ lemma improved_loss_shell (N Y θ : ℝ) (hN : 0 ≤ N) (hY : 0 ≤ Y) (hYN : Y 
     exact he
   exact hh.trans (mul_le_mul_of_nonneg_right hp (Real.rpow_nonneg hN _))
 
-theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
+theorem HasCubicExponent.full_improved  {ξ}  (h : HasCubicExponent ξ)
     (hξ : (4/3 : ℝ) ≤ ξ) (hξ2 : ξ ≤ 2)
     (θ : ℝ) (hθ : 0 < θ) (hθsmall : θ < 1/2) :
     ∃ C : ℝ, 0 < C ∧ ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
@@ -57,22 +58,19 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
         (M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1)) := by
   obtain ⟨K,hK,hb⟩ := h.annular_improved hξ hξ2 θ hθ hθsmall
   let D : ℝ := 2+1/(θ*Real.log 2)
-  have hD : 0 < D := by
-    dsimp [D]
-    have := Real.log_pos (by norm_num : (1:ℝ)<2)
-    positivity
+  
   refine ⟨64*K*D, by positivity, ?_⟩
   intro M N hM hN
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
-  let cols : idealRange N → Ideal O := fun j => j.val
+  let cols : idealRange N → Ideal ActualEisensteinCubic.O := fun j => j.val
   have hc (j : idealRange N) : Admissible (cols j) := (mem_idealRange.mp j.property).1
   have hn (j : idealRange N) : (Ideal.absNorm (cols j) : ℝ) ≤ N := (mem_idealRange.mp j.property).2
   let R := elementRange M
-  have hR (z : O) (hz : z ∈ R) : (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M :=
+  have hR (z : ActualEisensteinCubic.O) (hz : z ∈ R) : (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M :=
     ((mem_elementRange M z).mp hz).2
   let S := M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1)
-  have hS : 0 ≤ S := by dsimp [S]; positivity
+  
   apply FiniteSieveOperator.squared_norm_le_of_energy (elementMatrix M N)
   · positivity
   intro a
@@ -86,7 +84,7 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
       have hs := hb M ((2:ℝ)^l.val) hM hY1
         (fun j : CubicColumnShell cols N l => cols j.val)
         (fun j k he => Subtype.ext (Subtype.ext he)) (fun j => hc j.val)
-        (fun j => cubicColumnShell_bounds cols N hc hn l j)
+        (cubicColumnShell_bounds cols N hc hn l)
         (fun j => a j.val) R hR
       have hl := improved_loss_shell N ((2:ℝ)^l.val) θ hN0.le (by positivity) hYN hθ.le hθsmall.le
       have ht := improved_shape_shell M N ((2:ℝ)^l.val) ξ hM0 hN0 (by positivity) hYN
@@ -115,7 +113,7 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     _ = (64*K*D)*(N^θ*N^(6*θ))*S*∑ j, ‖a j‖^2 := by dsimp [D]; ring
     _ = _ := by rw [hp]
 
-end
+
 end SevenEighths.CubicSieve
 
 end OAI

@@ -11,84 +11,84 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical ContDiff
+ 
 
 namespace CompletedGauss
-open ActualEisensteinCubic CubicEisenstein
+open   CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 variable {α β ι:Type*} [Fintype α] [Fintype β] [Fintype ι]
 
 end CompletedGauss
 
 namespace CubicEisenstein
-open ActualEisensteinCubic CompletedGauss CompletedDyadic
+open   CompletedGauss CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedFourierGeometry
 variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
@@ -97,12 +97,12 @@ variable {α β ι:Type*} [Fintype α] [Fintype β] [Fintype ι] {p:ι→Eis} {N
 end FixedFourierGeometry
 end CubicEisenstein
 
-open scoped BigOperators Classical MatrixGroups
+open scoped     MatrixGroups
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJacobiGlobal
+open     CompletedGauss CubicKubota CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 noncomputable local instance primeQuotientFintype (P:Ideal Eis) [P.IsMaximal] : Fintype (Eis⧸P) :=
@@ -128,14 +128,13 @@ def activeStratumDatum {ι:Type*} [Fintype ι]
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJacobiGlobal
+open     CompletedGauss CubicKubota CubicJacobiGlobal
 open CanonicalRowCompletion
 local notation "Eis" => ActualEisensteinCubic.O
 
-noncomputable local instance fixedActiveQuotientFintype (P:Ideal Eis) [P.IsMaximal] : Fintype (Eis⧸P) :=
-  Fintype.ofFinite _
 
-abbrev FixedActiveCuspIndex {ι:Type*} (c:Eis) (p:ι→Eis) :=
+
+abbrev FixedActiveCuspIndex {ι} (c:Eis) (p:ι→Eis) :=
   Σ_h:Eis⧸Ideal.span {c},ΣA:Finset ι,∀i:A,(Eis⧸Ideal.span {p i.val})ˣ
 
 variable {ι:Type*} [Fintype ι] (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -147,18 +146,18 @@ variable (hN:∀h,(9:Eis)*(G h).c0∣N)
 variable (D:∀h:Eis⧸Ideal.span {c},∀A:Finset ι,
   ControlledStratumArithmetic (fun i:A=>p i.val) N (G h).a0 (G h).c0 (G h).mode)
 
-def fixedActiveCuspDatum (t:FixedActiveCuspIndex c p) : SourceCuspDatum :=
+def fixedActiveCuspDatum (t:FixedActiveCuspIndex c p)  :=
   activeStratumDatum p hp hprimary (D t.1) (hN t.1) (G t.1).denominator_ne_zero
     (G t.1).primary (G t.1).shape t.2.1 t.2.2
 
 end CubicEisenstein
 
-open scoped BigOperators Classical ContDiff
+ 
 
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein CubicJacobiGlobal
+open   CompletedGauss CanonicalQuadraticSieve CubicEisenstein CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 def actualControlledSource (I Q:Ideal Eis) (hI:Supported I)
@@ -185,7 +184,7 @@ def actualControlledSource (I Q:Ideal Eis) (hI:Supported I)
 end
 section
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
+open   CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 
 structure GoodMaskRowData (m f z:Eis) where
@@ -204,36 +203,36 @@ structure GoodMaskRowData (m f z:Eis) where
   numeratorPrimary:lambda^2∣numeratorGood-1
   numeratorFactor:f^4*z=numeratorUnit.val*lambda^numeratorLambda*(2:Eis)^numeratorTwo*numeratorGood
 
-theorem exists_goodMaskRowData (m f z:Eis) (hm:m≠0) (hf:f≠0) (hz:z≠0) :
+theorem exists_goodMaskRowData  m f z  (hm:m≠0) (hf:f≠0) (hz:z≠0) :
     Nonempty (GoodMaskRowData m f z) := by
   obtain ⟨um,am,bm,g,hg,hpg,hmf⟩:=exists_supported_numerator_factorization m hm
   obtain ⟨u,a,b,r,hr,hpr,hxf⟩:=exists_supported_numerator_factorization (f^4*z)
     (mul_ne_zero (pow_ne_zero _ hf) hz)
   exact ⟨⟨um,am,bm,g,hg,hpg,hmf,u,a,b,r,hr,hpr,hxf⟩⟩
 
-noncomputable def goodMaskRowData (m f z:Eis) (hm:m≠0) (hf:f≠0) (hz:z≠0) :
+noncomputable def goodMaskRowData (m f z) (hm:m≠0) (hf:f≠0) (hz:z≠0) :
     GoodMaskRowData m f z := Classical.choice (exists_goodMaskRowData m f z hm hf hz)
 
 namespace GoodMaskRowData
 variable {m f z:Eis} (D:GoodMaskRowData m f z)
 
-def movingIdeal : Ideal Eis := goodMaskMovingIdeal D.maskGood D.numeratorGood
+def movingIdeal  := goodMaskMovingIdeal D.maskGood D.numeratorGood
 
 lemma movingSupported : Supported D.movingIdeal :=
   goodMaskMovingIdeal_supported D.maskGood D.numeratorGood D.maskSupported D.numeratorSupported
 
-def fixedFactor (Ψ:Eis→*ℂ) (Q:Ideal Eis) : Eis→*ℂ :=
+def fixedFactor (Ψ:Eis→*ℂ) (Q:Ideal Eis)  :=
   (Ψ*numeratorBadTwist D.numeratorUnit D.numeratorLambda D.numeratorTwo D.numeratorGood
     D.numeratorSupported)*basePrimeRow D.movingIdeal D.movingSupported (Q*Ideal.span {(72:Eis)})
 
-lemma numeratorFactor_norm (Ψ:Eis→*ℂ) (hΨ:∀n,‖Ψ n‖≤1) (n:Eis) :
+lemma numeratorFactor_norm  Ψ  (hΨ:∀n,‖Ψ n‖≤1)  n  :
     ‖(Ψ*numeratorBadTwist D.numeratorUnit D.numeratorLambda D.numeratorTwo D.numeratorGood
       D.numeratorSupported) n‖≤1 := by
   change ‖Ψ n*numeratorBadTwist _ _ _ _ _ n‖≤1
   rw [norm_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _) (hΨ n)).trans (numeratorBadTwist_norm _ _ _ _ _ n)
 
-lemma fixedFactor_periodic (Ψ:Eis→*ℂ) (Q:Ideal Eis)
+lemma fixedFactor_periodic  Ψ   Q 
     (hΨ:CanonicalCoefficientClass.FactorsModulo Q Ψ) :
     CanonicalCoefficientClass.FactorsModulo (Q*Ideal.span {(72:Eis)}) (D.fixedFactor Ψ Q) := by
   have hn:=fixedNumeratorTwist_periodic Ψ Q hΨ D.numeratorUnit D.numeratorLambda
@@ -245,15 +244,15 @@ lemma fixedFactor_periodic (Ψ:Eis→*ℂ) (Q:Ideal Eis)
     D.numeratorSupported) y*basePrimeRow D.movingIdeal D.movingSupported (Q*Ideal.span {(72:Eis)}) y
   rw [hn x y hxy,basePrimeRow_periodic D.movingIdeal D.movingSupported _ x y hxy]
 
-lemma fixedFactor_norm (Ψ:Eis→*ℂ) (Q:Ideal Eis) (hΨ:∀n,‖Ψ n‖≤1) (n:Eis) :
+lemma fixedFactor_norm  Ψ   Q  (hΨ:∀n,‖Ψ n‖≤1)  n  :
     ‖D.fixedFactor Ψ Q n‖≤1 := by
   change ‖((Ψ*numeratorBadTwist _ _ _ _ _) n)*(basePrimeRow _ _ _ n)‖≤1
   rw [norm_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _)
     (D.numeratorFactor_norm Ψ hΨ n)).trans (basePrimeRow_norm _ _ _ n)
 
-theorem row_primary (Ψ:Eis→*ℂ) (Q:Ideal Eis) (hmLam:lambda∣m) (hm2:(2:Eis)∣m)
-    (n:Eis) (hpn:lambda^2∣n-1) :
+theorem row_primary  Ψ   Q  (hmLam:lambda∣m) (hm2:(2:Eis)∣m)
+     n  (hpn:lambda^2∣n-1) :
     rowTwist Ψ m f z n=D.fixedFactor Ψ Q n*
       freePrimeRow D.movingIdeal D.movingSupported (Q*Ideal.span {(72:Eis)}) n := by
   rw [rowTwist_eq_fixed_times_good_row_primary Ψ m f z hmLam hm2
@@ -265,8 +264,8 @@ theorem row_primary (Ψ:Eis→*ℂ) (Q:Ideal Eis) (hmLam:lambda∣m) (hm2:(2:Eis
   simp only [fixedFactor,MonoidHom.mul_apply]
   ring
 
-lemma fixedCoefficient_norm (Ψ:Eis→*ℂ) (Q:Ideal Eis) (hΨ:∀n,‖Ψ n‖≤1)
-    (c:Eis) (hc:c≠0) [Fintype (Eis⧸Ideal.span {c})] (h:Eis⧸Ideal.span {c}) :
+lemma fixedCoefficient_norm  Ψ   Q  (hΨ:∀n,‖Ψ n‖≤1)
+     c   hc  [Fintype (Eis⧸Ideal.span {c})]  h  :
     ‖fixedThetaRowCoeff c hc (D.fixedFactor Ψ Q) h‖≤1 :=
   fixedThetaRowCoeff_norm c hc _ (D.fixedFactor_norm Ψ Q hΨ) h
 
@@ -274,7 +273,7 @@ end GoodMaskRowData
 
 end
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
+open   CompletedGauss CanonicalQuadraticSieve  
 local notation "Eis" => ActualEisensteinCubic.O
 namespace GoodMaskRowData
 variable {m f z:Eis} (D:GoodMaskRowData m f z)
@@ -295,13 +294,13 @@ noncomputable def primeFiberEquiv :
     D.numeratorFactor hbad hcop hA hT
 
 lemma primeFiberEquiv_val
-    (P:PrimeIndex (rowResidualPart I (Ideal.span {m}*F)) ⊕ FreeReflection.pool R (Ideal.span {m}*F) Q0) :
+     P  :
     (D.primeFiberEquiv R I F Q0 hR hI hF hm hf hz hbad hcop hA hT P).val.val=
       Sum.elim Subtype.val Subtype.val P := by
   cases P <;> rfl
 
 lemma primeFiberEquiv_exponent
-    (P:PrimeIndex (rowResidualPart I (Ideal.span {m}*F)) ⊕ FreeReflection.pool R (Ideal.span {m}*F) Q0) :
+     P  :
     (normalizedFactors D.movingIdeal).count
       (D.primeFiberEquiv R I F Q0 hR hI hF hm hf hz hbad hcop hA hT P).val.val%6=
       Sum.elim (fun _=>1) (fun S=>completedLocalExponent R F S.val) P :=
@@ -314,11 +313,9 @@ local notation "splitIndex" => D.primeFiberEquiv R I F Q0 hR hI hF hm hf hz hbad
 
 end GoodMaskRowData
 
-noncomputable def fiberGoodMaskRowData (rows:Finset (Ideal Eis)) (R F:Ideal Eis) (m:Eis)
+noncomputable def fiberGoodMaskRowData (rows) (R F) (m)
     (hm:m≠0) (hF:F≠0) (hrows:∀I∈rows,I≠0) (u:Eisˣ)
-    (I:representativeRowFiber rows R (Ideal.span {m}*F)) :
-    GoodMaskRowData m (ConcretePrimeRowBridge.idealGenerator F)
-      (u.val*ConcretePrimeRowBridge.idealGenerator I.val) :=
+    (I:representativeRowFiber rows R (Ideal.span {m}*F))  :=
   goodMaskRowData _ _ _ hm (ConcretePrimeRowBridge.idealGenerator_ne_zero F hF)
     (mul_ne_zero u.ne_zero (ConcretePrimeRowBridge.idealGenerator_ne_zero I.val
       (hrows I.val (Finset.mem_filter.mp I.property).1)))

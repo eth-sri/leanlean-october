@@ -12,9 +12,9 @@ noncomputable section
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open ConcretePrimeRowBridge CubicEisenstein ProbePhase
-local notation "O" => ActualEisensteinCubic.O
 
-lemma supported_completed (c n : O) (hc : Supported (Ideal.span {c}))
+
+lemma supported_completed  c n  (hc : Supported (Ideal.span {c}))
     (hn : Supported (Ideal.span {n})) : Supported (Ideal.span {c*n^3}) := by
   rw [← Ideal.span_singleton_mul_span_singleton, ← Ideal.span_singleton_pow]
   apply (supported_mul_iff _ _).mpr
@@ -23,27 +23,27 @@ lemma supported_completed (c n : O) (hc : Supported (Ideal.span {c}))
   have hn3 := (supported_mul_iff _ _).mpr ⟨hn2,hn⟩
   simpa only [pow_succ, pow_zero, one_mul] using hn3
 
-lemma primary_completed (c n : O) (hc : goodLambda^2∣c-1)
+lemma primary_completed  c n  (hc : goodLambda^2∣c-1)
     (hn : goodLambda^2∣n-1) : goodLambda^2∣c*n^3-1 := by
   have h := dvd_add (dvd_mul_of_dvd_left hc (n^3))
     (dvd_mul_of_dvd_left hn (n^2+n+1))
   convert h using 1 ; ring
 
-def correctedFiniteCoefficient (I : Ideal O) (hI : primaryGenerator I≠0)
-    (A s : O) (hA : A≠0) (H : O) : ℂ :=
+def correctedFiniteCoefficient (I ) (hI : primaryGenerator I≠0)
+    (A s : ActualEisensteinCubic.O) (hA : A≠0) (H : ActualEisensteinCubic.O)  :=
   gaussTwo I hI * star (G A) * reciprocityCoefficient A s hA H
 
-theorem correctedFiniteCoefficient_product (I J : Ideal O)
+theorem correctedFiniteCoefficient_product (I J : Ideal ActualEisensteinCubic.O)
     (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)
     (hIJ : CubicSieve.Admissible (I*J)) (hIJcop : IsCoprime I J)
-    (n m s r : O)
-    (hc : Supported (Ideal.span {primaryGenerator I})) (hd : Supported (Ideal.span {primaryGenerator J}))
-    (hn : Supported (Ideal.span {n})) (hm : Supported (Ideal.span {m}))
+     n m s r 
+     hc   hd 
+     hn   hm 
     (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
     (hpc : goodLambda^2∣primaryGenerator I-1) (hpd : goodLambda^2∣primaryGenerator J-1)
     (hpn : goodLambda^2∣n-1) (hpm : goodLambda^2∣m-1)
     (hps : goodLambda^2∣s-1) (hpr : goodLambda^2∣r-1)
-    (hcop : IsCoprime ((primaryGenerator I*n^3)*s) ((primaryGenerator J*m^3)*r)) (H : O) :
+    (hcop : IsCoprime ((primaryGenerator I*n^3)*s) ((primaryGenerator J*m^3)*r))  H  :
     let A := primaryGenerator I*n^3
     let B := primaryGenerator J*m^3
     let hA := supportedElement_ne_zero A (supported_completed _ _ hc hn)

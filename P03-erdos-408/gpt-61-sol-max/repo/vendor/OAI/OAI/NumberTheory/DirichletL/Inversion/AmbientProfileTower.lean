@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.KernelSourceUniform
 public import OAI.NumberTheory.DirichletL.Descent.WindowFourier
@@ -17,32 +18,41 @@ noncomputable section
 
 abbrev Ambient (ι : Type*) := Frequency × (ι → ℝ)
 
-def ambientWeight {ι : Type*} [Fintype ι] (J : ℕ) (p : Ambient ι) : ℝ :=
+def ambientWeight {ι } [Fintype ι] (J : ℕ) (p : Ambient ι)  :=
   ((1 + ‖p.1.1‖)^J * (1 + ‖p.1.2.1‖)^J * (1 + ‖p.1.2.2‖)^J) *
     ∏ i, (1 + ‖p.2 i‖)^J
 
-theorem ambientWeight_eq_pow {ι : Type*} [Fintype ι] (J : ℕ) (p : Ambient ι) :
+section
+variable {ι : Type*} [Fintype ι]
+include ι
+
+section
+variable (J : ℕ) (p : Ambient ι)
+include J p
+
+theorem ambientWeight_eq_pow         :
     ambientWeight J p = (ambientWeight 1 p)^J := by
   simp [ambientWeight, mul_pow, Finset.prod_pow]
 
-theorem ambientWeight_one_le {ι : Type*} [Fintype ι] (J : ℕ) (p : Ambient ι) :
+theorem ambientWeight_one_le         :
     1 ≤ ambientWeight J p := by
   unfold ambientWeight
   exact one_le_mul_of_one_le_of_one_le
-    (one_le_mul_of_one_le_of_one_le
-      (one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by linarith [norm_nonneg p.1.1]))
-        (one_le_pow₀ (by linarith [norm_nonneg p.1.2.1])))
-        (one_le_pow₀ (by linarith [norm_nonneg p.1.2.2])))
+    ((by bound))
     (Finset.one_le_prod₀ (fun i _ => one_le_pow₀ (by linarith [norm_nonneg (p.2 i)])))
 
-theorem ambientWeight_add {ι : Type*} [Fintype ι] (J K : ℕ) (p : Ambient ι) :
-    ambientWeight (J + K) p = ambientWeight J p * ambientWeight K p := by
-  rw [ambientWeight_eq_pow (J+K), ambientWeight_eq_pow J, ambientWeight_eq_pow K, pow_add]
+end
 
-def inheritedLeft {ι : Type*} (i : ι) (p : Ambient ι) : ℝ :=
+theorem ambientWeight_add     (J K : ℕ) (p : Ambient ι) :
+    ambientWeight (J + K) p = ambientWeight J p * ambientWeight K p := by
+  grind [ambientWeight_eq_pow]
+
+end
+
+def inheritedLeft {ι } (i : ι) (p : Ambient ι)  :=
   p.2 i + p.1.1 - p.1.2.2
 
-def inheritedRight {ι : Type*} (i : ι) (p : Ambient ι) : ℝ :=
+def inheritedRight {ι } (i : ι) (p : Ambient ι)  :=
   -(p.2 i + p.1.2.1 - p.1.2.2)
 
 private theorem one_add_norm_add_le (x y : ℝ) :
@@ -52,8 +62,16 @@ private theorem one_add_norm_add_le (x y : ℝ) :
   have hy := norm_nonneg y
   nlinarith [mul_nonneg hx hy]
 
-private theorem coordinate_factor_le {ι : Type*} [Fintype ι]
-    (i : ι) (u : ι → ℝ) :
+section
+variable {ι : Type*} [Fintype ι]
+include ι
+
+section
+variable (i : ι)
+include i
+
+private theorem coordinate_factor_le    
+      (u : ι → ℝ) :
     1 + ‖u i‖ ≤ ∏ j, (1 + ‖u j‖) :=
   by
   have hm (j : ι) : max (1 + ‖u j‖) 1 = 1 + ‖u j‖ :=
@@ -61,7 +79,11 @@ private theorem coordinate_factor_le {ι : Type*} [Fintype ι]
   simpa only [hm] using
     Finset.le_prod_max_one (Finset.mem_univ i) (fun j => 1 + ‖u j‖)
 
-theorem inheritedLeft_bound {ι : Type*} [Fintype ι] (i : ι) (p : Ambient ι) :
+section
+variable (p : Ambient ι)
+include p
+
+theorem inheritedLeft_bound         :
     1 + ‖inheritedLeft i p‖ ≤ ambientWeight 1 p := by
   have h := (one_add_norm_add_le (p.2 i + p.1.1) (-p.1.2.2)).trans
     (mul_le_mul_of_nonneg_right (one_add_norm_add_le (p.2 i) p.1.1) (by positivity))
@@ -77,15 +99,19 @@ theorem inheritedLeft_bound {ι : Type*} [Fintype ι] (i : ι) (p : Ambient ι) 
   change _ ≤ (∏ j, (1 + ‖p.2 j‖)) * _ at hh
   exact h.trans (by simpa [ambientWeight, inheritedLeft, mul_comm, mul_left_comm, mul_assoc] using hh)
 
-theorem inheritedRight_bound {ι : Type*} [Fintype ι] (i : ι) (p : Ambient ι) :
+theorem inheritedRight_bound         :
     1 + ‖inheritedRight i p‖ ≤ ambientWeight 1 p := by
   have h := inheritedLeft_bound i ((p.1.2.1, p.1.1, p.1.2.2), p.2)
   change 1 + ‖-(p.2 i + p.1.2.1 - p.1.2.2)‖ ≤ _
   rw [norm_neg]
-  simpa [inheritedLeft, ambientWeight, mul_comm, mul_left_comm, mul_assoc] using h
+  grind [inheritedLeft, ambientWeight]
 
-theorem inherited_pair_weight_bound {ι : Type*} [Fintype ι]
-    (i j : ι) (J K : ℕ) (p : Ambient ι) :
+end
+
+end
+
+theorem inherited_pair_weight_bound    
+    (i j : ι)  J K   p  :
     ambientWeight J p * ((1 + ‖inheritedLeft i p‖)^K *
       (1 + ‖inheritedRight j p‖)^K) ≤ ambientWeight (J + 2*K) p := by
   have h₁ := pow_le_pow_left₀ (by positivity) (inheritedLeft_bound i p) K
@@ -97,14 +123,16 @@ theorem inherited_pair_weight_bound {ι : Type*} [Fintype ι]
   exact mul_le_mul_of_nonneg_left (by simpa [two_mul] using hh)
     (le_trans zero_le_one (ambientWeight_one_le J p))
 
-def twistedFullDensity {ι : Type*} [Fintype ι]
+end
+
+def twistedFullDensity {ι } [Fintype ι]
     (g : ι → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ))
-    (θ : ℝ × ℝ) (p : Ambient ι) : ℂ :=
+    (θ : ℝ × ℝ) (p : Ambient ι)  :=
   fullProfileDensity g (𝓕 (frequencyTwist g₁ θ.1))
     (𝓕 (frequencyTwist g₂ θ.2)) b₃ p
 
-theorem fullProfileDensity_weighted_integrable {ι : Type*} [Fintype ι]
-    (g : ι → 𝓢(ℝ, ℂ)) (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ) :
+theorem fullProfileDensity_weighted_integrable  {ι}  [Fintype ι]
+     g   b₁ b₂ b₃   J  :
     Integrable (fun p : Ambient ι =>
       ambientWeight J p * ‖fullProfileDensity g b₁ b₂ b₃ p‖) := by
   convert (tripleCoefficient_weighted_integrable b₁ b₂ b₃ J).mul_prod
@@ -113,25 +141,37 @@ theorem fullProfileDensity_weighted_integrable {ι : Type*} [Fintype ι]
   simp only [ambientWeight, fullProfileDensity, norm_mul]
   ring
 
-theorem first_inherited_left_eq (p : Ambient (Fin 9)) :
+section
+variable (p : Ambient (Fin 9))
+include p
+
+theorem first_inherited_left_eq   :
     inheritedLeft 7 p = profileHeight firstLeftSlope firstRightSlope firstKernelSlope p.1 p.2 7 := by
   simp [inheritedLeft, profileHeight, firstLeftSlope, firstRightSlope, firstKernelSlope]
   ring
 
-theorem first_inherited_right_eq (p : Ambient (Fin 9)) :
+theorem first_inherited_right_eq   :
     inheritedRight 8 p = -profileHeight firstLeftSlope firstRightSlope firstKernelSlope p.1 p.2 8 := by
   simp [inheritedRight, profileHeight, firstLeftSlope, firstRightSlope, firstKernelSlope]
   ring
 
-theorem second_inherited_left_eq (p : Ambient (Fin 6)) :
+end
+
+section
+variable (p : Ambient (Fin 6))
+include p
+
+theorem second_inherited_left_eq   :
     inheritedLeft 4 p = profileHeight secondLeftSlope secondRightSlope secondKernelSlope p.1 p.2 4 := by
   simp [inheritedLeft, profileHeight, secondLeftSlope, secondRightSlope, secondKernelSlope]
   ring
 
-theorem second_inherited_right_eq (p : Ambient (Fin 6)) :
+theorem second_inherited_right_eq   :
     inheritedRight 5 p = -profileHeight secondLeftSlope secondRightSlope secondKernelSlope p.1 p.2 5 := by
   simp [inheritedRight, profileHeight, secondLeftSlope, secondRightSlope, secondKernelSlope]
   ring
+
+end
 
 end
 end SevenEighths.InverseAmbientProfileTower

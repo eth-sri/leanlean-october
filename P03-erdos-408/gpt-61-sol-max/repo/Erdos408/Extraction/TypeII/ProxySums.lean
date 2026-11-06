@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Proxy
 public import Erdos408.Extraction.TypeII.Rough
@@ -25,17 +26,22 @@ namespace Erdos408.TypeII
 
 open Finset Real
 
+section
+variable {x : ℝ} (hL : 1 ≤ Real.log x) (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x) {N : ℕ} (hYN : proxyCutoff x ≤ N) {j p : ℕ} (hp : p ∈ candidatePrimes x) (hpp : p.Prime) (hj : 1 ≤ j)
+
+include hL hYP hp in
 /-- Candidate primes lie below `Y` when `exp(L^{0.45}) < Y`. -/
-theorem candidate_lt_cutoff {x : ℝ} (hL : 1 ≤ Real.log x)
-    (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x) {p : ℕ}
-    (hp : p ∈ candidatePrimes x) : (p : ℝ) < proxyCutoff x :=
+theorem candidate_lt_cutoff    
+       
+      : (p : ℝ) < proxyCutoff x :=
   lt_of_le_of_lt (mem_candidatePrimes hL hp).2.2 hYP
 
+include hL hYP hYN in
 /-- The Euler product over the primes up to `N` splits into the candidate primes and the
 primes in `(Y, N]` when the weight vanishes on the other primes up to `Y`. -/
-theorem prod_primes_split {x : ℝ} (hL : 1 ≤ Real.log x)
-    (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x) {N : ℕ}
-    (hYN : proxyCutoff x ≤ N) (loc : ℕ → ℝ)
+theorem prod_primes_split    
+       
+      (loc : ℕ → ℝ)
     (hloc : ∀ p : ℕ, p.Prime → (p : ℝ) ≤ proxyCutoff x → p ∉ candidatePrimes x → loc p = 0) :
     ∏ p ∈ (range (N + 1)).filter Nat.Prime, (1 - loc p)⁻¹ =
       (∏ p ∈ candidatePrimes x, (1 - loc p)⁻¹) *
@@ -51,9 +57,9 @@ theorem prod_primes_split {x : ℝ} (hL : 1 ≤ Real.log x)
     rcases mem_union.1 hp with h | h
     · obtain ⟨hpp, -, hle⟩ := mem_candidatePrimes hL h
       have : (p : ℝ) ≤ N := (candidate_lt_cutoff hL hYP h).le.trans hYN
-      exact ⟨by exact_mod_cast (show (p : ℝ) < N + 1 by linarith), hpp⟩
+      simp_all
     · obtain ⟨hpp, -, hle⟩ := mem_primesIoc.1 h
-      exact ⟨by exact_mod_cast (show (p : ℝ) < N + 1 by linarith), hpp⟩
+      simp_all
   · rw [mem_filter, mem_range] at hp
     rw [mem_union, not_or] at hnot
     have hpY : (p : ℝ) ≤ proxyCutoff x := by
@@ -62,39 +68,43 @@ theorem prod_primes_split {x : ℝ} (hL : 1 ≤ Real.log x)
       exact hnot.2 (mem_primesIoc.2 ⟨hp.2, h, by exact_mod_cast (by omega : p ≤ N)⟩)
     rw [hloc p hp.2 hpY hnot.1, sub_zero, inv_one]
 
-theorem proxyLoc_nonneg (x : ℝ) (j p : ℕ) : 0 ≤ proxyLoc x j p := by
+theorem proxyLoc_nonneg  x   j p  : 0 ≤ proxyLoc x j p := by
   unfold proxyLoc; split_ifs <;> positivity
 
-theorem proxyLoc_le_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (p : ℕ) : proxyLoc x j p ≤ 1 := by
+theorem proxyLoc_le_one  x   {j}  (hj : 1 ≤ j)  p  : proxyLoc x j p ≤ 1 := by
   have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
   unfold proxyLoc; split_ifs
   · exact inv_le_one_of_one_le₀ hj'
   · exact zero_le_one
   · exact le_rfl
 
-theorem proxyLoc_of_candidate {x : ℝ} {j p : ℕ} (hp : p ∈ candidatePrimes x) :
+include hp in
+theorem proxyLoc_of_candidate       :
     proxyLoc x j p = (j : ℝ)⁻¹ := by simp [proxyLoc, hp]
 
-theorem proxyLoc_of_gt {x : ℝ} (hL : 1 ≤ Real.log x)
-    (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x) {j p : ℕ}
+include hL hYP in
+theorem proxyLoc_of_gt    
+       
     (hp : proxyCutoff x < p) : proxyLoc x j p = 1 := by
   have hP : p ∉ candidatePrimes x := fun h => by linarith [candidate_lt_cutoff hL hYP h]
   simp [proxyLoc, hP, not_le.2 hp]
 
-theorem proxyLoc_of_le {x : ℝ} {j p : ℕ} (hpY : (p : ℝ) ≤ proxyCutoff x)
+theorem proxyLoc_of_le     (hpY : (p : ℝ) ≤ proxyCutoff x)
     (hP : p ∉ candidatePrimes x) : proxyLoc x j p = 0 := by
   simp [proxyLoc, hP, hpY]
 
+include hL hYP hpp in
 /-- `g(p) = 1` at primes above `Y`. -/
-theorem dampedWeight_prime {x : ℝ} (hL : 1 ≤ Real.log x)
-    (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x) {j p : ℕ} (hpp : p.Prime)
+theorem dampedWeight_prime    
+         
     (hp : proxyCutoff x < p) : dampedWeight x j p = 1 := by
   rw [dampedWeight_eq_cmul x j hpp.ne_zero, cmul_prime _ hpp, proxyLoc_of_gt hL hYP hp]
 
+include hL hYP hYN hj in
 /-- The log density `∑_{m ≤ N} g(m)/m ≤ Π_P(t) Π_{(Y,N]}(1)`. -/
-theorem sum_dampedWeight_div_le {x : ℝ} (hL : 1 ≤ Real.log x)
-    (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x) {N : ℕ}
-    (hYN : proxyCutoff x ≤ N) {j : ℕ} (hj : 1 ≤ j) :
+theorem sum_dampedWeight_div_le    
+       
+          :
     ∑ m ∈ Icc 1 N, dampedWeight x j m / m ≤
       (∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹) *
         ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ := by
@@ -116,10 +126,11 @@ theorem sum_dampedWeight_div_le {x : ℝ} (hL : 1 ≤ Real.log x)
     · exact prod_congr rfl fun p hp => by
         rw [proxyLoc_of_gt hL hYP (mem_primesIoc.1 hp).2.1]
 
+include hL hYP hYN hj in
 /-- The twisted second log density `∑_{m ≤ N} g(m)² r^{Ω(m)}/m ≤ Π_P(r t²) Π_{(Y,N]}(r)`. -/
-theorem sum_dampedWeight_sq_div_le {x : ℝ} (hL : 1 ≤ Real.log x)
-    (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x) {N : ℕ}
-    (hYN : proxyCutoff x ≤ N) {j : ℕ} (hj : 1 ≤ j) {r : ℝ} (hr : 0 ≤ r) (hrj : r ≤ j)
+theorem sum_dampedWeight_sq_div_le    
+       
+          {r : ℝ} (hr : 0 ≤ r) (hrj : r ≤ j)
     (hrY : r < proxyCutoff x) :
     ∑ m ∈ Icc 1 N, dampedWeight x j m ^ 2 * cmul (fun _ => r) m / m ≤
       (∏ p ∈ candidatePrimes x, (1 - r * ((j : ℝ)⁻¹) ^ 2 / p)⁻¹) *
@@ -144,21 +155,23 @@ theorem sum_dampedWeight_sq_div_le {x : ℝ} (hL : 1 ≤ Real.log x)
           _ ≤ j := hj'
       linarith
     · simp only [mul_zero, zero_mul]; linarith
-    · have : proxyCutoff x < p := by push Not at h2; exact h2
-      linarith
+    linarith
   · rw [prod_primes_split hL hYP hYN _ fun p hp hpY hP => by
-      rw [proxyLoc_of_le hpY hP, zero_mul, zero_mul, zero_div]]
+      simp_all [proxyLoc_of_le]]
     congr 1
     · exact prod_congr rfl fun p hp => by rw [proxyLoc_of_candidate hp]; ring_nf
     · exact prod_congr rfl fun p hp => by
         rw [proxyLoc_of_gt hL hYP (mem_primesIoc.1 hp).2.1, one_mul, one_mul]
 
+include hp hpp in
 /-- `g(p^a m) = t^a g(m)` at a candidate prime. -/
-theorem dampedWeight_pow_mul {x : ℝ} {j p : ℕ} (hp : p ∈ candidatePrimes x) (hpp : p.Prime)
-    (a : ℕ) {m : ℕ} (hm : m ≠ 0) :
+theorem dampedWeight_pow_mul        
+     a   {m}  (hm : m ≠ 0) :
     dampedWeight x j (p ^ a * m) = ((j : ℝ)⁻¹) ^ a * dampedWeight x j m := by
   rw [dampedWeight_eq_cmul x j (mul_ne_zero (pow_ne_zero _ hpp.ne_zero) hm),
     dampedWeight_eq_cmul x j hm, map_mul, cmul_prime_pow _ hpp, proxyLoc_of_candidate hp]
+
+end
 
 /-- `v_p(m) = #{a ≤ N : p^a ∣ m}` for `m ≤ N`. -/
 theorem factorization_eq_sum_dvd {p m N : ℕ} (hp : p.Prime) (hm : m ≠ 0) (hmN : m ≤ N) :
@@ -168,20 +181,18 @@ theorem factorization_eq_sum_dvd {p m N : ℕ} (hp : p.Prime) (hm : m ≠ 0) (hm
     ext a
     simp only [mem_filter, mem_Icc, hp.pow_dvd_iff_le_factorization hm]
     have := Nat.factorization_lt p hm
-    constructor
-    · rintro ⟨⟨h1, -⟩, h2⟩; exact ⟨h1, h2⟩
-    · rintro ⟨h1, h2⟩; exact ⟨⟨h1, by omega⟩, h2⟩
+    grind
   rw [this, Nat.card_Icc, Nat.add_sub_cancel]
 
 /-- The candidate logarithm: `∑_{m ≤ N} g(m) log(m / m̄) / m ≤ 2t (∑_P log p / p) ∑ g(m)/m`. -/
-theorem sum_dampedWeight_log_div_le {x : ℝ} (hL : 1 ≤ Real.log x) {j : ℕ} (hj : 1 ≤ j)
-    (N : ℕ) :
+theorem sum_dampedWeight_log_div_le  {x}  (hL : 1 ≤ Real.log x)  {j}  (hj : 1 ≤ j)
+     N  :
     ∑ m ∈ Icc 1 N, dampedWeight x j m *
         (Real.log m - Real.log (candidateStrip x m)) / m ≤
       2 * (j : ℝ)⁻¹ * (∑ p ∈ candidatePrimes x, Real.log p / p) *
         ∑ m ∈ Icc 1 N, dampedWeight x j m / m := by
   have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
-  have ht0 : 0 ≤ (j : ℝ)⁻¹ := by positivity
+  
   have ht1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hj'
   set S := ∑ m ∈ Icc 1 N, dampedWeight x j m / m with hS
   -- expand `log(m / m̄)` over the candidate prime powers dividing `m`
@@ -223,9 +234,7 @@ theorem sum_dampedWeight_log_div_le {x : ℝ} (hL : 1 ≤ Real.log x) {j : ℕ} 
       obtain ⟨hmI, ⟨c, rfl⟩⟩ := mem_filter.1 hm
       obtain ⟨h1, h2⟩ := mem_Icc.1 hmI
       have hc : 1 ≤ c := by
-        rcases Nat.eq_zero_or_pos c with rfl | h
-        · simp at h1
-        · exact h
+        grind
       exact mem_image.2 ⟨c, mem_Icc.2 ⟨hc, le_trans (Nat.le_mul_of_pos_left c
         (pow_pos hpp.pos a)) h2⟩, rfl⟩
     have hnn : ∀ m, 0 ≤ dampedWeight x j m / m := fun m =>
@@ -286,7 +295,7 @@ theorem sum_dampedWeight_log_div_le {x : ℝ} (hL : 1 ≤ Real.log x) {j : ℕ} 
 
 /-- An Euler product supported on `P` is at most the full product over `P`. -/
 theorem prod_primes_ite_le (P : Finset ℕ) (u : ℕ → ℝ) (h0 : ∀ p ∈ P, 0 ≤ u p)
-    (h1 : ∀ p ∈ P, u p < 1) (N : ℕ) :
+    (h1 : ∀ p ∈ P, u p < 1)  N  :
     ∏ p ∈ (range (N + 1)).filter Nat.Prime, (1 - if p ∈ P then u p else 0)⁻¹ ≤
       ∏ p ∈ P, (1 - u p)⁻¹ := by
   have : ∏ p ∈ (range (N + 1)).filter Nat.Prime, (1 - if p ∈ P then u p else 0)⁻¹ =
@@ -311,7 +320,7 @@ theorem sum_dampedWeight_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ (x : ℝ) (j W : �
   set Y := proxyCutoff x with hYdef
   set P := candidatePrimes x with hPdef
   have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
-  have ht0 : 0 ≤ (j : ℝ)⁻¹ := by positivity
+  
   have ht1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hj'
   have hlY : 0 < Real.log Y := Real.log_pos (by linarith)
   have hPp : ∀ p ∈ P, p.Prime := fun p hp => (mem_candidatePrimes hL hp).1
@@ -378,9 +387,7 @@ theorem sum_dampedWeight_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ (x : ℝ) (j W : �
           rw [mem_coe, mem_filter, hF, mem_filter, mem_Icc] at hm hm'
           have e1 := stripPrimes_mul_partPrimes P (show m ≠ 0 by omega)
           have e2 := stripPrimes_mul_partPrimes P (show m' ≠ 0 by omega)
-          rw [hm.1.2] at e1
-          rw [hm'.1.2] at e2
-          rw [← e1, ← e2, h]
+          grind
       have hW : ((W / a : ℕ) : ℝ) ≤ W / a := Nat.cast_div_le
       calc ((F.filter fun m => R (stripPrimes P m)).card : ℝ) ≤ roughCount Y (W / a) := by
             exact_mod_cast hcard
@@ -439,7 +446,7 @@ theorem sum_dampedWeight_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ (x : ℝ) (j W : �
       have haR : (1 : ℝ) ≤ a := by exact_mod_cast ha1
       have : (1 : ℝ) ≤ (W : ℝ) ^ θ * (a : ℝ) ^ (-θ) := by
         rw [Real.rpow_neg (by linarith), ← div_eq_mul_inv, le_div_iff₀ (by positivity), one_mul]
-        exact Real.rpow_le_rpow (by linarith) (by exact_mod_cast haW) hθ.le
+        gcongr <;> first | assumption | positivity | linarith
       linarith [dampedWeight_le_one x hj a]
     · positivity
   calc ∑ m ∈ Icc 1 W, dampedWeight x j m
@@ -455,8 +462,7 @@ theorem sum_dampedWeight_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ (x : ℝ) (j W : �
           ∑ a ∈ Icc 1 W, (if a.primeFactors ⊆ P then dampedWeight x j a else 0) := by
         rw [mul_sum, ← sum_add_distrib]
         refine sum_congr rfl fun a ha => ?_
-        have : (0 : ℝ) < a := by have := (mem_Icc.1 ha).1; exact_mod_cast this
-        field_simp
+        ring
     _ ≤ A * W / Real.log Y * ∑ a ∈ Icc 1 W, cmul Ploc a +
           ∑ a ∈ Icc 1 W, (W : ℝ) ^ θ * cmul Qloc a := by
         gcongr with a ha a ha

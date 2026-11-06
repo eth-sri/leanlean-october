@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.MellinScaling
 public import OAI.NumberTheory.DirichletL.Detector.SpectralWeights
@@ -7,25 +8,25 @@ public import OAI.NumberTheory.DirichletL.Detector.SpectralWeights
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 
-lemma elementNorm_mul (a b : ActualEisensteinCubic.O) :
+lemma elementNorm_mul  a b  :
     elementNorm (a*b)=elementNorm a*elementNorm b := by
-  simp only [elementNorm,←Ideal.span_singleton_mul_span_singleton,map_mul,Nat.cast_mul]
+  simp_all [elementNorm]
 
-lemma elementNorm_pow (a : ActualEisensteinCubic.O) (n : ℕ) :
+lemma elementNorm_pow  a   n  :
     elementNorm (a^n)=elementNorm a^n := by
-  simp only [elementNorm,←Ideal.span_singleton_pow,map_pow,Nat.cast_pow]
+  simp_all [elementNorm]
 
-lemma physical_radial_argument (B A s H : ActualEisensteinCubic.O) (X : ℝ)
+lemma physical_radial_argument  B A s H   X 
     (hB : elementNorm B≠0) (hs : elementNorm s≠0) :
     (elementNorm B*elementNorm s*X)*elementNorm H/elementNorm ((B*A)*s)=
       X*elementNorm H/elementNorm A := by
   simp only [elementNorm_mul]
   field_simp
 
-lemma physical_poisson_prefactor (B A S X : ℝ) (hB : 0<B) (hA : 0<A) (hS : 0<S) (hX : 0<X) :
+lemma physical_poisson_prefactor  B A S X  (hB : 0<B) (hA : 0<A) (hS : 0<S) (hX : 0<X) :
     (Real.sqrt (B*S*X):ℂ)⁻¹*(Real.sqrt S:ℂ)⁻¹*((B*S*X/(B*A):ℝ):ℂ)=
       (Real.sqrt X:ℂ)/(Real.sqrt B:ℂ)/(A:ℂ) := by
   have hBc : (B:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hB.ne'
@@ -36,12 +37,12 @@ lemma physical_poisson_prefactor (B A S X : ℝ) (hB : 0<B) (hA : 0<A) (hS : 0<S
   rw [Real.sqrt_mul (mul_pos hB hS).le,Real.sqrt_mul hB.le]
   simp only [Complex.ofReal_mul,Complex.ofReal_div]
   field_simp
-  have hb : (Real.sqrt B:ℂ)^2=(B:ℂ) := by exact_mod_cast Real.sq_sqrt hB.le
+  
   have hs : (Real.sqrt S:ℂ)^2=(S:ℂ) := by exact_mod_cast Real.sq_sqrt hS.le
   have hx : (Real.sqrt X:ℂ)^2=(X:ℂ) := by exact_mod_cast Real.sq_sqrt hX.le
   rw [hs,hx]
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

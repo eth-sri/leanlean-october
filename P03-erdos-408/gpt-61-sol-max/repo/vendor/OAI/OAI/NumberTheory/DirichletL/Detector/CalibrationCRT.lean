@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstPoisson
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationFourier
@@ -8,19 +9,19 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalCoefficient
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
 open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 open CenteredMomentFirstPoisson
-local notation "O" => ActualEisensteinCubic.O
 
-theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
+
+theorem coprime_mixed_fourier (a b : ActualEisensteinCubic.O) (ha : a ≠ 0) (hb : b ≠ 0)
     (hcop : IsCoprime a b)
     [Fintype (Residue a)] [Fintype (Residue b)] [Fintype (Residue (a * b))]
     (χa : MulChar (Residue a) ℂ) (F : Residue b → ℂ)
-    (h : Residue (a * b)) :
+     h  :
     (∑ x : Residue (a * b),
       χa (frequencyReduction a (a * b) (dvd_mul_right a b) x) *
         F (frequencyReduction b (a * b) (dvd_mul_left b a) x) *
@@ -35,14 +36,12 @@ theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (ua.mulLeft.prodCongr ub.mulLeft).trans (principalCRT a b hcop).toEquiv.symm
   have heproj (x : Residue a × Residue b) : principalCRT a b hcop (e x) =
       ((ua : Residue a) * x.1, (ub : Residue b) * x.2) := by
-    change (principalCRT a b hcop).toEquiv
-      ((principalCRT a b hcop).toEquiv.symm ((ua : Residue a) * x.1, (ub : Residue b) * x.2)) = _
-    exact (principalCRT a b hcop).toEquiv.apply_symm_apply _
+    aesop
   have he (x : Residue a × Residue b) : e x =
       scaledResidue a b (a * b) rfl x.1 + scaledResidue b a (a * b) (mul_comm a b) x.2 := by
     apply (principalCRT a b hcop).injective
     rw [heproj, map_add, principalCRT_scaled_left, principalCRT_scaled_right]
-    simp only [Prod.mk_add_mk, add_zero, zero_add, ua, ub, residueUnit_coe]
+    aesop
   have hproj (x : Residue (a * b)) :
       (frequencyReduction a (a * b) (dvd_mul_right a b) x,
         frequencyReduction b (a * b) (dvd_mul_left b a) x) = principalCRT a b hcop x := by
@@ -72,9 +71,13 @@ theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
   intro x _
   ring
 
-theorem calibration_mixed_fourier (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMaximal)
-    (b : O) (hb : b≠0) (hcop : IsCoprime (calibrationForSet S hS).generator b)
-    (F : Residue b → ℂ) (H : O) :
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀ P∈S, P.IsMaximal) (b : ActualEisensteinCubic.O) (hb : b≠0) (hcop : IsCoprime (calibrationForSet S hS).generator b) (F : Residue b → ℂ) (H : ActualEisensteinCubic.O)
+include S hS b hb hcop F H
+
+theorem calibration_mixed_fourier    
+         
+        :
     let C := calibrationForSet S hS
     (∑' x : Residue (C.generator*b),
       C.residue (frequencyReduction C.generator (C.generator*b) (dvd_mul_right _ _) x) *
@@ -99,9 +102,9 @@ theorem calibration_mixed_fourier (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMa
   simp only [frequencyReduction_mk]
   ring
 
-theorem calibration_mixed_fourier_zero (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMaximal)
-    (b : O) (hb : b≠0) (hcop : IsCoprime (calibrationForSet S hS).generator b)
-    (F : Residue b → ℂ) (H : O) (hH : ¬IsCoprime (calibrationForSet S hS).generator H) :
+theorem calibration_mixed_fourier_zero    
+         
+        (hH : ¬IsCoprime (calibrationForSet S hS).generator H) :
     let C := calibrationForSet S hS
     (∑' x : Residue (C.generator*b),
       C.residue (frequencyReduction C.generator (C.generator*b) (dvd_mul_right _ _) x) *
@@ -116,7 +119,9 @@ theorem calibration_mixed_fourier_zero (S : Finset (Ideal O)) (hS : ∀ P∈S, P
   rw [hz, star_zero]
   ring
 
-end SevenEighths.ProbePhysical
 end
+
+end SevenEighths.ProbePhysical
+
 
 end OAI

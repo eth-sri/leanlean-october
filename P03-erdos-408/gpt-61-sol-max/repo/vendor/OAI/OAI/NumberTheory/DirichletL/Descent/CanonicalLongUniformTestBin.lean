@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongIntegral
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
@@ -15,15 +15,15 @@ open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion C
 open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
 open FourierBridge JointLogSeparation
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem actual_marked_bin_uniform_test
     (a₀ b₀:ℝ)(ha₀:0<a₀)(hb₀:0≤b₀)
-    (Vlog:𝓢(ℝ,ℂ))(Alog:ℝ)(hbox:∀x,Vlog x≠0 → |x|≤Alog)
+    (Vlog:𝓢(ℝ,ℂ)) Alog  hbox 
     (hone:∀x,|x|≤CanonicalCubeSeparation.columnWindowRadius a₀ b₀ → Vlog x=1)
-    (Lcap eta tau saving em ed:ℝ)(hcap:0≤Lcap)
+     Lcap eta tau saving em ed (hcap:0≤Lcap)
     (heta:0≤eta)(heta1:eta≤1)(htau:0<tau)(htau1:tau≤1)
-    (hem:0<em)(hed:0<ed)(K:ℕ):
+    (hem:0<em)(hed:0<ed) K :
     ∃(ω₁₁ ω₁₂ ω₂₁ ω₂₂:𝓢(ℝ,ℂ))(af₁ bf₁ af₂ bf₂ window bw:ℝ),
       0<af₁ ∧ af₁≤bf₁ ∧ 0<af₂ ∧ af₂≤bf₂ ∧
       HasCompactSupport (ω₁₁:ℝ → ℂ) ∧ HasCompactSupport (ω₁₂:ℝ → ℂ) ∧
@@ -34,7 +34,7 @@ theorem actual_marked_bin_uniform_test
     ∀epsFirst epsSecond:ℝ,0<epsFirst → 0<epsSecond → ∀degree:ℕ,
       ∃Ccoef C:ℝ,0<Ccoef ∧ 0≤C ∧
     ∀(test:ℝ → ℂ)(hs₀:Function.support test⊆Set.Icc a₀ b₀)(hTest:ContDiff ℝ ∞ test),
-    ∀{σ:Type}[DecidableEq σ](S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(hSp:∀P∈S,Prime P),
+    ∀{σ:Type}[DecidableEq σ](S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(hSp:∀P∈S,Prime P),
       let F:=InitialMeanSquare.outsideSquarefreeIdeals S D;
       let hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad;
       letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
@@ -44,7 +44,7 @@ theorem actual_marked_bin_uniform_test
       let hcop:=poolPrimary_coprime F hF;
       let hg:=poolPrimary_good F hF;
       let om:=radialFromLog Vlog (Vlog.smooth ⊤) Alog hbox;
-      ∀(Q:Finset (primePool F →₀ ℕ))(labels:Finset (Ideal O))(Ψ:O →* ℂ)(m:O)
+      ∀(Q:Finset (primePool F →₀ ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))(Ψ:ActualEisensteinCubic.O →* ℂ)(m:ActualEisensteinCubic.O)
         (slots:Finset σ)(lists:σ → Finset (primePool F))(weights:σ → primePool F → ℂ)
         (Z M r ell V H₀ pi epschild A loss lossFinal:ℝ),
         2≤Z → 2≤Z^eta → Real.exp 1≤Z^eta → 0≤M → r+3*ell+V≤Lcap → M≤Lcap →
@@ -75,7 +75,7 @@ theorem actual_marked_bin_uniform_test
             (∫ξ:ℝ,‖reopeningCoefficient test a₀ b₀ ha₀ hs₀ hTest ξ‖*(1+|ξ|)^(InverseClippingProfiles.momentOrder (firstDegree degree)))^2 := by
   let om:=radialFromLog Vlog (Vlog.smooth ⊤) Alog hbox
   have hs:Function.support om⊆Set.Icc (Real.exp (-Alog)) (Real.exp Alog):=
-    fun x hx=>radialFromLog_support Vlog (Vlog.smooth ⊤) Alog hbox x hx
+    radialFromLog_support Vlog (Vlog.smooth ⊤) Alog hbox
   obtain ⟨ω₁₁,ω₁₂,ω₂₁,ω₂₂,af₁,bf₁,af₂,bf₂,window,bw,
     haf₁,hab₁,haf₂,hab₂,hw₁₁,hw₁₂,hw₂₁,hw₂₂,hs₁₁,hs₁₂,hs₂₁,hs₂₂,hbw,hbwb,hbwexp,he⟩:=
     actual_long_parent_energy om (Real.exp (-Alog)) (Real.exp Alog) (Real.exp_pos _) hs
@@ -119,7 +119,7 @@ theorem actual_marked_bin_uniform_test
       (by intro v hv;rw [cubeIdeal_primeProduct_norm F hF];exact hQhi v hv)
       hrcap hellcap hVcap hwin hpi hpieta hemcost hedcost hechild hsave hloss hcard hpar hprincipal hretained htail
       hΨ hA hsf hn hlabels hslots hweights (hleft ξ) (hright ξ)
-    have hc (I:Ideal O) := funext (actualLongCoefficient_complete S D hbad Ψ m H₀ (Z^ell) ξ I)
+    have hc (I:Ideal ActualEisensteinCubic.O) := funext (actualLongCoefficient_complete S D hbad Ψ m H₀ (Z^ell) ξ I)
     have hrow: (fun I z=>varyingReopenedRow (poolPrimary F) (poolPrimary_ne_zero F hF)
         (poolPrimary_coprime F hF) hg' Finset.univ Q
         (separatedCubeCoefficient (fun v=>reopenedCubeCoefficient H₀
@@ -149,6 +149,6 @@ theorem actual_marked_bin_uniform_test
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

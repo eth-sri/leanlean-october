@@ -6,16 +6,16 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassWeighted
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
 open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
-lemma active_norm_of_square {ι : Type*} [DecidableEq ι] (p : ι→O)
-    (A : Finset ι) (Z R eta : ℝ) (hZ : 0<Z)
+
+lemma active_norm_of_square {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O)
+     A  (Z R eta : ℝ) (hZ : 0<Z)
     (hA : primeProductNorm p A≤Z^(R+eta)) :
     ‖eisEmbedding (∏i∈A,p i)‖≤Z^((R+eta)/2) := by
   apply (sq_le_sq₀ (norm_nonneg _) (Real.rpow_nonneg hZ.le _)).mp
@@ -26,8 +26,8 @@ lemma active_norm_of_square {ι : Type*} [DecidableEq ι] (p : ι→O)
   rw [hh]
   exact hA
 
-theorem original_weighted_source (Jmax : ℕ) (delta : ℝ) (hdelta : 0<delta) :
-    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
+theorem original_weighted_source  Jmax   delta  (hdelta : 0<delta) :
+    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→ActualEisensteinCubic.O)(_hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(Z ell R Bfirst t eta a loss : ℝ),
@@ -63,6 +63,6 @@ theorem original_weighted_source (Jmax : ℕ) (delta : ℝ) (hdelta : 0<delta) :
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ (by linarith)) hC.le
 
 end SevenEighths.InverseMomentGlobalPrincipalMass
-end
+
 
 end OAI

@@ -6,7 +6,7 @@ public import Erdos821.P3Clean.Conditioning
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P3Clean

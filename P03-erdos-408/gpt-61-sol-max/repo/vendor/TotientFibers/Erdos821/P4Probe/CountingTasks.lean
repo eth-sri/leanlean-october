@@ -30,7 +30,7 @@ Hoeffding fraction in each block row. The energy may couple all rows.
 The genuine fraction identity/bound are in S34/Hoeffding.lean, not the
 owned blueprint placeholders. All ANOVA/projection algebra is already proved
 in P4Probe/Anova and ProjectionSelector; this task needs no label spaces. -/
-def ProbeCountingTask : Prop :=
+def ProbeCountingTask  :=
   ∀ (s J ell m : ℕ) (block : Finset (Fin s))
     (E : Finset (Fin s × Fin (J + ell)) → ℝ),
     1 ≤ m → 1 ≤ ell → m ≤ J →

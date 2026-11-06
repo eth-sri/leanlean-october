@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Moments.SecondBlockCount
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondTripleBounds
 
@@ -11,13 +13,12 @@ open scoped BigOperators Classical
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal)
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma nonzero_ideal_norm_one (I : Ideal Eis) (hI : I ≠ 0) : 1 ≤ (Ideal.absNorm I : ℝ) := by
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
 
-theorem triple_normalized_mass_source_bounds (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
+
+alias nonzero_ideal_norm_one := _root_.OAI.SevenEighths.CenteredMomentSecondBlockCount.ideal_norm_ge_one
+
+theorem triple_normalized_mass_source_bounds  K  (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (Γ : Finset OuterTriple) (B T R : ℝ),
       0 < B → 0 < T → 0 < R →
       (∀ γ ∈ Γ, γ.q0 ≠ 0 ∧ γ.quotient ≠ 0 ∧ γ.residual ≠ 0) →
@@ -36,10 +37,10 @@ theorem triple_normalized_mass_source_bounds (K : ℕ) (ε : ℝ) (hε : 0 < ε)
     exact hb Γ B T R ((nonzero_ideal_norm_one _ hq).trans hqb)
       ((nonzero_ideal_norm_one _ ht).trans htb) ((nonzero_ideal_norm_one _ hr).trans hrb) hz hn
 
-theorem actual_second_normalized_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ {ι : Type} [DecidableEq ι] (p : ι → Eis)
+theorem actual_second_normalized_mass  K   ε  (hε : 0 < ε) :
+    ∃ C : ℝ, 0 < C ∧ ∀ {ι : Type} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
       (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (u v : Eisˣ)
+      {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (u v : ActualEisensteinCubic.Oˣ)
       (Z ell R j t g theta eta : ℝ), 0 < Z →
       (∀ x ∈ source, x.quotient ≠ 0) →
       (∀ x ∈ source, x.second.divisor ⊆ x.second.sourceCommon) →
@@ -85,7 +86,7 @@ theorem actual_second_normalized_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
   rw [he,←Real.rpow_mul hZ.le,←Real.rpow_neg hZ.le] at hm
   exact hm
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

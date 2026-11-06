@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.ChildEnergy
 
@@ -6,42 +7,39 @@ public import OAI.NumberTheory.DirichletL.Moments.ChildEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentReflectedChild
 open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy
 open CenteredMomentSmooth CenteredMomentChildEnergy
-local notation "O" => ActualEisensteinCubic.O
 
-theorem finite_reflected_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a : α → O)
+
+theorem finite_reflected_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) (rows : Finset O)
-    (hW : ∀ z : O, 0 ≤ (W (‖ConcreteTraceCRT.eisEmbedding z‖ ^ 2 / K)).re)
+     W   K  (hK : 0 < K)  rows 
+    (hW : ∀ z : ActualEisensteinCubic.O, 0 ≤ (W (‖ConcreteTraceCRT.eisEmbedding z‖ ^ 2 / K)).re)
     (hmajor : ∀ z ∈ rows, 1 ≤ (W (‖ConcreteTraceCRT.eisEmbedding z‖ ^ 2 / K)).re) :
     (∑ z ∈ rows, ‖gaussPolynomial S a ha c (-z)‖ ^ 2) ≤
       (gaussEnergy S a ha c W K).re := by
   have hh := finite_energy_le_gaussEnergy S a ha c W K hK (rows.image Neg.neg) hW
     (by intro z hz;obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hz
         simpa only [map_neg,norm_neg] using hmajor w hw)
-  rw [Finset.sum_image] at hh
-  · exact hh
-  · intro x hx y hy hxy
-    exact neg_injective hxy
+  simp_all
 
-theorem whole_kernel_reflected_gauss_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
+theorem whole_kernel_reflected_gauss_child_bound  W   V 
     (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
-    (hV : ∀ i y, V i y ≠ 0 → |y| ≤ M i) (A J₁ J₂ : ℕ) :
+    (hV : ∀ i y, V i y ≠ 0 → |y| ≤ M i)  A J₁ J₂  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ R : ℝ, 0 < R →
-      ∀ {α β : Type*} (rows : Finset O) (S : Finset α) (T : Finset β)
-        (a : α → O) (b : β → O)
+      ∀ {α β : Type*} (rows : Finset ActualEisensteinCubic.O) (S : Finset α) (T : Finset β)
+        (a : α → ActualEisensteinCubic.O) (b : β → ActualEisensteinCubic.O)
         (ha : ∀ i, Supported (Ideal.span {a i}))
         (hb : ∀ j, Supported (Ideal.span {b j}))
         (c : α → ℂ) (d : β → ℂ) (u : α → ℝ) (v : β → ℝ)
-        (ρ x : O → ℝ) (η : O → ℂ),
+        (ρ x : ActualEisensteinCubic.O → ℝ) (η : ActualEisensteinCubic.O → ℂ),
       (∀ z ∈ rows, ‖η z‖ ≤ 1) →
       (∀ z ∈ rows, ‖V 0 (ρ z)‖ ≤ 1) → (∀ z ∈ rows, ‖V 1 (x z)‖ ≤ 1) →
       ∀ (U : 𝓢(ℝ, ℂ)) (K : ℝ), 0 < K →
-      (∀ z : O, 0 ≤ (U (‖ConcreteTraceCRT.eisEmbedding z‖ ^ 2 / K)).re) →
+      (∀ z : ActualEisensteinCubic.O, 0 ≤ (U (‖ConcreteTraceCRT.eisEmbedding z‖ ^ 2 / K)).re) →
       (∀ z ∈ rows, 1 ≤ (U (‖ConcreteTraceCRT.eisEmbedding z‖ ^ 2 / K)).re) →
       ∀ E₁ E₂ : ℝ, 0 ≤ E₁ → 0 ≤ E₂ →
       (∀ t : ℝ, (gaussEnergy S a ha (fun i => c i * columnPhase (V 2) (u i) t) U K).re ≤
@@ -79,6 +77,6 @@ theorem whole_kernel_reflected_gauss_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4
 
 end SevenEighths.CenteredMomentReflectedChild
 
-end
+
 
 end OAI

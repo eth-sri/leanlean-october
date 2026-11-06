@@ -11,14 +11,14 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "Grid" => Finset ((Ideal Eis × Ideal Eis) × Ideal Eis)
 
-def quotientGridSupport (r : Ideal Eis) (T : Grid) : Grid :=
+local notation "Grid" => Finset ((Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) × Ideal ActualEisensteinCubic.O)
+
+def quotientGridSupport (r : Ideal ActualEisensteinCubic.O) (T : Grid)  :=
   (T.filter fun u => r ∣ u.2).image fun u => (u.1, idealQuotient r u.2)
 
-@[simp] theorem mem_quotientGridSupport (r : Ideal Eis) (hr : r ≠ 0)
-    (T : Grid) (p : Ideal Eis × Ideal Eis) (c : Ideal Eis) :
+@[simp] theorem mem_quotientGridSupport  r  (hr : r ≠ 0)
+     T   p   c  :
     (p, c) ∈ quotientGridSupport r T ↔ (p, r * c) ∈ T := by
   constructor
   · intro hu
@@ -34,7 +34,7 @@ def quotientGridSupport (r : Ideal Eis) (T : Grid) : Grid :=
     exact mul_left_cancel₀ hr (idealQuotient_mul (dvd_mul_right r c))
 
 theorem sum_quotientGridSupport {A : Type*} [AddCommMonoid A]
-    (r : Ideal Eis) (T : Grid) (f : (Ideal Eis × Ideal Eis) × Ideal Eis → A) :
+    (r : Ideal ActualEisensteinCubic.O) (T : Grid) (f : (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) × Ideal ActualEisensteinCubic.O → A) :
     (∑ u ∈ T, if r ∣ u.2 then f u else 0) =
       ∑ u ∈ quotientGridSupport r T, f (u.1, r * u.2) := by
   rw [← Finset.sum_filter, quotientGridSupport, Finset.sum_image]
@@ -47,16 +47,16 @@ theorem sum_quotientGridSupport {A : Type*} [AddCommMonoid A]
     · exact idealQuotient_injective_on r (Finset.mem_filter.mp hu).2
         (Finset.mem_filter.mp hv).2 (congrArg Prod.snd he)
 
-theorem quotientGridSupport_origin (r : Ideal Eis) (hr : r ≠ 0)
-    (D : Finset HybridColumnData) (p : Ideal Eis × Ideal Eis) (c : Ideal Eis)
+theorem quotientGridSupport_origin (r : Ideal ActualEisensteinCubic.O) (hr : r ≠ 0)
+    (D : Finset HybridColumnData)  p   c 
     (hu : (p, c) ∈ quotientGridSupport r (hybridGridSupport D)) :
     ∃ d ∈ D, (d.residualN, d.residualB) = p ∧ d.common = r * c := by
   have hm := (mem_quotientGridSupport r hr (hybridGridSupport D) p c).mp hu
   obtain ⟨d, hd, he⟩ := Finset.mem_image.mp hm
   exact ⟨d, hd, congrArg Prod.fst he, congrArg Prod.snd he⟩
 
-theorem quotientGridCommonSupport_origin (r : Ideal Eis) (hr : r ≠ 0)
-    (D : Finset HybridColumnData) (m c : Ideal Eis)
+theorem quotientGridCommonSupport_origin (r : Ideal ActualEisensteinCubic.O) (hr : r ≠ 0)
+    (D : Finset HybridColumnData)  m c 
     (hc : c ∈ gridCommonSupport (quotientGridSupport r (hybridGridSupport D)) m) :
     ∃ d ∈ D, d.residualN = m ∧ d.common = r * c := by
   obtain ⟨u, hu, he⟩ := Finset.mem_image.mp hc
@@ -65,23 +65,23 @@ theorem quotientGridCommonSupport_origin (r : Ideal Eis) (hr : r ≠ 0)
   refine ⟨d, hd, (congrArg Prod.fst hp).trans hum, ?_⟩
   simpa only [he] using hdc
 
-def extractedGridCoefficient (T : Grid) (R t : Ideal Eis)
-    (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ) (c m h : Ideal Eis) : ℂ :=
+def extractedGridCoefficient (T : Grid) (R t : Ideal ActualEisensteinCubic.O)
+    (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ) (c m h : Ideal ActualEisensteinCubic.O)  :=
   if ((m, h), c) ∈ T then beta c m h * (if IsCoprime R (h * t) then 1 else 0) else 0
 
-theorem extractedGridCoefficient_norm_le_one (T : Grid) (R t : Ideal Eis)
-    (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
+theorem extractedGridCoefficient_norm_le_one  T   R t 
+     beta 
     (hb : ∀ u ∈ T, ‖beta u.2 u.1.1 u.1.2‖ ≤ 1)
-    (c m h : Ideal Eis) : ‖extractedGridCoefficient T R t beta c m h‖ ≤ 1 := by
+     c m h  : ‖extractedGridCoefficient T R t beta c m h‖ ≤ 1 := by
   unfold extractedGridCoefficient
   split_ifs with hu hcop
   · simpa using hb ((m, h), c) hu
   · simp
   · simp
 
-def gridDivisorHybridBlock (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
-    (t k R r : Ideal Eis) : ℂ :=
+def gridDivisorHybridBlock (T : Grid) (Pset : Finset (Ideal ActualEisensteinCubic.O))
+    (a : Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ)
+    (t k R r : Ideal ActualEisensteinCubic.O)  :=
   ∑ u ∈ T, if r ∣ u.2 then ∑ P ∈ Pset, if R ∣ P then
     a P / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ) * beta u.2 u.1.1 u.1.2 *
       (quadraticRow k (primaryGenerator (u.1.1 * u.1.2)) * inverseCubicKernel P (u.2 * u.1.1)) *
@@ -89,18 +89,18 @@ def gridDivisorHybridBlock (T : Grid) (Pset : Finset (Ideal Eis))
     else 0 else 0
 
 theorem gridDivisorHybridBlock_eq_zero_of_quotientGrid_empty
-    (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
-    (t k R r : Ideal Eis) (hQ : quotientGridSupport r T = ∅) :
+     T   Pset 
+     a   beta 
+     t k R r  (hQ : quotientGridSupport r T = ∅) :
     gridDivisorHybridBlock T Pset a beta t k R r = 0 := by
   unfold gridDivisorHybridBlock
   rw [sum_quotientGridSupport, hQ]
   exact Finset.sum_empty
 
 theorem gridDivisorHybridBlock_extract
-    (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
-    (t k R r : Ideal Eis) (hR : R ≠ 0) (hr : r ≠ 0)
+     T   Pset 
+     a   beta 
+     t k R r  (hR : R ≠ 0) (hr : r ≠ 0)
     (hk : Admissible ((R * r) * k))
     (hP : ∀ P ∈ Pset, CubicSieve.Admissible P) :
     gridDivisorHybridBlock T Pset a beta t ((R * r) * k) R r =
@@ -111,7 +111,7 @@ theorem gridDivisorHybridBlock_extract
               hybridColumnCoefficient R r (extractedGridCoefficient T R t beta) c p.1 p.2 *
                 ∑ P ∈ quotientSupport R Pset,
                   hybridCubicCoefficient R r p.2 t a P * inverseCubicKernel P (c * p.1) := by
-  have hmask (P h : Ideal Eis) :
+  have hmask (P h : Ideal ActualEisensteinCubic.O) :
       (if IsCoprime (R * P) (h * t) then (1 : ℂ) else 0) =
       (if IsCoprime R (h * t) then 1 else 0) *
         (if IsCoprime P (h * t) then 1 else 0) := by
@@ -119,7 +119,7 @@ theorem gridDivisorHybridBlock_extract
     split_ifs <;> simp_all
   unfold gridDivisorHybridBlock
   rw [sum_quotientGridSupport]
-  have hinner (u : (Ideal Eis × Ideal Eis) × Ideal Eis) :
+  have hinner (u : (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) × Ideal ActualEisensteinCubic.O) :
       (∑ P ∈ Pset, if R ∣ P then
         a P / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ) * beta (r * u.2) u.1.1 u.1.2 *
           (quadraticRow ((R * r) * k) (primaryGenerator (u.1.1 * u.1.2)) *

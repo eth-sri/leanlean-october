@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstExtractedLedger
 public import OAI.NumberTheory.DirichletL.Moments.FirstScale
@@ -28,19 +29,25 @@ local notation "O" => ActualEisensteinCubic.O
 
 abbrev ballProfile : 𝓢(ℝ,ℂ) := QuadraticInitialBound.sieveCutoff
 
-theorem ballProfile_nonneg (x : ℝ) : 0 ≤ (ballProfile x).re := by
+section
+variable (x : ℝ)
+include x
+
+theorem ballProfile_nonneg   : 0 ≤ (ballProfile x).re := by
   simpa only [ballProfile,QuadraticInitialBound.sieveCutoff_apply,Complex.ofReal_re]
     using (QuadraticInitialBound.sieveBump.nonneg (x:=x))
 
-theorem ballProfile_le_one (x : ℝ) : (ballProfile x).re ≤ 1 := by
+theorem ballProfile_le_one   : (ballProfile x).re ≤ 1 := by
   simpa only [ballProfile,QuadraticInitialBound.sieveCutoff_apply,Complex.ofReal_re]
     using (QuadraticInitialBound.sieveBump.le_one (x:=x))
 
-theorem ballProfile_one (x : ℝ) (hx : 0≤x) (hx1 : x≤1) : ballProfile x=1 := by
+theorem ballProfile_one   (hx : 0≤x) (hx1 : x≤1) : ballProfile x=1 := by
   simp only [ballProfile,QuadraticInitialBound.sieveCutoff_apply,
     QuadraticInitialBound.sieveBump_eq_one hx hx1,Complex.ofReal_one]
 
-theorem ballProfile_majorizes (Y : ℝ) (hY : 0<Y) (z : O)
+end
+
+theorem ballProfile_majorizes  Y  (hY : 0<Y)  z 
     (hz : normValue z≤Y) : 1≤(ballProfile (‖eisEmbedding z‖^2/Y)).re := by
   rw [←normValue_eq_embedding]
   have he := ballProfile_one (normValue z/Y)
@@ -72,10 +79,7 @@ theorem primeTest_tsupport : tsupport primeTest ⊆ Set.Ioi 0 := by
 theorem primeTest_ne_zero : (primeTest : ℝ→ℝ)≠0 := by
   have h : primeTest (3/4)=1 := primeTest.one_of_mem_closedBall
     (by simp [primeTest,Metric.mem_closedBall])
-  intro hz
-  have he := congrFun hz (3/4)
-  change primeTest (3/4)=0 at he
-  linarith
+  aesop
 
 theorem eventually_log_card_power (c ell loss : ℝ)
     (hc : 0<c) (hell : 0<ell) (hloss : 0<loss) :
@@ -101,12 +105,16 @@ theorem eventually_log_card_power (c ell loss : ℝ)
 
 section Pool
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 include hH
 
-theorem eventually_actual_pool_card (Sbad : Finset (Ideal O))
+section
+variable (Sbad : Finset (Ideal O))
+include Sbad
+
+theorem eventually_actual_pool_card  
     (ell loss : ℝ) (hell : 0<ell) (hloss : 0<loss) :
     ∀ᶠ Z : ℝ in atTop,
       Z^(ell-loss)≤(primePool M H Sbad (1/2) 1 (Z^ell)).card := by
@@ -118,7 +126,7 @@ theorem eventually_actual_pool_card (Sbad : Finset (Ideal O))
     eventually_log_card_power c ell loss hc hell hloss] with Z hcard hpower
   exact hpower.trans hcard
 
-theorem eventually_actual_pool (Sbad : Finset (Ideal O))
+theorem eventually_actual_pool  
     (hbad : fixedBadPrimes⊆Sbad) (ell loss cap b eta : ℝ)
     (hell : 0<ell) (hloss : 0<loss) (hgap : eta<ell/2) :
     ∀ᶠ Z : ℝ in atTop,
@@ -156,13 +164,19 @@ theorem eventually_actual_pool (Sbad : Finset (Ideal O))
     nlinarith [sq_nonneg (Z^(ell/2)-2)]
   · simpa only [mul_one] using hn.2
 
+end
+
 end Pool
 
 def dyadRows (n : ℤ) : Finset O :=
   (ShortDraftLatticeCount.rowNormBall ⌈dyadicScale n⌉₊).filter
     (fun h => dyadicWeight n (normValue h)≠0)
 
-@[simp] theorem mem_dyadRows (n : ℤ) (h : O) :
+section
+variable (n : ℤ) (h : O)
+include n h
+
+@[simp] theorem mem_dyadRows     :
     h∈dyadRows n ↔ dyadicWeight n (normValue h)≠0 := by
   constructor
   · exact fun hh => (Finset.mem_filter.mp hh).2
@@ -173,42 +187,52 @@ def dyadRows (n : ℤ) : Finset O :=
     unfold normValue at hn
     exact_mod_cast hn
 
-theorem dyadRows_ne_zero (n : ℤ) (h : O) (hh : h∈dyadRows n) : h≠0 := by
+section
+variable (hh : h∈dyadRows n)
+include hh
+
+theorem dyadRows_ne_zero       : h≠0 := by
   intro he
   have hn := (mem_dyadRows n h).mp hh
   subst h
   exact hn (by simpa [normValue] using dyadicWeight_zero_nonpos n 0 le_rfl)
 
-theorem dyadRows_norm_lt (n : ℤ) (h : O) (hh : h∈dyadRows n) :
+theorem dyadRows_norm_lt       :
     normValue h<dyadicScale n :=
   (dyadicWeight_support n ((mem_dyadRows n h).mp hh)).2
 
-theorem dyadRows_log_nonneg (Z : ℝ) (hZ : 1<Z) (n : ℤ)
+end
+
+end
+
+theorem dyadRows_log_nonneg  Z  (hZ : 1<Z)  n 
     (hne : (dyadRows n).Nonempty) : 0≤Real.logb Z (dyadicScale n) := by
   obtain ⟨h,hh⟩ := hne
   exact Real.logb_nonneg hZ
     ((normValue_ge_one h (dyadRows_ne_zero n h hh)).trans (dyadRows_norm_lt n h hh).le)
 
-theorem dyadic_energy_eq_sum (n : ℤ) (f : O→ℂ) :
+section
+variable (n : ℤ) (f : O→ℂ)
+include n f
+
+theorem dyadic_energy_eq_sum     :
     (∑' h : O,dyadicWeight n (normValue h)*‖f h‖^2)=
       ∑ h∈dyadRows n,dyadicWeight n (normValue h)*‖f h‖^2 := by
   apply tsum_eq_sum
-  intro h hh
-  have hz : dyadicWeight n (normValue h)=0 := by
-    by_contra hn
-    exact hh ((mem_dyadRows n h).mpr hn)
-  rw [hz,zero_mul]
+  simp_all
 
-theorem dyadic_energy_le_sum (n : ℤ) (f : O→ℂ) :
+theorem dyadic_energy_le_sum     :
     (∑' h : O,dyadicWeight n (normValue h)*‖f h‖^2)≤
       ∑ h∈dyadRows n,‖f h‖^2 := by
   rw [dyadic_energy_eq_sum]
   exact Finset.sum_le_sum (fun h _ =>
     mul_le_of_le_one_left (sq_nonneg _) (dyadicWeight_bounds n (normValue h)).2)
 
-theorem dyadic_energy_empty (n : ℤ) (f : O→ℂ) (h : dyadRows n=∅) :
+theorem dyadic_energy_empty     (h : dyadRows n=∅) :
     (∑' z : O,dyadicWeight n (normValue z)*‖f z‖^2)=0 := by
   rw [dyadic_energy_eq_sum,h,Finset.sum_empty]
+
+end
 
 def mainGain (D0 c sigma : ℝ) : ℝ := max (D0-c) 0+2*sigma
 
@@ -221,40 +245,38 @@ def errorMoving (p : O) (Z : ℝ) (k : ℕ) : ℝ :=
 def errorGain (D0 c sigma Z : ℝ) (p : O) (k : ℕ) : ℝ :=
   max (D0-c-2*errorRemoval p Z k+errorMoving p Z k) 0+sigma
 
-theorem mainGain_bounds (D0 c sigma : ℝ) (hs : 0≤sigma) :
+theorem mainGain_bounds  D0 c sigma  (hs : 0≤sigma) :
     2*sigma≤mainGain D0 c sigma ∧ D0-c+sigma≤mainGain D0 c sigma := by
-  have h0 := le_max_right (D0-c) (0:ℝ)
-  have h1 := le_max_left (D0-c) (0:ℝ)
-  unfold mainGain
-  constructor <;> linarith
+  grind [mainGain]
 
-theorem errorGain_bounds (D0 c sigma Z : ℝ) (p : O) (k : ℕ) (hs : 0≤sigma) :
+theorem errorGain_bounds  D0 c sigma Z   p   k  (hs : 0≤sigma) :
     sigma≤errorGain D0 c sigma Z p k ∧
     D0-c-2*errorRemoval p Z k+errorMoving p Z k+sigma≤errorGain D0 c sigma Z p k ∧
     errorGain D0 c sigma Z p k≤
       max (D0-c-2*errorRemoval p Z k+errorMoving p Z k) 0+2*sigma := by
-  have h0 := le_max_right (D0-c-2*errorRemoval p Z k+errorMoving p Z k) (0:ℝ)
-  have h1 := le_max_left (D0-c-2*errorRemoval p Z k+errorMoving p Z k) (0:ℝ)
-  unfold errorGain
-  constructor
-  · linarith
-  constructor <;> linarith
+  grind [errorRemoval, errorMoving, errorGain]
 
-theorem dyadRows_norm_power (Z : ℝ) (hZ : 1<Z) (n : ℤ)
-    (h : O) (hh : h∈dyadRows n) :
+section
+variable (Z : ℝ) (hZ : 1<Z) (n : ℤ)
+include Z hZ n
+
+theorem dyadRows_norm_power      
+     h  (hh : h∈dyadRows n) :
     normValue h≤Z^(Real.logb Z (dyadicScale n)) := by
   rw [Real.rpow_logb (zero_lt_one.trans hZ) (ne_of_gt hZ) (dyadicScale_pos n)]
   exact (dyadRows_norm_lt n h hh).le
 
-theorem dyad_ball_majorant (Z : ℝ) (hZ : 1<Z) (n : ℤ) (g : ℝ) (hg : 0≤g)
-    (h : O) (hh : h∈dyadRows n) :
+theorem dyad_ball_majorant        g  (hg : 0≤g)
+     h  (hh : h∈dyadRows n) :
     1≤(ballProfile (‖eisEmbedding h‖^2/Z^(Real.logb Z (dyadicScale n)+g))).re := by
   apply ballProfile_majorizes _ (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _)
   exact (dyadRows_norm_power Z hZ n h hh).trans
     (Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith))
 
-theorem amplified_ball_majorant (Z sigma D0 c : ℝ) (hZ : 1<Z) (hs : 0≤sigma)
-    (n : ℤ) (h p : O) (hh : h∈dyadRows n)
+end
+
+theorem amplified_ball_majorant  Z sigma D0 c  (hZ : 1<Z) (hs : 0≤sigma)
+     n   h p  (hh : h∈dyadRows n)
     (hp : normValue p≤Z^(sigma/3)) :
     1≤(ballProfile (‖eisEmbedding (p^6*h)‖^2/
       Z^(Real.logb Z (dyadicScale n)+mainGain D0 c sigma))).re := by
@@ -265,38 +287,38 @@ theorem amplified_ball_majorant (Z sigma D0 c : ℝ) (hZ : 1<Z) (hs : 0≤sigma)
   exact hb.trans (Real.rpow_le_rpow_of_exponent_le hZ.le
     (by linarith [(mainGain_bounds D0 c sigma hs).1]))
 
-theorem gaussEnergy_ball_nonneg {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ) (Y : ℝ) (hY : 0<Y) :
+section
+variable {α : Type*} (S : Finset α) (a : α→O) (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ)
+include α S a ha c
+
+theorem gaussEnergy_ball_nonneg      
+         Y  (hY : 0<Y) :
     0≤(gaussEnergy S a ha c ballProfile Y).re := by
   have hs := CenteredMomentSmoothedWindowEnergy.gaussEnergy_hasSum_re S a ha c ballProfile Y hY
   rw [←hs.tsum_eq]
   exact tsum_nonneg (fun h => mul_nonneg (sq_nonneg _) (ballProfile_nonneg _))
 
-theorem errorEnergy_nonneg {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ) (h p : O) :
-    0≤errorEnergy S a ha c h p := by
-  unfold errorEnergy
-  positivity
 
-theorem eligible_error_sum {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ)
-    (rows P : Finset O) (allow : O→O→Prop) :
+
+theorem eligible_error_sum      
+       
+     rows P   allow  :
     (∑x∈eligiblePairs rows P allow,errorEnergy S a ha c x.1 x.2)=
       ∑p∈P,∑h∈rows.filter (fun h => allow h p),errorEnergy S a ha c h p := by
   rw [←sum_eligiblePairs]
   simp only [Finset.sum_filter]
   exact Finset.sum_comm
 
-theorem dyadic_amplification_to_ball {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ)
-    (P : Finset (Ideal O)) (hp : ∀Q∈P,Prime Q) (hbad : ∀Q∈P,Q∉fixedBadPrimes)
-    (hP : P.Nonempty) (R s : Ideal O) (hR0 : R≠0) (hs0 : s≠0)
+theorem dyadic_amplification_to_ball      
+       
+     P  (hp : ∀Q∈P,Prime Q) (hbad : ∀Q∈P,Q∉fixedBadPrimes)
+    (hP : P.Nonempty)  R s  (hR0 : R≠0) (hs0 : s≠0)
     (Z sigma BR Bs Mmax D0 cLog : ℝ) (hZ : 1<Z) (hsigma : 0<sigma) (hM : 0≤Mmax)
     (hlower : ∀Q∈P,Z^(sigma/6)≤(Ideal.absNorm Q:ℝ))
     (hupper : ∀Q∈P,(Ideal.absNorm Q:ℝ)≤Z^(sigma/3))
     (hR : (Ideal.absNorm R:ℝ)≤Z^BR) (hs : (Ideal.absNorm s:ℝ)≤Z^Bs)
     (hsize : 2*((BR+Bs+Mmax)/(sigma/6))≤(P.card:ℝ))
-    (n : ℤ) (hK : Real.logb Z (dyadicScale n)≤Mmax) :
+     n  (hK : Real.logb Z (dyadicScale n)≤Mmax) :
     (∑' h : O,dyadicWeight n (normValue h)*‖gaussPolynomial S a ha c h‖^2)≤
       (8/(P.card:ℝ))*
         (((Mmax+2*sigma)/(sigma/6))*
@@ -312,8 +334,7 @@ theorem dyadic_amplification_to_ball {α : Type*} (S : Finset α) (a : α→O)
   · have hK0 := dyadRows_log_nonneg Z hZ n hn
     have hsize' : 2*((BR+Bs+K)/(sigma/6))≤(P.card:ℝ) := by
       apply le_trans _ hsize
-      apply mul_le_mul_of_nonneg_left _ (by norm_num)
-      exact div_le_div_of_nonneg_right (by dsimp [K];linarith) (by linarith)
+      bound
     have he := actual_eligible_amplification S a ha c (dyadRows n)
       (dyadRows_ne_zero n) P hp hbad hP R s hR0 hs0 Z (sigma/6) BR Bs K (sigma/3)
       hZ (by linarith) hlower hupper hR hs hsize' (dyadRows_norm_power Z hZ n)
@@ -342,11 +363,12 @@ theorem dyadic_amplification_to_ball {α : Type*} (S : Finset α) (a : α→O)
     apply mul_nonneg (by positivity)
     apply add_nonneg
     · exact mul_nonneg (by positivity) henergy
-    · exact Finset.sum_nonneg (fun p _ => Finset.sum_nonneg
-        (fun h _ => errorEnergy_nonneg S a ha c h p))
+    simp_all
+
+end
 
 theorem eventually_dyadic_amplification (M : Ideal O) [NeZero M]
-    (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+     H  (hH : RayOrthogonality.globalUnits M≤H)
     (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
     (sigma loss BR Bs Mmax b eta : ℝ)
     (hsigma : 0<sigma) (hloss : 0<loss) (hM : 0≤Mmax) (hgap : eta<sigma/6) :
@@ -421,9 +443,11 @@ def coefficient (D : OriginalData ι) (η : Character) (m : O) (t T : ℝ)
     : supportedColumns D.columns → ℂ :=
   fun I => (Real.sqrt T:ℂ)⁻¹*(D.beta I*rowWeight η m 1 1 t I)
 
-theorem coefficient_eq (D : OriginalData ι) (η : Character) (m : O) (t T : ℝ) :
-    D.coefficient η m t T = fun I : supportedColumns D.columns =>
-      (Real.sqrt T:ℂ)⁻¹*(D.beta I*rowWeight η m 1 1 t I) := rfl
+section
+variable (D : OriginalData ι)
+include D
+
+
 
 def childEnergy (D : OriginalData ι) (τ : RayCharacter → Character)
     (p : O) (n : ℕ) (t T K : ℝ) : ℝ :=
@@ -439,19 +463,21 @@ def childEnergy (D : OriginalData ι) (τ : RayCharacter → Character)
         (heightCoeff (τ χ) t) ballProfile K).re) /
       (T/(Ideal.absNorm (Ideal.span {p}):ℝ)^(n+1)))
 
-theorem childEnergy_nonneg (D : OriginalData ι) (τ : RayCharacter → Character)
-    (p : O) (n : ℕ) (t T K : ℝ) (hT : 0≤T) (hK : 0<K) :
+theorem childEnergy_nonneg    τ 
+     p   n   t T K  (hT : 0≤T) (hK : 0<K) :
     0≤D.childEnergy τ p n t T K := by
   apply mul_nonneg (mul_nonneg (by positivity) (localErrorCost_nonneg p n))
   apply div_nonneg _ (div_nonneg hT (by positivity))
   exact Finset.sum_nonneg (fun χ _ => Finset.sum_nonneg (fun B _ =>
     sourceGaussEnergy_nonneg _ _ _ ballProfile K hK (fun _ => ballProfile_nonneg _)))
 
+end
+
 end OriginalData
 
 def errorIndex (i : Fin 3) : ℕ := ![0,5,6] i
 
-theorem errorIndex_cases (i : Fin 3) : errorIndex i=0 ∨ errorIndex i=5 ∨ errorIndex i=6 := by
+theorem errorIndex_cases  i  : errorIndex i=0 ∨ errorIndex i=5 ∨ errorIndex i=6 := by
   fin_cases i <;> simp [errorIndex]
 
 theorem original_slot_coprime {ι : Type*} [Fintype ι]
@@ -461,7 +487,7 @@ theorem original_slot_coprime {ι : Type*} [Fintype ι]
     (hsupp : ∀i,Function.support (D.slot i)⊆Set.Iic b)
     (hslot : ∀i,∀I∈D.S (Sum.inl i),D.slot i ((Ideal.absNorm I:ℝ)/D.lengths i)≠0)
     (hprime : ∀i,∀I∈D.S (Sum.inl i),Prime I)
-    (Q : Ideal O) (hQ : Prime Q) (hQN : Z^(sigma/6)≤(Ideal.absNorm Q:ℝ)) :
+     Q  (hQ : Prime Q) (hQN : Z^(sigma/6)≤(Ideal.absNorm Q:ℝ)) :
     ∀i,∀I∈D.S (Sum.inl i),IsCoprime Q I := by
   intro i I hI
   have hW := hslot i I hI
@@ -478,18 +504,20 @@ def active (D : OriginalData ι) : OriginalData ι :=
     | Sum.inl j => (D.S i).filter (fun I => D.slot j ((Ideal.absNorm I:ℝ)/D.lengths j)≠0)
     | Sum.inr _ => D.S i }
 
-theorem active_subset (D : OriginalData ι) (i : ι ⊕ Fin 2) : D.active.S i⊆D.S i := by
-  cases i <;> simp only [active]
-  · exact Finset.filter_subset _ _
-  · exact fun _ h => h
+section
+variable (D : OriginalData ι)
+include D
 
-theorem active_profile (D : OriginalData ι) : D.active.profile=D.profile := rfl
+theorem active_subset    i  : D.active.S i⊆D.S i := by
+  grind [active]
 
-theorem active_slot (D : OriginalData ι) (i : ι) (I : Ideal O) (hI : I∈D.active.S (Sum.inl i)) :
+theorem active_profile   : D.active.profile=D.profile := rfl
+
+theorem active_slot   (i : ι) (I : Ideal O) (hI : I∈D.active.S (Sum.inl i)) :
     D.active.slot i ((Ideal.absNorm I:ℝ)/D.active.lengths i)≠0 :=
   (Finset.mem_filter.mp hI).2
 
-theorem active_profile_zero (D : OriginalData ι) (v : Tuple ι)
+theorem active_profile_zero    v 
     (hv : v∈Fintype.piFinset D.S) (hn : v∉Fintype.piFinset D.active.S) : D.profile v=0 := by
   have hn' : ¬∀i,v i∈D.active.S i := by simpa only [Fintype.mem_piFinset] using hn
   obtain ⟨i,hi⟩ := not_forall.mp hn'
@@ -506,23 +534,23 @@ theorem active_profile_zero (D : OriginalData ι) (v : Tuple ι)
       rw [hz,mul_zero]
     simp only [profile,profileCoefficient,hp,zero_mul]
 
-theorem active_beta (D : OriginalData ι) : D.active.beta=D.beta := by
+theorem active_beta   : D.active.beta=D.beta := by
   funext I
   unfold beta finiteColumnCoefficient
   rw [active_profile]
   apply Finset.sum_subset (Finset.filter_subset_filter _
     (Fintype.piFinset_subset _ _ (D.active_subset)))
-  intro v hv hn
-  have hv' := Finset.mem_filter.mp hv
-  apply D.active_profile_zero v hv'.1
-  intro hm
-  exact hn (Finset.mem_filter.mpr ⟨hm,hv'.2⟩)
+  simp_all [OAI.SevenEighths.CenteredMomentFirstAmplificationChoice.OriginalData.active_profile_zero]
 
-theorem active_columns_subset (D : OriginalData ι) : D.active.columns⊆D.columns :=
+theorem active_columns_subset   : D.active.columns⊆D.columns :=
   Finset.image_subset_image (Fintype.piFinset_subset _ _ D.active_subset)
 
-theorem active_gaussPolynomial (D : OriginalData ι) (η : Character) (m : O)
-    (t T : ℝ) (h : O) :
+section
+variable (η : Character) (m : O) (t T : ℝ)
+include η m t T
+
+theorem active_gaussPolynomial      
+       h  :
     gaussPolynomial Finset.univ (sourceGenerator D.active.columns)
       (sourceGenerator_supported D.active.columns) (D.active.coefficient η m t T) h=
     gaussPolynomial Finset.univ (sourceGenerator D.columns)
@@ -543,14 +571,18 @@ theorem active_gaussPolynomial (D : OriginalData ι) (η : Character) (m : O)
     exact hn (Finset.mem_filter.mpr ⟨hm,(Finset.mem_filter.mp hI).2⟩)
   rw [hz,zero_mul,mul_zero,zero_mul]
 
-theorem active_gaussEnergy (D : OriginalData ι) (η : Character) (m : O)
-    (t T : ℝ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+theorem active_gaussEnergy      
+       W   K  :
     gaussEnergy Finset.univ (sourceGenerator D.active.columns)
       (sourceGenerator_supported D.active.columns) (D.active.coefficient η m t T) W K=
     gaussEnergy Finset.univ (sourceGenerator D.columns)
       (sourceGenerator_supported D.columns) (D.coefficient η m t T) W K := by
   unfold gaussEnergy
   simp_rw [D.active_gaussPolynomial]
+
+end
+
+end
 
 end OriginalData
 
@@ -562,8 +594,8 @@ open CenteredMomentFirstColumns CenteredMomentRankinRadical ActualEisensteinCubi
 def nominalLog (I J E : Ideal O) (K X Z : ℝ) : ℝ :=
   Real.logb Z (firstNominalScale I J E K X)
 
-theorem canonical_active_log_le (η τ : Character) (m : O) (I J : Ideal O)
-    (E : Finset (CommonIndex I J)) (Z : ℝ) (hZ : 1<Z)
+theorem canonical_active_log_le (η τ : Character) (m : O)  I J 
+    (E : Finset (CommonIndex I J))  Z  (hZ : 1<Z)
     (hmod : τ.modulus=η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) E*activeConductor I J}) :
     0≤Real.logb Z (τ.modulus.absNorm:ℝ) ∧
@@ -581,7 +613,7 @@ theorem canonical_active_log_le (η τ : Character) (m : O) (I J : Ideal O)
 
 theorem pool_prime_log_range (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
-    (Z sigma : ℝ) (hZ : 1<Z) (p : O)
+     Z sigma  (hZ : 1<Z)  p 
     (hp : p∈elementPool (primePool M H Sbad (1/2) 1 (Z^(sigma/3)))) :
     0≤Real.logb Z (normValue p) ∧ Real.logb Z (normValue p)≤sigma/3 := by
   have hd := elementPool_data _
@@ -595,7 +627,7 @@ theorem pool_prime_log_range (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
   have hh := Real.logb_le_logb_of_le hZ (normValue_pos p hd.1.ne_zero) hu
   rwa [Real.logb_rpow (zero_lt_one.trans hZ) (ne_of_gt hZ)] at hh
 
-theorem errorRemoval_power (p : O) (hp : p≠0) (Z : ℝ) (hZ : 1<Z) (k : ℕ) :
+theorem errorRemoval_power  p  (hp : p≠0)  Z  (hZ : 1<Z)  k  :
     Z^(errorRemoval p Z k)=(normValue p)^k := by
   unfold errorRemoval
   rw [mul_comm,Real.rpow_mul_natCast (zero_lt_one.trans hZ).le,

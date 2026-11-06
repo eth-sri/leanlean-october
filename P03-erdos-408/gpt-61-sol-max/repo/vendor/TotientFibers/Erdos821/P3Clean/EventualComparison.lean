@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.QuantitativeScales
 public import Erdos821.P3Clean.UniformComparison
@@ -15,10 +16,10 @@ namespace Erdos821.P3Clean
 
 open Erdos821.Blueprint.Graph
 
-def comparisonPolynomial (F : FixedData) (J : ℕ) : ℝ :=
+def comparisonPolynomial (F : FixedData) (J : ℕ)  :=
   20 * (J + F.ell) * F.C₀ + 6 * F.C₀ * J * (J + F.ell) / F.vMin
 
-theorem comparisonPolynomial_nonneg (F : FixedData) (J : ℕ) : 0 ≤ comparisonPolynomial F J := by
+theorem comparisonPolynomial_nonneg  F   J  : 0 ≤ comparisonPolynomial F J := by
   have hC := F.C₀_pos
   have hv := F.vMin_pos
   unfold comparisonPolynomial
@@ -32,7 +33,7 @@ theorem eventually_tiltedBanned_norm (F : FixedData) (J m : ℕ) (C₁ Eid : ℝ
         ∀ theta : ℝ, ∀ forward : Bool,
           NormBound (tiltedIdealMass F (N x)) (tiltedBannedKernel A (N x) theta forward)
             (2 * (L x) ^ (-Eid)) := by
-  have hC₀ := F.C₀_pos
+  
   have hv := F.vMin_pos
   have hPolynomial := comparisonPolynomial_nonneg F J
   have hc : 0 < F.c := lt_trans F.a_pos (lt_trans F.ab F.bc)
@@ -55,11 +56,10 @@ theorem eventually_tiltedBanned_norm (F : FixedData) (J m : ℕ) (C₁ Eid : ℝ
   let pstar := Real.exp ((L x) ^ F.c)
   let t := pstar⁻¹
   have hpstar : 0 < pstar := Real.exp_pos _
-  have ht : 0 < t := inv_pos.mpr hpstar
+  
   have hG := bigGroup_card_le F x P hP hL1
   have hN := N_add_one_le x hL1
-  have hpbound : 10 * L x ≤ pstar := by
-    exact (div_le_one hpstar).mp hprime
+  have hpbound : 10 * L x ≤ pstar := (div_le_one hpstar).mp hprime
   have hV (g : P.Group) : 0 < P.V g := F.vMin_pos.trans_le (hP.2.2.2.2.1 g).1
   have hbase (g : P.BigGroup) (p : P.Prime g.val) :
       0 < baselinePrime F (N x) p.val ∧ 1 ≤ (baselinePrime F (N x) p.val)⁻¹ ∧
@@ -126,7 +126,7 @@ theorem eventually_tiltedBanned_norm (F : FixedData) (J m : ℕ) (C₁ Eid : ℝ
     have hsecond := (mul_le_mul_of_nonneg_right hD3 hban0).trans hban
     dsimp [comparisonPolynomial]
     nlinarith only [hfirst, hsecond]
-  have hdelta0 : 0 ≤ (D - 1) + D * banCost := by positivity
+  
   have hp0 : 0 ≤ A.patternMass := by rw [← sum_patternAmplitude]; exact Finset.sum_nonneg (fun v _ => patternAmplitude_nonneg A v)
   have herror : ((D - 1) + D * banCost) * A.patternMass ≤ (L x) ^ (-Eid) := by
     calc
@@ -139,7 +139,7 @@ theorem eventually_tiltedBanned_norm (F : FixedData) (J m : ℕ) (C₁ Eid : ℝ
       _ ≤ _ := herr
   have hnorm := normBound_tiltedBannedKernel A (N x) ((L x) ^ (-Eid)) D atom hD hatom0
     (fun g => (hV g.val).ne') hb hatom hsqrt hideal theta forward
-  exact normBound_mono hnorm (by change (L x) ^ (-Eid) + ((D - 1) + D * banCost) * A.patternMass ≤ _; linarith)
+  exact normBound_mono hnorm (by linarith)
 
 
 end Erdos821.P3Clean

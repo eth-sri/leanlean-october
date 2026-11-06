@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.CoreMoment
 public import Erdos408.Extraction.Allocation.Failure.Scale
@@ -27,11 +28,11 @@ open Finset Real
 noncomputable section
 
 /-- The candidate factor `κ_j = ∏_{p ∈ P} (1 - 1/(j p))` of the damped density. -/
-def candKappa (x : ℝ) (j : ℕ) : ℝ :=
+def candKappa (x : ℝ) (j : ℕ)  :=
   ∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)
 
 /-- `κ_j > 0` for `j ≥ 1`. -/
-lemma candKappa_pos (x : ℝ) {j : ℕ} (hj : 1 ≤ j) : 0 < candKappa x j := by
+lemma candKappa_pos  x   {j}  (hj : 1 ≤ j) : 0 < candKappa x j := by
   have hj1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by exact_mod_cast hj)
   refine prod_pos fun p hp => ?_
   have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (prime_of_mem_candidatePrimes hp).two_le
@@ -39,12 +40,12 @@ lemma candKappa_pos (x : ℝ) {j : ℕ} (hj : 1 ≤ j) : 0 < candKappa x j := by
   linarith
 
 /-- `D_j = Π / κ_j`. -/
-lemma dampedDensity_eq (x : ℝ) (j : ℕ) :
+lemma dampedDensity_eq  x   j  :
     dampedDensity x j = (∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) / candKappa x j := by
   rw [dampedDensity, candKappa, div_eq_mul_inv, prod_inv_distrib]
 
 /-- `κ_j^j ∏_{p ∈ P} (1 - 1/p)⁻¹ ≤ exp(2 ∑_{p ∈ P} 1/p²)`. -/
-lemma candKappa_pow_mul_le (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
+lemma candKappa_pow_mul_le  x   {j}  (hj : 1 ≤ j) :
     candKappa x j ^ j * ∏ p ∈ candidatePrimes x, (1 - (1 : ℝ) / p)⁻¹ ≤
       Real.exp (2 * ∑ p ∈ candidatePrimes x, (1 : ℝ) / p ^ 2) := by
   rw [candKappa, ← prod_pow, ← prod_mul_distrib, mul_sum, exp_sum]
@@ -55,7 +56,7 @@ lemma candKappa_pow_mul_le (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
     have h2 : (1 : ℝ) / p < 1 := by rw [div_lt_one (by linarith)]; linarith
     exact mul_nonneg (pow_nonneg (by linarith) _) (inv_nonneg.2 (by linarith))
   · have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (prime_of_mem_candidatePrimes hp).two_le
-    have hj0 : (0 : ℝ) < j := by exact_mod_cast hj
+    
     -- `(1 - 1/(j p))^j ≤ exp(-1/p)`
     have h1 : (1 - (j : ℝ)⁻¹ / p) ^ j ≤ Real.exp (-(1 / p)) := by
       have h0 : 0 ≤ 1 - (j : ℝ)⁻¹ / p := by
@@ -90,8 +91,8 @@ lemma candKappa_pow_mul_le (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
       _ = Real.exp (2 * (1 / p ^ 2)) := by rw [← exp_add]; ring_nf
 
 /-- Each core factor contributes `∑_a b(a)/a ≤ κ_j H`. -/
-lemma sum_coreFactor_div_le {x γ : ℝ} (hx : 0 < x) (hγL : 0 < γ * Real.log x) {j : ℕ}
-    (hj : 1 ≤ j) (X : ℕ) :
+lemma sum_coreFactor_div_le  {x γ}  (hx : 0 < x) (hγL : 0 < γ * Real.log x)  {j} 
+    (hj : 1 ≤ j)  X  :
     ∑ a ∈ Icc 1 X, coreFactor x γ j a / a ≤ candKappa x j *
       (1 / ((∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (γ * Real.log x)) *
         ∑ a ∈ (Icc 1 X).filter (IsYRough (proxyCutoff x)), (1 : ℝ) / a) := by
@@ -121,14 +122,14 @@ lemma sum_coreFactor_div_le {x γ : ℝ} (hx : 0 < x) (hγL : 0 < γ * Real.log 
   · rw [zero_div]
 
 /-- Real arithmetic for combining the factors of the main term. -/
-lemma main_combine {Xr WP Sd Sb κ E Q δ H γL : ℝ} (m : ℕ) (hXr : 0 ≤ Xr) (hWP0 : 0 ≤ WP)
+lemma main_combine {Xr WP Sd Sb κ E Q δ H γL : ℝ}  m  (hXr : 0 ≤ Xr) (hWP0 : 0 ≤ WP)
     (hWP : WP ≤ 2 * κ / γL) (hSd0 : 0 ≤ Sd) (hSd : Sd ≤ E * (Q + δ)) (hSb0 : 0 ≤ Sb)
     (hSb : Sb ≤ κ * H) (hκ : 0 ≤ κ) (hγL : 0 < γL) :
     Xr * WP * Sd * Sb ^ m ≤ Xr * (2 / γL) * (κ ^ (m + 1) * E) * (Q + δ) * H ^ m := by
   have h1 : Sb ^ m ≤ (κ * H) ^ m := pow_le_pow_left₀ hSb0 hSb m
   have h2 : Xr * WP * Sd * Sb ^ m ≤ Xr * (2 * κ / γL) * (E * (Q + δ)) * (κ * H) ^ m := by
     have hpow0 : 0 ≤ Sb ^ m := pow_nonneg hSb0 m
-    have hWP' : 0 ≤ 2 * κ / γL := hWP0.trans hWP
+    
     have hEQ : 0 ≤ E * (Q + δ) := hSd0.trans hSd
     calc Xr * WP * Sd * Sb ^ m ≤ Xr * (2 * κ / γL) * Sd * Sb ^ m :=
           mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
@@ -142,12 +143,12 @@ lemma main_combine {Xr WP Sd Sb κ E Q δ H γL : ℝ} (m : ℕ) (hXr : 0 ≤ Xr
   field_simp
 
 /-- The free-factor sum of one family at one scale, in Euler products. -/
-theorem freeFactorSum_le_at {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset ℕ)}
+theorem freeFactorSum_le_at  {x γ c₁}   {j' X}   R   {F} 
     (hx : 0 < x) (hlogx : 1 ≤ Real.log x) (hγL : 0 < γ * Real.log x) (hc₁ : 0 ≤ c₁)
     (hc₁' : c₁ ≤ 1 / 4) (hg : ∀ g ∈ candidateGroups x, SideGroup g)
     (hFC : F ⊆ candidateGroups x) (hFS : ∀ g ∈ F, g ⊆ primesIcc 2 (proxyCutoff x))
     (hPX : ∀ p ∈ candidatePrimes x, p ≤ X) (hγ : 1 ≤ x ^ γ)
-    (hb1 : ∀ e, coreFactor x γ (j' + 1) e ≤ 1) {K : ℝ} (hK1 : 1 ≤ K)
+    (hb1 : ∀ e, coreFactor x γ (j' + 1) e ≤ 1)  {K}  (hK1 : 1 ≤ K)
     (hwf : WeightFacts x γ (j' + 1) X (1 / (dampedDensity x (j' + 1) * (γ * Real.log x))) K)
     (hδ' : 8 * (∑ u ∈ (primesIcc 2 (proxyCutoff x)).powersetCard (R + 1),
       ∏ p ∈ u, (1 : ℝ) / p) * K / (∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) *
@@ -189,8 +190,7 @@ theorem freeFactorSum_le_at {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset
       refine le_trans ?_ hδ'
       have : 0 ≤ 8 * ε * K / Pi := by have := hε0; positivity
       exact le_mul_of_one_le_right this hpow1
-    have : 2 * ε * K / Pi = (8 * ε * K / Pi) / 4 := by ring
-    linarith
+    grind
   have hW0 : 0 ≤ 1 / (dampedDensity x (j' + 1) * (γ * Real.log x)) := by positivity
   have hfree := freeFactorSum_le R hc₁ hc₁' (fun g hgF => hg g (hFC hgF)) hFS
     ((pairwiseDisjoint_candidateGroups hlogx).subset hFC) hγ hb1 hW0 (by linarith) hwf hδ hδ'

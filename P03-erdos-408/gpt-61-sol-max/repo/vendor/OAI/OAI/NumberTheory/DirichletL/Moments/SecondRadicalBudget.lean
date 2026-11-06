@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalFamily
 
@@ -15,37 +16,39 @@ open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondCanonicalLedger CenteredMomentSecondHeightFamily
 open CenteredMomentCanonicalFirst CenteredMomentChildRows CenteredMomentPartitionNorm
 open CenteredMomentHeckeColumnWindow RayFourExpansion CenteredMomentCommonSupport CenteredMomentSupport
-local notation "O" => ActualEisensteinCubic.O
 
-def fixedFactor : ℕ := (Ideal.span {(12:O)}).absNorm*
-  (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:O)}).absNorm
+
+def fixedFactor  := (Ideal.span {(12:ActualEisensteinCubic.O)}).absNorm*
+  (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:ActualEisensteinCubic.O)}).absNorm
 
 theorem fixedFactor_pos : 0<fixedFactor := by
   unfold fixedFactor
   apply Nat.mul_pos
   · apply Nat.mul_pos
-    · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr (by norm_num)))
+    · simp_all
     · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
         (Ideal.span_singleton_eq_bot.not.mpr fixedBadMask_ne_zero))
-  · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr (by norm_num)))
+  simp_all
 
-theorem child_modulus_bound (η : Character) (χ : RayCharacter) :
-    (childCharacter η χ).modulus.absNorm≤η.modulus.absNorm*(Ideal.span {(12:O)}).absNorm := by
-  have hn : η.modulus*Ideal.span {(12:O)}≠0 := mul_ne_zero η.modulus_ne_bot
+theorem child_modulus_bound  η   χ  :
+    (childCharacter η χ).modulus.absNorm≤η.modulus.absNorm*(Ideal.span {(12:ActualEisensteinCubic.O)}).absNorm := by
+  have hn : η.modulus*Ideal.span {(12:ActualEisensteinCubic.O)}≠0 := mul_ne_zero η.modulus_ne_bot
     (Ideal.span_singleton_eq_bot.not.mpr (by norm_num))
-  have hd : (childCharacter η χ).modulus∣η.modulus*Ideal.span {(12:O)} := by
+  have hd : (childCharacter η χ).modulus∣η.modulus*Ideal.span {(12:ActualEisensteinCubic.O)} := by
     apply Ideal.dvd_iff_le.mpr
     exact le_inf Ideal.mul_le_left Ideal.mul_le_right
   simpa only [map_mul] using Nat.le_of_dvd
     (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)) (map_dvd Ideal.absNorm hd)
 
-theorem active_radical_dvd (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (U : Finset (CommonIndex C D)) (w : O)
-    (hne : idealCorrelation C D hC hD
-      (commonFrequencyGenerator C D*w)≠0) :
+section
+variable (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D) (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) (U : Finset (CommonIndex C D)) (w : ActualEisensteinCubic.O) (hne : idealCorrelation C D hC hD
+      (commonFrequencyGenerator C D*w)≠0)
+include C D hC hD hCD U w hne
+
+theorem active_radical_dvd      
+     
+       
+      :
     (∏P∈fixedActiveSet C D U,P.val)∣
       (∏P∈U,P.val)*Ideal.span {nonunitFrequencyGenerator C D U} := by
   have hd := Finset.prod_dvd_prod_of_subset (fixedActiveSet C D U)
@@ -59,11 +62,10 @@ theorem active_radical_dvd (C D : Ideal O) (hC : Supported C) (hD : Supported D)
   rw [nonunitFrequencyGenerator_span]
   simpa only [unitIdeal,commonPrime_span C D hC] using hd
 
-theorem active_radical_norm_bound (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (U : Finset (CommonIndex C D)) (w : O)
-    (hne : idealCorrelation C D hC hD
-      (commonFrequencyGenerator C D*w)≠0) :
+theorem active_radical_norm_bound      
+     
+       
+      :
     (∏P∈fixedActiveSet C D U,P.val).absNorm≤
       (∏P∈U,P.val).absNorm*(Ideal.span {nonunitFrequencyGenerator C D U}).absNorm := by
   have hp (S : Finset (CommonIndex C D)) : (∏P∈S,P.val)≠0 :=
@@ -75,16 +77,18 @@ theorem active_radical_norm_bound (C D : Ideal O) (hC : Supported C) (hD : Suppo
     (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (mul_ne_zero (hp U) hv)))
     (map_dvd Ideal.absNorm (active_radical_dvd C D hC hD hCD U w hne))
 
-theorem exists_second_budgeted_family (η : Character) (χ : RayCharacter)
-    (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D)) :
+end
+
+theorem exists_second_budgeted_family  η   χ 
+     C D   hC   U  :
     ∃τ : Character,
-      (∀n:O,elementCoeff τ n=rowTwist (HeckeRowClosure.elementHom (childCharacter η χ))
+      (∀n:ActualEisensteinCubic.O,elementCoeff τ n=rowTwist (HeckeRowClosure.elementHom (childCharacter η χ))
         fixedBadMask 1 (CenteredMomentSecondSixthReduction.reducedNumerator C D U) n) ∧
-      (∀I:Ideal O,Supported I → ∀t:ℝ,heightCoeff τ t I=heightCoeff η t I*
+      (∀I:Ideal ActualEisensteinCubic.O,Supported I → ∀t:ℝ,heightCoeff τ t I=heightCoeff η t I*
         idealRowHom (CenteredMomentSecondSixthReduction.reducedNumerator C D U) I*
         rayCharacter χ (primaryGenerator I)) ∧
       ∀(hD : Supported D),CompletedGauss.primeSupport C=CompletedGauss.primeSupport D →
-      ∀w:O,idealCorrelation C D hC hD
+      ∀w:ActualEisensteinCubic.O,idealCorrelation C D hC hD
         (commonFrequencyGenerator C D*w)≠0 →
       τ.modulus.absNorm≤η.modulus.absNorm*fixedFactor*
         (∏P∈U,P.val).absNorm*(Ideal.span {nonunitFrequencyGenerator C D U}).absNorm := by
@@ -95,15 +99,15 @@ theorem exists_second_budgeted_family (η : Character) (χ : RayCharacter)
   have h2 := active_radical_norm_bound C D hC hD hCD U w hne
   apply hN.trans
   calc
-    _≤(η.modulus.absNorm*(Ideal.span {(12:O)}).absNorm)*
-      (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:O)}).absNorm*
+    _≤(η.modulus.absNorm*(Ideal.span {(12:ActualEisensteinCubic.O)}).absNorm)*
+      (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:ActualEisensteinCubic.O)}).absNorm*
       ((∏P∈U,P.val).absNorm*(Ideal.span {nonunitFrequencyGenerator C D U}).absNorm) :=
       Nat.mul_le_mul (Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ h1)) h2
     _=_ := by unfold fixedFactor;ring
 
-theorem conductor_log_bound (η τ : Character) (A B : Ideal O) (hA : A≠0) (hB : B≠0)
+theorem conductor_log_bound (η τ : Character) (A B : Ideal ActualEisensteinCubic.O) (hA : A≠0) (hB : B≠0)
     (hN : τ.modulus.absNorm≤η.modulus.absNorm*fixedFactor*A.absNorm*B.absNorm)
-    (Z : ℝ) (hZ : 1<Z) :
+     Z  (hZ : 1<Z) :
     Real.logb Z (τ.modulus.absNorm:ℝ)≤Real.logb Z (η.modulus.absNorm:ℝ)+
       Real.logb Z (fixedFactor:ℝ)+Real.logb Z (A.absNorm:ℝ)+Real.logb Z (B.absNorm:ℝ) := by
   have hτ : (0:ℝ)<τ.modulus.absNorm := by

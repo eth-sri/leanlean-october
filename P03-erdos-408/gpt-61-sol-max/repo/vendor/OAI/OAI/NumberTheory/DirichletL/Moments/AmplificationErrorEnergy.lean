@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationSourceError
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationErrorPool
@@ -18,31 +19,31 @@ open CenteredMomentGaussEnergy CenteredMomentGaussNormalization
 open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy
 local notation "O" => ActualEisensteinCubic.O
 
-def localErrorCost (p : O) (n : ℕ) : ℝ :=
+def localErrorCost (p : O) (n : ℕ)  :=
   if n=5 then (1-(Ideal.absNorm (Ideal.span {p}):ℝ)⁻¹)^2
   else (Ideal.absNorm (Ideal.span {p}):ℝ)⁻¹
 
-theorem localErrorCost_nonneg (p : O) (n : ℕ) : 0≤localErrorCost p n := by
+theorem localErrorCost_nonneg  p   n  : 0≤localErrorCost p n := by
   unfold localErrorCost
   split_ifs <;> positivity
 
 theorem localErrorCost_exact (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p})≠2) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6)
-    (h : O) (hh : ¬p∣h) : ‖errorScalar p hp.ne_zero n h‖^2=localErrorCost p n := by
+    (hc : ringChar (O ⧸ Ideal.span {p})≠2)  n  (hn : n=0 ∨ n=5 ∨ n=6)
+     h  (hh : ¬p∣h) : ‖errorScalar p hp.ne_zero n h‖^2=localErrorCost p n := by
   have he := errorScalar_norms p hp hs hg hc h hh
   rcases hn with rfl|rfl|rfl
-  · simpa only [localErrorCost,show ¬(0:ℕ)=5 by decide,ite_false] using he.1
+  · simp_all [localErrorCost]
   · simpa only [localErrorCost,ite_true] using he.2.1
-  · simpa only [localErrorCost,show ¬(6:ℕ)=5 by decide,ite_false] using he.2.2
+  simp_all [localErrorCost]
 
 theorem finite_original_error_energy (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+     p   hp  [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
     (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hpp : goodLambda^2 ∣ p-1)
-    (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6) (T : ℝ) (hT : 0<T)
-    (rows : Finset O) (hrows : ∀ h∈rows,¬p∣h)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+     n  (hn : n=0 ∨ n=5 ∨ n=6)  T  (hT : 0<T)
+     rows  (hrows : ∀ h∈rows,¬p∣h)
+     W   K  (hK : 0<K)
     (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
     (hmajor : ∀ z∈rows,1≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (∑ h∈rows,‖amplificationError Finset.univ (sourceGenerator S) (sourceGenerator_supported S)

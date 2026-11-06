@@ -13,13 +13,13 @@ namespace Erdos821.P4Probe
 
 noncomputable section
 
-local instance invariantSiteDecidableEq (s M : ℕ) : DecidableEq (RowSite s M) := Classical.decEq _
+
 
 /-- The remaining analytic-free row-symmetry fact: ANOVA component energy is
 invariant under independent row permutations when the original vector is
 symmetric. The row laws are identical at every coordinate. No positivity or
 normalization is needed for this change-of-variables identity. -/
-def RowAnovaInvariantTask : Prop :=
+def RowAnovaInvariantTask  :=
   ∀ (s M : ℕ) (α : Fin s → Type) [∀ g, Fintype (α g)]
     (w : ∀ g, α g → ℝ) (f : ProbeSample α M → ℂ),
     (∀ (π : Fin s → Equiv.Perm (Fin M)) x,

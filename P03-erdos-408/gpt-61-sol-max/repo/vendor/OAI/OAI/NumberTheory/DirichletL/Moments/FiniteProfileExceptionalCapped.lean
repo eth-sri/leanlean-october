@@ -5,23 +5,23 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalRow
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume
 open CenteredMomentHeckeTwist CenteredMomentExceptionalCappedAmplitude
-local notation "O" => HeckeFamily.O
+
 theorem capped_rectangle_source_control
     (a b ε B : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
     ∃ J : ℕ, ∃ S : Finset (ℕ×ℕ), (0,0)∈S ∧
-      ∀ Q : Ideal O, Q≠0 → ∃ C : ℝ, 0<C ∧
+      ∀ Q : Ideal HeckeFamily.O, Q≠0 → ∃ C : ℝ, 0<C ∧
       ∀ W₁ W₂ : 𝓢(ℝ,ℂ),
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
-      ∀ Z : ℝ, 1≤Z → ∀ (η : Character) (m A₀ z : O),
+      ∀ Z : ℝ, 1≤Z → ∀ (η : Character) (m A₀ z : HeckeFamily.O),
       m ≠ 0 → A₀ ≠ 0 → z ≠ 0 →
-      (ConcretePrimeRowBridge.goodLambda ∣ m) → ((2:O) ∣ m) →
+      (ConcretePrimeRowBridge.goodLambda ∣ m) → ((2:HeckeFamily.O) ∣ m) →
       (HeckeRowClosure.rowConductorBound η m 1 (A₀*z):ℝ) ≤ Z^B →
       CenteredExceptionalProfile.FixedInducingRow η Q m A₀ z →
       ∀ t X₁ X₂ Y₁ Y₂ T L : ℝ, 0 < L →
@@ -75,6 +75,6 @@ theorem capped_rectangle_source_control
       _ = _ := by dsimp [P₁,P₂]; ring
 end SevenEighths.CenteredMomentFiniteProfileExceptional
 
-end
+
 
 end OAI

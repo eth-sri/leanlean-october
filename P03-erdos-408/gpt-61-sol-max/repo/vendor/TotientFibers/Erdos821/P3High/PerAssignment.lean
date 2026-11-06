@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3High.Initial
 public import Erdos821.S2High.MarkedAddresses
@@ -35,15 +36,15 @@ section Slots
 
 variable (F) (J) {n B : ℕ}
 
-abbrev AddrIdx (P : PrimeGroups) (M n B : ℕ) := Fin (Fintype.card (BirthAddress P M n B))
+abbrev AddrIdx (P ) (M n B ) := Fin (Fintype.card (BirthAddress P M n B))
 
-def aIdx (a : BirthAddress P (J + F.ell) n B) : AddrIdx P (J + F.ell) n B :=
+def aIdx (a : BirthAddress P (J + F.ell) n B)  :=
   Fintype.equivFin _ a
 
-def slI (U : Finset (AddrIdx P (J + F.ell) n B)) : Finset (P.BigGroup × Fin (J + F.ell)) :=
+def slI (U : Finset (AddrIdx P (J + F.ell) n B))  :=
   Finset.univ.filter (fun x => aIdx F J (n := n) (B := B) (.inl x) ∈ U)
 
-def valsI (tgt : AddrIdx P (J + F.ell) n B → ℕ) (x : P.BigGroup × Fin (J + F.ell)) : ℕ :=
+def valsI (tgt : AddrIdx P (J + F.ell) n B → ℕ) (x : P.BigGroup × Fin (J + F.ell))  :=
   tgt (aIdx F J (n := n) (B := B) (.inl x))
 
 def slE (U : Finset (AddrIdx P (J + F.ell) n B)) (i : Fin n) :
@@ -51,7 +52,7 @@ def slE (U : Finset (AddrIdx P (J + F.ell) n B)) (i : Fin n) :
   Finset.univ.filter (fun x => aIdx F J (n := n) (B := B) (.inr (.inl (i, x.1, x.2))) ∈ U)
 
 def valsE (tgt : AddrIdx P (J + F.ell) n B → ℕ) (i : Fin n)
-    (x : P.BigGroup × Fin (J + F.ell)) : ℕ :=
+    (x : P.BigGroup × Fin (J + F.ell))  :=
   tgt (aIdx F J (n := n) (B := B) (.inr (.inl (i, x.1, x.2))))
 
 def slG (U : Finset (AddrIdx P (J + F.ell) n B)) (i : Fin (n + 1)) :
@@ -59,23 +60,27 @@ def slG (U : Finset (AddrIdx P (J + F.ell) n B)) (i : Fin (n + 1)) :
   Finset.univ.filter (fun x => aIdx F J (n := n) (B := B) (.inr (.inr (i, x.1, x.2))) ∈ U)
 
 def valsG (tgt : AddrIdx P (J + F.ell) n B → ℕ) (i : Fin (n + 1))
-    (x : P.BigGroup × Fin B) : ℕ :=
+    (x : P.BigGroup × Fin B)  :=
   tgt (aIdx F J (n := n) (B := B) (.inr (.inr (i, x.1, x.2))))
 
 end Slots
 
 /-- Every address of `U` is performed with its prescribed value. -/
-def Prescribed {A : Model F P J m} {n : ℕ} (B : ℕ) (H : MemoryHistory A n)
-    (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx P (J + F.ell) n B → ℕ) : Prop :=
+def Prescribed {A : Model F P J m} {n } (B ) (H : MemoryHistory A n)
+    (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx P (J + F.ell) n B → ℕ)  :=
   ∀ j ∈ U, H.addressPerformed B ((Fintype.equivFin _).symm j) ∧
     H.addressValue B ((Fintype.equivFin _).symm j) = tgt j
 
-def initMult {n B : ℕ} (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx P (J + F.ell) n B → ℕ)
+def initMult {n B } (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx P (J + F.ell) n B → ℕ)
     (s : P.MemoryState (J + F.ell)) : ℝ :=
   if ∀ x ∈ slI F J U, (s.2.1 x.1.val x.2).val = valsI F J tgt x then 1 else 0
 
-theorem prescribed_local {A : Model F P J m} {n B : ℕ} (H : MemoryHistory A n)
-    (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx P (J + F.ell) n B → ℕ)
+section
+variable {A : Model F P J m} {n M B : ℕ} (H : MemoryHistory A n) (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx P (J + F.ell) n B → ℕ)
+
+
+theorem prescribed_local      
+       
     (hH : Prescribed B H U tgt) :
     localFactorR A n (initMult U tgt) (fun i => ghostMult (slG F J U i) (valsG F J tgt i))
       (fun i => edgeMult A (slE F J U i) (valsE F J tgt i)) H = 1 := by
@@ -108,21 +113,16 @@ theorem prescribed_local {A : Model F P J m} {n B : ℕ} (H : MemoryHistory A n)
     simp only [S2Core.MemoryHistory.freshTargetSlots, Finset.mem_filter, Finset.mem_univ,
       true_and] at h1'
     exact ⟨h1', h2⟩
-  unfold localFactorR
-  rw [hI, Finset.prod_eq_one (fun i _ => hG i), Finset.prod_eq_one (fun i _ => hE i)]
-  ring
+  simp_all [localFactorR]
 
-theorem localFactor_nonneg {A : Model F P J m} {n B : ℕ} (H : MemoryHistory A n)
-    (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx P (J + F.ell) n B → ℕ) :
+theorem localFactor_nonneg      
+        :
     0 ≤ localFactorR A n (initMult U tgt) (fun i => ghostMult (slG F J U i) (valsG F J tgt i))
       (fun i => edgeMult A (slE F J U i) (valsE F J tgt i)) H := by
   unfold localFactorR initMult ghostMult edgeMult
-  apply mul_nonneg (mul_nonneg _ _) _
-  · split_ifs <;> norm_num
-  · exact Finset.prod_nonneg fun i _ => by dsimp only; split_ifs <;> norm_num
-  · exact Finset.prod_nonneg fun i _ => by dsimp only; split_ifs <;> norm_num
+  positivity
 
-theorem bms_sum_le_tsum {M B : ℕ} (f : P.MemoryState M → ℝ) (hf : ∀ t, 0 ≤ f t)
+theorem bms_sum_le_tsum   (f : P.MemoryState M → ℝ) (hf : ∀ t, 0 ≤ f t)
     (hs : Summable f) :
     ∑ t : BoundedMemoryState P M B, f t.val ≤ ∑' t, f t := by
   have h1 : ∑ t : BoundedMemoryState P M B, f t.val =
@@ -133,9 +133,16 @@ theorem bms_sum_le_tsum {M B : ℕ} (f : P.MemoryState M → ℝ) (hf : ∀ t, 0
   rw [h1]
   exact hs.sum_le_tsum _ (fun t _ => hf t)
 
-theorem prod_slots_le (n B : ℕ) (U : Finset (AddrIdx P (J + F.ell) n B))
-    (tgt : AddrIdx P (J + F.ell) n B → ℕ)
-    (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p) :
+end
+
+section
+variable (A : Model F P J m) (n B : ℕ) (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx P (J + F.ell) n B → ℕ) (rho theta v CG CE : ℝ) (hv : 1 ≤ v) (hCG : 0 ≤ CG) (hCE : 0 ≤ CE) (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
+
+
+include hμ in
+theorem prod_slots_le    
+     
+      :
     (∏ x ∈ slI F J U, muHat F P n x.1 (valsI F J tgt x)) *
       (∏ i : Fin (n + 1), ∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x)) *
       (∏ i : Fin n, ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x)) ≤
@@ -155,27 +162,18 @@ theorem prod_slots_le (n B : ℕ) (U : Finset (AddrIdx P (J + F.ell) n B))
       ∏ x ∈ slI F J U, 2 * muHat F P n x.1 (valsI F J tgt x) := by
     unfold slI
     rw [Finset.prod_filter]
-    apply Finset.prod_congr rfl
-    intro x _
-    rcases x with ⟨g, h⟩
     rfl
   have hG : ∀ i : Fin (n + 1), (∏ x : P.BigGroup × Fin B, ψ (.inr (.inr (i, x)))) =
       ∏ x ∈ slG F J U i, 2 * muHat F P n x.1 (valsG F J tgt i x) := by
     intro i
     unfold slG
     rw [Finset.prod_filter]
-    apply Finset.prod_congr rfl
-    intro x _
-    rcases x with ⟨g, h⟩
     rfl
   have hE : ∀ i : Fin n, (∏ x : P.BigGroup × Fin (J + F.ell), ψ (.inr (.inl (i, x)))) =
       ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x) := by
     intro i
     unfold slE
     rw [Finset.prod_filter]
-    apply Finset.prod_congr rfl
-    intro x _
-    rcases x with ⟨g, h⟩
     rfl
   have hsplit : (∏ a, ψ a) =
       (∏ x : P.BigGroup × Fin (J + F.ell), ψ (.inl x)) *
@@ -209,10 +207,11 @@ theorem prod_slots_le (n B : ℕ) (U : Finset (AddrIdx P (J + F.ell) n B))
         mul_le_mul_of_nonneg_right (mul_le_mul hle1 hle2 hn2 hn1') hn3
     _ = _ := by ring
 
+include hv hCG hCE hμ in
 /-- The prescribed truncated absolute history sum, for fixed prescribed values. -/
-theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : ℝ)
-    (hv : 1 ≤ v) (hCG : 0 ≤ CG) (hCE : 0 ≤ CE)
-    (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
+theorem prescribed_sum_le      
+         
+     
     (hmass1 : ∀ g : P.BigGroup, 1 ≤ ∑ p : P.Prime g.val, tiltedMu F P n g.val p)
     (hmassJ : ∀ (g : P.BigGroup) (forb : Finset (P.Prime g.val)), forb.card ≤ J →
       (1 / 2 : ℝ) ≤ ∑ p ∈ Finset.univ.filter (fun p => p ∉ forb), tiltedMu F P n g.val p)
@@ -361,11 +360,8 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
   have hslots := prod_slots_le n B U tgt hμ
   have hK : 0 ≤ CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n :=
     mul_nonneg (mul_nonneg (pow_nonneg hCG _) (pow_nonneg hCE _)) hIBM
-  have hn2 : 0 ≤ ∏ i : Fin (n + 1), ∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x) :=
-    Finset.prod_nonneg fun i _ => Finset.prod_nonneg fun x _ => h0 _ _
-  have hn3 : 0 ≤ ∏ i : Fin n, ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x) :=
-    Finset.prod_nonneg fun i _ => Finset.prod_nonneg fun x _ =>
-      mul_nonneg two_pos.le (h0 _ _)
+  
+  
   have hcGE : 0 ≤ (∏ i, cG i) * (∏ i, cE i) :=
     mul_nonneg (Finset.prod_nonneg fun i _ => hcG i) (Finset.prod_nonneg fun i _ => hcE i)
   calc _ ≤ _ := step1
@@ -379,5 +375,7 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
             (∏ i : Fin n, ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x))) := by
         rw [hprodG, hprodE]; ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hslots hK
+
+end
 
 end Erdos821.P3High

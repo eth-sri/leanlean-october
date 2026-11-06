@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.SpectralSupport
 public import OAI.NumberTheory.DirichletL.Detector.HighAbsolute
@@ -13,11 +14,11 @@ open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
 open ProbeCompleted ProbeRow CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+
 
 def physicalMellinCoefficientTerm (η : HeckeFamily.Character) (C : CalibrationData)
-    (S : Finset (Ideal O)) (D I J : Ideal O) (s : O) (hs : Supported (Ideal.span {s}))
-    (X : ℝ) (H : O) (t z : ℂ) : ℂ :=
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D I J : Ideal ActualEisensteinCubic.O) (s ) (hs : Supported (Ideal.span {s}))
+    (X : ℝ) (H : ActualEisensteinCubic.O) (t z : ℂ)  :=
   if hA : completedIndex I J≠0 then
     let K := elementNorm C.generator*elementNorm s*X
     idealRowHom C.generator (Ideal.span {s}) /
@@ -29,7 +30,7 @@ def physicalMellinCoefficientTerm (η : HeckeFamily.Character) (C : CalibrationD
   else 0
 
 def guardedHighMellinCoefficient (η : HeckeFamily.Character) (C : CalibrationData)
-    (S : Finset (Ideal O)) (D I J : Ideal O) (s : O) (X : ℝ) (H : O) (x z : ℂ) : ℂ :=
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D I J : Ideal ActualEisensteinCubic.O) (s : ActualEisensteinCubic.O) (X : ℝ) (H : ActualEisensteinCubic.O) (x z : ℂ)  :=
   if h : Squarefree I ∧ Supported I ∧ Supported J then
     (X:ℂ)^(1/2-z)*(elementNorm H:ℂ)^(-z)*completedMask S D I J*star (C.residueMonoid H)*
       bareSourceCoefficient η I (supported_primaryGenerator_ne_zero I h.2.1)
@@ -39,11 +40,11 @@ def guardedHighMellinCoefficient (η : HeckeFamily.Character) (C : CalibrationDa
       (fullIdealWeight (x+1/2) I*fullIdealWeight (1+3*x) J)
   else 0
 
-theorem physicalMellinCoefficientTerm_eq_guarded (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    (D I J : Ideal O) (s : O) (hs : Supported (Ideal.span {s}))
+theorem physicalMellinCoefficientTerm_eq_guarded  η 
+     S   hS  (hbad : fixedBadPrimes⊆S)
+     D I J   s   hs 
     (hcs : IsCoprime (calibrationForSet S hS).generator s)
-    (X : ℝ) (hX : 0<X) (H : O) (hH : H≠0) (t z : ℂ) :
+     X  (hX : 0<X)  H  (hH : H≠0)  t z  :
     physicalMellinCoefficientTerm η (calibrationForSet S hS) S D I J s hs X H t z=
       guardedHighMellinCoefficient η (calibrationForSet S hS) S D I J s X H (t+1-z) z := by
   by_cases hg : Squarefree I ∧ Supported I ∧ Supported J
@@ -68,30 +69,29 @@ theorem physicalMellinCoefficientTerm_eq_guarded (η : HeckeFamily.Character)
       by_contra hn
       exact hg (spectralSummand_support S hbad D I J _ t hn)
     rw [guardedHighMellinCoefficient,dite_eq_right hg]
-    unfold physicalMellinCoefficientTerm
-    split_ifs <;> simp only [hz,mul_zero,zero_mul]
+    simp_all [physicalMellinCoefficientTerm]
 
-theorem guardedHighMellinCoefficient_eq_high (η : HeckeFamily.Character) (C : CalibrationData)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (D I J K : Ideal O)
-    (hK : Supported K) (hKS : ∀P∈S,¬P∣K) (X : ℝ) (H : O) (x w z : ℂ) :
+theorem guardedHighMellinCoefficient_eq_high  η   C 
+     S  (hS : ∀P∈S,Prime P)  D I J K 
+    (hK : Supported K) (hKS : ∀P∈S,¬P∣K)  X   H   x w z  :
     guardedHighMellinCoefficient η C S D I J (primaryGenerator K) X H x z *
       fullIdealWeight w K =
     (X:ℂ)^(1/2-z)*(elementNorm H:ℂ)^(-z)*star (C.residueMonoid H)*
       markedIdealHighSummand S D η H x w z I J K 1 := by
-  have h1 : ∀P∈S,¬P∣(1:Ideal O) := by
+  have h1 : ∀P∈S,¬P∣(1:Ideal ActualEisensteinCubic.O) := by
     intro P hP hd
     exact (hS P hP).not_isUnit (isUnit_of_dvd_one hd)
-  have hw : fullIdealWeight (6*z) (1:Ideal O)=1 := (IdealEuler.normWeight (6*z)).map_one
+  have hw : fullIdealWeight (6*z) (1:Ideal ActualEisensteinCubic.O)=1 := (IdealEuler.normWeight (6*z)).map_one
   unfold guardedHighMellinCoefficient markedIdealHighSummand highIdealMask
     bareIdealHighSummand bareIdealHighCoefficient
   simp only [ite_eq_left hKS,ite_eq_left h1,mul_one,hw,primaryGenerator_one,one_pow]
   by_cases hg : Squarefree I ∧ Supported I ∧ Supported J
-  · have hfull : Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported (1:Ideal O) :=
+  · have hfull : Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported (1:Ideal ActualEisensteinCubic.O) :=
       ⟨hg.1,hg.2.1,hg.2.2,hK,supported_one_ideal⟩
     rw [dite_eq_left hg,dite_eq_left hfull]
     dsimp only [completedIndex]
     ring
-  · have hfull : ¬(Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported (1:Ideal O)) :=
+  · have hfull : ¬(Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported (1:Ideal ActualEisensteinCubic.O)) :=
       fun h=>hg ⟨h.1,h.2.1,h.2.2.1⟩
     rw [dite_eq_right hg,dite_eq_right hfull]
     simp only [mul_zero,zero_mul]

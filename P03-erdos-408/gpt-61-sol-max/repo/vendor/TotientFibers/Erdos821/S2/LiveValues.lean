@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.GhostResources
 
@@ -23,26 +24,30 @@ theorem multiset_map_sum {α β ι : Type*} (s : Finset ι) (f : ι → Multiset
   | empty => simp
   | @insert i s hi ih => simp [hi, ih, Multiset.map_add]
 
-theorem activePrimes_act {M : ℕ} (π : P.Permutations M) (a : P.Labels M) (g : P.Group) :
-    activePrimes (P.act π a) g = activePrimes a g := by
-  exact Equiv.sum_comp (π g) (fun i => ({a g i} : Multiset (P.Prime g)))
+section
+variable {M : ℕ} (π : P.Permutations M)
 
-def groupLivePrimes {M : ℕ} (s : P.MemoryState M) (g : P.BigGroup) : Multiset (P.Prime g.val) :=
+theorem activePrimes_act     (a : P.Labels M)  g  :
+    activePrimes (P.act π a) g = activePrimes a g := Equiv.sum_comp (π g) (fun i => ({a g i} : Multiset (P.Prime g)))
+
+def groupLivePrimes {M } (s : P.MemoryState M) (g : P.BigGroup)  :=
   activePrimes s.2.1 g.val + pendingPrimes (s.2.2 g)
 
-def liveValues {M : ℕ} (s : P.MemoryState M) : Multiset ℕ :=
+def liveValues {M } (s : P.MemoryState M)  :=
   ∑ g : P.BigGroup, (groupLivePrimes s g).map Subtype.val
 
-def ghostNewValues {M : ℕ} {s t : P.MemoryState M} (c : GhostChoice s t) : Multiset ℕ :=
+def ghostNewValues {M } {s t : P.MemoryState M} (c : GhostChoice s t) : Multiset ℕ :=
   ∑ g : P.BigGroup, ∑ h : Fin (c.2.1 g).val, {(c.2.2 g h).val}
 
-def edgeNewValues {J ell m : ℕ} (ν : Pattern P J ell m) (a : P.Labels (J + ell))
+def edgeNewValues {J ell m } (ν : Pattern P J ell m) (a : P.Labels (J + ell))
     (prom : P.BigGroup → Finset (Fin (J + ell))) : Multiset ℕ :=
   ∑ g : P.BigGroup, ∑ h ∈ unsharedDroppedSlots ν g.val (prom g), {(a g.val h).val}
 
-theorem liveValues_permActive {M : ℕ} (π : P.Permutations M) (s : P.MemoryState M) :
+theorem liveValues_permActive     (s : P.MemoryState M) :
     liveValues (permuteActive π s) = liveValues s := by
   simp only [liveValues, groupLivePrimes, permuteActive, activePrimes_act]
+
+end
 
 theorem ghost_liveValues_le {M : ℕ} {s t : P.MemoryState M}
     (c : GhostChoice s t) (hc : ghostChoiceValid c) (ha : s.2.1 = t.2.1) :
@@ -79,17 +84,17 @@ theorem edge_liveValues_le (hTask : EdgeLiveConservationTask) (A : Model F P J m
           (unsharedDroppedSlots ν g.val (c.1 g)) := Multiset.le_add_right _ _
       _ = _ := hTask F P J m A ν forward u s t c hc g
   have he := Multiset.map_le_map (f := Subtype.val) hp
-  simpa only [Multiset.map_add, slotPrimes, multiset_map_sum, Multiset.map_singleton] using he
+  simp_all [slotPrimes, multiset_map_sum]
 
 namespace MemoryHistory
 
 variable {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n)
 
-theorem ghost_liveValues_le (hH : H.Valid) (i : Fin (n + 1)) :
+theorem ghost_liveValues_le (hH : H.Valid)  i  :
     liveValues (H.after i) ≤ liveValues (H.before i) + H.ghostBirthValues i :=
   Erdos821.S2Core.ghost_liveValues_le (H.ghost i) (hH.2.2.1 i).2.2 (hH.2.2.1 i).2.1
 
-theorem edge_liveValues_le (hTask : EdgeLiveConservationTask) (hH : H.Valid) (i : Fin n) :
+theorem edge_liveValues_le (hTask : EdgeLiveConservationTask) (hH : H.Valid)  i  :
     liveValues (H.before i.succ) ≤ liveValues (H.after i.castSucc) + H.freshBirthValues i := by
   have he := Erdos821.S2Core.edge_liveValues_le hTask A (A.pattern (H.edge i).2.2.1)
     (edgeForward i) (H.edge i).2.2.2.1 (permuteActive (H.edge i).1 (H.after i.castSucc))

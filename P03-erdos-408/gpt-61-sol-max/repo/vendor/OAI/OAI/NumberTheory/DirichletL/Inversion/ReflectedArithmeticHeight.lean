@@ -12,15 +12,23 @@ open scoped Classical BigOperators ContDiff SchwartzMap
 open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 open InverseReflectedPhase
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe u v w
 
+section
+variable (a₀ b₀ : ℝ) (ha₀ : 0<a₀)
+include a₀ b₀ ha₀
+
+section
+variable (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ) (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i) (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀) (hW : ContDiff ℝ ∞ W) (J : ℕ)
+include windows M hM hwindows W hWsupport hW J
+
 theorem actual_reflected_finite_source_arithmetic_uniform
-    (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
-    (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
-    (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+           
+       
+       
+        :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -66,10 +74,10 @@ theorem actual_reflected_finite_source_arithmetic_uniform
   simpa only [actualKernelSourceTerm_numeric,mul_assoc] using hh
 
 theorem weighted_finite_physical_row_common_measure_arithmetic_uniform
-    (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
-    (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
-    (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+           
+       
+       
+        :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -120,10 +128,10 @@ theorem weighted_finite_physical_row_common_measure_arithmetic_uniform
   ring
 
 theorem weighted_finite_physical_row_branch_measure_arithmetic_uniform
-    (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
-    (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
-    (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+           
+       
+       
+        :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -171,7 +179,9 @@ theorem weighted_finite_physical_row_branch_measure_arithmetic_uniform
   exact weightedPhysicalReflectedRow_eq_branches F K hK S jF Pset nset bset hprod D hcop
     G0 D0 s hc hκ hA hbgen _ _ _ unit m
 
-theorem literal_reflected_raw_tail_arithmetic_uniform (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (A : ℕ) :
+end
+
+theorem literal_reflected_raw_tail_arithmetic_uniform     (A : ℕ) :
     ∃ (orders : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
     ∀ {N a c : Eis} {mode : Bool}, ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc a₀ b₀ →
     ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
@@ -194,7 +204,13 @@ theorem literal_reflected_raw_tail_arithmetic_uniform (a₀ b₀ : ℝ) (ha₀ :
     (literalRawCoefficient G D s hc j S u) (literalRawCoefficient_norm G D s hc hN hbase hchar j hj S u) cut hcut
   simpa only [one_pow,mul_one] using hh
 
-theorem literal_reflected_dyadic_tail_arithmetic_uniform (lo hi : ℝ) (hlo : 0<lo) (A : ℕ) :
+end
+
+section
+variable (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
+include lo hi hlo A
+
+theorem literal_reflected_dyadic_tail_arithmetic_uniform       :
     ∃ (orders : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
     ∀ {N a c : Eis} {mode : Bool}, ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc lo hi →
     ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
@@ -222,8 +238,8 @@ theorem literal_reflected_dyadic_tail_arithmetic_uniform (lo hi : ℝ) (hlo : 0<
   rw [tsum_cut_dyadic _ cut hn.of_norm] at hh
   exact hh
 
-theorem literal_dyadic_tail_height_arithmetic_uniform (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
+theorem literal_dyadic_tail_height_arithmetic_uniform      
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
     ∃ (degree : ℕ) (C : ℝ), 0<C ∧
     ∀ {N a c : Eis} {mode : Bool}, ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
@@ -277,6 +293,8 @@ theorem literal_dyadic_tail_height_arithmetic_uniform (lo hi : ℝ) (hlo : 0<lo)
     _ = _ := by ring
 
 end
+
+
 end SevenEighths.InverseReflectedArithmeticHeight
 
 end OAI

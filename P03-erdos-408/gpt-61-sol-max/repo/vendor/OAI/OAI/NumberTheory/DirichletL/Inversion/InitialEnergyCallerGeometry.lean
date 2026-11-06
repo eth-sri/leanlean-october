@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerReference
 public import OAI.NumberTheory.DirichletL.Descent.SecondSquarefree
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
@@ -16,14 +17,14 @@ namespace SevenEighths.InverseInitialEnergyCallerGeometry
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialProfile InverseInitialClippedColumns ConcreteTraceCRT
-local notation "Eis"=>ActualEisensteinCubic.O
+
 variable {ι:Type*}[DecidableEq ι]
-  (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem outerCoefficient_nonzero_coprime
-    (Ψ:Eis→*ℂ)(j:Eis)(x:Point ι)(ρ:SecondRayIndex)
+    (Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(x:Point ι)(ρ:SecondRayIndex)
     (hn:outerCoefficient p hp hcop hg Ψ j x ρ≠0) :
     IsCoprime (sourceIdeal p x.overlap) (sourceIdeal p x.common) := by
   apply sourceIdeal_coprime_of_not_mem p
@@ -32,11 +33,10 @@ theorem outerCoefficient_nonzero_coprime
   have hz : rowCoprimeMask (fun i=>Ideal.span {p i}) x.overlap (j*(∏k∈x.common,p k))=0 := by
     simp only [rowCoprimeMask,ite_eq_left (show ∃i∈x.overlap,j*(∏k∈x.common,p k)∈Ideal.span {p i}
       from ⟨i,hi,hmc⟩)]
-  apply hn
-  simp only [outerCoefficient,initialColumn,hz,mul_zero,zero_mul,star_zero]
+  simp_all [outerCoefficient, initialColumn]
 
 omit [DecidableEq ι] in
-theorem initial_child_label_norm (x:Source (ι:=ι) 0)(u:Eisˣ) :
+theorem initial_child_label_norm (x:Source (ι:=ι) 0) u  :
     ((initialChild (toTuple p (sectorSource u x))).2.1.absNorm:ℝ)=
       (sourceIdeal p x.divisor).absNorm*(sourceIdeal p x.overlap).absNorm := by
   change ((sourceIdeal p x.divisor*sourceIdeal p x.overlap).absNorm:ℝ)=_
@@ -45,14 +45,14 @@ theorem initial_child_label_norm (x:Source (ι:=ι) 0)(u:Eisˣ) :
 include hp in
 
 theorem initial_child_row_norm (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (x:Source (ι:=ι) 0)(u:Eisˣ) :
+    (x:Source (ι:=ι) 0)(u:ActualEisensteinCubic.Oˣ) :
     ‖eisEmbedding (initialChild (toTuple p (sectorSource u x))).2.2‖^2=
       ((sourceIdeal p x.divisor).absNorm:ℝ)*‖eisEmbedding x.frequency‖^2 := by
-  change ‖eisEmbedding (primaryGenerator (sourceIdeal p x.divisor)*((u:Eis)^5*x.frequency))‖^2=_
-  have he : primaryGenerator (sourceIdeal p x.divisor)*((u:Eis)^5*x.frequency)=
-      ((u^5:Eisˣ):Eis)*(primaryGenerator (sourceIdeal p x.divisor)*x.frequency) := by
-    change primaryGenerator (sourceIdeal p x.divisor)*((u:Eis)^5*x.frequency)=
-      (u:Eis)^5*(primaryGenerator (sourceIdeal p x.divisor)*x.frequency)
+  change ‖eisEmbedding (primaryGenerator (sourceIdeal p x.divisor)*((u:ActualEisensteinCubic.O)^5*x.frequency))‖^2=_
+  have he : primaryGenerator (sourceIdeal p x.divisor)*((u:ActualEisensteinCubic.O)^5*x.frequency)=
+      ((u^5:ActualEisensteinCubic.Oˣ):ActualEisensteinCubic.O)*(primaryGenerator (sourceIdeal p x.divisor)*x.frequency) := by
+    change primaryGenerator (sourceIdeal p x.divisor)*((u:ActualEisensteinCubic.O)^5*x.frequency)=
+      (u:ActualEisensteinCubic.O)^5*(primaryGenerator (sourceIdeal p x.divisor)*x.frequency)
     ring
   rw [he,GaussGeneratorTransport.norm_eisEmbedding_unit_mul,map_mul,norm_mul,mul_pow]
   rw [eisEmbedding_norm_sq_eq_absNorm_span,sourceIdeal_gen p hp hpr]
@@ -60,7 +60,7 @@ theorem initial_child_row_norm (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p
 
 include hp in
 theorem initial_child_row_ball (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (x:Source (ι:=ι) 0)(u:Eisˣ)(R:ℝ) :
+    (x:Source (ι:=ι) 0)(u:ActualEisensteinCubic.Oˣ)(R:ℝ) :
     (initialChild (toTuple p (sectorSource u x))).2.2∈nonzeroChildFrequencyBall 1 R ↔
     0<((sourceIdeal p x.divisor).absNorm:ℝ)*‖eisEmbedding x.frequency‖^2 ∧
       ((sourceIdeal p x.divisor).absNorm:ℝ)*‖eisEmbedding x.frequency‖^2≤R := by
@@ -70,7 +70,7 @@ include hp in
 
 theorem initial_child_enclosures
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (x:Source (ι:=ι) 0)(u:Eisˣ)(Z θ v H η:ℝ)(hZ:0<Z)
+    (x:Source (ι:=ι) 0)(u:ActualEisensteinCubic.Oˣ)(Z θ v H η:ℝ)(hZ:0<Z)
     (hd:((sourceIdeal p x.divisor).absNorm:ℝ)≤Z^(θ+η))
     (hv:((sourceIdeal p x.overlap).absNorm:ℝ)≤Z^(v+η))
     (hh:‖eisEmbedding x.frequency‖^2≤Z^(H+η)) :
@@ -89,6 +89,6 @@ theorem initial_child_enclosures
 
 end SevenEighths.InverseInitialEnergyCallerGeometry
 
-end
+
 
 end OAI

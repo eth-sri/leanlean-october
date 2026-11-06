@@ -27,13 +27,21 @@ open ContDiff Real
 variable {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F]
   [NormedSpace ℝ F]
 
+section
+variable {f : E → F}
+include f
+
+section
+variable (hf : ContDiff ℝ ∞ f) (d : E)
+include hf d
+
 /-- A directional derivative of a smooth function is smooth. -/
-theorem contDiff_fderiv_apply {f : E → F} (hf : ContDiff ℝ ∞ f) (d : E) :
+theorem contDiff_fderiv_apply       :
     ContDiff ℝ ∞ fun x => fderiv ℝ f x d :=
   (hf.fderiv_right (by exact_mod_cast le_rfl)).clm_apply contDiff_const
 
 /-- `‖D^k ∂_d f‖ ≤ ‖d‖ ‖D^{k + 1} f‖`. -/
-theorem norm_iteratedFDeriv_fderiv_apply_le {f : E → F} (hf : ContDiff ℝ ∞ f) (d : E) (k : ℕ)
+theorem norm_iteratedFDeriv_fderiv_apply_le        k 
     (x : E) :
     ‖iteratedFDeriv ℝ k (fun x => fderiv ℝ f x d) x‖ ≤ ‖d‖ * ‖iteratedFDeriv ℝ (k + 1) f x‖ := by
   have h := (ContinuousLinearMap.apply ℝ F d).norm_iteratedFDeriv_comp_left (n := k)
@@ -45,15 +53,21 @@ theorem norm_iteratedFDeriv_fderiv_apply_le {f : E → F} (hf : ContDiff ℝ ∞
     rw [ContinuousLinearMap.apply_apply, mul_comm]
     exact L.le_opNorm d
 
+end
+
 /-- The derivative along the line `t ↦ a + t d` is the directional derivative. -/
-theorem deriv_comp_line {f : E → F} (hf : Differentiable ℝ f) (a d : E) (t : ℝ) :
+theorem deriv_comp_line   (hf : Differentiable ℝ f) (a d : E) (t : ℝ) :
     deriv (fun t => f (a + t • d)) t = fderiv ℝ f (a + t • d) d := by
   have h := ((hasDerivAt_id t).smul_const d).const_add a
   rw [one_smul] at h
   exact ((hf _).hasFDerivAt.comp_hasDerivAt t h).deriv
 
+section
+variable (hf : ContDiff ℝ ∞ f)
+include hf
+
 /-- The second derivative along the line `t ↦ a + t d` is `∂_d ∂_d f`. -/
-theorem iteratedDeriv_two_comp_line {f : E → F} (hf : ContDiff ℝ ∞ f) (a d : E) (t : ℝ) :
+theorem iteratedDeriv_two_comp_line     (a d : E) (t : ℝ) :
     iteratedDeriv 2 (fun t => f (a + t • d)) t =
       fderiv ℝ (fun x => fderiv ℝ f x d) (a + t • d) d := by
   have hd : ∀ {g : E → F}, ContDiff ℝ ∞ g → Differentiable ℝ g := fun hg =>
@@ -65,8 +79,8 @@ theorem iteratedDeriv_two_comp_line {f : E → F} (hf : ContDiff ℝ ∞ f) (a d
   exact deriv_comp_line (f := fun x => fderiv ℝ f x d) (hd (contDiff_fderiv_apply hf d)) a d t
 
 /-- A smooth function with compact support has bounded derivatives up to any order. -/
-theorem exists_norm_iteratedFDeriv_le {f : E → F} (hf : ContDiff ℝ ∞ f) (hc : HasCompactSupport f)
-    (n : ℕ) : ∃ P : ℝ, ∀ j ≤ n, ∀ x, ‖iteratedFDeriv ℝ j f x‖ ≤ P := by
+theorem exists_norm_iteratedFDeriv_le     (hc : HasCompactSupport f)
+     n  : ∃ P : ℝ, ∀ j ≤ n, ∀ x, ‖iteratedFDeriv ℝ j f x‖ ≤ P := by
   have hb : ∀ j : ℕ, ∃ P : ℝ, ∀ x, ‖iteratedFDeriv ℝ j f x‖ ≤ P := fun j =>
     (hf.continuous_iteratedFDeriv (by exact_mod_cast le_top)).bounded_above_of_compact_support
       (hc.iteratedFDeriv j)
@@ -82,8 +96,12 @@ theorem exists_norm_iteratedFDeriv_le {f : E → F} (hf : ContDiff ℝ ∞ f) (h
     · exact (hP j hj x).trans (le_max_left _ _)
     · exact (hQ x).trans (le_max_right _ _)
 
+end
+
+end
+
 /-- The derivatives of the twist `e(c y)`. -/
-theorem iteratedDeriv_twist (c : ℝ) (k : ℕ) :
+theorem iteratedDeriv_twist  c   k  :
     iteratedDeriv k (fun y : ℝ => Complex.exp (2 * π * Complex.I * ((c * y : ℝ) : ℂ))) =
       fun y => (2 * π * Complex.I * c) ^ k *
         Complex.exp (2 * π * Complex.I * ((c * y : ℝ) : ℂ)) := by
@@ -100,8 +118,8 @@ theorem iteratedDeriv_twist (c : ℝ) (k : ℕ) :
     ring
 
 /-- `‖D^i [φ(y) e(c y)]‖ ≤ 2^i P (2π(1 + |c|))^i` when `‖D^j φ‖ ≤ P` for `j ≤ i`. -/
-theorem norm_iteratedFDeriv_twist_le {φ : ℝ → ℂ} (hφ : ContDiff ℝ ∞ φ) {P : ℝ} {i : ℕ}
-    (hP : ∀ j ≤ i, ∀ y, ‖iteratedFDeriv ℝ j φ y‖ ≤ P) (c y : ℝ) :
+theorem norm_iteratedFDeriv_twist_le {φ : ℝ → ℂ} (hφ : ContDiff ℝ ∞ φ)  {P}   {i} 
+    (hP : ∀ j ≤ i, ∀ y, ‖iteratedFDeriv ℝ j φ y‖ ≤ P)  c y  :
     ‖iteratedFDeriv ℝ i
         (fun y => φ y * Complex.exp (2 * π * Complex.I * ((c * y : ℝ) : ℂ))) y‖ ≤
       2 ^ i * P * (2 * π * (1 + |c|)) ^ i := by
@@ -136,7 +154,7 @@ theorem norm_iteratedFDeriv_twist_le {φ : ℝ → ℂ} (hφ : ContDiff ℝ ∞ 
   ring
 
 /-- The plateau `ψ(t) = s(5 - t) s(5 + t)`. -/
-theorem plateau_eq_mul (t : ℝ) :
+theorem plateau_eq_mul  t  :
     plateau t = smoothTransition (5 - t) * smoothTransition (5 + t) := by
   rcases le_total 0 t with ht | ht
   · rw [plateau, abs_of_nonneg ht, smoothTransition.one_of_one_le (x := 5 + t) (by linarith),
@@ -153,11 +171,11 @@ theorem contDiff_plateau : ContDiff ℝ ∞ plateau := by
     (smoothTransition.contDiff.comp (contDiff_const.add contDiff_id))
 
 /-- `ψ(t) = 1` for `|t| ≤ 4`. -/
-theorem plateau_eq_one {t : ℝ} (ht : |t| ≤ 4) : plateau t = 1 :=
+theorem plateau_eq_one  {t}  (ht : |t| ≤ 4) : plateau t = 1 :=
   smoothTransition.one_of_one_le (by linarith)
 
 /-- `ψ(t) = 0` for `5 ≤ |t|`. -/
-theorem plateau_eq_zero {t : ℝ} (ht : 5 ≤ |t|) : plateau t = 0 :=
+theorem plateau_eq_zero  {t}  (ht : 5 ≤ |t|) : plateau t = 0 :=
   smoothTransition.zero_of_nonpos (by linarith)
 
 end Erdos408.OneSided.Mellin

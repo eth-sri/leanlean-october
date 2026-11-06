@@ -13,22 +13,22 @@ namespace SevenEighths.ProbeCentralRepeatedProduct
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve CompletedGauss ProbeRowReflectedAllocation
 open HeckeDeletionBounds HeckeReciprocalGrowth
-local notation "O" => HeckeFamily.O
 
-def rowCost (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (u : FreeRow)
-    (a e eps T : ℝ) : ℝ :=
-  ((ProbeRowRadicalConductor.fixedConductorConstant S:ℝ)*(Ideal.span {u.val}:Ideal O).absNorm)^(a-1/2+6*e)*
+
+def rowCost (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P) (u : FreeRow)
+    (a e eps T : ℝ)  :=
+  ((ProbeRowRadicalConductor.fixedConductorConstant S:ℝ)*(Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm)^(a-1/2+6*e)*
     ((radical (rowCharacter S hS u).modulus).absNorm:ℝ)^(6*e+2*eps)*
     (3+T)^2*(presentationComplexity (rowCharacter S hS u) T)^eps
 
-lemma rowCost_nonneg (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (u : FreeRow)
-    (a e eps T : ℝ) : 0≤rowCost S hS u a e eps T := by
+lemma rowCost_nonneg  S   hS   u 
+     a e eps T  : 0≤rowCost S hS u a e eps T := by
   unfold rowCost presentationComplexity HeckeLogarithmic.complexity
   positivity
 
 lemma repeated_weight_bound (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hη : IsCoprime P.val η.modulus)
-    (a e B Y : ℝ) (W : ℝ→ℂ) (x w z : ℂ)
+    (a e B Y : ℝ) (W : ℝ→ℂ)  x w z 
     (hB : 0≤B) (hW : ∀t,‖W t‖≤B)
     (hQ : (480:ℝ)≤P.val.absNorm) (hsmall : 198*(P.val.absNorm:ℝ)^(-10*e)≤1/2)
     (ha : (51/100:ℝ)≤a) (ha1 : a≤1) (he : 0<e) (he1 : e≤1/1000)
@@ -54,9 +54,9 @@ lemma repeated_weight_bound (η : Character) (u : FreeRow) (P : PrimeIdeal)
         _ = 812*B*(P.val.absNorm:ℝ)^(z.re-w.re) := by rw [←Real.rpow_add hp];congr 2;ring
         _ = _ := by rw [show z.re-w.re=z.re+(-w.re) by ring,Real.rpow_add hp];ring
 
-theorem selected_repeated_product (e eps : ℝ) (he : 0<e) (he1 : e<1/1000)
+theorem selected_repeated_product  e eps  (he : 0<e) (he1 : e<1/1000)
     (heps : 0<eps) :
-    ∃C : ℝ,0<C ∧ ∀(S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+    ∃C : ℝ,0<C ∧ ∀(S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
       (hmax : ∀P∈S,P.IsMaximal),fixedBadPrimes⊆S →
     ∀(u : FreeRow),u.val≠1 → ∀{ι : Type*} [Fintype ι] (η : Character) (twists : ι→Character)
       (T a : ℝ) (i : ℕ),2<T → 51/100≤a → a≤1 →
@@ -79,7 +79,7 @@ theorem selected_repeated_product (e eps : ℝ) (he : 0<e) (he1 : e<1/1000)
   obtain ⟨ψ,hle,hprim,hmask,hactive,hb⟩ := hbound S hS hmax hbad u hu
   have hi : Function.Injective (fun j=>(P j).val) := fun j l h=>hdis (Subtype.ext h)
   have hdiv (j : Fin k) := actual_multiplicity_divisor u (primaryGenerator (P j).val) (supported_primeGenerator_prime (P j) (hs j))
-  have hspan (j : Fin k) : (Ideal.span {primaryGenerator (P j).val}:Ideal O)=(P j).val := span_primaryGenerator_of_supported (P j).val (hs j)
+  have hspan (j : Fin k) : (Ideal.span {primaryGenerator (P j).val}:Ideal HeckeFamily.O)=(P j).val := span_primaryGenerator_of_supported (P j).val (hs j)
   have hb' := hb η twists T a i hT ha ha1 hbin k (fun j=>(P j).val) (fun j=>(P j).property) hi
     (fun j=>multiplicity (primaryGenerator (P j).val) u.val) (fun j=>(hr j).2)
     (fun j=>by have hd := (hdiv j).1;rw [hspan j] at hd;exact hd) w hw hwi

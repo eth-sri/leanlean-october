@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.ProbabilityPairing
 
@@ -8,9 +9,9 @@ set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
-noncomputable section
 
-theorem product_reproduction_error (a b A B : ℂ) (ε : ℝ)
+
+theorem product_reproduction_error (a b A B : ℂ)  ε 
     (hε : 0 ≤ ε) (hε1 : ε ≤ 1) (ha : ‖a‖ ≤ 1) (hb : ‖b‖ ≤ 1)
     (hA : ‖A - a‖ ≤ ε) (hB : ‖B - b‖ ≤ ε) : ‖A * B - a * b‖ ≤ 3 * ε := by
   have hnA : ‖A‖ ≤ 1 + ε := by
@@ -22,13 +23,11 @@ theorem product_reproduction_error (a b A B : ℂ) (ε : ℝ)
   calc
     _ ≤ ‖(A - a) * b‖ + ‖A * (B - b)‖ := norm_add_le _ _
     _ = ‖A - a‖ * ‖b‖ + ‖A‖ * ‖B - b‖ := by simp only [norm_mul]
-    _ ≤ ε * 1 + (1 + ε) * ε := add_le_add
-      (mul_le_mul hA hb (norm_nonneg _) hε)
-      (mul_le_mul hnA hB (norm_nonneg _) (by linarith))
+    _ ≤ ε * 1 + (1 + ε) * ε := (by bound)
     _ ≤ _ := by nlinarith
 
 theorem finite_character_reproduction_error {γ : Type} [Fintype γ]
-    (coeff a b A B : γ → ℂ) (ε : ℝ) (hε : 0 ≤ ε) (hε1 : ε ≤ 1)
+    (coeff a b A B : γ → ℂ)  ε  (hε : 0 ≤ ε) (hε1 : ε ≤ 1)
     (ha : ∀ c, ‖a c‖ ≤ 1) (hb : ∀ c, ‖b c‖ ≤ 1)
     (hA : ∀ c, ‖A c - a c‖ ≤ ε) (hB : ∀ c, ‖B c - b c‖ ≤ ε) :
     ‖(∑ c, coeff c * A c * B c) - ∑ c, coeff c * a c * b c‖ ≤
@@ -48,8 +47,8 @@ theorem finite_character_reproduction_error {γ : Type} [Fintype γ]
 
 theorem kernel_multiplier_freeze {α β : Type} [Fintype α] [Fintype β]
     (w : α → ℝ) (v : β → ℝ) (hw : ∀ x, 0 ≤ w x) (hv : ∀ y, 0 ≤ v y)
-    (K : α → ℂ) (H : β → ℂ) (M phase : α → β → ℂ) (M₀ : ℂ)
-    (E CA CB : ℝ) (hE : 0 ≤ E) (hCA : 0 ≤ CA)
+    (K : α → ℂ) (H : β → ℂ) (M phase : α → β → ℂ)  M₀ 
+     E CA CB  (hE : 0 ≤ E) (hCA : 0 ≤ CA)
     (hK : (∑ x, w x * ‖K x‖) ≤ CA) (hH : (∑ y, v y * ‖H y‖) ≤ CB)
     (hphase : ∀ x y, ‖phase x y‖ ≤ 1)
     (hM : ∀ x y, K x ≠ 0 → H y ≠ 0 → ‖M x y - M₀‖ ≤ E) :
@@ -81,5 +80,5 @@ theorem kernel_multiplier_freeze {α β : Type} [Fintype α] [Fintype β]
     _ ≤ _ := mul_le_mul (mul_le_mul_of_nonneg_left hK hE) hH
       (Finset.sum_nonneg fun y _ => mul_nonneg (hv y) (norm_nonneg _)) (mul_nonneg hE hCA)
 
-end
+
 end Erdos821.S34Core

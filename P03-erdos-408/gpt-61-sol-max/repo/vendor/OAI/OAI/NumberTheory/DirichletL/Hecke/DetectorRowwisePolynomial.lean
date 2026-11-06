@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwise
 
@@ -12,20 +13,24 @@ open Set Complex
 namespace SevenEighths.HeckeDetectorRowwisePolynomial
 open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge
 
-def logProfile (W : ℝ→ℂ) (x : ℝ) : ℂ := (Real.log x : ℂ)*W x
+def logProfile (W : ℝ→ℂ) (x : ℝ)  := (Real.log x : ℂ)*W x
 
-theorem logProfile_cover (W : ℝ→ℂ) (D : ℝ) (S : Finset (Ideal O))
-    (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
+section
+variable (x : ℝ) (χ : Character) (inv : Bool) (W : ℝ→ℂ) (D σ freq : ℝ) (hx : 0<x) (hD : 0<D) (S : Finset (Ideal O)) (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S)
+
+include hc in
+theorem logProfile_cover      
+      :
     ∀ J : Ideal O, J≠0 → logProfile W ((J.absNorm : ℝ)/D)≠0 → J∈S := by
   intro J hJ hw
   exact hc J hJ (fun hz => hw (by simp [logProfile,hz]))
 
-theorem logProfile_support (W : ℝ→ℂ) :
+theorem logProfile_support   :
     Function.support (logProfile W)⊆Function.support W := by
   intro x hx hw
   exact hx (by simp [logProfile,hw])
 
-theorem logProfile_smooth (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
+theorem logProfile_smooth   (a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) :
     ContDiff ℝ ∞ (logProfile W) := by
   apply contDiff_iff_contDiffAt.mpr
@@ -42,7 +47,8 @@ theorem logProfile_smooth (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   · exact (Complex.ofRealCLM.contDiff.contDiffAt.comp x
       (Real.contDiffAt_log.mpr hx)).mul hW.contDiffAt
 
-lemma power_sigma_deriv (x σ freq : ℝ) (hx : 0<x) :
+include hx in
+lemma power_sigma_deriv     :
     HasDerivAt (fun u : ℝ => (x : ℂ)^(-HeckeDyadic.shift u freq))
       (-(Real.log x : ℂ)*(x : ℂ)^(-HeckeDyadic.shift σ freq)) σ := by
   have hd := (((hasDerivAt_id (σ : ℂ)).neg).add_const ((freq : ℂ)*I)).const_cpow
@@ -59,26 +65,20 @@ lemma power_sigma_deriv (x σ freq : ℝ) (hx : 0<x) :
     simp only [Pi.neg_apply,id_eq]
     ring
 
-lemma power_freq_deriv (x σ freq : ℝ) (hx : 0<x) :
+include hx in
+lemma power_freq_deriv     :
     HasDerivAt (fun u : ℝ => (x : ℂ)^(-HeckeDyadic.shift σ u))
       (I*(Real.log x : ℂ)*(x : ℂ)^(-HeckeDyadic.shift σ freq)) freq := by
   have hd := (((hasDerivAt_id (freq : ℂ)).mul_const I).const_add (-(σ : ℂ))).const_cpow
     (Or.inl (Complex.ofReal_ne_zero.mpr hx.ne'))
   have hh := hd.comp_ofReal
   rw [←Complex.ofReal_log hx.le] at hh
-  convert hh using 1
-  · ext u
-    congr 1
-    simp [HeckeDyadic.shift]
-    ring
-  · have he : -HeckeDyadic.shift σ freq= -(σ : ℂ)+(freq : ℂ)*I := by unfold HeckeDyadic.shift; ring
-    rw [he]
-    simp only [id_eq]
-    ring
+  grind [HeckeDyadic.shift, I]
 
-theorem polynomial_sigma_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (D σ freq : ℝ) (hD : 0<D) (S : Finset (Ideal O))
-    (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
+include hD hc in
+theorem polynomial_sigma_deriv      
+         
+      :
     HasDerivAt (fun u => polynomial χ inv W D u freq)
       (-polynomial χ inv (logProfile W) D σ freq) σ := by
   simp_rw [polynomial_eq_finite χ inv W D _ _ S hc]
@@ -100,9 +100,10 @@ theorem polynomial_sigma_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
   convert (HasDerivAt.sum (u:=S) hd).const_mul ((D : ℂ)^(-(1/2 : ℂ))) using 1
   all_goals simp only [Finset.sum_apply,neg_mul,Finset.sum_neg_distrib,mul_neg]
 
-theorem polynomial_freq_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (D σ freq : ℝ) (hD : 0<D) (S : Finset (Ideal O))
-    (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
+include hD hc in
+theorem polynomial_freq_deriv      
+         
+      :
     HasDerivAt (fun u => polynomial χ inv W D σ u)
       (I*polynomial χ inv (logProfile W) D σ freq) freq := by
   simp_rw [polynomial_eq_finite χ inv W D _ _ S hc]
@@ -125,9 +126,10 @@ theorem polynomial_freq_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
   all_goals simp only [Finset.sum_apply,←Finset.mul_sum]
   ring
 
-theorem polynomial_continuous (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (D : ℝ) (hD : 0<D) (S : Finset (Ideal O))
-    (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
+include hD hc in
+theorem polynomial_continuous      
+         
+      :
     Continuous (fun p : ℝ×ℝ => polynomial χ inv W D p.1 p.2) := by
   simp_rw [polynomial_eq_finite χ inv W D _ _ S hc]
   apply Continuous.const_mul
@@ -143,6 +145,8 @@ theorem polynomial_continuous (χ : Character) (inv : Bool) (W : ℝ→ℂ)
   apply Continuous.const_cpow _ (Or.inl (Complex.ofReal_ne_zero.mpr hn.ne'))
   unfold HeckeDyadic.shift
   fun_prop
+
+end
 
 end SevenEighths.HeckeDetectorRowwisePolynomial
 

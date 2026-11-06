@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Edge.SmallDamp
 public import Erdos821.P3Edge.SmallFresh
@@ -17,13 +18,16 @@ open Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {g : P.Group}
 
-def smallPrefixFibre (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
-    (d : Fin J → P.Prime g) : Finset (Fin (J + ell) → P.Prime g) :=
+def smallPrefixFibre (J ell ) (y : (p : P.Prime g) → ZMod p.val)
+    (d : Fin J → P.Prime g)  :=
   Finset.univ.filter (fun a => Function.Injective a ∧ (∀ i, y (a i) = 0) ∧
     ∀ j : Fin J, a (Fin.castAdd ell j) = d j)
 
-theorem smallPrefixFibre_nonempty (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
-    (d : Fin J → P.Prime g) (h : (smallPrefixFibre J ell y d).Nonempty) :
+section
+variable (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val) (d : Fin J → P.Prime g)
+
+theorem smallPrefixFibre_nonempty    
+      (h : (smallPrefixFibre J ell y d).Nonempty) :
     Function.Injective d ∧ (∀ j, y (d j) = 0) ∧
       J + ell ≤ (Finset.univ.filter (fun p : P.Prime g => y p = 0)).card := by
   classical
@@ -46,8 +50,8 @@ theorem smallPrefixFibre_nonempty (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.
     obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hp
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hzero _⟩
 
-theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
-    (d : Fin J → P.Prime g) (hd : Function.Injective d) (hy : ∀ j, y (d j) = 0) :
+theorem smallPrefixFibre_card    
+      (hd : Function.Injective d) (hy : ∀ j, y (d j) = 0) :
     (smallPrefixFibre J ell y d).card ≤
       ((Finset.univ.filter (fun p : P.Prime g => y p = 0)).card - J).descFactorial ell := by
   classical
@@ -79,10 +83,7 @@ theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
         intro i j hij
         obtain ⟨ha, _, _⟩ := (Finset.mem_filter.mp a.property).2
         have hh := ha (congrArg Subtype.val hij)
-        apply Fin.ext
-        have hv := congrArg Fin.val hh
-        simp only [Fin.val_natAdd] at hv
-        omega
+        simp_all
     }
   have hinj : Function.Injective suffix := by
     intro a b hab
@@ -96,14 +97,16 @@ theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
   have hc := Fintype.card_le_of_injective suffix hinj
   simpa only [Fintype.card_coe, Fintype.card_embedding_eq, Fintype.card_fin, hB] using hc
 
+end
+
 /-- Per-small-group damped weight. -/
 def smallGroupWeight (F : FixedData) (J : ℕ) (g : P.SmallGroup)
-    (y : (p : P.Prime g.val) → ZMod p.val) : ℝ :=
+    (y : (p : P.Prime g.val) → ZMod p.val)  :=
   (P.V g.val) ^ (-(F.ell : ℤ)) *
     F.q ^ ((((Finset.univ.filter (fun p : P.Prime g.val => y p = 0)).card : ℝ) -
       ((J : ℝ) + (F.ell : ℝ))) / 2)
 
-lemma smallGroupWeight_nonneg (F : FixedData) (J : ℕ) (g : P.SmallGroup)
+lemma smallGroupWeight_nonneg  F   J  (g : P.SmallGroup)
     (hV : 0 < P.V g.val) (y : (p : P.Prime g.val) → ZMod p.val) :
     0 ≤ smallGroupWeight F J g y := by
   unfold smallGroupWeight
@@ -111,7 +114,7 @@ lemma smallGroupWeight_nonneg (F : FixedData) (J : ℕ) (g : P.SmallGroup)
 
 /-- The product of `smallGroupWeight` over all small groups equals
 `smallTargetFactor F * smallDamping F J y`. -/
-lemma prod_smallGroupWeight_eq (F : FixedData) (J : ℕ) (y : P.SmallResidues) :
+lemma prod_smallGroupWeight_eq  F   J   y  :
     (∏ g : P.SmallGroup, smallGroupWeight F J g (y g)) =
       smallTargetFactor (P := P) F * smallDamping F J y := by
   unfold smallGroupWeight smallTargetFactor smallDamping smallOmega
@@ -121,11 +124,11 @@ lemma prod_smallGroupWeight_eq (F : FixedData) (J : ℕ) (y : P.SmallResidues) :
   simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_comm]
 
 /-- Unconditional bound on the small-group fiber sum for one small group `g`. -/
-lemma smallPrefixFibre_sum_le (F : FixedData) (J m : ℕ) (Csmall0 : ℝ)
+lemma smallPrefixFibre_sum_le (F : FixedData)  J m   Csmall0 
     (hCsmall0 : ∀ Y : ℕ, F.ell ≤ Y →
       (Y : ℝ) ^ F.ell * F.q ^ ((((Y - F.ell : ℕ)) : ℝ) / 2) ≤ Csmall0)
-    (g : P.SmallGroup) (hVlo : F.vMin ≤ P.V g.val)
-    (y : (p : P.Prime g.val) → ZMod p.val) (d : Fin J → P.Prime g.val) :
+     g  (hVlo : F.vMin ≤ P.V g.val)
+     y   d  :
     (∑ b : Fin (J + F.ell) → P.Prime g.val,
       if b ∈ smallPrefixFibre J F.ell y d then smallGroupWeight F J g y else 0) ≤
       max 1 (max 1 ((F.vMin⁻¹) ^ (F.ell + m)) * Csmall0) := by

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorSimultaneous
 
@@ -9,25 +10,28 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.HeckeDetectorRowCount
 
-def denominator (x : ℝ) : ℝ := 3-17*x/9
+def denominator (x : ℝ)  := 3-17*x/9
 
-def primeWeight (x : ℝ) : ℝ := (2-8*x/9)*(1-x)
+def primeWeight (x : ℝ)  := (2-8*x/9)*(1-x)
 
-def crossing (x t : ℝ) : ℝ := ((2-8*x/9)*t-5*x/9)/denominator x
+def crossing (x t : ℝ)  := ((2-8*x/9)*t-5*x/9)/denominator x
 
-def inverseExponent (δ x r : ℝ) : ℝ := 1-δ*(x+(1-x)*r)
+def inverseExponent (δ x r : ℝ)  := 1-δ*(x+(1-x)*r)
 
-def plainExponent (δ x t r : ℝ) : ℝ := 1-δ*(4*x/9+(2-8*x/9)*(t-r))
+def plainExponent (δ x t r : ℝ)  := 1-δ*(4*x/9+(2-8*x/9)*(t-r))
 
-def shortExponent (δ x t : ℝ) : ℝ := 1-δ+δ*primeWeight x/denominator x*(3/2-t)
+def shortExponent (δ x t : ℝ)  := 1-δ+δ*primeWeight x/denominator x*(3/2-t)
 
-def longExponent (δ t : ℝ) : ℝ := 1-δ+(5/6-δ)*(t-1)
+def longExponent (δ t : ℝ)  := 1-δ+(5/6-δ)*(t-1)
 
-lemma denominator_lower {x : ℝ} (hx : x≤1/2) : 37/18≤denominator x := by
+section
+variable {δ x t r q m Δ γ κ ν : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' : x≤1/2)
+
+lemma denominator_lower   (hx : x≤1/2) : 37/18≤denominator x := by
   unfold denominator
   linarith
 
-theorem crossing_bounds {x t : ℝ} (hx : 0≤x) (hx' : x≤1/2)
+theorem crossing_bounds   (hx : 0≤x) (hx' : x≤1/2)
     (ht : 1≤t) (ht' : t≤3/2) :
     23/37≤crossing x t ∧ crossing x t≤1 ∧
       1/3≤t-crossing x t ∧ t-crossing x t≤1/2 := by
@@ -39,11 +43,7 @@ theorem crossing_bounds {x t : ℝ} (hx : 0≤x) (hx' : x≤1/2)
   have hmt := mul_le_mul_of_nonneg_left ht hm
   have hmt' := mul_le_mul_of_nonneg_left ht' hm
   have he : t-crossing x t=((1-x)*t+5*x/9)/denominator x := by
-    unfold crossing
-    apply (eq_div_iff hd.ne').mpr
-    rw [sub_mul,div_mul_cancel₀ _ hd.ne']
-    unfold denominator
-    ring
+    grind [crossing, denominator]
   refine ⟨(le_div_iff₀ hd).mpr ?_,(div_le_iff₀ hd).mpr ?_,?_,?_⟩
   · unfold denominator
     nlinarith
@@ -58,21 +58,22 @@ theorem crossing_bounds {x t : ℝ} (hx : 0≤x) (hx' : x≤1/2)
     unfold denominator
     nlinarith
 
-lemma inverse_at_crossing (δ x t : ℝ) (hd : denominator x≠0) :
+lemma inverse_at_crossing  δ x t  (hd : denominator x≠0) :
     inverseExponent δ x (crossing x t)=shortExponent δ x t := by
   unfold inverseExponent crossing shortExponent primeWeight
   field_simp
   unfold denominator
   ring
 
-lemma plain_at_crossing (δ x t : ℝ) (hd : denominator x≠0) :
+lemma plain_at_crossing  δ x t  (hd : denominator x≠0) :
     plainExponent δ x t (crossing x t)=shortExponent δ x t := by
   unfold plainExponent crossing shortExponent primeWeight
   field_simp
   unfold denominator
   ring
 
-theorem selected_short_bound {δ x t r : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' : x≤1/2) :
+include hδ _hx hx' in
+theorem selected_short_bound         :
     (r≤crossing x t → plainExponent δ x t r≤shortExponent δ x t) ∧
       (crossing x t≤r → inverseExponent δ x r≤shortExponent δ x t) := by
   have hd : denominator x≠0 := ne_of_gt (lt_of_lt_of_le (by norm_num) (denominator_lower hx'))
@@ -80,25 +81,24 @@ theorem selected_short_bound {δ x t r : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' 
   · intro hr
     rw [←plain_at_crossing δ x t hd]
     unfold plainExponent
-    have hh := mul_le_mul_of_nonneg_left hr (show 0≤2-8*x/9 by linarith)
-    nlinarith [mul_nonneg hδ (sub_nonneg.mpr hh)]
+    bound
   · intro hr
     rw [←inverse_at_crossing δ x t hd]
     unfold inverseExponent
-    have hh := mul_le_mul_of_nonneg_left hr (show 0≤1-x by linarith)
-    nlinarith [mul_nonneg hδ (sub_nonneg.mpr hh)]
+    bound
 
-lemma short_ge_base {δ x t : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' : x≤1/2)
+include hδ _hx hx' in
+lemma short_ge_base        
     (ht : t≤3/2) : 1-δ≤shortExponent δ x t := by
   have hd : 0<denominator x := lt_of_lt_of_le (by norm_num) (denominator_lower hx')
   have hp : 0≤primeWeight x := mul_nonneg (by linarith) (by linarith)
   unfold shortExponent
-  exact le_add_of_nonneg_right (mul_nonneg (div_nonneg (mul_nonneg hδ hp) hd.le) (by linarith))
+  exact (by bound)
 
-theorem capacity_loss {q m Δ γ : ℝ} (_hq : 0≤q) (hq' : q≤1/2)
+theorem capacity_loss   (_hq : 0≤q) (hq' : q≤1/2)
     (hm : 1/3-γ≤m) (hm' : m≤1/2) (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hγ : 0≤γ) :
     2*q*(1-2*m)*(2/9-1/(9/2+12*Δ))≤Δ/4+2*γ := by
-  have hd : 0<9/2+12*Δ := by linarith
+  
   have hden : (16 : ℝ)≤(9/2)*(9/2+12*Δ) := by nlinarith
   have hqmul : q*(1-2*m)≤(1/2)*(1/3+2*γ) :=
     mul_le_mul hq' (by linarith) (by linarith) (by norm_num)
@@ -111,7 +111,7 @@ theorem capacity_loss {q m Δ γ : ℝ} (_hq : 0≤q) (hq' : q≤1/2)
   have hb := mul_le_mul_of_nonneg_left hden (show 0≤Δ/4+2*γ by positivity)
   nlinarith
 
-theorem plain_capacity_comparison {δ x Δ t r m γ : ℝ}
+theorem plain_capacity_comparison  {δ x Δ t r m γ} 
     (hδ : 0≤δ) (hδ' : δ≤1) (hx : 0≤x) (hx' : x≤1/2)
     (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hm : 1/3-γ≤m) (hm' : m≤1/2)
     (hγ : 0≤γ) (hlength : t-r-γ≤m) :
@@ -121,24 +121,20 @@ theorem plain_capacity_comparison {δ x Δ t r m γ : ℝ}
   have hloss := capacity_loss hq hq' hm hm' hΔ hΔ' hγ
   have hc : 0≤δ*(2-8*x/9) := mul_nonneg hδ (by linarith)
   have hc' : δ*(2-8*x/9)≤2 := by
-    have hh := mul_le_mul_of_nonneg_right hδ' (show 0≤2-8*x/9 by linarith)
+    
     nlinarith
   have hlinear := mul_le_mul_of_nonneg_left (show t-r-m≤γ by linarith) hc
   have herror := mul_le_mul_of_nonneg_right hc' hγ
-  have hid : (1-2*δ*m-2*(δ*x)*(1-2*m)*(2/9))-plainExponent δ x t r =
-      δ*(2-8*x/9)*(t-r-m) := by unfold plainExponent; ring
-  have hid' : 1-2*δ*m-2*(δ*x)*(1-2*m)/(9/2+12*Δ) =
-      (1-2*δ*m-2*(δ*x)*(1-2*m)*(2/9)) +
-      2*(δ*x)*(1-2*m)*(2/9-1/(9/2+12*Δ)) := by ring
-  rw [hid']
-  linarith
+  grind [plainExponent]
 
-lemma inverse_zero_capacity {δ r ν : ℝ} (hδ : 0≤δ)
+include hδ in
+lemma inverse_zero_capacity    
     (hcap : (1-r)/2≤ν) : 1-δ*r≤1-δ+2*δ*ν := by
   have hh := mul_le_mul_of_nonneg_left hcap hδ
   nlinarith
 
-lemma plain_zero_capacity {δ m κ ν : ℝ} (hδ : 0≤δ) (hκ : 0<κ)
+include hδ in
+lemma plain_zero_capacity     (hκ : 0<κ)
     (hκ' : κ≤1) (hν : 0≤ν) (hcap : (1-2*m)/(6*κ)≤ν) :
     1-2*δ*m≤1-δ+6*δ*ν := by
   have hh := (div_le_iff₀ (show 0<6*κ by positivity)).mp hcap
@@ -147,7 +143,9 @@ lemma plain_zero_capacity {δ m κ ν : ℝ} (hδ : 0≤δ) (hκ : 0<κ)
   have hh' := mul_le_mul_of_nonneg_left hm hδ
   nlinarith
 
-lemma long_count_bound {δ r t γ : ℝ} (hδ : δ≤5/6) (_hγ : 0≤γ)
+end
+
+lemma long_count_bound  {δ r t γ}  (hδ : δ≤5/6) (_hγ : 0≤γ)
     (hr : r≤t+γ) :
     1-5/6+(5/6-δ)*r≤longExponent δ t+(5/6-δ)*γ := by
   have hh := mul_le_mul_of_nonneg_left hr (show 0≤5/6-δ by linarith)

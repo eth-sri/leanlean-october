@@ -6,15 +6,20 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGramApplied
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 
-lemma compensated_gram_ratio (q X Y L : ℝ) (hq : 0<q) (hX : 0<X) (hY : 0<Y) (hL : 0<L) :
+section
+variable (q X Y L Z δ : ℝ) (hq : 0<q) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+
+include hq hX hY in
+lemma compensated_gram_ratio         (hL : 0<L) :
     (Y/L)^2/(q*(X/L)*(Y/L))=Y/(q*X) := by
   field_simp
 
-lemma compensated_gram_scale_bound (q X Y L δ : ℝ)
-    (hq : 0<q) (hX : 0<X) (hY : 0<Y) (hL : 1≤L) (hδ : 0≤δ)
+include hq hX hY in
+lemma compensated_gram_scale_bound  
+          (hL : 1≤L) (hδ : 0≤δ)
     (hP : q*X≤Y) (htail : L*Y≤q^2*X^2) :
     (q*(X/L)*(Y/L)/(Y/L))*
       (1+((Y/L)^2/(q*(X/L)*(Y/L)))^(1/6:ℝ)+
@@ -38,20 +43,24 @@ lemma compensated_gram_scale_bound (q X Y L δ : ℝ)
         (by positivity) (by positivity)
     _=_ := by ring
 
-lemma source_gram_power (Z δ : ℝ) (hZ : 0<Z) :
+include hZ in
+lemma source_gram_power     :
     Z^(17/48:ℝ)*(Z^(1/8:ℝ))^(1/6:ℝ)*(Z^(23/48:ℝ))^δ=
       Z^(3/8+(23/48)*δ:ℝ) := by
   rw [←Real.rpow_mul hZ.le,←Real.rpow_mul hZ.le,←Real.rpow_add hZ,←Real.rpow_add hZ]
   congr 1
   ring
 
-lemma source_gram_sqrt_power (Z δ : ℝ) (hZ : 0<Z) :
+include hZ in
+lemma source_gram_sqrt_power     :
     Real.sqrt (Z^(3/8+(23/48)*δ:ℝ))=Z^(3/16+(23/96)*δ:ℝ) := by
   rw [Real.sqrt_eq_rpow,←Real.rpow_mul hZ.le]
   congr 1
   ring
 
-end SevenEighths.ProbePhysical
 end
+
+end SevenEighths.ProbePhysical
+
 
 end OAI

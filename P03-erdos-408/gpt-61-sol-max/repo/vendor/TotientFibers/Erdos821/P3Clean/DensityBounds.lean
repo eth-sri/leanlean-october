@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.FreshDensityFactor
 
@@ -15,7 +16,7 @@ namespace Erdos821.P3Clean
 open Erdos821.Blueprint.Graph
 
 theorem bigFreshMass_bounds {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J ell m)
-    (mu : (g : P.BigGroup) → P.Prime g.val → ℝ) (eps : ℝ) (he : 0 ≤ eps)
+    (mu : (g : P.BigGroup) → P.Prime g.val → ℝ)  eps  (he : 0 ≤ eps)
     (hmu : ∀ g p, 1 ≤ mu g p ∧ mu g p ≤ 1 + eps) (a : P.BigLabels (J + ell)) :
     1 ≤ bigFreshMass ν mu a ∧
       bigFreshMass ν mu a ≤ (1 + eps) ^ ((J + ell) * Fintype.card P.BigGroup) := by
@@ -50,20 +51,24 @@ theorem bigFreshMass_bounds {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J 
       (fun g _ => Finset.prod_nonneg (fun i _ => zero_le_one.trans (hlo g i))) (fun g _ => hg g)
     _ = _ := by simp only [Finset.prod_const, Finset.card_univ, ← pow_mul]
 
-theorem freshDensity_bounds (F : FixedData) (P : PrimeGroups) (n : ℕ) {J m : ℕ}
-    (ν : Pattern P J F.ell m) (eps : ℝ) (he : 0 ≤ eps)
-    (hmu : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
-      1 ≤ (baselinePrime F n p.val)⁻¹ ∧ (baselinePrime F n p.val)⁻¹ ≤ 1 + eps)
-    (a : P.BigLabels (J + F.ell)) :
+section
+variable (F : FixedData) (P : PrimeGroups) (n : ℕ) {J m : ℕ} (ν : Pattern P J F.ell m) (eps : ℝ) (he : 0 ≤ eps) (hmu : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
+      1 ≤ (baselinePrime F n p.val)⁻¹ ∧ (baselinePrime F n p.val)⁻¹ ≤ 1 + eps) (a b : P.BigLabels (J + F.ell))
+
+include he hmu in
+theorem freshDensity_bounds        
+         
+     
+      :
     1 ≤ freshDensity F n ν a ∧
       freshDensity F n ν a ≤ (1 + eps) ^ ((J + F.ell) * Fintype.card P.BigGroup) :=
   bigFreshMass_bounds ν (fun _ p => (baselinePrime F n p.val)⁻¹) eps he hmu a
 
-theorem freshSqrtFactor_bounds (F : FixedData) (P : PrimeGroups) (n : ℕ) {J m : ℕ}
-    (ν : Pattern P J F.ell m) (eps : ℝ) (he : 0 ≤ eps)
-    (hmu : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
-      1 ≤ (baselinePrime F n p.val)⁻¹ ∧ (baselinePrime F n p.val)⁻¹ ≤ 1 + eps)
-    (a b : P.BigLabels (J + F.ell)) :
+include he hmu in
+theorem freshSqrtFactor_bounds        
+         
+     
+      :
     1 ≤ Real.sqrt (freshDensity F n ν a) * Real.sqrt (freshDensity F n ν b) ∧
       Real.sqrt (freshDensity F n ν a) * Real.sqrt (freshDensity F n ν b) ≤
         (1 + eps) ^ ((J + F.ell) * Fintype.card P.BigGroup) := by
@@ -77,9 +82,10 @@ theorem freshSqrtFactor_bounds (F : FixedData) (P : PrimeGroups) (n : ℕ) {J m 
   calc
     _ ≤ Real.sqrt ((1 + eps) ^ ((J + F.ell) * Fintype.card P.BigGroup)) *
         Real.sqrt ((1 + eps) ^ ((J + F.ell) * Fintype.card P.BigGroup)) :=
-      mul_le_mul (Real.sqrt_le_sqrt ha1) (Real.sqrt_le_sqrt hb1)
-        (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+      (by gcongr <;> first | assumption | positivity | linarith)
     _ = _ := Real.mul_self_sqrt (pow_nonneg (by linarith) _)
+
+end
 
 
 end Erdos821.P3Clean

@@ -43,25 +43,28 @@ abbrev Batch.Bin (B : Batch M H Label Slot U a ε tstar T allowance i) :=
   BinLabel B.slots ((2*a-1)/2) B.binWidth
 
 def Batch.fiberRows (B : Batch M H Label Slot U a ε tstar T allowance i)
-    (bin : B.Bin) (j : Label) (J K : Fin (dyadicLength U)) : Finset FreeRow :=
+    (bin : B.Bin) (j : Label) (J K : Fin (dyadicLength U))  :=
   fiber B.rows B.family U a ε tstar T allowance i B.witness B.slots B.binWidth B.binWidth_pos B.widths
     (physical M H (fun u : FreeRow => u.val) B.profile B.upper B.widths B.external U) bin j J K
 
 def Batch.fiber (B : Batch M H Label Slot U a ε tstar T allowance i)
-    (bin : B.Bin) (j : Label) (J K : Fin (dyadicLength U))
-    (hne : (B.fiberRows bin j J K).Nonempty) : Fiber M H Label Slot U a ε tstar T allowance i :=
+    (bin ) (j ) (J K )
+    (hne : (B.fiberRows bin j J K).Nonempty)  :=
   toFiber M H B.rows B.family U a ε tstar T allowance i B.witness B.row_norm B.data B.reverse
     B.row_coeff B.slots B.profile B.upper B.widths B.external B.mesh B.binWidth B.mesh_nonneg
     B.binWidth_pos B.widths_pos B.widths_mesh B.supply bin j J K hne
 
-theorem Batch.card_eq_sum_fibers [Fintype Label] (B : Batch M H Label Slot U a ε tstar T allowance i) :
+section
+variable [Fintype Label] (B : Batch M H Label Slot U a ε tstar T allowance i)
+
+theorem Batch.card_eq_sum_fibers     :
     B.rows.card=∑ bin : B.Bin, ∑ j : Label, ∑ J : Fin (dyadicLength U), ∑ K : Fin (dyadicLength U),
       (B.fiberRows bin j J K).card :=
   HeckeDetectorFiberPartition.card_eq_sum_fibers B.rows B.family U a ε tstar T allowance i B.witness
     B.slots B.binWidth B.binWidth_pos B.widths
     (physical M H (fun u : FreeRow => u.val) B.profile B.upper B.widths B.external U)
 
-theorem Batch.card_bound [Fintype Label] (B : Batch M H Label Slot U a ε tstar T allowance i)
+theorem Batch.card_bound    
     (C : ℝ) (exponent : B.Bin→ℝ) (hC : 0≤C) (hU : 0<U)
     (hfiber : ∀ bin j J K,∀ hne : (B.fiberRows bin j J K).Nonempty,
       ((B.fiber bin j J K hne).rows.card : ℝ)≤C*U^(exponent bin)) :
@@ -92,6 +95,8 @@ theorem Batch.card_bound [Fintype Label] (B : Batch M H Label Slot U a ε tstar 
       simp_rw [←mul_assoc]
       rw [←Finset.mul_sum]
       ring
+
+end
 
 end SevenEighths.HeckeDetectorBatch
 

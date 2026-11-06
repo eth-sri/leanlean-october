@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerIntegral
 
 namespace OAI
 
-noncomputable section
+section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
@@ -18,7 +18,7 @@ open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite Inve
 open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
 open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
 local notation "Eis"=>ActualEisensteinCubic.O
-local instance initialEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -31,7 +31,7 @@ theorem actual_physical_block_bound
     (Φ:𝓢(ℝ,ℂ))(V:Fin 6→ℝ→ℂ)(M:Fin 6→ℝ)
     (hV:∀i,ContDiff ℝ ∞ (V i))(hS:∀i,HasCompactSupport (V i))
     (hM:∀i,0≤M i)(hbox:∀i y,V i y≠0→|y|≤M i)
-    (J N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
+     J N  U π (hU:0≤U)(hπ:0<π) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
       (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))

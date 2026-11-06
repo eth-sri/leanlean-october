@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.OwnedLeafProofs
 public import Erdos821.S34.AtomBound
@@ -26,8 +27,7 @@ theorem product_atom_bound_proof : Erdos821.Blueprint.Analytic.product_atom_boun
   have hcap : ∀ g, k g ≤ m := fun g => (hk.2 g).1
   have hinactive : ∀ g, g ∉ G.big → k g = 0 := by
     intro g hg
-    have hsmall : g ∈ G.small := by simpa only [PrimeGroups.big, Finset.mem_sdiff,
-      Finset.mem_univ, true_and, not_not] using hg
+    have hsmall : g ∈ G.small := by grind [PrimeGroups.big]
     exact (hk.2 g).2 hsmall
   have hc := Erdos821.S34Core.product_atom_group_count
     (Erdos821.S34Core.coreGroups G) k m G.big P.vmin hv hmass hcap hinactive n

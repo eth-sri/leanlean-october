@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.CubeSupportNorm
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -75,6 +75,6 @@ theorem full_marked_first_zero_bound (ε : ℝ) (hε : 0<ε) :
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

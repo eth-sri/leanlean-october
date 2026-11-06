@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.FiniteConductor
 
@@ -25,22 +26,22 @@ def pullback (e : R ≃+* S) (χ : MulChar S ℂ) : MulChar R ℂ where
     apply hx
     simpa using h.map e.symm.toMonoidHom
 
-@[simp] theorem pullback_apply (e : R ≃+* S) (χ : MulChar S ℂ) (x : R) :
+section
+variable (e : R ≃+* S) (χ ψ : MulChar S ℂ)
+
+
+@[simp] theorem pullback_apply     (x : R) :
     pullback e χ x = χ (e x) := rfl
 
-@[simp] theorem pullback_symm (e : R ≃+* S) (χ : MulChar S ℂ) :
+@[simp] theorem pullback_symm     :
     pullback e.symm (pullback e χ) = χ := by
   apply MulChar.ext'
   intro x
   simp
 
-@[simp] theorem pullback_mul (e : R ≃+* S) (χ ψ : MulChar S ℂ) :
-    pullback e (χ * ψ) = pullback e χ * pullback e ψ := by
-  apply MulChar.ext'
-  intro x
-  rfl
 
-theorem primitive_pullback (e : R ≃+* S) (χ : MulChar S ℂ)
+
+theorem primitive_pullback    
     (hχ : IsPrimitiveOnIdeals χ) : IsPrimitiveOnIdeals (pullback e χ) := by
   intro I hI
   let J : Ideal S := I.comap e.symm.toRingHom
@@ -52,16 +53,14 @@ theorem primitive_pullback (e : R ≃+* S) (χ : MulChar S ℂ)
     have he : e x ∈ J := by
       change e.symm (e x) ∈ I
       simpa using hx
-    rw [hJ] at he
-    have hx0 : x = 0 := e.injective (by simpa using he)
-    exact hx0
+    simp_all
   obtain ⟨u, hu, hχu⟩ := hχ J hJ
   let v : Rˣ := Units.map e.symm.toMonoidHom u
   refine ⟨v, ?_, ?_⟩
-  · change e.symm (u : S) - 1 ∈ I
-    change e.symm ((u : S) - 1) ∈ I at hu
-    simpa only [map_sub, map_one] using hu
+  · aesop
   · simpa [v, pullback] using hχu
+
+end
 
 end
 

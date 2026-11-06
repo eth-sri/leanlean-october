@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveSource
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfilePhysical
@@ -118,9 +119,7 @@ theorem original_refined_cell_physical_budget (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m�
     Benergy hB Z M r ell V delta aa₁ aa₂ bb rr tq hh eta hZ hscale hLe
     (by simpa [refinedChildEnergy,rawScales] using hleft)
     (by simpa [refinedChildEnergy,rawScales] using hright)
-  unfold refinedCellRows
-  unfold SevenEighths.InverseMomentFirstOriginalProfile.coefficient SevenEighths.InverseMomentFirstOriginalProfile.weight
-  simpa [source,rawScales] using hb
+  assumption
 
 end SevenEighths.InverseMomentFirstOriginalProfile
 end

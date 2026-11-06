@@ -11,10 +11,10 @@ open scoped BigOperators
 namespace SevenEighths.HeckeReciprocalBound
 open HeckeFamily
 
-def bound (σ : ℝ) : ℝ :=
+def bound (σ : ℝ)  :=
   ∑' I : Ideal O, ‖CubicEisenstein.fullIdealWeight (σ : ℂ) I‖
 
-theorem normWeight_le_of_re_ge {σ : ℝ} {s : ℂ} (hs : σ ≤ s.re) (I : Ideal O) :
+theorem normWeight_le_of_re_ge {σ : ℝ}  {s}  (hs : σ ≤ s.re)  I  :
     ‖CubicEisenstein.fullIdealWeight s I‖ ≤
       ‖CubicEisenstein.fullIdealWeight (σ : ℂ) I‖ := by
   by_cases hI : I = 0
@@ -30,8 +30,8 @@ theorem normWeight_le_of_re_ge {σ : ℝ} {s : ℂ} (hs : σ ≤ s.re) (I : Idea
     simp only [Complex.neg_re, Complex.ofReal_re]
     exact Real.rpow_le_rpow_of_exponent_le hN (neg_le_neg hs)
 
-theorem reciprocal_norm_le (χ : Character) {σ : ℝ} (hσ : 1 < σ)
-    {s : ℂ} (hs : σ ≤ s.re) : ‖HeckeReciprocal.reciprocal χ s‖ ≤ bound σ := by
+theorem reciprocal_norm_le  χ   {σ}  (hσ : 1 < σ)
+     {s}  (hs : σ ≤ s.re) : ‖HeckeReciprocal.reciprocal χ s‖ ≤ bound σ := by
   have hs1 : 1 < s.re := hσ.trans_le hs
   have hs0 : s ≠ 0 := by intro h; norm_num [h] at hs1
   have hsp : s ≠ 1 := by intro h; norm_num [h] at hs1

@@ -12,18 +12,18 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
 
-def actualLongCoefficient {ι:Type*}(p:ι→O)(Ψ:O→*ℂ)(m:O)(H₀ B ξ:ℝ)
-    (I:Ideal O)(v:ι→₀ℕ) : ℂ :=
+
+def actualLongCoefficient {ι}(p:ι→ActualEisensteinCubic.O)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(H₀ B ξ:ℝ)
+    (I:Ideal ActualEisensteinCubic.O)(v:ι→₀ℕ)  :=
   separatedCubeCoefficient
     (fun u:ι→₀ℕ=>reopenedCubeCoefficient H₀ (rowTwist Ψ m (idealGenerator I) 1)
       (Ideal.span {primeProduct p u.support u}))
     (fun u:ι→₀ℕ=>(Ideal.absNorm (Ideal.span {primeProduct p u.support u}):ℝ)) B ξ v
 
 theorem actualLongCoefficient_uniform (eps:ℝ)(heps:0<eps) :
-    ∃C:ℝ,0<C ∧ ∀{ι:Type*}(p:ι→O)(_hp:∀i,p i≠0)(Ψ:O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)
-      (m:O)(H₀ B ξ:ℝ)(I:Ideal O)(v:ι→₀ℕ),0<B→
+    ∃C:ℝ,0<C ∧ ∀{ι:Type*}(p:ι→ActualEisensteinCubic.O)(_hp:∀i,p i≠0)(Ψ:ActualEisensteinCubic.O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)
+      (m:ActualEisensteinCubic.O)(H₀ B ξ:ℝ)(I:Ideal ActualEisensteinCubic.O)(v:ι→₀ℕ),0<B→
       B≤‖ConcreteTraceCRT.eisEmbedding (primeProduct p v.support v)‖^2→
       ‖ConcreteTraceCRT.eisEmbedding (primeProduct p v.support v)‖^2≤Real.exp 1*B→
       ‖actualLongCoefficient p Ψ m H₀ B ξ I v‖≤C*(Real.exp 1*B)^eps := by
@@ -48,9 +48,9 @@ theorem actualLongCoefficient_uniform (eps:ℝ)(heps:0<eps) :
   convert hs using 1 ; ring
 
 theorem actualLongCoefficient_complete
-    (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
-    (Ψ:O→*ℂ)(m:O)(H₀ B ξ:ℝ)(I:Ideal O)
-    (v:primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→₀ℕ) :
+     S  D (hbad:fixedBadPrimes⊆S)
+     Ψ  m  H₀ B ξ  I 
+     v  :
     actualLongCoefficient (poolPrimary (InitialMeanSquare.outsideSquarefreeIdeals S D))
       Ψ (m*excludedGenerator S) H₀ B ξ I v=
     separatedCubeCoefficient

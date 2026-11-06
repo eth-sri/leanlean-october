@@ -27,15 +27,18 @@ instance pendingCycleFintype (P : PrimeGroups) (B : ℕ) [Fintype (CutPendingSta
 
 def regularCycleKernel (A : Model F P J m) (n B : ℕ) [Fintype (CutPendingState P B)]
     (theta : ℝ) (forward : Bool) (d : SmallLabels P J)
-    (a b : P.BigLabels (J + F.ell)) (r : PendingCycle P B) : ℂ :=
+    (a b : P.BigLabels (J + F.ell)) (r : PendingCycle P B)  :=
   ∑ v : Fin A.patternCount, ∑ u : P.BigAux J,
     if (A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u ∧
         r = cycleDisplacement A B (A.pattern v) forward d a u then
       bigCleanCoefficient A n theta forward (A.pattern v) d a b u else 0
 
-theorem regularCycleKernel_fibre (A : Model F P J m) (n B : ℕ)
-    [Fintype (CutPendingState P B)] (theta : ℝ) (forward : Bool) (d : SmallLabels P J)
-    (psi : AddChar (PendingCycle P B) ℂ) (a b : P.BigLabels (J + F.ell)) :
+section
+variable (A : Model F P J m) (n B : ℕ) [Fintype (CutPendingState P B)] (theta : ℝ) (forward : Bool) (d : SmallLabels P J)
+
+theorem regularCycleKernel_fibre    
+           
+     psi  (a b : P.BigLabels (J + F.ell)) :
     fourierFibre (regularCycleKernel A n B theta forward d) psi a b =
       ∑ v : Fin A.patternCount, ∑ u : P.BigAux J,
         if (A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u then
@@ -56,8 +59,8 @@ theorem regularCycleKernel_fibre (A : Model F P J m) (n B : ℕ)
           r = cycleDisplacement A B (A.pattern v) forward d a u) := by tauto
     simp only [ite_eq_right h, ite_eq_right (hf _), zero_mul, Finset.sum_const_zero]
 
-theorem cutoffConditionedKernel_cycle (A : Model F P J m) (n B : ℕ)
-    [Fintype (CutPendingState P B)] (theta : ℝ) (forward : Bool) (d : SmallLabels P J)
+theorem cutoffConditionedKernel_cycle    
+           
     (a b : BetweenState P (J + F.ell) B) :
     cutoffConditionedKernel A n theta forward d a b =
       ∑ r : PendingCycle P B,
@@ -100,6 +103,8 @@ theorem cutoffConditionedKernel_cycle (A : Model F P J m) (n B : ℕ)
       unfold bigCleanGate
       tauto
     simp only [ite_eq_right hg, ite_eq_right (hf _), ite_self, Finset.sum_const_zero]
+
+end
 
 
 end Erdos821.P3Clean

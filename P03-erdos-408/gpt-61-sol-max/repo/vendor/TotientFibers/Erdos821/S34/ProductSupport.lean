@@ -9,10 +9,13 @@ set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint.Analytic
 
-theorem tuple_product_pos (G : PrimeGroups) (k : Fin G.size → ℕ) (z : Tuple G k) :
+section
+variable (G : PrimeGroups) (k : Fin G.size → ℕ)
+
+theorem tuple_product_pos      z  :
     0 < product G k z := by
   apply Finset.prod_pos
   intro g _
@@ -20,7 +23,7 @@ theorem tuple_product_pos (G : PrimeGroups) (k : Fin G.size → ℕ) (z : Tuple 
   intro j _
   exact (G.prime g (z g j).val (z g j).property).pos
 
-theorem log_tuple_product (G : PrimeGroups) (k : Fin G.size → ℕ) (z : Tuple G k) :
+theorem log_tuple_product      z  :
     Real.log (product G k z) = ∑ g, ∑ j, Real.log (z g j).val := by
   simp only [product, Nat.cast_prod]
   rw [Real.log_prod]
@@ -34,7 +37,7 @@ theorem log_tuple_product (G : PrimeGroups) (k : Fin G.size → ℕ) (z : Tuple 
     intro j _
     exact_mod_cast (G.prime g (z g j).val (z g j).property).ne_zero
 
-theorem slot_count_bound (G : PrimeGroups) (k : Fin G.size → ℕ) (m : ℕ)
+theorem slot_count_bound      m 
     (hk : bigSlots G k m) : (∑ g, k g) ≤ m * G.big.card := by
   calc
     _ = ∑ g ∈ G.big, k g := by
@@ -46,9 +49,11 @@ theorem slot_count_bound (G : PrimeGroups) (k : Fin G.size → ℕ) (m : ℕ)
     _ ≤ ∑ _g ∈ G.big, m := Finset.sum_le_sum fun g _ => (hk.2 g).1
     _ = _ := by simp [mul_comm]
 
-theorem log_product_bounds (P : Geometry) (x : ℝ) (G : PrimeGroups)
-    (hL : 0 ≤ L x) (hG : Admissible P x G) (k : Fin G.size → ℕ) (m : ℕ)
-    (hk : bigSlots G k m) (z : Tuple G k) :
+end
+
+theorem log_product_bounds (P : Geometry)  x   G 
+    (hL : 0 ≤ L x) (hG : Admissible P x G)  k   m 
+    (hk : bigSlots G k m)  z  :
     L x ^ P.c ≤ Real.log (product G k z) ∧
       Real.log (product G k z) ≤ (m : ℝ) * P.C₀ * T x * L x ^ P.d := by
   have hlabel (g : Fin G.size) (j : Fin (k g)) :
@@ -93,5 +98,5 @@ theorem log_product_bounds (P : Geometry) (x : ℝ) (G : PrimeGroups)
         nlinarith [mul_le_mul_of_nonneg_left hb hm,
           mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb hm) hd]
 
-end
+
 end Erdos821.S34Core

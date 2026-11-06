@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.LogarithmicTargets
 
@@ -10,86 +11,86 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+ 
+ 
 
-def spatialTriple (x y v : ℝ) : SpatialCoordinates := ![x,y,v]
-@[simp] lemma spatialTriple_zero (x y v : ℝ) : spatialTriple x y v 0=x := rfl
-@[simp] lemma spatialTriple_one (x y v : ℝ) : spatialTriple x y v 1=y := rfl
-@[simp] lemma spatialTriple_two (x y v : ℝ) : spatialTriple x y v 2=v := rfl
+
+
+
+
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem sum_subtype_powerset_products (S : Finset (Ideal O)) (f : Ideal O → ℂ) :
@@ -97,19 +98,13 @@ theorem sum_subtype_powerset_products (S : Finset (Ideal O)) (f : Ideal O → �
       ∑ E ∈ S.powerset, f (∏ P ∈ E, P) := by
   classical
   have hS : (Finset.univ : Finset S).image Subtype.val = S := by
-    ext P
-    simp only [Finset.mem_image, Finset.mem_univ, true_and, Subtype.exists, exists_prop,
-      exists_eq_right]
+    simp_all
   conv_rhs => rw [← hS, Finset.powerset_image]
   rw [Finset.sum_image]
-  · apply Finset.sum_congr rfl
-    intro E hE
-    congr 1
-    rw [Finset.prod_image]
-    exact fun _ _ _ _ h => Subtype.val_injective h
+  · aesop
   · exact fun _ _ _ _ h => Finset.image_injective Subtype.val_injective h
 
-theorem primePool_singleton_eq_primeSupport (G : Ideal O) :
+theorem primePool_singleton_eq_primeSupport  G  :
     primePool {G} = primeSupport G := by
   simp [primePool, primeSupport]
 
@@ -119,8 +114,8 @@ theorem primePool_subset_sum_eq_divisors (G : Ideal O) (hG : Squarefree G) (f : 
   rw [sum_subtype_powerset_products, primePool_singleton_eq_primeSupport]
   exact (squarefree_divisor_sum_eq_support G hG f).symm
 
-theorem middleTruncation_eq_ideal_divisors (G : Ideal O) (hG : Squarefree G)
-    (W : ℝ → ℂ) (X Y Z lengthScale : ℝ) :
+theorem middleTruncation_eq_ideal_divisors  G  (hG : Squarefree G)
+     W   X Y Z lengthScale  :
     middleTruncation (fun P : primePool {G} => P.val) Finset.univ W X Y Z lengthScale =
       (X : ℂ) * ∑ d ∈ idealDivisors G,
         if Y < (Ideal.absNorm d : ℝ) ∧ (Ideal.absNorm d : ℝ) ≤ Z then
@@ -148,8 +143,8 @@ theorem middleTruncation_eq_ideal_divisors (G : Ideal O) (hG : Squarefree G)
     by_cases hZ : (Ideal.absNorm (∏ P ∈ E, P.val) : ℝ) ≤ Z <;> simp only [hY, hZ, and_self,
       false_and, and_false, ite_true, ite_false]
 
-theorem middleTruncation_eq_ideal_frequencies (G : Ideal O) (hG : Squarefree G)
-    (W : ℝ → ℂ) (X Y Z lengthScale : ℝ) :
+theorem middleTruncation_eq_ideal_frequencies  G  (hG : Squarefree G)
+     W   X Y Z lengthScale  :
     middleTruncation (fun P : primePool {G} => P.val) Finset.univ W X Y Z lengthScale =
       ∑ h ∈ rowNormDisk ⌊lengthScale⌋₊, ∑ d ∈ idealDivisors G,
         if Y < (Ideal.absNorm d : ℝ) ∧ (Ideal.absNorm d : ℝ) ≤ Z then
@@ -173,8 +168,8 @@ theorem middleTruncation_eq_ideal_frequencies (G : Ideal O) (hG : Squarefree G)
     ring
   · simp only [hc, ite_false, mul_zero, Finset.sum_const_zero]
 
-theorem principalTruncation_eq_ideal_divisors (G : Ideal O) (hG : Squarefree G)
-    (W : ℝ → ℂ) (X Z : ℝ) :
+theorem principalTruncation_eq_ideal_divisors  G  (hG : Squarefree G)
+     W   X Z  :
     principalTruncation (fun P : primePool {G} => P.val) Finset.univ W X Z =
       (X : ℂ) * paperRadialFourier W 0 *
         (∏ P : primePool {G}, (1 - (1 : ℂ) / Ideal.absNorm P.val)) -
@@ -194,7 +189,7 @@ theorem principalTruncation_eq_ideal_divisors (G : Ideal O) (hG : Squarefree G)
 
 end
 
-open ActualEisensteinCubic
+ 
 
 theorem finite_middle_triangle
     {m n p H D : Type*} [Fintype m] [Fintype n] [Fintype p] [Fintype H] [Fintype D]
@@ -231,15 +226,14 @@ theorem finite_nonzero_frequency_sum_le (H : Finset O) (hH : ∀ h ∈ H, h ≠ 
   let e : H → {h : O // h ≠ 0} := fun h => ⟨h.val, hH h.val h.property⟩
   have he : Function.Injective e := by
     intro h k hh
-    apply Subtype.ext
-    exact congrArg (fun x : {h : O // h ≠ 0} => x.val) hh
+    aesop
   have hsH : Summable (fun h : H => f h.val) :=
     summable_of_hasFiniteSupport (Set.toFinite _)
   have hb := hsH.tsum_le_tsum_of_inj e he (fun h _ => hf h.val) (fun _ => le_rfl) hs
   rw [tsum_fintype, Finset.sum_coe_sort H f] at hb
   exact hb
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem sum_two_finite_subtypes {α β A : Type*} [AddCommMonoid A]
@@ -253,7 +247,7 @@ variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
 
 def originalTruncatedMiddle (W : 𝓢(ℝ, ℂ))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ) : ℂ :=
+    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ)  :=
   ∑ i, ∑ j, ∑ k, originalTerm rows left right a b 1 1 i j k *
     middleTruncation (fun P : primePool {left j * right k} => P.val) Finset.univ W
       (Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ))) (Y i) (Z i) lengthScale
@@ -262,9 +256,9 @@ omit [Fintype m] [Fintype n] [Fintype p] [DecidableEq m] [DecidableEq n] [Decida
 theorem original_truncated_pair_expansion
     (W : 𝓢(ℝ, ℂ)) (K : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ)
+    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (Y Z : m → ℝ)  lengthScale 
     (hleft : ∀ j, Admissible (left j)) (hright : ∀ k, Admissible (right k))
-    (hK : ∀ j k d, d ∣ left j * right k → d ∈ K) (i : m) (j : n) (k : p) :
+    (hK : ∀ j k d, d ∣ left j * right k → d ∈ K)  i   j   k  :
     originalTerm rows left right a b 1 1 i j k *
       middleTruncation (fun P : primePool {left j * right k} => P.val) Finset.univ W
         (Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ))) (Y i) (Z i) lengthScale =
@@ -302,7 +296,7 @@ omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 theorem originalTruncatedMiddle_le_product_divisors
     (W : 𝓢(ℝ, ℂ)) (K : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ)
+     a   b   M   Y Z   lengthScale 
     (hleft : ∀ j, Admissible (left j)) (hright : ∀ k, Admissible (right k))
     (hK : ∀ j k d, d ∣ left j * right k → d ∈ K) :
     ‖originalTruncatedMiddle W rows left right a b M Y Z lengthScale‖ ≤
@@ -324,7 +318,7 @@ theorem originalTruncatedMiddle_le_product_divisors
     intro j hj
     apply Finset.sum_congr rfl
     intro k hk
-    exact original_truncated_pair_expansion W K rows left right a b M Y Z lengthScale hleft hright hK i j k
+    solve_by_elim [original_truncated_pair_expansion]
   rw [he]
   apply (finite_middle_triangle (fun d : K => (UniqueFactorizationMonoid.moebius d.val : ℂ))
     (fun d => QuadraticInitialBound.norm_ideal_moebius_le_one d.val) A).trans_eq
@@ -354,7 +348,7 @@ theorem HasSieveExponent.original_truncated_middle {α : ℝ} (hexp : HasSieveEx
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
     (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
-    (a : n → ℂ) (b : p → ℂ) (W : 𝓢(ℝ, ℂ)) (Y Z : m → ℝ) (lengthScale : ℝ)
+     a   b   W   Y Z   lengthScale 
     (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hZ : ∀ i, Z i ≤ U * Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ))) :
@@ -384,7 +378,7 @@ theorem HasSieveExponent.original_truncated_middle {α : ℝ} (hexp : HasSieveEx
         (fun j => (hleft j).1) (fun k => (hright k).1) hK
     _ ≤ ∑' h : {h : O // h ≠ 0}, originalProductDivisorMiddleAt W K rows left right a b M P h.val :=
       finite_nonzero_frequency_sum_le (rowNormDisk ⌊lengthScale⌋₊) hH _
-        (fun h => originalProductDivisorMiddleAt_nonneg W K rows left right a b M P h) hb.1
+        (originalProductDivisorMiddleAt_nonneg W K rows left right a b M P) hb.1
     _ ≤ _ := hb.2
 
 end CanonicalQuadraticSieve

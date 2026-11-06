@@ -13,28 +13,28 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGau
 open InverseSecondFibers IdealMobiusDivisorSum
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_ne_zero)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
-def actualSecondChild {Jo Jn : ℕ} (u v : Eisˣ) (x : MarkedSecondSource ι Jo Jn) : SecondChild :=
+def actualSecondChild {Jo Jn } (u v : ActualEisensteinCubic.Oˣ) (x : MarkedSecondSource ι Jo Jn)  :=
   secondChild (originalSecondTuple p u v (markedSecondOriginal p x))
 
-def actualSecondTriples {Jo Jn : ℕ} (u v : Eisˣ)
-    (source : Finset (MarkedSecondSource ι Jo Jn)) : Finset OuterTriple :=
+def actualSecondTriples {Jo Jn } (u v : ActualEisensteinCubic.Oˣ)
+    (source : Finset (MarkedSecondSource ι Jo Jn))  :=
   source.image (fun x => (actualSecondChild p u v x).1)
 
 theorem actualSecondChild_nonzero (hp : ∀ i, p i ≠ 0)
-    {Jo Jn : ℕ} (u v : Eisˣ) (x : MarkedSecondSource ι Jo Jn) (ht : x.quotient ≠ 0) :
+    {Jo Jn : ℕ}  u v  (x : MarkedSecondSource ι Jo Jn) (ht : x.quotient ≠ 0) :
     (actualSecondChild p u v x).2.1 ≠ 0 ∧
     (actualSecondChild p u v x).1.q0 ≠ 0 ∧
     (actualSecondChild p u v x).1.quotient ≠ 0 ∧
     (actualSecondChild p u v x).1.residual ≠ 0 := by
   have hj : Ideal.span {(jLabel p x.cube.support
-      (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)} ≠ (0 : Ideal Eis) :=
+      (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)} ≠ (0 : Ideal ActualEisensteinCubic.O) :=
     Ideal.span_singleton_eq_bot.not.mpr (primeProduct_ne_zero p hp _ _)
   have hb : Ideal.span {(b0Label p x.cube.support
-      (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)} ≠ (0 : Ideal Eis) :=
+      (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)} ≠ (0 : Ideal ActualEisensteinCubic.O) :=
     Ideal.span_singleton_eq_bot.not.mpr (primeProduct_ne_zero p hp _ _)
   change _ ≠ 0 ∧ _ ≠ 0 ∧ x.quotient ≠ 0 ∧ _ ≠ 0
   refine ⟨?_,hb,ht,sourceIdeal_ne_zero p hp _⟩
@@ -52,14 +52,19 @@ structure ActualSecondSourceConditions {Jo Jn : ℕ}
   new_support : ∀ x ∈ source, ∀ i, x.newAssigned i ∈ x.second.sourceCommon∪x.second.overlap
   quotient_nonzero : ∀ x ∈ source, x.quotient ≠ 0
 
-theorem actual_second_fiber_weight (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hs : ActualSecondSourceConditions p source) (c : SecondChild)
-    (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K)
-    (w : MarkedSecondSource ι Jo Jn → ℝ) (hw : ∀ x ∈ source, w x ≤ 1) :
+section
+variable (hp : ∀ i, p i ≠ 0) (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1) (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} (u v : ActualEisensteinCubic.Oˣ) (source : Finset (MarkedSecondSource ι Jo Jn)) (hs : ActualSecondSourceConditions p source) (c : SecondChild) (labels : Finset (Ideal ActualEisensteinCubic.O)) (rows : Finset ActualEisensteinCubic.O) (hchild : ∀ x ∈ source, (actualSecondChild p u v x).2.1 ∈ labels ∧
+      (actualSecondChild p u v x).2.2 ∈ rows) (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K) (w : MarkedSecondSource ι Jo Jn → ℝ) (hw : ∀ x ∈ source, w x ≤ 1)
+
+include hp hpr hcop hinj hs ho hn hw in
+theorem actual_second_fiber_weight  
+     
+     
+     
+         
+       
+         
+        :
     ∑ x ∈ source with actualSecondChild p u v x = c, w x ≤ secondDivisorWeight K c := by
   by_cases he : (source.filter (fun x => actualSecondChild p u v x = c)).Nonempty
   · obtain ⟨x,hx⟩ := he
@@ -81,17 +86,17 @@ theorem actual_second_fiber_weight (hp : ∀ i, p i ≠ 0)
     unfold secondDivisorWeight
     positivity
 
-theorem actual_second_energy_projection (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hs : ActualSecondSourceConditions p source)
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis)
-    (hchild : ∀ x ∈ source, (actualSecondChild p u v x).2.1 ∈ labels ∧
-      (actualSecondChild p u v x).2.2 ∈ rows)
-    (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K)
-    (w : MarkedSecondSource ι Jo Jn → ℝ) (hw : ∀ x ∈ source, w x ≤ 1) (F : SecondChild → ℂ) :
+include hp hpr hcop hinj hs hchild ho hn hw in
+theorem actual_second_energy_projection  
+     
+     
+     
+         
+     
+       
+     
+         
+         F  :
     ∑ x ∈ source, w x * ‖F (actualSecondChild p u v x)‖^2 ≤
       ∑ γ ∈ actualSecondTriples p u v source,
         tripleDivisorWeight K γ * secondLabelEnergy K labels rows F γ := by
@@ -112,18 +117,18 @@ theorem actual_second_energy_projection (hp : ∀ i, p i ≠ 0)
   intro k hk
   ring
 
-theorem actual_second_weighted_count (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hs : ActualSecondSourceConditions p source)
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis)
-    (hchild : ∀ x ∈ source, (actualSecondChild p u v x).2.1 ∈ labels ∧
-      (actualSecondChild p u v x).2.2 ∈ rows)
-    (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K)
+include hp hpr hcop hinj hs hchild ho hn in
+theorem actual_second_weighted_count  
+     
+     
+     
+         
+     
+       
+     
+         
     (w : MarkedSecondSource ι Jo Jn → ℂ) (hw : ∀ x ∈ source, ‖w x‖ ≤ 1)
-    (F G : SecondChild → ℂ) :
+     F G  :
     ‖∑ x ∈ source, w x * F (actualSecondChild p u v x) * star (G (actualSecondChild p u v x))‖ ≤
       Real.sqrt (∑ γ ∈ actualSecondTriples p u v source,
         tripleDivisorWeight K γ * secondLabelEnergy K labels rows F γ) *
@@ -135,6 +140,8 @@ theorem actual_second_weighted_count (hp : ∀ i, p i ≠ 0)
     (Real.sqrt_le_sqrt (actual_second_energy_projection p hp hpr hcop hinj u v source hs labels rows hchild K ho hn (fun x => ‖w x‖) hw F))
     (Real.sqrt_le_sqrt (actual_second_energy_projection p hp hpr hcop hinj u v source hs labels rows hchild K ho hn (fun x => ‖w x‖) hw G))
     (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+
+end
 
 end
 end SevenEighths.InverseMoment

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.ResidueCharacter
 public import Mathlib.RingTheory.PrincipalIdealDomain
@@ -18,16 +19,16 @@ noncomputable section
 
 variable {A : Type*} [CommRing A]
 
-abbrev UnitInvariant (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ) : Prop :=
+abbrev UnitInvariant (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ)  :=
   ∀ u : Aˣ, χ (Ideal.Quotient.mk M u) = 1
 
 theorem residue_eq_of_associated (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ)
-    (hχ : UnitInvariant M χ) {a b : A} (hab : Associated a b) :
+    (hχ : UnitInvariant M χ)  {a b}  (hab : Associated a b) :
     χ (Ideal.Quotient.mk M a) = χ (Ideal.Quotient.mk M b) := by
   obtain ⟨u, rfl⟩ := hab
   rw [map_mul, map_mul, hχ u, mul_one]
 
-theorem isUnit_mk_iff_isCoprime (M : Ideal A) (a : A) :
+theorem isUnit_mk_iff_isCoprime  M   a  :
     IsUnit (Ideal.Quotient.mk M a) ↔ IsCoprime (Ideal.span ({a} : Set A)) M := by
   rw [Ideal.isCoprime_iff_sup_eq, Ideal.eq_top_iff_one, Ideal.mem_span_singleton_sup]
   constructor
@@ -45,22 +46,21 @@ theorem isUnit_mk_iff_isCoprime (M : Ideal A) (a : A) :
     simpa only [map_add, map_mul, Ideal.Quotient.eq_zero_iff_mem.mpr hc,
       add_zero, map_one] using h
 
-section Principal
+
 
 variable [IsDomain A] [IsPrincipalIdealRing A]
 
-def value (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ) (I : Ideal A) : ℂ :=
+def value (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ) (I : Ideal A)  :=
   if I = ⊥ then 0 else χ (Ideal.Quotient.mk M (generator I))
 
 omit [IsDomain A] in
-theorem value_bot (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ) : value M χ ⊥ = 0 := by
+theorem value_bot (M : Ideal A)  χ  : value M χ ⊥ = 0 := by
   simp only [value, ite_true]
 
 theorem value_span (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ) (hχ : UnitInvariant M χ)
     {a : A} (ha : a ≠ 0) :
     value M χ (Ideal.span ({a} : Set A)) = χ (Ideal.Quotient.mk M a) := by
-  have hI : Ideal.span ({a} : Set A) ≠ ⊥ := by
-    exact fun h => ha (Ideal.span_singleton_eq_bot.mp h)
+  have hI : Ideal.span ({a} : Set A) ≠ ⊥ := fun h => ha (Ideal.span_singleton_eq_bot.mp h)
   simp only [value, hI, ite_false]
   exact residue_eq_of_associated M χ hχ (associated_generator_span_self a)
 
@@ -93,54 +93,47 @@ def ofResidue (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ) (hχ : UnitInvariant M 
       _ = value M χ I * value M χ J := by
         rw [← hIa, ← hJb, value_span M χ hχ ha, value_span M χ hχ hb]
 
-@[simp] theorem ofResidue_bot (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ)
-    (hχ : UnitInvariant M χ) : ofResidue M χ hχ ⊥ = 0 := value_bot M χ
+@[simp] theorem ofResidue_bot (M : Ideal A)  χ 
+     hχ  : ofResidue M χ hχ ⊥ = 0 := value_bot M χ
 
-theorem ofResidue_span (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ) (hχ : UnitInvariant M χ)
-    {a : A} (ha : a ≠ 0) :
+theorem ofResidue_span  M   χ   hχ 
+     {a}  (ha : a ≠ 0) :
     ofResidue M χ hχ (Ideal.span ({a} : Set A)) = χ (Ideal.Quotient.mk M a) :=
   value_span M χ hχ ha
 
-theorem ofResidue_of_generator (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ)
-    (hχ : UnitInvariant M χ) {I : Ideal A} (hI : I ≠ ⊥) {a : A}
+theorem ofResidue_of_generator (M : Ideal A)  χ 
+     hχ   {I}  (hI : I ≠ ⊥)  {a} 
     (ha : Ideal.span ({a} : Set A) = I) :
     ofResidue M χ hχ I = χ (Ideal.Quotient.mk M a) := by
-  have ha0 : a ≠ 0 := by
-    intro h
-    apply hI
-    simpa only [h, Ideal.span_singleton_zero] using ha.symm
-  rw [← ha, ofResidue_span M χ hχ ha0]
+  aesop (add safe [ofResidue_span])
 
 omit [IsDomain A] [IsPrincipalIdealRing A] in
 theorem norm_residue_le_one (M : Ideal A) [Finite (A ⧸ M)]
-    (χ : MulChar (A ⧸ M) ℂ) (a : A ⧸ M) : ‖χ a‖ ≤ 1 := by
+    (χ : MulChar (A ⧸ M) ℂ)  a  : ‖χ a‖ ≤ 1 := by
   let : Fintype (A ⧸ M)ˣ := Fintype.ofFinite _
   by_cases ha : IsUnit a
   · obtain ⟨u, rfl⟩ := ha
     have h := Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
-    have hn : ‖χ (u : A ⧸ M)‖ = 1 := by
-      simpa only [MulChar.coe_equivToUnitHom] using h
-    exact hn.le
+    simp_all
   · rw [MulChar.map_nonunit χ ha, norm_zero]
     exact zero_le_one
 
-theorem norm_ofResidue_le_one (M : Ideal A) [Finite (A ⧸ M)]
-    (χ : MulChar (A ⧸ M) ℂ) (hχ : UnitInvariant M χ) (I : Ideal A) :
+theorem norm_ofResidue_le_one  M  [Finite (A ⧸ M)]
+     χ   hχ   I  :
     ‖ofResidue M χ hχ I‖ ≤ 1 := by
   by_cases hI : I = ⊥
   · rw [hI, ofResidue_bot, norm_zero]
     exact zero_le_one
   · change ‖value M χ I‖ ≤ 1
-    simp only [value, hI, ite_false]
-    exact norm_residue_le_one M χ _
+    simp_all [value, norm_residue_le_one]
 
 omit [IsDomain A] [IsPrincipalIdealRing A] in
 
-theorem one_unitInvariant (M : Ideal A) : UnitInvariant M (1 : MulChar (A ⧸ M) ℂ) := by
+theorem one_unitInvariant  M  : UnitInvariant M (1 : MulChar (A ⧸ M) ℂ) := by
   intro u
   exact MulChar.one_apply (u.isUnit.map (Ideal.Quotient.mk M))
 
-theorem ofResidue_one (M : Ideal A) (I : Ideal A) :
+theorem ofResidue_one (M : Ideal A)  I  :
     ofResidue M 1 (one_unitInvariant M) I =
       if I = ⊥ then 0 else if IsCoprime I M then 1 else 0 := by
   by_cases hI : I = ⊥
@@ -159,11 +152,11 @@ theorem ofResidue_one (M : Ideal A) (I : Ideal A) :
       exact MulChar.map_nonunit _ (fun h => hc (hu.mp h))
 
 theorem ofResidue_source_mask (M K : Ideal A)
-    (χ : MulChar (A ⧸ M) ℂ) (φ : MulChar (A ⧸ K) ℂ)
-    (hχ : UnitInvariant M χ) (hφ : UnitInvariant K φ)
+     χ   φ 
+     hχ   hφ 
     (hmask : ∀ a : A, χ (Ideal.Quotient.mk M a) =
       if IsUnit (Ideal.Quotient.mk M a) then φ (Ideal.Quotient.mk K a) else 0)
-    (I : Ideal A) :
+     I  :
     ofResidue M χ hχ I = if IsCoprime I M then ofResidue K φ hφ I else 0 := by
   by_cases hI : I = ⊥
   · simp only [hI, ofResidue_bot, ite_self]
@@ -176,22 +169,19 @@ theorem ofResidue_source_mask (M K : Ideal A)
     simpa only [hcop] using h
 
 theorem ofResidue_finite_deletion (M K : Ideal A)
-    (χ : MulChar (A ⧸ M) ℂ) (φ : MulChar (A ⧸ K) ℂ)
-    (hχ : UnitInvariant M χ) (hφ : UnitInvariant K φ)
+     χ   φ 
+     hχ   hφ 
     (hmask : ∀ a : A, χ (Ideal.Quotient.mk M a) =
       if IsUnit (Ideal.Quotient.mk M a) then φ (Ideal.Quotient.mk K a) else 0)
-    (I : Ideal A) :
+     I  :
     ofResidue M χ hχ I =
       ofResidue M 1 (one_unitInvariant M) I * ofResidue K φ hφ I := by
   rw [ofResidue_source_mask M K χ φ hχ hφ hmask, ofResidue_one]
-  by_cases hI : I = ⊥
-  · simp only [hI, ofResidue_bot, ite_true, ite_self, mul_zero]
-  · simp only [hI, ite_false]
-    split_ifs <;> simp only [one_mul, zero_mul]
+  grind [ofResidue_bot]
 
 theorem ofResidue_product (M N : Ideal A)
-    (χ : MulChar (A ⧸ M) ℂ) (ψ : MulChar (A ⧸ N) ℂ)
-    (hχ : UnitInvariant M χ) (hψ : UnitInvariant N ψ) (I : Ideal A) :
+     χ   ψ 
+     hχ   hψ   I  :
     ofResidue (M ⊓ N) (ResidueCharacter.product M N χ ψ)
         (ResidueCharacter.product_global_units M N χ ψ hχ hψ) I =
       ofResidue M χ hχ I * ofResidue N ψ hψ I := by
@@ -203,12 +193,12 @@ theorem ofResidue_product (M N : Ideal A)
     rw [← ofResidue_span M χ hχ hg, ← ofResidue_span N ψ hψ hg,
       Ideal.span_singleton_generator]
 
-section Primitive
+
 
 variable [Infinite A]
 
-theorem exists_primitive_associate (M : Ideal A) [Finite (A ⧸ M)]
-    (χ : MulChar (A ⧸ M) ℂ) (hχ : UnitInvariant M χ) :
+theorem exists_primitive_associate  M  [Finite (A ⧸ M)]
+     χ   hχ  :
     ∃ (K : Ideal A) (φ : MulChar (A ⧸ K) ℂ) (hφ : UnitInvariant K φ),
       M ≤ K ∧ K ≠ ⊥ ∧ IsPrimitiveOnIdeals φ ∧ K.absNorm ≤ M.absNorm ∧
       (∀ I : Ideal A, ofResidue M χ hχ I =
@@ -224,10 +214,10 @@ theorem exists_primitive_associate (M : Ideal A) [Finite (A ⧸ M)]
     ofResidue_source_mask M K χ φ hχ hφ hmask,
     ofResidue_finite_deletion M K χ φ hχ hφ hmask⟩
 
-theorem exists_primitive_product_associate (M N : Ideal A)
+theorem exists_primitive_product_associate  M N 
     [Finite (A ⧸ M)] [Finite (A ⧸ N)]
-    (χ : MulChar (A ⧸ M) ℂ) (ψ : MulChar (A ⧸ N) ℂ)
-    (hχ : UnitInvariant M χ) (hψ : UnitInvariant N ψ) :
+     χ   ψ 
+     hχ   hψ  :
     ∃ (K : Ideal A) (φ : MulChar (A ⧸ K) ℂ) (hφ : UnitInvariant K φ),
       M ⊓ N ≤ K ∧ K ≠ ⊥ ∧ IsPrimitiveOnIdeals φ ∧
       K.absNorm ≤ M.absNorm * N.absNorm ∧
@@ -245,9 +235,9 @@ theorem exists_primitive_product_associate (M N : Ideal A)
   · intro I
     exact (ofResidue_product M N χ ψ hχ hψ I).symm.trans (hdelete I)
 
-end Primitive
 
-end Principal
+
+
 
 end
 

@@ -10,15 +10,18 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped BigOperators Classical
 open LocalReflectionBrackets
-noncomputable section
+
 
 lemma scalar_inverse_pair (a b c d : ℂ) (ha : a ≠ 0) (hb : b ≠ 0) (hd : d ≠ 0)
     (h : c*a*b=d) : a⁻¹*b⁻¹ = d⁻¹*c := by
   field_simp
   linear_combination -h
 
-theorem marked_local_phase {F : Type*} [Field F] [Fintype F]
-    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (σ ε : Fˣ) (B z : F)
+section
+variable {F : Type*} [Field F] [Fintype F] (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (σ ε : Fˣ)
+
+theorem marked_local_phase      
+           B z 
     (he : B*z*(σ : F)*(ε : F) = -1) :
     ((χ⁻¹)^2) σ * phase χ ψ 0 ε =
       (-tau χ ψ 2)*(χ (-1))⁻¹^2*(χ B)^2*(χ z)^2 := by
@@ -34,8 +37,8 @@ theorem marked_local_phase {F : Type*} [Field F] [Fintype F]
     _ = (-tau χ ψ 2)*((χ σ)⁻¹*(χ ε)⁻¹)^2 := by ring
     _ = _ := by rw [hi]; ring
 
-theorem residual_local_phase {F : Type*} [Field F] [Fintype F]
-    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (σ ε : Fˣ) (A B z : F)
+theorem residual_local_phase      
+           A B z 
     (hsigma : (σ : F) = A*z) (he : B*z*(σ : F)*(ε : F) = -1) :
     ((χ⁻¹)^2) σ * phase χ ψ 1 ε =
       (tau χ (ψ.mulShift (-1)) 1*tau χ ψ 3)*
@@ -57,6 +60,8 @@ theorem residual_local_phase {F : Type*} [Field F] [Fintype F]
     _ = _ := by rw [hid,hi,hsig]; ring
 
 end
+
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

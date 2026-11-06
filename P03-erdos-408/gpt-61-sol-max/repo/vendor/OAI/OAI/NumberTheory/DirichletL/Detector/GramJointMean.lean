@@ -23,11 +23,15 @@ def jointRemainder (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
   jointFixed S hS σ C u a b r hr n₁ n₂*
     (idealRowHom n₁ J*star (idealRowHom n₂ (Ideal.span {r})))*globalExtension P hg c n₁ n₂ k
 
-theorem jointExtension_local_factor (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
-    (C k : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
-    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,goodLambda∉P i) (c : ι→ℕ)
-    (J p : Id) [p.IsMaximal] (hgp : goodLambda∉p) (e : ℕ) (he : e≠0)
-    (hfactor : Ideal.span {r}=J*p^e) (n₁ n₂ : O) :
+section
+variable (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing) (C k : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r})) (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,goodLambda∉P i) (c : ι→ℕ)
+include S hS σ C k u a b r hr P hg c
+
+theorem jointExtension_local_factor      
+             
+           
+    (J p : Id) [p.IsMaximal] (hgp : goodLambda∉p)  e  (he : e≠0)
+    (hfactor : Ideal.span {r}=J*p^e)  n₁ n₂  :
     jointExtension S hS σ C k u a b r hr P hg c n₁ n₂=
       (actualSextic p hgp^e) (Ideal.Quotient.mk p n₁)*
         jointRemainder S hS σ C k u a b r hr P hg c J n₁ n₂ := by
@@ -37,10 +41,10 @@ theorem jointExtension_local_factor (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) 
   rw [jointExtension,hf,jointRemainder]
   ring
 
-lemma jointRemainder_periodic_first (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
-    (C k : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
-    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,goodLambda∉P i) (c : ι→ℕ)
-    (J : Id) (n m y : O) (h : n-m∈jointFixedModulus S hS*(∏i,P i)*J) :
+lemma jointRemainder_periodic_first      
+             
+           
+     J   n m y  (h : n-m∈jointFixedModulus S hS*(∏i,P i)*J) :
     jointRemainder S hS σ C k u a b r hr P hg c J n y=
       jointRemainder S hS σ C k u a b r hr P hg c J m y := by
   have hf := jointFixed_periodic S hS σ C u a b r hr n y m y
@@ -50,14 +54,14 @@ lemma jointRemainder_periodic_first (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) 
     (Ideal.mul_le_right (Ideal.mul_le_left h)) (by simp) (by simp)
   simp only [jointRemainder,hf,hm,hg']
 
-theorem jointExtension_mean_zero (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
-    (C k : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
-    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,goodLambda∉P i) (c : ι→ℕ)
+theorem jointExtension_mean_zero      
+             
+           
     (J p : Id) [p.IsMaximal] (hgp : goodLambda∉p) (hchar : ringChar (O⧸p)≠2)
-    (e : ℕ) (he : ¬6∣e) (hfactor : Ideal.span {r}=J*p^e)
+     e  (he : ¬6∣e) (hfactor : Ideal.span {r}=J*p^e)
     (hcop : IsCoprime (jointFixedModulus S hS*(∏i,P i)*J) (p^e))
     [Fintype (O⧸jointFixedModulus S hS*(∏i,P i)*J)] [Fintype (O⧸p^e)]
-    [Fintype (O⧸(jointFixedModulus S hS*(∏i,P i)*J)*p^e)] (d : O) :
+    [Fintype (O⧸(jointFixedModulus S hS*(∏i,P i)*J)*p^e)]  d  :
     (∑x : O⧸(jointFixedModulus S hS*(∏i,P i)*J)*p^e,
       ∑y : O⧸(jointFixedModulus S hS*(∏i,P i)*J)*p^e,
         jointExtension S hS σ C k u a b r hr P hg c (d*x.out) (d*y.out))=0 := by
@@ -70,6 +74,8 @@ theorem jointExtension_mean_zero (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ
   apply jointRemainder_periodic_first
   rw [←mul_sub]
   exact (jointFixedModulus S hS*(∏i,P i)*J).mul_mem_left d hxz
+
+end
 
 end SevenEighths.ProbeGramCommon
 end

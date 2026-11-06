@@ -1,4 +1,8 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Phased.Ghost
+import Erdos408.OneSided.Moment.Phased.HighRank
 
 public import Erdos408.OneSided.Moment.Phased
 public import Erdos408.OneSided.Moment.Rank.Budget
@@ -44,15 +48,21 @@ section Norms
 
 variable {ι κ : Type*} [Fintype ι] [Fintype κ]
 
+section
+variable {μ : ι → ℝ}
+include μ
+
 /-- The weighted square norm is nonnegative. -/
-theorem wnormSq_nonneg {μ : ι → ℝ} (hμ : ∀ i, 0 ≤ μ i) (f : ι → ℂ) : 0 ≤ wnormSq μ f :=
+theorem wnormSq_nonneg   (hμ : ∀ i, 0 ≤ μ i) (f : ι → ℂ) : 0 ≤ wnormSq μ f :=
   sum_nonneg fun i _ => mul_nonneg (hμ i) (sq_nonneg _)
 
 /-- A norm bound depends only on the modulus of the constant. -/
-theorem NormLe.abs {μ : ι → ℝ} {ν : κ → ℝ} {T : (κ → ℂ) → ι → ℂ} {c : ℝ}
+theorem NormLe.abs   {ν : κ → ℝ} {T : (κ → ℂ) → ι → ℂ} {c : ℝ}
     (hT : NormLe μ ν T c) : NormLe μ ν T |c| := fun f => by
   rw [sq_abs]
   exact hT f
+
+end
 
 /-- A product `T_{b₁} ⋯ T_{b_m} S` of operators bounded on `ℓ²(μ)` is bounded by the product
 of their bounds. -/
@@ -85,8 +95,7 @@ theorem norm_sum_mul_le_of_normLe {μ : ι → ℝ} (hμ : ∀ i, 0 ≤ μ i)
   calc ‖∑ i, (μ i : ℂ) * g i * T f i‖ ≤ ∑ i, μ i * ‖f i‖ * ‖T f i‖ := by
         refine (norm_sum_le _ _).trans (sum_le_sum fun i _ => ?_)
         rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (hμ i)]
-        exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (hg i) (hμ i))
-          (norm_nonneg _)
+        bound
     _ ≤ c * wnormSq μ f := (sq_le_sq₀ hX (mul_nonneg hc hW)).1 hsq
 
 end Norms
@@ -110,7 +119,7 @@ theorem norm_sum_blockCoef_mul_le {α : Type*} [Fintype α] [DecidableEq α]
   calc ‖∑ 𝒞 ∈ S, (blockCoef 𝒞 : ℂ) * z 𝒞‖ ≤ ∑ 𝒞 ∈ S, |(blockCoef 𝒞 : ℝ)| * f (blockRank 𝒞) :=
         (norm_sum_le _ _).trans (sum_le_sum fun 𝒞 h𝒞 => by
           rw [norm_mul, Complex.norm_intCast]
-          exact mul_le_mul_of_nonneg_left (hz 𝒞 h𝒞) (abs_nonneg _))
+          bound)
     _ = ∑ r ∈ R, (∑ 𝒞 ∈ S with blockRank 𝒞 = r, |(blockCoef 𝒞 : ℝ)|) * f r := by
         rw [← sum_fiberwise_of_maps_to hR]
         refine sum_congr rfl fun r _ => ?_
@@ -126,7 +135,7 @@ section Chain
 variable (q A₀ x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) (B : ℕ)
 
 /-- With trivial phases, the phased edge is the edge. -/
-theorem phasedEdge_one (N : ℕ) :
+theorem phasedEdge_one  N  :
     phasedEdge q A₀ x d Y d₀ u v r B N (fun _ _ => 1) = chainEdge q A₀ x d Y d₀ u v r B N := by
   unfold phasedEdge chainEdge
   congr 1
@@ -136,7 +145,7 @@ theorem phasedEdge_one (N : ℕ) :
 open scoped Classical in
 /-- The history sum constrained by the block system `𝒞`:
 `∑_s μ(s) 𝐛(s) ∑_h w(s, h) ∏_{C ∈ 𝒞} [C realized] 𝐛(end(s, h))`. -/
-def blockSum (N : ℕ) (𝒞 : Finset (Finset (BirthAddr (K := K) x B N))) : ℂ :=
+def blockSum (N ) (𝒞 : Finset (Finset (BirthAddr (K := K) x B N)))  :=
   ∑ s, (chainMeasure q x d Y d₀ u v r B N s : ℂ) * chainInit x d Y d₀ u v r B s *
     ∑ h ∈ histories x d Y d₀ u v r B N, chainWeight q A₀ s h *
       (∏ C ∈ 𝒞, if BlockRealized (births s h) C then 1 else 0) *
@@ -145,7 +154,7 @@ def blockSum (N : ℕ) (𝒞 : Finset (Finset (BirthAddr (K := K) x B N))) : ℂ
 open scoped Classical in
 /-- **The rank expansion**: by the partition identity, the distinct-birth history sum is
 `∑_𝒞 c(𝒞) blockSum(𝒞)`. -/
-theorem distinctSum_eq_sum_blockSum (N : ℕ) :
+theorem distinctSum_eq_sum_blockSum  N  :
     distinctSum q A₀ x d Y d₀ u v r B N =
       ∑ 𝒞 ∈ blockSystems (BirthAddr (K := K) x B N),
         (blockCoef 𝒞 : ℂ) * blockSum q A₀ x d Y d₀ u v r B N 𝒞 := by
@@ -190,45 +199,23 @@ variable {q A₀ x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B : ℕ}
 /-! ### Band facts on the chain -/
 
 /-- The active labels of group `i` are primes of `𝒫_i`. -/
-theorem chainState_mem_band (s : ChainState x d Y d₀ u v r B) (i : Fin K)
-    (k : Fin (padCount x + 1)) : s.2.1.1 i k ∈ band x (d.a i) := by
+theorem chainState_mem_band (s : ChainState x d Y d₀ u v r B)  i 
+     k  : s.2.1.1 i k ∈ band x (d.a i) := by
   have h := s.2.1.2
   unfold lists at h
   exact Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 (mem_filter.1 h).1 i) k
 
 /-- The prime of a particle is a band prime. -/
-theorem particle_mem_bandPrimes (xp : Particle x d) : xp.1.1 ∈ bandPrimes x d := by
-  obtain ⟨p, hp, hxp⟩ := mem_biUnion.1 xp.2
-  obtain ⟨ℓ, -, hℓ⟩ := mem_image.1 hxp
-  rw [← hℓ]
-  exact hp
+alias particle_mem_bandPrimes := _root_.SharedProofs.fst_mem_bandPrimes
 
 /-- Every performed birth of a history is a band prime. -/
 theorem births_mem_bandPrimes {N : ℕ} (s : ChainState x d Y d₀ u v r B)
     {h : History x d Y d₀ u v r N} (hh : h ∈ histories x d Y d₀ u v r B N) :
-    ∀ a p, births s h a = some p → p ∈ bandPrimes x d := by
-  rintro (⟨i, k⟩ | ⟨j, i⟩ | ⟨j, k⟩) p hp
-  · -- an initial slot
-    obtain rfl : s.2.1.1 i k = p := Option.some_injective _ hp
-    exact mem_biUnion.2 ⟨i, mem_univ _, chainState_mem_band s i k⟩
-  · -- a fresh label
-    simp only [births] at hp
-    split_ifs at hp
-    obtain rfl := Option.some_injective _ hp
-    have he := Fintype.mem_piFinset.1 (mem_product.1 hh).2 j
-    simp only [edgeChoices, mem_product, Fintype.mem_piFinset] at he
-    exact mem_biUnion.2 ⟨i, mem_univ _, (he.2.2.2.1 i).1⟩
-  · -- a ghost birth
-    simp only [births] at hp
-    have hmem := List.mem_of_getElem? hp
-    rw [batchPrimes, Multiset.mem_sort, Multiset.mem_sum] at hmem
-    obtain ⟨xp, -, hxp⟩ := hmem
-    rw [Multiset.eq_of_mem_replicate hxp]
-    exact particle_mem_bandPrimes xp
+    ∀ a p, births s h a = some p → p ∈ bandPrimes x d := by solve_by_elim [_root_.SharedProofs.shared_births_mem_bandPrimes]
 
 /-- The chain measure is nonnegative when the birth weights of band primes are. -/
-theorem chainMeasure_nonneg {N : ℕ} (hν : ∀ p ∈ bandPrimes x d, 0 ≤ primeWeight q x d N p)
-    (s : ChainState x d Y d₀ u v r B) : 0 ≤ chainMeasure q x d Y d₀ u v r B N s :=
+theorem chainMeasure_nonneg  {N}  (hν : ∀ p ∈ bandPrimes x d, 0 ≤ primeWeight q x d N p)
+     s  : 0 ≤ chainMeasure q x d Y d₀ u v r B N s :=
   mul_nonneg
     (prod_nonneg fun i _ => prod_nonneg fun k _ =>
       hν _ (mem_biUnion.2 ⟨i, mem_univ _, chainState_mem_band s i k⟩))
@@ -237,7 +224,7 @@ theorem chainMeasure_nonneg {N : ℕ} (hν : ∀ p ∈ bandPrimes x d, 0 ≤ pri
 variable (q x d) in
 /-- For a prime `p ∈ 𝒫_i` with `V_i ≥ 1/2` and `p + 1 ≥ 2(N + 1)`: `b'_p ≥ 1/2`, so
 `0 ≤ ν(p) ≤ 2 / (V_i p)`. -/
-theorem primeWeight_le_two_div (hq : 0 ≤ q) {N p : ℕ} {i : Fin K}
+theorem primeWeight_le_two_div (hq : 0 ≤ q)  {N p}   {i} 
     (hp : p ∈ band x (d.a i))
     (hV : 1 / 2 ≤ harmonicMass (band x (d.a i))) (hpN : 2 * (N + 1) ≤ p + 1) :
     0 ≤ primeWeight q x d N p ∧
@@ -284,7 +271,7 @@ theorem primeWeight_le_two_div (hq : 0 ≤ q) {N p : ℕ} {i : Fin K}
 variable (q x d) in
 /-- Under the hypotheses of `primeWeight_le_two_div`, the birth weights of a band sum to at
 most `2`. -/
-theorem sum_band_primeWeight_le (hq : 0 ≤ q) {N : ℕ} {i : Fin K}
+theorem sum_band_primeWeight_le (hq : 0 ≤ q)  {N}   {i} 
     (hV : 1 / 2 ≤ harmonicMass (band x (d.a i)))
     (hpN : ∀ p ∈ band x (d.a i), 2 * (N + 1) ≤ p + 1) :
     ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 2 := by
@@ -294,12 +281,16 @@ theorem sum_band_primeWeight_le (hq : 0 ≤ q) {N : ℕ} {i : Fin K}
         sum_le_sum fun p hp => (primeWeight_le_two_div q x d hq hp hV (hpN p hp)).2
     _ = 2 / harmonicMass (band x (d.a i)) * harmonicMass (band x (d.a i)) := by
         rw [harmonicMass, mul_sum]
-        exact sum_congr rfl fun p _ => by rw [div_mul_div_comm, mul_one]
+        ring
     _ = 2 := div_mul_cancel₀ _ hV0.ne'
+
+section
+variable {N : ℕ}
+include N
 
 /-- **The boundary norm**: `‖𝐛‖² ≤ 2^{KM}`. On the support of `𝐛` the memory is empty, and
 the active lists carry at most `∏_{i,k} ∑_{p ∈ 𝒫_i} ν(p) ≤ 2^{KM}`. -/
-theorem wnormSq_chainInit_le {N : ℕ} (hν₀ : ∀ p ∈ bandPrimes x d, 0 ≤ primeWeight q x d N p)
+theorem wnormSq_chainInit_le   (hν₀ : ∀ p ∈ bandPrimes x d, 0 ≤ primeWeight q x d N p)
     (hν : ∀ i, ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 2) :
     wnormSq (chainMeasure q x d Y d₀ u v r B N) (chainInit x d Y d₀ u v r B) ≤
       2 ^ (K * (padCount x + 1)) := by
@@ -386,7 +377,7 @@ theorem wnormSq_chainInit_le {N : ℕ} (hν₀ : ∀ p ∈ bandPrimes x d, 0 ≤
 `𝒢^ψ₀ ℰ^ψ ⋯ ℰ^ψ 𝒢^ψ_N` has norm at most `C₀^{N+1} L^{-GN + (C_e + G)|U|}`. An edge with no
 address in `U` is the plain edge, of norm `L^{-G}`; an edge with `m ≥ 1` addresses in `U` has
 the crude norm `L^{C_e} ≤ L^{-G + (C_e + G) m}`. -/
-theorem normLe_phasedProduct {N : ℕ} {L G Ce C₀ : ℝ} (hL : 1 ≤ L) (hCe : 0 ≤ Ce + G)
+theorem normLe_phasedProduct   {L G Ce C₀ : ℝ} (hL : 1 ≤ L) (hCe : 0 ≤ Ce + G)
     (hC₀ : 0 ≤ C₀) (hμ : ∀ s, 0 ≤ chainMeasure q x d Y d₀ u v r B N s)
     (hG : ∀ (j : ℕ) (ψ : Fin B → Option ℕ → ℂ), (∀ k o, ‖ψ k o‖ ≤ 1) →
       NormLe (chainMeasure q x d Y d₀ u v r B N) (chainMeasure q x d Y d₀ u v r B N)
@@ -396,7 +387,7 @@ theorem normLe_phasedProduct {N : ℕ} {L G Ce C₀ : ℝ} (hL : 1 ≤ L) (hCe :
         (phasedEdge q A₀ x d Y d₀ u v r B N ψ) (L ^ Ce))
     (hE₀ : NormLe (chainMeasure q x d Y d₀ u v r B N) (chainMeasure q x d Y d₀ u v r B N)
       (chainEdge q A₀ x d Y d₀ u v r B N) (L ^ (-G)))
-    {U : Finset (BirthAddr (K := K) x B N)} {ψ : BirthAddr (K := K) x B N → Option ℕ → ℂ}
+    {U : Finset (BirthAddr (K := K) x B N)}  {ψ} 
     (hψ : ∀ a o, ‖ψ a o‖ ≤ 1) (hψU : ∀ a ∉ U, ψ a = fun _ => 1) :
     NormLe (chainMeasure q x d Y d₀ u v r B N) (chainMeasure q x d Y d₀ u v r B N)
       (phasedProduct q A₀ x d Y d₀ u v r B N ψ)
@@ -426,8 +417,7 @@ theorem normLe_phasedProduct {N : ℕ} {L G Ce C₀ : ℝ} (hL : 1 ≤ L) (hCe :
       have h1 : (1 : ℝ) ≤ m j := by exact_mod_cast Nat.one_le_iff_ne_zero.2 hj
       refine NormLe.mono hμ (Real.rpow_nonneg hL0.le _) ?_ (hE _ fun i o => hψ _ o)
       refine Real.rpow_le_rpow_of_exponent_le hL ?_
-      have : (Ce + G) * 1 ≤ (Ce + G) * m j := mul_le_mul_of_nonneg_left h1 hCe
-      linarith
+      nlinarith
   -- compose along the chain
   have hfold := normLe_foldr _ (fun j : Fin N => C₀ * L ^ (-G + (Ce + G) * m j))
     (hG N (fun k => ψ (.inr (.inr (Fin.last N, k)))) fun k o => hψ _ o) (List.finRange N) hstep
@@ -455,16 +445,20 @@ theorem normLe_phasedProduct {N : ℕ} {L G Ce C₀ : ℝ} (hL : 1 ≤ L) (hCe :
 /-! ### The block sums at low and high rank -/
 
 open scoped Classical in
+section
+variable (hμ : ∀ s, 0 ≤ chainMeasure q x d Y d₀ u v r B N s)
+include hμ
+
 /-- **Low rank**: if every phased product with phases of modulus at most one, trivial off the
 addresses of `𝒞`, has norm at most `c`, then `|blockSum(𝒞)| ≤ c ‖𝐛‖²`. The local phases
 write `blockSum(𝒞)` as an average of matrix elements `⟨𝐛^ψ_init, 𝒢^ψ₀ ℰ^ψ ⋯ 𝒢^ψ_N 𝐛⟩`, where
 the phases of the initial addresses multiply `𝐛`. -/
-theorem norm_blockSum_le {N : ℕ} (hμ : ∀ s, 0 ≤ chainMeasure q x d Y d₀ u v r B N s)
-    {𝒞 : Finset (Finset (BirthAddr (K := K) x B N))}
+theorem norm_blockSum_le    
+     {𝒞} 
     (h𝒞 : 𝒞 ∈ blockSystems (BirthAddr (K := K) x B N)) {P : ℕ} (hP : 0 < P)
     (hβ : ∀ s : ChainState x d Y d₀ u v r B, ∀ h ∈ histories x d Y d₀ u v r B N, ∀ a p,
       births s h a = some p → p < P)
-    {c : ℝ} (hc : 0 ≤ c)
+     {c}  (hc : 0 ≤ c)
     (hT : ∀ ψ : BirthAddr (K := K) x B N → Option ℕ → ℂ, (∀ a o, ‖ψ a o‖ ≤ 1) →
       (∀ a ∉ 𝒞.biUnion id, ψ a = fun _ => 1) →
       NormLe (chainMeasure q x d Y d₀ u v r B N) (chainMeasure q x d Y d₀ u v r B N)
@@ -546,8 +540,8 @@ theorem norm_blockSum_le {N : ℕ} (hμ : ∀ s, 0 ≤ chainMeasure q x d Y d₀
 
 open scoped Classical in
 /-- **High rank**: `blockSum(𝒞)` is at most the absolute constrained history sum. -/
-theorem norm_blockSum_le_realized {N : ℕ} (hμ : ∀ s, 0 ≤ chainMeasure q x d Y d₀ u v r B N s)
-    (𝒞 : Finset (Finset (BirthAddr (K := K) x B N))) :
+theorem norm_blockSum_le_realized    
+     𝒞  :
     ‖blockSum q A₀ x d Y d₀ u v r B N 𝒞‖ ≤
       ∑ s, chainMeasure q x d Y d₀ u v r B N s * ‖chainInit x d Y d₀ u v r B s‖ *
         ∑ h ∈ histories x d Y d₀ u v r B N,
@@ -565,10 +559,14 @@ theorem norm_blockSum_le_realized {N : ℕ} (hμ : ∀ s, 0 ≤ chainMeasure q x
   rw [norm_mul, norm_mul, hind]
   ring
 
+end
+
+end
+
 end Bounds
 
 /-- `N = 2R` is between `L^{1/2}` and `L^{1/2} + 2`. -/
-theorem two_mul_momentPower_mem {x : ℝ} (hL : 0 < Real.log x) :
+theorem two_mul_momentPower_mem  {x}  (hL : 0 < Real.log x) :
     Real.log x ^ (1 / 2 : ℝ) ≤ ((2 * momentPower x : ℕ) : ℝ) ∧
       ((2 * momentPower x : ℕ) : ℝ) ≤ Real.log x ^ (1 / 2 : ℝ) + 2 := by
   have hpos : 0 < Real.log x ^ (1 / 2 : ℝ) / 2 := by positivity

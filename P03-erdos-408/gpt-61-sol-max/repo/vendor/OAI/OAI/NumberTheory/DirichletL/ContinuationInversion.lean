@@ -43,7 +43,7 @@ theorem integrable_logProfile {f : ℝ → ℂ} {σ : ℝ}
     ring
   simpa only [Function.comp_apply, integrableOn_univ, heq] using hf
 
-theorem mellin_mellinInv_eq (σ : ℝ) (F : ℂ → ℂ) (f : ℝ → ℂ)
+theorem mellin_mellinInv_eq (σ : ℝ) (F : ℂ → ℂ)  f 
     (hf : MellinConvergent f (σ : ℂ))
     (hF : Integrable (fun y : ℝ => F ((σ : ℂ) + 2 * Real.pi * y * Complex.I)))
     (hcont : Continuous (fun y : ℝ => F ((σ : ℂ) + 2 * Real.pi * y * Complex.I)))
@@ -79,10 +79,10 @@ theorem mellin_mellinInv_eq (σ : ℝ) (F : ℂ → ℂ) (f : ℝ → ℂ)
   rw [hginv]
   exact hF.fourier_fourierInv_eq hfourier hcont.continuousAt
 
-def normalizedSignal (f : ℝ → ℂ) (c : ℝ) (x : ℝ) : ℂ :=
+def normalizedSignal (f : ℝ → ℂ) (c : ℝ) (x : ℝ)  :=
   (x : ℂ) ^ (-(c : ℂ)) • f x
 
-theorem mellin_normalizedSignal (f : ℝ → ℂ) (c : ℝ) (s : ℂ) :
+theorem mellin_normalizedSignal  f   c   s  :
     mellin (normalizedSignal f c) (-s) = signalMellin f c s := by
   unfold normalizedSignal signalMellin
   rw [mellin_cpow_smul]

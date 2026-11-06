@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.GaussianCompletedSlots
 public import OAI.NumberTheory.DirichletL.Detector.LowCompletion
@@ -7,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Detector.LowCompletion
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff Topology SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma gaussian_selected_tuple_sum {ι α : Type*} [Fintype ι]
     (W : ι→ℝ→ℂ) (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
@@ -21,7 +22,7 @@ lemma gaussian_selected_tuple_sum {ι α : Type*} [Fintype ι]
       gaussianAnnulus x*(∏i,W i (q i))*gaussianMellinProfile (R*x/(∏i,q i))=
         ∫t : ℝ,Vstar (CompletedHeight.normTwistedSource gaussianFixedWindow t) x*
           (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*gaussianJointDensity V hV R t)
-    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→O→*ℂ)
+    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→ActualEisensteinCubic.O→*ℂ)
     (Z : ℝ) (hZ : 0<Z) (j : ℕ) (q : α→ι→ℝ) (hq : ∀k∈F,∀i,0<q k i) :
     (∑k∈F,a k*(∏i,W i (q k i))*correctedCompletedT S (D k) (Ψ k)
       (gaussianDyadicProfile (Z*∏i,q k i) j) ((2:ℝ)^j))=
@@ -48,8 +49,7 @@ lemma gaussian_selected_tuple_sum {ι α : Type*} [Fintype ι]
         gaussianJointDensity V hV ((2:ℝ)^j/Z) t := by rw [hh]
     _ = _ := by
       rw [←integral_const_mul]
-      apply integral_congr_ae
-      exact Filter.Eventually.of_forall (fun t=>by dsimp only; ring)
+      field_simp <;> ring
 
 lemma gaussian_selected_scale {ι : Type*} [Fintype ι]
     (Z : ℝ) (P Q : ι→ℝ) (hP : ∀i,0<P i) :
@@ -58,12 +58,11 @@ lemma gaussian_selected_scale {ι : Type*} [Fintype ι]
   have hp : (∏i,P i)≠0 := ne_of_gt (Finset.prod_pos (fun i _=>hP i))
   field_simp
 
-lemma gaussianFixedWindow_twist_compact (t : ℝ) :
-    HasCompactSupport (CompletedHeight.normTwistedSource gaussianFixedWindow t) := by
-  exact gaussianFixedWindow_compact.mul_left
+lemma gaussianFixedWindow_twist_compact  t  :
+    HasCompactSupport (CompletedHeight.normTwistedSource gaussianFixedWindow t) := gaussianFixedWindow_compact.mul_left
 
-lemma correctedGaussian_dyadic_summable (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
-    (hΨ : ∀n,‖Ψ n‖≤1) (Z : ℝ) (hZ : 0<Z) :
+lemma correctedGaussian_dyadic_summable  S   D   Ψ 
+    (hΨ : ∀n,‖Ψ n‖≤1)  Z  (hZ : 0<Z) :
     Summable (fun j : ℕ=>correctedCompletedT S D Ψ (gaussianDyadicProfile Z j) ((2:ℝ)^j)) := by
   have hh := (annular_reassembly_summable
     (fun p : Id×Id=>correctedSummand S D Ψ gaussianCompletedProfile Z p.1 p.2)
@@ -78,7 +77,7 @@ theorem gaussian_selected_tuple_reassembly {ι α : Type*} [Fintype ι]
       gaussianAnnulus x*(∏i,W i (q i))*gaussianMellinProfile (R*x/(∏i,q i))=
         ∫t : ℝ,Vstar (CompletedHeight.normTwistedSource gaussianFixedWindow t) x*
           (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*gaussianJointDensity V hV R t)
-    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→O→*ℂ)
+    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→ActualEisensteinCubic.O→*ℂ)
     (hΨ : ∀k∈F,∀n,‖Ψ k n‖≤1) (Z : ℝ) (hZ : 0<Z)
     (q : α→ι→ℝ) (hq : ∀k∈F,∀i,0<q k i) :
     (∑k∈F,a k*(∏i,W i (q k i))*correctedCompletedT S (D k) (Ψ k)
@@ -102,10 +101,9 @@ theorem gaussian_selected_tuple_reassembly {ι α : Type*} [Fintype ι]
       (gaussianDyadicProfile (Z*∏i,q k i) j) ((2:ℝ)^j) := (Summable.tsum_finsetSum hd).symm
     _ = _ := by
       apply tsum_congr
-      intro j
-      exact gaussian_selected_tuple_sum W V hV hsep F a S D Ψ Z hZ j q hq
+      solve_by_elim [gaussian_selected_tuple_sum]
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

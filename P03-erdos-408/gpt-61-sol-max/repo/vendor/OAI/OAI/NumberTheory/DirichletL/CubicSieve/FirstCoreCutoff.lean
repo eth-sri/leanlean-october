@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Fourier.LogDensity
 public import OAI.NumberTheory.DirichletL.CubicSieve.TwistedProfiles
@@ -11,86 +12,81 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (columnLog primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
-
-end
-section
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
 
 section
-open ActualEisensteinCubic
+
+ 
+ 
+
+section
+ 
 open ConcreteTraceCRT (eisEmbedding)
 open FirstPassCubeLabels (columnLog jLabel b0Label)
 open JointLogSeparation (
@@ -99,7 +95,7 @@ open JointLogSeparation (
 end
 
 section
-open ActualEisensteinCubic
+ 
 open ConcreteTraceCRT (eisEmbedding)
 open FirstPassCubeLabels (columnLog jLabel b0Label)
 open JointLogSeparation (
@@ -107,7 +103,7 @@ open JointLogSeparation (
 
 end
 
-open ActualEisensteinCubic
+ 
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstPassCubeLabels (columnLog jLabel b0Label)
@@ -119,10 +115,10 @@ open JointLogSeparation (frequencyTwist frequencyTwist_apply)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
 
-def HasSieveExponent (α : ℝ) : Prop :=
+def HasSieveExponent (α : ℝ)  :=
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧ ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
     sieveNorm M N ≤ C * (M * N) ^ ε * (M + N ^ α)
 
@@ -136,7 +132,7 @@ theorem hasSieveExponent_two : HasSieveExponent 2 := by
     have h := Nat.ceil_lt_add_one (show 0 ≤ N by linarith)
     linarith
   have hc2 : (⌈N⌉₊ : ℝ) ^ 2 ≤ 4 * N ^ 2 := by nlinarith [Nat.cast_nonneg (α := ℝ) ⌈N⌉₊]
-  have hmn : 1 ≤ M * N := by nlinarith [mul_le_mul hM hN (by norm_num : (0 : ℝ) ≤ 1) (show 0 ≤ M by linarith)]
+  have hmn : 1 ≤ M * N := by nlinarith
   have he : 1 ≤ (M * N) ^ ε := Real.one_le_rpow hmn hε.le
   rw [Real.rpow_two]
   calc
@@ -145,7 +141,12 @@ theorem hasSieveExponent_two : HasSieveExponent 2 := by
     _ ≤ (4 * C) * (M * N) ^ ε * (M + N ^ 2) := by
       nlinarith [show 0 ≤ (4 * C) * (M + N ^ 2) by positivity]
 
-theorem HasSieveExponent.reverse {α : ℝ} (h : HasSieveExponent α) :
+section
+variable {α : ℝ} (h : HasSieveExponent α)
+
+
+include h in
+theorem HasSieveExponent.reverse     :
     ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧ ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
       sieveNorm M N ≤ C * (M * N) ^ ε * (N + M ^ α) := by
   intro ε hε
@@ -158,14 +159,14 @@ theorem HasSieveExponent.reverse {α : ℝ} (h : HasSieveExponent α) :
       mul_le_mul_of_nonneg_left (hb N M hN hM) (by norm_num)
     _ = _ := by rw [mul_comm N M]; ring
 
-theorem sqrt_divisor_sieve_pair_le (M N D₁ D₂ Q C : ℝ)
+theorem sqrt_divisor_sieve_pair_le  M N D₁ D₂ Q C 
     (hN : 0 ≤ N) (hD₁ : 1 ≤ D₁) (hD₂ : 1 ≤ D₂) (hQ : 0 ≤ Q) (hC : 0 ≤ C)
     (h₁ : sieveNorm M (N / D₁) ≤ C * (N / D₁ + Q))
     (h₂ : sieveNorm M (N / D₂) ≤ C * (N / D₂ + Q)) :
     Real.sqrt (D₁ * D₂ * sieveNorm M (N / D₁) * sieveNorm M (N / D₂)) ≤
       C * (N + Q * (D₁ * D₂)) := by
-  have hD₁0 : 0 < D₁ := by linarith
-  have hD₂0 : 0 < D₂ := by linarith
+  
+  
   have hD₁le : D₁ ≤ D₁ * D₂ := by nlinarith
   have hD₂le : D₂ ≤ D₁ * D₂ := by nlinarith
   apply Real.sqrt_le_iff.mpr
@@ -178,7 +179,8 @@ theorem sqrt_divisor_sieve_pair_le (M N D₁ D₂ Q C : ℝ)
     _ ≤ C ^ 2 * ((N + Q * (D₁ * D₂)) * (N + Q * (D₁ * D₂))) := by gcongr
     _ = _ := by ring
 
-theorem HasSieveExponent.divisor_pair {α : ℝ} (h : HasSieveExponent α) :
+include h in
+theorem HasSieveExponent.divisor_pair     :
     ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧ ∀ M N D₁ D₂ : ℝ,
       1 ≤ M → 1 ≤ N → 1 ≤ D₁ → 1 ≤ D₂ → D₁ ≤ N → D₂ ≤ N →
       Real.sqrt (D₁ * D₂ * sieveNorm M (N / D₁) * sieveNorm M (N / D₂)) ≤
@@ -200,23 +202,30 @@ theorem HasSieveExponent.divisor_pair {α : ℝ} (h : HasSieveExponent α) :
     (by linarith) hD₁ hD₂ (Real.rpow_nonneg (by linarith) _) (by positivity)
     (hbound D₁ hD₁ hD₁N) (hbound D₂ hD₂ hD₂N)
 
+end
+
 open IdealCoprimeSieveOperator DivisorBlockCauchy
 
 variable {n p : Type*} [Fintype n] [Fintype p]
 
-def divisorEnergyFactor (ε : ℝ) (hε : 0 < ε) (N : ℝ) (a : n → ℂ) (b : p → ℂ) : ℝ :=
+def divisorEnergyFactor (ε : ℝ) (hε : 0 < ε) (N : ℝ) (a : n → ℂ) (b : p → ℂ)  :=
   256 * (supportConstant ε hε * divisorConstant ε hε) * (N ^ ε) ^ 2 *
     Real.sqrt (∑ j, ‖a j‖ ^ 2) * Real.sqrt (∑ k, ‖b k‖ ^ 2)
 
-theorem divisorEnergyFactor_nonneg (ε : ℝ) (hε : 0 < ε) (N : ℝ) (a : n → ℂ) (b : p → ℂ) :
+section
+variable (ε : ℝ) (hε : 0 < ε) (D₁ D₂ M N : ℝ) (hD₁ : 0 ≤ D₁) (hD₂ : 0 ≤ D₂) (a : n → ℂ) (b : p → ℂ)
+
+
+theorem divisorEnergyFactor_nonneg           :
     0 ≤ divisorEnergyFactor ε hε N a b := by
   have hs := (supportConstant_pos ε hε).le
   have hd := (divisorConstant_pos ε hε).le
   unfold divisorEnergyFactor
   positivity
 
-theorem divisorBlockCost_sqrt (ε : ℝ) (hε : 0 < ε) (D₁ D₂ M N : ℝ)
-    (hD₁ : 0 ≤ D₁) (hD₂ : 0 ≤ D₂) (a : n → ℂ) (b : p → ℂ) :
+include hD₁ hD₂ in
+theorem divisorBlockCost_sqrt      
+            :
     Real.sqrt (divisorBlockCost ε hε D₁ D₂ M N a b) =
       divisorEnergyFactor ε hε N a b *
         Real.sqrt (D₁ * D₂ * sieveNorm M (N / D₁) * sieveNorm M (N / D₂)) := by
@@ -230,9 +239,9 @@ theorem divisorBlockCost_sqrt (ε : ℝ) (hε : 0 < ε) (D₁ D₂ M N : ℝ)
     positivity
   apply (sq_eq_sq₀ (Real.sqrt_nonneg _) (mul_nonneg (divisorEnergyFactor_nonneg ε hε N a b) (Real.sqrt_nonneg _))).mp
   rw [Real.sq_sqrt hc]
-  simp only [divisorEnergyFactor, mul_pow, Real.sq_sqrt ha, Real.sq_sqrt hb, Real.sq_sqrt hp]
-  unfold divisorBlockCost
-  ring
+  grind [divisorEnergyFactor, divisorBlockCost]
+
+end
 
 end CanonicalQuadraticSieve
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskExpansion
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
@@ -8,19 +9,19 @@ public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionBudget
 open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentReflectionMass
 open CenteredMomentReflectionDeletion UniqueFactorizationMonoid
-local notation "O"=>HeckeFamily.O
 
-lemma product_norm_ge_one (D:Finset (Ideal O))(hD:∀I∈D,Prime I):
+
+lemma product_norm_ge_one (D:Finset (Ideal HeckeFamily.O))(hD:∀I∈D,Prime I):
     (1:ℝ)≤(∏I∈D,I).absNorm:=by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr (subset_product_nonzero D hD))
 
-lemma weighted_inverse_sqrt (I:Ideal O)(hI:I≠0)(t:ℝ)(ht:t≤1/2):
+lemma weighted_inverse_sqrt  I (hI:I≠0)(t:ℝ)(ht:t≤1/2):
     weight I*(I.absNorm:ℝ)^t≤1:=by
   have hn:(1:ℝ)≤I.absNorm:=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
@@ -29,7 +30,7 @@ lemma weighted_inverse_sqrt (I:Ideal O)(hI:I≠0)(t:ℝ)(ht:t≤1/2):
   exact Real.rpow_le_one_of_one_le_of_nonpos hn (by linarith)
 
 lemma powerset_square_subpower (eps:ℝ)(heps:0<eps):
-    ∃C:ℝ,0<C ∧ ∀(R:Finset (Ideal O))(_hR:∀I∈R,Prime I),
+    ∃C:ℝ,0<C ∧ ∀(R:Finset (Ideal HeckeFamily.O))(_hR:∀I∈R,Prime I),
       (R.powerset.card:ℝ)^2≤C*((∏I∈R,I).absNorm:ℝ)^eps:=by
   obtain ⟨C,hC,hb⟩:=HeckeDeletionBounds.constant_pow_primeSupport_bound 4 eps (by norm_num) heps
   refine ⟨C,hC,?_⟩
@@ -46,9 +47,14 @@ lemma powerset_square_subpower (eps:ℝ)(heps:0<eps):
 
 variable {α:Type*}
 
-lemma weighted_uniform_term (R D₁ D₂:Finset (Ideal O))
-    (hR:∀I∈R,Prime I)(hD₁:D₁⊆R)(hD₂:D₂⊆R)(J:Finset α)
-    (b M:α→ℝ)(hM:∀i∈J,0≤M i)(t:ℝ)(ht:t≤1/2):
+section
+variable (R D₁ D₂ : Finset (Ideal HeckeFamily.O)) (hR : ∀I∈R,Prime I) (hD₁ : D₁⊆R) (hD₂ : D₂⊆R) (J F : Finset α) (b M : α→ℝ)
+
+
+include hR hD₁ hD₂ in
+lemma weighted_uniform_term  
+        
+     (hM:∀i∈J,0≤M i)(t:ℝ)(ht:t≤1/2):
     uniformMajorant R D₁ D₂ J b M*((∏I∈D₂,I).absNorm:ℝ)^t≤
       ∏i∈J,(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I):=by
   have hn₂:=subset_product_nonzero D₂ (fun I hi=>hR I (hD₂ hi))
@@ -69,8 +75,9 @@ lemma weighted_uniform_term (R D₁ D₂:Finset (Ideal O))
           zero_le_one).trans_eq (one_mul 1)) hprod
     _=_:=one_mul _
 
-lemma slot_majorant_mass (R:Finset (Ideal O))(hR:∀I∈R,Prime I)
-    (F:Finset α)(b M:α→ℝ)(hM:∀i∈F,0≤M i):
+include hR in
+lemma slot_majorant_mass   
+      (hM:∀i∈F,0≤M i):
     (∑J∈F.powerset,∏i∈J,(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I))≤
       (∏i∈F,max 1 (Real.sqrt (max 1 (b i))*M i))*(∏I∈R,localMass I)^F.card:=by
   rw [←Finset.prod_one_add]
@@ -89,9 +96,9 @@ lemma slot_majorant_mass (R:Finset (Ideal O))(hR:∀I∈R,Prime I)
           (Finset.sum_nonneg (fun I _=>weight_nonneg I)))) hp
     _=_:=by rw [Finset.prod_mul_distrib,Finset.prod_const]
 
-theorem weighted_uniform_mass_subpower (F:Finset α)(b M:α→ℝ)(hM:∀i∈F,0≤M i)
+theorem weighted_uniform_mass_subpower   (hM:∀i∈F,0≤M i)
     (eps:ℝ)(heps:0<eps):
-    ∃C:ℝ,0<C ∧ ∀(R:Finset (Ideal O))(_hR:∀I∈R,Prime I),
+    ∃C:ℝ,0<C ∧ ∀(R:Finset (Ideal HeckeFamily.O))(_hR:∀I∈R,Prime I),
       ∀t:ℝ,t≤1/2→
       (∑D₁∈R.powerset,∑D₂∈R.powerset,∑J∈F.powerset,
         uniformMajorant R D₁ D₂ J b M*((∏I∈D₂,I).absNorm:ℝ)^t)≤
@@ -121,10 +128,7 @@ theorem weighted_uniform_mass_subpower (F:Finset α)(b M:α→ℝ)(hM:∀i∈F,0
   let N:ℝ:=(∏I∈R,I).absNorm
   have hN:1≤N:=product_norm_ge_one R hR
   have hN0:0<N:=zero_lt_one.trans_le hN
-  have hmass:0≤∑J∈F.powerset,∏i∈J,(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I):=by
-    exact Finset.sum_nonneg (fun J hJ=>Finset.prod_nonneg (fun i hi=>mul_nonneg
-      (mul_nonneg (Real.sqrt_nonneg _) (hM i ((Finset.mem_powerset.mp hJ) hi)))
-      (Finset.sum_nonneg (fun I _=>weight_nonneg I))))
+  
   have hpow:(∏I∈R,localMass I)^F.card≤Ce^F.card*N^(eps/2):=by
     calc
       _≤(Ce*N^delta)^F.card:=pow_le_pow_left₀
@@ -148,8 +152,10 @@ theorem weighted_uniform_mass_subpower (F:Finset α)(b M:α→ℝ)(hM:∀i∈F,0
       congr 2
       ring
 
+end
+
 end SevenEighths.CenteredMomentEnergyReferenceDeletionBudget
 
-end
+
 
 end OAI

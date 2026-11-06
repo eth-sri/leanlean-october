@@ -27,7 +27,7 @@ namespace ResiduePath
 variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
   (Q : ResiduePath A n)
 
-def coefficientPrefactor (theta : ℝ) : ℂ :=
+def coefficientPrefactor (theta : ℝ)  :=
   (P.markMass (J + F.ell) : ℂ) * ∏ i : Fin n, Q.edgeCoefficient theta i
 
 theorem smallResidueExpression_eq_subtype :
@@ -40,11 +40,16 @@ theorem smallResidueExpression_eq_subtype :
   exact Finset.sum_subtype (Finset.univ.filter Q.SmallCompatible) (by simp)
     (fun y => ∏ i : Fin n, Q.smallEdgeDamping y i)
 
-theorem factorial_weight_separated (hGhost : SpanGhostWeightTask) (hMark : SpanMarkWeightTask)
-    (S : LifespanAssignment P n) (hQ : Q.Valid) (hS : Q.lifespanValid S)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (hV : ∀ g, P.V g ≠ 0) (y : P.SmallResidues) (hy : Q.SmallCompatible y)
-    (rho theta : ℝ) (hrho : rho ≠ 0) :
+section
+variable (hGhost : SpanGhostWeightTask) (hMark : SpanMarkWeightTask) (S : LifespanAssignment P n) (hSpan : SpanSumTask) (hRes : ResidueFactorizationTask) (hn : 0 < n) (hQ : Q.Valid) (hS : Q.lifespanValid S) (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k) (hV : ∀ g, P.V g ≠ 0) (y : P.SmallResidues) (hy : Q.SmallCompatible y) (hbp : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, baselinePrime F n p.val ≠ 0) (rho theta : ℝ) (hrho : rho ≠ 0)
+
+
+include hGhost hMark hQ hk hV hy hrho in
+theorem factorial_weight_separated    
+         
+     
+         
+        :
     ((∏ i : Fin (n + 1), ∏ g : P.BigGroup,
         (Q.ghostBirthPrimes S i g).card.factorial : ℕ) : ℂ) *
         (Q.reconstructedHistory S hS y).Weight rho theta =
@@ -59,12 +64,13 @@ theorem factorial_weight_separated (hGhost : SpanGhostWeightTask) (hMark : SpanM
       simp only [coefficientPrefactor, spanProduct, Complex.ofReal_mul]
       ac_rfl
 
-theorem memory_fiber_sum (hGhost : SpanGhostWeightTask) (hMark : SpanMarkWeightTask)
-    (hSpan : SpanSumTask) (hRes : ResidueFactorizationTask) (hn : 0 < n) (hQ : Q.Valid)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (hV : ∀ g, P.V g ≠ 0)
-    (hbp : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, baselinePrime F n p.val ≠ 0)
-    (rho theta : ℝ) (hrho : rho ≠ 0) :
+include hGhost hMark hSpan hRes hn hQ hk hV hbp hrho in
+theorem memory_fiber_sum    
+           
+     
+     
+     
+        :
     (bigBaseline F P n : ℂ) *
       (∑ S : {S : LifespanAssignment P n // Q.lifespanValid S},
         ∑ y : {y : P.SmallResidues // Q.SmallCompatible y},
@@ -105,30 +111,39 @@ theorem memory_fiber_sum (hGhost : SpanGhostWeightTask) (hMark : SpanMarkWeightT
       rw [← hR]
       rfl
 
+end
+
 end ResiduePath
 
-theorem residueExpression_eq_valid_sum {F : FixedData} {P : PrimeGroups} {J m : ℕ}
-    (A : Model F P J m) (n : ℕ) (theta : ℝ) :
+section
+variable {F : FixedData} {P : PrimeGroups} {J m : ℕ} (hStructure : HistoryStructureProofs) (hGhost : SpanGhostWeightTask) (hMark : SpanMarkWeightTask) (hSpan : SpanSumTask) (hRes : ResidueFactorizationTask) (A : Model F P J m) (n : ℕ) (hn : 0 < n) (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k) (hV : ∀ g, P.V g ≠ 0) (hbp : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, baselinePrime F n p.val ≠ 0) (rho theta : ℝ)
+
+
+theorem residueExpression_eq_valid_sum      
+          :
     residueExpression A n theta = ∑ Q : {Q : ResiduePath A n // Q.Valid}, Q.val.Weight theta := by
   unfold residueExpression
   rw [← Finset.sum_filter]
   exact Finset.sum_subtype (Finset.univ.filter (fun Q : ResiduePath A n => Q.Valid)) (by simp)
     (fun Q => Q.Weight theta)
 
-theorem memory_identity_of_tasks {F : FixedData} {P : PrimeGroups} {J m : ℕ}
-    (hStructure : HistoryStructureProofs) (hGhost : SpanGhostWeightTask) (hMark : SpanMarkWeightTask)
-    (hSpan : SpanSumTask) (hRes : ResidueFactorizationTask) (A : Model F P J m)
-    (n : ℕ) (hn : 0 < n)
-    (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (hV : ∀ g, P.V g ≠ 0)
-    (hbp : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, baselinePrime F n p.val ≠ 0)
-    (rho theta : ℝ) (hrho : rho ≠ 0) :
+include hStructure hGhost hMark hSpan hRes hn hk hV hbp in
+theorem memory_identity_of_tasks      
+         
+         
+       
+     
+     
+     
+      (hrho : rho ≠ 0) :
     residueExpression A n theta = (bigBaseline F P n : ℂ) * distinctMemoryExpression A n rho theta := by
   rw [residueExpression_eq_valid_sum,
     distinctMemoryExpression_eq_lifespans hStructure A n hn hk rho theta, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro Q _
   exact (Q.val.memory_fiber_sum hGhost hMark hSpan hRes hn Q.property hk hV hbp rho theta hrho).symm
+
+end
 
 
 end Erdos821.S2Core

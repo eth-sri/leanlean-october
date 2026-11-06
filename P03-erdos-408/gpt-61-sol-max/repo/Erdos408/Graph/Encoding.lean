@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Extraction.Allocation.Groups
 
 public import Erdos408.Hypotheses
 public import Erdos821.Blueprint.Ideal
@@ -63,20 +66,22 @@ abbrev primeGroups {n : ℕ} (P : Fin n → Finset ℕ) (big : Finset (Fin n))
   prime := hP
   disjoint := hd
 
+section
+variable {a b : ℝ} {p : ℕ}
+
 /-- The members of `primesIcc a b` are primes in `[a, b]`. -/
-lemma mem_primesIcc {a b : ℝ} {p : ℕ} (hp : p ∈ primesIcc a b) :
+lemma mem_primesIcc     (hp : p ∈ primesIcc a b) :
     p.Prime ∧ a ≤ p ∧ (p : ℝ) ≤ b := by
   rw [primesIcc, Finset.mem_filter, Finset.mem_Icc] at hp
   exact ⟨hp.2, Nat.ceil_le.mp hp.1.1, (Nat.le_floor_iff' hp.2.ne_zero).mp hp.1.2⟩
 
 /-- `p ∈ primesIcc a b` exactly when `p` is a prime in `[a, b]`. -/
-lemma mem_primesIcc_iff {a b : ℝ} {p : ℕ} :
-    p ∈ primesIcc a b ↔ p.Prime ∧ a ≤ p ∧ (p : ℝ) ≤ b := by
-  refine ⟨mem_primesIcc, fun ⟨hp, ha, hb⟩ => ?_⟩
-  rw [primesIcc, Finset.mem_filter, Finset.mem_Icc]
-  exact ⟨⟨Nat.ceil_le.mpr ha, (Nat.le_floor_iff' hp.ne_zero).mpr hb⟩, hp⟩
+lemma mem_primesIcc_iff     :
+    p ∈ primesIcc a b ↔ p.Prime ∧ a ≤ p ∧ (p : ℝ) ≤ b := by solve_by_elim [_root_.Erdos408.mem_primesIcc]
 
-section
+end
+
+
 
 variable {n : ℕ} {P : Fin n → Finset ℕ} {big : Finset (Fin n)}
   {hP : ∀ g p, p ∈ P g → p.Prime} {hd : ∀ g h, g ≠ h → Disjoint (P g) (P h)}
@@ -95,7 +100,7 @@ lemma bigGroups_primeGroups : (primeGroups P big hP hd).bigGroups = big := by
   simp
 
 /-- Upstream's group mass is the harmonic mass. -/
-lemma V_primeGroups (g : Fin n) : (primeGroups P big hP hd).V g = harmonicMass (P g) := by
+lemma V_primeGroups  g  : (primeGroups P big hP hd).V g = harmonicMass (P g) := by
   simp [PrimeGroups.V, harmonicMass]
 
 /-- The big groups of `primeGroups` are intervals of primes when each `P g`,
@@ -109,8 +114,8 @@ lemma intervalBigGroups_primeGroups (h : ∀ g ∈ big, ∃ y z : ℝ, P g = pri
 
 /-- `GraphTransference`'s premises on the groups make `primeGroups` admissible
 for `fixedData`. -/
-lemma admissible {q₀ c₀ C₀ vlo vhi : ℝ} {hq₀ : 0 < q₀} {hq₁ : q₀ < 1} {hc₀ : 0 < c₀}
-    {hvlo : 0 < vlo} {x : ℝ} (hT : 0 ≤ Real.log (Real.log x))
+lemma admissible  {q₀ c₀ C₀ vlo vhi}   {hq₀}   {hq₁}   {hc₀} 
+     {hvlo}   {x}  (hT : 0 ≤ Real.log (Real.log x))
     (hs₁ : c₀ * Real.log (Real.log x) ≤ (Finset.univ \ big).card)
     (hs₂ : ((Finset.univ \ big).card : ℝ) ≤ C₀ * Real.log (Real.log x))
     (hb₁ : c₀ * Real.log (Real.log x) ≤ big.card)
@@ -139,6 +144,6 @@ lemma admissible {q₀ c₀ C₀ vlo vhi : ℝ} {hq₀ : 0 < q₀} {hq₁ : q₀
     · rw [ite_eq_right (by simpa using hg)]
       exact (mem_primesIcc (hsmall g hg hp)).2
 
-end
+
 
 end Erdos408.Graph

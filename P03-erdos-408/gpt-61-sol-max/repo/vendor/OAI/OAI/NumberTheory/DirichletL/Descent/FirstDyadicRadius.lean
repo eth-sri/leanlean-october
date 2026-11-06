@@ -15,12 +15,12 @@ namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps
 open InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+
 variable {ι:Type*}[DecidableEq ι]
 
-def firstDyadicExponent (Z x:ℝ):ℝ:=dyadicExponent Z (dyadIndex x)
+def firstDyadicExponent (Z x:ℝ):=dyadicExponent Z (dyadIndex x)
 
-theorem first_dyadic_bounds (Z eta x:ℝ)(hZ:1<Z)(hbin:2≤Z^eta)(hx:1≤x):
+theorem first_dyadic_bounds  Z eta x (hZ:1<Z)(hbin:2≤Z^eta)(hx:1≤x):
     0≤firstDyadicExponent Z x ∧ Z^firstDyadicExponent Z x≤x ∧ x≤Z^(firstDyadicExponent Z x+eta):=by
   have hd:=dyadIndex_bounds x hx
   have he:=dyad_power_bounds Z eta x hZ hbin (dyadIndex x) ⟨hd.1,hd.2.le⟩
@@ -29,23 +29,23 @@ theorem first_dyadic_bounds (Z eta x:ℝ)(hZ:1<Z)(hbin:2≤Z^eta)(hx:1≤x):
   rw [Real.rpow_zero,firstDyadicExponent,rpow_dyadicExponent Z hZ]
   exact one_le_pow₀ (by norm_num : (1:ℝ)≤2)
 
-def firstDyadicRadius (p:ι→O)(b:CubeCoordinates ι)(C D:Finset ι)
-    (Z M r ell V eta tau:ℝ):ℝ:=
+def firstDyadicRadius (p:ι→ActualEisensteinCubic.O)(b:CubeCoordinates ι)(C D:Finset ι)
+    (Z M r ell V eta tau:ℝ):=
   Z^(firstPhysicalHeight M r ell V (firstDyadicExponent Z (primeProductNorm p D))
     (firstDyadicExponent Z (primeProductNorm p C))
     (firstDyadicExponent Z (‖eisEmbedding (jLabel p b.support
       (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit)‖^2))+12*eta+tau)
 
-def firstDyadicPhysicalCutoff (p:ι→O)(b:CubeCoordinates ι)(C:Finset ι)(I:Ideal O)
-    (Z M r ell V eta tau:ℝ)(D:Finset ι):Finset O:=
+def firstDyadicPhysicalCutoff (p:ι→ActualEisensteinCubic.O)(b:CubeCoordinates ι)(C:Finset ι)(I:Ideal ActualEisensteinCubic.O)
+    (Z M r ell V eta tau:ℝ)(D:Finset ι):=
   childFrequencyBall (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent b.leftBit b.rightBit I)
     (firstDyadicRadius p b C D Z M r ell V eta tau)
 
 theorem first_dyadic_radius_global_cap
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-    (b:CubeCoordinates ι)(C D:Finset ι)
+    (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+     b  C D 
     (hD:D⊆C∪cubePrincipalSupport b.support b.leftExponent b.rightExponent b.leftBit b.rightBit)
-    (Z M r ell V eta tau Fmax:ℝ)(hZ:1<Z)(hbin:2≤Z^eta)(hM:0≤M)
+     Z M r ell V eta tau Fmax (hZ:1<Z)(hbin:2≤Z^eta)(hM:0≤M)
     (hF:r+3*ell+V≤Fmax)
     (h₁:‖eisEmbedding (primeProduct p b.support b.leftExponent)‖^2≤Z^(ell+eta))
     (h₂:‖eisEmbedding (primeProduct p b.support b.rightExponent)‖^2≤Z^(ell+eta)):

@@ -10,14 +10,14 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
 universe u
-variable {a c : Eis} {mode : Bool}
+variable {a c : ActualEisensteinCubic.O} {mode : Bool}
 
 lemma family_center_eq_kernel {φ : Type u} [Fintype φ] (F : PrimeFamily φ)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (X QK QP : ℝ) (i : ℕ×ℕ×ℕ) :
+     X QK QP   i  :
     rawDyadicCenter (familyRawScale F s X QK QP) i=
       kernelCenter (actualKernelCoefficient F s i.1 X) QK QP ((2:ℝ)^i.2.2) ((2:ℝ)^i.2.1) := by
   unfold rawDyadicCenter familyRawScale kernelCenter actualKernelCoefficient fixedKernelCoefficient
@@ -26,7 +26,7 @@ lemma family_center_eq_kernel {φ : Type u} [Fintype φ] (F : PrimeFamily φ)
 
 theorem actual_retained_width_uniform
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (kK kP kn kb η : ℝ) (hkK : 0<kK) (hkP : 0<kP) (hkn : 0<kn) (hkb : 0<kb) (hη : 0<η) :
+     kK kP kn kb η  (hkK : 0<kK) (hkP : 0<kP) (hkn : 0<kn) (hkb : 0<kb) (hη : 0<η) :
     ∃ Z₀ : ℝ, 1<Z₀ ∧ ∀ {φ : Type u} [Fintype φ],
     ∀ (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3) (Z X QK QP δ : ℝ) (i : ℕ×ℕ×ℕ),
       Z₀≤Z → 0<X → 0<QK → 0<QP →
@@ -64,7 +64,7 @@ theorem actual_retained_width_uniform
   have hoff : 0≤4*Real.logb Z 3 := mul_nonneg (by norm_num) (Real.logb_nonneg hz (by norm_num))
   change _ = _+Real.logb Z Cf at he
   linarith
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

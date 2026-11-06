@@ -35,8 +35,12 @@ namespace Erdos408
 
 open Filter
 
+section
+variable (c Ch Cj κ : ℝ) (hc : 0 < c) (hκ : 1 < κ)
+include c Ch Cj κ hc hκ
+
 /-- E6: few successes have small proxy mass. -/
-theorem exists_failure_mass_le (c Ch Cj κ : ℝ) (hc : 0 < c) (hκ : 1 < κ) :
+theorem exists_failure_mass_le       :
     ∃ c₁ c₂ c₃ C : ℝ, 0 < c₁ ∧ c₁ ≤ 1 / 4 ∧ 0 < c₂ ∧ 0 < c₃ ∧ ∀ᶠ x : ℝ in atTop,
       ∀ j : ℕ, 2 ≤ j → j ≤ compositeCutoff Cj x →
         ∑ w ∈ Finset.Icc 1 ⌊κ * x⌋₊ with x / κ ≤ ((w : ℕ) : ℝ),
@@ -62,10 +66,12 @@ theorem exists_failure_mass_le (c Ch Cj κ : ℝ) (hc : 0 < c) (hκ : 1 < κ) :
     (exp_logLog (by linarith)) (Nat.cast_nonneg _) hX h1 h2
 
 /-- E8: the core has a fixed-log-power mean square. -/
-theorem exists_sum_proxyCore_sq_le (c Ch Cj κ : ℝ) (hc : 0 < c) (hκ : 1 < κ) :
+theorem exists_sum_proxyCore_sq_le       :
     ∃ C₅ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ j : ℕ, 2 ≤ j → j ≤ compositeCutoff Cj x →
       ∑ w ∈ Finset.Icc 1 ⌊κ * x⌋₊, proxyCore x (presieveExponent c Ch x) j (w + 1) ^ 2 ≤
         x * Real.log x ^ C₅ :=
   ⟨15, eventually_sum_proxyCore_sq_le hc Ch Cj κ hκ⟩
+
+end
 
 end Erdos408

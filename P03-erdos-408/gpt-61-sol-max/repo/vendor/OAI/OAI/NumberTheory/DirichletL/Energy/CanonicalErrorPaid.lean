@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalMainPaid
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalNestedReference
@@ -28,14 +29,14 @@ open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeT
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
 open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open   CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
+open   CenteredMomentEnergyAllocatedZero
 open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+ 
+ 
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
 open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
@@ -71,20 +72,20 @@ def restoreDivisorAllocation (s:Input α)(C:Ideal O)
     (alloc:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2))):
     Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices (restoreAllocation s C B).val⊕Fin 2)):=alloc
 
-lemma cast_child_energy (s t:Input α)(h:s=t)(C R:Ideal O)
-    (B:actualAllocations s.pools C)(τ:Character)(v:ℝ)(D:Ideal O)
-    (alloc:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (rad:Radial):
+lemma cast_child_energy (s t:Input α) h  C R 
+     B  τ  v  D 
+     alloc 
+     rad :
     childEnergy (commonData (withHeight s τ v) C R B) rad D alloc=
       childEnergy (commonData (withHeight t τ v) C R (castAllocation s t h C B)) rad D
         (castDivisorAllocation s t h C B D alloc):=by
   subst t
   rfl
 
-lemma restored_child_energy (s:Input α)(C R:Ideal O)
-    (B:actualAllocations (activeInput s).pools C)(τ:Character)(v:ℝ)(D:Ideal O)
-    (alloc:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (rad:Radial):
+lemma restored_child_energy (s:Input α) C R 
+     B  τ  v  D 
+     alloc 
+     rad :
     childEnergy (commonData (withHeight (activeInput s) τ v) C R B) rad D alloc=
       childEnergy (commonData (withHeight s τ v) C R (restoreAllocation s C B)) rad D
         (restoreDivisorAllocation s C B D alloc):=by
@@ -92,34 +93,24 @@ lemma restored_child_energy (s:Input α)(C R:Ideal O)
   exact child_energy_active s C R B τ v D alloc rad
 
 omit instα in
-lemma cast_preVolume (s t:Input α)(h:s=t)(C R:Ideal O)
-    (B:actualAllocations s.pools C)(τ:Character)(v:ℝ):
+lemma cast_preVolume (s t:Input α) h  C R 
+     B  τ  v :
     CenteredMomentAllocatedChildCapacity.preVolume (commonData (withHeight t τ v) C R (castAllocation s t h C B))=
       CenteredMomentAllocatedChildCapacity.preVolume (commonData (withHeight s τ v) C R B):=by
   subst t
   rfl
 
-omit instα in
-lemma cast_slot_sum (s t:Input α)(h:s=t)(C:Ideal O)
-    (B:actualAllocations s.pools C)(f:α→ℝ):
-    (∑i:CenteredMomentCommonProfile.liveIndices (castAllocation s t h C B).val,f i.val)=
-      ∑i:CenteredMomentCommonProfile.liveIndices B.val,f i.val:=rfl
 
 omit instα in
-lemma restored_preVolume (s:Input α)(C R:Ideal O)
-    (B:actualAllocations (activeInput s).pools C)(τ:Character)(v:ℝ):
+lemma restored_preVolume (s:Input α) C R 
+     B  τ  v :
     CenteredMomentAllocatedChildCapacity.preVolume (commonData (withHeight s τ v) C R (restoreAllocation s C B))=
       CenteredMomentAllocatedChildCapacity.preVolume (commonData (withHeight (activeInput s) τ v) C R B):=rfl
 
-omit instα in
-lemma restored_slot_sum (s:Input α)(C:Ideal O)
-    (B:actualAllocations (activeInput s).pools C)(f:α→ℝ):
-    (∑i:CenteredMomentCommonProfile.liveIndices (restoreAllocation s C B).val,f i.val)=
-      ∑i:CenteredMomentCommonProfile.liveIndices B.val,f i.val:=rfl
 
-theorem actual_error_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
-    (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a)(L:ℝ)(hL:0≤L)
-    (degree:ℕ)(S:Finset (ℕ×ℕ))(ha:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)
+theorem actual_error_child_from_bands  W (aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
+    (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a) L (hL:0≤L)
+     degree  S (ha:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)
     (hW:ContDiff ℝ ∞ W)(hMcap:0≤Mcap)(hLs:0≤Lslot)(hε:0<εremove)
     (hκsmall:(1/6:ℝ)≤κ)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
     (hκ:2*HeckeZeroSupremum.beta-1≤κ):
@@ -201,7 +192,7 @@ theorem actual_error_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εrem
   let input:=errorInput src C R0 B τ t (Ideal.span {prime}) k Bp υ v0
   let restored:=restoredError src C R0 B τ t (Ideal.span {prime}) k Bp υ v0
   have heInput:input=activeInput restored:=by
-    exact error_source_active src C R0 B τ t (Ideal.span {prime}) k Bp υ v0
+    rfl
   let B₂a:=castAllocation input (activeInput restored) heInput Cpick B₂
   let B₂r:=restoreAllocation restored Cpick B₂a
   let Kerror:=errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
@@ -243,9 +234,7 @@ theorem actual_error_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εrem
   have hparw:Real.logb Z (volume src)+(6*κ-1)*
       (∑i:CenteredMomentCommonProfile.liveIndices B₂r.val,w i.val.val.val)≤Mdecl:=by
     rw [hsum] at hpar
-    have heSum := (restored_slot_sum restored Cpick B₂a (fun i=>w i.val.val)).trans
-      (cast_slot_sum input (activeInput restored) heInput Cpick B₂ (fun i=>w i.val.val))
-    exact (congrArg (fun x=>Real.logb Z (volume src)+(6*κ-1)*x) heSum).trans_le hpar
+    assumption
   have hshiftw:
       Real.logb Z ((commonData (withHeight restored (family χ) v) Cpick Rpick B₂r).X₁*
         (commonData (withHeight restored (family χ) v) Cpick Rpick B₂r).X₂*
@@ -263,11 +252,9 @@ theorem actual_error_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εrem
       _ = Real.logb Z (CenteredMomentAllocatedChildCapacity.preVolume
           (commonData (withHeight input υ v0) Cpick Rpick B₂)) -
           Real.logb Z (envelopeRef (cost*(τ.modulus.absNorm:ℝ)*Z^(errorMoving prime Z k)) C₂ D₂ U dyad) :=
-        congrArg (fun x=>Real.logb Z x - Real.logb Z
-          (envelopeRef (cost*(τ.modulus.absNorm:ℝ)*Z^(errorMoving prime Z k)) C₂ D₂ U dyad)) hpv
+        (by rfl)
       _ ≤ _ := by
-        dsimp only [input]
-        simpa only [add_zero] using hshift
+        linarith
   have hh:=hbound (CenteredMomentCommonProfile.liveIndices B.val)
     (CenteredMomentCommonProfile.liveIndices Bp.val) (fun i=>θ i.val.val)
     Z hZ εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hpos

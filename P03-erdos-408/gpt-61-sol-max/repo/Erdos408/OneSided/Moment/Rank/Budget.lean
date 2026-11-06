@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
@@ -29,7 +30,7 @@ open Filter Finset Real
 /-! ### Growth facts -/
 
 /-- For `0 ≤ a < b`, eventually `c (L^a + 1) ≤ L^b`. -/
-theorem eventually_mul_rpow_add_one_le (c : ℝ) {a b : ℝ} (ha : 0 ≤ a) (hab : a < b) :
+theorem eventually_mul_rpow_add_one_le  c  {a b : ℝ} (ha : 0 ≤ a) (hab : a < b) :
     ∀ᶠ L : ℝ in atTop, c * (L ^ a + 1) ≤ L ^ b := by
   filter_upwards [eventually_ge_atTop 1,
     (tendsto_rpow_atTop (sub_pos.2 hab)).eventually_ge_atTop (2 * |c|)] with L hL h
@@ -51,7 +52,6 @@ theorem eventually_log_le_const_mul_rpow {c ε : ℝ} (hc : 0 < c) (hε : 0 < ε
 /-- For `L ≥ 16`, `4 ≤ L^{1/2}`. -/
 theorem four_le_rpow_half {L : ℝ} (hL : 16 ≤ L) : 4 ≤ L ^ (1 / 2 : ℝ) := by
   calc (4 : ℝ) = (16 : ℝ) ^ (1 / 2 : ℝ) := by
-        rw [show (16 : ℝ) = 4 ^ (2 : ℝ) by norm_num, ← Real.rpow_mul (by norm_num)]
         norm_num
     _ ≤ L ^ (1 / 2 : ℝ) := Real.rpow_le_rpow (by norm_num) hL (by norm_num)
 
@@ -64,13 +64,13 @@ theorem rankCut_bounds {L : ℝ} (hL : 0 ≤ L) :
 
 /-- `KM + NK + (N + 1)B ≤ L⁴` for `M = J + 1`, `J ≤ L^{1/100}`, `N ≤ L^{1/2} + 2` and
 `B ≤ L² + 1`. -/
-theorem eventually_addrCount_le (K : ℕ) :
+theorem eventually_addrCount_le  K  :
     ∀ᶠ L : ℝ in atTop, ∀ N J B : ℕ, (N : ℝ) ≤ L ^ (1 / 2 : ℝ) + 2 →
       (J : ℝ) ≤ L ^ (1 / 100 : ℝ) → (B : ℝ) ≤ L ^ 2 + 1 →
       ((K * (J + 1) + (N * K + (N + 1) * B) : ℕ) : ℝ) ≤ L ^ 4 := by
   filter_upwards [eventually_ge_atTop (8 + 5 * (K : ℝ)), eventually_ge_atTop 1]
     with L hLK hL1 N J B hN hJ hB
-  have hL0 : 0 ≤ L := by linarith
+  
   -- `L^{1/2}, L^{1/100} ≤ L`
   have hs : L ^ (1 / 2 : ℝ) ≤ L := by
     simpa using Real.rpow_le_rpow_of_exponent_le hL1 (show (1 / 2 : ℝ) ≤ 1 by norm_num)
@@ -92,11 +92,7 @@ theorem eventually_addrCount_le (K : ℕ) :
           mul_le_mul hN' hB' (Nat.cast_nonneg _) (by positivity)
       _ = 8 * L ^ 3 := by ring
   have h₃ : 5 * K * L ≤ 5 * K * L ^ 3 := by
-    have : L ≤ L ^ 3 :=
-      calc L = L * 1 := (mul_one L).symm
-        _ ≤ L * L ^ 2 := mul_le_mul_of_nonneg_left hL2 hL0
-        _ = L ^ 3 := by ring
-    exact mul_le_mul_of_nonneg_left this (by positivity)
+    bound
   calc (K : ℝ) * (J + 1) + (N * K + (N + 1) * B) ≤ (8 + 5 * K) * L ^ 3 := by linarith
     _ ≤ L * L ^ 3 := mul_le_mul_of_nonneg_right hLK (by positivity)
     _ = L ^ 4 := by ring
@@ -259,7 +255,7 @@ theorem eventually_lowRank_sum_le (K : ℕ) {C₀ Ce G E : ℝ} (hC₀ : 1 ≤ C
   set s := L ^ (1 / 2 : ℝ) with hs
   have hs4 : 4 ≤ s := four_le_rpow_half hL16
   set n : ℝ := (N : ℝ) with hn
-  have hn4 : 4 ≤ n := by linarith
+  
   -- every term is at most `T = C₀^{N+1} 2^{K(J+1)} L^{-G n + A r₀}`
   set T := C₀ ^ (N + 1) * 2 ^ (K * (J + 1)) * L ^ (-G * n + A * r₀) with hT
   have hterm : ∀ r ∈ range r₀, (Q : ℝ) ^ (2 * r) *

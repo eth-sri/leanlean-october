@@ -21,24 +21,24 @@ def targetMonoid (η : HeckeFamily.Character) : O →* ℂ where
   map_one' := HeckeFamily.elementCoeff_one η
   map_mul' := HeckeFamily.elementCoeff_mul η
 
-theorem targetMonoid_norm_le_one (η : HeckeFamily.Character) (a : O) :
+theorem targetMonoid_norm_le_one  η   a  :
     ‖targetMonoid η a‖ ≤ 1 := by
   let : Finite (O ⧸ η.modulus) := Ring.HasFiniteQuotients.finiteQuotient η.modulus_ne_bot
   let : Fintype (O ⧸ η.modulus) := Fintype.ofFinite _
   exact FiniteRayExpansion.norm_char_le_one η.residue (Ideal.Quotient.mk η.modulus a)
 
 def rowCoefficient (η : HeckeFamily.Character) (Xi : O →* ℂ)
-    (s : O) (hs : Supported (Ideal.span {s})) (m : O) : O →* ℂ :=
+    (s ) (hs : Supported (Ideal.span {s})) (m : O)  :=
   targetMonoid η * conjugateMonoid Xi * reciprocityPhaseMonoid s hs *
     (idealRowHom m).toMonoidHom.comp principalIdealHom.toMonoidHom
 
-theorem rowCoefficient_apply (η : HeckeFamily.Character) (Xi : O →* ℂ)
-    (s : O) (hs : Supported (Ideal.span {s})) (m a : O) :
+theorem rowCoefficient_apply  η   Xi 
+     s   hs   m a  :
     rowCoefficient η Xi s hs m a = HeckeFamily.elementCoeff η a * star (Xi a) *
       sexticReciprocityPhase s a * idealRowHom m (Ideal.span {a}) := rfl
 
-theorem rowCoefficient_norm_le_one (η : HeckeFamily.Character) (Xi : O →* ℂ)
-    (hXi : ∀ a, ‖Xi a‖ ≤ 1) (s : O) (hs : Supported (Ideal.span {s})) (m a : O) :
+theorem rowCoefficient_norm_le_one  η   Xi 
+    (hXi : ∀ a, ‖Xi a‖ ≤ 1)  s   hs   m a  :
     ‖rowCoefficient η Xi s hs m a‖ ≤ 1 := by
   rw [rowCoefficient_apply]
   simp only [norm_mul, norm_star]
@@ -47,16 +47,16 @@ theorem rowCoefficient_norm_le_one (η : HeckeFamily.Character) (Xi : O →* ℂ
   exact (mul_le_of_le_one_left (norm_nonneg _) (targetMonoid_norm_le_one η a)).trans (hXi a)
 
 def spectralSummand (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (t : ℂ) (I J : Ideal O) : ℂ :=
+    (t : ℂ) (I J : Ideal O)  :=
   (completedMask S D I J * completedCorrection I J *
     (columnWeight Ψ I / (Real.sqrt (Ideal.absNorm I) : ℂ)) * cubeWeight Ψ J) *
       (CubicEisenstein.fullIdealWeight t I * CubicEisenstein.fullIdealWeight (3 * t) J)
 
-def spectralRow (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ) (t : ℂ) : ℂ :=
+def spectralRow (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ) (t : ℂ)  :=
   ∑' p : Ideal O × Ideal O, spectralSummand S D Ψ t p.1 p.2
 
-theorem spectralSummand_norm_le (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (t : ℂ) (I J : Ideal O) :
+theorem spectralSummand_norm_le  S   D 
+     Ψ  (hΨ : ∀ a, ‖Ψ a‖ ≤ 1)  t   I J  :
     ‖spectralSummand S D Ψ t I J‖ ≤
       2 * (‖CubicEisenstein.fullIdealWeight t I‖ *
         ‖CubicEisenstein.fullIdealWeight (3 * t) J‖) := by
@@ -76,8 +76,8 @@ theorem spectralSummand_norm_le (S : Finset (Ideal O)) (D : Ideal O)
     (norm_nonneg (CubicEisenstein.fullIdealWeight t I))
     (norm_nonneg (CubicEisenstein.fullIdealWeight (3 * t) J)))
 
-theorem spectralRow_summable (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (t : ℂ) (ht : 1 < t.re) :
+theorem spectralRow_summable  S   D 
+     Ψ  (hΨ : ∀ a, ‖Ψ a‖ ≤ 1)  t  (ht : 1 < t.re) :
     Summable (fun p : Ideal O × Ideal O => spectralSummand S D Ψ t p.1 p.2) := by
   have ht3 : 1 < (3 * t).re := by
     norm_num [Complex.mul_re]

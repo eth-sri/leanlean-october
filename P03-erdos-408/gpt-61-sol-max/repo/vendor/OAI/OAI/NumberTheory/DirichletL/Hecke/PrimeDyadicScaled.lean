@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicScale
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical Topology ContDiff
 open Set Complex
@@ -94,14 +94,13 @@ theorem scaled_direct_bound (e κ η : ℝ) (he : 0<e) (he' : e<1/1000)
   have heC : 4*Cb+E*Real.pi≤C := by dsimp [C]; nlinarith only [mul_nonneg hCb.le Real.pi_pos.le]
   calc
     _ ≤ (Cb*Real.pi)*C₂*U^((a-1/2+8*e)*r+κ)+
-        (4*Cb)*Cn*U^(2*R+κ)/(1+V)^n+(E*Real.pi)*Cn*U^(2*R+κ)/(1+V)^n := by
-      exact add_le_add (add_le_add hc hj) ht
+        (4*Cb)*Cn*U^(2*R+κ)/(1+V)^n+(E*Real.pi)*Cn*U^(2*R+κ)/(1+V)^n := add_le_add (add_le_add hc hj) ht
     _ = (Cb*Real.pi)*C₂*U^((a-1/2+8*e)*r+κ)+
         (4*Cb+E*Real.pi)*Cn*U^(2*R+κ)/(1+V)^n := by ring
     _ ≤ _ := by gcongr
 
 end SevenEighths.HeckePrimeDyadic
 
-end
+
 
 end OAI

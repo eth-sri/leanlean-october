@@ -29,21 +29,21 @@ function and $\phi_k(n) = \phi(\phi_{k-1}(n))$. As in the source, $k$ starts at 
 $f(1) = 1$. Every iterate of $\phi$ at $0$ is $0$, so `sInf ∅ = 0` gives the junk value
 $f(0) = 0$.
 -/
-noncomputable def f (n : ℕ) : ℕ :=
+noncomputable def f (n : ℕ)  :=
   sInf {k : ℕ | 1 ≤ k ∧ Nat.totient^[k] n = 1}
 
 /-- A set `S` of natural numbers has natural density `α` if the proportion of
 `n < b` that lie in `S` tends to `α`. -/
-def HasDensity (S : Set ℕ) (α : ℝ) : Prop :=
+def HasDensity (S : Set ℕ) (α : ℝ)  :=
   Tendsto (fun b : ℕ => ((S ∩ Set.Iio b).ncard : ℝ) / (Set.Iio b).ncard) atTop (𝓝 α)
 
 /-- The primes `p` with `x < p ≤ 2 x`. -/
-noncomputable def dyadicPrimes (x : ℝ) : Finset ℕ :=
+noncomputable def dyadicPrimes (x : ℝ)  :=
   (Finset.Ioc ⌊x⌋₊ ⌊2 * x⌋₊).filter Nat.Prime
 
 /-- The tuples `Q` of distinct primes with `x ^ u i < Q i ≤ x ^ v i` for every
 slot `i`. -/
-noncomputable def slotTuples (x : ℝ) {k : ℕ} (u v : Fin k → ℝ) : Finset (Fin k → ℕ) :=
+noncomputable def slotTuples (x : ℝ) {k } (u v : Fin k → ℝ)  :=
   (Fintype.piFinset fun i =>
     (Finset.Iic ⌊x ^ v i⌋₊).filter fun q : ℕ => q.Prime ∧ x ^ u i < q).filter
     Function.Injective
@@ -54,7 +54,7 @@ most `1 - c / T²⁰`, with `T = log log x`, the average over primes
 `x < p ≤ 2 x` of the tuples dividing `p - 1`, weighted by any coefficient of
 modulus at most one in all slots but the last, agrees with its harmonic model
 up to `C / T³⁰⁰`. -/
-def RectangleInput : Prop :=
+def RectangleInput  :=
   ∃ c > (0 : ℝ), ∃ C : ℝ, ∀ᶠ x : ℝ in atTop, ∀ k ≤ 2, ∀ u v : Fin (k + 1) → ℝ,
     (∀ i, c / Real.log (Real.log x) ^ 20 ≤ u i) →
     ∑ i, v i ≤ 1 - c / Real.log (Real.log x) ^ 20 →

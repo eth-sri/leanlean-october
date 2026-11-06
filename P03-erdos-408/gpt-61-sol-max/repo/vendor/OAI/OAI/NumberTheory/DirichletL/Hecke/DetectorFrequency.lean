@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFourierWitness
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesCutoffs
@@ -9,13 +10,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicSupport
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 open MeasureTheory
 namespace SevenEighths.HeckeDetectorFrequency
 open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier
 open HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorDyadicBridge
-local notation "O" => HeckeFamily.O
+
 
 theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
     (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω)
@@ -23,7 +24,7 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
     (hΩone : ∀ x y : ℝ, 0 ≤ x → 0 ≤ y →
       DyadicTransfer.annularCutoff cutoff x ≠ 0 →
       DyadicTransfer.annularCutoff cutoff y ≠ 0 → Ω (Real.log x+Real.log y)=1)
-    (n : ℕ) :
+     n  :
     ∃ C₀ Cn : ℝ, 1 ≤ C₀ ∧ 0 ≤ Cn ∧ ∀ (U Dstar F : ℝ),
       1 ≤ U → 0 < Dstar → 0 < F → ∀ (χ : Character) (s : ℂ), 0 ≤ s.re →
       ∀ j k : ℕ, ∃ t : ℝ, ‖t‖ ≤ F ∧
@@ -43,11 +44,11 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
   let N : ℝ := (2 : ℝ)^k
   let a := inverseCoefficient χ cutoff (DyadicTransfer.annularCutoff cutoff) Dstar D s
   let b := plainCoefficient χ (DyadicTransfer.annularCutoff cutoff) N s
-  let x := fun I : Ideal O => Real.log ((Ideal.absNorm I : ℝ)/D)
-  let y := fun I : Ideal O => Real.log ((Ideal.absNorm I : ℝ)/N)
+  let x := fun I : Ideal HeckeFamily.O => Real.log ((Ideal.absNorm I : ℝ)/D)
+  let y := fun I : Ideal HeckeFamily.O => Real.log ((Ideal.absNorm I : ℝ)/N)
   let g := logSource Ω cutoff cutoff hΩc hΩ (cutoff.smooth ⊤) (cutoff.smooth ⊤)
     (2*D*N/Dstar) (D*N/U^20) (D*N/U^21)
-  have hUpos : 0 < U := by linarith
+  
   have hD : 0 < D := by dsimp [D]; positivity
   have hN : 0 < N := by dsimp [N]; positivity
   have heq : dyadicBlock χ cutoff cutoff Dstar (U^20) (U^21) s j k =
@@ -75,16 +76,12 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
   apply add_le_add
   · calc
       _ ≤ ((67108864*U^42)/F^n)*Cn := by
-        apply mul_le_mul
-        · exact div_le_div_of_nonneg_right hmass (by positivity)
-        · exact hgn
-        · exact integral_nonneg (fun t => by positivity)
-        · positivity
+        gcongr <;> first | assumption | positivity | linarith
       _ = _ := by ring
-  · exact mul_le_mul_of_nonneg_right (hg₀.trans (by linarith)) (norm_nonneg _)
+  gcongr <;> first | assumption | positivity | linarith
 
 end SevenEighths.HeckeDetectorFrequency
 
-end
+
 
 end OAI

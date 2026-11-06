@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.PrimeRows.CubePrimeBound
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorGlobalIntegral
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
@@ -19,9 +21,7 @@ local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZ
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
-theorem normalizedFloorPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
+alias normalizedFloorPoolOutside := _root_.OAI.SevenEighths.ProbeHighRowFamily.poolOutside
 
 theorem actual_normalized_floor_cube (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
@@ -41,7 +41,7 @@ theorem actual_normalized_floor_cube (N n : ℕ) (e eps c b A R dmin dmax rmin �
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
     (hr0 : ∀y,(W0 y).im=0) (hr1 : ∀y,(W1 y).im=0)
     (hp0 : ∀y,0≤(W0 y).re) (hp1 : ∀y,0≤(W1 y).re) (hn0 : W0≠0) (hn1 : W1≠0)
-    (nu : ℝ) (hnu : 0<nu) :
+     nu  (hnu : 0<nu) :
     letI : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
     ∃C : ℝ,0<C ∧ ∀η : Character,∀ᶠ Z : ℝ in atTop,
       ∀d : ℝ,dmin≤d → d≤dmax → ∀(v : ℝ),0≤v → ∀rows : Finset FreeRow,

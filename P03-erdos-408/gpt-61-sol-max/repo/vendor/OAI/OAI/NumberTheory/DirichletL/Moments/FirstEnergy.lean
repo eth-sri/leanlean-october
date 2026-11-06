@@ -7,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceRow
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstEnergy
 open CenteredMomentCanonicalFirst CenteredMomentSourceRow CenteredMomentRowNorm
 open CenteredMomentHeckeExpansion HeckeFamily ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
 
-theorem finiteHeckeEnergy_reduced_poisson (η : Character) (m A : O) (t : ℝ)
-    (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
-    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+
+theorem finiteHeckeEnergy_reduced_poisson  η   m A   t 
+    (hmLam : goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m)
+     S   c   W   K  (hK : 0<K) :
     finiteHeckeEnergy η m A t S c W K =
       ∑ I : supportedColumns S,∑ J : supportedColumns S,
         ((c I*rowWeight η m A 1 t I)*star (c J*rowWeight η m A 1 t J))*
@@ -39,6 +39,6 @@ theorem finiteHeckeEnergy_reduced_poisson (η : Character) (m A : O) (t : ℝ)
 
 end SevenEighths.CenteredMomentFirstEnergy
 
-end
+
 
 end OAI

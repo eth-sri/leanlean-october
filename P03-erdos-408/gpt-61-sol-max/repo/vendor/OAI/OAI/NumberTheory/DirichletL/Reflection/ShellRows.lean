@@ -10,30 +10,30 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-def literalDyadicRow (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
+variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
+
+def literalDyadicRow (F : PrimeFamily φ) (K ) (hK )
+    (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal ActualEisensteinCubic.O))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (u : Eisˣ) (i : ℕ×ℕ×ℕ) (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal Eis→ℂ) : ℂ :=
+    (u : ActualEisensteinCubic.Oˣ) (i : ℕ×ℕ×ℕ) (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal ActualEisensteinCubic.O→ℂ)  :=
   ∑ P : {P : Pset // IsCoprime K P.val}, r K*aw P.val.val*
     literalDyadicBlock (F.reflected K hK (S P.val.val)) (D P.val P.property) s hc
       (reflectedExponent jF) (slotIndices φ (PrimeIndex K) σ)
       (CompletedHeight.normTwistedSource W θ) X u i
 
-theorem literalDyadicRow_eq_physical (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
+theorem literalDyadicRow_eq_physical (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K)
+    (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ)  jF  (Pset : Finset (Ideal ActualEisensteinCubic.O))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (u : Eisˣ) (i : ℕ×ℕ×ℕ) (QK QP : ℝ) (hQK : 0<QK) (hQP : 0<QP)
+     u   i   QK QP  (hQK : 0<QK) (hQP : 0<QP)
     (hKr : QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK)
     (hprod : ∀ P∈Pset, (∏ j,(S P).ideal j)=P)
     (hPr : ∀ P∈Pset, QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤QP)
-    (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal Eis→ℂ) :
+     W   θ X   r aw  :
     literalDyadicRow F K hK S jF Pset D s hc u i W θ X r aw=
       weightedFinitePhysicalKernelRow F K hK S jF Pset (reflectedNDyad i.2.2) (reflectedBDyad i.2.1)
         D s hc u i.1 (fun _ => completedShellWindow) QK QP ((2:ℝ)^i.2.2) ((2:ℝ)^i.2.1)

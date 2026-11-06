@@ -8,15 +8,15 @@ public import OAI.NumberTheory.DirichletL.Descent.Canonical
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
 open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-local notation "O" => ActualEisensteinCubic.O
 
-theorem marked_selected_column_sum (F : Finset (Ideal O))
+
+theorem marked_selected_column_sum (F : Finset (Ideal ActualEisensteinCubic.O))
     (hF : ∀I∈F,CanonicalQuadraticSieve.Admissible I)
-    (Ψ : O →* ℂ) (m f z : O) (W : ℕ → ℂ) (d : Ideal O → ℂ) :
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (W : ℕ → ℂ) (d : Ideal ActualEisensteinCubic.O → ℂ) :
     let p := CanonicalQuadraticSieve.poolPrimary F
     let hp := CanonicalQuadraticSieve.poolPrimary_ne_zero F hF
     letI : ∀i:ConcretePrimeRowBridge.primePool F,(Ideal.span {p i}).IsMaximal :=
@@ -50,11 +50,15 @@ theorem marked_selected_column_sum (F : Finset (Ideal O))
   unfold InitialMeanSquare.selectedIdealTest
   split_ifs <;> simp ; ring
 
-theorem marked_weighted_column_tsum_eq (S : Finset (Ideal O)) (D : ℕ)
-    (hSp : ∀ P∈S,Prime P) (Ψ : O →* ℂ) (m f z : O) (hm : ∀ P∈S,m∈P)
-    (W : ℝ → ℂ) (b X : ℝ) (hX : 0<X)
-    (hW : ∀ t,W t≠0 → t≤b) (hD : b*X≤D) (d : Ideal O → ℂ) :
-    (∑' I:Ideal O,columnWeight (rowTwist Ψ m f z) I*W ((Ideal.absNorm I:ℝ)/X)*d I) =
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (hm : ∀ P∈S,m∈P) (W : ℝ → ℂ) (b X : ℝ) (hX : 0<X) (hW : ∀ t,W t≠0 → t≤b) (hD : b*X≤D) (d : Ideal ActualEisensteinCubic.O → ℂ)
+
+include hSp hm hX hW hD in
+theorem marked_weighted_column_tsum_eq    
+           
+         
+          :
+    (∑' I:Ideal ActualEisensteinCubic.O,columnWeight (rowTwist Ψ m f z) I*W ((Ideal.absNorm I:ℝ)/X)*d I) =
       ∑ I∈InitialMeanSquare.outsideSquarefreeIdeals S D,
         columnWeight (rowTwist Ψ m f z) I*W ((Ideal.absNorm I:ℝ)/X)*d I := by
   apply tsum_eq_sum
@@ -64,10 +68,11 @@ theorem marked_weighted_column_tsum_eq (S : Finset (Ideal O)) (D : ℕ)
     exact hI (weighted_column_support S D hSp Ψ m f z hm W b X hX hW hD hn)
   rw [hz,zero_mul]
 
-theorem marked_complete_pool_eq_global (S : Finset (Ideal O)) (D : ℕ)
-    (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
-    (Ψ : O →* ℂ) (m f z : O) (W : ℝ → ℂ) (b X : ℝ) (hX : 0<X)
-    (hW : ∀ t,W t≠0 → t≤b) (hD : b*X≤D) (d : Ideal O → ℂ) :
+include hbad hSp Ψ m f z hX hW hD d in
+theorem marked_complete_pool_eq_global    
+       
+             
+          :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
     letI : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
@@ -75,7 +80,7 @@ theorem marked_complete_pool_eq_global (S : Finset (Ideal O)) (D : ℕ)
     fixedChildRow (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
       (poolPrimary_good F hF) Finset.univ Ψ m
       (fun T=>W (primeProductNorm (poolPrimary F) T/X)*d (∏i∈T,i.val)) f z =
-    ∑' I:Ideal O,columnWeight (rowTwist Ψ (m*excludedGenerator S) f z) I*
+    ∑' I:Ideal ActualEisensteinCubic.O,columnWeight (rowTwist Ψ (m*excludedGenerator S) f z) I*
       W ((Ideal.absNorm I:ℝ)/X)*d I := by
   let F := InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
@@ -99,6 +104,8 @@ theorem marked_complete_pool_eq_global (S : Finset (Ideal O)) (D : ℕ)
   ring
 
 end
+
+
 end SevenEighths.InverseMoment
 
 end OAI

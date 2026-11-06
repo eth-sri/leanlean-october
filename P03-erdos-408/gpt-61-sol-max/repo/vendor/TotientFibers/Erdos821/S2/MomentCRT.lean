@@ -7,7 +7,7 @@ public import Erdos821.Blueprint.Transference
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.S2Core
@@ -16,8 +16,12 @@ open Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ} (A : Model F P J m)
 
-theorem averagedMoment_eq_closed (hPath : PhysicalPathExpansionTask)
-    (r : ℕ) (hr : 0 < r) (X : ℝ) :
+section
+variable (hPath : PhysicalPathExpansionTask) (r : ℕ) (hr : 0 < r)
+include hPath r hr
+
+theorem averagedMoment_eq_closed  
+         X  :
     A.averagedMoment r X =
       (Complex.ofReal (((dyad X).card : ℝ)⁻¹) *
         ∑ z ∈ dyad X, closedPhysicalExpression A (2 * r) z).re := by
@@ -26,8 +30,8 @@ theorem averagedMoment_eq_closed (hPath : PhysicalPathExpansionTask)
   simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
   simp [dyad, div_eq_mul_inv, mul_comm]
 
-theorem averagedMoment_replacement_bound (hPath : PhysicalPathExpansionTask)
-    (r : ℕ) (hr : 0 < r) (X epsilon : ℝ)
+theorem averagedMoment_replacement_bound  
+         X epsilon 
     (hreplace : ∀ Q : ResiduePath A (2 * r), Q.Valid →
       |((dyad X).card : ℝ)⁻¹ * ∑ z ∈ dyad X,
           P.pathFactor (2 * r) (visitQ F.q (2 * r)) Q.offset Q.active z -
@@ -42,6 +46,8 @@ theorem averagedMoment_replacement_bound (hPath : PhysicalPathExpansionTask)
       (∑ z ∈ dyad X, closedPhysicalExpression A (2 * r) z) -
       closedResidueExpression A (2 * r))
   simpa only [Complex.sub_re] using hreal.trans hn
+
+end
 
 
 end Erdos821.S2Core

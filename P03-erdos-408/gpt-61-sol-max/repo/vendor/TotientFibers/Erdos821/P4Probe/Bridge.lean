@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P3Clean.QuantitativeScales
 
 public import Erdos821.P4Probe.CancellationTasks
 
@@ -14,7 +17,7 @@ open Blueprint.Graph
 noncomputable section
 
 /-- Verbatim task definition; the lead bridges by definitional equality. -/
-def SymmetricProbeTask : Prop :=
+def SymmetricProbeTask  :=
   Blueprint.ComparisonEstimate → Blueprint.Graph.IdealConstruction
 
 def analyticGeometry (F : FixedData) : Blueprint.Analytic.Geometry where
@@ -33,24 +36,18 @@ def analyticGeometry (F : FixedData) : Blueprint.Analytic.Geometry where
   damping := ⟨F.q_pos, F.q_lt⟩
   marks := F.ell_pos
 
-@[simp] lemma analyticGroups_mass (P : PrimeGroups) (g : P.Group) :
+@[simp] lemma analyticGroups_mass  P   g  :
     Blueprint.Analytic.mass (analyticGroups P) g = P.V g := by
   simp [Blueprint.Analytic.mass, PrimeGroups.V, analyticGroups, one_div]
 
-@[simp] lemma analyticGroups_big (P : PrimeGroups) :
+@[simp] lemma analyticGroups_big  P  :
     (analyticGroups P).big = P.bigGroups := by
   change Finset.univ \ P.smallGroups = P.bigGroups
-  ext g
-  simp only [PrimeGroups.smallGroups, PrimeGroups.bigGroups,
-    Finset.mem_sdiff, Finset.mem_filter, Finset.mem_univ, true_and]
-  simp only [Bool.not_eq_false]
+  grind [PrimeGroups.smallGroups, PrimeGroups.bigGroups]
 
-@[simp] lemma bigGroup_card (P : PrimeGroups) :
-    Fintype.card P.BigGroup = P.bigGroups.card := by
-  exact (Fintype.card_subtype _).trans (by
-    simp only [PrimeGroups.bigGroups])
+@[simp] alias bigGroup_card := _root_.Erdos821.P3Clean.bigGroup_card
 
-lemma admissible_analytic (F : FixedData) (P : PrimeGroups) (x : ℝ)
+lemma admissible_analytic  F   P   x 
     (hP : P.Admissible F x) (hint : intervalBigGroups P) :
     Blueprint.Analytic.Admissible (analyticGeometry F) x (analyticGroups P) := by
   unfold Blueprint.Analytic.Admissible
@@ -69,12 +66,8 @@ lemma admissible_analytic (F : FixedData) (P : PrimeGroups) (x : ℝ)
       Real.exp (L x ^ F.a) ≤ (p : ℝ) ∧ (p : ℝ) ≤ Real.exp (L x ^ F.b)
       else Real.exp (L x ^ F.c) ≤ (p : ℝ) ∧ (p : ℝ) ≤ Real.exp (L x ^ F.d))
     have h := hP.2.2.2.2.2 g p hp
-    have hsmall : g ∈ P.smallGroups ↔ P.big g = false := by
-      exact Finset.mem_filter.trans (by simp only [Finset.mem_univ, true_and])
-    simp only [hsmall]
-    cases hb : P.big g <;>
-      simpa only [hb, Bool.false_eq_true, Bool.true_eq_false,
-        ite_true, ite_false, Blueprint.Analytic.L, L] using h
+    have hsmall : g ∈ P.smallGroups ↔ P.big g = false := Finset.mem_filter.trans (by simp only [Finset.mem_univ, true_and])
+    simp_all
   · intro g hg
     have hb : P.big g = true := (Finset.mem_filter.mp hg).2
     exact hint ⟨g, hb⟩

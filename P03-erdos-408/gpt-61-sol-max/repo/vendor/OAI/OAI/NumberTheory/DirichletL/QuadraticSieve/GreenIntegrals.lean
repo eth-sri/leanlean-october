@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.MiddleWindows
 
@@ -10,73 +11,73 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open     EisensteinSchwartzPoisson
 
 theorem norm_double_sum_real_factor_fun {n p : Type*} [Fintype n] [Fintype p]
     (u z : n → p → ℂ) (c : ℝ) (hc : 0 ≤ c) :
@@ -84,19 +85,15 @@ theorem norm_double_sum_real_factor_fun {n p : Type*} [Fintype n] [Fintype p]
   have he : (∑ j, ∑ k, u j k * ((c : ℂ) * z j k)) =
       (c : ℂ) * ∑ j, ∑ k, u j k * z j k := by
     simp only [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro j hj
-    apply Finset.sum_congr rfl
-    intro k hk
-    ring
-  rw [he, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hc]
+    grind
+  aesop
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
 
 def dualPrincipalKernel (W : 𝓢(ℝ, ℂ)) (rows : m → Ideal O)
     (left : n → Ideal O) (right : p → Ideal O) (M F : ℝ) (h : O)
-    (d : Ideal O) (i : m) (j : n) (k : p) : ℂ :=
+    (d : Ideal O) (i : m) (j : n) (k : p)  :=
   ((Real.sqrt ((M / F) / (Ideal.absNorm (rows i) : ℝ)) / (Ideal.absNorm d : ℝ) : ℝ) : ℂ) *
     paperRadialFourier W (Real.sqrt (F * (Ideal.absNorm (left j) : ℝ) * (Ideal.absNorm (right k) : ℝ) /
       (M * (Ideal.absNorm (rows i) : ℝ))) * ‖eisEmbedding h‖ ^ 2 / (Ideal.absNorm d : ℝ))
@@ -112,7 +109,7 @@ def dualProductDivisorMiddleAt (W : 𝓢(ℝ, ℂ)) (K : Finset (Ideal O))
 omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 theorem dualProductDivisorMiddleAt_nonneg (W : 𝓢(ℝ, ℂ)) (K : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (P : Ideal O → m → Prop) (h : O) :
+     a   b   M F   P   h  :
     0 ≤ dualProductDivisorMiddleAt W K rows left right a b M F P h := by
   classical
   unfold dualProductDivisorMiddleAt
@@ -122,7 +119,7 @@ omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 theorem dualProductDivisorMiddleAt_le_window
     (W : 𝓢(ℝ, ℂ)) (K S T : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (P : Ideal O → m → Prop) (h : O)
+     a   b   M F   P   h 
     (hleft : ∀ j, left j ≠ 0) (hright : ∀ k, right k ≠ 0)
     (hS : ∀ j D, D ∣ left j → D ∈ S) (hT : ∀ k E, E ∣ right k → E ∈ T) :
     dualProductDivisorMiddleAt W K rows left right a b M F P h ≤
@@ -157,7 +154,7 @@ theorem HasSieveExponent.dual_product_divisor_middle {α : ℝ} (hexp : HasSieve
     (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
     (a₀ : n → ℂ) (b₀ : p → ℂ) (a : O → n → ℂ) (b : O → p → ℂ)
     (ha : ∀ h j, ‖a h j‖ ≤ ‖a₀ j‖) (hb : ∀ h k, ‖b h k‖ ≤ ‖b₀ k‖)
-    (W : 𝓢(ℝ, ℂ)) (P : Ideal O → m → Prop)
+     W   P 
     (hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hP : ∀ d ∈ K, ∀ i, P d i →
@@ -183,14 +180,13 @@ theorem HasSieveExponent.dual_product_divisor_middle {α : ℝ} (hexp : HasSieve
     rows left right (a h.val) (b h.val) M F P h.val hl0 hr0
     (mem_columnDivisorPool_of_dvd left hl0) (mem_columnDivisorPool_of_dvd right hr0)
   have ht := Summable.of_nonneg_of_le
-    (fun h : {h : O // h ≠ 0} => dualProductDivisorMiddleAt_nonneg W K rows left right
-      (a h.val) (b h.val) M F P h.val) hdom hs.1
+    (fun h : {h : O // h ≠ 0} => (by solve_by_elim [dualProductDivisorMiddleAt_nonneg])) hdom hs.1
   exact ⟨ht, (ht.tsum_le_tsum hdom hs.1).trans hs.2⟩
 
 end CanonicalQuadraticSieve
 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProductNorm)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -202,10 +198,10 @@ variable {ι : Type*} [DecidableEq ι]
 end SecondPassArithmetic
 
 namespace DescentFiberCost
-open ActualEisensteinCubic ConcreteTraceCRT
-open ShortDraftLatticeCount ActualEisensteinCoordinates
+ 
+open   ActualEisensteinCoordinates
 
-theorem finite_element_count_real (S : Finset O) (K : ℝ) (hK : 1 ≤ K)
+theorem finite_element_count_real (S : Finset O)  K  (hK : 1 ≤ K)
     (hS : ∀ z ∈ S, ‖eisEmbedding z‖^2 ≤ K) : (S.card : ℝ) ≤ 128*K := by
   have hbound : ∀ z ∈ S, q (coords z) ≤ (⌊K⌋₊ : ℕ) := by
     intro z hz
@@ -213,9 +209,7 @@ theorem finite_element_count_real (S : Finset O) (K : ℝ) (hK : 1 ≤ K)
       rw [qNat_eq_absNorm_span, ← eisEmbedding_norm_sq_eq_absNorm_span]
       exact hS z hz
     have hn := Nat.le_floor hq
-    have he : (qNat z : ℤ) = q (coords z) := Int.toNat_of_nonneg (qO_nonneg z)
-    rw [← he]
-    exact_mod_cast hn
+    simp_all [qNat]
   have hcard := actual_eisenstein_count S ⌊K⌋₊ hbound
   have hr : (S.card : ℝ) ≤ 64*((⌊K⌋₊ : ℝ)+1) := by exact_mod_cast hcard
   have hf : (⌊K⌋₊ : ℝ) ≤ K := Nat.floor_le (by linarith)
@@ -224,39 +218,39 @@ theorem finite_element_count_real (S : Finset O) (K : ℝ) (hK : 1 ≤ K)
 end DescentFiberCost
 
 namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
+open   SecondPassArithmetic JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm columnLog)
 
 end SecondPassIntegration
 
 namespace ShortDraftLatticeCount
-open ActualEisensteinCubic ActualEisensteinCoordinates ConcreteTraceCRT
+open   ActualEisensteinCoordinates  
 
 end ShortDraftLatticeCount
 namespace SecondPassArithmetic
-open ActualEisensteinCubic ConcreteTraceCRT
+ 
 
 end SecondPassArithmetic
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+ 
+ 
 
 namespace CubicEisenstein
 
-lemma axisSlice_update (f : SpatialCoordinates → ℂ) (p : SpatialCoordinates) (j : Fin 3) (t : ℝ) :
+lemma axisSlice_update  f   p   j   t  :
     axisSlice f (Function.update p j t) j = axisSlice f p j := by
   funext z
   simp only [axisSlice,Function.update_idem]
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+ 
+ 
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT
+ 
 
-def cuspRectangle : Set (ℝ × ℝ) := Set.Icc 0 3 ×ˢ Set.Icc 0 (3*Real.sqrt 3)
+
 
 end CubicEisenstein
 

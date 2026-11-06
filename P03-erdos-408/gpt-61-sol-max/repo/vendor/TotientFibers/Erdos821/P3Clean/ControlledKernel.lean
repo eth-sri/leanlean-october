@@ -14,12 +14,15 @@ namespace Erdos821.P3Clean
 
 open Erdos821.Blueprint.Graph
 
-def controlledKernel {α G V : Type*} [Fintype G]
-    (H : α → α → G → ℂ) (act : G → V ≃ V) (a b : α × V) : ℂ :=
+def controlledKernel {α G V } [Fintype G]
+    (H : α → α → G → ℂ) (act : G → V ≃ V) (a b : α × V)  :=
   ∑ r : G, if act r a.2 = b.2 then H a.1 b.1 r else 0
 
-theorem controlledKernel_row {α G V : Type*} [Fintype α] [Fintype G] [Fintype V]
-    (H : α → α → G → ℂ) (act : G → V ≃ V) (g : α × V → ℂ) (a : α × V) :
+section
+variable {α G V : Type*} [Fintype α]
+
+theorem controlledKernel_row     [Fintype G] [Fintype V]
+    (H : α → α → G → ℂ) (act : G → V ≃ V) (g : α × V → ℂ)  a  :
     (∑ b : α × V, controlledKernel H act a b * g b) =
       ∑ b : α, ∑ r : G, H a.1 b r * g (b, act r a.2) := by
   classical
@@ -29,7 +32,7 @@ theorem controlledKernel_row {α G V : Type*} [Fintype α] [Fintype G] [Fintype 
   rw [Finset.sum_comm]
   simp [ite_mul]
 
-theorem controlledKernel_form {α G V : Type*} [Fintype α] [Fintype G] [Fintype V]
+theorem controlledKernel_form     [Fintype G] [Fintype V]
     (mass : α → ℝ) (weight : V → ℝ) (H : α → α → G → ℂ) (act : G → V ≃ V)
     (f g : α × V → ℂ) :
     (∑ a : α × V, ∑ b : α × V,
@@ -59,11 +62,11 @@ theorem controlledKernel_form {α G V : Type*} [Fintype α] [Fintype G] [Fintype
   simp only [Complex.ofReal_mul]
   ring
 
-theorem normBound_controlledKernel {α G V : Type*} [Fintype α] [AddCommGroup G]
+theorem normBound_controlledKernel     [AddCommGroup G]
     [Fintype G] [Fintype V] (mass : α → ℝ) (weight : V → ℝ)
     (act : G → V ≃ V) (hw : ∀ r v, weight (act r v) = weight v)
     (hact : ∀ r d v, act (r + d) v = act d (act r v))
-    (H : α → α → G → ℂ) (C : ℝ)
+     H   C 
     (hm : ∀ a, 0 ≤ mass a) (hw0 : ∀ v, 0 ≤ weight v) (hC : 0 ≤ C)
     (hH : ∀ psi : AddChar G ℂ, NormBound mass (fourierFibre H psi) C) :
     NormBound (fun a : α × V => mass a.1 * weight a.2) (controlledKernel H act) C := by
@@ -71,6 +74,8 @@ theorem normBound_controlledKernel {α G V : Type*} [Fintype α] [AddCommGroup G
   intro f g
   rw [controlledKernel_form]
   exact controlled_translation_form_bound mass weight act hw hact H C hm hw0 hC hH f g
+
+end
 
 
 end Erdos821.P3Clean

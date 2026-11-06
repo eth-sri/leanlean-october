@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.SlotMass
 
@@ -9,7 +10,7 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-noncomputable section
+
 
 lemma subtype_product_le_full {σ : Type*} [Fintype σ] (p : σ→Prop) [DecidablePred p]
     (H : σ→ℝ) (hH : ∀ i,1≤H i) :
@@ -18,7 +19,7 @@ lemma subtype_product_le_full {σ : Type*} [Fintype σ] (p : σ→Prop) [Decidab
   exact Finset.prod_le_prod_of_subset_of_one_le₀ (Finset.filter_subset _ _)
     (fun i _ => (zero_le_one.trans (hH i))) (fun i _ _ => hH i)
 
-theorem harmonic_product_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
+theorem harmonic_product_small_power  rmax  (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ {σ : Type*} [Fintype σ] (H : σ→ℝ),
       Fintype.card σ≤rmax → (∀ i,1≤H i) →
       (∏ i,256*(columnDyadicLength (H i)+1:ℝ))^2≤C*(∏ i,H i)^ε := by
@@ -39,12 +40,10 @@ theorem harmonic_product_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
       rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,
         Real.finsetProd_rpow Finset.univ H (fun i _ => zero_le_one.trans (hH i)),mul_pow,←pow_mul,
         ←Real.rpow_mul_natCast hp.le]
-      congr 1
-      · congr 1;omega
-      · congr 1;norm_num
-    _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hD (Nat.mul_le_mul_left 2 hcard)) (Real.rpow_nonneg hp.le _)
+      ring
+    _ ≤ _ := (by gcongr <;> first | assumption | positivity | linarith)
 
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

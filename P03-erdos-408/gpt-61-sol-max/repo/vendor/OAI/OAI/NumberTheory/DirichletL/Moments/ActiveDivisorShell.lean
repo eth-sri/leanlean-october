@@ -13,16 +13,16 @@ open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentActiveDivisorShell
 open HeckeFamily CenteredMomentActiveAllocation CenteredMomentDivisorAllocation
 open CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
-local notation "O" => ActualEisensteinCubic.O
+
 
 structure Source (ι:Type*) [Fintype ι] where
   η : Character
-  m : O
-  A : O
+  m : ActualEisensteinCubic.O
+  A : ActualEisensteinCubic.O
   t : ℝ
-  slots : ι→Finset (Ideal O)
+  slots : ι→Finset (Ideal ActualEisensteinCubic.O)
   prime : ∀i,∀I∈slots i,Prime I
-  ν : ι→Ideal O→ℂ
+  ν : ι→Ideal ActualEisensteinCubic.O→ℂ
   W : ι→ℝ→ℂ
   lo : ι→ℝ
   hi : ι→ℝ
@@ -39,20 +39,20 @@ structure Source (ι:Type*) [Fintype ι] where
 
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
-def Source.active (s:Source ι) (D:Ideal O) : Finset (Allocation D (Finset.univ:Finset (ι⊕Fin 2))) :=
+def Source.active (s:Source ι) (D)  :=
   activeAllocations s.η s.m s.A s.t s.slots
     (fun i I=>s.ν i I*s.W i ((Ideal.absNorm I:ℝ)/s.P i)) D s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂
 
-def Source.allowance (s:Source ι) (Z:ℝ) : ℝ :=
+def Source.allowance (s:Source ι) (Z:ℝ)  :=
   (∑i,logWindow (s.lo i) (s.hi i))/Real.log Z
 
-theorem Source.active_boundary (s:Source ι) (D:Ideal O) (hD:Squarefree D)
-    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) (ha:a∈s.active D) (Z:ℝ) (hZ:1<Z) :
+theorem Source.active_boundary (s:Source ι)  D  (hD:Squarefree D)
+     a  (ha:a∈s.active D)  Z  (hZ:1<Z) :
     Real.logb Z (Ideal.absNorm D:ℝ)≤Real.logb Z (formalReductionFactor D a s.P)+s.allowance Z :=
   active_formal_boundary s.η s.m s.A s.t s.slots s.prime s.ν s.W s.lo s.hi s.P s.lo_pos s.P_pos
     s.support D hD a s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ Z hZ ha
 
-theorem reciprocal_sqrt_log (Z x y:ℝ) (hZ:1<Z) (hx:0<x) (hy:0<y) :
+theorem reciprocal_sqrt_log  Z x y  (hZ:1<Z) (hx:0<x) (hy:0<y) :
     1/Real.sqrt (x*y)=Z^(-(Real.logb Z x+Real.logb Z y)/2) := by
   have hz:0<Z:=zero_lt_one.trans hZ
   calc
@@ -62,10 +62,10 @@ theorem reciprocal_sqrt_log (Z x y:ℝ) (hZ:1<Z) (hx:0<x) (hy:0<y) :
     _=_:=by rw [←Real.rpow_mul hz.le]; congr 1; ring
 
 theorem Source.active_pair_weight {κ:Type*} [Fintype κ] [DecidableEq κ]
-    (s:Source ι) (v:Source κ) (D:Ideal O) (hD:Squarefree D)
-    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2)))
-    (b:Allocation D (Finset.univ:Finset (κ⊕Fin 2)))
-    (ha:a∈s.active D) (hb:b∈v.active D) (Z:ℝ) (hZ:1<Z) :
+    (s:Source ι) (v:Source κ)  D  (hD:Squarefree D)
+     a 
+     b 
+    (ha:a∈s.active D) (hb:b∈v.active D)  Z  (hZ:1<Z) :
     1/Real.sqrt (formalReductionFactor D a s.P*formalReductionFactor D b v.P)≤
       Z^((s.allowance Z+v.allowance Z)/2)/(Ideal.absNorm D:ℝ) := by
   have hs:0<formalReductionFactor D a s.P:=

@@ -7,19 +7,19 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalKernel
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentExceptionalWindowPair
 open CenteredMomentPlainWindowEnergy CenteredMomentRowNorm CenteredMomentSmooth
 open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+
 
 theorem paired_integrals {κ:Type*}(rows:Finset κ)(f g:κ→ℝ→ℂ)
     (hf:∀z∈rows,Integrable (f z))(hg:∀z∈rows,Integrable (g z))
     (a b:ℝ→ℝ)(ha:Integrable a)(hb:Integrable b)
-    (_ha0:∀u,0≤a u)(_hb0:∀v,0≤b v)(E:ℝ)(_hE:0≤E)
+    (_ha0:∀u,0≤a u)(_hb0:∀v,0≤b v) E (_hE:0≤E)
     (hpair:∀u v,∑z∈rows,‖f z u‖*‖g z v‖≤E*a u*b v):
     (∑z∈rows,‖∫u,f z u‖*‖∫v,g z v‖)≤E*(∫u,a u)*(∫v,b v):=by
   have hinner (u:ℝ):
@@ -33,7 +33,7 @@ theorem paired_integrals {κ:Type*}(rows:Finset κ)(f g:κ→ℝ→ℂ)
         simp only [integral_const_mul]
       _≤∫v,E*a u*b v:=integral_mono
         (integrable_finsetSum rows (fun z hz=>(hg z hz).norm.const_mul _))
-        (hb.const_mul _) (fun v=>hpair u v)
+        (hb.const_mul _) (hpair u)
       _=E*a u*(∫v,b v):=integral_const_mul _ _
   calc
     _≤∑z∈rows,(∫u,‖f z u‖)*‖∫v,g z v‖:=
@@ -49,6 +49,6 @@ theorem paired_integrals {κ:Type*}(rows:Finset κ)(f g:κ→ℝ→ℂ)
 
 end SevenEighths.CenteredMomentExceptionalWindowPair
 
-end
+
 
 end OAI

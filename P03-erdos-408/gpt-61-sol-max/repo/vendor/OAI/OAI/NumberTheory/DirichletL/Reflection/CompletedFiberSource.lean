@@ -18,9 +18,7 @@ variable (parents : Finset (Ideal Eis)) (J F : Ideal Eis) (hJ : J≠0) (hF : Squ
     (m : Eis) (hm : m≠0) (hparents : ∀ I∈parents,I≠0) (v : Eisˣ)
     (hbad : ∀ P∈fixedBadPrimes,P∣Ideal.span {m}*F)
 
-def residualOriginalData (K : originalResidualRows parents J (Ideal.span {m}*F)) :
-    GoodMaskRowData m (ConcretePrimeRowBridge.idealGenerator F)
-      (v.val*ConcretePrimeRowBridge.idealGenerator (reconstructFiberRow J (Ideal.span {m}*F) K.val)) :=
+def residualOriginalData (K : originalResidualRows parents J (Ideal.span {m}*F))  :=
   fiberGoodMaskRowData parents J F m hm hF.ne_zero hparents v
     ⟨reconstructFiberRow J (Ideal.span {m}*F) K.val,
       (originalResidualRows_reconstruct parents J (Ideal.span {m}*F) hparents K.val K.property).1⟩
@@ -52,11 +50,11 @@ variable (D : ∀ h : Eis⧸Ideal.span {c},∀ A : Finset (FreeReflection.pool J
 include hJ hQ hcQ hcop hdis hodd hperiod
 
 theorem original_completed_residual_source
-    (Ψ : Eis→*ℂ) (hΨnorm : ∀ n,‖Ψ n‖≤1) (hΨperiod : CanonicalCoefficientClass.FactorsModulo Q Ψ)
+     Ψ  (hΨnorm : ∀ n,‖Ψ n‖≤1) (hΨperiod : CanonicalCoefficientClass.FactorsModulo Q Ψ)
     (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:Eis)∣m)
-    (W : ℝ→ℂ) (hWcompact : HasCompactSupport W) (lo hi : ℝ) (hlo : 0<lo)
-    (hsupp : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0<X)
-    (w : ∀ i,lists i→ℂ) (K : originalResidualRows parents J (Ideal.span {m}*F)) :
+     W  (hWcompact : HasCompactSupport W) (lo hi : ℝ) (hlo : 0<lo)
+    (hsupp : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)  X  (hX : 0<X)
+     w   K  :
     (∑ p : ∀ i,lists i,(∏ i,w i (p i))*markedCompletedT
       (rowTwist Ψ m (ConcretePrimeRowBridge.idealGenerator F)
         (v.val*ConcretePrimeRowBridge.idealGenerator (reconstructFiberRow J (Ideal.span {m}*F) K.val))) W X

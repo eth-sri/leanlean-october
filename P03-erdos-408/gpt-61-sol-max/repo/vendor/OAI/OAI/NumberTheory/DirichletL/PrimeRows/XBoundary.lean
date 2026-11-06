@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.XGrowth
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedContour
@@ -13,19 +14,22 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
-def xRowScalar {K : ℕ} (P : Fin K→PrimeIdeal) (u : FreeRow)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y : ℝ) (w z : ℂ) : ℂ :=
+
+def xRowScalar {K } (P : Fin K→PrimeIdeal) (u : FreeRow)
+    (W0 W1 : SchwartzMap ℝ ℂ) (X Y : ℝ) (w z : ℂ)  :=
   (X:ℂ)^(1/2-z)*(Y:ℂ)^(w-1)*
     mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) z*mellin W1 w*
     (∏i,(elementNorm (CompletedGauss.primaryGenerator (P i).val):ℂ)^(z-1))*
     frequencyWeight z ⟨u.val,u.property.1⟩
 
-lemma continuedPhysicalRowKernel_x_factor {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ) :
+section
+variable {K : ℕ} (e eps : ℝ) (he : 0<e) (he' : e<1/1000) (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S) (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x : ℂ) (hZ : 0<Z) (w z : ℂ)
+
+lemma continuedPhysicalRowKernel_x_factor  
+         
+           
+          :
     continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z x w z=
       xRowScalar P u W0 W1 X Y w z*(Z:ℂ)^(x+z-1)*Complex.exp ((x+z-1)^2)*
         (star ((calibrationForSet S hmax).residueMonoid u.val)*
@@ -33,27 +37,27 @@ lemma continuedPhysicalRowKernel_x_factor {K : ℕ}
   unfold continuedPhysicalRowKernel xRowScalar sourceMellinWeight
   ring
 
-lemma coupled_gaussian_bound (z : ℂ) {l r v : ℝ} (hl : 0<l) (hv : v∈Icc l r) (t : ℝ) :
+lemma coupled_gaussian_bound   {l r v : ℝ} (hl : 0<l) (hv : v∈Icc l r) (t : ℝ) :
     ‖Complex.exp ((((v:ℂ)+t*I)+z-1)^2)‖≤
       Real.exp ((|z.re|+r+1)^2)*Real.exp (-((t+z.im)^2)) := by
   rw [Complex.norm_exp,←Real.exp_add]
   apply Real.exp_le_exp.mpr
   have hre : ((((v:ℂ)+t*I)+z-1)^2).re=(v+z.re-1)^2-(t+z.im)^2 := by simp [pow_two]
   rw [hre]
-  have hvp : 0<v := hl.trans_le hv.1
+  
   have hA : |v+z.re-1|≤|z.re|+r+1 := by
-    rw [abs_le]
-    constructor <;> linarith [neg_abs_le z.re,le_abs_self z.re,hv.2]
+    grind
   have hh := pow_le_pow_left₀ (abs_nonneg (v+z.re-1)) hA 2
   rw [sq_abs] at hh
   linarith
 
-theorem continuedPhysicalRowKernel_x_gaussian {K : ℕ}
-    (e eps : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
-    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
-    (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ)
-    (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ) (l r : ℝ)
+include he he' hfirst hZ in
+theorem continuedPhysicalRowKernel_x_gaussian  
+         
+         
+         
+         
+          (l r : ℝ)
     (hl : (51/100:ℝ)≤l) (hlβ : HeckeZeroSupremum.beta+8*e≤l)
     (hw : -(1/100:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re)
     (hlw : 1+eps≤l+w.re) :
@@ -89,6 +93,8 @@ theorem continuedPhysicalRowKernel_x_gaussian {K : ℕ}
     _ ≤ A*(2*(3+|z.im|)^2*(1+|t+z.im|^2))*Real.exp (-((t+z.im)^2)) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (Continuation.shifted_height_two t z.im) hA) (Real.exp_pos _).le
     _ = _ := by unfold Continuation.polynomialGaussian;ring
+
+end
 
 end SevenEighths.ProbeHighRowFamily
 

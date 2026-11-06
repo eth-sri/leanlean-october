@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.SmallNormalization
 public import Erdos821.P3Clean.ResidueAction
@@ -25,8 +26,7 @@ def stateCoordinates (P : PrimeGroups) (M : ℕ) :
     intro s
     have h := (splitLabels P M).left_inv s.2.1
     change joinLabels (restrictSmall s.2.1) (P.restrictBig s.2.1) = s.2.1 at h
-    change (s.1, joinLabels (restrictSmall s.2.1) (P.restrictBig s.2.1), s.2.2) = s
-    rw [h]
+    simp_all
   right_inv := by
     intro c
     apply Prod.ext
@@ -58,13 +58,13 @@ def cutoffStateCoordinates (P : PrimeGroups) (M B : ℕ) :
       · apply Subtype.ext
         rfl
 
-theorem mem_smallArrayStates (M : ℕ) (y : P.SmallResidues) (a : SmallLabels P M) :
+theorem mem_smallArrayStates  M   y   a  :
     a ∈ smallArrayStates P M y ↔
       ∀ g : P.SmallGroup, Function.Injective (a g) ∧ ∀ i, y g (a g i) = 0 := by
   simp only [smallArrayStates, Fintype.mem_piFinset, Finset.mem_filter, Finset.mem_univ, true_and]
 
-theorem smallPhysical_join {M : ℕ} (y : P.SmallResidues)
-    (a : SmallLabels P M) (b : P.BigLabels M) :
+theorem smallPhysical_join  {M}   y 
+     a   b  :
     P.smallPhysical y (joinLabels a b) ↔ a ∈ smallArrayStates P M y := by
   rw [mem_smallArrayStates]
   unfold PrimeGroups.smallPhysical
@@ -74,11 +74,11 @@ theorem smallPhysical_join {M : ℕ} (y : P.SmallResidues)
     (fun f : Fin M → P.Prime g.val => Function.Injective f ∧ ∀ i, y g (f i) = 0)
     (joinLabels_small a b g))
 
-def tiltedIdealMass (F : FixedData) (n : ℕ) {M : ℕ} (a : P.BigLabels M) : ℝ :=
+def tiltedIdealMass (F : FixedData) (n : ℕ) {M } (a : P.BigLabels M)  :=
   ∏ g : P.BigGroup, ∏ i, tiltedMu F P n g.val (a g i)
 
-theorem memoryMass_coordinates (F : FixedData) (J n : ℕ)
-    (a : SmallLabels P (J + F.ell)) (b : P.BigLabels (J + F.ell)) (u : PendingState P) :
+theorem memoryMass_coordinates  F   J n 
+     a   b   u  :
     P.memoryMass F J n (u.1, joinLabels a b, u.2) =
       (if a ∈ smallArrayStates P (J + F.ell) u.1 then smallMarkMass P (J + F.ell) else 0) *
         tiltedIdealMass F n b * pendingMass F n u := by

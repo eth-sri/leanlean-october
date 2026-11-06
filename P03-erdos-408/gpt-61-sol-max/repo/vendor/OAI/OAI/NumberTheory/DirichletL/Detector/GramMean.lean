@@ -6,24 +6,28 @@ public import OAI.NumberTheory.DirichletL.Detector.GramGlobalExtension
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open CenteredMomentCorrelation CenteredMomentCanonical
 local notation "O" => ActualEisensteinCubic.O
 
-lemma actualSextic_power_nonprincipal (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda∉P) (hchar : ringChar (O⧸P)≠2) (e : ℕ) (he : ¬6∣e) :
+section
+variable (P : Ideal O) [P.IsMaximal] (hg : goodLambda∉P) (hchar : ringChar (O⧸P)≠2)
+include P hg hchar
+
+lemma actualSextic_power_nonprincipal    
+         e  (he : ¬6∣e) :
     actualSextic P hg^e≠1 := by
   intro h
   have hd := (orderOf_dvd_iff_pow_eq_one).mpr h
   rw [actualSextic_order_six P hg hchar] at hd
   exact he hd
 
-theorem primePower_mean_zero (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda∉P) (hchar : ringChar (O⧸P)≠2)
-    (c e : ℕ) (hc : 1≤c) (he : ¬6∣e) [Fintype (O⧸P^c)] (d : O) :
+theorem primePower_mean_zero    
+       
+     c e   hc  (he : ¬6∣e) [Fintype (O⧸P^c)]  d  :
     (∑x : O⧸P^c,(actualSextic P hg^e)
       (Ideal.Quotient.mk P d*primePowerReduction P hc x))=0 := by
   let : Fintype (O⧸P) := Fintype.ofFinite _
@@ -31,11 +35,13 @@ theorem primePower_mean_zero (P : Ideal O) [P.IsMaximal]
   rw [←Finset.mul_sum,sum_reduction _ (primePowerReduction_surjective P hc),
     MulChar.sum_eq_zero_of_ne_one (actualSextic_power_nonprincipal P hg hchar e he),mul_zero,mul_zero]
 
+end
+
 theorem crt_joint_mean_zero (Q P : Ideal O) [P.IsMaximal]
     (hg : goodLambda∉P) (hchar : ringChar (O⧸P)≠2)
     (c e : ℕ) (hc : 1≤c) (he : ¬6∣e) (hcop : IsCoprime Q (P^c))
     [Fintype (O⧸Q)] [Fintype (O⧸P^c)] [Fintype (O⧸Q*P^c)]
-    (F : (O⧸Q)→(O⧸Q*P^c)→ℂ) (d : O) :
+    (F : (O⧸Q)→(O⧸Q*P^c)→ℂ)  d  :
     (∑x : O⧸Q*P^c,∑y : O⧸Q*P^c,
       (actualSextic P hg^e) (Ideal.Quotient.mk P d*
         primePowerReduction P hc ((Ideal.quotientMulEquivQuotientProd Q (P^c) hcop x).2))*
@@ -57,6 +63,6 @@ theorem crt_joint_mean_zero (Q P : Ideal O) [P.IsMaximal]
       simp
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

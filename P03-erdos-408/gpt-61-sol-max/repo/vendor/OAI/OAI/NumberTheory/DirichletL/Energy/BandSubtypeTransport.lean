@@ -22,8 +22,8 @@ variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [Fintype α] [Fintype β] in
 theorem positiveAt_embedding (e : β↪α)
-    (W : ℝ→ℂ) (bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z : ℝ)
-    (η₀ : Character) (Q : Ideal O) (degree : ℕ) (S : Finset (ℕ×ℕ)) (C : ℝ)
+     W   bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z 
+     η₀   Q   degree   S   C 
     (h : PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z
       η₀ Q degree S C) :
     PositiveAt (α:=β) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z
@@ -61,8 +61,8 @@ theorem positiveAt_embedding (e : β↪α)
 
 omit [Fintype α] in
 theorem positiveAt_subtype (T : Finset α)
-    (W : ℝ→ℂ) (bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z : ℝ)
-    (η₀ : Character) (Q : Ideal O) (degree : ℕ) (S : Finset (ℕ×ℕ)) (C : ℝ)
+     W   bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z 
+     η₀   Q   degree   S   C 
     (h : PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z
       η₀ Q degree S C) :
     PositiveAt (α:=T) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z

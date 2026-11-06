@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.Floor
 public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorState
@@ -16,13 +17,13 @@ open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
 open CenteredMomentPrimeSlot QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
-def length (Z X:ℝ):ℝ:=Real.logb Z (max 1 X)
+def length (Z X:ℝ):=Real.logb Z (max 1 X)
 
-lemma length_nonneg (Z X:ℝ)(hZ:1<Z):0≤length Z X:=
+lemma length_nonneg  Z X (hZ:1<Z):0≤length Z X:=
   Real.logb_nonneg hZ (le_max_left _ _)
 
 def ZeroAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
-    (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
+    (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):=
   ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→s.width≤M→
   ∀p:Profiles a b,∀t X₁ X₂:ℝ,0<X₁→0<X₂→X₁≤Z^L→X₂≤Z^L→
     s.plainEnergy p t X₁ X₂≤C*diagonalControl s.radial.profile*(p.control S)^2*
@@ -34,7 +35,7 @@ local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 def PositiveAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
+    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):=
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ v:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→(∀i,lo≤σ i)→(∀i,σ i≤hi)→
     0≤height→(∀i,|v i|≤height)→
@@ -92,7 +93,7 @@ theorem exists_positive_bottom (W:ℝ→ℂ)(aslot bslot:ℝ)(haslot:0<aslot)
   have hpow:(1+|t|+height)^(J T)≤(1+|t|+height)^(∑T:Finset α,J T):=
     pow_le_pow_right₀ (by linarith [abs_nonneg t]) hj
   have hd:=diagonalControl_nonneg s.radial.profile
-  have hp:=p.control_nonneg S₀
+  
   have hpt:=p.control_nonneg (S T)
   apply hh.trans
   gcongr

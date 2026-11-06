@@ -12,34 +12,38 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
 open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource
-local notation "O"=>ActualEisensteinCubic.O
+
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ] {Jo:ℕ}
-variable (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal]
+variable (p:ι→ActualEisensteinCubic.O)[∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def globalPriorityOuter (negative:Bool)(Ψ:O→*ℂ)(m:O)
-    (ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)(w:Source ι Jo→ℂ)(x:Source ι Jo):ℂ:=
+def globalPriorityOuter (negative:Bool)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)
+    (ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)(w:Source ι Jo→ℂ)(x:Source ι Jo):=
   w x*(priorityOuter p hg x.cube negative Ψ m (fun _=>1) ray core x.quotientSupport:ℂ)
 
-def globalPriorityWeight (negative:Bool)(Ψ:O→*ℂ)(m:O)
+def globalPriorityWeight (negative:Bool)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)
     (ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)(w:Source ι Jo→ℂ)
-    (J:Finset σ)(a:σ→ι→ℂ)(x:MarkedSecondSource ι (Jo+(J.card+J.card)) 0):ℂ:=
+    (J:Finset σ)(a:σ→ι→ℂ)(x:MarkedSecondSource ι (Jo+(J.card+J.card)) 0):=
   coefficient p J a (globalPriorityOuter p hg negative Ψ m ray core w) (secondParentOf x)
 
-def normalizedGlobalPriorityWeight (negative:Bool)(Ψ:O→*ℂ)(m:O)
+def normalizedGlobalPriorityWeight (negative:Bool)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)
     (ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)(w:Source ι Jo→ℂ)
-    (J:Finset σ)(a:σ→ι→ℂ)(x:MarkedSecondSource ι (Jo+(J.card+J.card)) 0):ℂ:=
+    (J:Finset σ)(a:σ→ι→ℂ)(x:MarkedSecondSource ι (Jo+(J.card+J.card)) 0):=
   globalPriorityWeight p hg negative Ψ m ray core w J a x/(coefficientBound:ℂ)
 
+section
+variable (hinj:Function.Injective (fun i=>Ideal.span {p i})) (extra:CubeCoordinates ι→Finset ι) (original:Finset (Source ι Jo)) (pool:Finset ι) (negative:Bool) (Ψ:ActualEisensteinCubic.O→*ℂ) (m:ActualEisensteinCubic.O) (ray:RayCharacter×RayCharacter) (core:FirstCoreIndex) (w:Source ι Jo→ℂ) (hw:∀x∈original,‖w x‖≤1) (hΨ:∀u,‖Ψ u‖≤1) (J:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ) (ha:∀i∈J,∀k∈lists i,‖a i k‖≤1) (R:SecondParentSource ι (Jo+(J.card+J.card))→Finset ι→Finset ι→ℝ) (x:MarkedSecondSource ι (Jo+(J.card+J.card)) 0) (hx:x∈unifiedSource p pool (wholeAssignedParents p (fun x=>extra x.cube) original negative J lists) R)
+include hinj extra original pool negative Ψ m ray core w hw hΨ J lists a ha R x hx
+
 theorem globalPriorityWeight_norm
-    (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (extra:CubeCoordinates ι→Finset ι)(original:Finset (Source ι Jo))(pool:Finset ι)
-    (negative:Bool)(Ψ:O→*ℂ)(m:O)(ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)
-    (w:Source ι Jo→ℂ)(hw:∀x∈original,‖w x‖≤1)(hΨ:∀u,‖Ψ u‖≤1)
-    (J:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)(ha:∀i∈J,∀k∈lists i,‖a i k‖≤1)
-    (R:SecondParentSource ι (Jo+(J.card+J.card))→Finset ι→Finset ι→ℝ)
-    (x:MarkedSecondSource ι (Jo+(J.card+J.card)) 0)
-    (hx:x∈unifiedSource p pool (wholeAssignedParents p (fun x=>extra x.cube) original negative J lists) R):
+     
+       
+         
+       
+        
+     
+     
+     :
     ‖globalPriorityWeight p hg negative Ψ m ray core w J a x‖≤coefficientBound:=by
   apply InverseMomentWholeRetainedSource.whole_coefficient_norm p hinj (fun x=>extra x.cube)
     original negative J lists a _ coefficientBound ha
@@ -51,22 +55,24 @@ theorem globalPriorityWeight_norm
   · exact ((mem_unifiedSource p pool _ R x).mp hx).1
 
 theorem normalizedGlobalPriorityWeight_norm
-    (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (extra:CubeCoordinates ι→Finset ι)(original:Finset (Source ι Jo))(pool:Finset ι)
-    (negative:Bool)(Ψ:O→*ℂ)(m:O)(ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)
-    (w:Source ι Jo→ℂ)(hw:∀x∈original,‖w x‖≤1)(hΨ:∀u,‖Ψ u‖≤1)
-    (J:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)(ha:∀i∈J,∀k∈lists i,‖a i k‖≤1)
-    (R:SecondParentSource ι (Jo+(J.card+J.card))→Finset ι→Finset ι→ℝ)
-    (x:MarkedSecondSource ι (Jo+(J.card+J.card)) 0)
-    (hx:x∈unifiedSource p pool (wholeAssignedParents p (fun x=>extra x.cube) original negative J lists) R):
+     
+       
+         
+       
+        
+     
+     
+     :
     ‖normalizedGlobalPriorityWeight p hg negative Ψ m ray core w J a x‖≤1:=by
   rw [normalizedGlobalPriorityWeight,norm_div,Complex.norm_real,Real.norm_of_nonneg coefficientBound_pos.le]
   exact (div_le_one coefficientBound_pos).mpr
     (globalPriorityWeight_norm p hg hinj extra original pool negative Ψ m ray core w hw hΨ J lists a ha R x hx)
 
+end
+
 omit [DecidableEq σ] in
 theorem globalPriority_sum_normalized
-    (negative:Bool)(Ψ:O→*ℂ)(m:O)(ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)
+    (negative:Bool)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)
     (w:Source ι Jo→ℂ)(J:Finset σ)(a:σ→ι→ℂ)
     (source:Finset (MarkedSecondSource ι (Jo+(J.card+J.card)) 0))
     (H:MarkedSecondSource ι (Jo+(J.card+J.card)) 0→ℂ):

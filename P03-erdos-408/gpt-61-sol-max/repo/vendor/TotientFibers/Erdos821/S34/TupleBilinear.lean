@@ -12,15 +12,15 @@ namespace Erdos821.S34Core
 noncomputable section
 open Blueprint.Analytic
 
-def tuplePhase (G : PrimeGroups) (a b : Fin G.size → ℕ) (θ ζ : ℝ)
-    (X : Tuple G a) (Y : Tuple G b) : ℂ :=
+def tuplePhase (G ) (a b ) (θ ζ : ℝ)
+    (X : Tuple G a) (Y : Tuple G b)  :=
   mellin (product G a X * product G b Y) ζ * e (θ * product G a X * product G b Y)
 
-theorem tuple_norm_nonneg (G : PrimeGroups) (k : Fin G.size → ℕ) (f : Tuple G k → ℂ) :
+theorem tuple_norm_nonneg  G   k   f  :
     0 ≤ tupleNorm G k f := Real.sqrt_nonneg _
 
-theorem supported_tuple_bilinear (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (f : Tuple G a → ℂ) (g : Tuple G b → ℂ) (U V H θ η ζ : ℝ) (u : ℤ) (r : ℕ)
+theorem supported_tuple_bilinear  G   a b 
+     f   g  (U V H θ η ζ : ℝ) (u : ℤ)  r 
     (hU : 1 ≤ U) (hV : 1 ≤ V) (hH : 0 ≤ H) (hr : 1 ≤ r)
     (hu : Nat.Coprime u.natAbs r) (hθ : θ = (u : ℝ) / r + η)
     (hη : |η| ≤ (r : ℝ) ^ (-2 : ℤ))

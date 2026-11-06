@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Analysis.Schur
 public import Erdos408.OneSided.Memory.Space
@@ -58,7 +59,7 @@ theorem sum_multBox_prod (B : ℕ) (G : X → ℕ → ℕ → ℝ) :
 omit [Fintype X] [DecidableEq X] in
 /-- The per-particle sum: the binomial theorem in the first variable and the exponential
 series in the second. For a particle that cannot hit, only `(0, 0)` survives. -/
-theorem sum_binom_exp_le {B s : ℕ} {a b e : ℝ} (P : Prop) [Decidable P] (ha : 0 ≤ a)
+theorem sum_binom_exp_le  {B s}  {a b e : ℝ}  P  [Decidable P] (ha : 0 ≤ a)
     (hb : 0 ≤ b) (he : 0 ≤ e) (hab : a + b ≤ 1) (hs : s ≤ B) (hP : ¬P → s = 0) :
     ∑ d ∈ range (B + 1), ∑ n ∈ range (B + 1),
         (if d ≤ s ∧ (P ∨ n = 0) then
@@ -93,22 +94,21 @@ theorem sum_binom_exp_le {B s : ℕ} {a b e : ℝ} (P : Prop) [Decidable P] (ha 
     · simp
     · intro n _ hn; simp [hn]
     · intro h; simp at h
-    · intro d _ hd
-      exact sum_eq_zero fun n _ => ite_eq_right fun h => hd h.1
+    · simp_all
     · intro h; simp at h
 
 /-! ### The ghost operation -/
 
-section Ghost
+
 
 variable (hit : X → Prop) [DecidablePred hit]
 
 /-- The multiplicities of the particles hitting the current position. -/
-def hitPart (S : X → ℕ) (x : X) : ℕ := if hit x then S x else 0
+def hitPart (S : X → ℕ) (x : X)  := if hit x then S x else 0
 
 /-- A ghost choice `(D, N)` at `S`: `D` deletes hitting particles, `N` creates particles
 anchored at the current lines, and the result has size at most `B`. -/
-def GhostValid (B : ℕ) (S : X → ℕ) (c : (X → ℕ) × (X → ℕ)) : Prop :=
+def GhostValid (B : ℕ) (S : X → ℕ) (c : (X → ℕ) × (X → ℕ))  :=
   (∀ x, c.1 x ≤ hitPart hit S x) ∧ (∀ x, ¬ hit x → c.2 x = 0) ∧
     memSize (fun x => S x - c.1 x + c.2 x) ≤ B
 
@@ -118,17 +118,17 @@ instance (B : ℕ) (S : X → ℕ) (c : (X → ℕ) × (X → ℕ)) : Decidable 
 variable (ν : X → ℝ) (del surv : ℝ) (cre : X → ℝ)
 
 /-- The per-particle factor `C(h, d) del^d surv^{h - d} (cre ν)^n / n!`. -/
-noncomputable def ghostFactor (x : X) (h d n : ℕ) : ℝ :=
+noncomputable def ghostFactor (x : X) (h d n : ℕ)  :=
   h.choose d * del ^ d * surv ^ (h - d) * (cre x * ν x) ^ n / n.factorial
 
 /-- The coefficient of a ghost choice. -/
-noncomputable def ghostCoef (B : ℕ) (S : MemState X B) (c : (X → ℕ) × (X → ℕ)) : ℂ :=
+noncomputable def ghostCoef (B ) (S : MemState X B) (c : (X → ℕ) × (X → ℕ))  :=
   if GhostValid hit B S.1 c then
     ((∏ x, ghostFactor ν del surv cre x (hitPart hit S.1 x) (c.1 x) (c.2 x) : ℝ) : ℂ)
   else 0
 
 /-- The output `S - D + N` of a ghost choice. -/
-def ghostOut (B : ℕ) (S : MemState X B) (c : (X → ℕ) × (X → ℕ)) : MemState X B :=
+def ghostOut (B ) (S : MemState X B) (c : (X → ℕ) × (X → ℕ))  :=
   if hc : GhostValid hit B S.1 c then
     ⟨fun x => S.1 x - c.1 x + c.2 x, mem_memStates.2 hc.2.2⟩
   else S
@@ -136,14 +136,14 @@ def ghostOut (B : ℕ) (S : MemState X B) (c : (X → ℕ) × (X → ℕ)) : Mem
 variable {hit ν del surv cre}
 
 omit [Fintype X] [DecidableEq X] in
-theorem abs_ghostFactor (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) (x : X) (h d n : ℕ) :
+theorem abs_ghostFactor (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv)  x   h d n  :
     |ghostFactor ν del surv cre x h d n| =
       h.choose d * |del| ^ d * surv ^ (h - d) * (|cre x| * ν x) ^ n / n.factorial := by
   simp only [ghostFactor, abs_div, abs_mul, abs_pow, Nat.abs_cast, abs_of_nonneg hsurv,
     abs_of_nonneg (hν x)]
 
-theorem norm_ghostCoef (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {B : ℕ} (S : MemState X B)
-    {c : (X → ℕ) × (X → ℕ)} (hc : GhostValid hit B S.1 c) :
+theorem norm_ghostCoef (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv)  {B}   S 
+     {c}  (hc : GhostValid hit B S.1 c) :
     ‖ghostCoef hit ν del surv cre B S c‖ = ∏ x, (hitPart hit S.1 x).choose (c.1 x) *
       |del| ^ c.1 x * surv ^ (hitPart hit S.1 x - c.1 x) * (|cre x| * ν x) ^ c.2 x /
         (c.2 x).factorial := by
@@ -151,8 +151,8 @@ theorem norm_ghostCoef (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {B : ℕ} 
   exact prod_congr rfl fun x _ => abs_ghostFactor hν hsurv x _ _ _
 
 /-- The row sums: `∑_c |a(S, c)| v₀^{size(out)} ≤ exp(v₀ ∑_{hits} |cre| ν) v₀^{size(S)}`. -/
-theorem ghost_row (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (hv₀ : 0 < v₀)
-    (hdel : surv + |del| / v₀ ≤ 1) {B : ℕ} (S : MemState X B) :
+theorem ghost_row (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv)  {v₀}  (hv₀ : 0 < v₀)
+    (hdel : surv + |del| / v₀ ≤ 1)  {B}   S  :
     ∑ c ∈ multBox B ×ˢ multBox B,
         ‖ghostCoef hit ν del surv cre B S c‖ * v₀ ^ memSize (ghostOut hit B S c).1 ≤
       Real.exp (v₀ * ∑ x with hit x, |cre x| * ν x) * v₀ ^ memSize S.1 := by
@@ -192,7 +192,7 @@ theorem ghost_row (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
       rw [ite_eq_left ⟨hd, hn⟩]
       obtain ⟨r, hr⟩ : ∃ r, S.1 x = r + c.1 x := ⟨S.1 x - c.1 x, by omega⟩
       rw [hr, show r + c.1 x - c.1 x + c.2 x = r + c.2 x by omega, pow_add, pow_add]
-      have hv : v₀ ≠ 0 := hv₀.ne'
+      
       simp only [div_pow, mul_pow]
       field_simp
     · rw [ghostCoef, ite_eq_right hc, norm_zero, zero_mul]
@@ -237,12 +237,12 @@ A choice `(D, N)` with output `T` comes from at most one input, `S = T - N + D`.
 input the factorial weights turn the choice into the adjoint one (`mem:ghost-factorial`):
 choose the `n` births among the `t` hits of `T`, and integrate the `d` deletions against
 `ν^{⊗d} / d!`. -/
-theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (hv₀ : 0 < v₀)
-    (hcre : ∀ x, surv + |cre x| / v₀ ≤ 1) {B : ℕ} (T : MemState X B) :
+theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv)  {v₀}  (hv₀ : 0 < v₀)
+    (hcre : ∀ x, surv + |cre x| / v₀ ≤ 1)  {B}   T  :
     ∑ S : MemState X B, ∑ c ∈ multBox B ×ˢ multBox B with ghostOut hit B S c = T,
         memWeight ν S.1 * ‖ghostCoef hit ν del surv cre B S c‖ * v₀ ^ memSize S.1 ≤
       Real.exp (v₀ * |del| * ∑ x with hit x, ν x) * (memWeight ν T.1 * v₀ ^ memSize T.1) := by
-  have hv : v₀ ≠ 0 := hv₀.ne'
+  
   -- the per-particle column factor `G'`: `d` deletions, `n` births
   set G' : X → ℕ → ℕ → ℝ := fun x d n =>
     if n ≤ hitPart hit T.1 x ∧ (hit x ∨ d = 0) then
@@ -360,6 +360,6 @@ theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
         congr 2
         exact sum_congr rfl fun x _ => by ring
 
-end Ghost
+
 
 end Erdos408.OneSided

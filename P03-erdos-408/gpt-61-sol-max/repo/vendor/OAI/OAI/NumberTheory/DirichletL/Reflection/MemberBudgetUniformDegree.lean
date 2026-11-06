@@ -10,15 +10,15 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem original_member_tuple_full_budget_uniform_degree
-    (ε : ℝ) (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (ρ : ℝ) (hρ : 0<ρ) (η : ℝ) (hηpos : 0<η)
-    (κ δ Lscale Lpool : ℝ) (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool)
+     ε  (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     ρ  (hρ : 0<ρ)  η  (hηpos : 0<η)
+     κ δ Lscale Lpool  (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool)
     (Lcap saving : ℝ) (hδ : 0<δ) :
     ∃ (degree : ℕ), ∀ {Nlevel a c₀ : Eis} {mode : Bool} [Fintype (Eis⧸Ideal.span {Nlevel^2})]
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c₀ mode)) (hc₀ : c₀≠0)
@@ -104,7 +104,7 @@ theorem original_member_tuple_full_budget_uniform_degree
   intro K hK
   congr 2
   exact (literalWholeRow_eq_member_tuples tuples hmax hgood G K.val (hrows K.val K.property) hne hinj (D K) s hc₀ j W θ X r aw).symm
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

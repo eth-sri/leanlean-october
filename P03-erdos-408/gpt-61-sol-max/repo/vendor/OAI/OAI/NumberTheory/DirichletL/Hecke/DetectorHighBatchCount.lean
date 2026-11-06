@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorHighBatchCount
@@ -16,13 +16,13 @@ open HeckeDetectorBatch
 open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorRowCount
 
 theorem high_batch_count_from_raw_moments
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+     M  [NeZero M]  H 
     (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O))
     (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ)
     (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀ y,0≤φ y) (hφne : φ≠0)
     (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
     (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀ y,φ y≤B₀)
-    (εm : ℝ) (hεm : 0<εm) :
+     εm  (hεm : 0<εm) :
     ∃ c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
       ∀ (a ε T allowance Δ C height : ℝ) (i : ℕ),
       1<U → 5/6≤2*a-1 → a≤1 → 0≤ε → ε≤1/1000 → 0≤C → 0≤height →
@@ -45,6 +45,6 @@ theorem high_batch_count_from_raw_moments
   simpa only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_assoc] using hb
 end SevenEighths.HeckeDetectorHighBatchCount
 
-end
+
 
 end OAI

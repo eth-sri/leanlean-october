@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Foundation
 
@@ -12,16 +13,16 @@ open scoped BigOperators Classical ContDiff SchwartzMap FourierTransform
 open MeasureTheory LocalLogFourier
 noncomputable section
 
-def smallScalar (R : ℝ) : ℝ := min 1 (R ^ (1/4 : ℝ))
+def smallScalar (R : ℝ)  := min 1 (R ^ (1/4 : ℝ))
 
-lemma smallScalar_pos {R : ℝ} (hR : 0 < R) : 0 < smallScalar R :=
+lemma smallScalar_pos  {R}  (hR : 0 < R) : 0 < smallScalar R :=
   lt_min zero_lt_one (Real.rpow_pos_of_pos hR _)
 
-def canonicalDensity (U : ℝ → ℂ) (V : 𝓢(ℝ, ℂ)) (R t : ℝ) : ℂ :=
+def canonicalDensity (U : ℝ → ℂ) (V : 𝓢(ℝ, ℂ)) (R t : ℝ)  :=
   ((smallScalar R : ℝ) : ℂ)⁻¹ *
     (𝓕 (fun s : ℝ => U s * CubicReflectionKernel.paperKernel V (R * Real.exp s))) t
 
-theorem paperKernel_window_source_bound (a b : ℝ) (ha : 0 < a) (K : ℕ) (L : ℝ) :
+theorem paperKernel_window_source_bound  a b  (ha : 0 < a)  K   L  :
     ∃ (S : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ V : 𝓢(ℝ, ℂ), Function.support (V : ℝ → ℂ) ⊆ Set.Icc a b →
       ∀ R : ℝ, 0 < R → ∀ j ≤ K, ∀ s : ℝ, |s| ≤ L →
@@ -74,9 +75,9 @@ theorem paperKernel_window_source_bound (a b : ℝ) (ha : 0 < a) (K : ℕ) (L : 
   exact le_min hlarge' hsmall'
 
 private theorem localized_source_seminorm
-    (V F : ℝ → ℂ) (R L CW CF : ℝ) (n k : ℕ)
-    (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V)
-    (hF : ContDiffOn ℝ ∞ F (Set.Ioi 0)) (hR : 0 < R)
+     V F   R L CW CF   n k 
+     hVc   hVs 
+     hF   hR 
     (hL : 0 ≤ L) (hCW : 0 ≤ CW) (hCF : 0 ≤ CF)
     (hVderiv : ∀ i ≤ n, ∀ s, ‖iteratedFDeriv ℝ i V s‖ ≤ CW)
     (hwindow : ∀ s, (∃ i ≤ n, ‖iteratedFDeriv ℝ i V s‖ ≠ 0) → |s| ≤ L)
@@ -89,9 +90,7 @@ private theorem localized_source_seminorm
     apply hF.comp_contDiff (by fun_prop)
     intro z
     exact mul_pos hR (Real.exp_pos _)
-  have hgeq : (g : ℝ → ℂ) = fun z => V z * G z := by
-    funext z
-    exact positiveLogProfile_apply V F R z hVc hVs hF hR
+  have hgeq : (g : ℝ → ℂ) = fun z => V z * G z := rfl
   have hD : 0 ≤ derivativeConstant n CW CF := derivativeConstant_nonneg _ _ _ hCW hCF
   apply SchwartzMap.seminorm_le_bound' ℝ k n g (mul_nonneg (pow_nonneg hL _) hD)
   intro s
@@ -111,7 +110,7 @@ private theorem localized_source_seminorm
         exact hEuler (n - i) (Nat.sub_le _ _) s hwindow'
       gcongr
       exact hVderiv i hi' s
-    have hsk : ‖s‖ ^ k ≤ L ^ k := by simpa only [Real.norm_eq_abs] using pow_le_pow_left₀ (abs_nonneg s) hwindow' k
+    have hsk : ‖s‖ ^ k ≤ L ^ k := by bound
     exact mul_le_mul hsk hraw (norm_nonneg _) (pow_nonneg hL _)
   · have hz (i : ℕ) (hi : i ≤ n) : ‖iteratedFDeriv ℝ i V s‖ = 0 := by
       by_contra hne
@@ -128,11 +127,15 @@ private theorem localized_source_seminorm
     rw [hgzero, mul_zero]
     positivity
 
-theorem source_uniform_separation {ι : Type*} [Fintype ι]
-    (a b : ℝ) (ha : 0 < a)
-    (windows : ι → ℝ → ℂ) (slope M : ι → ℝ)
-    (hM : ∀ i, 0 ≤ M i) (hwindows : ∀ i y, windows i y ≠ 0 → |y| ≤ M i)
-    (J : ℕ) :
+section
+variable {ι : Type*} [Fintype ι] (a b : ℝ) (ha : 0 < a) (windows : ι → ℝ → ℂ) (slope M : ι → ℝ) (hM : ∀ i, 0 ≤ M i) (hwindows : ∀ i y, windows i y ≠ 0 → |y| ≤ M i)
+include ι a b ha windows slope M hM hwindows
+
+theorem source_uniform_separation    
+       
+       
+       
+     J  :
     ∃ (U : ℝ → ℂ) (S : Finset (ℕ × ℕ)) (C : ℝ),
       0 ≤ C ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ V : 𝓢(ℝ, ℂ), Function.support (V : ℝ → ℂ) ⊆ Set.Icc a b →
@@ -174,8 +177,7 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
   have hF := CubicReflectionKernel.paperKernel_compact_source_smooth V a b ha hV (V.smooth ⊤)
   let g := positiveLogProfile U (CubicReflectionKernel.paperKernel V) R hUc hUs hF hR
   let B : 𝓢(ℝ, ℂ) := ((m : ℂ)⁻¹) • (𝓕 g)
-  have hcan (t : ℝ) : B t = canonicalDensity U V R t := by
-    rfl
+  have hcan (t : ℝ) : B t = canonicalDensity U V R t := rfl
   have hnorm (t : ℝ) : ‖B t‖ = m⁻¹ * ‖(𝓕 g) t‖ := by
     simp only [B, smul_apply, smul_eq_mul, norm_mul, norm_inv,
       Complex.norm_real, Real.norm_eq_abs, abs_of_pos hm]
@@ -257,17 +259,17 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
     rw [he]
     exact hh.trans (mul_le_mul_of_nonneg_right (le_add_of_nonneg_left hB0) hQ)
 
-def twistedDensity (U W : ℝ → ℂ) (θ R t : ℝ) : ℂ :=
+def twistedDensity (U W : ℝ → ℂ) (θ R t : ℝ)  :=
   (smallScalar R : ℂ)⁻¹ *
     (𝓕 (fun s : ℝ => U s * CubicReflectionKernel.paperKernel
       (CompletedGauss.Vstar (CompletedHeight.normTwistedSource W θ)) (R * Real.exp s))) t
 
-theorem normTwistedSource_uniform_separation {ι : Type*} [Fintype ι]
-    (a b : ℝ) (ha : 0 < a)
-    (windows : ι → ℝ → ℂ) (slope M : ι → ℝ)
-    (hM : ∀ i, 0 ≤ M i) (hwindows : ∀ i y, windows i y ≠ 0 → |y| ≤ M i)
-    (W : ℝ → ℂ) (hsupp : Function.support W ⊆ Set.Icc a b)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+theorem normTwistedSource_uniform_separation    
+       
+       
+       
+     W  (hsupp : Function.support W ⊆ Set.Icc a b)
+    (hW : ContDiff ℝ ∞ W)  J  :
     ∃ (U : ℝ → ℂ) (n : ℕ) (C : ℝ),
       0 ≤ C ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ θ R : ℝ, 0 < R →
@@ -313,7 +315,13 @@ theorem normTwistedSource_uniform_separation {ι : Type*} [Fintype ι]
     (mul_le_mul_of_nonneg_left (hpoly θ) hC).trans_eq (by ring)
   exact ⟨heq, hi, hm.trans hb, fun t => (hp t).trans hb⟩
 
-theorem fourier_joint_stronglyMeasurable {α : Type*} [MeasurableSpace α]
+end
+
+section
+variable {α : Type*} [MeasurableSpace α]
+include α
+
+theorem fourier_joint_stronglyMeasurable    
     (f : α → ℝ → ℂ) (hf : StronglyMeasurable (Function.uncurry f)) :
     StronglyMeasurable (fun p : α × ℝ => (𝓕 (f p.1)) p.2) := by
   simp_rw [Real.fourier_eq']
@@ -325,7 +333,7 @@ theorem fourier_joint_stronglyMeasurable {α : Type*} [MeasurableSpace α]
     (measurable_snd.prodMk (measurable_snd.comp measurable_fst))).smul
     (hf.comp_measurable ((measurable_fst.comp measurable_fst).prodMk measurable_snd))
 
-theorem paperKernel_joint_stronglyMeasurable {α : Type*} [MeasurableSpace α]
+theorem paperKernel_joint_stronglyMeasurable    
     (a b : ℝ) (ha : 0 < a) (V : α → 𝓢(ℝ, ℂ))
     (hV : ∀ θ, Function.support (V θ : ℝ → ℂ) ⊆ Set.Icc a b)
     (hf : StronglyMeasurable (fun p : α × ℝ => V p.1 (Real.exp p.2))) :
@@ -348,8 +356,10 @@ theorem paperKernel_joint_stronglyMeasurable {α : Type*} [MeasurableSpace α]
   exact CubicReflectionKernel.paperKernel_eq_logFourier (V p.1) L
     (fun _ => rfl) p.2 p.2.property
 
+end
+
 private theorem twistedDensity_measurable_of_profile
-    (U W : ℝ → ℂ) (R : ℝ)
+     U W   R 
     (hprofile : StronglyMeasurable (fun p : ℝ × ℝ =>
       U p.2 * CubicReflectionKernel.paperKernel
         (CompletedGauss.Vstar (CompletedHeight.normTwistedSource W p.1)) (R * Real.exp p.2))) :
@@ -360,7 +370,7 @@ private theorem twistedDensity_measurable_of_profile
       (CompletedGauss.Vstar (CompletedHeight.normTwistedSource W θ)) (R * Real.exp s)) hprofile)
 
 private theorem exists_measurable_twisted_source
-    (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
+     W   a b  (ha : 0 < a)
     (hsupp : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W) :
     ∃ G : ℝ → 𝓢(ℝ, ℂ),
       (∀ θ, (G θ : ℝ → ℂ) = CompletedGauss.Vstar (CompletedHeight.normTwistedSource W θ)) ∧
@@ -386,15 +396,13 @@ private theorem exists_measurable_twisted_source
     simp_rw [hG, CompletedHeight.normTwistedSource, Real.log_exp]
     apply Continuous.stronglyMeasurable
     unfold FourierBridge.logPhase
-    exact (by fun_prop : Continuous (fun p : ℝ × ℝ =>
-      Complex.exp ((↑(2*Real.pi*p.1*p.2) : ℂ)*Complex.I))).mul
-      (V.continuous.comp (Real.continuous_exp.comp continuous_snd))
+    fun_prop
   exact ⟨G, hlink, hGs, hf⟩
 
 theorem twistedDensity_joint_stronglyMeasurable
-    (U W : ℝ → ℂ) (hU : Measurable U)
+     U W  (hU : Measurable U)
     (a b : ℝ) (ha : 0 < a) (hsupp : Function.support W ⊆ Set.Icc a b)
-    (hW : ContDiff ℝ ∞ W) (R : ℝ) (hR : 0 < R) :
+    (hW : ContDiff ℝ ∞ W)  R  (hR : 0 < R) :
     StronglyMeasurable (fun p : ℝ × ℝ => twistedDensity U W p.1 R p.2) := by
   obtain ⟨G, hlink, hGs, hf⟩ := exists_measurable_twisted_source W a b ha hsupp hW
   have hkernel := paperKernel_joint_stronglyMeasurable a b ha G hGs hf
@@ -411,10 +419,7 @@ theorem twistedDensity_joint_stronglyMeasurable
         U p.2 * CubicReflectionKernel.paperKernel (G p.1) (R * Real.exp p.2)) :=
       (hU.stronglyMeasurable.comp_measurable measurable_snd).mul
         hcomposed
-    convert hprofileG using 1
-    exact funext (fun p => congrArg
-      (fun V : ℝ → ℂ => U p.2 * CubicReflectionKernel.paperKernel V (R * Real.exp p.2))
-      (hlink p.1).symm)
+    grind
   exact twistedDensity_measurable_of_profile U W R hprofile
 
 end

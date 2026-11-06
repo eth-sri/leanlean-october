@@ -7,7 +7,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators Topology ContDiff
 open Filter
 namespace SevenEighths.ProbeRayNormalization
@@ -67,7 +67,7 @@ theorem principalScalar_inverse_of_slot_bounds {ι : Type*} (J : Finset ι)
   simpa only [Real.rpow_neg hZ0.le,inv_inv] using hi
 
 variable (M : Id) [NeZero M]
-local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 include hH
 

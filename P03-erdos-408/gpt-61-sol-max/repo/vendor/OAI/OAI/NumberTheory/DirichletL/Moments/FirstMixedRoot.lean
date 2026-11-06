@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedAllowance
 public import OAI.NumberTheory.DirichletL.Moments.FirstExceptionalPrefactorActual
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceFixedFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstMixedRoot
@@ -18,9 +19,12 @@ open CenteredMomentCanonicalFirst CenteredMomentRankinRadical CenteredMomentComp
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily
 open CenteredMomentFirstScale CenteredMomentSupportedCorrelation
-local notation "O"=>HeckeFamily.O
 
-lemma active_span_swap (C D:Ideal O):
+
+section
+variable (C D : Ideal HeckeFamily.O) (hC : Supported C) (hD : Supported D) (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) (E : Finset (CommonIndex C D)) (η : Character) (ξ₁ ξ₂ : RayFourExpansion.RayCharacter) (F : FixedPair η C D hC E ξ₁ ξ₂) (K A₀ B₀ a T M Z EL ER : ℝ) (hK : 0<K) (hA : 0<A₀) (hB : 0<B₀) (ha : 0<a) (hT : 0<T) (hZ : 1<Z)
+
+lemma active_span_swap  :
     Ideal.span {activeConductor D C}=Ideal.span {activeConductor C D}:=by
   rw [activeConductor_span_filter,activeConductor_span_filter,
     CenteredMomentCompleteCommon.commonSupport_comm D C]
@@ -30,8 +34,9 @@ lemma active_span_swap (C D:Ideal O):
   simp only [CenteredMomentActive.netExponent]
   omega
 
-lemma allowance_pair (C D:Ideal O)(hC:Supported C)(hD:Supported D)
-    (hCD:CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)(Z:ℝ)(hZ:1<Z):
+include hC hD hCD hZ in
+lemma allowance_pair    
+       :
     allowance C D Z+allowance D C Z≤
       Real.logb Z (C.absNorm:ℝ)+Real.logb Z (D.absNorm:ℝ)-
         2*Real.logb Z ((commonRadical C D).absNorm:ℝ)-
@@ -39,10 +44,10 @@ lemma allowance_pair (C D:Ideal O)(hC:Supported C)(hD:Supported D)
   have hh:=actual_allowance_sum C D hC hD hCD Z hZ
   simpa only [allowance,active_span_swap C D] using hh
 
-lemma allowance_root (Z C D P R b:ℝ)(hZ:1<Z)(hC:0<C)(hD:0<D)(hP:0<P)(hR:0<R)
+lemma allowance_root  Z C D P R b (hZ:1<Z)(hC:0<C)(hD:0<D)(hP:0<P)(hR:0<R)
     (hb:b≤Real.logb Z C+Real.logb Z D-2*Real.logb Z P-Real.logb Z R):
     Real.sqrt R/Real.sqrt (C*D)*Z^(b/2)≤1/P:=by
-  have hz:0<Z:=zero_lt_one.trans hZ
+  
   have hlz:0<Real.log Z:=Real.log_pos hZ
   have hb':b≤(Real.log C+Real.log D-2*Real.log P-Real.log R)/Real.log Z:=by
     convert hb using 1 ; simp only [Real.logb] ; ring
@@ -70,12 +75,13 @@ lemma paired_reference_root (qL qR V C D Z bL bR EL ER:ℝ)
     ((qL*(V/C)^2*Z^bL)*(qR*(V/D)^2*Z^bR))*(EL*ER) by ring,
     Real.sqrt_mul (by positivity),hbase]
 
-theorem actual_fixed_reference_pair (C D:Ideal O)(hC:Supported C)(hD:Supported D)
-    (hCD:CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (E:Finset (CommonIndex C D))(η:Character)(ξ₁ ξ₂:RayFourExpansion.RayCharacter)
-    (F:FixedPair η C D hC E ξ₁ ξ₂)
-    (K A₀ B₀ a T M Z EL ER:ℝ)(hK:0<K)(hA:0<A₀)(hB:0<B₀)
-    (ha:0<a)(hT:0<T)(hZ:1<Z)(hEL:0≤EL)(hER:0≤ER)
+include hD hCD hK hA hB ha hT hZ in
+theorem actual_fixed_reference_pair    
+     
+       
+     
+        
+       (hEL:0≤EL)(hER:0≤ER)
     (hl:a*T≤(C.absNorm:ℝ)*Real.exp M*A₀)
     (hr:a*T≤(D.absNorm:ℝ)*Real.exp M*B₀):
     ‖scalar C D hC E K A₀ B₀‖/T*
@@ -120,23 +126,24 @@ theorem actual_fixed_reference_pair (C D:Ideal O)(hC:Supported C)(hD:Supported D
         ((‖eisEmbedding (activeConductor C D)‖/Real.sqrt ((C.absNorm:ℝ)*D.absNorm))*
           Z^((allowance C D Z+allowance D C Z)/2))*Real.sqrt (EL*ER):=by ring
     _≤(‖inactiveWeight C D E‖*(Real.exp M/a)*fixedPresentationCost*K*(η.modulus.absNorm:ℝ))*
-        (1/(commonRadical C D).absNorm)*Real.sqrt (EL*ER):=by
-      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left haR (by positivity))
+        (1/(commonRadical C D).absNorm)*Real.sqrt (EL*ER):=mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left haR (by positivity))
         (Real.sqrt_nonneg _)
     _=_:=by ring
 
+end
+
 open CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData
 open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
-open HeckeFamily CenteredMomentSupportedCorrelation
+ 
 
 theorem original_fixed_reference_pair {ι:Type*}[Fintype ι][DecidableEq ι]
-    (s:Input ι)(R seed:Ideal O)(a₁ a₂:ℝ)(ha₁:0<a₁)(ha₂:0<a₂)
+    (s:Input ι)(R seed:Ideal HeckeFamily.O)(a₁ a₂:ℝ)(ha₁:0<a₁)(ha₂:0<a₂)
     (hs₁:∀x,s.W₁ x≠0→a₁≤x)(hs₂:∀x,s.W₂ x≠0→a₂≤x)
-    (m A:O)(t:ℝ)(S:Finset (Ideal O))(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+    (m A:HeckeFamily.O)(t:ℝ)(S:Finset (Ideal HeckeFamily.O))(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)
     (hCD:CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (E:Finset (CommonIndex C D))(ξ₁ ξ₂:RayFourExpansion.RayCharacter)
     (F:FixedPair s.η C D hC E ξ₁ ξ₂)
-    (rows:Finset O)(W:𝓢(ℝ,ℂ))(U:Fin 4→ℝ→ℂ)
+    (rows:Finset HeckeFamily.O)(W:𝓢(ℝ,ℂ))(U:Fin 4→ℝ→ℂ)
     (K K₀ H₀ A₀ B₀ M Z EL ER:ℝ)(hK:0<K)(hA:0<A₀)(hB:0<B₀)(hZ:1<Z)
     (hEL:0≤EL)(hER:0≤ER)(hwin:∀i y,U i y≠0→|y|≤M)
     (hn:block s.η m A t S (CenteredMomentOriginalCommonHarmonic.coefficient s R seed)
@@ -158,6 +165,6 @@ theorem original_fixed_reference_pair {ι:Type*}[Fintype ι][DecidableEq ι]
 
 end SevenEighths.CenteredMomentFirstMixedRoot
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
@@ -14,13 +15,17 @@ open Set
 namespace SevenEighths.CenteredMomentDyadicCount
 open CenteredMomentSectorLocalization
 
-def indices (a b : ℝ) : Finset ℤ :=
+def indices (a b : ℝ)  :=
   Finset.Icc ⌈Real.logb 2 a⌉ ⌊Real.logb 2 (4*b)⌋
 
-lemma logb_dyadicScale (n : ℤ) : Real.logb 2 (dyadicScale n)=(n:ℝ) := by
+section
+variable (C R Z a b q ε : ℝ) (hC : 1≤C) (hR : 0≤R) (hZ : 1≤Z) (ha : 0<a) (hb : 0<b) (hab : a≤b) (hq : q∈Icc a b) (n : ℤ)
+
+lemma logb_dyadicScale   : Real.logb 2 (dyadicScale n)=(n:ℝ) := by
   rw [dyadicScale,←Real.rpow_intCast,Real.logb_rpow (by norm_num : (0:ℝ)<2) (by norm_num)]
 
-lemma mem_indices_iff_scale (a b : ℝ) (ha : 0<a) (hb : 0<b) (n : ℤ) :
+include ha hb in
+lemma mem_indices_iff_scale         :
     n∈indices a b ↔ a≤dyadicScale n ∧ dyadicScale n≤4*b := by
   rw [indices,Finset.mem_Icc,Int.ceil_le,Int.le_floor]
   rw [←logb_dyadicScale n]
@@ -32,31 +37,35 @@ lemma mem_indices_iff_scale (a b : ℝ) (ha : 0<a) (hb : 0<b) (n : ℤ) :
     exact ⟨Real.logb_le_logb_of_le (by norm_num) ha h1,
       Real.logb_le_logb_of_le (by norm_num) (dyadicScale_pos n) h2⟩
 
-lemma mem_indices_iff_whole_support (a b : ℝ) (ha : 0<a) (hab : a≤b) (n : ℤ) :
+include ha hab in
+lemma mem_indices_iff_whole_support         :
     n∈indices a b ↔ ∃q∈Icc a b,q∈tsupport (dyadicWeight n) := by
   rw [mem_indices_iff_scale a b ha (ha.trans_le hab) n]
   constructor
   · rintro ⟨hlo,hhi⟩
     refine ⟨max a (dyadicScale n/4),⟨le_max_left _ _,max_le hab (by linarith)⟩,?_⟩
     rw [dyadicWeight_tsupport_eq]
-    exact ⟨le_max_right _ _,max_le hlo (by linarith [dyadicScale_pos n])⟩
+    grind
   · rintro ⟨q,hq,hq'⟩
     have hh := dyadicWeight_tsupport n hq'
     exact ⟨hq.1.trans hh.2,by linarith [hq.2,hh.1]⟩
 
-lemma support_indices (a b q : ℝ) (ha : 0<a) (hq : q∈Icc a b)
-    (n : ℤ) (hne : dyadicWeight n q≠0) : n∈indices a b :=
+include ha hq in
+lemma support_indices      
+      (hne : dyadicWeight n q≠0) : n∈indices a b :=
   (mem_indices_iff_whole_support a b ha (hq.1.trans hq.2) n).mpr
     ⟨q,hq,subset_tsupport _ hne⟩
 
-lemma logb_four_mul (b : ℝ) (hb : 0<b) :
+include hb in
+lemma logb_four_mul     :
     Real.logb 2 (4*b)=2+Real.logb 2 b := by
   rw [Real.logb_mul (by norm_num) hb.ne']
   congr 1
   rw [show (4:ℝ)=(2:ℝ)^2 by norm_num,Real.logb_pow]
   norm_num [Real.logb_self_eq_one]
 
-theorem indices_card_bound (a b : ℝ) (ha : 0<a) (hab : a≤b) :
+include ha hab in
+theorem indices_card_bound       :
     ((indices a b).card:ℝ)≤3+Real.logb 2 (b/a) := by
   have hb := ha.trans_le hab
   have hlog := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) ha hab
@@ -72,24 +81,24 @@ theorem indices_card_bound (a b : ℝ) (ha : 0<a) (hab : a≤b) :
   rw [hcard',Real.logb_div hb.ne' ha.ne']
   linarith [Int.floor_le (Real.logb 2 (4*b)),Int.le_ceil (Real.logb 2 a)]
 
-lemma dyadic_partition_on_interval (a b q : ℝ) (ha : 0<a) (hq : q∈Icc a b) :
+include ha hq in
+lemma dyadic_partition_on_interval       :
     (∑n∈indices a b,dyadicWeight n q)=1 := by
   rw [←dyadicWeight_partition q (ha.trans_le hq.1)]
   symm
   apply tsum_eq_sum
-  intro n hn
-  by_contra hne
-  exact hn (support_indices a b q ha hq n hne)
+  grind [support_indices]
 
-lemma retained_integral_mem (R q : ℝ) (hq : 1≤q) (n : ℤ)
+lemma retained_integral_mem   (hq : 1≤q)  n 
     (hr : Retained R n) (hne : dyadicWeight n q≠0) :
     n∈indices 1 (max 1 R) := by
   rw [mem_indices_iff_scale 1 (max 1 R) (by norm_num) (by positivity) n]
   exact ⟨hq.trans (dyadicWeight_support n hne).2.le,
     (retained_scale_le R n hr).trans (by linarith [le_max_right (1:ℝ) R])⟩
 
-theorem indices_card_log_bound (C R Z a b : ℝ) (hC : 1≤C) (hR : 0≤R)
-    (hZ : 1≤Z) (ha : 0<a) (hab : a≤b) (hratio : b/a≤C*Z^R) :
+include hC hR hZ ha hab in
+theorem indices_card_log_bound      
+          (hratio : b/a≤C*Z^R) :
     ((indices a b).card:ℝ)≤
       (3+Real.logb 2 C+R/Real.log 2)*(1+Real.log Z) := by
   have hb := ha.trans_le hab
@@ -107,7 +116,8 @@ theorem indices_card_log_bound (C R Z a b : ℝ) (hC : 1≤C) (hR : 0≤R)
   rw [he] at hlog
   nlinarith
 
-theorem four_indices_subpower (C R ε : ℝ) (hC : 1≤C) (hR : 0≤R) (hε : 0<ε) :
+include hC hR in
+theorem four_indices_subpower       (hε : 0<ε) :
     ∃D : ℝ,0<D ∧ ∀ᶠZ : ℝ in Filter.atTop,
       ∀a b : Fin 4→ℝ,(∀j,0<a j) → (∀j,a j≤b j) →
       (∀j,b j/a j≤C*Z^R) →
@@ -144,6 +154,8 @@ theorem four_indices_subpower (C R ε : ℝ) (hC : 1≤C) (hR : 0≤R) (hε : 0<
     _ ≤ (K*(2*Real.log Z))^4 := by gcongr;linarith
     _ = (16*K^4)*(Real.log Z)^4 := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hp (by positivity)
+
+end
 
 end SevenEighths.CenteredMomentDyadicCount
 

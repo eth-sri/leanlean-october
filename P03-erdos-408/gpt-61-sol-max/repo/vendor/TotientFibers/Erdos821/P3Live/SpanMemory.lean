@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.SpanEdgeMemoryTask
 public import Erdos821.S2.PhysicalCompatibility
@@ -21,7 +22,7 @@ open Erdos821.Blueprint.Graph
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
 /-- Stored memory as a finset map. -/
-theorem storedMemory_eq_map {M : ℕ} {g : P.Group} (a : Fin M → P.Prime g)
+theorem storedMemory_eq_map {M : ℕ}  {g}  (a : Fin M → P.Prime g)
     (B : Finset (Fin M)) :
     storedMemory (P := P) a B =
       B.val.map (fun i => (⟨a i, 0⟩ : P.Particle g)) := by
@@ -32,7 +33,7 @@ theorem storedMemory_eq_map {M : ℕ} {g : P.Group} (a : Fin M → P.Prime g)
   exact h
 
 /-- Translation distributes over addition. -/
-theorem translateMemory_add (delta : ℤ) {g : P.Group} (a b : P.Memory g) :
+theorem translateMemory_add  delta  {g : P.Group} (a b : P.Memory g) :
     translateMemory delta (a + b) = translateMemory delta a + translateMemory delta b := by
   unfold translateMemory
   rw [Multiset.map_add]
@@ -44,87 +45,64 @@ theorem translateMemory_map (delta : ℤ) {g : P.Group} {α : Type*}
   simp only [translateMemory, Multiset.map_map, Function.comp_def]
 
 /-- The two cover conditions across one edge coincide. -/
-theorem edge_cover_iff_aux {n : ℕ} (i : Fin n) (birth stop : Fin (n + 1)) :
+theorem edge_cover_iff_aux {n : ℕ} (i : Fin n)  birth stop  :
     (birth ≤ i.castSucc ∧ i.castSucc < stop) ↔
       (birth < i.succ ∧ i.succ ≤ stop) := by
-  simp only [Fin.le_def, Fin.lt_def, Fin.val_succ, Fin.val_castSucc]
-  constructor
-  · rintro ⟨h1, h2⟩
-    exact ⟨by omega, by omega⟩
-  · rintro ⟨h1, h2⟩
-    exact ⟨by omega, by omega⟩
+  grind
 
 namespace ResiduePath
 
 variable {A : Model F P J m} {n : ℕ} (Q : ResiduePath A n)
 
 /-- Source labels cover exactly the active visit at `castSucc`. -/
-theorem source_active_iff (i : Fin n) (g : P.BigGroup) (p : P.Prime g.val) :
+theorem source_active_iff  i   g   p  :
     (∃ j : Fin (J + F.ell), Q.source i g.val j = p) ↔
       i.castSucc ∈ Q.activeVisits g p := by
   simp only [activeVisits, ResiduePath.source, Finset.mem_filter, Finset.mem_univ,
     true_and]
   constructor
-  · rintro ⟨j, hj⟩
-    exact ⟨(Q.sourcePerm i g.val) j, hj⟩
+  · aesop
   · rintro ⟨j₀, hj₀⟩
     refine ⟨(Q.sourcePerm i g.val).symm j₀, ?_⟩
-    have he : (Q.sourcePerm i g.val) ((Q.sourcePerm i g.val).symm j₀) = j₀ :=
-      Equiv.apply_symm_apply _ _
-    simp only [PrimeGroups.act] at hj₀ ⊢
-    rw [he]
-    exact hj₀
+    simp_all [PrimeGroups.act]
 
 /-- Target labels cover exactly the active visit at `succ`. -/
-theorem target_active_iff (i : Fin n) (g : P.BigGroup) (p : P.Prime g.val) :
+theorem target_active_iff  i   g   p  :
     (∃ j : Fin (J + F.ell), Q.target i g.val j = p) ↔
       i.succ ∈ Q.activeVisits g p := by
   simp only [activeVisits, ResiduePath.target, Finset.mem_filter, Finset.mem_univ,
     true_and]
   constructor
-  · rintro ⟨j, hj⟩
-    exact ⟨(Q.targetPerm i g.val) j, hj⟩
+  · aesop
   · rintro ⟨j₀, hj₀⟩
     refine ⟨(Q.targetPerm i g.val).symm j₀, ?_⟩
-    have he : (Q.targetPerm i g.val) ((Q.targetPerm i g.val).symm j₀) = j₀ :=
-      Equiv.apply_symm_apply _ _
-    simp only [PrimeGroups.act] at hj₀ ⊢
-    rw [he]
-    exact hj₀
+    simp_all [PrimeGroups.act]
 
 /-- When neither endpoint is active, pending before/after coincide. -/
 theorem pending_edge_iff_inactive (S : LifespanAssignment P n) (i : Fin n)
-    (g : P.BigGroup) (p : P.Prime g.val)
+     g   p 
     (h0 : i.castSucc ∉ Q.activeVisits g p) (h1 : i.succ ∉ Q.activeVisits g p) :
     Q.pendingAfter g p (S g p) i.castSucc ↔
       Q.pendingBefore g p (S g p) i.succ := by
-  rcases he : S g p with _ | ⟨birth, stop⟩
-  · simp only [pendingAfter, pendingBefore]
-  · simp only [pendingAfter, pendingBefore, h0, h1, not_false_eq_true,
-      and_true]
-    exact edge_cover_iff_aux i birth stop
+  simp_all [pendingAfter, pendingBefore, edge_cover_iff_aux]
 
 /-- Pending-after implies inactive at that visit. -/
-theorem pendingAfter_not_active (S : LifespanAssignment P n) (i : Fin (n + 1))
-    (g : P.BigGroup) (p : P.Prime g.val)
+theorem pendingAfter_not_active (S : LifespanAssignment P n)  i 
+     g   p 
     (h : Q.pendingAfter g p (S g p) i) : i ∉ Q.activeVisits g p := by
   rcases he : S g p with _ | ⟨birth, stop⟩
   · rw [he] at h
     simp only [pendingAfter] at h
-  · rw [he] at h
-    simp only [pendingAfter] at h
-    exact h.2.2
+  simp_all [pendingAfter]
 
 /-- Pending-before implies inactive at that visit. -/
-theorem pendingBefore_not_active (S : LifespanAssignment P n) (i : Fin (n + 1))
-    (g : P.BigGroup) (p : P.Prime g.val)
+theorem pendingBefore_not_active (S : LifespanAssignment P n)  i 
+     g   p 
     (h : Q.pendingBefore g p (S g p) i) : i ∉ Q.activeVisits g p := by
   rcases he : S g p with _ | ⟨birth, stop⟩
   · rw [he] at h
     simp only [pendingBefore] at h
-  · rw [he] at h
-    simp only [pendingBefore] at h
-    exact h.2.2
+  simp_all [pendingBefore]
 
 end ResiduePath
 
@@ -143,8 +121,7 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
     Q.target_injective hValid i g.val
   have hCompat : (A.pattern (Q.pattern i)).compatible (Q.source i) (Q.target i) :=
     (hValid.2 i).1
-  have hBan : (A.pattern (Q.pattern i)).ban (Q.source i) (Q.target i) (Q.free i) :=
-    (hValid.2 i).2
+  
   -- memories and slots
   set memAfter : P.Memory g.val := Q.memoryAfter S i0 g with hmemAfter
   set memBeforeNext : P.Memory g.val := Q.memoryBefore S i1 g with hmemBefore
@@ -169,26 +146,16 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
     fun p => (⟨p, ((off0 - Q.spanAnchor (S g p) : ℤ) : ZMod p.val)⟩ : P.Particle g.val) with hf0
   set f1 : P.Prime g.val → P.Particle g.val :=
     fun p => (⟨p, ((off1 - Q.spanAnchor (S g p) : ℤ) : ZMod p.val)⟩ : P.Particle g.val) with hf1
-  have hmemAfterEq : memAfter = Pafter.val.map f0 := Q.memoryAfter_eq_map S i0 g
+  
   have hmemBeforeEq : memBeforeNext = Pbefore.val.map f1 := Q.memoryBefore_eq_map S i1 g
   -- retrieved indices
   set TR : TransferChoice (Q.stateAfter S (fun _ _ => 0) i0) :=
     Q.reconstructedTransferChoice S (fun _ _ => 0) i with hTR
   have hRdef : retrievedIndices TR g = Finset.univ.image (Q.promotionIndex S i g) := rfl
   -- promotion prime membership
-  have hPromMem : ∀ j : {j : Fin (J + F.ell) // j ∈ prom},
-      Q.target i g.val j.val ∈ pendingPrimes memAfter :=
-    fun j => Q.promotion_prime_mem S i g j
+  
   -- Step 1: PromVals ⊆ Pafter, StoreVals ⊆ Pbefore
-  have hPromSub : PromVals ⊆ Pafter := by
-    intro p hp
-    obtain ⟨j, hjProm, heq⟩ := Finset.mem_map.mp hp
-    have hTgtMem : Q.target i g.val j ∈ Pafter :=
-      (Finset.mem_filter.mp hjProm).2.2
-    -- heq : tgtEmb j = p, i.e. target j = p
-    have heq' : Q.target i g.val j = p := heq
-    rw [← heq']
-    exact hTgtMem
+  
   have hStoreSub : StoreVals ⊆ Pbefore := by
     intro p hp
     obtain ⟨j, hjStore, heq⟩ := Finset.mem_map.mp hp
@@ -472,7 +439,7 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
         (⟨p, (((off0 - Q.spanAnchor (S g p) : ℤ)):ZMod p.val) + ((delta : ℤ):ZMod p.val)⟩ :
           P.Particle g.val) := rfl
     rw [e0, e1', et]
-    exact congrArg (fun r : ZMod p.val => (⟨p, r⟩ : P.Particle g.val)) hZ
+    solve_by_elim
   -- Stored slots translate to `f1` of their source primes (source visit is a hit).
   have hStoreResidue : ∀ j : Fin (J + F.ell),
       ((((off0 - Q.spanAnchor (S g (Q.source i g.val j)) : ℤ)) :
@@ -498,8 +465,7 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
         (⟨Q.source i g.val j, (0 : ZMod (Q.source i g.val j).val) + ((delta : ℤ):ZMod _)⟩ :
           P.Particle g.val) := rfl
     rw [et, e1']
-    exact congrArg (fun r : ZMod (Q.source i g.val j).val =>
-      (⟨Q.source i g.val j, r⟩ : P.Particle g.val)) hZj
+    solve_by_elim
   have hStoreTrans : translateMemory delta (storedMemory (Q.source i g.val) store) =
       StoreVals.val.map f1 := by
     rw [storedMemory_eq_map, translateMemory_map]

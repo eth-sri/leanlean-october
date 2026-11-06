@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Analysis.Bonferroni
 public import Erdos408.OneSided.Moment.PathExpansion.Average
@@ -31,17 +32,21 @@ open Finset
 variable {K : ℕ}
 
 /-- The damping mass `σ = ∑_{p ∉ act} 𝔼 (1 - λ_p)` of the band primes outside `act`. -/
-def dampMass (x : ℝ) (d : Data K) (act : Finset ℕ) (lam : ℕ → ℕ → ℝ) : ℝ :=
+def dampMass (x : ℝ) (d : Data K) (act : Finset ℕ) (lam : ℕ → ℕ → ℝ)  :=
   ∑ p ∈ bandPrimes x d \ act, ((p : ℝ) + 1)⁻¹ * ∑ l ∈ range (p + 1), (1 - lam p l)
 
 /-- The damping mass is nonnegative for line factors at most `1`. -/
-theorem dampMass_nonneg {x : ℝ} {d : Data K} {act : Finset ℕ} {lam : ℕ → ℕ → ℝ}
+theorem dampMass_nonneg  {x}  {d : Data K}  {act}   {lam} 
     (hlam : ∀ p ∈ bandPrimes x d, ∀ l, lam p l ≤ 1) : 0 ≤ dampMass x d act lam :=
   sum_nonneg fun p hp => mul_nonneg (by positivity)
     (sum_nonneg fun l _ => sub_nonneg.2 (hlam p (mem_sdiff.1 hp).1 l))
 
+section
+variable {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist K C₀) (x : ℝ) (d : Data K) {U V : ℝ} (hU : 2 ≤ U) (hV : 2 ≤ V) {a₁ b₁ a₂ b₂ a₃ b₃ : ℝ} (ha₁ : 1 ≤ a₁) (hab₁ : a₁ ≤ b₁) (hb₁ : b₁ ≤ 16) (ha₂ : 1 ≤ a₂) (hab₂ : a₂ ≤ b₂) (hb₂ : b₂ ≤ 2) (ha₃ : 0 ≤ a₃)
+
+
 /-- The line average of a real function is the real average over the line assignments. -/
-theorem lineAverage_ofReal (x : ℝ) (d : Data K) (g : (ℕ → ℕ) → ℝ) :
+theorem lineAverage_ofReal     (g : (ℕ → ℕ) → ℝ) :
     lineAverage x d (fun ℓ => (g ℓ : ℂ)) =
       (((lineAssignments x d).card : ℝ)⁻¹ * ∑ ℓ ∈ lineAssignments x d, g ℓ : ℝ) := by
   push_cast [lineAverage]
@@ -49,7 +54,7 @@ theorem lineAverage_ofReal (x : ℝ) (d : Data K) (g : (ℕ → ℕ) → ℝ) :
 
 /-- The lines at distinct band primes are independent: the real average of
 `∏_{p ∈ I} f_p(ℓ p)` over the line assignments is `∏_{p ∈ I} (p + 1)⁻¹ ∑_{l ≤ p} f_p(l)`. -/
-theorem lineAssignments_prod (x : ℝ) (d : Data K) {I : Finset ℕ} (hI : I ⊆ bandPrimes x d)
+theorem lineAssignments_prod     {I : Finset ℕ} (hI : I ⊆ bandPrimes x d)
     (f : ℕ → ℕ → ℝ) :
     ((lineAssignments x d).card : ℝ)⁻¹ * ∑ ℓ ∈ lineAssignments x d, ∏ p ∈ I, f p (ℓ p) =
       ∏ p ∈ I, (((p : ℝ) + 1)⁻¹ * ∑ l ∈ range (p + 1), f p l) := by
@@ -75,16 +80,17 @@ theorem lineAssignments_prod (x : ℝ) (d : Data K) {I : Finset ℕ} (hI : I ⊆
   rw [hl, hr, lineAverage_ofReal] at h
   exact_mod_cast h
 
+include hC₀ hE hU hV ha₁ hab₁ hb₁ ha₂ hab₂ hb₂ ha₃ in
 /-- `RootEquidist` for a real function `g` of the lines at a set `S` of at most `k` band
 primes, bounded by `1`, normalized by `UV`: the root average over the box is
 `c₂ |box|` times the line average up to `C₀ p_max^{6k} min(U, V)^{-1/5}`. -/
-theorem abs_boxRoots_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist K C₀) (x : ℝ)
-    (d : Data K) {U V : ℝ} (hU : 2 ≤ U) (hV : 2 ≤ V) {a₁ b₁ a₂ b₂ a₃ b₃ : ℝ} (ha₁ : 1 ≤ a₁)
-    (hab₁ : a₁ ≤ b₁) (hb₁ : b₁ ≤ 16) (ha₂ : 1 ≤ a₂) (hab₂ : a₂ ≤ b₂) (hb₂ : b₂ ≤ 2)
-    (ha₃ : 0 ≤ a₃) (hab₃ : a₃ ≤ b₃) (hb₃ : b₃ ≤ 1) {S : Finset ℕ} (hS : S ⊆ bandPrimes x d)
+theorem abs_boxRoots_sub_le        
+               
+             
+      (hab₃ : a₃ ≤ b₃) (hb₃ : b₃ ≤ 1) {S : Finset ℕ} (hS : S ⊆ bandPrimes x d)
     (g : (ℕ → ℕ) → ℝ) (hg : ∀ ℓ ℓ' : ℕ → ℕ, (∀ p ∈ S, ℓ p = ℓ' p) → g ℓ = g ℓ')
-    (hg₁ : ∀ ℓ, |g ℓ| ≤ 1) {pmax : ℝ} (hpmax₁ : 1 ≤ pmax)
-    (hpmax : ∀ p ∈ bandPrimes x d, (p : ℝ) ≤ pmax) {k : ℕ} (hk : S.card ≤ k) :
+    (hg₁ : ∀ ℓ, |g ℓ| ≤ 1)  {pmax}  (hpmax₁ : 1 ≤ pmax)
+    (hpmax : ∀ p ∈ bandPrimes x d, (p : ℝ) ≤ pmax)  {k}  (hk : S.card ≤ k) :
     |(U * V)⁻¹ * ∑ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃, g (rootLines P₀) -
         primitiveDensity * ((b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃)) *
           (((lineAssignments x d).card : ℝ)⁻¹ * ∑ ℓ ∈ lineAssignments x d, g ℓ)| ≤
@@ -110,7 +116,7 @@ theorem abs_boxRoots_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist
       _ ≤ pmax ^ k := pow_le_pow_right₀ hpmax₁ hk
   have hprod6 : (∏ p ∈ S, (p : ℝ)) ^ 6 ≤ pmax ^ (6 * k) := by
     rw [mul_comm, pow_mul]
-    exact pow_le_pow_left₀ (prod_nonneg fun _ _ => Nat.cast_nonneg _) hprod 6
+    gcongr <;> first | assumption | positivity | linarith
   have hUV : 0 < U * V := by positivity
   have hm : 0 ≤ C₀ * min U V ^ (-(1 / 5 : ℝ)) :=
     mul_nonneg hC₀ (Real.rpow_nonneg (le_min (by linarith) (by linarith)) _)
@@ -128,7 +134,7 @@ theorem abs_boxRoots_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist
     _ = C₀ * pmax ^ (6 * k) * min U V ^ (-(1 / 5 : ℝ)) := by ring
 
 /-- The subsets of `s` of size at most `T` number at most `(#s + 1)^T`. -/
-theorem card_powerset_card_lt_add_le (s : Finset ℕ) (T : ℕ) :
+theorem card_powerset_card_lt_add_le (s : Finset ℕ)  T  :
     ((s.powerset.filter fun I => I.card < T).card + (s.powersetCard T).card : ℝ) ≤
       ((s.card : ℝ) + 1) ^ T := by
   -- step: sort the subsets by size
@@ -138,7 +144,7 @@ theorem card_powerset_card_lt_add_le (s : Finset ℕ) (T : ℕ) :
       (fun I hI => mem_range.2 (mem_filter.1 hI).2)]
     refine sum_congr rfl fun k hk => ?_
     rw [powersetCard_eq_filter, filter_filter]
-    exact congrArg _ (filter_congr fun I _ => ⟨fun h => h.2, fun h => ⟨h ▸ mem_range.1 hk, h⟩⟩)
+    exact congrArg _ ((by aesop))
   have hnat : (s.powerset.filter fun I => I.card < T).card + (s.powersetCard T).card ≤
       (s.card + 1) ^ T := by
     rw [hlt, ← sum_range_succ (fun k => (s.powersetCard k).card), add_pow]
@@ -148,16 +154,17 @@ theorem card_powerset_card_lt_add_le (s : Finset ℕ) (T : ℕ) :
       (Nat.le_mul_of_pos_right _ (Nat.choose_pos (Nat.lt_succ_iff.1 (mem_range.1 hk))))
   exact_mod_cast hnat
 
+include hC₀ hE hU hV ha₁ hab₁ hb₁ ha₂ hab₂ hb₂ ha₃ in
 /-- **Root replacement on one box.** For a product `F = ∏_p λ_p` of line factors in `[0, 1]`,
 `(UV)⁻¹ ∑_{P₀ ∈ box} F(ℓ(P₀))` is `c₂ |box| 𝔼_ℓ F` up to the Bonferroni gap
 `4 |box| σ^T / T!` and the root-count errors of the at most `(n + 1)^T` monomials, each with
 modulus at most `p_max^{|act| + T}`. Here `n` is the number of band primes. -/
-theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist K C₀) (x : ℝ)
-    (d : Data K) {U V : ℝ} (hU : 2 ≤ U) (hV : 2 ≤ V) {a₁ b₁ a₂ b₂ a₃ b₃ : ℝ} (ha₁ : 1 ≤ a₁)
-    (hab₁ : a₁ ≤ b₁) (hb₁ : b₁ ≤ 16) (ha₂ : 1 ≤ a₂) (hab₂ : a₂ ≤ b₂) (hb₂ : b₂ ≤ 2)
-    (ha₃ : 0 ≤ a₃) (hab₃ : a₃ ≤ b₃) (hb₃ : b₃ ≤ 1) (lam : ℕ → ℕ → ℝ)
-    (hlam : ∀ p ∈ bandPrimes x d, ∀ l, 0 ≤ lam p l ∧ lam p l ≤ 1) (act : Finset ℕ)
-    (hact : act ⊆ bandPrimes x d) (T : ℕ) {pmax : ℝ} (hpmax₁ : 1 ≤ pmax)
+theorem norm_boxRoots_prod_sub_le        
+               
+             
+      (hab₃ : a₃ ≤ b₃) (hb₃ : b₃ ≤ 1)  lam 
+    (hlam : ∀ p ∈ bandPrimes x d, ∀ l, 0 ≤ lam p l ∧ lam p l ≤ 1)  act 
+    (hact : act ⊆ bandPrimes x d)  T   {pmax}  (hpmax₁ : 1 ≤ pmax)
     (hpmax : ∀ p ∈ bandPrimes x d, (p : ℝ) ≤ pmax) :
     ‖((U * V : ℝ) : ℂ)⁻¹ * ∑ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃,
           ∏ p ∈ bandPrimes x d, (lam p (rootLines P₀ p) : ℂ) -
@@ -197,19 +204,17 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
   have hw0 : 0 ≤ w := inv_nonneg.2 (by positivity)
   have hz0 : 0 ≤ z := inv_nonneg.2 (Nat.cast_nonneg _)
   have hvol0 : 0 ≤ vol :=
-    mul_nonneg (mul_nonneg (sub_nonneg.2 hab₁) (sub_nonneg.2 hab₂)) (sub_nonneg.2 hab₃)
+    (by positivity)
   have hc2 : |c| ≤ 2 := RootResidue.abs_primitiveDensity_le
   have herr : 0 ≤ C₀ * pmax ^ (6 * (act.card + T)) * min U V ^ (-(1 / 5 : ℝ)) :=
-    mul_nonneg (mul_nonneg hC₀ (pow_nonneg (by linarith) _))
-      (Real.rpow_nonneg (le_min (by linarith) (by linarith)) _)
+    (by positivity)
   -- step: the factors lie in `[0, 1]`
   have hact₀ : ∀ ℓ : ℕ → ℕ, 0 ≤ ∏ p ∈ act, lam p (ℓ p) := fun ℓ =>
     prod_nonneg fun p hp => (hlam p (hact hp) (ℓ p)).1
   have hact₁ : ∀ ℓ : ℕ → ℕ, ∏ p ∈ act, lam p (ℓ p) ≤ 1 := fun ℓ =>
     prod_le_one₀ (fun p hp => (hlam p (hact hp) (ℓ p)).1) fun p hp => (hlam p (hact hp) (ℓ p)).2
   have hX : ∀ ℓ : ℕ → ℕ, ∀ p ∈ Q, 0 ≤ 1 - lam p (ℓ p) ∧ 1 - lam p (ℓ p) ≤ 1 := fun ℓ p hp => by
-    obtain ⟨h0, h1⟩ := hlam p (hQP hp) (ℓ p)
-    constructor <;> linarith
+    grind
   have hh₀ : ∀ ℓ, ∀ I ⊆ Q, 0 ≤ h I ℓ := fun ℓ I hI => by
     rw [hh]
     exact prod_nonneg fun p hp => (hX ℓ p (hI hp)).1
@@ -228,9 +233,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
             (-1) ^ I.card * ∏ p ∈ I, (1 - lam p (ℓ p))) := by
       simp only [hF, hg]
       rw [← prod_sdiff hact, ← hQ, mul_sub, mul_sum]
-      congr 1
-      · ring
-      · exact sum_congr rfl fun I _ => by ring
+      ring
     have hE₀ : 0 ≤ ∑ I ∈ Q.powersetCard T, h I ℓ :=
       sum_nonneg fun I hI => hh₀ ℓ I (mem_powersetCard.1 hI).1
     rw [hid, abs_mul, abs_of_nonneg (hact₀ ℓ)]
@@ -381,5 +384,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
       _ = _ := by simp only [e]; ring
   have hrE := abs_le.1 hdE
   linarith [abs_le.1 hRgap, abs_nonneg a]
+
+end
 
 end Erdos408.OneSided

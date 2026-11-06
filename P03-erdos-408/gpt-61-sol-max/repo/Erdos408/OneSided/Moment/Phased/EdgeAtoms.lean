@@ -20,7 +20,7 @@ free group contributes `∑_p (2 S(p, ·) + ν(p)) ≤ 2B + 4`.
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos408.OneSided
 
@@ -28,7 +28,7 @@ open Finset
 
 variable {K : ℕ}
 
-section EdgeAtoms
+
 
 variable {q A₀ x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B N : ℕ}
 
@@ -147,8 +147,8 @@ theorem sum_chainEdge_pres_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (h
       (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hwt hr0)
         (crudeKernel_nonneg _ _ _ _ _ _ _))
     have hsize : v₀ ^ memSize (chainEdgeOut x d Y d₀ u v r B s c).2.2.1 ≤ W := by
-      rw [hWdef, ← pow_add, add_comm]
-      exact pow_le_pow_right₀ hv₀ (memSize_chainEdgeOut_le s c)
+      rw [hWdef, ← pow_add]
+      exact pow_le_pow_right₀ hv₀ ((memSize_chainEdgeOut_le s c).trans_eq (Nat.add_comm _ _))
     calc ‖chainEdgeCoef q A₀ x d Y d₀ u v r B N s c‖ *
           (∏ i, presInd (π i) (β (c.2.2.2.1 i))) *
           v₀ ^ memSize (chainEdgeOut x d Y d₀ u v r B s c).2.2.1
@@ -255,6 +255,6 @@ theorem sum_chainEdge_pres_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (h
         push_cast
         ring
 
-end EdgeAtoms
+
 
 end Erdos408.OneSided

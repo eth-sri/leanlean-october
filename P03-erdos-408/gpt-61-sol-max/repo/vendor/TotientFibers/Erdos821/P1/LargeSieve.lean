@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.Blueprint.Classical
 public import OAI.NumberTheory.PrimeGaps.Main
@@ -19,21 +20,14 @@ private theorem sum_Icc_eq_fin {α : Type} [AddCommMonoid α] (N : ℕ) (f : ℕ
   refine Finset.sum_bij i ?_ ?_ ?_ ?_
   · intro n hn
     simp
-  · intro n hn m hm hij
-    have hval := congrArg Fin.val hij
-    have hn' := Finset.mem_Icc.mp hn
-    have hm' := Finset.mem_Icc.mp hm
-    dsimp [i] at hval
-    omega
+  · grind
   · intro b hb
     refine ⟨b.val + 1, Finset.mem_Icc.mpr ⟨by omega, by have := b.isLt; omega⟩, ?_⟩
     apply Fin.ext
     simp [i]
-  · intro n hn
-    have hn' := Finset.mem_Icc.mp hn
-    simp [i, Nat.sub_add_cancel hn'.1]
+  aesop
 
-private noncomputable def sieveK : ℝ := 3 + (Real.log 2)⁻¹
+private noncomputable def sieveK  := 3 + (Real.log 2)⁻¹
 
 private theorem harmonic_log_bound (R : ℕ) :
     (harmonic (R ^ 2) : ℝ) ≤ sieveK * Real.log (2 * (R : ℝ)) := by
@@ -44,10 +38,8 @@ private theorem harmonic_log_bound (R : ℕ) :
   have hlog2 : (0 : ℝ) < Real.log 2 := Real.log_pos (by norm_num)
   have hlogx : (0 : ℝ) < Real.log (2 * (R : ℝ)) :=
     Real.log_pos (by nlinarith)
-  have hlog2_le : Real.log 2 ≤ Real.log (2 * (R : ℝ)) := by
-    apply Real.log_le_log (by norm_num) (by nlinarith)
-  have hlogR_le : Real.log (R : ℝ) ≤ Real.log (2 * (R : ℝ)) := by
-    exact Real.log_le_log hRpos (by nlinarith)
+  have hlog2_le : Real.log 2 ≤ Real.log (2 * (R : ℝ)) := Real.log_le_log (by norm_num) (by nlinarith)
+  have hlogR_le : Real.log (R : ℝ) ≤ Real.log (2 * (R : ℝ)) := Real.log_le_log hRpos (by nlinarith)
   have hharm := harmonic_le_one_add_log (R ^ 2)
   have hpow : Real.log ((R ^ 2 : ℕ) : ℝ) = 2 * Real.log (R : ℝ) := by
     rw [Nat.cast_pow, Real.log_pow]
@@ -88,7 +80,7 @@ theorem multiplicative_large_sieve_proof :
         unfold OAI.LargePrimeGaps.sequenceCharacterSum
         rw [Fin.sum_univ_succ]
         simp [b, Fin.val_succ]
-      rw [sum_Icc_eq_fin N (fun n => a n * χ (n : ZMod q)), hseq.symm]
+      grind [sum_Icc_eq_fin, ZMod]
     have hnorm : (∑ i : Fin (N + 1), ‖b i‖ ^ 2) =
         Erdos821.Blueprint.Analytic.sqNorm (Finset.Icc 1 N) a := by
       calc
@@ -106,13 +98,7 @@ theorem multiplicative_large_sieve_proof :
           ∑ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ (r.val + 1))).filter
             DirichletCharacter.IsPrimitive,
             ‖OAI.LargePrimeGaps.sequenceCharacterSum b χ‖ ^ 2 := by
-      apply Finset.sum_congr rfl
-      intro r hr
-      apply congrArg (fun t : ℝ =>
-        ((r.val + 1 : ℕ) : ℝ) / Nat.totient (r.val + 1) * t)
-      apply Finset.sum_congr rfl
-      intro χ hχ
-      rw [hchar]
+      grind
     have hOAI := OAI.LargePrimeGaps.multiplicative_large_sieve R (N + 1) b
     have hS : 0 ≤ ∑ i : Fin (N + 1), ‖b i‖ ^ 2 :=
       Finset.sum_nonneg fun i _ => sq_nonneg ‖b i‖
@@ -133,18 +119,8 @@ theorem multiplicative_large_sieve_proof :
         nlinarith
       have hbase : (N : ℝ) + 1 ≤ sieveK * ((N : ℝ) + 1) := by
         nlinarith
-      have hterm := add_le_add hbase hRterm
-      calc
-        ((N + 1 : ℕ) : ℝ) + (R : ℝ) ^ 2 * (harmonic (R ^ 2) : ℝ) ≤
-            sieveK * ((N : ℝ) + 1) + sieveK * ((R : ℝ) ^ 2 * Real.log (2 * (R : ℝ))) := by
-          simpa only [Nat.cast_add, Nat.cast_one] using hterm
-        _ = sieveK * ((N : ℝ) + 1 + (R : ℝ) ^ 2 * Real.log (2 * (R : ℝ))) := by ring
+      grind
     have hmain := hOAI.trans (mul_le_mul_of_nonneg_right hcoef hS)
-    rw [hleft]
-    calc
-      _ ≤ (sieveK * ((N : ℝ) + 1 + (R : ℝ) ^ 2 * Real.log (2 * (R : ℝ)))) *
-          (∑ i : Fin (N + 1), ‖b i‖ ^ 2) := hmain
-      _ = sieveK * ((N : ℝ) + 1 + (R : ℝ) ^ 2 * Real.log (2 * (R : ℝ))) *
-          Erdos821.Blueprint.Analytic.sqNorm (Finset.Icc 1 N) a := by rw [hnorm]
+    grind
 
 end Erdos821.P1

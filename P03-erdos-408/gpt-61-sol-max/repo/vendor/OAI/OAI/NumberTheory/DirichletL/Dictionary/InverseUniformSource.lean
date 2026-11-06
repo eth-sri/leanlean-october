@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseUniformTests
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorInverseFiberCount
@@ -22,7 +23,7 @@ lemma positiveAnnular_support_sharp : Function.support positiveAnnular⊆Ioo (1/
     rwa [←positiveAnnular_eq x hx0]
   simpa using HeckeDetectorPartition.annular_support cutoff cutoff_one cutoff_zero x hx0 0 (by simpa using he)
 
-lemma ratioProfile_zero_of_four_le (R : ℝ) (hR : 4≤R) :
+lemma ratioProfile_zero_of_four_le  R  (hR : 4≤R) :
     ratioProfile cutoff positiveAnnular R=0 := by
   funext x
   by_cases hx : positiveAnnular x=0
@@ -31,7 +32,7 @@ lemma ratioProfile_zero_of_four_le (R : ℝ) (hR : 4≤R) :
     have hrx : 2≤R*x := by nlinarith [hs.1]
     simp [ratioProfile,cutoff_zero _ hrx]
 
-lemma inverseDetectorTest_zero_of_four_le (scaled reverse : Bool) (n : ℕ) (R σ t : ℝ)
+lemma inverseDetectorTest_zero_of_four_le  scaled reverse   n   R σ t 
     (hR : 4≤R) : inverseDetectorTest scaled reverse n R σ t=0 := by
   have hz : inverseDetectorSchwartz reverse n R σ t=0 := by
     ext x
@@ -52,10 +53,10 @@ theorem inverseDetectorTest_uniform_all_ratios (S : Finset (ℕ×ℕ)) :
   · rw [inverseDetectorTest_zero_of_four_le _ _ _ _ _ _ (le_of_not_ge hh),map_zero]
     positivity
 
-def inverseSourceSchwartz (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) : 𝓢(ℝ,ℂ) :=
+def inverseSourceSchwartz (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ)  :=
   inverseDetectorTest scaled reverse n (U^r/U^tstar) σ t
 
-lemma inverseSourceSchwartz_apply (scaled reverse : Bool) (n : ℕ) (U tstar r σ t x : ℝ) :
+lemma inverseSourceSchwartz_apply  scaled reverse   n   U tstar r σ t x  :
     inverseSourceSchwartz scaled reverse n U tstar r σ t x=
       if scaled then scaleProfile (twistProfile
         (logTest (orientedProfile reverse (HeckeDetectorInverseFiberCount.inverseTest U tstar r)) n) σ t) x
@@ -71,7 +72,7 @@ theorem inverseSourceSchwartz_uniform (S : Finset (ℕ×ℕ)) :
   obtain ⟨J,C,hC,hb⟩ := inverseDetectorTest_uniform_all_ratios S
   refine ⟨J,C,hC,?_⟩
   intro scaled reverse n hn U hU tstar r σ hσ t
-  exact hb scaled reverse n hn (U^r/U^tstar) (by positivity) σ hσ t
+  bound
 
 end SevenEighths.DetectorDictionaryInverseUniform
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowGaussianSum
 public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
@@ -7,29 +8,31 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff SchwartzMap
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma low_window_log_support (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W⊆Set.Icc a b) (y : ℝ) (hy : W (Real.exp y)≠0) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+lemma low_window_log_support (W : ℝ→ℂ)  a b  (ha : 0<a)
+    (hW : Function.support W⊆Set.Icc a b)  y  (hy : W (Real.exp y)≠0) :
     |y|≤|Real.log a|+|Real.log b| := by
   have hs := hW hy
   have hlo := Real.log_le_log ha hs.1
   have hhi := Real.log_le_log (Real.exp_pos y) hs.2
   rw [Real.log_exp] at hlo hhi
-  exact abs_le.mpr ⟨by linarith [neg_abs_le (Real.log a),abs_nonneg (Real.log b)],
-    by linarith [le_abs_self (Real.log b),abs_nonneg (Real.log a)]⟩
+  grind
 
-theorem compensatedPhysicalProbe_low (η : HeckeFamily.Character) (S : Finset Id)
+section
+variable (η : HeckeFamily.Character) (S : Finset Id)
+
+theorem compensatedPhysicalProbe_low    
     (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
     {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
     (a b ε : ℝ) (ha : 0<a) (hε : 0<ε) (hε1 : ε<1)
-    (W : Fin K→ℝ→ℂ) (hW : ∀i,Function.support (W i)⊆Set.Icc a b) (hWnorm : ∀i x,‖W i x‖≤1)
-    (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 B0 B1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+     W  (hW : ∀i,Function.support (W i)⊆Set.Icc a b) (hWnorm : ∀i x,‖W i x‖≤1)
+     W0 W1  (a0 b0 a1 b1 B0 B1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hab1 : a1<b1) (hB0 : 0≤B0) (hB1 : 0≤B1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hW0s : ContDiff ℝ ∞ W0) (hW1s : ContDiff ℝ ∞ W1)
@@ -78,13 +81,13 @@ theorem compensatedPhysicalProbe_low (η : HeckeFamily.Character) (S : Finset Id
   rw [←Finset.sum_mul]
   exact mul_le_mul_of_nonneg_right (by dsimp [C0];linarith) (Real.rpow_nonneg hz.le _)
 
-theorem original_ray_compensatedPhysicalProbe_low (η : HeckeFamily.Character)
-    (S : Finset Id) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+theorem original_ray_compensatedPhysicalProbe_low  
+      (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i) (hinj : Function.Injective ell)
     (hsum : ∑i,ell i≤1/6) (R : Set Id)
     (a b ε : ℝ) (ha : 0<a) (hab : a≤b) (hε : 0<ε) (hε1 : ε<1)
-    (W : Fin K→ℝ→ℂ) (hW : ∀i,Function.support (W i)⊆Set.Icc a b) (hWnorm : ∀i x,‖W i x‖≤1)
-    (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 B0 B1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+     W  (hW : ∀i,Function.support (W i)⊆Set.Icc a b) (hWnorm : ∀i x,‖W i x‖≤1)
+     W0 W1  (a0 b0 a1 b1 B0 B1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hab1 : a1<b1) (hB0 : 0≤B0) (hB1 : 0≤B1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hW0s : ContDiff ℝ ∞ W0) (hW1s : ContDiff ℝ ∞ W1)
@@ -102,12 +105,14 @@ theorem original_ray_compensatedPhysicalProbe_low (η : HeckeFamily.Character)
   have hz : 0<Z := lt_trans zero_lt_one hZ.1
   apply hZ.2 _ (fun i=>ProbeRaySlots.pool_supported R S hS a b (Z^(ell i)))
     (fun i P hP=>((ProbeRaySlots.mem_pool R S a b (Z^(ell i)) P).mp hP).2.2.2)
-    (fun i j hij=>hd i j hij)
+    (hd)
   intro i P hP
   have hh := ProbeRaySlots.pool_norm_bounds R S ha.le hab (Real.rpow_pos_of_pos hz _) P hP
   simpa only [mul_comm] using And.intro hh.1.le hh.2
 
-end SevenEighths.ProbePhysical
 end
+
+end SevenEighths.ProbePhysical
+
 
 end OAI

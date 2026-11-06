@@ -12,13 +12,13 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
+
+
+variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
 def actualRowPhaseExtension (F : PrimeFamily φ) (jF : φ → ℕ)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (u : Eisˣ) (m : ℕ) (K : Ideal Eis) : ℂ :=
+    (u : ActualEisensteinCubic.Oˣ) (m : ℕ) (K : Ideal ActualEisensteinCubic.O)  :=
   if hK : Admissible K then actualRowPhase F K hK jF s u m else 0
 
 end

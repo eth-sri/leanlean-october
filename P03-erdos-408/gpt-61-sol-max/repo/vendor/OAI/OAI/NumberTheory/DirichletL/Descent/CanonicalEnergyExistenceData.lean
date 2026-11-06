@@ -12,9 +12,9 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
 open CanonicalRowCompletion InverseReflectedPhase
-local notation "O"=>ActualEisensteinCubic.O
 
-def CanonicalEnergyExists (Mcap Fcap c eps L:ℝ)(K:ℕ)(W:𝓢(ℝ,ℂ)):Prop :=
+
+def CanonicalEnergyExists (Mcap Fcap c eps L:ℝ)(K:ℕ)(W:𝓢(ℝ,ℂ)) :=
   ∃degree:ℕ,∃B:ℝ,1≤B ∧
     ∀q:ℕ,q≠0→∃C Z₀:ℝ,0<C ∧ 1<Z₀ ∧
     ∀Z:ℝ,Z₀≤Z→∀D:ℕ,B*Z^L≤D→
@@ -25,11 +25,11 @@ def CanonicalEnergyExists (Mcap Fcap c eps L:ℝ)(K:ℕ)(W:𝓢(ℝ,ℂ)):Prop :
       (∀i∈slots,1≤H i)→(∀i∈slots,∀P∈lists i,(Ideal.absNorm P.val:ℝ)≤H i)→
       (∀i∈slots,∀P∈lists i,‖a i P‖≤1)→
     ∀z:ℝ,0≤z→(∏i∈slots,H i)≤Z^z→
-    ∀base:O→*ℂ,(∀u,‖base u‖≤1)→
+    ∀base:ActualEisensteinCubic.O→*ℂ,(∀u,‖base u‖≤1)→
       CanonicalCoefficientClass.FactorsModulo (CanonicalCoefficientClass.fixedBaseConductor q) base→
       CompletePoolRankMoments q D slots lists a base W Z Mcap Fcap z c eps C K degree
 
-theorem canonical_energy_of_rank (n:ℕ)(L cstar cutoff eta Mcap Fcap c eps:ℝ)(K:ℕ)(W:𝓢(ℝ,ℂ))
+theorem canonical_energy_of_rank (n:ℕ)(L cstar cutoff eta Mcap Fcap c eps:ℝ) K  W 
     (hM:Mcap≤rankRowCap n cutoff)(hF:Fcap≤rankTotalCap n L eta)
     (hc:rankMargin n cstar eta≤c)(he:rankLoss n eta≤eps)
     (h:RankEnergyExists n L cstar cutoff eta K W):

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Analysis.Divisor
 public import Erdos408.TwoSided.Graph.Restore.Core
@@ -32,7 +33,7 @@ variable {ι : Type} [Fintype ι] [DecidableEq ι] {J : ℕ}
 /-! ### The list weights -/
 
 /-- The unshared parts with labels dividing `n` number at most `∏_g ω_g(n)^{t_g}`. -/
-lemma listCount_le_prod (P : ι → Finset ℕ) (C : ι → Finset (Fin J)) (n : ℕ) :
+lemma listCount_le_prod (P : ι → Finset ℕ) (C : ι → Finset (Fin J))  n  :
     listCount P C n ≤ ∏ g, primeCount (P g) n ^ (unsharedSlots C g).card := by
   unfold listCount
   calc _ ≤ (Fintype.piFinset fun g => Fintype.piFinset fun j =>
@@ -56,7 +57,7 @@ lemma listCount_le_prod (P : ι → Finset ℕ) (C : ι → Finset (Fin J)) (n :
         rw [Fintype.prod_ite_mem, prod_const]
 
 /-- `q₀^z z^t ≤ t! / log(1/q₀)^t`. -/
-private lemma pow_mul_pow_le {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (z t : ℕ) :
+private lemma pow_mul_pow_le  {q₀}  (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (z t : ℕ) :
     q₀ ^ z * (z : ℝ) ^ t ≤ t.factorial / Real.log q₀⁻¹ ^ t := by
   set θ := Real.log q₀⁻¹
   have hθ : 0 < θ := Real.log_pos (one_lt_inv_iff₀.2 ⟨hq₀, hq₀₁⟩)
@@ -67,7 +68,7 @@ private lemma pow_mul_pow_le {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 
   have h := Real.pow_div_factorial_le_exp _ (mul_nonneg hθ.le (Nat.cast_nonneg z)) t
   rw [hq, le_div_iff₀ (pow_pos hθ t)]
   rw [div_le_iff₀ (by positivity), mul_pow] at h
-  have he := Real.exp_pos (θ * z)
+  
   calc Real.exp (-(θ * z)) * (z : ℝ) ^ t * θ ^ t
       = Real.exp (-(θ * z)) * (θ ^ t * (z : ℝ) ^ t) := by ring
     _ ≤ Real.exp (-(θ * z)) * (Real.exp (θ * z) * t.factorial) :=
@@ -76,19 +77,19 @@ private lemma pow_mul_pow_le {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 
         rw [← mul_assoc, ← Real.exp_add, neg_add_cancel, Real.exp_zero, one_mul]
 
 /-- The per-group constant `c_q = (m₀ + 1)! max(1, 1/log(1/q₀))^{m₀+1}` of U9. -/
-noncomputable def listConst (q₀ : ℝ) (m₀ : ℕ) : ℝ :=
+noncomputable def listConst (q₀ : ℝ) (m₀ : ℕ)  :=
   (m₀ + 1).factorial * max 1 (Real.log q₀⁻¹)⁻¹ ^ (m₀ + 1)
 
 /-- `c_q ≥ 1`. -/
-lemma one_le_listConst (q₀ : ℝ) (m₀ : ℕ) : 1 ≤ listConst q₀ m₀ := by
+lemma one_le_listConst  q₀   m₀  : 1 ≤ listConst q₀ m₀ := by
   unfold listConst
   have h₁ : (1 : ℝ) ≤ (m₀ + 1).factorial := Nat.one_le_cast.2 (Nat.factorial_pos _)
   have h₂ : (1 : ℝ) ≤ max 1 (Real.log q₀⁻¹)⁻¹ ^ (m₀ + 1) := one_le_pow₀ (le_max_left _ _)
   nlinarith
 
 /-- **U9 for the list weights.** `Λ(n) ≤ (q₀^{-M} c_q)^{s_P}`. -/
-lemma listWeight_le {P : ι → Finset ℕ} {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1)
-    {C : ι → Finset (Fin J)} {m₀ : ℕ} (hC : ∀ g, (C g).card ≤ m₀) (n : ℕ) :
+lemma listWeight_le {P : ι → Finset ℕ}  {q₀}  (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1)
+    {C : ι → Finset (Fin J)}  {m₀}  (hC : ∀ g, (C g).card ≤ m₀)  n  :
     listWeight P q₀ C n ≤ (q₀⁻¹ ^ (J + 1) * listConst q₀ m₀) ^ Fintype.card ι := by
   set θ := Real.log q₀⁻¹
   have hθ : 0 < θ := Real.log_pos (one_lt_inv_iff₀.2 ⟨hq₀, hq₀₁⟩)
@@ -127,8 +128,8 @@ lemma listWeight_le {P : ι → Finset ℕ} {q₀ : ℝ} (hq₀ : 0 < q₀) (hq�
 
 omit [DecidableEq ι] in
 /-- `T = ∏_g V_g^{-t_g} ≤ max(1, 1/v₋)^{(m₀+1) s_P}`. -/
-lemma targetMass_le {P : ι → Finset ℕ} {vlo : ℝ} (hvlo : 0 < vlo)
-    (hV : ∀ g, vlo ≤ harmonicMass (P g)) {C : ι → Finset (Fin J)} {m₀ : ℕ}
+lemma targetMass_le {P : ι → Finset ℕ}  {vlo}  (hvlo : 0 < vlo)
+    (hV : ∀ g, vlo ≤ harmonicMass (P g)) {C : ι → Finset (Fin J)}  {m₀} 
     (hC : ∀ g, (C g).card ≤ m₀) :
     targetMass P C ≤ (max 1 vlo⁻¹ ^ (m₀ + 1)) ^ Fintype.card ι := by
   unfold targetMass
@@ -139,7 +140,7 @@ lemma targetMass_le {P : ι → Finset ℕ} {vlo : ℝ} (hvlo : 0 < vlo)
   calc (harmonicMass (P g))⁻¹ ^ (unsharedSlots C g).card
       ≤ max 1 vlo⁻¹ ^ (unsharedSlots C g).card := by
         refine pow_le_pow_left₀ (inv_nonneg.2 (hvlo.trans_le (hV g)).le) ?_ _
-        exact (inv_anti₀ hvlo (hV g)).trans (le_max_right _ _)
+        bound
     _ ≤ max 1 vlo⁻¹ ^ (m₀ + 1) := pow_le_pow_right₀ (le_max_left _ _) ht
 
 /-! ### Prime factors, masses and edges -/
@@ -147,7 +148,7 @@ lemma targetMass_le {P : ι → Finset ℕ} {vlo : ℝ} (hvlo : 0 < vlo)
 omit [DecidableEq ι] in
 /-- **U11.** `ω(n) log 2 ≤ log n` for `n ≥ 1`. -/
 lemma groupPrimeCount_mul_log_two_le {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, p.Prime)
-    (hdisj : ∀ g h, g ≠ h → Disjoint (P g) (P h)) {n : ℕ} (hn : 1 ≤ n) :
+    (hdisj : ∀ g h, g ≠ h → Disjoint (P g) (P h))  {n}  (hn : 1 ≤ n) :
     (groupPrimeCount P n : ℝ) * Real.log 2 ≤ Real.log n := by
   set S := (univ.biUnion P).filter (· ∣ n)
   have hcard : groupPrimeCount P n = S.card := by
@@ -157,8 +158,7 @@ lemma groupPrimeCount_mul_log_two_le {P : ι → Finset ℕ} (hprime : ∀ g, �
     intro g _ h _ hgh
     exact disjoint_filter_filter (hdisj g h hgh)
   have hprime' : ∀ p ∈ S, p.Prime := fun p hp => by
-    obtain ⟨g, -, hpg⟩ := mem_biUnion.1 (mem_filter.1 hp).1
-    exact hprime g p hpg
+    grind
   have hdvd : ∏ p ∈ S, p ∣ n :=
     prod_primes_dvd n (fun p hp => (hprime' p hp).prime) fun p hp => (mem_filter.1 hp).2
   have hle : 2 ^ S.card ≤ n := by
@@ -172,7 +172,7 @@ lemma groupPrimeCount_mul_log_two_le {P : ι → Finset ℕ} (hprime : ∀ g, �
 /-- **U10.** The edge product `D_R D_C` is at most `E^{J s_P}` when every group prime is at most
 `E`. -/
 lemma sharedProduct_mul_slotProduct_le {P : ι → Finset ℕ} {E : ℝ} (hE : 1 ≤ E)
-    (hP : ∀ g, ∀ p ∈ P g, (p : ℝ) ≤ E) {C : ι → Finset (Fin J)} {s a : ι → Fin J → ℕ}
+    (hP : ∀ g, ∀ p ∈ P g, (p : ℝ) ≤ E) {C : ι → Finset (Fin J)}  {s a} 
     (hs : s ∈ auxLabels P (sharedSlots C)) (ha : a ∈ auxLabels P C) :
     (sharedProduct C s : ℝ) * slotProduct C a ≤ E ^ (J * Fintype.card ι) := by
   have ha' : ∀ g, ∀ i ∈ C g, a g i ∈ P g := fun g i hi => by
@@ -197,7 +197,7 @@ lemma sharedProduct_mul_slotProduct_le {P : ι → Finset ℕ} {E : ℝ} (hE : 1
 
 /-- The eventual conditions on `x`: `L ≥ 10`, `A T ≤ L`, `log κ + J A T L^{0.46} ≤ L` and
 `K₁ ≤ L`. -/
-lemma eventually_restore_scale (A κ K₁ : ℝ) (J : ℕ) :
+lemma eventually_restore_scale  A κ K₁  (J : ℕ) :
     ∀ᶠ x : ℝ in atTop, 10 ≤ Real.log x ∧ A * Real.log (Real.log x) ≤ Real.log x ∧
       Real.log κ + J * A * Real.log (Real.log x) * Real.log x ^ (0.46 : ℝ) ≤ Real.log x ∧
       K₁ ≤ Real.log x := by
@@ -208,8 +208,7 @@ lemma eventually_restore_scale (A κ K₁ : ℝ) (J : ℕ) :
   set L := Real.log x
   have hL0 : 0 < L := by linarith
   have hc1 : 1 ≤ c := by
-    have := abs_nonneg (J * A); have := abs_nonneg (Real.log κ); have := abs_nonneg A
-    simp only [c]; linarith
+    bound
   -- `T ≤ 25 L^{0.04}` and `L^{1/2} ≥ c`
   have hT : Real.log L ≤ 25 * L ^ (0.04 : ℝ) := by
     have := Real.log_le_rpow_div hL0.le (by norm_num : (0 : ℝ) < 0.04)
@@ -232,7 +231,7 @@ lemma eventually_restore_scale (A κ K₁ : ℝ) (J : ℕ) :
           mul_le_mul_of_nonneg_left (hT.trans (by linarith)) (abs_nonneg A)
       _ ≤ c * L ^ (1 / 2 : ℝ) := by
           have : |A| * 25 ≤ c := by
-            have := abs_nonneg (J * A); have := abs_nonneg (Real.log κ); simp only [c]; linarith
+            grind
           nlinarith [Real.rpow_nonneg hL0.le (1 / 2 : ℝ)]
       _ ≤ L ^ (1 / 2 : ℝ) * L ^ (1 / 2 : ℝ) :=
           mul_le_mul_of_nonneg_right hsq (Real.rpow_nonneg hL0.le _)
@@ -263,7 +262,7 @@ lemma sharedProduct_mul_slotProduct_le_of_scale {x κ A : ℝ} (hx0 : 0 < x) (h�
     (hs : (Fintype.card ι : ℝ) ≤ A * Real.log (Real.log x))
     (hκT : Real.log κ + J * A * Real.log (Real.log x) * Real.log x ^ (0.46 : ℝ) ≤
       Real.log x)
-    {C : ι → Finset (Fin J)} {s a : ι → Fin J → ℕ} (hs' : s ∈ auxLabels P (sharedSlots C))
+    {C : ι → Finset (Fin J)}  {s a}  (hs' : s ∈ auxLabels P (sharedSlots C))
     (ha : a ∈ auxLabels P C) :
     (sharedProduct C s : ℝ) * slotProduct C a ≤ x / κ := by
   set L := Real.log x
@@ -302,7 +301,7 @@ lemma groupPrimeCount_le_of_scale {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p
     calc Real.log m ≤ Real.log (2 * x ^ 2) := Real.log_le_log (by exact_mod_cast hm1) hm
       _ = Real.log 2 + 2 * Real.log x := by
           rw [Real.log_mul (by norm_num) (by positivity), Real.log_pow]; push_cast; ring
-  have h0 := Nat.cast_nonneg (α := ℝ) (groupPrimeCount P m)
+  
   nlinarith
 
 /-- The final arithmetic of G5:
@@ -315,11 +314,11 @@ lemma restore_final_le {L κK M₀ B₀ cT cΛ vlo Q Tm Λ H Z Y : ℝ} (hL : 1 
     2 * (Tm ^ 2 * κK * M₀ * L * L ^ B₀ * Λ ^ 2) * H * (Y / vlo * Z) ≤
       κK * L ^ (2 * cT + 2 * cΛ + B₀ + 4) * Y := by
   have hL0 : 0 < L := by linarith
-  have hQ : 0 ≤ Q * L := hZ0.trans hZ
+  
   have hX : Tm ^ 2 * κK * M₀ * L * L ^ B₀ * Λ ^ 2 ≤
       (L ^ cT) ^ 2 * κK * M₀ * L * L ^ B₀ * (L ^ cΛ) ^ 2 := by
     gcongr
-  have hX'0 : 0 ≤ (L ^ cT) ^ 2 * κK * M₀ * L * L ^ B₀ * (L ^ cΛ) ^ 2 := by positivity
+  
   have hpow : ∀ c : ℝ, L ^ (2 * cT + 2 * cΛ + B₀ + c) =
       L ^ cT * L ^ cT * (L ^ cΛ * L ^ cΛ) * L ^ B₀ * L ^ c := fun c => by
     rw [show 2 * cT + 2 * cΛ + B₀ + c = cT + cT + (cΛ + cΛ) + B₀ + c by ring]
@@ -348,15 +347,9 @@ lemma sharedLabels_nonempty {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
   have hne : ∀ g, (P g).Nonempty := fun g => by
     by_contra h
     rw [not_nonempty_iff_eq_empty] at h
-    have := hV g
-    rw [h, harmonicMass, sum_empty] at this
-    exact lt_irrefl 0 this
+    grind [harmonicMass]
   refine ⟨fun g i => if i ∈ C g then 1 else (hne g).choose, mem_auxLabels.2 fun g i => ?_⟩
-  by_cases hi : i ∈ C g
-  · rw [ite_eq_right (by simp [sharedSlots, hi]), ite_eq_left hi]
-    exact mem_singleton_self 1
-  · rw [ite_eq_left (by simp [sharedSlots, hi]), ite_eq_right hi]
-    exact (hne g).choose_spec
+  grind [sharedSlots]
 
 /-- The support condition of G5 from `D_R D_C ≤ x/κ`. -/
 lemma sharedProduct_mul_le_floor {x κ : ℝ} (hx0 : 0 < x) (hκ : 1 < κ) {Ψ : ℝ → ℝ}
@@ -389,9 +382,9 @@ theorem norm_physSum_sub_stripSum_le_of_scale {q₀ c₀ C₀ vlo vhi B₀ κ M�
     (hK₁ : 6 * |M₀| * (J ^ 2 + 6 * J + J * m₀ + 3 * m₀) / vlo ≤ Real.log x)
     {P : ι → Finset ℕ} {big : Finset ι} (hadm : GroupAdmissible c₀ C₀ vlo vhi x P big)
     {C : ι → Finset (Fin J)} (hC : ∀ g, (C g).card ≤ m₀)
-    {K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ} {κK : ℝ}
+    {K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ}  {κK} 
     (hK : ∀ p p' a, ‖K p p' a‖ ≤ κK) (hKpad : ∀ p p' a, K p p' a = K (pad C p) (pad C p') a)
-    {F G : ℕ → ℝ} {Ψ : ℝ → ℝ} (hF : ∀ n : ℕ, 1 ≤ n → (n : ℝ) ≤ x ^ 3 → |F n| ≤ Real.log x)
+     {F G}   {Ψ}  (hF : ∀ n : ℕ, 1 ≤ n → (n : ℝ) ≤ x ^ 3 → |F n| ≤ Real.log x)
     (hFinv : ∀ p ∈ Finset.univ.biUnion P, ∀ n, F (p * n) = F n)
     (hG : CoreAdmissible B₀ x P G) (hΨ : ∀ y, |Ψ y| ≤ M₀)
     (hsupp : ∀ y, Ψ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) :
@@ -496,8 +489,8 @@ groups as in (6.1), every pattern `C` with `|C g| ≤ m₀`, every kernel `|K| �
 only on the unshared parts, every `F` with `|F| ≤ L` on `[1, x³]` invariant under the active
 primes, every clipped core and every `Ψ` with `|Ψ| ≤ M₀` supported in `[κ⁻¹, κ]`, the cutoff
 pairing is the stripped correlation up to `κ_K L^{C_r} e^{-L^{0.27}}`. -/
-theorem exists_eventually_norm_physSum_sub_stripSum_le (q₀ c₀ C₀ vlo vhi B₀ κ M₀ : ℝ)
-    (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (hκ : 1 < κ) (m₀ J : ℕ) :
+theorem exists_eventually_norm_physSum_sub_stripSum_le  q₀ c₀ C₀ vlo vhi B₀ κ M₀ 
+    (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (hκ : 1 < κ)  m₀ J  :
     ∃ Cr : ℝ, ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →

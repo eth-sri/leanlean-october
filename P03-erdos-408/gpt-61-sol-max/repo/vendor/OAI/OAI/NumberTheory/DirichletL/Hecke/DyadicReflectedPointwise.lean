@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedControl
 
@@ -6,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedControl
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeReciprocalGrowth HeckeDeletionBounds
 
-theorem reflected_polynomial_bound (e ε : ℝ)
+theorem reflected_polynomial_bound  e ε 
     (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
     ∃ Cg Cr : ℝ, 0<Cg ∧ 0<Cr ∧
     ∀ {ι : Type*} [Fintype ι] (χ : ι → Character)
@@ -73,9 +74,7 @@ theorem reflected_polynomial_bound (e ε : ℝ)
       change |t|+|freq|≤H
       linarith)
     apply hreflect χ hχ T a i hT ha ha' hmax j
-    · simp only [add_re,ofReal_re,mul_re,ofReal_im,I_re,mul_zero,I_im,zero_mul,
-        sub_self,add_zero,shift_re]
-      ring
+    · norm_num
     · simpa [shift,sub_eq_add_neg,H] using him
   have hb := polynomial_bound_of_rectangle_split (χ j) (hχ j) false W A B hA hWs hW
     D σ freq (1-a-6*e-σ) (2-σ) V C₂ Cn Kg Kr n hD hlr (by linarith)
@@ -85,6 +84,6 @@ theorem reflected_polynomial_bound (e ε : ℝ)
 
 end SevenEighths.HeckeDyadic
 
-end
+
 
 end OAI

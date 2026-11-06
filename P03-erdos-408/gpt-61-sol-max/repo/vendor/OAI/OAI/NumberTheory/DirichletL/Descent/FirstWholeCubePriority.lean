@@ -18,7 +18,7 @@ variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 def firstWholePrioritySecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (F : Finset ι) (b : CubeCoordinates ι) (C extra : Finset ι) (negative : Bool)
     (Ψ : O→*ℂ) (m d : O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ) : ℝ :=
+    (selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ)  :=
   let A := extra∪((if negative then b.rightDivisor else b.leftDivisor)∪C)
   (32*512)*(2:ℝ)^slots.card * ∑ r : RayCharacter×RayCharacter,∑ D∈F.powerset,
     (‖crossCoeff r.1 r.2‖*‖selector D‖)*∑ core : FirstCoreIndex,
@@ -33,8 +33,8 @@ theorem first_actual_second_whole_cube_priority
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
     (F : Finset ι) (b : CubeCoordinates ι) (C extra : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m d : O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ) (hY : 0<Y) :
+    (Ψ : O→*ℂ) (m d : O) (slots : Finset σ)  lists   a 
+     selector   ω   X t Y  (hY : 0<Y) :
     firstCanonicalSecondEnergy p hp hg hinj F b C negative Ψ m d
       (fun U=>primeMark slots lists a (extra∪U)) selector ω X t Y ≤
     firstWholePrioritySecondEnergy p hp hg hinj F b C extra negative Ψ m d slots lists a selector ω X t Y := by

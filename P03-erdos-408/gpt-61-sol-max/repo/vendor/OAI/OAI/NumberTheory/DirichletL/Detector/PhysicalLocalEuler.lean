@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LocalPhysical
 public import OAI.NumberTheory.DirichletL.Detector.SourceLocal
@@ -7,21 +8,21 @@ public import OAI.NumberTheory.DirichletL.Detector.SourceLocal
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion
 open CubicEisenstein GaussianShiftedPartition ProbePrimePower ProbeEuler ProbeLocal
-local notation "O" => ActualEisensteinCubic.O
 
-lemma outerQuotient_mk (s H : O) :
+
+lemma outerQuotient_mk  s H  :
     outerQuotient s (Ideal.Quotient.mk _ H)=idealRowHom H (Ideal.span {s}) := by
   unfold outerQuotient
   apply idealRowHom_congr_mod
   exact Ideal.Quotient.eq.mp (representative_spec _ _)
 
-theorem bareCongruenceCoefficient_all_prime_powers (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p}) (t k j : ℕ) :
+theorem bareCongruenceCoefficient_all_prime_powers  p   hp 
+    [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal] (hg : goodLambda∉Ideal.span {p})  t k j  :
     bareCongruenceCoefficient (p^t) (p^k) (pow_ne_zero _ hp.ne_zero) (p^j) =
       sourceScalar p hp hg t k j := by
   cases t with
@@ -37,10 +38,9 @@ theorem bareCongruenceCoefficient_all_prime_powers (p : O) (hp : Prime p)
         MulChar.pow_apply' _ hk]
   | succ n =>
     rw [bareCongruenceCoefficient_prime_power p hp hg n k j]
-    simp only [sourceScalar, Nat.add_eq_zero_iff, Nat.one_ne_zero, and_false, ite_false,
-      Nat.add_sub_cancel]
+    rfl
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

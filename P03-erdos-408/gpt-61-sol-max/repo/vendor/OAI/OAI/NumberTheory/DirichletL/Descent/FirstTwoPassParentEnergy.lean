@@ -12,7 +12,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -26,9 +26,9 @@ local notation "O"=>ActualEisensteinCubic.O
 
 theorem original_two_pass_parent_energy
     (om:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support om⊆Set.Icc a b)
-    (Lcap eta tau saving em ed:ℝ)(hcap:0≤Lcap)(hb:0≤b)
+     Lcap eta tau saving em ed (hcap:0≤Lcap)(hb:0≤b)
     (heta:0≤eta)(heta1:eta≤1)(htau:0<tau)(htau1:tau≤1)
-    (hem:0<em)(hed:0<ed)(K:ℕ):
+    (hem:0<em)(hed:0<ed) K :
     ∃(ω₁₁ ω₁₂ ω₂₁ ω₂₂:𝓢(ℝ,ℂ))(af₁ bf₁ af₂ bf₂ window bw:ℝ),
       0<af₁ ∧ af₁≤bf₁ ∧ 0<af₂ ∧ af₂≤bf₂ ∧
       HasCompactSupport (ω₁₁:ℝ→ℂ) ∧ HasCompactSupport (ω₁₂:ℝ→ℂ) ∧
@@ -99,6 +99,6 @@ theorem original_two_pass_parent_energy
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

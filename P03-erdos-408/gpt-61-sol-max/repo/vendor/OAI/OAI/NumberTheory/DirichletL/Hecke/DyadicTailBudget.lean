@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedPointwise
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedPointwise
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckeDyadic
 
 theorem exists_external_tail_order (τ B p : ℝ) (hτ : 0<τ) :
@@ -29,8 +30,7 @@ theorem exists_external_tail_order (τ B p : ℝ) (hτ : 0<τ) :
       (Real.rpow_nonneg hZp.le _)
 
 theorem constant_absorbed_eventually (C ε : ℝ) (hε : 0<ε) :
-    ∀ᶠ Z : ℝ in Filter.atTop, C≤Z^ε := by
-  exact (tendsto_rpow_atTop hε).eventually (Filter.eventually_ge_atTop C)
+    ∀ᶠ Z : ℝ in Filter.atTop, C≤Z^ε := Filter.Tendsto.eventually (tendsto_rpow_atTop hε) (Filter.eventually_ge_atTop C)
 
 theorem uniform_external_tail_order (τ dmax B R : ℝ)
     (hτ : 0<τ) (_hdmax : 0≤dmax) (hB : 0≤B) (hR : 0≤R) :
@@ -46,8 +46,7 @@ theorem uniform_external_tail_order (τ dmax B R : ℝ)
   have htarget : Z^(-dmax*R)≤(Z^d)^p := by
     rw [←Real.rpow_mul hZp.le]
     apply Real.rpow_le_rpow_of_exponent_le hZ
-    nlinarith [mul_nonneg hd (show 0≤p+R by linarith),
-      mul_nonneg (show 0≤dmax-d by linarith) hR]
+    nlinarith
   have hden : ((1+Z^τ)/2)^n≤(1+Z^τ/2)^n :=
     pow_le_pow_left₀ (by positivity) (by linarith) n
   calc
@@ -61,6 +60,6 @@ theorem uniform_external_tail_order (τ dmax B R : ℝ)
 
 end SevenEighths.HeckeDyadic
 
-end
+
 
 end OAI

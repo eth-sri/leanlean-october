@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.ProbabilityPairing
 public import Erdos821.S34.FrameBridge
@@ -13,19 +14,17 @@ namespace Erdos821.S34Core
 noncomputable section
 
 theorem weighted_event_pairing {α : Type} [Fintype α]
-    (w : α → ℝ) (hw : ∀ x, 0 ≤ w x) (event : α → Prop) (F : α → ℂ) :
+    (w : α → ℝ) (hw : ∀ x, 0 ≤ w x) (event : α → Prop)  F  :
     ‖∑ x, if event x then (w x : ℂ) * F x else 0‖ ≤
       Real.sqrt (∑ x, if event x then w x else 0) * weightedFrameNorm w F := by
   let v := fun x => if event x then w x else 0
-  have hv (x : α) : 0 ≤ v x := by dsimp [v]; split_ifs <;> first | exact hw x | exact le_rfl
+  have hv (x : α) : 0 ≤ v x := by grind
   have hc := Erdos821.S34.Proofs.norm_weighted_sum_sq v hv F
   have he : (∑ x, v x * ‖F x‖ ^ 2) ≤ ∑ x, w x * ‖F x‖ ^ 2 := by
     apply Finset.sum_le_sum
     intro x _
     dsimp [v]
-    split_ifs
-    · rfl
-    · simpa only [zero_mul] using mul_nonneg (hw x) (sq_nonneg ‖F x‖)
+    bound
   have hm : 0 ≤ ∑ x, v x := Finset.sum_nonneg fun x _ => hv x
   have he0 : 0 ≤ ∑ x, w x * ‖F x‖ ^ 2 := Finset.sum_nonneg fun x _ => mul_nonneg (hw x) (sq_nonneg _)
   have hsq := hc.trans (mul_le_mul_of_nonneg_left he hm)

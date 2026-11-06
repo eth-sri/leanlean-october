@@ -12,9 +12,9 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
-noncomputable section
+section
 local notation "Eis" => ActualEisensteinCubic.O
-local instance inverseSecondDeletedPhysicalRecursiveUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -24,7 +24,7 @@ theorem actual_second_deleted_physical_recursive
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
+     {Jo}   source 
     (hs : ActualSecondSourceConditions p source) :
     ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)

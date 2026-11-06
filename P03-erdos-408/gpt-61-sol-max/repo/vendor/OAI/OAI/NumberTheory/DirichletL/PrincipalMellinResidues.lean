@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.ContinuationContour
 public import OAI.NumberTheory.DirichletL.Hecke.Origin
@@ -17,7 +18,11 @@ open scoped Topology
 namespace SevenEighths.PrincipalMellinResidues
 open ProbePhysical
 
-lemma inverse_vertical_continuous (c : ℝ) (hc : c≠0) :
+section
+variable (c T : ℝ) (hc : c≠0)
+
+include hc in
+lemma inverse_vertical_continuous     :
     Continuous (fun t : ℝ => ((c:ℂ)+t*I)⁻¹) := by
   apply Continuous.inv₀ (by fun_prop)
   intro t h
@@ -25,7 +30,8 @@ lemma inverse_vertical_continuous (c : ℝ) (hc : c≠0) :
   simp at he
   exact hc he
 
-lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
+include hc in
+lemma inverse_vertical_truncated     :
     (∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) = (2*Real.arctan (T/c):ℝ) := by
   have hi : IntervalIntegrable (fun t : ℝ => ((c:ℂ)+t*I)⁻¹) volume (-T) T :=
     (inverse_vertical_continuous c hc).intervalIntegrable (-T) T
@@ -52,19 +58,21 @@ lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
     rw [he, intervalIntegral.integral_neg, integral_id_div_sq_add_sq hc]
     simp
 
-lemma inverse_vertical_limit_pos (c : ℝ) (hc : 0<c) :
+lemma inverse_vertical_limit_pos   (hc : 0<c) :
     Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) atTop (𝓝 (Real.pi:ℂ)) := by
   simp_rw [inverse_vertical_truncated c _ hc.ne']
   have ht := Real.tendsto_arctan_atTop.comp (Filter.tendsto_id.atTop_div_const hc)
   have hh := Complex.continuous_ofReal.continuousAt.tendsto.comp ((ht.mono_right inf_le_left).const_mul 2)
   convert hh using 1 <;> simp [Function.comp_def]; ring
 
-lemma inverse_vertical_limit_neg (c : ℝ) (hc : c<0) :
+lemma inverse_vertical_limit_neg   (hc : c<0) :
     Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) atTop (𝓝 (-(Real.pi:ℂ))) := by
   simp_rw [inverse_vertical_truncated c _ hc.ne]
   have ht := Real.tendsto_arctan_atBot.comp (Filter.tendsto_id.atTop_div_const_of_neg hc)
   have hh := Complex.continuous_ofReal.continuousAt.tendsto.comp ((ht.mono_right inf_le_left).const_mul 2)
   convert hh using 1 <;> simp [Function.comp_def]; ring
+
+end
 
 lemma inverse_horizontal_limit (a b p : ℝ) (ε : ℝ) (hε : |ε| = 1) :
     Tendsto (fun T : ℝ => ∫ x : ℝ in a..b,
@@ -82,7 +90,7 @@ lemma inverse_horizontal_limit (a b p : ℝ) (ε : ℝ) (hε : |ε| = 1) :
     simpa [abs_mul, hε, abs_of_pos hT] using h
   · simpa using (tendsto_inv_atTop_zero.mul_const |b-a|)
 
-lemma dslope_eq_sub_pole {A F : ℂ → ℂ} {p z : ℂ} (hz : z≠p)
+lemma dslope_eq_sub_pole {A F : ℂ → ℂ}  {p z}  (hz : z≠p)
     (hF : F z = A z / (z-p)) :
     dslope A p z = F z - A p * (z-p)⁻¹ := by
   rw [dslope_of_ne A hz, slope, hF]
@@ -107,7 +115,11 @@ lemma dslope_vertical_truncated (A F : ℂ → ℂ) (p x T : ℝ) (hx : x≠p)
     (((inverse_vertical_continuous (x-p) (sub_ne_zero.mpr hx)).const_mul _).intervalIntegrable _ _),
     intervalIntegral.integral_const_mul]
 
-lemma rectangle_limits (G : ℂ → ℂ) {a b : ℝ} (hab : a≤b)
+section
+variable (G A F : ℂ → ℂ) {a b p y : ℝ} (hab : a≤b) (hy : y≠0) (hap : a<p) (hpb : p<b) (hA : DifferentiableOn ℂ A {z : ℂ | a≤z.re ∧ z.re≤b}) (hF : ∀ z : ℂ, a≤z.re → z.re≤b → z≠p → F z = A z/(z-p))
+
+include hab in
+lemma rectangle_limits      
     (hG : DifferentiableOn ℂ G {z : ℂ | a≤z.re ∧ z.re≤b})
     {Va Vb : ℂ}
     (ha : Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, G ((a:ℂ)+t*I)) atTop (𝓝 Va))
@@ -130,9 +142,10 @@ lemma rectangle_limits (G : ℂ → ℂ) {a b : ℝ} (hab : a≤b)
     (by simpa only [hrect] using (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0:ℂ)) atTop (𝓝 0)))
   exact (mul_left_cancel₀ I_ne_zero (show I*Vb=I*Va by simpa using sub_eq_zero.mp hz)).symm
 
-lemma horizontal_quotient_continuousOn (A : ℂ → ℂ) {a b p y : ℝ}
-    (hab : a≤b) (hy : y≠0)
-    (hA : DifferentiableOn ℂ A {z : ℂ | a≤z.re ∧ z.re≤b}) :
+include hab hy hA in
+lemma horizontal_quotient_continuousOn    
+       
+      :
     ContinuousOn (fun x : ℝ => A ((x:ℂ)+y*I) / ((x:ℂ)+y*I-p)) (uIcc a b) := by
   apply ContinuousOn.div
   · apply hA.continuousOn.comp (by fun_prop)
@@ -143,9 +156,10 @@ lemma horizontal_quotient_continuousOn (A : ℂ → ℂ) {a b p y : ℝ}
     have hh := congrArg Complex.im h
     exact hy (by simpa using hh)
 
-lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
-    (hA : DifferentiableOn ℂ A {z : ℂ | a≤z.re ∧ z.re≤b})
-    (hF : ∀ z : ℂ, a≤z.re → z.re≤b → z≠p → F z = A z/(z-p))
+include hab hA hF in
+lemma dslope_horizontal_limit      
+     
+     
     (ε : ℝ) (hε : |ε|=1)
     (hlim : Tendsto (fun T : ℝ => ∫ x : ℝ in a..b, F ((x:ℂ)+(ε*T)*I)) atTop (𝓝 0)) :
     Tendsto (fun T : ℝ => ∫ x : ℝ in a..b, dslope A p ((x:ℂ)+(ε*T)*I)) atTop (𝓝 0) := by
@@ -174,10 +188,11 @@ lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
   intro x hx
   exact (dslope_eq_sub_pole (hn x) (he x hx)).symm
 
-theorem verticalIntegral_simple_pole (A F : ℂ → ℂ) {a b p : ℝ}
-    (hap : a<p) (hpb : p<b)
-    (hA : DifferentiableOn ℂ A {z : ℂ | a≤z.re ∧ z.re≤b})
-    (hF : ∀ z : ℂ, a≤z.re → z.re≤b → z≠p → F z = A z/(z-p))
+include hap hpb hA hF in
+theorem verticalIntegral_simple_pole    
+       
+     
+     
     (ha : Integrable (fun t : ℝ => F ((a:ℂ)+t*I)))
     (hb : Integrable (fun t : ℝ => F ((b:ℂ)+t*I)))
     (hbot : Tendsto (fun T : ℝ => ∫ x : ℝ in a..b, F ((x:ℂ)+(-T)*I)) atTop (𝓝 0))
@@ -198,13 +213,13 @@ theorem verticalIntegral_simple_pole (A F : ℂ → ℂ) {a b p : ℝ}
       atTop (𝓝 ((∫ t : ℝ, F ((a:ℂ)+t*I)) - A p * (-(Real.pi:ℂ)))) := by
     simp_rw [dslope_vertical_truncated A F p a _ hap.ne
       (fun z hz => hF z (by simp [hz]) (by simpa [hz] using hab)
-        (by intro h; have := congrArg Complex.re h; simp [hz] at this; exact hap.ne this)) ha]
+        (by intro h; aesop)) ha]
     exact haF.sub ((inverse_vertical_limit_neg (a-p) (sub_neg.mpr hap)).const_mul (A p))
   have hbG : Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, dslope A (p:ℂ) ((b:ℂ)+t*I))
       atTop (𝓝 ((∫ t : ℝ, F ((b:ℂ)+t*I)) - A p * (Real.pi:ℂ))) := by
     simp_rw [dslope_vertical_truncated A F p b _ hpb.ne'
       (fun z hz => hF z (by simpa [hz] using hab) (by simp [hz])
-        (by intro h; have := congrArg Complex.re h; simp [hz] at this; exact hpb.ne' this)) hb]
+        (by intro h; aesop)) hb]
     exact hbF.sub ((inverse_vertical_limit_pos (b-p) (sub_pos.mpr hpb)).const_mul (A p))
   have hbotG := dslope_horizontal_limit A F hab hA hF (-1) (by norm_num)
     (by simpa using hbot)
@@ -222,6 +237,8 @@ theorem verticalIntegral_simple_pole (A F : ℂ → ℂ) {a b p : ℝ}
   field_simp
   simp only [mul_comm]
 
+end
+
 structure BoundaryControl (F : ℂ → ℂ) (a b : ℝ) : Prop where
   left : Integrable (fun t : ℝ => F ((a:ℂ)+t*I))
   right : Integrable (fun t : ℝ => F ((b:ℂ)+t*I))
@@ -230,9 +247,13 @@ structure BoundaryControl (F : ℂ → ℂ) (a b : ℝ) : Prop where
 
 open HeckeFamily
 
-theorem verticalIntegral_hecke (χ : Character) (K : ℂ → ℂ) {a b : ℝ}
-    (ha : 0<a) (ha1 : a<1) (h1b : 1<b)
-    (hK : DifferentiableOn ℂ K {z : ℂ | a≤z.re ∧ z.re≤b})
+section
+variable (χ : Character) (K : ℂ → ℂ) {a b : ℝ} (ha : 0<a) (ha1 : a<1) (h1b : 1<b) (hap : a<1/6) (hpb : 1/6<b) (hK : DifferentiableOn ℂ K {z : ℂ | a≤z.re ∧ z.re≤b})
+
+include ha ha1 h1b hK in
+theorem verticalIntegral_hecke      
+         
+     
     (hB : BoundaryControl (fun z => K z * LFunction χ z) a b) :
     verticalIntegral b (fun z => K z * LFunction χ z) =
       verticalIntegral a (fun z => K z * LFunction χ z) +
@@ -250,9 +271,10 @@ theorem verticalIntegral_hecke (χ : Character) (K : ℂ → ℂ) {a b : ℝ}
     norm_num
     field_simp
 
-theorem verticalIntegral_hecke_six (χ : Character) (K : ℂ → ℂ) {a b : ℝ}
-    (ha : 0<a) (hap : a<1/6) (hpb : 1/6<b)
-    (hK : DifferentiableOn ℂ K {z : ℂ | a≤z.re ∧ z.re≤b})
+include ha hap hpb hK in
+theorem verticalIntegral_hecke_six      
+         
+     
     (hB : BoundaryControl (fun z => K z * LFunction χ (6*z)) a b) :
     verticalIntegral b (fun z => K z * LFunction χ (6*z)) =
       verticalIntegral a (fun z => K z * LFunction χ (6*z)) +
@@ -279,11 +301,11 @@ theorem verticalIntegral_hecke_six (χ : Character) (K : ℂ → ℂ) {a b : ℝ
       push_cast
       linear_combination h / 6
     rw [HeckeOrigin.poleRemoved_eq χ hz0 hz1]
-    have hden : z-(1/6:ℂ)≠0 := sub_ne_zero.mpr (by simpa using hzp)
+    
     push_cast
     field_simp
 
-theorem source_residue_z_shift (χ : Character) (K : ℂ → ℂ) {e : ℝ} (he : 0<e)
+theorem source_residue_z_shift      {e}  (he : 0<e)
     (hK : DifferentiableOn ℂ K {z : ℂ | 33/200≤z.re ∧ z.re≤1/6+e})
     (hB : BoundaryControl (fun z => K z * LFunction χ (6*z)) (33/200) (1/6+e)) :
     verticalIntegral (1/6+e) (fun z => K z * LFunction χ (6*z)) =
@@ -291,26 +313,33 @@ theorem source_residue_z_shift (χ : Character) (K : ℂ → ℂ) {e : ℝ} (he 
       K (1/6) * HeckeReciprocal.regularizedL χ 1 / 6 :=
   verticalIntegral_hecke_six χ K (by norm_num) (by norm_num) (by linarith) hK hB
 
-lemma verticalIntegral_add (a : ℝ) (F G : ℂ → ℂ)
+end
+
+section
+variable (a : ℝ) (F G : ℂ → ℂ)
+
+lemma verticalIntegral_add    
     (hF : Integrable (fun t : ℝ => F ((a:ℂ)+t*I)))
     (hG : Integrable (fun t : ℝ => G ((a:ℂ)+t*I))) :
     verticalIntegral a (fun z => F z + G z) = verticalIntegral a F + verticalIntegral a G := by
   unfold verticalIntegral
   rw [integral_add hF hG, mul_add]
 
-lemma verticalIntegral_mul_const (a : ℝ) (F : ℂ → ℂ) (c : ℂ) :
+lemma verticalIntegral_mul_const      c  :
     verticalIntegral a (fun z => F z * c) = verticalIntegral a F * c := by
   unfold verticalIntegral
   rw [integral_mul_const]
   ring
 
+end
+
 theorem source_ordered_double_shift (χ : Character) (K : ℂ → ℂ → ℂ)
-    {cw e : ℝ} (hcw : 1<cw) (he : 0<e)
+     {cw e}  (hcw : 1<cw) (he : 0<e)
     (hwK : ∀ z : ℂ, z.re=1/6+e → DifferentiableOn ℂ (fun w => K w z)
       {w : ℂ | 19/20≤w.re ∧ w.re≤cw})
     (hwB : ∀ z : ℂ, z.re=1/6+e → BoundaryControl
       (fun w => K w z * LFunction χ (6*z) * LFunction χ w) (19/20) cw)
-    (hzK : DifferentiableOn ℂ (fun z => K 1 z)
+    (hzK : DifferentiableOn ℂ (K 1)
       {z : ℂ | 33/200≤z.re ∧ z.re≤1/6+e})
     (hzB : BoundaryControl (fun z => K 1 z * LFunction χ (6*z)) (33/200) (1/6+e))
     (houter : Integrable (fun t : ℝ => verticalIntegral (19/20)
@@ -337,28 +366,28 @@ theorem source_ordered_double_shift (χ : Character) (K : ℂ → ℂ → ℂ)
     filter_upwards [] with t
     exact hw _ (by simp)
   rw [hpoint, verticalIntegral_add _ _ _ houter (hzB.right.mul_const _),
-    verticalIntegral_mul_const, source_residue_z_shift χ (fun z => K 1 z) he hzK hzB]
+    verticalIntegral_mul_const, source_residue_z_shift χ (K 1) he hzK hzB]
   ring
 
-abbrev fixedPrincipal (M : Ideal O) [NeZero M] : Character :=
+abbrev fixedPrincipal (M : Ideal O) [NeZero M]  :=
   HeckeRayFamily.character M 1
 
-def fixedPrincipalResidue (M : Ideal O) [NeZero M] : ℂ :=
+def fixedPrincipalResidue (M : Ideal O) [NeZero M]  :=
   HeckeReciprocal.regularizedL (fixedPrincipal M) 1
 
 def sourceMultiplier (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)
-    (eta : Character) (s : ℂ) (H B : ℂ → ℂ → ℂ) (w z : ℂ) : ℂ :=
+    (eta : Character) (s : ℂ) (H B : ℂ → ℂ → ℂ) (w z : ℂ)  :=
   (X:ℂ)^(1/2-z) * (Z:ℂ)^(s+z-1) * (Y:ℂ)^(w-1) *
     Complex.exp ((s+z-1)^2) *
     mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) z * mellin W1 w /
       LFunction eta s * H w z * B w z
 
-def sourceResidueConstant (W0 W1 : SchwartzMap ℝ ℂ) (M : Ideal O) [NeZero M] : ℂ :=
+def sourceResidueConstant (W0 W1 : SchwartzMap ℝ ℂ) (M : Ideal O) [NeZero M]  :=
   mellin W1 1 * mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) (1/6) *
     fixedPrincipalResidue M ^ 2 / 6
 
-theorem source_double_residue (W0 W1 : SchwartzMap ℝ ℂ) (M : Ideal O) [NeZero M]
-    (X Y Z : ℝ) (eta : Character) (s : ℂ) (H B : ℂ → ℂ → ℂ) :
+theorem source_double_residue  W0 W1   M  [NeZero M]
+     X Y Z   eta   s   H B  :
     fixedPrincipalResidue M ^ 2 / 6 *
       sourceMultiplier W0 W1 X Y Z eta s H B 1 (1/6) =
     sourceResidueConstant W0 W1 M *

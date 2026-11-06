@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.PrimeRows.CubePrimeBound
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalRayCube
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
@@ -20,10 +23,9 @@ variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
 theorem transportPoolOutside (S : Finset (Ideal O)) (K : ℕ) (a b : ℝ) (Y : Fin K→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S a b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S a b (Y j) P).mp hP |>.2.2.2
+    ∀j P,P∈pool (RayQuotient.identityClass M H) S a b (Y j) → P.val∉S := by solve_by_elim [_root_.OAI.SevenEighths.ProbeHighRowFamily.poolOutside]
 
-lemma normalized_central_transport (A P C F N : ℂ) (a b v : ℝ)
+lemma normalized_central_transport (A P C F N : ℂ)  a b v 
     (ha : ‖A-P-C‖≤a) (hb : ‖P/N-F‖≤b) (hv : ‖N⁻¹‖≤v) (ha0 : 0≤a) :
     ‖A/N-F-C/N‖≤a*v+b := by
   calc

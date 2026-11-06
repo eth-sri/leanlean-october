@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.EventPairing
 
@@ -15,10 +16,10 @@ theorem finite_comparison_of_pointwise {α β : Type} [Fintype α] [Fintype β]
     (w : α → ℝ) (v : β → ℝ) (hw : ∀ x, 0 ≤ w x) (hv : ∀ y, 0 ≤ v y)
     (hwprob : ∑ x, w x = 1) (hvprob : ∑ y, v y = 1)
     (EA : α → Prop) (EB : β → Prop) (raw comparison : α → β → ℂ)
-    (E : ℝ) (hE : 0 ≤ E) (hraw : ∀ x y, ‖raw x y‖ ≤ 1)
+     E  (hE : 0 ≤ E) (hraw : ∀ x y, ‖raw x y‖ ≤ 1)
     (hzero : ∀ x y, EA x ∨ EB y → comparison x y = 0)
     (hpoint : ∀ x y, ¬ EA x → ¬ EB y → ‖raw x y - comparison x y‖ ≤ E)
-    (f : β → ℂ) (g : α → ℂ) :
+     f   g  :
     ‖∑ x, ∑ y, (w x : ℂ) * (v y : ℂ) * star (f y) * g x *
         (raw x y - comparison x y)‖ ≤
       (Real.sqrt ((∑ x, if EA x then w x else 0) + (∑ y, if EB y then v y else 0)) + E) *
@@ -28,7 +29,7 @@ theorem finite_comparison_of_pointwise {α β : Type} [Fintype α] [Fintype β]
     dsimp [R]
     split_ifs with he
     · simpa only [norm_zero] using hE
-    · exact hpoint x y (fun hx => he (Or.inl hx)) (fun hy => he (Or.inr hy))
+    simp_all
   have hbad := independent_event_pairing w v hw hv hwprob hvprob EA EB f g raw hraw
   have hgood := independent_pairing_bound w v hw hv hwprob hvprob f g R E hE hR
   change ‖∑ x, ∑ y, (w x : ℂ) * (v y : ℂ) * star (f y) * g x * R x y‖ ≤
@@ -42,10 +43,7 @@ theorem finite_comparison_of_pointwise {α β : Type} [Fintype α] [Fintype β]
     intro x _
     rw [← Finset.sum_add_distrib]
     apply Finset.sum_congr rfl
-    intro y _
-    by_cases he : EA x ∨ EB y
-    · simp [R, he, hzero x y he]
-    · simp [R, he]
+    grind
   rw [heq]
   have hn := (norm_add_le _ _).trans (add_le_add hbad hgood)
   convert hn using 1; ring

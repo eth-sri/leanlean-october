@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.MeanSquare.PoissonSource
 public import OAI.NumberTheory.DirichletL.CubicSieve.QuantitativePassage
@@ -11,74 +12,74 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -88,7 +89,7 @@ variable {ι : Type*} [DecidableEq ι]
   (hg : ∀i,lambda∉Ideal.span {p i})
 
 omit [DecidableEq ι] in
-lemma multiplicityRow_norm_le_one (B : Finset ι) (v : ι→ℕ) (z:O) :
+lemma multiplicityRow_norm_le_one  B   v   z  :
     ‖multiplicityRow (fun i=>Ideal.span {p i}) hg B v z‖≤1 := by
   simp only [multiplicityRow,norm_prod,norm_pow]
   calc
@@ -101,36 +102,34 @@ lemma multiplicityRow_norm_le_one (B : Finset ι) (v : ι→ℕ) (z:O) :
     _ = _ := by simp
 
 omit [DecidableEq ι] in
-lemma multiplicityRow_support (B : Finset ι) (v : ι→₀ℕ) (hv : v.support⊆B) (z:O) :
+lemma multiplicityRow_support (B : Finset ι) (v : ι→₀ℕ) (hv : v.support⊆B)  z  :
     multiplicityRow (fun i=>Ideal.span {p i}) hg B v z =
       multiplicityRow (fun i=>Ideal.span {p i}) hg v.support v z := by
   unfold multiplicityRow
   symm
   apply Finset.prod_subset hv
-  intro i hi hn
-  have hv0 : v i=0 := by simpa only [Finsupp.mem_support_iff,not_not] using hn
-  simp only [hv0,pow_zero]
+  simp_all
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
+ 
 namespace CompletedGauss
-open ActualEisensteinCubic
+ 
 
-def completedDualScale (X r C K U B : ℝ) (D E : Ideal O) : ℝ :=
+def completedDualScale (X r C K U B : ℝ) (D E : Ideal O)  :=
   r^3*(Ideal.absNorm D:ℝ)*(Ideal.absNorm E:ℝ)^3*U*B^3*X/(K^2*C^2)
 
 end CompletedGauss
 
-open scoped BigOperators
+ 
 namespace CompletedDyadic
 
-def ramifiedScale (ρ q : ℝ) (m : ℕ) : ℝ := ρ*q^m
+def ramifiedScale (ρ q : ℝ) (m : ℕ)  := ρ*q^m
 
-theorem ramifiedScale_pos (ρ q : ℝ) (hρ : 0<ρ) (hq : 0<q) (m : ℕ) :
+theorem ramifiedScale_pos  ρ q  (hρ : 0<ρ) (hq : 0<q)  m  :
     0<ramifiedScale ρ q m := by unfold ramifiedScale; positivity
 
-def normMajorant (deltaLoss A K t r H U B : ℝ) : ℝ :=
+def normMajorant (deltaLoss A K t r H U B : ℝ)  :=
   K^deltaLoss/(r*Real.sqrt H)*
     (Real.sqrt K*B^(deltaLoss-1/2)*U^deltaLoss+B^deltaLoss*U^(deltaLoss+1/2))/(1+t*r^3*B^3*U)^A
 
@@ -157,7 +156,7 @@ theorem finite_tsum_energy_bound {κ α : Type*} [Fintype κ]
     hg.of_nonneg_of_le (fun i => norm_nonneg _) (hpoint k)
   have hfp : Summable f := Pi.summable.mpr (fun k => (hsum k).of_norm)
   have he : (∑'i,F i)=e.symm (fun k => ∑'i,f i k) := by
-    rw [show (fun i => F i)=(fun i => e.symm (f i)) from rfl,←e.symm.map_tsum]
+    rw [show (F)=(fun i => e.symm (f i)) from rfl,←e.symm.map_tsum]
     congr 1
     funext k
     exact Pi.tsum_apply hfp
@@ -169,11 +168,11 @@ theorem finite_tsum_energy_bound {κ α : Type*} [Fintype κ]
   rw [EuclideanSpace.norm_sq_eq] at hs
   exact hs
 
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
+open   CanonicalQuadraticSieve CompletedDyadic
 
 def completedSmoothDyadicBlock (V₀ V₁ V₂ W : ℝ→ℂ) (K Y ρ q : ℝ)
     (S T : (ℕ×ℕ×ℕ)→Finset (Ideal O))
-    (β : (ℕ×ℕ×ℕ)→Ideal O→Ideal O→ℂ) (i : ℕ×ℕ×ℕ) (k : idealRange K) : ℂ :=
+    (β : (ℕ×ℕ×ℕ)→Ideal O→Ideal O→ℂ) (i : ℕ×ℕ×ℕ) (k : idealRange K)  :=
   ∑n∈S i,∑v∈T i,quadraticRow k.val (primaryGenerator (n*v))*β i n v*
     (V₀ (Real.log ((Ideal.absNorm k.val:ℝ)/K))*
       V₁ (Real.log ((Ideal.absNorm n:ℝ)/(2:ℝ)^i.2.2))*

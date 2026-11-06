@@ -5,24 +5,24 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCapped
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
 open ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+
 theorem capped_slots_source_control
     (a b ε B : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
     ∃J : ℕ, ∃ R : Finset (ℕ×ℕ), (0,0)∈R ∧
-      ∀Q : Ideal O,Q≠0 → ∃C : ℝ,0<C ∧
+      ∀Q : Ideal HeckeFamily.O,Q≠0 → ∃C : ℝ,0<C ∧
       ∀W₁ W₂ : 𝓢(ℝ,ℂ), Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
       ∀(ι : Type*) [Fintype ι],∀Z : ℝ,1≤Z →
-      ∀(η : Character)(m A z : O),m≠0 → A≠0 → z≠0 → goodLambda∣m → (2:O)∣m →
+      ∀(η : Character)(m A z : HeckeFamily.O),m≠0 → A≠0 → z≠0 → goodLambda∣m → (2:HeckeFamily.O)∣m →
       (HeckeRowClosure.rowConductorBound η m 1 (A*z):ℝ)≤Z^B →
       CenteredExceptionalProfile.FixedInducingRow η Q m A z →
-      ∀(S : ι→Finset (Ideal O))(β : ι→Ideal O→ℂ)(P b M : ι→ℝ),
+      ∀(S : ι→Finset (Ideal HeckeFamily.O))(β : ι→Ideal HeckeFamily.O→ℂ)(P b M : ι→ℝ),
       (∀i,0<P i) → (∀i,0≤b i) → (∀i,0≤M i) →
       (∀i,∀I∈S i,‖β i I‖≤M i) →
       (∀i,∀I∈S i,β i I≠0 → (Ideal.absNorm I:ℝ)≤b i*P i) →
@@ -51,6 +51,6 @@ theorem capped_slots_source_control
 
 end SevenEighths.CenteredMomentFiniteProfileExceptional
 
-end
+
 
 end OAI

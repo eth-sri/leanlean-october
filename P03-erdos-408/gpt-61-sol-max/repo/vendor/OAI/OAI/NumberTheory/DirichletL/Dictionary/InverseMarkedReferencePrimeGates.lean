@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.DetectorMomentPrimeGeometry
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
@@ -34,7 +34,7 @@ theorem deleted_large_eventually {Label Slot:Type*}[Fintype Label][Fintype Slot]
   rw [←Real.rpow_mul (by linarith:0≤Z),mul_div_cancel₀ _ hd.ne']
   exact ht j s
 
-theorem deletedBase_supported (data:RowData)(I:Ideal O)
+theorem deletedBase_supported (data:RowData) I 
     (hI:idealCoeff (deletedBase data) I≠0) : CanonicalQuadraticSieve.Supported I := by
   by_contra hn
   exact hI (deletedBase_zero_unsupported data I hn)
@@ -42,9 +42,9 @@ theorem deletedBase_supported (data:RowData)(I:Ideal O)
 theorem deleted_source_live_prime {Δ:ℝ}{D:Parameters.HighData Δ}
     (F:ProbeFinalAssembly.SourceData D)(data:RowData)
     (M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)
-    (X:ℝ)(hX:0<X)(ζ:ℂ)(hζ:ζ.re≤1)
+     X (hX:0<X) ζ (hζ:ζ.re≤1)
     (hlarge:((deletedBase data).modulus.absNorm:ℝ)<X)
-    (P:Ideal O)(hP:P∈livePrimes M H F.W 2 X) :
+     P (hP:P∈livePrimes M H F.W 2 X) :
     Prime P ∧ InverseInitialExcludedPool.outside (excluded data) P ∧
       idealCoeff (deletedBase data) P≠0 ∧ ‖idealCoeff (deletedBase data) P‖=1 ∧
       ‖star (primeProfile F.W X ζ P)/idealCoeff (deletedBase data) P‖≤1 := by
@@ -63,6 +63,6 @@ theorem deleted_source_live_prime {Δ:ℝ}{D:Parameters.HighData Δ}
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
+
 
 end OAI

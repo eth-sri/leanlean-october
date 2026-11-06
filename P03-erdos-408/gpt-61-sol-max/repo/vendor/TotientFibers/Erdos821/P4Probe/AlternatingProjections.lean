@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.AverageOrthogonality
 public import Mathlib.Algebra.BigOperators.Group.Finset.Powerset
@@ -16,7 +17,7 @@ noncomputable section
 variable {ι : Type*} [Fintype ι] {α : ι → Type*} [∀ i, Fintype (α i)]
 
 lemma productAverage_empty (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1)
-    (f : ProductSample α → ℂ) : productAverage w ∅ f = f := by
+     f  : productAverage w ∅ f = f := by
   funext x
   have ht : ∑ y : ProductSample α, (productWeight w y : ℂ) = 1 := by
     exact_mod_cast productWeight_total w hsum
@@ -27,30 +28,30 @@ lemma productAverage_empty (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a
   rw [← Finset.sum_mul, ht, one_mul]
 
 lemma productAverage_sum {β : Type*} (w : ∀ i, α i → ℝ) (S : Finset ι)
-    (V : Finset β) (c : β → ℂ) (f : β → ProductSample α → ℂ) (x : ProductSample α) :
+    (V : Finset β) (c : β → ℂ) (f : β → ProductSample α → ℂ)  x  :
     productAverage w S (fun y => ∑ v ∈ V, c v * f v y) x =
       ∑ v ∈ V, c v * productAverage w S (f v) x := by
   unfold productAverage
   simp_rw [Finset.mul_sum]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro v _
-  apply Finset.sum_congr rfl
-  intro y _
-  ring
+  grind
 
 def productFull (w : ∀ i, α i → ℝ) (I : Finset ι)
-    (f : ProductSample α → ℂ) (x : ProductSample α) : ℂ :=
+    (f : ProductSample α → ℂ) (x : ProductSample α)  :=
   ∑ U ∈ I.powerset, (-1 : ℂ) ^ U.card * productAverage w U f x
 
-lemma productFull_empty (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1)
-    (f : ProductSample α → ℂ) : productFull w ∅ f = f := by
+section
+variable (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1)
+include w hsum
+
+lemma productFull_empty    
+     f  : productFull w ∅ f = f := by
   funext x
   simp only [productFull, Finset.powerset_empty, Finset.sum_singleton,
     Finset.card_empty, pow_zero, one_mul, productAverage_empty w hsum f]
 
-lemma productFull_insert (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1)
-    (I : Finset ι) (i : ι) (hi : i ∉ I) (f : ProductSample α → ℂ) :
+lemma productFull_insert    
+     I   i  (hi : i ∉ I)  f  :
     productFull w (insert i I) f =
       fun x => productFull w I f x - productAverage w {i} (productFull w I f) x := by
   funext x
@@ -70,8 +71,8 @@ lemma productFull_insert (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a =
   rw [ht]
   ring
 
-lemma productFull_average_commute (w : ∀ i, α i → ℝ)
-    (hsum : ∀ i, ∑ a, w i a = 1) (I S : Finset ι) (f : ProductSample α → ℂ) :
+lemma productFull_average_commute  
+       I S   f  :
     productFull w I (productAverage w S f) = productAverage w S (productFull w I f) := by
   funext x
   unfold productFull
@@ -80,6 +81,8 @@ lemma productFull_average_commute (w : ∀ i, α i → ℝ)
   intro U _
   rw [productAverage_union w hsum U S, productAverage_union w hsum S U,
     Finset.union_comm]
+
+end
 
 end
 end Erdos821.P4Probe

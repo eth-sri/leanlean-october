@@ -7,18 +7,22 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicProfiles
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff Topology
 open Set
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
 open HeckeDetectorDyadicProfiles
 
+section
+variable (F : (ℝ×ℝ)→ℝ→ℂ) (hF : ContDiff ℝ ∞ (Function.uncurry F)) (L : ℝ) (hL : 0≤L) (hs : ∀p,Function.support (F p)⊆Icc (-L) L) (J : Set (ℝ×ℝ)) (hJ : IsCompact J) (G : (ℝ×ℝ)→𝓢(ℝ,ℂ)) (hG : ∀p x,G p x=F p x)
+include F hF L hL hs J hJ G hG
+
 theorem compact_family_seminorm
-    (F : (ℝ×ℝ)→ℝ→ℂ) (hF : ContDiff ℝ ∞ (Function.uncurry F))
-    (L : ℝ) (hL : 0≤L) (hs : ∀p,Function.support (F p)⊆Icc (-L) L)
-    (J : Set (ℝ×ℝ)) (hJ : IsCompact J)
-    (G : (ℝ×ℝ)→𝓢(ℝ,ℂ)) (hG : ∀p x,G p x=F p x) (k n : ℕ) :
+       
+         
+       
+         k n  :
     ∃C : ℝ,0<C ∧ ∀p∈J,SchwartzMap.seminorm ℝ k n (G p)≤C := by
   have hc := (section_iteratedDeriv_smooth F hF n).continuous.norm
   obtain ⟨M,hM⟩ := (hJ.prod isCompact_Icc).bddAbove_image hc.continuousOn
@@ -44,11 +48,15 @@ theorem compact_family_seminorm
     rw [hout,norm_zero,mul_zero]
     positivity
 
+section
+variable (S : Finset (ℕ×ℕ))
+include S
+
 theorem compact_family_finite_seminorm
-    (F : (ℝ×ℝ)→ℝ→ℂ) (hF : ContDiff ℝ ∞ (Function.uncurry F))
-    (L : ℝ) (hL : 0≤L) (hs : ∀p,Function.support (F p)⊆Icc (-L) L)
-    (J : Set (ℝ×ℝ)) (hJ : IsCompact J)
-    (G : (ℝ×ℝ)→𝓢(ℝ,ℂ)) (hG : ∀p x,G p x=F p x) (S : Finset (ℕ×ℕ)) :
+       
+         
+       
+          :
     ∃C : ℝ,0<C ∧ ∀p∈J,S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (G p)≤C := by
   choose C hC hb using fun z : ℕ×ℕ=>compact_family_seminorm F hF L hL hs J hJ G hG z.1 z.2
   have hsum : 0≤∑z∈S,C z := Finset.sum_nonneg (fun z _=>(hC z).le)
@@ -61,10 +69,10 @@ theorem compact_family_finite_seminorm
   linarith
 
 theorem compact_family_frequencyTwist
-    (F : (ℝ×ℝ)→ℝ→ℂ) (hF : ContDiff ℝ ∞ (Function.uncurry F))
-    (L : ℝ) (hL : 0≤L) (hs : ∀p,Function.support (F p)⊆Icc (-L) L)
-    (J : Set (ℝ×ℝ)) (hJ : IsCompact J)
-    (G : (ℝ×ℝ)→𝓢(ℝ,ℂ)) (hG : ∀p x,G p x=F p x) (S : Finset (ℕ×ℕ)) :
+       
+         
+       
+          :
     ∃n : ℕ,∃C : ℝ,0<C ∧ ∀p∈J,∀t : ℝ,
       S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (JointLogSeparation.frequencyTwist (G p) t)≤C*(1+‖t‖)^n := by
   let S' := S.biUnion (fun z=> (Finset.range (z.2+1)).image (fun i=>(z.1,i)))
@@ -96,8 +104,12 @@ theorem compact_family_frequencyTwist
   exact hb.trans (mul_le_mul hzC
     (pow_le_pow_right₀ (by linarith [norm_nonneg t]) (Finset.le_sup hz)) (by positivity) (by linarith))
 
-end SevenEighths.CenteredMomentDetectorDictionary
+end
 
 end
+
+end SevenEighths.CenteredMomentDetectorDictionary
+
+
 
 end OAI

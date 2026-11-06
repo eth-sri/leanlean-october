@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.LowInactiveEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.SourcePhysical
@@ -11,7 +12,7 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 variable {Nlevel : Eis}
@@ -25,7 +26,7 @@ theorem low_original_frozen_energy
     (hNlevel : ∀ i,(9:Eis)*c₀ i∣Nlevel)
     (hbase : ∀ i,if mode i then ConcretePrimeRowBridge.goodLambda^2∣a i-1 else ConcretePrimeRowBridge.goodLambda^2∣c₀ i-1)
     (hac : ∀ i,IsCoprime (a i) (c₀ i))
-    (Q : Ideal Eis) (hQ : Q≠0) (Ck η : ℝ) (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) (rmax : ℕ) :
+     Q  (hQ : Q≠0)  Ck η  (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1)  rmax  :
     ∃ (degree : ℕ) (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
     ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (J F Q₀ : Ideal Eis)
       (_hJ : J≠0) (_hF : F≠0),
@@ -96,7 +97,7 @@ theorem low_original_frozen_energy
     apply (hD g A T θ w hw).trans
     apply mul_le_mul_of_nonneg_right _ (by dsimp [energy];positivity)
     apply pow_le_pow_left₀ (by positivity)
-    exact subtype_product_le_full (fun i => i∉T) (fun i => 256*(columnDyadicLength (H i)+1:ℝ)) (fun i => by have hn : (0:ℝ)≤columnDyadicLength (H i) := Nat.cast_nonneg _; linarith)
+    exact subtype_product_le_full (fun i => i∉T) (fun i => 256*(columnDyadicLength (H i)+1:ℝ)) (fun i => by linarith)
   let Labels := γ×(Finset (FreeReflection.pool J Q Q₀)×Finset σ)
   let f := fun (b : Labels) (K : rows) => (scalar b.1 K*frozenInactiveWeight J F Q Q₀ b.2.1)*source b.1 b.2.1 b.2.2 K
   have hf (b : Labels) : (∑ K : rows,‖f b K‖^2)≤harm*energy := by
@@ -146,7 +147,7 @@ theorem low_original_frozen_energy
       rw [Real.rpow_add hzp]
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hz.le (by linarith)) (by positivity)
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

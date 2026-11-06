@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.CenteredExceptionalCount
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceFixedFamily
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationRadicalFamily
@@ -19,23 +22,25 @@ open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
 open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
 open CenteredMomentAmplificationRadicalFamily CenteredMomentChildRows
 open CenteredMomentSecondHeightFamily
-local notation "O"=>ActualEisensteinCubic.O
 
-lemma divisor_norm_le (I C : Ideal O) (hC : C≠0) (h : I∣C) :
-    (I.absNorm:ℝ)≤C.absNorm := by
-  exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC))
-    (map_dvd Ideal.absNorm h)
 
-lemma original_factor_caps (C D : Ideal O) (hC : Supported C)
-    (E : Finset (CommonIndex C D)) :
+lemma divisor_norm_le (I C : Ideal ActualEisensteinCubic.O) (hC : C≠0) (h : I∣C) :
+    (I.absNorm:ℝ)≤C.absNorm := by solve_by_elim [_root_.OAI.SevenEighths.CenteredExceptionalCount.norm_le_of_dvd]
+
+section
+variable (η : Character) (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (E : Finset (CommonIndex C D))
+
+include hC in
+lemma original_factor_caps    
+      :
     ‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2≤C.absNorm ∧
     ‖eisEmbedding (activeConductor C D)‖^2≤C.absNorm := by
   rw [eisEmbedding_norm_sq_eq_absNorm_span,eisEmbedding_norm_sq_eq_absNorm_span]
   exact ⟨divisor_norm_le _ C hC.1 ((subsetGenerator_span_dvd C D E).trans (commonPart_dvd C D hC.1)),
     divisor_norm_le _ C hC.1 ((activeConductor_span_dvd C D).trans (commonPart_dvd C D hC.1))⟩
 
-theorem fixed_pair_caps (η : Character) (C D : Ideal O) (hC : Supported C)
-    (E : Finset (CommonIndex C D)) (ξ₁ ξ₂ : RayCharacter)
+theorem fixed_pair_caps      
+      (ξ₁ ξ₂ : RayCharacter)
     (F : FixedPair η C D hC E ξ₁ ξ₂) :
     (F.left.modulus.absNorm:ℝ)≤fixedPresentationCost*(η.modulus.absNorm:ℝ)*(C.absNorm:ℝ)^2 ∧
     (F.right.modulus.absNorm:ℝ)≤fixedPresentationCost*(η.modulus.absNorm:ℝ)*(C.absNorm:ℝ)^2 := by
@@ -49,13 +54,19 @@ theorem fixed_pair_caps (η : Character) (C D : Ideal O) (hC : Supported C)
       mul_nonneg hf (Nat.cast_nonneg η.modulus.absNorm)]
   exact ⟨F.conductor_caps.1.trans hb,F.conductor_caps.2.trans hb⟩
 
-def rayCost : ℝ := (Ideal.span {(12:O)}).absNorm*fixedPresentationCost
+end
+
+def rayCost  := (Ideal.span {(12:ActualEisensteinCubic.O)}).absNorm*fixedPresentationCost
 
 lemma rayCost_nonneg : 0≤rayCost :=
   mul_nonneg (Nat.cast_nonneg _) fixedPresentationCost_pos.le
 
-theorem radical_once_cap (ρ υ : Character) (χ : RayCharacter) (p : O) (hp : p≠0) (k : ℕ)
-    (hυ : υ.modulus.absNorm≤radicalBound (childCharacter ρ χ) fixedBadMask p k) :
+section
+variable (η : Character) (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (E : Finset (CommonIndex C D)) (ξ₁ ξ₂ : RayCharacter) (F : FixedPair η C D hC E ξ₁ ξ₂) (ρ υ : Character) (hρ : ρ=F.left ∨ ρ=F.right) (χ : RayCharacter) (p : ActualEisensteinCubic.O) (hp : p≠0) (k : ℕ) (hυ : υ.modulus.absNorm≤radicalBound (childCharacter ρ χ) fixedBadMask p k)
+
+include hp hυ in
+theorem radical_once_cap          
+      :
     (υ.modulus.absNorm:ℝ)≤rayCost*(ρ.modulus.absNorm:ℝ)*(Ideal.span {p}).absNorm := by
   have hP : (1:ℕ)≤(Ideal.span {p}).absNorm := Nat.one_le_iff_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hp))
@@ -63,41 +74,42 @@ theorem radical_once_cap (ρ υ : Character) (χ : RayCharacter) (p : O) (hp : p
     split_ifs <;> omega
   have hr:=CenteredMomentSecondRadicalBudget.child_modulus_bound ρ χ
   have hn : υ.modulus.absNorm≤
-      (ρ.modulus.absNorm*(Ideal.span {(12:O)}).absNorm)*
-      (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:O)}).absNorm*(Ideal.span {p}).absNorm := by
+      (ρ.modulus.absNorm*(Ideal.span {(12:ActualEisensteinCubic.O)}).absNorm)*
+      (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:ActualEisensteinCubic.O)}).absNorm*(Ideal.span {p}).absNorm := by
     apply hυ.trans
     unfold radicalBound
     gcongr
   have hh : (υ.modulus.absNorm:ℝ)≤
-      ((ρ.modulus.absNorm:ℝ)*(Ideal.span {(12:O)}).absNorm)*
-      (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:O)}).absNorm*(Ideal.span {p}).absNorm := by
+      ((ρ.modulus.absNorm:ℝ)*(Ideal.span {(12:ActualEisensteinCubic.O)}).absNorm)*
+      (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:ActualEisensteinCubic.O)}).absNorm*(Ideal.span {p}).absNorm := by
     exact_mod_cast hn
   convert hh using 1 ; unfold rayCost fixedPresentationCost ; ring
 
-theorem fixed_error_cap (η : Character) (C D : Ideal O) (hC : Supported C)
-    (E : Finset (CommonIndex C D)) (ξ₁ ξ₂ : RayCharacter)
-    (F : FixedPair η C D hC E ξ₁ ξ₂) (ρ υ : Character)
-    (hρ : ρ=F.left ∨ ρ=F.right) (χ : RayCharacter) (p : O) (hp : p≠0) (k : ℕ)
-    (hυ : υ.modulus.absNorm≤radicalBound (childCharacter ρ χ) fixedBadMask p k) :
+include hρ hp hυ in
+theorem fixed_error_cap      
+       
+       
+             
+      :
     (υ.modulus.absNorm:ℝ)≤(rayCost*fixedPresentationCost)*
       (η.modulus.absNorm:ℝ)*(C.absNorm:ℝ)^2*(Ideal.span {p}).absNorm := by
   have hf:=fixed_pair_caps η C D hC E ξ₁ ξ₂ F
   have hr : (ρ.modulus.absNorm:ℝ)≤fixedPresentationCost*(η.modulus.absNorm:ℝ)*(C.absNorm:ℝ)^2 := by
-    rcases hρ with rfl|rfl
-    · exact hf.1
-    · exact hf.2
+    bound
   apply (radical_once_cap ρ υ χ p hp k hυ).trans
   have hh:=mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hr rayCost_nonneg)
     (Nat.cast_nonneg (Ideal.span {p}).absNorm)
   convert hh using 1 ; ring
 
-theorem eventually_caps (ε : ℝ) (hε : 0<ε) :
-    ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀η:Character,∀(C D:Ideal O)(hC:Supported C),
+end
+
+theorem eventually_caps  ε  (hε : 0<ε) :
+    ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀η:Character,∀(C D:Ideal ActualEisensteinCubic.O)(hC:Supported C),
     ∀(E:Finset (CommonIndex C D))(ξ₁ ξ₂:RayCharacter)(F:FixedPair η C D hC E ξ₁ ξ₂),
     ∀q B:ℝ,(η.modulus.absNorm:ℝ)≤Z^q→(C.absNorm:ℝ)≤Z^B→
     (F.left.modulus.absNorm:ℝ)≤Z^(q+2*B+ε) ∧
     (F.right.modulus.absNorm:ℝ)≤Z^(q+2*B+ε) ∧
-    ∀(ρ υ:Character), (ρ=F.left∨ρ=F.right)→∀(χ:RayCharacter)(p:O),p≠0→
+    ∀(ρ υ:Character), (ρ=F.left∨ρ=F.right)→∀(χ:RayCharacter)(p:ActualEisensteinCubic.O),p≠0→
     ∀(k:ℕ)(r:ℝ),υ.modulus.absNorm≤radicalBound (childCharacter ρ χ) fixedBadMask p k→
     ((Ideal.span {p}).absNorm:ℝ)≤Z^r→(υ.modulus.absNorm:ℝ)≤Z^(q+2*B+r+ε) := by
   have he := (Filter.tendsto_atTop.1 (tendsto_rpow_atTop hε))

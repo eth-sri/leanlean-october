@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Major.Assembly
 
@@ -45,7 +46,7 @@ private theorem eventually_rpow_lt_roughLevel (A : ℝ) :
   exact hx'
 
 /-- There are at most `L^{2A₀}` arcs: at most `k` for each `k ≤ L^{A₀}`. -/
-private theorem card_arcSet_le (A₀ x : ℝ) (hL : 0 < Real.log x) :
+private theorem card_arcSet_le  A₀ x  (hL : 0 < Real.log x) :
     (#(arcSet A₀ x) : ℝ) ≤ Real.log x ^ (2 * A₀) := by
   set N := ⌊Real.log x ^ A₀⌋₊
   have hcard : #(arcSet A₀ x) ≤ N * N := by
@@ -74,7 +75,7 @@ private theorem arcBound_le {L X Y C₀ CE n A₀ P C₄ B A' : ℝ} (hL : 1 ≤
         L ^ (10 * A₀ - P) := by
   have hL0 : 0 < L := by linarith
   set u := L ^ (-P) with hu
-  have hu0 : 0 ≤ u := by positivity
+  
   -- the energy term: `ε E = |C_E| L^{-P}`
   have e₁ : L ^ (A' - P) * L ^ (-A') = u := by
     rw [hu, ← Real.rpow_add hL0]
@@ -83,7 +84,7 @@ private theorem arcBound_le {L X Y C₀ CE n A₀ P C₄ B A' : ℝ} (hL : 1 ≤
   -- the mean-value term on `[-T, T]`: `ε⁻¹ L^{C₄} L^B = L^{-3P - 2C₄} ≤ L^{-P}`
   have e₂ : (L ^ (A' - P))⁻¹ * L ^ C₄ * L ^ B ≤ u := by
     rw [hu, ← Real.rpow_neg hL0.le, ← Real.rpow_add hL0, ← Real.rpow_add hL0]
-    exact Real.rpow_le_rpow_of_exponent_le hL (by rw [hB, hA']; linarith)
+    gcongr <;> first | assumption | positivity | linarith
   have hLB : 1 ≤ L ^ B := Real.one_le_rpow hL (by rw [hB]; linarith)
   have e₃ : 1 + 2 * (X * L ^ B) / X ≤ 3 * L ^ B := by
     have h : 2 * (X * L ^ B) / X = 2 * L ^ B := by field_simp
@@ -147,7 +148,7 @@ private theorem arcBound_le {L X Y C₀ CE n A₀ P C₄ B A' : ℝ} (hL : 1 ≤
 `Y`. Write it as `∑_{k, h} ∫_{|θ| ≤ 2L^{A₀}/Y}` of the arc terms (`majorSquare_eq_sum_arcs`).
 Each arc term is `O(X Y² L^{-D - 3A₀})` (`norm_arcTerm_le`, `arcBound_le`), there are at most
 `L^{2A₀}` arcs, and each has length `4L^{A₀}/Y`. -/
-theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C) (hD : 0 < Dstar)
+theorem eventually_majorSquare  {C CX alo ahi Dstar g c₄ cG}  (hC : 0 < C) (hD : 0 < Dstar)
     (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) :
     ∃ C₃ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
       TwistBound (arcExp Dstar C) (freqExp Dstar C) (twistExp Dstar C) c₄ x d →
@@ -164,8 +165,7 @@ theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
   set P := majorPrec Dstar + 13 * A₀ with hP
   set c₁ : ℝ := |CE| / 2 + 3 * 165888 / 2 + 8 * 165888 with hc₁
   have hA₀0 : 0 < A₀ := by
-    simp only [hA₀, arcExp, edgePrec, momentPrec, squarePrec]
-    linarith
+    grind [arcExp, edgePrec, momentPrec, squarePrec]
   have hC₄0 : 0 < C₄ := by
     simp only [hC₄, meanExp]
     linarith
@@ -174,8 +174,7 @@ theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
     linarith
   have hBP : B = P + C₄ := by simp only [hB, hP, hC₄, hA₀, freqExp]
   have hA'P : A' = 5 * P + 4 * C₄ := by
-    simp only [hA', hP, hC₄, hA₀, energyExp, freqExp]
-    ring
+    grind [energyExp, freqExp]
   have hCX0 : 0 < CX := by linarith
   refine ⟨64 * π * |C₀| * c₁, ?_⟩
   filter_upwards [hEn, Real.tendsto_log_atTop.eventually_ge_atTop 1,

@@ -1,17 +1,18 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P5.Basic
 public import Mathlib.Algebra.Order.Star.Real
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P5Core
 
 /-- The dyadic harmonic coefficient-square mass is O(1/P), with an explicit constant. -/
-theorem harmonic_coefficient_square (s : Finset ℕ) (b : ℕ → ℂ) (P : ℝ)
+theorem harmonic_coefficient_square (s : Finset ℕ) (b : ℕ → ℂ)  P 
     (hP : 1 ≤ P) (hs : ∀ p ∈ s, P ≤ (p : ℝ) ∧ (p : ℝ) ≤ 2 * P)
     (hb : ∀ p ∈ s, ‖b p‖ ≤ 1) :
     (∑ p ∈ s, ‖b p‖ ^ 2 / (p : ℝ) ^ 2) ≤ 3 / P := by
@@ -30,7 +31,7 @@ theorem harmonic_coefficient_square (s : Finset ℕ) (b : ℕ → ℂ) (P : ℝ)
   have hlocal (p : ℕ) (hp : p ∈ s) : ‖b p‖ ^ 2 / (p : ℝ) ^ 2 ≤ 1 / P ^ 2 := by
     calc
       _ ≤ 1 / (p : ℝ) ^ 2 := div_le_div_of_nonneg_right
-        (by simpa using pow_le_pow_left₀ (norm_nonneg (b p)) (hb p hp) 2) (sq_nonneg _)
+        (by simp_all) (sq_nonneg _)
       _ ≤ _ := one_div_le_one_div_of_le (sq_pos_of_pos hPpos)
         (pow_le_pow_left₀ hPpos.le (hs p hp).1 2)
   calc

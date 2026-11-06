@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Edge.PowRho
 public import Erdos821.Leaves.Damped
@@ -14,7 +15,7 @@ namespace Erdos821.P3Edge
 /-- Small fresh-label counts against `q` damping, uniformly in the
 remaining-zero count. This is the small-group analogue of
 `eq:promotion-count`, with fixed `ell` in place of `a ≤ ell+m`. -/
-lemma small_count_damp (q : ℝ) (hq0 : 0 < q) (hq1 : q < 1) (ell : ℕ) :
+lemma small_count_damp  q  (hq0 : 0 < q) (hq1 : q < 1)  ell  :
     ∃ C : ℝ, 0 < C ∧ ∀ Y : ℕ, ell ≤ Y →
       (Y : ℝ) ^ ell * q ^ ((((Y - ell : ℕ)) : ℝ) / 2) ≤ C := by
   classical
@@ -30,20 +31,14 @@ lemma small_count_damp (q : ℝ) (hq0 : 0 < q) (hq1 : q < 1) (ell : ℕ) :
   have hpow : (Real.sqrt q) ^ (Y - ell) * (Real.sqrt q) ^ ell
       = (Real.sqrt q) ^ Y := by
     have hY2 : Y - ell + ell = Y := Nat.sub_add_cancel hY
-    calc (Real.sqrt q) ^ (Y - ell) * (Real.sqrt q) ^ ell
-        = (Real.sqrt q) ^ ((Y - ell) + ell) := by rw [pow_add]
-      _ = (Real.sqrt q) ^ Y := by rw [hY2]
+    grind [Real.sqrt]
   have hfin : (Y : ℝ) ^ ell * (Real.sqrt q) ^ (Y - ell) ≤ C₀ / (Real.sqrt q) ^ ell := by
     rw [le_div_iff₀ (pow_pos hsq0 _)]
     have heq : (Y : ℝ) ^ ell * (Real.sqrt q) ^ (Y - ell) * (Real.sqrt q) ^ ell
         = (Y : ℝ) ^ ell * (Real.sqrt q) ^ Y := by
-      calc _ = (Y : ℝ) ^ ell * ((Real.sqrt q) ^ (Y - ell) * (Real.sqrt q) ^ ell) := by
-              ring
-        _ = _ := by rw [hpow]
+      grind
     rw [heq]
     exact hnum
-  calc (Y : ℝ) ^ ell * q ^ ((((Y - ell : ℕ)) : ℝ) / 2)
-      = (Y : ℝ) ^ ell * (Real.sqrt q) ^ (Y - ell) := by rw [hsq]
-    _ ≤ C₀ / (Real.sqrt q) ^ ell := hfin
+  simp_all
 
 end Erdos821.P3Edge

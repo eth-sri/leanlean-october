@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Cancel.Flat
 
@@ -20,7 +21,7 @@ variable {P : PrimeGroups} {J ell m : ℕ}
 
 /-- Flat sites of one side of a probe choice. -/
 def siteOf (hj : m ≤ J) (block : P.BigGroup → Bool) (c : P.BigGroup → Finset (Fin m))
-    (side : Bool) : Finset (RowSite (rowCount P) (J + ell)) :=
+    (side : Bool)  :=
   Finset.univ.filter (fun z : RowSite (rowCount P) (J + ell) =>
     block (rowEquiv P z.1) = side ∧
       z.2 ∈ (c (rowEquiv P z.1)).map (Fin.castLEEmb (hj.trans (Nat.le_add_right J ell))))
@@ -31,8 +32,8 @@ lemma mem_siteSet {M : ℕ} (S : P.BigGroup → Finset (Fin M)) (z : RowSite (ro
   rw [Finset.mem_filter]
   simp
 
-lemma siteSet_patternSide (hj : m ≤ J) (block : P.BigGroup → Bool) (Q : ℕ) (h ξ : ℝ)
-    (c : ProbeChoice P m block) (side : Bool) :
+lemma siteSet_patternSide  hj   block   Q   h ξ 
+     c   side  :
     siteSet (P := P) (M := J + ell)
       (patternSideCoordinates (signedPattern hj block Q h ξ c : Pattern P J ell m) block side) =
       siteOf hj block c.val side := by
@@ -51,8 +52,7 @@ lemma siteSet_patternSide (hj : m ≤ J) (block : P.BigGroup → Bool) (Q : ℕ)
       exact ⟨x, hx, by rw [← hy]; rfl⟩
     · rintro ⟨x, hx, hxz⟩
       exact ⟨_, ⟨x, hx, rfl⟩, by rw [← hxz]; rfl⟩
-  · rw [ite_eq_right_of_eq_false _ _ (eq_false hb)]
-    simp [hb]
+  simp_all
 
 lemma card_filter_rows {s M : ℕ} (p : Fin s → Prop) (S : Fin s → Finset (Fin M))
     (q : RowSite s M → Prop) [DecidablePred q] (hq : ∀ z, q z ↔ p z.1 ∧ z.2 ∈ S z.1) :
@@ -65,8 +65,8 @@ lemma card_filter_rows {s M : ℕ} (p : Fin s → Prop) (S : Fin s → Finset (F
     rw [← Finset.card_filter, Finset.filter_univ_mem]
   · simp [hq, hp]
 
-lemma sign_card (hj : m ≤ J) (block : P.BigGroup → Bool) (Q : ℕ) (h ξ : ℝ)
-    (c : ProbeChoice P m block) :
+lemma sign_card  hj   block   Q   h ξ 
+     c  :
     (∑ j, ((signedPattern hj block Q h ξ c : Pattern P J ell m).changed j).card) =
       (siteOf (ell := ell) hj block c.val false).card +
         (siteOf (ell := ell) hj block c.val true).card := by
@@ -92,9 +92,7 @@ lemma sign_card (hj : m ≤ J) (block : P.BigGroup → Bool) (Q : ℕ) (h ξ : �
       (fun g => (c.val (rowEquiv P g)).map (Fin.castLEEmb (hj.trans (Nat.le_add_right J ell))))
       _ (fun z => Iff.rfl), ← Finset.sum_add_distrib]
   rw [← Equiv.sum_comp (rowEquiv P)]
-  apply Finset.sum_congr rfl
-  intro g _
-  cases hb : block (rowEquiv P g) <;> simp
+  grind
 
 /-- Inverse of the site map: rebuild a choice from two site sets. -/
 def choiceOf (hj : m ≤ J) (p : Finset (RowSite (rowCount P) (J + ell)) ×
@@ -102,29 +100,22 @@ def choiceOf (hj : m ≤ J) (p : Finset (RowSite (rowCount P) (J + ell)) ×
   fun g => Finset.univ.filter (fun k : Fin m =>
     ((rowEquiv P).symm g, Fin.castLE (hj.trans (Nat.le_add_right J ell)) k) ∈ p.1 ∪ p.2)
 
-lemma mem_siteOf (hj : m ≤ J) (block : P.BigGroup → Bool) (c : P.BigGroup → Finset (Fin m))
-    (side : Bool) (z : RowSite (rowCount P) (J + ell)) :
+lemma mem_siteOf (hj : m ≤ J)  block  (c : P.BigGroup → Finset (Fin m))
+     side   z  :
     z ∈ siteOf hj block c side ↔ block (rowEquiv P z.1) = side ∧
       z.2 ∈ (c (rowEquiv P z.1)).map (Fin.castLEEmb (hj.trans (Nat.le_add_right J ell))) := by
-  unfold siteOf
-  rw [Finset.mem_filter]
-  simp only [Finset.mem_univ, true_and]
+  grind [siteOf]
 
-lemma mem_choiceOf (hj : m ≤ J) (p : Finset (RowSite (rowCount P) (J + ell)) ×
-    Finset (RowSite (rowCount P) (J + ell))) (g : P.BigGroup) (k : Fin m) :
+lemma mem_choiceOf (hj : m ≤ J)  p   g  (k : Fin m) :
     k ∈ choiceOf hj p g ↔
       ((rowEquiv P).symm g, Fin.castLE (hj.trans (Nat.le_add_right J ell)) k) ∈ p.1 ∪ p.2 := by
-  unfold choiceOf
-  rw [Finset.mem_filter]
-  simp only [Finset.mem_univ, true_and]
+  simp_all [choiceOf]
 
-lemma mem_sideSites {M : ℕ} (block : P.BigGroup → Bool) (side : Bool)
-    (z : RowSite (rowCount P) M) :
+lemma mem_sideSites  {M}   block   side 
+     z  :
     z ∈ sideSites (P := P) (M := M) m block side ↔
       block (rowEquiv P z.1) = side ∧ z.2.val < m := by
-  unfold sideSites blockSet
-  rw [Finset.mem_filter, Finset.mem_filter]
-  simp only [Finset.mem_univ, true_and]
+  grind [sideSites, blockSet]
 
 lemma choice_sum (hj : m ≤ J) (block : P.BigGroup → Bool)
     (ψ : Finset (RowSite (rowCount P) (J + ell)) → Finset (RowSite (rowCount P) (J + ell)) → ℂ) :
@@ -151,8 +142,7 @@ lemma choice_sum (hj : m ≤ J) (block : P.BigGroup → Bool)
     apply Finset.nonempty_iff_ne_empty.mp
     refine ⟨((rowEquiv P).symm g, Fin.castLE hmM k), ?_⟩
     rw [mem_siteOf]
-    simp only [Equiv.apply_symm_apply]
-    exact ⟨hg, Finset.mem_map_of_mem _ hk⟩
+    simp_all
   -- the inverse is a probe choice
   have hchoice : ∀ p ∈ ((sideSites (P := P) (M := J + ell) m block false).powerset.erase ∅) ×ˢ
       ((sideSites (P := P) (M := J + ell) m block true).powerset.erase ∅),
@@ -177,9 +167,7 @@ lemma choice_sum (hj : m ≤ J) (block : P.BigGroup → Bool)
   refine Finset.sum_bij'
     (fun c _ => (siteOf hj block c.val false, siteOf hj block c.val true))
     (fun p hp => ⟨choiceOf hj p, hchoice p hp⟩) ?_ ?_ ?_ ?_ ?_
-  · intro c _
-    simp only [Finset.mem_product, Finset.mem_erase, Finset.mem_powerset]
-    exact ⟨⟨hne c false, hsub c false⟩, ⟨hne c true, hsub c true⟩⟩
+  · grind
   · intro p _
     exact Finset.mem_univ _
   · intro c _
@@ -238,9 +226,9 @@ lemma choice_sum (hj : m ≤ J) (block : P.BigGroup → Bool)
     rfl
 
 /-- The signed all-choice correction is the pairing of the two side complements. -/
-lemma correction_sum_eq (hV : ∀ g, 0 < P.V g) (hj : m ≤ J) (block : P.BigGroup → Bool)
-    (Q : ℕ) (h ξ : ℝ) (K : P.BigLabels (J + ell) → P.BigLabels (J + ell) → ℂ)
-    (F G : P.BigLabels (J + ell) → ℂ) :
+lemma correction_sum_eq (hV : ∀ g, 0 < P.V g)  hj   block 
+     Q   h ξ   K 
+     F G  :
     (∑ c : ProbeChoice P m block,
       (-1 : ℂ) ^ (∑ j, ((signedPattern hj block Q h ξ c : Pattern P J ell m).changed j).card) *
         idealFullPair K

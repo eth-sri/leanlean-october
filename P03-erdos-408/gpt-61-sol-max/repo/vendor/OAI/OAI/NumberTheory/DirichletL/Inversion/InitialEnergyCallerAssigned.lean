@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCaller
 public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSum
@@ -36,7 +37,7 @@ omit [DecidableEq ι] in
   exact Fin.elim0 i
 
 omit [DecidableEq ι] in
-theorem attach_injective {J : ℕ} :
+theorem attach_injective  {J}  :
     Function.Injective (fun z : Source (ι:=ι) 0 × (Fin J→ι) => attach z.1 z.2) := by
   intro x y h
   apply Prod.ext
@@ -44,8 +45,7 @@ theorem attach_injective {J : ℕ} :
   · exact congrArg Source.assigned h
 
 def attachPair (J₁ J₂ : Finset σ)
-    (z : Source (ι:=ι) 0 × ((∀ i∈J₁,ι) × (∀ i∈J₂,ι))) :
-    Source (ι:=ι) (J₁.card+J₂.card) :=
+    (z : Source (ι:=ι) 0 × ((∀ i∈J₁,ι) × (∀ i∈J₂,ι)))  :=
   attach z.1 (pairedSlotAssignment J₁ J₂ z.2)
 
 omit [DecidableEq ι] [DecidableEq σ] in
@@ -59,13 +59,13 @@ theorem attachPair_injective (J₁ J₂ : Finset σ) :
       (congrArg (fun z : Source (ι:=ι) 0 × (Fin (J₁.card+J₂.card)→ι)=>z.2) he))
 
 def assignedSource (S : Finset (Source (ι:=ι) 0)) (J₁ J₂ : Finset σ)
-    (L₁ L₂ : σ→Finset ι) : Finset (Source (ι:=ι) (J₁.card+J₂.card)) :=
+    (L₁ L₂ : σ→Finset ι)  :=
   ((S ×ˢ ((J₁.pi L₁) ×ˢ (J₂.pi L₂))).filter
     (fun z=>∀ i,pairedSlotAssignment J₁ J₂ z.2 i∈z.1.common∪z.1.overlap)).image
       (attachPair J₁ J₂)
 
 def coefficient (J₁ J₂ : Finset σ) (a₁ a₂ : σ→ι→ℂ)
-    (x : Source (ι:=ι) (J₁.card+J₂.card)) : ℂ :=
+    (x : Source (ι:=ι) (J₁.card+J₂.card))  :=
   star (slotAssignmentWeight J₁ a₁
     (fun i hi=>x.assigned (Fin.castAdd J₂.card (J₁.equivFin ⟨i,hi⟩)))) *
     slotAssignmentWeight J₂ a₂
@@ -104,9 +104,7 @@ theorem original_marks_eq_assigned (S : Finset (Source (ι:=ι) 0))
   rw [paired_primeMark_assignments]
   simp only [Finset.mul_sum,Finset.sum_mul]
   apply Finset.sum_congr rfl
-  intro q hq
-  rw [coefficient_attach]
-  simp only [attachPair,erase_attach]
+  grind [coefficient_attach, attachPair, erase_attach]
 
 theorem assignedSource_support (S : Finset (Source (ι:=ι) 0))
     (J₁ J₂ : Finset σ) (L₁ L₂ : σ→Finset ι)

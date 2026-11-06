@@ -17,7 +17,7 @@ noncomputable section
 variable {K : Type*} [Field K] [NumberField K]
 local instance : Infinite (𝓞 K) := Module.Free.infinite ℤ (𝓞 K)
 
-def primePowerReduction (P : Ideal (𝓞 K)) {c : ℕ} (hc : 1 ≤ c) :
+def primePowerReduction (P : Ideal (𝓞 K)) {c } (hc : 1 ≤ c) :
     (𝓞 K ⧸ P ^ c) →+* (𝓞 K ⧸ P) :=
   Ideal.Quotient.factor (by simpa using Ideal.pow_le_pow_right (I := P) hc)
 
@@ -51,17 +51,17 @@ def primePowerCharacter (P : Ideal (𝓞 K)) {c : ℕ} (hc : 1 ≤ c)
     exact hx ((Ideal.Quotient.isUnit_mk_pow_iff_isUnit_mk P (by omega)).mpr ha)
 
 omit [NumberField K] in
-@[simp] theorem primePowerCharacter_apply (P : Ideal (𝓞 K)) {c : ℕ} (hc : 1 ≤ c)
-    (χ : MulChar (𝓞 K ⧸ P) ℂ) (x : 𝓞 K ⧸ P ^ c) :
+@[simp] theorem primePowerCharacter_apply  P   {c}   hc 
+     χ  (x : 𝓞 K ⧸ P ^ c) :
     primePowerCharacter P hc χ x = χ (primePowerReduction P hc x) := rfl
 
-section Local
+
 variable (P : Ideal (𝓞 K)) [P.IsMaximal] {c : ℕ} (hc : 1 ≤ c)
 variable [Fintype (𝓞 K ⧸ P ^ c)] [Fintype (𝓞 K ⧸ P)]
 local instance : Field (𝓞 K ⧸ P) := Ideal.Quotient.field P
 
 theorem primePower_localCorrelation (χ : MulChar (𝓞 K ⧸ P) ℂ)
-    (u : (𝓞 K ⧸ P ^ c)ˣ) (v k : 𝓞 K ⧸ P ^ c) :
+    (u : (𝓞 K ⧸ P ^ c)ˣ)  v k  :
     fullCorrelation (fun x => v * x) (fun y => (u : 𝓞 K ⧸ P ^ c) * y)
       (fun x => (χ ^ c) (primePowerReduction P hc x))
       (fun y => (χ ^ c) (primePowerReduction P hc y)) k =
@@ -72,7 +72,7 @@ theorem primePower_localCorrelation (χ : MulChar (𝓞 K ⧸ P) ℂ)
     primePowerReduction_multiplicity, Nat.cast_pow]
   rfl
 
-end Local
+
 end
 end SevenEighths.CenteredMomentCorrelation
 

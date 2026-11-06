@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Sieve.Kubilius
 public import Mathlib.NumberTheory.Harmonic.Bounds
@@ -41,23 +42,29 @@ namespace Sieve
 noncomputable section
 
 /-- The cutoff mass `I = x⁻¹ ∑_{1 ≤ u ≤ κ x} Φ(u/x)`, a Riemann sum for `∫ Φ`. -/
-def cutoffMass (κ x : ℝ) (Φ : ℝ → ℝ) : ℝ :=
+def cutoffMass (κ x : ℝ) (Φ : ℝ → ℝ)  :=
   (∑ n ∈ Icc 1 ⌊κ * x⌋₊, Φ (n / x)) / x
 
-/-- A cutoff is bounded by `M₀`. -/
-lemma abs_le_of_isCutoff {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ → ℝ}
-    (hΦ : IsCutoff κ CΦ M x Φ) (y : ℝ) : |Φ y| ≤ M 0 := by
-  have := hΦ.2.2.2 0 y
-  rwa [iteratedDeriv_zero, Nat.cast_zero, mul_zero, rpow_zero, mul_one] at this
+section
+variable {κ CΦ : ℝ} {M : ℕ → ℝ} {𝔅 : Finset ℕ} {x : ℝ} {Φ : ℝ → ℝ} (hκ : 1 < κ) (hx : 0 < x) (hΦ : IsCutoff κ CΦ M x Φ)
 
+include hΦ in
+/-- A cutoff is bounded by `M₀`. -/
+lemma abs_le_of_isCutoff        
+       y  : |Φ y| ≤ M 0 := by
+  have := hΦ.2.2.2 0 y
+  simp_all
+
+include hx hΦ in
 /-- The mass of a cutoff is nonnegative. -/
-lemma cutoffMass_nonneg {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ → ℝ} (hx : 0 < x)
-    (hΦ : IsCutoff κ CΦ M x Φ) : 0 ≤ cutoffMass κ x Φ :=
+lemma cutoffMass_nonneg          
+      : 0 ≤ cutoffMass κ x Φ :=
   div_nonneg (sum_nonneg fun _ _ => hΦ.2.1 _) hx.le
 
+include hκ hx hΦ in
 /-- The mass of a cutoff is at most `κ M₀`. -/
-lemma cutoffMass_le {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ → ℝ} (hκ : 1 < κ) (hx : 0 < x)
-    (hΦ : IsCutoff κ CΦ M x Φ) : cutoffMass κ x Φ ≤ κ * M 0 := by
+lemma cutoffMass_le            
+      : cutoffMass κ x Φ ≤ κ * M 0 := by
   have hM : 0 ≤ M 0 := (abs_nonneg _).trans (abs_le_of_isCutoff hΦ 0)
   rw [cutoffMass, div_le_iff₀ hx]
   calc ∑ n ∈ Icc 1 ⌊κ * x⌋₊, Φ (n / x) ≤ ∑ _n ∈ Icc 1 ⌊κ * x⌋₊, M 0 :=
@@ -84,14 +91,14 @@ lemma sum_Icc_inv_le (R : ℕ) : ∑ r ∈ Icc 1 R, (1 : ℝ) / r ≤ 1 + Real.l
 
 /-- A number `r ≤ x` has at most `L` prime factors above `exp(L^{0.11})`, so the band primes
 dividing it have reciprocal mass at most `L exp(-L^{0.11})`. -/
-lemma sum_inv_dvd_le {𝔅 : Finset ℕ} {x : ℝ} (hx : 1 < x) (hL1 : 1 ≤ Real.log x)
+lemma sum_inv_dvd_le     (hx : 1 < x) (hL1 : 1 ≤ Real.log x)
     (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ exp (Real.log x ^ (11 / 100 : ℝ)) ≤ p) {r : ℕ} (hr : 0 < r)
     (hrx : (r : ℝ) ≤ x) :
     ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p ≤
       Real.log x * exp (-Real.log x ^ (11 / 100 : ℝ)) := by
   set F := 𝔅.filter (· ∣ r)
   set q := exp (Real.log x ^ (11 / 100 : ℝ))
-  have hL : 0 < Real.log x := Real.log_pos hx
+  
   have hq : 0 < q := exp_pos _
   have hFp : ∀ p ∈ F, p.Prime := fun p hp => (h𝔅 p (mem_filter.1 hp).1).1
   -- `q^{#F} ≤ ∏ F ≤ r ≤ x`
@@ -117,6 +124,8 @@ lemma sum_inv_dvd_le {𝔅 : Finset ℕ} {x : ℝ} (hx : 1 < x) (hL1 : 1 ≤ Rea
     _ ≤ Real.log x * (1 / q) := mul_le_mul_of_nonneg_right hcard (by positivity)
     _ = _ := by rw [exp_neg, one_div]
 
+end
+
 /-- A nonnegative sum over a union is at most the sum of the sums. -/
 lemma sum_biUnion_le_sum {ι : Type*} [DecidableEq ι] (s : Finset ι) (t : ι → Finset ℕ)
     (g : ℕ → ℝ) (hg : ∀ p, 0 ≤ g p) : ∑ p ∈ s.biUnion t, g p ≤ ∑ i ∈ s, ∑ p ∈ t i, g p := by
@@ -130,7 +139,7 @@ lemma sum_biUnion_le_sum {ι : Type*} [DecidableEq ι] (s : Finset ι) (t : ι �
 
 /-- For large `x`, the inert band primes lie in `[exp(L^{0.11}), exp(2 L^{1/5})]` and have
 reciprocal mass at most `T`. -/
-lemma eventually_inertBands_bounds {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_inertBands_bounds  {K}  (hK : 1 ≤ K)  CN  : ∀ᶠ x : ℝ in atTop,
     (∀ p ∈ inertBands K CN x, p.Prime ∧ exp (Real.log x ^ (11 / 100 : ℝ)) ≤ p ∧
       (p : ℝ) ≤ exp (2 * Real.log x ^ (1 / 5 : ℝ))) ∧
     ∑ p ∈ inertBands K CN x, (1 : ℝ) / p ≤ logLog x := by
@@ -158,17 +167,14 @@ lemma eventually_inertBands_bounds {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ 
           obtain ⟨hc, hi⟩ := mem_product.1 hci
           exact (hV ci.1 (mem_range.1 hc) ci.2 (mem_range.1 hi)).2
       _ = K * inertPerCluster K CN x := by
-          rw [sum_const, card_product, card_range, card_range, nsmul_one]
-          push_cast
-          ring
+          norm_num
       _ ≤ K * (|CN| / K * logLogLog x + 1) := by
           refine mul_le_mul_of_nonneg_left ?_ hK0.le
           have := Nat.ceil_lt_add_one (show 0 ≤ |CN| * logLogLog x / K by positivity)
           have h1 : (inertPerCluster K CN x : ℝ) ≤ ⌈|CN| * logLogLog x / K⌉₊ := by
             exact_mod_cast Nat.ceil_mono (div_le_div_of_nonneg_right
               (mul_le_mul_of_nonneg_right (le_abs_self CN) hs0) hK0.le)
-          have h2 : |CN| * logLogLog x / K = |CN| / K * logLogLog x := by ring
-          linarith
+          grind
       _ = |CN| * logLogLog x + K := by field_simp
       _ ≤ (|CN| + K) * (logLogLog x + 1) := by
           have := mul_nonneg (abs_nonneg CN) hs0
@@ -179,7 +185,7 @@ lemma eventually_inertBands_bounds {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ 
 /-- The savings of E1 at large `x`, with `ε = c / T²⁰`, `m = exp(2 L^{1/5})`,
 `h = 2 (⌈L^{1/10}⌉ + h₀)` and `Y₀ = x^{ε/4}`: the relative errors are at most `L⁻⁵` and the
 remainders at most `x / L²`. -/
-lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : ℝ} (hA : 0 ≤ A) :
+lemma eventually_progression_savings  {c}  (hc : 0 < c)  h₀   {A}  (hA : 0 ≤ A) :
     ∀ᶠ x : ℝ in atTop,
       exp (2 * Real.log x ^ (1 / 5 : ℝ)) < x ^ (c / logLog x ^ 20) ∧
       A * exp (-((2 * (⌈Real.log x ^ (1 / 10 : ℝ)⌉₊ + h₀) : ℕ) : ℝ)) +
@@ -193,7 +199,7 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
               (4 * (2 * (⌈Real.log x ^ (1 / 10 : ℝ)⌉₊ + h₀)) + 2) * Real.log x ^ (1 / 10 : ℝ)) +
               A * exp (2 * Real.log x ^ (1 / 5 : ℝ)))) ≤
         x / Real.log x ^ 2 := by
-  have hpow : ∀ (y : ℝ) (n : ℕ), y ^ (n : ℝ) = y ^ n := fun y n => rpow_natCast y n
+  have hpow : ∀ (y : ℝ) (n : ℕ), y ^ (n : ℝ) = y ^ n := rpow_natCast
   filter_upwards [eventually_gt_atTop 1, tendsto_log_atTop.eventually_ge_atTop (A + 4),
     tendsto_log_atTop.eventually_ge_atTop 1, tendsto_logLog.eventually_ge_atTop (max c 1),
     eventually_mul_rpow_le_log_rpow (4 / c) 20 (show (0 : ℝ) < 4 / 5 by norm_num),
@@ -209,14 +215,14 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
   set T := logLog x
   have hL0 : 0 < L := by linarith
   have hT1 : 1 ≤ T := (le_max_right _ _).trans hT
-  have hTc : c ≤ T := (le_max_left _ _).trans hT
+  
   have hT0 : 0 < T := by linarith
   have hx0 : 0 < x := by linarith
   rw [rpow_one] at hS2a hS2b hS3a
   have hT20 : 0 < T ^ (20 : ℝ) := by positivity
   set ε := c / T ^ 20
-  have hεT : ε = c / T ^ (20 : ℝ) := by rw [show (20 : ℝ) = ((20 : ℕ) : ℝ) by norm_num, hpow]
-  have hε0 : 0 < ε := by positivity
+  have hεT : ε = c / T ^ (20 : ℝ) := by grind
+  
   have hexpT : ∀ k : ℝ, exp (-(k * T)) = (L ^ k)⁻¹ := fun k => by
     rw [exp_neg, log_rpow_eq hL0]
   -- `m < x^ε`
@@ -237,8 +243,7 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
     have hh : 2 * L ^ (1 / 10 : ℝ) ≤ ((2 * (⌈L ^ (1 / 10 : ℝ)⌉₊ + h₀) : ℕ) : ℝ) := by
       push_cast
       have := Nat.le_ceil (L ^ (1 / 10 : ℝ))
-      have : (0 : ℝ) ≤ h₀ := Nat.cast_nonneg _
-      linarith
+      grind
     have e1 : exp (-((2 * (⌈L ^ (1 / 10 : ℝ)⌉₊ + h₀) : ℕ) : ℝ)) ≤ (L ^ (6 : ℝ))⁻¹ := by
       rw [← hexpT]
       exact exp_le_exp.2 (by linarith)
@@ -270,9 +275,7 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
         have h3 : T * T ^ (20 : ℝ) = T ^ (21 : ℝ) := by
           rw [show (21 : ℝ) = 1 + 20 by norm_num, rpow_add hT0, rpow_one]
         rw [div_mul_eq_mul_div, div_le_iff₀ hc] at hS2c
-        have : 9 * T * (8 * T ^ (20 : ℝ)) = 72 * T ^ (21 : ℝ) := by rw [← h3]; ring
-        rw [this, mul_comm c]
-        exact hS2c
+        grind
       have h4 : 9 * T ≤ c * L ^ (4 / 5 : ℝ) / (8 * T ^ (20 : ℝ)) := by
         rw [le_div_iff₀ (by positivity)]
         exact h2
@@ -280,9 +283,7 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
     have hL6 : (A + 4) * (L ^ (6 : ℝ))⁻¹ ≤ (L ^ 5)⁻¹ := by
       rw [show (6 : ℝ) = ((5 : ℕ) : ℝ) + 1 by norm_num, rpow_add hL0, hpow, rpow_one, mul_inv,
         ← mul_assoc, mul_comm (A + 4), mul_assoc]
-      refine mul_le_of_le_one_right (by positivity) ?_
-      rw [mul_inv_le_iff₀ hL0, one_mul]
-      exact hLA
+      bound
     have hA' : A * exp (-((2 * (⌈L ^ (1 / 10 : ℝ)⌉₊ + h₀) : ℕ) : ℝ)) ≤ A * (L ^ (6 : ℝ))⁻¹ :=
       mul_le_mul_of_nonneg_left e1 hA
     nlinarith
@@ -353,13 +354,12 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
         _ ≤ exp (L ^ (3 / 10 : ℝ)) * exp ((16 * h₀ + 36) * L ^ (3 / 10 : ℝ)) *
             exp (L ^ (3 / 10 : ℝ)) := by
           rw [hmexp]
-          refine mul_le_mul (mul_le_mul hA1 (exp_le_exp.2 hexp1) (exp_pos _).le (exp_pos _).le)
-            hL21 (by positivity) (by positivity)
+          gcongr <;> first | assumption | positivity | linarith
         _ = exp ((16 * h₀ + 38) * L ^ (3 / 10 : ℝ)) := by
           rw [← exp_add, ← exp_add]
           ring_nf
         _ ≤ exp (ε * L / 2) := exp_le_exp.2 hfin
-    have hxe : 0 < exp (ε * L / 2) := exp_pos _
+    
     have hY : 0 ≤ x ^ (ε / 4) * x ^ (1 - ε) * x ^ (ε / 4) := by positivity
     rw [le_div_iff₀ (by positivity)]
     calc x ^ (ε / 4) * x ^ (1 - ε) * (x ^ (ε / 4) * (A * (m ^ (4 * h + 2) * L ^ (1 / 10 : ℝ)) +
@@ -374,14 +374,18 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
           mul_le_mul_of_nonneg_left hbig hY
       _ = x := hx'
 
+section
+variable (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN c κ CΦ : ℝ) (M : ℕ → ℝ) (hc : 0 < c) (hκ : 1 < κ)
+
+include h₃ hK hc hκ in
 /-- E1, the progression lemma for the inert polynomial (PD Lemma 7.2 at the
 shrinking parameters). For every `H` determined by the band primes with
 `|H| ≤ 1`, every family of moduli `ℓ_i` with prime factors above `x^ε`,
 `#S ≤ x^{1-ε}` and `∑ 1/ℓ_i ≤ L`, and `|b_i| ≤ 1`, the progression sums at
 levels `r ≤ x^{ε/4}` match the independent divisor model up to `O(x / L²)` in
 total. -/
-theorem eventually_progression (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN c κ CΦ : ℝ)
-    (M : ℕ → ℝ) (hc : 0 < c) (hκ : 1 < κ) :
+theorem eventually_progression        
+          :
     ∃ C : ℝ, ∀ᶠ x : ℝ in atTop, ∀ (ι : Type) (S : Finset ι) (ℓ : ι → ℕ) (b : ι → ℝ)
       (Φ : ℝ → ℝ) (H : ℕ → ℝ),
       IsCutoff κ CΦ M x Φ →
@@ -503,7 +507,7 @@ theorem eventually_progression (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN 
     linarith
   have hmain := sum_progression_le hBS h𝔅m hm1.le (N := N) (R := R) S ℓ b
     (fun i hi => (hℓ i hi).1) hrℓ hℓ𝔅 hb hf0 hf hfM hV (even_two_mul _) (by omega) hY₀ H hH
-    (fun n => hHb n) hδr (by positivity) hHR hΛ
+    (hHb) hδr (by positivity) hHR hΛ
   -- the target is the bound of `sum_progression_le`
   have heq : ∀ r ∈ Icc 1 R, x / r * cutoffMass κ x Φ * (∑ i ∈ S, b i / ℓ i) *
       divisorModel 𝔅 H = ∑ i ∈ S, b i * (progMain N r (ℓ i) f *
@@ -557,10 +561,11 @@ theorem eventually_progression (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN 
   calc _ ≤ 2 * κ * |M 0| * x / L ^ 2 + x / L ^ 2 := add_le_add h1 h2
     _ = (2 * κ * |M 0| + 1) * x / L ^ 2 := by ring
 
+include h₃ hK hc hκ in
 /-- E1 for the constant weight `1` (the single modulus `ℓ = 1`). -/
-theorem eventually_progression_one (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN c κ CΦ : ℝ)
-    (M : ℕ → ℝ)
-    (hc : 0 < c) (hκ : 1 < κ) :
+theorem eventually_progression_one        
+     
+        :
     ∃ C : ℝ, ∀ᶠ x : ℝ in atTop, ∀ (Φ : ℝ → ℝ) (H : ℕ → ℝ), IsCutoff κ CΦ M x Φ →
       (∀ n, |H n| ≤ 1) → (∀ n, H n = H (bandPart (inertBands K CN x) n)) →
       ∑ r ∈ Icc 1 ⌊x ^ (c / logLog x ^ 20 / 4)⌋₊,
@@ -582,7 +587,7 @@ theorem eventually_progression_one (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) 
 
 /-- The prime factors of a slot tuple's product exceed `x^ε`. -/
 lemma lt_of_mem_primeFactors_slot {x ε : ℝ} (hx : 1 ≤ x) {k : ℕ} {u v : Fin k → ℝ}
-    (hu : ∀ i, ε ≤ u i) {Q : Fin k → ℕ} (hQ : Q ∈ slotTuples x u v) {p : ℕ}
+    (hu : ∀ i, ε ≤ u i) {Q : Fin k → ℕ} (hQ : Q ∈ slotTuples x u v)  {p} 
     (hp : p ∈ (∏ i, Q i).primeFactors) : x ^ ε < p := by
   have hpp := Nat.prime_of_mem_primeFactors hp
   obtain ⟨i, -, hpi⟩ := (hpp.prime.dvd_finsetProd_iff _).1 (Nat.dvd_of_mem_primeFactors hp)
@@ -590,10 +595,11 @@ lemma lt_of_mem_primeFactors_slot {x ε : ℝ} (hx : 1 ≤ x) {k : ℕ} {u v : F
   rw [(Nat.prime_dvd_prime_iff_eq hpp hQi).1 hpi]
   exact lt_of_le_of_lt (rpow_le_rpow_of_exponent_le hx (hu i)) hlt
 
+include h₃ hK hc hκ in
 /-- E1 for the slot statistic: the moduli are the slot products `ℓ = ∏ Q`. -/
-theorem eventually_progression_slot (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN c κ CΦ : ℝ)
-    (M : ℕ → ℝ)
-    (hc : 0 < c) (hκ : 1 < κ) :
+theorem eventually_progression_slot        
+     
+        :
     ∃ C : ℝ, ∀ᶠ x : ℝ in atTop, ∀ k ≤ 2, ∀ (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ)
       (Φ : ℝ → ℝ) (H : ℕ → ℝ), AdmissibleSlots c x u v → (∀ Q, |B Q| ≤ 1) →
       IsCutoff κ CΦ M x Φ → (∀ n, |H n| ≤ 1) →
@@ -610,7 +616,7 @@ theorem eventually_progression_slot (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K)
     with x hx hx2 hT hL k hk u v B Φ H hslot hB hΦ hH hHb
   rw [rpow_one, show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, rpow_natCast] at hL
   have hT1 : 1 ≤ logLog x := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hT
-  have hTc : c ≤ logLog x := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hT
+  
   have hTE : E ≤ logLog x := le_trans (le_max_right _ _) hT
   have hx1 : 1 ≤ x := by linarith
   have hε0 : 0 ≤ c / logLog x ^ 20 := by positivity
@@ -627,7 +633,7 @@ theorem eventually_progression_slot (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K)
       calc (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) ≤ (2 * logLog x) ^ (k + 1) :=
             pow_le_pow_left₀ h0 (by linarith) _
         _ ≤ (2 * logLog x) ^ 3 := pow_le_pow_right₀ (by linarith) (by omega)
-    have h4 : (2 * logLog x) ^ 3 = 8 * logLog x ^ 3 := by ring
+    
     push_cast
     linarith
   have h := hx (Fin (k + 1) → ℕ) (slotTuples x u v) (fun Q => ∏ i, Q i) (fun Q => B (Fin.init Q))
@@ -638,6 +644,8 @@ theorem eventually_progression_slot (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K)
     simp only [slotMean, Nat.cast_prod]
   rw [hmean]
   exact h
+
+end
 
 /-- The block-sieve remainders over sets `D` of sieving primes with
 `∏ D ≤ Y` are at most the progression remainders over `r ≤ Y'`, for `Y ≤ Y'`. -/
@@ -653,7 +661,7 @@ lemma sum_powerset_rem_le {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) (objs : F
     have hDp : ∀ p ∈ D, p.Prime := fun p hp => hP p (mem_powerset.1 (mem_filter.1 hD).1 hp)
     have hfilt : objs.filter (fun u => ∀ p ∈ D, p ∣ u + 1) =
         objs.filter ((∏ p ∈ D, p) ∣ · + 1) :=
-      filter_congr fun u _ => ⟨fun h => prod_primes_dvd _ (fun p hp => (hDp p hp).prime) h,
+      filter_congr fun u _ => ⟨prod_primes_dvd _ (fun p hp => (hDp p hp).prime),
         fun h p hp => (dvd_prod_of_mem _ hp).trans h⟩
     have hX : X * ∏ p ∈ D, 1 / (p : ℝ) = X / ((∏ p ∈ D, p : ℕ) : ℝ) := by
       push_cast
@@ -662,8 +670,7 @@ lemma sum_powerset_rem_le {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) (objs : F
   rw [sum_congr rfl hconv]
   refine (sum_powerset_prod_le hP Y
     (fun r => |∑ u ∈ objs.filter (r ∣ · + 1), wt u - X / r|) fun _ => abs_nonneg _).trans ?_
-  exact sum_le_sum_of_subset_of_nonneg (Icc_subset_Icc le_rfl (Nat.floor_mono hYY))
-    fun _ _ _ => abs_nonneg _
+  gcongr <;> first | assumption | positivity | linarith
 
 end
 

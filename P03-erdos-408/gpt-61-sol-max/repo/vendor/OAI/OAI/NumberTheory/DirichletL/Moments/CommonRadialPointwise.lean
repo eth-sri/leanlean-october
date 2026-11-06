@@ -16,10 +16,10 @@ open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMom
 open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
 open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
 open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
- def profileCost (s:Input ι) : ℝ :=
+ def profileCost (s:Input ι)  :=
   ((∏i,s.M i)^2*(max 1 s.upper)^Fintype.card ι)*s.toData.profileFactor
 
 omit [DecidableEq ι] in

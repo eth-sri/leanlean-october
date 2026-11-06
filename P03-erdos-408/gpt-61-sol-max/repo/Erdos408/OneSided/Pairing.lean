@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Pairing.Endpoint
 public import Erdos408.OneSided.Pairing.Geometry
@@ -29,18 +30,23 @@ open scoped Matrix
 
 variable {K : ℕ}
 
+section
+variable {q C CX alo ahi g x : ℝ} {d : Data K} {Y d₀ : ℝ} (hd : Admissible C CX alo ahi g x d) (hq : 0 < q) (hq₁ : q < 1) (hahi : ahi < 1 / 5)
+
+
 /-- The bounds of a position: `U ≤ P₁ ≤ 16U` and `P` is primitive. -/
-theorem mem_positions_bounds {d : Data K} {Y d₀ : ℝ} (hU : 0 ≤ d₀ * Y * d.Hm) {P : ℕ × ℕ}
+theorem mem_positions_bounds     (hU : 0 ≤ d₀ * Y * d.Hm) {P : ℕ × ℕ}
     (hP : P ∈ positions d Y d₀) :
     d₀ * Y * d.Hm ≤ P.1 ∧ (P.1 : ℝ) ≤ 16 * (d₀ * Y * d.Hm) ∧ Nat.Coprime P.1 P.2 := by
   unfold positions at hP
   rw [mem_filter, mem_product, mem_Icc] at hP
   exact ⟨Nat.ceil_le.1 hP.1.1.1, (Nat.le_floor_iff (by positivity)).1 hP.1.1.2, hP.2⟩
 
+include hd hahi in
 /-- The labels of a state have product at most `exp(4K L^{1/2})`: there are `K (J + 1)`
 labels, each at most `exp(2 L^{a_hi})`, and `(J + 1) L^{a_hi} ≤ 2 L^{0.01 + a_hi}`. -/
-theorem listProd_le_exp {C CX alo ahi g x : ℝ} {d : Data K} {Y d₀ : ℝ}
-    (hd : Admissible C CX alo ahi g x d) (hahi : ahi < 1 / 5) (hL : 1 ≤ Real.log x)
+theorem listProd_le_exp      
+        (hL : 1 ≤ Real.log x)
     (t : State x d Y d₀) :
     (listProd t.1.2 : ℝ) ≤ Real.exp (4 * K * Real.log x ^ (1 / 2 : ℝ)) := by
   obtain ⟨-, hband, -, -⟩ := state_props t
@@ -71,13 +77,14 @@ theorem listProd_le_exp {C CX alo ahi g x : ℝ} {d : Data K} {Y d₀ : ℝ}
           ← Real.exp_nat_mul, ← Real.exp_nat_mul]
     _ ≤ Real.exp (4 * K * L ^ (1 / 2 : ℝ)) := by
         refine Real.exp_le_exp.2 ?_
-        have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg _
+        
         push_cast
         nlinarith
 
+include hq hq₁ hahi in
 /-- PD (3.20): a moment bound with precision `E` bounds the pairing by `UV L^{4C - E}`. -/
-theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (hahi : ahi < 1 / 5) (hg : 0 < g) (A₀ E : ℝ) :
+theorem eventually_pairing_of_moment      
+      (hg : 0 < g) (A₀ E : ℝ) :
     ∃ C₀ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ‖detMoment q A₀ x d (2 ^ j) (2 ^ k)‖ ≤
           2 ^ k * 2 ^ j * d.X * Real.log x ^ (-(E * (2 * momentPower x : ℕ))) →
@@ -103,7 +110,7 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
   set Y : ℝ := 2 ^ j with hY
   set d₀ : ℝ := 2 ^ k with hd₀
   have hY0 : 0 < Y := by positivity
-  have hd₀0 : 0 < d₀ := by positivity
+  
   set H := d₀ * Y with hH
   have hH1 : 1 ≤ H := one_le_mul_of_one_le_of_one_le (one_le_pow₀ one_le_two)
     (one_le_pow₀ one_le_two)
@@ -140,7 +147,7 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
   obtain ⟨t, t', ht⟩ := hT
   -- `H ≤ exp(8 K M)`
   have hHexp : H ≤ Real.exp (8 * K * (R + 1)) := by
-    have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg _
+    
     calc H ≤ listProd t.1.2 := le_listProd_of_rowOp_ne_zero hY0 ht
       _ ≤ Real.exp (4 * K * L ^ (1 / 2 : ℝ)) := listProd_le_exp hd hahi hL t
       _ ≤ _ := Real.exp_le_exp.2 (by nlinarith)
@@ -221,7 +228,7 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
           mul_le_mul (mul_le_mul h₁ h₂ (by positivity) (by positivity)) h₃ (Nat.cast_nonneg _)
             (by positivity)
       _ = _ := by ring
-  have hP0 : 0 ≤ P := norm_nonneg _
+  
   have hS0 : 0 ≤ S := sqNorm_nonneg _
   have hρ0 : 0 ≤ ‖ρ‖ := norm_nonneg _
   have hNσ : 0 ≤ (N : ℝ) * σ := mul_nonneg (Nat.cast_nonneg _) hσ0
@@ -244,10 +251,11 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
         rw [hn]
         ring
     _ ≤ C₀ ^ n * (σ ^ n * L ^ (-(E * (n : ℝ)))) * Z ^ n :=
-        mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hnum
-          (mul_nonneg (pow_nonneg hσ0 _) (by positivity))) (pow_nonneg hZ0.le _)
+        mul_le_mul_of_nonneg_right ((by gcongr <;> first | assumption | positivity | linarith)) (pow_nonneg hZ0.le _)
     _ = (C₀ * Z * L ^ (4 * C - E)) ^ n := by
         rw [hrpow]
         ring
+
+end
 
 end Erdos408.OneSided

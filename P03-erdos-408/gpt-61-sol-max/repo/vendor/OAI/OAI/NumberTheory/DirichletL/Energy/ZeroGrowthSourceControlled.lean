@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthSource
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthSource
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -17,21 +18,21 @@ open CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthHighBound
 open CenteredMomentEnergyZeroReferencePhysical (balancedInput)
 open CenteredMomentFirstSourceReduction CenteredMomentEnergyBandMonotonicity
 open CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
-local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
+
+
 
 open CenteredMomentEnergyZeroGrowthSource (PhysicalGrowthAt)
 
 theorem actual_growth_from_physical
     (a b bΦ rho ε Mcap Bmask B L εdiag ξ saving:ℝ)
-    (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0<rho)(hε:0<ε)
+     ha (hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0<rho)(hε:0<ε)
     (hM:0≤Mcap)(hBmask:0≤Bmask)(hB:0≤B)(hLB:2*L≤B)(hεdiag:0<εdiag)(hξ:0<ξ):
     ∃Ψ:𝓢(ℝ,ℂ),Function.support (Ψ:ℝ→ℂ)⊆Set.Icc (-1) (bΦ+1) ∧
       (∀x,0≤(Ψ x).re) ∧
     ∀degree:ℕ,∀S:Finset (ℕ×ℕ),∀Jmass:ℕ,∀Smass:Finset (ℕ×ℕ),
     ∃Jout:ℕ,∃U:Finset (ℕ×ℕ),∃Cfixed:ℝ,0<Cfixed ∧
       ∀ᶠZ:ℝ in atTop,1<Z ∧
-      ∀(e emass efinal:ℝ)(Q:Ideal O)(K Cmass Cprevious:ℝ),
+      ∀(e emass efinal:ℝ)(Q:Ideal HeckeFamily.O)(K Cmass Cprevious:ℝ),
       0≤e→0≤K→0≤Cmass→0≤Cprevious→e+ε≤efinal→emass≤efinal→εdiag≤efinal→-saving≤efinal→
       ZeroAt Q a b bΦ Bmask L rho efinal Z degree S Cprevious→
       ZeroLowAt Q a b bΦ Bmask (max L (Mcap+Bmask+rho/100)) Mcap e Z degree S K→
@@ -51,7 +52,7 @@ theorem actual_growth_from_physical
   refine ⟨hZ.1,?_⟩
   intro e emass efinal Q K Cmass Cprevious he hK hCm hCp hef hmf hdf htf hold hlow hmass
   have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hCout:0≤Cfixed*(K+Cmass+Cprevious+1):=by positivity
+  
   intro s hQ hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂
   have hbase:1≤1+|t|:=by linarith [abs_nonneg t]
   have hdg:=diagonalControl_nonneg s.radial.profile

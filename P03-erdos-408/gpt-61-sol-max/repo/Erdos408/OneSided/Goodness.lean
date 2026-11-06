@@ -41,9 +41,14 @@ variable {K : ℕ}
 
 /-! ### Test (ii) -/
 
+section
+variable {C CX alo ahi g x : ℝ} {d : Data K} (I : Finset (Fin K)) (hV : ∀ i, 0 < harmonicMass (band x (d.a i)))
+
+
+include hV in
 /-- The fresh draws have total probability one when every band has positive mass. -/
-theorem sum_freshWeight {x : ℝ} {d : Data K} (I : Finset (Fin K))
-    (hV : ∀ i, 0 < harmonicMass (band x (d.a i))) :
+theorem sum_freshWeight      
+      :
     ∑ T ∈ freshDraws x d I, freshWeight x d I T = 1 := by
   unfold freshDraws freshWeight
   simp_rw [prod_filter]
@@ -59,15 +64,16 @@ theorem sum_freshWeight {x : ℝ} {d : Data K} (I : Finset (Fin K))
     rw [sum_congr rfl fun (q : ℕ) _ => (div_div (1 : ℝ) (q : ℝ) _).symm, ← sum_div]
     exact div_self (hV i).ne'
 
+include hV in
 /-- A fresh draw has nonnegative probability. -/
-theorem freshWeight_nonneg {x : ℝ} {d : Data K} (I : Finset (Fin K))
-    (hV : ∀ i, 0 < harmonicMass (band x (d.a i))) (T : Fin K → ℕ) :
+theorem freshWeight_nonneg      
+      (T : Fin K → ℕ) :
     0 ≤ freshWeight x d I T :=
   prod_nonneg fun i _ => div_nonneg zero_le_one (mul_nonneg (Nat.cast_nonneg _) (hV i).le)
 
 /-- With `i_* = max I`, the selections number at most `exp(2 L^{a_{i_*} - g})^K`: every
 selected group lies at least `g` below `i_*`, by the gap (B6). -/
-theorem card_selections_le {C CX alo ahi g x : ℝ} {d : Data K}
+theorem card_selections_le    
     (hd : Admissible C CX alo ahi g x d) (hL : 1 ≤ Real.log x) {I : Finset (Fin K)}
     (hI : I.Nonempty) :
     ((selections x d I (I.max' hI)).card : ℝ) ≤
@@ -88,6 +94,8 @@ theorem card_selections_le {C CX alo ahi g x : ℝ} {d : Data K}
           exact Real.one_le_exp (by positivity)
     _ = Real.exp (2 * Real.log x ^ (d.a (I.max' hI) - g)) ^ K := by
         rw [prod_const, card_univ, Fintype.card_fin]
+
+end
 
 /-! ### Both tests -/
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.ZContour
 public import OAI.NumberTheory.DirichletL.PrimeRows.ZGrowth
@@ -12,9 +13,9 @@ open scoped Classical BigOperators Topology
 open MeasureTheory Set Complex Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
-private lemma norm_mul_seven_le {a b c d e f g : ℂ} {A B C D E F G : ℝ}
+
+private lemma norm_mul_seven_le {a b c d e f g : ℂ}  {A B C D E F G} 
     (ha : ‖a‖≤A) (hb : ‖b‖≤B) (hc : ‖c‖≤C) (hd : ‖d‖≤D)
     (he : ‖e‖≤E) (hf : ‖f‖≤F) (hg : ‖g‖≤G) :
     ‖a*b*c*d*e*f*g‖≤A*B*C*D*E*F*G := by
@@ -27,17 +28,20 @@ private lemma norm_mul_seven_le {a b c d e f g : ℂ} {A B C D E F G : ℝ}
   simp only [norm_mul]
   gcongr
 
-def zRowScalar {K : ℕ} (P : Fin K→PrimeIdeal) (u : FreeRow)
-    (W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ) : ℂ :=
+def zRowScalar {K } (P : Fin K→PrimeIdeal) (u : FreeRow)
+    (W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ)  :=
   (X:ℂ)^(1/2-z)*(Z:ℂ)^(x+z-1)*(Y:ℂ)^(w-1)*
     Complex.exp ((x+z-1)^2)*mellin W1 w*
     (∏i,(elementNorm (CompletedGauss.primaryGenerator (P i).val):ℂ)^(z-1))*
     frequencyWeight z ⟨u.val,u.property.1⟩
 
-lemma continuedPhysicalRowKernel_z_factor {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ) :
+section
+variable {K : ℕ} (eps : ℝ) (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S) (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a) (hW : Function.support W0⊆Icc a b) (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z) (x w z : ℂ)
+
+lemma continuedPhysicalRowKernel_z_factor  
+         
+           
+          :
     continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z x w z=
       zRowScalar P u W1 X Y Z x w z*mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) z*
         (star ((calibrationForSet S hmax).residueMonoid u.val)*
@@ -45,11 +49,12 @@ lemma continuedPhysicalRowKernel_z_factor {K : ℕ}
   unfold continuedPhysicalRowKernel zRowScalar sourceMellinWeight
   ring
 
-lemma zRowScalar_bounded {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (u : FreeRow)
-    (W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z)
-    (x w : ℂ) (l r : ℝ) (hl : 0<l) :
+include hS hPS hX hZ in
+lemma zRowScalar_bounded  
+       
+         
+           
+      (l r : ℝ) (hl : 0<l) :
     ∃A : ℝ,0≤A ∧ ∀v∈Icc l r,∀t : ℝ,
       ‖zRowScalar P u W1 X Y Z x w ((v:ℂ)+t*I)‖≤A := by
   let B : Fin K→ℝ := fun i=>scaleBound (elementNorm (CompletedGauss.primaryGenerator (P i).val)) (l-1) (r-1)
@@ -57,8 +62,8 @@ lemma zRowScalar_bounded {K : ℕ}
     ‖(Y:ℂ)^(w-1)‖*Real.exp ((|x.re|+r+1)^2)*‖mellin W1 w‖*
     (∏i,B i)*scaleBound (elementNorm u.val) (-r) (-l)
   have hB (i : Fin K) : 0≤B i := (scaleBound_pos _ _ _).le
-  have hBP : 0≤∏i,B i := Finset.prod_nonneg (fun i _=>hB i)
-  have hscale (a b c : ℝ) : 0≤scaleBound a b c := (scaleBound_pos _ _ _).le
+  
+  
   refine ⟨max A 0,le_max_right _ _,?_⟩
   intro v hv t
   have hXb := cpow_le_scaleBound hX (1/2-((v:ℂ)+t*I))
@@ -81,12 +86,13 @@ lemma zRowScalar_bounded {K : ℕ}
     simpa using And.intro (neg_le_neg hv.2) (neg_le_neg hv.1)
   exact (norm_mul_seven_le hXb hZb le_rfl hGb le_rfl hPb hFb).trans (le_max_left A 0)
 
-theorem continuedPhysicalRowKernel_z_cauchy {K : ℕ}
-    (eps : ℝ) (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
-    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
-    (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ)
-    (a b : ℝ) (ha : 0<a) (hW : Function.support W0⊆Icc a b)
-    (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z) (x w : ℂ) (l r : ℝ)
+include hfirst ha hW hX in
+theorem continuedPhysicalRowKernel_z_cauchy  
+           
+         
+         
+         
+        (hZ : 0<Z) (x w : ℂ) (l r : ℝ)
     (hx : (51/100:ℝ)≤x.re) (hw : -(1/100:ℝ)≤w.re)
     (hxw : 1+eps≤x.re+w.re) (hl : (17/50:ℝ)≤l) :
     ∃B : ℝ,0≤B ∧ ∀v∈Icc l r,∀t : ℝ,
@@ -109,6 +115,8 @@ theorem continuedPhysicalRowKernel_z_cauchy {K : ℕ}
     _ ≤ A*(D*cauchy t)*C := mul_le_mul (mul_le_mul (hscalar v hv t) hm' (norm_nonneg _) hA)
       hr (norm_nonneg _) (mul_nonneg hA (mul_nonneg hD.le (cauchy_nonneg t)))
     _ = _ := by ring
+
+end
 
 end SevenEighths.ProbeHighRowFamily
 

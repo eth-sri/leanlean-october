@@ -15,7 +15,7 @@ open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
 open HeckeFamily PrincipalMellinResidues ProbeFiniteProductBounds
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
-lemma marked_differentiableAt_x (η : Character) (P : PrimeIdeal) (x w z : ℂ)
+lemma marked_differentiableAt_x  η   P   x w z 
     (hQ : 4 ≤ (Ideal.absNorm P.val : ℝ)) (hx : 7/8 ≤ x.re) (hz : 4/25 ≤ z.re) :
     DifferentiableAt ℂ (fun x => idealMarkedClosed η P x w z) x := by
   have hQ0 : 0 < (Ideal.absNorm P.val : ℝ) := by linarith
@@ -30,8 +30,8 @@ lemma marked_differentiableAt_x (η : Character) (P : PrimeIdeal) (x w z : ℂ)
   dsimp only
   fun_prop (disch := aesop)
 
-theorem local_analytic_x (η : Character) (S : Finset Id) (hS : CorrectionTail S)
-    (P : PrimeIdeal) (hP : P.val ∉ S) (w z : ℂ)
+theorem local_analytic_x  η  (S : Finset Id) (hS : CorrectionTail S)
+     P  (hP : P.val ∉ S)  w z 
     (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) :
     AnalyticOnNhd ℂ (fun x => localMultiplier η P x w z) {x : ℂ | 7/8 < x.re} := by
   have hQ : 4 ≤ (Ideal.absNorm P.val : ℝ) := by exact_mod_cast hS.norm_four P hP
@@ -55,9 +55,9 @@ theorem local_analytic_x (η : Character) (S : Finset Id) (hS : CorrectionTail S
   dsimp only
   fun_prop (disch := first | assumption | exact hd.2.2 | exact Or.inl hn)
 
-theorem slot_analytic_x {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
+theorem slot_analytic_x {ι : Type*}  η  (S : Finset Id) (hS : CorrectionTail S)
     (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
-    (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S) (w z : ℂ)
+    (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)  w z 
     (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) :
     AnalyticOnNhd ℂ (fun x => slotMultiplier η J T b x w z) {x : ℂ | 7/8 < x.re} := by
   apply J.analyticOnNhd_fun_prod
@@ -66,19 +66,23 @@ theorem slot_analytic_x {ι : Type*} (η : Character) (S : Finset Id) (hS : Corr
   intro P hp
   exact analyticOnNhd_const.mul (local_analytic_x η S hS P (hT j hj P hp) w z hw hz)
 
-def continuedSourceMultiplier {ι : Type*} (η : Character) (S : Finset Id)
+def continuedSourceMultiplier {ι } (η : Character) (S : Finset Id)
     (hS : ∀ P ∈ S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ) : ℂ :=
+    (b : ι → PrimeIdeal → ℂ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ)  :=
   (X:ℂ)^(1/2-z) * (Z:ℂ)^(x+z-1) * (Y:ℂ)^(w-1) *
     Complex.exp ((x+z-1)^2) *
     mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) z * mellin W1 w *
       HeckeReciprocal.reciprocal (η.excludePrimes S hS) x *
       globalClosedCorrection η S x w z * slotMultiplier η J T b x w z
 
-theorem continued_source_analytic_x {ι : Type*} (η : Character) (S : Finset Id)
+section
+variable {ι : Type*} (η : Character) (S : Finset Id)
+include ι η S
+
+theorem continued_source_analytic_x      
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ)
+     W0 W1   X Y Z  (hZ : 0<Z)  w z 
     (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) :
     AnalyticOnNhd ℂ (fun x => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z x w z)
       {x : ℂ | max (7/8 : ℝ) HeckeZeroSupremum.beta < x.re} := by
@@ -94,9 +98,9 @@ theorem continued_source_analytic_x {ι : Type*} (η : Character) (S : Finset Id
   unfold continuedSourceMultiplier
   fun_prop (disch := first | assumption | exact Or.inl hn)
 
-theorem continued_source_eq_raw {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : ∀ P ∈ S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ)
+theorem continued_source_eq_raw      
+     hS  (J : Finset ι) (T : ι → Finset PrimeIdeal)
+    (b : ι → PrimeIdeal → ℂ)  W0 W1   X Y Z   x w z 
     (hx0 : x≠0) (hx1 : x≠1) :
     continuedSourceMultiplier η S hS J T b W0 W1 X Y Z x w z =
       sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS) x
@@ -104,17 +108,19 @@ theorem continued_source_eq_raw {ι : Type*} (η : Character) (S : Finset Id)
   simp only [continuedSourceMultiplier,sourceMultiplier,
     HeckeReciprocal.reciprocal_eq_inv _ hx0 hx1,div_eq_mul_inv]
 
-theorem continued_source_differentiable_strip {ι : Type*} (η : Character) (S : Finset Id)
+theorem continued_source_differentiable_strip      
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ)
-    (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) {a c : ℝ}
+     W0 W1   X Y Z  (hZ : 0<Z)  w z 
+    (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re)  {a c} 
     (ha : 7/8<a) (hβ : HeckeZeroSupremum.beta<a) :
     DifferentiableOn ℂ (fun x => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z x w z)
       {x : ℂ | a≤x.re ∧ x.re≤c} := by
   apply (continued_source_analytic_x η S hS J T b hT W0 W1 X Y Z hZ w z hw hz).differentiableOn.mono
   intro x hx
   exact lt_of_lt_of_le (max_lt ha hβ) hx.1
+
+end
 
 end SevenEighths.ProbeFiniteProductX
 end

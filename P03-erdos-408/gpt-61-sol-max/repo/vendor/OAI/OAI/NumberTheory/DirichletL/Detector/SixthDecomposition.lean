@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRows
 public import OAI.NumberTheory.DirichletL.CenteredExceptionalCount
@@ -12,8 +13,8 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion ActualEisensteinCubic HeckeInverseAmplification CenteredExceptionalCount ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 theorem sixthRow_surjective (H : NonzeroFrequency) :
     ∃p : FreeRow×HeckeInverseAmplification.NonzeroIdeal,rowMap p=H.val := by
@@ -22,7 +23,7 @@ theorem sixthRow_surjective (H : NonzeroFrequency) :
   let J : Id := sixthQuotient I
   have hJ : J≠0 := sixthQuotient_ne_zero I
   let a := idealGenerator J
-  have ha : a≠0 := idealGenerator_ne_zero J hJ
+  
   have hspan : Ideal.span {a}=J := span_idealGenerator J
   have hd : a^6∣H.val := by
     apply Ideal.span_singleton_dvd_span_singleton_iff_dvd.mp
@@ -32,13 +33,11 @@ theorem sixthRow_surjective (H : NonzeroFrequency) :
     exact dvd_mul_left _ _
   obtain ⟨u,hu⟩ := hd
   have hu0 : u≠0 := by
-    intro hz
-    rw [hz,mul_zero] at hu
-    exact H.property hu
+    grind
   have hsu : Ideal.span {u}=sixthRemainder I := by
     have hi : Ideal.span {u}*J^6=I := by
       rw [←hspan,Ideal.span_singleton_pow,Ideal.span_singleton_mul_span_singleton]
-      exact congrArg (fun b : O=>Ideal.span {b}) (by simpa only [mul_comm] using hu.symm)
+      exact congrArg (fun b : ActualEisensteinCubic.O=>Ideal.span {b}) (by simpa only [mul_comm] using hu.symm)
     apply mul_right_cancel₀ (pow_ne_zero 6 hJ)
     exact hi.trans (sixth_normal_form I hI).symm
   have hf : SixthFree (Ideal.span {u}) := by
@@ -54,20 +53,20 @@ def sixthFrequencyEquiv : FreeRow×HeckeInverseAmplification.NonzeroIdeal ≃ No
     fun p q h=>rowMap_injective (congrArg Subtype.val h),
     fun H=>by obtain ⟨p,hp⟩ := sixthRow_surjective H;exact ⟨p,Subtype.ext hp⟩⟩
 
-lemma sixthFrequencyEquiv_apply (p : FreeRow×HeckeInverseAmplification.NonzeroIdeal) :
+lemma sixthFrequencyEquiv_apply  p  :
     (sixthFrequencyEquiv p).val=p.1.val*(idealGenerator p.2.val)^6 := rfl
 
-lemma idealGenerator_sixth_eq_primary (I : Id) (hI : CanonicalQuadraticSieve.Supported I) :
+lemma idealGenerator_sixth_eq_primary  I  (hI : CanonicalQuadraticSieve.Supported I) :
     (idealGenerator I)^6=(CompletedGauss.primaryGenerator I)^6 := by
   have he : Ideal.span {idealGenerator I}=Ideal.span {CompletedGauss.primaryGenerator I} :=
     (span_idealGenerator I).trans
       (CompletedGauss.primaryGenerator_spec I
         (supported_primaryGenerator_ne_zero I hI)).1.symm
   obtain ⟨u,hu⟩ := Ideal.span_singleton_eq_span_singleton.mp he
-  have hh := congrArg (fun a : O=>a^6) hu
+  have hh := congrArg (fun a : ActualEisensteinCubic.O=>a^6) hu
   simpa only [mul_pow,CanonicalUnitEuler.unit_pow_six,mul_one] using hh
 
-lemma sixthFrequencyEquiv_primary (p : FreeRow×HeckeInverseAmplification.NonzeroIdeal)
+lemma sixthFrequencyEquiv_primary  p 
     (hP : CanonicalQuadraticSieve.Supported p.2.val) :
     (sixthFrequencyEquiv p).val=p.1.val*(CompletedGauss.primaryGenerator p.2.val)^6 := by
   rw [sixthFrequencyEquiv_apply,idealGenerator_sixth_eq_primary p.2.val hP]

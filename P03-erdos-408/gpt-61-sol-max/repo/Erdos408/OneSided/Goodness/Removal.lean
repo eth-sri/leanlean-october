@@ -35,25 +35,29 @@ variable {K : ℕ}
 
 open scoped Classical in
 /-- The absolute row mass of `𝒯` on the pairs whose source or target is bad. -/
-noncomputable def badMass (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) : ℝ :=
+noncomputable def badMass (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ)  :=
   ∑ s : State x d Y d₀, ∑ s' : State x d Y d₀,
     ((if IsGood x d Y d₀ s.1.1 s.1.2 then 0 else 1) +
         (if IsGood x d Y d₀ s'.1.1 s'.1.2 then 0 else 1)) * ‖rowOp q A₀ x d Y d₀ s s'‖
 
 open scoped Classical in
 /-- The good indicator, the diagonal of `𝒢`. -/
-private noncomputable def goodVec (x : ℝ) (d : Data K) (Y d₀ : ℝ) (s : State x d Y d₀) : ℂ :=
+private noncomputable def goodVec (x ) (d : Data K) (Y d₀ ) (s : State x d Y d₀) : ℂ :=
   if IsGood x d Y d₀ s.1.1 s.1.2 then 1 else 0
 
+section
+variable {q C CX alo ahi g x : ℝ} {d : Data K} (hd : Admissible C CX alo ahi g x d) (hL : 0 ≤ Real.log x) {Y d₀ : ℝ} (s s' : State x d Y d₀)
+
+
 /-- The good indicator is real. -/
-private theorem star_goodVec {x : ℝ} {d : Data K} {Y d₀ : ℝ} (s : State x d Y d₀) :
+private theorem star_goodVec         :
     star (goodVec x d Y d₀ s) = goodVec x d Y d₀ s := by
   unfold goodVec
   split_ifs <;> simp
 
 open scoped Classical in
 /-- The good indicator is slot invariant, because goodness is. -/
-private theorem slotInvariant_goodVec {x : ℝ} {d : Data K} {Y d₀ : ℝ} :
+private theorem slotInvariant_goodVec       :
     SlotInvariant (goodVec x d Y d₀) := by
   intro s s' σ h₁ hσ
   have hp : s'.1.2 = permuteLists s.1.2 σ := funext hσ
@@ -63,18 +67,19 @@ private theorem slotInvariant_goodVec {x : ℝ} {d : Data K} {Y d₀ : ℝ} :
 
 open scoped Classical in
 /-- `1 - g g'` is at most the number of bad states among the two. -/
-private theorem norm_one_sub_goodVec_le {x : ℝ} {d : Data K} {Y d₀ : ℝ}
-    (s s' : State x d Y d₀) :
+private theorem norm_one_sub_goodVec_le      
+      :
     ‖1 - goodVec x d Y d₀ s * goodVec x d Y d₀ s'‖ ≤
       (if IsGood x d Y d₀ s.1.1 s.1.2 then 0 else 1) +
         (if IsGood x d Y d₀ s'.1.1 s'.1.2 then 0 else 1) := by
   unfold goodVec
   split_ifs <;> norm_num
 
+include hd hL in
 /-- `|f| ≤ L^{2C}`, from the bounds on `α` and `β`. -/
-private theorem norm_endVec_le {C CX alo ahi g x : ℝ} {d : Data K}
-    (hd : Admissible C CX alo ahi g x d) (hL : 0 ≤ Real.log x) {Y d₀ : ℝ}
-    (s : State x d Y d₀) : ‖endVec x d Y d₀ s‖ ≤ (Real.log x ^ C) ^ 2 := by
+private theorem norm_endVec_le    
+         
+      : ‖endVec x d Y d₀ s‖ ≤ (Real.log x ^ C) ^ 2 := by
   have hB : 0 ≤ Real.log x ^ C := Real.rpow_nonneg hL C
   have hα : ‖d.α (s.1.1.1 / listProd s.1.2)‖ ≤ Real.log x ^ C := by
     by_cases h : d.α (s.1.1.1 / listProd s.1.2) = 0
@@ -90,7 +95,7 @@ private theorem norm_endVec_le {C CX alo ahi g x : ℝ} {d : Data K}
   exact mul_le_mul hα hβ (norm_nonneg _) hB
 
 /-- `⟨f, 𝒯 f⟩` as a double sum. -/
-private theorem rowPairing_eq_sum (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) :
+private theorem rowPairing_eq_sum  q A₀ x  (d : Data K)  Y d₀  :
     rowPairing q A₀ x d Y d₀ = stateMass x d * ∑ s, ∑ s',
       star (endVec x d Y d₀ s) * (rowOp q A₀ x d Y d₀ s s' * endVec x d Y d₀ s') := by
   simp only [rowPairing, stateInner, Matrix.mulVec, dotProduct, mul_sum]
@@ -132,10 +137,11 @@ private theorem pairing_eq (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) :
         sum_mul_symOp_mulVec hu _
     _ = _ := by simp only [Matrix.mulVec, dotProduct, mul_sum]
 
+include hd in
 /-- Removing the projections costs at most `L^{4C}` times the bad mass: `|f| ≤ L^{2C}` at both
 ends. -/
-theorem norm_rowPairing_sub_pairing_le {q C CX alo ahi g x : ℝ} {d : Data K}
-    (hd : Admissible C CX alo ahi g x d) (hx : 1 ≤ x) (A₀ Y d₀ : ℝ) :
+theorem norm_rowPairing_sub_pairing_le    
+      (hx : 1 ≤ x)  A₀ Y d₀  :
     ‖rowPairing q A₀ x d Y d₀ - pairing q A₀ x d Y d₀‖ ≤
       stateMass x d * Real.log x ^ (4 * C) * badMass q A₀ x d Y d₀ := by
   classical
@@ -172,12 +178,14 @@ theorem norm_rowPairing_sub_pairing_le {q C CX alo ahi g x : ℝ} {d : Data K}
     _ = _ := by ring
 
 /-- The bad mass is at most `C₀ UV L^{3A₀} exp(-L^{α₋}/8)`, where `UV = d₀ Y X`. -/
-theorem eventually_badMass_le {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hg : 0 < g) (A₀ : ℝ) :
+theorem eventually_badMass_le   (hq : 0 < q) (hq₁ : q < 1)
+    (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hg : 0 < g)  A₀  :
     ∃ C₀ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       stateMass x d * badMass q A₀ x d (2 ^ j) (2 ^ k) ≤
         C₀ * (2 ^ k * 2 ^ j * d.X) * Real.log x ^ (3 * A₀) *
           Real.exp (-Real.log x ^ alo / 8) :=
   eventually_stateMass_mul_sum_le hq hq₁ hCX halo hahi hg A₀
+
+end
 
 end Erdos408.OneSided

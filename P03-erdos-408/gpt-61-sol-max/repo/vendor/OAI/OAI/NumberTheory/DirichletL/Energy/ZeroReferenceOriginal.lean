@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -19,16 +19,16 @@ open CenteredMomentEnergyReferenceChild CenteredMomentEnergyZeroReferenceDeleted
 open CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy
-local notation "O"=>HeckeFamily.O
+
 
 theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
     (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
-    (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi)
-    (hBmask:0≤Bmask)(hL:Mcap+Bmask+xi≤L)(B:ℕ)(hB:2≤B)(S:Finset (ℕ×ℕ)):
+     ha (hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi)
+    (hBmask:0≤Bmask)(hL:Mcap+Bmask+xi≤L)(B:ℕ)(hB:2≤B) S :
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃Dchild:ℝ,0<Dchild ∧
     ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D Cweight:ℝ,0<C ∧ 0<D ∧ 0<Cweight ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(ε:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K →
+      ∀(ε:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S K →
       ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q →s.width≤Mcap →xi≤s.width/6 →
       ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁ →0<X₂ →s.width/4≤Real.logb Z (X₁*X₂) →
@@ -76,6 +76,6 @@ theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
 
 end SevenEighths.CenteredMomentEnergyZeroReferenceOriginal
 
-end
+
 
 end OAI

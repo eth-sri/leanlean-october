@@ -21,19 +21,19 @@ variable {ι : Type*} [DecidableEq ι]
 
 def reopenedPhysicalSourceSum (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (source : CubeCoordinates ι→Finset ι→Ideal O→ℂ) : ℂ :=
+    (source : CubeCoordinates ι→Finset ι→Ideal O→ℂ)  :=
   ∑ b∈reopenedCubeFamily Q,∑ C∈(pool\b.support).powerset,∑ I∈labels,
     reopenedPairCoefficient β b C I*source b C I
 
 def reopenedPhysicalCutoff (b : CubeCoordinates ι) (I : Ideal O)
-    (R : Finset ι→ℝ) (D : Finset ι) : Finset O :=
+    (R : Finset ι→ℝ) (D : Finset ι)  :=
   childFrequencyBall (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent
     b.leftBit b.rightBit I) (R D)
 
 def reopenedPhysicalRetained (pool : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
     (Ψ : O→*ℂ) (m : O) (I : Ideal O)
     (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (K : ℝ) (R : Finset ι→ℝ) : ℂ :=
+    (K : ℝ) (R : Finset ι→ℝ)  :=
   canonicalCubeOuter p hp hcop hg b C Ψ Ψ m m (idealGenerator I)*
     ∑ D∈(C∪cubePrincipalSupport b.support b.leftExponent b.rightExponent b.leftBit b.rightBit).powerset,
       (UniqueFactorizationMonoid.moebius (∏ i∈D,Ideal.span {p i}):ℂ)*
@@ -75,8 +75,7 @@ theorem original_reopened_physical_split
     intro C hC
     apply Finset.sum_congr rfl
     intro I hI
-    have hCb : Disjoint C b.support := by
-      exact Finset.disjoint_left.mpr (fun i hi hib=>
+    have hCb : Disjoint C b.support := Finset.disjoint_left.mpr (fun i hi hib=>
         (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hC) hi)).2 hib)
     have he := canonical_first_physical_split p hp hcop hg hinj hc hpr pool b
       (reopenedCubeFamily_admissible Q b hb) C hCb Ψ Ψ m m I (hlabels I hI)

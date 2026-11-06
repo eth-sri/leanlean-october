@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.State
 
@@ -6,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Energy.State
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyState
 open HeckeFamily CenteredMomentNaturalMaskedFloor
 open CenteredMomentFiniteProfileExceptional QuadraticInitialBound
 
-theorem exists_zero_floor (a b bΦ Bmask ε:ℝ)(ha:0<a)(hb:0≤b)
+theorem exists_zero_floor  a b bΦ Bmask ε (ha:0<a)(hb:0≤b)
     (hbΦ:0<bΦ)(hmask:0≤Bmask)(hε:0<ε):
     ∃degree:ℕ,∃S:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀Q:Ideal HeckeFamily.O,ZeroBound Q a b bΦ Bmask (ε/16) ε degree S C 1:=by
@@ -46,7 +47,7 @@ theorem exists_zero_floor (a b bΦ Bmask ε:ℝ)(ha:0<a)(hb:0≤b)
   change CenteredMomentCoreFloor.zeroEnergy _ _ _ _ _ _ _ _ _≤_
   apply hh.trans
   have hd:=diagonalControl_nonneg s.radial.profile
-  have hc:=p.control_nonneg S
+  
   change C*(s.puncture.radical.absNorm:ℝ)^e*bΦ^4*diagonalControl s.radial.profile*
     (p.control S)^2*(1+‖t‖)^degree*Z^(s.width+4*(ε/16))≤_
   calc
@@ -58,6 +59,6 @@ theorem exists_zero_floor (a b bΦ Bmask ε:ℝ)(ha:0<a)(hb:0≤b)
 
 end SevenEighths.CenteredMomentEnergyState
 
-end
+
 
 end OAI

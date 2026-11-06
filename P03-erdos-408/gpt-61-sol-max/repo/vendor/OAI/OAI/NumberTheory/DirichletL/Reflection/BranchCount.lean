@@ -10,7 +10,7 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open CompletedGauss
-noncomputable section
+
 variable {φ : Type*} [Fintype φ]
 
 lemma primeFamily_support_card (F : PrimeFamily φ)
@@ -21,7 +21,11 @@ lemma primeFamily_support_card (F : PrimeFamily φ)
   have hh := InverseMoment.finite_primeSupport_card F.generator hc Finset.univ
   simpa only [PrimeFamily.product_span,Finset.card_univ] using hh
 
-theorem branch_count_small_power (ε : ℝ) (hε : 0<ε) :
+section
+variable (ε : ℝ) (hε : 0<ε)
+include ε hε
+
+theorem branch_count_small_power     :
     ∃ C : ℝ, 0<C ∧ ∀ {ι : Type*} [Fintype ι] (F : PrimeFamily ι),
       Pairwise (Function.onFun IsCoprime F.ideal) →
       (Fintype.card (ι→Fin 3):ℝ)^2≤C*(Ideal.absNorm (∏ i,F.ideal i):ℝ)^ε := by
@@ -47,7 +51,7 @@ theorem branch_count_small_power (ε : ℝ) (hε : 0<ε) :
       congr 2
       norm_num
 
-theorem surviving_branch_count_small_power (ε : ℝ) (hε : 0<ε) :
+theorem surviving_branch_count_small_power     :
     ∃ C : ℝ, 0<C ∧ ∀ {ι : Type*} [Fintype ι] (F : PrimeFamily ι),
       Pairwise (Function.onFun IsCoprime F.ideal) →
       ∀ (jF : ι→ℕ) (A : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ)
@@ -62,6 +66,8 @@ theorem surviving_branch_count_small_power (ε : ℝ) (hε : 0<ε) :
   exact (pow_le_pow_left₀ (Nat.cast_nonneg _) hcard 2).trans (hb F hF)
 
 end
+
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

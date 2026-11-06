@@ -24,18 +24,18 @@ open CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource CenteredMo
 open CenteredMomentSourceMass CenteredMomentCanonicalFirst CenteredMomentFirstSectors
 open CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentLogDyadic
 open CenteredMomentExceptionalAmplitudePair CenteredMomentRankinRadical
-local notation "O"=>ActualEisensteinCubic.O
+
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-abbrev SourceBlocks (s:Input ι)(R seed:Ideal O)(K Z ξ:ℝ)(p:Labels s R seed)
-    (E:Finset (CommonIndex p.val.1 p.val.2)):=
+abbrev SourceBlocks (s:Input ι)(R seed)(K Z ξ)(p:Labels s R seed)
+    (E):=
   Blocks (effectiveScale p.val.1 p.val.2 E K) (localRadius s R seed K Z ξ p E)
     (sourceRadius s/p.val.1.absNorm) (sourceRadius s/p.val.2.absNorm)
 
-def originalBlock (s:Input ι)(R seed:Ideal O)(W:𝓢(ℝ,ℂ))(K Z ξ:ℝ)
-    (p:Labels s R seed)(E:Finset (CommonIndex p.val.1 p.val.2))
-    (n:SourceBlocks s R seed K Z ξ p E):ℂ:=
+def originalBlock (s:Input ι)(R seed)(W:𝓢(ℝ,ℂ))(K Z ξ)
+    (p:Labels s R seed)(E)
+    (n:SourceBlocks s R seed K Z ξ p E):=
   block s.η (CenteredMomentSecondHeightFamily.fixedBadMask*idealGenerator R) 1 s.t
     (finiteColumns (Fintype.piFinset s.pools)) (CenteredMomentOriginalCommonHarmonic.coefficient s R seed)
     p.val.1 p.val.2
@@ -46,17 +46,17 @@ def originalBlock (s:Input ι)(R seed:Ideal O)(W:𝓢(ℝ,ℂ))(K Z ξ:ℝ)
     (retainedRows (localRadius s R seed K Z ξ p E) 1) W (fun _=>logAnnulus)
     K (dyadicScale (n 0)) (dyadicScale (n 1)) (dyadicScale (n 2)) (dyadicScale (n 3))
 
-def radicalWeight (s:Input ι)(R seed:Ideal O)(p:Labels s R seed)
-    (E:Finset (CommonIndex p.val.1 p.val.2)):ℝ:=
+def radicalWeight (s:Input ι)(R seed)(p:Labels s R seed)
+    (E:Finset (CommonIndex p.val.1 p.val.2)):=
   CenteredMomentFirstInactiveRadicalMass.inactiveWeight p.val.1 p.val.2 E 0/
     ((commonRadical p.val.1 p.val.2).absNorm:ℝ)
 
 omit [DecidableEq ι] in
-lemma radicalWeight_nonneg (s:Input ι)(R seed:Ideal O)(p:Labels s R seed)
-    (E:Finset (CommonIndex p.val.1 p.val.2)):0≤radicalWeight s R seed p E:=
+lemma radicalWeight_nonneg (s:Input ι) R seed  p 
+     E :0≤radicalWeight s R seed p E:=
   div_nonneg (inactiveWeight_nonneg _ _ _ _) (Nat.cast_nonneg _)
 
-lemma physicalMass_eq_sum (s:Input ι)(R seed:Ideal O)(W:𝓢(ℝ,ℂ))(K Z ξ:ℝ):
+lemma physicalMass_eq_sum (s:Input ι)(R seed:Ideal ActualEisensteinCubic.O)(W:𝓢(ℝ,ℂ))(K Z ξ:ℝ):
     physicalMass s R seed (CenteredMomentSecondHeightFamily.fixedBadMask*idealGenerator R) 1 W K Z ξ=
       ∑p:Labels s R seed,∑E∈inactiveSubsets p.val.1 p.val.2,
         ∑n:SourceBlocks s R seed K Z ξ p E,‖originalBlock s R seed W K Z ξ p E n‖:=by
@@ -65,7 +65,7 @@ lemma physicalMass_eq_sum (s:Input ι)(R seed:Ideal O)(W:𝓢(ℝ,ℂ))(K Z ξ:�
 
 theorem original_block_sum (hi:ι→ℝ)(b₁ b₂ B ξ ε:ℝ)
     (hB:0≤B)(hξ:0≤ξ)(hε:0<ε):
-    ∃C₀:ℝ,0<C₀ ∧ ∀ᶠZ:ℝ in atTop,∀s:Input ι,∀R seed:Ideal O,
+    ∃C₀:ℝ,0<C₀ ∧ ∀ᶠZ:ℝ in atTop,∀s:Input ι,∀R seed:Ideal ActualEisensteinCubic.O,
       Squarefree seed→seed≠0→s.W₁ 0=0→s.W₂ 0=0→
       (∀i,|s.hi i|≤hi i)→|s.b₁|≤b₁→|s.b₂|≤b₂→0<sourceRadius s→
     ∀W:𝓢(ℝ,ℂ),∀K A:ℝ,0<K→0≤A→volume s.toData≤Z^B→K⁻¹≤Z^B→
@@ -108,7 +108,7 @@ theorem original_block_sum (hi:ι→ℝ)(b₁ b₂ B ξ ε:ℝ)
     _≤∑p:Labels s R seed,∑E∈inactiveSubsets p.val.1 p.val.2,
         (Cd*Z^(ε/2)*A)*radicalWeight s R seed p E:=by
       apply Finset.sum_le_sum;intro p _
-      exact Finset.sum_le_sum (fun E hE=>hsector p E hE)
+      exact Finset.sum_le_sum (hsector p)
     _=(Cd*Z^(ε/2)*A)*(∑p:Labels s R seed,∑E∈inactiveSubsets p.val.1 p.val.2,
         radicalWeight s R seed p E):=by simp_rw [←Finset.mul_sum]
     _≤(Cd*Z^(ε/2)*A)*(Cm*Z^(ε/2)/(seed.absNorm:ℝ)):=

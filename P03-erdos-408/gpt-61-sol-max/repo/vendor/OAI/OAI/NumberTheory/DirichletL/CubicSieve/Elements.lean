@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.Extraction
 
@@ -10,14 +11,14 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-def elementCharacter (I : Ideal O) (hI : primaryGenerator I ≠ 0) : O →* ℂ where
+
+def elementCharacter (I : Ideal ActualEisensteinCubic.O) (hI : primaryGenerator I ≠ 0) : ActualEisensteinCubic.O →* ℂ where
   toFun x := eisEmbedding (CubicJacobiGlobal.idealSymbol I x)
   map_one' := by rw [CubicJacobiGlobal.idealSymbol_map_one I hI, map_one]
   map_mul' x y := by rw [CubicJacobiGlobal.idealSymbol_map_mul I hI, map_mul]
 
-theorem elementCharacter_norm_le_one (I : Ideal O) (hI : primaryGenerator I ≠ 0) (x : O) :
+theorem elementCharacter_norm_le_one  I   hI   x  :
     ‖elementCharacter I hI x‖ ≤ 1 := by
   change ‖eisEmbedding (CubicJacobiGlobal.idealSymbol I x)‖ ≤ 1
   rw [← CanonicalRowCompletion.idealRowHom_square, norm_pow]
@@ -27,8 +28,8 @@ theorem elementCharacter_norm_le_one (I : Ideal O) (hI : primaryGenerator I ≠ 
 theorem element_block_energy_le {a b c n : Type*}
     [Fintype a] [Fintype b] [Fintype c] [Fintype n]
     [DecidableEq a] [DecidableEq b] [DecidableEq n]
-    (A : a → Ideal O) (B : b → Ideal O) (D : c → O)
-    (cols : n → Ideal O) (hc : ∀ j, primaryGenerator (cols j) ≠ 0) (coef : n → ℂ) :
+    (A : a → Ideal ActualEisensteinCubic.O) (B : b → Ideal ActualEisensteinCubic.O) (D : c → ActualEisensteinCubic.O)
+    (cols : n → Ideal ActualEisensteinCubic.O) (hc : ∀ j, primaryGenerator (cols j) ≠ 0) (coef : n → ℂ) :
     (∑ l, ∑ k, ∑ i, ‖∑ j, coef j * elementCharacter (cols j) (hc j)
       (primaryGenerator (A i) * primaryGenerator (B k) ^ 2 * D l)‖ ^ 2) ≤
       (Fintype.card c : ℝ) *
@@ -53,25 +54,25 @@ theorem element_block_energy_le {a b c n : Type*}
   · exact fun k j => idealKernel_norm_le_one _ _
   · exact fun l j => elementCharacter_norm_le_one _ _ _
 
-def goodPart (I : Ideal O) : Ideal O := CanonicalQuadraticSieve.goodSquarefreePart I
+def goodPart (I : Ideal ActualEisensteinCubic.O)  := CanonicalQuadraticSieve.goodSquarefreePart I
 
-def badPart (I : Ideal O) : Ideal O :=
+def badPart (I : Ideal ActualEisensteinCubic.O)  :=
   ∏ P ∈ CanonicalQuadraticSieve.badPrimeSupport I, P
 
-theorem goodPart_admissible (I : Ideal O) : Admissible (goodPart I) := by
+theorem goodPart_admissible  I  : Admissible (goodPart I) := by
   have h := CanonicalQuadraticSieve.goodSquarefreePart_admissible I
   exact ⟨h.2.1, CanonicalQuadraticSieve.primaryGenerator_admissible _ h⟩
 
-theorem badPart_mul_goodPart (I : Ideal O) (hI : Squarefree I) :
+theorem badPart_mul_goodPart  I  (hI : Squarefree I) :
     badPart I * goodPart I = I := CanonicalQuadraticSieve.squarefree_bad_good_product I hI
 
-def extractedGenerator (I : Ideal O) : O :=
+def extractedGenerator (I : Ideal ActualEisensteinCubic.O)  :=
   primaryGenerator (goodPart (firstPart I)) *
     primaryGenerator (goodPart (secondPart I)) ^ 2 *
     idealGenerator (cubePart I) ^ 3 *
     (idealGenerator (badPart (firstPart I)) * idealGenerator (badPart (secondPart I)) ^ 2)
 
-theorem span_extractedGenerator (I : Ideal O) (hI : I ≠ 0) :
+theorem span_extractedGenerator  I  (hI : I ≠ 0) :
     Ideal.span {extractedGenerator I} = I := by
   change CanonicalRowCompletion.principalIdealHom (extractedGenerator I) = I
   unfold extractedGenerator
@@ -87,24 +88,22 @@ theorem span_extractedGenerator (I : Ideal O) (hI : I ≠ 0) :
   calc
     _ = (badPart (firstPart I) * goodPart (firstPart I)) *
         (badPart (secondPart I) * goodPart (secondPart I)) ^ 2 * cubePart I ^ 3 := by
-      rw [mul_pow]
-      simp only [mul_assoc, mul_left_comm, mul_comm]
+      ring
     _ = firstPart I * secondPart I ^ 2 * cubePart I ^ 3 := by
       rw [badPart_mul_goodPart _ (firstPart_squarefree I),
         badPart_mul_goodPart _ (secondPart_squarefree I)]
     _ = I := (cubic_factorization I hI).symm
 
-theorem element_cubic_extraction (z : O) (hz : z ≠ 0) :
-    ∃ u : Oˣ, z = u.val * extractedGenerator (Ideal.span {z}) := by
-  have hI : (Ideal.span {z} : Ideal O) ≠ 0 := Ideal.span_singleton_eq_bot.not.mpr hz
+theorem element_cubic_extraction  z  (hz : z ≠ 0) :
+    ∃ u : ActualEisensteinCubic.Oˣ, z = u.val * extractedGenerator (Ideal.span {z}) := by
+  have hI : (Ideal.span {z} : Ideal ActualEisensteinCubic.O) ≠ 0 := Ideal.span_singleton_eq_bot.not.mpr hz
   have ha : Associated (extractedGenerator (Ideal.span {z})) z :=
     Ideal.span_singleton_eq_span_singleton.mp (span_extractedGenerator _ hI)
   obtain ⟨u, hu⟩ := ha
   exact ⟨u, by simpa only [mul_comm] using hu.symm⟩
 
-theorem badPart_sector (I : Ideal O) :
-    ∃ E : CanonicalQuadraticSieve.fixedBadPrimes.powerset, badPart I = ∏ P ∈ E.val, P := by
-  exact ⟨⟨CanonicalQuadraticSieve.badPrimeSupport I,
+theorem badPart_sector  I  :
+    ∃ E : CanonicalQuadraticSieve.fixedBadPrimes.powerset, badPart I = ∏ P ∈ E.val, P := ⟨⟨CanonicalQuadraticSieve.badPrimeSupport I,
     Finset.mem_powerset.mpr (CanonicalQuadraticSieve.badPrimeSupport_subset I)⟩, rfl⟩
 
 end

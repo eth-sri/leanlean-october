@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.Ideal
 public import OAI.NumberTheory.DirichletL.CubicSieve.Initial
@@ -10,10 +11,10 @@ namespace OAI
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-theorem primaryGenerator_inj_on_cubic_admissible {I J : Ideal O}
+
+
+theorem primaryGenerator_inj_on_cubic_admissible {I J : Ideal ActualEisensteinCubic.O}
     (hI : Admissible I) (hJ : Admissible J)
     (heq : primaryGenerator I = primaryGenerator J) : I = J := by
   calc
@@ -22,9 +23,9 @@ theorem primaryGenerator_inj_on_cubic_admissible {I J : Ideal O}
     _ = J := (primaryGenerator_spec J hJ.2).1
 
 theorem idealSymbol_eq_idealSexticRow_sq
-    (F : Finset (Ideal O)) (hFp : ∀ I ∈ F, I ≠ ⊥)
+     F   hFp 
     (hFg : ∀ I ∈ F, ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P)
-    (I : Ideal O) (hI : I ∈ F) (hsq : Squarefree I) (z : O) :
+     I  (hI : I ∈ F) (hsq : Squarefree I)  z  :
     eisEmbedding (CubicJacobiGlobal.idealSymbol I z) =
       (idealSexticRow F hFp hFg I z) ^ 2 := by
   rw [← CanonicalRowCompletion.idealRowHom_square]
@@ -36,7 +37,7 @@ theorem idealSymbol_eq_idealSexticRow_sq
   intro i hi
   exact CanonicalRowCompletion.idealRowHom_prime z i.val (primePool_good F hFg i)
 
-theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
+theorem sieveNorm_initial  M N  (hM : 1 ≤ M) (hN : 1 ≤ N) :
     sieveNorm M N ≤ QuadraticInitialBound.initialSieveConstant * (M + (⌈N⌉₊ : ℝ) ^ 2) := by
   let F := idealRange N
   let R := (idealRange M).image primaryGenerator
@@ -61,8 +62,8 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
   · have hc := (QuadraticInitialBound.initialSieveConstant_pos).le
     positivity
   intro a
-  let aext (I : Ideal O) : ℂ := if h : I ∈ F then a ⟨I, h⟩ else 0
-  have hinner (z : O) :
+  let aext (I : Ideal ActualEisensteinCubic.O) : ℂ := if h : I ∈ F then a ⟨I, h⟩ else 0
+  have hinner (z : ActualEisensteinCubic.O) :
       (∑ I ∈ F, aext I * (idealSexticRow F hFp hFg I z) ^ 2) =
         ∑ J : F, eisEmbedding (CubicJacobiGlobal.idealSymbol J.val z) * a J := by
     rw [← Finset.sum_coe_sort]
@@ -70,9 +71,7 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     intro J _
     rw [idealSymbol_eq_idealSexticRow_sq F hFp hFg J.val J.property (hF J.val J.property).1 z]
     simp only [aext, dite_eq_left J.property]
-    change a J * (idealSexticRow F hFp hFg J.val z) ^ 2 =
-      (idealSexticRow F hFp hFg J.val z) ^ 2 * a J
-    exact mul_comm _ _
+    ring
   have he := ideal_initial_cubic_sieve F hFp hFg
     (fun I hI => (hF I hI).1) ⌈N⌉₊ hnat hnorm aext M hM R hR
   have heR : (∑ z ∈ R, ‖∑ I ∈ F, aext I * (idealSexticRow F hFp hFg I z) ^ 2‖ ^ 2) =
@@ -90,7 +89,7 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
   rw [heR, hea] at he
   exact he
 
-end
+
 end SevenEighths.CubicSieve
 
 end OAI

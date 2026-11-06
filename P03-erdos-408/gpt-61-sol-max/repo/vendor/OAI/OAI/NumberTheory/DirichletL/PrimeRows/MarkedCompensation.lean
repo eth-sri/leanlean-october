@@ -11,14 +11,14 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+
 
 def compensatedLocalCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (x w z B q : ℂ) : ℂ :=
+    (x w z B q : ℂ)  :=
   B*markedLocalCorrection η u P x w z-q*localCorrection η u P x w z
 
-theorem compensatedLocalCorrection_eq_raw (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (x w z B q : ℂ) :
+theorem compensatedLocalCorrection_eq_raw  η   u   P 
+     x w z B q  :
     compensatedLocalCorrection η u P x w z B q=
       (B*idealRowMarkedLocalFactor η u.val P x w z-q*idealRowHighLocalFactor η u.val P.val x w z)*
         localNormalization η u P x w z := by
@@ -26,10 +26,10 @@ theorem compensatedLocalCorrection_eq_raw (η : Character) (u : FreeRow) (P : Pr
   ring
 
 theorem spectralCompensatedRow_original_L_factorization
-    (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+     S   hS 
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow)
-    (x w z : ℂ) (B q : PrimeIdeal→ℂ)
+     T  (hT : ∀P∈T,P.val∉S)  η   u 
+     x w z   B q 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     spectralCompensatedRow S T η u.val x w z B q=
       (LFunction (fixedSourcePrincipal S hS) (6*z)*LFunction (rowCharacter S hS u) w/

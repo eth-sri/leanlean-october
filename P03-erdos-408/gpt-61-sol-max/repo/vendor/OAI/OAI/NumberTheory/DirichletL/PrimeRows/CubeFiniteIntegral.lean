@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFiniteError
 
@@ -11,27 +12,32 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+
 variable {ι : Type*} [Fintype ι]
 
-def cubeWeightedRow {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+def cubeWeightedRow {K } (S ) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z a e H : ℝ) : HeightSpace→ℂ :=
   {t : HeightSpace | (|t.1.1|≤H ∧ |t.2|≤H) ∧ |t.1.2|≤H}.indicator
     (weightedRowOnLines S hS hmax P hPS η u W Yp W0 W1 X Y Z (a+16*e) (1-a-6*e) (17/50))
 
-theorem cubeWeightedRow_integrable {K : ℕ}
-    (e a B H : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000)
-    (ha : (51/100:ℝ)≤a) (haTop : a≤1) (hB : 2<B) (hH : H≤(3*i+2:ℕ)*B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀j,(P j).val∉S)
-    (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
+section
+variable {K : ℕ} (e a B H : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000) (ha : (51/100:ℝ)≤a) (haTop : a≤1) (hB : 2<B) (hH : H≤(3*i+2:ℕ)*B) (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀j,(P j).val∉S) (η : Character)
+
+
+include he he' ha haTop hB hH hfirst in
+theorem cubeWeightedRow_integrable  
+           
+           
+         
+         
+      (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
     (hbin : detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+     X Y Z  (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     Integrable (cubeWeightedRow S hS hmax P hPS η u W Yp W0 W1 X Y Z a e H) heightMeasure := by
   have hi := continuedPhysicalRowKernel_buffered_integrable e a B H i he he' ha haTop hB hH
     S hS hmax hfirst P hPS η u hu ψ hbin W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
@@ -49,10 +55,10 @@ theorem cubeWeightedRow_integrable {K : ℕ}
   rw [heq]
   exact (hi.mono_set (fun t ht=>ht.1.1)).const_mul _
 
-lemma cubeWeightedRow_integral {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀j,(P j).val∉S) (η : Character) (u : FreeRow)
-    (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z a e H : ℝ) :
+lemma cubeWeightedRow_integral  
+         
+           u 
+    (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)  W0 W1   X Y Z a e H  :
     ((1/(2*Real.pi):ℝ):ℂ)^3*(∫t,cubeWeightedRow S hS hmax P hPS η u W Yp W0 W1 X Y Z a e H t ∂heightMeasure)=
       (∏j,W j (((P j).val.absNorm:ℝ)/Yp j))*centralCubeIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H := by
   have hE : MeasurableSet {t : HeightSpace | (|t.1.1|≤H ∧ |t.2|≤H) ∧ |t.1.2|≤H} :=
@@ -66,10 +72,11 @@ lemma cubeWeightedRow_integral {K : ℕ}
   unfold centralCubeIntegral
   ring
 
-theorem finiteCentralCubeRows_eq_integral {K : ℕ}
-    (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (hfirst : FirstTail (4*e) S) (η : Character) (R : Finset FreeRow) (hR : ∀u∈R,u.val≠1)
+include he he' hmax hfirst in
+theorem finiteCentralCubeRows_eq_integral  
+         
+         
+        (R : Finset FreeRow) (hR : ∀u∈R,u.val≠1)
     (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i → P.val∉S)
     (a B H : FreeRow→ℝ) (idx : FreeRow→ℕ) (ψ : FreeRow→ι→Character)
     (hbin : ∀u∈R,(51/100:ℝ)≤a u ∧ a u≤1 ∧ 2<B u ∧ H u≤(3*idx u+2:ℕ)*B u ∧
@@ -77,7 +84,7 @@ theorem finiteCentralCubeRows_eq_integral {K : ℕ}
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+     X Y Z  (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     let F := fun t : HeightSpace=>∑u∈R,∑P:(∀i,T i),
       cubeWeightedRow S hS hmax (fun i=>(P i).val) (fun i=>hT i _ (P i).property)
         η u W Yp W0 W1 X Y Z (a u) e (H u) t
@@ -104,16 +111,14 @@ theorem finiteCentralCubeRows_eq_integral {K : ℕ}
   intro P hP
   exact (cubeWeightedRow_integral S hS hmax _ _ η u W Yp W0 W1 X Y Z (a u) e (H u)).symm
 
-lemma cube_buffered_heights (t : HeightSpace) (H B : ℝ) (i : ℕ)
+end
+
+lemma cube_buffered_heights (t : HeightSpace) (H B : ℝ)  i 
     (ht : (|t.1.1|≤H ∧ |t.2|≤H) ∧ |t.1.2|≤H) (hB : 0≤B)
     (hbuffer : H+B/2≤(3*i+2:ℕ)*B) :
     |t.1.1|≤(3*i+2:ℕ)*B ∧ |t.2|≤(3*i+2:ℕ)*B ∧
       |t.1.2|+B/2≤(3*i+2:ℕ)*B := by
-  constructor
-  · linarith [ht.1.1]
-  constructor
-  · linarith [ht.1.2]
-  · linarith [ht.2]
+  grind
 
 end SevenEighths.ProbeHighRowFamily
 

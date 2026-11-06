@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.Constant.Bounds
 public import Erdos408.TwoSided.Endpoint.Constant.Growth
@@ -90,18 +91,18 @@ theorem integral_constCoeff_side_le {q q₀ c₀ C₀ vlo vhi alo ahi : ℝ} {K�
       Real.log x ^ CW)
     {ψ₁ : ℝ → ℂ} (hψ : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ₁)
     (hψs : ∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) (hψd : ∀ (j : ℕ) (y : ℝ), ‖iteratedDeriv j ψ₁ y‖ ≤ M₁ j)
-    {Y σ : ℝ} {k : ℕ} {h : ℤ} (hY₁ : x * Real.exp (Real.log x ^ (0.38 : ℝ)) ≤ Y)
+    {Y σ : ℝ} {k : ℕ}  {h}  (hY₁ : x * Real.exp (Real.log x ^ (0.38 : ℝ)) ≤ Y)
     (hY₂ : Y ≤ x * Real.exp (Real.log x ^ (0.47 : ℝ))) (hσ : |σ| ≤ Real.log x ^ Cm)
     (hk₁ : 1 ≤ k) (hk₂ : (k : ℝ) ≤ Real.log x ^ Cm) {A : ℕ → ℂ}
     (hA : DivisorModel x q q₀ a P (Function.update (unsharedSlots C) gs ∅) b C₈ CNN N A)
-    {t₁ t₂ : ℝ} (h12 : t₁ ≤ t₂)
+     {t₁ t₂}  (h12 : t₁ ≤ t₂)
     (hint : ∀ t ∈ Set.Icc t₁ t₂, Real.log x ^ B' ≤ |t| ∧ |t| ≤ x * Real.log x ^ (Cm + 2))
     (hlen : t₂ - t₁ ≤ x * Real.log x ^ (Cm + 2)) :
     ∫ t in t₁..t₂, ‖twistedPoly Y (constCoeff x q q₀ a u v Bc P C b gs ψ₁ Y σ) h k t‖ ^ 2 ≤
       256 * (8 * M₁ 0 ^ 2 * (195 + 18 * (2304 + 629 + 65 * CNN)) +
         2 * (3888 * 258 * M₁ 1 ^ 2)) * Real.log x ^ (-A₀) := by
   obtain ⟨hx2, hL4, hxC, hxD, h38, h47, h27, h4D, -⟩ := hsc
-  have hx0 : 0 < x := by linarith
+  
   have hL0 : 0 < Real.log x := by linarith
   have hL1 : 1 ≤ Real.log x := by linarith
   have hcc : constCoeff x q q₀ a u v Bc P C b gs ψ₁ Y σ = fun w : ℕ =>
@@ -221,8 +222,8 @@ theorem exists_integral_const_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
   have hC8 := le_abs_self C₈
   have hCm := le_abs_self Cm
   have hA0 := le_abs_self A₀
-  have hD0 : 0 ≤ D := by positivity
-  have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d
+  
+  
   have hD1 : 1 ≤ D := by linarith [abs_nonneg A₀, abs_nonneg CW]
   have hNZ : |Z| + 1 ≤ N := Nat.le_ceil _
   have eA : -(2 * As) + 3 - D + 2 * CW ≤ -(A₀ + 4 + 4 * D + 2 * ((d : ℝ) + 3) + 2 * Cm) := by

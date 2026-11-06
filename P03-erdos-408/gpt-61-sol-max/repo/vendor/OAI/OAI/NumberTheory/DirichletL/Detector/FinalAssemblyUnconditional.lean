@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainSlotProfile
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 
 namespace SevenEighths.ProbeFinalAssemblyUnconditional
@@ -38,7 +38,7 @@ theorem detector_certified_bands:DetectorCertifiedBands:=by
   · unfold kappaPlain
     linarith
 
-theorem dirichlet_nonzero (q:ℕ)(hq:q≠0)(χ:DirichletCharacter ℂ q)(s:ℂ)
+theorem dirichlet_nonzero (q:ℕ)(hq:q≠0)(χ:DirichletCharacter ℂ q) s 
     (hs:(7/8:ℝ)<s.re)(hexc:¬(χ=1 ∧ s=1)):
     letI:NeZero q:=⟨hq⟩
     DirichletCharacter.LFunction χ s≠0:=
@@ -46,6 +46,6 @@ theorem dirichlet_nonzero (q:ℕ)(hq:q≠0)(χ:DirichletCharacter ℂ q)(s:ℂ)
 
 end SevenEighths.ProbeFinalAssemblyUnconditional
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.PrimeLifespans
 public import Mathlib.Data.Fintype.BigOperators
@@ -21,7 +22,7 @@ def suffixChoice {n : ℕ} (z : Fin n) (f : Fin n → ℝ) : Option (Fin n) → 
   | none => 1
   | some j => if z < j then -f j * ∏ i ∈ Finset.univ.filter (fun i => z < i ∧ i < j), (1 - f i) else 0
 
-theorem prefixChoice_sum {n : ℕ} (a : Fin n) (f : Fin n → ℝ) :
+theorem prefixChoice_sum  {n}   a   f  :
     (∑ b : Option (Fin n), prefixChoice a f b) =
       1 - ∑ j ∈ Finset.univ.filter (fun j => j < a),
         f j * ∏ i ∈ Finset.univ.filter (fun i => j < i ∧ i < a), (1 - f i) := by
@@ -31,7 +32,7 @@ theorem prefixChoice_sum {n : ℕ} (a : Fin n) (f : Fin n → ℝ) :
   simp only [neg_mul, Finset.sum_neg_distrib]
   ring
 
-theorem suffixChoice_sum {n : ℕ} (z : Fin n) (f : Fin n → ℝ) :
+theorem suffixChoice_sum  {n}   z   f  :
     (∑ e : Option (Fin n), suffixChoice z f e) =
       1 - ∑ j ∈ Finset.univ.filter (fun j => z < j),
         f j * ∏ i ∈ Finset.univ.filter (fun i => z < i ∧ i < j), (1 - f i) := by
@@ -44,7 +45,7 @@ theorem suffixChoice_sum {n : ℕ} (z : Fin n) (f : Fin n → ℝ) :
 /-- `none` means the corresponding endpoint is the first/last active visit.
 A selected earlier/later ghost endpoint supplies its own negative eta factor. -/
 def activeSpanTerm (p n : ℕ) [NeZero p] (eta : Fin n → ℝ) (h : Fin n → ZMod p)
-    (active : Finset (Fin n)) (a z : Fin n) (birth stop : Option (Fin n)) : ℝ :=
+    (active : Finset (Fin n)) (a z : Fin n) (birth stop : Option (Fin n))  :=
   let f i := eta i * if h i = h a then 1 else 0
   if ∀ i ∈ active, h i = h a then
     (p : ℝ)⁻¹ * prefixChoice a f birth *
@@ -53,8 +54,8 @@ def activeSpanTerm (p n : ℕ) [NeZero p] (eta : Fin n → ℝ) (h : Fin n → Z
   else 0
 
 /-- One reciprocal-prime charge covers every active use and every later hit. -/
-theorem active_span_sum (p n : ℕ) [NeZero p] (eta : Fin n → ℝ) (h : Fin n → ZMod p)
-    (active : Finset (Fin n)) (a z : Fin n) (ha : a ∈ active) (hz : z ∈ active)
+theorem active_span_sum  p n  [NeZero p]  eta   h 
+     active   a z  (ha : a ∈ active) (hz : z ∈ active)
     (hfirst : ∀ i ∈ active, a ≤ i) (hlast : ∀ i ∈ active, i ≤ z) :
     (∑ birth : Option (Fin n), ∑ stop : Option (Fin n), activeSpanTerm p n eta h active a z birth stop) =
       onePrimeExpectation p n eta h active := by
@@ -75,7 +76,7 @@ theorem active_span_sum (p n : ℕ) [NeZero p] (eta : Fin n → ℝ) (h : Fin n 
       (p : ℝ)⁻¹ * prefixChoice a f birth * mid * suffixChoice z f stop) =
         (p : ℝ)⁻¹ * ∏ i ∈ Finset.univ.filter (fun i => i ∉ active), (1 - f i)
     rw [hs, prefixChoice_sum, suffixChoice_sum]
-    simpa only [mid, mul_assoc] using congrArg (fun v => (p : ℝ)⁻¹ * v) he.symm
+    grind
   · simp only [activeSpanTerm, ite_eq_right hc, Finset.sum_const_zero, mul_zero]
 
 

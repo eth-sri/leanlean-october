@@ -6,34 +6,34 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialCanonicalStateSource
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalState
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
 open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
 open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
-local notation "O"=>ActualEisensteinCubic.O
-local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
-variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
+
+
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 
 theorem actual_window_state
-    (hpr:∀i,λ₀^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
+    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
     (ψ:Fin 4→ℝ→ℂ)(lo hi:Fin 4→ℝ)
     (hψ:∀i,Function.support (ψ i)⊆Set.Icc (lo i) (hi i))
     (Z D B v θ H η:ℝ)(hZ:1<Z)(hη:0≤η)
     (hhi:∀i,hi i≤Z^η)(hdlo:Z^(-η)≤lo 1)
     (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
     {σ:Type*}[DecidableEq σ](all assigned:Finset σ)(hassigned:assigned⊆all)
-    (q:σ→O)(z a b:σ→ℝ)(W:σ→ℝ→ℂ)
+     q (z a b:σ→ℝ)(W:σ→ℝ→ℂ)
     (hz:∀i∈all,0≤z i)(hq:∀i∈assigned,q i≠0)
     (hW:∀i∈assigned,Function.support (W i)⊆Set.Icc (a i) (b i))
     (hret:∀i∈assigned,W i ((Ideal.absNorm (Ideal.span {q i}):ℝ)/Z^(z i))≠0)
     (hthreshold:(∏i∈assigned,b i)≤Z^η)
-    {t:Ideal O}(ht:t∈quotientSet p (windowSource p S ψ Z D B v θ H))
+     {t} (ht:t∈quotientSet p (windowSource p S ψ Z D B v θ H))
     (m r τ c₁ c₂:ℝ)(hD:D=r+assignedCenter all z-2*assignedCenter assigned z)
     (h₁:r+2*assignedCenter all z≤m-c₁)
     (h₂:2*r+8*assignedCenter all z≤3*m-c₂)
@@ -89,6 +89,6 @@ theorem actual_window_state
 
 end SevenEighths.InverseInitialCanonicalState
 
-end
+
 
 end OAI

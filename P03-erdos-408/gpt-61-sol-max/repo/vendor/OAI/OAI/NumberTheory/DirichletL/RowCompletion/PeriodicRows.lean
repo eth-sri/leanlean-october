@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.ChineseRemainder.FrequencyLifts
 
@@ -10,81 +11,86 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalUnitEuler
+open   CompletedGauss CanonicalQuadraticSieve CanonicalUnitEuler
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma numeratorBadTwist_zero_of_not_supported (u:Eisˣ) (a b:ℕ) (r:Eis)
-    (hr:Supported (Ideal.span {r})) (n:Eis) (hn:¬Supported (Ideal.span {n})) :
+section
+variable (u : Eisˣ) (a b : ℕ) (r : Eis) (hr : Supported (Ideal.span {r})) (Ψ : Eis→*ℂ) (m f z n : Eis) (hmLam : lambda∣m) (hm2 : (2:Eis)∣m) (hn : ¬Supported (Ideal.span {n}))
+
+
+include hn in
+lemma numeratorBadTwist_zero_of_not_supported      
+          :
     numeratorBadTwist u a b r hr n=0 := by
   have hu:unitSupplement u n=0:=by
     change (if Supported (Ideal.span {n}) then _ else 0)=0
@@ -93,22 +99,24 @@ lemma numeratorBadTwist_zero_of_not_supported (u:Eisˣ) (a b:ℕ) (r:Eis)
     sexticReciprocityPhase r n=0
   rw [hu,zero_mul,zero_mul,zero_mul]
 
-lemma rowTwist_zero_of_not_supported (Ψ:Eis→*ℂ) (m f z n:Eis)
-    (hmLam:lambda∣m) (hm2:(2:Eis)∣m) (hn:¬Supported (Ideal.span {n})) :
+include hmLam hm2 hn in
+lemma rowTwist_zero_of_not_supported    
+          :
     rowTwist Ψ m f z n=0 := by
   have hu:unitSupplement (1:Eisˣ) n=0:=by
     change (if Supported (Ideal.span {n}) then _ else 0)=0
     rw [ite_eq_right hn]
   have h:=congrArg (fun T:Eis→*ℂ=>T n) (rowTwist_unitSupplement Ψ m f z (1:Eisˣ) hmLam hm2)
-  change rowTwist Ψ m f ((1:Eisˣ).val*z) n=unitSupplement (1:Eisˣ) n*rowTwist Ψ m f z n at h
-  simpa only [Units.val_one,one_mul,hu,zero_mul] using h
+  simp_all
 
-def actualPeriodicRow (Ψ:Eis→*ℂ) (m:Eis) (u:Eisˣ) (a b:ℕ) (r:Eis)
-    (hr:Supported (Ideal.span {r})) : Eis→*ℂ :=
+end
+
+def actualPeriodicRow (Ψ:Eis→*ℂ) (m:Eis) (u:Eisˣ) (a b:ℕ) (r)
+    (hr:Supported (Ideal.span {r}))  :=
   Ψ * coprimalityMask m * numeratorBadTwist u a b r hr * movingNumeratorRow r hr
 
-lemma actualPeriodicRow_norm (Ψ:Eis→*ℂ) (hΨ:∀n,‖Ψ n‖≤1)
-    (m:Eis) (u:Eisˣ) (a b:ℕ) (r:Eis) (hr:Supported (Ideal.span {r})) (n:Eis) :
+lemma actualPeriodicRow_norm  Ψ  (hΨ:∀n,‖Ψ n‖≤1)
+     m   u   a b   r   hr   n  :
     ‖actualPeriodicRow Ψ m u a b r hr n‖≤1 := by
   change ‖((Ψ n*coprimalityMask m n)*numeratorBadTwist u a b r hr n)*movingNumeratorRow r hr n‖≤1
   simp only [norm_mul]
@@ -118,9 +126,14 @@ lemma actualPeriodicRow_norm (Ψ:Eis→*ℂ) (hΨ:∀n,‖Ψ n‖≤1)
     (hΨ n)).trans (coprimalityMask_norm m n))).trans (numeratorBadTwist_norm u a b r hr n))).trans
     (movingNumeratorRow_norm r hr n)
 
-lemma actualPeriodicRow_periodic (Ψ:Eis→*ℂ) (Q:Ideal Eis)
-    (hΨ:CanonicalCoefficientClass.FactorsModulo Q Ψ)
-    (m:Eis) (u:Eisˣ) (a b:ℕ) (r:Eis) (hr:Supported (Ideal.span {r})) :
+section
+variable (Ψ : Eis→*ℂ) (Q : Ideal Eis) (hQ : Q≠0) (hΨ : CanonicalCoefficientClass.FactorsModulo Q Ψ) (hΨnorm : ∀n,‖Ψ n‖≤1) (m f z : Eis) (hm : m≠0) (hf : f≠0) (hz : z≠0) (hmLam : lambda∣m) (hm2 : (2:Eis)∣m) (u : Eisˣ) (a b : ℕ) (r : Eis) (hr : Supported (Ideal.span {r}))
+
+
+include hΨ in
+lemma actualPeriodicRow_periodic    
+     
+              :
     CanonicalCoefficientClass.FactorsModulo
       (Q*Ideal.span {m}*Ideal.span {(72:Eis)}*Ideal.span {r})
       (actualPeriodicRow Ψ m u a b r hr) := by
@@ -134,11 +147,12 @@ lemma actualPeriodicRow_periodic (Ψ:Eis→*ℂ) (Q:Ideal Eis)
   rw [hΨ x y hQ,coprimalityMask_periodic m x y hm,numeratorBadTwist_periodic u a b r hr x y h72,
     movingNumeratorRow_periodic r hr x y hrxy]
 
-theorem rowTwist_eq_actualPeriodicRow_primary (Ψ:Eis→*ℂ) (m f z:Eis)
-    (hmLam:lambda∣m) (hm2:(2:Eis)∣m) (u:Eisˣ) (a b:ℕ) (r:Eis)
-    (hr:Supported (Ideal.span {r})) (hpr:lambda^2∣r-1)
+include hmLam hm2 in
+theorem rowTwist_eq_actualPeriodicRow_primary    
+             
+      (hpr:lambda^2∣r-1)
     (hx:f^4*z=u.val*lambda^a*(2:Eis)^b*r)
-    (n:Eis) (hpn:lambda^2∣n-1) :
+     n  (hpn:lambda^2∣n-1) :
     rowTwist Ψ m f z n=actualPeriodicRow Ψ m u a b r hr n := by
   by_cases hn:Supported (Ideal.span {n})
   · rw [rowTwist_extract_sixth_mask Ψ m f z n hn,hx,
@@ -147,11 +161,12 @@ theorem rowTwist_eq_actualPeriodicRow_primary (Ψ:Eis→*ℂ) (m f z:Eis)
     ring
   · rw [rowTwist_zero_of_not_supported Ψ m f z n hmLam hm2 hn]
     change 0=((Ψ n*coprimalityMask m n)*numeratorBadTwist u a b r hr n)*movingNumeratorRow r hr n
-    rw [numeratorBadTwist_zero_of_not_supported u a b r hr n hn,mul_zero,zero_mul]
+    simp_all [numeratorBadTwist_zero_of_not_supported]
 
-theorem exists_actual_periodic_row (Ψ:Eis→*ℂ) (Q:Ideal Eis)
-    (hQ:Q≠0) (hΨ:CanonicalCoefficientClass.FactorsModulo Q Ψ) (hΨnorm:∀n,‖Ψ n‖≤1)
-    (m f z:Eis) (hm:m≠0) (hf:f≠0) (hz:z≠0) (hmLam:lambda∣m) (hm2:(2:Eis)∣m) :
+include hQ hΨ hΨnorm hm hf hz hmLam hm2 in
+theorem exists_actual_periodic_row    
+         
+                :
     ∃(u:Eisˣ)(a b:ℕ)(r:Eis)(hr:Supported (Ideal.span {r})),
       lambda^2∣r-1 ∧ f^4*z=u.val*lambda^a*(2:Eis)^b*r ∧
       (Q*Ideal.span {m}*Ideal.span {(72:Eis)}*Ideal.span {r})≠0 ∧
@@ -164,53 +179,60 @@ theorem exists_actual_periodic_row (Ψ:Eis→*ℂ) (Q:Ideal Eis)
     (mul_ne_zero (pow_ne_zero _ hf) hz)
   refine ⟨u,a,b,r,hr,hpr,hx,?_,actualPeriodicRow_periodic Ψ Q hΨ m u a b r hr,
     actualPeriodicRow_norm Ψ hΨnorm m u a b r hr,?_⟩
-  · exact mul_ne_zero (mul_ne_zero (mul_ne_zero hQ (by
-      simpa only [ne_eq,Ideal.zero_eq_bot,Ideal.span_singleton_eq_bot] using hm))
+  · exact mul_ne_zero (mul_ne_zero ((by simp_all))
       (by simp only [ne_eq,Ideal.zero_eq_bot,Ideal.span_singleton_eq_bot];norm_num)) hr.1
-  · exact fun n hpn=>rowTwist_eq_actualPeriodicRow_primary Ψ m f z hmLam hm2 u a b r hr hpr hx n hpn
+  solve_by_elim [rowTwist_eq_actualPeriodicRow_primary]
+
+end
 
 end CanonicalRowCompletion
 
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic IdealMobiusDivisorSum UniqueFactorizationMonoid
+open   IdealMobiusDivisorSum  
 local notation "Eis" => ActualEisensteinCubic.O
 
-def completedReflectionPool (I Q:Ideal Eis) : Finset (Ideal Eis) :=
+def completedReflectionPool (I Q:Ideal Eis)  :=
   (primeSupport (I*Q)).filter (fun P=>lambda∉P ∧ ringChar (Eis⧸P)≠2 ∧ ¬P∣rowResidualPart I Q)
 
-lemma mem_completedReflectionPool (I Q P:Ideal Eis) (hI:I≠0) (hQ:Q≠0) :
+lemma mem_completedReflectionPool  I Q P  (hI:I≠0) (hQ:Q≠0) :
     P∈completedReflectionPool I Q ↔
       Prime P ∧ P∣I*Q ∧ lambda∉P ∧ ringChar (Eis⧸P)≠2 ∧ ¬P∣rowResidualPart I Q := by
   simp only [completedReflectionPool,Finset.mem_filter,primeSupport,Multiset.mem_toFinset,
     UniqueFactorizationMonoid.mem_normalizedFactors_iff (mul_ne_zero hI hQ)]
   aesop
 
-lemma completedReflectionPool_maximal (I Q:Ideal Eis) (P:completedReflectionPool I Q) :
+section
+variable (I J F Q : Ideal Eis) (hI : I≠0) (hJ : J≠0) (hQ : Q≠0) (hA : rowPowerfulPart I=rowPowerfulPart J) (hT : rowMaskPart I Q=rowMaskPart J Q) (P : completedReflectionPool I Q)
+
+
+lemma completedReflectionPool_maximal     :
     P.val.IsMaximal := by
   have hm: P.val∈normalizedFactors (I*Q):=
     Multiset.mem_toFinset.mp (Finset.mem_filter.mp P.property).1
   have hp:=prime_of_normalized_factor P.val hm
   exact (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
 
-lemma completedReflectionPool_good (I Q:Ideal Eis) (P:completedReflectionPool I Q) :
+lemma completedReflectionPool_good     :
     lambda∉P.val := (Finset.mem_filter.mp P.property).2.1
 
-lemma completedReflectionPool_odd (I Q:Ideal Eis) (P:completedReflectionPool I Q) :
+lemma completedReflectionPool_odd     :
     ringChar (Eis⧸P.val)≠2 := (Finset.mem_filter.mp P.property).2.2.1
 
-lemma completedReflectionPool_nonresidual (I Q:Ideal Eis) (P:completedReflectionPool I Q) :
+lemma completedReflectionPool_nonresidual     :
     ¬P.val∣rowResidualPart I Q := (Finset.mem_filter.mp P.property).2.2.2
 
-lemma completedReflectionPool_divides (I Q:Ideal Eis) (hI:I≠0) (hQ:Q≠0)
-    (P:completedReflectionPool I Q) : P.val∣I*Q :=
+include hI hQ in
+lemma completedReflectionPool_divides      
+      : P.val∣I*Q :=
   ((mem_completedReflectionPool I Q P.val hI hQ).mp P.property).2.1
 
-theorem completedReflectionPool_eq_on_fiber (I J Q:Ideal Eis)
-    (hI:I≠0) (hJ:J≠0) (hQ:Q≠0)
-    (hA:rowPowerfulPart I=rowPowerfulPart J)
-    (hT:rowMaskPart I Q=rowMaskPart J Q) :
+include hI hJ hQ hA hT in
+theorem completedReflectionPool_eq_on_fiber  
+         
+     
+      :
     completedReflectionPool I Q=completedReflectionPool J Q := by
   ext P
   rw [mem_completedReflectionPool I Q P hI hQ,mem_completedReflectionPool J Q P hJ hQ]
@@ -222,11 +244,12 @@ theorem completedReflectionPool_eq_on_fiber (I J Q:Ideal Eis)
     obtain ⟨hdivI,hresI,_⟩:=nonresidual_prime_transport J I 1 Q P hJ hI hP hA.symm hT.symm hdiv hres
     exact ⟨hP,hdivI,hgood,hodd,hresI⟩
 
-lemma completedReflectionPool_exponent_eq (I J F Q:Ideal Eis)
-    (hI:I≠0) (hJ:J≠0) (hQ:Q≠0)
-    (hA:rowPowerfulPart I=rowPowerfulPart J)
-    (hT:rowMaskPart I Q=rowMaskPart J Q)
-    (P:completedReflectionPool I Q) :
+include hI hJ hQ hA hT in
+lemma completedReflectionPool_exponent_eq  
+         
+     
+     
+      :
     completedLocalExponent I F P.val=completedLocalExponent J F P.val := by
   rcases (mem_completedReflectionPool I Q P.val hI hQ).mp P.property with
     ⟨hP,hdiv,_,_,hres⟩
@@ -234,38 +257,17 @@ lemma completedReflectionPool_exponent_eq (I J F Q:Ideal Eis)
 
 end
 
-section
-
-variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-
-end
-section
-
-open ActualEisensteinCubic LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance reflectionWeightField (P:Ideal Eis) [P.IsMaximal] : Field (Eis⧸P) :=
-  Ideal.Quotient.field P
-noncomputable local instance reflectionWeightFintype (P:Ideal Eis) [P.IsMaximal] : Fintype (Eis⧸P) :=
-  Fintype.ofFinite _
-
-variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-
-end
-section
-
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
-
 end
 
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve LocalReflectionBrackets
+
+
+
+
+open   CubicEisenstein CanonicalQuadraticSieve LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
-local instance poolMaximal (I Q:Ideal Eis) (P:completedReflectionPool I Q) : P.val.IsMaximal :=
-  completedReflectionPool_maximal I Q P
-noncomputable local instance poolField (I Q:Ideal Eis) (P:completedReflectionPool I Q) : Field (Eis⧸P.val) :=
-  Ideal.Quotient.field P.val
-noncomputable local instance poolFintype (I Q:Ideal Eis) (P:completedReflectionPool I Q) : Fintype (Eis⧸P.val) :=
-  Fintype.ofFinite _
+
+
+
 
 end CompletedGauss
 

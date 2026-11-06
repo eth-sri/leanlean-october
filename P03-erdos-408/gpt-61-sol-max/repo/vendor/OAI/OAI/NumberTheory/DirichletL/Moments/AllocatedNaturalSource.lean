@@ -17,7 +17,7 @@ open CenteredMomentNaturalRowSource CenteredMomentRetainedEnergy CenteredMomentR
 open CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation
 open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
 open CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-local notation "O" => HeckeFamily.O
+
 
 structure Plain where
   W : ℝ→ℂ
@@ -27,24 +27,24 @@ structure Plain where
   support : Function.support W⊆Set.Icc a b
   smooth : ContDiff ℝ ∞ W
 
-def Plain.profile (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) : 𝓢(ℝ,ℂ) :=
+def Plain.profile (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ)  :=
   if h : 1≤U*V.b then retainedProfile V.W V.a V.b V.a_pos V.support V.smooth U hU h t else 0
 
-lemma Plain.profile_retained (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) (h : 1≤U*V.b) :
+lemma Plain.profile_retained (V : Plain)  U   hU   t   h  :
     V.profile U hU t=retainedProfile V.W V.a V.b V.a_pos V.support V.smooth U hU h t := by
   simp [Plain.profile,h]
 
-lemma Plain.profile_zero (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) (h : U*V.b<1) :
+lemma Plain.profile_zero (V : Plain)  U   hU   t  (h : U*V.b<1) :
     V.profile U hU t=0 := by simp [Plain.profile,not_le.mpr h]
 
-lemma polynomial_zero (χ : Character) (X : ℝ) :
+lemma polynomial_zero  χ   X  :
     HeckeDyadic.polynomial χ false (0 : 𝓢(ℝ,ℂ)) X 0 0=0 := by
   simp [HeckeDyadic.polynomial,HeckeDyadic.summand]
 
-theorem retained_normalized (η : Character) (z : O) (hz : z≠0) (R : Ideal O) (hR : R≠0)
+theorem retained_normalized (η : Character) (z : HeckeFamily.O) (hz : z≠0) (R : Ideal HeckeFamily.O) (hR : R≠0)
     {α : Type*} [Fintype α] [DecidableEq α] (V₁ V₂ : Plain)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ) (hP : ∀i,0<P i)
-    (t U₁ U₂ : ℝ) (hU₁ : 0<U₁) (hU₂ : 0<U₂) :
+    (pool : α→Finset (Ideal HeckeFamily.O))  β   P  (hP : ∀i,0<P i)
+     t U₁ U₂   hU₁   hU₂  :
     retainedPositiveRow η (CenteredMomentSecondHeightFamily.fixedBadMask*ConcretePrimeRowBridge.idealGenerator R)
       1 z V₁.W V₂.W pool β P t U₁ U₂=
       (((clippedScale U₁):ℂ)^(Complex.I*t)*((clippedScale U₂):ℂ)^(Complex.I*t))*
@@ -69,18 +69,18 @@ theorem retained_normalized (η : Character) (z : O) (hz : z≠0) (R : Ideal O) 
 
 variable {α : Type*} [Fintype α] [DecidableEq α]
 
-def rawScale (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2))) (X : ℝ) (j : Fin 2) : ℝ :=
+def rawScale (D ) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2))) (X : ℝ) (j : Fin 2)  :=
   X/Ideal.absNorm (selectedPlain D a j)
 
-lemma rawScale_pos (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
-    (X : ℝ) (hX : 0<X) (j : Fin 2) : 0<rawScale D a X j := by
+lemma rawScale_pos (D : Ideal HeckeFamily.O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
+     X  (hX : 0<X)  j  : 0<rawScale D a X j := by
   apply div_pos hX
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (selectedDivisor_ne_zero D Finset.univ a _))
 
-theorem allocated_normalized (η : Character) (z : O) (hz : z≠0) (R : Ideal O) (hR : R≠0)
-    (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
-    (V₁ V₂ : Plain) (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ) (hP : ∀i,0<P i)
-    (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
+theorem allocated_normalized (η : Character) (z : HeckeFamily.O) (hz : z≠0) (R : Ideal HeckeFamily.O) (hR : R≠0)
+    (D : Ideal HeckeFamily.O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
+    (V₁ V₂ : Plain)  pool   β   P  (hP : ∀i,0<P i)
+     t X₁ X₂   hX₁   hX₂  :
     allocatedPositiveRow η (CenteredMomentSecondHeightFamily.fixedBadMask*ConcretePrimeRowBridge.idealGenerator R)
       1 z t pool β P D a V₁.W V₂.W X₁ X₂=
       (((clippedScale (rawScale D a X₁ 0)):ℂ)^(Complex.I*t)*
@@ -103,7 +103,7 @@ theorem allocated_normalized (η : Character) (z : O) (hz : z≠0) (R : Ideal O)
 
 omit [Fintype α] [DecidableEq α] in
 
-theorem slot_controls (ν : α→Ideal O→ℂ) (W : α→ℝ→ℂ) (P b M : α→ℝ)
+theorem slot_controls (ν : α→Ideal HeckeFamily.O→ℂ) (W : α→ℝ→ℂ) (P b M : α→ℝ)
     (hP : ∀i,0<P i) (hν : ∀i I,‖ν i I‖≤1)
     (hW : ∀i x,‖W i x‖≤M i) (hs : ∀i,Function.support (W i)⊆Set.Iic (b i)) :
     (∀i I,‖ν i I*W i ((I.absNorm:ℝ)/P i)‖≤M i) ∧
@@ -115,11 +115,11 @@ theorem slot_controls (ν : α→Ideal O→ℂ) (W : α→ℝ→ℂ) (P b M : α
   · intro i I hn
     exact (div_le_iff₀ (hP i)).mp (hs i (right_ne_zero_of_mul hn))
 
-def SharedBound (F : Finset α) (b M : α→ℝ) (C ε : ℝ) : Prop :=
+def SharedBound (F : Finset α) (b M : α→ℝ) (C ε : ℝ)  :=
     ∀{ι : Type*} [Fintype ι],
-      ∀(R : Finset (Ideal O))(hR : ∀I∈R,Prime I)(χ : ι→Character)
+      ∀(R : Finset (Ideal HeckeFamily.O))(hR : ∀I∈R,Prime I)(χ : ι→Character)
         (W₁ W₂ : ι→𝓢(ℝ,ℂ))(X₁ X₂ : ι→ℝ)
-        (pool : ι→α→Finset (Ideal O))(β : ι→α→Ideal O→ℂ)(P : ι→α→ℝ),
+        (pool : ι→α→Finset (Ideal HeckeFamily.O))(β : ι→α→Ideal HeckeFamily.O→ℂ)(P : ι→α→ℝ),
       (∀i,0<X₁ i) → (∀i,0<X₂ i) →
       (∀i j,j∈F → ∀I∈pool i j,Prime I) → (∀i j,j∈F → 0<P i j) →
       (∀i j,j∈F → ∀I∈pool i j,‖β i j I‖≤M j) →
@@ -136,16 +136,16 @@ def SharedBound (F : Finset α) (b M : α→ℝ) (C ε : ℝ) : Prop :=
         ∏j∈F,naturalSlot ((χ i).excludePrimes R hR) (pool i j) (β i j) (P i j)‖^2)≤
         C*(Ideal.absNorm (∏I∈R,I):ℝ)^ε*E
 
-lemma primeSupport_product_radical (R : Ideal O) (hR : R≠0) :
+lemma primeSupport_product_radical  R  (hR : R≠0) :
     (∏I∈CompletedGauss.primeSupport R,I)=R.radical := by
   ext x
   change x∈(∏I∈CompletedGauss.primeSupport R,I) ↔ ∃n : ℕ,x^n∈R
   simp_rw [←Ideal.span_singleton_le_iff_mem,←Ideal.dvd_iff_le,←Ideal.span_singleton_pow]
   exact (UniqueFactorizationMonoid.exists_dvd_pow_iff_radical_dvd hR).symm
 
-def child (χ : Character) (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
-    (V₁ V₂ : Plain) (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ)
-    (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂) (D₁ D₂ : Finset (Ideal O)) (J : Finset α) : ℂ :=
+def child (χ : Character) (D ) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
+    (V₁ V₂ : Plain) (pool : α→Finset (Ideal HeckeFamily.O)) (β : α→Ideal HeckeFamily.O→ℂ) (P : α→ℝ)
+    (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂) (D₁ D₂ : Finset (Ideal HeckeFamily.O)) (J : Finset α)  :=
   HeckeDyadic.polynomial χ false (V₁.profile _ (rawScale_pos D a X₁ hX₁ 0) t)
     (clippedScale (rawScale D a X₁ 0)/(Ideal.absNorm (∏I∈D₁,I):ℝ)) 0 0 *
   HeckeDyadic.polynomial χ false (V₂.profile _ (rawScale_pos D a X₂ hX₂ 1) t)
@@ -153,8 +153,8 @@ def child (χ : Character) (D : Ideal O) (a : Allocation D (Finset.univ : Finset
   ∏i∈liveIndices D a\J,naturalSlot χ (pool i) (heightCoefficient (β i) t) (P i)
 
 structure Slots (α : Type*) (b M : α→ℝ) where
-  pool : α→Finset (Ideal O)
-  ν : α→Ideal O→ℂ
+  pool : α→Finset (Ideal HeckeFamily.O)
+  ν : α→Ideal HeckeFamily.O→ℂ
   W : α→ℝ→ℂ
   P : α→ℝ
   prime : ∀i,∀I∈pool i,Prime I
@@ -163,7 +163,7 @@ structure Slots (α : Type*) (b M : α→ℝ) where
   W_bound : ∀i x,‖W i x‖≤M i
   support : ∀i,Function.support (W i)⊆Set.Iic (b i)
 
-def Slots.coefficient {b M : α→ℝ} (s : Slots α b M) (i : α) (I : Ideal O) : ℂ :=
+def Slots.coefficient {b M } (s : Slots α b M) (i : α) (I : Ideal HeckeFamily.O)  :=
   s.ν i I*s.W i ((I.absNorm:ℝ)/s.P i)
 
 omit [Fintype α] [DecidableEq α] in
@@ -172,25 +172,9 @@ lemma Slots.controls {b M : α→ℝ} (s : Slots α b M) :
     (∀i I,s.coefficient i I≠0 → (I.absNorm:ℝ)≤b i*s.P i) :=
   slot_controls s.ν s.W s.P b M s.P_pos s.ν_bound s.W_bound s.support
 
-structure Row (α : Type*) (b M : α→ℝ) where
-  η : Character
-  z : O
-  z_ne : z≠0
-  plain₁ : Plain
-  plain₂ : Plain
-  slots : Slots α b M
-  t : ℝ
-  X₁ : ℝ
-  X₂ : ℝ
-  Y₁ : ℝ
-  Y₂ : ℝ
-  X₁_pos : 0<X₁
-  X₂_pos : 0<X₂
-  Y₁_pos : 0<Y₁
-  Y₂_pos : 0<Y₂
-  same_product : X₁*X₂=Y₁*Y₂
 
-def commonSlots (s : CenteredMomentCommonRadialData.Input α) (C : Ideal O)
+
+def commonSlots (s : CenteredMomentCommonRadialData.Input α) (C : Ideal HeckeFamily.O)
     (B : CenteredMomentCommonAllocationSum.actualAllocations s.pools C) :
     Slots (CenteredMomentCommonProfile.liveIndices B.val) (fun i=>s.hi i) (fun i=>s.M i) where
   pool:=fun i=>s.slots i

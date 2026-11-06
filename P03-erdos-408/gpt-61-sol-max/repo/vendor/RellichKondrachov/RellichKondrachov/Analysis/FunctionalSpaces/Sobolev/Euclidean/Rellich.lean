@@ -55,7 +55,7 @@ open MeasureTheory Set
 
 noncomputable section
 
-section Volume
+
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
   [CompleteSpace E]
@@ -63,12 +63,9 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDim
 /-- Borel σ-algebra on the model space `E`. -/
 local instance instMeasurableSpaceRellich : MeasurableSpace E := borel E
 local instance instBorelSpaceRellich : BorelSpace E := ⟨rfl⟩
-local instance instOpensMeasurableSpaceRellich : OpensMeasurableSpace E := by
-  infer_instance
-local instance instMeasurableAddRellich : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegRellich : MeasurableNeg E := by
-  infer_instance
+
+
+
 local instance instFactOneLeTwoSobolevEuclideanRellich : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
 
 /-! ### Supported `H¹` subspace -/
@@ -77,8 +74,7 @@ local instance instFactOneLeTwoSobolevEuclideanRellich : Fact (1 ≤ (2 : ℝ≥
 
 We model “supported in `K`” as belonging to the closed range of the extension-by-zero map
 `Lp(volume.restrict K) →ₗᵢ Lp(volume)`. -/
-noncomputable def h1On (K : Set E) (hKm : MeasurableSet K) :
-    Submodule ℝ (↥(h1 (μ := (volume : Measure E)) (E := E))) :=
+noncomputable def h1On (K : Set E) (hKm : MeasurableSet K)  :=
   Submodule.comap
     (h1ToL2 (μ := (volume : Measure E)) (E := E)).toLinearMap
     (LinearMap.range
@@ -86,15 +82,14 @@ noncomputable def h1On (K : Set E) (hKm : MeasurableSet K) :
           (μ := (volume : Measure E)) (E := ℝ) (p := (2 : ℝ≥0∞)) (s := K) hKm).toLinearMap))
 
 /-- The inclusion `h1On K → L²(volume)` as a continuous linear map. -/
-noncomputable def h1OnToL2 (K : Set E) (hKm : MeasurableSet K) :
-    ↥(h1On K hKm) →L[ℝ] (E →₂[(volume : Measure E)] ℝ) :=
+noncomputable def h1OnToL2 (K : Set E) (hKm )  :=
   (h1ToL2 (μ := (volume : Measure E)) (E := E)).comp (h1On K hKm).subtypeL
 
 /-! ### Euclidean Rellich on fixed compact support -/
 
 /-- Euclidean Rellich–Kondrachov compactness (Lebesgue): on a fixed compact support `K`, the
 inclusion `H¹ → L²` is a compact operator. -/
-theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : MeasurableSet K) :
+theorem isCompactOperator_h1OnToL2  {K}  (_hK : IsCompact K)  hKm  :
     IsCompactOperator (h1OnToL2 (E := E) K hKm) := by
   classical
   have hr : (0 : ℝ) < 1 := by norm_num
@@ -107,8 +102,7 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
         T '' Metric.closedBall (0 : ↥(h1On (E := E) K hKm)) 1}
   let C : ℝ :=
     ‖h1ToL2 (μ := (volume : Measure E)) (E := E)‖
-  have hCnonneg : 0 ≤ C := by
-    exact norm_nonneg (h1ToL2 (μ := (volume : Measure E)) (E := E))
+  have hCnonneg : 0 ≤ C := norm_nonneg (h1ToL2 (μ := (volume : Measure E)) (E := E))
   have hA_ball :
       A ⊆
         Metric.closedBall
@@ -272,7 +266,7 @@ extension-by-zero map from `volume.restrict K`. We record a codomain-restricted 
 convenient compact map to the restricted `L²` space.
 -/
 
-end Volume
+
 
 end
 

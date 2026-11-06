@@ -28,33 +28,33 @@ open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExp
 open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
 open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
 open CenteredMomentSecondIdealBlockBound
-local notation "O" => ActualEisensteinCubic.O
+
 
 open Filter
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
 open CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass
 open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
+
 
 open CenteredMomentSecondOriginalChildren CenteredMomentSecondSupportedChildren
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
+open CenteredMomentSecondPhysicalBlock  
 open CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel
-open CenteredMomentSecondPhysicalCost CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
+open CenteredMomentSecondPhysicalCost   CenteredMomentExceptionalAmplitudePair
 
 open CenteredMomentSecondHeightFamily
 open CenteredMomentSecondExceptionalFamily CenteredMomentSecondEnergySplit
 open CenteredMomentSecondDyadicRowSupport CenteredMomentFirstAmplificationChoice
-open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
+open CenteredMomentOriginalCommonHarmonic  
 
-def canonicalRadial (τ:Character)(Q:Ideal O)(n:Fin 4→ℤ):Radial:=
+def canonicalRadial (τ:Character)(Q:Ideal ActualEisensteinCubic.O)(n:Fin 4→ℤ):=
   sourceRadial (fun z=>z≠0 ∧ ¬CenteredExceptionalProfile.FixedInducingRow τ Q fixedBadMask 1 z)
     ballProfile (dyadicScale (n 1)) (dyadicScale_pos _) (fun _z=>ballProfile_nonneg _)
 
-lemma sourceRadial_eq_canonical {η:Character}{C D:Ideal O}{hC:Supported C}{hD:Supported D}
+lemma sourceRadial_eq_canonical {η:Character}{C D:Ideal ActualEisensteinCubic.O}{hC:Supported C}{hD:Supported D}
     {U:Finset (CommonIndex C D)}{τ:RayCharacter→Character}
-    (h:Family η C D hC hD U τ)(χ:RayCharacter)(Q:Ideal O)(m:O)
-    (hm:m≠0)(hml:ConcretePrimeRowBridge.goodLambda∣m)(hm2:(2:O)∣m)(n:Fin 4→ℤ):
+    (h:Family η C D hC hD U τ) χ  Q  m 
+    (hm:m≠0)(hml:ConcretePrimeRowBridge.goodLambda∣m)(hm2:(2:ActualEisensteinCubic.O)∣m) n :
     sourceRadial (nonexceptional η χ Q m
       (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U))
       ballProfile (dyadicScale (n 1)) (dyadicScale_pos _) (fun _z=>ballProfile_nonneg _)=

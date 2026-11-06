@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.SpanGhost
 public import Erdos821.S2.PhysicalCompatibility
@@ -21,11 +22,11 @@ namespace ResiduePath
 
 variable {A : Model F P J m} {n : ℕ} (Q : ResiduePath A n)
 
-def storeSlots (S : LifespanAssignment P n) (i : Fin n) (g : P.BigGroup) : Finset (Fin (J + F.ell)) :=
+def storeSlots (S : LifespanAssignment P n) (i : Fin n) (g : P.BigGroup)  :=
   Finset.univ.filter (fun j => ¬ (A.pattern (Q.pattern i)).shared g.val j ∧
     Q.pendingBefore g (Q.source i g.val j) (S g (Q.source i g.val j)) i.succ)
 
-def promotionSlots (S : LifespanAssignment P n) (i : Fin n) (g : P.BigGroup) : Finset (Fin (J + F.ell)) :=
+def promotionSlots (S : LifespanAssignment P n) (i : Fin n) (g : P.BigGroup)  :=
   Finset.univ.filter (fun j => ¬ (A.pattern (Q.pattern i)).shared g.val j ∧
     Q.target i g.val j ∈ Q.pendingAfterPrimes S i.castSucc g)
 
@@ -35,39 +36,48 @@ theorem promotion_prime_mem (S : LifespanAssignment P n) (i : Fin n) (g : P.BigG
   rw [pendingPrimes_memoryAfter]
   exact (Finset.mem_filter.mp j.property).2.2
 
-def promotionIndex (S : LifespanAssignment P n) (i : Fin n) (g : P.BigGroup)
-    (j : {j : Fin (J + F.ell) // j ∈ Q.promotionSlots S i g}) : Fin (Q.memoryAfter S i.castSucc g).card :=
+def promotionIndex (S ) (i ) (g )
+    (j : {j : Fin (J + F.ell) // j ∈ Q.promotionSlots S i g})  :=
   primeIndex (Q.memoryAfter S i.castSucc g) (Q.target i g.val j.val) (Q.promotion_prime_mem S i g j)
 
-theorem promotionIndex_spec (S : LifespanAssignment P n) (i : Fin n) (g : P.BigGroup)
-    (j : {j : Fin (J + F.ell) // j ∈ Q.promotionSlots S i g}) :
+section
+variable (S : LifespanAssignment P n) (hq : Q.Valid) (i : Fin n) (g : P.BigGroup)
+
+
+theorem promotionIndex_spec      
+     j  :
     (memoryEntry (Q.memoryAfter S i.castSucc g) (Q.promotionIndex S i g j)).1 = Q.target i g.val j.val :=
   primeIndex_spec _ _ _
 
-theorem target_injective (hq : Q.Valid) (i : Fin n) (g : P.Group) : Function.Injective (Q.target i g) :=
+include hq in
+theorem target_injective      g  : Function.Injective (Q.target i g) :=
   (hq.1 i.succ g).comp (Q.targetPerm i g).injective
 
-theorem source_injective (hq : Q.Valid) (i : Fin n) (g : P.Group) : Function.Injective (Q.source i g) :=
+include hq in
+theorem source_injective      g  : Function.Injective (Q.source i g) :=
   (hq.1 i.castSucc g).comp (Q.sourcePerm i g).injective
 
-theorem promotionIndex_injective (S : LifespanAssignment P n) (hq : Q.Valid) (i : Fin n) (g : P.BigGroup) :
+include hq in
+theorem promotionIndex_injective         :
     Function.Injective (Q.promotionIndex S i g) := by
   intro j k he
   apply Subtype.ext
   apply Q.target_injective hq i g.val
-  calc
-    _ = (memoryEntry (Q.memoryAfter S i.castSucc g) (Q.promotionIndex S i g j)).1 :=
-      (Q.promotionIndex_spec S i g j).symm
-    _ = (memoryEntry (Q.memoryAfter S i.castSucc g) (Q.promotionIndex S i g k)).1 :=
-      congrArg (fun h => (memoryEntry (Q.memoryAfter S i.castSucc g) h).1) he
-    _ = _ := Q.promotionIndex_spec S i g k
+  grind [memoryEntry, Erdos821.S2Core.ResiduePath.promotionIndex_spec]
 
-def reconstructedTransferChoice (S : LifespanAssignment P n) (y : P.SmallResidues) (i : Fin n) :
+end
+
+def reconstructedTransferChoice (S ) (y ) (i : Fin n) :
     TransferChoice (Q.stateAfter S y i.castSucc) :=
   ⟨Q.storeSlots S i, ⟨Q.promotionSlots S i, Q.promotionIndex S i⟩⟩
 
-theorem store_slot_allowed (S : LifespanAssignment P n) (hq : Q.Valid)
-    (i : Fin n) (g : P.BigGroup) (j : Fin (J + F.ell)) (hj : j ∈ Q.storeSlots S i g) :
+section
+variable (S : LifespanAssignment P n) (hq : Q.Valid) (hS : Q.lifespanValid S) (i : Fin n) (g : P.BigGroup) (j : Fin (J + F.ell))
+
+
+include hq in
+theorem store_slot_allowed    
+          (hj : j ∈ Q.storeSlots S i g) :
     ¬ (A.pattern (Q.pattern i)).shared g.val j ∧
       ¬ (Q.source i g.val j).val ∣ (A.pattern (Q.pattern i)).D (Q.source i) (Q.free i) := by
   have hs := (Finset.mem_filter.mp hj).2.1
@@ -76,8 +86,9 @@ theorem store_slot_allowed (S : LifespanAssignment P n) (hq : Q.Valid)
   exact hs ((source_label_dvd_D_iff (A.pattern (Q.pattern i)) (Q.source i) (Q.target i) (Q.free i)
     (Q.source_injective hq i) (hq.2 i).2 g.val j).mp hd)
 
-theorem promotion_slot_allowed (S : LifespanAssignment P n) (hq : Q.Valid)
-    (i : Fin n) (g : P.BigGroup) (j : {j : Fin (J + F.ell) // j ∈ Q.promotionSlots S i g}) :
+include hq in
+theorem promotion_slot_allowed    
+        (j : {j : Fin (J + F.ell) // j ∈ Q.promotionSlots S i g}) :
     ¬ (A.pattern (Q.pattern i)).shared g.val j.val ∧
       ¬ (Q.target i g.val j.val).val ∣ (A.pattern (Q.pattern i)).D (Q.source i) (Q.free i) := by
   have hs := (Finset.mem_filter.mp j.property).2.1
@@ -86,8 +97,8 @@ theorem promotion_slot_allowed (S : LifespanAssignment P n) (hq : Q.Valid)
   exact hs ((target_label_dvd_D_iff (A.pattern (Q.pattern i)) (Q.source i) (Q.target i) (Q.free i)
     (Q.target_injective hq i) (hq.2 i).1 (hq.2 i).2 g.val j.val).mp hd)
 
-theorem memoryAfter_member_form (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup)
-    (z : P.Particle g.val) (hz : z ∈ Q.memoryAfter S i g) :
+theorem memoryAfter_member_form    i   g 
+     z  (hz : z ∈ Q.memoryAfter S i g) :
     ∃ p ∈ Q.pendingAfterPrimes S i g,
       z = (⟨p, ((Q.offset i - Q.spanAnchor (S g p) : ℤ) : ZMod p.val)⟩ : P.Particle g.val) := by
   have he := Q.memoryAfter_eq_map S i g
@@ -95,18 +106,19 @@ theorem memoryAfter_member_form (S : LifespanAssignment P n) (i : Fin (n + 1)) (
   obtain ⟨p, hp, he⟩ := Multiset.mem_map.mp hm
   exact ⟨p, hp, he.symm⟩
 
-theorem source_activeVisit (i : Fin n) (g : P.BigGroup) (j : Fin (J + F.ell)) :
+theorem source_activeVisit       :
     i.castSucc ∈ Q.activeVisits g (Q.source i g.val j) := by
   apply Finset.mem_filter.mpr
   exact ⟨Finset.mem_univ _, ⟨Q.sourcePerm i g.val j, rfl⟩⟩
 
-theorem target_activeVisit (i : Fin n) (g : P.BigGroup) (j : Fin (J + F.ell)) :
+theorem target_activeVisit       :
     i.succ ∈ Q.activeVisits g (Q.target i g.val j) := by
   apply Finset.mem_filter.mpr
   exact ⟨Finset.mem_univ _, ⟨Q.targetPerm i g.val j, rfl⟩⟩
 
-theorem span_active_hit (S : LifespanAssignment P n) (hS : Q.lifespanValid S)
-    (i : Fin (n + 1)) (g : P.BigGroup) (p : P.Prime g.val) (hi : i ∈ Q.activeVisits g p) :
+include hS in
+theorem span_active_hit    
+     i   g   p  (hi : i ∈ Q.activeVisits g p) :
     ((Q.offset i - Q.spanAnchor (S g p) : ℤ) : ZMod p.val) = 0 := by
   have hs := hS g p
   rcases he : S g p with _ | ⟨birth, stop⟩
@@ -116,8 +128,9 @@ theorem span_active_hit (S : LifespanAssignment P n) (hS : Q.lifespanValid S)
   · rw [he] at hs
     exact hs.2.2.2.2 i hi
 
-theorem promotion_translated_zero (S : LifespanAssignment P n) (hS : Q.lifespanValid S)
-    (i : Fin n) (g : P.BigGroup) (j : {j : Fin (J + F.ell) // j ∈ Q.promotionSlots S i g}) :
+include hS in
+theorem promotion_translated_zero    
+         j  :
     let z := memoryEntry (Q.memoryAfter S i.castSucc g) (Q.promotionIndex S i g j)
     z.2 + (Q.step i : ZMod z.1.val) = 0 := by
   have hm := Q.memoryAfter_member_form S i.castSucc g _
@@ -134,6 +147,8 @@ theorem promotion_translated_zero (S : LifespanAssignment P n) (hS : Q.lifespanV
   rw [residuePath_offset_succ] at hh
   simp only [Int.cast_sub, Int.cast_add] at hh ⊢
   linear_combination hh
+
+end
 
 end ResiduePath
 

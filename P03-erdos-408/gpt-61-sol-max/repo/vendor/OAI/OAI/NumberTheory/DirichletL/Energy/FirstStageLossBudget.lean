@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.StageReserveSchedule
 public import OAI.NumberTheory.DirichletL.Energy.FirstGaussianProfileWeights
@@ -16,13 +17,12 @@ open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
 open CenteredMomentSuccessorPaidParameters
 open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
 
-def sourcePaid (Bcap emask ell er delta reserveAmp thetaSource thetaClip κ mesh:ℝ):ℝ:=
+def sourcePaid (Bcap emask ell er delta reserveAmp thetaSource thetaClip κ mesh:ℝ):=
   (Bcap+Bcap)*emask+ell+er+(delta+reserveAmp+thetaSource)/6+thetaClip/3+κ*mesh
 
-theorem literal_four_budget (M Bcap Bcommon κ ε:ℝ)
+theorem literal_four_budget  M Bcap Bcommon κ ε 
     (hM:0≤M)(hB:0≤Bcap)(hκ:0≤κ)(hε:0<ε)
-    (k:ℕ)(ell epsSrc epsMask deltaSrc thetaSrc deltaAmp reserveAmp thetaSource thetaClip
-      er primeLoss physicalLoss highReflection zeroReflection saving:ℝ)
+     k  ell epsSrc epsMask deltaSrc thetaSrc deltaAmp reserveAmp thetaSource thetaClip er primeLoss physicalLoss highReflection zeroReflection saving 
     (hell:ell≤stageLoss M Bcap ε k)
     (he0:0≤epsSrc)(he:epsSrc≤reserve M Bcap ε)
     (hemask:(Bcap+Bcap)*epsMask≤reserve M Bcap ε)
@@ -42,8 +42,8 @@ theorem literal_four_budget (M Bcap Bcommon κ ε:ℝ)
         epsSrc*Bcommon+primeLoss+physicalLoss+highReflection+zeroReflection≤
       stageLoss M Bcap ε (k+1):=by
   have hb:=bounds M Bcap κ ε hM hB hκ hε
-  have hr:0<reserve M Bcap ε:=hb.2.2.2.1
-  have hs:0≤amplification ε:=hb.1.le
+  
+  
   have hother:epsSrc*Bcommon+primeLoss+physicalLoss≤48*reserve M Bcap ε:=by linarith
   have hextra:epsSrc*Bcommon+primeLoss+physicalLoss+highReflection+zeroReflection≤
       50*reserve M Bcap ε:=by linarith

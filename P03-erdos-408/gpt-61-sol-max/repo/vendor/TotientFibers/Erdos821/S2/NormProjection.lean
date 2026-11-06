@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.Blueprint.Graph
 public import Mathlib.Algebra.Order.Star.Real
@@ -16,7 +17,7 @@ namespace Erdos821.S2Core
 open Erdos821.Blueprint.Graph
 
 theorem normBound_project {α : Type*} (mass : α → ℝ) (K : α → α → ℂ)
-    (C : ℝ) (hC : 0 ≤ C) (hm : ∀ a, 0 ≤ mass a)
+     C  (hC : 0 ≤ C) (hm : ∀ a, 0 ≤ mass a)
     (hK : NormBound mass K C) (keep : α → Prop) :
     NormBound mass (projectKernel keep K) C := by
   intro s t f g
@@ -30,8 +31,7 @@ theorem normBound_project {α : Type*} (mass : α → ℝ) (K : α → α → �
     by_cases ha : keep a
     · simp only [ha, ite_true]
       apply Finset.sum_congr rfl
-      intro b _
-      by_cases hb : keep b <;> simp [projectKernel, ha, hb]
+      simp_all [projectKernel]
     · simp [projectKernel, ha]
   rw [he]
   have hs : (∑ a ∈ s.filter keep, mass a * ‖f a‖ ^ 2) ≤

@@ -16,17 +16,17 @@ open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourc
 open CenteredMomentCommonAllocationSum CenteredMomentOriginalCommonHarmonic
 open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
 open CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
-local instance {α:Type*}:DecidableEq α:=Classical.decEq _
 
-def commonExponent (A D P C q ε ξ:ℝ):ℝ:=
+
+
+def commonExponent (A D P C q ε ξ:ℝ):=
   max (A+ε) (max (2*A+D+ε+ξ/2) (max (P+C) q))
 
-theorem eventually_common_ready (N:ℕ)(b b₁ b₂ ε:ℝ)
+theorem eventually_common_ready  N  b b₁ b₂ ε 
     (hb:1≤b)(hb₁:1≤b₁)(hb₂:1≤b₂)(hε:0<ε):
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀{ι:Type*}[Fintype ι],∀s:Input ι,
     Fintype.card ι≤N → Endpoints b b₁ b₂ s →
-    ∀(C R:Ideal O)(B:actualAllocations s.pools C)(τ:Character)(t:ℝ),
+    ∀(C R:Ideal HeckeFamily.O)(B:actualAllocations s.pools C)(τ:Character)(t:ℝ),
     R≠0 → frozenCoefficient B.val C R s.ν s.W s.P≠0 →
     ∀K A D P Ccap q ξ:ℝ,0<K → 0≤ξ → volume s≤Z^A → K⁻¹≤Z^D →
     (R.absNorm:ℝ)≤Z^P → (C.absNorm:ℝ)≤Z^Ccap → (τ.modulus.absNorm:ℝ)≤Z^q →

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Strip
 
@@ -24,32 +25,35 @@ open Finset
 noncomputable section
 
 /-- The candidate groups `𝒞`, small and big. -/
-def candidateGroups (x : ℝ) : Finset (Finset ℕ) :=
+def candidateGroups (x : ℝ)  :=
   smallGroups x ∪ bigGroups x
 
 /-- The factor `b(e) = [e > x^γ] [e Y-rough] / (D_j log e)` of the core. -/
-def coreFactor (x γ : ℝ) (j e : ℕ) : ℝ :=
+def coreFactor (x γ : ℝ) (j e : ℕ)  :=
   if x ^ γ < e ∧ ∀ p ∈ e.primeFactors, proxyCutoff x < p then
     1 / (dampedDensity x j * Real.log e)
   else 0
 
 /-- The core `G_j(v) = ∑_{e₁ ⋯ e_j = v̄} ∏ b(e_i)`. -/
-def proxyCore (x γ : ℝ) (j v : ℕ) : ℝ :=
+def proxyCore (x γ : ℝ) (j v : ℕ)  :=
   ∑ e ∈ Nat.finMulAntidiag j (candidateStrip x v), ∏ i, coreFactor x γ j (e i)
 
 /-- The proxy coefficient `A_j(v) = ∑_{m₁ ⋯ m_j = v} ∏ a_j(m_i)`. -/
-def proxyCoeff (x γ : ℝ) (j v : ℕ) : ℝ :=
+def proxyCoeff (x γ : ℝ) (j v : ℕ)  :=
   ∑ m ∈ Nat.finMulAntidiag j v, ∏ i, strippedProxy x γ j (m i)
 
 /-- The allocation factor `ρ_j(v) = d_j(v_P) j^{-Ω_P(v)}`. -/
-def allocationFactor (x : ℝ) (j v : ℕ) : ℝ :=
+def allocationFactor (x : ℝ) (j v : ℕ)  :=
   (Nat.finMulAntidiag j (keepPrimes (candidatePrimes x) v)).card *
     ((j : ℝ)⁻¹) ^ candidateOmega x v
 
 /-! ### The allocation identity -/
 
+section
+variable (x : ℝ)
+
 /-- `Ω_P(n) = Ω(n_P)`. -/
-lemma candidateOmega_eq_cardFactors (x : ℝ) (n : ℕ) :
+lemma candidateOmega_eq_cardFactors    n  :
     candidateOmega x n = ArithmeticFunction.cardFactors (keepPrimes (candidatePrimes x) n) := by
   rw [ArithmeticFunction.cardFactors_eq_sum_factorization, factorization_keepPrimes,
     Finsupp.sum, Finsupp.support_filter, Nat.support_factorization, candidateOmega]
@@ -57,7 +61,7 @@ lemma candidateOmega_eq_cardFactors (x : ℝ) (n : ℕ) :
   rw [Finsupp.filter_apply_pos _ _ (mem_filter.1 hp).2]
 
 /-- `Ω_P(n) = Ω_P(n_P)`. -/
-lemma candidateOmega_keepPrimes (x : ℝ) (n : ℕ) :
+lemma candidateOmega_keepPrimes    n  :
     candidateOmega x (keepPrimes (candidatePrimes x) n) = candidateOmega x n := by
   rw [candidateOmega_eq_cardFactors, candidateOmega_eq_cardFactors]
   congr 1
@@ -68,12 +72,10 @@ lemma candidateOmega_keepPrimes (x : ℝ) (n : ℕ) :
   split_ifs <;> rfl
 
 /-- The stripped proxy splits as `a_j(m) = b(m̄) j^{-Ω_P(m_P)}`. -/
-lemma strippedProxy_eq (x γ : ℝ) (j m : ℕ) :
+lemma strippedProxy_eq  x γ   j m  :
     strippedProxy x γ j m = coreFactor x γ j (candidateStrip x m) *
       ((j : ℝ)⁻¹) ^ candidateOmega x (keepPrimes (candidatePrimes x) m) := by
-  rw [candidateOmega_keepPrimes]
-  unfold strippedProxy coreFactor dampedWeight
-  split_ifs with h₁ h₂ h₃ h₃ <;> first | (exfalso; tauto) | ring
+  grind [candidateOmega_keepPrimes, strippedProxy, coreFactor, dampedWeight]
 
 /-- `Ω` is additive over products of nonzero factors. -/
 lemma cardFactors_prod {ι : Type*} (s : Finset ι) {f : ι → ℕ} (hf : ∀ i ∈ s, f i ≠ 0) :
@@ -88,7 +90,7 @@ lemma cardFactors_prod {ι : Type*} (s : Finset ι) {f : ι → ℕ} (hf : ∀ i
       ih fun i hi => hf i (mem_insert_of_mem hi)]
 
 /-- The allocation identity `A_j(v) = G_j(v) ρ_j(v)`. -/
-theorem proxyCoeff_eq (x γ : ℝ) (j : ℕ) {v : ℕ} (hv : v ≠ 0) :
+theorem proxyCoeff_eq  x γ   j   {v}  (hv : v ≠ 0) :
     proxyCoeff x γ j v = proxyCore x γ j v * allocationFactor x j v := by
   simp only [proxyCoeff, proxyCore, strippedProxy_eq, candidateStrip]
   rw [sum_finMulAntidiag_eq_mul _ _ hv (coreFactor x γ j)
@@ -105,32 +107,31 @@ theorem proxyCoeff_eq (x γ : ℝ) (j : ℕ) {v : ℕ} (hv : v ≠ 0) :
     ← candidateOmega_eq_cardFactors, candidateOmega_keepPrimes]
 
 /-- The allocation factor is nonnegative. -/
-lemma allocationFactor_nonneg (x : ℝ) (j v : ℕ) : 0 ≤ allocationFactor x j v := by
+lemma allocationFactor_nonneg    j v  : 0 ≤ allocationFactor x j v := by
   unfold allocationFactor
   positivity
 
 /-- The allocation factor is at most `1`, since `d_j(n) ≤ j^{Ω(n)}`. -/
-lemma allocationFactor_le_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (v : ℕ) :
+lemma allocationFactor_le_one    {j}  (hj : 1 ≤ j)  v  :
     allocationFactor x j v ≤ 1 := by
-  have hj0 : (0 : ℝ) < j := by exact_mod_cast hj
+  
   rw [allocationFactor, candidateOmega_eq_cardFactors, inv_pow, ← div_eq_mul_inv,
     div_le_one (by positivity)]
   exact_mod_cast card_finMulAntidiag_le j _
 
 /-- Off the candidate-square multiples the allocation factor is exactly `1`:
 `j^{ω_P(v)} j^{-ω_P(v)} = 1`. -/
-lemma allocationFactor_eq_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) {v : ℕ}
+lemma allocationFactor_eq_one    {j}  (hj : 1 ≤ j)  {v} 
     (hv : Squarefree (keepPrimes (candidatePrimes x) v)) : allocationFactor x j v = 1 := by
   have hj0 : (j : ℝ) ≠ 0 := by positivity
   rw [allocationFactor, Nat.card_finMulAntidiag_of_squarefree hv,
     (ArithmeticFunction.cardDistinctFactors_eq_cardFactors_iff_squarefree
       (keepPrimes_ne_zero _ _)).2 hv, ← candidateOmega_eq_cardFactors]
-  push_cast
-  rw [← mul_pow, mul_inv_cancel₀ hj0, one_pow]
+  simp_all
 
 /-- If the candidate part of `v ≠ 0` is not squarefree, then `p² ∣ v` for a
 candidate prime `p`. -/
-lemma exists_sq_dvd_of_not_squarefree (x : ℝ) {v : ℕ} (hv : v ≠ 0)
+lemma exists_sq_dvd_of_not_squarefree    {v}  (hv : v ≠ 0)
     (h : ¬ Squarefree (keepPrimes (candidatePrimes x) v)) :
     ∃ p ∈ candidatePrimes x, p * p ∣ v := by
   rw [Nat.squarefree_iff_prime_squarefree] at h
@@ -151,7 +152,7 @@ lemma prime_of_mem_candidatePrimes {x : ℝ} {p : ℕ} (hp : p ∈ candidatePrim
     exact (mem_filter.1 hpg).2
 
 /-- The damped density is positive for `j ≥ 1`. -/
-lemma dampedDensity_pos (x : ℝ) {j : ℕ} (hj : 1 ≤ j) : 0 < dampedDensity x j := by
+lemma dampedDensity_pos    {j}  (hj : 1 ≤ j) : 0 < dampedDensity x j := by
   have hj1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by exact_mod_cast hj)
   refine mul_pos (prod_pos fun p hp => ?_) (prod_pos fun p hp => inv_pos.2 ?_)
   · have hp2 : (2 : ℝ) ≤ p := by
@@ -164,8 +165,13 @@ lemma dampedDensity_pos (x : ℝ) {j : ℕ} (hj : 1 ≤ j) : 0 < dampedDensity x
     rw [sub_pos, div_lt_one (by linarith)]
     linarith
 
+end
+
+section
+variable {x γ : ℝ} {j : ℕ}
+
 /-- The core factor is nonnegative when `x^γ ≥ 1`. -/
-lemma coreFactor_nonneg {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hxγ : 1 ≤ x ^ γ) (e : ℕ) :
+lemma coreFactor_nonneg     (hj : 1 ≤ j) (hxγ : 1 ≤ x ^ γ)  e  :
     0 ≤ coreFactor x γ j e := by
   unfold coreFactor
   split_ifs with h
@@ -175,14 +181,16 @@ lemma coreFactor_nonneg {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hxγ : 1 ≤ x ^ 
   · exact le_rfl
 
 /-- The core is nonnegative when `x^γ ≥ 1`. -/
-lemma proxyCore_nonneg {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hxγ : 1 ≤ x ^ γ) (v : ℕ) :
+lemma proxyCore_nonneg     (hj : 1 ≤ j) (hxγ : 1 ≤ x ^ γ)  v  :
     0 ≤ proxyCore x γ j v :=
   sum_nonneg fun _ _ => prod_nonneg fun _ _ => coreFactor_nonneg hj hxγ _
 
 /-- The core is invariant under stripping any set of candidate primes. -/
-lemma proxyCore_stripPrimes {x γ : ℝ} {j : ℕ} {S : Finset ℕ} (hS : S ⊆ candidatePrimes x)
-    (v : ℕ) : proxyCore x γ j (stripPrimes S v) = proxyCore x γ j v := by
+lemma proxyCore_stripPrimes      {S}  (hS : S ⊆ candidatePrimes x)
+     v  : proxyCore x γ j (stripPrimes S v) = proxyCore x γ j v := by
   rw [proxyCore, proxyCore, candidateStrip, candidateStrip, stripPrimes_stripPrimes hS]
+
+end
 
 end
 

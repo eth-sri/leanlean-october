@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.SpectralWeights
 public import OAI.NumberTheory.DirichletL.Detector.ZeroIndex
@@ -15,18 +16,18 @@ local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
 
-def sourceScalar (t k j : ℕ) : ℂ :=
+def sourceScalar (t k j : ℕ)  :=
   if t=0 then
     if k=0 then 1 else (actualSextic (Ideal.span {p}) hg ^ k) (Ideal.Quotient.mk _ (p^j))
   else positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) (t-1) k j
 
-def sourcePrincipalTerm (eta a x w z : ℂ) (e l k m : ℕ) : ℂ :=
+def sourcePrincipalTerm (eta a x w z : ℂ) (e l k m : ℕ)  :=
   sourceWeightedScalar (Ideal.absNorm (Ideal.span {p})) eta a
     (localGamma p hp.ne_zero hg 1) (star (localGamma p hp.ne_zero hg 3))
     (actualSextic (Ideal.span {p}) hg (-1)) x w z
     (sourceScalar p hp hg (e+3*l) k (6*m)) e l k m
 
-lemma sourcePrincipalTerm_pos (eta a x w z : ℂ) (e l k m : ℕ) (ht : e+3*l≠0) :
+lemma sourcePrincipalTerm_pos  eta a x w z   e l k m  (ht : e+3*l≠0) :
     sourcePrincipalTerm p hp hg eta a x w z e l k m =
       principalMarkedTerm p hp hg eta a
         ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x)) ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w))
@@ -35,7 +36,7 @@ lemma sourcePrincipalTerm_pos (eta a x w z : ℂ) (e l k m : ℕ) (ht : e+3*l≠
   rw [sourceWeightedScalar_actual p hp hg]
   simp only [sourceScalar, ht, ite_false, principalMarkedTerm, coordV, Complex.ofReal_natCast]
 
-lemma sourcePrincipalTerm_zero (eta a x w z : ℂ) (k m : ℕ) :
+lemma sourcePrincipalTerm_zero  eta a x w z   k m  :
     sourcePrincipalTerm p hp hg eta a x w z 0 0 k m =
       zeroIndexTerm p (actualSextic (Ideal.span {p}) hg)
         ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w))
@@ -46,7 +47,7 @@ lemma sourcePrincipalTerm_zero (eta a x w z : ℂ) (k m : ℕ) :
     mul_zero, add_zero, pow_zero,  one_mul, zero_mul, Nat.choose_zero_succ,
     ite_true, Complex.ofReal_natCast]
 
-def sourcePrincipalSeries (eta a x w z : ℂ) : ℂ :=
+def sourcePrincipalSeries (eta a x w z : ℂ)  :=
   ∑ e : Fin 2, ∑' l, ∑' k, ∑' m, sourcePrincipalTerm p hp hg eta a x w z e.val l k m
 
 include hc in
@@ -68,9 +69,7 @@ lemma sourcePrincipalSeries_eq (eta a x w z : ℂ)
   have hr : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a X V‖<1 := by
     have he := evenRatio_eq_coordR _ hQ a x z
     simp only [Complex.ofReal_natCast] at he
-    change ‖evenRatio _ a _ _‖<1
-    rw [he]
-    exact hR
+    grind
   have hW' : ‖W‖<1 := by simpa only [W, coordW, one_mul, Complex.ofReal_natCast] using hW
   have he : Summable (fun l => principalInner p hp hg eta a X W V 0 l) :=
     (principalInner_even_hasSum p hp hg hc eta a X W V hV hr).summable
@@ -100,9 +99,7 @@ lemma sourcePrincipalSeries_eq (eta a x w z : ℂ)
   simp only [Fin.sum_univ_two, Fin.val_zero, Fin.val_one]
   rw [h0, h1, he.tsum_add (hasSum_ite_eq 0 _).summable, tsum_ite_eq]
   rw [zeroIndexSeries_eq p hp _ W V hW' hV]
-  change _ = 1/(1-V)+W/(1-W)+((∑' l, principalInner p hp hg eta a X W V 0 l)+
-    ∑' l, principalInner p hp hg eta a X W V 1 l)
-  ring
+  grind
 
 include hc in
 

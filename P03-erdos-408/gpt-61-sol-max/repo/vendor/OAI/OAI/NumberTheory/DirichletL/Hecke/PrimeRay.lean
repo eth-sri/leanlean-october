@@ -15,13 +15,13 @@ namespace SevenEighths.HeckePrimeRay
 open HeckeFamily HeckePrimeAnnular
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
+
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-def twistedFamily (η : Character) (θ : RayQuotient.Characters M H) : Character :=
+def twistedFamily (η : Character) (θ : RayQuotient.Characters M H)  :=
   η.product (HeckeRayQuotient.character M H hH θ)
 
-def rayPrimePolynomial (η : Character) (W : ℝ→ℂ) (b D σ freq : ℝ) : ℂ :=
+def rayPrimePolynomial (η : Character) (W : ℝ→ℂ) (b D σ freq : ℝ)  :=
   (D : ℂ)^(-(1/2 : ℂ))*∑ I∈(annulusSet b D).filter
     (fun I => Prime I ∧ I∈RayQuotient.identityClass M H),
       idealCoeff η I*annularWeight W D σ freq I
@@ -46,7 +46,7 @@ theorem finite_average (η : Character) (S : Finset (Ideal O)) (f : Ideal O→�
   rw [hs,mul_left_comm,HeckeRayQuotient.average_idealCoeff M H hH I]
   split_ifs <;> simp
 
-theorem rayPrimePolynomial_eq_average (η : Character) (W : ℝ→ℂ) (b D σ freq : ℝ) :
+theorem rayPrimePolynomial_eq_average  η   W   b D σ freq  :
     rayPrimePolynomial M H η W b D σ freq =
       (RayQuotient.classNumber M H : ℂ)⁻¹ *
         ∑ θ : RayQuotient.Characters M H,
@@ -62,7 +62,7 @@ theorem rayPrimePolynomial_eq_average (η : Character) (W : ℝ→ℂ) (b D σ f
   rw [←Finset.mul_sum]
   ring
 
-theorem rayPrimePolynomial_norm_le (η : Character) (W : ℝ→ℂ) (b D σ freq C : ℝ)
+theorem rayPrimePolynomial_norm_le  η   W   b D σ freq C 
     (hbound : ∀ θ : RayQuotient.Characters M H,
       ‖primePolynomial (twistedFamily M H hH η θ) W b D σ freq‖≤C) :
     ‖rayPrimePolynomial M H η W b D σ freq‖≤C := by
@@ -80,7 +80,7 @@ theorem rayPrimePolynomial_norm_le (η : Character) (W : ℝ→ℂ) (b D σ freq
         (by positivity)
     _ = C := by simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,heq]; rw [←mul_assoc,inv_mul_cancel₀ hcard.ne',one_mul]
 
-theorem ray_prime_bin_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
+theorem ray_prime_bin_bound  W   A B  (hA : 0<A)
     (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W)
     (R dmax τ ε e κ η σmin σmax : ℝ)
     (hR : 0≤R) (hdmax : 0≤dmax) (hτ : 0<τ) (hε : 0<ε) (he : 0<e)

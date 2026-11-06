@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.ShortReflectedPower
 public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
@@ -7,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
 
 namespace OAI
 
-noncomputable section
+section
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseShortCanonicalNormalization
 open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion
 open InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis" => ActualEisensteinCubic.O
-lemma normalization_norm_sq (Z N V : ℝ) (hZ : 0<Z) (x : ℂ) :
+
+lemma normalization_norm_sq (Z N V : ℝ) (hZ : 0<Z)  x  :
     ‖((Z^(-(N+V)/2):ℝ):ℂ)*((Real.sqrt (Z^N):ℝ):ℂ)*x‖^2 =
       Z^(-V)*‖x‖^2 := by
   have hn : 0≤Z^(-(N+V)/2) := Real.rpow_nonneg hZ.le _
@@ -24,9 +25,9 @@ lemma normalization_norm_sq (Z N V : ℝ) (hZ : 0<Z) (x : ℂ) :
   congr 2
   norm_num
 
-lemma divisor_weight_sum (K : ℕ) (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
+lemma divisor_weight_sum  K   L ε  (hL : 0≤L) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ (Z V : ℝ),1≤Z → 0≤V → V≤L →
-      ∀ labels : Finset (Ideal Eis),
+      ∀ labels : Finset (Ideal ActualEisensteinCubic.O),
       (∀ f∈labels,f≠0 ∧ (Ideal.absNorm f:ℝ)≤Z^V) →
       (∑ f∈labels,((idealDivisors f).card:ℝ)^(9+4*K))≤C*Z^(V+ε) := by
   let n : ℕ := 9+4*K
@@ -40,7 +41,7 @@ lemma divisor_weight_sum (K : ℕ) (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
   have hbudget : L*(δ*(n:ℝ))≤ε := by
     have heq : (L+1)*(δ*(n:ℝ))=ε := by dsimp [δ]; field_simp
     nlinarith [mul_pos hδ hn]
-  have hb (f : Ideal Eis) (hfl : f∈labels) :
+  have hb (f : Ideal ActualEisensteinCubic.O) (hfl : f∈labels) :
       ((idealDivisors f).card:ℝ)^n≤D^n*Z^ε := by
     have hfN : (Ideal.absNorm f:ℝ)≤Z^L :=
       (hf f hfl).2.trans (Real.rpow_le_rpow_of_exponent_le hZ hVL)
@@ -59,26 +60,23 @@ lemma divisor_weight_sum (K : ℕ) (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
     _ ≤ (128*Z^V)*(D^n*Z^ε) := mul_le_mul_of_nonneg_right hc (by positivity)
     _ = (128*D^n)*Z^(V+ε) := by rw [Real.rpow_add hz]; ring
 
-lemma rowTwist_label_transfer (Ψ : Eis→*ℂ) (m a f k : Eis) :
+lemma rowTwist_label_transfer  Ψ   m a f k  :
     CanonicalRowCompletion.rowTwist Ψ m (a*f) k =
       CanonicalRowCompletion.rowTwist Ψ m f (a^4*k) := by
   have he : m^6*(a*f)^4*k=m^6*f^4*(a^4*k) := by ring
   unfold CanonicalRowCompletion.rowTwist
   rw [he]
 
-lemma label_eq_rowUnit_generator (f : Ideal Eis) (hf : f≠0) (g : Eis)
+lemma label_eq_rowUnit_generator  f  (hf : f≠0)  g 
     (hg : Ideal.span {g}=f) :
     g=(CompletedUnitRows.rowUnit g).val*ConcretePrimeRowBridge.idealGenerator f := by
   have hgn : g≠0 := by
-    intro he
-    apply hf
-    rw [←hg,he,Ideal.span_singleton_zero]
-    rfl
+    aesop
   have hh := CompletedUnitRows.rowUnit_spec g hgn
   rw [hg] at hh
   exact hh.symm
 
-local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+
 universe v
 
 end SevenEighths.InverseShortCanonicalNormalization

@@ -1,4 +1,9 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Extraction.Allocation.Expansion
+import Erdos408.Extraction.Sieve.Basic
+import Erdos408.Extraction.Sieve.Inert
 
 public import Erdos408.Extraction.TypeII.Asymp
 public import Erdos408.Mertens
@@ -26,13 +31,17 @@ open Finset Real
 
 /-! ### Band weights -/
 
-theorem bandWeight_eq (q x a : ℝ) (n : ℕ) :
+theorem bandWeight_eq  q x a   n  :
     bandWeight q x a n = q ^ ((primeCount (band x a) n : ℤ) - 1) *
       ((primeCount (band x a) n : ℝ) / harmonicMass (band x a)) := by
   simp [bandWeight, markedWeight]
 
+section
+variable {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (x a : ℝ) (n : ℕ)
+
+include hq hq₁ in
 /-- `ω q^{ω - 1} ≤ 1 / (1 - q)` for `0 < q < 1`. -/
-theorem zpow_mul_le {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (ω : ℕ) :
+theorem zpow_mul_le       (ω : ℕ) :
     q ^ ((ω : ℤ) - 1) * ω ≤ 1 / (1 - q) := by
   rcases Nat.eq_zero_or_pos ω with rfl | hω
   · simp only [Nat.cast_zero, mul_zero]; exact div_nonneg zero_le_one (by linarith)
@@ -56,13 +65,15 @@ theorem zpow_mul_le {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (ω : ℕ) :
   rw [le_div_iff₀ (by linarith)]
   nlinarith
 
-theorem bandWeight_nonneg {q : ℝ} (hq : 0 < q) (x a : ℝ) (n : ℕ) : 0 ≤ bandWeight q x a n := by
+include hq in
+theorem bandWeight_nonneg         : 0 ≤ bandWeight q x a n := by
   rw [bandWeight_eq]
   have : 0 ≤ harmonicMass (band x a) := sum_nonneg fun p _ => by positivity
   positivity
 
+include hq hq₁ in
 /-- `bandWeight ≤ 1 / ((1 - q) V)`. -/
-theorem bandWeight_le {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (x a : ℝ) (n : ℕ)
+theorem bandWeight_le          
     (hV : 0 < harmonicMass (band x a)) :
     bandWeight q x a n ≤ 1 / ((1 - q) * harmonicMass (band x a)) := by
   rw [bandWeight_eq]
@@ -76,22 +87,16 @@ theorem bandWeight_le {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (x a : ℝ) (n : �
 
 /-- `∏ q^{e_i} = q^{∑ e_i}` for `q ≠ 0`. -/
 theorem prod_zpow_eq {ι : Type*} (s : Finset ι) {q : ℝ} (hq : q ≠ 0) (e : ι → ℤ) :
-    ∏ i ∈ s, q ^ e i = q ^ (∑ i ∈ s, e i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp
-  | insert i s hi ih => rw [prod_insert hi, sum_insert hi, ih, zpow_add₀ hq]
+    ∏ i ∈ s, q ^ e i = q ^ (∑ i ∈ s, e i) := by solve_by_elim [_root_.Erdos408.prod_zpow_eq_zpow_sum]
 
 /-- The marked weight of `K` bands is the product of the single-band weights. -/
-theorem markedWeight_eq_prod {q : ℝ} (hq : q ≠ 0) (x : ℝ) {K : ℕ} (a : Fin K → ℝ) (n : ℕ) :
+theorem markedWeight_eq_prod   (hq : q ≠ 0) (x : ℝ) {K : ℕ} (a : Fin K → ℝ)  n  :
     markedWeight Finset.univ q (fun c => band x (a c)) n = ∏ c, bandWeight q x (a c) n := by
   simp only [bandWeight_eq, markedWeight, prod_mul_distrib]
   congr 1
-  rw [prod_zpow_eq _ hq]
-  congr 1
-  push_cast
-  rw [sum_sub_distrib, sum_const, card_univ, Fintype.card_fin]
-  simp
+  simp_all [prod_zpow_eq]
+
+end
 
 /-! ### Harmonic mass and disjointness of bands -/
 
@@ -133,8 +138,11 @@ theorem harmonicMass_band_ge : ∃ L₀ : ℝ, ∀ x a : ℝ, L₀ ≤ Real.log 
     sum_le_sum_of_subset_of_nonneg hsub fun p _ _ => by positivity
   linarith
 
+section
+variable {S : Finset ℕ} (hS : ∀ q ∈ S, q.Prime) {q x a a' : ℝ} (hdisj : Disjoint (band x a) (band x a')) {k : ℕ} (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) {p : ℕ} (hp : p.Prime)
+
 /-- Bands whose exponents differ by at least `1/T` are disjoint. -/
-theorem band_disjoint {x a a' : ℝ} (hL : 1 < Real.log x) (h : a + 1 / logLog x ≤ a') :
+theorem band_disjoint   (hL : 1 < Real.log x) (h : a + 1 / logLog x ≤ a') :
     Disjoint (band x a) (band x a') := by
   have hL0 : 0 < Real.log x := by linarith
   have hT : 0 < logLog x := Real.log_pos hL
@@ -162,9 +170,10 @@ theorem band_disjoint {x a a' : ℝ} (hL : 1 < Real.log x) (h : a + 1 / logLog x
 
 /-! ### Invariance under a small prime -/
 
+include hS hp in
 /-- Multiplying by a prime outside `S` does not change the number of primes of `S` dividing. -/
-theorem primeCount_prime_mul {S : Finset ℕ} (hS : ∀ q ∈ S, q.Prime) {p : ℕ} (hp : p.Prime)
-    (hpS : p ∉ S) (h : ℕ) : primeCount S (p * h) = primeCount S h := by
+theorem primeCount_prime_mul        
+    (hpS : p ∉ S)  h  : primeCount S (p * h) = primeCount S h := by
   unfold primeCount
   congr 1
   refine filter_congr fun q hq => ⟨fun hdvd => ?_, fun hdvd => dvd_mul_of_dvd_right hdvd p⟩
@@ -172,20 +181,20 @@ theorem primeCount_prime_mul {S : Finset ℕ} (hS : ∀ q ∈ S, q.Prime) {p : �
   · exact absurd ((Nat.prime_dvd_prime_iff_eq (hS q hq) hp).1 h' ▸ hq) hpS
   · exact h'
 
-theorem band_prime {x a : ℝ} {p : ℕ} (hp : p ∈ band x a) : p.Prime := by
-  unfold band at hp
-  exact (mem_filter.1 hp).2
+alias band_prime := _root_.Erdos408.Sieve.prime_of_mem_band
 
+include hdisj in
 /-- A band weight is invariant under the primes of a disjoint band. -/
-theorem bandWeight_prime_mul {q x a a' : ℝ} (hdisj : Disjoint (band x a) (band x a')) {p : ℕ}
-    (hp : p ∈ band x a') (h : ℕ) : bandWeight q x a (p * h) = bandWeight q x a h := by
+theorem bandWeight_prime_mul      
+    (hp : p ∈ band x a')  h  : bandWeight q x a (p * h) = bandWeight q x a h := by
   rw [bandWeight_eq, bandWeight_eq,
     primeCount_prime_mul (fun q hq => band_prime hq) (band_prime hp)
       (disjoint_right.1 hdisj hp)]
 
+include hp in
 /-- The slot statistic is invariant under primes below every slot. -/
-theorem slotCount_prime_mul {x : ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ)
-    {p : ℕ} (hp : p.Prime) (hpu : ∀ i, (p : ℝ) ≤ x ^ u i) (h : ℕ) :
+theorem slotCount_prime_mul        
+        (hpu : ∀ i, (p : ℝ) ≤ x ^ u i)  h  :
     slotCount x u v B (p * h) = slotCount x u v B h := by
   unfold slotCount
   congr 1
@@ -196,30 +205,33 @@ theorem slotCount_prime_mul {x : ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ) (B :
   have hcop : Nat.Coprime (∏ i, Q i) p := by
     refine Nat.Coprime.symm (Nat.coprime_prod_right_iff.2 fun i _ => ?_)
     refine (Nat.coprime_primes hp (hQ' i).1).2 fun hpq => ?_
-    have := (hQ' i).2
-    rw [← hpq] at this
-    linarith [hpu i]
+    grind
   exact hcop.dvd_mul_left
+
+end
 
 /-! ### Size of the slot statistic -/
 
-theorem slotCount_nonneg {x : ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ) {B : (Fin k → ℕ) → ℝ}
-    (hB : ∀ Q, 0 ≤ B Q) (h : ℕ) : 0 ≤ slotCount x u v B h :=
-  sum_nonneg fun _ _ => hB _
+section
+variable {c x : ℝ} (hx : 1 < x) (hc : 0 < c) (hT : 0 < logLog x) {k : ℕ} (u v : Fin (k + 1) → ℝ) {B : (Fin k → ℕ) → ℝ} (hB : ∀ Q, 0 ≤ B Q)
 
-theorem slotMean_nonneg {x : ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ) {B : (Fin k → ℕ) → ℝ}
-    (hB : ∀ Q, 0 ≤ B Q) : 0 ≤ slotMean x u v B :=
-  sum_nonneg fun _ _ => div_nonneg (hB _) (prod_nonneg fun _ _ => Nat.cast_nonneg _)
+include hB in
+theorem slotCount_nonneg        
+       h  : 0 ≤ slotCount x u v B h := by solve_by_elim [_root_.Erdos408.Sieve.slotCount_nonneg]
 
+include hB in
+alias slotMean_nonneg := _root_.Erdos408.Sieve.slotMean_nonneg
+
+include hx hc hT in
 /-- A slot tuple divides `h ≤ x²` only through the `≤ 2T²⁰/c` prime factors of `h` above
 `x^{c/T²⁰}`, so `f_𝔟(h) ≤ (2T²⁰/c)^{k+1}`. -/
-theorem slotCount_le {c x : ℝ} (hx : 1 < x) (hc : 0 < c) (hT : 0 < logLog x) {k : ℕ}
-    (u v : Fin (k + 1) → ℝ) {B : (Fin k → ℕ) → ℝ} (hB : ∀ Q, 0 ≤ B Q ∧ B Q ≤ 1)
+theorem slotCount_le          
+        (hB : ∀ Q, 0 ≤ B Q ∧ B Q ≤ 1)
     (hu : ∀ i, c / logLog x ^ 20 ≤ u i) {h : ℕ} (h1 : 1 ≤ h) (hh : (h : ℝ) ≤ x ^ 2) :
     slotCount x u v B h ≤ (2 * logLog x ^ 20 / c) ^ (k + 1) := by
-  have hL : 0 < Real.log x := Real.log_pos hx
+  
   set e := c / logLog x ^ 20 with he
-  have he0 : 0 < e := by positivity
+  
   set D := h.primeFactors.filter fun q : ℕ => x ^ e < q with hD
   -- the slot tuples dividing `h` have all coordinates in `D`
   have hsub : (slotTuples x u v).filter (fun Q => ∏ i, Q i ∣ h) ⊆
@@ -263,6 +275,8 @@ theorem slotCount_le {c x : ℝ} (hx : 1 < x) (hc : 0 < c) (hT : 0 < logLog x) {
         rw [Fintype.card_piFinset_const]; push_cast; rfl
     _ ≤ _ := pow_le_pow_left₀ (Nat.cast_nonneg _) hcard _
 
+end
+
 /-- The sum `∑_{p ≤ x} 1/p ≤ log log x + E₂`. -/
 theorem sum_inv_primes_le : ∃ E₂ : ℝ, 0 ≤ E₂ ∧ ∀ x : ℝ, 2 ≤ x →
     ∑ p ∈ primesIoc 1 x, (1 : ℝ) / p ≤ logLog x + E₂ := by
@@ -290,7 +304,7 @@ theorem sum_inv_primes_le : ∃ E₂ : ℝ, 0 ≤ E₂ ∧ ∀ x : ℝ, 2 ≤ x 
   linarith [hm.2]
 
 /-- `C_𝔟 ≤ (∑_{p ≤ x} 1/p)^{k+1}` for admissible slots and `0 ≤ 𝔟 ≤ 1`. -/
-theorem slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} (u v : Fin (k + 1) → ℝ)
+theorem slotMean_le  {x}  (hx : 1 < x) {k : ℕ} (u v : Fin (k + 1) → ℝ)
     {B : (Fin k → ℕ) → ℝ} (hB : ∀ Q, 0 ≤ B Q ∧ B Q ≤ 1) (hu : ∀ i, 0 < u i)
     (hv : ∑ i, v i ≤ 1) :
     slotMean x u v B ≤ (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) := by
@@ -331,6 +345,6 @@ theorem slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} (u v : Fin (k + 1) → ℝ)
   · push Not at hne
     obtain ⟨i, hi⟩ := hne
     rw [prod_eq_zero (mem_univ i) (by rw [hi, sum_empty])]
-    exact pow_nonneg (sum_nonneg fun _ _ => by positivity) _
+    positivity
 
 end Erdos408.TypeII

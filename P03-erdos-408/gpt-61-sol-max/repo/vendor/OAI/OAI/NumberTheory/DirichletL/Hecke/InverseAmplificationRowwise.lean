@@ -17,13 +17,13 @@ def logTest (W : ℝ→ℂ) : ℕ→ℝ→ℂ
   | 0 => W
   | n+1 => logProfile (logTest W n)
 
-theorem logTest_support (W : ℝ→ℂ) (n : ℕ) :
+theorem logTest_support  W   n  :
     Function.support (logTest W n)⊆Function.support W := by
   induction n with
   | zero => exact subset_rfl
   | succ n ih => exact (logProfile_support (logTest W n)).trans ih
 
-theorem logTest_smooth (W : ℝ→ℂ) (n : ℕ) (a b : ℝ) (ha : 0<a)
+theorem logTest_smooth  W   n  (a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) :
     ContDiff ℝ ∞ (logTest W n) := by
   induction n with
@@ -37,7 +37,7 @@ theorem no_slot_rowwise_endpoint
     (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀ y, 0≤φ y) (hφne : φ≠0)
     (a b B : ℝ) (ha : 0<a) (hab : a≤b) (hB : 0<B)
     (hφs : Function.support φ⊆Ioo a b) (hφB : ∀ y, φ y≤B)
-    (R ε : ℝ) (hR : 0≤R) (hε : 0<ε) :
+     R ε  (hR : 0≤R) (hε : 0<ε) :
     ∃ c κ K : ℝ, 0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K ∧ ∀ᶠ U : ℝ in atTop,
       ∀ (r : ℝ) (data : RowData) (rows : Finset FreeRow) (W : ℝ→ℂ)
         (wa wb C T : ℝ) (σ freq : FreeRow→ℝ),

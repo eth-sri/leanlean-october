@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalRows
 public import OAI.NumberTheory.DirichletL.Detector.GaussianDensityBudget
@@ -7,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianDensityBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma physicalRows_common_finset {α : Type*} (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
@@ -26,7 +27,7 @@ lemma physicalRows_common_finset {α : Type*} (C : CalibrationData) (W0 W1 : ℝ
   intro k hk r hr
   by_contra hn
   apply hr
-  exact Finset.mem_biUnion.mpr ⟨⟨k,hk⟩,by simp,by simpa only [Set.Finite.mem_toFinset,Function.mem_support] using hn⟩
+  exact (by aesop)
 
 theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
     (W : ι→ℝ→ℂ) (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
@@ -89,6 +90,6 @@ theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
       ring
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

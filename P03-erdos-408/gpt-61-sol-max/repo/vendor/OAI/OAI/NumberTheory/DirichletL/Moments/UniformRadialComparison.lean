@@ -7,20 +7,20 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialComparison
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformRadialComparison
 open HeckeFamily HeckeDyadic ConcreteTraceCRT
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
-local notation "O" => HeckeFamily.O
+
 
 theorem actual_original_radial_comparison (epsilon Cscale xi saving L : ℝ)
      (hepsilon : 0<epsilon) (hscale : 0<Cscale) (hxi : 0<xi)
     (B J : ℕ) (hB : 2≤B) :
     ∃H : Finset (ℕ×ℕ),∃C D : ℝ,0<C ∧ 0<D ∧ ∀ᶠ Z : ℝ in atTop,1<Z ∧
-      ∀(G:O→𝓢(ℝ,ℂ))(χ : O→Character)(P : O→ℂ)(omega : O→ℝ)(keep : O→Prop)
+      ∀(G:HeckeFamily.O→𝓢(ℝ,ℂ))(χ : HeckeFamily.O→Character)(P : HeckeFamily.O→ℂ)(omega : HeckeFamily.O→ℝ)(keep : HeckeFamily.O→Prop)
         (Φ : 𝓢(ℝ,ℂ))(K Pbound : ℝ)(Wshort : ℝ→ℂ)(c d M along bshort E Src Rcap : ℝ),
       0<K → (∀z,0≤(Φ (‖eisEmbedding z‖^2/K)).re) → (∀z,‖P z‖≤Pbound) →
       (∀z,keep z → (χ z).residue≠1) →
@@ -53,7 +53,7 @@ theorem actual_original_radial_comparison (epsilon Cscale xi saving L : ℝ)
   intro rows
   let S:=rows.filter keep
   let weightedP (z : ↥S) : ℂ:=P z*(Real.sqrt ((Φ (‖eisEmbedding z‖^2/K)).re):ℂ)
-  have hmem (z : ↥S) : keep (z:O):=(Finset.mem_filter.mp z.property).2
+  have hmem (z : ↥S) : keep (z:HeckeFamily.O):=(Finset.mem_filter.mp z.property).2
   have hh:=hZ.2 (fun z:↥S=>G z) (fun z:↥S=>χ z) weightedP (fun z=>omega z)
     Wshort c d M along bshort E Src Rcap (fun z=>hχ z (hmem z)) hd hshort hshortsmooth
     hML (fun z=>hmod z (hmem z)) hE hSrc (fun z=>hGS z (hmem z)) hRcap
@@ -80,6 +80,6 @@ theorem actual_original_radial_comparison (epsilon Cscale xi saving L : ℝ)
 
 end SevenEighths.CenteredMomentUniformRadialComparison
 
-end
+
 
 end OAI

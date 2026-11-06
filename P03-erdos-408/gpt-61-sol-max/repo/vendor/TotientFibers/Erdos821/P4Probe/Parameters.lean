@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.Blocks
 public import Erdos821.P4Probe.Costs
@@ -16,9 +17,9 @@ open Blueprint.Graph
 
 noncomputable section
 
-def probeBeta (ell m : ℕ) : ℝ := 2 * (ell : ℝ) ^ ell / (m : ℝ) ^ ell
+def probeBeta (ell m : ℕ)  := 2 * (ell : ℝ) ^ ell / (m : ℝ) ^ ell
 
-lemma exists_small_probe_beta (ell : ℕ) (hell : 1 ≤ ell) (c₀ E : ℝ)
+lemma exists_small_probe_beta  ell  (hell : 1 ≤ ell)  c₀ E 
     (hc₀ : 0 < c₀) (hE : 0 < E) :
     ∃ m : ℕ, 1 ≤ m ∧ 0 < probeBeta ell m ∧ probeBeta ell m < 1 ∧
       (c₀ / 6) * Real.log (probeBeta ell m) ≤ -(E + 2) := by
@@ -33,7 +34,6 @@ lemma exists_small_probe_beta (ell : ℕ) (hell : 1 ≤ ell) (c₀ E : ℝ)
   have hmn : 1 ≤ m := by exact_mod_cast hm1.le
   have hp : 0 < probeBeta ell m := by
     unfold probeBeta
-    have : 0 < (ell : ℝ) := by exact_mod_cast hell
     positivity
   have hbd : probeBeta ell m < delta := by
     have hpow : (m : ℝ) ≤ (m : ℝ) ^ ell := le_self_pow₀ hm1.le (by omega)
@@ -69,14 +69,13 @@ lemma sqrt_beta_power_le (beta c₀ E L : ℝ) (b : ℕ)
   rw [hsq, Real.rpow_def_of_pos hLpos]
   apply Real.exp_le_exp.mpr
   calc
-    _ ≤ Real.log beta * (c₀ * Real.log L / 3) / 2 := by
-      exact div_le_div_of_nonneg_right
+    _ ≤ Real.log beta * (c₀ * Real.log L / 3) / 2 := div_le_div_of_nonneg_right
         (mul_le_mul_of_nonpos_left hsize hlb.le) (by norm_num)
     _ = (c₀ / 6 * Real.log beta) * Real.log L := by ring
     _ ≤ -(E + 2) * Real.log L := mul_le_mul_of_nonneg_right hlog hlL
     _ = _ := by ring
 
-lemma probe_power_le (a C : ℝ) (m n : ℕ) (L : ℝ)
+lemma probe_power_le  a C  (m n : ℕ)  L 
     (ha : 1 ≤ a) (hL : 1 ≤ L) (hn : (n : ℝ) ≤ C * Real.log L) :
     a ^ (m * n) ≤ L ^ ((m : ℝ) * C * Real.log a) := by
   have hapos : 0 < a := lt_of_lt_of_le zero_lt_one ha
@@ -85,8 +84,7 @@ lemma probe_power_le (a C : ℝ) (m n : ℕ) (L : ℝ)
   apply Real.exp_le_exp.mpr
   have h := mul_le_mul_of_nonneg_left hn
     (mul_nonneg (Nat.cast_nonneg m) (Real.log_nonneg ha))
-  simpa only [Nat.cast_mul] using (show Real.log a * ((m : ℝ) * (n : ℝ)) ≤
-    Real.log L * ((m : ℝ) * C * Real.log a) by nlinarith [h])
+  grind
 
 lemma three_errors_le (L E : ℝ) (hL : 2 ≤ L) :
     3 * L ^ (-(E + 2)) ≤ L ^ (-E) := by

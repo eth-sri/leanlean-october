@@ -8,7 +8,7 @@ public import Erdos821.S2.HistoryDamping
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.S2Core
@@ -20,18 +20,18 @@ namespace ResiduePath
 variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
   (Q : ResiduePath A n)
 
-theorem ghostFactorial_cast (S : LifespanAssignment P n) :
+theorem ghostFactorial_cast  S  :
     (Q.ghostFactorial S : ℂ) =
       ((∏ i : Fin (n + 1), ∏ g : P.BigGroup,
         (Q.ghostBirthPrimes S i g).card.factorial : ℕ) : ℂ) := by
   simp [ghostFactorial]
 
 theorem reconstructed_weight_factorial (hGhost : SpanGhostWeightTask)
-    (hMark : SpanMarkWeightTask) (S : LifespanAssignment P n)
-    (hQ : Q.Valid) (hS : Q.lifespanValid S)
+    (hMark : SpanMarkWeightTask)  S 
+    (hQ : Q.Valid)  hS 
     (hk : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ A.k)
-    (hV : ∀ g, P.V g ≠ 0) (y : P.SmallResidues) (hy : Q.SmallCompatible y)
-    (rho theta : ℝ) (hrho : rho ≠ 0) :
+    (hV : ∀ g, P.V g ≠ 0)  y  (hy : Q.SmallCompatible y)
+     rho theta  (hrho : rho ≠ 0) :
     (Q.reconstructedHistory S hS y).Weight rho theta * (Q.ghostFactorial S : ℂ) =
       ((Fintype.card P.SmallResidues : ℝ)⁻¹ * P.markMass (J + F.ell) *
           (∏ i : Fin n, Q.smallEdgeDamping y i) *

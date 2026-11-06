@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
 
@@ -16,7 +17,7 @@ open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
 open CenteredMomentSourceProfileMass CenteredMomentSourceInputTailUniform
 open CenteredMomentFirstLocalization EisensteinSchwartzPoisson
 open CenteredMomentExceptionalAmplitudePair CenteredMomentAddedZeroUniform
-local notation "O"=>HeckeFamily.O
+
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -26,7 +27,7 @@ theorem first_input_zero_bound (hi:ι→ℝ)(wlo whi ε:ℝ)
     ∃C:ℝ,0<C ∧ ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),s.W₁=W₁→s.W₂=W₂→
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→
-      (∀i,s.hi i≤hi i)→∀(m A:O)(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
+      (∀i,s.hi i≤hi i)→∀(m A:HeckeFamily.O)(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
       ‖zeroEnergy s.η m A s.t (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) Φ K‖/volume s.toData≤
       C*(plainControl s W₁ W₂)^2*K*‖paperRadialFourier Φ 0‖*(volume s.toData)^ε:=by
@@ -65,7 +66,7 @@ theorem first_input_zero_bound (hi:ι→ℝ)(wlo whi ε:ℝ)
     refine ⟨hp.1,hp.2.trans ?_⟩
     simp only [map_one,Nat.cast_one,one_mul,div_one]
     change (∏i,hi i)*whi*whi*(s.X₁*s.X₂)*(∏i,s.P i)≤_
-    have hh:0≤V:=hV.le
+    
     dsimp [L,V,volume] at *
     nlinarith
   rw [hc]
@@ -94,7 +95,7 @@ theorem first_input_zero_uniform (hi:ι→ℝ)(wlo whi ε:ℝ)
       ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),s.W₁=W₁→s.W₂=W₂→
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→
-      (∀i,s.hi i≤hi i)→∀(m A:O)(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
+      (∀i,s.hi i≤hi i)→∀(m A:HeckeFamily.O)(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
       ‖zeroEnergy s.η m A s.t (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) Φ K‖/volume s.toData≤
       C*(plainControl s W₁ W₂)^2*SΦ.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ*K*
@@ -121,7 +122,7 @@ theorem first_input_zero_capped (hi:ι→ℝ)(wlo whi B ε:ℝ)
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→
       (∀i,s.hi i≤hi i)→volume s.toData≤Z^B→
-      ∀(m A:O)(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
+      ∀(m A:HeckeFamily.O)(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
       ‖zeroEnergy s.η m A s.t (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) Φ K‖/volume s.toData≤
       C*(plainControl s W₁ W₂)^2*SΦ.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ*K*Z^ε:=by

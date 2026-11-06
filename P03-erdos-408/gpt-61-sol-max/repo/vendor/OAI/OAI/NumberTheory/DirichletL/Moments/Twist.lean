@@ -6,21 +6,21 @@ public import OAI.NumberTheory.DirichletL.Moments.Counting
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
-local notation "O" => ActualEisensteinCubic.O
+
 namespace SevenEighths.CenteredMomentTwist
 open ActualEisensteinCubic EisensteinSchwartzPoisson
 open CenteredMomentLattice CenteredMomentCounting
 
-lemma normPowerProfile_support (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W) (t : ℝ) :
+lemma normPowerProfile_support  W   a b   ha 
+     hs   hW   t  :
     Function.support (normPowerProfile W a b ha hs hW t : ℝ → ℂ) ⊆ Function.support W := by
   intro x hx hz
   exact hx (by rw [normPowerProfile_apply, hz, mul_zero])
 
-lemma normPowerProfile_norm (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W) (t x : ℝ) :
+lemma normPowerProfile_norm  W   a b   ha 
+     hs   hW   t x  :
     ‖normPowerProfile W a b ha hs hW t x‖ = ‖W x‖ := by
   rw [normPowerProfile, CompletedHeight.uniformTwistedSchwartz_apply,
     CompletedHeight.normTwistedSource, norm_mul, FourierBridge.logPhase_norm, one_mul]
@@ -31,6 +31,6 @@ lemma norm_real_imaginary_power (X t : ℝ) (hX : 0 < X) :
   simp
 
 end SevenEighths.CenteredMomentTwist
-end
+
 
 end OAI

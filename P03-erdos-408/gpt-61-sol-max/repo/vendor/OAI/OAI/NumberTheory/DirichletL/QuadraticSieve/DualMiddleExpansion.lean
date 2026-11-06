@@ -10,77 +10,81 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
-theorem scaled_middleTruncation_eq_ideal_frequencies (G : Ideal O) (hG : Squarefree G)
-    (W : ℝ → ℂ) (c X Y Z lengthScale : ℝ) :
+section
+variable (G : Ideal O) (hG : Squarefree G) (W : ℝ → ℂ)
+include G hG W
+
+theorem scaled_middleTruncation_eq_ideal_frequencies    
+      (c X Y Z lengthScale : ℝ) :
     (c : ℂ) * middleTruncation (fun P : primePool {G} => P.val) Finset.univ W X Y Z lengthScale =
       ∑ h ∈ rowNormDisk ⌊lengthScale⌋₊, ∑ d ∈ idealDivisors G,
         if Y < (Ideal.absNorm d : ℝ) ∧ (Ideal.absNorm d : ℝ) ≤ Z then
@@ -101,8 +105,8 @@ theorem scaled_middleTruncation_eq_ideal_frequencies (G : Ideal O) (hG : Squaref
     ring
   · simp only [hp, ite_false, mul_zero]
 
-theorem dual_normalized_middle_expansion (G : Ideal O) (hG : Squarefree G)
-    (W : ℝ → ℂ) (M F b i j Y Z lengthScale : ℝ)
+theorem dual_normalized_middle_expansion    
+       M F b i j Y Z lengthScale 
     (hM : 0 < M) (hF : 0 < F) (hb : 0 < b) (hi : 0 < i) (hj : 0 < j) :
     ((M / (Real.sqrt (i * j) * F) : ℝ) : ℂ) *
       middleTruncation (fun P : primePool {G} => P.val) Finset.univ W
@@ -117,12 +121,14 @@ theorem dual_normalized_middle_expansion (G : Ideal O) (hG : Squarefree G)
   rw [scaled_middleTruncation_eq_ideal_frequencies G hG,
     dual_principal_prefactor_identity M F b i j hM hF hb hi hj]
 
+end
+
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
 
 def dualTruncatedMiddle (W : 𝓢(ℝ, ℂ))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ) : ℂ :=
+    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ)  :=
   ∑ i, ∑ j, ∑ k, originalTerm rows left right a b 1 1 i j k *
     (((M / (Real.sqrt ((Ideal.absNorm (left j) : ℝ) * (Ideal.absNorm (right k) : ℝ)) * F) : ℝ) : ℂ) *
       middleTruncation (fun P : primePool {left j * right k} => P.val) Finset.univ W
@@ -133,10 +139,10 @@ omit [Fintype m] [Fintype n] [Fintype p] [DecidableEq m] [DecidableEq n] [Decida
 theorem dual_truncated_pair_expansion
     (W : 𝓢(ℝ, ℂ)) (K : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ)
+    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (Y Z : m → ℝ)  lengthScale 
     (hM : 0 < M) (hF : 0 < F) (hrows : ∀ i, Admissible (rows i))
     (hleft : ∀ j, Admissible (left j)) (hright : ∀ k, Admissible (right k))
-    (hK : ∀ j k d, d ∣ left j * right k → d ∈ K) (i : m) (j : n) (k : p) :
+    (hK : ∀ j k d, d ∣ left j * right k → d ∈ K)  i   j   k  :
     originalTerm rows left right a b 1 1 i j k *
       (((M / (Real.sqrt ((Ideal.absNorm (left j) : ℝ) * (Ideal.absNorm (right k) : ℝ)) * F) : ℝ) : ℂ) *
         middleTruncation (fun P : primePool {left j * right k} => P.val) Finset.univ W
@@ -180,7 +186,7 @@ omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 theorem dualTruncatedMiddle_le_product_divisors
     (W : 𝓢(ℝ, ℂ)) (K : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ)
+     a   b   M F   Y Z   lengthScale 
     (hM : 0 < M) (hF : 0 < F) (hrows : ∀ i, Admissible (rows i))
     (hleft : ∀ j, Admissible (left j)) (hright : ∀ k, Admissible (right k))
     (hK : ∀ j k d, d ∣ left j * right k → d ∈ K) :
@@ -233,7 +239,7 @@ theorem HasSieveExponent.dual_truncated_middle {α : ℝ} (hexp : HasSieveExpone
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
     (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
-    (a : n → ℂ) (b : p → ℂ) (W : 𝓢(ℝ, ℂ)) (Y Z : m → ℝ) (lengthScale : ℝ)
+     a   b   W   Y Z   lengthScale 
     (hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hZ : ∀ i, Z i ≤ U * (N * Real.sqrt (F / (M * (Ideal.absNorm (rows i) : ℝ))))) :
@@ -263,49 +269,24 @@ theorem HasSieveExponent.dual_truncated_middle {α : ℝ} (hexp : HasSieveExpone
         (fun j => (hleft j).1) (fun k => (hright k).1) hK
     _ ≤ ∑' h : {h : O // h ≠ 0}, dualProductDivisorMiddleAt W K rows left right a b M F P h.val :=
       finite_nonzero_frequency_sum_le (rowNormDisk ⌊lengthScale⌋₊) hH _
-        (fun h => dualProductDivisorMiddleAt_nonneg W K rows left right a b M F P h) hb.1
+        (dualProductDivisorMiddleAt_nonneg W K rows left right a b M F P) hb.1
     _ ≤ _ := hb.2
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
+ 
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (jLabel primeProduct bit)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
 
-end
-section
 
-open ActualEisensteinCubic
-open FirstPassCubeLabels (jLabel)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-
-open scoped BigOperators Classical
-open MeasureTheory
-open ActualEisensteinCubic
+ 
+ 
+ 
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
 
-end
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -314,15 +295,15 @@ variable {ι : Type*} [DecidableEq ι]
 end SecondPassArithmetic
 
 namespace FirstPassCubeLabels
-open scoped BigOperators
-open MeasureTheory
+ 
+ 
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
+ 
+ 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (columnLog primeProductNorm b0Label jLabel)
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)

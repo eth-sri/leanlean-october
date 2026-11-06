@@ -6,20 +6,20 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongAggregate
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
 open InverseSecondFibers IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
 
-theorem actual_complete_finite_split (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
+
+theorem actual_complete_finite_split  K  L eps (hL:0≤L)(heps:0<eps) :
     ∃C:ℝ,0<C ∧ ∀{σ:Type*}[DecidableEq σ]
-      (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(_hSp:∀P∈S,Prime P)
-      (labels:Finset (Ideal O))(_hlabels:∀I∈labels,I≠0)
-      (Ψ:O→*ℂ)(m:O)(slots:Finset σ)
+      (S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(_hSp:∀P∈S,Prime P)
+      (labels:Finset (Ideal ActualEisensteinCubic.O))(_hlabels:∀I∈labels,I≠0)
+      (Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)
       (lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
       (a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
       (W:ℝ→ℂ)(_hWc:HasCompactSupport W)(b Z N V R H₀:ℝ),
@@ -46,7 +46,7 @@ theorem actual_complete_finite_split (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
     (progressingCubes S D H₀ (activeCubeLogBin S D b (Z^N) j))
     Ψ m (idealGenerator I) z W (Z^N) H₀ slots lists a
   let ball:=nonzeroChildFrequencyBall 1 R
-  have hpoint (I:Ideal O)(z:O):
+  have hpoint (I:Ideal ActualEisensteinCubic.O)(z:ActualEisensteinCubic.O):
       ‖outsideCanonicalMarkedRow S D hbad Ψ m (idealGenerator I) z slots lists a W (Z^N)‖^2≤
       2*Z^N*(‖short I z‖^2+bins.card*∑j∈bins,‖long j I z‖^2) := by
     have hh:=original_marked_binned_energy S D Ψ m (idealGenerator I) z W b (Z^N) H₀ slots lists a
@@ -98,6 +98,6 @@ theorem actual_complete_finite_split (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

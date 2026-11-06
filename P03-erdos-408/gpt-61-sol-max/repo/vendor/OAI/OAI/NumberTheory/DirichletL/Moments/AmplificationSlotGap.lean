@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationEligibility
 
@@ -6,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationEligibility
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 open Filter
 namespace SevenEighths.CenteredMomentAmplificationSlotGap
-local notation "O" => ActualEisensteinCubic.O
+
 
 theorem eventually_scale_gap (b η ell : ℝ) (hgap : η < ell) :
     ∀ᶠ Z : ℝ in atTop, 1 ≤ Z ∧ b*Z^η < Z^ell := by
@@ -21,7 +22,7 @@ theorem eventually_scale_gap (b η ell : ℝ) (hgap : η < ell) :
   have hh := mul_lt_mul_of_pos_right hz (Real.rpow_pos_of_pos hZ0 η)
   rwa [← Real.rpow_add hZ0,sub_add_cancel] at hh
 
-theorem amplifier_not_dvd_slot (P Q : Ideal O) (hP : Prime P) (hQ : Prime Q)
+theorem amplifier_not_dvd_slot (P Q : Ideal ActualEisensteinCubic.O) (hP : Prime P) (hQ : Prime Q)
     (Z ell η b : ℝ) (hgap : b*Z^η < Z^ell)
     (hPN : Z^ell ≤ (Ideal.absNorm P:ℝ)) (hQN : (Ideal.absNorm Q:ℝ) ≤ b*Z^η) :
     ¬P∣Q := by
@@ -30,17 +31,14 @@ theorem amplifier_not_dvd_slot (P Q : Ideal O) (hP : Prime P) (hQ : Prime Q)
   subst Q
   linarith
 
-theorem live_profile_norm_bound (W : ℝ → ℂ) (b Z z η : ℝ) (I : Ideal O)
+theorem live_profile_norm_bound (W : ℝ → ℂ) (b Z z η : ℝ) (I : Ideal ActualEisensteinCubic.O)
     (hb : 0 ≤ b) (hZ : 1 ≤ Z) (hz : z ≤ η)
     (hs : Function.support W ⊆ Set.Iic b)
     (hW : W ((Ideal.absNorm I:ℝ)/Z^z) ≠ 0) :
-    (Ideal.absNorm I:ℝ) ≤ b*Z^η := by
-  have hpow : 0 < Z^z := Real.rpow_pos_of_pos (zero_lt_one.trans_le hZ) _
-  have h := (div_le_iff₀ hpow).mp (hs hW)
-  exact h.trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ hz) hb)
+    (Ideal.absNorm I:ℝ) ≤ b*Z^η := LE.le.trans ((div_le_iff₀ (Real.rpow_pos_of_pos (LT.lt.trans_le zero_lt_one hZ) z)).mp (hs hW)) (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ hz) hb)
 
 end SevenEighths.CenteredMomentAmplificationSlotGap
 
-end
+
 
 end OAI

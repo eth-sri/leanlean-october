@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedBound
 
@@ -13,20 +14,20 @@ local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
-def ramifiedSelected (eta a rho x w z : ℂ) (j : ℕ) : ℂ :=
+def ramifiedSelected (eta a rho x w z : ℂ) (j : ℕ)  :=
   star eta*(Ideal.absNorm (Ideal.span {p}):ℂ)^x*(1-coordV (Ideal.absNorm (Ideal.span {p})) z)*
     rowClosedMarked p hp hg eta a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z) rho j -
     (Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)*ramifiedClosed p hp hg eta a rho x w z j
 
-lemma ramifiedSelected_eq_replacement (eta a rho x w z : ℂ) (j : ℕ) :
+lemma ramifiedSelected_eq_replacement  eta a rho x w z   j  :
     ramifiedSelected p hp hg eta a rho x w z j =
       ProbeLocal.compensatedReplacement (coordV (Ideal.absNorm (Ideal.span {p})) z) 0 0
         (rowClosedMarked p hp hg eta a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
           ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z) rho j)
         (star eta*(Ideal.absNorm (Ideal.span {p}):ℂ)^x) ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) := by
   rw [ProbeLocal.continued_ramified_compensation]
-  simp only [ramifiedSelected,ramifiedClosed,ProbeLocal.continuedCorrection,mul_zero,sub_zero,mul_one,div_one]
+  simp_all [ramifiedSelected, ramifiedClosed, ProbeLocal.continuedCorrection]
 
 include hc in
 theorem ramifiedSelected_bound (eta a rho x w z : ℂ)
@@ -54,7 +55,7 @@ theorem ramifiedSelected_bound (eta a rho x w z : ℂ)
   have hq : ‖(Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)‖≤Q^B := by
     change ‖(Q:ℂ)^(-w)‖≤Q^B
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hQ0,Complex.neg_re]
-    exact Real.rpow_le_rpow_of_exponent_le hQ1 (by dsimp [B];linarith)
+    gcongr <;> first | assumption | positivity | linarith
   have he : Q^x.re*Q^(-x.re+B)=Q^B := by rw [←Real.rpow_add hQ0];congr 1;ring
   unfold ramifiedSelected
   apply (norm_sub_le _ _).trans

@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianSubset
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
 
-theorem compensatedPhysicalProbe_common_gaussian {K : ℕ}
-    (W : Fin K→ℝ→ℂ) (M : Fin K→ℝ) (hM : ∀i,0≤M i)
+
+theorem compensatedPhysicalProbe_common_gaussian  {K} 
+     W  (M : Fin K→ℝ) (hM : ∀i,0≤M i)
     (hwindow : ∀i y,W i (Real.exp y)≠0→|y|≤M i) :
     ∃V : Finset (Fin K)→SchwartzMap ℝ ℂ,
     ∃hV : ∀A,HasCompactSupport (V A:ℝ→ℂ),
@@ -23,12 +23,12 @@ theorem compensatedPhysicalProbe_common_gaussian {K : ℕ}
           (∑'j : ℕ,((2:ℝ)^j)^s*gaussianJointMoment (V A) (hV A) N ((2:ℝ)^j/Z))≤B*Z^s) ∧
       (∀η : HeckeFamily.Character,∀C : CalibrationData,∀W0 W1 : ℝ→ℂ,
         HasCompactSupport W0→HasCompactSupport W1→
-        ∀slotPrimes : Fin K→Finset O,(∀i a,a∈slotPrimes i→a≠0)→
+        ∀slotPrimes : Fin K→Finset ActualEisensteinCubic.O,(∀i a,a∈slotPrimes i→a≠0)→
         ∀P : Fin K→ℝ,(∀i,0<P i)→∀X Y Z : ℝ,0<X→0<Y→0<Z→
           compensatedPhysicalProbe η C W0 W1 slotPrimes W P X Y Z=
           ∑A∈(Finset.univ : Finset (Fin K)).powerset,
             ∑'j : ℕ,∫t : ℝ,
-              (∑p : ((i : Fin K)→{a : O // a∈slotPrimes i}),
+              (∑p : ((i : Fin K)→{a : ActualEisensteinCubic.O // a∈slotPrimes i}),
                 compensationSubsetWeight η W P (fun i=>(p i).val) A*
                   compensationRowTest η C W0 W1 (fun i=>(p i).val) A X Y ((2:ℝ)^j) t*
                     selectedSlotFactor W P (fun i=>(p i).val) A t)*
@@ -59,10 +59,10 @@ theorem compensatedPhysicalProbe_common_gaussian {K : ℕ}
     apply Finset.sum_congr rfl
     intro A hA
     exact compensation_subset_common A W (V A) (hV A) (hsep A) η C W0 W1 hW0 hW1 Finset.univ
-      (fun p : ((i : Fin K)→{a : O // a∈slotPrimes i})=>fun i=>(p i).val)
+      (fun p : ((i : Fin K)→{a : ActualEisensteinCubic.O // a∈slotPrimes i})=>fun i=>(p i).val)
       (fun p _ i=>hp i (p i).val (p i).property) P hP X Y Z hX hY hZ
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

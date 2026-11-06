@@ -22,19 +22,19 @@ open CenteredMomentSecondExceptionalFamily CenteredMomentSecondNonexceptionalSca
 open CenteredMomentCommonHeightEnvelope
 open CenteredMomentSecondPhysicalCost CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
 open CenteredMomentAllocatedChildCapacity CenteredMomentFirstScale
-local notation "O"=>HeckeFamily.O
-variable {ι:Type*}[Fintype ι]
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
-def envelopeRef (qref:ℝ)(C D:Ideal O)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):ℝ:=
+variable {ι:Type*}[Fintype ι]
+
+
+def envelopeRef (qref:ℝ)(C D)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):=
   (fixedFactor:ℝ)*qref*(∏P∈U,P.val).absNorm*
     (Ideal.span {nonunitFrequencyGenerator C D U}).absNorm*dyadicScale (n 1)
 
-def ratioPenalty (n:Fin 4→ℤ):ℝ:=
+def ratioPenalty (n:Fin 4→ℤ):=
   max 1 (1/(dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3))))
 
-lemma envelope_pos (qref:ℝ)(hq:0<qref)(C D:Ideal O)(hC:Supported C)
-    (U:Finset (CommonIndex C D))(n:Fin 4→ℤ):0<envelopeRef qref C D U n:=by
+lemma envelope_pos  qref (hq:0<qref) C D (hC:Supported C)
+     U  n :0<envelopeRef qref C D U n:=by
   have hf:0<(fixedFactor:ℝ):=by exact_mod_cast fixedFactor_pos
   have hu:=CenteredMomentSecondPhysicalLedger.common_product_pos C D hC U
   have hv:=norm_pos (Ideal.span {nonunitFrequencyGenerator C D U})
@@ -43,20 +43,23 @@ lemma envelope_pos (qref:ℝ)(hq:0<qref)(C D:Ideal O)(hC:Supported C)
   unfold envelopeRef
   positivity
 
-lemma adjusted_log (Z qref:ℝ)(hq:0<qref)(C D:Ideal O)(hC:Supported C)
-    (U:Finset (CommonIndex C D))(n:Fin 4→ℤ):
+lemma adjusted_log  Z qref (hq:0<qref) C D (hC:Supported C)
+     U  n :
     Real.logb Z (adjustedEnvelopeRef qref C D U n)=
-      Real.logb Z (envelopeRef qref C D U n)+Real.logb Z (ratioPenalty n):=by
-  exact Real.logb_mul (envelope_pos qref hq C D hC U n).ne'
+      Real.logb Z (envelopeRef qref C D U n)+Real.logb Z (ratioPenalty n):=Real.logb_mul (envelope_pos qref hq C D hC U n).ne'
     (lt_of_lt_of_le zero_lt_one (le_max_left _ _)).ne'
 
-theorem common_raw_reference_shift (s:Input ι)(υ:Character)(t:ℝ)
-    (S:Finset (Ideal O))(β:Ideal O→ℂ)(C D R0:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (B:actualAllocations s.pools C)(hB:frozenCoefficient B.val C R0 s.ν s.W s.P≠0)
-    (U:Finset (CommonIndex C D))(R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))
-    (K a Z qref:ℝ)(n:Fin 4→ℤ)(hq:0<qref)(hK:0<K)(ha:0<a)(hZ:1<Z)
-    (hlower:∀I:Ideal O,β I≠0→a*volume s≤(I.absNorm:ℝ))
+section
+variable (s:Input ι) (υ:Character) (t:ℝ) (S:Finset (Ideal HeckeFamily.O)) (β:Ideal HeckeFamily.O→ℂ) (C D R0:Ideal HeckeFamily.O) (hC:Supported C) (hD:Supported D) (hCD:primeSupport C=primeSupport D)
+include s υ t S β C D R0 hC hD hCD
+
+theorem common_raw_reference_shift    
+       
+       
+     B (hB:frozenCoefficient B.val C R0 s.ν s.W s.P≠0)
+     U (R:ℝ)(rows:Finset HeckeFamily.O)(W:𝓢(ℝ,ℂ))
+     K a Z qref  n (hq:0<qref)(hK:0<K)(ha:0<a)(hZ:1<Z)
+    (hlower:∀I:Ideal HeckeFamily.O,β I≠0→a*volume s≤(I.absNorm:ℝ))
     (hne:physicalBlock υ t S β C D hC hD U R rows W K n≠0):
     Real.logb Z (preVolume (commonData (withHeight s υ t) C R0 B))-
       Real.logb Z (envelopeRef qref C D U n)≤
@@ -77,13 +80,13 @@ theorem common_raw_reference_shift (s:Input ι)(υ:Character)(t:ℝ)
   rw [he]
   linarith
 
-theorem common_raw_reference_shift_right (s:Input ι)(υ:Character)(t:ℝ)
-    (S:Finset (Ideal O))(β:Ideal O→ℂ)(C D R0:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (B:actualAllocations s.pools D)(hB:frozenCoefficient B.val D R0 s.ν s.W s.P≠0)
-    (U:Finset (CommonIndex C D))(R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))
-    (K a Z qref:ℝ)(n:Fin 4→ℤ)(hq:0<qref)(hK:0<K)(ha:0<a)(hZ:1<Z)
-    (hlower:∀I:Ideal O,β I≠0→a*volume s≤(I.absNorm:ℝ))
+theorem common_raw_reference_shift_right    
+       
+       
+     B (hB:frozenCoefficient B.val D R0 s.ν s.W s.P≠0)
+     U (R:ℝ)(rows:Finset HeckeFamily.O)(W:𝓢(ℝ,ℂ))
+     K a Z qref  n (hq:0<qref)(hK:0<K)(ha:0<a)(hZ:1<Z)
+    (hlower:∀I:Ideal HeckeFamily.O,β I≠0→a*volume s≤(I.absNorm:ℝ))
     (hne:physicalBlock υ t S β C D hC hD U R rows W K n≠0):
     Real.logb Z (preVolume (commonData (withHeight s υ t) D R0 B))-
       Real.logb Z (envelopeRef qref C D U n)≤
@@ -104,12 +107,14 @@ theorem common_raw_reference_shift_right (s:Input ι)(υ:Character)(t:ℝ)
   rw [he]
   linarith
 
-theorem actual_width_le_reference {η:Character}{C D:Ideal O}{hC:Supported C}{hD:Supported D}
+end
+
+theorem actual_width_le_reference {η:Character}{C D:Ideal HeckeFamily.O}{hC:Supported C}{hD:Supported D}
     {U:Finset (CommonIndex C D)}{τ:RayFourExpansion.RayCharacter→Character}
-    (hf:Family η C D hC hD U τ)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-    (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(n:Fin 4→ℤ)
+    (hf:Family η C D hC hD U τ)(t:ℝ)(S:Finset (Ideal HeckeFamily.O))(β:Ideal HeckeFamily.O→ℂ)
+    (R:ℝ)(rows:Finset HeckeFamily.O)(W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K) n 
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0)
-    (qref Z:ℝ)(hq:(η.modulus.absNorm:ℝ)≤qref)(hZ:1<Z)(χ:RayFourExpansion.RayCharacter):
+     qref Z (hq:(η.modulus.absNorm:ℝ)≤qref)(hZ:1<Z) χ :
     Real.logb Z ((τ χ).modulus.absNorm:ℝ)+Real.logb Z (dyadicScale (n 1))≤
       Real.logb Z (envelopeRef qref C D U n) := by
   have hqpos:=norm_pos (τ χ).modulus (τ χ).modulus_ne_bot

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Sieve.Presieve
 
@@ -21,10 +22,14 @@ open Filter Real Finset
 
 namespace Sieve
 
-noncomputable section
+
+
+section
+variable {κ x z Y G₀ : ℝ} (hz : 1 ≤ z) (J : ℕ) (G : ℕ → ℝ)
+
 
 /-- The presieved sum, reindexed by `n = u + 1`. -/
-lemma presieved_eq_sum_rough {κ x z : ℝ} (hκx : 0 ≤ κ * x) (g : ℕ → ℝ) (hg0 : g 0 = 0) :
+lemma presieved_eq_sum_rough   (hκx : 0 ≤ κ * x)  g  (hg0 : g 0 = 0) :
     presieved κ x z g = ∑ n ∈ (Icc 1 ⌊κ * x + 1⌋₊).filter (Rough z), g (n - 1) := by
   set A := (Icc 1 ⌊κ * x⌋₊).filter (fun u => ∀ p ∈ primesIcc 2 z, ¬ p ∣ u + 1)
   have hinj : Set.InjOn (fun u : ℕ => u + 1) A := fun a _ b _ h => by simpa using h
@@ -40,15 +45,14 @@ lemma presieved_eq_sum_rough {κ x z : ℝ} (hκx : 0 ≤ κ * x) (g : ℕ → �
   · obtain ⟨hn1, hnr⟩ := mem_filter.1 hn
     have hn1' := mem_Icc.1 hn1
     rcases Nat.lt_or_ge n 2 with h | h
-    · have : n = 1 := by omega
-      rw [this, Nat.sub_self, hg0]
+    · grind
     · exfalso
       refine hnA (mem_image.2 ⟨n - 1, mem_filter.2 ⟨mem_Icc.2 ⟨by omega, by omega⟩, ?_⟩, by omega⟩)
       rw [Nat.sub_add_cancel (by omega)]
       exact hnr
 
 /-- The rough primes are the primes, when `G` vanishes at primes `p ≤ z`. -/
-lemma sum_rough_prime_eq {z Y : ℝ} (G : ℕ → ℝ) (hG : ∀ p : ℕ, p.Prime → (p : ℝ) ≤ z → G p = 0) :
+lemma sum_rough_prime_eq     (hG : ∀ p : ℕ, p.Prime → (p : ℝ) ≤ z → G p = 0) :
     ∑ n ∈ (Icc 1 ⌊Y⌋₊).filter (fun n => Rough z n ∧ n.Prime), G n =
       ∑ p ∈ primesIcc 2 Y, G p := by
   have hP : primesIcc 2 Y = (Icc 1 ⌊Y⌋₊).filter Nat.Prime := by
@@ -63,8 +67,7 @@ lemma sum_rough_prime_eq {z Y : ℝ} (G : ℕ → ℝ) (hG : ∀ p : ℕ, p.Prim
       exact_mod_cast hp.two_le
   rw [hP]
   refine sum_subset (fun n hn => ?_) fun p hp hpr => ?_
-  · obtain ⟨h1, -, h2⟩ := mem_filter.1 hn
-    exact mem_filter.2 ⟨h1, h2⟩
+  · simp_all
   · obtain ⟨h1, hpp⟩ := mem_filter.1 hp
     refine hG p hpp ?_
     by_contra hlt
@@ -74,9 +77,10 @@ lemma sum_rough_prime_eq {z Y : ℝ} (G : ℕ → ℝ) (hG : ∀ p : ℕ, p.Prim
     rw [(Nat.prime_dvd_prime_iff_eq hq hpp).1 hqp]
     exact lt_of_not_ge hlt
 
+include hz in
 /-- The error sum of E3: a uniform bound `G₀` on `|G|` times the number of rough
 `n ≤ Y` that are not squarefree or have `ω(n) > J`. -/
-lemma sum_bad_le {z Y G₀ : ℝ} (hz : 1 ≤ z) (J : ℕ) (G : ℕ → ℝ) (hG₀ : 0 ≤ G₀)
+lemma sum_bad_le         (hG₀ : 0 ≤ G₀)
     (hG : ∀ n ∈ Icc 1 ⌊Y⌋₊, |G n| ≤ G₀) :
     ∑ n ∈ (Icc 1 ⌊Y⌋₊).filter (fun n => Rough z n ∧ ¬ (Squarefree n ∧ #n.primeFactors ≤ J)),
         |G n| ≤
@@ -86,13 +90,7 @@ lemma sum_bad_le {z Y G₀ : ℝ} (hz : 1 ≤ z) (J : ℕ) (G : ℕ → ℝ) (hG
   set R₁ := (Icc 1 ⌊Y⌋₊).filter (fun n => Rough z n ∧ ¬ Squarefree n)
   set R₂ := (Icc 1 ⌊Y⌋₊).filter (fun n => Rough z n ∧ J < #n.primeFactors)
   have hsub : R ⊆ R₁ ∪ R₂ := by
-    intro n hn
-    obtain ⟨h1, hr, hbad⟩ := mem_filter.1 hn
-    by_cases hsq : Squarefree n
-    · exact mem_union_right _ (mem_filter.2 ⟨h1, hr, by
-        by_contra h
-        exact hbad ⟨hsq, not_lt.1 h⟩⟩)
-    · exact mem_union_left _ (mem_filter.2 ⟨h1, hr, hsq⟩)
+    grind
   have hcard : (#R : ℝ) ≤ #R₁ + #R₂ := by
     exact_mod_cast (card_le_card hsub).trans (card_union_le _ _)
   have h₁ := card_rough_not_squarefree_le hz ⌊Y⌋₊
@@ -103,11 +101,12 @@ lemma sum_bad_le {z Y G₀ : ℝ} (hz : 1 ≤ z) (J : ℕ) (G : ℕ → ℝ) (hG
       _ ≤ ∑ n ∈ R₂, (2 : ℝ) ^ #n.primeFactors := sum_le_sum fun n hn =>
           pow_le_pow_right₀ (by norm_num) (mem_filter.1 hn).2.2.le
       _ ≤ _ := sum_le_sum_of_subset_of_nonneg (fun n hn => by
-          obtain ⟨h1, hr, -⟩ := mem_filter.1 hn
-          exact mem_filter.2 ⟨h1, hr⟩) fun _ _ _ => by positivity
+          grind) fun _ _ _ => by positivity
   calc ∑ n ∈ R, |G n| ≤ ∑ _n ∈ R, G₀ := sum_le_sum fun n hn => hG n (mem_filter.1 hn).1
     _ = G₀ * #R := by rw [sum_const, nsmul_eq_mul, mul_comm]
     _ ≤ _ := mul_le_mul_of_nonneg_left (by linarith) hG₀
+
+end
 
 /-- The bookkeeping of E3. -/
 lemma tail_budget {x L T z Y γ D₀ E κ m N Z S Pr J : ℝ} (hx0 : 0 < x) (hL : 0 < L)
@@ -117,7 +116,7 @@ lemma tail_budget {x L T z Y γ D₀ E κ m N Z S Pr J : ℝ} (hx0 : 0 < x) (hL 
     (hJ : 0 ≤ J) :
     |m| * T ^ 62 * (N / Z + J * S) ≤
       |m| * (4 * κ + 6 * κ * D₀ * exp E) * (x / L) * (T ^ 62 * (L / z) + T ^ 62 * T ^ 44 * J) := by
-  have hz0 : 0 < z := by linarith
+  
   have hZ0 : 0 < Z := by linarith
   have hT22 : 1 ≤ T ^ 22 := one_le_pow₀ hT
   have h1 : N / Z ≤ x / L * (4 * κ * (L / z)) := by
@@ -164,8 +163,8 @@ lemma tail_budget {x L T z Y γ D₀ E κ m N Z S Pr J : ℝ} (hx0 : 0 < x) (hL 
 
 /-- E3: for large `x`, the presieved sum of `Φ P (f_𝔟 - C_𝔟)` is the prime sum plus
 `∑_{2 ≤ j ≤ J} Comp_j / j!` up to `C (x / L) (T⁶² L / z + T¹⁰⁶ 2^{-J})`. -/
-theorem eventually_composite (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) {c Ch κ CΦ : ℝ}
-    (M : ℕ → ℝ) (Cj : ℝ) (hc : 0 < c) (hCh : 0 < Ch) (hκ : 1 < κ) :
+theorem eventually_composite (h₃ : BlockSieve)  {K}  (hK : 1 ≤ K)  CN   {c Ch κ CΦ} 
+     M   Cj  (hc : 0 < c) (hCh : 0 < Ch) (hκ : 1 < κ) :
     ∃ C : ℝ, ∀ᶠ x : ℝ in atTop, ∀ k ≤ 2, ∀ (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ)
       (Φ : ℝ → ℝ), AdmissibleSlots c x u v → (∀ Q, |B Q| ≤ 1) → IsCutoff κ CΦ M x Φ →
       |presieved κ x (x ^ presieveExponent c Ch x)
@@ -247,7 +246,7 @@ theorem eventually_composite (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : 
       linarith
     have hB' := hsize k hk u v B hslot hB
     have hf := hB'.1 (n - 1) hm hmx
-    have hC := hB'.2
+    
     have hP1 : |inertPoly (1 / 2) (1 / 12) K CN x (n - 1)| ≤ 1 := by
       rw [abs_le]
       constructor <;> linarith [hP (n - 1)]
@@ -327,7 +326,7 @@ theorem eventually_composite (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : 
     (Nat.floor_le hY0.le) (by have := Nat.lt_floor_add_one z; linarith)
     (prod_nonneg fun p _ => by positivity) hprod hS (by positivity)
 
-end
+
 
 end Sieve
 

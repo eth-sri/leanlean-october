@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Cauchy
 public import Erdos408.OneSided.Decomposition.Count
@@ -27,7 +28,7 @@ variable {K : ℕ}
 /-! ### The kernel -/
 
 /-- `0 ≤ ψ ≤ 1`. -/
-theorem norm_plateau_le (u : ℝ) : ‖((plateau u : ℝ) : ℂ)‖ ≤ 1 := by
+theorem norm_plateau_le  u  : ‖((plateau u : ℝ) : ℂ)‖ ≤ 1 := by
   unfold plateau
   rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (smoothTransition.nonneg _)]
   exact smoothTransition.le_one _
@@ -39,7 +40,7 @@ theorem abs_lt_of_plateau_ne_zero {u : ℝ} (h : plateau u ≠ 0) : |u| < 5 := b
 
 /-- The arcs have total measure at most `4 L^{3A₀}/Y`: at most `L^{2A₀}` arcs of length
 `4 L^{A₀}/Y`. -/
-theorem norm_arcIntegral_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY : 0 < Y) (n : ℤ) :
+theorem norm_arcIntegral_le  A₀   {x Y}  (hL : 0 < Real.log x) (hY : 0 < Y)  n  :
     ‖arcIntegral A₀ x Y n‖ ≤ 4 * Real.log x ^ (3 * A₀) / Y := by
   set L := Real.log x
   set N := ⌊L ^ A₀⌋₊
@@ -54,8 +55,7 @@ theorem norm_arcIntegral_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY :
     · rw [show 2 * π * Complex.I * ((((h : ℝ) / k + θ) * n : ℝ) : ℂ) =
           ((2 * π * (((h : ℝ) / k + θ) * n) : ℝ) : ℂ) * Complex.I by push_cast; ring]
       exact (Complex.norm_exp_ofReal_mul_I _).le
-    · rw [one_mul, sub_neg_eq_add, abs_of_nonneg (by linarith)]
-      exact le_of_eq (by ring)
+    grind
   calc ‖arcIntegral A₀ x Y n‖
       ≤ ∑ k ∈ Icc 1 N, ∑ h ∈ (range k).filter (fun h => Nat.Coprime h k),
           4 * L ^ A₀ / Y := by
@@ -66,7 +66,7 @@ theorem norm_arcIntegral_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY :
         refine sum_le_sum fun k hk => ?_
         rw [sum_const, nsmul_eq_mul]
         gcongr
-        exact_mod_cast (card_filter_le _ _).trans ((card_range k).le.trans (mem_Icc.1 hk).2)
+        grind
     _ = (N : ℝ) * N * (4 * L ^ A₀ / Y) := by
         rw [sum_const, nsmul_eq_mul, Nat.card_Icc, Nat.add_sub_cancel, mul_assoc]
     _ ≤ L ^ A₀ * L ^ A₀ * (4 * L ^ A₀ / Y) := by
@@ -77,8 +77,8 @@ theorem norm_arcIntegral_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY :
         ring
 
 /-- `|𝓗_𝔐(t; a, b)| ≤ 4 L^{3A₀}/Y`, and it vanishes unless `|t| ≤ 5Y`. -/
-theorem norm_majorWeight_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY : 0 < Y)
-    (t a b : ℤ) :
+theorem norm_majorWeight_le  A₀   {x Y}  (hL : 0 < Real.log x) (hY : 0 < Y)
+     t a b  :
     ‖majorWeight A₀ x Y t a b‖ ≤
       4 * Real.log x ^ (3 * A₀) / Y * (if |(t : ℝ)| ≤ 5 * Y then 1 else 0) := by
   unfold majorWeight
@@ -92,21 +92,21 @@ theorem norm_majorWeight_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY :
       have := abs_lt_of_plateau_ne_zero hψ
       rw [abs_div, abs_of_pos hY, div_lt_iff₀ hY] at this
       exact ht this.le
-    rw [hψ, mul_zero, Complex.ofReal_zero, zero_mul, norm_zero]
+    simp_all
 
 /-! ### The pair error -/
 
 open scoped Classical in
 /-- The pair error `E(a, b)`: the inner sum of `Q_Y - Q_Y^maj` at the label products
 `a, b`. -/
-noncomputable def pairError (A₀ x : ℝ) (d : Data K) (Y : ℝ) (a b : ℕ) : ℂ :=
+noncomputable def pairError (A₀ x : ℝ) (d : Data K) (Y : ℝ) (a b : ℕ)  :=
   ∑ m ∈ d.mRange, ∑ n ∈ d.nRange, ∑ r ∈ d.mRange, ∑ s ∈ d.nRange,
     d.α m * star (d.α r) * d.β n * star (d.β s) *
       ((if ∃ h, 1 ≤ h ∧ m * n - 1 = a * h ∧ r * s - 1 = b * h then 1 else 0) -
         majorWeight A₀ x Y (b * m * n - a * r * s) a b)
 
 /-- `Q_Y - Q_Y^maj = ∏V_i⁻² ∑_{p, p'} η(a/Y) η(b/Y) E(a, b)`. -/
-theorem cauchySquare_sub_majorSquare (A₀ x : ℝ) (d : Data K) (Y : ℝ) :
+theorem cauchySquare_sub_majorSquare  A₀ x  (d : Data K)  Y  :
     cauchySquare x d Y - majorSquare A₀ x d Y =
       ((d.bandMass x)⁻¹ ^ 2 : ℝ) * ∑ p ∈ d.labels x, ∑ p' ∈ d.labels x,
         (dyadicBump ((∏ i, p i : ℕ) / Y) * dyadicBump ((∏ i, p' i : ℕ) / Y) : ℝ) *
@@ -138,7 +138,7 @@ theorem norm_pairError_le (A₀ : ℝ) {C x : ℝ} {d : Data K} (hL : 0 < Real.l
   classical
   set L := Real.log x
   set w := 4 * L ^ (3 * A₀) / Y
-  have hw : 0 ≤ w := by positivity
+  
   have ha0 : 0 < a := by exact_mod_cast hY.trans ha
   have hb0 : 0 < b := by exact_mod_cast hY.trans hb
   -- the ranges: `1 ≤ mn ≤ M`, and `mn ≤ 4X`

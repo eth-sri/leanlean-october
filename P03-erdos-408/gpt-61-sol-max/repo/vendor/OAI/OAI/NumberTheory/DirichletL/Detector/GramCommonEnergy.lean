@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.GramEnergyNonzero
 public import OAI.NumberTheory.DirichletL.Detector.GramWindowGcd
@@ -12,22 +13,22 @@ open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT RayFourExpansion
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma gcdCommon_product_coprime (C I J : SupportedIdeal) (h : IsCoprime I.val J.val) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+lemma gcdCommon_product_coprime  C I J  (h : IsCoprime I.val J.val) :
     gcdCommon (supportedIdealProduct C I) (supportedIdealProduct C J)=C := by
   have hh:=congrArg (fun t : CoprimeTriple=>t.val.1) (gcdTriple_multiply ⟨(C,I,J),h⟩)
   exact hh
 
 def originalPairWeight (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
-    (W : ℝ→ℂ) (Y v : ℝ) (I J : SupportedIdeal) : ℂ :=
+    (W : ℝ→ℂ) (Y v : ℝ) (I J : SupportedIdeal)  :=
   (lowGramCoefficient (calibrationForSet S hS) σ I*lowGramProfile W v ((Ideal.absNorm I.val:ℝ)/Y))*
     star (lowGramCoefficient (calibrationForSet S hS) σ J*lowGramProfile W v ((Ideal.absNorm J.val:ℝ)/Y))
 
 theorem original_nonzero_common_sum (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
     (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
-    (U : SchwartzMap ℝ ℂ) (v : ℝ) :
+    (U : SchwartzMap ℝ ℂ)  v  :
     (∑I∈lowGaussColumns W hW Y hY,∑J∈lowGaussColumns W hW Y hY,
       originalPairWeight S hS σ W Y v I J*
       ∑'h : GramFrequency,actualCorrelation (primaryGenerator I.val) (primaryGenerator J.val)
@@ -51,7 +52,7 @@ theorem original_nonzero_common_sum (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) 
   have hf (I J : SupportedIdeal) : Summable (f I J) := by
     by_cases hij : IsCoprime I.val J.val
     · have hh := ((actual_correlation_radial_summable (supportedIdealProduct C I) (supportedIdealProduct C J)
-        (primaryGenerator C.val) (supported_primaryGenerator_ne_zero _ C.property) U Q hQ).subtype (fun k : O=>k≠0)).mul_left
+        (primaryGenerator C.val) (supported_primaryGenerator_ne_zero _ C.property) U Q hQ).subtype (fun k : ActualEisensteinCubic.O=>k≠0)).mul_left
           (originalPairWeight S hS σ W Y v (supportedIdealProduct C I) (supportedIdealProduct C J))
       simpa only [f,hij,ite_true,Function.comp_def,mul_assoc] using hh
     · simpa only [f,hij,ite_false] using (summable_zero : Summable (fun _ : GramFrequency=>(0:ℂ)))
@@ -75,9 +76,9 @@ theorem original_nonzero_common_sum (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) 
     ring
   · simp only [hij,ite_false,f,tsum_zero]
 
-theorem original_energy_common_blocks (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
-    (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
-    (U : SchwartzMap ℝ ℂ) (v : ℝ) :
+theorem original_energy_common_blocks  S   hS   σ 
+     W   hW   Y Q   hY  (hQ : 0<Q)
+     U   v  :
     gaussEnergy (lowGaussColumns W hW Y hY) (fun I=>primaryGenerator I.val)
       (fun I=>(supported_span_primaryGenerator_iff _).mpr I.property)
       (lowGaussColumn (calibrationForSet S hS) W Y σ v) U Q=
@@ -85,9 +86,7 @@ theorem original_energy_common_blocks (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
       ((Q/Y^3:ℝ):ℂ)*(∑C∈commonPool (lowGaussColumns W hW Y hY),
         ∑'k : GramFrequency,originalCommonBlock S hS σ C k W hW Y Q hY U v) := by
   rw [original_energy_nonzero _ _ _ _ _ _ _ _ _ hQ]
-  congr 1
-  congr 1
-  exact original_nonzero_common_sum S hS σ W hW Y Q hY hQ U v
+  solve_by_elim [original_nonzero_common_sum]
 
 end SevenEighths.ProbeGramCommon
 end

@@ -34,7 +34,7 @@ open Finset
 
 /-- The averaged factor of one prime: `(p + 1)⁻¹ ∑_ℓ ∏_{j ∈ A} [ℓ = L_j] ∏_{j ∉ A}
 (1 - η'_j [ℓ = L_j])`, over visits `j ∈ range (N + 1)`. -/
-noncomputable def primeFactor (p N : ℕ) (L : ℕ → ℕ) (η' : ℕ → ℝ) (A : Finset ℕ) : ℝ :=
+noncomputable def primeFactor (p N : ℕ) (L : ℕ → ℕ) (η' : ℕ → ℝ) (A : Finset ℕ)  :=
   ((p : ℝ) + 1)⁻¹ * ∑ ℓ ∈ range (p + 1),
     (∏ j ∈ A, if ℓ = L j then (1 : ℝ) else 0) *
       ∏ j ∈ (range (N + 1)).filter (· ∉ A), (1 - η' j * if ℓ = L j then 1 else 0)

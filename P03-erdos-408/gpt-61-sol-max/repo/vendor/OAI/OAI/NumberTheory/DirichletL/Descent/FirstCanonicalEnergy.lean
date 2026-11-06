@@ -19,20 +19,19 @@ variable {ι : Type*} [DecidableEq ι]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def retainedCubeWeight (b : CubeCoordinates ι) (C : Finset ι) (Ψ₁ Ψ₂ : O→*ℂ)
-    (m₁ m₂ d : O) (a : Ideal O×O→ℂ) (x : Ideal O×O) : ℂ :=
+    (m₁ m₂ d : O) (a : Ideal O×O→ℂ) (x : Ideal O×O)  :=
   a x * canonicalCubeOuter p hp hcop hg b C Ψ₁ Ψ₂ m₁ m₂ (ConcretePrimeRowBridge.idealGenerator x.1) *
     cubeBaseFactor p hp hg b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit d x.2
 
 theorem retainedCubeWeight_norm
     (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
-    (b : CubeCoordinates ι) (C : Finset ι) (Ψ₁ Ψ₂ : O→*ℂ)
+     b   C   Ψ₁ Ψ₂ 
     (hΨ₁ : ∀ u,‖Ψ₁ u‖≤1) (hΨ₂ : ∀ u,‖Ψ₂ u‖≤1)
-    (m₁ m₂ d : O) (a : Ideal O×O→ℂ) (x : Ideal O×O) :
+     m₁ m₂ d   a   x  :
     ‖retainedCubeWeight p hp hcop hg b C Ψ₁ Ψ₂ m₁ m₂ d a x‖≤‖a x‖ := by
   simp only [retainedCubeWeight,norm_mul]
   calc
-    _ ≤ ‖a x‖*1*1 := by
-      exact mul_le_mul
+    _ ≤ ‖a x‖*1*1 := mul_le_mul
         (mul_le_mul_of_nonneg_left
           (canonicalCubeOuter_norm_le_one p hp hcop hg hc b C Ψ₁ Ψ₂ hΨ₁ hΨ₂ m₁ m₂ _) (norm_nonneg _))
         (cubeBaseFactor_norm_le_one p hp hcop hg hc _ _ _ _ _ _)

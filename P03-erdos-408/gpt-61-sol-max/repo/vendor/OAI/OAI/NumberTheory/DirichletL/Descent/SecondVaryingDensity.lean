@@ -10,11 +10,11 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open MeasureTheory FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
@@ -22,7 +22,7 @@ theorem actualSecondVaryingFreshRows_normalized_density {κ : Type*}
     (source : Finset κ) (F : Finset ι) (x : κ → SecondProfileData ι) (w : κ → ℂ)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : κ → σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (W₁ W₂ ω₁ ω₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Y G₀ E₀ V₀ K₀ X₀ : ℝ)
-    (density : Frequency × (Fin 6 → ℝ) → ℂ) (hDensity : Integrable density) (normalization : ℂ)
+    (density : Frequency × (Fin 6 → ℝ) → ℂ) (hDensity : Integrable density)  normalization 
     (he : ∀ j ∈ secondProfileIndices source F x,
       normalization * secondNormProfile (fun z => star (W₁ (z/(G₀*V₀*X₀))))
         (fun z => W₂ (z/(G₀*V₀*X₀))) Φ (fun _ _ => 1) Y (secondActualNorms p (x j.1) j.2.1 j.2.2) =
@@ -72,7 +72,7 @@ theorem actualSecondVaryingFreshRows_normalized_density {κ : Type*}
           (secondActualNorms p (x j.1) j.2.1 j.2.2)) := by ring
     _ = _ := by rw [he j hj]; ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

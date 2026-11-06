@@ -13,16 +13,16 @@ open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CenteredMomentCorrelation CenteredMomentSupportedCorrelation
 open CenteredMomentCommonSupport CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
 
-def actualCommon (C : O) (hC : Supported (Ideal.span {C})) (n₁ n₂ k : O) : ℂ := by
+
+def actualCommon (C ) (hC : Supported (Ideal.span {C})) (n₁ n₂ k : ActualEisensteinCubic.O) : ℂ := by
   letI := finite_quotient_span (supported_element_ne_zero C hC)
   letI : Fintype (ResidueQ C) := Fintype.ofFinite _
   exact fullCorrelation (fun x : ResidueQ C=>Ideal.Quotient.mk _ n₂*x)
     (fun y : ResidueQ C=>Ideal.Quotient.mk _ n₁*y)
     (supportedModulusCharacter C hC) (supportedModulusCharacter C hC) (Ideal.Quotient.mk _ k)
 
-lemma actualCommon_parameter (C : O) (hC : Supported (Ideal.span {C})) (n₁ n₂ a b k : O)
+lemma actualCommon_parameter  C   hC   n₁ n₂ a b k 
     (hab : a*n₁+b*n₂=1) :
     letI := finite_quotient_span (supported_element_ne_zero C hC)
     letI : Fintype (ResidueQ C) := Fintype.ofFinite _
@@ -37,9 +37,9 @@ lemma actualCommon_parameter (C : O) (hC : Supported (Ideal.span {C})) (n₁ n�
   rw [actualCommon,fullCorrelation_bezout _ _ _ _ _ hh]
   simp only [map_mul,map_neg]
 
-theorem actual_common_lift_bezout (C n₁ n₂ a b k : O)
-    (hC : Supported (Ideal.span {C})) (h₁ : Supported (Ideal.span {n₁}))
-    (h₂ : Supported (Ideal.span {n₂})) (hab : a*n₁+b*n₂=1) :
+theorem actual_common_lift_bezout  C n₁ n₂ a b k 
+     hC   h₁ 
+     h₂  (hab : a*n₁+b*n₂=1) :
     actualCorrelation (C*n₁) (C*n₂) (supported_mul_elements C n₁ hC h₁)
       (supported_mul_elements C n₂ hC h₂) (C*k)=
       (idealRowHom (b*k) (Ideal.span {n₁})*star (idealRowHom (-a*k) (Ideal.span {n₂})))*

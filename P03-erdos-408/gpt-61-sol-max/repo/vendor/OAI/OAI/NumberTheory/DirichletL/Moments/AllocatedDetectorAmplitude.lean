@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.AllocatedDetectorCapped
 public import OAI.NumberTheory.DirichletL.Moments.EligibleEnergy
@@ -15,15 +16,15 @@ open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation Ce
 open CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction
 open CenteredMomentAllocatedDetectorCapped CenteredMomentDetectorDictionary
 open ConcretePrimeRowBridge CenteredMomentDivisorRows
-local notation "O" => HeckeFamily.O
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
-def amplitude (s:Data ι) (D:Ideal O)
-    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) (z:O):ℂ:=
+def amplitude (s:Data ι) (D)
+    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) (z:HeckeFamily.O):=
   (Real.sqrt (s.X₁*s.X₂*∏i,s.P i):ℂ)⁻¹*
     allocatedRectangle s.η s.m s.A z s.t s.slots s.coefficient D a s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂
 
-def slotControl (s:Data ι):ℝ:=
+def slotControl (s:Data ι):=
   (∏i,s.M i)*(∏i,max 1 (128*max 0 (s.hi i)*s.M i))
 
 omit [DecidableEq ι] in
@@ -32,8 +33,8 @@ lemma slotControl_nonneg (s:Data ι):0≤slotControl s:=by
   exact mul_nonneg (Finset.prod_nonneg (fun i _=>(zero_le_one.trans (s.M_ge_one i))))
     (Finset.prod_nonneg (fun i _=>zero_le_one.trans (le_max_left _ _)))
 
-lemma slot_product_bound (s:Data ι) (D:Ideal O)
-    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))):
+lemma slot_product_bound (s:Data ι)  D 
+     a :
     (∏i∈frozenIndices D a,s.M i)*(∏i:liveIndices D a,128*max 0 (s.hi i)*s.M i)≤slotControl s:=by
   have hf:(∏i∈frozenIndices D a,s.M i)≤∏i,s.M i:=
     Finset.prod_le_prod_of_subset_of_one_le₀ (Finset.subset_univ _)
@@ -49,10 +50,8 @@ lemma slot_product_bound (s:Data ι) (D:Ideal O)
     (Finset.prod_nonneg (fun i _=>zero_le_one.trans (s.M_ge_one i)))
 
 omit [DecidableEq ι] in
-lemma coefficient_support (s:Data ι) (i:ι) (I:Ideal O) (hI:s.coefficient i I≠0):
-    (Ideal.absNorm I:ℝ)≤max 0 (s.hi i)*s.P i:=by
-  have hw:s.W i ((Ideal.absNorm I:ℝ)/s.P i)≠0:=right_ne_zero_of_mul hI
-  exact (div_le_iff₀ (s.P_pos i)).mp ((s.support i hw).2.trans (le_max_right _ _))
+lemma coefficient_support (s:Data ι) (i:ι) (I:Ideal HeckeFamily.O) (hI:s.coefficient i I≠0):
+    (Ideal.absNorm I:ℝ)≤max 0 (s.hi i)*s.P i:=(div_le_iff₀ (s.P_pos i)).mp (LE.le.trans (s.support i (right_ne_zero_of_mul hI)).right (le_max_right 0 (s.hi i)))
 
 end SevenEighths.CenteredMomentAllocatedDetectorAmplitude
 

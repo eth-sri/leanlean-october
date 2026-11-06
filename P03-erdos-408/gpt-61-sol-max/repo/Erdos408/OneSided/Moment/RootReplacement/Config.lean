@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Phased.Edge
 
 public import Erdos408.OneSided.Moment.PathExpansion
 
@@ -44,7 +47,7 @@ open scoped Matrix
 variable {K : ℕ}
 
 /-- The square `|z₁|, |z₂| ≤ rootBound U V`, which contains the positions at every root. -/
-def rootSquare (U V : ℝ) : Finset (ℤ × ℤ) :=
+def rootSquare (U V : ℝ)  :=
   Icc (-(rootBound U V : ℤ)) (rootBound U V) ×ˢ Icc (-(rootBound U V : ℤ)) (rootBound U V)
 
 /-- The square model: the points of `rootSquare`, with every prime dividing. Its ratio is
@@ -56,88 +59,82 @@ def squareModel (d : Data K) (Y d₀ : ℝ) : PosModel where
   ratio _ := 0
 
 /-- The configurations: paths of `N + 1` states of the square model, `N = 2R`. -/
-abbrev Conf (x : ℝ) (d : Data K) (Y d₀ : ℝ) :=
+abbrev Conf (x ) (d : Data K) (Y d₀ ) :=
   Fin (2 * momentPower x + 1) → (squareModel d Y d₀).State x d
 
 /-- The root-free kernel `𝒮 𝒯 𝒮` of the square model at `q = 1`. -/
-def confKernel (A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) :
-    Matrix ((squareModel d Y d₀).State x d) ((squareModel d Y d₀).State x d) ℂ :=
+def confKernel (A₀ x : ℝ) (d : Data K) (Y d₀ )  :=
   (squareModel d Y d₀).symOp x d * (squareModel d Y d₀).rowOp 1 A₀ x d Y d₀ *
     (squareModel d Y d₀).symOp x d
 
 /-- The coefficient `c(ω)`: the state mass, the endpoint condition `z₀ = z_N = e₁`, and the
 kernel `𝒮 𝒯 𝒮` along the path. It does not depend on the root. -/
-def confCoeff (A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) (ω : Conf x d Y d₀) : ℂ :=
+def confCoeff (A₀ x : ℝ) (d : Data K) (Y d₀ ) (ω : Conf x d Y d₀)  :=
   (stateMass x d : ℂ) *
     (if (ω 0).1.1.1 = (1, 0) ∧ (ω (Fin.last _)).1.1.1 = (1, 0) then 1 else 0) *
     ∏ j : Fin (2 * momentPower x), confKernel A₀ x d Y d₀ (ω j.castSucc) (ω j.succ)
 
 /-- The transported ratio `τ(w_z)/τ(z)` at the ratio `r`, the ratio of `rootModel`. -/
-def rootRatioAt (r : ℝ) (z : ℤ × ℤ) : ℝ := tau r (complement z) / tau r z
+def rootRatioAt (r : ℝ) (z : ℤ × ℤ)  := tau r (complement z) / tau r z
 
 open scoped Classical in
 /-- The indicator of one visit at the root `ϱ = (u, v, r)`: the point is a position at `ϱ`
 and the state passes both good-state tests at the transported ratio. -/
-def visitInd (x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) (s : (squareModel d Y d₀).State x d) : ℝ :=
+def visitInd (x ) (d : Data K) (Y d₀ u v r : ℝ) (s : (squareModel d Y d₀).State x d) : ℝ :=
   if s.1.1.1 ∈ rootPositions (d₀ * Y * d.Hm) d.Hn u v r ∧
       GoodFirst Y d₀ (rootRatioAt r s.1.1.1) s.1.2 ∧
       GoodSecond x d d₀ (rootRatioAt r s.1.1.1) s.1.2 then 1
   else 0
 
 /-- The archimedean indicator `A(ω, ϱ)`: the product of the visit indicators. -/
-def confInd (x : ℝ) (d : Data K) (Y d₀ : ℝ) (ω : Conf x d Y d₀) (u v r : ℝ) : ℝ :=
+def confInd (x ) (d : Data K) (Y d₀ ) (ω : Conf x d Y d₀) (u v r : ℝ)  :=
   ∏ j, visitInd x d Y d₀ u v r (ω j)
 
 /-- The lines `[z_j]_p` along a configuration, extended by `0` past the end. -/
-def confLines {x : ℝ} {d : Data K} {Y d₀ : ℝ} (p : ℕ) (ω : Conf x d Y d₀) (j : ℕ) : ℕ :=
+def confLines {x } {d : Data K} {Y d₀ } (p : ℕ) (ω : Conf x d Y d₀) (j : ℕ)  :=
   if h : j < 2 * momentPower x + 1 then lineOf p (ω ⟨j, h⟩).1.1.1 else 0
 
 /-- The line factor `λ_p(ω, l)` of a configuration, as `lineFactor`:
 `∏_{j active} [l = [z_j]_p] ∏_{j inactive} (1 - η'_j [l = [z_j]_p])`. -/
-def confLineFactor {x : ℝ} {d : Data K} {Y d₀ : ℝ} (q : ℝ) (p : ℕ) (ω : Conf x d Y d₀)
-    (l : ℕ) : ℝ :=
+def confLineFactor {x } {d : Data K} {Y d₀ } (q : ℝ) (p : ℕ) (ω : Conf x d Y d₀)
+    (l : ℕ)  :=
   (∏ j ∈ activeSet p ω, if l = confLines p ω j then 1 else 0) *
     ∏ j ∈ (range (2 * momentPower x + 1)).filter (· ∉ activeSet p ω),
       (1 - dampDefect q (2 * momentPower x) j * if l = confLines p ω j then 1 else 0)
 
 /-- The primes in the lists along a configuration. -/
-def confActive {x : ℝ} {d : Data K} {Y d₀ : ℝ} (ω : Conf x d Y d₀) : Finset ℕ :=
+def confActive {x } {d : Data K} {Y d₀ } (ω : Conf x d Y d₀)  :=
   univ.biUnion fun j => univ.biUnion fun i => univ.image fun h => (ω j).1.2 i h
 
 /-- A configuration is live when its indicator is nonzero at some root of the box
 `[U, 16U] × [V, 2V] × [0, 1]`. Only live configurations contribute to the root
 replacement. -/
-def ConfLive {x : ℝ} {d : Data K} {Y d₀ : ℝ} (ω : Conf x d Y d₀) : Prop :=
+def ConfLive {x } {d : Data K} {Y d₀ } (ω : Conf x d Y d₀)  :=
   ∃ u v r : ℝ, d₀ * Y * d.Hm ≤ u ∧ u ≤ 16 * (d₀ * Y * d.Hm) ∧ d.Hn ≤ v ∧ v ≤ 2 * d.Hn ∧
     0 ≤ r ∧ r ≤ 1 ∧ confInd x d Y d₀ ω u v r ≠ 0
 
 /-! ### Elementary bounds -/
 
 /-- A visit indicator is `0` or `1`. -/
-theorem visitInd_mem_Icc (x : ℝ) (d : Data K) (Y d₀ u v r : ℝ)
+theorem visitInd_mem_Icc  x  (d : Data K)  Y d₀ u v r 
     (s : (squareModel d Y d₀).State x d) :
     0 ≤ visitInd x d Y d₀ u v r s ∧ visitInd x d Y d₀ u v r s ≤ 1 := by
   unfold visitInd
   split_ifs <;> norm_num
 
 /-- The archimedean indicator lies in `[0, 1]`. -/
-theorem confInd_mem_Icc (x : ℝ) (d : Data K) (Y d₀ : ℝ) (ω : Conf x d Y d₀) (u v r : ℝ) :
+theorem confInd_mem_Icc  x  (d : Data K)  Y d₀  (ω : Conf x d Y d₀)  u v r  :
     0 ≤ confInd x d Y d₀ ω u v r ∧ confInd x d Y d₀ ω u v r ≤ 1 :=
   ⟨prod_nonneg fun j _ => (visitInd_mem_Icc x d Y d₀ u v r (ω j)).1,
     prod_le_one₀ (fun j _ => (visitInd_mem_Icc x d Y d₀ u v r (ω j)).1)
       fun j _ => (visitInd_mem_Icc x d Y d₀ u v r (ω j)).2⟩
 
 /-- The damping defect lies in `[0, 1]` for `q ∈ (0, 1)`. -/
-theorem dampDefect_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
-    0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  unfold dampDefect
-  have h₁ : Real.sqrt q ≤ 1 := Real.sqrt_le_one.mpr hq₁.le
-  have h₀ : 0 ≤ Real.sqrt q := Real.sqrt_nonneg q
-  split_ifs <;> constructor <;> linarith
+alias dampDefect_mem_Icc := _root_.SharedProofs.dampDefect_mem_Icc_
 
 /-- The line factor lies in `[0, 1]` for `q ∈ (0, 1)`. -/
-theorem confLineFactor_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {x : ℝ} {d : Data K}
-    {Y d₀ : ℝ} (p : ℕ) (ω : Conf x d Y d₀) (l : ℕ) :
+theorem confLineFactor_mem_Icc  {q}  (hq : 0 < q) (hq₁ : q < 1) {x : ℝ} {d : Data K}
+    {Y d₀ : ℝ}  p  (ω : Conf x d Y d₀)  l  :
     0 ≤ confLineFactor q p ω l ∧ confLineFactor q p ω l ≤ 1 := by
   have hind : ∀ j, (0 : ℝ) ≤ (if l = confLines p ω j then 1 else 0) ∧
       (if l = confLines p ω j then (1 : ℝ) else 0) ≤ 1 := fun j => by
@@ -165,7 +162,7 @@ section Square
 variable {d : Data K} {Y d₀ u v r x : ℝ}
 
 /-- The positions at a root lie in the square. -/
-theorem rootPositions_subset_rootSquare (U V u v r : ℝ) :
+theorem rootPositions_subset_rootSquare  U V u v r  :
     rootPositions U V u v r ⊆ rootSquare U V :=
   filter_subset _ _
 
@@ -185,7 +182,7 @@ theorem toSquare_injective :
     (congrArg (fun t => t.1.2) h))
 
 /-- The image of the line-free states is the square states at a position at the root. -/
-theorem mem_range_toSquare_iff (t : (squareModel d Y d₀).State x d) :
+theorem mem_range_toSquare_iff  t  :
     t ∈ Set.range (toSquare (d := d) (Y := Y) (d₀ := d₀) (u := u) (v := v) (r := r)
       (x := x)) ↔ t.1.1.1 ∈ rootPositions (d₀ * Y * d.Hm) d.Hn u v r := by
   classical
@@ -210,13 +207,11 @@ theorem symOp_mul_rootPosInd :
   rw [Matrix.mul_diagonal, Matrix.diagonal_mul]
   by_cases h : t.1.1 = t'.1.1 ∧
       ∃ σ : Fin K → Equiv.Perm (Fin (padCount x + 1)), ∀ i, t'.1.2 i = t.1.2 i ∘ σ i
-  · have hw : rootPosInd u v r t' = rootPosInd u v r t := by
-      simp only [rootPosInd, h.1]
-    rw [hw, mul_comm]
+  · simp_all [rootPosInd]
   · simp only [PosModel.symOp, h, ite_false, zero_mul, mul_zero]
 
 /-- `𝒮` of the line-free model is the restriction of `𝒮` of the square model. -/
-theorem symOp_toSquare (s s' : (freeRootModel d Y d₀ u v r).State x d) :
+theorem symOp_toSquare  s s'  :
     (freeRootModel d Y d₀ u v r).symOp x d s s' =
       (squareModel d Y d₀).symOp x d (toSquare s) (toSquare s') := by
   refine if_congr (and_congr ⟨fun h => Subtype.ext ?_, fun h => Subtype.ext ?_⟩ Iff.rfl) rfl rfl
@@ -226,7 +221,7 @@ theorem symOp_toSquare (s s' : (freeRootModel d Y d₀ u v r).State x d) :
     exact h'
 
 /-- `𝒯` of the line-free model is the restriction of `𝒯` of the square model. -/
-theorem rowOp_toSquare (A₀ : ℝ) (s s' : (freeRootModel d Y d₀ u v r).State x d) :
+theorem rowOp_toSquare  A₀   s s'  :
     (freeRootModel d Y d₀ u v r).rowOp 1 A₀ x d Y d₀ s s' =
       (squareModel d Y d₀).rowOp 1 A₀ x d Y d₀ (toSquare s) (toSquare s') :=
   rfl
@@ -245,7 +240,7 @@ theorem goodOp_eq_diagonal_visitInd :
 
 /-- `A⁰(s, s') = g(s) (𝒮 𝒯 𝒮)(s, s') g(s')` along the inclusion, where `g` is the visit
 indicator and `𝒮 𝒯 𝒮` is the kernel of the square model. -/
-theorem freeRootModel_edgeOp_eq (A₀ : ℝ) (s s' : (freeRootModel d Y d₀ u v r).State x d) :
+theorem freeRootModel_edgeOp_eq  A₀   s s'  :
     (freeRootModel d Y d₀ u v r).edgeOp 1 A₀ x d Y d₀ s s' =
       (visitInd x d Y d₀ u v r (toSquare s) : ℂ) *
         confKernel A₀ x d Y d₀ (toSquare s) (toSquare s') *
@@ -281,17 +276,15 @@ theorem freeRootModel_edgeOp_eq (A₀ : ℝ) (s s' : (freeRootModel d Y d₀ u v
     Matrix.mul_diagonal, Matrix.diagonal_mul, hv, hv, one_mul, mul_one]
 
 /-- A visit indicator other than `1` is `0`. -/
-theorem visitInd_eq_zero_of_ne_one {t : (squareModel d Y d₀).State x d}
+theorem visitInd_eq_zero_of_ne_one  {t} 
     (ht : visitInd x d Y d₀ u v r t ≠ 1) : visitInd x d Y d₀ u v r t = 0 := by
   unfold visitInd at ht ⊢
-  split_ifs at ht ⊢ with h
-  · exact (ht rfl).elim
-  · rfl
+  simp_all
 
 /-- The line-free weight of a path is the kernel `𝒮 𝒯 𝒮` along the included path, times the
 visit indicators: every visit carries `g` once or twice, and `g² = g`. -/
-theorem pathWeight_eq_prod_confKernel {A₀ : ℝ} {N : ℕ} (hN : 0 < N)
-    (path : Fin (N + 1) → (freeRootModel d Y d₀ u v r).State x d) :
+theorem pathWeight_eq_prod_confKernel  {A₀}   {N}  (hN : 0 < N)
+     path  :
     pathWeight A₀ x d Y d₀ u v r path =
       (∏ j : Fin N, confKernel A₀ x d Y d₀ (toSquare (path j.castSucc))
         (toSquare (path j.succ))) * ∏ j, (visitInd x d Y d₀ u v r (toSquare (path j)) : ℂ) := by
@@ -320,10 +313,10 @@ end Square
 is `∑_ω c(ω) A(ω, ϱ) ∏_p λ_p(ω, ℓ_p)`. The paths of `freeRootModel` at `ϱ` are the
 configurations whose visits are all positions at `ϱ`; along them the edge operator is
 `𝒢 (𝒮 𝒯 𝒮) 𝒢`, with `𝒮 𝒯 𝒮` independent of the root. -/
-theorem rootMoment_eq_sum_conf {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ : ℝ}
+theorem rootMoment_eq_sum_conf  {q A₀ x}  (hq : 0 < q) {d : Data K}  {Y d₀} 
     (hR : 0 < momentPower x)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (u v r : ℝ)
-    (ℓ : ℕ → ℕ) :
+    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))  u v r 
+     ℓ  :
     rootMoment q A₀ x d Y d₀ u v r ℓ =
       ∑ ω : Conf x d Y d₀, confCoeff A₀ x d Y d₀ ω * (confInd x d Y d₀ ω u v r : ℂ) *
         ∏ p ∈ bandPrimes x d, (confLineFactor q p ω (ℓ p) : ℂ) := by

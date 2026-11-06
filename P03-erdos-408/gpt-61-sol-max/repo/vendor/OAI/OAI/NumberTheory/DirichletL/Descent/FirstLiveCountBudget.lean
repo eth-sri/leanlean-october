@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveSupport
 
@@ -6,15 +7,18 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveSuppor
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
-lemma liveNormCap_power_bound (b Lcap Z r ell F eta tau : ℝ)
+
+section
+variable (b Lcap Z r ell F eta tau A : ℝ)
+
+lemma liveNormCap_power_bound  
     (_hb : 0 ≤ b) (hcap : 0 ≤ Lcap) (hZ : 2 ≤ Z)
     (hr : r ≤ Lcap) (hell : ell ≤ Lcap) (hF : 0 ≤ F) (hFcap : F ≤ Lcap)
     (heta : 0 ≤ eta) (heta1 : eta ≤ 1) (htau : 0 ≤ tau) (htau1 : tau ≤ 1) :
@@ -35,8 +39,7 @@ lemma liveNormCap_power_bound (b Lcap Z r ell F eta tau : ℝ)
   unfold liveNormCap
   apply max_le (hpow _ (by linarith))
   apply max_le
-  · exact mul_le_mul hbmax (Real.rpow_le_rpow_of_exponent_le hz1 (by linarith))
-      (Real.rpow_nonneg hz.le _) (by linarith)
+  · gcongr <;> first | assumption | positivity | linarith
   apply max_le
   · rw [hsq,mul_assoc,←Real.rpow_add hz]
     exact mul_le_mul hbmax (Real.rpow_le_rpow_of_exponent_le hz1 (by linarith))
@@ -44,7 +47,7 @@ lemma liveNormCap_power_bound (b Lcap Z r ell F eta tau : ℝ)
   · rw [hsq]
     exact hpow _ (by linarith)
 
-lemma dyadIndex_power_log_bound (b A : ℝ) (hb : 1 ≤ b) (hA : 0 ≤ A) :
+lemma dyadIndex_power_log_bound   (hb : 1 ≤ b) (hA : 0 ≤ A) :
     ∃ C : ℝ,0<C ∧ ∀ Z R : ℝ,2 ≤ Z → 1 ≤ R → R ≤ b*Z^A →
       ((dyadIndex R+1:ℕ):ℝ)^8 ≤ C*(1+Real.log Z)^8 := by
   let c := 1+Real.log b/Real.log 2+A/Real.log 2
@@ -65,15 +68,18 @@ lemma dyadIndex_power_log_bound (b A : ℝ) (hb : 1 ≤ b) (hA : 0 ≤ A) :
     simp only [Nat.cast_add,Nat.cast_one,dyadIndex,Real.logb] at *
     have hd := div_le_div_of_nonneg_right hl hl2.le
     have hmul : 0 ≤ (Real.log b/Real.log 2)*Real.log Z := mul_nonneg hcb hlz
-    dsimp [c]
-    have he : (Real.log b+A*Real.log Z)/Real.log 2=Real.log b/Real.log 2+(A/Real.log 2)*Real.log Z := by ring
-    rw [he] at hd
-    nlinarith
+    grind
   calc
     _ ≤ (c*(1+Real.log Z))^8 := pow_le_pow_left₀ (by positivity) hstep 8
     _= _ := by rw [mul_pow]
 
-theorem live_joint_scalar_log_budget (b Lcap : ℝ) (hb : 0 ≤ b) (hcap : 0 ≤ Lcap) :
+end
+
+section
+variable (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap : 0 ≤ Lcap) (hε : 0<ε)
+
+include hb hcap in
+theorem live_joint_scalar_log_budget       :
     ∃ C : ℝ,0<C ∧ ∀ Z r ell F eta tau : ℝ,2 ≤ Z → r ≤ Lcap → ell ≤ Lcap →
       0 ≤ F → F ≤ Lcap → 0 ≤ eta → eta ≤ 1 → 0 ≤ tau → tau ≤ 1 →
       ((dyadIndex (liveNormCap (b*Z^r) (Z^(ell+eta)) (Z^(2*F+15*eta+tau)))+1:ℕ):ℝ)^8 ≤
@@ -84,7 +90,8 @@ theorem live_joint_scalar_log_budget (b Lcap : ℝ) (hb : 0 ≤ b) (hcap : 0 ≤
   have hc := liveNormCap_power_bound b Lcap Z r ell F eta tau hb hcap hZ hr hell hF hFcap heta heta1 htau htau1
   exact hcount Z _ hZ hc.1 hc.2
 
-lemma log_eighth_small_power (ε : ℝ) (hε : 0<ε) :
+include hε in
+lemma log_eighth_small_power     :
     ∃ C : ℝ,0<C ∧ ∀ Z : ℝ,1 ≤ Z → (1+Real.log Z)^8 ≤ C*Z^ε := by
   let δ := ε/8
   have hd : 0<δ := by dsimp [δ];positivity
@@ -94,9 +101,7 @@ lemma log_eighth_small_power (ε : ℝ) (hε : 0<ε) :
   have h1 := Real.one_le_rpow hZ hd.le
   have hl := Real.log_le_rpow_div hz.le hd
   have hb : 1+Real.log Z ≤ (1+1/δ)*Z^δ := by
-    calc
-      _ ≤ Z^δ+Z^δ/δ := add_le_add h1 hl
-      _=_ := by ring
+    grind
   calc
     _ ≤ ((1+1/δ)*Z^δ)^8 := pow_le_pow_left₀ (by linarith [Real.log_nonneg hZ]) hb 8
     _=(1+1/δ)^8*Z^ε := by
@@ -107,7 +112,8 @@ lemma log_eighth_small_power (ε : ℝ) (hε : 0<ε) :
         ring
       rw [mul_pow,he]
 
-theorem live_joint_scalar_small_power (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap : 0 ≤ Lcap) (hε : 0<ε) :
+include hb hcap hε in
+theorem live_joint_scalar_small_power         :
     ∃ C : ℝ,0<C ∧ ∀ Z r ell F eta tau : ℝ,2 ≤ Z → r ≤ Lcap → ell ≤ Lcap →
       0 ≤ F → F ≤ Lcap → 0 ≤ eta → eta ≤ 1 → 0 ≤ tau → tau ≤ 1 →
       ((dyadIndex (liveNormCap (b*Z^r) (Z^(ell+eta)) (Z^(2*F+15*eta+tau)))+1:ℕ):ℝ)^8 ≤ C*Z^ε := by
@@ -118,14 +124,15 @@ theorem live_joint_scalar_small_power (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap : 0
   exact (h₁ Z r ell F eta tau hZ hr hell hF hFcap heta heta1 htau htau1).trans
     ((mul_le_mul_of_nonneg_left (h₂ Z (by linarith)) hC₁.le).trans_eq (mul_assoc _ _ _).symm)
 
-theorem original_live_joint_small_power (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap : 0 ≤ Lcap) (hε : 0<ε) :
-    ∃ C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι → O)(hp : ∀i,p i≠0)
+include hb hcap hε in
+theorem original_live_joint_small_power         :
+    ∃ C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι → ActualEisensteinCubic.O)(hp : ∀i,p i≠0)
       [∀i,(Ideal.span {p i}).IsMaximal]
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (pool : Finset ι)(Q : Finset (ι→₀ℕ))(labels : Finset (Ideal O))
-      (β : Ideal O → (ι→₀ℕ) → ℂ)(cutoff : CubeCoordinates ι → Finset ι → Ideal O → Finset ι → ℝ)
-      (Ψ : O→*ℂ)(m : O)(mark : (ι→₀ℕ) → Finset ι → ℂ)(W : ℝ → ℂ)(Φ : 𝓢(ℝ,ℂ))
+      (pool : Finset ι)(Q : Finset (ι→₀ℕ))(labels : Finset (Ideal ActualEisensteinCubic.O))
+      (β : Ideal ActualEisensteinCubic.O → (ι→₀ℕ) → ℂ)(cutoff : CubeCoordinates ι → Finset ι → Ideal ActualEisensteinCubic.O → Finset ι → ℝ)
+      (Ψ : ActualEisensteinCubic.O→*ℂ)(m : ActualEisensteinCubic.O)(mark : (ι→₀ℕ) → Finset ι → ℂ)(W : ℝ → ℂ)(Φ : 𝓢(ℝ,ℂ))
       (K Z r ell F eta tau theta : ℝ),
       2 ≤ Z → r ≤ Lcap → ell ≤ Lcap → 0 ≤ F → F ≤ Lcap → 0 ≤ eta → eta ≤ 1 → 0 ≤ tau → tau ≤ 1 →
       (∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2 ≤ Z^(ell+eta)) →
@@ -151,7 +158,9 @@ theorem original_live_joint_small_power (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap :
       (((dyadIndex (liveNormCap (b*Z^r) (Z^(ell+eta)) (Z^(2*F+15*eta+tau))))+1:ℕ):ℝ)^8 := by exact_mod_cast he
   exact he'.trans (hcount Z r ell F eta tau hZ hr hell hF hFcap heta heta1 htau htau1)
 
-end SevenEighths.InverseMomentFirstOriginalProfile
 end
+
+end SevenEighths.InverseMomentFirstOriginalProfile
+
 
 end OAI

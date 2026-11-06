@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P5Energy.Schur
 
@@ -17,7 +18,7 @@ open Blueprint.Analytic
 theorem kernelRadius_lt : 1 / (8 * Real.pi) < 1 / 4 := by
   rw [div_lt_div_iff₀ (by positivity) (by norm_num)]; nlinarith [Real.pi_gt_three]
 
-theorem localKernel_eq_zero_of_far (x : ℝ) (hx : 1 / 4 ≤ |x|) : localKernel x = 0 :=
+theorem localKernel_eq_zero_of_far  x  (hx : 1 / 4 ≤ |x|) : localKernel x = 0 :=
   localKernel_eq_zero_of_radius x (kernelRadius_lt.le.trans hx)
 
 theorem localKernel_continuous : Continuous localKernel := localKernel_contDiff.continuous
@@ -26,9 +27,13 @@ theorem localKernel_lipschitz : ∃ L : NNReal, LipschitzWith L localKernel :=
   ContDiff.lipschitzWith_of_hasCompactSupport localKernel_hasCompactSupport localKernel_contDiff
     (by simp)
 
+section
+variable {L : NNReal} (hL : LipschitzWith L localKernel) {Y H n v : ℝ} (hY : 0 < Y) (hH : 0 < H) (hHY : H ≤ Y / 10) (hv1 : Y / 2 ≤ v) (hn1 : Y ≤ n) (hn2 : n ≤ 2 * Y)
+
+include hY hH hHY hv1 hn1 hn2 in
 /-- Both kernels vanish when `|n - v| > H` on the working range. -/
-theorem kernels_vanish_far {Y H n v : ℝ} (hY : 0 < Y) (hH : 0 < H) (hHY : H ≤ Y / 10)
-    (hv1 : Y / 2 ≤ v) (hn1 : Y ≤ n) (hn2 : n ≤ 2 * Y) (hfar : H < |n - v|) :
+theorem kernels_vanish_far        
+          (hfar : H < |n - v|) :
     localKernel ((n - v) / H) = 0 ∧ localKernel (v * Real.log (n / v) / H) = 0 := by
   have hv : 0 < v := by linarith
   have hn : 0 < n := by linarith
@@ -47,16 +52,13 @@ theorem kernels_vanish_far {Y H n v : ℝ} (hY : 0 < Y) (hH : 0 < H) (hHY : H �
       have h2 : 1 / 4 * H ≤ v * ((n - v) / n) := by
         rw [mul_div_assoc', le_div_iff₀ hn]
         nlinarith
-      calc 1 / 4 * H ≤ v * Real.log (n / v) := h2.trans h1
-        _ ≤ |v * Real.log (n / v)| := le_abs_self _
+      grind
     · have hlog : Real.log (n / v) ≤ n / v - 1 := Real.log_le_sub_one_of_pos (div_pos hn hv)
       have h1 : v * Real.log (n / v) ≤ v * (n / v - 1) := mul_le_mul_of_nonneg_left hlog hv.le
       have h2 : v * (n / v - 1) = n - v := by field_simp
-      rw [h2] at h1
-      calc 1 / 4 * H ≤ -(v * Real.log (n / v)) := by linarith
-        _ ≤ |v * Real.log (n / v)| := neg_le_abs _
+      grind
 
-theorem abs_log_one_add_sub_self_le {z : ℝ} (hz : -1 < z) :
+theorem abs_log_one_add_sub_self_le  {z}  (hz : -1 < z) :
     |Real.log (1 + z) - z| ≤ z ^ 2 / (1 + z) := by
   have hpos : 0 < 1 + z := by linarith
   have hup := Real.log_le_sub_one_of_pos hpos
@@ -65,21 +67,20 @@ theorem abs_log_one_add_sub_self_le {z : ℝ} (hz : -1 < z) :
   have hform : (1 + z)⁻¹ - 1 = -z / (1 + z) := by field_simp; ring
   rw [hform] at hinv
   have hlo : z / (1 + z) ≤ Real.log (1 + z) := by
-    have hn := neg_le_neg hinv
-    simpa [neg_div] using hn
-  have hu : Real.log (1 + z) - z ≤ 0 := by linarith
+    grind
+  
   have hl : -(z ^ 2 / (1 + z)) ≤ Real.log (1 + z) - z := by
     have heq : z / (1 + z) - z = -(z ^ 2 / (1 + z)) := by field_simp; ring
     rw [← heq]
     linarith
-  rw [abs_le]
-  exact ⟨hl, hu.trans (div_nonneg (sq_nonneg z) hpos.le)⟩
+  grind
 
-theorem log_argument_error {Y H n v : ℝ} (hY : 0 < Y) (hv : 0 < v) (hn : Y ≤ n)
+include hY in
+theorem log_argument_error     (hv : 0 < v) (hn : Y ≤ n)
     (hnv : |n - v| ≤ H) :
     |v * Real.log (n / v) - (n - v)| ≤ H ^ 2 / Y := by
   have hnpos : 0 < n := hY.trans_le hn
-  have hH : 0 ≤ H := (abs_nonneg _).trans hnv
+  
   let z : ℝ := (n - v) / v
   have h1pz : 1 + z = n / v := by
     dsimp [z]; field_simp; ring
@@ -99,17 +100,17 @@ theorem log_argument_error {Y H n v : ℝ} (hY : 0 < Y) (hv : 0 < v) (hn : Y ≤
   rw [hdiff, abs_mul, abs_of_pos hv]
   exact hmain
 
-theorem kernel_diff_le {L : NNReal} (hL : LipschitzWith L localKernel) {Y H n v : ℝ}
-    (hY : 0 < Y) (hH : 0 < H) (hHY : H ≤ Y / 10)
-    (hv1 : Y / 2 ≤ v) (hn1 : Y ≤ n) (hn2 : n ≤ 2 * Y) :
+include hL hY hH hHY hv1 hn1 hn2 in
+theorem kernel_diff_le      
+         
+          :
     |localKernel ((n - v) / H) - localKernel (v * Real.log (n / v) / H)| ≤ L * (H / Y) := by
   by_cases hnear : |n - v| ≤ H
   · have hv : 0 < v := by linarith
     have harg := log_argument_error hY hv hn1 hnear
     have hd : |(n - v) / H - v * Real.log (n / v) / H| ≤ H / Y := by
       rw [← sub_div, abs_div, abs_of_pos hH, div_le_iff₀ hH, abs_sub_comm]
-      calc |v * Real.log (n / v) - (n - v)| ≤ H ^ 2 / Y := harg
-        _ = H / Y * H := by ring
+      grind
     have hlip := hL.dist_le_mul ((n - v) / H) (v * Real.log (n / v) / H)
     rw [Real.dist_eq, Real.dist_eq] at hlip
     exact hlip.trans (mul_le_mul_of_nonneg_left hd L.2)
@@ -117,28 +118,35 @@ theorem kernel_diff_le {L : NNReal} (hL : LipschitzWith L localKernel) {Y H n v 
     rw [h1, h2, sub_zero, abs_zero]
     positivity
 
+end
+
 /-- Indicator of `|n - v| ≤ H`. -/
 def chi (H : ℝ) (n : ℕ) : ℝ → ℝ := Set.indicator (Set.Icc ((n : ℝ) - H) (n + H)) 1
 
-theorem chi_apply (H : ℝ) (n : ℕ) (v : ℝ) :
+section
+variable (H : ℝ) (n : ℕ) (v : ℝ)
+
+theorem chi_apply       :
     chi H n v = if |(n : ℝ) - v| ≤ H then 1 else 0 := by
   unfold chi
   rw [Set.indicator_apply]
   have : v ∈ Set.Icc ((n : ℝ) - H) (n + H) ↔ |(n : ℝ) - v| ≤ H := by
-    rw [Set.mem_Icc, abs_le]; constructor <;> intro h <;> constructor <;> linarith [h.1, h.2]
+    grind
   simp only [this, Pi.one_apply]
 
-theorem chi_nonneg (H : ℝ) (n : ℕ) (v : ℝ) : 0 ≤ chi H n v := by
+theorem chi_nonneg       : 0 ≤ chi H n v := by
   rw [chi_apply]; split_ifs <;> norm_num
 
-theorem chi_sq (H : ℝ) (n : ℕ) (v : ℝ) : chi H n v ^ 2 = chi H n v := by
+theorem chi_sq       : chi H n v ^ 2 = chi H n v := by
   rw [chi_apply]; split_ifs <;> norm_num
 
-theorem integrable_chi (H : ℝ) (n : ℕ) : Integrable (chi H n) := by
+theorem integrable_chi     : Integrable (chi H n) := by
   unfold chi
   exact (integrable_indicator_iff measurableSet_Icc).2 continuous_const.integrableOn_Icc
 
-theorem integral_chi_le {H : ℝ} (hH : 0 ≤ H) (n : ℕ) {a b : ℝ} (hab : a ≤ b) :
+end
+
+theorem integral_chi_le  {H}  (hH : 0 ≤ H)  n   {a b}  (hab : a ≤ b) :
     ∫ v in a..b, chi H n v ≤ 2 * H := by
   rw [intervalIntegral.integral_of_le hab]
   refine (setIntegral_le_integral (integrable_chi H n)
@@ -149,8 +157,11 @@ theorem integral_chi_le {H : ℝ} (hH : 0 ≤ H) (n : ℕ) {a b : ℝ} (hab : a 
   rw [ENNReal.toReal_ofReal (by linarith)]
   linarith
 
+section
+variable {L : NNReal} (hL : LipschitzWith L localKernel) (s : Finset ℕ) (a : ℕ → ℂ) {Y H v : ℝ} (hY : 0 < Y) (hH1 : 1 ≤ H) (hHY : H ≤ Y / 10) (hs : ∀ n ∈ s, Y ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * Y)
+
 /-- At most `2H + 1` integers lie within `H` of `v`. -/
-theorem sum_chi_le (s : Finset ℕ) {H v : ℝ} (hH : 0 ≤ H) (hvH : H ≤ v) :
+theorem sum_chi_le     (hH : 0 ≤ H) (hvH : H ≤ v) :
     ∑ n ∈ s, chi H n v ≤ 2 * H + 1 := by
   simp_rw [chi_apply]
   rw [Finset.sum_boole]
@@ -178,7 +189,7 @@ theorem sum_chi_le (s : Finset ℕ) {H v : ℝ} (hH : 0 ≤ H) (hvH : H ≤ v) :
     simp
     linarith
 
-theorem localLogConvolution_continuousOn (s : Finset ℕ) (a : ℕ → ℂ) (H : ℝ) :
+theorem localLogConvolution_continuousOn      H  :
     ContinuousOn (localLogConvolution s a H) (Set.Ioi 0) := by
   unfold localLogConvolution
   apply continuousOn_finsetSum
@@ -191,13 +202,12 @@ theorem localLogConvolution_continuousOn (s : Finset ℕ) (a : ℕ → ℂ) (H :
   apply ContinuousOn.mul continuousOn_id
   by_cases hn0 : (n : ℝ) = 0
   · simp only [hn0, zero_div]; exact continuousOn_const
-  · apply ContinuousOn.log
-    · exact continuousOn_const.div continuousOn_id (fun x hx => ne_of_gt hx)
-    · intro x hx; exact div_ne_zero hn0 (ne_of_gt hx)
+  fun_prop (disch := aesop)
 
-theorem diff_pointwise_sq {L : NNReal} (hL : LipschitzWith L localKernel) (s : Finset ℕ)
-    (a : ℕ → ℂ) {Y H v : ℝ} (hY : 0 < Y) (hH1 : 1 ≤ H) (hHY : H ≤ Y / 10)
-    (hs : ∀ n ∈ s, Y ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * Y) (hv1 : Y / 2 ≤ v) :
+include hL hY hH1 hHY hs in
+theorem diff_pointwise_sq      
+             
+      (hv1 : Y / 2 ≤ v) :
     ‖localConvolution s a H v - localLogConvolution s a H v‖ ^ 2 ≤
       (2 * H + 1) * ((L : ℝ) * (H / Y)) ^ 2 * ∑ n ∈ s, chi H n v * ‖a n‖ ^ 2 := by
   set δ : ℝ := (L : ℝ) * (H / Y) with hδ
@@ -241,10 +251,11 @@ theorem diff_pointwise_sq {L : NNReal} (hL : LipschitzWith L localKernel) (s : F
         mul_le_mul_of_nonneg_right hcount (by positivity)
     _ = _ := by ring
 
+include hL hY hH1 hHY hs in
 /-- The squared `L²` norm of the kernel replacement error on `[Y/2, 5Y/2]`. -/
-theorem error_energy {L : NNReal} (hL : LipschitzWith L localKernel) (s : Finset ℕ)
-    (a : ℕ → ℂ) {Y H : ℝ} (hY : 0 < Y) (hH1 : 1 ≤ H) (hHY : H ≤ Y / 10)
-    (hs : ∀ n ∈ s, Y ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * Y) :
+theorem error_energy      
+             
+      :
     ∫ v in (Y / 2)..(5 * Y / 2),
         ‖localConvolution s a H v - localLogConvolution s a H v‖ ^ 2 ≤
       6 * (L : ℝ) ^ 2 * (H / Y) ^ 2 * H ^ 2 * sqNorm s a := by
@@ -271,8 +282,7 @@ theorem error_energy {L : NNReal} (hL : LipschitzWith L localKernel) (s : Finset
         ∑ n ∈ s, (∫ v in (Y / 2)..(5 * Y / 2), chi H n v) * ‖a n‖ ^ 2 := by
         rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_finsetSum
           (fun n _ => ((integrable_chi H n).mul_const _).intervalIntegrable)]
-        congr 1
-        exact Finset.sum_congr rfl (fun n _ => intervalIntegral.integral_mul_const _ _)
+        simp_all
     _ ≤ (2 * H + 1) * ((L : ℝ) * (H / Y)) ^ 2 * ∑ n ∈ s, (2 * H) * ‖a n‖ ^ 2 :=
         mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun n _ =>
           mul_le_mul_of_nonneg_right (integral_chi_le hH.le n hab) (sq_nonneg _)) (by positivity)
@@ -283,5 +293,7 @@ theorem error_energy {L : NNReal} (hL : LipschitzWith L localKernel) (s : Finset
         apply mul_le_mul_of_nonneg_right _ (by positivity)
         nlinarith
     _ = _ := by ring
+
+end
 
 end Erdos821.P5Energy

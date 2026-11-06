@@ -6,19 +6,19 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.XBoundary
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+
 
 theorem first_x_integral_eq {K : ℕ}
     (e eps : ℝ) (he : 0<e) (he' : e<1/1000) (heps : 0<eps)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (eps/2) S)
-    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
-    (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ)
-    (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ) (l r : ℝ) (hlr : l≤r)
+     S   hS  (hfirst : FirstTail (eps/2) S)
+     hmax  (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
+     η   u   W0 W1 
+     X Y Z  (hZ : 0<Z)  w z   l r  (hlr : l≤r)
     (hl : (51/100:ℝ)≤l) (hlβ : HeckeZeroSupremum.beta+8*e≤l)
     (hw : -(1/100:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re)
     (hlw : 1+eps≤l+w.re) :
@@ -36,6 +36,6 @@ theorem first_x_integral_eq {K : ℕ}
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

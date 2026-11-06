@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceGeometry
 
@@ -6,20 +7,20 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceGeometry
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedDeletedGeometry
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyZeroReferenceGeometry
-local notation "O" => HeckeFamily.O
+
 
 theorem actual_deleted_gates {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
     (hZ : 1 < Z) (hB : 0 ≤ Bmask) (Mcap L X₁ X₂ xi : ℝ)
     (hwidth : s.width ≤ Mcap) (hL : Mcap + Bmask + xi ≤ L)
     (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) (hxi : 0 ≤ xi) (hxiM : xi ≤ s.width / 6)
     (hshort : Real.logb Z X₁ ≤ s.width / 4) (hlong : 1 ≤ X₂)
-    (D₁ D₂ : Finset (Ideal O))
+    (D₁ D₂ : Finset (Ideal HeckeFamily.O))
     (hD₁ : D₁ ∈ (CompletedGauss.primeSupport s.puncture).powerset)
     (hD₂ : D₂ ∈ (CompletedGauss.primeSupport s.puncture).powerset) :
     let short := Real.logb Z X₁ - Real.logb Z ((∏ P ∈ D₁, P).absNorm : ℝ)
@@ -58,13 +59,11 @@ theorem actual_deleted_gates {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
   · refine Or.inl ⟨?_, hd⟩
     have hh₁ := le_max_right (0 : ℝ)
       (Real.logb Z X₂ - Real.logb Z ((∏ P ∈ D₂, P).absNorm : ℝ))
-    have hh₂ := le_max_left (0 : ℝ)
-      (Real.logb Z X₁ - Real.logb Z ((∏ P ∈ D₁, P).absNorm : ℝ))
-    linarith
+    grind
   · exact Or.inr hr
 
 end SevenEighths.CenteredMomentEnergyZeroUnbalancedDeletedGeometry
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Bands
 public import Erdos408.OneSided.Lift
@@ -32,13 +33,13 @@ variable {K : ℕ} {x : ℝ} {d : Data K} {Y d₀ : ℝ}
 theorem state_props (s : State x d Y d₀) :
     s.1.1 ∈ positions d Y d₀ ∧ (∀ i h, s.1.2 i h ∈ band x (d.a i)) ∧
       (∀ i, Function.Injective (s.1.2 i)) ∧ ∀ i h, s.1.2 i h ∣ s.1.1.1 := by
-  have hs : s.1 ∈ states x d Y d₀ := s.2
-  unfold states lists at hs
-  rw [mem_filter, mem_product, mem_filter, Fintype.mem_piFinset] at hs
-  exact ⟨hs.1.1, fun i h => Fintype.mem_piFinset.1 (hs.1.2.1 i) h, hs.1.2.2, hs.2⟩
+  grind [states, lists]
+
+section
+variable {J : ℕ} {p : Lists K J}
 
 /-- With disjoint bands, the labels of a state are distinct across groups and slots. -/
-theorem label_injective {J : ℕ} {p : Lists K J}
+theorem label_injective    
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
     (hband : ∀ i h, p i h ∈ band x (d.a i)) (hinj : ∀ i, Function.Injective (p i)) :
     Function.Injective fun ih : Fin K × Fin (J + 1) => p ih.1 ih.2 := by
@@ -51,7 +52,7 @@ theorem label_injective {J : ℕ} {p : Lists K J}
   rw [hinj i heq]
 
 /-- With disjoint bands, the list product of distinct band primes dividing `n` divides `n`. -/
-theorem listProd_dvd_of_dvd {J : ℕ} {p : Lists K J} {n : ℕ}
+theorem listProd_dvd_of_dvd      {n} 
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
     (hband : ∀ i h, p i h ∈ band x (d.a i)) (hinj : ∀ i, Function.Injective (p i))
     (hdvd : ∀ i h, p i h ∣ n) : listProd p ∣ n := by
@@ -60,12 +61,13 @@ theorem listProd_dvd_of_dvd {J : ℕ} {p : Lists K J} {n : ℕ}
       ∏ ih : Fin K × Fin (J + 1), p ih.1 ih.2 :=
     prod_image fun a _ b _ h => hg h
   unfold listProd
-  rw [← Fintype.prod_prod_type' (fun i h => p i h), ← himg]
+  rw [← Fintype.prod_prod_type' (p), ← himg]
   refine prod_primes_dvd _ (fun a ha => ?_) fun a ha => ?_
   · obtain ⟨⟨i, h⟩, -, rfl⟩ := mem_image.1 ha
     exact (TypeII.band_prime (hband i h)).prime
-  · obtain ⟨⟨i, h⟩, -, rfl⟩ := mem_image.1 ha
-    exact hdvd i h
+  grind
+
+end
 
 /-- With disjoint bands, the list product of a state divides `P₁`. -/
 theorem listProd_dvd (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
@@ -73,9 +75,12 @@ theorem listProd_dvd (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (ba
   obtain ⟨-, hband, hinj, hdvd⟩ := state_props s
   exact listProd_dvd_of_dvd hdisj hband hinj hdvd
 
+section
+variable {C CX alo ahi g : ℝ}
+
 /-- If `α_{P₁ / G} ≠ 0` at one list with product `G`, then every list at the same position
 has the product `G`. -/
-theorem listProd_eq_of_alpha_ne_zero {C CX alo ahi g : ℝ} (hd : Admissible C CX alo ahi g x d)
+theorem listProd_eq_of_alpha_ne_zero   (hd : Admissible C CX alo ahi g x d)
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
     (hrough : ∀ i, ∀ p ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ p ∣ m)
     (hHm : 0 < d.Hm) {s s' : State x d Y d₀} (hpos : s.1.1 = s'.1.1)
@@ -121,10 +126,10 @@ theorem listProd_eq_of_alpha_ne_zero {C CX alo ahi g : ℝ} (hd : Admissible C C
   rw [← h₁, ← h₂, himage i]
 
 /-- `f` is constant on the lists at a position. -/
-theorem endVec_eq_of_pos_eq {C CX alo ahi g : ℝ} (hd : Admissible C CX alo ahi g x d)
+theorem endVec_eq_of_pos_eq   (hd : Admissible C CX alo ahi g x d)
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
     (hrough : ∀ i, ∀ p ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ p ∣ m)
-    (hHm : 0 < d.Hm) {s s' : State x d Y d₀} (hpos : s.1.1 = s'.1.1) :
+    (hHm : 0 < d.Hm)  {s s'}  (hpos : s.1.1 = s'.1.1) :
     endVec x d Y d₀ s = endVec x d Y d₀ s' := by
   unfold endVec
   by_cases hα : d.α (s.1.1.1 / listProd s.1.2) = 0
@@ -136,8 +141,8 @@ theorem endVec_eq_of_pos_eq {C CX alo ahi g : ℝ} (hd : Admissible C CX alo ahi
 /-! ### Norms -/
 
 /-- `|f|² ≤ L^{4C}`, from `|α|, |β| ≤ L^C`. -/
-theorem norm_endVec_sq_le {C CX alo ahi g : ℝ} (hd : Admissible C CX alo ahi g x d)
-    (hL : 0 < Real.log x) (s : State x d Y d₀) :
+theorem norm_endVec_sq_le   (hd : Admissible C CX alo ahi g x d)
+    (hL : 0 < Real.log x)  s  :
     ‖endVec x d Y d₀ s‖ ^ 2 ≤ Real.log x ^ (4 * C) := by
   have hα : ∀ m, ‖d.α m‖ ≤ Real.log x ^ C := by
     intro m
@@ -155,8 +160,7 @@ theorem norm_endVec_sq_le {C CX alo ahi g : ℝ} (hd : Admissible C CX alo ahi g
   rw [norm_mul, norm_star]
   calc (‖d.α (s.1.1.1 / listProd s.1.2)‖ * ‖d.β s.1.1.2‖) ^ 2
       ≤ (Real.log x ^ C * Real.log x ^ C) ^ 2 :=
-        pow_le_pow_left₀ (by positivity)
-          (mul_le_mul (hα _) (hβ _) (norm_nonneg _) (by positivity)) 2
+        (by bound)
     _ = Real.log x ^ (4 * C) := by
         rw [← Real.rpow_add hL, ← Real.rpow_natCast, ← Real.rpow_mul hL.le]
         congr 1
@@ -168,11 +172,11 @@ theorem bandMass_nonneg (x : ℝ) (d : Data K) : 0 ≤ d.bandMass x :=
   prod_nonneg fun _ _ => sum_nonneg fun _ _ => by positivity
 
 /-- The state measure is nonnegative. -/
-theorem stateMass_nonneg (x : ℝ) (d : Data K) : 0 ≤ stateMass x d :=
+theorem stateMass_nonneg  x  (d : Data K) : 0 ≤ stateMass x d :=
   pow_nonneg (inv_nonneg.2 (bandMass_nonneg x d)) _
 
 /-- `∏_i V_i^{-M} ∑_{lists} 1 / G ≤ 1`: dropping distinctness, the sum is `∏_i V_i^M`. -/
-theorem stateMass_mul_sum_inv_listProd_le (x : ℝ) (d : Data K) :
+theorem stateMass_mul_sum_inv_listProd_le  x  (d : Data K) :
     stateMass x d * ∑ p ∈ lists x d (padCount x), ((listProd p : ℕ) : ℝ)⁻¹ ≤ 1 := by
   set J := padCount x
   have hsum : ∑ p ∈ lists x d J, ((listProd p : ℕ) : ℝ)⁻¹ ≤ d.bandMass x ^ (J + 1) := by
@@ -202,12 +206,11 @@ theorem stateMass_mul_sum_inv_listProd_le (x : ℝ) (d : Data K) :
     _ = ((d.bandMass x)⁻¹ * d.bandMass x) ^ (J + 1) := (mul_pow _ _ _).symm
     _ ≤ 1 := by
         rcases eq_or_ne (d.bandMass x) 0 with h | h
-        · rw [h, inv_zero, zero_mul, zero_pow (Nat.succ_ne_zero _)]
-          exact zero_le_one
+        · simp_all
         · rw [inv_mul_cancel₀ h, one_pow]
 
 /-- `#(ℕ ∩ [a, b]) ≤ b - a + 1`. -/
-theorem card_Icc_ceil_floor_le {a b : ℝ} (ha : 0 ≤ a) (hab : a ≤ b) :
+theorem card_Icc_ceil_floor_le  {a b}  (ha : 0 ≤ a) (hab : a ≤ b) :
     ((Icc ⌈a⌉₊ ⌊b⌋₊).card : ℝ) ≤ b - a + 1 := by
   have h := Nat.card_Icc ⌈a⌉₊ ⌊b⌋₊
   rcases (show (Icc ⌈a⌉₊ ⌊b⌋₊).card + ⌈a⌉₊ ≤ ⌊b⌋₊ + 1 ∨ (Icc ⌈a⌉₊ ⌊b⌋₊).card = 0 by omega)
@@ -218,21 +221,18 @@ theorem card_Icc_ceil_floor_le {a b : ℝ} (ha : 0 ≤ a) (hab : a ≤ b) :
     linarith
 
 /-- PD (3.18): `‖f‖² ≤ 64 σ U V` when `|f|² ≤ σ`, with `U = d₀ Y H_m` and `V = H_n`. -/
-theorem stateMass_mul_sqNorm_endVec_le {C CX alo ahi g : ℝ}
+theorem stateMass_mul_sqNorm_endVec_le  
     (hd : Admissible C CX alo ahi g x d)
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hHm : 1 ≤ d.Hm) (hHn : 1 ≤ d.Hn) (hd₀Y : 0 < d₀ * Y) {σ : ℝ} (hσ : 0 ≤ σ)
+    (hHm : 1 ≤ d.Hm) (hHn : 1 ≤ d.Hn) (hd₀Y : 0 < d₀ * Y)  {σ}  (hσ : 0 ≤ σ)
     (hfσ : ∀ s, ‖endVec x d Y d₀ s‖ ^ 2 ≤ σ) :
     stateMass x d * sqNorm (endVec x d Y d₀) ≤ 64 * σ * (d₀ * Y * d.Hm * d.Hn) := by
   set U := d₀ * Y * d.Hm with hU
-  have hU₀ : 0 < U := mul_pos hd₀Y (by linarith)
+  
   set e : (ℕ × ℕ) × Lists K (padCount x) → ℝ :=
     fun s => if d.α (s.1.1 / listProd s.2) ≠ 0 then σ else 0 with he
   have he₀ : ∀ s, 0 ≤ e s := fun s => by
-    simp only [he]
-    split_ifs
-    · exact hσ
-    · exact le_rfl
+    positivity
   -- pointwise, `|f|² ≤ σ` where `α_m ≠ 0`
   have h₁ : sqNorm (endVec x d Y d₀) ≤ ∑ s ∈ states x d Y d₀, e s := by
     unfold sqNorm
@@ -244,9 +244,7 @@ theorem stateMass_mul_sqNorm_endVec_le {C CX alo ahi g : ℝ}
         rw [hα, star_zero, zero_mul]
       rw [h₀, norm_zero, zero_pow two_ne_zero]
       exact he₀ _
-    · simp only [he]
-      rw [ite_eq_left hα]
-      exact hfσ s
+    grind
   -- at a fixed list with product `G`, at most `(32 U / G) (2 V)` positions contribute
   have h₂ : ∀ p ∈ lists x d (padCount x), ∑ P ∈ positions d Y d₀,
       (if ∀ i h, p i h ∣ P.1 then e (P, p) else 0) ≤
@@ -273,17 +271,11 @@ theorem stateMass_mul_sqNorm_endVec_le {C CX alo ahi g : ℝ}
             · rw [ite_eq_left hQ]
               simp only [he]
               by_cases hα : d.α (P.1 / G) = 0
-              · rw [ite_eq_right (not_not.2 hα)]
-                split_ifs
-                · exact hσ
-                · exact le_rfl
+              · grind
               · rw [ite_eq_left hα, ite_eq_left]
                 rw [mem_product, hA₁, mem_filter]
                 exact ⟨⟨hP.1.1, listProd_dvd_of_dvd hdisj hband hp.2 hQ, hα⟩, hP.1.2⟩
-            · rw [ite_eq_right hQ]
-              split_ifs
-              · exact hσ
-              · exact le_rfl
+            grind
         _ = σ * ((positions d Y d₀ ∩ A₁ ×ˢ A₂).card : ℝ) := by
             rw [sum_ite_mem, sum_const, nsmul_eq_mul, mul_comm]
         _ ≤ σ * ((A₁.card : ℝ) * A₂.card) := by
@@ -292,8 +284,7 @@ theorem stateMass_mul_sqNorm_endVec_le {C CX alo ahi g : ℝ}
             exact_mod_cast card_le_card inter_subset_right
     -- `#A₂ ≤ 2V`
     have hA₂card : (A₂.card : ℝ) ≤ 2 * d.Hn := by
-      have := card_Icc_ceil_floor_le (by linarith : 0 ≤ d.Hn) (by linarith : d.Hn ≤ 2 * d.Hn)
-      linarith
+      grind [card_Icc_ceil_floor_le]
     -- `#A₁ G ≤ 32 U`: `n ↦ n / G` is injective into `[H_m, 2H_m]`, and `G H_m ≤ 16 U`
     have hA₁card : (A₁.card : ℝ) * G ≤ 32 * U := by
       rcases A₁.eq_empty_or_nonempty with h | ⟨n₀, hn₀⟩
@@ -310,7 +301,7 @@ theorem stateMass_mul_sqNorm_endVec_le {C CX alo ahi g : ℝ}
         rw [← Nat.div_mul_cancel (mem_filter.1 hn).2.1,
           ← Nat.div_mul_cancel (mem_filter.1 hn').2.1, h]
       have hcard : (A₁.card : ℝ) ≤ (Icc ⌈d.Hm⌉₊ ⌊2 * d.Hm⌋₊).card := by
-        exact_mod_cast card_le_card_of_injOn _ (fun n hn => hmaps n hn) hinj
+        exact_mod_cast card_le_card_of_injOn _ (hmaps) hinj
       have hIcc := card_Icc_ceil_floor_le (by linarith : 0 ≤ d.Hm) (by linarith : d.Hm ≤ 2 * d.Hm)
       have hGHm : (G : ℝ) * d.Hm ≤ 16 * U := by
         obtain ⟨hn₀I, hn₀G, hn₀α⟩ := mem_filter.1 hn₀
@@ -344,5 +335,7 @@ theorem stateMass_mul_sqNorm_endVec_le {C CX alo ahi g : ℝ}
     _ ≤ 64 * σ * (U * d.Hn) * 1 :=
         mul_le_mul_of_nonneg_left (stateMass_mul_sum_inv_listProd_le x d) (by positivity)
     _ = 64 * σ * (d₀ * Y * d.Hm * d.Hn) := by rw [hU]; ring
+
+end
 
 end Erdos408.OneSided

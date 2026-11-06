@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Defs
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
@@ -22,7 +23,7 @@ open Filter Real Topology
 
 /-- Leibniz for `y Φ(y)`: `(y Φ)^{(r+1)} = y Φ^{(r+1)} + (r + 1) Φ^{(r)}`. -/
 lemma iteratedDeriv_succ_mul_id {Φ : ℝ → ℝ} (hΦ : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) Φ)
-    (r : ℕ) : iteratedDeriv (r + 1) (fun y => y * Φ y) =
+     r  : iteratedDeriv (r + 1) (fun y => y * Φ y) =
       fun y => y * iteratedDeriv (r + 1) Φ y + (r + 1) * iteratedDeriv r Φ y := by
   have hd : ∀ k, Differentiable ℝ (iteratedDeriv k Φ) := fun k =>
     hΦ.differentiable_iteratedDeriv k (by exact_mod_cast WithTop.coe_lt_top _)
@@ -49,22 +50,19 @@ lemma iteratedDeriv_succ_mul_id {Φ : ℝ → ℝ} (hΦ : ContDiff ℝ ((⊤ : �
 
 /-- The derivatives of a function vanishing off `[κ⁻¹, κ]` vanish at `|y| > κ`. -/
 lemma iteratedDeriv_eq_zero_of_lt {Φ : ℝ → ℝ} {κ : ℝ} (hκ : 1 < κ)
-    (hsupp : ∀ y, Φ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) (r : ℕ) {y : ℝ} (hy : κ < |y|) :
+    (hsupp : ∀ y, Φ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ)  r   {y}  (hy : κ < |y|) :
     iteratedDeriv r Φ y = 0 := by
   have hκ0 : 0 < κ⁻¹ := inv_pos.2 (by linarith)
   have hopen : IsOpen {z : ℝ | κ < |z|} := isOpen_lt continuous_const continuous_abs
   have hzero : Φ =ᶠ[𝓝 y] fun _ => 0 := by
     filter_upwards [hopen.mem_nhds hy] with z hz
-    by_contra h
-    obtain ⟨h1, h2⟩ := hsupp z h
-    have : |z| = z := abs_of_pos (by linarith)
-    linarith
+    grind
   rw [(hzero.iteratedDeriv r).eq_of_nhds]
   simp
 
 /-- `|y Φ^{(r)}(y)| ≤ κ |Φ^{(r)}(y)|`. -/
-lemma abs_mul_iteratedDeriv_le {Φ : ℝ → ℝ} {κ : ℝ} (hκ : 1 < κ)
-    (hsupp : ∀ y, Φ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) (r : ℕ) (y : ℝ) :
+lemma abs_mul_iteratedDeriv_le {Φ : ℝ → ℝ}  {κ}  (hκ : 1 < κ)
+    (hsupp : ∀ y, Φ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ)  r   y  :
     |y * iteratedDeriv r Φ y| ≤ κ * |iteratedDeriv r Φ y| := by
   rcases le_or_gt |y| κ with h | h
   · rw [abs_mul]
@@ -105,10 +103,7 @@ theorem isCutoff_mul_id {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ →
     have h3 := hder r y
     have e1 := hexp (r + 1) (CΦ * ↑(r + 1)) (by gcongr; exact le_max_left _ _)
     have e2 := hexp (r + 1) (CΦ * r) (by
-      push_cast
-      have : CΦ * r ≤ max CΦ 0 * r := by gcongr; exact le_max_left _ _
-      have : 0 ≤ max CΦ 0 := le_max_right _ _
-      nlinarith)
+      bound)
     have hκ0 : 0 ≤ κ := by linarith
     have hr : (0 : ℝ) ≤ r + 1 := by positivity
     calc |y * iteratedDeriv (r + 1) Φ y + (↑r + 1) * iteratedDeriv r Φ y|

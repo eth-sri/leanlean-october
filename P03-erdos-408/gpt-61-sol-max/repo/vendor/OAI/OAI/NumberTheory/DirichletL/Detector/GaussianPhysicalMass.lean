@@ -11,15 +11,15 @@ noncomputable section
 open scoped Classical SchwartzMap
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-def gaussianPhysicalScaleMass {α ι : Type*} [Fintype ι]
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+def gaussianPhysicalScaleMass {α ι } [Fintype ι]
     (C : CalibrationData) (F : Finset α) (a : α→ℂ) (X Y : α→ℝ)
-    (W : ι→ℝ→ℂ) (q : α→ι→ℝ) : ℝ :=
+    (W : ι→ℝ→ℂ) (q : α→ι→ℝ)  :=
   ∑k∈F,‖a k‖*(∏i,‖W i (q k i)‖)*lowPhysicalScale C (X k) (Y k)
 
-theorem gaussianPhysicalFamily_mass_bound (a0 b0 a1 b1 B0 B1 : ℝ)
+theorem gaussianPhysicalFamily_mass_bound  a0 b0 a1 b1 B0 B1 
     (ha0 : 0<a0) (ha1 : 0<a1) (hB0 : 0≤B0) (hB1 : 0≤B1) :
     ∃K : ℝ,0<K ∧ ∀{α ι : Type*} [Fintype ι],
       ∀S : Finset Id,∀hS : ∀P∈S,P.IsMaximal,
@@ -42,9 +42,9 @@ theorem gaussianPhysicalFamily_mass_bound (a0 b0 a1 b1 B0 B1 : ℝ)
       mul_le_mul_of_nonneg_left (hb S hS W0 W1 hW1c hW0 hW1 hWB0 hWB1 (X k) (Y k) (hX k hk) (hY k hk)) (by positivity)
     _ = _ := by ring
 
-theorem gaussianPhysicalFamily_remote_polynomial (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (N : ℕ)
-    (a0 b0 a1 b1 B0 B1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1) (hB0 : 0≤B0) (hB1 : 0≤B1) :
+theorem gaussianPhysicalFamily_remote_polynomial  V 
+     hV   N 
+     a0 b0 a1 b1 B0 B1  (ha0 : 0<a0) (ha1 : 0<a1) (hB0 : 0≤B0) (hB1 : 0≤B1) :
     ∃K : ℝ,0<K ∧ ∀{α ι : Type*} [Fintype ι],
       ∀η : HeckeFamily.Character,∀S : Finset Id,∀hS : ∀P∈S,P.IsMaximal,
       ∀W0 W1 : ℝ→ℂ,HasCompactSupport W0→HasCompactSupport W1→

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.MeanSquare.SourceTransfer
 
@@ -10,94 +11,76 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 namespace InitialMeanSquare
 
-section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
 
 section
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
-open FourierBridge (logPhase)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
-
-end
-
-section
-open ActualEisensteinCubic SecondPassArithmetic
+open   SecondPassArithmetic
 open FirstPassCubeLabels (primeProductNorm)
 open SecondPassIntegration (elementNorm)
 open ConcreteTraceCRT (eisEmbedding)
@@ -105,33 +88,28 @@ open ConcreteTraceCRT (eisEmbedding)
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
-def initialLogColumn (Z B : ℝ) (j : SecondLogIndex) : ℝ :=
+def initialLogColumn (Z B : ℝ) (j : SecondLogIndex)  :=
   Z/(secondLogE j*secondLogV j*B)
 
 end
 
-open ActualEisensteinCubic SecondPassArithmetic
+open   SecondPassArithmetic
 open FirstPassCubeLabels (primeProductNorm)
 open SecondPassIntegration (elementNorm)
 
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
 
-end
 
 end InitialMeanSquare
 
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (bit conductorExponent dilationExponent retained parity evenDouble
   primeProduct primeProductNorm aLabel dilationLabel jLabel j2Label squarefreeLabel cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 
-theorem local_first_conductor_bound (parityBit e₁ e₂ : Bool) (n : ℕ) (hn : 0<n) :
+theorem local_first_conductor_bound  parityBit e₁ e₂   n  (hn : 0<n) :
     (if conductorExponent parityBit e₁ e₂=0 then 0 else 1)+dilationExponent parityBit e₁ e₂+
       bit (retained parityBit e₁ e₂)≤bit e₁+bit e₂+2*n := by
   have h : (if conductorExponent parityBit e₁ e₂=0 then 0 else 1)+dilationExponent parityBit e₁ e₂+
@@ -142,19 +120,17 @@ theorem local_first_conductor_bound (parityBit e₁ e₂ : Bool) (n : ℕ) (hn :
 variable {ι : Type*} [DecidableEq ι] (p : ι → O)
 
 omit [DecidableEq ι] in
-theorem firstActiveProduct_as_primeProduct (S : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) :
+theorem firstActiveProduct_as_primeProduct  S   v   ε₁ ε₂  :
     (∏ i∈cubeActiveSupport S v ε₁ ε₂,p i)=
       primeProduct p S (fun i => if conductorExponent (parity (v i)) (ε₁ i) (ε₂ i)=0 then 0 else 1) := by
   unfold cubeActiveSupport primeProduct
   rw [Finset.prod_filter]
-  apply Finset.prod_congr rfl
-  intro i hi
-  by_cases h : conductorExponent (parity (v i)) (ε₁ i) (ε₂ i)=0 <;> simp [h]
+  simp_all
 
 variable [∀ i,(Ideal.span {p i}).IsMaximal]
 
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
-theorem first_conductor_product_dvd (S : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
+theorem first_conductor_product_dvd (S : Finset ι) (v₁ v₂ : ι → ℕ)  ε₁ ε₂ 
     (hv : ∀ i∈S,0<v₁ i+v₂ i) :
     (∏ i∈cubeActiveSupport S (fun i => v₁ i+v₂ i) ε₁ ε₂,p i)*
       dilationLabel p S (fun i => v₁ i+v₂ i) ε₁ ε₂*jLabel p S (fun i => v₁ i+v₂ i) ε₁ ε₂ ∣
@@ -191,7 +167,7 @@ theorem first_conductor_norm_bound (S : Finset ι) (v₁ v₂ : ι → ℕ) (ε�
 end
 section
 
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProductNorm primeProduct aLabel dilationLabel jLabel cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -206,7 +182,7 @@ lemma first_row_numeric_bound (an en jn a1 a2 cn dn hn fn ell K B F : ℝ)
   calc
     hn*fn^2*en ≤ (ell^2*an*dn/(K*a1*a2*cn^2))*F^2*en := by
       apply mul_le_mul_of_nonneg_right _ he
-      exact mul_le_mul hfreq (pow_le_pow_left₀ hf hlabel 2) (sq_nonneg _) (by positivity)
+      gcongr <;> first | assumption | positivity | linarith
     _ = (ell^2*dn*F^2/(K*cn^2))*(an*en/(a1*a2)) := by
       field_simp
 
@@ -218,7 +194,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProductNorm primeProduct aLabel dilationLabel cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 

@@ -6,14 +6,18 @@ public import OAI.NumberTheory.DirichletL.Detector.PrimePower
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
-theorem primePowerGauss_at_pow_nonprincipal (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (hχ : χ ≠ 1) (n j : ℕ) :
+section
+variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
+include p hp
+
+theorem primePowerGauss_at_pow_nonprincipal    
+     
+     χ  (hχ : χ ≠ 1)  n j  :
     primePowerGauss p hp.ne_zero χ n (p ^ j) =
       if j = n then (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ n * primeGauss p hp.ne_zero χ 1
       else 0 := by
@@ -32,9 +36,9 @@ theorem primePowerGauss_at_pow_nonprincipal (p : O) (hp : Prime p)
     apply primePowerGauss_nonprincipal_extra_divisibility p hp.ne_zero χ hχ
     exact dvd_pow_self p (by omega)
 
-theorem primePowerGauss_at_pow_principal (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
-    (hψ : quotientTrace p hp.ne_zero ≠ 1) (n j : ℕ) :
+theorem primePowerGauss_at_pow_principal    
+     
+    (hψ : quotientTrace p hp.ne_zero ≠ 1)  n j  :
     primePowerGauss p hp.ne_zero 1 n (p ^ j) =
       (if n + 1 ≤ j then (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ (n + 1) else 0) -
       (if n ≤ j then (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ n else 0) := by
@@ -63,7 +67,9 @@ theorem primePowerGauss_at_pow_principal (p : O) (hp : Prime p)
     ring
     exact hψ
 
-end SevenEighths.ProbePrimePower
 end
+
+end SevenEighths.ProbePrimePower
+
 
 end OAI

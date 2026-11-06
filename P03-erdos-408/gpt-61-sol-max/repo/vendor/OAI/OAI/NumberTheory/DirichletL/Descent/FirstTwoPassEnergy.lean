@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstLiveHeightStep
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicFullEnergy
@@ -12,7 +13,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -26,9 +27,9 @@ local notation "O"=>ActualEisensteinCubic.O
 
 theorem original_two_pass_energy
     (om:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support om⊆Set.Icc a b)
-    (Lcap eta tau saving em ed:ℝ)(hcap:0≤Lcap)(hb:0≤b)
+     Lcap eta tau saving em ed (hcap:0≤Lcap)(hb:0≤b)
     (heta:0≤eta)(heta1:eta≤1)(htau:0<tau)(htau1:tau≤1)
-    (hem:0<em)(hed:0<ed)(K:ℕ):
+    (hem:0<em)(hed:0<ed) K :
     ∃(ω₁₁ ω₁₂ ω₂₁ ω₂₂:𝓢(ℝ,ℂ))(af₁ bf₁ af₂ bf₂ window bw:ℝ),
       0<af₁ ∧ af₁≤bf₁ ∧ 0<af₂ ∧ af₂≤bf₂ ∧
       HasCompactSupport (ω₁₁:ℝ→ℂ) ∧ HasCompactSupport (ω₁₂:ℝ→ℂ) ∧
@@ -103,7 +104,7 @@ theorem original_two_pass_energy
     hVcap hwin hpi hpieta hemcost hedcost hechild hsave hloss hcard hΨ hΓ hA hsf hn hβ hlabels hslots hweights
     mark Y cutoff W source keys hl hr'
   let Be:ℝ:=(Cl+Cr)*(1+A)*Z^(r+3*ell+V+loss)
-  have hz:0<Z:=by linarith
+  
   have hBe:0≤Be:=by dsimp[Be];positivity
   have left : ∀k∈keys,∀z:Frequency×(Fin 9→ℝ),
         (Z^(firstKappa M r ell V (dyadicExponent Z (k.1 3)) (dyadicExponent Z (k.1 0))
@@ -153,6 +154,6 @@ theorem original_two_pass_energy
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

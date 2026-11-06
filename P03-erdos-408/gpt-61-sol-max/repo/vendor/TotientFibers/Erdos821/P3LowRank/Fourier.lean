@@ -1,4 +1,8 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P3Clean.TiltedIdealKernel
+import Erdos821.P3Edge.NormOsc
 
 public import Erdos821.Blueprint.Graph
 public import Mathlib.Algebra.BigOperators.Field
@@ -20,21 +24,11 @@ namespace Erdos821.P3Lowrank
 
 open Erdos821.Blueprint.Graph
 
-theorem phase_eq_exp (t : ℝ) :
-    phase t = Complex.exp (((2 * Real.pi * t : ℝ) : ℂ) * Complex.I) := by
-  unfold phase
-  push_cast
-  ring_nf
 
-theorem norm_phase (t : ℝ) : ‖phase t‖ = 1 := by
-  rw [phase_eq_exp, Complex.norm_exp_ofReal_mul_I]
 
-theorem phase_add (s t : ℝ) : phase (s + t) = phase s * phase t := by
-  unfold phase
-  rw [← Complex.exp_add]
-  congr 1
-  push_cast
-  ring
+alias norm_phase := _root_.Erdos821.P3Edge.norm_phase
+
+alias phase_add := _root_.Erdos821.P3Clean.phase_add
 
 theorem phase_zero : phase 0 = 1 := by
   simp [phase]
@@ -43,9 +37,9 @@ theorem phase_sum {ι : Type*} (S : Finset ι) (f : ι → ℝ) :
     phase (∑ i ∈ S, f i) = ∏ i ∈ S, phase (f i) := by
   induction S using Finset.induction_on with
   | empty => simp [phase_zero]
-  | @insert i S hi ih => rw [Finset.sum_insert hi, Finset.prod_insert hi, phase_add, ih]
+  | @insert i S hi ih => simp_all [phase_add]
 
-theorem phase_nat_mul (k : ℕ) (t : ℝ) : phase (k * t) = phase t ^ k := by
+theorem phase_nat_mul (k : ℕ)  t  : phase (k * t) = phase t ^ k := by
   unfold phase
   rw [← Complex.exp_nat_mul]
   congr 1
@@ -57,7 +51,7 @@ theorem phase_int (k : ℤ) : phase k = 1 := by
   rw [Complex.exp_eq_one_iff]
   exact ⟨k, by push_cast; ring⟩
 
-theorem phase_eq_one_imp (t : ℝ) (h : phase t = 1) : ∃ k : ℤ, t = k := by
+theorem phase_eq_one_imp  t  (h : phase t = 1) : ∃ k : ℤ, t = k := by
   unfold phase at h
   rw [Complex.exp_eq_one_iff] at h
   obtain ⟨k, hk⟩ := h
@@ -77,11 +71,7 @@ theorem sum_phase (Q : ℕ) (hQ : 0 < Q) (d : ℤ) :
   rw [Fin.sum_univ_eq_sum_range (fun x => phase ((d : ℝ) / Q) ^ x) Q]
   split_ifs with hd
   · obtain ⟨k, rfl⟩ := hd
-    have : (((Q * k : ℤ) : ℝ)) / Q = (k : ℝ) := by
-      push_cast
-      field_simp
-    rw [this, phase_int]
-    simp
+    simp_all [phase_int]
   · have hz : phase ((d : ℝ) / Q) ≠ 1 := by
       intro h
       obtain ⟨k, hk⟩ := phase_eq_one_imp _ h
@@ -93,9 +83,7 @@ theorem sum_phase (Q : ℕ) (hQ : 0 < Q) (d : ℤ) :
         ring
       exact_mod_cast this
     rw [geom_sum_eq hz, ← phase_nat_mul]
-    have : (Q : ℝ) * ((d : ℝ) / Q) = (d : ℝ) := by field_simp
-    rw [this, phase_int]
-    simp
+    grind [phase_int]
 
 theorem dvd_sub_iff_eq (Q x y : ℕ) (hx : x < Q) (hy : y < Q) :
     (Q : ℤ) ∣ ((x : ℤ) - y) ↔ x = y := by
@@ -109,7 +97,7 @@ theorem dvd_sub_iff_eq (Q x y : ℕ) (hx : x < Q) (hy : y < Q) :
 
 /-- The averaged-product representation of a birth event. -/
 def Represents {a : ℕ} (π : Finset (Finset (Fin a))) (Q : ℕ) (Ξ : Type) [Fintype Ξ]
-    (m : Ξ → Fin a → Prop → ℕ → ℂ) : Prop :=
+    (m : Ξ → Fin a → Prop → ℕ → ℂ)  :=
   (∀ ξ j p v, ‖m ξ j p v‖ ≤ 1) ∧ 0 < Fintype.card Ξ ∧
   ∀ (perf : Finset (Fin a)) (value : Fin a → ℕ), (∀ j, value j < Q) →
     (if birthEvent perf value π then (1 : ℂ) else 0) =
@@ -124,13 +112,13 @@ theorem prod_ite_mem_univ {α M : Type*} [Fintype α] [CommMonoid M] (s : Finset
   simp
 
 /-- A performed-address gate, kept opaque so decidability instances never need to agree. -/
-def gate (P : Prop) (z : ℂ) : ℂ := if P then z else 0
+def gate (P : Prop) (z : ℂ)  := if P then z else 0
 
-theorem gate_pos {P : Prop} (h : P) (z : ℂ) : gate P z = z := ite_eq_left h
+theorem gate_pos  {P}  (h : P)  z  : gate P z = z := ite_eq_left h
 
-theorem gate_neg {P : Prop} (h : ¬ P) (z : ℂ) : gate P z = 0 := ite_eq_right h
+theorem gate_neg  {P}  (h : ¬ P)  z  : gate P z = 0 := ite_eq_right h
 
-theorem norm_gate_le (P : Prop) {z : ℂ} (hz : ‖z‖ ≤ 1) : ‖gate P z‖ ≤ 1 := by
+theorem norm_gate_le  P   {z}  (hz : ‖z‖ ≤ 1) : ‖gate P z‖ ≤ 1 := by
   by_cases h : P
   · rw [gate_pos h]
     exact hz
@@ -138,7 +126,7 @@ theorem norm_gate_le (P : Prop) {z : ℂ} (hz : ‖z‖ ≤ 1) : ‖gate P z‖ 
     exact zero_le_one
 
 /-- One block, with a chosen pivot. -/
-theorem block_rep {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (B : Finset (Fin a)) (hB : B.Nonempty) :
+theorem block_rep  {a}   Q  (hQ : 0 < Q)  B  (hB : B.Nonempty) :
     ∃ m : (Fin a → Fin Q) → Fin a → Prop → ℕ → ℂ, (∀ ξ j p v, ‖m ξ j p v‖ ≤ 1) ∧
       ∀ (perf : Finset (Fin a)) (value : Fin a → ℕ), (∀ j, value j < Q) →
         (if B ⊆ perf ∧ ∀ i ∈ B, ∀ j ∈ B, value i = value j then (1 : ℂ) else 0) =
@@ -147,8 +135,7 @@ theorem block_rep {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (B : Finset (Fin a)) (hB : B.
   let cf : (Fin a → Fin Q) → Fin a → ℤ := fun ξ j =>
     if j = p then -(∑ k ∈ B.erase p, ((ξ k : ℕ) : ℤ)) else ((ξ j : ℕ) : ℤ)
   refine ⟨fun ξ j P v => gate P (phase ((cf ξ j : ℝ) * v / Q)), ?_, ?_⟩
-  · intro ξ j P v
-    exact norm_gate_le P (le_of_eq (norm_phase _))
+  · simp_all [norm_gate_le, norm_phase]
   intro perf value hv
   dsimp only
   have hQ' : (Q : ℂ) ≠ 0 := by exact_mod_cast hQ.ne'
@@ -198,19 +185,8 @@ theorem block_rep {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (B : Finset (Fin a)) (hB : B.
     have hiff : (B ⊆ perf ∧ ∀ i ∈ B, ∀ j ∈ B, value i = value j) ↔
         ∀ k, k ∈ B.erase p → value k = value p := by
       constructor
-      · intro h k hk
-        exact h.2 k (Finset.mem_of_mem_erase hk) p hp
-      · intro h
-        refine ⟨hsub, fun i hi j hj => ?_⟩
-        have hi' : value i = value p := by
-          by_cases hip : i = p
-          · rw [hip]
-          · exact h i (Finset.mem_erase.mpr ⟨hip, hi⟩)
-        have hj' : value j = value p := by
-          by_cases hjp : j = p
-          · rw [hjp]
-          · exact h j (Finset.mem_erase.mpr ⟨hjp, hj⟩)
-        rw [hi', hj']
+      · grind
+      · grind
     simp only [hprod]
     rw [← Fintype.prod_sum (fun (k : Fin a) (x : Fin Q) =>
       if k ∈ B.erase p then phase (((x : ℕ) : ℝ) * D k) else 1)]
@@ -218,10 +194,7 @@ theorem block_rep {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (B : Finset (Fin a)) (hB : B.
     rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ, Fintype.card_fin,
       Finset.prod_boole]
     rw [← mul_assoc, inv_mul_cancel₀ (pow_ne_zero a hQ'), one_mul]
-    by_cases hall : ∀ k, k ∈ B.erase p → value k = value p
-    · rw [ite_eq_left (hiff.mpr hall), ite_eq_left (fun k _ => hall k)]
-    · rw [ite_eq_right (fun h => hall (hiff.mp h)),
-        ite_eq_right (fun h => hall (fun k => h k (Finset.mem_univ k)))]
+    grind
   · obtain ⟨j, hjB, hjp⟩ := Finset.not_subset.mp hsub
     rw [ite_eq_right (fun h => hsub h.1)]
     have h0 : ∀ ξ : Fin a → Fin Q,
@@ -229,7 +202,7 @@ theorem block_rep {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (B : Finset (Fin a)) (hB : B.
       fun ξ => Finset.prod_eq_zero hjB (gate_neg hjp _)
     simp only [h0, Finset.sum_const_zero, mul_zero]
 
-theorem exists_represents {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (π : Finset (Finset (Fin a)))
+theorem exists_represents  {a}   Q  (hQ : 0 < Q)  π 
     (hπ : BirthCollection π) :
     ∃ (Ξ : Type) (_ : Fintype Ξ) (m : Ξ → Fin a → Prop → ℕ → ℂ), Represents π Q Ξ m := by
   induction π using Finset.induction_on with

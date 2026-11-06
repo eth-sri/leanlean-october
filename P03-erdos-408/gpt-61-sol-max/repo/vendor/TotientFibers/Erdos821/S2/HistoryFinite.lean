@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.HistoryBirths
 
@@ -18,17 +19,14 @@ variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
 theorem multiset_card_sum {α ι : Type*} (s : Finset ι) (f : ι → Multiset α) :
     (∑ i ∈ s, f i).card = ∑ i ∈ s, (f i).card := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp
-  | @insert i s hi ih => simp [hi, ih, Multiset.card_add]
+  simp_all
 
 theorem group_prime_mem_all (g : P.Group) (p : P.Prime g) : p.val ∈ P.allPrimes :=
   Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ g, p.property⟩
 
 /-- A bounded multiset over a finite alphabet is the image of a bounded
 ordered-list representation. This keeps diagonal multiplicities. -/
-theorem bounded_multiset_finite (α : Type*) [Finite α] (B : ℕ) :
+theorem bounded_multiset_finite  α  [Finite α]  B  :
     Finite {z : Multiset α // z.card ≤ B} := by
   classical
   let mk : (Σ b : Fin (B + 1), Fin b.val → α) → {z : Multiset α // z.card ≤ B} :=
@@ -42,10 +40,10 @@ theorem bounded_multiset_finite (α : Type*) [Finite α] (B : ℕ) :
   rw [← List.Vector.toList_ofFn, List.Vector.ofFn_get]
   exact Multiset.coe_toList z.val
 
-abbrev BoundedMemoryState (P : PrimeGroups) (M B : ℕ) :=
+abbrev BoundedMemoryState (P : PrimeGroups) (M B ) :=
   {s : P.MemoryState M // P.memorySize s ≤ B}
 
-theorem bounded_memoryState_finite (P : PrimeGroups) (M B : ℕ) :
+theorem bounded_memoryState_finite  P   M B  :
     Finite (BoundedMemoryState P M B) := by
   classical
   let (g : P.BigGroup) : Finite {z : P.Memory g.val // z.card ≤ B} :=
@@ -68,13 +66,13 @@ theorem bounded_memoryState_finite (P : PrimeGroups) (M B : ℕ) :
     exact congrArg (fun z => (z.2.2 g).val) he
   exact Prod.ext hy (Prod.ext ha hz)
 
-abbrev BoundedHistoryData (A : Model F P J m) (n B : ℕ) :=
+abbrev BoundedHistoryData (A : Model F P J m) (n B ) :=
   Σ before : Fin (n + 1) → BoundedMemoryState P (J + F.ell) B,
     Σ after : Fin (n + 1) → BoundedMemoryState P (J + F.ell) B,
       ((i : Fin (n + 1)) → GhostChoice (before i).val (after i).val) ×
         ((i : Fin n) → EdgeChoice A (after i.castSucc).val)
 
-theorem truncated_history_finite (A : Model F P J m) (n B : ℕ) :
+theorem truncated_history_finite (A : Model F P J m)  n B  :
     Finite {H : MemoryHistory A n // H.Truncated B} := by
   classical
   let : Finite (BoundedMemoryState P (J + F.ell) B) := bounded_memoryState_finite P _ B
@@ -98,7 +96,7 @@ namespace MemoryHistory
 
 variable {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n)
 
-theorem ghostBirthValues_card (i : Fin (n + 1)) : (H.ghostBirthValues i).card = ghostBirthCount (H.ghost i) := by
+theorem ghostBirthValues_card  i  : (H.ghostBirthValues i).card = ghostBirthCount (H.ghost i) := by
   simp [ghostBirthValues, ghostBirthCount]
 
 theorem totalGhostBirths_le_card : H.totalGhostBirths ≤ H.birthValues.card := by
@@ -112,7 +110,7 @@ theorem birthValues_subset_allprimes : H.birthValues ⊆ P.allPrimes.val := by
   · simp only [initialBirthValues, Multiset.mem_sum, Finset.mem_univ, true_and,
       Multiset.mem_singleton] at hp
     obtain ⟨g, i, rfl⟩ := hp
-    exact group_prime_mem_all g.val ((H.before 0).2.1 g.val i)
+    simp_all [group_prime_mem_all]
   · simp only [Multiset.mem_sum, Finset.mem_univ, true_and, ghostBirthValues,
       Multiset.mem_singleton] at hp
     obtain ⟨i, g, h, rfl⟩ := hp
@@ -120,7 +118,7 @@ theorem birthValues_subset_allprimes : H.birthValues ⊆ P.allPrimes.val := by
   · simp only [Multiset.mem_sum, Finset.mem_univ, true_and, freshBirthValues,
       Multiset.mem_singleton] at hp
     obtain ⟨i, g, h, _, rfl⟩ := hp
-    exact group_prime_mem_all g.val ((permuteActive (H.edge i).2.1 (H.before i.succ)).2.1 g.val h)
+    simp_all [group_prime_mem_all, permuteActive]
 
 theorem birthValues_card_le (hH : H.DistinctBirths) : H.birthValues.card ≤ P.allPrimes.card := by
   have he : H.birthValues ≤ P.allPrimes.val :=
@@ -138,7 +136,7 @@ theorem distinct_truncated (hH : H.Valid) (hd : H.DistinctBirths) :
   have hc := Nat.mul_le_mul_right ((J + F.ell) * Fintype.card P.BigGroup) hi
   constructor <;> omega
 
-theorem valid_distinct_finite (A : Model F P J m) (n : ℕ) :
+theorem valid_distinct_finite (A : Model F P J m)  n  :
     Finite {H : MemoryHistory A n // H.Valid ∧ H.DistinctBirths} := by
   classical
   let B := P.allPrimes.card + n * ((J + F.ell) * Fintype.card P.BigGroup)
@@ -148,12 +146,11 @@ theorem valid_distinct_finite (A : Model F P J m) (n : ℕ) :
     fun H => ⟨H.val, H.val.distinct_truncated H.property.1 H.property.2⟩
   apply Finite.of_injective enc
   intro H K he
-  apply Subtype.ext
-  exact congrArg (fun z : {H : MemoryHistory A n // H.Truncated B} => z.val) he
+  aesop
 
 end MemoryHistory
 
-abbrev ValidDistinctHistory (A : Model F P J m) (n : ℕ) :=
+abbrev ValidDistinctHistory (A : Model F P J m) (n ) :=
   {H : MemoryHistory A n // H.Valid ∧ H.DistinctBirths}
 
 instance (A : Model F P J m) (n : ℕ) : Finite (ValidDistinctHistory A n) :=
@@ -161,15 +158,12 @@ instance (A : Model F P J m) (n : ℕ) : Finite (ValidDistinctHistory A n) :=
 
 instance (A : Model F P J m) (n : ℕ) : Fintype (ValidDistinctHistory A n) := Fintype.ofFinite _
 
-theorem distinctMemoryExpression_eq_finite_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ) :
+theorem distinctMemoryExpression_eq_finite_sum (A : Model F P J m)  n   rho theta  :
     distinctMemoryExpression A n rho theta = ∑ H : ValidDistinctHistory A n, H.val.Weight rho theta := by
   have hs : Function.support (fun H : MemoryHistory A n =>
       if H.Valid ∧ H.DistinctBirths then H.Weight rho theta else 0) ⊆
       {H | H.Valid ∧ H.DistinctBirths} := by
-    intro H hH
-    change (if H.Valid ∧ H.DistinctBirths then H.Weight rho theta else 0) ≠ 0 at hH
-    by_contra hn
-    exact hH (ite_eq_right hn)
+    simp_all
   unfold distinctMemoryExpression
   rw [← tsum_subtype_eq_of_support_subset hs]
   change (∑' H : ValidDistinctHistory A n,

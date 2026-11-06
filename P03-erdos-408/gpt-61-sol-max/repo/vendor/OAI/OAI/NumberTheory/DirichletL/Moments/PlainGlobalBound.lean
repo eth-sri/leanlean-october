@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedControl
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open Set MeasureTheory Complex
 namespace SevenEighths.CenteredMomentPlainGlobalBound
@@ -40,9 +40,9 @@ open HeckeFamily HeckeDyadic
       integral_mono_measure Measure.restrict_le_self (by filter_upwards [] with t; positivity) hint
     _=_:=by rw [integral_const_mul,integral_univ_inv_one_add_sq]
 
- theorem finite_strip_bound (χ:Character)(hχ:χ.residue≠1)(W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
+ theorem finite_strip_bound  χ (hχ:χ.residue≠1) W (a b:ℝ)(ha:0<a)
     (hWs:Function.support W⊆Icc a b)(hW:ContDiff ℝ ∞ W)
-    (D freq C K:ℝ)(hD:1≤D)(hC:0≤C)(hK:0≤K)
+     D freq C K (hD:1≤D)(hC:0≤C)(hK:0≤K)
     (hm:∀x∈Icc (1/2:ℝ) 2,∀t:ℝ,(1+|t|)^6*‖mellin W ((x:ℂ)+t*I)‖≤C)
     (hs:∀x∈Icc (1/2:ℝ) 2,∀t:ℝ,
       ‖series χ false ((x:ℂ)+t*I+shift 0 freq)‖≤K*(1+|t|)^2):
@@ -102,6 +102,6 @@ open HeckeFamily HeckeDyadic
 
 end SevenEighths.CenteredMomentPlainGlobalBound
 
-end
+
 
 end OAI

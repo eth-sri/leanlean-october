@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Edge.CoeffBound
 public import Erdos821.P3Edge.NormOsc
@@ -17,32 +18,35 @@ open Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-lemma memoryWeight_pos (r : MemoryParameters F) (z : P.MemoryState (J + F.ell)) :
-    0 < P.memoryWeight r.v z := by
-  unfold PrimeGroups.memoryWeight
-  exact pow_pos (lt_trans zero_lt_one r.v_gt) _
+section
+variable (r : MemoryParameters F) (z : P.MemoryState (J + F.ell))
 
-lemma memoryWeight_nonneg (r : MemoryParameters F) (z : P.MemoryState (J + F.ell)) :
+lemma memoryWeight_pos     :
+    0 < P.memoryWeight r.v z := pow_pos (lt_trans zero_lt_one r.v_gt) (P.memorySize z)
+
+lemma memoryWeight_nonneg     :
     0 ≤ P.memoryWeight r.v z :=
   (memoryWeight_pos r z).le
 
-lemma absoluteMemoryEdgeKernel_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
-    (i : Fin n) (s t : P.MemoryState (J + F.ell)) :
+end
+
+section
+variable (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n) (s t : P.MemoryState (J + F.ell))
+
+lemma absoluteMemoryEdgeKernel_nonneg      
+        :
     0 ≤ absoluteMemoryEdgeKernel A n rho theta i .all s t := by
   unfold absoluteMemoryEdgeKernel
   apply mul_nonneg (edgeSymmetryFactor_nonneg P _)
-  apply Finset.sum_nonneg
-  intro c _
-  split_ifs with hc
-  · exact norm_nonneg _
-  · exact le_refl 0
+  positivity
 
-lemma norm_cast_absolute (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
-    (i : Fin n) (s t : P.MemoryState (J + F.ell)) :
+lemma norm_cast_absolute      
+        :
     ‖((absoluteMemoryEdgeKernel A n rho theta i .all s t : ℝ) : ℂ)‖ =
       absoluteMemoryEdgeKernel A n rho theta i .all s t := by
-  rw [Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg (absoluteMemoryEdgeKernel_nonneg A n rho theta i s t)]
+  simp_all [absoluteMemoryEdgeKernel_nonneg]
+
+end
 
 -- Coefficient norms: oscillation (pattern coeff * imaginaryPower, phase) has
 -- modulus ≤ patternMass; rawEdgeWeight carries all masses/dampings.

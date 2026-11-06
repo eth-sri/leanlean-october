@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.MarkedTails
 
@@ -10,10 +11,10 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
-noncomputable section
+
 local notation "O" => ActualEisensteinCubic.O
 
-theorem full_first_supported_remainder (A : ℕ) :
+theorem full_first_supported_remainder  A  :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ),0<C ∧
     ∀ {ι : Type*} [DecidableEq ι]
       (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -52,7 +53,7 @@ theorem full_first_supported_remainder (A : ℕ) :
   have hU₂:0<U₂:=mul_pos hX₂ (Real.exp_pos _)
   have hNd:0<‖eisEmbedding d‖^2:=sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hd))
   have hslow:0<slow:=div_pos hK (mul_pos (mul_pos (mul_pos hNd (primeProductNorm_pos p hp S)) hU₁) hU₂)
-  have hH:0≤P:=hP
+  
   have htail:0≤tail:=by dsimp [tail]; positivity
   have hQ:0≤Q:=mul_nonneg (mul_nonneg (mul_nonneg hG₁ hG₂) hK.le) htail
   let rem (N R:Finset ι):ℂ:=if Disjoint N R then
@@ -135,14 +136,14 @@ theorem full_first_supported_remainder (A : ℕ) :
     _ ≤ ∑N∈boundedPrimeSupports p F U₁,∑R∈boundedPrimeSupports p F U₂,‖rem N R‖ :=
       (norm_sum_le _ _).trans (Finset.sum_le_sum (fun N hN=>norm_sum_le _ _))
     _ ≤ ∑N∈boundedPrimeSupports p F U₁,∑R∈boundedPrimeSupports p F U₂,Q:=
-      Finset.sum_le_sum (fun N hN=>Finset.sum_le_sum (fun R hR=>hrem N hN R hR))
+      Finset.sum_le_sum (fun N hN=>Finset.sum_le_sum (hrem N hN))
     _ = ((boundedPrimeSupports p F U₁).card:ℝ)*((boundedPrimeSupports p F U₂).card:ℝ)*Q:=by simp;ring
     _ ≤ (128*U₁)*(128*U₂)*Q:=mul_le_mul_of_nonneg_right
       (mul_le_mul (boundedPrimeSupports_card_positive p hp hinj F U₁ hU₁)
         (boundedPrimeSupports_card_positive p hp hinj F U₂ hU₂) (Nat.cast_nonneg _) (by positivity)) hQ
     _ = _ := by dsimp [Q,tail,slow,U₁,U₂,S];ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

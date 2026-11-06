@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.SourceProjection
 
@@ -10,83 +11,83 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise
+ 
+open scoped       MatrixGroups Matrix Pointwise
 
 open CubicKubota
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev SourceKernelQuotient := IntegralOrbitQuotient globalKubotaKernel
 
-def sourceComplexMatrix : levelTwo→*SL(2,ℂ) :=
+def sourceComplexMatrix  :=
   integralComplexMatrix.comp levelTwo.subtype
 
 lemma globalKubotaKernel_source_conjugate_mem (M : levelTwo) (N : globalKubotaKernel) :
@@ -100,7 +101,7 @@ def kernelSourceConjugate (M : levelTwo) : globalKubotaKernel ≃* globalKubotaK
   right_inv N := by apply Subtype.ext; simp [mul_assoc]
   map_mul' N P := by apply Subtype.ext; simp [mul_assoc]
 
-lemma source_action_respects_kernel (M : levelTwo) (u v : HyperbolicSpace)
+lemma source_action_respects_kernel  M   u v 
     (h : (integralOrbitRel globalKubotaKernel).r u v) :
     (integralOrbitRel globalKubotaKernel).r (sourceComplexMatrix M • u) (sourceComplexMatrix M • v) := by
   obtain ⟨N,hN⟩ := h
@@ -108,24 +109,22 @@ lemma source_action_respects_kernel (M : levelTwo) (u v : HyperbolicSpace)
   change integralComplexMatrix ((M:SL(2,ActualEisensteinCubic.O))*(N:SL(2,ActualEisensteinCubic.O))*(M:SL(2,ActualEisensteinCubic.O))⁻¹) •
     (sourceComplexMatrix M • u)=sourceComplexMatrix M • v
   rw [map_mul,map_mul,map_inv,mul_smul,mul_smul]
-  change sourceComplexMatrix M • (integralComplexMatrix (N:SL(2,ActualEisensteinCubic.O)) •
-    ((sourceComplexMatrix M)⁻¹ • (sourceComplexMatrix M • u)))=_
-  rw [inv_smul_smul,hN]
+  simp_all [sourceComplexMatrix, integralComplexMatrix, ActualEisensteinCubic.O]
 
-def kernelSourceAction (M : levelTwo) : SourceKernelQuotient→SourceKernelQuotient :=
+def kernelSourceAction (M : levelTwo)  :=
   Quotient.map' (fun w => sourceComplexMatrix M • w) (source_action_respects_kernel M)
 
-lemma kernelSourceAction_mk (M : levelTwo) (w : HyperbolicSpace) :
+lemma kernelSourceAction_mk  M   w  :
     kernelSourceAction M (integralOrbitProjection globalKubotaKernel w)=
       integralOrbitProjection globalKubotaKernel (sourceComplexMatrix M • w) := rfl
 
-lemma kernelSourceAction_one (q : SourceKernelQuotient) : kernelSourceAction 1 q=q := by
+lemma kernelSourceAction_one  q  : kernelSourceAction 1 q=q := by
   induction q using Quotient.inductionOn with
   | _ w =>
     change integralOrbitProjection globalKubotaKernel (sourceComplexMatrix 1 • w)=integralOrbitProjection globalKubotaKernel w
     rw [map_one,one_smul]
 
-lemma kernelSourceAction_mul (M N : levelTwo) (q : SourceKernelQuotient) :
+lemma kernelSourceAction_mul  M N   q  :
     kernelSourceAction (M*N) q=kernelSourceAction M (kernelSourceAction N q) := by
   induction q using Quotient.inductionOn with
   | _ w =>
@@ -133,7 +132,7 @@ lemma kernelSourceAction_mul (M N : levelTwo) (q : SourceKernelQuotient) :
       integralOrbitProjection globalKubotaKernel (sourceComplexMatrix M • (sourceComplexMatrix N • w))
     rw [map_mul,mul_smul]
 
-lemma kernelSourceAction_continuous (M : levelTwo) : Continuous (kernelSourceAction M) :=
+lemma kernelSourceAction_continuous  M  : Continuous (kernelSourceAction M) :=
   (continuous_hyperbolic_action (sourceComplexMatrix M)).quotient_map' (source_action_respects_kernel M)
 
 def kernelSourceHomeomorph (M : levelTwo) : SourceKernelQuotient ≃ₜ SourceKernelQuotient where
@@ -144,14 +143,13 @@ def kernelSourceHomeomorph (M : levelTwo) : SourceKernelQuotient ≃ₜ SourceKe
   continuous_toFun := kernelSourceAction_continuous M
   continuous_invFun := kernelSourceAction_continuous M⁻¹
 
-lemma kernelSourceAction_fundamentalDomain (M : levelTwo) :
+lemma kernelSourceAction_fundamentalDomain  M  :
     IsFundamentalDomain globalKubotaKernel
       ((fun w : HyperbolicSpace => sourceComplexMatrix M • w) '' hyperbolicFundamentalSet globalKubotaKernel)
       hyperbolicVolume := by
   apply (hyperbolicFundamentalSet_isFundamentalDomain globalKubotaKernel
     globalKubotaKernel_le_levelThree).image_of_equiv (MulAction.toPerm (sourceComplexMatrix M))
-    (show Measure.QuasiMeasurePreserving (MulAction.toPerm (sourceComplexMatrix M)).symm hyperbolicVolume hyperbolicVolume from by
-      exact (measurePreserving_smul (sourceComplexMatrix M)⁻¹ hyperbolicVolume).quasiMeasurePreserving)
+    (show Measure.QuasiMeasurePreserving (MulAction.toPerm (sourceComplexMatrix M)).symm hyperbolicVolume hyperbolicVolume from (measurePreserving_smul (sourceComplexMatrix M)⁻¹ hyperbolicVolume).quasiMeasurePreserving)
     (kernelSourceConjugate M⁻¹).toEquiv
   intro N w
   change sourceComplexMatrix M • (integralComplexMatrix
@@ -162,7 +160,7 @@ lemma kernelSourceAction_fundamentalDomain (M : levelTwo) :
     ((sourceComplexMatrix M)⁻¹)⁻¹) • w)=_
   simp only [inv_inv,mul_smul,smul_inv_smul]
 
-lemma kernelSourceAction_measurePreserving (M : levelTwo) :
+lemma kernelSourceAction_measurePreserving  M  :
     MeasurePreserving (kernelSourceAction M) (integralQuotientVolume globalKubotaKernel)
       (integralQuotientVolume globalKubotaKernel) := by
   refine ⟨(kernelSourceAction_continuous M).measurable,?_⟩
@@ -186,8 +184,8 @@ lemma kernelSourceAction_measurePreserving (M : levelTwo) :
 end CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+ 
+open scoped       MatrixGroups
 
 namespace CubicEisenstein
 open CubicKubota
@@ -195,17 +193,17 @@ open CubicKubota
 def kernelSourcePullback (M : levelTwo) : KernelQuotientL2 →ₗᵢ[ℂ] KernelQuotientL2 :=
   Lp.compMeasurePreservingₗᵢ ℂ (kernelSourceAction M) (kernelSourceAction_measurePreserving M)
 
-lemma kernelSourcePullback_ae_eq (M : levelTwo) (F : KernelQuotientL2) :
+lemma kernelSourcePullback_ae_eq  M   F  :
     kernelSourcePullback M F=ᵐ[integralQuotientVolume globalKubotaKernel]
       fun q => F (kernelSourceAction M q) :=
   Lp.coeFn_compMeasurePreserving F (kernelSourceAction_measurePreserving M)
 
-lemma kernelSourcePullback_one (F : KernelQuotientL2) : kernelSourcePullback 1 F=F := by
+lemma kernelSourcePullback_one  F  : kernelSourcePullback 1 F=F := by
   apply Lp.ext
   filter_upwards [kernelSourcePullback_ae_eq 1 F] with q hq
   simpa only [kernelSourceAction_one] using hq
 
-lemma kernelSourcePullback_comp (M N : levelTwo) (F : KernelQuotientL2) :
+lemma kernelSourcePullback_comp  M N   F  :
     kernelSourcePullback M (kernelSourcePullback N F)=kernelSourcePullback (N*M) F := by
   have hcomp := (kernelSourceAction_measurePreserving M).quasiMeasurePreserving.ae_eq_comp
     (kernelSourcePullback_ae_eq N F)
@@ -215,27 +213,27 @@ lemma kernelSourcePullback_comp (M N : levelTwo) (F : KernelQuotientL2) :
   rw [hp,hnm]
   exact hn.trans (congrArg F (kernelSourceAction_mul N M q).symm)
 
-lemma kernelSourcePullback_surjective (M : levelTwo) : Function.Surjective (kernelSourcePullback M) := by
+lemma kernelSourcePullback_surjective  M  : Function.Surjective (kernelSourcePullback M) := by
   intro F
   refine ⟨kernelSourcePullback M⁻¹ F,?_⟩
   rw [kernelSourcePullback_comp,inv_mul_cancel,kernelSourcePullback_one]
 
-def kernelSourceUnitary (M : levelTwo) : KernelQuotientL2 ≃ₗᵢ[ℂ] KernelQuotientL2 :=
+def kernelSourceUnitary (M : levelTwo)  :=
   LinearIsometryEquiv.ofSurjective (kernelSourcePullback M) (kernelSourcePullback_surjective M)
 
 local notation "O" => ActualEisensteinCubic.O
 
-def kernelSourceProjection : KernelQuotientL2 →L[ℂ] KernelQuotientL2 :=
+def kernelSourceProjection  :=
   (24:ℂ)⁻¹ • ∑q : levelTwo ⧸ levelThreeInTwo,
     (kernelSourcePullback (rationalLift (sourceRationalSection q))).toContinuousLinearMap
 
-lemma kernelSourceProjection_apply (F : KernelQuotientL2) :
+lemma kernelSourceProjection_apply  F  :
     kernelSourceProjection F=(24:ℂ)⁻¹ • ∑q : levelTwo ⧸ levelThreeInTwo,
       kernelSourcePullback (rationalLift (sourceRationalSection q)) F := by
   simp only [kernelSourceProjection,_root_.smul_apply,_root_.sum_apply,
     LinearIsometry.coe_toContinuousLinearMap]
 
-lemma kernelSourceProjection_eq_twentyFour (F : KernelQuotientL2) :
+lemma kernelSourceProjection_eq_twentyFour  F  :
     kernelSourceProjection F=(24:ℂ)⁻¹ • ∑i : RationalBruhatIndex,
       kernelSourcePullback (rationalLift (rationalBruhatRep i)) F := by
   rw [kernelSourceProjection_apply]
@@ -246,14 +244,14 @@ lemma kernelSourceProjection_eq_twentyFour (F : KernelQuotientL2) :
 end CubicEisenstein
 
 namespace CubicKubota
-open ActualEisensteinCubic
+ 
 
 def sourceLevelInclusion : levelThree→*levelTwo where
   toFun n := ⟨(n:SL(2,ActualEisensteinCubic.O)),levelThree_le_levelTwo n.property⟩
   map_one' := rfl
   map_mul' _ _ := rfl
 
-lemma sourceLevelInclusion_character (n : levelThree) :
+lemma sourceLevelInclusion_character  n  :
     levelTwoComplexCharacter (sourceLevelInclusion n)=complexCharacter n :=
   levelTwoComplexCharacter_restrict n
 
@@ -262,7 +260,7 @@ end CubicKubota
 namespace CubicEisenstein
 open CubicKubota
 
-lemma kernelSourceProjection_ae_eq (F : KernelQuotientL2) :
+lemma kernelSourceProjection_ae_eq  F  :
     kernelSourceProjection F=ᵐ[integralQuotientVolume globalKubotaKernel]
       fun x => (24:ℂ)⁻¹ * ∑q : levelTwo ⧸ levelThreeInTwo,
         F (kernelSourceAction (rationalLift (sourceRationalSection q)) x) := by
@@ -278,23 +276,23 @@ lemma kernelSourceProjection_ae_eq (F : KernelQuotientL2) :
 end CubicEisenstein
 end
 
-open scoped Classical
+ 
 
 namespace CubicEisenstein
 open CubicKubota
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
-open Finset AddChar MulChar EisensteinEmbedding
+ 
+open scoped       ENNReal
+ 
 
 namespace CubicEisenstein
-open EisensteinSchwartzPoisson ActualEisensteinCubic ConcreteTraceCRT Module
+open EisensteinSchwartzPoisson     Module
 
-def periodVector : (Fin 2 → ℝ) ≃L[ℝ] ℂ := periodBasis.equivFunL.symm
+def periodVector  := periodBasis.equivFunL.symm
 
-lemma periodVector_apply (x : Fin 2 → ℝ) :
+lemma periodVector_apply  x  :
     periodVector x = 3 * ((x 0 : ℂ) + (x 1 : ℂ) * omega3) := by
   change periodBasis.equivFun.symm x = _
   rw [Basis.equivFun_symm_apply, Fin.sum_univ_two, periodBasis_zero, periodBasis_one]
@@ -304,30 +302,29 @@ lemma periodVector_apply (x : Fin 2 → ℝ) :
 def periodTorus (z : ℂ) : UnitAddTorus (Fin 2) :=
   fun i => (periodBasis.equivFunL z i : UnitAddCircle)
 
-lemma periodTorus_periodVector (x : Fin 2 → ℝ) :
+lemma periodTorus_periodVector  x  :
     periodTorus (periodVector x) = fun i => (x i : UnitAddCircle) := by
   change (fun i => ((periodBasis.equivFunL (periodBasis.equivFunL.symm x)) i : UnitAddCircle)) = _
   rw [periodBasis.equivFunL.apply_symm_apply]
 
-def periodFrequencyEquiv : (Fin 2 → ℤ) ≃ ActualEisensteinCubic.O :=
+def periodFrequencyEquiv  :=
   (finTwoArrowEquiv ℤ).trans dualFrequencyEquiv
 
-lemma periodFrequencyEquiv_apply (n : Fin 2 → ℤ) :
+lemma periodFrequencyEquiv_apply  n  :
     periodFrequencyEquiv n = dualFrequencyEquiv (n 0, n 1) := rfl
 
-lemma periodVector_character (n : Fin 2 → ℤ) (x : Fin 2 → ℝ) :
+lemma periodVector_character  n   x  :
     ShortDraftTrace.breveE (cuspFrequency (periodFrequencyEquiv n) * periodVector x) =
       Complex.exp (2 * Real.pi * Complex.I *
         ((n 0 : ℂ) * (x 0 : ℂ) + (n 1 : ℂ) * (x 1 : ℂ))) := by
-  have hlam : eisLam ≠ 0 := by
-    exact eisLam_ne_zero
+  have hlam : eisLam ≠ 0 := eisLam_ne_zero
   have harg : cuspFrequency (periodFrequencyEquiv n) * periodVector x =
       (eisEmbedding (dualFrequencyEquiv (n 0,n 1)) *
         ((x 0 : ℂ) + (x 1 : ℂ) * omega3)) / eisLam := by
     rw [cuspFrequency, periodVector_apply, periodFrequencyEquiv_apply]
     field_simp
   rw [harg, ←paperE, paperE_eq_exp, dualFrequencyEquiv_coordinates]
-  have hs : Real.sqrt 3 ≠ 0 := ne_of_gt (Real.sqrt_pos.mpr (by norm_num))
+  
   have hw : omega3.re = -(1/2:ℝ) := by norm_num [omega3]
   congr 1
   simp only [complexPoint, Complex.mul_im, Complex.add_re, Complex.add_im,
@@ -336,7 +333,7 @@ lemma periodVector_character (n : Fin 2 → ℤ) (x : Fin 2 → ℝ) :
   field_simp
   ring
 
-lemma periodTorus_mFourier (n : Fin 2 → ℤ) (z : ℂ) :
+lemma periodTorus_mFourier  n   z  :
     UnitAddTorus.mFourier n (periodTorus z) =
       ShortDraftTrace.breveE (cuspFrequency (periodFrequencyEquiv n) * z) := by
   obtain ⟨x, rfl⟩ := periodVector.surjective z
@@ -347,7 +344,7 @@ lemma periodTorus_mFourier (n : Fin 2 → ℤ) (z : ℂ) :
   congr 1
   ring
 
-lemma periodFrequencyEquiv_neg (n : Fin 2 → ℤ) :
+lemma periodFrequencyEquiv_neg  n  :
     periodFrequencyEquiv (-n) = -periodFrequencyEquiv n := by
   apply eisEmbedding_injective
   change eisEmbedding (ActualEisensteinCoordinates.eval (-n 0 + -n 1) (-n 0)) =
@@ -356,13 +353,11 @@ lemma periodFrequencyEquiv_neg (n : Fin 2 → ℤ) :
   push_cast
   ring
 
-lemma cuspFrequency_neg (h : ActualEisensteinCubic.O) : cuspFrequency (-h) = -cuspFrequency h := by
+lemma cuspFrequency_neg  h  : cuspFrequency (-h) = -cuspFrequency h := by
   simp only [cuspFrequency, map_neg, neg_div]
 
-lemma periodVector_eq_lattice (x : Fin 2 → ℝ) :
-    periodVector x = eisensteinLatticeMap 3 (by norm_num) (Complex.measurableEquivPi.symm x) := by
-  rw [periodVector_apply]
-  simp [eisensteinLatticeMap, Complex.measurableEquivPi_symm_apply, mul_comm]
+lemma periodVector_eq_lattice  x  :
+    periodVector x = eisensteinLatticeMap 3 (by norm_num) (Complex.measurableEquivPi.symm x) := rfl
 
 lemma periodVector_map_volume :
     Measure.map periodVector volume = ENNReal.ofReal (2/(9*Real.sqrt 3)) • volume := by
@@ -398,10 +393,8 @@ lemma periodDomain_integral_coordinates (f : ℂ → ℂ) :
   exact h
 
 local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
-local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
-local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
+
+
 
 lemma periodCube_ae_Ioc : periodCube =ᵐ[volume]
     {x : Fin 2 → ℝ | ∀i, x i ∈ Set.Ioc 0 1} := by
@@ -417,7 +410,7 @@ lemma periodTorus_integral (f : UnitAddTorus (Fin 2) → ℂ) :
   simp only [zero_add, periodTorus_periodVector]
   exact setIntegral_congr_set periodCube_ae_Ioc.symm
 
-lemma periodTorus_fourierCoeff (f : UnitAddTorus (Fin 2) → ℂ) (n : Fin 2 → ℤ) :
+lemma periodTorus_fourierCoeff  f   n  :
     UnitAddTorus.mFourierCoeff f n = (2/(9*Real.sqrt 3):ℝ) •
       (∫z in periodDomain, f (periodTorus z) *
         ShortDraftTrace.breveE (-cuspFrequency (periodFrequencyEquiv n)*z)) := by

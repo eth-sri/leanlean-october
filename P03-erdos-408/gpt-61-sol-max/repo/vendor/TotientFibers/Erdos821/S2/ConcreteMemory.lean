@@ -13,7 +13,7 @@ public import Erdos821.P3Sum.SpanSumTask
 
 @[expose] public section
 
-noncomputable section
+section
 namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph

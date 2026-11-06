@@ -18,8 +18,11 @@ open Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-theorem bigAveragedConditionedKernel_controlled (A : Model F P J m) (n B : ℕ)
-    [Fintype (CutPendingState P B)] (theta : ℝ) (forward : Bool) (d : SmallLabels P J) :
+section
+variable (A : Model F P J m) (n B : ℕ) [Fintype (CutPendingState P B)] (theta : ℝ) (forward : Bool) (d : SmallLabels P J)
+
+theorem bigAveragedConditionedKernel_controlled    
+            :
     bigAveragedConditionedKernel A n theta forward (B := B) d =
       controlledKernel (symmetricCycleKernel A n B theta forward d)
         (cycleAct (pendingTranslationEquiv (P := P) B 1)) := by
@@ -47,15 +50,14 @@ theorem bigAveragedConditionedKernel_controlled (A : Model F P J m) (n B : ℕ)
   · simp only [ite_eq_left h, symmetricCycleKernel]
   · simp only [ite_eq_right h, Finset.sum_const_zero, mul_zero]
 
-theorem normBound_bigAveragedConditionedKernel (A : Model F P J m) (n B : ℕ)
-    [Fintype (CutPendingState P B)] (theta : ℝ) (forward : Bool) (d : SmallLabels P J)
-    (C : ℝ) (hC : 0 ≤ C)
+theorem normBound_bigAveragedConditionedKernel    
+           
+     C  (hC : 0 ≤ C)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
     (hbig : ∀ theta' : ℝ, NormBound (tiltedIdealMass F n) (tiltedBannedKernel A n theta' forward) C) :
     NormBound (betweenMass F n (B := B))
       (bigAveragedConditionedKernel A n theta forward (B := B) d) C := by
-  have hm (a : P.BigLabels (J + F.ell)) : 0 ≤ tiltedIdealMass F n a := by
-    exact Finset.prod_nonneg (fun g _ => Finset.prod_nonneg (fun i _ =>
+  have hm (a : P.BigLabels (J + F.ell)) : 0 ≤ tiltedIdealMass F n a := Finset.prod_nonneg (fun g _ => Finset.prod_nonneg (fun i _ =>
       (tiltedMu_pos F P n g.val (a g i) (hb g _)).le))
   have hw (a : CutPendingState P B) : 0 ≤ pendingMass F n a.val := by
     unfold pendingMass
@@ -79,6 +81,8 @@ theorem normBound_bigAveragedConditionedKernel (A : Model F P J m) (n B : ℕ)
       (fun a : CutPendingState P B => pendingMass F n a.val)
       (fun a : CutPendingState P B => pendingMass_translate F n 1 a.val))
     (cycleAct_add _) (symmetricCycleKernel A n B theta forward d) C hm hw hC hf
+
+end
 
 
 end Erdos821.P3Clean

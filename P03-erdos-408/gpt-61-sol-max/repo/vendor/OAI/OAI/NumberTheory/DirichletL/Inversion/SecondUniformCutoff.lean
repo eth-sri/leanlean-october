@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondCutoffScale
 public import OAI.NumberTheory.DirichletL.Descent.SecondCorrelatedCutoff
@@ -15,31 +16,41 @@ namespace SevenEighths.InverseSecondUniformCutoff
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMoment InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
-def uniformSecondRadius {ι : Type*} [DecidableEq ι] (p : ι→O)
-    (Z delta eta : ℝ) (G E : Finset ι) (L Y H : ℝ) : ℝ :=
+
+def uniformSecondRadius {ι } [DecidableEq ι] (p : ι→ActualEisensteinCubic.O)
+    (Z delta eta : ℝ) (G E : Finset ι) (L Y H : ℝ)  :=
   Z^(delta+eta)*(primeProductNorm p E/primeProductNorm p G)^2*L^2*H/Y
 
-lemma uniformSecondRadius_nonneg {ι : Type*} [DecidableEq ι] (p : ι→O)
-    (Z delta eta : ℝ) (G E : Finset ι) (L Y H : ℝ)
+section
+variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O)
+include ι p
+
+lemma uniformSecondRadius_nonneg      
+     Z delta eta   G E   L Y H 
     (hZ : 0≤Z) (hY : 0≤Y) (hH : 0≤H) :
     0≤uniformSecondRadius p Z delta eta G E L Y H := by
   unfold uniformSecondRadius
   positivity
 
-theorem correlated_le_uniform {ι : Type*} [DecidableEq ι] (p : ι→O)
-    (Z delta eta : ℝ) (d : O) (G E : Finset ι) (L Y H : ℝ)
+theorem correlated_le_uniform      
+     Z delta eta   d   G E   L Y H 
     (hY : 0<Y) (hH : 0≤H) (hd : ‖eisEmbedding d‖^2≤Z^(delta+eta)) :
     correlatedSecondRadius p d G E L Y H≤uniformSecondRadius p Z delta eta G E L Y H := by
   unfold correlatedSecondRadius uniformSecondRadius
-  exact div_le_div_of_nonneg_right
-    (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hd (sq_nonneg _)) (sq_nonneg _)) hH) hY.le
+  bound
 
-theorem uniform_radius_bound {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (G E : Finset ι) (Z delta theta g s Hc eta tau L : ℝ)
+section
+variable (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+include hp
+
+section
+variable (G E : Finset ι)
+include G E
+
+theorem uniform_radius_bound    
+         
+       Z delta theta g s Hc eta tau L 
     (hZ : 0<Z) (hL0 : 0≤L)
     (hE : primeProductNorm p E≤Z^(theta+eta))
     (hG : Z^(g-eta)≤primeProductNorm p G) (hL : L≤Z^(s+4*eta)) :
@@ -65,9 +76,9 @@ theorem uniform_radius_bound {ι : Type*} [DecidableEq ι]
       congr 1
       ring
 
-theorem uniform_radius_childM {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (G E : Finset ι) (Z M r ell V delta A B j t g theta eta tau L : ℝ)
+theorem uniform_radius_childM    
+         
+       Z M r ell V delta A B j t g theta eta tau L 
     (hZ : 0<Z) (hL0 : 0≤L)
     (hE : primeProductNorm p E≤Z^(theta+eta))
     (hG : Z^(g-eta)≤primeProductNorm p G) (hL : L≤Z^(r-A-B-t+4*eta)) :
@@ -81,8 +92,10 @@ theorem uniform_radius_childM {ι : Type*} [DecidableEq ι]
   unfold childM decrease firstPhysicalHeight
   ring
 
-theorem actual_cell_uniform_source_gates {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+end
+
+theorem actual_cell_uniform_source_gates    
+         
     {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (Z M r ell V delta A B j t eta tau L : ℝ) (hZ : 1<Z)
     (heta : 0≤eta) (hbin : 2≤Z^eta) (hL0 : 0≤L)
@@ -102,6 +115,10 @@ theorem actual_cell_uniform_source_gates {ι : Type*} [DecidableEq ι]
     (zero_lt_one.trans hZ) hL0 (by simpa [outerNorms] using hE) (by simpa [outerNorms] using hG) hL
   have hb:=(mem_nonzeroChildFrequencyBall _ (actualSecondMultiplier_ne_zero p x) _ _).mp (hgate x hxs)
   exact (mem_nonzeroChildFrequencyBall _ (actualSecondMultiplier_ne_zero p x) _ _).mpr ⟨hb.1,hb.2.trans hr⟩
+
+end
+
+end
 
 end SevenEighths.InverseSecondUniformCutoff
 end

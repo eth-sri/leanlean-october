@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
 
@@ -6,14 +7,17 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
-lemma reciprocal_differentiableAt_of_nonzero (χ : Character) (s : ℂ) (h0 : s≠0)
+
+section
+variable {K : ℕ} (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hfirst : FirstTail (eps/2) S) (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hZ : 0<Z) (x w z : ℂ) (hx : (51/100:ℝ)≤x.re)
+
+lemma reciprocal_differentiableAt_of_nonzero  χ   s  (h0 : s≠0)
     (hnz : ¬(χ.residue=1 ∧ s=1) → LFunction χ s≠0) :
     DifferentiableAt ℂ (HeckeReciprocal.reciprocal χ) s := by
   by_cases hχ : χ.residue=1
@@ -22,7 +26,7 @@ lemma reciprocal_differentiableAt_of_nonzero (χ : Character) (s : ℂ) (h0 : s�
       · subst s
         exact HeckeReciprocal.regularizedL_ne_zero_at_one χ hχ
       · rw [HeckeReciprocal.regularizedL_eq χ h0 hs]
-        exact mul_ne_zero (sub_ne_zero.mpr hs) (hnz (by simp [hs]))
+        grind
     have he : HeckeReciprocal.reciprocal χ=(fun z=>(z-1)/HeckeReciprocal.regularizedL χ z) := by
       funext z
       simp only [HeckeReciprocal.reciprocal,ite_eq_left hχ]
@@ -35,11 +39,12 @@ lemma reciprocal_differentiableAt_of_nonzero (χ : Character) (s : ℂ) (h0 : s�
     rw [he]
     exact (LFunction_differentiableAt χ h0 (Or.inr hχ)).inv (hnz (by simp [hχ]))
 
+include heps hfirst hx in
 theorem physicalCompensatedRow_buffered_differentiableAt_x
-    (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hfirst : FirstTail (eps/2) S) (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S)
-    (η : Character) (u : FreeRow) (x w z : ℂ)
-    (hx : (51/100:ℝ)≤x.re) (hw : -(1/100:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re)
+           
+         
+         
+      (hw : -(1/100:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re)
     (hxw : 1+eps≤x.re+w.re)
     (hnz : ¬(((targetRow η u).excludePrimes S hS.prime).residue=1 ∧ x=1) →
       LFunction ((targetRow η u).excludePrimes S hS.prime) x≠0) :
@@ -57,19 +62,21 @@ theorem physicalCompensatedRow_buffered_differentiableAt_x
       exact continuedCompensatedLocal_first_differentiableAt_x η u P.val _
         (by exact_mod_cast hS.tail.norm_four P.val (hT P.val P.property)) x w z (by linarith) (by linarith)
 
-lemma sourceMellinWeight_differentiable_x (W0 W1 : SchwartzMap ℝ ℂ)
-    (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ) :
+include hZ in
+lemma sourceMellinWeight_differentiable_x  
+          :
     Differentiable ℂ (fun x=>sourceMellinWeight W0 W1 X Y Z x w z) := by
   have hz : (Z:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hZ.ne'
   unfold sourceMellinWeight
   fun_prop (disch := exact Or.inl hz)
 
-theorem continuedPhysicalRowKernel_buffered_differentiableAt_x {K : ℕ}
-    (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hfirst : FirstTail (eps/2) S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hZ : 0<Z) (x w z : ℂ)
-    (hx : (51/100:ℝ)≤x.re) (hw : -(1/100:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re)
+include heps hfirst hZ hx in
+theorem continuedPhysicalRowKernel_buffered_differentiableAt_x  
+           
+       
+           
+           
+      (hw : -(1/100:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re)
     (hxw : 1+eps≤x.re+w.re)
     (hnz : ¬(((targetRow η u).excludePrimes S hS.prime).residue=1 ∧ x=1) →
       LFunction ((targetRow η u).excludePrimes S hS.prime) x≠0) :
@@ -78,11 +85,12 @@ theorem continuedPhysicalRowKernel_buffered_differentiableAt_x {K : ℕ}
     ((physicalCompensatedRow_buffered_differentiableAt_x eps heps S hS hfirst _
       (contourTupleOutside S P hPS) η u x w z hx hw hz hxw hnz).const_mul _)
 
-theorem buffered_x_rectangle {K : ℕ}
-    (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hfirst : FirstTail (eps/2) S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ) (l r T : ℝ)
+include heps hfirst hmax hPS W0 W1 X Y hZ in
+theorem buffered_x_rectangle  
+           
+       
+           
+            (l r T : ℝ)
     (hl : (51/100:ℝ)≤l) (hr : (51/100:ℝ)≤r) (hw : -(1/100:ℝ)≤w.re)
     (hz : (17/50:ℝ)≤z.re) (hlw : 1+eps≤l+w.re) (hrw : 1+eps≤r+w.re)
     (hnz : ∀x∈(uIcc l r ×ℂ uIcc (-T) T),
@@ -114,8 +122,10 @@ theorem buffered_x_rectangle {K : ℕ}
   simp only [I_sq] at hd
   linear_combination hd
 
+end
+
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

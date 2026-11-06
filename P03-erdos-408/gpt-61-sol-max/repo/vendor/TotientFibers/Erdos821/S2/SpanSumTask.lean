@@ -15,7 +15,7 @@ namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-def SpanSumTask : Prop :=
+def SpanSumTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
     (Q : ResiduePath A n) (g : P.BigGroup) (p : P.Prime g.val),
     baselinePrime F n p.val ≠ 0 →

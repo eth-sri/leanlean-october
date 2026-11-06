@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindows
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindows
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
@@ -15,10 +16,10 @@ open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
 open InverseSecondChildWindows InverseSecondProfileUniform
-local notation "Eis"=>ActualEisensteinCubic.O
 
-theorem log_source_support (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
-    (hs:Function.support W⊆Set.Icc a b)(hW:ContDiff ℝ ∞ W) :
+
+theorem log_source_support  W  a b  ha 
+     hs  hW  :
     Function.support (CubicReflectionKernel.logSchwartz W a b ha hs hW)⊆
       Set.Icc (-(|Real.log a|+|Real.log b|)) (|Real.log a|+|Real.log b|) := by
   intro x hx
@@ -27,9 +28,7 @@ theorem log_source_support (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
   have hl := Real.log_le_log ha hh.1
   have hu := Real.log_le_log (Real.exp_pos x) hh.2
   rw [Real.log_exp] at hl hu
-  constructor
-  · linarith [neg_abs_le (Real.log a),abs_nonneg (Real.log b)]
-  · linarith [le_abs_self (Real.log b),abs_nonneg (Real.log a)]
+  grind
 
 theorem exists_actual_initial_windows
     (W₁ W₂:ℝ→ℂ)(a b bcap:ℝ)(ha:0<a)(hcap:1≤bcap)
@@ -41,7 +40,7 @@ theorem exists_actual_initial_windows
       tsupport (wFresh:ℝ→ℂ)⊆Set.Icc af bf ∧
       (∀i,0≤M i) ∧ (∀i,HasCompactSupport (V i:ℝ→ℂ)) ∧
       (∀i,Function.support (V i)⊆Set.Icc (-M i) (M i)) ∧
-      ∀{ι:Type*}[DecidableEq ι](p:ι→Eis)(_hp:∀i,p i≠0)
+      ∀{ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)(_hp:∀i,p i≠0)
       [∀i,(Ideal.span {p i}).IsMaximal]
       (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
       (_hdiv:∀x∈S,x.divisor⊆x.common)(_hf:∀x∈S,x.frequency≠0)
@@ -103,6 +102,6 @@ theorem exists_actual_initial_windows
 
 end SevenEighths.InverseInitialEnergyCallerFixedWindows
 
-end
+
 
 end OAI

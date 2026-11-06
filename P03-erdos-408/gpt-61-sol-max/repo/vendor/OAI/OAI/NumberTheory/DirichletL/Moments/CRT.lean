@@ -13,7 +13,7 @@ namespace SevenEighths.CenteredMomentCorrelation
 noncomputable section
 variable {A B : Type*} [CommRing A] [CommRing B] [Fintype A] [Fintype B]
 
-theorem fullCorrelation_ringEquiv (e : A ≃+* B) (u v k : A) (f g : B → ℂ) :
+theorem fullCorrelation_ringEquiv (e : A ≃+* B)  u v k   f g  :
     fullCorrelation (fun x => v * x) (fun y => u * y)
         (fun x => f (e x)) (fun y => g (e y)) k =
       fullCorrelation (fun x => e v * x) (fun y => e u * y) f g (e k) := by
@@ -74,7 +74,7 @@ def crtCharacter {S ι : Type*} [CommRing S] [Fintype ι] {R : ι → Type*}
     exact Finset.prod_eq_zero (Finset.mem_univ i) ((χ i).map_nonunit hi)
 
 @[simp] theorem crtCharacter_apply {S ι : Type*} [CommRing S] [Fintype ι] {R : ι → Type*}
-    [∀ i, CommRing (R i)] (e : S ≃+* (∀ i, R i)) (χ : ∀ i, MulChar (R i) ℂ) (x : S) :
+    [∀ i, CommRing (R i)] (e : S ≃+* (∀ i, R i))  χ  (x : S) :
     crtCharacter e χ x = ∏ i, χ i (e x i) := rfl
 
 end

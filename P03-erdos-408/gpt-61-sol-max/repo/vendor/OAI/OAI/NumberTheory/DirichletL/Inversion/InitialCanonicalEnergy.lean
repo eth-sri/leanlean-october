@@ -6,23 +6,23 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankMoments
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialCanonicalEnergy
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalQuadraticSieve
 open InverseMoment InverseInitialClippedColumns SecondPassArithmetic CanonicalCoefficientClass
-local notation "O"=>ActualEisensteinCubic.O
+
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
-  (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 omit [DecidableEq σ] in
-theorem normalization_change (pool:Finset ι)(Ψ:O→*ℂ)(m:O)
+theorem normalization_change  pool  Ψ  m 
     (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (labels:Finset (Ideal O))(rows:Finset O)(w:Ideal O→ℝ)(W:ℝ→ℂ)
-    (X Z F G:ℝ)(hZ:0<Z):
+     labels  rows  w  W 
+     X Z F G (hZ:0<Z):
     normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z F=
       Z^(G-F)*normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z G := by
   have he:Z^F*normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z F=
@@ -34,10 +34,10 @@ theorem normalization_change (pool:Finset ι)(Ψ:O→*ℂ)(m:O)
   exact he
 
 omit [DecidableEq σ] in
-theorem energy_range_weight_le (pool:Finset ι)(Ψ:O→*ℂ)(m:O)
+theorem energy_range_weight_le (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)
     (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (labels:Finset (Ideal O))(rows largeRows:Finset O)(w v:Ideal O→ℝ)(W:ℝ→ℂ)
-    (X Z F:ℝ)(hrows:rows⊆largeRows)(hw:∀f∈labels,0≤w f)(hv:∀f∈labels,w f≤v f):
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(rows largeRows:Finset ActualEisensteinCubic.O)(w v:Ideal ActualEisensteinCubic.O→ℝ) W 
+     X Z F (hrows:rows⊆largeRows)(hw:∀f∈labels,0≤w f)(hv:∀f∈labels,w f≤v f):
     normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z F≤
       normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels largeRows v W X Z F := by
   unfold normalizedColumnEnergy
@@ -49,18 +49,18 @@ theorem energy_range_weight_le (pool:Finset ι)(Ψ:O→*ℂ)(m:O)
     ((hw f hf).trans (hv f hf))
 
 omit [DecidableEq σ] in
-theorem initial_child_from_rank (pool:Finset ι)(base Ψ:O→*ℂ)
+theorem initial_child_from_rank (pool:Finset ι)(base Ψ:ActualEisensteinCubic.O→*ℂ)
     (slots subslots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)(W:𝓢(ℝ,ℂ))
-    (Z Mcap Fcap z c eps A N V M Q η:ℝ)(K degree:ℕ)(m:O)
+    (Z Mcap Fcap z c eps A N V M Q η:ℝ)(K degree:ℕ)(m:ActualEisensteinCubic.O)
     (hZ:1<Z)(hbase:IsBaseRayTwist base Ψ)(hm:m≠0)
     (hN:0≤N)(hV:0≤V+2*η)(hM:0≤M)(hQ:0≤Q)
     (hMcap:M≤Mcap)(hFcap:N+(V+2*η)≤Fcap)
     (hmargin:CanonicalMargins (N+(V+2*η)) M Q z c)
     (hmnorm:‖eisEmbedding m‖^2=Z^Q)(hsub:subslots⊆slots)
-    (labels:Finset (Ideal O))(hlabels:∀f∈labels,Admissible f ∧ (f.absNorm:ℝ)≤Z^(V+2*η))
-    (rows:Finset O)(hrows:rows⊆nonzeroChildFrequencyBall 1 (Z^M))
-    (weight:Ideal O→ℝ)(hw:∀f∈labels,0≤weight f)
-    (hweight:∀f∈labels,weight f≤secondLabelWeight K f)(s:ℝ)
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(hlabels:∀f∈labels,Admissible f ∧ (f.absNorm:ℝ)≤Z^(V+2*η))
+    (rows:Finset ActualEisensteinCubic.O)(hrows:rows⊆nonzeroChildFrequencyBall 1 (Z^M))
+    (weight:Ideal ActualEisensteinCubic.O→ℝ)(hw:∀f∈labels,0≤weight f)
+    (hweight:∀f∈labels,weight f≤secondLabelWeight K f) s 
     (hmoment:CanonicalRankMoments p hp hcop hg pool base slots lists a W Z Mcap Fcap z c eps A K degree):
     normalizedColumnEnergy p hp hcop hg pool Ψ m subslots lists a labels rows weight
       (childLogTest W s) (Z^N) Z (N+V)≤A*Z^(N+V+eps+4*η)*(1+‖s‖)^(2*degree) := by
@@ -83,6 +83,6 @@ theorem initial_child_from_rank (pool:Finset ι)(base Ψ:O→*ℂ)
 
 end SevenEighths.InverseInitialCanonicalEnergy
 
-end
+
 
 end OAI

@@ -11,22 +11,22 @@ open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-def boundedExtension (z : ℂ) : ℂ := if ‖z‖ ≤ 1 then z else 0
-lemma boundedExtension_norm (z : ℂ) : ‖boundedExtension z‖ ≤ 1 := by
+
+def boundedExtension (z : ℂ)  := if ‖z‖ ≤ 1 then z else 0
+lemma boundedExtension_norm  z  : ‖boundedExtension z‖ ≤ 1 := by
   unfold boundedExtension
   split_ifs with h
   · exact h
   · simp
-lemma boundedExtension_eq (z : ℂ) (hz : ‖z‖ ≤ 1) : boundedExtension z = z := ite_eq_left hz
+lemma boundedExtension_eq  z  (hz : ‖z‖ ≤ 1) : boundedExtension z = z := ite_eq_left hz
 
 theorem canonical_bounded_cusp_templates {α : Type*} {ι : α → Type*}
     [∀ x, Fintype (ι x)] (G : ∀ x, PrimeFamily (ι x))
     (N a c : Eis) (mode : Bool)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (hc : c ≠ 0) (hN : (9:Eis)*c ∣ N)
-    (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) (hac : IsCoprime a c)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) (hac : IsCoprime a c)
     (hcop : ∀ x, Pairwise (Function.onFun IsCoprime (G x).ideal))
     (hNp : ∀ x i, IsCoprime (Ideal.span {N}) ((G x).ideal i))
     (fixedIdeal : Ideal Eis) (row slot : α → Ideal Eis)

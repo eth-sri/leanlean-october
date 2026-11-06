@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedChoiceEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformReflectionChoices
 open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson
 open CenteredMomentSectorLocalization CenteredMomentScaleSupremum
 open CenteredMomentUniformReflectionScale
 
-theorem actual_independent_choices (B J : ℕ) :
+theorem actual_independent_choices  B J  :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type}[Fintype ι],∀{α : ι→Type},
       ∀(G : ι→𝓢(ℝ,ℂ))(χ : ι→Character)(P : ι→ℂ)(s X : ∀i,α i→ℝ)(keep : ∀i,α i→Prop)
         (ly omega : ι→ℝ)(Wshort : ℝ→ℂ)(c d lo hi low high D E : ℝ),
@@ -68,6 +68,6 @@ theorem actual_independent_choices (B J : ℕ) :
 
 end SevenEighths.CenteredMomentUniformReflectionChoices
 
-end
+
 
 end OAI

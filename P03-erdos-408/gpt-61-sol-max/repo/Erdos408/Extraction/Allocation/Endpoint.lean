@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Expansion
 public import Erdos408.Extraction.Allocation.Groups
@@ -22,12 +23,17 @@ namespace Erdos408
 
 open Finset Filter Real
 
-noncomputable section
+section
 
 /-! ### Single-group weights -/
 
+section
+variable {q c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4) {g : Finset ℕ} (hg : 1 / 2 ≤ harmonicMass g) {cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw₁ : cw ≤ (1 - q) ^ 2 / 3) {K : ℕ} {CN x : ℝ} (hband : ∀ c ∈ range K, ∀ i ∈ range (inertPerCluster K CN x),
+      1 / 2 ≤ harmonicMass (band x (inertExponent K x c i))) (n : ℕ) {κ ε H : ℝ}
+
+include hq hq₁ in
 /-- `n q^{n - 1} ≤ 1/(1 - q)` for `0 < q < 1`. -/
-lemma natCast_mul_zpow_le {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (n : ℕ) :
+lemma natCast_mul_zpow_le         :
     (n : ℝ) * q ^ ((n : ℤ) - 1) ≤ 1 / (1 - q) := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · simp only [Nat.cast_zero, zero_mul]
@@ -45,7 +51,7 @@ lemma natCast_mul_zpow_le {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (n : ℕ) :
         div_le_div_of_nonneg_right (by linarith [pow_pos hq n]) (by linarith)
 
 /-- `n 2^{1 - n} ≤ 1`. -/
-lemma natCast_mul_half_zpow_le (n : ℕ) : (n : ℝ) * (1 / 2 : ℝ) ^ ((n : ℤ) - 1) ≤ 1 := by
+lemma natCast_mul_half_zpow_le   : (n : ℝ) * (1 / 2 : ℝ) ^ ((n : ℤ) - 1) ≤ 1 := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · simp
   have he : (1 / 2 : ℝ) ^ ((n : ℤ) - 1) = 1 / 2 ^ (n - 1) := by
@@ -57,15 +63,15 @@ lemma natCast_mul_half_zpow_le (n : ℕ) : (n : ℝ) * (1 / 2 : ℝ) ^ ((n : ℤ
   exact_mod_cast this
 
 /-- The weight of one group is `q^{ω - 1} ω / V`. -/
-lemma markedWeight_singleton {ι : Type*} (i : ι) (q : ℝ) (G : ι → Finset ℕ) (n : ℕ) :
+lemma markedWeight_singleton {ι : Type*} (i : ι)  q  (G : ι → Finset ℕ)  n  :
     markedWeight {i} q G n =
       (primeCount (G i) n : ℝ) * q ^ ((primeCount (G i) n : ℤ) - 1) / harmonicMass (G i) := by
-  simp only [markedWeight, sum_singleton, card_singleton, prod_singleton, Nat.cast_one]
-  ring
+  grind [markedWeight]
 
+include hg in
 /-- With reciprocal mass at least `1/2`, the weight of one group with `q₀ = 1/2`
 lies in `[0, 2]`. -/
-lemma markedWeight_half_mem {g : Finset ℕ} (hg : 1 / 2 ≤ harmonicMass g) (n : ℕ) :
+lemma markedWeight_half_mem       :
     0 ≤ markedWeight {g} (1 / 2) id n ∧ markedWeight {g} (1 / 2) id n ≤ 2 := by
   rw [markedWeight_singleton]
   simp only [id]
@@ -75,9 +81,10 @@ lemma markedWeight_half_mem {g : Finset ℕ} (hg : 1 / 2 ≤ harmonicMass g) (n 
   have := natCast_mul_half_zpow_le (primeCount g n)
   linarith
 
+include hc₁ hc₁' hg in
 /-- With masses at least `1/2` and `c₁ ≤ 1/4`, the coins lie in `[0, 1]`. -/
-lemma successCoin_mem {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4) {g : Finset ℕ}
-    (hg : 1 / 2 ≤ harmonicMass g) (w : ℕ) :
+lemma successCoin_mem        
+       w  :
     0 ≤ successCoin c₁ g w ∧ successCoin c₁ g w ≤ 1 := by
   obtain ⟨h₁, h₂⟩ := markedWeight_half_mem hg w
   obtain ⟨h₃, h₄⟩ := markedWeight_half_mem hg (w + 1)
@@ -87,11 +94,11 @@ lemma successCoin_mem {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4
       ≤ (1 / 4) * 2 * 2 := by gcongr
     _ = 1 := by norm_num
 
+include hq hq₁ hcw hcw₁ hband in
 /-- With band masses at least `1/2`, the inert polynomial lies in `[0, 1]`. -/
-lemma inertPoly_mem {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw)
-    (hcw₁ : cw ≤ (1 - q) ^ 2 / 3) {K : ℕ} {CN x : ℝ}
-    (hband : ∀ c ∈ range K, ∀ i ∈ range (inertPerCluster K CN x),
-      1 / 2 ≤ harmonicMass (band x (inertExponent K x c i))) (n : ℕ) :
+lemma inertPoly_mem        
+         
+        :
     0 ≤ inertPoly q cw K CN x n ∧ inertPoly q cw K CN x n ≤ 1 := by
   -- each factor `1 - c_w w_{c,i}` lies in `[0, 1]`
   have hf : ∀ c ∈ range K, ∀ i ∈ range (inertPerCluster K CN x),
@@ -133,7 +140,7 @@ lemma inertPoly_mem {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw)
 /-! ### The slot statistic -/
 
 /-- Membership in the slot tuples. -/
-lemma mem_slotTuples {x : ℝ} (hx : 1 ≤ x) {k : ℕ} {u v : Fin k → ℝ} {Q : Fin k → ℕ}
+lemma mem_slotTuples   (hx : 1 ≤ x) {k : ℕ} {u v : Fin k → ℝ} {Q : Fin k → ℕ}
     (hQ : Q ∈ slotTuples x u v) : ∀ i, (Q i).Prime ∧ x ^ u i < Q i ∧ (Q i : ℝ) ≤ x ^ v i := by
   intro i
   have h := (Fintype.mem_piFinset.1 (mem_filter.1 hQ).1) i
@@ -143,7 +150,7 @@ lemma mem_slotTuples {x : ℝ} (hx : 1 ≤ x) {k : ℕ} {u v : Fin k → ℝ} {Q
 /-- On `1 ≤ n ≤ κ x` with `L ≥ log κ`, the slot statistic and its mean are
 at most `(2/ε + 1)^3` and `H^3` in absolute value, where `H ≥ 1` bounds the
 reciprocal sum of the primes in `(x^ε, x]`. -/
-lemma abs_slotCount_sub_slotMean_le {x κ ε H : ℝ} (hx : 1 < x) (hκ : Real.log κ ≤ Real.log x)
+lemma abs_slotCount_sub_slotMean_le   (hx : 1 < x) (hκ : Real.log κ ≤ Real.log x)
     (hκ0 : 0 < κ) (hε : 0 < ε) (hH : ∑ p ∈ primesIoc (x ^ ε) x, (1 : ℝ) / p ≤ H) (hH1 : 1 ≤ H)
     {k : ℕ} (hk : k ≤ 2) {u v : Fin (k + 1) → ℝ} (hu : ∀ i, ε ≤ u i) (hv : ∑ i, v i ≤ 1)
     {B : (Fin k → ℕ) → ℝ} (hB : ∀ Q, 0 ≤ B Q ∧ B Q ≤ 1) {n : ℕ} (hn : 1 ≤ n)
@@ -223,9 +230,11 @@ lemma abs_slotCount_sub_slotMean_le {x κ ε H : ℝ} (hx : 1 < x) (hκ : Real.l
 
 end
 
+end
+
 /-- For large `x`, the primes in `(x^ε, x]` with `ε = c T^{-20}` have
 reciprocal sum at most `T`. -/
-lemma eventually_sum_primesIoc_le {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atTop,
+lemma eventually_sum_primesIoc_le  {c}  (hc : 0 < c) : ∀ᶠ x : ℝ in atTop,
     ∑ p ∈ primesIoc (x ^ (c / logLog x ^ 20)) x, (1 : ℝ) / p ≤ logLog x := by
   obtain ⟨E, hE, hM⟩ := mertens_second
   filter_upwards [eventually_logLog_rpow_le 22 one_pos, eventually_le_logLog (max (1 / c) 1),

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
 public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstTailUniform
@@ -21,7 +22,7 @@ open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
 open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
 open CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate
 open CenteredMomentSourceInputFirstTailUniform
-local notation "O"=>HeckeFamily.O
+
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -32,7 +33,7 @@ theorem local_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
       ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),s.W₁=W₁→s.W₂=W₂→
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→
-      (∀i,s.hi i≤hi i)→∀(m A:O)(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K Tsec:ℝ),
+      (∀i,s.hi i≤hi i)→∀(m A:HeckeFamily.O)(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K Tsec:ℝ),
       0<K→volume s.toData≤Z^B→Tsec≤Z^B→(volume s.toData)^2/K≤Tsec→
       ‖CenteredMomentFirstSectorLocalization.discardedEnergy s.η m A s.t (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) Φ K (volume s.toData) Z ξ‖/volume s.toData≤
@@ -64,7 +65,7 @@ theorem local_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
     apply mul_le_mul_of_nonneg_right _ hcontrol
     dsimp [Cmass]
     linarith
-  have hn (I:Ideal O)(_hI:I∈finiteColumns (Fintype.piFinset s.pools))
+  have hn (I:Ideal HeckeFamily.O)(_hI:I∈finiteColumns (Fintype.piFinset s.pools))
       (hI:coefficient s R seed I≠0):(Ideal.absNorm I:ℝ)≤Real.exp HN*V:=
     (input_column_bound hi whi s W₁ W₂ wlo hwlo he₁ he₂ hs₁ hs₂ hshi R seed I hI).trans
       (mul_le_mul_of_nonneg_right hexp hV.le)
@@ -75,7 +76,7 @@ theorem local_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
   have hsquare:=pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _=>norm_nonneg _)) hm 2
   have hp:0<min 1 (kernelReference Tsec HN):=lt_min zero_lt_one (kernelReference_pos _ _ hT)
   have hzpos:0<Z:=zero_lt_one.trans hZ.1
-  have hzpower:0<Z^(ξ/4):=Real.rpow_pos_of_pos hzpos _
+  
   have hden:0<(min 1 (kernelReference Tsec HN))^2*(1+Z^(ξ/4))^Adec:=by positivity
   have hb:=hdecay HN Z V Tsec hZ.1.le hV hVcap hT hTcap
   calc

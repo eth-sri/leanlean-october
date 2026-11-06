@@ -6,22 +6,27 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalParentSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
 open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityValidSource
 open InversePrioritySecondSource
-local notation "O"=>ActualEisensteinCubic.O
+
 variable {ι σ:Type*}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
-variable (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal]
+variable (p:ι→ActualEisensteinCubic.O)[∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
+section
+variable (hp : ∀i,p i≠0) (hinj : Function.Injective (fun i=>Ideal.span {p i})) (outer : Finset (Source ι Jo)) (pool : Finset ι) (selector : Source ι Jo→Finset ι→ℂ) (houter : ∀x∈outer,x.quotientSupport=∅) (extra : CubeCoordinates ι→Finset ι) (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
+
+
+include houter in
 theorem global_original_priority_slice
-    (outer:Finset (Source ι Jo))(pool:Finset ι)(selector:Source ι Jo→Finset ι→ℂ)
-    (houter:∀x∈outer,x.quotientSupport=∅)
-    (negative:Bool)(Ψ:O→*ℂ)(m:O)(ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)
+       
+     
+       (ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)
     (H:Source ι Jo→ℂ):
     (∑x∈globalParentSource outer pool selector,
       globalPriorityOuter p hg negative Ψ m ray core
@@ -43,12 +48,13 @@ theorem global_original_priority_slice
   · rw [ite_eq_right hs,priorityOuter_zero p hg x.cube negative Ψ m (selector x) ray core D (not_ne_iff.mp hs)]
     simp
 
+include houter in
 theorem global_second_energy_source
-    (hp:∀i,p i≠0)(hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (outer:Finset (Source ι Jo))(pool:Finset ι)(selector:Source ι Jo→Finset ι→ℂ)
-    (houter:∀x∈outer,x.quotientSupport=∅)(extra:CubeCoordinates ι→Finset ι)
-    (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (om:ℝ→ℂ)(X t Y:ℝ):
+      
+       
+      
+       (slots:Finset σ) lists  a 
+     om  X t Y :
     (∑x∈outer,firstWholePrioritySecondEnergy p hp hg hinj pool x.cube x.firstCommon
       (extra x.cube) negative Ψ m (primeSubsetGenerator (fun i=>Ideal.span {p i}) x.firstDivisor)
       slots lists a (selector x) om X t Y)=
@@ -108,8 +114,10 @@ theorem global_second_energy_source
   apply Finset.sum_congr rfl
   intro D hD
   ring
-end SevenEighths.InverseMoment
 
 end
+end SevenEighths.InverseMoment
+
+
 
 end OAI

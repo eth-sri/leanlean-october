@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondCanonicalSplit
 public import OAI.NumberTheory.DirichletL.Descent.SlotAssignments
@@ -11,7 +12,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def pairedSlotAssignment (J₁ J₂ : Finset σ)
@@ -31,11 +32,14 @@ theorem pairedSlotAssignment_injective (J₁ J₂ : Finset σ) :
     simpa only [pairedSlotAssignment,Fin.addCases_right] using congrFun h (Fin.natAdd J₁.card j)
 
 def pairedSlotWeight (J₁ J₂ : Finset σ) (a₁ a₂ : σ → ι → ℂ)
-    (q : (∀ i ∈ J₁, ι) × (∀ i ∈ J₂, ι)) : ℂ :=
+    (q : (∀ i ∈ J₁, ι) × (∀ i ∈ J₂, ι))  :=
   star (slotAssignmentWeight J₁ a₁ q.1)*slotAssignmentWeight J₂ a₂ q.2
 
-theorem paired_primeMark_assignments (J₁ J₂ : Finset σ)
-    (L₁ L₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ) (A : Finset ι) :
+section
+variable (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ) (A : Finset ι)
+
+theorem paired_primeMark_assignments  
+          :
     star (primeMark J₁ L₁ a₁ A)*primeMark J₂ L₂ a₂ A =
       ∑ q ∈ (J₁.pi (fun i => L₁ i∩A)) ×ˢ (J₂.pi (fun i => L₂ i∩A)),
         pairedSlotWeight J₁ J₂ a₁ a₂ q := by
@@ -43,8 +47,8 @@ theorem paired_primeMark_assignments (J₁ J₂ : Finset σ)
   simp only [star_sum,Finset.sum_product,pairedSlotWeight,Finset.sum_mul,Finset.mul_sum]
   exact Finset.sum_comm
 
-theorem pairedSlotWeight_norm_le_one (J₁ J₂ : Finset σ)
-    (L₁ L₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ) (A : Finset ι)
+theorem pairedSlotWeight_norm_le_one  
+         
     (q : (∀ i ∈ J₁, ι) × (∀ i ∈ J₂, ι))
     (hq : q ∈ (J₁.pi (fun i => L₁ i∩A)) ×ˢ (J₂.pi (fun i => L₂ i∩A)))
     (ha₁ : ∀ i ∈ J₁, ∀ p ∈ L₁ i, ‖a₁ i p‖ ≤ 1)
@@ -54,6 +58,8 @@ theorem pairedSlotWeight_norm_le_one (J₁ J₂ : Finset σ)
   exact (mul_le_of_le_one_left (norm_nonneg _)
     (slotAssignmentWeight_norm_le_one J₁ L₁ a₁ A q.1 (Finset.mem_product.mp hq).1 ha₁)).trans
     (slotAssignmentWeight_norm_le_one J₂ L₂ a₂ A q.2 (Finset.mem_product.mp hq).2 ha₂)
+
+end
 
 def attachSecondSlots {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo 0)
     (newAssigned : Fin Jn → ι) : MarkedSecondSource ι Jo Jn where
@@ -66,7 +72,7 @@ def attachSecondSlots {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo 0)
   newAssigned := newAssigned
 
 omit [DecidableEq ι] in
-theorem attachSecondSlots_injective {Jo Jn : ℕ} :
+theorem attachSecondSlots_injective  {Jo Jn}  :
     Function.Injective (fun q : MarkedSecondSource ι Jo 0 × (Fin Jn → ι) => attachSecondSlots q.1 q.2) := by
   intro q r h
   apply Prod.ext
@@ -80,13 +86,12 @@ theorem attachSecondSlots_injective {Jo Jn : ℕ} :
     · funext i; exact Fin.elim0 i
   · exact congrArg MarkedSecondSource.newAssigned h
 
-def attachPairedSlots {Jo : ℕ} (J₁ J₂ : Finset σ)
-    (q : MarkedSecondSource ι Jo 0 × ((∀ i ∈ J₁, ι) × (∀ i ∈ J₂, ι))) :
-    MarkedSecondSource ι Jo (J₁.card+J₂.card) :=
+def attachPairedSlots {Jo } (J₁ J₂ : Finset σ)
+    (q : MarkedSecondSource ι Jo 0 × ((∀ i ∈ J₁, ι) × (∀ i ∈ J₂, ι)))  :=
   attachSecondSlots q.1 (pairedSlotAssignment J₁ J₂ q.2)
 
 omit [DecidableEq ι] [DecidableEq σ] in
-theorem attachPairedSlots_injective {Jo : ℕ} (J₁ J₂ : Finset σ) :
+theorem attachPairedSlots_injective  {Jo}  (J₁ J₂ : Finset σ) :
     Function.Injective (attachPairedSlots (ι:=ι) (Jo:=Jo) J₁ J₂) := by
   intro q r h
   have he := @attachSecondSlots_injective ι Jo (J₁.card+J₂.card)
@@ -95,15 +100,14 @@ theorem attachPairedSlots_injective {Jo : ℕ} (J₁ J₂ : Finset σ) :
     (pairedSlotAssignment_injective J₁ J₂
       (congrArg (fun z : MarkedSecondSource ι Jo 0 × (Fin (J₁.card+J₂.card) → ι) => z.2) he))
 
-def assignedSecondSource {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι) :
-    Finset (MarkedSecondSource ι Jo (J₁.card+J₂.card)) :=
+def assignedSecondSource {Jo } (source : Finset (MarkedSecondSource ι Jo 0))
+    (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι)  :=
   ((source ×ˢ ((J₁.pi (fun i => L₁ i)) ×ˢ (J₂.pi (fun i => L₂ i)))).filter
     (fun q => ∀ j, pairedSlotAssignment J₁ J₂ q.2 j ∈ q.1.second.sourceCommon∪q.1.second.overlap)).image
       (attachPairedSlots J₁ J₂)
 
 theorem mem_assignedSecondSource {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι)
+    (J₁ J₂ : Finset σ)  L₁ L₂ 
     (x : MarkedSecondSource ι Jo (J₁.card+J₂.card)) :
     x ∈ assignedSecondSource source J₁ J₂ L₁ L₂ ↔
       ∃ y ∈ source, ∃ q₁ ∈ J₁.pi (fun i => L₁ i∩(y.second.sourceCommon∪y.second.overlap)),
@@ -125,8 +129,8 @@ theorem mem_assignedSecondSource {Jo : ℕ} (source : Finset (MarkedSecondSource
   · rintro ⟨y,hy,q₁,hq₁,q₂,hq₂,rfl⟩
     apply Finset.mem_image.mpr
     refine ⟨(y,(q₁,q₂)),Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨hy,Finset.mem_product.mpr ⟨?_,?_⟩⟩,?_⟩,rfl⟩
-    · exact Finset.mem_pi.mpr (fun i hi => (Finset.mem_inter.mp (Finset.mem_pi.mp hq₁ i hi)).1)
-    · exact Finset.mem_pi.mpr (fun i hi => (Finset.mem_inter.mp (Finset.mem_pi.mp hq₂ i hi)).1)
+    · simp_all
+    · simp_all
     · intro j
       refine Fin.addCases (fun k => ?_) (fun k => ?_) j
       · simpa only [pairedSlotAssignment,Fin.addCases_left] using
@@ -134,18 +138,17 @@ theorem mem_assignedSecondSource {Jo : ℕ} (source : Finset (MarkedSecondSource
       · simpa only [pairedSlotAssignment,Fin.addCases_right] using
           (Finset.mem_inter.mp (indexedSlotAssignment_support J₂ L₂ _ q₂ hq₂ k)).2
 
-theorem assignedSecondSource_conditions (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem assignedSecondSource_conditions (p : ι → ActualEisensteinCubic.O) [∀ i, (Ideal.span {p i}).IsMaximal]
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source)
-    (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι) :
+    (J₁ J₂ : Finset σ)  L₁ L₂  :
     ActualSecondSourceConditions p (assignedSecondSource source J₁ J₂ L₁ L₂) := by
   have hmem : ∀ x ∈ assignedSecondSource source J₁ J₂ L₁ L₂,
       ∃ y ∈ source, ∃ q, attachPairedSlots J₁ J₂ (y,q)=x ∧
         ∀ j, pairedSlotAssignment J₁ J₂ q j ∈ y.second.sourceCommon∪y.second.overlap := by
     intro x hx
     obtain ⟨⟨y,q⟩,hmem,he⟩ := Finset.mem_image.mp hx
-    obtain ⟨hmem,hq⟩ := Finset.mem_filter.mp hmem
-    exact ⟨y,(Finset.mem_product.mp hmem).1,q,he,hq⟩
+    grind
   constructor
   all_goals
     intro x hx

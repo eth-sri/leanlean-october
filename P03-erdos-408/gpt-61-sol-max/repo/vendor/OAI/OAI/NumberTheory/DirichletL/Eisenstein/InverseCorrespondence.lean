@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Reciprocity.CubicJacobi
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.CubeCuspAverage
 
@@ -10,86 +13,90 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise ENNReal InnerProductSpace
-open Finset AddChar MulChar EisensteinEmbedding
+ 
+open scoped       MatrixGroups Pointwise ENNReal InnerProductSpace
+ 
 
 local notation "O" => ActualEisensteinCubic.O
 
-lemma integralCoverFiber_memLp {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
+section
+variable {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K) (hK : K≤CubicKubota.levelThree)
+
+include hHK hK in
+lemma integralCoverFiber_memLp  
+        [H.IsFiniteRelIndex K]
     (f : IntegralOrbitQuotient H→ℂ) (hmeas : Measurable f)
-    (hf : MemLp f 2 (integralQuotientVolume H)) (q : IntegralCoverCosets H K) :
+    (hf : MemLp f 2 (integralQuotientVolume H))  q  :
     MemLp (fun w=>f (integralCoverFiberPoint H K q w)) 2
       (hyperbolicVolume.restrict (hyperbolicFundamentalSet K)) := by
   have hD := hf.comp_measurePreserving (integralCoverDomain_projection_measurePreserving hHK hK)
@@ -102,9 +109,10 @@ lemma integralCoverFiber_memLp {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
   apply hi.mpr
   simpa only [Function.comp_def,integralCoverFiberPoint_rep_smul] using hS
 
-theorem integralCoverTraceFunction_memLp {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
-    (f : IntegralOrbitQuotient H→ℂ) (hmeas : Measurable f)
+include hHK hK in
+theorem integralCoverTraceFunction_memLp  
+        [H.IsFiniteRelIndex K]
+     f  (hmeas : Measurable f)
     (hf : MemLp f 2 (integralQuotientVolume H)) :
     MemLp (integralCoverTraceFunction H K f) 2 (integralQuotientVolume K) := by
   let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
@@ -116,15 +124,15 @@ theorem integralCoverTraceFunction_memLp {H K : Subgroup (SL(2,ActualEisensteinC
   change MemLp (fun w=>∑q : IntegralCoverCosets H K,f (integralCoverFiberPoint H K q w)) 2 _
   exact memLp_finsetSum Finset.univ (fun q _=>integralCoverFiber_memLp hHK hK f hmeas hf q)
 
-lemma integralCoverMap_fiberPoint {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K)
-    (q : IntegralCoverCosets H K) (w : HyperbolicSpace) :
+lemma integralCoverMap_fiberPoint    
+     q   w  :
     integralCoverMap hHK (integralCoverFiberPoint H K q w)=integralOrbitProjection K w := by
   rw [integralCoverFiberPoint_rep,integralCoverMap_projection,integralSubgroup_smul,
     integralOrbitProjection_eq]
 
-lemma integralCoverTraceFunction_pairing {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) [H.IsFiniteRelIndex K] (F : IntegralOrbitQuotient K→ℂ)
-    (f : IntegralOrbitQuotient H→ℂ) (q : IntegralOrbitQuotient K) :
+lemma integralCoverTraceFunction_pairing  
+      [H.IsFiniteRelIndex K] (F : IntegralOrbitQuotient K→ℂ)
+     f   q  :
     integralCoverTraceFunction H K (fun r=>inner ℂ (F (integralCoverMap hHK r)) (f r)) q=
       inner ℂ (F q) (integralCoverTraceFunction H K f q) := by
   let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
@@ -136,8 +144,8 @@ lemma integralCoverTraceFunction_pairing {H K : Subgroup (SL(2,ActualEisensteinC
       inner ℂ (F (integralOrbitProjection K w)) (∑r : IntegralCoverCosets H K,f (integralCoverFiberPoint H K r w))
     simp only [integralCoverMap_fiberPoint,inner_sum]
 
-theorem integralCoverTrace_toLp_ae {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
+theorem integralCoverTrace_toLp_ae  
+        [H.IsFiniteRelIndex K]
     (f : IntegralOrbitQuotient H→ℂ) (hmeas : Measurable f)
     (hf : MemLp f 2 (integralQuotientVolume H)) :
     integralCoverTrace hHK hK (hf.toLp f)=ᵐ[integralQuotientVolume K]
@@ -154,8 +162,7 @@ theorem integralCoverTrace_toLp_ae {H K : Subgroup (SL(2,ActualEisensteinCubic.O
       have hstar : Measurable (fun r=>star (F (integralCoverMap hHK r))) :=
         continuous_star.measurable.comp hFm
       have hm := hmeas.mul hstar
-      change Measurable (fun r=>f r*star (F (integralCoverMap hHK r))) at hm
-      simpa only [pair,RCLike.inner_apply,starRingEnd_apply] using hm
+      assumption
     have hae : (fun r=>inner ℂ (integralCoverPullback hHK hK F r) (hf.toLp f r))
         =ᵐ[integralQuotientVolume H]pair := by
       filter_upwards [integralCoverPullback_ae hHK hK F,hf.coeFn_toLp] with r hr hfR
@@ -168,8 +175,7 @@ theorem integralCoverTrace_toLp_ae {H K : Subgroup (SL(2,ActualEisensteinCubic.O
         rw [L2.inner_def]
         apply integral_congr_ae
         filter_upwards [htr.coeFn_toLp] with q hq
-        change inner ℂ (F q) (htr.toLp (integralCoverTraceFunction H K f) q)=_
-        rw [hq]
+        solve_by_elim
       _ = ∫q,integralCoverTraceFunction H K pair q∂integralQuotientVolume K := by
         apply integral_congr_ae
         exact Eventually.of_forall (fun q=>(integralCoverTraceFunction_pairing hHK F f q).symm)
@@ -182,9 +188,9 @@ theorem integralCoverTrace_toLp_ae {H K : Subgroup (SL(2,ActualEisensteinCubic.O
   rw [←he]
   exact htr.coeFn_toLp
 
-theorem integralCoverTrace_representative {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
-    (G : IntegralQuotientL2 H) (f : IntegralOrbitQuotient H→ℂ) (hmeas : Measurable f)
+theorem integralCoverTrace_representative  
+        [H.IsFiniteRelIndex K]
+    (G : IntegralQuotientL2 H)  f  (hmeas : Measurable f)
     (hrep : G=ᵐ[integralQuotientVolume H]f) :
     integralCoverTrace hHK hK G=ᵐ[integralQuotientVolume K]integralCoverTraceFunction H K f := by
   have hf : MemLp f 2 (integralQuotientVolume H) := (memLp_congr_ae hrep).mp (Lp.memLp G)
@@ -194,39 +200,39 @@ theorem integralCoverTrace_representative {H K : Subgroup (SL(2,ActualEisenstein
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
-open Finset AddChar MulChar EisensteinEmbedding
+end
+
+ 
+open scoped       MatrixGroups
+ 
 
 local notation "O" => ActualEisensteinCubic.O
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical
+ 
+ 
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open     CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 def primaryDenominatorShift (a:PrimaryLower) (m:Eis) : PrimaryCoprimeDenominator a≃PrimaryCoprimeDenominator a where
   toFun d:=⟨⟨d.val.val+3*a.val*m,by
-    convert dvd_add d.val.2 (show (3:Eis)∣3*a.val*m from ⟨a.val*m,by ring⟩) using 1 ;ring⟩,by
-      exact (isCoprime_right_congr_of_dvd a.val (d.val.val+3*a.val*m) d.val.val ⟨3*m,by ring⟩).mpr d.2⟩
+    convert dvd_add d.val.2 (show (3:Eis)∣3*a.val*m from ⟨a.val*m,by ring⟩) using 1 ;ring⟩,(isCoprime_right_congr_of_dvd a.val (d.val.val+3*a.val*m) d.val.val ⟨3*m,by ring⟩).mpr d.2⟩
   invFun d:=⟨⟨d.val.val-3*a.val*m,by
-    convert dvd_sub d.val.2 (show (3:Eis)∣3*a.val*m from ⟨a.val*m,by ring⟩) using 1 ;ring⟩,by
-      exact (isCoprime_right_congr_of_dvd a.val (d.val.val-3*a.val*m) d.val.val ⟨-(3*m),by ring⟩).mpr d.2⟩
+    convert dvd_sub d.val.2 (show (3:Eis)∣3*a.val*m from ⟨a.val*m,by ring⟩) using 1 ;ring⟩,(isCoprime_right_congr_of_dvd a.val (d.val.val-3*a.val*m) d.val.val ⟨-(3*m),by ring⟩).mpr d.2⟩
   left_inv d:=by apply Subtype.ext;apply Subtype.ext;dsimp;ring
   right_inv d:=by apply Subtype.ext;apply Subtype.ext;dsimp;ring
 
-def unitLowerDataShift (m:Eis) : UnitLowerData≃UnitLowerData :=
+def unitLowerDataShift (m:Eis)  :=
   Equiv.sigmaCongrRight (fun a=>primaryDenominatorShift a m)
 
-lemma affineCusp_term_weighted_period (h q r:Eis) (j n:ℕ) (a d:PrimaryLower) (m:Eis)
+lemma affineCusp_term_weighted_period (h q r:Eis) (j n:ℕ) (a d:PrimaryLower)  m 
     (hq:q≠0) (hr:r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
-    (hbase:(3:Eis)∣h+ramifiedAffineParameter j n*q) (z:ℂ) (v:ℝ) (s:ℂ) :
+    (hbase:(3:Eis)∣h+ramifiedAffineParameter j n*q)  z   v   s  :
     affineLowerTerm q r z v s a.val (d.val+3*a.val*(q*m))*ShortDraftTrace.breveE (-ninthCuspFrequency h*z)=
       affineLowerTerm q r (z+3*eisEmbedding m) v s a.val d.val*
         ShortDraftTrace.breveE (-ninthCuspFrequency h*(z+3*eisEmbedding m)) := by
@@ -248,12 +254,12 @@ lemma affineCusp_term_weighted_period (h q r:Eis) (j n:ℕ) (a d:PrimaryLower) (
   rw [hdx,show a.val+3*x+3*a.val*(q*m)=a.val+3*(x+a.val*(q*m)) by ring]
   exact he
 
-def affineCuspBlock (q r:Eis) (z:ℂ) (v:ℝ) (s:ℂ) : ℂ :=
+def affineCuspBlock (q r:Eis) (z:ℂ) (v:ℝ) (s:ℂ)  :=
   ∑'p:UnitLowerData,affineLowerTerm q r z v s p.1.val p.2.val.val
 
-lemma affineCuspBlock_weighted_periodic (h q r:Eis) (j n:ℕ)
+lemma affineCuspBlock_weighted_periodic  h q r  (j n:ℕ)
     (hq:q≠0) (hr:r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
-    (hbase:(3:Eis)∣h+ramifiedAffineParameter j n*q) (v:ℝ) (s:ℂ) (m:Eis) (z:ℂ) :
+    (hbase:(3:Eis)∣h+ramifiedAffineParameter j n*q)  v   s   m   z  :
     affineCuspBlock q r (z+3*eisEmbedding m) v s*
         ShortDraftTrace.breveE (-ninthCuspFrequency h*(z+3*eisEmbedding m))=
       affineCuspBlock q r z v s*ShortDraftTrace.breveE (-ninthCuspFrequency h*z) := by
@@ -268,9 +274,9 @@ lemma affineCuspBlock_weighted_periodic (h q r:Eis) (j n:ℕ)
     _ = _ := (unitLowerDataShift (q*m)).tsum_eq
       (fun p:UnitLowerData=>affineLowerTerm q r z v s p.1.val p.2.val.val*ShortDraftTrace.breveE (-ninthCuspFrequency h*z))
 
-lemma period_integral_twisted_translation (f:ℂ→ℂ) (freq:ℂ)
+lemma period_integral_twisted_translation (f:ℂ→ℂ)  freq 
     (hp:∀(n:Eis)(z:ℂ),f (z+3*eisEmbedding n)*ShortDraftTrace.breveE (-freq*(z+3*eisEmbedding n))=
-      f z*ShortDraftTrace.breveE (-freq*z)) (b:ℂ) :
+      f z*ShortDraftTrace.breveE (-freq*z))  b  :
     (∫z in periodDomain,f (z+b)*ShortDraftTrace.breveE (-freq*z))=
       ShortDraftTrace.breveE (freq*b)*∫z in periodDomain,f z*ShortDraftTrace.breveE (-freq*z) := by
   let g:ℂ→ℂ:=fun z=>f z*ShortDraftTrace.breveE (-freq*z)
@@ -286,16 +292,20 @@ lemma period_integral_twisted_translation (f:ℂ→ℂ) (freq:ℂ)
 end
 section
 
-open Filter MeasureTheory
-open scoped BigOperators Classical MatrixGroups
+ 
+open scoped     MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open     CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma diagonal_unit_weighted_periodic (u t:Eisˣ) (j:ℕ) (h:Eis)
-    (hr:(↑u⁻¹:Eis)^2*(t:Eis)=omega^j ∨ (↑u⁻¹:Eis)^2*(t:Eis)=-(omega^j))
-    (hbase:(3:Eis)∣h+ramifiedAffineParameter j 0*(t:Eis))
-    (v:ℝ) (hv:0<v) (s:ℂ) (m:Eis) (z:ℂ) :
+section
+variable (u t : Eisˣ) (j : ℕ) (h : Eis) (hr : (↑u⁻¹:Eis)^2*(t:Eis)=omega^j ∨ (↑u⁻¹:Eis)^2*(t:Eis)=-(omega^j)) (hbase : (3:Eis)∣h+ramifiedAffineParameter j 0*(t:Eis)) (hfreq : (3:Eis)∣h-onceCuspScale t) (v : ℝ) (hv : 0<v) (s b : ℂ) (hs : 2<s.re) (m : Eis) (z : ℂ)
+
+include hr hbase in
+lemma diagonal_unit_weighted_periodic      
+     
+     
+              :
     eisenstein (integralComplexMatrix (unitCuspDiagonal u)*integralComplexMatrix (lowerCuspMatrix (t:Eis))*
       upperSection (z+3*eisEmbedding m) v hv) s*ShortDraftTrace.breveE (-ninthCuspFrequency h*(z+3*eisEmbedding m))=
     eisenstein (integralComplexMatrix (unitCuspDiagonal u)*integralComplexMatrix (lowerCuspMatrix (t:Eis))*
@@ -304,7 +314,7 @@ lemma diagonal_unit_weighted_periodic (u t:Eisˣ) (j:ℕ) (h:Eis)
     affineCuspBlock_weighted_periodic h (t:Eis) ((↑u⁻¹:Eis)^2*(t:Eis)) j 0 t.ne_zero
       (by simpa using hr) hbase v s m z
 
-lemma diagonal_once_block_expansion (u t:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (hs:2<s.re) :
+lemma diagonal_once_block_expansion      v   hv   s  (hs:2<s.re) :
     eisenstein (integralComplexMatrix (unitCuspDiagonal u)*integralComplexMatrix (lowerCuspMatrix (onceCuspScale t))*
       upperSection z v hv) s=
     ∑l:Fin 3,affineCuspBlock (onceCuspScale t*omega^l.val)
@@ -314,12 +324,13 @@ lemma diagonal_once_block_expansion (u t:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ)
       (integralComplexMatrix (lowerCuspMatrix (onceCuspScale t))*upperSection z v hv)) s hs)
   have ht:Summable (fun p:OnceRamifiedData=>affineLowerTerm (onceCuspScale t*omega^p.1.val)
       ((↑u⁻¹:Eis)^2*(onceCuspScale t*omega^p.1.val)) z v s p.2.1.val p.2.2.val.val):=
-    hsum.congr (fun p=>diagonal_once_summand u t z v hv s p)
+    hsum.congr (diagonal_once_summand u t z v hv s)
   rw [mul_assoc,diagonal_once_eisenstein_rows,ht.tsum_prod,tsum_fintype]
   rfl
 
-lemma diagonal_once_weighted_periodic (u t:Eisˣ) (h:Eis)
-    (hfreq:(3:Eis)∣h-onceCuspScale t) (v:ℝ) (hv:0<v) (s:ℂ) (hs:2<s.re) (m:Eis) (z:ℂ) :
+include hfreq hs in
+lemma diagonal_once_weighted_periodic    
+                  :
     eisenstein (integralComplexMatrix (unitCuspDiagonal u)*integralComplexMatrix (lowerCuspMatrix (onceCuspScale t))*
       upperSection (z+3*eisEmbedding m) v hv) s*ShortDraftTrace.breveE (-ninthCuspFrequency h*(z+3*eisEmbedding m))=
     eisenstein (integralComplexMatrix (unitCuspDiagonal u)*integralComplexMatrix (lowerCuspMatrix (onceCuspScale t))*
@@ -334,10 +345,11 @@ lemma diagonal_once_weighted_periodic (u t:Eisˣ) (h:Eis)
       (by simpa only [pow_one] using onceCuspRayIndex_spec u t l)
       (onceCusp_period_congruence t l h _ hfreq) v s m z
 
-lemma diagonal_unit_fourier_shift (u t:Eisˣ) (j:ℕ) (h:Eis)
-    (hr:(↑u⁻¹:Eis)^2*(t:Eis)=omega^j ∨ (↑u⁻¹:Eis)^2*(t:Eis)=-(omega^j))
-    (hbase:(3:Eis)∣h+ramifiedAffineParameter j 0*(t:Eis))
-    (v:ℝ) (hv:0<v) (s b:ℂ) :
+include hr hbase in
+lemma diagonal_unit_fourier_shift      
+     
+     
+          :
     (∫z in periodDomain,eisenstein (integralComplexMatrix (unitCuspDiagonal u)*
       integralComplexMatrix (lowerCuspMatrix (t:Eis))*upperSection (z+b) v hv) s*
         ShortDraftTrace.breveE (-ninthCuspFrequency h*z))=
@@ -349,8 +361,9 @@ lemma diagonal_unit_fourier_shift (u t:Eisˣ) (j:ℕ) (h:Eis)
     (fun z=>eisenstein (integralComplexMatrix (unitCuspDiagonal u)*integralComplexMatrix (lowerCuspMatrix (t:Eis))*upperSection z v hv) s)
     (ninthCuspFrequency h) (diagonal_unit_weighted_periodic u t j h hr hbase v hv s) b
 
-lemma diagonal_once_fourier_shift (u t:Eisˣ) (h:Eis)
-    (hfreq:(3:Eis)∣h-onceCuspScale t) (v:ℝ) (hv:0<v) (s b:ℂ) (hs:2<s.re) :
+include hfreq hs in
+lemma diagonal_once_fourier_shift    
+              :
     (∫z in periodDomain,eisenstein (integralComplexMatrix (unitCuspDiagonal u)*
       integralComplexMatrix (lowerCuspMatrix (onceCuspScale t))*upperSection (z+b) v hv) s*
         ShortDraftTrace.breveE (-ninthCuspFrequency h*z))=
@@ -364,28 +377,32 @@ lemma diagonal_once_fourier_shift (u t:Eisˣ) (h:Eis)
 
 end
 
+end
+
 section
-open ActualEisensteinCubic ConcreteTraceCRT
+ 
 local notation "Eis" => ActualEisensteinCubic.O
 
-def ramifiedCuspRoot (b:Bool) : Eisˣ := if b then ramifiedOmegaUnit^2 else ramifiedOmegaUnit
+def ramifiedCuspRoot (b:Bool)  := if b then ramifiedOmegaUnit^2 else ramifiedOmegaUnit
 
-def ramifiedCuspScaleUnit (b:Bool) : Eisˣ := if b then ramifiedOmegaUnit^2 else -ramifiedOmegaUnit
+def ramifiedCuspScaleUnit (b:Bool)  := if b then ramifiedOmegaUnit^2 else -ramifiedOmegaUnit
 
-def ramifiedCuspDirectIndex (b:Bool) : ℕ := if b then 2 else 1
+def ramifiedCuspDirectIndex (b:Bool)  := if b then 2 else 1
 
-def ramifiedCuspOppositeIndex (b:Bool) : ℕ := if b then 1 else 2
+def ramifiedCuspOppositeIndex (b:Bool)  := if b then 1 else 2
 
-lemma ramified_omega_four : omega^4=omega := by
-  rw [show (4:ℕ)=3+1 from rfl,pow_add,omega_primitive.pow_eq_one,pow_one,one_mul]
+alias ramified_omega_four := _root_.OAI.CubicRamified.omega_four
 
-lemma ramifiedCuspRoot_val (b:Bool) : (ramifiedCuspRoot b:Eis)=omega^(ramifiedCuspDirectIndex b) := by
+section
+variable (b : Bool)
+
+lemma ramifiedCuspRoot_val   : (ramifiedCuspRoot b:Eis)=omega^(ramifiedCuspDirectIndex b) := by
   cases b <;>simp [ramifiedCuspRoot,ramifiedCuspDirectIndex,ramifiedOmegaUnit_val]
 
-lemma ramifiedCuspRoot_cube (b:Bool) : (ramifiedCuspRoot b:Eis)^3=1 := by
+lemma ramifiedCuspRoot_cube   : (ramifiedCuspRoot b:Eis)^3=1 := by
   rw [ramifiedCuspRoot_val,←pow_mul,Nat.mul_comm,pow_mul,omega_primitive.pow_eq_one,one_pow]
 
-lemma ramifiedCuspRoot_primitive (b:Bool) :
+lemma ramifiedCuspRoot_primitive   :
     (ramifiedCuspRoot b:Eis)^2+(ramifiedCuspRoot b:Eis)+1=0 := by
   cases b
   · simpa [ramifiedCuspRoot,ramifiedOmegaUnit_val] using ramified_omega_relation
@@ -393,24 +410,23 @@ lemma ramifiedCuspRoot_primitive (b:Bool) :
     rw [show 2*2=4 from rfl,ramified_omega_four]
     linear_combination ramified_omega_relation
 
-lemma ramifiedCuspScaleUnit_spec (b:Bool) :
+lemma ramifiedCuspScaleUnit_spec   :
     -(ramifiedCuspRoot b:Eis)*(1+2*(ramifiedCuspRoot b:Eis))=onceCuspScale (ramifiedCuspScaleUnit b) := by
   cases b
-  · simp [ramifiedCuspRoot,ramifiedCuspScaleUnit,onceCuspScale,ramifiedTraceLambda,ramifiedOmegaUnit_val]
+  · rfl
   · simp only [ramifiedCuspRoot,ramifiedCuspScaleUnit,ite_true,onceCuspScale,Units.val_pow_eq_pow_val,ramifiedOmegaUnit_val,
       ramifiedTraceLambda]
     linear_combination -(2*omega^2)*ramified_omega_relation
 
-lemma ramifiedCusp_neg_inv_square (b:Bool) :
+lemma ramifiedCusp_neg_inv_square   :
     (↑(-(ramifiedCuspRoot b))⁻¹:Eis)^2=(ramifiedCuspRoot b:Eis) := by
   have hi:(↑(-(ramifiedCuspRoot b))⁻¹:Eis)=-(ramifiedCuspRoot b:Eis)^2:=by
     apply (-(ramifiedCuspRoot b)).inv_eq_of_mul_eq_one_right
     change -(ramifiedCuspRoot b:Eis)*(-(ramifiedCuspRoot b:Eis)^2)=1
     convert ramifiedCuspRoot_cube b using 1 ;ring
-  rw [hi]
-  linear_combination (ramifiedCuspRoot b:Eis)*ramifiedCuspRoot_cube b
+  grind [ramifiedCuspRoot, ramifiedCuspRoot_cube]
 
-lemma ramifiedCusp_opposite_character (b:Bool) :
+lemma ramifiedCusp_opposite_character   :
     (↑(-(ramifiedCuspRoot b))⁻¹:Eis)^2*(-(ramifiedCuspRoot b:Eis))=
       -(omega^(ramifiedCuspOppositeIndex b)) := by
   rw [ramifiedCusp_neg_inv_square,ramifiedCuspRoot_val]
@@ -419,7 +435,7 @@ lemma ramifiedCusp_opposite_character (b:Bool) :
   · simp only [ramifiedCuspDirectIndex,ramifiedCuspOppositeIndex,ite_true,pow_one]
     rw [mul_neg,←pow_add,show 2+2=4 from rfl,ramified_omega_four]
 
-lemma ramifiedCusp_direct_period_constant (b:Bool) :
+lemma ramifiedCusp_direct_period_constant   :
     (3:Eis)∣onceCuspScale (ramifiedCuspScaleUnit b)+
       ramifiedAffineParameter (ramifiedCuspDirectIndex b) 0*(ramifiedCuspRoot b:Eis) := by
   cases b
@@ -432,7 +448,7 @@ lemma ramifiedCusp_direct_period_constant (b:Bool) :
       ramifiedAffineParameter,ramifiedOmegaUnit_val]
     ring
 
-lemma ramifiedCusp_opposite_period_constant (b:Bool) :
+lemma ramifiedCusp_opposite_period_constant   :
     (3:Eis)∣onceCuspScale (ramifiedCuspScaleUnit b)+
       ramifiedAffineParameter (ramifiedCuspOppositeIndex b) 0*(-(ramifiedCuspRoot b:Eis)) := by
   cases b
@@ -445,7 +461,7 @@ lemma ramifiedCusp_opposite_period_constant (b:Bool) :
       ramifiedAffineParameter,ramifiedOmegaUnit_val]
     ring
 
-lemma ramifiedCusp_unit_period_constant (b:Bool) :
+lemma ramifiedCusp_unit_period_constant   :
     (3:Eis)∣onceCuspScale (ramifiedCuspScaleUnit b)+
       ramifiedAffineParameter (ramifiedCuspDirectIndex b) 0 := by
   cases b
@@ -462,20 +478,22 @@ lemma ramifiedCusp_unit_period_constant (b:Bool) :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical MatrixGroups Matrix
+end
 
-open ActualEisensteinCubic ConcreteTraceCRT
+ 
+open scoped     MatrixGroups Matrix
+
+ 
 local notation "Eis" => ActualEisensteinCubic.O
 
-def unitCuspGaussSeries (u t:Eisˣ) (h:Eis) (s:ℂ) : ℂ :=
+def unitCuspGaussSeries (u t:Eisˣ) (h:Eis) (s:ℂ)  :=
   ShortDraftTrace.breveE (ninthCuspFrequency h/eisEmbedding (t:Eis))*
     unramifiedCubicGaussSeries s (3*((↑u⁻¹:Eis)^2*(t:Eis))^2*((↑t⁻¹:Eis)*h))
 
-lemma unitCusp_eisenstein_fourier_base (u t:Eisˣ) (j:ℕ) (h:Eis)
+lemma unitCusp_eisenstein_fourier_base (u t:Eisˣ) (j:ℕ)  h 
     (hr:(↑u⁻¹:Eis)^2*(t:Eis)=omega^j ∨ (↑u⁻¹:Eis)^2*(t:Eis)=-(omega^j))
     (hbase:(3:Eis)∣h+ramifiedAffineParameter j 0*(t:Eis))
-    (v:ℝ) (hv:0<v) (s:ℂ) (hs:2<s.re) :
+     v   hv   s  (hs:2<s.re) :
     (∫z in periodDomain,eisenstein (integralComplexMatrix (unitCuspDiagonal u)*
       integralComplexMatrix (lowerCuspMatrix (t:Eis))*upperSection z v hv) s*
         ShortDraftTrace.breveE (-ninthCuspFrequency h*z))=
@@ -500,32 +518,44 @@ lemma unitCuspDiagonal_one : unitCuspDiagonal (1:Eisˣ)=1 := by
   ext i j
   fin_cases i <;>fin_cases j <;>simp [unitCuspDiagonal]
 
-lemma ramifiedCusp_direct_base (b:Bool) (h:Eis)
-    (hf:(3:Eis)∣h-onceCuspScale (ramifiedCuspScaleUnit b)) :
+section
+variable (b : Bool) (h : Eis) (hf : (3:Eis)∣h-onceCuspScale (ramifiedCuspScaleUnit b))
+
+include hf in
+lemma ramifiedCusp_direct_base    
+      :
     (3:Eis)∣h+ramifiedAffineParameter (ramifiedCuspDirectIndex b) 0*(ramifiedCuspRoot b:Eis) := by
   convert dvd_add hf (ramifiedCusp_direct_period_constant b) using 1 ;ring
 
-lemma ramifiedCusp_opposite_base (b:Bool) (h:Eis)
-    (hf:(3:Eis)∣h-onceCuspScale (ramifiedCuspScaleUnit b)) :
+include hf in
+lemma ramifiedCusp_opposite_base    
+      :
     (3:Eis)∣h+ramifiedAffineParameter (ramifiedCuspOppositeIndex b) 0*(-(ramifiedCuspRoot b:Eis)) := by
   convert dvd_add hf (ramifiedCusp_opposite_period_constant b) using 1 ;ring
 
-lemma ramifiedCusp_unit_base (b:Bool) (h:Eis)
-    (hf:(3:Eis)∣h-onceCuspScale (ramifiedCuspScaleUnit b)) :
+include hf in
+lemma ramifiedCusp_unit_base    
+      :
     (3:Eis)∣h+ramifiedAffineParameter (ramifiedCuspDirectIndex b) 0 := by
   convert dvd_add hf (ramifiedCusp_unit_period_constant b) using 1 ;ring
 
+end
+
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
-open Finset AddChar MulChar EisensteinEmbedding
+ 
+open scoped       MatrixGroups
+ 
 
 namespace CubicKubota
 open CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
-lemma cubeKernelLeftGlobal_injective (p : ActualEisensteinCubic.O) (hp : p≠0) :
+section
+variable (p : ActualEisensteinCubic.O) (hp : p≠0)
+
+include hp in
+lemma cubeKernelLeftGlobal_injective     :
     Function.Injective (cubeKernelLeftGlobal p) := by
   intro x y hxy
   apply (cubeKernel_finite_covers p hp).1
@@ -533,7 +563,7 @@ lemma cubeKernelLeftGlobal_injective (p : ActualEisensteinCubic.O) (hp : p≠0) 
   apply Subtype.ext
   exact hxy
 
-lemma cubeKernelRightGlobal_injective (p : ActualEisensteinCubic.O) (hp : p≠0) :
+lemma cubeKernelRightGlobal_injective     :
     Function.Injective (cubeKernelRightGlobal p hp) := by
   intro x y hxy
   apply (cubeKernel_finite_covers p hp).2.1
@@ -541,8 +571,9 @@ lemma cubeKernelRightGlobal_injective (p : ActualEisensteinCubic.O) (hp : p≠0)
   apply Subtype.ext
   exact hxy
 
-def cubeKernelRangeEquiv (p : ActualEisensteinCubic.O) (hp : p≠0) :
-    (cubeKernelLeftGlobal p).range≃*(cubeKernelRightGlobal p hp).range :=
+end
+
+def cubeKernelRangeEquiv (p ) (hp )  :=
   (MonoidHom.ofInjective (cubeKernelLeftGlobal_injective p hp)).symm.trans
     (MonoidHom.ofInjective (cubeKernelRightGlobal_injective p hp))
 

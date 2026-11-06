@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.PrecisionPowers
 
@@ -7,7 +8,7 @@ public import Erdos821.S34.PrecisionPowers
 set_option autoImplicit false
 
 namespace Erdos821.S34Core
-noncomputable section
+
 
 theorem rpow_quot_product (L K a b c : ℝ) (hL : 0 < L) :
     L ^ a * (K * L ^ b) / L ^ c = K * L ^ (a + b - c) := by
@@ -32,7 +33,7 @@ theorem major_power_precision (L K B q d C₄ hExp ξExp DExp ζ NA NB : ℝ) (Q
   have hLp : 0 < L := by linarith
   have hKle : K ≤ L := by linarith
   let ε := (Q : ℝ) ^ 2 * (K * L ^ (-DExp)) / L ^ (-ξExp)
-  have hε0 : 0 ≤ ε := by dsimp [ε]; positivity
+  
   have hQ2 : (Q : ℝ) ^ 2 ≤ L ^ (2 * q) := by
     have ht := pow_le_pow_left₀ (Nat.cast_nonneg Q) hQ 2
     simpa only [rpow_nat_pow L q 2 hLp.le, Nat.cast_ofNat] using ht
@@ -44,12 +45,7 @@ theorem major_power_precision (L K B q d C₄ hExp ξExp DExp ζ NA NB : ℝ) (Q
       _ ≤ L ^ (2 * q) * (K * L ^ (-DExp)) / L ^ (-ξExp) :=
         div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hQ2 (by positivity)) (by positivity)
       _ = _ := by
-        rw [rpow_quot_product L K _ _ _ hLp]
-        congr 1
-        congr 1
-        rw [hDEq]
-        unfold comparisonPowerD
-        ring
+        grind [rpow_quot_product, comparisonPowerD]
   have hε1 : ε ≤ 1 := by
     calc
       _ ≤ K * L ^ (-B - q - 20) := hε
@@ -62,12 +58,8 @@ theorem major_power_precision (L K B q d C₄ hExp ξExp DExp ζ NA NB : ℝ) (Q
           mul_le_mul_of_nonneg_right (by linarith [hNA, hNB]) (Real.rpow_nonneg hLp.le _)
         _ = _ := by
           rw [mul_assoc, ← Real.rpow_add hLp]
-          congr 1
-          congr 1
-          rw [hξEq]
-          unfold comparisonPowerXi
-          ring
-    have hs2 : Real.sqrt 2 ≤ 2 := by nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2), Real.sqrt_nonneg 2]
+          grind [comparisonPowerXi]
+    have hs2 : Real.sqrt 2 ≤ 2 := by simp_all
     calc
       _ ≤ Real.sqrt (2 * L ^ (-2 * B - 20)) := Real.sqrt_le_sqrt hm
       _ = Real.sqrt 2 * L ^ (-B - 10) := by
@@ -85,7 +77,7 @@ theorem major_power_precision (L K B q d C₄ hExp ξExp DExp ζ NA NB : ℝ) (Q
       nlinarith [hζ.trans hz]
     calc
       _ ≤ L ^ (4 * q) * (2 * L ^ (-hExp) * ((1 + 64 * Real.pi) * L ^ (q + C₄))) :=
-        mul_le_mul hQ4 (mul_le_mul_of_nonneg_left hC (by positivity)) (by positivity) (by positivity)
+        (by gcongr <;> first | assumption | positivity | linarith)
       _ = (2 * (1 + 64 * Real.pi)) * L ^ (-B - 20) := by
         have he : L ^ (4 * q) * L ^ (-hExp) * L ^ (q + C₄) = L ^ (-B - 20) := by
           rw [← Real.rpow_add hLp, ← Real.rpow_add hLp]
@@ -93,9 +85,7 @@ theorem major_power_precision (L K B q d C₄ hExp ξExp DExp ζ NA NB : ℝ) (Q
           rw [hhEq]
           unfold comparisonPowerH
           ring
-        calc
-          _ = (2 * (1 + 64 * Real.pi)) * (L ^ (4 * q) * L ^ (-hExp) * L ^ (q + C₄)) := by ring
-          _ = _ := by rw [he]
+        grind
       _ ≤ _ := rpow_cost_absorption L _ (-B - 2) (-B - 20) hL1 hπL (by linarith)
   have hchar : 3 * ε * Real.sqrt (Q : ℝ) ≤ L ^ (-B - 2) := by
     have hrootQ : Real.sqrt (Q : ℝ) ≤ L ^ (q / 2) := by
@@ -104,20 +94,18 @@ theorem major_power_precision (L K B q d C₄ hExp ξExp DExp ζ NA NB : ℝ) (Q
         _ = _ := sqrt_rpow L q hLp.le
     calc
       _ ≤ 3 * (K * L ^ (-B - q - 20)) * L ^ (q / 2) :=
-        mul_le_mul (mul_le_mul_of_nonneg_left hε (by norm_num)) hrootQ (Real.sqrt_nonneg _) (by positivity)
+        (by gcongr <;> first | assumption | positivity | linarith)
       _ = (3 * K) * L ^ (-B - q / 2 - 20) := by
         have he : L ^ (-B - q - 20) * L ^ (q / 2) = L ^ (-B - q / 2 - 20) := by
           rw [← Real.rpow_add hLp]
           congr 1
           ring
-        calc
-          _ = (3 * K) * (L ^ (-B - q - 20) * L ^ (q / 2)) := by ring
-          _ = _ := by rw [he]
+        grind
       _ ≤ _ := rpow_cost_absorption L (3 * K) (-B - 2) (-B - q / 2 - 20) hL1 hKL (by linarith)
   refine ⟨hε1, ?_⟩
   have hs := add_le_add (add_le_add hdiscard hfreeze) hchar
   have hlast := rpow_cost_absorption L 3 (-B) (-B - 2) hL1 hL (by linarith)
   exact hs.trans (by convert hlast using 1; ring)
 
-end
+
 end Erdos821.S34Core

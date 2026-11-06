@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.DetectorPlainUnmarkedField
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.DetectorPlainUnmarkedField
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -20,7 +21,7 @@ open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedS
 open CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource
 open QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+
 
 open ProbeDetectorPlainUnmarkedField
 variable {Δ:ℝ}
@@ -52,7 +53,7 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
   refine ⟨Jheight,?_⟩
   intro η
   let :Fintype (Sum Bool (RayQuotient.Characters S.modulus ⊤)):=Fintype.ofFinite _
-  let η₀:=fun label=>sourceMomentBase S.modulus ⊤ le_top S.S S.exclusions.prime η label
+  let η₀:=sourceMomentBase S.modulus ⊤ le_top S.S S.exclusions.prime η
   let Q:=fun label=>internalQ (sourceFixedIdeal S) (η₀ label)
   choose A hA hzero using (fun label=>henergy (η₀ label))
   let Amax:ℝ:=1+∑label,A label
@@ -64,8 +65,7 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
   let C:=Amax*(1+diagonalControl radialMajorant)*Cp
   have hdiag:0≤diagonalControl radialMajorant:=diagonalControl_nonneg _
   have hC:0<C:=mul_pos (mul_pos hAmax (by linarith)) hCp
-  have hC_bound (label):A label*diagonalControl radialMajorant*Cp≤C:=by
-    exact mul_le_mul_of_nonneg_right
+  have hC_bound (label):A label*diagonalControl radialMajorant*Cp≤C:=mul_le_mul_of_nonneg_right
       (mul_le_mul (hA_bound label) (by linarith) hdiag hAmax.le) hCp.le
   have hscales:∀ᶠZ:ℝ in atTop,∀label,∀d:ℝ,(1/200:ℝ)≤d→
       ZeroAt (Q label) (1/4) (9/4) radialSupportUpper 0 1 2 (stageError D)
@@ -87,8 +87,7 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
   have hnorm:‖t‖≤height:=by simpa only [Real.norm_eq_abs] using abs_le.mpr ht
   have hp:(detectorProfiles F.reverse j k σ t).control control ^2≤Cp*(1+height)^Jheight:=by
     apply (hprofiles F.reverse j k hjk σ hσ t).trans
-    exact mul_le_mul_of_nonneg_left
-      (pow_le_pow_left₀ (by positivity) (add_le_add le_rfl hnorm) Jheight) hCp.le
+    gcongr <;> first | assumption | positivity | linarith
   have hcompare:value≤retainedSourceEnergy (initialKeep (η₀ label) (Q label))
       F (η₀ label) ∅ j k σ t radialMajorant:=by
     simpa only [Fiber.physicalProduct,Finset.prod_empty,mul_one] using
@@ -119,6 +118,6 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
 
 end SevenEighths.ProbeDetectorPlainUnmarkedRestrictedField
 
-end
+
 
 end OAI

@@ -13,9 +13,9 @@ open Filter
 namespace SevenEighths.HeckeDetectorClassBudget
 open HeckeDetectorFiberPartition HeckeDetectorWitnessRows
 
-def alphabetBound (mesh : ℝ) : ℕ := 2+(⌈(1/2 : ℝ)/mesh⌉+1 : ℤ).toNat
+def alphabetBound (mesh : ℝ)  := 2+(⌈(1/2 : ℝ)/mesh⌉+1 : ℤ).toNat
 
-theorem labels_card_le (cap mesh : ℝ) (hcap : cap≤1/2) (hm : 0<mesh) :
+theorem labels_card_le  cap mesh  (hcap : cap≤1/2) (hm : 0<mesh) :
     (HeckePrimeAmplitudeBins.labels cap mesh).card≤alphabetBound mesh := by
   have hceil : ⌈cap/mesh⌉≤⌈(1/2 : ℝ)/mesh⌉ :=
     Int.ceil_mono (div_le_div_of_nonneg_right hcap hm.le)
@@ -33,7 +33,7 @@ theorem labels_card_le (cap mesh : ℝ) (hcap : cap≤1/2) (hm : 0<mesh) :
   unfold HeckePrimeAmplitudeBins.labels alphabetBound
   omega
 
-theorem bin_card_le {Slot : Type*} (slots : Finset Slot) (cap mesh : ℝ)
+theorem bin_card_le {Slot : Type*} (slots : Finset Slot)  cap mesh 
     (hcap : cap≤1/2) (hm : 0<mesh) :
     Fintype.card (BinLabel slots cap mesh)≤(alphabetBound mesh)^slots.card := by
   simpa only [BinLabel,Fintype.card_fun,Fintype.card_coe] using

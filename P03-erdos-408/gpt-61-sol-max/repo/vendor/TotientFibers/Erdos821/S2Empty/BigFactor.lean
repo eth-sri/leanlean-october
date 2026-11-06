@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2Empty.SmallFactor
 public import Mathlib.Algebra.Order.Star.Real
@@ -13,11 +14,11 @@ namespace Erdos821.S2Empty
 
 open Erdos821.Blueprint.Graph
 
-abbrev BigLabels (P : PrimeGroups) (M : ℕ) :=
+abbrev BigLabels (P : PrimeGroups) (M ) :=
   (g : P.BigGroup) → Fin M → P.Prime g.val
 
 set_option maxHeartbeats 2000000 in
-theorem big_label_sum_eq_prod (F : FixedData) (P : PrimeGroups) (n M : ℕ) :
+theorem big_label_sum_eq_prod  F   P   n M  :
     (∑ a : BigLabels P M,
       ∏ g : P.BigGroup, ∏ j : Fin M, tiltedMu F P n g.val (a g j)) =
       ∏ g : P.BigGroup,
@@ -42,7 +43,7 @@ theorem big_label_sum_eq_prod (F : FixedData) (P : PrimeGroups) (n M : ℕ) :
         _ = _ := by simp
 
 /-- Bernoulli's lower bound for a power of `1 - e`. -/
-theorem one_sub_pow_lower {e : ℝ} (he : e ≤ 1) (k : ℕ) :
+theorem one_sub_pow_lower  {e}  (he : e ≤ 1) (k : ℕ) :
     1 - (k : ℝ) * e ≤ (1 - e) ^ k := by
   induction k with
   | zero => simp
@@ -75,9 +76,7 @@ theorem big_label_product_le_two (P : PrimeGroups) (M : ℕ) (e : ℝ)
       _ = _ := by simp [pow_mul]
   let K : ℕ := M * Fintype.card P.BigGroup
   have hKe : (K : ℝ) * e ≤ 1 / 2 := by
-    dsimp [K]
-    rw [Nat.cast_mul]
-    nlinarith [hbudget]
+    grind
   have hbern := one_sub_pow_lower (by linarith [he1] : e ≤ 1) K
   have hden : 1 / 2 ≤ (1 - e) ^ K := by nlinarith [hbern, hKe]
   have hdenpos : 0 < (1 - e) ^ K := by linarith

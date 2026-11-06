@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.GlobalBinLoss
 
@@ -12,74 +13,74 @@ namespace CanonicalQuadraticSieve
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 section
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
+ 
+open   IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
 
 theorem list_exists_positive_bound (xs : List ℝ) :
     ∃ H : ℝ, 1≤H ∧ ∀x∈xs, x≤H := by
@@ -88,16 +89,12 @@ theorem list_exists_positive_bound (xs : List ℝ) :
   | cons x xs ih =>
     obtain ⟨H,hH,hxs⟩ := ih
     refine ⟨max H x, hH.trans (le_max_left _ _), ?_⟩
-    intro y hy
-    simp only [List.mem_cons] at hy
-    rcases hy with rfl | hy
-    · exact le_max_right _ _
-    · exact (hxs y hy).trans (le_max_left _ _)
+    simp_all
 
 def poissonPrimitiveConstants
     (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
-    {α : ℝ} (hexp : HasSieveExponent α) (η : ℝ) (hη : 0<η)
-    (D : ℝ) (W : 𝓢(ℝ,ℂ)) : List ℝ :=
+    {α } (hexp : HasSieveExponent α) (η : ℝ) (hη : 0<η)
+    (D : ℝ) (W : 𝓢(ℝ,ℂ))  :=
   [divisorConstant η hη, 2+1/(η*Real.log 2), 256,
    supportConstant η hη, divisorExponentConstant hexp η hη,
    ‖paperRadialFourier (quadraticTransformedSquareProfile W) 0‖,
@@ -110,17 +107,21 @@ def poissonPrimitiveConstants
    sS.sup (schwartzSeminormFamily ℝ ℝ ℂ) (quadraticSquareProfile W),
    sT.sup (schwartzSeminormFamily ℝ ℝ ℂ) W, D^η]
 
+section
+variable (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ) (hCD : 0≤CD) (hCS : 0≤CS) (hCT : 0≤CT) (hCP : 0≤CP) {α : ℝ} (hexp : HasSieveExponent α) (η : ℝ) (hη : 0<η) (G : Ideal O) (hG : G≠0) (K N P D : ℝ) (hD : 0≤D) (H : ℝ) (W : 𝓢(ℝ,ℂ))
+
+include hCD hCS hCT hCP hD in
 theorem poissonPrimitiveConstants_nonneg
-    (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
-    (hCD : 0≤CD) (hCS : 0≤CS) (hCT : 0≤CT) (hCP : 0≤CP)
-    {α : ℝ} (hexp : HasSieveExponent α) (η : ℝ) (hη : 0<η)
-    (D : ℝ) (hD : 0≤D) (W : 𝓢(ℝ,ℂ)) :
+       
+           
+           
+          :
     ∀x∈poissonPrimitiveConstants sD sS sT CD CS CT CP hexp η hη D W, 0≤x := by
   intro x hx
   simp only [poissonPrimitiveConstants,List.mem_cons,List.not_mem_nil,or_false] at hx
   rcases hx with rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl
   · exact (divisorConstant_pos η hη).le
-  · have : 0<Real.log 2 := Real.log_pos (by norm_num); positivity
+  · positivity
   · norm_num
   · exact (supportConstant_pos η hη).le
   · exact (divisorExponentConstant_pos hexp η hη).le
@@ -139,11 +140,12 @@ theorem poissonPrimitiveConstants_nonneg
   · positivity
   · exact Real.rpow_nonneg hD _
 
+include hCD hCS hCT hCP hG in
 theorem poissonUnitBudget_power_envelope
-    (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
-    (hCD : 0≤CD) (hCS : 0≤CS) (hCT : 0≤CT) (hCP : 0≤CP)
-    {α : ℝ} (hexp : HasSieveExponent α) (η : ℝ) (hη : 0<η)
-    (G : Ideal O) (hG : G≠0) (K N P D H : ℝ) (W : 𝓢(ℝ,ℂ))
+       
+           
+           
+           
     (hK : 1≤K) (hN : 1≤N) (hP : 1≤P) (hD : 1≤D) (hH : 1≤H)
     (hconst : ∀x∈poissonPrimitiveConstants sD sS sT CD CS CT CP hexp η hη D W, x≤H)
     (hscales : ∀x∈([(Ideal.absNorm G:ℝ), K,N,(2*K)*N,N*N,
@@ -347,19 +349,24 @@ theorem poissonUnitBudget_power_envelope
 
 end
 
+end
+
 section
 
-theorem selectedPoisson_upper (C C1 M X η : ℝ)
+section
+variable (C g K N P B C1 M X η : ℝ)
+
+theorem selectedPoisson_upper  
     (hC : 4≤C) (hCC : C≤C1) (hM : 1≤M) (hX : 1≤X)
     (hη : 0≤η) (hη1 : η≤1) :
     4≤selectedPoissonT C M X η ∧
     (M*X)^η≤selectedPoissonT C M X η ∧
     selectedPoissonK C M X η≤C1*(M*X)^3 := by
   have hC10 : 0≤C1 := by linarith
-  have hM0 : 0<M := by linarith
+  
   have hX0 : 0<X := by linarith
   have hP : 1≤M*X := by nlinarith
-  have hP0 : 0<M*X := by positivity
+  
   have hR : 1≤(M*X)^η := Real.one_le_rpow hP hη
   have hT : 4≤selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
   refine ⟨hT,by dsimp [selectedPoissonT]; nlinarith,?_⟩
@@ -375,29 +382,25 @@ theorem selectedPoisson_upper (C C1 M X η : ℝ)
     _ ≤ C1*(M*X)*(M*X)^2 := by gcongr
     _ = C1*(M*X)^3 := by ring
 
-theorem poisson_seven_scale_bounds (g K N P B C1 : ℝ)
+theorem poisson_seven_scale_bounds  
     (hP : 1≤P) (hB : 1≤B) (hC1 : 1≤C1)
     (hg0 : 0≤g) (hK0 : 0≤K) (hN0 : 0≤N)
     (hg : g≤B*P) (hK : K≤C1*P^3) (hN : N≤P) :
     ∀x∈([g,K,N,(2*K)*N,N*N,g*(N*N),K*N] : List ℝ),
       0≤x ∧ x≤(2*C1+B)*P^4 := by
-  have hP0 : 0≤P := by linarith
-  have hD : 1≤2*C1+B := by linarith
+  
+  
   have hp14 : P≤P^4 := by
-    simpa only [pow_one] using pow_le_pow_right₀ hP (show 1≤4 by omega)
+    bound
   have hp24 : P^2≤P^4 := pow_le_pow_right₀ hP (by omega)
   have hp34 : P^3≤P^4 := pow_le_pow_right₀ hP (by omega)
   intro x hx
   simp only [List.mem_cons,List.not_mem_nil,or_false] at hx
   rcases hx with rfl|rfl|rfl|rfl|rfl|rfl|rfl
   · refine ⟨hg0, hg.trans ?_⟩
-    calc
-      B*P ≤ B*P^4 := by gcongr
-      _ ≤ (2*C1+B)*P^4 := by gcongr; linarith
+    gcongr <;> first | assumption | positivity | linarith
   · refine ⟨hK0,hK.trans ?_⟩
-    calc
-      C1*P^3 ≤ C1*P^4 := by gcongr
-      _ ≤ (2*C1+B)*P^4 := by gcongr; linarith
+    gcongr <;> first | assumption | positivity | linarith
   · refine ⟨hN0,hN.trans (hp14.trans ?_)⟩
     nlinarith [show 0≤P^4 by positivity]
   · refine ⟨by positivity,?_⟩
@@ -423,8 +426,14 @@ theorem poisson_seven_scale_bounds (g K N P B C1 : ℝ)
       _ = C1*P^4 := by ring
       _ ≤ (2*C1+B)*P^4 := by gcongr; linarith
 
-theorem power_cutoff_dominates (P T η : ℝ) (l : ℕ)
-    (hP : 1≤P) (hT : P^η≤T) (hpow : 4≤η*l) :
+end
+
+section
+variable (P T η K M N C1 : ℝ) (l : ℕ) (hP : 1≤P) (hT : P^η≤T) (hpow : 4≤η*l)
+
+include hP hT hpow in
+theorem power_cutoff_dominates    
+          :
     P^4≤T^l := by
   have hp0 : 0<P := by linarith
   calc
@@ -433,8 +442,9 @@ theorem power_cutoff_dominates (P T η : ℝ) (l : ℕ)
     _ = (P^η)^l := by rw [Real.rpow_mul hp0.le,Real.rpow_natCast]
     _ ≤ T^l := pow_le_pow_left₀ (Real.rpow_nonneg hp0.le _) hT l
 
-theorem poisson_truncation_small (P T η K M N C1 : ℝ) (l : ℕ)
-    (hP : 1≤P) (hT : P^η≤T) (hpow : 4≤η*l)
+include hP hT hpow in
+theorem poisson_truncation_small    
+         
     (_hK : 0≤K) (hM : 0≤M) (hN : 0≤N) (hC1 : 0≤C1)
     (hKP : K≤C1*P^3) (hMP : M≤P) (hNP : N≤P) :
     K*M/T^l≤C1 ∧ K*N/T^l≤C1 := by
@@ -449,11 +459,13 @@ theorem poisson_truncation_small (P T η K M N C1 : ℝ) (l : ℕ)
       _ ≤ C1*T^l := by gcongr
   exact ⟨hb M hM hMP,hb N hN hNP⟩
 
+end
+
 theorem poisson_tail_abstract (B P t K η M : ℝ) (A : ℕ)
     (hB : 1≤B) (hP : 1≤P) (hM : 0≤M)
     (ht : 1/(B*P^2)≤t) (hu : P^η≤1+t*K) (hA : 4≤η*A) :
     M/((min 1 t)^2*(1+t*K)^A)≤B^2*M := by
-  have hB0 : 0<B := by linarith
+  
   have hP0 : 0<P := by linarith
   have hBP : 1≤B*P^2 := by nlinarith [sq_nonneg (P-1)]
   have hinv : 1/(B*P^2)≤1 := (div_le_one (by positivity)).mpr hBP
@@ -471,7 +483,10 @@ theorem poisson_tail_abstract (B P t K η M : ℝ) (A : ℕ)
   rw [he] at hh
   exact hh
 
-theorem selectedPoisson_tail_shape (C B M X q η : ℝ) (A : ℕ)
+section
+variable (C B M X q N η α : ℝ)
+
+theorem selectedPoisson_tail_shape   (A : ℕ)
     (hC : B≤C) (hB : 1≤B) (hM : 1≤M) (hX : 1≤X)
     (hq : 1≤q) (_hη : 0≤η) (hA : 4≤η*A) :
     M/((min 1 (M/((B*q)*(X/q)*(X/q))))^2*
@@ -487,11 +502,7 @@ theorem selectedPoisson_tail_shape (C B M X q η : ℝ) (A : ℕ)
   have hEq : M/((B*q)*(X/q)*(X/q))=M*q/(B*X^2) := by field_simp
   have ht : 1/(B*(M*X)^2)≤M/((B*q)*(X/q)*(X/q)) := by
     rw [hEq]
-    apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
-    calc
-      1*(B*X^2) ≤ B*(M*X)^2 := by
-        simpa only [one_mul] using mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hX0.le hXP 2) hB0.le
-      _ ≤ (M*q)*(B*(M*X)^2) := by nlinarith [show 0≤B*(M*X)^2 by positivity]
+    gcongr <;> first | assumption | positivity | linarith
   have hu : (M*X)^η≤1+(M/((B*q)*(X/q)*(X/q)))*selectedPoissonK C M X η := by
     rw [selectedPoisson_radial_identity C B M X q η hM0 hX0 hq0 hB0]
     have hp : 0≤(M*X)^η := Real.rpow_nonneg (by positivity) _
@@ -505,18 +516,18 @@ theorem selectedPoisson_tail_shape (C B M X q η : ℝ) (A : ℕ)
     linarith
   exact poisson_tail_abstract B (M*X) _ _ η M A hB hP hM0.le ht hu hA
 
-theorem selectedPoisson_principal_shape (C M X N η α : ℝ)
+theorem selectedPoisson_principal_shape  
     (hC : 4≤C) (hM : 1≤M) (hX : 1≤X) (hN : 0≤N) (hNX : N≤X)
     (hη : 0≤η) (hα : 1/2≤α) :
     Real.sqrt (M/selectedPoissonK C M X η)*N+
       Real.sqrt M*(selectedPoissonK C M X η)^(α-1/2) ≤
     M+selectedPoissonT C M X η*Real.sqrt M*(2*selectedPoissonK C M X η)^(α-1/2) := by
-  have hM0 : 0<M := by linarith
-  have hX0 : 0<X := by linarith
+  
+  
   have hP : 1≤M*X := by nlinarith
   have hpow : 1≤(M*X)^η := Real.one_le_rpow hP hη
   have hT : 1≤selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
-  have hT0 : 0<selectedPoissonT C M X η := by linarith
+  
   have hK0 : 0<selectedPoissonK C M X η := by unfold selectedPoissonK; positivity
   have hfrac : M/selectedPoissonK C M X η≤(M/X)^2 := by
     apply (div_le_iff₀ hK0).mpr
@@ -545,11 +556,13 @@ theorem selectedPoisson_principal_shape (C M X N η α : ℝ)
 
 end
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
+end
 
-def poissonShape (M X α : ℝ) : ℝ := M+X+X^(2*α-1)*M^(1-α)
-def poissonShapeConstant (B C1 : ℝ) : ℝ := 2+4*C1^3+B^2+C1
+ 
+open   IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
+
+def poissonShape (M X α : ℝ)  := M+X+X^(2*α-1)*M^(1-α)
+def poissonShapeConstant (B C1 : ℝ)  := 2+4*C1^3+B^2+C1
 
 theorem poisson_envelope_identity (H C P η Z : ℝ) (hP : 0<P) :
     262144*((H*P^(4*η))^8)^8*(C*P^(3*η)*Z) =
@@ -559,17 +572,15 @@ theorem poisson_envelope_identity (H C P η Z : ℝ) (hP : 0<P) :
       _ = P^((4*η)*64)*P^(3*η) := by rw [Real.rpow_mul hP.le (4*η) 64,Real.rpow_ofNat]
       _ = P^((4*η)*64+3*η) := (Real.rpow_add hP _ _).symm
       _ = _ := by congr 1; ring
-  calc
-    _ = (262144*H^64*C)*((P^(4*η))^64*P^(3*η))*Z := by ring
-    _ = _ := by rw [hp]
+  grind
 
 theorem poissonComparisonMajorant_selected_power
     {α : ℝ} (hexp : HasSieveExponent α) (hα : 1/2≤α) (hα2 : α≤2)
     (η : ℝ) (hη : 0<η) (hη1 : η≤1) (l A : ℕ)
     (hl : 4≤η*l) (hA : 4≤η*A)
-    (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
+     sD sS sT   CD CS CT CP 
     (hCD : 0≤CD) (hCS : 0≤CS) (hCT : 0≤CT) (hCP : 0≤CP)
-    (B C1 : ℝ) (hB : 1≤B) (hC1 : 1≤C1) (W : 𝓢(ℝ,ℂ)) :
+     B C1  (hB : 1≤B) (hC1 : 1≤C1)  W  :
     ∃ Cfinal : ℝ, 0<Cfinal ∧
       ∀ (C M X q : ℝ) (G : Ideal O), 4≤C → B≤C → C≤C1 →
         1≤M → 1≤X → 1≤q → q≤X → G≠0 → (Ideal.absNorm G:ℝ)=B*q →
@@ -685,7 +696,7 @@ theorem poissonComparisonMajorant_selected_power
     (selectedPoissonK C M X η) (X/q) M (selectedPoissonT C M X η)
     ((H*(M*X)^(4*η))^8) S W hKg (by positivity) hM0.le (by linarith only [hT]) hU (by dsimp [S]; positivity)
     hb hMS hNS hmidS hprS (hED.trans hC1S) (hES.trans hC1S) htailS).trans_eq
-  exact poisson_envelope_identity H Cshape (M*X) η (poissonShape M X α) hP0
+  solve_by_elim [poisson_envelope_identity, poissonShape]
 
 end CanonicalQuadraticSieve
 

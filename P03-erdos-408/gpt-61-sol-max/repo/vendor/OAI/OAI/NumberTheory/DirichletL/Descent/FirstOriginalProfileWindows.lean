@@ -6,12 +6,12 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileCells
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform
-local notation "O" => ActualEisensteinCubic.O
+
 theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (Bρ : Fin 9→ℝ)
     (hm₁ : 0≤m₁) (hm₂ : 0≤m₂)
@@ -24,9 +24,9 @@ theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
       (∀i,0≤M₀ i) ∧ (∀i,HasCompactSupport (U₀ i : ℝ→ℂ)) ∧
       (∀i,Function.support (U₀ i)⊆Set.Icc (-M₀ i) (M₀ i)) ∧
       ∀{ι : Type*}[DecidableEq ι]
-      (p : ι→O)(_hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O)(_hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O)) (Y : ℝ)
+      (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal ActualEisensteinCubic.O)) (Y : ℝ)
       (C₁ C₂ : OriginalIndex ι→Finset ι→ℂ) (k : SourceIndex) (l : ℕ) (T₁ T₂ : ℝ)
       (ρ : Fin 9→ℝ)(c₁ c₂ θ₁ θ₂ : ℝ),
       0<T₁ → 0<T₂ → (∀i,|ρ i|≤Bρ i) →
@@ -69,6 +69,6 @@ theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (original_source_norms_ge_one p hp pool Q labels Y) k l T₁ T₂ x hx j hn
 
 end SevenEighths.InverseMomentFirstOriginalProfile
-end
+
 
 end OAI

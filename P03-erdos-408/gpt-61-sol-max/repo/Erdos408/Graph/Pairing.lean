@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Graph.Pattern
 public import Erdos821.Blueprint.Transference
@@ -31,11 +32,11 @@ open scoped Classical
 variable {G : PrimeGroups}
 
 /-- The extension of `f` from `S ⊆ ℕ` to `ℤ` by zero. -/
-noncomputable def extend (S : Finset ℕ) (f : ℕ → ℂ) (n : ℤ) : ℂ :=
+noncomputable def extend (S : Finset ℕ) (f : ℕ → ℂ) (n : ℤ)  :=
   if 0 ≤ n ∧ n.toNat ∈ S then f n.toNat else 0
 
 /-- The states at the positions of `S'`, with all labels. -/
-noncomputable def targets {F : FixedData} {J m : ℕ} (A : Model F G J m) (S' : Finset ℕ) :
+noncomputable def targets {F } {J m } (A : Model F G J m) (S' : Finset ℕ) :
     Finset A.State :=
   (S'.map Nat.castEmbedding) ×ˢ Finset.univ
 
@@ -48,21 +49,25 @@ def actEquiv {M : ℕ} (π : G.Permutations M) : G.Labels M ≃ G.Labels M where
   left_inv a := by funext g i; simp [PrimeGroups.act]
   right_inv a := by funext g i; simp [PrimeGroups.act]
 
+section
+variable {M : ℕ} (π : G.Permutations M) {F : FixedData} {J m : ℕ} (A : Model F G J m) (n n' : ℤ) (X : ℝ) (S S' : Finset ℕ) (f g : ℕ → ℂ) (hS : ∀ n ∈ S, X ≤ n ∧ (n : ℝ) < 2 * X)
+
+
 /-- Physical states are invariant under slot permutations. -/
-lemma physical_act {M : ℕ} (π : G.Permutations M) (n : ℤ) (a : G.Labels M) :
+lemma physical_act        a  :
     G.physical M n (G.act π a) ↔ G.physical M n a :=
   forall_congr' fun g => and_congr (EquivLike.injective_comp (π g) (a g))
     ((π g).surjective.forall (p := fun i => ((a g i).val : ℤ) ∣ n)).symm
 
 /-- The state mass is invariant under slot permutations. -/
-lemma stateMass_act {F : FixedData} {J m : ℕ} (A : Model F G J m)
-    (π : G.Permutations (J + F.ell)) (n : ℤ) (a : G.Labels (J + F.ell)) :
+lemma stateMass_act      
+     π   n   a  :
     A.stateMass (n, G.act π a) = A.stateMass (n, a) := by
   simp only [Model.stateMass, physical_act]
 
 /-- Against the state mass and complete label sums, the symmetrized kernel
 pairs as the raw kernel. -/
-lemma sum_physicalKernel {F : FixedData} {J m : ℕ} (A : Model F G J m) (n n' : ℤ) (s t : ℂ) :
+lemma sum_physicalKernel          s t  :
     ∑ a : G.Labels (J + F.ell), ∑ b : G.Labels (J + F.ell),
         (A.stateMass (n, a) : ℂ) * s * A.physicalKernel false (n, a) (n', b) * t =
       ∑ a : G.Labels (J + F.ell), ∑ b : G.Labels (J + F.ell),
@@ -95,8 +100,7 @@ lemma sum_physicalKernel {F : FixedData} {J m : ℕ} (A : Model F G J m) (n n' :
         refine Finset.sum_congr rfl fun ab _ => ?_
         rw [Model.physicalKernel, ← Fintype.sum_prod_type', Finset.mul_sum, Finset.mul_sum,
           Finset.sum_mul]
-        refine Finset.sum_congr rfl fun πτ _ => ?_
-        ring
+        grind
     _ = ∑ πτ : G.Permutations (J + F.ell) × G.Permutations (J + F.ell),
           ((Fintype.card (G.Permutations (J + F.ell)) : ℂ) ^ 2)⁻¹ *
             ∑ a : G.Labels (J + F.ell), ∑ b : G.Labels (J + F.ell),
@@ -109,14 +113,15 @@ lemma sum_physicalKernel {F : FixedData} {J m : ℕ} (A : Model F G J m) (n n' :
     _ = _ := by
         simp_rw [hperm, Finset.sum_const, Finset.card_univ, Fintype.card_prod, nsmul_eq_mul,
           ← mul_assoc]
-        rw [Nat.cast_mul, ← pow_two, mul_inv_cancel₀ hcard, one_mul]
+        grind
 
 /-! ### The pairing -/
 
+include hS in
 /-- Upstream's pairing of `extend S f` with a function `g` of the position on
 `targets S'` is the sum of the pattern pairings. -/
-theorem pairing_eq_sum {F : FixedData} {J m : ℕ} (A : Model F G J m) (X : ℝ)
-    (S S' : Finset ℕ) (f g : ℕ → ℂ) (hS : ∀ n ∈ S, X ≤ n ∧ (n : ℝ) < 2 * X) :
+theorem pairing_eq_sum        
+          :
     A.pairing X (targets A S') (extend S f) (fun z => g z.1.toNat) =
       ∑ v, rawPairing A v S S' f g := by
   unfold Model.pairing
@@ -127,7 +132,7 @@ theorem pairing_eq_sum {F : FixedData} {J m : ℕ} (A : Model F G J m) (X : ℝ)
     obtain ⟨k, hk, rfl⟩ := Finset.mem_map.mp hn
     obtain ⟨h₁, h₂⟩ := hS k hk
     rw [Finset.mem_Ico, Int.ceil_le, Int.lt_ceil]
-    exact ⟨by exact_mod_cast h₁, by exact_mod_cast h₂⟩
+    solve_by_elim
   · intro n _ hn
     have : extend S f n = 0 := by
       refine ite_eq_right fun h => hn (Finset.mem_map.mpr ⟨n.toNat, h.2, ?_⟩)
@@ -170,7 +175,7 @@ theorem pairing_eq_sum {F : FixedData} {J m : ℕ} (A : Model F G J m) (X : ℝ)
 
 /-- The state mass at a position, summed over labels, is the number of
 physical lists times `∏ V_g^{-M}`. -/
-lemma sum_stateMass {F : FixedData} {J m : ℕ} (A : Model F G J m) (n : ℕ) :
+lemma sum_stateMass       (n : ℕ) :
     ∑ a : G.Labels (J + F.ell), A.stateMass ((n : ℤ), a) =
       (physicalLists G.primes (J + F.ell) n).card *
         ∏ g, (harmonicMass (G.primes g))⁻¹ ^ (J + F.ell) := by
@@ -181,9 +186,10 @@ lemma sum_stateMass {F : FixedData} {J m : ℕ} (A : Model F G J m) (n : ℕ) :
   refine Finset.sum_congr rfl fun p _ => ?_
   split_ifs <;> simp
 
+include hS in
 /-- Upstream's norm of `extend S f` on the dyad is the physical norm. -/
-lemma normOn_extend {F : FixedData} {J m : ℕ} (A : Model F G J m) (X : ℝ)
-    (S : Finset ℕ) (f : ℕ → ℂ) (hS : ∀ n ∈ S, X ≤ n ∧ (n : ℝ) < 2 * X) :
+lemma normOn_extend        
+          :
     A.normOn ((Finset.Ico ⌈X⌉ ⌈2 * X⌉).product Finset.univ) (fun z => extend S f z.1) =
       Real.sqrt (physicalNormSq G.primes (J + F.ell) S f) := by
   unfold Model.normOn
@@ -195,7 +201,7 @@ lemma normOn_extend {F : FixedData} {J m : ℕ} (A : Model F G J m) (X : ℝ)
     obtain ⟨k, hk, rfl⟩ := Finset.mem_map.mp hn
     obtain ⟨h₁, h₂⟩ := hS k hk
     rw [Finset.mem_Ico, Int.ceil_le, Int.lt_ceil]
-    exact ⟨by exact_mod_cast h₁, by exact_mod_cast h₂⟩
+    solve_by_elim
   · intro n _ hn
     have : extend S f n = 0 := by
       refine ite_eq_right fun h => hn (Finset.mem_map.mpr ⟨n.toNat, h.2, ?_⟩)
@@ -211,8 +217,8 @@ lemma normOn_extend {F : FixedData} {J m : ℕ} (A : Model F G J m) (X : ℝ)
 
 /-- Upstream's norm of a function of the position on `targets S'` is the
 physical norm. -/
-lemma normOn_targets {F : FixedData} {J m : ℕ} (A : Model F G J m) (S' : Finset ℕ)
-    (g : ℕ → ℂ) :
+lemma normOn_targets        
+      :
     A.normOn (targets A S') (fun z => g z.1.toNat) =
       Real.sqrt (physicalNormSq G.primes (J + F.ell) S' g) := by
   unfold Model.normOn targets
@@ -223,5 +229,7 @@ lemma normOn_targets {F : FixedData} {J m : ℕ} (A : Model F G J m) (S' : Finse
     ← Finset.sum_mul]
   rw [sum_stateMass]
   ring
+
+end
 
 end Erdos408.Graph

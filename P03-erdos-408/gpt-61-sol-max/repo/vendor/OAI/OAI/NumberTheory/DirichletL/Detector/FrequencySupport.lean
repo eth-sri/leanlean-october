@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationCRT
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalPoisson
@@ -12,28 +13,31 @@ open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion
 open CenteredMomentCommonSupport CenteredMomentFourier
-local notation "O" => ActualEisensteinCubic.O
 
-def elementFourier (c : O) (hc : c≠0) (f : O → ℂ) (H : O) : ℂ :=
+
+def elementFourier (c : ActualEisensteinCubic.O) (hc : c≠0) (f : ActualEisensteinCubic.O → ℂ) (H : ActualEisensteinCubic.O)  :=
   ∑' x : Residue c, f (representative c x) * quotientTrace c hc (Ideal.Quotient.mk _ H*x)
 
-lemma elementFourier_congr (c d : O) (hc : c≠0) (hd : d≠0) (f : O → ℂ) (H : O)
+lemma elementFourier_congr  c d   hc   hd   f   H 
     (he : c=d) : elementFourier c hc f H = elementFourier d hd f H := by
   subst d
   rfl
 
-def movingQuotient (A s : O) (hs : s≠0) (x : Residue (A*s)) : ℂ :=
+def movingQuotient (A s : ActualEisensteinCubic.O) (hs : s≠0) (x : Residue (A*s))  :=
   idealRowHom (representative (A*s) x) (Ideal.span {A}) *
     sexticGauss s hs (-representative (A*s) x)
 
-lemma movingQuotient_mk (A s : O) (hs : s≠0) (m : O) :
+section
+variable (C : CalibrationData) (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀ P∈S, P.IsMaximal) (A s : ActualEisensteinCubic.O) (hA : A≠0) (hs : s≠0) (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : ActualEisensteinCubic.O) (hH : ¬IsCoprime (calibrationForSet S hS).generator H)
+
+lemma movingQuotient_mk      m  :
     movingQuotient A s hs (Ideal.Quotient.mk _ m) =
       idealRowHom m (Ideal.span {A}) * sexticGauss s hs (-m) := by
   have hd : A*s ∣ representative (A*s) (Ideal.Quotient.mk _ m)-m :=
     Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp (representative_spec _ _))
-  have hA : representative (A*s) (Ideal.Quotient.mk _ m)-m ∈ (Ideal.span {A}:Ideal O) :=
+  have hA : representative (A*s) (Ideal.Quotient.mk _ m)-m ∈ (Ideal.span {A}:Ideal ActualEisensteinCubic.O) :=
     Ideal.mem_span_singleton.mpr ((dvd_mul_right A s).trans hd)
-  have hs' : -representative (A*s) (Ideal.Quotient.mk _ m)-(-m) ∈ (Ideal.span {s}:Ideal O) := by
+  have hs' : -representative (A*s) (Ideal.Quotient.mk _ m)-(-m) ∈ (Ideal.span {s}:Ideal ActualEisensteinCubic.O) := by
     apply Ideal.mem_span_singleton.mpr
     rw [show -representative (A*s) (Ideal.Quotient.mk _ m)-(-m) =
       -(representative (A*s) (Ideal.Quotient.mk _ m)-m) by ring]
@@ -41,7 +45,7 @@ lemma movingQuotient_mk (A s : O) (hs : s≠0) (m : O) :
   unfold movingQuotient
   rw [idealRowHom_congr_mod _ _ _ hA, sexticGauss_frequency_congr s hs _ (-m) hs']
 
-lemma physicalFourier_eq_element (C : CalibrationData) (A s : O) (hA : A≠0) (hs : s≠0) (H : O) :
+lemma physicalFourier_eq_element           :
     actualPhysicalFourier C A s hA hs H =
       elementFourier (C.generator*(A*s)) (mul_ne_zero C.generator_ne_zero (mul_ne_zero hA hs))
         (fun m => C.residueMonoid m * idealRowHom m (Ideal.span {A}) * sexticGauss s hs (-m)) H := by
@@ -50,7 +54,7 @@ lemma physicalFourier_eq_element (C : CalibrationData) (A s : O) (hA : A≠0) (h
   apply elementFourier_congr
   exact mul_assoc _ _ _
 
-lemma physicalFourier_eq_mixed (C : CalibrationData) (A s : O) (hA : A≠0) (hs : s≠0) (H : O) :
+lemma physicalFourier_eq_mixed           :
     actualPhysicalFourier C A s hA hs H =
       ∑' x : Residue (C.generator*(A*s)),
         C.residue (frequencyReduction C.generator (C.generator*(A*s)) (dvd_mul_right _ _) x) *
@@ -76,24 +80,26 @@ lemma physicalFourier_eq_mixed (C : CalibrationData) (A s : O) (hA : A≠0) (hs 
 
   ring
 
-theorem actualPhysicalFourier_zero_off_calibration (S : Finset (Ideal O))
-    (hS : ∀ P∈S, P.IsMaximal) (A s : O) (hA : A≠0) (hs : s≠0)
-    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : O)
-    (hH : ¬IsCoprime (calibrationForSet S hS).generator H) :
+include hcop hH in
+theorem actualPhysicalFourier_zero_off_calibration  
+           
+       
+      :
     actualPhysicalFourier (calibrationForSet S hS) A s hA hs H=0 := by
   rw [physicalFourier_eq_mixed]
   exact calibration_mixed_fourier_zero S hS (A*s) (mul_ne_zero hA hs) hcop (movingQuotient A s hs) H hH
 
-theorem actualCongruenceCoefficient_zero_off_calibration (S : Finset (Ideal O))
-    (hS : ∀ P∈S, P.IsMaximal) (A s : O) (hA : A≠0) (hs : s≠0)
-    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : O)
-    (hH : ¬IsCoprime (calibrationForSet S hS).generator H) :
+include hs hcop hH in
+theorem actualCongruenceCoefficient_zero_off_calibration  
+           
+       
+      :
     actualCongruenceCoefficient (calibrationForSet S hS) A s hA H=0 := by
   have he := actualPhysicalFourier_zero_off_calibration S hS A s hA hs hcop H hH
   rw [actualPhysicalFourier_eq] at he
-  have hn : (Ideal.absNorm (Ideal.span {s}):ℂ)≠0 := by
-    exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hs)
-  exact (mul_eq_zero.mp he).resolve_left hn
+  simp_all
+
+end
 
 end SevenEighths.ProbePhysical
 end

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityPhysical
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -28,9 +28,9 @@ theorem global_priority_signed_branches
     (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι)
     (original:Finset (Source ι Jo)) (w:Source ι Jo→ℂ) (negative:Bool) (Ψ:Eis→*ℂ) (m:Eis)
     (ray:RayCharacter×RayCharacter) (core:FirstCoreIndex)
-    (slots assigned:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ)
-    (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo) (hs:Function.support om⊆Set.Icc lo hi)
-    (X t Y:ℝ) (hX:0<X) (hY:0<Y) (R:Finset ι→Finset ι→ℝ):
+    (slots assigned:Finset σ)  lists   a 
+     om   lo hi   hlo   hs 
+     X t Y  (hX:0<X) (hY:0<Y)  R :
     let V:=principalWindow om lo hi hlo hs negative t
     let Ψ₀:=firstCoreTwist negative (if negative then ray.1 else ray.2) Ψ core
     let parents:=wholeAssignedParents p (fun x=>extra x.cube) original negative assigned lists
@@ -60,6 +60,6 @@ theorem global_priority_signed_branches
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

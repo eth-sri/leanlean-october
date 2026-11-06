@@ -7,24 +7,24 @@ public import OAI.NumberTheory.DirichletL.Detector.MellinPowers
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open ProbeCompleted ProbeRow CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
-lemma completedIndex_norm (I J : Ideal O) (hI : Supported I) (hJ : Supported J) :
+
+lemma completedIndex_norm  I J  (hI : Supported I) (hJ : Supported J) :
     elementNorm (completedIndex I J)=(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3 := by
   rw [completedIndex, elementNorm_mul, elementNorm_pow]
   unfold elementNorm
   rw [(primaryGenerator_spec I (supported_primaryGenerator_ne_zero I hI)).1,
     (primaryGenerator_spec J (supported_primaryGenerator_ne_zero J hJ)).1]
 
-theorem physical_mellin_coefficient (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
-    (D I J : Ideal O) (η : HeckeFamily.Character) (s : O) (hs : Supported (Ideal.span {s}))
-    (hI : Supported I) (hJ : Supported J) (hsf : Squarefree I)
+theorem physical_mellin_coefficient  S   hS 
+     D I J   η   s   hs 
+     hI   hJ  (hsf : Squarefree I)
     (hcop : IsCoprime (calibrationForSet S hS).generator (completedIndex I J*s))
-    (X : ℝ) (hX : 0<X) (H : O) (hH : H≠0) (t z : ℂ) :
+     X  (hX : 0<X)  H  (hH : H≠0)  t z  :
     let C := calibrationForSet S hS
     let A := completedIndex I J
     let hA := supportedElement_ne_zero A (supported_completed _ _
@@ -68,6 +68,6 @@ theorem physical_mellin_coefficient (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMa
   convert he using 1 <;> ring_nf
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

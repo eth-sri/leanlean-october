@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.Factor.Bounds
 public import Erdos408.TwoSided.Endpoint.Low
@@ -34,13 +35,13 @@ namespace Erdos408.TwoSided
 open Filter
 
 /-- The spare-slot primes `x^{u_d} < p ≤ x^{v_d}` of the last slot. -/
-noncomputable def sparePrimes (x : ℝ) {d : ℕ} (u v : Fin (d + 1) → ℝ) : Finset ℕ :=
+noncomputable def sparePrimes (x : ℝ) {d } (u v : Fin (d + 1) → ℝ)  :=
   (Finset.Iic ⌊x ^ v (Fin.last d)⌋₊).filter fun p : ℕ => p.Prime ∧ x ^ u (Fin.last d) < p
 
 /-- `𝒜_B(n) = ∑_{Q'} B(Q') [∏ Q' ∣ n]` over all tuples of primes of the weighted slots,
 repetitions allowed (E5). -/
-noncomputable def weightedSlotCount (x : ℝ) {d : ℕ} (u v : Fin (d + 1) → ℝ)
-    (Bc : (Fin d → ℕ) → ℝ) (n : ℕ) : ℝ :=
+noncomputable def weightedSlotCount (x : ℝ) {d } (u v : Fin (d + 1) → ℝ)
+    (Bc : (Fin d → ℕ) → ℝ) (n : ℕ)  :=
   ∑ Q ∈ (Fintype.piFinset fun i : Fin d =>
       (Finset.Iic ⌊x ^ v i.castSucc⌋₊).filter fun p : ℕ => p.Prime ∧ x ^ u i.castSucc < p) with
       ∏ i, Q i ∣ n,
@@ -50,9 +51,9 @@ noncomputable def weightedSlotCount (x : ℝ) {d : ℕ} (u v : Fin (d + 1) → �
 `𝒰_tup(w) = ψ₁(w/Y) w^{iσ} V_{g_s}⁻¹ ∑_{p_s p_l u = w} 𝒲(u) 𝒜_B(u) W_{S'}^b(u)`, with
 `p_s ∈ P_{g_s}`, `p_l` a spare-slot prime and `S' = S` except `S' g_s = ∅`. -/
 noncomputable def tupleCoeff (x q q₀ : ℝ) {r d : ℕ} (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ)
-    (Bc : (Fin d → ℕ) → ℝ) {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
-    {J : ℕ} (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ) (gs : ι)
-    (ψ₁ : ℝ → ℂ) (Y σ : ℝ) (w : ℕ) : ℂ :=
+    (Bc : (Fin d → ℕ) → ℝ) {ι } [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
+    {J } (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ) (gs : ι)
+    (ψ₁ : ℝ → ℂ) (Y σ : ℝ) (w : ℕ)  :=
   ψ₁ (w / Y) * (w : ℂ) ^ ((σ : ℂ) * Complex.I) * (((harmonicMass (P gs))⁻¹ : ℝ) : ℂ) *
     ∑ ps ∈ (P gs).filter (· ∣ w), ∑ pl ∈ (sparePrimes x u v).filter (· ∣ w / ps),
       ((markedWeight Finset.univ q (fun i => band x (a i)) (w / ps / pl) *
@@ -62,9 +63,9 @@ noncomputable def tupleCoeff (x q q₀ : ℝ) {r d : ℕ} (a : Fin r → ℝ) (u
 /-- The constant part of the first endpoint:
 `𝒰_con(w) = ψ₁(w/Y) w^{iσ} C_B V_{g_s}⁻¹ ∑_{p_s n = w} 𝒲(n) W_{S'}^b(n)`. -/
 noncomputable def constCoeff (x q q₀ : ℝ) {r d : ℕ} (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ)
-    (Bc : (Fin d → ℕ) → ℝ) {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
-    {J : ℕ} (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ) (gs : ι)
-    (ψ₁ : ℝ → ℂ) (Y σ : ℝ) (w : ℕ) : ℂ :=
+    (Bc : (Fin d → ℕ) → ℝ) {ι } [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
+    {J } (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ) (gs : ι)
+    (ψ₁ : ℝ → ℂ) (Y σ : ℝ) (w : ℕ)  :=
   ψ₁ (w / Y) * (w : ℂ) ^ ((σ : ℂ) * Complex.I) *
     ((slotMean x u v Bc / harmonicMass (P gs) : ℝ) : ℂ) *
     ∑ ps ∈ (P gs).filter (· ∣ w),
@@ -75,7 +76,7 @@ noncomputable def constCoeff (x q q₀ : ℝ) {r d : ℕ} (a : Fin r → ℝ) (u
 `f_B(w) = ∑_{p_l ∣ w} 𝒜_B(w / p_l)` over the spare-slot primes: a tuple dividing `w` has
 distinct entries, and `B` reads `Fin.init`. -/
 theorem slotCount_eq_sum_sparePrimes {x : ℝ} (hx : 0 ≤ x) {d : ℕ} (u v : Fin (d + 1) → ℝ)
-    (Bc : (Fin d → ℕ) → ℝ) {w : ℕ}
+    (Bc : (Fin d → ℕ) → ℝ)  {w} 
     (hsq : ∀ p : ℕ, p.Prime → (∃ i, x ^ u i < p ∧ (p : ℝ) ≤ x ^ v i) → ¬ p ^ 2 ∣ w) :
     slotCount x u v Bc w =
       ∑ pl ∈ (sparePrimes x u v).filter (· ∣ w), weightedSlotCount x u v Bc (w / pl) := by
@@ -96,9 +97,7 @@ theorem slotCount_eq_sum_sparePrimes {x : ℝ} (hx : 0 ≤ x) {d : ℕ} (u v : F
     exact hpair.trans hdvd
   have hall : (slotTuples x u v).filter (fun Q => ∏ i, Q i ∣ w) =
       (Fintype.piFinset s).filter (fun Q => ∏ i, Q i ∣ w) := by
-    ext Q
-    simp only [slotTuples, Finset.mem_filter]
-    exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, hinj Q h.1 h.2⟩, h.2⟩⟩
+    grind [slotTuples]
   -- split off the spare slot
   have hR : ∑ pl ∈ (sparePrimes x u v).filter (· ∣ w), weightedSlotCount x u v Bc (w / pl) =
       ∑ y ∈ s (Fin.last d) ×ˢ Fintype.piFinset (Fin.init s),
@@ -161,6 +160,9 @@ theorem abs_weightedSlotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {d : �
     _ ≤ (2 / ε) ^ d :=
         pow_le_pow_left₀ (Nat.cast_nonneg _) (Sieve.card_primeFactors_gt_le hx hε hn hnx) _
 
+section
+variable (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ) (d : ℕ)
+
 /-- **E3–E5 (exact factorization off the exceptional set).** Eventually, for groups as in
 (6.1), a small group `g_s`, all bands, slots and coefficients, every pattern `C` vanishing off
 the big groups and every test `b` that ignores the small groups: if `w ≥ 1` has no square
@@ -168,8 +170,8 @@ factor `p²` with `p ∈ P_{g_s}` and none `q²` with `q` a slot prime, then
 `𝒰(w) = 𝒰_tup(w) - 𝒰_con(w)`. It uses E3, `f_B(w) = f̃_B(w)` (a repeated tuple prime `q`
 forces `q² ∣ w`), E5, and the invariance of `𝒲`, `𝒜_B` and `W_{S'}^b` under the active and
 spare primes (U3, U8). This is PD (6.30)–(6.31), with the spare slot as `p_l`. -/
-theorem eventually_endpointCoeff_eq_tuple_sub_const (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ)
-    (K₀ : ℕ) (CN c : ℝ) (d : ℕ) (hahi : ahi < 1 / 5) (hc : 0 < c) :
+theorem eventually_endpointCoeff_eq_tuple_sub_const  
+          (hahi : ahi < 1 / 5) (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big → ∀ gs ∉ big,
@@ -193,8 +195,7 @@ theorem eventually_endpointCoeff_eq_tuple_sub_const (q q₀ c₀ C₀ vlo vhi al
   set Fs := (P gs).filter (· ∣ w) with hFs
   set Fl := (sparePrimes x u v).filter (· ∣ w) with hFl
   have hSgs : S gs = {Fin.last J} := by
-    rw [hSdef, unsharedSlots, hC gs hgs, Finset.map_empty]
-    rfl
+    grind [unsharedSlots]
   -- the primes of the three kinds are distinct
   have hpl : ∀ pl ∈ Fl, pl.Prime ∧ Real.exp (Real.log x ^ (0.46 : ℝ)) < pl ∧ pl ∣ w := by
     intro pl hpl
@@ -203,9 +204,7 @@ theorem eventually_endpointCoeff_eq_tuple_sub_const (q q₀ c₀ C₀ vlo vhi al
     exact ⟨hp, (hslotr (Fin.last d)).trans hlt, hdvd⟩
   have hps : ∀ ps ∈ Fs, ps.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ ps ∧
       (ps : ℝ) ≤ Real.exp (Real.log x ^ (0.46 : ℝ)) ∧ ps ∣ w := by
-    intro ps hps
-    obtain ⟨hpsP, hdvd⟩ := Finset.mem_filter.1 hps
-    exact ⟨(hPr gs ps hpsP).1, hbs gs hgs ps hpsP, (hPr gs ps hpsP).2, hdvd⟩
+    grind
   have hne : ∀ {p p' : ℕ}, (p : ℝ) < p' → p ≠ p' := fun h h' => by
     rw [h'] at h
     exact lt_irrefl _ h
@@ -307,8 +306,8 @@ E3–E5 the coefficient vanishes except on `w ∈ [Y, 2Y]` with `p_s² ∣ w` (c
 `≤ L^{C}` (U7, U9, U11); then the mean value theorem over `[-T₀, T₀]` with `T₀/Y ≤ L^{C_m + 2}`
 (`FactorAux.integral_norm_twistedPoly_sq_le`). This is the square-exception paragraph after
 PD (6.30), and WD (5.12). -/
-theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ)
-    (d : ℕ) (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo)
+theorem exists_integral_removal_le      
+      (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo)
     (halo : 1 / 10 < alo) (hal : alo ≤ ahi) (hahi : ahi < 1 / 5) (hc : 0 < c) (m₀ : ℕ)
     (Cm : ℝ) (M₁ : ℕ → ℝ) :
     ∃ CR : ℝ, ∀ᶠ x : ℝ in atTop,
@@ -468,7 +467,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     intro w hw hwx
     have hw0 : 0 < w := hw
     have hLa₁ : 0 ≤ L ^ a₁ := by positivity
-    have hLa₂ : 0 ≤ L ^ a₂ := by positivity
+    
     -- the endpoint
     have hU : ‖U w‖ ≤ Z * (2 * Λ) := by
       rw [hUdef]
@@ -584,9 +583,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     obtain ⟨hw₁, hw₂⟩ := Finset.mem_Icc.1 hw
     have hw1 : 1 ≤ w := le_trans (Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 hY0).ne') hw₁
     have hwx : (w : ℝ) ≤ x ^ 2 := le_trans (by exact_mod_cast hw₂) (hN.trans h2Y)
-    have hind0 : 0 ≤ ind w := by
-      rw [hind]
-      positivity
+    
     by_cases hex : (∃ p ∈ P gs, p ^ 2 ∣ w) ∨
         ∃ p : ℕ, p.Prime ∧ (∃ i, x ^ u i < p ∧ (p : ℝ) ≤ x ^ v i) ∧ p ^ 2 ∣ w
     · have h1 : 1 ≤ ind w := by
@@ -642,7 +639,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
             rw [he₁, Real.exp_neg, one_div]
             exact inv_anti₀ (Real.exp_pos _)
               (mem_primesIcc.1 (hadm.2.2.2.2.2.2.1 gs hgs hp)).2.1
-          have hpp : (0 : ℝ) < p := by exact_mod_cast hp0
+          
           rw [Nat.cast_pow, div_eq_mul_inv, ← inv_pow, pow_two]
           calc (N : ℝ) * ((p : ℝ)⁻¹ * (p : ℝ)⁻¹) = N * (1 / p) * (1 / p) := by ring
             _ ≤ N * e₁ * (1 / p) := by
@@ -744,7 +741,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
           (inv_nonneg.2 hY2.le)
     _ ≤ (Y ^ 2)⁻¹ * ((50 * Y * L ^ (|Cm| + 2)) *
           (L ^ E * ((2 * Y) * (max vhi 2 * (e₁ + e₂))))) := by
-        have hG0 : 0 ≤ vhi * e₁ + 2 * e₂ := by positivity
+        
         gcongr
     _ = 100 * max vhi 2 * (L ^ (|Cm| + 2) * L ^ E) * (e₁ + e₂) := by
         field_simp
@@ -759,5 +756,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
                 rw [Real.rpow_add hL0 1, Real.rpow_add hL0 (|Cm| + 2) E]
             _ = L ^ (|Cm| + 3 + E) := by ring_nf
         rw [hfin]
+
+end
 
 end Erdos408.TwoSided

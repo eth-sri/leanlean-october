@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalBudget
 public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalAllowance
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalAllowance
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalPhysicalSaving
@@ -18,11 +19,11 @@ open CenteredMomentSecondPhysicalLedger CenteredMomentSecondPhysicalBlock
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst
 open CenteredMomentSectorLocalization CenteredMomentFirstCanonicalAllowance
 open CenteredMomentRankinRadical
-local notation "O"=>HeckeFamily.O
+
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
-lemma forcingNorm_ge_one (C D:Ideal O)(hC:Supported C)(U:Finset (CommonIndex C D)) :
+lemma forcingNorm_ge_one  C D (hC:Supported C) U  :
     1≤forcingNorm C D U := by
   have hf:0<forcingNorm C D U:=common_product_pos C D hC _
   unfold forcingNorm at hf ⊢
@@ -30,7 +31,7 @@ lemma forcingNorm_ge_one (C D:Ideal O)(hC:Supported C)(U:Finset (CommonIndex C D
 
 lemma column_cap_ledger (c d r:ℝ)(hc:0≤c)(hd:0≤d) :
     2*max r 0/3≤(c+d)/3+max (r-min c d) 0 := by
-  have hmin:0≤min c d:=le_min hc hd
+  
   have hc':min c d≤c:=min_le_left _ _
   have hd':min c d≤d:=min_le_right _ _
   by_cases hr:0≤r
@@ -46,6 +47,6 @@ lemma column_cap_ledger (c d r:ℝ)(hc:0≤c)(hd:0≤d) :
 
 end SevenEighths.CenteredMomentSecondExceptionalPhysicalSaving
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.GaussianSummation
 
@@ -11,10 +12,10 @@ open scoped Classical ContDiff Topology
 open Filter Set Metric
 namespace SevenEighths.ProbePhysical
 
-def gaussianFlow (R : ℝ) (z : ℂ) : ℂ :=
+def gaussianFlow (R : ℝ) (z : ℂ)  :=
   ((1/(2*Real.pi):ℝ):ℂ)*(Real.pi:ℂ)^(1/2:ℂ)*
     Complex.exp (-((Real.log R:ℂ)+z)^2/4)
-lemma gaussianFlow_analytic (R : ℝ) (z : ℂ) : AnalyticAt ℂ (gaussianFlow R) z := by
+lemma gaussianFlow_analytic  R   z  : AnalyticAt ℂ (gaussianFlow R) z := by
   unfold gaussianFlow
   fun_prop
 lemma gaussianFlow_real (R : ℝ) (hR : 0<R) (s : ℝ) :
@@ -24,7 +25,7 @@ lemma gaussianFlow_real (R : ℝ) (hR : 0<R) (s : ℝ) :
     Complex.ofReal_add]
 
 lemma iteratedDeriv_restrict_real (f : ℂ→ℂ)
-    (hf : ∀x : ℝ,AnalyticAt ℂ f (x:ℂ)) (n : ℕ) (x : ℝ) :
+    (hf : ∀x : ℝ,AnalyticAt ℂ f (x:ℂ))  n  (x : ℝ) :
     iteratedDeriv n (fun y : ℝ=>f (y:ℂ)) x=iteratedDeriv n f (x:ℂ) := by
   induction n generalizing f with
   | zero => rfl
@@ -50,10 +51,7 @@ lemma gaussianFlow_disk_bound (a L : ℝ) (_hL : 0≤L) :
   have hzi := (Complex.abs_im_le_norm (z-(y:ℂ))).trans hd
   simp only [Complex.sub_re,Complex.sub_im,Complex.ofReal_re,Complex.ofReal_im,sub_zero] at hzr hzi
   have hre : |z.re|≤L+1 := by
-    have h := abs_add_le (z.re-y) y
-    have he : z.re-y+y=z.re := by ring
-    rw [he] at h
-    linarith
+    grind
   have hsq : z.im^2≤1 := by nlinarith [(abs_le.mp hzi).1,(abs_le.mp hzi).2]
   have hmul : -(a*z.re)≤|a| *(L+1) := by
     calc
@@ -72,7 +70,7 @@ lemma gaussianFlow_disk_bound (a L : ℝ) (_hL : 0≤L) :
     _ ≤ c*(B*R^(-a)) := mul_le_mul_of_nonneg_left hb hc
     _ ≤ (c+1)*B*R^(-a) := by nlinarith [mul_pos hB (Real.rpow_pos_of_pos hR (-a))]
 
-lemma gaussianFlow_derivative_bound (a L : ℝ) (hL : 0≤L) (n : ℕ) :
+lemma gaussianFlow_derivative_bound (a L : ℝ) (hL : 0≤L)  n  :
     ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→∀y : ℝ,|y|≤L→
       ‖iteratedDeriv n (fun s : ℝ=>gaussianFlow R (s:ℂ)) y‖≤C*R^(-a) := by
   obtain ⟨B,hB,hbound⟩ := gaussianFlow_disk_bound a L hL

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.Contractions
 
@@ -6,7 +7,7 @@ public import Erdos821.P3Clean.Contractions
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P3Clean
@@ -15,7 +16,7 @@ open Erdos821.Blueprint.Graph
 
 theorem normBound_conditioned_form {α β δ : Type*} [Fintype α] [Fintype β] [Fintype δ]
     (mass : α → ℝ) (targetMass : β → ℝ) (K : α → α → ℂ)
-    (H : δ → β → β → ℂ) (P : δ → (α → ℂ) → β → ℂ) (C S : ℝ)
+    (H : δ → β → β → ℂ) (P : δ → (α → ℂ) → β → ℂ)  C S 
     (hm : ∀ b, 0 ≤ targetMass b) (hC : 0 ≤ C) (hS : 0 ≤ S)
     (hH : ∀ d, NormBound targetMass (H d) C)
     (hP : ∀ f, (∑ d, ∑ b, targetMass b * ‖P d f b‖ ^ 2) ≤
@@ -34,12 +35,7 @@ theorem normBound_conditioned_form {α β δ : Type*} [Fintype α] [Fintype β] 
     (Real.sqrt_le_sqrt (hP g)) (Real.sqrt_nonneg _)
     (mul_nonneg hC (Real.sqrt_nonneg _)))
   rw [Real.sqrt_mul hS, Real.sqrt_mul hS] at hbound
-  have heq (U V : ℝ) : C * (Real.sqrt S * Real.sqrt U) * (Real.sqrt S * Real.sqrt V) =
-      (C * S) * Real.sqrt U * Real.sqrt V := by
-    calc
-      _ = (C * (Real.sqrt S) ^ 2) * Real.sqrt U * Real.sqrt V := by ring
-      _ = _ := by rw [Real.sq_sqrt hS]
-  simpa only [heq] using hbound
+  grind
 
 
 end Erdos821.P3Clean

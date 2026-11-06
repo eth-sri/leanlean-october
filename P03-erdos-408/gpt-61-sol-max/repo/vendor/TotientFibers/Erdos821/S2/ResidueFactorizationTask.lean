@@ -20,7 +20,7 @@ namespace ResiduePath
 variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
   (Q : ResiduePath A n)
 
-def smallResidueExpression : ℝ :=
+def smallResidueExpression  :=
   (Fintype.card P.SmallResidues : ℝ)⁻¹ * ∑ y : P.SmallResidues,
     if Q.SmallCompatible y then
       ∏ i : Fin n, smallDamping (P := P) F J
@@ -30,7 +30,7 @@ def smallResidueExpression : ℝ :=
 
 end ResiduePath
 
-def ResidueFactorizationTask : Prop :=
+def ResidueFactorizationTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
     (Q : ResiduePath A n), 0 < n → Q.Valid →
       P.residueExpectation n (visitQ F.q n) Q.offset Q.active =

@@ -7,15 +7,15 @@ public import OAI.NumberTheory.DirichletL.Moments.AddedZero
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRadicalFamily
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
 open CenteredMomentFirstFamily CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-theorem elementCoeff_power_pos (χ : Character) (e : ℕ) (he : 0<e) (n : O) :
+
+
+theorem elementCoeff_power_pos  χ   e  (he : 0<e)  n  :
     elementCoeff (χ.power e) n=(elementCoeff χ n)^e := by
   by_cases hn : IsUnit (Ideal.Quotient.mk χ.modulus n)
   · exact elementCoeff_power_of_unit χ e n hn
@@ -23,10 +23,13 @@ theorem elementCoeff_power_pos (χ : Character) (e : ℕ) (he : 0<e) (n : O) :
     have hp : elementCoeff (χ.power e) n=0 := MulChar.map_nonunit _ hn
     rw [hp,hz,zero_pow (Nat.ne_zero_of_lt he)]
 
-theorem exists_product_presentation {ι : Type*} (S : Finset ι) (base : Character)
+section
+variable {ι : Type*}
+
+theorem exists_product_presentation   (S : Finset ι) (base : Character)
     (χ : ι→Character) (e : ι→ℕ) (he : ∀i∈S,0<e i)
-    (M : Ideal O) (hb : M≤base.modulus) (hχ : ∀i∈S,M≤(χ i).modulus) :
-    ∃τ : Character,M≤τ.modulus ∧ ∀n:O,
+     M  (hb : M≤base.modulus) (hχ : ∀i∈S,M≤(χ i).modulus) :
+    ∃τ : Character,M≤τ.modulus ∧ ∀n:ActualEisensteinCubic.O,
       elementCoeff τ n=elementCoeff base n*∏i∈S,(elementCoeff (χ i) n)^(e i) := by
   induction S using Finset.induction_on with
   | empty => exact ⟨base,hb,by simp⟩
@@ -39,8 +42,8 @@ theorem exists_product_presentation {ι : Type*} (S : Finset ι) (base : Charact
       ht,Finset.prod_insert ha]
     ring
 
-theorem single_row_on_base (η : Character) (m p n : O)
-    (hmLam : λ₀∣m) (hm2 : (2:O)∣m)
+theorem single_row_on_base (η : Character)  m p n 
+    (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m)
     (hn : rowTwist (elementHom η) m 1 1 n≠0) :
     rowTwist (elementHom (η.power 0)) m 1 p n=idealRowHom p (Ideal.span {n}) := by
   have hs := (rowTwist_nonzero_coprime η m 1 1 n hmLam hm2 hn).1
@@ -58,9 +61,9 @@ theorem single_row_on_base (η : Character) (m p n : O)
   rw [hp,one_pow,one_mul]
   simp [coprimalityMask,hm]
 
-theorem row_product_formula {ι : Type*} (S : Finset ι)
-    (η : Character) (m : O) (p : ι→O) (e : ι→ℕ)
-    (hmLam : λ₀∣m) (hm2 : (2:O)∣m) (n : O) :
+theorem row_product_formula   (S : Finset ι)
+    (η : Character) (m : ActualEisensteinCubic.O) (p : ι→ActualEisensteinCubic.O) (e : ι→ℕ)
+    (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m)  n  :
     rowTwist (elementHom η) m 1 1 n*
       (∏i∈S,(rowTwist (elementHom (η.power 0)) m 1 (p i) n)^(e i))=
       rowTwist (elementHom η) m 1 (∏i∈S,(p i)^(e i)) n := by
@@ -76,20 +79,20 @@ theorem row_product_formula {ι : Type*} (S : Finset ι)
     rw [Finset.prod_insert ha,Finset.prod_insert ha,idealRowHom_argument_mul,
       idealRowHom_argument_pow _ _ _ hs,ih]
 
-theorem exists_radical_row_presentation {ι : Type*} [Fintype ι]
-    (η : Character) (m : O) (hm : m≠0) (hmLam : λ₀∣m) (hm2 : (2:O)∣m)
-    (p : ι→O) (hp : ∀i,Supported (Ideal.span {p i}))
+theorem exists_radical_row_presentation   [Fintype ι]
+    (η : Character) (m : ActualEisensteinCubic.O) (hm : m≠0) (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m)
+    (p : ι→ActualEisensteinCubic.O) (hp : ∀i,Supported (Ideal.span {p i}))
     (e : ι→ℕ) (he : ∀i,0<e i) :
     ∃τ : Character,
-      η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*(∏i,Ideal.span {p i})≤τ.modulus ∧
+      η.modulus*Ideal.span {m}*Ideal.span {(72:ActualEisensteinCubic.O)}*(∏i,Ideal.span {p i})≤τ.modulus ∧
       τ.modulus.absNorm≤η.modulus.absNorm*(Ideal.span {m}).absNorm*
-        (Ideal.span {(72:O)}).absNorm*∏i,(Ideal.span {p i}).absNorm ∧
-      ∀n:O,elementCoeff τ n=rowTwist (elementHom η) m 1 (∏i,(p i)^(e i)) n := by
+        (Ideal.span {(72:ActualEisensteinCubic.O)}).absNorm*∏i,(Ideal.span {p i}).absNorm ∧
+      ∀n:ActualEisensteinCubic.O,elementCoeff τ n=rowTwist (elementHom η) m 1 (∏i,(p i)^(e i)) n := by
   obtain ⟨base,hbase,hbasec⟩ := exists_supported_row_presentation η m 1 hm
     CenteredMomentAddedZero.supported_one_element hmLam hm2
   choose χ hχ hc using fun i=>exists_supported_row_presentation (η.power 0) m (p i) hm
     (hp i) hmLam hm2
-  let B := η.modulus*Ideal.span {m}*Ideal.span {(72:O)}
+  let B := η.modulus*Ideal.span {m}*Ideal.span {(72:ActualEisensteinCubic.O)}
   let M := B*∏i,Ideal.span {p i}
   have hb : M≤base.modulus := by
     rw [hbase,Ideal.span_singleton_one,←Ideal.one_eq_top,mul_one]
@@ -115,8 +118,10 @@ theorem exists_radical_row_presentation {ι : Type*} [Fintype ι]
     simp_rw [hc]
     exact row_product_formula Finset.univ η m p e hmLam hm2 n
 
+end
+
 end SevenEighths.CenteredMomentRadicalFamily
 
-end
+
 
 end OAI

@@ -7,7 +7,7 @@ public import Erdos821.P3Pair.PairingFromMoment
 
 @[expose] public section
 
-noncomputable section
+section
 namespace Erdos821.S2Core
 
 open Filter Erdos821.Blueprint.Graph

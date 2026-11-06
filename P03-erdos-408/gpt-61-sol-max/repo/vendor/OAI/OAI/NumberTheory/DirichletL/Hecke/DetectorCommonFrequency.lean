@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFrequencyTail
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorLower
@@ -12,9 +13,9 @@ open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 namespace SevenEighths.HeckeDetectorFrequency
 open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier HeckeDetectorLower
 open HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorPartition
-local notation "O" => HeckeFamily.O
 
-def phaseProduct (χ : Character) (D U : ℝ) (s : ℂ) (j k : ℕ) (t : ℝ) : ℂ :=
+
+def phaseProduct (χ : Character) (D U : ℝ) (s : ℂ) (j k : ℕ) (t : ℝ)  :=
   phasePolynomial (expandedSet U)
     (inverseCoefficient χ cutoff (DyadicTransfer.annularCutoff cutoff) D ((2 : ℝ)^j) s)
     (fun I => Real.log ((Ideal.absNorm I : ℝ)/(2 : ℝ)^j)) t *
@@ -37,8 +38,7 @@ theorem exists_common_frequency_witness (R θ τ : ℝ) (hR : 0 ≤ R)
   obtain ⟨Ω,hΩc,hΩ,hwindow,hΩone⟩ := exists_product_log_cutoff
   obtain ⟨n,hn⟩ := exists_frequency_tail_order τ hτ
   have hL : 0 ≤ 2*Real.log 2+1 := by
-    have h := Real.log_nonneg (show (1 : ℝ) ≤ 2 by norm_num)
-    linarith
+    positivity
   obtain ⟨C₀,Cn,hC₀,hCn,hfreq⟩ := dyadic_frequency_bound Ω hΩc hΩ
     (2*Real.log 2+1) hL hwindow hΩone n
   obtain ⟨UF,hUF⟩ := hn Cn
@@ -47,7 +47,7 @@ theorem exists_common_frequency_witness (R θ τ : ℝ) (hR : 0 ≤ R)
   intro U hU χ hχ D hD hDU hQ ρ hρ hzero hheight
   have hU2 : 2 ≤ U := (le_max_left _ _).trans hU
   have hU1 : 1 ≤ U := by linarith
-  have hUpos : 0 < U := by linarith
+  
   obtain ⟨j,hj,k,hk,hblock,hsupport⟩ :=
     hUL U ((le_max_right UF UL).trans ((le_max_right 2 _).trans hU))
       χ hχ cutoff cutoff cutoff_norm_le cutoff_norm_le cutoff_one cutoff_zero cutoff_one cutoff_zero

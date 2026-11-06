@@ -33,14 +33,14 @@ open Finset
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
 /-- The size `∑_x S(x)` of a memory state. -/
-def memSize (S : X → ℕ) : ℕ := ∑ x, S x
+def memSize (S : X → ℕ)  := ∑ x, S x
 
 /-- The memory states of size at most `B`, as multiplicity functions. -/
 def memStates (B : ℕ) : Finset (X → ℕ) :=
   (Fintype.piFinset fun _ => range (B + 1)).filter fun S => memSize S ≤ B
 
 omit [DecidableEq X] in
-theorem le_memSize (S : X → ℕ) (x : X) : S x ≤ memSize S :=
+theorem le_memSize  S  (x : X) : S x ≤ memSize S :=
   single_le_sum (fun _ _ => Nat.zero_le _) (mem_univ x)
 
 theorem mem_memStates {B : ℕ} {S : X → ℕ} : S ∈ memStates B ↔ memSize S ≤ B := by
@@ -50,13 +50,13 @@ theorem mem_memStates {B : ℕ} {S : X → ℕ} : S ∈ memStates B ↔ memSize 
   omega
 
 /-- The memory space with the cap `B`. -/
-abbrev MemState (X : Type*) [Fintype X] [DecidableEq X] (B : ℕ) := ↥(memStates (X := X) B)
+abbrev MemState (X ) [Fintype X] [DecidableEq X] (B ) := ↥(memStates (X := X) B)
 
 /-- The symmetric weight `∏_x ν(x)^{S(x)} / S(x)!`. -/
-noncomputable def memWeight (ν : X → ℝ) (S : X → ℕ) : ℝ := ∏ x, ν x ^ S x / (S x).factorial
+noncomputable def memWeight (ν : X → ℝ) (S : X → ℕ)  := ∏ x, ν x ^ S x / (S x).factorial
 
 omit [DecidableEq X] in
-theorem memWeight_nonneg {ν : X → ℝ} (hν : ∀ x, 0 ≤ ν x) (S : X → ℕ) : 0 ≤ memWeight ν S :=
+theorem memWeight_nonneg {ν : X → ℝ} (hν : ∀ x, 0 ≤ ν x)  S  : 0 ≤ memWeight ν S :=
   prod_nonneg fun x _ => div_nonneg (pow_nonneg (hν x) _) (Nat.cast_nonneg _)
 
 end Erdos408.OneSided

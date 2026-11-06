@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Extraction.Sieve.Progression
 
 public import Erdos408.OneSided.Lift
 public import Erdos408.OneSided.Moment.Edge.Operator
@@ -33,23 +36,28 @@ open Finset Real
 
 /-! ### The circle distance -/
 
+section
+variable (s t : ℝ)
+
 /-- `‖t‖ ≥ 0`. -/
-theorem circleDist_nonneg (t : ℝ) : 0 ≤ circleDist t := abs_nonneg _
+theorem circleDist_nonneg   : 0 ≤ circleDist t := abs_nonneg _
 
 /-- `‖t‖ ≤ |t - n|` for every integer `n`. -/
-theorem circleDist_le_abs_sub (t : ℝ) (n : ℤ) : circleDist t ≤ |t - n| := round_le t n
+theorem circleDist_le_abs_sub   (n : ℤ) : circleDist t ≤ |t - n| := round_le t n
 
 /-- `‖t‖ ≤ 1/2`. -/
-theorem circleDist_le_half (t : ℝ) : circleDist t ≤ 1 / 2 := abs_sub_round t
+theorem circleDist_le_half   : circleDist t ≤ 1 / 2 := abs_sub_round t
 
 /-- `‖s + t‖ ≤ ‖s‖ + |t|`. -/
-theorem circleDist_add_le (s t : ℝ) : circleDist (s + t) ≤ circleDist s + |t| := by
+theorem circleDist_add_le   : circleDist (s + t) ≤ circleDist s + |t| := by
   calc circleDist (s + t) ≤ |s + t - round s| := circleDist_le_abs_sub _ _
     _ = |(s - round s) + t| := by ring_nf
     _ ≤ |s - round s| + |t| := abs_add_le _ _
 
+end
+
 /-- For an integer `n` not divisible by `d ≥ 1`, `‖n/d‖ ≥ 1/d`. -/
-theorem one_div_le_circleDist_div {n : ℤ} {d : ℕ} (hd : 0 < d) (hn : ¬ (d : ℤ) ∣ n) :
+theorem one_div_le_circleDist_div  {n}  {d : ℕ} (hd : 0 < d) (hn : ¬ (d : ℤ) ∣ n) :
     1 / (d : ℝ) ≤ circleDist (n / d) := by
   have hd' : (0 : ℝ) < d := by exact_mod_cast hd
   unfold circleDist
@@ -65,20 +73,25 @@ theorem one_div_le_circleDist_div {n : ℤ} {d : ℕ} (hd : 0 < d) (hn : ¬ (d :
 /-! ### The phase -/
 
 /-- `e(t) = exp(2πit)`. -/
-def ephase (t : ℝ) : ℂ := Complex.exp (2 * π * Complex.I * t)
+def ephase (t : ℝ)  := Complex.exp (2 * π * Complex.I * t)
+
+section
+variable (s t : ℝ)
 
 /-- `|e(t)| = 1`. -/
-theorem norm_ephase (t : ℝ) : ‖ephase t‖ = 1 := by
+theorem norm_ephase   : ‖ephase t‖ = 1 := by
   rw [ephase, show 2 * (π : ℂ) * Complex.I * t = ((2 * π * t : ℝ) : ℂ) * Complex.I by
     push_cast; ring]
   exact Complex.norm_exp_ofReal_mul_I _
 
 /-- `e(s + t) = e(s) e(t)`. -/
-theorem ephase_add (s t : ℝ) : ephase (s + t) = ephase s * ephase t := by
+theorem ephase_add   : ephase (s + t) = ephase s * ephase t := by
   rw [ephase, ephase, ephase, ← Complex.exp_add]
   congr 1
   push_cast
   ring
+
+end
 
 /-- `e(n) = 1` for an integer `n`. -/
 theorem ephase_intCast (n : ℤ) : ephase n = 1 := by
@@ -89,8 +102,11 @@ theorem ephase_intCast (n : ℤ) : ephase n = 1 := by
 /-- `e(0) = 1`. -/
 theorem ephase_zero : ephase 0 = 1 := by simp [ephase]
 
+section
+variable (n : ℕ) (t : ℝ)
+
 /-- `\overline{e(t)} = e(-t)`. -/
-theorem star_ephase (t : ℝ) : star (ephase t) = ephase (-t) := by
+theorem star_ephase   : star (ephase t) = ephase (-t) := by
   rw [ephase, ephase, Complex.star_def, ← Complex.exp_conj]
   congr 1
   simp only [map_mul, Complex.conj_ofReal, Complex.conj_I, map_ofNat]
@@ -98,13 +114,13 @@ theorem star_ephase (t : ℝ) : star (ephase t) = ephase (-t) := by
   ring
 
 /-- `e(n t) = e(t)^n` for a natural `n`. -/
-theorem ephase_natCast_mul (n : ℕ) (t : ℝ) : ephase (n * t) = ephase t ^ n := by
+theorem ephase_natCast_mul     : ephase (n * t) = ephase t ^ n := by
   induction n with
   | zero => simp [ephase_zero]
   | succ n ih => rw [Nat.cast_succ, add_mul, one_mul, ephase_add, ih, pow_succ]
 
 /-- `|e(t) - 1| ≥ 4 ‖t‖`. -/
-theorem four_mul_circleDist_le (t : ℝ) : 4 * circleDist t ≤ ‖ephase t - 1‖ := by
+theorem four_mul_circleDist_le   : 4 * circleDist t ≤ ‖ephase t - 1‖ := by
   set y := t - round t with hy
   have hyt : ephase t = ephase y := by
     rw [hy, sub_eq_add_neg, ephase_add, ← Int.cast_neg, ephase_intCast, mul_one]
@@ -137,48 +153,46 @@ theorem four_mul_circleDist_le (t : ℝ) : 4 * circleDist t ≤ ‖ephase t - 1�
   have : 2 / π * (π * |y|) = 2 * |y| := by field_simp
   linarith
 
+end
+
 /-! ### Geometric sums -/
 
 /-- The bound `min(n, 1/(2‖t‖))` for a geometric sum of `n` terms, read as `n` when `‖t‖ = 0`. -/
-def dirBound (n t : ℝ) : ℝ := if circleDist t = 0 then n else min n (1 / (2 * circleDist t))
+def dirBound (n t : ℝ)  := if circleDist t = 0 then n else min n (1 / (2 * circleDist t))
+
+section
+variable (n ϑ : ℝ) (A : ℕ) (t : ℝ) (B : ℕ)
 
 /-- `dirBound n t ≤ n`. -/
-theorem dirBound_le (n t : ℝ) : dirBound n t ≤ n := by
+theorem dirBound_le   : dirBound n t ≤ n := by
   unfold dirBound
   split_ifs
   · exact le_rfl
   · exact min_le_left _ _
 
 /-- `dirBound n t ≥ 0` for `n ≥ 0`. -/
-theorem dirBound_nonneg {n : ℝ} (hn : 0 ≤ n) (t : ℝ) : 0 ≤ dirBound n t := by
+theorem dirBound_nonneg  {n}  (hn : 0 ≤ n)  t  : 0 ≤ dirBound n t := by
   unfold dirBound
   split_ifs
   · exact hn
-  · exact le_min hn (by have := circleDist_nonneg t; positivity)
+  simp_all [circleDist_nonneg]
 
 /-- `dirBound n t ≤ 1/(2‖t‖)` when `‖t‖ ≠ 0`. -/
-theorem dirBound_le_inv {n t : ℝ} (ht : circleDist t ≠ 0) :
+theorem dirBound_le_inv  {n t}  (ht : circleDist t ≠ 0) :
     dirBound n t ≤ 1 / (2 * circleDist t) := by
-  simp only [dirBound, ht, ↓reduceIte]
-  exact min_le_right _ _
+  simp_all [dirBound]
 
 /-- **The geometric sum**: `|∑_{|h| ≤ A} e(h t)| ≤ dirBound (2A + 1) t`. -/
-theorem norm_sum_ephase_le (A : ℕ) (t : ℝ) :
+theorem norm_sum_ephase_le     :
     ‖∑ h ∈ Icc (-(A : ℤ)) A, ephase (h * t)‖ ≤ dirBound (2 * A + 1) t := by
   -- reindex `h = j - A`, `0 ≤ j ≤ 2A`
   have e : ∑ h ∈ Icc (-(A : ℤ)) A, ephase (h * t) =
       ephase (-(A * t)) * ∑ j ∈ range (2 * A + 1), ephase t ^ j := by
     rw [mul_sum]
     refine sum_nbij' (fun h => (h + A).toNat) (fun j => (j : ℤ) - A) ?_ ?_ ?_ ?_ ?_
-    · intro h hh
-      simp only [mem_Icc, mem_range] at hh ⊢
-      omega
-    · intro j hj
-      simp only [mem_Icc, mem_range] at hj ⊢
-      omega
-    · intro h hh
-      simp only [mem_Icc] at hh ⊢
-      omega
+    · grind
+    · grind
+    · grind
     · intro j _
       simp
     · intro h hh
@@ -223,7 +237,7 @@ theorem norm_sum_ephase_le (A : ℕ) (t : ℝ) :
 
 /-- **The Gram bound**: the matrix `e(ϑ h k)` from `|k| ≤ B` to `|h| ≤ A` has squared norm at
 most `∑_{|m| ≤ 2B} dirBound (2A + 1) (m ϑ)`. -/
-theorem kerLe_phaseBox (ϑ : ℝ) (A B : ℕ) :
+theorem kerLe_phaseBox     :
     KerLe (Icc (-(A : ℤ)) A) (Icc (-(B : ℤ)) B) (fun h k => ephase (ϑ * h * k))
       (Real.sqrt (∑ m ∈ Icc (-(2 * B : ℤ)) (2 * B), dirBound (2 * A + 1) (m * ϑ))) := by
   intro f
@@ -308,23 +322,27 @@ theorem kerLe_phaseBox (ϑ : ℝ) (A B : ℕ) :
       _ ≤ Γ := by
           refine sum_le_sum_of_subset_of_nonneg (fun m hm => ?_)
             fun m _ _ => dirBound_nonneg (by positivity) _
-          obtain ⟨k', hk', rfl⟩ := mem_image.1 hm
-          rw [mem_Icc] at hk hk' ⊢
-          constructor <;> omega
+          grind
   calc _ ≤ _ := hreal
     _ ≤ _ := hamgm
     _ ≤ ∑ k ∈ IB, ‖f k‖ ^ 2 * Γ :=
         sum_le_sum fun k hk => mul_le_mul_of_nonneg_left (hrow k hk) (sq_nonneg _)
     _ = Γ * ∑ k ∈ IB, ‖f k‖ ^ 2 := by rw [mul_sum]; exact sum_congr rfl fun k _ => by ring
 
+end
+
 /-! ### The spacing bound -/
 
+section
+variable {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d ≤ Q) (hcop : Int.gcd c d = 1) (happ : |ϑ - c / d| ≤ 1 / (d * Q))
+
+include hd hdQ hcop happ in
 /-- Points `m ϑ` with `m` in a block of at most `d/2 + 1` consecutive integers are
 `1/(2d)`-separated modulo one, when `|ϑ - c/d| ≤ 1/(dQ)`, `(c, d) = 1` and `d ≤ Q`. -/
-theorem circleDist_mul_ge {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d ≤ Q)
-    (hcop : Int.gcd c d = 1) (happ : |ϑ - c / d| ≤ 1 / (d * Q)) {j : ℤ} (hj : j ≠ 0)
+theorem circleDist_mul_ge          
+        {j : ℤ} (hj : j ≠ 0)
     (hjd : 2 * |j| ≤ d) : 1 / (2 * d) ≤ circleDist (j * ϑ) := by
-  have hd' : (0 : ℝ) < d := by exact_mod_cast hd
+  
   have hQ' : (d : ℝ) ≤ Q := by exact_mod_cast hdQ
   -- `d ∤ j c`
   have hndvd : ¬ (d : ℤ) ∣ j * c := by
@@ -335,8 +353,7 @@ theorem circleDist_mul_ge {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d
         exact hcop
       exact hc.dvd_of_dvd_mul_right h
     have h2 := Int.le_of_dvd (abs_pos.2 hj) ((dvd_abs _ _).2 h1)
-    have : (1 : ℤ) ≤ |j| := Int.one_le_abs hj
-    omega
+    grind
   have h1 := one_div_le_circleDist_div hd hndvd
   have hjr : (2 : ℝ) * |(j : ℝ)| ≤ d := by exact_mod_cast hjd
   have herr : |(j : ℝ)| * |ϑ - c / d| ≤ 1 / (2 * d) := by
@@ -355,9 +372,10 @@ theorem circleDist_mul_ge {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d
   have : 1 / (d : ℝ) = 1 / (2 * d) + 1 / (2 * d) := by field_simp; norm_num
   linarith
 
+include hd in
 /-- At most two points of a `1/(2d)`-separated family lie at circle distances in one interval
 `[j/(4d), (j+1)/(4d))`, one on each side of zero. -/
-private theorem card_bucket_le_two {ϑ : ℝ} {d : ℕ} (hd : 0 < d) (T : Finset ℤ)
+private theorem card_bucket_le_two       (T : Finset ℤ)
     (hsep : ∀ m ∈ T, ∀ m' ∈ T, m ≠ m' → 1 / (2 * d) ≤ circleDist ((m - m' : ℤ) * ϑ)) (j : ℕ)
     (hT : ∀ m ∈ T, ⌊4 * d * circleDist (m * ϑ)⌋₊ = j) : T.card ≤ 2 := by
   have hd' : (0 : ℝ) < d := by exact_mod_cast hd
@@ -373,9 +391,7 @@ private theorem card_bucket_le_two {ϑ : ℝ} {d : ℕ} (hd : 0 < d) (T : Finset
     set y := (m : ℝ) * ϑ - round ((m : ℝ) * ϑ)
     set y' := (m' : ℝ) * ϑ - round ((m' : ℝ) * ϑ)
     have hb : (0 ≤ y ↔ 0 ≤ y') := by
-      have h := hm.2.trans hm'.2.symm
-      simp only [sgn, decide_eq_decide] at h
-      exact h
+      grind
     -- `|y|, |y'| ∈ [j/(4d), (j+1)/(4d))`
     have hy0 : 0 ≤ 4 * d * |y| := by positivity
     have hy0' : 0 ≤ 4 * d * |y'| := by positivity
@@ -416,17 +432,14 @@ private theorem card_bucket_le_two {ϑ : ℝ} {d : ℕ} (hd : 0 < d) (T : Finset
 
 /-- `∑_{j=1}^{n} 1/j ≤ 1 + log n`. -/
 private theorem sum_inv_le_one_add_log (n : ℕ) :
-    ∑ j ∈ Icc 1 n, (1 : ℝ) / j ≤ 1 + Real.log n := by
-  have h := harmonic_le_one_add_log n
-  rw [harmonic_eq_sum_Icc] at h
-  push_cast at h
-  simpa [one_div] using h
+    ∑ j ∈ Icc 1 n, (1 : ℝ) / j ≤ 1 + Real.log n := by solve_by_elim [_root_.Erdos408.Sieve.sum_Icc_inv_le]
 
+include hd in
 /-- Within a block of `1/(2d)`-separated points, `∑ dirBound n (m ϑ) ≤ 2n + 4d (1 + log 2d)`. -/
-private theorem sum_block_le {ϑ : ℝ} {d : ℕ} (hd : 0 < d) {n : ℝ} (hn : 0 ≤ n) (T : Finset ℤ)
+private theorem sum_block_le       {n : ℝ} (hn : 0 ≤ n) (T : Finset ℤ)
     (hsep : ∀ m ∈ T, ∀ m' ∈ T, m ≠ m' → 1 / (2 * d) ≤ circleDist ((m - m' : ℤ) * ϑ)) :
     ∑ m ∈ T, dirBound n (m * ϑ) ≤ 2 * n + 4 * d * (1 + Real.log (2 * d)) := by
-  have hd' : (0 : ℝ) < d := by exact_mod_cast hd
+  
   set bucket : ℤ → ℕ := fun m => ⌊4 * d * circleDist (m * ϑ)⌋₊
   have hmaps : ∀ m ∈ T, bucket m ∈ range (2 * d + 1) := by
     intro m _
@@ -456,20 +469,13 @@ private theorem sum_block_le {ϑ : ℝ} {d : ℕ} (hd : 0 < d) {n : ℝ} (hn : 0
           rw [← hj]
           exact Nat.floor_le (by have := circleDist_nonneg (m * ϑ); positivity)
         have hc : 0 < circleDist (m * ϑ) := by
-          by_contra hc
-          have : circleDist (m * ϑ) = 0 := le_antisymm (not_lt.1 hc) (circleDist_nonneg _)
-          rw [this] at hfl
-          linarith
+          grind [circleDist, circleDist_nonneg]
         calc dirBound n (m * ϑ) ≤ 1 / (2 * circleDist (m * ϑ)) := dirBound_le_inv hc.ne'
           _ ≤ 2 * d / j := by
               rw [div_le_div_iff₀ (by positivity) hjpos]
               nlinarith
     have hbj : 0 ≤ bnd j := by
-      rw [hbnd]
-      dsimp only
-      split_ifs
-      · exact hn
-      · positivity
+      positivity
     calc ∑ m ∈ T with bucket m = j, dirBound n (m * ϑ) ≤ ∑ m ∈ T with bucket m = j, bnd j :=
           sum_le_sum hpt
       _ = (T.filter fun m => bucket m = j).card * bnd j := by rw [sum_const, nsmul_eq_mul]
@@ -479,9 +485,7 @@ private theorem sum_block_le {ϑ : ℝ} {d : ℕ} (hd : 0 < d) {n : ℝ} (hn : 0
   have htail : ∑ j ∈ Ico (0 + 1) (2 * d + 1), bnd j = 2 * d * ∑ j ∈ Icc 1 (2 * d), (1 : ℝ) / j := by
     rw [mul_sum]
     refine sum_congr (by ext j; simp) fun j hj => ?_
-    have hj0 : j ≠ 0 := by simp at hj; omega
-    simp only [hbnd, hj0, ↓reduceIte]
-    ring
+    grind
   rw [htail]
   have hlog := sum_inv_le_one_add_log (2 * d)
   have : bnd 0 = n := by simp [hbnd]
@@ -489,11 +493,12 @@ private theorem sum_block_le {ϑ : ℝ} {d : ℕ} (hd : 0 < d) {n : ℝ} (hn : 0
   push_cast at hlog ⊢
   nlinarith
 
+include hd hdQ hcop happ in
 /-- **The spacing bound** (PD `mem:bilinear-gram`): if `|ϑ - c/d| ≤ 1/(dQ)` with
 `(c, d) = 1` and `1 ≤ d ≤ Q`, then
 `∑_{|m| ≤ M} dirBound n (m ϑ) ≤ (4M/d + 1) (2n + 4d (1 + log 2d))`. -/
-theorem sum_dirBound_le {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d ≤ Q)
-    (hcop : Int.gcd c d = 1) (happ : |ϑ - c / d| ≤ 1 / (d * Q)) (M : ℕ) {n : ℝ} (hn : 0 ≤ n) :
+theorem sum_dirBound_le          
+        (M : ℕ)  {n}  (hn : 0 ≤ n) :
     ∑ m ∈ Icc (-(M : ℤ)) M, dirBound n (m * ϑ) ≤
       (4 * M / d + 1) * (2 * n + 4 * d * (1 + Real.log (2 * d))) := by
   have hd' : (0 : ℝ) < d := by exact_mod_cast hd
@@ -508,10 +513,7 @@ theorem sum_dirBound_le {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d �
     exact Nat.div_le_div_right (by omega)
   rw [← sum_fiberwise_of_maps_to hmaps]
   have hW : 0 ≤ 2 * n + 4 * d * (1 + Real.log (2 * d)) := by
-    have : 0 ≤ Real.log (2 * d) := Real.log_nonneg (by
-      have : (1 : ℝ) ≤ d := by exact_mod_cast hd
-      linarith)
-    positivity
+    bound
   have hblock : ∀ q ∈ range (2 * M / ℓ + 1),
       ∑ m ∈ Icc (-(M : ℤ)) M with blk m = q, dirBound n (m * ϑ) ≤
         2 * n + 4 * d * (1 + Real.log (2 * d)) := by
@@ -553,12 +555,14 @@ theorem sum_dirBound_le {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d �
           nlinarith [(Nat.cast_nonneg M : (0 : ℝ) ≤ M)]
         linarith
 
+end
+
 /-! ### The determinant matrix -/
 
 /-- **The tensor step** (PD `mem:minor-decay`): the determinant matrix
 `e(ϑ (h₁ l₂ - l₁ h₂))` on the box `|h| ≤ A`, `|l| ≤ B` is the tensor product of
 `e(-ϑ l h)` and `e(ϑ h l)`, so its norm is at most the product of their norms. -/
-theorem kerLe_detPhase (ϑ : ℝ) (A B : ℕ) {Γ₁ Γ₂ : ℝ}
+theorem kerLe_detPhase  ϑ  (A B : ℕ)  {Γ₁ Γ₂} 
     (h₁ : KerLe (Icc (-(B : ℤ)) B) (Icc (-(A : ℤ)) A) (fun l h => ephase (-ϑ * l * h)) Γ₁)
     (h₂ : KerLe (Icc (-(A : ℤ)) A) (Icc (-(B : ℤ)) B) (fun h l => ephase (ϑ * h * l)) Γ₂) :
     KerLe (Icc (-(A : ℤ)) A ×ˢ Icc (-(B : ℤ)) B) (Icc (-(A : ℤ)) A ×ˢ Icc (-(B : ℤ)) B)

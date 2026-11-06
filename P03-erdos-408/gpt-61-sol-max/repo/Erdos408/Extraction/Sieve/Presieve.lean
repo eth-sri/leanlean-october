@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Sieve.Progression
 
@@ -28,14 +29,18 @@ namespace Sieve
 noncomputable section
 
 /-- The presieved sum `∑_{1 ≤ u ≤ κ x, P⁻(u + 1) > z} w(u)`. -/
-def presieved (κ x z : ℝ) (w : ℕ → ℝ) : ℝ :=
+def presieved (κ x z : ℝ) (w : ℕ → ℝ)  :=
   ∑ u ∈ (Icc 1 ⌊κ * x⌋₊).filter (fun u => ∀ p ∈ primesIcc 2 z, ¬ p ∣ u + 1), w u
 
 /-! ### Size bounds (E0) -/
 
+section
+variable {sift main rem : ℝ} (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) {c Ch κ x z CΦ : ℝ} (M : ℕ → ℝ) (hc : 0 < c) (hCh : 0 < Ch) (hκ : 1 < κ) {D₁ D₂ C main₂ e R₁ R₂ KB A B₁ B₂ : ℝ}
+
+include hc in
 /-- E0: for large `x`, on admissible slots with `|𝔟| ≤ 1`, the slot count is at
 most `T⁶¹` on `0 < n ≤ x²` and the harmonic mean is at most `T⁴`. -/
-lemma eventually_slot_size {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atTop, ∀ k ≤ 2,
+lemma eventually_slot_size     : ∀ᶠ x : ℝ in atTop, ∀ k ≤ 2,
     ∀ (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ), AdmissibleSlots c x u v →
       (∀ Q, |B Q| ≤ 1) →
       (∀ n : ℕ, 0 < n → (n : ℝ) ≤ x ^ 2 → |slotCount x u v B n| ≤ logLog x ^ 61) ∧
@@ -50,7 +55,7 @@ lemma eventually_slot_size {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atTop, ∀
   have hT8 : 8 / c ^ 3 + 8 ≤ logLog x :=
     le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hT
   set T := logLog x
-  have hT0 : 0 < T := by linarith
+  
   obtain ⟨hu, hv⟩ := hslot
   have hε : 0 < c / T ^ 20 := by positivity
   constructor
@@ -92,12 +97,12 @@ lemma eventually_slot_size {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atTop, ∀
 /-! ### Primes inject into the presieved integers -/
 
 /-- `⌊κ x + 1⌋ = ⌊κ x⌋ + 1`. -/
-lemma floor_add_one_eq {κ x : ℝ} (h : 0 ≤ κ * x) : ⌊κ * x + 1⌋₊ = ⌊κ * x⌋₊ + 1 :=
+lemma floor_add_one_eq   (h : 0 ≤ κ * x) : ⌊κ * x + 1⌋₊ = ⌊κ * x⌋₊ + 1 :=
   Nat.floor_add_one h
 
 /-- A nonnegative weight vanishing at `u ≤ z` has its prime sum at most its
 presieved sum. -/
-lemma sum_primes_le_presieved {κ x z : ℝ} (hκx : 0 ≤ κ * x) (f : ℕ → ℝ) (hf : ∀ u, 0 ≤ f u)
+lemma sum_primes_le_presieved   (hκx : 0 ≤ κ * x)  f  (hf : ∀ u, 0 ≤ f u)
     (hfz : ∀ u : ℕ, f u ≠ 0 → z < u) :
     ∑ p ∈ primesIcc 2 (κ * x + 1), f (p - 1) ≤ presieved κ x z f := by
   set A := (primesIcc 2 (κ * x + 1)).filter fun p => f (p - 1) ≠ 0
@@ -106,9 +111,7 @@ lemma sum_primes_le_presieved {κ x z : ℝ} (hκx : 0 ≤ κ * x) (f : ℕ → 
   have hinj : Set.InjOn (fun p : ℕ => p - 1) A := by
     intro p hp q hq h
     have hp2 := (mem_primesIcc_two.1 (mem_filter.1 hp).1).1.two_le
-    have hq2 := (mem_primesIcc_two.1 (mem_filter.1 hq).1).1.two_le
-    simp only at h
-    omega
+    grind
   rw [hA, ← sum_image hinj]
   refine sum_le_sum_of_subset_of_nonneg (fun u hu => ?_) fun u _ _ => hf u
   obtain ⟨p, hpA, rfl⟩ := mem_image.1 hu
@@ -129,8 +132,9 @@ lemma sum_primes_le_presieved {κ x z : ℝ} (hκx : 0 ≤ κ * x) (f : ℕ → 
 
 /-! ### The level `z = x^γ` -/
 
+include hc hCh hκ in
 /-- For large `x`, `γ ≤ 1/40` and `κ z < x`, and `z^{4h+2} ≤ x^{ε/4}` with `z = x^γ`. -/
-lemma eventually_level {c Ch κ : ℝ} (hc : 0 < c) (hCh : 0 < Ch) (hκ : 1 < κ) :
+lemma eventually_level         :
     ∀ᶠ x : ℝ in atTop,
     presieveExponent c Ch x ≤ 1 / 40 ∧ κ * x ^ presieveExponent c Ch x < x ∧
       (x ^ presieveExponent c Ch x) ^ (4 * sieveDepth Ch x + 2) ≤
@@ -152,7 +156,7 @@ lemma eventually_level {c Ch κ : ℝ} (hc : 0 < c) (hCh : 0 < Ch) (hκ : 1 < κ
     have h2 : x ^ (1 / 2 : ℝ) * x ^ (1 / 2 : ℝ) = x := by
       rw [← rpow_add hx0]
       norm_num
-    have h3 : 0 < x ^ (1 / 2 : ℝ) := by positivity
+    
     have h4 : κ * x ^ presieveExponent c Ch x ≤ κ * x ^ (1 / 2 : ℝ) :=
       mul_le_mul_of_nonneg_left h1 (by linarith)
     nlinarith
@@ -162,7 +166,7 @@ lemma eventually_level {c Ch κ : ℝ} (hc : 0 < c) (hCh : 0 < Ch) (hκ : 1 < κ
     linarith
 
 /-- Combining the upper sieve with bounds on its main term and remainders. -/
-lemma combine_bound {sift main rem KB A B₁ B₂ : ℝ} (hup : sift ≤ KB * main + KB * rem)
+lemma combine_bound   (hup : sift ≤ KB * main + KB * rem)
     (hmain0 : 0 ≤ main) (hrem0 : 0 ≤ rem) (hmain : main ≤ A * B₁) (hrem : rem ≤ A * B₂) :
     sift ≤ |KB| * (A * (B₁ + B₂)) := by
   have h1 := mul_le_mul_of_nonneg_right (le_abs_self KB) hmain0
@@ -178,11 +182,12 @@ lemma add_mul_le_add_mul_add {a b u w : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hu :
 
 /-! ### Mark removal (E10) -/
 
+include h₃ hK hc hCh hκ in
 /-- E10: the upper block sieve on `Φ(u/x)(1 - P(u))`. For large `x`,
 `∑_p Φ((p-1)/x) (1 - P(p-1)) ≤ C (x / L) (T²² M_x(1 - P) + 1/L)`, and
 `M_x(1 - P) ≤ K exp(-N / (12 e))`. -/
-theorem eventually_mark_removal (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) {c Ch κ CΦ : ℝ}
-    (M : ℕ → ℝ) (hc : 0 < c) (hCh : 0 < Ch) (hκ : 1 < κ) :
+theorem eventually_mark_removal          
+            :
     ∃ C : ℝ, ∀ᶠ x : ℝ in atTop, ∀ Φ : ℝ → ℝ, IsCutoff κ CΦ M x Φ →
       ∑ p ∈ primesIcc 2 (κ * x + 1),
           Φ (((p : ℝ) - 1) / x) * (1 - inertPoly (1 / 2) (1 / 12) K CN x (p - 1)) ≤
@@ -330,7 +335,7 @@ theorem eventually_mark_removal (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN
 /-! ### The presieve (E2) -/
 
 /-- The cancellation of the two main terms in E2. -/
-lemma presieve_cancel {D₁ D₂ C main₂ e R₁ R₂ KB : ℝ}
+lemma presieve_cancel  
     (h1 : |D₁| ≤ KB * e * (C * main₂) + KB * R₁) (h2 : |D₂| ≤ KB * e * main₂ + KB * R₂)
     (hC : 0 ≤ C) (hm : 0 ≤ main₂) (he : 0 ≤ e) (hR₁ : 0 ≤ R₁) (hR₂ : 0 ≤ R₂) :
     |D₁ - C * D₂| ≤ |KB| * (2 * (C * (e * main₂)) + R₁ + C * R₂) := by
@@ -343,8 +348,7 @@ lemma presieve_cancel {D₁ D₂ C main₂ e R₁ R₂ KB : ℝ}
   have h3 : |C * D₂| ≤ C * (|KB| * e * main₂ + |KB| * R₂) := by
     rw [abs_mul, abs_of_nonneg hC]
     exact mul_le_mul_of_nonneg_left (by linarith) hC
-  calc |D₁ - C * D₂| ≤ |D₁| + |C * D₂| := abs_sub _ _
-    _ ≤ _ := by nlinarith
+  grind
 
 /-- The bookkeeping of E2. -/
 lemma presieve_budget {KB C e m R₁ R₂ A T₄ T₂₂ B E₁ E₂ iL : ℝ} (hA : 0 ≤ A)
@@ -368,11 +372,12 @@ lemma presieve_budget {KB C e m R₁ R₂ A T₄ T₂₂ B E₁ E₂ iL : ℝ} (
         mul_le_mul_of_nonneg_left (h4.trans (mul_le_mul_of_nonneg_left h5 hA)) (abs_nonneg _)
     _ = _ := by ring
 
+include h₃ hK hc hCh hκ in
 /-- E2: the presieve at depth `h` on the weights `Φ f_𝔟 P` and `Φ P`, applied
 separately. For large `x` and `0 ≤ 𝔟 ≤ 1`,
 `|∑_{P⁻(u+1) > z} Φ(u/x) P(u) (f_𝔟(u) - C_𝔟)| ≤ C (x / L) (T²⁶ e^{-h} + T⁴ / L)`. -/
-theorem eventually_presieve (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) {c Ch κ CΦ : ℝ}
-    (M : ℕ → ℝ) (hc : 0 < c) (hCh : 0 < Ch) (hκ : 1 < κ) :
+theorem eventually_presieve          
+            :
     ∃ C : ℝ, ∀ᶠ x : ℝ in atTop, ∀ k ≤ 2, ∀ (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ)
       (Φ : ℝ → ℝ), AdmissibleSlots c x u v → (∀ Q, 0 ≤ B Q ∧ B Q ≤ 1) →
       IsCutoff κ CΦ M x Φ →
@@ -473,7 +478,7 @@ theorem eventually_presieve (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : �
   have hrem₁ := sum_powerset_rem_le hPp (Icc 1 ⌊κ * x⌋₊) f₁ (x * I * Cb * mP) hYY
   have hrem₂ := sum_powerset_rem_le hPp (Icc 1 ⌊κ * x⌋₊) f₂ (x * I * mP) hYY
   have hPb : ∀ n, |Pw n| ≤ 1 := fun n => by rw [abs_le]; constructor <;> linarith [hP n]
-  have hPband : ∀ n, Pw n = Pw (bandPart 𝔅 n) := fun n => inertPoly_bandPart _ _ _ _ _ n
+  have hPband : ∀ n, Pw n = Pw (bandPart 𝔅 n) := inertPoly_bandPart _ _ _ _ _
   have hE₁ := hE1sx k hk u v B Φ Pw hslot hB' hΦ hPb hPband
   have hE₂ := hE1ox Φ Pw hΦ hPb hPband
   have hx2 : ∀ E : ℝ, E * x / Real.log x ^ 2 = x / Real.log x * (E * (1 / Real.log x)) :=
@@ -517,6 +522,8 @@ theorem eventually_presieve (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : �
     (mul_nonneg (mul_nonneg (by linarith) (abs_nonneg _)) hCM.le) (by positivity)
     (by positivity) (abs_nonneg _) (abs_nonneg _) (sum_nonneg fun _ _ => abs_nonneg _)
     (by simpa [mul_assoc] using hmain) hR₁ hR₂
+
+end
 
 end
 

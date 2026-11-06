@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.MellinBoundary
 public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicInput
@@ -14,25 +15,28 @@ open Complex Set
 namespace SevenEighths.PrincipalMellinGrowth
 open HeckeFamily PrincipalMellinResidues ProbeMellinBoundary
 
-def principalConstant (M : Ideal HeckeFamily.O) : ℝ :=
+def principalConstant (M : Ideal HeckeFamily.O)  :=
   (1+HeckeLogarithmicInput.uniformConstant)*(M.absNorm : ℝ)^(3/5 : ℝ)*
     HeckeDeletionBounds.localBound (19/20)^(IdealMobiusDivisorSum.primeSupport M).card
 
-theorem principalConstant_pos (M : Ideal HeckeFamily.O) [NeZero M] :
+theorem principalConstant_pos  M  [NeZero M] :
     0<principalConstant M := by
   have hQ : 0<(M.absNorm : ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (NeZero.ne M))
   exact mul_pos (mul_pos (by linarith [HeckeLogarithmicInput.uniformConstant_nonneg])
     (Real.rpow_pos_of_pos hQ _)) (pow_pos (HeckeDeletionBounds.localBound_pos (by norm_num)) _)
 
-lemma poleRemoved_eq_mul_regular (χ : Character) (hχ : χ.residue=1)
-    {s : ℂ} (hs : s+1≠0) :
-    HeckeOrigin.poleRemoved χ s=(s+1)*HeckeLogarithmicInput.regular χ s := by
-  simp only [HeckeLogarithmicInput.regular,ite_eq_left hχ,HeckePrincipalStrip.sourceNormalized]
-  field_simp
+section
+variable (χ : Character) (hχ : χ.residue=1) {s : ℂ}
+include χ hχ s
 
-theorem principal_poleRemoved_growth (χ : Character) (hχ : χ.residue=1)
-    {s : ℂ} (hs : (19/20 : ℝ)≤s.re) :
+lemma poleRemoved_eq_mul_regular    
+      (hs : s+1≠0) :
+    HeckeOrigin.poleRemoved χ s=(s+1)*HeckeLogarithmicInput.regular χ s := by
+  grind [HeckeLogarithmicInput.regular, HeckePrincipalStrip.sourceNormalized]
+
+theorem principal_poleRemoved_growth    
+      (hs : (19/20 : ℝ)≤s.re) :
     ‖HeckeOrigin.poleRemoved χ s‖≤principalConstant χ.modulus*‖s+1‖*(3+|s.im|)^2 := by
   obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
   have hψ : ψ.residue=1 := (HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mp hχ
@@ -73,15 +77,21 @@ theorem principal_poleRemoved_growth (χ : Character) (hχ : χ.residue=1)
       linarith
     _ = _ := by unfold principalConstant; ring
 
-def wAmplitude (M : Ideal HeckeFamily.O) (cw : ℝ) : ℝ := 9*(cw+2)*principalConstant M
+end
 
-theorem wAmplitude_pos (M : Ideal HeckeFamily.O) [NeZero M] {cw : ℝ} (hcw : 1<cw) :
+def wAmplitude (M : Ideal HeckeFamily.O) (cw : ℝ)  := 9*(cw+2)*principalConstant M
+
+section
+variable (M : Ideal HeckeFamily.O) [NeZero M] {cw : ℝ} (hcw : 1<cw)
+include M cw hcw
+
+theorem wAmplitude_pos         :
     0<wAmplitude M cw := by
   unfold wAmplitude
   exact mul_pos (mul_pos (by norm_num) (by linarith)) (principalConstant_pos M)
 
-theorem fixed_principal_w_growth (M : Ideal HeckeFamily.O) [NeZero M]
-    {cw : ℝ} (hcw : 1<cw) {x : ℝ} (hx : x∈Icc (19/20 : ℝ) cw) (t : ℝ) :
+theorem fixed_principal_w_growth    
+        {x : ℝ} (hx : x∈Icc (19/20 : ℝ) cw) (t : ℝ) :
     ‖HeckeOrigin.poleRemoved (fixedPrincipal M) ((x:ℂ)+t*I)‖≤wAmplitude M cw*height t^3 := by
   have hb := principal_poleRemoved_growth (fixedPrincipal M) rfl
     (show (19/20 : ℝ)≤(((x:ℂ)+t*I) : ℂ).re by simpa using hx.1)
@@ -105,14 +115,16 @@ theorem fixed_principal_w_growth (M : Ideal HeckeFamily.O) [NeZero M]
   calc
     _ ≤ principalConstant M*‖((x:ℂ)+t*I)+1‖*(3+|t|)^2 := hb
     _ ≤ principalConstant M*((cw+2)*height t)*(9*height t^2) := by
-      have hc2 : 0≤cw+2 := by linarith
+      
       gcongr
     _ = _ := by unfold wAmplitude; ring
 
+end
+
 theorem source_w_boundary (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ)
     (ha1 : 0<a1) (hW1 : Function.support W1⊆Icc a1 b1)
-    (M : Ideal HeckeFamily.O) [NeZero M] (X Y Z : ℝ) (hY : 0<Y)
-    (eta : Character) (s z : ℂ) (hEta : LFunction eta s≠0) (H B : ℂ → ℂ → ℂ) {cw AH : ℝ}
+     M  [NeZero M]  X Y Z  (hY : 0<Y)
+     eta   s z  (hEta : LFunction eta s≠0)  H B  {cw AH : ℝ}
     (hcw : 1<cw) (hAH : 0≤AH) (JH : ℕ)
     (hHB : ContinuousOn (fun w => H w z*B w z) {w : ℂ | (19/20:ℝ)≤w.re ∧ w.re≤cw})
     (hHBbd : ∀x∈Icc (19/20:ℝ) cw, ∀t : ℝ, (x=19/20 ∨ x=cw ∨ 1≤|t|) →

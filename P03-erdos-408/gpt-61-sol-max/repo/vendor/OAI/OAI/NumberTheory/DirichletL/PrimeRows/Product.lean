@@ -11,17 +11,21 @@ open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
 open CanonicalRowCompletion CompletedGauss
-local notation "O" => HeckeFamily.O
 
-def unramifiedFactor (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
+
+def unramifiedFactor (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ)  :=
   if P.val∣Ideal.span {u.val} then 1 else idealUnramifiedCorrection η u P x w z
 
-def unramifiedProduct (S : Finset (Ideal O)) (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
+def unramifiedProduct (S : Finset (Ideal HeckeFamily.O)) (η : Character) (u : FreeRow) (x w z : ℂ)  :=
   ∏' P : {P : PrimeIdeal // P.val∉S},unramifiedFactor η u P.val x w z
 
-theorem unramifiedFactor_defect (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hP : 4≤P.val.absNorm) (x w z : ℂ)
-    (hx : (7/8 : ℝ)≤x.re) (hw : (9/10 : ℝ)≤w.re) (hz : (4/25 : ℝ)≤z.re) :
+section
+variable (S : Finset (Ideal HeckeFamily.O)) (hS : CorrectionTail S) (η : Character) (u : FreeRow) (P : PrimeIdeal) (hP : 4≤P.val.absNorm) (x w z : ℂ) (hx : (7/8 : ℝ)≤x.re) (hw : (9/10 : ℝ)≤w.re) (hz : (4/25 : ℝ)≤z.re)
+
+include hP hx hw hz in
+theorem unramifiedFactor_defect      
+       
+          :
     ‖unramifiedFactor η u P x w z-1‖≤globalPrimeDefectBound P := by
   unfold unramifiedFactor
   split_ifs
@@ -35,9 +39,10 @@ theorem unramifiedFactor_defect (η : Character) (u : FreeRow) (P : PrimeIdeal)
     · exact hw
     · exact hz
 
-theorem unramifiedProduct_multipliable (S : Finset (Ideal O)) (hS : CorrectionTail S)
-    (η : Character) (u : FreeRow) (x w z : ℂ)
-    (hx : (7/8 : ℝ)≤x.re) (hw : (9/10 : ℝ)≤w.re) (hz : (4/25 : ℝ)≤z.re) :
+include hS hx hw hz in
+theorem unramifiedProduct_multipliable    
+         
+          :
     Multipliable (fun P : {P : PrimeIdeal // P.val∉S} =>unramifiedFactor η u P.val x w z) := by
   let F := fun P : {P : PrimeIdeal // P.val∉S} => unramifiedFactor η u P.val x w z
   let B := fun P : {P : PrimeIdeal // P.val∉S} => globalPrimeDefectBound P.val
@@ -49,6 +54,8 @@ theorem unramifiedProduct_multipliable (S : Finset (Ideal O)) (hS : CorrectionTa
   apply Finset.prod_congr rfl
   intro P hP
   exact Complex.exp_log (factor_ne_zero_of_defect _ ((hB P).trans (hS.half P)))
+
+end
 
 end SevenEighths.ProbeHighRowFamily
 

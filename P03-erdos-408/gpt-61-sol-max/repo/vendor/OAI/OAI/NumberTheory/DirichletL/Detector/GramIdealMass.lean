@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPrefactor
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma normalized_double_sum_bound (F G : Finset SupportedIdeal) (α V : SupportedIdeal→SupportedIdeal→ℂ)
     (hα : ∀C∈F,∀D∈G,‖α C D‖≤1) (p : ℝ) (hp : 0≤p) :
@@ -32,7 +32,7 @@ lemma normalized_double_sum_bound (F G : Finset SupportedIdeal) (α V : Supporte
     _=_ := by simp only [Finset.mul_sum]
 
 theorem canonical_nonexceptional_ideal_sum (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
-    (A : ℕ) (hA : 2<A) (a b : ℝ) (ha : 0<a) (hab : a<b) :
+    (A : ℕ) (hA : 2<A)  a b  (ha : 0<a) (hab : a<b) :
     ∃(J : ℕ)(H₀ : Finset (ℕ×ℕ)),
       ∀(W : ℝ→ℂ)(_hs : Function.support W⊆Set.Icc a b)(_hW : ContDiff ℝ ∞ W),
       ∃K : ℝ,0<K ∧ ∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
@@ -87,7 +87,7 @@ theorem canonical_nonexceptional_ideal_sum (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     _=_ := by dsimp [B,M];ring
 
 theorem canonical_exceptional_ideal_sum (ε : ℝ) (hε : 0<ε) (hε1 : ε<1/6)
-    (a b M₀ : ℝ) (ha : 0<a) (hb : 0≤b) (hM₀ : 0≤M₀) :
+     a b M₀  (ha : 0<a) (hb : 0≤b) (hM₀ : 0≤M₀) :
     ∃H₀ : Finset (ℕ×ℕ),∃K : ℝ,0<K ∧
       ∀(W : ℝ→ℂ)(_hcompact : HasCompactSupport W),
       (Function.support W⊆Set.Icc a b)→(∀x,‖W x‖≤M₀)→
@@ -136,6 +136,6 @@ theorem canonical_exceptional_ideal_sum (ε : ℝ) (hε : 0<ε) (hε1 : ε<1/6)
     _=_ := by dsimp [B,M];ring
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

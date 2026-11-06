@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainFiberSource
 public import OAI.NumberTheory.DirichletL.Moments.DetectorEnergyInitialState
@@ -29,15 +30,15 @@ variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 
 def retainedSourceEnergy (keep:O→Prop)
     (F:Fiber M H Label Slot U a ε tstar T allowance i)
-    (η:Character)(selected:Finset Slot)(j k:ℕ)(σ t:ℝ)(Φ:𝓢(ℝ,ℂ)):ℝ:=
+    (η:Character)(selected:Finset Slot)(j k:ℕ)(σ t:ℝ)(Φ:𝓢(ℝ,ℂ)):=
   sourceRestrictedEnergy keep (finiteColumns (fiberPool F selected))
     (fiberCoefficient F η selected j k σ t) (heightCoeff η 0) Φ U /
     ((U^F.m)*(U^F.m)*∏s:selected,U^(F.widths s.val))
 
 theorem retained_positive_energy_le_source
-    (keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(hΦ:∀x,0≤(Φ x).re)(hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
-    (F:Fiber M H Label Slot U a ε tstar T allowance i)(η:Character)
-    (selected:Finset Slot)(j k:ℕ)(σ t:ℝ)(hU:0<U)
+     keep  Φ (hΦ:∀x,0≤(Φ x).re)(hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
+    (F:Fiber M H Label Slot U a ε tstar T allowance i) η 
+    (selected:Finset Slot) j k  σ t (hU:0<U)
     (hkeep:∀u∈F.rows,keep u.val):
     (∑u∈F.rows,‖detectorPositiveRow F η selected j k σ t u‖^2)≤
       retainedSourceEnergy keep F η selected j k σ t Φ:=by
@@ -45,8 +46,7 @@ theorem retained_positive_energy_le_source
   let c:=fun I:supportedColumns Q=>fiberCoefficient F η selected j k σ t I*heightCoeff η 0 I
   let rows:Finset O:=F.rows.image Subtype.val
   have ht:0<(U^F.m)*(U^F.m)*∏s:selected,U^(F.widths s.val):=
-    mul_pos (mul_pos (Real.rpow_pos_of_pos hU _) (Real.rpow_pos_of_pos hU _))
-      (Finset.prod_pos (fun _ _=>Real.rpow_pos_of_pos hU _))
+    (by positivity)
   have he (u:FreeRow):
       ‖detectorPositiveRow F η selected j k σ t u‖^2=
       ‖rowPolynomial Finset.univ (sourceGenerator Q) c u.val‖^2/
@@ -81,7 +81,7 @@ theorem retained_positive_energy_le_source
 
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
-theorem source_fibers_eventually_retained (S:ProbeFinalAssembly.SourceData D)(η:Character):
+theorem source_fibers_eventually_retained (S:ProbeFinalAssembly.SourceData D) η :
     ∀ᶠZ:ℝ in atTop,∀rows:Finset FreeRow,
       (∀u∈rows,Z^(1/100:ℝ)≤rowNorm u)→
       ∀(d a ε tstar T allowance:ℝ)(i:ℕ)
@@ -110,7 +110,7 @@ theorem source_fibers_eventually_retained (S:ProbeFinalAssembly.SourceData D)(η
   obtain ⟨hu,hex⟩:=Finset.mem_filter.mp hu
   exact ((source_keep_iff S η₀ u).mp (hk u hu)) hex
 
-theorem source_batch_plain_retained (S:ProbeFinalAssembly.SourceData D)(η:Character):
+theorem source_batch_plain_retained (S:ProbeFinalAssembly.SourceData D) η :
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀rows:Finset FreeRow,
       (∀u∈rows,Z^(1/100:ℝ)≤rowNorm u)→
       ∀d:ℝ,d≠0→∀(a ε tstar T allowance:ℝ)(i:ℕ)

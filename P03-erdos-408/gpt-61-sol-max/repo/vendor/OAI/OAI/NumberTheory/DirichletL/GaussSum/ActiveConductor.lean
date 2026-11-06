@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.ActiveGaussFactorization
 public import OAI.NumberTheory.DirichletL.Poisson.RadialFourier
@@ -11,60 +12,60 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 namespace ActualEisensteinCubic
 
@@ -79,24 +80,32 @@ section
   simp only [activeSupport, Finset.union_eq_empty, Finset.sdiff_eq_empty_iff_subset] at he
   exact ⟨fun hi => he.1 hi, fun hi => he.2 hi⟩
 
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open   EisensteinSchwartzPoisson
 
- theorem finiteSexticRow_of_isEmpty {ι : Type*} [Fintype ι] [IsEmpty ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i) (j : ι → ℕ) (a : O) :
+ section
+variable {ι : Type*} [Fintype ι] [IsEmpty ι] (P : ι → Ideal O)
+include ι P
+
+theorem finiteSexticRow_of_isEmpty      
+      [∀ i, (P i).IsMaximal]
+    (hgood : ∀ i, lambda ∉ P i)  j   a  :
     finiteSexticRow P hgood j a = 1 := by
   simp [finiteSexticRow]
 
- theorem finitePrimeModulus_norm_of_isEmpty {ι : Type*} [Fintype ι] [IsEmpty ι]
-    (P : ι → Ideal O) : ‖eisEmbedding (finitePrimeModulus P)‖ = 1 := by
+ theorem finitePrimeModulus_norm_of_isEmpty      
+      : ‖eisEmbedding (finitePrimeModulus P)‖ = 1 := by
   have h := finitePrimeModulus_norm_sq P
   simp only [Finset.univ_eq_empty, Finset.prod_empty, map_one, Nat.cast_one] at h
   nlinarith [norm_nonneg (eisEmbedding (finitePrimeModulus P))]
 
- theorem canonicalGaussSum_of_isEmpty {ι : Type*} [Fintype ι] [IsEmpty ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hgood : ∀ i, lambda ∉ P i) (j : ι → ℕ) :
+ section
+variable [∀ i, (P i).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime P)) (hgood : ∀ i, lambda ∉ P i) (j : ι → ℕ)
+include hcop hgood j
+
+theorem canonicalGaussSum_of_isEmpty      
+       
+     
+        :
     canonicalGaussSum P hcop hgood j = 1 := by
   let c := finitePrimeModulus P
   have hc : Ideal.span {c} = ⊤ := by
@@ -113,13 +122,16 @@ open ConcreteTraceCRT EisensteinSchwartzPoisson
   rw [Fintype.sum_subsingleton _ 0]
   simp [principalSexticRow, finiteSexticQuotientRow]
 
- theorem canonicalNormalizedGauss_of_isEmpty {ι : Type*} [Fintype ι] [IsEmpty ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hgood : ∀ i, lambda ∉ P i) (j : ι → ℕ) :
+ theorem canonicalNormalizedGauss_of_isEmpty      
+       
+     
+        :
     canonicalNormalizedGauss P hcop hgood j = 1 := by
-  rw [canonicalNormalizedGauss, canonicalGaussSum_of_isEmpty,
-    finitePrimeModulus_norm_of_isEmpty, Complex.ofReal_one, div_one]
+  simp_all [canonicalNormalizedGauss, canonicalGaussSum_of_isEmpty, finitePrimeModulus_norm_of_isEmpty]
+
+end
+
+end
 
 noncomputable def squarefreePairPoissonZeroMode
     {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -141,9 +153,13 @@ end
 
 open EisensteinSchwartzPoisson
 
+section
+variable {ι : Type*}
+include ι
+
 theorem primeSubset_moebius_norm_sum
-    {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hprime : ∀ i, Prime (P i)) (hinj : Function.Injective P) (S : Finset ι) :
+      [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+    (hprime : ∀ i, Prime (P i)) (hinj : Function.Injective P)  S  :
     (∑ E ∈ S.powerset, (UniqueFactorizationMonoid.moebius (∏ i ∈ E, P i) : ℂ) /
       (Ideal.absNorm (∏ i ∈ E, P i) : ℂ)) =
       ∏ i ∈ S, (1 - (1 : ℂ) / Ideal.absNorm (P i)) := by
@@ -155,7 +171,7 @@ theorem primeSubset_moebius_norm_sum
     Finset.prod_inv_distrib, div_eq_mul_inv, one_mul]
 
 theorem primeDensity_nonneg_le_one
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (S : Finset ι) :
+      (P : ι → Ideal O) [∀ i, (P i).IsMaximal]  S  :
     0 ≤ (∏ i ∈ S, (1 - (1 : ℝ) / Ideal.absNorm (P i))) ∧
       (∏ i ∈ S, (1 - (1 : ℝ) / Ideal.absNorm (P i))) ≤ 1 := by
   have hfactor (i : ι) : 0 ≤ 1 - (1 : ℝ) / Ideal.absNorm (P i) ∧
@@ -164,16 +180,17 @@ theorem primeDensity_nonneg_le_one
       exact_mod_cast Nat.one_le_iff_ne_zero.mpr
         (Ideal.absNorm_eq_zero_iff.not.mpr (NeZero.ne (P i)))
     constructor
-    · exact sub_nonneg.mpr ((div_le_one (by linarith)).mpr hnorm)
-    · have : 0 ≤ (1 : ℝ) / Ideal.absNorm (P i) := by positivity
-      linarith
+    · bound
+    simp_all
   exact ⟨Finset.prod_nonneg (fun i _ => (hfactor i).1),
     Finset.prod_le_one₀ (fun i _ => (hfactor i).1) (fun i _ => (hfactor i).2)⟩
+
+end
 
 end ActualEisensteinCubic
 
 namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge EisensteinSchwartzPoisson
+open   ShortDraftHeckeBridge EisensteinSchwartzPoisson
 
 noncomputable def idealPairPoissonZeroMode
     (F : Finset (Ideal O)) (hFpos : ∀ I ∈ F, I ≠ ⊥)
@@ -187,23 +204,23 @@ noncomputable def idealPairPoissonZeroMode
 
 end ConcretePrimeRowBridge
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+ 
 namespace ActualEisensteinCubic
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open   EisensteinSchwartzPoisson
 
 end ActualEisensteinCubic
 
 namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge ConcreteTraceCRT EisensteinSchwartzPoisson
+open   ShortDraftHeckeBridge   EisensteinSchwartzPoisson
 
-noncomputable def idealPrimeDensity (F : Finset (Ideal O)) (I : Ideal O) : ℝ :=
+noncomputable def idealPrimeDensity (F : Finset (Ideal O)) (I : Ideal O)  :=
   ∏ i ∈ idealSupport F I, (1 - (1 : ℝ) / Ideal.absNorm i.val)
 
 theorem idealPrimeDensity_mem_Icc
-    (F : Finset (Ideal O)) (hFpos : ∀ I ∈ F, I ≠ ⊥) (I : Ideal O) :
+     F  (hFpos : ∀ I ∈ F, I ≠ ⊥)  I  :
     idealPrimeDensity F I ∈ Set.Icc (0 : ℝ) 1 := by
   let : ∀ i : primePool F, (i.val).IsMaximal := primePool_maximal F hFpos
-  exact primeDensity_nonneg_le_one (fun i : primePool F => i.val) (idealSupport F I)
+  solve_by_elim [primeDensity_nonneg_le_one, primePool, idealSupport]
 
 end ConcretePrimeRowBridge
 
@@ -213,15 +230,16 @@ end ShortDraftHeckeBridge
 
 namespace ConcretePrimeRowBridge
 
+
+
+open   ShortDraftHeckeBridge
+
 section
-open ActualEisensteinCubic ShortDraftHeckeBridge EisensteinSchwartzPoisson
-
-end
-
-open ActualEisensteinCubic ShortDraftHeckeBridge
+variable (F : Finset (Ideal O)) {I : Ideal O} (hI : I ∈ F)
+include F I hI
 
 theorem idealSupport_image_eq_factors
-    (F : Finset (Ideal O)) {I : Ideal O} (hI : I ∈ F) :
+          :
     (idealSupport F I).image Subtype.val =
       (UniqueFactorizationMonoid.normalizedFactors I).toFinset := by
   ext P
@@ -234,14 +252,13 @@ theorem idealSupport_image_eq_factors
     exact ⟨p, (mem_idealSupport_iff F I p).mpr hP, rfl⟩
 
 theorem idealSupport_product_eq
-    (F : Finset (Ideal O)) {I : Ideal O} (hI : I ∈ F) (hsI : Squarefree I) :
+          (hsI : Squarefree I) :
     (∏ i ∈ idealSupport F I, i.val) = I := by
   have hnodup := (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors
     hsI.ne_zero).mp hsI
   calc
     _ = ∏ P ∈ (idealSupport F I).image Subtype.val, P := by
-      rw [Finset.prod_image]
-      exact fun a ha b hb h => Subtype.val_injective h
+      simp_all
     _ = ∏ P ∈ (UniqueFactorizationMonoid.normalizedFactors I).toFinset, P := by
       rw [idealSupport_image_eq_factors F hI]
     _ = (UniqueFactorizationMonoid.normalizedFactors I).prod := by
@@ -249,19 +266,19 @@ theorem idealSupport_product_eq
       rw [Multiset.map_id, Multiset.toFinset_val, Multiset.dedup_eq_self.mpr hnodup]
     _ = I := Ideal.prod_normalizedFactors_eq_self hsI.ne_zero
 
+end
+
 end ConcretePrimeRowBridge
 
 namespace ActualEisensteinCubic
 
 theorem activeSupport_product_mul_common_sq
     {ι M : Type*} [DecidableEq ι] [CommMonoid M]
-    (P : ι → M) (S T : Finset ι) :
+    (P : ι → M)  S T  :
     (∏ i ∈ activeSupport S T, P i) * (∏ i ∈ S ∩ T, P i) ^ 2 =
       (∏ i ∈ S, P i) * (∏ i ∈ T, P i) := by
   have hset : activeSupport S T = (S ∪ T) \ (S ∩ T) := by
-    ext i
-    simp only [activeSupport, Finset.mem_union, Finset.mem_sdiff, Finset.mem_inter]
-    tauto
+    grind [activeSupport]
   have hsub : S ∩ T ⊆ S ∪ T := Finset.inter_subset_left.trans Finset.subset_union_left
   calc
     _ = ((∏ i ∈ activeSupport S T, P i) * (∏ i ∈ S ∩ T, P i)) *
@@ -271,7 +288,7 @@ theorem activeSupport_product_mul_common_sq
     _ = _ := Finset.prod_union_inter
 
 theorem activePrimeModulus_norm_sq
-    {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) (S T : Finset ι) :
+    {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)  S T  :
     ‖ConcreteTraceCRT.eisEmbedding (finitePrimeModulus (activePrimes P S T))‖ ^ 2 =
       (Ideal.absNorm (∏ i ∈ activeSupport S T, P i) : ℝ) := by
   rw [finitePrimeModulus_norm_sq]
@@ -281,7 +298,7 @@ theorem activePrimeModulus_norm_sq
 end ActualEisensteinCubic
 
 namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge
+open   ShortDraftHeckeBridge
 
 end ConcretePrimeRowBridge
 

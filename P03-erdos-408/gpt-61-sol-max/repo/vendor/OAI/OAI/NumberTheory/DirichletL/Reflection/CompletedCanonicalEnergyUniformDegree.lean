@@ -10,15 +10,15 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_completed_fiber_energy_uniform_degree
     (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (L cstar η : ℝ) (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η)
-    (hη1 : η≤1) (hηc : η≤cstar/100000) (rmax : ℕ) :
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     L cstar η  (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η)
+    (hη1 : η≤1) (hηc : η≤cstar/100000)  rmax  :
     ∃ (degree : ℕ), ∀ (q : ℕ) (_hq : q≠0), ∃ (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
     ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (J F : Ideal Eis) (_hJ : J≠0) (_hF : Squarefree F)
       (m : Eis) (_hm : m≠0) (Z N V M z₀ margin hhat d : ℝ),
@@ -176,7 +176,7 @@ theorem canonical_completed_fiber_energy_uniform_degree
       (CompletedHeight.normTwistedSource W θ) (Z^(N-3*hhat))
       (fun A => ∏ i,if (p i).val∣A then (1:ℂ) else 0)‖^2)
   exact hs.symm.trans_le (hbound.trans_eq hR)
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

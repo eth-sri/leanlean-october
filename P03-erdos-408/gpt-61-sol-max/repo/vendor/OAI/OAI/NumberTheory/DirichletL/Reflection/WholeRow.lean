@@ -14,12 +14,12 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-def literalWholeRow (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
+def literalWholeRow (F : PrimeFamily φ) (K ) (hK )
     (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal Eis→ℂ) : ℂ :=
+    (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal Eis→ℂ)  :=
   ∑ P : {P : Pset // IsCoprime K P.val}, r K*aw P.val.val*
     mixedReflectedValue (D P.val P.property) s (F.reflected K hK (S P.val.val)).generator_ne_zero hc
       (F.reflected K hK (S P.val.val)).generator_good (reflectedExponent jF)
@@ -35,7 +35,7 @@ lemma sum_tsum_tsum_finite_middle {α β γ : Type*} [Fintype β]
   exact (Summable.tsum_finsetSum (fun p hp => hf p hp u)).symm
 
 theorem literalWholeRow_eq_dyadic (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
+    (S : Ideal Eis→PrimeFamily σ)  jF  (Pset : Finset (Ideal Eis))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -43,8 +43,8 @@ theorem literalWholeRow_eq_dyadic (F : PrimeFamily φ) (K : Ideal Eis) (hK : Adm
     (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
     (hchar : ∀ P∈Pset, ∀ i, ringChar (Eis⧸(F.reflected K hK (S P)).ideal i)≠2)
     (hj : ∀ i,jF i<6) (hprod : ∀ P∈Pset,(∏ j,(S P).ideal j)=P)
-    (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo) (hWs : Function.support W⊆Set.Icc lo hi)
-    (hW : ContDiff ℝ ∞ W) (θ X : ℝ) (hX : 0<X) (r aw : Ideal Eis→ℂ) :
+     W  (lo hi : ℝ) (hlo : 0<lo) (hWs : Function.support W⊆Set.Icc lo hi)
+    (hW : ContDiff ℝ ∞ W)  θ X  (hX : 0<X)  r aw  :
     literalWholeRow F K hK S jF Pset D s hc W θ X r aw=
       (fixedRadialCoefficientScalar*s.stratumShapeFactor (c*primaryGenerator (∏ i,F.ideal i)))*
         ∑' u : Eisˣ,∑' i : ℕ×ℕ×ℕ,

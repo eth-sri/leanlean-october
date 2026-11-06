@@ -13,33 +13,33 @@ namespace SevenEighths.CenteredMomentReflectedUniformPair
 open HeckeFamily FourierBridge EisensteinSchwartzPoisson
 open CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
 
-def heightScale (A n : ℕ) (s t : ℝ) : ℝ := (1+s)^A/(1+‖t‖)^n
+def heightScale (A n : ℕ) (s t : ℝ)  := (1+s)^A/(1+‖t‖)^n
 
-def normalizedReflected (V W : ℝ→ℂ) (A n : ℕ) (s t x : ℝ) : ℂ :=
+def normalizedReflected (V W : ℝ→ℂ) (A n : ℕ) (s t x : ℝ)  :=
   logWindow V x*((heightScale A n s t:ℝ):ℂ)*
     paperRadialFourier (CompletedHeight.normTwistedSource W t) (s*x)
 
-def envelope (C : ℝ) (J : ℕ) (v : ℝ) : ℝ := C/(1+v^2)/(1+‖v‖)^J
+def envelope (C : ℝ) (J : ℕ) (v : ℝ)  := C/(1+v^2)/(1+‖v‖)^J
 
-lemma heightScale_pos (A n : ℕ) (s t : ℝ) (hs : 0<s) : 0<heightScale A n s t := by
+lemma heightScale_pos  A n   s t  (hs : 0<s) : 0<heightScale A n s t := by
   unfold heightScale
   positivity
 
-lemma envelope_pos (C : ℝ) (hC : 0<C) (J : ℕ) (v : ℝ) : 0<envelope C J v := by
+lemma envelope_pos  C  (hC : 0<C)  J   v  : 0<envelope C J v := by
   unfold envelope
   positivity
 
-lemma envelope_weight (C : ℝ) (J : ℕ) (v : ℝ) :
+lemma envelope_weight  C   J   v  :
     envelope C J v*(1+‖v‖)^J=C/(1+v^2) := by
   unfold envelope
   field_simp
 
-lemma envelope_integrable (C : ℝ) (J : ℕ) :
+lemma envelope_integrable  C   J  :
     Integrable (fun v : ℝ=>envelope C J v*(1+‖v‖)^J) := by
   simp_rw [envelope_weight,div_eq_mul_inv]
   exact integrable_inv_one_add_sq.const_mul C
 
-lemma envelope_integral (C : ℝ) (J : ℕ) :
+lemma envelope_integral  C   J  :
     (∫v : ℝ,envelope C J v*(1+‖v‖)^J)=C*Real.pi := by
   simp_rw [envelope_weight,div_eq_mul_inv]
   rw [integral_const_mul,integral_univ_inv_one_add_sq]

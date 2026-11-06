@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.OrthantIntegrals
 public import Erdos821.Blueprint.Classical
@@ -25,31 +26,19 @@ theorem divisors_card_mul_le (a b : ℕ) :
       ∏ p ∈ a.primeFactors, (a.factorization p + 1) := by
     symm
     apply Finset.prod_subset (Finset.subset_union_left)
-    intro p hp hpA
-    have hpz : a.factorization p = 0 := by
-      apply Finsupp.notMem_support_iff.mp
-      simpa only [Nat.support_factorization] using hpA
-    simp [hpz]
+    aesop
   have hB : ∏ p ∈ S, (b.factorization p + 1) =
       ∏ p ∈ b.primeFactors, (b.factorization p + 1) := by
     symm
     apply Finset.prod_subset (Finset.subset_union_right)
-    intro p hp hpB
-    have hpz : b.factorization p = 0 := by
-      apply Finsupp.notMem_support_iff.mp
-      simpa only [Nat.support_factorization] using hpB
-    simp [hpz]
+    aesop
   have hprod : ∀ p ∈ S,
       a.factorization p + b.factorization p + 1 ≤
         (a.factorization p + 1) * (b.factorization p + 1) := by
-    intro p hp
-    nlinarith [Nat.zero_le (a.factorization p * b.factorization p)]
+    grind
   calc
     _ = ∏ p ∈ S, (a.factorization p + b.factorization p + 1) := by
-      apply Finset.prod_congr rfl
-      intro p hp
-      rw [Nat.factorization_mul ha hb]
-      rfl
+      simp_all
     _ ≤ ∏ p ∈ S, ((a.factorization p + 1) * (b.factorization p + 1)) := by
       apply Finset.prod_le_prod
       intro p hp
@@ -58,7 +47,7 @@ theorem divisors_card_mul_le (a b : ℕ) :
 
 /-- The generalized divisor function of order `2^k` majorizes the `k`-th
 power of the ordinary divisor count. -/
-theorem divisorMultiplicity_pow_lower (k n : ℕ) (hn : 0 < n) :
+theorem divisorMultiplicity_pow_lower  k n  (hn : 0 < n) :
     n.divisors.card ^ k ≤ OAI.LargePrimeGaps.divisorMultiplicity (2 ^ k) n := by
   induction k generalizing n with
   | zero =>
@@ -93,9 +82,7 @@ theorem divisorMultiplicity_pow_lower (k n : ℕ) (hn : 0 < n) :
           have hqp : 0 < n / d := Nat.div_pos (Nat.le_of_dvd hn hdvd) hdp
           have hfac : d * (n / d) = n := Nat.mul_div_cancel' hdvd
           have hcount : n.divisors.card ≤ d.divisors.card * (n / d).divisors.card := by
-            calc
-              n.divisors.card = (d * (n / d)).divisors.card := by rw [hfac]
-              _ ≤ d.divisors.card * (n / d).divisors.card := divisors_card_mul_le d (n / d)
+            grind [divisors_card_mul_le]
           calc
             n.divisors.card ^ k ≤
                 (d.divisors.card * (n / d).divisors.card) ^ k :=
@@ -107,7 +94,7 @@ theorem divisorMultiplicity_pow_lower (k n : ℕ) (hn : 0 < n) :
         _ = OAI.LargePrimeGaps.divisorMultiplicity (q + q) n := (hrep n).symm
 
 /-- The fixed divisor moments have logarithmic reciprocal and counting bounds. -/
-def DivisorMoments : Prop :=
+def DivisorMoments  :=
   ∀ k : ℕ, ∃ C K : ℝ, 0 < K ∧ ∀ Y : ℝ, 1 ≤ Y →
     (∑ n ∈ Finset.Icc 1 ⌊Y⌋₊, (n.divisors.card : ℝ) ^ k / n) ≤
       K * Real.log (2 * Y) ^ C ∧
@@ -171,9 +158,6 @@ theorem divisorMoments : DivisorMoments := by
       _ ≤ (c * Real.log (2 * Y)) ^ D := by
         have hHnonneg : (0 : ℝ) ≤ (harmonic N : ℝ) := by
           rw [harmonic_eq_sum_Icc]
-          simp only [Rat.cast_sum, Rat.cast_inv, Rat.cast_natCast]
-          apply Finset.sum_nonneg
-          intro i hi
           positivity
         exact pow_le_pow_left₀ hHnonneg hharm D
       _ = c ^ D * Real.log (2 * Y) ^ D := by rw [mul_pow]
@@ -187,8 +171,7 @@ theorem divisorMoments : DivisorMoments := by
         intro n hn
         have hnI := Finset.mem_Icc.mp hn
         have hnpos : (0 : ℝ) < (n : ℝ) := by exact_mod_cast (by omega : 0 < n)
-        have hnY : (n : ℝ) ≤ Y := by
-          exact (Nat.cast_le.mpr hnI.2).trans hNY
+        have hnY : (n : ℝ) ≤ Y := (Nat.cast_le.mpr hnI.2).trans hNY
         have hfactor :
             (n.divisors.card : ℝ) ^ k =
               ((n.divisors.card : ℝ) ^ k / n) * (n : ℝ) := by
@@ -205,8 +188,7 @@ theorem divisorMoments : DivisorMoments := by
   refine ⟨?_, ?_⟩
   · simpa only [N] using hrecBound
   · calc
-      _ ≤ Y * (c ^ D * Real.log (2 * Y) ^ (D : ℝ)) := by
-        exact hunweighted.trans (mul_le_mul_of_nonneg_left hrecBound (by positivity))
+      _ ≤ Y * (c ^ D * Real.log (2 * Y) ^ (D : ℝ)) := hunweighted.trans (mul_le_mul_of_nonneg_left hrecBound (by positivity))
       _ = c ^ D * Y * Real.log (2 * Y) ^ (D : ℝ) := by ring
 
 end Erdos821.Classical

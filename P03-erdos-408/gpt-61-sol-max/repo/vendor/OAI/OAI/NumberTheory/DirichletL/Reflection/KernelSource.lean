@@ -9,14 +9,14 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open MeasureTheory FourierBridge InverseKernelSourceUniform
-noncomputable section
+
 universe u
 
 theorem reflected_finite_source_uniform
-    (a b : ℝ) (ha : 0<a) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
+    (a b : ℝ) (ha : 0<a)  windows   M 
     (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
-    (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a b)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+     W  (hWsupport : Function.support W ⊆ Set.Icc a b)
+    (hW : ContDiff ℝ ∞ W)  J  :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧
       HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ θ C QK QP Qn Qb r : ℝ, 0<C → 0<QK → 0<QP → 0<Qn → 0<Qb → 0<r →
@@ -58,7 +58,7 @@ theorem reflected_finite_source_uniform
     Complex.ofReal_mul]
   ring
 
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

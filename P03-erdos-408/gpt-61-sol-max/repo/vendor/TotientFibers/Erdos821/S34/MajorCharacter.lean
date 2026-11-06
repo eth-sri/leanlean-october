@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.RationalCharacterTasks
 public import Erdos821.S34.CharacterReproduction
@@ -10,7 +11,7 @@ set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint.Analytic
 
 theorem sum_triple_reorder {α β γ M : Type*} [Fintype α] [Fintype β]
@@ -32,16 +33,12 @@ theorem finite_character_kernel_integral {α β γ : Type} [Fintype α] [Fintype
   apply Finset.sum_congr rfl
   intro c _
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro E _
-  apply Finset.sum_congr rfl
-  intro D _
-  ring
+  grind
 
 theorem rational_kernel_reproduction (hfourier : RationalFourierTask)
     (hind : PrimitiveInductionTask) (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (Q r : ℕ) (u : ℤ) (h ξ ε : ℝ) (hr : 1 ≤ r) (hrQ : r ≤ Q)
-    (hε : 0 ≤ ε) (hε1 : ε ≤ 1) (X : Tuple G a) (Y : Tuple G b)
+    (Q r : ℕ) (u : ℤ)  h ξ ε  (hr : 1 ≤ r) (hrQ : r ≤ Q)
+    (hε : 0 ≤ ε) (hε1 : ε ≤ 1)  X   Y 
     (hcopA : ∀ D : Tuple G a, Nat.Coprime (product G a D) r)
     (hcopB : ∀ E : Tuple G b, Nat.Coprime (product G b E) r)
     (hrepA : ∀ χ ∈ primitiveCharacters Q,
@@ -92,5 +89,5 @@ theorem rational_kernel_reproduction (hfourier : RationalFourierTask)
     (fun ψ => ψ.norm_le_one _) (fun ψ => ψ.norm_le_one _) ha hb).trans
       (mul_le_mul_of_nonneg_left hcoeff (by positivity))
 
-end
+
 end Erdos821.S34Core

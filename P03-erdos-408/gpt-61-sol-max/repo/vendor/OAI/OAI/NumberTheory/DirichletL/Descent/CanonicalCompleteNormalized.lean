@@ -8,21 +8,21 @@ public import OAI.NumberTheory.DirichletL.Descent.CompletedReopening
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseInitialClippedColumns
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem normalizedColumnEnergy_eq_generator_sum {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+    (p:ι→ActualEisensteinCubic.O) hp [∀i,(Ideal.span {p i}).IsMaximal]
+     hcop 
     (hg:∀i,goodLambda∉Ideal.span {p i})
-    (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (labels:Finset (Ideal O))(hlabels:∀I∈labels,primaryGenerator I≠0)
-    (weight:Ideal O→ℝ)(W:ℝ→ℂ)(X Z F R:ℝ)(hZ:0<Z) :
+     pool  Ψ  m (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+     labels (hlabels:∀I∈labels,primaryGenerator I≠0)
+     weight  W  X Z F R (hZ:0<Z) :
     normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels
       (nonzeroChildFrequencyBall 1 R) weight W X Z F=
     Z^(-F)*(∑I∈labels,weight I*∑k∈nonzeroChildFrequencyBall 1 R,
@@ -41,12 +41,12 @@ theorem normalizedColumnEnergy_eq_generator_sum {ι σ:Type*}[DecidableEq ι][De
   ring
 
 theorem outside_complete_normalized_energy {σ:Type*}[DecidableEq σ]
-    (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
-    (Ψ:O→*ℂ)(m:O)(slots:Finset σ)
-    (lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
-    (labels:Finset (Ideal O))(hlabels:∀I∈labels,Supported I)
-    (weight:Ideal O→ℝ)(W:ℝ→ℂ)(X Z Fexp R:ℝ)(hZ:0<Z) :
+    (S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
+    (Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)
+     lists 
+     a 
+     labels (hlabels:∀I∈labels,Supported I)
+     weight  W  X Z Fexp R (hZ:0<Z) :
     let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
@@ -67,6 +67,6 @@ theorem outside_complete_normalized_energy {σ:Type*}[DecidableEq σ]
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

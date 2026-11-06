@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.SelectedExponents
 
@@ -10,77 +11,77 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise ENNReal
+ 
+open scoped       MatrixGroups Matrix Pointwise ENNReal
 
-lemma cosetHeight_continuous (r : CuspCosets) : Continuous (cosetHeight r) := by
+lemma cosetHeight_continuous  r  : Continuous (cosetHeight r) := by
   induction r using Quotient.inductionOn with
   | _ M =>
     have heq : cosetHeight (cosetOf M)=(fun w => hyperbolicHeight (complexMatrix M • w)) :=
@@ -89,7 +90,7 @@ lemma cosetHeight_continuous (r : CuspCosets) : Continuous (cosetHeight r) := by
     rw [heq]
     exact hyperbolicHeight_continuous.comp (continuous_hyperbolic_action _)
 
-lemma cuspCutoffCorrection_measurable (Y : ℝ) (F : ℝ → ℂ) (hF : Measurable F) :
+lemma cuspCutoffCorrection_measurable  Y   F  (hF : Measurable F) :
     Measurable (cuspCutoffCorrection Y F) := by
   unfold cuspCutoffCorrection
   apply Measurable.tsum
@@ -99,8 +100,8 @@ lemma cuspCutoffCorrection_measurable (Y : ℝ) (F : ℝ → ℂ) (hF : Measurab
   · exact measurable_const.mul (hF.comp (cosetHeight_continuous r).measurable)
   · exact measurable_const
 
-lemma cuspCutoffCorrection_norm_le (F : ℝ → ℂ) (C : ℝ) (hC : 0≤C)
-    (hF : ∀v,‖F v‖≤C) (w : HyperbolicSpace) : ‖cuspCutoffCorrection 1 F w‖≤C := by
+lemma cuspCutoffCorrection_norm_le  F   C  (hC : 0≤C)
+    (hF : ∀v,‖F v‖≤C)  w  : ‖cuspCutoffCorrection 1 F w‖≤C := by
   by_cases hh : ∃r : CuspCosets,1<cosetHeight r w
   · obtain ⟨r,hr⟩ := hh
     rw [cuspCutoffCorrection_eq 1 le_rfl F w r hr,norm_mul,norm_inv,
@@ -109,28 +110,35 @@ lemma cuspCutoffCorrection_norm_le (F : ℝ → ℂ) (C : ℝ) (hC : 0≤C)
   · have hz : cuspCutoffCorrection 1 F w=0 := by
       unfold cuspCutoffCorrection
       have hz : (fun r => cuspCutoffTerm 1 F r w)=(fun _ : CuspCosets => (0:ℂ)) := by
-        funext r
-        simp [cuspCutoffTerm,show ¬1<cosetHeight r w from fun h => hh ⟨r,h⟩]
+        grind [cuspCutoffTerm, cosetHeight]
       rw [hz,tsum_zero]
     rw [hz,norm_zero]
     exact hC
 
-lemma smoothCuspSeedDefect_measurable (a b : ℝ) (s : ℂ) (ha : 0<a) (hab : a<b) :
+section
+variable (a b : ℝ)
+include a b
+
+section
+variable (s : ℂ) (ha : 0<a) (hab : a<b)
+include s ha hab
+
+lemma smoothCuspSeedDefect_measurable         :
     Measurable (smoothCuspSeedDefect a b s) :=
   cuspCutoffCorrection_measurable 1 _ (cuspSeedDefectProfile_continuous a b s ha hab).measurable
 
-lemma smoothCuspSeedDefect_bounded (a b : ℝ) (s : ℂ) (ha : 0<a) (hab : a<b) :
+lemma smoothCuspSeedDefect_bounded         :
     ∃C : ℝ, 0≤C ∧ ∀w,‖smoothCuspSeedDefect a b s w‖≤C := by
   obtain ⟨C,hC⟩ := (cuspSeedDefectProfile_hasCompactSupport a b s hab).exists_bound_of_continuous
     (cuspSeedDefectProfile_continuous a b s ha hab)
   refine ⟨max C 0,le_max_right _ _,fun w => ?_⟩
   exact cuspCutoffCorrection_norm_le _ _ (le_max_right _ _) (fun v => (hC v).trans (le_max_left _ _)) w
 
-lemma kernelQuotientDefect_measurable (a b : ℝ) (s : ℂ) (ha : 0<a) (hab : a<b) :
+lemma kernelQuotientDefect_measurable         :
     Measurable (kernelQuotientDefect a b s) :=
   measurable_from_quotient.mpr (smoothCuspSeedDefect_measurable a b s ha hab)
 
-theorem kernelQuotientDefect_memLp (a b : ℝ) (s : ℂ) (ha : 0<a) (hab : a<b) :
+theorem kernelQuotientDefect_memLp         :
     MemLp (kernelQuotientDefect a b s) 2 (integralQuotientVolume globalKubotaKernel) := by
   obtain ⟨C,hC,hbound⟩ := smoothCuspSeedDefect_bounded a b s ha hab
   apply MemLp.of_bound (kernelQuotientDefect_measurable a b s ha hab).aestronglyMeasurable C
@@ -139,20 +147,24 @@ theorem kernelQuotientDefect_memLp (a b : ℝ) (s : ℂ) (ha : 0<a) (hab : a<b) 
   induction q using Quotient.inductionOn with
   | _ w => exact hbound w
 
-def kernelL2Defect (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ) : KernelQuotientL2 :=
+end
+
+def kernelL2Defect (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ)  :=
   (kernelQuotientDefect_memLp a b s ha hab).toLp (kernelQuotientDefect a b s)
 
-lemma kernelL2Defect_ae_eq (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ) :
+lemma kernelL2Defect_ae_eq    ha   hab   s  :
     kernelL2Defect a b ha hab s =ᵐ[integralQuotientVolume globalKubotaKernel]
       kernelQuotientDefect a b s :=
   MemLp.coeFn_toLp _
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise ENNReal
+end
 
-lemma cuspCutoffCorrection_add (F G : ℝ → ℂ) (w : HyperbolicSpace) :
+ 
+open scoped       MatrixGroups Pointwise ENNReal
+
+lemma cuspCutoffCorrection_add  F G   w  :
     cuspCutoffCorrection 1 (F+G) w=cuspCutoffCorrection 1 F w+cuspCutoffCorrection 1 G w := by
   unfold cuspCutoffCorrection
   rw [←(cuspCutoffTerm_summable 1 le_rfl F w).tsum_add (cuspCutoffTerm_summable 1 le_rfl G w)]
@@ -161,7 +173,7 @@ lemma cuspCutoffCorrection_add (F G : ℝ → ℂ) (w : HyperbolicSpace) :
   simp only [cuspCutoffTerm,Pi.add_apply]
   split_ifs <;> simp [mul_add]
 
-lemma cuspCutoffCorrection_smul (c : ℂ) (F : ℝ → ℂ) (w : HyperbolicSpace) :
+lemma cuspCutoffCorrection_smul (c : ℂ)  F   w  :
     cuspCutoffCorrection 1 (c • F) w=c • cuspCutoffCorrection 1 F w := by
   unfold cuspCutoffCorrection
   rw [smul_eq_mul,←tsum_mul_left]
@@ -173,11 +185,23 @@ lemma cuspCutoffCorrection_smul (c : ℂ) (F : ℝ → ℂ) (w : HyperbolicSpace
 def compactHeightProfile (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,ℂ)) : ℝ → ℂ :=
   (Set.Icc a b).indicator (fun v => F (Set.projIcc a b hab v))
 
-lemma compactHeightProfile_measurable (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,ℂ)) :
+section
+variable (a b : ℝ)
+include a b
+
+section
+variable (hab : a≤b)
+include hab
+
+section
+variable (F : C(Set.Icc a b,ℂ))
+include F
+
+lemma compactHeightProfile_measurable       :
     Measurable (compactHeightProfile a b hab F) :=
   (F.continuous.comp continuous_projIcc).measurable.indicator measurableSet_Icc
 
-lemma compactHeightProfile_norm_le (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,ℂ)) (v : ℝ) :
+lemma compactHeightProfile_norm_le        v  :
     ‖compactHeightProfile a b hab F v‖≤‖F‖ := by
   unfold compactHeightProfile
   by_cases hv : v∈Set.Icc a b
@@ -186,12 +210,14 @@ lemma compactHeightProfile_norm_le (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,
   · rw [Set.indicator_of_notMem hv,norm_zero]
     exact norm_nonneg _
 
-lemma compactHeightProfile_add (a b : ℝ) (hab : a≤b) (F G : C(Set.Icc a b,ℂ)) :
+end
+
+lemma compactHeightProfile_add      F G  :
     compactHeightProfile a b hab (F+G)=compactHeightProfile a b hab F+compactHeightProfile a b hab G := by
   funext v
   simp [compactHeightProfile,Set.indicator_add]
 
-lemma compactHeightProfile_smul (a b : ℝ) (hab : a≤b) (c : ℂ) (F : C(Set.Icc a b,ℂ)) :
+lemma compactHeightProfile_smul     (c : ℂ)  F  :
     compactHeightProfile a b hab (c • F)=c • compactHeightProfile a b hab F := by
   funext v
   by_cases hv : v∈Set.Icc a b <;> simp [compactHeightProfile,hv]
@@ -207,24 +233,30 @@ def kernelCompactProfile (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,ℂ)) :
     rw [hchar,one_mul] at he
     exact he.symm)
 
-lemma kernelCompactProfile_measurable (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,ℂ)) :
+section
+variable (F : C(Set.Icc a b,ℂ))
+include F
+
+lemma kernelCompactProfile_measurable       :
     Measurable (kernelCompactProfile a b hab F) :=
   measurable_from_quotient.mpr (cuspCutoffCorrection_measurable 1 _
     (compactHeightProfile_measurable a b hab F))
 
-lemma kernelCompactProfile_norm_le (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,ℂ))
-    (q : IntegralOrbitQuotient globalKubotaKernel) : ‖kernelCompactProfile a b hab F q‖≤‖F‖ := by
+lemma kernelCompactProfile_norm_le      
+     q  : ‖kernelCompactProfile a b hab F q‖≤‖F‖ := by
   induction q using Quotient.inductionOn with
   | _ w =>
     exact cuspCutoffCorrection_norm_le _ _ (norm_nonneg F)
       (compactHeightProfile_norm_le a b hab F) w
 
-lemma kernelCompactProfile_memLp (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,ℂ)) :
+lemma kernelCompactProfile_memLp       :
     MemLp (kernelCompactProfile a b hab F) 2 (integralQuotientVolume globalKubotaKernel) :=
   MemLp.of_bound (kernelCompactProfile_measurable a b hab F).aestronglyMeasurable ‖F‖
     (Filter.Eventually.of_forall (kernelCompactProfile_norm_le a b hab F))
 
-lemma kernelCompactProfile_add (a b : ℝ) (hab : a≤b) (F G : C(Set.Icc a b,ℂ)) :
+end
+
+lemma kernelCompactProfile_add      F G  :
     kernelCompactProfile a b hab (F+G)=kernelCompactProfile a b hab F+kernelCompactProfile a b hab G := by
   funext q
   induction q using Quotient.inductionOn with
@@ -233,7 +265,7 @@ lemma kernelCompactProfile_add (a b : ℝ) (hab : a≤b) (F G : C(Set.Icc a b,�
     rw [compactHeightProfile_add,cuspCutoffCorrection_add]
     rfl
 
-lemma kernelCompactProfile_smul (a b : ℝ) (hab : a≤b) (c : ℂ) (F : C(Set.Icc a b,ℂ)) :
+lemma kernelCompactProfile_smul     (c : ℂ)  F  :
     kernelCompactProfile a b hab (c • F)=c • kernelCompactProfile a b hab F := by
   funext q
   induction q using Quotient.inductionOn with
@@ -254,7 +286,11 @@ def compactProfileL2Linear (a b : ℝ) (hab : a≤b) : C(Set.Icc a b,ℂ) →ₗ
     rw [kernelCompactProfile_smul]
     exact Filter.Eventually.of_forall (fun _ => rfl)
 
-lemma compactProfileL2Linear_bound (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,ℂ)) :
+section
+variable (F : C(Set.Icc a b,ℂ))
+include F
+
+lemma compactProfileL2Linear_bound       :
     ‖compactProfileL2Linear a b hab F‖≤
       (measureUnivNNReal (integralQuotientVolume globalKubotaKernel) : ℝ)^((2:ℝ)⁻¹)*‖F‖ := by
   apply Lp.norm_le_of_ae_bound (norm_nonneg F)
@@ -263,15 +299,19 @@ lemma compactProfileL2Linear_bound (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,
   rw [hq]
   exact kernelCompactProfile_norm_le a b hab F q
 
-def compactProfileL2 (a b : ℝ) (hab : a≤b) : C(Set.Icc a b,ℂ) →L[ℂ] KernelQuotientL2 :=
+def compactProfileL2 (a b : ℝ) (hab : a≤b)  :=
   (compactProfileL2Linear a b hab).mkContinuous
     ((measureUnivNNReal (integralQuotientVolume globalKubotaKernel) : ℝ)^((2:ℝ)⁻¹))
     (compactProfileL2Linear_bound a b hab)
 
-lemma compactProfileL2_ae_eq (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,ℂ)) :
+lemma compactProfileL2_ae_eq       :
     compactProfileL2 a b hab F =ᵐ[integralQuotientVolume globalKubotaKernel]
       kernelCompactProfile a b hab F :=
   MemLp.coeFn_toLp (kernelCompactProfile_memLp a b hab F)
+
+end
+
+end
 
 def compactLogProfile (a b : ℝ) (ha : 0<a) : C(Set.Icc a b,ℂ) :=
   ⟨fun v => (Real.log (v:ℝ):ℂ),Complex.continuous_ofReal.comp
@@ -292,11 +332,15 @@ def compactDefectFirst (a b : ℝ) : C(Set.Icc a b,ℂ) where
     exact (Complex.continuous_ofReal.comp continuous_subtype_val).mul
       (Complex.continuous_ofReal.comp (hd.continuous.comp continuous_subtype_val))
 
-def compactDefectProfile (a b : ℝ) (ha : 0<a) (s : ℂ) : C(Set.Icc a b,ℂ) :=
+def compactDefectProfile (a b : ℝ) (ha : 0<a) (s : ℂ)  :=
   NormedSpace.exp (s • compactLogProfile a b ha)*
     (compactDefectSecond a b+(2*s-1) • compactDefectFirst a b)
 
-lemma compactDefectProfile_apply (a b : ℝ) (ha : 0<a) (s : ℂ) (v : Set.Icc a b) :
+section
+variable (ha : 0<a)
+include ha
+
+lemma compactDefectProfile_apply      s   v  :
     compactDefectProfile a b ha s v=cuspSeedDefectProfile a b s v := by
   have hexp := NormedSpace.map_exp (ContinuousMap.evalAlgHom ℂ ℂ v)
     (continuous_eval_const v) (s • compactLogProfile a b ha)
@@ -310,14 +354,18 @@ lemma compactDefectProfile_apply (a b : ℝ) (ha : 0<a) (s : ℂ) (v : Set.Icc a
     logRatioPower,Real.log_one,sub_zero,ContinuousMap.coe_mk]
   ring
 
-lemma compactDefectProfile_entire (a b : ℝ) (ha : 0<a) :
+lemma compactDefectProfile_entire     :
     Differentiable ℂ (compactDefectProfile a b ha) := by
   have he := differentiable_exp_smul_const ℂ (compactLogProfile a b ha)
   exact he.mul ((differentiable_const _).add
     (((differentiable_const (2:ℂ)).mul differentiable_id |>.sub (differentiable_const 1)).smul
       (differentiable_const (compactDefectFirst a b))))
 
-lemma compactHeightProfile_actual_defect (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ) :
+section
+variable (hab : a<b)
+include hab
+
+lemma compactHeightProfile_actual_defect        s  :
     compactHeightProfile a b hab.le (compactDefectProfile a b ha s)=cuspSeedDefectProfile a b s := by
   funext v
   by_cases hv : v∈Set.Icc a b
@@ -327,7 +375,7 @@ lemma compactHeightProfile_actual_defect (a b : ℝ) (ha : 0<a) (hab : a<b) (s :
     have hout : v<a ∨ b<v := by simpa only [Set.mem_Icc,not_and_or,not_le] using hv
     exact (cuspSeedDefectProfile_zero a b s v hab hout).symm
 
-lemma compactProfileL2_actual_defect (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ) :
+lemma compactProfileL2_actual_defect        s  :
     compactProfileL2 a b hab.le (compactDefectProfile a b ha s)=kernelL2Defect a b ha hab s := by
   apply Lp.ext
   grw [compactProfileL2_ae_eq,kernelL2Defect_ae_eq]
@@ -339,7 +387,7 @@ lemma compactProfileL2_actual_defect (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ
       cuspCutoffCorrection 1 (cuspSeedDefectProfile a b s) w
     rw [compactHeightProfile_actual_defect a b ha hab s]
 
-theorem kernelL2Defect_entire (a b : ℝ) (ha : 0<a) (hab : a<b) :
+theorem kernelL2Defect_entire       :
     Differentiable ℂ (kernelL2Defect a b ha hab) := by
   have heq : kernelL2Defect a b ha hab=
       fun s => compactProfileL2 a b hab.le (compactDefectProfile a b ha s) :=
@@ -347,32 +395,25 @@ theorem kernelL2Defect_entire (a b : ℝ) (ha : 0<a) (hab : a<b) :
   rw [heq]
   exact (compactProfileL2 a b hab.le).differentiable.comp (compactDefectProfile_entire a b ha)
 
+end
+
+end
+
+end
+
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+ 
 namespace SecondPassIntegration
-open ActualEisensteinCubic JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
+open   JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
 
 end SecondPassIntegration
 
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm columnLog b0Label)
-open SecondPassFiber (newRow)
 
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
 
-end
-
-end
-
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProductNorm columnLog b0Label)
 open JointLogSeparation (frequencyTwist frequencyTwist_apply)
 open SecondPassFiber (newRow)

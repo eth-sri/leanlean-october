@@ -10,16 +10,22 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 abbrev SupportedIdeal := {I : Id // Supported I}
 
-lemma gram_supported_divisor (I D : Id) (hI : Supported I) (hd : D∣I) : Supported D := by
+section
+variable (I D : Id) (hI : Supported I) (hd : D∣I)
+include I D hI hd
+
+lemma gram_supported_divisor       : Supported D := by
   obtain ⟨J,rfl⟩ := hd
   exact (supported_mul_iff D J).mp hI |>.1
 
-lemma gram_supported_quotient (I D : Id) (hI : Supported I) (hd : D∣I) :
+lemma gram_supported_quotient       :
     Supported (idealQuotient D I) := gram_supported_divisor I _ hI (idealQuotient_dvd hd)
+
+end
 
 def gcdCommon (I J : SupportedIdeal) : SupportedIdeal :=
   ⟨gcd I.val J.val,gram_supported_divisor I.val _ I.property (gcd_dvd_left _ _)⟩
@@ -32,15 +38,21 @@ def gcdRight (I J : SupportedIdeal) : SupportedIdeal :=
   ⟨idealQuotient (gcdCommon I J).val J.val,
     gram_supported_quotient J.val _ J.property (gcd_dvd_right _ _)⟩
 
-lemma gcd_residual_coprime (I J : SupportedIdeal) : IsCoprime (gcdLeft I J).val (gcdRight I J).val :=
+section
+variable (I J : SupportedIdeal)
+include I J
+
+lemma gcd_residual_coprime   : IsCoprime (gcdLeft I J).val (gcdRight I J).val :=
   (gcd_eq_iff_quotient_coprime _ _ _ (gcdCommon I J).property.1
     (gcd_dvd_left _ _) (gcd_dvd_right _ _)).mp rfl
 
-lemma gcd_common_left (I J : SupportedIdeal) : (gcdCommon I J).val*(gcdLeft I J).val=I.val :=
+lemma gcd_common_left   : (gcdCommon I J).val*(gcdLeft I J).val=I.val :=
   idealQuotient_mul (gcd_dvd_left _ _)
 
-lemma gcd_common_right (I J : SupportedIdeal) : (gcdCommon I J).val*(gcdRight I J).val=J.val :=
+lemma gcd_common_right   : (gcdCommon I J).val*(gcdRight I J).val=J.val :=
   idealQuotient_mul (gcd_dvd_right _ _)
+
+end
 
 abbrev CoprimeTriple := {t : SupportedIdeal×SupportedIdeal×SupportedIdeal // IsCoprime t.2.1.val t.2.2.val}
 
@@ -51,7 +63,7 @@ def multiplyTriple (t : CoprimeTriple) : SupportedIdeal×SupportedIdeal :=
   (⟨t.val.1.val*t.val.2.1.val,(supported_mul_iff _ _).mpr ⟨t.val.1.property,t.val.2.1.property⟩⟩,
    ⟨t.val.1.val*t.val.2.2.val,(supported_mul_iff _ _).mpr ⟨t.val.1.property,t.val.2.2.property⟩⟩)
 
-lemma gcdTriple_multiply (t : CoprimeTriple) : gcdTriple (multiplyTriple t)=t := by
+lemma gcdTriple_multiply  t  : gcdTriple (multiplyTriple t)=t := by
   have he : gcd (t.val.1.val*t.val.2.1.val) (t.val.1.val*t.val.2.2.val)=t.val.1.val := by
     rw [_root_.gcd_mul_left,normalize_eq,Ideal.isCoprime_iff_gcd.mp t.property,mul_one]
   apply Subtype.ext

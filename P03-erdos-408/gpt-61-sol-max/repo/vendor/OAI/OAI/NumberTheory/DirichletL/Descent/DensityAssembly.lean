@@ -9,10 +9,10 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open MeasureTheory FourierBridge JointLogSeparation
-noncomputable section
+
 
 theorem integrable_density_mode {ι : Type*} [Fintype ι]
-    (D : Frequency × (ι → ℝ) → ℂ) (hD : Integrable D) (a₁ a₂ ak y : ι → ℝ) :
+    (D : Frequency × (ι → ℝ) → ℂ) (hD : Integrable D)  a₁ a₂ ak y  :
     Integrable (fun z : Frequency × (ι → ℝ) => D z *
       pureProfileMode a₁ a₂ ak y z.1 z.2) := by
   have hc : Continuous (fun z : Frequency × (ι → ℝ) => pureProfileMode a₁ a₂ ak y z.1 z.2) := by
@@ -35,7 +35,7 @@ theorem density_finite_sum {ι κ : Type*} [Fintype ι] (s : Finset κ)
   intro k hk
   ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

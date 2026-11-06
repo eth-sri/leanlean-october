@@ -11,7 +11,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
 open JointLogSeparation FourierBridge MeasureTheory
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 open InverseMomentFirstProfileUniform InverseAmbientProfileTower
 theorem actual_first_original_subset_two_energies (ε : ℝ) (hε : 0<ε)
@@ -20,7 +20,7 @@ theorem actual_first_original_subset_two_energies (ε : ℝ) (hε : 0<ε)
     (hM : ∀ i,0 ≤ M₀ i) (hB₀ : ∀ i,0 ≤ B₀ i)
     (hU : ∀ i,Function.support (U₀ i) ⊆ Set.Icc (-M₀ i) (M₀ i))
     (hg₁ : Function.support g₁ ⊆ Set.Icc (-m₁) m₁)
-    (hg₂ : Function.support g₂ ⊆ Set.Icc (-m₂) m₂) (Aker J : ℕ) :
+    (hg₂ : Function.support g₂ ⊆ Set.Icc (-m₂) m₂)  Aker J  :
     ∃ Cprofile Kpush : ℝ,0 ≤ Cprofile ∧ 0<Kpush ∧ ∀ {ι κ : Type*} [DecidableEq ι] [DecidableEq κ] (p : ι → Eis) (hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal]
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -121,7 +121,7 @@ theorem actual_first_original_subset_two_energies (ε : ℝ) (hε : 0<ε)
     apply (hm2.trans he).trans
     simpa only [mul_assoc,ite_true,ite_false,Bool.false_eq_true] using mul_le_mul_of_nonneg_left (hright z) hweight
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankExistenceInduction
 public import OAI.NumberTheory.DirichletL.Inversion.CanonicalReferenceThreshold
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.CanonicalReferenceThreshold
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
@@ -18,9 +19,7 @@ theorem actual_rank_reference_cutoffs : RankReferenceCutoffs :=by
     exists_canonical_reference_cutoff lo hi
   exact ⟨Vlog,Alog,hbox,hone⟩
 
-theorem actual_rank_reference_thresholds : RankReferenceThresholds :=by
-  intro eta heta hi Alog window
-  exact eventually_canonical_reference_gates hi Alog window eta heta
+theorem actual_rank_reference_thresholds : RankReferenceThresholds :=fun eta heta hi Alog window => OAI.SevenEighths.InverseMoment.eventually_canonical_reference_gates hi Alog window eta heta
 
 theorem canonical_marked_energy_exists
     (Mcap Fcap c eps:ℝ)(hM:0≤Mcap)(hF:0≤Fcap)(hc:0<c)(heps:0<eps)
@@ -32,6 +31,6 @@ theorem canonical_marked_energy_exists
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

@@ -12,20 +12,20 @@ open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+
 
 def rawPhysicalMellinTerm (η : HeckeFamily.Character) (C : CalibrationData)
-    (S : Finset (Ideal O)) (D I J K : Ideal O) (hK : Supported K)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (H : O) (t w z : ℂ) : ℂ :=
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D I J K : Ideal ActualEisensteinCubic.O) (hK : Supported K)
+    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (H : ActualEisensteinCubic.O) (t w z : ℂ)  :=
   physicalMellinCoefficientTerm η C S D I J (primaryGenerator K)
     ((supported_span_primaryGenerator_iff K).mpr hK) X H t z *fullIdealWeight w K*
     (Y:ℂ)^(w-1)*(Z:ℂ)^t*Complex.exp (t^2)*mellin (paperRadialFourier W0) z*mellin W1 w
 
-theorem rawPhysicalMellinTerm_eq_source (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (D I J K : Ideal O) (hK : Supported K)
-    (hKS : ∀P∈S,¬P∣K) (W0 W1 : SchwartzMap ℝ ℂ)
-    (X Y Z : ℝ) (hX : 0<X) (H : NonzeroFrequency) (t w z : ℂ) :
+theorem rawPhysicalMellinTerm_eq_source  η 
+     S   hS  (hpS : ∀P∈S,Prime P)
+    (hbad : fixedBadPrimes⊆S)  D I J K   hK 
+    (hKS : ∀P∈S,¬P∣K)  W0 W1 
+     X Y Z  (hX : 0<X)  H   t w z  :
     rawPhysicalMellinTerm η (calibrationForSet S hS) S D I J K hK W0 W1 X Y Z H.val t w z=
       sourceMellinWeight W0 W1 X Y Z (t+1-z) w z *
         fullHighCoefficient S D η (fun h=>star ((calibrationForSet S hS).residueMonoid h.val))

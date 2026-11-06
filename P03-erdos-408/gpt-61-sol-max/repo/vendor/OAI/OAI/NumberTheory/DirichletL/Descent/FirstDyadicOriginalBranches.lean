@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.OriginalZeroPhysical
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -88,6 +88,6 @@ theorem original_dyadic_zero_tail
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

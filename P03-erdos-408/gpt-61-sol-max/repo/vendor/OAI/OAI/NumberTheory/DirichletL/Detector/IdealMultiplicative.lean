@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Moments.SourceRow
 
 public import OAI.NumberTheory.DirichletL.Detector.HighSeries
 public import OAI.NumberTheory.DirichletL.Detector.SixthFrequency
@@ -13,27 +16,32 @@ open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-def highSupport (I J K L : Id) : Prop :=
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+def highSupport (I J K L : Id)  :=
   Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported L
 
-lemma highSupport_mul (I J K L I' J' K' L' : Id) (hcop : IsCoprime I I') :
+section
+variable (I J K L I' J' K' L' : Id) (hI : Supported I)
+
+lemma highSupport_mul   (hcop : IsCoprime I I') :
     highSupport (I*I') (J*J') (K*K') (L*L') ↔
       highSupport I J K L ∧ highSupport I' J' K' L' := by
   simp only [highSupport, squarefree_mul_iff, supported_mul_iff]
   have hc := hcop.isRelPrime
   tauto
 
-lemma span_primaryGenerator_of_supported (I : Id) (hI : Supported I) :
-    Ideal.span {primaryGenerator I}=I :=
-  (primaryGenerator_spec I (supported_primaryGenerator_ne_zero I hI)).1
+include hI in
+alias span_primaryGenerator_of_supported := _root_.OAI.SevenEighths.CenteredMomentSourceRow.primary_span_supported
 
-lemma primaryGenerator_coprime (I J : Id) (hI : Supported I) (hJ : Supported J)
+include hI in
+lemma primaryGenerator_coprime     (hJ : Supported J)
     (hcop : IsCoprime I J) : IsCoprime (primaryGenerator I) (primaryGenerator J) := by
   apply (Ideal.isCoprime_span_singleton_iff _ _).mp
   rwa [span_primaryGenerator_of_supported I hI,span_primaryGenerator_of_supported J hJ]
+
+end
 
 lemma completed_block_dvd_cube (I J K L : Id) : I*J^3*K ∣ (I*J*K*L)^3 := by
   refine ⟨I^2*K^2*L^3,?_⟩
@@ -47,9 +55,13 @@ lemma last_block_dvd (I J K L : Id) : L ∣ I*J*K*L := by
   refine ⟨I*J*K,?_⟩
   ring
 
-theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character)
-    (I J K L I' J' K' L' : Id)
-    (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
+section
+variable (η : HeckeFamily.Character) (s x w z : ℂ) (I J K L I' J' K' L' : Id) (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L'))
+
+include hcop in
+theorem bareIdealHighCoefficient_mul  
+     
+      :
     bareIdealHighCoefficient η 1 (I*I') (J*J') (K*K') (L*L') =
       bareIdealHighCoefficient η 1 I J K L * bareIdealHighCoefficient η 1 I' J' K' L' := by
   have hII := hcop.mono (first_block_dvd I J K L) (first_block_dvd I' J' K' L')
@@ -97,25 +109,25 @@ theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character)
     unfold bareIdealHighCoefficient
     rw [dite_eq_right hprod]
     by_cases hi : highSupport I J K L
-    · have hj : ¬highSupport I' J' K' L' := fun hj=>h ⟨hi,hj⟩
-      unfold highSupport at hj
-      rw [dite_eq_right hj,mul_zero]
-    · unfold highSupport at hi
-      rw [dite_eq_right hi,zero_mul]
+    · grind [highSupport]
+    grind [highSupport]
 
-lemma fullIdealWeight_mul (s : ℂ) (I J : Id) :
+lemma fullIdealWeight_mul     :
     fullIdealWeight s (I*J)=fullIdealWeight s I*fullIdealWeight s J :=
   (IdealEuler.normWeight s).map_mul I J
 
-theorem bareIdealHighSummand_mul (η : HeckeFamily.Character) (x w z : ℂ)
-    (I J K L I' J' K' L' : Id)
-    (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
+include hcop in
+theorem bareIdealHighSummand_mul    
+     
+      :
     bareIdealHighSummand η 1 x w z (I*I') (J*J') (K*K') (L*L') =
       bareIdealHighSummand η 1 x w z I J K L * bareIdealHighSummand η 1 x w z I' J' K' L' := by
   unfold bareIdealHighSummand
   rw [bareIdealHighCoefficient_mul η I J K L I' J' K' L' hcop,
     fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul]
   ring
+
+end
 
 end SevenEighths.ProbePhysical
 end

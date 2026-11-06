@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Major.Assembly
 
 public import Erdos408.TwoSided.Graph.BoundsLists
 
@@ -22,7 +25,7 @@ namespace GraphBounds
 open Finset
 
 /-- `z^M q₀^{z/2} ≤ c q₀^{M/2}` for all `z`, for some `c ≥ 1`. -/
-theorem exists_pow_mul_sqrt_pow_le {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (M : ℕ) :
+theorem exists_pow_mul_sqrt_pow_le  {q₀}  (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1)  M  :
     ∃ c : ℝ, 1 ≤ c ∧ ∀ z : ℕ, (z : ℝ) ^ M * Real.sqrt q₀ ^ z ≤ c * Real.sqrt q₀ ^ M := by
   have hs0 : 0 < Real.sqrt q₀ := Real.sqrt_pos.2 hq₀
   have hs1 : Real.sqrt q₀ < 1 := (Real.sqrt_lt' one_pos).2 (by rw [one_pow]; exact hq₀₁)
@@ -38,11 +41,14 @@ theorem exists_pow_mul_sqrt_pow_le {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q
 
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
 
+section
+variable (P : ι → Finset ℕ)
+
 /-- **A list sum with its damping.** If `z^M q₀^{z/2} ≤ c q₀^{M/2}` for all `z`, then
 `#lists(n) q₀^{(ω(n) - Ms)₊/2} ≤ c^s`: `#lists(n) ≤ ∏_g ω_g(n)^M`. -/
-theorem card_physicalLists_mul_damping_le (P : ι → Finset ℕ) {q₀ : ℝ} (hq₀ : 0 < q₀)
-    (hq₀₁ : q₀ < 1) {M : ℕ} {c : ℝ}
-    (hc : ∀ z : ℕ, (z : ℝ) ^ M * Real.sqrt q₀ ^ z ≤ c * Real.sqrt q₀ ^ M) (n : ℕ) :
+theorem card_physicalLists_mul_damping_le    {q₀}  (hq₀ : 0 < q₀)
+    (hq₀₁ : q₀ < 1)  {M}   {c} 
+    (hc : ∀ z : ℕ, (z : ℝ) ^ M * Real.sqrt q₀ ^ z ≤ c * Real.sqrt q₀ ^ M)  n  :
     (#(physicalLists P M n) : ℝ) *
         Real.sqrt q₀ ^ (groupPrimeCount P n - M * Fintype.card ι) ≤
       c ^ Fintype.card ι := by
@@ -64,8 +70,7 @@ theorem card_physicalLists_mul_damping_le (P : ι → Finset ℕ) {q₀ : ℝ} (
           r ^ (groupPrimeCount P n - M * Fintype.card ι) * ∏ _g : ι, r ^ M
         ≤ (∏ g, (primeCount (P g) n : ℝ) ^ M) * ∏ g, r ^ primeCount (P g) n := by
           rw [mul_assoc]
-          exact mul_le_mul hcard hdamp (by positivity)
-            (prod_nonneg fun _ _ => by positivity)
+          gcongr <;> first | assumption | positivity | linarith
       _ = ∏ g, (primeCount (P g) n : ℝ) ^ M * r ^ primeCount (P g) n :=
           prod_mul_distrib.symm
       _ ≤ ∏ _g : ι, c * r ^ M :=
@@ -76,27 +81,19 @@ theorem card_physicalLists_mul_damping_le (P : ι → Finset ℕ) {q₀ : ℝ} (
 
 /-- `‖D^{iζ}‖ ≤ 1` for a natural number `D`. -/
 theorem norm_natCast_cpow_mul_I_le (D : ℕ) (ζ : ℝ) :
-    ‖(D : ℂ) ^ ((ζ : ℂ) * Complex.I)‖ ≤ 1 := by
-  rcases Nat.eq_zero_or_pos D with hD | hD
-  · subst hD
-    by_cases hζ : (ζ : ℂ) * Complex.I = 0
-    · rw [hζ, Complex.cpow_zero, norm_one]
-    · rw [Nat.cast_zero, Complex.zero_cpow hζ, norm_zero]
-      exact zero_le_one
-  · rw [Complex.norm_natCast_cpow_of_pos hD]
-    simp
+    ‖(D : ℂ) ^ ((ζ : ℂ) * Complex.I)‖ ≤ 1 := by solve_by_elim [_root_.SharedProofs.shared_norm_natCast_cpow_mul_I_le]
 
 /-- **The absolute pattern bound.** With `‖f‖ ≤ 1`, `‖g‖ ≤ L_g`, `‖K‖ ≤ κ_K`, `V_g ≥ v₋` and
 `z^M q₀^{z/2} ≤ c q₀^{M/2}` (`M = J + 1`),
 `‖patternPairing P q₀ C K ζ S f g‖ ≤ |S| κ_K L_g (β^{2M} c²)^s` with `β = max 1 v₋⁻¹`. The
 target lists are bounded by all physical lists at `n + D`. -/
-theorem norm_patternPairing_le (P : ι → Finset ℕ) {vlo : ℝ} (hvlo : 0 < vlo)
-    (hV : ∀ g, vlo ≤ harmonicMass (P g)) {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) {J : ℕ}
-    {c : ℝ} (hc : ∀ z : ℕ, (z : ℝ) ^ (J + 1) * Real.sqrt q₀ ^ z ≤ c * Real.sqrt q₀ ^ (J + 1))
+theorem norm_patternPairing_le    {vlo}  (hvlo : 0 < vlo)
+    (hV : ∀ g, vlo ≤ harmonicMass (P g))  {q₀}  (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) {J : ℕ}
+     {c}  (hc : ∀ z : ℕ, (z : ℝ) ^ (J + 1) * Real.sqrt q₀ ^ z ≤ c * Real.sqrt q₀ ^ (J + 1))
     (hc1 : 1 ≤ c) (C : ι → Finset (Fin J))
-    (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ) {κK : ℝ}
-    (hK : ∀ p p' a, ‖K p p' a‖ ≤ κK) (ζ : ℝ) (S : Finset ℕ) {f : ℕ → ℂ}
-    (hf : ∀ n, ‖f n‖ ≤ 1) {g : ℕ → ℂ} {Lg : ℝ} (hg : ∀ n, ‖g n‖ ≤ Lg) :
+    (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)  {κK} 
+    (hK : ∀ p p' a, ‖K p p' a‖ ≤ κK)  ζ   S   {f} 
+    (hf : ∀ n, ‖f n‖ ≤ 1)  {g}   {Lg}  (hg : ∀ n, ‖g n‖ ≤ Lg) :
     ‖patternPairing P q₀ C K ζ S f g‖ ≤
       #S * κK * Lg * ((max 1 vlo⁻¹) ^ (2 * (J + 1)) * c ^ 2) ^ Fintype.card ι := by
   set β := max 1 vlo⁻¹
@@ -113,8 +110,7 @@ theorem norm_patternPairing_le (P : ι → Finset ℕ) {vlo : ℝ} (hvlo : 0 < v
   have hΛ : ∀ n, 0 ≤ Λ n := fun n => pow_nonneg (Real.sqrt_nonneg _) _
   have haux : ∀ a, 0 ≤ aux a := fun a => prod_nonneg fun h _ => prod_nonneg fun i _ =>
     inv_nonneg.2 (mul_nonneg (hVpos h).le (Nat.cast_nonneg _))
-  have hlist : ∀ n, (#(physicalLists P (J + 1) n) : ℝ) * Λ n ≤ c ^ s := fun n =>
-    card_physicalLists_mul_damping_le P hq₀ hq₀₁ hc n
+  have hlist : ∀ n, (#(physicalLists P (J + 1) n) : ℝ) * Λ n ≤ c ^ s := card_physicalLists_mul_damping_le P hq₀ hq₀₁ hc
   -- the mass of one edge
   have hmass : ∀ a, 0 ≤ ∏ h, (harmonicMass (P h))⁻¹ ^ (J + 1) *
       (∏ i ∈ C h, (harmonicMass (P h) * a h i)⁻¹) * (harmonicMass (P h))⁻¹ ^ ((C h).card + 1) ∧
@@ -169,7 +165,7 @@ theorem norm_patternPairing_le (P : ι → Finset ℕ) {vlo : ℝ} (hvlo : 0 < v
             (mul_le_mul hm (hf n) (norm_nonneg _) hBw) (hK p p' a) (norm_nonneg _)
             (by rw [mul_one]; exact hBw)) h₁ (norm_nonneg _)
             (by rw [mul_one]; exact mul_nonneg hBw hκ)) hΛ2) (hg _) (norm_nonneg _)
-            (by rw [mul_one, mul_one]; exact mul_nonneg (mul_nonneg hBw hκ) hΛ2)
+            (by positivity)
       _ = B * aux a * κK * Lg * (Λ n * Λ (n + edgeProduct C p a)) := by ring
   -- the target lists, by all physical lists at `n + D`
   have hinner : ∀ n p a (T : Finset (ι → Fin (J + 1) → ℕ)),
@@ -214,6 +210,8 @@ theorem norm_patternPairing_le (P : ι → Finset ℕ) {vlo : ℝ} (hvlo : 0 < v
     _ = #S * κK * Lg * (β ^ (2 * (J + 1)) * c ^ 2) ^ s := by
         rw [sum_const, nsmul_eq_mul, hB, mul_pow, ← pow_mul, ← pow_mul]
         ring
+
+end
 
 end GraphBounds
 

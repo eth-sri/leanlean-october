@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.Blueprint.Classical
 public import Mathlib.Algebra.Order.Star.Real
@@ -17,13 +18,13 @@ noncomputable section
 attribute [local instance] Classical.propDecidable
 
 /-- The logarithmic parameter used in the analytic blueprint. -/
-def L (x : ℝ) : ℝ := Real.log x
+def L (x : ℝ)  := Real.log x
 
 /-- The additive character used in the analytic blueprint. -/
-def e (t : ℝ) : ℂ := Complex.exp (2 * Real.pi * t * Complex.I)
+def e (t : ℝ)  := Complex.exp (2 * Real.pi * t * Complex.I)
 
 /-- Fourier separation contract copied from the architect's blueprint. -/
-def FourierSeparation : Prop :=
+def FourierSeparation  :=
   ∀ b : ℕ, ∀ C R : ℝ, 0 < C → 0 < R → ∀ bounds : ℕ → ℝ,
     (∀ j, 0 ≤ bounds j) → ∃ C' K : ℝ, C < C' ∧ 0 < K ∧
       ∀ A : ℝ, 0 < A → ∃ KA : ℝ, 0 < KA ∧
@@ -35,9 +36,12 @@ def FourierSeparation : Prop :=
           (∀ y, F y = ∫ ξ, a ξ * e (∑ i, ξ i * y i)) ∧
           (∫ ξ in {ξ : Fin b → ℝ | L x ^ C' < ‖ξ‖}, ‖a ξ‖) ≤ KA * L x ^ (-A)
 
-private lemma fourier_weighted_pointwise {V : Type*}
-    [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
-    [MeasurableSpace V] [BorelSpace V] (φ : 𝓢(V, ℂ)) (m : ℕ) (ξ : V) :
+section
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] (φ : 𝓢(V, ℂ))
+
+private lemma fourier_weighted_pointwise  
+         
+          (m : ℕ) (ξ : V) :
     ‖ξ‖ ^ m * ‖𝓕 φ ξ‖ ≤
       (2 : ℝ) ^ m *
         ∑ p ∈ Finset.range (0 + 1) ×ˢ Finset.range (m + 1),
@@ -48,9 +52,9 @@ private lemma fourier_weighted_pointwise {V : Type*}
   simpa [norm_iteratedFDeriv_zero, ← SchwartzMap.fourier_coe] using h
 
 private lemma integral_derivative_on_ball_le
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
-    (φ : 𝓢(V, ℂ)) (S B : ℝ) (j : ℕ)
+         
+         
+      (S B : ℝ) (j : ℕ)
     (hSupport : tsupport (φ : V → ℂ) ⊆ Metric.closedBall 0 S)
     (_hB : 0 ≤ B)
     (hDeriv : ∀ v, ‖iteratedFDeriv ℝ j (φ : V → ℂ) v‖ ≤ B) :
@@ -76,9 +80,9 @@ private lemma integral_derivative_on_ball_le
       simp [measureReal_def]
 
 private lemma fourier_weighted_pointwise_of_deriv
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
-    (φ : 𝓢(V, ℂ)) (S : ℝ) (hSupport : tsupport (φ : V → ℂ) ⊆ Metric.closedBall 0 S)
+         
+         
+      (S : ℝ) (hSupport : tsupport (φ : V → ℂ) ⊆ Metric.closedBall 0 S)
     (D : ℕ → ℝ) (hDnonneg : ∀ j, 0 ≤ D j)
     (hD : ∀ j v, ‖iteratedFDeriv ℝ j (φ : V → ℂ) v‖ ≤ D j) (m : ℕ) :
     ∀ ξ : V, ‖ξ‖ ^ m * ‖𝓕 φ ξ‖ ≤
@@ -87,10 +91,7 @@ private lemma fourier_weighted_pointwise_of_deriv
           ∑ j ∈ Finset.range (m + 1), D j := by
   intro ξ
   have hpoint := fourier_weighted_pointwise φ m ξ
-  have hDsum_nonneg : 0 ≤ ∑ j ∈ Finset.range (m + 1), D j := by
-    apply Finset.sum_nonneg
-    intro j hj
-    exact hDnonneg j
+  
   have hsum :
       (∑ p ∈ Finset.range (0 + 1) ×ˢ Finset.range (m + 1),
         ∫ v : V, ‖v‖ ^ p.1 * ‖iteratedFDeriv ℝ p.2 (φ : V → ℂ) v‖) ≤
@@ -100,16 +101,7 @@ private lemma fourier_weighted_pointwise_of_deriv
       _ ≤ ∑ p ∈ Finset.range (0 + 1) ×ˢ Finset.range (m + 1),
           (volume (Metric.closedBall (0 : V) S)).toReal * D p.2 := by
         apply Finset.sum_le_sum
-        intro p hp
-        have hp' := Finset.mem_product.mp hp
-        have hp₁ : p.1 = 0 := by
-          have h := Finset.mem_range.mp hp'.1
-          omega
-        have hp₂ : p.2 ∈ Finset.range (m + 1) := hp'.2
-        rw [hp₁]
-        simp only [pow_zero, one_mul]
-        exact integral_derivative_on_ball_le φ S (D p.2) p.2 hSupport
-          (hDnonneg p.2) (hD p.2)
+        simp_all [Finset.range, integral_derivative_on_ball_le]
       _ ≤ ∑ _p ∈ Finset.range (0 + 1) ×ˢ Finset.range (m + 1),
           (volume (Metric.closedBall (0 : V) S)).toReal *
             (∑ j ∈ Finset.range (m + 1), D j) := by
@@ -129,14 +121,13 @@ private lemma fourier_weighted_pointwise_of_deriv
           ∫ v : V, ‖v‖ ^ p.1 * ‖iteratedFDeriv ℝ p.2 (φ : V → ℂ) v‖) := hpoint
     _ ≤ (2 : ℝ) ^ m * ((m + 1 : ℝ) *
         (volume (Metric.closedBall (0 : V) S)).toReal *
-        ∑ j ∈ Finset.range (m + 1), D j) := by
-      exact mul_le_mul_of_nonneg_left hsum (by positivity)
+        ∑ j ∈ Finset.range (m + 1), D j) := mul_le_mul_of_nonneg_left hsum (by positivity)
     _ = _ := by ring
 
 private lemma fourier_moment_integral_bound
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
-    (φ : 𝓢(V, ℂ)) (q m : ℕ) (hq : Module.finrank ℝ V < q)
+         
+         
+      (q m : ℕ) (hq : Module.finrank ℝ V < q)
     (B₀ Bmq : ℝ)
     (h₀ : ∀ ξ : V, ‖𝓕 φ ξ‖ ≤ B₀)
     (hmq : ∀ ξ : V, ‖ξ‖ ^ (m + q) * ‖𝓕 φ ξ‖ ≤ Bmq) :
@@ -158,7 +149,9 @@ private lemma fourier_moment_integral_bound
         ∫ ξ : V, (1 + ‖ξ‖) ^ (-(q : ℝ)) := by
       rw [integral_const_mul]
 
-private lemma coordinate_norm_le_euclidean (b : ℕ) (ξ : Fin b → ℝ) :
+end
+
+private lemma coordinate_norm_le_euclidean  b   ξ  :
     ‖ξ‖ ≤ ‖(WithLp.toLp 2 ξ : EuclideanSpace ℝ (Fin b))‖ := by
   change ((Finset.univ.sup (fun i : Fin b => ‖ξ i‖₊) : NNReal) : ℝ) ≤
     ((‖(WithLp.toLp 2 ξ : EuclideanSpace ℝ (Fin b))‖₊ : NNReal) : ℝ)
@@ -167,7 +160,7 @@ private lemma coordinate_norm_le_euclidean (b : ℕ) (ξ : Fin b → ℝ) :
   intro i hi
   exact_mod_cast PiLp.norm_apply_le (WithLp.toLp 2 ξ) i
 
-private lemma inner_toLp_coord (b : ℕ) (ξ y : Fin b → ℝ) :
+private lemma inner_toLp_coord  b   ξ y  :
     inner ℝ (WithLp.toLp 2 ξ : EuclideanSpace ℝ (Fin b)) (WithLp.toLp 2 y) =
       ∑ i, ξ i * y i := by
   rw [EuclideanSpace.inner_toLp_toLp]
@@ -183,9 +176,8 @@ private lemma tail_integral_le_moment
     (∫ ξ in {ξ : P | T < ‖ξ‖}, ‖a ξ‖ ∂μ) ≤
       (T ^ m)⁻¹ * ∫ ξ, ‖toV ξ‖ ^ m * ‖a ξ‖ ∂μ := by
   let s : Set P := {ξ : P | T < ‖ξ‖}
-  have hs : MeasurableSet s := by
-    exact measurableSet_lt measurable_const (continuous_norm.measurable)
-  have hInv : 0 ≤ (T ^ m)⁻¹ := (inv_nonneg.mpr (pow_nonneg hT.le _))
+  have hs : MeasurableSet s := measurableSet_lt measurable_const (continuous_norm.measurable)
+  
   have hpoint :
       (fun ξ => ‖a ξ‖) ≤ᵐ[μ.restrict s]
         fun ξ => (T ^ m)⁻¹ * (‖toV ξ‖ ^ m * ‖a ξ‖) := by
@@ -198,7 +190,7 @@ private lemma tail_integral_le_moment
       simpa [mul_comm] using hm
     have hd : ‖a ξ‖ ≤ (‖toV ξ‖ ^ m * ‖a ξ‖) / (T ^ m) :=
       (le_div_iff₀ (pow_pos hT m)).2 hm'
-    simpa [div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc] using hd
+    grind
   calc
     _ ≤ ∫ ξ in s, (T ^ m)⁻¹ * (‖toV ξ‖ ^ m * ‖a ξ‖) ∂μ := by
       simpa only [s] using
@@ -206,7 +198,7 @@ private lemma tail_integral_le_moment
     _ ≤ ∫ ξ, (T ^ m)⁻¹ * (‖toV ξ‖ ^ m * ‖a ξ‖) ∂μ := by
       refine setIntegral_le_integral (s := s) (hmom.const_mul (T ^ m)⁻¹) ?_
       filter_upwards with ξ
-      exact mul_nonneg hInv (mul_nonneg (pow_nonneg (norm_nonneg _) _) (norm_nonneg _))
+      positivity
     _ = (T ^ m)⁻¹ * ∫ ξ, ‖toV ξ‖ ^ m * ‖a ξ‖ ∂μ := by
       rw [integral_const_mul]
 
@@ -228,10 +220,8 @@ theorem lem_fourier_separation : FourierSeparation := by
   have hWint : Integrable (fun ξ : V => (1 + ‖ξ‖) ^ (-(q : ℝ))) := by
     apply integrable_one_add_norm
     exact_mod_cast hqfin
-  have hWnonneg : 0 ≤ W := by
-    exact integral_nonneg (fun ξ => by positivity)
-  have hvol : 0 ≤ vol := by
-    exact ENNReal.toReal_nonneg
+  have hWnonneg : 0 ≤ W := integral_nonneg (fun ξ => by positivity)
+  have hvol : 0 ≤ vol := ENNReal.toReal_nonneg
   have hS : 0 < S := by
     dsimp [S]
     positivity
@@ -262,8 +252,7 @@ theorem lem_fourier_separation : FourierSeparation := by
   intro A hA
   have hdelta : 0 < (C + 1) - C := by norm_num
   obtain ⟨m, hmratio⟩ := exists_nat_gt ((A + C * ((q : ℝ) + 1)) / ((C + 1) - C))
-  have hmprod : A + C * ((q : ℝ) + 1) < (m : ℝ) * ((C + 1) - C) := by
-    exact (div_lt_iff₀ hdelta).mp hmratio
+  have hmprod : A + C * ((q : ℝ) + 1) < (m : ℝ) * ((C + 1) - C) := (div_lt_iff₀ hdelta).mp hmratio
   have hmcast : ((m + q + 1 : ℕ) : ℝ) = (m : ℝ) + (q : ℝ) + 1 := by norm_cast
   have hExp : C * ((m + q + 1 : ℕ) : ℝ) - (C + 1) * (m : ℝ) ≤ -A := by
     rw [hmcast]
@@ -372,8 +361,7 @@ theorem lem_fourier_separation : FourierSeparation := by
       _ ≤ (2 : ℝ) ^ n * (n + 1 : ℝ) * vol *
           ∑ j ∈ Finset.range (n + 1), D j := hbase
       _ ≤ (2 : ℝ) ^ n * (n + 1 : ℝ) * vol *
-          (H n * (L x) ^ (C * ((n : ℝ) + 1))) := by
-        exact mul_le_mul_of_nonneg_left (hsumD n)
+          (H n * (L x) ^ (C * ((n : ℝ) + 1))) := mul_le_mul_of_nonneg_left (hsumD n)
           (mul_nonneg (mul_nonneg (by positivity) (by positivity)) hvol)
       _ = B n * (L x) ^ (C * ((n : ℝ) + 1)) := by
         dsimp [B]
@@ -402,8 +390,7 @@ theorem lem_fourier_separation : FourierSeparation := by
           (B 0 + B (n + q)) * (L x) ^ (C * ((n + q : ℝ) + 1)) := by
       calc
         _ ≤ B 0 * (L x) ^ (C * ((n + q : ℝ) + 1)) +
-            B (n + q) * (L x) ^ (C * ((n + q : ℝ) + 1)) := by
-          exact add_le_add_left (mul_le_mul_of_nonneg_left hpow (hBnonneg 0)) _
+            B (n + q) * (L x) ^ (C * ((n + q : ℝ) + 1)) := add_le_add_left (mul_le_mul_of_nonneg_left hpow (hBnonneg 0)) _
         _ = _ := by ring
     calc
       _ ≤ (2 : ℝ) ^ q *
@@ -411,13 +398,12 @@ theorem lem_fourier_separation : FourierSeparation := by
             B (n + q) * (L x) ^ (C * ((n + q : ℝ) + 1))) * W := by
         simpa [W] using hbase
       _ ≤ (2 : ℝ) ^ q *
-          ((B 0 + B (n + q)) * (L x) ^ (C * ((n + q : ℝ) + 1))) * W := by
-        exact mul_le_mul_of_nonneg_right
+          ((B 0 + B (n + q)) * (L x) ^ (C * ((n + q : ℝ) + 1))) * W := mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_left hsum (by positivity)) hWnonneg
       _ = M n * (L x) ^ (C * ((n + q : ℝ) + 1)) := by
         dsimp [M]
         ring
-  let toV : (Fin b → ℝ) → V := fun ξ => WithLp.toLp 2 ξ
+  let toV : (Fin b → ℝ) → V := WithLp.toLp 2
   have hmp : MeasurePreserving toV volume (volume : Measure V) := by
     simpa [toV, V] using (PiLp.volume_preserving_toLp (Fin b))
   have hme : MeasurableEmbedding toV := by
@@ -568,8 +554,7 @@ theorem lem_fourier_separation : FourierSeparation := by
           ring
     _ = ∫ ξ : Fin b → ℝ, a ξ * e (∑ i, ξ i * y i) := hIntegral.symm
 
-theorem blueprint_lem_fourier_separation : Erdos821.Blueprint.FourierSeparation := by
-  exact lem_fourier_separation
+theorem blueprint_lem_fourier_separation : Erdos821.Blueprint.FourierSeparation := lem_fourier_separation
 
 end
 

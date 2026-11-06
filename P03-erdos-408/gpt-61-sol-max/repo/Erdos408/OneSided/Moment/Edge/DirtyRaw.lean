@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Phased.Edge
 
 public import Erdos408.OneSided.Moment.Edge.RawCol
 
@@ -38,7 +41,7 @@ open scoped Classical in
 /-- The coefficient of the raw part of an edge piece: the edge amplitude
 `M!^{-2K} ρ^{hits} ρ^{hits'} ∏_i w_i (d₀/D) η(b/Y) η(a/Y) ψ(t/Y)` of an admissible choice
 times the raw kernel `[t - b + a = 0]`. -/
-def rawCoef (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : ℂ :=
+def rawCoef (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)  :=
   ((if EdgeValid x d Y d₀ u v r B s c then
       ((((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
         pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 *
@@ -51,13 +54,7 @@ def rawCoef (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r
         (∏ i, (c.2.2.2.1 i).1 : ℕ) = 0 then 1 else 0
 
 /-- `|η| ≤ 1`. -/
-private theorem abs_dyadicBump_le' (y : ℝ) : |dyadicBump y| ≤ 1 := by
-  unfold dyadicBump
-  have h₁ := smoothTransition.nonneg (y - 1)
-  have h₂ := smoothTransition.le_one (y - 1)
-  have h₃ := smoothTransition.nonneg (y / 2 - 1)
-  have h₄ := smoothTransition.le_one (y / 2 - 1)
-  exact abs_le.2 ⟨by linarith, by linarith⟩
+private alias abs_dyadicBump_le' := _root_.SharedProofs.abs_dyadicBump_le
 
 /-- **The raw coefficient bound**: `|w [t - b + a = 0]| ≤ rawAmp`. With `D ∣ det`, the raw kernel
 is the raw determinant equation, and the factors `d₀/D`, `η`, `η`, `ψ` have modulus at most
@@ -98,7 +95,7 @@ theorem norm_rawCoef_le (hq : 0 < q) (hd₀ : 0 < d₀)
         have h₂ := abs_dyadicBump_le' ((∏ i, edgeSrc s c i (Fin.last _) : ℕ) / Y)
         have h₃ := abs_dyadicBump_le' ((∏ i, (c.2.2.2.1 i).1 : ℕ) / Y)
         have h₄ := smoothTransition.le_one (5 - |((edgeDet s c / edgePad s c : ℤ) : ℝ) / Y|)
-        have h₅ : 0 ≤ d₀ / edgePad s c := (div_pos hd₀ hD).le
+        
         calc d₀ / ↑(edgePad s c) * |dyadicBump _| * |dyadicBump _| * plateau _
             ≤ 1 * 1 * 1 * 1 := by
               gcongr <;> first | exact h₄ | exact smoothTransition.nonneg _
@@ -126,23 +123,29 @@ variable {q x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B N : ℕ}
 
 /-- The small row `ε = 16 (4 C_ρ)^K B / M^K + 16 (2B + 1)^K 2^K e^{-L^{0.1}/4}` of the dirty raw
 pieces (PD `mem:epsilon`). -/
-def rawEps (q x : ℝ) (B : ℕ) : ℝ :=
+def rawEps (q x : ℝ) (B : ℕ)  :=
   16 * (4 * dampConst q) ^ K * B / ((padCount x + 1 : ℕ) : ℝ) ^ K +
     16 * (2 * B + 1) ^ K * (2 ^ K * Real.exp (-Real.log x ^ (1 / 10 : ℝ) / 4))
 
+section
+variable (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u) (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+
+
+include hq hq₁ in
 /-- The small row is nonnegative. -/
-theorem rawEps_nonneg (hq : 0 < q) (hq₁ : q < 1) (x : ℝ) (B : ℕ) : 0 ≤ rawEps (K := K) q x B := by
+theorem rawEps_nonneg      x   B  : 0 ≤ rawEps (K := K) q x B := by
   have := one_le_dampConst hq hq₁
   unfold rawEps
   positivity
 
+include hq hq₁ hU hu hdisj in
 /-- **The rows of the dirty raw pieces**: `16 · 2^K` without promotions, and `ε` with
 promotions. -/
-theorem sum_rawAmp_le_rowBound (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem sum_rawAmp_le_rowBound        
+     
     (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (ha : ∀ i, 1 / 10 ≤ d.a i)
-    (hL : 1 ≤ Real.log x) (s : ChainState x d Y d₀ u v r B) (S I : Finset (Fin K)) :
+    (hL : 1 ≤ Real.log x) (s : ChainState x d Y d₀ u v r B)  S I  :
     ∑ c ∈ rawChoices x d Y d₀ u v r S I, rawAmp q N s c ≤
       if I = ∅ then 16 * 2 ^ K else rawEps (K := K) q x B := by
   split_ifs with hI
@@ -154,18 +157,19 @@ theorem sum_rawAmp_le_rowBound (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * Y *
     gcongr
     exact ha _
 
+include hq hq₁ hd₀ hU hu hdisj in
 /-- **The dirty raw pieces for fixed data** (PD `mem:raw-dirty-norm`): the weighted Schur test
 with weight one. The row of `(S, I)` and the column (`2^K` times the row of `(I, S)`) are
 `16 · 2^K` and `ε` according as the promoted and the stored set are empty; one of them is
 nonempty, so the norm is at most `√(2^K · 16 · 2^K · ε)` once `ε ≤ 16 · 2^K`. -/
-theorem normLe_rawChoiceOp (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hU : 0 < d₀ * Y * d.Hm)
-    (hu : 0 < u) (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem normLe_rawChoiceOp        
+       
     (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) ∧ harmonicMass (band x (d.a i)) ≤ 1)
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (ha : ∀ i, 1 / 10 ≤ d.a i)
-    (hL : 1 ≤ Real.log x) (hε : rawEps (K := K) q x B ≤ 16 * 2 ^ K) {S I : Finset (Fin K)}
+    (hL : 1 ≤ Real.log x) (hε : rawEps (K := K) q x B ≤ 16 * 2 ^ K)  {S I} 
     (hSI : (S, I) ≠ (∅, ∅)) :
-    NormLe (fun s => chainMeasure q x d Y d₀ u v r B N s)
-      (fun s => chainMeasure q x d Y d₀ u v r B N s)
+    NormLe (chainMeasure q x d Y d₀ u v r B N)
+      (chainMeasure q x d Y d₀ u v r B N)
       (choiceOp (rawChoices x d Y d₀ u v r S I) (rawCoef q N) (chainEdgeOut x d Y d₀ u v r B))
       (Real.sqrt (2 ^ K * (16 * 2 ^ K) * rawEps (K := K) q x B)) := by
   classical
@@ -178,21 +182,15 @@ theorem normLe_rawChoiceOp (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hU :
   set ρB : Finset (Fin K) → ℝ := fun J => if J = ∅ then 16 * 2 ^ K else rawEps (K := K) q x B
     with hρB
   have hρB0 : ∀ J, 0 ≤ ρB J := fun J => by
-    simp only [hρB]
-    split_ifs
-    · positivity
-    · exact hε0
+    positivity
   have hρBle : ∀ J, ρB J ≤ 16 * 2 ^ K := fun J => by
-    simp only [hρB]
-    split_ifs
-    · exact le_rfl
-    · exact hε
+    grind
   have hrowB := fun s J T => sum_rawAmp_le_rowBound (N := N) (B := B) hq hq₁ hU hu hdisj hV' hb
     ha hL (Y := Y) (d₀ := d₀) (v := v) (r := r) s T J
   have hnorm := normLe_choiceOp (cs := rawChoices x d Y d₀ u v r S I) (a := rawCoef q N)
     (out := chainEdgeOut x d Y d₀ u v r B)
-    (μ := fun s => chainMeasure q x d Y d₀ u v r B N s)
-    (ν := fun s => chainMeasure q x d Y d₀ u v r B N s) (h := fun _ => 1) (h' := fun _ => 1)
+    (μ := chainMeasure q x d Y d₀ u v r B N)
+    (ν := chainMeasure q x d Y d₀ u v r B N) (h := fun _ => 1) (h' := fun _ => 1)
     (R := ρB I) (C := 2 ^ K * ρB S) (hρB0 I) (by have := hρB0 S; positivity) hμ0
     (fun _ => zero_lt_one) (fun s => ?_) (fun s' => ?_)
   · refine fun f => (hnorm f).trans (mul_le_mul_of_nonneg_right
@@ -207,10 +205,7 @@ theorem normLe_rawChoiceOp (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hU :
       rw [h₁]
       have h2 : (0 : ℝ) < 2 ^ K := by positivity
       have h3 := mul_le_mul_of_nonneg_left (hρBle S) (mul_nonneg hε0 h2.le)
-      calc rawEps (K := K) q x B * (2 ^ K * ρB S) = rawEps (K := K) q x B * 2 ^ K * ρB S := by
-            ring
-        _ ≤ rawEps (K := K) q x B * 2 ^ K * (16 * 2 ^ K) := h3
-        _ = _ := by ring
+      grind
   · -- the row
     rw [mul_one]
     refine (sum_le_sum fun c hc => ?_).trans ((hrowB s I S).trans (le_of_eq ?_))
@@ -237,64 +232,32 @@ theorem normLe_rawChoiceOp (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hU :
           · exact hrowB s' S I
       _ = 2 ^ K * ρB S * chainMeasure q x d Y d₀ u v r B N s' := by ring
 
+end
+
 end Schur
 
 /-! ### Asymptotics -/
 
-/-- The damping defects are in `[0, 1]`. -/
-private theorem dampDefect_mem_Icc' {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
-    0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
-  unfold dampDefect
-  split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
+section
+variable {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (halo : 1 / 10 < alo)
 
+
+include hq hq₁ in
 /-- For primes `p ≥ 2N + 1`, the baseline is `b'_p ≥ 1/2`: each of the `N + 1` defects is at
 most `1`, and `p + 1 ≥ 2(N + 1)`. -/
-private theorem half_le_baseline' {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {N p : ℕ}
-    (hp : 2 * N + 1 ≤ p) : 1 / 2 ≤ baseline q N p := by
-  have hp1 : (0 : ℝ) < p + 1 := by positivity
-  have hNp : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast (show 2 * (N + 1) ≤ p + 1 by omega)
-  have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (N : ℝ) + 1 :=
-    calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
-          sum_le_sum fun j _ => (dampDefect_mem_Icc' hq hq₁ N j).2
-      _ = (N : ℝ) + 1 := by simp
-  have h₁ : ((p : ℝ) + 1)⁻¹ * ∑ j ∈ range (N + 1), dampDefect q N j ≤ 1 / 2 := by
-    rw [inv_mul_le_iff₀ hp1]
-    linarith
-  unfold baseline
-  linarith
+private alias half_le_baseline' := _root_.SharedProofs.half_le_baseline_
 
+include halo in
 /-- Eventually every band prime is at least `2N + 1` for `N = 2R`: band primes exceed `L`, and
 `2N + 1 ≤ 2 L^{1/2} + 5 ≤ L`. -/
-private theorem eventually_two_mul_add_one_le' {C CX alo ahi g : ℝ} (halo : 1 / 10 < alo) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
-      ∀ p ∈ bandPrimes x d, 2 * (2 * momentPower x) + 1 ≤ p := by
-  have hL := (tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 2)).comp Real.tendsto_log_atTop
-  filter_upwards [eventually_rpow_lt_of_mem_band (by linarith : 0 < alo) 1,
-    hL.eventually_ge_atTop 8, Real.tendsto_log_atTop.eventually_gt_atTop 0]
-    with x hbig hs8 hL0 d hd p hp
-  obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
-  have hLp := hbig (d.a i) (hd.window i).1 p hpi
-  rw [Real.rpow_one] at hLp
-  set s := Real.log x ^ (1 / 2 : ℝ) with hs
-  have hs8' : 8 ≤ s := hs8
-  have hss : s * s = Real.log x := by
-    rw [hs, ← Real.rpow_add hL0]
-    norm_num
-  have hR : (momentPower x : ℝ) < s / 2 + 1 := by
-    unfold momentPower
-    exact Nat.ceil_lt_add_one (by linarith)
-  have h8 : 8 * s ≤ s * s := mul_le_mul_of_nonneg_right hs8' (by linarith)
-  have : ((2 * (2 * momentPower x) + 1 : ℕ) : ℝ) < p := by
-    push_cast
-    linarith
-  exact_mod_cast this.le
+private alias eventually_two_mul_add_one_le' := _root_.SharedProofs.eventually_two_mul_add_one_le_
 
+include hq hq₁ in
 /-- **The small row is small** (PD `mem:raw-dirty-norm`): for `K ≥ 200 (G + 3)`, eventually
 every `B ≤ L³` has `2^K · 16 · 2^K · ε ≤ (L^{-G-1})²` and `ε ≤ 16 · 2^K`. Here
 `B/M^K ≤ L³/L^{K/100} ≤ L^{-2G-3}`, as `M ≥ L^{0.01}`, and `B^K e^{-L^{0.1}/4}` decays faster
 than every power of `L`. -/
-theorem eventually_rawEps_small {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {G : ℝ} (hG : 0 < G)
+theorem eventually_rawEps_small       {G : ℝ} (hG : 0 < G)
     (hK : 200 * (G + 3) ≤ (K : ℝ)) :
     ∀ᶠ x : ℝ in atTop, ∀ B : ℕ, (B : ℝ) ≤ Real.log x ^ 3 →
       2 ^ K * (16 * 2 ^ K) * rawEps (K := K) q x B ≤ (Real.log x ^ (-(G + 1))) ^ 2 ∧
@@ -302,9 +265,7 @@ theorem eventually_rawEps_small {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {G : ℝ}
   have hdC := one_le_dampConst hq hq₁
   set κ : ℝ := 2 ^ K * (16 * 2 ^ K) with hκ
   have hκ1 : 1 ≤ κ := by
-    rw [hκ]
-    have : (1 : ℝ) ≤ 2 ^ K := one_le_pow₀ (by norm_num)
-    nlinarith
+    bound
   set c₁ : ℝ := κ * 16 * (4 * dampConst q) ^ K with hc₁
   set c₂ : ℝ := κ * 16 * 3 ^ K * 2 ^ K with hc₂
   have hc₂0 : 0 < c₂ := by positivity
@@ -376,7 +337,7 @@ theorem eventually_rawEps_small {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {G : ℝ}
       rw [mul_pow, ← pow_mul, ← Real.rpow_natCast L (3 * K)]
       push_cast
       ring_nf
-    have hE := Real.exp_pos (-L ^ (1 / 10 : ℝ) / 4)
+    
     calc κ * (16 * (2 * B + 1) ^ K * (2 ^ K * Real.exp (-L ^ (1 / 10 : ℝ) / 4)))
         ≤ κ * (16 * (3 * L ^ 3) ^ K * (2 ^ K * Real.exp (-L ^ (1 / 10 : ℝ) / 4))) := by
           gcongr
@@ -384,10 +345,7 @@ theorem eventually_rawEps_small {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {G : ℝ}
           have hLA : L ^ A * L ^ (-(2 * G + 2)) = L ^ (3 * (K : ℝ)) := by
             rw [hpow, hA]
             ring_nf
-          rw [show c₂ * (L ^ A * Real.exp (-(L ^ (1 / 10 : ℝ)) / 4)) * L ^ (-(2 * G + 2)) =
-            c₂ * Real.exp (-(L ^ (1 / 10 : ℝ)) / 4) * (L ^ A * L ^ (-(2 * G + 2))) by ring,
-            hLA, hLK, hc₂, neg_div]
-          ring
+          grind
       _ ≤ c₂ * (1 / (2 * c₂)) * L ^ (-(2 * G + 2)) := by gcongr
       _ = L ^ (-(2 * G + 2)) / 2 := by field_simp
   have hmain : κ * rawEps (K := K) q x B ≤ (L ^ (-(G + 1))) ^ 2 := by
@@ -400,21 +358,21 @@ theorem eventually_rawEps_small {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {G : ℝ}
   have hε0 := rawEps_nonneg (K := K) hq hq₁ x B
   have : rawEps (K := K) q x B ≤ 1 := by nlinarith
   have : (1 : ℝ) ≤ 16 * 2 ^ K := by
-    have : (1 : ℝ) ≤ 2 ^ K := one_le_pow₀ (by norm_num)
-    linarith
+    bound
   linarith
 
+include hq hq₁ hC hD halo in
 /-- **M7 for the raw coefficients**: for `K ≥ K₀` and `B ≤ L³`, every dirty raw piece has norm
 at most `L^{-G-1}` for the chain measure, uniformly in the root box. -/
-theorem eventually_rawChoiceOp_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (hC : 0 < C) (hD : 0 < Dstar) (halo : 1 / 10 < alo) (hK : bandThreshold Dstar C ≤ K)
+theorem eventually_rawChoiceOp_normLe      
+          (hK : bandThreshold Dstar C ≤ K)
     (hg : 0 < g) :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ, ∀ u v r : ℝ,
       (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u →
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
       ∀ S I : Finset (Fin K), (S, I) ≠ (∅, ∅) →
-        NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
-          (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
+        NormLe (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
+          (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
           (choiceOp (rawChoices x d (2 ^ j) (2 ^ k) u v r S I) (rawCoef q N)
             (chainEdgeOut x d (2 ^ j) (2 ^ k) u v r B))
           (Real.log x ^ (-(edgePrec Dstar C + 1))) := by
@@ -456,5 +414,7 @@ theorem eventually_rawChoiceOp_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q
   · have hν := primeWeight_nonneg_of (fun i => (hV i).1) hb (q := q)
     exact mul_nonneg (prod_nonneg fun i _ => prod_nonneg fun h _ => hν _)
       (memWeight_nonneg (fun xp => hν _) _)
+
+end
 
 end Erdos408.OneSided

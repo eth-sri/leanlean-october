@@ -24,51 +24,51 @@ namespace Erdos408.TwoSided
 open Filter
 
 /-- The dyads `X = 2^m` with `√x ≤ X ≤ x²`. -/
-noncomputable def dyads (x : ℝ) : Finset ℕ :=
+noncomputable def dyads (x : ℝ)  :=
   (Finset.range (⌊2 * Real.logb 2 x⌋₊ + 1)).filter fun m => √x ≤ 2 ^ m ∧ (2 : ℝ) ^ m ≤ x ^ 2
 
 /-- The source positions `S_X = [X, 2X)`. -/
-noncomputable def dyadSource (X : ℝ) : Finset ℕ :=
+noncomputable def dyadSource (X : ℝ)  :=
   Finset.Ico ⌈X⌉₊ ⌈2 * X⌉₊
 
 /-- The target positions `S'_X = [X, 3X)`. -/
-noncomputable def dyadTarget (X : ℝ) : Finset ℕ :=
+noncomputable def dyadTarget (X : ℝ)  :=
   Finset.Ico ⌈X⌉₊ ⌈3 * X⌉₊
 
 /-- The damping `h(n) = √q₀^{ω_P(n) - M s_P}` of a physical endpoint, with ℕ subtraction as
 in `patternPairing`. -/
 noncomputable def physicalDamping (q₀ : ℝ) {ι : Type} [Fintype ι] (P : ι → Finset ℕ)
-    (M n : ℕ) : ℝ :=
+    (M n : ℕ)  :=
   Real.sqrt q₀ ^ (groupPrimeCount P n - M * Fintype.card ι)
 
 /-- The source endpoint `f_{X,ξ}(n) = conj(N_F⁻¹ F(n) (n/x)^{2πiξ} (X/n) h(n))` on `S_X`, with
 `N_F = L`. -/
-noncomputable def sourceEndpoint (x q₀ : ℝ) {ι : Type} [Fintype ι] (P : ι → Finset ℕ)
-    (J : ℕ) (F : ℕ → ℝ) (X ξ : ℝ) (n : ℕ) : ℂ :=
+noncomputable def sourceEndpoint (x q₀ : ℝ) {ι } [Fintype ι] (P : ι → Finset ℕ)
+    (J : ℕ) (F : ℕ → ℝ) (X ξ : ℝ) (n : ℕ)  :=
   if n ∈ dyadSource X then
     starRingEnd ℂ (((Real.log x)⁻¹ * F n * (X / n) * physicalDamping q₀ P (J + 1) n : ℝ) *
       ((n / x : ℝ) : ℂ) ^ (((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I))
   else 0
 
 /-- The target endpoint `g_X(n') = G(n') h(n')` on `S'_X`. -/
-noncomputable def targetEndpoint (q₀ : ℝ) {ι : Type} [Fintype ι] (P : ι → Finset ℕ)
-    (J : ℕ) (G : ℕ → ℝ) (X : ℝ) (n : ℕ) : ℂ :=
+noncomputable def targetEndpoint (q₀ : ℝ) {ι } [Fintype ι] (P : ι → Finset ℕ)
+    (J : ℕ) (G : ℕ → ℝ) (X : ℝ) (n : ℕ)  :=
   if n ∈ dyadTarget X then ((G n * physicalDamping q₀ P (J + 1) n : ℝ) : ℂ) else 0
 
 /-- The positions of `S_X` lie in `[X, 2X)`. -/
-theorem mem_dyadSource {X : ℝ} {n : ℕ} (hn : n ∈ dyadSource X) : X ≤ n ∧ (n : ℝ) < 2 * X := by
+theorem mem_dyadSource  {X}   {n}  (hn : n ∈ dyadSource X) : X ≤ n ∧ (n : ℝ) < 2 * X := by
   obtain ⟨h₁, h₂⟩ := Finset.mem_Ico.1 hn
   exact ⟨Nat.ceil_le.1 h₁, Nat.lt_ceil.1 h₂⟩
 
 /-- `g_X` vanishes off `S'_X`. -/
-theorem targetEndpoint_eq_zero (q₀ : ℝ) {ι : Type} [Fintype ι] (P : ι → Finset ℕ) (J : ℕ)
-    (G : ℕ → ℝ) (X : ℝ) {n : ℕ} (hn : n ∉ dyadTarget X) : targetEndpoint q₀ P J G X n = 0 := by
+theorem targetEndpoint_eq_zero (q₀ : ℝ) {ι : Type} [Fintype ι] (P : ι → Finset ℕ)  J 
+     G   X   {n}  (hn : n ∉ dyadTarget X) : targetEndpoint q₀ P J G X n = 0 := by
   simp [targetEndpoint, hn]
 
 /-- `‖g_X‖ ≤ L^{B₀}` for a clipped core: `0 ≤ G ≤ L^{B₀}` and `0 ≤ h ≤ 1`. -/
 theorem norm_targetEndpoint_le {B₀ x q₀ : ℝ} (hx : 1 < x) (hq₀₁ : q₀ < 1) {ι : Type}
-    [Fintype ι] {P : ι → Finset ℕ} {G : ℕ → ℝ} (hG : CoreAdmissible B₀ x P G) (J : ℕ)
-    (X : ℝ) (n : ℕ) : ‖targetEndpoint q₀ P J G X n‖ ≤ Real.log x ^ B₀ := by
+    [Fintype ι] {P : ι → Finset ℕ}  {G}  (hG : CoreAdmissible B₀ x P G)  J 
+     X   n  : ‖targetEndpoint q₀ P J G X n‖ ≤ Real.log x ^ B₀ := by
   have hL0 : 0 < Real.log x := Real.log_pos hx
   have hh0 : 0 ≤ physicalDamping q₀ P (J + 1) n := pow_nonneg (Real.sqrt_nonneg _) _
   have hh1 : physicalDamping q₀ P (J + 1) n ≤ 1 :=
@@ -83,7 +83,7 @@ theorem norm_targetEndpoint_le {B₀ x q₀ : ℝ} (hx : 1 < x) (hq₀₁ : q₀
     exact Real.rpow_nonneg hL0.le _
 
 /-- A dyad `X = 2^m` satisfies `√x ≤ X ≤ x²`. -/
-theorem mem_dyads {x : ℝ} {m : ℕ} (hm : m ∈ dyads x) : √x ≤ 2 ^ m ∧ (2 : ℝ) ^ m ≤ x ^ 2 :=
+theorem mem_dyads  {x}   {m}  (hm : m ∈ dyads x) : √x ≤ 2 ^ m ∧ (2 : ℝ) ^ m ≤ x ^ 2 :=
   (Finset.mem_filter.1 hm).2
 
 /-- Eventually there are at most `4L` dyads. -/
@@ -109,9 +109,9 @@ slots, `|B| ≤ 1` and the clipped core, for every dyad `X = 2^m` and frequency 
 length `Y + 1`, `∑_n #lists(n) ∏ V^{-M} ≤ Y + 2 ∏_g (|P_g|/V_g)^M`, which is (6.12) plus
 `exp(O(J T L^{0.46})) ≤ √x ≤ X`. In place of U7 the proof uses the crude bound `|F| ≤ L`
 (`eventually_abs_centeredCore_le_log`). -/
-theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ)
-    (d : ℕ) (B₀ : ℝ) (hq : 0 < q) (hq₁ : q < 1) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo)
-    (halo : 1 / 10 < alo) (hc : 0 < c) (J : ℕ) :
+theorem eventually_endpoint_bounds  q q₀ c₀ C₀ vlo vhi alo ahi   K₀   CN c 
+     d   B₀  (hq : 0 < q) (hq₁ : q < 1) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo)
+    (halo : 1 / 10 < alo) (hc : 0 < c)  J  :
     ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
@@ -169,8 +169,7 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
         abs_of_pos (inv_pos.2 hL0), abs_of_nonneg (div_nonneg (by linarith) hn0.le)]
       have hXn' : X / n ≤ 1 := (div_le_one hn0).2 hXn
       calc L⁻¹ * |centeredCore x q a u v Bc n| * (X / n) * physicalDamping q₀ P (J + 1) n
-          ≤ L⁻¹ * L * 1 * 1 := by
-            refine mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_left hFn (by positivity)) hXn'
+          ≤ L⁻¹ * L * 1 * 1 := mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_left hFn (by positivity)) hXn'
               (div_nonneg (by linarith) hn0.le) (by positivity)) (hh n).2 (hh n).1
               (by positivity)
         _ = 1 := by field_simp

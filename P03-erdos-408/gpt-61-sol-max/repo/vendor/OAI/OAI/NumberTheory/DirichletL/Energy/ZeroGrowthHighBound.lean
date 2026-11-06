@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ZeroUnbalancedOriginal
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReferencePhysicalBounded
@@ -11,7 +12,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowth
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -25,11 +26,11 @@ open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
 open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
 open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyOriginalProfileControl
-local notation "O"=>HeckeFamily.O
-local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
-lemma low_restrict (Q:Ideal O)(a b bΦ Bmask L L' Mcap e Z:ℝ)
-    (degree:ℕ)(S:Finset (ℕ×ℕ))(K:ℝ)(hZ:1≤Z)(hL:L'≤L)
+
+
+lemma low_restrict  Q (a b bΦ Bmask L L' Mcap e Z:ℝ)
+     degree  S  K (hZ:1≤Z)(hL:L'≤L)
     (h:ZeroLowAt Q a b bΦ Bmask L Mcap e Z degree S K):
     ZeroLowAt Q a b bΦ Bmask L' Mcap e Z degree S K:=by
   intro s hQ hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂ hl
@@ -38,14 +39,14 @@ lemma low_restrict (Q:Ideal O)(a b bΦ Bmask L L' Mcap e Z:ℝ)
 
 theorem actual_high_from_physical
     (a b bΦ rho ε Mcap Bmask B εdiag ξ saving:ℝ)
-    (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0<rho)(hε:0<ε)
+     ha (hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0<rho)(hε:0<ε)
     (hM:0≤Mcap)(hBmask:0≤Bmask)(hB:0≤B)(hεdiag:0<εdiag)(hξ:0<ξ):
     ∃Ψ:𝓢(ℝ,ℂ),Function.support (Ψ:ℝ→ℂ)⊆Set.Icc (-1) (bΦ+1) ∧
       (∀x,0≤(Ψ x).re) ∧
     ∀degree:ℕ,∀S:Finset (ℕ×ℕ),∀Jmass:ℕ,∀Smass:Finset (ℕ×ℕ),
     ∃Jout:ℕ,∃U:Finset (ℕ×ℕ),∃Cfixed:ℝ,0<Cfixed ∧
       ∀ᶠZ:ℝ in atTop,1<Z ∧
-      ∀(e emass efinal:ℝ)(Q:Ideal O)(K Cmass:ℝ),
+      ∀(e emass efinal:ℝ)(Q:Ideal HeckeFamily.O)(K Cmass:ℝ),
       0≤e→0≤K→0≤Cmass→e+ε≤efinal→emass≤efinal→εdiag≤efinal→-saving≤efinal→
       ZeroLowAt Q a b bΦ Bmask (Mcap+Bmask+rho/100) Mcap e Z degree S K→
       ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q→ rho≤s.width→s.width≤Mcap→
@@ -75,7 +76,7 @@ theorem actual_high_from_physical
   let P:ℝ:=1
   let D:ℝ:=Cdiag*P*Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
   let T:ℝ:=Ctail*P*Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ
-  have hP:0≤P:=by norm_num [P]
+  
   have hD:0≤D:=by dsimp [D];positivity
   have hT:0≤T:=by dsimp [T];positivity
   let Cfixed:ℝ:=Cu+2*Cr+2*D+2*T+2
@@ -93,7 +94,7 @@ theorem actual_high_from_physical
   have hz:0<Z:=zero_lt_one.trans hZ.1
   have hscale:0≤s.radial.scale:=s.radial.scale_pos.le
   have hdg:=diagonalControl_nonneg s.radial.profile
-  have hbase:1≤1+|t|:=by exact le_add_of_nonneg_right (abs_nonneg t)
+  have hbase:1≤1+|t|:=le_add_of_nonneg_right (abs_nonneg t)
   let Mout:ℝ:=max s.width (length Z X₁+length Z X₂)
   have hwm:s.width≤Mout:=le_max_left _ _
   let F:ℝ:=(p.control U)^2*(1+|t|)^Jout*Z^(Mout+efinal)

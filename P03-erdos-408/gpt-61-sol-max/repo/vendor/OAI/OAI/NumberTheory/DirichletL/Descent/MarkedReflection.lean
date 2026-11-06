@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.MarkedTwists
 
@@ -14,14 +15,18 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 variable {ι : Type*}
 
-def markTwist (p : ι → Eis) (T : Finset ι) : Eis →* ℂ :=
+def markTwist (p : ι → Eis) (T : Finset ι)  :=
   ∏ i ∈ T, coprimalityMask (p i)
 
-theorem markTwist_norm (p : ι → Eis) (T : Finset ι) (x : Eis) : ‖markTwist p T x‖ ≤ 1 := by
+section
+variable (p : ι → Eis)
+include p
+
+theorem markTwist_norm   (T : Finset ι)  x  : ‖markTwist p T x‖ ≤ 1 := by
   simp only [markTwist, MonoidHom.finsetProd_apply, norm_prod]
   exact Finset.prod_le_one₀ (fun i hi => norm_nonneg _) (fun i hi => coprimalityMask_norm _ _)
 
-theorem markTwist_periodic (p : ι → Eis) (S T : Finset ι) (hTS : T ⊆ S) :
+theorem markTwist_periodic   (S T : Finset ι) (hTS : T ⊆ S) :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {∏ i ∈ S, p i}) (markTwist p T) := by
   intro x y hxy
   simp only [markTwist, MonoidHom.finsetProd_apply]
@@ -32,12 +37,16 @@ theorem markTwist_periodic (p : ι → Eis) (S T : Finset ι) (hTS : T ⊆ S) :
   exact (Finset.dvd_prod_of_mem p (hTS hi)).trans (Ideal.mem_span_singleton.mp hxy)
 
 def markedThetaQuotient (p : ι → Eis) (S : Finset ι) (Ψ : Eis →* ℂ) (c : Eis)
-    (x : Eis ⧸ Ideal.span {c}) : ℂ :=
+    (x : Eis ⧸ Ideal.span {c})  :=
   fixedThetaQuotient Ψ c x * ∏ i ∈ S, if p i ∣ Quotient.out x then 1 else 0
 
-theorem markedThetaQuotient_twists (p : ι → Eis) (S : Finset ι)
-    (hp : ∀ i ∈ S, Prime (p i)) (Ψ : Eis →* ℂ) (c : Eis)
-    (x : Eis ⧸ Ideal.span {c}) :
+section
+variable (S : Finset ι) (hp : ∀ i ∈ S, Prime (p i)) (Ψ : Eis →* ℂ)
+include S hp Ψ
+
+theorem markedThetaQuotient_twists    
+         c 
+     x  :
     markedThetaQuotient p S Ψ c x =
       ∑ T ∈ S.powerset, (-1 : ℂ) ^ T.card * fixedThetaQuotient (markTwist p T * Ψ) c x := by
   have hmark (i : ι) (hi : i ∈ S) :
@@ -56,15 +65,15 @@ theorem markedThetaQuotient_twists (p : ι → Eis) (S : Finset ι)
   simp only [fixedThetaQuotient, fixedThetaTwist_mul, markTwist, MonoidHom.finsetProd_apply]
   ring
 
-theorem markedCompletedT_canonical_reflection (p : ι → Eis) (S : Finset ι)
-    (hp : ∀ i ∈ S, Prime (p i))
-    (Ψ : Eis →* ℂ) (hΨ : ∀ x, ‖Ψ x‖ ≤ 1)
+theorem markedCompletedT_canonical_reflection    
+     
+      (hΨ : ∀ x, ‖Ψ x‖ ≤ 1)
     (Q : Ideal Eis) (hperiod : CanonicalCoefficientClass.FactorsModulo Q Ψ)
-    (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]
+     c   hc  [Fintype (Eis ⧸ Ideal.span {c})]
     (hcQ : Ideal.span {c} ≤ Ideal.span {(9 : Eis)} * (Q * Ideal.span {∏ i ∈ S, p i}))
-    (W : ℝ → ℂ) (hWcompact : HasCompactSupport W)
+     W  (hWcompact : HasCompactSupport W)
     (v0 v1 : ℝ) (hv0 : 0 < v0) (hWs : Function.support W ⊆ Set.Icc v0 v1)
-    (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0 < X) :
+    (hW : ContDiff ℝ ∞ W)  X  (hX : 0 < X) :
     markedCompletedT Ψ W X (fun A => ∏ i ∈ S, if Ideal.span {p i} ∣ A then 1 else 0) =
       thetaDerivativeScalar⁻¹ * ∑ h : Eis ⧸ Ideal.span {c},
         finiteAdditiveFourierCoeff (quotientTrace c hc) (markedThetaQuotient p S Ψ c) h *
@@ -106,11 +115,11 @@ theorem markedCompletedT_canonical_reflection (p : ι → Eis) (S : Finset ι)
       simp_rw [hcoeff]
       simp only [Finset.mul_sum, Finset.sum_mul]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro h hh
-      apply Finset.sum_congr rfl
-      intro T hT
       ring
+
+end
+
+end
 
 end
 end SevenEighths.InverseMoment

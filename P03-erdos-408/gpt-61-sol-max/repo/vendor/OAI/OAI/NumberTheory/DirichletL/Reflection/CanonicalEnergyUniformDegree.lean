@@ -10,14 +10,14 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_member_geometry_uniform_uniform_degree
     (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (L cstar η : ℝ)
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     L cstar η 
     (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η) (hη1 : η≤1) (hηc : η≤cstar/100000) :
     ∃ (degree : ℕ), ∀ {Nlevel : Eis}, ∀
     {γ : Type*} [Fintype γ] (a c₀ : γ→Eis) (mode : γ→Bool)
@@ -130,7 +130,7 @@ theorem canonical_member_geometry_uniform_uniform_degree
     (hlog Z (hz4.trans hZ)) hbudget hXi hKcap hPcap (by linarith : -1≤N+V-3*cstar/16-O₀/2)
     hFc hsc hFc hsmall
   exact hc
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

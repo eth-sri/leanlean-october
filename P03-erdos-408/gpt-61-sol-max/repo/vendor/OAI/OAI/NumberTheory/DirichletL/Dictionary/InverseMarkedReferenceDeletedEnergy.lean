@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceShift
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
@@ -23,7 +23,7 @@ local notation "O"=>HeckeFamily.O
 
 theorem deletedSelectedSource_tuple {ι:Type*}[Fintype ι](data:RowData)
     (M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)(W:ℝ→ℂ)(V:ι→ℝ→ℂ)
-    (U r bW:ℝ)(b ell:ι→ℝ)(ζ:ι→ℂ)(u:O):
+     U r bW  b ell  ζ  u :
     deletedSelectedSource data M H W V U r 0 0 bW b ell ζ u=
       ∑x:Tuple (fun i=>livePrimes M H (V i) (b i) (U^(ell i))),
         (∏i,star (primeProfile (V i) (U^(ell i)) (ζ i) (x i).val)/
@@ -49,7 +49,7 @@ theorem deleted_source_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     (F:ProbeFinalAssembly.SourceData D)
     (W:ℝ→ℂ)(ao bo:ℝ)(hao:0<ao)(hab:ao≤bo)
     (hsW:Function.support W⊆Set.Icc ao bo)(hW:ContDiff ℝ ∞ W)
-    (εm:ℝ)(hεm:0<εm)(K:ℕ):
+    (εm:ℝ)(hεm:0<εm) K :
     ∃degree:ℕ,∀data:RowData,∃C U₀:ℝ,0<C ∧ 1<U₀ ∧
     ∀U:ℝ,U₀≤U →
     ∀{ι:Type}[Fintype ι],Fintype.card ι≤K →
@@ -102,6 +102,6 @@ theorem deleted_source_energy {Δ:ℝ}{D:Parameters.HighData Δ}
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
+
 
 end OAI

@@ -11,15 +11,18 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-theorem finite_squarefree_quadratic_energy (ε : ℝ) (hε : 0 < ε) :
+
+
+section
+variable (ε : ℝ)
+
+theorem finite_squarefree_quadratic_energy   (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K X : ℝ, 1 ≤ K → 1 ≤ X →
-    ∀ (rows cols : Finset (Ideal Eis)),
+    ∀ (rows cols : Finset (Ideal ActualEisensteinCubic.O)),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ J ∈ cols, Squarefree J ∧ (Ideal.absNorm J : ℝ) ≤ X) →
-    ∀ a : Ideal Eis → ℂ,
+    ∀ a : Ideal ActualEisensteinCubic.O → ℂ,
       (∑ k ∈ rows, ‖∑ J ∈ cols, quadraticRow k (primaryGenerator J) * a J‖ ^ 2) ≤
         C * (K * X) ^ ε * (K + X) * ∑ J ∈ cols, ‖a J‖ ^ 2 := by
   obtain ⟨C, hC, hsharp⟩ := sieveNorm_sharp ε hε
@@ -46,12 +49,12 @@ theorem finite_squarefree_quadratic_energy (ε : ℝ) (hε : 0 < ε) :
       exact mul_le_mul_of_nonneg_left (hsharp X K hX hK) (by norm_num)
     _ = _ := by rw [mul_comm X K, add_comm X K]; ring
 
-theorem quadratic_squarefree_product_column_energy (ε : ℝ) (hε : 0 < ε) :
+theorem quadratic_squarefree_product_column_energy   (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K X : ℝ, 1 ≤ K → 1 ≤ X →
-    ∀ (rows : Finset (Ideal Eis)) (pairs : Finset (Ideal Eis × Ideal Eis)),
+    ∀ (rows : Finset (Ideal ActualEisensteinCubic.O)) (pairs : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O)),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ p ∈ pairs, Squarefree (p.1 * p.2) ∧ (Ideal.absNorm (p.1 * p.2) : ℝ) ≤ X) →
-    ∀ a : Ideal Eis × Ideal Eis → ℂ,
+    ∀ a : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O → ℂ,
       (∑ k ∈ rows, ‖∑ p ∈ pairs,
         quadraticRow k (primaryGenerator (p.1 * p.2)) * a p‖ ^ 2) ≤
       C * (K * X) ^ ε * (K + X) * ∑ p ∈ pairs, ‖a p‖ ^ 2 := by
@@ -61,11 +64,11 @@ theorem quadratic_squarefree_product_column_energy (ε : ℝ) (hε : 0 < ε) :
   refine ⟨Cq * Cd, mul_pos hCq hCd, ?_⟩
   intro K X hK hX rows pairs hrows hpairs a
   let target := pairs.image (fun p => p.1 * p.2)
-  have ht (J : Ideal Eis) (hJ : J ∈ target) :
+  have ht (J : Ideal ActualEisensteinCubic.O) (hJ : J ∈ target) :
       Squarefree J ∧ (Ideal.absNorm J : ℝ) ≤ X := by
     obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hJ
     exact hpairs p hp
-  have hfiber (J : Ideal Eis) (hJ : J ∈ target) :
+  have hfiber (J : Ideal ActualEisensteinCubic.O) (hJ : J ∈ target) :
       ((pairs.filter (fun p => p.1 * p.2 = J)).card : ℝ) ≤ Cd * X ^ (ε / 2) := by
     apply (Nat.cast_le.mpr (product_fiber_card pairs J (ht J hJ).1.ne_zero)).trans
     exact (hdiv J (ht J hJ).1.ne_zero).trans (mul_le_mul_of_nonneg_left
@@ -89,9 +92,9 @@ theorem quadratic_squarefree_product_column_energy (ε : ℝ) (hε : 0 < ε) :
     _ ≤ _ := by gcongr
 
 theorem quadratic_fixed_factor_energy
-    (rows : Finset (Ideal Eis)) (pairs : Finset (Ideal Eis × Ideal Eis))
-    (hrows : ∀ k ∈ rows, Admissible k) (B : Ideal Eis)
-    (a : Ideal Eis × Ideal Eis → ℂ) :
+    (rows : Finset (Ideal ActualEisensteinCubic.O)) (pairs : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O))
+    (hrows : ∀ k ∈ rows, Admissible k) (B : Ideal ActualEisensteinCubic.O)
+    (a : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O → ℂ) :
     (∑ k ∈ rows, ‖∑ p ∈ pairs,
       quadraticRow k (primaryGenerator (B * (p.1 * p.2))) * a p‖ ^ 2) ≤
     ∑ k ∈ rows, ‖∑ p ∈ pairs,
@@ -109,12 +112,12 @@ theorem quadratic_fixed_factor_energy
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (quadraticRow_norm_le_one k _)
 
-theorem quadratic_squarefree_product_energy_fixed_factor (ε : ℝ) (hε : 0 < ε) :
+theorem quadratic_squarefree_product_energy_fixed_factor   (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K X : ℝ, 1 ≤ K → 1 ≤ X →
-    ∀ (rows : Finset (Ideal Eis)) (pairs : Finset (Ideal Eis × Ideal Eis)),
+    ∀ (rows : Finset (Ideal ActualEisensteinCubic.O)) (pairs : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O)),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ p ∈ pairs, Squarefree (p.1 * p.2) ∧ (Ideal.absNorm (p.1 * p.2) : ℝ) ≤ X) →
-    ∀ (B : Ideal Eis) (a : Ideal Eis × Ideal Eis → ℂ),
+    ∀ (B : Ideal ActualEisensteinCubic.O) (a : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O → ℂ),
       (∑ k ∈ rows, ‖∑ p ∈ pairs,
         quadraticRow k (primaryGenerator (B * (p.1 * p.2))) * a p‖ ^ 2) ≤
       C * (K * X) ^ ε * (K + X) * ∑ p ∈ pairs, ‖a p‖ ^ 2 := by
@@ -125,6 +128,8 @@ theorem quadratic_squarefree_product_energy_fixed_factor (ε : ℝ) (hε : 0 < �
     (hb K X hK hX rows pairs hrows hpairs a)
 
 end
+
+
 end SevenEighths.InverseMoment
 
 end OAI

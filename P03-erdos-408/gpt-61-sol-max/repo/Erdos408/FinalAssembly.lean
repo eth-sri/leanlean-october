@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Grid
 
 public import Erdos408.CrossTerm
 public import Erdos408.Cumulative
@@ -31,8 +34,7 @@ open Filter
 open scoped Topology
 
 /-- `log log x → ∞`. -/
-theorem tendsto_log_log_atTop : Tendsto (fun x : ℝ => Real.log (Real.log x)) atTop atTop :=
-  Real.tendsto_log_atTop.comp Real.tendsto_log_atTop
+alias tendsto_log_log_atTop := _root_.SharedProofs.tendsto_loglog
 
 /-- Under `RectangleInput` there is `1 / log 3 ≤ α ≤ 1 / log 2` with
 `B(x) = α L + O(L T⁻⁵)` and `C(x) + D(x) = α² L² + O(L² T⁻⁵)`. -/
@@ -53,20 +55,17 @@ theorem harmonic_moments (hR : RectangleInput) :
     filter_upwards [h₁, eventually_ge_atTop 1] with t ht ht₁
     have : 0 ≤ t * Real.log t := mul_nonneg (by linarith) (Real.log_nonneg ht₁)
     refine ht.2.trans (div_le_div_of_nonneg_right ?_ (by positivity))
-    rw [mul_assoc, mul_assoc]
-    exact mul_le_mul_of_nonneg_right (le_max_left _ _) this
+    bound
   have hD' : ∀ᶠ x : ℝ in atTop,
       |harmonicFPair x - α ^ 2 / 2 * Real.log x ^ 2| ≤
         max K₁ K₃ * Real.log x ^ 2 / Real.log (Real.log x) ^ 5 := by
     filter_upwards [hD, hT] with x hx hTx
-    exact hx.trans (div_le_div_of_nonneg_right
-      (mul_le_mul_of_nonneg_right (le_max_right _ _) (sq_nonneg _)) (pow_nonneg hTx 5))
+    exact hx.trans ((by bound))
   obtain ⟨K₄, hC⟩ := second_renewal h₁' hD'
   refine ⟨α, max K₂ (K₄ + max K₁ K₃), hα₃, hα₂, ?_⟩
   filter_upwards [hB, hC, hD', hT, eventually_ge_atTop 1] with x hBx hCx hDx hTx hx₁
   have hL := Real.log_nonneg hx₁
-  refine ⟨hBx.trans (div_le_div_of_nonneg_right
-    (mul_le_mul_of_nonneg_right (le_max_left _ _) hL) (pow_nonneg hTx 5)), ?_⟩
+  refine ⟨hBx.trans ((by bound)), ?_⟩
   -- `C + D - α² L² = (C - α² L² / 2) + (D - α² L² / 2)`
   calc |harmonicFSq x + harmonicFPair x - α ^ 2 * Real.log x ^ 2|
       = |(harmonicFSq x - α ^ 2 / 2 * Real.log x ^ 2) +
@@ -76,8 +75,7 @@ theorem harmonic_moments (hR : RectangleInput) :
         (abs_add_le _ _).trans (add_le_add hCx hDx)
     _ = (K₄ + max K₁ K₃) * Real.log x ^ 2 / Real.log (Real.log x) ^ 5 := by ring
     _ ≤ max K₂ (K₄ + max K₁ K₃) * Real.log x ^ 2 / Real.log (Real.log x) ^ 5 :=
-        div_le_div_of_nonneg_right
-          (mul_le_mul_of_nonneg_right (le_max_right _ _) (sq_nonneg _)) (pow_nonneg hTx 5)
+        (by bound)
 
 /-- The variance of `F` about `α L`: `∑_{n ≤ x} (F n - α L)² = O(x L² T⁻⁵ + x L)`. -/
 theorem variance_F (hR : RectangleInput) :
@@ -132,7 +130,7 @@ theorem variance_F (hR : RectangleInput) :
     have : δ₂ ≤ |K| * (L ^ 2 / T ^ 5) := by
       refine hδ₂.2.trans ?_
       rw [mul_div_assoc]
-      exact mul_le_mul_of_nonneg_right (le_abs_self K) (div_nonneg (sq_nonneg _) hT5)
+      bound
     calc x * δ₂ ≤ x * (|K| * (L ^ 2 / T ^ 5)) := mul_le_mul_of_nonneg_left this hx₀
       _ = |K| * (x * L ^ 2 / T ^ 5) := by ring
   have h₂ : -(2 * α * L * x * δ₁) ≤ 4 * |K| * (x * L ^ 2 / T ^ 5) := by
@@ -140,19 +138,19 @@ theorem variance_F (hR : RectangleInput) :
       have := hδ₁.1
       have : K * L / T ^ 5 ≤ |K| * (L / T ^ 5) := by
         rw [mul_div_assoc]
-        exact mul_le_mul_of_nonneg_right (le_abs_self K) (div_nonneg hL hT5)
+        bound
       linarith
     have h2αLx : 0 ≤ 2 * α * L * x := by positivity
     calc -(2 * α * L * x * δ₁) = 2 * α * L * x * -δ₁ := by ring
       _ ≤ 2 * α * L * x * (|K| * (L / T ^ 5)) := mul_le_mul_of_nonneg_left this h2αLx
       _ ≤ 2 * 2 * L * x * (|K| * (L / T ^ 5)) := by
           refine mul_le_mul_of_nonneg_right ?_ (mul_nonneg (abs_nonneg _) (div_nonneg hL hT5))
-          nlinarith [mul_le_mul_of_nonneg_right hα (mul_nonneg hL hx₀)]
+          bound
       _ = 4 * |K| * (x * L ^ 2 / T ^ 5) := by ring
   have h₃ : S₂ - x * (harmonicFSq x + harmonicFPair x) ≤ |K₂| * (x * L) := by
     refine he₂.2.trans ?_
     rw [mul_assoc]
-    exact mul_le_mul_of_nonneg_right (le_abs_self _) (mul_nonneg hx₀ hL)
+    bound
   have h₄ : -(2 * α * L * (S₁ - x * harmonicF x)) ≤ 4 * |K₁| * (x * L) := by
     have : -(S₁ - x * harmonicF x) ≤ |K₁| * x := by
       linarith [mul_le_mul_of_nonneg_right (le_abs_self K₁) hx₀]
@@ -169,7 +167,7 @@ theorem variance_F (hR : RectangleInput) :
     mul_nonneg (abs_nonneg K₁) ha]
 
 /-- `u² ≤ 16 exp (u / 2)` for `u ≥ 0`, since `u / 4 < exp (u / 4)`. -/
-theorem sq_le_exp_half {u : ℝ} (hu : 0 ≤ u) : u ^ 2 ≤ 16 * Real.exp (u / 2) := by
+theorem sq_le_exp_half  {u}  (hu : 0 ≤ u) : u ^ 2 ≤ 16 * Real.exp (u / 2) := by
   have h := Real.add_one_le_exp (u / 4)
   have he : Real.exp (u / 2) = Real.exp (u / 4) ^ 2 := by
     rw [sq, ← Real.exp_add]
@@ -193,7 +191,7 @@ theorem sum_inv_sqrt_le (N : ℕ) : ∑ n ∈ Finset.Icc 1 N, 1 / √(n : ℝ) �
     linarith
 
 /-- `∑_{n ≤ x} log² (x / n) ≤ 32 x`. -/
-theorem sum_log_div_sq_le {x : ℝ} (hx : 0 ≤ x) :
+theorem sum_log_div_sq_le  {x}  (hx : 0 ≤ x) :
     ∑ n ∈ Finset.Icc 1 ⌊x⌋₊, Real.log (x / n) ^ 2 ≤ 32 * x := by
   calc ∑ n ∈ Finset.Icc 1 ⌊x⌋₊, Real.log (x / n) ^ 2
       ≤ ∑ n ∈ Finset.Icc 1 ⌊x⌋₊, 16 * √x * (1 / √(n : ℝ)) := by
@@ -211,7 +209,7 @@ theorem sum_log_div_sq_le {x : ℝ} (hx : 0 ≤ x) :
         exact (sum_inv_sqrt_le _).trans
           (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt (Nat.floor_le hx)) (by norm_num))
     _ = 32 * x := by
-        rw [show 16 * √x * (2 * √x) = 32 * (√x * √x) by ring, Real.mul_self_sqrt hx]
+        grind
 
 /-- The variance of `f` about `α log n`: `∑_{n ≤ x} (f n - α log n)² = O(x L² T⁻⁵)`. -/
 theorem variance_f (hR : RectangleInput) :
@@ -265,14 +263,11 @@ theorem variance_f (hR : RectangleInput) :
   have hK : K * (x * L ^ 2 / T ^ 5 + x * L) ≤ |K| * (2 * (x * L ^ 2 / T ^ 5)) :=
     (mul_le_mul_of_nonneg_right (le_abs_self K) (by positivity)).trans
       (mul_le_mul_of_nonneg_left (by linarith) (abs_nonneg K))
-  have : (8 * |K| + 514) * x * L ^ 2 / T ^ 5 =
-      8 * |K| * (x * L ^ 2 / T ^ 5) + 514 * (x * L ^ 2 / T ^ 5) := by ring
-  rw [this]
-  linarith
+  grind
 
 /-- Chebyshev's inequality: if `c ≤ g` on `t ⊆ s` and `g ≥ 0` on `s`, then
 `#t ≤ ∑_{n ∈ s} g n / c`. -/
-theorem card_le_sum_div {s t : Finset ℕ} {g : ℕ → ℝ} {c : ℝ} (hts : t ⊆ s)
+theorem card_le_sum_div {s t : Finset ℕ} {g : ℕ → ℝ}  {c}  (hts : t ⊆ s)
     (hg : ∀ n ∈ s, 0 ≤ g n) (hc : 0 < c) (ht : ∀ n ∈ t, c ≤ g n) :
     (t.card : ℝ) ≤ (∑ n ∈ s, g n) / c := by
   rw [le_div_iff₀ hc]
@@ -299,8 +294,7 @@ theorem normal_order_rate_proved (hR : RectangleInput) :
   have hT5 : 0 < T ^ 5 := pow_pos hT 5
   have hsq := Real.sqrt_nonneg x
   have hKC : K ≤ 4 * |K| + 1 := (le_abs_self K).trans (by linarith [abs_nonneg K])
-  refine ⟨hKx.trans (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right
-    (mul_le_mul_of_nonneg_right hKC hx₀) (sq_nonneg _)) hT5.le), ?_⟩
+  refine ⟨hKx.trans ((by bound)), ?_⟩
   set s := (Finset.Icc 1 ⌊x⌋₊).filter fun n : ℕ =>
     Real.log n / Real.log (Real.log n) < |(f n : ℝ) - α * Real.log n|
   rw [← Finset.card_filter_add_card_filter_not (fun n : ℕ => √x < n) (s := s)]
@@ -351,7 +345,7 @@ theorem normal_order_rate_proved (hR : RectangleInput) :
   nlinarith [mul_nonneg (abs_nonneg K) hsq]
 
 /-- The elements of `{n | p n}` below `b` are those of `range b` satisfying `p`. -/
-theorem ncard_setOf_inter_Iio (p : ℕ → Prop) [DecidablePred p] (b : ℕ) :
+theorem ncard_setOf_inter_Iio  p  [DecidablePred p]  b  :
     ({n | p n} ∩ Set.Iio b).ncard = ((Finset.range b).filter p).card := by
   rw [← Set.ncard_coe_finset]
   congr 1
@@ -427,15 +421,13 @@ theorem parts_ii_proved (hR : RectangleInput) :
       · rw [div_le_iff₀ hc]
         calc ∑ n ∈ Finset.Icc 1 b, ((f n : ℝ) - α * Real.log n) ^ 2
             ≤ K * b * L ^ 2 / T ^ 5 := hKb
-          _ ≤ |K| * b * L ^ 2 / T ^ 5 := div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right
-              (mul_le_mul_of_nonneg_right (le_abs_self K) hb₀.le) (sq_nonneg _)) (pow_pos hT 5).le
+          _ ≤ |K| * b * L ^ 2 / T ^ 5 := (by bound)
           _ = b * (c * (T ^ 5)⁻¹) * (ε * L / 2) ^ 2 := by
             simp only [c]
             field_simp
             ring
     have : (b : ℝ) * g b = √b + 1 + b * (c * (T ^ 5)⁻¹) := by
-      simp only [g, mul_add]
-      rw [← div_eq_mul_inv, Real.div_sqrt, mul_inv_cancel₀ hb₀.ne']
+      grind
     rw [this]
     linarith
   have hratio : ∀ᶠ b : ℕ in atTop,
@@ -461,7 +453,7 @@ theorem parts_ii_proved (hR : RectangleInput) :
   exact this.congr' (hratio.mono fun b hb => hb.symm)
 
 /-- The partial densities of `S` below `b` are at most those of `S'` if `S ⊆ S'`. -/
-theorem ncard_inter_Iio_le {S S' : Set ℕ} (h : S ⊆ S') (b : ℕ) :
+theorem ncard_inter_Iio_le {S S' : Set ℕ} (h : S ⊆ S')  b  :
     ((S ∩ Set.Iio b).ncard : ℝ) / (Set.Iio b).ncard ≤
       ((S' ∩ Set.Iio b).ncard : ℝ) / (Set.Iio b).ncard :=
   div_le_div_of_nonneg_right (Nat.cast_le.mpr (Set.ncard_le_ncard
@@ -478,8 +470,7 @@ theorem parts_i_proved (hR : RectangleInput) :
     tendsto_const_nhds.congr' ((eventually_lt_atBot α).mono fun c hc => (ite_eq_left hc).symm),
     tendsto_const_nhds.congr' ((eventually_ge_atTop α).mono fun c hc =>
       (ite_eq_right (not_lt.mpr hc)).symm), fun c hc => ?_⟩
-  · dsimp only
-    split_ifs with ha hb hb <;> first | exact absurd (hab.trans_lt hb) ha | norm_num
+  · grind
   -- `F` jumps at `α`
   have hcα : c ≠ α := by
     rintro rfl
@@ -518,7 +509,7 @@ theorem parts_i_proved (hR : RectangleInput) :
     rw [sub_self] at this
     exact tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds this
       (Eventually.of_forall fun b => by positivity)
-      ((eventually_gt_atTop 0).mono fun b hb => hle b hb)
+      ((eventually_gt_atTop 0).mono hle)
   · -- `{f / log ≤ c}` contains `{|f / log - α| < c - α}`, whose density is one
     rw [ite_eq_right (not_lt.mpr h.le)]
     have hA := hα (c - α) (by linarith)

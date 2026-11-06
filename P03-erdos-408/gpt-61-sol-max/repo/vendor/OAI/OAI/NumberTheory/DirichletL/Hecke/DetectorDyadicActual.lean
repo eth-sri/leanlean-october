@@ -6,20 +6,20 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicCutoff
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical ContDiff
 open Set
 namespace SevenEighths.HeckeDetectorDyadicActual
 open HeckeFamily HeckeDyadic HeckeDetectorDyadicProfiles HeckeDetectorProfiles
 
-lemma inverse_profile_smooth (Dstar D : ℝ) :
+lemma inverse_profile_smooth  Dstar D  :
     ContDiff ℝ ∞ (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular Dstar D) := by
   unfold HeckeDetectorDyadicBridge.inverseProfile
   have hv : ContDiff ℝ ∞ (fun x : ℝ => cutoff (D*x/Dstar)) := (cutoff.smooth ⊤).comp (by fun_prop)
   exact hv.mul positiveAnnular_smooth
 
-lemma inverse_profile_support (Dstar D : ℝ) :
+lemma inverse_profile_support  Dstar D  :
     Function.support (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular Dstar D)⊆Icc (1/4) (9/4) := by
   intro x hx
   exact positiveAnnular_support ((mul_ne_zero_iff.mp hx).2)
@@ -69,6 +69,6 @@ theorem simultaneous_upper (R dmax τ ε e κ η : ℝ)
 
 end SevenEighths.HeckeDetectorDyadicActual
 
-end
+
 
 end OAI

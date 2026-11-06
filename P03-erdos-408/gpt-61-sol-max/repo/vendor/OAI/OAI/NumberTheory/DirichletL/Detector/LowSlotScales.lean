@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowSourceScales
 
@@ -6,19 +7,22 @@ public import OAI.NumberTheory.DirichletL.Detector.LowSourceScales
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
 
-lemma elementNorm_finset_prod {ι : Type*} (F : Finset ι) (p : ι→O) :
+
+section
+variable {K : ℕ} (C : CalibrationData) (ell : Fin K→ℝ) (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6) (b Z : ℝ) (hb : 1≤b) (hZ : 1≤Z) (slots : Fin K→Finset ActualEisensteinCubic.O)
+
+lemma elementNorm_finset_prod {ι : Type*} (F : Finset ι) (p : ι→ActualEisensteinCubic.O) :
     elementNorm (∏i∈F,p i)=∏i∈F,elementNorm (p i) := by
   induction F using Finset.induction_on with
   | empty => simp [elementNorm_one]
   | @insert i F hi ih => simp only [Finset.prod_insert hi,elementNorm_mul,ih]
 
-lemma lowUnselectedProduct_norm_ge_one {K : ℕ} (slots : Fin K→Finset O)
+lemma lowUnselectedProduct_norm_ge_one    
     (hslots : ∀i x,x∈slots i→x≠0) (J : Finset (Fin K)) (a : LowUnselectedTuple slots J) :
     1≤elementNorm (∏i : J,(a i).val) := by
   have hn : (∏i : J,(a i).val)≠0 := Finset.prod_ne_zero_iff.mpr (fun i _=>hslots i.val _ (a i).property)
@@ -26,9 +30,10 @@ lemma lowUnselectedProduct_norm_ge_one {K : ℕ} (slots : Fin K→Finset O)
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
     (Ideal.span_singleton_eq_bot.not.mpr hn))
 
-lemma lowUnselectedProduct_norm_bound {K : ℕ} (ell : Fin K→ℝ)
-    (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
-    (b Z : ℝ) (hb : 1≤b) (hZ : 1≤Z) (slots : Fin K→Finset O)
+include hell hsum hb hZ in
+lemma lowUnselectedProduct_norm_bound    
+       
+           
     (hslots : ∀i x,x∈slots i→elementNorm x≤b*Z^(ell i))
     (J : Finset (Fin K)) (a : LowUnselectedTuple slots J) :
     elementNorm (∏i : J,(a i).val)≤b^K*Z^(1/6:ℝ) := by
@@ -43,13 +48,13 @@ lemma lowUnselectedProduct_norm_bound {K : ℕ} (ell : Fin K→ℝ)
     _=b^J.card*Z^(∑i∈J,ell i) := by
       rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_coe,
         ←Real.rpow_sum_of_pos hz,Finset.sum_coe_sort]
-    _≤b^K*Z^(1/6:ℝ) := mul_le_mul (pow_le_pow_right₀ hb hc)
-      (Real.rpow_le_rpow_of_exponent_le hZ hsub) (by positivity) (by positivity)
+    _≤b^K*Z^(1/6:ℝ) := (by gcongr <;> first | assumption | positivity | linarith)
 
-theorem eventually_original_slot_scales {K : ℕ} (C : CalibrationData) (ell : Fin K→ℝ)
-    (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6) (b : ℝ) (hb : 1≤b) :
+include C hell hsum hb in
+theorem eventually_original_slot_scales      
+            :
     ∀ᶠ Z : ℝ in Filter.atTop,1≤Z ∧
-      ∀(slots : Fin K→Finset O)(_hslots : ∀i x,x∈slots i→x≠0),
+      ∀(slots : Fin K→Finset ActualEisensteinCubic.O)(_hslots : ∀i x,x∈slots i→x≠0),
       (∀i x,x∈slots i→elementNorm x≤b*Z^(ell i))→
       ∀(J : Finset (Fin K))(a : LowUnselectedTuple slots J),
       let L := elementNorm (∏i : J,(a i).val)
@@ -63,7 +68,9 @@ theorem eventually_original_slot_scales {K : ℕ} (C : CalibrationData) (ell : F
   exact hZ.2.2 _ (lowUnselectedProduct_norm_ge_one slots hslots J a)
     (lowUnselectedProduct_norm_bound ell hell hsum b Z hb hZ.1 slots hnorm J a)
 
-end SevenEighths.ProbePhysical
 end
+
+end SevenEighths.ProbePhysical
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.PoissonTails
 
@@ -11,13 +12,21 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-def childFrequencyBall (a : Eis) (R : ℝ) : Finset Eis :=
+
+def childFrequencyBall (a : ActualEisensteinCubic.O) (R : ℝ)  :=
   (secondFrequencyCutoff (‖eisEmbedding a‖^2) R).filter
     (fun k => ‖eisEmbedding (a*k)‖^2 ≤ R)
 
-lemma mem_childFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis) :
+section
+variable (a : ActualEisensteinCubic.O) (ha : a ≠ 0) (R : ℝ)
+include a ha R
+
+section
+variable (k : ActualEisensteinCubic.O)
+include k
+
+lemma mem_childFrequencyBall         :
     k ∈ childFrequencyBall a R ↔ ‖eisEmbedding (a*k)‖^2 ≤ R := by
   have hn : 0 < ‖eisEmbedding a‖^2 := sq_pos_of_pos
     (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero ha))
@@ -27,14 +36,14 @@ lemma mem_childFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis) :
   apply (le_div_iff₀ hn).mpr
   simpa only [map_mul, norm_mul, mul_pow, mul_comm] using h
 
-lemma outside_childFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis)
+lemma outside_childFrequencyBall        
     (hk : k ∉ childFrequencyBall a R) : R < ‖eisEmbedding (a*k)‖^2 :=
-  lt_of_not_ge (fun h => hk ((mem_childFrequencyBall a ha R k).mpr h))
+  lt_of_not_ge fun h => hk ((OAI.SevenEighths.InverseMoment.mem_childFrequencyBall a ha R k).mpr h)
 
-def nonzeroChildFrequencyBall (a : Eis) (R : ℝ) : Finset Eis :=
+def nonzeroChildFrequencyBall (a : ActualEisensteinCubic.O) (R : ℝ)  :=
   (childFrequencyBall a R).erase 0
 
-lemma mem_nonzeroChildFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis) :
+lemma mem_nonzeroChildFrequencyBall         :
     k ∈ nonzeroChildFrequencyBall a R ↔
       0 < ‖eisEmbedding (a*k)‖^2 ∧ ‖eisEmbedding (a*k)‖^2 ≤ R := by
   have hn : 0 < ‖eisEmbedding (a*k)‖^2 ↔ k ≠ 0 := by
@@ -45,7 +54,9 @@ lemma mem_nonzeroChildFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis)
   simp only [nonzeroChildFrequencyBall, Finset.mem_erase,
     mem_childFrequencyBall a ha, hn]
 
-lemma nonzeroChildFrequencyBall_empty (a : Eis) (ha : a ≠ 0) (R : ℝ) (hR : R < 1) :
+end
+
+lemma nonzeroChildFrequencyBall_empty       (hR : R < 1) :
     nonzeroChildFrequencyBall a R = ∅ := by
   apply Finset.eq_empty_iff_forall_notMem.mpr
   intro k hk
@@ -53,6 +64,8 @@ lemma nonzeroChildFrequencyBall_empty (a : Eis) (ha : a ≠ 0) (R : ℝ) (hR : R
   have hk0 : k ≠ 0 := by intro hk; simp [hk] at hm
   exact (not_le_of_gt hR) ((EisensteinSchwartzPoisson.one_le_eisenstein_norm_sq
     (a*k) (mul_ne_zero ha hk0)).trans hm.2)
+
+end
 
 end
 end SevenEighths.InverseMoment

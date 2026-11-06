@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Graph.Restore.Eventually
 
@@ -36,15 +37,16 @@ lemma unsharedSlots_empty (g : ι) :
     unsharedSlots (fun _ => (∅ : Finset (Fin J))) g = {Fin.last J} := by
   simp [unsharedSlots]
 
+section
+variable (P : ι → Finset ℕ)
+
 /-- The only auxiliary labels of the raw pattern are `1`. -/
-lemma auxLabels_empty (P : ι → Finset ℕ) :
+lemma auxLabels_empty   :
     auxLabels P (fun _ => (∅ : Finset (Fin J))) = {fun _ _ => 1} := by
-  ext a
-  simp only [auxLabels, Fintype.mem_piFinset, notMem_empty, ite_false, mem_singleton,
-    funext_iff]
+  simp_all [auxLabels]
 
 /-- The represented lists of the raw pattern: one prime of each group. -/
-lemma card_slotLists_empty (P : ι → Finset ℕ) (n : ℕ) :
+lemma card_slotLists_empty    n  :
     (slotLists P (unsharedSlots (fun _ => (∅ : Finset (Fin J)))) n).card =
       ∏ g, primeCount (P g) n := by
   have h : slotLists P (unsharedSlots (fun _ => (∅ : Finset (Fin J)))) n =
@@ -53,22 +55,7 @@ lemma card_slotLists_empty (P : ι → Finset ℕ) (n : ℕ) :
     ext l
     simp only [slotLists, unsharedSlots_empty, mem_filter, Fintype.mem_piFinset,
       mem_singleton, coe_singleton, Set.injOn_singleton, true_and, forall_eq]
-    constructor
-    · rintro ⟨h₁, h₂⟩ g j
-      have := h₁ g j
-      split_ifs at this ⊢ with hj
-      · subst hj
-        exact mem_filter.2 ⟨this, h₂ g⟩
-      · exact this
-    · intro h
-      refine ⟨fun g j => ?_, fun g => ?_⟩
-      · have := h g j
-        split_ifs at this ⊢ with hj
-        · exact (mem_filter.1 this).1
-        · exact this
-      · have := h g (Fin.last J)
-        rw [ite_eq_left rfl] at this
-        exact (mem_filter.1 this).2
+    grind
   rw [h, Fintype.card_piFinset]
   refine prod_congr rfl fun g _ => ?_
   rw [Fintype.card_piFinset, Fintype.prod_eq_single (Fin.last J) fun j hj => by simp [hj]]
@@ -76,7 +63,7 @@ lemma card_slotLists_empty (P : ι → Finset ℕ) (n : ℕ) :
 
 /-- `W₁ = q₀^{ω - s} ∏_g ω_g / V_g` is the stripped damping times the number of represented
 lists of the raw pattern. -/
-lemma markedWeight_eq_listDamping_mul (P : ι → Finset ℕ) (q₀ : ℝ) (n : ℕ) :
+lemma markedWeight_eq_listDamping_mul    q₀   n  :
     markedWeight Finset.univ q₀ P n =
       listDamping P q₀ (fun _ => (∅ : Finset (Fin J))) n *
         (slotLists P (unsharedSlots (fun _ => (∅ : Finset (Fin J)))) n).card := by
@@ -90,9 +77,11 @@ lemma markedWeight_eq_listDamping_mul (P : ι → Finset ℕ) (q₀ : ℝ) (n : 
   rw [← prod_mul_distrib]
   exact prod_congr rfl fun g _ => by ring
 
+end
+
 /-- **The raw pattern.** Its stripped correlation is the raw correlation, once `κ x ≤ x²`. -/
 lemma stripSum_raw_eq {x q₀ κ : ℝ} (hx : 0 < x) (hκx : κ * x ≤ x ^ 2) (P : ι → Finset ℕ)
-    (F G : ℕ → ℝ) {Ψ : ℝ → ℝ} (hsupp : ∀ y, Ψ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) :
+     F G   {Ψ}  (hsupp : ∀ y, Ψ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) :
     stripSum x q₀ P (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1) F G Ψ =
       ((∑ w ∈ Icc 1 ⌊κ * x⌋₊, Ψ (w / x) / w * F w * G (w + 1) *
         markedWeight Finset.univ q₀ P w * markedWeight Finset.univ q₀ P (w + 1) : ℝ) : ℂ) := by
@@ -107,11 +96,9 @@ lemma stripSum_raw_eq {x q₀ κ : ℝ} (hx : 0 < x) (hκx : κ * x ≤ x ^ 2) (
   refine sum_subset (Icc_subset_Icc le_rfl (Nat.floor_le_floor hκx)) (fun w hw hw' => ?_)
     |>.trans (sum_congr rfl fun w _ => ?_)
   · have hlt : ⌊κ * x⌋₊ < w := by
-      by_contra h
-      exact hw' (mem_Icc.2 ⟨(mem_Icc.1 hw).1, not_lt.1 h⟩)
+      simp_all
     have hw0 : (0 : ℝ) < w := by
-      have := (mem_Icc.1 hw).1
-      exact_mod_cast (show 0 < w by omega)
+      bound
     have hwx : κ < w / x := by
       rw [lt_div_iff₀ hx]
       rcases le_or_gt 0 (κ * x) with hκ0 | hκ0
@@ -140,7 +127,7 @@ lemma pad_invariant_one (p p' : ι → Fin (J + 1) → ℕ) (a : ι → Fin J �
 /-- **The comparison patterns.** With the kernel `β φ(D_A) φ'(D_B) ψ(X_A) ψ'(X_B)`, the stripped
 correlation is `β` times the stripped comparison correlation. -/
 lemma stripSum_comparison_eq (x q₀ : ℝ) (P : ι → Finset ℕ) (A B : ι → Finset (Fin J))
-    (β : ℂ) (φ φ' ψ ψ' : ℕ → ℂ) (F G : ℕ → ℝ) (Ψ : ℝ → ℝ) :
+     β   φ φ' ψ ψ'   F G   Ψ  :
     stripSum x q₀ P (fun h => A h ∪ B h)
         (fun p p' a => β * φ (slotProduct A a) * φ' (slotProduct B a) *
           ψ (slotProduct A fun h i => p' h i.castSucc) *
@@ -173,7 +160,7 @@ omit [DecidableEq ι] in
 /-- The comparison kernel depends only on the unshared parts: it reads the source labels in
 `B ⊆ C` and the target labels in `A ⊆ C`. -/
 lemma pad_invariant_comparison (A B : ι → Finset (Fin J)) (β : ℂ) (φ φ' ψ ψ' : ℕ → ℂ)
-    (p p' : ι → Fin (J + 1) → ℕ) (a : ι → Fin J → ℕ) :
+     p p'   a  :
     β * φ (slotProduct A a) * φ' (slotProduct B a) *
         ψ (slotProduct A fun h i => p' h i.castSucc) *
         ψ' (slotProduct B fun h i => p h i.castSucc) =

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowGramScale
 public import OAI.NumberTheory.DirichletL.Detector.LowTupleGram
@@ -8,21 +9,32 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalCrudeMass
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 
-lemma source_scale_ratio (Z : ℝ) (hZ : 0<Z) :
+section
+variable (Z : ℝ) (hZ : 0<Z)
+
+include hZ in
+lemma source_scale_ratio     :
     Z^(23/48:ℝ)/Z^(17/48:ℝ)=Z^(1/8:ℝ) := by
   rw [←Real.rpow_sub hZ]
   norm_num
 
-lemma source_scale_square (Z : ℝ) (hZ : 0<Z) :
+include hZ in
+lemma source_scale_square     :
     Z^(11/48:ℝ)*Z^(23/48:ℝ)=(Z^(17/48:ℝ))^2 := by
   rw [←Real.rpow_add hZ,←Real.rpow_natCast,←Real.rpow_mul hZ.le]
   norm_num
 
-lemma source_compensated_scale_admissible (q Z L : ℝ) (hq : 1≤q) (hZ : 1≤Z)
-    (hL : 1≤L) (hql : q≤Z^(1/8:ℝ)) (hLl : L≤Z^(11/48:ℝ)) :
+end
+
+section
+variable (q : ℝ) (C : CalibrationData) (Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z) (hL : 1≤L) (hql : q≤Z^(1/8:ℝ)) (hLl : L≤Z^(11/48:ℝ)) (hδ : 0≤δ)
+
+include hq hZ hL hql hLl in
+lemma source_compensated_scale_admissible      
+          :
     1≤Z^(23/48:ℝ)/L ∧
     q*Z^(17/48:ℝ)≤Z^(23/48:ℝ) ∧
     L*Z^(23/48:ℝ)≤q^2*(Z^(17/48:ℝ))^2 := by
@@ -39,8 +51,9 @@ lemma source_compensated_scale_admissible (q Z L : ℝ) (hq : 1≤q) (hZ : 1≤Z
       _=(Z^(17/48:ℝ))^2 := source_scale_square Z hz
       _≤_ := le_mul_of_one_le_left (by positivity) (one_le_pow₀ hq)
 
-lemma source_compensated_gram_scale (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
-    (hL : 1≤L) (hql : q≤Z^(1/8:ℝ)) (hLl : L≤Z^(11/48:ℝ)) (hδ : 0≤δ) :
+include hq hZ hL hql hLl hδ in
+lemma source_compensated_gram_scale      
+            :
     (q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)/(Z^(23/48:ℝ)/L))*
       (1+((Z^(23/48:ℝ)/L)^2/(q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)))^(1/6:ℝ)+
         ((Z^(23/48:ℝ)/L)^2/(q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)))^2/(Z^(23/48:ℝ)/L))*
@@ -48,7 +61,7 @@ lemma source_compensated_gram_scale (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
         (3*q/L)*Z^(3/8+(23/48)*δ:ℝ) := by
   have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
   have hq0 : 0<q := lt_of_lt_of_le zero_lt_one hq
-  have hL0 : 0<L := lt_of_lt_of_le zero_lt_one hL
+  
   obtain ⟨_,hqp,ht⟩ := source_compensated_scale_admissible q Z L hq hZ hL hql hLl
   have hb := compensated_gram_scale_bound q (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) L δ hq0
     (by positivity) (by positivity) hL hδ hqp ht
@@ -63,8 +76,9 @@ lemma source_compensated_gram_scale (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
     _=(3*q/L)*(Z^(17/48:ℝ)*(Z^(1/8:ℝ))^(1/6:ℝ)*(Z^(23/48:ℝ))^δ) := by ring
     _=_ := by rw [source_gram_power Z δ hz]
 
-lemma source_compensated_gram_sqrt (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
-    (hL : 1≤L) (hql : q≤Z^(1/8:ℝ)) (hLl : L≤Z^(11/48:ℝ)) (hδ : 0≤δ) :
+include hq hZ hL hql hLl hδ in
+lemma source_compensated_gram_sqrt      
+            :
     Real.sqrt ((q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)/(Z^(23/48:ℝ)/L))*
       (1+((Z^(23/48:ℝ)/L)^2/(q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)))^(1/6:ℝ)+
         ((Z^(23/48:ℝ)/L)^2/(q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)))^2/(Z^(23/48:ℝ)/L))*
@@ -73,14 +87,15 @@ lemma source_compensated_gram_sqrt (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
   apply (Real.sqrt_le_sqrt (source_compensated_gram_scale q Z L δ hq hZ hL hql hLl hδ)).trans_eq
   rw [Real.sqrt_mul (by positivity),source_gram_sqrt_power Z δ (lt_of_lt_of_le zero_lt_one hZ)]
 
-lemma lowGramFactor_source_bound (C : CalibrationData) (Z L δ : ℝ) (hZ : 1≤Z)
-    (hL : 1≤L) (hql : elementNorm C.generator≤Z^(1/8:ℝ))
+include hZ hL in
+lemma lowGramFactor_source_bound      
+      (hql : elementNorm C.generator≤Z^(1/8:ℝ))
     (hLl : L≤Z^(11/48:ℝ)) (hδ : 0≤δ) :
     lowGramFactor C (Z^(17/48:ℝ)/L) (Z^(23/48:ℝ)/L) δ≤
       Real.sqrt (3*elementNorm C.generator/L)*Z^(3/16+(23/96)*δ:ℝ) :=
   source_compensated_gram_sqrt _ Z L δ (calibration_elementNorm_ge_one C) hZ hL hql hLl hδ
 
-lemma eventually_compensated_source_scales (C : CalibrationData) (B : ℝ) :
+lemma eventually_compensated_source_scales    B  :
     ∀ᶠ Z : ℝ in Filter.atTop,1≤Z ∧ elementNorm C.generator≤Z^(1/8:ℝ) ∧
       ∀L : ℝ,1≤L→L≤B*Z^(1/6:ℝ)→
         1≤Z^(23/48:ℝ)/L ∧
@@ -106,7 +121,9 @@ lemma eventually_compensated_source_scales (C : CalibrationData) (B : ℝ) :
     (by positivity) (by positivity) hl]
   exact (le_div_iff₀ (mul_pos (calibration_elementNorm_pos C) (by positivity))).mpr (by simpa using hp)
 
-end SevenEighths.ProbePhysical
 end
+
+end SevenEighths.ProbePhysical
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicControl
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionDerivative
@@ -7,17 +8,17 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionDerivative
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Set Metric Complex
 namespace SevenEighths.HeckePrimeDyadicControl
 open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
 open HeckeDeletionBounds HeckeReciprocalGrowth
 
-theorem logDeriv_eq_of_mask (χ ψ : Character)
+theorem logDeriv_eq_of_mask  χ ψ 
     (hmask : ∀ I : Ideal O, idealCoeff χ I =
       if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
-    (hχ : χ.residue ≠ 1) {s : ℂ} (hs : 0 < s.re)
+    (hχ : χ.residue ≠ 1)  {s}  (hs : 0 < s.re)
     (hψs : LFunction ψ s ≠ 0) :
     logDeriv (LFunction χ) s = logDeriv (LFunction ψ) s +
       logDeriv (factors χ.modulus ψ) s := by
@@ -29,7 +30,11 @@ theorem logDeriv_eq_of_mask (χ ψ : Character)
   exact logDeriv_fun_mul s hψs (factors_ne_zero _ _ hs)
     (LFunction_entire_nonprincipal ψ hψ s) (factors_differentiable _ _ s)
 
-theorem original_disk_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
+section
+variable (e : ℝ) (he : 0<e) (he' : e<1/1000)
+include e he he'
+
+theorem original_disk_control       :
     ∃ B : ℝ, 0≤B ∧ ∀ (χ : Character), χ.residue ≠ 1 → ∀ a t : ℝ,
       1/2≤a → a≤1 →
       (∀ z ∈ ball ((2 : ℂ)+t*Complex.I) (2-a-2*e), LFunction χ z ≠ 0) →
@@ -63,14 +68,13 @@ theorem original_disk_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
     χ.modulus ψ hzre
   have hQ : complexity ψ t ≤ complexity χ t := by
     unfold complexity
-    have hn' : (ψ.modulus.absNorm : ℝ) ≤ χ.modulus.absNorm := by exact_mod_cast hn
-    gcongr
+    gcongr <;> first | assumption | positivity | linarith
   have hc0 : 0 < complexity ψ t := (Real.exp_pos 1).trans_le (complexity_ge_exp ψ t)
   rw [logDeriv_eq_of_mask χ ψ hmask hχ hzpos (by simpa [hregular] using hzeroψ z hz2)]
   apply (norm_add_le _ _).trans
   exact add_le_add (hbound.trans (mul_le_mul_of_nonneg_left (Real.log_le_log hc0 hQ) hB)) hdel
 
-theorem buffered_original_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
+theorem buffered_original_control       :
     ∃ B : ℝ, 0≤B ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι → Character)
       (hχ : ∀ j, (χ j).residue ≠ 1) (T a : ℝ) (i : ℕ),
       2<T → 51/100≤a → a≤1 →
@@ -86,8 +90,8 @@ theorem buffered_original_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
     (fun w hw => HeckeDetectorZeros.nonzero_on_buffered_disk χ hχ T a e i hT ha he
       hmax j t ht (ball_subset_closedBall hw)) z hz
 
-theorem buffered_rectangle_control (e : ℝ)
-    (he : 0<e) (he' : e<1/1000) :
+theorem buffered_rectangle_control  
+        :
     ∃ B : ℝ, 0≤B ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι → Character)
       (hχ : ∀ j, (χ j).residue≠1) (T a : ℝ) (i : ℕ),
       2<T → 51/100≤a → a≤1 →
@@ -120,8 +124,10 @@ theorem buffered_rectangle_control (e : ℝ)
   rw [abs_of_nonneg hH]
   gcongr
 
+end
+
 end SevenEighths.HeckePrimeDyadicControl
 
-end
+
 
 end OAI

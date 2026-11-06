@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.InitialBound
 
@@ -10,95 +11,103 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
 
 namespace CubicReflectionKernel
 
 section
-open scoped Classical FourierTransform SchwartzMap ContDiff
-open MeasureTheory
+ 
+ 
 
-def momentScale : ℝ :=
+def momentScale  :=
   2 ^ (volume : Measure ℝ).integrablePower *
     ∫ u : ℝ, (1 + ‖u‖) ^ (-(volume : Measure ℝ).integrablePower : ℝ)
 
 end
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
-open MeasureTheory Filter Asymptotics
+ 
+ 
 
-def paperScale : ℝ := (2 * Real.pi) ^ 4 / 27
+def paperScale  := (2 * Real.pi) ^ 4 / 27
 
 theorem paperScale_pos : 0 < paperScale := by
   unfold paperScale
   positivity
 
-def paperKernel (V : ℝ → ℂ) (x : ℝ) : ℂ :=
+def paperKernel (V : ℝ → ℂ) (x : ℝ)  :=
   mellinInv 0 (fun t => mellin V (-t) * gammaMultiplier t) (paperScale * x)
 
-theorem logProfile_compact (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) :
+section
+variable (V : ℝ → ℂ)
+include V
+
+section
+variable (a b : ℝ) (ha : 0 < a) (hsupp : Function.support V ⊆ Set.Icc a b)
+include a b ha hsupp
+
+theorem logProfile_compact      
+      :
     HasCompactSupport (fun u : ℝ => V (Real.exp u)) := by
   apply HasCompactSupport.of_support_subset_isCompact
     (K := Set.Icc (Real.log a) (Real.log b)) isCompact_Icc
@@ -109,19 +118,22 @@ theorem logProfile_compact (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
   · simpa only [Real.log_exp] using Real.log_le_log ha hm.1
   · simpa only [Real.log_exp] using Real.log_le_log (Real.exp_pos u) hm.2
 
-def logSchwartz (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V) :
-    SchwartzMap ℝ ℂ :=
+def logSchwartz (V : ℝ → ℂ) (a b ) (ha : 0 < a)
+    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)  :=
   (logProfile_compact V a b ha hsupp).toSchwartzMap (hV.comp Real.contDiff_exp)
 
-@[simp] theorem logSchwartz_apply (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V) (u : ℝ) :
+section
+variable (hV : ContDiff ℝ ∞ V)
+include hV
+
+@[simp] theorem logSchwartz_apply      
+         u  :
     logSchwartz V a b ha hsupp hV u = V (Real.exp u) := rfl
 
 theorem compact_source_mellin_convergent
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
-    (s : ℂ) : MellinConvergent V s := by
+         
+       
+     s  : MellinConvergent V s := by
   have hlocal : LocallyIntegrableOn V (Set.Ioi (0 : ℝ)) :=
     hV.continuous.continuousOn.locallyIntegrableOn measurableSet_Ioi
   have htopzero : V =ᶠ[atTop] (fun _ => 0) := by
@@ -139,8 +151,16 @@ theorem compact_source_mellin_convergent
   exact mellinConvergent_of_isBigO_rpow hlocal htop (by linarith)
     hbot (by linarith)
 
-theorem mellin_axis_eq_fourier (V : ℝ → ℂ) (logSource : SchwartzMap ℝ ℂ)
-    (hL : ∀ u, logSource u = V (Real.exp u)) (u : ℝ) :
+end
+
+end
+
+section
+variable (logSource : SchwartzMap ℝ ℂ) (hL : ∀ u, logSource u = V (Real.exp u))
+include logSource hL
+
+theorem mellin_axis_eq_fourier    
+       u  :
     mellin V (-((2 * Real.pi * u : ℝ) * Complex.I)) = (𝓕 logSource) u := by
   rw [mellin_eq_fourier]
   have hfreq : (-((2 * Real.pi * u : ℝ) * Complex.I) : ℂ).im / (2 * Real.pi) = -u := by
@@ -157,8 +177,8 @@ theorem mellin_axis_eq_fourier (V : ℝ → ℂ) (logSource : SchwartzMap ℝ �
   simp
   rfl
 
-theorem paperKernel_eq_logFourier (V : ℝ → ℂ) (logSource : SchwartzMap ℝ ℂ)
-    (hL : ∀ u, logSource u = V (Real.exp u)) (x : ℝ) (hx : 0 < x) :
+theorem paperKernel_eq_logFourier    
+       x  (hx : 0 < x) :
     paperKernel V x = reflectedLogProfile logSource (Real.log (paperScale * x)) := by
   unfold paperKernel
   rw [mellinInv_eq_fourierInv 0 _ (mul_pos paperScale_pos hx)]
@@ -174,14 +194,26 @@ theorem paperKernel_eq_logFourier (V : ℝ → ℂ) (logSource : SchwartzMap ℝ
   rw [hfun]
   rfl
 
+end
+
+end
+
 end CubicReflectionKernel
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
-open MeasureTheory Filter
+ 
+ 
 namespace CubicReflectionKernel
 
-theorem paperKernel_contDiffOn (V : ℝ → ℂ) (logSource : SchwartzMap ℝ ℂ)
-    (hL : ∀ u, logSource u = V (Real.exp u)) :
+section
+variable (V : ℝ → ℂ)
+include V
+
+section
+variable (logSource : SchwartzMap ℝ ℂ) (hL : ∀ u, logSource u = V (Real.exp u))
+include logSource hL
+
+theorem paperKernel_contDiffOn    
+      :
     ContDiffOn ℝ ∞ (paperKernel V) (Set.Ioi 0) := by
   have hg : ContDiffOn ℝ ∞
       (fun x => reflectedLogProfile logSource (Real.log (paperScale * x))) (Set.Ioi 0) := by
@@ -193,8 +225,8 @@ theorem paperKernel_contDiffOn (V : ℝ → ℂ) (logSource : SchwartzMap ℝ �
   intro x hx
   exact paperKernel_eq_logFourier V logSource hL x hx
 
-theorem paperKernel_euler_eq (V : ℝ → ℂ) (logSource : SchwartzMap ℝ ℂ)
-    (hL : ∀ u, logSource u = V (Real.exp u)) (j : ℕ) (x : ℝ) (hx : 0 < x) :
+theorem paperKernel_euler_eq    
+       j   x  (hx : 0 < x) :
     LocalLogFourier.eulerDeriv (paperKernel V) j x =
       iteratedDeriv j (reflectedLogProfile logSource) (Real.log (paperScale * x)) := by
   have hfun : (fun t : ℝ => paperKernel V (x * Real.exp t)) =
@@ -206,19 +238,25 @@ theorem paperKernel_euler_eq (V : ℝ → ℂ) (logSource : SchwartzMap ℝ ℂ)
   rw [LocalLogFourier.eulerDeriv, hfun, iteratedDeriv_comp_const_add]
   simp
 
+end
+
+section
+variable (a b : ℝ) (ha : 0 < a) (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
+include a b ha hsupp hV
+
 theorem paperKernel_compact_source_smooth
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V) :
+         
+        :
     ContDiffOn ℝ ∞ (paperKernel V) (Set.Ioi 0) :=
   paperKernel_contDiffOn V (logSchwartz V a b ha hsupp hV) (by intro u; rfl)
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
-open MeasureTheory Filter Asymptotics
+ 
+ 
 
 theorem compact_source_mellin_hasDerivAt
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
-    (s : ℂ) :
+         
+       
+     s  :
     HasDerivAt (mellin V) (mellin (fun t => Real.log t • V t) s) s := by
   have hlocal : LocallyIntegrableOn V (Set.Ioi (0 : ℝ)) :=
     hV.continuous.continuousOn.locallyIntegrableOn measurableSet_Ioi
@@ -238,21 +276,25 @@ theorem compact_source_mellin_hasDerivAt
     hbot (by linarith)).2
 
 theorem compact_source_mellin_differentiable
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V) :
+         
+        :
     Differentiable ℂ (mellin V) :=
   fun s => (compact_source_mellin_hasDerivAt V a b ha hsupp hV s).differentiableAt
 
-theorem Gamma_differentiableAt_of_re_pos (z : ℂ) (hz : 0 < z.re) :
+end
+
+end
+
+theorem Gamma_differentiableAt_of_re_pos  z  (hz : 0 < z.re) :
     DifferentiableAt ℂ Complex.Gamma z := by
   apply Complex.differentiableAt_Gamma
   intro m hm
   have hr := congrArg Complex.re hm
   simp only [Complex.neg_re, Complex.natCast_re] at hr
-  have hn : (0 : ℝ) ≤ m := Nat.cast_nonneg m
+  
   linarith
 
-theorem gammaMultiplier_differentiableAt (s : ℂ) (hs : -(5 / 6 : ℝ) < s.re) :
+theorem gammaMultiplier_differentiableAt  s  (hs : -(5 / 6 : ℝ) < s.re) :
     DifferentiableAt ℂ gammaMultiplier s := by
   have h1 := (Gamma_differentiableAt_of_re_pos ((7 / 6 : ℂ) + s) (by
     norm_num [Complex.add_re, Complex.div_re]
@@ -270,21 +312,24 @@ theorem gammaMultiplier_differentiableAt (s : ℂ) (hs : -(5 / 6 : ℝ) < s.re) 
   ring
 
 theorem kernelMellinIntegrand_differentiableAt
-    (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
+     V  (a b : ℝ) (ha : 0 < a)
     (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
-    (s : ℂ) (hs : -(5 / 6 : ℝ) < s.re) :
-    DifferentiableAt ℂ (fun t => mellin V (-t) * gammaMultiplier t) s := by
-  exact ((compact_source_mellin_differentiable V a b ha hsupp hV (-s)).comp s
+     s  (hs : -(5 / 6 : ℝ) < s.re) :
+    DifferentiableAt ℂ (fun t => mellin V (-t) * gammaMultiplier t) s := ((compact_source_mellin_differentiable V a b ha hsupp hV (-s)).comp s
     differentiableAt_id.neg).mul (gammaMultiplier_differentiableAt s hs)
 
 end CubicReflectionKernel
 
-open scoped BigOperators Classical
+ 
 
 namespace DescentWeightedCauchy
 
-theorem weighted_cauchy_sq {ι : Type*} (s : Finset ι)
-    (w U V : ι → ℂ) :
+section
+variable {ι : Type*} (s : Finset ι) (w U V : ι → ℂ)
+include ι s w U V
+
+theorem weighted_cauchy_sq    
+      :
     ‖∑ i ∈ s, w i * U i * star (V i)‖ ^ 2 ≤
       (∑ i ∈ s, ‖w i‖ * ‖U i‖ ^ 2) *
       (∑ i ∈ s, ‖w i‖ * ‖V i‖ ^ 2) := by
@@ -299,8 +344,8 @@ theorem weighted_cauchy_sq {ι : Type*} (s : Finset ι)
       (fun i _ => by positivity) (fun i _ => by positivity)
       (fun i _ => by ring_nf; exact le_rfl)
 
-theorem weighted_cauchy {ι : Type*} (s : Finset ι)
-    (w U V : ι → ℂ) :
+theorem weighted_cauchy    
+      :
     ‖∑ i ∈ s, w i * U i * star (V i)‖ ≤
       Real.sqrt (∑ i ∈ s, ‖w i‖ * ‖U i‖ ^ 2) *
       Real.sqrt (∑ i ∈ s, ‖w i‖ * ‖V i‖ ^ 2) := by
@@ -317,9 +362,15 @@ theorem weighted_cauchy {ι : Type*} (s : Finset ι)
       (∑ i ∈ s, ‖w i‖ * ‖V i‖ ^ 2) := by rw [mul_pow, he1, he2]
   exact (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp (hp ▸ hs)
 
-theorem weighted_energy_pushforward {ι κ : Type*} [DecidableEq κ]
-    (s : Finset ι) (t : Finset κ) (f : ι → κ) (w : ι → ℂ)
-    (P : κ → ℂ) (B : κ → ℝ)
+end
+
+section
+variable {ι κ : Type*} [DecidableEq κ] (s : Finset ι) (t : Finset κ) (f : ι → κ) (w : ι → ℂ) (P : κ → ℂ)
+include ι κ s t f w P
+
+theorem weighted_energy_pushforward    
+           
+      (B : κ → ℝ)
     (hmap : ∀ i ∈ s, f i ∈ t)
     (hfib : ∀ y ∈ t, (∑ i ∈ s with f i = y, ‖w i‖) ≤ B y) :
     (∑ i ∈ s, ‖w i‖ * ‖P (f i)‖ ^ 2) ≤
@@ -335,12 +386,11 @@ theorem weighted_energy_pushforward {ι κ : Type*} [DecidableEq κ]
       apply Finset.sum_congr rfl
       intro i hi
       rw [(Finset.mem_filter.mp hi).2]
-    _ ≤ _ := Finset.sum_le_sum (fun y hy =>
-      mul_le_mul_of_nonneg_right (hfib y hy) (sq_nonneg _))
+    _ ≤ _ := (by bound)
 
-theorem bounded_energy_pushforward {ι κ : Type*} [DecidableEq κ]
-    (s : Finset ι) (t : Finset κ) (f : ι → κ) (w : ι → ℂ)
-    (P : κ → ℂ) (C : ℝ)
+theorem bounded_energy_pushforward    
+           
+       C 
     (hmap : ∀ i ∈ s, f i ∈ t) (hw : ∀ i ∈ s, ‖w i‖ ≤ C) :
     (∑ i ∈ s, ‖w i‖ * ‖P (f i)‖ ^ 2) ≤
       ∑ y ∈ t, C * (s.filter (fun i => f i = y)).card * ‖P y‖ ^ 2 := by
@@ -351,12 +401,14 @@ theorem bounded_energy_pushforward {ι κ : Type*} [DecidableEq κ]
       (fun i hi => hw i (Finset.mem_filter.mp hi).1)
     _ = _ := by simp [mul_comm]
 
+end
+
 abbrev O := ActualEisensteinCubic.O
 
-def firstElementRowMap (e : O) (x : Ideal O × O) : O :=
+def firstElementRowMap (e : O) (x : Ideal O × O)  :=
   x.2 * ConcretePrimeRowBridge.idealGenerator x.1 ^ 2 * e
 
-theorem firstElementRowMap_label_dvd (e : O) (x : Ideal O × O) :
+theorem firstElementRowMap_label_dvd  e   x  :
     x.1 ∣ Ideal.span {firstElementRowMap e x} := by
   rw [← ConcretePrimeRowBridge.span_idealGenerator x.1]
   apply Ideal.span_singleton_dvd_span_singleton_iff_dvd.mpr

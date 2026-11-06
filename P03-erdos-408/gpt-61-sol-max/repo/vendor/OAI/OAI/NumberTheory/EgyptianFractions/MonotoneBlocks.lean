@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.CStarAlgebra.Classes
 
@@ -9,10 +10,13 @@ open scoped BigOperators
 
 namespace Problem337
 
+section
+variable {α : Type*} [LinearOrder α] (d : ℕ → α)
+
 /-- The indices of a monotone sequence lying in a closed interval form one
 possibly empty interval of indices. -/
-theorem monotone_filter_range_eq_Ico {α : Type*} [LinearOrder α]
-    (d : ℕ → α) (hd : Monotone d) (N : ℕ) (L R : α) :
+theorem monotone_filter_range_eq_Ico    
+      (hd : Monotone d)  N   L R  :
     ∃ a b : ℕ, a ≤ b ∧ b ≤ N ∧
       (Finset.range N).filter (fun j => L ≤ d j ∧ d j ≤ R) = Finset.Ico a b := by
   classical
@@ -42,28 +46,29 @@ theorem monotone_filter_range_eq_Ico {α : Type*} [LinearOrder α]
 
 /-- Cancellation on every interval transfers to one interval cut out by a
 monotone increment sequence, without paying an extra term count. -/
-theorem norm_sum_monotone_block_le {α : Type*} [LinearOrder α]
-    (d : ℕ → α) (hd : Monotone d) (N : ℕ) (L R : α)
-    (z : ℕ → ℂ) (C : ℝ)
+theorem norm_sum_monotone_block_le    
+      (hd : Monotone d) (N : ℕ) (L R : α)
+    (z : ℕ → ℂ)  C 
     (hcancel : ∀ a b : ℕ, a ≤ b → b ≤ N →
       (∀ j ∈ Finset.Ico a b, L ≤ d j ∧ d j ≤ R) →
       ‖∑ j ∈ Finset.Ico a b, z j‖ ≤ C) :
     ‖∑ j ∈ (Finset.range N).filter (fun j => L ≤ d j ∧ d j ≤ R), z j‖ ≤ C := by
   classical
   obtain ⟨a, b, hab, hbN, heq⟩ := monotone_filter_range_eq_Ico d hd N L R
-  rw [heq]
-  apply hcancel a b hab hbN
-  intro j hj
-  rw [← heq] at hj
-  exact (Finset.mem_filter.mp hj).2
+  grind
+
+end
 
 /-- Good derivative indices in the integer cell labelled by `k`. -/
 noncomputable def phaseGoodBlock (d : ℕ → ℝ) (N : ℕ) (β : ℝ) (k : ℤ) : Finset ℕ := by
   classical
   exact (Finset.range N).filter (fun j => (k : ℝ) + β ≤ d j ∧ d j ≤ (k : ℝ) + 1 - β)
 
-lemma phaseGoodBlock_pairwise_disjoint (d : ℕ → ℝ) (N : ℕ)
-    (β : ℝ) (hβ : 0 < β) : Pairwise (fun k l : ℤ =>
+section
+variable (d : ℕ → ℝ)
+
+lemma phaseGoodBlock_pairwise_disjoint    N 
+     β  (hβ : 0 < β) : Pairwise (fun k l : ℤ =>
       Disjoint (phaseGoodBlock d N β k) (phaseGoodBlock d N β l)) := by
   classical
   intro k l hkl
@@ -82,8 +87,8 @@ lemma phaseGoodBlock_pairwise_disjoint (d : ℕ → ℝ) (N : ℕ)
 /-- Partition a sum into good monotone derivative blocks and exceptional
 indices. Each good integer cell pays just one cancellation bound. -/
 theorem norm_sum_le_bad_card_add_good_blocks
-    (d : ℕ → ℝ) (hd : Monotone d) (N : ℕ) (β : ℝ) (hβ : 0 < β)
-    (K : Finset ℤ) (z : ℕ → ℂ) (C : ℝ)
+      (hd : Monotone d) (N : ℕ) (β : ℝ) (hβ : 0 < β)
+    (K : Finset ℤ) (z : ℕ → ℂ)  C 
     (hz : ∀ j < N, ‖z j‖ ≤ 1)
     (hcancel : ∀ k ∈ K, ∀ a b : ℕ, a ≤ b → b ≤ N →
       (∀ j ∈ Finset.Ico a b, (k : ℝ) + β ≤ d j ∧ d j ≤ (k : ℝ) + 1 - β) →
@@ -108,23 +113,21 @@ theorem norm_sum_le_bad_card_add_good_blocks
       _ ≤ ∑ _k ∈ K, C := by
         apply Finset.sum_le_sum
         intro k hk
-        exact norm_sum_monotone_block_le d hd N ((k : ℝ) + β) ((k : ℝ) + 1 - β)
-          z C (hcancel k hk)
+        solve_by_elim [norm_sum_monotone_block_le]
       _ = _ := by simp
   have hbad : ‖∑ j ∈ Finset.range N \ G, z j‖ ≤ ((Finset.range N \ G).card : ℝ) := by
     calc
       _ ≤ ∑ j ∈ Finset.range N \ G, ‖z j‖ := norm_sum_le _ _
       _ ≤ ∑ _j ∈ Finset.range N \ G, (1 : ℝ) := by
         apply Finset.sum_le_sum
-        intro j hj
-        exact hz j (Finset.mem_range.mp (Finset.mem_sdiff.mp hj).1)
+        grind
       _ = _ := by simp
   rw [← Finset.sum_sdiff hsub]
   exact (norm_add_le _ _).trans (add_le_add hbad hgood)
 
 /-- The number of integer cells intersecting a real interval has the usual
 length-plus-two bound. -/
-theorem floor_interval_card_le (L U : ℝ) (hLU : L ≤ U) :
+theorem floor_interval_card_le  L U  (hLU : L ≤ U) :
     ((Finset.Icc ⌊L⌋ ⌊U⌋).card : ℝ) ≤ U - L + 2 := by
   have hfloor : ⌊L⌋ ≤ ⌊U⌋ := Int.floor_le_floor hLU
   have hcardZ := Int.card_Icc_of_le ⌊L⌋ ⌊U⌋ (show ⌊L⌋ ≤ ⌊U⌋ + 1 by omega)
@@ -136,8 +139,8 @@ theorem floor_interval_card_le (L U : ℝ) (hLU : L ≤ U) :
   linarith
 
 /-- Outside the good integer cells, an increment is close to an integer. -/
-theorem phase_bad_near_integer (d : ℕ → ℝ) (N : ℕ) (β L U : ℝ)
-    (hrange : ∀ j < N, L ≤ d j ∧ d j ≤ U) (j : ℕ)
+theorem phase_bad_near_integer   (N : ℕ) (β L U : ℝ)
+    (hrange : ∀ j < N, L ≤ d j ∧ d j ≤ U)  j 
     (hj : j ∈ Finset.range N \ (Finset.Icc ⌊L⌋ ⌊U⌋).biUnion (phaseGoodBlock d N β)) :
     ∃ k : ℤ, |d j - (k : ℝ)| < β := by
   classical
@@ -155,17 +158,11 @@ theorem phase_bad_near_integer (d : ℕ → ℝ) (N : ℕ) (β L U : ℝ)
   have hklo : (k : ℝ) ≤ d j := Int.floor_le _
   have hkhi : d j < (k : ℝ) + 1 := Int.lt_floor_add_one _
   by_cases hleft : d j - (k : ℝ) < β
-  · refine ⟨k, ?_⟩
-    rwa [abs_of_nonneg (sub_nonneg.mpr hklo)]
+  · grind
   · have hleft' : β ≤ d j - (k : ℝ) := le_of_not_gt hleft
-    have hright : (k : ℝ) + 1 - β < d j := by
-      apply lt_of_not_ge
-      intro hupper
-      exact hnot ⟨by linarith, hupper⟩
+    
     refine ⟨k + 1, ?_⟩
-    simp only [Int.cast_add, Int.cast_one]
-    rw [abs_of_nonpos (by linarith : d j - ((k : ℝ) + 1) ≤ 0)]
-    linarith
+    grind
 
 noncomputable def nearIntegerIndices (d : ℕ → ℝ) (N : ℕ) (β : ℝ) : Finset ℕ := by
   classical
@@ -174,9 +171,9 @@ noncomputable def nearIntegerIndices (d : ℕ → ℝ) (N : ℕ) (β : ℝ) : Fi
 /-- A second-derivative partition estimate, separating the packing estimate
 for bad points from the cancellation estimate on good intervals. -/
 theorem norm_sum_le_near_integer_bound
-    (d : ℕ → ℝ) (hd : Monotone d) (N : ℕ) (β L U : ℝ) (hβ : 0 < β)
+      (hd : Monotone d) (N : ℕ) (β L U : ℝ) (hβ : 0 < β)
     (hLU : L ≤ U) (hrange : ∀ j < N, L ≤ d j ∧ d j ≤ U)
-    (z : ℕ → ℂ) (B C : ℝ) (hC : 0 ≤ C)
+    (z : ℕ → ℂ)  B C  (hC : 0 ≤ C)
     (hz : ∀ j < N, ‖z j‖ ≤ 1)
     (hbad : ((nearIntegerIndices d N β).card : ℝ) ≤ B)
     (hcancel : ∀ k ∈ Finset.Icc ⌊L⌋ ⌊U⌋, ∀ a b : ℕ, a ≤ b → b ≤ N →
@@ -200,10 +197,10 @@ theorem norm_sum_le_near_integer_bound
 /-- Local monotonicity on the sampled range suffices for the partition bound;
 extend by a constant after the last sampled increment. -/
 theorem norm_sum_le_near_integer_bound_local
-    (d : ℕ → ℝ) (N : ℕ) (hd : MonotoneOn d (Set.Iio N))
+      (N : ℕ) (hd : MonotoneOn d (Set.Iio N))
     (β L U : ℝ) (hβ : 0 < β) (hLU : L ≤ U)
     (hrange : ∀ j < N, L ≤ d j ∧ d j ≤ U)
-    (z : ℕ → ℂ) (B C : ℝ) (hC : 0 ≤ C)
+    (z : ℕ → ℂ)  B C  (hC : 0 ≤ C)
     (hz : ∀ j < N, ‖z j‖ ≤ 1)
     (hbad : ((nearIntegerIndices d N β).card : ℝ) ≤ B)
     (hcancel : ∀ k ∈ Finset.Icc ⌊L⌋ ⌊U⌋, ∀ a b : ℕ, a ≤ b → b ≤ N →
@@ -220,26 +217,20 @@ theorem norm_sum_le_near_integer_bound_local
     by_cases hN : N = 0
     · simp [e, hN]
     · apply hd
-      · change min i (N - 1) < N
-        have := min_le_right i (N - 1)
-        omega
-      · change min j (N - 1) < N
-        have := min_le_right j (N - 1)
-        omega
+      · grind
+      · grind
       · exact min_le_min_right _ hij
   have hindices : nearIntegerIndices e N β = nearIntegerIndices d N β := by
     ext j
     by_cases hj : j < N
     · simp only [nearIntegerIndices, Finset.mem_filter, Finset.mem_range, hj, true_and, heq j hj]
-    · simp only [nearIntegerIndices, Finset.mem_filter, Finset.mem_range, hj, false_and]
+    grind [nearIntegerIndices]
   apply norm_sum_le_near_integer_bound e hem N β L U hβ hLU
     (fun j hj => by simpa only [heq j hj] using hrange j hj) z B C hC hz
   · simpa only [hindices] using hbad
-  · intro k hk a b hab hbN hstrip
-    apply hcancel k hk a b hab hbN
-    intro j hj
-    have hjN : j < N := lt_of_lt_of_le (Finset.mem_Ico.mp hj).2 hbN
-    simpa only [heq j hjN] using hstrip j hj
+  grind
+
+end
 
 end Problem337
 

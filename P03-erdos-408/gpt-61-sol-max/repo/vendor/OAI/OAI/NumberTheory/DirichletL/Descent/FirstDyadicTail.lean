@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicRadius
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicRadius
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -80,12 +81,9 @@ theorem full_first_dyadic_marked_rapid_tail (Mmax Fmax eta tau saving:ℝ)
       (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp (Finset.mem_filter.mp hC).1) hi)).2 hib)
     have hupper (x:ℝ) (hx:1≤x):x≤Z^(firstDyadicExponent Z x+eta):=
       (first_dyadic_bounds Z eta x hZ hbin hx).2.2
-    have hlower (x:ℝ) (hx:1≤x):Z^(firstDyadicExponent Z x-eta)≤x:=by
-      exact (Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith : firstDyadicExponent Z x-eta≤firstDyadicExponent Z x)).trans
+    have hlower (x:ℝ) (hx:1≤x):Z^(firstDyadicExponent Z x-eta)≤x:=(Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith : firstDyadicExponent Z x-eta≤firstDyadicExponent Z x)).trans
         (first_dyadic_bounds Z eta x hZ hbin hx).2.1
-    have hjpos:0<‖eisEmbedding (jLabel p b.support
-      (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit)‖^2:=
-      SecondPassIntegration.elementNorm_pos _ (primeProduct_ne_zero p hp _ _)
+    
     have he:=hloc p hp hinj hcop hg hc pool b C D (extra₁ b) (extra₂ b) I Ψ₁ Ψ₂ m₁ m₂
       slots lists weights (test₁ b) (test₂ b) W (B^2) G₁ G₂ Z M r ell V
       (firstDyadicExponent Z (primeProductNorm p C))
@@ -122,6 +120,6 @@ theorem full_first_dyadic_marked_rapid_tail (Mmax Fmax eta tau saving:ℝ)
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

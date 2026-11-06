@@ -7,16 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformRadialComparison
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentCommonMaskRadialEnergy
 open HeckeFamily HeckeDyadic ConcreteTraceCRT
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
 open CenteredMomentUniformReflectionProfile
-local notation "O" => HeckeFamily.O
 
-lemma naturalSlot_bounded (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) :
+
+lemma naturalSlot_bounded  pool   β   P  :
     ∃B : ℝ,0≤B ∧ ∀χ : Character,‖naturalSlot χ pool β P‖≤B := by
   refine ⟨‖(Real.sqrt P:ℂ)⁻¹‖*∑I∈pool,‖β I‖,by positivity,?_⟩
   intro χ
@@ -29,8 +29,8 @@ lemma naturalSlot_bounded (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : �
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one χ I)
 
-lemma slots_bounded {α : Type*} (F : Finset α) (pool : α→Finset (Ideal O))
-    (β : α→Ideal O→ℂ) (P : α→ℝ) :
+lemma slots_bounded {α : Type*} (F : Finset α) (pool : α→Finset (Ideal HeckeFamily.O))
+    (β : α→Ideal HeckeFamily.O→ℂ) (P : α→ℝ) :
     ∃B : ℝ,0≤B ∧ ∀χ : Character,‖∏j∈F,naturalSlot χ (pool j) (β j) (P j)‖≤B := by
   choose B hB hb using fun j=>naturalSlot_bounded (pool j) (β j) (P j)
   refine ⟨∏j∈F,B j,Finset.prod_nonneg (fun j _=>hB j),?_⟩
@@ -40,10 +40,10 @@ lemma slots_bounded {α : Type*} (F : Finset α) (pool : α→Finset (Ideal O))
 
 theorem actual_radial_shared_energy {α : Type*} [DecidableEq α]
     (F : Finset α) (b M : α→ℝ) (hM : ∀j∈F,0≤M j) (ε : ℝ) (hε : 0<ε) :
-    ∃C : ℝ,0<C ∧ ∀(R : Finset (Ideal O))(hR : ∀I∈R,Prime I)
-      (χ : O→Character)(W₁ W₂ : 𝓢(ℝ,ℂ))(X₁ X₂ a₁ b₁ a₂ b₂ : ℝ)
-      (pool : α→Finset (Ideal O))(β : α→Ideal O→ℂ)(P : α→ℝ)
-      (keep : O→Prop)(Φ : 𝓢(ℝ,ℂ))(K E : ℝ),
+    ∃C : ℝ,0<C ∧ ∀(R : Finset (Ideal HeckeFamily.O))(hR : ∀I∈R,Prime I)
+      (χ : HeckeFamily.O→Character)(W₁ W₂ : 𝓢(ℝ,ℂ))(X₁ X₂ a₁ b₁ a₂ b₂ : ℝ)
+      (pool : α→Finset (Ideal HeckeFamily.O))(β : α→Ideal HeckeFamily.O→ℂ)(P : α→ℝ)
+      (keep : HeckeFamily.O→Prop)(Φ : 𝓢(ℝ,ℂ))(K E : ℝ),
       0<X₁ → 0<X₂ → 0≤b₁ → 0≤b₂ →
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a₁ b₁ →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a₂ b₂ →
@@ -74,14 +74,13 @@ theorem actual_radial_shared_energy {α : Type*} [DecidableEq α]
     (fun _=>hX₁) (fun _=>hX₂) (fun _=>hp) (fun _=>hP)
     (fun _=>hβ) (fun _=>hs) E hE ?_
   · have hid (χ₀ : Character) (z : ↥S) (X : ℝ) :
-        polynomial χ₀ false (q z • W₁ : 𝓢(ℝ,ℂ)) X 0 0=q z*polynomial χ₀ false W₁ X 0 0 := by
-      exact polynomial_const_mul χ₀ W₁ X 0 0 (q z)
+        polynomial χ₀ false (q z • W₁ : 𝓢(ℝ,ℂ)) X 0 0=q z*polynomial χ₀ false W₁ X 0 0 := polynomial_const_mul χ₀ W₁ X 0 0 (q z)
     simp_rw [hid] at hh
     have halg (z : ↥S) (u v w : ℂ) : q z*u*v*w=(u*v*w)*q z := by ring
     simp_rw [halg] at hh
     exact (finite_weighted rows keep _ Φ K hΦ).symm.trans_le hh
   · intro D₁ hD₁ D₂ hD₂ J hJ
-    have hn (D : Finset (Ideal O)) (hD : D∈R.powerset) :
+    have hn (D : Finset (Ideal HeckeFamily.O)) (hD : D∈R.powerset) :
         0<(Ideal.absNorm (∏I∈D,I):ℝ) := by
       apply Nat.cast_pos.mpr
       exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
@@ -108,6 +107,6 @@ theorem actual_radial_shared_energy {α : Type*} [DecidableEq α]
       (hchild D₁ hD₁ D₂ hD₂ J hJ)
 end SevenEighths.CenteredMomentCommonMaskRadialEnergy
 
-end
+
 
 end OAI

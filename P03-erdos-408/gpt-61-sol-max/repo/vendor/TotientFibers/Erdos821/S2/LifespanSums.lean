@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.SpanSumTask
 
@@ -19,23 +20,23 @@ namespace ResiduePath
 variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
   (Q : ResiduePath A n)
 
-def spanProduct (S : LifespanAssignment P n) : ℝ :=
+def spanProduct (S : LifespanAssignment P n)  :=
   ∏ g : P.BigGroup, ∏ p : P.Prime g.val, Q.spanWeight g p (S g p)
 
-def bigResidueExpectation : ℝ :=
+def bigResidueExpectation  :=
   ∏ g : P.BigGroup, ∏ p : P.Prime g.val,
     onePrimeExpectation p.val (n + 1) (eta F n)
       (fun i => (Q.offset i : ZMod p.val)) (Q.activeVisits g p)
 
-theorem spanWeight_zero_of_invalid (g : P.BigGroup) (p : P.Prime g.val)
-    (span : PrimeSpan n) (hn : ¬ Q.spanValid g p span) : Q.spanWeight g p span = 0 := by
+theorem spanWeight_zero_of_invalid  g   p 
+     span  (hn : ¬ Q.spanValid g p span) : Q.spanWeight g p span = 0 := by
   cases span with
   | none => exact ite_eq_right hn
   | some be =>
     rcases be with ⟨b, e⟩
     exact ite_eq_right hn
 
-theorem spanProduct_zero_of_invalid (S : LifespanAssignment P n)
+theorem spanProduct_zero_of_invalid  S 
     (hn : ¬ Q.lifespanValid S) : Q.spanProduct S = 0 := by
   change ¬ ∀ g p, Q.spanValid g p (S g p) at hn
   obtain ⟨g, hg⟩ := not_forall.mp hn
@@ -83,13 +84,12 @@ theorem valid_spanProduct_sum_normalized (hSpan : SpanSumTask)
       apply Finset.prod_congr rfl
       intro g _
       apply Finset.prod_congr rfl
-      intro p _
-      exact hSpan F P J m n A Q g p (hbp g p)
+      solve_by_elim
     _ = _ := by simp only [bigResidueExpectation, Finset.prod_mul_distrib]
 
 end ResiduePath
 
-theorem bigBaseline_eq_subtypes (F : FixedData) (P : PrimeGroups) (n : ℕ) :
+theorem bigBaseline_eq_subtypes  F   P   n  :
     bigBaseline F P n = ∏ g : P.BigGroup, ∏ p : P.Prime g.val, baselinePrime F n p.val := by
   unfold bigBaseline
   rw [Finset.prod_subtype (p := fun g : P.Group => P.big g = true)

@@ -13,12 +13,12 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-universe v
-variable {Nlevel a c₀ : Eis} {mode : Bool}
 
-end
+
+universe v
+variable {Nlevel a c₀ : ActualEisensteinCubic.O} {mode : Bool}
+
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

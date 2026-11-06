@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.CentralPrimeSum
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubePhaseBins
@@ -25,14 +26,14 @@ theorem poolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→�
     ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
   fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
 
-theorem actual_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
+theorem actual_cube_prime_bound  N n  (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hrmin : 0<rmin)
     (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ)
     (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
-    (hmax : ∀P∈S,P.IsMaximal) (W : Fin N→ℝ→ℂ)
+     S   hS  (hfirst : FirstTail (4*e) S)
+     hmax   W 
     (hWs : ∀j,Function.support (W j)⊆Ioo c b) (hW : ∀j,ContDiff ℝ ∞ (W j)) (hWB : ∀j t,‖W j t‖≤A) :
     ∃C : ℝ,0<C ∧ ∀η : Character,∀ᶠ Z : ℝ in atTop,
       ∀d : ℝ,dmin≤d → d≤dmax → ∀(u : FreeRow),u.val≠1 → Z^δ≤rowNorm u →
@@ -77,7 +78,7 @@ theorem actual_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε 
   let g : Fin N→ℝ := fun j=>amplitude (Y j) (a-1/2) mesh
     (HeckePrimeRow.canonicalPrimeAmplitude M H u.val (W j) b (Y j) z)
   have hU : 2≤Z^d := hscaleZ d hd
-  have hUp : 0<Z^d := by linarith
+  
   have hY (j : Fin N) : 1≤Y j := Real.one_le_rpow (by linarith) (hrmin.trans_le (hr j)).le
   have hYp (j : Fin N) : 0<Y j := zero_lt_one.trans_le (hY j)
   have hphase (j : Fin N) := hb j d hd hd' hU hZ.2 η u hulo hcal huhi a i hi ha ha1 hbin (r j) t (hr j) (hr' j) ht
@@ -104,7 +105,7 @@ theorem actual_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε 
     ring
   have hgood (j : Fin N) (P : PrimeIdeal) (hP : P∈T j) := hg (RayQuotient.identityClass M H) S d (r j) hd (hr j) P hP
   have hfreq := cube_buffered_heights t ((3*i+1:ℕ)*Z^τ) (Z^τ) i ht
-    (Real.rpow_nonneg (zero_le_one.trans hZ.1) _) (by push_cast;have hh : 0≤Z^τ := Real.rpow_nonneg (zero_le_one.trans hZ.1) _;nlinarith)
+    (Real.rpow_nonneg (zero_le_one.trans hZ.1) _) (by push_cast;linarith)
   have hbound' := hbound u hu η (rayCubeFamily M H hH u) (Z^τ) a i hZ.2 ha ha1 hbin T
     (poolOutside M H S N c b Y) hdis (fun j P hP=>(hgood j P hP).2.1)
     (fun j P hP=>(hgood j P hP).2.2.1) (fun j P hP=>(hgood j P hP).2.2.2)
@@ -121,8 +122,7 @@ theorem actual_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε 
     ring
   calc
     _ ≤ C*(η.modulus.absNorm:ℝ)^(2*eps)*rowNorm u^(a-1/2+12*e+eps*(N+8))*
-        (3+(3*i+2:ℕ)*Z^τ)^(2+4*eps)*((∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j)) := by
-      exact hbound'.trans_eq (by ring)
+        (3+(3*i+2:ℕ)*Z^τ)^(2+4*eps)*((∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j)) := hbound'.trans_eq (by ring)
     _ ≤ C*(η.modulus.absNorm:ℝ)^(2*eps)*rowNorm u^(a-1/2+12*e+eps*(N+8))*Z^loss*
         ((∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j)) := by
       apply mul_le_mul_of_nonneg_right _ (mul_nonneg

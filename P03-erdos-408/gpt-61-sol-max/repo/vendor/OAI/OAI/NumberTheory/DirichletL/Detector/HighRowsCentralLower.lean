@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralDefect
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralDefect
 
 namespace OAI
 
-noncomputable section
+
 open scoped Topology
 open Filter
 namespace SevenEighths.ProbeEuler
@@ -21,8 +22,7 @@ theorem central_correction_threshold (eps : ℝ) (heps : 0<eps) :
   have he := hh.eventually (eventually_lt_nhds (by norm_num : (0:ℝ)<1/2))
   obtain ⟨Q0,hQ0⟩ := Filter.eventually_atTop.mp he
   refine ⟨max 480 Q0,le_max_left _ _,?_⟩
-  intro Q hQ
-  exact (hQ0 Q ((le_max_right _ _).trans hQ)).le
+  grind
 
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
@@ -42,6 +42,6 @@ theorem ramifiedClosed_central_lower (eta a rho x w z : ℂ) (alpha eps : ℝ)
   rw [sub_add_cancel,norm_one,norm_sub_rev] at hh
   linarith
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

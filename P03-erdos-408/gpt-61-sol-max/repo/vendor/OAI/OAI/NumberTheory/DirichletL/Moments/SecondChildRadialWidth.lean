@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWidthDrop
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -19,13 +19,13 @@ open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
 open CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization
 open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRadicalBudget
 open CenteredMomentSecondActualWidth CenteredMomentSecondWidthDrop
-local notation "O" => HeckeFamily.O
+
 
 theorem physicalBlock_live_dyadic_witness (η:Character)(t:ℝ)
-    (S:Finset (Ideal O))(β:Ideal O→ℂ)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
-    (U:Finset (CommonIndex C D))(R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K:ℝ)(n:Fin 4→ℤ)
+    (S:Finset (Ideal HeckeFamily.O))(β:Ideal HeckeFamily.O→ℂ) C D (hC:Supported C)(hD:Supported D)
+     U  R  rows (W:𝓢(ℝ,ℂ))(K:ℝ) n 
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0) :
-    ∃z:O,z∈liveRows C D U R rows ∧ z∈dyadicRows rows n ∧
+    ∃z:HeckeFamily.O,z∈liveRows C D U R rows ∧ z∈dyadicRows rows n ∧
       z≠0 ∧ dyadicScale (n 1)<4*normValue z := by
   rw [physicalBlock_live_dyadic_rows η t S β C D hC hD U R rows W K n] at hne
   unfold physicalBlock at hne
@@ -37,11 +37,11 @@ theorem physicalBlock_live_dyadic_witness (η:Character)(t:ℝ)
     have hh:=(dyadicRows_norm rows n z hz').1
     linarith⟩
 
-section Family
-variable {η:Character}{C D:Ideal O}{hC:Supported C}{hD:Supported D}
+
+variable {η:Character}{C D:Ideal HeckeFamily.O}{hC:Supported C}{hD:Supported D}
   {U:Finset (CommonIndex C D)}{τ:RayCharacter→Character}
   (h:Family η C D hC hD U τ)
-  (t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)(R:ℝ)(rows:Finset O)
+  (t:ℝ)(S:Finset (Ideal HeckeFamily.O))(β:Ideal HeckeFamily.O→ℂ)(R:ℝ)(rows:Finset HeckeFamily.O)
   (W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(n:Fin 4→ℤ)
   (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0)
 
@@ -67,8 +67,8 @@ theorem dyadic_log_budget (Z:ℝ)(hZ:1<Z)(χ:RayCharacter) :
 
 omit h hK hne in
 
-theorem radial_support_bound (Φ:ℝ→ℂ)(b:ℝ)
-    (hs:Function.support Φ⊆Set.Iic b)(y:O)
+theorem radial_support_bound (Φ:ℝ→ℂ) b 
+    (hs:Function.support Φ⊆Set.Iic b) y 
     (hy:Φ (normValue y/dyadicScale (n 1))≠0) :
     normValue y≤b*dyadicScale (n 1) :=
   (div_le_iff₀ (dyadicScale_pos (n 1))).mp (hs hy)
@@ -88,10 +88,10 @@ theorem radial_radius_log_budget (Z:ℝ)(hZ:1<Z)(χ:RayCharacter)(b:ℝ)(hb:0<b)
   rw [Real.logb_mul hb.ne' (dyadicScale_pos (n 1)).ne',hf]
   linarith
 
-end Family
+
 
 end SevenEighths.CenteredMomentSecondChildRadialWidth
 
-end
+
 
 end OAI

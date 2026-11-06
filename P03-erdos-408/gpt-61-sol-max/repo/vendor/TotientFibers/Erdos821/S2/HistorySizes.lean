@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.MemoryHistory
 
@@ -20,21 +21,25 @@ theorem zeroBirthBatch_card {g : P.Group} {b : ℕ} (p : Fin b → P.Prime g) :
     (zeroBirthBatch p).card = b := by
   simp [zeroBirthBatch]
 
-theorem ghostChoiceValid_memory_card {M : ℕ} {s t : P.MemoryState M}
-    (c : GhostChoice s t) (hc : ghostChoiceValid c) (g : P.BigGroup) :
+section
+variable {M : ℕ} {s t : P.MemoryState M} (c : GhostChoice s t) (hc : ghostChoiceValid c)
+include M s t c hc
+
+theorem ghostChoiceValid_memory_card    
+         g  :
     (t.2.2 g).card = (s.2.2 g).card - (c.1 g).card + (c.2.1 g).val := by
   have he := congrArg Multiset.card (hc g).2
   simp only [Multiset.card_add, deleteMemoryIndices_card, zeroBirthBatch_card] at he
   exact he.symm
 
-theorem ghostChoiceValid_size_le {M : ℕ} {s t : P.MemoryState M}
-    (c : GhostChoice s t) (hc : ghostChoiceValid c) :
+theorem ghostChoiceValid_size_le    
+        :
     P.memorySize t ≤ P.memorySize s + ghostBirthCount c := by
   simp only [PrimeGroups.memorySize, ghostBirthCount, ← Finset.sum_add_distrib]
   apply Finset.sum_le_sum
-  intro g _
-  have he := ghostChoiceValid_memory_card c hc g
-  omega
+  grind [ghostChoiceValid_memory_card]
+
+end
 
 theorem edgeChoiceValid_size_le (A : Model F P J m) {n : ℕ} (i : Fin n)
     (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)
@@ -86,9 +91,7 @@ theorem finite_growth_bound (n C : ℕ) (before after births : Fin (n + 1) → �
   | succ i ih =>
       have hp : (∑ j : Fin (n + 1), if j.val < i.succ.val then births j else 0) =
           ∑ j : Fin (n + 1), if j.val ≤ i.castSucc.val then births j else 0 := by
-        apply Finset.sum_congr rfl
-        intro j _
-        simp only [Fin.val_succ, Fin.val_castSucc, Nat.lt_succ_iff]
+        norm_num
       have hb : before i.succ ≤
           (∑ j : Fin (n + 1), if j.val < i.succ.val then births j else 0) + i.succ.val * C := by
         calc
@@ -107,7 +110,7 @@ variable {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n)
 
 /-- Even the coarser bound M stores per edge is enough for the memory tail:
 M is fixed before x tends to infinity. -/
-theorem size_le_births_stores (hH : H.Valid) (i : Fin (n + 1)) :
+theorem size_le_births_stores (hH : H.Valid)  i  :
     P.memorySize (H.before i) ≤ H.totalGhostBirths + i.val * ((J + F.ell) * Fintype.card P.BigGroup) ∧
     P.memorySize (H.after i) ≤ H.totalGhostBirths + i.val * ((J + F.ell) * Fintype.card P.BigGroup) := by
   have hz : P.memorySize (H.before 0) = 0 := by
@@ -130,7 +133,7 @@ theorem size_le_births_stores (hH : H.Valid) (i : Fin (n + 1)) :
     intro j _
     split_ifs <;> omega
 
-theorem ghostBatch_le (B : ℕ) (hH : H.Truncated B) (i : Fin (n + 1)) (g : P.BigGroup) :
+theorem ghostBatch_le  B  (hH : H.Truncated B)  i   g  :
     ((H.ghost i).2.1 g).val ≤ B := by
   have hb := ((H.ghost i).2.1 g).isLt
   have hg : ((H.after i).2.2 g).card ≤ P.memorySize (H.after i) := by
@@ -142,7 +145,7 @@ theorem ghostBatch_le (B : ℕ) (hH : H.Truncated B) (i : Fin (n + 1)) (g : P.Bi
 
 /-- Every path omitted by a cutoff needs a corresponding number of original
  ghost births, beyond the fixed total capacity of stores. -/
-theorem tail_requires_births (B : ℕ) (hH : H.Valid) (htail : ¬ H.Truncated B) :
+theorem tail_requires_births  B  (hH : H.Valid) (htail : ¬ H.Truncated B) :
     B < H.totalGhostBirths + n * ((J + F.ell) * Fintype.card P.BigGroup) := by
   by_contra h
   apply htail

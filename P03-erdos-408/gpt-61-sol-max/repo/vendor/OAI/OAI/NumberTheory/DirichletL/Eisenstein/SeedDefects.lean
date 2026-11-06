@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.DualMiddleExpansion
 public import OAI.NumberTheory.DirichletL.Eisenstein.SmoothCuspCutoffs
@@ -11,76 +12,80 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 namespace CubicEisenstein
-open Filter
-open scoped BigOperators Classical Topology ContDiff
+ 
+ 
 
-lemma cuspSeed_row_defect (a b : ℝ) (s c : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
-    (p : SpatialCoordinates) (hp : 0<p 2) :
+section
+variable (a b : ℝ)
+include a b
+
+lemma cuspSeed_row_defect    s c   u  (hu : u≠0)
+     p  (hp : 0<p 2) :
     axisLaplacian (fun q => c*cuspSeedProfile a b s (rowHeight u q)) p-
       s*(s-2)*(c*cuspSeedProfile a b s (rowHeight u p))=
         c*cuspSeedDefectProfile a b s (rowHeight u p) := by
@@ -88,8 +93,12 @@ lemma cuspSeed_row_defect (a b : ℝ) (s c : ℂ) (u : Fin 2 → ℂ) (hu : u≠
   have h := cuspSeedProfile_laplace_defect a b s (rowHeight u p) (rowHeight_pos u hu p hp).ne'
   linear_combination c*h
 
-theorem heightPoincare_cuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) :
+section
+variable (s : ℂ) (ha : 1<a) (hab : a<b) (p : SpatialCoordinates) (hp : 0<p 2)
+include s ha hab p hp
+
+theorem heightPoincare_cuspSeed_laplace_defect        
+        :
     axisLaplacian (heightPoincareField (cuspSeedProfile a b s)) p-
       s*(s-2)*heightPoincareField (cuspSeedProfile a b s) p=
         heightPoincareField (cuspSeedDefectProfile a b s) p := by
@@ -120,67 +129,77 @@ theorem heightPoincare_cuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) 
   intro r hr
   exact cuspSeed_row_defect a b s (cosetCharacter r)⁻¹ (embeddedRow r) (embeddedRow_ne_zero r) p hp
 
-def smoothCuspSeedField (a b : ℝ) (s : ℂ) (p : SpatialCoordinates) : ℂ :=
+def smoothCuspSeedField (a b : ℝ) (s : ℂ) (p : SpatialCoordinates)  :=
   if hp : 0<p 2 then smoothCuspSeed a b s
     (upperPoint ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hp) else 0
 
-def smoothCuspSeedDefectField (a b : ℝ) (s : ℂ) (p : SpatialCoordinates) : ℂ :=
+def smoothCuspSeedDefectField (a b : ℝ) (s : ℂ) (p : SpatialCoordinates)  :=
   if hp : 0<p 2 then smoothCuspSeedDefect a b s
     (upperPoint ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hp) else 0
 
-lemma smoothCuspSeedField_eq (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) :
+lemma smoothCuspSeedField_eq        
+        :
     smoothCuspSeedField a b s p=heightPoincareField (cuspSeedProfile a b s) p := by
   rw [smoothCuspSeedField,dite_eq_left hp,smoothCuspSeed_coordinate a b s ha hab p hp]
-lemma smoothCuspSeedDefectField_eq (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) :
+lemma smoothCuspSeedDefectField_eq        
+        :
     smoothCuspSeedDefectField a b s p=heightPoincareField (cuspSeedDefectProfile a b s) p := by
   rw [smoothCuspSeedDefectField,dite_eq_left hp,smoothCuspSeedDefect_coordinate a b s ha hab p hp]
 
-lemma actual_smoothCuspSeed_contDiffAt (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) : ContDiffAt ℝ ∞ (smoothCuspSeedField a b s) p := by
+lemma actual_smoothCuspSeed_contDiffAt        
+        : ContDiffAt ℝ ∞ (smoothCuspSeedField a b s) p := by
   have heq : smoothCuspSeedField a b s =ᶠ[𝓝 p] heightPoincareField (cuspSeedProfile a b s) := by
     filter_upwards [(continuous_apply 2).continuousAt.eventually_const_lt hp] with q hq
     exact smoothCuspSeedField_eq a b s ha hab q hq
   exact (smoothCuspSeed_contDiffAt a b s ha hab p hp).congr_of_eventuallyEq heq
 
-theorem actual_smoothCuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) :
+theorem actual_smoothCuspSeed_laplace_defect        
+        :
     axisLaplacian (smoothCuspSeedField a b s) p-s*(s-2)*smoothCuspSeedField a b s p=
       smoothCuspSeedDefectField a b s p := by
-  rw [axisLaplacian_congr_positive _ _ (fun q hq => smoothCuspSeedField_eq a b s ha hab q hq) p hp,
+  rw [axisLaplacian_congr_positive _ _ (smoothCuspSeedField_eq a b s ha hab) p hp,
     smoothCuspSeedField_eq a b s ha hab p hp,smoothCuspSeedDefectField_eq a b s ha hab p hp]
   exact heightPoincare_cuspSeed_laplace_defect a b s ha hab p hp
 
+end
+
+end
+
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
-def sectorBadIdeal (E : fixedBadPrimes.powerset) : Ideal O := ∏ P ∈ E.val, P
+def sectorBadIdeal (E : fixedBadPrimes.powerset)  := ∏ P ∈ E.val, P
 
-theorem sector_bad_good_product (I : Ideal O) (hI : Squarefree I)
-    (E : fixedBadPrimes.powerset) (hE : badPrimeSector I = E) :
+section
+variable (I : Ideal O) (hI : Squarefree I) (E : fixedBadPrimes.powerset) (hE : badPrimeSector I = E)
+include I hI E hE
+
+theorem sector_bad_good_product    
+        :
     sectorBadIdeal E * goodSquarefreePart I = I := by
   have hs : badPrimeSupport I = E.val := congrArg Subtype.val hE
   simpa only [hs, sectorBadIdeal] using squarefree_bad_good_product I hI
 
-theorem sectorBadIdeal_ne_zero_of_row (I : Ideal O) (hI : Squarefree I)
-    (E : fixedBadPrimes.powerset) (hE : badPrimeSector I = E) : sectorBadIdeal E ≠ 0 := by
+theorem sectorBadIdeal_ne_zero_of_row    
+        : sectorBadIdeal E ≠ 0 := by
   intro hz
   have hp := sector_bad_good_product I hI E hE
   rw [hz, zero_mul] at hp
   exact hI.ne_zero hp.symm
 
+end
+
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
 
 def unrestrictedPairTerm (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (i : m) (j : n) (k : p) : ℂ :=
+    (a : n → ℂ) (b : p → ℂ) (i : m) (j : n) (k : p)  :=
   if IsCoprime (left j) (right k) then
     star (a j) * b k * unrestrictedPairCharacter (left j) (right k) (rows i) else 0
 
@@ -189,7 +208,7 @@ theorem unrestrictedPairTerm_sector (rows : m → Ideal O) (left : n → Ideal O
     (a : n → ℂ) (b : p → ℂ)
     (hrows : ∀ i, Squarefree (rows i)) (hleft : ∀ j, Admissible (left j)) (hright : ∀ k, Admissible (right k))
     (hray : ∀ j k, columnRay (left j) = columnRay (right k))
-    (E : fixedBadPrimes.powerset) (hE : ∀ i, badPrimeSector (rows i) = E) (i : m) (j : n) (k : p) :
+     E  (hE : ∀ i, badPrimeSector (rows i) = E) (i : m) (j : n) (k : p) :
     unrestrictedPairTerm rows left right a b i j k =
       originalTerm (fun i => goodSquarefreePart (rows i)) left right
         (fun j => a j * quadraticRow (left j) (idealGenerator (sectorBadIdeal E)))
@@ -204,11 +223,11 @@ theorem unrestrictedPairTerm_sector (rows : m → Ideal O) (left : n → Ideal O
     simp only [sectorBadIdeal, unrestrictedPairCharacter, star_mul,
       canonical_quadraticRow_star _ (hleft j)]
     ring
-  · simp only [unrestrictedPairTerm, originalTerm, hc, ite_false]
+  simp_all [unrestrictedPairTerm, originalTerm]
 
 def unrestrictedDualTruncatedMiddle (W : 𝓢(ℝ, ℂ))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ) : ℂ :=
+    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (Y Z : m → ℝ) (lengthScale : ℝ)  :=
   ∑ i, ∑ j, ∑ k, unrestrictedPairTerm rows left right a b i j k *
     (((M / (Real.sqrt ((Ideal.absNorm (left j) : ℝ) * (Ideal.absNorm (right k) : ℝ)) * F) : ℝ) : ℂ) *
       middleTruncation (fun P : primePool {left j * right k} => P.val) Finset.univ W
@@ -266,7 +285,7 @@ theorem unrestrictedDualTruncatedMiddle_sector
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
 
 lemma divisorEnergyFactor_mono_coefficients {n p : Type*} [Fintype n] [Fintype p]
     (ε : ℝ) (hε : 0 < ε) (N : ℝ) (a a' : n → ℂ) (b b' : p → ℂ)
@@ -305,8 +324,8 @@ lemma dual_bad_sector_scale (M F B Q U α : ℝ)
     _ ≤ _ := by gcongr
 
 def dualMiddleMajorant {n p : Type} [Fintype n] [Fintype p]
-    {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)
-    (ε : ℝ) (hε : 0 < ε) (B N M F U : ℝ) (a : n → ℂ) (b : p → ℂ) (W : 𝓢(ℝ, ℂ)) : ℝ :=
+    {α } (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)
+    (ε : ℝ) (hε : 0 < ε) (B N M F U : ℝ) (a : n → ℂ) (b : p → ℂ) (W : 𝓢(ℝ, ℂ))  :=
   ((columnDyadicLength N + 1 : ℕ) : ℝ) ^ 2 *
     ((2 * nonzeroLatticeEnvelopeConstant * dualMiddleDecayConstant W) *
       divisorEnergyFactor ε hε N a b * (divisorExponentConstant hexp deltaLoss hδ * (B * N) ^ deltaLoss) *
@@ -405,7 +424,7 @@ theorem HasSieveExponent.dual_truncated_middle_sector {α : ℝ} (hexp : HasSiev
     have hs := dual_bad_sector_scale M F B Q U α hM hF (by linarith) hQ hU hα
     have hc := nonzeroLatticeEnvelopeConstant_nonneg
     have hW := dualMiddleDecayConstant_nonneg W
-    have hea := divisorEnergyFactor_nonneg ε hε N a' b'
+    
     have heb := divisorEnergyFactor_nonneg ε hε N a b
     have hd := (divisorExponentConstant_pos hexp deltaLoss hδ).le
     unfold dualMiddleMajorant
@@ -418,7 +437,7 @@ theorem HasSieveExponent.dual_truncated_middle_sector {α : ℝ} (hexp : HasSiev
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -467,9 +486,9 @@ theorem HasSieveExponent.unrestricted_dual_truncated_middle {α : ℝ} (hexp : H
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
+ 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+ 
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -479,30 +498,22 @@ variable {ι : Type*} [DecidableEq ι]
 end SecondPassArithmetic
 
 namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
-include hinj
+open   SecondPassArithmetic
 
-end
 
 open ConcreteTraceCRT (eisEmbedding)
 open FirstPassCubeLabels (primeProductNorm)
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical
+ 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProduct primeProductNorm squarefreeLabel jLabel j2Label b0Label
   bit parity conductorExponent cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 
-lemma element_norm_le_of_dvd {a b : O} (hb : b ≠ 0) (h : a ∣ b) :
+lemma element_norm_le_of_dvd  {a b}  (hb : b ≠ 0) (h : a ∣ b) :
     ‖eisEmbedding a‖^2 ≤ ‖eisEmbedding b‖^2 := by
   obtain ⟨c,rfl⟩ := h
   have hc : c ≠ 0 := (mul_ne_zero_iff.mp hb).2
@@ -526,8 +537,7 @@ lemma squarefreeLabel_active_bound (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂
     unfold squarefreeLabel primeProduct S
     rw [Finset.prod_filter]
     apply Finset.prod_congr rfl
-    intro i hi
-    cases hb : parity (v i) <;> simp [bit,hb]
+    simp_all [parity, bit]
   have hsub : S ⊆ cubeActiveSupport B v ε₁ ε₂ := by
     intro i hi
     obtain ⟨hi,hpi⟩ := Finset.mem_filter.mp hi
@@ -540,26 +550,24 @@ lemma squarefreeLabel_active_bound (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂
   exact primeProductNorm_mono p hp hsub
 
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
-lemma jLabel_dvd_cube_product (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
+lemma jLabel_dvd_cube_product (B : Finset ι) (v₁ v₂ : ι → ℕ)  ε₁ ε₂ 
     (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) :
     jLabel p B (fun i => v₁ i+v₂ i) ε₁ ε₂ ∣ primeProduct p B v₁ * primeProduct p B v₂ := by
   rw [← primeProduct_add]
   apply Finset.prod_dvd_prod_of_dvd
   intro i hi
   apply pow_dvd_pow
-  dsimp only
-  unfold bit
-  split <;> have h := hv i hi <;> omega
+  grind [bit]
 
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
-lemma b0_square_dvd_cube_product (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
+lemma b0_square_dvd_cube_product (B : Finset ι) (v₁ v₂ : ι → ℕ)  ε₁ ε₂ 
     (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) :
     b0Label p B (fun i => v₁ i+v₂ i) ε₁ ε₂ ^ 2 ∣ primeProduct p B v₁ * primeProduct p B v₂ := by
   rw [FirstPassCubeLabels.cube_pair_product_decomposition p B v₁ v₂ ε₁ ε₂ hv]
   exact dvd_mul_of_dvd_left (dvd_mul_right _ _) _
 
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
-lemma b0_jLabel_square (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
+lemma b0_jLabel_square (B : Finset ι) (v₁ v₂ : ι → ℕ)  ε₁ ε₂ 
     (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) :
     (b0Label p B (fun i => v₁ i+v₂ i) ε₁ ε₂ * jLabel p B (fun i => v₁ i+v₂ i) ε₁ ε₂)^2 =
       primeProduct p B v₁ * primeProduct p B v₂ * squarefreeLabel p B (fun i => v₁ i+v₂ i) := by
@@ -583,7 +591,7 @@ theorem cube_label_norm_bounds (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ �
   dsimp only
   have hbb : ‖eisEmbedding (primeProduct p B v₁ * primeProduct p B v₂)‖^2 ≤ B₀^2 := by
     rw [map_mul,norm_mul,mul_pow]
-    simpa only [pow_two] using mul_le_mul hb₁ hb₂ (sq_nonneg _) hB
+    nlinarith
   have hbb0 := mul_ne_zero (primeProduct_ne_zero p hp B v₁) (primeProduct_ne_zero p hp B v₂)
   have hJ := (element_norm_le_of_dvd hbb0 (jLabel_dvd_cube_product p B v₁ v₂ ε₁ ε₂ hv)).trans hbb
   have hb0sq := (element_norm_le_of_dvd hbb0 (b0_square_dvd_cube_product p B v₁ v₂ ε₁ ε₂ hv)).trans hbb
@@ -598,8 +606,7 @@ theorem cube_label_norm_bounds (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ �
     simpa only [map_mul,norm_mul,mul_pow] using hbb
   have hmul := mul_le_mul hNprod hs (sq_nonneg _) (sq_nonneg B₀)
   change _ ≤ B₀^2*‖eisEmbedding (∏ i ∈ cubeActiveSupport B (fun i => v₁ i+v₂ i) ε₁ ε₂,p i)‖^2 at hmul
-  have hjpos : 0 < ‖eisEmbedding (jLabel p B (fun i => v₁ i+v₂ i) ε₁ ε₂)‖^2 := by
-    exact zero_lt_one.trans_le (element_norm_ge_one _ (primeProduct_ne_zero p hp B _))
+  have hjpos : 0 < ‖eisEmbedding (jLabel p B (fun i => v₁ i+v₂ i) ε₁ ε₂)‖^2 := zero_lt_one.trans_le (element_norm_ge_one _ (primeProduct_ne_zero p hp B _))
   apply (le_div_iff₀ hjpos).mpr
   apply (sq_le_sq₀ (mul_nonneg (sq_nonneg _) (sq_nonneg _))
     (mul_nonneg hB (norm_nonneg _))).mp

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2Empty.BigFactor
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
@@ -40,10 +41,7 @@ theorem tendsto_log_sq_exp_neg_rpow (F : FixedData) :
   have hcomp' : Tendsto
       (fun x : ℝ => ((L x) ^ F.c) ^ (2 / F.c) * Real.exp (-((L x) ^ F.c)))
       atTop (𝓝 0) := by
-    change Tendsto
-      (fun x : ℝ => ((L x) ^ F.c) ^ (2 / F.c) * Real.exp (-1 * ((L x) ^ F.c)))
-      atTop (𝓝 0) at hcomp
-    simpa [neg_one_mul] using hcomp
+    aesop
   exact hcomp'.congr' heq.symm
 
 set_option maxHeartbeats 600000 in
@@ -53,7 +51,7 @@ theorem eventually_big_deficit_budget (F : FixedData) (M : ℕ) :
       (N x : ℝ) + 1 ≤ 5 * L x ∧
       5 * (L x) ^ (2 : ℕ) * Real.exp (-((L x) ^ F.c)) < 1 / 2 ∧
       (M : ℝ) * F.C₀ * T x * ((N x : ℝ) + 1) / Real.exp ((L x) ^ F.c) ≤ 1 / 2 := by
-  have hc : 0 < F.c := lt_trans F.a_pos (lt_trans F.ab F.bc)
+  
   have hdecay := tendsto_log_sq_exp_neg_rpow F
   have hscaled := hdecay.const_mul (5 * (M : ℝ) * F.C₀)
   have hsmall : ∀ᶠ x : ℝ in atTop,

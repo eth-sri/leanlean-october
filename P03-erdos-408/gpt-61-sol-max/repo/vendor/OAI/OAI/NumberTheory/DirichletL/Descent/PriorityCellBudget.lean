@@ -7,15 +7,15 @@ public import OAI.NumberTheory.DirichletL.Descent.PriorityCellEnergy
 
 namespace OAI
 
-noncomputable section
+
 
 namespace SevenEighths.InverseMoment
 open InverseSecondSourceBlocks
 
 theorem priority_cell_physical_budget
-    (Z:ℝ) (hZ:1<Z) (d:BlockIndex)
+     Z  (hZ:1<Z)  d 
     (M r ell V delta A B R j t eta tau pi eps epsmass b C:ℝ)
-    (ray:ℂ) (hC:0≤C) (hb:1≤b)
+     ray  (hC:0≤C) (hb:1≤b)
     (hsource:scales d 0*scales d 2≤b*Z^(r-A-B-t))
     (hthreshold:b≤Z^(6*eta))
     (hmass:epsmass*(secondCount ell R j t (secondCellExponent Z d 0)
@@ -44,6 +44,6 @@ theorem priority_cell_physical_budget
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

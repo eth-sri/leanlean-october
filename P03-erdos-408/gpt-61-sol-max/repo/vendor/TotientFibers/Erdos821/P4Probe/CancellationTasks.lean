@@ -22,7 +22,7 @@ def analyticGroups (P : PrimeGroups) : Blueprint.Analytic.PrimeGroups where
 
 /-- Uniform finite comparison hypothesis. No limiting or admissibility
 assumption enters the finite cancellation lemma. -/
-def LocalComparison (P : PrimeGroups) (m Q : ℕ) (h ξ ζ ε : ℝ) : Prop :=
+def LocalComparison (P : PrimeGroups) (m Q : ℕ) (h ξ ζ ε : ℝ)  :=
   let G := analyticGroups P
   ∀ a b, Blueprint.Analytic.bigSlots G a m → Blueprint.Analytic.bigSlots G b m →
     ∀ (α : ℝ) (f : Blueprint.Analytic.Tuple G b → ℂ)
@@ -37,7 +37,7 @@ exceptions before norms; their costs are sqrt(theta^block-size), with no
 subset count. At most 3^(m*#big-groups) triples pay the comparison error.
 The target is the literal Graph idealKernel, including both permutation
 averages; all unselected auxiliary labels integrate to one. -/
-def FiniteProbeCancellationTask : Prop :=
+def FiniteProbeCancellationTask  :=
   SymmetricFullComponentTask →
   ∀ (F : FixedData) (P : PrimeGroups) (J m : ℕ) (hj : m ≤ J)
     (block : P.BigGroup → Bool) (Q : ℕ) (h ξ θ ζ ε : ℝ),

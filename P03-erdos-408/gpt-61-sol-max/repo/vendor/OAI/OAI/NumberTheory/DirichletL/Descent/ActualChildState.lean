@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
 public import OAI.NumberTheory.DirichletL.Descent.SecondSharpPuncture
@@ -14,18 +15,22 @@ open scoped Classical BigOperators
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
-def actualCellLabelExponent (Z B j eta : ℝ) (d : BlockIndex) : ℝ :=
+
+def actualCellLabelExponent (Z B j eta : ℝ) (d : BlockIndex)  :=
   secondFormalLabel B (secondCellExponent Z d 1) (secondCellExponent Z d 2) j+4*eta
 
-def actualCellTotalExponent (Z X B j eta : ℝ) (d : BlockIndex) : ℝ :=
+def actualCellTotalExponent (Z X B j eta : ℝ) (d : BlockIndex)  :=
   max 0 (secondCellColumnExponent Z X d)+actualCellLabelExponent Z B j eta d
 
-def actualCellClipping (Z X : ℝ) (d : BlockIndex) : ℝ :=
+def actualCellClipping (Z X : ℝ) (d : BlockIndex)  :=
   max 0 (secondCellColumnExponent Z X d)-secondCellColumnExponent Z X d
 
-lemma actual_cell_total_transition (Z r ell V A B t j eta : ℝ) (d : BlockIndex) (hZ : 1<Z) :
+section
+variable (Z r ell V A B t j eta : ℝ) (d : BlockIndex) (hZ : 1<Z)
+
+include hZ in
+lemma actual_cell_total_transition       :
     actualCellTotalExponent Z (Z^(r-A-B-t)) B j eta d=
       childF (r+3*ell+V) ell A t (secondCellExponent Z d 0) (secondCellExponent Z d 1) V j
         (actualCellClipping Z (Z^(r-A-B-t)) d+4*eta) := by
@@ -34,15 +39,18 @@ lemma actual_cell_total_transition (Z r ell V A B t j eta : ℝ) (d : BlockIndex
   unfold childF decrease secondFormalColumn secondFormalLabel
   ring
 
-lemma actual_cell_label_nonneg (Z B j eta : ℝ) (d : BlockIndex)
-    (hZ : 1<Z) (hB : 0≤B) (hj : 0≤j) (heta : 0≤eta) :
+include hZ in
+lemma actual_cell_label_nonneg    
+      (hB : 0≤B) (hj : 0≤j) (heta : 0≤eta) :
     0≤actualCellLabelExponent Z B j eta d := by
   have h1 := secondCellExponent_nonneg Z d 1 hZ
   have h2 := secondCellExponent_nonneg Z d 2 hZ
   unfold actualCellLabelExponent secondFormalLabel
   positivity
 
-variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+end
+
+variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
 include hp
 
@@ -65,16 +73,20 @@ theorem actual_cell_norm_centers {Jo Jn : ℕ}
       _ ≤ Z^eta*scales d i := mul_le_mul_of_nonneg_right hbin (dyadScale_pos _).le
       _ = _ := by rw [←second_cell_scale_rpow Z d i hZ,←Real.rpow_add hz];congr 1;ring
 
+section
+variable (hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1) {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (hs : ActualSecondSourceConditions p source) (hk : ∀x∈source,x.second.frequency≠0) (d : BlockIndex) (x : MarkedSecondSource ι Jo Jn) (hx : x∈cell p source d) (u v : ActualEisensteinCubic.Oˣ) (m : ActualEisensteinCubic.O) (hm : m≠0) (Z r ell V M Q z c A B t j eta b : ℝ) (hZ : 1<Z) (hparent : CanonicalMargins (r+3*ell+V) M Q z c) (hA : 0≤A) (ht : 0≤t)
+
+include hpr hs hk hx hm hZ hparent hA ht in
 theorem actual_cell_child_margins
-    (hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hs : ActualSecondSourceConditions p source) (hk : ∀x∈source,x.second.frequency≠0)
-    (d : BlockIndex) (x : MarkedSecondSource ι Jo Jn) (hx : x∈cell p source d)
-    (u v : Oˣ) (m : O) (hm : m≠0)
-    (Z r ell V M Q z c A B t j eta : ℝ) (hZ : 1<Z)
-    (hparent : CanonicalMargins (r+3*ell+V) M Q z c)
-    (hA : 0≤A) (ht : 0≤t) (hV : 0≤V) (hj : 0≤j) (heta : 0≤eta) (hbin : 2≤Z^eta)
-    (hQ : (Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z^Q)
+     
+       
+       
+         
+         
+       
+     
+        (hV : 0≤V) (hj : 0≤j) (heta : 0≤eta) (hbin : 2≤Z^eta)
+    (hQ : (Ideal.absNorm (Ideal.span {m}:Ideal ActualEisensteinCubic.O).radical:ℝ)≤Z^Q)
     (h1 : ‖eisEmbedding (primeProduct p x.cube.support x.cube.leftExponent)‖^2≤Z^(ell+eta))
     (h2 : ‖eisEmbedding (primeProduct p x.cube.support x.cube.rightExponent)‖^2≤Z^(ell+eta))
     (hT : (Ideal.absNorm x.quotient:ℝ)≤Z^(t+eta)) :
@@ -88,17 +100,18 @@ theorem actual_cell_child_margins
   apply actual_second_child_margins_from_cubes p hp hpr x (hs.second_divisor x hxs)
     (hs.quotient_nonzero x hxs) u v m hm Z (r+3*ell+V) M Q z c ell A t
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) V j _ eta hZ hparent hA ht hV hj
-    (by unfold actualCellClipping;have := le_max_right 0 (secondCellColumnExponent Z (Z^(r-A-B-t)) d);linarith)
+    (by unfold actualCellClipping;bound)
     heta hQ h1 h2 hT
   · simpa only [outerNorms,Matrix.cons_val_zero] using hG
-  · simpa only [outerNorms,Matrix.cons_val_one,Matrix.cons_val_zero] using hD
+  assumption
 
-theorem actual_cell_child_total_upper {Jo Jn : ℕ}
-    (source : Finset (MarkedSecondSource ι Jo Jn)) (hs : ActualSecondSourceConditions p source)
-    (hk : ∀x∈source,x.second.frequency≠0) (d : BlockIndex)
-    (x : MarkedSecondSource ι Jo Jn) (hx : x∈cell p source d)
-    (Z r ell V A B t j eta b : ℝ) (hZ : 1<Z)
-    (hA : 0≤A) (ht : 0≤t) (hell : 0≤ell) (hV : 0≤V) (heta : 0≤eta) (hbin : 2≤Z^eta)
+include hs hk hx hZ hA ht in
+theorem actual_cell_child_total_upper  
+       
+       
+       
+       
+        (hell : 0≤ell) (hV : 0≤V) (heta : 0≤eta) (hbin : 2≤Z^eta)
     (hb : 1≤b) (hthreshold : b≤Z^(6*eta))
     (hgeom : ∀x∈source,primeProductNorm p x.second.sourceCommon*primeProductNorm p x.second.overlap≤b*Z^(r-A-B-t))
     (h1 : ‖eisEmbedding (primeProduct p x.cube.support x.cube.leftExponent)‖^2≤Z^(ell+eta))
@@ -120,6 +133,8 @@ theorem actual_cell_child_total_upper {Jo Jn : ℕ}
   rw [actual_cell_total_transition Z r ell V A B t j eta d hZ]
   unfold childF decrease actualCellClipping
   linarith
+
+end
 
 end SevenEighths.InverseMoment
 end

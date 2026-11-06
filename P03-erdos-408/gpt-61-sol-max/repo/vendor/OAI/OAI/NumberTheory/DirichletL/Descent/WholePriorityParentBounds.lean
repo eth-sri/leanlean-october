@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Descent.WholePriorityMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -19,7 +19,7 @@ variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
 
 omit [DecidableEq σ] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem parent_residual_lists_subset {Jo:ℕ} (extra:CubeCoordinates ι→Finset ι)
-    (negative:Bool) (lists:σ→Finset ι) (y:SecondParentSource ι Jo) (i:σ):
+    (negative:Bool) (lists:σ→Finset ι) (y:SecondParentSource ι Jo)  i :
     residualLists p negative (fun i=>lists i\extra y.cube) y i⊆lists i:=
 by
   intro k hk
@@ -112,6 +112,6 @@ theorem priority_tail_parent_uniform (Lcap tau saving:ℝ)(hLcap:0≤Lcap)(htau:
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

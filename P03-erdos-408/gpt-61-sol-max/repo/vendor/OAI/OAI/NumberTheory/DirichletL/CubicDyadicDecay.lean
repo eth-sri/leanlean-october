@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.CubicSieve.QuantitativePassage
 
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Analysis.SpecificLimits.Normed
@@ -17,22 +20,23 @@ namespace SevenEighths.CubicDyadicDecay
 open scoped BigOperators
 noncomputable section
 
-def decayConstant (α : ℝ) : ℝ :=
+def decayConstant (α : ℝ)  :=
   (2 : ℝ)^α / ((2 : ℝ)^α - 1) + (1 - (2 : ℝ)^(α - 3))⁻¹
 
-lemma dyadic_rpow (α : ℝ) (j : ℕ) :
-    ((2 : ℝ)^j)^α = ((2 : ℝ)^α)^j := by
-  rw [← Real.rpow_natCast_mul (by norm_num), mul_comm,
-    Real.rpow_mul_natCast (by norm_num)]
+section
+variable (t α : ℝ) (ht : 0 < t) (j : ℕ)
 
-lemma decay_le_low (t α : ℝ) (ht : 0 < t) (j : ℕ) :
+lemma dyadic_rpow     :
+    ((2 : ℝ)^j)^α = ((2 : ℝ)^α)^j := by solve_by_elim [_root_.OAI.CompletedDyadic.pow_rpow_comm]
+
+include ht in
+lemma decay_le_low       :
     ((2 : ℝ)^j)^α / (1 + t * (2 : ℝ)^j)^3 ≤ ((2 : ℝ)^α)^j := by
   rw [← dyadic_rpow]
-  exact div_le_self (by positivity) (one_le_pow₀ (by
-    have : 0 ≤ t * (2 : ℝ)^j := by positivity
-    linarith))
+  bound
 
-lemma decay_le_high (t α : ℝ) (ht : 0 < t) (j : ℕ) :
+include ht in
+lemma decay_le_high       :
     ((2 : ℝ)^j)^α / (1 + t * (2 : ℝ)^j)^3 ≤
       t^(-3 : ℝ) * ((2 : ℝ)^(α - 3))^j := by
   have hk : 0 < (2 : ℝ)^j := by positivity
@@ -45,14 +49,20 @@ lemma decay_le_high (t α : ℝ) (ht : 0 < t) (j : ℕ) :
       simp only [Real.rpow_ofNat]
       ring
 
-lemma decay_summable (t α : ℝ) (ht : 0 < t) (hα : α < 3) :
+include ht in
+lemma decay_summable     (hα : α < 3) :
     Summable (fun j : ℕ => ((2 : ℝ)^j)^α / (1 + t * (2 : ℝ)^j)^3) := by
-  have hr : (2 : ℝ)^(α - 3) < 1 := by
-    exact Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
+  have hr : (2 : ℝ)^(α - 3) < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
   exact ((summable_geometric_of_lt_one (by positivity) hr).mul_left (t^(-3 : ℝ))).of_nonneg_of_le
     (fun j => by positivity) (decay_le_high t α ht)
 
-lemma decayConstant_pos (α : ℝ) (hα : 0 < α) (hα3 : α < 3) :
+end
+
+section
+variable (q : ℝ) (hq : 1 < q) (B : ℝ → ℝ) (C P Q t α β : ℝ) (hC : 0 ≤ C) (hP : 0 ≤ P) (hQ : 0 ≤ Q) (ht : 0 < t) (hα : 0 < α) (hα3 : α < 3) (k : ℕ)
+
+include hα hα3 in
+lemma decayConstant_pos       :
     0 < decayConstant α := by
   have hq : 1 < (2 : ℝ)^α := Real.one_lt_rpow (by norm_num) hα
   have hr : (2 : ℝ)^(α - 3) < 1 :=
@@ -60,12 +70,14 @@ lemma decayConstant_pos (α : ℝ) (hα : 0 < α) (hα3 : α < 3) :
   unfold decayConstant
   positivity
 
-lemma geometric_prefix_le (q : ℝ) (hq : 1 < q) (k : ℕ) :
+include hq in
+lemma geometric_prefix_le       :
     (∑ j ∈ Finset.range k, q^j) ≤ q^k / (q - 1) := by
   rw [geom_sum_eq (ne_of_gt hq)]
   exact div_le_div_of_nonneg_right (by linarith) (by linarith)
 
-lemma decay_tail_le (t α : ℝ) (ht : 0 < t) (hα3 : α < 3) (k : ℕ) :
+include ht hα3 in
+lemma decay_tail_le         :
     (∑' j : ℕ, ((2 : ℝ)^(j+k))^α / (1 + t * (2 : ℝ)^(j+k))^3) ≤
       t^(-3 : ℝ) * ((2 : ℝ)^(α-3))^k * (1 - (2 : ℝ)^(α-3))⁻¹ := by
   have hr0 : 0 ≤ (2 : ℝ)^(α-3) := by positivity
@@ -82,7 +94,8 @@ lemma decay_tail_le (t α : ℝ) (ht : 0 < t) (hα3 : α < 3) (k : ℕ) :
       rw [tsum_mul_left, tsum_mul_right, tsum_geometric_of_lt_one hr0 hr]
       ring
 
-theorem dyadic_decay_bound (t α : ℝ) (ht : 0 < t) (hα : 0 < α) (hα3 : α < 3) :
+include ht hα hα3 in
+theorem dyadic_decay_bound         :
     (∑' j : ℕ, ((2 : ℝ)^j)^α / (1 + t * (2 : ℝ)^j)^3) ≤
       decayConstant α * t^(-α) := by
   have hq : 1 < (2 : ℝ)^α := Real.one_lt_rpow (by norm_num) hα
@@ -139,9 +152,10 @@ theorem dyadic_decay_bound (t α : ℝ) (ht : 0 < t) (hα : 0 < α) (hα3 : α <
     unfold decayConstant
     nlinarith
 
-theorem two_power_majorant (B : ℝ → ℝ) (C P Q t α β : ℝ)
-    (hC : 0 ≤ C) (hP : 0 ≤ P) (hQ : 0 ≤ Q) (ht : 0 < t)
-    (hα : 0 < α) (hα3 : α < 3) (hβ : 0 < β) (hβ3 : β < 3)
+include hC hP hQ ht hα hα3 in
+theorem two_power_majorant    
+           
+        (hβ : 0 < β) (hβ3 : β < 3)
     (hB0 : ∀ K, 1 ≤ K → 0 ≤ B K)
     (hB : ∀ K, 1 ≤ K → B K ≤ C * (P*K^α + Q*K^β)) :
     Summable (fun j : ℕ => B ((2 : ℝ)^j) / (1 + t*(2 : ℝ)^j)^3) ∧
@@ -170,12 +184,18 @@ theorem two_power_majorant (B : ℝ → ℝ) (C P Q t α β : ℝ)
   dsimp [f] at *
   nlinarith
 
-theorem sieve_growth_majorant (B : ℝ → ℝ) (A N t δ ξ : ℝ)
-    (hA : 0 ≤ A) (hN : 0 < N) (ht : 0 < t)
-    (hα : 0 < 1/3+δ) (hα3 : 1/3+δ < 3)
-    (hβ : 0 < ξ+δ) (hβ3 : ξ+δ < 3)
-    (hB0 : ∀ K, 1 ≤ K → 0 ≤ B K)
-    (hB : ∀ K, 1 ≤ K → B K ≤ A*(K*N)^δ*(N*K^(1/3 : ℝ)+K^ξ)) :
+end
+
+section
+variable (B : ℝ → ℝ) (A M N t α e d δ ξ : ℝ) (hA : 0 ≤ A) (β u v P Q : ℝ) (hM : 0 < M) (hN : 0 < N) (ht : 0 < t) (hα : 0 < 1/3+δ) (hα3 : 1/3+δ < 3) (hβ : 0 < ξ+δ) (hβ3 : ξ+δ < 3) (hB0 : ∀ K, 1 ≤ K → 0 ≤ B K) (hB : ∀ K, 1 ≤ K → B K ≤ A*(K*N)^δ*(N*K^(1/3 : ℝ)+K^ξ)) (he : 1 ≤ e) (hed : e ≤ d) (hδ : 0 ≤ δ) (hξ : 1 ≤ ξ)
+
+include hA hN ht hα hα3 hβ hβ3 hB0 hB in
+theorem sieve_growth_majorant    
+         
+       
+       
+     
+      :
     Summable (fun j : ℕ => B ((2 : ℝ)^j) / (1+t*(2 : ℝ)^j)^3) ∧
     (∑' j : ℕ, B ((2 : ℝ)^j) / (1+t*(2 : ℝ)^j)^3) ≤
       A*N^δ * (N*decayConstant (1/3+δ)*t^(-(1/3+δ)) +
@@ -190,7 +210,8 @@ theorem sieve_growth_majorant (B : ℝ → ℝ) (A N t δ ξ : ℝ)
   rw [Real.mul_rpow hK0.le hN.le, Real.rpow_add hK0, Real.rpow_add hK0]
   ring
 
-lemma poisson_scale_identity (M N α : ℝ) (hM : 0 < M) (hN : 0 < N) :
+include hM hN in
+lemma poisson_scale_identity       :
     M/N * (M/N^2)^(-α) = M^(1-α) * N^(2*α-1) := by
   rw [Real.div_rpow hM.le (sq_nonneg N), Real.rpow_neg hM.le,
     Real.rpow_neg (sq_nonneg N), div_inv_eq_mul,
@@ -199,7 +220,8 @@ lemma poisson_scale_identity (M N α : ℝ) (hM : 0 < M) (hN : 0 < N) :
   norm_num
   ring
 
-lemma poisson_small_power_identity (M N δ β : ℝ) (hM : 0 < M) (hN : 0 < N) :
+include hM hN in
+lemma poisson_small_power_identity       :
     N^δ * (M/N) * (M/N^2)^(-(β+δ)) =
       N^(3*δ)*M^(-δ)*M^(1-β)*N^(2*β-1) := by
   rw [mul_assoc, poisson_scale_identity M N (β+δ) hM hN]
@@ -210,12 +232,13 @@ lemma poisson_small_power_identity (M N δ β : ℝ) (hM : 0 < M) (hN : 0 < N) :
       congr 1 <;> congr 1 <;> ring
     _ = _ := by rw [Real.rpow_add hM, Real.rpow_add hN]; ring
 
-theorem sieve_poisson_bound (B : ℝ → ℝ) (A M N δ ξ : ℝ)
-    (hA : 0 ≤ A) (hM : 0 < M) (hN : 0 < N)
-    (hα : 0 < 1/3+δ) (hα3 : 1/3+δ < 3)
-    (hβ : 0 < ξ+δ) (hβ3 : ξ+δ < 3)
-    (hB0 : ∀ K, 1 ≤ K → 0 ≤ B K)
-    (hB : ∀ K, 1 ≤ K → B K ≤ A*(K*N)^δ*(N*K^(1/3 : ℝ)+K^ξ)) :
+include hA hM hN hα hα3 hβ hβ3 hB0 hB in
+theorem sieve_poisson_bound    
+         
+       
+       
+     
+      :
     (M/N) * (∑' j : ℕ, B ((2 : ℝ)^j) / (1+M*(2 : ℝ)^j/N^2)^3) ≤
       A*N^(3*δ)*M^(-δ) *
         (decayConstant (1/3+δ)*(M*N)^(2/3 : ℝ) +
@@ -241,15 +264,10 @@ theorem sieve_poisson_bound (B : ℝ → ℝ) (A M N δ ξ : ℝ)
         _ = N^(1 : ℝ) * N^(-(1/3 : ℝ)) := by rw [Real.rpow_one]
         _ = _ := by rw [← Real.rpow_add hN]; norm_num
     nlinarith [congrArg (fun x => M^(2/3 : ℝ)*x) hn']
-  calc
-    _ = A*N*decayConstant (1/3+δ)*(N^δ*(M/N)*(M/N^2)^(-(1/3+δ))) +
-        A*decayConstant (ξ+δ)*(N^δ*(M/N)*(M/N^2)^(-(ξ+δ))) := by ring
-    _ = _ := by
-      rw [hid₁, hid₂]
-      have he := congrArg (fun x => A*N^(3*δ)*M^(-δ)*decayConstant (1/3+δ)*x) hmix
-      nlinarith [he]
+  grind
 
-lemma descent_factor_le_one (e d u v : ℝ) (he : 1 ≤ e) (hed : e ≤ d)
+include he hed in
+lemma descent_factor_le_one      
     (hv : v ≤ 0) (huv : u+v ≤ 0) : e^u*d^v ≤ 1 := by
   have hd : 1 ≤ d := he.trans hed
   by_cases hu : 0 ≤ u
@@ -262,8 +280,9 @@ lemma descent_factor_le_one (e d u v : ℝ) (he : 1 ≤ e) (hed : e ≤ d)
       (Real.rpow_le_one_of_one_le_of_nonpos hd hv) (by positivity) (by norm_num)).trans_eq
       (one_mul 1)
 
-lemma monomial_descendant_le (M N e d u v : ℝ) (hM : 0 < M) (hN : 0 < N)
-    (he : 1 ≤ e) (hed : e ≤ d) (hv : 0 ≤ v) (huv : 0 ≤ u+v) :
+include hM hN he hed in
+lemma monomial_descendant_le      
+        (hv : 0 ≤ v) (huv : 0 ≤ u+v) :
     (M/e)^u*(N/d)^v ≤ M^u*N^v := by
   have he0 : 0 < e := by linarith
   have hd0 : 0 < d := by linarith
@@ -276,7 +295,8 @@ lemma monomial_descendant_le (M N e d u v : ℝ) (hM : 0 < M) (hN : 0 < N)
     _ ≤ (M^u*N^v)*1 := mul_le_mul_of_nonneg_left hg (by positivity)
     _ = _ := mul_one _
 
-lemma mixed_monomial_identity (M N δ : ℝ) (hM : 0 < M) (hN : 0 < N) :
+include hM hN in
+lemma mixed_monomial_identity       :
     N^(3*δ)*M^(-δ)*(M*N)^(2/3 : ℝ) =
       M^(2/3-δ)*N^(2/3+3*δ) := by
   rw [Real.mul_rpow hM.le hN.le]
@@ -286,7 +306,8 @@ lemma mixed_monomial_identity (M N δ : ℝ) (hM : 0 < M) (hN : 0 < N) :
       rw [← Real.rpow_add hM, ← Real.rpow_add hN]
       congr 1 <;> congr 1 <;> ring
 
-lemma secondary_monomial_identity (M N δ ξ : ℝ) (hM : 0 < M) (hN : 0 < N) :
+include hM hN in
+lemma secondary_monomial_identity       :
     N^(3*δ)*M^(-δ)*M^(1-ξ)*N^(2*ξ-1) =
       M^(1-ξ-δ)*N^(2*ξ-1+3*δ) := by
   calc
@@ -295,31 +316,32 @@ lemma secondary_monomial_identity (M N δ ξ : ℝ) (hM : 0 < M) (hN : 0 < N) :
       rw [← Real.rpow_add hM, ← Real.rpow_add hN]
       congr 1 <;> congr 1 <;> ring
 
-lemma mixed_descendant_le (M N e d δ : ℝ) (hM : 0 < M) (hN : 0 < N)
-    (he : 1 ≤ e) (hed : e ≤ d) (hδ : 0 ≤ δ) :
+include hM hN he hed hδ in
+lemma mixed_descendant_le      
+          :
     (N/d)^(3*δ)*(M/e)^(-δ)*((M/e)*(N/d))^(2/3 : ℝ) ≤
       N^(3*δ)*M^(-δ)*(M*N)^(2/3 : ℝ) := by
   have he0 : 0 < e := by linarith
   have hd0 : 0 < d := by linarith
   rw [mixed_monomial_identity (M/e) (N/d) δ (div_pos hM he0) (div_pos hN hd0),
     mixed_monomial_identity M N δ hM hN]
-  exact monomial_descendant_le M N e d (2/3-δ) (2/3+3*δ) hM hN he hed
-    (by linarith) (by linarith)
+  grind [monomial_descendant_le]
 
-lemma secondary_descendant_le (M N e d δ ξ : ℝ) (hM : 0 < M) (hN : 0 < N)
-    (he : 1 ≤ e) (hed : e ≤ d) (hδ : 0 ≤ δ) (hξ : 1 ≤ ξ) :
+include hM hN he hed hδ hξ in
+lemma secondary_descendant_le      
+            :
     (N/d)^(3*δ)*(M/e)^(-δ)*(M/e)^(1-ξ)*(N/d)^(2*ξ-1) ≤
       N^(3*δ)*M^(-δ)*M^(1-ξ)*N^(2*ξ-1) := by
   have he0 : 0 < e := by linarith
   have hd0 : 0 < d := by linarith
   rw [secondary_monomial_identity (M/e) (N/d) δ ξ (div_pos hM he0) (div_pos hN hd0),
     secondary_monomial_identity M N δ ξ hM hN]
-  exact monomial_descendant_le M N e d (1-ξ-δ) (2*ξ-1+3*δ) hM hN he hed
-    (by linarith) (by linarith)
+  grind [monomial_descendant_le]
 
-theorem poisson_envelope_descendant_le (M N e d δ ξ P Q : ℝ)
-    (hM : 0 < M) (hN : 0 < N) (he : 1 ≤ e) (hed : e ≤ d)
-    (hδ : 0 ≤ δ) (hξ : 1 ≤ ξ) (hP : 0 ≤ P) (hQ : 0 ≤ Q) :
+include hM hN he hed hδ hξ in
+theorem poisson_envelope_descendant_le  
+           
+        (hP : 0 ≤ P) (hQ : 0 ≤ Q) :
     (N/d)^(3*δ)*(M/e)^(-δ) *
         (P*((M/e)*(N/d))^(2/3 : ℝ) + Q*(M/e)^(1-ξ)*(N/d)^(2*ξ-1)) ≤
       N^(3*δ)*M^(-δ) * (P*(M*N)^(2/3 : ℝ)+Q*M^(1-ξ)*N^(2*ξ-1)) := by
@@ -327,6 +349,8 @@ theorem poisson_envelope_descendant_le (M N e d δ ξ P Q : ℝ)
   have hs := mul_le_mul_of_nonneg_left
     (secondary_descendant_le M N e d δ ξ hM hN he hed hδ hξ) hQ
   nlinarith [hm, hs]
+
+end
 
 end
 end SevenEighths.CubicDyadicDecay

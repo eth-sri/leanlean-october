@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Moment.Phased.Edge
 
 public import Erdos408.OneSided.Moment.Chain.Identity
 public import Erdos408.OneSided.Moment.Rank
@@ -33,13 +36,18 @@ open Filter Finset Real
 variable {K : ℕ}
 
 /-- The truncation cap `B = ⌈L²⌉`. -/
-def truncCap (x : ℝ) : ℕ := ⌈Real.log x ^ 2⌉₊
+def truncCap (x : ℝ)  := ⌈Real.log x ^ 2⌉₊
 
+section
+variable {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g) {E L n : ℝ}
+
+
+include hq hq₁ hC hD halo hahi hK in
 /-- M3, the truncation: lowering the memory cap from the number of band primes to
 `B = ⌈L²⌉` changes the distinct-birth history sum by at most `exp(-L²/2)`. -/
-theorem eventually_distinctSum_truncation {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q)
-    (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5)
-    (hK : bandThreshold Dstar C ≤ K) :
+theorem eventually_distinctSum_truncation    
+             
+      :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
         d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
@@ -52,11 +60,12 @@ theorem eventually_distinctSum_truncation {q C CX alo ahi Dstar g : ℝ} (hq : 0
     with x hx d hd j k u v r _ _ _ _ _ _
   exact hx d hd j k u v r
 
+include hq hq₁ hC hD hCX halo hahi hK hg in
 /-- M4–M10, the truncated memory bound: with the cap `B = ⌈L²⌉`, the distinct-birth history
 sum is at most `2 L^{-(E₀ + 2) N}`. -/
-theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q)
-    (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo)
-    (hahi : ahi < 1 / 5) (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g) :
+theorem eventually_norm_distinctSum_le    
+             
+          :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
         d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
@@ -224,8 +233,7 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
       Nat.lt_succ_of_le (blockRank_le_card (mem_filter.1 h).1)⟩)
     (blockSum q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N)
     (f := fun t => L ^ (C₁' * (N + 1)) * (C₁' * Real.exp (-L ^ alo)) ^ t)
-    (fun _ _ => mul_nonneg (Real.rpow_nonneg hL0.le _)
-      (pow_nonneg (mul_nonneg (by linarith) (Real.exp_pos _).le) _)) hhi
+    (fun _ _ => (by positivity)) hhi
   rw [distinctSum_eq_sum_blockSum, ← sum_filter_add_sum_filter_not _ (blockRank · < r₀)]
   calc ‖∑ 𝒞 ∈ (blockSystems (BirthAddr (K := K) x B N)).filter (blockRank · < r₀),
           (blockCoef 𝒞 : ℂ) * blockSum q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N 𝒞 +
@@ -237,16 +245,14 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
           (hhighsum.trans (hhigh N Q hN₂ hQ)))
     _ = 2 * L ^ (-((momentPrec Dstar C + 2) * N)) := by ring
 
+include hq hq₁ in
 /-- The damping defects are in `[0, 1]`. -/
-private theorem dampDefect_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
-    0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
-  unfold dampDefect
-  split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
+private alias dampDefect_mem_Icc := _root_.SharedProofs.dampDefect_mem_Icc_
 
+include hq hq₁ in
 /-- For band primes beyond `N`, the baseline `b'_p` is in `[0, 1]`: each of the `N + 1`
 defects is at most `1`, and `p + 1 > N + 1`. -/
-private theorem baseline_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {N p : ℕ} (hp : N < p) :
+private theorem baseline_mem_Icc        {N p}  (hp : N < p) :
     0 ≤ baseline q N p ∧ baseline q N p ≤ 1 := by
   have hp1 : (0 : ℝ) < p + 1 := by positivity
   -- `0 ≤ ∑_{j ≤ N} η'_j ≤ N + 1 ≤ p + 1`
@@ -265,7 +271,7 @@ private theorem baseline_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {N p : �
   constructor <;> linarith
 
 /-- For `L ≥ 4`, `2 ≤ L^{1/2}` and `2 L^{1/2} ≤ L`. -/
-theorem two_le_rpow_half_of_four_le {L : ℝ} (hL : 4 ≤ L) :
+theorem two_le_rpow_half_of_four_le   (hL : 4 ≤ L) :
     2 ≤ L ^ (1 / 2 : ℝ) ∧ 2 * L ^ (1 / 2 : ℝ) ≤ L := by
   set s := L ^ (1 / 2 : ℝ) with hs
   have hs0 : 0 ≤ s := by positivity
@@ -274,16 +280,12 @@ theorem two_le_rpow_half_of_four_le {L : ℝ} (hL : 4 ≤ L) :
     rw [hs, ← Real.rpow_add (by linarith)]
     norm_num
   have hs2 : 2 ≤ s := by
-    by_contra h
-    push Not at h
-    have : s * s < 2 * 2 := mul_lt_mul'' h h hs0 hs0
-    linarith
+    nlinarith
   refine ⟨hs2, ?_⟩
-  calc 2 * s ≤ s * s := mul_le_mul_of_nonneg_right hs2 hs0
-    _ = L := hss
+  nlinarith
 
 /-- `N = 2R` is between `2` and `L^{1/2} + 2`. -/
-theorem two_mul_momentPower_bounds {x : ℝ} (hL : 0 < Real.log x) :
+theorem two_mul_momentPower_bounds  {x}  (hL : 0 < Real.log x) :
     2 ≤ ((2 * momentPower x : ℕ) : ℝ) ∧
       ((2 * momentPower x : ℕ) : ℝ) ≤ Real.log x ^ (1 / 2 : ℝ) + 2 := by
   have hpos : 0 < Real.log x ^ (1 / 2 : ℝ) / 2 := by positivity
@@ -292,13 +294,12 @@ theorem two_mul_momentPower_bounds {x : ℝ} (hL : 0 < Real.log x) :
     Nat.ceil_lt_add_one hpos.le
   push_cast
   constructor
-  · have : (1 : ℝ) ≤ momentPower x := by exact_mod_cast hR
-    linarith
+  · simp_all
   · linarith
 
 /-- The final comparison: for `L ≥ 8E + 16` and `2 ≤ n ≤ L^{1/2} + 2`,
 `2 L^{-(E + 2) n} + exp(-L²/2) ≤ L^{-(E + 1) n}`. -/
-private theorem two_mul_rpow_add_exp_le {E L n : ℝ} (hE : 0 < E) (hL : 8 * E + 16 ≤ L)
+private theorem two_mul_rpow_add_exp_le   (hE : 0 < E) (hL : 8 * E + 16 ≤ L)
     (hn₂ : 2 ≤ n) (hn : n ≤ L ^ (1 / 2 : ℝ) + 2) :
     2 * L ^ (-((E + 2) * n)) + Real.exp (-(L ^ 2 / 2)) ≤ L ^ (-((E + 1) * n)) := by
   have hL0 : 0 < L := by linarith
@@ -320,7 +321,7 @@ private theorem two_mul_rpow_add_exp_le {E L n : ℝ} (hE : 0 < E) (hL : 8 * E +
       rw [ha, ← Real.rpow_add hL0]
       ring_nf
     rw [hsplit]
-    have ha0 : 0 ≤ a := by positivity
+    
     calc 2 * (a * L ^ (-n)) ≤ 2 * (a * (1 / 4)) := by gcongr
       _ = a / 2 := by ring
   -- the second term: `(E + 1) n log L + log 2 ≤ 4 (E + 1) L + L ≤ L² / 2`
@@ -349,11 +350,12 @@ private theorem two_mul_rpow_add_exp_le {E L n : ℝ} (hE : 0 < E) (hL : 8 * E +
     exact Real.exp_le_exp.2 (by linarith)
   linarith
 
+include hq hq₁ hC hD hCX halo hahi hK hg in
 /-- PD §4 (the memory bound): for `K ≥ K₀`, at every real root in the box, the line average
 of the root moment is at most `L^{-(E₀ + 1) N}`. -/
-theorem eventually_norm_lineAverage_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q)
-    (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo)
-    (hahi : ahi < 1 / 5) (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g) :
+theorem eventually_norm_lineAverage_le    
+             
+          :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
         d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
@@ -426,5 +428,7 @@ theorem eventually_norm_lineAverage_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
             (2 * momentPower x))
         linarith
     _ ≤ L ^ (-((momentPrec Dstar C + 1) * (2 * momentPower x : ℕ))) := by linarith
+
+end
 
 end Erdos408.OneSided

@@ -6,20 +6,23 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalDyadicAssembly
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicCount
 open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentDyadicCount
 
-lemma indices_mono_upper (a b c : ℝ) (ha : 0<a) (hb : 0<b) (hbc : b≤c) :
+section
+variable (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L) (_hCr hCr : 0<Cr) (hε : 0<ε)
+
+lemma indices_mono_upper  a b c  (ha : 0<a) (hb : 0<b) (hbc : b≤c) :
     indices a b ⊆ indices a c := by
   intro n hn
   rw [mem_indices_iff_scale a c ha (hb.trans_le hbc)]
   have h := (mem_indices_iff_scale a b ha hb n).mp hn
   exact ⟨h.1,h.2.trans (by linarith)⟩
 
-lemma blocks_card_le (K R H nC nD : ℝ) (hH : 0<H)
+lemma blocks_card_le  K R H nC nD  (hH : 0<H)
     (hC : 1≤nC) (hD : 1≤nD) :
     Fintype.card (Blocks K R (H/nC) (H/nD)) ≤
       Fintype.card (∀i:Fin 4,↥(indices (![K,1,1,1] i)
@@ -45,8 +48,9 @@ lemma blocks_card_le (K R H nC nD : ℝ) (hH : 0<H)
   apply Subtype.ext
   exact congrArg (fun z => (z i).val) hxy
 
-theorem blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
-    (_hCr : 0<Cr) (hε : 0<ε) :
+include hB hL _hCr hε in
+theorem blocks_subpower      
+        :
     ∃C : ℝ,0<C ∧ ∀ᶠZ:ℝ in Filter.atTop,
       ∀K R H nC nD : ℝ,0<K → 0<H → 1≤nC → 1≤nD →
       R≤Cr*Z^L → H≤Z^B →
@@ -82,8 +86,9 @@ theorem blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
       (![K,max 1 R,max 1 H,max 1 H] i))) by
       exact_mod_cast blocks_card_le K R H nC nD hH hnC hnD).trans hfour
 
-theorem original_blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
-    (hCr : 0<Cr) (hε : 0<ε) :
+include hB hL hCr hε in
+theorem original_blocks_subpower      
+        :
     ∃C₀ : ℝ,0<C₀ ∧ ∀ᶠZ:ℝ in Filter.atTop,
       ∀(C D : Ideal ActualEisensteinCubic.O), C≠0 → D≠0 →
       ∀(E : Finset (CenteredMomentCanonicalFirst.CommonIndex C D))
@@ -100,8 +105,10 @@ theorem original_blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
   exact hcount _ _ _ _ _ (effectiveScale_pos C D E K hK) hH
     (norm_one C hC) (norm_one D hD) hR hHcap
 
+end
+
 end SevenEighths.CenteredMomentFirstPhysicalDyadicCount
 
-end
+
 
 end OAI

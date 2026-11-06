@@ -6,22 +6,22 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesChildren
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
 open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 theorem supported_row_rank_decrease (hp : ∀i,p i≠0)
     (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
     (hvalid : ∀x∈original,SourceValid p x) (hextra : ∀x∈original,extra x.cube⊆x.cube.support)
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
-    (cutoff : Finset ι→Finset ι→ℝ) (b X Z M ell A t V j eta shortCutoff : ℝ)
+    (negative : Bool) (J : Finset σ)  lists   pool 
+     cutoff   b X Z M ell A t V j eta shortCutoff 
     (hZ : 1<Z) (hA : 0≤A) (ht : 0≤t) (heta : 0≤eta) (hbin : 2≤Z^eta)
     (hterminal : shortCutoff≤ell+V) (hsmall : eta≤shortCutoff/16)
     (h1 : ∀y∈original,‖eisEmbedding (primeProduct p y.cube.support y.cube.leftExponent)‖^2≤Z^(ell+eta))
@@ -46,6 +46,6 @@ theorem supported_row_rank_decrease (hp : ∀i,p i≠0)
     hZ hA ht heta hbin hterminal hsmall (hb₁ x hxs) (hb₂ x hxs) (hj x hxs)
 
 end SevenEighths.InverseMomentGlobalRetainedGates
-end
+
 
 end OAI

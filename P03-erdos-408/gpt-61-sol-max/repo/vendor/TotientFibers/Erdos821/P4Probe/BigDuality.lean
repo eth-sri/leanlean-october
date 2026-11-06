@@ -15,16 +15,19 @@ noncomputable section
 
 local instance (P : PrimeGroups) (M : ℕ) : DecidableEq (BigSite P M) := Classical.decEq _
 
-lemma bigCoordinateAverage_star (P : PrimeGroups) (M : ℕ)
-    (S : P.BigGroup → Finset (Fin M)) (f : P.BigLabels M → ℂ) :
+section
+variable (P : PrimeGroups) (M : ℕ) (S : P.BigGroup → Finset (Fin M))
+
+lemma bigCoordinateAverage_star    
+       f  :
     bigCoordinateAverage P M S (fun x => star (f x)) =
       fun x => star (bigCoordinateAverage P M S f x) := by
   funext x
   simp only [bigCoordinateAverage, star_sum, star_mul, Complex.star_def,
     Complex.conj_ofReal, mul_comm]
 
-lemma bigCoordinateAverage_duality (P : PrimeGroups) (M : ℕ)
-    (S : P.BigGroup → Finset (Fin M)) (f g : P.BigLabels M → ℂ) :
+lemma bigCoordinateAverage_duality    
+       f g  :
     (∑ a, (P.idealMass a : ℂ) * star (f a) * bigCoordinateAverage P M S g a) =
       ∑ a, (P.idealMass a : ℂ) * star (bigCoordinateAverage P M S f a) * g a := by
   let ff : ProductSample (BigAlphabet P M) → ℂ := fun x => f ((flattenBig P M).symm x)
@@ -46,10 +49,10 @@ lemma bigCoordinateAverage_duality (P : PrimeGroups) (M : ℕ)
   rw [hl, hr]
   exact productAverage_duality (bigFlatWeight P M) (bigFlatSet P M S) ff gg
 
-lemma idealFullPair_source_average (P : PrimeGroups) (M : ℕ)
-    (S : P.BigGroup → Finset (Fin M)) (K : P.BigLabels M → P.BigLabels M → ℂ)
+lemma idealFullPair_source_average    
+       K 
     (hK : ∀ b, bigCoordinateAverage P M S (fun a => K a b) = fun a => K a b)
-    (f g : P.BigLabels M → ℂ) :
+     f g  :
     idealFullPair K (bigCoordinateAverage P M S f) g = idealFullPair K f g := by
   unfold idealFullPair
   conv_lhs => rw [Finset.sum_comm]
@@ -61,10 +64,10 @@ lemma idealFullPair_source_average (P : PrimeGroups) (M : ℕ)
   rw [hK b] at h
   exact congrArg (fun z => z * g b) h.symm
 
-lemma idealFullPair_target_average (P : PrimeGroups) (M : ℕ)
-    (S : P.BigGroup → Finset (Fin M)) (H : P.BigLabels M → P.BigLabels M → ℂ)
+lemma idealFullPair_target_average    
+      (H : P.BigLabels M → P.BigLabels M → ℂ)
     (hH : ∀ a, bigCoordinateAverage P M S (H a) = H a)
-    (f g : P.BigLabels M → ℂ) :
+     f g  :
     idealFullPair (fun a b => (P.idealMass b : ℂ) * H a b) f
       (bigCoordinateAverage P M S g) =
         idealFullPair (fun a b => (P.idealMass b : ℂ) * H a b) f g := by
@@ -76,6 +79,8 @@ lemma idealFullPair_target_average (P : PrimeGroups) (M : ℕ)
   simp only [star_star] at h
   simpa only [Finset.mul_sum, mul_assoc] using
     congrArg (fun z => (P.idealMass a : ℂ) * star (f a) * z) h
+
+end
 
 end
 end Erdos821.P4Probe

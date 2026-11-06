@@ -8,11 +8,11 @@ set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint.Analytic
 
 theorem occupied_cell_count {α : Type*} [Fintype α] (n : α → ℕ)
-    (h H : ℝ) (hh : 0 < h) (hH : 0 ≤ H)
+     h H  (hh : 0 < h) (hH : 0 ≤ H)
     (hn : ∀ x, Real.log (n x) ≤ H) :
     ((Finset.univ.image (fun x => cell h (n x))).card : ℝ) ≤ H / h + 1 := by
   have hfloor : 0 ≤ ⌊H / h⌋ := Int.floor_nonneg.mpr (div_nonneg hH hh.le)
@@ -32,16 +32,16 @@ theorem occupied_cell_count {α : Type*} [Fintype α] (n : α → ℕ)
     _ = _ := hc
     _ ≤ _ := by linarith [Int.floor_le (H / h)]
 
-theorem product_cell_count (P : Geometry) (x : ℝ) (G : PrimeGroups)
+theorem product_cell_count (P : Geometry)  x   G 
     (hL : 0 ≤ L x) (hT : 0 ≤ T x) (hG : Admissible P x G)
-    (k : Fin G.size → ℕ) (m : ℕ) (hk : bigSlots G k m)
-    (h : ℝ) (hh : 0 < h) :
+     k   m  (hk : bigSlots G k m)
+     h  (hh : 0 < h) :
     ((Finset.univ.image (fun z : Tuple G k => cell h (product G k z))).card : ℝ) ≤
       ((m : ℝ) * P.C₀ * T x * L x ^ P.d) / h + 1 := by
-  apply occupied_cell_count (fun z => product G k z) h _ hh
+  apply occupied_cell_count (product G k) h _ hh
   · exact mul_nonneg (mul_nonneg (mul_nonneg (Nat.cast_nonneg m)
       P.positive.2.1.le) hT) (Real.rpow_nonneg hL _)
   · exact fun z => (log_product_bounds P x G hL hG k m hk z).2
 
-end
+
 end Erdos821.S34Core

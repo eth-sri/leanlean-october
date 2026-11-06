@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Detector.SelectedPrimeIndexed
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+
 
 theorem continued_selected_slot_bound (eps a b r B : ℝ) (heps : 0<eps)
     (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B) :
@@ -23,12 +23,12 @@ theorem continued_selected_slot_bound (eps a b r B : ℝ) (heps : 0<eps)
       (∑P : T,‖W ((P.val.val.absNorm:ℝ)/Y)*(P.val.val.absNorm:ℂ)^(z-1)*
         continuedCompensatedLocal η u P.val (hT P.val P.property).1 x w z
           (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x) ((P.val.val.absNorm:ℂ)^(-w))‖)
-      ≤C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps*Y^r := by
+      ≤C*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^eps*Y^r := by
   obtain ⟨C,hC,hmain⟩ := ProbeSelectedPrimeSums.weighted_slot_bound_indexed eps a b r (1/2) B 961
     heps ha hb (by norm_num) hB (by norm_num)
   refine ⟨C,hC,?_⟩
   intro η u T hT Y hY W hWS hWB x w z hx hw hz
-  let f : T→Ideal O := fun P=>P.val.val
+  let f : T→Ideal HeckeFamily.O := fun P=>P.val.val
   have hf : Function.Injective f := by
     intro P Q h
     apply Subtype.ext
@@ -50,6 +50,6 @@ theorem continued_selected_slot_bound (eps a b r B : ℝ) (heps : 0<eps)
     Y hY Finset.univ (fun P _=>P.val.property.ne_zero) W hWS hWB G hg z hz
 
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

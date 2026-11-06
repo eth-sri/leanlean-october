@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstJoint
 public import OAI.NumberTheory.DirichletL.PrimeRows.DiskControl
@@ -9,20 +10,20 @@ public import OAI.NumberTheory.DirichletL.Hecke.StripActual
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+
 
 variable {ι : Type*} [Fintype ι]
 
 theorem calibrated_physicalRow_buffered_joint_growth
     (e a B H : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000)
     (ha : (51/100:ℝ)≤a) (ha1 : a≤1) (hB : 2<B) (hH : H≤(3*i+2:ℕ)*B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
-    (hmax : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S)
-    (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
+     S   hS  (hfirst : FirstTail (4*e) S)
+     hmax   T   hT 
+     η   u  (hu : u.val≠1) (ψ : ι→Character)
     (hbin : detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e) :
     ∃C : ℝ,0≤C ∧ ∀x w z : ℂ,a+16*e≤x.re → x.re≤2 → |x.im|≤H → w.re=1-a-6*e → (17/50:ℝ)≤z.re →
       ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
@@ -34,13 +35,13 @@ theorem calibrated_physicalRow_buffered_joint_growth
   have hR : 0≤R := by
     dsimp [R,HeckeReciprocalGrowth.presentationComplexity,HeckeLogarithmic.complexity]
     positivity
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N : ℝ := ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)
   let A : T→ℝ := fun P=>selectedFirstBound P.val.val.absNorm 2
   let L : ℝ := HeckeReciprocalBound.bound 2
   have hL : 0≤L := by dsimp [L,HeckeReciprocalBound.bound];positivity
   have hA (P : T) : 0≤A P := selectedFirstBound_nonneg (P.val.val.absNorm : ℝ) 2 (Nat.cast_nonneg _)
   have hprod : 0≤∏P:T,A P := Finset.prod_nonneg (fun P _=>hA P)
-  have hN : 0≤N := Nat.cast_nonneg _
+  
   refine ⟨L*R*Cn*(Ch*N)*(∏P:T,A P),by positivity,?_⟩
   intro x w z hxl hxr hxi hw hz
   have hwlow : -(1/100:ℝ)≤w.re := by rw [hw];linarith
@@ -85,6 +86,6 @@ theorem calibrated_physicalRow_buffered_joint_growth
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.Order.Antidiag.Nat
 public import Mathlib.Analysis.InnerProductSpace.Calculus
@@ -34,15 +35,18 @@ open Finset
 
 /-! ### Divisor moments -/
 
+section
+variable (Y n l Z m : ℕ)
+
 /-- The harmonic bound `∑_{k ≤ Y} 1/k ≤ 1 + log Y`. -/
-theorem sum_Icc_inv_le (Y : ℕ) : ∑ k ∈ Icc 1 Y, (k : ℝ)⁻¹ ≤ 1 + Real.log Y := by
+theorem sum_Icc_inv_le   : ∑ k ∈ Icc 1 Y, (k : ℝ)⁻¹ ≤ 1 + Real.log Y := by
   have h := harmonic_le_one_add_log Y
   rw [harmonic_eq_sum_Icc] at h
   push_cast at h
   exact h
 
 /-- `∑_{t ∈ [1, Y]³} 1 / (t₀ t₁ t₂) ≤ (1 + log Y)³`. -/
-theorem sum_inv_prod_le (Y : ℕ) :
+theorem sum_inv_prod_le   :
     ∑ t ∈ Fintype.piFinset (fun _ : Fin 3 => Icc 1 Y), ((∏ i, t i : ℕ) : ℝ)⁻¹ ≤
       (1 + Real.log Y) ^ 3 := by
   have h : ∑ t ∈ Fintype.piFinset (fun _ : Fin 3 => Icc 1 Y), ((∏ i, t i : ℕ) : ℝ)⁻¹ =
@@ -55,7 +59,7 @@ theorem sum_inv_prod_le (Y : ℕ) :
 /-- `τ(n)² ≤ τ₄(n)`: a pair of divisors `(d, e)` with `g = gcd(d, e)` gives the
 factorization `n = g · (d / g) · (e / g) · (n / lcm(d, e))`, from which `d` and `e` are
 recovered. -/
-theorem card_divisors_sq_le (n : ℕ) : n.divisors.card ^ 2 ≤ (Nat.finMulAntidiag 4 n).card := by
+theorem card_divisors_sq_le   : n.divisors.card ^ 2 ≤ (Nat.finMulAntidiag 4 n).card := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · simp
   rw [sq, ← card_product]
@@ -74,8 +78,7 @@ theorem card_divisors_sq_le (n : ℕ) : n.divisors.card ^ 2 ≤ (Nat.finMulAntid
     have hl : d.lcm e = g * a * b := by
       refine Nat.eq_of_mul_eq_mul_left hg ?_
       rw [hg_def, Nat.gcd_mul_lcm, ← hg_def]
-      calc d * e = g * a * (g * b) := by rw [← ha, ← hb]
-        _ = g * (g * a * b) := by ring
+      grind
     have hda : d / g = a := by
       rw [ha]
       exact Nat.mul_div_cancel_left _ hg
@@ -105,7 +108,7 @@ theorem card_divisors_sq_le (n : ℕ) : n.divisors.card ^ 2 ≤ (Nat.finMulAntid
 /-- Deleting coordinate `i` of a factorization `n = f₀ f₁ f₂ f₃` leaves a triple in `[1, Q]³`
 whose product is `n / fᵢ`. -/
 theorem removeNth_mem_of_mem_finMulAntidiag {n Q : ℕ} (hnQ : n ≤ Q) {f : Fin 4 → ℕ}
-    (hf : f ∈ Nat.finMulAntidiag 4 n) (i : Fin 4) :
+    (hf : f ∈ Nat.finMulAntidiag 4 n)  i  :
     Fin.removeNth i f ∈ Fintype.piFinset (fun _ : Fin 3 => Icc 1 Q) ∧
       f i * ∏ j, Fin.removeNth i f j = n := by
   rw [Nat.mem_finMulAntidiag] at hf
@@ -121,7 +124,7 @@ theorem removeNth_mem_of_mem_finMulAntidiag {n Q : ℕ} (hnQ : n ≤ Q) {f : Fin
 
 /-- Deleting one coordinate of a factorization of `n ≠ 0` into four factors loses no
 information: the deleted factor is `n` divided by the product of the others. -/
-theorem injOn_removeNth (n : ℕ) (i : Fin 4) :
+theorem injOn_removeNth    i  :
     Set.InjOn (Fin.removeNth i) (Nat.finMulAntidiag 4 n : Set (Fin 4 → ℕ)) := by
   intro f hf f' hf' h
   have h₁ := (removeNth_mem_of_mem_finMulAntidiag le_rfl hf i).2
@@ -134,7 +137,7 @@ theorem injOn_removeNth (n : ℕ) (i : Fin 4) :
   rw [← Fin.insertNth_self_removeNth i f, ← Fin.insertNth_self_removeNth i f', h, hi]
 
 /-- `τ₄(n)` counts the triples in `[1, Y]³` whose product divides `n`, for `n ≤ Y`. -/
-theorem card_finMulAntidiag_le {n Y : ℕ} (hnY : n ≤ Y) :
+theorem card_finMulAntidiag_le  {n Y}  (hnY : n ≤ Y) :
     (Nat.finMulAntidiag 4 n).card ≤
       #{t ∈ Fintype.piFinset (fun _ : Fin 3 => Icc 1 Y) | ∏ i, t i ∣ n} := by
   refine card_le_card_of_injOn (Fin.removeNth 3) (fun f hf => ?_) (injOn_removeNth n 3)
@@ -144,7 +147,7 @@ theorem card_finMulAntidiag_le {n Y : ℕ} (hnY : n ≤ Y) :
 
 /-- `τ₄(n) ≤ 4 #{t ∈ [1, Q]³ : t₀ t₁ t₂ ∣ n, (t₀ t₁ t₂)⁴ ≤ Q³}` for `n ≤ Q`: deleting a
 largest factor of a factorization into four leaves a product at most `n^{3/4}`. -/
-theorem card_finMulAntidiag_le_four {n Q : ℕ} (hnQ : n ≤ Q) :
+theorem card_finMulAntidiag_le_four  {n Q}  (hnQ : n ≤ Q) :
     (Nat.finMulAntidiag 4 n).card ≤
       4 * #{t ∈ Fintype.piFinset (fun _ : Fin 3 => Icc 1 Q) |
         ∏ i, t i ∣ n ∧ (∏ i, t i) ^ 4 ≤ Q ^ 3} := by
@@ -178,7 +181,7 @@ theorem card_finMulAntidiag_le_four {n Q : ℕ} (hnQ : n ≤ Q) :
   exact (Nat.le_of_mul_le_mul_right h₄ hn).trans (Nat.pow_le_pow_left hnQ 3)
 
 /-- `∑_{n ≤ Y} τ(n)² ≤ Y (1 + log Y)³`. -/
-theorem sum_card_divisors_sq_le (Y : ℕ) :
+theorem sum_card_divisors_sq_le   :
     ∑ n ∈ Icc 1 Y, ((n.divisors.card : ℕ) : ℝ) ^ 2 ≤ Y * (1 + Real.log Y) ^ 3 := by
   set B := Fintype.piFinset (fun _ : Fin 3 => Icc 1 Y)
   -- `τ(n)² ≤ #{t ∈ [1, Y]³ : t₀ t₁ t₂ ∣ n}`
@@ -205,7 +208,7 @@ theorem sum_card_divisors_sq_le (Y : ℕ) :
 
 /-- At most `Z / m + 1` of the `h ∈ [1, Z]` have `m ∣ 1 + l h`: all of them lie in one
 residue class mod `m`, since `l` is invertible mod `m`. -/
-theorem card_filter_dvd_one_add_mul_le (l Z m : ℕ) (hm : 0 < m) :
+theorem card_filter_dvd_one_add_mul_le   (hm : 0 < m) :
     (#{h ∈ Icc 1 Z | m ∣ 1 + l * h} : ℝ) ≤ Z / m + 1 := by
   rcases eq_empty_or_nonempty {h ∈ Icc 1 Z | m ∣ 1 + l * h} with hA | ⟨h₀, hh₀⟩
   · rw [hA, card_empty, Nat.cast_zero]
@@ -235,7 +238,7 @@ theorem card_filter_dvd_one_add_mul_le (l Z m : ℕ) (hm : 0 < m) :
       exact Nat.cast_div_le
 
 /-- PD (3.9): `∑_{h ≤ Z} τ(1 + l h)² ≤ 4 (Z + (1 + lZ)^{3/4}) (1 + log(1 + lZ))³`. -/
-theorem sum_card_divisors_one_add_mul_sq_le (l Z : ℕ) :
+theorem sum_card_divisors_one_add_mul_sq_le   :
     ∑ h ∈ Icc 1 Z, (((1 + l * h).divisors.card : ℕ) : ℝ) ^ 2 ≤
       4 * (Z + ((1 + l * Z : ℕ) : ℝ) ^ (3 / 4 : ℝ)) *
         (1 + Real.log ((1 + l * Z : ℕ) : ℝ)) ^ 3 := by
@@ -290,16 +293,23 @@ theorem sum_card_divisors_one_add_mul_sq_le (l Z : ℕ) :
         gcongr
         exact sum_inv_prod_le Q
 
+end
+
 /-! ### Mean values of Dirichlet polynomials -/
 
+section
+variable {m n : ℕ} (hm : m ≠ 0) (hn : n ≠ 0) {N : ℕ} {f f' : ℝ → ℂ} (hf : ∀ s, HasDerivAt f (f' s) s) (hf' : Continuous f') (t : ℝ)
+
+include hn in
 /-- `n^{it} = exp(i t log n)` for `n ≠ 0`. -/
-theorem natCast_cpow_mul_I {n : ℕ} (hn : n ≠ 0) (t : ℝ) :
+theorem natCast_cpow_mul_I       :
     (n : ℂ) ^ ((t : ℂ) * Complex.I) = Complex.exp ((Real.log n : ℂ) * Complex.I * t) := by
   rw [Complex.cpow_def_of_ne_zero (Nat.cast_ne_zero.2 hn), ← Complex.natCast_log]
   ring_nf
 
+include hm hn in
 /-- `m^{it} \overline{n^{it}} = exp(i t (log m - log n))` for `m, n ≠ 0`. -/
-theorem natCast_cpow_mul_I_mul_conj {m n : ℕ} (hm : m ≠ 0) (hn : n ≠ 0) (t : ℝ) :
+theorem natCast_cpow_mul_I_mul_conj         :
     (m : ℂ) ^ ((t : ℂ) * Complex.I) * (starRingEnd ℂ) ((n : ℂ) ^ ((t : ℂ) * Complex.I)) =
       Complex.exp (((Real.log m - Real.log n : ℝ) : ℂ) * Complex.I * t) := by
   rw [natCast_cpow_mul_I hm, natCast_cpow_mul_I hn, ← Complex.exp_conj, ← Complex.exp_add]
@@ -309,7 +319,7 @@ theorem natCast_cpow_mul_I_mul_conj {m n : ℕ} (hm : m ≠ 0) (hn : n ≠ 0) (t
   ring
 
 /-- `|∫_a^b exp(i θ t) dt| ≤ 2 / |θ|` for `θ ≠ 0`. -/
-theorem norm_integral_exp_mul_I_le {θ : ℝ} (hθ : θ ≠ 0) (a b : ℝ) :
+theorem norm_integral_exp_mul_I_le {θ : ℝ} (hθ : θ ≠ 0)  a b  :
     ‖∫ t in a..b, Complex.exp ((θ : ℂ) * Complex.I * t)‖ ≤ 2 / |θ| := by
   have hc : (θ : ℂ) * Complex.I ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.2 hθ) Complex.I_ne_zero
   rw [integral_exp_mul_complex hc, norm_div, norm_mul, Complex.norm_I, mul_one,
@@ -324,11 +334,10 @@ theorem norm_integral_exp_mul_I_le {θ : ℝ} (hθ : θ ≠ 0) (a b : ℝ) :
   norm_num
 
 /-- `|m - n| / N ≤ |log m - log n|` for `1 ≤ m, n ≤ N`. -/
-theorem abs_sub_div_le_abs_log_sub {m n N : ℕ} (hm : 1 ≤ m) (hn : 1 ≤ n) (hmN : m ≤ N)
+theorem abs_sub_div_le_abs_log_sub   (hm : 1 ≤ m) (hn : 1 ≤ n) (hmN : m ≤ N)
     (hnN : n ≤ N) : |(m : ℝ) - n| / N ≤ |Real.log m - Real.log n| := by
   wlog h : n ≤ m generalizing m n
-  · rw [abs_sub_comm, abs_sub_comm (Real.log m)]
-    exact this hn hm hnN hmN (by omega)
+  · grind
   have hm' : (0 : ℝ) < m := by exact_mod_cast hm
   have hn' : (0 : ℝ) < n := by exact_mod_cast hn
   have hnm : (n : ℝ) ≤ m := by exact_mod_cast h
@@ -342,7 +351,7 @@ theorem abs_sub_div_le_abs_log_sub {m n N : ℕ} (hm : 1 ≤ m) (hn : 1 ≤ n) (
     _ ≤ _ := h₁
 
 /-- `∑_{n ≤ N} 1 / |m - n| ≤ 2 (1 + log N)` for `1 ≤ m ≤ N`, the term `n = m` being `0`. -/
-theorem sum_inv_abs_sub_le {m N : ℕ} (hm : m ∈ Icc 1 N) :
+theorem sum_inv_abs_sub_le   (hm : m ∈ Icc 1 N) :
     ∑ n ∈ Icc 1 N, |(m : ℝ) - n|⁻¹ ≤ 2 * (1 + Real.log N) := by
   rw [mem_Icc] at hm
   rw [← sum_erase (Icc 1 N) (f := fun n => |(m : ℝ) - n|⁻¹) (a := m) (by simp),
@@ -351,28 +360,20 @@ theorem sum_inv_abs_sub_le {m N : ℕ} (hm : m ∈ Icc 1 N) :
   -- the terms `n < m` are `1 / (m - n)`
   · refine (sum_le_sum_of_injOn (fun n => m - n) (fun n hn n' hn' h => ?_) (fun k hk => ?_)
       (fun n hn => ?_) (fun k _ _ => by positivity)).trans (sum_Icc_inv_le N)
-    · simp only [mem_coe, mem_filter, mem_erase, mem_Icc] at hn hn' h
-      omega
-    · simp only [mem_image, mem_filter, mem_erase, mem_Icc] at hk
-      obtain ⟨n, hn, rfl⟩ := hk
-      rw [mem_Icc]
-      omega
+    · grind
+    · grind
     · simp only [mem_filter, mem_erase, mem_Icc] at hn
       rw [Nat.cast_sub hn.2.le, abs_of_nonneg (sub_nonneg.2 (by exact_mod_cast hn.2.le))]
   -- the terms `n > m` are `1 / (n - m)`
   · refine (sum_le_sum_of_injOn (fun n => n - m) (fun n hn n' hn' h => ?_) (fun k hk => ?_)
       (fun n hn => ?_) (fun k _ _ => by positivity)).trans (sum_Icc_inv_le N)
-    · simp only [mem_coe, mem_filter, mem_erase, mem_Icc] at hn hn' h
-      omega
-    · simp only [mem_image, mem_filter, mem_erase, mem_Icc] at hk
-      obtain ⟨n, hn, rfl⟩ := hk
-      rw [mem_Icc]
-      omega
+    · grind
+    · grind
     · simp only [mem_filter, mem_erase, mem_Icc, not_lt] at hn
       rw [Nat.cast_sub hn.2, abs_sub_comm, abs_of_nonneg (sub_nonneg.2 (by exact_mod_cast hn.2))]
 
 /-- PD (2.4): `∫_a^b |∑_{n ≤ N} c_n n^{it}|² dt ≤ (b - a + 8 N (1 + log N)) ∑ |c_n|²`. -/
-theorem integral_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
+theorem integral_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ)  a b  :
     ∫ t in a..b, ‖∑ n ∈ Icc 1 N, c n * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2 ≤
       (b - a + 8 * N * (1 + Real.log N)) * ∑ n ∈ Icc 1 N, ‖c n‖ ^ 2 := by
   set J : ℕ → ℕ → ℂ := fun m n =>
@@ -387,8 +388,7 @@ theorem integral_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
       intro t
       rw [← Complex.normSq_eq_norm_sq, ← Complex.mul_conj, map_sum, sum_mul_sum]
       refine sum_congr rfl fun m hm => sum_congr rfl fun n hn => ?_
-      rw [map_mul, ← natCast_cpow_mul_I_mul_conj (by grind) (by grind)]
-      ring
+      grind [natCast_cpow_mul_I_mul_conj]
     have hint : ∀ m n : ℕ, IntervalIntegrable
         (fun t : ℝ => Complex.exp (((Real.log m - Real.log n : ℝ) : ℂ) * Complex.I * t))
         MeasureTheory.volume a b :=
@@ -444,7 +444,7 @@ theorem integral_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
     refine sum_congr rfl fun m _ => ?_
     rw [mul_sum, mul_sum, mul_sum]
     exact sum_congr rfl fun n _ => by ring
-  have hA : 0 ≤ ∑ n ∈ Icc 1 N, ‖c n‖ ^ 2 := sum_nonneg fun n _ => by positivity
+  
   rw [hexp]
   calc ∑ m ∈ Icc 1 N, ∑ n ∈ Icc 1 N, (c m * (starRingEnd ℂ) (c n) * J m n).re
       ≤ ∑ m ∈ Icc 1 N, ∑ n ∈ Icc 1 N, ((if m = n then (b - a) * ‖c m‖ ^ 2 else 0) +
@@ -465,12 +465,13 @@ theorem integral_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
         linarith
 
 
+include hf hf' in
 /-- Gallagher's Sobolev inequality on a unit interval:
 `|f(t)|² ≤ ∫_{t - 1/2}^{t + 1/2} (2 |f|² + |f'|²)`. By the fundamental theorem of calculus,
 `|f(t)|² ≤ |f(x)|² + ∫ |(|f|²)'|` for every `x` in the interval, and
 `|(|f|²)'| ≤ 2 |f| |f'| ≤ |f|² + |f'|²`; then average over `x`. -/
-theorem sq_norm_le_integral {f f' : ℝ → ℂ} (hf : ∀ s, HasDerivAt f (f' s) s)
-    (hf' : Continuous f') (t : ℝ) :
+theorem sq_norm_le_integral    
+        :
     ‖f t‖ ^ 2 ≤ ∫ s in (t - 1 / 2)..(t + 1 / 2), (2 * ‖f s‖ ^ 2 + ‖f' s‖ ^ 2) := by
   have hfc : Continuous f := continuous_iff_continuousAt.2 fun s => (hf s).continuousAt
   have hg : ∀ s, HasDerivAt (fun s => ‖f s‖ ^ 2) (2 * inner ℝ (f s) (f' s)) s :=
@@ -493,8 +494,7 @@ theorem sq_norm_le_integral {f f' : ℝ → ℂ} (hf : ∀ s, HasDerivAt f (f' s
     have hFTC := intervalIntegral.integral_eq_sub_of_hasDerivAt (fun s _ => hg s)
       (hgc.intervalIntegrable x t)
     have hsub : Set.uIoc x t ⊆ Set.Ioc (t - 1 / 2) (t + 1 / 2) := by
-      rw [Set.uIoc]
-      exact Set.Ioc_subset_Ioc (le_min hx.1 (by linarith)) (max_le hx.2 (by linarith))
+      grind
     have hle : ∫ s in x..t, 2 * inner ℝ (f s) (f' s) ≤ K :=
       calc ∫ s in x..t, 2 * inner ℝ (f s) (f' s)
           ≤ ‖∫ s in x..t, 2 * inner ℝ (f s) (f' s)‖ := Real.le_norm_self _
@@ -526,12 +526,18 @@ theorem sq_norm_le_integral {f f' : ℝ → ℂ} (hf : ∀ s, HasDerivAt f (f' s
         ext s
         ring
 
+end
+
+section
+variable {G : ℝ → ℝ} (hG : Continuous G) (hG₀ : ∀ s, 0 ≤ G s) (N : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : a ≤ b) (T : Finset ℝ) (hT : ∀ t ∈ T, a ≤ t ∧ t ≤ b) (hsep : ∀ t ∈ T, ∀ s ∈ T, t ≠ s → 1 ≤ |t - s|)
+
+include hG hG₀ hab hT hsep in
 /-- For continuous `G ≥ 0` and points of `[a, b]` with mutual spacing at least one, the
 intervals `(t - 1/2, t + 1/2]` are disjoint inside `(a - 1/2, b + 1/2]`, so
 `∑_t ∫_{t - 1/2}^{t + 1/2} G ≤ ∫_{a - 1/2}^{b + 1/2} G`. -/
-theorem sum_integral_le_integral {G : ℝ → ℝ} (hG : Continuous G) (hG₀ : ∀ s, 0 ≤ G s)
-    {a b : ℝ} (hab : a ≤ b) (T : Finset ℝ) (hT : ∀ t ∈ T, a ≤ t ∧ t ≤ b)
-    (hsep : ∀ t ∈ T, ∀ s ∈ T, t ≠ s → 1 ≤ |t - s|) :
+theorem sum_integral_le_integral      
+           
+      :
     ∑ t ∈ T, ∫ s in (t - 1 / 2)..(t + 1 / 2), G s ≤ ∫ s in (a - 1 / 2)..(b + 1 / 2), G s := by
   rw [intervalIntegral.integral_of_le (by linarith)]
   rw [sum_congr rfl fun t _ => intervalIntegral.integral_of_le (by linarith),
@@ -547,12 +553,13 @@ theorem sum_integral_le_integral {G : ℝ → ℝ} (hG : Continuous G) (hG₀ : 
     intro x hx₁ hx₂
     rw [Set.mem_Ioc] at hx₁ hx₂
     have h := hsep t ht s hs hts
-    rcases abs_cases (t - s) with ⟨h', -⟩ | ⟨h', -⟩ <;> linarith
+    grind
 
+include hab hT hsep in
 /-- PD (2.5): at points of `[a, b]` with mutual spacing at least one,
 `∑_t |∑_{n ≤ N} c_n n^{it}|² ≤ 2 (b - a + 1 + 8N(1 + log N)) (1 + log N)² ∑ |c_n|²`. -/
-theorem sum_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : a ≤ b) (T : Finset ℝ)
-    (hT : ∀ t ∈ T, a ≤ t ∧ t ≤ b) (hsep : ∀ t ∈ T, ∀ s ∈ T, t ≠ s → 1 ≤ |t - s|) :
+theorem sum_norm_dirichlet_sq_le          
+        :
     ∑ t ∈ T, ‖∑ n ∈ Icc 1 N, c n * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2 ≤
       2 * (b - a + 1 + 8 * N * (1 + Real.log N)) * (1 + Real.log N) ^ 2 *
         ∑ n ∈ Icc 1 N, ‖c n‖ ^ 2 := by
@@ -571,13 +578,7 @@ theorem sum_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : 
       have h' := (((hasDerivAt_id s).ofReal_comp.const_mul
         ((Real.log n : ℂ) * Complex.I)).cexp).const_mul (c n)
       simp only [id, Complex.ofReal_one, mul_one] at h'
-      have e : (fun t : ℝ => c n * (n : ℂ) ^ ((t : ℂ) * Complex.I)) =
-          fun t : ℝ => c n * Complex.exp ((Real.log n : ℂ) * Complex.I * t) :=
-        funext fun t => by rw [hterm n hn t]
-      rw [e, hterm n hn s]
-      convert h' using 1
-      simp only [c']
-      ring
+      grind
     convert HasDerivAt.sum h using 1
     ext t
     simp [P]
@@ -626,5 +627,7 @@ theorem sum_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : 
         have h : 0 ≤ (b - a + 1 + 8 * N * (1 + Real.log N)) * ∑ n ∈ Icc 1 N, ‖c n‖ ^ 2 *
             Real.log N := by positivity
         nlinarith [mul_nonneg hL hA]
+
+end
 
 end Erdos408.OneSided

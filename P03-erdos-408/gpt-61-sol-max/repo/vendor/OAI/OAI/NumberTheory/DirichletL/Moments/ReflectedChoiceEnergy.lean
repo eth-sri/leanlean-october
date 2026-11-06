@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectionTailMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.CenteredMomentReflectedChoiceEnergy
 open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum
@@ -19,9 +19,9 @@ open CenteredMomentReflectionDeletion CenteredMomentReflectionTailMass
 open CenteredMomentNaturalPrimitive CenteredMomentReflectionRetainedLength
 open Filter
 
-local notation "O" => HeckeFamily.O
 
-theorem eventually_natural_choice_geometry (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
+
+theorem eventually_natural_choice_geometry  C xi  (hC : 0<C) (hxi : 0<xi) :
     ∀ᶠ Z : ℝ in atTop,1<Z ∧ ∀(χ ψ : Character)(M a : ℝ),
       ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm →
       (χ.modulus.absNorm:ℝ)≤C*Z^M →
@@ -57,6 +57,6 @@ theorem eventually_natural_choice_geometry (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) 
 
 end SevenEighths.CenteredMomentReflectedChoiceEnergy
 
-end
+
 
 end OAI

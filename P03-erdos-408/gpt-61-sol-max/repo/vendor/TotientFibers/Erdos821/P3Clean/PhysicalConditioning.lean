@@ -17,11 +17,10 @@ open Erdos821.Blueprint.Graph
 local instance (priority := 11000) physicalBoolEqDecidable (b c : Bool) : Decidable (b = c) :=
   instDecidableEqBool b c
 
-local instance physicalLabelsDecidableEq (P : PrimeGroups) (M : ℕ) :
-    DecidableEq (SmallLabels P M) := Classical.decEq _
 
-theorem physicalSmallCoefficient_norm_sq (F : FixedData) (P : PrimeGroups) (J : ℕ)
-    (y : P.SmallResidues) (z : ℂ) (hV : ∀ g : P.SmallGroup, 0 ≤ P.V g.val) :
+
+theorem physicalSmallCoefficient_norm_sq  F   P   J 
+     y   z  (hV : ∀ g : P.SmallGroup, 0 ≤ P.V g.val) :
     ‖physicalSmallCoefficient F P J y * z‖ ^ 2 =
       smallMarkMass P (J + F.ell) * ‖smallArrayCoefficient F P J y * z‖ ^ 2 := by
   have hm : 0 ≤ smallMarkMass P (J + F.ell) :=
@@ -29,7 +28,7 @@ theorem physicalSmallCoefficient_norm_sq (F : FixedData) (P : PrimeGroups) (J : 
   rw [physicalSmallCoefficient, mul_assoc, norm_mul, mul_pow,
     Complex.norm_real, Real.norm_eq_abs, sq_abs, Real.sq_sqrt hm]
 
-theorem physical_conditioning_log_gain (F : FixedData) :
+theorem physical_conditioning_log_gain  F  :
     ∃ Cs : ℝ, ∀ (x : ℝ) (P : PrimeGroups), P.Admissible F x → 0 < L x →
       ∀ (J : ℕ) (y : P.SmallResidues) (f : SmallLabels P (J + F.ell) → ℂ),
         (∑ d : SmallLabels P J,

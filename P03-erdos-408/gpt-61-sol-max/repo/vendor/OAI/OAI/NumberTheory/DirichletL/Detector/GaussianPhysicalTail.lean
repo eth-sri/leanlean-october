@@ -12,28 +12,31 @@ open scoped Classical SchwartzMap
 open MeasureTheory CompletedGauss FourierBridge
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-def gaussianPhysicalFamilyIntegral {α ι : Type*} [Fintype ι]
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+def gaussianPhysicalFamilyIntegral {α ι } [Fintype ι]
     (η : HeckeFamily.Character) (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (F : Finset α) (a : α→ℂ) (D : α→Id) (X Y : α→ℝ)
     (W : ι→ℝ→ℂ) (q : α→ι→ℝ) (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (T Z : ℝ) : ℂ :=
+    (hV : HasCompactSupport (V:ℝ→ℂ)) (T Z : ℝ)  :=
   ∫t : ℝ,(∑k∈F,a k*
     (∑'r : PhysicalRowIndex,physicalRowWeight C W0 W1 (X k) (Y k) r*
       correctedCompletedT C.excluded (D k) (physicalRowMonoid η C r)
         (CompletedHeight.normTwistedSource gaussianFixedWindow t) T)*
     (∏i,W i (q k i)*logPhase (-t) (Real.log (q k i))))*gaussianJointDensity V hV (T/Z) t
 
-def gaussianPhysicalFamilyMass {α ι : Type*} [Fintype ι]
+def gaussianPhysicalFamilyMass {α ι } [Fintype ι]
     (C : CalibrationData) (W0 W1 : ℝ→ℂ) (F : Finset α) (a : α→ℂ) (X Y : α→ℝ)
-    (W : ι→ℝ→ℂ) (q : α→ι→ℝ) : ℝ :=
+    (W : ι→ℝ→ℂ) (q : α→ι→ℝ)  :=
   ∑k∈F,‖a k‖*(∏i,‖W i (q k i)‖)*∑'r : PhysicalRowIndex,‖physicalRowWeight C W0 W1 (X k) (Y k) r‖
 
-lemma gaussianPhysicalFamily_mass_eq {α ι : Type*} [Fintype ι]
+section
+variable {α ι : Type*} [Fintype ι]
+
+lemma gaussianPhysicalFamily_mass_eq    
     (C : CalibrationData) (W0 W1 : ℝ→ℂ) (F : Finset α) (a : α→ℂ) (X Y : α→ℝ)
-    (W : ι→ℝ→ℂ) (q : α→ι→ℝ) (R : Finset PhysicalRowIndex)
+    (W : ι→ℝ→ℂ)  q   R 
     (hR : ∀k∈F,∀r∉R,physicalRowWeight C W0 W1 (X k) (Y k) r=0) :
     gaussianCompletedFamilyMass (F×ˢR)
       (fun p=>a p.1*physicalRowWeight C W0 W1 (X p.1) (Y p.1) p.2) W (fun p=>q p.1)=
@@ -48,11 +51,11 @@ lemma gaussianPhysicalFamily_mass_eq {α ι : Type*} [Fintype ι]
   rw [norm_mul]
   ring
 
-lemma gaussianPhysicalFamily_integral_eq {α ι : Type*} [Fintype ι]
+lemma gaussianPhysicalFamily_integral_eq    
     (η : HeckeFamily.Character) (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (F : Finset α) (a : α→ℂ) (D : α→Id) (X Y : α→ℝ)
-    (W : ι→ℝ→ℂ) (q : α→ι→ℝ) (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (T Z : ℝ) (R : Finset PhysicalRowIndex)
+    (W : ι→ℝ→ℂ)  q   V 
+     hV   T Z   R 
     (hR : ∀k∈F,∀r∉R,physicalRowWeight C W0 W1 (X k) (Y k) r=0) :
     gaussianPhysicalFamilyIntegral η C W0 W1 F a D X Y W q V hV T Z=
       gaussianCompletedFamilyIntegral (F×ˢR)
@@ -71,8 +74,10 @@ lemma gaussianPhysicalFamily_integral_eq {α ι : Type*} [Fintype ι]
   intro r hr
   ring
 
-theorem gaussianPhysicalFamily_remote (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (N : ℕ) :
+end
+
+theorem gaussianPhysicalFamily_remote  V 
+     hV   N  :
     ∃C0 : ℝ,0<C0 ∧ ∀{α ι : Type*} [Fintype ι],
       ∀η : HeckeFamily.Character,∀C : CalibrationData,∀W0 W1 : ℝ→ℂ,
       HasCompactSupport W0→HasCompactSupport W1→

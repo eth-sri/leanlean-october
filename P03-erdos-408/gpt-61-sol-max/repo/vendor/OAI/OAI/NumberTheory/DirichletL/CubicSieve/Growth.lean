@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.ExtractionOptimization
 
@@ -10,7 +11,7 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 noncomputable section
 
-def HasCubicExponent (ξ : ℝ) : Prop :=
+def HasCubicExponent (ξ : ℝ)  :=
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
     ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
       sieveNorm M N ≤ C*(M*N)^ε*(M + N^ξ + (M*N)^(2/3 : ℝ))
@@ -26,7 +27,7 @@ theorem hasCubicExponent_initial : HasCubicExponent 2 := by
     have hh := Nat.ceil_lt_add_one hN0
     linarith
   have hn : (⌈N⌉₊ : ℝ)^2 ≤ 4*N^2 := by nlinarith [sq_nonneg ((⌈N⌉₊ : ℝ) - 2*N)]
-  have hp : 1 ≤ (M*N)^ε := Real.one_le_rpow (by nlinarith [mul_nonneg (sub_nonneg.mpr hM) (sub_nonneg.mpr hN)]) hε.le
+  have hp : 1 ≤ (M*N)^ε := Real.one_le_rpow (by nlinarith) hε.le
   have hx : 0 ≤ (M*N)^(2/3 : ℝ) := Real.rpow_nonneg (by positivity) _
   calc
     _ ≤ C*(M+(⌈N⌉₊ : ℝ)^2) := sieveNorm_initial M N hM hN
@@ -37,23 +38,27 @@ theorem hasCubicExponent_initial : HasCubicExponent 2 := by
       have hs : 0 ≤ M + N^(2 : ℝ) + (M*N)^(2/3 : ℝ) := by positivity
       nlinarith [mul_nonneg (mul_nonneg (by positivity : 0 ≤ 4*C) hs) (sub_nonneg.mpr hp)]
 
-lemma HasCubicExponent.swapped {ξ : ℝ} (h : HasCubicExponent ξ)
-    (ε : ℝ) (hε : 0 < ε) : ∃ C : ℝ, 0 < C ∧
+section
+variable {ξ : ℝ} (h : HasCubicExponent ξ) (ε : ℝ) (hε : 0 < ε)
+include ξ h ε hε
+
+lemma HasCubicExponent.swapped    
+        : ∃ C : ℝ, 0 < C ∧
       ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
         sieveNorm M N ≤ C*(M*N)^ε*(M^ξ + N + (M*N)^(2/3 : ℝ)) := by
   obtain ⟨C,hC,hb⟩ := h ε hε
   refine ⟨C,hC,?_⟩
   intro M N hM hN
   rw [sieveNorm_reciprocity]
-  simpa only [mul_comm, add_comm, add_left_comm, add_assoc] using hb N M hN hM
+  grind
 
-lemma HasCubicExponent.doubled {ξ : ℝ} (h : HasCubicExponent ξ)
-    (ε : ℝ) (hε : 0 < ε) : ∃ C : ℝ, 0 < C ∧
+lemma HasCubicExponent.doubled    
+        : ∃ C : ℝ, 0 < C ∧
       ∀ X N : ℝ, 1 ≤ X → 1 ≤ N →
         sieveNorm (2*X) N ≤ C*(X*N)^ε*(X^ξ + N + (X*N)^(2/3 : ℝ)) := by
   obtain ⟨C,hC,hb⟩ := h.swapped ε hε
   let A : ℝ := 1 + (2:ℝ)^ξ + (2:ℝ)^(2/3 : ℝ)
-  have hA : 0 < A := by dsimp [A]; positivity
+  
   refine ⟨C*(2:ℝ)^ε*A, by positivity, ?_⟩
   intro X N hX hN
   have hX0 : 0 ≤ X := by linarith
@@ -76,6 +81,8 @@ lemma HasCubicExponent.doubled {ξ : ℝ} (h : HasCubicExponent ξ)
     _ = _ := by
       rw [show (2*X)*N = 2*(X*N) by ring, Real.mul_rpow (by norm_num) (mul_nonneg hX0 hN0)]
       ring
+
+end
 
 end
 end SevenEighths.CubicSieve

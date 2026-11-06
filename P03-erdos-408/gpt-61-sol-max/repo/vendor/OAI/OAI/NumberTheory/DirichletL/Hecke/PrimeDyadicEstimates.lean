@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicContour
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicJoins
@@ -8,14 +9,18 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicPointwise
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
 
-theorem absolute_tail_bound (χ : Character) (W : ℝ → ℂ)
-    (D r σ freq C T : ℝ) (n : ℕ) (hD : 0<D) (hr : 1<r+σ) (hC : 0≤C) (hT : 0≤T)
+section
+variable (χ : Character) (W : ℝ → ℂ) (D r l σ freq C K T : ℝ) (n : ℕ) (hD : 0<D) (hr : 1<r+σ) (hC : 0≤C) (hK : 0≤K) (hT : 0≤T)
+
+include hD hr hC hT in
+theorem absolute_tail_bound    
+               
     (hm : ∀ t : ℝ, (1+|t|)^(n+2)*‖mellin W ((r : ℂ)+t*I)‖≤C) :
     ‖∫ t : ℝ in (Icc (-T) T)ᶜ, integrand χ W D σ freq ((r : ℂ)+t*I)‖ ≤
       (C*D^(r+σ-1/2)*eulerBound (r+σ))/(1+T)^n*Real.pi := by
@@ -31,11 +36,11 @@ theorem absolute_tail_bound (χ : Character) (W : ℝ → ℂ)
     calc
       _ = ((1+|t|)^(n+2)*‖mellin W ((r : ℂ)+t*I)‖)*D^(r+σ-1/2)*
         ‖series χ ((r : ℂ)+t*I+shift σ freq)‖ := by ring
-      _ ≤ _ := mul_le_mul (mul_le_mul_of_nonneg_right (hm t) (Real.rpow_nonneg hD.le _))
-        hb (norm_nonneg _) (mul_nonneg hC (Real.rpow_nonneg hD.le _))
+      _ ≤ _ := (by bound)
 
-theorem central_segment_bound (χ : Character) (W : ℝ → ℂ)
-    (D l σ freq C K T : ℝ) (hD : 0<D) (hC : 0≤C) (hK : 0≤K) (hT : 0≤T)
+include hD hC hK hT in
+theorem central_segment_bound    
+             
     (hm : ∀ t : ℝ, (1+|t|)^2*‖mellin W ((l : ℂ)+t*I)‖≤C)
     (hs : ∀ t ∈ Icc (-T) T, ‖series χ ((l : ℂ)+t*I+shift σ freq)‖≤K) :
     ‖∫ t : ℝ in -T..T, integrand χ W D σ freq ((l : ℂ)+t*I)‖ ≤
@@ -59,9 +64,15 @@ theorem central_segment_bound (χ : Character) (W : ℝ → ℂ)
       integral_mono_measure Measure.restrict_le_self (by filter_upwards [] with t; positivity) hint
     _ = _ := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
 
-theorem horizontal_join_bound (χ : Character) (W : ℝ → ℂ)
-    (D σ freq l r y C K : ℝ) (n : ℕ)
-    (hD : 1≤D) (hlr : l≤r) (hC : 0≤C) (_hK : 0≤K)
+end
+
+section
+variable (χ : Character) (hχ : χ.residue≠1) (W : ℝ → ℂ) (a b : ℝ) (ha : 0<a) (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (D σ freq l r y C T C₂ Cn K : ℝ) (n : ℕ) (hD : 1≤D) (hlr : l≤r)
+
+include hD hlr in
+theorem horizontal_join_bound    
+       
+        (hC : 0≤C) (_hK : 0≤K)
     (hm : ∀ x ∈ Icc l r, (1+|y|)^n*‖mellin W ((x : ℂ)+y*I)‖≤C)
     (hs : ∀ x ∈ Icc l r, ‖series χ ((x : ℂ)+y*I+shift σ freq)‖≤K) :
     ‖∫ x : ℝ in l..r, integrand χ W D σ freq ((x : ℂ)+y*I)‖ ≤
@@ -83,11 +94,12 @@ theorem horizontal_join_bound (χ : Character) (W : ℝ → ℂ)
         (hs x hx') (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-theorem polynomial_bound_of_rectangle (χ : Character) (hχ : χ.residue≠1)
-    (W : ℝ → ℂ) (a b : ℝ) (ha : 0<a)
-    (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (D σ freq l r T C₂ Cn K : ℝ) (n : ℕ)
-    (hD : 1≤D) (hlr : l≤r) (hr : 1<r+σ) (hT : 0≤T)
+include hχ ha hWs hW hD hlr in
+theorem polynomial_bound_of_rectangle    
+         
+       
+       
+        (hr : 1<r+σ) (hT : 0≤T)
     (hC₂ : 0≤C₂) (hCn : 0≤Cn) (hK : 0≤K)
     (hm₂ : ∀ t : ℝ, (1+|t|)^2*‖mellin W ((l : ℂ)+t*I)‖≤C₂)
     (hmn : ∀ x ∈ Icc l r, ∀ t : ℝ,
@@ -127,8 +139,10 @@ theorem polynomial_bound_of_rectangle (χ : Character) (hχ : χ.residue≠1)
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact (norm_four_sides _ _ _ _).trans (by linarith)
 
+end
+
 end SevenEighths.HeckePrimeDyadic
 
-end
+
 
 end OAI

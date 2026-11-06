@@ -17,7 +17,7 @@ namespace Erdos408.TwoSided.TupleHigh
 open Filter
 
 /-- `exp(i t log y) = y^{it}` for `y > 0`. -/
-theorem mellin_eq_cpow {y : ℝ} (hy : 0 < y) (t : ℝ) :
+theorem mellin_eq_cpow  {y}  (hy : 0 < y)  t  :
     Erdos821.Blueprint.Analytic.mellin y t = (y : ℂ) ^ ((t : ℂ) * Complex.I) := by
   rw [Erdos821.Blueprint.Analytic.mellin, Complex.cpow_def_of_ne_zero (by exact_mod_cast hy.ne'),
     ← Complex.ofReal_log hy.le]

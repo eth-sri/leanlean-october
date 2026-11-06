@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.WholePriorityValidSource
 
@@ -14,18 +15,17 @@ open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyA
 open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource
 open InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical
 open InverseWholePriorityValidSource RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
-variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable {Jo : ℕ} (p : ι→ActualEisensteinCubic.O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 def unifiedSource (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
-    (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ) :
-    Finset (MarkedSecondSource ι Jo 0) :=
+    (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ)  :=
   attachedSecondFamily parents (fun y=>secondExpansionPool pool
     (fun G E=>(secondVariableCutoff p y (R y) G E).erase 0))
 
 omit [∀ i,(Ideal.span {p i}).IsMaximal] in
-theorem mem_unifiedSource (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
+theorem mem_unifiedSource  pool  (parents : Finset (SecondParentSource ι Jo))
     (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ) (x : MarkedSecondSource ι Jo 0) :
     x∈unifiedSource p pool parents R ↔ secondParentOf x∈parents ∧
       x.second.sourceCommon⊆pool ∧ x.second.divisor⊆x.second.sourceCommon ∧
@@ -89,31 +89,37 @@ theorem parent_retained_sum [Fintype κ]
   simp_rw [←Finset.mul_sum,retained_sum]
   exact sectors_sum p pool parents R label _
 
-theorem unified_conditions (hp : ∀ i,p i≠0)
-    (extra : CubeCoordinates ι→Finset ι) (source : Finset (Source ι Jo))
-    (hs : ∀ x∈source,SourceValid p x) (he : ∀ x∈source,extra x.cube⊆x.cube.support)
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
-    (R : SecondParentSource ι (Jo+(J.card+J.card))→Finset ι→Finset ι→ℝ) :
+section
+variable (hp : ∀ i,p i≠0) (hinj : Function.Injective (fun i=>Ideal.span {p i})) (extra : CubeCoordinates ι→Finset ι) (source : Finset (Source ι Jo)) (hs : ∀ x∈source,SourceValid p x) (he : ∀ x∈source,extra x.cube⊆x.cube.support) (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι) (R : SecondParentSource ι (Jo+(J.card+J.card))→Finset ι→Finset ι→ℝ)
+
+include hp hs he in
+theorem unified_conditions  
+       
+       
+           
+      :
     ActualSecondSourceConditions p (unifiedSource p pool
       (wholeAssignedParents p (fun x=>extra x.cube) source negative J lists) R) := by
   apply whole_assigned_family_conditions p hp (fun x=>extra x.cube) source hs he negative J lists
   intro y hy x hx
   exact ((mem_secondExpansionPool _ _ x).mp hx).2.1
 
+include hinj hs he in
 theorem unified_deleted_support
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (extra : CubeCoordinates ι→Finset ι) (source : Finset (Source ι Jo))
-    (hs : ∀ x∈source,SourceValid p x) (he : ∀ x∈source,extra x.cube⊆x.cube.support)
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
-    (R : SecondParentSource ι (Jo+(J.card+J.card))→Finset ι→Finset ι→ℝ)
+     
+       
+       
+           
+     
     (x : MarkedSecondSource ι (Jo+(J.card+J.card)) 0)
     (hx : x∈unifiedSource p pool (wholeAssignedParents p (fun x=>extra x.cube)
       source negative J lists) R) :
     ∀ i∈InverseMomentWholeRetainedSource.deleted p extra negative x,
-      i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal O)∣x.quotient := by
-  exact InverseMomentWholeRetainedSource.retained_deleted_support p hinj extra source hs he
+      i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient := InverseMomentWholeRetainedSource.retained_deleted_support p hinj extra source hs he
     negative J lists pool R (fun _ _ _=>()) _ () x
     (unified_mem_sector p pool _ R (fun _ _ _=>()) x hx)
+
+end
 
 omit [DecidableEq σ] [∀ i,(Ideal.span {p i}).IsMaximal] in
 
@@ -130,7 +136,7 @@ def wholeRow (hp : ∀ i,p i≠0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (V : ℝ→ℂ) (X Y : ℝ) (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0) : ℂ :=
   retainedRow p hp hcop hg pool negative Ψ m slots J (fun i=>lists i\extra x.cube) a V X Y ray x
 
@@ -138,8 +144,8 @@ theorem wholeRow_eq (hp : ∀ i,p i≠0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (V : ℝ→ℂ) (X Y : ℝ) (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0) :
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (slots J : Finset σ)  lists   a 
+     V   X Y   ray  (x : MarkedSecondSource ι Jo 0) :
     wholeRow p hp hcop hg extra pool negative Ψ m slots J lists a V X Y ray x =
       actualSecondSignedWeight p hp hcop hg Ψ
         (m*ConcretePrimeRowBridge.idealGenerator x.quotient) ray x *
@@ -156,7 +162,7 @@ theorem whole_retained_sum [Fintype κ] (hp : ∀ i,p i≠0)
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
     (parents : Finset (SecondParentSource ι Jo)) (w : SecondParentSource ι Jo→ℂ)
-    (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots J : Finset σ)
+    (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (slots J : Finset σ)
     (lists : σ→Finset ι) (a : σ→ι→ℂ) (V : ℝ→ℂ) (X Y : ℝ)
     (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ)
     (label : SecondParentSource ι Jo→Finset ι→SecondExpansionData ι→κ) :
@@ -178,9 +184,7 @@ theorem whole_retained_sum [Fintype κ] (hp : ∀ i,p i≠0)
           (attachSecondExpansion y),
           wholeRow p hp hcop hg extra pool negative Ψ m slots J lists a V X Y ray x := by
     apply Finset.sum_congr rfl
-    intro x hx
-    obtain ⟨z,hz,rfl⟩ := Finset.mem_image.mp hx
-    rfl
+    aesop
   simp_rw [hrow,Finset.mul_sum]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
@@ -196,8 +200,8 @@ theorem coefficientBound_pos : 0<coefficientBound := by norm_num [coefficientBou
 
 variable (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-theorem priorityOuter_norm (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
-    (selector : Finset ι→ℂ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex) (D : Finset ι)
+theorem priorityOuter_norm  b   negative   Ψ   m 
+     selector   r   core   D 
     (hselector : ‖selector D‖≤1) (hΨ : ‖Ψ (∏ i∈D,p i)‖≤1) :
     ‖(priorityOuter p hg b negative Ψ m selector r core D:ℂ)‖≤coefficientBound := by
   have hr : ‖crossCoeff r.1 r.2‖≤512 :=
@@ -206,8 +210,7 @@ theorem priorityOuter_norm (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→
         (Finset.mem_univ r.1)).trans crossCoeff_sum_norm_le)
   have hc : ‖firstCoreOuter p hg b.support (fun i=>b.leftExponent i+b.rightExponent i)
       b.leftBit b.rightBit negative Ψ m D core‖≤32*512 :=
-    (Finset.single_le_sum (fun c _=>norm_nonneg (firstCoreOuter p hg b.support
-      (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit negative Ψ m D c))
+    (Finset.single_le_sum (fun c _=>(by simp_all))
       (Finset.mem_univ core)).trans
       (firstCoreOuter_mass p hg b.support _ b.leftBit b.rightBit negative Ψ m D hΨ)
   rw [Complex.norm_real,Real.norm_of_nonneg (by unfold priorityOuter; positivity)]
@@ -220,7 +223,7 @@ theorem fullPhysical_unified [Fintype κ] (hp : ∀ i,p i≠0)
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
     (parents : Finset (SecondParentSource ι Jo)) (w : SecondParentSource ι Jo→ℂ)
-    (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots J : Finset σ)
+    (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (slots J : Finset σ)
     (lists : σ→Finset ι) (a : σ→ι→ℂ) (V : 𝓢(ℝ,ℂ)) (X Y : ℝ)
     (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
     (R : Finset ι→Finset ι→ℝ) (label : Finset ι→SecondExpansionData ι→κ) :
@@ -239,8 +242,7 @@ theorem fullPhysical_unified [Fintype κ] (hp : ∀ i,p i≠0)
         (secondParentLabel p y) (secondParentDivisor p y) (H y) rowMajorant Y (K y)) := by
   intro Ψ₀ H K
   simp only [fullPhysical,mul_add,Finset.sum_add_distrib]
-  rw [whole_retained_sum p hp hcop hg extra pool parents w negative Ψ₀ m slots J lists a
-    V X Y (fun _=>R) (fun _=>label)]
+  solve_by_elim [whole_retained_sum]
 
 end SevenEighths.InverseWholePriorityRetainedSource
 

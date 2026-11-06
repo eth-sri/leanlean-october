@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildSourceCaps
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstCommonSourcePowerBudget
@@ -15,15 +15,15 @@ open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
 open CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
-local notation "O"=>ActualEisensteinCubic.O
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
-theorem common_energy_power_budget (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<ε):
+
+
+theorem common_energy_power_budget  N (a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<ε):
     ∃Cbound:ℝ,0<Cbound ∧ ∀{ι:Type*}[Fintype ι],∀s:Input ι,
     Fintype.card ι≤N → a≤s.lower → s.upper≤b →
-    ∀(C R seed:Ideal O)(hC:Supported C),seed∣C →
-    ∀(τ:Character)(t:ℝ)(L:Ideal O)(W:𝓢(ℝ,ℂ))(K:ℝ),0<K →
-    (∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
+    ∀(C R seed:Ideal ActualEisensteinCubic.O)(hC:Supported C),seed∣C →
+    ∀(τ:Character)(t:ℝ)(L:Ideal ActualEisensteinCubic.O)(W:𝓢(ℝ,ℂ))(K:ℝ),0<K →
+    (∀z:ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
     ∀(n:ℕ)(E α:Fin n→ℝ),(∀j,0≤E j)→(∀j,0≤α j)→
     (∀B:actualAllocations s.pools C,frozenCoefficient B.val C R s.ν s.W s.P≠0 →
       childNormalizedGaussSource s C R L B τ t W K≤

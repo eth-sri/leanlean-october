@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Failure.Params
 
@@ -16,11 +17,14 @@ namespace Erdos408
 
 open Finset Filter Real
 
-noncomputable section
+
+
+section
+variable {x γ : ℝ}
 
 /-- The weight facts at one scale. -/
-lemma weightFacts_at {x γ : ℝ} (hx : 1 < x) (hγ0 : 0 < γ) (hγ : 1 ≤ x ^ γ) {j : ℕ}
-    (hj : 1 ≤ j) (X : ℕ) :
+lemma weightFacts_at   (hx : 1 < x) (hγ0 : 0 < γ) (hγ : 1 ≤ x ^ γ)  {j} 
+    (hj : 1 ≤ j)  X  :
     WeightFacts x γ j X (1 / (dampedDensity x j * (γ * Real.log x)))
       (Real.log X / (γ * Real.log x)) := by
   have hD := dampedDensity_pos x hj
@@ -36,13 +40,11 @@ lemma weightFacts_at {x γ : ℝ} (hx : 1 < x) (hγ0 : 0 < γ) (hγ : 1 ≤ x ^ 
     exact Real.log_lt_log (rpow_pos_of_pos hx0 γ) h1
   refine ⟨fun e => ?_, fun e he => ?_, fun e he => ?_, fun e he heX => ?_⟩
   · unfold roughWeight
-    have : 0 ≤ Real.log (e : ℝ) := Real.log_natCast_nonneg e
     positivity
   · unfold roughWeight
     have h1 := hlog e he
     have h2 : Real.log (e : ℝ) ≤ Real.log ((e + 1 : ℕ) : ℝ) :=
-      Real.log_le_log (by have := lt_trans hγL h1; exact_mod_cast (show 0 < e by omega))
-        (by push_cast; linarith)
+      (by bound)
     exact one_div_le_one_div_of_le (by nlinarith) (by nlinarith)
   · unfold roughWeight
     exact one_div_le_one_div_of_le (by positivity) (by nlinarith [hlog e he])
@@ -61,7 +63,7 @@ lemma weightFacts_at {x γ : ℝ} (hx : 1 < x) (hγ0 : 0 < γ) (hγ : 1 ≤ x ^ 
           gcongr
 
 /-- Every core factor is at most `1/(D_j γ L)`. -/
-lemma coreFactor_le_of {x γ : ℝ} (hx : 1 < x) {j : ℕ} (hj : 1 ≤ j) (e : ℕ) :
+lemma coreFactor_le_of   (hx : 1 < x)  {j}  (hj : 1 ≤ j)  e  :
     coreFactor x γ j e ≤ 1 / (dampedDensity x j * (γ * Real.log x)) ∨ γ ≤ 0 := by
   by_cases hγ0 : γ ≤ 0
   · exact Or.inr hγ0
@@ -90,12 +92,10 @@ lemma final_combine {X L κE Q δ G Err W e1 e2 e3 : ℝ} (hX : 0 ≤ X) (hL : 0
       mul_le_mul a1 a2 (by linarith) (by positivity)
     exact mul_le_mul a3 hG hG0 (mul_nonneg (by positivity) (by linarith))
   have h2 : W * Err ≤ X * e2 / L := (mul_le_of_le_one_left hErr0 hW).trans hErr
-  have h3 : X * 2 * (e1 + e2) * (e3 / L) + X * e2 / L = X / L * (2 * e3 * (e1 + e2) + e2) := by
-    field_simp
-  linarith
+  grind
 
 /-- The free-factor sum of one family at one scale, given the numerical facts. -/
-theorem freeFactorSum_le_of_facts {x γ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset ℕ)} (a : ℝ)
+theorem freeFactorSum_le_of_facts   {j' X : ℕ} (R : ℕ)  {F}   a 
     (hx : 1 < x) (hlogx : 1 ≤ Real.log x) (hγ0 : 0 < γ) (hγ1 : γ ≤ 1)
     (hg : ∀ g ∈ candidateGroups x, SideGroup g) (hFC : F ⊆ candidateGroups x)
     (hFS : ∀ g ∈ F, g ⊆ primesIcc 2 (proxyCutoff x)) (hxX : x ≤ X)
@@ -174,5 +174,7 @@ theorem freeFactorSum_le_of_facts {x γ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finse
   ring
 
 end
+
+
 
 end Erdos408

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCommonTransform
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialCommonTransform
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
@@ -15,12 +16,12 @@ namespace SevenEighths.InverseInitialLargePool
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
 open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
 open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialCommonTuples
-local notation "Eis"=>ActualEisensteinCubic.O
-local notation "O"=>ActualEisensteinCubic.O
-theorem selected_conjugate_row_supported (F : Finset (Ideal O))
-    (hF : ∀ I ∈ F,Admissible I) (j : Ideal O) (hj : Admissible j)
-    (η : Ideal O →* ℂ) (H : Ideal O → ℂ)
-    (hcop : ∀ I ∈ F,H I≠0→IsCoprime I j) (u : O) :
+
+
+theorem selected_conjugate_row_supported (F : Finset (Ideal ActualEisensteinCubic.O))
+    (hF : ∀ I ∈ F,Admissible I) (j : Ideal ActualEisensteinCubic.O) (hj : Admissible j)
+    (η : Ideal ActualEisensteinCubic.O →* ℂ) (H : Ideal ActualEisensteinCubic.O → ℂ)
+    (hcop : ∀ I ∈ F,H I≠0→IsCoprime I j)  u  :
     let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i => by rw [poolPrimary_span F hF i]; infer_instance
     (∑ I ∈ F,(moebius I : ℂ)*η I*H I*star (idealRowHom u I)) =
@@ -51,11 +52,11 @@ theorem selected_conjugate_row_supported (F : Finset (Ideal O))
   · simp only [hAF,ite_false,mul_zero,zero_mul]
 
 theorem residual_eq_large_input
-    (S F : Finset (Ideal Eis)) {P j : Ideal Eis}
-    (hP : Admissible P) (hj : j∣P) (hF : ∀I∈F,Admissible I)
+     S F   {P j} 
+    (hP : Admissible P) (hj : j∣P)  hF 
     (hsub : columns S P j⊆F)
-    (η : Ideal Eis→*ℂ) (a : Ideal Eis→ℂ) (W : ℝ→ℂ)
-    (Z r z G : ℝ) (u : Eis) :
+     η   a   W 
+     Z r z G   u  :
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i=>by rw [poolPrimary_span F hF i];infer_instance
     residualNormalizedPolynomial S P j η a W Z r z G u =
@@ -67,13 +68,11 @@ theorem residual_eq_large_input
             (((∏i∈A,i.val).absNorm:ℝ)/Z^(r+z-2*G)) else 0) u := by
   let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
     fun i=>by rw [poolPrimary_span F hF i];infer_instance
-  let H : Ideal Eis→ℂ := fun c=>if c∈columns S P j then
+  let H : Ideal ActualEisensteinCubic.O→ℂ := fun c=>if c∈columns S P j then
     a (reconstruct P j c)*residualOverlapWindow P j W Z z G
       ((c.absNorm:ℝ)/Z^(r+z-2*G)) else 0
   have hfilter : F.filter (fun c=>c∈columns S P j)=columns S P j := by
-    ext c
-    simp only [Finset.mem_filter]
-    exact and_iff_right_of_imp (fun h=>hsub h)
+    simp_all
   have he : (∑c∈columns S P j,
       overlapResidualCoefficient P j η a W Z r z G c*star (CanonicalRowCompletion.idealRowHom u c))=
       ∑c∈F,(moebius c:ℂ)*η c*H c*star (CanonicalRowCompletion.idealRowHom u c) := by
@@ -103,6 +102,6 @@ variable {κ:Type*}
 
 end SevenEighths.InverseInitialLargePool
 
-end
+
 
 end OAI

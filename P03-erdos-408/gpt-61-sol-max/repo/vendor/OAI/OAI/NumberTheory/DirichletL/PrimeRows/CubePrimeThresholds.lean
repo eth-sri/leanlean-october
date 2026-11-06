@@ -7,16 +7,16 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralLower
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily ProbeRaySlots
-local notation "O" => HeckeFamily.O
+
 
 theorem central_pool_good_eventually (η : Character) (e c b dmin rmin : ℝ)
     (he : 0<e) (hc : 0<c) (hcb : c≤b) (hd : 0<dmin) (hr : 0<rmin) :
-    ∀ᶠ Z : ℝ in atTop,∀(C : Set (Ideal O)) (S : Finset (Ideal O)) (d r : ℝ),dmin≤d → rmin≤r →
+    ∀ᶠ Z : ℝ in atTop,∀(C : Set (Ideal HeckeFamily.O)) (S : Finset (Ideal HeckeFamily.O)) (d r : ℝ),dmin≤d → rmin≤r →
       ∀P∈pool C S c b ((Z^d)^r),P.val∉S ∧ IsCoprime P.val η.modulus ∧
         (480:ℝ)≤P.val.absNorm ∧ 198*(P.val.absNorm:ℝ)^(-10*e)≤1/2 := by
   obtain ⟨Q0,hQ0,hsmall⟩ := ProbeEuler.central_correction_threshold e he
@@ -37,6 +37,6 @@ theorem central_pool_good_eventually (η : Character) (e c b dmin rmin : ℝ)
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

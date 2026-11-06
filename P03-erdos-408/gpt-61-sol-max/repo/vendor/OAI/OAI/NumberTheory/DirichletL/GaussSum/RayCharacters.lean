@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.GaussSum.CompletedExpansion
 
@@ -10,76 +11,76 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 
 namespace RayFourExpansion
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase QuadraticGaussRay
+open     FiniteGaussPhase QuadraticGaussRay
 open ActualEisensteinCoordinates MixedCrossSeparation
 
-theorem prime_unit_mod_four (p : O) [(Ideal.span {p}).IsMaximal]
+theorem prime_unit_mod_four  p  [(Ideal.span {p}).IsMaximal]
     (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
     IsUnit (Ideal.Quotient.mk (Ideal.span {(4 : O)}) p) := by
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
@@ -95,10 +96,7 @@ theorem prime_unit_mod_four (p : O) [(Ideal.span {p}).IsMaximal]
     simpa only [cubicTwoIdeal, Ideal.span_singleton_neg] using cubicTwoIdeal_isMaximal
   have hcop : IsCoprime (Ideal.span {p}) (Ideal.span {(2 : O)}) := by
     apply Ideal.isCoprime_of_isMaximal
-    intro heq
-    apply h2
-    rw [heq]
-    exact Ideal.subset_span (by simp)
+    aesop
   obtain ⟨a, b, hab⟩ := IdealGaussCRT.bezout_of_principal_coprime hcop
   have hcp : IsCoprime p (2 : O) := ⟨a, b, hab⟩
   have hcp4 : IsCoprime p (4 : O) := by
@@ -111,23 +109,33 @@ theorem prime_unit_mod_four (p : O) [(Ideal.span {p}).IsMaximal]
   simp only [map_add, map_mul, map_one, hz, mul_zero, add_zero] at hm
   exact IsUnit.of_mul_eq_one_right _ hm
 
-theorem prime_product_unit_mod_four {ι : Type*} (p : ι → O)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (S : Finset ι) :
+section
+variable {ι : Type*}
+include ι
+
+section
+variable (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal] (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (S : Finset ι)
+include p hchar S
+
+theorem prime_product_unit_mod_four    
+     
+        :
     IsUnit (Ideal.Quotient.mk (Ideal.span {(4 : O)}) (∏ i ∈ S, p i)) := by
   rw [map_prod]
-  exact IsUnit.prod_iff.mpr (fun i _ => prime_unit_mod_four (p i) (hchar i))
+  simp_all [prime_unit_mod_four]
 
-theorem rayMask_prime_product {ι : Type*} (p : ι → O)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (S : Finset ι) :
+theorem rayMask_prime_product    
+     
+        :
     rayMask (∏ i ∈ S, p i) = 1 := by
   rw [rayMask, ite_eq_left (prime_product_unit_mod_four p hchar S)]
 
+end
+
 theorem canonicalProductG_character_expansion
-    {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
+      [Fintype ι] (p : ι → O)  hp 
     [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+     hcop 
     (hgood : ∀ i, lambda ∉ Ideal.span {p i})
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) :
@@ -139,7 +147,7 @@ theorem canonicalProductG_character_expansion
   exact h
 
 theorem quadraticCrossPhase_character_expansion
-    {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
+      [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
     [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
@@ -154,17 +162,23 @@ theorem quadraticCrossPhase_character_expansion
   rw [rayMask_prime_product p hchar A, rayMask_prime_product p hchar B, one_mul, one_mul] at h
   exact h
 
+end
+
 end RayFourExpansion
 
 namespace MixedCrossSeparation
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion
+open     FiniteGaussPhase MixedGaussConversion
 open QuadraticGaussRay ActualEisensteinCoordinates GaussGeneratorTransport
 
+section
+variable {ι κ : Type*} [DecidableEq ι] [DecidableEq κ] (p : ι → O)
+include ι κ p
+
 theorem convertedColumnBlock_image
-    {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+         
+      (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (e : κ → ι) (he : Function.Injective e)
-    (A : Finset κ) (inverse : Bool) :
+     A   inverse  :
     convertedColumnBlock (fun i => p (e i)) (fun i => hp (e i)) (fun i => hg (e i)) A inverse =
       convertedColumnBlock p hp hg (A.image e) inverse := by
   unfold convertedColumnBlock
@@ -175,8 +189,8 @@ theorem convertedColumnBlock_image
   rfl
 
 theorem quadraticCrossPhase_image
-    {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+         
+      [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (e : κ → ι) (he : Function.Injective e)
     (A B : Finset κ) :
     quadraticCrossPhase (fun i => p (e i)) (fun i => hg (e i)) A B =
@@ -188,18 +202,26 @@ theorem quadraticCrossPhase_image
   rw [Finset.prod_image (fun a ha b hb hab => he hab)]
   rfl
 
-private theorem negative_active_image {ι : Type*} [DecidableEq ι] (S T : Finset ι) :
+end
+
+section
+variable {ι : Type*} [DecidableEq ι]
+include ι
+
+section
+variable (S T : Finset ι)
+include S T
+
+private theorem negative_active_image       :
     (Finset.univ.filter (fun i : activeSupport S T => i.val ∈ S \ T)).image Subtype.val = S \ T := by
   ext i
   constructor
-  · intro hi
-    obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hi
-    exact (Finset.mem_filter.mp ha).2
+  · simp_all
   · intro hi
     exact Finset.mem_image.mpr ⟨⟨i, Finset.mem_union_left _ hi⟩,
       Finset.mem_filter.mpr ⟨Finset.mem_univ _, hi⟩, rfl⟩
 
-private theorem positive_active_image {ι : Type*} [DecidableEq ι] (S T : Finset ι) :
+private theorem positive_active_image       :
     (Finset.univ.filter (fun i : activeSupport S T => i.val ∉ S \ T)).image Subtype.val = T \ S := by
   ext i
   constructor
@@ -214,11 +236,13 @@ private theorem positive_active_image {ι : Type*} [DecidableEq ι] (S T : Finse
     exact Finset.mem_image.mpr ⟨⟨i, Finset.mem_union_right _ hi⟩,
       Finset.mem_filter.mpr ⟨Finset.mem_univ _, hn⟩, rfl⟩
 
+end
+
 theorem activeConvertedGauss_eq_columnBlocks
-    {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
+        (p : ι → O)  hp 
     [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) (S T : Finset ι) :
+    (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1)  S T  :
     activeConvertedGauss p hp hg S T =
       convertedColumnBlock p hp hg (S \ T) true *
         convertedColumnBlock p hp hg (T \ S) false *
@@ -229,15 +253,17 @@ theorem activeConvertedGauss_eq_columnBlocks
     quadraticCrossPhase_image p hg Subtype.val Subtype.val_injective,
     negative_active_image, positive_active_image]
 
+end
+
 end MixedCrossSeparation
 
 namespace FirstCauchyArithmetic
 
 section
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic CoprimeMobiusExtension
+open   CoprimeMobiusExtension
 
-def supportMobius {ι : Type*} (P : ι → Ideal O) (S : Finset ι) : ℂ :=
+def supportMobius {ι } (P : ι → Ideal O) (S : Finset ι)  :=
   (UniqueFactorizationMonoid.moebius (∏ i ∈ S, P i) : ℂ)
 
 def supportConjugateSum {ι : Type*} [DecidableEq ι]
@@ -245,39 +271,59 @@ def supportConjugateSum {ι : Type*} [DecidableEq ι]
     (hg : ∀ i, lambda ∉ P i) (B : Finset ι) (C : Finset ι → ℂ) (h : O) : ℂ :=
   ∑ S ∈ B.powerset, supportMobius P S * C S * star (finiteSquarefreeRow P hg S h)
 
-theorem supportMobius_sq {ι : Type*} [DecidableEq ι]
+section
+variable {ι : Type*}
+include ι
+
+theorem supportMobius_sq   [DecidableEq ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hprime : ∀ i, Prime (P i)) (hinj : Function.Injective P) (S : Finset ι) :
+    (hprime : ∀ i, Prime (P i)) (hinj : Function.Injective P)  S  :
     supportMobius P S * supportMobius P S = 1 := by
   rw [supportMobius, prime_product_moebius P hprime hinj, ← mul_pow]
   norm_num
 
-theorem star_supportMobius {ι : Type*} (P : ι → Ideal O) (S : Finset ι) :
+theorem star_supportMobius   (P : ι → Ideal O) (S : Finset ι) :
     star (supportMobius P S) = supportMobius P S := by
   simp [supportMobius]
 
 end
+
+end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedCrossSeparation RayFourExpansion
+open     FiniteGaussPhase MixedCrossSeparation RayFourExpansion
 
-def supportRay {ι : Type*} (p : ι → O) (χ : RayCharacter) (S : Finset ι) : ℂ :=
+def supportRay {ι } (p : ι → O) (χ : RayCharacter) (S : Finset ι)  :=
   rayCharacter χ (∏ i ∈ S, p i)
 
 end
 
-open ActualEisensteinCubic ConcretePrimeRowBridge
+open   ConcretePrimeRowBridge
 
-private theorem family_prime {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (i : ι) :
+section
+variable {ι : Type*}
+include ι
+
+section
+variable (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+include P
+
+private theorem family_prime        i  :
     Prime (P i) := Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
 
-private theorem family_prod_ne_zero {ι : Type*}
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (S : Finset ι) :
+private theorem family_prod_ne_zero  
+         S  :
     (∏ i ∈ S, P i) ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => (family_prime P i).ne_zero)
 
-theorem family_prime_dvd_product_iff {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hinj : Function.Injective P) (S : Finset ι) (i : ι) :
+end
+
+section
+variable [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
+include P hinj
+
+theorem family_prime_dvd_product_iff    
+       
+       S   i  :
     P i ∣ ∏ j ∈ S, P j ↔ i ∈ S := by
   constructor
   · intro h
@@ -285,29 +331,35 @@ theorem family_prime_dvd_product_iff {ι : Type*} [DecidableEq ι]
     have he : P i = P j := associated_iff_eq.mp
       ((family_prime P i).associated_of_dvd (family_prime P j) hd)
     exact hinj he ▸ hj
-  · exact fun hi => Finset.dvd_prod_of_mem P hi
+  · exact Finset.dvd_prod_of_mem P
 
-theorem family_product_injective {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hinj : Function.Injective P) : Function.Injective (fun S : Finset ι => ∏ i ∈ S, P i) := by
+theorem family_product_injective    
+       
+      : Function.Injective (fun S : Finset ι => ∏ i ∈ S, P i) := by
   intro S T h
-  change (∏ i ∈ S, P i) = (∏ i ∈ T, P i) at h
-  ext i
-  rw [← family_prime_dvd_product_iff P hinj S i, h, family_prime_dvd_product_iff P hinj T i]
+  grind [family_prime_dvd_product_iff]
 
-def supportIdealFamily {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) (B : Finset ι) : Finset (Ideal O) :=
+end
+
+end
+
+def supportIdealFamily {ι } [DecidableEq ι]
+    (P : ι → Ideal O) (B : Finset ι)  :=
   B.powerset.image (fun S => ∏ i ∈ S, P i)
 
-theorem supportIdealFamily_pos {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (B : Finset ι) :
+section
+variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+include ι P
+
+theorem supportIdealFamily_pos    
+         B  :
     ∀ I ∈ supportIdealFamily P B, I ≠ ⊥ := by
   intro I hI
   obtain ⟨S, hS, rfl⟩ := Finset.mem_image.mp hI
   exact family_prod_ne_zero P S
 
-private theorem factor_family_product_iff {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (S : Finset ι) (Q : Ideal O) :
+private theorem factor_family_product_iff    
+         S   Q  :
     Q ∈ UniqueFactorizationMonoid.normalizedFactors (∏ i ∈ S, P i) ↔
       ∃ i ∈ S, Q = P i := by
   rw [UniqueFactorizationMonoid.mem_normalizedFactors_iff (family_prod_ne_zero P S)]
@@ -318,9 +370,9 @@ private theorem factor_family_product_iff {ι : Type*} [DecidableEq ι]
   · rintro ⟨i, hi, rfl⟩
     exact ⟨family_prime P i, Finset.dvd_prod_of_mem P hi⟩
 
-theorem supportIdealFamily_good {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (B : Finset ι) :
+theorem supportIdealFamily_good    
+       
+    (hg : ∀ i, lambda ∉ P i)  B  :
     ∀ I ∈ supportIdealFamily P B,
       ∀ Q ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ Q := by
   intro I hI Q hQ
@@ -328,22 +380,30 @@ theorem supportIdealFamily_good {ι : Type*} [DecidableEq ι]
   obtain ⟨i, hi, rfl⟩ := (factor_family_product_iff P S Q).mp hQ
   exact hg i
 
-def recoveredSupport {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) (B : Finset ι) (I : Ideal O) : Finset ι :=
+end
+
+def recoveredSupport {ι } [DecidableEq ι]
+    (P : ι → Ideal O) (B : Finset ι) (I : Ideal O)  :=
   B.filter (fun i => P i ∣ I)
 
-theorem recoveredSupport_product {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hinj : Function.Injective P) (B S : Finset ι) (hS : S ⊆ B) :
-    recoveredSupport P B (∏ i ∈ S, P i) = S := by
-  ext i
-  simp only [recoveredSupport, Finset.mem_filter, family_prime_dvd_product_iff P hinj S i]
-  exact and_iff_right_of_imp (fun hi => hS hi)
+section
+variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
+include ι P hinj
 
-theorem idealSexticRow_support_product {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hinj : Function.Injective P) (hg : ∀ i, lambda ∉ P i)
-    (B S : Finset ι) (hS : S ⊆ B) (h : O) :
+theorem recoveredSupport_product    
+       
+       B S  (hS : S ⊆ B) :
+    recoveredSupport P B (∏ i ∈ S, P i) = S := by
+  simp_all [recoveredSupport, family_prime_dvd_product_iff]
+
+section
+variable (hg : ∀ i, lambda ∉ P i)
+include hg
+
+theorem idealSexticRow_support_product    
+       
+       
+     B S  (hS : S ⊆ B)  h  :
     idealSexticRow (supportIdealFamily P B) (supportIdealFamily_pos P B)
       (supportIdealFamily_good P hg B) (∏ i ∈ S, P i) h =
       finiteSquarefreeRow P hg S h := by
@@ -359,8 +419,7 @@ theorem idealSexticRow_support_product {ι : Type*} [DecidableEq ι]
   · intro i hi
     exact (mem_idealSupport_iff F _ (idx i hi)).mpr
       ((factor_family_product_iff P S (P i)).mpr ⟨i, hi, rfl⟩)
-  · intro i hi j hj hij
-    exact hinj (congrArg Subtype.val hij)
+  · aesop
   · intro Q hQ
     have hm := (mem_idealSupport_iff F _ Q).mp hQ
     obtain ⟨i, hi, he⟩ := (factor_family_product_iff P S Q.val).mp hm
@@ -369,9 +428,9 @@ theorem idealSexticRow_support_product {ι : Type*} [DecidableEq ι]
     rfl
 
 theorem supportConjugateSum_eq_conjugateIdealRowSum
-    {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hinj : Function.Injective P) (hg : ∀ i, lambda ∉ P i)
-    (B : Finset ι) (C : Finset ι → ℂ) (h : O) :
+           
+       
+     B   C   h  :
     supportConjugateSum P hg B C h =
       conjugateIdealRowSum (supportIdealFamily P B) (supportIdealFamily_pos P B)
         (supportIdealFamily_good P hg B) (fun I => C (recoveredSupport P B I)) h := by
@@ -387,8 +446,11 @@ theorem supportConjugateSum_eq_conjugateIdealRowSum
   intro S hS
   have hSB := Finset.mem_powerset.mp hS
   dsimp only [f]
-  rw [idealSexticRow_support_product P hinj hg B S hSB h]
-  simp only [mobiusIdealColumn, supportMobius, recoveredSupport_product P hinj B S hSB]
+  simp_all [idealSexticRow_support_product, mobiusIdealColumn, supportMobius, recoveredSupport_product]
+
+end
+
+end
 
 end FirstCauchyArithmetic
 

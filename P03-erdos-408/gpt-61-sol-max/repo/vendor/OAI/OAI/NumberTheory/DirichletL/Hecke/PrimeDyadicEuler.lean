@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadic
 
@@ -11,7 +12,7 @@ open scoped Classical BigOperators Topology
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
 
-def eulerBound (b : ℝ) : ℝ :=
+def eulerBound (b : ℝ)  :=
   ∑' I : NonzeroIdeal, IdealMangoldt.value I.val * (norm I)^(-b)
 
 theorem eulerBound_summable {b : ℝ} (hb : 1<b) :
@@ -19,10 +20,8 @@ theorem eulerBound_summable {b : ℝ} (hb : 1<b) :
   have ha (I : Ideal O) : ‖IdealEuler.normWeight 0 I‖ ≤ 1 := by
     change ‖CubicEisenstein.fullIdealWeight 0 I‖ ≤ 1
     by_cases hI : I = 0
-    · rw [CubicEisenstein.fullIdealWeight, ite_eq_left_iff.mpr (fun h => (h hI).elim), norm_zero]
-      norm_num
-    · rw [CubicEisenstein.fullIdealWeight, ite_eq_right_iff.mpr (fun h => (hI h).elim)]
-      simp
+    · simp_all [CubicEisenstein.fullIdealWeight]
+    simp_all [CubicEisenstein.fullIdealWeight]
   have hf := (IdealLogDerivative.mangoldt_weighted_summable_norm
     (IdealEuler.normWeight 0) ha (b : ℂ) (by simpa using hb)).comp_injective
       (Subtype.val_injective : Function.Injective (fun I : NonzeroIdeal => I.val))
@@ -38,8 +37,8 @@ theorem eulerBound_summable {b : ℝ} (hb : 1<b) :
     Complex.norm_cpow_eq_rpow_re_of_pos (norm_pos I)]
   simp
 
-theorem series_norm_le (χ : Character) {b : ℝ} (hb : 1<b)
-    {s : ℂ} (hs : b≤s.re) : ‖series χ s‖ ≤ eulerBound b := by
+theorem series_norm_le  χ   {b}  (hb : 1<b)
+     {s}  (hs : b≤s.re) : ‖series χ s‖ ≤ eulerBound b := by
   rw [series_eq_tsum χ (hb.trans_le hs)]
   have hbound (I : NonzeroIdeal) :
       ‖coefficient χ I.val * (norm I : ℂ)^(-s)‖ ≤

@@ -16,14 +16,14 @@ open Erdos821.Blueprint.Graph
 
 /-- The finite mass at the initial empty-memory boundary. Absolute values
 allow the structural tail estimate to use only its explicit row hypotheses. -/
-def initialMemoryBoundaryMass {F : FixedData} {P : PrimeGroups} {J m : ℕ}
-    (_A : Model F P J m) (n : ℕ) : ℝ :=
+def initialMemoryBoundaryMass {F } {P } {J m }
+    (_A : Model F P J m) (n : ℕ)  :=
   ∑ y : P.SmallResidues, ∑ a : P.Labels (J + F.ell),
     |P.memoryMass F J n (y, a, fun _ => 0)|
 
 /-- No signed edge norm, CRT statement or lifespan identity is an input.
 The integer exponent retains the store capacity when B is larger than it. -/
-def MemoryTailTask : Prop :=
+def MemoryTailTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
     (rho v theta CG CE : ℝ),
     1 ≤ v → 0 ≤ CG → 0 ≤ CE →

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationPrimePool
 
@@ -10,27 +11,25 @@ noncomputable section
 open Filter
 namespace SevenEighths.HeckeInverseAmplification
 
-def amplificationPower (c r : ℝ) : ℝ := max 0 (((1+c)*r-1)/6)
-def sourceExponent (r : ℝ) : ℝ := max 1 ((1+5*r)/6)
+def amplificationPower (c r : ℝ)  := max 0 (((1+c)*r-1)/6)
+def sourceExponent (r : ℝ)  := max 1 ((1+5*r)/6)
 
-theorem amplificationPower_nonneg (c r : ℝ) : 0≤amplificationPower c r := le_max_left _ _
+section
+variable (c r R ε : ℝ)
 
-theorem amplificationPower_upper (c r R : ℝ) (hc : c≤1) (hr : 0≤r)
+theorem amplificationPower_nonneg   : 0≤amplificationPower c r := le_max_left _ _
+
+theorem amplificationPower_upper   (hc : c≤1) (hr : 0≤r)
     (hrR : r≤R) : amplificationPower c r≤R/3 := by
   apply max_le (by linarith)
   have hh := mul_le_mul_of_nonneg_right hc hr
   nlinarith
 
-theorem amplified_exponent (c r : ℝ) :
+theorem amplified_exponent   :
     1+5*amplificationPower c r=max 1 ((1+5*(1+c)*r)/6) := by
-  unfold amplificationPower
-  by_cases h : 0≤((1+c)*r-1)/6
-  · rw [max_eq_right h,max_eq_right (by linarith)]
-    ring
-  · rw [max_eq_left (le_of_not_ge h),max_eq_left (by linarith)]
-    ring
+  grind [amplificationPower]
 
-theorem amplified_exponent_le (c r R : ℝ) (hc : 0≤c) (hrR : r≤R)
+theorem amplified_exponent_le   (hc : 0≤c) (hrR : r≤R)
     (hR : 0≤R) : 1+5*amplificationPower c r≤sourceExponent r+5*c*R/6 := by
   rw [amplified_exponent]
   apply max_le
@@ -42,7 +41,7 @@ theorem amplified_exponent_le (c r R : ℝ) (hc : 0≤c) (hrR : r≤R)
     unfold sourceExponent
     nlinarith
 
-theorem exists_amplification_budget (R ε : ℝ) (hR : 0≤R) (hε : 0<ε) :
+theorem exists_amplification_budget   (hR : 0≤R) (hε : 0<ε) :
     ∃ c κ : ℝ, 0<c ∧ c≤1 ∧ 0<κ ∧
       ∀ r : ℝ, 0≤r → r≤R →
       1+5*amplificationPower c r+κ*(1+6*amplificationPower c r+r)≤
@@ -62,6 +61,8 @@ theorem exists_amplification_budget (R ε : ℝ) (hR : 0≤R) (hε : 0<ε) :
     apply mul_le_mul_of_nonneg_left _ hκ.le
     linarith
   nlinarith
+
+end
 
 theorem logarithmic_cost_eventually (A b P η : ℝ) (hA : 1≤A)
     (hbA : 1≤b*A) (hP : 0≤P) (hη : 0<η) :

@@ -12,23 +12,27 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
 
-def supportedCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
+
+def supportedCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ)  :=
   if hs : Supported P.val then
     if P.val∣Ideal.span {u.val} then ramifiedCorrection η u P hs x w z
     else idealUnramifiedCorrection η u P x w z
   else 1
 
-def excludedCorrection (S : Finset (Ideal O)) (η : Character) (u : FreeRow)
-    (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
+def excludedCorrection (S : Finset (Ideal HeckeFamily.O)) (η : Character) (u : FreeRow)
+    (P : PrimeIdeal) (x w z : ℂ)  :=
   if P.val∈S then 1 else supportedCorrection η u P x w z
 
-theorem continuedCorrection_first_hasProd (eps : ℝ) (S : Finset (Ideal O))
-    (hS : SourceExclusions S) (htail : FirstTail eps S)
-    (η : Character) (u : FreeRow) (x w z : ℂ)
-    (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
-    (hw : -(1/100:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re) :
+section
+variable (eps : ℝ) (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (htail : FirstTail eps S) (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow) (x w z : ℂ) (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re) (hw : -(1/100:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re)
+
+include htail hx hz hw hxw in
+theorem continuedCorrection_first_hasProd    
+       
+         
+       
+        :
     HasProd (fun P : PrimeIdeal=>excludedCorrection S η u P x w z)
       (continuedCorrection S hS η u x w z) := by
   have hp := (ramifiedFactor_hasProd S hS η u x w z).mul
@@ -48,12 +52,13 @@ theorem continuedCorrection_first_hasProd (eps : ℝ) (S : Finset (Ideal O))
       exact hP ⟨⟨P,hn⟩,rfl⟩
     simp [excludedCorrection,hm])).mp hsub
 
-theorem continuedCorrection_restore (eps : ℝ) (S : Finset (Ideal O))
-    (hS : SourceExclusions S) (htail : FirstTail eps S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S)
-    (η : Character) (u : FreeRow) (x w z : ℂ)
-    (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
-    (hw : -(1/100:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re) :
+include htail hT hx hz hw hxw in
+theorem continuedCorrection_restore    
+       
+       
+         
+       
+        :
     continuedCorrection S hS η u x w z=
       continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z*
         ∏P∈T,supportedCorrection η u P x w z := by
@@ -74,6 +79,8 @@ theorem continuedCorrection_restore (eps : ℝ) (S : Finset (Ideal O))
   by_cases hp : P∈T
   · simp [hp,hT P hp]
   · simp [hp]
+
+end
 
 end SevenEighths.ProbeHighRowFamily
 end

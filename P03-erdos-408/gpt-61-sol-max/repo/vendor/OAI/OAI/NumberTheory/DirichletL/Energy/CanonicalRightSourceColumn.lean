@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.FirstRightAdmission
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalHighColumn
@@ -56,14 +57,14 @@ open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeT
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
 open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open   CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
+open   CenteredMomentEnergyAllocatedZero
 open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+ 
+ 
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
 open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
@@ -110,23 +111,27 @@ open CenteredMomentEnergyCanonicalLowColumn CenteredMomentFirstMixedRightTranspo
 open CenteredMomentFirstNonexceptionalLocalWeightSum
 open CenteredMomentEnergyFirstRightAdmission
 
+section
+variable (Wslot:ℝ→ℂ) (aslot bslot Mcap Lslot εremove lo hi κ:ℝ) (a b Mslot εmask:ℝ) (hMslot:0≤Mslot) (hεmask:0<εmask) (haPlain:0<a) (hbPlain:0≤b) (L:ℝ) (hL:0≤L) (degree:ℕ) (S:Finset (ℕ×ℕ)) (ha:0<aslot) (hWs:Function.support Wslot⊆Set.Icc aslot bslot) (hW:ContDiff ℝ ∞ Wslot) (hMcap:0≤Mcap) (hLs:0≤Lslot) (hε:0<εremove) (hκsmall:(1/6:ℝ)≤κ) (hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta) (hκ:2*HeckeZeroSupremum.beta-1≤κ) (N:ℕ) (lower upper a0 θsource:ℝ) (hlower:0<lower) (hupper:1≤upper) (ha0:0<a0) (hθsource:0<θsource) (lows highs:α→ℝ) (hhighs:∀i,0≤highs i) (εsrc δsrc θsrc Bseed ξ saving:ℝ) (hεsrc:0<εsrc) (hδsrc:0<δsrc) (hθsrc:0<θsrc) (hξ:0<ξ) (sigma:ℝ) (hsigma:0<sigma) (hξsmall:ξ≤sigma/4) (A Pcap eta primeLoss reserve:ℝ) (hA:0≤A) (hPcap:0≤Pcap) (heta:eta<sigma/6) (hPrimeLoss:0<primeLoss) (hsigma1:sigma≤1) (hξ1:ξ≤1) (hreserve:0<reserve) (heps1:εsrc≤1) (hBseed:A+1≤Bseed)
+include Wslot aslot bslot Mcap Lslot εremove lo hi κ a b Mslot εmask hMslot hεmask haPlain hbPlain L hL degree S ha hWs hW hMcap hLs hε hκsmall hbeta hκ N lower upper a0 θsource hlower hupper ha0 hθsource lows highs hhighs εsrc δsrc θsrc Bseed ξ saving hεsrc hδsrc hθsrc hξ sigma hsigma hξsmall A Pcap eta primeLoss reserve hA hPcap heta hPrimeLoss hsigma1 hξ1 hreserve heps1 hBseed
+
 theorem actual_original_right_low_column
-    (Wslot:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
-    (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a)(hbPlain:0≤b)
-    (L:ℝ)(hL:0≤L)(degree:ℕ)(S:Finset (ℕ×ℕ))
-    (ha:0<aslot)(hWs:Function.support Wslot⊆Set.Icc aslot bslot)
-    (hW:ContDiff ℝ ∞ Wslot)(hMcap:0≤Mcap)(hLs:0≤Lslot)(hε:0<εremove)
-    (hκsmall:(1/6:ℝ)≤κ)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
-    (hκ:2*HeckeZeroSupremum.beta-1≤κ)
-    (N:ℕ)(lower upper a0 θsource:ℝ)(hlower:0<lower)(hupper:1≤upper)
-    (ha0:0<a0)(hθsource:0<θsource)
-    (lows highs:α→ℝ)(hhighs:∀i,0≤highs i)
-    (εsrc δsrc θsrc Bseed ξ saving:ℝ)
-    (hεsrc:0<εsrc)(hδsrc:0<δsrc)(hθsrc:0<θsrc)(hξ:0<ξ)
-    (sigma:ℝ)(hsigma:0<sigma)(hξsmall:ξ≤sigma/4)(A Pcap eta primeLoss reserve:ℝ)
-    (hA:0≤A)(hPcap:0≤Pcap)(heta:eta<sigma/6)(hPrimeLoss:0<primeLoss)
-    (hsigma1:sigma≤1)(hξ1:ξ≤1)(hreserve:0<reserve)
-    (heps1:εsrc≤1)(hBseed:A+1≤Bseed):
+      
+         
+        
+      
+        
+      
+     
+        
+      
+      
+     
+        
+        
+        
+       
+      :
     ∃Uprofile:Finset (ℕ×ℕ),∃Jheight:ℕ,
     ∀η₀:Character,∀Q:Ideal O,Q≤M →
       internalQ Q η₀≠0 → internalQ Q η₀≠⊤ → internalQ Q η₀≤Ideal.span {(72:O)} →
@@ -260,7 +265,7 @@ theorem actual_original_right_low_column
       _≤Z^(A+1):=hradius.1
       _≤Z^Bseed:=Real.rpow_le_rpow_of_exponent_le hZ.le hBseed
   have hamp:=(hradius.2 ⟨(C,D),hlabel⟩ E n)
-  have hTspan:=source_nominal_span src R0 seed0 K ⟨(C,D),hlabel⟩ E
+  
   let Es:=swapSubset C D E
   have hmod:F.right.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex D C=>P.val) Es*activeConductor D C}:=by
@@ -329,22 +334,22 @@ theorem actual_original_right_low_column
     · exact Or.inr (by simpa only [mul_one] using hlive.1)
 
 theorem actual_original_right_high_column
-    (Wslot:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
-    (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a)(hbPlain:0≤b)
-    (L:ℝ)(hL:0≤L)(degree:ℕ)(S:Finset (ℕ×ℕ))
-    (ha:0<aslot)(hWs:Function.support Wslot⊆Set.Icc aslot bslot)
-    (hW:ContDiff ℝ ∞ Wslot)(hMcap:0≤Mcap)(hLs:0≤Lslot)(hε:0<εremove)
-    (hκsmall:(1/6:ℝ)≤κ)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
-    (hκ:2*HeckeZeroSupremum.beta-1≤κ)
-    (N:ℕ)(lower upper a0 θsource:ℝ)(hlower:0<lower)(hupper:1≤upper)
-    (ha0:0<a0)(hθsource:0<θsource)
-    (lows highs:α→ℝ)(hhighs:∀i,0≤highs i)
-    (εsrc δsrc θsrc Bseed ξ saving:ℝ)
-    (hεsrc:0<εsrc)(hδsrc:0<δsrc)(hθsrc:0<θsrc)(hξ:0<ξ)
-    (sigma:ℝ)(hsigma:0<sigma)(hξsmall:ξ≤sigma/4)(A Pcap eta primeLoss reserve:ℝ)
-    (hA:0≤A)(hPcap:0≤Pcap)(heta:eta<sigma/6)(hPrimeLoss:0<primeLoss)
-    (hsigma1:sigma≤1)(hξ1:ξ≤1)(hreserve:0<reserve)
-    (heps1:εsrc≤1)(hBseed:A+1≤Bseed):
+      
+         
+        
+      
+        
+      
+     
+        
+      
+      
+     
+        
+        
+        
+       
+      :
     ∃Uprofile:Finset (ℕ×ℕ),∃Jheight:ℕ,
     ∀η₀:Character,∀Q:Ideal O,Q≤M →
       internalQ Q η₀≠0 → internalQ Q η₀≠⊤ → internalQ Q η₀≤Ideal.span {(72:O)} →
@@ -480,7 +485,7 @@ theorem actual_original_right_high_column
       _≤Z^(A+1):=hradius.1
       _≤Z^Bseed:=Real.rpow_le_rpow_of_exponent_le hZ.le hBseed
   have hamp:=(hradius.2 ⟨(C,D),hlabel⟩ E n)
-  have hTspan:=source_nominal_span src R0 seed0 K ⟨(C,D),hlabel⟩ E
+  
   let Es:=swapSubset C D E
   have hmod:F.right.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex D C=>P.val) Es*activeConductor D C}:=by
@@ -547,6 +552,8 @@ theorem actual_original_right_high_column
     rcases he.2 with hdead|hlive
     · exact Or.inl hdead.1
     · exact Or.inr (by simpa only [mul_one] using hlive.1)
+
+end
 
 end SevenEighths.CenteredMomentEnergyCanonicalRightSourceColumn
 

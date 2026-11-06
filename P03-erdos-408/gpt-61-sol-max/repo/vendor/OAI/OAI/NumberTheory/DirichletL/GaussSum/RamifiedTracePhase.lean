@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.GaussSum.LocalProductAssembly
 
@@ -10,18 +11,18 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
+ 
 
 namespace TraceLambdaPhase
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT  
 open scoped ComplexConjugate
 
 theorem eisLam_sq : eisLam ^ 2 = (-3 : ℂ) := by
@@ -58,17 +59,13 @@ open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE TraceLambdaPhase
 end ActualEisensteinCubic
 
 namespace PoissonFirstLocal
-open scoped Classical
+ 
 
 end PoissonFirstLocal
 
 namespace ActualEisensteinCubic
 
-section
 
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE TraceLambdaPhase
-
-end
 
 noncomputable def finiteSquarefreeRow
     {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -77,7 +74,7 @@ noncomputable def finiteSquarefreeRow
 
 theorem finiteSquarefreeRow_sixth_power
     {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i) (S : Finset ι) (a : O) :
+    (hgood : ∀ i, lambda ∉ P i)  S   a  :
     finiteSquarefreeRow P hgood S (a ^ 6) =
       if ∃ i ∈ S, a ∈ P i then 0 else 1 := by
   classical
@@ -92,38 +89,9 @@ theorem finiteSquarefreeRow_sixth_power
     apply Finset.prod_eq_one
     intro i hi
     rw [canonicalSextic_sixth_power_mask]
-    simp [show a ∉ P i by intro hai; exact hex ⟨i, hi, hai⟩]
+    simp_all
 
-theorem finiteSquarefreeRow_difference
-    {ι N : Type*} [DecidableEq N]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset N) (support : N → Finset ι)
-    (weight : N → ℂ) (a : O) :
-    (∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (a ^ 6)) =
-      ∑ n ∈ columns.filter (fun n => ∃ i ∈ support n, a ∈ P i), weight n := by
-  classical
-  rw [← Finset.sum_sub_distrib]
-  rw [Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [finiteSquarefreeRow_sixth_power]
-  by_cases h : ∃ i ∈ support n, a ∈ P i <;> simp [h]
 
-theorem finiteSquarefreeRow_difference_norm
-    {ι N : Type*} [DecidableEq N]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset N) (support : N → Finset ι)
-    (weight : N → ℂ) (a : O) :
-    ‖(∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (a ^ 6))‖ ≤
-      ∑ n ∈ columns.filter (fun n => ∃ i ∈ support n, a ∈ P i), ‖weight n‖ := by
-  rw [finiteSquarefreeRow_difference]
-  exact norm_sum_le _ _
 
 end ActualEisensteinCubic
 
@@ -139,7 +107,7 @@ end ShortDraftCusp
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT  
 
 theorem breveE_quarter_trace (a b : ℤ) :
     ShortDraftTrace.breveE
@@ -165,14 +133,14 @@ theorem breveE_quarter_trace (a b : ℤ) :
     ring
   rw [harg, Complex.exp_int_mul, Complex.exp_pi_div_two_mul_I]
 
-noncomputable def breveGaussianFourTerms (a b : ℤ) : ℂ :=
+noncomputable def breveGaussianFourTerms (a b : ℤ)  :=
   let c : ℂ := (a : ℂ) + (b : ℂ) * omega3
   (ShortDraftTrace.breveE (0 : ℂ) +
       ShortDraftTrace.breveE (((-c) / eisLam) / 4) +
       ShortDraftTrace.breveE (((-c * omega3 ^ 2) / eisLam) / 4) +
       ShortDraftTrace.breveE (((-c * (1 + omega3) ^ 2) / eisLam) / 4)) / 2
 
-theorem breveGaussianFourTerms_formula (a b : ℤ) :
+theorem breveGaussianFourTerms_formula  a b  :
     breveGaussianFourTerms a b =
       (1 + Complex.I ^ (-b) + Complex.I ^ a + Complex.I ^ (b-a)) / 2 := by
   let c : ℂ := (a : ℂ) + (b : ℂ) * omega3
@@ -200,10 +168,7 @@ theorem breveGaussianFourTerms_formula (a b : ℤ) :
       linear_combination omega3_sq
     have hc : -c * (1 + omega3) ^ 2 =
         (b : ℂ) + ((b-a : ℤ) : ℂ) * omega3 := by
-      rw [hω]
-      dsimp [c]
-      push_cast
-      linear_combination -(b : ℂ) * omega3_sq
+      grind
     rw [hc]
     exact breveE_quarter_trace b (b-a)
   dsimp [breveGaussianFourTerms]

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalSource
 
@@ -10,21 +11,21 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
 
-lemma supportedIdealProduct_injective (C : SupportedIdeal) : Function.Injective (supportedIdealProduct C) := by
+
+lemma supportedIdealProduct_injective  C  : Function.Injective (supportedIdealProduct C) := by
   intro I J h
   apply Subtype.ext
   exact mul_left_cancel₀ C.property.1 (congrArg Subtype.val h)
 
-def commonPool (F : Finset SupportedIdeal) : Finset SupportedIdeal :=
+def commonPool (F : Finset SupportedIdeal)  :=
   (F×ˢF).image (fun p=>gcdCommon p.1 p.2)
-def commonColumns (F : Finset SupportedIdeal) (C : SupportedIdeal) : Finset SupportedIdeal :=
+def commonColumns (F : Finset SupportedIdeal) (C : SupportedIdeal)  :=
   F.preimage (supportedIdealProduct C) (supportedIdealProduct_injective C).injOn
-lemma commonColumns_mem (F : Finset SupportedIdeal) (C I : SupportedIdeal) :
+lemma commonColumns_mem  F   C I  :
     I∈commonColumns F C ↔ supportedIdealProduct C I∈F := Finset.mem_preimage
 
-def commonTriples (F : Finset SupportedIdeal) : Finset ((_C : SupportedIdeal)×(SupportedIdeal×SupportedIdeal)) :=
+def commonTriples (F : Finset SupportedIdeal)  :=
   (commonPool F).sigma (fun C=>(commonColumns F C×ˢcommonColumns F C).filter (fun p=>IsCoprime p.1.val p.2.val))
 
 theorem finite_pair_gcd (F : Finset SupportedIdeal) (f : SupportedIdeal→SupportedIdeal→ℂ) :
@@ -40,20 +41,20 @@ theorem finite_pair_gcd (F : Finset SupportedIdeal) (f : SupportedIdeal→Suppor
       simp only [commonTriples,Finset.mem_sigma,Finset.mem_filter,Finset.mem_product,commonColumns_mem]
       exact ⟨Finset.mem_image.mpr ⟨p,hp,rfl⟩,⟨by rw [hl];exact (Finset.mem_product.mp hp).1,by rw [hr];exact (Finset.mem_product.mp hp).2⟩,gcd_residual_coprime _ _⟩
     · intro p hp q hq he
-      have hc := congrArg Sigma.fst he
-      have hl := congrArg (fun t : (C : SupportedIdeal)×(SupportedIdeal×SupportedIdeal)=>t.2.1) he
-      have hr := congrArg (fun t : (C : SupportedIdeal)×(SupportedIdeal×SupportedIdeal)=>t.2.2) he
+      
+      have hl := (by solve_by_elim)
+      have hr := (by solve_by_elim)
       apply Prod.ext <;> apply Subtype.ext
       · rw [←gcd_common_left p.1 p.2,←gcd_common_left q.1 q.2]
-        rw [show gcdCommon p.1 p.2=gcdCommon q.1 q.2 from hc,show gcdLeft p.1 p.2=gcdLeft q.1 q.2 from hl]
+        simp_all
       · rw [←gcd_common_right p.1 p.2,←gcd_common_right q.1 q.2]
-        rw [show gcdCommon p.1 p.2=gcdCommon q.1 q.2 from hc,show gcdRight p.1 p.2=gcdRight q.1 q.2 from hr]
+        simp_all
     · intro t ht
       have ht' : t.1∈commonPool F ∧ (t.2.1∈commonColumns F t.1 ∧ t.2.2∈commonColumns F t.1) ∧ IsCoprime t.2.1.val t.2.2.val := by
-        simpa only [commonTriples,Finset.mem_sigma,Finset.mem_filter,Finset.mem_product] using ht
+        simp_all [commonTriples]
       let u : CoprimeTriple:=⟨(t.1,t.2),ht'.2.2⟩
       refine ⟨(supportedIdealProduct t.1 t.2.1,supportedIdealProduct t.1 t.2.2),?_,?_⟩
-      · exact Finset.mem_product.mpr ⟨(commonColumns_mem F _ _).mp ht'.2.1.1,(commonColumns_mem F _ _).mp ht'.2.1.2⟩
+      · grind [commonColumns_mem]
       · have h:=congrArg Subtype.val (gcdTriple_multiply u)
         exact congrArg (fun p : SupportedIdeal×(SupportedIdeal×SupportedIdeal)=>(⟨p.1,p.2⟩ : (C : SupportedIdeal)×(SupportedIdeal×SupportedIdeal))) h
     · intro p hp

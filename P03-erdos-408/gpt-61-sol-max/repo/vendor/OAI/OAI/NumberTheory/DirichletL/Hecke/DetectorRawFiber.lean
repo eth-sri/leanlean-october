@@ -55,12 +55,12 @@ structure Fiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
 variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
-def Fiber.r (F : Fiber M H Label Slot U a ε tstar T allowance i) : ℝ := Real.logb U ((2 : ℝ)^F.left.val)
-def Fiber.m (F : Fiber M H Label Slot U a ε tstar T allowance i) : ℝ := Real.logb U ((2 : ℝ)^F.right.val)
-def Fiber.q (F : Fiber M H Label Slot U a ε tstar T allowance i) : ℝ := weightedMean F.slots F.widths F.bin
-def Fiber.inverseProfile (F : Fiber M H Label Slot U a ε tstar T allowance i) : ℝ→ℂ := inverseTest U tstar F.r
+def Fiber.r (F : Fiber M H Label Slot U a ε tstar T allowance i)  := Real.logb U ((2 : ℝ)^F.left.val)
+def Fiber.m (F : Fiber M H Label Slot U a ε tstar T allowance i)  := Real.logb U ((2 : ℝ)^F.right.val)
+def Fiber.q (F : Fiber M H Label Slot U a ε tstar T allowance i)  := weightedMean F.slots F.widths F.bin
+def Fiber.inverseProfile (F : Fiber M H Label Slot U a ε tstar T allowance i)  := inverseTest U tstar F.r
 def Fiber.physicalProduct (F : Fiber M H Label Slot U a ε tstar T allowance i)
-    (selected : Finset Slot) (u : FreeRow) : ℂ :=
+    (selected : Finset Slot) (u : FreeRow)  :=
   ∏ s∈selected,physical M H (fun u : FreeRow => u.val) F.profile F.upper F.widths F.external U u s
 
 structure Moments (F : Fiber M H Label Slot U a ε tstar T allowance i)

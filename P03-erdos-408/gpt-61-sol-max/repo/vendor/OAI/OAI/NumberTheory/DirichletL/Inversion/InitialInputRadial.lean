@@ -6,23 +6,26 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialTotalEnergy
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialInputRadial
 open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT
 open InverseInitialConjugateEnergy
-local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal]
+
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)[∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-theorem input_energy_summable (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(test:Finset ι→ℂ)
-    (a:ℂ)(Φ:𝓢(ℝ,ℂ))(Y:ℝ)(hY:0<Y):
-    Summable (fun u:O=>Φ (‖eisEmbedding u‖^2/Y)*
+section
+variable (pool:Finset ι) (Ψ:ActualEisensteinCubic.O→*ℂ) (j:ActualEisensteinCubic.O) (test:Finset ι→ℂ) (a:ℂ) (Φ:𝓢(ℝ,ℂ))
+
+theorem input_energy_summable     
+       Y (hY:0<Y):
+    Summable (fun u:ActualEisensteinCubic.O=>Φ (‖eisEmbedding u‖^2/Y)*
       (‖a*inputConjugateRow p hg pool Ψ j 1 1 test u‖^2:ℝ)):=by
   let c:Finset ι→ℂ:=fun S=>a*supportMobius (fun i=>Ideal.span {p i}) S*
     secondInputCoefficient p hg Ψ j 1 1 test S
-  have he (u:O):a*inputConjugateRow p hg pool Ψ j 1 1 test u=
+  have he (u:ActualEisensteinCubic.O):a*inputConjugateRow p hg pool Ψ j 1 1 test u=
       star (∑S∈pool.powerset,star (c S)*finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S u):=by
     simp only [inputConjugateRow,supportConjugateSum,Finset.mul_sum,star_sum,star_mul,star_star,c]
     apply Finset.sum_congr rfl
@@ -32,12 +35,12 @@ theorem input_energy_summable (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(test:Finset ι�
   exact finiteSquarefreeRow_smoothed_mean_square_summable (fun i=>Ideal.span {p i}) hg
     pool.powerset id (fun S=>star (c S)) Φ Y hY
 
-theorem finite_rows_le_input_norm (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(test:Finset ι→ℂ)
-    (a:ℂ)(Φ:𝓢(ℝ,ℂ))(hΦ:∀x,0≤(Φ x).re)
+theorem finite_rows_le_input_norm     
+      (hΦ:∀x,0≤(Φ x).re)
     (hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
-    (Y:ℝ)(hY:0<Y)(rows:Finset O)(hrows:∀u∈rows,‖eisEmbedding u‖^2≤Y):
+     Y (hY:0<Y) rows (hrows:∀u∈rows,‖eisEmbedding u‖^2≤Y):
     (∑u∈rows,‖a*inputConjugateRow p hg pool Ψ j 1 1 test u‖^2)≤
-      ‖∑'u:O,Φ (‖eisEmbedding u‖^2/Y)*
+      ‖∑'u:ActualEisensteinCubic.O,Φ (‖eisEmbedding u‖^2/Y)*
         (‖a*inputConjugateRow p hg pool Ψ j 1 1 test u‖^2:ℝ)‖:=by
   have hs:=input_energy_summable p hg pool Ψ j test a Φ Y hY
   have hr:=Complex.hasSum_re hs.hasSum
@@ -55,8 +58,10 @@ theorem finite_rows_le_input_norm (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(test:Finset
   · simp only [Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,mul_zero,sub_zero]
     exact mul_nonneg (hΦ _) (sq_nonneg _)
 
+end
+
 end SevenEighths.InverseInitialInputRadial
 
-end
+
 
 end OAI

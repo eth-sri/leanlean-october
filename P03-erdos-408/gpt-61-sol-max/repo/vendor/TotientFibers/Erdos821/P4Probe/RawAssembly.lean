@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.PatternBridgeTasks
 
@@ -13,9 +14,9 @@ open Blueprint.Graph
 
 noncomputable section
 
-lemma probeFamily_idealRaw_eq (F : FixedData) (P : PrimeGroups) (J m : ℕ)
-    (hj : m ≤ J) (block : P.BigGroup → Bool) (Q : ℕ) (h ξ θ ζ : ℝ)
-    (a b : P.BigLabels (J + F.ell)) :
+lemma probeFamily_idealRaw_eq  F   P   J m 
+     hj   block   Q   h ξ θ ζ 
+     a b  :
     ((probeFamily F P J m hj block Q h ξ).model 1 ζ).idealRaw θ a b =
       ((rawFamily F P J m).model 1 ζ).idealRaw θ a b +
       ∑ c : ProbeChoice P m block,
@@ -46,7 +47,7 @@ lemma idealFullPair_add {P : PrimeGroups} {M : ℕ}
   simp [idealFullPair, mul_add, add_mul, Finset.sum_add_distrib]
 
 lemma idealFullPair_sum {P : PrimeGroups} {M : ℕ} {ι : Type*} [Fintype ι]
-    (K : ι → P.BigLabels M → P.BigLabels M → ℂ) (f g : P.BigLabels M → ℂ) :
+    (K : ι → P.BigLabels M → P.BigLabels M → ℂ)  f g  :
     idealFullPair (fun a b => ∑ i, K i a b) f g =
       ∑ i, idealFullPair (K i) f g := by
   simp only [idealFullPair, Finset.mul_sum, Finset.sum_mul]
@@ -57,16 +58,16 @@ lemma idealFullPair_sum {P : PrimeGroups} {M : ℕ} {ι : Type*} [Fintype ι]
       exact Finset.sum_comm
     _ = _ := Finset.sum_comm
 
-lemma rawFullPair_bound (F : FixedData) (P : PrimeGroups) (J m : ℕ)
-    (hV : ∀ j, 0 < P.V j) (θ ζ : ℝ) (f g : P.BigLabels (J + F.ell) → ℂ) :
+lemma rawFullPair_bound  F   P   J m 
+    (hV : ∀ j, 0 < P.V j)  θ ζ   f g  :
     ‖idealFullPair (((rawFamily F P J m).model 1 ζ).idealRaw θ) f g‖ ≤
       idealVectorNorm P (J + F.ell) f * idealVectorNorm P (J + F.ell) g := by
   simpa [idealFullPair, idealVectorNorm] using
     rawModel_normBound F P J m hV θ ζ Finset.univ Finset.univ f g
 
-lemma probeFamily_fullPair_eq (F : FixedData) (P : PrimeGroups) (J m : ℕ)
-    (hj : m ≤ J) (block : P.BigGroup → Bool) (Q : ℕ) (h ξ θ ζ : ℝ)
-    (f g : P.BigLabels (J + F.ell) → ℂ) :
+lemma probeFamily_fullPair_eq  F   P   J m 
+     hj   block   Q   h ξ θ ζ 
+     f g  :
     idealFullPair (((probeFamily F P J m hj block Q h ξ).model 1 ζ).idealRaw θ) f g =
       idealFullPair (((rawFamily F P J m).model 1 ζ).idealRaw θ) f g +
       ∑ c : ProbeChoice P m block,
@@ -76,15 +77,14 @@ lemma probeFamily_fullPair_eq (F : FixedData) (P : PrimeGroups) (J m : ℕ)
       fun a b => ((rawFamily F P J m).model 1 ζ).idealRaw θ a b +
         ∑ c : ProbeChoice P m block, ((onePatternFamily F P J m
           (signedPattern hj block Q h ξ c)).model 1 ζ).idealRaw θ a b := by
-    funext a b
-    exact probeFamily_idealRaw_eq F P J m hj block Q h ξ θ ζ a b
+    grind [probeFamily_idealRaw_eq]
   rw [hk, idealFullPair_add, idealFullPair_sum]
 
 lemma probeFamily_comparison_bound (hbridge : PatternComparisonBridgeTask)
-    (F : FixedData) (P : PrimeGroups) (J m : ℕ) (hj : m ≤ J)
-    (block : P.BigGroup → Bool) (Q : ℕ) (h ξ θ ζ ε : ℝ)
+     F   P   J m   hj 
+     block   Q   h ξ θ ζ ε 
     (hV : ∀ j, 0 < P.V j) (hε : 0 ≤ ε) (hLC : LocalComparison P m Q h ξ ζ ε)
-    (f g : P.BigLabels (J + F.ell) → ℂ) :
+     f g  :
     let R := ((rawFamily F P J m).model 1 ζ).idealRaw θ
     let correction := fun c : ProbeChoice P m block =>
       let ν : Pattern P J F.ell m := signedPattern hj block Q h ξ c
@@ -114,7 +114,7 @@ lemma probeFamily_comparison_bound (hbridge : PatternComparisonBridgeTask)
         ε * idealVectorNorm P (J + F.ell) f * idealVectorNorm P (J + F.ell) g := by
       apply Finset.sum_le_sum
       intro c _
-      exact hbridge F P J m hj block Q h ξ θ ζ ε c hV hε hLC f g
+      solve_by_elim
     _ = _ := by simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]; ring
 
 end

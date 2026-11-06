@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.ThetaProduct
 public import Mathlib.Logic.Equiv.Fin.Basic
@@ -14,7 +15,7 @@ open MeasureTheory
 namespace SevenEighths.EisensteinTheta
 open ThetaProduct
 
-def normForm (x y : ℝ) : ℝ := x ^ 2 - x * y + y ^ 2
+def normForm (x y : ℝ)  := x ^ 2 - x * y + y ^ 2
 
 def shearEquiv : (ℤ × (ℤ × Fin 2)) ≃ (Fin 2 × (ℤ × ℤ)) where
   toFun n := (n.2.2, (n.1 - n.2.1, n.2.1))
@@ -22,11 +23,11 @@ def shearEquiv : (ℤ × (ℤ × Fin 2)) ≃ (Fin 2 × (ℤ × ℤ)) where
   left_inv n := by simp
   right_inv p := by simp
 
-def parityEquiv : (ℤ × ℤ) ≃ (Fin 2 × (ℤ × ℤ)) :=
+def parityEquiv  :=
   (Equiv.prodCongr (Equiv.refl ℤ) (Int.divModEquiv 2)).trans shearEquiv
 
-def xShift (a b L : ℝ) (e : Fin 2) : ℝ := (2 * a - b - L * e) / (2 * L)
-def yShift (b L : ℝ) (e : Fin 2) : ℝ := (b + L * e) / (2 * L)
+def xShift (a b L : ℝ) (e : Fin 2)  := (2 * a - b - L * e) / (2 * L)
+def yShift (b L : ℝ) (e : Fin 2)  := (b + L * e) / (2 * L)
 
 theorem normForm_parity (a b L : ℝ) (hL : L ≠ 0) (e : Fin 2) (i j : ℤ) :
     normForm (a + L * (i + j)) (b + L * (2 * j + e)) =
@@ -36,11 +37,11 @@ theorem normForm_parity (a b L : ℝ) (hL : L ≠ 0) (e : Fin 2) (i j : ℤ) :
   field_simp
   ring
 
-def parityPair (a b L : ℝ) (hL : 0 < L) (e : Fin 2) : WeakFEPair ℂ :=
+def parityPair (a b L : ℝ) (hL : 0 < L) (e : Fin 2)  :=
   rectangularPair (xShift a b L e) (yShift b L e) (L ^ 2) (3 * L ^ 2)
     (sq_pos_of_pos hL) (mul_pos (by norm_num) (sq_pos_of_pos hL))
 
-theorem cosetTheta_hasSum (a b L : ℝ) (hL : 0 < L) {t : ℝ} (ht : 0 < t) :
+theorem cosetTheta_hasSum  a b L   hL   {t}  (ht : 0 < t) :
     HasSum (fun n : ℤ × ℤ =>
       (Real.exp (-Real.pi * normForm (a + L * n.1) (b + L * n.2) * t) : ℂ))
       (∑ e : Fin 2, (parityPair a b L hL e).f t) := by
@@ -75,18 +76,17 @@ theorem cosetTheta_hasSum (a b L : ℝ) (hL : 0 < L) {t : ℝ} (ht : 0 < t) :
   rw [hFC.tsum_prod, tsum_fintype]
   exact (Finset.sum_congr rfl (fun e _ => (hsum e).tsum_eq)).symm
 
-@[simp] theorem parityPair_k (a b L : ℝ) (hL : 0 < L) (e : Fin 2) :
-    (parityPair a b L hL e).k = 1 := rectangularPair_k _ _ _ _ _ _
 
-def cosetConstant (a b L : ℝ) (hL : 0 < L) : ℂ :=
+
+def cosetConstant (a b L : ℝ) (hL : 0 < L)  :=
   ∑ e : Fin 2, (parityPair a b L hL e).f₀
 
-theorem parityPair_f₀ (a b L : ℝ) (hL : 0 < L) (e : Fin 2) :
+theorem parityPair_f₀  a b L   hL   e  :
     (parityPair a b L hL e).f₀ =
       (if (xShift a b L e : UnitAddCircle) = 0 then 1 else 0) *
       (if (yShift b L e : UnitAddCircle) = 0 then 1 else 0) := rfl
 
-theorem cosetConstant_eq (a b L : ℝ) (hL : 0 < L)
+theorem cosetConstant_eq  a b L   hL 
     (ha₀ : 0 ≤ a) (haL : a < L) (hb₀ : 0 ≤ b) (hbL : b < L) :
     cosetConstant a b L hL = if a = 0 ∧ b = 0 then 1 else 0 := by
   have htwo : 0 < 2 * L := by positivity
@@ -126,7 +126,7 @@ theorem cosetConstant_eq (a b L : ℝ) (hL : 0 < L)
       rw [hx, AddCircle.coe_eq_zero_iff_of_mem_Ico hxmem]
       simp [div_eq_zero_iff, hL.ne']
     simp only [hxiff, and_true]
-  · rw [ite_eq_right (fun h => hb (hy0iff.mp h)), mul_zero, ite_eq_right (fun h => hb h.2)]
+  simp_all
 
 end SevenEighths.EisensteinTheta
 

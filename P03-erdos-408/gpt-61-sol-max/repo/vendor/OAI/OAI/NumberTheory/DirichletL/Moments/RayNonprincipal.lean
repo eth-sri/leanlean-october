@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.NonprincipalGate
 public import OAI.NumberTheory.DirichletL.Hecke.MaskDescent
@@ -15,8 +16,12 @@ namespace SevenEighths.CenteredMomentRayNonprincipal
 open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion HeckePrimeRay
 local notation "O" => HeckeFamily.O
 
-theorem product_principal_descent (χ θ:Character)
-    (hp:(χ.product θ).residue=1) :
+section
+variable (χ θ:Character) (hp:(χ.product θ).residue=1)
+include χ θ hp
+
+theorem product_principal_descent  
+      :
     FiniteConductor.FactorsThroughIdeal χ.residue
       (θ.modulus.map (Ideal.Quotient.mk χ.modulus)) := by
   let : Finite (O ⧸ χ.modulus) := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
@@ -45,12 +50,14 @@ theorem product_principal_descent (χ θ:Character)
     θ.residue (Ideal.Quotient.mk θ.modulus a)=1 at hv
   simpa only [ha,hθa,map_one,mul_one] using hv
 
-theorem product_principal_inducing (χ θ:Character)
-    (hp:(χ.product θ).residue=1) :
+theorem product_principal_inducing  
+      :
     ∃ψ:Character, FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
       θ.modulus≤ψ.modulus ∧ InducedBy χ ψ :=
   HeckeMaskDescent.exists_primitive_above χ θ.modulus
     (product_principal_descent χ θ hp)
+
+end
 
 theorem actual_row_twist_nonprincipal (η χ θ:Character) (Q:Ideal O) (m A z:O)
     (hrow:∀n:O,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)
@@ -68,9 +75,7 @@ theorem all_ray_twists_nonprincipal (η χ:Character) (Q:Ideal O) (m A z:O)
     (hrow:∀n:O,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)
     (hQ:Q≤M) (hex:¬FixedInducingRow η Q m A z) :
     ∀θ:RayQuotient.Characters M H, (twistedFamily M H hH χ θ).residue≠1 := by
-  intro θ
-  exact actual_row_twist_nonprincipal η χ (HeckeRayQuotient.character M H hH θ)
-    Q m A z hrow hQ hex
+  solve_by_elim [actual_row_twist_nonprincipal, HeckeRayQuotient.character]
 
 end SevenEighths.CenteredMomentRayNonprincipal
 

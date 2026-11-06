@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P5MarkedEnergy.WeightedMean
 
@@ -15,21 +16,29 @@ namespace Erdos821.P5Marked
 open Blueprint.Analytic
 
 /-- The weight of `LocalMellinEnergyTask`. -/
-def wj (j : ℕ) (h t : ℝ) : ℝ := (1 + |h * t|) ^ (-(j : ℤ))
+def wj (j : ℕ) (h t : ℝ)  := (1 + |h * t|) ^ (-(j : ℤ))
 
-theorem wj_eq (j : ℕ) (h t : ℝ) : wj j h t = ((1 + |h * t|) ^ j)⁻¹ := by
+section
+variable (j : ℕ) (h t : ℝ)
+
+theorem wj_eq     : wj j h t = ((1 + |h * t|) ^ j)⁻¹ := by
   unfold wj; rw [zpow_neg, zpow_natCast]
 
-theorem wj_nonneg (j : ℕ) (h t : ℝ) : 0 ≤ wj j h t := by rw [wj_eq]; positivity
+theorem wj_nonneg     : 0 ≤ wj j h t := by rw [wj_eq]; positivity
 
-theorem wj_le_one (j : ℕ) (h t : ℝ) : wj j h t ≤ 1 := by
+theorem wj_le_one     : wj j h t ≤ 1 := by
   rw [wj_eq]
-  apply inv_le_one_of_one_le₀
-  exact one_le_pow₀ (by linarith [abs_nonneg (h * t)])
+  bound
 
+end
+
+section
+variable {j : ℕ} (hj : 4 ≤ j) {h L c t : ℝ} (hh : 0 < h) (hL : 1 ≤ L) (hc : |c| ≤ L / h)
+
+include hj hh hL hc in
 /-- Pointwise: beyond `L/h` the weight gains `(1+L)^(4-j)` against the shifted `wt`. -/
-theorem wj_le_shift {j : ℕ} (hj : 4 ≤ j) {h L c t : ℝ} (hh : 0 < h) (hL : 1 ≤ L)
-    (hc : |c| ≤ L / h) (ht : L / h < |t|) :
+theorem wj_le_shift          
+      (ht : L / h < |t|) :
     wj j h t ≤ ((1 + L) ^ (j - 4))⁻¹ * wt h (t + c) := by
   rw [wj_eq]; unfold wt
   have hht : L < |h * t| := by
@@ -39,7 +48,7 @@ theorem wj_le_shift {j : ℕ} (hj : 4 ≤ j) {h L c t : ℝ} (hh : 0 < h) (hL : 
     rw [abs_mul, abs_of_pos hh]
     rwa [le_div_iff₀ hh, mul_comm] at hc
   set u := 1 + |h * t| with hu
-  have hu2 : 2 ≤ u := by linarith
+  
   have hshift : 1 + |h * (t + c)| ≤ 2 * u := by
     have : |h * (t + c)| ≤ |h * t| + |h * c| := by rw [mul_add]; exact abs_add_le _ _
     linarith
@@ -47,8 +56,7 @@ theorem wj_le_shift {j : ℕ} (hj : 4 ≤ j) {h L c t : ℝ} (hh : 0 < h) (hL : 
     rw [← pow_add]; congr 1; omega
   rw [hsplit, mul_inv]
   apply mul_le_mul _ _ (by positivity) (by positivity)
-  · apply inv_anti₀ (by positivity)
-    exact pow_le_pow_left₀ (by linarith) (by linarith) _
+  · gcongr <;> first | assumption | positivity | linarith
   · apply inv_anti₀ (by positivity)
     calc (1 + |h * (t + c)|) ^ 2 ≤ (2 * u) ^ 2 :=
           pow_le_pow_left₀ (by positivity) hshift 2
@@ -57,9 +65,10 @@ theorem wj_le_shift {j : ℕ} (hj : 4 ≤ j) {h L c t : ℝ} (hh : 0 < h) (hL : 
           have h4 : 4 ≤ u ^ 2 := by nlinarith
           nlinarith [sq_nonneg u]
 
+include hj hh hL hc in
 /-- Split of the weighted integral of a shifted continuous function. -/
-theorem wj_integral_split {j : ℕ} (hj : 4 ≤ j) {h L c : ℝ} (hh : 0 < h) (hL : 1 ≤ L)
-    (hc : |c| ≤ L / h) (F : ℝ → ℂ) (hF : Continuous F)
+theorem wj_integral_split          
+      (F : ℝ → ℂ) (hF : Continuous F)
     (hFi : Integrable (fun s => wt h s * ‖F s‖ ^ 2)) :
     ∫ t, wj j h t * ‖F (t + c)‖ ^ 2 ≤
       (∫ s in (-(2 * L / h))..(2 * L / h), ‖F s‖ ^ 2) +
@@ -112,5 +121,7 @@ theorem wj_integral_split {j : ℕ} (hj : 4 ≤ j) {h L c : ℝ} (hh : 0 < h) (h
     apply le_of_eq
     congr 1
     exact integral_add_right_eq_self (fun s => wt h s * ‖F s‖ ^ 2) c
+
+end
 
 end Erdos821.P5Marked

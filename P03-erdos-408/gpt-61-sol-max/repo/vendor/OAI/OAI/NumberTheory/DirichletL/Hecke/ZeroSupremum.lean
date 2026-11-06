@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.Euler
 public import OAI.NumberTheory.DirichletL.Supremum
@@ -11,15 +12,15 @@ noncomputable section
 namespace SevenEighths.HeckeZeroSupremum
 open HeckeFamily
 
-def zeroRealParts : Set ℝ :=
+def zeroRealParts  :=
   {x | ∃ (χ : Character) (s : ℂ), 0 < s.re ∧
     (s ≠ 1 ∨ χ.residue ≠ 1) ∧ LFunction χ s = 0 ∧ s.re = x}
 
-def zeroSetWithSentinel : Set ℝ := insert (1 / 2) zeroRealParts
+def zeroSetWithSentinel  := insert (1 / 2) zeroRealParts
 
-def beta : ℝ := sSup zeroSetWithSentinel
+def beta  := sSup zeroSetWithSentinel
 
-theorem zeroRealParts_le_one {x : ℝ} (hx : x ∈ zeroRealParts) : x ≤ 1 := by
+theorem zeroRealParts_le_one  {x}  (hx : x ∈ zeroRealParts) : x ≤ 1 := by
   obtain ⟨χ, s, _, _, hz, rfl⟩ := hx
   by_contra h
   exact LFunction_ne_zero_of_one_lt_re χ (lt_of_not_ge h) hz
@@ -44,17 +45,20 @@ theorem beta_le_one : beta ≤ 1 := by
   · norm_num
   · exact zeroRealParts_le_one hx
 
-theorem zero_re_le_beta (χ : Character) {s : ℂ} (hs : 0 < s.re)
+section
+variable (χ : Character) {s : ℂ}
+
+theorem zero_re_le_beta     (hs : 0 < s.re)
     (hpole : s ≠ 1 ∨ χ.residue ≠ 1) (hz : LFunction χ s = 0) :
     s.re ≤ beta :=
   le_csSup zeroSet_bddAbove (Set.mem_insert_of_mem _ ⟨χ, s, hs, hpole, hz, rfl⟩)
 
-theorem LFunction_ne_zero_of_beta_lt (χ : Character) {s : ℂ}
+theorem LFunction_ne_zero_of_beta_lt    
     (hs : beta < s.re) (hpole : s ≠ 1 ∨ χ.residue ≠ 1) :
     LFunction χ s ≠ 0 := by
-  intro hz
-  have hpos : 0 < s.re := lt_trans (by linarith [half_le_beta]) hs
-  exact (not_lt_of_ge (zero_re_le_beta χ hpos hpole hz)) hs
+  grind [half_le_beta, zero_re_le_beta]
+
+end
 
 end SevenEighths.HeckeZeroSupremum
 

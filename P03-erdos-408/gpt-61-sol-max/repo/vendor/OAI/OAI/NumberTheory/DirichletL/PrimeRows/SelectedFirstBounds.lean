@@ -12,7 +12,7 @@ namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
 open CanonicalQuadraticSieve CanonicalRowCompletion
 
-lemma compensatedReplacement_crude (V W D M B q : ℂ) (A E : ℝ)
+lemma compensatedReplacement_crude  V W D M B q   A E 
     (hA : 0≤A) (hE : 0≤E) (hV : ‖V‖≤1) (hW : ‖W‖≤A)
     (hD : ‖D‖≤1/2) (hM : ‖M‖≤388) (hB : ‖B‖≤E) (hq : ‖q‖≤A) :
     ‖ProbeLocal.compensatedReplacement V W D M B q‖≤
@@ -36,15 +36,15 @@ lemma compensatedReplacement_crude (V W D M B q : ℂ) (A E : ℝ)
       gcongr
     _ = _ := by ring
 
-def selectedFirstBound (Q R : ℝ) : ℝ :=
+def selectedFirstBound (Q R : ℝ)  :=
   2*((Q^R+Q^(1/100:ℝ))*2*(1+Q^(1/100:ℝ))*388+Q^(1/100:ℝ)*(1+Q^(1/100:ℝ)))
 
-lemma selectedFirstBound_nonneg (Q R : ℝ) (hQ : 0≤Q) : 0≤selectedFirstBound Q R := by
+lemma selectedFirstBound_nonneg  Q R  (hQ : 0≤Q) : 0≤selectedFirstBound Q R := by
   unfold selectedFirstBound
   positivity
 
-theorem continuedCompensatedLocal_first_bound (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm) (R : ℝ) (x w z : ℂ)
+theorem continuedCompensatedLocal_first_bound  η   u   P 
+     hs  (hQ : (4:ℝ)≤P.val.absNorm)  R   x w z 
     (hx : (51/100:ℝ)≤x.re) (hxR : x.re≤R) (hw : -(1/100:ℝ)≤w.re)
     (hz : (17/50:ℝ)≤z.re) (hxw : 1≤x.re+w.re) :
     ‖continuedCompensatedLocal η u P hs x w z

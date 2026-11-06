@@ -8,16 +8,19 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedPriority
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
 open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-local notation "O" => ActualEisensteinCubic.O
 
-theorem complete_pool_whole_cube_mark {σ : Type*} [DecidableEq σ]
-    (F : Finset (Ideal O)) (hF : ∀ I∈F,Admissible I)
-    (slots : Finset σ) (lists : σ→Finset (primePool F)) (a : σ→primePool F→ℂ)
-    (T : Finset (primePool F)) (v : primePool F→₀ℕ) :
+
+section
+variable {σ : Type*} [DecidableEq σ]
+
+theorem complete_pool_whole_cube_mark    
+    (F : Finset (Ideal ActualEisensteinCubic.O)) (hF : ∀ I∈F,Admissible I)
+    (slots : Finset σ)  lists   a 
+     T   v  :
     indexedIdealMark (fun i:primePool F=>i.val) slots lists a
       ((∏i∈T,i.val)*cubeIdeal F v^3) = primeMark slots lists a (T∪v.support) := by
   let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
@@ -34,20 +37,20 @@ theorem complete_pool_whole_cube_mark {σ : Type*} [DecidableEq σ]
   rw [hspan,cubeIdeal_eq_primeProduct_span F hF v] at he
   simpa only [indexedIdealMark,poolPrimary_span F hF] using he.symm
 
-theorem reopened_marked_global_column {σ : Type*} [DecidableEq σ]
-    (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
-    (Ψ : O→*ℂ) (m f z : O) (W : ℝ→ℂ) (b X : ℝ) (hb : 0≤b) (hX : 0<X)
+theorem reopened_marked_global_column    
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m f z : ActualEisensteinCubic.O) (W : ℝ→ℂ) (b X : ℝ) (hb : 0≤b) (hX : 0<X)
     (hW : ∀ t,W t≠0→t≤b) (hD : b*X≤D)
     (slots : Finset σ)
-    (lists : σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (a : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
-    (v : primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→₀ℕ) :
+     lists 
+     a 
+     v  :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
     letI : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i=>by rw [poolPrimary_span F hF i];infer_instance
     let Y := X/(Ideal.absNorm (cubeIdeal F v):ℝ)^3
-    (∑' I:Ideal O,columnWeight (rowTwist Ψ (m*excludedGenerator S) f z) I*W ((Ideal.absNorm I:ℝ)/Y)*
+    (∑' I:Ideal ActualEisensteinCubic.O,columnWeight (rowTwist Ψ (m*excludedGenerator S) f z) I*W ((Ideal.absNorm I:ℝ)/Y)*
       indexedIdealMark (fun i:primePool F=>i.val) slots lists a (I*cubeIdeal F v^3)) =
     fixedChildRow (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
       (poolPrimary_good F hF) Finset.univ Ψ m
@@ -70,6 +73,8 @@ theorem reopened_marked_global_column {σ : Type*} [DecidableEq σ]
   rw [complete_pool_whole_cube_mark F hF slots lists a T v,mul_comm]
 
 end
+
+
 end SevenEighths.InverseMoment
 
 end OAI

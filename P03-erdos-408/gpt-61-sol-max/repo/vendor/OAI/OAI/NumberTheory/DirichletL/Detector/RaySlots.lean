@@ -15,22 +15,26 @@ open HeckeFamily ProbePhysical PNT.AnnularPrimeMass
 open PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "Id" => Ideal HeckeFamily.O
 
-def pool (C : Set Id) (S : Finset Id) (a b x : ℝ) : Finset PrimeIdeal :=
-  (annularPrimeIdeals C a b x \ S).subtype (fun P=>Prime P)
+def pool (C : Set Id) (S : Finset Id) (a b x : ℝ)  :=
+  (annularPrimeIdeals C a b x \ S).subtype (Prime)
 
-@[simp] theorem mem_pool (C : Set Id) (S : Finset Id) (a b x : ℝ) (P : PrimeIdeal) :
+section
+variable (C : Set Id) (S : Finset Id)
+include C S
+
+@[simp] theorem mem_pool      a b x   P  :
     P∈pool C S a b x ↔ P.val∈C ∧ ⌊x*a⌋₊<Ideal.absNorm P.val ∧
       Ideal.absNorm P.val≤⌊x*b⌋₊ ∧ P.val∉S := by
   simp only [pool,Finset.mem_subtype,Finset.mem_sdiff,mem_annularPrimeIdeals,P.property]
   tauto
 
-theorem pool_norm_bounds (C : Set Id) (S : Finset Id) {a b x : ℝ}
+theorem pool_norm_bounds     {a b x : ℝ}
     (ha : 0≤a) (hab : a≤b) (hx : 0<x) (P : PrimeIdeal) (hP : P∈pool C S a b x) :
     x*a<(Ideal.absNorm P.val:ℝ) ∧ (Ideal.absNorm P.val:ℝ)≤x*b :=
   norm_bounds_of_mem_annularPrimeIdeals ha hab hx
     (Finset.mem_sdiff.mp (Finset.mem_subtype.mp hP)).1
 
-lemma pool_sum (C : Set Id) (S : Finset Id) (a b x : ℝ) (f : Id→ℝ) :
+lemma pool_sum     (a b x : ℝ) (f : Id→ℝ) :
     (∑P∈pool C S a b x,f P.val)=∑P∈annularPrimeIdeals C a b x\S,f P := by
   apply Finset.sum_bij (fun P _=>P.val)
   · intro P hP
@@ -43,8 +47,8 @@ lemma pool_sum (C : Set Id) (S : Finset Id) (a b x : ℝ) (f : Id→ℝ) :
   · intro P hP
     rfl
 
-theorem pool_mass_eq_deleted (C : Set Id) (S : Finset Id) (W : ℝ→ℝ)
-    {a b x : ℝ} (ha : 0<a) (hab : a≤b)
+theorem pool_mass_eq_deleted      W 
+     {a b x}  (ha : 0<a) (hab : a≤b)
     (hsupp : Function.support W⊆Set.Ioo a b) (hx : 0<x) :
     (∑P∈pool C S a b x,W ((Ideal.absNorm P.val:ℝ)/x)*(Ideal.absNorm P.val:ℝ)^(-(5/6:ℝ)))=
       weightedPrimeSumDeleted C S W x := by
@@ -52,16 +56,22 @@ theorem pool_mass_eq_deleted (C : Set Id) (S : Finset Id) (W : ℝ→ℝ)
     weightedPrimeSumDeleted_eq_annular C S W ha hab hsupp hx]
   norm_num
 
+end
+
 variable (M : Id) [NeZero M]
-local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 include hH
 
-theorem ray_pool_mass_eventually_positive (S : Finset Id) (W : ℝ→ℝ)
-    (a b : ℝ) (ha : 0<a) (hab : a≤b) (hsupp : Function.support W⊆Set.Ioo a b)
-    (hW : ContDiff ℝ ∞ W) (hc : HasCompactSupport W) (hp : tsupport W⊆Set.Ioi 0)
-    (hW0 : ∀y,0≤W y) (hWne : W≠0) :
+section
+variable (S : Finset Id) (W : ℝ→ℝ) (a b : ℝ) (ha : 0<a) (hab : a≤b) (hsupp : Function.support W⊆Set.Ioo a b) (hW : ContDiff ℝ ∞ W) (hc : HasCompactSupport W) (hp : tsupport W⊆Set.Ioi 0) (hW0 : ∀y,0≤W y) (hWne : W≠0)
+include S W a b ha hab hsupp hW hc hp hW0 hWne
+
+theorem ray_pool_mass_eventually_positive    
+           
+         
+        :
     ∀ᶠx : ℝ in atTop,0<∑P∈pool (RayQuotient.identityClass M H) S a b x,
       W ((Ideal.absNorm P.val:ℝ)/x)*(Ideal.absNorm P.val:ℝ)^(-(5/6:ℝ)) := by
   filter_upwards [RayPrimeNormalizer.eventually_pos M H hH S W hW hc hp hW0 hWne,
@@ -69,10 +79,10 @@ theorem ray_pool_mass_eventually_positive (S : Finset Id) (W : ℝ→ℝ)
   rw [pool_mass_eq_deleted _ _ _ ha hab hsupp hx0]
   exact hx
 
-theorem ray_pool_mass_eventually_lower_bound (S : Finset Id) (W : ℝ→ℝ)
-    (a b : ℝ) (ha : 0<a) (hab : a≤b) (hsupp : Function.support W⊆Set.Ioo a b)
-    (hW : ContDiff ℝ ∞ W) (hc : HasCompactSupport W) (hp : tsupport W⊆Set.Ioi 0)
-    (hW0 : ∀y,0≤W y) (hWne : W≠0) :
+theorem ray_pool_mass_eventually_lower_bound    
+           
+         
+        :
     ∃c : ℝ,0<c ∧ ∀ᶠx : ℝ in atTop,c*x^(1/6:ℝ)/Real.log x≤
       ∑P∈pool (RayQuotient.identityClass M H) S a b x,
         W ((Ideal.absNorm P.val:ℝ)/x)*(Ideal.absNorm P.val:ℝ)^(-(5/6:ℝ)) := by
@@ -81,6 +91,8 @@ theorem ray_pool_mass_eventually_lower_bound (S : Finset Id) (W : ℝ→ℝ)
   filter_upwards [hbound,eventually_gt_atTop (0:ℝ)] with x hx hx0
   rw [pool_mass_eq_deleted _ _ _ ha hab hsupp hx0]
   exact hx
+
+end
 
 end SevenEighths.ProbeRaySlots
 end

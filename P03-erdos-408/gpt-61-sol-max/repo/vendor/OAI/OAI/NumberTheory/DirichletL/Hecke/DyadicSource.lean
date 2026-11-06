@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicScaledReflection
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical Topology ContDiff
 open Set Complex
@@ -118,6 +118,6 @@ theorem source_dyadic_bounds (R dmax τ ε e κ η : ℝ)
 
 end SevenEighths.HeckeDyadic
 
-end
+
 
 end OAI

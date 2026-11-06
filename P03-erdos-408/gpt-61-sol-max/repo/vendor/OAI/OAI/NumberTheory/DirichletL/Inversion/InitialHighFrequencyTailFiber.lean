@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailCoefficient
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailScale
@@ -21,17 +22,16 @@ def keyNorms (p : ι→O) (k : Fin 5→Finset ι) : Fin 5→ℝ :=
   fun i=>primeProductNorm p (k i)
 
 omit [DecidableEq ι] in
-theorem coordinates_sourcePoint (p : ι→O) (k : Fin 5→Finset ι) (h : O) :
+theorem coordinates_sourcePoint (p : ι→O) (k : Fin 5→Finset ι)  h  :
     coordinates p (sourcePoint k h)=
       ![keyNorms p k 0,keyNorms p k 1,keyNorms p k 2,‖eisEmbedding h‖^2,
         keyNorms p k 3,keyNorms p k 4] := by
   have hn (A : Finset ι) : ((sourceIdeal p A).absNorm:ℝ)=primeProductNorm p A := by
     rw [sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span]
     rfl
-  funext i
-  fin_cases i <;> simp [coordinates,sourcePoint,physicalCoordinates,keyNorms,hn]
+  simp_all [coordinates, sourcePoint, physicalCoordinates, keyNorms]
 
-theorem original_frequency_fiber_tail (A : ℕ) :
+theorem original_frequency_fiber_tail  A  :
     ∃ (s : Finset (ℕ×ℕ)) (C₀ : ℝ), 0<C₀ ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
       (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]

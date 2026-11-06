@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.MemoryEdge
 
@@ -15,7 +16,7 @@ open Erdos821.S2Core
 
 -- Small physical states have at least M zeros per small group.
 lemma small_zeros_ge (P : PrimeGroups) {M : ℕ} (y : P.SmallResidues) (a : P.Labels M)
-    (hphys : P.smallPhysical y a) (g : P.SmallGroup) :
+    (hphys : P.smallPhysical y a)  g  :
     M ≤ ((Finset.univ.filter (fun p : P.Prime g.val => y g p = 0)).card) := by
   classical
   -- a g.val : Fin M → Prime, injective with y=0
@@ -25,8 +26,7 @@ lemma small_zeros_ge (P : PrimeGroups) {M : ℕ} (y : P.SmallResidues) (a : P.La
     intro p hp
     simp only [Finset.mem_image, Finset.mem_univ, true_and] at hp
     obtain ⟨i, rfl⟩ := hp
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-    exact hzero i
+    aesop
   have hcard_range : (Finset.image (a g.val) Finset.univ).card = M := by
     rw [Finset.card_image_of_injective _ hinj]
     simp

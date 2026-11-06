@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstWGrowth
 public import OAI.NumberTheory.DirichletL.PrimeRows.Conductor
@@ -8,20 +9,20 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
-lemma selectedFirstBound_polynomial {Q : ℝ} (hQ : 1≤Q) : selectedFirstBound Q 2≤8192*Q^3 := by
+
+lemma selectedFirstBound_polynomial  {Q}  (hQ : 1≤Q) : selectedFirstBound Q 2≤8192*Q^3 := by
   have hQ0 : 0≤Q := by linarith
   have hsmall : Q^(1/100:ℝ)≤Q := by
     simpa using Real.rpow_le_rpow_of_exponent_le hQ (by norm_num : (1/100:ℝ)≤1)
-  have hsmall0 : 0≤Q^(1/100:ℝ) := Real.rpow_nonneg hQ0 _
+  
   have hQQ : Q≤Q^2 := by nlinarith
-  have hQ2 : 0≤Q^2 := sq_nonneg Q
-  have hQ3 : Q^2≤Q^3 := by nlinarith [mul_nonneg (sub_nonneg.mpr hQ) (sq_nonneg Q)]
+  
+  have hQ3 : Q^2≤Q^3 := by nlinarith
   unfold selectedFirstBound
   rw [Real.rpow_two]
   calc
@@ -46,8 +47,7 @@ theorem nonprincipal_first_uniform_growth :
     simpa using Real.rpow_le_rpow_of_exponent_le hψN (by norm_num : (3/5:ℝ)≤1)
   have hg := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10:ℝ)≤s.re)
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal ψ hψ] at hg
-  have hl : ‖LFunction ψ s‖≤U*(χ.modulus.absNorm:ℝ)*(3+|s.im|)^2 := by
-    exact hg.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow hU) (sq_nonneg _))
+  have hl : ‖LFunction ψ s‖≤U*(χ.modulus.absNorm:ℝ)*(3+|s.im|)^2 := hg.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow hU) (sq_nonneg _))
   have hdel : ‖HeckeFiniteDeletion.factors χ.modulus ψ s‖≤Cd*(χ.modulus.absNorm:ℝ)^2 := by
     apply (hd χ.modulus ψ s).trans
     apply mul_le_mul_of_nonneg_left _ hCd.le
@@ -64,14 +64,14 @@ theorem nonprincipal_first_uniform_growth :
     _ ≤ _ := by nlinarith [mul_nonneg (pow_nonneg (by positivity : (0:ℝ)≤χ.modulus.absNorm) 3) (sq_nonneg (3+|s.im|))]
 
 theorem calibrated_numerator_first_uniform_growth
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) :
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)  hmax  :
     ∃C : ℝ,0<C ∧ ∀u : FreeRow,u.val≠1 → ∀s : ℂ,-(1/100:ℝ)≤s.re →
       ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
         HeckeOrigin.continued (rowCharacter S hS.prime u) s‖≤
-        C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^3*(3+|s.im|)^2 := by
+        C*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^3*(3+|s.im|)^2 := by
   obtain ⟨C,hC,hmain⟩ := nonprincipal_first_uniform_growth
   let A : ℝ := (conductorConstant:ℝ)*((∏P∈S,P).absNorm:ℝ)
-  have hA : 0≤A := by dsimp [A];positivity
+  
   refine ⟨C*(1+A^3),by positivity,?_⟩
   intro u hu s hs
   by_cases hc : (calibrationForSet S hmax).residueMonoid u.val=0
@@ -83,7 +83,7 @@ theorem calibrated_numerator_first_uniform_growth
       rw [norm_star]
       exact (calibrationForSet S hmax).residueMonoid_norm_le_one _
     have hQ : ((rowCharacter S hS.prime u).modulus.absNorm:ℝ)≤
-        A*((Ideal.span {u.val}:Ideal O).absNorm:ℝ) := by
+        A*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ) := by
       have h := rowCharacter_conductor S hS.prime u
       dsimp [A]
       exact_mod_cast (by simpa only [mul_right_comm] using h)
@@ -92,14 +92,14 @@ theorem calibrated_numerator_first_uniform_growth
       _ ≤ ‖HeckeOrigin.continued (rowCharacter S hS.prime u) s‖ :=
         mul_le_of_le_one_left (norm_nonneg _) hcal
       _ ≤ C*((rowCharacter S hS.prime u).modulus.absNorm:ℝ)^3*(3+|s.im|)^2 := hg
-      _ ≤ C*(A*((Ideal.span {u.val}:Ideal O).absNorm:ℝ))^3*(3+|s.im|)^2 := by gcongr
+      _ ≤ C*(A*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ))^3*(3+|s.im|)^2 := by gcongr
       _ ≤ _ := by
         rw [mul_pow]
-        nlinarith [mul_nonneg (pow_nonneg (by positivity : (0:ℝ)≤(Ideal.span {u.val}:Ideal O).absNorm) 3)
+        nlinarith [mul_nonneg (pow_nonneg (by positivity : (0:ℝ)≤(Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm) 3)
           (sq_nonneg (3+|s.im|))]
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

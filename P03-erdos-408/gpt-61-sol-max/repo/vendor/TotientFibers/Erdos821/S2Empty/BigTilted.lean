@@ -12,7 +12,7 @@ namespace Erdos821.S2Empty
 
 open Erdos821.Blueprint.Graph
 
-theorem eta_unit_bounds (F : FixedData) (n : ℕ) (i : Fin (n + 1)) :
+theorem eta_unit_bounds  F   n   i  :
     0 ≤ eta F n i ∧ eta F n i ≤ 1 := by
   have hs : Real.sqrt F.q ≤ 1 := by
     apply Real.sqrt_le_iff.mpr
@@ -32,7 +32,7 @@ theorem eta_unit_bounds (F : FixedData) (n : ℕ) (i : Fin (n + 1)) :
   unfold eta
   constructor <;> linarith
 
-theorem baseline_prime_floor_of_admissible (F : FixedData) (P : PrimeGroups) (x : ℝ)
+theorem baseline_prime_floor_of_admissible (F : FixedData) (P : PrimeGroups)  x 
     (hP : P.Admissible F x) :
     ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
       1 - ((N x : ℝ) + 1) / Real.exp ((L x) ^ F.c) ≤

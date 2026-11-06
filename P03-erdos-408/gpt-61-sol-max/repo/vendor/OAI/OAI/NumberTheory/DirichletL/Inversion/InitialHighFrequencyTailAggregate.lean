@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailSour
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialHighFrequencyTail
@@ -25,11 +25,11 @@ theorem original_source_norm_fibers
       apply Finset.sum_le_sum
       intro k hk
       rw [Finset.sum_comm]
-      exact (norm_sum_le _ _).trans (Finset.sum_le_sum (fun r hr=>hb k hk r hr))
+      exact (norm_sum_le _ _).trans (Finset.sum_le_sum (hb k hk))
     _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul]
 
 end SevenEighths.InverseInitialHighFrequencyTail
 
-end
+
 
 end OAI

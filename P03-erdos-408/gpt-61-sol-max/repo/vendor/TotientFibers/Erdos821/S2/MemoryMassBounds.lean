@@ -17,14 +17,19 @@ open Erdos821.Blueprint.Graph
 
 variable {P : PrimeGroups}
 
-theorem tiltedMu_big_pos (F : FixedData) (n : ℕ) (hV : ∀ g, 0 < P.V g)
-    (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
-    (g : P.BigGroup) (p : P.Prime g.val) : 0 < tiltedMu F P n g.val p := by
+section
+variable (F : FixedData) (J n : ℕ) (hV : ∀ g, 0 < P.V g) (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val) (g : P.BigGroup)
+
+
+include hV hb in
+theorem tiltedMu_big_pos      
+     
+       p  : 0 < tiltedMu F P n g.val p := by
   have hp : 0 < (p.val : ℝ) := by exact_mod_cast (P.prime g.val p.val p.property).pos
   exact inv_pos.mpr (mul_pos (mul_pos (hV g.val) hp) (hb g p))
 
-theorem groupMemoryMass_nonneg (F : FixedData) (n : ℕ) (g : P.BigGroup)
-    (hmu : ∀ p : P.Prime g.val, 0 ≤ tiltedMu F P n g.val p) (z : P.Memory g.val) :
+theorem groupMemoryMass_nonneg      
+    (hmu : ∀ p : P.Prime g.val, 0 ≤ tiltedMu F P n g.val p)  z  :
     0 ≤ P.groupMemoryMass F n g.val z := by
   unfold PrimeGroups.groupMemoryMass
   apply div_nonneg
@@ -36,9 +41,10 @@ theorem groupMemoryMass_nonneg (F : FixedData) (n : ℕ) (g : P.BigGroup)
     intro u _
     positivity
 
-theorem memoryMass_nonneg (F : FixedData) (J n : ℕ) (hV : ∀ g, 0 < P.V g)
-    (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
-    (s : P.MemoryState (J + F.ell)) : 0 ≤ P.memoryMass F J n s := by
+include hV hb in
+theorem memoryMass_nonneg      
+     
+     s  : 0 ≤ P.memoryMass F J n s := by
   unfold PrimeGroups.memoryMass
   split_ifs
   · apply mul_nonneg
@@ -54,16 +60,23 @@ theorem memoryMass_nonneg (F : FixedData) (J n : ℕ) (hV : ∀ g, 0 < P.V g)
       exact groupMemoryMass_nonneg F n g (fun p => (tiltedMu_big_pos F n hV hb g p).le) _
   · exact le_refl 0
 
+end
+
+section
+variable (hAdj : GhostAdjointTask) (hRows : GhostRowsTask) (F : FixedData) (J n : ℕ) (r : MemoryParameters F) (hV : ∀ g, 0 < P.V g ∧ P.V g ≤ F.vMax) (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val) (hmu : ∀ g : P.BigGroup, ∑ p : P.Prime g.val, tiltedMu F P n g.val p ≤ 2) (i : Fin (n + 1))
+
+
+include hAdj hRows hV hb hmu in
 /-- Once the independent row and factorial-adjoint tasks are proved, all local
 modulus-one multipliers retain the same ghost L² bound. -/
-theorem scaled_ghost_domination_of_tasks (hAdj : GhostAdjointTask) (hRows : GhostRowsTask)
-    (F : FixedData) (J n : ℕ) (r : MemoryParameters F)
-    (hV : ∀ g, 0 < P.V g ∧ P.V g ≤ F.vMax)
-    (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
-    (hmu : ∀ g : P.BigGroup, ∑ p : P.Prime g.val, tiltedMu F P n g.val p ≤ 2)
-    (i : Fin (n + 1))
+theorem scaled_ghost_domination_of_tasks    
+         
+     
+     
+     
+     
     (d : ℝ) (hd : d = 1 ∨ d = 2)
-    (K : P.MemoryState (J + F.ell) → P.MemoryState (J + F.ell) → ℂ)
+     K 
     (hbound : ∀ s t, ‖K s t‖ ≤ absoluteScaledMemoryGhostKernel F J n r.rho d i s t) :
     NormBound (P.memoryMass F J n) K
       ((Real.exp (4 * max 1 F.vMax * r.v / r.rho)) ^ P.bigGroups.card) := by
@@ -116,14 +129,15 @@ theorem scaled_ghost_domination_of_tasks (hAdj : GhostAdjointTask) (hRows : Ghos
     finite_support_schur (P.memoryMass F J n) (P.memoryWeight r.v)
       K C C hm hw hC hC hrow hcol
 
+include hAdj hRows hV hb hmu in
 /-- Unscaled signed ghosts, with multipliers before choices are combined. -/
-theorem ghost_norm_of_tasks (hAdj : GhostAdjointTask) (hRows : GhostRowsTask)
-    (F : FixedData) (J n : ℕ) (r : MemoryParameters F)
-    (hV : ∀ g, 0 < P.V g ∧ P.V g ≤ F.vMax)
-    (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
-    (hmu : ∀ g : P.BigGroup, ∑ p : P.Prime g.val, tiltedMu F P n g.val p ≤ 2)
-    (i : Fin (n + 1))
-    (phi : (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℂ)
+theorem ghost_norm_of_tasks    
+         
+     
+     
+     
+     
+     phi 
     (hphi : ∀ s t c, ‖phi s t c‖ ≤ 1) :
     NormBound (P.memoryMass F J n) (memoryGhostKernel F J n r.rho i phi)
       ((Real.exp (4 * max 1 F.vMax * r.v / r.rho)) ^ P.bigGroups.card) := by
@@ -134,6 +148,8 @@ theorem ghost_norm_of_tasks (hAdj : GhostAdjointTask) (hRows : GhostRowsTask)
     simp only [absoluteScaledMemoryGhostKernel, absoluteMemoryGhostKernel, one_pow, mul_one]
   rw [he]
   exact memoryGhostKernel_norm_le F J n r.rho i phi hphi s t
+
+end
 
 
 end Erdos821.S2Core

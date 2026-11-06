@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.ParametersHighDataFine
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainMomentParameters
@@ -22,9 +23,9 @@ open CenteredMomentEnergyBands CenteredMomentEnergyState CenteredMomentInduction
 open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState
 open CenteredMomentDetectorPlainMomentParameters CenteredMomentNaturalFixedRaySource
 open CenteredMomentFiniteProfileExceptional CenteredMomentDetectorPlainFiberSource
-local notation "O"=>HeckeFamily.O
 
-def PositiveFineSourceInput {Δ:ℝ}{D:Parameters.HighData Δ}(S:SourceData D)(mesh:ℝ):Prop:=
+
+def PositiveFineSourceInput {Δ}{D:Parameters.HighData Δ}(S:SourceData D)(mesh:ℝ):=
   ∀bΦ:ℝ,0<bΦ→∃degree:ℕ,∃seminorms:Finset (ℕ×ℕ),
     ∀η₀:Character,∃C:ℝ,0<C ∧ ∀ᶠU:ℝ in atTop,
       PositiveAt (α:=Fin D.N) S.modulus ⊤ le_top (fun x=>conj (S.W x))
@@ -108,15 +109,14 @@ theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
       ((Z^d)^(F.widths s.val)) (33/50) (-(F.external s.val).im) I)
     0 ((Z^d)^F.m) ((Z^d)^F.m) state.radial.keep state.radial.profile state.radial.scale
   have hnorm:=hprofile degree F.reverse j k hjk σ hσ height t hheight (abs_le.mpr ht)
-  have hp:0≤(detectorProfiles F.reverse j k σ t).control seminorms ^2:=sq_nonneg _
+  
   have hexp:state.width+stageError D≤1+D.t:=by
     rw [hwidthstate];linarith [(fixed_parameters D).2.2.2.1]
   calc
     _≤_:=hrow j k σ t
     _≤C label*diagonalControl state.radial.profile*
         (detectorProfiles F.reverse j k σ t).control seminorms ^2*
-        (1+|(0:ℝ)|+height)^degree*(Z^d)^(state.width+stageError D):=by
-      exact heq.le.trans hpos
+        (1+|(0:ℝ)|+height)^degree*(Z^d)^(state.width+stageError D):=heq.le.trans hpos
     _≤(Cfinal*(1+height)^(J+degree))*(Z^d)^(1+D.t):=by
       rw [hΦ]
       have hpow:=Real.rpow_le_rpow_of_exponent_le hU.le hexp

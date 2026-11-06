@@ -15,7 +15,7 @@ open ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation CenteredM
 local notation "O" => ActualEisensteinCubic.O
 
 lemma finiteField_local_norm {F : Type*} [Field F] [Fintype F]
-    (χ : MulChar F ℂ) (u v k : F) (huv : u≠0 ∨ v≠0) :
+    (χ : MulChar F ℂ)  u v k  (huv : u≠0 ∨ v≠0) :
     ‖localCorrelation χ u v k‖≤(Fintype.card F:ℝ) := by
   rcases huv with hu|hv
   · exact fullCorrelation_bezout_norm u v u⁻¹ 0 k (by simp [hu]) χ χ
@@ -31,8 +31,12 @@ def localExtension (P : Ideal O) [P.IsMaximal] (hg : goodLambda∉P)
     localCorrelation (actualSextic P hg^c) (Ideal.Quotient.mk P n₁)
       (Ideal.Quotient.mk P n₂) (Ideal.Quotient.mk P k)
 
-theorem localExtension_periodic (P : Ideal O) [P.IsMaximal] (hg : goodLambda∉P)
-    (c : ℕ) (n₁ n₂ m₁ m₂ k l : O)
+section
+variable (P : Ideal O) [P.IsMaximal] (hg : goodLambda∉P) (c : ℕ)
+include P hg c
+
+theorem localExtension_periodic      
+       n₁ n₂ m₁ m₂ k l 
     (h₁ : n₁-m₁∈P) (h₂ : n₂-m₂∈P) (hk : k-l∈P) :
     localExtension P hg c n₁ n₂ k=localExtension P hg c m₁ m₂ l := by
   have he₁ := Ideal.Quotient.eq.mpr h₁
@@ -44,8 +48,12 @@ theorem localExtension_periodic (P : Ideal O) [P.IsMaximal] (hg : goodLambda∉P
     rw [←Ideal.Quotient.eq_zero_iff_mem,he₂,Ideal.Quotient.eq_zero_iff_mem]
   simp only [localExtension,hm₁,hm₂,he₁,he₂,hek]
 
-theorem localExtension_norm (P : Ideal O) [P.IsMaximal] (hg : goodLambda∉P)
-    (c : ℕ) (hc : 1≤c) (n₁ n₂ k : O) :
+section
+variable (hc : 1≤c)
+include hc
+
+theorem localExtension_norm      
+         n₁ n₂ k  :
     ‖localExtension P hg c n₁ n₂ k‖≤(Ideal.absNorm P:ℝ)^c := by
   let : Fintype (O⧸P) := Fintype.ofFinite _
   let : Field (O⧸P) := Ideal.Quotient.field P
@@ -66,8 +74,8 @@ theorem localExtension_norm (P : Ideal O) [P.IsMaximal] (hg : goodLambda∉P)
       simpa only [Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card] using hh
     _ = _ := by rw [←pow_succ,Nat.sub_add_cancel hc]
 
-theorem primePower_common_extension (P : Ideal O) [P.IsMaximal] (hg : goodLambda∉P)
-    (c : ℕ) (hc : 1≤c) [Fintype (O⧸P^c)] (n₁ n₂ k : O)
+theorem primePower_common_extension      
+        [Fintype (O⧸P^c)]  n₁ n₂ k 
     (hn : n₁∉P ∨ n₂∉P) :
     fullCorrelation (fun x : O⧸P^c=>Ideal.Quotient.mk _ n₂*x)
       (fun y : O⧸P^c=>Ideal.Quotient.mk _ n₁*y)
@@ -98,6 +106,10 @@ theorem primePower_common_extension (P : Ideal O) [P.IsMaximal] (hg : goodLambda
       (primePowerReduction P hc (Ideal.Quotient.mk _ n₁)) (primePowerReduction P hc v)
       (primePowerReduction P hc (Ideal.Quotient.mk _ k))=_
     simp only [hv,primePowerReduction,Ideal.Quotient.factor_mk]
+
+end
+
+end
 
 end SevenEighths.ProbeGramCommon
 end

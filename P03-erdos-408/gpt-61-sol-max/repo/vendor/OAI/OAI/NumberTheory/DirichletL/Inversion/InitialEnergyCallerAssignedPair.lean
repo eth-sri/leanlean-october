@@ -7,19 +7,19 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerOpposite
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerAssignedPair
 open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
 open InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite
-local notation "Eis"=>ActualEisensteinCubic.O
+
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
 omit [DecidableEq ι] in
-theorem child_erase {J:ℕ}(u:Eisˣ)(x:Source (ι:=ι) J) :
+theorem child_erase {J:ℕ} u (x:Source (ι:=ι) J) :
     initialChild (toTuple p (sectorSource u (erase x)))=
       initialChild (toTuple p (sectorSource u x)) := rfl
 
@@ -28,12 +28,12 @@ include hp in
 theorem original_assigned_pair
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (S:Finset (Source (ι:=ι) 0))(u:Eisˣ)
+    (S:Finset (Source (ι:=ι) 0))(u:ActualEisensteinCubic.Oˣ)
     (J₁ J₂:Finset σ)(L₁ L₂:σ→Finset ι)(a₁ a₂:σ→ι→ℂ)
     (ha₁:∀i∈J₁,∀q∈L₁ i,‖a₁ i q‖≤1)
     (ha₂:∀i∈J₂,∀q∈L₂ i,‖a₂ i q‖≤1)
     (hdiv:∀x∈S,x.divisor⊆x.common)
-    (labels:Finset (Ideal Eis))(rows:Finset Eis)
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(rows:Finset ActualEisensteinCubic.O)
     (hlabels:∀f∈labels,f≠0)
     (hchild:∀x∈S,(initialChild (toTuple p (sectorSource u x))).2.1∈labels ∧
       (initialChild (toTuple p (sectorSource u x))).2.2∈rows)
@@ -71,6 +71,6 @@ theorem original_assigned_pair
 
 end SevenEighths.InverseInitialEnergyCallerAssignedPair
 
-end
+
 
 end OAI

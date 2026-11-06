@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.MultiplicativeSieve
 public import Mathlib.NumberTheory.Harmonic.Int
@@ -11,28 +12,28 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set   MeasureTheory
 
 open scoped Topology ContDiff
 
 open Asymptotics
 
-open Asymptotics
+ 
 
-open Asymptotics
+ 
 
 open scoped Classical
 
-open scoped ContDiff
+ 
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution   Pointwise
 
 open scoped ComplexConjugate
 
 theorem monotone_weighted_prefix_bound (g : ℕ→ℂ) (w : ℕ→ℝ) (hw : Monotone w)
-    (hw0 : 0≤w 0) {B : ℝ} (hB : 0≤B) (N : ℕ)
+    (hw0 : 0≤w 0)  {B}  (hB : 0≤B)  N 
     (hg : ∀ n≤N,‖∑ i∈Finset.range n,g i‖≤B) :
     ‖∑ i∈Finset.range N,(w i:ℂ)*g i‖≤2*w (N-1)*B := by
   have hwpos (n : ℕ) : 0≤w n := hw0.trans (hw (Nat.zero_le n))
@@ -60,13 +61,15 @@ theorem log_nat_monotone : Monotone (fun n:ℕ=>Real.log n) := by
   by_cases hn : n=0
   · subst n
     simp only [Nat.cast_zero,Real.log_zero]
-    by_cases hm : m=0
-    · simp [hm]
-    · exact Real.log_nonneg (by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hm)
+    positivity
   · exact Real.log_le_log (by exact_mod_cast Nat.pos_of_ne_zero hn) (by exact_mod_cast hnm)
 
-theorem primitive_log_character_bound {q : ℕ} (hq : 1<q) {χ : DirichletCharacter ℂ q}
-    (hχ : χ.IsPrimitive) (N : ℕ) :
+section
+variable {q : ℕ} (hq : 1<q) {χ : DirichletCharacter ℂ q} (hχ : χ.IsPrimitive) (X D : ℕ) (a : ℕ→ℂ)
+
+include hq hχ in
+theorem primitive_log_character_bound      
+       N  :
     ‖∑ n∈Finset.range N,(Real.log n:ℂ)*χ (n:ZMod q)‖≤
       2*Real.log N*(Real.sqrt q*(harmonic q:ℝ)) := by
   have hH : 0≤(harmonic q:ℝ) := by exact_mod_cast (harmonic_pos (by omega : q≠0)).le
@@ -78,8 +81,9 @@ theorem primitive_log_character_bound {q : ℕ} (hq : 1<q) {χ : DirichletCharac
   exact h.trans (mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_left (log_nat_monotone (Nat.sub_le N 1)) (by norm_num)) hB)
 
-theorem primitive_typeI_log_bound {q : ℕ} (hq : 1<q) {χ : DirichletCharacter ℂ q}
-    (hχ : χ.IsPrimitive) (X D : ℕ) (a : ℕ→ℂ) :
+include hq hχ in
+theorem primitive_typeI_log_bound      
+          :
     ‖∑ d∈Finset.Icc 1 D,a d*χ (d:ZMod q)*
       (∑ n∈Finset.range (X/d+1),(Real.log n:ℂ)*χ (n:ZMod q))‖≤
       (∑ d∈Finset.Icc 1 D,‖a d‖)*
@@ -101,8 +105,9 @@ theorem primitive_typeI_log_bound {q : ℕ} (hq : 1<q) {χ : DirichletCharacter 
       · exact norm_nonneg _
     _ = _ := by rw [Finset.sum_mul]
 
-theorem primitive_typeI_bound {q : ℕ} (hq : 1<q) {χ : DirichletCharacter ℂ q}
-    (hχ : χ.IsPrimitive) (X D : ℕ) (a : ℕ→ℂ) :
+include hq hχ in
+theorem primitive_typeI_bound      
+          :
     ‖∑ d∈Finset.Icc 1 D,a d*χ (d:ZMod q)*
       (∑ n∈Finset.range (X/d+1),χ (n:ZMod q))‖≤
       (∑ d∈Finset.Icc 1 D,‖a d‖)*(Real.sqrt q*(harmonic q:ℝ)) := by
@@ -121,18 +126,28 @@ theorem primitive_typeI_bound {q : ℕ} (hq : 1<q) {χ : DirichletCharacter ℂ 
       · exact norm_nonneg _
     _ = _ := by rw [Finset.sum_mul]
 
-noncomputable def sequenceSize {N : ℕ} (a : Fin N→ℂ) : ℝ :=
+end
+
+noncomputable def sequenceSize {N } (a : Fin N→ℂ)  :=
   Real.sqrt (∑ n:Fin N,‖a n‖^2)
 
-theorem sequenceSize_nonneg {N : ℕ} (a : Fin N→ℂ) : 0 ≤ sequenceSize a := Real.sqrt_nonneg _
+section
+variable {N : ℕ} (a : Fin N→ℂ)
 
-theorem sequenceSize_sq {N : ℕ} (a : Fin N→ℂ) :
+theorem sequenceSize_nonneg     : 0 ≤ sequenceSize a := Real.sqrt_nonneg _
+
+theorem sequenceSize_sq     :
     sequenceSize a^2=∑ n:Fin N,‖a n‖^2 := Real.sq_sqrt (Finset.sum_nonneg (fun _ _=>sq_nonneg _))
 
-noncomputable def sequenceMask {N : ℕ} (p : Fin N→Prop) (a : Fin N→ℂ) : Fin N→ℂ :=
+end
+
+noncomputable def sequenceMask {N } (p : Fin N→Prop) (a : Fin N→ℂ) : Fin N→ℂ :=
   fun n=>if p n then a n else 0
 
-theorem sequenceMask_size_le {N : ℕ} (p : Fin N→Prop) (a : Fin N→ℂ) :
+section
+variable {M N : ℕ} (p : Fin N→Prop) (a : Fin N→ℂ)
+
+theorem sequenceMask_size_le       :
     sequenceSize (sequenceMask p a) ≤ sequenceSize a := by
   apply Real.sqrt_le_sqrt
   apply Finset.sum_le_sum
@@ -140,7 +155,7 @@ theorem sequenceMask_size_le {N : ℕ} (p : Fin N→Prop) (a : Fin N→ℂ) :
   dsimp [sequenceMask]
   split <;> simp
 
-theorem sequenceMask_size_partition {N : ℕ} (p : Fin N→Prop) (a : Fin N→ℂ) :
+theorem sequenceMask_size_partition       :
     sequenceSize (sequenceMask p a)^2+sequenceSize (sequenceMask (fun n=>¬p n) a)^2=
       sequenceSize a^2 := by
   rw [sequenceSize_sq,sequenceSize_sq,sequenceSize_sq,←Finset.sum_add_distrib]
@@ -148,7 +163,7 @@ theorem sequenceMask_size_partition {N : ℕ} (p : Fin N→Prop) (a : Fin N→�
   intro n _
   by_cases h:p n <;> simp [sequenceMask,h]
 
-theorem sequenceMask_cauchy {M N : ℕ} (p : Fin M→Prop) (r : Fin N→Prop)
+theorem sequenceMask_cauchy   (p : Fin M→Prop) (r : Fin N→Prop)
     (a : Fin M→ℂ) (b : Fin N→ℂ) :
     sequenceSize (sequenceMask p a)*sequenceSize (sequenceMask r b)+
       sequenceSize (sequenceMask (fun m=>¬p m) a)*sequenceSize (sequenceMask (fun n=>¬r n) b) ≤
@@ -161,15 +176,20 @@ theorem sequenceMask_cauchy {M N : ℕ} (p : Fin M→Prop) (r : Fin N→Prop)
   exact (sq_le_sq₀ (add_nonneg (mul_nonneg (sequenceSize_nonneg _) (sequenceSize_nonneg _))
     (mul_nonneg (sequenceSize_nonneg _) (sequenceSize_nonneg _))) (mul_nonneg (sequenceSize_nonneg a) (sequenceSize_nonneg b))).mp h
 
-noncomputable def sieveBilinearConstant (Q M N : ℕ) : ℝ :=
+end
+
+noncomputable def sieveBilinearConstant (Q M N : ℕ)  :=
   Real.sqrt ((M:ℝ)+(Q:ℝ)^2*(harmonic (Q^2):ℝ))*
     Real.sqrt ((N:ℝ)+(Q:ℝ)^2*(harmonic (Q^2):ℝ))
 
-theorem sieveBilinearConstant_nonneg (Q M N : ℕ) : 0 ≤ sieveBilinearConstant Q M N := by
+section
+variable (Q M N : ℕ)
+
+theorem sieveBilinearConstant_nonneg   : 0 ≤ sieveBilinearConstant Q M N := by
   unfold sieveBilinearConstant
   positivity
 
-theorem bilinear_primitive_mean_le (Q M N : ℕ) (a : Fin M→ℂ) (b : Fin N→ℂ) :
+theorem bilinear_primitive_mean_le   (a : Fin M→ℂ) (b : Fin N→ℂ) :
     primitiveCharacterMean Q (fun _ χ=>‖sequenceCharacterSum a χ*sequenceCharacterSum b χ‖) ≤
       sieveBilinearConstant Q M N*sequenceSize a*sequenceSize b := by
   have h:=bilinear_multiplicative_large_sieve Q M N a b
@@ -182,34 +202,41 @@ theorem bilinear_primitive_mean_le (Q M N : ℕ) (a : Fin M→ℂ) (b : Fin N→
   have he : (sieveBilinearConstant Q M N*sequenceSize a*sequenceSize b)^2=
       (((M:ℝ)+(Q:ℝ)^2*(harmonic (Q^2):ℝ))*(∑ m:Fin M,‖a m‖^2))*
       (((N:ℝ)+(Q:ℝ)^2*(harmonic (Q^2):ℝ))*(∑ n:Fin N,‖b n‖^2)) := by
-    rw [mul_pow,mul_pow,sequenceSize_sq,sequenceSize_sq]
-    unfold sieveBilinearConstant
-    rw [mul_pow,Real.sq_sqrt hM,Real.sq_sqrt hN]
-    ring
+    grind [sequenceSize_sq, sieveBilinearConstant]
   rw [←he] at h
   exact (sq_le_sq₀ (primitiveCharacterMean_nonneg _ (fun _ _=>norm_nonneg _))
     (mul_nonneg (mul_nonneg (sieveBilinearConstant_nonneg _ _ _) (sequenceSize_nonneg _))
       (sequenceSize_nonneg _))).mp h
 
-theorem primitiveCharacterMean_mono {Q : ℕ}
-    {f g : (q:Fin Q)→DirichletCharacter ℂ (q.val+1)→ℝ}
+end
+
+section
+variable {Q : ℕ}
+
+theorem primitiveCharacterMean_mono  
+     {f g} 
     (h : ∀ q χ,f q χ ≤ g q χ) : primitiveCharacterMean Q f ≤ primitiveCharacterMean Q g := by
   apply Finset.sum_le_sum
   intro q _
-  exact mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun χ _=>h q χ)) (by positivity)
+  bound
 
-theorem primitiveCharacterMean_add {Q : ℕ}
-    (f g : (q:Fin Q)→DirichletCharacter ℂ (q.val+1)→ℝ) :
+theorem primitiveCharacterMean_add  
+     f g  :
     primitiveCharacterMean Q (fun q χ=>f q χ+g q χ)=
       primitiveCharacterMean Q f+primitiveCharacterMean Q g := by
   simp only [primitiveCharacterMean,Finset.sum_add_distrib,mul_add]
 
-noncomputable def triangularCharacterSum {q M N : ℕ} (a : Fin M→ℂ) (b : Fin N→ℂ)
-    (t : Fin M→ℕ) (χ : DirichletCharacter ℂ q) : ℂ :=
+end
+
+noncomputable def triangularCharacterSum {q M N } (a : Fin M→ℂ) (b : Fin N→ℂ)
+    (t : Fin M→ℕ) (χ : DirichletCharacter ℂ q)  :=
   ∑ m:Fin M,∑ n:Fin N,if n.val<t m then a m*b n*χ (m.val:ZMod q)*χ (n.val:ZMod q) else 0
 
-theorem triangularCharacterSum_split {q M N : ℕ} (a : Fin M→ℂ) (b : Fin N→ℂ)
-    (t : Fin M→ℕ) (χ : DirichletCharacter ℂ q) (H : ℕ) :
+section
+variable {q M N L : ℕ} (a : Fin M→ℂ) (b : Fin N→ℂ) (t : Fin M→ℕ) (χ : DirichletCharacter ℂ q)
+
+theorem triangularCharacterSum_split      
+         H  :
     triangularCharacterSum a b t χ=
       triangularCharacterSum (sequenceMask (fun m=>t m ≤ H) a) (sequenceMask (fun n=>n.val<H) b) t χ+
       sequenceCharacterSum (sequenceMask (fun m=>¬t m ≤ H) a) χ*
@@ -225,8 +252,8 @@ theorem triangularCharacterSum_split {q M N : ℕ} (a : Fin M→ℂ) (b : Fin N�
   by_cases hm:t m ≤ H <;> by_cases hn:n.val<H <;> by_cases ht:n.val<t m <;>
     simp [sequenceMask,hm,hn,ht] <;> (try omega) ; ring
 
-theorem triangularCharacterSum_single {q M N L : ℕ} (a : Fin M→ℂ) (b : Fin N→ℂ)
-    (t : Fin M→ℕ) (χ : DirichletCharacter ℂ q) (hb : ∀ n,b n≠0→n.val=L) :
+theorem triangularCharacterSum_single      
+        (hb : ∀ n,b n≠0→n.val=L) :
     triangularCharacterSum a b t χ=
       sequenceCharacterSum (sequenceMask (fun m=>L<t m) a) χ*sequenceCharacterSum b χ := by
   unfold triangularCharacterSum sequenceCharacterSum
@@ -241,8 +268,13 @@ theorem triangularCharacterSum_single {q M N L : ℕ} (a : Fin M→ℂ) (b : Fin
   · have he:=hb n hn
     by_cases ht:L<t m <;> simp [sequenceMask,he,ht] ; ring
 
-theorem triangular_primitive_mean_dyadic (Q M N k L : ℕ) (a : Fin M→ℂ) (b : Fin N→ℂ)
-    (t : Fin M→ℕ) (hb : ∀ n,b n≠0→L ≤ n.val ∧ n.val<L+2^k) :
+end
+
+section
+variable (Q M N k L : ℕ) (hk : N ≤ 2^k) (a : Fin M→ℂ) (b : Fin N→ℂ) (t : Fin M→ℕ)
+
+theorem triangular_primitive_mean_dyadic      
+      (hb : ∀ n,b n≠0→L ≤ n.val ∧ n.val<L+2^k) :
     primitiveCharacterMean Q (fun _ χ=>‖triangularCharacterSum a b t χ‖) ≤
       ((k:ℝ)+1)*sieveBilinearConstant Q M N*sequenceSize a*sequenceSize b := by
   induction k generalizing L a b with
@@ -263,20 +295,9 @@ theorem triangular_primitive_mean_dyadic (Q M N k L : ℕ) (a : Fin M→ℂ) (b 
     let b₀:=sequenceMask r b
     let b₁:=sequenceMask (fun n=>¬r n) b
     have hb₀ : ∀ n,b₀ n≠0→L ≤ n.val ∧ n.val<L+2^k := by
-      intro n hn
-      have hn' : b n≠0 ∧ n.val<H := by
-        dsimp [b₀,sequenceMask,r] at hn
-        split at hn <;> simp_all
-      exact ⟨(hb n hn'.1).1,hn'.2⟩
+      grind [sequenceMask]
     have hb₁ : ∀ n,b₁ n≠0→H ≤ n.val ∧ n.val<H+2^k := by
-      intro n hn
-      have hn' : b n≠0 ∧ ¬n.val<H := by
-        dsimp [b₁,sequenceMask,r] at hn
-        split at hn <;> simp_all
-      have h:=hb n hn'.1
-      simp only [pow_succ] at h
-      dsimp [H]
-      omega
+      grind [sequenceMask]
     have hsplit := primitiveCharacterMean_mono (Q:=Q)
       (f:=fun _ χ=>‖triangularCharacterSum a b t χ‖)
       (g:=fun _ χ=>‖triangularCharacterSum a₀ b₀ t χ‖+
@@ -296,19 +317,17 @@ theorem triangular_primitive_mean_dyadic (Q M N k L : ℕ) (a : Fin M→ℂ) (b 
     have hk : 0 ≤ (k:ℝ)+1 := by positivity
     have hp:=mul_le_mul_of_nonneg_left hpair (mul_nonneg hk hC)
     have hc:=mul_le_mul_of_nonneg_left hcross hC
-    change sequenceSize a₀*sequenceSize b₀+sequenceSize a₁*sequenceSize b₁ ≤ _ at hpair
-    change ((k:ℝ)+1)*sieveBilinearConstant Q M N*
-      (sequenceSize a₀*sequenceSize b₀+sequenceSize a₁*sequenceSize b₁) ≤ _ at hp
-    push_cast
-    nlinarith only [hsplit,h0,h1,hR,hp,hc]
+    grind
 
-theorem triangular_primitive_mean_le (Q M N k : ℕ) (hk : N ≤ 2^k)
-    (a : Fin M→ℂ) (b : Fin N→ℂ) (t : Fin M→ℕ) :
+include hk in
+theorem triangular_primitive_mean_le    
+          :
     primitiveCharacterMean Q (fun _ χ=>‖triangularCharacterSum a b t χ‖) ≤
       ((k:ℝ)+1)*sieveBilinearConstant Q M N*sequenceSize a*sequenceSize b := by
   apply triangular_primitive_mean_dyadic Q M N k 0 a b t
-  intro n _
-  exact ⟨Nat.zero_le _,by simpa only [zero_add] using n.isLt.trans_le hk⟩
+  grind
+
+end
 
 theorem sum_divisorsAntidiagonal_hyperbola (X : ℕ) (F : ℕ→ℕ→ℂ) :
     (∑ n∈Finset.Icc 1 X,∑ p∈n.divisorsAntidiagonal,F p.1 p.2)=
@@ -321,26 +340,13 @@ theorem sum_divisorsAntidiagonal_hyperbola (X : ℕ) (F : ℕ→ℕ→ℂ) :
     obtain ⟨hdm,hn0⟩:=Nat.mem_divisorsAntidiagonal.mp hdm
     dsimp only at hn1 hnX hdm hn0
     have hd : 0 < d := by
-      by_contra hh
-      have he : d=0 := by omega
-      simp only [he,zero_mul] at hdm
-      omega
+      nlinarith
     have hm : 0 < m := by
-      by_contra hh
-      have he : m=0 := by omega
-      simp only [he,mul_zero] at hdm
-      omega
+      nlinarith
     exact Finset.mem_sigma.mpr ⟨Finset.mem_Icc.mpr ⟨hd,by nlinarith⟩,
       Finset.mem_Icc.mpr ⟨hm,(Nat.le_div_iff_mul_le hd).mpr (by nlinarith)⟩⟩
   · rintro ⟨n,d,m⟩ hx ⟨n',d',m'⟩ hy he
-    have hv:(d,m)=(d',m'):=by simpa using congrArg (fun x:(d:ℕ)×ℕ=>(x.1,x.2)) he
-    have hd:d=d':=congrArg Prod.fst hv
-    have hm:m=m':=congrArg Prod.snd hv
-    have hn: d*m = n := (Nat.mem_divisorsAntidiagonal.mp (Finset.mem_sigma.mp hx).2).1
-    have hn': d'*m' = n' := (Nat.mem_divisorsAntidiagonal.mp (Finset.mem_sigma.mp hy).2).1
-    subst d'; subst m'
-    have hnn:n=n':=hn.symm.trans hn'
-    cases hnn; rfl
+    simp_all
   · rintro ⟨d,m⟩ hy
     obtain ⟨hd,hm⟩:=Finset.mem_sigma.mp hy
     obtain ⟨hd1,hdX⟩:=Finset.mem_Icc.mp hd
@@ -351,12 +357,15 @@ theorem sum_divisorsAntidiagonal_hyperbola (X : ℕ) (F : ℕ→ℕ→ℂ) :
       Nat.mem_divisorsAntidiagonal.mpr ⟨rfl,by positivity⟩⟩
   · intro x _; rfl
 
-noncomputable def arithmeticCharacterSum {q : ℕ} (X : ℕ) (f : ArithmeticFunction ℝ)
-    (χ : DirichletCharacter ℂ q) : ℂ :=
+noncomputable def arithmeticCharacterSum {q } (X : ℕ) (f : ArithmeticFunction ℝ)
+    (χ : DirichletCharacter ℂ q)  :=
   ∑ n∈Finset.Icc 1 X,(f n:ℂ)*χ (n:ZMod q)
 
-theorem arithmeticCharacterSum_convolution {q : ℕ} (X : ℕ)
-    (f g : ArithmeticFunction ℝ) (χ : DirichletCharacter ℂ q) :
+section
+variable {q : ℕ} (X : ℕ) (f g : ArithmeticFunction ℝ) (U V : ℕ) (χ : DirichletCharacter ℂ q)
+
+theorem arithmeticCharacterSum_convolution    
+        :
     arithmeticCharacterSum X (f*g) χ=
       ∑ d∈Finset.Icc 1 X,(f d:ℂ)*χ (d:ZMod q)*
         (∑ m∈Finset.Icc 1 (X/d),(g m:ℂ)*χ (m:ZMod q)) := by
@@ -378,13 +387,13 @@ theorem arithmeticCharacterSum_convolution {q : ℕ} (X : ℕ)
       rw [sum_divisorsAntidiagonal_hyperbola X (fun d m=>(f d:ℂ)*χ (d:ZMod q)*((g m:ℂ)*χ (m:ZMod q)))]
       simp only [Finset.mul_sum,mul_assoc]
 
-@[simp] theorem arithmeticCharacterSum_add {q : ℕ} (X : ℕ)
-    (f g : ArithmeticFunction ℝ) (χ : DirichletCharacter ℂ q) :
+@[simp] theorem arithmeticCharacterSum_add    
+        :
     arithmeticCharacterSum X (f+g) χ=arithmeticCharacterSum X f χ+arithmeticCharacterSum X g χ := by
   simp [arithmeticCharacterSum,ArithmeticFunction.add_apply,add_mul,Finset.sum_add_distrib]
 
-@[simp] theorem arithmeticCharacterSum_sub {q : ℕ} (X : ℕ)
-    (f g : ArithmeticFunction ℝ) (χ : DirichletCharacter ℂ q) :
+@[simp] theorem arithmeticCharacterSum_sub    
+        :
     arithmeticCharacterSum X (f-g) χ=arithmeticCharacterSum X f χ-arithmeticCharacterSum X g χ := by
   unfold arithmeticCharacterSum
   rw [←Finset.sum_sub_distrib]
@@ -394,7 +403,7 @@ theorem arithmeticCharacterSum_convolution {q : ℕ} (X : ℕ)
   push_cast
   ring
 
-theorem vaughan_character_identity {q : ℕ} (X U V : ℕ) (χ : DirichletCharacter ℂ q) :
+theorem vaughan_character_identity       :
     arithmeticCharacterSum X ArithmeticFunction.vonMangoldt χ=
       arithmeticCharacterSum X (arithmeticCutoff U ArithmeticFunction.vonMangoldt) χ+
       arithmeticCharacterSum X (arithmeticCutoff V ArithmeticFunction.moebius*ArithmeticFunction.log) χ-
@@ -404,6 +413,8 @@ theorem vaughan_character_identity {q : ℕ} (X U V : ℕ) (χ : DirichletCharac
         vaughanSecondCoefficient U) χ := by
   have h:=congrArg (fun f=>arithmeticCharacterSum X f χ) (vaughan_identity U V)
   simpa only [arithmeticCharacterSum_add,arithmeticCharacterSum_sub,vaughanSecondCoefficient,mul_assoc] using h
+
+end
 
 end LargePrimeGaps
 

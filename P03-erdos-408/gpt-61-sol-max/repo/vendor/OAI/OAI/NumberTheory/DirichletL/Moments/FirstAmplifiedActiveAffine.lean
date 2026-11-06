@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedActiveCapacitySource
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedActiveCapacitySo
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedActiveAffine
@@ -16,26 +17,23 @@ open CenteredMomentAmplificationChildInput CenteredMomentCommonRawScale
 open CenteredMomentFirstAnnularInput CenteredMomentFirstSecondActiveErrorGates
 open CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentAllocatedChildCapacity
 open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
-local notation "O" => HeckeFamily.O
+
 variable {ι : Type*} [Fintype ι]
-local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
-theorem active_error_slot_logs_le (s : Input ι) (C R : Ideal O)
-    (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
-    (Q : Ideal O) (k : ℕ)
-    (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
-    (υ : Character) (v Z : ℝ) (hZ : 1<Z) (hP : ∀i,1≤s.P i) :
+
+theorem active_error_slot_logs_le (s : Input ι)  C R 
+     B   τ   t 
+     Q   k 
+     Bp 
+     υ   v Z  (hZ : 1<Z) (hP : ∀i,1≤s.P i) :
     (∑i,Real.logb Z ((errorInput s C R B τ t Q k Bp υ v).P i))≤
-      ∑i,Real.logb Z (s.P i) := by
-  have hp : ∀i,1≤(activeInput (child s C R B τ t)).P i := fun i=>hP i.val
-  have hs := common_slot_logs_le (activeInput (child s C R B τ t)) (Q^k) Bp Z hZ hp
-  exact hs.trans (common_slot_logs_le s C B Z hZ hP)
+      ∑i,Real.logb Z (s.P i) := LE.le.trans (OAI.SevenEighths.CenteredMomentAllocatedChildCapacity.common_slot_logs_le (OAI.SevenEighths.CenteredMomentFirstAnnularInput.activeInput (OAI.SevenEighths.CenteredMomentAmplificationChildInput.child s C R B τ t)) (Q ^ k) Bp Z hZ fun i => hP ↑i) (OAI.SevenEighths.CenteredMomentAllocatedChildCapacity.common_slot_logs_le s C B Z hZ hP)
 
-theorem active_error_parent_affine (s : Input ι) (C R : Ideal O)
-    (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
-    (Q : Ideal O) (k : ℕ)
-    (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
-    (υ : Character) (v Z κ M : ℝ) (hZ : 1<Z) (hκ : 1/6≤κ) (hP : ∀i,1≤s.P i)
+theorem active_error_parent_affine (s : Input ι)  C R 
+     B   τ   t 
+     Q   k 
+     Bp 
+     υ   v Z κ M  (hZ : 1<Z) (hκ : 1/6≤κ) (hP : ∀i,1≤s.P i)
     (hcap : length Z s.X₁+length Z s.X₂+6*κ*(∑i,Real.logb Z (s.P i))≤M) :
     Real.logb Z (volume s)+(6*κ-1)*
       (∑i,Real.logb Z ((errorInput s C R B τ t Q k Bp υ v).P i))≤M := by

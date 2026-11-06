@@ -34,14 +34,14 @@ open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeT
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
 open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open   CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
+open   CenteredMomentEnergyAllocatedZero
 open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+ 
+ 
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
 open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
@@ -238,8 +238,7 @@ theorem actual_error_gaussian_from_bands
     exact (p.support 1 hx).1
   have hlowerBeta (I:Ideal O)
       (hI:coefficient input ((R0*C)*(Ideal.span {prime})^k) seed I≠0):
-      asource*volume input≤(I.absNorm:ℝ):=by
-    exact (mul_le_mul_of_nonneg_right hasourceFactor (volume_pos input).le).trans
+      asource*volume input≤(I.absNorm:ℝ):=(mul_le_mul_of_nonneg_right hasourceFactor (volume_pos input).le).trans
       (CenteredMomentSecondInputCapacitySource.actual_lower_support N lower a hlower haPlain
         input hcardInput hlowerInput hplain₁ hplain₂ _ seed I hI)
   apply hbound χ₀ m hm0 hml hm2 Km (nominal input Km) hready.scale_pos hready.volume_cap

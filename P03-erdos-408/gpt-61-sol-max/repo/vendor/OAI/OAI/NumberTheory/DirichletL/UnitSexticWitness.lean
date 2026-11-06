@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.IdealEuler
@@ -13,10 +14,13 @@ namespace SevenEighths.UnitSexticWitness
 open ActualEisensteinCubic CanonicalRowCompletion CanonicalUnitEuler
 open ConcreteTraceCRT
 open scoped Classical
-noncomputable section
+
 local notation "lambda" => ConcretePrimeRowBridge.goodLambda
 
-lemma idealRowHom_unit_eq_of_norm_mod_seven (P : Ideal O) [P.IsMaximal]
+section
+variable {p : ℕ} (_hp : p.Prime) (hp3 : 3 < p) (hp : p.Prime) (P : Ideal O) (u : Oˣ) (hu : u ≠ 1) (S : Finset (Ideal O)) (B : ℕ)
+
+lemma idealRowHom_unit_eq_of_norm_mod_seven   [P.IsMaximal]
     (hg : lambda ∉ P) (hodd : ringChar (O ⧸ P) ≠ 2)
     (hmod : Ideal.absNorm P % 36 = 7) (u : Oˣ) :
     idealRowHom u.val P = eisEmbedding u.val := by
@@ -30,8 +34,9 @@ lemma idealRowHom_unit_eq_of_norm_mod_seven (P : Ideal O) [P.IsMaximal]
   have he := pow_eq_pow_of_modEq hm (unit_pow_six u)
   simpa only [pow_one] using congrArg eisEmbedding he
 
-lemma prime_norm_good {p : ℕ} (_hp : p.Prime) (hp3 : 3 < p)
-    (P : Ideal O) (hP : Ideal.absNorm P = p) : lambda ∉ P := by
+include _hp hp3 in
+lemma prime_norm_good      
+      (hP : Ideal.absNorm P = p) : lambda ∉ P := by
   intro hl
   have hd := Ideal.absNorm_dvd_absNorm_of_le
     ((Ideal.span_singleton_le_iff_mem P).mpr hl)
@@ -40,8 +45,9 @@ lemma prime_norm_good {p : ℕ} (_hp : p.Prime) (hp3 : 3 < p)
   have := Nat.le_of_dvd (by decide : 0 < 3) hd
   omega
 
-lemma prime_norm_ringChar {p : ℕ} (hp : p.Prime)
-    (P : Ideal O) [P.IsMaximal] (hP : Ideal.absNorm P = p) :
+include hp in
+lemma prime_norm_ringChar    
+      [P.IsMaximal] (hP : Ideal.absNorm P = p) :
     ringChar (O ⧸ P) = p := by
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
   let : Fact p.Prime := ⟨hp⟩
@@ -51,11 +57,11 @@ lemma prime_norm_ringChar {p : ℕ} (hp : p.Prime)
   let : CharP (O ⧸ P) p := charP_of_card_eq_prime hcard
   exact ringChar.eq (O ⧸ P) p
 
-lemma exists_primeIdeal_norm {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1) :
+include hp in
+lemma exists_primeIdeal_norm     (hmod : p % 3 = 1) :
     ∃ P : Ideal O, P.IsMaximal ∧ Ideal.absNorm P = p := by
   have hc := ShortDraftHeckeBridge.split_count_of_mod_one hp hmod
-  have hne : ((Ideal.span {(p : ℤ)}).primesOver O).Nonempty := by
-    exact Set.nonempty_of_ncard_ne_zero (by rw [hc]; decide)
+  have hne : ((Ideal.span {(p : ℤ)}).primesOver O).Nonempty := Set.nonempty_of_ncard_ne_zero (by rw [hc]; decide)
   obtain ⟨P, hP⟩ := hne
   let : P.IsPrime := hP.1
   let : P.LiesOver (Ideal.span {(p : ℤ)}) := hP.2
@@ -66,7 +72,7 @@ lemma exists_primeIdeal_norm {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1) :
     exact hp.ne_zero hn.symm
   exact ⟨P, hP.1.isMaximal hP0, hn⟩
 
-theorem exists_prime_unit_embedding (S : Finset (Ideal O)) (B : ℕ) :
+theorem exists_prime_unit_embedding     :
     ∃ P : Ideal O, P.IsMaximal ∧ P ∉ S ∧ B < Ideal.absNorm P ∧
       Ideal.absNorm P % 36 = 7 ∧ lambda ∉ P ∧ ringChar (O ⧸ P) ≠ 2 ∧
       ∀ u : Oˣ, idealRowHom u.val P = eisEmbedding u.val := by
@@ -87,12 +93,12 @@ theorem exists_prime_unit_embedding (S : Finset (Ideal O)) (B : ℕ) :
     rw [hn] at hle
     have := le_max_right (max B 3) (S.sup Ideal.absNorm)
     omega
-  · rw [hn]
-    exact lt_of_le_of_lt ((le_max_left B 3).trans (le_max_left _ _)) hpB
+  · omega
   · exact idealRowHom_unit_eq_of_norm_mod_seven P hg hodd (hn ▸ hp36)
 
-theorem exists_unit_witness (u : Oˣ) (hu : u ≠ 1)
-    (S : Finset (Ideal O)) (B : ℕ) :
+include hu in
+theorem exists_unit_witness    
+        :
     ∃ P : Ideal O, P.IsMaximal ∧ P ∉ S ∧ B < Ideal.absNorm P ∧
       lambda ∉ P ∧ ringChar (O ⧸ P) ≠ 2 ∧
       idealRowHom u.val P ≠ 0 ∧ idealRowHom u.val P ≠ 1 := by
@@ -108,6 +114,8 @@ theorem exists_unit_witness (u : Oˣ) (hu : u ≠ 1)
     exact eisEmbedding_injective (by simpa using hh)
 
 end
+
+
 end SevenEighths.UnitSexticWitness
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.Probability
 
@@ -18,12 +19,11 @@ def splitBigLabels (P : PrimeGroups) (J ell : ℕ) :
   toFun a := (fun g i => a g (Fin.castAdd ell i), fun g i => a g (Fin.natAdd J i))
   invFun a := fun g => Fin.addCases (a.1 g) (a.2 g)
   left_inv a := by
-    funext g i
-    refine Fin.addCases (fun j => ?_) (fun j => ?_) i <;> simp
+    simp_all [Fin.addCases]
   right_inv a := by
     apply Prod.ext <;> funext g i <;> simp
 
-lemma idealMass_split (P : PrimeGroups) (J ell : ℕ) (a : P.BigLabels (J + ell)) :
+lemma idealMass_split (P : PrimeGroups)  J ell   a  :
     P.idealMass a = P.idealMass ((splitBigLabels P J ell a).1) *
       P.idealMass ((splitBigLabels P J ell a).2) := by
   unfold PrimeGroups.idealMass
@@ -31,7 +31,10 @@ lemma idealMass_split (P : PrimeGroups) (J ell : ℕ) (a : P.BigLabels (J + ell)
   rw [Finset.prod_mul_distrib]
   rfl
 
-lemma raw_shared_iff {P : PrimeGroups} {J ell m : ℕ} (g : P.Group) (i : Fin (J + ell)) :
+section
+variable {P : PrimeGroups} {J ell m : ℕ}
+
+lemma raw_shared_iff      g   i  :
     (rawPattern P J ell m).shared g i ↔ i.val < J := by
   constructor
   · rintro ⟨j, hj, _⟩
@@ -43,8 +46,8 @@ lemma raw_shared_iff {P : PrimeGroups} {J ell m : ℕ} (g : P.Group) (i : Fin (J
       rfl
     · simp [rawPattern]
 
-lemma raw_matches_prefix {P : PrimeGroups} {J ell m : ℕ}
-    (a b : P.BigLabels (J + ell)) :
+lemma raw_matches_prefix    
+     a b  :
     (rawPattern P J ell m).matchesBig a b ↔
       (splitBigLabels P J ell a).1 = (splitBigLabels P J ell b).1 := by
   constructor
@@ -54,12 +57,11 @@ lemma raw_matches_prefix {P : PrimeGroups} {J ell m : ℕ}
   · intro h g i hi
     have hj : i.val < J := (raw_shared_iff g.val i).mp hi
     let j : Fin J := ⟨i.val, hj⟩
-    have he : Fin.castAdd ell j = i := by apply Fin.ext; rfl
+    
     have hv := congrFun (congrFun h g) j
-    change a g (Fin.castAdd ell j) = b g (Fin.castAdd ell j) at hv
-    rwa [he] at hv
+    assumption
 
-lemma raw_freshMass_tail {P : PrimeGroups} {J ell m : ℕ} (b : P.BigLabels (J + ell)) :
+lemma raw_freshMass_tail      b  :
     (rawPattern P J ell m).freshMass b = P.idealMass ((splitBigLabels P J ell b).2) := by
   unfold Pattern.freshMass PrimeGroups.idealMass
   apply Finset.prod_congr rfl
@@ -67,32 +69,24 @@ lemma raw_freshMass_tail {P : PrimeGroups} {J ell m : ℕ} (b : P.BigLabels (J +
   rw [Fin.prod_univ_add]
   have hp : (∏ i : Fin J, if (rawPattern P J ell m).shared g.val (Fin.castAdd ell i)
       then (1 : ℝ) else P.mu g.val (b g (Fin.castAdd ell i))) = 1 := by
-    apply Finset.prod_eq_one
-    intro i _
-    rw [ite_eq_left ((raw_shared_iff g.val _).mpr i.isLt)]
+    simp_all [raw_shared_iff]
   rw [hp, one_mul]
   apply Finset.prod_congr rfl
   intro i _
   have hi : ¬(rawPattern P J ell m).shared g.val (Fin.natAdd J i) := by
-    rw [raw_shared_iff]
-    change ¬J + i.val < J
-    omega
+    grind [raw_shared_iff]
   rw [ite_eq_right hi]
   rfl
 
-def prefixProduct {P : PrimeGroups} {J : ℕ} (a : P.BigLabels J) : ℕ :=
+def prefixProduct {P : PrimeGroups} {J } (a : P.BigLabels J)  :=
   ∏ g, ∏ i, (a g i).val
 
-lemma raw_DBig_prefix {P : PrimeGroups} {J ell m : ℕ}
-    (a : P.BigLabels (J + ell)) (u : P.BigAux J) :
+lemma raw_DBig_prefix    
+     a   u  :
     (rawPattern P J ell m).DBig a u = prefixProduct ((splitBigLabels P J ell a).1) := by
-  unfold Pattern.DBig prefixProduct
-  apply Finset.prod_congr rfl
-  intro g _
-  apply Finset.prod_congr rfl
-  intro i _
-  simp only [rawPattern, Finset.notMem_empty, ite_false]
   rfl
+
+end
 
 end
 end Erdos821.P4Probe

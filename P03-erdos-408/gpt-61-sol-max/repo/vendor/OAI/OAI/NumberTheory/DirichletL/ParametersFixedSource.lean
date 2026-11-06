@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstTail
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff
 namespace SevenEighths.Parameters
 open ProbePhysical ProbeHighRowFamily CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+
 
 lemma fixed_bad_primes_prime : ∀ P∈fixedBadPrimes,Prime P := by
   intro P hP
@@ -24,12 +24,12 @@ lemma fixed_bad_primes_prime : ∀ P∈fixedBadPrimes,Prime P := by
   · have he := Finset.mem_singleton.mp hP
     subst P
     exact Ideal.prime_of_isPrime
-      (Ideal.span_singleton_eq_bot.not.mpr (by norm_num : (2:O)≠0))
+      (Ideal.span_singleton_eq_bot.not.mpr (by norm_num : (2:ActualEisensteinCubic.O)≠0))
       twoIdeal_maximal.isPrime
 
-theorem exists_fixed_source (e : ℝ) (he : 0<e)
-    (S₀ : Finset (Ideal O)) (hS₀ : ∀P∈S₀,Prime P) :
-    ∃ S : Finset (Ideal O), S₀⊆S ∧ SourceExclusions S ∧
+theorem exists_fixed_source  e  (he : 0<e)
+     S₀  (hS₀ : ∀P∈S₀,Prime P) :
+    ∃ S : Finset (Ideal ActualEisensteinCubic.O), S₀⊆S ∧ SourceExclusions S ∧
       FirstTail (4*e) S ∧ (∀P∈S,P.IsMaximal) := by
   obtain ⟨S,hsub,hS,hfirst⟩ := exists_both_source_exclusions (4*e) (by positivity)
     (S₀∪fixedBadPrimes)
@@ -53,6 +53,6 @@ theorem exists_fixed_probe_window : ∃ (w : ℝ→ℝ) (W : SchwartzMap ℝ ℂ
   exact lt_of_lt_of_le (by norm_num : (0:ℝ)<1) (hcl hx).1
 end SevenEighths.Parameters
 
-end
+
 
 end OAI

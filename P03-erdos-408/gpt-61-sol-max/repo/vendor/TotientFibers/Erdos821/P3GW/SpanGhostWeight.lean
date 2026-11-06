@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.SpanGhostWeightTask
 
@@ -24,25 +25,25 @@ namespace ResiduePath
 variable {Q : Erdos821.S2Core.ResiduePath A n}
 
 def pendingZeroPrimes (S : LifespanAssignment P n) (i : Fin (n + 1))
-    (g : P.BigGroup) : Finset (P.Prime g.val) :=
+    (g : P.BigGroup)  :=
   Q.pendingBeforePrimes S i g |>.filter
     (fun p => ((Q.offset i - Q.spanAnchor (S g p) : ℤ) : ZMod p.val) = 0)
 
 def survivingZeroHitPrimes (S : LifespanAssignment P n) (i : Fin (n + 1))
-    (g : P.BigGroup) : Finset (P.Prime g.val) :=
+    (g : P.BigGroup)  :=
   Finset.univ.filter (fun p =>
     Q.pendingBefore g p (S g p) i ∧ Q.pendingAfter g p (S g p) i ∧
       ((Q.offset i - Q.spanAnchor (S g p) : ℤ) : ZMod p.val) = 0)
 
-theorem pendingBefore_stop_or_after (S : LifespanAssignment P n) (i : Fin (n + 1))
-    (g : P.BigGroup) (p : P.Prime g.val)
+section
+variable (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup)
+
+theorem pendingBefore_stop_or_after    
+       p 
     (h : Q.pendingBefore g p (S g p) i) :
     Q.ghostStopAt g p (S g p) i ∨ Q.pendingAfter g p (S g p) i := by
   rcases he : S g p with _ | ⟨birth, stop⟩
-  · rw [he] at h
-    have hf : False := by
-      simp only [Erdos821.S2Core.ResiduePath.pendingBefore] at h
-    exact hf.elim
+  · aesop
   · rw [he] at h
     simp only [Erdos821.S2Core.ResiduePath.pendingBefore] at h
     rcases h with ⟨hb, hs, ha⟩
@@ -51,11 +52,10 @@ theorem pendingBefore_stop_or_after (S : LifespanAssignment P n) (i : Fin (n + 1
       exact ⟨hstop, ha⟩
     · right
       refine ⟨le_of_lt hb, ?_, ha⟩
-      have : i.val < stop.val := by omega
-      exact Fin.lt_def.mpr this
+      omega
 
-theorem stop_hits_disjoint (S : LifespanAssignment P n) (i : Fin (n + 1))
-    (g : P.BigGroup) :
+theorem stop_hits_disjoint    
+      :
     Disjoint (Q.ghostStopPrimes S i g)
       (survivingZeroHitPrimes (Q := Q) S i g) := by
   apply Finset.disjoint_left.mpr
@@ -63,17 +63,15 @@ theorem stop_hits_disjoint (S : LifespanAssignment P n) (i : Fin (n + 1))
   have hs := (Finset.mem_filter.mp hp).2
   have hh' := (Finset.mem_filter.mp hh).2
   rcases he : S g p with _ | ⟨birth, stop⟩
-  · rw [he] at hs
-    have hf : False := by simp only [ghostStopAt] at hs
-    exact hf.elim
+  · simp_all [ghostStopAt]
   · rw [he] at hs hh'
     simp only [ghostStopAt, pendingAfter] at hs hh'
     obtain ⟨rfl, _⟩ := hs
     omega
 
 theorem pendingZeroPrimes_eq_stop_union_hits
-    (S : LifespanAssignment P n) (hS : Q.lifespanValid S)
-    (i : Fin (n + 1)) (g : P.BigGroup) :
+     S  (hS : Q.lifespanValid S)
+     i   g  :
       pendingZeroPrimes (Q := Q) S i g =
       Q.ghostStopPrimes S i g ∪ survivingZeroHitPrimes (Q := Q) S i g := by
   ext p
@@ -102,22 +100,21 @@ theorem pendingZeroPrimes_eq_stop_union_hits
     · have hs' : p ∈ Q.ghostStopPrimes S i g := hs
       have hbefore := Q.ghostStopPrimes_subset S hS i g hs'
       have hzero := Q.ghostStop_residue_zero S hS i g p hs'
-      simp only [pendingZeroPrimes, Finset.mem_filter]
-      exact ⟨hbefore, hzero⟩
+      simp_all [pendingZeroPrimes]
     · have hh' := (Finset.mem_filter.mp hh).2
       simp only [pendingZeroPrimes, Finset.mem_filter]
       exact ⟨Finset.mem_filter.mpr ⟨Finset.mem_univ _, hh'.1⟩, hh'.2.2⟩
 
 theorem zeroMemoryIndices_card_eq_pendingZeroPrimes
-    (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup) :
+          :
     (zeroMemoryIndices (Q.memoryBefore S i g)).card =
       (pendingZeroPrimes (Q := Q) S i g).card := by
   rw [zeroMemoryIndices_card, Q.memoryBefore_eq_map]
   simp only [Multiset.filter_map, Multiset.card_map]
   rfl
 
-theorem ghostBatchLabels_prod (S : LifespanAssignment P n) (i : Fin (n + 1))
-    (g : P.BigGroup) (f : P.Prime g.val → ℝ) :
+theorem ghostBatchLabels_prod    
+      (f : P.Prime g.val → ℝ) :
     (∏ h : Fin (Q.ghostBirthPrimes S i g).card, f (Q.ghostBatchLabels S i g h)) =
       ∏ p ∈ Q.ghostBirthPrimes S i g, f p := by
   calc
@@ -129,26 +126,27 @@ theorem ghostBatchLabels_prod (S : LifespanAssignment P n) (i : Fin (n + 1))
     _ = ∏ p ∈ Q.ghostBirthPrimes S i g, f p :=
       Finset.prod_map_toList _ _
 
+end
+
 end ResiduePath
 
 theorem mul_self_inv_factor (a b : ℝ) (ha : a ≠ 0) :
     a * (a * b)⁻¹ = b⁻¹ := by
-  by_cases hb : b = 0
-  · simp [hb]
-  · field_simp [ha, hb]
+  field_simp <;> ring
 
-theorem value_mul_tiltedMu (F : FixedData) (P : PrimeGroups) (n : ℕ)
-    (g : P.Group) (p : P.Prime g) (hV : P.V g ≠ 0) :
+section
+variable (F : FixedData) (P : PrimeGroups)
+
+theorem value_mul_tiltedMu      n 
+     g   p  (hV : P.V g ≠ 0) :
     P.V g * tiltedMu F P n g p = (p.val * baselinePrime F n p.val)⁻¹ := by
-  unfold tiltedMu
-  simpa only [mul_assoc] using
-    mul_self_inv_factor (P.V g) (p.val * baselinePrime F n p.val) hV
+  grind [tiltedMu, mul_self_inv_factor, baselinePrime]
 
 theorem groupGhostWeight_factor
-    (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
-    (Q : Erdos821.S2Core.ResiduePath A n) (S : LifespanAssignment P n)
+        (J m n : ℕ) (A : Model F P J m)
+    (Q : Erdos821.S2Core.ResiduePath A n)  S 
     (hV : ∀ g, P.V g ≠ 0) (hS : Q.lifespanValid S)
-    (i : Fin (n + 1)) (g : P.BigGroup) :
+     i   g  :
     (-eta F n i) ^ (Q.ghostTerminationIndices S i g).card *
         visitQ F.q n i ^
           ((zeroMemoryIndices (Q.memoryBefore S i g)).card -
@@ -183,34 +181,13 @@ theorem groupGhostWeight_factor
     have hmem := Q.memoryBefore_card S i g
     have htermLE' :=
       Finset.card_le_card (Finset.subset_univ (Q.ghostTerminationIndices S i g))
-    have htermLE :
-        (Q.ghostTerminationIndices S i g).card ≤ (Q.memoryBefore S i g).card := by
-      simpa only [Finset.card_univ, Fintype.card_fin] using htermLE'
+    
     have hstopLE :
         (Q.ghostStopPrimes S i g).card ≤ (Q.pendingBeforePrimes S i g).card :=
       Finset.card_le_card (Q.ghostStopPrimes_subset S hS i g)
-    have hsub :
-        (Q.pendingBeforePrimes S i g).card -
-            (Q.ghostTerminationIndices S i g).card =
-          (Q.pendingBeforePrimes S i g).card - T.card := by
-      have hmemsub := congrArg
-        (fun k : ℕ => k - (Q.ghostTerminationIndices S i g).card) hmem
-      exact hmemsub.symm.trans hdeleted
-    have htermLEBefore :
-        (Q.ghostTerminationIndices S i g).card ≤ (Q.pendingBeforePrimes S i g).card := by
-      omega
-    let t : ℕ := (Q.ghostTerminationIndices S i g).card
-    let s : ℕ := T.card
-    have hsub' :
-        (Q.pendingBeforePrimes S i g).card - t =
-          (Q.pendingBeforePrimes S i g).card - s := by
-      simpa [t, s] using hsub
-    have ht' : t ≤ (Q.pendingBeforePrimes S i g).card := by
-      simpa [t] using htermLEBefore
-    have hs' : s ≤ (Q.pendingBeforePrimes S i g).card := by
-      simpa [s] using hstopLE
-    have hts : t = s := by omega
-    simpa [t, s] using hts
+    
+    
+    grind
   have hexponent :
       (zeroMemoryIndices (Q.memoryBefore S i g)).card -
           (Q.ghostTerminationIndices S i g).card = R.card := by
@@ -238,14 +215,8 @@ theorem groupGhostWeight_factor
               ((Q.ghostBatchLabels S i g h).val *
                 baselinePrime F n (Q.ghostBatchLabels S i g h).val)⁻¹) := by
         apply Finset.prod_congr rfl
-        intro h hh
-        rw [show (-eta F n i * P.V g.val) *
-              tiltedMu F P n g.val (Q.ghostBatchLabels S i g h) =
-            (-eta F n i) *
-              (P.V g.val * tiltedMu F P n g.val (Q.ghostBatchLabels S i g h)) by ring]
-        rw [value_mul_tiltedMu F P n g.val (Q.ghostBatchLabels S i g h) (hV g)]
-      _ = ∏ p ∈ B, (-eta F n i * (p.val * baselinePrime F n p.val)⁻¹) := by
-        exact ResiduePath.ghostBatchLabels_prod (Q := Q) S i g
+        grind [eta, tiltedMu, value_mul_tiltedMu]
+      _ = ∏ p ∈ B, (-eta F n i * (p.val * baselinePrime F n p.val)⁻¹) := ResiduePath.ghostBatchLabels_prod (Q := Q) S i g
           (fun p => -eta F n i * (p.val * baselinePrime F n p.val)⁻¹)
   have hstop : ∏ p ∈ T, (-eta F n i) = (-eta F n i) ^ T.card := by
     rw [Finset.prod_const]
@@ -305,6 +276,8 @@ theorem groupGhostWeight_factor
       rw [← hstop, ← hhit, hfactor]
       ring
 
+end
+
 theorem SpanGhostWeightTask_proof : Erdos821.S2Core.SpanGhostWeightTask := by
   intro F P J m n A Q S hV hS y i
   classical
@@ -346,12 +319,10 @@ theorem SpanGhostWeightTask_proof : Erdos821.S2Core.SpanGhostWeightTask := by
             (-eta F n i * P.V g.val) ^ (Q.ghostBirthPrimes S i g).card *
             (∏ h : Fin (Q.ghostBirthPrimes S i g).card,
               tiltedMu F P n g.val (Q.ghostBatchLabels S i g h))) *
-            (Q.ghostBirthPrimes S i g).card.factorial) := by
-      exact Finset.prod_mul_distrib.symm
+            (Q.ghostBirthPrimes S i g).card.factorial) := Finset.prod_mul_distrib.symm
     _ = ∏ g : P.BigGroup, ∏ p : P.Prime g.val, Q.spanGhostFactor S i g p := by
       apply Finset.prod_congr rfl
-      intro g hg
-      exact groupGhostWeight_factor F P J m n A Q S hV hS i g
+      solve_by_elim [groupGhostWeight_factor]
 
 end Erdos821.P3Gw
 

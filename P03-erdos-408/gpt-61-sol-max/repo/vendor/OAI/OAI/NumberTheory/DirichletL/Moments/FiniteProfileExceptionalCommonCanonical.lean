@@ -9,7 +9,7 @@ set_option linter.privateModule false
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Filter
 
@@ -25,12 +25,12 @@ open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSo
 open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
 open CenteredMomentSecondHeightFamily
 open CenteredMomentFiniteProfileExceptional
-local notation "O" => HeckeFamily.O
+
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 
-end
+
 
 end OAI

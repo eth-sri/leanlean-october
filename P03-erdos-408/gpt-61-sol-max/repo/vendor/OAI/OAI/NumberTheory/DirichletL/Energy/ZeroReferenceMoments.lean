@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowControl
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceMoments
@@ -19,12 +19,12 @@ open CenteredMomentEnergyZeroReferenceChild CenteredMomentEnergyReferenceLowCont
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
 open CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
 
-theorem reflected_uniform (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
-    (S:Finset (ℕ×ℕ)):
+
+theorem reflected_uniform  a b (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
+     S :
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃D:ℝ,0<D ∧
-    ∀(bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal O)(degree:ℕ)(C:ℝ),0≤C →
+    ∀(bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(C:ℝ),0≤C →
     ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S C → 0≤Bmask →
     ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → s.width≤Mcap →
     ∀(Wshort:𝓢(ℝ,ℂ))(_hsW:Function.support (Wshort:ℝ→ℂ)⊆Set.Icc a b)
@@ -54,6 +54,6 @@ theorem reflected_uniform (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
 
 end SevenEighths.CenteredMomentEnergyZeroReferenceMoments
 
-end
+
 
 end OAI

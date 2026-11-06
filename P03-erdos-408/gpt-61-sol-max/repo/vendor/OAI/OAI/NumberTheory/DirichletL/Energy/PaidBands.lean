@@ -33,7 +33,7 @@ lemma remaining_energy_bound
     (hw:∀i,0≤w i)(hwL:∀i,w i≤Lslot)(hσlo:∀i,lo≤σ i)(hσhi:∀i,σ i≤hi)
     (hheight:0≤height)(hv:∀i,|v i|≤height)
     (s:NaturalState Z Bmask bΦ)(hQ:s.fixedModulus=internalQ Q η₀)(hs:s.width≤Mcap)
-    (p:Profiles a b)(X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(hc₁:X₁≤Z^L)(hc₂:X₂≤Z^L)
+    (p:Profiles a b) X₁ X₂ (hX₁:0<X₁)(hX₂:0<X₂)(hc₁:X₁≤Z^L)(hc₂:X₂≤Z^L)
     (hcapacity:R=J ∨ length Z X₁+length Z X₂+6*κ*(∑i∈J\R,w i)≤s.width):
     energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
       (fun i:↥(J\R)=>primePool M H bslot (Z^(w i)))

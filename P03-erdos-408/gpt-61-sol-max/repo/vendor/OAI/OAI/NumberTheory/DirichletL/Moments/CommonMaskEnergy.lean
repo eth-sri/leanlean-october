@@ -1,4 +1,8 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Moments.PrimeSlot
+import OAI.NumberTheory.DirichletL.Moments.Twist
 
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskExpansion
 public import OAI.NumberTheory.DirichletL.Moments.NaturalRowSourceDictionary
@@ -14,18 +18,18 @@ namespace SevenEighths.CenteredMomentCommonMaskEnergy
 open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentNaturalRowSource
 open CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentLattice
 open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
-local notation "O" => HeckeFamily.O
+
 
 theorem finite_shared_energy {ι κ : Type*} [Fintype ι] [Fintype κ]
     (a f : ι→κ→ℂ) (ρ : κ→ℝ) (hρ : ∀j,0≤ρ j)
-    (ha : ∀i j,‖a i j‖≤ρ j) (E : ℝ) (hE : 0≤E)
+    (ha : ∀i j,‖a i j‖≤ρ j)  E  (hE : 0≤E)
     (hf : ∀j,(∑i,‖f i j‖^2)≤E) :
     (∑i,‖∑j,a i j*f i j‖^2)≤(∑j,ρ j)^2*E := by
   have hb (j : κ) : (∑i,‖a i j*f i j‖^2)≤(ρ j*Real.sqrt E)^2 := by
     calc
       _≤∑i,(ρ j)^2*‖f i j‖^2 := Finset.sum_le_sum (fun i _=>by
         rw [norm_mul,mul_pow]
-        exact mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (norm_nonneg _) (ha i j) 2) (sq_nonneg _))
+        bound)
       _=(ρ j)^2*(∑i,‖f i j‖^2) := (Finset.mul_sum _ _ _).symm
       _≤(ρ j)^2*E := mul_le_mul_of_nonneg_left (hf j) (sq_nonneg _)
       _=_ := by rw [mul_pow,Real.sq_sqrt hE]
@@ -43,14 +47,8 @@ lemma triple_sum {τ : Type*} {υ : Type*} {ξ : Type*} {A : Type*} [AddCommMono
   have hh : (∑j : {x // x∈S}×{x // x∈T}×{x // x∈U},g j.1.val j.2.1.val j.2.2.val)=
       ∑j∈S×ˢ(T×ˢU),g j.1 j.2.1 j.2.2 := by
     apply Finset.sum_bij (fun j _=>(j.1.val,j.2.1.val,j.2.2.val))
-    · intro j _
-      exact Finset.mem_product.mpr ⟨j.1.property,Finset.mem_product.mpr ⟨j.2.1.property,j.2.2.property⟩⟩
-    · intro i _ j _ h
-      apply Prod.ext
-      · exact Subtype.ext (congrArg Prod.fst h)
-      · apply Prod.ext
-        · exact Subtype.ext (congrArg (fun x=>x.2.1) h)
-        · exact Subtype.ext (congrArg (fun x=>x.2.2) h)
+    · grind
+    · grind
     · intro j hj
       obtain ⟨h1,h23⟩:=Finset.mem_product.mp hj
       obtain ⟨h2,h3⟩:=Finset.mem_product.mp h23
@@ -62,9 +60,9 @@ lemma triple_sum {τ : Type*} {υ : Type*} {ξ : Type*} {A : Type*} [AddCommMono
 theorem actual_shared_energy {α : Type*} [DecidableEq α]
     (F : Finset α) (b M : α→ℝ) (hM : ∀j∈F,0≤M j) (ε : ℝ) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*} [Fintype ι],
-      ∀(R : Finset (Ideal O))(hR : ∀I∈R,Prime I)(χ : ι→Character)
+      ∀(R : Finset (Ideal HeckeFamily.O))(hR : ∀I∈R,Prime I)(χ : ι→Character)
         (W₁ W₂ : ι→𝓢(ℝ,ℂ))(X₁ X₂ : ι→ℝ)
-        (pool : ι→α→Finset (Ideal O))(β : ι→α→Ideal O→ℂ)(P : ι→α→ℝ),
+        (pool : ι→α→Finset (Ideal HeckeFamily.O))(β : ι→α→Ideal HeckeFamily.O→ℂ)(P : ι→α→ℝ),
       (∀i,0<X₁ i) → (∀i,0<X₂ i) →
       (∀i j,j∈F → ∀I∈pool i j,Prime I) → (∀i j,j∈F → 0<P i j) →
       (∀i j,j∈F → ∀I∈pool i j,‖β i j I‖≤M j) →
@@ -83,8 +81,8 @@ theorem actual_shared_energy {α : Type*} [DecidableEq α]
   obtain ⟨C,hC,hmass⟩:=uniform_mass_subpower F b M hM (ε/2) (by positivity)
   refine ⟨C^2,sq_pos_of_pos hC,?_⟩
   intro ι _ R hR χ W₁ W₂ X₁ X₂ pool β P hX₁ hX₂ hp hP hβ hs E hE he
-  let κ := {D : Finset (Ideal O) // D∈R.powerset} ×
-    {D : Finset (Ideal O) // D∈R.powerset} × {J : Finset α // J∈F.powerset}
+  let κ := {D : Finset (Ideal HeckeFamily.O) // D∈R.powerset} ×
+    {D : Finset (Ideal HeckeFamily.O) // D∈R.powerset} × {J : Finset α // J∈F.powerset}
   let a (i : ι) (j : κ) := signedCoefficient (χ i) R j.1.val j.2.1.val j.2.2.val (pool i) (β i) (P i)
   let f (i : ι) (j : κ) := HeckeDyadic.polynomial (χ i) false (W₁ i)
     (X₁ i/(Ideal.absNorm (∏I∈j.1.val,I):ℝ)) 0 0 *
@@ -94,8 +92,7 @@ theorem actual_shared_energy {α : Type*} [DecidableEq α]
   let ρ (j : κ) := uniformMajorant R j.1.val j.2.1.val j.2.2.val b M
   have hρ (j : κ) : 0≤ρ j := uniformMajorant_nonneg _ _ _ _ _ _
     (fun k hk=>hM k (Finset.mem_powerset.mp j.2.2.property hk))
-  have ha (i : ι) (j : κ) : ‖a i j‖≤ρ j := by
-    exact signedCoefficient_uniform (χ i) R hR _ _
+  have ha (i : ι) (j : κ) : ‖a i j‖≤ρ j := signedCoefficient_uniform (χ i) R hR _ _
       (Finset.mem_powerset.mp j.1.property) (Finset.mem_powerset.mp j.2.1.property)
       _ (pool i) (β i) (P i) b M
       (fun k hk=>hp i k (Finset.mem_powerset.mp j.2.2.property hk))
@@ -108,16 +105,14 @@ theorem actual_shared_energy {α : Type*} [DecidableEq α]
   have hid (i : ι) : (∑j,a i j*f i j)=
       HeckeDyadic.polynomial ((χ i).excludePrimes R hR) false (W₁ i) (X₁ i) 0 0 *
       HeckeDyadic.polynomial ((χ i).excludePrimes R hR) false (W₂ i) (X₂ i) 0 0 *
-      ∏j∈F,naturalSlot ((χ i).excludePrimes R hR) (pool i j) (β i j) (P i j) := by
-    exact (triple_sum R.powerset R.powerset F.powerset
+      ∏j∈F,naturalSlot ((χ i).excludePrimes R hR) (pool i j) (β i j) (P i j) := (triple_sum R.powerset R.powerset F.powerset
       (fun D₁ D₂ J=>signedCoefficient (χ i) R D₁ D₂ J (pool i) (β i) (P i)*
         (HeckeDyadic.polynomial (χ i) false (W₁ i) (X₁ i/(Ideal.absNorm (∏I∈D₁,I):ℝ)) 0 0 *
          HeckeDyadic.polynomial (χ i) false (W₂ i) (X₂ i/(Ideal.absNorm (∏I∈D₂,I):ℝ)) 0 0 *
          ∏k∈F\J,naturalSlot (χ i) (pool i k) (β i k) (P i k)))).trans
       (simultaneous_deletion (χ i) R hR (W₁ i) (W₂ i) (X₁ i) (X₂ i) (hX₁ i) (hX₂ i)
         F (pool i) (hp i) (β i) (P i)).symm
-  have hm : (∑j,ρ j)≤C*(Ideal.absNorm (∏I∈R,I):ℝ)^(ε/2) := by
-    exact (triple_sum R.powerset R.powerset F.powerset
+  have hm : (∑j,ρ j)≤C*(Ideal.absNorm (∏I∈R,I):ℝ)^(ε/2) := (triple_sum R.powerset R.powerset F.powerset
       (fun D₁ D₂ J=>uniformMajorant R D₁ D₂ J b M)).trans_le (hmass R hR)
   have hr : ((Ideal.absNorm (∏I∈R,I):ℝ)^(ε/2))^2=(Ideal.absNorm (∏I∈R,I):ℝ)^ε := by
     rw [←Real.rpow_natCast,←Real.rpow_mul (Nat.cast_nonneg _)]
@@ -128,29 +123,26 @@ theorem actual_shared_energy {α : Type*} [DecidableEq α]
     (pow_le_pow_left₀ (Finset.sum_nonneg (fun j _=>hρ j)) hm 2) hE).trans_eq
       (by rw [mul_pow,hr]))
 
-lemma sqrt_inverse_cpow (X : ℝ) (hX : 0<X) :
-    (Real.sqrt X:ℂ)⁻¹=(X:ℂ)^(-(1/2:ℂ)) := by
-  rw [Complex.cpow_neg,Real.sqrt_eq_rpow]
-  congr 1
-  simpa using (Complex.ofReal_cpow hX.le (1/2:ℝ))
+lemma sqrt_inverse_cpow  X  (hX : 0<X) :
+    (Real.sqrt X:ℂ)⁻¹=(X:ℂ)^(-(1/2:ℂ)) := by solve_by_elim [_root_.OAI.SevenEighths.CenteredMomentPrimeSlot.sqrt_inverse_cpow]
 
-lemma plain_zero_height (χ : Character) (W : ℝ→ℂ) (X : ℝ) (hX : 0<X) :
+lemma plain_zero_height  χ   W   X  (hX : 0<X) :
     HeckeDyadic.polynomial χ false W X 0 0=(Real.sqrt X:ℂ)⁻¹*idealSum χ W X := by
   rw [sqrt_inverse_cpow X hX]
   unfold HeckeDyadic.polynomial idealSum
   congr 1
   have he:=tsum_subtype_eq_of_support_subset
-    (s:={I : Ideal O | I≠0}) (f:=fun I : Ideal O=>idealCoeff χ I*W ((I.absNorm:ℝ)/X))
+    (s:={I : Ideal HeckeFamily.O | I≠0}) (f:=fun I : Ideal HeckeFamily.O=>idealCoeff χ I*W ((I.absNorm:ℝ)/X))
     (by intro I hI hi;subst I;exact hI (by simp only [map_zero,zero_mul]))
   change (∑' I : HeckeDyadic.NonzeroIdeal,idealCoeff χ I.val*W ((I.val.absNorm:ℝ)/X))=_ at he
   simpa only [HeckeDyadic.summand,HeckeDyadic.coefficient,Bool.false_eq_true,ite_false,
     HeckeDyadic.norm,HeckeDyadic.shift,Complex.ofReal_zero,zero_mul,mul_zero,sub_zero,
     neg_zero,Complex.cpow_zero,mul_one,HeckeDyadic.NonzeroIdeal,UnrestrictedIdealReindex.NonzeroIdeal] using he
 
-def heightCoefficient (β : Ideal O→ℂ) (t : ℝ) (I : Ideal O) : ℂ :=
+def heightCoefficient (β : Ideal HeckeFamily.O→ℂ) (t : ℝ) (I : Ideal HeckeFamily.O)  :=
   β I*(I.absNorm:ℂ)^(Complex.I*t)
 
-lemma heightCoefficient_norm (β : Ideal O→ℂ) (t : ℝ) (I : Ideal O) (hI : I≠0) :
+lemma heightCoefficient_norm  β   t   I  (hI : I≠0) :
     ‖heightCoefficient β t I‖=‖β I‖ := by
   have hn : (0:ℝ)<I.absNorm := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
@@ -160,12 +152,12 @@ lemma heightCoefficient_norm (β : Ideal O→ℂ) (t : ℝ) (I : Ideal O) (hI : 
   rw [hp,mul_one]
 
 theorem original_positive_normalized {α : Type*} [Fintype α] [DecidableEq α]
-    {η : Character} {z : O} (F : NaturalRow η z) (R : Ideal O) (hR : R≠0)
+    {η : Character} {z : HeckeFamily.O} (F : NaturalRow η z) (R : Ideal HeckeFamily.O) (hR : R≠0)
     (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ : ℝ) (ha₁ : 0<a₁) (ha₂ : 0<a₂)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁) (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂)
     (hW₁ : ContDiff ℝ ∞ W₁) (hW₂ : ContDiff ℝ ∞ W₂)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ)
-    (hP : ∀i,0<P i) (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
+    (pool : α→Finset (Ideal HeckeFamily.O))  β   P 
+    (hP : ∀i,0<P i)  t X₁ X₂  (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
     positiveSlotRow η (CenteredMomentSecondHeightFamily.fixedBadMask*ConcretePrimeRowBridge.idealGenerator R)
       1 z W₁ W₂ pool β P t X₁ X₂=
       ((X₁:ℂ)^(Complex.I*t)*(X₂:ℂ)^(Complex.I*t))*
@@ -194,17 +186,20 @@ theorem original_positive_normalized {α : Type*} [Fintype α] [DecidableEq α]
   rw [hn]
   ring
 
-lemma positive_height_phase_norm (X t : ℝ) (hX : 0<X) : ‖(X:ℂ)^(Complex.I*t)‖=1 := by
-  simpa using Complex.norm_cpow_eq_rpow_re_of_pos hX (Complex.I*t)
+alias positive_height_phase_norm := _root_.OAI.SevenEighths.CenteredMomentTwist.norm_real_imaginary_power
 
-theorem original_positive_deletion {α : Type*} [Fintype α] [DecidableEq α]
-    (η : Character) (z : O) (hz : z≠0) (R : Ideal O) (hR : R≠0)
-    (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ : ℝ) (ha₁ : 0<a₁) (ha₂ : 0<a₂)
-    (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁) (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂)
-    (hW₁ : ContDiff ℝ ∞ W₁) (hW₂ : ContDiff ℝ ∞ W₂)
-    (pool : α→Finset (Ideal O)) (hp : ∀i,∀I∈pool i,Prime I)
-    (β : α→Ideal O→ℂ) (P : α→ℝ) (hP : ∀i,0<P i)
-    (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
+section
+variable {α : Type*} [Fintype α]
+include α
+
+theorem original_positive_deletion     [DecidableEq α]
+     η   z   hz   R  (hR : R≠0)
+     W₁ W₂   a₁ b₁ a₂ b₂   ha₁   ha₂ 
+     hs₁   hs₂ 
+     hW₁   hW₂ 
+     pool  (hp : ∀i,∀I∈pool i,Prime I)
+     β   P  (hP : ∀i,0<P i)
+     t X₁ X₂  (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
     let χ:=(naturalRow η z hz).character
     let S:=CompletedGauss.primeSupport R
     positiveSlotRow η (CenteredMomentSecondHeightFamily.fixedBadMask*ConcretePrimeRowBridge.idealGenerator R)
@@ -226,13 +221,13 @@ theorem original_positive_deletion {α : Type*} [Fintype α] [DecidableEq α]
     (normPowerProfile W₂ a₂ b₂ ha₂ hs₂ hW₂ t) X₁ X₂ hX₁ hX₂ Finset.univ pool
     (fun i _=>hp i) (fun i=>heightCoefficient (β i) t) P
 
-theorem original_retained_normalized {α : Type*} [Fintype α] [DecidableEq α]
-    {η : Character} {z : O} (F : NaturalRow η z) (R : Ideal O) (hR : R≠0)
+theorem original_retained_normalized     [DecidableEq α]
+    {η : Character} {z : HeckeFamily.O} (F : NaturalRow η z) (R : Ideal HeckeFamily.O) (hR : R≠0)
     (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ : ℝ) (ha₁ : 0<a₁) (ha₂ : 0<a₂)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁) (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂)
     (hW₁ : ContDiff ℝ ∞ W₁) (hW₂ : ContDiff ℝ ∞ W₂)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ) (hP : ∀i,0<P i)
-    (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂) (hr₁ : 1≤X₁*b₁) (hr₂ : 1≤X₂*b₂) :
+    (pool : α→Finset (Ideal HeckeFamily.O))  β   P  (hP : ∀i,0<P i)
+     t X₁ X₂   hX₁   hX₂   hr₁   hr₂  :
     retainedPositiveRow η (CenteredMomentSecondHeightFamily.fixedBadMask*ConcretePrimeRowBridge.idealGenerator R)
       1 z W₁ W₂ pool β P t X₁ X₂=
       (((clippedScale X₁):ℂ)^(Complex.I*t)*((clippedScale X₂):ℂ)^(Complex.I*t))*
@@ -240,8 +235,7 @@ theorem original_retained_normalized {α : Type*} [Fintype α] [DecidableEq α]
           (retainedProfile W₁ a₁ b₁ ha₁ hs₁ hW₁ X₁ hX₁ hr₁ t) (clippedScale X₁) 0 0 *
          HeckeDyadic.polynomial (excluded F.character R) false
           (retainedProfile W₂ a₂ b₂ ha₂ hs₂ hW₂ X₂ hX₂ hr₂ t) (clippedScale X₂) 0 0 *
-         ∏i,naturalSlot (excluded F.character R) (pool i) (heightCoefficient (β i) t) (P i)) := by
-  exact original_positive_normalized F R hR (dilated W₁ (clipDilation X₁))
+         ∏i,naturalSlot (excluded F.character R) (pool i) (heightCoefficient (β i) t) (P i)) := original_positive_normalized F R hR (dilated W₁ (clipDilation X₁))
     (dilated W₂ (clipDilation X₂)) (a₁/max 1 b₁) b₁ (a₂/max 1 b₂) b₂
     (div_pos ha₁ (lt_of_lt_of_le zero_lt_one (le_max_left _ _)))
     (div_pos ha₂ (lt_of_lt_of_le zero_lt_one (le_max_left _ _)))
@@ -252,11 +246,11 @@ theorem original_retained_normalized {α : Type*} [Fintype α] [DecidableEq α]
     (dilated_contDiff W₁ hW₁ _) (dilated_contDiff W₂ hW₂ _) pool β P hP t
     _ _ (by unfold clippedScale;positivity) (by unfold clippedScale;positivity)
 
-theorem original_retained_zero {α : Type*} [Fintype α]
-    (η : Character) (m A z : O) (W₁ W₂ : ℝ→ℂ) (b₁ b₂ : ℝ)
+theorem original_retained_zero    
+    (η : Character) (m A z : HeckeFamily.O) (W₁ W₂ : ℝ→ℂ) (b₁ b₂ : ℝ)
     (hs₁ : Function.support W₁⊆Set.Iic b₁) (hs₂ : Function.support W₂⊆Set.Iic b₂)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ)
-    (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂)
+    (pool : α→Finset (Ideal HeckeFamily.O))  β   P 
+     t X₁ X₂  (hX₁ : 0<X₁) (hX₂ : 0<X₂)
     (hz : X₁*b₁<1 ∨ X₂*b₂<1) :
     retainedPositiveRow η m A z W₁ W₂ pool β P t X₁ X₂=0 := by
   unfold retainedPositiveRow positiveSlotRow
@@ -267,6 +261,8 @@ theorem original_retained_zero {α : Type*} [Fintype α]
     simp
   · rw [strict_subunit_rowTwistedSum_zero η m A z W₂ b₂ t X₂ hX₂ hs₂ h]
     simp
+
+end
 
 end SevenEighths.CenteredMomentCommonMaskEnergy
 

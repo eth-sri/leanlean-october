@@ -10,23 +10,31 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
 open IdealMobiusDivisorSum
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
-lemma cubeDivList_card (H : Ideal Eis) (hH : H≠0) (L : Finset (Ideal Eis)) :
+section
+variable (H : Ideal ActualEisensteinCubic.O) (hH : H≠0)
+include H hH
+
+lemma cubeDivList_card      L  :
     (cubeDivList H L).card≤(idealDivisors H).card := by
   apply Finset.card_le_card
   intro P hP
   exact (mem_idealDivisors hH).mpr (Finset.mem_filter.mp hP).2
 
-lemma cube_divisor_card_one (H : Ideal Eis) (hH : H≠0) :
+lemma cube_divisor_card_one     :
     (1:ℝ)≤(idealDivisors H).card := by
   exact_mod_cast Finset.card_pos.mpr ⟨1,(mem_idealDivisors hH).mpr (one_dvd H)⟩
 
-lemma cubeAbsorbedCoefficient_norm (H : Ideal Eis) (hH : H≠0)
-    (L : σ→Finset (Ideal Eis)) (w : ∀ i,L i→ℂ)
-    (hw : ∀ i P,‖w i P‖≤1) (T : Finset σ) (rmax : ℕ)
+section
+variable (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (w : ∀ i,L i→ℂ) (hw : ∀ i P,‖w i P‖≤1)
+include L w hw
+
+lemma cubeAbsorbedCoefficient_norm    
+       
+       T   rmax 
     (hr : Fintype.card σ≤rmax) :
     ‖cubeAbsorbedCoefficient H L w T‖≤((idealDivisors H).card:ℝ)^rmax := by
   rw [cubeAbsorbedCoefficient_product,norm_prod]
@@ -43,9 +51,9 @@ lemma cubeAbsorbedCoefficient_norm (H : Ideal Eis) (hH : H≠0)
     _ ≤ _ := pow_le_pow_right₀ (cube_divisor_card_one H hH)
       ((Fintype.card_subtype_le _).trans hr)
 
-lemma cubeAbsorbedCoefficient_mass (H : Ideal Eis) (hH : H≠0)
-    (L : σ→Finset (Ideal Eis)) (w : ∀ i,L i→ℂ)
-    (hw : ∀ i P,‖w i P‖≤1) (rmax : ℕ) (hr : Fintype.card σ≤rmax) :
+lemma cubeAbsorbedCoefficient_mass    
+       
+       rmax  (hr : Fintype.card σ≤rmax) :
     (∑ T : Finset σ,‖cubeAbsorbedCoefficient H L w T‖)≤
       (2:ℝ)^rmax*((idealDivisors H).card:ℝ)^rmax := by
   calc
@@ -55,9 +63,13 @@ lemma cubeAbsorbedCoefficient_mass (H : Ideal Eis) (hH : H≠0)
       simp [Fintype.card_finset]
     _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hr) (by positivity)
 
-theorem cubeAbsorbedCoefficient_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
+end
+
+end
+
+theorem cubeAbsorbedCoefficient_small_power  rmax  (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ {σ : Type*} [Fintype σ] [DecidableEq σ]
-      (H : Ideal Eis),H≠0 → ∀ (L : σ→Finset (Ideal Eis)) (w : ∀ i,L i→ℂ),
+      (H : Ideal ActualEisensteinCubic.O),H≠0 → ∀ (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (w : ∀ i,L i→ℂ),
       (∀ i P,‖w i P‖≤1) → Fintype.card σ≤rmax →
       (∑ T : Finset σ,‖cubeAbsorbedCoefficient H L w T‖)^2≤C*(Ideal.absNorm H:ℝ)^ε := by
   let δ : ℝ := ε/(2*rmax+1)
@@ -75,8 +87,7 @@ theorem cubeAbsorbedCoefficient_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε)
     apply (div_le_iff₀ hp).mpr
     nlinarith
   calc
-    _ ≤ ((2:ℝ)^rmax*((idealDivisors H).card:ℝ)^rmax)^2 := by
-      exact pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _ => norm_nonneg _))
+    _ ≤ ((2:ℝ)^rmax*((idealDivisors H).card:ℝ)^rmax)^2 := pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _ => norm_nonneg _))
         (cubeAbsorbedCoefficient_mass H hH L w hw rmax hr) 2
     _ ≤ ((2:ℝ)^rmax*(D*(Ideal.absNorm H:ℝ)^δ)^rmax)^2 := by gcongr; exact hd H hH
     _ = ((2:ℝ)^rmax*D^rmax)^2*(Ideal.absNorm H:ℝ)^(δ*(rmax:ℝ)*2) := by
@@ -85,7 +96,7 @@ theorem cubeAbsorbedCoefficient_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε)
       rw [he,Real.rpow_mul_natCast hn0.le δ rmax]
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hn hde) (by positivity)
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

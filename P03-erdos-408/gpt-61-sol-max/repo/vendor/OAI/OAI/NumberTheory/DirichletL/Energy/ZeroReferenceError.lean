@@ -6,19 +6,19 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneousError
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceError
 open HeckeFamily ConcreteTraceCRT HeckeDyadic QuadraticInitialBound
 open CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison
 open CenteredMomentEnergyReferenceHomogeneousError
-local notation "O"=>HeckeFamily.O
 
-theorem short_energy_bound (b:ℝ):
+
+theorem short_energy_bound  b :
     ∃C:ℝ,0<C ∧ ∀W:𝓢(ℝ,ℂ),Function.support (W:ℝ→ℂ)⊆Set.Iic b →
-      ∀(χ:O→Character)(t X K:ℝ)(Φ:𝓢(ℝ,ℂ))(keep:O→Prop),0<X →0<K →
-      (∀z:O,0≤(Φ (‖eisEmbedding z‖^2/K)).re) →
+      ∀(χ:HeckeFamily.O→Character)(t X K:ℝ)(Φ:𝓢(ℝ,ℂ))(keep:HeckeFamily.O→Prop),0<X →0<K →
+      (∀z:HeckeFamily.O,0≤(Φ (‖eisEmbedding z‖^2/K)).re) →
       radialEnergy (fun z=>polynomial (χ z) false W X 0 t) keep Φ K≤
         C*((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W)^2*diagonalControl Φ*max 1 K*X:=by
   obtain ⟨C,hC,h⟩:=natural_reference_error_homogeneous (∅:Finset (Fin 0)) b
@@ -31,6 +31,6 @@ theorem short_energy_bound (b:ℝ):
 
 end SevenEighths.CenteredMomentEnergyZeroReferenceError
 
-end
+
 
 end OAI

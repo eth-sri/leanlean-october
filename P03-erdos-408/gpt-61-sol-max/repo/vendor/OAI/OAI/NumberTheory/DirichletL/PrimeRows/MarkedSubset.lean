@@ -11,11 +11,11 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEulerFinsupp
-local notation "O" => HeckeFamily.O
 
-theorem markedRowSeries_subset_replacement (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (T J : Finset PrimeIdeal) (hJ : J⊆T) (hT : ∀P∈T,P.val∉S)
-    (η : Character) (u : O) (x w z : ℂ)
+
+theorem markedRowSeries_subset_replacement  S  (hS : ∀P∈S,Prime P)
+     T J  (hJ : J⊆T) (hT : ∀P∈T,P.val∉S)
+     η   u   x w z 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     markedIdealHighSeries S (∏P∈T\J,P.val) η u x w z=
       markedIdealHighSeries (markExclusions S T) 1 η u x w z*
@@ -61,14 +61,14 @@ theorem markedRowSeries_subset_replacement (S : Finset (Ideal O)) (hS : ∀P∈S
   funext P
   exact (heq P).symm
 
-def spectralCompensatedRow (S : Finset (Ideal O)) (T : Finset PrimeIdeal)
-    (η : Character) (u : O) (x w z : ℂ) (B q : PrimeIdeal→ℂ) : ℂ :=
+def spectralCompensatedRow (S : Finset (Ideal HeckeFamily.O)) (T : Finset PrimeIdeal)
+    (η : Character) (u : HeckeFamily.O) (x w z : ℂ) (B q : PrimeIdeal→ℂ)  :=
   ∑J∈T.powerset,(-1:ℂ)^J.card*(∏P∈J,q P)*(∏P∈T\J,B P)*
     markedIdealHighSeries S (∏P∈T\J,P.val) η u x w z
 
-theorem spectralCompensatedRow_eq_product (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : O)
-    (x w z : ℂ) (B q : PrimeIdeal→ℂ)
+theorem spectralCompensatedRow_eq_product  S  (hS : ∀P∈S,Prime P)
+     T  (hT : ∀P∈T,P.val∉S)  η   u 
+     x w z   B q 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     spectralCompensatedRow S T η u x w z B q=
       markedIdealHighSeries (markExclusions S T) 1 η u x w z*
@@ -81,9 +81,9 @@ theorem spectralCompensatedRow_eq_product (S : Finset (Ideal O)) (hS : ∀P∈S,
   simp only [Finset.prod_mul_distrib]
   ring
 
-theorem indexedCompensatedHigh_eq_spectral {K : ℕ} (η : Character) (S : Finset (Ideal O))
+theorem indexedCompensatedHigh_eq_spectral {K : ℕ}  η   S 
     (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
-    (hs : ∀i,CanonicalQuadraticSieve.Supported (P i).val) (u : O) (x w z : ℂ) :
+    (hs : ∀i,CanonicalQuadraticSieve.Supported (P i).val)  u   x w z  :
     indexedCompensatedHigh η S (fun i=>CompletedGauss.primaryGenerator (P i).val) u x w z=
       spectralCompensatedRow S (Finset.univ.image P) η u x w z
         (fun Q=>star (idealCoeff η Q.val)*(Q.val.absNorm:ℂ)^x)

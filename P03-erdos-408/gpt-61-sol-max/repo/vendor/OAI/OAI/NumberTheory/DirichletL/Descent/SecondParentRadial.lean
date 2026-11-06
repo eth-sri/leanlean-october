@@ -11,7 +11,7 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers RayFourExpansion
 open InverseInitialArithmetic (sourceIdeal)
 open InversePrincipalEnergy InverseSecondPrincipalCaller
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -23,11 +23,11 @@ theorem first_fresh_parent_radial_truncated
     {Jo : ℕ} (parent : SecondParentSource ι Jo) (F D : Finset ι)
     (hq : parent.quotient = sourceIdeal p D)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
-    (slots : Finset σ) (lists : σ→Finset ι) (coeff : σ→ι→ℂ)
+    (slots : Finset σ)  lists   coeff 
     (hD : ∀ i∈slots,Disjoint (lists i) D)
-    (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hs : Function.support om⊆Set.Icc a b)
-    (X t Y : ℝ) (hX : 0<X) (hY : 0<Y) (core : FirstCoreIndex)
-    (K : Finset ι → Finset ι → Finset Eis) :
+     om   a b   ha   hs 
+     X t Y  (hX : 0<X) (hY : 0<Y)  core 
+     K  :
     let Ψ₀ := firstCoreTwist negative χ Ψ core
     let H₀ := markedRadial p slots lists coeff ∅ (principalWindow om a b ha hs negative t) X
     firstFreshSecondPoisson p hp hg hinj F D parent.cube.support
@@ -65,7 +65,7 @@ theorem first_fresh_parent_radial_truncated
   exact inputConjugateRow_eq_truncated_add_tail p hp hg hinj hc F Ψ₀ (secondParentPuncture p m parent)
     (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y hY K
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

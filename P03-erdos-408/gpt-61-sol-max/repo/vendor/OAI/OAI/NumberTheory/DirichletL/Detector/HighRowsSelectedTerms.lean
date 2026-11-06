@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstRamified
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
@@ -144,6 +144,6 @@ theorem sourceRowTerm_selected_base (eta a rho x w z : ℂ)
         linarith
 
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

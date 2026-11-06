@@ -14,7 +14,7 @@ target-true changed slots. Use freshMass = idealMass / sharedLabelMass on
 compatible pairs, then source/target average duality for the relative
 kernel. This is the finite marginal identity in the comparison bridge;
 it assumes no analytic comparison estimate. -/
-def PatternAveragingTask : Prop :=
+def PatternAveragingTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J m : ℕ) (hj : m ≤ J)
     (block : P.BigGroup → Bool) (Q : ℕ) (h ξ θ ζ : ℝ)
     (c : ProbeChoice P m block),

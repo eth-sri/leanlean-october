@@ -1,4 +1,8 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P4Rat.RationalFourier
+import Erdos821.P5Energy.Additive
 
 public import Erdos821.P5MarkedEnergy.MarkRemoval
 public import Erdos821.S56.GroupParts
@@ -28,24 +32,18 @@ open Blueprint.Analytic
 
 /-! ### Rational phases by characters -/
 
-theorem e_int (k : ℤ) : e (k : ℝ) = 1 := by
-  unfold e
-  have : (2 * (Real.pi : ℂ) * ((k : ℝ) : ℂ) * Complex.I) = (k : ℂ) * (2 * Real.pi * Complex.I) := by
-    push_cast; ring
-  rw [this, Complex.exp_int_mul_two_pi_mul_I]
 
-theorem e_add' (a b : ℝ) : e (a + b) = e a * e b := by
-  unfold e; rw [← Complex.exp_add]; congr 1; push_cast; ring
 
-theorem e_periodic (a : ℝ) (k : ℤ) : e (a + k) = e a := by
-  rw [e_add', e_int, mul_one]
+
+
+theorem e_periodic  a  (k : ℤ) : e (a + k) = e a := by solve_by_elim [_root_.Erdos821.P4Rat.rf_e_add_int]
 
 /-- The character coefficient of the rational phase. -/
-def cchi (r : ℕ) (u : ℤ) (χ : DirichletCharacter ℂ r) (k : ℕ) : ℂ :=
+def cchi (r ) (u : ℤ) (χ : DirichletCharacter ℂ r) (k : ℕ)  :=
   ((Nat.totient r : ℂ))⁻¹ * ∑ a ∈ (Finset.range r).filter (fun a => Nat.Coprime a r),
     χ ((a : ZMod r)⁻¹) * e (u * a * k / r)
 
-theorem norm_cchi_le (r : ℕ) (u : ℤ) (χ : DirichletCharacter ℂ r) (k : ℕ) : ‖cchi r u χ k‖ ≤ 1 := by
+theorem norm_cchi_le  r   u   χ   k  : ‖cchi r u χ k‖ ≤ 1 := by
   unfold cchi
   rw [norm_mul, norm_inv, Complex.norm_natCast]
   have hcard : ((Finset.range r).filter (fun a => Nat.Coprime a r)).card = Nat.totient r := by
@@ -72,7 +70,7 @@ theorem norm_cchi_le (r : ℕ) (u : ℤ) (χ : DirichletCharacter ℂ r) (k : �
       _ = Nat.totient r := by rw [Finset.sum_const, hcard]; simp
 
 /-- Character expansion of the rational phase on units. -/
-theorem e_eq_sum_cchi (r : ℕ) (hr : 1 ≤ r) (u : ℤ) (v k : ℕ) (hv : Nat.Coprime v r) :
+theorem e_eq_sum_cchi (r : ℕ) (hr : 1 ≤ r) (u : ℤ)  v k  (hv : Nat.Coprime v r) :
     e (u * (v * k : ℕ) / r) = ∑ χ : DirichletCharacter ℂ r, cchi r u χ k * χ (v : ZMod r) := by
   have : NeZero r := ⟨by omega⟩
   unfold cchi

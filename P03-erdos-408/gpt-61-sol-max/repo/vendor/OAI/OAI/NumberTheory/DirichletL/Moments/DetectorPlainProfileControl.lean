@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.DetectorEnergyInitialState
 
@@ -6,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorEnergyInitialState
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainProfileControl
 open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary
 open CenteredMomentFiniteProfileExceptional
 
-theorem paired_control (S:Finset (ℕ×ℕ)):
+theorem paired_control  S :
     ∃J:ℕ,∃C:ℝ,0<C ∧ ∀reverse:Bool,∀j k:ℕ,j+k≤2 →
       ∀σ∈Set.Icc (0:ℝ) 1,∀t:ℝ,
       (detectorProfiles reverse j k σ t).control S ^2≤C*(1+‖t‖)^J:=by
@@ -30,10 +31,9 @@ theorem paired_control (S:Finset (ℕ×ℕ)):
   calc
     _≤((C*(1+‖t‖)^J)^2)^2:=hs
     _=C^4*(1+‖t‖)^(4*J):=by
-      rw [←pow_mul,mul_pow,←pow_mul]
-      congr 2 ; omega
+      ring
 
-theorem source_height_factor (S:Finset (ℕ×ℕ)):
+theorem source_height_factor  S :
     ∃J:ℕ,∃C:ℝ,0<C ∧ ∀degree:ℕ,∀reverse:Bool,∀j k:ℕ,j+k≤2 →
       ∀σ∈Set.Icc (0:ℝ) 1,∀height t:ℝ,0≤height → |t|≤height →
       (detectorProfiles reverse j k σ t).control S ^2*(1+|(0:ℝ)|+height)^degree
@@ -43,14 +43,12 @@ theorem source_height_factor (S:Finset (ℕ×ℕ)):
   intro degree reverse j k hjk σ hσ height t hh ht
   have hb:(detectorProfiles reverse j k σ t).control S ^2≤C*(1+height)^J:=by
     apply (h reverse j k hjk σ hσ t).trans
-    apply mul_le_mul_of_nonneg_left _ hC.le
-    apply pow_le_pow_left₀ (by positivity)
-    simpa only [Real.norm_eq_abs] using add_le_add le_rfl ht
+    bound
   simpa only [abs_zero,add_zero,pow_add,mul_assoc] using
     mul_le_mul_of_nonneg_right hb (pow_nonneg (by linarith:0≤1+height) degree)
 
 end SevenEighths.CenteredMomentDetectorPlainProfileControl
 
-end
+
 
 end OAI

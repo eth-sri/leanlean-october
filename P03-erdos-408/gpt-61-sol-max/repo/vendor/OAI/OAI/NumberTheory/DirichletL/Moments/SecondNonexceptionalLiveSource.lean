@@ -1,40 +1,8 @@
 module
-
 public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalCost
 public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalAggregate
 public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
-
-@[expose] public section
-
 namespace OAI
-
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
-open Filter
-
 namespace SevenEighths.CenteredMomentSecondNonexceptionalLiveSource
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSecondNonexceptionalCost
-open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass
-open CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
-open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
-open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentSecondActivePhysicalDictionary
-local notation "O" => HeckeFamily.O
-variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
-
 end SevenEighths.CenteredMomentSecondNonexceptionalLiveSource
-
-end
-
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.CharacterCellTasks
 public import Erdos821.S34.KernelTransport
@@ -10,7 +11,7 @@ open scoped BigOperators Classical
 open Filter
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint Blueprint.Analytic
 
 theorem gram_factor_le_two (L q ξexp K : ℝ) (Q : ℕ)
@@ -40,8 +41,7 @@ theorem gram_factor_le_two (L q ξexp K : ℝ) (Q : ℕ)
         rw [show -ξexp - 2 = -ξexp + (-2) by ring, Real.rpow_add hLpos,
           Real.rpow_neg hLpos.le (2 : ℝ), Real.rpow_two]
         ring
-      _ ≤ L ^ (-ξexp) * 1 := mul_le_mul_of_nonneg_left
-        ((div_le_one₀ (by positivity : (0 : ℝ) < L ^ (2 : ℕ))).mpr hKL) hξpos.le
+      _ ≤ L ^ (-ξexp) * 1 := (by bound)
       _ = _ := mul_one _
   have hd := (div_le_one₀ hξpos).mpr hb
   linarith
@@ -80,5 +80,5 @@ theorem eventually_cell_operator_norm (hchar : CharacterCellTask) (hc : Harmonic
   · exact (cell_operator_norm G k Q h (L x ^ (-ξexp)) δ hξ hδ hgram f).trans hnorm
   · exact (cell_transpose_operator_norm G k Q h (L x ^ (-ξexp)) δ hξ hδ hgram f).trans hnorm
 
-end
+
 end Erdos821.S34Core

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapInputFourier
 public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapFresh
@@ -14,7 +15,7 @@ namespace SevenEighths.InverseInitialOverlapSource
 open InverseInitialOverlapFresh InverseInitialOverlapInputFourier
 variable {σ ι : Type*} [DecidableEq σ] [DecidableEq ι]
 
-def tupleCoordinate (I : Finset σ) (y : σ→ι→ℝ) (q : ∀i∈I,ι) (i : σ) : ℝ :=
+def tupleCoordinate (I : Finset σ) (y : σ→ι→ℝ) (q : ∀i∈I,ι) (i : σ)  :=
   if hi:i∈I then y i (q i hi) else 1
 
 omit [DecidableEq ι] in
@@ -33,7 +34,7 @@ theorem insert_original_fresh
     (hFresh : ∀(v:σ→ℝ)(yj yc:ℝ),
       (∀i∈I,v i∈Set.Icc (lo i) (hi i))→yj∈Set.Icc jlo jhi→0<yc→
       W (yj*yc/(∏i∈I,v i))≠0→wFresh yc=1)
-    (A : Finset ι) (yj yc : ℝ) (hj : yj∈Set.Icc jlo jhi) (hc : 0<yc) :
+    (A : Finset ι)  yj yc  (hj : yj∈Set.Icc jlo jhi) (hc : 0<yc) :
     wFresh yc*(∑q∈I.pi L,
       (∏i∈I.attach,if q i.val i.property∈A then a i.val (q i.val i.property) else 0)*
         W (yj*yc/(∏i∈I.attach,y i.val (q i.val i.property)))) =
@@ -50,14 +51,7 @@ theorem insert_original_fresh
   have hcoord : ∀i∈I,tupleCoordinate I y q i∈Set.Icc (lo i) (hi i) := by
     intro i hi
     have hn := Finset.prod_ne_zero_iff.mp hz ⟨i,hi⟩ (Finset.mem_attach _ _)
-    have hcoeff : a i (q i hi)≠0 := by
-      intro he
-      apply hn
-      split_ifs
-      · exact he
-      · rfl
-    simpa only [tupleCoordinate,dite_eq_left hi] using
-      ha i hi (q i hi) ((Finset.mem_pi.mp hq) i hi) hcoeff
+    grind [tupleCoordinate]
   have hf := hFresh (tupleCoordinate I y q) yj yc hcoord hj hc
     (by rwa [tupleCoordinate_product])
   rw [hf,one_mul]

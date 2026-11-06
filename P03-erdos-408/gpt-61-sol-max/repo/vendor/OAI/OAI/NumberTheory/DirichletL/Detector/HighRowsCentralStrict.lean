@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedTerms
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
@@ -59,6 +59,6 @@ lemma squarefree_base_strict_norm (j : ℕ) (hj : j<6) :
       rw [mul_comm]
       convert ProbeEuler.pow_mul_sqrt (Ideal.absNorm (Ideal.span {p}):ℝ) hQ 1 using 1 <;> norm_num
 end SevenEighths.ProbePrimePower
-end
+
 
 end OAI

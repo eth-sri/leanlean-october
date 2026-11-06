@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalNorms
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 open ProbeEuler
 
@@ -45,6 +45,6 @@ lemma sourceNormPower_identity (I J H X : ℝ) (hI : 0<I) (hJ : 0<J) (hH : 0<H) 
   ring
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

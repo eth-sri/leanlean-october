@@ -7,7 +7,7 @@ public import Mathlib.Tactic.Ring.RingNF
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.S2

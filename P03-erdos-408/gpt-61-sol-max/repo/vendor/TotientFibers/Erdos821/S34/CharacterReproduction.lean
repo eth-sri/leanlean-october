@@ -9,12 +9,12 @@ set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint.Analytic
 
-theorem tuple_product_coprime (G : PrimeGroups) (k : Fin G.size → ℕ)
-    (r : ℕ) (hr : 0 < r)
-    (hp : ∀ g, 0 < k g → ∀ p ∈ G.primes g, r < p) (z : Tuple G k) :
+theorem tuple_product_coprime  G   k 
+     r  (hr : 0 < r)
+    (hp : ∀ g, 0 < k g → ∀ p ∈ G.primes g, r < p)  z  :
     Nat.Coprime (product G k z) r := by
   unfold product
   apply Nat.coprime_prod_left_iff.mpr
@@ -24,20 +24,20 @@ theorem tuple_product_coprime (G : PrimeGroups) (k : Fin G.size → ℕ)
   exact Nat.coprime_of_lt_prime hr.ne' (hp g (by have hj := j.isLt; omega) (z g j).val (z g j).property)
     (G.prime g (z g j).val (z g j).property)
 
-theorem charValue_norm_of_coprime {Q : ℕ} (χ : CharacterIndex Q) (n : ℕ)
+theorem charValue_norm_of_coprime {Q : ℕ} (χ : CharacterIndex Q)  n 
     (hn : Nat.Coprime n (χ.1.val + 1)) : ‖charValue χ n‖ = 1 := by
   have hu := (ZMod.isUnit_iff_coprime n (χ.1.val + 1)).mpr hn
   simpa only [charValue, IsUnit.unit_spec] using χ.2.unit_norm_eq_one hu.unit
 
-theorem cell_character_reproduction (G : PrimeGroups) (k : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ δ : ℝ) (hξ : 0 < ξ) (hδ : 0 ≤ δ)
+theorem cell_character_reproduction  G   k 
+    (Q : ℕ)  h ξ δ  (hξ : 0 < ξ) (hδ : 0 ≤ δ)
     (χ : CharacterIndex Q) (hχ : χ ∈ primitiveCharacters Q)
     (hunit : ∀ z : Tuple G k, Nat.Coprime (product G k z) (χ.1.val + 1))
     (hgram : ∀ j : ℤ, ξ ≤ cellMass G k h j →
       ∀ ψ ∈ primitiveCharacters Q, ψ ≠ χ →
       ‖expect G k (fun z => if cell h (product G k z) = j then
         star (charValue ψ (product G k z)) * charValue χ (product G k z) else 0)‖ ≤ δ)
-    (X : Tuple G k) (hret : ξ ≤ cellMass G k h (cell h (product G k X))) :
+     X  (hret : ξ ≤ cellMass G k h (cell h (product G k X))) :
     ‖cellApply G k Q h ξ (fun z => charValue χ (product G k z)) X -
         charValue χ (product G k X)‖ ≤ (Q : ℝ) ^ 2 * δ / ξ := by
   let w := tupleWeight G k
@@ -91,5 +91,5 @@ theorem cell_character_reproduction (G : PrimeGroups) (k : Fin G.size → ℕ)
       exact_mod_cast primitiveCharacterTask_proof.1 Q)
   exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hc hδ) hξ.le
 
-end
+
 end Erdos821.S34Core

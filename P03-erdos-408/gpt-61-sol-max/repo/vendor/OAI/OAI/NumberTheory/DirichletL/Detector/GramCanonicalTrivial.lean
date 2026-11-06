@@ -6,19 +6,19 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalBlock
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-theorem canonical_trivial_block (a b B : ℝ) (ha : 0<a) (hb : 0≤b) (hB : 0≤B) (A : ℕ) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+theorem canonical_trivial_block  a b B  (ha : 0<a) (hb : 0≤b) (hB : 0≤B)  A  :
     ∃s : Finset (ℕ×ℕ),∃K : ℝ,0<K ∧
       ∀(W : ℝ→ℂ)(_hcompact : HasCompactSupport W),
       (Function.support W⊆Set.Icc a b)→(∀x,‖W x‖≤B)→
       ∀(U : SchwartzMap ℝ ℂ)(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
-      (C : SupportedIdeal)(k : GramFrequency)(d : O)(N T v : ℝ),0<N→0≤T→
+      (C : SupportedIdeal)(k : GramFrequency)(d : ActualEisensteinCubic.O)(N T v : ℝ),0<N→0≤T→
       (1+T)^A*‖canonicalLatticeBlock S hS σ C k d W U v T N‖≤
         K*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(Ideal.absNorm C.val:ℝ)*N^2 := by
   obtain ⟨s,K,hK,hprofile⟩ := shellProfile_weighted_bound a b B ha hB A
@@ -32,9 +32,9 @@ theorem canonical_trivial_block (a b B : ℝ) (ha : 0<a) (hb : 0≤b) (hB : 0≤
   have hGN : ∀z∈G,‖eisEmbedding z‖^2≤b*N := hFN
   unfold canonicalLatticeBlock
   rw [shell_lattice_tsum W hcompact N hN U v T (fun n m=>canonicalJoint S hS σ C k (d*n) (d*m))]
-  have hcoef (n m : O) : ‖canonicalJoint S hS σ C k (d*n) (d*m)‖≤(Ideal.absNorm C.val:ℝ) :=
+  have hcoef (n m : ActualEisensteinCubic.O) : ‖canonicalJoint S hS σ C k (d*n) (d*m)‖≤(Ideal.absNorm C.val:ℝ) :=
     canonicalJoint_norm S hS σ C k _ _
-  have hpoint (n m : O) : (1+T)^A*‖canonicalJoint S hS σ C k (d*n) (d*m)*
+  have hpoint (n m : ActualEisensteinCubic.O) : (1+T)^A*‖canonicalJoint S hS σ C k (d*n) (d*m)*
       shellProfile W v U T (‖eisEmbedding n‖^2/N) (‖eisEmbedding m‖^2/N)‖≤
       (Ideal.absNorm C.val:ℝ)*(K*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) U) := by
     rw [norm_mul]
@@ -63,6 +63,6 @@ theorem canonical_trivial_block (a b B : ℝ) (ha : 0<a) (hb : 0≤b) (hB : 0≤
         (K*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) U)) by positivity)]
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

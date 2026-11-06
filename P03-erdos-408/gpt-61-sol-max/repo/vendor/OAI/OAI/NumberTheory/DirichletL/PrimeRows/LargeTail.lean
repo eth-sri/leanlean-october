@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.GeometricTail
 
@@ -6,18 +7,18 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.GeometricTail
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+
 
 lemma absolutePhysicalDyadIntegral_nonneg {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
+     S   hS   hmax 
+     η   R  (T : Fin K→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→P.val∉S) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z σ υ r : ℝ) :
+     W0 W1   X Y Z σ υ r  :
     0≤absolutePhysicalDyadIntegral S hS hmax η R T hT W Yp W0 W1 X Y Z σ υ r := by
   apply integral_nonneg
   intro p
@@ -26,13 +27,13 @@ lemma absolutePhysicalDyadIntegral_nonneg {K : ℕ}
 theorem large_physical_dyads_summable (K : ℕ) (δ a b B r ζ : ℝ)
     (hδ : 0<δ) (hδ' : δ≤1) (hr : (17/50:ℝ)≤r) (hr' : 8/5+δ<r) (hζ : 0<ζ)
     (ha : 0<a) (hb : 0<b) (hB : 0≤B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (Z : ℝ),1≤Z → ∀R : ℕ→Finset FreeRow,
-      (∀n u,u∈R n → u.val≠1 ∧ Z^((13/16:ℝ)+ζ)*(2:ℝ)^n≤((Ideal.span {u.val}:Ideal O).absNorm:ℝ) ∧
-        ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤2*(Z^((13/16:ℝ)+ζ)*(2:ℝ)^n)) →
+      (∀n u,u∈R n → u.val≠1 ∧ Z^((13/16:ℝ)+ζ)*(2:ℝ)^n≤((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ) ∧
+        ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤2*(Z^((13/16:ℝ)+ζ)*(2:ℝ)^n)) →
       ∀(T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S),
       (∀P:(∀i,T i),Function.Injective (fun i=>(P i).val)) →
       ∀length : Fin K→ℝ,(∀i,0≤length i) → (∑i,length i)=(1/6:ℝ) →
@@ -52,7 +53,7 @@ theorem large_physical_dyads_summable (K : ℕ) (δ a b B r ζ : ℝ)
     (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z 2 2 r
   let g : ℕ→ℝ := fun n=>Z^((53/32:ℝ)+(13/16:ℝ)*r)*(Z^((13/16:ℝ)+ζ)*(2:ℝ)^n)^(8/5+δ-r)
   let A : ℝ := C*(η.modulus.absNorm:ℝ)^δ
-  have hf0 (n : ℕ) : 0≤f n := absolutePhysicalDyadIntegral_nonneg S hS hmax η (R n) T hT W _ W0 W1 _ _ _ _ _ _
+  have hf0 (n : ℕ) : 0≤f n := (by solve_by_elim [absolutePhysicalDyadIntegral_nonneg])
   have hbnd (n : ℕ) : f n≤A*g n := by
     have hUn : 1≤Z^((13/16:ℝ)+ζ)*(2:ℝ)^n :=
       one_le_mul_of_one_le_of_one_le (Real.one_le_rpow hZ (by linarith)) (one_le_pow₀ (by norm_num))
@@ -69,6 +70,6 @@ theorem large_physical_dyads_summable (K : ℕ) (δ a b B r ζ : ℝ)
     _ = _ := by dsimp [A];ring
 
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

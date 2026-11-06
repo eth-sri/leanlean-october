@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.RankExpansion
 public import Erdos821.P3Tail.MemoryTail
@@ -26,16 +27,17 @@ theorem distinct_history_guard_hasFiniteSupport {β : Type*} [Zero β]
     @Set.toFinite (MemoryHistory A n) {H | H.Valid ∧ H.DistinctBirths}
       (MemoryHistory.valid_distinct_finite A n)
   apply hf.subset
-  intro H hH
-  change (if H.Valid ∧ H.DistinctBirths ∧ guard H then f H else 0) ≠ 0 at hH
-  by_contra hn
-  exact hH (ite_eq_right (fun hp => hn ⟨hp.1, hp.2.1⟩))
+  simp_all
 
-def memoryTailExpression (A : Model F P J m) (n B : ℕ) (rho theta : ℝ) : ℂ :=
+def memoryTailExpression (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)  :=
   ∑' H : MemoryHistory A n,
     if H.Valid ∧ H.DistinctBirths ∧ ¬ H.Truncated B then H.Weight rho theta else 0
 
-theorem memoryTailExpression_summable (A : Model F P J m) (n B : ℕ) (rho theta : ℝ) :
+section
+variable (A : Model F P J m) (n B : ℕ) (rho v theta CG CE : ℝ)
+
+
+theorem memoryTailExpression_summable       :
     Summable (fun H : MemoryHistory A n =>
       if H.Valid ∧ H.DistinctBirths ∧ ¬ H.Truncated B then H.Weight rho theta else 0) := by
   apply summable_of_hasFiniteSupport
@@ -44,7 +46,7 @@ theorem memoryTailExpression_summable (A : Model F P J m) (n B : ℕ) (rho theta
   ext H
   by_cases h : H.Valid ∧ H.DistinctBirths ∧ ¬ H.Truncated B <;> simp [h]
 
-theorem memoryTailExpression_abs_summable (A : Model F P J m) (n B : ℕ) (rho theta : ℝ) :
+theorem memoryTailExpression_abs_summable       :
     Summable (fun H : MemoryHistory A n =>
       if H.Valid ∧ H.DistinctBirths ∧ ¬ H.Truncated B then ‖H.Weight rho theta‖ else 0) := by
   apply summable_of_hasFiniteSupport
@@ -53,8 +55,8 @@ theorem memoryTailExpression_abs_summable (A : Model F P J m) (n B : ℕ) (rho t
   ext H
   by_cases h : H.Valid ∧ H.DistinctBirths ∧ ¬ H.Truncated B <;> simp [h]
 
-theorem truncatedDistinctMemoryExpression_summable (A : Model F P J m) (n B : ℕ)
-    (rho theta : ℝ) :
+theorem truncatedDistinctMemoryExpression_summable    
+      :
     Summable (fun H : MemoryHistory A n =>
       if H.Valid ∧ H.Truncated B ∧ H.DistinctBirths then H.Weight rho theta else 0) := by
   apply summable_of_hasFiniteSupport
@@ -64,18 +66,15 @@ theorem truncatedDistinctMemoryExpression_summable (A : Model F P J m) (n B : �
   by_cases hv : H.Valid <;> by_cases hd : H.DistinctBirths <;> by_cases ht : H.Truncated B <;>
     simp [hv, hd, ht]
 
-theorem distinctMemoryExpression_split (A : Model F P J m) (n B : ℕ) (rho theta : ℝ) :
+theorem distinctMemoryExpression_split       :
     distinctMemoryExpression A n rho theta =
       truncatedDistinctMemoryExpression A n B rho theta + memoryTailExpression A n B rho theta := by
   unfold distinctMemoryExpression truncatedDistinctMemoryExpression memoryTailExpression
   rw [← (truncatedDistinctMemoryExpression_summable A n B rho theta).tsum_add
     (memoryTailExpression_summable A n B rho theta)]
-  apply tsum_congr
-  intro H
-  by_cases hv : H.Valid <;> by_cases hd : H.DistinctBirths <;> by_cases ht : H.Truncated B <;>
-    simp [hv, hd, ht]
+  grind
 
-theorem memoryTailExpression_norm_le (A : Model F P J m) (n B : ℕ) (rho theta : ℝ) :
+theorem memoryTailExpression_norm_le       :
     ‖memoryTailExpression A n B rho theta‖ ≤
       ∑' H : MemoryHistory A n,
         if H.Valid ∧ H.DistinctBirths ∧ ¬ H.Truncated B then ‖H.Weight rho theta‖ else 0 := by
@@ -85,8 +84,8 @@ theorem memoryTailExpression_norm_le (A : Model F P J m) (n B : ℕ) (rho theta 
     simpa only [f, apply_ite norm, norm_zero] using memoryTailExpression_abs_summable A n B rho theta
   simpa only [memoryTailExpression, f, apply_ite norm, norm_zero] using norm_tsum_le_tsum_norm hs
 
-theorem distinctMemoryExpression_norm_le_cutoff (A : Model F P J m) (n B : ℕ)
-    (rho v theta CG CE : ℝ) (hv : 1 ≤ v) (hCG : 0 ≤ CG) (hCE : 0 ≤ CE)
+theorem distinctMemoryExpression_norm_le_cutoff    
+      (hv : 1 ≤ v) (hCG : 0 ≤ CG) (hCE : 0 ≤ CE)
     (hG : ∀ (i : Fin (n + 1)) (s : P.MemoryState (J + F.ell)),
       Summable (fun t => absoluteScaledMemoryGhostKernel F J n rho 2 i s t * P.memoryWeight v t) ∧
       (∑' t, absoluteScaledMemoryGhostKernel F J n rho 2 i s t * P.memoryWeight v t) ≤
@@ -103,6 +102,8 @@ theorem distinctMemoryExpression_norm_le_cutoff (A : Model F P J m) (n B : ℕ)
   apply (norm_add_le _ _).trans
   exact add_le_add le_rfl ((memoryTailExpression_norm_le A n B rho theta).trans
     (MemoryTailTask_proof F P J m n A rho v theta CG CE hv hCG hCE hG hE B))
+
+end
 
 
 end Erdos821.S2Core

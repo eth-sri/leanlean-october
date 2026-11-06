@@ -17,7 +17,7 @@ structure SupportedWitness {Label : Type*} (χ : Label→Character)
     extends Witness χ U a ε tstar T allowance i where
   product_length_lower : tstar-r-ε≤m
 
-theorem actual_supported_witness_family (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
+theorem actual_supported_witness_family (dmin dmax τ ε e κ η : ℝ)  I 
     (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)
     (hτzero : τ<dmin/2) (hτheight : 4*τ<dmin*η)
     (hε : 0<ε) (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hη : 0≤η)

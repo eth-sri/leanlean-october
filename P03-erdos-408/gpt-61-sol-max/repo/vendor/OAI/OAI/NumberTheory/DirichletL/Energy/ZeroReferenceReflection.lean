@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneous
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -20,16 +20,16 @@ open CenteredMomentEnergyZeroReferenceMoments CenteredMomentEnergyReferenceLowWi
 open CenteredMomentEnergyReferenceHomogeneous CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-local notation "O"=>HeckeFamily.O
+
 
 theorem reference_from_low
     (a b bΦ epsilon xi saving Lreflect:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi)
-    (B:ℕ)(hB:2≤B)(S:Finset (ℕ×ℕ)):
+    (B:ℕ)(hB:2≤B) S :
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃Dchild:ℝ,0<Dchild ∧
     ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D:ℝ,0<C ∧ 0<D ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(Bmask L Mcap ε:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K →
+      ∀(Bmask L Mcap ε:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S K → 0≤Bmask →
       ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → s.width≤Mcap →
       ∀(Wlong Wshort:𝓢(ℝ,ℂ)),
@@ -78,6 +78,6 @@ theorem reference_from_low
 
 end SevenEighths.CenteredMomentEnergyZeroReferenceReflection
 
-end
+
 
 end OAI

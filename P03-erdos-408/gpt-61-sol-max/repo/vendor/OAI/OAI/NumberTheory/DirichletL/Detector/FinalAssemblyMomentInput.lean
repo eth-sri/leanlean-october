@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyData
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyMomentMono
@@ -14,9 +15,9 @@ namespace SevenEighths.ProbeFinalAssembly
 open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters
 open HeckeInverseAmplification
 
-def SourceMomentBound {Δ : ℝ} {D : HighData Δ} (F : SourceData D)
+def SourceMomentBound {Δ } {D : HighData Δ} (F : SourceData D)
     (counts : CountParameters F.modulus ⊤ D.t) (η : Character)
-    (Z τ C height : ℝ) : Prop :=
+    (Z τ C height : ℝ)  :=
   ∀rows : Finset FreeRow,∀d a : ℝ, (1/200:ℝ)≤d → d≤7/8 → 51/100<a → a≤1 →
     (∀u∈rows,u.val≠1 ∧ Z^(1/100:ℝ)≤rowNorm u ∧
       (calibrationForSet F.S F.maximal).residueMonoid u.val≠0 ∧ rowNorm u≤Z^(d-D.t)) →
@@ -27,7 +28,7 @@ def SourceMomentBound {Δ : ℝ} {D : HighData Δ} (F : SourceData D)
       (if 2*a-1≤5/6 then counts.kB else counts.kH) C height D.t
 
 lemma SourceMomentBound.mono_constant {Δ : ℝ} {D : HighData Δ} {F : SourceData D}
-    {counts : CountParameters F.modulus ⊤ D.t} {η : Character} {Z τ C C' height : ℝ}
+    {counts : CountParameters F.modulus ⊤ D.t}  {η}  {Z τ C C' height : ℝ}
     (hZ : 0≤Z) (h : SourceMomentBound F counts η Z τ C height) (hC : C≤C') :
     SourceMomentBound F counts η Z τ C' height := by
   intro rows d a hd hd' ha ha' hrows i z hz hzh
@@ -46,8 +47,7 @@ lemma polynomial_height_absorption (C Z τ J t : ℝ)
       rw [Real.mul_rpow (by norm_num : (0:ℝ)≤2) (Real.rpow_nonneg hZp.le _),←Real.rpow_mul hZp.le]
       ring
     _≤(C*2^J)*Z^t := by
-      apply mul_le_mul_of_nonneg_left _ (by positivity)
-      exact Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)
+      bound
 
 end SevenEighths.ProbeFinalAssembly
 

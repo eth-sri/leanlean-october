@@ -8,19 +8,19 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSeparatedColumns
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic
 open FirstPassCubeLabels
 namespace SevenEighths.InverseInitialOverlapInputFourier
 open InverseMoment InverseInitialOverlapFourier InverseInitialArithmetic InverseInitialRayAttachment
-local notation "Eis"=>ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-theorem input_integral (F : Finset ι) (Ψ : Eis→*ℂ) (j u : Eis)
+theorem input_integral (F : Finset ι) (Ψ : ActualEisensteinCubic.O→*ℂ) (j u : ActualEisensteinCubic.O)
     (H : Finset ι→ℝ→ℂ) (hH : ∀A∈F.powerset,Integrable (H A)) :
     inputConjugateRow p hg F Ψ j 1 1 (fun A=>∫t:ℝ,H A t) u =
       ∫t:ℝ,inputConjugateRow p hg F Ψ j 1 1 (fun A=>H A t) u := by
@@ -43,6 +43,6 @@ theorem input_integral (F : Finset ι) (Ψ : Eis→*ℂ) (j u : Eis)
 
 end SevenEighths.InverseInitialOverlapInputFourier
 
-end
+
 
 end OAI

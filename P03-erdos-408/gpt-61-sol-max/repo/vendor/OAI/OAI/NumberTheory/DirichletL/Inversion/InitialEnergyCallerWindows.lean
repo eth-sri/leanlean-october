@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerRanges
 public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
@@ -16,19 +17,19 @@ open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask
 open InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge
-local notation "Eis"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
 
-def sourceRelative (x:Source (ι:=ι) 0)(Z D B v θ H:ℝ) : Fin 6→ℝ :=
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)
+
+def sourceRelative (x:Source (ι:=ι) 0)(Z D B v θ H:ℝ)  :=
   relativeNorm (coordinates p (sourcePoint x ∅ ∅)) Z D B v θ H
 
 def windowSource (S:Finset (Source (ι:=ι) 0))(ψ:Fin 4→ℝ→ℂ)
-    (Z D B v θ H:ℝ) : Finset (Source (ι:=ι) 0) :=
+    (Z D B v θ H:ℝ)  :=
   S.filter (fun x=>outerCutoff ψ (sourceRelative p x Z D B v θ H)≠0)
 
 omit [DecidableEq ι] in
-theorem sourceRelative_four (x:Source (ι:=ι) 0)(N M:Finset ι)
-    (Z D B v θ H:ℝ)(i:Fin 4) :
+theorem sourceRelative_four  x  N M 
+     Z D B v θ H  i  :
     relativeNorm (coordinates p (sourcePoint x N M)) Z D B v θ H (InverseSecondChildWindows.outerIndex i)=
       sourceRelative p x Z D B v θ H (InverseSecondChildWindows.outerIndex i) := by
   fin_cases i <;> simp only [InverseSecondChildWindows.outerIndex,sourceRelative,relativeNorm,
@@ -37,8 +38,8 @@ theorem sourceRelative_four (x:Source (ι:=ι) 0)(N M:Finset ι)
     Matrix.cons_val_zero',Matrix.cons_val_succ']
 
 theorem windowSource_four_nonzero
-    (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))(ψ:Fin 4→ℝ→ℂ)(Z D B v θ H:ℝ)
-    {x:Point ι}(hx:x∈pointSource pool (windowSource p S ψ Z D B v θ H))(i:Fin 4) :
+    (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))(ψ:Fin 4→ℝ→ℂ) Z D B v θ H 
+     {x} (hx:x∈pointSource pool (windowSource p S ψ Z D B v θ H)) i  :
     ψ i (relativeNorm (coordinates p x) Z D B v θ H (InverseSecondChildWindows.outerIndex i))≠0 := by
   obtain ⟨s,hs,hx⟩ := Finset.mem_biUnion.mp hx
   obtain ⟨⟨N,M⟩,hNM,rfl⟩ := Finset.mem_image.mp hx
@@ -60,8 +61,8 @@ variable (hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 
 theorem physicalBlock_windowSource
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))(ψ:Fin 4→ℝ→ℂ)
-    (Z D B v θ H m:ℝ)(w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
-    (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ)) :
+    (Z D B v θ H m:ℝ)(w:Source (ι:=ι) 0→ℂ) Ψ  j  marks 
+     W₁ W₂  Φ  :
     physicalBlock p hp hcop hg (pointSource pool S)
       ((fun x=>w x*outerCutoff ψ (sourceRelative p x Z D B v θ H))∘erasePoint)
       Ψ j marks W₁ W₂ Φ Z D m =
@@ -73,8 +74,7 @@ theorem physicalBlock_windowSource
   apply Finset.sum_congr rfl
   intro x hx
   by_cases ho:outerCutoff ψ (sourceRelative p x Z D B v θ H)=0
-  · simp only [ho,ne_eq,not_true_eq_false,ite_false,Function.comp_apply,erase_sourcePoint,
-      mul_zero,zero_mul,Finset.sum_const_zero]
+  · simp_all
   · rw [ite_eq_left ho]
 
 end SevenEighths.InverseInitialEnergyCallerWindows

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalScalar
 
@@ -18,7 +19,7 @@ open CenteredMomentSecondCanonicalLedger CenteredMomentSecondWholeKernel
 open CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily
 open CenteredMomentSecondRadicalBudget CenteredMomentSourceBlockWindows
 open CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
-local notation "O" => HeckeFamily.O
+
 
 open CenteredMomentSecondNonexceptionalScalar
 
@@ -36,12 +37,16 @@ theorem ratio_penalty_le (r a:ℝ) (hr:0<r) (_ha:0≤a) (ha1:a≤1) :
     rw [max_eq_left hi,Real.one_rpow,mul_one]
     exact (div_le_one (by positivity)).mpr (by linarith)
 
-def retainedRatio (n:Fin 4→ℤ):ℝ :=
+def retainedRatio (n:Fin 4→ℤ) :=
   dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3))
 
-theorem actual_envelope_scalar_ratio (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))
-    (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K:ℝ)(_hK:0<K)(n:Fin 4→ℤ)
+section
+variable (η : Character) (t : ℝ) (S : Finset (Ideal HeckeFamily.O)) (β : Ideal HeckeFamily.O→ℂ) (C D : Ideal HeckeFamily.O) (hC : Supported C) (hD : Supported D) (U : Finset (CommonIndex C D)) (R : ℝ) (rows : Finset HeckeFamily.O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (_hK hK : 0<K) (n : Fin 4→ℤ)
+
+include _hK in
+theorem actual_envelope_scalar_ratio     
+        
+          
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0)
     (a:ℝ)(ha:0≤a)(ha1:a≤1) :
     (outerScalar C D K n*normalizer C D U)/Real.sqrt ((C.absNorm:ℝ)*D.absNorm)*
@@ -68,15 +73,13 @@ theorem actual_envelope_scalar_ratio (η:Character)(t:ℝ)(S:Finset (Ideal O))(�
     dsimp only [normValue]
     ring
   have hrat : secondEffectiveScale C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K*
-      dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3))≤r := by
-    exact div_le_div_of_nonneg_right
+      dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3))≤r := div_le_div_of_nonneg_right
       (mul_le_mul_of_nonneg_right hscale (dyadicScale_pos _).le) (mul_pos (hn 2) (hn 3)).le
   have hfrac : (secondEffectiveScale C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K*
       dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3)))/(1+r)*
         (max 1 (1/r))^a≤1 := by
     apply le_trans _ (ratio_penalty_le r a hr ha ha1)
-    exact mul_le_mul_of_nonneg_right
-      (div_le_div_of_nonneg_right hrat (by positivity)) (Real.rpow_nonneg (by positivity) _)
+    gcongr <;> first | assumption | positivity | linarith
   rw [outerScalar,normalizer,actual_partitionNormalizer C D hC]
   change _≤(fixedFactor:ℝ)*η.modulus.absNorm*Real.sqrt (dyadicScale (n 2)*dyadicScale (n 3))
   rw [childEnvelope,scalar_cancel _ _ _ _ _ _ _ _ _ r _ hc hd
@@ -91,10 +94,11 @@ theorem actual_envelope_scalar_ratio (η:Character)(t:ℝ)(S:Finset (Ideal O))(�
       simpa only [mul_one] using mul_le_mul_of_nonneg_left hfrac
         (show 0≤(fixedFactor:ℝ)*η.modulus.absNorm*Real.sqrt (dyadicScale (n 2)*dyadicScale (n 3)) by positivity)
 
-theorem actual_source_envelope_scalar_ratio (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))
-    (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(n:Fin 4→ℤ)
-    (Hsource:ℝ)(hsource:∀I,β I≠0→(I.absNorm:ℝ)≤Hsource)
+include hK in
+theorem actual_source_envelope_scalar_ratio     
+        
+          
+     Hsource (hsource:∀I,β I≠0→(I.absNorm:ℝ)≤Hsource)
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0)
     (a:ℝ)(ha:0≤a)(ha1:a≤1) :
     (outerScalar C D K n*normalizer C D U)/Real.sqrt ((C.absNorm:ℝ)*D.absNorm)*
@@ -107,6 +111,8 @@ theorem actual_source_envelope_scalar_ratio (η:Character)(t:ℝ)(S:Finset (Idea
     (actual_residual_sqrt_cap η t S β C D hC hD U R rows W K n Hsource hsource hne)
     (show 0≤(fixedFactor:ℝ)*η.modulus.absNorm by positivity)
   convert hh using 1 ; ring
+
+end
 
 end SevenEighths.CenteredMomentSecondRetainedRatioScalar
 

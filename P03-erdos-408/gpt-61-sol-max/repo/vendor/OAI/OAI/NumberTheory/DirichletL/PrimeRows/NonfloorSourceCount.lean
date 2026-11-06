@@ -13,7 +13,7 @@ namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
 open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
 
-def adaptiveRowExponent (δ q Δ ε εm slotMesh ν : ℝ) : ℝ :=
+def adaptiveRowExponent (δ q Δ ε εm slotMesh ν : ℝ)  :=
   if δ≤5/6 then Endpoint.balancedRowCount δ (1/2-q/δ)+Δ/4+159*ε+εm+slotMesh+7*ν
   else 1-δ+78*ε+εm
 

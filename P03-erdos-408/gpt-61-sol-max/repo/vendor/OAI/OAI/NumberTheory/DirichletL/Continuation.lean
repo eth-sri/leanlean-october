@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.MellinTransform
 public import Mathlib.Analysis.Complex.HalfPlane
@@ -16,10 +17,10 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 namespace SevenEighths.Continuation
 
-def signalMellin (f : ℝ → ℂ) (c : ℝ) (s : ℂ) : ℂ :=
+def signalMellin (f : ℝ → ℂ) (c : ℝ) (s : ℂ)  :=
   mellin f (-(s + (c : ℂ)))
 
-def RapidDecayAtZero (f : ℝ → ℂ) : Prop :=
+def RapidDecayAtZero (f : ℝ → ℂ)  :=
   ∀ B : ℝ, f =O[𝓝[>] (0 : ℝ)] (fun x : ℝ => x ^ B)
 
 theorem rpow_isBigO_atTop_of_le {a b : ℝ} (h : a ≤ b) :
@@ -30,7 +31,10 @@ theorem rpow_isBigO_atTop_of_le {a b : ℝ} (h : a ≤ b) :
     abs_of_nonneg (Real.rpow_nonneg (by linarith : 0 ≤ x) _)] using
     Real.rpow_le_rpow_of_exponent_le hx h
 
-theorem common_signal_bound (J f : ℝ → ℂ) (a b : ℝ)
+section
+variable (J f : ℝ → ℂ) (a b β ω σ c : ℝ) (hlocal : LocallyIntegrableOn f (Set.Ioi 0)) (htop : f =O[atTop] (fun x : ℝ => x ^ (a + c))) (hzero : RapidDecayAtZero f) (L M Lregular R W : ℂ → ℂ) {H : ℂ → ℂ} {s : ℂ}
+
+theorem common_signal_bound    
     (hJ : J =O[atTop] (fun x : ℝ => x ^ a))
     (herror : (fun x => J x - f x) =O[atTop] (fun x : ℝ => x ^ b)) :
     f =O[atTop] (fun x : ℝ => x ^ max a b) := by
@@ -38,7 +42,7 @@ theorem common_signal_bound (J f : ℝ → ℂ) (a b : ℝ)
   have h₂ := herror.trans (rpow_isBigO_atTop_of_le (le_max_right a b))
   simpa only [sub_sub_cancel] using h₁.sub h₂
 
-theorem common_signal_bound_with_margin (J f : ℝ → ℂ) (β ω σ c : ℝ)
+theorem common_signal_bound_with_margin    
     (hJ : J =O[atTop] (fun x : ℝ => x ^ (7 / 8 + c + ω)))
     (herror : (fun x => J x - f x) =O[atTop]
       (fun x : ℝ => x ^ (β + c - σ))) :
@@ -47,10 +51,11 @@ theorem common_signal_bound_with_margin (J f : ℝ → ℂ) (β ω σ c : ℝ)
   simpa only [Supremum.max_signal_exponents] using
     common_signal_bound J f (7 / 8 + c + ω) (β + c - σ) hJ herror
 
-theorem signalMellin_convergent (f : ℝ → ℂ) (a c : ℝ)
-    (hlocal : LocallyIntegrableOn f (Set.Ioi 0))
-    (htop : f =O[atTop] (fun x : ℝ => x ^ (a + c)))
-    (hzero : RapidDecayAtZero f) {s : ℂ} (hs : a < s.re) :
+include hlocal htop hzero in
+theorem signalMellin_convergent    
+     
+     
+        (hs : a < s.re) :
     MellinConvergent f (-(s + (c : ℂ))) := by
   apply mellinConvergent_of_isBigO_rpow (a := -(a+c))
     (b := (-(s + (c : ℂ))).re - 1) hlocal
@@ -60,10 +65,11 @@ theorem signalMellin_convergent (f : ℝ → ℂ) (a c : ℝ)
   · exact hzero _
   · linarith
 
-theorem signalMellin_analytic (f : ℝ → ℂ) (a c : ℝ)
-    (hlocal : LocallyIntegrableOn f (Set.Ioi 0))
-    (htop : f =O[atTop] (fun x : ℝ => x ^ (a + c)))
-    (hzero : RapidDecayAtZero f) :
+include hlocal htop hzero in
+theorem signalMellin_analytic    
+     
+     
+      :
     AnalyticOnNhd ℂ (signalMellin f c) {s : ℂ | a < s.re} := by
   apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt a)).2
   intro s hs
@@ -78,7 +84,7 @@ theorem signalMellin_analytic (f : ℝ → ℂ) (a c : ℝ)
     · linarith
   exact (hd.comp s ((differentiableAt_id.add_const (c : ℂ)).neg)).differentiableWithinAt
 
-theorem product_identity_on_halfPlane (a b : ℝ) (L M W : ℂ → ℂ)
+theorem product_identity_on_halfPlane    
     (hL : AnalyticOnNhd ℂ L {s : ℂ | a < s.re})
     (hM : AnalyticOnNhd ℂ M {s : ℂ | a < s.re})
     (hW : AnalyticOnNhd ℂ W {s : ℂ | a < s.re})
@@ -93,8 +99,8 @@ theorem product_identity_on_halfPlane (a b : ℝ) (L M W : ℂ → ℂ)
   exact (hL.mul hM).eqOn_of_preconnected_of_eventuallyEq hW
     (convex_halfSpace_re_gt a).isPreconnected hz hev
 
-theorem nonzero_of_regularized_signal (a b c : ℝ)
-    (L Lregular R W : ℂ → ℂ) (f : ℝ → ℂ)
+theorem nonzero_of_regularized_signal  
+      (f : ℝ → ℂ)
     (hL : AnalyticOnNhd ℂ Lregular {s : ℂ | a < s.re})
     (hR : AnalyticOnNhd ℂ R {s : ℂ | a < s.re})
     (hW : AnalyticOnNhd ℂ W {s : ℂ | a < s.re})
@@ -103,33 +109,36 @@ theorem nonzero_of_regularized_signal (a b c : ℝ)
     (hzero : RapidDecayAtZero f)
     (heq : ∀ s : ℂ, max a b < s.re →
       Lregular s * signalMellin f c s = R s * W s)
-    {ρ : ℂ} (hρ : a < ρ.re)
+     {ρ}  (hρ : a < ρ.re)
     (hregular : Lregular ρ = R ρ * L ρ)
     (hRρ : R ρ ≠ 0) (hWρ : W ρ ≠ 0) : L ρ ≠ 0 := by
   have hid := product_identity_on_halfPlane a b Lregular (signalMellin f c)
     (fun s => R s * W s) hL (signalMellin_analytic f a c hlocal htop hzero)
     (hR.mul hW) heq hρ
-  intro hz
-  change Lregular ρ * signalMellin f c ρ = R ρ * W ρ at hid
-  rw [hregular, hz, mul_zero, zero_mul] at hid
-  exact (mul_ne_zero hRρ hWρ) hid.symm
+  grind
 
-theorem multiplier_ne_zero {H : ℂ → ℂ} {s : ℂ}
+theorem multiplier_ne_zero    
     (h : ‖H s - 1‖ ≤ (1 / 2 : ℝ)) : H s ≠ 0 := by
   intro hz
   simp [hz] at h
   norm_num at h
 
-def gaussianMultiplier (H : ℂ → ℂ) (s : ℂ) : ℂ :=
+end
+
+def gaussianMultiplier (H : ℂ → ℂ) (s : ℂ)  :=
   Complex.exp ((s - 5 / 6) ^ 2) * H s
 
-theorem gaussianMultiplier_analytic {H : ℂ → ℂ} {U : Set ℂ}
-    (hH : AnalyticOnNhd ℂ H U) : AnalyticOnNhd ℂ (gaussianMultiplier H) U := by
-  exact ((analyticOnNhd_id.sub analyticOnNhd_const).pow 2).cexp.mul hH
+section
+variable {H : ℂ → ℂ}
 
-theorem gaussianMultiplier_ne_zero {H : ℂ → ℂ} {s : ℂ}
+theorem gaussianMultiplier_analytic    {U} 
+    (hH : AnalyticOnNhd ℂ H U) : AnalyticOnNhd ℂ (gaussianMultiplier H) U := ((analyticOnNhd_id.sub analyticOnNhd_const).pow 2).cexp.mul hH
+
+theorem gaussianMultiplier_ne_zero    {s} 
     (hH : ‖H s - 1‖ ≤ (1 / 2 : ℝ)) : gaussianMultiplier H s ≠ 0 :=
   mul_ne_zero (Complex.exp_ne_zero _) (multiplier_ne_zero hH)
+
+end
 
 theorem nonzero_of_common_signal (β ω σ c : ℝ) (hω : 0 < ω)
     (L Lregular R H : ℂ → ℂ) (J f : ℝ → ℂ)
@@ -146,7 +155,7 @@ theorem nonzero_of_common_signal (β ω σ c : ℝ) (hω : 0 < ω)
       (fun x : ℝ => x ^ (β + c - σ)))
     (heq : ∀ s : ℂ, max (β - Supremum.continuationMargin β ω σ) 1 < s.re →
       Lregular s * signalMellin f c s = R s * gaussianMultiplier H s)
-    {ρ : ℂ} (hρ : β - Supremum.continuationMargin β ω σ < ρ.re)
+     {ρ}  (hρ : β - Supremum.continuationMargin β ω σ < ρ.re)
     (hregular : Lregular ρ = R ρ * L ρ) (hRρ : R ρ ≠ 0) : L ρ ≠ 0 := by
   have hboundary := Supremum.continuation_boundary_gt (β := β) (σ := σ) hω
   have hH' : AnalyticOnNhd ℂ H

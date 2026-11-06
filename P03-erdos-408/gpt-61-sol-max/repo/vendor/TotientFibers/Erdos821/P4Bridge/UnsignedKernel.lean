@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Bridge.RawPairing
 public import Erdos821.P4Probe.AuxTupleLaw
@@ -13,8 +14,8 @@ open Blueprint.Graph P4Probe
 noncomputable section
 variable {P : PrimeGroups} {J ell m : ℕ}
 
-def tupleMultiplier (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (C : ℕ) (θ ζ : ℝ) (a : SideTuple ν block false) (b : SideTuple ν block true) : ℂ :=
+def tupleMultiplier (ν : Pattern P J ell m) (block )
+    (C : ℕ) (θ ζ : ℝ) (a : SideTuple ν block false) (b : SideTuple ν block true)  :=
   Blueprint.Analytic.mellin
     ((Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block false) a : ℝ) *
       Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block true) b) ζ *
@@ -22,9 +23,9 @@ def tupleMultiplier (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
       Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block false) a *
       Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block true) b)
 
-def auxCorrection (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
+def auxCorrection (ν : Pattern P J ell m) (block )
     (Q : ℕ) (h ξ θ ζ : ℝ) (C : ℕ)
-    (a : SideTuple ν block false) (b : SideTuple ν block true) : ℂ :=
+    (a : SideTuple ν block false) (b : SideTuple ν block true)  :=
   Blueprint.Analytic.expect (analyticGroups P) (sideCounts ν block false) fun dA =>
     Blueprint.Analytic.expect (analyticGroups P) (sideCounts ν block true) fun dB =>
       Blueprint.Analytic.cellKernel (analyticGroups P) (sideCounts ν block false) Q h ξ
@@ -35,15 +36,15 @@ def auxCorrection (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
         (Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block true) b) *
       tupleMultiplier ν block C θ ζ dA dB
 
-def correctionConditional (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
+def correctionConditional (ν : Pattern P J ell m) (block )
     (Q : ℕ) (h ξ θ ζ : ℝ) (C : ℕ)
-    (f : SideTuple ν block true → ℂ) (g : SideTuple ν block false → ℂ) : ℂ :=
+    (f : SideTuple ν block true → ℂ) (g : SideTuple ν block false → ℂ)  :=
   Blueprint.Analytic.expect (analyticGroups P) (sideCounts ν block true) fun b =>
     Blueprint.Analytic.expect (analyticGroups P) (sideCounts ν block false) fun a =>
       star (f b) * g a * auxCorrection ν block Q h ξ θ ζ C a b
 
 def unsignedKernel (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (Q : ℕ) (h ξ θ ζ : ℝ) (a b : P.BigLabels (J + ell)) : ℂ :=
+    (Q : ℕ) (h ξ θ ζ : ℝ) (a b : P.BigLabels (J + ell))  :=
   ∑ u : P.BigAux J, if ν.matchesBig a b then
     ((ν.bigAuxMass u * ν.freshMass b : ℝ) : ℂ) *
     (selectedKernel ν block false Q h ξ
@@ -53,8 +54,13 @@ def unsignedKernel (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     imaginaryPower (ν.DBig a u) ζ * phase (θ * ν.DBig a u)
   else 0
 
-lemma unsignedKernel_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (hV : ∀ g, 0 < P.V g) (Q : ℕ) (h ξ θ ζ : ℝ)
+section
+variable (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (hV : ∀ g, 0 < P.V g) (Q : ℕ) (h ξ θ ζ : ℝ)
+
+
+include hV in
+lemma unsignedKernel_join    
+         
     (s s' : SharedRows ν) (a a' : SideTuple ν block false) (b b' : SideTuple ν block true)
     (t t' : P.BigLabels ell) :
     unsignedKernel ν block Q h ξ θ ζ (labelJoin ν block s a b t) (labelJoin ν block s' a' b' t') =
@@ -99,18 +105,7 @@ lemma unsignedKernel_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
       dsimp only [H, tupleMultiplier, C, sideCounts]
       simp only [selectedAuxTuple_product, Complex.ofReal_mul, Nat.cast_mul, mul_assoc]
       simp only [mul_assoc] at hm
-      linear_combination ((ν.bigAuxMass u : ℂ) *
-        (ν.freshMass (labelJoin ν block s a' b' t') : ℂ) *
-        (Blueprint.Analytic.cellKernel (analyticGroups P)
-          (selectedCounts (patternAuxCoordinates ν block false)) Q h ξ
-          (selectedProduct ν block false u)
-          (Blueprint.Analytic.product (analyticGroups P)
-            (selectedCounts (patternAuxCoordinates ν block false)) a') *
-        Blueprint.Analytic.cellKernel (analyticGroups P)
-          (selectedCounts (patternAuxCoordinates ν block true)) Q h ξ
-          (selectedProduct ν block true u)
-          (Blueprint.Analytic.product (analyticGroups P)
-            (selectedCounts (patternAuxCoordinates ν block true)) b))) * hm
+      grind
     simp_rw [ht]
     rw [← Finset.mul_sum, bigAux_selected_pair_expect ν block hV H,
       freshMass_join ν block hV]
@@ -120,15 +115,17 @@ lemma unsignedKernel_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     rfl
   · simp [matchesBig_join, hs]
 
-lemma analyticError_eq (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (Q : ℕ) (h ξ θ ζ : ℝ) (C : ℕ)
-    (f : SideTuple ν block true → ℂ) (g : SideTuple ν block false → ℂ) :
+lemma analyticError_eq    
+        (C : ℕ)
+     f   g  :
     Blueprint.Analytic.comparisonError (analyticGroups P)
       (sideCounts ν block false) (sideCounts ν block true) Q h ξ (θ * C) ζ f g =
       rawConditional ν block C θ ζ f g - correctionConditional ν block Q h ξ θ ζ C f g := by
   unfold Blueprint.Analytic.comparisonError rawConditional correctionConditional
     auxCorrection tupleMultiplier Blueprint.Analytic.expect
   simp only [mul_sub, Finset.sum_sub_distrib, mul_assoc]
+
+end
 
 end
 end Erdos821.P4Bridge

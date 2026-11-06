@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SupportedZeroEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceZeroEnergy
@@ -18,13 +18,21 @@ open CenteredMomentFirstLocalization CenteredMomentSourceRow
 open EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
-theorem profileCoefficient_norm_le {ι : Type*} [Fintype ι]
-    (R : Ideal O) (ν : ι → Ideal O → ℂ) (hν : ∀ j I,‖ν j I‖≤1)
-    (Wslot : ι → ℝ → ℂ) (P D : ι → ℝ) (W₁ W₂ : ℝ → ℂ) (D₁ D₂ : ℝ)
+section
+variable {ι : Type*} [Fintype ι]
+include ι
+
+section
+variable (R : Ideal O) (ν : ι → Ideal O → ℂ)
+include R ν
+
+theorem profileCoefficient_norm_le    
+        (hν : ∀ j I,‖ν j I‖≤1)
+    (Wslot : ι → ℝ → ℂ) (P D : ι → ℝ)  W₁ W₂   D₁ D₂ 
     (hD : ∀ j,0≤D j) (hD₁ : 0≤D₁) (hD₂ : 0≤D₂)
     (hslot : ∀ j x,‖Wslot j x‖≤D j)
     (h₁ : ∀ x,‖W₁ x‖≤D₁) (h₂ : ∀ x,‖W₂ x‖≤D₂)
-    (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ s : Ideal O) (v : Tuple ι) :
+     X₁ X₂ Y₁ Y₂   B₁ B₂ s   v  :
     ‖profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s v‖≤
       2*D₁*D₂*(∏ j,D j) := by
   have hp : ‖∏ j,ν j (v (Sum.inl j))*Wslot j ((Ideal.absNorm (v (Sum.inl j)):ℝ)/P j)‖≤∏ j,D j := by
@@ -54,8 +62,8 @@ theorem profileCoefficient_norm_le {ι : Type*} [Fintype ι]
     (hm (s∣finiteTupleProduct v)) (norm_nonneg _) (by positivity)
   simpa only [mul_one] using h.trans_eq (by ring)
 
-theorem profileCoefficient_product_bound {ι : Type*} [Fintype ι]
-    (R : Ideal O) (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ)
+theorem profileCoefficient_product_bound    
+        (Wslot : ι → ℝ → ℂ)
     (P b : ι → ℝ) (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ T : ℝ)
     (B₁ B₂ s : Ideal O)
     (hP : ∀ j,0<P j) (hX₁ : 0<X₁) (hX₂ : 0<X₂) (hY₁ : 0<Y₁) (hY₂ : 0<Y₂)
@@ -90,9 +98,11 @@ theorem profileCoefficient_product_bound {ι : Type*} [Fintype ι]
     hX₁ hX₂ hY₁ hY₂ hB₁ hB₂ hX hY hzero hsup (tupleEquiv e v) hn
   simpa only [tupleProduct_reindex,sourceRadius,e.symm.prod_comp] using hh
 
-theorem zeroEnergy_eq_zero_of_subunit {ι : Type*} [Fintype ι]
-    (η : Character) (m A : O) (t : ℝ) (S : Finset (Tuple ι)) (β : Tuple ι → ℂ)
-    (W : 𝓢(ℝ,ℂ)) (K Y : ℝ) (hY : Y<1)
+end
+
+theorem zeroEnergy_eq_zero_of_subunit    
+    (η : Character) (m A : O) (t : ℝ) (S : Finset (Tuple ι))  β 
+     W  (K Y : ℝ) (hY : Y<1)
     (hN : ∀ v∈S,β v≠0 → finiteTupleProduct v≠0 ∧
       (Ideal.absNorm (finiteTupleProduct v):ℝ)≤Y) :
     zeroEnergy η m A t (finiteColumns S) (finiteColumnCoefficient S β) W K=0 := by
@@ -107,8 +117,10 @@ theorem zeroEnergy_eq_zero_of_subunit {ι : Type*} [Fintype ι]
     exact Finset.sum_eq_zero (fun v hv => hb v (Finset.mem_filter.mp hv).1)
   simp only [zeroEnergy,hc,zero_mul,star_zero,mul_zero,Finset.sum_const_zero]
 
+end
+
 end SevenEighths.CenteredMomentSourceZeroEnergy
 
-end
+
 
 end OAI

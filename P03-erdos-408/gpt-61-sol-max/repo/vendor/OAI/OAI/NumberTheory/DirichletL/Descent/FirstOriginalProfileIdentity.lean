@@ -6,20 +6,20 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileData
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open CompletedHeight FourierBridge
 open InverseMomentFirstProfileUniform
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι κ : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 include hp in
 lemma physical_rows_congr_positive (F : Finset ι) (selector C₁ C₂ : Finset ι→ℂ)
-    (W₁ W₂ V₁ V₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C R K : ℝ) (d h : O)
+    (W₁ W₂ V₁ V₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C R K : ℝ) (d h : ActualEisensteinCubic.O)
     (hA₁ : 0<A₁) (hA₂ : 0<A₂) (hC : 0<C)
     (h₁ : ∀x,0<x→W₁ x=V₁ x) (h₂ : ∀x,0<x→W₂ x=V₂ x) :
     firstBlockedPhysicalRows p hg F selector C₁ C₂ W₁ W₂ Φ A₁ A₂ C R K d h=
@@ -34,10 +34,10 @@ lemma physical_rows_congr_positive (F : Finset ι) (selector C₁ C₂ : Finset 
   simp [firstNormProfile,firstCommonNorms,he₁,he₂]
 
 include hp in
-lemma physical_family_congr_positive (S : Finset κ) (F : Finset ι)
+lemma physical_family_congr_positive (S : Finset κ)  F 
     (selector C₁ C₂ : κ→Finset ι→ℂ) (w : κ→ℂ)
-    (W₁ W₂ V₁ V₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C R : κ→ℝ) (K : ℝ)
-    (d h : κ→O) (s : Fin 9→ℝ) (hs : ∀i,0<s i)
+     W₁ W₂ V₁ V₂   Φ  (A₁ A₂ C R : κ→ℝ)  K 
+    (d h : κ→ActualEisensteinCubic.O)  s  (hs : ∀i,0<s i)
     (hpos : ∀x∈S,0<A₁ x ∧ 0<A₂ x ∧ 0<C x)
     (h₁ : ∀x,0<x→W₁ x=V₁ x) (h₂ : ∀x,0<x→W₂ x=V₂ x) :
     firstFamilyPhysicalRows p hg S F selector C₁ C₂ w W₁ W₂ Φ A₁ A₂ C R K d h s=
@@ -55,9 +55,9 @@ include hp in
 
 theorem original_family_profiles (S : Finset κ) (F : Finset ι)
     (selector C₁ C₂ : κ→Finset ι→ℂ) (w : κ→ℂ)
-    (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hsom : Function.support om⊆Set.Icc a b)
-    (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C R : κ→ℝ) (K X theta : ℝ)
-    (d h : κ→O) (s : Fin 9→ℝ) (hs : ∀i,0<s i)
+    (om : 𝓢(ℝ,ℂ))  a b   ha   hsom 
+     Φ   A₁ A₂ C R   K X theta 
+     d h   s  (hs : ∀i,0<s i)
     (hpos : ∀x∈S,0<A₁ x ∧ 0<A₂ x ∧ 0<C x)
     (hX : 0<X) (hleft : s 0*s 2*s 5*s 7=X) (hright : s 1*s 2*s 5*s 8=X) :
     firstFamilyPhysicalRows p hg S F selector C₁ C₂ w
@@ -75,6 +75,6 @@ theorem original_family_profiles (S : Finset κ) (F : Finset ι)
     exact (actual_old_profile om a b ha hsom theta y hy).1.symm
 
 end SevenEighths.InverseMomentFirstOriginalProfile
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicLiveRadius
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileScales
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCaps
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -16,7 +17,7 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
 open InverseMomentFirstOriginalProfile CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem first_profile_live_products (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)(q:Fin 9→ℝ)
     (hq:∀i,1≤q i)(hW:∀x,W x≠0→x≤L)
@@ -28,7 +29,7 @@ theorem first_profile_live_products (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)(q:F
   · exact (le_mul_of_one_le_right (mul_nonneg (mul_nonneg (zero_le_one.trans (hq 0)) (zero_le_one.trans (hq 2))) (zero_le_one.trans (hq 5))) (hq 7)).trans (hW _ h₁)
   · exact (le_mul_of_one_le_right (mul_nonneg (mul_nonneg (zero_le_one.trans (hq 1)) (zero_le_one.trans (hq 2))) (zero_le_one.trans (hq 5))) (hq 8)).trans (hW _ h₂)
 
-private theorem dyadic_column_scale {a c z X b : ℝ}
+private theorem dyadic_column_scale  {a c z X b} 
     (ha : 1 ≤ a) (hc : 1 ≤ c) (hz : 1 ≤ z) (hprod : a * c * z ≤ b * X) :
     1 ≤ X / (dyadScale (dyadIndex a) * dyadScale (dyadIndex c) *
       dyadScale (dyadIndex z)) * b := by
@@ -45,12 +46,12 @@ private theorem dyadic_column_scale {a c z X b : ℝ}
   exact hscale.trans hprod
 
 theorem original_live_column_scale {ι:Type}[DecidableEq ι]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))(Y:ℝ)
-    (β:Ideal O→(ι→₀ℕ)→ℂ)(cutoff:CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Ψ:O→*ℂ)(m:O)(mark:(ι→₀ℕ)→Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K X b:ℝ)
+    (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))(Y:ℝ)
+    (β:Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)(cutoff:CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→Finset ι→ℝ)
+    (Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(mark:(ι→₀ℕ)→Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K X b:ℝ)
     (_hX:0<X)(hW:∀y,W y≠0→y≤b*X)
     (k:JointKey)(hk:k∈liveJointKeys p
       (firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y) pool
@@ -76,8 +77,7 @@ theorem original_live_column_scale {ι:Type}[DecidableEq ι]
   have hprof:firstNormProfile (fun y=>star (W y)) W Φ (fun _ _=>1) K
       (firstCommonNorms p (leftNorm p x) (rightNorm p x) (commonNorm p x) (activeNorm p x)
         (divisorElement p x.1) x.2.2 j)≠0:=by
-    intro hzero
-    exact hnon (by unfold sourceSummand;rw [hzero,mul_zero])
+    simp_all [sourceSummand]
   have hb:=first_profile_live_products W Φ K (b*X) _ hq hW hprof
   constructor
   · change 1 ≤ X / (dyadScale (dyadIndex (leftNorm p x)) *
@@ -91,6 +91,6 @@ theorem original_live_column_scale {ι:Type}[DecidableEq ι]
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

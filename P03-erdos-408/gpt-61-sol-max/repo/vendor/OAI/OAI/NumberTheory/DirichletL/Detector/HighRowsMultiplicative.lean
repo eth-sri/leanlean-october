@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighEulerGeneral
 public import OAI.NumberTheory.DirichletL.Detector.SixthFrequency
@@ -7,25 +8,25 @@ public import OAI.NumberTheory.DirichletL.Detector.SixthFrequency
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-theorem bareSourceCoefficient_product_row_frequency (η : HeckeFamily.Character) (u : O) (I J : Ideal O)
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+theorem bareSourceCoefficient_product_row_frequency (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (I J : Ideal ActualEisensteinCubic.O)
     (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)
     (hIJ : CubicSieve.Admissible (I*J)) (hIJcop : IsCoprime I J)
-    (n m s r : O)
-    (hc : Supported (Ideal.span {primaryGenerator I})) (hd : Supported (Ideal.span {primaryGenerator J}))
-    (hn : Supported (Ideal.span {n})) (hm : Supported (Ideal.span {m}))
+     n m s r 
+     hc   hd 
+     hn   hm 
     (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
     (hpc : goodLambda^2∣primaryGenerator I-1) (hpd : goodLambda^2∣primaryGenerator J-1)
     (hpn : goodLambda^2∣n-1) (hpm : goodLambda^2∣m-1)
     (hps : goodLambda^2∣s-1) (hpr : goodLambda^2∣r-1)
-    (hcop : IsCoprime ((primaryGenerator I*n^3)*s) ((primaryGenerator J*m^3)*r)) (a b : O)
+    (hcop : IsCoprime ((primaryGenerator I*n^3)*s) ((primaryGenerator J*m^3)*r))  a b 
     (hba : IsCoprime b ((primaryGenerator I*n^3)*s))
     (hab : IsCoprime a ((primaryGenerator J*m^3)*r)) :
     let A := primaryGenerator I*n^3
@@ -46,9 +47,13 @@ theorem bareSourceCoefficient_product_row_frequency (η : HeckeFamily.Character)
   rw [hi,hj] at he
   exact he
 
-theorem bareIdealHighCoefficient_row_mul (η : HeckeFamily.Character) (u : O)
-    (I J K L I' J' K' L' : Id)
-    (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
+section
+variable (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (x w z : ℂ) (I J K L I' J' K' L' : Id) (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L'))
+
+include hcop in
+theorem bareIdealHighCoefficient_row_mul    
+     
+      :
     bareIdealHighCoefficient η u (I*I') (J*J') (K*K') (L*L') =
       bareIdealHighCoefficient η u I J K L * bareIdealHighCoefficient η u I' J' K' L' := by
   have hII := hcop.mono (first_block_dvd I J K L) (first_block_dvd I' J' K' L')
@@ -96,15 +101,13 @@ theorem bareIdealHighCoefficient_row_mul (η : HeckeFamily.Character) (u : O)
     unfold bareIdealHighCoefficient
     rw [dite_eq_right hprod]
     by_cases hi : highSupport I J K L
-    · have hj : ¬highSupport I' J' K' L' := fun hj=>h ⟨hi,hj⟩
-      unfold highSupport at hj
-      rw [dite_eq_right hj,mul_zero]
-    · unfold highSupport at hi
-      rw [dite_eq_right hi,zero_mul]
+    · grind [highSupport]
+    grind [highSupport]
 
-theorem bareIdealHighSummand_row_mul (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
-    (I J K L I' J' K' L' : Id)
-    (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
+include hcop in
+theorem bareIdealHighSummand_row_mul      
+     
+      :
     bareIdealHighSummand η u x w z (I*I') (J*J') (K*K') (L*L') =
       bareIdealHighSummand η u x w z I J K L * bareIdealHighSummand η u x w z I' J' K' L' := by
   unfold bareIdealHighSummand
@@ -112,7 +115,9 @@ theorem bareIdealHighSummand_row_mul (η : HeckeFamily.Character) (u : O) (x w z
     fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul]
   ring
 
-end SevenEighths.ProbePhysical
 end
+
+end SevenEighths.ProbePhysical
+
 
 end OAI

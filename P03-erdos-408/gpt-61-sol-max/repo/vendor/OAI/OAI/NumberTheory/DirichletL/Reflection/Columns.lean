@@ -10,41 +10,41 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {ι φ σ : Type*} [Fintype ι] [Fintype φ] [Fintype σ]
-variable {p : ι → Eis} {N a c : Eis} {mode : Bool}
+variable {p : ι → ActualEisensteinCubic.O} {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
 def actualCuspColumn (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
-    (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) : ℂ :=
+    (u : ActualEisensteinCubic.Oˣ) (m : ℕ) (n b : Ideal ActualEisensteinCubic.O)  :=
   fixedCuspArrayWithPhase s.index u
     (s.reflectionStaticPhase c hc (Ideal.Quotient.mk _ (-(D.matrix (fun _ => 1) 1 1)*D.U))
       (s.modelDualNumerator u) u) m n b
 
 lemma actualCuspColumn_norm_le_one (D : ControlledStratumArithmetic p N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
-    (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) : ‖actualCuspColumn D s hc u m n b‖ ≤ 1 :=
+     s   hc 
+     u   m   n b  : ‖actualCuspColumn D s hc u m n b‖ ≤ 1 :=
   fixedCuspArrayWithPhase_norm_le_one s.index u _
     (s.reflectionStaticPhase_norm_le_one c hc _ _ u) m n b
 
 def frozenBranchColumn (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ → Fin 3)
-    (A : Ideal Eis → Ideal Eis → ℂ) (n b : Ideal Eis) : ℂ :=
+    (A : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ) (n b : Ideal ActualEisensteinCubic.O)  :=
   A n b * reflectedBranch (fun i => Ideal.span {F.generator i}) F.generator_good jF e
     (primaryGenerator n) (primaryGenerator b)
 
-def frozenExtracted (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ → Fin 3) (v : Fin 3) : Ideal Eis :=
+def frozenExtracted (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ → Fin 3) (v : Fin 3)  :=
   reflectionExtractedDivisor (fun i => Ideal.span {F.generator i}) jF e v
 
-def frozenBranchScale (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ → Fin 3) : ℝ :=
+def frozenBranchScale (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ → Fin 3)  :=
   Real.sqrt (Ideal.absNorm (frozenExtracted F jF e 1):ℝ)*
     Real.sqrt (Ideal.absNorm (frozenExtracted F jF e 2):ℝ)/
     Real.sqrt (Ideal.absNorm (frozenExtracted F jF e 0):ℝ)
 
-theorem sourceColumn_eq_sum_frozenBranches (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : PrimeFamily σ) (jF : φ → ℕ)
+theorem sourceColumn_eq_sum_frozenBranches (F : PrimeFamily φ)  K   hK 
+     S   jF 
     (D : ControlledStratumArithmetic (F.reflected K hK S).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
-    (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) :
+     u   m   n b  :
     sourceColumn D s hc (F.reflected K hK S).generator_good (reflectedExponent jF)
       (frozenIndices φ (PrimeIndex K) σ) u m n b =
       ∑ e : φ → Fin 3, frozenBranchColumn F jF e (actualCuspColumn D s hc u m) n b := by
@@ -60,7 +60,7 @@ theorem sourceColumn_eq_sum_frozenBranches (F : PrimeFamily φ) (K : Ideal Eis) 
       jF (primaryGenerator n) (primaryGenerator b))).trans (Finset.mul_sum _ _ _)
 
 theorem frozenBranchColumn_norm_le (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ → Fin 3)
-    (A : Ideal Eis → Ideal Eis → ℂ) (hA : ∀ n b, ‖A n b‖ ≤ 1) (n b : Ideal Eis) :
+    (A : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ) (hA : ∀ n b, ‖A n b‖ ≤ 1)  n b  :
     ‖frozenBranchColumn F jF e A n b‖ ≤ frozenBranchScale F jF e := by
   rw [frozenBranchColumn,norm_mul]
   calc

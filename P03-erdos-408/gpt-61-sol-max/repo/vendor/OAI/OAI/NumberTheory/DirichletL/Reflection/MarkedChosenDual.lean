@@ -9,18 +9,17 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 namespace PrimeFamily
 variable {ι : Type*} [Fintype ι] (P : PrimeFamily ι)
 
 lemma fixed_active_sum_eq_mixed_of_controlled
-    (_hP : Pairwise (Function.onFun IsCoprime P.ideal)) (j : ι→ℕ) (S : Finset ι)
-    (φ : Eis→*ℂ) (c : Eis) (hc : c≠0) [Fintype (Eis⧸Ideal.span {c})]
-    (G : ∀ h : Eis⧸Ideal.span {c}, FixedFourierGeometry c h)
-    (N : Eis) (hN : ∀ h, (9:Eis)*(G h).c0∣N)
-    (C : ∀ h : Eis⧸Ideal.span {c}, ∀ A : Finset ι,
-      ControlledStratumArithmetic (fun i : A => P.generator i.val) N (G h).a0 (G h).c0 (G h).mode) (W : ℝ→ℂ) (X : ℝ) :
+    (_hP : Pairwise (Function.onFun IsCoprime P.ideal))  j   S 
+     φ   c   hc  [Fintype (Eis⧸Ideal.span {c})]
+     G 
+     N   hN 
+     C   W   X  :
     (∑ t : FixedActiveCuspIndex c P.generator,
       fixedActiveFunctionWeight P.generator P.generator_ne_zero
         (mixedPrimeFunction P.generator P.generator_good j S) c hc φ t *
@@ -64,9 +63,9 @@ theorem marked_reflected_source_of_controlled
     (N : Eis) (hN : ∀ h, (9:Eis)*(G h).c0∣N)
     (C : ∀ h : Eis⧸Ideal.span {c}, ∀ A : Finset ι,
       ControlledStratumArithmetic (fun i : A => P.generator i.val) N (G h).a0 (G h).c0 (G h).mode)
-    (W : ℝ→ℂ) (hWcompact : HasCompactSupport W)
+     W  (hWcompact : HasCompactSupport W)
     (lo hi : ℝ) (hlo : 0<lo) (hsupp : Function.support W⊆Set.Icc lo hi)
-    (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0<X) :
+    (hW : ContDiff ℝ ∞ W)  X  (hX : 0<X) :
     markedCompletedT (φ*unmarkedSexticTwist P.generator P.generator_good j S) W X
       (fun A => ∏ i∈S, if Ideal.span {P.generator i}∣A then 1 else 0)=
     thetaDerivativeScalar⁻¹*∑ h : Eis⧸Ideal.span {c}, fixedThetaRowCoeff c hc φ h *
@@ -99,7 +98,7 @@ theorem marked_reflected_source_of_controlled
   · exact hW
   · exact hX
 end PrimeFamily
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

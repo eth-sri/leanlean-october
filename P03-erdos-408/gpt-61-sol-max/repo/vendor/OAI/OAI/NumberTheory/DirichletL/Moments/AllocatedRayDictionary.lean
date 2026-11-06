@@ -21,24 +21,23 @@ local notation "O" => HeckeFamily.O
 
 variable {α : Type*} [Fintype α] [DecidableEq α]
 
-def originalEmbedding (s : Input α) (C : Ideal O) (B : actualAllocations s.pools C) :
+def originalEmbedding (s : Input α) (C ) (B : actualAllocations s.pools C) :
     CenteredMomentCommonProfile.liveIndices B.val ↪ α :=
   ⟨Subtype.val, Subtype.val_injective⟩
 
-def remaining (s : Input α) (C : Ideal O) (B : actualAllocations s.pools C)
-    (L : Ideal O) (a : Allocation L (Finset.univ : Finset
+def remaining (s : Input α) (C ) (B : actualAllocations s.pools C)
+    (L ) (a : Allocation L (Finset.univ : Finset
       (CenteredMomentCommonProfile.liveIndices B.val ⊕ Fin 2)))
-    (J : Finset (CenteredMomentCommonProfile.liveIndices B.val)) :
-    Finset (CenteredMomentCommonProfile.liveIndices B.val) :=
+    (J : Finset (CenteredMomentCommonProfile.liveIndices B.val))  :=
   CenteredMomentDivisorRaw.liveIndices (ι := CenteredMomentCommonProfile.liveIndices B.val) L a \ J
 
-def originalImage (s : Input α) (C : Ideal O) (B : actualAllocations s.pools C)
-    (L : Ideal O) (a : Allocation L (Finset.univ : Finset
+def originalImage (s : Input α) (C ) (B : actualAllocations s.pools C)
+    (L ) (a : Allocation L (Finset.univ : Finset
       (CenteredMomentCommonProfile.liveIndices B.val ⊕ Fin 2)))
-    (J : Finset (CenteredMomentCommonProfile.liveIndices B.val)) : Finset α :=
+    (J : Finset (CenteredMomentCommonProfile.liveIndices B.val))  :=
   (remaining s C B L a J).map (originalEmbedding s C B)
 
-section RayData
+
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
@@ -117,7 +116,7 @@ theorem common_energy (τ : Character) (v : ℝ) (C R : Ideal O)
 
 omit h
 
-end RayData
+
 end SevenEighths.CenteredMomentAllocatedRayDictionary
 
 end

@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Moments.FirstScale
 
 public import OAI.NumberTheory.DirichletL.Foundation
 
@@ -9,19 +11,18 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CompletedGauss
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma actual_ideal_norm_pos (I : Ideal Eis) (hI : I ≠ 0) : 0 < (Ideal.absNorm I : ℝ) := by
-  exact_mod_cast Nat.pos_of_ne_zero (fun hz => hI (Ideal.absNorm_eq_zero_iff.mp hz))
 
-theorem actual_residual_norm_width (I Q : Ideal Eis) (hI : I ≠ 0) :
+
+alias actual_ideal_norm_pos := _root_.OAI.SevenEighths.CenteredMomentFirstScale.norm_pos
+
+theorem actual_residual_norm_width  I Q  (hI : I ≠ 0) :
     (Ideal.absNorm (rowResidualPart I Q) : ℝ) *
       (Ideal.absNorm (rowPowerfulPart I) : ℝ) ≤ (Ideal.absNorm I : ℝ) := by
   have hm : 1 ≤ (Ideal.absNorm (rowMaskPart I Q) : ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz =>
       squarefreeMaskPart_ne_zero (rowSimplePart I) Q (Ideal.absNorm_eq_zero_iff.mp hz))
-  have he := congrArg (fun J : Ideal Eis => (Ideal.absNorm J : ℝ))
+  have he := congrArg (fun J : Ideal ActualEisensteinCubic.O => (Ideal.absNorm J : ℝ))
     (row_powerful_mask_residual_product I Q hI)
   simp only [map_mul, Nat.cast_mul] at he
   calc
@@ -33,12 +34,15 @@ theorem actual_residual_norm_width (I Q : Ideal Eis) (hI : I ≠ 0) :
       nlinarith [hh]
     _ = _ := he
 
-theorem actual_common_width_charge {ι : Type*} [Fintype ι]
-    (I F Q : Ideal Eis) (hI : I ≠ 0) (hQ : Q ≠ 0)
-    (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
+section
+variable {ι : Type*} [Fintype ι]
+
+theorem actual_common_width_charge    
+    (I F Q : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) (hQ : Q ≠ 0)
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
     (hpool : ∀ i, P i ∣ I * Q)
-    (hres : ∀ i, ¬ P i ∣ rowResidualPart I Q) (e : ι → Fin 3) :
+    (hres : ∀ i, ¬ P i ∣ rowResidualPart I Q)  e  :
     (Ideal.absNorm (rowResidualPart I Q) : ℝ)^2 *
       reflectionConductorCost P (fun i => completedLocalExponent I F (P i)) e ≤
       (Ideal.absNorm I : ℝ)^2 / (Ideal.absNorm (rowPowerfulPart I) : ℝ) *
@@ -55,12 +59,12 @@ theorem actual_common_width_charge {ι : Type*} [Fintype ι]
         (sq_nonneg _)
     _ = _ := by rw [he]; field_simp
 
-theorem actual_common_width_charge_label_puncture {ι : Type*} [Fintype ι]
-    (I F rho S : Ideal Eis) (hI : I ≠ 0) (hF : F ≠ 0) (hrho : rho ≠ 0) (hS : S ≠ 0)
-    (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
+theorem actual_common_width_charge_label_puncture    
+    (I F rho S : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) (hF : F ≠ 0) (hrho : rho ≠ 0) (hS : S ≠ 0)
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
     (hpool : ∀ i, P i ∣ I * (S * F * rho))
-    (hres : ∀ i, ¬ P i ∣ rowResidualPart I (S * F * rho)) (e : ι → Fin 3) :
+    (hres : ∀ i, ¬ P i ∣ rowResidualPart I (S * F * rho))  e  :
     (Ideal.absNorm (rowResidualPart I (S * F * rho)) : ℝ)^2 *
       reflectionConductorCost P (fun i => completedLocalExponent I F (P i)) e ≤
       (Ideal.absNorm S : ℝ) *
@@ -72,6 +76,8 @@ theorem actual_common_width_charge_label_puncture {ι : Type*} [Fintype ι]
   ring
 
 end
+
+
 end SevenEighths.InverseMoment
 
 end OAI

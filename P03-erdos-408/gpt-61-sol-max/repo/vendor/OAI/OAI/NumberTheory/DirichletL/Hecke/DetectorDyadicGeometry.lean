@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorSaturation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.HeckeDetectorDyadicGeometry
 open HeckeDyadic
 
-lemma uniform_power_allowance (C p dmin α : ℝ) (hα : 0≤α) (hgap : p<dmin*α) :
+lemma uniform_power_allowance  C p dmin α  (hα : 0≤α) (hgap : p<dmin*α) :
     ∀ᶠ Z : ℝ in atTop, ∀ d : ℝ, dmin≤d → C*Z^p≤(Z^d)^α := by
   have hh := constant_absorbed_eventually C (dmin*α-p) (by linarith)
   filter_upwards [hh,eventually_ge_atTop (1 : ℝ)] with Z hC hZ d hd
@@ -23,13 +23,13 @@ lemma uniform_power_allowance (C p dmin α : ℝ) (hα : 0≤α) (hgap : p<dmin*
     _ ≤ Z^(d*α) := Real.rpow_le_rpow_of_exponent_le hZ (mul_le_mul_of_nonneg_right hd hα)
     _ = _ := Real.rpow_mul hZp.le _ _
 
-lemma uniform_scale_threshold (dmin A : ℝ) (hd : 0<dmin) :
+lemma uniform_scale_threshold  dmin A  (hd : 0<dmin) :
     ∀ᶠ Z : ℝ in atTop, ∀ d : ℝ, dmin≤d → A≤Z^d := by
   have hh := constant_absorbed_eventually A dmin hd
   filter_upwards [hh,eventually_ge_atTop (1 : ℝ)] with Z hA hZ d hd'
   exact hA.trans (Real.rpow_le_rpow_of_exponent_le hZ hd')
 
-lemma uniform_zero_height (dmin τ : ℝ) (I : ℕ) (hgap : τ<dmin/2) :
+lemma uniform_zero_height  dmin τ   I  (hgap : τ<dmin/2) :
     ∀ᶠ Z : ℝ in atTop, ∀ d : ℝ, dmin≤d →
       ∀ i : ℕ, i≤I → (3*i : ℕ)*Z^τ≤(Z^d)^(1/2 : ℝ) := by
   have hh := uniform_power_allowance (3*I : ℕ) τ dmin (1/2) (by norm_num) (by linarith)
@@ -37,7 +37,7 @@ lemma uniform_zero_height (dmin τ : ℝ) (I : ℕ) (hgap : τ<dmin/2) :
   have hn : (3*i : ℕ)≤3*I := by omega
   exact (mul_le_mul_of_nonneg_right (by exact_mod_cast hn) (Real.rpow_nonneg (by linarith) _)).trans (hZ d hd)
 
-lemma uniform_height_budget (dmin τ η : ℝ) (I : ℕ) (hτ : 0≤τ)
+lemma uniform_height_budget  dmin τ η   I  (hτ : 0≤τ)
     (hη : 0≤η) (hgap : 4*τ<dmin*η) :
     ∀ᶠ Z : ℝ in atTop, ∀ d : ℝ, dmin≤d →
       ∀ i : ℕ, i≤I → (3+(3*i+2 : ℕ)*Z^τ)^4≤(Z^d)^η := by
@@ -61,7 +61,7 @@ lemma uniform_height_budget (dmin τ η : ℝ) (I : ℕ) (hτ : 0≤τ)
     _ = ((3*(I : ℝ)+5)^4*16)*Z^(4*τ) := by ring
     _ ≤ _ := hZ d hd
 
-lemma uniform_fourier_allowance (dmax τ : ℝ) (hdmax : 0<dmax) (hτ : 0<τ) :
+lemma uniform_fourier_allowance  dmax τ  (hdmax : 0<dmax) (hτ : 0<τ) :
     ∀ᶠ Z : ℝ in atTop, ∀ d : ℝ, 0≤d → d≤dmax →
       2*Real.pi*(Z^d)^(τ/(2*dmax))≤Z^τ/2 := by
   have hh := constant_absorbed_eventually (4*Real.pi) (τ/2) (by linarith)
@@ -81,6 +81,6 @@ lemma uniform_fourier_allowance (dmax τ : ℝ) (hdmax : 0<dmax) (hτ : 0<τ) :
 
 end SevenEighths.HeckeDetectorDyadicGeometry
 
-end
+
 
 end OAI

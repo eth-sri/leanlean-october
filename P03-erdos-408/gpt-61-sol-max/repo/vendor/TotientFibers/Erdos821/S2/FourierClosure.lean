@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P3Clean.TiltedIdealKernel
 
 public import Erdos821.S2.ClosedPaths
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
@@ -15,19 +18,14 @@ namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-theorem phase_add (s t : ℝ) : phase (s + t) = phase s * phase t := by
-  unfold phase
-  rw [← Complex.exp_add]
-  congr 1
-  push_cast
-  ring
+alias phase_add := _root_.Erdos821.P3Clean.phase_add
 
 theorem phase_prod {ι : Type*} (s : Finset ι) (f : ι → ℝ) :
     (∏ i ∈ s, phase (f i)) = phase (∑ i ∈ s, f i) := by
   classical
   induction s using Finset.induction_on with
   | empty => simp [phase]
-  | insert i s hi ih => rw [Finset.prod_insert hi, Finset.sum_insert hi, ih, phase_add]
+  | insert i s hi ih => simp_all [phase_add]
 
 theorem continuous_phase_int (n : ℤ) : Continuous (fun theta : ℝ => phase (theta * (n : ℝ))) := by
   unfold phase
@@ -56,8 +54,7 @@ theorem integral_phase_int (n : ℤ) :
       exact Complex.exp_int_mul_two_pi_mul_I n
     simp_rw [hf]
     rw [integral_exp_mul_complex hc]
-    simp only [Complex.ofReal_one, Complex.ofReal_zero, mul_one, mul_zero, hexp,
-      Complex.exp_zero, sub_self, zero_div]
+    simp_all
 
 namespace ResiduePath
 
@@ -66,16 +63,13 @@ variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
 
 theorem offset_last : Q.offset (Fin.last n) = ∑ i : Fin n, Q.step i := by
   unfold offset
-  apply Finset.sum_congr rfl
-  intro i _
-  simp only [Fin.val_last, ite_eq_left i.isLt]
+  simp_all
 
-theorem edgeCoefficient_phase (theta : ℝ) (i : Fin n) :
+theorem edgeCoefficient_phase  theta   i  :
     Q.edgeCoefficient theta i = Q.edgeCoefficient 0 i * phase (theta * (Q.step i : ℝ)) := by
-  simp only [edgeCoefficient, zero_mul, phase, Complex.ofReal_zero, mul_zero,
-    Complex.exp_zero, mul_one]
+  simp_all [edgeCoefficient, phase]
 
-theorem weight_phase_factor (theta : ℝ) :
+theorem weight_phase_factor  theta  :
     Q.Weight theta = Q.Weight 0 * phase (theta * (Q.offset (Fin.last n) : ℝ)) := by
   unfold Weight
   simp_rw [Q.edgeCoefficient_phase theta]
@@ -105,7 +99,7 @@ theorem integral_weight :
 end ResiduePath
 
 theorem integral_residueExpression {F : FixedData} {P : PrimeGroups} {J m : ℕ}
-    (A : Model F P J m) (n : ℕ) :
+    (A : Model F P J m)  n  :
     (∫ theta : ℝ in (0 : ℝ)..1, residueExpression A n theta) = closedResidueExpression A n := by
   unfold residueExpression
   rw [intervalIntegral.integral_finsetSum]
@@ -114,8 +108,7 @@ theorem integral_residueExpression {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     intro Q _
     by_cases hq : Q.Valid
     · simp only [hq, ite_true, Q.integral_weight]
-      by_cases hc : Q.offset (Fin.last n) = 0 <;>
-        simp [closedPathCoefficient, hq, hc, ResiduePath.Weight]
+      simp_all [Fin.last, closedPathCoefficient, ResiduePath.Weight]
     · simp [hq, closedPathCoefficient]
   · intro Q _
     by_cases hq : Q.Valid

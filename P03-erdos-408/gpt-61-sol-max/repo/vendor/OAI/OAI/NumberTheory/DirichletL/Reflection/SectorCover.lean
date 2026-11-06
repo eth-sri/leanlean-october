@@ -10,14 +10,18 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-universe u v
-variable {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-lemma sector_arithmetic_prescribed (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
-    (S : Ideal Eis→PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+
+universe u v
+variable {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
+
+section
+variable (F : PrimeFamily φ) (rows Pset : Finset (Ideal ActualEisensteinCubic.O)) (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+include F rows Pset S hrows s hc
+
+lemma sector_arithmetic_prescribed    
+       
+       
     (D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
       ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property) (S P.val)).generator N a c mode)
     (hcommon : ∀ (x y : SourcePair rows Pset),
@@ -48,10 +52,10 @@ lemma sector_arithmetic_prescribed (F : PrimeFamily φ) (rows Pset : Finset (Ide
       cuspColumn_eq := fun K P hp => (hn ⟨⟨(K,P),hp⟩⟩).elim
     },rfl⟩
 
-theorem exists_global_sector_completion (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
-    (S : Ideal Eis→PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (hN : (9:Eis)*c∣N)
+theorem exists_global_sector_completion    
+       
+       
+    (hN : (9:ActualEisensteinCubic.O)*c∣N)
     (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
     (hac : IsCoprime a c) (hF : Pairwise (Function.onFun IsCoprime F.ideal))
     (hNF : ∀ f,IsCoprime (Ideal.span {N}) (F.ideal f))
@@ -61,7 +65,7 @@ theorem exists_global_sector_completion (F : PrimeFamily φ) (rows Pset : Finset
     (hSN : ∀ P∈Pset,∀ i,IsCoprime (Ideal.span {N}) ((S P).ideal i)) :
     ∃ D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
       ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property) (S P.val)).generator N a c mode,
-    ∀ r p : Eis⧸Ideal.span {N^2},
+    ∀ r p : ActualEisensteinCubic.O⧸Ideal.span {N^2},
     ∃ E : SectorArithmetic (N:=N) F (fullRaySector N rows r) (fullRaySector N Pset p) S
       (fun K hK => hrows K (Finset.mem_filter.mp hK).1) s hc,
     ∀ (K : fullRaySector N rows r) (P : fullRaySector N Pset p) hp,
@@ -99,7 +103,9 @@ theorem exists_global_sector_completion (F : PrimeFamily φ) (rows Pset : Finset
   refine ⟨E,?_⟩
   intro K P hp
   rw [hE]
+
 end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

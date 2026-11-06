@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.DetectorMoments
 public import Mathlib.Analysis.Complex.Polynomial.Basic
@@ -15,32 +16,36 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set   MeasureTheory
 
 open scoped Topology ContDiff
 
 open Asymptotics
 
-open Asymptotics
+ 
 
-open Asymptotics
+ 
 
 open scoped Classical
 
-open scoped ContDiff
+ 
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution   Pointwise
 
-noncomputable def primeCharacterPrefix (x : ℝ) {q : ℕ} (χ : DirichletCharacter ℂ q) : ℂ :=
+noncomputable def primeCharacterPrefix (x : ℝ) {q } (χ : DirichletCharacter ℂ q)  :=
   ∑ n∈Finset.Ioc 0 ⌊x⌋₊, χ (n:ZMod q)*(ArithmeticFunction.vonMangoldt n:ℂ)
 
-noncomputable def primeCharacterError (x : ℝ) {q : ℕ} (χ : DirichletCharacter ℂ q) : ℂ :=
+noncomputable def primeCharacterError (x : ℝ) {q } (χ : DirichletCharacter ℂ q)  :=
   primeCharacterPrefix x χ-if χ=1 then (x:ℂ) else 0
 
-theorem character_prefix_orthogonality (x : ℝ) {q c : ℕ} (hq : 0<q)
-    (hc : c<q) (hcop : Nat.Coprime c q) :
+section
+variable (x : ℝ) {q c : ℕ} (hq : 0<q) (hc : c<q) (hcop : Nat.Coprime c q)
+
+include hq hc hcop in
+theorem character_prefix_orthogonality      
+        :
     ∑ χ : DirichletCharacter ℂ q, χ (c:ZMod q)⁻¹*primeCharacterPrefix x χ=
       (q.totient:ℂ)*(residuePrefix ArithmeticFunction.vonMangoldt ⌊x⌋₊ q c:ℂ) := by
   classical
@@ -58,8 +63,9 @@ theorem character_prefix_orthogonality (x : ℝ) {q c : ℕ} (hq : 0<q)
   intro n _
   split_ifs <;> simp
 
-theorem character_error_orthogonality (x : ℝ) {q c : ℕ} (hq : 0<q)
-    (hc : c<q) (hcop : Nat.Coprime c q) :
+include hq hc hcop in
+theorem character_error_orthogonality      
+        :
     ∑ χ : DirichletCharacter ℂ q, χ (c:ZMod q)⁻¹*primeCharacterError x χ=
       (q.totient:ℂ)*((residuePrefix ArithmeticFunction.vonMangoldt ⌊x⌋₊ q c-x/q.totient:ℝ):ℂ) := by
   classical
@@ -76,8 +82,9 @@ theorem character_error_orthogonality (x : ℝ) {q c : ℕ} (hq : 0<q)
   push_cast
   field_simp
 
-theorem endpointClassError_le_character_sum (x : ℝ) {q c : ℕ} (hq : 0<q)
-    (hc : c<q) (hcop : Nat.Coprime c q) :
+include hq hc hcop in
+theorem endpointClassError_le_character_sum      
+        :
     |residuePrefix ArithmeticFunction.vonMangoldt ⌊x⌋₊ q c-x/q.totient|≤
       (∑ χ : DirichletCharacter ℂ q, ‖primeCharacterError x χ‖)/(q.totient:ℝ) := by
   have hphi : (0:ℝ)<q.totient := by exact_mod_cast Nat.totient_pos.mpr hq
@@ -94,14 +101,20 @@ theorem endpointClassError_le_character_sum (x : ℝ) {q c : ℕ} (hq : 0<q)
       rw [norm_mul]
       exact mul_le_of_le_one_left (norm_nonneg _) (χ.norm_le_one _)
 
-noncomputable def characterMeanError (x : ℝ) (q : ℕ) : ℝ :=
+end
+
+noncomputable def characterMeanError (x : ℝ) (q : ℕ)  :=
   (∑ χ : DirichletCharacter ℂ q, ‖primeCharacterError x χ‖)/(q.totient:ℝ)
 
-theorem characterMeanError_nonneg (x : ℝ) (q : ℕ) : 0≤characterMeanError x q := by
+theorem characterMeanError_nonneg  x   q  : 0≤characterMeanError x q := by
   unfold characterMeanError
   positivity
 
-theorem endpointError_le_characterMeanError (x : ℝ) {q : ℕ} (hq : 0<q) :
+section
+variable (x : ℝ) (X : ℕ) {q : ℕ} (hq : 0<q) (χ : DirichletCharacter ℂ q)
+
+include hq in
+theorem endpointError_le_characterMeanError       :
     (endpointError x q:ℝ)≤characterMeanError x q := by
   change (endpointError x q:ℝ)≤(⟨characterMeanError x q,characterMeanError_nonneg x q⟩:NNReal)
   apply NNReal.coe_le_coe.mpr
@@ -111,7 +124,8 @@ theorem endpointError_le_characterMeanError (x : ℝ) {q : ℕ} (hq : 0<q) :
   · exact NNReal.coe_le_coe.mp (endpointClassError_le_character_sum x hq (Finset.mem_range.mp hc) hcop)
   · exact bot_le
 
-theorem vonMangoldt_noncoprime_sum_le (X : ℕ) {q : ℕ} (hq : 0<q) :
+include hq in
+theorem vonMangoldt_noncoprime_sum_le       :
     (∑ n∈(Finset.Ioc 0 X).filter (fun n => ¬Nat.Coprime n q),
       ArithmeticFunction.vonMangoldt n)≤(Nat.log 2 X:ℝ)*Real.log q := by
   classical
@@ -119,9 +133,7 @@ theorem vonMangoldt_noncoprime_sum_le (X : ℕ) {q : ℕ} (hq : 0<q) :
   have he : (∑ n∈(Finset.Ioc 0 X).filter (fun n => ¬Nat.Coprime n q),
       ArithmeticFunction.vonMangoldt n)=∑ n∈S,ArithmeticFunction.vonMangoldt n := by
     simp only [S,Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro n _
-    by_cases hcop : Nat.Coprime n q <;> by_cases hn : ArithmeticFunction.vonMangoldt n=0 <;> simp [hcop,hn]
+    grind
   rw [he]
   have hsub : S⊆(q^(Nat.log 2 X)).divisors := by
     intro n hn
@@ -148,7 +160,8 @@ theorem vonMangoldt_noncoprime_sum_le (X : ℕ) {q : ℕ} (hq : 0<q) :
     _ = Real.log ((q^(Nat.log 2 X):ℕ):ℝ) := ArithmeticFunction.vonMangoldt_sum
     _ = _ := by rw [Nat.cast_pow,Real.log_pow]
 
-theorem primitiveCharacter_eq_one_iff {q : ℕ} (hq : 0<q) (χ : DirichletCharacter ℂ q) :
+include hq in
+theorem primitiveCharacter_eq_one_iff       :
     χ.primitiveCharacter=1 ↔ χ=1 := by
   have : NeZero q := ⟨ne_of_gt hq⟩
   constructor
@@ -157,8 +170,9 @@ theorem primitiveCharacter_eq_one_iff {q : ℕ} (hq : 0<q) (χ : DirichletCharac
   · rintro rfl
     exact DirichletCharacter.primitiveCharacter_one
 
-theorem primeCharacterPrefix_primitive_difference (x : ℝ) {q : ℕ} (hq : 0<q)
-    (χ : DirichletCharacter ℂ q) :
+include hq in
+theorem primeCharacterPrefix_primitive_difference      
+      :
     ‖primeCharacterPrefix x χ-primeCharacterPrefix x χ.primitiveCharacter‖≤
       (Nat.log 2 ⌊x⌋₊:ℝ)*Real.log q := by
   have hsame (n : ℕ) (hn : Nat.Coprime n q) :
@@ -185,8 +199,9 @@ theorem primeCharacterPrefix_primitive_difference (x : ℝ) {q : ℕ} (hq : 0<q)
           (χ.primitiveCharacter.norm_le_one _)
     _ ≤ _ := vonMangoldt_noncoprime_sum_le _ hq
 
-theorem primeCharacterError_primitive_difference (x : ℝ) {q : ℕ} (hq : 0<q)
-    (χ : DirichletCharacter ℂ q) :
+include hq in
+theorem primeCharacterError_primitive_difference      
+      :
     ‖primeCharacterError x χ-primeCharacterError x χ.primitiveCharacter‖≤
       (Nat.log 2 ⌊x⌋₊:ℝ)*Real.log q := by
   have he : primeCharacterError x χ-primeCharacterError x χ.primitiveCharacter=
@@ -196,16 +211,18 @@ theorem primeCharacterError_primitive_difference (x : ℝ) {q : ℕ} (hq : 0<q)
   rw [he]
   exact primeCharacterPrefix_primitive_difference x hq χ
 
-theorem primeCharacterError_le_primitive (x : ℝ) {q : ℕ} (hq : 0<q)
-    (χ : DirichletCharacter ℂ q) :
+include hq in
+theorem primeCharacterError_le_primitive      
+      :
     ‖primeCharacterError x χ‖≤‖primeCharacterError x χ.primitiveCharacter‖+
       (Nat.log 2 ⌊x⌋₊:ℝ)*Real.log q := by
   have hn := norm_add_le (primeCharacterError x χ.primitiveCharacter)
     (primeCharacterError x χ-primeCharacterError x χ.primitiveCharacter)
   rw [add_sub_cancel] at hn
-  exact hn.trans (add_le_add_right (primeCharacterError_primitive_difference x hq χ) _)
+  grind [primeCharacterError_primitive_difference]
 
-theorem characterMeanError_le_primitive_average (x : ℝ) {q : ℕ} (hq : 0<q) :
+include hq in
+theorem characterMeanError_le_primitive_average       :
     characterMeanError x q≤
       (∑ χ : DirichletCharacter ℂ q,‖primeCharacterError x χ.primitiveCharacter‖)/(q.totient:ℝ)+
       (Nat.log 2 ⌊x⌋₊:ℝ)*Real.log q := by
@@ -224,15 +241,21 @@ theorem characterMeanError_le_primitive_average (x : ℝ) {q : ℕ} (hq : 0<q) :
       congr 1
       exact mul_div_cancel_left₀ _ hphi.ne'
 
-noncomputable def primitiveErrorMass (x : ℝ) (d : ℕ) : ℝ :=
+end
+
+noncomputable def primitiveErrorMass (x : ℝ) (d : ℕ)  :=
   ∑ χ∈(Finset.univ : Finset (DirichletCharacter ℂ d)).filter DirichletCharacter.IsPrimitive,
     ‖primeCharacterError x χ‖
 
-theorem primitiveErrorMass_nonneg (x : ℝ) (d : ℕ) : 0≤primitiveErrorMass x d := by
+section
+variable (x : ℝ) {q : ℕ} (hq : 0<q) (f : ℕ → ℝ) (hf : ∀ n, 0 ≤ f n) (Q : ℕ)
+
+theorem primitiveErrorMass_nonneg    d  : 0≤primitiveErrorMass x d := by
   unfold primitiveErrorMass
   positivity
 
-theorem induced_primitive_sum_le (x : ℝ) {q : ℕ} (hq : 0<q) :
+include hq in
+theorem induced_primitive_sum_le       :
     (∑ χ : DirichletCharacter ℂ q,‖primeCharacterError x χ.primitiveCharacter‖)≤
       ∑ d∈q.divisors,primitiveErrorMass x d := by
   classical
@@ -260,7 +283,8 @@ theorem induced_primitive_sum_le (x : ℝ) {q : ℕ} (hq : 0<q) :
       Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => norm_nonneg _)
     _ = _ := by rw [Finset.sum_sigma]; rfl
 
-theorem endpointError_le_primitive_conductors (x : ℝ) {q : ℕ} (hq : 0<q) :
+include hq in
+theorem endpointError_le_primitive_conductors       :
     (endpointError x q:ℝ)≤(∑ d∈q.divisors,primitiveErrorMass x d)/(q.totient:ℝ)+
       (Nat.log 2 ⌊x⌋₊:ℝ)*Real.log q := by
   apply (endpointError_le_characterMeanError x hq).trans
@@ -277,7 +301,7 @@ theorem nat_le_card_divisors_mul_totient (q : ℕ) : q≤q.divisors.card*q.totie
         (Nat.totient_dvd_of_dvd (Nat.mem_divisors.mp hd).1)
     _ = _ := by simp
 
-theorem divisorMultiplicity_two (q : ℕ) : divisorMultiplicity 2 q=q.divisors.card := by
+theorem divisorMultiplicity_two  q  : divisorMultiplicity 2 q=q.divisors.card := by
   rw [show 2=1+1 from rfl,divisorMultiplicity_succ]
   calc
     _ = ∑ _d∈q.divisors,1 := by
@@ -287,7 +311,7 @@ theorem divisorMultiplicity_two (q : ℕ) : divisorMultiplicity 2 q=q.divisors.c
         (Nat.pos_of_dvd_of_pos (Nat.mem_divisors.mp hd).1 (Nat.pos_of_ne_zero (Nat.mem_divisors.mp hd).2)).ne']
     _ = _ := by simp
 
-theorem sum_totient_reciprocal_le (Q : ℕ) :
+theorem sum_totient_reciprocal_le   :
     (∑ q∈Finset.Icc 1 Q,(1:ℝ)/(q.totient:ℝ))≤(harmonic Q:ℝ)^2 := by
   apply le_trans (Finset.sum_le_sum (g:=fun q => (divisorMultiplicity 2 q:ℝ)/(q:ℝ)) ?_)
     (sum_divisorMultiplicity_reciprocal_le 2 Q)
@@ -297,7 +321,8 @@ theorem sum_totient_reciprocal_le (Q : ℕ) :
   rw [divisorMultiplicity_two,div_le_div_iff₀ hp hq0,one_mul]
   exact_mod_cast nat_le_card_divisors_mul_totient q
 
-theorem reciprocal_totient_divisor_sum_le (f : ℕ → ℝ) (hf : ∀ n, 0 ≤ f n) (Q : ℕ) :
+include hf in
+theorem reciprocal_totient_divisor_sum_le       :
     (∑ q ∈ Finset.Icc 1 Q, (∑ d ∈ q.divisors, f d) / (q.totient : ℝ)) ≤
       (∑ d ∈ Finset.Icc 1 Q, f d / (d.totient : ℝ)) * (harmonic Q : ℝ)^2 := by
   classical
@@ -320,13 +345,7 @@ theorem reciprocal_totient_divisor_sum_le (f : ℕ → ℝ) (hf : ∀ n, 0 ≤ f
     obtain ⟨hq',hd'⟩ := Finset.mem_sigma.mp hy
     have hed : d = d' := congrArg Prod.fst he
     have heq : q/d = q'/d' := congrArg Prod.snd he
-    have hdq : d ∣ q := (Nat.mem_divisors.mp hd).1
-    have hdq' : d' ∣ q' := (Nat.mem_divisors.mp hd').1
-    have hqq : q = q' := by
-      rw [← Nat.div_mul_cancel hdq, ← Nat.div_mul_cancel hdq', heq, hed]
-    subst d'
-    subst q'
-    rfl
+    simp_all
   have hsum : (∑ q ∈ Finset.Icc 1 Q, (∑ d ∈ q.divisors, f d) / (q.totient : ℝ)) ≤
       ∑ x ∈ s, f (e x).1 / (e x).1.totient / (e x).2.totient := by
     dsimp only [s]
@@ -361,7 +380,7 @@ theorem reciprocal_totient_divisor_sum_le (f : ℕ → ℝ) (hf : ∀ n, 0 ≤ f
     _ ≤ _ := mul_le_mul_of_nonneg_left (sum_totient_reciprocal_le Q)
       (Finset.sum_nonneg (fun _ _ => div_nonneg (hf _) (Nat.cast_nonneg _)))
 
-theorem endpointErrors_le_primitive_weighted_sum (x : ℝ) (Q : ℕ) :
+theorem endpointErrors_le_primitive_weighted_sum     :
     (∑ q∈Finset.Icc 1 Q,(endpointError x q:ℝ))≤
       (∑ d∈Finset.Icc 1 Q,primitiveErrorMass x d/(d.totient:ℝ))*(harmonic Q:ℝ)^2+
       (Q:ℝ)*(Nat.log 2 ⌊x⌋₊:ℝ)*Real.log Q := by
@@ -382,13 +401,15 @@ theorem endpointErrors_le_primitive_weighted_sum (x : ℝ) (Q : ℕ) :
             (Nat.cast_nonneg _)
         _ = _ := by simp [mul_assoc]
 
+end
+
 noncomputable def arithmeticCutoff (T : ℕ) (f : ArithmeticFunction ℝ) : ArithmeticFunction ℝ :=
   ⟨fun n => if n≤T then f n else 0,by simp⟩
 
-@[simp] theorem arithmeticCutoff_apply (T n : ℕ) (f : ArithmeticFunction ℝ) :
+@[simp] theorem arithmeticCutoff_apply  T n   f  :
     arithmeticCutoff T f n=if n≤T then f n else 0 := rfl
 
-theorem vaughan_identity (U V : ℕ) :
+theorem vaughan_identity  U V  :
     ArithmeticFunction.vonMangoldt =
       arithmeticCutoff U ArithmeticFunction.vonMangoldt+
       arithmeticCutoff V (ArithmeticFunction.moebius:ArithmeticFunction ℝ)*ArithmeticFunction.log-
@@ -403,27 +424,28 @@ theorem vaughan_identity (U V : ℕ) :
   linear_combination
     (arithmeticCutoff U ArithmeticFunction.vonMangoldt-ArithmeticFunction.vonMangoldt)*hmu
 
-noncomputable def vaughanSecondCoefficient (U : ℕ) : ArithmeticFunction ℝ :=
+noncomputable def vaughanSecondCoefficient (U : ℕ)  :=
   (ArithmeticFunction.vonMangoldt-arithmeticCutoff U ArithmeticFunction.vonMangoldt)*
     (ArithmeticFunction.zeta:ArithmeticFunction ℝ)
 
-theorem vaughanSecondCoefficient_eq (U n : ℕ) :
+section
+variable (U n : ℕ)
+
+theorem vaughanSecondCoefficient_eq   :
     vaughanSecondCoefficient U n=
       ∑ d∈n.divisors,if U<d then ArithmeticFunction.vonMangoldt d else 0 := by
   rw [vaughanSecondCoefficient,ArithmeticFunction.coe_mul_zeta_apply]
   apply Finset.sum_congr rfl
   intro d _
   change ArithmeticFunction.vonMangoldt d-(if d≤U then ArithmeticFunction.vonMangoldt d else 0)=_
-  by_cases hd : d≤U
-  · simp [hd,not_lt_of_ge hd]
-  · simp [hd,lt_of_not_ge hd]
+  aesop
 
-theorem vaughanSecondCoefficient_nonneg (U n : ℕ) :
+theorem vaughanSecondCoefficient_nonneg   :
     0≤vaughanSecondCoefficient U n := by
   rw [vaughanSecondCoefficient_eq]
-  exact Finset.sum_nonneg (fun _ _ => by split_ifs <;> positivity)
+  positivity
 
-theorem vaughanSecondCoefficient_le_log (U n : ℕ) :
+theorem vaughanSecondCoefficient_le_log   :
     vaughanSecondCoefficient U n≤Real.log n := by
   rw [vaughanSecondCoefficient_eq,←ArithmeticFunction.vonMangoldt_sum]
   apply Finset.sum_le_sum
@@ -432,7 +454,9 @@ theorem vaughanSecondCoefficient_le_log (U n : ℕ) :
   · rfl
   · exact ArithmeticFunction.vonMangoldt_nonneg
 
-theorem vaughanSecondCoefficient_zero_of_le {U n : ℕ} (hn : n≤U) :
+end
+
+theorem vaughanSecondCoefficient_zero_of_le  {U n}  (hn : n≤U) :
     vaughanSecondCoefficient U n=0 := by
   rw [vaughanSecondCoefficient_eq]
   apply Finset.sum_eq_zero

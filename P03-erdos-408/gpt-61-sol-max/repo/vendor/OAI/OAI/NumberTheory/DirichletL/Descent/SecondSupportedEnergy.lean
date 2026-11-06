@@ -10,9 +10,9 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open InverseSecondFibers SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
@@ -28,18 +28,23 @@ theorem ActualSecondSourceConditions.mono {Jo Jn : ℕ}
   new_support x hx := h.new_support x (hTS hx)
   quotient_nonzero x hx := h.quotient_nonzero x (hTS hx)
 
-theorem assignedSecondSource_mono {Jo : ℕ}
+section
+variable {Jo Jn : ℕ}
+
+theorem assignedSecondSource_mono  
     {S T : Finset (MarkedSecondSource ι Jo 0)} (hST : S ⊆ T)
-    (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι) :
+    (J₁ J₂ : Finset σ)  L₁ L₂  :
     assignedSecondSource S J₁ J₂ L₁ L₂ ⊆ assignedSecondSource T J₁ J₂ L₁ L₂ := by
   intro x hx
   obtain ⟨y,hy,q₁,hq₁,q₂,hq₂,he⟩ := (mem_assignedSecondSource S J₁ J₂ L₁ L₂ x).mp hx
   exact (mem_assignedSecondSource T J₁ J₂ L₁ L₂ x).mpr ⟨y,hST hy,q₁,hq₁,q₂,hq₂,he⟩
 
-theorem actualSecondTriples_mono {Jo Jn : ℕ} (u v : Eisˣ)
+theorem actualSecondTriples_mono    u v 
     {S T : Finset (MarkedSecondSource ι Jo Jn)} (hST : S ⊆ T) :
     actualSecondTriples p u v S ⊆ actualSecondTriples p u v T :=
   Finset.image_subset_image hST
+
+end
 
 end
 end SevenEighths.InverseMoment

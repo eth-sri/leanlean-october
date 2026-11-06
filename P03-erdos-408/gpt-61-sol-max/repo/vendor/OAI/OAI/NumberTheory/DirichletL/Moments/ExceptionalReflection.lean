@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalPair
 
@@ -6,25 +7,29 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalPair
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentExceptionalReflection
 open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CenteredMomentChildRows
 open CenteredMomentFixedRay CenteredMomentExceptionalPair RayFourExpansion
 open CanonicalRowCompletion CanonicalQuadraticSieve CanonicalUnitEuler
-local notation "O" => HeckeFamily.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-theorem child_rows_zero_off_support (η : Character) (χ ξ : RayCharacter)
-    (m A z n : O) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+
+
+section
+variable (η : Character) (χ ξ : RayCharacter) (Q : Ideal HeckeFamily.O) (hQ : Q ≤ Ideal.span {(72 : HeckeFamily.O)}) (m A z n : HeckeFamily.O) (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2 : HeckeFamily.O) ∣ m)
+
+include hmLam hm2 in
+theorem child_rows_zero_off_support    
+         
     (hn : ¬Supported (Ideal.span {n})) :
     rowTwist (elementHom (childCharacter η χ)) m 1 (A*z) n = 0 ∧
-      rowTwist (elementHom (childCharacter η ξ)) m 1 (A*(-z)) n = 0 := by
-  exact ⟨rowTwist_zero_of_not_supported _ _ _ _ _ hmLam hm2 hn,
+      rowTwist (elementHom (childCharacter η ξ)) m 1 (A*(-z)) n = 0 := ⟨rowTwist_zero_of_not_supported _ _ _ _ _ hmLam hm2 hn,
     rowTwist_zero_of_not_supported _ _ _ _ _ hmLam hm2 hn⟩
 
-theorem child_row_reflection (η : Character) (χ ξ : RayCharacter)
-    (m A z : O) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m) (n : O) :
+include hmLam hm2 in
+theorem child_row_reflection    
+           n  :
     rowTwist (elementHom (childCharacter η ξ)) m 1 (A*(-z)) n =
       rowTwist (elementHom (childCharacter η χ)) m 1 (A*z) n *
         elementCoeff (reflectionRatio χ ξ) n := by
@@ -38,9 +43,9 @@ theorem child_row_reflection (η : Character) (χ ξ : RayCharacter)
         idealRowHom (A*z) (Ideal.span {n})) * elementCoeff (reflectionRatio χ ξ) n
     rw [childCharacter_ratio, reflectionRatio, elementCoeff_product,
       HeckeUnitRows.elementCoeff_character]
-    have hu : unitSupplement (-1 : Oˣ) n = idealRowHom (-1) (Ideal.span {n}) := by
+    have hu : unitSupplement (-1 : HeckeFamily.Oˣ) n = idealRowHom (-1) (Ideal.span {n}) := by
       change (if Supported (Ideal.span {n}) then
-        idealRowHom ((-1 : Oˣ) : O) (Ideal.span {n}) else 0) = _
+        idealRowHom ((-1 : HeckeFamily.Oˣ) : HeckeFamily.O) (Ideal.span {n}) else 0) = _
       rw [ite_eq_left hn]
       rfl
     rw [hu, show A*(-z) = (-1)*(A*z) by ring, idealRowHom_argument_mul]
@@ -48,35 +53,39 @@ theorem child_row_reflection (η : Character) (χ ξ : RayCharacter)
   · obtain ⟨hleft, hright⟩ := child_rows_zero_off_support η χ ξ m A z n hmLam hm2 hn
     rw [hleft, hright, zero_mul]
 
-theorem fixedInducingRow_reflected (η : Character) (χ ξ : RayCharacter)
-    (Q : Ideal O) (hQ : Q ≤ Ideal.span {(72 : O)})
-    (m A z : O) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+include hQ hmLam hm2 in
+theorem fixedInducingRow_reflected    
+       
+         
     (hex : FixedInducingRow (childCharacter η χ) Q m A z) :
-    FixedInducingRow (childCharacter η ξ) Q m A (-z) := by
-  exact fixedInducingRow_of_product (childCharacter η χ) (childCharacter η ξ)
+    FixedInducingRow (childCharacter η ξ) Q m A (-z) := fixedInducingRow_of_product (childCharacter η χ) (childCharacter η ξ)
     (reflectionRatio χ ξ) Q m A z (-z) (reflectionRatio_modulus χ ξ Q hQ)
     (child_row_reflection η χ ξ m A z hmLam hm2) hex
 
-theorem fixedInducingRow_reflection_iff (η : Character) (χ ξ : RayCharacter)
-    (Q : Ideal O) (hQ : Q ≤ Ideal.span {(72 : O)})
-    (m A z : O) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m) :
+include hQ hmLam hm2 in
+theorem fixedInducingRow_reflection_iff    
+       
+          :
     FixedInducingRow (childCharacter η χ) Q m A z ↔
       FixedInducingRow (childCharacter η ξ) Q m A (-z) := by
   constructor
-  · exact fixedInducingRow_reflected η χ ξ Q hQ m A z hmLam hm2
+  · solve_by_elim [fixedInducingRow_reflected]
   · intro hex
     simpa only [neg_neg] using
       fixedInducingRow_reflected η ξ χ Q hQ m A (-z) hmLam hm2 hex
 
-theorem not_fixedInducingRow_reflection_iff (η : Character) (χ ξ : RayCharacter)
-    (Q : Ideal O) (hQ : Q ≤ Ideal.span {(72 : O)})
-    (m A z : O) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m) :
+include hQ hmLam hm2 in
+theorem not_fixedInducingRow_reflection_iff    
+       
+          :
     (¬FixedInducingRow (childCharacter η χ) Q m A z) ↔
       ¬FixedInducingRow (childCharacter η ξ) Q m A (-z) :=
   not_congr (fixedInducingRow_reflection_iff η χ ξ Q hQ m A z hmLam hm2)
 
+end
+
 end SevenEighths.CenteredMomentExceptionalReflection
 
-end
+
 
 end OAI

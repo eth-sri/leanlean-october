@@ -12,18 +12,18 @@ open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical EisensteinSchwartzPoisson
 
-def shellProfile (W : ℝ→ℂ) (v : ℝ) (U : SchwartzMap ℝ ℂ) (T x y : ℝ) : ℂ :=
+def shellProfile (W : ℝ→ℂ) (v : ℝ) (U : SchwartzMap ℝ ℂ) (T x y : ℝ)  :=
   lowGramProfile W v x*star (lowGramProfile W v y)*paperRadialFourier U (T/(x*y))
 
-lemma shellProfile_zero_left (W : ℝ→ℂ) (v : ℝ) (U : SchwartzMap ℝ ℂ) (T x y : ℝ)
+lemma shellProfile_zero_left  W   v   U   T x y 
     (hx : W x=0) : shellProfile W v U T x y=0 := by
   simp [shellProfile,lowGramProfile,hx]
 
-lemma shellProfile_zero_right (W : ℝ→ℂ) (v : ℝ) (U : SchwartzMap ℝ ℂ) (T x y : ℝ)
+lemma shellProfile_zero_right  W   v   U   T x y 
     (hy : W y=0) : shellProfile W v U T x y=0 := by
   simp [shellProfile,lowGramProfile,hy]
 
-theorem shellProfile_weighted_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) (A : ℕ) :
+theorem shellProfile_weighted_bound  a b B  (ha : 0<a) (hB : 0≤B)  A  :
     ∃s : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧
       ∀(W : ℝ→ℂ),(Function.support W⊆Set.Icc a b)→(∀x,‖W x‖≤B)→
       ∀(U : SchwartzMap ℝ ℂ)(v T x y : ℝ),0≤T→

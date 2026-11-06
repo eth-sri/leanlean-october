@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSummability
 
@@ -14,13 +15,13 @@ local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
-def rowInner (eta a X W V rho : ℂ) (j e l : ℕ) : ℂ :=
+def rowInner (eta a X W V rho : ℂ) (j e l : ℕ)  :=
   ∑' k, ∑' m,rowMarkedTerm p hp hg eta a X W V rho j e l k m
 
-def rowMarkedSeries (eta a X W V rho : ℂ) (j : ℕ) : ℂ :=
+def rowMarkedSeries (eta a X W V rho : ℂ) (j : ℕ)  :=
   ∑ e : Fin 2, ∑' l,rowInner p hp hg eta a X W V rho j e.val l
 
-lemma rowInner_two (eta a X W V rho : ℂ) (j e l : ℕ) :
+lemma rowInner_two  eta a X W V rho   j e l  :
     rowInner p hp hg eta a X W V rho j e l=
       (∑' m,rowMarkedTerm p hp hg eta a X W V rho j e l 0 m)+
       (∑' m,rowMarkedTerm p hp hg eta a X W V rho j e l 1 m) := by
@@ -28,9 +29,9 @@ lemma rowInner_two (eta a X W V rho : ℂ) (j e l : ℕ) :
   intro k
   simp only [rowMarkedTerm_higher_outer,tsum_zero]
 
-@[simp] lemma rowInner_zero (eta a X W V rho : ℂ) (j : ℕ) :
+@[simp] lemma rowInner_zero  eta a X W V rho   j  :
     rowInner p hp hg eta a X W V rho j 0 0=0 := by
-  simp only [rowInner,rowMarkedTerm,mul_zero,add_zero,ite_true,tsum_zero]
+  simp_all [rowInner, rowMarkedTerm]
 
 include hc in
 theorem rowInner_family_hasSum (eta a X W V rho : ℂ) (hρ : rho^6=1)
@@ -41,8 +42,7 @@ theorem rowInner_family_hasSum (eta a X W V rho : ℂ) (hρ : rho^6=1)
   have h0 := rowMarkedFamily_hasSum p hp hg hc eta a X W V rho hρ hV hR j e l 0 hj ht
   have h1 := rowMarkedFamily_hasSum p hp hg hc eta a X W V rho hρ hV hR j e l 1 hj ht
   convert h0.add h1 using 1
-  · funext r
-    exact rowInner_two p hp hg eta a X W V rho j e (l+2*r)
+  · simp_all [rowInner_two]
   · rw [rowInner_two,add_div]
 
 include hc in

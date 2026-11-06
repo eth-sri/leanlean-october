@@ -48,7 +48,7 @@ theorem idealConstruction : Erdos821.Blueprint.Graph.IdealConstruction :=
     Erdos821.P4Probe.FiniteProbeCancellationTask_proof).construction
 
 /-- `√(L^{2C}) = L^C`. -/
-private lemma sqrt_rpow_two_mul {L : ℝ} (hL : 0 ≤ L) (C : ℝ) :
+private lemma sqrt_rpow_two_mul  {L}  (hL : 0 ≤ L) (C : ℝ) :
     Real.sqrt (L ^ (2 * C)) = L ^ C := by
   rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hL]
   ring_nf

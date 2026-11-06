@@ -8,16 +8,16 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.ScalarGrowth
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
-theorem calibrated_physical_tuple_sum (K : ℕ) (e δ a b r B : ℝ)
+
+theorem calibrated_physical_tuple_sum  K  (e δ a b r B : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1)
     (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+     S   hS   hmax 
     (hfirst : FirstTail (1/4) S) :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow),u.val≠1 →
       ∀(T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S),
@@ -28,13 +28,13 @@ theorem calibrated_physical_tuple_sum (K : ℕ) (e δ a b r B : ℝ)
       (1/2:ℝ)≤w.re → z.re=r →
       (∑P:(∀i,T i),‖calibratedTupleValue S hS hmax η u (fun i=>(P i).val)
         (fun i=>hT i (P i).val (P i).property) W Y x w z‖)≤
-      C*(η.modulus.absNorm:ℝ)^δ*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(3/5+δ)*
+      C*(η.modulus.absNorm:ℝ)^δ*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^(3/5+δ)*
         (∏i,(Y i)^r)*(3+|x.im|)^2*(3+|w.im|)^2 := by
   obtain ⟨CL,hCL,hL⟩ := calibrated_scalar_growth e (δ/2) he he' (by linarith) (by linarith) S hS hmax
   obtain ⟨CG,hCG,hG⟩ := continued_selected_tuple_with_correction K (δ/2) a b r B (by linarith) ha hb hr hB
   refine ⟨CL*CG,mul_pos hCL hCG,?_⟩
   intro η u hu T hT hdis Y hY W hWS hWB x w z hx hxβ hw hz
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N : ℝ := ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)
   have hN : 0<N := by
     dsimp [N]
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
@@ -80,6 +80,6 @@ theorem calibrated_physical_tuple_sum (K : ℕ) (e δ a b r B : ℝ)
         _ = _ := by rw [hp]
 
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2Empty.BoundaryBound
 public import Erdos821.S2.AnalyticParametersTasks
@@ -24,12 +25,10 @@ theorem EmptyBoundaryMassTask_proof : Erdos821.S2Core.EmptyBoundaryMassTask := b
   let e : ℝ := ((N x : ℝ) + 1) / Real.exp ((L x) ^ F.c)
   rcases hx₀ x hx with ⟨hL, hT, hTle, hN, hdecay, hbudgetRaw⟩
   have hePos : 0 < e := by
-    dsimp [e]
-    exact div_pos (by positivity) (Real.exp_pos _)
+    positivity
   have he0 : 0 ≤ e := hePos.le
   have hLsq : 5 * L x ≤ 5 * (L x) ^ (2 : ℕ) := by
-    nlinarith [mul_nonneg (sub_nonneg.mpr hL)
-      (show 0 ≤ 5 * L x by positivity)]
+    bound
   have hehalf : e ≤ 1 / 2 := by
     dsimp [e]
     calc
@@ -59,9 +58,7 @@ theorem EmptyBoundaryMassTask_proof : Erdos821.S2Core.EmptyBoundaryMassTask := b
   have hbudget : (J + F.ell : ℝ) * (Fintype.card P.BigGroup : ℝ) * e ≤ 1 / 2 := by
     calc
       _ ≤ (J + F.ell : ℝ) * (F.C₀ * T x) * e := by
-        apply mul_le_mul_of_nonneg_right
-        · exact mul_le_mul_of_nonneg_left hBigCard (by positivity)
-        · exact he0
+        bound
       _ = (J + F.ell : ℝ) * F.C₀ * T x *
           ((N x : ℝ) + 1) / Real.exp ((L x) ^ F.c) := by
         dsimp [e]

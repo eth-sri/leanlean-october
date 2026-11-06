@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.Complex.Basic
 
@@ -16,20 +17,19 @@ variable {ι : Type*} [Fintype ι] {α : ι → Type*} [∀ i, Fintype (α i)]
 
 abbrev ProductSample (α : ι → Type*) := ∀ i, α i
 
-def productWeight (w : ∀ i, α i → ℝ) (x : ProductSample α) : ℝ := ∏ i, w i (x i)
+def productWeight (w : ∀ i, α i → ℝ) (x : ProductSample α)  := ∏ i, w i (x i)
 
 def mixCoords (S : Finset ι) (x y : ProductSample α) : ProductSample α :=
   fun i => if i ∈ S then y i else x i
 
 def productAverage (w : ∀ i, α i → ℝ) (S : Finset ι)
-    (f : ProductSample α → ℂ) (x : ProductSample α) : ℂ :=
+    (f : ProductSample α → ℂ) (x : ProductSample α)  :=
   ∑ y, (productWeight w y : ℂ) * f (mixCoords S x y)
 
 omit [Fintype ι] [(i : ι) → Fintype (α i)] in
 lemma mixCoords_involution (S : Finset ι) (x y : ProductSample α) :
     mixCoords S (mixCoords S x y) (mixCoords S y x) = x := by
-  funext i
-  by_cases hi : i ∈ S <;> simp [mixCoords, hi]
+  grind [mixCoords]
 
 def swapCoords (S : Finset ι) :
     ProductSample α × ProductSample α ≃ ProductSample α × ProductSample α where
@@ -39,17 +39,16 @@ def swapCoords (S : Finset ι) :
   right_inv z := by ext <;> simp only [mixCoords_involution]
 
 omit [(i : ι) → Fintype (α i)] in
-lemma productWeight_swap (w : ∀ i, α i → ℝ) (S : Finset ι)
+lemma productWeight_swap  w   S 
     (x y : ProductSample α) :
     productWeight w (mixCoords S x y) * productWeight w (mixCoords S y x) =
       productWeight w x * productWeight w y := by
   unfold productWeight
   rw [← Finset.prod_mul_distrib, ← Finset.prod_mul_distrib]
   apply Finset.prod_congr rfl
-  intro i _
-  by_cases hi : i ∈ S <;> simp [mixCoords, hi, mul_comm]
+  grind [mixCoords]
 
-lemma productWeight_total (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1) :
+lemma productWeight_total  w  (hsum : ∀ i, ∑ a, w i a = 1) :
     ∑ x : ProductSample α, productWeight w x = 1 := by
   change (∑ x : ProductSample α, ∏ i, w i (x i)) = 1
   trans ∏ i, ∑ a : α i, w i a
@@ -57,13 +56,12 @@ lemma productWeight_total (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a 
   · simp only [hsum, Finset.prod_const_one]
 
 omit [Fintype ι] [(i : ι) → Fintype (α i)] in
-lemma mixCoords_union (A B : Finset ι) (x y z : ProductSample α) :
+lemma mixCoords_union  A B  (x y z : ProductSample α) :
     mixCoords B (mixCoords A x y) z = mixCoords (A ∪ B) x (mixCoords B y z) := by
-  funext i
-  by_cases ha : i ∈ A <;> by_cases hb : i ∈ B <;> simp [mixCoords, ha, hb]
+  grind [mixCoords]
 
-lemma productAverage_union (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1)
-    (A B : Finset ι) (f : ProductSample α → ℂ) (x : ProductSample α) :
+lemma productAverage_union  w  (hsum : ∀ i, ∑ a, w i a = 1)
+     A B   f  (x : ProductSample α) :
     productAverage w A (productAverage w B f) x = productAverage w (A ∪ B) f x := by
   have htotal : ∑ y : ProductSample α, (productWeight w y : ℂ) = 1 := by
     exact_mod_cast productWeight_total w hsum
@@ -101,8 +99,8 @@ lemma productAverage_union (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a
       ring
     _ = _ := by rw [htotal, mul_one]
 
-lemma productAverage_duality (w : ∀ i, α i → ℝ) (S : Finset ι)
-    (f g : ProductSample α → ℂ) :
+lemma productAverage_duality (w : ∀ i, α i → ℝ)  S 
+     f g  :
     (∑ x, (productWeight w x : ℂ) * star (f x) * productAverage w S g x) =
       ∑ x, (productWeight w x : ℂ) * star (productAverage w S f x) * g x := by
   let R : ProductSample α × ProductSample α → ℂ := fun z =>
@@ -131,11 +129,7 @@ lemma productAverage_duality (w : ∀ i, α i → ℝ) (S : Finset ι)
       ∑ x : ProductSample α, ∑ y : ProductSample α,
         (productWeight w x : ℂ) * (productWeight w y : ℂ) *
           star (f x) * g (mixCoords S x y) := by
-    apply Finset.sum_congr rfl
-    intro x _
-    apply Finset.sum_congr rfl
-    intro y _
-    ring
+    grind
   rw [hleft, heq, Fintype.sum_prod_type]
   simp only [R, star_sum, star_mul, Complex.star_def, Complex.conj_ofReal]
   simp_rw [Finset.mul_sum, Finset.sum_mul]

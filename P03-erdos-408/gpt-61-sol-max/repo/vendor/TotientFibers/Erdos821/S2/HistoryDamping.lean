@@ -16,10 +16,13 @@ open Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-def pendingZeroCount {M : ℕ} (s : P.MemoryState M) : ℕ :=
+def pendingZeroCount {M } (s : P.MemoryState M)  :=
   ∑ g : P.BigGroup, (zeroMemoryIndices (s.2.2 g)).card
 
-theorem rawEdgeWeight_rho_factor (A : Model F P J m) (n : ℕ) (rho : ℝ)
+section
+variable (A : Model F P J m) (n : ℕ)
+
+theorem rawEdgeWeight_rho_factor      rho 
     (ν : Pattern P J F.ell m) (u : P.Aux J) (s t : P.MemoryState (J + F.ell))
     (c : TransferChoice s) :
     rawEdgeWeight A n rho ν u s t c =
@@ -27,8 +30,8 @@ theorem rawEdgeWeight_rho_factor (A : Model F P J m) (n : ℕ) (rho : ℝ)
   simp only [rawEdgeWeight, pendingZeroCount, one_pow, mul_one]
   ring
 
-theorem edgeChoiceCoefficient_rho_factor (A : Model F P J m) (n : ℕ)
-    (rho theta : ℝ) (i : Fin n) (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) :
+theorem edgeChoiceCoefficient_rho_factor    
+     rho theta   i  (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) :
     edgeChoiceCoefficient A n rho theta i s t c =
       (rho ^ (pendingZeroCount s + pendingZeroCount t) : ℝ) *
         edgeChoiceCoefficient A n 1 theta i s t c := by
@@ -38,6 +41,8 @@ theorem edgeChoiceCoefficient_rho_factor (A : Model F P J m) (n : ℕ)
   rw [he]
   simp only [pendingZeroCount, permuteActive, Complex.ofReal_mul]
   ring
+
+end
 
 /-- The two empty boundary coordinates supply the missing endpoint factors. -/
 theorem interleaved_product {R : Type*} [CommMonoid R] (n : ℕ)
@@ -56,7 +61,7 @@ namespace MemoryHistory
 
 variable {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n)
 
-theorem weight_rho_independent (rho theta : ℝ) (hρ : rho ≠ 0) (hH : H.Valid) :
+theorem weight_rho_independent  rho theta  (hρ : rho ≠ 0) (hH : H.Valid) :
     H.Weight rho theta = H.Weight 1 theta := by
   let u (i : Fin (n + 1)) : ℂ := (rho ^ pendingZeroCount (H.before i) : ℝ)
   let v (i : Fin (n + 1)) : ℂ := (rho ^ pendingZeroCount (H.after i) : ℝ)

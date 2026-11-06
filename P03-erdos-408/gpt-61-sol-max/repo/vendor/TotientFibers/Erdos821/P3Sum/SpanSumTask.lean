@@ -1,11 +1,12 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.SpanSumTask
 public import Erdos821.Leaves.OrphanExp
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P3Sum
@@ -34,17 +35,10 @@ theorem option_sum_recode {α : Type*} [Fintype α] [DecidableEq α]
           simp [(Finset.mem_erase.mp hx).1]
         · simp
   rw [Fintype.sum_option]
-  calc
-    f none + (∑ x : α, f (some x)) =
-        f none + ((∑ x ∈ (Finset.univ : Finset α).erase a, f (some x)) + f (some a)) := by
-      rw [← hleft]
-    _ = (∑ x ∈ (Finset.univ : Finset α).erase a, f (some x)) + f none := by
-      rw [hz]
-      ring
-    _ = ∑ x : α, f (if x = a then none else some x) := hright.symm
+  grind
 
 /-- Congruent endpoint offsets are exactly the zero difference used by a span. -/
-theorem intCast_sub_eq_zero_iff {p : ℕ} (u v : ℤ) :
+theorem intCast_sub_eq_zero_iff  {p}   u v  :
     ((u - v : ℤ) : ZMod p) = 0 ↔ (u : ZMod p) = (v : ZMod p) := by
   rw [Int.cast_sub, sub_eq_zero]
 
@@ -64,78 +58,31 @@ theorem span_interval_product_split {n : ℕ} (birth stop a z : Fin n)
   let post := Finset.univ.filter (fun i : Fin n => z < i ∧ i < stop)
   let whole := Finset.univ.filter (fun i : Fin n => birth < i ∧ i < stop ∧ i ∉ active)
   have hcover : whole = pre ∪ mid ∪ post := by
-    ext i
-    simp only [whole, pre, mid, post, Finset.mem_filter, Finset.mem_univ, true_and,
-      Finset.mem_union]
-    constructor
-    · rintro ⟨hbi, his, hnot⟩
-      by_cases hleft : i < a
-      · exact Or.inl (Or.inl ⟨hbi, hleft⟩)
-      · have hia : a ≤ i := le_of_not_gt hleft
-        have hneA : i ≠ a := by
-          intro he
-          subst i
-          exact hnot ha
-        have hait : a < i := lt_of_le_of_ne hia (Ne.symm hneA)
-        by_cases hright : z < i
-        · exact Or.inr ⟨hright, his⟩
-        · have hiz : i ≤ z := le_of_not_gt hright
-          have hneZ : i ≠ z := by
-            intro he
-            subst i
-            exact hnot hz
-          have hitz : i < z := lt_of_le_of_ne hiz hneZ
-          exact Or.inl (Or.inr ⟨hait, hitz, hnot⟩)
-    · intro hi
-      rcases hi with hleft | hright
-      · rcases hleft with hpre | hmid
-        · obtain ⟨hbi, hia⟩ := hpre
-          have his : i < stop := lt_of_lt_of_le hia (le_trans haz hze)
-          have hnot : i ∉ active := by
-            intro hi
-            exact (not_lt_of_ge (hfirst i hi)) hia
-          simp [hbi, his, hnot]
-        · obtain ⟨hai, hiz, hnot⟩ := hmid
-          have hbi : birth < i := lt_of_le_of_lt hba hai
-          have his : i < stop := lt_of_lt_of_le hiz hze
-          simp [hbi, his, hnot]
-      · obtain ⟨hzi, his⟩ := hright
-        have hbi : birth < i := lt_of_le_of_lt (le_trans hba haz) hzi
-        have hnot : i ∉ active := by
-          intro hi
-          exact (not_lt_of_ge (hlast i hi)) hzi
-        simp [hbi, his, hnot]
+    grind
   have hpre_mid : Disjoint pre mid := by
     apply Finset.disjoint_left.mpr
-    intro i hipre himid
-    simp only [pre, mid, Finset.mem_filter, Finset.mem_univ, true_and] at hipre himid
-    omega
+    grind
   have hpre_post : Disjoint pre post := by
     apply Finset.disjoint_left.mpr
-    intro i hipre hipost
-    simp only [pre, post, Finset.mem_filter, Finset.mem_univ, true_and] at hipre hipost
-    omega
+    grind
   have hmid_post : Disjoint mid post := by
     apply Finset.disjoint_left.mpr
-    intro i himid hipost
-    simp only [mid, post, Finset.mem_filter, Finset.mem_univ, true_and] at himid hipost
-    omega
+    grind
   have hunion_post : Disjoint (pre ∪ mid) post := by
-    apply Finset.disjoint_left.mpr
-    intro i hi hipost
-    rcases Finset.mem_union.mp hi with hipre | himid
-    · exact Finset.disjoint_left.mp hpre_post hipre hipost
-    · exact Finset.disjoint_left.mp hmid_post himid hipost
+    simp_all
   change (∏ i ∈ whole, f i) = (∏ i ∈ pre, f i) * (∏ i ∈ mid, f i) * (∏ i ∈ post, f i)
   rw [hcover, Finset.prod_union hunion_post, Finset.prod_union hpre_mid]
 
 open Erdos821.Blueprint.Graph Erdos821.S2Core
 
+section
+variable (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m) (Q : ResiduePath A n) (g : P.BigGroup) (p : P.Prime g.val)
+
 /-- The absent-prime case is the orphan expansion with its constant part
 collected into the baseline. -/
 theorem inactive_span_sum
-    (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
-    (Q : ResiduePath A n) (g : P.BigGroup) (p : P.Prime g.val)
+           
+         
     (hbase : baselinePrime F n p.val ≠ 0)
     (hactive : Q.activeVisits g p = ∅) :
     (∑ span : PrimeSpan n, Q.spanWeight g p span) =
@@ -143,7 +90,7 @@ theorem inactive_span_sum
         onePrimeExpectation p.val (n + 1) (eta F n)
           (fun i => (Q.offset i : ZMod p.val)) (Q.activeVisits g p) := by
   classical
-  let η : Fin (n + 1) → ℝ := fun i => eta F n i
+  let η : Fin (n + 1) → ℝ := eta F n
   let h : Fin (n + 1) → ZMod p.val := fun i => (Q.offset i : ZMod p.val)
   let B : ℝ := baselinePrime F n p.val
   let C : ℝ := ((p.val : ℝ) * B)⁻¹
@@ -160,14 +107,13 @@ theorem inactive_span_sum
     else 0
   have hcast (i j : Fin (n + 1)) :
       ((Q.offset i - Q.offset j : ℤ) : ZMod p.val) = 0 ↔ h i = h j := by
-    simpa [h] using intCast_sub_eq_zero_iff (Q.offset i) (Q.offset j)
+    solve_by_elim [intCast_sub_eq_zero_iff]
   have hvalid (birth stop : Fin (n + 1)) :
       Q.spanValid g p (some (birth, stop)) ↔ birth < stop ∧ h birth = h stop := by
     unfold ResiduePath.spanValid
     rw [hactive]
     constructor
-    · rintro ⟨_, hlt, _, hres, _⟩
-      exact ⟨hlt rfl, ((hcast stop birth).mp hres).symm⟩
+    · simp_all
     · rintro ⟨hlt, hres⟩
       refine ⟨hlt.le, ?_, by simp, (hcast stop birth).mpr hres.symm, by simp⟩
       intro _
@@ -229,8 +175,7 @@ theorem inactive_span_sum
       intro birth _
       exact hinner birth
     rw [hdouble, Finset.mul_sum]
-  have hbase_formula : B = 1 - (p.val : ℝ)⁻¹ * ∑ i : Fin (n + 1), η i := by
-    rfl
+  have hbase_formula : B = 1 - (p.val : ℝ)⁻¹ * ∑ i : Fin (n + 1), η i := rfl
   have hexp := Erdos821.Blueprint.Graph.orphan_expansion p.val (n + 1) η h
   have hexpectation :
       onePrimeExpectation p.val (n + 1) (eta F n)
@@ -249,8 +194,8 @@ theorem inactive_span_sum
 
 /-- Reindex the active prime's valid lifespans by their optional ghost endpoints. -/
 theorem active_span_sum_formula
-    (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
-    (Q : ResiduePath A n) (g : P.BigGroup) (p : P.Prime g.val)
+           
+         
     (hbase : baselinePrime F n p.val ≠ 0)
     (hnonempty : Q.activeVisits g p ≠ ∅) :
     (∑ span : PrimeSpan n, Q.spanWeight g p span) =
@@ -258,7 +203,7 @@ theorem active_span_sum_formula
         onePrimeExpectation p.val (n + 1) (eta F n)
           (fun i => (Q.offset i : ZMod p.val)) (Q.activeVisits g p) := by
   classical
-  let η : Fin (n + 1) → ℝ := fun i => eta F n i
+  let η : Fin (n + 1) → ℝ := eta F n
   let h : Fin (n + 1) → ZMod p.val := fun i => (Q.offset i : ZMod p.val)
   let active : Finset (Fin (n + 1)) := Q.activeVisits g p
   have hne : active.Nonempty := Finset.nonempty_iff_ne_empty.mpr hnonempty
@@ -283,11 +228,10 @@ theorem active_span_sum_formula
     activeSpanTerm p.val (n + 1) η h active a z
   have hcast (i j : Fin (n + 1)) :
       ((Q.offset i - Q.offset j : ℤ) : ZMod p.val) = 0 ↔ h i = h j := by
-    simpa [h] using intCast_sub_eq_zero_iff (Q.offset i) (Q.offset j)
+    solve_by_elim [intCast_sub_eq_zero_iff]
   have hcastZ (i j : Fin (n + 1)) :
       (Q.offset i : ZMod p.val) - (Q.offset j : ZMod p.val) = 0 ↔ h i = h j := by
-    change h i - h j = 0 ↔ h i = h j
-    exact sub_eq_zero
+    simp_all
   have hfilterEmpty (x : Fin (n + 1)) :
       Finset.univ.filter (fun i : Fin (n + 1) => x < i ∧ i < x) = ∅ := by
     ext i
@@ -312,8 +256,7 @@ theorem active_span_sum_formula
       (∀ i ∈ active, h i = h a) ∧ h birth = h a ∧ h stop = h a ∧
         birth ≤ a ∧ z ≤ stop := by
     rcases hv with ⟨_, _, hinside, hstop, hhit⟩
-    have hbirthA : h birth = h a := by
-      exact ((hcast a birth).mp (hhit a ha)).symm
+    have hbirthA : h birth = h a := ((hcast a birth).mp (hhit a ha)).symm
     have hstopA : h stop = h a := by
       have hstopB := (hcast stop birth).mp hstop
       have hAB := (hcast a birth).mp (hhit a ha)
@@ -387,17 +330,13 @@ theorem active_span_sum_formula
           suffixChoice z f (stopCode stop) := by
     dsimp [T, activeSpanTerm, f]
     rw [ite_eq_left hall]
-  have hpcast : (p.val : ℝ) ≠ 0 := by
-    exact_mod_cast (NeZero.ne p.val)
+  
   have hweight (birth stop : Fin (n + 1)) :
       Q.spanWeight g p (some (birth, stop)) = B⁻¹ * T (birthCode birth) (stopCode stop) := by
     by_cases hv : Q.spanValid g p (some (birth, stop))
     · obtain ⟨hall, hbirthA, hstopA, hba, hze⟩ := hcompat_of_valid birth stop hv
       rw [ResiduePath.spanWeight, ite_eq_left hv, hprod birth stop hv]
       rw [hTformula birth stop hall, hprefix birth stop hv, hsuffix birth stop hv]
-      rw [show baselinePrime F n p.val = B by rfl]
-      dsimp [B]
-      field_simp [hbase, hpcast]
       ring
     · rw [ResiduePath.spanWeight, ite_eq_right hv]
       have hTzero : T (birthCode birth) (stopCode stop) = 0 := by
@@ -489,8 +428,7 @@ theorem active_span_sum_formula
         apply Finset.sum_congr rfl
         intro birth _
         exact option_sum_recode z (T birth) (hzero_stop birth)
-      _ = _ := by
-        exact option_sum_recode a
+      _ = _ := option_sum_recode a
           (fun birth : Option (Fin (n + 1)) =>
             ∑ stop : Fin (n + 1), T birth (stopCode stop))
           (by simp [hzero_birth])
@@ -529,6 +467,8 @@ theorem active_span_sum_formula
     _ = _ := by
       rw [hactiveSum]
 
+end
+
 end Erdos821.P3Sum
 
 namespace Erdos821.S2Core
@@ -536,9 +476,7 @@ namespace Erdos821.S2Core
 /-- Exact finite one-prime lifespan sum, in the active and orphan cases. -/
 theorem SpanSumTask_proof : SpanSumTask := by
   intro F P J m n A Q g p hbase
-  by_cases hactive : Q.activeVisits g p = ∅
-  · exact Erdos821.P3Sum.inactive_span_sum F P J m n A Q g p hbase hactive
-  · exact Erdos821.P3Sum.active_span_sum_formula F P J m n A Q g p hbase hactive
+  grind [Erdos821.P3Sum.inactive_span_sum, Erdos821.P3Sum.active_span_sum_formula]
 
 
 end Erdos821.S2Core

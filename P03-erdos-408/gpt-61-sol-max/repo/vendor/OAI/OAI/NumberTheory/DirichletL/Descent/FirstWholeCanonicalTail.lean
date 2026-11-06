@@ -10,10 +10,10 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
+
 local notation "O" => ActualEisensteinCubic.O
 
-theorem first_whole_cube_canonical_tail (ε : ℝ) (hε : 0<ε) (order : ℕ) :
+theorem first_whole_cube_canonical_tail (ε : ℝ) (hε : 0<ε)  order  :
     ∃ (s : Finset (ℕ×ℕ)) (Ct Cm : ℝ),0<Ct ∧ 0<Cm ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
       (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -102,7 +102,7 @@ theorem first_whole_cube_canonical_tail (ε : ℝ) (hε : 0<ε) (order : ℕ) :
     simp only [ite_false,Bool.false_eq_true] at he
     exact he ▸ hn'
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

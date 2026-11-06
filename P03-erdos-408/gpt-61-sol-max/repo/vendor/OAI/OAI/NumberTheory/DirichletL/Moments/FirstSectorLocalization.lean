@@ -15,22 +15,22 @@ open CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization Centere
 open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport
 open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate
 open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy
-local notation "O" => ActualEisensteinCubic.O
+
 
 open CenteredMomentFirstLocalization
 
-def retainedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) : ℂ :=
+def retainedPair (I J ) (hI : Supported I) (hJ : Supported J)
+    (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ)  :=
   ∑ E∈inactiveSubsets I J,canonicalRetainedTerm I J hI hJ E W K
     (firstNominalScale I J (∏ P∈E,P.val) K X) Z ξ
 
-def discardedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) : ℂ :=
+def discardedPair (I J ) (hI : Supported I) (hJ : Supported J)
+    (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ)  :=
   ∑ E∈inactiveSubsets I J,canonicalDiscardedTerm I J hI hJ E W K
     (firstNominalScale I J (∏ P∈E,P.val) K X) Z ξ
 
-theorem reducedFirstSum_sector_split (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) (hK : 0<K) :
+theorem reducedFirstSum_sector_split  I J   hI   hJ 
+     W   K X Z ξ  (hK : 0<K) :
     reducedFirstSum I J hI hJ W K=canonicalZeroPair I J hI hJ W K+
       retainedPair I J hI hJ W K X Z ξ+discardedPair I J hI hJ W K X Z ξ := by
   unfold reducedFirstSum canonicalZeroPair retainedPair discardedPair
@@ -61,33 +61,33 @@ theorem reducedFirstSum_sector_split (I J : Ideal O) (hI : Supported I) (hJ : Su
     (residualCharacter J I hJ)⁻¹ (activeFunction I J hI)
   let d := (UniqueFactorizationMonoid.moebius (∏ P∈E,P.val):ℂ)*
     tripleRow a b r (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) e
-  change d*((k:ℂ)*∑' h : O,F h*paperRadialFourier W ((K/normValue e)*normValue h/normValue (a*(b*r))))=
+  change d*((k:ℂ)*∑' h : ActualEisensteinCubic.O,F h*paperRadialFourier W ((K/normValue e)*normValue h/normValue (a*(b*r))))=
     d*((k:ℂ)*(F 0*paperRadialFourier W 0))+
-      d*((k:ℂ)*∑' h : O,(retainedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*F h*paperRadialFourier W (k*normValue h))+
-      d*((k:ℂ)*∑' h : O,(discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*F h*paperRadialFourier W (k*normValue h))
-  have heq (h : O) : (K/normValue e)*normValue h/normValue (a*(b*r))=k*normValue h := by dsimp [k];ring
+      d*((k:ℂ)*∑' h : ActualEisensteinCubic.O,(retainedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*F h*paperRadialFourier W (k*normValue h))+
+      d*((k:ℂ)*∑' h : ActualEisensteinCubic.O,(discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*F h*paperRadialFourier W (k*normValue h))
+  have heq (h : ActualEisensteinCubic.O) : (K/normValue e)*normValue h/normValue (a*(b*r))=k*normValue h := by dsimp [k];ring
   simp_rw [heq]
   rw [hh]
   ring
 
-def retainedEnergy (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) : ℂ :=
+def retainedEnergy (η : Character) (m A : ActualEisensteinCubic.O) (t : ℝ)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ) (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ)  :=
   ∑ I : supportedColumns S,∑ J : supportedColumns S,
     ((c I*rowWeight η m A 1 t I)*star (c J*rowWeight η m A 1 t J))*
       retainedPair I J (Finset.mem_filter.mp I.property).2
         (Finset.mem_filter.mp J.property).2 W K X Z ξ
 
-def discardedEnergy (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) : ℂ :=
+def discardedEnergy (η : Character) (m A : ActualEisensteinCubic.O) (t : ℝ)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ) (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ)  :=
   ∑ I : supportedColumns S,∑ J : supportedColumns S,
     ((c I*rowWeight η m A 1 t I)*star (c J*rowWeight η m A 1 t J))*
       discardedPair I J (Finset.mem_filter.mp I.property).2
         (Finset.mem_filter.mp J.property).2 W K X Z ξ
 
-theorem finiteHeckeEnergy_sector_localized (η : Character) (m A : O) (t : ℝ)
-    (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:O)∣m)
-    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ))
-    (K X Z ξ : ℝ) (hK : 0<K) :
+theorem finiteHeckeEnergy_sector_localized  η   m A   t 
+    (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m)
+     S   c   W 
+     K X Z ξ  (hK : 0<K) :
     finiteHeckeEnergy η m A t S c W K=
       zeroEnergy η m A t S c W K+retainedEnergy η m A t S c W K X Z ξ+
         discardedEnergy η m A t S c W K X Z ξ := by

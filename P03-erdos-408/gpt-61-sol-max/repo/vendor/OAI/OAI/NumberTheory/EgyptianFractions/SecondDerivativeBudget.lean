@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.Order.Star.Real
 
@@ -9,7 +10,7 @@ namespace Problem337
 
 /-- The elementary square-root optimization of bad-point counting and
 first-derivative cancellation, with explicit harmless constants. -/
-theorem second_derivative_partition_sqrt_budget (A T lam : ℝ)
+theorem second_derivative_partition_sqrt_budget  A T lam 
     (hA : 0 ≤ A) (hT : 0 ≤ T) (hlam : 0 < lam) (hlamone : lam ≤ 1) :
     (A * lam * T + 2 * Real.sqrt lam + 1) * (2 * Real.sqrt lam / lam + 1) +
       (A * lam * T + 2) * (2 / Real.sqrt lam + 1) ≤
@@ -30,11 +31,8 @@ theorem second_derivative_partition_sqrt_budget (A T lam : ℝ)
         (A * lam * T + 2) * (2 / Real.sqrt lam + 1) =
       4 * A * T * Real.sqrt lam + 2 * A * T * lam +
         2 * Real.sqrt lam + 6 / Real.sqrt lam + 7 := by
-    field_simp
-    nlinarith [mul_nonneg hat (sq_nonneg (Real.sqrt lam))]
-  convert heq.le.trans (show 4 * A * T * Real.sqrt lam + 2 * A * T * lam +
-      2 * Real.sqrt lam + 6 / Real.sqrt lam + 7 ≤
-      6 * A * T * Real.sqrt lam + 6 / Real.sqrt lam + 9 by nlinarith) using 1
+    grind
+  grind
 
 end Problem337
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedTerms
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedTerms
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
@@ -24,7 +25,7 @@ lemma rowBaseFinite_selected_bound (eta a rho x w z : ℂ)
     ‖rowBaseFinite p hp hg eta a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z)
       rho j e l‖≤16*(Ideal.absNorm (Ideal.span {p}):ℝ)^(-x.re+max (1-w.re) 0) := by
-  have hpow : 0≤(Ideal.absNorm (Ideal.span {p}):ℝ)^(-x.re+max (1-w.re) 0) := by positivity
+  
   have hv := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_V_half _ hQ z hz)
   have ht' (k : Fin 2) (m : ℕ) :
       ‖rowMarkedTerm p hp hg eta a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
@@ -73,6 +74,6 @@ theorem rowClosedMarked_selected_bound (eta a rho x w z : ℂ)
   nlinarith
 
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

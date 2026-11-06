@@ -6,19 +6,19 @@ public import OAI.NumberTheory.DirichletL.Moments.RadialEligibleEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentRadialPointwiseEnergy
 open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
 open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 open CenteredMomentSlotRatios CenteredMomentUniformDivisorShell
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
-lemma inverse_reduction (s:Data ι) (D:Ideal O) (hD:Squarefree D)
-    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) (ha:a∈s.toSource.active D)
-    (Z:ℝ) (hZ:1<Z) :
+lemma inverse_reduction (s:Data ι)  D  (hD:Squarefree D)
+     a  (ha:a∈s.toSource.active D)
+     Z  (hZ:1<Z) :
     1/formalReductionFactor D a s.P≤Z^(s.toSource.allowance Z)/(Ideal.absNorm D:ℝ) := by
   have hh:=s.toSource.active_pair_weight s.toSource D hD a a ha ha Z hZ
   rw [show formalReductionFactor D a s.P*formalReductionFactor D a s.P=
@@ -28,7 +28,7 @@ lemma inverse_reduction (s:Data ι) (D:Ideal O) (hD:Squarefree D)
   ring
 
  theorem actual_pointwise_divisor (N:ℕ) (hι:Fintype.card ι≤N) (ε:ℝ) (hε:0<ε) :
-    ∃C:ℝ,0<C ∧ ∀(s:Data ι) (r:Radial) (D:Ideal O),Squarefree D →
+    ∃C:ℝ,0<C ∧ ∀(s:Data ι) (r:Radial) (D:Ideal ActualEisensteinCubic.O),Squarefree D →
       ∀E Z:ℝ,0≤E → 1<Z → (∀a∈s.toSource.active D,childEnergy s r D a≤E) →
       energy s r D≤C*(Ideal.absNorm D:ℝ)^(2*ε)*Z^(s.toSource.allowance Z)*
         (s.profileFactor*E)/(Ideal.absNorm D:ℝ) := by
@@ -67,6 +67,6 @@ lemma inverse_reduction (s:Data ι) (D:Ideal O) (hD:Squarefree D)
 
 end SevenEighths.CenteredMomentRadialPointwiseEnergy
 
-end
+
 
 end OAI

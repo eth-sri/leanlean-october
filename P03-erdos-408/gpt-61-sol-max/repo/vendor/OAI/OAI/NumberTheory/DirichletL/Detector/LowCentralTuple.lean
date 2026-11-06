@@ -7,23 +7,23 @@ public import OAI.NumberTheory.DirichletL.Detector.LowUnselectedMass
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma low_compensated_sqrt_factor (q L : ℝ) (hq : 0≤q) (hL : 0<L) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+lemma low_compensated_sqrt_factor  q L  (hq : 0≤q) (hL : 0<L) :
     Real.sqrt (3*q/L)=Real.sqrt (3*q)*L^(-(1/2:ℝ)) := by
   rw [Real.sqrt_div (by positivity)]
   simp only [div_eq_mul_inv,Real.sqrt_eq_rpow,Real.rpow_neg hL.le]
 
-theorem low_central_compensated_tuple (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
-    (a b ε : ℝ) (ha : 0<a) (hε : 0<ε) (hε1 : ε<1)
-    (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 M : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+theorem low_central_compensated_tuple  η   S 
+     hS  (hbad : fixedBadPrimes⊆S)
+     {K}   ell  (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
+     a b ε  (ha : 0<a) (hε : 0<ε) (hε1 : ε<1)
+     W0 W1  (a0 b0 a1 b1 M : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hab1 : a1<b1) (hM : 0≤M)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hW0s : ContDiff ℝ ∞ W0) (hW1s : ContDiff ℝ ∞ W1) (hWM : ∀x,‖W1 x‖≤M) :
@@ -130,6 +130,6 @@ theorem low_central_compensated_tuple (η : HeckeFamily.Character) (S : Finset I
     _=_ := by dsimp [C0];ring
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.MajorRetained
 public import Erdos821.S34.FiniteComparison
@@ -15,17 +16,19 @@ namespace Erdos821.S34Core
 noncomputable section
 open Blueprint.Analytic
 
-def occupiedProductCells (G : PrimeGroups) (k : Fin G.size → ℕ) (h : ℝ) : ℕ :=
+def occupiedProductCells (G : PrimeGroups) (k : Fin G.size → ℕ) (h : ℝ)  :=
   (Finset.univ.image (fun z : Tuple G k => cell h (product G k z))).card
 
-theorem discarded_tuple_mass_bound (G : PrimeGroups) (k : Fin G.size → ℕ)
-    (h ξ : ℝ) (hξ : 0 ≤ ξ) :
-    (∑ z, if cellMass G k h (cell h (product G k z)) < ξ then tupleWeight G k z else 0) ≤
-      (occupiedProductCells G k h : ℝ) * ξ := by
-  exact discarded_cell_mass (tupleWeight G k) (fun z => cell h (product G k z)) ξ hξ
+section
+variable (hfourier : RationalFourierTask) (hind : PrimitiveInductionTask) (G : PrimeGroups) (k a b : Fin G.size → ℕ) (Q r : ℕ) (u : ℤ) (h ξ U V S θ β ζ δ : ℝ)
 
-theorem comparisonScalar_zero_discarded (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ θ ζ : ℝ) (X : Tuple G a) (Y : Tuple G b)
+theorem discarded_tuple_mass_bound    
+      (hξ : 0 ≤ ξ) :
+    (∑ z, if cellMass G k h (cell h (product G k z)) < ξ then tupleWeight G k z else 0) ≤
+      (occupiedProductCells G k h : ℝ) * ξ := discarded_cell_mass (tupleWeight G k) (fun z => cell h (product G k z)) ξ hξ
+
+theorem comparisonScalar_zero_discarded    
+         X   Y 
     (hdisc : cellMass G a h (cell h (product G a X)) < ξ ∨
       cellMass G b h (cell h (product G b Y)) < ξ) :
     comparisonScalar G a b Q h ξ θ ζ X Y = 0 := by
@@ -35,8 +38,8 @@ theorem comparisonScalar_zero_discarded (G : PrimeGroups) (a b : Fin G.size → 
   · have hnot := not_le_of_gt hb
     simp [comparisonScalar, cellKernel, expect, hnot]
 
-theorem comparison_error_scalar_pairing (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ θ ζ : ℝ) (f : Tuple G b → ℂ) (g : Tuple G a → ℂ) :
+theorem comparison_error_scalar_pairing    
+         f   g  :
     comparisonError G a b Q h ξ θ ζ f g =
       ∑ X, ∑ Y, (tupleWeight G a X : ℂ) * (tupleWeight G b Y : ℂ) * star (f Y) * g X *
         (tuplePhase G a b θ ζ X Y - comparisonScalar G a b Q h ξ θ ζ X Y) := by
@@ -48,9 +51,10 @@ theorem comparison_error_scalar_pairing (G : PrimeGroups) (a b : Fin G.size → 
   intro Y _
   ring
 
-theorem dyadic_major_comparison (hfourier : RationalFourierTask) (hind : PrimitiveInductionTask)
-    (G : PrimeGroups) (a b : Fin G.size → ℕ) (Q r : ℕ) (u : ℤ)
-    (h ξ U V S θ β ζ δ : ℝ) (hr : 1 ≤ r) (hrQ : r ≤ Q)
+include hfourier hind in
+theorem dyadic_major_comparison    
+           
+      (hr : 1 ≤ r) (hrQ : r ≤ Q)
     (hh : 0 < h) (hh2 : h ≤ Real.log 2) (hξ : 0 < ξ)
     (hU : 1 ≤ U) (hV : 1 ≤ V) (hS : 0 ≤ S)
     (hθ : θ = (u : ℝ) / r + β) (hβ : |β| * (U * V) ≤ 2 * S)
@@ -64,7 +68,7 @@ theorem dyadic_major_comparison (hfourier : RationalFourierTask) (hind : Primiti
     (hGramB : ∀ j χ ψ, χ ∈ primitiveCharacters Q → ψ ∈ primitiveCharacters Q → χ ≠ ψ →
       ‖expect G b (fun z => if cell h (product G b z) = j then
         star (charValue χ (product G b z)) * charValue ψ (product G b z) else 0)‖ ≤ δ)
-    (f : Tuple G b → ℂ) (g : Tuple G a → ℂ)
+     f   g 
     (hg : ∀ X, g X ≠ 0 → U ≤ (product G a X : ℝ) ∧ (product G a X : ℝ) ≤ 2 * U)
     (hf : ∀ Y, f Y ≠ 0 → V ≤ (product G b Y : ℝ) ∧ (product G b Y : ℝ) ≤ 2 * V) :
     ‖comparisonError G a b Q h ξ θ ζ f g‖ ≤
@@ -113,7 +117,7 @@ theorem dyadic_major_comparison (hfourier : RationalFourierTask) (hind : Primiti
   have hzero (X : Tuple G a) (Y : Tuple G b) (hd : EA X ∨ EB Y) : comp X Y = 0 := by
     dsimp [comp]
     split_ifs
-    · exact comparisonScalar_zero_discarded G a b Q h ξ θ ζ X Y hd
+    · solve_by_elim [comparisonScalar_zero_discarded]
     · rfl
   have hpoint (X : Tuple G a) (Y : Tuple G b) (hX : ¬ EA X) (hY : ¬ EB Y) : ‖raw X Y - comp X Y‖ ≤ E := by
     by_cases hv : valid X Y
@@ -158,6 +162,8 @@ theorem dyadic_major_comparison (hfourier : RationalFourierTask) (hind : Primiti
     (mul_le_mul_of_nonneg_right (add_le_add (Real.sqrt_le_sqrt hmass') (le_refl E)) (tuple_norm_nonneg G a g))
     (tuple_norm_nonneg G b f))
   convert hn using 1; dsimp [E, ε]; ring
+
+end
 
 end
 end Erdos821.S34Core

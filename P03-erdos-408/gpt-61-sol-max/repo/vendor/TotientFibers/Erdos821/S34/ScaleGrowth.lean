@@ -8,7 +8,7 @@ set_option autoImplicit false
 open Filter
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint.Analytic
 
 theorem eventually_power_le_label_scale (A c ε : ℝ) (hc : 0 < c) (hε : 0 < ε) :
@@ -27,7 +27,7 @@ theorem eventually_power_le_label_scale (A c ε : ℝ) (hc : 0 < c) (hε : 0 < �
   simpa only [Real.norm_eq_abs, abs_of_pos (Real.rpow_pos_of_pos hLx A),
     abs_of_pos (Real.exp_pos _)] using hx
 
-theorem eventually_log_count_bound (C : ℝ) (hC : 0 ≤ C) :
+theorem eventually_log_count_bound  C  (hC : 0 ≤ C) :
     ∀ᶠ x : ℝ in atTop, C * T x + 1 ≤ L x := by
   have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
   have hsmall := (isLittleO_log_rpow_atTop (by norm_num : (0 : ℝ) < 1)).comp_tendsto hL
@@ -42,5 +42,5 @@ theorem eventually_log_count_bound (C : ℝ) (hC : 0 ≤ C) :
     simpa only [one_div_mul_eq_div] using hb)
   nlinarith
 
-end
+
 end Erdos821.S34Core

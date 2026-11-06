@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Main
 
@@ -41,8 +42,7 @@ theorem count_at {A₁ C₁r c₃ EM2 : ℝ} (hA₁ : 0 < A₁) (hc₃ : 0 < c�
   have hη : Real.log x ^ (-(45 / 100) : ℝ) < 1 :=
     Real.rpow_lt_one_of_one_lt_of_neg hL (by norm_num)
   have hθ0 : 0 < θ := by linarith
-  have hθ1 : θ ≤ 1 := by have : 0 ≤ Real.log x ^ (-(45 / 100) : ℝ) := by positivity
-                         linarith
+  
   have hS := sum_candidate_inv_le (x := x) hsf.log_ge hEM2
   have hsmall := rankin_small hsf.one_lt hsf.log_ge hL28 hc₃ hlogY hS hrank
   intro w hw
@@ -50,7 +50,7 @@ theorem count_at {A₁ C₁r c₃ EM2 : ℝ} (hA₁ : 0 < A₁) (hc₃ : 0 < c�
     (fun W => hG x j W θ hsf.log_ge hsf.one_le_j hY2 hC₁ hθ0) hsmall N w hw
 
 /-- The exponent of `endBound_le_exp`. -/
-noncomputable def endExp (q : ℝ) (K : ℕ) (CN c E₂ : ℝ) : ℝ :=
+noncomputable def endExp (q : ℝ) (K : ℕ) (CN c E₂ : ℝ)  :=
   K * (Real.log 2 + Real.log (2 / (1 - q))) * (|CN| + 2) + 60 +
     |Real.log ((2 / c + 1) ^ 3 + (E₂ + 2) ^ 3)|
 
@@ -89,8 +89,8 @@ structure LargeX (q : ℝ) (K : ℕ) (CN c Ch Cj κ CΦ C₂ c₃ C₁r E₂ L�
   T42 : logLog x ^ (42 : ℝ) ≤ Real.log x ^ (1 / 200 : ℝ)
 
 /-- The bound `|Comp_j - Prox_j| ≤ C (x/L) L^{-1/20}` at one large scale. -/
-theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw₁ : cw ≤ 1)
-    {K : ℕ} (hK : 1 ≤ K) {CN c Ch Cj κ CΦ C₂ c₃ A₁ C₁r E₂ L₀ EM1 EM2 : ℝ} {M : ℕ → ℝ}
+theorem final_at  {q cw}  (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw₁ : cw ≤ 1)
+     {K}  (hK : 1 ≤ K) {CN c Ch Cj κ CΦ C₂ c₃ A₁ C₁r E₂ L₀ EM1 EM2 : ℝ}  {M} 
     (hc : 0 < c) (hκ : 1 < κ) (hC₂ : 0 ≤ C₂) (hc₃ : 0 < c₃)
     (hmert : ∀ y : ℝ, 2 ≤ y → c₃ / Real.log y ≤ ∏ p ∈ primesIcc 2 y, (1 - (1 : ℝ) / p))
     (hA₁ : 0 < A₁)
@@ -106,7 +106,7 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
       |∑ p ∈ primesIoc y z, Real.log p / p - Real.log (z / y)| ≤ EM1)
     (hEM2 : ∀ y z : ℝ, 2 ≤ y → y ≤ z →
       |∑ p ∈ primesIoc y z, (1 : ℝ) / p - Real.log (Real.log z / Real.log y)| ≤ EM2 / Real.log y)
-    {x : ℝ} (hX : LargeX q K CN c Ch Cj κ CΦ C₂ c₃ C₁r E₂ L₀ EM1 EM2 x) :
+     {x}  (hX : LargeX q K CN c Ch Cj κ CΦ C₂ c₃ C₁r E₂ L₀ EM1 EM2 x) :
     ∀ k ≤ 2, ∀ (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) (Φ : ℝ → ℝ) (j : ℕ),
       AdmissibleSlots c x u v → (∀ Q, 0 ≤ B Q ∧ B Q ≤ 1) → IsCutoff κ CΦ M x Φ →
       2 ≤ j → j ≤ compositeCutoff Cj x →
@@ -131,7 +131,7 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
   have hs0 : 0 ≤ s := by linarith [hX.s1]
   have hx2 : 2 ≤ x := by linarith [hX.x4]
   have hx0 : 0 < x := by linarith
-  have hu1 : 1 ≤ L ^ (1 / 200 : ℝ) := Real.one_le_rpow hL1 (by norm_num)
+  
   -- the number of factors
   have hjs : ((r + 2 : ℕ) : ℝ) ≤ Cj * s + 1 := by
     unfold compositeCutoff at hjJ

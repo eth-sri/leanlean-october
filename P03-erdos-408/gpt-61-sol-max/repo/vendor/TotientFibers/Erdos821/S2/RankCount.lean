@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.BirthExpansion
 public import Erdos821.S2.RankEncoding
@@ -21,7 +22,7 @@ lemma birthMobius_natAbs_eq_card {a : ℕ} (π : Finset (Finset (Fin a)))
   exact (permutationsWithBlocks_card π hπ).symm
 
 /-- Absolute rank-r coefficients count rank-r permutations. -/
-theorem rank_coefficient_eq_card (a r : ℕ) :
+theorem rank_coefficient_eq_card  a r  :
     (∑ π ∈ Finset.univ.powerset.powerset.filter
       (fun π : Finset (Finset (Fin a)) => BirthCollection π ∧ birthRank π = r),
         (birthMobius π).natAbs) = (rankPermutations a r).card := by
@@ -36,25 +37,17 @@ theorem rank_coefficient_eq_card (a r : ℕ) :
     exact Finset.mem_powerset.mpr (Finset.subset_univ _)
   have hfiber (π : Finset (Finset (Fin a))) (hπ : π ∈ C) :
       (rankPermutations a r).filter (fun σ => cycleBirthBlocks σ = π) = permutationsWithBlocks π := by
-    have hr : birthRank π = r := (Finset.mem_filter.mp hπ).2.2
-    ext σ
-    simp only [rankPermutations, permutationsWithBlocks, Finset.mem_filter, Finset.mem_univ, true_and]
-    constructor
-    · rintro ⟨_, h⟩
-      exact h
-    · intro h
-      exact ⟨by rw [h, hr], h⟩
+    grind [birthRank, rankPermutations, permutationsWithBlocks]
   calc
     _ = ∑ π ∈ C, (permutationsWithBlocks π).card := by
       apply Finset.sum_congr rfl
-      intro π hπ
-      exact birthMobius_natAbs_eq_card π (Finset.mem_filter.mp hπ).2.1
+      simp_all [birthMobius_natAbs_eq_card]
     _ = ∑ π ∈ C, ((rankPermutations a r).filter (fun σ => cycleBirthBlocks σ = π)).card :=
       Finset.sum_congr rfl (fun π hπ => congrArg Finset.card (hfiber π hπ).symm)
     _ = _ := (Finset.card_eq_sum_card_fiberwise hmap).symm
 
 /-- eq:rank-coefficient-count, including rank zero and empty address sets. -/
-theorem rank_coefficient_count (a r : ℕ) :
+theorem rank_coefficient_count  a r  :
     (∑ π ∈ Finset.univ.powerset.powerset.filter
       (fun π : Finset (Finset (Fin a)) => BirthCollection π ∧ birthRank π = r),
         (birthMobius π).natAbs) ≤ a ^ (2 * r) := by

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRadius
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
@@ -14,15 +14,19 @@ open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseIniti
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
+
+section
+variable (hp : ∀i,p i≠0) (hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1) (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo)) (hvalid : ∀x∈original,SourceValid p x) (hextra : ∀x∈original,extra x.cube⊆x.cube.support) (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι) (cutoff : Finset ι→Finset ι→ℝ) (b X : ℝ) (m : ActualEisensteinCubic.O) (hm : m≠0) (Z r ell V M Q z c A B t j eta : ℝ) (hZ : 1<Z)
+
 
 lemma supported_original_property
-    (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
-    (cutoff : Finset ι→Finset ι→ℝ) (b X : ℝ)
-    (F : CubeCoordinates ι→Finset ι→Finset ι→Ideal O→Prop)
+       
+           
+       
+    (F : CubeCoordinates ι→Finset ι→Finset ι→Ideal ActualEisensteinCubic.O→Prop)
     (hF : ∀y∈original,F y.cube y.firstCommon y.firstDivisor (sourceIdeal p y.quotientSupport)) :
     ∀x∈supportedRetainedSource p extra original negative J lists pool cutoff b X,
       F x.cube x.firstCommon x.firstDivisor x.quotient := by
@@ -32,10 +36,11 @@ lemma supported_original_property
   rw [hb,hc,hd,hq]
   exact hF y hy
 
-theorem supported_label_gates (hp : ∀i,p i≠0)
-    (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
-    (cutoff : Finset ι→Finset ι→ℝ) (b X Z B j eta : ℝ) (hZ : 1<Z) (hbin : 2≤Z^eta)
+include hp extra negative J lists pool cutoff b X hZ in
+theorem supported_label_gates  
+       
+           
+          (hbin : 2≤Z^eta)
     (hC : ∀y∈original,primeProductNorm p y.firstCommon≤Z^(B+eta))
     (hJ : ∀y∈original,‖eisEmbedding (jLabel p y.cube.support
       (fun i=>y.cube.leftExponent i+y.cube.rightExponent i) y.cube.leftBit y.cube.rightBit)‖^2≤Z^(j+eta)) :
@@ -53,16 +58,17 @@ theorem supported_label_gates (hp : ∀i,p i≠0)
     fun d=>actual_cell_squarefree_labels p hp source
       (supported_frequency_ne_zero p extra original negative J lists pool cutoff b X) d Z B j eta hZ hbin hc hj⟩
 
-theorem supported_child_margins (hp : ∀i,p i≠0)
-    (hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
-    (hvalid : ∀x∈original,SourceValid p x) (hextra : ∀x∈original,extra x.cube⊆x.cube.support)
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
-    (cutoff : Finset ι→Finset ι→ℝ) (b : ℝ) (m : O) (hm : m≠0)
-    (Z r ell V M Q z c A B t j eta : ℝ) (hZ : 1<Z)
+include hp hpr hvalid hextra negative J lists pool cutoff b hm B hZ in
+theorem supported_child_margins  
+     
+       
+       
+           
+           
+       
     (hparent : CanonicalMargins (r+3*ell+V) M Q z c)
     (hA : 0≤A) (ht : 0≤t) (hV : 0≤V) (hj : 0≤j) (heta : 0≤eta) (hbin : 2≤Z^eta)
-    (hQ : (Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z^Q)
+    (hQ : (Ideal.absNorm (Ideal.span {m}:Ideal ActualEisensteinCubic.O).radical:ℝ)≤Z^Q)
     (h1 : ∀y∈original,‖eisEmbedding (primeProduct p y.cube.support y.cube.leftExponent)‖^2≤Z^(ell+eta))
     (h2 : ∀y∈original,‖eisEmbedding (primeProduct p y.cube.support y.cube.rightExponent)‖^2≤Z^(ell+eta))
     (hT : ∀y∈original,primeProductNorm p y.quotientSupport≤Z^(t+eta)) :
@@ -87,7 +93,9 @@ theorem supported_child_margins (hp : ∀i,p i≠0)
   exact actual_cell_triple_margins p hp hpr source hs hk d m hm
     Z r ell V M Q z c A B t j eta hZ hparent hA ht hV hj heta hbin hQ hb₁ hb₂ hq γ hγ
 
-end SevenEighths.InverseMomentGlobalRetainedGates
 end
+
+end SevenEighths.InverseMomentGlobalRetainedGates
+
 
 end OAI

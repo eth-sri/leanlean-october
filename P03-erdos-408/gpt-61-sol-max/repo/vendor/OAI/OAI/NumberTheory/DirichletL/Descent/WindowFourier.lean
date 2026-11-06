@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.ActualProfiles
 public import Mathlib.MeasureTheory.Integral.Pi
@@ -14,12 +15,12 @@ noncomputable section
 
 variable {ι : Type*} [Fintype ι]
 
-def coordinateDensity (g : ι → 𝓢(ℝ, ℂ)) (t : ι → ℝ) : ℂ :=
+def coordinateDensity (g : ι → 𝓢(ℝ, ℂ)) (t : ι → ℝ)  :=
   ∏ i, (𝓕 (g i)) (t i)
 
-def coordinatePhase (t y : ι → ℝ) : ℂ := ∏ i, logPhase (t i) (y i)
+def coordinatePhase (t y : ι → ℝ)  := ∏ i, logPhase (t i) (y i)
 
-theorem coordinate_fourier_inversion (g : ι → 𝓢(ℝ, ℂ)) (y : ι → ℝ) :
+theorem coordinate_fourier_inversion  g   y  :
     (∏ i, g i (y i)) = ∫ t : ι → ℝ, coordinateDensity g t * coordinatePhase t y := by
   simp only [coordinateDensity, coordinatePhase, ← Finset.prod_mul_distrib]
   have hp := integral_fintype_prod_volume_eq_prod (E := fun _ : ι => ℝ)
@@ -29,14 +30,14 @@ theorem coordinate_fourier_inversion (g : ι → 𝓢(ℝ, ℂ)) (y : ι → ℝ
   intro i hi
   simpa only [mul_comm] using schwartz_logPhase_inversion (g i) (y i)
 
-theorem coordinate_density_weighted_integrable (g : ι → 𝓢(ℝ, ℂ)) (J : ℕ) :
+theorem coordinate_density_weighted_integrable  g   J  :
     Integrable (fun t : ι → ℝ => (∏ i, (1 + ‖t i‖)^J) * ‖coordinateDensity g t‖) := by
   have hi (i : ι) := AnalyticBridge.schwartz_fourier_one_plus_integrable (g i) J
   convert Integrable.fintype_prod hi using 1
   funext t
   simp only [coordinateDensity, norm_prod, Finset.prod_mul_distrib]
 
-theorem coordinate_density_weighted_integral (g : ι → 𝓢(ℝ, ℂ)) (J : ℕ) :
+theorem coordinate_density_weighted_integral  g   J  :
     (∫ t : ι → ℝ, (∏ i, (1 + ‖t i‖)^J) * ‖coordinateDensity g t‖) =
       ∏ i, ∫ t : ℝ, (1 + ‖t‖)^J * ‖(𝓕 (g i)) t‖ := by
   simp only [coordinateDensity, norm_prod, ← Finset.prod_mul_distrib]
@@ -44,36 +45,34 @@ theorem coordinate_density_weighted_integral (g : ι → 𝓢(ℝ, ℂ)) (J : �
     (fun i t => (1 + ‖t‖)^J * ‖(𝓕 (g i)) t‖)
 
 def pureProfileMode (a₁ a₂ ak : ι → ℝ) (y : ι → ℝ)
-    (t : Frequency) (u : ι → ℝ) : ℂ :=
+    (t : Frequency) (u : ι → ℝ)  :=
   ∏ i, logPhase (u i) (y i) * logPhase t.1 (a₁ i * y i) *
     logPhase t.2.1 (a₂ i * y i) * logPhase t.2.2 (ak i * y i)
 
-theorem profileMode_coordinate_separation (g : ι → 𝓢(ℝ, ℂ))
-    (a₁ a₂ ak : ι → ℝ) (y : ι → ℝ) (t : Frequency) :
+theorem profileMode_coordinate_separation  g 
+     a₁ a₂ ak   y   t  :
     profileMode (fun i => g i) a₁ a₂ ak y t =
       ∫ u : ι → ℝ, coordinateDensity g u * pureProfileMode a₁ a₂ ak y t u := by
   simp only [profileMode, pureProfileMode, Finset.prod_mul_distrib]
   simp only [← mul_assoc]
   rw [integral_mul_const, integral_mul_const, integral_mul_const]
-  have he := coordinate_fourier_inversion g y
-  simp only [coordinatePhase] at he
-  rw [← he]
+  simp_all [coordinate_fourier_inversion, coordinatePhase]
 
- theorem pureProfileMode_norm (a₁ a₂ ak : ι → ℝ) (y : ι → ℝ)
-    (t : Frequency) (u : ι → ℝ) : ‖pureProfileMode a₁ a₂ ak y t u‖ = 1 := by
+ theorem pureProfileMode_norm (a₁ a₂ ak : ι → ℝ)  y 
+     t   u  : ‖pureProfileMode a₁ a₂ ak y t u‖ = 1 := by
   simp [pureProfileMode, norm_prod,  logPhase_norm]
 
 def fullProfileDensity (g : ι → 𝓢(ℝ, ℂ)) (b₁ b₂ b₃ : 𝓢(ℝ, ℂ))
-    (p : Frequency × (ι → ℝ)) : ℂ :=
+    (p : Frequency × (ι → ℝ))  :=
   tripleCoefficient b₁ b₂ b₃ p.1 * coordinateDensity g p.2
 
-def tripleHeight (J : ℕ) (t : Frequency) : ℝ :=
+def tripleHeight (J : ℕ) (t : Frequency)  :=
   (1 + ‖t.1‖)^J * (1 + ‖t.2.1‖)^J * (1 + ‖t.2.2‖)^J
 
-def coordinateHeight (J : ℕ) (u : ι → ℝ) : ℝ := ∏ i, (1 + ‖u i‖)^J
+def coordinateHeight (J : ℕ) (u : ι → ℝ)  := ∏ i, (1 + ‖u i‖)^J
 
-theorem fullProfileDensity_weighted_integrable (g : ι → 𝓢(ℝ, ℂ))
-    (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ) :
+theorem fullProfileDensity_weighted_integrable  g 
+     b₁ b₂ b₃   J  :
     Integrable (fun p : Frequency × (ι → ℝ) =>
       tripleHeight J p.1 * coordinateHeight J p.2 * ‖fullProfileDensity g b₁ b₂ b₃ p‖) := by
   convert (tripleCoefficient_weighted_integrable b₁ b₂ b₃ J).mul_prod
@@ -82,8 +81,8 @@ theorem fullProfileDensity_weighted_integrable (g : ι → 𝓢(ℝ, ℂ))
   simp only [tripleHeight, coordinateHeight, fullProfileDensity, norm_mul]
   ring
 
-theorem fullProfileDensity_weighted_integral (g : ι → 𝓢(ℝ, ℂ))
-    (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ) :
+theorem fullProfileDensity_weighted_integral  g 
+     b₁ b₂ b₃   J  :
     (∫ p : Frequency × (ι → ℝ),
       tripleHeight J p.1 * coordinateHeight J p.2 * ‖fullProfileDensity g b₁ b₂ b₃ p‖) =
       (∫ t : Frequency, tripleHeight J t * ‖tripleCoefficient b₁ b₂ b₃ t‖) *
@@ -101,8 +100,8 @@ theorem fullProfileDensity_weighted_integral (g : ι → 𝓢(ℝ, ℂ))
   simp only [coordinateHeight]
   rw [coordinate_density_weighted_integral g J]
 
-theorem profile_integral_coordinate_absorption (g : ι → 𝓢(ℝ, ℂ))
-    (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (a₁ a₂ ak y : ι → ℝ) :
+theorem profile_integral_coordinate_absorption  g 
+     b₁ b₂ b₃   a₁ a₂ ak y  :
     (∫ t₁ : ℝ, ∫ t₂ : ℝ, ∫ t₃ : ℝ,
       tripleCoefficient b₁ b₂ b₃ (t₁,t₂,t₃) *
         profileMode (fun i => g i) a₁ a₂ ak y (t₁,t₂,t₃)) =
@@ -121,16 +120,16 @@ theorem profile_integral_coordinate_absorption (g : ι → 𝓢(ℝ, ℂ))
   simp only [fullProfileDensity]
   ring
 
-def profileHeight (a₁ a₂ ak : ι → ℝ) (t : Frequency) (u : ι → ℝ) (i : ι) : ℝ :=
+def profileHeight (a₁ a₂ ak : ι → ℝ) (t : Frequency) (u : ι → ℝ) (i : ι)  :=
   u i + a₁ i * t.1 + a₂ i * t.2.1 + ak i * t.2.2
 
-lemma logPhase_scaled_coordinate (t a y : ℝ) : logPhase t (a*y) = logPhase (a*t) y := by
+lemma logPhase_scaled_coordinate  t a y  : logPhase t (a*y) = logPhase (a*t) y := by
   unfold logPhase
   congr 1
   push_cast
   ring
 
-theorem pureProfileMode_height (a₁ a₂ ak y : ι → ℝ) (t : Frequency) (u : ι → ℝ) :
+theorem pureProfileMode_height (a₁ a₂ ak y : ι → ℝ)  t   u  :
     pureProfileMode a₁ a₂ ak y t u = ∏ i, logPhase (profileHeight a₁ a₂ ak t u i) (y i) := by
   apply Finset.prod_congr rfl
   intro i hi

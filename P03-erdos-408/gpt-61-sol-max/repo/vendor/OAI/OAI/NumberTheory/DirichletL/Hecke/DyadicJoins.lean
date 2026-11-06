@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Mellin.UniformKernelBounds
 
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicEstimates
 
@@ -6,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicEstimates
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
 
 theorem horizontal_join_bound (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
-    (D σ freq l r y C K : ℝ) (n : ℕ)
+    (D σ freq l r y C K : ℝ)  n 
     (hD : 1≤D) (hlr : l≤r) (hC : 0≤C) (_hK : 0≤K)
     (hm : ∀ x ∈ Icc l r, (1+|y|)^n*‖mellin W ((x : ℂ)+y*I)‖≤C)
     (hs : ∀ x ∈ Icc l r, ‖series χ inverse ((x : ℂ)+y*I+shift σ freq)‖≤K) :
@@ -36,16 +39,15 @@ theorem horizontal_join_bound (χ : Character) (inverse : Bool) (W : ℝ → ℂ
         (hs x hx') (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-theorem profile_strip_decay (a b : ℝ) (ha : 0<a) (l r : ℝ) (n : ℕ) :
+theorem profile_strip_decay (a b : ℝ) (ha : 0<a) (l r : ℝ)  n  :
     ∃ (S : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
       ∀ W : SchwartzMap ℝ ℂ, Function.support (W : ℝ → ℂ)⊆Icc a b →
       ∀ x ∈ Icc l r, ∀ y : ℝ,
       (1+|y|)^n*‖mellin W ((x : ℂ)+y*I)‖≤
-        C*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W :=
-  CubicReflectionKernel.mellin_strip_source_bound a b ha l r n
+        C*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W := by solve_by_elim [_root_.OAI.CubicReflectionKernel.mellin_strip_source_bound]
 
 end SevenEighths.HeckeDyadic
 
-end
+
 
 end OAI

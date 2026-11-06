@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.FixedConductor
 
@@ -10,79 +11,79 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
+open   CompletedGauss CanonicalQuadraticSieve  
 open ConcretePrimeRowBridge
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -90,12 +91,16 @@ lemma prime_dvd_iff_factor_count_pos (P A:Ideal Eis) (hP:Prime P) (hA:A≠0) :
     P∣A ↔ 0<(normalizedFactors A).count P := by
   simp only [Multiset.count_pos,UniqueFactorizationMonoid.mem_normalizedFactors_iff hA,hP,true_and]
 
-theorem goodMaskMovingIdeal_dvd_iff (I F:Ideal Eis) (hI:I≠0) (hF:F≠0)
-    (m f z:Eis) (hm0:m≠0) (hf:Ideal.span {f}=F) (hz:Ideal.span {z}=I)
-    (um:Eisˣ) (am bm:ℕ) (g:Eis) (hg:Supported (Ideal.span {g}))
-    (hm:m=um.val*lambda^am*(2:Eis)^bm*g)
-    (u:Eisˣ) (a b:ℕ) (r:Eis) (hr:Supported (Ideal.span {r}))
-    (hx:f^4*z=u.val*lambda^a*(2:Eis)^b*r)
+section
+variable (I F:Ideal Eis) (hI:I≠0) (hF:F≠0) (m f z:Eis) (hm0:m≠0) (hf:Ideal.span {f}=F) (hz:Ideal.span {z}=I) (um:Eisˣ) (am bm:ℕ) (g:Eis) (hg:Supported (Ideal.span {g})) (hm:m=um.val*lambda^am*(2:Eis)^bm*g) (u:Eisˣ) (a b:ℕ) (r:Eis) (hr:Supported (Ideal.span {r})) (hx:f^4*z=u.val*lambda^a*(2:Eis)^b*r)
+include I F hI hF m f z hm0 hf hz um am bm g hg hm u a b r hr hx
+
+theorem goodMaskMovingIdeal_dvd_iff      
+           
+           
+     
+           
+     
     (P:Ideal Eis) [P.IsMaximal] (hgood:lambda∉P) (hodd:ringChar (Eis⧸P)≠2) :
     P∣goodMaskMovingIdeal g r ↔ P∣I*(Ideal.span {m}*F) := by
   have hP:Prime P:=Ideal.prime_of_isPrime (NeZero.ne P) inferInstance
@@ -107,12 +112,12 @@ theorem goodMaskMovingIdeal_dvd_iff (I F:Ideal Eis) (hI:I≠0) (hF:F≠0)
   simp only [Multiset.count_add]
   omega
 
-theorem goodMaskMovingIdeal_primeSupport (I F:Ideal Eis) (hI:I≠0) (hF:F≠0)
-    (m f z:Eis) (hm0:m≠0) (hf:Ideal.span {f}=F) (hz:Ideal.span {z}=I)
-    (um:Eisˣ) (am bm:ℕ) (g:Eis) (hg:Supported (Ideal.span {g}))
-    (hm:m=um.val*lambda^am*(2:Eis)^bm*g)
-    (u:Eisˣ) (a b:ℕ) (r:Eis) (hr:Supported (Ideal.span {r}))
-    (hx:f^4*z=u.val*lambda^a*(2:Eis)^b*r) :
+theorem goodMaskMovingIdeal_primeSupport      
+           
+           
+     
+           
+      :
     IdealMobiusDivisorSum.primeSupport (goodMaskMovingIdeal g r)=
       (IdealMobiusDivisorSum.primeSupport (I*(Ideal.span {m}*F))).filter
         (fun P=>lambda∉P ∧ ringChar (Eis⧸P)≠2) := by
@@ -141,7 +146,9 @@ theorem goodMaskMovingIdeal_primeSupport (I F:Ideal Eis) (hI:I≠0) (hF:F≠0)
 
 end
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
+end
+
+open   CompletedGauss CanonicalQuadraticSieve  
 open ConcretePrimeRowBridge CanonicalUnitEuler
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -150,14 +157,14 @@ end CanonicalRowCompletion
 namespace CubicEisenstein
 
 section
-open scoped Classical BigOperators MatrixGroups Matrix
+open scoped     MatrixGroups Matrix
 
-open CubicKubota EisensteinCuspModThree ConcreteTraceCRT CompletedGauss CompletedDyadic
+open CubicKubota EisensteinCuspModThree   CompletedGauss CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedCuspShape
 variable {H:SL(2,Eis)} (s:FixedCuspShape H)
 
-lemma amplitude_source_nonzero (p:ThetaFullIndex)
+lemma amplitude_source_nonzero  p 
     (hp:s.amplitude p.1 p.2.1 p.2.2.1.val p.2.2.2.val≠0) :
     (sourceCuspCoefficients s.index).value (thetaFullFrequency p)≠0 := by
   intro hz
@@ -165,10 +172,9 @@ lemma amplitude_source_nonzero (p:ThetaFullIndex)
   have hz':(sourceCuspCoefficients s.index).value
       (fixedCuspArrayIndex p.1 p.2.1 p.2.2.1.val p.2.2.2.val)=0:=by
     simpa only [thetaFullFrequency_eq_fixedCuspArrayIndex] using hz
-  simp only [amplitude,fixedConjugateCuspArray,fixedCuspArray,hz',zero_div,ite_self,
-    star_zero,zero_mul]
+  simp_all [amplitude, fixedConjugateCuspArray, fixedCuspArray]
 
-lemma amplitude_integral_phase (p:ThetaFullIndex) (c d:Eis) (hc:c≠0) :
+lemma amplitude_integral_phase  p   c d  (hc:c≠0) :
     s.amplitude p.1 p.2.1 p.2.2.1.val p.2.2.2.val *
       ShortDraftTrace.breveE (cuspFrequency (thetaFullFrequency p)*eisEmbedding (s.upper 0 0)^2*
         (eisEmbedding d/eisEmbedding c)/(sourceCuspScale s.index:ℂ)) =
@@ -181,8 +187,12 @@ lemma amplitude_integral_phase (p:ThetaFullIndex) (c d:Eis) (hc:c≠0) :
   · rw [sourceCuspPhaseNumerator_phase s.index (s.upper 0 0) (thetaFullFrequency p) c d hc
       (s.amplitude_source_nonzero p hp)]
 
-lemma datum_integral_phase (g:levelTwo) (c:Eis) (hc:c≠0)
-    (hg:((g:SL(2,Eis))*H) 1 0=c) (p:ThetaFullIndex) :
+section
+variable (g:levelTwo) (c:Eis) (hc:c≠0) (hg:((g:SL(2,Eis))*H) 1 0=c)
+include g c hc hg
+
+lemma datum_integral_phase      
+       p  :
     (fixedConjugateCuspArray s.index p.1 p.2.1 p.2.2.1.val p.2.2.2.val*
       sourceFrequencyAngle (thetaFullFrequency p))*
       ShortDraftTrace.breveE (-cuspFrequency (thetaFullFrequency p)*
@@ -207,12 +217,12 @@ lemma datum_integral_phase (g:levelTwo) (c:Eis) (hc:c≠0)
       ring
     _=_:=s.amplitude_integral_phase p c _ hc
 
-def stratumShapeFactor (c:Eis) : ℂ :=
+def stratumShapeFactor (c:Eis)  :=
   -star (levelTwoComplexCharacter s.gamma)*eisEmbedding (s.upper 0 0)^2*
     ((Ideal.absNorm (Ideal.span {c}):ℝ):ℂ)/eisEmbedding c^2
 
-lemma datum_common_row_factor (g:levelTwo) (c:Eis) (hc:c≠0)
-    (hg:((g:SL(2,Eis))*H) 1 0=c) :
+lemma datum_common_row_factor      
+      :
     (s.datum g (by rwa [hg])).multiplier*((Ideal.absNorm (Ideal.span {c}):ℝ):ℂ)=
       s.stratumShapeFactor c*star (levelTwoComplexCharacter g) := by
   have hm:=s.smoothed_row_factor g (by rwa [hg])
@@ -221,20 +231,22 @@ lemma datum_common_row_factor (g:levelTwo) (c:Eis) (hc:c≠0)
   unfold stratumShapeFactor
   ring
 
+end
+
 end FixedCuspShape
 end
 
-open scoped Classical BigOperators ContDiff MatrixGroups Matrix
+open scoped       MatrixGroups Matrix
 
-open CubicKubota EisensteinCuspModThree ConcreteTraceCRT CompletedGauss CompletedDyadic
+open CubicKubota EisensteinCuspModThree   CompletedGauss CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedCuspShape
 variable {H:SL(2,Eis)} (s:FixedCuspShape H)
 
 theorem sum_smoothedKernel_integral_phase {ι:Type*} [Fintype ι]
     (g:ι→levelTwo) (c:Eis) (hc:c≠0) (hC:∀v,((g v:SL(2,Eis))*H) 1 0=c)
-    (w:ι→ℂ) (W:ℝ→ℂ) (a b:ℝ) (ha:0<a) (hsupp:Function.support W⊆Set.Icc a b)
-    (hW:ContDiff ℝ ∞ W) (X:ℝ) (hX:0<X) :
+    (w:ι→ℂ)  W  (a b:ℝ) (ha:0<a) (hsupp:Function.support W⊆Set.Icc a b)
+    (hW:ContDiff ℝ ∞ W)  X  (hX:0<X) :
     (∑v,w v*(s.datum (g v) (by rw [hC v];exact hc)).smoothedKernel W X)=
       fixedRadialCoefficientScalar*s.stratumShapeFactor c*
       ∑'p:ThetaFullIndex,
@@ -301,21 +313,21 @@ theorem sum_smoothedKernel_integral_phase {ι:Type*} [Fintype ι]
 end FixedCuspShape
 end CubicEisenstein
 
-open scoped BigOperators Classical ContDiff
+ 
 
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
+open   CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
 
 def fixedCuspArrayWithPhase (cusp:Fin 3) (u:Eisˣ)
-    (phaseArray:ℕ→Ideal Eis→Ideal Eis→ℂ) (m:ℕ) (n b:Ideal Eis) : ℂ :=
+    (phaseArray:ℕ→Ideal Eis→Ideal Eis→ℂ) (m:ℕ) (n b:Ideal Eis)  :=
   phaseArray m n b*fixedConjugateCuspArray cusp u m n b
 
-lemma fixedCuspArrayWithPhase_norm_le_one (cusp:Fin 3) (u:Eisˣ)
-    (phaseArray:ℕ→Ideal Eis→Ideal Eis→ℂ) (hphase:∀m n b,‖phaseArray m n b‖≤1)
-    (m:ℕ) (n b:Ideal Eis) : ‖fixedCuspArrayWithPhase cusp u phaseArray m n b‖≤1 := by
+lemma fixedCuspArrayWithPhase_norm_le_one  cusp   u 
+     phaseArray  (hphase:∀m n b,‖phaseArray m n b‖≤1)
+     m   n b  : ‖fixedCuspArrayWithPhase cusp u phaseArray m n b‖≤1 := by
   rw [fixedCuspArrayWithPhase,norm_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _)
     (hphase m n b)).trans (fixedConjugateCuspArray_norm_le_one cusp u m n b)
@@ -324,14 +336,9 @@ namespace ReflectedBranchData
 
 end ReflectedBranchData
 end
-section
 
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
 
-end
-
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve LocalReflectionBrackets
+open   CubicEisenstein CanonicalQuadraticSieve LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss

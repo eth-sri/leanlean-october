@@ -21,7 +21,7 @@ def firstFreshSecondPoisson
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
     (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : Eis)
-    (r : FirstCoreIndex) (t Y : ℝ) : ℂ :=
+    (r : FirstCoreIndex) (t Y : ℝ)  :=
   ∑ G ∈ (F\D).powerset, ∑ U ∈ ((F\D)\G).powerset, ∑ V ∈ ((F\D)\G).powerset,
     if Disjoint U V then overlapPairWeight p hg (firstCoreTwist negative χ Ψ r)
       (m*b0Label p B v ε₁ ε₂) (c*jLabel p B v ε₁ ε₂) d
@@ -30,12 +30,12 @@ def firstFreshSecondPoisson
       maskedSecondDual p hg hp hinj G U V rowMajorant Y else 0
 
 theorem firstFreshSecondPoisson_fixed_pool
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+     hinj 
     (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
-    (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : Eis)
-    (r : FirstCoreIndex) (t Y : ℝ) (hY : 0 < Y) :
+     F D B   v   ε₁ ε₂ 
+     negative   χ   Ψ   m 
+     H   ω   X   c d 
+     r   t Y  (hY : 0 < Y) :
     firstFreshSecondPoisson p hp hg hinj F D B v ε₁ ε₂ negative χ Ψ m H ω X c d r t Y =
     ∑ G∈F.powerset,∑ U∈(F\G).powerset,∑ V∈(F\G).powerset,
       if Disjoint U V then overlapPairWeight p hg (firstCoreTwist negative χ Ψ r)
@@ -56,13 +56,13 @@ theorem firstFreshSecondPoisson_fixed_pool
       (columnLog p (primeProductNorm p D*X)) negative (-t) D) rowMajorant Y hY
 
 theorem first_fresh_core_energy_to_second
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+     hinj 
     (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
-    (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : Eis) (t : ℝ)
-    (rows : Finset Eis) (Y : ℝ) (hY : 0 < Y)
+     F D B   v   ε₁ ε₂ 
+     negative   χ   Ψ   m 
+     H   ω   X   c d   t 
+     rows   Y  (hY : 0 < Y)
     (hrows : ∀ z ∈ rows,(Ideal.absNorm (Ideal.span {z}):ℝ) ≤ Y)
     (hΨ : ‖Ψ (∏ i∈D,p i)‖ ≤ 1) :
     (∑ z∈rows,‖dilatedCoreRow p hp hcop hg F D B v ε₁ ε₂ negative χ

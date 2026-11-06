@@ -12,14 +12,13 @@ open scoped BigOperators Classical
 namespace SevenEighths.HeckeDetectorCoefficientBounds
 open HeckeFamily HeckeDetectorFourier HeckeDetectorTail
 open ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
 
-lemma annular_norm_le_two (V : ℝ → ℂ) (hV : ∀ x, ‖V x‖ ≤ 1) (x : ℝ) :
-    ‖DyadicTransfer.annularCutoff V x‖ ≤ 2 := by
-  exact (norm_sub_le _ _).trans (by linarith [hV x,hV (2*x)])
 
-lemma inverseCoefficient_norm_le_two (χ : Character) (V : ℝ → ℂ)
-    (hV : ∀ x, ‖V x‖ ≤ 1) (Dstar D : ℝ) (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
+lemma annular_norm_le_two  V  (hV : ∀ x, ‖V x‖ ≤ 1)  x  :
+    ‖DyadicTransfer.annularCutoff V x‖ ≤ 2 := (norm_sub_le _ _).trans (by linarith [hV x,hV (2*x)])
+
+lemma inverseCoefficient_norm_le_two  χ   V 
+    (hV : ∀ x, ‖V x‖ ≤ 1)  Dstar D   s  (hs : 0 ≤ s.re)  I  :
     ‖inverseCoefficient χ V (DyadicTransfer.annularCutoff V) Dstar D s I‖ ≤ 2 := by
   simp only [inverseCoefficient,norm_mul]
   calc
@@ -31,8 +30,8 @@ lemma inverseCoefficient_norm_le_two (χ : Character) (V : ℝ → ℂ)
       · exact annular_norm_le_two V hV _
     _ = _ := by norm_num
 
-lemma plainCoefficient_norm_le_two (χ : Character) (V : ℝ → ℂ)
-    (hV : ∀ x, ‖V x‖ ≤ 1) (N : ℝ) (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
+lemma plainCoefficient_norm_le_two  χ   V 
+    (hV : ∀ x, ‖V x‖ ≤ 1)  N   s  (hs : 0 ≤ s.re)  I  :
     ‖plainCoefficient χ (DyadicTransfer.annularCutoff V) N s I‖ ≤ 2 := by
   simp only [plainCoefficient,norm_mul]
   calc
@@ -40,9 +39,9 @@ lemma plainCoefficient_norm_le_two (χ : Character) (V : ℝ → ℂ)
       (annular_norm_le_two V hV _) (norm_nonneg _) (by norm_num)
     _ = _ := by norm_num
 
-def expandedSet (U : ℝ) : Finset (Ideal O) := idealsUpTo ⌈16*U^21⌉₊
+def expandedSet (U : ℝ)  := idealsUpTo ⌈16*U^21⌉₊
 
-lemma expandedSet_count (U : ℝ) (hU : 1 ≤ U) :
+lemma expandedSet_count  U  (hU : 1 ≤ U) :
     ((expandedSet U).card : ℝ) ≤ 4096*U^21 := by
   have hp : 1 ≤ U^21 := one_le_pow₀ hU
   have hc : (1 : ℝ) ≤ ⌈16*U^21⌉₊ := (by linarith : (1 : ℝ) ≤ 16*U^21).trans (Nat.le_ceil _)
@@ -52,8 +51,8 @@ lemma expandedSet_count (U : ℝ) (hU : 1 ≤ U) :
   have hceil := Nat.ceil_lt_add_one (show 0 ≤ 16*U^21 by positivity)
   linarith
 
-theorem coefficient_mass (χ : Character) (V : ℝ → ℂ) (hV : ∀ x, ‖V x‖ ≤ 1)
-    (U Dstar D N : ℝ) (hU : 1 ≤ U) (s : ℂ) (hs : 0 ≤ s.re) :
+theorem coefficient_mass  χ   V  (hV : ∀ x, ‖V x‖ ≤ 1)
+     U Dstar D N  (hU : 1 ≤ U)  s  (hs : 0 ≤ s.re) :
     ((∑ I ∈ expandedSet U, ‖inverseCoefficient χ V (DyadicTransfer.annularCutoff V) Dstar D s I‖)*
       (∑ I ∈ expandedSet U, ‖plainCoefficient χ (DyadicTransfer.annularCutoff V) N s I‖)) ≤
       67108864*U^42 := by

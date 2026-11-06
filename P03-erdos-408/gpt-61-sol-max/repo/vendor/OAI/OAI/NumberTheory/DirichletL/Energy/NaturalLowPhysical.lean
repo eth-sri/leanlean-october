@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
@@ -27,9 +27,9 @@ open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
 open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_natural_low_physical

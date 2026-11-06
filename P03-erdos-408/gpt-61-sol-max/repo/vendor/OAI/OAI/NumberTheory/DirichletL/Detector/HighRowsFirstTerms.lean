@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsSharpScalar
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
@@ -14,7 +14,7 @@ local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
-lemma pow_mul_sqrt (Q : ℝ) (hQ : 0<Q) (n : ℕ) : Q^n*Real.sqrt Q=Q^((n:ℝ)+1/2) := by
+lemma pow_mul_sqrt  Q  (hQ : 0<Q) (n : ℕ) : Q^n*Real.sqrt Q=Q^((n:ℝ)+1/2) := by
   rw [Real.rpow_add hQ,Real.rpow_natCast,Real.sqrt_eq_rpow]
 
 include hc in
@@ -145,6 +145,6 @@ theorem sourceRowTerm_first_base (eta a rho x w z : ℂ)
         linarith
 
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

@@ -10,7 +10,7 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
@@ -39,9 +39,9 @@ theorem actual_marked_slot_split_reflection
       ∀ T : Finset σ,ControlledStratumArithmetic
         (((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A).reflected (rowResidualPart I (Ideal.span {m}*F)) (rowResidualPart_admissible I (Ideal.span {m}*F) hbad) ((slotChoiceFamily L hmax hgood p.val).restrict T)).generator
         N (G h).a0 (G h).c0 (G h).mode)
-    (w : ∀ i,L i→ℂ) (W : ℝ→ℂ) (hWcompact : HasCompactSupport W)
+    (w : ∀ i,L i→ℂ)  W  (hWcompact : HasCompactSupport W)
     (lo hi : ℝ) (hlo : 0<lo) (hsupp : Function.support W⊆Set.Icc lo hi)
-    (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0<X) :
+    (hW : ContDiff ℝ ∞ W)  X  (hX : 0<X) :
     (∑ p : ∀ i,L i,(∏ i,w i (p i))*markedCompletedT (rowTwist Ψ m f z) W X
       (fun A => ∏ i,if (slotChoiceFamily L hmax hgood p).ideal i∣A then (1:ℂ) else 0))=
     let physical := fun (h : Eis⧸Ideal.span {c})
@@ -97,7 +97,7 @@ theorem actual_marked_slot_split_reflection
   intro t ht
   rfl
 
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

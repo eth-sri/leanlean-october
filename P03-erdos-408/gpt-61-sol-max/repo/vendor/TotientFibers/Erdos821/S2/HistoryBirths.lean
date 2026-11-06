@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.HistorySizes
 public import Erdos821.S2.BlueprintBirths
@@ -26,7 +27,7 @@ theorem sum_fin_dite {M : Type*} [AddCommMonoid M] (b B : ℕ) (hb : b ≤ B) (f
       simp
   | succ B hb ih =>
       rw [Fin.sum_univ_castSucc]
-      simpa only [Fin.val_castSucc, Fin.val_last, dite_eq_right (Nat.not_lt.mpr hb), add_zero] using ih
+      grind
 
 theorem sum_singletons_eq_map {α β : Type*} (s : Finset α) (f : α → β) :
     (∑ a ∈ s, ({f a} : Multiset β)) = s.val.map f := by
@@ -36,7 +37,11 @@ namespace MemoryHistory
 
 variable {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n)
 
-theorem birthValues_eq_addresses (B : ℕ) (hH : H.Truncated B) :
+section
+variable (B : ℕ) (hH : H.Truncated B)
+include B hH
+
+theorem birthValues_eq_addresses     :
     H.birthValues = ∑ a : BirthAddress P (J + F.ell) n B,
       if H.addressPerformed B a then ({H.addressValue B a} : Multiset ℕ) else 0 := by
   simp only [BirthAddress, Fintype.sum_sum_type, Fintype.sum_prod_type]
@@ -75,23 +80,23 @@ theorem birthValues_eq_addresses (B : ℕ) (hH : H.Truncated B) :
   simp only [birthValues, initialBirthValues, ghostBirthValues, freshBirthValues]
   ac_rfl
 
-theorem birthValues_eq_map (B : ℕ) (hH : H.Truncated B) :
+theorem birthValues_eq_map     :
     H.birthValues = (Finset.univ.filter (H.addressPerformed B)).val.map (H.addressValue B) := by
   rw [H.birthValues_eq_addresses B hH, ← Finset.sum_filter, sum_singletons_eq_map]
 
-theorem distinctBirths_iff_addresses (B : ℕ) (hH : H.Truncated B) :
+theorem distinctBirths_iff_addresses     :
     H.DistinctBirths ↔ Set.InjOn (H.addressValue B)
       (Finset.univ.filter (H.addressPerformed B)) := by
   rw [DistinctBirths, H.birthValues_eq_map B hH]
   exact Multiset.nodup_map_iff_inj_on (Finset.univ.filter (H.addressPerformed B)).nodup
 
-def performedFin (B : ℕ) : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B))) :=
+def performedFin (B )  :=
   Finset.univ.filter (fun i => H.addressPerformed B ((Fintype.equivFin _).symm i))
 
-def valueFin (B : ℕ) : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → ℕ :=
+def valueFin (B ) : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → ℕ :=
   fun i => H.addressValue B ((Fintype.equivFin _).symm i)
 
-theorem distinctBirths_iff_fin (B : ℕ) (hH : H.Truncated B) :
+theorem distinctBirths_iff_fin     :
     H.DistinctBirths ↔ Set.InjOn (H.valueFin B) (H.performedFin B) := by
   rw [H.distinctBirths_iff_addresses B hH]
   constructor
@@ -109,17 +114,14 @@ theorem distinctBirths_iff_fin (B : ℕ) (hH : H.Truncated B) :
     · simpa [valueFin] using he
 
 /-- The generic equality-rank formula applies to the actual global birth rule. -/
-theorem distinct_birth_expansion_history (B : ℕ) (hH : H.Truncated B) :
+theorem distinct_birth_expansion_history     :
     (if H.DistinctBirths then (1 : ℤ) else 0) =
       ∑ π ∈ Finset.univ.powerset.powerset.filter BirthCollection,
         if birthEvent (H.performedFin B) (H.valueFin B) π then birthMobius π else 0 := by
   have he := distinct_birth_expansion_proof _ (H.performedFin B) (H.valueFin B)
-  by_cases hd : H.DistinctBirths
-  · have hf := (H.distinctBirths_iff_fin B hH).mp hd
-    simpa only [ite_eq_left hd, ite_eq_left hf] using he
-  · have hf : ¬ Set.InjOn (H.valueFin B) (H.performedFin B) :=
-      fun hf => hd ((H.distinctBirths_iff_fin B hH).mpr hf)
-    simpa only [ite_eq_right hd, ite_eq_right hf] using he
+  grind [Set.InjOn, Erdos821.S2Core.MemoryHistory.distinctBirths_iff_fin]
+
+end
 
 end MemoryHistory
 

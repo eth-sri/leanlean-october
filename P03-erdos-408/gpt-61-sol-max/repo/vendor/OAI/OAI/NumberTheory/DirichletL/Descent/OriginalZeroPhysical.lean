@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -15,7 +15,7 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSc
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 
-theorem original_first_zero_physical (ε:ℝ)(hε:0<ε):
+theorem original_first_zero_physical  ε (hε:0<ε):
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
       (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -63,6 +63,6 @@ theorem original_first_zero_physical (ε:ℝ)(hε:0<ε):
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

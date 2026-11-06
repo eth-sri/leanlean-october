@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstSectorEnergy
 public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalFamily
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstSectorTransform
@@ -15,14 +16,12 @@ open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
 open CanonicalQuadraticSieve HeckeFamily CenteredMomentSourceRow CenteredMomentHeckeExpansion
 open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentCompleteCommon
 open CenteredMomentFirstCanonicalFamily CenteredMomentSupportedCorrelation IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
 
-theorem residualPool_supported (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : residualPool C hC (supportedColumns S)) : Supported (a:Ideal O) := by
-  have ha := (Finset.mem_filter.mp ((mem_residualPool C hC (supportedColumns S) a).mp a.property)).2
-  exact ((supported_mul_iff C a).mp ha).2
 
-theorem commonLabels_supported (S : Finset (Ideal O))
+theorem residualPool_supported (C : Ideal ActualEisensteinCubic.O) (hC : C≠0) (S : Finset (Ideal ActualEisensteinCubic.O))
+    (a : residualPool C hC (supportedColumns S)) : Supported (a:Ideal ActualEisensteinCubic.O) := ((OAI.CanonicalQuadraticSieve.supported_mul_iff C ↑a).mp (Finset.mem_filter.mp ((OAI.SevenEighths.CenteredMomentFirstSectors.mem_residualPool C hC (OAI.SevenEighths.CenteredMomentSourceRow.supportedColumns S) ↑a).mp a.property)).right).right
+
+theorem commonLabels_supported (S : Finset (Ideal ActualEisensteinCubic.O))
     (p : commonLabels (supportedColumns S) (supportedColumns S)) :
     Supported p.val.1 ∧ Supported p.val.2 := by
   obtain ⟨q,hq,he⟩ := Finset.mem_image.mp p.property
@@ -33,6 +32,6 @@ theorem commonLabels_supported (S : Finset (Ideal O))
 
 end SevenEighths.CenteredMomentFirstSectorTransform
 
-end
+
 
 end OAI

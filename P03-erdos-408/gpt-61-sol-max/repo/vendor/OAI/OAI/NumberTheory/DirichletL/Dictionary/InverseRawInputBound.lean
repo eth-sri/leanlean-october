@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialTotalEnergy
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawInputBound
 open ConcretePrimeRowBridge ActualEisensteinCubic ConcreteTraceCRT CompletedGauss SecondPassArithmetic CanonicalQuadraticSieve CanonicalRowCompletion
 open CanonicalCoefficientClass InverseMoment InverseInitialProfile InverseInitialRayAttachment
 open InverseInitialQuotientGeometry InverseInitialProfileBounds
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem raw_input_bound
     (W:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support W⊆Set.Icc a b)
@@ -27,9 +27,9 @@ theorem raw_input_bound
     letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
     let p:=poolPrimary F;
     let hg:=poolPrimary_good F hF;
-    ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
+    ∀Ψ:ActualEisensteinCubic.O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
     ∀ (r t : ℝ), (-2 : ℝ) ≤ r → r ≤ 1 - 2 * gap → 2 * r ≤ 3 - 2 * gap → r + 7 * η ≤ 2 →
-    ‖∑'u:O,Φ (‖eisEmbedding u‖^2/Z)*
+    ‖∑'u:ActualEisensteinCubic.O,Φ (‖eisEmbedding u‖^2/Z)*
       (‖((Z^(-r/2):ℝ):ℂ)*inputConjugateRow p hg Finset.univ Ψ 1 1 1
         (initialTest p (fun _=>1) (childLogTest W t) Z r) u‖^2:ℝ)‖≤
       C*Z^(1+15*η+π+eps+loss)*(1+‖t‖)^(2*J) := by
@@ -68,6 +68,6 @@ theorem raw_input_bound
 
 end SevenEighths.DetectorDictionaryInverseRawInputBound
 
-end
+
 
 end OAI

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAllocationShell
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentExceptionalCappedAmplitude
@@ -19,17 +19,17 @@ open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSe
 open CenteredMomentSecondCanonicalFrequency CenteredMomentForcing CenteredMomentChildRows
 open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge UniqueFactorizationMonoid
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-local notation "O" => HeckeFamily.O
 
-theorem rowTwistedSum_absolute (η : Character) (m A z : O) (W : ℝ→ℂ)
-    (b M t X : ℝ) (hb : 0≤b) (hM : 0≤M) (hX : 0<X)
+
+theorem rowTwistedSum_absolute  η   m A z   W 
+     b M t X  (hb : 0≤b) (hM : 0≤M) (hX : 0<X)
     (hs : Function.support W⊆Set.Iic b) (hW : ∀x,‖W x‖≤M) :
     ‖rowTwistedSum η m A z W t X‖≤(128*b*M)*X := by
   have hh := norm_tsum_ideal_ball
-    (fun I : Ideal O => (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*(A*z)) I)*
+    (fun I : Ideal HeckeFamily.O => (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*(A*z)) I)*
       (Ideal.absNorm I:ℂ)^(Complex.I*t)*W ((Ideal.absNorm I:ℝ)/X)) (b*X) M
     (mul_nonneg hb hX.le) hM (by
-      change (idealCoeff η (0:Ideal O)*_)*_*_=0
+      change (idealCoeff η (0:Ideal HeckeFamily.O)*_)*_*_=0
       rw [map_zero,zero_mul,zero_mul,zero_mul]) (by
       intro I
       by_cases hI : I=0
@@ -41,12 +41,12 @@ theorem rowTwistedSum_absolute (η : Character) (m A z : O) (W : ℝ→ℂ)
       exact (div_le_iff₀ hX).mp (hs (right_ne_zero_of_mul hI)))
   exact hh.trans_eq (by ring)
 
-theorem normalized_rectangle_absolute (η : Character) (m A z : O)
-    (W₁ W₂ : ℝ→ℂ) (b₁ b₂ M₁ M₂ : ℝ)
+theorem normalized_rectangle_absolute  η   m A z 
+     W₁ W₂   b₁ b₂ M₁ M₂ 
     (hb₁ : 0≤b₁) (hb₂ : 0≤b₂) (hM₁ : 0≤M₁) (hM₂ : 0≤M₂)
     (hs₁ : Function.support W₁⊆Set.Iic b₁) (hs₂ : Function.support W₂⊆Set.Iic b₂)
     (hW₁ : ∀x,‖W₁ x‖≤M₁) (hW₂ : ∀x,‖W₂ x‖≤M₂)
-    (t X₁ X₂ Y₁ Y₂ T : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂)
+     t X₁ X₂ Y₁ Y₂ T  (hX₁ : 0<X₁) (hX₂ : 0<X₂)
     (hY₁ : 0<Y₁) (hY₂ : 0<Y₂) (hpX : X₁*X₂=T) (hpY : Y₁*Y₂=T) :
     ‖(Real.sqrt T:ℂ)⁻¹ *
       (rowTwistedSum η m A z W₁ t X₁*rowTwistedSum η m A z W₂ t X₂-
@@ -74,7 +74,7 @@ theorem normalized_rectangle_absolute (η : Character) (m A z : O)
   rw [he]
   ring
 
-theorem max_raw_reduction (Z Rred r : ℝ) (hZ : 1<Z) (hR : 0<Rred) :
+theorem max_raw_reduction  Z Rred r  (hZ : 1<Z) (hR : 0<Rred) :
     max 1 (Z^r/Rred)=Z^(max (r-Real.logb Z Rred) 0) := by
   have hz : 0<Z := zero_lt_one.trans hZ
   have he : Z^r/Rred=Z^(r-Real.logb Z Rred) := by
@@ -87,6 +87,6 @@ theorem max_raw_reduction (Z Rred r : ℝ) (hZ : 1<Z) (hR : 0<Rred) :
 
 end SevenEighths.CenteredMomentExceptionalCappedAmplitude
 
-end
+
 
 end OAI

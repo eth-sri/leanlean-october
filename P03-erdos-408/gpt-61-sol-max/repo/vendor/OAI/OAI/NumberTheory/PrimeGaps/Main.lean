@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.RieszDecay
 
@@ -10,25 +11,25 @@ namespace LargePrimeGaps
 
 open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Filter Topology
+ 
 
-open Complex Filter Topology MeasureTheory
-
-open scoped FourierTransform
-
-open Complex Real Set MeasureTheory Filter Topology
-
-open Complex Real Set MeasureTheory Filter Topology
-
-open Complex Real Set MeasureTheory Filter Topology
+ 
 
 open scoped FourierTransform
 
-open Complex Real Set MeasureTheory Filter Topology
+ 
 
-open Complex Real Set MeasureTheory Filter Topology
+ 
 
-open Complex Real Set MeasureTheory Filter Topology
+ 
+
+ 
+
+ 
+
+ 
+
+ 
 
 lemma primeCharacterError_log_bound (A B : ℝ) (hA : 0<A) (hB : 0<B) :
     ∃ M : ℝ, 0<M ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q), χ.IsPrimitive →
@@ -65,7 +66,7 @@ lemma primeCharacterError_log_bound (A B : ℝ) (hA : 0<A) (hB : 0<B) :
     calc
       _ ≤ Real.log (x^2) := Real.log_le_log (by linarith) (by nlinarith)
       _ = _ := by rw [Real.log_pow]; rfl
-  have hQ0 : 0≤Q := by dsimp [Q]; positivity
+  
   have hQ : Q≤3*L^B := by
     have hq2 : 1≤(q:ℝ)+2 := by have := Nat.cast_nonneg (α:=ℝ) q; linarith
     have hqpow : Q≤(q:ℝ)+2 := by
@@ -156,8 +157,7 @@ theorem siegelWalfisz : SiegelWalfisz := by
   refine ⟨M,hM,max x₀ 2,by have := le_max_right x₀ (2:ℝ); linarith,?_⟩
   intro x hx d hd hdlog χ hχ
   let : NeZero d := ⟨ne_of_gt hd⟩
-  obtain ⟨hx2,hlog,hpower⟩ := hx₀ x ((le_max_left _ _).trans hx)
-  exact hb d χ hχ x hx2 hlog hpower hdlog
+  simp_all
 
 theorem bombieriVinogradov : BombieriVinogradov :=
   bombieriVinogradov_of_siegelWalfisz siegelWalfisz

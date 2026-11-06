@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.PartitionNorm
 public import OAI.NumberTheory.DirichletL.Moments.Forcing
@@ -18,7 +19,7 @@ local notation "O" => ActualEisensteinCubic.O
 theorem nonzero_unequal_min_six (p : O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
     (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d) (hcd : c ≠ d) (k : O)
+     c d  (hc : 1 ≤ c) (hd : 1 ≤ d) (hcd : c ≠ d) (k : O)
     (hne : actualCorrelation (p^c) (p^d) (supported_power p hp c) (supported_power p hp d)
       (p^min c d*k) ≠ 0) : 6 ∣ min c d := by
   by_contra h6
@@ -37,14 +38,14 @@ theorem nonzero_unequal_min_six (p : O) [(Ideal.span {p}).IsMaximal]
     have he : d+(c-d)=c := Nat.add_sub_of_le hgt.le
     exact hne (by simpa only [← pow_add,he,min_eq_right hgt.le] using hz)
 
-def localSaving (c d : ℕ) (nonunit : Prop) : ℝ :=
+def localSaving (c d : ℕ) (nonunit : Prop)  :=
   (c+d : ℝ) - 5*(min c d : ℝ)/6 - 1 +
     (if c=d ∧ ¬6∣c ∧ ¬nonunit then 1 else 0) +
     (if c=d ∧ ¬6∣c ∧ nonunit then 1/6 else 0) +
     (if c=d ∧ c=1 ∧ nonunit then 1/3 else 0)
 
 theorem localSaving_lower (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d)
-    (huneq : c ≠ d → 6 ∣ min c d) (nonunit : Prop) :
+    (huneq : c ≠ d → 6 ∣ min c d)  nonunit  :
     ((c:ℝ)+d)/3 ≤ localSaving c d nonunit := by
   by_cases hcd : c=d
   · subst d
@@ -66,35 +67,30 @@ theorem localSaving_lower (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d)
           linarith
       · simp only [localSaving,min_self,h6,not_false_eq_true,hu,and_false,
           and_true,ite_false,ite_true,add_zero]
-        have hcr : (1:ℝ) ≤ c := by exact_mod_cast hc
         linarith
   · have hmin : 6 ≤ min c d := Nat.le_of_dvd (lt_of_lt_of_le Nat.zero_lt_one (le_min hc hd)) (huneq hcd)
     have hmr : (6:ℝ) ≤ min c d := by exact_mod_cast hmin
-    have hmc : ((min c d : ℕ) : ℝ) ≤ c := by exact_mod_cast min_le_left c d
-    have hmd : ((min c d : ℕ) : ℝ) ≤ d := by exact_mod_cast min_le_right c d
-    simp only [Nat.cast_min] at hmr hmc hmd
-    simp only [localSaving,hcd,false_and,ite_false,add_zero]
-    linarith
+    grind [min, localSaving]
 
 theorem actual_localSaving_lower (p : O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
     (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d) (k : O)
+    (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d)  k 
     (hne : actualCorrelation (p^c) (p^d) (supported_power p hp c) (supported_power p hp d)
       (p^min c d*k) ≠ 0) :
     ((c:ℝ)+d)/3 ≤ localSaving c d (p ∣ k) :=
   localSaving_lower c d hc hd (fun hcd => nonzero_unequal_min_six p hp hg hchar c d hc hd hcd k hne) _
 
-section Global
+
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem local_nonzero_of_global (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hp : ∀ i, Supported (Ideal.span {p i}))
-    (hcop : Pairwise (Function.onFun IsCoprime p)) (c d : ι → ℕ) (w : O)
+    (hcop : Pairwise (Function.onFun IsCoprime p)) (c d : ι → ℕ)  w 
     (hne : actualCorrelation (∏ i, p i^c i) (∏ i, p i^d i)
       (supported_product _ (fun i => supported_power (p i) (hp i) (c i)))
       (supported_product _ (fun i => supported_power (p i) (hp i) (d i)))
-      ((∏ i, p i^min (c i) (d i))*w) ≠ 0) (i : ι) :
+      ((∏ i, p i^min (c i) (d i))*w) ≠ 0)  i  :
     actualCorrelation (p i^c i) (p i^d i) (supported_power (p i) (hp i) (c i))
       (supported_power (p i) (hp i) (d i))
       (p i^min (c i) (d i)*dividedFrequency p c d w i) ≠ 0 := by
@@ -121,7 +117,7 @@ theorem local_nonzero_of_global (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaxi
 
 omit [DecidableEq ι] in
 theorem log_norm_power_product (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
-    (c : ι → ℕ) (Z : ℝ) :
+    (c : ι → ℕ)  Z  :
     Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}^c i) : ℝ) =
       ∑ i, (c i : ℝ)*Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) := by
   simp only [map_prod,map_pow,Nat.cast_prod,Nat.cast_pow]
@@ -129,19 +125,19 @@ theorem log_norm_power_product (p : ι → O) (hp : ∀ i, Supported (Ideal.span
     (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)))]
   simp only [Real.logb_pow]
 
-def secondSaving (p : ι → O) (c d : ι → ℕ) (w : O) (Z : ℝ) : ℝ :=
+def secondSaving (p : ι → O) (c d : ι → ℕ) (w : O) (Z : ℝ)  :=
   ∑ i, Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) *
     localSaving (c i) (d i) (p i ∣ dividedFrequency p c d w i)
 
-def actualUnitSet (p : ι → O) (c d : ι → ℕ) (w : O) : Finset ι :=
+def actualUnitSet (p : ι → O) (c d : ι → ℕ) (w : O)  :=
   Finset.univ.filter (fun i => c i=d i ∧ ¬6∣c i ∧ ¬p i∣dividedFrequency p c d w i)
 
-def actualNonunitSet (p : ι → O) (c d : ι → ℕ) (w : O) : Finset ι :=
+def actualNonunitSet (p : ι → O) (c d : ι → ℕ) (w : O)  :=
   Finset.univ.filter (fun i => c i=d i ∧ ¬6∣c i ∧ p i∣dividedFrequency p c d w i)
 
 omit [Fintype ι] [DecidableEq ι] in
 theorem log_norm_radical (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
-    (S : Finset ι) (Z : ℝ) :
+     S   Z  :
     Real.logb Z (Ideal.absNorm (∏ i ∈ S, Ideal.span {p i}) : ℝ) =
       ∑ i ∈ S, Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) := by
   simp only [map_prod,Nat.cast_prod]
@@ -149,7 +145,7 @@ theorem log_norm_radical (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}
     (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1))
 
 theorem secondSaving_eq_norm_ledger (p : ι → O)
-    (hp : ∀ i, Supported (Ideal.span {p i})) (c d : ι → ℕ) (w : O) (Z : ℝ) :
+    (hp : ∀ i, Supported (Ideal.span {p i}))  c d   w   Z  :
     secondSaving p c d w Z =
       Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}^c i) : ℝ) +
       Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}^d i) : ℝ) -
@@ -172,14 +168,7 @@ theorem secondSaving_eq_norm_ledger (p : ι → O)
        then Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) else 0) =
       (if c i=d i ∧ c i=1 ∧ p i∣dividedFrequency p c d w i
        then Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) else 0) := by
-    have he : ((c i=d i ∧ ¬6∣c i ∧ p i∣dividedFrequency p c d w i) ∧ c i=1 ∧ d i=1) ↔
-        (c i=d i ∧ c i=1 ∧ p i∣dividedFrequency p c d w i) := by
-      constructor
-      · rintro ⟨⟨hcd,h6,hn⟩,hc,hd⟩
-        exact ⟨hcd,hc,hn⟩
-      · rintro ⟨hcd,hc,hn⟩
-        exact ⟨⟨hcd,by omega,hn⟩,hc,by omega⟩
-    simp only [he]
+    grind
   simp_rw [hf]
   rw [show (∑ i, (c i:ℝ)*Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ)) +
       (∑ i, (d i:ℝ)*Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ)) =
@@ -197,7 +186,7 @@ theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMa
     (hp : ∀ i, Supported (Ideal.span {p i})) (hg : ∀ i, goodLambda ∉ Ideal.span {p i})
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hcop : Pairwise (Function.onFun IsCoprime p)) (c d : ι → ℕ)
-    (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i) (w : O) (Z : ℝ) (hZ : 1 < Z)
+    (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i)  w   Z  (hZ : 1 < Z)
     (hne : actualCorrelation (∏ i, p i^c i) (∏ i, p i^d i)
       (supported_product _ (fun i => supported_power (p i) (hp i) (c i)))
       (supported_product _ (fun i => supported_power (p i) (hp i) (d i)))
@@ -220,7 +209,7 @@ theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMa
       apply Real.logb_nonneg hZ
       exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
 
-end Global
+
 
 end SevenEighths.CenteredMomentSecondLedger
 

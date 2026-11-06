@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsHolomorphic
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsHolomorphic
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CubicEisenstein
@@ -56,16 +57,10 @@ lemma nonprincipal_kone_norm (n j : ℕ) (hn : 0<n) (hn6 : n<6) :
         Complex.norm_eq_one_of_pow_eq_one (actualSextic_neg_one_sq _ hg) (by decide),inv_one,one_mul,
         primeGauss_actual_norm p hp.ne_zero hg hc,norm_mul,norm_pow,Complex.norm_natCast,
         primeGauss_actual_pow_norm p hp hg hc n (by omega) hn6]
-      have hsq := Real.sq_sqrt (Nat.cast_nonneg (Ideal.absNorm (Ideal.span {p})) : (0:ℝ)≤_)
-      rw [pow_succ]
-      apply le_of_eq
-      calc
-        _ = (Ideal.absNorm (Ideal.span {p}):ℝ)^n*(Real.sqrt (Ideal.absNorm (Ideal.span {p}):ℝ))^2 := by ring
-        _ = _ := by rw [hsq]
+      grind
     · simp only [mul_zero,norm_zero]
       positivity
-  · rw [ite_eq_right (by omega),norm_zero]
-    positivity
+  simp_all
 
 include hc in
 lemma even_base_kzero_norm (m j : ℕ) (hj : j<6) :
@@ -100,6 +95,6 @@ lemma even_base_kone_zero (j : ℕ) (hj : j<6) :
   · rw [ite_eq_right (by omega)]
 
 end SevenEighths.ProbePrimePower
-end
+
 
 end OAI

@@ -6,16 +6,16 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedHolomorphic
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+
 
 theorem physicalCompensatedRow_indexed {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (P : Fin K→PrimeIdeal) (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
-    (η : Character) (u : FreeRow) (x w z : ℂ) :
+     η   u   x w z  :
     let hT : ∀Q∈Finset.univ.image P,Q.val∉S := by
       intro Q hQ
       obtain ⟨i,_,rfl⟩ := Finset.mem_image.mp hQ
@@ -43,6 +43,6 @@ theorem physicalCompensatedRow_indexed {K : ℕ}
   · intro i _; rfl
 
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

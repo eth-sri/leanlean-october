@@ -5,6 +5,7 @@ Authors: Adam Benenson
 -/
 
 module
+public import Mathlib.Tactic
 
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.Approximation
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.Translation
@@ -38,7 +39,7 @@ open MeasureTheory Set
 
 noncomputable section
 
-section Volume
+
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
 
@@ -47,14 +48,12 @@ local instance instMeasurableSpaceEL2CompactnessTranslationIntegral : Measurable
 local instance instBorelSpaceEL2CompactnessTranslationIntegral : BorelSpace E := ⟨rfl⟩
 local instance instOpensMeasurableSpaceEL2CompactnessTranslationIntegral :
     OpensMeasurableSpace E := by infer_instance
-local instance instMeasurableAddEL2CompactnessTranslationIntegral : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegEL2CompactnessTranslationIntegral : MeasurableNeg E := by
-  infer_instance
+
+
 
 variable {ψ : E → ℝ}
 
-private lemma kernelMeasure_compl_ball_eq_zero_of_tsupport_subset {deltaLoss : ℝ}
+private lemma kernelMeasure_compl_ball_eq_zero_of_tsupport_subset  {deltaLoss} 
     (hψsupp : tsupport ψ ⊆ Metric.ball (0 : E) deltaLoss) :
     kernelMeasure (E := E) ψ ((Metric.ball (0 : E) deltaLoss)ᶜ) = 0 := by
   classical
@@ -92,7 +91,7 @@ theorem integral_norm_sq_translateL2_sub_le_sq_of_tsupport_subset_ball
   have : MeasureTheory.IsProbabilityMeasure μ :=
     ⟨kernelMeasure_univ (E := E) (ψ := ψ) hψc hψcs hψ0 hψint⟩
   have hμzero : μ ((Metric.ball (0 : E) deltaLoss)ᶜ) = 0 := by
-    simpa [μ] using kernelMeasure_compl_ball_eq_zero_of_tsupport_subset (E := E) (ψ := ψ) hψsupp
+    solve_by_elim [kernelMeasure_compl_ball_eq_zero_of_tsupport_subset]
   have hAE_ball : (Metric.ball (0 : E) deltaLoss) ∈ MeasureTheory.ae μ :=
     (MeasureTheory.mem_ae_iff.2 hμzero)
   -- On `Metric.ball 0 deltaLoss`, the squared translation error is bounded by `η²`.
@@ -136,7 +135,7 @@ theorem integral_norm_sq_translateL2_sub_le_sq_of_tsupport_subset_ball
     simpa [Real.norm_eq_abs, hμreal, mul_one] using this
   simpa [abs_of_nonneg hnonneg_int, μ] using habs
 
-end Volume
+
 
 end
 

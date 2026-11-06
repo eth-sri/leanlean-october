@@ -10,13 +10,13 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-def slotTupleProduct (p : ι → Ideal Eis) : Ideal Eis := ∏ i, p i
+def slotTupleProduct (p : ι → Ideal ActualEisensteinCubic.O)  := ∏ i, p i
 
 theorem slotTupleProduct_injective_on
-    (L : ι → Finset (Ideal Eis)) (hL : Pairwise (fun i j => Disjoint (L i) (L j)))
+    (L : ι → Finset (Ideal ActualEisensteinCubic.O)) (hL : Pairwise (fun i j => Disjoint (L i) (L j)))
     (hp : ∀ i, ∀ P ∈ L i, Prime P) :
     Set.InjOn (slotTupleProduct (ι := ι)) {p | ∀ i, p i ∈ L i} := by
   intro p hpL q hqL he
@@ -35,10 +35,10 @@ theorem slotTupleProduct_injective_on
 
 omit [DecidableEq ι] in
 theorem slotTupleProduct_admissible
-    (L : ι → Finset (Ideal Eis)) (hL : Pairwise (fun i j => Disjoint (L i) (L j)))
+    (L : ι → Finset (Ideal ActualEisensteinCubic.O)) (hL : Pairwise (fun i j => Disjoint (L i) (L j)))
     (hp : ∀ i, ∀ P ∈ L i, Prime P)
     (hgen : ∀ i, ∀ P ∈ L i, primaryGenerator P ≠ 0)
-    (p : ι → Ideal Eis) (hpL : ∀ i, p i ∈ L i) :
+    (p : ι → Ideal ActualEisensteinCubic.O) (hpL : ∀ i, p i ∈ L i) :
     CubicSieve.Admissible (slotTupleProduct p) := by
   constructor
   · apply Finset.squarefree_prod_of_pairwise_isCoprime
@@ -56,15 +56,15 @@ theorem slotTupleProduct_admissible
     rw [map_prod]
     exact Finset.prod_ne_zero_iff.mpr (fun i _ => hgen i (p i) (hpL i))
 
-def slotProductCoefficient (tuples : Finset (ι → Ideal Eis))
-    (a : (ι → Ideal Eis) → ℂ) (P : Ideal Eis) : ℂ :=
+def slotProductCoefficient (tuples : Finset (ι → Ideal ActualEisensteinCubic.O))
+    (a : (ι → Ideal ActualEisensteinCubic.O) → ℂ) (P : Ideal ActualEisensteinCubic.O)  :=
   ∑ p ∈ tuples, if slotTupleProduct p = P then a p else 0
 
 omit [DecidableEq ι] in
 theorem slotProductCoefficient_at_product
-    (tuples : Finset (ι → Ideal Eis))
-    (hinj : Set.InjOn slotTupleProduct (↑tuples : Set (ι → Ideal Eis)))
-    (a : (ι → Ideal Eis) → ℂ) (p : ι → Ideal Eis) (hp : p ∈ tuples) :
+    (tuples : Finset (ι → Ideal ActualEisensteinCubic.O))
+    (hinj : Set.InjOn slotTupleProduct (↑tuples : Set (ι → Ideal ActualEisensteinCubic.O)))
+     a   p  (hp : p ∈ tuples) :
     slotProductCoefficient tuples a (slotTupleProduct p) = a p := by
   unfold slotProductCoefficient
   rw [Finset.sum_eq_single p]

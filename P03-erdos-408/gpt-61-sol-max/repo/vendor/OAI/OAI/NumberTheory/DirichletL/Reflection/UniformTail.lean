@@ -9,12 +9,12 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff SchwartzMap
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe u
 variable {N a c : Eis} {mode : Bool}
 
-theorem literal_reflected_raw_tail_type_uniform (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (A : ℕ) :
+theorem literal_reflected_raw_tail_type_uniform  a₀ b₀  (ha₀ : 0<a₀) (A : ℕ) :
     ∃ (orders : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
     ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc a₀ b₀ →
     ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
@@ -37,7 +37,11 @@ theorem literal_reflected_raw_tail_type_uniform (a₀ b₀ : ℝ) (ha₀ : 0<a�
     (literalRawCoefficient G D s hc j S u) (literalRawCoefficient_norm G D s hc hN hbase hchar j hj S u) cut hcut
   simpa only [one_pow,mul_one] using hh
 
-theorem literal_reflected_dyadic_tail_type_uniform (lo hi : ℝ) (hlo : 0<lo) (A : ℕ) :
+section
+variable (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
+include lo hi hlo A
+
+theorem literal_reflected_dyadic_tail_type_uniform       :
     ∃ (orders : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
     ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc lo hi →
     ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
@@ -65,8 +69,8 @@ theorem literal_reflected_dyadic_tail_type_uniform (lo hi : ℝ) (hlo : 0<lo) (A
   rw [tsum_cut_dyadic _ cut hn.of_norm] at hh
   exact hh
 
-theorem literal_dyadic_tail_uniform_height_type_uniform (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
+theorem literal_dyadic_tail_uniform_height_type_uniform      
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
     ∃ (degree : ℕ) (C : ℝ), 0<C ∧
     ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
@@ -118,7 +122,9 @@ theorem literal_dyadic_tail_uniform_height_type_uniform (lo hi : ℝ) (hlo : 0<l
         ((Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹) :=
       mul_le_mul_of_nonneg_right hsemi' hrest
     _ = _ := by ring
+
 end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

@@ -13,7 +13,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
 
@@ -40,8 +40,8 @@ open CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentRankinRadical
 open CenteredMomentSecondExceptionalCommonSaving
 open ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation
 open CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
-local notation "O" => HeckeFamily.O
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
+
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 

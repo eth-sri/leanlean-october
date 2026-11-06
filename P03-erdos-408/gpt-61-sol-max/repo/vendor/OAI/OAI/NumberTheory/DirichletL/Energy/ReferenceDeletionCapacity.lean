@@ -8,16 +8,16 @@ public import OAI.NumberTheory.DirichletL.Energy.Bands
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionCapacity
 open HeckeFamily CenteredMomentEnergyReferenceDeletionBudget
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyBands CenteredMomentLiveCapacity
 
-local notation "O"=>HeckeFamily.O
+
 
 lemma deleted_short_length (Z M:ℝ)(hZ:1<Z)(hM:0≤M)
-    (D:Finset (Ideal O))(hD:∀I∈D,Prime I):
+    (D:Finset (Ideal HeckeFamily.O))(hD:∀I∈D,Prime I):
     length Z (comparisonFirst Z M/((∏I∈D,I).absNorm:ℝ))≤M/4:=by
   have hn:=product_norm_ge_one D hD
   have hY:1≤comparisonFirst Z M:=Real.one_le_rpow hZ.le (by linarith)
@@ -30,6 +30,6 @@ lemma deleted_short_length (Z M:ℝ)(hZ:1<Z)(hM:0≤M)
 
 end SevenEighths.CenteredMomentEnergyReferenceDeletionCapacity
 
-end
+
 
 end OAI

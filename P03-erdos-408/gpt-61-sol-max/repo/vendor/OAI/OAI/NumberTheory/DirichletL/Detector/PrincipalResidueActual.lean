@@ -16,20 +16,19 @@ open ProbeFiniteProductBounds ProbeEuler ProbeLocal HeckeSignal ProbePhysical Co
 open ActualEisensteinCubic CompletedGauss
 
 def residueWeights {κ : Type*} (W : κ → ℝ → ℝ) (scale : κ → ℝ)
-    (j : κ) (p : PrimeIdeal) : ℝ :=
+    (j : κ) (p : PrimeIdeal)  :=
   W j ((Ideal.absNorm p.val : ℝ)/scale j) * (Ideal.absNorm p.val : ℝ)^(-(5/6 : ℝ))
 
-theorem actual_window_residue {κ : Type*} (η : Character) (S : Finset κ)
-    (T : κ → Finset PrimeIdeal) (W : κ → ℝ → ℝ) (scale : κ → ℝ) (s : ℂ) :
+theorem actual_window_residue {κ : Type*}  η  (S : Finset κ)
+    (T : κ → Finset PrimeIdeal) (W : κ → ℝ → ℝ) (scale : κ → ℝ)  s  :
     windowMultiplier η S T (fun j t => (W j t : ℂ)) scale s 1 (1/6) =
       slotProduct S T (residueWeights W scale) (fun _ p => Ideal.absNorm p.val)
         (fun _ p => actualAPhase η (primaryGenerator p.val))
-        (fun _ p => idealCoeff η p.val) s := by
-  exact window_at_residue η S T W scale s
+        (fun _ p => idealCoeff η p.val) s := window_at_residue η S T W scale s
 
 theorem normalized_actual_window_residue {κ : Type*}
     (E : Finset (Ideal HeckeFamily.O)) (hE : SourceExclusions E) (η : Character)
-    {a : ℝ} (ha : 7/8<a) (ha2 : a≤2) (hβ : HeckeZeroSupremum.beta<a) (S : Finset κ) :
+    {a : ℝ} (ha : 7/8<a) (ha2 : a≤2) (hβ : HeckeZeroSupremum.beta<a)  S  :
     letI : NeZero (∏p∈E,p) := ⟨fixedPrimeProduct_ne_zero E hE.prime⟩
     ∃D : ℝ, 0≤D ∧ ∀ (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ),
       0<a0 → 0<a1 → Function.support W0⊆Set.Icc a0 b0 →

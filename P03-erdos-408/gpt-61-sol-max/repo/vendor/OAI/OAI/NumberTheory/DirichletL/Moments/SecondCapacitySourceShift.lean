@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalScalar
 public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalLedger
@@ -20,11 +21,11 @@ open CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondPhysicalLedger
 open CenteredMomentSectorLocalization CenteredMomentSourceBlockWindows
 open CenteredMomentSecondPhysicalCost CenteredMomentSecondRadicalBudget
 open CenteredMomentSupport CenteredMomentSecondWholeKernel ConcretePrimeRowBridge CenteredMomentSourceRow
-local notation "O"=>HeckeFamily.O
 
-theorem effective_upper (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))
-    (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K:ℝ)(n:Fin 4→ℤ)
+
+theorem effective_upper (η:Character)(t:ℝ)(S:Finset (Ideal HeckeFamily.O))(β:Ideal HeckeFamily.O→ℂ)
+    (C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))
+    (R:ℝ)(rows:Finset HeckeFamily.O)(W:𝓢(ℝ,ℂ))(K:ℝ)(n:Fin 4→ℤ)
     (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0):
     dyadicScale (n 0)≤4*secondEffectiveScale C D
       (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K:=by
@@ -53,7 +54,7 @@ lemma scalar_capacity_shift (Z F q U V H K a c d k h x y:ℝ)
     (hscale:k≤4*(K*g*V/(c*d)))(hleft:a*H/c≤x)(hright:a*H/d≤y):
     Real.logb Z (H/c)-Real.logb Z (F*q*U*V*h*max 1 (1/(k*h/(x*y))))≤
       Real.logb Z K-Real.logb Z q-Real.logb Z H+Real.logb Z (4/(F*a^2)):=by
-  have hu:0<U:=zero_lt_one.trans_le hU
+  
   have hl:=Real.logb_le_logb_of_le hZ (div_pos (mul_pos ha hH) hc) hleft
   have hr:=Real.logb_le_logb_of_le hZ (div_pos (mul_pos ha hH) hd) hright
   have hs:=Real.logb_le_logb_of_le hZ hk hscale
@@ -61,26 +62,30 @@ lemma scalar_capacity_shift (Z F q U V H K a c d k h x y:ℝ)
   have hu':0≤Real.logb Z U:=Real.logb_nonneg hZ hU
   have hrow:=Real.logb_le_logb_of_le hZ (div_pos (mul_pos hx hy) hk)
     (adjusted_row_lower k h x y hk hh hx hy)
-  have hm:0<max 1 (1/(k*h/(x*y))):=lt_of_lt_of_le zero_lt_one (le_max_left _ _)
+  
   simp (disch := positivity) only [Real.logb_mul,Real.logb_div,Real.logb_pow] at hl hr hs hrow ⊢
   linarith
 
-def adjustedEnvelope (η:Character)(C D:Ideal O)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):ℝ:=
+def adjustedEnvelope (η:Character)(C D)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):=
   childEnvelope η C D U n*
     max 1 (1/(dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3))))
 
-def adjustedEnvelopeRef (qref:ℝ)(C D:Ideal O)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):ℝ:=
+def adjustedEnvelopeRef (qref:ℝ)(C D)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):=
   (fixedFactor:ℝ)*qref*(∏P∈U,P.val).absNorm*
     (Ideal.span {nonunitFrequencyGenerator C D U}).absNorm*dyadicScale (n 1)*
     max 1 (1/(dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3))))
 
-theorem actual_capacity_shift_reference (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)
-    (hCD:primeSupport C=primeSupport D)(U:Finset (CommonIndex C D))
-    (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K H a Z qref:ℝ)(n:Fin 4→ℤ)
-    (hq:0<qref)(hK:0<K)(hH:0<H)(ha:0<a)(hZ:1<Z)
-    (hlower:∀I:Ideal O,β I≠0→a*H≤(I.absNorm:ℝ))
-    (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0):
+section
+variable (η:Character) (t:ℝ) (S:Finset (Ideal HeckeFamily.O)) (β:Ideal HeckeFamily.O→ℂ) (C D:Ideal HeckeFamily.O) (hC:Supported C) (hD:Supported D) (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset HeckeFamily.O) (W:𝓢(ℝ,ℂ)) (K H a Z qref:ℝ) (n:Fin 4→ℤ) (hq:0<qref) (hK:0<K) (hH:0<H) (ha:0<a) (hZ:1<Z) (hlower:∀I:Ideal HeckeFamily.O,β I≠0→a*H≤(I.absNorm:ℝ)) (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0)
+include η t S β C D hC hD hCD U R rows W K H a Z qref n hq hK hH ha hZ hlower hne
+
+theorem actual_capacity_shift_reference     
+       
+      
+         
+         
+     
+     :
     Real.logb Z (H/(C.absNorm:ℝ))-Real.logb Z (adjustedEnvelopeRef qref C D U n)≤
       Real.logb Z K-Real.logb Z qref-Real.logb Z H+
         Real.logb Z (4/((fixedFactor:ℝ)*a^2)):=by
@@ -119,13 +124,13 @@ theorem actual_capacity_shift_reference (η:Character)(t:ℝ)(S:Finset (Ideal O)
     (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _)
     ((Ideal.span {commonFrequencyGenerator C D}).absNorm:ℝ) hg hgc hs hl hr
 
-theorem actual_capacity_shift_reference_right (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)
-    (hCD:primeSupport C=primeSupport D)(U:Finset (CommonIndex C D))
-    (R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(K H a Z qref:ℝ)(n:Fin 4→ℤ)
-    (hq:0<qref)(hK:0<K)(hH:0<H)(ha:0<a)(hZ:1<Z)
-    (hlower:∀I:Ideal O,β I≠0→a*H≤(I.absNorm:ℝ))
-    (hne:physicalBlock η t S β C D hC hD U R rows W K n≠0):
+theorem actual_capacity_shift_reference_right     
+       
+      
+         
+         
+     
+     :
     Real.logb Z (H/(D.absNorm:ℝ))-Real.logb Z (adjustedEnvelopeRef qref C D U n)≤
       Real.logb Z K-Real.logb Z qref-Real.logb Z H+
         Real.logb Z (4/((fixedFactor:ℝ)*a^2)):=by
@@ -167,6 +172,8 @@ theorem actual_capacity_shift_reference_right (η:Character)(t:ℝ)(S:Finset (Id
     (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _)
     ((Ideal.span {commonFrequencyGenerator C D}).absNorm:ℝ) hg hgc hs' hr hl
   simpa only [adjustedEnvelopeRef,mul_comm (dyadicScale (n 3)) (dyadicScale (n 2))] using hh'
+
+end
 
 end SevenEighths.CenteredMomentSecondCapacitySourceShift
 

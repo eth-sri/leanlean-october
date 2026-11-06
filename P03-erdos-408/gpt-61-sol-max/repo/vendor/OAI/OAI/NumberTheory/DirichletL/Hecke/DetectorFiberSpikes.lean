@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorPhysicalSelection
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 open Set
 namespace SevenEighths.HeckeDetectorFiberSpikes
@@ -40,6 +40,6 @@ theorem fiber_spikes {Row Label : Type*} (rows : Finset Row) (χ : Row→Label�
 
 end SevenEighths.HeckeDetectorFiberSpikes
 
-end
+
 
 end OAI

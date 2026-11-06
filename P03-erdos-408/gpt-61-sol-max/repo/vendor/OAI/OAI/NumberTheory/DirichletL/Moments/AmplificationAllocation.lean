@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Eisenstein.ResidualCuspDecay
 
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationShortening
 
@@ -6,19 +8,18 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationShortening
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationAllocation
 open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
 
-theorem primaryGenerator_power (I : Ideal O) (n : ℕ) :
-    primaryGenerator (I^n) = primaryGenerator I ^ n := map_pow primaryGeneratorHom I n
 
-theorem primeRemainder_primary (p : O) (hp : Prime p) (hpp : goodLambda^2 ∣ p-1)
-    (a : O) (ha : Supported (Ideal.span {a})) (hpa : goodLambda^2 ∣ a-1) :
+alias primaryGenerator_power := _root_.OAI.CubicEisenstein.primaryGenerator_pow
+
+theorem primeRemainder_primary  p   hp  (hpp : goodLambda^2 ∣ p-1)
+     a   ha  (hpa : goodLambda^2 ∣ a-1) :
     goodLambda^2 ∣ primeRemainder p hp a (supported_element_ne_zero a ha)-1 := by
   let r := primeRemainder p hp a (supported_element_ne_zero a ha)
   have hr := primeRemainder_supported p hp a ha
@@ -40,6 +41,6 @@ theorem primeRemainder_primary (p : O) (hp : Prime p) (hpp : goodLambda^2 ∣ p-
 
 end SevenEighths.CenteredMomentAmplificationAllocation
 
-end
+
 
 end OAI

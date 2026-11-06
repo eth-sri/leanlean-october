@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
 
@@ -6,19 +7,24 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialProfileBounds
 open InverseInitialProfile InverseMoment FourierBridge
 
-theorem clipped_norm (W:ℝ→ℂ)(c θ x:ℝ):‖clippedSource W c θ x‖=‖W (c*x)‖:=by
+section
+variable (W : ℝ→ℂ) (B : ℝ) (hW : ∀x,‖W x‖≤B) (a b c cmax θ x : ℝ) (ha : 0<a) (hc : 1≤c)
+
+theorem clipped_norm   :‖clippedSource W c θ x‖=‖W (c*x)‖:=by
   simp only [clippedSource,norm_mul,logPhase_norm,one_mul]
 
-theorem clipped_bound (W:ℝ→ℂ)(B:ℝ)(hW:∀x,‖W x‖≤B)(c θ x:ℝ):
+include hW in
+theorem clipped_bound     :
     ‖clippedSource W c θ x‖≤B:=by rw [clipped_norm];exact hW _
 
-theorem clipped_support (W:ℝ→ℂ)(a b c cmax θ:ℝ)(ha:0<a)(hc:1≤c)(hcm:c≤cmax)
+include ha hc in
+theorem clipped_support     (hcm:c≤cmax)
     (hW:Function.support W⊆Set.Icc a b):
     Function.support (clippedSource W c θ)⊆Set.Icc (a/cmax) b:=by
   intro x hx
@@ -32,16 +38,18 @@ theorem clipped_support (W:ℝ→ℂ)(a b c cmax θ:ℝ)(ha:0<a)(hc:1≤c)(hcm:c
   · have hxc:x≤c*x:=le_mul_of_one_le_left hxpos.le hc
     exact hxc.trans hs.2
 
-theorem clipped_support_upper (W:ℝ→ℂ)(a b c θ:ℝ)(ha:0<a)(hc:1≤c)
+include ha hc in
+theorem clipped_support_upper     
     (hW:Function.support W⊆Set.Icc a b):Function.support (clippedSource W c θ)⊆Set.Iic b:=
   fun _ hx=>(clipped_support W a b c c θ ha hc le_rfl hW hx).2
 
-theorem childLogTest_eq_clipped (W:ℝ→ℂ)(θ:ℝ):childLogTest W θ=clippedSource W 1 θ:=by
-  funext x
-  simp only [childLogTest,clippedSource,mul_comm,mul_one]
+theorem childLogTest_eq_clipped   :childLogTest W θ=clippedSource W 1 θ:=by
+  grind [childLogTest, clippedSource]
+
+end
 
 end SevenEighths.InverseInitialProfileBounds
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.PrimitiveRows
 
@@ -10,77 +11,77 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace TruncatedPrincipalPoisson
 
 section
 local notation "O" => ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson
 
-theorem mem_rowNormDisk_floor {lengthScale : ℝ} (hL : 0 ≤ lengthScale) (z : O) :
+theorem mem_rowNormDisk_floor  {lengthScale}  (hL : 0 ≤ lengthScale)  z  :
     z ∈ rowNormDisk ⌊lengthScale⌋₊ ↔ z ≠ 0 ∧ ‖eisEmbedding z‖ ^ 2 ≤ lengthScale := by
   rw [mem_rowNormDisk]
   constructor
@@ -96,21 +97,18 @@ theorem mem_rowNormDisk_floor {lengthScale : ℝ} (hL : 0 ≤ lengthScale) (z : 
     rw [eisEmbedding_norm_sq_eq_absNorm_span] at hp hN
     exact ⟨by exact_mod_cast hp, Nat.le_floor hN⟩
 
-theorem dualNear_eq_finite (W : ℝ → ℂ) (X lengthScale : ℝ) (hL : 0 ≤ lengthScale) :
+theorem dualNear_eq_finite  W   X lengthScale  (hL : 0 ≤ lengthScale) :
     dualNear W X lengthScale =
       ∑ h ∈ rowNormDisk ⌊lengthScale⌋₊, paperRadialFourier W (X * ‖eisEmbedding h‖ ^ 2) := by
   unfold dualNear
   rw [tsum_eq_sum (s := rowNormDisk ⌊lengthScale⌋₊) (fun h hh => ?_)]
   · apply Finset.sum_congr rfl
-    intro h hh
-    have hd := (mem_rowNormDisk_floor hL h).mp hh
-    simp only [ite_eq_left hd.2, ite_eq_right hd.1]
+    simp_all [mem_rowNormDisk_floor]
   · by_cases hz : h = 0
     · simp [hz]
-    · have hn : ¬ ‖eisEmbedding h‖ ^ 2 ≤ lengthScale := fun hn => hh ((mem_rowNormDisk_floor hL h).mpr ⟨hz, hn⟩)
-      simp only [ite_eq_right hn]
+    simp_all [eisEmbedding, mem_rowNormDisk_floor]
 
-theorem dualFar_decay (A : ℕ) :
+theorem dualFar_decay  A  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ (W : 𝓢(ℝ, ℂ)) (K lengthScale : ℝ), 0 < K → 0 ≤ lengthScale →
         ‖dualFar W K lengthScale‖ ≤ (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) /
@@ -154,9 +152,9 @@ end
 
 section
 local notation "O" => ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open     EisensteinSchwartzPoisson
 
-theorem middle_divisor_frequency_tail (A : ℕ) :
+theorem middle_divisor_frequency_tail  A  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
         (S : Finset ι) (W : 𝓢(ℝ, ℂ)) (X Y Z lengthScale : ℝ),
@@ -189,8 +187,8 @@ theorem middle_divisor_frequency_tail (A : ℕ) :
           _ = (X / Z) * lengthScale := by ring
           _ ≤ _ := mul_le_mul_of_nonneg_right hk hL
       apply mul_le_mul
-      · exact pow_le_pow_left₀ (by positivity) (min_le_min_left _ hk) 2
-      · exact pow_le_pow_left₀ (by positivity) (by linarith) A
+      · gcongr <;> first | assumption | positivity | linarith
+      · gcongr <;> first | assumption | positivity | linarith
       · positivity
       · positivity
     have hh : ‖dualFar W (X / subsetNorm P E) lengthScale‖ ≤ B / Q :=
@@ -225,29 +223,29 @@ theorem middle_divisor_frequency_tail (A : ℕ) :
 end
 
 local notation "O" => ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson
 
-def principalTruncation {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) (S : Finset ι) (W : ℝ → ℂ) (X Z : ℝ) : ℂ :=
+def principalTruncation {ι } [DecidableEq ι]
+    (P : ι → Ideal O) (S : Finset ι) (W : ℝ → ℂ) (X Z : ℝ)  :=
   (X : ℂ) * paperRadialFourier W 0 * (∏ i ∈ S, (1 - (1 : ℂ) / Ideal.absNorm (P i))) -
   (X : ℂ) * paperRadialFourier W 0 *
     (∑ E ∈ largeDivisors P S Z, subsetMobius P E / (subsetNorm P E : ℂ)) -
   W 0 * (∑ E ∈ smallDivisors P S Z, subsetMobius P E)
 
-def middleTruncation {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) (S : Finset ι) (W : ℝ → ℂ) (X Y Z lengthScale : ℝ) : ℂ :=
+def middleTruncation {ι } [DecidableEq ι]
+    (P : ι → Ideal O) (S : Finset ι) (W : ℝ → ℂ) (X Y Z lengthScale : ℝ)  :=
   (X : ℂ) * ∑ E ∈ middleDivisors P S Y Z,
     (subsetMobius P E / (subsetNorm P E : ℂ)) *
       ∑ h ∈ rowNormDisk ⌊lengthScale⌋₊, paperRadialFourier W ((X / subsetNorm P E) * ‖eisEmbedding h‖ ^ 2)
 
-def truncationError {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) (S : Finset ι) (W : ℝ → ℂ) (X Y Z lengthScale : ℝ) : ℂ :=
+def truncationError {ι } [DecidableEq ι]
+    (P : ι → Ideal O) (S : Finset ι) (W : ℝ → ℂ) (X Y Z lengthScale : ℝ)  :=
   (∑' z : O, rowCoprimeMask P S z * (if z = 0 then 0 else W (‖eisEmbedding z‖ ^ 2 / X))) -
     (principalTruncation P S W X Z + middleTruncation P S W X Y Z lengthScale)
 
 theorem truncationError_eq {ι : Type*} [DecidableEq ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (S : Finset ι) (W : 𝓢(ℝ, ℂ)) (X Y Z lengthScale : ℝ) (hX : 0 < X) (hYZ : Y ≤ Z) (hL : 0 ≤ lengthScale) :
+     S  (W : 𝓢(ℝ, ℂ))  X Y Z lengthScale  (hX : 0 < X) (hYZ : Y ≤ Z) (hL : 0 ≤ lengthScale) :
     truncationError P S W X Y Z lengthScale =
       (X : ℂ) * (∑ E ∈ smallDivisors P S Y,
         (subsetMobius P E / (subsetNorm P E : ℂ)) * radialDual W (X / subsetNorm P E)) +
@@ -259,7 +257,7 @@ theorem truncationError_eq {ι : Type*} [DecidableEq ι]
   simp_rw [dualNear_eq_finite W _ lengthScale hL]
   ring
 
-theorem truncationError_bound (A : ℕ) :
+theorem truncationError_bound  A  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
         (_hinj : Function.Injective P) (S : Finset ι) (W : 𝓢(ℝ, ℂ)) (X Y Z lengthScale : ℝ),
@@ -275,7 +273,7 @@ theorem truncationError_bound (A : ℕ) :
   intro ι _ P _ hinj S W X Y Z lengthScale hX hY hYX hXZ hL
   let Q := ((s₀ ∪ s₁) ∪ s₂).sup (schwartzSeminormFamily ℝ ℝ ℂ) W
   let C := C₀ + C₁ + C₂
-  have hQ : 0 ≤ Q := apply_nonneg _ _
+  
   have hc₀ : C₀ ≤ C := by dsimp [C]; linarith
   have hc₁ : C₁ ≤ C := by dsimp [C]; linarith
   have hc₂ : C₂ ≤ C := by dsimp [C]; linarith
@@ -315,23 +313,27 @@ end TruncatedPrincipalPoisson
 
 namespace JointLogSeparation
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+ 
+ 
 
 section
 open FourierBridge FirstPassCubeLabels
 
-lemma schwartz_phase_inversion (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
+section
+variable (g : 𝓢(ℝ, ℂ))
+include g
+
+lemma schwartz_phase_inversion    x  :
     g x = ∫ t : ℝ, logPhase t x * (𝓕 g) t := by
   simpa only [logPhase, Real.inner_apply, mul_assoc, mul_comm, mul_left_comm] using
     FourierBridge.schwartz_log_inversion g x
 
-def profileSourceBound (g : 𝓢(ℝ, ℂ)) (J : ℕ) : ℝ :=
+def profileSourceBound (g : 𝓢(ℝ, ℂ)) (J : ℕ)  :=
   ∑ i ∈ Finset.range (J + 1),
     ((SchwartzMap.seminorm ℝ 0 i) g +
       (SchwartzMap.seminorm ℝ (volume : Measure ℝ).integrablePower i) g)
 
-lemma source_le_profileSourceBound (g : 𝓢(ℝ, ℂ)) (J i : ℕ) (hi : i ≤ J) :
+lemma source_le_profileSourceBound    J i  (hi : i ≤ J) :
     (SchwartzMap.seminorm ℝ 0 i) g +
       (SchwartzMap.seminorm ℝ (volume : Measure ℝ).integrablePower i) g ≤
       profileSourceBound g J := by
@@ -343,63 +345,64 @@ lemma source_le_profileSourceBound (g : 𝓢(ℝ, ℂ)) (J i : ℕ) (hi : i ≤ 
     positivity
   · exact Finset.mem_range.mpr (by omega)
 
-def outerWindow (V : Fin 7 → ℝ → ℂ) (z ud ue uv kap : ℝ) : ℂ :=
+end
+
+def outerWindow (V : Fin 7 → ℝ → ℂ) (z ud ue uv kap : ℝ)  :=
   V 0 z * V 1 ud * V 2 ue * V 3 uv * V 4 kap
 
-def fixedColumnTest (V : ℝ → ℂ) (t : ℝ) (x : ℝ) : ℂ := V x * logPhase t x
+def fixedColumnTest (V : ℝ → ℂ) (t : ℝ) (x : ℝ)  := V x * logPhase t x
 
 end
 
 open FirstPassCubeLabels
 
-lemma weighted_schwartz_integrable (b : 𝓢(ℝ, ℂ)) (J : ℕ) :
+lemma weighted_schwartz_integrable (b : 𝓢(ℝ, ℂ))  J  :
     Integrable (fun t : ℝ => (1 + ‖t‖) ^ J * ‖b t‖) := by
   simpa using AnalyticBridge.schwartz_fourier_one_plus_integrable (𝓕⁻ b) J
 
 end JointLogSeparation
 
-open scoped BigOperators
+ 
 namespace FiniteOverlapDecomposition
 variable {ι : Type*} [DecidableEq ι]
 
-abbrev Triple (ι : Type*) := Σ _ : Finset ι, Finset ι × Finset ι
+abbrev Triple (ι ) := Σ _ : Finset ι, Finset ι × Finset ι
 
-def triples (F : Finset ι) : Finset (Triple ι) :=
+def triples (F : Finset ι)  :=
   F.powerset.sigma fun G => ((F \ G).powerset ×ˢ (F \ G).powerset).filter fun UV => Disjoint UV.1 UV.2
 
 def split (ST : Finset ι × Finset ι) : Triple ι :=
   ⟨ST.1 ∩ ST.2, ST.1 \ ST.2, ST.2 \ ST.1⟩
 
-def join (GUV : Triple ι) : Finset ι × Finset ι :=
+def join (GUV : Triple ι)  :=
   (GUV.1 ∪ GUV.2.1, GUV.1 ∪ GUV.2.2)
 
 lemma join_split (ST : Finset ι × Finset ι) : join (split ST) = ST := by
   apply Prod.ext
-  · ext i
-    simp only [join, split, Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
-    tauto
-  · ext i
-    simp only [join, split, Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
-    tauto
+  · grind [join, split]
+  grind [join, split]
 
-lemma split_mem {F : Finset ι} {ST : Finset ι × Finset ι}
+section
+variable {F : Finset ι}
+include F
+
+lemma split_mem    {ST} 
     (hST : ST ∈ F.powerset ×ˢ F.powerset) : split ST ∈ triples F := by
   rcases Finset.mem_product.mp hST with ⟨hS, hT⟩
   have hSF := Finset.mem_powerset.mp hS
   have hTF := Finset.mem_powerset.mp hT
   simp only [triples, split, Finset.mem_sigma, Finset.mem_filter, Finset.mem_product, Finset.mem_powerset]
   refine ⟨Finset.inter_subset_left.trans hSF, ⟨?_, ?_⟩, ?_⟩
-  · intro i hi
-    simp only [Finset.mem_sdiff, Finset.mem_inter] at hi ⊢
-    exact ⟨hSF hi.1, by tauto⟩
-  · intro i hi
-    simp only [Finset.mem_sdiff, Finset.mem_inter] at hi ⊢
-    exact ⟨hTF hi.1, by tauto⟩
+  · grind
+  · grind
   · apply Finset.disjoint_left.mpr
-    intro i hi hj
-    exact (Finset.mem_sdiff.mp hi).2 (Finset.mem_sdiff.mp hj).1
+    simp_all
 
-lemma join_mem {F : Finset ι} {GUV : Triple ι} (h : GUV ∈ triples F) :
+section
+variable {GUV : Triple ι} (h : GUV ∈ triples F)
+include GUV h
+
+lemma join_mem       :
     join GUV ∈ F.powerset ×ˢ F.powerset := by
   rcases (by simpa only [triples, Finset.mem_sigma, Finset.mem_filter,
     Finset.mem_product, Finset.mem_powerset] using h) with ⟨hG, ⟨hU, hV⟩, _⟩
@@ -408,33 +411,28 @@ lemma join_mem {F : Finset ι} {GUV : Triple ι} (h : GUV ∈ triples F) :
   · exact Finset.union_subset hG (hU.trans Finset.sdiff_subset)
   · exact Finset.union_subset hG (hV.trans Finset.sdiff_subset)
 
-lemma split_join {F : Finset ι} {GUV : Triple ι} (h : GUV ∈ triples F) :
+lemma split_join       :
     split (join GUV) = GUV := by
   rcases GUV with ⟨G, U, V⟩
   have hh : G ⊆ F ∧ (U ⊆ F \ G ∧ V ⊆ F \ G) ∧ Disjoint U V := by
-    simpa only [triples, Finset.mem_sigma, Finset.mem_filter,
-      Finset.mem_product, Finset.mem_powerset] using h
+    simp_all [triples]
   rcases hh with ⟨_, ⟨hU, hV⟩, hd⟩
-  have hUG : Disjoint U G := Finset.disjoint_left.mpr (fun i hi hg => (Finset.mem_sdiff.mp (hU hi)).2 hg)
-  have hVG : Disjoint V G := Finset.disjoint_left.mpr (fun i hi hg => (Finset.mem_sdiff.mp (hV hi)).2 hg)
+  
+  
   have h₀ : (G ∪ U) ∩ (G ∪ V) = G := by
     ext i
     have hi : i ∈ U → i ∈ V → False := fun hi hj => Finset.disjoint_left.mp hd hi hj
     simp only [Finset.mem_union, Finset.mem_inter]
     tauto
   have h₁ : (G ∪ U) \ (G ∪ V) = U := by
-    ext i
-    have hi : i ∈ U → i ∈ V → False := fun hi hj => Finset.disjoint_left.mp hd hi hj
-    have hj : i ∈ U → i ∈ G → False := fun hi hj => Finset.disjoint_left.mp hUG hi hj
-    simp only [Finset.mem_union, Finset.mem_sdiff]
-    tauto
+    grind
   have h₂ : (G ∪ V) \ (G ∪ U) = V := by
-    ext i
-    have hi : i ∈ V → i ∈ U → False := fun hi hj => Finset.disjoint_left.mp hd.symm hi hj
-    have hj : i ∈ V → i ∈ G → False := fun hi hj => Finset.disjoint_left.mp hVG hi hj
-    simp only [Finset.mem_union, Finset.mem_sdiff]
-    tauto
+    grind
   simp only [split, join, h₀, h₁, h₂]
+
+end
+
+end
 
 theorem sum_pair_eq_overlap {β : Type*} [AddCommMonoid β]
     (F : Finset ι) (C : Finset ι → Finset ι → β) :
@@ -447,9 +445,7 @@ theorem sum_pair_eq_overlap {β : Type*} [AddCommMonoid β]
     apply Finset.sum_bij (fun ST _ => split ST)
     · intro ST hST
       exact split_mem hST
-    · intro ST hST SU hSU heq
-      have hh := congrArg join heq
-      simpa only [join_split] using hh
+    · grind [ST, join, join_split]
     · intro GUV hGUV
       exact ⟨join GUV, join_mem hGUV, split_join hGUV⟩
     · intro ST hST

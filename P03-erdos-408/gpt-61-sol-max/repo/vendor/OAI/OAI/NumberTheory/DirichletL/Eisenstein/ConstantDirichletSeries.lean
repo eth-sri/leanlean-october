@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.FrequencyCutoffs
 
@@ -10,77 +11,81 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid CompletedGauss
+open     CubicJacobiGlobal   CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 
-lemma constant_dirichlet_support (s : ℂ) :
+section
+variable (s : ℂ)
+include s
+
+lemma constant_dirichlet_support   :
     Function.support (arithmeticDirichletTerm s 0) ⊆
       {c : LevelLower | c.1 ≠ 0 ∧ ∃ a : O,c.1=a^3} := by
   intro c hc
@@ -89,12 +94,10 @@ lemma constant_dirichlet_support (s : ℂ) :
   · simp [arithmeticDirichletTerm,hzero] at hc
   · refine ⟨hzero, ?_⟩
     have hA : arithmeticResidueSum 0 c.1 ≠ 0 := by
-      intro hA
-      apply hc
-      simp only [arithmeticDirichletTerm,ite_eq_right hzero,hA,mul_zero]
+      simp_all [arithmeticDirichletTerm]
     exact (arithmeticResidueSum_ne_zero_iff_cube c.1 hzero c.2).mp hA
 
-lemma totient_sum_good (s : ℂ) :
+lemma totient_sum_good   :
     (∑' I : GoodIdeal,(idealTotient I.1:ℂ)*unramifiedNormWeight s I.1)=unramifiedTotientSeries s := by
   unfold unramifiedTotientSeries
   apply tsum_subtype_eq_of_support_subset (s := {I : Ideal O | primaryGenerator I ≠ 0})
@@ -106,14 +109,14 @@ lemma totient_sum_good (s : ℂ) :
   apply hI
   rw [unramifiedNormWeight_of_bad _ I hg,mul_zero]
 
-lemma norm_ramifiedRatio_lt_one (s : ℂ) (hs : 1<s.re) : ‖ramifiedRatio s‖<1 := by
+lemma norm_ramifiedRatio_lt_one   (hs : 1<s.re) : ‖ramifiedRatio s‖<1 := by
   change ‖((3:ℝ):ℂ)^(3-3*s)‖<1
   rw [Complex.norm_cpow_eq_rpow_re_of_pos (by norm_num : (0:ℝ)<3)]
   apply Real.rpow_lt_one_of_one_lt_of_neg (by norm_num)
   norm_num
   linarith
 
-theorem constantDirichlet_summable_norm (s : ℂ) (hs : (4:ℝ)/3<s.re) :
+theorem constantDirichlet_summable_norm   (hs : (4:ℝ)/3<s.re) :
     Summable (fun c : LevelLower => ‖arithmeticDirichletTerm s 0 c‖) := by
   have hs1 : 1<s.re := by linarith
   have hw : 2<(3*s-2).re := by norm_num; linarith
@@ -146,7 +149,7 @@ theorem constantDirichlet_summable_norm (s : ℂ) (hs : (4:ℝ)/3<s.re) :
       exact hc (constant_dirichlet_support s h)
     simp [Set.indicator,hc,hz]
 
-lemma ramified_geometric_sum (s : ℂ) (hs : 1<s.re) :
+lemma ramified_geometric_sum   (hs : 1<s.re) :
     (∑' n : ℕ,ramifiedRatio s^(n+1))=((3:ℂ)^(3*s-3)-1)⁻¹ := by
   have hn := norm_ramifiedRatio_lt_one s hs
   have hne : ramifiedRatio s ≠ 0 := by
@@ -162,7 +165,11 @@ lemma ramified_geometric_sum (s : ℂ) (hs : 1<s.re) :
   rw [tsum_mul_right,tsum_geometric_of_norm_lt_one hn,hi]
   field_simp
 
-theorem arithmeticDirichletSeries_zero_totient (s : ℂ) (hs : (4:ℝ)/3<s.re) :
+section
+variable (hs : (4:ℝ)/3<s.re)
+include hs
+
+theorem arithmeticDirichletSeries_zero_totient     :
     arithmeticDirichletSeries s 0 =
       2*((3:ℂ)^(3*s-3)-1)⁻¹*unramifiedTotientSeries (3*s-2) := by
   have hc := (constantDirichlet_summable_norm s hs).of_norm
@@ -185,7 +192,7 @@ theorem arithmeticDirichletSeries_zero_totient (s : ℂ) (hs : (4:ℝ)/3<s.re) :
         ramifiedRatio s^(n+1)*((idealTotient I.1:ℂ)*unramifiedNormWeight (3*s-2) I.1) := by
       apply tsum_congr; intro b
       apply tsum_congr; intro n
-      exact tsum_congr (fun I => cubeColumn_dirichletTerm s b n I)
+      exact tsum_congr (cubeColumn_dirichletTerm s b n)
     _ = ∑' _ : Bool,∑' n : ℕ,ramifiedRatio s^(n+1)*unramifiedTotientSeries (3*s-2) := by
       apply tsum_congr; intro b
       apply tsum_congr; intro n
@@ -198,7 +205,7 @@ theorem arithmeticDirichletSeries_zero_totient (s : ℂ) (hs : (4:ℝ)/3<s.re) :
       simp only [Finset.sum_const,Finset.card_univ,Fintype.card_bool,nsmul_eq_mul]
       ring
 
-theorem scatteringCoefficient_zero_zeta (s : ℂ) (hs : (4:ℝ)/3<s.re) :
+theorem scatteringCoefficient_zero_zeta     :
     scatteringCoefficient s 0 =
       (2/((9*Real.sqrt 3/2:ℝ):ℂ))*
       ((3:ℂ)^(3*s-3)-1)⁻¹ *
@@ -210,15 +217,19 @@ theorem scatteringCoefficient_zero_zeta (s : ℂ) (hs : (4:ℝ)/3<s.re) :
   rw [show 3*s-2-1=3*s-3 by ring]
   ring
 
+end
+
+end
+
 end CubicEisenstein
 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open   CompletedGauss ConcretePrimeRowBridge
 
-theorem matrix_eq_primePool (M N : ℝ) (F : Finset (Ideal O))
-    (hF : ∀ I ∈ F, Admissible I)
+theorem matrix_eq_primePool  M N   F 
+     hF 
     (hM : idealRange M ⊆ F) (hN : idealRange N ⊆ F) :
     letI : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i => by rw [poolPrimary_span F hF i]; infer_instance
@@ -232,7 +243,7 @@ theorem matrix_eq_primePool (M N : ℝ) (F : Finset (Ideal O))
   rw [primaryGenerator_eq_poolProduct F hF I.val (hM I.property)]
   rfl
 
-theorem sieveNorm_reverse_le (M N : ℝ) :
+theorem sieveNorm_reverse_le  M N  :
     sieveNorm M N ≤ 262144 * sieveNorm N M := by
   let F := idealRange M ∪ idealRange N
   have hF : ∀ I ∈ F, Admissible I := by
@@ -256,17 +267,17 @@ theorem sieveNorm_reverse_le (M N : ℝ) :
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
+open     ConcretePrimeRowBridge CompletedGauss
 open EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex
 open TruncatedPrincipalPoisson QuadraticSquarefreeKernel
 
-def dualPrincipalIdeal (I J : Ideal O) (V : ℝ → ℂ) (X : ℝ) : ℂ :=
+def dualPrincipalIdeal (I J : Ideal O) (V : ℝ → ℂ) (X : ℝ)  :=
   ∑' A : NonzeroIdeal,
     (idealZeroMask I (idealGenerator A.val) * idealZeroMask J (idealGenerator A.val)) *
       V ((Ideal.absNorm A.val : ℝ) / X)
 
-theorem canonical_pair_ideal_fourier_summable (I J : Ideal O) (W : 𝓢(ℝ, ℂ))
-    (t : ℝ) (ht : 0 < t) :
+theorem canonical_pair_ideal_fourier_summable  I J  (W : 𝓢(ℝ, ℂ))
+     t  (ht : 0 < t) :
     Summable (fun lengthScale : NonzeroIdeal => unrestrictedPairCharacter I J lengthScale.val *
       paperRadialFourier W (t * (Ideal.absNorm lengthScale.val : ℝ))) := by
   have hi : Function.Injective (fun lengthScale : NonzeroIdeal => idealGenerator lengthScale.val) := by
@@ -278,64 +289,68 @@ theorem canonical_pair_ideal_fourier_summable (I J : Ideal O) (W : 𝓢(ℝ, ℂ
   simpa only [Function.comp_def, idealGenerator_norm_sq, unrestrictedPairCharacter] using h
 
 end
-section
 
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
-open QuadraticMainOperatorBound IdealCoprimeSieveOperator DivisorBlockCauchy
 
-end
+open   CompletedGauss FiniteSieveRestriction
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveRestriction
-
-def CoefficientOnShell (N X : ℝ) (a : idealRange N → ℂ) : Prop :=
+def CoefficientOnShell (N X : ℝ) (a : idealRange N → ℂ)  :=
   ∀ J, a J ≠ 0 → X / 2 < (Ideal.absNorm J.val : ℝ) ∧ (Ideal.absNorm J.val : ℝ) ≤ X
 
-theorem column_dyadic_exists (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale) (J : idealRange N) :
+section
+variable (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale)
+include N lengthScale hNL
+
+theorem column_dyadic_exists       (J : idealRange N) :
     ∃ j ∈ Finset.range (lengthScale + 1), (2 : ℝ) ^ j / 2 < (Ideal.absNorm J.val : ℝ) ∧
       (Ideal.absNorm J.val : ℝ) ≤ (2 : ℝ) ^ j := by
   have hn : 1 ≤ Ideal.absNorm J.val := Nat.one_le_iff_ne_zero.mpr
     (fun hz => (mem_idealRange.mp J.property).1.1 (Ideal.absNorm_eq_zero_iff.mp hz))
   exact exists_dyadic_shell (Ideal.absNorm J.val) lengthScale hn ((mem_idealRange.mp J.property).2.trans hNL)
 
-def columnDyadicSector (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale) (J : idealRange N) : Fin (lengthScale + 1) :=
+def columnDyadicSector (N ) (lengthScale ) (hNL : N ≤ (2 : ℝ) ^ lengthScale) (J : idealRange N) : Fin (lengthScale + 1) :=
   ⟨(column_dyadic_exists N lengthScale hNL J).choose,
     Finset.mem_range.mp (column_dyadic_exists N lengthScale hNL J).choose_spec.1⟩
 
-def dyadicColumnCoefficient (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale)
+def dyadicColumnCoefficient (N ) (lengthScale ) (hNL : N ≤ (2 : ℝ) ^ lengthScale)
     (j : Fin (lengthScale + 1)) (a : idealRange N → ℂ) : idealRange N → ℂ :=
   sectorCoefficient (columnDyadicSector N lengthScale hNL) j a
 
-theorem dyadicColumnCoefficient_shell (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale)
-    (j : Fin (lengthScale + 1)) (a : idealRange N → ℂ) :
+theorem dyadicColumnCoefficient_shell      
+     j   a  :
     CoefficientOnShell N ((2 : ℝ) ^ j.val) (dyadicColumnCoefficient N lengthScale hNL j a) := by
   intro J hJ
   have he : columnDyadicSector N lengthScale hNL J = j := by
-    by_contra hn
-    exact hJ (by simp only [dyadicColumnCoefficient, sectorCoefficient, ite_eq_right hn])
+    simp_all [dyadicColumnCoefficient, sectorCoefficient]
   have hs := (column_dyadic_exists N lengthScale hNL J).choose_spec.2
   have hv : (columnDyadicSector N lengthScale hNL J).val = j.val := congrArg Fin.val he
   change (column_dyadic_exists N lengthScale hNL J).choose = j.val at hv
   simpa only [hv] using hs
 
-theorem dyadicColumnCoefficient_energy (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale)
-    (a : idealRange N → ℂ) :
+theorem dyadicColumnCoefficient_energy      
+     a  :
     (∑ j : Fin (lengthScale + 1), ∑ J, ‖dyadicColumnCoefficient N lengthScale hNL j a J‖ ^ 2) = ∑ J, ‖a J‖ ^ 2 :=
   sectorCoefficient_energy (columnDyadicSector N lengthScale hNL) a
+
+end
 
 theorem weighted_energy_column_shells {m : Type*} [Fintype m]
     (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale)
     (A : Matrix m (idealRange N) ℂ) (v : m → ℝ) (hv : ∀ i, 0 ≤ v i)
-    (a : idealRange N → ℂ) :
+     a  :
     (∑ i, v i * ‖∑ J, A i J * a J‖ ^ 2) ≤
       (lengthScale + 1 : ℝ) * ∑ j : Fin (lengthScale + 1), ∑ i,
         v i * ‖∑ J, A i J * dyadicColumnCoefficient N lengthScale hNL j a J‖ ^ 2 := by
   simpa only [Fintype.card_fin, Nat.cast_add, Nat.cast_one, dyadicColumnCoefficient] using
     sector_weighted_energy_bound A (columnDyadicSector N lengthScale hNL) a v hv
 
-def coefficientAtScale (N X : ℝ) (a : idealRange N → ℂ) (J : idealRange X) : ℂ :=
+def coefficientAtScale (N X ) (a : idealRange N → ℂ) (J : idealRange X)  :=
   if h : J.val ∈ idealRange N then a ⟨J.val, h⟩ else 0
 
-theorem coefficientAtScale_shell (N X : ℝ) (a : idealRange N → ℂ)
+section
+variable (N X : ℝ) (a : idealRange N → ℂ)
+include N X a
+
+theorem coefficientAtScale_shell    
     (ha : CoefficientOnShell N X a) : CoefficientOnShell X X (coefficientAtScale N X a) := by
   intro J hJ
   unfold coefficientAtScale at hJ
@@ -343,23 +358,23 @@ theorem coefficientAtScale_shell (N X : ℝ) (a : idealRange N → ℂ)
   · exact ha ⟨J.val, h⟩ hJ
   · exact (hJ rfl).elim
 
-theorem coefficientAtScale_row_sum (N X : ℝ) (a : idealRange N → ℂ)
-    (ha : ∀ J, a J ≠ 0 → (Ideal.absNorm J.val : ℝ) ≤ X) (z : O) :
+section
+variable (ha : ∀ J, a J ≠ 0 → (Ideal.absNorm J.val : ℝ) ≤ X)
+include ha
+
+theorem coefficientAtScale_row_sum    
+       z  :
     (∑ J : idealRange N, quadraticRow J.val z * a J) =
       ∑ J : idealRange X, quadraticRow J.val z * coefficientAtScale N X a J := by
   let f : Ideal O → ℂ := fun I => if h : I ∈ idealRange N then quadraticRow I z * a ⟨I, h⟩ else 0
   have hleft : (∑ J : idealRange N, quadraticRow J.val z * a J) = ∑ I ∈ idealRange N, f I := by
     rw [← Finset.sum_coe_sort (idealRange N) f]
-    apply Finset.sum_congr rfl
-    intro J _
-    simp only [f, dite_eq_left J.property]
+    grind
   have hright : (∑ J : idealRange X, quadraticRow J.val z * coefficientAtScale N X a J) =
       ∑ I ∈ idealRange X, f I := by
     rw [← Finset.sum_coe_sort (idealRange X) f]
     apply Finset.sum_congr rfl
-    intro J _
-    unfold coefficientAtScale
-    split_ifs with h <;> simp only [f, h, ↓reduceDIte, mul_zero]
+    grind [coefficientAtScale]
   rw [hleft, hright]
   rcases le_total N X with hNX | hXN
   · apply Finset.sum_subset (idealRange_mono hNX)
@@ -373,15 +388,13 @@ theorem coefficientAtScale_row_sum (N X : ℝ) (a : idealRange N → ℂ)
       exact hIX (mem_idealRange.mpr ⟨(mem_idealRange.mp hIN).1, ha ⟨I, hIN⟩ hn⟩)
     simp only [f, dite_eq_left hIN, haI, mul_zero]
 
-theorem coefficientAtScale_energy (N X : ℝ) (a : idealRange N → ℂ)
-    (ha : ∀ J, a J ≠ 0 → (Ideal.absNorm J.val : ℝ) ≤ X) :
+theorem coefficientAtScale_energy    
+      :
     (∑ J : idealRange N, ‖a J‖ ^ 2) = ∑ J : idealRange X, ‖coefficientAtScale N X a J‖ ^ 2 := by
   let f : Ideal O → ℝ := fun I => if h : I ∈ idealRange N then ‖a ⟨I, h⟩‖ ^ 2 else 0
   have hleft : (∑ J : idealRange N, ‖a J‖ ^ 2) = ∑ I ∈ idealRange N, f I := by
     rw [← Finset.sum_coe_sort (idealRange N) f]
-    apply Finset.sum_congr rfl
-    intro J _
-    simp only [f, dite_eq_left J.property]
+    grind
   have hright : (∑ J : idealRange X, ‖coefficientAtScale N X a J‖ ^ 2) =
       ∑ I ∈ idealRange X, f I := by
     rw [← Finset.sum_coe_sort (idealRange X) f]
@@ -402,14 +415,18 @@ theorem coefficientAtScale_energy (N X : ℝ) (a : idealRange N → ℂ)
       exact hIX (mem_idealRange.mpr ⟨(mem_idealRange.mp hIN).1, ha ⟨I, hIN⟩ hn⟩)
     simp only [f, dite_eq_left hIN, haI, norm_zero, zero_pow (by decide : 2 ≠ 0)]
 
-theorem annularHighEnergy_coefficientAtScale (M N X K : ℝ) (a : idealRange N → ℂ)
+end
+
+end
+
+theorem annularHighEnergy_coefficientAtScale  M N X K   a 
     (ha : ∀ J, a J ≠ 0 → (Ideal.absNorm J.val : ℝ) ≤ X) :
     annularHighEnergy M N K a = annularHighEnergy M X K (coefficientAtScale N X a) := by
   unfold annularHighEnergy
   simp_rw [coefficientAtScale_row_sum N X a ha]
 
-theorem dyadicColumnCoefficient_at_scale_energy (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale)
-    (a : idealRange N → ℂ) :
+theorem dyadicColumnCoefficient_at_scale_energy  N   lengthScale   hNL 
+     a  :
     (∑ j : Fin (lengthScale + 1), ∑ J : idealRange ((2 : ℝ) ^ j.val),
       ‖coefficientAtScale N ((2 : ℝ) ^ j.val) (dyadicColumnCoefficient N lengthScale hNL j a) J‖ ^ 2) =
         ∑ J : idealRange N, ‖a J‖ ^ 2 := by

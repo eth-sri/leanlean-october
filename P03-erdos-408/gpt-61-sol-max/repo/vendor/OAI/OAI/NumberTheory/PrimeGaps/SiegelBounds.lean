@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.TaylorBounds
 
@@ -13,7 +14,7 @@ section
 open Complex Filter Topology Set MeasureTheory Finset ArithmeticFunction
 
 lemma quadratic_character_im {q : ℕ} {χ : DirichletCharacter ℂ q} (hχ : χ^2=1)
-    (a : ZMod q) : (χ a).im = 0 := by
+     a  : (χ a).im = 0 := by
   rcases MulChar.isQuadratic_iff_sq_eq_one.mpr hχ a with h|h|h <;> simp [h]
 
 lemma regularSeries_im_zero {f : ℕ → ℂ} {c : ℂ} {D : ℝ}
@@ -30,7 +31,7 @@ lemma regularSeries_im_zero {f : ℕ → ℂ} {c : ℂ} {D : ℝ}
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
     have hp : ((t:ℂ)^(-((x:ℂ)+1))).im=0 := by
       rw [show -((x:ℂ)+1)= (-(x+1):ℝ) by push_cast; rfl,
-        ←Complex.ofReal_cpow (by exact (zero_lt_one.trans ht).le : 0≤t)]
+        ←Complex.ofReal_cpow ((zero_lt_one.trans ht).le : 0≤t)]
       rfl
     change (seriesDiscrepancy f c t * (t:ℂ)^(-((x:ℂ)+1))).im=0
     rw [Complex.mul_im,hp,mul_zero,zero_add]
@@ -38,7 +39,11 @@ lemma regularSeries_im_zero {f : ℕ → ℂ} {c : ℂ} {D : ℝ}
     rw [hz,zero_mul]
   simp [regularSeries,Complex.mul_im,hc,he]
 
-lemma quadratic_LFunction_im {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
+section
+variable {q : ℕ} [NeZero q]
+include q
+
+lemma quadratic_LFunction_im     {χ : DirichletCharacter ℂ q}
     (hχ : χ≠1) (hχ2 : χ^2=1) {x : ℝ} (hx : 0<x) : (χ.LFunction x).im=0 := by
   rw [←regularSeries_character_eq hχ hx]
   apply regularSeries_im_zero _ (by simp) (by positivity : (0:ℝ)≤q+1)
@@ -47,27 +52,39 @@ lemma quadratic_LFunction_im {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q
   simp only [positiveCoefficients]
   split_ifs <;> simp [quadratic_character_im hχ2]
 
-lemma LSeries_character_summable {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
-    {s : ℂ} (hs : 1<s.re) :
+section
+variable (χ : DirichletCharacter ℂ q) {s : ℂ} (hs : 1<s.re)
+include χ s hs
+
+lemma LSeries_character_summable      
+        :
     LSeriesSummable (toArithmeticFunction (fun n : ℕ => χ (n : ZMod q))) s := by
   apply (LSeriesSummable_congr _ (fun h => (χ.apply_eq_toArithmeticFunction_apply h).symm)).mpr
   exact ZMod.LSeriesSummable_of_one_lt_re χ hs
 
-lemma LSeries_character_eq {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
-    {s : ℂ} (hs : 1<s.re) :
+lemma LSeries_character_eq      
+        :
     LSeries (toArithmeticFunction (fun n : ℕ => χ (n : ZMod q))) s = χ.LFunction s := by
   rw [χ.LFunction_eq_LSeries hs]
   exact (LSeries_congr χ.apply_eq_toArithmeticFunction_apply s).symm
 
-lemma LSeries_zeta_complex_eq {s : ℂ} (hs : 1<s.re) :
+end
+
+end
+
+lemma LSeries_zeta_complex_eq  {s}  (hs : 1<s.re) :
     LSeries (ArithmeticFunction.zeta : ArithmeticFunction ℂ) s=riemannZeta s := by
   rw [←LSeries_one_eq_riemannZeta hs]
   apply LSeries_congr
   intro n hn
   simp [hn]
 
-lemma LSeries_zetaMul_eq {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
-    {s : ℂ} (hs : 1<s.re) : LSeries χ.zetaMul s=riemannZeta s*χ.LFunction s := by
+section
+variable {q : ℕ} [NeZero q]
+include q
+
+lemma LSeries_zetaMul_eq     (χ : DirichletCharacter ℂ q)
+     {s}  (hs : 1<s.re) : LSeries χ.zetaMul s=riemannZeta s*χ.LFunction s := by
   have hz : LSeriesSummable (ArithmeticFunction.zeta : ArithmeticFunction ℂ) s := by
     apply LSeriesSummable_of_bounded_of_one_lt_re (m:=1) _ hs
     intro n hn
@@ -76,8 +93,12 @@ lemma LSeries_zetaMul_eq {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
     (LSeries_character_summable χ hs),LSeries_character_eq χ hs,LSeries_zeta_complex_eq hs]
 
 open scoped ComplexOrder in
-lemma quadratic_LFunction_re_pos_of_one_lt {q : ℕ} [NeZero q]
-    {χ : DirichletCharacter ℂ q} (hχ2 : χ^2=1) {x : ℝ} (hx : 1<x) :
+section
+variable {χ : DirichletCharacter ℂ q}
+include χ
+
+lemma quadratic_LFunction_re_pos_of_one_lt    
+      (hχ2 : χ^2=1) {x : ℝ} (hx : 1<x) :
     0<(χ.LFunction x).re := by
   have hp := LSeries.positive (DirichletCharacter.zetaMul_nonneg hχ2)
     (χ.isMultiplicative_zetaMul.map_one ▸ zero_lt_one)
@@ -88,8 +109,12 @@ lemma quadratic_LFunction_re_pos_of_one_lt {q : ℕ} [NeZero q]
   rw [Complex.mul_re,riemannZeta_im_eq_zero_of_one_lt hx,zero_mul,sub_zero] at hr
   exact (mul_pos_iff.mp hr).resolve_right (fun h => (riemannZeta_re_pos_of_one_lt hx).not_ge h.1.le) |>.2
 
-lemma quadratic_LFunction_re_pos_one {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
-    (hχ : χ≠1) (hχ2 : χ^2=1) : 0<(χ.LFunction 1).re := by
+section
+variable (hχ : χ≠1) (hχ2 : χ^2=1)
+include hχ hχ2
+
+lemma quadratic_LFunction_re_pos_one      
+        : 0<(χ.LFunction 1).re := by
   have hc : Continuous (fun x : ℝ => (χ.LFunction x).re) :=
     Complex.continuous_re.comp ((DirichletCharacter.differentiable_LFunction hχ).continuous.comp
       Complex.continuous_ofReal)
@@ -105,8 +130,8 @@ lemma quadratic_LFunction_re_pos_one {q : ℕ} [NeZero q] {χ : DirichletCharact
   · simpa using he.symm
   · simpa using quadratic_LFunction_im hχ hχ2 (x:=1) zero_lt_one
 
-lemma quadratic_LFunction_re_pos_of_no_root {q : ℕ} [NeZero q]
-    {χ : DirichletCharacter ℂ q} (hχ : χ≠1) (hχ2 : χ^2=1)
+lemma quadratic_LFunction_re_pos_of_no_root    
+         
     {β : ℝ} (hβ : 0<β) (hβ1 : β≤1)
     (hz : ∀ x ∈ Set.Icc β 1, χ.LFunction x≠0) : 0<(χ.LFunction β).re := by
   by_contra! hn
@@ -123,24 +148,28 @@ lemma quadratic_LFunction_re_pos_of_no_root {q : ℕ} [NeZero q]
 
 end
 
+end
+
+end
+
+end
+
 section
 
 open Complex Finset ArithmeticFunction
 
-noncomputable def productCharacter {q r : ℕ} (χ : DirichletCharacter ℂ q)
-    (ψ : DirichletCharacter ℂ r) : DirichletCharacter ℂ (q*r) :=
+noncomputable def productCharacter {q r } (χ : DirichletCharacter ℂ q)
+    (ψ : DirichletCharacter ℂ r)  :=
   χ.changeLevel (dvd_mul_right q r) * ψ.changeLevel (dvd_mul_left r q)
 
 lemma changeLevel_natCast {q m : ℕ} (χ : DirichletCharacter ℂ q) (hqm : q∣m)
     {n : ℕ} (hn : n.Coprime m) :
     χ.changeLevel hqm (n : ZMod m)=χ (n : ZMod q) := by
   have h := χ.changeLevel_eq_cast_of_dvd hqm (ZMod.unitOfCoprime n hn)
-  simp only [ZMod.coe_unitOfCoprime] at h
-  rw [ZMod.cast_natCast hqm] at h
-  exact h
+  simp_all
 
-lemma productCharacter_apply {q r n : ℕ} (χ : DirichletCharacter ℂ q)
-    (ψ : DirichletCharacter ℂ r) : productCharacter χ ψ (n : ZMod (q*r))=
+lemma productCharacter_apply {q r n : ℕ}  χ 
+     ψ  : productCharacter χ ψ (n : ZMod (q*r))=
       χ (n : ZMod q)*ψ (n : ZMod r) := by
   by_cases hn : n.Coprime (q*r)
   · simp only [productCharacter,MulChar.mul_apply,changeLevel_natCast _ _ hn]
@@ -150,12 +179,16 @@ lemma productCharacter_apply {q r n : ℕ} (χ : DirichletCharacter ℂ q)
       rw [ψ.map_nonunit (by rwa [ZMod.isUnit_iff_coprime]),mul_zero]
     · rw [χ.map_nonunit (by rwa [ZMod.isUnit_iff_coprime]),zero_mul]
 
-lemma productCharacter_quadratic {q r : ℕ} {χ : DirichletCharacter ℂ q}
+section
+variable {q r : ℕ}
+include q r
+
+lemma productCharacter_quadratic   {χ : DirichletCharacter ℂ q}
     {ψ : DirichletCharacter ℂ r} (hχ : χ^2=1) (hψ : ψ^2=1) :
     (productCharacter χ ψ)^2=1 := by
   simp [productCharacter,mul_pow,←map_pow,hχ,hψ]
 
-lemma productCharacter_ne_one_of_levels_ne {q r : ℕ} [NeZero q] [NeZero r]
+lemma productCharacter_ne_one_of_levels_ne   [NeZero q] [NeZero r]
     {χ : DirichletCharacter ℂ q} {ψ : DirichletCharacter ℂ r}
     (hχ : χ.IsPrimitive) (hψ : ψ.IsPrimitive) (hψ2 : ψ^2=1) (hqr : q≠r) :
     productCharacter χ ψ≠1 := by
@@ -171,7 +204,7 @@ lemma productCharacter_ne_one_of_levels_ne {q r : ℕ} [NeZero q] [NeZero r]
     hχ,hψ] at hc
   exact hqr hc
 
-lemma productCharacter_toArithmeticFunction {q r : ℕ} (χ : DirichletCharacter ℂ q)
+lemma productCharacter_toArithmeticFunction   (χ : DirichletCharacter ℂ q)
     (ψ : DirichletCharacter ℂ r) :
     toArithmeticFunction (productCharacter χ ψ ·)=
       (toArithmeticFunction (χ ·)).pmul (toArithmeticFunction (ψ ·)) := by
@@ -180,6 +213,8 @@ lemma productCharacter_toArithmeticFunction {q r : ℕ} (χ : DirichletCharacter
   · simp [hn]
   · rw [ArithmeticFunction.pmul_apply]
     simp [toArithmeticFunction,hn,productCharacter_apply]
+
+end
 
 end
 
@@ -225,8 +260,7 @@ lemma zeta_product_residue_lower {P : ℂ → ℂ} {a : ℕ → ℂ} {A B Q β �
     simp only [Complex.ofReal_one,Complex.ofReal_re]
     rw [hid,neg_div,sub_neg_eq_add]
     exact add_le_of_nonpos_left hvalue
-  have hn (n : ℕ) : |signedTaylorCoeff H n|≤(A*Q^4)/(3/2)^n := by
-    apply (signedTaylorCoeff_norm_bound (by norm_num : (0:ℝ)<3/2) hf
+  have hn (n : ℕ) : |signedTaylorCoeff H n|≤(A*Q^4)/(3/2)^n := (signedTaylorCoeff_norm_bound (by norm_num : (0:ℝ)<3/2) hf
       (fun s hs => (hbound s (Metric.sphere_subset_closedBall hs)).trans hBQ) n)
   have hr := residue_polynomial_lower (ε:=ε) hA hQ hQA hz (by linarith) (by linarith) hn
     (by simpa [signedTaylorCoeff] using ha0) han hv
@@ -237,7 +271,7 @@ lemma zeta_product_residue_lower {P : ℂ → ℂ} {a : ℕ → ℂ} {A B Q β �
 lemma zeta_re_neg_near_one {β : ℝ} (hβ : 99/100≤β) (hβ1 : β<1) :
     (riemannZeta β).re<0 := by
   have hβ0 : 0<β := by linarith
-  have hβne : (β:ℂ)≠1 := by intro h; have := congrArg Complex.re h; simp at this; linarith
+  have hβne : (β:ℂ)≠1 := by aesop
   have hmem : (β:ℂ) ∈ Metric.closedBall 2 (7/4:ℝ) := by
     rw [Metric.mem_closedBall,dist_eq_norm,←Complex.ofReal_ofNat,←Complex.ofReal_sub,
       Complex.norm_real,Real.norm_eq_abs,abs_of_neg (by linarith : β-2<0)]
@@ -252,14 +286,18 @@ end
 
 open Complex Filter Topology Set MeasureTheory Finset ArithmeticFunction
 
-lemma LSeries_zeta_complex_summable {s : ℂ} (hs : 1<s.re) :
+lemma LSeries_zeta_complex_summable  {s}  (hs : 1<s.re) :
     LSeriesSummable (ArithmeticFunction.zeta : ArithmeticFunction ℂ) s := by
   apply LSeriesSummable_of_bounded_of_one_lt_re (m:=1) _ hs
   intro n hn
   simp [hn]
 
-lemma biquadraticCoefficients_summable {q r : ℕ} [NeZero q] [NeZero r]
-    (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) {s : ℂ} (hs : 1<s.re) :
+section
+variable {q r : ℕ} [NeZero q] [NeZero r] (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) {s : ℂ} (hs : 1<s.re)
+include q r χ ψ s hs
+
+lemma biquadraticCoefficients_summable      
+            :
     LSeriesSummable (biquadraticCoefficients χ ψ) s := by
   rw [biquadraticCoefficients,←productCharacter_toArithmeticFunction]
   exact ArithmeticFunction.LSeriesSummable_mul
@@ -267,8 +305,8 @@ lemma biquadraticCoefficients_summable {q r : ℕ} [NeZero q] [NeZero r]
       (ArithmeticFunction.LSeriesSummable_mul (LSeries_zeta_complex_summable hs) (LSeries_character_summable χ hs))
       (LSeries_character_summable ψ hs)) (LSeries_character_summable (productCharacter χ ψ) hs)
 
-lemma LSeries_biquadratic_eq {q r : ℕ} [NeZero q] [NeZero r]
-    (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) {s : ℂ} (hs : 1<s.re) :
+lemma LSeries_biquadratic_eq      
+            :
     LSeries (biquadraticCoefficients χ ψ) s=
       riemannZeta s*(χ.LFunction s*ψ.LFunction s*(productCharacter χ ψ).LFunction s) := by
   have hz := LSeries_zeta_complex_summable hs
@@ -282,6 +320,8 @@ lemma LSeries_biquadratic_eq {q r : ℕ} [NeZero q] [NeZero r]
     LSeries_character_eq χ hs,LSeries_character_eq ψ hs,
     LSeries_character_eq (productCharacter χ ψ) hs]
   ring
+
+end
 
 lemma quadratic_residue_lower_of_no_root {q : ℕ} [NeZero q]
     {χ : DirichletCharacter ℂ q} (hχ : χ≠1) (hχ2 : χ^2=1)
@@ -305,10 +345,14 @@ lemma quadratic_residue_lower_of_no_root {q : ℕ} [NeZero q]
     (fun s hs => LSeries_zetaMul_eq χ hs) hv
     (by simpa using quadratic_LFunction_im hχ hχ2 (x:=1) zero_lt_one)
 
-lemma biquadratic_norm_bound {q r : ℕ} [NeZero q] [NeZero r]
-    {χ : DirichletCharacter ℂ q} {ψ : DirichletCharacter ℂ r}
-    (hχ : χ≠1) (hψ : ψ≠1) (hp : productCharacter χ ψ≠1)
-    {s : ℂ} (hs : s ∈ Metric.closedBall 2 (7/4:ℝ)) :
+section
+variable {q r : ℕ} [NeZero q] [NeZero r] {χ : DirichletCharacter ℂ q} {ψ : DirichletCharacter ℂ r} (hχ : χ≠1)
+include q r χ ψ hχ
+
+lemma biquadratic_norm_bound      
+       
+      (hψ : ψ≠1) (hp : productCharacter χ ψ≠1)
+     {s}  (hs : s ∈ Metric.closedBall 2 (7/4:ℝ)) :
     ‖χ.LFunction s*ψ.LFunction s*(productCharacter χ ψ).LFunction s‖≤
       16^3*((q:ℝ)+1)^2*((r:ℝ)+1)^2 := by
   have hq0 : (0:ℝ)≤q := Nat.cast_nonneg q
@@ -323,9 +367,9 @@ lemma biquadratic_norm_bound {q r : ℕ} [NeZero q] [NeZero r]
       · exact LFunction_norm_polynomial hψ hs
     _ ≤ _ := by nlinarith [mul_nonneg hq0 hr0]
 
-lemma biquadratic_residue_lower_of_root {q r : ℕ} [NeZero q] [NeZero r]
-    {χ : DirichletCharacter ℂ q} {ψ : DirichletCharacter ℂ r}
-    (hχ : χ≠1) (hχ2 : χ^2=1) (hψ : ψ≠1) (hψ2 : ψ^2=1)
+lemma biquadratic_residue_lower_of_root      
+       
+      (hχ2 : χ^2=1) (hψ : ψ≠1) (hψ2 : ψ^2=1)
     (hp : productCharacter ψ χ≠1) {β ε : ℝ}
     (hβ : 3/4≤β) (hβ1 : β<1) (hβε : 60*(1-β)≤ε)
     (hq : (12*(21*16^3*((r:ℝ)+1)^2))≤q+1) (hq1 : (2:ℝ)≤q+1)
@@ -334,9 +378,7 @@ lemma biquadratic_residue_lower_of_root {q r : ℕ} [NeZero q] [NeZero r]
       ‖ψ.LFunction 1‖*‖χ.LFunction 1‖*‖(productCharacter ψ χ).LFunction 1‖ := by
   let P := fun s => ψ.LFunction s*χ.LFunction s*(productCharacter ψ χ).LFunction s
   have hd : Differentiable ℂ P :=
-    ((DirichletCharacter.differentiable_LFunction hψ).mul
-      (DirichletCharacter.differentiable_LFunction hχ)).mul
-      (DirichletCharacter.differentiable_LFunction hp)
+    (by fun_prop)
   have hpow : ((q:ℝ)+1)^2≤((q:ℝ)+1)^4 :=
     pow_le_pow_right₀ (by linarith) (by norm_num)
   have hb : ∀ s ∈ Metric.closedBall (2:ℂ) (7/4:ℝ),
@@ -358,6 +400,8 @@ lemma biquadratic_residue_lower_of_root {q r : ℕ} [NeZero q] [NeZero r]
   have := hR.trans (Complex.re_le_norm (P 1))
   simpa only [P,norm_mul] using this
 
+end
+
 lemma quadratic_siegel_eventual {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1) :
     ∃ c Q₀ : ℝ, 0<c ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q),
       χ.IsPrimitive → χ≠1 → χ^2=1 → Q₀≤(q:ℝ)+1 → c*((q:ℝ)+1)^(-ε)≤‖χ.LFunction 1‖ := by
@@ -372,15 +416,14 @@ lemma quadratic_siegel_eventual {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1) :
       intro he
       apply DirichletCharacter.LFunction_apply_one_ne_zero hψ
       simpa [he] using hzero)
-    have hβ : 99/100≤β := hβ₀.trans hβI.1
+    
     have hβε : 60*(1-β)≤ε/2 := by dsimp [β₀] at hβI; linarith [hβI.1]
     obtain ⟨K,hK,hgrowth⟩ := LFunction_norm_small_power (by linarith : 0<ε/4)
       (by linarith : ε/4≤1/2)
     let D : ℝ := 3*((r:ℝ)+3)
     let U : ℝ := ‖ψ.LFunction 1‖*K*D^(ε/2)
     have hD : 0<D := by dsimp [D]; positivity
-    have hU : 0<U := by
-      exact mul_pos (mul_pos (norm_pos_iff.mpr (DirichletCharacter.LFunction_apply_one_ne_zero hψ)) hK)
+    have hU : 0<U := mul_pos (mul_pos (norm_pos_iff.mpr (DirichletCharacter.LFunction_apply_one_ne_zero hψ)) hK)
         (Real.rpow_pos_of_pos hD _)
     let c : ℝ := (1-β)/(2*(2-β))/U
     have hc : 0<c := div_pos (div_pos (by linarith) (by linarith)) hU
@@ -401,7 +444,7 @@ lemma quadratic_siegel_eventual {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1) :
     have hQ0 : 0<(q:ℝ)+1 := by positivity
     have he : 2*(ε/4)=ε/2 := by ring
     rw [he] at hb
-    have hbase : (((r+1)*q:ℕ):ℝ)+2≤((r:ℝ)+3)*((q:ℝ)+1) := by push_cast; nlinarith [Nat.cast_nonneg (α:=ℝ) q,Nat.cast_nonneg (α:=ℝ) r]
+    have hbase : (((r+1)*q:ℕ):ℝ)+2≤((r:ℝ)+3)*((q:ℝ)+1) := by push_cast; linarith
     have hb' : ‖(productCharacter ψ χ).LFunction 1‖≤K*D^(ε/2)*((q:ℝ)+1)^(ε/2) := by
       apply hb.trans
       simp only [norm_one]
@@ -447,14 +490,9 @@ lemma finite_positive_lower {ι : Type*} (S : Finset ι) (f : ι → ℝ)
   induction S using Finset.induction_on with
   | empty => exact ⟨1,zero_lt_one,by simp⟩
   | @insert a S ha ih =>
-    obtain ⟨c,hc,hcb⟩ := ih (fun i hi => hf i (Finset.mem_insert_of_mem hi))
-    refine ⟨min c (f a),lt_min hc (hf a (Finset.mem_insert_self _ _)),?_⟩
-    intro i hi
-    rcases Finset.mem_insert.mp hi with rfl|hi
-    · exact min_le_right _ _
-    · exact (min_le_left _ _).trans (hcb i hi)
+    grind
 
-lemma LFunction_one_finite_lower (N : ℕ) :
+lemma LFunction_one_finite_lower  N  :
     ∃ c : ℝ, 0<c ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q),
       q≤N → χ≠1 → c≤‖χ.LFunction 1‖ := by
   classical
@@ -469,7 +507,7 @@ lemma LFunction_one_finite_lower (N : ℕ) :
     refine ⟨min c d,lt_min hc hd,?_⟩
     intro q _ χ hq hχ
     rcases Nat.le_succ_iff_eq_or_le.mp hq with rfl|hq
-    · exact (min_le_right _ _).trans (hdb χ (by simp [hχ]))
+    · simp_all
     · exact (min_le_left _ _).trans (hcb q χ hq hχ)
 
 theorem quadratic_siegel {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1) :

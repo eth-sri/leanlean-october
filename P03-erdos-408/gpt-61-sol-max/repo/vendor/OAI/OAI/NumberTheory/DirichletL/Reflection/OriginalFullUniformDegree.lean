@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalFull
 public import OAI.NumberTheory.DirichletL.Reflection.RetainedBudgetUniformDegree
@@ -11,24 +12,20 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 private lemma mul_chain_add_one (a b c d e f : ℝ)
     (ha : 0 ≤ a) (hc : 0 ≤ c) (hd : 0 ≤ d) (he : 0 ≤ e) (hf : 0 ≤ f) :
     a*b*c*d*e*f ≤ a*(b+1)*c*d*e*f :=
-  mul_le_mul_of_nonneg_right
-    (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left (le_add_of_nonneg_right zero_le_one) ha) hc) hd) he) hf
+  (by bound)
 
 theorem original_sector_full_energy_uniform_degree
-    (Adecay : ℕ) (ε : ℝ) (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (ρ : ℝ) (hρ : 0<ρ) (η : ℝ) (hηpos : 0<η)
-    (κ δ Lscale Lpool : ℝ) (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool) :
+    (Adecay : ℕ)  ε  (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     ρ  (hρ : 0<ρ)  η  (hηpos : 0<η)
+     κ δ Lscale Lpool  (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool) :
     ∃ (degree degreeTail : ℕ), ∀ {Nlevel a c₀ : Eis} {mode : Bool}
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c₀ mode)) (hc₀ : c₀≠0)
     (_hNlevel : (9:Eis)*c₀∣Nlevel)
@@ -87,7 +84,7 @@ theorem original_sector_full_energy_uniform_degree
   obtain ⟨Cm,Z₀,hCm,hZ₀,henergy⟩ := hu (Nlevel:=Nlevel) (a:=a) (c₀:=c₀) (mode:=mode) s hc₀ hNlevel hbase hac
   let Cshape := ‖fixedRadialCoefficientScalar‖*‖s.stratumShapeFactor c₀‖
   let Ctail := 6*Cshape*Ct+1
-  have hshape : 0≤Cshape := by dsimp [Cshape];positivity
+  
   have hCtail : 0<Ctail := by dsimp [Ctail];positivity
   refine ⟨2*Cshape^2*Cm+1,Ctail,Z₀,by positivity,hCtail,hZ₀,?_⟩
   intro σ _ J I F B R Q₀ hJ hI hF hB hR hpower hmask A
@@ -153,7 +150,7 @@ theorem original_sector_full_energy_uniform_degree
       dsimp only [Et]
       have hp : 0≤(1+‖θ‖)^degree*Z^(F₀-3*cstar/16-O₀/2) := by positivity
       nlinarith only [hp]
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

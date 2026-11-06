@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialCanonicalState
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalState
@@ -15,15 +15,15 @@ open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfi
 open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
 open InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry
 open InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
-local notation "O"=>ActualEisensteinCubic.O
-local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
-variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
+
+
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 
 theorem live_widths_nonnegative
-    (hpr:∀i,λ₀^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
+    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
     (ψ:Fin 4→ℝ→ℂ)(lo hi:Fin 4→ℝ)
     (hψ:∀i,Function.support (ψ i)⊆Set.Icc (lo i) (hi i))
     (Z D B v θ H η:ℝ)(hZ:1<Z)(hhi:∀i,hi i≤Z^η)
@@ -62,14 +62,14 @@ theorem live_widths_nonnegative
 include hp in
 omit [∀i,(Ideal.span {p i}).IsMaximal] in
 theorem retained_full_puncture
-    (hpr:∀i,λ₀^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
+    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
     (ψ:Fin 4→ℝ→ℂ)(D v H aC bC ad bd Z B θ η G:ℝ)(hZ:1<Z)
     (hC:Function.support (ψ 0)⊆Set.Icc aC bC)
     (hd:Function.support (ψ 1)⊆Set.Icc ad bd)
     (hCup:bC≤Z^η)(hdlo:Z^(-η)≤ad)
     (hdiv:∀x∈S,x.divisor⊆x.common)
-    (j:O)(hj:j≠0)(hnj:(Ideal.absNorm (Ideal.span {j}):ℝ)≤Z^(G+η))
-    {t:Ideal O}(ht:t∈quotientSet p (windowSource p S ψ Z D B v θ H)):
+    (j:ActualEisensteinCubic.O)(hj:j≠0)(hnj:(Ideal.absNorm (Ideal.span {j}):ℝ)≤Z^(G+η))
+    {t:Ideal ActualEisensteinCubic.O}(ht:t∈quotientSet p (windowSource p S ψ Z D B v θ H)):
     j*primaryGenerator t≠0 ∧ 0≤fullPunctureWidth Z t j ∧
     ‖eisEmbedding (j*primaryGenerator t)‖^2=Z^(fullPunctureWidth Z t j) ∧
     fullPunctureWidth Z t j≤B-θ+G+3*η := by
@@ -87,6 +87,6 @@ theorem retained_full_puncture
 
 end SevenEighths.InverseInitialCanonicalState
 
-end
+
 
 end OAI

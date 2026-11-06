@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorNormalized
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorDyadic
@@ -14,10 +15,10 @@ open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
 
-def sourceDyadExponent (Z : ℝ) (k : ℕ) : ℝ := Real.logb Z ((2:ℝ)^k)
-def sourceDyadConductor (Z margin : ℝ) (k : ℕ) : ℝ := sourceDyadExponent Z k+2*margin
+def sourceDyadExponent (Z : ℝ) (k : ℕ)  := Real.logb Z ((2:ℝ)^k)
+def sourceDyadConductor (Z margin : ℝ) (k : ℕ)  := sourceDyadExponent Z k+2*margin
 
-lemma sourceDyad_scale {Z : ℝ} (hZ : 1<Z) (k : ℕ) :
+lemma sourceDyad_scale  {Z}  (hZ : 1<Z)  k  :
     Z^(sourceDyadExponent Z k)=(2:ℝ)^k :=
   Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' (by positivity)
 
@@ -40,7 +41,7 @@ lemma canonical_dyad_cost (loss : ℝ) (hl : 0<loss) :
       rw [←Real.rpow_mul hZp.le]
       exact Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)
 
-lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
+lemma sourceDyad_geometry_eventually  dmin dmax margin vmax 
     (_hdmin : 0<dmin) (hdmin1 : dmin<1/100) (hmargin : 0<margin)
     (hdmax : vmax+2*margin≤dmax) :
     ∀ᶠZ : ℝ in atTop,∀rows : Finset FreeRow,
@@ -60,7 +61,7 @@ lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
   have hur := (Finset.mem_inter.mp hu).1
   have hud := mem_dyadicRows.mp (Finset.mem_inter.mp hu).2
   have hlow : (2:ℝ)^k≤rowNorm u := by simpa only [one_mul] using hud.2.1
-  have hhigh : rowNorm u<2*(2:ℝ)^k := by simpa only [one_mul] using hud.2.2
+  
   have hv0 : 0≤sourceDyadExponent Z k := by
     apply (Real.rpow_le_rpow_left_iff hZ).mp
     rw [sourceDyad_scale hZ,Real.rpow_zero]

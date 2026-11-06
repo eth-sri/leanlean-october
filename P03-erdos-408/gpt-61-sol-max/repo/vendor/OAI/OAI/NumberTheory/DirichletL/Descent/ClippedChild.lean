@@ -15,13 +15,13 @@ open MeasureTheory FourierBridge
 namespace SevenEighths.InverseMoment
 open InverseInitialClippedColumns JointLogSeparation InverseAmbientProfileTower
 open InverseSecondSourceBlocks
-local notation "O"=>ActualEisensteinCubic.O
 
-def secondChildHeight (right:Bool)(t:Ambient (Fin 6)):ℝ :=
+
+def secondChildHeight (right:Bool)(t:Ambient (Fin 6)) :=
   if right then profileHeight secondLeftSlope secondRightSlope secondKernelSlope t.1 t.2 5
   else -profileHeight secondLeftSlope secondRightSlope secondKernelSlope t.1 t.2 4
 
-theorem second_child_height_budget (J:ℕ)(right:Bool)(t:Ambient (Fin 6)):
+theorem second_child_height_budget  J  right  t :
     (1+‖secondChildHeight right t‖)^J≤tripleHeight J t.1*coordinateHeight J t.2:=by
   cases right
   · have h:=pow_le_pow_left₀ (by positivity : 0≤1+‖inheritedLeft 4 t‖) (inheritedLeft_bound 4 t) J
@@ -34,17 +34,17 @@ theorem second_child_height_budget (J:ℕ)(right:Bool)(t:Ambient (Fin 6)):
       ambientWeight,tripleHeight,coordinateHeight] using h
 
 theorem canonical_actual_child_uniform
-    (W:ℝ→ℂ)(lo hi b:ℝ)(hlo:0<lo)(hb:1≤b)
+     W (lo hi b:ℝ)(hlo:0<lo)(hb:1≤b)
     (hs:Function.support W⊆Set.Icc lo hi)(hW:ContDiff ℝ ∞ W):
     ∃(wFresh:𝓢(ℝ,ℂ))(af bf:ℝ),0<af ∧ af≤bf ∧ HasCompactSupport (wFresh:ℝ→ℂ) ∧
       tsupport (wFresh:ℝ→ℂ)⊆Set.Icc af bf ∧
       ∀J:ℕ,∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-      (labels:Finset (Ideal O))(rows:Finset O)(D:Ideal O→ℝ)(_hD:∀f∈labels,0≤D f)
+      (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+      (labels:Finset (Ideal ActualEisensteinCubic.O))(rows:Finset ActualEisensteinCubic.O)(D:Ideal ActualEisensteinCubic.O→ℝ)(_hD:∀f∈labels,0≤D f)
       (Z X F E:ℝ)(d:BlockIndex)(right:Bool)(t:Ambient (Fin 6)),
       1<Z→0<X→scales d 0*scales d 2≤b*X→0≤E→
       (∀s,normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows D

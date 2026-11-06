@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.RootReplacement.Bonferroni
 
@@ -30,34 +31,46 @@ open Finset
 variable {K : ℕ}
 
 /-- The indices `(i₁, i₂, i₃) ∈ [0, 15n) × [0, n) × [0, n)` of the cubes. -/
-def cubeIndices (n : ℕ) : Finset (ℕ × ℕ × ℕ) := range (15 * n) ×ˢ range n ×ˢ range n
+def cubeIndices (n : ℕ)  := range (15 * n) ×ˢ range n ×ˢ range n
 
 /-- The integer roots of the cube `i`:
 `u/U ∈ [1 + i₁/n, 1 + (i₁+1)/n)`, `v/V ∈ [1 + i₂/n, 1 + (i₂+1)/n)`, `c/u ∈ [i₃/n, (i₃+1)/n)`. -/
-def cubeRoots (U V : ℝ) (n : ℕ) (i : ℕ × ℕ × ℕ) : Finset (ℕ × ℕ) :=
+def cubeRoots (U V : ℝ) (n : ℕ) (i : ℕ × ℕ × ℕ)  :=
   boxRoots U V (1 + i.1 / n) (1 + (i.1 + 1) / n) (1 + i.2.1 / n) (1 + (i.2.1 + 1) / n)
     (i.2.2 / n) ((i.2.2 + 1) / n)
 
 /-- The positions on the upper faces `u ≥ 16U` or `v ≥ 2V`, which lie in no cube. -/
-def edgeRoots (d : Data K) (Y d₀ : ℝ) : Finset (ℕ × ℕ) :=
+def edgeRoots (d : Data K) (Y d₀ : ℝ)  :=
   (positions d Y d₀).filter fun P => 16 * (d₀ * Y * d.Hm) ≤ P.1 ∨ 2 * d.Hn ≤ P.2
 
+section
+variable {t : ℝ} (ht : 0 ≤ t) {U u : ℝ} (hU : 0 < U) (hu : U ≤ u) {n : ℕ} (hn : 0 < n) {k : ℕ}
+
+
+include ht hn in
 /-- `⌊t n⌋₊ = k` if and only if `t ∈ [k/n, (k+1)/n)`, for `t ≥ 0`. -/
-theorem floor_mul_natCast_eq_iff {t : ℝ} (ht : 0 ≤ t) {n : ℕ} (hn : 0 < n) {k : ℕ} :
+theorem floor_mul_natCast_eq_iff           :
     ⌊t * n⌋₊ = k ↔ (k : ℝ) / n ≤ t ∧ t < (k + 1) / n := by
   have hn' : (0 : ℝ) < n := by exact_mod_cast hn
   rw [Nat.floor_eq_iff (by positivity), div_le_iff₀ hn', lt_div_iff₀ hn']
 
+include hU hu hn in
 /-- For `u ≥ U > 0`, `⌊(u/U - 1) n⌋₊ = k` if and only if `u/U ∈ [1 + k/n, 1 + (k+1)/n)`. -/
-theorem floor_div_sub_one_mul_eq_iff {U u : ℝ} (hU : 0 < U) (hu : U ≤ u) {n : ℕ} (hn : 0 < n)
-    {k : ℕ} : ⌊(u / U - 1) * n⌋₊ = k ↔ (1 + k / n) * U ≤ u ∧ u < (1 + (k + 1) / n) * U := by
+theorem floor_div_sub_one_mul_eq_iff          
+      : ⌊(u / U - 1) * n⌋₊ = k ↔ (1 + k / n) * U ≤ u ∧ u < (1 + (k + 1) / n) * U := by
   rw [floor_mul_natCast_eq_iff (sub_nonneg.2 ((one_le_div hU).2 hu)) hn, le_sub_iff_add_le,
     sub_lt_iff_lt_add, le_div_iff₀ hU, div_lt_iff₀ hU, add_comm ((k : ℝ) / n) 1,
     add_comm (((k : ℝ) + 1) / n) 1]
 
+end
+
+section
+variable {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist K C₀) (x : ℝ) (d : Data K) {U V Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm) (hV : 0 < d.Hn) {n : ℕ} {i : ℕ × ℕ × ℕ} {P : ℕ × ℕ}
+
+
 /-- The roots of the cube `i` are the primitive `(u, v)` with `u/U`, `v/V` and `c/u` in the
 three intervals of the cube. -/
-theorem mem_cubeRoots {U V : ℝ} {n : ℕ} {i : ℕ × ℕ × ℕ} {P : ℕ × ℕ} :
+theorem mem_cubeRoots         :
     P ∈ cubeRoots U V n i ↔ Nat.Coprime P.1 P.2 ∧
       ((1 + i.1 / n) * U ≤ P.1 ∧ (P.1 : ℝ) < (1 + (i.1 + 1) / n) * U) ∧
       ((1 + i.2.1 / n) * V ≤ P.2 ∧ (P.2 : ℝ) < (1 + (i.2.1 + 1) / n) * V) ∧
@@ -73,21 +86,22 @@ theorem mem_cubeRoots {U V : ℝ} {n : ℕ} {i : ℕ × ℕ × ℕ} {P : ℕ × 
 
 /-- The positions off the upper faces are the primitive `(u, v)` with `u ∈ [U, 16U)` and
 `v ∈ [V, 2V)`. -/
-theorem mem_positions_filter_not (d : Data K) {Y d₀ : ℝ} {P : ℕ × ℕ} :
+theorem mem_positions_filter_not       :
     P ∈ (positions d Y d₀).filter (fun P => ¬(16 * (d₀ * Y * d.Hm) ≤ P.1 ∨ 2 * d.Hn ≤ P.2)) ↔
       Nat.Coprime P.1 P.2 ∧ (d₀ * Y * d.Hm ≤ P.1 ∧ (P.1 : ℝ) < 16 * (d₀ * Y * d.Hm)) ∧
         (d.Hn ≤ P.2 ∧ (P.2 : ℝ) < 2 * d.Hn) := by
   simp only [positions, mem_filter, mem_product, mem_Icc, not_or, not_le]
   constructor
   · rintro ⟨⟨⟨⟨h₁, -⟩, h₂, -⟩, hc⟩, h₃, h₄⟩
-    exact ⟨hc, ⟨Nat.ceil_le.1 h₁, h₃⟩, Nat.ceil_le.1 h₂, h₄⟩
+    aesop
   · rintro ⟨hc, ⟨h₁, h₃⟩, h₂, h₄⟩
     exact ⟨⟨⟨⟨Nat.ceil_le.2 h₁, Nat.le_floor h₃.le⟩, Nat.ceil_le.2 h₂, Nat.le_floor h₄.le⟩, hc⟩,
       h₃, h₄⟩
 
+include hU hV in
 /-- Every position lies in exactly one cube or on an upper face. -/
-theorem sum_positions_eq (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm) (hV : 0 < d.Hn)
-    {n : ℕ} (hn : 1 ≤ n) (f : ℕ × ℕ → ℂ) :
+theorem sum_positions_eq        
+      (hn : 1 ≤ n) (f : ℕ × ℕ → ℂ) :
     ∑ P ∈ positions d Y d₀, f P =
       ∑ i ∈ cubeIndices n, ∑ P ∈ cubeRoots (d₀ * Y * d.Hm) d.Hn n i, f P +
         ∑ P ∈ edgeRoots d Y d₀, f P := by
@@ -168,8 +182,9 @@ theorem sum_positions_eq (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm) 
     · calc (P.2 : ℝ) < (1 + (i.2.1 + 1) / n) * d.Hn := hv₂
         _ ≤ 2 * d.Hn := mul_le_mul_of_nonneg_right (by linarith) hV.le
 
+include hU hV in
 /-- The upper faces carry at most `16U + 2V + 2` positions. -/
-theorem card_edgeRoots_le (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm) (hV : 0 < d.Hn) :
+theorem card_edgeRoots_le         :
     ((edgeRoots d Y d₀).card : ℝ) ≤ 16 * (d₀ * Y * d.Hm) + 2 * d.Hn + 2 := by
   classical
   set U := d₀ * Y * d.Hm with hUdef
@@ -206,7 +221,7 @@ theorem card_edgeRoots_le (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm)
     hIcc (by linarith : U ≤ 16 * U) (by linarith : (0 : ℝ) ≤ 16 * U)]
 
 /-- The line average of a function bounded by `1` is bounded by `1`. -/
-theorem norm_lineAverage_le_one (x : ℝ) (d : Data K) {G : (ℕ → ℕ) → ℂ} (hG : ∀ ℓ, ‖G ℓ‖ ≤ 1) :
+theorem norm_lineAverage_le_one      {G}  (hG : ∀ ℓ, ‖G ℓ‖ ≤ 1) :
     ‖lineAverage x d G‖ ≤ 1 := by
   rw [lineAverage, norm_mul, norm_inv, Complex.norm_natCast]
   rcases Nat.eq_zero_or_pos (lineAssignments x d).card with h | h
@@ -218,10 +233,11 @@ theorem norm_lineAverage_le_one (x : ℝ) (d : Data K) {G : (ℕ → ℕ) → �
       _ = 1 := by
           rw [sum_const, nsmul_eq_mul, mul_one, inv_mul_cancel₀ (by exact_mod_cast h.ne')]
 
+include hE x d in
 /-- `RootEquidist` for `G ≡ 1`: a box at scales `U, V ≥ 2` has at most
 `UV (|c₂| |box| + C₀ min(U, V)^{-1/5})` roots. -/
-theorem card_boxRoots_le {C₀ : ℝ} (hE : RootEquidist K C₀) (x : ℝ) (d : Data K) {U V : ℝ}
-    (hU : 2 ≤ U) (hV : 2 ≤ V) {a₁ b₁ a₂ b₂ a₃ b₃ : ℝ} (ha₁ : 1 ≤ a₁) (hab₁ : a₁ ≤ b₁)
+theorem card_boxRoots_le          
+    (hU : 2 ≤ U) (hV : 2 ≤ V)  {a₁ b₁ a₂ b₂ a₃ b₃}  (ha₁ : 1 ≤ a₁) (hab₁ : a₁ ≤ b₁)
     (hb₁ : b₁ ≤ 16) (ha₂ : 1 ≤ a₂) (hab₂ : a₂ ≤ b₂) (hb₂ : b₂ ≤ 2) (ha₃ : 0 ≤ a₃)
     (hab₃ : a₃ ≤ b₃) (hb₃ : b₃ ≤ 1) :
     ((boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃).card : ℝ) ≤
@@ -235,8 +251,7 @@ theorem card_boxRoots_le {C₀ : ℝ} (hE : RootEquidist K C₀) (x : ℝ) (d : 
     (((primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) : ℝ) : ℂ) *
       lineAverage x d fun _ => 1)
   rw [Complex.norm_natCast, norm_mul, Complex.norm_real, Real.norm_eq_abs] at hs
-  have hvol : 0 ≤ (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) :=
-    mul_nonneg (mul_nonneg (sub_nonneg.2 hab₁) (sub_nonneg.2 hab₂)) (sub_nonneg.2 hab₃)
+  
   have habs : |primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃)| =
       U * V * (|primitiveDensity| * ((b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃))) := by
     rw [show primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) =
@@ -250,13 +265,14 @@ theorem card_boxRoots_le {C₀ : ℝ} (hE : RootEquidist K C₀) (x : ℝ) (d : 
     mul_le_of_le_one_right (by positivity) hl
   linarith
 
+include hC₀ hE in
 /-- **Root replacement for one configuration.** Let `A` be an indicator bounded by `1` that
 is constant on the roots of each cube outside `bad`, and `F = ∏_p λ_p` a product of line
 factors in `[0, 1]`. Then the normalized root sum of `A · F` over the positions is the
 Riemann sum `c₂ n⁻³ ∑_Q A(ϱ_Q) 𝔼_ℓ F` at the lower corners, up to the box errors on the good
 cubes, the bad cubes, and the upper faces. -/
-theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist K C₀) (x : ℝ)
-    (d : Data K) {Y d₀ : ℝ} (hU : 2 ≤ d₀ * Y * d.Hm) (hV : 2 ≤ d.Hn) {n : ℕ} (hn : 1 ≤ n)
+theorem norm_sum_positions_sub_le        
+        (hU : 2 ≤ d₀ * Y * d.Hm) (hV : 2 ≤ d.Hn) {n : ℕ} (hn : 1 ≤ n)
     (A : ℝ → ℝ → ℝ → ℝ) (hA : ∀ u v r, |A u v r| ≤ 1) (lam : ℕ → ℕ → ℝ)
     (hlam : ∀ p ∈ bandPrimes x d, ∀ l, 0 ≤ lam p l ∧ lam p l ≤ 1) (act : Finset ℕ)
     (hact : act ⊆ bandPrimes x d) (T : ℕ) {pmax : ℝ} (hpmax₁ : 1 ≤ pmax)
@@ -285,10 +301,10 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
   set V := d.Hn with hVdef
   set L := lineAverage x d (fun ℓ => ∏ p ∈ bandPrimes x d, (lam p (ℓ p) : ℂ)) with hLdef
   set m := min U V ^ (-(1 / 5 : ℝ)) with hm
-  have hm₀ : 0 ≤ m := Real.rpow_nonneg (le_min hU₀.le hV₀.le) _
+  
   have hc₂ : |primitiveDensity| ≤ 2 := RootResidue.abs_primitiveDensity_le
   have hUV : 0 < U * V := mul_pos hU₀ hV₀
-  have hn₃ : (0 : ℝ) < (n : ℝ) ^ 3 := by positivity
+  
   -- step: the factors are bounded by `1`
   have hF₁ : ∀ ℓ : ℕ → ℕ, ‖∏ p ∈ bandPrimes x d, (lam p (ℓ p) : ℂ)‖ ≤ 1 := fun ℓ => by
     rw [norm_prod]
@@ -461,5 +477,7 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
         (U * V)⁻¹ * ((edgeRoots d Y d₀).card : ℝ) := by
         rw [sum_filter_add_sum_filter_not]
     _ ≤ _ := by linarith
+
+end
 
 end Erdos408.OneSided

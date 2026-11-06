@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedFirstBounds
 public import OAI.NumberTheory.DirichletL.PrimeRows.PrincipalMask
@@ -9,13 +10,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
-theorem nonprincipal_first_growth (χ : Character) (hχ : χ.residue≠1) :
+
+theorem nonprincipal_first_growth  χ  (hχ : χ.residue≠1) :
     ∃C : ℝ,0<C ∧ ∀s : ℂ,-(1/100:ℝ)≤s.re →
       ‖HeckeOrigin.continued χ s‖≤C*(3+|s.im|)^2 := by
   obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
@@ -44,8 +45,8 @@ theorem nonprincipal_first_growth (χ : Character) (hχ : χ.residue≠1) :
     _ = C*(3+|s.im|)^2 := by dsimp [C];ring
     _ ≤ (1+C)*(3+|s.im|)^2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg _)
 
-theorem calibrated_numerator_first_growth (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (u : FreeRow) (hu : u.val≠1) :
+theorem calibrated_numerator_first_growth (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
+     hmax   u  (hu : u.val≠1) :
     ∃C : ℝ,0<C ∧ ∀s : ℂ,-(1/100:ℝ)≤s.re →
       ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
         HeckeOrigin.continued (rowCharacter S hS.prime u) s‖≤C*(3+|s.im|)^2 := by
@@ -63,9 +64,9 @@ theorem calibrated_numerator_first_growth (S : Finset (Ideal O)) (hS : SourceExc
       (hbound s hs)
 
 theorem calibrated_physicalRow_first_w_growth (eps : ℝ)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
-    (hmax : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S)
-    (η : Character) (u : FreeRow) (hu : u.val≠1) (x z : ℂ) (l : ℝ)
+     S   hS  (hfirst : FirstTail eps S)
+     hmax   T   hT 
+     η   u  (hu : u.val≠1)  x z   l 
     (hx : (51/100:ℝ)≤x.re) (hl : -(1/100:ℝ)≤l) (hz : (17/50:ℝ)≤z.re)
     (hxw : 1+eps≤x.re+l) :
     ∃C : ℝ,0<C ∧ ∀w : ℂ,l≤w.re →
@@ -73,7 +74,7 @@ theorem calibrated_physicalRow_first_w_growth (eps : ℝ)
         physicalCompensatedRow S hS T hT η u x w z‖≤C*(3+|w.im|)^2 := by
   obtain ⟨Cn,hCn,hn⟩ := calibrated_numerator_first_growth S hS hmax u hu
   obtain ⟨Ch,hCh,hh⟩ := unselectedCorrection_first_subpower 1 (by norm_num)
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N : ℝ := ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)
   let A : T→ℝ := fun P=>selectedFirstBound P.val.val.absNorm x.re
   let L : ℝ := ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖*
     ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖
@@ -82,8 +83,7 @@ theorem calibrated_physicalRow_first_w_growth (eps : ℝ)
     selectedFirstBound_nonneg (P.val.val.absNorm : ℝ) x.re (Nat.cast_nonneg _)
   have hprod : 0≤∏P:T,A P := Finset.prod_nonneg (fun P _=>hA P)
   have hC : 0≤C :=
-    mul_nonneg (mul_nonneg (mul_nonneg (by dsimp [L]; positivity) hCn.le)
-      (mul_nonneg hCh.le (Nat.cast_nonneg _))) hprod
+    (by positivity)
   refine ⟨1+C,by linarith,?_⟩
   intro w hw
   have hn' := hn w (hl.trans hw)
@@ -125,6 +125,6 @@ theorem calibrated_physicalRow_first_w_growth (eps : ℝ)
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

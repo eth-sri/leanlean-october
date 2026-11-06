@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Analytic
 public import Erdos408.Extraction.Allocation.Budget
@@ -26,10 +27,15 @@ namespace Erdos408
 
 open Finset Real
 
+section
+variable {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < cw) (hcw₁ : cw ≤ (1 - q) ^ 2 / 3) {K : ℕ} {CN c Ch κ CΦ γ : ℝ} {M : ℕ → ℝ} (hκ : 1 < κ) (hc : 0 < c) {c₁ c₂ c' C₃ C₅ Cs : ℝ} (hc₁ : 0 < c₁) (hc₁' : c₁ ≤ 1 / 4) {x : ℝ} {k j : ℕ} (hbody : TwoSidedBody q (1 / 2) c₂ 1 (1 / 2) 3 (11 / 100) (39 / 200) K (max CN 0) c k
+      (C₅ + 1 + 2 * c') κ (max CΦ 0) (fun r => κ * M r + r * M (r - 1)) (5 + c') Cs x)
+
+include hq hq₁ hcw hcw₁ hκ hc in
 /-- The endpoint bound at one scale: `|Φ(w/x) P(w) (f_𝔟 - C_𝔟)(w)| ≤ B_d`. -/
-lemma abs_endpoint_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < cw)
-    (hcw₁ : cw ≤ (1 - q) ^ 2 / 3) {K : ℕ} {CN c κ CΦ : ℝ} {M : ℕ → ℝ} (hκ : 1 < κ)
-    (hc : 0 < c) {x : ℝ} {k : ℕ} (hbands : BandFacts K CN x)
+lemma abs_endpoint_le_at        
+             
+          (hbands : BandFacts K CN x)
     (hmassband : ∀ a : ℝ, 11 / 100 ≤ a → 1 / 2 ≤ harmonicMass (band x a))
     (hH : ∑ p ∈ primesIoc (x ^ (c / logLog x ^ 20)) x, (1 : ℝ) / p ≤ logLog x)
     (hx : 1 < x) (hxκ : κ ≤ x) (hT : 1 ≤ logLog x) (hk : k ≤ 2) {u v : Fin (k + 1) → ℝ}
@@ -65,7 +71,7 @@ lemma abs_endpoint_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < cw
     _ = _ := by ring
 
 /-- The number of terms of the signed expansion at one scale. -/
-lemma card_mul_card_le_at {c₂ x : ℝ} {K : ℕ} {CN : ℝ} (hgroups : GroupFacts x)
+lemma card_mul_card_le_at    {K}   {CN}  (hgroups : GroupFacts x)
     (hbands : BandFacts K CN x)
     (hterms : (4 : ℝ) ^ (2 * logLog x) *
         (2 ^ K * (2 : ℝ) ^ ((K : ℝ) + max CN 0 * logLogLog x)) ≤ Real.log x ^ (4 : ℝ)) :
@@ -99,12 +105,12 @@ lemma card_mul_card_le_at {c₂ x : ℝ} {K : ℕ} {CN : ℝ} (hgroups : GroupFa
         gcongr
     _ ≤ _ := hterms
 
+include hq hq₁ hcw hcw₁ hκ hc₁ hc₁' hbody in
 /-- The signed expansion at one scale: `L^4` terms of size `x C* L^{-5-c'}`. -/
-lemma abs_expansion_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < cw)
-    (hcw₁ : cw ≤ (1 - q) ^ 2 / 3) {K : ℕ} {CN c κ CΦ γ : ℝ} {M : ℕ → ℝ} (hκ : 1 < κ)
-    {c₁ c₂ c' C₅ Cs : ℝ} (hc₁ : 0 < c₁) (hc₁' : c₁ ≤ 1 / 4) {x : ℝ} {k j : ℕ}
-    (hbody : TwoSidedBody q (1 / 2) c₂ 1 (1 / 2) 3 (11 / 100) (39 / 200) K (max CN 0) c k
-      (C₅ + 1 + 2 * c') κ (max CΦ 0) (fun r => κ * M r + r * M (r - 1)) (5 + c') Cs x)
+lemma abs_expansion_le_at        
+             
+             
+     
     (hgroups : GroupFacts x) (hbands : BandFacts K CN x) (hx : 1 < x) (hT : 1 ≤ logLog x)
     (hγ : 1 ≤ x ^ γ) (hj1 : 1 ≤ j)
     (hterms : (4 : ℝ) ^ (2 * logLog x) *
@@ -200,12 +206,12 @@ lemma card_squares_le_at {x κ c' C₅ : ℝ} (hgroups : GroupFacts x) (hx : 1 <
     _ ≤ (κ * x + 1) * e * (6 * T) := mul_le_mul_of_nonneg_left hsum (by positivity)
     _ ≤ _ := hsq
 
+include hq hq₁ hcw hcw₁ hκ hc hc₁ hc₁' hbody in
 /-- E6–E8 at one large `x`. -/
-theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < cw)
-    (hcw₁ : cw ≤ (1 - q) ^ 2 / 3) {K : ℕ} {CN c Ch κ CΦ : ℝ} {M : ℕ → ℝ} (hκ : 1 < κ)
-    (hc : 0 < c) {c₁ c₂ c' C₃ C₅ Cs : ℝ} (hc₁ : 0 < c₁) (hc₁' : c₁ ≤ 1 / 4) {x : ℝ} {k j : ℕ}
-    (hbody : TwoSidedBody q (1 / 2) c₂ 1 (1 / 2) 3 (11 / 100) (39 / 200) K (max CN 0) c k
-      (C₅ + 1 + 2 * c') κ (max CΦ 0) (fun r => κ * M r + r * M (r - 1)) (5 + c') Cs x)
+theorem abs_proxySum_le_at        
+             
+               
+     
     (hgroups : GroupFacts x) (hbands : BandFacts K CN x)
     (hmassband : ∀ a : ℝ, 11 / 100 ≤ a → 1 / 2 ≤ harmonicMass (band x a))
     (hH : ∑ p ∈ primesIoc (x ^ (c / logLog x ^ 20)) x, (1 : ℝ) / p ≤ logLog x)
@@ -220,7 +226,7 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
       C₃ * (x / Real.log x) * Real.log x ^ (-(2 * c')))
     (hcore : ∑ w ∈ Icc 1 ⌊κ * x⌋₊, proxyCore x (presieveExponent c Ch x) j (w + 1) ^ 2 ≤
       x * Real.log x ^ C₅)
-    (hk : k ≤ 2) {u v : Fin (k + 1) → ℝ} {B : (Fin k → ℕ) → ℝ} {Φ : ℝ → ℝ}
+    (hk : k ≤ 2) {u v : Fin (k + 1) → ℝ} {B : (Fin k → ℕ) → ℝ}  {Φ} 
     (hadm : AdmissibleSlots c x u v) (hB : ∀ Q, 0 ≤ B Q ∧ B Q ≤ 1)
     (hΦ : IsCutoff κ CΦ M x Φ) (hj : 2 ≤ j) :
     |proxySum q cw K CN x (presieveExponent c Ch x) κ j Φ u v B| ≤
@@ -287,7 +293,7 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
   have hmainb := abs_expansion_le_at hq hq₁ hcw hcw₁ hκ hc₁ hc₁' hbody hgroups hbands hx hT hγ
     hj1 hterms hadm hB hΦ (j := j)
   set X := x / L * L ^ (-c') with hX
-  have hX0 : 0 ≤ X := by positivity
+  
   have hrp : ∀ a b : ℝ, L ^ a * L ^ b = L ^ (a + b) := fun a b => (rpow_add hL a b).symm
   have hXe : ∀ a : ℝ, a = -c' - 1 → x * L ^ a = X := by
     intro a ha
@@ -347,6 +353,8 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
   -- combine
   calc _ ≤ |Cs| * X + X + X + |C₃| * X := by linarith
     _ = (|Cs| + |C₃| + 2) * (x / L) * L ^ (-c') := by rw [hX]; ring
+
+end
 
 
 end Erdos408

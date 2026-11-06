@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstAllocationGaussEnergy
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildInput
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocationCost
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
@@ -16,34 +17,34 @@ open CenteredMomentFirstAllocationGaussEnergy CenteredMomentCommonAllocationSum
 open CenteredMomentSourceLiveColumn CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentSourceMass
 open CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
-variable {ι : Type*} [Fintype ι]
-local instance firstAllocationControlDecidableEq {κ : Type*} : DecidableEq κ := Classical.decEq _
 
-lemma frozen_live_control (B : Tuple ι) (M : ι→ℝ) :
+variable {ι : Type*} [Fintype ι]
+
+
+lemma frozen_live_control (B : Tuple ι)  M  :
     frozenControl B M * (∏i : liveIndices B,M i.val) = ∏i,M i := by
   rw [Finset.prod_coe_sort (liveIndices B) M]
   unfold frozenControl liveIndices
   rw [mul_comm]
   exact Finset.prod_filter_mul_prod_filter_not Finset.univ (fun i=>B (Sum.inl i)=1) M
 
-lemma frozen_child_control (s : Input ι) (C R : Ideal O)
-    (B : actualAllocations s.pools C) (τ : HeckeFamily.Character) (t : ℝ) :
+lemma frozen_child_control (s : Input ι)  C R 
+     B   τ   t  :
     (frozenControl B.val s.M)^2 * (∏i,(child s C R B τ t).M i)^2 = (∏i,s.M i)^2 := by
   rw [←mul_pow]
-  exact congrArg (fun x:ℝ=>x^2) (frozen_live_control B.val s.M)
+  solve_by_elim [frozen_live_control]
 
-lemma allocated_control_sum (s : Input ι) (C R : Ideal O)
-    (τ : HeckeFamily.Character) (t : ℝ) :
+lemma allocated_control_sum (s : Input ι)  C R 
+     τ   t  :
     (∑B : actualAllocations s.pools C,
       (frozenControl B.val s.M)^2 * (∏i,(child s C R B τ t).M i)^2) =
       ((actualAllocations s.pools C).card:ℝ) * (∏i,s.M i)^2 := by
   simp only [frozen_child_control,Finset.sum_const,Finset.card_univ,Fintype.card_coe,
     nsmul_eq_mul]
 
-theorem allocated_control_mass (N : ℕ) (ε : ℝ) (hε : 0<ε) :
+theorem allocated_control_mass  N  (ε : ℝ) (hε : 0<ε) :
     ∃D : ℝ,0<D ∧ ∀{κ : Type*}[Fintype κ],Fintype.card κ≤N →
-      ∀(s : Input κ)(C R : Ideal O),C≠0 →
+      ∀(s : Input κ)(C R : Ideal ActualEisensteinCubic.O),C≠0 →
       ∀(τ : HeckeFamily.Character)(t : ℝ),
         ((actualAllocations s.pools C).card:ℝ)/(Ideal.absNorm C:ℝ) *
           (∑B : actualAllocations s.pools C,

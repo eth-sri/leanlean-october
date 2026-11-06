@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.HistoryResourceTasks
 public import Erdos821.S2.MemoryEdge
@@ -20,40 +21,39 @@ open Erdos821.Blueprint.Graph
 
 variable {P : PrimeGroups}
 
+section
+variable {M : ℕ} (delta : ℤ) {g : P.Group} (a : Fin M → P.Prime g)
+
+
 /-- Finset sum of singletons equals the mapped finset value. -/
-theorem slotPrimes_eq_val_map {M : ℕ} {g : P.Group}
-    (a : Fin M → P.Prime g) (s : Finset (Fin M)) :
-    slotPrimes a s = s.val.map (fun i => a i) := by
+theorem slotPrimes_eq_val_map    
+      (s : Finset (Fin M)) :
+    slotPrimes a s = s.val.map (a) := by
   unfold slotPrimes
   rw [Finset.sum_eq_multiset_sum]
   have h : s.1.map (fun i => ({a i} : Multiset (P.Prime g)))
-      = (s.1.map (fun i => a i)).map (fun p => ({p} : Multiset (P.Prime g))) := by
+      = (s.1.map (a)).map (fun p => ({p} : Multiset (P.Prime g))) := by
     rw [Multiset.map_map]
     rfl
   rw [h, Multiset.sum_map_singleton]
 
 /-- Translation preserves the prime projection. -/
-theorem pendingPrimes_translate (delta : ℤ) {g : P.Group} (w : P.Memory g) :
+theorem pendingPrimes_translate     (w : P.Memory g) :
     pendingPrimes (translateMemory delta w) = pendingPrimes w := by
   unfold pendingPrimes translateMemory
-  rw [Multiset.map_map]
-  have h : ((fun u : P.Particle g => u.1) ∘ translateParticle delta)
-      = (fun u : P.Particle g => u.1) := by
-    funext u
-    rfl
-  rw [h]
+  aesop
 
-theorem pendingPrimes_add {g : P.Group} (a b : P.Memory g) :
+theorem pendingPrimes_add   (a b : P.Memory g) :
     pendingPrimes (a + b) = pendingPrimes a + pendingPrimes b :=
   Multiset.map_add _ _ _
 
 /-- Stored memory contributes exactly the stored slot primes. -/
-theorem pendingPrimes_stored {M : ℕ} {g : P.Group}
-    (a : Fin M → P.Prime g) (B : Finset (Fin M)) :
+theorem pendingPrimes_stored    
+      (B : Finset (Fin M)) :
     pendingPrimes (storedMemory (P := P) a B) = slotPrimes a B := by
   unfold pendingPrimes storedMemory
   have hlist : ((B.toList.map (fun i => (⟨a i, 0⟩ : P.Particle g))).map (fun u => u.1))
-      = B.toList.map (fun i => a i) := by
+      = B.toList.map (a) := by
     rw [List.map_map]
     rfl
   have hmap : Multiset.map (fun u : P.Particle g => u.1)
@@ -61,13 +61,13 @@ theorem pendingPrimes_stored {M : ℕ} {g : P.Group}
       = ((B.toList.map (fun i => (⟨a i, 0⟩ : P.Particle g))).map (fun u => u.1) : List (P.Prime g)) := by
     rw [Multiset.map_coe]
   rw [hmap, hlist]
-  have hcoe : ((B.toList.map (fun i => a i) : List (P.Prime g)) : Multiset (P.Prime g))
-      = B.val.map (fun i => a i) := by
+  have hcoe : ((B.toList.map (a) : List (P.Prime g)) : Multiset (P.Prime g))
+      = B.val.map (a) := by
     rw [← Multiset.map_coe, Finset.coe_toList]
   rw [hcoe, ← slotPrimes_eq_val_map]
 
 /-- Source pending splits into deleted pending plus retrieved primes. -/
-theorem pendingPrimes_delete_add {g : P.Group} (z : P.Memory g)
+theorem pendingPrimes_delete_add   (z : P.Memory g)
     (B : Finset (Fin z.card)) :
     pendingPrimes z =
       pendingPrimes (deleteMemoryIndices z B)
@@ -96,9 +96,9 @@ theorem pendingPrimes_delete_add {g : P.Group} (z : P.Memory g)
   exact (Finset.sum_sdiff (Finset.subset_univ B)).symm
 
 /-- Promoted target slots carry exactly the retrieved primes. -/
-theorem promoted_eq_retrieved {M : ℕ} {s : P.MemoryState M}
-    (c : TransferChoice s) (g : P.BigGroup)
-    (Tact : Fin M → P.Prime g.val)
+theorem promoted_eq_retrieved   {s : P.MemoryState M}
+     c   g 
+     Tact 
     (hInj : Function.Injective (c.2.2 g))
     (hRet : ∀ i : {i : Fin M // i ∈ c.2.1 g},
       (memoryEntry (s.2.2 g) (c.2.2 g i)).1 = Tact i.val) :
@@ -107,8 +107,7 @@ theorem promoted_eq_retrieved {M : ℕ} {s : P.MemoryState M}
   classical
   have hdef : retrievedIndices c g = Finset.univ.image (c.2.2 g) := rfl
   rw [hdef, ← slotPrimes_eq_val_map]
-  have hInjOn : Set.InjOn (c.2.2 g) (↑(Finset.univ : Finset {i : Fin M // i ∈ c.2.1 g})) := by
-    exact hInj.injOn
+  have hInjOn : Set.InjOn (c.2.2 g) (↑(Finset.univ : Finset {i : Fin M // i ∈ c.2.1 g})) := hInj.injOn
   have himage : slotPrimes (fun k : Fin (s.2.2 g).card => (memoryEntry (s.2.2 g) k).1)
       (Finset.univ.image (c.2.2 g))
       = ∑ j : {i : Fin M // i ∈ c.2.1 g},
@@ -128,6 +127,8 @@ theorem promoted_eq_retrieved {M : ℕ} {s : P.MemoryState M}
     rfl
   rw [hatt]
   exact (Finset.sum_attach (c.2.1 g) (fun i => ({Tact i} : Multiset (P.Prime g.val)))).symm
+
+end
 
 theorem EdgeLiveConservationTask_proof : EdgeLiveConservationTask := by
   classical
@@ -175,8 +176,7 @@ theorem EdgeLiveConservationTask_proof : EdgeLiveConservationTask := by
     have hmem : ν.shared g.val i := by
       rw [hSharedDef] at hi
       simpa using (Finset.mem_filter.mp hi).2
-    have heq : s.2.1 g.val i = t.2.1 g.val i := hcompat g.val i hmem
-    rw [heq]
+    solve_by_elim
   have hS_split : slotPrimes (s.2.1 g.val) Shared
         + slotPrimes (s.2.1 g.val) Unshared
       = slotPrimes (s.2.1 g.val) Finset.univ := by

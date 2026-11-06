@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.AmplifiedChildWidth
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceFixedSource
@@ -36,14 +37,14 @@ open CenteredMomentPrimePool CenteredMomentPrimeElements
 open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
 open CenteredMomentChildRows CompletedGauss RayFourExpansion
 open CenteredMomentLogDyadic CenteredMomentRowNorm
-local notation "O" => HeckeFamily.O
+
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem first_block_active_rows_nonempty
-    (η : Character) (m A : O) (t : ℝ) (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (E : Finset (CommonIndex C D)) (rows : Finset O) (W : 𝓢(ℝ,ℂ))
-    (K : ℝ) (n : Fin 4 → ℤ)
+    (η : Character) (m A : HeckeFamily.O) (t : ℝ) (S : Finset (Ideal HeckeFamily.O)) (c : Ideal HeckeFamily.O → ℂ)
+    (C D : Ideal HeckeFamily.O) (hC : Supported C) (hD : Supported D)
+    (E : Finset (CommonIndex C D))  rows  (W : 𝓢(ℝ,ℂ))
+    (K : ℝ)  n 
     (hne : block η m A t S c C D hC hD E rows W (fun _ => logAnnulus) K
       (dyadicScale (n 0)) (dyadicScale (n 1))
       (dyadicScale (n 2)) (dyadicScale (n 3)) ≠ 0) :
@@ -54,41 +55,39 @@ theorem first_block_active_rows_nonempty
   rw [block_activeRows, he]
   simp only [block, Finset.sum_empty, mul_zero]
 
-def columnIdeal (C D : Ideal O) (right : Bool) : Ideal O := if right then D else C
+def columnIdeal (C D : Ideal HeckeFamily.O) (right : Bool)  := if right then D else C
 
-def oppositeIdeal (C D : Ideal O) (right : Bool) : Ideal O := if right then C else D
+def oppositeIdeal (C D : Ideal HeckeFamily.O) (right : Bool)  := if right then C else D
 
-def columnMainRadius (C D : Ideal O) (E : Finset (CommonIndex C D))
-    (K V Z σ δ reserve : ℝ) (right : Bool) : ℝ :=
+def columnMainRadius (C D ) (E : Finset (CommonIndex C D))
+    (K V Z σ δ reserve : ℝ) (right : Bool)  :=
   mainCommonRadius Z (Real.logb Z ((oppositeIdeal C D right).absNorm : ℝ))
     (Real.logb Z (firstNominalScale C D
       (Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E}) K V))
     (Real.logb Z ((columnIdeal C D right).absNorm : ℝ)) σ δ reserve
 
-def columnErrorRadius (C D : Ideal O) (E : Finset (CommonIndex C D))
-    (K V Z σ δ reserve : ℝ) (right : Bool) (p : O) (k : ℕ) : ℝ :=
+def columnErrorRadius (C D ) (E : Finset (CommonIndex C D))
+    (K V Z σ δ reserve : ℝ) (right : Bool) (p : HeckeFamily.O) (k : ℕ)  :=
   errorCommonRadius Z (Real.logb Z ((oppositeIdeal C D right).absNorm : ℝ))
     (Real.logb Z (firstNominalScale C D
       (Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E}) K V))
     (Real.logb Z ((columnIdeal C D right).absNorm : ℝ)) σ δ reserve p k
 
-def readyBudget (A P : ℝ) : ℝ := 4*A + P + 10
+def readyBudget (A P : ℝ)  := 4*A + P + 10
 
-lemma readyBudget_nonneg (A P : ℝ) (hA : 0 ≤ A) (hP : 0 ≤ P) :
+lemma readyBudget_nonneg  A P  (hA : 0 ≤ A) (hP : 0 ≤ P) :
     0 ≤ readyBudget A P := by unfold readyBudget; linarith
 
-lemma common_exponent_le (A P ξ : ℝ) (hA : 0 ≤ A) (hP : 0 ≤ P) (hξ : ξ ≤ 1) :
+lemma common_exponent_le  A P ξ  (hA : 0 ≤ A) (hP : 0 ≤ P) (hξ : ξ ≤ 1) :
     commonExponent A 0 P (A+1) (3*A+3) 1 ξ ≤ readyBudget A P := by
-  unfold commonExponent readyBudget
-  exact max_le (by linarith) (max_le (by linarith) (max_le (by linarith) (by linarith)))
+  grind [commonExponent, readyBudget]
 
-lemma error_exponent_le (A P σ ξ : ℝ) (hA : 0 ≤ A) (hP : 0 ≤ P)
+lemma error_exponent_le  A P σ ξ  (hA : 0 ≤ A) (hP : 0 ≤ P)
     (hσ : σ ≤ 1) (hξ : ξ ≤ 1) :
     exponent A 0 P (3*A+3+σ/3) 1 ξ ≤ readyBudget A P := by
-  unfold exponent readyBudget
-  exact max_le (by linarith) (max_le (by linarith) (max_le (by linarith) (by linarith)))
+  grind [exponent, readyBudget]
 
-lemma ready_mono {ι : Type*} [Fintype ι] [DecidableEq ι] (s : Input ι) (R : Ideal O)
+lemma ready_mono {ι : Type*} [Fintype ι] [DecidableEq ι] (s : Input ι)  R 
     (K Z ξ B B' : ℝ) (hZ : 1 ≤ Z) (hB : B ≤ B')
     (h : Ready s R K Z ξ B) : Ready s R K Z ξ B' := by
   have hp := Real.rpow_le_rpow_of_exponent_le hZ hB
@@ -101,42 +100,46 @@ lemma lower_profile_zero (W : ℝ → ℂ) (a : ℝ) (ha : 0 < a)
   by_contra hn
   exact (not_le_of_gt ha) (h 0 hn)
 
-theorem main_lower_support {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (N : ℕ) (l a : ℝ) (hl : 0 < l) (ha : 0 < a)
-    (s : Input ι) (hc : Fintype.card ι ≤ N) (hs : l ≤ s.lower)
-    (hW₁ : ∀ x, s.W₁ x ≠ 0 → a ≤ x) (hW₂ : ∀ x, s.W₂ x ≠ 0 → a ≤ x)
-    (C R seed : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ) :
-    ∀ I : Ideal O, coefficient (child s C R B τ t) (R*C) seed I ≠ 0 →
+section
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] (N : ℕ) (l a : ℝ) (hl : 0 < l) (ha : 0 < a) (s : Input ι) (hc : Fintype.card ι ≤ N) (hs : l ≤ s.lower) (hW₁ : ∀ x, s.W₁ x ≠ 0 → a ≤ x) (hW₂ : ∀ x, s.W₂ x ≠ 0 → a ≤ x) (C R seed : Ideal HeckeFamily.O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
+include ι N l a hl ha s hc hs hW₁ hW₂ C R seed B τ t
+
+theorem main_lower_support      
+           
+         
+       
+            :
+    ∀ I : Ideal HeckeFamily.O, coefficient (child s C R B τ t) (R*C) seed I ≠ 0 →
       lowerFactor N l a * volume (child s C R B τ t) ≤ (I.absNorm : ℝ) := by
   intro I hI
   exact actual_lower_support N l a hl ha (child s C R B τ t)
     ((live_card_le B.val).trans hc) hs hW₁ hW₂ (R*C) seed I hI
 
-theorem error_lower_support {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (N : ℕ) (l a : ℝ) (hl : 0 < l) (ha : 0 < a)
-    (s : Input ι) (hc : Fintype.card ι ≤ N) (hs : l ≤ s.lower)
-    (hW₁ : ∀ x, s.W₁ x ≠ 0 → a ≤ x) (hW₂ : ∀ x, s.W₂ x ≠ 0 → a ≤ x)
-    (C R seed : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
-    (Q : Ideal O) (k : ℕ)
-    (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
-    (υ : Character) (v : ℝ) :
-    ∀ I : Ideal O, coefficient (errorInput s C R B τ t Q k Bp υ v) ((R*C)*(Q^k)) seed I ≠ 0 →
+theorem error_lower_support      
+           
+         
+       
+           
+     Q   k 
+     Bp 
+     υ   v  :
+    ∀ I : Ideal HeckeFamily.O, coefficient (errorInput s C R B τ t Q k Bp υ v) ((R*C)*(Q^k)) seed I ≠ 0 →
       lowerFactor N l a * volume (errorInput s C R B τ t Q k Bp υ v) ≤ (I.absNorm : ℝ) := by
   intro I hI
   exact actual_lower_support N l a hl ha (errorInput s C R B τ t Q k Bp υ v)
     ((live_card_le Bp.val).trans ((live_card_le B.val).trans hc))
     hs hW₁ hW₂ ((R*C)*(Q^k)) seed I hI
 
-theorem eventual_parent_radius (N : ℕ) (b b₁ b₂ : ℝ)
+end
+
+theorem eventual_parent_radius  N   b b₁ b₂ 
     (hb : 1 ≤ b) (hb₁ : 1 ≤ b₁) (hb₂ : 1 ≤ b₂) :
     ∀ᶠ Z : ℝ in atTop, 1 < Z ∧ ∀ {ι : Type*} [Fintype ι] [DecidableEq ι],
       ∀ s : Input ι, Fintype.card ι ≤ N → Endpoints b b₁ b₂ s →
       ∀ A : ℝ, volume s ≤ Z^A → sourceRadius s ≤ Z^(A+1) := by
   let G := b^N*b₁*b₂
   have hG : 1 ≤ G := by
-    have hp : 1 ≤ b^N := one_le_pow₀ hb
-    dsimp [G]
-    exact one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hp hb₁) hb₂
+    bound
   filter_upwards [eventual_geometry G 1 hG (by norm_num)] with Z hZ
   refine ⟨hZ.1, ?_⟩
   intro ι _ _ s hc he A hV
@@ -147,7 +150,7 @@ theorem eventual_parent_radius (N : ℕ) (b b₁ b₂ : ℝ)
     G * volume s ≤ Z * Z^A := mul_le_mul hg hV (volume_pos s).le (zero_lt_one.trans hZ.1).le
     _ = Z^(A+1) := by rw [Real.rpow_add_one (zero_lt_one.trans hZ.1).ne']; ring
 
-theorem eventually_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
+theorem eventually_main_packet  N   b b₁ b₂ l a A P 
     (hb : 1 ≤ b) (hb₁ : 1 ≤ b₁) (hb₂ : 1 ≤ b₂)
     (hl : 0 < l) (ha : 0 < a) (hA : 0 ≤ A) (hP : 0 ≤ P) :
     ∀ᶠ Z : ℝ in atTop, 1 < Z ∧ ∀ {ι : Type*} [Fintype ι] [DecidableEq ι],
@@ -156,8 +159,8 @@ theorem eventually_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
       ∀ κ : ℝ, 1/6 ≤ κ → (∀ i, 1 ≤ s.P i) →
       length Z s.X₁ + length Z s.X₂ + 6*κ*(∑ i, Real.logb Z (s.P i)) ≤ A →
       (s.η.modulus.absNorm : ℝ) ≤ Z^A →
-      ∀ R seed : Ideal O, R ≠ 0 → (R.absNorm : ℝ) ≤ Z^P → Squarefree seed →
-      ∀ C D : Ideal O, ∀ hC : Supported C, ∀ hD : Supported D,
+      ∀ R seed : Ideal HeckeFamily.O, R ≠ 0 → (R.absNorm : ℝ) ≤ Z^P → Squarefree seed →
+      ∀ C D : Ideal HeckeFamily.O, ∀ hC : Supported C, ∀ hD : Supported D,
       (C,D) ∈ CenteredMomentFirstSectors.commonLabels
         (CenteredMomentSourceRow.supportedColumns (activeSource
           (finiteColumns (Fintype.piFinset s.pools)) (coefficient s R seed)))
@@ -169,7 +172,7 @@ theorem eventually_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
       0 ≤ reserve →
       Tsec ≤ Csec * firstNominalScale C D
         (Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E}) K (volume s) →
-      ∀ rows : Finset O, ∀ W : 𝓢(ℝ,ℂ), ∀ n : Fin 4 → ℤ,
+      ∀ rows : Finset HeckeFamily.O, ∀ W : 𝓢(ℝ,ℂ), ∀ n : Fin 4 → ℤ,
       Retained (frequencyRadius Tsec Z ξ) (n 1) →
       block s.η (fixedBadMask*idealGenerator R) 1 s.t
         (finiteColumns (Fintype.piFinset s.pools)) (coefficient s R seed)
@@ -180,7 +183,7 @@ theorem eventually_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
       frozenCoefficient B.val (columnIdeal C D side) R s.ν s.W s.P ≠ 0 →
       let Km := columnMainRadius C D E K (volume s) Z σ (frequencyLoss Z (32*Csec) ξ) reserve side
       Ready (child s (columnIdeal C D side) R B τ t) (R*columnIdeal C D side) Km Z ξ (readyBudget A P) ∧
-      (∀ I : Ideal O, coefficient (child s (columnIdeal C D side) R B τ t) (R*columnIdeal C D side) seed I ≠ 0 →
+      (∀ I : Ideal HeckeFamily.O, coefficient (child s (columnIdeal C D side) R B τ t) (R*columnIdeal C D side) seed I ≠ 0 →
         lowerFactor N l a * volume (child s (columnIdeal C D side) R B τ t) ≤ (I.absNorm : ℝ)) := by
   filter_upwards [eventually_common_ready N b b₁ b₂ 1 hb hb₁ hb₂ (by norm_num),
     eventual_parent_radius N b b₁ b₂ hb hb₁ hb₂,
@@ -208,8 +211,7 @@ theorem eventually_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
       · exact ht.1
       · exact ht.2.1
     simpa only [show A+2*(A+1)+1 = 3*A+3 by ring] using hx
-  have hE : Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E} ≠ 0 := by
-    exact Ideal.span_singleton_eq_bot.not.mpr (primeSubsetGenerator_ne_zero _ _)
+  have hE : Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E} ≠ 0 := Ideal.span_singleton_eq_bot.not.mpr (primeSubsetGenerator_ne_zero _ _)
   have hne := first_block_active_rows_nonempty s.η (fixedBadMask*idealGenerator R) 1 s.t
     _ _ C D hC hD E rows W K n hblock
   have hrec := (active_row_reciprocals C D _ hE K (volume s) Z Csec Tsec ξ

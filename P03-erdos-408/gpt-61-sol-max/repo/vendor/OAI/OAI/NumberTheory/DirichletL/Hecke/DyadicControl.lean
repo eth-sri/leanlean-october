@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicActual
 public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalGrowth
@@ -8,15 +9,19 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorZeros
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Set Metric
 namespace SevenEighths.HeckeDyadicControl
 open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
 open HeckeDeletionBounds HeckeReciprocalGrowth
 
-theorem original_disk_control (e ε : ℝ)
-    (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
+section
+variable (e ε : ℝ) (he : 0<e) (he' : e<1/1000) (hε : 0<ε)
+include e ε he he' hε
+
+theorem original_disk_control  
+          :
     ∃ C : ℝ, 0<C ∧ ∀ (χ : Character), χ.residue ≠ 1 → ∀ a t : ℝ,
       1/2≤a → a≤1 →
       (∀ z ∈ ball ((2 : ℂ)+t*Complex.I) (2-a-2*e), LFunction χ z ≠ 0) →
@@ -60,8 +65,7 @@ theorem original_disk_control (e ε : ℝ)
     linarith [norm_nonneg (factors χ.modulus ψ z)]
   have hQ : complexity ψ t ≤ complexity χ t := by
     unfold complexity
-    have hn' : (ψ.modulus.absNorm : ℝ) ≤ χ.modulus.absNorm := by exact_mod_cast hn
-    gcongr
+    gcongr <;> first | assumption | positivity | linarith
   have hc0 : 0 ≤ complexity ψ t := (Real.exp_pos 1).le.trans (complexity_ge_exp ψ t)
   have hr0 : 0 ≤ ((radical χ.modulus).absNorm : ℝ) := by positivity
   rw [hL,hR,norm_mul,norm_mul]
@@ -80,8 +84,8 @@ theorem original_disk_control (e ε : ℝ)
       (Real.rpow_le_rpow (mul_nonneg hr0 hc0) (mul_le_mul_of_nonneg_left hQ hr0) hε.le)
       (mul_pos hDp hCd).le
 
-theorem buffered_original_control (e ε : ℝ)
-    (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
+theorem buffered_original_control  
+          :
     ∃ C : ℝ, 0<C ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι → Character)
       (hχ : ∀ j, (χ j).residue ≠ 1) (T a : ℝ) (i : ℕ),
       2<T → 51/100≤a → a≤1 →
@@ -97,8 +101,10 @@ theorem buffered_original_control (e ε : ℝ)
     (fun w hw => HeckeDetectorZeros.nonzero_on_buffered_disk χ hχ T a e i hT ha he
       hmax j t ht (ball_subset_closedBall hw)) z hz
 
+end
+
 end SevenEighths.HeckeDyadicControl
 
-end
+
 
 end OAI

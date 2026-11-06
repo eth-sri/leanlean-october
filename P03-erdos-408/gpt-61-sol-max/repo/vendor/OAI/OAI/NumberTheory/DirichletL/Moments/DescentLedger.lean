@@ -10,18 +10,18 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDescentLedger
 open CanonicalQuadraticSieve CenteredMomentSecondLedger CenteredMomentPartitionNorm
-local notation "O" => ActualEisensteinCubic.O
 
-def firstSaving (c D₀ w q wo B g ell : ℝ) : ℝ :=
+
+def firstSaving (c D₀ w q wo B g ell : ℝ)  :=
   c/6+5*D₀/6+w/3+q/6+wo+B-5*g/6+ell
 
-section ActualSecond
+
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 omit [DecidableEq ι] in
-theorem common_log_ge_unit (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
+theorem common_log_ge_unit (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, Supported (Ideal.span {p i}))
     (c d : ι → ℕ) (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i)
-    (U : Finset ι) (Z : ℝ) (hZ : 1 < Z) :
+     U   Z  (hZ : 1 < Z) :
     Real.logb Z (Ideal.absNorm (unitIdeal p U) : ℝ) ≤
       Real.logb Z (Ideal.absNorm (commonIdeal p c d) : ℝ) := by
   rw [unitIdeal,log_norm_radical p hp,commonIdeal,log_norm_power_product p hp]
@@ -39,7 +39,7 @@ theorem common_log_ge_unit (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p 
       have hm : (1:ℝ) ≤ (min (c i) (d i) : ℕ) := by exact_mod_cast le_min (hc i) (hd i)
       nlinarith
 
-end ActualSecond
+
 
 end SevenEighths.CenteredMomentDescentLedger
 

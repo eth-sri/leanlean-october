@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindows
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindows
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
@@ -14,18 +15,18 @@ namespace SevenEighths.InverseInitialEnergyCallerEmpty
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge
-local notation "Eis"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→Eis)(hp:∀i,p i≠0)
+
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem physicalBlock_zero_of_fresh_empty
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
+     pool  S 
     (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
-    (w:Point ι→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
-    (W₁ W₂ ω₁ ω₂:ℝ→ℂ)(V:Fin 6→ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
+     w  Ψ  j  marks 
+    (W₁ W₂ ω₁ ω₂:ℝ→ℂ)(V:Fin 6→ℝ→ℂ) Φ 
     (Z D B v θ H m c₁ c₂ θ₁ θ₂:ℝ)(hZ:0<Z)
     (hs:BlockSupport p (pointSource pool S) W₁ W₂ ω₁ ω₂ V Z D B v θ H c₁ c₂ θ₁ θ₂)
     (he:freshColumns p pool ω₁ (Z^(columnCenter D B v))=∅) :
@@ -57,9 +58,7 @@ theorem physicalBlock_zero_of_fresh_empty
   intro ρ hρ
   rw [physicalTerm_extracted p hp hcop hg hpr Ψ j marks _ _ Φ Z D m x hv ρ,
     physicalKernel_nominal _ _ Φ hZ D B v m θ H _ (coordinates_pos p hp x hv)]
-  change w x*(_*(_*secondNormProfile _ _ _ _ _
-    (relativeNorm (coordinates p x) Z D B v θ H)))=0
-  simp only [secondNormProfile,hW,mul_zero,zero_mul,zero_div]
+  simp_all [secondNormProfile, relativeNorm, coordinates]
 
 include hp hcop hg in
 
@@ -67,7 +66,7 @@ theorem physical_nonzero_clipping
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
     (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
-    (w:Point ι→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
+    (w:Point ι→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W₁ W₂ ω₁ ω₂:ℝ→ℂ)(V:Fin 6→ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
     (Z D B v θ H m c₁ c₂ θ₁ θ₂ a b η:ℝ)(hZ:1<Z)(hb:1≤b)
     (hω:Function.support ω₁⊆Set.Icc a b)
@@ -85,6 +84,6 @@ theorem physical_nonzero_clipping
 
 end SevenEighths.InverseInitialEnergyCallerEmpty
 
-end
+
 
 end OAI

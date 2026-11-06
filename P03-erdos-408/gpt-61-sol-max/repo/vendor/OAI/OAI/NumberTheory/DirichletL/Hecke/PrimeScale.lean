@@ -7,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.ConductorBounds
 
 namespace OAI
 
-noncomputable section
+section
 open Filter
 open scoped Topology
 namespace SevenEighths.HeckePrimeScale
 open HeckeFamily
 
-theorem log_scale_eventually (dmin rmin K : ℝ) (hd : 0<dmin) (hr : 0<rmin) :
+theorem log_scale_eventually  dmin rmin K  (hd : 0<dmin) (hr : 0<rmin) :
     ∀ᶠ Z : ℝ in atTop, ∀ d r : ℝ, dmin≤d → rmin≤r →
       K≤Real.log ((Z^d)^r) := by
   have hlog : ∀ᶠ Z : ℝ in atTop, max 0 (K/(dmin*rmin))≤Real.log Z :=
@@ -37,10 +37,10 @@ theorem product_modulus_bound (χ ψ : Character) :
   exact FiniteConductor.absNorm_inf_le_mul χ.modulus ψ.modulus
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-theorem twisted_modulus_bound (χ : Character) (θ : RayQuotient.Characters M H) :
+theorem twisted_modulus_bound  χ   θ  :
     (HeckePrimeRay.twistedFamily M H hH χ θ).modulus.absNorm≤χ.modulus.absNorm*M.absNorm :=
   product_modulus_bound χ (HeckeRayQuotient.character M H hH θ)
 

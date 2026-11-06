@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalRetainedEnergy
@@ -99,7 +100,7 @@ theorem fixed_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     · exact ha₁
     · exact ha₂
   let H (i : Fin 9) := |Real.log (l i)|+|Real.log (u i)|+Bρ i
-  have hH (i : Fin 9) : 0≤H i := by dsimp [H];exact add_nonneg (add_nonneg (abs_nonneg _) (abs_nonneg _)) (hBρ i)
+  have hH (i : Fin 9) : 0≤H i := by bound
   choose V hVc hVs hVone hVsupport hVzero using
     fun i : Fin 9=>FourierBridge.exists_complex_smooth_cutoff (H i) (hH i)
   let U (i : Fin 9) : 𝓢(ℝ,ℂ) := (hVc i).toSchwartzMap (hVs i)

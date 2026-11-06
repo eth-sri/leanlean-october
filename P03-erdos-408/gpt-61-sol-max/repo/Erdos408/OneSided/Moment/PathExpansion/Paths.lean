@@ -73,10 +73,14 @@ theorem mul_apply_eq_restrict [DecidableEq β] {X Y : Matrix α α ℂ} {X' Y' :
     fun k => ?_
   rw [hX, hY, hv, mul_one]
 
+section
+variable [DecidableEq α] [DecidableEq β] {A : Matrix α α ℂ} {B : Matrix β β ℂ} (hA : ∀ i j, A i j = B (ι i) (ι j))
+include A B hA
+
 /-- Powers of the restriction of `B` along `ι` are the restrictions of the powers of `B` when
 the columns of `B` off the image of `ι` vanish. -/
-theorem pow_apply_eq_restrict [DecidableEq α] [DecidableEq β] {A : Matrix α α ℂ}
-    {B : Matrix β β ℂ} (hA : ∀ i j, A i j = B (ι i) (ι j))
+theorem pow_apply_eq_restrict      
+       
     (hB : ∀ k ∉ Set.range ι, ∀ i, B i k = 0) (n : ℕ) (i j : α) :
     (A ^ n) i j = (B ^ n) (ι i) (ι j) := by
   induction n generalizing i j with
@@ -88,8 +92,8 @@ theorem pow_apply_eq_restrict [DecidableEq α] [DecidableEq β] {A : Matrix α �
 
 /-- With `n ≥ 1` and `B` vanishing off the image of `ι` in both indices, the endpoint sums of
 `A^n` and `B^n` agree, for the restriction `A` of `B` along `ι`. -/
-theorem sum_mul_pow_apply_eq_restrict [DecidableEq α] [DecidableEq β] {A : Matrix α α ℂ}
-    {B : Matrix β β ℂ} (hA : ∀ i j, A i j = B (ι i) (ι j))
+theorem sum_mul_pow_apply_eq_restrict      
+       
     (hrow : ∀ k ∉ Set.range ι, ∀ j, B k j = 0) (hcol : ∀ k ∉ Set.range ι, ∀ i, B i k = 0)
     {n : ℕ} (hn : 0 < n) (g : β → β → ℂ) :
     ∑ i, ∑ j, g (ι i) (ι j) * (A ^ n) i j = ∑ k, ∑ l, g k l * (B ^ n) k l := by
@@ -106,6 +110,8 @@ theorem sum_mul_pow_apply_eq_restrict [DecidableEq α] [DecidableEq β] {A : Mat
   refine Fintype.sum_of_injective ι hι _ _ (fun l hl => by rw [hcol' l hl, mul_zero])
     fun j => ?_
   rw [pow_apply_eq_restrict hι hA hcol]
+
+end
 
 end Restrict
 

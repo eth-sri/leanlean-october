@@ -17,7 +17,7 @@ subset signs cancel every pair with both missing sets nonempty. Bound the
 two full-block exceptions before taking individual subset norms.
 Proved factorial bounds are in the lead's S34/Hoeffding.lean; use those
 proofs or reproduce them, never the owned blueprint placeholders. -/
-def SymmetricProbeTask : Prop :=
+def SymmetricProbeTask  :=
   Blueprint.ComparisonEstimate → Blueprint.Graph.IdealConstruction
 
 end Erdos821.S34Core

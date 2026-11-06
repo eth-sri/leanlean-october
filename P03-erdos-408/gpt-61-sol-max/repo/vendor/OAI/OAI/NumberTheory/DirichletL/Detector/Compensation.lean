@@ -14,9 +14,9 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbeCompensation
 
-def tupleOperation {α : Type*} [CommMonoid α] {K : ℕ}
+def tupleOperation {α } [CommMonoid α] {K }
     (p : Fin K → α) (q : α → ℝ) (η : α → ℂ)
-    (F : α → ℝ → ℝ → ℝ → ℂ) (X Y Z : ℝ) : ℂ :=
+    (F : α → ℝ → ℝ → ℝ → ℂ) (X Y Z : ℝ)  :=
   ∑ J ∈ (Finset.univ : Finset (Fin K)).powerset,
     (-1 : ℂ) ^ J.card * ((q (∏ i ∈ J, p i) ^ (-(3 / 2 : ℝ)) : ℝ) : ℂ) *
       star (η (∏ i ∈ Finset.univ \ J, p i)) *

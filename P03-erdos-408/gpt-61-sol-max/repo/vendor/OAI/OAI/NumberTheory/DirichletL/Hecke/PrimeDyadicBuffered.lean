@@ -13,10 +13,10 @@ open Set Metric MeasureTheory Complex
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic HeckeLogarithmic HeckeDeletionBounds
 
-def binCost (B : ℝ) (χ : Character) (H : ℝ) : ℝ :=
+def binCost (B : ℝ) (χ : Character) (H : ℝ)  :=
   B*Real.log (complexity χ H) + localBound (1/2)*Real.log ((radical χ.modulus).absNorm : ℝ)
 
-theorem binCost_nonneg {B : ℝ} (hB : 0≤B) (χ : Character) (H : ℝ) : 0≤binCost B χ H := by
+theorem binCost_nonneg  {B}  (hB : 0≤B)  χ   H  : 0≤binCost B χ H := by
   have hc : 1≤complexity χ H :=
     (Real.one_le_exp (by norm_num : (0 : ℝ)≤1)).trans (complexity_ge_exp χ H)
   have hr : (1 : ℝ)≤(radical χ.modulus).absNorm := by
@@ -25,7 +25,7 @@ theorem binCost_nonneg {B : ℝ} (hB : 0≤B) (χ : Character) (H : ℝ) : 0≤b
   exact add_nonneg (mul_nonneg hB (Real.log_nonneg hc))
     (mul_nonneg (localBound_pos (by norm_num : (0 : ℝ)<1/2)).le (Real.log_nonneg hr))
 
-theorem polynomial_bound_in_bin (e : ℝ) (he : 0<e) (he' : e<1/1000) :
+theorem polynomial_bound_in_bin  e  (he : 0<e) (he' : e<1/1000) :
     ∃ B : ℝ, 0≤B ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι→Character)
       (hχ : ∀ j, (χ j).residue≠1) (T a : ℝ) (i : ℕ),
       2<T → 51/100≤a → a≤1 →

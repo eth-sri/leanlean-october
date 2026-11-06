@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2Empty.BoundaryAssembly
 public import Erdos821.S2.MassDecomposition
@@ -33,8 +34,7 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
   let M := J + F.ell
   let C : ℝ := (Fintype.card P.SmallResidues : ℝ)⁻¹ *
     ∏ g : P.SmallGroup, (P.V g.val) ^ (-(M : ℕ) : ℤ)
-  have hCardNat : 0 < Fintype.card P.SmallResidues := by
-    exact Fintype.card_pos_iff.mpr ⟨fun _ _ => 0⟩
+  have hCardNat : 0 < Fintype.card P.SmallResidues := Fintype.card_pos_iff.mpr ⟨fun _ _ => 0⟩
   have hCard : 0 < (Fintype.card P.SmallResidues : ℝ) := by exact_mod_cast hCardNat
   have hsmallProd : 0 < ∏ g : P.SmallGroup, (P.V g.val) ^ (-(M : ℕ) : ℤ) := by
     apply Finset.prod_pos
@@ -64,13 +64,11 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
     · rw [ite_eq_left hs]
       have hcoeff :
           (Fintype.card P.SmallResidues : ℝ)⁻¹ *
-              (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) = C := by
-        rfl
+              (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) = C := rfl
       have hbig :
           (∏ g : P.BigGroup, ∏ j : Fin (J + F.ell),
             tiltedMu F P n g.val (a g.val j)) =
-              bigLabelWeight F P n M ((labelSplitEquiv P M a).2) := by
-        rfl
+              bigLabelWeight F P n M ((labelSplitEquiv P M a).2) := rfl
       calc
         _ = |C * bigLabelWeight F P n M ((labelSplitEquiv P M a).2)| := by
           rw [hcoeff, hbig]
@@ -100,14 +98,8 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
             if P.smallPhysical y a then
               bigLabelWeight F P n M ((labelSplitEquiv P M a).2) else 0 := by
           apply Finset.sum_congr rfl
-          intro y _
-          exact fintype_sum_const_mul C (fun a =>
-            if P.smallPhysical y a then
-              bigLabelWeight F P n M ((labelSplitEquiv P M a).2) else 0)
-        _ = _ := fintype_sum_const_mul C (fun y =>
-          ∑ a : P.Labels M,
-            if P.smallPhysical y a then
-              bigLabelWeight F P n M ((labelSplitEquiv P M a).2) else 0)
+          solve_by_elim [fintype_sum_const_mul, bigLabelWeight, labelSplitEquiv]
+        _ = _ := (by solve_by_elim [fintype_sum_const_mul, bigLabelWeight, labelSplitEquiv])
     _ = C * ((∑ y : P.SmallResidues, ∑ s : SmallLabels P M,
           if ∀ g : P.SmallGroup, smallLocalGood g (y g) (s g) then (1 : ℝ) else 0) *
         ∑ b : BigLabels P M, bigLabelWeight F P n M b) := by

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedProduct
 
@@ -10,33 +11,31 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEulerFinsupp CanonicalRowCompletion
-local notation "O" => HeckeFamily.O
 
-def localNormalization (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
+
+def localNormalization (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ)  :=
   (1-CubicEisenstein.fullIdealWeight (6*z) P.val)*
     (1-idealRowHom u.val P.val*CubicEisenstein.fullIdealWeight w P.val)/
     (1-idealCoeff η P.val*starRingEnd ℂ (idealRowHom u.val P.val)*CubicEisenstein.fullIdealWeight x P.val)
 
-def markedLocalCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
+def markedLocalCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ)  :=
   idealRowMarkedLocalFactor η u.val P x w z*localNormalization η u P x w z
 
-theorem localCorrection_eq_normalization (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) :
+theorem localCorrection_eq_normalization  η   u   P   x w z  :
     localCorrection η u P x w z=idealRowHighLocalFactor η u.val P.val x w z*
       localNormalization η u P x w z := by
   unfold localCorrection localNormalization
   ring
 
-lemma lift_outside_hasProd (S : Finset (Ideal O)) (f : PrimeIdeal→ℂ) (a : ℂ)
+lemma lift_outside_hasProd (S : Finset (Ideal HeckeFamily.O)) (f : PrimeIdeal→ℂ)  a 
     (h : HasProd (fun P : {P : PrimeIdeal // P.val∉S}=>f P.val) a) :
     HasProd (fun P : PrimeIdeal=>if P.val∈S then 1 else f P) a := by
   have hh := (hasProd_subtype_iff_mulIndicator (s:={P : PrimeIdeal | P.val∉S}) (f:=f)).mp h
   convert hh using 1
-  funext P
-  simp only [Set.mulIndicator,Set.mem_ofPred_eq]
-  split_ifs <;> simp_all
+  grind [Set.mulIndicator]
 
-theorem localNormalization_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (η : Character) (u : FreeRow) (x w z : ℂ)
+theorem localNormalization_hasProd  S   hS 
+    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)  η   u   x w z 
     (hx : 1<x.re) (hw : 1<w.re) (hz : 1<(6*z).re) :
     HasProd (fun P : PrimeIdeal=>if P.val∈S then 1 else localNormalization η u P x w z)
       ((LFunction (fixedSourcePrincipal S hS) (6*z))⁻¹*

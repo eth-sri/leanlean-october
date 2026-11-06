@@ -6,16 +6,20 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationColumn
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion
 open CanonicalQuadraticSieve hiding O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-theorem row_coeff_zero_unsupported (η χ : Character) (m f z : O)
-    (heq : ∀ n : O, elementCoeff χ n=rowTwist (elementHom η) m f z n)
-    (hmLam : λ₀∣m) (hm2 : (2 : O)∣m) (J : Ideal O) (hJ : ¬Supported J) :
+
+section
+variable (η χ ψ : Character) (m f z : O) (heq : ∀ n : O, elementCoeff χ n=rowTwist (elementHom η) m f z n) (a : O) (P : SmoothMobiusCorrection.PrimeIdeal) (hspan : Ideal.span {a}=P.val) (hχ : ∀ n : O, elementCoeff χ n=rowTwist (elementHom η) m f z n) (hψ : ∀ n : O, elementCoeff ψ n=rowTwist (elementHom η) m f (z*a^6) n) (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2 : O)∣m) (J : Ideal O)
+
+include heq hmLam hm2 in
+theorem row_coeff_zero_unsupported    
+     
+          (hJ : ¬Supported J) :
     idealCoeff χ J=0 := by
   by_cases hz : J=0
   · subst J
@@ -26,18 +30,19 @@ theorem row_coeff_zero_unsupported (η χ : Character) (m f z : O)
   rw [←hs,idealCoeff_span χ hn,heq]
   exact rowTwist_zero_of_not_supported (elementHom η) m f z n hmLam hm2 (hs ▸ hJ)
 
-theorem prime_coprime_iff (P : SmoothMobiusCorrection.PrimeIdeal) (J : Ideal O) :
+theorem prime_coprime_iff     :
     IsCoprime J P.val ↔ ¬P.val∣J := by
   let : P.val.IsMaximal := (Ideal.isPrime_of_prime P.property).isMaximal P.property.ne_zero
   rw [isCoprime_comm,Ideal.isCoprime_iff_codisjoint,
     ←(Ideal.isMaximal_def.mp (inferInstance : P.val.IsMaximal)).not_le_iff_codisjoint,
     ←Ideal.dvd_iff_le]
 
-theorem amplified_row_prime_mask (η χ ψ : Character) (m f z a : O)
-    (P : SmoothMobiusCorrection.PrimeIdeal) (hspan : Ideal.span {a}=P.val)
-    (hχ : ∀ n : O, elementCoeff χ n=rowTwist (elementHom η) m f z n)
-    (hψ : ∀ n : O, elementCoeff ψ n=rowTwist (elementHom η) m f (z*a^6) n)
-    (hmLam : λ₀∣m) (hm2 : (2 : O)∣m) :
+include hspan hχ hψ hmLam hm2 in
+theorem amplified_row_prime_mask    
+       
+     
+     
+        :
     idealCoeff ψ=IdealEuler.deletePrimes {P} (idealCoeff χ) := by
   ext J
   rw [IdealEuler.deletePrimes_apply]
@@ -54,8 +59,10 @@ theorem amplified_row_prime_mask (η χ ψ : Character) (m f z a : O)
       row_coeff_zero_unsupported η χ m f z hχ hmLam hm2 J hs]
     simp
 
+end
+
 end SevenEighths.HeckeInverseAmplification
 
-end
+
 
 end OAI

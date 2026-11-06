@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.ChineseRemainder.AdditiveCharacters
 public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinIdeals
@@ -9,10 +10,10 @@ namespace OAI
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 noncomputable section
 
@@ -20,9 +21,9 @@ namespace ShortDraftCusp
 
 variable {R : Type*} [CommRing R]
 
-def U (t : R) : Matrix (Fin 2) (Fin 2) R := !![1,t;0,1]
-def L (t : R) : Matrix (Fin 2) (Fin 2) R := !![1,0;t,1]
-def E : Matrix (Fin 2) (Fin 2) R := !![0,-1;1,0]
+def U (t : R)  := !![1,t;0,1]
+def L (t : R)  := !![1,0;t,1]
+
 
 end ShortDraftCusp
 
@@ -38,7 +39,7 @@ open scoped ComplexConjugate
 
 variable {F : Type*} [Field F] [Fintype F]
 
-theorem norm_gaussSum_eq_sqrt_card (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+theorem norm_gaussSum_eq_sqrt_card (χ : MulChar F ℂ)  ψ 
     (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
     ‖gaussSum χ ψ‖ = Real.sqrt (Fintype.card F) := by
   let g := gaussSum χ ψ
@@ -57,7 +58,7 @@ theorem norm_gaussSum_eq_sqrt_card (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   have hsqrt := Real.sq_sqrt hcard
   nlinarith [norm_nonneg g, Real.sqrt_nonneg (Fintype.card F)]
 
-theorem norm_normalized_gaussSum (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+theorem norm_normalized_gaussSum (χ : MulChar F ℂ)  ψ 
     (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
     ‖((Real.sqrt (Fintype.card F) : ℝ) : ℂ)⁻¹ * gaussSum χ ψ‖ = 1 := by
   have hcard : (0 : ℝ) < Fintype.card F := by
@@ -72,10 +73,9 @@ end ShortDraftGauss
 
 namespace EisensteinRayPhase
 
-abbrev SquareClass := ZMod 2 × ZMod 2
 
-def R (a b : SquareClass) : ℤ :=
-  (-1) ^ (a.1.val * b.2.val + a.2.val * b.1.val + a.2.val * b.2.val)
+
+
 
 end EisensteinRayPhase
 
@@ -84,13 +84,11 @@ open scoped Classical
 variable {R : Type*} [CommRing R]
 
 theorem sextic_power_is_unit_mask (χ : MulChar R ℂ)
-    (hχ : χ ^ 6 = 1) (u : R) :
+    (hχ : χ ^ 6 = 1)  u  :
     χ (u ^ 6) = if IsUnit u then 1 else 0 := by
   classical
   rw [map_pow, ← MulChar.pow_apply' χ (by decide : 6 ≠ 0), hχ]
-  by_cases hu : IsUnit u
-  · simp [hu, MulChar.one_apply]
-  · simp [hu]
+  rfl
 
 end ShortDraftSextic
 
@@ -105,7 +103,7 @@ namespace ShortDraftQuadraticGauss
 open Finset
 variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
 
-theorem quadratic_gauss_as_square_phase (ψ : AddChar F ℂ)
+theorem quadratic_gauss_as_square_phase  ψ 
     (hchar : ringChar F ≠ 2) (hψ : ψ ≠ 1) :
     gaussSum ((quadraticChar F).ringHomComp (Int.castRingHom ℂ)) ψ =
       ∑ x : F, ψ (x ^ 2) := by
@@ -143,33 +141,26 @@ end ShortDraftQuotientPhase
 namespace EisensteinEPrimaryPhase
 
 abbrev Coord := ZMod 4 × ZMod 4
-abbrev Bit := ZMod 2
 
-def mul (x y : Coord) : Coord :=
+
+def mul (x y : Coord)  :=
   (x.1 * y.1 - x.2 * y.2,
    x.1 * y.2 + x.2 * y.1 - x.2 * y.2)
 
-def odd (x : Coord) : Prop := x.1.val % 2 = 1 ∨ x.2.val % 2 = 1
+def odd (x : Coord)  := x.1.val % 2 = 1 ∨ x.2.val % 2 = 1
 
 instance : DecidablePred odd := fun x =>
   inferInstanceAs (Decidable (x.1.val % 2 = 1 ∨ x.2.val % 2 = 1))
 
-def rep (e f : Bit) : Coord :=
-  if f = 0 then (if e = 0 then (1, 0) else (-1, 0))
-  else (if e = 0 then (1, 2) else (-1, -2))
 
-def norm (x : Coord) : ZMod 4 :=
-  x.1 * x.1 - x.1 * x.2 + x.2 * x.2
 
-def ePrimary (x : Coord) : Prop :=
-  let cube := mul (mul x x) x
-  cube.1 - 2 * cube.2 = 1
 
-instance : DecidablePred ePrimary := fun x =>
-  inferInstanceAs (Decidable ((mul (mul x x) x).1 -
-    2 * (mul (mul x x) x).2 = 1))
 
-theorem odd_mul (x y : Coord) (hx : odd x) (hy : odd y) : odd (mul x y) := by
+
+
+
+
+theorem odd_mul  x y  (hx : odd x) (hy : odd y) : odd (mul x y) := by
   decide +revert
 
 end EisensteinEPrimaryPhase
@@ -184,16 +175,15 @@ abbrev O := NumberField.RingOfIntegers K
 instance : IsCyclotomicExtension {3} ℚ K := CyclotomicField.isCyclotomicExtension 3 ℚ
 theorem hζ : IsPrimitiveRoot (IsCyclotomicExtension.zeta 3 ℚ K) 3 :=
   IsCyclotomicExtension.zeta_spec 3 ℚ K
-def omega : O := hζ.toInteger
-def pb : PowerBasis ℤ O := hζ.integralPowerBasis
+def omega  := hζ.toInteger
+def pb  := hζ.integralPowerBasis
 
 theorem pb_dim : pb.dim = 2 := by
   simp [pb, Nat.totient_prime Nat.prime_three]
 
-theorem pb_gen : pb.gen = omega := by
-  exact hζ.integralPowerBasis_gen
+theorem pb_gen : pb.gen = omega := hζ.integralPowerBasis_gen
 
-theorem exists_coordinates (x : O) :
+theorem exists_coordinates  x  :
     ∃ a b : ℤ, x = (a : O) + (b : O) * omega := by
   let i0 : Fin pb.dim := ⟨0, by rw [pb_dim]; decide⟩
   let i1 : Fin pb.dim := ⟨1, by rw [pb_dim]; decide⟩
@@ -202,13 +192,7 @@ theorem exists_coordinates (x : O) :
   refine ⟨a, b, ?_⟩
   have hsum := pb.basis.sum_repr x
   have huniv : (Finset.univ : Finset (Fin pb.dim)) = {i0, i1} := by
-    ext i
-    have hi : i.val < 2 := by simpa only [pb_dim] using i.isLt
-    have hv : i.val = 0 ∨ i.val = 1 := by omega
-    simp only [Finset.mem_univ, Finset.mem_insert, Finset.mem_singleton, true_iff]
-    rcases hv with h | h
-    · left; exact Fin.ext h
-    · right; exact Fin.ext h
+    grind [pb_dim]
   rw [huniv] at hsum
   have hne : i0 ≠ i1 := by decide
   have hnot : i0 ∉ ({i1} : Finset (Fin pb.dim)) := by
@@ -222,11 +206,11 @@ theorem exists_coordinates (x : O) :
 def i0 : Fin pb.dim := ⟨0, by rw [pb_dim]; decide⟩
 def i1 : Fin pb.dim := ⟨1, by rw [pb_dim]; decide⟩
 
-def eval (a b : ℤ) : O := (a : O) + (b : O) * omega
+def eval (a b : ℤ)  := (a : O) + (b : O) * omega
 
-theorem eval_basis (a b : ℤ) :
+theorem eval_basis  a b  :
     eval a b = a • pb.basis i0 + b • pb.basis i1 := by
-  simp [eval, PowerBasis.basis_eq_pow, i0, i1, pb_gen, mul_comm]
+  simp_all [eval, i0, i1, pb_gen]
 
 theorem unique_coordinates {a b c d : ℤ}
     (h : eval a b = eval c d) : a = c ∧ b = d := by
@@ -245,7 +229,7 @@ theorem unique_coordinates {a b c d : ℤ}
 theorem omega_sq : omega ^ 2 = -omega - 1 := by
   simpa [omega] using IsCyclotomicExtension.Rat.Three.eta_sq hζ
 
-theorem eval_mul (a b c d : ℤ) :
+theorem eval_mul  a b c d  :
     eval a b * eval c d = eval (a*c-b*d) (a*d+b*c-b*d) := by
   simp only [eval]
   calc
@@ -270,26 +254,26 @@ theorem eval_congr_mod_four {a b c d : ℤ}
   push_cast
   ring
 
-theorem exists_pair (x : O) :
+theorem exists_pair  x  :
     ∃ p : ℤ × ℤ, eval p.1 p.2 = x := by
   obtain ⟨a, b, h⟩ := exists_coordinates x
   exact ⟨(a, b), h.symm⟩
 
-def coords (x : O) : ℤ × ℤ := Classical.choose (exists_pair x)
+def coords (x : O)  := Classical.choose (exists_pair x)
 
-theorem eval_coords (x : O) : eval (coords x).1 (coords x).2 = x :=
+theorem eval_coords  x  : eval (coords x).1 (coords x).2 = x :=
   Classical.choose_spec (exists_pair x)
 
 def residue (x : O) : EisensteinEPrimaryPhase.Coord :=
   ((coords x).1, (coords x).2)
 
-theorem residue_eval (a b : ℤ) :
+theorem residue_eval  a b  :
     residue (eval a b) = ((a : ZMod 4), (b : ZMod 4)) := by
   have h := unique_coordinates (eval_coords (eval a b))
   exact Prod.ext (congrArg (fun n : ℤ => (n : ZMod 4)) h.1)
     (congrArg (fun n : ℤ => (n : ZMod 4)) h.2)
 
-theorem residue_mul (x y : O) :
+theorem residue_mul  x y  :
     residue (x*y) = EisensteinEPrimaryPhase.mul (residue x) (residue y) := by
   calc
     residue (x*y) = residue (eval (coords x).1 (coords x).2 *
@@ -298,17 +282,17 @@ theorem residue_mul (x y : O) :
       rw [eval_mul, residue_eval]
       simp [residue, EisensteinEPrimaryPhase.mul]
 
-theorem congr_mod_four_of_residue_eq {x y : O}
+theorem congr_mod_four_of_residue_eq  {x y} 
     (h : residue x = residue y) : ∃ z : O, x-y = 4*z := by
   rw [←eval_coords x, ←eval_coords y]
   apply eval_congr_mod_four
   · exact congrArg Prod.fst h
   · exact congrArg Prod.snd h
 
-def lift (v : EisensteinEPrimaryPhase.Coord) : O :=
+def lift (v : EisensteinEPrimaryPhase.Coord)  :=
   eval (v.1.val : ℤ) (v.2.val : ℤ)
 
-theorem residue_lift (v : EisensteinEPrimaryPhase.Coord) :
+theorem residue_lift  v  :
     residue (lift v) = v := by
   simp [lift, residue_eval]
 
@@ -317,7 +301,7 @@ theorem residue_two : residue (2 : O) = (2, 0) := by
   rw [← h, residue_eval]
   norm_num
 
-theorem not_odd_mul_two (v : EisensteinEPrimaryPhase.Coord) :
+theorem not_odd_mul_two  v  :
     ¬ EisensteinEPrimaryPhase.odd
       (EisensteinEPrimaryPhase.mul (2, 0) v) := by
   decide +revert
@@ -328,7 +312,7 @@ theorem not_odd_cast_zero (v : EisensteinEPrimaryPhase.Coord)
       (ZMod.cast v.2 : ZMod 2) = 0 := by
   decide +revert
 
-theorem odd_residue_iff_not_two_dvd (x : O) :
+theorem odd_residue_iff_not_two_dvd  x  :
     EisensteinEPrimaryPhase.odd (residue x) ↔ ¬ (2 : O) ∣ x := by
   constructor
   · intro hx hdiv
@@ -339,9 +323,9 @@ theorem odd_residue_iff_not_two_dvd (x : O) :
     by_contra hodd
     obtain ⟨ha, hb⟩ := not_odd_cast_zero (residue x) hodd
     have ha' : ((coords x).1 : ZMod 2) = 0 := by
-      simpa [residue, ZMod.cast_intCast (by decide : 2 ∣ 4)] using ha
+      simp_all [residue]
     have hb' : ((coords x).2 : ZMod 2) = 0 := by
-      simpa [residue, ZMod.cast_intCast (by decide : 2 ∣ 4)] using hb
+      simp_all [residue]
     obtain ⟨a, ha2⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd (coords x).1 2).mp ha'
     obtain ⟨b, hb2⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd (coords x).2 2).mp hb'
     apply hdiv

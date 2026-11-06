@@ -17,15 +17,15 @@ variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMax
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def secondVariableCutoff {Jo : ℕ} (parent : SecondParentSource ι Jo) (R : Finset ι → Finset ι → ℝ)
-    (G E : Finset ι) : Finset Eis :=
+def secondVariableCutoff {Jo } (parent : SecondParentSource ι Jo) (R : Finset ι → Finset ι → ℝ)
+    (G E : Finset ι)  :=
   childFrequencyBall (secondParentDivisor p parent*primeSubsetGenerator (fun i => Ideal.span {p i}) E) (R G E)
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem second_variable_original_support {Jo : ℕ} (parent : SecondParentSource ι Jo)
     (pool residual : Finset ι) (R : Finset ι → Finset ι → ℝ)
     (label : Finset ι → SecondExpansionData ι → κ) (j : κ)
-    (x : SecondExpansionData ι)
+     x 
     (hx : x∈secondDyadicSector pool (secondVariableCutoff p parent R) residual label j) :
     x.sourceCommon ⊆ pool ∧ x.divisor ⊆ x.sourceCommon ∧ x.overlap ⊆ pool ∧
     x.frequency ∈ nonzeroChildFrequencyBall (actualSecondMultiplier p (attachSecondExpansion parent x)) (R x.sourceCommon x.divisor) := by
@@ -39,9 +39,9 @@ theorem truncated_second_attached_variable [Fintype κ]
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     {Jo : ℕ} (parent : SecondParentSource ι Jo)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
-    (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (W : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (X Y : ℝ) (R : Finset ι → Finset ι → ℝ)
-    (label : Finset ι → SecondExpansionData ι → κ) :
+    (slots : Finset σ)  lists   a 
+     W   Φ   X Y   R 
+     label  :
     truncatedSecondSource p hp hg hinj pool Ψ (secondParentPuncture p m parent)
       (secondParentLabel p parent) (secondParentDivisor p parent)
       (fun U => primeMark slots lists a U*W (primeProductNorm p U/X)) Φ Y

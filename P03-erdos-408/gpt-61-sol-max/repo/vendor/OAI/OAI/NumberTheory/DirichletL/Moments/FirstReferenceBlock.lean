@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstDivisorCommonBound
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedWindow
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedWindow
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -24,17 +25,17 @@ open CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalAnnularCommonBo
 open CenteredMomentOriginalCommonHarmonic CenteredMomentFirstMixedAllowance
 open CenteredMomentFirstMixedWindow CenteredMomentFirstWindowBudgets
 open CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical
-local notation "O"=>HeckeFamily.O
 
-theorem actual_reference_block (W:𝓢(ℝ,ℂ)) (decay J₁ J₂:ℕ)
+
+theorem actual_reference_block  W   decay J₁ J₂ 
     (B δ:ℝ)(hB:0≤B)(hδ:0<δ):
     ∃Cb:ℝ,0<Cb ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀{ι:Type*}[Fintype ι][DecidableEq ι],∀s:Input ι,∀R seed:Ideal O,
+    ∀{ι:Type*}[Fintype ι][DecidableEq ι],∀s:Input ι,∀R seed:Ideal HeckeFamily.O,
     ∀a₁ a₂:ℝ,0<a₁→0<a₂→
     (∀x,s.W₁ x≠0→a₁≤x)→(∀x,s.W₂ x≠0→a₂≤x)→
-    ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D),primeSupport C=primeSupport D→
+    ∀(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D),primeSupport C=primeSupport D→
     ∀E:Finset (CommonIndex C D),∀ξ₁ ξ₂:RayCharacter,
-    ∀F:FixedPair s.η C D hC E ξ₁ ξ₂,∀rows:Finset O,∀K:ℝ,0<K→∀n:Fin 4→ℤ,
+    ∀F:FixedPair s.η C D hC E ξ₁ ξ₂,∀rows:Finset HeckeFamily.O,∀K:ℝ,0<K→∀n:Fin 4→ℤ,
     sourceRadius s/(D.absNorm:ℝ)≤Z^B→∀EL ER:Fin 4→ℝ,(∀i,0≤EL i)→(∀i,0≤ER i)→
     let V:=volume s;
     let refL:=(F.left.modulus.absNorm:ℝ)*(V/(C.absNorm:ℝ))^2*Z^(allowance C D Z);
@@ -66,7 +67,7 @@ theorem actual_reference_block (W:𝓢(ℝ,ℂ)) (decay J₁ J₂:ℕ)
   intro ι _ _ s R seed a₁ a₂ ha₁ ha₂ hs₁ hs₂ C D hC hD hCD E ξ₁ ξ₂ F rows K hK n hcap EL ER hEL hER
     V refL refR hleft hright
   have hz:0≤Z:=zero_le_one.trans hZ.1.le
-  have hcb:0≤Cb:=hCb.le
+  
   have hf:0≤fixedPresentationCost:=fixedPresentationCost_pos.le
   have hprodlo:0≤∏i,s.lo i:=Finset.prod_nonneg (fun i _=>(s.lo_pos i).le)
   have hV:0<V:=volume_pos s
@@ -110,6 +111,6 @@ theorem actual_reference_block (W:𝓢(ℝ,ℂ)) (decay J₁ J₂:ℕ)
 
 end SevenEighths.CenteredMomentFirstReferenceBlock
 
-end
+
 
 end OAI

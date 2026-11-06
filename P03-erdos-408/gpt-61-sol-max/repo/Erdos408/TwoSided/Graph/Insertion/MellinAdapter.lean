@@ -64,7 +64,7 @@ theorem eventually_iteratedDeriv_bound (CΨ : ℝ) (M : ℕ → ℝ) :
 
 /-- The iterated derivatives of a smooth real function, cast to `ℂ`, have the same norms. -/
 theorem norm_iteratedDeriv_ofReal {Ψ : ℝ → ℝ} (hΨ : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) Ψ)
-    (k : ℕ) (y : ℝ) :
+     k   y  :
     ‖iteratedDeriv k (fun y => (Ψ y : ℂ)) y‖ = |iteratedDeriv k Ψ y| := by
   rw [← norm_iteratedFDeriv_eq_norm_iteratedDeriv, ← Real.norm_eq_abs,
     ← norm_iteratedFDeriv_eq_norm_iteratedDeriv]

@@ -9,8 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma sum_tuple_filter_zero {ι α : Type*} [Fintype ι] [DecidableEq α]
     (T : ι→Finset α) (good : ι→α→Prop) [∀i,DecidablePred (good i)]
@@ -38,9 +38,9 @@ lemma sum_tuple_filter_zero {ι α : Type*} [Fintype ι] [DecidableEq α]
   change (∑p,H p)=_
   rw [←he,Finset.sum_image (fun p _ q _ h=>hinj h)]
 
-def lowPeriodIdeal (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) : Id :=
+def lowPeriodIdeal (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)  :=
   lowBaseModulus η (calibrationForSet S hS) (calibrationForSet S hS).generator
-    (calibrationLowData S hS)*Ideal.span {(72:O)}
+    (calibrationLowData S hS)*Ideal.span {(72:ActualEisensteinCubic.O)}
 
 lemma canonical_prime_calibration_coprime (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (P : PrimeIdeal) (hP : CanonicalQuadraticSieve.Supported P.val) (hout : P.val∉S) :
@@ -53,11 +53,11 @@ lemma canonical_prime_calibration_coprime (S : Finset Id) (hS : ∀P∈S,P.IsMax
   exact hout (he.symm ▸ hQ)
 
 def lowPeriodPrimeList (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal) : Finset PrimeIdeal :=
+    (hS : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal)  :=
   T.filter (fun P=>IsCoprime P.val (lowPeriodIdeal η S hS))
 
-lemma lowPeriodPrimeList_subset (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal) :
+lemma lowPeriodPrimeList_subset  η   S 
+     hS   T  :
     lowPeriodPrimeList η S hS T⊆T := Finset.filter_subset _ _
 
 lemma lowPeriodPrimeList_disjoint {ι : Type*} (η : HeckeFamily.Character) (S : Finset Id)

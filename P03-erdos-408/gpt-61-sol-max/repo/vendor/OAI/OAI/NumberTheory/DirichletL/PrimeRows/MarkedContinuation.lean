@@ -11,11 +11,11 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
-def continuedCompensatedRow (S : Finset (Ideal O)) (hS : SourceExclusions S)
+
+def continuedCompensatedRow (S ) (hS : SourceExclusions S)
     (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow)
-    (x w z : ℂ) (B q : PrimeIdeal→ℂ) : ℂ :=
+    (x w z : ℂ) (B q : PrimeIdeal→ℂ)  :=
   (LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
     HeckeOrigin.continued (rowCharacter S hS.prime u) w*
     HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x)*
@@ -23,9 +23,9 @@ def continuedCompensatedRow (S : Finset (Ideal O)) (hS : SourceExclusions S)
     ∏P∈T.attach,continuedCompensatedLocal η u P.val
       (outside_prime_supported S hS.bad P.val (hT P.val P.property)) x w z (B P.val) (q P.val))
 
-theorem continuedCompensatedRow_eq_initial (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow)
-    (x w z : ℂ) (B q : PrimeIdeal→ℂ)
+theorem continuedCompensatedRow_eq_initial  S   hS 
+     T   hT   η   u 
+     x w z   B q 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     continuedCompensatedRow S hS T hT η u x w z B q=spectralCompensatedRow S T η u.val x w z B q := by
   have hx0 : x≠0 := by intro h; simp only [h,Complex.zero_re] at hx;linarith
@@ -40,9 +40,9 @@ theorem continuedCompensatedRow_eq_initial (S : Finset (Ideal O)) (hS : SourceEx
     div_eq_mul_inv]
 
 theorem continuedCompensatedRow_eq_indexed {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (P : Fin K→PrimeIdeal) (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
-    (η : Character) (u : FreeRow) (x w z : ℂ)
+     η   u   x w z 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     let hT : ∀Q∈Finset.univ.image P,Q.val∉S := by
       intro Q hQ

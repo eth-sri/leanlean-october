@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2Root.AbsoluteClosedRoot
 public import Erdos821.S2.RootMemoryBound
@@ -16,9 +17,12 @@ open Erdos821.Blueprint.Graph
     absoluteScaledMemoryGhostKernel
 open Erdos821.S2Core
 
+section
+variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
+
 private theorem memoryHistory_norm_le_doubledWeight
-    {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
-    (H : MemoryHistory A n) (rho theta : ℝ) (hH : H.Valid) :
+           
+    (H : MemoryHistory A n)  rho theta  (hH : H.Valid) :
     ‖H.Weight rho theta‖ ≤ Erdos821.P3Tail.doubledWeight H rho theta := by
   have hp : 1 ≤ (2 : ℝ) ^ H.totalGhostBirths := one_le_pow₀ (by norm_num)
   calc
@@ -29,9 +33,9 @@ private theorem memoryHistory_norm_le_doubledWeight
       Erdos821.P3Tail.norm_weight_mul_pow H rho theta hH
 
 private theorem reconstructed_batch_norm_sum
-    {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
-    (Q : ResiduePath A n) (S : LifespanAssignment P n) (hS : Q.lifespanValid S)
-    (y : P.SmallResidues) (rho theta : ℝ) :
+           
+    (Q : ResiduePath A n)  S   hS 
+     y   rho theta  :
     (∑ sigma : (Q.reconstructedHistory S hS y).BatchOrders,
       ‖((Q.reconstructedHistory S hS y).reorderBatches sigma).Weight rho theta‖) =
       (∏ i : Fin (n + 1), ∏ g : P.BigGroup,
@@ -45,11 +49,7 @@ private theorem reconstructed_batch_norm_sum
       ∏ i : Fin (n + 1), ∏ g : P.BigGroup,
         (Q.ghostBirthPrimes S i g).card.factorial := by
     rw [H.batchOrders_card]
-    apply Finset.prod_congr rfl
-    intro i hi
-    apply Finset.prod_congr rfl
-    intro g hg
-    simp [H, ResiduePath.reconstructedHistory, ResiduePath.reconstructedGhostChoice]
+    rfl
   calc
     _ = ∑ sigma : H.BatchOrders, ‖H.Weight rho theta‖ :=
       Finset.sum_congr rfl (fun sigma _ => hweight sigma)
@@ -61,7 +61,7 @@ private theorem reconstructed_batch_norm_sum
       rfl
 
 private theorem path_norm_le_configuration_fiber
-    {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
+           
     (hGhost : SpanGhostWeightTask) (hMark : SpanMarkWeightTask) (hSpan : SpanSumTask)
     (hRes : ResidueFactorizationTask)
     (hn : 0 < n)
@@ -155,7 +155,7 @@ private theorem path_norm_le_configuration_fiber
     _ ≤ _ := htriangle.trans_eq hsigma
 
 private theorem validHistory_norm_sum_le_doubled_bound
-    {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
+           
     (rho v CG CE : ℝ) (hv : 1 ≤ v) (hCG : 0 ≤ CG) (hCE : 0 ≤ CE)
     (hG : ∀ (i : Fin (n + 1)) (s : P.MemoryState (J + F.ell)),
       Summable (fun t => absoluteScaledMemoryGhostKernel F J n rho 2 i s t *
@@ -172,16 +172,13 @@ private theorem validHistory_norm_sum_le_doubled_bound
   classical
   let S : Finset (MemoryHistory A n) := Finset.univ.image (fun H : ValidDistinctHistory A n => H.val)
   have hS : ∀ H ∈ S, H.Valid := by
-    intro H hH
-    obtain ⟨K, hK, rfl⟩ := Finset.mem_image.mp hH
-    exact K.property.1
+    grind
   have hsum :
       (∑ H : ValidDistinctHistory A n,
         Erdos821.P3Tail.doubledWeight H.val rho 0) =
       ∑ H ∈ S, Erdos821.P3Tail.doubledWeight H rho 0 := by
     unfold S
-    symm
-    rw [Finset.sum_image (fun H _ K _ h => Subtype.ext h)]
+    norm_num
   calc
     _ ≤ ∑ H : ValidDistinctHistory A n,
           Erdos821.P3Tail.doubledWeight H.val rho 0 :=
@@ -190,6 +187,8 @@ private theorem validHistory_norm_sum_le_doubled_bound
     _ = ∑ H ∈ S, Erdos821.P3Tail.doubledWeight H rho 0 := hsum
     _ ≤ CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n :=
       Erdos821.P3Tail.finite_doubled_sum_le A n rho 0 v CG CE hv hCG hCE hG hE S hS
+
+end
 
 theorem AbsoluteClosedRootTask_proof : AbsoluteClosedRootTask := by
   intro hStructure hGhost hMark hSpan hRes F P J m n A hn hk hV hbp rho v CG CE hrho hv hCG hCE hG hE
@@ -235,8 +234,7 @@ theorem AbsoluteClosedRootTask_proof : AbsoluteClosedRootTask := by
     simp only [SpanConfiguration, Fintype.sum_sigma, SpanConfiguration.history]
   have hconfigHistory :
       (∑ c : SpanConfiguration A n, ‖c.history.Weight rho 0‖) =
-        ∑ H : ValidDistinctHistory A n, ‖H.val.Weight rho 0‖ := by
-    exact Fintype.sum_equiv (SpanConfiguration.historyEquiv hStructure hn hk)
+        ∑ H : ValidDistinctHistory A n, ‖H.val.Weight rho 0‖ := Fintype.sum_equiv (SpanConfiguration.historyEquiv hStructure hn hk)
       (fun c => ‖c.history.Weight rho 0‖)
       (fun H => ‖H.val.Weight rho 0‖) (fun _ => rfl)
   calc

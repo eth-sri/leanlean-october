@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P5.Basic
 
 public import Erdos821.P4Bridge.SignedPairing
 
@@ -12,9 +15,9 @@ open Blueprint.Graph P4Probe
 noncomputable section
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-lemma signedRaw_eq (hj : m ≤ J) (block : P.BigGroup → Bool)
-    (Q : ℕ) (h ξ θ ζ : ℝ) (c : ProbeChoice P m block)
-    (a b : P.BigLabels (J + F.ell)) :
+lemma signedRaw_eq  hj   block 
+     Q   h ξ θ ζ   c 
+     a b  :
     (((onePatternFamily F P J m (signedPattern hj block Q h ξ c)).model 1 ζ).idealRaw θ) a b =
       -((-1 : ℂ) ^ (∑ j, ((choiceBase hj c.val : Pattern P J F.ell m).changed j).card)) *
       unsignedKernel (choiceBase hj c.val : Pattern P J F.ell m) block Q h ξ θ ζ a b := by
@@ -33,16 +36,11 @@ lemma signedRaw_eq (hj : m ≤ J) (block : P.BigGroup → Bool)
         selectedKernel ν block true Q h ξ (selectedProduct ν block true u)
           (selectedEndpoint ν block true a)) * imaginaryPower (ν.DBig a u) ζ *
         phase (θ * ν.DBig a u) else 0) = _
-  by_cases hm : ν.matchesBig a b
-  · dsimp only [ν] at hm ⊢
-    simp only [hm, ite_true]
-    ring
-  · dsimp only [ν] at hm ⊢
-    simp only [hm, ite_false, mul_zero]
+  grind
 
-lemma signedFullPair_eq (hj : m ≤ J) (block : P.BigGroup → Bool)
-    (Q : ℕ) (h ξ θ ζ : ℝ) (c : ProbeChoice P m block)
-    (f g : P.BigLabels (J + F.ell) → ℂ) :
+lemma signedFullPair_eq  hj   block 
+     Q   h ξ θ ζ   c 
+     f g  :
     idealFullPair (((onePatternFamily F P J m (signedPattern hj block Q h ξ c)).model 1 ζ).idealRaw θ) f g =
       -((-1 : ℂ) ^ (∑ j, ((choiceBase hj c.val : Pattern P J F.ell m).changed j).card)) *
         idealFullPair (unsignedKernel (choiceBase hj c.val : Pattern P J F.ell m)
@@ -57,8 +55,7 @@ lemma signedFullPair_eq (hj : m ≤ J) (block : P.BigGroup → Bool)
   intro b _
   ring
 
-lemma analytic_mellin_norm (n ζ : ℝ) : ‖Blueprint.Analytic.mellin n ζ‖ = 1 := by
-  simp [Blueprint.Analytic.mellin, Complex.norm_exp]
+lemma analytic_mellin_norm  n ζ  : ‖Blueprint.Analytic.mellin n ζ‖ = 1 := by solve_by_elim [_root_.Erdos821.P5Core.norm_mellin]
 
 end
 end Erdos821.P4Bridge

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Endpoint
 
@@ -8,7 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseInitialMarkedReserve
 
-theorem exists_reserve (εm:ℝ)(hε:0<εm):
+theorem exists_reserve  εm (hε:0<εm):
     ∃ρ gap η τ π eps loss:ℝ,
       0<ρ ∧ ρ≤1/4 ∧ ρ≤εm/4 ∧
       0<gap ∧ 2*gap≤ρ ∧
@@ -30,17 +31,7 @@ theorem shifted_capacity (ρ gap η r r' ell G:ℝ)
       r'+2*ell≤(1+ρ)-2*gap ∧
       2*r'+8*ell≤3*(1+ρ)-2*gap ∧
       r'+ell+7*η≤2:=by
-  constructor
-  · linarith
-  constructor
-  · linarith
-  constructor
-  · linarith
-  constructor
-  · linarith
-  constructor
-  · linarith
-  · linarith
+  grind
 
 end SevenEighths.InverseInitialMarkedReserve
 

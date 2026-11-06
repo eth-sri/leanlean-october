@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.AnalyticParametersTasks
 public import Erdos821.S2Empty.FiniteProducts
@@ -7,7 +8,7 @@ public import Mathlib.Tactic.Positivity.Finset
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.S2Empty
@@ -16,14 +17,13 @@ open Erdos821.Blueprint.Graph
 
 theorem sum_zeroCoordinates {α : Type*} [DecidableEq α] [Fintype α]
     {β : α → Type*} [∀ a, Fintype (β a)] [∀ a, DecidableEq (β a)] [∀ a, Zero (β a)]
-    (S : α → Prop) [DecidablePred S] :
+     S  [DecidablePred S] :
     (∑ x : (a : α) → β a,
       if ∀ a, S a → x a = 0 then (1 : ℝ) else 0) =
       ∏ a : {a : α // ¬ S a}, (Fintype.card (β a.1) : ℝ) := by
   classical
   let C : ((a : α) → β a) → Prop := fun x => ∀ a, S a → x a = 0
-  have hcard : (Finset.univ.filter C).card = Fintype.card {x : (a : α) → β a // C x} := by
-    exact (Fintype.card_of_subtype (Finset.univ.filter C) (by intro x; simp)).symm
+  have hcard : (Finset.univ.filter C).card = Fintype.card {x : (a : α) → β a // C x} := (Fintype.card_of_subtype (Finset.univ.filter C) (by intro x; simp)).symm
   calc
     _ = ((Finset.univ.filter C).card : ℝ) := by simp [C]
     _ = (Fintype.card {x : (a : α) → β a // C x} : ℝ) := by exact_mod_cast hcard
@@ -31,8 +31,11 @@ theorem sum_zeroCoordinates {α : Type*} [DecidableEq α] [Fintype α]
       exact_mod_cast Fintype.card_congr (zeroCoordinatesEquiv S)
     _ = _ := by simp [Fintype.card_pi]
 
+section
+variable (P : PrimeGroups) (g : P.Group) (M : ℕ)
+
 /-- Distinct selected primes impose independent zero-residue conditions. -/
-theorem group_zeroAverage_eq (P : PrimeGroups) (g : P.Group) (M : ℕ)
+theorem group_zeroAverage_eq      
     (a : Fin M → P.Prime g) (ha : Function.Injective a) :
     (Fintype.card ((p : P.Prime g) → ZMod p.val) : ℝ)⁻¹ *
       (∑ y : (p : P.Prime g) → ZMod p.val,
@@ -42,12 +45,7 @@ theorem group_zeroAverage_eq (P : PrimeGroups) (g : P.Group) (M : ℕ)
   let S : P.Prime g → Prop := fun p => ∃ i, a i = p
   have hcond (y : (p : P.Prime g) → ZMod p.val) :
       (∀ p, S p → y p = 0) ↔ ∀ i, y (a i) = 0 := by
-    constructor
-    · intro h i
-      exact h (a i) ⟨i, rfl⟩
-    · intro h p hp
-      obtain ⟨i, rfl⟩ := hp
-      exact h i
+    aesop
   have hcount := sum_zeroCoordinates (α := P.Prime g)
       (β := fun p => ZMod p.val) S
   have hcount' :
@@ -99,7 +97,7 @@ theorem group_zeroAverage_eq (P : PrimeGroups) (g : P.Group) (M : ℕ)
   field_simp [hcomp.ne', hlist.ne']
 
 /-- The physical small-label restriction has total normalized mass at most one. -/
-theorem local_small_group_mass_le_one (P : PrimeGroups) (g : P.Group) (M : ℕ)
+theorem local_small_group_mass_le_one      
     (hV : 0 < P.V g) :
     (Fintype.card ((p : P.Prime g) → ZMod p.val) : ℝ)⁻¹ *
       (P.V g) ^ (-(M : ℤ)) *
@@ -108,24 +106,12 @@ theorem local_small_group_mass_le_one (P : PrimeGroups) (g : P.Group) (M : ℕ)
   classical
   let Y := (p : P.Prime g) → ZMod p.val
   let cardY : ℝ := (Fintype.card Y : ℝ)
-  have hcardNat : 0 < Fintype.card Y := by
-    exact Fintype.card_pos_iff.mpr ⟨fun _ => 0⟩
+  have hcardNat : 0 < Fintype.card Y := Fintype.card_pos_iff.mpr ⟨fun _ => 0⟩
   have hcard : 0 < cardY := by simpa [cardY] using hcardNat
   have havg (a : Fin M → P.Prime g) (ha : Function.Injective a) :
       ∑ y : Y, (if (∀ i, y (a i) = 0) then (1 : ℝ) else 0) =
         cardY * ∏ i : Fin M, ((a i).val : ℝ)⁻¹ := by
-    have h := group_zeroAverage_eq P g M a ha
-    have h' : (Fintype.card Y : ℝ)⁻¹ *
-        (∑ y : Y, if ∀ i, y (a i) = 0 then (1 : ℝ) else 0) =
-          ∏ i : Fin M, ((a i).val : ℝ)⁻¹ := by
-      simpa [Y] using h
-    calc
-      _ = (Fintype.card Y : ℝ) *
-          ((Fintype.card Y : ℝ)⁻¹ *
-            ∑ y : Y, (if (∀ i, y (a i) = 0) then (1 : ℝ) else 0)) := by
-          field_simp [hcard.ne']
-      _ = cardY * ∏ i : Fin M, ((a i).val : ℝ)⁻¹ := by
-          rw [h']
+    grind [group_zeroAverage_eq, Fintype.card]
   have hsum :
       (∑ a : Fin M → P.Prime g, ∑ y : Y,
         if Function.Injective a ∧ (∀ i, y (a i) = 0) then (1 : ℝ) else 0) =
@@ -143,18 +129,11 @@ theorem local_small_group_mass_le_one (P : PrimeGroups) (g : P.Group) (M : ℕ)
           if ha : Function.Injective a then
             cardY * ∏ i : Fin M, ((a i).val : ℝ)⁻¹
           else 0 := by
-        apply Finset.sum_congr rfl
-        intro a _
-        by_cases ha : Function.Injective a
-        · simp only [dite_eq_left ha]
-          rw [havg a ha]
-        · simp [ha]
+        grind
       _ = cardY * ∑ a : Fin M → P.Prime g,
           if Function.Injective a then ∏ i : Fin M, ((a i).val : ℝ)⁻¹ else 0 := by
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro a _
-        by_cases ha : Function.Injective a <;> simp [ha]
+        grind
   have hVeq : (∑ p : P.Prime g, (p.val : ℝ)⁻¹) = P.V g := by
     change (∑ p : P.primes g, (p : ℝ)⁻¹) = ∑ p ∈ P.primes g, (p : ℝ)⁻¹
     exact Finset.sum_coe_sort (P.primes g) (fun p : ℕ => (p : ℝ)⁻¹)
@@ -187,15 +166,14 @@ theorem local_small_group_mass_le_one (P : PrimeGroups) (g : P.Group) (M : ℕ)
     _ = (P.V g) ^ (-(M : ℤ)) *
         (∑ a : Fin M → P.Prime g,
           if Function.Injective a then ∏ i : Fin M, ((a i).val : ℝ)⁻¹ else 0) := by
-      rw [hsum]
-      dsimp [cardY]
-      field_simp [hcard.ne']
-      ring
+      grind
     _ ≤ (P.V g) ^ (-(M : ℤ)) * (P.V g) ^ M :=
       mul_le_mul_of_nonneg_left hlabels (by positivity)
     _ = 1 := by
       rw [hpow]
       exact inv_mul_cancel₀ (pow_ne_zero _ hV.ne')
+
+end
 
 
 end Erdos821.S2Empty

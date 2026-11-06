@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralRamified
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
-lemma ramifiedStrictSelected_from_entry (eta a rho x w z : ℂ) (j : ℕ) (b : ℝ)
+lemma ramifiedStrictSelected_from_entry  eta a rho x w z   j   b 
     (hQ : (4:ℝ)≤Ideal.absNorm (Ideal.span {p})) (heta : ‖eta‖≤1) (ha : ‖a‖≤1)
     (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
     (ht : ‖sourceRowTerm p hp hg eta a rho x w z j 1 0 1 0‖≤
@@ -61,6 +61,6 @@ theorem ramifiedStrictSelected_boundary_norm (eta a rho x w z : ℂ)
     hQ heta ha hx hz (sourceRowTerm_central_boundary_norm p hp hg hc eta a rho x w z heta ha hρ j hj)
   convert hb using 1 ; congr 2 ; ring
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

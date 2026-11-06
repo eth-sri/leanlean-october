@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicScaled
 public import OAI.NumberTheory.DirichletL.PrimeLogProfile
@@ -8,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicTailBudget
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical Topology ContDiff
 open Set Complex
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
 
-theorem source_log_profile_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
+theorem source_log_profile_bound  W  (A B : ℝ) (hA : 0<A)
     (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W)
     (R dmax τ ε e κ η σmin σmax : ℝ)
     (hR : 0≤R) (hdmax : 0≤dmax) (hτ : 0<τ) (he : 0<e)
@@ -44,7 +45,7 @@ theorem source_log_profile_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     hr hrR hσmin hσmax hL k hQ hfreq hheight
   let U := Z^d
   have hU : 1≤U := Real.one_le_rpow hZ hd
-  have hUp : 0<U := lt_of_lt_of_le zero_lt_one hU
+  
   have hs : Icc (a+8*e-σ) (2-σ)⊆Icc (-σmax) (2-σmin) := by
     intro x hx
     exact ⟨by linarith [hx.1],by linarith [hx.2]⟩
@@ -78,6 +79,6 @@ theorem source_log_profile_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
 
 end SevenEighths.HeckePrimeDyadic
 
-end
+
 
 end OAI

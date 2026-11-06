@@ -9,15 +9,15 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
 open MeasureTheory CompletedGauss CubicEisenstein
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 
 private theorem cusp_sum_kernel_integral {ι : Type*} [Fintype ι]
-    (d : ι → SourceCuspDatum) (w : ι → ℂ) (F : ℝ → ℂ)
+    (d : ι → SourceCuspDatum) (w : ι → ℂ)  F 
     (hF : ∀ v : ℝ, 0 < v → F v = ∑ i, w i * cuspBarProfile cubicSourceConjugateFunction (d i).point v)
-    (W : ℝ → ℂ) (lo hi : ℝ) (hlo : 0 < lo)
+     W  (lo hi : ℝ) (hlo : 0 < lo)
     (hsupp : Function.support W ⊆ Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (X : ℝ) (hX : 0 < X) :
+     X  (hX : 0 < X) :
     (∑ i, w i * (d i).smoothedKernel W X) =
       (1 / (2 * Real.pi) : ℂ) * ∫ t : ℝ,
         besselSmoothingIntegrand F thetaBesselScale (Vstar W) X ((-1 : ℂ) + t * Complex.I) := by
@@ -60,9 +60,9 @@ theorem cusp_kernel_sum_congr {ι κ : Type*} [Fintype ι] [Fintype κ]
     (hmult : ∀ n : Eis,
       (∑ i, w i * ShortDraftTrace.breveE (-cuspFrequency n * (d i).point)) =
         ∑ k, z k * ShortDraftTrace.breveE (-cuspFrequency n * (e k).point))
-    (W : ℝ → ℂ) (lo hi : ℝ) (hlo : 0 < lo)
+     W  (lo hi : ℝ) (hlo : 0 < lo)
     (hsupp : Function.support W ⊆ Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (X : ℝ) (hX : 0 < X) :
+     X  (hX : 0 < X) :
     (∑ i, w i * (d i).smoothedKernel W X) = ∑ k, z k * (e k).smoothedKernel W X := by
   let F : ℝ → ℂ := fun v => ∑ i, w i * cuspBarProfile cubicSourceConjugateFunction (d i).point v
   have hprofile (v : ℝ) (hv : 0 < v) :
@@ -84,9 +84,9 @@ theorem markedCompletedT_of_cusp_multiplier {ι κ : Type*} [Fintype κ]
     (d : κ → SourceCuspDatum) (w : κ → ℂ)
     (hmult : ∀ n : Eis, (∑ k, w k * ShortDraftTrace.breveE (-cuspFrequency n * (d k).point)) =
       markedThetaQuotient p S Ψ c (Ideal.Quotient.mk _ n))
-    (W : ℝ → ℂ) (hWcompact : HasCompactSupport W)
+     W  (hWcompact : HasCompactSupport W)
     (lo hi : ℝ) (hlo : 0 < lo) (hsupp : Function.support W ⊆ Set.Icc lo hi)
-    (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0 < X) :
+    (hW : ContDiff ℝ ∞ W)  X  (hX : 0 < X) :
     markedCompletedT Ψ W X (fun A => ∏ i ∈ S, if Ideal.span {p i} ∣ A then 1 else 0) =
       thetaDerivativeScalar⁻¹ * ∑ k, w k * (d k).smoothedKernel W X := by
   rw [markedCompletedT_canonical_reflection p S hp Ψ hΨ Q hperiod c hc hcQ
@@ -99,7 +99,7 @@ theorem markedCompletedT_of_cusp_multiplier {ι κ : Type*} [Fintype κ]
   simp_rw [finiteTwistCusp_point]
   rw [thetaFourierTranslation_inversion c hc, hmult]
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

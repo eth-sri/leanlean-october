@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.RankinRadical
 public import OAI.NumberTheory.DirichletL.Moments.RankinSubset
@@ -7,15 +8,19 @@ public import OAI.NumberTheory.DirichletL.Moments.RankinSubset
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRankinLabels
 open IdealMobiusDivisorSum CenteredMomentRankinRadical CenteredMomentRankinSubset
-local notation "O" => ActualEisensteinCubic.O
 
-theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
-    ∃ C : ℝ,0 < C ∧ ∀ (s : Ideal O),Squarefree s → s ≠ 0 →
-      ∀ S : Finset (Ideal O × Ideal O),
+
+section
+variable (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε)
+include a ε ha hε
+
+theorem common_pair_count       :
+    ∃ C : ℝ,0 < C ∧ ∀ (s : Ideal ActualEisensteinCubic.O),Squarefree s → s ≠ 0 →
+      ∀ S : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O),
       (∀ v ∈ S,v.1 ≠ 0 ∧ v.2 ≠ 0) →
       (∀ v ∈ S,primeSupport v.1=primeSupport v.2) →
       (∀ v ∈ S,s ∣ v.1 ∧ s ∣ v.2) →
@@ -26,8 +31,8 @@ theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
   obtain ⟨C,hC,hcount⟩ := supported_power_pair_count a ε ha hε
   refine ⟨128*C,by positivity,?_⟩
   intro s hs hs0 S hS heq hdiv X₁ X₂ Y hX₁ hX₂ hY hN hR
-  let rad : Ideal O × Ideal O → Ideal O := fun v => commonRadical v.1 v.2
-  have hfiber (R : Ideal O) (hRmem : R ∈ S.image rad) :
+  let rad : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O := fun v => commonRadical v.1 v.2
+  have hfiber (R : Ideal ActualEisensteinCubic.O) (hRmem : R ∈ S.image rad) :
       ((S.filter (fun v => rad v=R)).card:ℝ) ≤ C*X₁^a*X₂^a*Y^ε := by
     obtain ⟨v,hv,hvR⟩ := Finset.mem_image.mp hRmem
     have hR0 : R ≠ 0 := hvR ▸ commonRadical_ne_zero v.1 v.2
@@ -42,8 +47,7 @@ theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
         rw [he,heq w hw]
         exact ⟨Finset.Subset.refl _,Finset.Subset.refl _⟩)
       X₁ X₂ hX₁ hX₂ (fun w hw => hN w (Finset.mem_filter.mp hw).1)
-    exact hb.trans (mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow (Nat.cast_nonneg _) hRN hε.le) (by positivity))
+    exact hb.trans ((by gcongr <;> first | assumption | positivity | linarith))
   have hrad := old_mask_radical_count S Prod.fst Prod.snd s hs hs0
     (fun v hv => (hS v hv).1) (fun v hv => (hS v hv).2)
     (fun v hv => (hdiv v hv).1) (fun v hv => (hdiv v hv).2) Y hY.le hR
@@ -57,9 +61,9 @@ theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_right hrad (by positivity)
     _ = _ := by rw [Real.rpow_add hY,Real.rpow_one]; ring
 
-theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
-    ∃ C : ℝ,0 < C ∧ ∀ (s : Ideal O),Squarefree s → s ≠ 0 →
-      ∀ S : Finset ((Ideal O × Ideal O) × Finset (Ideal O)),
+theorem partitioned_common_pair_count       :
+    ∃ C : ℝ,0 < C ∧ ∀ (s : Ideal ActualEisensteinCubic.O),Squarefree s → s ≠ 0 →
+      ∀ S : Finset ((Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) × Finset (Ideal ActualEisensteinCubic.O)),
       (∀ v ∈ S,v.1.1 ≠ 0 ∧ v.1.2 ≠ 0) →
       (∀ v ∈ S,primeSupport v.1.1=primeSupport v.1.2) →
       (∀ v ∈ S,s ∣ v.1.1 ∧ s ∣ v.1.2) →
@@ -79,7 +83,7 @@ theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
     X₁ X₂ Y hX₁ hX₂ hY
     (by intro v hv; obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hv; exact hN w hw)
     (by intro v hv; obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hv; exact hR w hw)
-  have hfiber (v : Ideal O × Ideal O) (hv : v ∈ S.image Prod.fst) :
+  have hfiber (v : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) (hv : v ∈ S.image Prod.fst) :
       ((S.filter (fun w => w.1=v)).card:ℝ) ≤ D*Y^(ε/2) := by
     have hin : (S.filter (fun w => w.1=v)).image Prod.snd ⊆
         (primeSupport (commonRadical v.1 v.2)).powerset := by
@@ -87,8 +91,8 @@ theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hA
       obtain ⟨hw,hwe⟩ := Finset.mem_filter.mp hw
       exact Finset.mem_powerset.mpr (hwe ▸ hpart w hw)
-    have hinj : Set.InjOn (fun w : (Ideal O × Ideal O) × Finset (Ideal O) => w.2)
-        (↑(S.filter (fun w => w.1=v)) : Set ((Ideal O × Ideal O) × Finset (Ideal O))) := by
+    have hinj : Set.InjOn (fun w : (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) × Finset (Ideal ActualEisensteinCubic.O) => w.2)
+        (↑(S.filter (fun w => w.1=v)) : Set ((Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) × Finset (Ideal ActualEisensteinCubic.O))) := by
       intro w hw z hz he
       exact Prod.ext ((Finset.mem_filter.mp hw).2.trans (Finset.mem_filter.mp hz).2.symm) he
     have hc : ((S.filter (fun w => w.1=v)).card:ℝ) ≤
@@ -112,8 +116,10 @@ theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
     _ = (C*D)*X₁^a*X₂^a*(Y^(1+ε/2)*Y^(ε/2))/(Ideal.absNorm s:ℝ) := by ring
     _ = _ := by rw [← Real.rpow_add hY]; congr 3; ring
 
+end
+
 end SevenEighths.CenteredMomentRankinLabels
 
-end
+
 
 end OAI

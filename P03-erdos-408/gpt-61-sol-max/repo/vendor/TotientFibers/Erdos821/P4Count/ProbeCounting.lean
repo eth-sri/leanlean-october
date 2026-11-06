@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.CountingTasks
 public import Erdos821.S34.Hoeffding
@@ -15,30 +16,33 @@ namespace Erdos821.P4Count
 
 noncomputable section
 
-abbrev RowFamily (s M : ℕ) := Fin s → Finset (Fin M)
+abbrev RowFamily (s M ) := Fin s → Finset (Fin M)
 
-def rowsToFinset {s M : ℕ} (A : RowFamily s M) : Finset (Fin s × Fin M) :=
+def rowsToFinset {s M } (A : RowFamily s M) : Finset (Fin s × Fin M) :=
   Finset.univ.filter (fun z => z.2 ∈ A z.1)
 
-def finsetToRows {s M : ℕ} (S : Finset (Fin s × Fin M)) : RowFamily s M :=
+def finsetToRows {s M } (S : Finset (Fin s × Fin M)) : RowFamily s M :=
   fun i => Finset.univ.filter (fun a => (i, a) ∈ S)
 
-lemma mem_rowsToFinset {s M : ℕ} (A : RowFamily s M) (z : Fin s × Fin M) :
+section
+variable {s M : ℕ} (A : RowFamily s M)
+
+lemma mem_rowsToFinset     (z : Fin s × Fin M) :
     z ∈ rowsToFinset A ↔ z.2 ∈ A z.1 := by
   simp [rowsToFinset]
 
-lemma rowsToFinset_finsetToRows {s M : ℕ} (S : Finset (Fin s × Fin M)) :
+lemma rowsToFinset_finsetToRows   (S : Finset (Fin s × Fin M)) :
     rowsToFinset (finsetToRows S) = S := by
   ext z
   simp [rowsToFinset, finsetToRows]
 
-lemma finsetToRows_rowsToFinset {s M : ℕ} (A : RowFamily s M) :
+lemma finsetToRows_rowsToFinset     :
     finsetToRows (rowsToFinset A) = A := by
   funext i
   ext a
   simp [finsetToRows, rowsToFinset]
 
-lemma sum_powerset_eq_rows {s M : ℕ}
+lemma sum_powerset_eq_rows  
     (f : Finset (Fin s × Fin M) → ℝ) (g : RowFamily s M → ℝ)
     (hfg : ∀ S, S ⊆ (Finset.univ : Finset (Fin s × Fin M)) →
       f S = g (finsetToRows S)) :
@@ -48,25 +52,25 @@ lemma sum_powerset_eq_rows {s M : ℕ}
   apply Finset.sum_bij (fun S _ => finsetToRows S)
   · intro S hS
     simp
-  · intro S hS T hT hEq
-    calc
-      S = rowsToFinset (finsetToRows S) :=
-        (rowsToFinset_finsetToRows S).symm
-      _ = rowsToFinset (finsetToRows T) := congrArg rowsToFinset hEq
-      _ = T := rowsToFinset_finsetToRows T
+  · grind [rowsToFinset, finsetToRows, rowsToFinset_finsetToRows]
   · intro A hA
     refine ⟨rowsToFinset A, Finset.mem_powerset.mpr (Finset.subset_univ _), ?_⟩
     exact finsetToRows_rowsToFinset A
   · intro S hS
     exact hfg S (Finset.mem_powerset.mp hS)
 
-noncomputable def permFinsetOfCardEq {M : ℕ} (A B : Finset (Fin M))
+end
+
+noncomputable def permFinsetOfCardEq {M } (A B : Finset (Fin M))
     (h : A.card = B.card) : Equiv.Perm (Fin M) := by
   let e : A ≃ B := Fintype.equivOfCardEq (by simpa using h)
   exact Equiv.extendSubtype e
 
-lemma map_permFinsetOfCardEq {M : ℕ} (A B : Finset (Fin M))
-    (h : A.card = B.card) :
+section
+variable {s M : ℕ}
+
+lemma map_permFinsetOfCardEq   (A B : Finset (Fin M))
+     h  :
     A.map (permFinsetOfCardEq A B h).toEmbedding = B := by
   classical
   unfold permFinsetOfCardEq
@@ -84,8 +88,8 @@ lemma map_permFinsetOfCardEq {M : ℕ} (A B : Finset (Fin M))
     rw [Equiv.extendSubtype_apply_of_mem]
     exact congrArg Subtype.val (e.apply_symm_apply ⟨x, hx⟩)
 
-lemma rowsToFinset_map {s M : ℕ} (A : RowFamily s M)
-    (π : Fin s → Equiv.Perm (Fin M)) :
+lemma rowsToFinset_map    A 
+     π  :
     (rowsToFinset A).map
         (Erdos821.P4Probe.rowPermutation s M π).toEmbedding =
       rowsToFinset (fun i => (A i).map (π i).toEmbedding) := by
@@ -95,34 +99,24 @@ lemma rowsToFinset_map {s M : ℕ} (A : RowFamily s M)
     Erdos821.P4Probe.rowPermutation]
   constructor
   · rintro ⟨⟨i, a⟩, ha, hz⟩
-    change (i, π i a) = z at hz
-    cases z with
-    | mk j b =>
-      simp only [Prod.mk.injEq] at hz
-      rcases hz with ⟨rfl, rfl⟩
-      change ∃ a' ∈ A i, (π i).toEmbedding a' = π i a
-      exact ⟨a, ha, rfl⟩
+    aesop
   · intro hb
     rcases hb with ⟨a, ha, hz⟩
     refine ⟨(z.1, a), ?_, ?_⟩
     · change a ∈ A z.1
       exact ha
-    · change (z.1, π z.1 a) = z
-      apply Prod.ext
-      · rfl
-      · exact hz
+    simp_all
 
-lemma energy_eq_of_rowCard_eq {s M : ℕ}
+lemma energy_eq_of_rowCard_eq  
     (E : Finset (Fin s × Fin M) → ℝ)
     (hinv : ∀ (π : Fin s → Equiv.Perm (Fin M)) S,
       E (S.map (Erdos821.P4Probe.rowPermutation s M π).toEmbedding) = E S)
-    (A B : RowFamily s M) (hcard : ∀ i, (A i).card = (B i).card) :
+     A B  (hcard : ∀ i, (A i).card = (B i).card) :
     E (rowsToFinset A) = E (rowsToFinset B) := by
   let π : Fin s → Equiv.Perm (Fin M) := fun i =>
     permFinsetOfCardEq (A i) (B i) (hcard i)
   have hmapi : ∀ i, (A i).map (π i).toEmbedding = B i := by
-    intro i
-    exact map_permFinsetOfCardEq (A i) (B i) (hcard i)
+    solve_by_elim [map_permFinsetOfCardEq]
   calc
     E (rowsToFinset A) =
         E ((rowsToFinset A).map
@@ -132,19 +126,19 @@ lemma energy_eq_of_rowCard_eq {s M : ℕ}
       rw [rowsToFinset_map]
       exact congrArg E (congrArg rowsToFinset (funext hmapi))
 
-def rowProfile {s M : ℕ} (A : RowFamily s M) : Fin s → Fin (M + 1) :=
+end
+
+def rowProfile {s M } (A : RowFamily s M) : Fin s → Fin (M + 1) :=
   fun i => ⟨(A i).card, Nat.lt_succ_of_le (by simpa using Finset.card_le_univ (A i))⟩
 
-abbrev FullFiber {s M : ℕ} (k : Fin s → Fin (M + 1)) :=
+abbrev FullFiber {s M } (k ) :=
   {A : RowFamily s M // rowProfile A = k}
 
 noncomputable def fullFiberEquiv {s M : ℕ} (k : Fin s → Fin (M + 1)) :
     FullFiber k ≃ ∀ i, {A : Finset (Fin M) //
       A ∈ (Finset.univ : Finset (Fin M)).powersetCard (k i).val} where
   toFun A i := ⟨A.val i, by
-    have hcard := congrArg Fin.val (congrFun A.property i)
-    change (A.val i).card = (k i).val at hcard
-    simp [Finset.mem_powersetCard, hcard]
+    aesop
   ⟩
   invFun B := ⟨fun i => (B i).val, by
     funext i
@@ -165,55 +159,54 @@ lemma card_fullFiber {s M : ℕ} (k : Fin s → Fin (M + 1)) :
   rw [Fintype.card_congr (fullFiberEquiv k)]
   simp [Fintype.card_pi]
 
-def allowedCoords (J ell : ℕ) : Finset (Fin (J + ell)) :=
+def allowedCoords (J ell ) : Finset (Fin (J + ell)) :=
   (Finset.univ : Finset (Fin J)).map (Fin.castLEEmb (by omega))
 
 def probeCoords (m J ell : ℕ) : Finset (Fin (J + ell)) :=
   Finset.univ.filter (fun a => a.val < m)
 
-def probePoints {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ) :
+def probePoints {s J ell } (block : Finset (Fin s)) (m : ℕ) :
     Finset (Fin s × Fin (J + ell)) :=
   Finset.univ.filter (fun z => z.1 ∈ block ∧ z.2.val < m)
 
-def tailPoints {s ell : ℕ} (J : ℕ) : Finset (Fin s × Fin (J + ell)) :=
+def tailPoints {s ell } (J ) : Finset (Fin s × Fin (J + ell)) :=
   Finset.univ.filter (fun z => J ≤ z.2.val)
 
-def rowChoices {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
-    (i : Fin s) (j : ℕ) : Finset (Finset (Fin (J + ell))) :=
+def rowChoices {s J ell } (block : Finset (Fin s)) (m : ℕ)
+    (i : Fin s) (j : ℕ)  :=
   ((Finset.univ : Finset (Fin (J + ell))).powersetCard j).filter
     (fun A => A ⊆ allowedCoords J ell ∧ (i ∈ block → probeCoords m J ell ⊆ A))
 
-def selectedRows {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
-    (A : RowFamily s (J + ell)) : Prop :=
+def selectedRows {s J ell } (block : Finset (Fin s)) (m : ℕ)
+    (A : RowFamily s (J + ell))  :=
   ∀ i, A i ⊆ allowedCoords J ell ∧ (i ∈ block → probeCoords m J ell ⊆ A i)
 
-lemma mem_allowedCoords {J ell : ℕ} (a : Fin (J + ell)) :
+section
+variable {m s J ell : ℕ} (a : Fin (J + ell)) (hm : m ≤ J + ell)
+
+lemma mem_allowedCoords     :
     a ∈ allowedCoords J ell ↔ a.val < J := by
   constructor
   · intro ha
     rcases Finset.mem_map.mp ha with ⟨b, _, hb⟩
-    have : b.val = a.val := by simpa [Fin.castLEEmb_apply] using congrArg Fin.val hb
-    omega
+    bound
   · intro ha
     refine Finset.mem_map.mpr ⟨⟨a.val, ha⟩, Finset.mem_univ _, ?_⟩
     apply Fin.ext
     rfl
 
-lemma card_allowedCoords (J ell : ℕ) : (allowedCoords J ell).card = J := by
+lemma card_allowedCoords  J ell  : (allowedCoords J ell).card = J := by
   simp [allowedCoords]
 
-lemma mem_probeCoords {m J ell : ℕ} (a : Fin (J + ell)) :
+lemma mem_probeCoords     :
     a ∈ probeCoords m J ell ↔ a.val < m := by
   simp [probeCoords]
 
-lemma probeCoords_subset_allowedCoords {m J ell : ℕ} (hmJ : m ≤ J) :
+lemma probeCoords_subset_allowedCoords   (hmJ : m ≤ J) :
     probeCoords m J ell ⊆ allowedCoords J ell := by
-  intro a ha
-  rw [mem_probeCoords] at ha
-  rw [mem_allowedCoords]
-  exact lt_of_lt_of_le ha hmJ
+  grind [mem_probeCoords, mem_allowedCoords]
 
-lemma selectedRows_iff {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
+lemma selectedRows_iff   (block : Finset (Fin s))  m 
     (S : Finset (Fin s × Fin (J + ell))) :
     (probePoints block m ⊆ S ∧ Disjoint (tailPoints J) S) ↔
       selectedRows block m (finsetToRows S) := by
@@ -225,18 +218,8 @@ lemma selectedRows_iff {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
       have hS : (i, a) ∈ S := by simpa [finsetToRows] using ha
       have hnot : (i, a) ∉ tailPoints J :=
         (Finset.disjoint_right.mp htail) hS
-      rw [mem_allowedCoords]
-      by_contra hlt
-      have hle : J ≤ a.val := Nat.le_of_not_gt hlt
-      apply hnot
-      simpa [tailPoints] using hle
-    · intro hi a ha
-      have hav : a.val < m :=
-        (mem_probeCoords (m := m) (J := J) (ell := ell) a).mp ha
-      have hp : (i, a) ∈ probePoints block m := by
-        simp [probePoints, hi, hav]
-      have hS := hprobe hp
-      simpa [finsetToRows] using hS
+      grind [mem_allowedCoords, hnot, tailPoints]
+    grind [mem_probeCoords, probePoints, finsetToRows]
   · intro h
     constructor
     · intro z hz
@@ -248,19 +231,16 @@ lemma selectedRows_iff {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
       have hmem : a ∈ probeCoords m J ell := by
         rw [mem_probeCoords]
         exact ha
-      have hS := hrow hmem
-      simpa [finsetToRows] using hS
+      grind [finsetToRows]
     · apply Finset.disjoint_right.mpr
       intro z hzS hzT
       rcases z with ⟨i, a⟩
       have hrow : a ∈ finsetToRows S i := by
         simpa [finsetToRows] using hzS
       have ha := (h i).1 hrow
-      rw [mem_allowedCoords] at ha
-      have hJ : J ≤ a.val := by simpa [tailPoints] using hzT
-      omega
+      grind [mem_allowedCoords, tailPoints]
 
-lemma probeCoords_eq_map {m J ell : ℕ} (hm : m ≤ J + ell) :
+lemma probeCoords_eq_map     :
     probeCoords m J ell =
       (Finset.univ : Finset (Fin m)).map (Fin.castLEEmb hm) := by
   ext a
@@ -270,34 +250,35 @@ lemma probeCoords_eq_map {m J ell : ℕ} (hm : m ≤ J + ell) :
     refine ⟨⟨a.val, ha⟩, Finset.mem_univ _, ?_⟩
     apply Fin.ext
     rfl
-  · rintro ⟨b, _, hb⟩
-    have hval : b.val = a.val := by
-      simpa [Fin.castLEEmb_apply] using congrArg Fin.val hb
-    omega
+  aesop
 
-lemma card_probeCoords {m J ell : ℕ} (hm : m ≤ J + ell) :
+include hm in
+lemma card_probeCoords     :
     (probeCoords m J ell).card = m := by
   rw [probeCoords_eq_map hm]
   simp
 
-lemma rowChoices_eq_block {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
-    (i : Fin s) (j : ℕ) (hi : i ∈ block) :
+end
+
+section
+variable {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ) (i : Fin s) (j : ℕ) (hi : i ∈ block)
+
+include hi in
+lemma rowChoices_eq_block      
+          :
     rowChoices block m i j =
       ((allowedCoords J ell).powersetCard j).filter
         (fun A => probeCoords m J ell ⊆ A) := by
-  ext A
-  simp [rowChoices, Finset.mem_filter, Finset.mem_powersetCard, hi,
-    and_comm, and_assoc]
+  grind [rowChoices]
 
-lemma rowChoices_eq_outside {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
-    (i : Fin s) (j : ℕ) (hi : i ∉ block) :
+lemma rowChoices_eq_outside      
+        (hi : i ∉ block) :
     rowChoices block m i j = (allowedCoords J ell).powersetCard j := by
-  ext A
-  simp [rowChoices, Finset.mem_filter, Finset.mem_powersetCard, hi,
-    and_comm]
+  grind [rowChoices]
 
-lemma card_rowChoices_block {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
-    (i : Fin s) (j : ℕ) (hi : i ∈ block) (hmJ : m ≤ J)
+include hi in
+lemma card_rowChoices_block      
+          (hmJ : m ≤ J)
     (hmj : m ≤ j) :
     (rowChoices (s := s) (J := J) (ell := ell) block m i j).card =
       Nat.choose (J - m) (j - m) := by
@@ -305,12 +286,12 @@ lemma card_rowChoices_block {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
   rw [Finset.card_filter_powersetCard_subset
     (probeCoords m J ell) (allowedCoords J ell) j
     (probeCoords_subset_allowedCoords hmJ) (by
-      rw [card_probeCoords (by omega : m ≤ J + ell)]
-      exact hmj)]
-  rw [card_allowedCoords, card_probeCoords (by omega : m ≤ J + ell)]
+      grind [card_probeCoords])]
+  grind [card_allowedCoords, card_probeCoords]
 
-lemma card_rowChoices_block_zero {s J ell : ℕ} (block : Finset (Fin s))
-    (m : ℕ) (i : Fin s) (j : ℕ) (hi : i ∈ block)
+include hi in
+lemma card_rowChoices_block_zero    
+           
     (hm : m ≤ J + ell) (hjm : j < m) :
     (rowChoices (s := s) (J := J) (ell := ell) block m i j).card = 0 := by
   rw [rowChoices_eq_block block m i j hi]
@@ -323,10 +304,10 @@ lemma card_rowChoices_block_zero {s J ell : ℕ} (block : Finset (Fin s))
   rw [card_probeCoords hm] at hle
   omega
 
-lemma rowChoices_card_le {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
+lemma rowChoices_card_le      
     (hm : 1 ≤ m) (he : 1 ≤ ell) (hmJ : m ≤ J)
     (hM : (m + ell) * (m + ell - 1) ≤ J + ell)
-    (i : Fin s) (j : ℕ) (hj : j ≤ J + ell) :
+     i   j  (hj : j ≤ J + ell) :
     ((rowChoices (s := s) (J := J) (ell := ell) block m i j).card : ℝ) ≤
       (if i ∈ block then 2 * (ell : ℝ) ^ ell / (m : ℝ) ^ ell else 1) *
         (Nat.choose (J + ell) j : ℝ) := by
@@ -378,8 +359,10 @@ lemma rowChoices_card_le {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
           ((Finset.univ : Finset (Fin (J + ell))).powersetCard j).card := hcard
     exact_mod_cast (by simpa [Finset.card_powersetCard, card_allowedCoords] using hcard')
 
-abbrev SelectedFiber {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
-    (k : Fin s → Fin (J + ell + 1)) :=
+end
+
+abbrev SelectedFiber {s J ell } (block ) (m )
+    (k ) :=
   {A : RowFamily s (J + ell) // rowProfile A = k ∧ selectedRows block m A}
 
 noncomputable def selectedFiberEquiv {s J ell : ℕ} (block : Finset (Fin s))
@@ -410,14 +393,14 @@ noncomputable def selectedFiberEquiv {s J ell : ℕ} (block : Finset (Fin s))
     apply Subtype.ext
     rfl
 
-lemma card_selectedFiber {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
+lemma card_selectedFiber {s J ell : ℕ}  block   m 
     (k : Fin s → Fin (J + ell + 1)) :
     Fintype.card (SelectedFiber block m k) =
       ∏ i, (rowChoices (s := s) (J := J) (ell := ell) block m i (k i).val).card := by
   rw [Fintype.card_congr (selectedFiberEquiv block m k)]
   simp [Fintype.card_pi, Fintype.card_coe]
 
-def canonicalRows {s M : ℕ} (k : Fin s → Fin (M + 1)) : RowFamily s M :=
+def canonicalRows {s M } (k : Fin s → Fin (M + 1)) : RowFamily s M :=
   fun i => (Finset.univ : Finset (Fin (k i).val)).map
     (Fin.castLEEmb (by omega : (k i).val ≤ M))
 
@@ -425,12 +408,11 @@ lemma canonicalRows_card {s M : ℕ} (k : Fin s → Fin (M + 1)) (i : Fin s) :
     (canonicalRows k i).card = (k i).val := by
   simp [canonicalRows]
 
-def profileFinset {s M : ℕ} (k : Fin s → Fin (M + 1)) :
-    Finset (RowFamily s M) :=
+def profileFinset {s M } (k : Fin s → Fin (M + 1))  :=
   Finset.univ.filter (fun A => rowProfile A = k)
 
-def selectedProfileFinset {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ)
-    (k : Fin s → Fin (J + ell + 1)) : Finset (RowFamily s (J + ell)) :=
+def selectedProfileFinset {s J ell } (block : Finset (Fin s)) (m : ℕ)
+    (k : Fin s → Fin (J + ell + 1))  :=
   Finset.univ.filter (fun A => rowProfile A = k ∧ selectedRows block m A)
 
 noncomputable def fullFiberFinsetEquiv {s M : ℕ} (k : Fin s → Fin (M + 1)) :
@@ -455,8 +437,11 @@ noncomputable def selectedFiberFinsetEquiv {s J ell : ℕ}
   left_inv A := by apply Subtype.ext; rfl
   right_inv A := by apply Subtype.ext; rfl
 
-lemma card_selectedProfileFinset {s J ell : ℕ} (block : Finset (Fin s))
-    (m : ℕ) (k : Fin s → Fin (J + ell + 1)) :
+section
+variable {s J ell : ℕ} (block : Finset (Fin s)) (m : ℕ) (hm : 1 ≤ m) (he : 1 ≤ ell) (hmJ : m ≤ J) (hM : (m + ell) * (m + ell - 1) ≤ J + ell) (k : Fin s → Fin (J + ell + 1)) {M : ℕ}
+
+lemma card_selectedProfileFinset    
+        :
     (selectedProfileFinset block m k).card =
       Fintype.card (SelectedFiber block m k) := by
   calc
@@ -465,10 +450,11 @@ lemma card_selectedProfileFinset {s J ell : ℕ} (block : Finset (Fin s))
     _ = Fintype.card (SelectedFiber block m k) :=
       (Fintype.card_congr (selectedFiberFinsetEquiv block m k)).symm
 
-lemma selectedFiber_card_le {s J ell : ℕ} (block : Finset (Fin s))
-    (m : ℕ) (hm : 1 ≤ m) (he : 1 ≤ ell) (hmJ : m ≤ J)
-    (hM : (m + ell) * (m + ell - 1) ≤ J + ell)
-    (k : Fin s → Fin (J + ell + 1)) :
+include hm he hmJ hM in
+lemma selectedFiber_card_le    
+           
+     
+      :
     (Fintype.card (SelectedFiber block m k) : ℝ) ≤
       (2 * (ell : ℝ) ^ ell / (m : ℝ) ^ ell) ^ block.card *
         (Fintype.card (FullFiber k) : ℝ) := by
@@ -483,9 +469,7 @@ lemma selectedFiber_card_le {s J ell : ℕ} (block : Finset (Fin s))
     apply Finset.prod_le_prod₀
     · intro i _
       positivity
-    · intro i _
-      simpa [β] using rowChoices_card_le block m hm he hmJ hM i (k i).val
-        (Nat.le_of_lt_succ (k i).isLt)
+    grind [rowChoices_card_le]
   have hsplit :
       (∏ i : Fin s,
         (if i ∈ block then β else 1) * (Nat.choose (J + ell) (k i).val : ℝ)) =
@@ -508,29 +492,20 @@ lemma selectedFiber_card_le {s J ell : ℕ} (block : Finset (Fin s))
         ∏ i : Fin s, (Nat.choose (J + ell) (k i).val : ℝ) := by
     rw [card_fullFiber]
     simp
-  calc
-    (Fintype.card (SelectedFiber block m k) : ℝ) =
-        ∏ i : Fin s,
-          ((rowChoices (s := s) (J := J) (ell := ell)
-            block m i (k i).val).card : ℝ) := hsel
-    _ ≤ ∏ i : Fin s,
-          (if i ∈ block then β else 1) *
-            (Nat.choose (J + ell) (k i).val : ℝ) := hprod
-    _ = β ^ block.card * (Fintype.card (FullFiber k) : ℝ) := by
-      rw [hsplit, hfactor, hfull]
+  grind
 
-lemma selectedProfileFinset_eq_filter {s J ell : ℕ}
-    (block : Finset (Fin s)) (m : ℕ) (k : Fin s → Fin (J + ell + 1)) :
+lemma selectedProfileFinset_eq_filter  
+          :
     selectedProfileFinset block m k =
       (profileFinset k).filter (selectedRows block m) := by
   ext A
   simp [selectedProfileFinset, profileFinset, and_comm]
 
-lemma profileSum_total {s M : ℕ}
+lemma profileSum_total  
     (E : Finset (Fin s × Fin M) → ℝ)
     (hinv : ∀ (π : Fin s → Equiv.Perm (Fin M)) S,
       E (S.map (Erdos821.P4Probe.rowPermutation s M π).toEmbedding) = E S)
-    (k : Fin s → Fin (M + 1)) :
+     k  :
     (∑ A ∈ profileFinset k, E (rowsToFinset A)) =
       (profileFinset k).card • E (rowsToFinset (canonicalRows k)) := by
   apply Finset.sum_eq_card_nsmul
@@ -543,11 +518,17 @@ lemma profileSum_total {s M : ℕ}
   rw [canonicalRows_card]
   exact hcard
 
-lemma profileSum_selected {s J ell : ℕ}
-    (E : Finset (Fin s × Fin (J + ell)) → ℝ)
-    (hinv : ∀ (π : Fin s → Equiv.Perm (Fin (J + ell))) S,
-      E (S.map (Erdos821.P4Probe.rowPermutation s (J + ell) π).toEmbedding) = E S)
-    (block : Finset (Fin s)) (m : ℕ) (k : Fin s → Fin (J + ell + 1)) :
+end
+
+section
+variable {s J ell : ℕ} (E : Finset (Fin s × Fin (J + ell)) → ℝ) (hnonneg : ∀ S, 0 ≤ E S) (hinv : ∀ (π : Fin s → Equiv.Perm (Fin (J + ell))) S,
+      E (S.map (Erdos821.P4Probe.rowPermutation s (J + ell) π).toEmbedding) = E S) (block : Finset (Fin s)) (m : ℕ) (hm : 1 ≤ m) (he : 1 ≤ ell) (hmJ : m ≤ J) (hM : (m + ell) * (m + ell - 1) ≤ J + ell) (k : Fin s → Fin (J + ell + 1)) {M : ℕ}
+
+include hinv in
+lemma profileSum_selected  
+     
+     
+          :
     (∑ A ∈ profileFinset k,
       if selectedRows block m A then E (rowsToFinset A) else 0) =
       (selectedProfileFinset block m k).card •
@@ -572,14 +553,14 @@ lemma profileSum_selected {s J ell : ℕ}
       rw [canonicalRows_card]
       exact hcard
 
-lemma profileContribution_le {s J ell : ℕ}
-    (E : Finset (Fin s × Fin (J + ell)) → ℝ)
-    (hnonneg : ∀ S, 0 ≤ E S)
-    (hinv : ∀ (π : Fin s → Equiv.Perm (Fin (J + ell))) S,
-      E (S.map (Erdos821.P4Probe.rowPermutation s (J + ell) π).toEmbedding) = E S)
-    (block : Finset (Fin s)) (m : ℕ) (hm : 1 ≤ m) (he : 1 ≤ ell)
-    (hmJ : m ≤ J) (hM : (m + ell) * (m + ell - 1) ≤ J + ell)
-    (k : Fin s → Fin (J + ell + 1)) :
+include hnonneg hinv hm he hmJ hM in
+lemma profileContribution_le  
+     
+     
+     
+           
+       
+      :
     (∑ A ∈ profileFinset k,
       if selectedRows block m A then E (rowsToFinset A) else 0) ≤
       (2 * (ell : ℝ) ^ ell / (m : ℝ) ^ ell) ^ block.card *
@@ -603,13 +584,15 @@ lemma profileContribution_le {s J ell : ℕ}
     _ = (2 * (ell : ℝ) ^ ell / (m : ℝ) ^ ell) ^ block.card *
           (((profileFinset k).card : ℝ) * e) := by ring
 
-lemma sum_eq_profileFibers {s M : ℕ} (f : RowFamily s M → ℝ) :
+lemma sum_eq_profileFibers   (f : RowFamily s M → ℝ) :
     (∑ A ∈ (Finset.univ : Finset (RowFamily s M)), f A) =
       ∑ k : Fin s → Fin (M + 1), ∑ A ∈ profileFinset k, f A := by
   classical
   have h := Finset.sum_fiberwise
     (s := (Finset.univ : Finset (RowFamily s M))) (g := rowProfile) (f := f)
   simpa [profileFinset] using h.symm
+
+end
 
 end
 end Erdos821.P4Count
@@ -635,25 +618,13 @@ theorem Erdos821.P4Probe.ProbeCountingTask_proof :
     apply Erdos821.P4Count.sum_powerset_eq_rows
     intro S hS
     rw [Erdos821.P4Count.rowsToFinset_finsetToRows]
-    let hs := Erdos821.P4Count.selectedRows_iff block m S
-    by_cases hp : Erdos821.P4Count.probePoints block m ⊆ S ∧
-        Disjoint (Erdos821.P4Count.tailPoints J) S
-    · have hq := hs.mp hp
-      simp [hp, hq]
-    · have hq : ¬ Erdos821.P4Count.selectedRows block m
-          (Erdos821.P4Count.finsetToRows S) := by
-        intro hq
-        exact hp (hs.mpr hq)
-      simp [hp, hq]
+    grind [Erdos821.P4Count.selectedRows_iff, Erdos821.P4Count.probePoints, Disjoint, Erdos821.P4Count.tailPoints, Erdos821.P4Count.selectedRows, Erdos821.P4Count.finsetToRows]
   have htotal :
       (∑ S ∈ (Finset.univ : Finset (Fin s × Fin (J + ell))).powerset, E S) =
         ∑ A ∈ (Finset.univ : Finset
             (Erdos821.P4Count.RowFamily s (J + ell))),
           E (Erdos821.P4Count.rowsToFinset A) := by
-    apply Erdos821.P4Count.sum_powerset_eq_rows
-    intro S hS
-    exact congrArg E
-      (Erdos821.P4Count.rowsToFinset_finsetToRows S).symm
+    grind [Erdos821.P4Count.sum_powerset_eq_rows, Erdos821.P4Count.rowsToFinset_finsetToRows]
   have hfamily :
       (∑ A ∈ (Finset.univ : Finset
           (Erdos821.P4Count.RowFamily s (J + ell))),

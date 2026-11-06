@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.CuspCongruence
 public import OAI.NumberTheory.DirichletL.Descent.MarkedStratum
@@ -12,25 +13,29 @@ open scoped BigOperators Classical
 open CompletedGauss CubicEisenstein ConcreteTraceCRT
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 noncomputable local instance activeQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 variable {ι : Type*} [Fintype ι]
 
 def localInactiveWeight (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ) (A : Finset ι) : ℂ :=
+    (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ) (A : Finset ι)  :=
   ∏ i ∈ (Finset.univ : Finset ι) \ A,
     finiteAdditiveFourierCoeff (quotientTrace (p i) (hp i)) (F i) 0
 
 def localActiveWeight (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
-    (A : Finset ι) (v : ∀ i : A, (Eis ⧸ Ideal.span {p i.val})ˣ) : ℂ :=
+    (A : Finset ι) (v : ∀ i : A, (Eis ⧸ Ideal.span {p i.val})ˣ)  :=
   ∏ i : A, finiteAdditiveFourierCoeff (quotientTrace (p i.val) (hp i.val)) (F i.val) (v i)
 
+section
+variable (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal] (hp : ∀ i, p i ≠ 0)
+include p hp
+
 theorem primeFunction_fourier_by_active
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ) (n : Eis) :
+       
+       F   n  :
     (∏ i, F i (Ideal.Quotient.mk _ n)) =
       ∑ A : Finset ι, localInactiveWeight p hp F A *
         ∑ v : ∀ i : A, (Eis ⧸ Ideal.span {p i.val})ˣ,
@@ -47,15 +52,19 @@ theorem primeFunction_fourier_by_active
       (fun i => GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive (p i) (hp i)) F
       (fun i => Ideal.Quotient.mk _ n)
 
+section
+variable (hprimary : ∀ i, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ p i - 1) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
+include hprimary F
+
 theorem activeStratum_function_multiplier
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
-    (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
+       
+       
+     
     {N a0 c0 : Eis} {mode : Bool}
     (D : ∀ A : Finset ι, ControlledStratumArithmetic (fun i : A => p i.val) N a0 c0 mode)
     (hN : (9 : Eis) * c0 ∣ N) (hc0 : c0 ≠ 0)
-    (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode)) (n : Eis) :
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a0 - 1 else ConcretePrimeRowBridge.goodLambda ^ 2 ∣ c0 - 1)
+    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))  n  :
     (∑ A : Finset ι, localInactiveWeight p hp F A *
       ∑ v : ∀ i : A, (Eis ⧸ Ideal.span {p i.val})ˣ,
         localActiveWeight p hp F A v * ShortDraftTrace.breveE (-cuspFrequency n *
@@ -84,21 +93,20 @@ def fixedActiveFunctionWeight
     (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
     (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]
-    (φ : Eis →* ℂ) (t : FixedActiveCuspIndex c p) : ℂ :=
+    (φ : Eis →* ℂ) (t : FixedActiveCuspIndex c p)  :=
   fixedThetaRowCoeff c hc φ t.1 * localInactiveWeight p hp F t.2.1 *
     localActiveWeight p hp F t.2.1 t.2.2
 
 theorem fixedActiveFunction_multiplier
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
-    (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
-    (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]
-    (G : ∀ h : Eis ⧸ Ideal.span {c}, FixedFourierGeometry c h) (N : Eis)
-    (hN : ∀ h, (9 : Eis) * (G h).c0 ∣ N)
-    (D : ∀ h : Eis ⧸ Ideal.span {c}, ∀ A : Finset ι,
-      ControlledStratumArithmetic (fun i : A => p i.val) N (G h).a0 (G h).c0 (G h).mode)
+       
+       
+     
+     c   hc  [Fintype (Eis ⧸ Ideal.span {c})]
+     G   N 
+     hN 
+     D 
     (Q : Ideal Eis) (hcQ : Ideal.span {c} ≤ Ideal.span {(9 : Eis)} * Q)
-    (φ : Eis →* ℂ) (hφ : CanonicalCoefficientClass.FactorsModulo Q φ) (n : Eis) :
+     φ  (hφ : CanonicalCoefficientClass.FactorsModulo Q φ)  n  :
     (∑ t : FixedActiveCuspIndex c p, fixedActiveFunctionWeight p hp F c hc φ t *
       ShortDraftTrace.breveE (-cuspFrequency n *
         (fixedActiveCuspDatum p hp hprimary c G N hN D t).point)) =
@@ -120,15 +128,15 @@ theorem fixedActiveFunction_multiplier
               (activeStratumDatum p hp hprimary (D h) (hN h) (G h).denominator_ne_zero
                 (G h).primary (G h).shape A v).point)) := by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro A hA
-      apply Finset.sum_congr rfl
-      intro v hv
       ring
     _ = _ := by
       rw [activeStratum_function_multiplier p hp hprimary F (D h) (hN h)
         (G h).denominator_ne_zero (G h).primary (G h).shape n, (G h).point]
       ring
+
+end
+
+end
 
 end
 end SevenEighths.InverseMoment

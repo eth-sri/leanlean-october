@@ -15,11 +15,11 @@ namespace SevenEighths.CenteredMomentNaturalFixedRaySource
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily UniqueFactorizationMonoid
 open CenteredMomentDetectorDictionary CenteredExceptionalProfile CenteredExceptionalCount
 open ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-local notation "O" => HeckeFamily.O
 
-theorem fixed_inducing_free_support (η : Character) (Q : Ideal O)
-    (hQ0 : Q≠0) (hQ : Q≠⊤) (hQ72 : Q≤Ideal.span {(72:O)}) (hQη : Q≤η.modulus)
-    (m : O) (hm : m≠0) (hml : goodLambda∣m) (hm2 : (2:O)∣m)
+
+theorem fixed_inducing_free_support (η : Character) (Q : Ideal HeckeFamily.O)
+    (hQ0 : Q≠0) (hQ : Q≠⊤) (hQ72 : Q≤Ideal.span {(72:HeckeFamily.O)}) (hQη : Q≤η.modulus)
+    (m : HeckeFamily.O) (hm : m≠0) (hml : goodLambda∣m) (hm2 : (2:HeckeFamily.O)∣m)
     (u : FreeRow) (hu : FixedInducingRow η Q m 1 u.val) :
     u.val∈HeckeExceptionalRows.rows (normalizedFactors Q).toFinset := by
   obtain ⟨χ,ψ,hprim,hind,hψ,hχ⟩:=hu
@@ -41,10 +41,13 @@ theorem fixed_inducing_free_support (η : Character) (Q : Ideal O)
 
 variable {Δ : ℝ} {D : Parameters.HighData Δ}
 
-def sourceExceptionalBound (F : ProbeFinalAssembly.SourceData D) (η : Character) : ℕ :=
+def sourceExceptionalBound (F : ProbeFinalAssembly.SourceData D) (η : Character)  :=
   HeckeExceptionalRows.bound (normalizedFactors (internalQ (sourceFixedIdeal F) η)).toFinset
 
-lemma source_exceptional_norm (F : ProbeFinalAssembly.SourceData D) (η : Character)
+section
+variable (F : ProbeFinalAssembly.SourceData D) (η : Character)
+
+lemma source_exceptional_norm    
     (u : FreeRow) (hu : sourceExceptional F η u) :
     (Ideal.span {u.val}).absNorm≤sourceExceptionalBound F η := by
   apply HeckeExceptionalRows.row_norm_bound _
@@ -58,7 +61,7 @@ lemma source_exceptional_norm (F : ProbeFinalAssembly.SourceData D) (η : Charac
     ((dvd_mul_right _ _).trans (dvd_mul_right _ _))
     ((dvd_mul_left _ _).trans (dvd_mul_right _ _)) u hu
 
-theorem eventually_source_no_exceptional (F : ProbeFinalAssembly.SourceData D) (η : Character) :
+theorem eventually_source_no_exceptional     :
     ∀ᶠZ : ℝ in atTop,∀label : Sum Bool (RayQuotient.Characters F.modulus ⊤),∀u : FreeRow,
       Z^(1/100:ℝ)≤rowNorm u →
       ¬sourceExceptional F (sourceMomentBase F.modulus ⊤ le_top F.S F.exclusions.prime η label) u := by
@@ -74,6 +77,8 @@ theorem eventually_source_no_exceptional (F : ProbeFinalAssembly.SourceData D) (
     change ((Ideal.span {u.val}).absNorm:ℝ)≤_
     exact_mod_cast source_exceptional_norm F _ u hex
   exact (not_lt_of_ge (hu.trans hb)) (hz label)
+
+end
 
 end SevenEighths.CenteredMomentNaturalFixedRaySource
 

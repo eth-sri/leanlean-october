@@ -11,14 +11,14 @@ open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
 open RayFourExpansion CanonicalCoefficientClass
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-abbrev PhysicalRayElement := {s : O // Supported (Ideal.span {s})}
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
-def physicalRay (s : O) : RayRing := Ideal.Quotient.mk (Ideal.span {(4:O)}) s
+abbrev PhysicalRayElement := {s : ActualEisensteinCubic.O // Supported (Ideal.span {s})}
 
-def physicalRayRepresentative (σ : RayRing) : PhysicalRayElement :=
+def physicalRay (s : ActualEisensteinCubic.O)  := Ideal.Quotient.mk (Ideal.span {(4:ActualEisensteinCubic.O)}) s
+
+def physicalRayRepresentative (σ : RayRing)  :=
   if h : ∃s : PhysicalRayElement,physicalRay s.val=σ then Classical.choose h
   else ⟨1,by
     simp [Supported,Ideal.span_singleton_one,←Ideal.one_eq_top]
@@ -31,25 +31,25 @@ lemma physicalRayRepresentative_spec (s : PhysicalRayElement) :
   simp only [physicalRayRepresentative,dite_eq_left hh]
   exact Classical.choose_spec hh
 
-lemma rowCoefficient_congr_ray (η : HeckeFamily.Character) (Xi : O→*ℂ)
-    (s r : PhysicalRayElement) (h : physicalRay s.val=physicalRay r.val) (m : O) :
+lemma rowCoefficient_congr_ray (η : HeckeFamily.Character) (Xi : ActualEisensteinCubic.O→*ℂ)
+    (s r : PhysicalRayElement) (h : physicalRay s.val=physicalRay r.val)  m  :
     rowCoefficient η Xi s.val s.property m=rowCoefficient η Xi r.val r.property m := by
   apply MonoidHom.ext
   intro n
   rw [rowCoefficient_apply,rowCoefficient_apply]
-  have hd : (4:O)∣s.val-r.val := Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
+  have hd : (4:ActualEisensteinCubic.O)∣s.val-r.val := Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
   have he : sexticReciprocityPhase s.val n=sexticReciprocityPhase r.val n := by
     unfold sexticReciprocityPhase
     rw [QuadraticGaussRay.residue_eq_of_four_dvd_sub s.val r.val hd]
   rw [he]
 
 def physicalRayRowMonoid (η : HeckeFamily.Character) (C : CalibrationData)
-    (σ : RayRing) (m : O) : O→*ℂ :=
+    (σ : RayRing) (m : ActualEisensteinCubic.O)  :=
   rowCoefficient η C.Xi (physicalRayRepresentative σ).val (physicalRayRepresentative σ).property m
 
-def physicalIdealRay (s : {I : Id // Supported I}) : RayRing := physicalRay (primaryGenerator s.val)
+def physicalIdealRay (s : {I : Id // Supported I})  := physicalRay (primaryGenerator s.val)
 
-lemma physicalRowMonoid_eq_ray (η : HeckeFamily.Character) (C : CalibrationData) (r : PhysicalRowIndex) :
+lemma physicalRowMonoid_eq_ray  η   C   r  :
     physicalRowMonoid η C r=physicalRayRowMonoid η C (physicalIdealRay r.1) r.2 := by
   let s : PhysicalRayElement :=
     ⟨primaryGenerator r.1.val,(supported_span_primaryGenerator_iff r.1.val).mpr r.1.property⟩
@@ -57,15 +57,15 @@ lemma physicalRowMonoid_eq_ray (η : HeckeFamily.Character) (C : CalibrationData
     (physicalRayRepresentative_spec s).symm r.2
 
 def physicalRayPeriodicBase (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (σ : RayRing) (χ : RayCharacter) : O→*ℂ :=
+    (hS : ∀P∈S,P.IsMaximal) (σ : RayRing) (χ : RayCharacter)  :=
   lowPeriodicBase η (calibrationForSet S hS) (calibrationForSet S hS).generator
     (calibrationLowData S hS) (physicalRayRepresentative σ).val
       (physicalRayRepresentative σ).property χ
 
-theorem physicalRayRow_eq_periodic_inverse (η : HeckeFamily.Character)
-    (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    (σ : RayRing) (m : O) (D : Id) (W : ℝ→ℂ) (hW : HasCompactSupport W)
-    (T : ℝ) (hT : 0<T) :
+theorem physicalRayRow_eq_periodic_inverse  η 
+     S   hS  (hbad : fixedBadPrimes⊆S)
+     σ   m   D   W  (hW : HasCompactSupport W)
+     T  (hT : 0<T) :
     correctedCompletedT S D (physicalRayRowMonoid η (calibrationForSet S hS) σ m) W T=
       ∑χ : RayCharacter,correctionCoeff χ*
         InverseMoment.markedCompletedT

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountOptimization
 public import OAI.NumberTheory.DirichletL.Endpoint
@@ -7,19 +8,23 @@ public import OAI.NumberTheory.DirichletL.Endpoint
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckeDetectorRowCount
 
-lemma denominator_endpoint (x : ℝ) : denominator x=Endpoint.denominator (1/2-x) := by
+lemma denominator_endpoint  x  : denominator x=Endpoint.denominator (1/2-x) := by
   unfold denominator Endpoint.denominator
   ring
 
-lemma primeWeight_endpoint (x : ℝ) : primeWeight x=Endpoint.primeWeight (1/2-x) := by
+lemma primeWeight_endpoint  x  : primeWeight x=Endpoint.primeWeight (1/2-x) := by
   unfold primeWeight Endpoint.primeWeight
   ring
 
-theorem balanced_cutoff_bounds {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
-    (hx : 0≤x) (hx' : x≤1/2) :
+section
+variable {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6) (hx : 0≤x) (hx' : x≤1/2)
+include δ x hδ hδ' hx hx'
+
+theorem balanced_cutoff_bounds      
+        :
     1≤Endpoint.balancedCutoff δ (1/2-x) ∧ Endpoint.balancedCutoff δ (1/2-x)≤3/2 := by
   have hy : 0≤1/2-x := by linarith
   have hy' : 1/2-x≤1/2 := by linarith
@@ -38,8 +43,8 @@ theorem balanced_cutoff_bounds {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
       (div_le_iff₀ (by positivity)).mpr (by linarith)
     linarith
 
-theorem balanced_count_identity {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
-    (hx : 0≤x) (hx' : x≤1/2) :
+theorem balanced_count_identity      
+        :
     max (shortExponent δ x (Endpoint.balancedCutoff δ (1/2-x)))
         (longExponent δ (Endpoint.balancedCutoff δ (1/2-x))) =
       Endpoint.balancedRowCount δ (1/2-x) := by
@@ -61,16 +66,10 @@ theorem balanced_count_identity {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
     rw [denominator_endpoint,primeWeight_endpoint]
     unfold Endpoint.balancedRowCount Endpoint.balancedCutoff
     generalize hDd : Endpoint.denominator (1/2-x) = D at *
-    generalize hPd : Endpoint.primeWeight (1/2-x) = P at *
-    generalize hJd : Endpoint.balanceDenominator δ (1/2-x) = J at *
-    have hJdef : J=(5/6-δ)*D+δ*P := by
-      rw [←hJd, Endpoint.balanceDenominator, hDd, hPd]
-    have hD : D ≠ 0 := hDb.ne'
-    have hJ : J ≠ 0 := hJb.ne'
-    field_simp [hD,hJ]
-    rw [hJdef]
-    ring
+    grind [Endpoint.primeWeight, Endpoint.balanceDenominator]
   rw [hl,hs,max_self]
+
+end
 
 theorem high_bin_count {B C U δ r ε γ : ℝ}
     (hC : 0≤C) (hU : 1≤U) (hδ : 5/6≤δ) (hδ' : δ≤1)
@@ -85,12 +84,10 @@ theorem high_bin_count {B C U δ r ε γ : ℝ}
     have hh := mul_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hδ) (sub_nonneg.mpr hr1)
     nlinarith
   · rw [max_eq_left (show (1+5*r)/6≤1 by linarith)]
-    have hh := mul_le_mul_of_nonneg_left hr (show 0≤δ by linarith)
-    have hh' := mul_le_mul_of_nonneg_right hδ' hγ
     nlinarith
 
 end SevenEighths.HeckeDetectorRowCount
 
-end
+
 
 end OAI

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstNormalizedGaussianPowers
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstLowHomogeneousPowers
@@ -22,7 +22,7 @@ open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondChildPowe
 open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFiniteProfileExceptional
 open QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
-local notation "Ray"=>RayFourExpansion.RayCharacter
+
 
 open CenteredMomentEnergyFirstHighGaussianUniformPowers
 
@@ -44,25 +44,25 @@ theorem actual_low_homogeneous_four_powers
     (hncap:(C.absNorm:ℝ)≤Z^Bcommon)
     (hbound:∀j,H j≤F*Z^(srcLoss j)/seed)
     (rmain:ℝ)
-    (rerror:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3)))→Fin 3→Ray→ℝ):
+    (rerror:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3)))→Fin 3→RayFourExpansion.RayCharacter→ℝ):
     let P:=primePool M Hray Sbad (1/2) 1 (Z^(sigma/3));
     let M0:=Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ);
     let K0:=nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z;
     let Kmain:=mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ)) K0
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve;
-    let Kerror:=fun (p:elementPool P)(i:Fin 3)(_:Ray)=>
+    let Kerror:=fun (p:elementPool P)(i:Fin 3)(_:RayFourExpansion.RayCharacter)=>
       errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ)) K0
         (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve p (errorIndex i+1);
     let alpha:=CenteredMomentSecondChildPowerBudget.powers eps;
     let amain:=fun j=>H j*mainPowers (τ.modulus.absNorm:ℝ) Z Kmain (sigma/3)
       (Mdecl-M0) paid saving rmain j;
-    let aerror:=fun (p:elementPool P)(i:Fin 3)(χ:Ray)(j:Fin 4)=>
+    let aerror:=fun (p:elementPool P)(i:Fin 3)(χ:RayFourExpansion.RayCharacter)(j:Fin 4)=>
       H j*errorPowers p (errorIndex i+1) (τ.modulus.absNorm:ℝ) Z (Kerror p i χ)
         (Mdecl-M0) paid saving (rerror p i χ) j;
     (∑j:Fin 4,normalizedPower upper V (C.absNorm:ℝ) (τ.modulus.absNorm:ℝ) Z
       (allowance C D Z) eps
       (sourceCoefficients P ((Mamp+2*sigma)/(sigma/6)) amain aerror alpha j) N (alpha j))≤
-      (upper^N*(56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card Ray:ℝ)))*F/seed)*
+      (upper^N*(56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card RayFourExpansion.RayCharacter:ℝ)))*F/seed)*
         Z^(Mdecl-M0+eps*Bcommon+primeLoss)*
         ∑j:Fin 4,Z^(srcLoss j+lossVector sigma delta reserve paid eps Mcap saving j) := by
   have ha:=CenteredMomentEnergyFirstNormalizedGaussianPowers.actual_normalized_four_powers
@@ -74,12 +74,12 @@ theorem actual_low_homogeneous_four_powers
   apply ha.trans
   exact finite_power_budget upper (C.absNorm:ℝ) Z eps Bcommon
     (Mdecl-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))) primeLoss
-    (56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card Ray:ℝ))) F seed N
+    (56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card RayFourExpansion.RayCharacter:ℝ))) F seed N
     hupper (Nat.cast_nonneg _) hZ heps heps1 hncap (by positivity) hF hseed H
     srcLoss (lossVector sigma delta reserve paid eps Mcap saving) hH hbound
 
 end SevenEighths.CenteredMomentEnergyFirstLowHomogeneousPowers
 
-end
+
 
 end OAI

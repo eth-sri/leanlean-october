@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.CommonSupport
 public import OAI.NumberTheory.DirichletL.Moments.Mask
@@ -9,12 +10,12 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-local notation "O" => ActualEisensteinCubic.O
+
 namespace SevenEighths.CenteredMomentSupportedCorrelation
 open CanonicalRowCompletion CanonicalQuadraticSieve
 open CenteredMomentCorrelation CenteredMomentCommonSupport
 
-def supportedModulusCharacter (d : O) (hd : Supported (Ideal.span {d})) :
+def supportedModulusCharacter (d : ActualEisensteinCubic.O) (hd : Supported (Ideal.span {d})) :
     MulChar (Residue d) ℂ where
   toFun x := Quotient.liftOn' x (fun z => idealRowHom z (Ideal.span {d})) (by
     intro x y hxy
@@ -33,38 +34,40 @@ def supportedModulusCharacter (d : O) (hd : Supported (Ideal.span {d})) :
     have hm := idealRowHom_sixth_mask x (Ideal.span {d}) hd
     rw [idealRowHom_argument_pow x 6 _ hd, Ideal.isCoprime_span_singleton_iff] at hm
     have hcop : IsCoprime d x := by
-      by_contra h
-      rw [ite_eq_right h] at hm
-      exact (pow_ne_zero 6 hn) hm
+      grind
     exact hx (isUnit_residue_of_coprime d x hcop)
 
-@[simp] theorem supportedModulusCharacter_mk (d : O)
-    (hd : Supported (Ideal.span {d})) (x : O) :
+section
+variable (d a : ActualEisensteinCubic.O) (hd : Supported (Ideal.span {d})) (b : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a})) (x : ActualEisensteinCubic.O)
+
+@[simp] theorem supportedModulusCharacter_mk  
+        :
     supportedModulusCharacter d hd (Ideal.Quotient.mk _ x) = idealRowHom x (Ideal.span {d}) := rfl
 
-lemma supported_mul_elements (d a : O)
-    (hd : Supported (Ideal.span {d})) (ha : Supported (Ideal.span {a})) :
+include hd ha in
+lemma supported_mul_elements  
+        :
     Supported (Ideal.span {d * a}) := by
   rw [← Ideal.span_singleton_mul_span_singleton]
   exact (supported_mul_iff _ _).mpr ⟨hd, ha⟩
 
-theorem supportedModulusCharacter_mul (d a : O)
-    (hd : Supported (Ideal.span {d})) (ha : Supported (Ideal.span {a})) (x : O) :
+theorem supportedModulusCharacter_mul  
+          :
     supportedModulusCharacter (d * a) (supported_mul_elements d a hd ha) (Ideal.Quotient.mk _ x) =
       supportedModulusCharacter d hd (Ideal.Quotient.mk _ x) *
         supportedModulusCharacter a ha (Ideal.Quotient.mk _ x) := by
   simp only [supportedModulusCharacter_mk, ← Ideal.span_singleton_mul_span_singleton, map_mul]
 
-lemma sexticReciprocityPhase_symm (a b : O) :
-    sexticReciprocityPhase a b = sexticReciprocityPhase b a := by
-  exact congrArg (fun z : ℤ => (z : ℂ)) (QuadraticAllOddCRT.quadraticRaySign_symm _ _)
+lemma sexticReciprocityPhase_symm   :
+    sexticReciprocityPhase a b = sexticReciprocityPhase b a := congrArg (fun z : ℤ => (z : ℂ)) (QuadraticAllOddCRT.quadraticRaySign_symm _ _)
 
-@[simp] lemma star_sexticReciprocityPhase (a b : O) :
+@[simp] lemma star_sexticReciprocityPhase   :
     star (sexticReciprocityPhase a b) = sexticReciprocityPhase a b := by
   simp only [sexticReciprocityPhase, star_intCast]
 
-theorem supported_opposite_phase (a b : O)
-    (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+include ha in
+theorem supported_opposite_phase  
+      (hb : Supported (Ideal.span {b}))
     (hpa : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a - 1)
     (hpb : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ b - 1)
     (hcop : IsCoprime a b) [Fintype (Residue a)] :
@@ -82,14 +85,16 @@ theorem supported_opposite_phase (a b : O)
     exact mul_inv_cancel₀ hn
   rw [heq, mul_one]
 
-def supportedCorrelation (u v : O)
+end
+
+def supportedCorrelation (u v : ActualEisensteinCubic.O)
     (hu : Supported (Ideal.span {u})) (hv : Supported (Ideal.span {v}))
-    [Fintype (Residue u)] [Fintype (Residue v)] (j : O) : ℂ :=
+    [Fintype (Residue u)] [Fintype (Residue v)] (j : ActualEisensteinCubic.O)  :=
   fullModulusCorrelation u v (supportedModulusCharacter u hu) (supportedModulusCharacter v hv) j
 
-theorem supported_complete_common_support (D E a b : O)
-    (hD : Supported (Ideal.span {D})) (hE : Supported (Ideal.span {E}))
-    (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+theorem supported_complete_common_support  D E a b 
+     hD   hE 
+     ha   hb 
     (hpD : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ D - 1)
     (hpE : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ E - 1)
     (hpa : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a - 1)
@@ -97,7 +102,7 @@ theorem supported_complete_common_support (D E a b : O)
     (hcopA : IsCoprime (D * E) a) (hcopB : IsCoprime (D * E) b) (hab : IsCoprime a b)
     [Fintype (Residue D)] [Fintype (Residue E)]
     [Fintype (Residue a)] [Fintype (Residue b)]
-    [Fintype (Residue (D * a))] [Fintype (Residue (E * b))] (j : O) :
+    [Fintype (Residue (D * a))] [Fintype (Residue (E * b))]  j  :
     supportedCorrelation (D * a) (E * b)
       (supported_mul_elements D a hD ha) (supported_mul_elements E b hE hb) j =
       supportedCorrelation D E hD hE j * sexticReciprocityPhase a E *
@@ -116,34 +121,34 @@ theorem supported_complete_common_support (D E a b : O)
     supported_opposite_phase a b ha hb hpa hpb hab,
     sexticReciprocityPhase_symm D b, star_sexticReciprocityPhase]
 
-lemma supported_element_ne_zero (d : O) (hd : Supported (Ideal.span {d})) : d ≠ 0 := by
+lemma supported_element_ne_zero  d  (hd : Supported (Ideal.span {d})) : d ≠ 0 := by
   intro h
   exact hd.1 (by simp [h])
 
-def actualCorrelation (u v : O)
-    (hu : Supported (Ideal.span {u})) (hv : Supported (Ideal.span {v})) (j : O) : ℂ := by
+def actualCorrelation (u v )
+    (hu : Supported (Ideal.span {u})) (hv : Supported (Ideal.span {v})) (j : ActualEisensteinCubic.O) : ℂ := by
   letI := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero u hu)
   letI := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero v hv)
   letI : Fintype (Residue u) := Fintype.ofFinite _
   letI : Fintype (Residue v) := Fintype.ofFinite _
   exact supportedCorrelation u v hu hv j
 
-def completeSupportExtension (D E : O)
+def completeSupportExtension (D E )
     (hD : Supported (Ideal.span {D})) (hE : Supported (Ideal.span {E}))
-    (j a b : O) : ℂ :=
+    (j a b : ActualEisensteinCubic.O)  :=
   actualCorrelation D E hD hE j * sexticReciprocityPhase a E *
     star (sexticReciprocityPhase b D) * sexticReciprocityPhase a b *
     idealRowHom j (Ideal.span {a}) * star (idealRowHom (-j) (Ideal.span {b}))
 
-theorem actual_complete_common_support (D E a b : O)
-    (hD : Supported (Ideal.span {D})) (hE : Supported (Ideal.span {E}))
-    (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+theorem actual_complete_common_support  D E a b 
+     hD   hE 
+     ha   hb 
     (hpD : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ D - 1)
     (hpE : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ E - 1)
     (hpa : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a - 1)
     (hpb : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ b - 1)
     (hcopA : IsCoprime (D * E) a) (hcopB : IsCoprime (D * E) b) (hab : IsCoprime a b)
-    (j : O) :
+     j  :
     actualCorrelation (D * a) (E * b)
       (supported_mul_elements D a hD ha) (supported_mul_elements E b hE hb) j =
       completeSupportExtension D E hD hE j a b := by

@@ -14,22 +14,27 @@ namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
 open FourierBridge CompletedHeight SecondPassIntegration
-local notation "O" => ActualEisensteinCubic.O
 
-def secondCellColumnExponent (Z X:ℝ) (d:BlockIndex):ℝ :=
+
+def secondCellColumnExponent (Z X:ℝ) (d:BlockIndex) :=
   Real.logb Z (X/(scales d 0*scales d 2))
 
-theorem second_cell_column_scale (Z X:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X) :
-    Z^(secondCellColumnExponent Z X d)=X/(scales d 0*scales d 2) := by
-  exact Real.rpow_logb (by linarith) (ne_of_gt hZ)
+section
+variable (Z X b : ℝ) (d : BlockIndex) (hZ : 1<Z) (hX : 0<X)
+
+include hZ hX in
+theorem second_cell_column_scale         :
+    Z^(secondCellColumnExponent Z X d)=X/(scales d 0*scales d 2) := Real.rpow_logb (by linarith) (ne_of_gt hZ)
     (div_pos hX (mul_pos (dyadScale_pos _) (dyadScale_pos _)))
 
-theorem second_cell_physical_scale (Z X:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X) :
+include hZ hX in
+theorem second_cell_physical_scale         :
     scales d 0*scales d 2*Z^(secondCellColumnExponent Z X d)=X := by
   rw [second_cell_column_scale Z X d hZ hX]
   field_simp [scales,ne_of_gt (dyadScale_pos (d 0)),ne_of_gt (dyadScale_pos (d 2))]
 
-theorem second_cell_clipping_ratio (Z X b:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X)
+include hZ hX in
+theorem second_cell_clipping_ratio        
     (hb:1≤b) (hsource:scales d 0*scales d 2≤b*X) :
     1≤Z^(max 0 (secondCellColumnExponent Z X d)-secondCellColumnExponent Z X d) ∧
     Z^(max 0 (secondCellColumnExponent Z X d)-secondCellColumnExponent Z X d)≤b := by
@@ -44,9 +49,11 @@ theorem second_cell_clipping_ratio (Z X b:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X)
       rw [max_eq_left hN',zero_sub,Real.rpow_neg hz.le,hn,inv_div]
       exact (div_le_iff₀ hX).mpr hsource
 
+end
+
 theorem actual_source_block_ratios {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn)) (d:BlockIndex)
+    (p:ι→ActualEisensteinCubic.O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn))  d 
     (hcell:∀x∈source,index p x=d) (hk:∀x∈source,x.second.frequency≠0) :
     ∀x∈source,∀i,InverseSecondChildWindows.actualOuterRatios p x
       (scales d 0) (scales d 1) (scales d 2) (scales d 3) i∈Set.Icc 1 2 := by

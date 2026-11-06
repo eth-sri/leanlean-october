@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.IdealMultiplicative
 public import Mathlib.RingTheory.UniqueFactorizationDomain.Finsupp
@@ -11,71 +12,63 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 abbrev PrimeIdeal := {P : Id // Prime P}
 
-def primeValuations (I : Id) : PrimeIdeal →₀ ℕ :=
+def primeValuations (I : Id)  :=
   (factorization I).subtypeDomain Prime
 
-def idealFromValuations (v : PrimeIdeal →₀ ℕ) : Id :=
+def idealFromValuations (v : PrimeIdeal →₀ ℕ)  :=
   v.prod (fun P n=>P.val^n)
 
-lemma idealFromValuations_ne_zero (v : PrimeIdeal →₀ ℕ) : idealFromValuations v≠0 := by
+lemma idealFromValuations_ne_zero  v  : idealFromValuations v≠0 := by
   unfold idealFromValuations Finsupp.prod
   exact Finset.prod_ne_zero_iff.mpr (fun P hP=>pow_ne_zero _ P.property.ne_zero)
 
-@[simp] lemma primeValuations_apply (I : Id) (P : PrimeIdeal) :
+@[simp] lemma primeValuations_apply  I   P  :
     primeValuations I P=(normalizedFactors I).count P.val := by
   simp only [primeValuations,Finsupp.subtypeDomain_apply,factorization_eq_count]
 
 @[simp] lemma primeValuations_one : primeValuations 1=0 := by
   simp only [primeValuations,factorization_one,Finsupp.subtypeDomain_zero]
 
-lemma primeValuations_mul (I J : Id) (hI : I≠0) (hJ : J≠0) :
+lemma primeValuations_mul  I J  (hI : I≠0) (hJ : J≠0) :
     primeValuations (I*J)=primeValuations I+primeValuations J := by
   simp only [primeValuations,factorization_mul hI hJ,Finsupp.subtypeDomain_add]
 
-@[simp] lemma primeValuations_prime (P : PrimeIdeal) :
+@[simp] lemma primeValuations_prime  P  :
     primeValuations P.val=Finsupp.single P 1 := by
   ext Q
   simp only [primeValuations_apply,normalizedFactors_irreducible P.property.irreducible,
     normalize_eq,Multiset.count_singleton,Finsupp.single_apply]
-  by_cases h : Q=P
-  · subst Q
-    simp
-  · have hv : Q.val≠P.val := fun hh=>h (Subtype.ext hh)
-    simp [Ne.symm h,hv]
+  aesop
 
-lemma primeValuations_pow (I : Id) (n : ℕ) :
+lemma primeValuations_pow  I   n  :
     primeValuations (I^n)=n • primeValuations I := by
-  ext P
-  simp only [primeValuations_apply,normalizedFactors_pow,Multiset.count_nsmul,
-    Finsupp.coe_smul,Pi.smul_apply,smul_eq_mul]
+  bound
 
 @[simp] lemma idealFromValuations_zero : idealFromValuations 0=1 := by
   simp [idealFromValuations]
 
-lemma idealFromValuations_add (v w : PrimeIdeal →₀ ℕ) :
-    idealFromValuations (v+w)=idealFromValuations v*idealFromValuations w := by
-  exact Finsupp.prod_add_index' (fun _=>pow_zero _) (fun _ _ _=>pow_add _ _ _)
+lemma idealFromValuations_add  v w  :
+    idealFromValuations (v+w)=idealFromValuations v*idealFromValuations w := Finsupp.prod_add_index' (fun _=>pow_zero _) (fun _ _ _=>pow_add _ _ _)
 
-@[simp] lemma idealFromValuations_single (P : PrimeIdeal) (n : ℕ) :
+@[simp] lemma idealFromValuations_single  P   n  :
     idealFromValuations (Finsupp.single P n)=P.val^n := by
   simp [idealFromValuations]
 
-@[simp] theorem primeValuations_idealFromValuations (v : PrimeIdeal →₀ ℕ) :
+@[simp] theorem primeValuations_idealFromValuations  v  :
     primeValuations (idealFromValuations v)=v := by
   induction v using Finsupp.induction with
   | zero => simp only [idealFromValuations_zero,primeValuations_one]
   | @single_add P n v hP hn ih =>
     rw [idealFromValuations_add,primeValuations_mul _ _
       (idealFromValuations_ne_zero _) (idealFromValuations_ne_zero _),ih]
-    simp only [idealFromValuations_single,primeValuations_pow,primeValuations_prime,
-      Finsupp.smul_single,smul_eq_mul,mul_one]
+    simp_all [idealFromValuations_single, primeValuations_pow, primeValuations_prime]
 
-@[simp] theorem idealFromValuations_primeValuations (I : Id) (hI : I≠0) :
+@[simp] theorem idealFromValuations_primeValuations  I  (hI : I≠0) :
     idealFromValuations (primeValuations I)=I := by
   have hs : ∀ P∈(factorization I).support,Prime P := by
     intro P hP
@@ -99,7 +92,7 @@ lemma primeIdeal_coprime (P Q : PrimeIdeal) (h : P≠Q) : IsCoprime P.val Q.val 
   let : Q.val.IsMaximal := Ideal.IsPrime.isMaximal inferInstance Q.property.ne_zero
   exact Ideal.isCoprime_of_isMaximal (fun hh=>h (Subtype.ext hh))
 
-lemma prime_coprime_idealFromValuations (P : PrimeIdeal) (v : PrimeIdeal →₀ ℕ)
+lemma prime_coprime_idealFromValuations (P : PrimeIdeal)  v 
     (hP : v P=0) : IsCoprime P.val (idealFromValuations v) := by
   apply IsCoprime.prod_right
   intro Q hQ
@@ -123,18 +116,13 @@ def finsuppPairEquiv {α β γ : Type*} [Zero β] [Zero γ] :
 abbrev HighValuation := (ℕ×ℕ)×(ℕ×ℕ)
 abbrev NonzeroIdeal := {I : Id // I≠0}
 
-def highValuationEquiv : ((NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroIdeal)) ≃
-    (PrimeIdeal→₀HighValuation) :=
+def highValuationEquiv  :=
   (Equiv.prodCongr
     (Equiv.prodCongr nonzeroIdealValuationEquiv nonzeroIdealValuationEquiv)
     (Equiv.prodCongr nonzeroIdealValuationEquiv nonzeroIdealValuationEquiv)).trans
       ((Equiv.prodCongr finsuppPairEquiv finsuppPairEquiv).trans finsuppPairEquiv)
 
-@[simp] lemma highValuationEquiv_apply
-    (a : (NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroIdeal)) (P : PrimeIdeal) :
-    highValuationEquiv a P =
-      ((primeValuations a.1.1.val P,primeValuations a.1.2.val P),
-        (primeValuations a.2.1.val P,primeValuations a.2.2.val P)) := rfl
+
 
 end SevenEighths.ProbePhysical
 end

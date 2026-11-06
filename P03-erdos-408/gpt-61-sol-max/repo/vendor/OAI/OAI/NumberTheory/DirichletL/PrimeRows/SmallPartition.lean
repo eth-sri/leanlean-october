@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.RowPartition
 
@@ -12,10 +13,10 @@ open Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
 
-def smallDyadicIndices (L : ℝ) : Finset ℕ :=
+def smallDyadicIndices (L : ℝ)  :=
   (Finset.range (Nat.find (pow_unbounded_of_one_lt L (by norm_num : (1:ℝ)<2)))).filter (fun n=>(2:ℝ)^n≤L)
 
-@[simp] lemma mem_smallDyadicIndices {L : ℝ} {n : ℕ} : n∈smallDyadicIndices L ↔ (2:ℝ)^n≤L := by
+@[simp] lemma mem_smallDyadicIndices  {L}   {n}  : n∈smallDyadicIndices L ↔ (2:ℝ)^n≤L := by
   simp only [smallDyadicIndices,Finset.mem_filter,Finset.mem_range]
   constructor
   · exact And.right
@@ -23,18 +24,18 @@ def smallDyadicIndices (L : ℝ) : Finset ℕ :=
     refine ⟨?_,hn⟩
     by_contra h
     have hp := pow_le_pow_right₀ (by norm_num : (1:ℝ)≤2) (not_lt.mp h)
-    exact not_lt_of_ge (hp.trans hn) (Nat.find_spec (pow_unbounded_of_one_lt L (by norm_num : (1:ℝ)<2)))
+    grind
 
-def smallDyadicRows (L : ℝ) (n : ℕ) : Finset FreeRow := (dyadicRows 1 n).filter (fun u=>rowNorm u<L)
+def smallDyadicRows (L : ℝ) (n : ℕ)  := (dyadicRows 1 n).filter (fun u=>rowNorm u<L)
 
-@[simp] lemma mem_smallDyadicRows {L : ℝ} {n : ℕ} {u : FreeRow} :
+@[simp] lemma mem_smallDyadicRows  {L}   {n}   {u}  :
     u∈smallDyadicRows L n ↔ u∈dyadicRows 1 n ∧ rowNorm u<L := Finset.mem_filter
 
-lemma smallDyadicRows_disjoint (L : ℝ) : Pairwise (fun m n=>Disjoint (smallDyadicRows L m) (smallDyadicRows L n)) := by
+lemma smallDyadicRows_disjoint  L  : Pairwise (fun m n=>Disjoint (smallDyadicRows L m) (smallDyadicRows L n)) := by
   intro m n hmn
   exact (dyadicRows_disjoint 1 (by norm_num) hmn).mono (Finset.filter_subset _ _) (Finset.filter_subset _ _)
 
-lemma small_rows_biUnion (L : ℝ) :
+lemma small_rows_biUnion  L  :
     (smallDyadicIndices L).biUnion (smallDyadicRows L)=rowBand 1 L := by
   ext u
   constructor

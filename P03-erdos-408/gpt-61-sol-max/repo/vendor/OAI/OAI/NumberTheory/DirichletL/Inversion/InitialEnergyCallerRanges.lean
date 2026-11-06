@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerSourceMas
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
@@ -36,7 +36,11 @@ theorem sourceIdeal_admissible (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
   rw [he]
   exact ⟨hg i,hc i⟩
 
-theorem retained_label_admissible (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
+section
+variable (hc : ∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
+
+include hc in
+theorem retained_label_admissible  
     (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)
     {x:Source (ι:=ι) 0}(hx:x∈coprimeSource p S)(u:Eisˣ) :
     Admissible (initialChild (toTuple p (sectorSource u x))).2.1 := by
@@ -45,10 +49,11 @@ theorem retained_label_admissible (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2
       admissible_supported (sourceIdeal_admissible p hp hcop hg hc _)⟩
   exact ⟨hs.1,retained_child_squarefree p hcop S hdiv hx u,hs.2⟩
 
+include hc in
 theorem childLabels_subset_range
-    (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
+     
     (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)
+     S (hdiv:∀x∈S,x.divisor⊆x.common)
     (Z θ v η:ℝ)(hZ:0<Z)
     (hd:∀x∈coprimeSource p S,((sourceIdeal p x.divisor).absNorm:ℝ)≤Z^(θ+η))
     (hv:∀x∈coprimeSource p S,((sourceIdeal p x.overlap).absNorm:ℝ)≤Z^(v+η)) :
@@ -64,10 +69,11 @@ theorem childLabels_subset_range
   congr 1
   ring
 
+include hc in
 theorem canonical_child_domains
-    (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
+     
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)
+     S (hdiv:∀x∈S,x.divisor⊆x.common)
     (hf:∀x∈S,x.frequency≠0)(Z θ v H η:ℝ)(hZ:0<Z)
     (hd:∀x∈coprimeSource p S,((sourceIdeal p x.divisor).absNorm:ℝ)≤Z^(θ+η))
     (hv:∀x∈coprimeSource p S,((sourceIdeal p x.overlap).absNorm:ℝ)≤Z^(v+η))
@@ -88,8 +94,10 @@ theorem canonical_child_domains
       (hd x hx) (hv x hx) (hh x hx)).2
     rwa [initial_child_row_norm p hp hpr] at he
 
+end
+
 end SevenEighths.InverseInitialEnergyCallerRanges
 
-end
+
 
 end OAI

@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.S2.SpanConfigurations
 
 public import Erdos821.S2.HistoryReconstructionTask
 
@@ -14,12 +17,16 @@ open Erdos821.S2Core
 variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
 variable {A : Model F P J m} (H : MemoryHistory A n)
 
+section
+variable (hn : 0 < n) (hH : H.Valid) (S : LifespanAssignment P n) (hS : H.toResiduePath.lifespanValid S) (hm : ∀ i g, H.toResiduePath.memoryBefore S i g = (H.before i).2.2 g ∧
+      H.toResiduePath.memoryAfter S i g = (H.after i).2.2 g) (i : Fin (n + 1))
+
+include hH hm in
 theorem reconstructed_before_eq
-    (hH : H.Valid) (S : LifespanAssignment P n)
-    (hS : H.toResiduePath.lifespanValid S)
-    (hm : ∀ i g, H.toResiduePath.memoryBefore S i g = (H.before i).2.2 g ∧
-      H.toResiduePath.memoryAfter S i g = (H.after i).2.2 g)
-    (i : Fin (n + 1)) :
+       
+     
+     
+      :
     (H.toResiduePath.reconstructedHistory S hS (H.before 0).1).before i = H.before i := by
   change H.toResiduePath.stateBefore S (H.before 0).1 i = H.before i
   apply Prod.ext
@@ -29,12 +36,12 @@ theorem reconstructed_before_eq
     · funext g
       exact (hm i g).1
 
+include hH hm in
 theorem reconstructed_after_eq
-    (hH : H.Valid) (S : LifespanAssignment P n)
-    (hS : H.toResiduePath.lifespanValid S)
-    (hm : ∀ i g, H.toResiduePath.memoryBefore S i g = (H.before i).2.2 g ∧
-      H.toResiduePath.memoryAfter S i g = (H.after i).2.2 g)
-    (i : Fin (n + 1)) :
+       
+     
+     
+      :
     (H.toResiduePath.reconstructedHistory S hS (H.before 0).1).after i = H.after i := by
   change H.toResiduePath.stateAfter S (H.before 0).1 i = H.after i
   apply Prod.ext
@@ -44,12 +51,15 @@ theorem reconstructed_after_eq
     · funext g
       exact (hm i g).2
 
-theorem initial_small_compatible (hn : 0 < n) (hH : H.Valid) :
+include hn hH in
+theorem initial_small_compatible     :
     H.toResiduePath.SmallCompatible (H.before 0).1 := by
   intro i
   have hs := H.smallPhysical_before hn hH i
   rw [H.small_residue_translation hH i] at hs
   simpa [MemoryHistory.toResiduePath] using hs
+
+end
 
 def birthAddressBeforeVisit (i : Fin (n + 1)) :
     BirthAddress P (J + F.ell) n H.birthBound → Prop
@@ -58,7 +68,7 @@ def birthAddressBeforeVisit (i : Fin (n + 1)) :
   | .inr (.inr (j, _, _)) => j.val < i.val
 
 theorem birthAddressBeforeVisit_mono (i j : Fin (n + 1)) (hij : i.val ≤ j.val)
-    (a : BirthAddress P (J + F.ell) n H.birthBound)
+     a 
     (ha : birthAddressBeforeVisit (H := H) i a) :
     birthAddressBeforeVisit (H := H) j a := by
   cases a with
@@ -77,8 +87,12 @@ theorem pendingPrime_mem_liveValues {M : ℕ} (s : P.MemoryState M)
   simp only [groupLivePrimes, Multiset.mem_add]
   exact Or.inr hp
 
-theorem liveValue_origin_before (hH : H.Valid) (hd : H.DistinctBirths)
-    (i : Fin (n + 1)) (p : ℕ) (hp : p ∈ liveValues (H.before i)) :
+section
+variable (hH : H.Valid) (hd : H.DistinctBirths) (Q : ResiduePath A n) (S : LifespanAssignment P n) (i : Fin (n + 1)) {M : ℕ} {s s' t t' : P.MemoryState M} (hs : s = s') (ht : t = t') (c d : GhostChoice s t) (hc : ghostChoiceValid c) (g : P.BigGroup)
+
+include hH hd in
+theorem liveValue_origin_before    
+       p  (hp : p ∈ liveValues (H.before i)) :
     ∃ a : BirthAddress P (J + F.ell) n H.birthBound,
       H.addressPerformed H.birthBound a ∧ H.addressValue H.birthBound a = p ∧
         birthAddressBeforeVisit (H := H) i a := by
@@ -108,9 +122,7 @@ theorem liveValue_origin_before (hH : H.Valid) (hd : H.DistinctBirths)
       have hp' := Multiset.mem_of_le hbound hp
       rcases Multiset.mem_add.mp hp' with hpOld | hpFresh
       · rcases Multiset.mem_add.mp hpOld with hpOld | hpGhost
-        · obtain ⟨a, hperf, hvalue, hbefore⟩ := ih p hpOld
-          exact ⟨a, hperf, hvalue,
-            birthAddressBeforeVisit_mono (H := H) i.castSucc i.succ (by simp) a hbefore⟩
+        · grind [birthAddressBeforeVisit_mono]
         · simp only [MemoryHistory.ghostBirthValues, Multiset.mem_sum, Finset.mem_univ,
             true_and, Multiset.mem_sum, Finset.mem_univ, true_and,
             Multiset.mem_singleton] at hpGhost
@@ -128,8 +140,9 @@ theorem liveValue_origin_before (hH : H.Valid) (hd : H.DistinctBirths)
         refine ⟨.inr (.inl (i, g, h)), hh, rfl, ?_⟩
         simp [birthAddressBeforeVisit]
 
-theorem actual_ghost_birth_not_before (hH : H.Valid) (hd : H.DistinctBirths)
-    (i : Fin (n + 1)) (g : P.BigGroup) (h : Fin ((H.ghost i).2.1 g).val) :
+include hH hd in
+theorem actual_ghost_birth_not_before    
+         h  :
     (H.ghost i).2.2 g h ∉ pendingPrimes ((H.before i).2.2 g) := by
   classical
   intro hmem
@@ -148,9 +161,7 @@ theorem actual_ghost_birth_not_before (hH : H.Valid) (hd : H.DistinctBirths)
     (Finset.mem_filter.mpr ⟨Finset.mem_univ _, haPerf⟩)
     (Finset.mem_filter.mpr ⟨Finset.mem_univ _, ha'Perf⟩)
     (haVal.trans ha'Val.symm)
-  have hbad : ¬ birthAddressBeforeVisit (H := H) i a' := by
-    simp [a', birthAddressBeforeVisit]
-  exact hbad (heq ▸ haBefore)
+  grind [birthAddressBeforeVisit]
 
 theorem memoryEntry_mem_delete_iff {g : P.Group} (z : P.Memory g)
     (B : Finset (Fin z.card)) (hz : (pendingPrimes z).Nodup)
@@ -163,47 +174,36 @@ theorem memoryEntry_mem_delete_iff {g : P.Group} (z : P.Memory g)
     have hPrime : (memoryEntry z j).1 = (memoryEntry z i).1 :=
       congrArg (fun x : P.Particle g => x.1) hEntry
     have hji := memoryEntry_prime_injective z hz hPrime
-    have hjVal : j ∈ (Finset.univ \ B).val := by
-      simpa only [Finset.sdiff_val] using hj
-    have hj' : j ∈ Finset.univ \ B := Finset.mem_val.mp hjVal
-    intro hiB
-    exact (Finset.mem_sdiff.mp hj').2 (hji ▸ hiB)
+    grind
   · intro hi
     apply Multiset.mem_map.mpr
-    refine ⟨i, ?_, rfl⟩
-    have hiFin : i ∈ Finset.univ \ B :=
-      Finset.mem_sdiff.mpr ⟨Finset.mem_univ _, hi⟩
-    have hiVal : i ∈ (Finset.univ \ B).val := Finset.mem_val.mpr hiFin
-    simpa only [Finset.sdiff_val] using hiVal
+    grind
 
-theorem canonical_ghost_birth_not_before (Q : ResiduePath A n)
-    (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup)
-    (p : P.Prime g.val) (hp : p ∈ Q.ghostBirthPrimes S i g) :
+theorem canonical_ghost_birth_not_before  
+         
+     p  (hp : p ∈ Q.ghostBirthPrimes S i g) :
     p ∉ pendingPrimes (Q.memoryBefore S i g) := by
   classical
   intro hmem
   rw [Q.pendingPrimes_memoryBefore] at hmem
   have hbefore : Q.pendingBefore g p (S g p) i := by
-    have hfin : p ∈ Q.pendingBeforePrimes S i g := Finset.mem_val.mp hmem
-    simpa [ResiduePath.pendingBeforePrimes] using hfin
+    simp_all [ResiduePath.pendingBeforePrimes]
   have hborn : Q.ghostBirthAt g p (S g p) i :=
     (Finset.mem_filter.mp hp).2
   cases hs : S g p with
   | none =>
       simp [ResiduePath.ghostBirthAt, hs] at hborn
   | some pair =>
-      rcases pair with ⟨b, e⟩
-      rw [hs] at hbefore hborn
-      simp only [ResiduePath.pendingBefore, ResiduePath.ghostBirthAt] at hbefore hborn
-      omega
+      simp_all [ResiduePath.pendingBefore, ResiduePath.ghostBirthAt]
 
-theorem ghostChoice_selected_iff_not_target {M : ℕ}
-    {s t : P.MemoryState M} (c : GhostChoice s t)
-    (hc : ghostChoiceValid c) (g : P.BigGroup)
+include hc in
+theorem ghostChoice_selected_iff_not_target  
+       
+       
     (hsrc : (pendingPrimes (s.2.2 g)).Nodup)
     (hfresh : ∀ h : Fin (c.2.1 g).val,
       c.2.2 g h ∉ pendingPrimes (s.2.2 g))
-    (i : Fin (s.2.2 g).card) :
+     i  :
     i ∈ c.1 g ↔ memoryEntry (s.2.2 g) i ∉ t.2.2 g := by
   classical
   let z := memoryEntry (s.2.2 g) i
@@ -233,9 +233,10 @@ theorem ghostChoice_selected_iff_not_target {M : ℕ}
     rw [(hc g).2] at hleft
     exact hnotTarget hleft
 
-theorem ghostChoice_deletions_eq {M : ℕ}
-    {s t : P.MemoryState M} (c d : GhostChoice s t)
-    (hc : ghostChoiceValid c) (hd : ghostChoiceValid d)
+include hc in
+theorem ghostChoice_deletions_eq  
+       
+      (hd : ghostChoiceValid d)
     (hsrc : ∀ g : P.BigGroup, (pendingPrimes (s.2.2 g)).Nodup)
     (hfc : ∀ g h, c.2.2 g h ∉ pendingPrimes (s.2.2 g))
     (hfd : ∀ g h, d.2.2 g h ∉ pendingPrimes (s.2.2 g)) :
@@ -260,41 +261,33 @@ theorem batch_perm_of_map_eq {α : Type*} {b₁ b₂ : ℕ}
   have hmatch (i : Fin b₁) : ∃ j : Fin b₁, q j = p i := by
     have hi : p i ∈ (Finset.univ : Finset (Fin b₁)).val.map q := by
       rw [← hrange]
-      exact Multiset.mem_map.mpr ⟨i, Finset.mem_val.mpr (Finset.mem_univ _), rfl⟩
-    rcases Multiset.mem_map.mp hi with ⟨j, _, hqj⟩
-    exact ⟨j, hqj⟩
+      simp_all
+    simp_all
   let f : Fin b₁ → Fin b₁ := fun i => Classical.choose (hmatch i)
   have hspec (i : Fin b₁) : q (f i) = p i := Classical.choose_spec (hmatch i)
   have hbij : Function.Bijective f := by
     constructor
     · intro i j hij
-      apply hp
-      calc
-        p i = q (f i) := (hspec i).symm
-        _ = q (f j) := congrArg q hij
-        _ = p j := hspec j
+      grind
     · intro j
       have hj : q j ∈ (Finset.univ : Finset (Fin b₁)).val.map p := by
         rw [hrange]
-        exact Multiset.mem_map.mpr ⟨j, Finset.mem_val.mpr (Finset.mem_univ _), rfl⟩
+        simp_all
       rcases Multiset.mem_map.mp hj with ⟨i, _, hpi⟩
       refine ⟨i, ?_⟩
-      apply hq
-      calc
-        q (f i) = p i := hspec i
-        _ = q j := hpi
-  refine ⟨Equiv.ofBijective f hbij, ?_⟩
-  intro i
-  exact hspec i
+      grind
+  solve_by_elim [Equiv.ofBijective]
 
-theorem history_pending_prime_nodup (hH : H.Valid) (hd : H.DistinctBirths)
-    (i : Fin (n + 1)) (g : P.BigGroup) :
+include hH hd in
+theorem history_pending_prime_nodup    
+        :
     (pendingPrimes ((H.before i).2.2 g)).Nodup := by
   have hlive := H.liveValues_nodup_of_distinct hH hd i
   exact (big_live_structure (H.before i) hlive.1 g).2.1
 
-theorem actual_ghost_batch_injective (hH : H.Valid) (hd : H.DistinctBirths)
-    (i : Fin (n + 1)) (g : P.BigGroup) :
+include hH hd in
+theorem actual_ghost_batch_injective    
+        :
     Function.Injective ((H.ghost i).2.2 g) := by
   classical
   intro h k he
@@ -322,23 +315,13 @@ theorem actual_ghost_batch_injective (hH : H.Valid) (hd : H.DistinctBirths)
   apply Fin.ext
   simpa [embed] using congrArg Fin.val hembed
 
-theorem canonical_ghost_batch_injective (Q : ResiduePath A n)
-    (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup) :
-    Function.Injective (Q.ghostBatchLabels S i g) := by
-  intro h k he
-  have hlist := (Q.ghostBirthPrimes S i g).nodup_toList
-  have hget : (Q.ghostBirthPrimes S i g).toList.get
-      ⟨h.val, by simp⟩ = (Q.ghostBirthPrimes S i g).toList.get
-      ⟨k.val, by simp⟩ := by
-    simpa [ResiduePath.ghostBatchLabels] using congrArg Subtype.val he
-  have hidx := (hlist.get_inj_iff).mp hget
-  apply Fin.ext
-  have hvalEq := congrArg
-    (fun j : Fin (Q.ghostBirthPrimes S i g).toList.length => j.val) hidx
-  simpa using hvalEq
+theorem canonical_ghost_batch_injective  
+          :
+    Function.Injective (Q.ghostBatchLabels S i g) := by solve_by_elim [_root_.Erdos821.S2Core.ResiduePath.ghostBatchLabels_injective]
 
-theorem ghostChoice_reorder {M : ℕ} {s t : P.MemoryState M}
-    (c d : GhostChoice s t) (hc : ghostChoiceValid c) (hd : ghostChoiceValid d)
+include hc in
+theorem ghostChoice_reorder    
+        (hd : ghostChoiceValid d)
     (hsrc : ∀ g : P.BigGroup, (pendingPrimes (s.2.2 g)).Nodup)
     (hfc : ∀ g h, c.2.2 g h ∉ pendingPrimes (s.2.2 g))
     (hfd : ∀ g h, d.2.2 g h ∉ pendingPrimes (s.2.2 g))
@@ -399,9 +382,10 @@ theorem ghostChoice_reorder {M : ℕ} {s t : P.MemoryState M}
         exact (hsigma g i).symm
       exact heq_of_eq hbatchEq
 
-theorem ghostChoice_reorder_heq {M : ℕ} {s s' t t' : P.MemoryState M}
-    (hs : s = s') (ht : t = t')
-    (c : GhostChoice s t) (d : GhostChoice s' t')
+include hs ht in
+theorem ghostChoice_reorder_heq    
+       
+      (d : GhostChoice s' t')
     (hc : ghostChoiceValid c) (hd : ghostChoiceValid d)
     (hsrc : ∀ g : P.BigGroup, (pendingPrimes (s.2.2 g)).Nodup)
     (hfc : ∀ g h, c.2.2 g h ∉ pendingPrimes (s.2.2 g))
@@ -415,10 +399,16 @@ theorem ghostChoice_reorder_heq {M : ℕ} {s s' t t' : P.MemoryState M}
   obtain ⟨sigma, he⟩ := ghostChoice_reorder c d hc hd hsrc hfc hfd hic hid
   exact ⟨sigma, heq_of_eq he⟩
 
-theorem reconstructed_ghost_reorder_exists (hH : H.Valid) (hd : H.DistinctBirths)
-    (S : LifespanAssignment P n) (hS : H.toResiduePath.lifespanValid S)
-    (hm : ∀ i g, H.toResiduePath.memoryBefore S i g = (H.before i).2.2 g ∧
-      H.toResiduePath.memoryAfter S i g = (H.after i).2.2 g) :
+end
+
+section
+variable (hH : H.Valid) (hd : H.DistinctBirths) {M : ℕ} {g : P.Group} (Q : ResiduePath A n) (S : LifespanAssignment P n) (hS : H.toResiduePath.lifespanValid S) (hm : ∀ i g, H.toResiduePath.memoryBefore S i g = (H.before i).2.2 g ∧
+      H.toResiduePath.memoryAfter S i g = (H.after i).2.2 g) (i : Fin (n + 1))
+
+include hH hd hm in
+theorem reconstructed_ghost_reorder_exists    
+       
+      :
     ∃ sigma : (H.toResiduePath.reconstructedHistory S hS (H.before 0).1).BatchOrders,
       ∀ i, HEq (H.ghost i)
         (reorderGhostChoice
@@ -433,9 +423,9 @@ theorem reconstructed_ghost_reorder_exists (hH : H.Valid) (hd : H.DistinctBirths
     have hbefore := reconstructed_before_eq (H := H) hH S hS hm i
     have hafter := reconstructed_after_eq (H := H) hH S hS hm i
     have hsrc : ∀ g : P.BigGroup, (pendingPrimes ((H.before i).2.2 g)).Nodup :=
-      fun g => history_pending_prime_nodup (H := H) hH hd i g
+      history_pending_prime_nodup (H := H) hH hd i
     have hfc : ∀ g h, (H.ghost i).2.2 g h ∉ pendingPrimes ((H.before i).2.2 g) :=
-      fun g h => actual_ghost_birth_not_before (H := H) hH hd i g h
+      actual_ghost_birth_not_before (H := H) hH hd i
     have hfd : ∀ g h, (K.ghost i).2.2 g h ∉ pendingPrimes ((K.before i).2.2 g) := by
       intro g h
       have hpBirth : Q.ghostBatchLabels S i g h ∈ Q.ghostBirthPrimes S i g := by
@@ -444,14 +434,13 @@ theorem reconstructed_ghost_reorder_exists (hH : H.Valid) (hd : H.DistinctBirths
           List.mem_ofFn.mpr ⟨h, rfl⟩
         rw [Q.ghostBatchLabels_enumeration] at hget
         exact Finset.mem_toList.mp hget
-      change Q.ghostBatchLabels S i g h ∉ pendingPrimes (Q.memoryBefore S i g)
-      exact canonical_ghost_birth_not_before Q S i g _ hpBirth
+      solve_by_elim [canonical_ghost_birth_not_before]
     obtain ⟨sigma, hEq⟩ := ghostChoice_reorder_heq hbefore.symm hafter.symm
       (H.ghost i) (K.ghost i)
       ((hH.2.2.1 i).2.2) (Q.reconstructedGhostChoice_valid S hS (H.before 0).1 i)
       hsrc hfc hfd
-      (fun g => actual_ghost_batch_injective (H := H) hH hd i g)
-      (fun g => canonical_ghost_batch_injective Q S i g)
+      (actual_ghost_batch_injective (H := H) hH hd i)
+      (canonical_ghost_batch_injective Q S i)
     exact ⟨sigma, hEq⟩
   let sigma : K.BatchOrders := fun i => Classical.choose (hghost i)
   refine ⟨sigma, ?_⟩
@@ -476,7 +465,7 @@ theorem memoryHistory_eq_of_fields {H K : MemoryHistory A n}
       subst edge'
       rfl
 
-theorem pendingPrimes_delete_le {g : P.Group} (z : P.Memory g)
+theorem pendingPrimes_delete_le   (z : P.Memory g)
     (B : Finset (Fin z.card)) :
     pendingPrimes (deleteMemoryIndices z B) ≤ pendingPrimes z := by
   calc
@@ -484,19 +473,19 @@ theorem pendingPrimes_delete_le {g : P.Group} (z : P.Memory g)
         B.val.map (fun k => (memoryEntry z k).1) := Multiset.le_add_right _ _
     _ = pendingPrimes z := (pendingPrimes_delete_add z B).symm
 
-theorem activePrimes_mem_of_index {M : ℕ} (a : P.Labels M)
+theorem activePrimes_mem_of_index   (a : P.Labels M)
     (g : P.Group) (i : Fin M) : a g i ∈ activePrimes a g := by
   simp [activePrimes]
 
-theorem slotPrimes_mem_iff {M : ℕ} {g : P.Group}
+theorem slotPrimes_mem_iff    
     (a : Fin M → P.Prime g) (B : Finset (Fin M)) (p : P.Prime g) :
     p ∈ slotPrimes a B ↔ ∃ i, i ∈ B ∧ a i = p := by
   rw [slotPrimes_eq_val_map]
   simp only [Multiset.mem_map, Finset.mem_val]
 
-theorem pendingBefore_iff_pendingPrimes (Q : ResiduePath A n)
-    (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup)
-    (p : P.Prime g.val) (z : P.Memory g.val)
+theorem pendingBefore_iff_pendingPrimes  
+         g 
+     p   z 
     (hmem : Q.memoryBefore S i g = z) :
     Q.pendingBefore g p (S g p) i ↔ p ∈ pendingPrimes z := by
   constructor
@@ -513,12 +502,11 @@ theorem pendingBefore_iff_pendingPrimes (Q : ResiduePath A n)
       rw [hmem]
       exact hp
     rw [Q.pendingPrimes_memoryBefore] at hpCanon
-    have hpFin := Finset.mem_val.mp hpCanon
-    simpa [ResiduePath.pendingBeforePrimes] using hpFin
+    simp_all [ResiduePath.pendingBeforePrimes]
 
-theorem pendingAfter_iff_pendingPrimes (Q : ResiduePath A n)
-    (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup)
-    (p : P.Prime g.val) (z : P.Memory g.val)
+theorem pendingAfter_iff_pendingPrimes  
+         g 
+     p   z 
     (hmem : Q.memoryAfter S i g = z) :
     Q.pendingAfter g p (S g p) i ↔ p ∈ pendingPrimes z := by
   constructor
@@ -535,10 +523,10 @@ theorem pendingAfter_iff_pendingPrimes (Q : ResiduePath A n)
       rw [hmem]
       exact hp
     rw [Q.pendingPrimes_memoryAfter] at hpCanon
-    have hpFin := Finset.mem_val.mp hpCanon
-    simpa [ResiduePath.pendingAfterPrimes] using hpFin
+    simp_all [ResiduePath.pendingAfterPrimes]
 
-theorem history_edge_pending_primes_eq (hH : H.Valid) (i : Fin n) (g : P.BigGroup) :
+include hH in
+theorem history_edge_pending_primes_eq    i   g  :
     pendingPrimes ((H.before i.succ).2.2 g) =
       pendingPrimes (deleteMemoryIndices ((H.after i.castSucc).2.2 g)
         (retrievedIndices (H.edge i).2.2.2.2 g)) +
@@ -555,11 +543,11 @@ theorem history_edge_pending_primes_eq (hH : H.Valid) (i : Fin n) (g : P.BigGrou
   rw [pendingPrimes_translate, pendingPrimes_add, pendingPrimes_stored] at hp
   exact hp
 
-theorem history_edge_store_slots_eq (hH : H.Valid) (hd : H.DistinctBirths)
-    (S : LifespanAssignment P n)
-    (hm : ∀ i g, H.toResiduePath.memoryBefore S i g = (H.before i).2.2 g ∧
-      H.toResiduePath.memoryAfter S i g = (H.after i).2.2 g)
-    (i : Fin n) :
+include hH hd hm in
+theorem history_edge_store_slots_eq    
+     
+     
+     i  :
     (H.edge i).2.2.2.2.1 = H.toResiduePath.storeSlots S i := by
   classical
   let Q := H.toResiduePath
@@ -628,11 +616,11 @@ theorem history_edge_store_slots_eq (hH : H.Valid) (hd : H.DistinctBirths)
   · rintro ⟨hshared, hpending⟩
     exact hStoreActual.mpr (hPend.mp hpending)
 
-theorem history_edge_promotion_slots_eq (hH : H.Valid) (hd : H.DistinctBirths)
-    (S : LifespanAssignment P n)
-    (hm : ∀ i g, H.toResiduePath.memoryBefore S i g = (H.before i).2.2 g ∧
-      H.toResiduePath.memoryAfter S i g = (H.after i).2.2 g)
-    (i : Fin n) :
+include hH hd hm in
+theorem history_edge_promotion_slots_eq    
+     
+     
+     i  :
     (H.edge i).2.2.2.2.2.1 = H.toResiduePath.promotionSlots S i := by
   classical
   let Q := H.toResiduePath
@@ -662,16 +650,13 @@ theorem history_edge_promotion_slots_eq (hH : H.Valid) (hd : H.DistinctBirths)
       pendingPrimes (target.2.2 g) =
         pendingPrimes (deleteMemoryIndices (source.2.2 g) (retrievedIndices c g)) +
           slotPrimes (Q.source i g.val) (c.1 g) := by
-    simpa [source, target, c, permuteActive] using hPrimeUpdate g
+    solve_by_elim
   apply funext
   intro g
   obtain ⟨_, hPromotionAllowed, _, hRet, _⟩ := hgroups g
   have hSourceStruct := big_live_structure source hLiveSource g
   have hTargetStruct := big_live_structure target hLiveTarget g
-  have hSourceInj : Function.Injective (Q.source i g.val) := by
-    intro j k hEq
-    apply hSourceStruct.1
-    simpa [hsourceLabels] using hEq
+  
   have hTargetInj : Function.Injective (Q.target i g.val) := by
     intro j k hEq
     apply hTargetStruct.1
@@ -699,19 +684,7 @@ theorem history_edge_promotion_slots_eq (hH : H.Valid) (hd : H.DistinctBirths)
     · intro hp
       have hpSource : Q.target i g.val j ∈ pendingPrimes (source.2.2 g) := by
         simpa [source, permuteActive] using hp
-      have hUnshared : ¬ (A.pattern (H.edge i).2.2.1).shared g.val j := by
-        intro hs
-        have hsame : Q.source i g.val j = Q.target i g.val j := by
-          calc
-            _ = source.2.1 g.val j := (congrFun (congrFun hsourceLabels g.val) j).symm
-            _ = target.2.1 g.val j := hcompat g.val j hs
-            _ = _ := congrFun (congrFun htargetLabels g.val) j
-        have hpSource : Q.source i g.val j ∈ pendingPrimes ((source.2.2 g)) := by
-          rw [hsame]
-          exact hpSource
-        have hpActive : Q.source i g.val j ∈ activePrimes (Q.source i) g.val :=
-          activePrimes_mem_of_index (Q.source i) g.val j
-        exact (Multiset.disjoint_left.mp hSourceDisjoint hpActive) hpSource
+      
       obtain ⟨k, hEntryPrime⟩ :=
         (pendingPrime_mem_iff (source.2.2 g) (Q.target i g.val j)).mp hpSource
       have hkRetrieved : k ∈ retrievedIndices c g := by
@@ -734,8 +707,7 @@ theorem history_edge_promotion_slots_eq (hH : H.Valid) (hd : H.DistinctBirths)
       have hTargetEq : Q.target i g.val u.val = Q.target i g.val j := by
         calc
           _ = target.2.1 g.val u.val := (congrFun (congrFun htargetLabels g.val) u.val).symm
-          _ = (memoryEntry ((source.2.2 g)) (c.2.2 g u)).1 := by
-            exact (hRet u).1.symm
+          _ = (memoryEntry ((source.2.2 g)) (c.2.2 g u)).1 := (hRet u).1.symm
           _ = (memoryEntry ((source.2.2 g)) k).1 :=
             congrArg (fun a => (memoryEntry ((source.2.2 g)) a).1) hidx
           _ = Q.target i g.val j := hEntryPrime
@@ -746,8 +718,7 @@ theorem history_edge_promotion_slots_eq (hH : H.Valid) (hd : H.DistinctBirths)
   have hPendJ := pendingAfter_iff_pendingPrimes Q S i.castSucc g
     (Q.target i g.val j) ((H.after i.castSucc).2.2 g) (hm i.castSucc g).2
   have hPendFin : Q.target i g.val j ∈ Q.pendingAfterPrimes S i.castSucc g ↔
-      Q.target i g.val j ∈ pendingPrimes ((H.after i.castSucc).2.2 g) := by
-    exact Iff.trans (by simp [ResiduePath.pendingAfterPrimes]) hPendJ
+      Q.target i g.val j ∈ pendingPrimes ((H.after i.castSucc).2.2 g) := Iff.trans (by simp [ResiduePath.pendingAfterPrimes]) hPendJ
   change j ∈ c.2.1 g ↔ j ∈ Q.promotionSlots S i g
   rw [ResiduePath.promotionSlots, Finset.mem_filter]
   simp only [Finset.mem_univ, true_and]
@@ -758,19 +729,19 @@ theorem history_edge_promotion_slots_eq (hH : H.Valid) (hd : H.DistinctBirths)
   · rintro ⟨_, hpending⟩
     exact hPromActual j |>.mpr (hPendFin.mp hpending)
 
-theorem memoryEntry_cast_eq {g : P.Group} {z w : P.Memory g} (h : z = w)
+theorem memoryEntry_cast_eq   {z w : P.Memory g} (h : z = w)
     (i : Fin z.card) :
     memoryEntry w (Fin.cast (congrArg Multiset.card h) i) = memoryEntry z i := by
   cases h
   rfl
 
-theorem history_edge_promotion_index_eq (hH : H.Valid) (hd : H.DistinctBirths)
-    (S : LifespanAssignment P n)
-    (hm : ∀ i g, H.toResiduePath.memoryBefore S i g = (H.before i).2.2 g ∧
-      H.toResiduePath.memoryAfter S i g = (H.after i).2.2 g)
+include hH hd in
+theorem history_edge_promotion_index_eq    
+     
+     
     (hProm : ∀ i, (H.edge i).2.2.2.2.2.1 = H.toResiduePath.promotionSlots S i)
-    (i : Fin n) (g : P.BigGroup)
-    (j : {j : Fin (J + F.ell) // j ∈ (H.edge i).2.2.2.2.2.1 g}) :
+     i   g 
+     j  :
     (H.edge i).2.2.2.2.2.2 g j =
       Fin.cast (congrArg Multiset.card (hm i.castSucc g).2)
         (H.toResiduePath.promotionIndex S i g ⟨j.val, by
@@ -814,8 +785,14 @@ theorem history_edge_promotion_index_eq (hH : H.Valid) (hd : H.DistinctBirths)
   exact memoryEntry_prime_injective ((H.after i.castSucc).2.2 g)
     hSourceStruct.2.1 hPrimeEq
 
-def finsetSubtypeCast {α : Type*} {s t : Finset α} (h : s = t)
+end
+
+def finsetSubtypeCast {α } {s t : Finset α} (h : s = t)
     (x : {x // x ∈ s}) : {x // x ∈ t} := ⟨x.val, h ▸ x.property⟩
+
+section
+variable (hH : H.Valid) (hd : H.DistinctBirths) (S : LifespanAssignment P n) (hS : H.toResiduePath.lifespanValid S) (hm : ∀ i g, H.toResiduePath.memoryBefore S i g = (H.before i).2.2 g ∧
+      H.toResiduePath.memoryAfter S i g = (H.after i).2.2 g) (i : Fin n)
 
 theorem transferChoice_heq_of_components {M : ℕ}
     {s s' : P.MemoryState M} (c : TransferChoice s) (d : TransferChoice s')
@@ -833,21 +810,13 @@ theorem transferChoice_heq_of_components {M : ℕ}
   have hindex : cIndex = dIndex := by
     funext g j
     simpa [finsetSubtypeCast] using hIndex g j
-  let IndexFamily : ((g : P.BigGroup) → Finset (Fin M)) → Type := fun B =>
-    (g : P.BigGroup) → (j : {j : Fin M // j ∈ B g}) → Fin (sMem g).card
-  have hmiddle : (Sigma.mk cPromotion cIndex : Sigma IndexFamily) =
-      Sigma.mk cPromotion dIndex := by
-    rw [hindex]
-  have hchoice : (Prod.mk cStore (Sigma.mk cPromotion cIndex) :
-      TransferChoice (sSmall, sLabels, sMem)) =
-      Prod.mk cStore (Sigma.mk cPromotion dIndex) := congrArg (Prod.mk cStore) hmiddle
-  exact heq_of_eq hchoice
+  grind
 
-theorem history_edge_transfer_choice_heq (hH : H.Valid) (hd : H.DistinctBirths)
-    (S : LifespanAssignment P n)
-    (hm : ∀ i g, H.toResiduePath.memoryBefore S i g = (H.before i).2.2 g ∧
-      H.toResiduePath.memoryAfter S i g = (H.after i).2.2 g)
-    (i : Fin n) :
+include hH hd hm in
+theorem history_edge_transfer_choice_heq    
+     
+     
+      :
     HEq (H.edge i).2.2.2.2
       (H.toResiduePath.reconstructedTransferChoice S (H.before 0).1 i) := by
   classical
@@ -856,7 +825,7 @@ theorem history_edge_transfer_choice_heq (hH : H.Valid) (hd : H.DistinctBirths)
   let d := Q.reconstructedTransferChoice S (H.before 0).1 i
   have hStore := history_edge_store_slots_eq (H := H) hH hd S hm i
   have hPromAll : ∀ e, (H.edge e).2.2.2.2.2.1 = Q.promotionSlots S e :=
-    fun e => history_edge_promotion_slots_eq (H := H) hH hd S hm e
+    history_edge_promotion_slots_eq (H := H) hH hd S hm
   have hProm := hPromAll i
   have hSourceMem : ((H.after i.castSucc).2.2) = (Q.memoryAfter S i.castSucc) := by
     funext g
@@ -865,8 +834,7 @@ theorem history_edge_transfer_choice_heq (hH : H.Valid) (hd : H.DistinctBirths)
       c.2.2 g j =
         Fin.cast (congrArg Multiset.card (congrFun hSourceMem g)).symm
           (d.2.2 g (finsetSubtypeCast (congrFun hProm g) j)) := by
-    have he := history_edge_promotion_index_eq (H := H) hH hd S hm hPromAll i g j
-    simpa [Q, c, d, ResiduePath.reconstructedTransferChoice, finsetSubtypeCast] using he
+    solve_by_elim [history_edge_promotion_index_eq]
   exact transferChoice_heq_of_components c d hSourceMem hStore hProm hIndex
 
 universe u v
@@ -888,17 +856,19 @@ theorem edgeChoice_heq_of_fields {s s' : P.MemoryState (J + F.ell)}
       (prod_heq_of_components _ _ _ _ (heq_of_eq hpattern)
         (prod_heq_of_components _ _ _ _ (heq_of_eq hfree) htransfer)))
 
-theorem history_edge_choice_heq (hH : H.Valid) (hd : H.DistinctBirths)
-    (S : LifespanAssignment P n) (hS : H.toResiduePath.lifespanValid S)
-    (hm : ∀ i g, H.toResiduePath.memoryBefore S i g = (H.before i).2.2 g ∧
-      H.toResiduePath.memoryAfter S i g = (H.after i).2.2 g)
-    (i : Fin n) :
+include hH hd hm in
+theorem history_edge_choice_heq    
+       
+     
+      :
     HEq (H.edge i)
       ((H.toResiduePath.reconstructedHistory S hS (H.before 0).1).edge i) := by
   have htransfer := history_edge_transfer_choice_heq (H := H) hH hd S hm i
   exact edgeChoice_heq_of_fields (H.edge i)
     ((H.toResiduePath.reconstructedHistory S hS (H.before 0).1).edge i)
     rfl rfl rfl rfl htransfer
+
+end
 
 theorem HistoryReconstructionTask_proof : HistoryReconstructionTask := by
   classical
@@ -922,9 +892,7 @@ theorem HistoryReconstructionTask_proof : HistoryReconstructionTask := by
     intro i
     simpa [K', MemoryHistory.reorderBatches] using hGhost i
   have hedge' : ∀ i, HEq (H.edge i) (K'.edge i) := by
-    intro i
-    simpa [K', MemoryHistory.reorderBatches] using
-      (history_edge_choice_heq (H := H) hH hd S hS hm i)
+    solve_by_elim [history_edge_choice_heq]
   refine ⟨S, hS, hy, ⟨sigma, ?_⟩⟩
   exact memoryHistory_eq_of_fields hbefore' hafter' hghost' hedge'
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicControl
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicJoins
@@ -7,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicJoins
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Set Metric Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeLogarithmic HeckeReciprocalGrowth
 
-theorem presentationComplexity_mono_height (χ : Character) {t H : ℝ}
+theorem presentationComplexity_mono_height  χ   {t H} 
     (ht : |t|≤H) : presentationComplexity χ t≤presentationComplexity χ H := by
   unfold presentationComplexity complexity
   have hH : 0≤H := (abs_nonneg t).trans ht
@@ -54,12 +55,11 @@ theorem buffered_rectangle_control (e ε : ℝ)
 
 theorem translated_rectangle_mem {a e σ freq l r H T : ℝ}
     (hl : a+6*e≤l+σ) (hr : r+σ≤2) (hlr : l≤r) (hT : 0≤T)
-    (hfreq : |freq|+T≤H) {s : ℂ} (hs : s ∈ (uIcc l r ×ℂ uIcc (-T) T)) :
+    (hfreq : |freq|+T≤H)  {s}  (hs : s ∈ (uIcc l r ×ℂ uIcc (-T) T)) :
     a+6*e≤(s+shift σ freq).re ∧ (s+shift σ freq).re≤2 ∧
       |(s+shift σ freq).im|≤H := by
   have hs' : s.re ∈ Icc l r ∧ s.im ∈ Icc (-T) T := by
-    change s.re ∈ uIcc l r ∧ s.im ∈ uIcc (-T) T at hs
-    simpa [uIcc_of_le hlr,uIcc_of_le (by linarith : -T≤T)] using hs
+    aesop
   have hsi : |s.im|≤T := abs_le.mpr hs'.2
   constructor
   · simp only [add_re,shift_re]
@@ -73,6 +73,6 @@ theorem translated_rectangle_mem {a e σ freq l r H T : ℝ}
 
 end SevenEighths.HeckeDyadic
 
-end
+
 
 end OAI

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerUniform
 
 namespace OAI
 
-noncomputable section
+section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
@@ -18,7 +18,7 @@ open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite Inve
 open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
 open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
 local notation "Eis"=>ActualEisensteinCubic.O
-local instance initialEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -31,7 +31,7 @@ theorem actual_physical_reference_bound
     (Φ:𝓢(ℝ,ℂ))(V:Fin 6→ℝ→ℂ)(M:Fin 6→ℝ)
     (hV:∀i,ContDiff ℝ ∞ (V i))(hS:∀i,HasCompactSupport (V i))
     (hM:∀i,0≤M i)(hbox:∀i y,V i y≠0→|y|≤M i)
-    (ω₁ ω₂:ℝ→ℂ)(lo b:ℝ)(hlo:0<lo)(hb:1≤b)
+     ω₁ ω₂ (lo b:ℝ)(hlo:0<lo)(hb:1≤b)
     (hω₁:Function.support ω₁⊆Set.Icc lo b)(hω₂:Function.support ω₂⊆Set.Icc lo b)
     (hd₁:ContDiff ℝ ∞ ω₁)(hd₂:ContDiff ℝ ∞ ω₂) :
     ∃(fresh₁ fresh₂:𝓢(ℝ,ℂ)),

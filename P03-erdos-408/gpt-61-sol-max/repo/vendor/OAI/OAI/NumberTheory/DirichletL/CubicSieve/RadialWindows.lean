@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.Rellich
 public import OAI.NumberTheory.DirichletL.MeanSquare.PoissonSource
@@ -11,74 +12,74 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels
 
 variable {ι : Type*} [DecidableEq ι]
@@ -88,9 +89,9 @@ variable {ι : Type*} [DecidableEq ι]
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
+ 
 
 variable {ι:Type*} (p:ι→O) (B:Finset ι) (v:ι→ℕ) (ε₁ ε₂:ι→Bool)
 
@@ -99,40 +100,25 @@ end FirstPassCubeLabels
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic FirstPassCubeLabels
+open   FirstPassCubeLabels
 
 namespace CubeCoordinates
 variable {ι:Type*}
-def swap (b:CubeCoordinates ι) : CubeCoordinates ι :=
-  ⟨b.rightExponent,b.leftExponent,b.rightDivisor,b.leftDivisor⟩
-@[simp] lemma swap_swap (b:CubeCoordinates ι) : b.swap.swap=b := by cases b;rfl
+
+
 end CubeCoordinates
 end
-section
 
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm actualFirstKernel originalLabelColumn cubeActiveSupport dilationLabel columnLog)
-open ConcreteTraceCRT (eisEmbedding)
 
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
-
-end
-
-end
-
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProduct dilationLabel)
 open ConcreteTraceCRT (eisEmbedding)
 
 end SecondPassArithmetic
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
+ 
+open scoped       ENNReal
 
 open RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean
 
@@ -146,7 +132,7 @@ def euclideanC1cToH1 (f : C1c (E := EuclideanSpatial)) :
   exact (LinearMap.range gr).le_topologicalClosure ⟨f,rfl⟩
 
 lemma euclideanC1c_supported_range (K : Set EuclideanSpatial) (hK : MeasurableSet K)
-    (f : C1c (E := EuclideanSpatial)) (hf : Function.support f.1⊆K) :
+     f  (hf : Function.support f.1⊆K) :
     toL2 («μ» := volume) f∈LinearMap.range
       (Lp.extendByZeroₗᵢ («μ» := (volume : Measure EuclideanSpatial)) (p := (2:ℝ≥0∞)) hK).toLinearMap := by
   have hmem := memLp_of_mem_C1c («μ» := (volume : Measure EuclideanSpatial)) f.2
@@ -167,18 +153,18 @@ lemma euclideanC1c_supported_range (K : Set EuclideanSpatial) (hK : MeasurableSe
     by_contra hne
     exact hxm (hf hne)
 
-def euclideanC1cToSupportedH1 (K : Set EuclideanSpatial) (hK : MeasurableSet K)
+def euclideanC1cToSupportedH1 (K ) (hK )
     (f : C1c (E := EuclideanSpatial)) (hf : Function.support f.1⊆K) :
     h1On (E := EuclideanSpatial) K hK :=
   ⟨euclideanC1cToH1 f,euclideanC1c_supported_range K hK f hf⟩
 
 lemma compact_clm_closedBall {V W : Type*} [NormedAddCommGroup V] [NormedAddCommGroup W]
     [NormedSpace ℝ V] [NormedSpace ℝ W] (T : V →L[ℝ] W)
-    (hT : IsCompactOperator T) (R : ℝ) : IsCompact (closure (T '' Metric.closedBall 0 R)) :=
+    (hT : IsCompactOperator T)  R  : IsCompact (closure (T '' Metric.closedBall 0 R)) :=
   IsCompactOperator.isCompact_closure_image_closedBall (f := T.toLinearMap) hT R
 
 theorem euclidean_C1c_family_precompact (K : Set EuclideanSpatial) (hK : IsCompact K)
-    (family : Set (C1c (E := EuclideanSpatial))) (R : ℝ)
+     family  (R : ℝ)
     (hsupp : ∀f∈family,Function.support f.1⊆K)
     (hmass : ∀f∈family,‖toL2 («μ» := volume) f‖≤R)
     (hgrad : ∀f∈family,‖toL2Grad («μ» := volume) f‖≤R) :
@@ -199,17 +185,17 @@ theorem euclidean_C1c_family_precompact (K : Set EuclideanSpatial) (hK : IsCompa
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal InnerProductSpace
+ 
+open scoped         Manifold ENNReal InnerProductSpace
 
 namespace CubicEisenstein
 
-abbrev KernelFundamentalVolume : Measure HyperbolicSpace :=
+abbrev KernelFundamentalVolume  :=
   hyperbolicVolume.restrict (hyperbolicFundamentalSet globalKubotaKernel)
 
 abbrev KernelGradientL2 := Lp (EuclideanSpace ℂ (Fin 3)) 2 KernelFundamentalVolume
 
-lemma kernelTestPartial_continuous (f : kernelSmoothTests) (j : Fin 3) :
+lemma kernelTestPartial_continuous  f   j  :
     Continuous (fun w => kernelTestPartial f w j) := by
   rw [continuous_iff_continuousAt]
   intro w
@@ -217,7 +203,7 @@ lemma kernelTestPartial_continuous (f : kernelSmoothTests) (j : Fin 3) :
     (by simp)).clm_apply continuousAt_const).comp
       hyperbolicEuclideanCoordinates_continuous.continuousAt
 
-lemma kernelGradientAt_continuous (f : kernelSmoothTests) :
+lemma kernelGradientAt_continuous  f  :
     Continuous (fun w => kernelGradientAt w f) := by
   apply (PiLp.continuousLinearEquiv 2 ℂ (fun _ : Fin 3 => ℂ)).symm.continuous.comp
   apply continuous_pi
@@ -225,7 +211,7 @@ lemma kernelGradientAt_continuous (f : kernelSmoothTests) :
   exact (Complex.continuous_ofReal.comp hyperbolicHeight_continuous).mul
     (kernelTestPartial_continuous f j)
 
-lemma kernelGradientAt_memLp (f : kernelSmoothTests) :
+lemma kernelGradientAt_memLp  f  :
     MemLp (fun w => kernelGradientAt w f) 2 KernelFundamentalVolume := by
   apply (memLp_two_iff_integrable_sq_norm
     (kernelGradientAt_continuous f).aestronglyMeasurable).mpr
@@ -237,14 +223,14 @@ lemma kernelGradientAt_memLp (f : kernelSmoothTests) :
   rw [he] at hh
   simpa only [kernelGradientAt_norm_sq] using hh
 
-def kernelGradientToL2 (f : kernelSmoothTests) : KernelGradientL2 :=
+def kernelGradientToL2 (f : kernelSmoothTests)  :=
   (kernelGradientAt_memLp f).toLp (fun w => kernelGradientAt w f)
 
-lemma kernelGradientToL2_coe (f : kernelSmoothTests) :
+lemma kernelGradientToL2_coe  f  :
     (kernelGradientToL2 f : HyperbolicSpace → EuclideanSpace ℂ (Fin 3))=ᵐ[KernelFundamentalVolume]
       fun w => kernelGradientAt w f := (kernelGradientAt_memLp f).coeFn_toLp
 
-lemma kernelGradientToL2_inner (f g : kernelSmoothTests) :
+lemma kernelGradientToL2_inner  f g  :
     inner ℂ (kernelGradientToL2 f) (kernelGradientToL2 g)=kernelDirichletForm f g := by
   rw [L2.inner_def,kernelDirichletForm,integralQuotientVolume_integral _ _
     (kernelDirichletPairDensity_integrable f g).aestronglyMeasurable]
@@ -252,7 +238,7 @@ lemma kernelGradientToL2_inner (f g : kernelSmoothTests) :
   filter_upwards [kernelGradientToL2_coe f,kernelGradientToL2_coe g] with w hf hg
   rw [hf,hg,kernelDirichletPairDensity_coordinate]
 
-lemma kernelGradientToL2_norm_sq (f : kernelSmoothTests) :
+lemma kernelGradientToL2_norm_sq  f  :
     ‖kernelGradientToL2 f‖^2=kernelDirichletEnergy f := by
   have hh := kernelGradientToL2_inner f f
   rw [inner_self_eq_norm_sq_to_K,kernelDirichletForm_self] at hh
@@ -271,12 +257,12 @@ def kernelGradientLinear : kernelSmoothTests →ₗ[ℂ] KernelGradientL2 where
     apply Lp.ext
     filter_upwards [kernelGradientToL2_coe (c•f),kernelGradientToL2_coe f,
       Lp.coeFn_smul c (kernelGradientToL2 f)] with w hcf hf hsmul
-    simp only [RingHom.id_apply,hcf,hsmul,Pi.smul_apply,hf,map_smul]
+    simp_all
 
-def kernelInitialGradientGraph : Submodule ℂ (KernelQuotientL2 × KernelGradientL2) :=
+def kernelInitialGradientGraph  :=
   LinearMap.range (kernelSmoothTestsToL2.prod kernelGradientLinear)
 
-def kernelInitialGradient : KernelQuotientL2 →ₗ.[ℂ] KernelGradientL2 :=
+def kernelInitialGradient  :=
   kernelInitialGradientGraph.toLinearPMap
 
 end CubicEisenstein

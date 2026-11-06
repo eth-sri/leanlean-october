@@ -6,16 +6,16 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStepChildren
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentFirstLabelCell
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
 open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 theorem source_step_arithmetic (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
@@ -70,6 +70,6 @@ theorem source_step_arithmetic (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k 
       hZ heps hcol hYi hgeom hphysical hbudget⟩
 
 end SevenEighths.InverseMomentFirstLabelCell
-end
+
 
 end OAI

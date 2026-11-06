@@ -11,10 +11,9 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMoment
 
-def actualDepth (Mmax cutoff : ℝ) : ℕ := ⌈2*Mmax/(3*cutoff)⌉₊+1
+def actualDepth (Mmax cutoff : ℝ)  := ⌈2*Mmax/(3*cutoff)⌉₊+1
 
-lemma actualDepth_pos (Mmax cutoff : ℝ) : 0<actualDepth Mmax cutoff := by
-  exact Nat.succ_pos _
+lemma actualDepth_pos  Mmax cutoff  : 0<actualDepth Mmax cutoff := Nat.succ_pos _
 
 end SevenEighths.InverseMoment
 end

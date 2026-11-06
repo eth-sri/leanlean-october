@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.Edge.Minor
 
@@ -19,7 +20,7 @@ The two Fourier steps of PD §4 for the clean edge, as kernel bounds.
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos408.OneSided
 
@@ -27,18 +28,18 @@ open MeasureTheory Finset Real
 
 /-- A measurable function bounded by `M` is integrable on every interval. -/
 private theorem intervalIntegrable_of_norm_le {F : ℝ → ℂ} (hF : AEStronglyMeasurable F volume)
-    {M : ℝ} (hb : ∀ θ, ‖F θ‖ ≤ M) (a b : ℝ) : IntervalIntegrable F volume a b :=
+    {M : ℝ} (hb : ∀ θ, ‖F θ‖ ≤ M)  a b  : IntervalIntegrable F volume a b :=
   (intervalIntegrable_const (c := M)).mono_fun' hF.restrict (ae_of_all _ hb)
 
 /-- `e(θ t)` is continuous in `θ`. -/
-theorem continuous_ephase_mul (t : ℝ) : Continuous fun θ : ℝ => ephase (θ * t) := by
+theorem continuous_ephase_mul  t  : Continuous fun θ : ℝ => ephase (θ * t) := by
   unfold ephase
   fun_prop
 
 /-- **Parseval's identity**: for `β` injective on `X`,
 `∫_{lo}^{lo+1} |∑_{x ∈ X} c_x e(θ β x)|² dθ = ∑_x |c_x|²`. -/
 theorem integral_norm_sq_sum_ephase {κ : Type*} (X : Finset κ) {β : κ → ℤ} (hβ : Set.InjOn β X)
-    (c : κ → ℂ) (lo : ℝ) :
+    (c : κ → ℂ)  lo  :
     ∫ θ in lo..lo + 1, ‖∑ x ∈ X, ephase (θ * β x) * c x‖ ^ 2 = ∑ x ∈ X, ‖c x‖ ^ 2 := by
   classical
   have hcont : ∀ x x' : κ, Continuous fun θ : ℝ =>
@@ -77,7 +78,7 @@ theorem integral_norm_sq_sum_ephase {κ : Type*} (X : Finset κ) {β : κ → �
   rw [← Complex.mul_conj', Complex.star_def]
 
 /-- If `m ≤ (t A + B/t)/2` for every `t > 0`, then `m ≤ √A √B`. -/
-private theorem le_sqrt_mul_sqrt_of_amgm {m A B : ℝ} (hA : 0 ≤ A) (hB : 0 ≤ B)
+private theorem le_sqrt_mul_sqrt_of_amgm  {m A B}  (hA : 0 ≤ A) (hB : 0 ≤ B)
     (h : ∀ t : ℝ, 0 < t → m ≤ (t * A + B / t) / 2) : m ≤ Real.sqrt A * Real.sqrt B := by
   rcases hA.eq_or_lt with hA0 | hApos
   · -- `A = 0`: `m ≤ B/(2t)` for all `t`
@@ -108,12 +109,7 @@ private theorem le_sqrt_mul_sqrt_of_amgm {m A B : ℝ} (hA : 0 ≤ A) (hB : 0 �
     have h1 := h (Real.sqrt B / Real.sqrt A) (by positivity)
     have e : (Real.sqrt B / Real.sqrt A * A + B / (Real.sqrt B / Real.sqrt A)) / 2 =
         Real.sqrt A * Real.sqrt B := by
-      have hA' : A = Real.sqrt A ^ 2 := (Real.sq_sqrt hA).symm
-      have hB' : B = Real.sqrt B ^ 2 := (Real.sq_sqrt hB).symm
-      rw [hA', hB']
-      field_simp
-      rw [Real.sqrt_sq hsA.le, Real.sqrt_sq hsB.le]
-      ring
+      grind
     linarith
 
 /-- **Fourier in the product variable** (PD §4): a kernel
@@ -121,7 +117,7 @@ private theorem le_sqrt_mul_sqrt_of_amgm {m A B : ℝ} (hA : 0 ≤ A) (hB : 0 �
 on `X` has norm at most `ε` if every fiber `G(p, p') e(θ T(p, p'))` with `w(θ) ≠ 0` does. -/
 theorem kerLe_parseval {γ κ : Type*} (P : Finset γ) (X : Finset κ) {β : κ → ℤ}
     (hβ : Set.InjOn β X) (G : γ → γ → ℂ) (T : γ → γ → ℤ) {w : ℝ → ℝ} (hwm : Measurable w)
-    (hw : ∀ θ, |w θ| ≤ 1) (lo : ℝ) {ε : ℝ} (hε : 0 ≤ ε)
+    (hw : ∀ θ, |w θ| ≤ 1)  lo   {ε}  (hε : 0 ≤ ε)
     (hfib : ∀ θ ∈ Set.Ioc lo (lo + 1), w θ ≠ 0 →
       KerLe P P (fun p p' => G p p' * ephase (θ * T p p')) ε) :
     KerLe (P ×ˢ X) (P ×ˢ X) (fun q q' => G q.1 q'.1 *
@@ -197,7 +193,7 @@ theorem kerLe_parseval {γ κ : Type*} (P : Finset γ) (X : Finset κ) {β : κ 
     intro θ hθ
     by_cases hw0 : w θ = 0
     · rw [hw0, Complex.ofReal_zero, zero_mul, norm_zero]
-      exact mul_nonneg hε (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+      positivity
     · have h := (hfib θ hθ hw0).bilinear hε (fT θ) (gT θ)
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
       have h1 : ‖Φ θ‖ ≤ ε * a θ * b θ := h
@@ -221,7 +217,7 @@ theorem kerLe_parseval {γ κ : Type*} (P : Finset γ) (X : Finset κ) {β : κ 
     rw [intervalIntegral.integral_finsetSum fun p _ => (hc p).intervalIntegrable _ _, sum_product]
     refine sum_congr rfl fun p _ => ?_
     simp_rw [hFh]
-    exact integral_norm_sq_sum_ephase X hβ (fun x => F (p, x)) lo
+    solve_by_elim [integral_norm_sq_sum_ephase]
   have hA := hparse g gT fun θ p => rfl
   have hB := hparse f fT fun θ p => rfl
   set A := ∑ q ∈ P ×ˢ X, ‖g q‖ ^ 2
@@ -305,7 +301,7 @@ theorem exists_kerLe_cutoff : ∃ C : ℝ, 0 ≤ C ∧ ∀ {γ : Type*} (P : Fin
     intro p p'
     refine hint (hcont.mul (continuous_const.mul ((continuous_const.mul (hcontξ _)).mul
       continuous_const))) (C * (‖g p‖ * ‖H p p'‖ * ‖f p'‖)) fun ξ => ?_
-    have h0 : 0 ≤ ‖g p‖ * ‖H p p'‖ * ‖f p'‖ := by positivity
+    
     refine le_trans (b := C * fourierDecay ξ * (‖g p‖ * ‖H p p'‖ * ‖f p'‖)) ?_ (le_of_eq (by ring))
     rw [norm_mul]
     refine mul_le_mul (hdec ξ) (le_of_eq ?_) (norm_nonneg _)

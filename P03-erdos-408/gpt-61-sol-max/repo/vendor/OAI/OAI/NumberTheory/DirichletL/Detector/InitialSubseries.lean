@@ -10,9 +10,9 @@ noncomputable section
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary
-local notation "O" => ActualEisensteinCubic.O
 
-abbrev RawHighIndex := NonzeroFrequency×((Ideal O×Ideal O)×Ideal O)
+
+abbrev RawHighIndex := NonzeroFrequency×((Ideal ActualEisensteinCubic.O×Ideal ActualEisensteinCubic.O)×Ideal ActualEisensteinCubic.O)
 
 def rawHighEmbedding (p : RawHighIndex) : FullHighIndex := (p.1,(p.2.1,(p.2.2,1)))
 

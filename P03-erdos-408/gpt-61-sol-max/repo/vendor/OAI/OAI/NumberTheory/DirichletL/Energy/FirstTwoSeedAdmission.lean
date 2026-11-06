@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.FirstLiveAdmission
 
@@ -33,7 +34,7 @@ open CenteredMomentEnergyFirstLiveAdmission
 local notation "O" => HeckeFamily.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-theorem eventually_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
+theorem eventually_error_packet  N   b b₁ b₂ l a A P 
     (hb : 1 ≤ b) (hb₁ : 1 ≤ b₁) (hb₂ : 1 ≤ b₂)
     (hl : 0 < l) (ha : 0 < a) (hA : 0 ≤ A) (hP : 0 ≤ P) :
     ∀ᶠ Z : ℝ in atTop, 1 < Z ∧ ∀ {ι : Type*} [Fintype ι] [DecidableEq ι],
@@ -103,10 +104,7 @@ theorem eventually_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
   have hz₂ := lower_profile_zero s.W₂ a ha hW₂
   have hcdata := actual_common_gates s R seed0 hseed hz₁ hz₂ C D hlabel
   have hCN := hcdata.2.2.2.2.2.1.trans hH
-  have hJN : ((columnIdeal C D side).absNorm : ℝ) ≤ Z^(A+1) := by
-    cases side
-    · exact hCN
-    · exact hcdata.2.2.2.2.2.2.trans hH
+  
   have hd := elementPool_data _
     (fun Q hQ => (primePool_data M H Sbad hbad (1/2) 1 (Z^(σ/3)) Q hQ).1)
     (fun Q hQ => (primePool_data M H Sbad hbad (1/2) 1 (Z^(σ/3)) Q hQ).2) p hp

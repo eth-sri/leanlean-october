@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Numeric
 
@@ -18,11 +19,15 @@ namespace Erdos408.TypeII
 
 open Finset Real Filter
 
+section
+variable {q : ℝ} {K : ℕ} {CN c E₂ κ CΦ C₂ : ℝ} {M : ℕ → ℝ} {x γ : ℝ} {A : ℕ} {cW SP c₃ CW : ℝ} {K' r : ℕ} {u : ℝ} (hx : 1 < x) (hκ : 1 < κ) {C₄ C₅ : ℝ} (hL : 1 ≤ Real.log x) (hu : 1 ≤ u) (hM0 : 0 ≤ M 0) (hM1 : 0 ≤ M 1) (hC₂ : 0 ≤ C₂) (hc₃ : 0 < c₃) (hCW : 0 ≤ CW) (hγ : 0 < γ) (hSE0 : 0 ≤ endBound q K CN c E₂ x)
+
+include hx hκ hL hu hM0 hM1 hC₂ hSE0 in
 /-- The E4 bound against the fudge factor `u`. -/
-theorem bound4_le {q : ℝ} {K : ℕ} {CN c E₂ κ CΦ C₂ : ℝ} {M : ℕ → ℝ} {x γ : ℝ} {A r : ℕ}
-    {u : ℝ} (hx : 1 < x) (hκ : 1 < κ) (hL : 1 ≤ Real.log x) (hu : 1 ≤ u) (hM0 : 0 ≤ M 0)
-    (hM1 : 0 ≤ M 1) (hC₂ : 0 ≤ C₂)
-    (hSE0 : 0 ≤ endBound q K CN c E₂ x) (hF1 : endBound q K CN c E₂ x ≤ u)
+theorem bound4_le            
+               
+       
+      (hF1 : endBound q K CN c E₂ x ≤ u)
     (hF2 : 2 ^ (K * inertPerCluster K CN x) * normBound q K CN c E₂ x ≤ u)
     (hF2' : 0 ≤ normBound q K CN c E₂ x)
     (hF3 : (r + 2 : ℝ) ≤ u)
@@ -40,15 +45,15 @@ theorem bound4_le {q : ℝ} {K : ℕ} {CN c E₂ κ CΦ C₂ : ℝ} {M : ℕ →
         u ^ 4 := by
   set L := Real.log x
   have hL0 : 0 < L := by linarith
-  have hx0 : 0 < x := by linarith
-  have hκ0 : 0 < κ := by linarith
-  have hu0 : 0 ≤ u := by linarith
+  
+  
+  
   set w := L ^ (-3 : ℝ) with hw
-  have hw0 : 0 < w := by positivity
+  
   have hL3 : L ^ (3 : ℝ) = L ^ (3 : ℕ) := by exact_mod_cast Real.rpow_natCast L 3
   have hwinv : w = (L ^ (3 : ℕ))⁻¹ := by rw [hw, Real.rpow_neg hL0.le, hL3]
   have hLm12 : L ^ (-12 : ℝ) = (L ^ (12 : ℕ))⁻¹ := by
-    rw [Real.rpow_neg hL0.le]; congr 1; exact_mod_cast Real.rpow_natCast L 12
+    norm_num
   -- the three terms
   have hT1 : M 0 * endBound q K CN c E₂ x * (⌊κ * x + 1⌋₊ / L ^ (3 : ℝ)) *
       ((r + 1 : ℕ) * recipSum x γ ⌊κ * x + 1⌋₊ + highProd x ⌊κ * x + 1⌋₊ (r + 1 : ℕ)) ^ (r + 1) ≤
@@ -62,14 +67,13 @@ theorem bound4_le {q : ℝ} {K : ℕ} {CN c E₂ κ CΦ C₂ : ℝ} {M : ℕ →
       25 * M 0 * C₂ * κ * x * w * u := by
     have hA2 : (A : ℝ) ^ 2 ≤ 25 * L ^ 8 := by
       have := pow_le_pow_left₀ (Nat.cast_nonneg A) hA 2
-      calc (A : ℝ) ^ 2 ≤ (5 * L ^ 4) ^ 2 := this
-        _ = 25 * L ^ 8 := by ring
+      grind
     have hL8 : L ^ 8 * L ^ (-12 : ℝ) ≤ w := by
       rw [hLm12, hwinv]
       have h1 : L ^ 8 * (L ^ (12 : ℕ))⁻¹ = (L ^ (4 : ℕ))⁻¹ := by field_simp
       rw [h1]
       exact inv_anti₀ (by positivity) (pow_le_pow_right₀ hL (by norm_num))
-    have hLr : 0 ≤ L ^ (-12 : ℝ) := by positivity
+    
     calc (A : ℝ) ^ 2 * (M 0 * (2 ^ (K * inertPerCluster K CN x) *
           normBound q K CN c E₂ x * (C₂ * (κ * x) * L ^ (-12 : ℝ))))
         ≤ 25 * L ^ 8 * (M 0 * (u * (C₂ * (κ * x) * L ^ (-12 : ℝ)))) := by gcongr
@@ -80,8 +84,8 @@ theorem bound4_le {q : ℝ} {K : ℕ} {CN c E₂ κ CΦ C₂ : ℝ} {M : ℕ →
       endBound q K CN c E₂ x * (4 * (κ * x + 1)) *
       (recipSum x γ ⌊κ * x + 1⌋₊ + highProd x ⌊κ * x + 1⌋₊ 1) ^ (r + 1) ≤
       M 1 * u * (7 * κ * w) * u * (8 * κ * x) * u := by
-    have hτ0 : 0 ≤ (3 * L ^ (-3 : ℝ) * (κ * x + 1) + 1) / x := by positivity
-    have hT0 : 0 ≤ logLog x ^ (CΦ * 1) := Real.rpow_nonneg (Real.log_nonneg hL) _
+    
+    
     gcongr
   unfold bound4
   have hsum := add_le_add (add_le_add hT1 hT2) hT3
@@ -99,11 +103,12 @@ theorem bound4_le {q : ℝ} {K : ℕ} {CN c E₂ κ CΦ C₂ : ℝ} {M : ℕ →
         gcongr
     _ = _ := by ring
 
+include hx hκ hL hu hM0 hc₃ hCW hγ hSE0 in
 /-- The E5 bound against the fudge factor `u`. -/
-theorem bound5_le {q : ℝ} {K : ℕ} {CN c E₂ κ : ℝ} {M : ℕ → ℝ} {x γ cW SP c₃ CW : ℝ}
-    {K' r : ℕ} {u : ℝ} (hx : 1 < x) (hκ : 1 < κ) (hL : 1 ≤ Real.log x) (hu : 1 ≤ u)
-    (hM0 : 0 ≤ M 0) (hc₃ : 0 < c₃) (hCW : 0 ≤ CW) (hγ : 0 < γ)
-    (hSE0 : 0 ≤ endBound q K CN c E₂ x) (hF1 : endBound q K CN c E₂ x ≤ u)
+theorem bound5_le          
+               
+           
+      (hF1 : endBound q K CN c E₂ x ≤ u)
     (hF3 : (r + 2 : ℝ) ≤ u) (hcW0 : 0 ≤ cW) (hcW : cW ≤ CW * u / Real.log x)
     (hN : (⌊κ * x + 1⌋₊ : ℝ) ≤ 2 * κ * x) (hP0 : 0 ≤ highProd x ⌊κ * x + 1⌋₊ 1)
     (hPr : highProd x ⌊κ * x + 1⌋₊ 1 ^ r ≤ u) (hP1 : highProd x ⌊κ * x + 1⌋₊ 1 ≤ u)
@@ -116,9 +121,9 @@ theorem bound5_le {q : ℝ} {K : ℕ} {CN c E₂ κ : ℝ} {M : ℕ → ℝ} {x 
         Real.log x ^ (-(1 / 10) : ℝ) * u ^ 6 := by
   set L := Real.log x
   have hL0 : 0 < L := by linarith
-  have hx0 : 0 < x := by linarith
-  have hκ0 : 0 < κ := by linarith
-  have hu0 : 0 ≤ u := by linarith
+  
+  
+  
   set e := L ^ (-(1 / 10) : ℝ) with he
   have he0 : 0 < e := by positivity
   have hLinv : L ^ (-1 : ℝ) = L⁻¹ := Real.rpow_neg_one L
@@ -132,7 +137,7 @@ theorem bound5_le {q : ℝ} {K : ℕ} {CN c E₂ κ : ℝ} {M : ℕ → ℝ} {x 
   -- the candidate-logarithm term
   have hlogt : 2 * SP * highProd x ⌊κ * x + 1⌋₊ 1 * (Real.log (proxyCutoff x) / c₃) /
       (γ ^ 2 * L ^ (19 / 10 : ℝ)) ≤ 4 / c₃ * u ^ 2 * e := by
-    have hL19 : 0 < L ^ (19 / 10 : ℝ) := by positivity
+    
     have h1 : L ^ (45 / 100 : ℝ) * L / L ^ (19 / 10 : ℝ) ≤ e := by
       rw [← Real.rpow_add_one hL0.ne', ← Real.rpow_sub hL0, he]
       exact Real.rpow_le_rpow_of_exponent_le hL (by norm_num)
@@ -152,8 +157,7 @@ theorem bound5_le {q : ℝ} {K : ℕ} {CN c E₂ κ : ℝ} {M : ℕ → ℝ} {x 
       have : u ≤ u ^ 2 := by nlinarith
       gcongr
     nlinarith
-  have hbr0 : 0 ≤ 2 * cW * K' + 2 * SP * highProd x ⌊κ * x + 1⌋₊ 1 *
-      (Real.log (proxyCutoff x) / c₃) / (γ ^ 2 * L ^ (19 / 10 : ℝ)) := by positivity
+  
   unfold bound5
   have hcWN : cW * ⌊κ * x + 1⌋₊ ≤ CW * u / L * (2 * κ * x) := by gcongr
   calc (r + 2 : ℝ) * (M 0 * endBound q K CN c E₂ x * cW * ⌊κ * x + 1⌋₊ *
@@ -168,8 +172,9 @@ theorem bound5_le {q : ℝ} {K : ℕ} {CN c E₂ κ : ℝ} {M : ℕ → ℝ} {x 
         field_simp
     _ = _ := by rw [hLinv]
 
+include hL in
 /-- Combining the two bounds with `u = L^{1/200}`. -/
-theorem combine_le {x C₄ C₅ : ℝ} (hL : 1 ≤ Real.log x) (hx : 0 < x) (hC₄ : 0 ≤ C₄)
+theorem combine_le     (hx : 0 < x) (hC₄ : 0 ≤ C₄)
     (hC₅ : 0 ≤ C₅) :
     C₄ * x * Real.log x ^ (-3 : ℝ) * (Real.log x ^ (1 / 200 : ℝ)) ^ 4 +
         C₅ * x * Real.log x ^ (-1 : ℝ) * Real.log x ^ (-(1 / 10) : ℝ) *
@@ -198,5 +203,7 @@ theorem combine_le {x C₄ C₅ : ℝ} (hL : 1 ≤ Real.log x) (hx : 0 < x) (hC�
   have := mul_le_mul_of_nonneg_left h1 (show 0 ≤ C₄ * x by positivity)
   have := mul_le_mul_of_nonneg_left h2 (show 0 ≤ C₅ * x by positivity)
   nlinarith
+
+end
 
 end Erdos408.TypeII

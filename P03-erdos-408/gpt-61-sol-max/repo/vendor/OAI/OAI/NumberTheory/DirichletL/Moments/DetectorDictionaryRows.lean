@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.DetectorMomentData
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
@@ -17,8 +17,11 @@ open CenteredMomentPrimeSlot CenteredMomentWholeSlotDeletion
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
+section
+variable (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
+
 theorem source_plain_pair_norm
-    (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
+       
     (η χ ψ : Character) (m u : O) (reverse : Bool)
     (hrow : ∀n,elementCoeff ψ n=CanonicalRowCompletion.rowTwist (elementHom η) m 1 (1*u) n)
     (hc : ∀I : Ideal O,idealCoeff χ I=if reverse then conj (idealCoeff ψ I) else idealCoeff ψ I)
@@ -43,7 +46,7 @@ theorem source_plain_pair_norm
   rw [physical_slot_conj M H η m u hmLam hMm (V i) (b i) (P i) (external i) (hP i) (hη i),RCLike.norm_conj]
 
 theorem momentData_plain_pair_norm
-    (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
+       
     (η χ : Character) (u : FreeRow) (reverse : Bool)
     (hc : ∀I : Ideal O,idealCoeff χ I=if reverse then
       conj (idealCoeff ((ProbeHighRowFamily.momentData η).character (ProbeHighRowFamily.momentElement u)) I)
@@ -67,8 +70,10 @@ theorem momentData_plain_pair_norm
   simpa only [ProbeHighRowFamily.momentData,ProbeHighRowFamily.momentElement,one_mul] using
     (ProbeHighRowFamily.momentData η).character_spec (ProbeHighRowFamily.momentElement u) n
 
+end
+
 end SevenEighths.CenteredMomentDetectorDictionary
 
-end
+
 
 end OAI

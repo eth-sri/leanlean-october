@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.Parameters
 
@@ -20,9 +21,7 @@ lemma kernel_cost_power (L q ξ : ℝ) (hL : 1 ≤ L) (hq : 0 < q) (hξ : 0 < ξ
   have hf : ((⌊L ^ q⌋₊ : ℕ) : ℝ) ≤ L ^ q := Nat.floor_le (Real.rpow_nonneg hp.le _)
   have hb : (((⌊L ^ q⌋₊ : ℕ) : ℝ) ^ 2 / (L ^ (-ξ))) ^ 2 ≤
       ((L ^ q) ^ (2 : ℕ) / L ^ (-ξ)) ^ (2 : ℕ) :=
-    pow_le_pow_left₀ (by positivity)
-      (div_le_div_of_nonneg_right (pow_le_pow_left₀ (Nat.cast_nonneg _) hf 2)
-        (Real.rpow_nonneg hp.le _)) 2
+    (by bound)
   have he : ((L ^ q) ^ (2 : ℕ) / L ^ (-ξ)) ^ (2 : ℕ) =
       L ^ (4 * q + 2 * ξ) := by
     rw [← Real.rpow_natCast (L ^ q) 2, ← Real.rpow_mul hp.le,
@@ -54,9 +53,7 @@ lemma family_cost_power (F : FixedData) (P : PrimeGroups) (J m : ℕ)
         max 1 ((((⌊L x ^ q⌋₊ : ℕ) : ℝ) ^ 2 / L x ^ (-ξ)) ^ 2) := hcost
     _ ≤ (L x ^ ((m : ℝ) * F.C₀ * Real.log 2) + 1) *
         L x ^ (4 * q + 2 * ξ) :=
-      mul_le_mul (add_le_add hnum le_rfl) hkernel
-        (le_trans zero_le_one (le_max_left ..))
-        (by positivity)
+      (by gcongr <;> first | assumption | positivity | linarith)
     _ ≤ (2 * L x ^ ((m : ℝ) * F.C₀ * Real.log 2)) *
         L x ^ (4 * q + 2 * ξ) := by
       apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hp.le _)

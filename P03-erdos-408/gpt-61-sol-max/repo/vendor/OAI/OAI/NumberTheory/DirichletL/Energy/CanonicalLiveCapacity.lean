@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.DeletedChildCapacity
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalLiveCapacity
@@ -18,15 +18,14 @@ open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentRetainedProfile
 open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyBands
 open CenteredMomentEnergyDeletedChildCapacity CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
+
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-lemma original_deleted_excess (src:Input α)(C R:Ideal O)(B:actualAllocations src.pools C)
-    (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset
-      (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (J:Finset (CenteredMomentCommonProfile.liveIndices B.val))
-    (τ:Character)(v Z X₁ X₂ κ Mactual:ℝ)(w:α→ℝ)
-    (hZ:1<Z)(hscale:∀i,src.P i=Z^(w i))(F₁ F₂:Finset (Ideal O)):
+lemma original_deleted_excess (src:Input α) C R  B 
+     D  alloc 
+     J 
+     τ  v Z X₁ X₂ κ Mactual  w 
+    (hZ:1<Z)(hscale:∀i,src.P i=Z^(w i)) F₁ F₂ :
     deletedExcess D alloc Z X₁ X₂ κ Mactual
       (commonData (withHeight src τ v) C R B).P F₁ F₂ J =
     CenteredMomentLiveCapacity.excess (originalImage src C B D alloc J) w
@@ -40,12 +39,11 @@ lemma original_deleted_excess (src:Input α)(C R:Ideal O)(B:actualAllocations sr
   change Real.logb Z (src.P i.val)=w i.val
   rw [hscale,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne']
 
-theorem live_source_paid_cost (src:Input α)(C R:Ideal O)(B:actualAllocations src.pools C)
-    (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset
-      (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (J:Finset (CenteredMomentCommonProfile.liveIndices B.val))
+theorem live_source_paid_cost (src:Input α)(C R:Ideal HeckeFamily.O) B 
+     D  alloc 
+     J 
     (τ:Character)(rad:Radial)(V₁ V₂:Plain)(v Z X₁ X₂ κ A M Mnom Mactual u ell δ₁ δ₂ θ:ℝ)
-    (w:α→ℝ)(h₁:0<X₁)(h₂:0<X₂)(F₁ F₂:Finset (Ideal O))
+     w (h₁:0<X₁)(h₂:0<X₂) F₁ F₂ 
     (hZ:1<Z)(hκ:0≤κ)(hw:∀i,0≤w i)(hscale:∀i,src.P i=Z^(w i))
     (hF₁:∀I∈F₁,I≠0)(hF₂:∀I∈F₂,I≠0)
     (hparent:A+(6*κ-1)*(∑i:CenteredMomentCommonProfile.liveIndices B.val,w i.val)≤M)
@@ -77,6 +75,6 @@ theorem live_source_paid_cost (src:Input α)(C R:Ideal O)(B:actualAllocations sr
 
 end SevenEighths.CenteredMomentEnergyCanonicalLiveCapacity
 
-end
+
 
 end OAI

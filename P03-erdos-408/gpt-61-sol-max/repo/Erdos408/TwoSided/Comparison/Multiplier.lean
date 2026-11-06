@@ -30,7 +30,7 @@ open scoped Classical in
 factors of `n` in its group (each prime lies in one group), so there are at most
 `max(1, m₀)^k` labels with product `n`, `k = m₀ |ι|`, each of mass at most
 `max(1, v₋⁻¹)^k / n`; and `|ι| ≤ 2 C₀ T`. -/
-theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo) (m₀ : ℕ) :
+theorem eventually_sum_auxLabels_eq_le  c₀ C₀ vlo vhi  (hvlo : 0 < vlo)  m₀  :
     ∃ C₇ : ℝ, ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →

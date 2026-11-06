@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondUniformSubsetSource
 public import OAI.NumberTheory.DirichletL.Moments.SecondFrozenLiveDescent
@@ -34,7 +35,7 @@ open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
 open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
 open CenteredMomentSecondActivePhysicalDictionary
 open CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar
-local notation "O" => HeckeFamily.O
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -42,7 +43,7 @@ open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileException
 open CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate
 open CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
 
-open CenteredMomentLogDyadic CenteredMomentSecondWindowSource
+open CenteredMomentLogDyadic  
 open MeasureTheory UniqueFactorizationMonoid CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalCost
 
 theorem original_subsets_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
@@ -50,11 +51,11 @@ theorem original_subsets_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
     (ε δ θ B ξ saving:ℝ)(hε:0<ε)(hδ:0<δ)(hθ:0<θ)(hB:0≤B)(hξ:0<ξ):
     ∃J:ℕ,∃Sprofile SΦ:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧
       ∃Cmain Cexc Cdiag Ctail:ℝ,0<Cmain ∧ 0≤Cexc ∧ 0<Cdiag ∧ 0<Ctail ∧
-      ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} →
+      ∀Q:Ideal HeckeFamily.O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:HeckeFamily.O)} →
       ∃Kc:ℝ,0<Kc ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀T : Finset ι, ∀(s:Input T)(p:Profiles wlo whi),(∀i,s.lo i=lo i.val) → (∀i,s.hi i=hi i.val) →
       (∀i,1≤s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
-      ∀(R0 seed:Ideal O),R0≠0 → Squarefree seed → seed≠0 →
+      ∀(R0 seed:Ideal HeckeFamily.O),R0≠0 → Squarefree seed → seed≠0 →
       0≤sourceRadius s → sourceRadius s≤Z^B →
       (s.η.modulus.absNorm:ℝ)≤Z^B → (R0.absNorm:ℝ)≤Z^B →
       let S:=finiteColumns (Fintype.piFinset s.pools)
@@ -63,7 +64,7 @@ theorem original_subsets_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
     (∀q U,Family s.η q.val.1 q.val.2
       (commonLabels_supported (activeSource S β) _ _ q.property).1
       (commonLabels_supported (activeSource S β) _ _ q.property).2 U (τ q U)) ∧
-    ∀χ₀:RayCharacter,∀m:O,m≠0 → goodLambda∣m → (2:O)∣m →
+    ∀χ₀:RayCharacter,∀m:HeckeFamily.O,m≠0 → goodLambda∣m → (2:HeckeFamily.O)∣m →
     ∀Kphys Tsec:ℝ,0<Kphys → volume s.toData≤Z^B → Tsec≤Z^B →
       (volume s.toData)^2/Kphys≤Tsec →
       0<frequencyRadius Tsec Z ξ → frequencyRadius Tsec Z ξ≤Z^B →
@@ -76,7 +77,7 @@ theorem original_subsets_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
         (partRows false s.η χ₀ Q m q.val.1 q.val.2 U (frequencyRadius Tsec Z ξ)) W Kphys
         (fun i=>(n i:ℤ))≠0→
       ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
+        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal HeckeFamily.O)),
       (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
       ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.1,
       frozenCoefficient b.val q.val.1 R0 s.ν s.W s.P≠0 →
@@ -93,7 +94,7 @@ theorem original_subsets_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
         (partRows false s.η χ₀ Q m q.val.1 q.val.2 U (frequencyRadius Tsec Z ξ)) W Kphys
         (fun i=>(n i:ℤ))≠0→
       ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
+        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal HeckeFamily.O)),
       (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
       ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.2,
       frozenCoefficient b.val q.val.2 R0 s.ν s.W s.P≠0 →
@@ -162,12 +163,12 @@ theorem original_subsets_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
   have hm1:=profileMoment_nonneg J₁
   have hm2:=profileMoment_nonneg J₂
   have he:=heightEnvelope_pos s.t
-  have hsn : 0≤(seed.absNorm:ℝ) := by positivity
+  
   have hvol:=CenteredMomentSourceInputTailUniform.volume_pos s
-  have hc : 0≤(Sf T).sup (schwartzSeminormFamily ℝ ℝ ℂ) W := apply_nonneg _ _
-  have hCm0 : 0≤Cm0 := (sum_pos Cm (fun T=>(hCm T).le)).le
+  
+  
   have hCe0 : 0≤Ce0 := (sum_pos Ce hCe).le
-  have hCd0 : 0≤Cd0 := (sum_pos Cd (fun T=>(hCd T).le)).le
+  
   have hCt0 : 0≤Ct0 := (sum_pos Ct (fun T=>(hCt T).le)).le
   have hprodhi : 0≤∏i:T,hi i.val := Finset.prod_nonneg (fun i _=>hhi i.val)
   have hprodlo : 0≤∏i:T,s.lo i := Finset.prod_nonneg (fun i _=>(s.lo_pos i).le)

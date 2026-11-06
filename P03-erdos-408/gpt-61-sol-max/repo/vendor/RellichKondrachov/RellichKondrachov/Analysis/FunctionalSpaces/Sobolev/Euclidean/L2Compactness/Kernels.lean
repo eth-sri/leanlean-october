@@ -5,6 +5,7 @@ Authors: Adam Benenson
 -/
 
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
@@ -41,7 +42,7 @@ open MeasureTheory Set
 
 noncomputable section
 
-section Volume
+
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
 
@@ -53,7 +54,7 @@ local instance instOpensMeasurableSpaceEL2CompactnessKernels : OpensMeasurableSp
 
 /-- For any `deltaLoss > 0`, there exists a continuous compactly supported kernel `ψ` supported in
 `Metric.ball 0 deltaLoss`, with `ψ ≥ 0` and `∫ ψ = 1` (w.r.t. Lebesgue measure). -/
-theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (hδ : 0 < deltaLoss) :
+theorem exists_kernel_tsupport_subset_ball_integral_eq_one  {deltaLoss}  (hδ : 0 < deltaLoss) :
     ∃ ψ : E → ℝ, Continuous ψ ∧ HasCompactSupport ψ ∧ (∀ x, 0 ≤ ψ x) ∧
       (∫ x, ψ x ∂(volume : Measure E) = 1) ∧ tsupport ψ ⊆ Metric.ball (0 : E) deltaLoss := by
   classical
@@ -78,20 +79,13 @@ theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (h�
         hf_cont hf_cs hf_nonneg hf0_ne)
   set I : ℝ := ∫ x, f x ∂(volume : Measure E)
   have hI0 : I ≠ 0 := ne_of_gt hIpos
-  have hIpos' : 0 < I := by simpa [I] using hIpos
+  
   -- Normalize: `ψ = I⁻¹ • f`.
   let ψ : E → ℝ := fun x => I⁻¹ * f x
-  have hψc : Continuous ψ := by
-    exact (continuous_const.mul hf_cont)
-  have hψcs : HasCompactSupport ψ := by
-    exact
-      (HasCompactSupport.smul_left (f := fun _x : E => I⁻¹) (f' := f) hf_cs)
+  have hψc : Continuous ψ := (continuous_const.mul hf_cont)
+  have hψcs : HasCompactSupport ψ := (HasCompactSupport.smul_left (f := fun _x : E => I⁻¹) (f' := f) hf_cs)
   have hψ0 : ∀ x, 0 ≤ ψ x := by
-    intro x
-    have hInv : 0 ≤ I⁻¹ := by
-      have : 0 ≤ I := le_of_lt hIpos'
-      simpa using inv_nonneg.2 this
-    simpa [ψ] using mul_nonneg hInv (hf_nonneg x)
+    aesop
   have hψint : ∫ x, ψ x ∂(volume : Measure E) = 1 := by
     have : (∫ x, ψ x ∂(volume : Measure E)) = I⁻¹ * I := by
       -- Pull out the constant scalar.
@@ -105,7 +99,7 @@ theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (h�
     exact hsub.trans hf_tsupp
   exact ⟨ψ, hψc, hψcs, hψ0, hψint, hψ_tsupp⟩
 
-end Volume
+
 
 end
 

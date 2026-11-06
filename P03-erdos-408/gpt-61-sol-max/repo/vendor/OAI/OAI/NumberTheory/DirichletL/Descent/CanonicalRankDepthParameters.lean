@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankExistenceData
 public import OAI.NumberTheory.DirichletL.Descent.RecursionParameters
@@ -7,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Descent.RecursionParameters
 
 namespace OAI
 
-noncomputable section
+
 
 namespace SevenEighths.InverseMoment
 
-theorem actual_rank_depth_covers (Mmax cutoff:ℝ)(hcut:0<cutoff):
+theorem actual_rank_depth_covers  Mmax cutoff (hcut:0<cutoff):
     Mmax≤rankRowCap (actualDepth Mmax (cutoff/2)) cutoff := by
   have hceil:=Nat.le_ceil (2*Mmax/(3*(cutoff/2)))
   have hscaled:2*Mmax≤(⌈2*Mmax/(3*(cutoff/2))⌉₊:ℝ)*(3*(cutoff/2)):=
@@ -20,8 +21,12 @@ theorem actual_rank_depth_covers (Mmax cutoff:ℝ)(hcut:0<cutoff):
   push_cast
   nlinarith
 
-theorem actual_rank_depth_parameters (Mmax Fmax c eps:ℝ)
-    (hM:0≤Mmax)(hF:0≤Fmax)(hc:0<c)(heps:0<eps):
+section
+variable (Mmax Fmax c eps:ℝ) (hM:0≤Mmax) (hF:0≤Fmax) (hc:0<c) (heps:0<eps)
+include Mmax Fmax c eps hM hF hc heps
+
+theorem actual_rank_depth_parameters  
+        :
     ∃cutoff eta:ℝ,0<cutoff ∧ 0<eta ∧ eta≤1 ∧ eta≤cutoff/32 ∧
       cutoff≤Fmax+1 ∧ cutoff≤c/200 ∧ eta≤c/100000 ∧
       let n:=actualDepth Mmax (cutoff/2);
@@ -44,12 +49,10 @@ theorem actual_rank_depth_parameters (Mmax Fmax c eps:ℝ)
   have hmono:=mul_le_mul_of_nonneg_right hk' heta.le
   have hk0:0≤(k:ℝ):=Nat.cast_nonneg _
   have hkE:0≤(k:ℝ)*eta:=mul_nonneg hk0 heta.le
-  rcases hbudgets with ⟨hmargin,hsize,hloss⟩
-  unfold rankTotalCap rankMargin rankLoss
-  refine ⟨?_,?_,?_,?_,?_⟩ <;> nlinarith
+  grind [rankTotalCap, rankMargin, rankLoss]
 
-theorem actual_rank_top_parameters (Mmax Fmax c eps:ℝ)
-    (hM:0≤Mmax)(hF:0≤Fmax)(hc:0<c)(heps:0<eps):
+theorem actual_rank_top_parameters  
+        :
     ∃(n:ℕ)(cutoff eta:ℝ),n=actualDepth Mmax (cutoff/2) ∧
       0<n ∧ 0<cutoff ∧ 0<eta ∧ eta≤1 ∧ eta≤cutoff/32 ∧
       cutoff≤Fmax+1 ∧ cutoff≤c/200 ∧ eta≤c/100000 ∧
@@ -63,8 +66,10 @@ theorem actual_rank_top_parameters (Mmax Fmax c eps:ℝ)
     hcutL,hcutc,hetac,hrow,htop.1,htop.2.1,htop.2.2.1,htop.2.2.2.1,?_⟩
   linarith [htop.2.2.2.2]
 
+end
+
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

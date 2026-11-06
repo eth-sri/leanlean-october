@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Failure.Bound
 
@@ -21,7 +22,7 @@ namespace Erdos408
 
 open Finset Filter Real
 
-noncomputable section
+
 
 /-- Mertens: `∑_{p ≤ Y} 1/p ≤ log log Y + C`. -/
 lemma exists_sum_one_div_primesIcc_le : ∃ C : ℝ, ∀ Y : ℝ, 2 ≤ Y →
@@ -58,7 +59,7 @@ lemma exists_sum_one_div_primesIcc_le : ∃ C : ℝ, ∀ Y : ℝ, 2 ≤ Y →
         linarith
 
 /-- Rankin at `z = 8`: `ε ≤ exp(8 ∑_{p ∈ S} 1/p) / 8^{R+1}`. -/
-lemma sum_powersetCard_le_exp (S : Finset ℕ) (R : ℕ) :
+lemma sum_powersetCard_le_exp (S : Finset ℕ)  R  :
     ∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p ≤
       Real.exp (8 * ∑ p ∈ S, (1 : ℝ) / p) / 8 ^ (R + 1) := by
   refine (sum_powersetCard_prod_le S (R + 1) (fun p _ => by positivity) (by norm_num :
@@ -69,17 +70,19 @@ lemma sum_powersetCard_le_exp (S : Finset ℕ) (R : ℕ) :
     rw [add_comm]
     exact add_one_le_exp _
 
+section
+variable {Y : ℝ} (hY : 0 ≤ Y)
+include Y hY
+
 /-- At most `Y` primes up to `Y`. -/
-lemma card_primesIcc_le {Y : ℝ} (hY : 0 ≤ Y) : ((primesIcc 2 Y).card : ℝ) ≤ Y := by
+lemma card_primesIcc_le     : ((primesIcc 2 Y).card : ℝ) ≤ Y := by
   have h1 : (primesIcc 2 Y).card ≤ ⌊Y⌋₊ := by
     refine (card_filter_le _ _).trans ?_
-    rw [Nat.card_Icc]
-    have : ⌈(2 : ℝ)⌉₊ = 2 := by norm_num
-    omega
+    simp_all
   exact (Nat.cast_le.2 h1).trans (Nat.floor_le hY)
 
 /-- `#{u ⊆ S : |u| ≤ m} ≤ (Y + 1)^m` for the primes up to `Y`. -/
-lemma card_filter_powerset_primesIcc_le {Y : ℝ} (hY : 0 ≤ Y) (m : ℕ) :
+lemma card_filter_powerset_primesIcc_le      m  :
     (((primesIcc 2 Y).powerset.filter (·.card ≤ m)).card : ℝ) ≤ (Y + 1) ^ m := by
   have := card_filter_powerset_card_le (primesIcc 2 Y) m
   calc (((primesIcc 2 Y).powerset.filter (·.card ≤ m)).card : ℝ)
@@ -89,13 +92,15 @@ lemma card_filter_powerset_primesIcc_le {Y : ℝ} (hY : 0 ≤ Y) (m : ℕ) :
         gcongr
         exact card_primesIcc_le hY
 
+end
+
 /-- `#{K ⊆ g : |K| ≤ 2} ≤ (|g| + 1)²`. -/
-lemma card_lowSubsets_le (g : Finset ℕ) : ((lowSubsets g).card : ℝ) ≤ ((g.card : ℝ) + 1) ^ 2 := by
+lemma card_lowSubsets_le  g  : ((lowSubsets g).card : ℝ) ≤ ((g.card : ℝ) + 1) ^ 2 := by
   have := card_filter_powerset_card_le g 2
   exact_mod_cast this
 
 /-- `4 h + 3 ≤ (8 |C_h| + 11) T`. -/
-lemma sieveDepth_le {Ch x : ℝ} (hT : 1 ≤ logLog x) :
+lemma sieveDepth_le  {Ch x}  (hT : 1 ≤ logLog x) :
     4 * (sieveDepth Ch x : ℝ) + 3 ≤ (8 * |Ch| + 11) * logLog x := by
   have hs : logLogLog x ≤ logLog x := by
     have := Real.log_le_sub_one_of_pos (show 0 < logLog x by linarith)
@@ -114,11 +119,11 @@ lemma sieveDepth_le {Ch x : ℝ} (hT : 1 ≤ logLog x) :
   nlinarith [abs_nonneg Ch]
 
 /-- `γ > 0` and `1/γ ≤ C_γ T^{21}`, with `C_γ = 4 (8 |C_h| + 11) / c`. -/
-lemma presieveExponent_facts {c Ch x : ℝ} (hc : 0 < c) (hT : 1 ≤ logLog x) :
+lemma presieveExponent_facts  {c Ch x}  (hc : 0 < c) (hT : 1 ≤ logLog x) :
     0 < presieveExponent c Ch x ∧
       1 / presieveExponent c Ch x ≤ 4 * (8 * |Ch| + 11) / c * logLog x ^ 21 := by
-  have hT0 : 0 < logLog x := by linarith
-  have hden : 0 < 4 * (sieveDepth Ch x : ℝ) + 3 := by positivity
+  
+  
   have hγ : presieveExponent c Ch x =
       c / (4 * logLog x ^ 20 * (4 * (sieveDepth Ch x : ℝ) + 3)) := by
     rw [presieveExponent]
@@ -126,11 +131,11 @@ lemma presieveExponent_facts {c Ch x : ℝ} (hc : 0 < c) (hT : 1 ≤ logLog x) :
   refine ⟨by rw [hγ]; positivity, ?_⟩
   rw [hγ, one_div_div, div_le_iff₀ hc]
   have := sieveDepth_le (Ch := Ch) hT
-  have h20 : 0 < logLog x ^ 20 := by positivity
+  
   calc 4 * logLog x ^ 20 * (4 * (sieveDepth Ch x : ℝ) + 3)
       ≤ 4 * logLog x ^ 20 * ((8 * |Ch| + 11) * logLog x) := by gcongr
     _ = 4 * (8 * |Ch| + 11) / c * logLog x ^ 21 * c := by field_simp
 
-end
+
 
 end Erdos408

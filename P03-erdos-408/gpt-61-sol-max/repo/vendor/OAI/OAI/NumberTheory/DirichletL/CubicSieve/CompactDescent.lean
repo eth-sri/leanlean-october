@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.Smoothed
 public import OAI.NumberTheory.DirichletL.CubicSieve.DescentEnergy
@@ -11,32 +12,30 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-lemma majorant_radial_summable (P : O → ℂ) (M : ℝ) (hM : 0 < M) :
-    Summable (fun z : O => rowMajorant (‖eisEmbedding z‖^2 / M) * P z) := by
+
+
+lemma majorant_radial_summable (P : ActualEisensteinCubic.O → ℂ)  M  (hM : 0 < M) :
+    Summable (fun z : ActualEisensteinCubic.O => rowMajorant (‖eisEmbedding z‖^2 / M) * P z) := by
   apply (hasSum_sum_of_ne_finset_zero (s := rowMajorantBall M) ?_).summable
   intro z hz
   rw [rowMajorant_zero_outside M hM z hz, zero_mul]
 
-lemma majorant_rescale (d z : O) (_hd : d ≠ 0) (M : ℝ) :
+lemma majorant_rescale  d z  (_hd : d ≠ 0)  M  :
     rowMajorant (‖eisEmbedding (d*z)‖^2 / M) =
       rowMajorant (‖eisEmbedding z‖^2 / (M / (Ideal.absNorm (Ideal.span {d}) : ℝ))) := by
   rw [map_mul, norm_mul, mul_pow, eisEmbedding_norm_sq_eq_absNorm_span d]
-  congr 1
-  simp only [div_eq_mul_inv, mul_inv_rev, inv_inv]
-  ring
+  field_simp <;> ring
 
-lemma dividedMajorant_tsum (P : O → ℂ) (d : O) (hd : d ≠ 0)
-    (M : ℝ) (hM : 0 < M) :
+lemma dividedMajorant_tsum (P : ActualEisensteinCubic.O → ℂ)  d  (hd : d ≠ 0)
+     M  (hM : 0 < M) :
     (∑ z ∈ dividedRows (rowMajorantBall M) d,
       rowMajorant (‖eisEmbedding (d*z)‖^2 / M) * P z) =
-      ∑' z : O, rowMajorant (‖eisEmbedding z‖^2 /
+      ∑' z : ActualEisensteinCubic.O, rowMajorant (‖eisEmbedding z‖^2 /
         (M / (Ideal.absNorm (Ideal.span {d}) : ℝ))) * P z := by
   symm
-  rw [← show (fun z : O => rowMajorant (‖eisEmbedding (d*z)‖^2 / M) * P z) =
-      (fun z : O => rowMajorant (‖eisEmbedding z‖^2 /
+  rw [← show (fun z : ActualEisensteinCubic.O => rowMajorant (‖eisEmbedding (d*z)‖^2 / M) * P z) =
+      (fun z : ActualEisensteinCubic.O => rowMajorant (‖eisEmbedding z‖^2 /
         (M / (Ideal.absNorm (Ideal.span {d}) : ℝ))) * P z) by
           funext z; rw [majorant_rescale d z hd M]]
   apply tsum_eq_sum
@@ -50,9 +49,13 @@ lemma dividedMajorant_tsum (P : O → ℂ) (d : O) (hd : d ≠ 0)
     exact elementQuotient_mul d (d*z) (dvd_mul_right d z)
   rw [rowMajorant_zero_outside M hM (d*z) hout, zero_mul]
 
-lemma majorant_coprime_tsum {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (a : n → ℂ) (M : ℝ) (hM : 0 < M) :
-    (∑' z : O, rowMajorant (‖eisEmbedding z‖^2 / M) *
+section
+variable {n : Type*} [Fintype n]
+include n
+
+lemma majorant_coprime_tsum    
+    (cols : n → Ideal ActualEisensteinCubic.O)  a   M  (hM : 0 < M) :
+    (∑' z : ActualEisensteinCubic.O, rowMajorant (‖eisEmbedding z‖^2 / M) *
       ∑ j, ∑ k, if IsCoprime (cols j) (cols k) then
         star (cubicRow (cols j) z * a j) * (cubicRow (cols k) z * a k) else 0) =
       cubicSmoothedCoprime cols a rowMajorant M := by
@@ -76,10 +79,10 @@ lemma majorant_coprime_tsum {n : Type*} [Fintype n]
     ring
   · simp only [ite_eq_right hcop, mul_zero, tsum_zero]
 
-lemma compact_gcd_mobius_descent {n : Type*} [Fintype n]
-    (D : Ideal O) (hD : primaryGenerator D ≠ 0)
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (a : n → ℂ) (M : ℝ) (hM : 0 < M) :
+lemma compact_gcd_mobius_descent    
+    (D : Ideal ActualEisensteinCubic.O) (hD : primaryGenerator D ≠ 0)
+    (cols : n → Ideal ActualEisensteinCubic.O) (hc : ∀ j, Admissible (cols j))
+     a   M  (hM : 0 < M) :
     (∑ z ∈ rowMajorantBall M, rowMajorant (‖eisEmbedding z‖^2 / M) *
       ∑ j, ∑ k, cubicGcdTerm D cols a z j k) =
       ∑ E ∈ idealDivisors D, (UniqueFactorizationMonoid.moebius E : ℂ) *
@@ -102,22 +105,26 @@ lemma compact_gcd_mobius_descent {n : Type*} [Fintype n]
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hE0)
   exact div_pos hM hNE
 
-lemma gcdPool_cubic_admissible {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (D : Ideal O) (hD : D ∈ gcdPool cols) : Admissible D := by
+section
+variable (cols : n → Ideal ActualEisensteinCubic.O)
+include cols
+
+lemma gcdPool_cubic_admissible    
+      (hc : ∀ j, Admissible (cols j))
+     D  (hD : D ∈ gcdPool cols) : Admissible D := by
   obtain ⟨⟨j,k⟩, _, rfl⟩ := Finset.mem_image.mp hD
   exact cubic_admissible_of_dvd (hc j) (gcd_dvd_left _ _)
 
-lemma gcdPool_subset_columnDivisorPool {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, cols j ≠ 0) :
+lemma gcdPool_subset_columnDivisorPool    
+      (hc : ∀ j, cols j ≠ 0) :
     gcdPool cols ⊆ columnDivisorPool cols := by
   intro D hD
   obtain ⟨⟨j,k⟩, _, rfl⟩ := Finset.mem_image.mp hD
   exact mem_columnDivisorPool_of_dvd cols hc j _ (gcd_dvd_left _ _)
 
-theorem finite_energy_le_compact_descendants {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j)) (a : n → ℂ)
-    (R : Finset O) (M : ℝ) (hM : 0 < M)
+theorem finite_energy_le_compact_descendants    
+      (hc : ∀ j, Admissible (cols j))  a 
+     R   M  (hM : 0 < M)
     (hR : ∀ z ∈ R, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M) :
     (∑ z ∈ R, ‖∑ j, cubicRow (cols j) z * a j‖^2) ≤
       ∑ D ∈ gcdPool cols, ∑ E ∈ idealDivisors D,
@@ -130,7 +137,7 @@ theorem finite_energy_le_compact_descendants {n : Type*} [Fintype n]
   apply (Complex.re_le_norm _).trans
   rw [rowMajorant_tsum_eq_sum _ M hM,
     cubic_weighted_energy_eq_gcd_blocks (rowMajorantBall M) _ cols a]
-  have he (D : Ideal O) (hD : D ∈ gcdPool cols) :=
+  have he (D : Ideal ActualEisensteinCubic.O) (hD : D ∈ gcdPool cols) :=
     compact_gcd_mobius_descent D (gcdPool_cubic_admissible cols hc D hD).2 cols hc a M hM
   calc
     _ ≤ ∑ D ∈ gcdPool cols,
@@ -148,6 +155,10 @@ theorem finite_energy_le_compact_descendants {n : Type*} [Fintype n]
         (norm_nonneg _)).trans_eq (one_mul _)
 
 end
+
+end
+
+
 end SevenEighths.CubicSieve
 
 end OAI

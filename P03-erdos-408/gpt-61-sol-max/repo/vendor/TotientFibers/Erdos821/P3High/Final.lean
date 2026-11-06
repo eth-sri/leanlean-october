@@ -11,6 +11,6 @@ set_option autoImplicit false
 
 open Erdos821.Blueprint.Graph
 
-theorem Erdos821.S2Core.HighRankMemoryTask_proof (F : FixedData) (r : MemoryParameters F) :
+theorem Erdos821.S2Core.HighRankMemoryTask_proof  F   r  :
     Erdos821.S2Core.HighRankMemoryTask F r :=
   Erdos821.P3High.highRank_of_boundary F r Erdos821.S2Empty.EmptyBoundaryMassTask_proof

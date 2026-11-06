@@ -10,12 +10,12 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open EisensteinSchwartzPoisson
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+
 
 lemma cubicDualRow_zero {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (hunit : ∀ j, cols j ≠ 1) (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) :
+    (cols : n → Ideal ActualEisensteinCubic.O)  hc 
+    (hunit : ∀ j, cols j ≠ 1)  a   W   M  :
     cubicDualRow cols hc a W M 0 = 0 := by
   unfold cubicDualRow
   apply Finset.sum_eq_zero
@@ -25,11 +25,11 @@ lemma cubicDualRow_zero {n : Type*} [Fintype n]
   rw [cubicRow_zero_of_ne_one _ (hc j) (hunit j)]
   simp
 
-theorem cubic_dual_shell_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
+theorem cubic_dual_shell_bound  W   A  :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
         (ε : ℝ) (hε : 0 < ε) (M K N : ℝ) (_hM : 0 < M) (_hK : 0 < K) (_hN : 0 < N)
-        (rows : m → O) (cols : n → Ideal O)
+        (rows : m → ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
         (_hr : Function.Injective rows) (_hc : Function.Injective cols)
         (_hrows : ∀ i, K / 2 ≤ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ∧
           (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ K)
@@ -51,7 +51,7 @@ theorem cubic_dual_shell_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
     ((2 / N) * ∑ j, ‖a j‖ ^ 2) (by positivity) he he
   simpa only [cubicDualRow_eq_gram] using h
 
-end
+
 end SevenEighths.CubicSieve
 
 end OAI

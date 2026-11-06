@@ -11,26 +11,26 @@ open scoped Classical SchwartzMap
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def lowGramCoefficient (C : CalibrationData) (σ : RayRing)
-    (s : {I : Id // Supported I}) : ℂ :=
+    (s : {I : Id // Supported I})  :=
   if physicalIdealRay s=σ then lowArithmeticCoefficient C s else 0
 
-def lowGramProfile (W1 : ℝ→ℂ) (v r : ℝ) : ℂ :=
+def lowGramProfile (W1 : ℝ→ℂ) (v r : ℝ)  :=
   W1 r*(r:ℂ)^(-1+(v:ℂ)*Complex.I)
 
-def lowGramScale (Y : ℝ) : ℂ := (Y:ℂ)⁻¹*(Real.sqrt Y:ℂ)⁻¹
+def lowGramScale (Y : ℝ)  := (Y:ℂ)⁻¹*(Real.sqrt Y:ℂ)⁻¹
 
-lemma lowGramProfile_norm (W1 : ℝ→ℂ) (v r : ℝ) (hr : 0<r) :
+lemma lowGramProfile_norm  W1   v r  (hr : 0<r) :
     ‖lowGramProfile W1 v r‖=‖W1 r‖/r := by
   rw [lowGramProfile,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos hr]
   simp only [Complex.add_re,Complex.neg_re,Complex.one_re,Complex.mul_re,
     Complex.ofReal_re,Complex.ofReal_im,Complex.I_re,Complex.I_im,mul_zero,zero_mul,sub_self,add_zero,
     Real.rpow_neg_one,div_eq_mul_inv]
 
-lemma lowGramScale_mul_star (Y : ℝ) (hY : 0<Y) :
+lemma lowGramScale_mul_star  Y  (hY : 0<Y) :
     lowGramScale Y*star (lowGramScale Y)=((Y^3:ℝ):ℂ)⁻¹ := by
   have hy : (Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hY.ne'
   have hs : (Real.sqrt Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hY).ne'
@@ -40,8 +40,8 @@ lemma lowGramScale_mul_star (Y : ℝ) (hY : 0<Y) :
   ring_nf
   rw [hsquare]
 
-theorem lowGaussColumn_unnormalized (C : CalibrationData) (W1 : ℝ→ℂ)
-    (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (s : {I : Id // Supported I}) :
+theorem lowGaussColumn_unnormalized  C   W1 
+     Y  (hY : 0<Y)  σ   v   s  :
     lowGaussColumn C W1 Y σ v s/(Real.sqrt (Ideal.absNorm s.val:ℝ):ℂ)=
       lowGramScale Y*(lowGramCoefficient C σ s*
         lowGramProfile W1 v ((Ideal.absNorm s.val:ℝ)/Y)) := by

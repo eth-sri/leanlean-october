@@ -6,16 +6,16 @@ public import OAI.NumberTheory.DirichletL.Detector.LowCommonBound
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma compensatedPhysicalProbe_window_scale {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (X Y Z : ℝ) (c : ℂ) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+lemma compensatedPhysicalProbe_window_scale {K : ℕ}  η   C 
+     W0 W1  (slots : Fin K→Finset ActualEisensteinCubic.O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
+     X Y Z   c  :
     compensatedPhysicalProbe η C W0 W1 slots (fun i x=>c*W i x) Yp X Y Z=
       c^K*compensatedPhysicalProbe η C W0 W1 slots W Yp X Y Z := by
   unfold compensatedPhysicalProbe
@@ -25,10 +25,10 @@ lemma compensatedPhysicalProbe_window_scale {K : ℕ} (η : HeckeFamily.Characte
 theorem original_ray_compensatedPhysicalProbe_low_loss
     (S : Finset Id) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i) (hinj : Function.Injective ell)
-    (hsum : ∑i,ell i≤1/6) (R : Set Id)
+    (hsum : ∑i,ell i≤1/6)  R 
     (a b B loss : ℝ) (ha : 0<a) (hab : a≤b) (hloss : 0<loss)
-    (W : Fin K→ℝ→ℂ) (hW : ∀i,Function.support (W i)⊆Set.Icc a b) (hWnorm : ∀i x,‖W i x‖≤B)
-    (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 B0 B1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+     W  (hW : ∀i,Function.support (W i)⊆Set.Icc a b) (hWnorm : ∀i x,‖W i x‖≤B)
+     W0 W1  (a0 b0 a1 b1 B0 B1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hab1 : a1<b1) (hB0 : 0≤B0) (hB1 : 0≤B1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hW0s : ContDiff ℝ ∞ W0) (hW1s : ContDiff ℝ ∞ W1)
@@ -76,6 +76,6 @@ theorem original_ray_compensatedPhysicalProbe_low_loss
     _=_ := by ring
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

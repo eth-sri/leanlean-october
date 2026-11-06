@@ -11,13 +11,13 @@ open scoped BigOperators Classical
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal)
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-theorem actual_second_original_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ {ι : Type} [DecidableEq ι] (p : ι → Eis)
+
+
+theorem actual_second_original_mass  K   ε  (hε : 0 < ε) :
+    ∃ C : ℝ, 0 < C ∧ ∀ {ι : Type} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
       (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (u v : Eisˣ)
+      {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (u v : ActualEisensteinCubic.Oˣ)
       (Z ell R j t g theta eta : ℝ), 0 < Z →
       (∀ x ∈ source, x.quotient ≠ 0) →
       (∀ x ∈ source, x.second.divisor ⊆ x.second.sourceCommon) →
@@ -47,7 +47,7 @@ theorem actual_second_original_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
       dsimp only [c]
       ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

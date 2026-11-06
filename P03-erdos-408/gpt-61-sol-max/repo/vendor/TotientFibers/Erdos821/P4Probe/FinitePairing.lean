@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.Probability
 
@@ -22,7 +23,7 @@ lemma weighted_pair_le {β : Type*} [Fintype β]
     hw (fun _ => sq_nonneg _) (fun _ => sq_nonneg _)
   have hc : (∑ z, w z * ‖f z‖ * ‖g z‖) ≤
       Real.sqrt (∑ z, w z * ‖f z‖ ^ 2) * Real.sqrt (∑ z, w z * ‖g z‖ ^ 2) := by
-    simpa only [Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)] using hcs
+    simp_all
   calc
     _ ≤ ∑ z, ‖(w z : ℂ) * star (f z) * g z * multiplier z‖ := norm_sum_le _ _
     _ ≤ ∑ z, w z * ‖f z‖ * ‖g z‖ := by
@@ -30,21 +31,24 @@ lemma weighted_pair_le {β : Type*} [Fintype β]
       intro z _
       simp only [norm_mul, norm_star, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (hw z)]
-      simpa only [mul_one] using mul_le_mul_of_nonneg_left (hm z)
-        (mul_nonneg (mul_nonneg (hw z) (norm_nonneg _)) (norm_nonneg _))
+      bound
     _ ≤ _ := hc
 
-def finiteRestrict {β : Type*} (s : Finset β) (f : β → ℂ) (z : β) : ℂ :=
+def finiteRestrict {β } (s : Finset β) (f : β → ℂ) (z : β)  :=
   if z ∈ s then f z else 0
 
-lemma finiteRestrict_sqNorm {β : Type*} [Fintype β] (w : β → ℝ)
-    (s : Finset β) (f : β → ℂ) :
+section
+variable {β : Type*} [Fintype β] (w : β → ℝ)
+include β w
+
+lemma finiteRestrict_sqNorm      
+     s   f  :
     (∑ z, w z * ‖finiteRestrict s f z‖ ^ 2) = ∑ z ∈ s, w z * ‖f z‖ ^ 2 := by
   simp only [finiteRestrict, apply_ite, norm_zero]
   simp
 
-lemma normBound_of_full_pair {β : Type*} [Fintype β] (w : β → ℝ)
-    (K : β → β → ℂ) (C : ℝ)
+lemma normBound_of_full_pair      
+    (K : β → β → ℂ)  C 
     (hK : ∀ f g : β → ℂ,
       ‖∑ a, ∑ b, (w a : ℂ) * star (f a) * K a b * g b‖ ≤
         C * Real.sqrt (∑ a, w a * ‖f a‖ ^ 2) * Real.sqrt (∑ b, w b * ‖g b‖ ^ 2)) :
@@ -58,6 +62,8 @@ lemma normBound_of_full_pair {β : Type*} [Fintype β] (w : β → ℝ)
     simp
   rw [hp] at h
   exact h
+
+end
 
 end
 end Erdos821.P4Probe

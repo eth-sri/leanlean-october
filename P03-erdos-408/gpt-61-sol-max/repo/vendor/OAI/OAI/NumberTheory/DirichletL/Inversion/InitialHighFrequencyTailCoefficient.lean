@@ -22,7 +22,7 @@ variable {ι σ : Type*} [DecidableEq ι]
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def originalCoefficient (Ψ : O→*ℂ) (j : O) (mark : Finset ι→ℂ)
-    (x : Point ι) (ρ : SecondRayIndex) : ℂ :=
+    (x : Point ι) (ρ : SecondRayIndex)  :=
   (initialBeta p Ψ j x.common * (UniqueFactorizationMonoid.moebius (sourceIdeal p x.divisor):ℂ) *
     supportMobius (fun i=>Ideal.span {p i}) x.overlap * secondRayCoefficient ρ) *
   star (initialColumn p hp hcop hg (secondRayMinus Ψ ρ) j (∏ i∈x.common,p i)
@@ -32,9 +32,9 @@ def originalCoefficient (Ψ : O→*ℂ) (j : O) (mark : Finset ι→ℂ)
 
 include hp hcop hg in
 theorem physicalTerm_original_coefficient
-    (Ψ : O→*ℂ) (j : O) (mark : Finset ι→ℂ)
-    (W₁ W₂ : ℝ→ℂ) (Φ : SchwartzMap ℝ ℂ) (Z D m : ℝ)
-    (x : Point ι) (hx : Valid x) (ρ : SecondRayIndex) :
+     Ψ   j   mark 
+     W₁ W₂   Φ   Z D m 
+     x  (hx : Valid x)  ρ  :
     physicalTerm p hp hcop hg Ψ j mark W₁ W₂ Φ Z D m x ρ =
       originalCoefficient p hp hcop hg Ψ j mark x ρ *
       physicalKernel W₁ W₂ Φ Z D m (coordinates p x) := by
@@ -47,11 +47,11 @@ include hp hcop hg in
 theorem originalCoefficient_marked_bound
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
-    (Ψ : O→*ℂ) (hΨ : ∀n,‖Ψ n‖≤1) (j : O)
+     Ψ  (hΨ : ∀n,‖Ψ n‖≤1)  j 
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (hdis : (slots:Set σ).PairwiseDisjoint lists)
     (ha : ∀i∈slots,∀k∈lists i,‖a i k‖≤1)
-    (x : Point ι) (ρ : SecondRayIndex) (L : ℝ) (hL : 1≤L)
+     x   ρ   L  (hL : 1≤L)
     (hleft : primeProductNorm p x.common*primeProductNorm p x.overlap*
       primeProductNorm p x.left≤L)
     (hright : primeProductNorm p x.common*primeProductNorm p x.overlap*

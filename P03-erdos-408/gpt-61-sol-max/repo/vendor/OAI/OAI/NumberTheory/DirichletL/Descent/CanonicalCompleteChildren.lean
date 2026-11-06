@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongCosts
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongHeightBin
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongHeightBin
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
@@ -15,16 +16,16 @@ open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion C
 open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
 open FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem actual_complete_state_from_children
     (lo hi:ℝ)(hlo:0<lo)(hhi:0≤hi)(W:ℝ→ℂ)
     (hsW:Function.support W⊆Set.Icc lo hi)(hW:ContDiff ℝ ∞ W)
-    (Vlog:𝓢(ℝ,ℂ))(Alog:ℝ)(hbox:∀x,Vlog x≠0 → |x|≤Alog)
+    (Vlog:𝓢(ℝ,ℂ)) Alog  hbox 
     (hone:∀x,|x|≤columnWindowRadius lo hi → Vlog x=1)
-    (L cstar eta tau saving em ed eps:ℝ)(hL:1≤L)(hcstar:0<cstar)(heta:0<eta)
+     L cstar eta tau saving em ed eps (hL:1≤L)(hcstar:0<cstar)(heta:0<eta)
     (heta1:eta≤1)(hetac:eta≤cstar/100000)(htau:0<tau)(htau1:tau≤1)
-    (hem:0<em)(hed:0<ed)(heps:0<eps)(K:ℕ):
+    (hem:0<em)(hed:0<ed)(heps:0<eps) K :
     ∃(ω₁₁ ω₁₂ ω₂₁ ω₂₂:𝓢(ℝ,ℂ))(af₁ bf₁ af₂ bf₂ window bw:ℝ)(shortDegree:ℕ),
       0<af₁ ∧ af₁≤bf₁ ∧ 0<af₂ ∧ af₂≤bf₂ ∧
       HasCompactSupport (ω₁₁:ℝ→ℂ) ∧ HasCompactSupport (ω₁₂:ℝ→ℂ) ∧
@@ -34,7 +35,7 @@ theorem actual_complete_state_from_children
       1≤bw ∧ Real.exp Alog≤bw ∧ bw=Real.exp window ∧
     ∀epsFirst epsSecond:ℝ,0<epsFirst → 0<epsSecond → ∀degree:ℕ,
     ∀(q:ℕ)(hq:q≠0),∃Cs Cb Z₀:ℝ,0<Cs ∧ 0≤Cb ∧ 1<Z₀ ∧
-    ∀{σ:Type}[DecidableEq σ](m:O),m≠0 →
+    ∀{σ:Type}[DecidableEq σ](m:ActualEisensteinCubic.O),m≠0 →
     ∀Z N V M z₀ margin cutoff pi epschild A loss lossFinal theta:ℝ,
       Z₀≤Z → 2≤Z → 2≤Z^eta → Real.exp 1≤Z^eta → 1≤eta*Real.log Z →
       0≤N → 0≤V → 0≤M → N+V≤L → M≤N+V → z₀≤L →
@@ -48,12 +49,12 @@ theorem actual_complete_state_from_children
       3*eta+epsFirst*(2*L+7*eta)≤lossFinal →
       loss+(2*L+15*eta+tau)*epsFirst+epsFirst≤lossFinal → -saving≤lossFinal →
       0≤A →
-    ∀labels:Finset (Ideal O),(∀I∈labels,Supported I ∧ Squarefree I ∧ (I.absNorm:ℝ)≤Z^V) →
+    ∀labels:Finset (Ideal ActualEisensteinCubic.O),(∀I∈labels,Supported I ∧ Squarefree I ∧ (I.absNorm:ℝ)≤Z^V) →
     ∀D:ℕ,hi*Z^N≤D → ∀slots:Finset σ,slots.card≤K →
     ∀(lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D)))(H:σ→ℝ),
       (slots:Set σ).PairwiseDisjoint lists →
       (∀i∈slots,1≤H i) → (∀i∈slots,∀P∈lists i,(Ideal.absNorm P.val:ℝ)≤H i) → (∏i∈slots,H i)≤Z^z₀ →
-    ∀(Ψ:O→*ℂ),(∀u,‖Ψ u‖≤1) →
+    ∀(Ψ:ActualEisensteinCubic.O→*ℂ),(∀u,‖Ψ u‖≤1) →
       CanonicalCoefficientClass.FactorsModulo (CanonicalCoefficientClass.fixedBaseConductor q) Ψ →
     ∀a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D)→ℂ,
       (∀i∈slots,∀P∈lists i,‖a i P‖≤1) →
@@ -129,7 +130,7 @@ theorem actual_complete_state_from_children
       hi Z N V cutoff eta L j (by linarith) hL heta1 hV hFcap hbZ hlog hne
     have hsN:(N-3*ell)+3*ell=N:=by ring
     have hpr:3*eta+epsFirst*(5*ell+2*(N-3*ell)+7*eta)≤lossFinal:=by
-      have hNL:N≤L:=by linarith
+      
       nlinarith
     have hh:=hbin theta S D (reflectionExcludedPrimes_bad q) (reflectionExcludedPrimes_prime q)
       Q labels Ψ m slots lists a Z M (N-3*ell) ell V (Z^(cutoff-V)) pi epschild A loss lossFinal
@@ -157,6 +158,6 @@ theorem actual_complete_state_from_children
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

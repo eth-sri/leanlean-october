@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.SixthDecomposition
 public import OAI.NumberTheory.DirichletL.Detector.SpectralSupport
@@ -7,15 +8,15 @@ public import OAI.NumberTheory.DirichletL.Detector.SpectralSupport
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CubicEisenstein
 open HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
 
-lemma calibration_sixth_ideal_mask (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
-    (L : Ideal O) :
+
+lemma calibration_sixth_ideal_mask  S   hS 
+     L  :
     (calibrationForSet S hS).residueMonoid (idealGenerator L)^6=
       if ∀P∈S,¬P∣L then 1 else 0 := by
   by_cases hL : ∀P∈S,¬P∣L
@@ -33,19 +34,19 @@ lemma calibration_sixth_ideal_mask (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMax
       intro P hP hd
       apply ho P hP
       apply (Ideal.dvd_iff_le.mp hd)
-      have hm : idealGenerator L∈Ideal.span ({idealGenerator L}:Set O) := Ideal.subset_span (by simp)
+      have hm : idealGenerator L∈Ideal.span ({idealGenerator L}:Set ActualEisensteinCubic.O) := Ideal.subset_span (by simp)
       rw [span_idealGenerator L] at hm
       exact hm
     rw [hz,zero_pow (by decide : 6≠0)]
 
-lemma calibration_sixth_frequency_mask (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
-    (u : O) (L : Ideal O) :
+lemma calibration_sixth_frequency_mask  S   hS 
+     u   L  :
     star ((calibrationForSet S hS).residueMonoid (u*idealGenerator L^6))=
       star ((calibrationForSet S hS).residueMonoid u)*(if ∀P∈S,¬P∣L then 1 else 0) := by
   rw [map_mul,map_pow,calibration_sixth_ideal_mask]
   split_ifs <;> simp only [mul_one,mul_zero,star_zero]
 
-lemma sixthFrequencyWeight (p : FreeRow×HeckeInverseAmplification.NonzeroIdeal) (z : ℂ) :
+lemma sixthFrequencyWeight  p   z  :
     frequencyWeight z (sixthFrequencyEquiv p)=
       frequencyWeight z ⟨p.1.val,p.1.property.1⟩*fullIdealWeight (6*z) p.2.val := by
   have hu : 0<elementNorm p.1.val := elementNorm_pos _ p.1.property.1
@@ -59,13 +60,9 @@ lemma sixthFrequencyWeight (p : FreeRow×HeckeInverseAmplification.NonzeroIdeal)
   rw [Complex.mul_cpow_ofReal_nonneg hu.le (pow_nonneg hl.le 6)]
   congr 1
   have he := Complex.cpow_mul_ofReal_nonneg hl.le (6:ℝ) (-z)
-  simp only [Real.rpow_ofNat,Complex.ofReal_pow,Complex.ofReal_ofNat,Complex.ofReal_natCast] at he
-  simp only [Complex.ofReal_pow,Complex.ofReal_natCast]
-  rw [←he]
-  congr 1
-  ring
+  simp_all
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

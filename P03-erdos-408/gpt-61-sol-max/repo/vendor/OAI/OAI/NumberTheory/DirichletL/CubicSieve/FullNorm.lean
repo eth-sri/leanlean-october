@@ -10,13 +10,13 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-def elementRange (M : ℝ) : Finset O :=
+
+def elementRange (M : ℝ)  :=
   (ShortDraftLatticeCount.rowNormBall ⌊M⌋₊).filter
     (fun z => z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M)
 
-lemma mem_elementRange (M : ℝ) (z : O) :
+lemma mem_elementRange  M   z  :
     z ∈ elementRange M ↔ z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M := by
   constructor
   · intro h
@@ -28,18 +28,21 @@ lemma mem_elementRange (M : ℝ) (z : O) :
     rw [ActualEisensteinCubic.qNat_eq_absNorm_span]
     exact Nat.le_floor h.2
 
-def elementMatrix (M N : ℝ) : Matrix (elementRange M) (idealRange N) ℂ :=
+def elementMatrix (M N ) : Matrix (elementRange M) (idealRange N) ℂ :=
   fun z J => cubicRow J.val z.val
 
-def elementSieveNorm (M N : ℝ) : ℝ := squaredNorm (elementMatrix M N)
+def elementSieveNorm (M N : ℝ)  := squaredNorm (elementMatrix M N)
 
-lemma elementSieveNorm_nonneg (M N : ℝ) : 0 ≤ elementSieveNorm M N := squaredNorm_nonneg _
+lemma elementSieveNorm_nonneg  M N  : 0 ≤ elementSieveNorm M N := squaredNorm_nonneg _
 
-theorem element_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
-    [DecidableEq m] [DecidableEq n]
-    (rows : m → O) (cols : n → Ideal O)
+section
+variable {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
+
+theorem element_family_squared_norm_le      
+       
+    (rows : m → ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
-    (M N : ℝ) (hrows : ∀ i, rows i ≠ 0 ∧ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ M)
+     M N  (hrows : ∀ i, rows i ≠ 0 ∧ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ M)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
     squaredNorm (fun i j => cubicRow (cols j) (rows i)) ≤ elementSieveNorm M N := by
   let r : m → elementRange M := fun i => ⟨rows i, (mem_elementRange M (rows i)).mpr (hrows i)⟩
@@ -49,7 +52,7 @@ theorem element_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
   have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (elementMatrix M N)
   exact pow_le_pow_left₀ (norm_nonneg _) h 2
 
-lemma sieveNorm_le_elementSieveNorm (M N : ℝ) : sieveNorm M N ≤ elementSieveNorm M N := by
+lemma sieveNorm_le_elementSieveNorm  M N  : sieveNorm M N ≤ elementSieveNorm M N := by
   apply element_family_squared_norm_le
     (fun I : idealRange M => primaryGenerator I.val) (fun J : idealRange N => J.val)
   · intro I J he
@@ -63,10 +66,10 @@ lemma sieveNorm_le_elementSieveNorm (M N : ℝ) : sieveNorm M N ≤ elementSieve
   · intro J
     exact mem_idealRange.mp J.property
 
-theorem element_coprime_bilinear_bound {m n : Type*} [Fintype m] [Fintype n]
-    [DecidableEq m] [DecidableEq n]
+theorem element_coprime_bilinear_bound      
+       
     (ε : ℝ) (hε : 0 < ε) (M N : ℝ) (hN : 0 ≤ N)
-    (rows : m → O) (cols : n → Ideal O)
+    (rows : m → ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (hrows : ∀ i, rows i ≠ 0 ∧ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ M)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
@@ -90,7 +93,9 @@ theorem element_coprime_bilinear_bound {m n : Type*} [Fintype m] [Fintype n]
   · positivity
   · exact mul_nonneg (mul_nonneg (elementSieveNorm_nonneg _ _) hfac) (by positivity)
 
-theorem elementSieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
+end
+
+theorem elementSieveNorm_initial  M N  (hM : 1 ≤ M) (hN : 1 ≤ N) :
     elementSieveNorm M N ≤ QuadraticInitialBound.initialSieveConstant * (M + (⌈N⌉₊ : ℝ) ^ 2) := by
   let F := idealRange N
   have hF : ∀ I ∈ F, Admissible I := fun I hI => (mem_idealRange.mp hI).1
@@ -110,8 +115,8 @@ theorem elementSieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
   · have hc := (QuadraticInitialBound.initialSieveConstant_pos).le
     positivity
   intro a
-  let aext (I : Ideal O) : ℂ := if h : I ∈ F then a ⟨I, h⟩ else 0
-  have hinner (z : O) :
+  let aext (I : Ideal ActualEisensteinCubic.O) : ℂ := if h : I ∈ F then a ⟨I, h⟩ else 0
+  have hinner (z : ActualEisensteinCubic.O) :
       (∑ I ∈ F, aext I * (idealSexticRow F hFp hFg I z) ^ 2) =
         ∑ J : F, cubicRow J.val z * a J := by
     rw [← Finset.sum_coe_sort]

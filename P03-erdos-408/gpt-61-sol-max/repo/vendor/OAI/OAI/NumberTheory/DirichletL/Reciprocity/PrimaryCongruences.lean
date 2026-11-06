@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Cusp.ResiduesModThree
 
@@ -10,81 +11,84 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 section
 
-open scoped Classical MatrixGroups
+open scoped   MatrixGroups
 namespace CubicJacobiGlobal
-open ActualEisensteinCubic CubicRamified
+open   CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma integer_congruence_primary_cases (c : Eis) (r : ℤ) (h : (3:Eis)∣c-(r:Eis)) :
+section
+variable (c a t : Eis) (r : ℤ) (hc : lambda^2∣c-1) (ha : lambda^2∣a-1)
+
+lemma integer_congruence_primary_cases     (h : (3:Eis)∣c-(r:Eis)) :
     (3:Eis)∣c ∨ lambda^2∣c-1 ∨ lambda^2∣(-c)-1 := by
   have hr : (3:ℤ)∣r ∨ (3:ℤ)∣r-1 ∨ (3:ℤ)∣r+1 := by omega
   rcases hr with hr|hr|hr
@@ -102,7 +106,8 @@ lemma integer_congruence_primary_cases (c : Eis) (r : ℤ) (h : (3:Eis)∣c-(r:E
     apply lambda_sq_dvd_three.trans
     convert dvd_neg.mpr (dvd_add h hn) using 1 ; ring
 
-lemma symbol_three_shift_primary (c a t:Eis) (hc:lambda^2∣c-1) (ha:lambda^2∣a-1) :
+include hc ha in
+lemma symbol_three_shift_primary       :
     symbol c (a+3*t*c)=symbol c a := by
   have hs:=primary_add_multiple_three a c t ha
   calc
@@ -110,8 +115,9 @@ lemma symbol_three_shift_primary (c a t:Eis) (hc:lambda^2∣c-1) (ha:lambda^2∣
     _=symbol a c:=symbol_congr ⟨3*t,by ring⟩
     _=symbol c a:=(symbol_reciprocity _ _ (primary_ne_zero _ hc) (primary_ne_zero _ ha) hc ha).symm
 
-lemma symbol_three_shift_integer (c a t:Eis) (r:ℤ)
-    (ha:lambda^2∣a-1) (hc:(3:Eis)∣c-(r:Eis)) :
+include ha in
+lemma symbol_three_shift_integer    
+      (hc:(3:Eis)∣c-(r:Eis)) :
     symbol c (a+3*t*c)=symbol c a := by
   rcases integer_congruence_primary_cases c r hc with h|h|h
   · exact symbol_three_shift c a t ha h
@@ -122,17 +128,23 @@ lemma symbol_three_shift_integer (c a t:Eis) (r:ℤ)
       symbol_neg_numerator _ _ ha] at hh
     exact hh
 
+end
+
 end CubicJacobiGlobal
 namespace CubicKubota
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal CubicRamified
+open     CubicEisenstein CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma levelTwo_cube_phase_balance (A N:levelTwo) (p q:Eis) (j:ℕ)
-    (hp:lambda^2∣p-1)
-    (hA:lambda^2∣((A:SL(2,Eis)) 0 0)-1)
-    (hN:lambda^2∣((N:SL(2,Eis)) 0 0)-1)
-    (hx:(A:SL(2,Eis)) 0 0+3*q*(A:SL(2,Eis)) 1 0=p^j*(N:SL(2,Eis)) 0 0)
-    (hc:(N:SL(2,Eis)) 1 0=p^(3-j)*(A:SL(2,Eis)) 1 0) :
+section
+variable (A N : levelTwo) (p q : Eis) (j : ℕ) (hj : j≤3) (hp : lambda^2∣p-1) (hA : lambda^2∣((A:SL(2,Eis)) 0 0)-1) (hN : lambda^2∣((N:SL(2,Eis)) 0 0)-1) (hx : (A:SL(2,Eis)) 0 0+3*q*(A:SL(2,Eis)) 1 0=p^j*(N:SL(2,Eis)) 0 0) (hc : (N:SL(2,Eis)) 1 0=p^(3-j)*(A:SL(2,Eis)) 1 0) (hC : IsCoprime ((A:SL(2,Eis)) 1 0) p) (hNA : (N:SL(2,Eis))*(A:SL(2,Eis))⁻¹∈levelThree)
+
+include hp hA hN hx hc in
+lemma levelTwo_cube_phase_balance      
+     
+     
+     
+     
+      :
     levelTwoComplexCharacter N *
         eisEmbedding (symbol ((A:SL(2,Eis)) 1 0) p)^j =
       levelTwoComplexCharacter A *
@@ -148,8 +160,8 @@ lemma levelTwo_cube_phase_balance (A N:levelTwo) (p q:Eis) (j:ℕ)
     hs,map_mul,map_pow,map_mul,map_pow]
   ring
 
-lemma levelTwo_comparison_character (A N:levelTwo)
-    (hNA:(N:SL(2,Eis))*(A:SL(2,Eis))⁻¹∈levelThree) :
+lemma levelTwo_comparison_character  
+      :
     complexCharacter ⟨(N:SL(2,Eis))*(A:SL(2,Eis))⁻¹,hNA⟩ *
         levelTwoComplexCharacter A = levelTwoComplexCharacter N := by
   rw [←levelTwoComplexCharacter_restrict ⟨(N:SL(2,Eis))*(A:SL(2,Eis))⁻¹,hNA⟩]
@@ -162,14 +174,15 @@ lemma levelTwo_comparison_character (A N:levelTwo)
     norm_num at hh
   rw [inv_mul_cancel₀ hA,mul_one]
 
-lemma levelTwo_cube_comparison_phase (A N:levelTwo) (p q:Eis) (j:ℕ) (hj:j≤3)
-    (hp:lambda^2∣p-1)
-    (hA:lambda^2∣((A:SL(2,Eis)) 0 0)-1)
-    (hN:lambda^2∣((N:SL(2,Eis)) 0 0)-1)
-    (hx:(A:SL(2,Eis)) 0 0+3*q*(A:SL(2,Eis)) 1 0=p^j*(N:SL(2,Eis)) 0 0)
-    (hc:(N:SL(2,Eis)) 1 0=p^(3-j)*(A:SL(2,Eis)) 1 0)
-    (hC:IsCoprime ((A:SL(2,Eis)) 1 0) p)
-    (hNA:(N:SL(2,Eis))*(A:SL(2,Eis))⁻¹∈levelThree) :
+include hj hp hA hN hx hc hC in
+lemma levelTwo_cube_comparison_phase        
+     
+     
+     
+     
+     
+     
+      :
     complexCharacter ⟨(N:SL(2,Eis))*(A:SL(2,Eis))⁻¹,hNA⟩ =
       eisEmbedding (symbol (((N:SL(2,Eis)) 0 0)*((A:SL(2,Eis)) 1 0)) p)^(3-j) := by
   let a:=eisEmbedding (symbol ((A:SL(2,Eis)) 1 0) p)
@@ -198,31 +211,35 @@ lemma levelTwo_cube_comparison_phase (A N:levelTwo) (p q:Eis) (j:ℕ) (hj:j≤3)
   rw [hcomp,he]
   ring
 
+end
+
 end CubicKubota
 end
 
-open scoped BigOperators Classical
+ 
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open     CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma ramified_cubicExp_nat_mul (n : ℕ) (t : ℤ) :
+section
+variable (j n : ℕ)
+
+lemma ramified_cubicExp_nat_mul    t  :
     cubicExp ((n:ℤ)*t)=cubicExp t^n := by
   induction n with
   | zero => simp
   | succ n ih =>
     rw [Nat.cast_add,Nat.cast_one,add_mul,one_mul,cubicExp_add,ih,pow_succ]
 
-lemma ramified_trace_symbol (a : Eis) (ha : lambda^2∣a-1) :
+lemma ramified_trace_symbol  a  (ha : lambda^2∣a-1) :
     symbol ramifiedTraceLambda a=linearRay 0 (-1) a := by
   have h := symbol_traceLambda_eq_linearRay a ha
-  change symbol ramifiedTraceLambda a=linearRay 0 (-1) a at h
-  exact h
+  assumption
 
-lemma ramifiedSymbol_primaryCoord (j n : ℕ) (A B : ℤ) :
+lemma ramifiedSymbol_primaryCoord    A B  :
     symbol (omega^j*ramifiedTraceLambda^n) (primaryCoord A B)=
       cubicExp ((j:ℤ)*(2*A-B)-(n:ℤ)*B) := by
   rw [symbol_mul_numerator _ _ _ (primaryCoord_primary _ _),
@@ -234,9 +251,14 @@ lemma ramifiedSymbol_primaryCoord (j n : ℕ) (A B : ℤ) :
   congr 1
   ring
 
-def ramifiedAffineParameter (j n : ℕ) : Eis := (j:Eis)*ramifiedTraceLambda-(n:Eis)
+end
 
-lemma ramifiedAffineParameter_coords (j n : ℕ) (C D : ℤ) :
+def ramifiedAffineParameter (j n : ℕ)  := (j:Eis)*ramifiedTraceLambda-(n:Eis)
+
+section
+variable (j n : ℕ) (r a x : Eis) (hr : r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n)) (ha : lambda^2∣a-1)
+
+lemma ramifiedAffineParameter_coords    C D  :
     (ActualEisensteinCoordinates.coords
       (ramifiedAffineParameter j n*ActualEisensteinCoordinates.eval C D)).2=
       (j:ℤ)*(2*C-D)-(n:ℤ)*D := by
@@ -247,7 +269,8 @@ lemma ramifiedAffineParameter_coords (j n : ℕ) (C D : ℤ) :
   rw [hk,ActualEisensteinCoordinates.eval_mul,ShortDraftLatticeCount.coords_eval]
   ring
 
-theorem ramified_symbol_primary_shift (j n : ℕ) (a x : Eis) (ha : lambda^2∣a-1) :
+include ha in
+theorem ramified_symbol_primary_shift       :
     eisEmbedding (symbol (omega^j*ramifiedTraceLambda^n) (a+3*x))=
       eisEmbedding (symbol (omega^j*ramifiedTraceLambda^n) a)*
         ShortDraftTrace.breveE (eisEmbedding (ramifiedAffineParameter j n*x)/eisLam/3) := by
@@ -268,9 +291,10 @@ theorem ramified_symbol_primary_shift (j n : ℕ) (a x : Eis) (ha : lambda^2∣a
   apply congrArg cubicExp
   ring
 
-lemma ramified_symbol_primary_shift_signed (j n : ℕ) (r a x : Eis)
-    (hr : r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
-    (ha : lambda^2∣a-1) :
+include hr ha in
+lemma ramified_symbol_primary_shift_signed    
+     
+      :
     eisEmbedding (symbol r (a+3*x))=eisEmbedding (symbol r a)*
       ShortDraftTrace.breveE (eisEmbedding (ramifiedAffineParameter j n*x)/eisLam/3) := by
   rcases hr with rfl|rfl
@@ -279,16 +303,21 @@ lemma ramified_symbol_primary_shift_signed (j n : ℕ) (r a x : Eis)
     exact ramified_symbol_primary_shift j n a x ha
 
 end
+
+end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open     CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma ramifiedTraceLambda_square : ramifiedTraceLambda^2=(-3:Eis) := by
   unfold ramifiedTraceLambda
   linear_combination 4*ramified_omega_relation
 
-lemma ramified_character_coprime (j n : ℕ) (r a : Eis)
+section
+variable (j n : ℕ) (r h h1 q a k c x : Eis)
+
+lemma ramified_character_coprime    
     (hr : r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
     (ha : lambda^2∣a-1) : IsCoprime r a := by
   have hc3 := (primary_coprime_three a ha).symm
@@ -304,7 +333,7 @@ lemma ramified_character_coprime (j n : ℕ) (r a : Eis)
   · exact hc
   · exact hc.neg_left
 
-lemma affineCusp_phase_identity (h h1 q a k c x : Eis)
+lemma affineCusp_phase_identity  
     (ha : a≠0) (hq : q≠0) (hh : h=q*h1) (hk : 3*k=h1+c*a) :
     ShortDraftTrace.breveE (eisEmbedding (c*x)/eisLam/3)*
       ShortDraftTrace.breveE (ninthCuspFrequency h*eisEmbedding (a+3*x)/eisEmbedding (q*a))=
@@ -324,17 +353,23 @@ lemma affineCusp_phase_identity (h h1 q a k c x : Eis)
   field_simp [eisEmbedding_ne_zero ha,eisEmbedding_ne_zero hq,eisLam_ne_zero]
   ;ring
 
-def ramifiedAffineGauss (h q r a : Eis) : ℂ :=
+end
+
+def ramifiedAffineGauss (h q r a : Eis)  :=
   ∑'x:CubicUnitResidue a,
     (eisEmbedding (symbol r (a+3*GaussianShiftedPartition.representative a x.val))*
       eisEmbedding (symbol (a+3*GaussianShiftedPartition.representative a x.val) a))*
       ShortDraftTrace.breveE (ninthCuspFrequency h*
         eisEmbedding (a+3*GaussianShiftedPartition.representative a x.val)/eisEmbedding (q*a))
 
-lemma ramifiedAffineGauss_factor (h h1 q r a k : Eis) (j n : ℕ)
-    (ha : a≠0) (hprimary : lambda^2∣a-1) (hq : q≠0)
-    (hr : r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
-    (hh : h=q*h1) (hk : 3*k=h1+ramifiedAffineParameter j n*a) :
+section
+variable (h h1 q r a k : Eis) (j n : ℕ) (ha : a≠0) (hprimary : lambda^2∣a-1) (hq : q≠0) (hr : r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n)) (hh : h=q*h1) (hk : 3*k=h1+ramifiedAffineParameter j n*a)
+
+include ha hprimary hq hr hh hk in
+lemma ramifiedAffineGauss_factor    
+         
+     
+        :
     ramifiedAffineGauss h q r a=
       ShortDraftTrace.breveE (ninthCuspFrequency h/eisEmbedding q)*
         (eisEmbedding (symbol r a)*eisEmbedding (symbol 3 a))*cubicUnitGaussSum k a := by
@@ -349,16 +384,13 @@ lemma ramifiedAffineGauss_factor (h h1 q r a k : Eis) (j n : ℕ)
     symbol_mul_numerator _ _ _ hprimary]
   rw [map_mul eisEmbedding (symbol 3 a) (symbol t a)]
   have hp := affineCusp_phase_identity h h1 q a k (ramifiedAffineParameter j n) t ha hq hh hk
-  calc
-    _ = (eisEmbedding (symbol r a)*eisEmbedding (symbol 3 a)*eisEmbedding (symbol t a))*
-      (ShortDraftTrace.breveE (eisEmbedding (ramifiedAffineParameter j n*t)/eisLam/3)*
-        ShortDraftTrace.breveE (ninthCuspFrequency h*eisEmbedding (a+3*t)/eisEmbedding (q*a))) := by ring
-    _ = _ := by rw [hp];ring
+  grind
 
-theorem ramifiedAffineGauss_eq_unramified (h h1 q r a k : Eis) (j n : ℕ)
-    (ha : a≠0) (hprimary : lambda^2∣a-1) (hq : q≠0)
-    (hr : r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
-    (hh : h=q*h1) (hk : 3*k=h1+ramifiedAffineParameter j n*a) :
+include ha hprimary hq hr hh hk in
+theorem ramifiedAffineGauss_eq_unramified    
+         
+     
+        :
     ramifiedAffineGauss h q r a=
       ShortDraftTrace.breveE (ninthCuspFrequency h/eisEmbedding q)*
         cubicUnitGaussSum (3*r^2*h1) a := by
@@ -378,18 +410,17 @@ theorem ramifiedAffineGauss_eq_unramified (h h1 q r a k : Eis) (j n : ℕ)
     refine ⟨3*r^2*ramifiedAffineParameter j n,?_⟩
     linear_combination 3*r^2*hk
   have hg := cubicUnitGaussSum_frequency_congr (k*(9*r^2)) (3*r^2*h1) a ha hcong
-  calc
-    _ = ShortDraftTrace.breveE (ninthCuspFrequency h/eisEmbedding q)*
-      (eisEmbedding (symbol r a)*eisEmbedding (symbol 3 a)*cubicUnitGaussSum k a) := by ring
-    _ = _ := by rw [hp,hg]
+  grind
+
+end
 
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology Pointwise
+ 
+open scoped       Pointwise
 
-open ConcreteTraceCRT
+ 
 local notation "O" => ActualEisensteinCubic.O
 
 def eisensteinUnitRotation (u : ActualEisensteinCubic.Oˣ) : ℂ≃ₗᵢ[ℝ]ℂ where
@@ -417,10 +448,13 @@ def eisensteinUnitEquiv (u : ActualEisensteinCubic.Oˣ) : ActualEisensteinCubic.
   left_inv x := by dsimp only; rw [←mul_assoc];simp
   right_inv x := by dsimp only; rw [←mul_assoc];simp
 
-def periodUnitEquiv (u : ActualEisensteinCubic.Oˣ) : periodLattice≃periodLattice :=
+def periodUnitEquiv (u : ActualEisensteinCubic.Oˣ)  :=
   (periodEquiv.symm.trans (eisensteinUnitEquiv u)).trans periodEquiv
 
-lemma periodUnitEquiv_val (u : ActualEisensteinCubic.Oˣ) (x : periodLattice) :
+section
+variable (f : ℂ→ℂ) (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,f (z+3*eisEmbedding n)=f z) (u : ActualEisensteinCubic.Oˣ)
+
+lemma periodUnitEquiv_val    x  :
     (periodUnitEquiv u x:ℂ)=eisEmbedding (u:ActualEisensteinCubic.O)*(x:ℂ) := by
   obtain ⟨n,rfl⟩ := periodEquiv.surjective x
   dsimp only [periodUnitEquiv,Equiv.trans_apply]
@@ -430,7 +464,7 @@ lemma periodUnitEquiv_val (u : ActualEisensteinCubic.Oˣ) (x : periodLattice) :
   rw [map_mul]
   ring
 
-lemma periodDomain_unit_rotation (u : ActualEisensteinCubic.Oˣ) :
+lemma periodDomain_unit_rotation   :
     IsAddFundamentalDomain periodLattice (eisensteinUnitRotation u '' periodDomain) volume := by
   apply periodDomain_fundamental.image_of_equiv (eisensteinUnitRotation u).toEquiv
     (eisensteinUnitRotation u).symm.measurePreserving.quasiMeasurePreserving (periodUnitEquiv u⁻¹)
@@ -440,8 +474,9 @@ lemma periodDomain_unit_rotation (u : ActualEisensteinCubic.Oˣ) :
   rw [periodUnitEquiv_val,mul_add,←mul_assoc,←map_mul]
   simp
 
-theorem period_integral_unit_rotation (f : ℂ→ℂ)
-    (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,f (z+3*eisEmbedding n)=f z) (u : ActualEisensteinCubic.Oˣ) :
+include hp in
+theorem period_integral_unit_rotation  
+        :
     (∫z in periodDomain,f (eisEmbedding (u:ActualEisensteinCubic.O)*z))=∫z in periodDomain,f z := by
   have hperiod (n : periodLattice) (z : ℂ) : f (n+ᵥz)=f z := by
     obtain ⟨m,rfl⟩ := periodEquiv.surjective n
@@ -452,8 +487,9 @@ theorem period_integral_unit_rotation (f : ℂ→ℂ)
     (eisensteinUnitRotation u).toHomeomorph.measurableEmbedding f periodDomain
   exact hchange.symm.trans heq.symm
 
-theorem period_integral_unit_affine (f : ℂ→ℂ)
-    (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,f (z+3*eisEmbedding n)=f z) (u : ActualEisensteinCubic.Oˣ) (b : ℂ) :
+include hp in
+theorem period_integral_unit_affine  
+         b  :
     (∫z in periodDomain,f (eisEmbedding (u:ActualEisensteinCubic.O)*z+b))=∫z in periodDomain,f z := by
   have hg : ∀n : ActualEisensteinCubic.O,∀z : ℂ,(fun w=>f (w+b)) (z+3*eisEmbedding n)=(fun w=>f (w+b)) z := by
     intro n z
@@ -464,15 +500,21 @@ theorem period_integral_unit_affine (f : ℂ→ℂ)
 
 end
 
-section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+end
 
-open ConcreteTraceCRT
+section
+ 
+open scoped       MatrixGroups
+
+ 
 local notation "O" => ActualEisensteinCubic.O
 
-lemma integral_upper_triangular_action (T : SL(2,ActualEisensteinCubic.O)) (hc : T 1 0=0)
-    (z : ℂ) (v : ℝ) (hv : 0<v) :
+section
+variable (T : SL(2,ActualEisensteinCubic.O)) (hc : T 1 0=0) (z : ℂ) (F : HyperbolicSpace→ℂ) (v : ℝ) (hv : 0<v)
+
+include hc in
+lemma integral_upper_triangular_action    
+          :
     integralComplexMatrix T • upperPoint z v hv=
       upperPoint (eisEmbedding (T 0 0)^2*z+eisEmbedding (T 0 0*T 0 1)) v hv := by
   have hdet : T 0 0*T 1 1=1 := by
@@ -495,15 +537,13 @@ lemma integral_upper_triangular_action (T : SL(2,ActualEisensteinCubic.O)) (hc :
       mul_zero,add_zero,norm_zero,hn,one_pow,hstar,map_mul]
     norm_num
     ; ring
-  · simp only [integralComplexMatrix_apply,hc,map_zero,zero_mul,zero_add,norm_zero,
-      hn,one_pow,]
-    norm_num
+  simp_all
 
 theorem period_integral_upper_triangular
-    (F : HyperbolicSpace→ℂ) (v : ℝ) (hv : 0<v)
+         
     (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,
       F (upperPoint (3*(z+3*eisEmbedding n)) v hv)=F (upperPoint (3*z) v hv))
-    (T : SL(2,ActualEisensteinCubic.O)) (hc : T 1 0=0) :
+     T  (hc : T 1 0=0) :
     (∫z in periodDomain,F (integralComplexMatrix T • upperPoint (3*z) v hv))=
       ∫z in periodDomain,F (upperPoint (3*z) v hv) := by
   have hdet : T 0 0*T 1 1=1 := by
@@ -522,14 +562,20 @@ theorem period_integral_upper_triangular
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
+end
+
+ 
+open scoped       ENNReal
 
 local notation "O" => ActualEisensteinCubic.O
 namespace SubexponentialBesselCoefficients
 
-lemma series_scaled_three_average_zero (coeff : SubexponentialBesselCoefficients)
-    (v : ℝ) (hv : 0<v) : (∫z in periodDomain,coeff.series (v,3*z))=0 := by
+section
+variable (coeff : SubexponentialBesselCoefficients) (c : ℂ) (v : ℝ) (hv : 0<v)
+
+include hv in
+lemma series_scaled_three_average_zero  
+        : (∫z in periodDomain,coeff.series (v,3*z))=0 := by
   let : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
   let : IsFiniteMeasure (volume.restrict periodDomain) := isFiniteMeasure_restrict.mpr (by
     rw [periodDomain_volume]
@@ -573,8 +619,8 @@ lemma series_scaled_three_average_zero (coeff : SubexponentialBesselCoefficients
   simp_rw [hterm]
   exact tsum_zero
 
-lemma fullFunction_scaled_three_average (coeff : SubexponentialBesselCoefficients)
-    (c : ℂ) (v : ℝ) (hv : 0<v) :
+lemma fullFunction_scaled_three_average  
+          :
     (∫z in periodDomain,coeff.fullFunction c (upperPoint (3*z) v hv))=
       ((9*Real.sqrt 3/2:ℝ):ℂ)*c*(v:ℂ)^(2/3:ℂ) := by
   let : IsFiniteMeasure (volume.restrict periodDomain) := isFiniteMeasure_restrict.mpr (by
@@ -589,9 +635,11 @@ lemma fullFunction_scaled_three_average (coeff : SubexponentialBesselCoefficient
   simp only [Complex.real_smul]
   ring
 
+end
+
 end SubexponentialBesselCoefficients
 
-theorem cubicSource_scaled_three_average (v : ℝ) (hv : 0<v) :
+theorem cubicSource_scaled_three_average  v   hv  :
     (∫z in periodDomain,cubicSourceResidualFunction (upperPoint (3*z) v hv))=
       ((9*Real.sqrt 3/2:ℝ):ℂ)*((3*(Real.pi:ℂ))*constantArithmeticResidue)*(v:ℂ)^(2/3:ℂ) := by
   rw [cubicSourceResidualFunction_eq_bessel]
@@ -599,18 +647,21 @@ theorem cubicSource_scaled_three_average (v : ℝ) (hv : 0<v) :
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+ 
+open scoped       MatrixGroups
 
 namespace CubicEisenstein
-open ConcreteTraceCRT CubicKubota EisensteinCuspModThree
+open   CubicKubota EisensteinCuspModThree
 local notation "O" => ActualEisensteinCubic.O
 
 lemma lowerCuspMatrix_zero : lowerCuspMatrix (0:ActualEisensteinCubic.O)=1 := by
   ext i j
   fin_cases i <;> fin_cases j <;> simp [lowerCuspMatrix]
 
-lemma cubicSource_scaled_periodic (v : ℝ) (hv : 0<v) (n : ActualEisensteinCubic.O) (z : ℂ) :
+section
+variable (j : Fin 3) (v : ℝ) (hv : 0<v) (n : ActualEisensteinCubic.O) (z : ℂ)
+
+lemma cubicSource_scaled_periodic         :
     cubicSourceResidualFunction (upperPoint (3*(z+3*eisEmbedding n)) v hv)=
       cubicSourceResidualFunction (upperPoint (3*z) v hv) := by
   have he : 3*(z+3*eisEmbedding n)=3*z+3*eisEmbedding (3*n) := by
@@ -619,32 +670,37 @@ lemma cubicSource_scaled_periodic (v : ℝ) (hv : 0<v) (n : ActualEisensteinCubi
   rw [cubicSourceResidualFunction_eq_bessel,he]
   exact sourceBesselFunction_period v hv (3*z) (3*n)
 
-lemma sourceCuspRepresentative_periodic (j : Fin 3) (v : ℝ) (hv : 0<v) (n : ActualEisensteinCubic.O) (z : ℂ) :
+lemma sourceCuspRepresentative_periodic           :
     cubicSourceResidualFunction (integralComplexMatrix (cuspRepresentative j) •
       upperPoint (3*(z+3*eisEmbedding n)) v hv)=
     cubicSourceResidualFunction (integralComplexMatrix (cuspRepresentative j) •
       upperPoint (3*z) v hv) := by
   fin_cases j
-  · simpa [cuspRepresentative,cuspParameter,lowerCuspMatrix_zero] using cubicSource_scaled_periodic v hv n z
+  · simp_all [cuspRepresentative, cuspParameter, lowerCuspMatrix_zero, cubicSource_scaled_periodic]
   · simpa [cuspRepresentative,cuspParameter,ramifiedSourceFunction] using ramifiedSource_scaled_periodic10 v hv n z
   · simpa [cuspRepresentative,cuspParameter,ramifiedSourceFunction] using ramifiedSource_scaled_periodic19 v hv n z
 
-def sourcePrincipalCuspConstant : ℂ :=
+end
+
+def sourcePrincipalCuspConstant  :=
   ((9*Real.sqrt 3/2:ℝ):ℂ)*((3*(Real.pi:ℂ))*constantArithmeticResidue)
 
-lemma sourceCuspRepresentative_average (j : Fin 3) (v : ℝ) (hv : 0<v) :
+section
+variable (M : SL(2,ActualEisensteinCubic.O)) (G : levelTwo) (j : Fin 3) (T : SL(2,ActualEisensteinCubic.O)) (hT : T 1 0=0) (hM : M=(G:SL(2,ActualEisensteinCubic.O))*cuspRepresentative j*T) (v : ℝ) (hv : 0<v)
+
+lemma sourceCuspRepresentative_average       :
     (∫z in periodDomain,cubicSourceResidualFunction
       (integralComplexMatrix (cuspRepresentative j) • upperPoint (3*z) v hv))=
       (if j=0 then sourcePrincipalCuspConstant else 0)*(v:ℂ)^(2/3:ℂ) := by
   fin_cases j
-  · simpa [cuspRepresentative,cuspParameter,lowerCuspMatrix_zero,sourcePrincipalCuspConstant] using
-      cubicSource_scaled_three_average v hv
+  · simp_all [cuspRepresentative, cuspParameter, lowerCuspMatrix_zero, sourcePrincipalCuspConstant, cubicSource_scaled_three_average]
   · simpa [cuspRepresentative,cuspParameter,ramifiedSourceFunction] using ramifiedSource_zero_mode10 v hv
   · simpa [cuspRepresentative,cuspParameter,ramifiedSourceFunction] using ramifiedSource_zero_mode19 v hv
 
-lemma sourceCusp_average_of_decomposition (M : SL(2,ActualEisensteinCubic.O)) (G : levelTwo) (j : Fin 3)
-    (T : SL(2,ActualEisensteinCubic.O)) (hT : T 1 0=0) (hM : M=(G:SL(2,ActualEisensteinCubic.O))*cuspRepresentative j*T)
-    (v : ℝ) (hv : 0<v) :
+include hT hM in
+lemma sourceCusp_average_of_decomposition      
+         
+        :
     (∫z in periodDomain,cubicSourceResidualFunction (integralComplexMatrix M • upperPoint (3*z) v hv))=
       (levelTwoComplexCharacter G*(if j=0 then sourcePrincipalCuspConstant else 0))*(v:ℂ)^(2/3:ℂ) := by
   have he (z : ℂ) : cubicSourceResidualFunction (integralComplexMatrix M • upperPoint (3*z) v hv)=
@@ -659,10 +715,15 @@ lemma sourceCusp_average_of_decomposition (M : SL(2,ActualEisensteinCubic.O)) (G
   rw [hi,sourceCuspRepresentative_average]
   ring
 
-def sourceCuspConstant (M : SL(2,ActualEisensteinCubic.O)) : ℂ :=
+end
+
+def sourceCuspConstant (M : SL(2,ActualEisensteinCubic.O))  :=
   ∫z in periodDomain,cubicSourceResidualFunction (integralComplexMatrix M • upperPoint (3*z) 1 (by norm_num))
 
-theorem sourceCusp_average_all (M : SL(2,ActualEisensteinCubic.O)) (v : ℝ) (hv : 0<v) :
+section
+variable (M : SL(2,ActualEisensteinCubic.O))
+
+theorem sourceCusp_average_all    v   hv  :
     (∫z in periodDomain,cubicSourceResidualFunction (integralComplexMatrix M • upperPoint (3*z) v hv))=
       sourceCuspConstant M*(v:ℂ)^(2/3:ℂ) := by
   obtain ⟨G,j,T,hT,_,_,hM⟩ := three_cusp_decomposition M
@@ -672,11 +733,13 @@ theorem sourceCusp_average_all (M : SL(2,ActualEisensteinCubic.O)) (v : ℝ) (hv
   rw [hc]
   exact sourceCusp_average_of_decomposition M G j T hT hM v hv
 
-theorem sourceCuspConstant_decomposition (M : SL(2,ActualEisensteinCubic.O)) (G : levelTwo) (j : Fin 3)
+theorem sourceCuspConstant_decomposition   (G : levelTwo)  j 
     (T : SL(2,ActualEisensteinCubic.O)) (hT : T 1 0=0) (hM : M=(G:SL(2,ActualEisensteinCubic.O))*cuspRepresentative j*T) :
     sourceCuspConstant M=levelTwoComplexCharacter G*(if j=0 then sourcePrincipalCuspConstant else 0) := by
   simpa only [sourceCuspConstant,Complex.ofReal_one,Complex.one_cpow,mul_one] using
     sourceCusp_average_of_decomposition M G j T hT hM 1 (by norm_num)
+
+end
 
 lemma sourcePrincipalCuspConstant_ne_zero : sourcePrincipalCuspConstant≠0 := by
   unfold sourcePrincipalCuspConstant
@@ -685,8 +748,12 @@ lemma sourcePrincipalCuspConstant_ne_zero : sourcePrincipalCuspConstant≠0 := b
   · exact mul_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))
       constantArithmeticResidue_ne_zero
 
-lemma sourceCuspConstant_zero_iff (M : SL(2,ActualEisensteinCubic.O)) (G : levelTwo) (j : Fin 3)
-    (T : SL(2,ActualEisensteinCubic.O)) (hT : T 1 0=0) (hM : M=(G:SL(2,ActualEisensteinCubic.O))*cuspRepresentative j*T) :
+section
+variable (M : SL(2,ActualEisensteinCubic.O)) (G : levelTwo) (j : Fin 3) (T : SL(2,ActualEisensteinCubic.O)) (hT : T 1 0=0)
+
+include hT in
+lemma sourceCuspConstant_zero_iff      
+        (hM : M=(G:SL(2,ActualEisensteinCubic.O))*cuspRepresentative j*T) :
     sourceCuspConstant M=0 ↔ j≠0 := by
   have hG : levelTwoComplexCharacter G≠0 := by
     intro hz
@@ -696,13 +763,14 @@ lemma sourceCuspConstant_zero_iff (M : SL(2,ActualEisensteinCubic.O)) (G : level
   rw [sourceCuspConstant_decomposition M G j T hT hM]
   by_cases hj : j=0 <;> simp [hj,hG,sourcePrincipalCuspConstant_ne_zero]
 
-lemma sourceCuspConstant_left (G : levelTwo) (M : SL(2,ActualEisensteinCubic.O)) :
+lemma sourceCuspConstant_left    M  :
     sourceCuspConstant ((G:SL(2,ActualEisensteinCubic.O))*M)=levelTwoComplexCharacter G*sourceCuspConstant M := by
   unfold sourceCuspConstant
   simp_rw [map_mul,mul_smul,cubicSourceResidualFunction_automorphy]
   exact integral_const_mul _ _
 
-lemma sourceCuspConstant_upper_right (M T : SL(2,ActualEisensteinCubic.O)) (hT : T 1 0=0) :
+include hT in
+lemma sourceCuspConstant_upper_right     :
     sourceCuspConstant (M*T)=sourceCuspConstant M := by
   obtain ⟨G,j,S,hS,_,_,hM⟩ := three_cusp_decomposition M
   have hST : (S*T) 1 0=0 := by
@@ -712,6 +780,8 @@ lemma sourceCuspConstant_upper_right (M T : SL(2,ActualEisensteinCubic.O)) (hT :
   have he : M*T=(G:SL(2,ActualEisensteinCubic.O))*cuspRepresentative j*(S*T) := by rw [hM]; group
   rw [sourceCuspConstant_decomposition (M*T) G j (S*T) hST he,
     sourceCuspConstant_decomposition M G j S hS hM]
+
+end
 
 end CubicEisenstein
 

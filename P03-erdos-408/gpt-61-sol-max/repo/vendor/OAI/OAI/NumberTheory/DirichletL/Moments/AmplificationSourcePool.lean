@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationSourceDomain
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourcePool
@@ -15,19 +15,19 @@ open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
 open CenteredMomentAmplificationAllocation CenteredMomentAmplificationSourceDomain
 open CenteredMomentSourceRow CenteredMomentLiveDomain CenteredMomentFirstSectors
 open CenteredMomentSupportedCorrelation CenteredMomentUnequal
-local notation "O" => ActualEisensteinCubic.O
 
-theorem residualIdeal_coprime (p : O) (hp : Prime p) (I : Ideal O) (hI : Supported I) :
+
+theorem residualIdeal_coprime  p   hp   I  (hI : Supported I) :
     IsCoprime (Ideal.span {p}) (residualIdeal p hp I) := by
   rw [residualIdeal,dite_eq_left hI,Ideal.isCoprime_span_singleton_iff]
   exact hp.irreducible.coprime_iff_not_dvd.mpr
     (primeRemainder_spec p hp (primaryGenerator I) (supported_primaryGenerator_ne_zero I hI)).2
 
-theorem residualColumns_eq (S : Finset (Ideal O)) (p : O) (hp : Prime p)
-    (hs : Supported (Ideal.span {p})) (hpp : goodLambda^2 ∣ p-1) (k : ℕ) :
+theorem residualColumns_eq (S : Finset (Ideal ActualEisensteinCubic.O)) (p : ActualEisensteinCubic.O) (hp : Prime p)
+    (hs : Supported (Ideal.span {p})) (hpp : goodLambda^2 ∣ p-1)  k  :
     residualColumns S p hp k=
       (supportedColumns (residualPool ((Ideal.span {p})^k) (pow_ne_zero k hs.1) S)).filter
-        (fun I => IsCoprime (Ideal.span {p}) I) := by
+        (IsCoprime (Ideal.span {p})) := by
   ext I
   constructor
   · intro hI
@@ -72,6 +72,6 @@ theorem residualColumns_eq (S : Finset (Ideal O)) (p : O) (hp : Prime p)
 
 end SevenEighths.CenteredMomentAmplificationSourcePool
 
-end
+
 
 end OAI

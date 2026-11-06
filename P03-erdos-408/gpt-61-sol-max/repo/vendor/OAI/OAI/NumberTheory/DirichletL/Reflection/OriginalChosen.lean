@@ -10,9 +10,9 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
-variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
+
+variable {σ : Type*} [Fintype σ] {m f z : ActualEisensteinCubic.O} (D : GoodMaskRowData m f z)
+variable (R I F Q₀ : Ideal ActualEisensteinCubic.O) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hm : m≠0) (hf : Ideal.span {f}=F) (hz : Ideal.span {z}=I)
     (hbad : ∀ P∈fixedBadPrimes, P∣Ideal.span {m}*F)
     (hcop : IsCoprime Q₀ (rowResidualPart I (Ideal.span {m}*F)))
@@ -26,16 +26,16 @@ local notation "PS" => PrimeFamily.restrict (PrimeFamily.sum (freePrimeFamily D.
 local notation "PF" => PrimeFamily.reflected (PrimeFamily.restrict (poolPrimeFamily R (Ideal.span (Set.singleton m)*F) Q₀) B) K hK (S.restrict T)
 local notation "EA" => markedActiveEquiv E B T
 
-def originalChosenControlled {N a c : Eis} {mode : Bool}
+def originalChosenControlled {N a c } {mode }
     (C : ControlledStratumArithmetic (PF).generator N a c mode) :
     ControlledStratumArithmetic (PS).generator N a c mode :=
   pullbackControlled EA
     (funext (original_active_family_generator D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask S B T)) C
 
-theorem original_chosen_reflected_source_eq {N a c : Eis} {mode : Bool}
+theorem original_chosen_reflected_source_eq {N a c : ActualEisensteinCubic.O} {mode : Bool}
     (C : ControlledStratumArithmetic (PF).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (W : ℝ→ℂ) (X : ℝ) :
+     W   X  :
     mixedReflectedValue (originalChosenControlled D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask S B T C)
       s (PS).generator_ne_zero hc (PS).generator_good
       (fun i => Sum.elim (fun P : FreePrimeIndex D.movingIdeal Q₀ =>

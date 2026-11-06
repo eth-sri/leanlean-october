@@ -8,11 +8,11 @@ public import Mathlib.Algebra.BigOperators.Field
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators
 namespace SevenEighths.Parameters
 
-theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :
+theorem exists_distinct_slot_lengths  L  (hL : 0<L) :
     ∃N : ℕ,0<N ∧ ∃ell : Fin N→ℝ,Function.Injective ell ∧
       (∀j,0<ell j ∧ ell j<L) ∧ (∑j,ell j)=1/6 := by
   obtain ⟨N,hN⟩ := exists_nat_gt (max 1 (1/(3*L)))
@@ -60,7 +60,7 @@ theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :
     change A/(6*A)=1/6
     field_simp
 
-theorem exists_physical_slot_lengths (dmin dmax mesh R : ℝ)
+theorem exists_physical_slot_lengths  dmin dmax mesh R 
     (hdmin : 0<dmin) (hd : dmin≤dmax) (hm : 0<mesh) (hR : 0<R) :
     ∃N : ℕ,0<N ∧ ∃ell : Fin N→ℝ,∃rmin : ℝ,0<rmin ∧
       Function.Injective ell ∧ (∑j,ell j)=1/6 ∧
@@ -92,6 +92,6 @@ theorem exists_physical_slot_lengths (dmin dmax mesh R : ℝ)
 
 end SevenEighths.Parameters
 
-end
+
 
 end OAI

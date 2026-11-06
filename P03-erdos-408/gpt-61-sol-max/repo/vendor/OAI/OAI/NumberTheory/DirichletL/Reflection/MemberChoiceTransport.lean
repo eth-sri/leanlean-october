@@ -12,9 +12,9 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {σ φ τ : Type*} [Fintype σ] [DecidableEq σ] [Fintype τ]
-variable (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis)
+variable (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (F : φ→Ideal ActualEisensteinCubic.O)
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
 
@@ -23,18 +23,17 @@ abbrev originalTupleMax : ∀ p∈fixedSlotTupleSet L F,∀ i,(p i).IsMaximal :=
 abbrev originalTupleGood : ∀ p∈fixedSlotTupleSet L F,∀ i,ConcretePrimeRowBridge.goodLambda∉p i :=
   fun p hp i => hgood i _ (((mem_fixedSlotTupleSet L F p).mp hp).1 i)
 
-variable {N a c : Eis} {mode : Bool} (G : PrimeFamily τ) (K : Ideal Eis) (hK : Admissible K)
+variable {N a c : ActualEisensteinCubic.O} {mode : Bool} (G : PrimeFamily τ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K)
 variable (D : ∀ p : fixedSlotTupleSet L F,IsCoprime K (slotTupleProduct p.val)→
     ControlledStratumArithmetic (G.reflected K hK
       (memberTupleFamily (fixedSlotTupleSet L F) (originalTupleMax L F hmax) (originalTupleGood L F hgood) p)).generator N a c mode)
 
-def memberChoiceControlled (p : supportedSlotChoices L F K) :
-    ControlledStratumArithmetic (G.reflected K hK (slotChoiceFamily L hmax hgood p.val)).generator N a c mode :=
+def memberChoiceControlled (p : supportedSlotChoices L F K)  :=
   D ((supportedSlotTupleEquiv L F K) p).val ((supportedSlotTupleEquiv L F K) p).property
 
 theorem member_source_eq_original_choices
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (jF : τ→ℕ) (W : ℝ→ℂ) (X : ℝ) (r : ℂ) (w : ∀ i,L i→ℂ) :
+     s   hc 
+     jF   W   X   r   w  :
     (∑ p : fixedSlotTupleSet L F,if hp:IsCoprime K (slotTupleProduct p.val) then
       r*fixedTupleCoefficient L w p.val*mixedReflectedValue (D p hp) s
         (G.reflected K hK (memberTupleFamily (fixedSlotTupleSet L F)

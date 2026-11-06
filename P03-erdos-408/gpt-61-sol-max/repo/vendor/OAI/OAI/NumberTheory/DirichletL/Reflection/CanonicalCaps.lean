@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.ActualSizeCaps
 public import OAI.NumberTheory.DirichletL.Reflection.SourceScaleCaps
@@ -10,10 +11,10 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma canonical_mask_norm_cap (B F R : Ideal Eis) (Z V Q L : ℝ)
+
+
+lemma canonical_mask_norm_cap (B F R : Ideal ActualEisensteinCubic.O) (Z V Q L : ℝ)
     (hZ : 1≤Z) (hB : (Ideal.absNorm B:ℝ)≤Z)
     (hF : (Ideal.absNorm F:ℝ)≤Z^V) (hR : (Ideal.absNorm R:ℝ)≤Z^Q)
     (hV : V≤L) (hQ : Q≤L) :
@@ -21,13 +22,12 @@ lemma canonical_mask_norm_cap (B F R : Ideal Eis) (Z V Q L : ℝ)
   have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
   rw [map_mul,map_mul,Nat.cast_mul,Nat.cast_mul]
   calc
-    _ ≤ Z*Z^V*Z^Q := mul_le_mul
-      (mul_le_mul hB hF (Nat.cast_nonneg _) hz.le) hR (Nat.cast_nonneg _) (by positivity)
+    _ ≤ Z*Z^V*Z^Q := (by bound)
     _ = Z^(1+V+Q) := by rw [Real.rpow_add hz,Real.rpow_add hz,Real.rpow_one]
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
 
 theorem canonical_actual_arithmetic_caps (L : ℝ) (hL : 0≤L)
-    (J I B F R Q₀ : Ideal Eis) (hJ : J≠0) (hI : I≠0) (hB : B≠0) (hF : F≠0) (hR : R≠0)
+    (J I B F R Q₀ : Ideal ActualEisensteinCubic.O) (hJ : J≠0) (hI : I≠0) (hB : B≠0) (hF : F≠0) (hR : R≠0)
     (hpower : rowPowerfulPart J=rowPowerfulPart I)
     (hmask : rowMaskPart J (B*F*R)=rowMaskPart I (B*F*R))
     (A : Finset (FreeReflection.pool J (B*F*R) Q₀))
@@ -59,7 +59,7 @@ theorem canonical_actual_arithmetic_caps (L : ℝ) (hL : 0≤L)
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hZ1 (by linarith)
   · rw [←Real.rpow_neg hZp.le]
     exact Real.rpow_le_rpow_of_exponent_le hZ1 (by linarith)
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

@@ -11,23 +11,31 @@ open MeasureTheory
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 noncomputable section
 
-def phasePolynomial {α : Type*} (S : Finset α) (a : α → ℂ) (x : α → ℝ) (t : ℝ) : ℂ :=
+def phasePolynomial {α } (S : Finset α) (a : α → ℂ) (x : α → ℝ) (t : ℝ)  :=
   ∑ i ∈ S, a i*FourierBridge.logPhase t (x i)
 
-lemma phasePolynomial_continuous {α : Type*} (S : Finset α) (a : α → ℂ) (x : α → ℝ) :
+section
+variable {α : Type*} (S : Finset α) (a : α → ℂ) (x : α → ℝ)
+
+lemma phasePolynomial_continuous         :
     Continuous (phasePolynomial S a x) := by
   apply continuous_finsetSum
   intro i hi
   exact continuous_const.mul (FourierBridge.logPhase_continuous_left _)
 
-lemma phasePolynomial_norm {α : Type*} (S : Finset α) (a : α → ℂ) (x : α → ℝ) (t : ℝ) :
+lemma phasePolynomial_norm          t  :
     ‖phasePolynomial S a x t‖ ≤ ∑ i ∈ S, ‖a i‖ := by
   calc
     _ ≤ ∑ i ∈ S, ‖a i*FourierBridge.logPhase t (x i)‖ := norm_sum_le _ _
     _ = _ := by simp only [norm_mul, FourierBridge.logPhase_norm, mul_one]
 
-lemma separated_pair_integrable {α β : Type*} (S : Finset α) (T : Finset β)
-    (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ) (g : SchwartzMap ℝ ℂ) :
+end
+
+section
+variable {α β : Type*} (S : Finset α) (T : Finset β) (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ) (g : SchwartzMap ℝ ℂ)
+
+lemma separated_pair_integrable      
+              :
     Integrable (fun t => (𝓕 g) t*phasePolynomial S a x t*phasePolynomial T b y t) := by
   have hmeas : AEStronglyMeasurable (fun t => phasePolynomial S a x t*phasePolynomial T b y t) volume :=
     ((phasePolynomial_continuous S a x).mul
@@ -37,7 +45,7 @@ lemma separated_pair_integrable {α β : Type*} (S : Finset α) (T : Finset β)
       (phasePolynomial_norm T b y t) (norm_nonneg _) (Finset.sum_nonneg (fun i hi => norm_nonneg _)))))
   simpa only [mul_assoc] using hh
 
-lemma schwartz_product_inversion (g : SchwartzMap ℝ ℂ) (x y : ℝ) :
+lemma schwartz_product_inversion (g : SchwartzMap ℝ ℂ)  x y  :
     g (x+y) = ∫ t : ℝ,
       (𝓕 g) t*FourierBridge.logPhase t x*FourierBridge.logPhase t y := by
   rw [FourierBridge.schwartz_log_inversion g (x+y)]
@@ -52,8 +60,8 @@ lemma schwartz_product_inversion (g : SchwartzMap ℝ ℂ) (x y : ℝ) :
   rw [hp]
   ring
 
-theorem finite_pair_separation {α β : Type*} (S : Finset α) (T : Finset β)
-    (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ) (g : SchwartzMap ℝ ℂ) :
+theorem finite_pair_separation      
+              :
     (∑ i ∈ S, ∑ j ∈ T, a i*b j*g (x i+y j)) =
       ∫ t : ℝ, (𝓕 g) t*phasePolynomial S a x t*phasePolynomial T b y t := by
   have hterm (i : α) (j : β) : Integrable (fun t : ℝ =>
@@ -76,6 +84,8 @@ theorem finite_pair_separation {α β : Type*} (S : Finset α) (T : Finset β)
   apply integral_congr_ae
   filter_upwards [] with t
   ring
+
+end
 
 end
 end SevenEighths.HeckeDetectorFourier

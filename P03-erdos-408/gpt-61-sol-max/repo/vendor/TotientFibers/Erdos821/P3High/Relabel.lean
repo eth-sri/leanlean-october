@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.BigOperators.Ring.Finset
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
@@ -13,13 +14,13 @@ values multiplies the constrained mass by the total value mass. -/
 
 set_option autoImplicit false
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P3High
 
-theorem relabel_sum_le {X Q : Type*} [DecidableEq X] (f : X → ℝ) (T S : Finset X)
-    (Q' : Finset Q) (Φ : X → Q → X) (μ : Q → ℝ) (μ0 c : ℝ)
+theorem relabel_sum_le {X Q : Type*} [DecidableEq X] (f : X → ℝ)  T S 
+    (Q' : Finset Q) (Φ : X → Q → X) (μ : Q → ℝ)  μ0 c 
     (hfS : ∀ x ∈ S, 0 ≤ f x) (hfT : ∀ x ∈ T, 0 ≤ f x) (hμ0 : 0 ≤ μ0) (hc : 0 < c)
     (hmass : c ≤ ∑ p ∈ Q', μ p)
     (hmaps : ∀ x ∈ T, ∀ p ∈ Q', Φ x p ∈ S)
@@ -31,13 +32,9 @@ theorem relabel_sum_le {X Q : Type*} [DecidableEq X] (f : X → ℝ) (T S : Fins
   have hinjOn : Set.InjOn (fun z : X × Q => Φ z.1 z.2) ↑(T ×ˢ Q') := by
     intro z1 hz1 z2 hz2 h
     rw [Finset.coe_product, Set.mem_prod] at hz1 hz2
-    have := hinj z1.1 hz1.1 z1.2 hz1.2 z2.1 hz2.1 z2.2 hz2.2 h
-    exact Prod.ext this.1 this.2
+    grind
   have hsub : (T ×ˢ Q').image (fun z : X × Q => Φ z.1 z.2) ⊆ S := by
-    intro y hy
-    obtain ⟨z, hz, rfl⟩ := Finset.mem_image.1 hy
-    rw [Finset.mem_product] at hz
-    exact hmaps z.1 hz.1 z.2 hz.2
+    grind
   have key : (∑ x ∈ T, f x) * c ≤ μ0 * ∑ x ∈ S, f x := by
     calc (∑ x ∈ T, f x) * c ≤ (∑ x ∈ T, f x) * ∑ p ∈ Q', μ p :=
           mul_le_mul_of_nonneg_left hmass hT0
@@ -45,9 +42,7 @@ theorem relabel_sum_le {X Q : Type*} [DecidableEq X] (f : X → ℝ) (T S : Fins
           rw [Finset.sum_mul_sum, Finset.sum_product]
       _ = ∑ z ∈ T ×ˢ Q', f (Φ z.1 z.2) * μ0 := by
           apply Finset.sum_congr rfl
-          intro z hz
-          rw [Finset.mem_product] at hz
-          exact hscale z.1 hz.1 z.2 hz.2
+          grind
       _ = μ0 * ∑ y ∈ (T ×ˢ Q').image (fun z : X × Q => Φ z.1 z.2), f y := by
           rw [Finset.sum_image hinjOn, Finset.mul_sum]
           exact Finset.sum_congr rfl fun _ _ => by ring

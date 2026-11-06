@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P3Restore.Restoration
 
 public import Erdos821.S2.EdgeTasks
 public import Mathlib.Algebra.Order.Star.Real
@@ -7,20 +10,20 @@ public import Mathlib.Algebra.Order.Star.Real
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
 open Erdos821.Blueprint.Graph
 
-theorem normBound_mono {α : Type*} {mass : α → ℝ} {K : α → α → ℂ}
-    {C D : ℝ} (hK : NormBound mass K C) (hCD : C ≤ D) : NormBound mass K D := by
-  intro s t f g
-  exact (hK s t f g).trans (mul_le_mul_of_nonneg_right
-    (mul_le_mul_of_nonneg_right hCD (Real.sqrt_nonneg _)) (Real.sqrt_nonneg _))
+section
+variable {α : Type*} {mass : α → ℝ} {K : α → α → ℂ}
 
-theorem normBound_mul_endpoints {α : Type*} {mass : α → ℝ} {K : α → α → ℂ}
+theorem normBound_mono      
+    {C D : ℝ} (hK : NormBound mass K C) (hCD : C ≤ D) : NormBound mass K D := by solve_by_elim [_root_.Erdos821.P3Restore.normBound_mono]
+
+theorem normBound_mul_endpoints      
     {C : ℝ} (hm : ∀ a, 0 ≤ mass a) (hC : 0 ≤ C) (hK : NormBound mass K C)
     (u v : α → ℂ) (hu : ∀ a, ‖u a‖ ≤ 1) (hv : ∀ a, ‖v a‖ ≤ 1) :
     NormBound mass (fun a b => u a * K a b * v b) C := by
@@ -47,19 +50,14 @@ theorem normBound_mul_endpoints {α : Type*} {mass : α → ℝ} {K : α → α 
       (mass a : ℂ) * (star (f a) * u a) * K a b * (v b * g b)) =
       ∑ a ∈ s, ∑ b ∈ t,
         (mass a : ℂ) * star (f a) * (u a * K a b * v b) * g b := by
-    apply Finset.sum_congr rfl
-    intro a _
-    apply Finset.sum_congr rfl
-    intro b _
     ring
   rw [heq] at h
-  exact h.trans (mul_le_mul
-    (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hf) hC)
-    (Real.sqrt_le_sqrt hg) (Real.sqrt_nonneg _)
-    (mul_nonneg hC (Real.sqrt_nonneg _)))
+  exact h.trans ((by gcongr <;> first | assumption | positivity | linarith))
 
-theorem normBound_iff_univ {α : Type*} [Fintype α] (mass : α → ℝ)
-    (K : α → α → ℂ) (C : ℝ) : NormBound mass K C ↔
+end
+
+theorem normBound_iff_univ  {α}  [Fintype α]  mass 
+     K   C  : NormBound mass K C ↔
       ∀ f g : α → ℂ,
         ‖∑ a, ∑ b, (mass a : ℂ) * star (f a) * K a b * g b‖ ≤
           C * Real.sqrt (∑ a, mass a * ‖f a‖ ^ 2) *
@@ -89,9 +87,7 @@ theorem sum_fibre_forms_bound {α β : Type*} [Fintype α] [Fintype β]
       norm_sum_le _ _
     _ ≤ ∑ j, C * Real.sqrt (∑ a, mass a * ‖f j a‖ ^ 2) *
         Real.sqrt (∑ b, mass b * ‖g j b‖ ^ 2) := by
-      apply Finset.sum_le_sum
-      intro j _
-      exact hK j Finset.univ Finset.univ (f j) (g j)
+      bound
     _ = C * ∑ j, Real.sqrt (∑ a, mass a * ‖f j a‖ ^ 2) *
         Real.sqrt (∑ b, mass b * ‖g j b‖ ^ 2) := by
       simp only [Finset.mul_sum, mul_assoc]

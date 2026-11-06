@@ -12,16 +12,15 @@ open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge JointLogSeparation
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-def secondProfileIndices {κ ι : Type*} [DecidableEq ι]
-    (source : Finset κ) (F : Finset ι) (x : κ → SecondProfileData ι) :
-    Finset (Σ _ : κ, Finset ι × Finset ι) :=
+
+def secondProfileIndices {κ ι } [DecidableEq ι]
+    (source : Finset κ) (F : Finset ι) (x : κ → SecondProfileData ι)  :=
   source.sigma (fun j => (F \ (x j).overlap).powerset ×ˢ (F \ (x j).overlap).powerset)
 
-lemma mem_secondProfileIndices {κ ι : Type*} [DecidableEq ι]
-    (source : Finset κ) (F : Finset ι) (x : κ → SecondProfileData ι)
-    (j : Σ _ : κ, Finset ι × Finset ι) : j ∈ secondProfileIndices source F x ↔
+lemma mem_secondProfileIndices  {κ ι}  [DecidableEq ι]
+     source   F  (x : κ → SecondProfileData ι)
+     j  : j ∈ secondProfileIndices source F x ↔
       j.1 ∈ source ∧ j.2.1 ∈ (F \ (x j.1).overlap).powerset ∧
         j.2.2 ∈ (F \ (x j.1).overlap).powerset := by
   simp only [secondProfileIndices,Finset.mem_sigma,Finset.mem_product]

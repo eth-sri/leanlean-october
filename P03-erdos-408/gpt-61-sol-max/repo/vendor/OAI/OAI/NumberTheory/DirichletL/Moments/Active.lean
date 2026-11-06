@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.Canonical
 public import OAI.NumberTheory.DirichletL.Moments.FirstPoisson
@@ -14,11 +15,11 @@ namespace SevenEighths.CenteredMomentActive
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 open CanonicalRowCompletion CenteredMomentCanonical
 
-def netExponent (c d : ℕ) : ℕ := (c + 5 * d) % 6
+def netExponent (c d : ℕ)  := (c + 5 * d) % 6
 
 theorem local_pair_reduction (P : Ideal O) [P.IsMaximal]
     (hg : goodLambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
-    (c d : ℕ) (x : O ⧸ P) :
+     c d   x  :
     (actualSextic P hg ^ c) x * star ((actualSextic P hg ^ d) x) =
       (actualSextic P hg ^ netExponent c d) x := by
   have h6 : actualSextic P hg ^ 6 = 1 := by
@@ -33,20 +34,20 @@ theorem local_pair_reduction (P : Ideal O) [P.IsMaximal]
   rw [← actualSextic_order_six P hg hchar, pow_mod_orderOf,
     pow_add, pow_mul, h5, inv_pow]
 
-def activeSupport {ι : Type*} (B : Finset ι) (c d : ι → ℕ) : Finset ι :=
+def activeSupport {ι } (B : Finset ι) (c d : ι → ℕ)  :=
   B.filter (fun i => netExponent (c i) (d i) ≠ 0)
 
-def principalSupport {ι : Type*} (B : Finset ι) (c d : ι → ℕ) : Finset ι :=
+def principalSupport {ι } (B : Finset ι) (c d : ι → ℕ)  :=
   B.filter (fun i => netExponent (c i) (d i) = 0)
 
 theorem netExponent_ne_zero {ι : Type*} (B : Finset ι) (c d : ι → ℕ)
     (i : activeSupport B c d) : netExponent (c i.val) (d i.val) ≠ 0 :=
   (Finset.mem_filter.mp i.property).2
 
-theorem netExponent_lt_six (c d : ℕ) : netExponent c d < 6 := Nat.mod_lt _ (by decide)
+theorem netExponent_lt_six  c d  : netExponent c d < 6 := Nat.mod_lt _ (by decide)
 
 theorem principal_product_eq_mask {ι : Type*}
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (B : Finset ι) (z : O) :
+    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]  B   z  :
     (∏ i ∈ B, (1 : MulChar (O ⧸ P i) ℂ) (Ideal.Quotient.mk (P i) z)) =
       rowCoprimeMask P B z := by
   by_cases h : ∃ i ∈ B, z ∈ P i
@@ -64,10 +65,13 @@ theorem principal_product_eq_mask {ι : Type*}
 
 variable {ι : Type*}
 
-theorem common_ideal_pair_active (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+section
+variable (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+
+theorem common_ideal_pair_active    
     (hg : ∀ i, goodLambda ∉ P i) (hchar : ∀ i, ringChar (O ⧸ P i) ≠ 2)
-    (B : Finset ι) (c d : ι → ℕ)
-    (hc : ∀ i ∈ B, c i ≠ 0) (hd : ∀ i ∈ B, d i ≠ 0) (z : O) :
+     B   c d 
+    (hc : ∀ i ∈ B, c i ≠ 0) (hd : ∀ i ∈ B, d i ≠ 0)  z  :
     idealRowHom z (∏ i ∈ B, P i ^ c i) *
       star (idealRowHom z (∏ i ∈ B, P i ^ d i)) =
       rowCoprimeMask P (principalSupport B c d) z *
@@ -82,7 +86,7 @@ theorem common_ideal_pair_active (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     intro i hi
     rw [idealRowHom_prime z (P i) (hg i),
       ← MulChar.pow_apply' _ (hc i hi), ← MulChar.pow_apply' _ (hd i hi)]
-    exact local_pair_reduction (P i) (hg i) (hchar i) (c i) (d i) _
+    solve_by_elim [local_pair_reduction]
   have hzero : (∏ i ∈ B.filter (fun i => netExponent (c i) (d i) = 0), f i) =
       rowCoprimeMask P (principalSupport B c d) z := by
     rw [← principal_product_eq_mask]
@@ -95,12 +99,14 @@ theorem common_ideal_pair_active (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
   congr 1
   exact (Finset.prod_coe_sort (s := activeSupport B c d) (f := f)).symm
 
-theorem activePrimes_pairwise_coprime (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hinj : Function.Injective P) (B : Finset ι) (c d : ι → ℕ) :
+theorem activePrimes_pairwise_coprime    
+    (hinj : Function.Injective P)  B   c d  :
     Pairwise (Function.onFun IsCoprime (fun i : activeSupport B c d => P i.val)) := by
   intro i j hij
   apply Ideal.isCoprime_of_isMaximal
   exact fun he => hij (Subtype.ext (hinj he))
+
+end
 
 open ConcreteTraceCRT EisensteinSchwartzPoisson
 

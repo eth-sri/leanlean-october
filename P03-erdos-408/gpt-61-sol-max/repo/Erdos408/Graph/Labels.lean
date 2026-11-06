@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Graph.Encoding
 
@@ -23,17 +24,17 @@ open Erdos821.Blueprint.Graph
 variable {G : PrimeGroups}
 
 /-- The values of upstream labels, as `ℕ`-valued lists. -/
-def vals {M : ℕ} (a : G.Labels M) : Fin G.count → Fin M → ℕ :=
+def vals {M } (a : G.Labels M) : Fin G.count → Fin M → ℕ :=
   fun g i => (a g i).val
 
 /-- Upstream auxiliary labels trimmed to the slots `C g`: their values there,
 and `1` elsewhere. -/
-def trim {J : ℕ} (C : Fin G.count → Finset (Fin J)) (u : G.Aux J) :
+def trim {J } (C : Fin G.count → Finset (Fin J)) (u : G.Aux J) :
     Fin G.count → Fin J → ℕ :=
   fun g i => if i ∈ C g then (u g i).val else 1
 
 /-- Upstream's group mass is the harmonic mass. -/
-lemma V_eq_harmonicMass (g : G.Group) : G.V g = harmonicMass (G.primes g) := by
+lemma V_eq_harmonicMass  g  : G.V g = harmonicMass (G.primes g) := by
   simp [PrimeGroups.V, harmonicMass]
 
 /-- Summing over upstream labels is summing over their values. -/
@@ -47,10 +48,14 @@ lemma sum_vals {M : ℕ} {R : Type*} [AddCommMonoid R] (Φ : (Fin G.count → Fi
   simp only [Fintype.mem_piFinset]
   exact fun g i => (a g i).property
 
+section
+variable {J : ℕ} (C : Fin G.count → Finset (Fin J)) (hV : ∀ g, G.V g ≠ 0)
+include J C hV
+
 /-- The mass of the upstream auxiliary labels trimming to `w ∈ auxLabels`:
 the slots outside `C g` integrate to one. -/
-lemma sum_mass_trim_eq {J : ℕ} (C : Fin G.count → Finset (Fin J))
-    (hV : ∀ g, G.V g ≠ 0) {w : Fin G.count → Fin J → ℕ} (hw : w ∈ auxLabels G.primes C) :
+lemma sum_mass_trim_eq    
+       {w}  (hw : w ∈ auxLabels G.primes C) :
     ∑ u : G.Aux J, (if trim C u = w then ∏ g, ∏ i, G.mu g (u g i) else 0) =
       ∏ g, ∏ i ∈ C g, (harmonicMass (G.primes g) * w g i)⁻¹ := by
   have hw' : ∀ g i, w g i ∈ if i ∈ C g then G.primes g else {1} := fun g i =>
@@ -99,16 +104,13 @@ lemma sum_mass_trim_eq {J : ℕ} (C : Fin G.count → Finset (Fin J))
 /-- Summing over upstream auxiliary labels against their mass `∏ μ_g`, for a
 function of the labels in the slots `C g`, is summing over `auxLabels` against
 `∏_{i ∈ C g} μ_g`. -/
-lemma sum_trim {J : ℕ} (C : Fin G.count → Finset (Fin J)) (hV : ∀ g, G.V g ≠ 0)
+lemma sum_trim      
     (Φ : (Fin G.count → Fin J → ℕ) → ℂ) :
     ∑ u : G.Aux J, Φ (trim C u) * ((∏ g, ∏ i, G.mu g (u g i) : ℝ) : ℂ) =
       ∑ w ∈ auxLabels G.primes C,
         Φ w * ((∏ g, ∏ i ∈ C g, (harmonicMass (G.primes g) * w g i)⁻¹ : ℝ) : ℂ) := by
   have hmem : ∀ u : G.Aux J, trim C u ∈ auxLabels G.primes C := by
-    intro u
-    simp only [auxLabels, Fintype.mem_piFinset]
-    intro g i
-    by_cases hi : i ∈ C g <;> simp [trim, hi]
+    grind [auxLabels, trim]
   calc ∑ u : G.Aux J, Φ (trim C u) * ((∏ g, ∏ i, G.mu g (u g i) : ℝ) : ℂ)
       = ∑ u : G.Aux J, ∑ w ∈ auxLabels G.primes C,
           Φ w * (((if trim C u = w then ∏ g, ∏ i, G.mu g (u g i) else 0) : ℝ) : ℂ) := by
@@ -120,5 +122,7 @@ lemma sum_trim {J : ℕ} (C : Fin G.count → Finset (Fin J)) (hV : ∀ g, G.V g
         rw [Finset.sum_comm]
         refine Finset.sum_congr rfl fun w hw => ?_
         rw [← Finset.mul_sum, ← Complex.ofReal_sum, sum_mass_trim_eq C hV hw]
+
+end
 
 end Erdos408.Graph

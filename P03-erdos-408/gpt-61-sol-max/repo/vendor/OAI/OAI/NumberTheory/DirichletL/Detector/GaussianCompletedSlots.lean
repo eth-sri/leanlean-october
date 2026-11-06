@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.GaussianSlots
 public import OAI.NumberTheory.DirichletL.Detector.GaussianDecomposition
@@ -7,16 +8,16 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianDecomposition
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff Topology SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma correctedSummand_normTwisted (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
-    (W : ℝ→ℂ) (T t : ℝ) (I J : Id) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+lemma correctedSummand_normTwisted  S   D   Ψ 
+     W   T t   I J  :
     correctedSummand S D Ψ (CompletedHeight.normTwistedSource W t) T I J=
       logPhase t (Real.log ((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/T))*
         correctedSummand S D Ψ W T I J := by
@@ -24,15 +25,18 @@ lemma correctedSummand_normTwisted (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
     CompletedHeight.normTwistedSource
   ring
 
-lemma correctedSummand_fixed_finite (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
-    (T : ℝ) (hT : 0<T) :
+lemma correctedSummand_fixed_finite  S   D   Ψ 
+     T  (hT : 0<T) :
     (Function.support (fun p : Id×Id=>correctedSummand S D Ψ gaussianFixedWindow T p.1 p.2)).Finite := by
   apply (completedT_finite_support Ψ gaussianFixedWindow gaussianFixedWindow_compact T hT).subset
   intro p hp hz
-  exact hp (by simp only [correctedSummand,markedSummand,hz,mul_zero])
+  simp_all [correctedSummand, markedSummand]
 
-lemma gaussian_slot_integrable {ι : Type*} [Fintype ι]
-    (W : ι→ℝ→ℂ) (q : ι→ℝ) (b : SchwartzMap ℝ ℂ) (x : ℝ) (c : ℂ) :
+section
+variable {ι : Type*} [Fintype ι] (W : ι→ℝ→ℂ)
+
+lemma gaussian_slot_integrable    
+      (q : ι→ℝ) (b : SchwartzMap ℝ ℂ)  x   c  :
     Integrable (fun t : ℝ=>logPhase t x*c*
       (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*b t) := by
   have hh : Integrable (fun t : ℝ=>b t*(logPhase t x*c*
@@ -48,14 +52,14 @@ lemma gaussian_slot_integrable {ι : Type*} [Fintype ι]
       simp only [norm_mul,norm_prod,logPhase_norm,mul_one,one_mul,le_refl]
   simpa only [mul_comm (b _) _] using hh
 
-lemma gaussian_selected_summand {ι : Type*} [Fintype ι]
-    (W : ι→ℝ→ℂ) (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
+lemma gaussian_selected_summand    
+      (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
     (hsep : ∀R : ℝ,0<R→∀x : ℝ,0<x→∀q : ι→ℝ,(∀i,0<q i)→
       gaussianAnnulus x*(∏i,W i (q i))*gaussianMellinProfile (R*x/(∏i,q i))=
         ∫t : ℝ,Vstar (CompletedHeight.normTwistedSource gaussianFixedWindow t) x*
           (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*gaussianJointDensity V hV R t)
-    (S : Finset Id) (D : Id) (Ψ : O→*ℂ) (Z : ℝ) (hZ : 0<Z) (j : ℕ)
-    (q : ι→ℝ) (hq : ∀i,0<q i) (I J : Id) :
+    (S : Finset Id) (D : Id) (Ψ : ActualEisensteinCubic.O→*ℂ) (Z : ℝ) (hZ : 0<Z) (j : ℕ)
+    (q : ι→ℝ) (hq : ∀i,0<q i)  I J  :
     (∏i,W i (q i))*correctedSummand S D Ψ
       (gaussianDyadicProfile (Z*∏i,q i) j) ((2:ℝ)^j) I J=
       ∫t : ℝ,correctedSummand S D Ψ
@@ -74,7 +78,7 @@ lemma gaussian_selected_summand {ι : Type*} [Fintype ι]
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
   have hT : (0:ℝ)<2^j := by positivity
   have hN := div_pos (mul_pos hi (pow_pos hj 3)) hT
-  have hprod : 0<∏i,q i := Finset.prod_pos (fun i _=>hq i)
+  
   have hh := hsep ((2:ℝ)^j/Z) (div_pos hT hZ) _ hN q hq
   have he : (2:ℝ)^j/Z*((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/(2:ℝ)^j)/(∏i,q i)=
       (2:ℝ)^j*((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/(2:ℝ)^j)/(Z*∏i,q i) := by ring
@@ -99,8 +103,8 @@ lemma gaussian_selected_summand {ι : Type*} [Fintype ι]
       dsimp [c]
       ring
 
-lemma correctedSummand_gaussian_factor (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
-    (Z : ℝ) (j : ℕ) (I J : Id) :
+lemma correctedSummand_gaussian_factor  S   D   Ψ 
+     Z   j   I J  :
     correctedSummand S D Ψ (gaussianDyadicProfile Z j) ((2:ℝ)^j) I J=
       gaussianMellinProfile (((2:ℝ)^j/Z)*((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/(2:ℝ)^j))*
         correctedSummand S D Ψ gaussianFixedWindow ((2:ℝ)^j) I J := by
@@ -108,9 +112,9 @@ lemma correctedSummand_gaussian_factor (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
   unfold correctedSummand markedSummand CompletedGauss.summand Vstar
   ring
 
-lemma gaussian_selected_completed_integrable {ι : Type*} [Fintype ι]
-    (W : ι→ℝ→ℂ) (q : ι→ℝ) (b : SchwartzMap ℝ ℂ)
-    (S : Finset Id) (D : Id) (Ψ : O→*ℂ) (T : ℝ) (hT : 0<T) :
+lemma gaussian_selected_completed_integrable    
+      (q : ι→ℝ) (b : SchwartzMap ℝ ℂ)
+     S   D   Ψ   T  (hT : 0<T) :
     Integrable (fun t : ℝ=>correctedCompletedT S D Ψ
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) T*
       (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*b t) := by
@@ -121,21 +125,20 @@ lemma gaussian_selected_completed_integrable {ι : Type*} [Fintype ι]
   have hr (t : ℝ) : correctedCompletedT S D Ψ
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) T=
       ∑p∈hf.toFinset,correctedSummand S D Ψ
-        (CompletedHeight.normTwistedSource gaussianFixedWindow t) T p.1 p.2 := by
-    exact tsum_eq_sum (fun p hp=>by rw [correctedSummand_normTwisted,hz p hp,mul_zero])
+        (CompletedHeight.normTwistedSource gaussianFixedWindow t) T p.1 p.2 := tsum_eq_sum (fun p hp=>by rw [correctedSummand_normTwisted,hz p hp,mul_zero])
   simp_rw [hr,Finset.sum_mul]
   apply integrable_finsetSum
   intro p hp
   simp_rw [correctedSummand_normTwisted]
   exact gaussian_slot_integrable W q b _ _
 
-theorem gaussian_selected_completed {ι : Type*} [Fintype ι]
-    (W : ι→ℝ→ℂ) (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
+theorem gaussian_selected_completed    
+      (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
     (hsep : ∀R : ℝ,0<R→∀x : ℝ,0<x→∀q : ι→ℝ,(∀i,0<q i)→
       gaussianAnnulus x*(∏i,W i (q i))*gaussianMellinProfile (R*x/(∏i,q i))=
         ∫t : ℝ,Vstar (CompletedHeight.normTwistedSource gaussianFixedWindow t) x*
           (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*gaussianJointDensity V hV R t)
-    (S : Finset Id) (D : Id) (Ψ : O→*ℂ) (Z : ℝ) (hZ : 0<Z) (j : ℕ)
+    (S : Finset Id) (D : Id) (Ψ : ActualEisensteinCubic.O→*ℂ) (Z : ℝ) (hZ : 0<Z) (j : ℕ)
     (q : ι→ℝ) (hq : ∀i,0<q i) :
     (∏i,W i (q i))*correctedCompletedT S D Ψ
       (gaussianDyadicProfile (Z*∏i,q i) j) ((2:ℝ)^j)=
@@ -148,13 +151,11 @@ theorem gaussian_selected_completed {ι : Type*} [Fintype ι]
       correctedSummand S D Ψ gaussianFixedWindow ((2:ℝ)^j) p.1 p.2=0 := by
     simpa only [Set.Finite.mem_toFinset,Function.mem_support,not_not] using hp
   have hl : correctedCompletedT S D Ψ (gaussianDyadicProfile (Z*∏i,q i) j) ((2:ℝ)^j)=
-      ∑p∈hf.toFinset,correctedSummand S D Ψ (gaussianDyadicProfile (Z*∏i,q i) j) ((2:ℝ)^j) p.1 p.2 := by
-    exact tsum_eq_sum (fun p hp=>by rw [correctedSummand_gaussian_factor,hz p hp,mul_zero])
+      ∑p∈hf.toFinset,correctedSummand S D Ψ (gaussianDyadicProfile (Z*∏i,q i) j) ((2:ℝ)^j) p.1 p.2 := tsum_eq_sum (fun p hp=>by rw [correctedSummand_gaussian_factor,hz p hp,mul_zero])
   have hr (t : ℝ) : correctedCompletedT S D Ψ
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) ((2:ℝ)^j)=
       ∑p∈hf.toFinset,correctedSummand S D Ψ
-        (CompletedHeight.normTwistedSource gaussianFixedWindow t) ((2:ℝ)^j) p.1 p.2 := by
-    exact tsum_eq_sum (fun p hp=>by rw [correctedSummand_normTwisted,hz p hp,mul_zero])
+        (CompletedHeight.normTwistedSource gaussianFixedWindow t) ((2:ℝ)^j) p.1 p.2 := tsum_eq_sum (fun p hp=>by rw [correctedSummand_normTwisted,hz p hp,mul_zero])
   have hi (p : Id×Id) : Integrable (fun t : ℝ=>
       correctedSummand S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) ((2:ℝ)^j) p.1 p.2*
         (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*
@@ -166,9 +167,11 @@ theorem gaussian_selected_completed {ι : Type*} [Fintype ι]
   rw [integral_finsetSum _ (fun p _=>hi p)]
   apply Finset.sum_congr rfl
   intro p hp
-  exact gaussian_selected_summand W V hV hsep S D Ψ Z hZ j q hq p.1 p.2
+  solve_by_elim [gaussian_selected_summand]
+
+end
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

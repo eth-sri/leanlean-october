@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalRawIntegral
 public import OAI.NumberTheory.DirichletL.Detector.RawArithmetic
@@ -12,23 +13,27 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
-local instance (S : Finset (Ideal O)) : MeasurableSpace (SourceRawIndex S) := ⊤
-local instance (S : Finset (Ideal O)) : MeasurableSingletonClass (SourceRawIndex S) := ⟨fun _=>trivial⟩
 
-def rawSourceOnLines (η : HeckeFamily.Character) (S : Finset (Ideal O))
-    (hS : ∀P∈S,P.IsMaximal) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)
-    (i : SourceRawIndex S) (p : HeightSpace) : ℂ :=
+
+
+local instance (S : Finset (Ideal ActualEisensteinCubic.O)) : MeasurableSpace (SourceRawIndex S) := ⊤
+local instance (S : Finset (Ideal ActualEisensteinCubic.O)) : MeasurableSingletonClass (SourceRawIndex S) := ⟨fun _=>trivial⟩
+
+def rawSourceOnLines (η : HeckeFamily.Character) (S )
+    (hS : ∀P∈S,P.IsMaximal) (D : Ideal ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)
+    (i : SourceRawIndex S) (p : HeightSpace)  :=
   initialHighOnLines S D η (fun H=>star ((calibrationForSet S hS).residueMonoid H.val))
     3 3 2 (sourceRawEmbedding S i) p *sourceMellinWeight W0 W1 X Y Z
       ((3:ℂ)+p.1.1*Complex.I) ((3:ℂ)+p.2*Complex.I) ((2:ℂ)+p.1.2*Complex.I)
 
-lemma originalRawOnLines_eq_source (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
-    (X Y Z : ℝ) (hX : 0<X) (i : SourceRawIndex S) (p : HeightSpace) :
+section
+variable (η : HeckeFamily.Character) (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P) (hbad : fixedBadPrimes⊆S) (D : Ideal ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1) (X Y Z : ℝ) (hX : 0<X)
+
+include hpS hbad hX in
+lemma originalRawOnLines_eq_source  
+         
+         
+         i   p  :
     originalRawOnLines η S hS D W0 W1 X Y Z i p=
       rawSourceOnLines η S hS D W0 W1 X Y Z i (sourceHeightShear.symm p) := by
   rw [originalRawOnLines,rawPhysicalMellinTerm_eq_source η S hS hpS hbad D _ _ _ i.property.1
@@ -39,11 +44,12 @@ lemma originalRawOnLines_eq_source (η : HeckeFamily.Character)
   simp only [rawSourceOnLines,initialHighOnLines,he,hs,sourceRawEmbedding,Complex.ofReal_ofNat]
   ring
 
-lemma rawSourceOnLines_integrable (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
-    (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+include ha0 ha1 hW0 hW1 hX in
+lemma rawSourceOnLines_integrable  
+           
+         
+       
+        (hY : 0<Y) (hZ : 0<Z) :
     Integrable (fun p : SourceRawIndex S×HeightSpace=>rawSourceOnLines η S hS D W0 W1 X Y Z p.1 p.2)
       ((Measure.count:Measure (SourceRawIndex S)).prod heightMeasure) := by
   have hm (H : NonzeroFrequency) : ‖star ((calibrationForSet S hS).residueMonoid H.val)‖≤1 := by
@@ -59,10 +65,11 @@ lemma rawSourceOnLines_integrable (η : HeckeFamily.Character)
   · exact sourceMellinWeight_initial_continuous W0 W1 a1 b1 ha1 hW1
       X Y Z hX hY hZ 3 2 3 (by norm_num)
 
-lemma rawPhysicalTotalIntegral_eq_source (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
-    (X Y Z : ℝ) (hX : 0<X) :
+include hpS hbad hX in
+lemma rawPhysicalTotalIntegral_eq_source  
+         
+         
+        :
     rawPhysicalTotalIntegral η S hS D W0 W1 X Y Z=
       ((1/(2*Real.pi):ℝ):ℂ)^3*
         ∫p : SourceRawIndex S×HeightSpace,rawSourceOnLines η S hS D W0 W1 X Y Z p.1 p.2
@@ -79,23 +86,28 @@ lemma rawPhysicalTotalIntegral_eq_source (η : HeckeFamily.Character)
   refine Eq.trans ?_ he
   apply integral_congr_ae
   apply Filter.Eventually.of_forall
-  intro p
-  exact originalRawOnLines_eq_source η S hS hpS hbad D W0 W1 X Y Z hX p.1 p.2
+  solve_by_elim [originalRawOnLines_eq_source]
 
-def rawSourceTripleIntegral (η : HeckeFamily.Character) (S : Finset (Ideal O))
-    (hS : ∀P∈S,P.IsMaximal) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) : ℂ :=
+end
+
+def rawSourceTripleIntegral (η : HeckeFamily.Character) (S : Finset (Ideal ActualEisensteinCubic.O))
+    (hS : ∀P∈S,P.IsMaximal) (D : Ideal ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)  :=
   ((1/(2*Real.pi):ℝ):ℂ)^3*∫p : HeightSpace,
     sourceMellinWeight W0 W1 X Y Z ((3:ℂ)+p.1.1*Complex.I)
       ((3:ℂ)+p.2*Complex.I) ((2:ℂ)+p.1.2*Complex.I)*
     rawArithmeticSeries S D η (calibrationForSet S hS) ((3:ℂ)+p.1.1*Complex.I)
       ((3:ℂ)+p.2*Complex.I) ((2:ℂ)+p.1.2*Complex.I) ∂heightMeasure
 
-lemma rawPhysicalTotalIntegral_eq_triple (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
-    (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+section
+variable (η : HeckeFamily.Character) (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P) (hbad : fixedBadPrimes⊆S) (hSne : S.Nonempty) (D : Ideal ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1) (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y)
+
+include hpS hbad ha0 ha1 hW0 hW1 hX hY in
+lemma rawPhysicalTotalIntegral_eq_triple  
+         
+         
+         
+       
+          (hZ : 0<Z) :
     rawPhysicalTotalIntegral η S hS D W0 W1 X Y Z=
       rawSourceTripleIntegral η S hS D W0 W1 X Y Z := by
   rw [rawPhysicalTotalIntegral_eq_source η S hS hpS hbad D W0 W1 X Y Z hX]
@@ -110,18 +122,21 @@ lemma rawPhysicalTotalIntegral_eq_triple (η : HeckeFamily.Character)
   simp only [rawSourceOnLines,initialHighOnLines,Complex.ofReal_ofNat,tsum_mul_right]
   ring
 
-theorem markedPhysicalProbe_eq_raw_triple (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (hSne : S.Nonempty) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
-    (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+include hpS hbad hSne ha0 ha1 hW0 hW1 hX hY in
+theorem markedPhysicalProbe_eq_raw_triple  
+         
+           
+         
+       
+          (hZ : 0<Z) :
     markedPhysicalProbe η (calibrationForSet S hS) D W0 W1 X Y Z=
       rawSourceTripleIntegral η S hS D W0 W1 X Y Z := by
   rw [markedPhysicalProbe_eq_raw_integral η S hS hpS hbad hSne D W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z hX hY hZ]
   exact rawPhysicalTotalIntegral_eq_triple η S hS hpS hbad D W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z hX hY hZ
+
+end
 
 end SevenEighths.ProbePhysical
 end

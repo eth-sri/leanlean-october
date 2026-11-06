@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedTerms
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedTerms
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
@@ -29,7 +30,7 @@ theorem sourceRowTerm_central_nonstrict (eta a rho x w z : ℂ) (alpha eps : ℝ
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
   have hm0 : (0:ℝ)≤m := Nat.cast_nonneg m
-  have hzpos : 0<z.re := by rw [hz];norm_num
+  
   have hzm : 0≤6*z.re*(m:ℝ) := by positivity
   have hzm1 (hm : m≠0) : 6*z.re≤6*z.re*(m:ℝ) := by
     have hm1 : (1:ℝ)≤m := by exact_mod_cast (by omega : 1≤m)
@@ -118,6 +119,6 @@ theorem sourceRowTerm_central_nonstrict (eta a rho x w z : ℂ) (alpha eps : ℝ
         linarith
 
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

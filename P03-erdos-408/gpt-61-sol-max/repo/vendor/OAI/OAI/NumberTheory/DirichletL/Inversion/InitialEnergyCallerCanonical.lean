@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCaller
 
@@ -13,24 +14,24 @@ open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
 open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 open SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns
 namespace SevenEighths.InverseInitialEnergyCallerCanonical
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i≠0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i≠0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def child (pool : Finset ι) (Ψ : Eis →* ℂ) (j : Eis)
+def child (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (W : ℝ → ℂ) (X : ℝ) (c : InitialChild) : ℂ :=
+    (W : ℝ → ℂ) (X : ℝ) (c : InitialChild)  :=
   finiteCanonicalMarkedRow p hp hcop hg pool Ψ (j*primaryGenerator c.1)
     (primaryGenerator c.2.1) c.2.2 slots lists a W X
 
 omit [DecidableEq σ] in
-theorem energy_eq_normalized (pool : Finset ι) (Ψ : Eis →* ℂ) (j : Eis)
+theorem energy_eq_normalized  pool   Ψ   j 
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (W : ℝ → ℂ) (X : ℝ) (J : ℕ) (T : Finset (Ideal Eis))
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis)
-    {Z : ℝ} (hZ : 0<Z) (F : ℝ) :
+     W   X   J   T 
+     labels   rows 
+     {Z}  (hZ : 0<Z)  F  :
     (∑ t ∈ T, ((idealDivisors t).card:ℝ)^J *
       ∑ f ∈ labels, ((idealDivisors f).card:ℝ)^(J+1) *
         ∑ k ∈ rows, ‖child p hp hcop hg pool Ψ j slots lists a W X (t,f,k)‖^2) =
@@ -48,11 +49,11 @@ theorem energy_eq_normalized (pool : Finset ι) (Ψ : Eis →* ℂ) (j : Eis)
   ring
 
 omit [DecidableEq σ] in
-theorem energy_le_moment (pool : Finset ι) (Ψ : Eis →* ℂ) (j : Eis)
+theorem energy_le_moment  pool   Ψ   j 
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (W : ℝ → ℂ) (X : ℝ) (J : ℕ) (T : Finset (Ideal Eis))
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis)
-    {Z : ℝ} (hZ : 0<Z) (F B : ℝ)
+     W   X   J   T 
+     labels   rows 
+     {Z}  (hZ : 0<Z)  F B 
     (hmoment : ∀ t ∈ T,
       normalizedColumnEnergy p hp hcop hg pool Ψ (j*primaryGenerator t)
         slots lists a labels rows (fun f=>((idealDivisors f).card:ℝ)^(J+1)) W X Z F ≤ B) :
@@ -62,16 +63,12 @@ theorem energy_le_moment (pool : Finset ι) (Ψ : Eis →* ℂ) (j : Eis)
     (Z^F * ∑ t ∈ T, ((idealDivisors t).card:ℝ)^J) * B := by
   rw [energy_eq_normalized p hp hcop hg pool Ψ j slots lists a W X J T labels rows hZ F,
     mul_assoc, Finset.sum_mul]
-  apply mul_le_mul_of_nonneg_left _ (Real.rpow_nonneg hZ.le _)
-  exact Finset.sum_le_sum fun t ht =>
-    mul_le_mul_of_nonneg_left (hmoment t ht) (by positivity)
+  bound
 
-theorem sqrt_pair_mass (M B₁ B₂ : ℝ) (hM : 0≤M) :
+theorem sqrt_pair_mass  M B₁ B₂  (hM : 0≤M) :
     Real.sqrt (M*B₁)*Real.sqrt (M*B₂) = M*(Real.sqrt B₁*Real.sqrt B₂) := by
   rw [Real.sqrt_mul hM,Real.sqrt_mul hM]
-  calc
-    _ = (Real.sqrt M*Real.sqrt M)*(Real.sqrt B₁*Real.sqrt B₂) := by ring
-    _ = _ := by rw [Real.mul_self_sqrt hM]
+  grind
 
 end SevenEighths.InverseInitialEnergyCallerCanonical
 

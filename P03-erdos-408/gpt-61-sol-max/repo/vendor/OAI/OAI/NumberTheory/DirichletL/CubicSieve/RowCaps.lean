@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.GaussSum.PowerfulParts
 public import OAI.NumberTheory.DirichletL.MeanSquare.LogarithmicBins
@@ -11,115 +12,111 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
-end
-
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (primeProduct dilationLabel)
 open ConcreteTraceCRT (eisEmbedding)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
+ 
 namespace CompletedGauss
-open ActualEisensteinCubic LocalReflectionBrackets
+open   LocalReflectionBrackets
 
 noncomputable abbrev actualSextic := ActualEisensteinCubic.canonicalSextic
 
-def exceptionalPiece (P : Ideal O) [P.IsMaximal] (e : Fin 3) (n b : O) : ℂ :=
+def exceptionalPiece (P : Ideal O) [P.IsMaximal] (e : Fin 3) (n b : O)  :=
   if e=0 then -(rootCard (O ⧸ P) : ℂ)⁻¹
   else if e=1 then (rootCard (O ⧸ P) : ℂ)*(if n∈P then 1 else 0)
   else (rootCard (O ⧸ P) : ℂ)*(if n∉P ∧ b∈P then 1 else 0)
 
-theorem bracket_four_eq_sum_exceptionalPiece (P : Ideal O) [P.IsMaximal]
-    (hg : lambda∉P) (n b : O) :
+section
+variable (P : Ideal O) [P.IsMaximal]
+include P
+
+theorem bracket_four_eq_sum_exceptionalPiece    
+    (hg : lambda∉P)  n b  :
     bracket (actualSextic P hg) 4 (Ideal.Quotient.mk P (n*b^3)) =
       ∑e : Fin 3, exceptionalPiece P e n b := by
   rw [canonical_bracket_four_cube_split]
   simp [Fin.sum_univ_succ,exceptionalPiece]
   ring
 
-theorem rootCard_eq_sqrt_absNorm (P : Ideal O) [P.IsMaximal] :
+theorem rootCard_eq_sqrt_absNorm     :
     rootCard (O ⧸ P)=Real.sqrt (Ideal.absNorm P:ℝ) := by
   rw [rootCard,←Nat.card_eq_fintype_card]
   rfl
 
-theorem exceptionalPiece_norm_le (P : Ideal O) [P.IsMaximal]
-    (e : Fin 3) (n b : O) :
+theorem exceptionalPiece_norm_le    
+     e   n b  :
     ‖exceptionalPiece P e n b‖≤(if e=0 then (rootCard (O ⧸ P))⁻¹ else rootCard (O ⧸ P)) := by
   have hr : 0≤rootCard (O ⧸ P) := rootCard_pos.le
   fin_cases e <;> simp only [exceptionalPiece,Fin.isValue,Fin.zero_eta,↓reduceIte]
@@ -127,24 +124,26 @@ theorem exceptionalPiece_norm_le (P : Ideal O) [P.IsMaximal]
   · by_cases hn : n∈P <;> simp [hn,abs_of_nonneg hr,hr]
   · by_cases hn : n∉P ∧ b∈P <;> simp [hn,abs_of_nonneg hr,hr]
 
+end
+
 end CompletedGauss
 
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic CompletedGauss
+open   CompletedGauss
 
 end CanonicalQuadraticSieve
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix ContDiff
+ 
+open scoped       MatrixGroups Matrix  
 
 namespace CubicEisenstein
 
-def spatialHorizontal (p : SpatialCoordinates) : ℂ := (p 0:ℂ)+(p 1:ℂ)*Complex.I
+def spatialHorizontal (p : SpatialCoordinates)  := (p 0:ℂ)+(p 1:ℂ)*Complex.I
 
-def mobiusSpatialDenominator (g : SL(2,ℂ)) (p : SpatialCoordinates) : ℝ :=
+def mobiusSpatialDenominator (g : SL(2,ℂ)) (p : SpatialCoordinates)  :=
   Complex.normSq (g 1 0*spatialHorizontal p+g 1 1)+Complex.normSq (g 1 0)*(p 2)^2
 
-def mobiusSpatialHorizontal (g : SL(2,ℂ)) (p : SpatialCoordinates) : ℂ :=
+def mobiusSpatialHorizontal (g : SL(2,ℂ)) (p : SpatialCoordinates)  :=
   ((g 0 0*spatialHorizontal p+g 0 1)*star (g 1 0*spatialHorizontal p+g 1 1)+
     g 0 0*star (g 1 0)*(p 2:ℂ)^2)/(mobiusSpatialDenominator g p:ℂ)
 
@@ -152,26 +151,36 @@ def mobiusSpatial (g : SL(2,ℂ)) (p : SpatialCoordinates) : SpatialCoordinates 
   ![(mobiusSpatialHorizontal g p).re,(mobiusSpatialHorizontal g p).im,
     p 2/mobiusSpatialDenominator g p]
 
-lemma mobiusSpatialDenominator_pos (g : SL(2,ℂ)) (p : SpatialCoordinates) (hp : 0<p 2) :
+section
+variable (g : SL(2,ℂ)) (p : SpatialCoordinates) (hp : 0<p 2)
+include g p hp
+
+lemma mobiusSpatialDenominator_pos       :
     0<mobiusSpatialDenominator g p := by
   simpa only [mobiusSpatialDenominator,Complex.normSq_eq_norm_sq] using
     mobius_denominator_pos g (spatialHorizontal p) (p 2) hp
 
-lemma mobiusSpatial_positive (g : SL(2,ℂ)) (p : SpatialCoordinates) (hp : 0<p 2) :
+lemma mobiusSpatial_positive       :
     0<mobiusSpatial g p 2 := div_pos hp (mobiusSpatialDenominator_pos g p hp)
 
-lemma mobiusSpatial_coordinates (g : SL(2,ℂ)) (p : SpatialCoordinates) (hp : 0<p 2) :
+lemma mobiusSpatial_coordinates       :
     hyperbolicSpatialCoordinates (g • upperPoint (spatialHorizontal p) (p 2) hp)=mobiusSpatial g p := by
   rw [mobius_upperPoint]
   simp only [hyperbolicSpatialCoordinates,hyperbolicHorizontal_upperPoint,hyperbolicHeight_upperPoint,
     mobiusSpatial,mobiusSpatialHorizontal,mobiusSpatialDenominator,Complex.normSq_eq_norm_sq]
+
+end
 
 lemma spatialHorizontal_contDiff : ContDiff ℝ ∞ spatialHorizontal := by
   unfold spatialHorizontal
   exact (Complex.ofRealCLM.contDiff.comp (contDiff_apply ℝ ℝ 0)).add
     ((Complex.ofRealCLM.contDiff.comp (contDiff_apply ℝ ℝ 1)).mul contDiff_const)
 
-lemma mobiusSpatialDenominator_contDiff (g : SL(2,ℂ)) : ContDiff ℝ ∞ (mobiusSpatialDenominator g) := by
+section
+variable (g : SL(2,ℂ))
+include g
+
+lemma mobiusSpatialDenominator_contDiff   : ContDiff ℝ ∞ (mobiusSpatialDenominator g) := by
   unfold mobiusSpatialDenominator
   have hz : ContDiff ℝ ∞ (fun p => g 1 0*spatialHorizontal p+g 1 1) :=
     (contDiff_const.mul spatialHorizontal_contDiff).add contDiff_const
@@ -183,7 +192,7 @@ lemma mobiusSpatialDenominator_contDiff (g : SL(2,ℂ)) : ContDiff ℝ ∞ (mobi
     Complex.normSq (g 1 0)*(p 2)^2)
   exact ((hre.mul hre).add (him.mul him)).add (contDiff_const.mul ((contDiff_apply ℝ ℝ 2).pow 2))
 
-lemma mobiusSpatial_contDiffAt (g : SL(2,ℂ)) (p : SpatialCoordinates) (hp : 0<p 2) :
+lemma mobiusSpatial_contDiffAt    p  (hp : 0<p 2) :
     ContDiffAt ℝ ∞ (mobiusSpatial g) p := by
   have hD := (mobiusSpatialDenominator_contDiff g).contDiffAt (x := p)
   have hDc : ContDiffAt ℝ ∞ (fun p => (mobiusSpatialDenominator g p:ℂ)) p :=
@@ -211,6 +220,8 @@ lemma mobiusSpatial_contDiffAt (g : SL(2,ℂ)) (p : SpatialCoordinates) (hp : 0<
   · exact Complex.imCLM.contDiff.contDiffAt.comp p hh
   · exact (by fun_prop : ContDiffAt ℝ ∞ (fun p : SpatialCoordinates => p 2) p).div hD
       (mobiusSpatialDenominator_pos g p hp).ne'
+
+end
 
 abbrev PositiveSpatial := {p : SpatialCoordinates // 0<p 2}
 
@@ -244,7 +255,7 @@ def positiveSpatialUpperHomeomorph : PositiveSpatial ≃ₜ UpperCoordinates whe
   continuous_toFun := positiveSpatialToUpper_continuous
   continuous_invFun := upperToPositiveSpatial_continuous
 
-def positiveSpatialHomeomorph : PositiveSpatial ≃ₜ HyperbolicSpace :=
+def positiveSpatialHomeomorph  :=
   positiveSpatialUpperHomeomorph.trans upperCoordinatesHomeomorph
 
 lemma hyperbolicSpatial_isOpenEmbedding : Topology.IsOpenEmbedding hyperbolicSpatialCoordinates := by
@@ -254,17 +265,17 @@ lemma hyperbolicSpatial_isOpenEmbedding : Topology.IsOpenEmbedding hyperbolicSpa
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix ContDiff Manifold
+ 
+open scoped             Manifold
 
 namespace CubicEisenstein
 
 abbrev KernelQuotient := IntegralOrbitQuotient globalKubotaKernel
 
-def hyperbolicSpatialChart : OpenPartialHomeomorph HyperbolicSpace SpatialCoordinates :=
+def hyperbolicSpatialChart  :=
   hyperbolicSpatial_isOpenEmbedding.toOpenPartialHomeomorph hyperbolicSpatialCoordinates
 
-@[simp] lemma hyperbolicSpatialChart_apply (w : HyperbolicSpace) :
+@[simp] lemma hyperbolicSpatialChart_apply  w  :
     hyperbolicSpatialChart w=hyperbolicSpatialCoordinates w := rfl
 
 @[simp] lemma hyperbolicSpatialChart_source : hyperbolicSpatialChart.source=Set.univ := rfl
@@ -275,20 +286,24 @@ lemma hyperbolicSpatialChart_target_positive {p : SpatialCoordinates}
   have hh := hyperbolicSpatialCoordinates_positive (hyperbolicSpatialChart.symm p)
   rwa [← hyperbolicSpatialChart_apply,he] at hh
 
-def kernelLocalLift (w : HyperbolicSpace) : OpenPartialHomeomorph KernelQuotient HyperbolicSpace :=
+def kernelLocalLift (w : HyperbolicSpace)  :=
   kernelQuotient_localHomeomorph.localInverseAt w
 
-@[simp] lemma kernelLocalLift_symm (w : HyperbolicSpace) :
+@[simp] lemma kernelLocalLift_symm  w  :
     (kernelLocalLift w).symm=integralOrbitProjection globalKubotaKernel :=
   kernelQuotient_localHomeomorph.localInverseAt_symm w
 
-lemma kernelLocalLift_project {w : HyperbolicSpace} {q : KernelQuotient}
+lemma kernelLocalLift_project  {w}   {q} 
     (hq : q∈(kernelLocalLift w).source) :
     integralOrbitProjection globalKubotaKernel (kernelLocalLift w q)=q :=
   kernelQuotient_localHomeomorph.apply_localInverseAt_of_mem hq
 
-lemma kernel_lifts_eventually_eq {X : Type*} [TopologicalSpace X]
-    {f g : X→HyperbolicSpace} {x : X} (hf : ContinuousAt f x) (hg : ContinuousAt g x)
+section
+variable {X : Type*} [TopologicalSpace X] {f g : X→HyperbolicSpace} {x : X} (hf : ContinuousAt f x) (hg : ContinuousAt g x)
+include X f g x hf hg
+
+lemma kernel_lifts_eventually_eq    
+           
     (hfg : f x=g x)
     (hproj : (fun y => integralOrbitProjection globalKubotaKernel (f y))=ᶠ[𝓝 x]
       (fun y => integralOrbitProjection globalKubotaKernel (g y))) : f=ᶠ[𝓝 x]g := by
@@ -298,8 +313,8 @@ lemma kernel_lifts_eventually_eq {X : Type*} [TopologicalSpace X]
   filter_upwards [hfn,hgn,hproj] with y hyf hyg hye
   exact hUinj hyf hyg hye
 
-lemma kernel_lifts_eventually_deck {X : Type*} [TopologicalSpace X]
-    {f g : X→HyperbolicSpace} {x : X} (hf : ContinuousAt f x) (hg : ContinuousAt g x)
+lemma kernel_lifts_eventually_deck    
+           
     (hproj : (fun y => integralOrbitProjection globalKubotaKernel (f y))=ᶠ[𝓝 x]
       (fun y => integralOrbitProjection globalKubotaKernel (g y))) :
     ∃M : globalKubotaKernel, f=ᶠ[𝓝 x](fun y => integralComplexMatrix M • g y) := by
@@ -311,21 +326,27 @@ lemma kernel_lifts_eventually_deck {X : Type*} [TopologicalSpace X]
   filter_upwards [hproj] with y hy
   simpa only [integralOrbitProjection_eq] using hy
 
-lemma mobiusSpatial_coordinates_global (g : SL(2,ℂ)) (w : HyperbolicSpace) :
+end
+
+lemma mobiusSpatial_coordinates_global  g   w  :
     hyperbolicSpatialCoordinates (g•w)=mobiusSpatial g (hyperbolicSpatialCoordinates w) := by
   have hp := hyperbolicSpatialCoordinates_positive w
   have hr := hyperbolicSpatialCoordinates_reconstruct w
   nth_rw 1 [← hr]
   exact mobiusSpatial_coordinates g (hyperbolicSpatialCoordinates w) hp
 
-def kernelCoordinateTransition (w : HyperbolicSpace) (p : SpatialCoordinates) : SpatialCoordinates :=
+def kernelCoordinateTransition (w : HyperbolicSpace) (p : SpatialCoordinates)  :=
   hyperbolicSpatialCoordinates (kernelLocalLift w
     (integralOrbitProjection globalKubotaKernel (hyperbolicSpatialChart.symm p)))
 
-lemma kernelCoordinateTransition_eventually (w : HyperbolicSpace) (p : SpatialCoordinates)
-    (hp : p∈hyperbolicSpatialChart.target)
-    (hq : integralOrbitProjection globalKubotaKernel (hyperbolicSpatialChart.symm p)∈
-      (kernelLocalLift w).source) :
+section
+variable (w : HyperbolicSpace) (p : SpatialCoordinates) (hp : p∈hyperbolicSpatialChart.target) (hq : integralOrbitProjection globalKubotaKernel (hyperbolicSpatialChart.symm p)∈
+      (kernelLocalLift w).source)
+include w p hp hq
+
+lemma kernelCoordinateTransition_eventually    
+     
+      :
     ∃M : globalKubotaKernel,kernelCoordinateTransition w=ᶠ[𝓝 p]
       mobiusSpatial (integralComplexMatrix M) := by
   have hc : ContinuousAt hyperbolicSpatialChart.symm p :=
@@ -353,23 +374,24 @@ lemma kernelCoordinateTransition_eventually (w : HyperbolicSpace) (p : SpatialCo
   rw [hy,mobiusSpatial_coordinates_global]
   exact congrArg _ (hyperbolicSpatialChart.right_inv hyt)
 
-lemma kernelCoordinateTransition_contDiffAt (w : HyperbolicSpace) (p : SpatialCoordinates)
-    (hp : p∈hyperbolicSpatialChart.target)
-    (hq : integralOrbitProjection globalKubotaKernel (hyperbolicSpatialChart.symm p)∈
-      (kernelLocalLift w).source) : ContDiffAt ℝ ∞ (kernelCoordinateTransition w) p := by
+lemma kernelCoordinateTransition_contDiffAt    
+     
+      : ContDiffAt ℝ ∞ (kernelCoordinateTransition w) p := by
   obtain ⟨M,hM⟩ := kernelCoordinateTransition_eventually w p hp hq
   exact (mobiusSpatial_contDiffAt _ p (hyperbolicSpatialChart_target_positive hp)).congr_of_eventuallyEq hM
 
-def kernelQuotientChart (q : KernelQuotient) : OpenPartialHomeomorph KernelQuotient SpatialCoordinates :=
+end
+
+def kernelQuotientChart (q : KernelQuotient)  :=
   (kernelLocalLift q.out).trans hyperbolicSpatialChart
 
-@[simp] lemma kernelQuotientChart_symm (q : KernelQuotient) (p : SpatialCoordinates) :
+@[simp] lemma kernelQuotientChart_symm  q   p  :
     (kernelQuotientChart q).symm p=
       integralOrbitProjection globalKubotaKernel (hyperbolicSpatialChart.symm p) := by
   change (kernelLocalLift q.out).symm (hyperbolicSpatialChart.symm p)=_
   rw [kernelLocalLift_symm]
 
-lemma kernelQuotientChart_contDiffOn (q r : KernelQuotient) :
+lemma kernelQuotientChart_contDiffOn  q r  :
     ContDiffOn ℝ ∞ ((kernelQuotientChart q).symm.trans (kernelQuotientChart r))
       ((kernelQuotientChart q).symm.trans (kernelQuotientChart r)).source := by
   intro p hp
@@ -378,12 +400,9 @@ lemma kernelQuotientChart_contDiffOn (q r : KernelQuotient) :
       (kernelLocalLift r.out).source := by
     rw [← kernelQuotientChart_symm q p]
     exact hp.2.1
-  have he : (fun p => ((kernelQuotientChart q).symm.trans (kernelQuotientChart r)) p)=
+  have he : (((kernelQuotientChart q).symm.trans (kernelQuotientChart r)))=
       kernelCoordinateTransition r.out := by
-    funext y
-    change hyperbolicSpatialChart (kernelLocalLift r.out ((kernelQuotientChart q).symm y))=_
-    rw [kernelQuotientChart_symm]
-    rfl
+    aesop
   change ((kernelQuotientChart q).symm.trans (kernelQuotientChart r) : SpatialCoordinates→SpatialCoordinates)=_ at he
   rw [he]
   exact (kernelCoordinateTransition_contDiffAt r.out p hp' hq').contDiffWithinAt

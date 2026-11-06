@@ -16,21 +16,21 @@ namespace Erdos821.Blueprint.Graph
 
 namespace Model
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ} (A : Model F P J m)
-def stepBound : ℕ := A.k.natAbs * (P.allPrimes.sup id) ^ (J * P.count)
+def stepBound  := A.k.natAbs * (P.allPrimes.sup id) ^ (J * P.count)
 def neighbors (n : ℤ) : Finset A.State :=
   (Finset.Icc (n - A.stepBound) (n + A.stepBound)).product Finset.univ
-def averagedMoment (R : ℕ) (X : ℝ) : ℝ :=
+def averagedMoment (R : ℕ) (X : ℝ)  :=
   let I := Finset.Ico ⌈X⌉ ⌈2 * X⌉
   (∑ n ∈ I, A.rootMoment R n) / I.card
 
-def normOn (s : Finset A.State) (f : A.State → ℂ) : ℝ :=
+def normOn (s : Finset A.State) (f : A.State → ℂ)  :=
   Real.sqrt (∑ z ∈ s, A.stateMass z * ‖f z‖ ^ 2)
-def pairing (X : ℝ) (t : Finset A.State) (f : ℤ → ℂ) (g : A.State → ℂ) : ℂ :=
+def pairing (X : ℝ) (t : Finset A.State) (f : ℤ → ℂ) (g : A.State → ℂ)  :=
   ∑ n ∈ Finset.Ico ⌈X⌉ ⌈2 * X⌉, ∑ a : A.Labels, ∑ z ∈ t,
     (A.stateMass (n, a) : ℂ) * star (f n) * A.physicalKernel false (n, a) z * g z
 end Model
 
-def AbsolutePhysicalBounds : Prop :=
+def AbsolutePhysicalBounds  :=
   ∀ F : FixedData, ∀ m : ℕ, ∀ C₁ : ℝ, ∃ Cabs : ℝ,
     ∀ J : ℕ, ∀ᶠ x : ℝ in atTop, ∀ (P : PrimeGroups) (A : Model F P J m),
       P.Admissible F x → A.patternMass ≤ L x ^ C₁ →
@@ -38,7 +38,7 @@ def AbsolutePhysicalBounds : Prop :=
       (∀ z, (∑ z' ∈ A.neighbors z.1, ‖A.physicalKernel true z' z‖) ≤ L x ^ Cabs)
 
 /-- E_id precedes m,C₁,J. The threshold for x follows every fixed choice. -/
-def TransferenceEstimate : Prop :=
+def TransferenceEstimate  :=
   ∀ F : FixedData, ∀ E : ℝ, 0 < E → ∃ Eid : ℝ, 0 < Eid ∧
     ∀ (m : ℕ) (C₁ : ℝ), ∃ J₀ : ℕ, ∀ J : ℕ, J₀ ≤ J →
       ∀ γ C₂ : ℝ, 0 < γ → 0 < C₂ →
@@ -52,7 +52,7 @@ def TransferenceEstimate : Prop :=
               L x ^ (-E * (2 * (⌈L x ^ (0.52 : ℝ)⌉₊ : ℝ)))
 
 /-- The only mark-independent endpoint is f. No equal root norms are assumed. -/
-def TransferencePairing : Prop :=
+def TransferencePairing  :=
   ∀ F : FixedData, ∀ E : ℝ, 0 < E → ∃ Eid : ℝ, 0 < Eid ∧
     ∀ (m : ℕ) (C₁ : ℝ), ∃ J₀ : ℕ, ∀ J : ℕ, J₀ ≤ J →
       ∀ γ C₂ C₃ Cf : ℝ, 0 < γ → 0 < C₂ →

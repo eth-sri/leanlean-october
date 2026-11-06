@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.CommonLinearSource
 public import OAI.NumberTheory.DirichletL.Moments.CommonRawCost
@@ -16,20 +17,20 @@ open CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentElig
 open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
 open CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
 open CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
-def commonScalar (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C):ℂ:=
+def commonScalar (s:Input ι)(C R:Ideal HeckeFamily.O)(B:actualAllocations s.pools C):=
   (Real.sqrt (rawReduction B.val s.P):ℂ)⁻¹*frozenCoefficient B.val C R s.ν s.W s.P
 
 omit [DecidableEq ι] in
-theorem common_volume (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C):
+theorem common_volume (s:Input ι) C R  B :
     volume (commonData s C R B)=remainingRaw B.val (s.X₁*s.X₂) s.P:=by
   dsimp only [volume,commonData,remainingRaw,plainNorm]
   ring
 
-theorem source_normalized (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
-    (hseed:seed∣C)(z:O):
+theorem source_normalized (s:Input ι) C  hC  R seed L 
+    (hseed:seed∣C) z :
     (Real.sqrt (volume s.toData):ℂ)⁻¹*sourceColumn s C hC R seed L z=
       ∑B:actualAllocations s.pools C,commonScalar s C R B*maskedAmplitude (commonData s C R B) L z:=by
   rw [source_column_allocation s C hC R seed L hseed z,Finset.mul_sum]
@@ -37,7 +38,7 @@ theorem source_normalized (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal
   intro B hB
   rw [live_column_rectangle]
   have hv:=volume_pos (commonData s C R B)
-  have hr:=rawReduction_pos B.val (alloc_ne s C B) s.P s.P_pos
+  
   have he:volume (commonData s C R B)*rawReduction B.val s.P=volume s.toData:=by
     rw [common_volume]
     exact raw_scale_identity B.val (alloc_ne s C B) (s.X₁*s.X₂) s.P

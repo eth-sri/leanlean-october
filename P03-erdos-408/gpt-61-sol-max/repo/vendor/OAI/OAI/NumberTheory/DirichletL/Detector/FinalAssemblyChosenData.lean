@@ -14,7 +14,7 @@ open Filter
 namespace SevenEighths.ProbeFinalAssembly
 open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters PrincipalSignalComparison
 
-def ChosenMomentInput:Prop:=
+def ChosenMomentInput:=
   ∀_hβ:(7/8:ℝ)<HeckeZeroSupremum.beta,
     ∃D:HighData (HeckeZeroSupremum.beta-7/8),∃F:SourceData D,
     ∃counts:CountParameters F.modulus ⊤ D.t,
@@ -22,7 +22,7 @@ def ChosenMomentInput:Prop:=
       ∀τ:ℝ,0<τ→τ≤1→∀ᶠZ:ℝ in atTop,
         SourceMomentBound F counts η Z τ (C*(1+Z^(2*τ))^J) (Z^(2*τ))
 
-def FineMomentInput:Prop:=
+def FineMomentInput:=
   ∀_hβ:(7/8:ℝ)<HeckeZeroSupremum.beta,
     ∃mesh:ℝ→ℝ,(∀t:ℝ,0<t→0<mesh t) ∧
     ∀D:HighData (HeckeZeroSupremum.beta-7/8),(∀j,D.ell j≤mesh D.t/200)→
@@ -79,7 +79,7 @@ theorem common_probe_of_chosen_moments (hmom : ChosenMomentInput) : HeckeCommonP
   exact hh Cm hCm.le hs
 
 theorem dirichlet_of_chosen_moments (hmom : ChosenMomentInput) (q : ℕ) (hq : q≠0)
-    (χ : DirichletCharacter ℂ q) (s : ℂ) (hs : (7/8:ℝ)<s.re)
+    (χ : DirichletCharacter ℂ q)  s  (hs : (7/8:ℝ)<s.re)
     (hexc : ¬(χ=1 ∧ s=1)) :
     letI : NeZero q := ⟨hq⟩
     DirichletCharacter.LFunction χ s≠0 :=

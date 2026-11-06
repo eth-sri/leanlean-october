@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.ConductorBounds
 public import Mathlib.NumberTheory.LSeries.Nonvanishing
@@ -12,31 +13,35 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set   MeasureTheory
 
 open scoped Topology ContDiff
 
 open Asymptotics
 
-open Asymptotics
+ 
 
-open Asymptotics
+ 
 
 open scoped Classical
 
-open scoped ContDiff
+ 
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution   Pointwise
 
 open scoped ComplexConjugate
 
-open Filter Topology
+open Filter  
 
-theorem exists_vaughan_log_parameters {A : ℝ} (hA : 0 < A) {X : ℕ}
-    (hX : 16 ≤ X) (hL : 2 ≤ Real.log (X:ℝ))
-    (hpower : (Real.log (X:ℝ))^(A+10) ≤ (X:ℝ)^(1/32:ℝ)) :
+section
+variable {A M x : ℝ} (hA : 0 < A) (hM : 0 ≤ M) {X Q : ℕ} (hX : 16 ≤ X) (hL : 2 ≤ Real.log (X:ℝ)) (hpower : (Real.log (X:ℝ))^(A+10) ≤ (X:ℝ)^(1/32:ℝ))
+
+include hA hX hL hpower in
+theorem exists_vaughan_log_parameters      
+       
+      :
     ∃ T k r n : ℕ,
       X+1 ≤ 2^k ∧
       2*(X:ℝ)^(1/2:ℝ)*(Real.log (X:ℝ))^(-A-10) ≤ ((2^(r+n):ℕ):ℝ) ∧
@@ -98,11 +103,7 @@ theorem exists_vaughan_log_parameters {A : ℝ} (hA : 0 < A) {X : ℕ}
     have hh : ((2^m:ℕ):ℝ) ≤ (X:ℝ) := hmbounds.2.trans hymX
     exact_mod_cast hh
   have hymk : y ≤ (X+1:ℕ) := by
-    have hy0 : 0 ≤ y := by positivity
-    have hyx : y ≤ x := by linarith
-    push_cast
-    change y ≤ x+1
-    linarith
+    grind
   have hmk : m ≤ k := dyadicExponent_mono hymk
   have hkbounds := vaughanBinaryExponent_bounds (show 2 ≤ X by omega) (show 1 ≤ Real.log (X:ℝ) by linarith)
   have hrnm : r+(m-r)=m := Nat.add_sub_of_le hry
@@ -110,10 +111,7 @@ theorem exists_vaughan_log_parameters {A : ℝ} (hA : 0 < A) {X : ℕ}
   · rw [hrnm,←hyeq]
     exact hmbounds.1.le
   · simpa only [hrnm] using hmX
-  · rw [hrnm]
-    calc
-      _ ≤ 2*y := hmbounds.2
-      _ = _ := by rw [hyeq]; ring
+  · grind
   · exact hrbounds.1.le
   · exact hrbounds.2
   · exact (by exact_mod_cast (Nat.sub_le m r).trans hmk : ((m-r:ℕ):ℝ) ≤ k).trans hkbounds.2
@@ -122,12 +120,12 @@ theorem exists_vaughan_log_parameters {A : ℝ} (hA : 0 < A) {X : ℕ}
     have hh := Real.sqrt_le_sqrt ht
     change Real.sqrt (x^(1/16:ℝ)) ≤ Real.sqrt ((T:ℝ)+1) at hh
     rw [Real.sqrt_eq_rpow,←Real.rpow_mul hx.le] at hh
-    norm_num at hh
-    simpa only [Nat.cast_add,Nat.cast_one] using hh
+    grind
 
-theorem endpoint_errors_nat_log_bound {A M : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
-    {X Q : ℕ} (hX : 16 ≤ X) (hL : 2 ≤ Real.log (X:ℝ))
-    (hpower : (Real.log (X:ℝ))^(A+10) ≤ (X:ℝ)^(1/32:ℝ))
+include hA hM hX hL hpower in
+theorem endpoint_errors_nat_log_bound      
+         
+     
     (hQ : (Q:ℝ) ≤ 2*(X:ℝ)^(1/2:ℝ)*(Real.log (X:ℝ))^(-A-10))
     (hsmall : ∀ d : ℕ, 0 < d → (d:ℝ) ≤ (Real.log (X:ℝ))^(A+11) →
       ∀ χ : DirichletCharacter ℂ d, χ.IsPrimitive →
@@ -141,7 +139,7 @@ theorem endpoint_errors_nat_log_bound {A M : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
   let x : ℝ := X
   let L : ℝ := Real.log x
   have hx1 : 1 ≤ x := by dsimp [x]; exact_mod_cast (by omega : 1 ≤ X)
-  have hx : 0 < x := lt_of_lt_of_le zero_lt_one hx1
+  
   have hL1 : 1 ≤ L := by dsimp [L,x]; linarith
   have hL0 : 0 < L := lt_of_lt_of_le zero_lt_one hL1
   have hQP : Q ≤ P := by
@@ -162,8 +160,7 @@ theorem endpoint_errors_nat_log_bound {A M : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
   have hsmallTotal : (∑ d∈Finset.Icc 1 R,primitiveErrorMass x d/(d.totient:ℝ)) *
       (harmonic P:ℝ)^2 ≤ 8*M*x*L^(-A) := by
     calc
-      _ ≤ (2*L^(A+10)*(M*x*L^(-2*A-14)))*(4*L^2) := by
-        apply mul_le_mul (hsmallR.trans (mul_le_mul_of_nonneg_right hRhi (by positivity))) hH2
+      _ ≤ (2*L^(A+10)*(M*x*L^(-2*A-14)))*(4*L^2) := mul_le_mul (hsmallR.trans (mul_le_mul_of_nonneg_right hRhi (by positivity))) hH2
           (sq_nonneg _) (by positivity)
       _ = 8*M*x*L^(-A-2) := by
         conv_rhs => rw [show -A-2=(A+10)+(-2*A-14)+2 by ring,
@@ -176,8 +173,7 @@ theorem endpoint_errors_nat_log_bound {A M : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
   have hhighTotal : ((n:ℝ)*highConductorBlockBound P X T R k)*(harmonic P:ℝ)^2 ≤
       192000*x*L^(-A) := by
     calc
-      _ ≤ ((6*L)*(8000*x*L^(-A-3)))*(4*L^2) := by
-        apply mul_le_mul (mul_le_mul hn hhi (highConductorBlockBound_nonneg _ _ _ _ _) (by positivity))
+      _ ≤ ((6*L)*(8000*x*L^(-A-3)))*(4*L^2) := mul_le_mul (mul_le_mul hn hhi (highConductorBlockBound_nonneg _ _ _ _ _) (by positivity))
           hH2 (sq_nonneg _) (by positivity)
       _ = _ := by
         conv_rhs => rw [show -A=(-A-3)+1+2 by ring,Real.rpow_add hL0,Real.rpow_add hL0,
@@ -205,14 +201,10 @@ theorem endpoint_errors_nat_log_bound {A M : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
         apply mul_le_mul (mul_le_mul_of_nonneg_left hsx (by norm_num : (0:ℝ) ≤ 24))
           (Real.rpow_le_rpow_of_exponent_le hL1 (by linarith)) (by positivity) (by positivity)
   have hfinite := endpoint_errors_finite_vaughan_reduction_of_le X T k r n Q hk hQP
-  apply hfinite.trans
-  change ((∑ d∈Finset.Icc 1 R,primitiveErrorMass x d/(d.totient:ℝ))+
-    (n:ℝ)*highConductorBlockBound P X T R k)*(harmonic P:ℝ)^2+
-      (P:ℝ)*(Nat.log 2 X:ℝ)*Real.log P ≤ (8*M+192024)*x*L^(-A)
-  rw [add_mul]
-  nlinarith [hsmallTotal,hhighTotal,hcost]
+  grind
 
-theorem endpoint_errors_real_log_bound {A M x : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
+include hA hM in
+theorem endpoint_errors_real_log_bound      
     (hx : 0 ≤ x) (hX : 16 ≤ ⌊x⌋₊) (hL : 2 ≤ Real.log (⌊x⌋₊:ℝ))
     (hpower : (Real.log (⌊x⌋₊:ℝ))^(A+10) ≤ (⌊x⌋₊:ℝ)^(1/32:ℝ))
     (hsmall : ∀ d : ℕ, 0 < d → (d:ℝ) ≤ (Real.log (⌊x⌋₊:ℝ))^(A+11) →
@@ -242,7 +234,7 @@ theorem endpoint_errors_real_log_bound {A M x : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
     rw [←Real.sqrt_eq_rpow,←Real.sqrt_eq_rpow]
     calc
       _ ≤ Real.sqrt (4*(X:ℝ)) := Real.sqrt_le_sqrt (by linarith)
-      _ = _ := by rw [Real.sqrt_mul (by norm_num : (0:ℝ) ≤ 4)]; norm_num
+      _ = _ := by norm_num
   have hQ : (Q:ℝ) ≤ 2*(X:ℝ)^(1/2:ℝ)*L^(-A-10) := by
     calc
       _ ≤ x^(1/2:ℝ)*(Real.log x)^(-(A+10)) := Nat.floor_le (by positivity)
@@ -260,8 +252,7 @@ theorem endpoint_errors_real_log_bound {A M x : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
         nlinarith
       linarith
     have hh₁ : 2*(X:ℝ)^(1/2:ℝ)*L^(-A-10) ≤ 2*(X:ℝ)^(1/2:ℝ) := by
-      simpa only [mul_one] using mul_le_mul_of_nonneg_left hneg
-        (by positivity : 0 ≤ 2*(X:ℝ)^(1/2:ℝ))
+      bound
     have hh : (Q:ℝ) ≤ X := hQ.trans (hh₁.trans hrootsmall)
     exact_mod_cast hh
   have hnat := endpoint_errors_nat_log_bound hA hM hX hL hpower hQ hsmall
@@ -287,6 +278,8 @@ theorem endpoint_errors_real_log_bound {A M x : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
     _ ≤ (8*M+192028)*x*((2:ℝ)^A*(Real.log x)^(-A)) := by gcongr
     _ = _ := by ring
 
+end
+
 theorem bombieriVinogradov_of_siegelWalfisz (hs : SiegelWalfisz) : BombieriVinogradov := by
   intro A hA
   obtain ⟨M,hM,x₀,hx₀,hSW⟩ := hs (2*A+14) (A+11) (by linarith) (by linarith)
@@ -303,34 +296,32 @@ theorem bombieriVinogradov_of_siegelWalfisz (hs : SiegelWalfisz) : BombieriVinog
       hf.eventually (eventually_log_rpow_le_rpow (A+10) (by norm_num : (0:ℝ)<1/32))]
       with x hx hX hL hxsw hp
     apply endpoint_errors_real_log_bound hA hM.le hx hX hL hp
-    intro d hd hdL χ hχ
-    convert hSW (⌊x⌋₊:ℝ) hxsw d hd hdL χ hχ using 1
-    congr 1
-    congr 1
-    ring
+    grind
   obtain ⟨z,hz⟩ := eventually_atTop.mp he
   refine ⟨max z 2,by linarith [le_max_right z (2:ℝ)],?_⟩
-  intro x hx
-  exact hz x ((le_max_left z (2:ℝ)).trans hx)
+  grind
 
-open Complex Filter Topology
+open Complex    
 
-noncomputable def poleRemovedL {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) : ℂ → ℂ :=
+noncomputable def poleRemovedL {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)  :=
   if χ = 1 then DirichletCharacter.LFunctionTrivChar₁ q else χ.LFunction
 
 noncomputable def primeLogDerivativeRegular {q : ℕ} [NeZero q]
-    (χ : DirichletCharacter ℂ q) (s : ℂ) : ℂ :=
+    (χ : DirichletCharacter ℂ q) (s : ℂ)  :=
   -deriv (poleRemovedL χ) s / poleRemovedL χ s
 
-theorem poleRemovedL_differentiable {q : ℕ} [NeZero q]
+section
+variable {q : ℕ}
+
+theorem poleRemovedL_differentiable   [NeZero q]
     (χ : DirichletCharacter ℂ q) : Differentiable ℂ (poleRemovedL χ) := by
   unfold poleRemovedL
   split_ifs with hχ
   · exact DirichletCharacter.differentiable_LFunctionTrivChar₁ q
   · exact DirichletCharacter.differentiable_LFunction hχ
 
-theorem poleRemovedL_ne_zero {q : ℕ} [NeZero q]
-    (χ : DirichletCharacter ℂ q) {s : ℂ} (hs : 1 ≤ s.re) :
+theorem poleRemovedL_ne_zero   [NeZero q]
+    (χ : DirichletCharacter ℂ q)  {s}  (hs : 1 ≤ s.re) :
     poleRemovedL χ s ≠ 0 := by
   unfold poleRemovedL
   split_ifs with hχ
@@ -341,14 +332,14 @@ theorem poleRemovedL_ne_zero {q : ℕ} [NeZero q]
       exact DirichletCharacter.LFunction_ne_zero_of_one_le_re 1 (.inr hs1) hs
   · exact DirichletCharacter.LFunction_ne_zero_of_one_le_re χ (.inl hχ) hs
 
-theorem primeLogDerivativeRegular_analyticAt {q : ℕ} [NeZero q]
-    (χ : DirichletCharacter ℂ q) {s : ℂ} (hs : poleRemovedL χ s ≠ 0) :
+theorem primeLogDerivativeRegular_analyticAt   [NeZero q]
+    (χ : DirichletCharacter ℂ q)  {s}  (hs : poleRemovedL χ s ≠ 0) :
     AnalyticAt ℂ (primeLogDerivativeRegular χ) s := by
   have h := (poleRemovedL_differentiable χ).analyticAt s
   exact h.deriv.neg.div h hs
 
-theorem primeLogDerivativeRegular_eq {q : ℕ} [NeZero q]
-    (χ : DirichletCharacter ℂ q) {s : ℂ} (hs : 1 < s.re) :
+theorem primeLogDerivativeRegular_eq   [NeZero q]
+     χ   {s}  (hs : 1 < s.re) :
     primeLogDerivativeRegular χ s =
       LSeries (fun n : ℕ => χ (n : ZMod q) * (ArithmeticFunction.vonMangoldt n : ℂ)) s -
         (if χ = 1 then 1 / (s - 1) else 0) := by
@@ -366,12 +357,10 @@ theorem primeLogDerivativeRegular_eq {q : ℕ} [NeZero q]
     simp only [primeLogDerivativeRegular, poleRemovedL, ↓reduceIte]
     rw [DirichletCharacter.deriv_LFunctionTrivChar₁_apply_of_ne_one q hs1,
       DirichletCharacter.LFunctionTrivChar₁, Function.update_of_ne hs1]
-    change -((s-1)*deriv (DirichletCharacter.LFunction (1 : DirichletCharacter ℂ q)) s +
-      DirichletCharacter.LFunction (1 : DirichletCharacter ℂ q) s) /
-      ((s-1)*DirichletCharacter.LFunction (1 : DirichletCharacter ℂ q) s) = _
-    field_simp
-    ring
+    grind
   · simp [primeLogDerivativeRegular, poleRemovedL, hχ]
+
+end
 
 end LargePrimeGaps
 

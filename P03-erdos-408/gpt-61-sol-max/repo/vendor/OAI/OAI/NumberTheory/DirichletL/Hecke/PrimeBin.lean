@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicSource
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical Topology ContDiff
 open Set Complex
 namespace SevenEighths.HeckePrimeAnnular
 open HeckeFamily HeckeDyadic
 
-theorem prime_bin_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
+theorem prime_bin_bound  W   A B  (hA : 0<A)
     (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W)
     (R dmax τ ε e κ η σmin σmax : ℝ)
     (hR : 0≤R) (hdmax : 0≤dmax) (hτ : 0<τ) (hε : 0<ε) (he : 0<e)
@@ -83,6 +83,6 @@ theorem prime_bin_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
 
 end SevenEighths.HeckePrimeAnnular
 
-end
+
 
 end OAI

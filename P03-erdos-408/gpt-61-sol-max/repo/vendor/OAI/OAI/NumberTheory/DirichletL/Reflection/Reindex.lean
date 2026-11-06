@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedSource
 
@@ -13,24 +14,28 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [Fintype ι] [Fintype κ]
 
-lemma cofactor_reindex (p : ι→Eis) (e : κ≃ι) (k : κ) :
+section
+variable (a c l : Eis) (p : ι→Eis) (e : κ≃ι)
+
+
+lemma cofactor_reindex      k  :
     cofactor (fun k => p (e k)) k=cofactor p (e k) := by
   unfold cofactor
   apply Finset.prod_equiv e
-  · intro i
-    simp only [Finset.mem_erase,Finset.mem_univ,and_true,ne_eq,EmbeddingLike.apply_eq_iff_eq]
+  · simp_all
   · intro i hi
     rfl
 
-lemma finiteCrossNumerator_reindex (a c l : Eis) (p : ι→Eis) (e : κ≃ι) (h : ι→Eis) :
+lemma finiteCrossNumerator_reindex        h  :
     finiteCrossNumerator a c l (fun k => p (e k)) (fun k => h (e k))=
       finiteCrossNumerator a c l p h := by
   unfold finiteCrossNumerator
   simp_rw [cofactor_reindex]
   rw [e.prod_comp,e.sum_comp (fun i => h i*cofactor p i)]
 
-def unitFrequencyEquiv (p : ι→Eis) (e : κ≃ι) :
-    (∀ k, (Eis⧸Ideal.span {p (e k)})ˣ)≃(∀ i, (Eis⧸Ideal.span {p i})ˣ) :=
+end
+
+def unitFrequencyEquiv (p : ι→Eis) (e : κ≃ι)  :=
   Equiv.piCongrLeft (fun i => (Eis⧸Ideal.span {p i})ˣ) e
 
 omit [Fintype ι] [Fintype κ] in

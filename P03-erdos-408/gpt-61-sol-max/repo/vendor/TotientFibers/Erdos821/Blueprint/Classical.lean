@@ -17,24 +17,24 @@ attribute [local instance] Classical.propDecidable
 namespace Erdos821.Blueprint
 open Analytic
 
-def primesUpTo (y : ℝ) : Finset ℕ := (Finset.Icc 1 ⌊y⌋₊).filter Nat.Prime
-def sieveProduct (y : ℝ) : ℝ := ∏ p ∈ primesUpTo y, (1 - (p : ℝ)⁻¹)
-def li (y : ℝ) : ℝ := ∫ t : ℝ in (2 : ℝ)..y, (Real.log t)⁻¹
+def primesUpTo (y : ℝ)  := (Finset.Icc 1 ⌊y⌋₊).filter Nat.Prime
+def sieveProduct (y : ℝ)  := ∏ p ∈ primesUpTo y, (1 - (p : ℝ)⁻¹)
+def li (y : ℝ)  := ∫ t : ℝ in (2 : ℝ)..y, (Real.log t)⁻¹
 
-def PrimeProgressions : Prop :=
+def PrimeProgressions  :=
   ∀ A C : ℝ, 0 < A → 0 < C → ∃ K : ℝ, 0 < K ∧
     ∀ᶠ y : ℝ in atTop, ∀ r a : ℕ, 1 ≤ r → (r : ℝ) ≤ Real.log y ^ C →
       Nat.Coprime a r →
       |(((primesUpTo y).filter (fun p => p % r = a % r)).card : ℝ) -
           li y / (Nat.totient r : ℝ)| ≤ K * y * Real.log y ^ (-A)
 
-def MertensEstimates : Prop :=
+def MertensEstimates  :=
   (∃ K : ℝ, ∀ y : ℝ, 2 ≤ y →
     |(∑ p ∈ primesUpTo y, (p : ℝ)⁻¹) - Real.log (Real.log y)| ≤ K) ∧
   Tendsto (fun y : ℝ => Real.log y * sieveProduct y) atTop
     (nhds (Real.exp (-Real.eulerMascheroniConstant)))
 
-def HarmonicCharacters : Prop :=
+def HarmonicCharacters  :=
   ∀ c C B A : ℝ, 0 < c → 0 < C → 0 < B → 0 < A →
     ∃ K : ℝ, 0 < K ∧ ∀ᶠ x : ℝ in atTop,
       ∀ (lo hi t : ℝ) (r : ℕ) (χ : DirichletCharacter ℂ r),
@@ -43,14 +43,14 @@ def HarmonicCharacters : Prop :=
         ‖∑ p ∈ ((Finset.Icc ⌈lo⌉₊ ⌊hi⌋₊).filter Nat.Prime),
           χ (p : ZMod r) * mellin p t / (p : ℂ)‖ ≤ K * L x ^ (-A)
 
-def DivisorMoments : Prop :=
+def DivisorMoments  :=
   ∀ k : ℕ, ∃ C K : ℝ, 0 < K ∧ ∀ Y : ℝ, 1 ≤ Y →
     (∑ n ∈ Finset.Icc 1 ⌊Y⌋₊, (n.divisors.card : ℝ) ^ k / n) ≤
       K * Real.log (2 * Y) ^ C ∧
     (∑ n ∈ Finset.Icc 1 ⌊Y⌋₊, (n.divisors.card : ℝ) ^ k) ≤
       K * Y * Real.log (2 * Y) ^ C
 
-def MeanSquares : Prop :=
+def MeanSquares  :=
   ∃ K : ℝ, 0 < K ∧ ∀ (Y : ℕ) (a : ℕ → ℂ) (lo hi : ℝ), lo ≤ hi →
     (∫ t : ℝ in lo..hi, ‖dp (Finset.Icc 1 Y) a t‖ ^ 2) ≤
       K * (hi - lo + Y * Real.log (2 * Y)) * sqNorm (Finset.Icc 1 Y) a ∧
@@ -61,7 +61,7 @@ def MeanSquares : Prop :=
           sqNorm (Finset.Icc 1 Y) a
 
 /-- Logarithmic loss in the available OAI large sieve is harmless here. -/
-def MultiplicativeLargeSieve : Prop :=
+def MultiplicativeLargeSieve  :=
   ∃ K : ℝ, 0 < K ∧ ∀ (N R : ℕ) (a : ℕ → ℂ),
     (∑ r : Fin R, ((r.val + 1 : ℕ) : ℝ) / Nat.totient (r.val + 1) *
       ∑ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ (r.val + 1))).filter
@@ -69,7 +69,7 @@ def MultiplicativeLargeSieve : Prop :=
           ‖∑ n ∈ Finset.Icc 1 N, a n * χ (n : ZMod (r.val + 1))‖ ^ 2) ≤
       K * (N + 1 + (R : ℝ) ^ 2 * Real.log (2 * R)) * sqNorm (Finset.Icc 1 N) a
 
-def DerivativeTests : Prop :=
+def DerivativeTests  :=
   (∃ K : ℝ, 0 < K ∧ ∀ (lo hi lam : ℝ) (j : ℤ) (f : ℝ → ℝ),
     lo ≤ hi → 0 < lam → lam ≤ 1 / 2 → DifferentiableOn ℝ f (Set.Icc lo hi) →
     (MonotoneOn (deriv f) (Set.Icc lo hi) ∨ AntitoneOn (deriv f) (Set.Icc lo hi)) →
@@ -85,7 +85,7 @@ def DerivativeTests : Prop :=
 /-- A Fourier coefficient measure is an explicit factorization, not an abstract oracle.
 The derivatives can grow by a fixed power per order; the frequency cutoff is fixed
 before the requested saving A. -/
-def FourierSeparation : Prop :=
+def FourierSeparation  :=
   ∀ b : ℕ, ∀ C R : ℝ, 0 < C → 0 < R → ∀ bounds : ℕ → ℝ,
     (∀ j, 0 ≤ bounds j) → ∃ C' K : ℝ, C < C' ∧ 0 < K ∧
       ∀ A : ℝ, 0 < A → ∃ KA : ℝ, 0 < KA ∧

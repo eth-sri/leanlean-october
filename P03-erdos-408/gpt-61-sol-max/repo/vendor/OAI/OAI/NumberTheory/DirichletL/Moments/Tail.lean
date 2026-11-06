@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.Smooth
 
@@ -6,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Moments.Smooth
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
-local notation "O" => ActualEisensteinCubic.O
+
 namespace SevenEighths.CenteredMomentTail
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
 open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier
 open CenteredMomentSupportedCorrelation
 
-theorem fullModulusCorrelation_norm_le (u v : O) (_hu : u ≠ 0) (_hv : v ≠ 0)
+theorem fullModulusCorrelation_norm_le (u v : ActualEisensteinCubic.O) (_hu : u ≠ 0) (_hv : v ≠ 0)
     [Fintype (Residue u)] [Fintype (Residue v)]
-    (χu : MulChar (Residue u) ℂ) (χv : MulChar (Residue v) ℂ) (j : O) :
+     χu   χv   j  :
     ‖fullModulusCorrelation u v χu χv j‖ ≤
       (Ideal.absNorm (Ideal.span {u}) : ℝ) * (Ideal.absNorm (Ideal.span {v}) : ℝ) := by
   unfold fullModulusCorrelation fullCorrelation
@@ -39,9 +40,9 @@ theorem fullModulusCorrelation_norm_le (u v : O) (_hu : u ≠ 0) (_hv : v ≠ 0)
     _ = _ := by
       simp [Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
 
-theorem actualCorrelation_norm_le (u v : O)
-    (hu : CanonicalQuadraticSieve.Supported (Ideal.span {u}))
-    (hv : CanonicalQuadraticSieve.Supported (Ideal.span {v})) (j : O) :
+theorem actualCorrelation_norm_le  u v 
+     hu 
+     hv   j  :
     ‖actualCorrelation u v hu hv j‖ ≤
       (Ideal.absNorm (Ideal.span {u}) : ℝ) * (Ideal.absNorm (Ideal.span {v}) : ℝ) := by
   let := finite_quotient_span (supported_element_ne_zero u hu)
@@ -52,18 +53,18 @@ theorem actualCorrelation_norm_le (u v : O)
   exact fullModulusCorrelation_norm_le u v (supported_element_ne_zero u hu)
     (supported_element_ne_zero v hv) _ _ j
 
-theorem weighted_set_lattice_tail (A : ℕ) :
+theorem weighted_set_lattice_tail  A  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
-      ∀ (W : 𝓢(ℝ, ℂ)) (D : Set O) (K T B : ℝ), 0 < K → 0 ≤ T → 0 ≤ B →
+      ∀ (W : 𝓢(ℝ, ℂ)) (D : Set ActualEisensteinCubic.O) (K T B : ℝ), 0 < K → 0 ≤ T → 0 ≤ B →
       (∀ h ∈ D, T ≤ K * ‖eisEmbedding h‖ ^ 2) →
-      ∀ c δ : O → ℂ, (∀ h ∈ D, ‖c h‖ ≤ B) → (∀ h ∈ D, ‖δ h‖ ≤ 1) →
+      ∀ c δ : ActualEisensteinCubic.O → ℂ, (∀ h ∈ D, ‖c h‖ ≤ B) → (∀ h ∈ D, ‖δ h‖ ≤ 1) →
       ‖∑' h : D, δ h.val * c h.val * paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖ ≤
         B * (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) /
           ((min 1 K) ^ 2 * (1 + T) ^ A) := by
   obtain ⟨s, C, hC, ht⟩ := paperRadialFourier_lattice_tail A
   refine ⟨s, C, hC, ?_⟩
   intro W D K T B hK hT hB hD c δ hc hδ
-  let L := {h : O | T ≤ K * ‖eisEmbedding h‖ ^ 2}
+  let L := {h : ActualEisensteinCubic.O | T ≤ K * ‖eisEmbedding h‖ ^ 2}
   let f : D → L := fun h => ⟨h.val, hD h.val h.property⟩
   have hfi : Function.Injective f := by
     intro x y h
@@ -92,26 +93,24 @@ theorem weighted_set_lattice_tail (A : ℕ) :
       · rfl
       · ring
 
-theorem uniform_sector_lattice_tail (A : ℕ) :
+theorem uniform_sector_lattice_tail  A  :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
-      ∀ (W : 𝓢(ℝ, ℂ)) (D : Set O) (K₀ T B : ℝ), 0 < K₀ → 0 ≤ T → 0 ≤ B →
+      ∀ (W : 𝓢(ℝ, ℂ)) (D : Set ActualEisensteinCubic.O) (K₀ T B : ℝ), 0 < K₀ → 0 ≤ T → 0 ≤ B →
       (∀ h ∈ D, T ≤ K₀ * ‖eisEmbedding h‖ ^ 2) →
       ∀ K : ℝ, K₀ ≤ K →
-      ∀ c δ : O → ℂ, (∀ h ∈ D, ‖c h‖ ≤ B) → (∀ h ∈ D, ‖δ h‖ ≤ 1) →
+      ∀ c δ : ActualEisensteinCubic.O → ℂ, (∀ h ∈ D, ‖c h‖ ≤ B) → (∀ h ∈ D, ‖δ h‖ ≤ 1) →
       ‖∑' h : D, δ h.val * c h.val * paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖ ≤
         B * (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) /
           ((min 1 K₀) ^ 2 * (1 + T) ^ A) := by
   obtain ⟨s, C, hC, ht⟩ := weighted_set_lattice_tail A
   refine ⟨s, C, hC, ?_⟩
   intro W D K₀ T B hK₀ hT hB hD K hK c δ hc hδ
-  have hD' (h : O) (hh : h ∈ D) : T ≤ K * ‖eisEmbedding h‖ ^ 2 :=
+  have hD' (h : ActualEisensteinCubic.O) (hh : h ∈ D) : T ≤ K * ‖eisEmbedding h‖ ^ 2 :=
     (hD h hh).trans (mul_le_mul_of_nonneg_right hK (sq_nonneg _))
   apply (ht W D K T B (hK₀.trans_le hK) hT hB hD' c δ hc hδ).trans
-  apply div_le_div_of_nonneg_left (by positivity)
-    (by have : 0 < min 1 K₀ := lt_min zero_lt_one hK₀; positivity)
-  gcongr
+  gcongr <;> first | assumption | positivity | linarith
 
 end SevenEighths.CenteredMomentTail
-end
+
 
 end OAI

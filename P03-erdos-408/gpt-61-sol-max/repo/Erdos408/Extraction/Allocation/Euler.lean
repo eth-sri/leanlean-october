@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Groups
 public import Mathlib.NumberTheory.EulerProduct.Basic
@@ -38,9 +39,7 @@ lemma sum_inv_le_prod_of_factored (S : Finset ℕ) (F : Finset ℕ)
       rw [div_lt_one (by exact_mod_cast hp.pos)]
       exact_mod_cast hp.one_lt
     refine (summable_geometric_of_lt_one (by positivity) h1).congr fun n => ?_
-    rw [norm_of_nonneg (by positivity)]
-    push_cast
-    rw [one_div_pow]
+    norm_num
   obtain ⟨-, hhas⟩ := EulerProduct.summable_and_hasSum_factoredNumbers_prod_filter_prime_tsum
     (f := fun n : ℕ => (1 : ℝ) / n) (by simp) hmul hsum S
   have hgeom : ∀ p ∈ S.filter Nat.Prime, ∑' n : ℕ, (1 : ℝ) / (p ^ n : ℕ) = (1 - (1 : ℝ) / p)⁻¹ := by
@@ -59,7 +58,7 @@ lemma sum_inv_le_prod_of_factored (S : Finset ℕ) (F : Finset ℕ)
   exact hle
 
 /-- `(1 - 1/p)⁻¹ ≤ exp(2/p)` for `p ≥ 2`. -/
-lemma inv_one_sub_le_exp {p : ℝ} (hp : 2 ≤ p) : (1 - 1 / p)⁻¹ ≤ Real.exp (2 / p) := by
+lemma inv_one_sub_le_exp  {p}  (hp : 2 ≤ p) : (1 - 1 / p)⁻¹ ≤ Real.exp (2 / p) := by
   have ht : 1 / p ≤ 1 / 2 := one_div_le_one_div_of_le (by norm_num) hp
   have ht0 : 0 < 1 / p := by positivity
   rw [inv_le_comm₀ (by linarith) (exp_pos _), ← exp_neg]
@@ -118,8 +117,7 @@ lemma exists_prod_one_sub_ge : ∃ C₁ : ℝ, 0 < C₁ ∧ ∀ Y : ℝ, 2 ≤ Y
       have hpt : ((p : ℝ) ^ 2)⁻¹ = t ^ 2 := by rw [htdef, one_div_pow, one_div]
       rw [abs_of_pos ht0, hpt, div_le_iff₀ (by linarith), show t ^ (1 + 1) = t ^ 2 by norm_num]
       nlinarith [mul_nonneg (sq_nonneg t) (show 0 ≤ 1 - 2 * t by linarith)]
-    have : -(1 : ℝ) / p = -(1 / p) := by ring
-    linarith [h.1]
+    grind
   -- the reciprocal sums
   have hsum1 : ∑ p ∈ primesIcc 2 Y, (1 : ℝ) / p ≤ 1 / 2 + Real.log (Real.log Y / Real.log 2) +
       E / Real.log 2 := by

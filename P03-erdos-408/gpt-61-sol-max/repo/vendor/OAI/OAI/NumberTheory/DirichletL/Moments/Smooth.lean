@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.Initial
 public import OAI.NumberTheory.DirichletL.Moments.Extraction
@@ -13,25 +14,29 @@ open MeasureTheory
 namespace SevenEighths.CenteredMomentSmooth
 open FourierBridge EisensteinSchwartzPoisson
 
-def rootWindow (V : ℝ → ℂ) (u : ℝ) : ℂ := V u / (Real.sqrt (Real.exp u) : ℂ)
+def rootWindow (V : ℝ → ℂ) (u : ℝ)  := V u / (Real.sqrt (Real.exp u) : ℂ)
 
 def wholeKernel (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
-    (R ρ x u v : ℝ) : ℂ :=
+    (R ρ x u v : ℝ)  :=
   V 0 ρ * V 1 x * rootWindow (V 2) u * rootWindow (V 3) v *
     paperRadialFourier W (R * Real.exp (ρ + x - u - v))
 
-def rowPhase (V : Fin 4 → ℝ → ℂ) (ρ x t : ℝ) : ℂ :=
+def rowPhase (V : Fin 4 → ℝ → ℂ) (ρ x t : ℝ)  :=
   (V 0 ρ * logPhase t ρ) * (V 1 x * logPhase t x)
 
-def columnPhase (V : ℝ → ℂ) (u t : ℝ) : ℂ :=
+def columnPhase (V : ℝ → ℂ) (u t : ℝ)  :=
   rootWindow V u * logPhase t (-u)
 
-def separatedKernel (V : Fin 4 → ℝ → ℂ) (ρ x u v t : ℝ) : ℂ :=
+def separatedKernel (V : Fin 4 → ℝ → ℂ) (ρ x u v t : ℝ)  :=
   rowPhase V ρ x t * columnPhase (V 2) u t * columnPhase (V 3) v t
 
-theorem whole_kernel_separation (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
-    (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
-    (hV : ∀ i y, V i y ≠ 0 → |y| ≤ M i) (A J : ℕ) :
+section
+variable (W b : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ) (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i) (hV : ∀ i y, V i y ≠ 0 → |y| ≤ M i) (A J : ℕ)
+
+include hM hV in
+theorem whole_kernel_separation    
+       
+        :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ R : ℝ, 0 < R → ∃ b : 𝓢(ℝ, ℂ),
       (∀ ρ x u v : ℝ, wholeKernel W V R ρ x u v =
         ∫ t : ℝ, separatedKernel V ρ x u v t * b t) ∧
@@ -61,8 +66,8 @@ theorem whole_kernel_separation (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
   simpa [U, a, wholeKernel, separatedKernel, rowPhase, columnPhase,
     Fin.prod_univ_succ, Fin.sum_univ_succ, sub_eq_add_neg, mul_assoc, add_assoc] using h
 
-lemma separated_integrable (b : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
-    (ρ x u v : ℝ) (c : ℂ) :
+lemma separated_integrable    
+     ρ x u v   c  :
     Integrable (fun t : ℝ => c * separatedKernel V ρ x u v t * b t) := by
   let K : ℝ := ‖c‖ * ‖V 0 ρ‖ * ‖V 1 x‖ * ‖rootWindow (V 2) u‖ * ‖rootWindow (V 3) v‖
   apply (b.integrable.norm.const_mul K).mono'
@@ -83,7 +88,7 @@ theorem finite_pair_separation {α β : Type*}
     (hsep : ∀ ρ x u v : ℝ, wholeKernel W V R ρ x u v =
       ∫ t : ℝ, separatedKernel V ρ x u v t * b t)
     (S : Finset α) (T : Finset β) (c : α → ℂ) (d : β → ℂ)
-    (u : α → ℝ) (v : β → ℝ) (ρ x : ℝ) :
+    (u : α → ℝ) (v : β → ℝ)  ρ x  :
     (∑ i ∈ S, ∑ j ∈ T, (c i * star (d j)) * wholeKernel W V R ρ x (u i) (v j)) =
       ∫ t : ℝ, rowPhase V ρ x t *
         (∑ i ∈ S, c i * columnPhase (V 2) (u i) t) *
@@ -112,15 +117,12 @@ theorem finite_pair_separation {α β : Type*}
       filter_upwards [] with t
       simp only [Finset.sum_mul, Finset.mul_sum, separatedKernel]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro i hi
-      apply Finset.sum_congr rfl
-      intro j hj
-      ring
+      grind
 
-theorem whole_product_pair_separation (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
-    (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
-    (hV : ∀ i y, V i y ≠ 0 → |y| ≤ M i) (A J : ℕ) :
+include hM hV in
+theorem whole_product_pair_separation    
+       
+        :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ R : ℝ, 0 < R → ∃ b : 𝓢(ℝ, ℂ),
       (∀ {α β : Type*} (S : Finset α) (T : Finset β) (c : α → ℂ) (d : β → ℂ)
         (u : α → ℝ) (v : β → ℝ) (ρ x : ℝ),
@@ -138,7 +140,9 @@ theorem whole_product_pair_separation (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ �
   exact ⟨b, fun S T c d u v ρ x => finite_pair_separation W V R b hb S T c d u v ρ x,
     hi, hm, hp⟩
 
-theorem logPhase_norm_ratio (q X θ : ℝ) (hq : 0 < q) (hX : 0 < X) :
+end
+
+theorem logPhase_norm_ratio  q X θ  (hq : 0 < q) (hX : 0 < X) :
     logPhase θ (-Real.log (q / X)) =
       logPhase θ (Real.log X) * (q : ℂ) ^ (Complex.I * (-(2 * Real.pi * θ))) := by
   have hlog : -Real.log (q / X) = Real.log X + -Real.log q := by
@@ -150,16 +154,10 @@ theorem logPhase_norm_ratio (q X θ : ℝ) (hq : 0 < q) (hX : 0 < X) :
     have hp := Real.pi_ne_zero
     field_simp
   have hn := CenteredMomentLattice.logPhase_eq_normPower (-(2 * Real.pi * θ)) q hq
-  rw [hθ] at hn
-  push_cast at hn
-  rw [← hn]
-  unfold logPhase
-  congr 1
-  push_cast
-  ring
+  simp_all [logPhase]
 
 open CenteredMomentRectangle
-local notation "O" => ActualEisensteinCubic.O
+
 
 end SevenEighths.CenteredMomentSmooth
 end

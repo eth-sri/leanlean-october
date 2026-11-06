@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.Constant.High
 
@@ -18,20 +19,24 @@ namespace Erdos408.TwoSided.ConstHigh
 
 open Filter
 
+section
+variable {L a b e x Y D As B' G Nexp C₈ CW Z CNN JB : ℝ} (hx : 1 ≤ x) {d' M₁ E Cm : ℝ} (hx2 : 2 ≤ x) (hx0 : 0 < x) (hL1 : 1 ≤ Real.log x)
+
 /-- `L^a L^b ≤ L^e` for `L ≥ 1` and `a + b ≤ e`. -/
-theorem rpow_mul_rpow_le {L a b e : ℝ} (hL : 1 ≤ L) (h : a + b ≤ e) : L ^ a * L ^ b ≤ L ^ e := by
+theorem rpow_mul_rpow_le   (hL : 1 ≤ L) (h : a + b ≤ e) : L ^ a * L ^ b ≤ L ^ e := by
   rw [← Real.rpow_add (by linarith)]
   exact Real.rpow_le_rpow_of_exponent_le hL h
 
 /-- `(L^a)² = L^{2a}`. -/
-theorem rpow_sq_eq {L a : ℝ} (hL : 0 < L) : (L ^ a) ^ 2 = L ^ (2 * a) := by
+theorem rpow_sq_eq   (hL : 0 < L) : (L ^ a) ^ 2 = L ^ (2 * a) := by
   rw [← Real.rpow_natCast, ← Real.rpow_mul hL.le]
   norm_num
   ring_nf
 
+include hx hL1 in
 /-- The class bound in powers of `L`. -/
-theorem classBound_le_rpow {x D As B' G Nexp C₈ CW Z CNN JB : ℝ} (hx : 1 ≤ x)
-    (hL1 : 1 ≤ Real.log x) (hCNN : 0 ≤ CNN) (hJB : 0 ≤ JB)
+theorem classBound_le_rpow    
+      (hCNN : 0 ≤ CNN) (hJB : 0 ≤ JB)
     (hxC : x ^ (-(1 / 100 : ℝ)) ≤ Real.log x ^ (-G))
     (hxD : JB * x ^ (-(1 / 150 : ℝ)) ≤ Real.log x ^ (-G))
     (eA : -(2 * As) + 3 - D + 2 * CW ≤ -Z) (eB : -(2 * D) + 2 * C₈ - B' ≤ -Z)
@@ -41,7 +46,7 @@ theorem classBound_le_rpow {x D As B' G Nexp C₈ CW Z CNN JB : ℝ} (hx : 1 ≤
       (195 + 18 * (2304 + 629 + 65 * CNN)) * Real.log x ^ (-Z) := by
   set L := Real.log x with hL
   have hL0 : 0 < L := by linarith
-  have hLZ : 0 ≤ L ^ (-Z) := Real.rpow_nonneg hL0.le _
+  
   have hx0 : 0 < x := by linarith
   -- the ordinary times
   have h1 : (L ^ (-As)) ^ 2 * ((17 + 48 * L) * (3 * L ^ (-D) * (L ^ (CW + 1)) ^ 2)) ≤
@@ -88,7 +93,7 @@ theorem classBound_le_rpow {x D As B' G Nexp C₈ CW Z CNN JB : ℝ} (hx : 1 ≤
   have hD : JB * (L ^ C₈ * (24 / x ^ (1 / 300 : ℝ) + x ^ (-(1 / 150 : ℝ)))) ^ 2 ≤
       625 * L ^ (2 * C₈ - G) := by
     rw [mul_pow, rpow_sq_eq hL0, sub_eq_add_neg, Real.rpow_add hL0]
-    have hC8 : 0 ≤ L ^ (2 * C₈) := Real.rpow_nonneg hL0.le _
+    
     calc JB * (L ^ (2 * C₈) * (24 / x ^ (1 / 300 : ℝ) + x ^ (-(1 / 150 : ℝ))) ^ 2)
         ≤ JB * (L ^ (2 * C₈) * (625 * x ^ (-(1 / 150 : ℝ)))) := by gcongr
       _ = 625 * L ^ (2 * C₈) * (JB * x ^ (-(1 / 150 : ℝ))) := by ring
@@ -96,7 +101,7 @@ theorem classBound_le_rpow {x D As B' G Nexp C₈ CW Z CNN JB : ℝ} (hx : 1 ≤
       _ = 625 * (L ^ (2 * C₈) * L ^ (-G)) := by ring
   have hE : (17 + 48 * L) * (CNN * L ^ (-Nexp)) ≤ 65 * CNN * L ^ (1 - Nexp) := by
     have h65 : 17 + 48 * L ≤ 65 * L := by linarith
-    have hN0 : 0 ≤ CNN * L ^ (-Nexp) := mul_nonneg hCNN (Real.rpow_nonneg hL0.le _)
+    
     calc (17 + 48 * L) * (CNN * L ^ (-Nexp)) ≤ 65 * L * (CNN * L ^ (-Nexp)) := by gcongr
       _ = 65 * CNN * (L ^ (1 : ℝ) * L ^ (-Nexp)) := by rw [Real.rpow_one]; ring
       _ = 65 * CNN * L ^ (1 - Nexp) := by rw [← Real.rpow_add hL0]; ring_nf
@@ -118,11 +123,12 @@ theorem classBound_le_rpow {x D As B' G Nexp C₈ CW Z CNN JB : ℝ} (hx : 1 ≤
   linarith
 
 /-- `(L^a)^n = L^{na}`. -/
-theorem rpow_pow_eq {L a : ℝ} (hL : 0 < L) (n : ℕ) : (L ^ a) ^ n = L ^ (n * a) := by
+theorem rpow_pow_eq   (hL : 0 < L) (n : ℕ) : (L ^ a) ^ n = L ^ (n * a) := by
   rw [← Real.rpow_natCast, ← Real.rpow_mul hL.le, mul_comm]
 
+include hL1 in
 /-- The corner-error bound in powers of `L`. -/
-theorem errBound_le_rpow {x D CW d' M₁ E : ℝ} (hL1 : 1 ≤ Real.log x)
+theorem errBound_le_rpow    
     (e : -(5 * D) + 2 * d' + 2 * (CW + 1) + 1 ≤ -E) :
     errBound x (Real.log x ^ (-D)) (Real.log x ^ d') M₁ (Real.log x ^ (CW + 1)) ≤
       3888 * 258 * M₁ ^ 2 * Real.log x ^ (-E) := by
@@ -130,7 +136,7 @@ theorem errBound_le_rpow {x D CW d' M₁ E : ℝ} (hL1 : 1 ≤ Real.log x)
   have hL0 : 0 < L := by linarith
   rw [errBound, rpow_pow_eq hL0, rpow_sq_eq hL0, rpow_sq_eq hL0]
   have h1 : 66 + 192 * L ≤ 258 * L ^ (1 : ℝ) := by rw [Real.rpow_one]; linarith
-  have hM : 0 ≤ M₁ ^ 2 := sq_nonneg _
+  
   have h2 : L ^ ((5 : ℕ) * -D) * L ^ (2 * d') * L ^ (2 * (CW + 1)) * L ^ (1 : ℝ) ≤ L ^ (-E) := by
     simp only [← Real.rpow_add hL0]
     exact Real.rpow_le_rpow_of_exponent_le hL1 (by push_cast; linarith)
@@ -166,7 +172,7 @@ theorem total_le_rpow {x D As B' C₈ CNN Nexp JB CW d' M₀ M₁ Cm A₀ c₁ c
   have hc₁' : 0 ≤ c₁ := nonneg_of_mul_nonneg_left hc₁ (Real.rpow_pos_of_pos hL0 _)
   have hc₂' : 0 ≤ c₂ := nonneg_of_mul_nonneg_left hc₂ (Real.rpow_pos_of_pos hL0 _)
   -- the box bound
-  have hk0 : (0 : ℝ) ≤ k := Nat.cast_nonneg k
+  
   have hkk : (k : ℝ) * (k * classBound x (L ^ (-D)) (L ^ (-As)) (L ^ B') C₈ CNN Nexp JB
       (L ^ (CW + 1))) ≤ L ^ Cm * (L ^ Cm * (c₁ * L ^ (-(A₀ + 4 + 4 * D + 2 * d' + 2 * Cm)))) := by
     gcongr
@@ -198,7 +204,7 @@ theorem total_le_rpow {x D As B' C₈ CNN Nexp JB CW d' M₀ M₁ Cm A₀ c₁ c
           rw [mul_pow, rpow_pow_eq hL0]
           push_cast
           ring_nf
-  have hbB : 0 ≤ (8 * M₀ ^ 2 * c₁ + 2 * c₂) * L ^ (-(A₀ + 4 + 4 * D)) := by positivity
+  
   calc (I : ℝ) ^ 2 * ((I : ℝ) ^ 2 * boxBound x (L ^ (-D)) (L ^ (-As)) (L ^ B') C₈ CNN Nexp JB
         (L ^ (CW + 1)) (L ^ d') M₀ M₁ k)
       ≤ (I : ℝ) ^ 2 * (I : ℝ) ^ 2 * ((8 * M₀ ^ 2 * c₁ + 2 * c₂) * L ^ (-(A₀ + 4 + 4 * D))) := by
@@ -214,11 +220,11 @@ theorem total_le_rpow {x D As B' C₈ CNN Nexp JB CW d' M₀ M₁ Cm A₀ c₁ c
         ring
 
 /-- The growth facts in `L` alone used by S19. -/
-theorem eventually_constGrowth_log (Cm D G K : ℝ) (hK : 0 ≤ K) : ∀ᶠ L : ℝ in atTop,
+theorem eventually_constGrowth_log  Cm D G K  (hK : 0 ≤ K) : ∀ᶠ L : ℝ in atTop,
     4 ≤ L ∧ K * (L ^ (0.36 : ℝ) + L ^ (0.73 : ℝ) * Real.log L) + G * Real.log L ≤ L / 150 ∧
       (Cm + 2) * Real.log L + L ^ (0.36 : ℝ) ≤ L ^ (0.38 : ℝ) ∧
       L ^ (0.47 : ℝ) + Real.log 16 ≤ L ∧ D * Real.log L + Real.log 2 ≤ L ^ (0.27 : ℝ) := by
-  have hK1 : 0 < K + 1 := by linarith
+  
   filter_upwards [eventually_ge_atTop 4,
     IntegerKernel.eventually_rpow_le_mul_rpow (a := 0.36) (b := 1) (by norm_num)
       (ε := 1 / (600 * (K + 1))) (by positivity),
@@ -258,9 +264,7 @@ theorem eventually_constGrowth_log (Cm D G K : ℝ) (hK : 0 ≤ K) : ∀ᶠ L : 
   have hKabs : |K| = K := abs_of_nonneg hK
   refine ⟨hL4, ?_, ?_, ?_, ?_⟩
   · have e1 : K * L ^ (0.36 : ℝ) ≤ L / 600 := by
-      have := absorb K L (L ^ (0.36 : ℝ)) 600 (by norm_num) hL0.le
-        (by rw [hKabs]; exact h36)
-      rwa [hKabs] at this
+      grind
     have e2 : K * (L ^ (0.73 : ℝ) * Real.log L) ≤ L / 600 := by
       have h73 : L ^ (0.73 : ℝ) * Real.log L ≤ L ^ (0.74 : ℝ) := by
         calc L ^ (0.73 : ℝ) * Real.log L ≤ L ^ (0.73 : ℝ) * (1 * L ^ (0.01 : ℝ)) :=
@@ -268,9 +272,7 @@ theorem eventually_constGrowth_log (Cm D G K : ℝ) (hK : 0 ≤ K) : ∀ᶠ L : 
           _ = L ^ (0.74 : ℝ) := by
               rw [one_mul, ← Real.rpow_add hL0]
               norm_num
-      have := absorb K L (L ^ (0.73 : ℝ) * Real.log L) 600 (by norm_num) hL0.le
-        (by rw [hKabs]; exact h73.trans h74)
-      rwa [hKabs] at this
+      grind
     have e3 : G * Real.log L ≤ L / 600 := by
       have := absorb G L (Real.log L) 600 (by norm_num) hL0.le hlogG
       exact (mul_le_mul_of_nonneg_right (le_abs_self G) hlog0).trans this
@@ -332,9 +334,10 @@ theorem eventually_constScales (Cm D G K B' : ℝ) (hK : 0 ≤ K) : ∀ᶠ x : �
     rw [this]
     exact mul_le_mul_of_nonneg_right hB (Real.rpow_nonneg hL0.le _)
 
+include hx2 hL1 in
 /-- The scale facts of package E at `Y ∈ [x e^{L^{0.38}}, x e^{L^{0.47}}]` and
 `T₀ = x L^{C_m + 2}`. -/
-theorem time_scales {x Y Cm : ℝ} (hx2 : 2 ≤ x) (hL1 : 1 ≤ Real.log x)
+theorem time_scales      
     (h38 : Real.log x ^ (Cm + 2) * Real.exp (Real.log x ^ (0.36 : ℝ)) ≤
       Real.exp (Real.log x ^ (0.38 : ℝ)))
     (h47 : 16 * Real.exp (Real.log x ^ (0.47 : ℝ)) ≤ x)
@@ -358,7 +361,7 @@ theorem time_scales {x Y Cm : ℝ} (hx2 : 2 ≤ x) (hL1 : 1 ≤ Real.log x)
   have hx3 : 2 * x ^ 2 ≤ x ^ 3 := by
     have : 2 * x ^ 2 ≤ x * x ^ 2 := mul_le_mul_of_nonneg_right hx2 (sq_nonneg x)
     linarith [show x * x ^ 2 = x ^ 3 by ring]
-  have hx21 : 4 ≤ x ^ 2 := by nlinarith
+  
   have hLC : 0 ≤ L ^ (Cm + 2) := Real.rpow_nonneg hL0.le _
   have hT : x * L ^ (Cm + 2) * Real.exp (L ^ (0.36 : ℝ)) ≤ Y := by
     calc x * L ^ (Cm + 2) * Real.exp (L ^ (0.36 : ℝ)) =
@@ -374,7 +377,7 @@ theorem time_scales {x Y Cm : ℝ} (hx2 : 2 ≤ x) (hL1 : 1 ≤ Real.log x)
   linarith
 
 /-- The grid step `δ = L^{-D}`: `δ ≤ 1/2`, `δ e^{L^{0.27}}/2 ≥ 1` and `δ x ≥ 4`. -/
-theorem grid_scales {x D : ℝ} (hL4 : 4 ≤ Real.log x) (hD : 1 ≤ D)
+theorem grid_scales   (hL4 : 4 ≤ Real.log x) (hD : 1 ≤ D)
     (h27 : 2 * Real.log x ^ D ≤ Real.exp (Real.log x ^ (0.27 : ℝ)))
     (h4D : 4 * Real.log x ^ D ≤ x) :
     0 < Real.log x ^ (-D) ∧ Real.log x ^ (-D) ≤ 1 / 2 ∧
@@ -396,16 +399,17 @@ theorem grid_scales {x D : ℝ} (hL4 : 4 ≤ Real.log x) (hD : 1 ≤ D)
   · rw [hδdef, ← div_eq_inv_mul, le_div_iff₀ hLD]
     linarith
 
+include hx0 hL1 in
 /-- The grid of `I = ⌈3L^{1+D}⌉` steps `δ = L^{-D}` reaches `x³ - 1 ≥ 2Y`, and
 `I ≤ 4L^{1+D}`. -/
-theorem grid_reach {x Y D : ℝ} (hx0 : 0 < x) (hL1 : 1 ≤ Real.log x) (hD : 0 ≤ D)
+theorem grid_reach       (hD : 0 ≤ D)
     (hY : 2 * Y + 1 ≤ x ^ 3) :
     (⌈3 * Real.log x ^ (1 + D)⌉₊ : ℝ) ≤ 4 * Real.log x ^ (1 + D) ∧
       2 * Y ≤ grid (Real.log x ^ (-D)) ⌈3 * Real.log x ^ (1 + D)⌉₊ := by
   set L := Real.log x with hL
   have hL0 : 0 < L := by linarith
   set I := ⌈3 * L ^ (1 + D)⌉₊ with hIdef
-  have hLD : 0 < L ^ D := Real.rpow_pos_of_pos hL0 D
+  
   have hLD1 : L ^ (1 + D) = L * L ^ D := by rw [Real.rpow_add hL0, Real.rpow_one]
   refine ⟨?_, ?_⟩
   · have h1 := Nat.ceil_lt_add_one (show (0 : ℝ) ≤ 3 * L ^ (1 + D) by positivity)
@@ -426,6 +430,8 @@ theorem grid_reach {x Y D : ℝ} (hx0 : 0 < x) (hL1 : 1 ≤ Real.log x) (hD : 0 
     have h4 := Nat.lt_floor_add_one (Real.exp (I * L ^ (-D)))
     rw [grid]
     linarith
+
+end
 
 open scoped Classical in
 /-- **S19 at fixed `x`, in powers of `L`.** `integral_twistedPoly_const_le` with

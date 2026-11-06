@@ -11,35 +11,38 @@ open scoped Classical SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-abbrev SelectedSlot {K : ℕ} (J : Finset (Fin K)) := ↥(Finset.univ\J)
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
-def compensationSubsetWeight {K : ℕ} (η : HeckeFamily.Character)
-    (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ) (p : Fin K→O) (J : Finset (Fin K)) : ℂ :=
+abbrev SelectedSlot {K } (J : Finset (Fin K)) := ↥(Finset.univ\J)
+
+def compensationSubsetWeight {K } (η : HeckeFamily.Character)
+    (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ) (p : Fin K→ActualEisensteinCubic.O) (J : Finset (Fin K))  :=
   compensationSubsetCoefficient η p J*(∏i∈J,W i (elementNorm (p i)/P i))
 
-def selectedSlotFactor {K : ℕ} (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ)
-    (p : Fin K→O) (J : Finset (Fin K)) (t : ℝ) : ℂ :=
+def selectedSlotFactor {K } (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ)
+    (p : Fin K→ActualEisensteinCubic.O) (J : Finset (Fin K)) (t : ℝ)  :=
   ∏i : SelectedSlot J,W i.val (elementNorm (p i.val)/P i.val)*
     logPhase (-t) (Real.log (elementNorm (p i.val)/P i.val))
 
-def compensationRowTest {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (p : Fin K→O) (J : Finset (Fin K)) (X Y T t : ℝ) : ℂ :=
+def compensationRowTest {K } (η : HeckeFamily.Character) (C : CalibrationData)
+    (W0 W1 : ℝ→ℂ) (p : Fin K→ActualEisensteinCubic.O) (J : Finset (Fin K)) (X Y T t : ℝ)  :=
   ∑'r : PhysicalRowIndex,
     physicalRowWeight C W0 W1 (X/elementNorm (slotProduct p J)) (Y/elementNorm (slotProduct p J)) r*
       correctedCompletedT C.excluded (Ideal.span {slotProduct p (Finset.univ\J)})
         (physicalRowMonoid η C r) (CompletedHeight.normTwistedSource gaussianFixedWindow t) T
 
-lemma gaussian_slot_window_split {K : ℕ} (W : Fin K→ℝ→ℂ) (q : Fin K→ℝ) (J : Finset (Fin K)) :
+section
+variable {K : ℕ}
+
+lemma gaussian_slot_window_split   (W : Fin K→ℝ→ℂ) (q : Fin K→ℝ)  J  :
     (∏i,W i (q i))=(∏i∈J,W i (q i))*(∏i : SelectedSlot J,W i.val (q i.val)) := by
   rw [Finset.prod_coe_sort (Finset.univ\J) (fun i=>W i (q i))]
   have hh := Finset.prod_sdiff (Finset.subset_univ J) (f:=fun i=>W i (q i))
   simpa only [mul_comm] using hh.symm
 
-lemma gaussian_compensation_scale {K : ℕ} (P : Fin K→ℝ) (hP : ∀i,0<P i)
-    (p : Fin K→O) (J : Finset (Fin K)) (Z : ℝ) :
+lemma gaussian_compensation_scale   (P : Fin K→ℝ) (hP : ∀i,0<P i)
+     p   J   Z  :
     (Z*∏i∈Finset.univ\J,P i)*(∏i : SelectedSlot J,elementNorm (p i.val)/P i.val)=
       Z*elementNorm (slotProduct p (Finset.univ\J)) := by
   rw [←Finset.prod_coe_sort (Finset.univ\J) P]
@@ -47,7 +50,7 @@ lemma gaussian_compensation_scale {K : ℕ} (P : Fin K→ℝ) (hP : ∀i,0<P i)
     (fun i : SelectedSlot J=>elementNorm (p i.val)) (fun i=>hP i.val)]
   rw [Finset.prod_coe_sort (Finset.univ\J) (fun i=>elementNorm (p i)),elementNorm_slotProduct]
 
-theorem compensation_subset_common {K : ℕ} {α : Type*}
+theorem compensation_subset_common   {α : Type*}
     (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ)
     (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
     (hsep : ∀R : ℝ,0<R→∀x : ℝ,0<x→∀q : SelectedSlot J→ℝ,(∀i,0<q i)→
@@ -56,8 +59,8 @@ theorem compensation_subset_common {K : ℕ} {α : Type*}
           (∏i,W i.val (q i)*logPhase (-t) (Real.log (q i)))*gaussianJointDensity V hV R t)
     (η : HeckeFamily.Character) (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
-    (F : Finset α) (p : α→Fin K→O) (hp : ∀k∈F,∀i,p k i≠0)
-    (P : Fin K→ℝ) (hP : ∀i,0<P i) (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+    (F : Finset α) (p : α→Fin K→ActualEisensteinCubic.O) (hp : ∀k∈F,∀i,p k i≠0)
+     P  (hP : ∀i,0<P i)  X Y Z  (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     (∑k∈F,(∏i,W i (elementNorm (p k i)/P i))*compensationSubsetProbe η C W0 W1 (p k) J X Y Z)=
       ∑'j : ℕ,∫t : ℝ,(∑k∈F,compensationSubsetWeight η W P (p k) J*
         compensationRowTest η C W0 W1 (p k) J X Y ((2:ℝ)^j) t*
@@ -86,6 +89,8 @@ theorem compensation_subset_common {K : ℕ} {α : Type*}
       unfold compensationSubsetProbe compensationSubsetWeight
       ring
     _ = _ := hh
+
+end
 
 end SevenEighths.ProbePhysical
 end

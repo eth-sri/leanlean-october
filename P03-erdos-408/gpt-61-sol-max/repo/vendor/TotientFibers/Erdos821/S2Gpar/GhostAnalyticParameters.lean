@@ -1,11 +1,12 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.AnalyticParametersTasks
 public import Erdos821.S34.ScaleGrowth
 
 @[expose] public section
 
-noncomputable section
+section
 open Filter
 open scoped BigOperators
 
@@ -21,38 +22,22 @@ theorem eventually_N_plus_one_le_half_exp (F : FixedData) :
     1 F.c (1 / 10) hc (by norm_num : (0 : ℝ) < 1 / 10)
   have hscale : ∀ᶠ x : ℝ in atTop,
       (L x) ^ (1 : ℝ) ≤ (1 / 10) * Real.exp ((L x) ^ F.c) := by
-    filter_upwards [hscale₀] with x hx
-    simpa [Erdos821.Blueprint.Analytic.L, Erdos821.Blueprint.Graph.L] using hx
+    assumption
   have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
   filter_upwards [hscale, hL.eventually_ge_atTop 1] with x hx hLx
   have hLpow : (L x) ^ (1 : ℝ) = L x := Real.rpow_one _
-  have hscale' : L x ≤ (1 / 10) * Real.exp ((L x) ^ F.c) := by
-    simpa only [hLpow] using hx
+  
   have hpow₀ : (L x) ^ ((52 : ℝ) / 100) ≤ (L x) ^ (1 : ℝ) :=
     Real.rpow_le_rpow_of_exponent_le hLx (by norm_num : (52 : ℝ) / 100 ≤ 1)
-  have hpow : (L x) ^ ((52 : ℝ) / 100) ≤ L x := by
-    simpa only [Real.rpow_one] using hpow₀
+  
   have hceil : (R x : ℝ) < (L x) ^ ((52 : ℝ) / 100) + 1 := by
     dsimp [R]
     exact Nat.ceil_lt_add_one (Real.rpow_nonneg (by linarith) _)
-  have hR : (R x : ℝ) ≤ L x + 1 := by
-    calc
-      (R x : ℝ) ≤ (L x) ^ ((52 : ℝ) / 100) + 1 := hceil.le
-      _ ≤ L x + 1 := by simpa [add_comm] using add_le_add_right hpow 1
+  
   have hN : (N x : ℝ) + 1 ≤ 5 * L x := by
     dsimp [N]
-    push_cast
-    calc
-      2 * (R x : ℝ) + 1 ≤ 2 * (L x + 1) + 1 := by
-        gcongr
-      _ ≤ 5 * L x := by nlinarith [hLx]
-  calc
-    (N x : ℝ) + 1 ≤ 5 * L x := hN
-    _ ≤ (1 / 2) * Real.exp ((L x) ^ F.c) := by
-      calc
-        5 * L x ≤ 5 * ((1 / 10) * Real.exp ((L x) ^ F.c)) :=
-          mul_le_mul_of_nonneg_left hscale' (by norm_num)
-        _ = (1 / 2) * Real.exp ((L x) ^ F.c) := by ring
+    grind
+  grind
 
 theorem baselinePrime_ge_half_of_scale
     (F : FixedData) (x : ℝ) (p : ℕ)
@@ -79,15 +64,10 @@ theorem baselinePrime_ge_half_of_scale
   have hN' : ((N x + 1 : ℕ) : ℝ) ≤ (1 / 2) * Real.exp ((L x) ^ F.c) := by
     simpa only [Nat.cast_add, Nat.cast_one] using hN
   have hpHalf : ((N x + 1 : ℕ) : ℝ) ≤ (p : ℝ) / 2 := by
-    calc
-      ((N x + 1 : ℕ) : ℝ) ≤ Real.exp ((L x) ^ F.c) / 2 := by nlinarith [hN']
-      _ ≤ (p : ℝ) / 2 := div_le_div_of_nonneg_right hp (by norm_num)
+    linarith
   have hinvprod : (p : ℝ)⁻¹ * ((N x + 1 : ℕ) : ℝ) ≤ 1 / 2 := by
     have hmul := mul_le_mul_of_nonneg_left hpHalf (inv_nonneg.mpr hppos.le)
-    have heq : (p : ℝ)⁻¹ * ((p : ℝ) / 2) = 1 / 2 := by
-      field_simp [ne_of_gt hppos]
-    rw [heq] at hmul
-    exact hmul
+    grind
   have hprod :
       (p : ℝ)⁻¹ * (∑ i : Fin (N x + 1), eta F (N x) i) ≤ 1 / 2 := by
     calc
@@ -119,7 +99,7 @@ theorem GhostAnalyticParametersTask_proof :
   refine ⟨Cv, hCv, x₀, ?_⟩
   intro x hx P hP
   rcases hx₀ x hx with ⟨hxexp, hN⟩
-  have hxpos : 0 < x := (Real.exp_pos 1).trans_le hxexp
+  
   have hL : 1 ≤ L x := by
     have hlog := Real.log_le_log (Real.exp_pos 1) hxexp
     simpa only [L, Real.log_exp] using hlog
@@ -131,17 +111,11 @@ theorem GhostAnalyticParametersTask_proof :
     exact ⟨lt_of_lt_of_le F.vMin_pos hlo, hhi⟩
   have hBaselineHalf : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
       (1 / 2 : ℝ) ≤ baselinePrime F (N x) p.val := by
-    intro g p
-    have hrange := hPrime g.val p.val p.property
-    rw [g.property] at hrange
-    have hpLower : Real.exp ((L x) ^ F.c) ≤ (p.val : ℝ) := hrange.1
-    have hpPos : 0 < (p.val : ℝ) := by
-      exact_mod_cast (P.prime g.val p.val p.property).pos
-    exact baselinePrime_ge_half_of_scale F x p.val hL hN hpLower hpPos
+    grind [Real.exp, L, baselinePrime_ge_half_of_scale]
   have hBaseline : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
       0 < baselinePrime F (N x) p.val := by
     intro g p
-    exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1 / 2) (hBaselineHalf g p)
+    grind
   refine ⟨hVpos, ?_, ?_, ?_⟩
   · exact hBaseline
   · intro g
@@ -157,9 +131,7 @@ theorem GhostAnalyticParametersTask_proof :
         have hbase := hBaselineHalf g p
         have hden : P.V g.val * (p.val : ℝ) * (1 / 2) ≤
             P.V g.val * (p.val : ℝ) * baselinePrime F (N x) p.val := by
-          have hmul := mul_le_mul_of_nonneg_left hbase
-            (mul_nonneg hVg.le hpPos.le)
-          simpa [mul_assoc] using hmul
+          bound
         have hminPos : 0 < P.V g.val * (p.val : ℝ) * (1 / 2) := by positivity
         have hmaxPos : 0 < P.V g.val * (p.val : ℝ) *
             baselinePrime F (N x) p.val := by positivity

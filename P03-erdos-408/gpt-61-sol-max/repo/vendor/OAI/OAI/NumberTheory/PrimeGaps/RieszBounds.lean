@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.PrincipalGrowth
 
@@ -10,7 +11,7 @@ namespace LargePrimeGaps
 
 open Complex Filter Topology
 
-noncomputable def logRiesz (f : ℂ → ℂ) (s : ℂ) : ℂ := (-deriv f s / f s)/(s*(s+1))
+noncomputable def logRiesz (f : ℂ → ℂ) (s : ℂ)  := (-deriv f s / f s)/(s*(s+1))
 
 lemma near_line_denominator {z w : ℂ} {r : ℝ} (hz : 1 ≤  z.re) (hr : r ≤ 1/4)
     (hw : w∈Metric.closedBall z r) :
@@ -46,11 +47,15 @@ lemma near_line_denominator {z w : ℂ} {r : ℝ} (hz : 1 ≤  z.re) (hr : r ≤
   have hp := mul_le_mul ha' hb' (by positivity : 0 ≤ |z.im|+2) (by positivity : 0 ≤ 4*‖w‖)
   nlinarith
 
-lemma logRiesz_local {f : ℂ → ℂ} {z : ℂ} {r m M : ℝ}
-    (hr : 0 < r) (hr1 : r ≤ 1/4) (hm : 0 < m) (hM : 0 ≤ M) (hz : 1 ≤  z.re)
-    (hf : ∀ w∈Metric.closedBall z r,AnalyticAt ℂ f w)
-    (hb : ∀ w∈Metric.closedBall z r,‖deriv f w‖ ≤ M)
-    (hl : m ≤ ‖f z‖) (hMr : M*r ≤ m/2) :
+section
+variable {f : ℂ → ℂ} {z : ℂ} {r m M P W c K d : ℝ} (n : ℕ) (hr : 0 < r) (hr1 : r ≤ 1/4) (hm : 0 < m) (hM : 0 ≤ M) (hP : 1 ≤ P) (hW : 0 < W) (hc : 0 < c) (hK : 0 < K) (hd : 0 < d) (hd1 : d ≤ 1/4) (hKd : K*d ≤ c/2) (hz : 1 ≤  z.re) (hf : ∀ w∈Metric.closedBall z r,AnalyticAt ℂ f w) (hb : ∀ w∈Metric.closedBall z r,‖deriv f w‖ ≤ M) (hl : m ≤ ‖f z‖) (hMr : M*r ≤ m/2)
+
+include hr hr1 hm hM hz hf hb hl hMr in
+lemma logRiesz_local      
+             
+     
+     
+        :
     (∀ w∈Metric.closedBall z r,f w≠0) ∧
       DiffContOnCl ℂ (logRiesz f) (Metric.ball z r) ∧
       ∀ w∈Metric.closedBall z r,‖logRiesz f w‖ ≤ (32*M/m)/(|z.im|+2)^2 := by
@@ -63,8 +68,7 @@ lemma logRiesz_local {f : ℂ → ℂ} {z : ℂ} {r m M : ℝ}
     have ht := norm_add_le (f z-f w) (f w)
     rw [sub_add_cancel] at ht
     linarith
-  have hne (w : ℂ) (hw : w∈Metric.closedBall z r) : f w≠0 := by
-    exact norm_pos_iff.mp ((by positivity : 0 < m/2).trans_le (hlo w hw))
+  have hne (w : ℂ) (hw : w∈Metric.closedBall z r) : f w≠0 := norm_pos_iff.mp ((by positivity : 0 < m/2).trans_le (hlo w hw))
   refine ⟨hne,?_,?_⟩
   · apply DifferentiableOn.diffContOnCl
     rw [closure_ball _ hr.ne']
@@ -87,27 +91,28 @@ lemma logRiesz_local {f : ℂ → ℂ} {z : ℂ} {r m M : ℝ}
       _  ≤  (2*M/m)*(16/(|z.im|+2)^2) := mul_le_mul hb₀ hb₁ (by positivity) (by positivity)
       _ = _ := by ring
 
-lemma logRiesz_iteratedDeriv_bound {f : ℂ → ℂ} {z : ℂ} {r m M : ℝ}
-    (n : ℕ) (hr : 0 < r) (hr1 : r ≤ 1/4) (hm : 0 < m) (hM : 0 ≤ M) (hz : 1 ≤  z.re)
-    (hf : ∀ w∈Metric.closedBall z r,AnalyticAt ℂ f w)
-    (hb : ∀ w∈Metric.closedBall z r,‖deriv f w‖ ≤ M)
-    (hl : m ≤ ‖f z‖) (hMr : M*r ≤ m/2) :
+include hr hr1 hm hM hz hf hb hl hMr in
+lemma logRiesz_iteratedDeriv_bound      
+               
+     
+     
+        :
     ‖iteratedDeriv n (logRiesz f) z‖ ≤ (n.factorial:ℝ)*((32*M/m)/(|z.im|+2)^2)/r^n := by
   have hh := logRiesz_local hr hr1 hm hM hz hf hb hl hMr
   exact Complex.norm_iteratedDeriv_le_of_forall_mem_sphere_norm_le n hr hh.2.1
     (fun w hw => hh.2.2 w (Metric.sphere_subset_closedBall hw))
 
-lemma logRiesz_power_bound {f : ℂ → ℂ} {z : ℂ} {P W c K d : ℝ} (n : ℕ)
-    (hP : 1 ≤ P) (hW : 0 < W) (hc : 0 < c) (hK : 0 < K) (hd : 0 < d)
-    (hd1 : d ≤ 1/4) (hKd : K*d ≤ c/2) (hz : 1 ≤ z.re)
+include hP hW hc hK hd hd1 hKd hz in
+lemma logRiesz_power_bound        
+             
+         
     (hf : ∀ w∈Metric.closedBall z (d/P^2), AnalyticAt ℂ f w)
     (hb : ∀ w∈Metric.closedBall z (d/P^2), ‖deriv f w‖ ≤ K*W*P)
     (hl : c*W/P ≤ ‖f z‖) :
     ‖iteratedDeriv n (logRiesz f) z‖ ≤
       ((n.factorial:ℝ)*(32*K/c)/d^n)*P^(2*n+2)/(|z.im|+2)^2 := by
   have hP0 : 0 < P := by linarith
-  have hr1 : d/P^2 ≤ 1/4 := by
-    apply (div_le_self hd.le (one_le_pow₀ hP)).trans hd1
+  have hr1 : d/P^2 ≤ 1/4 := (div_le_self hd.le (one_le_pow₀ hP)).trans hd1
   have hMr : (K*W*P)*(d/P^2) ≤ (c*W/P)/2 := by
     calc
       _ = (K*d)*W/P := by field_simp
@@ -137,7 +142,7 @@ lemma near_strip_geometry {σ t d P η : ℝ} (hσ : 1 ≤ σ) (hσ2 : σ ≤ 2)
     one_mul,sub_self,zero_add,add_zero,abs_of_nonneg (by linarith : 0 ≤ σ)] at hnz
   constructor <;> linarith [abs_nonneg t]
 
-lemma nonprincipal_logRiesz_bound (n : ℕ) :
+lemma nonprincipal_logRiesz_bound   :
     ∃ D : ℝ, 0 < D ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q),
       χ.IsPrimitive → χ≠1 → ∀ σ t : ℝ, 1 ≤ σ → σ ≤ 2 →
         ‖iteratedDeriv n (logRiesz χ.LFunction) (σ+I*t)‖ ≤
@@ -145,10 +150,7 @@ lemma nonprincipal_logRiesz_bound (n : ℕ) :
   let ε : ℝ := 1/(4*(n+1:ℕ))
   have hε : 0 < ε := by dsimp [ε]; positivity
   have hε1 : ε ≤ 1 := by
-    dsimp [ε]
-    apply (div_le_one (by positivity : 0 < 4*((n+1:ℕ):ℝ))).mpr
-    have hn : (1:ℝ) ≤ (n+1:ℕ) := by exact_mod_cast (Nat.succ_pos n)
-    linarith
+    bound
   obtain ⟨c,hc,hl⟩ := nonprincipal_strip_lower hε hε1
   obtain ⟨K₀,hK₀,hb⟩ := LFunction_deriv_norm_small_power (by linarith : 0 < ε/2) (by linarith : ε/2 ≤ 1/2)
   let K := K₀*3^ε
@@ -210,6 +212,8 @@ lemma nonprincipal_logRiesz_bound (n : ℕ) :
     norm_num
   field_simp
   rw [←ht]
+
+end
 
 end LargePrimeGaps
 

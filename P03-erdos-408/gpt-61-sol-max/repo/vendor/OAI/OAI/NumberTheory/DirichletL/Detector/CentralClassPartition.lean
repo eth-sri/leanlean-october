@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.CentralClassArithmetic
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorAmplitudeFirst
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorClassBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -23,25 +24,28 @@ lemma sum_amplitudeRows {Slot : Type*} (rows : Finset FreeRow) (slots : Finset S
       (Finset.univ : Finset (BinLabel slots cap mesh)) := by simp
   exact (Finset.sum_fiberwise_of_maps_to hmap f).symm
 
-lemma cubeArithmeticSum_amplitude_partition {N : ℕ} {Slot : Type*}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (rows : Finset FreeRow) (T : Fin N→Finset ProbePhysical.PrimeIdeal)
-    (hT : ∀j P,P∈T j→P.val∉S) (W : Fin N→ℝ→ℂ) (Yp : Fin N→ℝ)
-    (a e : ℝ) (t : HeightSpace) (slots : Finset Slot) (U cap mesh : ℝ)
-    (hm : 0<mesh) (widths : Slot→ℝ) (Q : FreeRow→Slot→ℂ) :
+section
+variable {N : ℕ} {Slot : Type*} (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) (η : Character) (rows : Finset FreeRow) (T : Fin N→Finset ProbePhysical.PrimeIdeal) (hT : ∀j P,P∈T j→P.val∉S) (W : Fin N→ℝ→ℂ) (Yp : Fin N→ℝ) (a e : ℝ) (t : HeightSpace) (slots : Finset Slot) (U cap mesh : ℝ) (hm : 0<mesh)
+include N Slot S hS hmax η rows T hT W Yp a e t slots U cap mesh hm
+
+lemma cubeArithmeticSum_amplitude_partition    
+         
+         
+         
+           
+       widths   Q  :
     cubeArithmeticSum S hS hmax η rows T hT W Yp a e t=
       ∑bin : BinLabel slots cap mesh,cubeArithmeticSum S hS hmax η
         (amplitudeRows rows slots U cap mesh hm widths Q bin) T hT W Yp a e t := by
-  unfold cubeArithmeticSum
-  exact sum_amplitudeRows rows slots U cap mesh hm widths Q _
+  solve_by_elim [sum_amplitudeRows]
 
-theorem cubeArithmeticSum_class_uniform {N : ℕ} {Slot : Type*}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (rows : Finset FreeRow) (T : Fin N→Finset ProbePhysical.PrimeIdeal)
-    (hT : ∀j P,P∈T j→P.val∉S) (W : Fin N→ℝ→ℂ) (Yp : Fin N→ℝ)
-    (a e : ℝ) (t : HeightSpace) (slots : Finset Slot) (U cap mesh : ℝ)
-    (hm : 0<mesh) (hcap : cap≤1/2) (widths : Slot→ℝ) (Q : FreeRow→Slot→ℂ)
-    (A : ℝ) (hA : 0≤A)
+theorem cubeArithmeticSum_class_uniform    
+         
+         
+         
+           
+      (hcap : cap≤1/2) (widths : Slot→ℝ) (Q : FreeRow→Slot→ℂ)
+     A  (hA : 0≤A)
     (hclass : ∀bin : BinLabel slots cap mesh,
       (amplitudeRows rows slots U cap mesh hm widths Q bin).Nonempty →
       ‖cubeArithmeticSum S hS hmax η (amplitudeRows rows slots U cap mesh hm widths Q bin)
@@ -62,8 +66,10 @@ theorem cubeArithmeticSum_class_uniform {N : ℕ} {Slot : Type*}
     _ ≤ _ := by
       apply mul_le_mul_of_nonneg_right _ hA
       exact_mod_cast HeckeDetectorClassBudget.bin_card_le slots cap mesh hcap hm
-end SevenEighths.ProbeHighRowFamily
 
 end
+end SevenEighths.ProbeHighRowFamily
+
+
 
 end OAI

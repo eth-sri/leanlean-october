@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.AmplifiedRetainedRadius
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplifiedRetainedRadius
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonRadiusSaving
@@ -16,9 +17,12 @@ open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
 open CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
 open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstCanonicalFamily
 open CenteredMomentRankinRadical ConcreteTraceCRT ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
 
-theorem common_saving_identity (c d x w q wo B sigma branch delta reserve ell : ℝ) :
+
+section
+variable (c d x w q wo B l sigma branch delta reserve ell : ℝ) (hc : 0≤c) (hw : 0≤w) (hq : 0≤q) (hwo : 0≤wo) (hB : 0≤B) (hallow : 3*c-5*d≤6*B+q)
+
+theorem common_saving_identity   :
     firstSaving c (d+x) w q wo B
       (x+max (d-c-2*w+wo) 0+branch*sigma+delta+reserve) ell =
       c/6+5*d/6+w/3+q/6+wo+B-5*max (d-c-2*w+wo) 0/6-
@@ -26,38 +30,34 @@ theorem common_saving_identity (c d x w q wo B sigma branch delta reserve ell : 
   unfold firstSaving
   ring
 
-theorem common_saving_lower (c d x w q wo B sigma branch delta reserve ell : ℝ)
-    (hc : 0≤c) (hw : 0≤w) (hq : 0≤q) (hwo : 0≤wo) (hB : 0≤B)
-    (hallow : 3*c-5*d≤6*B+q) :
+include hc hw hq hwo hB hallow in
+theorem common_saving_lower  
+             
+      :
     2*(c+w)/3-max (w/3-wo) 0-5*branch*sigma/6-5*(delta+reserve)/6+ell≤
       firstSaving c (d+x) w q wo B
         (x+max (d-c-2*w+wo) 0+branch*sigma+delta+reserve) ell := by
-  rw [common_saving_identity]
-  have hm0 := le_max_right (w/3-wo) (0:ℝ)
-  have hm1 := le_max_left (w/3-wo) (0:ℝ)
-  by_cases h : 0≤d-c-2*w+wo
-  · rw [max_eq_left h]
-    linarith
-  · rw [max_eq_right (le_of_not_ge h)]
-    linarith
+  grind [common_saving_identity]
 
-theorem main_saving_lower (c d x q B sigma delta reserve : ℝ)
-    (hc : 0≤c) (hq : 0≤q) (hB : 0≤B) (hallow : 3*c-5*d≤6*B+q) :
+include hc hq hB hallow in
+theorem main_saving_lower  
+            :
     2*c/3-4*sigma/3-5*(delta+reserve)/6≤
       firstSaving c (d+x) 0 q 0 B
         (x+max (d-c) 0+2*sigma+delta+reserve) (sigma/3) := by
   have hh := common_saving_lower c d x 0 q 0 B sigma 2 delta reserve (sigma/3)
     hc (by norm_num) hq (by norm_num) hB hallow
-  norm_num only [zero_div,sub_zero,add_zero,mul_zero,max_self] at hh
-  linarith
+  grind
 
-theorem error_penalty_le (l sigma : ℝ) (hl : 0≤l) (hu : l≤sigma/3)
+theorem error_penalty_le   (hl : 0≤l) (hu : l≤sigma/3)
     (k : ℕ) (hk : k=1 ∨ k=6 ∨ k=7) :
     max (((k:ℝ)*l)/3-(if k=6 then 0 else l)) 0≤2*sigma/3 := by
   rcases hk with rfl|rfl|rfl <;> norm_num only [Nat.cast_ofNat,ite_false,ite_true,
     one_mul,sub_zero] <;> apply max_le <;> linarith
 
-theorem error_saving_lower (c d x q B sigma delta reserve l : ℝ)
+end
+
+theorem error_saving_lower  c d x q B sigma delta reserve l 
     (hc : 0≤c) (hq : 0≤q) (hB : 0≤B) (hallow : 3*c-5*d≤6*B+q)
     (hl : 0≤l) (hu : l≤sigma/3) (k : ℕ) (hk : k=1 ∨ k=6 ∨ k=7) :
     2*(c+(k:ℝ)*l)/3-3*sigma/2-5*(delta+reserve)/6≤
@@ -71,24 +71,31 @@ theorem error_saving_lower (c d x q B sigma delta reserve l : ℝ)
   simp only [one_mul,add_zero] at hh
   linarith [error_penalty_le l sigma hl hu k hk]
 
-theorem main_radius_gain (Z d K0 c sigma delta reserve j : ℝ) (hZ : 1<Z) :
+section
+variable (Z d K0 c sigma delta reserve j : ℝ) (hZ : 1<Z)
+
+include hZ in
+theorem main_radius_gain     :
     Real.logb Z (mainCommonRadius Z d K0 c sigma delta reserve)-j=
       (K0-j)+max (d-c) 0+2*sigma+delta+reserve := by
   rw [mainCommonRadius,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne']
   ring
 
-theorem error_radius_gain (Z d K0 c sigma delta reserve j : ℝ) (hZ : 1<Z)
-    (p : O) (k : ℕ) :
+include hZ in
+theorem error_radius_gain    
+     p   k  :
     Real.logb Z (errorCommonRadius Z d K0 c sigma delta reserve p k)-j=
       (K0-j)+max (d-c-2*errorRemoval p Z k+errorMoving p Z k) 0+
         sigma+delta+reserve := by
   rw [errorCommonRadius,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne']
   ring
 
+end
+
 open CenteredMomentFirstScale
 
 end SevenEighths.CenteredMomentCommonRadiusSaving
 
-end
+
 
 end OAI

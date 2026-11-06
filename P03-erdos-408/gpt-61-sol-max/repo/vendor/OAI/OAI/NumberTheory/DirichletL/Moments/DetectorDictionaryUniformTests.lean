@@ -14,24 +14,24 @@ namespace SevenEighths.CenteredMomentDetectorDictionary
 open HeckeInverseAmplification HeckeDyadic HeckeDetectorCoefficientTransfer
 open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 
-lemma twistProfile_zero (W : ℝ→ℂ) : twistProfile W 0 0=W := by
+lemma twistProfile_zero  W  : twistProfile W 0 0=W := by
   funext x
   simp [twistProfile,HeckeDyadic.shift]
 
-lemma oriented_detector_log_support (reverse : Bool) (n : ℕ) :
+lemma oriented_detector_log_support  reverse   n  :
     Function.support (orientedProfile reverse ((logProfile^[n]) positiveAnnular))⊆Icc (1/4) (9/4) := by
   simpa only [twistProfile_zero] using detector_profile_support reverse n 0 0
 
-lemma oriented_detector_log_smooth (reverse : Bool) (n : ℕ) :
+lemma oriented_detector_log_smooth  reverse   n  :
     ContDiff ℝ ∞ (orientedProfile reverse ((logProfile^[n]) positiveAnnular)) := by
   simpa only [twistProfile_zero] using detector_profile_smooth reverse n 0 0
 
-def detectorSchwartz (reverse : Bool) (n : ℕ) (σ t : ℝ) : 𝓢(ℝ,ℂ) :=
+def detectorSchwartz (reverse : Bool) (n : ℕ) (σ t : ℝ)  :=
   interpolatedProfile (orientedProfile reverse ((logProfile^[n]) positiveAnnular)) (1/4) (9/4)
     (by norm_num) (oriented_detector_log_support reverse n) (oriented_detector_log_smooth reverse n) σ
       (orientedFrequency reverse t)
 
-lemma detectorSchwartz_apply (reverse : Bool) (n : ℕ) (σ t x : ℝ) :
+lemma detectorSchwartz_apply  reverse   n   σ t x  :
     detectorSchwartz reverse n σ t x=
       twistProfile (orientedProfile reverse ((logProfile^[n]) positiveAnnular)) σ (orientedFrequency reverse t) x :=
   interpolatedProfile_apply _ _ _ _ _ _ _ _ _

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.Constant
 
@@ -126,7 +127,7 @@ theorem exists_endpoint_meanSquare
     σ k h hY₁ hY₂ hσ hk₁ hk₂
   rw [one_mul] at he₁
   -- the remainder is at most `2 L^{-A₀}`
-  have hemar : Real.exp (-(c * L / Real.log L ^ 20)) ≤ L ^ (-(A₀ + CR)) := he₂
+  
   have hR : ∫ t in -T₀..T₀, ‖twistedPoly Y Ue h k t‖ ^ 2 ≤ 2 * L ^ (-A₀) := by
     refine he.trans ?_
     rw [mul_add]
@@ -149,7 +150,7 @@ theorem exists_endpoint_meanSquare
   -- split `[-T₀, T₀]` at `±L^{B'}`
   have hi : ∀ t₁ t₂ : ℝ,
       IntervalIntegrable (fun t => ‖twistedPoly Y U h k t‖ ^ 2) MeasureTheory.volume t₁ t₂ :=
-    fun t₁ t₂ => (continuous_norm_twistedPoly_sq hY0 U h k).intervalIntegrable t₁ t₂
+    (continuous_norm_twistedPoly_sq hY0 U h k).intervalIntegrable
   show ∫ t in -T₀..T₀, ‖twistedPoly Y U h k t‖ ^ 2 ≤ _
   rw [← intervalIntegral.integral_add_adjacent_intervals (hi (-T₀) (-(L ^ B')))
     (hi (-(L ^ B')) T₀), ← intervalIntegral.integral_add_adjacent_intervals

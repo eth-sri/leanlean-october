@@ -16,21 +16,21 @@ open Erdos821.Blueprint.Graph
 
 variable {P : PrimeGroups}
 
-def activePrimes {M : ℕ} (a : P.Labels M) (g : P.Group) : Multiset (P.Prime g) :=
+def activePrimes {M } (a : P.Labels M) (g ) : Multiset (P.Prime g) :=
   ∑ i : Fin M, {a g i}
 
-def pendingPrimes {g : P.Group} (z : P.Memory g) : Multiset (P.Prime g) := z.map (fun u => u.1)
+def pendingPrimes {g } (z : P.Memory g)  := z.map (fun u => u.1)
 
-def slotPrimes {M : ℕ} {g : P.Group} (a : Fin M → P.Prime g) (slots : Finset (Fin M)) : Multiset (P.Prime g) :=
+def slotPrimes {M } {g } (a : Fin M → P.Prime g) (slots : Finset (Fin M)) : Multiset (P.Prime g) :=
   ∑ i ∈ slots, {a i}
 
-def unsharedDroppedSlots {J ell m : ℕ} (ν : Pattern P J ell m) (g : P.Group)
-    (stores : Finset (Fin (J + ell))) : Finset (Fin (J + ell)) :=
+def unsharedDroppedSlots {J ell m } (ν : Pattern P J ell m) (g : P.Group)
+    (stores : Finset (Fin (J + ell)))  :=
   Finset.univ.filter (fun i => ¬ ν.shared g i ∧ i ∉ stores)
 
 /-- Retrievals cancel once against the old pending indices. Stores cancel once
 against unshared source slots. The equality keeps all numerical multiplicities. -/
-def EdgeLiveConservationTask : Prop :=
+def EdgeLiveConservationTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J m : ℕ) (A : Model F P J m)
     (ν : Pattern P J F.ell m) (forward : Bool) (u : P.Aux J)
     (s t : P.MemoryState (J + F.ell)) (c : TransferChoice s),

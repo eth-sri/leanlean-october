@@ -13,11 +13,11 @@ noncomputable section
 
 def rootSchwartz {ι : Type*} (U : ι → ℝ → ℂ)
     (hU : ∀ i, ContDiff ℝ ∞ (U i)) (hS : ∀ i, HasCompactSupport (U i))
-    (i : ι) : 𝓢(ℝ, ℂ) := (hS i).toSchwartzMap (hU i)
+    (i : ι)  := (hS i).toSchwartzMap (hU i)
 
 @[simp] theorem rootSchwartz_apply {ι : Type*} (U : ι → ℝ → ℂ)
     (hU : ∀ i, ContDiff ℝ ∞ (U i)) (hS : ∀ i, HasCompactSupport (U i))
-    (i : ι) (y : ℝ) : rootSchwartz U hU hS i y = U i y := rfl
+    (i : ι)  y  : rootSchwartz U hU hS i y = U i y := rfl
 
 def secondRootSchwartz (V : Fin 6 → ℝ → ℂ)
     (hV : ∀ i, ContDiff ℝ ∞ (V i)) (hS : ∀ i, HasCompactSupport (V i)) :

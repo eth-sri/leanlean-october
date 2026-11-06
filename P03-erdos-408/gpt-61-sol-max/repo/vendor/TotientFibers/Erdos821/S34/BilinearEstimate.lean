@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.BilinearBlocks
 public import Erdos821.S34.Core
@@ -12,7 +13,7 @@ open OAI.LargePrimeGaps
 
 namespace Erdos821.S34.Proofs
 
-theorem e_eq_bvExp (t : ℝ) : Core.e t = bvExp t := by
+theorem e_eq_bvExp  t  : Core.e t = bvExp t := by
   unfold Core.e bvExp
   congr 1
   push_cast
@@ -31,7 +32,7 @@ private theorem interval_from_real_bounds (s : Finset ℤ) (X H : ℝ)
 
 /-- §3 integer bilinear estimate, including intervals with arbitrary origins
 and coefficients with arbitrary holes in their support. -/
-theorem integer_bilinear (C : ℝ) (hC : 0 < C) :
+theorem integer_bilinear  C  (hC : 0 < C) :
     ∃ K : ℝ, 0 < K ∧ ∀ (U V N M α β : ℝ) (u : ℤ) (r : ℕ)
       (s t : Finset ℤ) (a b : ℤ → ℂ),
       1 ≤ U → 1 ≤ V → 1 ≤ r → Nat.Coprime u.natAbs r →
@@ -50,8 +51,8 @@ theorem integer_bilinear (C : ℝ) (hC : 0 < C) :
   refine ⟨Real.sqrt K₂, Real.sqrt_pos.mpr hKpos, ?_⟩
   intro U V N M α β u r s t a b hU hV hr hu hα hβ hs ht
   have hUpos : 0 < U := by linarith
-  have hVpos : 0 < V := by linarith
-  have hrpos : 0 < (r : ℝ) := by exact_mod_cast (show 0 < r by omega)
+  
+  
   have hr₁ : (1 : ℝ) ≤ r := by exact_mod_cast hr
   have hβ' : |β| ≤ 1 / (r : ℝ) ^ 2 := by
     simpa only [zpow_neg, zpow_ofNat, one_div] using hβ
@@ -100,11 +101,9 @@ theorem integer_bilinear (C : ℝ) (hC : 0 < C) :
     calc
       _ ≤ (2 * (C * V) / r + 1) *
           (((⌊C * U⌋₊ + 1 : ℕ) : ℝ) + 2 * r * (harmonic (2 * r) : ℝ)) * Ea := he
-      _ ≤ (2 * (C * V) / r + 1) * (B * (U + r * Real.log (2 * r))) * Ea := by
-        exact mul_le_mul_of_nonneg_right
+      _ ≤ (2 * (C * V) / r + 1) * (B * (U + r * Real.log (2 * r))) * Ea := mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_left hkernel (by positivity)) hEa
-      _ ≤ ((2 * C + 1) * (1 + V / r)) * (B * (U + r * Real.log (2 * r))) * Ea := by
-        exact mul_le_mul_of_nonneg_right
+      _ ≤ ((2 * C + 1) * (1 + V / r)) * (B * (U + r * Real.log (2 * r))) * Ea := mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right hcount (by positivity)) hEa
       _ = K₂ * ((1 + V / r) * (U + r * Real.log (2 * r))) * Ea := by dsimp [K₂]; ring
       _ ≤ K₂ * F * Ea := by

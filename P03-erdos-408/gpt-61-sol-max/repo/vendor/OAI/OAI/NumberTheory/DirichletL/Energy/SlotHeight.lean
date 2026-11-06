@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.Bands
 public import OAI.NumberTheory.DirichletL.Moments.PrimeSlotShift
@@ -7,18 +8,18 @@ public import OAI.NumberTheory.DirichletL.Moments.PrimeSlotShift
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergySlotHeight
 open HeckeFamily CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
 open CenteredMomentHeckeSlots CenteredMomentCommonMaskEnergy
 open HeckePrimeAnnular CenteredMomentPrimeSlotShift
-local notation "O"=>HeckeFamily.O
+
 
 variable {α:Type*}[Fintype α]
 
-lemma height_coefficient (ν:Ideal O→ℂ)(W:ℝ→ℂ)(P σ freq t:ℝ)(hP:0<P)
-    (I:Ideal O)(hI:I≠0):
+lemma height_coefficient (ν:Ideal HeckeFamily.O→ℂ) W  P σ freq t (hP:0<P)
+     I (hI:I≠0):
     heightCoefficient (fun J=>ν J*annularWeight W P σ freq J) t I=
       (P:ℂ)^(Complex.I*t)*(ν I*annularWeight W P σ (t+freq) I):=by
   have hN:0<(I.absNorm:ℝ):=by
@@ -30,8 +31,8 @@ lemma height_coefficient (ν:Ideal O→ℂ)(W:ℝ→ℂ)(P σ freq t:ℝ)(hP:0<P
       (((((I.absNorm:ℝ)/P:ℝ):ℂ)^(-HeckeDyadic.shift σ freq))*(I.absNorm:ℂ)^(Complex.I*t)):=by ring
     _=_:=by rw [show (I.absNorm:ℂ)=((I.absNorm:ℝ):ℂ) by simp,hh];ring
 
-lemma row_slot_phase (η:Character)(m A z:O)(pool:Finset (Ideal O))
-    (β γ:Ideal O→ℂ)(phase:ℂ)(t:ℝ)(he:∀I∈pool,β I=phase*γ I):
+lemma row_slot_phase (η:Character)(m A z:HeckeFamily.O)(pool:Finset (Ideal HeckeFamily.O))
+    (β γ:Ideal HeckeFamily.O→ℂ) phase  t (he:∀I∈pool,β I=phase*γ I):
     rowSlot η m A z pool β t=phase*rowSlot η m A z pool γ t:=by
   unfold rowSlot
   rw [Finset.mul_sum]
@@ -40,9 +41,14 @@ lemma row_slot_phase (η:Character)(m A z:O)(pool:Finset (Ideal O))
   rw [he I hI]
   ring
 
-lemma positive_row_phase (η:Character)(m A z:O)(W₁ W₂:ℝ→ℂ)
-    (pool:α→Finset (Ideal O))(β γ:α→Ideal O→ℂ)(phase:α→ℂ)(P:α→ℝ)
-    (t X₁ X₂:ℝ)(he:∀i I,I∈pool i→β i I=phase i*γ i I):
+section
+variable (η : Character) (m A z : HeckeFamily.O) (W₁ W₂ : ℝ→ℂ) (pool : α→Finset (Ideal HeckeFamily.O)) (β γ : α→Ideal HeckeFamily.O→ℂ) (phase : α→ℂ) (ν : α→Ideal HeckeFamily.O→ℂ) (W : α→ℝ→ℂ) (P σ freq : α→ℝ) (hP : ∀i,0<P i) (hpool : ∀i I,I∈pool i→I≠0) (t rowt X₁ X₂ : ℝ) (keep : HeckeFamily.O→Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (he : ∀i I,I∈pool i→β i I=phase i*γ i I)
+
+
+include he in
+lemma positive_row_phase    
+        
+      :
     positiveSlotRow η m A z W₁ W₂ pool β P t X₁ X₂=
       (∏i,phase i)*positiveSlotRow η m A z W₁ W₂ pool γ P t X₁ X₂:=by
   have hs (i:α):rowSlot η m A z (pool i) (β i) t=
@@ -53,10 +59,11 @@ lemma positive_row_phase (η:Character)(m A z:O)(W₁ W₂:ℝ→ℂ)
   rw [Finset.prod_mul_distrib]
   ring
 
-theorem energy_phase (η:Character)(m A:O)(W₁ W₂:ℝ→ℂ)
-    (pool:α→Finset (Ideal O))(β γ:α→Ideal O→ℂ)(phase:α→ℂ)(P:α→ℝ)
-    (t X₁ X₂:ℝ)(keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(K:ℝ)
-    (he:∀i I,I∈pool i→β i I=phase i*γ i I)(hp:∀i,‖phase i‖=1):
+include he in
+theorem energy_phase    
+        
+        
+     (hp:∀i,‖phase i‖=1):
     energy η m A t W₁ W₂ pool β P X₁ X₂ keep Φ K=
       energy η m A t W₁ W₂ pool γ P X₁ X₂ keep Φ K:=by
   have hprod:‖∏i,phase i‖=1:=by rw [norm_prod];simp only [hp,Finset.prod_const_one]
@@ -66,10 +73,11 @@ theorem energy_phase (η:Character)(m A:O)(W₁ W₂:ℝ→ℂ)
   rw [positive_row_phase η m A z W₁ W₂ pool β γ phase P t X₁ X₂ he]
   simp only [norm_mul,hprod,one_mul]
 
-theorem inherited_height_energy (η:Character)(m A:O)(W₁ W₂:ℝ→ℂ)
-    (pool:α→Finset (Ideal O))(ν:α→Ideal O→ℂ)(W:α→ℝ→ℂ)
-    (P σ freq:α→ℝ)(hP:∀i,0<P i)(hpool:∀i I,I∈pool i→I≠0)
-    (t rowt X₁ X₂:ℝ)(keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(K:ℝ):
+include hP hpool in
+theorem inherited_height_energy    
+       
+       
+        :
     energy η m A rowt W₁ W₂ pool
       (fun i=>heightCoefficient (fun I=>ν i I*annularWeight (W i) (P i) (σ i) (freq i) I) t)
       P X₁ X₂ keep Φ K=
@@ -78,12 +86,14 @@ theorem inherited_height_energy (η:Character)(m A:O)(W₁ W₂:ℝ→ℂ)
       P X₁ X₂ keep Φ K:=by
   apply energy_phase η m A W₁ W₂ pool _ _ (fun i=>(P i:ℂ)^(Complex.I*t)) P rowt X₁ X₂ keep Φ K
   · intro i I hi
-    exact height_coefficient (ν i) (W i) (P i) (σ i) (freq i) t (hP i) I (hpool i I hi)
+    solve_by_elim [height_coefficient]
   · intro i
     simpa using Complex.norm_cpow_eq_rpow_re_of_pos (hP i) (Complex.I*t)
 
+end
+
 end SevenEighths.CenteredMomentEnergySlotHeight
 
-end
+
 
 end OAI

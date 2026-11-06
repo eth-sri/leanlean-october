@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.PrimeGaps.Main
 public import OAI.NumberTheory.PrimeGaps.MangoldtBounds
@@ -35,9 +36,7 @@ theorem primeCharacterError_nonprincipal_bound (A B : ℝ)
       _ ≤ (Real.log y) ^ B := hqlog
   let : NeZero χ.conductor :=
     ⟨Nat.ne_of_gt (Nat.pos_of_dvd_of_pos χ.conductor_dvd_level hq)⟩
-  have hprim : χ.primitiveCharacter ≠ 1 := by
-    intro h
-    exact hχ ((primitiveCharacter_eq_one_iff hq χ).mp h)
+  
   have hmain := hbound χ.conductor χ.primitiveCharacter
     χ.primitiveCharacter_isPrimitive y hy hlog hpower hcond
   calc
@@ -46,24 +45,22 @@ theorem primeCharacterError_nonprincipal_bound (A B : ℝ)
           (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log q :=
       primeCharacterError_le_primitive y hq χ
     _ ≤ M * y * (Real.log y) ^ (-A) +
-          (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log q := by
-      exact add_le_add hmain le_rfl
+          (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log q := add_le_add hmain le_rfl
 
 /-- The character sum weighted by the Chebyshev theta coefficients. -/
-noncomputable def thetaCharacterPrefix {q : ℕ}
-    (y : ℝ) (χ : DirichletCharacter ℂ q) : ℂ :=
+noncomputable def thetaCharacterPrefix {q }
+    (y : ℝ) (χ : DirichletCharacter ℂ q)  :=
   ∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, χ (n : ZMod q) * (theta n : ℂ)
 
 /-- Replacing von Mangoldt weights by prime logarithmic weights costs at most
 the elementary prime-power error. -/
-theorem thetaCharacterPrefix_norm_le {q : ℕ} (y : ℝ)
+theorem thetaCharacterPrefix_norm_le {q : ℕ}  y 
     (χ : DirichletCharacter ℂ q) (hy : 1 ≤ y) (hχ : χ ≠ 1) :
     ‖thetaCharacterPrefix y χ‖ ≤
       ‖primeCharacterError y χ‖ + 2 * Real.sqrt y * Real.log y := by
   let X : ℕ := ⌊y⌋₊
   have hX : 1 ≤ X := by
-    apply (Nat.le_floor_iff (show 0 ≤ y by linarith)).2
-    exact_mod_cast hy
+    aesop
   have hXreal : (1 : ℝ) ≤ (X : ℝ) := by exact_mod_cast hX
   have hXle : (X : ℝ) ≤ y := Nat.floor_le (by linarith)
   have hsum :
@@ -118,12 +115,7 @@ theorem thetaCharacterPrefix_norm_le {q : ℕ} (y : ℝ)
   have hmain :
       2 * Real.sqrt (X : ℝ) * Real.log (X : ℝ) ≤
         2 * Real.sqrt y * Real.log y := by
-    have hprod := mul_le_mul hsqrtXle hlogXle hlogXnonneg (Real.sqrt_nonneg y)
-    calc
-      2 * Real.sqrt (X : ℝ) * Real.log (X : ℝ) =
-          2 * (Real.sqrt (X : ℝ) * Real.log (X : ℝ)) := by ring
-      _ ≤ 2 * (Real.sqrt y * Real.log y) := mul_le_mul_of_nonneg_left hprod (by norm_num)
-      _ = 2 * Real.sqrt y * Real.log y := by ring
+    bound
   have herr : ‖primeCharacterError y χ‖ = ‖primeCharacterPrefix y χ‖ := by
     simp [primeCharacterError, hχ]
   calc
@@ -135,8 +127,7 @@ theorem thetaCharacterPrefix_norm_le {q : ℕ} (y : ℝ)
     _ ≤ ‖primeCharacterPrefix y χ‖ +
           ‖primeCharacterPrefix y χ - thetaCharacterPrefix y χ‖ := norm_sub_le _ _
     _ ≤ ‖primeCharacterError y χ‖ + 2 * Real.sqrt y * Real.log y := by
-      rw [herr]
-      exact add_le_add (le_rfl) (hdiff.trans hmain)
+      linarith
 
 /-- Uniform power saving for the theta-character prefix of nonprincipal characters. -/
 theorem thetaCharacterPrefix_log_bound (A B : ℝ)
@@ -322,18 +313,17 @@ theorem thetaCharacterPrefix_log_bound (A B : ℝ)
     _ ≤ (M * y * L ^ (-(A + 1)) +
           (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log (q : ℝ)) +
           2 * Real.sqrt y * L := add_le_add herror le_rfl
-    _ ≤ M * (y / L ^ A) + (y / L ^ A) + (y / L ^ A) := by
-      exact add_le_add (add_le_add hmainSW hconductorAbs) hprimePower
+    _ ≤ M * (y / L ^ A) + (y / L ^ A) + (y / L ^ A) := add_le_add (add_le_add hmainSW hconductorAbs) hprimePower
     _ = (M + 2) * y * L ^ (-A) := by
       rw [Real.rpow_neg hLpos.le]
       ring
 
 /-- The Mellin weight dual to the theta coefficients. -/
-noncomputable def thetaMellinWeight (t y : ℝ) : ℂ :=
+noncomputable def thetaMellinWeight (t y : ℝ)  :=
   Erdos821.Blueprint.Analytic.mellin y t * (y : ℂ)⁻¹ * (Real.log y : ℂ)⁻¹
 
 /-- The derivative of the Mellin-over-prime weight has the usual `(|t|+2)/(y² log y)` bound. -/
-theorem thetaMellinWeight_deriv_norm_le (t y : ℝ) (hy : 0 < y)
+theorem thetaMellinWeight_deriv_norm_le  t y  (hy : 0 < y)
     (hlog : 1 ≤ Real.log y) :
     ‖deriv (thetaMellinWeight t) y‖ ≤ (|t| + 2) / (y ^ 2 * Real.log y) := by
   have hyC : (y : ℂ) ≠ 0 := by exact_mod_cast hy.ne'
@@ -408,8 +398,7 @@ theorem thetaMellinWeight_deriv_norm_le (t y : ℝ) (hy : 0 < y)
               ‖Erdos821.Blueprint.Analytic.mellin y t * (-1 / (y : ℂ) ^ 2)‖) *
               ‖(Real.log y : ℂ)⁻¹‖ +
             ‖Erdos821.Blueprint.Analytic.mellin y t * (y : ℂ)⁻¹ *
-              (-((y⁻¹ : ℝ) : ℂ) / (Real.log y : ℂ) ^ 2)‖ := by
-          exact add_le_add (mul_le_mul_of_nonneg_right hab (norm_nonneg _)) le_rfl
+              (-((y⁻¹ : ℝ) : ℂ) / (Real.log y : ℂ) ^ 2)‖ := add_le_add (mul_le_mul_of_nonneg_right hab (norm_nonneg _)) le_rfl
         _ = _ := by
           rw [hterm₁, hterm₂, hterm₃, norm_inv, hlognorm]
           simp [one_div]
@@ -497,8 +486,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
   let n : ℕ := a - 1
   let m : ℕ := ⌊hi⌋₊
   have hloPos : 0 < lo := by
-    have hlo' : Real.exp (L ^ c) ≤ lo := by simpa [L, Analytic.L] using hlo
-    exact (Real.exp_pos _).trans_le hlo'
+    grind [Real.exp, L]
   have haPos : 1 ≤ a := by
     apply Nat.one_le_iff_ne_zero.mpr
     intro ha0
@@ -515,24 +503,15 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
     rw [Nat.cast_sub (by omega : 1 ≤ a)]
     simp
   have hloLarge : 2 ≤ lo := by
-    calc
-      2 ≤ Real.exp (L ^ c) := hExpLtwo
-      _ ≤ lo := hlo
+    grind [Real.exp, L]
   have hloExp : Real.exp (L ^ c) ≤ lo := by simpa [L, Analytic.L] using hlo
   have hnLeLo : lo - 1 ≤ (n : ℝ) := by
     rw [hnCast]
     linarith
   have hnHalf : lo / 2 ≤ (n : ℝ) := by
-    have : lo / 2 ≤ lo - 1 := by linarith
-    exact this.trans hnLeLo
+    linarith
   have hnExp : Real.exp u ≤ (n : ℝ) := by
-    have huExp : Real.exp u ≤ Real.exp (L ^ c) / 2 := by
-      apply (le_div_iff₀ (by norm_num : (0 : ℝ) < 2)).2
-      nlinarith [hExpU]
-    calc
-      Real.exp u ≤ Real.exp (L ^ c) / 2 := huExp
-      _ ≤ lo / 2 := by exact div_le_div_of_nonneg_right hloExp (by norm_num)
-      _ ≤ (n : ℝ) := hnHalf
+    linarith
   have hYθLe : Yθ ≤ Real.exp u := by
     have hYexp : Ybig ≤ Real.exp u := by
       calc
@@ -544,10 +523,6 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
     exact le_trans (le_max_right 1 Yθ) hYexp
   have hnYθ : Yθ ≤ (n : ℝ) := hYθLe.trans hnExp
   have hnOne : 1 ≤ (n : ℝ) := by
-    have h : 1 < Real.exp u := by
-      have := Real.add_one_le_exp u
-      have huPos : 0 < u := by linarith
-      linarith
     linarith
   have hnNatOne : 1 ≤ n := by exact_mod_cast hnOne
   have hnm : n ≤ m := by
@@ -561,7 +536,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
     dsimp [n]
     omega
   have hnmReal : (n : ℝ) ≤ (m : ℝ) := by exact_mod_cast hnm
-  have hmOne : 1 ≤ (m : ℝ) := by exact hnOne.trans hnmReal
+  have hmOne : 1 ≤ (m : ℝ) := hnOne.trans hnmReal
   have hmPos : 0 < (m : ℝ) := by linarith
   have hmLeHi : (m : ℝ) ≤ hi := by
     dsimp [m]
@@ -689,8 +664,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
         Erdos821.DivisorHarmonic.thetaMellinWeight,
         OAI.LargePrimeGaps.theta, ite_eq_left hprime]
       field_simp [hkC, hlogne]
-      have hkCast : ((k : ℝ) : ℂ) = (k : ℂ) := by norm_cast
-      rw [hkCast]
+      rfl
     · simp only [coeff, ite_eq_left hnk, OAI.LargePrimeGaps.theta, ite_eq_right hprime]
       simp
   let s : Set ℝ := Set.Ioi 1
@@ -705,8 +679,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
     exact hlogRealCD.continuousLinearMap_comp Complex.ofRealCLM
   have hinnerCD : ContDiffOn ℝ 2
       (fun y : ℝ => Complex.I * (t : ℂ) * (Real.log y : ℂ)) s := by
-    have h := ContDiffOn.const_smul (Complex.I * (t : ℂ)) hlogComplexCD
-    simpa only [smul_eq_mul] using h
+    fun_prop
   have hmellinCD : ContDiffOn ℝ 2 (fun y : ℝ => mellin y t) s := by
     change ContDiffOn ℝ 2
       (fun y : ℝ => Complex.exp (Complex.I * (t : ℂ) * (Real.log y : ℂ))) s
@@ -789,8 +762,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
     have hypos : y ≠ 0 := by linarith [hnOne, hy.1]
     fun_prop (disch := assumption)
   have hRIntIntegrable :
-      IntegrableOn (fun y : ℝ => R * y⁻¹) (Set.Icc (n : ℝ) (m : ℝ)) := by
-    exact hRIntContinuous.integrableOn_Icc (μ := volume)
+      IntegrableOn (fun y : ℝ => R * y⁻¹) (Set.Icc (n : ℝ) (m : ℝ)) := hRIntContinuous.integrableOn_Icc (μ := volume)
   have hIntLe :
       (∫ y in (n : ℝ)..(m : ℝ), ‖deriv weight y * partialTheta y‖) ≤
         ∫ y in (n : ℝ)..(m : ℝ), R * y⁻¹ :=
@@ -841,8 +813,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
       have harg :
           Complex.I * (t : ℂ) * (Real.log (m : ℝ) : ℂ) =
             Complex.I * (t : ℂ) * Complex.log (m : ℂ) := by
-        exact congrArg (fun z : ℂ => Complex.I * (t : ℂ) * z)
-          (Complex.ofReal_log (by positivity : 0 ≤ (m : ℝ)))
+        norm_num
       have hRe : (Complex.I * (t : ℂ) * Complex.log (m : ℂ)).re = 0 := by
         rw [Complex.mul_re]
         simp [Complex.mul_re, Complex.mul_im, Complex.log_im, Complex.natCast_arg]
@@ -920,8 +891,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
             (2 * M * (|t| + 2) * L ^ (-E)) * (C * L) ≤
               6 * M * C * L ^ (B + 1 - E) := by
           calc
-            _ ≤ (2 * M * (3 * L ^ B) * L ^ (-E)) * (C * L) := by
-              exact mul_le_mul_of_nonneg_right
+            _ ≤ (2 * M * (3 * L ^ B) * L ^ (-E)) * (C * L) := mul_le_mul_of_nonneg_right
                 (mul_le_mul_of_nonneg_right
                   (mul_le_mul_of_nonneg_left htAbs (by positivity))
                   (Real.rpow_nonneg hLpos.le _)) (by positivity)
@@ -942,8 +912,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
           2 * M * L ^ (-E) + (2 * M * (|t| + 2) * L ^ (-E)) * (C * L) ≤
               2 * M * L ^ (-A) + 6 * M * C * L ^ (B + 1 - E) :=
                 add_le_add hEndpoint hIntegral
-          _ ≤ 2 * M * L ^ (-A) + 6 * M * C * L ^ (-A) := by
-                exact add_le_add le_rfl
+          _ ≤ 2 * M * L ^ (-A) + 6 * M * C * L ^ (-A) := add_le_add le_rfl
                   (mul_le_mul_of_nonneg_left
                     (Real.rpow_le_rpow_of_exponent_le hLone' hExpInt) (by positivity))
           _ = (2 + 6 * C) * M * L ^ (-A) := by ring

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformLog
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff Topology
 open Set
 
@@ -41,6 +41,6 @@ open HeckeInverseAmplification HeckeDyadic JointLogSeparation
 
 end SevenEighths.CenteredMomentDetectorDictionary
 
-end
+
 
 end OAI

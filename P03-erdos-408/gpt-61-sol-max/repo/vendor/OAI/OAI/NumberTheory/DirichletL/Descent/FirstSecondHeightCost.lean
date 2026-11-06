@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstHeightBudget
 public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStep
@@ -14,30 +15,39 @@ namespace SevenEighths.InverseMomentFirstSecondHeightCost
 open InverseMoment InverseAmbientProfileTower JointLogSeparation FourierBridge
 open InverseMomentFirstOriginalProfile
 
-def firstDegree (degree : ℕ) : ℕ := 2*InverseClippingProfiles.momentOrder (2*degree)
+def firstDegree (degree : ℕ)  := 2*InverseClippingProfiles.momentOrder (2*degree)
 
-def firstHeight (negative : Bool) (z : Frequency×(Fin 9→ℝ)) : ℝ :=
+def firstHeight (negative : Bool) (z : Frequency×(Fin 9→ℝ))  :=
   profileHeight firstLeftSlope firstRightSlope firstKernelSlope z.1 z.2 (if negative then 7 else 8)
 
-lemma first_height_cost (degree : ℕ) (negative : Bool) (z : Frequency×(Fin 9→ℝ)) :
+section
+variable (degree : ℕ) (negative : Bool) (J : ℕ) (z : Frequency×(Fin 9→ℝ))
+
+lemma first_height_cost       :
     (1+‖firstHeight negative z‖)^(firstDegree degree)≤
       tripleHeight (firstDegree degree) z.1*coordinateHeight (firstDegree degree) z.2 := by
   cases negative
   · exact first_right_height_budget _ z
   · exact first_left_height_budget _ z
 
-lemma first_weight_one_le (J : ℕ) (z : Frequency×(Fin 9→ℝ)) :
+lemma first_weight_one_le     :
     1≤tripleHeight J z.1*coordinateHeight J z.2 := by
   simpa only [ambientWeight,tripleHeight,coordinateHeight] using ambientWeight_one_le J z
 
-def stepBudget (C Cbin Czero Ctail A Z F eta tau pi epschild saving : ℝ) : ℝ :=
+end
+
+def stepBudget (C Cbin Czero Ctail A Z F eta tau pi epschild saving : ℝ)  :=
   Czero*Z^(F+17*eta+tau+pi)+
     C*A*(1+Cbin*Real.log Z)^4*Z^(F+48*eta+tau+pi+epschild)+Ctail*Z^(-saving)
 
-theorem second_step_first_height (degree : ℕ) (negative : Bool)
-    (C Cbin Czero Ctail A Z F eta tau pi epschild saving : ℝ)
-    (hC : 0≤C) (hz : 0≤Czero) (ht : 0≤Ctail) (hA : 0≤A) (hZ : 0≤Z)
-    (z : Frequency×(Fin 9→ℝ)) :
+section
+variable (degree : ℕ) (negative : Bool) (C Cbin Czero Ctail A Z F eta tau pi epschild saving ε : ℝ) (hC : 0≤C) (hz : 0≤Czero) (ht : 0≤Ctail) (hε : 0<ε)
+
+include hC hz ht in
+theorem second_step_first_height    
+     
+          (hA : 0≤A) (hZ : 0≤Z)
+     z  :
     Czero*Z^(F+17*eta+tau+pi)+
       C*A*(1+‖firstHeight negative z‖)^(firstDegree degree)*(1+Cbin*Real.log Z)^4*
         Z^(F+48*eta+tau+pi+epschild)+Ctail*Z^(-saving)≤
@@ -56,7 +66,8 @@ theorem second_step_first_height (degree : ℕ) (negative : Bool)
   have hs := add_le_add (add_le_add hzero hmiddle) htail
   convert hs using 1 <;> dsimp [stepBudget] <;> ring
 
-lemma log_fourth_small_power (Cbin ε : ℝ) (hε : 0<ε) :
+include hε in
+lemma log_fourth_small_power     :
     ∃ Clog : ℝ,0<Clog ∧ ∀ Z : ℝ,2≤Z→
       (1+Cbin*Real.log Z)^4≤Clog*Z^ε := by
   obtain ⟨C,hC,he⟩ := log_eighth_small_power ε hε
@@ -75,12 +86,13 @@ lemma log_fourth_small_power (Cbin ε : ℝ) (hε : 0<ε) :
     _ ≤ (b*(1+Real.log Z))^4 := pow_le_pow_left₀ (abs_nonneg _) hn 4
     _≤b^4*(1+Real.log Z)^8 := by
       rw [mul_pow]
-      exact mul_le_mul_of_nonneg_left (pow_le_pow_right₀ (by linarith : 1≤1+Real.log Z) (by norm_num : 4≤8)) (by positivity)
+      gcongr <;> first | assumption | positivity | linarith
     _≤b^4*(C*Z^ε) := mul_le_mul_of_nonneg_left (he Z hZ1) (by positivity)
     _=_ := by ring
 
-theorem stepBudget_small_power (C Cbin Czero Ctail ε : ℝ)
-    (hC : 0≤C) (hz : 0≤Czero) (ht : 0≤Ctail) (hε : 0<ε) :
+include hC hz ht hε in
+theorem stepBudget_small_power  
+            :
     ∃ Ctotal : ℝ,0<Ctotal ∧ ∀ A Z F eta tau pi epschild saving : ℝ,
       0≤A→2≤Z→0≤eta→0≤epschild→
       -saving≤F+48*eta+tau+pi+epschild+ε→
@@ -113,8 +125,9 @@ theorem stepBudget_small_power (C Cbin Czero Ctail ε : ℝ)
     nlinarith
   convert mul_le_mul_of_nonneg_right hcoef hpow using 1 ; ring
 
-theorem first_source_budget (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)
-    (hC : 0≤C) (hz : 0≤Czero) (ht : 0≤Ctail) (hε : 0<ε) :
+include hC hz ht hε in
+theorem first_source_budget    
+            :
     ∃ Ctotal : ℝ,0<Ctotal ∧ ∀ A Z F eta tau pi epschild saving : ℝ,
       0≤A→2≤Z→0≤eta→0≤epschild→
       -saving≤F+48*eta+tau+pi+epschild+ε→
@@ -132,8 +145,9 @@ theorem first_source_budget (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)
     (mul_le_mul_of_nonneg_right (hbudget A Z F eta tau pi epschild saving hA hZ heta heps hsaving)
       (le_trans zero_le_one (first_weight_one_le _ z)))
 
-theorem first_source_requested_loss (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)
-    (hC : 0≤C) (hz : 0≤Czero) (ht : 0≤Ctail) (hε : 0<ε) :
+include hC hz ht hε in
+theorem first_source_requested_loss    
+            :
     ∃ Ctotal : ℝ,0<Ctotal ∧ ∀ A Z F eta tau pi epschild saving loss : ℝ,
       0≤A→2≤Z→0≤eta→0≤epschild→
       -saving≤F+48*eta+tau+pi+epschild+ε→
@@ -151,6 +165,8 @@ theorem first_source_requested_loss (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)
   apply mul_le_mul_of_nonneg_right _ (le_trans zero_le_one (first_weight_one_le _ z))
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)
+
+end
 
 end SevenEighths.InverseMomentFirstSecondHeightCost
 end

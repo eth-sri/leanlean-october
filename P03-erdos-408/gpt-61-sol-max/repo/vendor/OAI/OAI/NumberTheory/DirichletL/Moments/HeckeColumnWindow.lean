@@ -14,19 +14,19 @@ open MeasureTheory
 namespace SevenEighths.CenteredMomentHeckeColumnWindow
 open FourierBridge HeckeFamily CenteredMomentSmooth CenteredMomentGaussEnergy
 open CenteredMomentTwist
-local notation "O" => ActualEisensteinCubic.O
 
-def heightCoeff (τ : Character) (t : ℝ) (I : Ideal O) : ℂ :=
+
+def heightCoeff (τ : Character) (t : ℝ) (I : Ideal ActualEisensteinCubic.O)  :=
   idealCoeff τ I*(Ideal.absNorm I:ℂ)^(Complex.I*t)
 
-theorem heightCoeff_add (τ : Character) (I : Ideal O) (hI : I≠0) (t v : ℝ) :
+theorem heightCoeff_add  τ   I  (hI : I≠0)  t v  :
     heightCoeff τ (t+v) I=heightCoeff τ t I*(Ideal.absNorm I:ℂ)^(Complex.I*v) := by
   have hn : (Ideal.absNorm I:ℂ)≠0 := Nat.cast_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   simp only [heightCoeff,Complex.ofReal_add,mul_add,Complex.cpow_add _ _ hn]
   ring
 
-theorem heightCoeff_phase (τ : Character) (I : Ideal O) (hI : I≠0)
-    (t θ X : ℝ) (hX : 0<X) :
+theorem heightCoeff_phase  τ   I  (hI : I≠0)
+     t θ X  (hX : 0<X) :
     heightCoeff τ t I*logPhase θ (-Real.log ((Ideal.absNorm I:ℝ)/X))=
       logPhase θ (Real.log X)*heightCoeff τ (t-2*Real.pi*θ) I := by
   have hn : (0:ℝ)<Ideal.absNorm I := by
@@ -35,28 +35,28 @@ theorem heightCoeff_phase (τ : Character) (I : Ideal O) (hI : I≠0)
   push_cast
   ring
 
-def rootProfile (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) : 𝓢(ℝ,ℂ) :=
+def rootProfile (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V)  :=
   (hVc.mul_right (f':=fun u : ℝ => (Real.exp (-u/2):ℂ))).toSchwartzMap
     (hVs.mul (Complex.ofRealCLM.contDiff.comp
       (Real.contDiff_exp.comp (contDiff_id.neg.div_const 2))))
 
-theorem rootProfile_apply (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (u : ℝ) :
+theorem rootProfile_apply  V   hVc   hVs   u  :
     rootProfile V hVc hVs u=rootWindow V u := by
   change V u*(Real.exp (-u/2):ℂ)=_
   rw [rootWindow,← Real.exp_half,show -u/2=-(u/2) by ring,Real.exp_neg,
     Complex.ofReal_inv,div_eq_mul_inv]
   ring
 
-def columnDensity (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) : 𝓢(ℝ,ℂ) :=
+def columnDensity (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V)  :=
   𝓕 (rootProfile V hVc hVs)
 
-theorem columnDensity_moments (V : ℝ → ℂ) (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V) (J : ℕ) :
+theorem columnDensity_moments  V   hVc 
+     hVs   J  :
     Integrable (fun w : ℝ => (1+‖w‖)^J*‖columnDensity V hVc hVs w‖) :=
   JointLogSeparation.weighted_schwartz_integrable _ J
 
-theorem rootWindow_integral (V : ℝ → ℂ) (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V) (u : ℝ) :
+theorem rootWindow_integral  V   hVc 
+     hVs   u  :
     rootWindow V u=∫ w : ℝ,logPhase w u*columnDensity V hVc hVs w := by
   rw [← rootProfile_apply V hVc hVs u,schwartz_log_inversion]
   apply integral_congr_ae
@@ -66,7 +66,7 @@ theorem rootWindow_integral (V : ℝ → ℂ) (hVc : HasCompactSupport V)
   push_cast
   ring
 
-theorem phase_combine (w θ u : ℝ) :
+theorem phase_combine  w θ u  :
     logPhase w u*logPhase θ (-u)=logPhase (θ-w) (-u) := by
   unfold logPhase
   rw [← Complex.exp_add]
@@ -74,9 +74,9 @@ theorem phase_combine (w θ u : ℝ) :
   push_cast
   ring
 
-theorem height_column_integral (V : ℝ → ℂ) (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V) (τ : Character) (I : Ideal O) (hI : I≠0)
-    (t θ X : ℝ) (hX : 0<X) :
+theorem height_column_integral  V   hVc 
+     hVs   τ   I  (hI : I≠0)
+     t θ X  (hX : 0<X) :
     heightCoeff τ t I*columnPhase V (Real.log ((Ideal.absNorm I:ℝ)/X)) θ=
       ∫ w : ℝ,columnDensity V hVc hVs w*logPhase (θ-w) (Real.log X)*
         heightCoeff τ (t+2*Real.pi*(w-θ)) I := by
@@ -92,9 +92,9 @@ theorem height_column_integral (V : ℝ → ℂ) (hVc : HasCompactSupport V)
         show t-2*Real.pi*(θ-w)=t+2*Real.pi*(w-θ) by ring]
       ring
 
-theorem height_column_integrable (V : ℝ → ℂ) (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V) (τ : Character) (I : Ideal O) (hI : I≠0)
-    (t θ X : ℝ) (hX : 0<X) :
+theorem height_column_integrable  V   hVc 
+     hVs   τ   I  (hI : I≠0)
+     t θ X  (hX : 0<X) :
     Integrable (fun w : ℝ => columnDensity V hVc hVs w*logPhase (θ-w) (Real.log X)*
       heightCoeff τ (t+2*Real.pi*(w-θ)) I) := by
   have he (w : ℝ) : logPhase (θ-w) (Real.log X)*heightCoeff τ (t+2*Real.pi*(w-θ)) I=
@@ -117,10 +117,10 @@ theorem height_column_integrable (V : ℝ → ℂ) (hVc : HasCompactSupport V)
     simp only [norm_mul,logPhase_norm,mul_one]
     exact le_of_eq (mul_comm _ _)
 
-theorem gauss_column_integral {α : Type*} (S : Finset α) (a : α → O)
+theorem gauss_column_integral {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O)
     (ha : ∀ i,CanonicalQuadraticSieve.Supported (Ideal.span {a i}))
-    (β : α → ℂ) (τ : Character) (t θ X : ℝ) (hX : 0<X)
-    (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (z : O) :
+    (β : α → ℂ)  τ   t θ X  (hX : 0<X)
+     V   hVc   hVs   z  :
     gaussPolynomial S a ha (fun i => β i*heightCoeff τ t (Ideal.span {a i})*
       columnPhase V (Real.log ((Ideal.absNorm (Ideal.span {a i}):ℝ)/X)) θ) z=
       ∫ w : ℝ,columnDensity V hVc hVs w*logPhase (θ-w) (Real.log X)*

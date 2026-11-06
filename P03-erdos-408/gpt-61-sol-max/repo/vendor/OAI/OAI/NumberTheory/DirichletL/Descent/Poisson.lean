@@ -23,10 +23,14 @@ noncomputable local instance markedQuotientField (P : Ideal ActualEisensteinCubi
 noncomputable local instance markedQuotientFintype (P : Ideal ActualEisensteinCubic.O)
     [P.IsMaximal] : Fintype (ActualEisensteinCubic.O ⧸ P) := Fintype.ofFinite _
 
+section
+variable (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] (hg : ConcretePrimeRowBridge.goodLambda ∉ P)
+include P hg
+
 theorem actual_marked_active_eq
-    (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] (hg : ConcretePrimeRowBridge.goodLambda ∉ P)
-    (ψ : AddChar (ActualEisensteinCubic.O ⧸ P) ℂ) (hψ : ψ.IsPrimitive)
-    (σ ε : (ActualEisensteinCubic.O ⧸ P)ˣ) (x : ActualEisensteinCubic.O ⧸ P) :
+         
+     ψ  (hψ : ψ.IsPrimitive)
+     σ ε   x  :
     localReflectionActive zeroMark (CompletedGauss.actualSextic P hg) ψ σ ε x =
       -LocalReflectionBrackets.activeRow (CompletedGauss.actualSextic P hg) ψ 0 σ ε x := by
   simpa only [localReflectionActive, localFourier,
@@ -34,11 +38,11 @@ theorem actual_marked_active_eq
     marked_active_eq_neg_trivial (CompletedGauss.actualSextic P hg) ψ hψ σ ε x
 
 theorem actual_marked_active_formula
-    (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
-    (hg : ConcretePrimeRowBridge.goodLambda ∉ P)
+       
+     
     (hchar : ringChar (ActualEisensteinCubic.O ⧸ P) ≠ 2)
-    (ψ : AddChar (ActualEisensteinCubic.O ⧸ P) ℂ) (hψ : ψ.IsPrimitive)
-    (σ ε : (ActualEisensteinCubic.O ⧸ P)ˣ) (x : ActualEisensteinCubic.O ⧸ P) :
+     ψ  (hψ : ψ.IsPrimitive)
+     σ ε   x  :
     localReflectionActive zeroMark (CompletedGauss.actualSextic P hg) ψ σ ε x =
       (LocalReflectionBrackets.rootCard (ActualEisensteinCubic.O ⧸ P) : ℂ)⁻¹ *
         LocalReflectionBrackets.tau (CompletedGauss.actualSextic P hg) ψ 2 *
@@ -49,6 +53,8 @@ theorem actual_marked_active_formula
   simp only [LocalReflectionBrackets.phase, LocalReflectionBrackets.bracket,
     show (0 : ℕ) ≠ 4 by decide, ↓reduceIte, inv_pow, map_mul]
   ring
+
+end
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0)

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.RetainedDualBounds
 
@@ -10,73 +11,73 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic
+ 
 
 theorem finite_inverse_norm_square_sum (S : Finset (Ideal O)) (H : ℝ)
     (hS : ∀ I ∈ S, I ≠ 0)
@@ -124,7 +125,7 @@ theorem finite_inverse_norm_square_sum (S : Finset (Ideal O)) (H : ℝ)
     _ ≤ 512 * 2 := mul_le_mul_of_nonneg_left (sum_geometric_two_le _) (by norm_num)
     _ = 1024 := by norm_num
 
-theorem highSquareParts_card_le (M K : ℝ) (_hM : 0 ≤ M) (hK : 0 < K) :
+theorem highSquareParts_card_le  M K  (_hM : 0 ≤ M) (hK : 0 < K) :
     ((highSquareParts M K).card : ℝ) ≤ 128 * Real.sqrt (M/K) := by
   by_cases hempty : highSquareParts M K = ∅
   · simp only [hempty,Finset.card_empty,Nat.cast_zero]
@@ -137,7 +138,7 @@ theorem highSquareParts_card_le (M K : ℝ) (_hM : 0 ≤ M) (hK : 0 < K) :
     · intro I hI
       exact (highSquareParts_bounds M K hK I hI).2.2.1
 
-theorem HasSieveExponent.high_kernel {α : ℝ} (h : HasSieveExponent α) :
+theorem HasSieveExponent.high_kernel  {α}  (h : HasSieveExponent α) :
     ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧ ∀ M N K : ℝ,
       1 ≤ M → 1 ≤ N → 1 ≤ K →
       highKernelNorm M N K ≤ C * (M*N)^ε * (M + Real.sqrt (M/K)*N^α) := by
@@ -187,13 +188,13 @@ theorem HasSieveExponent.high_kernel {α : ℝ} (h : HasSieveExponent α) :
 end CanonicalQuadraticSieve
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
+ 
+open scoped       MatrixGroups Matrix
 
-def bottomRowUnitary (c d : ℂ) (r : ℝ) : Matrix (Fin 2) (Fin 2) ℂ :=
+def bottomRowUnitary (c d : ℂ) (r : ℝ)  :=
   !![star d/(r:ℂ),-star c/(r:ℂ);c/(r:ℂ),d/(r:ℂ)]
 
-lemma bottomRowUnitary_mem (c d : ℂ) (r : ℝ) (hr : r≠0)
+lemma bottomRowUnitary_mem  c d   r  (hr : r≠0)
     (hrow : ‖c‖^2+‖d‖^2=r^2) : bottomRowUnitary c d r∈Matrix.unitaryGroup (Fin 2) ℂ := by
   have hC : c*star c+d*star d=(r:ℂ)^2 := by
     simpa only [Complex.ofReal_add,Complex.ofReal_pow,← Complex.mul_conj',Complex.star_def] using
@@ -207,23 +208,17 @@ lemma bottomRowUnitary_mem (c d : ℂ) (r : ℝ) (hr : r≠0)
       Complex.conj_ofReal] <;>
     field_simp [hrC] <;> first | exact hC | (simpa only [mul_comm,add_comm] using hC) | ring
 
-lemma iwasawa_z_row_identities (a b c d : ℂ) (q : ℝ)
+lemma iwasawa_z_row_identities  a b c d  (q : ℝ)
     (hq : q≠0) (hrow : (q:ℂ)=c*star c+d*star d) (hdet : a*d-b*c=1) :
     star d/(q:ℂ)+(a*star c+b*star d)/(q:ℂ)*c=a ∧
     -star c/(q:ℂ)+(a*star c+b*star d)/(q:ℂ)*d=b := by
   have hqC : (q:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hq
-  constructor
-  · field_simp [hqC]
-    rw [hrow]
-    linear_combination -(star d)*hdet
-  · field_simp [hqC]
-    rw [hrow]
-    linear_combination (star c)*hdet
+  grind
 
-def matrixHorizontal (g : SL(2,ℂ)) : ℂ :=
+def matrixHorizontal (g : SL(2,ℂ))  :=
   (g 0 0*star (g 1 0)+g 0 1*star (g 1 1))/(rowEnergy (complexBottomRow g):ℂ)
 
-lemma matrix_iwasawa_factor (g : SL(2,ℂ)) :
+lemma matrix_iwasawa_factor  g  :
     ∃k : SL(2,ℂ), k∈compactSubgroup ∧
       g=upperSection (matrixHorizontal g) (liftedHeight g) (liftedHeight_pos g)*k := by
   let q : ℝ := rowEnergy (complexBottomRow g)
@@ -242,8 +237,7 @@ lemma matrix_iwasawa_factor (g : SL(2,ℂ)) :
   have hz := iwasawa_z_row_identities (g 0 0) (g 0 1) (g 1 0) (g 1 1) q hq.ne' hqC hdet
   let B := upperSection (matrixHorizontal g) (liftedHeight g) (liftedHeight_pos g)
   let U := bottomRowUnitary (g 1 0) (g 1 1) r
-  have hroot : Real.sqrt (liftedHeight g)=r⁻¹ := by
-    exact Real.sqrt_inv q
+  have hroot : Real.sqrt (liftedHeight g)=r⁻¹ := Real.sqrt_inv q
   have hrC : (r:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hr.ne'
   have hqrC : (r:ℂ)^2=(q:ℂ) := by exact_mod_cast hr2
   have hB : (B:Matrix (Fin 2) (Fin 2) ℂ)=
@@ -287,7 +281,7 @@ lemma matrix_iwasawa_factor (g : SL(2,ℂ)) :
   · dsimp [k,B]
     group
 
-theorem upperPoint_surjective (w : HyperbolicSpace) :
+theorem upperPoint_surjective  w  :
     ∃z : ℂ, ∃v : ℝ, ∃hv : 0<v, upperPoint z v hv=w := by
   induction w using Quotient.inductionOn with
   | _ g =>
@@ -307,11 +301,11 @@ theorem upperPoint_surjective (w : HyperbolicSpace) :
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+ 
+ 
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinEmbedding
+ 
 local notation "O" => ActualEisensteinCubic.O
 
 lemma eisEmbedding_range_closed : IsClosed (Set.range eisEmbedding) := by
@@ -331,7 +325,7 @@ lemma eisEmbedding_range_closed : IsClosed (Set.range eisEmbedding) := by
   rw [heq]
   exact hc.preimage (by fun_prop)
 
-lemma exists_nearest_eisenstein (z : ℂ) :
+lemma exists_nearest_eisenstein  z  :
     ∃n : O, ∀m : O, ‖z-eisEmbedding n‖≤‖z-eisEmbedding m‖ := by
   obtain ⟨y,hy,heq⟩ := eisEmbedding_range_closed.exists_infDist_eq_dist
     (Set.range_nonempty eisEmbedding) z
@@ -340,7 +334,7 @@ lemma exists_nearest_eisenstein (z : ℂ) :
   rw [← dist_eq_norm,← dist_eq_norm,← heq]
   exact Metric.infDist_le_dist_of_mem ⟨m,rfl⟩
 
-lemma hexagon_norm_sq_bound (x y : ℝ)
+lemma hexagon_norm_sq_bound  x y 
     (hx : |x|≤1/2)
     (h₁ : x+Real.sqrt 3*y≤1) (h₂ : x-Real.sqrt 3*y≤1)
     (h₃ : -x+Real.sqrt 3*y≤1) (h₄ : -x-Real.sqrt 3*y≤1) :
@@ -348,9 +342,9 @@ lemma hexagon_norm_sq_bound (x y : ℝ)
   have hs : (Real.sqrt 3)^2=3 := Real.sq_sqrt (by norm_num)
   have ha : |x|+Real.sqrt 3*|y|≤1 := by
     rcases le_total 0 x with hxx | hxx <;> rcases le_total 0 y with hyy | hyy
-    · simpa only [abs_of_nonneg hxx,abs_of_nonneg hyy] using h₁
+    · grind
     · simpa only [abs_of_nonneg hxx,abs_of_nonpos hyy,mul_neg,← sub_eq_add_neg] using h₂
-    · simpa only [abs_of_nonpos hxx,abs_of_nonneg hyy] using h₃
+    · grind
     · simpa only [abs_of_nonpos hxx,abs_of_nonpos hyy,mul_neg,← sub_eq_add_neg] using h₄
   have hyprod : 0≤(1-|x|-Real.sqrt 3*|y|)*(1-|x|+Real.sqrt 3*|y|) := by
     apply mul_nonneg
@@ -361,7 +355,7 @@ lemma hexagon_norm_sq_bound (x y : ℝ)
   have hxy : (Real.sqrt 3*|y|)^2=3*y^2 := by rw [mul_pow,hs,sq_abs]
   nlinarith [sq_abs x,sq_abs y]
 
-theorem exists_eisenstein_distance_sq_le_third (z : ℂ) :
+theorem exists_eisenstein_distance_sq_le_third  z  :
     ∃n : O, Complex.normSq (z-eisEmbedding n)≤1/3 := by
   obtain ⟨n,hn⟩ := exists_nearest_eisenstein z
   let w := z-eisEmbedding n
@@ -394,20 +388,20 @@ theorem exists_eisenstein_distance_sq_le_third (z : ℂ) :
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+ 
+open scoped       MatrixGroups
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT
+ 
 local notation "O" => ActualEisensteinCubic.O
 
-def integralBottomRow (M : SL(2,O)) : Fin 2 → O := fun j => M 1 j
-def integralRowEnergy (g : SL(2,ℂ)) (v : Fin 2 → O) : ℝ :=
+def integralBottomRow (M : SL(2,O)) : Fin 2 → O := M 1
+def integralRowEnergy (g : SL(2,ℂ)) (v : Fin 2 → O)  :=
   rowEnergy (rowOperator g (fun j => eisEmbedding (v j)))
 
-lemma integralRowEnergy_sublevel_finite (g : SL(2,ℂ)) (C : ℝ) :
+lemma integralRowEnergy_sublevel_finite  g   C  :
     Set.Finite {v : Fin 2 → O | integralRowEnergy g v≤C} := by
   have hb : Set.Finite (Metric.closedBall (0 : (Fin 2×Fin 2)→ℤ) (rowBound g*Real.sqrt C)) :=
     (isCompact_closedBall _ _).finite_of_discrete
@@ -418,20 +412,17 @@ lemma integralRowEnergy_sublevel_finite (g : SL(2,ℂ)) (C : ℝ) :
   exact (coordinates_le_transformed_energy g v).trans
     (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hv) (rowBound_pos g).le)
 
-lemma integral_height_action_matrix (M : SL(2,O)) (g : SL(2,ℂ)) :
+lemma integral_height_action_matrix  M   g  :
     hyperbolicHeight (integralComplexMatrix M • (QuotientGroup.mk g : HyperbolicSpace))=
-      (integralRowEnergy g (integralBottomRow M))⁻¹ := by
-  change (rowEnergy (complexBottomRow (integralComplexMatrix M*g)))⁻¹=_
-  rw [complexBottomRow_mul]
-  rfl
+      (integralRowEnergy g (integralBottomRow M))⁻¹ := rfl
 
-lemma integralRowEnergy_bottom_pos (g : SL(2,ℂ)) (M : SL(2,O)) :
+lemma integralRowEnergy_bottom_pos  g   M  :
     0 < integralRowEnergy g (integralBottomRow M) := by
   have h := hyperbolicHeight_pos (integralComplexMatrix M • (QuotientGroup.mk g : HyperbolicSpace))
   rw [integral_height_action_matrix,inv_pos] at h
   exact h
 
-theorem exists_maximal_integral_height (w : HyperbolicSpace) :
+theorem exists_maximal_integral_height  w  :
     ∃N : SL(2,O), ∀M : SL(2,O),
       hyperbolicHeight (integralComplexMatrix M • w)≤hyperbolicHeight (integralComplexMatrix N • w) := by
   induction w using Quotient.inductionOn with
@@ -442,25 +433,21 @@ theorem exists_maximal_integral_height (w : HyperbolicSpace) :
     have hS : Set.Finite S := (integralRowEnergy_sublevel_finite g C).inter_of_left P
     have hSne : S.Nonempty := by
       refine ⟨integralBottomRow 1,?_⟩
-      change C≤C ∧ integralBottomRow 1∈Set.range integralBottomRow
-      exact ⟨le_rfl,1,rfl⟩
+      aesop
     obtain ⟨v,hv,hmin⟩ := Set.exists_min_image S (integralRowEnergy g) hS hSne
     obtain ⟨N,hN⟩ := hv.2
     refine ⟨N,fun M => ?_⟩
     have hNM : integralRowEnergy g (integralBottomRow N)≤ integralRowEnergy g (integralBottomRow M) := by
-      rw [hN]
-      by_cases hM : integralRowEnergy g (integralBottomRow M)≤C
-      · exact hmin _ ⟨hM,⟨M,rfl⟩⟩
-      · exact hv.1.trans (le_of_not_ge hM)
+      grind
     rw [integral_height_action_matrix,integral_height_action_matrix]
     exact inv_anti₀ (integralRowEnergy_bottom_pos g N) hNM
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
+ 
+open scoped         Matrix
 
-open ActualEisensteinCubic ConcreteTraceCRT
+ 
 local notation "O" => ActualEisensteinCubic.O
 
 def integralTranslation (n : O) : SL(2,O) :=
@@ -468,7 +455,7 @@ def integralTranslation (n : O) : SL(2,O) :=
 def integralInversion : SL(2,O) :=
   ⟨!![0,-1;1,0],by simp [Matrix.det_fin_two]⟩
 
-lemma integralTranslation_action (n : O) (z : ℂ) (v : ℝ) (hv : 0<v) :
+lemma integralTranslation_action  n   z   v   hv  :
     integralComplexMatrix (integralTranslation n) • upperPoint z v hv=
       upperPoint (z+eisEmbedding n) v hv := by
   change (QuotientGroup.mk (integralComplexMatrix (integralTranslation n)*upperSection z v hv) : HyperbolicSpace)=
@@ -484,7 +471,7 @@ lemma integralTranslation_action (n : O) (z : ℂ) (v : ℝ) (hv : 0<v) :
     simp [integralTranslation,RingHom.mapMatrix_apply,Matrix.map_apply,upperSection,Matrix.mul_apply,
       Fin.sum_univ_two,div_eq_mul_inv] ; ring
 
-lemma integralInversion_height (z : ℂ) (v : ℝ) (hv : 0<v) :
+lemma integralInversion_height  z   v   hv  :
     hyperbolicHeight (integralComplexMatrix integralInversion • upperPoint z v hv)=
       v/(‖z‖^2+v^2) := by
   have h10 : integralComplexMatrix integralInversion 1 0 = 1 := by
@@ -496,7 +483,7 @@ lemma integralInversion_height (z : ℂ) (v : ℝ) (hv : 0<v) :
   rw [hyperbolicHeight_action_upperPoint, h10, h11]
   simp
 
-theorem bianchi_ford_cover (w : HyperbolicSpace) :
+theorem bianchi_ford_cover  w  :
     ∃M : SL(2,O), ∃z : ℂ, ∃v : ℝ, ∃hv : 0<v,
       integralComplexMatrix M • w=upperPoint z v hv ∧
       Complex.normSq z≤1/3 ∧ 1≤Complex.normSq z+v^2 ∧
@@ -521,13 +508,11 @@ theorem bianchi_ford_cover (w : HyperbolicSpace) :
   have hden : 0<‖z'‖^2+v^2 := by positivity
   have hunit : 1≤‖z'‖^2+v^2 := by
     have hm := (div_le_iff₀ hden).mp hinv
-    by_contra hh
-    have hlt := mul_lt_mul_of_pos_left (lt_of_not_ge hh) hv
-    linarith
+    simp_all
   refine ⟨M,z',v,hv,hMw,hn,?_,hmax⟩
   simpa only [Complex.normSq_eq_norm_sq] using hunit
 
-theorem bianchi_reduction_height_floor (w : HyperbolicSpace) :
+theorem bianchi_reduction_height_floor  w  :
     ∃M : SL(2,O), ∃z : ℂ, ∃v : ℝ, ∃hv : 0<v,
       integralComplexMatrix M • w=upperPoint z v hv ∧
       Complex.normSq z≤1/3 ∧ Real.sqrt (2/3)≤v := by
@@ -538,10 +523,10 @@ theorem bianchi_reduction_height_floor (w : HyperbolicSpace) :
 
 def truncatedFordBox (T : ℝ) : Set (ℂ×ℝ) :=
   Metric.closedBall 0 1 ×ˢ Set.Icc (Real.sqrt (2/3)) T
-lemma truncatedFordBox_isCompact (T : ℝ) : IsCompact (truncatedFordBox T) :=
+lemma truncatedFordBox_isCompact  T  : IsCompact (truncatedFordBox T) :=
   (isCompact_closedBall _ _).prod isCompact_Icc
 
-lemma mem_truncatedFordBox (z : ℂ) (v T : ℝ)
+lemma mem_truncatedFordBox  z   v T 
     (hz : Complex.normSq z≤1/3) (hv : Real.sqrt (2/3)≤v) (hT : v≤T) :
     (z,v)∈truncatedFordBox T := by
   refine ⟨?_,hv,hT⟩
@@ -551,11 +536,11 @@ lemma mem_truncatedFordBox (z : ℂ) (v T : ℝ)
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+ 
+ 
 
 namespace CubicEisenstein
-open CubicKubota ActualEisensteinCubic ConcreteTraceCRT
+open CubicKubota    
 local notation "O" => ActualEisensteinCubic.O
 
 lemma levelThree_finiteIndex : levelThree.FiniteIndex := by
@@ -566,15 +551,13 @@ lemma levelThree_finiteIndex : levelThree.FiniteIndex := by
 def finiteCubicMultiplier : levelThree →* rootsOfUnity 3 ℂ where
   toFun M := rootsOfUnity.mkOfPowEq (complexCharacter M) (complexCharacter_cube M)
   map_one' := by
-    apply Subtype.ext
-    apply Units.ext
-    simp only [rootsOfUnity.coe_mkOfPowEq,map_one,OneMemClass.coe_one,Units.val_one]
+    aesop
   map_mul' M N := by
     apply Subtype.ext
     apply Units.ext
     simp only [rootsOfUnity.coe_mkOfPowEq,map_mul,Subgroup.coe_mul,Units.val_mul]
 
-def globalKubotaKernel : Subgroup (SL(2,O)) := finiteCubicMultiplier.ker.map levelThree.subtype
+def globalKubotaKernel  := finiteCubicMultiplier.ker.map levelThree.subtype
 
 lemma globalKubotaKernel_finiteIndex : globalKubotaKernel.FiniteIndex := by
   let : levelThree.FiniteIndex := levelThree_finiteIndex
@@ -584,21 +567,18 @@ lemma globalKubotaKernel_finiteIndex : globalKubotaKernel.FiniteIndex := by
   exact mul_ne_zero (Subgroup.FiniteIndex.index_ne_zero (H := finiteCubicMultiplier.ker))
     (Subgroup.FiniteIndex.index_ne_zero (H := levelThree))
 
-@[simp] lemma finiteCubicMultiplier_coe (M : levelThree) :
+@[simp] lemma finiteCubicMultiplier_coe  M  :
     ((finiteCubicMultiplier M : ℂˣ) : ℂ)=complexCharacter M := rfl
 
-lemma finiteCubicMultiplier_eq_one (M : levelThree) :
+lemma finiteCubicMultiplier_eq_one  M  :
     finiteCubicMultiplier M=1 ↔ complexCharacter M=1 := by
   constructor
   · intro h
     have hc := congrArg (fun x : rootsOfUnity 3 ℂ => ((x:ℂˣ):ℂ)) h
     simpa only [finiteCubicMultiplier_coe,OneMemClass.coe_one,Units.val_one] using hc
-  · intro h
-    apply Subtype.ext
-    apply Units.ext
-    simpa only [finiteCubicMultiplier_coe,OneMemClass.coe_one,Units.val_one] using h
+  aesop
 
-lemma globalKubotaKernel_mem (M : SL(2,O)) :
+lemma globalKubotaKernel_mem  M  :
     M∈globalKubotaKernel ↔ ∃hM : M∈levelThree,complexCharacter ⟨M,hM⟩=1 := by
   constructor
   · rintro ⟨N,hN,hNM⟩

@@ -17,7 +17,7 @@ open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
 open ProbePhysical CenteredMomentPrimeSlot
 local notation "O" => HeckeFamily.O
 
-lemma source_product_le_rowMask (S : Finset (Ideal O))
+lemma source_product_le_rowMask  S 
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) :
     (∏P∈S,P)≤Ideal.span {rowMaskElement} := by
   apply Ideal.dvd_iff_le.mp
@@ -44,8 +44,8 @@ def sourceMomentBase (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Charac
   Sum.elim (fun b=>if b then fixedSourcePrincipal S hS else η.inverse.excludePrimes S hS)
     (fun θ=>(HeckeRayQuotient.character M H hH θ).inverse)
 
-lemma sourceMomentData_base (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character)
-    (j : Sum Bool (RayQuotient.Characters M H)) :
+lemma sourceMomentData_base  S   hS   η 
+     j  :
     sourceMomentData M H hH S hS η j=momentData (sourceMomentBase M H hH S hS η j) := by
   rcases j with b|θ
   · cases b <;> rfl
@@ -53,7 +53,7 @@ lemma sourceMomentData_base (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η :
 
 theorem eventually_source_slots_coprime {N : ℕ}
     (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character)
-    (ell : Fin N→ℝ) (hell : ∀i,0<ell i) (a : ℝ) (ha : 0<a) :
+    (ell : Fin N→ℝ) (hell : ∀i,0<ell i)  a  (ha : 0<a) :
     ∀ᶠZ : ℝ in atTop,∀j : Sum Bool (RayQuotient.Characters M H),∀i : Fin N,
       ∀d : ℝ,d≠0→∀(W : ℝ→ℂ)(b : ℝ),Function.support W⊆Set.Ici a→
       ∀P∈primePool M H b ((Z^d)^(ell i/d)),

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTail
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTail
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
@@ -56,7 +57,7 @@ theorem global_parent_tail_aggregate_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
         (SchwartzMap.seminorm ℝ 0 0 om)^2*Z^(-saving) := by
   obtain ⟨s,C,hC,hbound⟩ := global_parent_tail_rapid Jmax Lcap tau saving hLcap htau
   let N : ℝ := (Fintype.card (RayCharacter×RayCharacter):ℝ)*(Fintype.card FirstCoreIndex:ℝ)
-  have hN : 0<N := by dsimp [N];positivity
+  
   refine ⟨s,(32*512)*N*C,by positivity,?_⟩
   intro ι σ _ _ p hp _ hg hinj hcop hc Jo hJo extra pool source negative Ψ m w slots lists a
     hslots ha hΨ hw om lo hi hlo hs X M Y Z height R hX hhi hZ hY hscale hy hyi hXcap
@@ -96,6 +97,6 @@ theorem global_parent_tail_aggregate_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
     _ = _ := by rw [he]
 
 end SevenEighths.InverseMomentGlobalPriorityTail
-end
+
 
 end OAI

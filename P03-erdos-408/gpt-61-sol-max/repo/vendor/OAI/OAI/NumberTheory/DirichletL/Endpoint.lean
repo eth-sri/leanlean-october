@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Basic.Real.Basic
 public import Mathlib.Tactic.Linarith
@@ -15,39 +16,45 @@ namespace SevenEighths.Endpoint
 
 noncomputable section
 
-def denominator (y : ℝ) : ℝ := (37 + 34 * y) / 18
+def denominator (y : ℝ)  := (37 + 34 * y) / 18
 
-def primeWeight (y : ℝ) : ℝ := (7 + 18 * y + 8 * y ^ 2) / 9
+def primeWeight (y : ℝ)  := (7 + 18 * y + 8 * y ^ 2) / 9
 
-def balanceDenominator (δ y : ℝ) : ℝ :=
+def balanceDenominator (δ y : ℝ)  :=
   (5 / 6 - δ) * denominator y + δ * primeWeight y
 
-def certificateWeight (y : ℝ) : ℝ := 51 + 41 * y
+def certificateWeight (y : ℝ)  := 51 + 41 * y
 
-def balancedCutoff (δ y : ℝ) : ℝ :=
+def balancedCutoff (δ y : ℝ)  :=
   1 + δ * primeWeight y / (2 * balanceDenominator δ y)
 
-def balancedRowCount (δ y : ℝ) : ℝ :=
+def balancedRowCount (δ y : ℝ)  :=
   1 - 5 / 6 + (5 / 6 - δ) * balancedCutoff δ y
 
-def balancedExponent (δ y : ℝ) : ℝ :=
+def balancedExponent (δ y : ℝ)  :=
   -(1 / 48) + (2 / 3) * δ + δ * (1 / 2 - y) / 6 -
     (13 / 16) * (1 - balancedRowCount δ y)
 
-theorem denominator_bounds {y : ℝ} (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2) :
+section
+variable {δ y : ℝ} (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 5 / 6) (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2)
+
+include hy0 hy1 in
+theorem denominator_bounds       :
     7 / 9 ≤ denominator y ∧ denominator y ≤ 3 := by
   dsimp [denominator]
   constructor <;> linarith
 
-theorem primeWeight_bounds {y : ℝ} (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2) :
+include hy0 hy1 in
+theorem primeWeight_bounds       :
     7 / 9 ≤ primeWeight y ∧ primeWeight y ≤ 2 := by
-  have hs := sq_nonneg y
+  
   have ht := mul_nonneg hy0 (sub_nonneg.mpr hy1)
   dsimp [primeWeight]
   constructor <;> nlinarith
 
-theorem balanceDenominator_bounds {δ y : ℝ}
-    (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 5 / 6) (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2) :
+include hδ0 hδ1 hy0 hy1 in
+theorem balanceDenominator_bounds  
+            :
     35 / 54 ≤ balanceDenominator δ y ∧ balanceDenominator δ y ≤ 5 / 2 := by
   obtain ⟨hd0, hd1⟩ := denominator_bounds hy0 hy1
   obtain ⟨hp0, hp1⟩ := primeWeight_bounds hy0 hy1
@@ -59,7 +66,7 @@ theorem balanceDenominator_bounds {δ y : ℝ}
   dsimp [balanceDenominator]
   constructor <;> nlinarith
 
-theorem endpoint_identity (δ y : ℝ) (hJ : balanceDenominator δ y ≠ 0) :
+theorem endpoint_identity  δ y  (hJ : balanceDenominator δ y ≠ 0) :
     10368 * certificateWeight y * balanceDenominator δ y * (-balancedExponent δ y) =
       (3 + 5 * y) * ((4 * certificateWeight y * δ - 79) ^ 2 + 49) +
       4 * y * (4 * certificateWeight y * δ *
@@ -69,8 +76,9 @@ theorem endpoint_identity (δ y : ℝ) (hJ : balanceDenominator δ y ≠ 0) :
   simp only [balanceDenominator, denominator, primeWeight, certificateWeight]
   ring
 
-theorem balanced_endpoint_margin {δ y : ℝ}
-    (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 5 / 6) (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2) :
+include hδ0 hδ1 hy0 hy1 in
+theorem balanced_endpoint_margin  
+            :
     (49 : ℝ) / 440640 ≤ -balancedExponent δ y := by
   obtain ⟨hJlo, hJhi⟩ := balanceDenominator_bounds hδ0 hδ1 hy0 hy1
   have hJpos : 0 < balanceDenominator δ y := by linarith
@@ -102,6 +110,8 @@ theorem balanced_endpoint_margin {δ y : ℝ}
     nlinarith only [hcancel, hp]
   have hup := mul_le_mul_of_nonneg_right hJhi (le_of_lt hEpos)
   nlinarith only [hcancel, hup]
+
+end
 
 end
 

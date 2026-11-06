@@ -121,7 +121,7 @@ theorem actual_nonfloor_class_from_raw_moments (N n : ℕ) (e eps c b A R dmin d
     (adaptiveRowExponent (2*a-1) q Δ ε εm R ν) hv ha.le ha' (by positivity) rows'
     (fun u hu=>hrows u (hsub hu)) (fun u hu=>hnorm u (hsub hu)) hcard i hi
     (fun u hu=>hnext u (hsub hu)) t ht
-    (fun u hu=>source_amplitude_class_mean M H ell W Z d b a mesh z hZp hd0.ne' hmesh rows bin u hu)
+    (source_amplitude_class_mean M H ell W Z d b a mesh z hZp hd0.ne' hmesh rows bin)
   apply hp.trans_eq
   rw [show logCost+heightCost+momentCost+
       d*adaptiveRowExponent (2*a-1) q Δ ε εm R ν+

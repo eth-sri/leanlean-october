@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ConjugateWindow
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators ContDiff
 open MeasureTheory
 
@@ -21,12 +21,12 @@ open CenteredMomentSecondHeightFamily CenteredMomentSourceLiveColumn CenteredMom
 open CenteredMomentFirstColumns CenteredMomentChildAssembly CenteredMomentCanonicalFirst
 open CenteredMomentFirstCanonicalFamily CenteredMomentCommonSupport RayFourExpansion IdealMobiusDivisorSum
 open FourierBridge
-local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[Fintype ι]
-local instance firstWindowColumnsDecidableEq : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-lemma element_norm (Q C:Ideal O)(hC:C≠0)(S:Finset (Ideal O))(I:columns Q C hC S):
-    ‖eisEmbedding (element Q C hC S I)‖^2=(Ideal.absNorm (I:Ideal O):ℝ):=by
+variable {ι:Type*}[Fintype ι]
+
+
+lemma element_norm  Q C  hC  S  I :
+    ‖eisEmbedding (element Q C hC S I)‖^2=(Ideal.absNorm (I:Ideal ActualEisensteinCubic.O):ℝ):=by
   rw [eisEmbedding_norm_sq_eq_absNorm_span,element_span]
 
 end SevenEighths.CenteredMomentFirstPhysicalSource

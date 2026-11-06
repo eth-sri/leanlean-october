@@ -20,8 +20,11 @@ theorem prime_group_eq {g h : P.Group} (p : P.Prime g) (q : P.Prime h) (he : p.v
   by_contra hgh
   exact Finset.disjoint_left.mp (P.disjoint g h hgh) p.property (he.symm ▸ q.property)
 
-theorem source_label_dvd_D_iff (ν : Pattern P J ell m) (a b : P.Labels (J + ell)) (u : P.Aux J)
-    (hinj : ∀ g, Function.Injective (a g)) (hban : ν.ban a b u) (g : P.Group) (i : Fin (J + ell)) :
+section
+variable (ν : Pattern P J ell m) (a b : P.Labels (J + ell)) (u : P.Aux J)
+
+theorem source_label_dvd_D_iff      
+    (hinj : ∀ g, Function.Injective (a g)) (hban : ν.ban a b u)  g   i  :
     (a g i).val ∣ ν.D a u ↔ ν.shared g i := by
   constructor
   · intro hd
@@ -51,7 +54,7 @@ theorem source_label_dvd_D_iff (ν : Pattern P J ell m) (a b : P.Labels (J + ell
       (Finset.mem_univ g)
     simpa only [ite_eq_right hc, Pattern.D] using h1.trans h2
 
-theorem compatible_D_eq (ν : Pattern P J ell m) (a b : P.Labels (J + ell)) (u : P.Aux J)
+theorem compatible_D_eq      
     (hc : ν.compatible a b) : ν.D a u = ν.D b u := by
   unfold Pattern.D
   apply Finset.prod_congr rfl
@@ -63,9 +66,9 @@ theorem compatible_D_eq (ν : Pattern P J ell m) (a b : P.Labels (J + ell)) (u :
   · simp only [ite_eq_right hj]
     exact congrArg Subtype.val (hc g (ν.slot j) ⟨j, rfl, hj⟩)
 
-theorem target_label_dvd_D_iff (ν : Pattern P J ell m) (a b : P.Labels (J + ell)) (u : P.Aux J)
+theorem target_label_dvd_D_iff      
     (hinj : ∀ g, Function.Injective (b g)) (hcompat : ν.compatible a b)
-    (hban : ν.ban a b u) (g : P.Group) (i : Fin (J + ell)) :
+    (hban : ν.ban a b u)  g   i  :
     (b g i).val ∣ ν.D a u ↔ ν.shared g i := by
   rw [compatible_D_eq ν a b u hcompat]
   apply source_label_dvd_D_iff ν b a u hinj
@@ -74,10 +77,10 @@ theorem target_label_dvd_D_iff (ν : Pattern P J ell m) (a b : P.Labels (J + ell
 
 /-- A repeated active prime across one physical step must occupy the same
 canonical shared slot. This prevents an immediate new-store promotion. -/
-theorem active_both_shared (ν : Pattern P J ell m) (a b : P.Labels (J + ell)) (u : P.Aux J)
+theorem active_both_shared      
     (hinjA : ∀ g, Function.Injective (a g)) (hinjB : ∀ g, Function.Injective (b g))
     (hcompat : ν.compatible a b) (hban : ν.ban a b u)
-    (g : P.Group) (i j : Fin (J + ell)) (he : a g i = b g j)
+     g   i j  (he : a g i = b g j)
     (n k : ℤ) (hn : ((a g i).val : ℤ) ∣ n)
     (hn' : ((a g i).val : ℤ) ∣ n + k * (ν.D a u : ℤ))
     (hk : ¬ ((a g i).val : ℤ) ∣ k) :
@@ -88,6 +91,8 @@ theorem active_both_shared (ν : Pattern P J ell m) (a b : P.Labels (J + ell)) (
   have hshared := (source_label_dvd_D_iff ν a b u hinjA hban g i).mp hd
   have hij : i = j := hinjB g ((hcompat g i hshared).symm.trans he)
   exact ⟨hshared, hij ▸ hshared, hij⟩
+
+end
 
 
 end Erdos821.S2Core

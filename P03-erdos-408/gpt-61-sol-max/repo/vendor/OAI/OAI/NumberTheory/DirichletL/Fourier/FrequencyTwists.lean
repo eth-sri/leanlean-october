@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.SecondPoisson
 public import OAI.NumberTheory.DirichletL.Poisson.PrincipalTruncation
@@ -11,89 +12,88 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 namespace JointLogSeparation
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+ 
+ 
 open FourierBridge
 
-lemma logPhase_temperate (t : ℝ) : (logPhase t).HasTemperateGrowth := by
+lemma logPhase_temperate  t  : (logPhase t).HasTemperateGrowth := by
   have hl : Function.HasTemperateGrowth (fun x : ℝ => (2 * Real.pi * t) * x) := by
     simpa [Pi.smul_def, smul_eq_mul] using (((2 * Real.pi * t) • ContinuousLinearMap.id ℝ ℝ).hasTemperateGrowth)
   exact Complex.hasTemperateGrowth_exp_mul_I.comp hl
 
-def frequencyTwist (g : 𝓢(ℝ, ℂ)) (t : ℝ) : 𝓢(ℝ, ℂ) :=
+def frequencyTwist (g : 𝓢(ℝ, ℂ)) (t : ℝ)  :=
   SchwartzMap.smulLeftCLM ℂ (logPhase t) g
 
-@[simp] lemma frequencyTwist_apply (g : 𝓢(ℝ, ℂ)) (t x : ℝ) :
-    frequencyTwist g t x = logPhase t x * g x := by
-  exact SchwartzMap.smulLeftCLM_apply_apply (logPhase_temperate t) g x
+@[simp] lemma frequencyTwist_apply  g   t x  :
+    frequencyTwist g t x = logPhase t x * g x := SchwartzMap.smulLeftCLM_apply_apply (logPhase_temperate t) g x
 
-lemma logPhase_add_frequency (t s x : ℝ) :
+lemma logPhase_add_frequency  t s x  :
     logPhase (t + s) x = logPhase t x * logPhase s x := by
   unfold logPhase
   rw [← Complex.exp_add]
@@ -101,18 +101,13 @@ lemma logPhase_add_frequency (t s x : ℝ) :
   push_cast
   ring
 
-@[simp] lemma frequencyTwist_twice (g : 𝓢(ℝ, ℂ)) (t s : ℝ) :
-    frequencyTwist (frequencyTwist g t) s = frequencyTwist g (t + s) := by
-  ext x
-  simp only [frequencyTwist_apply, logPhase_add_frequency]
-  ring
 
-@[simp] lemma frequencyTwist_norm (g : 𝓢(ℝ, ℂ)) (t x : ℝ) :
-    ‖frequencyTwist g t x‖ = ‖g x‖ := by simp [logPhase_norm]
 
-def phaseDerivative (t : ℝ) : ℂ := ((2 * Real.pi * t : ℝ) : ℂ) * Complex.I
 
-lemma logPhase_hasDerivAt (t x : ℝ) :
+
+def phaseDerivative (t : ℝ)  := ((2 * Real.pi * t : ℝ) : ℂ) * Complex.I
+
+lemma logPhase_hasDerivAt  t x  :
     HasDerivAt (logPhase t) (phaseDerivative t * logPhase t x) x := by
   have h := ((Complex.ofRealCLM.hasDerivAt (x := x)).const_mul (phaseDerivative t)).cexp
   simp only [Complex.ofRealCLM_apply, Complex.ofReal_one, mul_one] at h
@@ -124,7 +119,7 @@ lemma logPhase_hasDerivAt (t x : ℝ) :
   simp_rw [he] at h
   simpa only [mul_comm] using h
 
-lemma logPhase_iteratedDeriv (t : ℝ) (n : ℕ) :
+lemma logPhase_iteratedDeriv  t   n  :
     iteratedDeriv n (logPhase t) = fun x => phaseDerivative t ^ n * logPhase t x := by
   induction n with
   | zero => funext x; simp
@@ -137,29 +132,28 @@ lemma logPhase_iteratedDeriv (t : ℝ) (n : ℕ) :
     simp only [pow_succ]
     ring
 
-lemma phaseDerivative_norm (t : ℝ) : ‖phaseDerivative t‖ = 2 * Real.pi * ‖t‖ := by
-  simp only [phaseDerivative, norm_mul, Complex.norm_real, Complex.norm_I, mul_one]
-  rw [Real.norm_of_nonneg (by norm_num : (0 : ℝ) ≤ 2), Real.norm_of_nonneg Real.pi_pos.le]
+lemma phaseDerivative_norm  t  : ‖phaseDerivative t‖ = 2 * Real.pi * ‖t‖ := by
+  simp_all [phaseDerivative]
 
-lemma logPhase_iteratedFDeriv_norm (t x : ℝ) (n : ℕ) :
+lemma logPhase_iteratedFDeriv_norm  t x   n  :
     ‖iteratedFDeriv ℝ n (logPhase t) x‖ = (2 * Real.pi * ‖t‖) ^ n := by
   rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, logPhase_iteratedDeriv]
   simp only [norm_mul, norm_pow, phaseDerivative_norm, logPhase_norm, mul_one]
 
-def derivativeSeminormSum (g : 𝓢(ℝ, ℂ)) (k n : ℕ) : ℝ :=
+def derivativeSeminormSum (g : 𝓢(ℝ, ℂ)) (k n : ℕ)  :=
   ∑ i ∈ Finset.range (n + 1), (SchwartzMap.seminorm ℝ k i) g
 
-lemma derivativeSeminormSum_nonneg (g : 𝓢(ℝ, ℂ)) (k n : ℕ) :
+lemma derivativeSeminormSum_nonneg  g   k n  :
     0 ≤ derivativeSeminormSum g k n := by unfold derivativeSeminormSum; positivity
 
-lemma seminorm_le_derivativeSeminormSum (g : 𝓢(ℝ, ℂ)) (k n i : ℕ) (hi : i ≤ n) :
+lemma seminorm_le_derivativeSeminormSum  g   k n i  (hi : i ≤ n) :
     (SchwartzMap.seminorm ℝ k i) g ≤ derivativeSeminormSum g k n := by
   apply Finset.single_le_sum (s := Finset.range (n + 1))
     (f := fun j => (SchwartzMap.seminorm ℝ k j) g) (a := i)
   · intro j hj; positivity
   · exact Finset.mem_range.mpr (by omega)
 
-theorem frequencyTwist_seminorm_bound (g : 𝓢(ℝ, ℂ)) (t : ℝ) (k n : ℕ) :
+theorem frequencyTwist_seminorm_bound  g   t   k n  :
     (SchwartzMap.seminorm ℝ k n) (frequencyTwist g t) ≤
       (2 : ℝ)^n * (1 + 2 * Real.pi * ‖t‖)^n * derivativeSeminormSum g k n := by
   apply SchwartzMap.seminorm_le_bound ℝ k n _
@@ -189,8 +183,7 @@ theorem frequencyTwist_seminorm_bound (g : 𝓢(ℝ, ℂ)) (t : ℝ) (k n : ℕ)
         calc
           _ ≤ (1 + 2 * Real.pi * ‖t‖)^i := by gcongr; linarith
           _ ≤ _ := pow_le_pow_right₀ (by
-            have hc : 0 ≤ 2 * Real.pi * ‖t‖ := by positivity
-            linarith) hin
+            bound) hin
       have hs := (SchwartzMap.le_seminorm ℝ k (n-i) g x).trans
         (seminorm_le_derivativeSeminormSum g k n (n-i) (Nat.sub_le n i))
       exact mul_le_mul (mul_le_mul_of_nonneg_left hp (by positivity)) hs (by positivity)
@@ -199,7 +192,7 @@ theorem frequencyTwist_seminorm_bound (g : 𝓢(ℝ, ℂ)) (t : ℝ) (k n : ℕ)
       rw [← Finset.sum_mul, ← Finset.sum_mul, ← Nat.cast_sum, Nat.sum_range_choose]
       norm_cast
 
-theorem frequencyTwist_seminorm_polynomial (g : 𝓢(ℝ, ℂ)) (t : ℝ) (k n : ℕ) :
+theorem frequencyTwist_seminorm_polynomial  g   t   k n  :
     (SchwartzMap.seminorm ℝ k n) (frequencyTwist g t) ≤
       ((2 : ℝ)^n * (1 + 2 * Real.pi)^n * derivativeSeminormSum g k n) * (1 + ‖t‖)^n := by
   have hsum := derivativeSeminormSum_nonneg g k n
@@ -212,18 +205,18 @@ theorem frequencyTwist_seminorm_polynomial (g : 𝓢(ℝ, ℂ)) (t : ℝ) (k n :
       gcongr
     _ = _ := by rw [mul_pow]; ring
 
-def twistSourceBound (g : 𝓢(ℝ, ℂ)) (K : ℕ) : ℝ :=
+def twistSourceBound (g : 𝓢(ℝ, ℂ)) (K : ℕ)  :=
   ∑ i ∈ Finset.range (K + 1),
     ((2 : ℝ)^i * (1 + 2 * Real.pi)^i *
       (derivativeSeminormSum g 0 i + derivativeSeminormSum g (volume : Measure ℝ).integrablePower i))
 
-lemma twistSourceBound_nonneg (g : 𝓢(ℝ, ℂ)) (K : ℕ) : 0 ≤ twistSourceBound g K := by
+lemma twistSourceBound_nonneg  g   K  : 0 ≤ twistSourceBound g K := by
   apply Finset.sum_nonneg
   intro i hi
   exact mul_nonneg (mul_nonneg (by positivity) (by positivity))
     (add_nonneg (derivativeSeminormSum_nonneg _ _ _) (derivativeSeminormSum_nonneg _ _ _))
 
-theorem profileSourceBound_frequencyTwist (g : 𝓢(ℝ, ℂ)) (t : ℝ) (K : ℕ) :
+theorem profileSourceBound_frequencyTwist  g   t   K  :
     profileSourceBound (frequencyTwist g t) K ≤ twistSourceBound g K * (1 + ‖t‖)^K := by
   unfold profileSourceBound twistSourceBound
   rw [Finset.sum_mul]
@@ -246,15 +239,15 @@ end JointLogSeparation
 
 section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open MeasureTheory
+ 
+ 
 namespace JointLogSeparation
 open FourierBridge
 
 end JointLogSeparation
 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
+ 
 open FirstPassCubeLabels (columnLog)
 open JointLogSeparation (outerWindow fixedColumnTest)
 open FourierBridge (logPhase)
@@ -264,34 +257,23 @@ variable {ι : Type*} [DecidableEq ι]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, lambda ∉ Ideal.span {p i})
 
-def fixedSecondTest (V : ℝ → ℂ) (X t s : ℝ) (negative : Bool) (N : Finset ι) : ℂ :=
+def fixedSecondTest (V : ℝ → ℂ) (X t s : ℝ) (negative : Bool) (N : Finset ι)  :=
   if negative then star (fixedColumnTest V (t-s) (columnLog p X N))
   else fixedColumnTest V (t-s) (columnLog p X N)
 
 end SecondPassArithmetic
 end
 
-open scoped BigOperators Classical
+ 
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
-open SecondPassFiber (OldTuple newLabel newRow Valid)
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
 
-end
-
-open ActualEisensteinCubic
+ 
 open FirstCauchyArithmetic (supportMobius)
 open RayFourExpansion (RayCharacter gCoeff crossCoeff)
 
-lemma secondRayMinus_norm_le (Ψ : O →* ℂ) (z : SecondRayIndex) (a : O) :
+lemma secondRayMinus_norm_le  Ψ   z   a  :
     ‖secondRayMinus Ψ z a‖ ≤ ‖Ψ a‖ := by
   simp only [secondRayMinus, MonoidHom.mul_apply, norm_mul, conjugateRayMonoid_apply, norm_star]
   calc
@@ -299,7 +281,7 @@ lemma secondRayMinus_norm_le (Ψ : O →* ℂ) (z : SecondRayIndex) (a : O) :
       gcongr <;> exact FiniteRayExpansion.norm_char_le_one _ _
     _ = _ := by ring
 
-lemma secondRayPlus_norm_le (Ψ : O →* ℂ) (z : SecondRayIndex) (a : O) :
+lemma secondRayPlus_norm_le  Ψ   z   a  :
     ‖secondRayPlus Ψ z a‖ ≤ ‖Ψ a‖ := by
   simp only [secondRayPlus, MonoidHom.mul_apply, norm_mul, conjugateRayMonoid_apply, rayMonoid_apply, norm_star]
   calc
@@ -315,7 +297,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 theorem secondPreColumn_norm_le
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (Ψ : O →* ℂ) (m c d e k : O) (S : Finset ι) :
+     Ψ   m c d e k   S  :
     ‖secondPreColumn p hp hcop hg Ψ m c d e k (fun _ => 1) S‖ ≤ ‖Ψ (∏ i ∈ S, p i)‖ := by
   have hm : ‖rowCoprimeMask (fun i => Ideal.span {p i}) S m‖ ≤ 1 := by
     unfold rowCoprimeMask
@@ -330,7 +312,7 @@ theorem secondPreColumn_norm_le
 theorem secondCommonWeight_norm_le
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k₁ k₂ : O) (S : Finset ι) :
+     Ψ₁ Ψ₂   m r c d e k₁ k₂   S  :
     ‖secondCommonWeight p hp hcop hg Ψ₁ Ψ₂ m r c d e k₁ k₂ S‖ ≤
       ‖Ψ₁ (∏ i ∈ S, p i)‖ * ‖Ψ₂ (∏ i ∈ S, p i)‖ := by
   have hprime (i : ι) : Prime (Ideal.span {p i}) :=
@@ -354,17 +336,9 @@ theorem secondRayCoefficient_mass :
         (∑ a : RayCharacter, ‖gCoeff a‖) ^ 2 := by
     simp only [secondRayCoefficient, Fintype.sum_prod_type, norm_mul, norm_star, pow_two,
       Finset.sum_mul, Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro a ha
-    apply Finset.sum_congr rfl
-    intro b hb
-    apply Finset.sum_congr rfl
-    intro χ hχ
-    apply Finset.sum_congr rfl
-    intro η hη
     ring
   rw [heq]
-  exact mul_le_mul hQ (pow_le_pow_left₀ (by positivity) hG 2) (by positivity) (by norm_num)
+  exact (by gcongr <;> first | assumption | positivity | linarith)
 
 end SecondPassArithmetic
 

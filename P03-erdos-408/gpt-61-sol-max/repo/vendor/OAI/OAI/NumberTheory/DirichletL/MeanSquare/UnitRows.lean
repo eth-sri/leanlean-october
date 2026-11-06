@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.MeanSquare.UniformPolynomialHeight
 
@@ -10,129 +11,112 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+ 
 namespace CompletedUnitRows
-open ActualEisensteinCubic
+ 
 open ConcretePrimeRowBridge hiding O
 open CompletedGauss hiding O
 open CanonicalQuadraticSieve hiding O
 open CanonicalRowCompletion
-local instance : Fintype ActualEisensteinCubic.Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
-def unitRowFamily (Ψ : ActualEisensteinCubic.O→*ℂ) (mask : ActualEisensteinCubic.O) (u : ActualEisensteinCubic.Oˣ) {F : ℝ}
-    (f : idealRange F) (I : Ideal ActualEisensteinCubic.O) : ActualEisensteinCubic.O→*ℂ :=
+
+def unitRowFamily (Ψ : ActualEisensteinCubic.O→*ℂ) (mask : ActualEisensteinCubic.O) (u : ActualEisensteinCubic.Oˣ) {F }
+    (f : idealRange F) (I : Ideal ActualEisensteinCubic.O)  :=
   rowTwist Ψ mask (idealGenerator f.val) (u.val*idealGenerator I)
 
 end CompletedUnitRows
 
-open scoped BigOperators Classical
+ 
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-open CanonicalCoefficientClass (IsBaseRayTwist)
-open RayFourExpansion (RayCharacter)
 
-variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
 
-end
-section
 
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-open CanonicalCoefficientClass (IsBaseRayTwist)
-open RayFourExpansion (RayCharacter)
-variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-
-end
-
-open ActualEisensteinCubic FirstPassCubeLabels
+open   FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 open JointLogSeparation (frequencyTwist)
 
 end SecondPassArithmetic
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
+ 
+ 
 
 namespace CubicEisenstein
 
-def euclideanAxisPath (p : EuclideanSpatial) (j : Fin 3) (t : ℝ) : EuclideanSpatial :=
+def euclideanAxisPath (p : EuclideanSpatial) (j : Fin 3) (t : ℝ)  :=
   WithLp.toLp 2 (Function.update p.ofLp j t)
 
-lemma euclideanAxisPath_affine (p : EuclideanSpatial) (j : Fin 3) (t : ℝ) :
+section
+variable (f : EuclideanSpatial→ℂ) (p : EuclideanSpatial) (j : Fin 3) (t : ℝ)
+
+lemma euclideanAxisPath_affine       :
     euclideanAxisPath p j t=p+(t-p j)•euclideanCoordinateVector j := by
   apply (WithLp.equiv 2 (Fin 3→ℝ)).injective
   funext k
@@ -141,11 +125,11 @@ lemma euclideanAxisPath_affine (p : EuclideanSpatial) (j : Fin 3) (t : ℝ) :
     simp [euclideanAxisPath,euclideanCoordinateVector]
   · simp [euclideanAxisPath,euclideanCoordinateVector,Function.update,hk]
 
-lemma euclideanAxisPath_self (p : EuclideanSpatial) (j : Fin 3) :
+lemma euclideanAxisPath_self     :
     euclideanAxisPath p j (p j)=p := by
   rw [euclideanAxisPath_affine,sub_self,zero_smul,add_zero]
 
-lemma euclideanAxisPath_hasDerivAt (p : EuclideanSpatial) (j : Fin 3) (t : ℝ) :
+lemma euclideanAxisPath_hasDerivAt       :
     HasDerivAt (euclideanAxisPath p j) (euclideanCoordinateVector j) t := by
   have he : euclideanAxisPath p j=(fun t => p+(t-p j)•euclideanCoordinateVector j) :=
     funext (euclideanAxisPath_affine p j)
@@ -153,14 +137,14 @@ lemma euclideanAxisPath_hasDerivAt (p : EuclideanSpatial) (j : Fin 3) (t : ℝ) 
   simpa only [sub_zero,one_smul,zero_add,Pi.add_apply,id_eq] using!
     (hasDerivAt_const t p).add (((hasDerivAt_id t).sub_const (p j)).smul_const (euclideanCoordinateVector j))
 
-lemma euclideanAxisSlice_deriv (f : EuclideanSpatial→ℂ) (p : EuclideanSpatial)
-    (j : Fin 3) (t : ℝ) (hf : DifferentiableAt ℝ f (euclideanAxisPath p j t)) :
+lemma euclideanAxisSlice_deriv    
+        (hf : DifferentiableAt ℝ f (euclideanAxisPath p j t)) :
     deriv (axisSlice (fun q => f (WithLp.toLp 2 q)) p.ofLp j) t=
       fderiv ℝ f (euclideanAxisPath p j t) (euclideanCoordinateVector j) :=
   (hf.hasFDerivAt.comp_hasDerivAt t (euclideanAxisPath_hasDerivAt p j t)).deriv
 
-lemma euclideanAxisSlice_derivatives (f : EuclideanSpatial→ℂ)
-    (hf : ∀p,0<p 2→ContDiffAt ℝ ∞ f p) (p : EuclideanSpatial) (hp : 0<p 2) (j : Fin 3) :
+lemma euclideanAxisSlice_derivatives  
+    (hf : ∀p,0<p 2→ContDiffAt ℝ ∞ f p)  p  (hp : 0<p 2)  j  :
     deriv (axisSlice (fun q => f (WithLp.toLp 2 q)) p.ofLp j) (p j)=
       fderiv ℝ f p (euclideanCoordinateVector j) ∧
     deriv (deriv (axisSlice (fun q => f (WithLp.toLp 2 q)) p.ofLp j)) (p j)=
@@ -169,8 +153,7 @@ lemma euclideanAxisSlice_derivatives (f : EuclideanSpatial→ℂ)
   · simpa only [euclideanAxisPath_self] using euclideanAxisSlice_deriv f p j (p j)
       (by simpa only [euclideanAxisPath_self] using (hf p hp).differentiableAt (by simp))
   · have hc : ContinuousAt (fun t => euclideanAxisPath p j t 2) (p j) :=
-      (by fun_prop : Continuous (fun q : EuclideanSpatial => q 2)).continuousAt.comp
-        (euclideanAxisPath_hasDerivAt p j (p j)).continuousAt
+      (by fun_prop)
     have hpos : 0<euclideanAxisPath p j (p j) 2 := by rw [euclideanAxisPath_self]; exact hp
     have he : deriv (axisSlice (fun q => f (WithLp.toLp 2 q)) p.ofLp j)=ᶠ[𝓝 (p j)]
         (fun t => fderiv ℝ f (euclideanAxisPath p j t) (euclideanCoordinateVector j)) := by
@@ -184,18 +167,20 @@ lemma euclideanAxisSlice_derivatives (f : EuclideanSpatial→ℂ)
     have hh := hd'.hasFDerivAt.comp_hasDerivAt (p j) (euclideanAxisPath_hasDerivAt p j (p j))
     simpa only [euclideanAxisPath_self,Function.comp_def] using! hh.deriv
 
-def positiveEuclideanLaplacian (f : EuclideanSpatial→ℂ) (p : EuclideanSpatial) : ℂ :=
+end
+
+def positiveEuclideanLaplacian (f : EuclideanSpatial→ℂ) (p : EuclideanSpatial)  :=
   -(p 2:ℂ)^2*(∑j : Fin 3,fderiv ℝ (fun q => fderiv ℝ f q (euclideanCoordinateVector j)) p
     (euclideanCoordinateVector j))+(p 2:ℂ)*fderiv ℝ f p (euclideanCoordinateVector 2)
 
-lemma positiveEuclideanLaplacian_eq_axis (f : EuclideanSpatial→ℂ)
-    (hf : ∀p,0<p 2→ContDiffAt ℝ ∞ f p) (p : EuclideanSpatial) (hp : 0<p 2) :
+lemma positiveEuclideanLaplacian_eq_axis  f 
+    (hf : ∀p,0<p 2→ContDiffAt ℝ ∞ f p)  p  (hp : 0<p 2) :
     positiveEuclideanLaplacian f p=-axisLaplacian (fun q => f (WithLp.toLp 2 q)) p.ofLp := by
   unfold positiveEuclideanLaplacian axisLaplacian
   simp only [(euclideanAxisSlice_derivatives f hf p hp _).1,(euclideanAxisSlice_derivatives f hf p hp _).2]
   ring
 
-lemma positiveEuclideanLaplacian_congr (f g : EuclideanSpatial→ℂ) (p : EuclideanSpatial)
+lemma positiveEuclideanLaplacian_congr  f g   p 
     (he : f=ᶠ[𝓝 p]g) : positiveEuclideanLaplacian f p=positiveEuclideanLaplacian g p := by
   have hd (j : Fin 3) : (fun q => fderiv ℝ f q (euclideanCoordinateVector j))=ᶠ[𝓝 p]
       (fun q => fderiv ℝ g q (euclideanCoordinateVector j)) :=
@@ -204,18 +189,22 @@ lemma positiveEuclideanLaplacian_congr (f g : EuclideanSpatial→ℂ) (p : Eucli
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv Manifold
+ 
+open scoped           LineDeriv Manifold
 
 namespace CubicEisenstein
 
+section
+variable (χ : PositiveChartCutoff) (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) (f g : kernelSmoothTests) (hg : tsupport g.1⊆kernelChartCoreImage χ) (A : KernelQuotient→ℂ) (hA : MemLp A 2 (integralQuotientVolume globalKubotaKernel)) (heq : ∀p,0<p 2→kernelEuclideanProjection p∈tsupport g.1→
+      kernelCoordinateLaplacian f p=A (kernelEuclideanProjection p))
+
 lemma kernelTestPartitionTerm_tsupport_right {ι : Type*} {S : Set KernelQuotient}
     (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ,SpatialCoordinates) KernelQuotient S)
-    (f : kernelSmoothTests) (i : ι) :
+     f  (i : ι) :
     tsupport (kernelTestPartitionTerm ρ f i).1⊆tsupport f.1 :=
   tsupport_smul_subset_right _ _
 
-lemma kernelSmoothTest_finite_chart_partition_subsupport (f : kernelSmoothTests) :
+lemma kernelSmoothTest_finite_chart_partition_subsupport   :
     ∃t : Finset KernelGoodCutoff,∃g : t→kernelSmoothTests,
       (∑i,g i)=f ∧ ∀i,tsupport (g i).1⊆kernelChartCoreImage i.1.1 ∧
         tsupport (g i).1⊆tsupport f.1 := by
@@ -231,12 +220,12 @@ lemma kernelSmoothTest_finite_chart_partition_subsupport (f : kernelSmoothTests)
   exact ⟨(kernelTestPartitionTerm_tsupport ρ f i).trans (hρ i),
     kernelTestPartitionTerm_tsupport_right ρ f i⟩
 
-lemma kernelDirichletForm_supported_equation_chart (χ : PositiveChartCutoff)
-    (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
-    (f g : kernelSmoothTests) (hg : tsupport g.1⊆kernelChartCoreImage χ)
-    (A : KernelQuotient→ℂ) (hA : MemLp A 2 (integralQuotientVolume globalKubotaKernel))
-    (heq : ∀p,0<p 2→kernelEuclideanProjection p∈tsupport g.1→
-      kernelCoordinateLaplacian f p=A (kernelEuclideanProjection p)) :
+include hinj hg hA heq in
+lemma kernelDirichletForm_supported_equation_chart  
+     
+       
+       
+      :
     kernelDirichletForm f g=∫q,star (A q)*g.1 q∂integralQuotientVolume globalKubotaKernel := by
   let S := tsupport χ.func
   have hS : MeasurableSet S := χ.compact.measurableSet
@@ -282,10 +271,10 @@ lemma kernelDirichletForm_supported_equation_chart (χ : PositiveChartCutoff)
       have hz : g.1 q=0 := image_eq_zero_of_notMem_tsupport (fun h => hq (himg (hg h)))
       rw [hz,mul_zero]
 
-theorem kernelDirichletForm_supported_equation (f g : kernelSmoothTests)
-    (A : KernelQuotient→ℂ) (hA : MemLp A 2 (integralQuotientVolume globalKubotaKernel))
-    (heq : ∀p,0<p 2→kernelEuclideanProjection p∈tsupport g.1→
-      kernelCoordinateLaplacian f p=A (kernelEuclideanProjection p))
+include hA heq in
+theorem kernelDirichletForm_supported_equation  
+       
+     
     :
     kernelDirichletForm f g=∫q,star (A q)*g.1 q∂integralQuotientVolume globalKubotaKernel := by
   obtain ⟨t,G,hG,hGsupp⟩ := kernelSmoothTest_finite_chart_partition_subsupport g
@@ -306,6 +295,8 @@ theorem kernelDirichletForm_supported_equation (f g : kernelSmoothTests)
         simp only [Submodule.coe_sum,Finset.sum_apply] at hq
         dsimp only
         rw [←Finset.mul_sum,hq])
+
+end
 
 end CubicEisenstein
 

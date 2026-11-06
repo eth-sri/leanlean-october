@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowSlotScales
 public import OAI.NumberTheory.DirichletL.Detector.GramIdealSummation
@@ -7,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.Detector.GramIdealSummation
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "SupportedIdeal" => {I : Ideal O // Supported I}
+
+local notation "SupportedIdeal" => {I : Ideal ActualEisensteinCubic.O // Supported I}
 
 lemma canonical_slot_inverse_square : ∃C : ℝ,0<C ∧
     ∀(T : Finset PrimeIdeal)(_hT : ∀P∈T,Supported P.val),
@@ -23,9 +24,7 @@ lemma canonical_slot_inverse_square : ∃C : ℝ,0<C ∧
   let f : T→SupportedIdeal := fun P=>⟨P.val.val,hT P.val P.property⟩
   have hf : Function.Injective f := by
     intro P Q h
-    apply Subtype.ext
-    apply Subtype.ext
-    exact congrArg (fun I : SupportedIdeal=>I.val) h
+    aesop
   have he : (∑a : canonicalSlotSupport T,elementNorm a.val^(-2:ℝ))=
       ∑I∈Finset.univ.image f,ProbeGramCommon.gramIdealNorm I^(-2:ℝ) := by
     rw [Finset.sum_image (fun P _ Q _ h=>hf h)]
@@ -38,7 +37,7 @@ lemma canonical_slot_inverse_square : ∃C : ℝ,0<C ∧
   rw [he]
   exact hb _
 
-lemma lowUnselectedWeight_norm_identity {K : ℕ} (slots : Fin K→Finset O)
+lemma lowUnselectedWeight_norm_identity {K : ℕ} (slots : Fin K→Finset ActualEisensteinCubic.O)
     (hslots : ∀i x,x∈slots i→x≠0) (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ)
     (a : LowUnselectedTuple slots J) :
     ‖lowUnselectedWeight slots J W P a‖*elementNorm (∏i : J,(a i).val)^(-(1/2:ℝ))=
@@ -56,7 +55,7 @@ lemma lowUnselectedWeight_norm_identity {K : ℕ} (slots : Fin K→Finset O)
       rw [elementNorm_finset_prod,Finset.prod_mul_distrib,Real.finsetProd_rpow Finset.univ
         (fun i : J=>elementNorm (a i).val) (fun i _=>by unfold elementNorm;positivity)]
 
-theorem lowUnselectedMass_bound (K : ℕ) (M : ℝ) (hM : 0≤M) :
+theorem lowUnselectedMass_bound  K   M  (hM : 0≤M) :
     ∃C : ℝ,0<C ∧ ∀(T : Fin K→Finset PrimeIdeal)(_hT : ∀i P,P∈T i→Supported P.val)
       (J : Finset (Fin K))(W : Fin K→ℝ→ℂ)(P : Fin K→ℝ),
       (∀i x,‖W i x‖≤M)→
@@ -86,6 +85,6 @@ theorem lowUnselectedMass_bound (K : ℕ) (M : ℝ) (hM : 0≤M) :
       exact pow_le_pow_right₀ (le_max_left _ _) (by simpa using Finset.card_le_card (Finset.subset_univ J))
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

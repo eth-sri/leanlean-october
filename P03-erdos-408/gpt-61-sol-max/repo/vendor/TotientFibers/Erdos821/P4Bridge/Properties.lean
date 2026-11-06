@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Bridge.Structure
 
@@ -12,33 +13,37 @@ open Blueprint.Graph P4Probe
 noncomputable section
 variable {P : PrimeGroups} {J ell m : ℕ}
 
-@[simp] lemma prefixSplit_apply (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (u : P.BigLabels J) :
-    prefixSplit ν block u = ((fun g i => u g i.val),
-      selectedAuxTuple ν block false u, selectedAuxTuple ν block true u) := rfl
+section
+variable (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true) (t : P.BigLabels ell)
 
-@[simp] lemma labelSplit_apply (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (u : P.BigLabels (J + ell)) :
-    labelSplit ν block u = ((fun g i => u g (ν.slot i.val),
-      selectedLabelTuple ν block false u, selectedLabelTuple ν block true u),
-      (splitBigLabels P J ell u).2) := rfl
 
-@[simp] lemma labelSplit_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
-    (t : P.BigLabels ell) : labelSplit ν block (labelJoin ν block s a b t) = ((s, a, b), t) :=
+
+
+
+
+@[simp] lemma labelSplit_join    
+         
+      : labelSplit ν block (labelJoin ν block s a b t) = ((s, a, b), t) :=
   (labelSplit ν block).apply_symm_apply _
 
-@[simp] lemma selectedLabelTuple_join_false (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
-    (t : P.BigLabels ell) : selectedLabelTuple ν block false (labelJoin ν block s a b t) = a :=
+@[simp] lemma selectedLabelTuple_join_false    
+         
+      : selectedLabelTuple ν block false (labelJoin ν block s a b t) = a :=
   congrArg (fun z => z.1.2.1) (labelSplit_join ν block s a b t)
 
-@[simp] lemma selectedLabelTuple_join_true (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
-    (t : P.BigLabels ell) : selectedLabelTuple ν block true (labelJoin ν block s a b t) = b :=
+@[simp] lemma selectedLabelTuple_join_true    
+         
+      : selectedLabelTuple ν block true (labelJoin ν block s a b t) = b :=
   congrArg (fun z => z.1.2.2) (labelSplit_join ν block s a b t)
 
-lemma sideWeight_sum (hV : ∀ g, 0 < P.V g) (S : P.BigGroup → Finset (Fin J)) :
+end
+
+section
+variable (hV : ∀ g, 0 < P.V g) (S : P.BigGroup → Finset (Fin J)) (a : Blueprint.Analytic.Tuple (analyticGroups P) (selectedCounts S))
+
+
+include hV in
+lemma sideWeight_sum     :
     (∑ a : Blueprint.Analytic.Tuple (analyticGroups P) (selectedCounts S),
       Blueprint.Analytic.tupleWeight (analyticGroups P) (selectedCounts S) a) = 1 := by
   have he : (∑ x : BigRowPartial S, rowWeight S x) =
@@ -49,8 +54,9 @@ lemma sideWeight_sum (hV : ∀ g, 0 < P.V g) (S : P.BigGroup → Finset (Fin J))
     exact (rowPartialTuple_weight S x).symm
   rw [← he, rowWeight_sum hV S]
 
-lemma sideWeight_pos (hV : ∀ g, 0 < P.V g) (S : P.BigGroup → Finset (Fin J))
-    (a : Blueprint.Analytic.Tuple (analyticGroups P) (selectedCounts S)) :
+include hV in
+lemma sideWeight_pos    
+      :
     0 < Blueprint.Analytic.tupleWeight (analyticGroups P) (selectedCounts S) a := by
   rw [← (rowPartialTupleEquiv S).apply_symm_apply a]
   change 0 < Blueprint.Analytic.tupleWeight (analyticGroups P) (selectedCounts S)
@@ -58,14 +64,20 @@ lemma sideWeight_pos (hV : ∀ g, 0 < P.V g) (S : P.BigGroup → Finset (Fin J))
   rw [rowPartialTuple_weight]
   exact rowWeight_pos hV S _
 
-lemma sideProduct_pos (S : P.BigGroup → Finset (Fin J))
-    (a : Blueprint.Analytic.Tuple (analyticGroups P) (selectedCounts S)) :
+lemma sideProduct_pos  
+      :
     0 < Blueprint.Analytic.product (analyticGroups P) (selectedCounts S) a := by
   rw [← (rowPartialTupleEquiv S).apply_symm_apply a]
   change 0 < Blueprint.Analytic.product (analyticGroups P) (selectedCounts S)
     (rowPartialTuple S ((rowPartialTupleEquiv S).symm a))
   rw [rowPartialTuple_product]
   exact rowProduct_pos S _
+
+end
+
+section
+variable (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (a b : P.BigLabels (J + ell))
+
 
 lemma prod_sharedRows {R : Type*} [CommMonoid R] (ν : Pattern P J ell m)
     (g : P.BigGroup) (v : Fin J → R) :
@@ -76,20 +88,18 @@ lemma prod_sharedRows {R : Type*} [CommMonoid R] (ν : Pattern P J ell m)
     ext i
     simp [sharedRows]
   rw [hs, Finset.prod_filter]
-  apply Finset.prod_congr rfl
-  intro i _
-  by_cases hi : i ∈ ν.changed g.val <;> simp [hi]
+  simp_all
 
-lemma sharedPrefixProduct_rows (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (a : P.BigLabels (J + ell)) :
+lemma sharedPrefixProduct_rows    
+      :
     sharedPrefixProduct ν a = rowProduct (sharedRows ν) ((labelSplit ν block a).1.1) := by
   unfold sharedPrefixProduct rowProduct
   apply Finset.prod_congr rfl
   intro g _
   exact (prod_sharedRows ν g (fun i => (a g (ν.slot i)).val)).symm
 
-lemma sharedLabelMass_rows (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (a : P.BigLabels (J + ell)) :
+lemma sharedLabelMass_rows    
+      :
     sharedLabelMass ν a = rowWeight (sharedRows ν) ((labelSplit ν block a).1.1) := by
   unfold sharedLabelMass rowWeight
   apply Finset.prod_congr rfl
@@ -108,8 +118,8 @@ lemma sharedLabelMass_rows (ν : Pattern P J ell m) (block : P.BigGroup → Bool
   rw [shared_castAdd_iff]
   by_cases hi : i ∈ ν.changed g.val <;> simp [hi]; rfl
 
-lemma matchesBig_rows (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (a b : P.BigLabels (J + ell)) :
+lemma matchesBig_rows    
+      :
     ν.matchesBig a b ↔ (labelSplit ν block a).1.1 = (labelSplit ν block b).1.1 := by
   constructor
   · intro hab
@@ -121,16 +131,23 @@ lemma matchesBig_rows (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     have hz : j ∈ sharedRows ν g := by simp [sharedRows, hj]
     exact congrFun (congrFun hab g) ⟨j, hz⟩
 
-@[simp] lemma matchesBig_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s s' : SharedRows ν) (a a' : SideTuple ν block false)
-    (b b' : SideTuple ν block true) (t t' : P.BigLabels ell) :
+end
+
+section
+variable (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (hV : ∀ g, 0 < P.V g) (s s' : SharedRows ν) (a a' : SideTuple ν block false) (b b' : SideTuple ν block true) (t t' : P.BigLabels ell)
+
+
+@[simp] lemma matchesBig_join    
+       
+        :
     ν.matchesBig (labelJoin ν block s a b t) (labelJoin ν block s' a' b' t') ↔ s = s' := by
   rw [matchesBig_rows ν block]
   simp only [labelSplit_join]
 
-lemma freshMass_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (hV : ∀ g, 0 < P.V g) (s : SharedRows ν) (a : SideTuple ν block false)
-    (b : SideTuple ν block true) (t : P.BigLabels ell) :
+include hV in
+lemma freshMass_join    
+         
+        :
     ν.freshMass (labelJoin ν block s a b t) =
       Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block false) a *
       Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block true) b * P.idealMass t := by
@@ -139,29 +156,29 @@ lemma freshMass_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
   have hn := (rowWeight_pos hV (sharedRows ν) s).ne'
   field_simp [hn]
 
-lemma selectedEndpoint_join_false (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
-    (t : P.BigLabels ell) : selectedEndpoint ν block false (labelJoin ν block s a b t) =
+lemma selectedEndpoint_join_false    
+         
+      : selectedEndpoint ν block false (labelJoin ν block s a b t) =
       Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block false) a := by
   rw [← selectedLabelTuple_product, selectedLabelTuple_join_false]
   rfl
 
-lemma selectedEndpoint_join_true (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
-    (t : P.BigLabels ell) : selectedEndpoint ν block true (labelJoin ν block s a b t) =
+lemma selectedEndpoint_join_true    
+         
+      : selectedEndpoint ν block true (labelJoin ν block s a b t) =
       Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block true) b := by
   rw [← selectedLabelTuple_product, selectedLabelTuple_join_true]
   rfl
 
-lemma sharedPrefixProduct_join_rows (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
-    (t : P.BigLabels ell) : sharedPrefixProduct ν (labelJoin ν block s a b t) =
+lemma sharedPrefixProduct_join_rows    
+         
+      : sharedPrefixProduct ν (labelJoin ν block s a b t) =
       rowProduct (sharedRows ν) s := by
   rw [sharedPrefixProduct_rows ν block, labelSplit_join]
 
-lemma prefixProduct_labelJoin (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
-    (t : P.BigLabels ell) :
+lemma prefixProduct_labelJoin    
+         
+      :
     prefixProduct ((splitBigLabels P J ell (labelJoin ν block s a b t)).1) =
       rowProduct (sharedRows ν) s *
       Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block false) a *
@@ -169,16 +186,18 @@ lemma prefixProduct_labelJoin (ν : Pattern P J ell m) (block : P.BigGroup → B
   rw [prefixProduct_split ν block, sharedPrefixProduct_join_rows,
     selectedEndpoint_join_false, selectedEndpoint_join_true]
 
-lemma splitBigLabels_labelJoin (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
-    (t : P.BigLabels ell) : splitBigLabels P J ell (labelJoin ν block s a b t) =
+lemma splitBigLabels_labelJoin    
+         
+      : splitBigLabels P J ell (labelJoin ν block s a b t) =
       ((prefixSplit ν block).symm (s, a, b), t) := by
   change splitBigLabels P J ell ((splitBigLabels P J ell).symm
     ((prefixSplit ν block).symm (s, a, b), t)) = _
   exact (splitBigLabels P J ell).apply_symm_apply _
 
-lemma multiplier_factor (C D E : ℕ) (hC : 0 < C) (hD : 0 < D) (hE : 0 < E)
-    (θ ζ : ℝ) :
+end
+
+lemma multiplier_factor  C D E  (hC : 0 < C) (hD : 0 < D) (hE : 0 < E)
+     θ ζ  :
     imaginaryPower (C * D * E) ζ * phase (θ * (C * D * E)) =
       Blueprint.Analytic.mellin C ζ *
         (Blueprint.Analytic.mellin ((D : ℝ) * E) ζ *

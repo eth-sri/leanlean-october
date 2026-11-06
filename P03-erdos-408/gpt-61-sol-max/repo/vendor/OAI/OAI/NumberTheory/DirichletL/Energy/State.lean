@@ -14,12 +14,12 @@ open HeckeFamily CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
 open CenteredMomentFiniteProfileExceptional
 open CenteredMomentInductionEnergy QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+
 
 structure NaturalState (Z Bmask bΦ:ℝ) where
   character : Character
-  fixedModulus : Ideal O
-  puncture : Ideal O
+  fixedModulus : Ideal HeckeFamily.O
+  puncture : Ideal HeckeFamily.O
   radial : Radial
   rowWidth : ℝ
   characterWidth : ℝ
@@ -38,34 +38,39 @@ structure NaturalState (Z Bmask bΦ:ℝ) where
 
 namespace NaturalState
 variable {Z Bmask bΦ:ℝ}
-def width (s:NaturalState Z Bmask bΦ):ℝ := s.rowWidth+s.characterWidth
-lemma width_nonneg (s:NaturalState Z Bmask bΦ):0≤s.width :=
+def width (s:NaturalState Z Bmask bΦ) := s.rowWidth+s.characterWidth
+section
+variable (s:NaturalState Z Bmask bΦ)
+
+lemma width_nonneg  :0≤s.width :=
   add_nonneg s.row_nonneg s.character_nonneg
 
-def mask (s:NaturalState Z Bmask bΦ):O :=
+def mask (s:NaturalState Z Bmask bΦ) :=
   fixedBadMask*ConcretePrimeRowBridge.idealGenerator s.puncture
 
-def plainEnergy (s:NaturalState Z Bmask bΦ) {a b:ℝ} (p:Profiles a b)
-    (t X₁ X₂:ℝ):ℝ :=
+def plainEnergy (s:NaturalState Z Bmask bΦ) {a b} (p:Profiles a b)
+    (t X₁ X₂:ℝ) :=
   energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
     (fun _:Fin 0=>∅) (fun _:Fin 0=>0) (fun _:Fin 0=>1)
     X₁ X₂ s.radial.keep s.radial.profile s.radial.scale
 
-lemma plainEnergy_eq_zero (s:NaturalState Z Bmask bΦ) {a b:ℝ} (p:Profiles a b)
-    (t X₁ X₂:ℝ):
+lemma plainEnergy_eq_zero   {a b:ℝ} (p:Profiles a b)
+     t X₁ X₂ :
     s.plainEnergy p t X₁ X₂=CenteredMomentCoreFloor.zeroEnergy s.character s.mask 1 t
       (p.profile 0) (p.profile 1) X₁ X₂ s.radial :=
   (CenteredMomentCoreFloor.zero_energy_eq _ _ _ _ _ _ _ _ _).symm
 
-lemma radical_bound (s:NaturalState Z Bmask bΦ):
+lemma radical_bound  :
     (s.puncture.radical.absNorm:ℝ)≤Z^Bmask :=by
   apply le_trans _ s.puncture_bound
   exact_mod_cast Nat.le_of_dvd
     (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.puncture_ne_zero))
     (map_dvd Ideal.absNorm (Ideal.dvd_iff_le.mpr (Ideal.le_radical (I:=s.puncture))))
+
+end
 end NaturalState
 
-def ZeroBound (Q:Ideal O) (a b bΦ Bmask M ε:ℝ)(degree:ℕ)(S:Finset (ℕ×ℕ))(C Z₀:ℝ):Prop :=
+def ZeroBound (Q:Ideal HeckeFamily.O) (a b bΦ Bmask M ε:ℝ)(degree:ℕ)(S:Finset (ℕ×ℕ))(C Z₀:ℝ) :=
   ∀Z:ℝ,Z₀≤Z→∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→s.width≤M→
   ∀p:Profiles a b,∀t X₁ X₂:ℝ,0<X₁→0<X₂→
     s.plainEnergy p t X₁ X₂≤

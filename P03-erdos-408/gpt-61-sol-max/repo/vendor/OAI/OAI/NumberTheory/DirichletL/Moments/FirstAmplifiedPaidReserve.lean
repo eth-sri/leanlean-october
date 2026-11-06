@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPaidAdmission
 
@@ -17,23 +18,27 @@ open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourc
 open CenteredMomentFirstPhysicalSource CenteredMomentSecondCanonicalScalar CenteredMomentFirstScale
 open CenteredMomentSecondRadicalBudget
 open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
-local notation "O"=>HeckeFamily.O
-local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
 
-def fixedNumerator (N:ℕ)(lower upper cost0 a0:ℝ):ℝ :=
+
+
+def fixedNumerator (N:ℕ)(lower upper cost0 a0:ℝ) :=
   (N:ℝ)*|Real.log (min 1 lower)|+(N:ℝ)*|Real.log (max 1 upper)|+
     |Real.log fixedPresentationCost|+|Real.log cost0|+
     |Real.log (4/((fixedFactor:ℝ)*a0^2))|
 
-lemma fixedNumerator_nonneg (N:ℕ)(lower upper cost0 a0:ℝ):
+section
+variable (N : ℕ) (lower upper cost0 a0 theta : ℝ) (hlower : 0<lower) (hcost0 : 0<cost0) (ha0 : 0<a0) (htheta : 0<theta)
+
+lemma fixedNumerator_nonneg   :
     0≤fixedNumerator N lower upper cost0 a0 := by unfold fixedNumerator;positivity
 
-theorem source_reserve_bound (N:ℕ)(lower upper cost0 a0:ℝ)
-    (hlower:0<lower)(hcost0:0<cost0)(ha0:0<a0)
+include hlower hcost0 ha0 in
+theorem source_reserve_bound   
+       
     {ι α:Type*}[Fintype ι][Fintype α](s:Input ι)(input:Input α)
     (hn:Fintype.card ι≤N)(hnc:Fintype.card α≤N)
     (hl:lower≤s.lower)(hu:input.upper≤upper)
-    (C D:Ideal O)(hC:C≠0)(hD:D≠0)(Z delta reserve cost a:ℝ)
+     C D (hC:C≠0)(hD:D≠0) Z delta reserve cost a 
     (hZ:1<Z)(hd:0≤delta)(hr:0≤reserve)(hc:cost0≤cost)(ha:a0≤a):
     sourceReserve s input C D Z delta reserve cost a≤
       delta+reserve+fixedNumerator N lower upper cost0 a0/Real.log Z := by
@@ -88,12 +93,13 @@ theorem source_reserve_bound (N:ℕ)(lower upper cost0 a0:ℝ)
   · linarith
   · exact add_nonneg (add_nonneg hd hr) (div_nonneg (fixedNumerator_nonneg _ _ _ _ _) hz.le)
 
-theorem eventually_source_reserve (N:ℕ)(lower upper cost0 a0 theta:ℝ)
-    (hlower:0<lower)(hcost0:0<cost0)(ha0:0<a0)(htheta:0<theta):
+include hlower hcost0 ha0 htheta in
+theorem eventually_source_reserve   
+        :
     ∃Z0:ℝ,1<Z0 ∧ ∀Z:ℝ,Z0≤Z→
       ∀{ι α:Type*}[Fintype ι][Fintype α],∀(s:Input ι)(input:Input α),
       Fintype.card ι≤N→Fintype.card α≤N→lower≤s.lower→input.upper≤upper→
-      ∀(C D:Ideal O),C≠0→D≠0→∀delta reserve cost a:ℝ,
+      ∀(C D:Ideal HeckeFamily.O),C≠0→D≠0→∀delta reserve cost a:ℝ,
       0≤delta→0≤reserve→cost0≤cost→a0≤a→
       sourceReserve s input C D Z delta reserve cost a≤delta+reserve+theta := by
   let L:=fixedNumerator N lower upper cost0 a0
@@ -113,18 +119,19 @@ theorem eventually_source_reserve (N:ℕ)(lower upper cost0 a0 theta:ℝ)
     linarith
   have hb:=source_reserve_bound N lower upper cost0 a0 hlower hcost0 ha0 s input
     hn hnc hl hu C D hC hD Z delta reserve cost a hZ hd hr hc ha
-  exact hb.trans (by change delta+reserve+L/Real.log Z≤_;linarith)
+  grind
 
-theorem eventually_actual_amplified_reserves (N:ℕ)(lower upper cost0 a0 theta:ℝ)
-    (hlower:0<lower)(hcost0:0<cost0)(ha0:0<a0)(htheta:0<theta):
+include hlower hcost0 ha0 htheta in
+theorem eventually_actual_amplified_reserves   
+        :
     ∃Z0:ℝ,1<Z0 ∧ ∀Z:ℝ,Z0≤Z→
       ∀{ι:Type*}[Fintype ι],∀s:Input ι,
       Fintype.card ι≤N→lower≤s.lower→s.upper≤upper→
-      ∀(C D R:Ideal O),C≠0→D≠0→∀B:actualAllocations s.pools C,
+      ∀(C D R:Ideal HeckeFamily.O),C≠0→D≠0→∀B:actualAllocations s.pools C,
       ∀(τ:Character)(t delta reserve cost a:ℝ),
       0≤delta→0≤reserve→cost0≤cost→a0≤a→
       sourceReserve s (child s C R B τ t) C D Z delta reserve cost a≤delta+reserve+theta ∧
-      ∀(Q:Ideal O)(k:ℕ)
+      ∀(Q:Ideal HeckeFamily.O)(k:ℕ)
         (Bp:actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
         (υ:Character)(v:ℝ),
         sourceReserve s (errorInput s C R B τ t Q k Bp υ v) C D Z delta reserve cost a≤
@@ -140,6 +147,8 @@ theorem eventually_actual_amplified_reserves (N:ℕ)(lower upper cost0 a0 theta:
   have herr:Fintype.card (liveIndices Bp.val)≤N:=(live_card_le Bp.val).trans hchild
   exact hbound Z hZZ s (errorInput s C R B τ t Q k Bp υ v) hn herr hl hu C D hC hD
     delta reserve cost a hd hr hc ha
+
+end
 
 end SevenEighths.CenteredMomentFirstAmplifiedPaidReserve
 

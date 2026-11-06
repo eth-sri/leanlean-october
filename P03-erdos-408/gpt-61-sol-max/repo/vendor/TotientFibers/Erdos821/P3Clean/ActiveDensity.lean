@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.BigRefresh
 public import Erdos821.P3Clean.DensityIdentification
@@ -17,19 +18,22 @@ open Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-def activeDensity (F : FixedData) (n : ℕ) {M : ℕ} (a : P.BigLabels M) : ℝ :=
+def activeDensity (F : FixedData) (n : ℕ) {M } (a : P.BigLabels M)  :=
   bigProductMass (fun _ p => (baselinePrime F n p.val)⁻¹) a
 
 def freshDensity (F : FixedData) (n : ℕ) (ν : Pattern P J F.ell m)
-    (a : P.BigLabels (J + F.ell)) : ℝ :=
+    (a : P.BigLabels (J + F.ell))  :=
   bigFreshMass ν (fun _ p => (baselinePrime F n p.val)⁻¹) a
 
-theorem tiltedIdealMass_density (F : FixedData) (n : ℕ) {M : ℕ} (a : P.BigLabels M) :
+section
+variable (F : FixedData) (n : ℕ)
+
+theorem tiltedIdealMass_density     {M : ℕ} (a : P.BigLabels M) :
     tiltedIdealMass F n a = P.idealMass a * activeDensity F n a := by
   unfold tiltedIdealMass PrimeGroups.idealMass activeDensity bigProductMass
   simp only [tiltedMu_eq_mu_mul, Finset.prod_mul_distrib]
 
-theorem tiltedFreshMass_density (F : FixedData) (n : ℕ) (ν : Pattern P J F.ell m)
+theorem tiltedFreshMass_density     (ν : Pattern P J F.ell m)
     (a : P.BigLabels (J + F.ell)) :
     tiltedFreshMass F n ν a = ν.freshMass a * freshDensity F n ν a := by
   unfold tiltedFreshMass Pattern.freshMass freshDensity bigFreshMass
@@ -43,7 +47,7 @@ theorem tiltedFreshMass_density (F : FixedData) (n : ℕ) (ν : Pattern P J F.el
   · simp only [ite_eq_left hi, one_mul]
   · simp only [ite_eq_right hi, tiltedMu_eq_mu_mul]
 
-theorem activeDensity_pos (F : FixedData) (n : ℕ)
+theorem activeDensity_pos    
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
     {M : ℕ} (a : P.BigLabels M) : 0 < activeDensity F n a := by
   unfold activeDensity bigProductMass
@@ -53,7 +57,7 @@ theorem activeDensity_pos (F : FixedData) (n : ℕ)
   intro i _
   exact inv_pos.mpr (hb g (a g i))
 
-theorem freshDensity_pos (F : FixedData) (n : ℕ) (ν : Pattern P J F.ell m)
+theorem freshDensity_pos     (ν : Pattern P J F.ell m)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
     (a : P.BigLabels (J + F.ell)) : 0 < freshDensity F n ν a := by
   unfold freshDensity bigFreshMass
@@ -61,32 +65,32 @@ theorem freshDensity_pos (F : FixedData) (n : ℕ) (ν : Pattern P J F.ell m)
   intro g _
   apply Finset.prod_pos
   intro i _
-  split_ifs
-  · exact zero_lt_one
-  · exact inv_pos.mpr (hb g (a g i))
+  bound
 
-theorem density_reversal (F : FixedData) (n : ℕ) (ν : Pattern P J F.ell m)
+theorem density_reversal     (ν : Pattern P J F.ell m)
     (a b : P.BigLabels (J + F.ell)) (h : ν.matchesBig a b) :
     activeDensity F n a * freshDensity F n ν b =
       activeDensity F n b * freshDensity F n ν a :=
   bigFreshMass_reversal ν (fun _ p => (baselinePrime F n p.val)⁻¹) a b h
 
 theorem bigProductMass_actBig {M : ℕ}
-    (mu : (g : P.BigGroup) → P.Prime g.val → ℝ) (p : P.BigPermutations M) (a : P.BigLabels M) :
+     mu  (p : P.BigPermutations M) (a : P.BigLabels M) :
     bigProductMass mu (P.actBig p a) = bigProductMass mu a := by
   apply Finset.prod_congr rfl
   intro g _
   exact Equiv.prod_comp (p g) (fun i => mu g (a g i))
 
-theorem activeDensity_actBig (F : FixedData) (n : ℕ) {M : ℕ}
+theorem activeDensity_actBig     {M : ℕ}
     (p : P.BigPermutations M) (a : P.BigLabels M) :
     activeDensity F n (P.actBig p a) = activeDensity F n a :=
   bigProductMass_actBig _ p a
 
-theorem tiltedIdealMass_actBig (F : FixedData) (n : ℕ) {M : ℕ}
+theorem tiltedIdealMass_actBig     {M : ℕ}
     (p : P.BigPermutations M) (a : P.BigLabels M) :
     tiltedIdealMass F n (P.actBig p a) = tiltedIdealMass F n a :=
   bigProductMass_actBig (fun g q => tiltedMu F P n g.val q) p a
+
+end
 
 
 end Erdos821.P3Clean

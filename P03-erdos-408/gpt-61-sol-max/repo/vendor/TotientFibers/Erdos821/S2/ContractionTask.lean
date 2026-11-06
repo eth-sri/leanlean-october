@@ -12,7 +12,7 @@ namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-def WholeEdgeContractionTask (F : FixedData) (r : MemoryParameters F) : Prop :=
+def WholeEdgeContractionTask (F ) (r : MemoryParameters F)  :=
   MemoryRareTask F r → MemoryCleanTask F r →
   ∀ G : ℝ, 0 < G → ∃ Eid : ℝ, 0 < Eid ∧
     ∀ (m : ℕ) (C₁ : ℝ), ∃ J₀ : ℕ, ∀ J ≥ J₀, ∀ C₂ : ℝ, ∃ x₀ : ℝ,

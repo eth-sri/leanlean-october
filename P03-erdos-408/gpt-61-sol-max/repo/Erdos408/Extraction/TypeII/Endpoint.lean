@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Bands
 
@@ -30,27 +31,26 @@ open Finset Real
 def clusterSets (K N' : ℕ) : Finset (Fin K → Finset ℕ) :=
   Fintype.piFinset fun _ => (range N').powerset.erase ∅
 
-theorem mem_clusterSets {K N' : ℕ} {S : Fin K → Finset ℕ} :
+theorem mem_clusterSets  {K N'}   {S}  :
     S ∈ clusterSets K N' ↔ ∀ c, (S c).Nonempty ∧ S c ⊆ range N' := by
-  simp only [clusterSets, Fintype.mem_piFinset, mem_erase, mem_powerset,
-    Finset.nonempty_iff_ne_empty]
+  grind [clusterSets]
 
 /-- The distinguished (least) band of cluster `c`. -/
-noncomputable def distIndex {K : ℕ} (S : Fin K → Finset ℕ) (c : Fin K) : ℕ :=
+noncomputable def distIndex {K } (S : Fin K → Finset ℕ) (c : Fin K)  :=
   if h : (S c).Nonempty then (S c).min' h else 0
 
 /-- The exponent of the distinguished band of cluster `c`. -/
-noncomputable def distExponent (K : ℕ) (x : ℝ) (S : Fin K → Finset ℕ) (c : Fin K) : ℝ :=
+noncomputable def distExponent (K ) (x : ℝ) (S : Fin K → Finset ℕ) (c : Fin K)  :=
   inertExponent K x c (distIndex S c)
 
 /-- The coefficient `∏_c -(-c_w)^{|S_c|}` of a monomial. -/
-noncomputable def monoCoeff (cw : ℝ) {K : ℕ} (S : Fin K → Finset ℕ) : ℝ :=
+noncomputable def monoCoeff (cw : ℝ) {K } (S : Fin K → Finset ℕ)  :=
   ∏ c, -(-cw) ^ (S c).card
 
 /-- The remainder `R_S`: the coefficient, the non-distinguished band weights and the
 centred slot statistic. -/
-noncomputable def monoRest (q cw : ℝ) (K : ℕ) (x : ℝ) {k : ℕ} (u v : Fin (k + 1) → ℝ)
-    (B : (Fin k → ℕ) → ℝ) (S : Fin K → Finset ℕ) (h : ℕ) : ℝ :=
+noncomputable def monoRest (q cw : ℝ) (K ) (x : ℝ) {k } (u v : Fin (k + 1) → ℝ)
+    (B : (Fin k → ℕ) → ℝ) (S : Fin K → Finset ℕ) (h : ℕ)  :=
   monoCoeff cw S *
     (∏ c, ∏ i ∈ (S c).erase (distIndex S c), bandWeight q x (inertExponent K x c i) h) *
       (slotCount x u v B h - slotMean x u v B)
@@ -64,13 +64,11 @@ theorem distIndex_mem {K : ℕ} {S : Fin K → Finset ℕ} {c : Fin K} (h : (S c
 theorem one_sub_prod_one_sub (s : Finset ℕ) (y : ℕ → ℝ) :
     1 - ∏ i ∈ s, (1 - y i) = ∑ t ∈ s.powerset.erase ∅, -∏ i ∈ t, (-y i) := by
   have h := prod_one_add (f := fun i => -y i) s
-  simp only [← sub_eq_add_neg] at h
-  rw [h, ← add_sum_erase _ _ (empty_mem_powerset s), prod_empty, sum_neg_distrib]
-  ring
+  aesop
 
 /-- The monomial expansion `P (f_𝔟 - C_𝔟) = ∑_S 𝒲_S R_S`. -/
-theorem endpoint_eq_sum (q cw : ℝ) (hq : q ≠ 0) (K : ℕ) (CN x : ℝ) {k : ℕ}
-    (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) (h : ℕ) :
+theorem endpoint_eq_sum  q cw  (hq : q ≠ 0)  K   CN x  {k : ℕ}
+    (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ)  h  :
     endpoint q cw K CN x u v B h =
       ∑ S ∈ clusterSets K (inertPerCluster K CN x),
         markedWeight Finset.univ q (fun c => band x (distExponent K x S c)) h *
@@ -106,7 +104,7 @@ theorem endpoint_eq_sum (q cw : ℝ) (hq : q ≠ 0) (K : ℕ) (CN x : ℝ) {k : 
   simp only [hw]
   ring
 
-theorem card_clusterSets_le (K N' : ℕ) : ((clusterSets K N').card : ℝ) ≤ 2 ^ (K * N') := by
+theorem card_clusterSets_le  K N'  : ((clusterSets K N').card : ℝ) ≤ 2 ^ (K * N') := by
   unfold clusterSets
   rw [Fintype.card_piFinset_const, card_erase_of_mem (empty_mem_powerset _), card_powerset,
     card_range]
@@ -115,13 +113,18 @@ theorem card_clusterSets_le (K N' : ℕ) : ((clusterSets K N').card : ℝ) ≤ 2
   gcongr
   exact_mod_cast Nat.sub_le _ _
 
+section
+variable {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw₁ : cw ≤ 1) {K N' : ℕ} {x : ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) {S : Fin K → Finset ℕ} (hS : S ∈ clusterSets K N') (hV : ∀ (c : Fin K) i, i < N' → 1 / 2 ≤ harmonicMass (band x (inertExponent K x c i))) (hdisj : ∀ (c c' : Fin K) (i i' : ℕ), i < N' → i' < N' → (c ≠ c' ∨ i ≠ i') →
+      Disjoint (band x (inertExponent K x c i)) (band x (inertExponent K x c' i'))) (c₀ : Fin K) {p : ℕ} (hp : p ∈ band x (distExponent K x S c₀)) (hpu : ∀ i, (p : ℝ) ≤ x ^ u i) (h : ℕ)
+
+include hq hq₁ hcw hcw₁ hS hV in
 /-- The remainder is at most `(2/(1-q))^{K N'} |f_𝔟 - C_𝔟|` when every band has harmonic mass
 at least `1/2`. -/
-theorem abs_monoRest_le {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw₁ : cw ≤ 1)
-    {K N' : ℕ} {x : ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ)
-    {S : Fin K → Finset ℕ} (hS : S ∈ clusterSets K N')
-    (hV : ∀ (c : Fin K) i, i < N' → 1 / 2 ≤ harmonicMass (band x (inertExponent K x c i)))
-    (h : ℕ) :
+theorem abs_monoRest_le          
+             
+       
+     
+      :
     |monoRest q cw K x u v B S h| ≤
       (2 / (1 - q)) ^ (K * N') * |slotCount x u v B h - slotMean x u v B| := by
   have hC1 : (1 : ℝ) ≤ 2 / (1 - q) := by rw [le_div_iff₀ (by linarith)]; linarith
@@ -164,13 +167,13 @@ theorem abs_monoRest_le {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ c
   rw [one_mul] at h1
   exact mul_le_mul_of_nonneg_right h1 (abs_nonneg _)
 
+include hS hdisj hp hpu in
 /-- The remainder is invariant under the primes of a distinguished band. -/
-theorem monoRest_prime_mul {q cw : ℝ} {K N' : ℕ} {x : ℝ} {k : ℕ} (u v : Fin (k + 1) → ℝ)
-    (B : (Fin k → ℕ) → ℝ) {S : Fin K → Finset ℕ} (hS : S ∈ clusterSets K N')
-    (hdisj : ∀ (c c' : Fin K) (i i' : ℕ), i < N' → i' < N' → (c ≠ c' ∨ i ≠ i') →
-      Disjoint (band x (inertExponent K x c i)) (band x (inertExponent K x c' i')))
-    (c₀ : Fin K) {p : ℕ} (hp : p ∈ band x (distExponent K x S c₀))
-    (hpu : ∀ i, (p : ℝ) ≤ x ^ u i) (h : ℕ) :
+theorem monoRest_prime_mul          
+         
+     
+         
+        :
     monoRest q cw K x u v B S (p * h) = monoRest q cw K x u v B S h := by
   unfold monoRest
   rw [slotCount_prime_mul u v B (band_prime hp) hpu]
@@ -182,9 +185,9 @@ theorem monoRest_prime_mul {q cw : ℝ} {K N' : ℕ} {x : ℝ} {k : ℕ} (u v : 
   have hd₀ : distIndex S c₀ < N' :=
     mem_range.1 (hsub₀ (distIndex_mem ((mem_clusterSets.1 hS) c₀).1))
   refine bandWeight_prime_mul (hdisj c c₀ i (distIndex S c₀) hi' hd₀ ?_) hp h
-  by_cases hc : c = c₀
-  · subst hc; exact Or.inr (ne_of_mem_erase hi)
-  · exact Or.inl hc
+  grind
+
+end
 
 /-! ### The cluster layout -/
 
@@ -192,10 +195,14 @@ section Layout
 
 variable {K : ℕ} {x : ℝ}
 
+section
+variable (hK : 1 ≤ K) {N' : ℕ} (hT : 0 < logLog x) (hlay : 2 * ((N' : ℝ) + 1) * K ≤ 4 / 100 * logLog x) {c c' i : ℕ} (hc : c < K) {i' : ℕ} (hi : i < N')
+
+include hK hT hlay hc hi in
 /-- Under `2 (N' + 1) K ≤ T / 25`, the band exponents lie in `[0.11, 0.19]`. -/
-theorem inertExponent_mem (hK : 1 ≤ K) {N' : ℕ} (hT : 0 < logLog x)
-    (hlay : 2 * ((N' : ℝ) + 1) * K ≤ 4 / 100 * logLog x) {c i : ℕ} (hc : c < K)
-    (hi : i < N') :
+theorem inertExponent_mem      
+         
+      :
     11 / 100 ≤ inertExponent K x c i ∧ inertExponent K x c i ≤ 19 / 100 := by
   unfold inertExponent
   have hK' : (1 : ℝ) ≤ K := by exact_mod_cast hK
@@ -209,14 +216,12 @@ theorem inertExponent_mem (hK : 1 ≤ K) {N' : ℕ} (hT : 0 < logLog x)
     nlinarith
   have h3 : 0 ≤ (c : ℝ) * (8 / 100 / K) := by positivity
   have h4 : 0 ≤ (i : ℝ) * (2 / logLog x) := by positivity
-  have h5 : 4 / 100 / (K : ℝ) ≤ 8 / 100 / K :=
-    div_le_div_of_nonneg_right (by norm_num) (by linarith)
-  have h6 : 0 ≤ 4 / 100 / (K : ℝ) := by positivity
-  constructor <;> linarith
+  grind
 
+include hK hT hlay hi in
 /-- Distinct bands of the layout are separated by at least `1 / T`. -/
-theorem inertExponent_sep (hK : 1 ≤ K) {N' : ℕ} (hT : 0 < logLog x)
-    (hlay : 2 * ((N' : ℝ) + 1) * K ≤ 4 / 100 * logLog x) {c c' i i' : ℕ} (hi : i < N')
+theorem inertExponent_sep      
+         
     (hi' : i' < N') (hne : c ≠ c' ∨ i ≠ i') :
     inertExponent K x c i + 1 / logLog x ≤ inertExponent K x c' i' ∨
       inertExponent K x c' i' + 1 / logLog x ≤ inertExponent K x c i := by
@@ -262,15 +267,16 @@ theorem inertExponent_sep (hK : 1 ≤ K) {N' : ℕ} (hT : 0 < logLog x)
       have := mul_le_mul_of_nonneg_right hcc' (show (0 : ℝ) ≤ 8 / 100 / K by positivity)
       linarith
 
+include hK hT hlay in
 /-- The distinguished exponents of distinct clusters are `0.04 / K` apart. -/
-theorem distExponent_gap (hK : 1 ≤ K) {N' : ℕ} (hT : 0 < logLog x)
-    (hlay : 2 * ((N' : ℝ) + 1) * K ≤ 4 / 100 * logLog x) {S : Fin K → Finset ℕ}
-    (hS : S ∈ clusterSets K N') {c c' : Fin K} (h : c < c') :
+theorem distExponent_gap      
+       {S} 
+    (hS : S ∈ clusterSets K N')  {c c'}  (h : c < c') :
     distExponent K x S c + 4 / 100 / K ≤ distExponent K x S c' := by
   unfold distExponent inertExponent
   have hK' : (1 : ℝ) ≤ K := by exact_mod_cast hK
   have hd : ∀ c, distIndex S c < N' := fun c =>
-    mem_range.1 (((mem_clusterSets.1 hS) c).2 (distIndex_mem ((mem_clusterSets.1 hS) c).1))
+    (by grind [mem_clusterSets, distIndex_mem])
   have hiT : (distIndex S c : ℝ) * (2 / logLog x) ≤ 4 / 100 / K := by
     have : (distIndex S c : ℝ) ≤ N' := by exact_mod_cast (hd c).le
     rw [mul_div_assoc', div_le_div_iff₀ hT (by linarith)]
@@ -278,45 +284,37 @@ theorem distExponent_gap (hK : 1 ≤ K) {N' : ℕ} (hT : 0 < logLog x)
   have hi0 : 0 ≤ (distIndex S c' : ℝ) * (2 / logLog x) := by positivity
   have hcc : ((c : ℕ) : ℝ) + 1 ≤ ((c' : ℕ) : ℝ) := by exact_mod_cast Fin.lt_def.1 h
   have := mul_le_mul_of_nonneg_right hcc (show (0 : ℝ) ≤ 8 / 100 / K by positivity)
-  rw [add_mul, one_mul] at this
-  have h7 : 8 / 100 / (K : ℝ) = 2 * (4 / 100 / K) := by ring
-  linarith
+  grind
+
+end
 
 end Layout
 
 /-! ### Clipping and the layout -/
 
 /-- Clipping to `[-1, 1]`. -/
-noncomputable def clampOne (y : ℝ) : ℝ := max (-1) (min 1 y)
+noncomputable def clampOne (y : ℝ)  := max (-1) (min 1 y)
 
-theorem abs_clampOne_le (y : ℝ) : |clampOne y| ≤ 1 := by
-  unfold clampOne
-  rw [abs_le]
-  constructor
-  · exact le_max_left _ _
-  · exact max_le (by norm_num) (min_le_left _ _)
+theorem abs_clampOne_le  y  : |clampOne y| ≤ 1 := by
+  grind [clampOne]
 
-theorem clampOne_of_abs_le {y : ℝ} (h : |y| ≤ 1) : clampOne y = y := by
-  unfold clampOne
-  rw [abs_le] at h
-  rw [min_eq_right h.2, max_eq_right h.1]
+theorem clampOne_of_abs_le  {y}  (h : |y| ≤ 1) : clampOne y = y := by
+  grind [clampOne]
 
 /-- The primes of the band with exponent `a` are at most `exp(2 L^a)`. -/
-theorem band_le {x a : ℝ} {p : ℕ} (hp : p ∈ band x a) :
+theorem band_le  {x a}   {p}  (hp : p ∈ band x a) :
     (p : ℝ) ≤ Real.exp (2 * Real.log x ^ a) := by
   unfold band at hp
   exact (Nat.le_floor_iff (by positivity)).1 (mem_Icc.1 (mem_filter.1 hp).1).2
 
 /-- The bands of the layout are pairwise disjoint. -/
-theorem layout_disjoint {K : ℕ} (hK : 1 ≤ K) {N' : ℕ} {x : ℝ} (hL : 1 < Real.log x)
+theorem layout_disjoint {K : ℕ} (hK : 1 ≤ K) {N' : ℕ}  {x}  (hL : 1 < Real.log x)
     (hT : 0 < logLog x) (hlay : 2 * ((N' : ℝ) + 1) * K ≤ 4 / 100 * logLog x) :
     ∀ (c c' : Fin K) (i i' : ℕ), i < N' → i' < N' → (c ≠ c' ∨ i ≠ i') →
       Disjoint (band x (inertExponent K x c i)) (band x (inertExponent K x c' i')) := by
   intro c c' i i' hi hi' hne
   have hne' : (c : ℕ) ≠ c' ∨ i ≠ i' := by
-    rcases hne with h | h
-    · exact Or.inl fun h' => h (Fin.ext h')
-    · exact Or.inr h
+    grind
   rcases inertExponent_sep hK hT hlay hi hi' hne' with h | h
   · exact band_disjoint hL h
   · exact (band_disjoint hL h).symm

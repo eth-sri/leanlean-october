@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.Tuple.Box
 
@@ -21,8 +22,11 @@ namespace Erdos408.TwoSided.TupleHigh
 
 open Filter Finset MeasureTheory
 
+section
+variable {L a A m z : ℝ}
+
 /-- Eventually `exp(K (L^{0.36} + L^{0.73} log L)) exp(-L^{0.95}) ≤ 1`. -/
-theorem eventually_exp_card_exceptional_le (K : ℝ) :
+theorem eventually_exp_card_exceptional_le  K  :
     ∀ᶠ x : ℝ in atTop,
       Real.exp (K * (Real.log x ^ (0.36 : ℝ) +
         Real.log x ^ (0.73 : ℝ) * Real.log (Real.log x))) *
@@ -58,7 +62,7 @@ theorem eventually_exp_card_exceptional_le (K : ℝ) :
   exact Real.exp_le_exp.2 (by linarith)
 
 /-- `L^{-a}` squared is `L^{-2a}`. -/
-theorem rpow_neg_sq {L a : ℝ} (hL : 0 ≤ L) : (L ^ (-a)) ^ 2 = L ^ (-(2 * a)) := by
+theorem rpow_neg_sq   (hL : 0 ≤ L) : (L ^ (-a)) ^ 2 = L ^ (-(2 * a)) := by
   rw [← Real.rpow_natCast, ← Real.rpow_mul hL]
   ring_nf
 
@@ -76,7 +80,7 @@ theorem floor_mem_Icc_of_abs_le {t T : ℝ} (h : |t| ≤ T) : ⌊t⌋ ∈ Icc (-
   · exact (Int.floor_le_floor h₂).trans (Int.floor_le_ceil T)
 
 /-- `L^{-(A + 1)} < m |z|` if `L^{-A} < |z|` and `m L ≥ 1`, `m > 0`. -/
-theorem rpow_neg_add_one_lt {L A m z : ℝ} (hL : 0 < L) (hm : 0 < m) (hmL : 1 ≤ m * L)
+theorem rpow_neg_add_one_lt   (hL : 0 < L) (hm : 0 < m) (hmL : 1 ≤ m * L)
     (hz : L ^ (-A) < z) : L ^ (-(A + 1)) < m * z := by
   have hsplit : L ^ (-(A + 1)) = L ^ (-A) / L := by
     rw [neg_add, Real.rpow_add hL, Real.rpow_neg_one, div_eq_mul_inv]
@@ -86,10 +90,16 @@ theorem rpow_neg_add_one_lt {L A m z : ℝ} (hL : 0 < L) (hm : 0 < m) (hmL : 1 �
     _ < z * (m * L) := mul_lt_mul_of_pos_right hz (by positivity)
     _ = m * z * L := by ring
 
+end
+
+section
+variable {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ t, 0 ≤ f t) {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k : ℕ} {c : ℕ → ℂ} (hvlo : 0 < vlo) (hd : BoxData x Cm CU vlo Y P N R V lo hi sP uR k c) (hx : 0 < x) (hL : 1 ≤ Real.log x) (χ : DirichletCharacter ℂ k) {A' E κ' : ℝ} (hAP1 : PrimeTwistBound x A' E Cm κ') {τ₁ τ₂ : ℝ} {S : Set ℝ} (hrange : ∀ τ ∈ Set.Icc τ₁ τ₂, Real.log x ^ E ≤ |τ| ∧ |τ| ≤ x ^ 3) {θ : ℝ} (𝒥 : Finset ℤ)
+
+include hf hf0 in
 /-- A nonnegative continuous `f` on `(τ₁, τ₂] \ S`, covered by the unit intervals
 `[j, j + 1)`, `j ∈ 𝒥`, on each of which `f ≤ b_j`: `∫ f ≤ ∑_{j ∈ 𝒥} b_j`. -/
-theorem integral_sdiff_le_of_cover {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ t, 0 ≤ f t)
-    {τ₁ τ₂ : ℝ} {S : Set ℝ} (𝒥 : Finset ℤ) {b : ℤ → ℝ} (hb0 : ∀ j ∈ 𝒥, 0 ≤ b j)
+theorem integral_sdiff_le_of_cover      
+          {b : ℤ → ℝ} (hb0 : ∀ j ∈ 𝒥, 0 ≤ b j)
     (hcover : Set.Ioc τ₁ τ₂ \ S ⊆ ⋃ j ∈ 𝒥, Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1))
     (hpt : ∀ j ∈ 𝒥, ∀ t ∈ Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1), f t ≤ b j) :
     ∫ t in Set.Ioc τ₁ τ₂ \ S, f t ≤ ∑ j ∈ 𝒥, b j := by
@@ -130,26 +140,28 @@ theorem integral_sdiff_le_of_cover {f : ℝ → ℝ} (hf : Continuous f) (hf0 : 
         integral_biUnion_finset 𝒥 hmeasA hdisj fun j _ => hint.mono_set Set.inter_subset_left
     _ ≤ ∑ j ∈ 𝒥, b j := sum_le_sum hpiece
 
+include hL in
 /-- `P ≥ 1` for `P ≥ e^{L^{0.27}}/2` and `L ≥ 1`. -/
-theorem one_le_of_exp_div_two_le {x P : ℝ} (hL : 1 ≤ Real.log x)
+theorem one_le_of_exp_div_two_le    
     (hP : Real.exp (Real.log x ^ (0.27 : ℝ)) / 2 ≤ P) : 1 ≤ P := by
   have h := Real.add_one_le_exp (Real.log x ^ (0.27 : ℝ))
   have : 1 ≤ Real.log x ^ (0.27 : ℝ) := Real.one_le_rpow hL (by norm_num)
   linarith
 
+include hvlo hd hx hL hAP1 in
 /-- **The exceptional times, pointwise.** For the data of one box, under AP1, at a time
 `L^E ≤ |t| ≤ x³` with `|R⁻¹ R(t)|² ≤ s`:
 `|G(t)|² ≤ (2/v₋)² · 4 (4κ' L^{-A'})² s`, by `|P_s| ≤ 2/v₋`, E9 and `PNR ≤ 2Y`. -/
-theorem norm_boxPoly_sq_le_of_twist {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ}
-    {k : ℕ} {c : ℕ → ℂ} (hvlo : 0 < vlo) (hd : BoxData x Cm CU vlo Y P N R V lo hi sP uR k c)
-    (hx : 0 < x) (hL : 1 ≤ Real.log x) (χ : DirichletCharacter ℂ k) {A' E κ' : ℝ}
-    (hAP1 : PrimeTwistBound x A' E Cm κ') {t : ℝ} (htE : Real.log x ^ E ≤ |t|)
-    (htx : |t| ≤ x ^ 3) {s : ℝ}
+theorem norm_boxPoly_sq_le_of_twist    
+           
+           
+       {t}  (htE : Real.log x ^ E ≤ |t|)
+    (htx : |t| ≤ x ^ 3)  {s} 
     (hR : ‖(R : ℂ)⁻¹ * ∑ u ∈ uR, c u * (u : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2 ≤ s) :
     ‖boxPoly Y P V sP ((Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) uR χ c t‖ ^ 2 ≤
       (2 / vlo) ^ 2 * 4 * (4 * κ' * Real.log x ^ (-A')) ^ 2 * s := by
   have hP1 : 1 ≤ P := one_le_of_exp_div_two_le hL hd.hP₁
-  have hP0 : 0 < P := by linarith
+  
   have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hd.hY₁
   have hN0 : 0 < N := lt_of_lt_of_le (Real.exp_pos _) hd.hN₁
   have hR0 : 0 < R := lt_of_lt_of_le (Real.exp_pos _) hd.hR₁
@@ -163,7 +175,7 @@ theorem norm_boxPoly_sq_le_of_twist {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR :
     have : ‖Pl‖ = N * (N⁻¹ * ‖Pl‖) := by field_simp
     rw [this]
     exact mul_le_mul_of_nonneg_left h hN0.le
-  have hB0 : 0 ≤ B := (mul_nonneg_iff_of_pos_left hN0).1 ((norm_nonneg _).trans hPl)
+  
   have hs0 : 0 ≤ s := le_trans (sq_nonneg _) hR
   -- E8's bound for `R`
   have hR' : ‖Rr‖ ^ 2 ≤ R ^ 2 * s := by
@@ -202,17 +214,18 @@ theorem norm_boxPoly_sq_le_of_twist {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR :
           (by positivity)
     _ = (2 / vlo) ^ 2 * 4 * B ^ 2 * s := by ring
 
+include hvlo hd hx hL hAP1 hrange in
 /-- **The exceptional times.** For the data of one box, under AP1, on a range of times with
 `L^E ≤ |τ|`, `|τ| + 2 ≤ 2T₀`: if every time of `(τ₁, τ₂]` with `|P_s| > θ` lies in `[j, j + 1)`
 for some `j ∈ 𝒥`, and `s_j` bound `|R⁻¹ R|²` on `[j, j + 1]` with
 `∑ s_j ≤ 9(1 + |κ'|) L^{2C_U + 4}`, then the mean square of `G` over these times is at most
 `(2/v₋)² · 4 (4κ' L^{-A'})² · 9(1 + |κ'|) L^{2C_U + 4}`. -/
-theorem integral_exceptional_le {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k : ℕ}
-    {c : ℕ → ℂ} (hvlo : 0 < vlo) (hd : BoxData x Cm CU vlo Y P N R V lo hi sP uR k c)
-    (hx : 0 < x) (hL : 1 ≤ Real.log x) (χ : DirichletCharacter ℂ k) {A' E κ' : ℝ}
-    (hAP1 : PrimeTwistBound x A' E Cm κ') {τ₁ τ₂ : ℝ}
-    (hrange : ∀ τ ∈ Set.Icc τ₁ τ₂, Real.log x ^ E ≤ |τ| ∧ |τ| ≤ x ^ 3) {θ : ℝ}
-    (𝒥 : Finset ℤ)
+theorem integral_exceptional_le      
+         
+           
+       
+       
+     
     (h𝒥 : ∀ t ∈ Set.Ioc τ₁ τ₂, θ < ‖∑ p ∈ sP, (((P * V)⁻¹ : ℝ) : ℂ) *
       (p : ℂ) ^ ((t : ℂ) * Complex.I)‖ → ⌊t⌋ ∈ 𝒥)
     (s : ℤ → ℝ) (hs₁ : ∀ j ∈ 𝒥, ∀ t ∈ Set.Icc (j : ℝ) (j + 1),
@@ -243,6 +256,8 @@ theorem integral_exceptional_le {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Fin
       (hs₁ j hj t ⟨ht.2.1, ht.2.2.le⟩)
   · rw [← mul_sum]
     exact mul_le_mul_of_nonneg_left hs₂ hC0
+
+end
 
 /-- `P⁻¹ ∑_{p ∈ s} (m/V) p^{it} = m P_s(t)`. -/
 theorem smallPoly_rescale (P V m : ℝ) (hP : P ≠ 0) (sP : Finset ℕ) (t : ℝ) :

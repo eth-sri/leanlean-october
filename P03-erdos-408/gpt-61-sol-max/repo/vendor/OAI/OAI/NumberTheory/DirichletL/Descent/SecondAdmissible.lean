@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondTripleBounds
 public import OAI.NumberTheory.DirichletL.Descent.Basic
@@ -13,15 +14,15 @@ open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassAri
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen)
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
   (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 theorem actual_second_inherited_puncture_ne_zero
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (ht : x.quotient ≠ 0)
-    (u v : Eisˣ) (m : Eis) (hm : m ≠ 0) :
+    (u v : ActualEisensteinCubic.Oˣ) (m : ActualEisensteinCubic.O) (hm : m ≠ 0) :
     actualSecondInheritedPuncture m (actualSecondChild p u v x).1 ≠ 0 := by
   change ((m*ConcretePrimeRowBridge.idealGenerator x.quotient)*
     primaryGenerator (Ideal.span {(b0Label p x.cube.support
@@ -35,15 +36,10 @@ theorem actual_second_inherited_puncture_ne_zero
   exact mul_ne_zero (mul_ne_zero (mul_ne_zero hm (ConcretePrimeRowBridge.idealGenerator_ne_zero _ ht))
     (primeProduct_ne_zero p hp _ _)) (Finset.prod_ne_zero_iff.mpr (fun i _ => hp i))
 
-lemma radicalGenerator_ne_zero (a : Eis) (ha : a ≠ 0) :
-    ConcretePrimeRowBridge.idealGenerator (Ideal.span {a}).radical ≠ 0 := by
-  apply ConcretePrimeRowBridge.idealGenerator_ne_zero
-  intro hz
-  apply Ideal.span_singleton_eq_bot.not.mpr ha
-  apply le_antisymm _ bot_le
-  exact (Ideal.le_radical : (Ideal.span {a} : Ideal Eis) ≤ (Ideal.span {a}).radical).trans (le_of_eq hz)
+lemma radicalGenerator_ne_zero  a  (ha : a ≠ 0) :
+    ConcretePrimeRowBridge.idealGenerator (Ideal.span {a}).radical ≠ 0 := OAI.ConcretePrimeRowBridge.idealGenerator_ne_zero (Ideal.span {a}).radical fun hz => (Iff.not Ideal.span_singleton_eq_bot).mpr ha (le_antisymm (LE.le.trans Ideal.le_radical (le_of_eq hz)) bot_le)
 
-def actualSecondPunctureWidth (Z : ℝ) (m : Eis) (γ : OuterTriple) : ℝ :=
+def actualSecondPunctureWidth (Z : ℝ) (m : ActualEisensteinCubic.O) (γ : OuterTriple)  :=
   Real.logb Z (‖eisEmbedding (actualSecondInheritedRadicalPuncture m γ)‖^2)
 
 include hp in

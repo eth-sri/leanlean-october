@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Moments.PrimeSlot
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentPrimeSlotShift
 open HeckeFamily HeckeRowClosure HeckePrimeRay HeckePrimeAnnular HeckeDyadic
 open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentTwist
 open CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
+
 
 lemma norm_height_split (N D σ t v:ℝ) (hN:0<N) (hD:0<D) :
     (((N/D:ℝ):ℂ)^(-shift σ v))*(N:ℂ)^(Complex.I*t)=
@@ -28,10 +28,10 @@ lemma norm_height_split (N D σ t v:ℝ) (hN:0<N) (hD:0<D) :
   simp only [HeckeDyadic.shift,Complex.ofReal_sub,Complex.ofReal_add]
   ring
 
-theorem normalizedSlot_eq_ray (M:Ideal O) (H:Subgroup (O⧸M)ˣ)
-    (η χ:Character) (m A z:O)
-    (hrow:∀n:O,elementCoeff χ n=CanonicalRowCompletion.rowTwist (elementHom η) m 1 (A*z) n)
-    (W:ℝ→ℂ) (b D σ t v:ℝ) (hD:0<D) :
+theorem normalizedSlot_eq_ray  M   H 
+     η χ   m A z 
+    (hrow:∀n:HeckeFamily.O,elementCoeff χ n=CanonicalRowCompletion.rowTwist (elementHom η) m 1 (A*z) n)
+     W   b D σ t v  (hD:0<D) :
     normalizedSlot η m A z (primePool M H b D) (annularWeight W D σ v) t D=
       (D:ℂ)^(Complex.I*t)*rayPrimePolynomial M H χ W b D σ (t+v) := by
   unfold normalizedSlot rowSlot rayPrimePolynomial primePool
@@ -56,6 +56,6 @@ theorem normalizedSlot_eq_ray (M:Ideal O) (H:Subgroup (O⧸M)ˣ)
 
 end SevenEighths.CenteredMomentPrimeSlotShift
 
-end
+
 
 end OAI

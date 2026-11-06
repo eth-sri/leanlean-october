@@ -18,7 +18,7 @@ open Finset
 
 /-- Abel summation with weight `k`: `∑_{k ∈ (m, N]} k a_k = N S(N) - ∑_{n ∈ [m, N)} S(n)`,
 where `S(n) = ∑_{k ∈ (m, n]} a_k`. -/
-theorem sum_Ioc_natCast_mul_eq (a : ℕ → ℂ) (m : ℕ) {N : ℕ} (hN : m ≤ N) :
+theorem sum_Ioc_natCast_mul_eq (a : ℕ → ℂ) (m : ℕ)  {N}  (hN : m ≤ N) :
     ∑ k ∈ Ioc m N, (k : ℂ) * a k =
       N * ∑ k ∈ Ioc m N, a k - ∑ n ∈ Ico m N, ∑ k ∈ Ioc m n, a k := by
   induction N, hN using Nat.le_induction with
@@ -35,7 +35,7 @@ for `H ∈ [exp(L/T²²), x]`, an interval `(lo, hi] ⊂ [H, 2H]`, a character `
 theorem norm_primeTwistPoly_le {x A' E Cm κ' : ℝ} (hP : PrimeTwistBound x A' E Cm κ')
     {H lo hi : ℝ} (hH₁ : Real.exp (Real.log x / Real.log (Real.log x) ^ 22) ≤ H) (hH₂ : H ≤ x)
     (hlo : H ≤ lo) (hhi : hi ≤ 2 * H) {k : ℕ} (hk₁ : 1 ≤ k) (hk₂ : (k : ℝ) ≤ Real.log x ^ Cm)
-    (χ : DirichletCharacter ℂ k) {u : ℝ} (hu₁ : Real.log x ^ E ≤ |u|) (hu₂ : |u| ≤ x ^ 3) :
+    (χ : DirichletCharacter ℂ k)  {u}  (hu₁ : Real.log x ^ E ≤ |u|) (hu₂ : |u| ≤ x ^ 3) :
     ‖(H : ℂ)⁻¹ * ∑ p ∈ (Finset.Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime,
         χ p * (p : ℂ) ^ ((u : ℂ) * Complex.I)‖ ≤ 4 * κ' * Real.log x ^ (-A') := by
   have hH0 : 0 < H := lt_of_lt_of_le (Real.exp_pos _) hH₁

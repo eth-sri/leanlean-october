@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.KernelSeparation
 
@@ -11,11 +12,15 @@ open scoped Classical BigOperators ContDiff
 open MeasureTheory FourierBridge InverseKernelSourceUniform
 noncomputable section
 
-def reciprocalWindow (w : ℝ→ℂ) (α M : ℝ) (y : ℝ) : ℂ :=
+def reciprocalWindow (w : ℝ→ℂ) (α M : ℝ) (y : ℝ)  :=
   (Real.exp (-α*M):ℂ)*(w y*(Real.exp (-α*y):ℂ))
 
-lemma reciprocalWindow_norm_le_one (w : ℝ→ℂ) (α M : ℝ) (hα : 0≤α)
-    (hw : ∀ y, ‖w y‖≤1) (hs : ∀ y, w y≠0 → -M≤y) (y : ℝ) :
+section
+variable (w : ℝ→ℂ) (α M : ℝ) (hα : 0≤α) (hw : ∀ y, ‖w y‖≤1) (hs : ∀ y, w y≠0 → -M≤y) (y Q q : ℝ) (hQ : 0<Q) (hq : 0<q)
+
+include hα hw hs in
+lemma reciprocalWindow_norm_le_one      
+          :
     ‖reciprocalWindow w α M y‖≤1 := by
   by_cases hy : w y=0
   · simp [reciprocalWindow,hy]
@@ -28,37 +33,45 @@ lemma reciprocalWindow_norm_le_one (w : ℝ→ℂ) (α M : ℝ) (hα : 0≤α)
       _ ≤ Real.exp (-α*M)*(1*Real.exp (-α*y)) := by gcongr; exact hw y
       _ ≤ 1 := by simpa only [one_mul] using he
 
-lemma reciprocalWindow_support (w : ℝ→ℂ) (α M y : ℝ) :
+lemma reciprocalWindow_support     :
     reciprocalWindow w α M y≠0 → w y≠0 := by
   intro h hw
   apply h
   simp [reciprocalWindow,hw]
 
-lemma reciprocalWindow_reconstruct (w : ℝ→ℂ) (α M y : ℝ) :
+lemma reciprocalWindow_reconstruct     :
     w y*(Real.exp (-α*y):ℂ) =
       (Real.exp (α*M):ℂ)*reciprocalWindow w α M y := by
   unfold reciprocalWindow
   rw [← mul_assoc,← Complex.ofReal_mul,← Real.exp_add]
   simp
 
-lemma reciprocal_norm_log (Q q : ℝ) (hQ : 0<Q) (hq : 0<q) :
+include hQ hq in
+lemma reciprocal_norm_log       :
     Real.exp (-(1/2:ℝ)*Real.log (q/Q)) = Real.sqrt Q/Real.sqrt q := by
   rw [show -(1/2:ℝ)*Real.log (q/Q) = Real.log (q/Q)*(-(1/2:ℝ)) by ring,
     ← Real.rpow_def_of_pos (div_pos hq hQ),Real.div_rpow hq.le hQ.le,
     Real.rpow_neg hq.le,Real.rpow_neg hQ.le,← Real.sqrt_eq_rpow,← Real.sqrt_eq_rpow]
   field_simp
 
-lemma reciprocal_cube_log (Q q : ℝ) (hQ : 0<Q) (hq : 0<q) :
+include hQ hq in
+lemma reciprocal_cube_log       :
     Real.exp (-Real.log (q/Q)) = Q/q := by
   rw [Real.exp_neg,Real.exp_log (div_pos hq hQ),inv_div]
 
-def reciprocalKernelWindows (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ) : Fin 4→ℝ→ℂ :=
+end
+
+def reciprocalKernelWindows (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)  :=
   ![windows 0,windows 1,reciprocalWindow (windows 2) (1/2) (M 2),
     reciprocalWindow (windows 3) 1 (M 3)]
 
-lemma reciprocalKernelWindows_norm (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
-    (hw : ∀ i y, ‖windows i y‖≤1)
-    (hs : ∀ i y, windows i y≠0 → |y|≤M i) :
+section
+variable (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ) (hw : ∀ i y, ‖windows i y‖≤1) (hs : ∀ i y, windows i y≠0 → |y|≤M i) (y : Fin 4→ℝ)
+
+include hw hs in
+lemma reciprocalKernelWindows_norm    
+     
+      :
     ∀ i y, ‖reciprocalKernelWindows windows M i y‖≤1 := by
   intro i y
   fin_cases i
@@ -69,8 +82,9 @@ lemma reciprocalKernelWindows_norm (windows : Fin 4→ℝ→ℂ) (M : Fin 4→�
   · exact reciprocalWindow_norm_le_one _ _ _ (by norm_num) (hw 3)
       (fun y hy => (abs_le.mp (hs 3 y hy)).1) y
 
-lemma reciprocalKernelWindows_support (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
-    (hs : ∀ i y, windows i y≠0 → |y|≤M i) :
+include hs in
+lemma reciprocalKernelWindows_support    
+      :
     ∀ i y, reciprocalKernelWindows windows M i y≠0 → |y|≤M i := by
   intro i y hy
   fin_cases i
@@ -79,7 +93,7 @@ lemma reciprocalKernelWindows_support (windows : Fin 4→ℝ→ℂ) (M : Fin 4�
   · exact hs 2 y (reciprocalWindow_support _ _ _ _ hy)
   · exact hs 3 y (reciprocalWindow_support _ _ _ _ hy)
 
-lemma reciprocal_window_product (windows : Fin 4→ℝ→ℂ) (M y : Fin 4→ℝ) :
+lemma reciprocal_window_product     :
     (∏ i, windows i (y i)) *
       ((Real.exp (-(1/2:ℝ)*y 2):ℂ)*(Real.exp (-y 3):ℂ)) =
     (Real.exp (M 2/2+M 3):ℂ)*(∏ i, reciprocalKernelWindows windows M i (y i)) := by
@@ -93,22 +107,10 @@ lemma reciprocal_window_product (windows : Fin 4→ℝ→ℂ) (M y : Fin 4→ℝ
   rw [hp]
   simp only [reciprocalKernelWindows,Fin.prod_univ_succ,Matrix.cons_val_zero,
     Matrix.cons_val_succ,Fin.prod_univ_zero,mul_one]
-  simp only [Fin.succ,Fin.val_mk]
-  simp only [one_mul,neg_one_mul] at h3 ⊢
-  change (windows 0 (y 0)*(windows 1 (y 1)*(windows 2 (y 2)*windows 3 (y 3)))) *
-    ((Real.exp (-(1/2:ℝ)*y 2):ℂ)*(Real.exp (-y 3):ℂ)) =
-    ((Real.exp ((1/2:ℝ)*M 2):ℂ)*(Real.exp (M 3):ℂ))*
-      (windows 0 (y 0)*(windows 1 (y 1)*
-        (reciprocalWindow (windows 2) (1/2) (M 2) (y 2)*
-         reciprocalWindow (windows 3) 1 (M 3) (y 3))))
-  calc
-    _ = windows 0 (y 0)*windows 1 (y 1)*
-      (windows 2 (y 2)*(Real.exp (-(1/2:ℝ)*y 2):ℂ))*
-      (windows 3 (y 3)*(Real.exp (-y 3):ℂ)) := by ring
-    _ = _ := by rw [h2,h3]; ring
+  grind
 
-theorem reciprocal_source_window_identity (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
-    (QK QP Qn Qb k p n b r : ℝ) (hQn : 0<Qn) (hQb : 0<Qb)
+theorem reciprocal_source_window_identity    
+     QK QP Qn Qb k p n b r  (hQn : 0<Qn) (hQb : 0<Qb)
     (hn : 0<n) (hb : 0<b) (hr : 0<r) :
     (∏ i, windows i (kernelLogCoordinates QK QP Qn Qb k p n b i)) /
       ((r*Real.sqrt n*b:ℝ):ℂ) =
@@ -128,6 +130,8 @@ theorem reciprocal_source_window_identity (windows : Fin 4→ℝ→ℂ) (M : Fin
   have hnC : (Real.sqrt n:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hn0
   have hQnC : (Real.sqrt Qn:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hQn0
   convert he using 1 <;> field_simp
+
+end
 
 end
 end SevenEighths.InverseReflectedPhase

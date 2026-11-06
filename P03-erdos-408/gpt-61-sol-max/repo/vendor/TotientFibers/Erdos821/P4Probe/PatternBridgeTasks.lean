@@ -14,12 +14,12 @@ open Blueprint.Graph
 
 noncomputable section
 
-def bigCoordinateAverage (P : PrimeGroups) (M : ℕ)
-    (S : P.BigGroup → Finset (Fin M)) (f : P.BigLabels M → ℂ) (a : P.BigLabels M) : ℂ :=
+def bigCoordinateAverage (P : PrimeGroups) (M )
+    (S : P.BigGroup → Finset (Fin M)) (f : P.BigLabels M → ℂ) (a : P.BigLabels M)  :=
   ∑ y, (P.idealMass y : ℂ) * f (fun g i => if i ∈ S g then y g i else a g i)
 
-def patternSideCoordinates {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (g : P.BigGroup) : Finset (Fin (J + ell)) :=
+def patternSideCoordinates {P } {J ell m } (ν : Pattern P J ell m)
+    (block : P.BigGroup → Bool) (side : Bool) (g : P.BigGroup)  :=
   if block g = side then (ν.changed g.val).image ν.slot else ∅
 
 def onePatternFamily (F : FixedData) (P : PrimeGroups) (J m : ℕ)
@@ -27,11 +27,11 @@ def onePatternFamily (F : FixedData) (P : PrimeGroups) (J m : ℕ)
   count := 1
   pattern := fun _ => ν
 
-def idealFullPair {P : PrimeGroups} {M : ℕ} (K : P.BigLabels M → P.BigLabels M → ℂ)
-    (f g : P.BigLabels M → ℂ) : ℂ :=
+def idealFullPair {P : PrimeGroups} {M } (K : P.BigLabels M → P.BigLabels M → ℂ)
+    (f g : P.BigLabels M → ℂ)  :=
   ∑ a, ∑ b, (P.idealMass a : ℂ) * star (f a) * K a b * g b
 
-def idealVectorNorm (P : PrimeGroups) (M : ℕ) (f : P.BigLabels M → ℂ) : ℝ :=
+def idealVectorNorm (P : PrimeGroups) (M ) (f : P.BigLabels M → ℂ)  :=
   Real.sqrt (∑ a, P.idealMass a * ‖f a‖ ^ 2)
 
 /-- Exact one-pattern conditional comparison bridge, before permutations.
@@ -43,7 +43,7 @@ analytic free-tuple cellMass by unused-coordinate integration; all required
 side counts are positive and <=m. Apply LocalComparison, then weighted
 Cauchy--Schwarz over shared labels. Generic marginal/CS helpers are already
 proved in P4Probe; no projection/cardinality/symmetry proof is needed. -/
-def PatternComparisonBridgeTask : Prop :=
+def PatternComparisonBridgeTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J m : ℕ) (hj : m ≤ J)
     (block : P.BigGroup → Bool) (Q : ℕ) (h ξ θ ζ ε : ℝ)
     (c : ProbeChoice P m block),

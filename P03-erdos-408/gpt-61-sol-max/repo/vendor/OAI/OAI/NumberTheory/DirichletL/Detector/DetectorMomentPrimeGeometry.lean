@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.DetectorMomentFiberGates
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalSlots
@@ -34,7 +35,7 @@ theorem sourceMoment_separation_eventually {Slot : Type*} [Fintype Slot]
     apply Filter.eventually_all.mpr
     intro t
     by_cases he : s=t
-    · exact Filter.Eventually.of_forall (fun _ h=>False.elim (h he))
+    · simp_all
     rcases lt_or_gt_of_ne (fun h=>he (hinj h)) with hlt|hlt
     · filter_upwards [ProbeRaySlots.annular_power_separation 1 2 (ell s) (ell t)
         (by norm_num) hlt] with Z hZ _
@@ -43,12 +44,9 @@ theorem sourceMoment_separation_eventually {Slot : Type*} [Fintype Slot]
         (by norm_num) hlt] with Z hZ _
       exact Or.inr hZ
   filter_upwards [hs,eventually_ge_atTop (1:ℝ)] with Z hs hZ
-  refine ⟨hZ,?_⟩
-  intro d hd s t hst
-  simp only [sourceMoment_physical_scale Z d _ (by linarith) hd.ne']
-  exact hs s t hst
+  grind [sourceMoment_physical_scale]
 
-theorem sourceMoment_fixedBase_norm_one (data : RowData) (P : Ideal O) (hP : Prime P)
+theorem sourceMoment_fixedBase_norm_one (data : RowData)  P  (hP : Prime P)
     (hlarge : ((baseCharacter data).modulus.absNorm:ℝ)<(P.absNorm:ℝ)) :
     ‖fixedBase data.η data.m data.f P‖=1 := by
   rw [←baseCharacter_coeff]
@@ -57,8 +55,8 @@ theorem sourceMoment_fixedBase_norm_one (data : RowData) (P : Ideal O) (hP : Pri
     (ProbeRaySlots.prime_coprime_of_norm_gt (baseCharacter data) ⟨P,hP⟩ hlarge)
 
 theorem sourceMoment_primeProfile_norm {Δ : ℝ} {D : Parameters.HighData Δ}
-    (F : ProbeFinalAssembly.SourceData D) (X : ℝ) (ζ : ℂ) (hz : ζ.re≤1)
-    (P : Ideal O) : ‖primeProfile F.W X ζ P‖≤1 := by
+    (F : ProbeFinalAssembly.SourceData D)  X   ζ  (hz : ζ.re≤1)
+     P  : ‖primeProfile F.W X ζ P‖≤1 := by
   by_cases hw : F.W ((P.absNorm:ℝ)/X)=0
   · simp [primeProfile,hw]
   have hx := F.complex_support hw
@@ -76,9 +74,13 @@ theorem sourceMoment_primeProfile_norm {Δ : ℝ} {D : Parameters.HighData Δ}
 section Live
 variable (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ)
 
-theorem sourceMoment_live_disjoint {Δ : ℝ} {D : Parameters.HighData Δ}
-    (F : ProbeFinalAssembly.SourceData D) {ι : Type*} (ell : ι→ℝ)
-    (U : ℝ) (hU : 0<U) (s t : ι)
+section
+variable {Δ : ℝ} {D : Parameters.HighData Δ} (F : ProbeFinalAssembly.SourceData D) {ι : Type*}
+include Δ D F ι
+
+theorem sourceMoment_live_disjoint    
+        (ell : ι→ℝ)
+     U  (hU : 0<U)  s t 
     (hsep : 2*U^(ell s)<1*U^(ell t) ∨ 2*U^(ell t)<1*U^(ell s)) :
     Disjoint (livePrimes M H F.W 2 (U^(ell s))) (livePrimes M H F.W 2 (U^(ell t))) := by
   apply Finset.disjoint_left.mpr
@@ -87,11 +89,15 @@ theorem sourceMoment_live_disjoint {Δ : ℝ} {D : Parameters.HighData Δ}
     (Real.rpow_pos_of_pos hU _) F.complex_support P hs
   have ht' := livePrime_data M H F.W 1 2 (U^(ell t))
     (Real.rpow_pos_of_pos hU _) F.complex_support P ht
-  rcases hsep with hsep|hsep <;> linarith [hs'.2.2.1,hs'.2.2.2,ht'.2.2.1,ht'.2.2.2]
+  grind
 
-theorem sourceMoment_live_denominator {Δ : ℝ} {D : Parameters.HighData Δ}
-    (F : ProbeFinalAssembly.SourceData D) {ι : Type*} [Fintype ι]
-    (data : RowData) (U : ℝ) (ell : ι→ℝ) (hU : 0<U)
+section
+variable [Fintype ι] (data : RowData) (U : ℝ) (ell : ι→ℝ)
+include data U ell
+
+theorem sourceMoment_live_denominator    
+         
+          (hU : 0<U)
     (hlarge : ∀s,((baseCharacter data).modulus.absNorm:ℝ)<1*U^(ell s))
     (p : ι→Ideal O) (hp : p∈Fintype.piFinset (fun s=>livePrimes M H F.W 2 (U^(ell s)))) :
     ‖fixedBase data.η data.m data.f (∏s,p s)‖=1 := by
@@ -102,9 +108,9 @@ theorem sourceMoment_live_denominator {Δ : ℝ} {D : Parameters.HighData Δ}
     (Real.rpow_pos_of_pos hU _) F.complex_support (p s) (Fintype.mem_piFinset.mp hp s)
   exact sourceMoment_fixedBase_norm_one data (p s) hs.1 ((hlarge s).trans_le hs.2.2.1)
 
-theorem sourceMoment_live_quotient_norm {Δ : ℝ} {D : Parameters.HighData Δ}
-    (F : ProbeFinalAssembly.SourceData D) {ι : Type*} [Fintype ι]
-    (data : RowData) (U : ℝ) (ell : ι→ℝ) (ζ : ι→ℂ) (hU : 0<U)
+theorem sourceMoment_live_quotient_norm    
+         
+          (ζ : ι→ℂ) (hU : 0<U)
     (hz : ∀s,(ζ s).re=17/50)
     (hlarge : ∀s,((baseCharacter data).modulus.absNorm:ℝ)<1*U^(ell s))
     (p : ι→Ideal O) (hp : p∈Fintype.piFinset (fun s=>livePrimes M H F.W 2 (U^(ell s)))) :
@@ -114,10 +120,14 @@ theorem sourceMoment_live_quotient_norm {Δ : ℝ} {D : Parameters.HighData Δ}
     div_one,norm_prod]
   exact Finset.prod_le_one₀ (fun s _=>norm_nonneg _)
     (fun s _=>sourceMoment_primeProfile_norm F _ _ (by rw [hz s];norm_num) _)
+
+end
+
+end
 end Live
 
 theorem sourceMoment_capacity_eventually {Slot : Type*} [Fintype Slot]
-    (ell : Slot→ℝ) (hell : ∀s,0≤ell s) (ε : ℝ) (hε : 0<ε) :
+    (ell : Slot→ℝ) (hell : ∀s,0≤ell s)  ε  (hε : 0<ε) :
     ∀ᶠ Z : ℝ in atTop,1≤Z ∧ ∀d : ℝ,1/200≤d→
       (∀s,1≤2*(Z^d)^(ell s/d)) ∧ ∀selected : Finset Slot,
       (∏s:selected,2*(Z^d)^(ell s/d))≤
@@ -148,14 +158,14 @@ theorem sourceMoment_capacity_eventually {Slot : Type*} [Fintype Slot]
         mul_le_mul_of_nonneg_right hp (Real.rpow_nonneg hu0.le _)
       _ = _ := mul_comm _ _
 
-section Source
+
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem sourceMoment_fiber_prime_geometry_eventually
     {Δ : ℝ} {D : Parameters.HighData Δ} (F : ProbeFinalAssembly.SourceData D)
-    (η : Character) (εg : ℝ) (hεg : 0<εg) :
+     η   εg  (hεg : 0<εg) :
     ∀ᶠ Z : ℝ in atTop,1≤Z ∧ ∀d : ℝ,1/200≤d→
       ∀(a ε tstar T allowance : ℝ)(i : ℕ)
       (B : Batch M H (Sum Bool (RayQuotient.Characters M H)) (Fin D.N)
@@ -242,7 +252,7 @@ theorem sourceMoment_fiber_prime_geometry_eventually
         exact sourceMoment_live_quotient_norm M H F (B.data j) (Z^d)
           (fun s:selected=>D.ell s/d) (fun s:selected=>B.external s) hu (fun s=>hz s) hl' p (by simpa only [Fintype.mem_piFinset] using hp')
 
-end Source
+
 end SevenEighths.ProbeHighRowFamily
 
 end

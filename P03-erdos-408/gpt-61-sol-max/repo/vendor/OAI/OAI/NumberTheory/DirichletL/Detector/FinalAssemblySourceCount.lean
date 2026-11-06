@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyCountParameters
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.ProbeFinalAssembly
@@ -15,18 +15,26 @@ open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBa
 open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
 open ProbeHighRowFamily
 
+section
+variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+include M H
+
+section
+variable (_hH : RayOrthogonality.globalUnits M≤H) (_S : Finset (Ideal O)) (φ : ℝ→ℝ) (_hφ : ContDiff ℝ ∞ φ) (_hφc : HasCompactSupport φ) (_hφp : tsupport φ⊆Ioi 0) (_hφ0 : ∀y,0≤φ y) (_hφne : φ≠0) (a₀ b₀ B₀ : ℝ) (_ha₀ : 0<a₀) (_hab₀ : a₀≤b₀) (_hB₀ : 0<B₀) (_hφs : Function.support φ⊆Ioo a₀ b₀) (_hφB : ∀y,φ y≤B₀) (εm : ℝ) (_hεm : 0<εm) (Label : Type) [Fintype Label] (N n : ℕ) (dmin dmax τ logCost heightCost momentCost binWidth : ℝ) (hdmin : 0<dmin) (hdmax : 0<dmax) (hτ : 0<τ) (hl : 0<logCost) (hh : τ<heightCost) (hb : 0<binWidth) (counts : CountParameters M H εm)
+include _hH _S φ _hφ _hφc _hφp _hφ0 _hφne a₀ b₀ B₀ _ha₀ _hab₀ _hB₀ _hφs _hφB εm _hεm Label N n dmin dmax τ logCost heightCost momentCost binWidth hdmin hdmax hτ hl hh hb counts
+
 theorem balanced_source_count_from_raw_moments
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (_hH : RayOrthogonality.globalUnits M≤H) (_S : Finset (Ideal O))
-    (φ : ℝ→ℝ) (_hφ : ContDiff ℝ ∞ φ) (_hφc : HasCompactSupport φ)
-    (_hφp : tsupport φ⊆Ioi 0) (_hφ0 : ∀y,0≤φ y) (_hφne : φ≠0)
-    (a₀ b₀ B₀ : ℝ) (_ha₀ : 0<a₀) (_hab₀ : a₀≤b₀) (_hB₀ : 0<B₀)
-    (_hφs : Function.support φ⊆Ioo a₀ b₀) (_hφB : ∀y,φ y≤B₀)
-    (εm : ℝ) (_hεm : 0<εm)
-    (Label : Type) [Fintype Label] (N n : ℕ)
-    (dmin dmax τ logCost heightCost momentCost binWidth : ℝ)
-    (hdmin : 0<dmin) (hdmax : 0<dmax) (hτ : 0<τ)
-    (hl : 0<logCost) (hh : τ<heightCost) (hb : 0<binWidth) (counts : CountParameters M H εm) :
+         
+       
+         
+         
+           
+       
+       
+         
+     
+         
+            :
     ∃K : ℝ,0<K ∧ ∀ᶠZ : ℝ in atTop,
       ∀d : ℝ,dmin≤d → d≤dmax →
       ∀(a ε Δ ν C q : ℝ) (i : ℕ),i≤n → 51/100<a → 2*a-1≤5/6 → a≤1 → 0≤ε → ε≤1/1000 →
@@ -58,17 +66,17 @@ theorem balanced_source_count_from_raw_moments
       hC ha' B hslots hbin) (Real.rpow_nonneg (Real.rpow_nonneg (by linarith) _) _)
 
 theorem high_source_count_from_raw_moments
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (_hH : RayOrthogonality.globalUnits M≤H) (_S : Finset (Ideal O))
-    (φ : ℝ→ℝ) (_hφ : ContDiff ℝ ∞ φ) (_hφc : HasCompactSupport φ)
-    (_hφp : tsupport φ⊆Ioi 0) (_hφ0 : ∀y,0≤φ y) (_hφne : φ≠0)
-    (a₀ b₀ B₀ : ℝ) (_ha₀ : 0<a₀) (_hab₀ : a₀≤b₀) (_hB₀ : 0<B₀)
-    (_hφs : Function.support φ⊆Ioo a₀ b₀) (_hφB : ∀y,φ y≤B₀)
-    (εm : ℝ) (_hεm : 0<εm)
-    (Label : Type) [Fintype Label] (N n : ℕ)
-    (dmin dmax τ logCost heightCost momentCost binWidth : ℝ)
-    (hdmin : 0<dmin) (hdmax : 0<dmax) (hτ : 0<τ)
-    (hl : 0<logCost) (hh : τ<heightCost) (hb : 0<binWidth) (counts : CountParameters M H εm) :
+         
+       
+         
+         
+           
+       
+       
+         
+     
+         
+            :
     ∃K : ℝ,0<K ∧ ∀ᶠZ : ℝ in atTop,
       ∀d : ℝ,dmin≤d → d≤dmax →
       ∀(a ε Δ C q : ℝ) (i : ℕ),i≤n → 5/6<2*a-1 → a≤1 → 0≤ε → ε≤1/1000 → 0≤C →
@@ -95,8 +103,10 @@ theorem high_source_count_from_raw_moments
     (hpref d hd hd' C a ε (cutoff (2*a-1) q) (Z^τ) ((Z^d)^(τ/(2*dmax))) i
       hC ha' B hslots hbin) (Real.rpow_nonneg (Real.rpow_nonneg (by linarith) _) _)
 
+end
+
 theorem adaptive_source_count_from_raw_moments
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+         
     (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O))
     (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ)
     (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀y,0≤φ y) (hφne : φ≠0)
@@ -139,8 +149,10 @@ theorem adaptive_source_count_from_raw_moments
     simp only [adaptiveRowExponent,ite_eq_right hδ]
     exact hc.trans (by gcongr;exact le_max_right _ _)
 
+end
+
 end SevenEighths.ProbeFinalAssembly
 
-end
+
 
 end OAI

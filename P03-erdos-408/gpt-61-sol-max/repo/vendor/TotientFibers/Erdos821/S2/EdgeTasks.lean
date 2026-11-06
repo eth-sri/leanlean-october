@@ -15,7 +15,7 @@ open Erdos821.Blueprint.Graph
 
 /-- Absolute kernels before any combination of signed local choices.
 The exponent is independent of J. This includes both countable summability claims. -/
-def MemoryEdgeAbsoluteTask (F : FixedData) (r : MemoryParameters F) : Prop :=
+def MemoryEdgeAbsoluteTask (F ) (r : MemoryParameters F)  :=
   ∀ (m : ℕ) (C₁ : ℝ), ∃ Ca : ℝ, ∀ J : ℕ, ∃ x₀ : ℝ,
     ∀ x ≥ x₀, ∀ P : PrimeGroups, P.Admissible F x →
     ∀ A : Model F P J m, A.patternMass ≤ (L x) ^ C₁ →
@@ -26,7 +26,7 @@ def MemoryEdgeAbsoluteTask (F : FixedData) (r : MemoryParameters F) : Prop :=
 
 /-- The truncation gain from averaging small source omissions in rows and
 small target omissions in columns. Local multipliers are allowed before sums. -/
-def MemoryRareTask (F : FixedData) (r : MemoryParameters F) : Prop :=
+def MemoryRareTask (F ) (r : MemoryParameters F)  :=
   ∀ (m : ℕ) (C₁ : ℝ), ∃ Ca : ℝ, ∀ J : ℕ, ∀ C₂ : ℝ, ∃ x₀ : ℝ,
     ∀ x ≥ x₀, ∀ P : PrimeGroups, P.Admissible F x →
     ∀ A : Model F P J m, A.patternMass ≤ (L x) ^ C₁ →
@@ -41,7 +41,7 @@ def MemoryRareTask (F : FixedData) (r : MemoryParameters F) : Prop :=
 
 /-- Signed clean norm. Cs is chosen before m, C₁, J and Eid.
 No arbitrary choice multiplier is admitted here: it could destroy cancellation. -/
-def MemoryCleanTask (F : FixedData) (r : MemoryParameters F) : Prop :=
+def MemoryCleanTask (F ) (r : MemoryParameters F)  :=
   ∃ Cs : ℝ, ∀ (m : ℕ) (C₁ : ℝ) (J : ℕ) (C₂ Eid : ℝ), 0 < Eid → ∃ x₀ : ℝ,
     ∀ x ≥ x₀, ∀ P : PrimeGroups, P.Admissible F x →
     ∀ A : Model F P J m, A.patternMass ≤ (L x) ^ C₁ →

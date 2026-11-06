@@ -13,8 +13,8 @@ namespace Erdos821.S34Core
 noncomputable section
 open Blueprint.Analytic
 
-def comparisonScalar (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ θ ζ : ℝ) (X : Tuple G a) (Y : Tuple G b) : ℂ :=
+def comparisonScalar (G ) (a b )
+    (Q : ℕ) (h ξ θ ζ : ℝ) (X : Tuple G a) (Y : Tuple G b)  :=
   expect G a (fun D => expect G b (fun E =>
     cellKernel G a Q h ξ (product G a D) (product G a X) *
     cellKernel G b Q h ξ (product G b E) (product G b Y) * tuplePhase G a b θ ζ D E))
@@ -25,7 +25,7 @@ theorem major_retained_comparison (hfourier : RationalFourierTask) (hind : Primi
     (hh : 0 < h) (hh2 : h ≤ Real.log 2) (hξ : 0 < ξ)
     (hU : 0 < U) (hV : 0 < V) (hS : 0 ≤ S)
     (hθ : θ = (u : ℝ) / r + β) (hβ : |β| * (U * V) ≤ 2 * S)
-    (hε : 0 ≤ ε) (hε1 : ε ≤ 1) (X : Tuple G a) (Y : Tuple G b)
+    (hε : 0 ≤ ε) (hε1 : ε ≤ 1)  X   Y 
     (hX : U ≤ (product G a X : ℝ) ∧ (product G a X : ℝ) ≤ 2 * U)
     (hY : V ≤ (product G b Y : ℝ) ∧ (product G b Y : ℝ) ≤ 2 * V)
     (hcopA : ∀ D : Tuple G a, Nat.Coprime (product G a D) r)

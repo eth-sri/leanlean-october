@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.Poisson
 public import OAI.NumberTheory.DirichletL.Descent.Completion
@@ -11,24 +12,24 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def finiteCanonicalMarkedRow (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+def finiteCanonicalMarkedRow (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f k : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (W : ℝ → ℂ) (X : ℝ) : ℂ :=
+    (W : ℝ → ℂ) (X : ℝ)  :=
   fixedChildRow p hp hcop hg pool Ψ m
     (fun U => primeMark slots lists a U * W (primeProductNorm p U / X)) f k
 
 omit [DecidableEq σ] in
 theorem finiteCanonicalMarkedRow_actual_columns
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ p i - 1)
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+     pool   Ψ   m f k 
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (W : ℝ → ℂ) (X : ℝ) :
+     W   X  :
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a W X =
       ∑ U ∈ pool.powerset,
         columnWeight (CanonicalRowCompletion.rowTwist Ψ m f k)
@@ -43,9 +44,9 @@ theorem finiteCanonicalMarkedRow_actual_columns
   convert he using 1 ; simp only [secondChildColumn, canonicalSourceCoefficient] ; ring
 
 theorem secondChildSum_marked_canonical
-    (F V A : Finset ι) (Ψ : Eis →* ℂ) (m r c d e k : Eis)
-    (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (W : ℝ → ℂ) (X : ℝ) :
+    (F V A : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m r c d e k : ActualEisensteinCubic.O)
+    (slots : Finset σ)  lists   a 
+     W   X  :
     secondChildSum p hp hcop hg F V Ψ m r c d e k
       (fun U => primeMark slots lists a (A ∪ U) * W (primeProductNorm p U / X)) =
     ∑ J ∈ slots.powerset, primeMark J lists a (A ∪ V) *
@@ -74,9 +75,9 @@ theorem secondChildSum_marked_canonical
 
 omit [DecidableEq σ] in
 theorem finiteCanonicalMarkedRow_restore_pool
-    (pool B : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+     pool B   Ψ   m f k 
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (W : ℝ → ℂ) (X : ℝ)
+     W   X 
     (hB : ∀ i ∈ B, m * f ∈ Ideal.span {p i}) :
     finiteCanonicalMarkedRow p hp hcop hg (pool \ B) Ψ m f k slots lists a W X =
       finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a W X :=
@@ -84,9 +85,9 @@ theorem finiteCanonicalMarkedRow_restore_pool
 
 omit [DecidableEq σ] in
 theorem finiteCanonicalMarkedRow_restore_lists
-    (pool B : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+     pool B   Ψ   m f k 
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (W : ℝ → ℂ) (X : ℝ)
+     W   X 
     (hB : ∀ i ∈ B, m * f ∈ Ideal.span {p i}) :
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots (fun i => lists i \ B) a W X =
       finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a W X := by
@@ -101,9 +102,9 @@ theorem finiteCanonicalMarkedRow_restore_lists
       secondChildColumn_zero_of_mask_label_mem p hp hcop hg Ψ m f k _ U i hiU (hB i hiB)]
 
 theorem secondChildSum_marked_fixed_pool
-    (F V A : Finset ι) (Ψ : Eis →* ℂ) (m r c d e k : Eis)
-    (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (W : ℝ → ℂ) (X : ℝ) :
+    (F V A : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m r c d e k : ActualEisensteinCubic.O)
+    (slots : Finset σ)  lists   a 
+     W   X  :
     secondChildSum p hp hcop hg F V Ψ m r c d e k
       (fun U => primeMark slots lists a (A ∪ U) * W (primeProductNorm p U / X)) =
     ∑ J ∈ slots.powerset, primeMark J lists a (A ∪ V) *
@@ -120,13 +121,9 @@ theorem secondChildSum_marked_fixed_pool
   rw [finiteCanonicalMarkedRow_restore_pool p hp hcop hg F V Ψ (m * r)
     (c * e * ∏ i ∈ V, p i) (d * e * k) _ _ _ _ _ hV]
   have hlists : (fun i => lists i \ (A ∪ V)) = (fun i => (lists i \ A) \ V) := by
-    funext i
-    ext x
-    simp only [Finset.mem_sdiff, Finset.mem_union]
-    tauto
+    grind
   rw [hlists]
-  exact finiteCanonicalMarkedRow_restore_lists p hp hcop hg F V Ψ (m * r)
-    (c * e * ∏ i ∈ V, p i) (d * e * k) _ _ _ _ _ hV
+  solve_by_elim [finiteCanonicalMarkedRow_restore_lists]
 
 end
 end SevenEighths.InverseMoment

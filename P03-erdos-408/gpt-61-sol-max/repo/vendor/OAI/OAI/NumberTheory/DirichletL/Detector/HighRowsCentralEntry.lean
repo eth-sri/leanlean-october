@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralStrict
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
@@ -40,6 +40,6 @@ lemma sourceRowTerm_central_boundary_norm (eta a rho x w z : ℂ)
       Nat.reduceEqDiff,mul_zero,add_zero] using hb.trans (show _≤2*(Ideal.absNorm (Ideal.span {p}):ℝ)^(1/2:ℝ) by linarith)
   · norm_num
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

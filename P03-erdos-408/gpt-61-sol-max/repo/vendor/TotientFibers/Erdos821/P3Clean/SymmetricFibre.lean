@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.TiltedIdealKernel
 public import Erdos821.P3Clean.BigAverage
@@ -18,14 +19,14 @@ variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
 def symmetricCycleKernel (A : Model F P J m) (n B : ℕ) [Fintype (CutPendingState P B)]
     (theta : ℝ) (forward : Bool) (d : SmallLabels P J)
-    (a b : P.BigLabels (J + F.ell)) (r : PendingCycle P B) : ℂ :=
+    (a b : P.BigLabels (J + F.ell)) (r : PendingCycle P B)  :=
   bigSymmetryFactor P (J + F.ell) *
     ∑ p : P.BigPermutations (J + F.ell), ∑ q : P.BigPermutations (J + F.ell),
       regularCycleKernel A n B theta forward d (P.actBig p a) (P.actBig q b) r
 
-theorem symmetricCycleKernel_fibre (A : Model F P J m) (n B : ℕ)
-    [Fintype (CutPendingState P B)] (theta : ℝ) (forward : Bool) (d : SmallLabels P J)
-    (psi : AddChar (PendingCycle P B) ℂ) (a b : P.BigLabels (J + F.ell)) :
+theorem symmetricCycleKernel_fibre (A : Model F P J m)  n B 
+    [Fintype (CutPendingState P B)]  theta   forward   d 
+     psi   a b  :
     fourierFibre (symmetricCycleKernel A n B theta forward d) psi a b =
       bigSymmetryFactor P (J + F.ell) *
         ∑ p : P.BigPermutations (J + F.ell), ∑ q : P.BigPermutations (J + F.ell),
@@ -46,9 +47,9 @@ theorem symmetricCycleKernel_fibre (A : Model F P J m) (n B : ℕ)
   intro p _
   rw [Finset.sum_comm]
 
-theorem symmetricCycleKernel_ideal_frequency (A : Model F P J m) (n B : ℕ)
-    [Fintype (CutPendingState P B)] (theta : ℝ) (forward : Bool) (d : SmallLabels P J)
-    (psi : AddChar (PendingCycle P B) ℂ) :
+theorem symmetricCycleKernel_ideal_frequency (A : Model F P J m)  n B 
+    [Fintype (CutPendingState P B)]  theta   forward   d 
+     psi  :
     ∃ theta' : ℝ, ∀ a b : P.BigLabels (J + F.ell),
       fourierFibre (symmetricCycleKernel A n B theta forward d) psi a b =
         smallSignedCoefficient A forward d * tiltedBannedKernel A n theta' forward a b := by
@@ -57,10 +58,6 @@ theorem symmetricCycleKernel_ideal_frequency (A : Model F P J m) (n B : ℕ)
   intro a b
   rw [symmetricCycleKernel_fibre]
   simp only [ht, tiltedBannedKernel, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro p _
-  apply Finset.sum_congr rfl
-  intro q _
   ring
 
 

@@ -11,10 +11,10 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
+
 local notation "O" => ActualEisensteinCubic.O
 
-theorem full_first_physical_tail (order : ℕ) :
+theorem full_first_physical_tail  order  :
     ∃ (s : Finset (ℕ×ℕ)) (Ct : ℝ),0<Ct ∧
     ∀ {ι : Type*} [DecidableEq ι]
       (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -83,7 +83,7 @@ theorem full_first_physical_tail (order : ℕ) :
   simpa only [Real.exp_log hU₁,Real.exp_log hU₂,one_mul,primeSubsetGenerator_norm_eq_productNorm]
     using hb
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

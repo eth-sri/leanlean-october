@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Poisson.PrincipalTruncation
 
 public import OAI.NumberTheory.DirichletL.Foundation
 
@@ -9,22 +11,13 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge EisensteinSchwartzPoisson JointLogSeparation
-noncomputable section
 
-lemma schwartz_logPhase_inversion (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
-    g x = ∫ t : ℝ, logPhase t x * (𝓕 g) t := by
-  convert schwartz_log_inversion g x using 1
-  apply integral_congr_ae
-  filter_upwards with t
-  congr 1
-  simp only [logPhase, Real.inner_apply]
-  congr 1
-  push_cast
-  ring
+
+alias schwartz_logPhase_inversion := _root_.OAI.JointLogSeparation.schwartz_phase_inversion
 
 theorem descent_profile_identity {ι : Type*} [Fintype ι]
     (g₁ g₂ W : 𝓢(ℝ, ℂ)) (V : ι → ℝ → ℂ) (a₁ a₂ ak : ι → ℝ)
-    (R : ℝ) (b : 𝓢(ℝ, ℂ))
+     R   b 
     (he : ∀ y : ι → ℝ,
       (∏ i, V i (y i)) * paperRadialFourier W (R * Real.exp (∑ i, ak i * y i)) =
         ∫ t : ℝ, (∏ i, V i (y i) * logPhase t (ak i * y i)) * b t) :
@@ -76,7 +69,7 @@ theorem descent_profile_identity {ι : Type*} [Fintype ι]
   dsimp only [P, x₁, x₂, xk]
   ring
 
-theorem tripleCoefficient_weighted_integrable (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ) :
+theorem tripleCoefficient_weighted_integrable  b₁ b₂ b₃   J  :
     Integrable (fun t : Frequency =>
       ((1 + ‖t.1‖)^J * (1 + ‖t.2.1‖)^J * (1 + ‖t.2.2‖)^J) *
         ‖tripleCoefficient b₁ b₂ b₃ t‖) := by
@@ -88,7 +81,7 @@ theorem tripleCoefficient_weighted_integrable (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) 
   simp only [tripleCoefficient, norm_mul]
   ring
 
-theorem tripleCoefficient_weighted_integral (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ) :
+theorem tripleCoefficient_weighted_integral  b₁ b₂ b₃   J  :
     (∫ t : Frequency,
       ((1 + ‖t.1‖)^J * (1 + ‖t.2.1‖)^J * (1 + ‖t.2.2‖)^J) *
         ‖tripleCoefficient b₁ b₂ b₃ t‖) =
@@ -111,7 +104,7 @@ theorem tripleCoefficient_weighted_integral (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J
     (fun t : ℝ => (1 + ‖t‖)^J * ‖b₂ t‖) (fun t : ℝ => (1 + ‖t‖)^J * ‖b₃ t‖)]
   ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

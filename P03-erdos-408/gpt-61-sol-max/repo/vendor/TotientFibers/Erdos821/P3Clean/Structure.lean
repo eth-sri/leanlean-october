@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P3Edge.ColReversal
 
 public import Erdos821.S2.EdgeTasks
 
@@ -16,12 +19,15 @@ open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 variable {P : PrimeGroups} {F : FixedData} {J m : ℕ}
 
-def emptyTransfer {M : ℕ} (s : P.MemoryState M) : TransferChoice s :=
+def emptyTransfer {M } (s : P.MemoryState M) : TransferChoice s :=
   ⟨fun _ => ∅, ⟨fun _ => ∅,
     fun _ (i : {i : Fin M // i ∈ (∅ : Finset (Fin M))}) =>
       False.elim (Finset.notMem_empty i.val i.property)⟩⟩
 
-theorem clean_transfer_iff {M : ℕ} {s : P.MemoryState M} (c : TransferChoice s) :
+section
+variable {M : ℕ}
+
+theorem clean_transfer_iff   {s : P.MemoryState M} (c : TransferChoice s) :
     transferModeAccept .clean c ↔ c = emptyTransfer s := by
   constructor
   · intro h
@@ -35,7 +41,7 @@ theorem clean_transfer_iff {M : ℕ} {s : P.MemoryState M} (c : TransferChoice s
   · rintro rfl
     exact fun _ => ⟨rfl, rfl⟩
 
-theorem sum_clean_transfer {M : ℕ} (s : P.MemoryState M)
+theorem sum_clean_transfer   (s : P.MemoryState M)
     (h : TransferChoice s → Prop) (f : TransferChoice s → ℂ) :
     (∑ c : TransferChoice s, if h c ∧ transferModeAccept .clean c then f c else 0) =
       if h (emptyTransfer s) then f (emptyTransfer s) else 0 := by
@@ -47,8 +53,8 @@ theorem sum_clean_transfer {M : ℕ} (s : P.MemoryState M)
     simp [hc]
   · simp
 
-def cleanEdgeKernel (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (s t : P.MemoryState (J + F.ell)) : ℂ :=
+def cleanEdgeKernel (A : Model F P J m) (n ) (rho theta : ℝ) (i : Fin n)
+    (s t : P.MemoryState (J + F.ell))  :=
   (edgeSymmetryFactor P (J + F.ell) : ℂ) *
     ∑ π : P.Permutations (J + F.ell), ∑ τ : P.Permutations (J + F.ell),
       ∑ v : Fin A.patternCount, ∑ u : P.Aux J,
@@ -57,8 +63,8 @@ def cleanEdgeKernel (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
           edgeChoiceCoefficient A n rho theta i s t ⟨π, τ, v, u, emptyTransfer s⟩
         else 0
 
-theorem memoryEdgeKernel_clean (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
-    (i : Fin n) (s t : P.MemoryState (J + F.ell)) :
+theorem memoryEdgeKernel_clean (A : Model F P J m)  n   rho theta 
+     i  (s t : P.MemoryState (J + F.ell)) :
     memoryEdgeKernel A n rho theta i .clean (fun _ _ _ => 1) s t =
       cleanEdgeKernel A n rho theta i s t := by
   classical
@@ -89,21 +95,19 @@ theorem deleteMemoryIndices_empty {g : P.Group} (z : P.Memory g) :
       List.ofFn (fun i : Fin n => l.get ⟨i.val, by omega⟩) = l := by
     subst n
     exact List.ofFn_get l
-  rw [h z.toList z.card (Multiset.length_toList z), Multiset.coe_toList]
+  aesop
 
-theorem retrievedIndices_empty {M : ℕ} (s : P.MemoryState M) (g : P.BigGroup) :
+theorem retrievedIndices_empty   (s : P.MemoryState M) (g : P.BigGroup) :
     retrievedIndices (emptyTransfer s) g = ∅ := by
-  classical
-  apply Finset.eq_empty_iff_forall_notMem.mpr
-  intro i hi
-  obtain ⟨j, _, _⟩ := Finset.mem_image.mp hi
-  exact False.elim (Finset.notMem_empty j.val j.property)
+  rfl
 
-theorem storedMemory_empty {M : ℕ} {g : P.Group} (a : Fin M → P.Prime g) :
+theorem storedMemory_empty   {g : P.Group} (a : Fin M → P.Prime g) :
     storedMemory a ∅ = 0 := by simp [storedMemory]
 
+end
+
 theorem rawEdgeValid_empty (A : Model F P J m) (ν : Pattern P J F.ell m)
-    (forward : Bool) (u : P.Aux J) (s t : P.MemoryState (J + F.ell)) :
+     forward  (u : P.Aux J) (s t : P.MemoryState (J + F.ell)) :
     rawEdgeValid A ν forward u s t (emptyTransfer s) ↔
       P.smallPhysical s.1 s.2.1 ∧ P.smallPhysical t.1 t.2.1 ∧
       ν.compatible s.2.1 t.2.1 ∧ ν.ban s.2.1 t.2.1 u ∧
@@ -117,38 +121,10 @@ theorem rawEdgeValid_empty (A : Model F P J m) (ν : Pattern P J F.ell m)
   simp only [hr]
   simp [emptyTransfer, storedMemory_empty, deleteMemoryIndices_empty, Function.Injective]
 
-def particleTranslation (delta : ℤ) (g : P.Group) : P.Particle g ≃ P.Particle g where
-  toFun := translateParticle delta
-  invFun := translateParticle (-delta)
-  left_inv := by
-    intro z
-    rcases z with ⟨p, r⟩
-    simp only [translateParticle]
-    congr 1
-    change r + (delta : ZMod p.val) + ((-delta : ℤ) : ZMod p.val) = r
-    simp
-  right_inv := by
-    intro z
-    rcases z with ⟨p, r⟩
-    simp only [translateParticle]
-    congr 1
-    change r + ((-delta : ℤ) : ZMod p.val) + (delta : ZMod p.val) = r
-    simp
 
-theorem translateMemory_groupMass (F : FixedData) (n : ℕ) (delta : ℤ)
-    (g : P.Group) (z : P.Memory g) :
-    P.groupMemoryMass F n g (translateMemory delta z) = P.groupMemoryMass F n g z := by
-  classical
-  have hinj : Function.Injective (translateParticle (P := P) delta (g := g)) :=
-    (particleTranslation delta g).injective
-  unfold PrimeGroups.groupMemoryMass translateMemory
-  simp only [Multiset.map_map]
-  congr 1
-  rw [Multiset.toFinset_map, Finset.prod_image]
-  · apply Finset.prod_congr rfl
-    intro u _
-    rw [Multiset.count_map_eq_count' _ _ hinj]
-  · intro a _ b _ h
-    exact hinj h
+
+theorem translateMemory_groupMass  F   n   delta 
+     g   z  :
+    P.groupMemoryMass F n g (translateMemory delta z) = P.groupMemoryMass F n g z := by solve_by_elim [_root_.Erdos821.P3Edge.groupMemoryMass_translateMemory]
 
 end Erdos821.P3Clean

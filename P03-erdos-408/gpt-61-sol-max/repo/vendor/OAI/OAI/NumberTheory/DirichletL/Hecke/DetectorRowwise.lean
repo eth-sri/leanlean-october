@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCount
 public import Mathlib.Analysis.InnerProductSpace.Calculus
@@ -7,14 +8,14 @@ public import Mathlib.Analysis.InnerProductSpace.Calculus
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 open MeasureTheory Set
 namespace SevenEighths.HeckeDetectorRowwise
 
 theorem norm_sq_le_anchor_integral (F F' : ℝ→ℂ)
     (hF : Continuous F) (hF' : Continuous F')
-    (hd : ∀ x, HasDerivAt F (F' x) x) {a b x : ℝ} (hx : x∈Icc a b) :
+    (hd : ∀ x, HasDerivAt F (F' x) x)  {a b x}  (hx : x∈Icc a b) :
     ‖F x‖^2≤‖F a‖^2+∫ t in a..b, (‖F t‖^2+‖F' t‖^2) := by
   let G : ℝ→ℝ := fun t => ‖F t‖^2+‖F' t‖^2
   have hG : Continuous G := (hF.norm.pow 2).add (hF'.norm.pow 2)
@@ -31,10 +32,12 @@ theorem norm_sq_le_anchor_integral (F F' : ℝ→ℂ)
   have hm := intervalIntegral.integral_mono_interval (μ:=volume) (le_refl a) hx.1 hx.2
     (Filter.Eventually.of_forall (fun t => show 0≤G t by dsimp [G]; positivity))
     (hG.intervalIntegrable a b)
-  change ‖F x‖^2≤‖F a‖^2+∫ t in a..b, G t
-  linarith
+  grind
 
-theorem rowwise_energy {ι : Type*} (rows : Finset ι) (F F' : ι→ℝ→ℂ)
+section
+variable {ι : Type*} (rows : Finset ι)
+
+theorem rowwise_energy     (F F' : ι→ℝ→ℂ)
     (hF : ∀ i∈rows, Continuous (F i)) (hF' : ∀ i∈rows, Continuous (F' i))
     (hd : ∀ i∈rows, ∀ x, HasDerivAt (F i) (F' i x) x)
     (a b E : ℝ) (hab : a≤b) (choice : ι→ℝ)
@@ -60,7 +63,7 @@ theorem rowwise_energy {ι : Type*} (rows : Finset ι) (F F' : ι→ℝ→ℂ)
   have ha := henergy a ⟨le_refl a,hab⟩
   nlinarith
 
-theorem rowwise_energy_two {ι : Type*} (rows : Finset ι)
+theorem rowwise_energy_two    
     (F : Fin 2→Fin 2→ι→ℝ→ℝ→ℂ)
     (hcont : ∀ j k i, i∈rows → Continuous (Function.uncurry (F j k i)))
     (hdx : ∀ k i, i∈rows → ∀ x y,
@@ -91,8 +94,10 @@ theorem rowwise_energy_two {ι : Type*} (rows : Finset ι)
     (fun i hi x => hdx 0 i hi x (py i)) a b ((1+2*(d-c))*E) hab px hpx
     (he 0) (he 1)
 
+end
+
 end SevenEighths.HeckeDetectorRowwise
 
-end
+
 
 end OAI

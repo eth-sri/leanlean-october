@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.TailAbsorptionTask
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
@@ -24,14 +25,13 @@ theorem tail_scale_bounds : ∀ᶠ x : ℝ in atTop,
   have hLpos : 0 < L x := by linarith
   have hLnonneg : 0 ≤ L x := hLpos.le
   have hTnonneg : 0 ≤ T x := Real.log_nonneg hx
-  have hlogNonneg : 0 ≤ Real.log (L x) := Real.log_nonneg hx
+  
   have hpowNonneg : 0 ≤ (L x) ^ ((1 : ℝ) / 10) := Real.rpow_nonneg hLnonneg _
   have hTle : T x ≤ (L x) ^ ((1 : ℝ) / 10) := by
     change ‖Real.log (L x)‖ ≤ 1 * ‖(L x) ^ ((1 : ℝ) / 10)‖ at hsmallx
     have habs : |Real.log (L x)| ≤ 1 * |(L x) ^ ((1 : ℝ) / 10)| := by
       simpa only [Real.norm_eq_abs] using hsmallx
-    rw [abs_of_nonneg hlogNonneg, abs_of_nonneg hpowNonneg] at habs
-    simpa [T] using habs
+    grind [T]
   let w : ℝ := (L x) ^ ((52 : ℝ) / 100)
   have hwge : 1 ≤ w := by
     dsimp [w]
@@ -78,8 +78,7 @@ theorem TailAbsorptionTask_proof : Erdos821.S2Core.TailAbsorptionTask := by
   have hDnonneg : 0 ≤ D := by
     dsimp [D]
     positivity
-  have hDsmall : ∀ᶠ x : ℝ in atTop, D / Real.log 2 ≤ L x := by
-    exact Real.tendsto_log_atTop.eventually_ge_atTop (D / Real.log 2)
+  have hDsmall : ∀ᶠ x : ℝ in atTop, D / Real.log 2 ≤ L x := Real.tendsto_log_atTop.eventually_ge_atTop (D / Real.log 2)
   have hgood : ∀ᶠ x : ℝ in atTop, ∀ cap : ℕ,
       (cap : ℝ) ≤ Ccap * (N x : ℝ) * T x →
       (2 : ℝ) ^ ((cap : ℤ) - (memoryCutoff x : ℤ)) *
@@ -154,10 +153,9 @@ theorem TailAbsorptionTask_proof : Erdos821.S2Core.TailAbsorptionTask := by
     rw [hBase, hPowL, hPowL, ← Real.exp_add]
     apply Real.exp_le_exp.mpr
     rw [show Real.log l = t by rfl]
-    dsimp [n, n1, t, l] at hExponent ⊢
-    nlinarith [hExponent]
+    linarith
   obtain ⟨x₀, hx₀⟩ := Filter.eventually_atTop.1 hgood
-  exact ⟨x₀, fun x hx cap hcap => hx₀ x hx cap hcap⟩
+  solve_by_elim
 
 
 end Erdos821.S2Tail

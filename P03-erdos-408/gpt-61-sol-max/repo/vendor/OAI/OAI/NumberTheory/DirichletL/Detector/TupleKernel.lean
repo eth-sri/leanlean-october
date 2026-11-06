@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.TupleRows
 
@@ -9,17 +10,17 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-def tuplePhysicalScalar {K : ℕ} (η : HeckeFamily.Character) (p : Fin K→O)
-    (J : Finset (Fin K)) : ℂ :=
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+def tuplePhysicalScalar {K } (η : HeckeFamily.Character) (p : Fin K→ActualEisensteinCubic.O)
+    (J : Finset (Fin K))  :=
   (-1:ℂ)^J.card*((elementNorm (∏i∈J,p i)^(-(3/2:ℝ)):ℝ):ℂ)*
     star (HeckeFamily.elementCoeff η (∏i∈Finset.univ\J,p i))
 
-lemma tuple_scaled_coefficient {K : ℕ} (η : HeckeFamily.Character) (p : Fin K→O)
-    (hp : ∀i,p i≠0) (J : Finset (Fin K)) (W0 W1 : SchwartzMap ℝ ℂ)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (x w z : ℂ) :
+lemma tuple_scaled_coefficient {K : ℕ}  η  (p : Fin K→ActualEisensteinCubic.O)
+    (hp : ∀i,p i≠0) (J : Finset (Fin K))  W0 W1 
+     X Y Z  (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)  x w z  :
     tuplePhysicalScalar η p J*
       sourceMellinWeight W0 W1 (X/elementNorm (∏i∈J,p i)) (Y/elementNorm (∏i∈J,p i))
         (Z*elementNorm (∏i∈Finset.univ\J,p i)) x w z=
@@ -30,13 +31,11 @@ lemma tuple_scaled_coefficient {K : ℕ} (η : HeckeFamily.Character) (p : Fin K
     (tuple_norm_pos p hp (Finset.univ\J))
     (star (HeckeFamily.elementCoeff η (∏i∈Finset.univ\J,p i))) x w z
   have hb := tuple_source_scalar η p hp J x w z
-  unfold tuplePhysicalScalar tupleIndexedCoefficient
-  linear_combination (-1:ℂ)^J.card*ha +
-    (-1:ℂ)^J.card*sourceMellinWeight W0 W1 X Y Z x w z*hb
+  grind [tuplePhysicalScalar, tupleIndexedCoefficient, sourceMellinWeight]
 
-lemma compensatedRow_kernel_subsets {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
-    (p : Fin K→O) (hp : ∀i,p i≠0) (u : O) (a : ℂ) (W0 W1 : SchwartzMap ℝ ℂ)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (x w z : ℂ) :
+lemma compensatedRow_kernel_subsets  {K}   η   S 
+     p  (hp : ∀i,p i≠0)  u   a   W0 W1 
+     X Y Z  (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)  x w z  :
     sourceMellinWeight W0 W1 X Y Z x w z*(∏i,(elementNorm (p i):ℂ)^(z-1))*
       (a*indexedCompensatedHigh η S p u x w z)=
     ∑J∈(Finset.univ:Finset (Fin K)).powerset,tuplePhysicalScalar η p J*
@@ -48,7 +47,7 @@ lemma compensatedRow_kernel_subsets {K : ℕ} (η : HeckeFamily.Character) (S : 
   apply Finset.sum_congr rfl
   intro J hJ
   have he := tuple_scaled_coefficient η p hp J W0 W1 X Y Z hX hY hZ x w z
-  linear_combination -a*markedIdealHighSeries S (Ideal.span {∏i∈Finset.univ\J,p i}) η u x w z*he
+  grind
 
 end SevenEighths.ProbePhysical
 end

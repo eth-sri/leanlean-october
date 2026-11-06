@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.TruncatedSecondTransfer
 
@@ -10,81 +11,81 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+ 
+ 
 namespace JointLogSeparation
 open FirstPassCubeLabels
 
 end JointLogSeparation
 
 namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
+open   SecondPassArithmetic JointLogSeparation
 
 end SecondPassIntegration
 
@@ -94,17 +95,20 @@ open FirstPassCubeLabels
 end JointLogSeparation
 end
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
+open   CompletedGauss IdealMobiusDivisorSum
 
-theorem ideals_coprime_of_relprime (A B : Ideal O) (h : IsRelPrime A B) : IsCoprime A B := by
+section
+variable (A B D H G : Ideal O)
+
+theorem ideals_coprime_of_relprime   (h : IsRelPrime A B) : IsCoprime A B := by
   apply Ideal.isCoprime_iff_gcd.mpr
   simpa only [Ideal.one_eq_top] using Ideal.isUnit_iff.mp (h (GCDMonoid.gcd_dvd_left A B) (GCDMonoid.gcd_dvd_right A B))
 
-theorem squarefree_quotient_gcd_coprime (B G : Ideal O) (hB : Squarefree B) :
+theorem squarefree_quotient_gcd_coprime   (hB : Squarefree B) :
     IsCoprime (idealQuotient (gcd B G) B) G := by
   let D := gcd B G
   have hDB : D ∣ B := GCDMonoid.gcd_dvd_left B G
@@ -119,13 +123,15 @@ theorem squarefree_quotient_gcd_coprime (B G : Ideal O) (hB : Squarefree B) :
   rw [idealQuotient_mul hDG] at hh
   exact hh
 
-theorem gcd_mul_of_coprime_divisor (D H G : Ideal O) (hDG : D ∣ G) (hHG : IsCoprime H G) :
+theorem gcd_mul_of_coprime_divisor   (hDG : D ∣ G) (hHG : IsCoprime H G) :
     gcd (D * H) G = D := by
   have hleft : D ∣ gcd (D * H) G := GCDMonoid.dvd_gcd (dvd_mul_right D H) hDG
   have hcop : IsCoprime (gcd (D * H) G) H :=
     (hHG.mono (dvd_refl H) (GCDMonoid.gcd_dvd_right (D * H) G)).symm
   have hright : gcd (D * H) G ∣ D := hcop.dvd_of_dvd_mul_right (GCDMonoid.gcd_dvd_left _ _)
   exact associated_iff_eq.mp (associated_of_dvd_dvd hright hleft)
+
+end
 
 def squarefreeGcdEquiv (G : Ideal O) (hG : Squarefree G) :
     {B : Ideal O // Squarefree B} ≃
@@ -151,10 +157,13 @@ def squarefreeGcdEquiv (G : Ideal O) (hG : Squarefree G) :
         ((mem_idealDivisors hG.ne_zero).mp p.1.property)
       exact mul_left_cancel₀ hD (idealQuotient_mul (dvd_mul_right p.1.val p.2.val))
 
-def coprimeSquarefreeRange (G : Ideal O) (K : ℝ) : Finset (Ideal O) :=
+def coprimeSquarefreeRange (G : Ideal O) (K : ℝ)  :=
   (squarefreeIdealRange K).filter (fun H => IsCoprime H G)
 
-theorem squarefree_cutoff_summable (K : ℝ) (f : Ideal O → ℂ) :
+section
+variable (G D H : Ideal O) (hD : D ≠ 0) (hG : Squarefree G) (K : ℝ) (f : Ideal O → ℂ)
+
+theorem squarefree_cutoff_summable     :
     Summable (fun B : {B : Ideal O // Squarefree B} =>
       if (Ideal.absNorm B.val : ℝ) ≤ K then f B.val else 0) := by
   let e : squarefreeIdealRange K → {B : Ideal O // Squarefree B} :=
@@ -167,13 +176,15 @@ theorem squarefree_cutoff_summable (K : ℝ) (f : Ideal O → ℂ) :
     exact hB (ite_eq_right hn)
   exact ⟨⟨B.val, mem_squarefreeIdealRange.mpr ⟨B.property, hN⟩⟩, Subtype.ext rfl⟩
 
-theorem norm_le_mul_of_ne_zero (D H : Ideal O) (hD : D ≠ 0) :
+include hD in
+theorem norm_le_mul_of_ne_zero     :
     Ideal.absNorm H ≤ Ideal.absNorm (D * H) := by
   have hD1 : 1 ≤ Ideal.absNorm D := Nat.one_le_iff_ne_zero.mpr
     (fun h => hD (Ideal.absNorm_eq_zero_iff.mp h))
   simpa only [one_mul, map_mul] using Nat.mul_le_mul_right (Ideal.absNorm H) hD1
 
-theorem coprime_squarefree_cutoff (G D : Ideal O) (hD : D ≠ 0) (K : ℝ) (f : Ideal O → ℂ) :
+include hD in
+theorem coprime_squarefree_cutoff         :
     (∑' H : {H : Ideal O // Squarefree H ∧ IsCoprime H G},
       if (Ideal.absNorm (D * H.val) : ℝ) ≤ K then f (D * H.val) else 0) =
       ∑ H : coprimeSquarefreeRange G K,
@@ -183,8 +194,7 @@ theorem coprime_squarefree_cutoff (G D : Ideal O) (hD : D ≠ 0) (K : ℝ) (f : 
       (Finset.mem_filter.mp H.property).2⟩
   have he : Function.Injective e := by
     intro H J h
-    apply Subtype.ext
-    exact congrArg (fun C : {H : Ideal O // Squarefree H ∧ IsCoprime H G} => C.val) h
+    aesop
   let F : {H : Ideal O // Squarefree H ∧ IsCoprime H G} → ℂ := fun H =>
     if (Ideal.absNorm (D * H.val) : ℝ) ≤ K then f (D * H.val) else 0
   have hs : Function.support F ⊆ Set.range e := by
@@ -198,7 +208,8 @@ theorem coprime_squarefree_cutoff (G D : Ideal O) (hD : D ≠ 0) (K : ℝ) (f : 
       ⟨mem_squarefreeIdealRange.mpr ⟨H.property.1, hHN⟩, H.property.2⟩⟩, Subtype.ext rfl⟩
   simpa only [tsum_fintype, F, e] using (he.tsum_eq hs).symm
 
-theorem squarefree_gcd_finite_sum (G : Ideal O) (hG : Squarefree G) (K : ℝ) (f : Ideal O → ℂ) :
+include hG in
+theorem squarefree_gcd_finite_sum         :
     (∑ B : squarefreeIdealRange K, f B.val) =
       ∑ D : idealDivisors G, ∑ H : coprimeSquarefreeRange G K,
         if (Ideal.absNorm (D.val * H.val) : ℝ) ≤ K then f (D.val * H.val) else 0 := by
@@ -223,25 +234,33 @@ theorem squarefree_gcd_finite_sum (G : Ideal O) (hG : Squarefree G) (K : ℝ) (f
 
 end
 
+end
+
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
+open     ConcretePrimeRowBridge CompletedGauss
 open IdealMobiusDivisorSum
 
-theorem canonical_quadraticRow_one (I : Ideal O) (hI : Admissible I) : quadraticRow I 1 = 1 := by
-  rw [quadraticRow, dite_eq_left hI]
-  simp [idealSexticRow, finiteSquarefreeRow]
+section
+variable (I J : Ideal O) (hI : Admissible I)
 
-theorem unrestrictedPairCharacter_one (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
+include hI in
+theorem canonical_quadraticRow_one     : quadraticRow I 1 = 1 := by
+  simp_all [quadraticRow, idealSexticRow, finiteSquarefreeRow]
+
+include hI in
+theorem unrestrictedPairCharacter_one     (hJ : Admissible J)
     (hray : columnRay I = columnRay J) : unrestrictedPairCharacter I J 1 = 1 := by
   have h := unrestrictedPairCharacter_span I J hI hJ hray 1
   simpa only [Ideal.span_singleton_one, canonical_quadraticRow_one I hI,
     canonical_quadraticRow_one J hJ, one_mul, Ideal.one_eq_top] using h
 
-def normalizedIdealPair (I J lengthScale : Ideal O) : ℂ :=
+end
+
+def normalizedIdealPair (I J lengthScale : Ideal O)  :=
   unrestrictedPairCharacter I J lengthScale / (Real.sqrt (Ideal.absNorm lengthScale : ℝ) : ℂ)
 
-theorem normalizedIdealPair_mul (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hray : columnRay I = columnRay J) (A B : Ideal O) :
+theorem normalizedIdealPair_mul  I J  (hI : Admissible I) (hJ : Admissible J)
+    (hray : columnRay I = columnRay J)  A B  :
     normalizedIdealPair I J (A * B) = normalizedIdealPair I J A * normalizedIdealPair I J B := by
   simp only [normalizedIdealPair, unrestrictedPairCharacter_mul I J hI hJ hray,
     map_mul, Nat.cast_mul, Real.sqrt_mul (Nat.cast_nonneg _), Complex.ofReal_mul, div_mul_div_comm]
@@ -254,7 +273,11 @@ def normalizedIdealPairHom (I J : Ideal O) (hI : Admissible I) (hJ : Admissible 
     norm_num
   map_mul' := normalizedIdealPair_mul I J hI hJ hray
 
-theorem normalizedIdealPair_square (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (lengthScale : Ideal O) :
+section
+variable (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (hray : columnRay I = columnRay J) (G : Ideal O) (hG : Squarefree G)
+
+include hI hJ in
+theorem normalizedIdealPair_square        lengthScale  :
     normalizedIdealPair I J lengthScale ^ 2 =
       (idealZeroMask I (idealGenerator lengthScale) * idealZeroMask J (idealGenerator lengthScale)) / (Ideal.absNorm lengthScale : ℂ) := by
   have hc : unrestrictedPairCharacter I J lengthScale ^ 2 =
@@ -268,7 +291,8 @@ theorem normalizedIdealPair_square (I J : Ideal O) (hI : Admissible I) (hJ : Adm
     exact_mod_cast Real.sq_sqrt (Nat.cast_nonneg (Ideal.absNorm lengthScale) : (0 : ℝ) ≤ _)
   rw [normalizedIdealPair, div_pow, hc, hn]
 
-theorem squarefree_divisor_sum_eq_support (G : Ideal O) (hG : Squarefree G) (f : Ideal O → ℂ) :
+include hG in
+theorem squarefree_divisor_sum_eq_support     (f : Ideal O → ℂ) :
     (∑ D ∈ idealDivisors G, f D) =
       ∑ S ∈ (IdealMobiusDivisorSum.primeSupport G).powerset, f (∏ P ∈ S, P) := by
   have hfilter : (idealDivisors G).filter Squarefree = idealDivisors G := by
@@ -279,9 +303,10 @@ theorem squarefree_divisor_sum_eq_support (G : Ideal O) (hG : Squarefree G) (f :
   intro S hS T hT hST
   exact support_product_injective (Finset.mem_powerset.mp hS) (Finset.mem_powerset.mp hT) hST
 
+include hI hJ hray hG in
 theorem normalizedIdealPair_double_divisor
-    (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (hray : columnRay I = columnRay J)
-    (G : Ideal O) (hG : Squarefree G) :
+           
+        :
     (∑ D ∈ idealDivisors G, ∑ E ∈ idealDivisors G,
       (UniqueFactorizationMonoid.moebius E : ℂ) * normalizedIdealPair I J (D * E)) =
       ∏ P ∈ IdealMobiusDivisorSum.primeSupport G,
@@ -316,29 +341,35 @@ theorem normalizedIdealPair_double_divisor
     normalizedIdealPair_square I J hI hJ] using hh
 
 end
+
+end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
+open     CompletedGauss
 open IdealMobiusDivisorSum QuadraticMainBoundary
 
 def idealNormCutoff (K : ℝ) (H : Ideal O) : ℂ := if (Ideal.absNorm H : ℝ) ≤ K then 1 else 0
 
-def normalizedPairPartial (I J : Ideal O) (K : ℝ) : ℂ :=
+def normalizedPairPartial (I J : Ideal O) (K : ℝ)  :=
   ∑ B : squarefreeIdealRange K, normalizedIdealPair I J B.val
 
-def normalizedPairCoprimePartial (I J G : Ideal O) (K : ℝ) : ℂ :=
+def normalizedPairCoprimePartial (I J G : Ideal O) (K : ℝ)  :=
   ∑ H : coprimeSquarefreeRange G K, normalizedIdealPair I J H.val
 
-def normalizedPairDivisors (I J G : Ideal O) : ℂ :=
+def normalizedPairDivisors (I J G : Ideal O)  :=
   ∑ E ∈ idealDivisors G, (UniqueFactorizationMonoid.moebius E : ℂ) * normalizedIdealPair I J E
 
-def normalizedPairDensity (I J G : Ideal O) : ℂ :=
+def normalizedPairDensity (I J G : Ideal O)  :=
   ∏ P ∈ IdealMobiusDivisorSum.primeSupport G,
     (1 - (idealZeroMask I (ConcretePrimeRowBridge.idealGenerator P) *
       idealZeroMask J (ConcretePrimeRowBridge.idealGenerator P)) / (Ideal.absNorm P : ℂ))
 
-theorem normalizedPairPartial_split (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hray : columnRay I = columnRay J) (G : Ideal O) (hG : Squarefree G) (K : ℝ) :
+section
+variable (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (hray : columnRay I = columnRay J) (G : Ideal O) (hG : Squarefree G) (K : ℝ)
+
+include hI hJ hray hG in
+theorem normalizedPairPartial_split      
+            :
     normalizedPairPartial I J K =
       ∑ H : coprimeSquarefreeRange G K, ∑ D ∈ idealDivisors G,
         normalizedIdealPair I J H.val * normalizedIdealPair I J D * idealNormCutoff K (H.val * D) := by
@@ -355,9 +386,10 @@ theorem normalizedPairPartial_split (I J : Ideal O) (hI : Admissible I) (hJ : Ad
   unfold idealNormCutoff
   split_ifs <;> ring
 
+include hI hJ hray hG in
 theorem normalizedPair_main_difference
-    (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (hray : columnRay I = columnRay J)
-    (G : Ideal O) (hG : Squarefree G) (K : ℝ) :
+           
+          :
     normalizedPairPartial I J K * normalizedPairDivisors I J G -
       normalizedPairCoprimePartial I J G K * normalizedPairDensity I J G =
       ∑ H : coprimeSquarefreeRange G K, ∑ D ∈ idealDivisors G, ∑ E ∈ idealDivisors G,
@@ -394,11 +426,16 @@ theorem normalizedPair_main_difference
 
 end
 
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss IdealMobiusDivisorSum
+end
 
-def commonMaskIdeal (D : Ideal O) : Ideal O := ∏ P ∈ gcdMaskPrimes D, P
+open   ConcretePrimeRowBridge CompletedGauss IdealMobiusDivisorSum
 
-theorem commonMaskIdeal_squarefree (D : Ideal O) : Squarefree (commonMaskIdeal D) := by
+def commonMaskIdeal (D : Ideal O)  := ∏ P ∈ gcdMaskPrimes D, P
+
+section
+variable (D P H G : Ideal O) (hH : Squarefree H) (hc : IsCoprime H G) (hbad : ∀ P ∈ fixedBadPrimes, P ∣ G) (hD : Admissible D)
+
+theorem commonMaskIdeal_squarefree   : Squarefree (commonMaskIdeal D) := by
   have hp (P : Ideal O) (hP : P ∈ gcdMaskPrimes D) : Prime P := by
     let : P.IsMaximal := gcdMaskPrimes_maximal D ⟨P, hP⟩
     exact Ideal.prime_of_isPrime (NeZero.ne P) inferInstance
@@ -410,14 +447,15 @@ theorem commonMaskIdeal_squarefree (D : Ideal O) : Squarefree (commonMaskIdeal D
   · intro P hP
     exact (hp P hP).squarefree
 
-theorem fixedBadPrimes_dvd_commonMaskIdeal (D P : Ideal O) (hP : P ∈ fixedBadPrimes) :
+theorem fixedBadPrimes_dvd_commonMaskIdeal   (hP : P ∈ fixedBadPrimes) :
     P ∣ commonMaskIdeal D := by
   apply Finset.dvd_prod_of_mem
   exact Finset.mem_union_left _ hP
 
+include hH hc hbad in
 theorem admissible_of_squarefree_coprime_bad
-    (H G : Ideal O) (hH : Squarefree H) (hc : IsCoprime H G)
-    (hbad : ∀ P ∈ fixedBadPrimes, P ∣ G) : Admissible H := by
+         
+      : Admissible H := by
   refine ⟨hH.ne_zero, hH, ?_⟩
   intro P hP
   have hp : Prime P := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
@@ -426,15 +464,17 @@ theorem admissible_of_squarefree_coprime_bad
   intro hb
   exact hp.not_isUnit (hc.isRelPrime (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hP) (hbad P hb))
 
-theorem coprimeSquarefreeRange_subset_idealRange (G : Ideal O)
-    (hbad : ∀ P ∈ fixedBadPrimes, P ∣ G) (K : ℝ) :
+include hbad in
+theorem coprimeSquarefreeRange_subset_idealRange  
+       K  :
     coprimeSquarefreeRange G K ⊆ idealRange K := by
   intro H hH
   obtain ⟨hHs, hc⟩ := Finset.mem_filter.mp hH
   obtain ⟨hsf, hN⟩ := mem_squarefreeIdealRange.mp hHs
   exact mem_idealRange.mpr ⟨admissible_of_squarefree_coprime_bad H G hsf hc hbad, hN⟩
 
-theorem commonMaskIdeal_eq_fixed_mul (D : Ideal O) (hD : Admissible D) :
+include hD in
+theorem commonMaskIdeal_eq_fixed_mul     :
     commonMaskIdeal D = (∏ P ∈ fixedBadPrimes, P) * D := by
   have hd : Disjoint fixedBadPrimes (IdealMobiusDivisorSum.primeSupport D) := by
     apply Finset.disjoint_left.mpr
@@ -446,9 +486,12 @@ theorem commonMaskIdeal_eq_fixed_mul (D : Ideal O) (hD : Admissible D) :
   change (∏ P ∈ fixedBadPrimes ∪ IdealMobiusDivisorSum.primeSupport D, P) = _
   rw [Finset.prod_union hd, squarefree_support_product_self hD.2.1]
 
-theorem commonMaskIdeal_norm (D : Ideal O) (hD : Admissible D) :
+include hD in
+theorem commonMaskIdeal_norm     :
     Ideal.absNorm (commonMaskIdeal D) = Ideal.absNorm (∏ P ∈ fixedBadPrimes, P) * Ideal.absNorm D := by
   rw [commonMaskIdeal_eq_fixed_mul D hD, map_mul]
+
+end
 
 end CanonicalQuadraticSieve
 

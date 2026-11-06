@@ -27,7 +27,7 @@ def fullPhysical (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (V : 𝓢(ℝ,ℂ)) (X Y : ℝ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
     (R : Finset ι→Finset ι→ℝ) (label : Finset ι→SecondExpansionData ι→κ)
-    (y : SecondParentSource ι Jo) : ℂ :=
+    (y : SecondParentSource ι Jo)  :=
   let Ψ₀ := firstCoreTwist negative (if negative then r.1 else r.2) Ψ core
   let ll := fun i=>lists i\extra y.cube
   let H := markedRadial p (slots\J) (residualLists p negative ll y) a ∅ V X
@@ -41,14 +41,19 @@ def fullPhysical (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     secondSourceTail p hp hg hinj pool Ψ₀ (secondParentPuncture p m y)
       (secondParentLabel p y) (secondParentDivisor p y) H rowMajorant Y K
 
+section
+variable (hinj : Function.Injective (fun i=>Ideal.span {p i})) (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2) (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1) (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι) (source : Finset (Source ι Jo)) (w : Source ι Jo→ℂ) (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ) (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo)
+
+
+include hc hpr in
 theorem whole_parent_full
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
-    (negative : Bool) (Ψ : O→*ℂ) (m : O)
-    (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo) (hs : Function.support om⊆Set.Icc lo hi)
+     
+     
+     
+       
+         
+         
+          (hs : Function.support om⊆Set.Icc lo hi)
     (X t Y : ℝ) (hX : 0<X) (hY : 0<Y) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
     (R : Finset ι→Finset ι→ℝ) (label : Finset ι→SecondExpansionData ι→κ)
     (y : SecondParentSource ι Jo) (hq : y.quotient=sourceIdeal p (quotientSupport p y)) :
@@ -59,15 +64,16 @@ theorem whole_parent_full
   parentPoisson_full p hp hcop hg hinj hc hpr y pool hq negative Ψ m slots J
     (fun i=>lists i\extra y.cube) a om lo hi hlo hs X t Y hX hY r core R label
 
+include hc hpr in
 theorem whole_signed_source_full
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
-    (source : Finset (Source ι Jo)) (w : Source ι Jo→ℂ)
-    (negative : Bool) (Ψ : O→*ℂ) (m : O)
-    (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo) (hs : Function.support om⊆Set.Icc lo hi)
+     
+     
+     
+       
+       
+         
+         
+          (hs : Function.support om⊆Set.Icc lo hi)
     (X t Y : ℝ) (hX : 0<X) (hY : 0<Y) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
     (R : Finset ι→Finset ι→ℝ) (label : Finset ι→SecondExpansionData ι→κ) :
     (∑ x∈source,w x*(‖primeMark J lists a
@@ -92,6 +98,8 @@ theorem whole_signed_source_full
     rw [quotientSupport_attach p hinj];rfl
   exact whole_parent_full p hp hcop hg hinj hc hpr extra pool negative Ψ m slots J lists a
     om lo hi hlo hs X t Y hX hY r core R label (attach p J (x,q)) hquot
+
+end
 
 end SevenEighths.InverseMomentWholePriorityPhysical
 

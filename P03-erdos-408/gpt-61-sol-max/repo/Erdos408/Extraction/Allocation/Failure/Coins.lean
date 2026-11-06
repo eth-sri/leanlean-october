@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Endpoint
 
@@ -28,7 +29,7 @@ noncomputable section
 /-! ### Chernoff -/
 
 /-- The Chernoff parameter `θ = 1 - e⁻¹`. -/
-def chernoffTheta : ℝ := 1 - Real.exp (-1)
+def chernoffTheta  := 1 - Real.exp (-1)
 
 /-- `θ > 0`. -/
 lemma chernoffTheta_pos : 0 < chernoffTheta := by
@@ -41,7 +42,7 @@ lemma chernoffTheta_le_one : chernoffTheta ≤ 1 := by
   linarith [exp_pos (-1)]
 
 /-- `∑_P w(P) e^{-|P ∩ F|} = ∏_{g ∈ F} (1 - θ s_g)` for a family `F ⊆ 𝒞`. -/
-lemma sum_patternWeight_mul_exp_eq (c₁ x : ℝ) (w : ℕ) {F : Finset (Finset ℕ)}
+lemma sum_patternWeight_mul_exp_eq  c₁ x   w   {F} 
     (hF : F ⊆ candidateGroups x) :
     ∑ P ∈ (candidateGroups x).powerset,
         patternWeight c₁ x P w * Real.exp (-((P ∩ F).card : ℝ)) =
@@ -67,7 +68,7 @@ lemma sum_patternWeight_mul_exp_eq (c₁ x : ℝ) (w : ℕ) {F : Finset (Finset 
 
 /-- Chernoff: few successes in either family have probability at most
 `e^{c₂ T} (∏_{small} (1 - θ s_g) + ∏_{big} (1 - θ s_g))`. -/
-theorem failureProb_le_exp_mul {c₁ c₂ x : ℝ} {w : ℕ}
+theorem failureProb_le_exp_mul  {c₁ c₂ x}   {w} 
     (hs : ∀ g ∈ candidateGroups x, 0 ≤ successCoin c₁ g w ∧ successCoin c₁ g w ≤ 1) :
     failureProb c₁ c₂ x w ≤ Real.exp (c₂ * logLog x) *
       (∏ g ∈ smallGroups x, (1 - chernoffTheta * successCoin c₁ g w) +
@@ -112,17 +113,17 @@ theorem failureProb_le_exp_mul {c₁ c₂ x : ℝ} {w : ℕ}
 /-! ### The depth-two lower bound -/
 
 /-- The depth-two Bonferroni polynomial `ℓ(ω) = ω - C(ω, 2)`. -/
-def ell (n : ℕ) : ℝ := n - (n.choose 2 : ℝ)
+def ell (n : ℕ)  := n - (n.choose 2 : ℝ)
 
 /-- `ℓ(ω) ≤ 1`. -/
-lemma ell_le_one (n : ℕ) : ell n ≤ 1 := by
+lemma ell_le_one  n  : ell n ≤ 1 := by
   unfold ell
   rcases Nat.lt_or_ge n 3 with h | h
   · interval_cases n <;> norm_num [Nat.choose]
   · rw [Nat.choose_two_right]
     have h2 : (n : ℝ) * (n - 1) / 2 ≤ ((n * (n - 1) / 2 : ℕ) : ℝ) + 1 := by
       have := Nat.div_add_mod (n * (n - 1)) 2
-      have hm := Nat.mod_lt (n * (n - 1)) (show 0 < 2 by norm_num)
+      
       have : ((n * (n - 1) : ℕ) : ℝ) = 2 * ((n * (n - 1) / 2 : ℕ) : ℝ) +
           ((n * (n - 1) % 2 : ℕ) : ℝ) := by exact_mod_cast this.symm
       have hm' : ((n * (n - 1) % 2 : ℕ) : ℝ) ≤ 1 := by exact_mod_cast (by omega)
@@ -132,7 +133,7 @@ lemma ell_le_one (n : ℕ) : ell n ≤ 1 := by
     nlinarith
 
 /-- `ℓ(ω) ≤ ω 2^{1 - ω}`. -/
-lemma ell_le_natCast_mul_zpow (n : ℕ) : ell n ≤ (n : ℝ) * (1 / 2 : ℝ) ^ ((n : ℤ) - 1) := by
+lemma ell_le_natCast_mul_zpow  n  : ell n ≤ (n : ℝ) * (1 / 2 : ℝ) ^ ((n : ℤ) - 1) := by
   unfold ell
   rcases Nat.lt_or_ge n 3 with h | h
   · interval_cases n <;> norm_num [Nat.choose]
@@ -147,14 +148,14 @@ lemma ell_le_natCast_mul_zpow (n : ℕ) : ell n ≤ (n : ℝ) * (1 / 2 : ℝ) ^ 
     linarith
 
 /-- The weight of one group is at least `ℓ(ω_g(n)) / V_g`. -/
-lemma ell_div_le_markedWeight {g : Finset ℕ} (hg : 0 < harmonicMass g) (n : ℕ) :
+lemma ell_div_le_markedWeight  {g}  (hg : 0 < harmonicMass g)  n  :
     ell (primeCount g n) / harmonicMass g ≤ markedWeight {g} (1 / 2) id n := by
   rw [markedWeight_singleton]
   exact div_le_div_of_nonneg_right (ell_le_natCast_mul_zpow _) hg.le
 
 /-- `1 - θ s_g(u) ≤ 1 - α_g ℓ(ω_g(u))` with `α_g = θ c₁ W_g(u + 1) / V_g`. -/
-lemma one_sub_mul_successCoin_le {c₁ : ℝ} (hc₁ : 0 ≤ c₁) {g : Finset ℕ}
-    (hg : 0 < harmonicMass g) (w : ℕ) :
+lemma one_sub_mul_successCoin_le  {c₁}  (hc₁ : 0 ≤ c₁)  {g} 
+    (hg : 0 < harmonicMass g)  w  :
     1 - chernoffTheta * successCoin c₁ g w ≤
       1 - chernoffTheta * c₁ * markedWeight {g} (1 / 2) id (w + 1) / harmonicMass g *
         ell (primeCount g w) := by
@@ -175,11 +176,11 @@ lemma one_sub_mul_successCoin_le {c₁ : ℝ} (hc₁ : 0 ≤ c₁) {g : Finset �
 /-! ### The expansion -/
 
 /-- The subsets of at most two primes of a group. -/
-def lowSubsets (g : Finset ℕ) : Finset (Finset ℕ) :=
+def lowSubsets (g : Finset ℕ)  :=
   g.powerset.filter (·.card ≤ 2)
 
 /-- The coefficients `c_α(0) = 1`, `c_α(1) = -α`, `c_α(2) = α` of the expansion. -/
-def lowCoeff (α : ℝ) (k : ℕ) : ℝ :=
+def lowCoeff (α : ℝ) (k : ℕ)  :=
   if k = 0 then 1 else if k = 1 then -α else α
 
 /-- `∑_{m ≤ n} C(n, m) f(m) = f(0) + n f(1) + C(n, 2) f(2)` when `f` vanishes beyond `2`. -/
@@ -193,25 +194,18 @@ private lemma sum_range_choose_mul_eq (n : ℕ) (f : ℕ → ℝ) (hf : ∀ m, 2
   have h2 : ∑ m ∈ range 3, (n.choose m : ℝ) * f m =
       ∑ m ∈ range (n + 3), (n.choose m : ℝ) * f m := by
     refine sum_subset (range_subset_range.2 (by omega)) fun m hm hm' => ?_
-    rw [mem_range] at hm'
-    rw [hf m (by omega), mul_zero]
+    grind
   rw [h1, ← h2]
   simp [sum_range_succ]
 
 /-- `1 - α ℓ(ω_g(u)) = ∑_{K ⊆ g, |K| ≤ 2} c_α(|K|) [∀ p ∈ K, p ∣ u]`. -/
-lemma sum_lowSubsets_eq (g : Finset ℕ) (α : ℝ) (w : ℕ) :
+lemma sum_lowSubsets_eq  g   α   w  :
     ∑ K ∈ lowSubsets g, lowCoeff α K.card * (if ∀ p ∈ K, p ∣ w then 1 else 0) =
       1 - α * ell (primeCount g w) := by
   set s := g.filter (· ∣ w)
   have hfilt : (lowSubsets g).filter (fun K => ∀ p ∈ K, p ∣ w) =
       s.powerset.filter (·.card ≤ 2) := by
-    ext K
-    simp only [lowSubsets, mem_filter, mem_powerset, s, subset_iff]
-    constructor
-    · rintro ⟨⟨h1, h2⟩, h3⟩
-      exact ⟨fun p hp => ⟨h1 hp, h3 p hp⟩, h2⟩
-    · rintro ⟨h1, h2⟩
-      exact ⟨⟨fun p hp => (h1 hp).1, h2⟩, fun p hp => (h1 hp).2⟩
+    grind [lowSubsets]
   have : ∑ K ∈ lowSubsets g, lowCoeff α K.card * (if ∀ p ∈ K, p ∣ w then 1 else 0) =
       ∑ K ∈ (lowSubsets g).filter (fun K => ∀ p ∈ K, p ∣ w), lowCoeff α K.card := by
     rw [sum_filter]
@@ -220,13 +214,11 @@ lemma sum_lowSubsets_eq (g : Finset ℕ) (α : ℝ) (w : ℕ) :
     sum_powerset_apply_card (fun m => if m ≤ 2 then lowCoeff α m else 0)]
   simp only [nsmul_eq_mul]
   rw [sum_range_choose_mul_eq _ _ fun m hm => by simp [show ¬ m ≤ 2 by omega]]
-  simp only [lowCoeff, ell, primeCount, s]
-  norm_num
-  ring
+  grind [lowCoeff, ell, primeCount]
 
 /-- The expansion of `∏_{g ∈ F} (1 - α_g ℓ(ω_g(u)))` over choices of at most two primes in each
 group: the term of `κ` is `∏_g c_{α_g}(|κ_g|)` times `[∀ p ∈ ⋃ κ_g, p ∣ u]`. -/
-theorem prod_one_sub_mul_ell_eq (F : Finset (Finset ℕ)) (α : Finset ℕ → ℝ) (w : ℕ) :
+theorem prod_one_sub_mul_ell_eq (F : Finset (Finset ℕ)) (α : Finset ℕ → ℝ)  w  :
     ∏ g ∈ F, (1 - α g * ell (primeCount g w)) =
       ∑ κ ∈ Fintype.piFinset (fun g : F => lowSubsets g.1),
         (∏ g, lowCoeff (α g.1) (κ g).card) *
@@ -241,7 +233,7 @@ theorem prod_one_sub_mul_ell_eq (F : Finset (Finset ℕ)) (α : Finset ℕ → �
   congr 1
   apply propext
   simp only [mem_biUnion, mem_univ, true_and, forall_exists_index]
-  exact ⟨fun h p g hp => h g trivial p hp, fun h g _ p hp => h p g hp⟩
+  grind
 
 end
 

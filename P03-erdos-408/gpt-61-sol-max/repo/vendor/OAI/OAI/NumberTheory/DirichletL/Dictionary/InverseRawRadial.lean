@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialDetectorSource
 public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
@@ -7,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawRadial
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
 open InverseInitialRawDictionary InverseInitialConjugateEnergy CanonicalQuadraticSieve
 open ConcreteTraceCRT ActualEisensteinCubic
-local notation "O"=>HeckeFamily.O
+
 
 theorem exists_raw_radial_majorant :
     ∃Φ : 𝓢(ℝ,ℂ),HasCompactSupport (Φ:ℝ→ℂ) ∧
@@ -38,13 +39,10 @@ theorem exists_raw_radial_majorant :
   · intro x
     change 0≤(f x)^2
     positivity
-  · intro x hx
-    change (((f x)^2:ℝ):ℂ)=1
-    rw [(hone x).mp hx]
-    norm_num
+  aesop
 
 end SevenEighths.DetectorDictionaryInverseRawRadial
 
-end
+
 
 end OAI

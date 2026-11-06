@@ -10,16 +10,19 @@ noncomputable section
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 
-lemma count_product {A B : Type*} [Countable A] [Countable B]
-    [MeasurableSpace A] [MeasurableSpace B] [MeasurableSingletonClass A] [MeasurableSingletonClass B] :
+section
+variable {A B : Type*} [Countable A] [Countable B] [MeasurableSpace A] [MeasurableSpace B] [MeasurableSingletonClass A] [MeasurableSingletonClass B]
+
+lemma count_product      
+            :
     (Measure.count:Measure A).prod (Measure.count:Measure B)=Measure.count := by
   apply Measure.ext_of_singleton
   rintro ⟨a,b⟩
   rw [←Set.singleton_prod_singleton,Measure.prod_prod]
   simp
 
-lemma count_equiv_preserving {A B : Type*} [Countable A] [Countable B]
-    [MeasurableSpace A] [MeasurableSpace B] [MeasurableSingletonClass A] [MeasurableSingletonClass B]
+lemma count_equiv_preserving      
+           
     (e : A≃ᵐB) : MeasurePreserving e Measure.count Measure.count := by
   refine ⟨e.measurable,?_⟩
   apply Measure.ext_of_singleton
@@ -28,6 +31,8 @@ lemma count_equiv_preserving {A B : Type*} [Countable A] [Countable B]
   have he : e ⁻¹' {b}={e.symm b} := by ext a;simp [e.eq_symm_apply]
   rw [he]
   simp
+
+end
 
 def quadShuffle {A B C D : Type*} [MeasurableSpace A] [MeasurableSpace B]
     [MeasurableSpace C] [MeasurableSpace D] : (A×B)×(C×D) ≃ᵐ (A×C)×(B×D) where
@@ -38,9 +43,9 @@ def quadShuffle {A B C D : Type*} [MeasurableSpace A] [MeasurableSpace B]
   measurable_toFun := by change Measurable (fun p : (A×B)×(C×D)=>((p.1.1,p.2.1),(p.1.2,p.2.2)));fun_prop
   measurable_invFun := by change Measurable (fun p : (A×C)×(B×D)=>((p.1.1,p.2.1),(p.1.2,p.2.2)));fun_prop
 
-lemma quadShuffle_preserving {A B C D : Type*} [MeasurableSpace A] [MeasurableSpace B]
-    [MeasurableSpace C] [MeasurableSpace D] (μA : Measure A) (μB : Measure B)
-    (μC : Measure C) (μD : Measure D) [SFinite μA] [SFinite μB] [SFinite μC] [SFinite μD] :
+lemma quadShuffle_preserving  {A B C D}  [MeasurableSpace A] [MeasurableSpace B]
+    [MeasurableSpace C] [MeasurableSpace D]  μA   μB 
+     μC   μD  [SFinite μA] [SFinite μB] [SFinite μC] [SFinite μD] :
     MeasurePreserving (quadShuffle : (A×B)×(C×D) ≃ᵐ (A×C)×(B×D))
       ((μA.prod μB).prod (μC.prod μD)) ((μA.prod μC).prod (μB.prod μD)) := by
   have h1 := measurePreserving_prodAssoc μA μB (μC.prod μD)
@@ -67,10 +72,10 @@ def physicalNestingEquiv {A B C D E F : Type*} [MeasurableSpace A] [MeasurableSp
       ((p.1,(p.2.2.2.1,p.2.2.2.2.2)),((p.2.2.1,p.2.2.2.2.1),p.2.1)))
     fun_prop
 
-lemma physicalNesting_preserving {A B C D E F : Type*} [MeasurableSpace A] [MeasurableSpace B]
+lemma physicalNesting_preserving  {A B C D E F}  [MeasurableSpace A] [MeasurableSpace B]
     [MeasurableSpace C] [MeasurableSpace D] [MeasurableSpace E] [MeasurableSpace F]
-    (μA : Measure A) (μB : Measure B) (μC : Measure C)
-    (μD : Measure D) (μE : Measure E) (μF : Measure F)
+     μA   μB   μC 
+     μD   μE   μF 
     [SFinite μA] [SFinite μB] [SFinite μC] [SFinite μD] [SFinite μE] [SFinite μF] :
     MeasurePreserving (physicalNestingEquiv : (A×(B×C))×((D×E)×F) ≃ᵐ A×(F×(D×(B×(E×C)))))
       ((μA.prod (μB.prod μC)).prod ((μD.prod μE).prod μF))

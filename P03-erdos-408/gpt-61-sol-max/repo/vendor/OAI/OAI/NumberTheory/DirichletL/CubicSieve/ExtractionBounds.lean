@@ -9,10 +9,10 @@ namespace OAI
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-theorem extracted_parts_ne_zero (I : Ideal O) (hI : I ≠ 0) :
+
+
+theorem extracted_parts_ne_zero (I : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) :
     firstPart I ≠ 0 ∧ secondPart I ≠ 0 ∧ cubePart I ≠ 0 := by
   have he := cubic_factorization I hI
   rw [he, mul_ne_zero_iff, mul_ne_zero_iff,
@@ -20,17 +20,20 @@ theorem extracted_parts_ne_zero (I : Ideal O) (hI : I ≠ 0) :
     pow_ne_zero_iff (by decide : (3 : ℕ) ≠ 0)] at hI
   exact ⟨hI.1.1, hI.1.2, hI.2⟩
 
-theorem goodPart_norm_le (I : Ideal O) (hI : Squarefree I) :
+theorem goodPart_norm_le  I  (hI : Squarefree I) :
     (Ideal.absNorm (goodPart I) : ℝ) ≤ Ideal.absNorm I := by
   exact_mod_cast CanonicalQuadraticSieve.goodSquarefreePart_norm_le I hI
 
-theorem full_element_extraction_norm_bound {n : Type*} [Fintype n] [DecidableEq n]
-    (R : Finset O) (hR : ∀ z ∈ R, z ≠ 0)
+section
+variable {n : Type*} [Fintype n] [DecidableEq n] (R : Finset ActualEisensteinCubic.O)
+
+theorem full_element_extraction_norm_bound      
+      (hR : ∀ z ∈ R, z ≠ 0)
     (X Y H N : ℝ) (hX : 1 ≤ X) (hY : 1 ≤ Y) (hH : 1 ≤ H)
     (hfirst : ∀ z ∈ R, (Ideal.absNorm (firstPart (Ideal.span {z})) : ℝ) ≤ X)
     (hsecond : ∀ z ∈ R, (Ideal.absNorm (secondPart (Ideal.span {z})) : ℝ) ≤ Y)
     (hcube : ∀ z ∈ R, (Ideal.absNorm (cubePart (Ideal.span {z})) : ℝ) ≤ H)
-    (cols : n → Ideal O) (hinj : Function.Injective cols)
+    (cols : n → Ideal ActualEisensteinCubic.O) (hinj : Function.Injective cols)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
     (coef : n → ℂ) :
     (∑ z ∈ R, ‖∑ j, coef j * elementCharacter (cols j) (hcols j).1.2 z‖ ^ 2) ≤
@@ -78,8 +81,7 @@ theorem full_element_extraction_norm_bound {n : Type*} [Fintype n] [DecidableEq 
   have hn : 0 ≤ min ((secondImage R).card * squaredNorm
       (fun (i : firstImage R) j => idealKernel (cols j) i.val))
       ((firstImage R).card * squaredNorm
-      (fun (k : secondImage R) j => idealKernel (cols j) k.val)) := by
-    exact le_min (mul_nonneg (Nat.cast_nonneg _) (squaredNorm_nonneg _))
+      (fun (k : secondImage R) j => idealKernel (cols j) k.val)) := le_min (mul_nonneg (Nat.cast_nonneg _) (squaredNorm_nonneg _))
       (mul_nonneg (Nat.cast_nonneg _) (squaredNorm_nonneg _))
   calc
     _ ≤ _ := full_element_extraction_energy R hR cols (fun j => (hcols j).1.2) coef
@@ -89,7 +91,7 @@ theorem full_element_extraction_norm_bound {n : Type*} [Fintype n] [DecidableEq 
       exact mul_le_mul (mul_le_mul_of_nonneg_left hcc (by norm_num)) hmin hn (by positivity)
     _ = _ := by ring
 
-theorem cubePart_norm_le_of_block (I : Ideal O) (hI : I ≠ 0)
+theorem cubePart_norm_le_of_block (I : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0)
     (X Y H : ℝ) (hX : 0 < X) (hY : 0 < Y) (hH : 0 ≤ H)
     (hx : X ≤ (Ideal.absNorm (firstPart I) : ℝ))
     (hy : Y ≤ (Ideal.absNorm (secondPart I) : ℝ))
@@ -109,15 +111,15 @@ theorem cubePart_norm_le_of_block (I : Ideal O) (hI : I ≠ 0)
     _ = Ideal.absNorm I := hp.symm
     _ ≤ _ := hN
 
-theorem full_element_dyadic_block_bound {n : Type*} [Fintype n] [DecidableEq n]
-    (R : Finset O) (hR : ∀ z ∈ R, z ≠ 0)
+theorem full_element_dyadic_block_bound      
+      (hR : ∀ z ∈ R, z ≠ 0)
     (M X Y N : ℝ) (hX : 1 ≤ X) (hY : 1 ≤ Y) (hXY : X * Y ^ 2 ≤ M)
     (hfirst : ∀ z ∈ R, X ≤ (Ideal.absNorm (firstPart (Ideal.span {z})) : ℝ) ∧
       (Ideal.absNorm (firstPart (Ideal.span {z})) : ℝ) ≤ 2 * X)
     (hsecond : ∀ z ∈ R, Y ≤ (Ideal.absNorm (secondPart (Ideal.span {z})) : ℝ) ∧
       (Ideal.absNorm (secondPart (Ideal.span {z})) : ℝ) ≤ 2 * Y)
     (hnorm : ∀ z ∈ R, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M)
-    (cols : n → Ideal O) (hinj : Function.Injective cols)
+    (cols : n → Ideal ActualEisensteinCubic.O) (hinj : Function.Injective cols)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
     (coef : n → ℂ) :
     (∑ z ∈ R, ‖∑ j, coef j * elementCharacter (cols j) (hcols j).1.2 z‖ ^ 2) ≤
@@ -148,6 +150,8 @@ theorem full_element_dyadic_block_bound {n : Type*} [Fintype n] [DecidableEq n]
   ring
 
 end
+
+
 end SevenEighths.CubicSieve
 
 end OAI

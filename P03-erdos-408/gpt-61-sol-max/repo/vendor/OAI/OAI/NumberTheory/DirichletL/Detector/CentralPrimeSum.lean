@@ -7,18 +7,18 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralTargetCost
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralPrimeSum
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve ProbeCentralAllSlots
-local notation "O" => HeckeFamily.O
 
-theorem actual_central_prime_sum (N : ℕ) (e eps c d B : ℝ)
+
+theorem actual_central_prime_sum  N   e eps c d B 
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps)
     (hc : 0<c) (hd : 0<d) (hB : 0≤B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
-    (hmax : ∀P∈S,P.IsMaximal) :
+     S   hS  (hfirst : FirstTail (4*e) S)
+     hmax  :
     ∃C : ℝ,0<C ∧ ∀(u : FreeRow),u.val≠1 → ∀{ι : Type*} [Fintype ι] (η : Character) (twists : ι→Character)
       (T0 a : ℝ) (i : ℕ),2<T0 → 51/100≤a → a≤1 →
       detectorMaximum (sourceDetectorFamily S hS.prime η u twists) (3*(i+1:ℕ)*T0)<a+2*e →
@@ -80,6 +80,6 @@ theorem actual_central_prime_sum (N : ℕ) (e eps c d B : ℝ)
         _ = _ := by rw [hpow]
 end SevenEighths.ProbeCentralPrimeSum
 
-end
+
 
 end OAI

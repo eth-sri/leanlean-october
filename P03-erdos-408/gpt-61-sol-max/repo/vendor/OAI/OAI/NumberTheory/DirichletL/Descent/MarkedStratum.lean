@@ -16,11 +16,11 @@ section Local
 variable {F : Type*} [Field F] [Fintype F]
 
 def markedFrequencyRow (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
-    (σ ε : Fˣ) (x h : F) : ℂ :=
+    (σ ε : Fˣ) (x h : F)  :=
   finiteAdditiveFourierCoeff ψ zeroMark h * frequencyMultiplier χ ψ σ ε x h
 
-theorem markedFrequencyRow_units (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
-    (σ ε : Fˣ) (x : F) :
+theorem markedFrequencyRow_units (χ : MulChar F ℂ)  ψ 
+     σ ε   x  :
     (∑ h : Fˣ, markedFrequencyRow χ ψ σ ε x h) =
       localReflectionActive zeroMark χ ψ σ ε x := by
   unfold markedFrequencyRow finiteAdditiveFourierCoeff frequencyMultiplier localReflectionActive localFourier
@@ -31,7 +31,7 @@ theorem markedFrequencyRow_units (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   ring
 
 def mixedFrequencyRow (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
-    (marked : Bool) (j : ℕ) (σ ε : Fˣ) (x h : F) : ℂ :=
+    (marked : Bool) (j : ℕ) (σ ε : Fˣ) (x h : F)  :=
   if marked then markedFrequencyRow χ ψ σ ε x h else frequencyRow χ ψ j σ ε x h
 
 end Local
@@ -43,8 +43,8 @@ noncomputable local instance markedStratumFintype (P : Ideal Eis) [P.IsMaximal] 
 
 theorem actual_mixed_frequency_units (P : Ideal Eis) [P.IsMaximal]
     (hg : ConcretePrimeRowBridge.goodLambda ∉ P) (hc : ringChar (Eis ⧸ P) ≠ 2)
-    (ψ : AddChar (Eis ⧸ P) ℂ) (hψ : ψ.IsPrimitive) (marked : Bool)
-    (j : ℕ) (hj : j < 6) (σ ε : (Eis ⧸ P)ˣ) (x : Eis ⧸ P) :
+     ψ  (hψ : ψ.IsPrimitive)  marked 
+     j  (hj : j < 6)  σ ε   x  :
     (∑ h : (Eis ⧸ P)ˣ, mixedFrequencyRow (actualSextic P hg) ψ marked j σ ε x h) =
       if marked then
         (rootCard (Eis ⧸ P) : ℂ)⁻¹ * tau (actualSextic P hg) ψ 2 *

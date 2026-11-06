@@ -12,18 +12,18 @@ namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
-def actualCellRowExponent (Z M ell A t V j eta : ℝ) (d : BlockIndex) : ℝ :=
+
+def actualCellRowExponent (Z M ell A t V j eta : ℝ) (d : BlockIndex)  :=
   childM M ell A t (secondCellExponent Z d 0) (secondCellExponent Z d 1) V j eta
 
-def actualCellRowRadius (Z M ell A t V j eta : ℝ) (d : BlockIndex) : ℝ :=
+def actualCellRowRadius (Z M ell A t V j eta : ℝ) (d : BlockIndex)  :=
   Z^(actualCellRowExponent Z M ell A t V j eta d)
 
 theorem actual_cell_radius_nonnegative_on_keys {ι : Type*} [DecidableEq ι]
-    (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
     {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
-    (Z M ell A t V j eta : ℝ) (hZ : 1<Z)
+     Z M ell A t V j eta  (hZ : 1<Z)
     (hrows : ∀d,∀x∈cell p source d,x.second.frequency∈nonzeroChildFrequencyBall (actualSecondMultiplier p x)
       (actualCellRowRadius Z M ell A t V j eta d)) :
     ∀d∈keys p source,0≤actualCellRowExponent Z M ell A t V j eta d := by

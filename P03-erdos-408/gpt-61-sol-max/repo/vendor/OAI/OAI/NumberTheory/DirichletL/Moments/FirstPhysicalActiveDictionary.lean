@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstSourceReduction
 public import OAI.NumberTheory.DirichletL.Moments.SecondActivePhysicalDictionary
@@ -21,45 +22,40 @@ open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirst
 open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
 open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
 open CenteredMomentFirstPhysicalSource CenteredMomentActiveSource
-local notation "O" => HeckeFamily.O
 
-theorem columns_active (C D : Ideal O) (hD : D≠0) (S : Finset (Ideal O))
-    (β : Ideal O→ℂ) :
+
+theorem columns_active  C D   hD   S 
+     β  :
     columns C D hD (activeSource S β)=
       (columns C D hD S).filter (fun I=>β (D*I)≠0) := by
   ext I
   simp only [columns,Finset.mem_filter,mem_residualPool,supportedColumns_active]
   tauto
 
-theorem column_sum_active (C D : Ideal O) (hD : D≠0) (S : Finset (Ideal O))
-    (β f : Ideal O→ℂ) (hf : ∀I,β (D*I)=0→f I=0) :
+theorem column_sum_active (C D : Ideal HeckeFamily.O) (hD : D≠0) (S : Finset (Ideal HeckeFamily.O))
+    (β f : Ideal HeckeFamily.O→ℂ) (hf : ∀I,β (D*I)=0→f I=0) :
     (∑I∈columns C D hD (activeSource S β),f I)=∑I∈columns C D hD S,f I := by
   rw [columns_active,Finset.sum_filter]
   apply Finset.sum_congr rfl
-  intro I hI
-  by_cases hi : β (D*I)=0
-  · simp only [hi,ne_eq,not_true_eq_false,ite_false,hf I hi]
-  · simp only [hi,ne_eq,not_false_eq_true,ite_true]
+  simp_all
 
-theorem column_pair_sum_active (C D : Ideal O) (hC : C≠0) (hD : D≠0)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (f : Ideal O→Ideal O→ℂ)
+theorem column_pair_sum_active (C D : Ideal HeckeFamily.O) (hC : C≠0) (hD : D≠0)
+    (S : Finset (Ideal HeckeFamily.O)) (β : Ideal HeckeFamily.O→ℂ) (f : Ideal HeckeFamily.O→Ideal HeckeFamily.O→ℂ)
     (hl : ∀I J,β (C*I)=0→f I J=0) (hr : ∀I J,β (D*J)=0→f I J=0) :
     (∑I∈columns C C hC (activeSource S β),∑J∈columns C D hD (activeSource S β),f I J)=
       ∑I∈columns C C hC S,∑J∈columns C D hD S,f I J := by
-  simp_rw [column_sum_active C D hD S β _ (fun J h=>hr _ J h)]
-  apply column_sum_active C C hC S β
-  intro I hi
-  exact Finset.sum_eq_zero (fun J hJ=>hl I J hi)
+  simp_rw [column_sum_active C D hD S β _ (hr _)]
+  aesop (add safe [column_sum_active, S])
 
-lemma primary_supported (I : Ideal O) (hI : Supported I) :
+lemma primary_supported  I  (hI : Supported I) :
     Supported (Ideal.span {CompletedGauss.primaryGenerator I}) := by
   rw [primary_span_supported I hI]
   exact hI
 
-def physicalTerm (η : Character) (m A : O) (t : ℝ) (β : Ideal O→ℂ)
-    (C D : Ideal O) (hC : Supported C) (E : Finset (CommonIndex C D))
+def physicalTerm (η : Character) (m A : HeckeFamily.O) (t : ℝ) (β : Ideal HeckeFamily.O→ℂ)
+    (C D ) (hC : Supported C) (E : Finset (CommonIndex C D))
     (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ)
-    (h : O) (I J : Ideal O) : ℂ :=
+    (h : HeckeFamily.O) (I J : Ideal HeckeFamily.O)  :=
   if hI : Supported I then if hJ : Supported J then
     let na:=CompletedGauss.primaryGenerator I
     let nb:=CompletedGauss.primaryGenerator J
@@ -83,26 +79,24 @@ def physicalTerm (η : Character) (m A : O) (t : ℝ) (β : Ideal O→ℂ)
     else 0
   else 0 else 0
 
-theorem physicalTerm_zero_left (η : Character) (m A : O) (t : ℝ) (β : Ideal O→ℂ)
-    (C D : Ideal O) (hC : Supported C) (E : Finset (CommonIndex C D))
-    (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ)
-    (h : O) (I J : Ideal O) (hi : β (C*I)=0) :
+theorem physicalTerm_zero_left  η   m A   t   β 
+     C D   hC   E 
+     W   V   K K₀ H₀ A₀ B₀ 
+     h   I J  (hi : β (C*I)=0) :
     physicalTerm η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J=0 := by
-  simp only [physicalTerm,coefficient,hi,zero_mul,mul_zero]
-  split_ifs <;> rfl
+  simp_all [physicalTerm, coefficient]
 
-theorem physicalTerm_zero_right (η : Character) (m A : O) (t : ℝ) (β : Ideal O→ℂ)
-    (C D : Ideal O) (hC : Supported C) (E : Finset (CommonIndex C D))
-    (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ)
-    (h : O) (I J : Ideal O) (hj : β (D*J)=0) :
+theorem physicalTerm_zero_right  η   m A   t   β 
+     C D   hC   E 
+     W   V   K K₀ H₀ A₀ B₀ 
+     h   I J  (hj : β (D*J)=0) :
     physicalTerm η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J=0 := by
-  simp only [physicalTerm,coefficient,hj,zero_mul,star_zero,mul_zero]
-  split_ifs <;> rfl
+  simp_all [physicalTerm, coefficient]
 
-theorem block_eq_ideal_sums (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O)
-    (hC : Supported C) (hD : Supported D) (E : Finset (CommonIndex C D))
-    (rows : Finset O) (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ) :
+theorem block_eq_ideal_sums  η   m A   t 
+     S   β   C D 
+     hC   hD   E 
+     rows   W   V   K K₀ H₀ A₀ B₀  :
     block η m A t S β C D hC hD E rows W V K K₀ H₀ A₀ B₀=
       inactiveWeight C D E * ∑h∈rows,
         ∑I∈columns C C hC.1 S,∑J∈columns C D hD.1 S,
@@ -128,10 +122,10 @@ theorem block_eq_ideal_sums (η : Character) (m A : O) (t : ℝ)
         (fun I=>∑J∈columns C D hD.1 S,
           physicalTerm η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J)
 
-theorem block_active (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O)
-    (hC : Supported C) (hD : Supported D) (E : Finset (CommonIndex C D))
-    (rows : Finset O) (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ) :
+theorem block_active  η   m A   t 
+     S   β   C D 
+     hC   hD   E 
+     rows   W   V   K K₀ H₀ A₀ B₀  :
     block η m A t (activeSource S β) β C D hC hD E rows W V K K₀ H₀ A₀ B₀=
       block η m A t S β C D hC hD E rows W V K K₀ H₀ A₀ B₀ := by
   rw [block_eq_ideal_sums,block_eq_ideal_sums]
@@ -140,8 +134,8 @@ theorem block_active (η : Character) (m A : O) (t : ℝ)
   intro h hh
   exact column_pair_sum_active C D hC.1 hD.1 S β
     (physicalTerm η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h)
-    (fun I J hi=>physicalTerm_zero_left η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J hi)
-    (fun I J hj=>physicalTerm_zero_right η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J hj)
+    (physicalTerm_zero_left η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h)
+    (physicalTerm_zero_right η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h)
 
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
@@ -149,9 +143,9 @@ open CenteredMomentCommonRadialData CenteredMomentFirstRetainedNorm
 open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale
 open CenteredMomentSectorLocalization CenteredMomentLogDyadic
 
-theorem original_sectorMass_active (s : Input ι) (R seed : Ideal O)
-    (m A : O) (t : ℝ) (S : Finset (Ideal O)) (C D : Ideal O)
-    (hC : Supported C) (hD : Supported D) (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) :
+theorem original_sectorMass_active (s : Input ι)  R seed 
+     m A   t   S   C D 
+     hC   hD   W   K X Z ξ  :
     sectorMass s R seed m A t
         (activeSource S (CenteredMomentOriginalCommonHarmonic.coefficient s R seed))
         C D hC hD W K X Z ξ=
@@ -164,8 +158,8 @@ theorem original_sectorMass_active (s : Input ι) (R seed : Ideal O)
   intro n hn
   rw [block_active]
 
-theorem active_sectorMass_sum (s : Input ι) (R seed : Ideal O)
-    (m A : O) (t : ℝ) (S : Finset (Ideal O)) (Φ : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) :
+theorem active_sectorMass_sum (s : Input ι)  R seed 
+     m A   t   S   Φ   K X Z ξ  :
     let T:=activeSource S (CenteredMomentOriginalCommonHarmonic.coefficient s R seed)
     (∑p:commonLabels (supportedColumns T) (supportedColumns T),
       sectorMass s R seed m A t T p.val.1 p.val.2
@@ -175,11 +169,10 @@ theorem active_sectorMass_sum (s : Input ι) (R seed : Ideal O)
         (commonLabels_supported T p).1 (commonLabels_supported T p).2 Φ K X Z ξ := by
   dsimp only
   apply Finset.sum_congr rfl
-  intro p hp
-  exact original_sectorMass_active s R seed m A t S _ _ _ _ Φ K X Z ξ
+  grind [original_sectorMass_active, S]
 
-theorem physicalMass_full_source [DecidableEq ι] (s : Input ι) (R seed : Ideal O)
-    (m A : O) (Φ : 𝓢(ℝ,ℂ)) (K Z ξ : ℝ) :
+theorem physicalMass_full_source [DecidableEq ι] (s : Input ι)  R seed 
+     m A   Φ   K Z ξ  :
     CenteredMomentFirstSourceReduction.physicalMass s R seed m A Φ K Z ξ=
       let S:=CenteredMomentSourceMass.finiteColumns (Fintype.piFinset s.pools)
       let β:=CenteredMomentOriginalCommonHarmonic.coefficient s R seed
@@ -188,9 +181,7 @@ theorem physicalMass_full_source [DecidableEq ι] (s : Input ι) (R seed : Ideal
         sectorMass s R seed m A s.t S p.val.1 p.val.2
           (commonLabels_supported T p).1 (commonLabels_supported T p).2 Φ K
           (CenteredMomentExceptionalAmplitudePair.volume s.toData) Z ξ := by
-  exact active_sectorMass_sum s R seed m A s.t
-    (CenteredMomentSourceMass.finiteColumns (Fintype.piFinset s.pools)) Φ K
-    (CenteredMomentExceptionalAmplitudePair.volume s.toData) Z ξ
+  solve_by_elim [active_sectorMass_sum, CenteredMomentSourceMass.finiteColumns, Fintype.piFinset, CenteredMomentExceptionalAmplitudePair.volume]
 
 end SevenEighths.CenteredMomentFirstPhysicalActiveDictionary
 

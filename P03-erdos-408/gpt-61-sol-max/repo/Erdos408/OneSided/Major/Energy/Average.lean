@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.QuadraticDiscriminant
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
@@ -49,9 +50,7 @@ theorem sq_integral_mul_le {w h : ℝ → ℝ} (hw : Integrable w) (hw0 : ∀ ξ
     rw [← hint]
     exact integral_nonneg fun ξ => mul_nonneg (hw0 ξ) (sq_nonneg _)
   have hd := discrim_le_zero hq
-  rw [discrim] at hd
-  have e : (-2 * ∫ ξ, w ξ * h ξ) ^ 2 = 4 * (∫ ξ, w ξ * h ξ) ^ 2 := by ring
-  linarith
+  grind [discrim]
 
 /-- The energy of an average: if `0 ≤ F(τ) ≤ c ∫ w(ξ) h(ξ, τ) dξ` with `w ≥ 0` integrable and
 `0 ≤ h ≤ M` continuous, and `∫_a^b h(ξ, ·)² ≤ E` for every `ξ`, then
@@ -75,10 +74,7 @@ theorem integral_sq_le_of_le_integral {a b c M E : ℝ} (hab : a ≤ b) {w : ℝ
         ((hh.comp continuous_swap).pow 2).aestronglyMeasurable
     · simp only [Function.uncurry, f, Real.norm_eq_abs]
       rw [abs_of_nonneg (mul_nonneg (hw0 _) (sq_nonneg _)), mul_comm (M ^ 2)]
-      gcongr
-      · exact hw0 _
-      · exact hh0 _ _
-      · exact hhM _ _
+      bound
   -- pointwise Cauchy–Schwarz in `ξ`
   have hCS : ∀ τ, F τ ^ 2 ≤ c ^ 2 * W * ∫ ξ, f τ ξ := by
     intro τ

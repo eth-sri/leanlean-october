@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstTwoPassEnergy
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstTwoPassEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.InverseMoment
@@ -27,12 +28,10 @@ theorem two_pass_scalar (C Cz Ct Γ A Z F M r ell eta tau _pi epsFirst loss Lcap
   have hlarge:1≤(1+A)*H:=one_le_mul_of_one_le_of_one_le (by linarith) hH
   have hp:Cz*Γ^2*Z^(M-ell+3*eta+epsFirst*(5*ell+2*r+7*eta))≤Cz*Γ^2*((1+A)*H)*Z^(F+lossFinal):=by
     apply (mul_le_mul_of_nonneg_left hP (by positivity)).trans
-    apply mul_le_mul_of_nonneg_right _ (by positivity)
-    simpa using mul_le_mul_of_nonneg_left hlarge (show 0≤Cz*Γ^2 by positivity)
+    bound
   have ht:Ct*Γ^2*Z^(-saving)≤Ct*Γ^2*((1+A)*H)*Z^(F+lossFinal):=by
     apply (mul_le_mul_of_nonneg_left hT (by positivity)).trans
-    apply mul_le_mul_of_nonneg_right _ (by positivity)
-    simpa using mul_le_mul_of_nonneg_left hlarge (show 0≤Ct*Γ^2 by positivity)
+    bound
   have hr:C*Γ^2*(1+A)*Z^(F+loss)*H*Z^((2*Lcap+15*eta+tau)*epsFirst+epsFirst)≤
       C*Γ^2*((1+A)*H)*Z^(F+lossFinal):=by
     calc
@@ -42,6 +41,6 @@ theorem two_pass_scalar (C Cz Ct Γ A Z F M r ell eta tau _pi epsFirst loss Lcap
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

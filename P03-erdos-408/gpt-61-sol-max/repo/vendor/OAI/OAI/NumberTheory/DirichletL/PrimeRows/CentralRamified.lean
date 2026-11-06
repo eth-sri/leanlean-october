@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedBounds
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 
-theorem actual_central_ramified_normalized (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hP : P.val∣Ideal.span {u.val}) (hQ : (4:ℝ)≤P.val.absNorm)
-    (alpha eps : ℝ) (x w z : ℂ)
+theorem actual_central_ramified_normalized  η   u   P 
+     hs  (hP : P.val∣Ideal.span {u.val}) (hQ : (4:ℝ)≤P.val.absNorm)
+    (alpha eps : ℝ)  x w z 
     (hsmall : 198*(P.val.absNorm:ℝ)^(-10*eps)≤1/2)
     (halpha : (51/100:ℝ)≤alpha) (halpha1 : alpha≤1) (heps : 0<eps) (heps1 : eps≤1/1000)
     (hx : x.re=alpha+16*eps) (hw : w.re=1-alpha-6*eps) (hz : z.re=17/50) :
@@ -49,6 +49,6 @@ theorem actual_central_ramified_normalized (η : Character) (u : FreeRow) (P : P
     dsimp only at hb
     simpa only [ramifiedCorrection,p,hnorm] using hb
 end SevenEighths.ProbeHighRowFamily
-end
+
 
 end OAI

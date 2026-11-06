@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RaySlots
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeRaySlots
@@ -30,6 +30,6 @@ theorem pool_supported (C : Set Id) (S : Finset Id) (hS : SourceExclusions S)
   outside_prime_supported S hS.bad P ((mem_pool C S a b x P).mp hP).2.2.2
 
 end SevenEighths.ProbeRaySlots
-end
+
 
 end OAI

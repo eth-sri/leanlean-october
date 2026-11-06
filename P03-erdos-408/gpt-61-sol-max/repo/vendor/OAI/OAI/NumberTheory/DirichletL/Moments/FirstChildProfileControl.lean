@@ -1,4 +1,6 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
 
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildSourceCaps
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadialPointwise
@@ -18,10 +20,10 @@ open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourc
 open CenteredMomentCommonRadialPointwise CenteredMomentCommonExceptionalCost
 open CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
 open CenteredMomentFiniteProfileExceptionalPhysical
-local notation "O" => HeckeFamily.O
+
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-def mass (s : Input ι) : ℝ := ∏ i,s.M i
+def mass (s : Input ι)  := ∏ i,s.M i
 
 omit [DecidableEq ι] in
 lemma mass_one (s : Input ι) : 1≤mass s :=
@@ -31,8 +33,8 @@ omit [DecidableEq ι] in
 lemma mass_nonneg (s : Input ι) : 0≤mass s := zero_le_one.trans (mass_one s)
 
 omit [DecidableEq ι] in
-lemma child_mass (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : mass (child s C R B τ t)≤mass s := by
+lemma child_mass (s : Input ι)  C R   B 
+     τ   t  : mass (child s C R B τ t)≤mass s := by
   change (∏i:liveIndices B.val,s.M i.val)≤∏i,s.M i
   rw [Finset.prod_coe_sort]
   exact Finset.prod_le_prod_of_subset_of_one_le₀ (Finset.subset_univ _)
@@ -40,11 +42,10 @@ lemma child_mass (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C
 
 omit [DecidableEq ι] in
 lemma child_card (B : CenteredMomentAddedZeroUniform.Tuple ι) :
-    Fintype.card (liveIndices B)≤Fintype.card ι := by
-  simpa using Finset.card_le_card (Finset.subset_univ (liveIndices B))
+    Fintype.card (liveIndices B)≤Fintype.card ι := by solve_by_elim [_root_.OAI.SevenEighths.CenteredMomentAmplificationChildSourceCaps.live_card_le]
 
 omit [DecidableEq ι] in
-lemma slot_control_bound (s : Input ι) (b : ℝ) (hb : 1≤b) (hu : s.upper≤b) :
+lemma slot_control_bound (s : Input ι)  b  (hb : 1≤b) (hu : s.upper≤b) :
     slotControl s.toData≤(128*b)^Fintype.card ι*mass s^2 := by
   have hpoint (i : ι) : max 1 (128*max 0 (s.hi i)*s.M i)≤(128*b)*s.M i := by
     apply max_le
@@ -63,10 +64,10 @@ lemma slot_control_bound (s : Input ι) (b : ℝ) (hb : 1≤b) (hu : s.upper≤b
       ring
 
 omit [DecidableEq ι] in
-lemma profile_cost_bound (s : Input ι) (N : ℕ) (b A : ℝ)
+lemma profile_cost_bound (s : Input ι)  N   b A 
     (hb : 1≤b) (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hm : mass s≤A) :
     profileCost s≤(2*(max 1 s.b₁*max 1 s.b₂)*b^N*A^2)*mass s^2 := by
-  have hb0:0≤b:=zero_le_one.trans hb
+  
   have hp : (max 1 s.upper)^Fintype.card ι≤b^N :=
     (pow_le_pow_left₀ (by positivity) (max_le hb hu) _).trans (pow_le_pow_right₀ hb hc)
   have hm2:=pow_le_pow_left₀ (mass_nonneg s) hm 2
@@ -76,11 +77,11 @@ lemma profile_cost_bound (s : Input ι) (N : ℕ) (b A : ℝ)
   convert h' using 1 <;> simp only [profileCost,Data.profileFactor,mass]; ring
 
 omit [DecidableEq ι] in
-lemma exceptional_slot_bound (s : Input ι) (N : ℕ) (b A : ℝ)
+lemma exceptional_slot_bound (s : Input ι)  N   b A 
     (hb : 1≤b) (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hm : mass s≤A) :
     slotControl s.toData^2*frozenProfile s^2≤
       ((128*b)^N)^2*(b^N)^2*A^4*mass s^2 := by
-  have hb0:0≤b:=zero_le_one.trans hb
+  
   have hp : (max 1 s.upper)^Fintype.card ι≤b^N :=
     (pow_le_pow_left₀ (by positivity) (max_le hb hu) _).trans (pow_le_pow_right₀ hb hc)
   have h128 : (1:ℝ)≤128*b := by linarith
@@ -98,7 +99,7 @@ lemma exceptional_slot_bound (s : Input ι) (N : ℕ) (b A : ℝ)
       (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (mass_nonneg s) hm 4) (by positivity))
       (sq_nonneg _)
 
-def exceptionalConstant (N : ℕ) (b : ℝ) (J : ℕ) (Q : Ideal O) (K : ℝ) : ℝ :=
+def exceptionalConstant (N : ℕ) (b : ℝ) (J : ℕ) (Q : Ideal HeckeFamily.O) (K : ℝ)  :=
   K*(768*(6:ℝ)^(UniqueFactorizationMonoid.normalizedFactors Q).toFinset.card)*
     (1+2*Real.pi)^(4*J)*
     (∫u:ℝ,(1+‖u‖)^J*‖CenteredMomentHeckeColumnWindow.columnDensity
@@ -108,8 +109,8 @@ def exceptionalConstant (N : ℕ) (b : ℝ) (J : ℕ) (Q : Ideal O) (K : ℝ) : 
 
 omit [DecidableEq ι] in
 lemma exceptional_factor_bound {wlo whi : ℝ}
-    (S : Finset (ℕ×ℕ)) (p : Profiles wlo whi) (J : ℕ) (Q : Ideal O) (K : ℝ)
-    (hK : 0≤K) (s : Input ι) (N : ℕ) (b A : ℝ)
+    (S : Finset (ℕ×ℕ)) (p : Profiles wlo whi) (J : ℕ) (Q : Ideal HeckeFamily.O) (K : ℝ)
+    (hK : 0≤K) (s : Input ι)  N   b A 
     (hb : 1≤b) (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hm : mass s≤A) :
     profileFactor S s p J Q K≤exceptionalConstant N b J Q K*
       p.control S^2*(1+‖s.t‖)^(2*J)*A^4*mass s^2 := by

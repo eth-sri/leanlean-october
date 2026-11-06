@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.FullProjection
 
@@ -18,22 +19,24 @@ def productAnova (w : ∀ i, α i → ℝ) (I S : Finset ι)
     (f : ProductSample α → ℂ) : ProductSample α → ℂ :=
   productFull w S (productAverage w (I \ S) f)
 
-lemma productAnova_empty (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1)
-    (f : ProductSample α → ℂ) : productAnova w ∅ ∅ f = f := by
+section
+variable (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1) (I S : Finset ι) (i : ι) (hi : i ∉ I) (hS : S ⊆ I) (f : ProductSample α → ℂ)
+
+
+include hsum in
+lemma productAnova_empty    
+      : productAnova w ∅ ∅ f = f := by
   rw [productAnova, Finset.sdiff_empty, productAverage_empty w hsum,
     productFull_empty w hsum]
 
-lemma productAnova_insert_unselected (w : ∀ i, α i → ℝ)
-    (hsum : ∀ i, ∑ a, w i a = 1) (I S : Finset ι) (i : ι)
-    (hi : i ∉ I) (hS : S ⊆ I) (f : ProductSample α → ℂ) :
+include hsum hi hS in
+lemma productAnova_insert_unselected  
+         
+          :
     productAnova w (insert i I) S f = productAverage w {i} (productAnova w I S f) := by
   have hiS : i ∉ S := fun h => hi (hS h)
   have hdiff : insert i I \ S = {i} ∪ (I \ S) := by
-    ext j
-    by_cases hj : j = i
-    · subst j
-      simp [hi, hiS]
-    · simp [hj]
+    grind
   have havg : productAverage w (insert i I \ S) f =
       productAverage w {i} (productAverage w (I \ S) f) := by
     funext x
@@ -41,23 +44,21 @@ lemma productAnova_insert_unselected (w : ∀ i, α i → ℝ)
   unfold productAnova
   rw [havg, productFull_average_commute w hsum S {i}]
 
-lemma productAnova_insert_selected (w : ∀ i, α i → ℝ)
-    (hsum : ∀ i, ∑ a, w i a = 1) (I S : Finset ι) (i : ι)
-    (hi : i ∉ I) (hS : S ⊆ I) (f : ProductSample α → ℂ) :
+include hsum hi hS in
+lemma productAnova_insert_selected  
+         
+          :
     productAnova w (insert i I) (insert i S) f =
       fun x => productAnova w I S f x - productAverage w {i} (productAnova w I S f) x := by
   have hiS : i ∉ S := fun h => hi (hS h)
   have hdiff : insert i I \ insert i S = I \ S := by
-    ext j
-    by_cases hj : j = i
-    · subst j
-      simp [hi, hiS]
-    · simp [hj]
+    grind
   unfold productAnova
   rw [hdiff, productFull_insert w hsum S i hiS]
 
-lemma productAnova_energy (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1)
-    (I : Finset ι) (f : ProductSample α → ℂ) :
+include hsum in
+lemma productAnova_energy    
+        :
     (∑ S ∈ I.powerset, productSqNorm w (productAnova w I S f)) = productSqNorm w f := by
   induction I using Finset.induction_on with
   | empty =>
@@ -73,15 +74,17 @@ lemma productAnova_energy (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a 
         linarith
       · exact hI
 
-lemma productAnova_mean_zero (w : ∀ i, α i → ℝ)
-    (hsum : ∀ i, ∑ a, w i a = 1) (I S : Finset ι) (i : ι)
-    (hi : i ∈ S) (f : ProductSample α → ℂ) :
+include hsum in
+lemma productAnova_mean_zero  
+         
+    (hi : i ∈ S)  f  :
     productAverage w {i} (productAnova w I S f) = (fun _ => 0) :=
   productFull_mean_zero w hsum S i hi _
 
-lemma productAnova_independent (w : ∀ i, α i → ℝ)
-    (hsum : ∀ i, ∑ a, w i a = 1) (I S : Finset ι) (i : ι)
-    (hi : i ∈ I) (hiS : i ∉ S) (f : ProductSample α → ℂ) :
+include hsum in
+lemma productAnova_independent  
+         
+    (hi : i ∈ I) (hiS : i ∉ S)  f  :
     productAverage w {i} (productAnova w I S f) = productAnova w I S f := by
   have hin : i ∈ I \ S := Finset.mem_sdiff.mpr ⟨hi, hiS⟩
   have hu : {i} ∪ (I \ S) = I \ S := by
@@ -92,6 +95,8 @@ lemma productAnova_independent (w : ∀ i, α i → ℝ)
   congr 1
   funext x
   rw [productAverage_union w hsum {i} (I \ S), hu]
+
+end
 
 end
 end Erdos821.P4Probe

@@ -11,22 +11,26 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
-def lowActualIdealPolynomial {ι : Type*} [Fintype ι]
-    (L : ι→Finset Id) (w : ι→Id→ℂ) (Ψ : O→*ℂ) (W : ℝ→ℂ) (X : ℝ) : ℂ :=
+local notation "Id" => Ideal ActualEisensteinCubic.O
+local instance : Fintype ActualEisensteinCubic.Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+
+def lowActualIdealPolynomial {ι } [Fintype ι]
+    (L : ι→Finset Id) (w : ι→Id→ℂ) (Ψ : ActualEisensteinCubic.O→*ℂ) (W : ℝ→ℂ) (X : ℝ)  :=
   ∑p : ∀i,L i,(∏i,w i (p i).val)*InverseMoment.markedCompletedT Ψ W X
     (fun A=>∏i,if (p i).val∣A then (1:ℂ) else 0)
 
-theorem lowSelectedInverseRow_actual_ideal {K : ℕ} (η : HeckeFamily.Character)
-    (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
-    (hout : ∀i P,P∈T i→P.val∉S)
-    (hdis : Pairwise (fun i j=>Disjoint (T i) (T j)))
-    (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)
-    (X t : ℝ) (σ : RayRing) (z : O) :
+section
+variable {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val) (hout : ∀i P,P∈T i→P.val∉S) (hdis : Pairwise (fun i j=>Disjoint (T i) (T j))) (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (X t : ℝ) (σ : RayRing)
+include K η S hS hbad T hT hout hdis J W Y X t σ
+
+theorem lowSelectedInverseRow_actual_ideal    
+         
+       
+     
+     
+         
+         z  :
     lowSelectedInverseRow Finset.univ
       (lowSelectedWeight η (fun i=>canonicalSlotSupport (T i)) J W Y t)
       η S hS (lowSelectedIdeal (fun i=>canonicalSlotSupport (T i)) J) X t σ z=
@@ -58,17 +62,17 @@ theorem lowSelectedInverseRow_actual_ideal {K : ℕ} (η : HeckeFamily.Character
     simp
   · rfl
 
-theorem lowSelectedInverseRow_actual_reflected_energy {K : ℕ} (η : HeckeFamily.Character)
-    (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
-    (hout : ∀i P,P∈T i→P.val∉S)
-    (hdis : Pairwise (fun i j=>Disjoint (T i) (T j)))
-    (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)
-    (X t : ℝ) (σ : RayRing) (R : Finset O) (hR : ∀z∈R,z≠0) :
+theorem lowSelectedInverseRow_actual_reflected_energy    
+         
+       
+     
+     
+         
+         R  (hR : ∀z∈R,z≠0) :
     (∑z∈R,‖lowSelectedInverseRow Finset.univ
       (lowSelectedWeight η (fun i=>canonicalSlotSupport (T i)) J W Y t)
       η S hS (lowSelectedIdeal (fun i=>canonicalSlotSupport (T i)) J) X t σ z‖^2)≤
-    lowCorrectionEnergy*∑χ : RayCharacter,∑u : Oˣ,∑I∈lowIdealRows R,
+    lowCorrectionEnergy*∑χ : RayCharacter,∑u : ActualEisensteinCubic.Oˣ,∑I∈lowIdealRows R,
       ‖lowActualIdealPolynomial
         (fun i : SelectedSlot J=>lowPrimeIdealList (lowPeriodPrimeList η S hS (T i.val)))
         (fun i I=>lowSingleSlotWeight η (W i.val) (Y i.val) t (primaryGenerator I))
@@ -85,6 +89,8 @@ theorem lowSelectedInverseRow_actual_reflected_energy {K : ℕ} (η : HeckeFamil
       (fun i : SelectedSlot J=>lowPrimeIdealList (lowPeriodPrimeList η S hS (T i.val)))
       (fun i I=>lowSingleSlotWeight η (W i.val) (Y i.val) t (primaryGenerator I)) Ψ
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) X)
+
+end
 
 end SevenEighths.ProbePhysical
 end

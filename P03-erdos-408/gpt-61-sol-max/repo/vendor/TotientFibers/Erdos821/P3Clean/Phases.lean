@@ -6,7 +6,7 @@ public import Erdos821.P3Clean.FiniteFourier
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P3Clean
@@ -21,7 +21,7 @@ theorem phase_nat_mul (theta : ℝ) (n : ℕ) :
   push_cast
   ring
 
-theorem exists_phase_of_norm_one (z : ℂ) (h : ‖z‖ = 1) :
+theorem exists_phase_of_norm_one  z  (h : ‖z‖ = 1) :
     ∃ theta : ℝ, phase theta = z := by
   refine ⟨z.arg / (2 * Real.pi), ?_⟩
   have hpi : (2 : ℝ) * Real.pi ≠ 0 := ne_of_gt (mul_pos two_pos Real.pi_pos)
@@ -34,14 +34,14 @@ theorem exists_phase_of_norm_one (z : ℂ) (h : ‖z‖ = 1) :
   simpa only [h, Complex.ofReal_one, one_mul] using Complex.norm_mul_exp_arg_mul_I z
 
 theorem character_nsmul_phase {G : Type*} [AddCommGroup G] [Finite G]
-    (ψ : AddChar G ℂ) (d : G) :
+    (ψ : AddChar G ℂ)  d  :
     ∃ theta : ℝ, ∀ n : ℕ, ψ (n • d) = phase (theta * n) := by
   obtain ⟨theta, ht⟩ := exists_phase_of_norm_one (ψ d) (ψ.norm_apply d)
   refine ⟨theta, ?_⟩
   intro n
   rw [AddChar.map_nsmul_eq_pow, ← ht, phase_nat_mul]
 
-theorem imaginaryPower_mul (a b : ℕ) (ha : 0 < a) (hb : 0 < b) (zeta : ℝ) :
+theorem imaginaryPower_mul  a b  (ha : 0 < a) (hb : 0 < b)  zeta  :
     imaginaryPower (a * b) zeta = imaginaryPower a zeta * imaginaryPower b zeta := by
   unfold imaginaryPower
   rw [Nat.cast_mul, Real.log_mul (by exact_mod_cast (ne_of_gt ha))

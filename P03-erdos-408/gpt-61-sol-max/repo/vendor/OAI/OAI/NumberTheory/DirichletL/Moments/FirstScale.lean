@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.CenteredExceptionalCount
 
 public import OAI.NumberTheory.DirichletL.Moments.CanonicalFirst
 public import OAI.NumberTheory.DirichletL.Moments.Scale
@@ -12,28 +15,33 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstScale
 open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 
-def firstNominalScale (I J E : Ideal O) (K X : ℝ) : ℝ :=
+
+def firstNominalScale (I J E : Ideal ActualEisensteinCubic.O) (K X : ℝ)  :=
   (Ideal.absNorm E:ℝ)*(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ)*X^2 /
     (K*(Ideal.absNorm (commonPart I J):ℝ)*(Ideal.absNorm (commonPart J I):ℝ))
 
-theorem norm_pos (I : Ideal O) (hI : I≠0) : 0<(Ideal.absNorm I:ℝ) := by
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+section
+variable (I J E : Ideal ActualEisensteinCubic.O) (hI : I≠0) (hJ : J≠0) (hE : E≠0) (K X H HN Tsec : ℝ) (hK : 0<K) (hX : 0<X) (hH : 0≤H) (hi : (Ideal.absNorm I:ℝ)≤Real.exp HN*X) (hj : (Ideal.absNorm J:ℝ)≤Real.exp HN*X)
 
-theorem active_norm_pos (I J : Ideal O) :
+include hI in
+theorem norm_pos     : 0<(Ideal.absNorm I:ℝ) := by solve_by_elim [_root_.OAI.SevenEighths.CenteredExceptionalCount.norm_pos]
+
+theorem active_norm_pos   :
     0<(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ) := by
   apply norm_pos
   exact Ideal.span_singleton_eq_bot.not.mpr (ActualEisensteinCubic.finitePrimeModulus_ne_zero _)
 
-theorem firstNominalScale_pos (I J E : Ideal O) (hE : E≠0) (K X : ℝ)
-    (hK : 0<K) (hX : 0<X) : 0<firstNominalScale I J E K X := by
+include hE hK hX in
+theorem firstNominalScale_pos      
+        : 0<firstNominalScale I J E K X := by
   unfold firstNominalScale
   exact div_pos (mul_pos (mul_pos (norm_pos E hE) (active_norm_pos I J)) (sq_pos_of_pos hX))
     (mul_pos (mul_pos hK (norm_pos _ (commonPart_ne_zero I J))) (norm_pos _ (commonPart_ne_zero J I)))
 
-theorem first_kernel_ratio (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (hE : E≠0)
-    (K X H : ℝ) (hK : 0<K) (hX : 0<X) :
+include hI hJ hE hK hX in
+theorem first_kernel_ratio        
+          :
     K*H/((Ideal.absNorm E:ℝ)*(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ)*
       (Ideal.absNorm (residualPart I J):ℝ)*(Ideal.absNorm (residualPart J I):ℝ)) =
       (H/firstNominalScale I J E K X)*(X^2/((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ))) := by
@@ -51,10 +59,11 @@ theorem first_kernel_ratio (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (hE : E�
   unfold firstNominalScale
   field_simp
 
-theorem first_kernel_lower (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (hE : E≠0)
-    (K X H HN : ℝ) (hK : 0<K) (hX : 0<X) (hH : 0≤H)
-    (hi : (Ideal.absNorm I:ℝ)≤Real.exp HN*X)
-    (hj : (Ideal.absNorm J:ℝ)≤Real.exp HN*X) :
+include hI hJ hE hK hX hH hi hj in
+theorem first_kernel_lower        
+           
+     
+      :
     H/(Real.exp (2*HN)*firstNominalScale I J E K X) ≤
       K*H/((Ideal.absNorm E:ℝ)*(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ)*
         (Ideal.absNorm (residualPart I J):ℝ)*(Ideal.absNorm (residualPart J I):ℝ)) := by
@@ -73,10 +82,11 @@ theorem first_kernel_lower (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (hE : E�
     _ = (H/firstNominalScale I J E K X)*(1/Real.exp (2*HN)) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hr (div_nonneg hH hT.le)
 
-theorem first_kernel_sector_lower (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (hE : E≠0)
-    (K X H HN Tsec : ℝ) (hK : 0<K) (hX : 0<X) (hH : 0≤H)
-    (hi : (Ideal.absNorm I:ℝ)≤Real.exp HN*X)
-    (hj : (Ideal.absNorm J:ℝ)≤Real.exp HN*X)
+include hI hJ hE hK hX hH hi hj in
+theorem first_kernel_sector_lower        
+           
+     
+     
     (hsec : firstNominalScale I J E K X≤Tsec) :
     (Real.exp (-2*HN)/Tsec)*H ≤
       K*H/((Ideal.absNorm E:ℝ)*(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ)*
@@ -85,9 +95,10 @@ theorem first_kernel_sector_lower (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (h
   calc
     _ = H/(Real.exp (2*HN)*Tsec) := by rw [show -2*HN=-(2*HN) by ring,Real.exp_neg];ring
     _ ≤ H/(Real.exp (2*HN)*firstNominalScale I J E K X) :=
-      div_le_div_of_nonneg_left hH (mul_pos (Real.exp_pos _) hT)
-        (mul_le_mul_of_nonneg_left hsec (Real.exp_pos _).le)
+      (by bound)
     _ ≤ _ := first_kernel_lower I J E hI hJ hE K X H HN hK hX hH hi hj
+
+end
 
 end SevenEighths.CenteredMomentFirstScale
 

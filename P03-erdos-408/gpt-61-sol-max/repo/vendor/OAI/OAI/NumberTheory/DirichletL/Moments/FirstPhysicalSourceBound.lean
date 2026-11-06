@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSource
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
@@ -17,14 +17,14 @@ open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMome
 open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
 open CenteredMomentFirstChildBound CenteredMomentChildAssembly CenteredMomentMobiusRegroup
 open CenteredMomentSmooth RayFourExpansion IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
 
-theorem physical_block_child_bound (W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
-    (M:Fin 4→ℝ)(hM:∀i,0≤M i)(hV:∀i y,V i y≠0→|y|≤M i)(A J₁ J₂:ℕ):
+
+theorem physical_block_child_bound  W  V 
+    (M:Fin 4→ℝ)(hM:∀i,0≤M i)(hV:∀i y,V i y≠0→|y|≤M i) A J₁ J₂ :
     ∃Cbound:ℝ,0≤Cbound ∧
-    ∀(η:Character)(m:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-      (C D:Ideal O)(hC:Supported C)(hD:Supported D),primeSupport C=primeSupport D→
-    ∀(E:Finset (CommonIndex C D))(rows:Finset O),(∀h∈rows,h≠0)→
+    ∀(η:Character)(m:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))(c:Ideal ActualEisensteinCubic.O→ℂ)
+      (C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D),primeSupport C=primeSupport D→
+    ∀(E:Finset (CommonIndex C D))(rows:Finset ActualEisensteinCubic.O),(∀h∈rows,h≠0)→
     ∀K K₀ H₀ A₀ B₀:ℝ,0<K→0<K₀→0<H₀→0<A₀→0<B₀→
     let e:=primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E;
     let k:=K/‖eisEmbedding e‖^2;
@@ -33,9 +33,9 @@ theorem physical_block_child_bound (W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
     (∀h∈rows,‖V 0 (Real.log ((k/‖eisEmbedding r‖^2)/K₀))‖≤1)→
     (∀h∈rows,‖V 1 (Real.log (‖eisEmbedding h‖^2/H₀))‖≤1)→
     ∀(U:𝓢(ℝ,ℂ))(H:ℝ),0<H→
-    (∀h:O,0≤(U (‖eisEmbedding h‖^2/H)).re)→
+    (∀h:ActualEisensteinCubic.O,0≤(U (‖eisEmbedding h‖^2/H)).re)→
     (∀h∈rows,1≤(U (‖eisEmbedding h‖^2/H)).re)→
-    ∀B₁ B₂:Ideal O→ℝ,
+    ∀B₁ B₂:Ideal ActualEisensteinCubic.O→ℝ,
     (∀L∈divisorPool (Finset.univ:Finset (columns C D hD.1 S))
       (fun b=>Ideal.span {element C D hD.1 S b}),0≤B₁ L)→
     (∀L∈divisorPool (Finset.univ:Finset (columns C D hD.1 S))
@@ -86,6 +86,6 @@ theorem physical_block_child_bound (W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
 
 end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
+
 
 end OAI

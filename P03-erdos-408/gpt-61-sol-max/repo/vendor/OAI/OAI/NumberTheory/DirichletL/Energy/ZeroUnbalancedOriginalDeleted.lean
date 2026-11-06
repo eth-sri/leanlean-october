@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceError
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -21,15 +21,15 @@ open CenteredMomentEnergyZeroUnbalancedDeletedGeometry CenteredMomentEnergyZeroR
 open CenteredMomentEnergyZeroReferenceError CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-local notation "O"=>HeckeFamily.O
+
 
 theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
-    (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi)
-    (hBmask:0≤Bmask)(hL:Mcap+Bmask+xi≤L)(B:ℕ)(hB:2≤B)(S:Finset (ℕ×ℕ)):
+     ha (hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi)
+    (hBmask:0≤Bmask)(hL:Mcap+Bmask+xi≤L)(B:ℕ)(hB:2≤B) S :
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃Dchild:ℝ,0<Dchild ∧
     ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D:ℝ,0<C ∧ 0<D ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(ε:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K →
+      ∀(ε:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S K →
       ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q →s.width≤Mcap →xi≤s.width/6 →
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),
@@ -81,7 +81,7 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
   · have hh:=hZ.2 Bmask L Mcap ε Q degree K hK hlow hBmask s hQ hs
       W₂ W₁ hs₂ hs₁ t along short hg.2.2.2.2.2.1 hg.2.2.2.2.2.2.1 hg.2.2.2.1 hr.2
     dsimp only at hh
-    have he₁:=he W₁ (fun x hx=>(hs₁ hx).2) (fun z=>naturalCharacter s.character z)
+    have he₁:=he W₁ (fun x hx=>(hs₁ hx).2) (naturalCharacter s.character)
       t (Z^short) s.radial.scale s.radial.profile (effectiveState s).radial.keep
       (Real.rpow_pos_of_pos hZpos _) s.radial.scale_pos s.radial.nonneg
     have hswap:(fun z=>polynomial (naturalCharacter s.character z) false W₁ (Z^short) 0 t *
@@ -108,6 +108,6 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
 
 end SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalDeleted
 
-end
+
 
 end OAI

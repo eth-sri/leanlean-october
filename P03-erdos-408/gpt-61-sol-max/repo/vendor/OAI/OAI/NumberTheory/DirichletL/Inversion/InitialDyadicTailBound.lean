@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialDyadicTailGates
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicTailBound
@@ -121,6 +121,6 @@ theorem actual_high_mass_tail (Lcap saving τ : ℝ) (hτ : 0<τ) :
 
 end SevenEighths.InverseInitialDyadicTailBound
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalEulerIdentity
 
@@ -14,11 +15,11 @@ local notation "O" => ActualEisensteinCubic.O
 
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
 
-def zeroIndexTerm (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ) (k m : ℕ) : ℂ :=
+def zeroIndexTerm (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ) (k m : ℕ)  :=
   (if k=0 then 1 else (χ^k) (Ideal.Quotient.mk _ (p^(6*m)))) * W^k * V^m
 
 omit [(Ideal.span {p}).IsMaximal] in
-lemma zeroIndex_inner_zero (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ)
+lemma zeroIndex_inner_zero  χ   W V 
     (hV : ‖V‖<1) :
     HasSum (fun m => zeroIndexTerm p χ W V 0 m) (1/(1-V)) := by
   simpa [zeroIndexTerm, one_div] using hasSum_geometric_of_norm_lt_one hV
@@ -34,12 +35,9 @@ lemma zeroIndex_inner_pos (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ)
   dsimp only
   unfold zeroIndexTerm
   rw [ite_eq_right hk, zero_index_scalar p hp χ k (6*m) hk]
-  by_cases h : m=0
-  · subst m; simp
-  · have h6 : 6*m≠0 := by omega
-    simp [h, h6]
+  simp_all
 
-def zeroIndexSeries (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ) : ℂ :=
+def zeroIndexSeries (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ)  :=
   ∑' k, ∑' m, zeroIndexTerm p χ W V k m
 
 include hp in

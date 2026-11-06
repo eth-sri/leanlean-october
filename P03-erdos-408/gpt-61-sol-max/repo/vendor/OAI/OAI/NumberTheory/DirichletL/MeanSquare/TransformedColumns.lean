@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.LogarithmicLoss
 public import OAI.NumberTheory.DirichletL.CubicSieve.PooledRows
@@ -11,78 +12,78 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 namespace InitialMeanSquare
-open ActualEisensteinCubic SecondPassArithmetic
+open   SecondPassArithmetic
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
 open MixedCrossSeparation (columnCoefficient)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀i,lambda∉Ideal.span {p i})
 
@@ -91,8 +92,8 @@ end InitialMeanSquare
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise ENNReal
+ 
+open scoped       MatrixGroups Pointwise ENNReal
 
 instance fullSLContinuousAction : ContinuousConstSMul (SL(2,ℂ)) HyperbolicSpace :=
   ⟨continuous_hyperbolic_action⟩
@@ -114,55 +115,26 @@ instance hyperbolicVolume_fullSupport : Measure.IsOpenPosMeasure hyperbolicVolum
     have htotal : hyperbolicVolume Set.univ=0 := measure_mono_null hseq hz
     exact hyperbolicVolume_ne_zero (Measure.measure_univ_eq_zero.mp htotal)
 
-instance kernelQuotientVolume_fullSupport :
-    Measure.IsOpenPosMeasure (integralQuotientVolume globalKubotaKernel) where
-  open_pos U hU hne := by
-    let quotientProjection := integralOrbitProjection globalKubotaKernel
-    have hp : Measurable quotientProjection := measurable_integralOrbitProjection _
-    have hpre : IsOpen (quotientProjection ⁻¹' U) := hU.preimage (continuous_integralOrbitProjection _)
-    have hpren : (quotientProjection ⁻¹' U).Nonempty := by
-      obtain ⟨q,hq⟩ := hne
-      obtain ⟨w,rfl⟩ := Quotient.mk_surjective q
-      exact ⟨w,hq⟩
-    intro hzero
-    have hd : hyperbolicVolume ((quotientProjection ⁻¹' U)∩hyperbolicFundamentalSet globalKubotaKernel)=0 := by
-      simpa only [integralQuotientVolume,quotientProjection,Measure.map_apply (measurable_integralOrbitProjection _) hU.measurableSet,
-        Measure.restrict_apply ((measurable_integralOrbitProjection _) hU.measurableSet)] using hzero
-    have hinv : ∀M:globalKubotaKernel,M • (quotientProjection ⁻¹' U)=quotientProjection ⁻¹' U := by
-      intro M
-      ext w
-      constructor
-      · rintro ⟨u,hu,rfl⟩
-        change quotientProjection (M • u)∈U
-        change quotientProjection u∈U at hu
-        rwa [show quotientProjection (M • u)=quotientProjection u from integralOrbitProjection_eq _ M u]
-      · intro hw
-        refine ⟨M⁻¹ • w,?_,smul_inv_smul M w⟩
-        change quotientProjection (M⁻¹ • w)∈U
-        rwa [show quotientProjection (M⁻¹ • w)=quotientProjection w from integralOrbitProjection_eq _ M⁻¹ w]
-    have hz := globalKubotaKernel_isFundamentalDomain.measure_zero_of_invariant (quotientProjection ⁻¹' U) hinv hd
-    exact hpre.measure_ne_zero _ hpren hz
+
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise ENNReal
+ 
+open scoped       MatrixGroups Matrix Pointwise ENNReal
 
-open ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+ 
 
-lemma integral_upper_triangular_height (M : SL(2,O)) (hc : M 1 0=0)
-    (z : ℂ) (v : ℝ) (hv : 0<v) :
+
+lemma integral_upper_triangular_height  M  (hc : M 1 0=0)
+     z   v   hv  :
     hyperbolicHeight (integralComplexMatrix M • upperPoint z v hv)=v := by
   have hdet : M 0 0*M 1 1=1 := by
     have h := M.property
     simpa only [Matrix.det_fin_two,hc,mul_zero,sub_zero] using h
-  let u : Oˣ := ⟨M 1 1,M 0 0,by rw [mul_comm,hdet],hdet⟩
+  let u : ActualEisensteinCubic.Oˣ := ⟨M 1 1,M 0 0,by rw [mul_comm,hdet],hdet⟩
   have hn : ‖eisEmbedding (M 1 1)‖=1 := GaussGeneratorTransport.norm_eisEmbedding_unit u
   rw [hyperbolicHeight_action_upperPoint]
-  simp only [integralComplexMatrix_apply,hc,map_zero,zero_mul,zero_add,norm_zero,
-    hn,one_pow,]
-  norm_num
+  simp_all
 
 def hyperbolicSpatialCoordinates (w : HyperbolicSpace) : SpatialCoordinates :=
   ![(hyperbolicHorizontal w).re,(hyperbolicHorizontal w).im,hyperbolicHeight w]
@@ -175,10 +147,10 @@ lemma hyperbolicSpatialCoordinates_continuous : Continuous hyperbolicSpatialCoor
   · exact Complex.continuous_im.comp hyperbolicHorizontal_continuous
   · exact hyperbolicHeight_continuous
 
-lemma hyperbolicSpatialCoordinates_positive (w : HyperbolicSpace) :
+lemma hyperbolicSpatialCoordinates_positive  w  :
     0<hyperbolicSpatialCoordinates w 2 := hyperbolicHeight_pos w
 
-lemma hyperbolicSpatialCoordinates_reconstruct (w : HyperbolicSpace) :
+lemma hyperbolicSpatialCoordinates_reconstruct  w  :
     upperPoint ((hyperbolicSpatialCoordinates w 0:ℂ)+(hyperbolicSpatialCoordinates w 1:ℂ)*Complex.I)
       (hyperbolicSpatialCoordinates w 2) (hyperbolicSpatialCoordinates_positive w)=w := by
   change upperPoint (((hyperbolicHorizontal w).re:ℂ)+((hyperbolicHorizontal w).im:ℂ)*Complex.I)
@@ -190,26 +162,29 @@ end CubicEisenstein
 
 namespace SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
-open MeasureTheory
-open ActualEisensteinCubic
+ 
+ 
+ 
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,lambda ∉ Ideal.span {p i})
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
 
-open ActualEisensteinCubic
+ 
 
-theorem finite_inverse_norm_sum (S : Finset (Ideal O)) (H : ℝ)
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O))
+
+theorem finite_inverse_norm_sum    H 
     (hS : ∀ I∈S,I≠0) (hH : ∀I∈S,(Ideal.absNorm I:ℝ)≤H) :
     (∑I∈S,1/(Ideal.absNorm I:ℝ))≤256*(columnDyadicLength H+1:ℝ) := by
-  have hpos (I : Ideal O) (hI : I∈S) : 1≤(Ideal.absNorm I:ℝ) := by
+  have hpos (I : Ideal ActualEisensteinCubic.O) (hI : I∈S) : 1≤(Ideal.absNorm I:ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => hS I hI (Ideal.absNorm_eq_zero_iff.mp hz))
   have hbin (j : Fin (columnDyadicLength H+1)) :
       (∑I∈divisorDyadicBin S H j,1/(Ideal.absNorm I:ℝ))≤256 := by
@@ -223,7 +198,7 @@ theorem finite_inverse_norm_sum (S : Finset (Ideal O)) (H : ℝ)
         obtain ⟨hIS,hj⟩ := Finset.mem_filter.mp hI
         have hb := (divisorDyadicLabel_bounds H I (hpos I hIS) (hH I hIS)).2
         simpa only [hj] using hb
-    have hterm (I : Ideal O) (hI : I∈divisorDyadicBin S H j) :
+    have hterm (I : Ideal ActualEisensteinCubic.O) (hI : I∈divisorDyadicBin S H j) :
         1/(Ideal.absNorm I:ℝ)≤2/(2:ℝ)^j.val := by
       obtain ⟨hIS,hj⟩ := Finset.mem_filter.mp hI
       have hb := (divisorDyadicLabel_bounds H I (hpos I hIS) (hH I hIS)).1
@@ -240,11 +215,11 @@ theorem finite_inverse_norm_sum (S : Finset (Ideal O)) (H : ℝ)
     _ ≤ ∑j : Fin (columnDyadicLength H+1),(256:ℝ) := Finset.sum_le_sum (fun j _ => hbin j)
     _ = _ := by simp; ring
 
-theorem ideal_reciprocal_cauchy (S : Finset (Ideal O)) (hS : ∀I∈S,I≠0)
-    (v : Ideal O → ℂ) :
+theorem ideal_reciprocal_cauchy   (hS : ∀I∈S,I≠0)
+    (v : Ideal ActualEisensteinCubic.O → ℂ) :
     ‖∑I∈S,v I‖^2≤(∑I∈S,1/(Ideal.absNorm I:ℝ))*
       (∑I∈S,(Ideal.absNorm I:ℝ)*‖v I‖^2) := by
-  have hpos (I : Ideal O) (hI : I∈S) : 0<(Ideal.absNorm I:ℝ) := by
+  have hpos (I : Ideal ActualEisensteinCubic.O) (hI : I∈S) : 0<(Ideal.absNorm I:ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (fun hz => hS I hI (Ideal.absNorm_eq_zero_iff.mp hz))
   apply (pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le S v) 2).trans
   apply Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul S
@@ -252,9 +227,11 @@ theorem ideal_reciprocal_cauchy (S : Finset (Ideal O)) (hS : ∀I∈S,I≠0)
   intro I hI
   exact le_of_eq (by field_simp [(hpos I hI).ne'])
 
-open ActualEisensteinCubic CompletedGauss QuadraticSquarefreeKernel
+end
 
-open ActualEisensteinCubic CompletedGauss QuadraticSquarefreeKernel
+open   CompletedGauss QuadraticSquarefreeKernel
+
+ 
 
 end CanonicalQuadraticSieve
 

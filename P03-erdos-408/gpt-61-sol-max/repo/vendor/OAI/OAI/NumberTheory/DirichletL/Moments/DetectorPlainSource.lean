@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.UncenteredTerminal
 public import OAI.NumberTheory.DirichletL.Moments.SourceRectangleEnergy
@@ -21,39 +22,46 @@ open CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentDivisorRow
 open CenteredMomentRetainedEnergy CenteredMomentRectangle CenteredMomentSourceRectangleEnergy
 open CenteredMomentHeckeColumnWindow
 open CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentSecondHeightFamily
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-def completePool (slots : ι→Finset (Ideal O)) (b₁ b₂ X₁ X₂ : ℝ) : Finset (Tuple ι) :=
+def completePool (slots : ι→Finset (Ideal ActualEisensteinCubic.O)) (b₁ b₂ X₁ X₂ : ℝ)  :=
   tuplePool slots (plainSupportPool b₁ X₁ (comparisonScale b₁))
     (plainSupportPool b₂ X₂ (X₁*X₂/comparisonScale b₁))
 
-lemma support_zero (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support W⊆Set.Icc a b) : W 0=0 := by
+section
+variable (η : Character) (m A z : ActualEisensteinCubic.O) (t : ℝ) (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hs : Function.support W⊆Set.Icc a b) (hmLam : goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m) (keep : ActualEisensteinCubic.O→Prop) (slots : ι→Finset (Ideal ActualEisensteinCubic.O)) (R : Ideal ActualEisensteinCubic.O) (ν : ι→Ideal ActualEisensteinCubic.O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ) (hP : ∀ i,0<P i) (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ X₁ X₂ : ℝ) (ha₁ : 0<a₁) (ha₂ : 0<a₂) (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁) (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂)
+
+
+include ha hs in
+lemma support_zero      
+      : W 0=0 := by
   by_contra hn
   have := (hs hn).1
   linarith
 
-lemma comparison_row_zero (η : Character) (m A z : O) (t : ℝ)
-    (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hs : Function.support W⊆Set.Icc a b) :
+include ha hs in
+lemma comparison_row_zero      
+            :
     rowTwistedSum η m A z W t (comparisonScale b)=0 := by
   rw [rowTwistedSum_eq_weight]
   calc
-    _ = ∑' _I : Ideal O, (0:ℂ) := by
+    _ = ∑' _I : Ideal ActualEisensteinCubic.O, (0:ℂ) := by
       apply tsum_congr
       intro I
       have h := comparison_first_zero W a b ha hs 1 I one_ne_zero
-      simpa only [one_mul,mul_zero] using congrArg (fun v : ℂ=>rowWeight η m A z t I*v) h
+      simp_all
     _ = 0 := tsum_zero
 
-theorem complete_source_polynomial (η : Character) (m A z : O) (t : ℝ)
-    (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
-    (slots : ι→Finset (Ideal O)) (R : Ideal O)
-    (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
-    (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ X₁ X₂ : ℝ)
-    (ha₁ : 0<a₁) (ha₂ : 0<a₂)
-    (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁)
-    (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂) (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
+include hmLam hm2 ha₁ ha₂ hs₁ hs₂ in
+theorem complete_source_polynomial      
+       
+       
+         
+       
+       
+     
+      (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
     (∑ I∈finiteColumns (completePool slots b₁ b₂ X₁ X₂),
       finiteColumnCoefficient (completePool slots b₁ b₂ X₁ X₂)
         (uncenteredProfileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ 1 1 1) I *
@@ -85,14 +93,15 @@ theorem complete_source_polynomial (η : Character) (m A z : O) (t : ℝ)
   rw [hr,comparison_row_zero η (m*idealGenerator R) A z t W₁ a₁ b₁ ha₁ hs₁,
     zero_mul,sub_zero]
 
-theorem positiveSlotRow_eq_complete_source (η : Character) (m A z : O) (t : ℝ)
-    (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
-    (slots : ι→Finset (Ideal O)) (R : Ideal O)
-    (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
-    (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ X₁ X₂ : ℝ)
-    (ha₁ : 0<a₁) (ha₂ : 0<a₂)
-    (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁)
-    (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂) (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
+include hmLam hm2 ha₁ ha₂ hs₁ hs₂ in
+theorem positiveSlotRow_eq_complete_source      
+       
+       
+         
+       
+       
+     
+      (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
     positiveSlotRow η (m*idealGenerator R) A z W₁ W₂ slots
       (fun i I=>ν i I*Wslot i ((Ideal.absNorm I:ℝ)/P i)) P t X₁ X₂=
       (Real.sqrt (X₁*X₂*∏ i,P i):ℂ)⁻¹*
@@ -104,15 +113,16 @@ theorem positiveSlotRow_eq_complete_source (η : Character) (m A z : O) (t : ℝ
     a₁ b₁ a₂ b₂ X₁ X₂ ha₁ ha₂ hs₁ hs₂ hX₁ hX₂]
   rfl
 
-theorem positive_energy_eq_complete_source (η : Character) (t : ℝ) (keep : O→Prop)
-    (slots : ι→Finset (Ideal O)) (R : Ideal O)
-    (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ) (hP : ∀ i,0<P i)
-    (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ X₁ X₂ : ℝ)
-    (ha₁ : 0<a₁) (ha₂ : 0<a₂)
-    (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁)
-    (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂) (hX₁ : 0<X₁) (hX₂ : 0<X₂)
-    (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) :
-    (∑' z : O,if keep z then
+include hP ha₁ ha₂ hs₁ hs₂ in
+theorem positive_energy_eq_complete_source      
+       
+           
+       
+       
+     
+      (hX₁ : 0<X₁) (hX₂ : 0<X₂)
+     Φ   K  :
+    (∑' z : ActualEisensteinCubic.O,if keep z then
       ‖positiveSlotRow η (fixedBadMask*idealGenerator R) 1 z W₁ W₂ slots
         (fun i I=>ν i I*Wslot i ((Ideal.absNorm I:ℝ)/P i)) P t X₁ X₂‖^2*
         (Φ (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0)=
@@ -135,6 +145,8 @@ theorem positive_energy_eq_complete_source (η : Character) (t : ℝ) (keep : O�
       CenteredMomentDivisorRawEnergy.normalized_norm_sq _ htotal]
     ring
   · simp only [ite_eq_right hk,zero_div]
+
+end
 
 end SevenEighths.CenteredMomentDetectorPlainSource
 

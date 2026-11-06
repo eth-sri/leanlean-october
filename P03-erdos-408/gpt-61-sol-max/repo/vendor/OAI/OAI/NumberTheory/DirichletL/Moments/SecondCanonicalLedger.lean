@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.RankinLabels
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalLedger
@@ -15,28 +15,28 @@ open CanonicalQuadraticSieve CompletedGauss
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
 open CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentPartitionNorm
 open CenteredMomentSupport CenteredMomentForcing
-local notation "O" => ActualEisensteinCubic.O
 
-theorem span_finset_product {ι : Type*} (S : Finset ι) (p : ι→O) :
+
+theorem span_finset_product {ι : Type*} (S : Finset ι) (p : ι→ActualEisensteinCubic.O) :
     Ideal.span {∏ i∈S,p i}=∏ i∈S,Ideal.span {p i} := by
   induction S using Finset.induction_on with
   | empty => simp
   | @insert i S hi ih => rw [Finset.prod_insert hi,Finset.prod_insert hi,
       ←Ideal.span_singleton_mul_span_singleton,ih]
 
-theorem commonFrequencyGenerator_span (C D : Ideal O) (_hC : Supported C) :
+theorem commonFrequencyGenerator_span  C D  (_hC : Supported C) :
     Ideal.span {commonFrequencyGenerator C D}=
       commonIdeal (commonPrime C D) (leftExponent C D) (rightExponent C D) := by
   simp only [commonFrequencyGenerator,span_finset_product,←Ideal.span_singleton_pow,commonIdeal]
 
-theorem nonunitFrequencyGenerator_span (C D : Ideal O)
-    (U : Finset (CommonIndex C D)) :
+theorem nonunitFrequencyGenerator_span  C D 
+     U  :
     Ideal.span {nonunitFrequencyGenerator C D U}=
       unitIdeal (commonPrime C D) (nonunitPartitionSet C D U) := by
   simp only [nonunitFrequencyGenerator,span_finset_product,unitIdeal]
 
-theorem actual_partitionNormalizer (C D : Ideal O) (hC : Supported C)
-    (U : Finset (CommonIndex C D)) :
+theorem actual_partitionNormalizer  C D  (hC : Supported C)
+     U  :
     partitionNormalizer (commonPrime C D) (leftExponent C D) (rightExponent C D) U=
       (Ideal.absNorm (Ideal.span {commonFrequencyGenerator C D}):ℝ)/
         Ideal.absNorm (∏ P∈U,P.val) := by
@@ -44,10 +44,10 @@ theorem actual_partitionNormalizer (C D : Ideal O) (hC : Supported C)
     (leftExponent_pos C D) (rightExponent_pos C D),←commonFrequencyGenerator_span C D hC]
   simp only [unitIdeal,commonPrime_span C D hC]
 
-theorem actual_second_ledger_lower (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem actual_second_ledger_lower  C D  (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (U : Finset (CommonIndex C D)) (w : O) (hpart : canonicalPartition C D U w)
-    (Z : ℝ) (hZ : 1<Z)
+     U  (w : ActualEisensteinCubic.O) (hpart : canonicalPartition C D U w)
+     Z  (hZ : 1<Z)
     (hne : idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0) :
     (Real.logb Z (Ideal.absNorm C:ℝ)+Real.logb Z (Ideal.absNorm D:ℝ))/3≤
       Real.logb Z (Ideal.absNorm C:ℝ)+Real.logb Z (Ideal.absNorm D:ℝ)-
@@ -68,6 +68,6 @@ theorem actual_second_ledger_lower (C D : Ideal O) (hC : Supported C) (hD : Supp
 
 end SevenEighths.CenteredMomentSecondCanonicalLedger
 
-end
+
 
 end OAI

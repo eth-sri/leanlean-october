@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.ReflectedShortGeneratorUnifo
 @[expose] public section
 
 namespace OAI
-noncomputable section
+
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseShortCanonicalNormalization
 open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion
@@ -15,10 +15,10 @@ local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 
 theorem canonical_short_normalized_energy_uniform_degree
-    (lo hi : ℝ) (hlo : 0<lo) (W : ℝ→ℂ)
+    (lo hi : ℝ) (hlo : 0<lo)  W 
     (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (L cstar eta : ℝ) (hL : 0≤L) (hcstar : 0<cstar) (heta : 0<eta)
-    (heta1 : eta≤1) (hetac : eta≤cstar/100000) (rmax K : ℕ) :
+     L cstar eta  (hL : 0≤L) (hcstar : 0<cstar) (heta : 0<eta)
+    (heta1 : eta≤1) (hetac : eta≤cstar/100000)  rmax K  :
     ∃ (degree : ℕ), ∀ (q : ℕ) (_hq : q≠0), ∃ (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
     ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],
     ∀ (m : Eis) (_hm : m≠0) (Z N V M z₀ margin hcut d : ℝ),
@@ -58,6 +58,6 @@ theorem canonical_short_normalized_energy_uniform_degree
 
 end SevenEighths.InverseShortCanonicalNormalization
 
-end
+
 
 end OAI

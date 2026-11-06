@@ -17,13 +17,13 @@ open CenteredMomentEnergyFixedRadialSource CenteredMomentSourceRow
 open CenteredMomentSecondHeightFamily CenteredMomentAmplificationChildInput
 open CenteredMomentOriginalCommonHarmonic CenteredMomentRadialEligibleEnergy
 open CenteredMomentEnergyZeroComparison CanonicalQuadraticSieve
-local notation "O"=>HeckeFamily.O
+
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
 theorem original_comparison (b:ℝ)(hb:0<b):
     ∃Ψ:𝓢(ℝ,ℂ),Function.support (Ψ:ℝ→ℂ)⊆Set.Icc (-1) (b+1) ∧
-      (∀x,0≤(Ψ x).re) ∧ ∀s:Input ι,∀R:Ideal O,∀r:Radial,
+      (∀x,0≤(Ψ x).re) ∧ ∀s:Input ι,∀R:Ideal HeckeFamily.O,∀r:Radial,
       Function.support (r.profile:ℝ→ℂ)⊆Set.Iic b→
       CenteredMomentInductionEnergy.energy s.η (fixedBadMask*idealGenerator R) 1 s.t
         s.W₁ s.W₂ s.slots s.toData.coefficient s.P s.X₁ s.X₂ r.keep r.profile r.scale ≤

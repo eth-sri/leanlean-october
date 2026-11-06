@@ -6,7 +6,7 @@ public import Erdos821.P3Clean.TiltedAdjoint
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos821.P3Clean
 
@@ -14,7 +14,7 @@ open Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-theorem normBound_tiltedBannedKernel (A : Model F P J m) (n : ℕ) (C D atom : ℝ)
+theorem normBound_tiltedBannedKernel (A : Model F P J m)  n   C D atom 
     (hD : 1 ≤ D) (hat : 0 ≤ atom)
     (hV : ∀ g : P.BigGroup, P.V g.val ≠ 0)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
@@ -23,7 +23,7 @@ theorem normBound_tiltedBannedKernel (A : Model F P J m) (n : ℕ) (C D atom : �
       1 ≤ Real.sqrt (freshDensity F n (A.pattern v) a) * Real.sqrt (freshDensity F n (A.pattern v) b) ∧
         Real.sqrt (freshDensity F n (A.pattern v) a) * Real.sqrt (freshDensity F n (A.pattern v) b) ≤ D)
     (hideal : ∀ theta : ℝ, NormBound P.idealMass (A.idealKernel theta) C)
-    (theta : ℝ) (forward : Bool) :
+     theta   forward  :
     NormBound (tiltedIdealMass F n) (tiltedBannedKernel A n theta forward)
       (C + ((D - 1) + D * ((Fintype.card P.BigGroup : ℝ) * J * (J + F.ell) * (2 * atom))) *
         A.patternMass) := by

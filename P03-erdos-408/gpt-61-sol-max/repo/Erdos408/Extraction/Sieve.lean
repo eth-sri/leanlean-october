@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.BlockSieve
 public import Erdos408.Extraction.Allocation
@@ -43,10 +44,14 @@ namespace Erdos408
 
 open Filter Real Finset Sieve
 
+section
+variable (h₁ : OneSidedTypeII) (h₂ : TwoSidedCorrelation)
+include h₁ h₂
+
 /-- The statistic for coefficients `0 ≤ 𝔟 ≤ 1`, with the parameters `q = 1/2`,
 `c_w = 1/12`, `K = max K₀ 1`, `C_h = 200`, `C_j = 1001` and `C_N = 30000 K`. -/
-lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSidedCorrelation)
-    (h₃ : BlockSieve) (c κ CΦ : ℝ) (M : ℕ → ℝ) (hc : 0 < c) (hκ : 1 < κ) :
+lemma eventually_smooth_rectangle_nonneg    
+    (h₃ : BlockSieve)  c κ CΦ   M  (hc : 0 < c) (hκ : 1 < κ) :
     ∀ᶠ x : ℝ in atTop,
       ∀ k ≤ 2, ∀ (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) (Φ : ℝ → ℝ),
         AdmissibleSlots c x u v → (∀ Q, 0 ≤ B Q ∧ B Q ≤ 1) → IsCutoff κ CΦ M x Φ →
@@ -74,7 +79,7 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
     with x hTIIx hAllx h10x hprex htailx ⟨hT, heh, hj2, he1, hiL, hLz, hLc, hJ⟩ hsize hP hTC
       hxκ hL k hk u v B Φ hslot hB hΦ
   have hx0 : 0 < x := by linarith
-  have hL0 : 0 < Real.log x := by linarith
+  
   have hB' : ∀ Q, |B Q| ≤ 1 := fun Q => by rw [abs_le]; constructor <;> linarith [hB Q]
   set T := logLog x
   set J := compositeCutoff 1001 x
@@ -234,8 +239,8 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
     _ ≤ 7 * (T ^ 300)⁻¹ := hfin
 
 /-- The smoothed rectangle statistic. -/
-theorem eventually_smooth_rectangle (h₁ : OneSidedTypeII) (h₂ : TwoSidedCorrelation)
-    (c κ CΦ : ℝ) (M : ℕ → ℝ) (hc : 0 < c) (hκ : 1 < κ) :
+theorem eventually_smooth_rectangle    
+     c κ CΦ   M  (hc : 0 < c) (hκ : 1 < κ) :
     ∃ C : ℝ, ∀ᶠ x : ℝ in atTop,
       ∀ k ≤ 2, ∀ (u v : Fin (k + 1) → ℝ) (B : (Fin k → ℕ) → ℝ) (Φ : ℝ → ℝ),
         AdmissibleSlots c x u v → (∀ Q, |B Q| ≤ 1) → IsCutoff κ CΦ M x Φ →
@@ -273,5 +278,7 @@ theorem eventually_smooth_rectangle (h₁ : OneSidedTypeII) (h₂ : TwoSidedCorr
         mul_le_mul_of_nonneg_left (abs_sub _ _) hLx
     _ ≤ 7 * (logLog x ^ 300)⁻¹ + 7 * (logLog x ^ 300)⁻¹ := by rw [mul_add]; linarith
     _ = 14 * (logLog x ^ 300)⁻¹ := by ring
+
+end
 
 end Erdos408

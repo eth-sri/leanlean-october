@@ -9,15 +9,15 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
+
 variable {φ : Type*} [Fintype φ]
 
 lemma hybridInner_frozen_dual_reindex (F : PrimeFamily φ)
-    (hF : Pairwise (Function.onFun IsCoprime F.ideal)) (jF : φ → ℕ) (e : φ → Fin 3)
-    (A : Ideal Eis → Ideal Eis → ℂ) (nset bset : Finset (Ideal Eis))
+    (hF : Pairwise (Function.onFun IsCoprime F.ideal))  jF   e 
+     A   nset bset 
     (hn : ∀ n ∈ nset, primaryGenerator n ≠ 0) (hb : ∀ b ∈ bset, primaryGenerator b ≠ 0)
-    (K P : Ideal Eis) :
+     K P  :
     hybridInner nset bset (frozenBranchColumn F jF e A) K P =
       ∑ n ∈ quotientSupport (frozenExtracted F jF e 1) nset,
         ∑ b ∈ quotientSupport (frozenExtracted F jF e 2) bset,
@@ -30,10 +30,10 @@ lemma hybridInner_frozen_dual_reindex (F : PrimeFamily φ)
     nset bset hn hb
 
 theorem hybridRow_frozen_extraction (F : PrimeFamily φ)
-    (hF : Pairwise (Function.onFun IsCoprime F.ideal)) (jF : φ → ℕ) (e : φ → Fin 3)
-    (A : Ideal Eis → Ideal Eis → ℂ) (nset bset Pset : Finset (Ideal Eis))
+    (hF : Pairwise (Function.onFun IsCoprime F.ideal))  jF   e 
+     A   nset bset Pset 
     (hn : ∀ n ∈ nset, primaryGenerator n ≠ 0) (hb : ∀ b ∈ bset, primaryGenerator b ≠ 0)
-    (aP : Ideal Eis → ℂ) (K : Ideal Eis) (hK : Admissible K)
+     aP   K  (hK : Admissible K)
     (hP : ∀ P ∈ Pset, primaryGenerator P ≠ 0) :
     hybridRow Pset nset bset aP (frozenBranchColumn F jF e A) K =
       ((frozenBranchScale F jF e:ℂ)*extractedRowFactor (frozenExtracted F jF e 1) (frozenExtracted F jF e 2) K)*
@@ -57,8 +57,8 @@ theorem hybridRow_frozen_extraction (F : PrimeFamily φ)
     (frozenBranchScale F jF e:ℂ)*extractedFrozenColumn F jF e A n b*z) hh
   convert he using 1 <;> simp only [extractedFrozenColumn,div_eq_mul_inv] <;> ring
 
-lemma quotientSupport_norm_div (D : Ideal Eis) (hD : D ≠ 0) (S : Finset (Ideal Eis)) (Y : ℝ)
-    (hS : ∀ I ∈ S, (Ideal.absNorm I:ℝ) ≤ Y) (J : Ideal Eis) (hJ : J ∈ quotientSupport D S) :
+lemma quotientSupport_norm_div (D : Ideal ActualEisensteinCubic.O) (hD : D ≠ 0) (S : Finset (Ideal ActualEisensteinCubic.O)) (Y : ℝ)
+    (hS : ∀ I ∈ S, (Ideal.absNorm I:ℝ) ≤ Y) (J : Ideal ActualEisensteinCubic.O) (hJ : J ∈ quotientSupport D S) :
     (Ideal.absNorm J:ℝ) ≤ Y/(Ideal.absNorm D:ℝ) := by
   have hpos : (0:ℝ) < Ideal.absNorm D := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD)
@@ -66,7 +66,7 @@ lemma quotientSupport_norm_div (D : Ideal Eis) (hD : D ≠ 0) (S : Finset (Ideal
   rw [map_mul,Nat.cast_mul] at hh
   exact (le_div_iff₀ hpos).mpr (by simpa only [mul_comm] using hh)
 
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

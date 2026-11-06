@@ -11,10 +11,10 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstChildWindows
 open InverseMoment InverseMomentFirstProfileUniform ActualEisensteinCubic
 open FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 
-def actualOuterRatios {ι : Type*} (p : ι→O) (A₁ A₂ C R : ℝ) (d h : O)
-    (j : FirstCommonIndex ι) (s : Fin 9→ℝ) (i : Fin 7) : ℝ :=
+
+def actualOuterRatios {ι } (p : ι→ActualEisensteinCubic.O) (A₁ A₂ C R : ℝ) (d h : ActualEisensteinCubic.O)
+    (j : FirstCommonIndex ι) (s : Fin 9→ℝ) (i : Fin 7)  :=
   firstCommonNorms p A₁ A₂ C R d h j (outerIndex i)/s (outerIndex i)
 
 theorem actual_first_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
@@ -29,10 +29,10 @@ theorem actual_first_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap :
       (∀i,0≤M₀ i) ∧ (∀i,HasCompactSupport (U₀ i : ℝ→ℂ)) ∧
       (∀i,Function.support (U₀ i)⊆Set.Icc (-M₀ i) (M₀ i)) ∧
       ∀{ι κ : Type*}[DecidableEq ι][DecidableEq κ]
-      (p : ι→O)(_hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O)(_hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (source : Finset κ)(F : Finset ι)(selector C₁ C₂ : κ→Finset ι→ℂ)
-      (A₁ A₂ C R : κ→ℝ)(d h : κ→O)(s : Fin 9→ℝ)
+      (A₁ A₂ C R : κ→ℝ)(d h : κ→ActualEisensteinCubic.O)(s : Fin 9→ℝ)
       (ρ : Fin 9→ℝ)(c₁ c₂ θ₁ θ₂ : ℝ),
       (∀i,0<s i) → (∀i,|ρ i|≤Bρ i) →
       1≤c₁ → c₁≤bcap → 1≤c₂ → c₂≤bcap →

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.MemoryGhost
 public import Erdos821.S2.GhostTasks
@@ -15,10 +16,10 @@ namespace Erdos821.P3Adj
 open Erdos821.Blueprint.Graph hiding GhostChoice absoluteMemoryGhostKernel absoluteScaledMemoryGhostKernel deleteMemoryIndices ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEntry memoryGhostKernel zeroBirthBatch zeroMemoryIndices
 open Erdos821.S2Core
 
-def singleWeight {P : PrimeGroups} (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1))
+def singleWeight {P : PrimeGroups} (F : FixedData) (n ) (rho : ℝ) (i : Fin (n + 1))
     (g : P.BigGroup) (s0 t0 : P.Memory g.val)
     (A : Finset (Fin s0.card)) (b : Fin (t0.card + 1))
-    (p : Fin b.val → P.Prime g.val) : ℝ :=
+    (p : Fin b.val → P.Prime g.val)  :=
   (-eta F n i / rho) ^ A.card *
   (visitQ F.q n i / rho ^ (2 : ℕ)) ^
     ((zeroMemoryIndices s0).card - A.card) *
@@ -28,12 +29,12 @@ def singleWeight {P : PrimeGroups} (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fi
 
 def singleValid {P : PrimeGroups} (g : P.BigGroup) (s0 t0 : P.Memory g.val)
     (A : Finset (Fin s0.card)) (b : Fin (t0.card + 1))
-    (p : Fin b.val → P.Prime g.val) : Prop :=
+    (p : Fin b.val → P.Prime g.val)  :=
   A ⊆ zeroMemoryIndices s0 ∧
     deleteMemoryIndices s0 A + zeroBirthBatch p = t0
 
-def singleKernel {P : PrimeGroups} (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
-    (g : P.BigGroup) (s0 t0 : P.Memory g.val) : ℝ :=
+def singleKernel {P : PrimeGroups} (F : FixedData) (n ) (rho d : ℝ) (i : Fin (n + 1))
+    (g : P.BigGroup) (s0 t0 : P.Memory g.val)  :=
   ∑ A : Finset (Fin s0.card), ∑ b : Fin (t0.card + 1),
     ∑ p : Fin b.val → P.Prime g.val,
       if singleValid g s0 t0 A b p then
@@ -43,7 +44,7 @@ def singleKernel {P : PrimeGroups} (F : FixedData) (n : ℕ) (rho d : ℝ) (i : 
 variable {P : PrimeGroups} (F : FixedData) (J n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
   (s t : P.MemoryState (J + F.ell))
 
-lemma globalSummand_eq_prod (c : GhostChoice s t) :
+lemma globalSummand_eq_prod  c  :
     (if ghostChoiceValid c then |ghostChoiceWeight F n rho i c| * d ^ ghostBirthCount c else 0) =
     ∏ g : P.BigGroup,
       (if singleValid g (s.2.2 g) (t.2.2 g) (c.1 g) (c.2.1 g) (c.2.2 g) then
@@ -52,7 +53,7 @@ lemma globalSummand_eq_prod (c : GhostChoice s t) :
       else 0) := by
   by_cases hvalid : ghostChoiceValid c
   · rw [ite_eq_left hvalid]
-    have hsingle : ∀ g, singleValid g (s.2.2 g) (t.2.2 g) (c.1 g) (c.2.1 g) (c.2.2 g) := fun g => hvalid g
+    have hsingle : ∀ g, singleValid g (s.2.2 g) (t.2.2 g) (c.1 g) (c.2.1 g) (c.2.2 g) := hvalid
     rw [Finset.prod_congr rfl (fun g _ => ite_eq_left (hsingle g))]
     have hweight : ghostChoiceWeight F n rho i c =
         ∏ g, singleWeight F n rho i g (s.2.2 g) (t.2.2 g) (c.1 g) (c.2.1 g) (c.2.2 g) := rfl
@@ -102,8 +103,7 @@ lemma globalSum_split :
   apply Finset.sum_congr rfl
   intro b _
   apply Finset.sum_congr rfl
-  intro p _
-  rw [globalSummand_eq_prod F J n rho d i s t (A, ⟨b, p⟩)]
+  solve_by_elim [globalSummand_eq_prod]
 
 lemma interchange_p (A : (g : P.BigGroup) → Finset (Fin (s.2.2 g).card))
     (b : (g : P.BigGroup) → Fin ((t.2.2 g).card + 1)) :
@@ -165,8 +165,7 @@ lemma globalKernel_eq_prod (hcoord : s.1 = t.1 ∧ s.2.1 = t.2.1) :
         apply Finset.sum_congr rfl
         intro A _
         apply Finset.sum_congr rfl
-        intro b _
-        exact interchange_p F J n rho d i s t A b
+        solve_by_elim [interchange_p]
     _ = ∑ A : ((g : P.BigGroup) → Finset (Fin (s.2.2 g).card)),
         ∏ g : P.BigGroup, ∑ b_g : Fin ((t.2.2 g).card + 1),
           ∑ p_g : Fin b_g.val → P.Prime g.val,
@@ -182,8 +181,7 @@ lemma globalKernel_eq_prod (hcoord : s.1 = t.1 ∧ s.2.1 = t.2.1) :
         ∑ b_g : Fin ((t.2.2 g).card + 1),
         ∑ p_g : Fin b_g.val → P.Prime g.val,
           (if singleValid g (s.2.2 g) (t.2.2 g) A_g b_g p_g then
-            |singleWeight F n rho i g (s.2.2 g) (t.2.2 g) A_g b_g p_g| * d ^ b_g.val else 0) := by
-        exact interchange_A F J s
+            |singleWeight F n rho i g (s.2.2 g) (t.2.2 g) A_g b_g p_g| * d ^ b_g.val else 0) := interchange_A F J s
           (fun g A_g => ∑ b_g : Fin ((t.2.2 g).card + 1),
             ∑ p_g : Fin b_g.val → P.Prime g.val,
               (if singleValid g (s.2.2 g) (t.2.2 g) A_g b_g p_g then

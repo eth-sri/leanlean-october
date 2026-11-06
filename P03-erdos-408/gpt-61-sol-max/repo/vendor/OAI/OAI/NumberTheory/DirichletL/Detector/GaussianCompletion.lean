@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.GaussianMellin
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalAnalytic
@@ -12,19 +13,23 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeRow ProbeCompleted CompletedGauss CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-def gaussianCompletedProfile (y : ℝ) : ℂ := gaussianMellinProfile y/(Real.sqrt y:ℂ)
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
-lemma gaussianCompleted_Vstar (y : ℝ) (hy : 0<y) :
+def gaussianCompletedProfile (y : ℝ)  := gaussianMellinProfile y/(Real.sqrt y:ℂ)
+
+section
+variable (S : Finset Id) (D : Id) (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀n,‖Ψ n‖≤1) (σ : ℝ) (hσ : 1<σ) (Z : ℝ) (hZ : 0<Z)
+
+lemma gaussianCompleted_Vstar  y  (hy : 0<y) :
     Vstar gaussianCompletedProfile y=gaussianMellinProfile y := by
   have h : (Real.sqrt y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hy).ne'
   simp only [Vstar,gaussianCompletedProfile]
   field_simp
 
-lemma gaussian_mellinSummand (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
-    (σ Z : ℝ) (hZ : 0<Z) (I J : Id) :
+include hZ in
+lemma gaussian_mellinSummand      
+         I J  :
     ((1/(2*Real.pi):ℝ):ℂ)*(∫v : ℝ,mellinSummand S D Ψ σ Z (I,J) v)=
       correctedSummand S D Ψ gaussianCompletedProfile Z I J := by
   by_cases hI : I=0
@@ -55,8 +60,9 @@ lemma gaussian_mellinSummand (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
   rw [gaussianCompleted_Vstar _ hq]
   ring
 
-lemma gaussian_correctedSummand_summable (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
-    (hΨ : ∀n,‖Ψ n‖≤1) (Z : ℝ) (hZ : 0<Z) :
+include hΨ hZ in
+lemma gaussian_correctedSummand_summable      
+          :
     Summable (fun p : Id×Id=>correctedSummand S D Ψ gaussianCompletedProfile Z p.1 p.2) := by
   have hs : Summable (fun p : Id×Id=>∫v : ℝ,‖mellinSummand S D Ψ 2 Z p v‖) := by
     simp only [mellinSummand_integral_norm S D Ψ 2 Z hZ]
@@ -65,17 +71,17 @@ lemma gaussian_correctedSummand_summable (S : Finset Id) (D : Id) (Ψ : O→*ℂ
     apply Summable.of_norm
     exact Summable.of_nonneg_of_le (fun _=>norm_nonneg _) (fun p=>norm_integral_le_integral_norm _) hs
   have hh := hi.mul_left (((1/(2*Real.pi):ℝ):ℂ))
-  simpa only [gaussian_mellinSummand S D Ψ 2 Z hZ] using hh
+  grind [gaussian_mellinSummand]
 
-theorem spectralRow_eq_gaussianCompleted (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
-    (hΨ : ∀n,‖Ψ n‖≤1) (σ : ℝ) (hσ : 1<σ) (Z : ℝ) (hZ : 0<Z) :
+include hΨ hσ hZ in
+theorem spectralRow_eq_gaussianCompleted      
+              :
     verticalIntegral σ (fun t=>(Z:ℂ)^t*Complex.exp (t^2)*spectralRow S D Ψ t)=
       correctedCompletedT S D Ψ gaussianCompletedProfile Z := by
   rw [verticalIntegral,spectralRow_integral_eq_tsum S D Ψ hΨ σ hσ Z hZ,←tsum_mul_left]
-  unfold correctedCompletedT
-  apply tsum_congr
-  intro p
-  exact gaussian_mellinSummand S D Ψ σ Z hZ p.1 p.2
+  grind [correctedCompletedT, gaussian_mellinSummand]
+
+end
 
 end SevenEighths.ProbePhysical
 end

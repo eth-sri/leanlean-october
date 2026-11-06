@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.Blueprint.Ideal
 
@@ -15,19 +16,13 @@ noncomputable section
 variable {P : PrimeGroups} {J ell m : ℕ}
 
 lemma selectedProduct_aux_ext (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (u v : P.BigAux J)
+    (block : P.BigGroup → Bool)  side  (u v : P.BigAux J)
     (huv : ∀ g i, i ∈ ν.changed g.val → u g i = v g i) :
     selectedProduct ν block side u = selectedProduct ν block side v := by
   unfold selectedProduct
-  apply Finset.prod_congr rfl
-  intro g _
-  apply Finset.prod_congr rfl
-  intro i _
-  split_ifs with h
-  · rw [huv g i h.2]
-  · rfl
+  grind
 
-def ProbeChoice (P : PrimeGroups) (m : ℕ) (block : P.BigGroup → Bool) :=
+def ProbeChoice (P : PrimeGroups) (m ) (block : P.BigGroup → Bool) :=
   {c : P.BigGroup → Finset (Fin m) //
     ∀ side : Bool, ∃ g : P.BigGroup, block g = side ∧ (c g).Nonempty}
 
@@ -36,36 +31,44 @@ instance (P : PrimeGroups) (m : ℕ) (block : P.BigGroup → Bool) :
   inferInstanceAs (Fintype {c : P.BigGroup → Finset (Fin m) //
     ∀ side : Bool, ∃ g : P.BigGroup, block g = side ∧ (c g).Nonempty})
 
-instance (P : PrimeGroups) (m : ℕ) (block : P.BigGroup → Bool) :
-    DecidableEq (ProbeChoice P m block) := Classical.decEq _
+
 
 def liftChoice (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m))
-    (g : P.Group) : Finset (Fin J) :=
+    (g : P.Group)  :=
   if hg : P.big g = true then (c ⟨g, hg⟩).image (Fin.castLE hj) else ∅
 
-@[simp] lemma liftChoice_big (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m))
+section
+variable (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m))
+include hj c
+
+@[simp] lemma liftChoice_big    
     (g : P.BigGroup) :
     liftChoice hj c g.val = (c g).image (Fin.castLE hj) := by
   simp [liftChoice, g.property]
 
-lemma liftChoice_small (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m))
-    (g : P.Group) (hg : P.big g = false) : liftChoice hj c g = ∅ := by
+section
+variable (g : P.Group)
+include g
+
+lemma liftChoice_small    
+      (hg : P.big g = false) : liftChoice hj c g = ∅ := by
   simp [liftChoice, hg]
 
-lemma liftChoice_bound (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m))
-    (g : P.Group) : (liftChoice hj c g).card ≤ m := by
+lemma liftChoice_bound    
+      : (liftChoice hj c g).card ≤ m := by
   unfold liftChoice
   split_ifs
   · exact Finset.card_image_le.trans (by simpa using Finset.card_le_univ (c ⟨g, by assumption⟩))
   · simp
 
-lemma liftChoice_probe (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m))
-    (g : P.Group) (i : Fin J) (hi : i ∈ liftChoice hj c g) : i.val < m := by
+lemma liftChoice_probe    
+      (i : Fin J) (hi : i ∈ liftChoice hj c g) : i.val < m := by
   unfold liftChoice at hi
-  split_ifs at hi with hg
-  · obtain ⟨j, _, rfl⟩ := Finset.mem_image.mp hi
-    exact j.isLt
-  · simp at hi
+  grind
+
+end
+
+end
 
 def rawPattern (P : PrimeGroups) (J ell m : ℕ) : Pattern P J ell m where
   changed := fun _ => ∅
@@ -82,8 +85,8 @@ def choiceBase (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m)) :
   coefficient := fun _ _ _ => 0
   coefficient_aux_ext := by intros; rfl
 
-def signedPattern (hj : m ≤ J) (block : P.BigGroup → Bool)
-    (Q : ℕ) (h ξ : ℝ) (c : ProbeChoice P m block) : Pattern P J ell m :=
+def signedPattern (hj : m ≤ J) (block )
+    (Q : ℕ) (h ξ : ℝ) (c : ProbeChoice P m block)  :=
   let ν : Pattern P J ell m := choiceBase hj c.val
   { ν with
     coefficient := fun a b u =>
@@ -93,9 +96,7 @@ def signedPattern (hj : m ≤ J) (block : P.BigGroup → Bool)
       selectedKernel ν block true Q h ξ (selectedProduct ν block true u)
         (selectedEndpoint ν block true a)
     coefficient_aux_ext := by
-      intro a b u v huv
-      rw [selectedProduct_aux_ext ν block false u v huv,
-        selectedProduct_aux_ext ν block true u v huv] }
+      grind [selectedProduct_aux_ext] }
 
 def probeFamily (F : FixedData) (P : PrimeGroups) (J m : ℕ) (hj : m ≤ J)
     (block : P.BigGroup → Bool) (Q : ℕ) (h ξ : ℝ) : Family F P J m where
@@ -105,8 +106,8 @@ def probeFamily (F : FixedData) (P : PrimeGroups) (J m : ℕ) (hj : m ≤ J)
     | none => rawPattern P J F.ell m
     | some c => signedPattern hj block Q h ξ c
 
-theorem probeFamily_residual (F : FixedData) (P : PrimeGroups) (J m : ℕ)
-    (hj : m ≤ J) (block : P.BigGroup → Bool) (Q : ℕ) (h ξ : ℝ) :
+theorem probeFamily_residual  F   P   J m 
+     hj   block   Q   h ξ  :
     (probeFamily F P J m hj block Q h ξ).Residual Q h ξ := by
   let e := Fintype.equivFin (Option (ProbeChoice P m block))
   refine ⟨e none, block, ?_, ?_, ?_⟩

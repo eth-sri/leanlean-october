@@ -13,27 +13,30 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
-def physicalDyadNorm {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+
+def physicalDyadNorm {K } (S ) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow)
     (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
-    (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (x w z : ℂ) : ℝ :=
+    (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (x w z : ℂ)  :=
   ∑u∈R,∑P:(∀i,T i),‖frequencyWeight z ⟨u.val,u.property.1⟩*
     calibratedTupleValue S hS hmax η u (fun i=>(P i).val)
       (fun i=>hT i (P i).val (P i).property) W Y x w z‖
 
-lemma physicalDyadNorm_nonneg {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow)
-    (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
-    (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (x w z : ℂ) :
-    0≤physicalDyadNorm S hS hmax η R T hT W Y x w z := by
-  exact Finset.sum_nonneg fun u hu=>Finset.sum_nonneg fun P hP=>norm_nonneg _
+section
+variable {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)
 
-lemma physicalDyadNorm_onLines_aestronglyMeasurable {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
-    (hT : ∀i P,P∈T i→P.val∉S) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)
+
+lemma physicalDyadNorm_nonneg      
+         
+       
+         x w z  :
+    0≤physicalDyadNorm S hS hmax η R T hT W Y x w z := Finset.sum_nonneg fun u hu=>Finset.sum_nonneg fun P hP=>norm_nonneg _
+
+lemma physicalDyadNorm_onLines_aestronglyMeasurable  
+         
+         
+         
     (σ υ r : ℝ) : AEStronglyMeasurable (fun p : HeightSpace=>physicalDyadNorm S hS hmax η R T hT W Y
       ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)) heightMeasure := by
   unfold physicalDyadNorm
@@ -44,21 +47,23 @@ lemma physicalDyadNorm_onLines_aestronglyMeasurable {K : ℕ}
     Finset.aestronglyMeasurable_sum (Finset.univ : Finset (∀i,T i)) (fun P hP=>
       (calibratedTupleValue_onLines_aestronglyMeasurable S hS hmax η u
         (fun i=>(P i).val) (fun i=>hT i (P i).val (P i).property) W Y σ υ r heightMeasure).norm.const_mul
-          (((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(-r)))) using 1
+          (((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^(-r)))) using 1
   ext p
   simp only [Finset.sum_apply]
+
+end
 
 theorem calibrated_physical_dyad_integral (K : ℕ) (e δ a b r B σ υ : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1)
     (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B)
     (hσ : (7/8:ℝ)≤σ) (hσβ : HeckeZeroSupremum.beta+8*e≤σ) (hυ : (1/2:ℝ)≤υ)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (U : ℝ),1≤U → ∀R : Finset FreeRow,
-      (∀u∈R,u.val≠1 ∧ U≤((Ideal.span {u.val}:Ideal O).absNorm:ℝ) ∧
-        ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤2*U) →
+      (∀u∈R,u.val≠1 ∧ U≤((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ) ∧
+        ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤2*U) →
       ∀(T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S),
       (∀P:(∀i,T i),Function.Injective (fun i=>(P i).val)) →
       ∀(Y : Fin K→ℝ), (∀i,1≤Y i) → ∀(W : Fin K→ℝ→ℂ),

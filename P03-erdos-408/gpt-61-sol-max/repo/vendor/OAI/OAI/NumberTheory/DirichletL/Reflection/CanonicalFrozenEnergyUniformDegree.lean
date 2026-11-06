@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalFrozenEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalInactiveEnergyUniformDegree
@@ -10,15 +11,15 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_original_frozen_energy_uniform_degree
     (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (L cstar η : ℝ)
-    (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η) (hη1 : η≤1) (hηc : η≤cstar/100000) (rmax : ℕ) :
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     L cstar η 
+    (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η) (hη1 : η≤1) (hηc : η≤cstar/100000)  rmax  :
     ∃ (degree : ℕ), ∀ {Nlevel : Eis}, ∀
     {γ : Type*} [Fintype γ] (a c₀ : γ→Eis) (mode : γ→Bool)
     [Fintype (Eis⧸Ideal.span {Nlevel^2})]
@@ -102,7 +103,7 @@ theorem canonical_original_frozen_energy_uniform_degree
     apply (hD g A T θ w hw).trans
     apply mul_le_mul_of_nonneg_right _ (by dsimp [energy];positivity)
     apply pow_le_pow_left₀ (by positivity)
-    exact subtype_product_le_full (fun i => i∉T) (fun i => 256*(columnDyadicLength (H i)+1:ℝ)) (fun i => by have hn : (0:ℝ)≤columnDyadicLength (H i) := Nat.cast_nonneg _; linarith)
+    exact subtype_product_le_full (fun i => i∉T) (fun i => 256*(columnDyadicLength (H i)+1:ℝ)) (fun i => by linarith)
   let Labels := γ×(Finset (FreeReflection.pool J (B*F*R) Q₀)×Finset σ)
   let f := fun (b : Labels) (K : rows) => (scalar b.1 K*frozenInactiveWeight J F (B*F*R) Q₀ b.2.1)*source b.1 b.2.1 b.2.2 K
   have hf (b : Labels) : (∑ K : rows,‖f b K‖^2)≤harm*energy := by
@@ -151,7 +152,7 @@ theorem canonical_original_frozen_energy_uniform_degree
       rw [Real.rpow_add hzp]
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hz.le (by linarith)) (by positivity)
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

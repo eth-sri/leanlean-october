@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedActiveSets
 
@@ -23,10 +24,9 @@ def disjSumIndexEquiv (B : Finset β) (T : Finset σ) : B⊕T≃B.disjSum T wher
   right_inv x := by rcases x with ⟨x,hx⟩; cases x <;> rfl
 
 omit [Fintype β] [Fintype σ] in
-lemma complete_marked_set (e : α⊕β≃γ) (B : Finset β) (T : Finset σ) :
+lemma complete_marked_set (e : α⊕β≃γ)  B  (T : Finset σ) :
     completeActiveSet (joinedFiberEquiv e) (B.disjSum T)=markedActiveSet e B T := by
-  ext x
-  simp only [completeActiveSet,markedActiveSet,Finset.mem_union,Finset.mem_image]
+  grind [completeActiveSet, markedActiveSet]
 
 def markedActiveEquiv (e : α⊕β≃γ) (B : Finset β) (T : Finset σ) :
     B⊕(α⊕T)≃markedActiveSet e B T :=
@@ -36,12 +36,18 @@ def markedActiveEquiv (e : α⊕β≃γ) (B : Finset β) (T : Finset σ) :
     (selectedActiveEquiv (joinedFiberEquiv e) (B.disjSum T))).trans
     (Equiv.subtypeEquivRight (fun x => by rw [complete_marked_set e B T]))
 
-lemma markedActiveEquiv_frozen (e : α⊕β≃γ) (B : Finset β) (T : Finset σ) (b : B) :
+section
+variable (e : α⊕β≃γ) (B : Finset β) (T : Finset σ)
+include e B T
+
+lemma markedActiveEquiv_frozen        b  :
     (markedActiveEquiv e B T (Sum.inl b)).val=Sum.inl (e (Sum.inr b.val)) := rfl
-lemma markedActiveEquiv_residual (e : α⊕β≃γ) (B : Finset β) (T : Finset σ) (a : α) :
+lemma markedActiveEquiv_residual        a  :
     (markedActiveEquiv e B T (Sum.inr (Sum.inl a))).val=Sum.inl (e (Sum.inl a)) := rfl
-lemma markedActiveEquiv_slot (e : α⊕β≃γ) (B : Finset β) (T : Finset σ) (t : T) :
+lemma markedActiveEquiv_slot        t  :
     (markedActiveEquiv e B T (Sum.inr (Sum.inr t))).val=Sum.inr t.val := rfl
+
+end
 end
 end SevenEighths.InverseReflectedPhase
 

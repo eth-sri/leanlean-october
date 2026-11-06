@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.RetainedDualBounds
 
@@ -10,108 +11,108 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
 namespace SecondPassIntegration
 
-open scoped BigOperators Classical
-open MeasureTheory
-open ActualEisensteinCubic SecondPassArithmetic
+ 
+ 
+open   SecondPassArithmetic
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical SchwartzMap
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
-def sourcePrincipalScale (M : ℝ) (I : Ideal O) : ℝ := Real.sqrt (M/(Ideal.absNorm I:ℝ))
+def sourcePrincipalScale (M : ℝ) (I : Ideal O)  := Real.sqrt (M/(Ideal.absNorm I:ℝ))
 
 variable {m n : Type} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
 
 def maskedSourceDensity (G : Ideal O) (rows : m → Ideal O) (cols : n → Ideal O)
-    (a : n → ℂ) (M : ℝ) : ℂ :=
+    (a : n → ℂ) (M : ℝ)  :=
   ∑ i, ∑ j, ∑ k, originalTerm rows cols cols a a 1 1 i j k *
     ((sourcePrincipalScale M (rows i):ℝ):ℂ)*primePoolDensity (G*(cols j*cols k))
 
 def maskedPrincipalSourceSum (G : Ideal O) (W : 𝓢(ℝ,ℂ))
-    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ) (M : ℝ) : ℂ :=
+    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ) (M : ℝ)  :=
   ∑ i, ∑ j, ∑ k, originalTerm rows cols cols a a 1 1 i j k *
     ∑' z : O, rowCoprimeMask (fun P : primePool {G*(cols j*cols k)} => P.val) Finset.univ z *
       (if z=0 then 0 else W (‖eisEmbedding z‖^2/sourcePrincipalScale M (rows i)))
 
 def maskedSourcePrincipalTruncation (G : Ideal O) (W : 𝓢(ℝ,ℂ))
-    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ) (M : ℝ) (Z : m → ℝ) : ℂ :=
+    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ) (M : ℝ) (Z : m → ℝ)  :=
   ∑ i, ∑ j, ∑ k, originalTerm rows cols cols a a 1 1 i j k *
     principalTruncation (fun P : primePool {G*(cols j*cols k)} => P.val) Finset.univ W
       (sourcePrincipalScale M (rows i)) (Z i)
 
 def maskedSourceErrorSum (G : Ideal O) (W : 𝓢(ℝ,ℂ))
-    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ) (M T : ℝ) : ℂ :=
+    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ) (M T : ℝ)  :=
   ∑ i, ∑ j, ∑ k, originalTerm rows cols cols a a 1 1 i j k *
     truncationError (fun P : primePool {G*(cols j*cols k)} => P.val) Finset.univ W
       (sourcePrincipalScale M (rows i))
@@ -121,7 +122,7 @@ def maskedSourceErrorSum (G : Ideal O) (W : 𝓢(ℝ,ℂ))
 omit [DecidableEq m] [DecidableEq n] in
 theorem maskedSourcePrincipalTruncation_eq (G : Ideal O) (hG : Squarefree G)
     (W : 𝓢(ℝ,ℂ)) (hW : W 0=0) (rows : m → Ideal O) (cols : n → Ideal O)
-    (a : n → ℂ) (M : ℝ) (Z : m → ℝ)
+     a   M   Z 
     (hcols : ∀ j, Admissible (cols j)) (hGc : ∀ j, IsCoprime G (cols j)) :
     maskedSourcePrincipalTruncation G W rows cols a M Z =
       paperRadialFourier W 0*maskedSourceDensity G rows cols a M -
@@ -156,7 +157,7 @@ theorem maskedSourcePrincipalTruncation_eq (G : Ideal O) (hG : Squarefree G)
 omit [DecidableEq m] [DecidableEq n] in
 theorem maskedPrincipalSourceSum_eq (G : Ideal O) (hG : Squarefree G)
     (W : 𝓢(ℝ,ℂ)) (hW : W 0=0) (rows : m → Ideal O) (cols : n → Ideal O)
-    (a : n → ℂ) (M T : ℝ)
+     a   M T 
     (hcols : ∀ j, Admissible (cols j)) (hGc : ∀ j, IsCoprime G (cols j)) :
     maskedPrincipalSourceSum G W rows cols a M =
       paperRadialFourier W 0*maskedSourceDensity G rows cols a M -
@@ -181,10 +182,10 @@ theorem maskedPrincipalSourceSum_eq (G : Ideal O) (hG : Squarefree G)
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open     ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
-theorem maskedSource_error_uniform (l : ℕ) :
+theorem maskedSource_error_uniform  l  :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
       ∀ {m n : Type} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
         (ε : ℝ) (hε : 0<ε) (G : Ideal O), G≠0 →
@@ -225,13 +226,13 @@ theorem maskedSource_error_uniform (l : ℕ) :
   exact actual_pair_error_ideal_bound rows cols hr hc B N hB hN hrows hcols a E hE error herr
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator IdealMobiusDivisorSum
+ 
+open     IdealMobiusDivisorSum
 
 def sourcePrincipalMajorant {n : Type} [Fintype n]
     (s : Finset (ℕ×ℕ)) (C : ℝ) (l : ℕ)
-    {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
-    (ε : ℝ) (hε : 0<ε) (G : Ideal O) (B N M T : ℝ) (a : n → ℂ) (W : 𝓢(ℝ,ℂ)) : ℝ :=
+    {α } (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
+    (ε : ℝ) (hε : 0<ε) (G : Ideal O) (B N M T : ℝ) (a : n → ℂ) (W : 𝓢(ℝ,ℂ))  :=
   ‖paperRadialFourier W 0‖*((idealDivisors G).card *
     (((columnDyadicLength N+1:ℕ):ℝ)^2 *
       (2*divisorEnergyFactor ε hε N a a*(divisorExponentConstant hexp deltaLoss hδ*(B*N)^deltaLoss)*
@@ -243,7 +244,7 @@ def sourcePrincipalMajorant {n : Type} [Fintype n]
   16384*B*N*((supportConstant ε hε*((Ideal.absNorm G:ℝ)*(N*N))^ε)*
     (C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/T^l)*∑ j, ‖a j‖^2
 
-theorem masked_source_principal_difference (l : ℕ) :
+theorem masked_source_principal_difference  l  :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
       ∀ {m n : Type} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
         {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0<deltaLoss) (ε : ℝ) (hε : 0<ε)
@@ -291,10 +292,13 @@ theorem masked_source_principal_difference (l : ℕ) :
   rw [norm_mul]
   exact add_le_add (add_le_add (mul_le_mul_of_nonneg_left hl (norm_nonneg _)) hm) he
 
-lemma sourcePrincipalMajorant_nonneg {n : Type} [Fintype n]
-    (s : Finset (ℕ×ℕ)) (C : ℝ) (hC : 0≤C) (l : ℕ)
+section
+variable {n : Type} [Fintype n] (s : Finset (ℕ×ℕ)) (C : ℝ)
+
+lemma sourcePrincipalMajorant_nonneg    
+        (hC : 0≤C) (l : ℕ)
     {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
-    (ε : ℝ) (hε : 0<ε) (G : Ideal O) (B N M T : ℝ) (a : n → ℂ) (W : 𝓢(ℝ,ℂ))
+    (ε : ℝ) (hε : 0<ε) (G : Ideal O) (B N M T : ℝ) (a : n → ℂ)  W 
     (hB : 0≤B) (hN : 0≤N) (_hM : 0≤M) (hT : 0≤T) :
     0≤sourcePrincipalMajorant s C l hexp deltaLoss hδ ε hε G B N M T a W := by
   have he := divisorEnergyFactor_nonneg ε hε N a a
@@ -305,15 +309,15 @@ lemma sourcePrincipalMajorant_nonneg {n : Type} [Fintype n]
   unfold sourcePrincipalMajorant
   positivity
 
-lemma sourcePrincipalMajorant_mono {n : Type} [Fintype n]
-    (s : Finset (ℕ×ℕ)) (C : ℝ) (hC : 0≤C) (l : ℕ)
+lemma sourcePrincipalMajorant_mono    
+        (hC : 0≤C) (l : ℕ)
     {α : ℝ} (hexp : HasSieveExponent α) (hα : 1/2≤α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
-    (ε : ℝ) (hε : 0<ε) (G : Ideal O) (B' B N M T : ℝ) (a : n → ℂ) (W : 𝓢(ℝ,ℂ))
+    (ε : ℝ) (hε : 0<ε) (G : Ideal O) (B' B N M T : ℝ) (a : n → ℂ)  W 
     (hB' : 0≤B') (hB : B'≤B) (hN : 0≤N) (_hM : 0≤M) (hT : 0≤T) :
     sourcePrincipalMajorant s C l hexp deltaLoss hδ ε hε G B' N M T a W ≤
       sourcePrincipalMajorant s C l hexp deltaLoss hδ ε hε G B N M T a W := by
   have hB0 := hB'.trans hB
-  have hα0 : 0≤α-1/2 := by linarith
+  
   have he := divisorEnergyFactor_nonneg ε hε N a a
   have hc := (divisorExponentConstant_pos hexp deltaLoss hδ).le
   have hs := (supportConstant_pos ε hε).le
@@ -324,12 +328,14 @@ lemma sourcePrincipalMajorant_mono {n : Type} [Fintype n]
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+end
+
+ 
+ 
 
 lemma maskedPrincipalSourceDifference_dyadic {n : Type} [Fintype n] [DecidableEq n]
     (G : Ideal O) (W : 𝓢(ℝ,ℂ)) (S : Finset (Ideal O)) (K : ℝ)
-    (cols : n → Ideal O) (a : n → ℂ) (M : ℝ) :
+    (cols : n → Ideal O)  a   M  :
     maskedPrincipalSourceSum G W (fun I : S => I.val) cols a M -
       paperRadialFourier W 0*maskedSourceDensity G (fun I : S => I.val) cols a M =
     ∑ j : Fin (columnDyadicLength K+1),
@@ -342,7 +348,7 @@ lemma maskedPrincipalSourceDifference_dyadic {n : Type} [Fintype n] [DecidableEq
   simpa only [maskedPrincipalSourceSum,maskedSourceDensity,originalTerm,
     Finset.mul_sum,←Finset.sum_sub_distrib,Fintype.sum_unique] using h
 
-theorem masked_source_principal_global (l : ℕ) :
+theorem masked_source_principal_global  l  :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
       ∀ {n : Type} [Fintype n] [DecidableEq n] {α : ℝ} (hexp : HasSieveExponent α), 1/2≤α →
       ∀ (deltaLoss : ℝ) (hδ : 0<deltaLoss) (ε : ℝ) (hε : 0<ε) (G : Ideal O), Squarefree G →
@@ -402,33 +408,38 @@ theorem masked_source_principal_global (l : ℕ) :
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
+open   ConcretePrimeRowBridge IdealMobiusDivisorSum
 
-theorem primePoolDensity_eq_support (G : Ideal O) :
+section
+variable (G : Ideal O)
+
+theorem primePoolDensity_eq_support   :
     primePoolDensity G = ∏ P ∈ primeSupport G, (1-(1:ℂ)/(Ideal.absNorm P:ℂ)) := by
   rw [primePoolDensity,Finset.prod_coe_sort (primePool {G})
     (fun P : Ideal O => (1-(1:ℂ)/(Ideal.absNorm P:ℂ)))]
   simp [primePool,primeSupport]
 
-theorem primePoolDensity_eq_real (G : Ideal O) :
+theorem primePoolDensity_eq_real   :
     primePoolDensity G = (idealPrimeDensity {G} G : ℂ) := by
   simp only [primePoolDensity,idealPrimeDensity,idealSupport_singleton_univ,
     Complex.ofReal_prod,Complex.ofReal_sub,Complex.ofReal_one,
     Complex.ofReal_div,Complex.ofReal_natCast]
 
-theorem primePoolDensity_norm_le_one (G : Ideal O) (hG : G ≠ 0) :
+theorem primePoolDensity_norm_le_one   (hG : G ≠ 0) :
     ‖primePoolDensity G‖ ≤ 1 := by
   rw [primePoolDensity_eq_real,Complex.norm_real,Real.norm_eq_abs]
   have hb := idealPrimeDensity_mem_Icc {G}
-    (by intro I hI; simpa only [Finset.mem_singleton.mp hI,Ideal.zero_eq_bot] using hG) G
+    (by simp_all) G
   rw [abs_of_nonneg hb.1]
   exact hb.2
 
-theorem primePoolDensity_star (G : Ideal O) : star (primePoolDensity G) = primePoolDensity G := by
+theorem primePoolDensity_star   : star (primePoolDensity G) = primePoolDensity G := by
   rw [primePoolDensity_eq_real]
   simp
 
-theorem primePoolDensity_mul (G H : Ideal O) (hG : G ≠ 0) (hH : H ≠ 0)
+end
+
+theorem primePoolDensity_mul  G H  (hG : G ≠ 0) (hH : H ≠ 0)
     (hcop : IsCoprime G H) : primePoolDensity (G*H) = primePoolDensity G*primePoolDensity H := by
   simp only [primePoolDensity_eq_support,primeSupport]
   rw [UniqueFactorizationMonoid.normalizedFactors_mul hG hH,Multiset.toFinset_add,
@@ -438,7 +449,7 @@ theorem primePoolDensity_mul (G H : Ideal O) (hG : G ≠ 0) (hH : H ≠ 0)
   exact (Multiset.disjoint_left.mp (UniqueFactorizationMonoid.disjoint_normalizedFactors hcop.isRelPrime))
     (Multiset.mem_toFinset.mp hPG) (Multiset.mem_toFinset.mp hPH)
 
-theorem idealZeroMask_generator_eq_one (I G : Ideal O) (hcop : IsCoprime I G) :
+theorem idealZeroMask_generator_eq_one  I G  (hcop : IsCoprime I G) :
     idealZeroMask I (idealGenerator G) = 1 := by
   apply ite_eq_right
   rintro ⟨P,hP,hgen⟩
@@ -449,7 +460,7 @@ theorem idealZeroMask_generator_eq_one (I G : Ideal O) (hcop : IsCoprime I G) :
   exact (UniqueFactorizationMonoid.prime_of_normalized_factor P hP).not_isUnit
     (hcop.isRelPrime (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hP) hPG)
 
-theorem normalizedPairDensity_eq_primePoolDensity (I J G : Ideal O)
+theorem normalizedPairDensity_eq_primePoolDensity  I J G 
     (hI : IsCoprime I G) (hJ : IsCoprime J G) :
     normalizedPairDensity I J G = primePoolDensity G := by
   rw [normalizedPairDensity,primePoolDensity_eq_support]
@@ -462,7 +473,7 @@ theorem normalizedPairDensity_eq_primePoolDensity (I J G : Ideal O)
 
 end
 
-open ActualEisensteinCubic
+ 
 
 def densityColumn {n : Type*} (cols : n → Ideal O) (a : n → ℂ) : n → ℂ :=
   fun j => primePoolDensity (cols j) * a j
@@ -473,15 +484,18 @@ theorem densityColumn_norm_le {n : Type*} (cols : n → Ideal O) (a : n → ℂ)
   exact (mul_le_mul_of_nonneg_right (primePoolDensity_norm_le_one _ (hcols j))
     (norm_nonneg _)).trans_eq (one_mul _)
 
-theorem densityColumn_energy_le {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (a : n → ℂ) (hcols : ∀ j, cols j ≠ 0) :
+section
+variable {n : Type*} [Fintype n] (cols : n → Ideal O) (a : n → ℂ)
+
+theorem densityColumn_energy_le    
+        (hcols : ∀ j, cols j ≠ 0) :
     (∑ j, ‖densityColumn cols a j‖^2) ≤ ∑ j, ‖a j‖^2 := by
   apply Finset.sum_le_sum
   intro j _
   exact pow_le_pow_left₀ (norm_nonneg _) (densityColumn_norm_le cols a hcols j) 2
 
-theorem actualPrincipalDifference_densityColumn {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (a : n → ℂ) (G : Ideal O) (K : ℝ)
+theorem actualPrincipalDifference_densityColumn    
+         G   K 
     (hcols : ∀ j, cols j ≠ 0) (hcop : ∀ j, IsCoprime (cols j) G) :
     actualPrincipalDifference cols (densityColumn cols a) G K =
       (∑ j, ∑ k, if IsCoprime (cols j) (cols k) then
@@ -505,16 +519,21 @@ theorem actualPrincipalDifference_densityColumn {n : Type*} [Fintype n]
     ring
   · simp only [hjk,ite_false,mul_zero,sub_self]
 
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss IdealMobiusDivisorSum
+end
+
+open   ConcretePrimeRowBridge CompletedGauss IdealMobiusDivisorSum
 
 def densityPairSum {n : Type} [Fintype n] (cols : n → Ideal O) (a : n → ℂ)
-    (P : Ideal O → Ideal O → ℂ) : ℂ :=
+    (P : Ideal O → Ideal O → ℂ)  :=
   ∑ j, ∑ k, if IsCoprime (cols j) (cols k) then
     star (a j)*a k*primePoolDensity (cols j*cols k)*P (cols j) (cols k) else 0
 
-theorem unrestrictedPrincipalDensity_eq {m n : Type} [Fintype m] [Fintype n]
-    [DecidableEq m] [DecidableEq n]
-    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ) (R : ℝ) (hR : 0 ≤ R) :
+section
+variable {m n : Type} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n] (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ)
+
+theorem unrestrictedPrincipalDensity_eq      
+       
+           R  (hR : 0 ≤ R) :
     unrestrictedPrincipalDensity rows cols cols a a R =
       (Real.sqrt R : ℂ)*densityPairSum cols a
         (fun I J => ∑ i, normalizedIdealPair I J (rows i)) := by
@@ -533,18 +552,17 @@ theorem unrestrictedPrincipalDensity_eq {m n : Type} [Fintype m] [Fintype n]
     rw [Real.sqrt_div hR]
     simp only [Complex.ofReal_div,normalizedIdealPair]
     ring
-  · simp only [unrestrictedPairTerm,hc,ite_false,zero_mul,mul_zero,Finset.sum_const_zero]
+  simp_all [unrestrictedPairTerm]
 
 theorem unrestrictedPrincipalDensity_squarefree {n : Type} [Fintype n] [DecidableEq n]
-    (cols : n → Ideal O) (a : n → ℂ) (R K : ℝ) (hR : 0 ≤ R) :
+    (cols : n → Ideal O)  a   R K  (hR : 0 ≤ R) :
     unrestrictedPrincipalDensity (fun I : squarefreeIdealRange K => I.val) cols cols a a R =
       (Real.sqrt R : ℂ)*densityPairSum cols a (fun I J => normalizedPairPartial I J K) := by
-  simpa only [normalizedPairPartial] using
-    unrestrictedPrincipalDensity_eq (fun I : squarefreeIdealRange K => I.val) cols a R hR
+  solve_by_elim [unrestrictedPrincipalDensity_eq, squarefreeIdealRange]
 
-theorem originalTerm_one_eq_unrestricted {m n : Type} [Fintype m] [Fintype n]
-    [DecidableEq m] [DecidableEq n] (rows : m → Ideal O) (cols : n → Ideal O)
-    (a : n → ℂ) (hrows : ∀ i, Supported (rows i)) (hcols : ∀ j, Admissible (cols j))
+theorem originalTerm_one_eq_unrestricted      
+           
+      (hrows : ∀ i, Supported (rows i)) (hcols : ∀ j, Admissible (cols j))
     (hray : ∀ j k, columnRay (cols j)=columnRay (cols k)) (i : m) (j k : n) :
     originalTerm rows cols cols a a 1 1 i j k = unrestrictedPairTerm rows cols cols a a i j k := by
   by_cases hc : IsCoprime (cols j) (cols k)
@@ -552,11 +570,13 @@ theorem originalTerm_one_eq_unrestricted {m n : Type} [Fintype m] [Fintype n]
       canonical_quadraticRow_star _ (hcols j),
       unrestrictedPairCharacter_eq_primary _ _ (hcols j) (hcols k) (hray j k) _ (hrows i)]
     ring
-  · simp only [originalTerm,unrestrictedPairTerm,hc,ite_false]
+  simp_all [originalTerm, unrestrictedPairTerm]
+
+end
 
 theorem maskedSourceDensity_eq {m n : Type} [Fintype m] [Fintype n]
     [DecidableEq m] [DecidableEq n] (G : Ideal O) (hG : G ≠ 0)
-    (rows : m → Ideal O) (cols : n → Ideal O) (a : n → ℂ) (M : ℝ)
+    (rows : m → Ideal O) (cols : n → Ideal O)  a   M 
     (hrows : ∀ i, Supported (rows i)) (hcols : ∀ j, Admissible (cols j))
     (hray : ∀ j k, columnRay (cols j)=columnRay (cols k))
     (hGc : ∀ j, IsCoprime G (cols j)) :
@@ -577,7 +597,7 @@ theorem maskedSourceDensity_eq {m n : Type} [Fintype m] [Fintype n]
   · simp only [unrestrictedPairTerm,hc,ite_false,zero_mul,mul_zero]
 
 theorem maskedSourceDensity_coprime_squarefree {n : Type} [Fintype n] [DecidableEq n]
-    (G : Ideal O) (hG : G ≠ 0) (K M : ℝ) (hM : 0 ≤ M) (cols : n → Ideal O) (a : n → ℂ)
+    (G : Ideal O) (hG : G ≠ 0) (K M : ℝ) (hM : 0 ≤ M) (cols : n → Ideal O)  a 
     (hcols : ∀ j, Admissible (cols j)) (hray : ∀ j k, columnRay (cols j)=columnRay (cols k))
     (hGc : ∀ j, IsCoprime G (cols j)) (hbad : ∀ P ∈ fixedBadPrimes, P ∣ G) :
     maskedSourceDensity G (fun I : coprimeSquarefreeRange G K => I.val) cols a M =

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.SumMeasure
 
@@ -9,13 +10,17 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 universe u v
 variable {Ω : Type*} [MeasurableSpace Ω] {N a c : Eis} {mode : Bool}
 
-theorem bounded_column_hybrid_energy_extracted_type_uniform (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+
+theorem bounded_column_hybrid_energy_extracted_type_uniform     :
     ∃ C : ℝ, 0 < C ∧ ∀ {φ : Type u} [Fintype φ], ∀ X Y B L : ℝ, 1 ≤ X → 1 ≤ L →
     ∀ (F : PrimeFamily φ), Pairwise (Function.onFun IsCoprime F.ideal) →
     ∀ (jF : φ → ℕ) (e : φ → Fin 3) (A : Ideal Eis → Ideal Eis → ℂ),
@@ -74,20 +79,17 @@ theorem bounded_column_hybrid_energy_extracted_type_uniform (ε : ℝ) (hε : 0 
   have hp := frozenBranchScale_pos F jF e
   have hs := extractedRowFactor_norm_le_one D1 D2 K
   have hs2 : ‖extractedRowFactor D1 D2 K‖^2 ≤ 1 := by
-    have h0 := norm_nonneg (extractedRowFactor D1 D2 K)
-    nlinarith
+    bound
   simp only [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hp,mul_pow]
   change (frozenBranchScale F jF e)^2*‖extractedRowFactor D1 D2 K‖^2* _ ≤ _
-  calc
-    _ ≤ ((frozenBranchScale F jF e)^2*1)*_ := by gcongr
-    _ = _ := by rw [mul_one]
+  bound
 
-theorem actual_weighted_reflected_branch_energy_type_uniform (ε : ℝ) (hε : 0 < ε) :
+theorem actual_weighted_reflected_branch_energy_type_uniform     :
     ∃ C : ℝ, 0 < C ∧ ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (X Y B L : ℝ), 1 ≤ X → 1 ≤ Y → 1 ≤ B → 1 ≤ L →
     ∀ (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ → Fin 3)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
       (hc : c ≠ 0), (9:Eis)*c ∣ N →
-      (if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) → IsCoprime a c →
+      (if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) → IsCoprime a c →
       Pairwise (Function.onFun IsCoprime F.ideal) →
       (∀ f, IsCoprime (Ideal.span {N}) (F.ideal f)) →
       (∀ f, ringChar (Eis ⧸ F.ideal f) ≠ 2) → (∀ f, jF f < 6) →
@@ -145,6 +147,8 @@ theorem actual_weighted_reflected_branch_energy_type_uniform (ε : ℝ) (hε : 0
   exact (mul_le_mul_of_nonneg_right hs (sq_nonneg _)).trans_eq (one_mul _)
 
 end
+
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

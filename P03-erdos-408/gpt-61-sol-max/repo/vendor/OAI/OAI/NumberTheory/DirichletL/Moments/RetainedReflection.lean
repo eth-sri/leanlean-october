@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionTailMass
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedTruncation
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.TwistedReflection
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRetainedReflection
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
@@ -16,8 +17,8 @@ open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
 open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
 open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
-local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
+
+
 
 lemma masked_decayTwo (F : ℝ→ℂ) (hF : DecayTwo F) (w : ℝ→ℝ)
     (hw : ∀x,0≤w x ∧ w x≤1) : DecayTwo (fun x=>(w x:ℂ)*F x) := by
@@ -28,8 +29,8 @@ lemma masked_decayTwo (F : ℝ→ℂ) (hF : DecayTwo F) (w : ℝ→ℝ)
   apply (mul_le_mul_of_nonneg_left
     (mul_le_of_le_one_left (norm_nonneg _) (hw x).2) (sq_nonneg x)).trans (hb x hx)
 
-lemma column_retained_discarded (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
-    (R Y : ℝ) (hY : 0<Y) :
+lemma column_retained_discarded  η   F  (hF : DecayTwo F)
+     R Y  (hY : 0<Y) :
     HeckeDyadic.polynomial η false F Y 0 0=
       HeckeDyadic.polynomial η false (fun x=>(retainedWeight R x:ℂ)*F x) Y 0 0+
       HeckeDyadic.polynomial η false (fun x=>(discardedWeight R x:ℂ)*F x) Y 0 0 := by
@@ -45,7 +46,7 @@ lemma column_retained_discarded (η : Character) (F : ℝ→ℂ) (hF : DecayTwo 
   simp only [CenteredMomentReflectionDeletion.norm] at hp ⊢
   rw [←mul_add,←add_mul,←Complex.ofReal_add,hp,Complex.ofReal_one,one_mul]
 
-lemma bounded_columns (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F) :
+lemma bounded_columns  η   F  (hF : DecayTwo F) :
     ∃C : ℝ,0≤C ∧ ∀Y U : ℝ,0<Y → Y≤U →
       ‖HeckeDyadic.polynomial η false F Y 0 0‖≤C*U^(3/2:ℝ) := by
   obtain ⟨D,hD,hF⟩ := hF
@@ -55,11 +56,11 @@ lemma bounded_columns (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F) :
   apply (hb η F D Y hD hY hF).trans
   rw [normalized_power_eq Y hY 2]
   norm_num only [Nat.cast_ofNat,show (2:ℝ)-1/2=3/2 by norm_num]
-  exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hY.le hYU (by norm_num)) (by positivity)
+  bound
 
-lemma reflected_column_summable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (η ηi χ : Character) (F : ℝ→ℂ) (hF : DecayTwo F) (Q X : ℝ)
-    (hQ : 0<Q) (hX : 0<X) (D : Finset (Ideal O)) (hD : D∈S.powerset) :
+lemma reflected_column_summable  S  (hS : ∀P∈S,Prime P)
+     η ηi χ   F  (hF : DecayTwo F)  Q X 
+    (hQ : 0<Q) (hX : 0<X)  D  (hD : D∈S.powerset) :
     Summable (fun H : SmoothIdeal S=>coefficient η ηi S D H*
       HeckeDyadic.polynomial χ false F
         (Q*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm H.val)) 0 0) := by
@@ -76,13 +77,13 @@ lemma reflected_column_summable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
         rw [div_mul_cancel₀ _ hX.ne'])
       exact hb _ U hscale.1 hscale.2)).1 D hD
 
-theorem original_retained_reflection (χ : Character) (hn : χ.residue≠1) :
+theorem original_retained_reflection  χ  (hn : χ.residue≠1) :
     ∃(ψ : Character)(G : ℂ),FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧ ψ.residue≠1 ∧ ‖G‖=1 ∧
       let S := redundantSet χ.modulus ψ.modulus
       ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm ∧
       ∀(W : 𝓢(ℝ,ℂ))(X R : ℝ)(_hX : 0<X),
         let Q := (ψ.modulus.absNorm:ℝ)
-        let Y := fun (D : Finset (Ideal O))(H : SmoothIdeal S)=>Q*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm H.val)
+        let Y := fun (D : Finset (Ideal HeckeFamily.O))(H : SmoothIdeal S)=>Q*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm H.val)
         HeckeDyadic.polynomial χ false W X 0 0=
           G*((∑D∈S.powerset,∑'H : SmoothIdeal S,coefficient ψ ψ.inverse S D H*
             HeckeDyadic.polynomial χ.inverse false
@@ -119,6 +120,6 @@ theorem original_retained_reflection (χ : Character) (hn : χ.residue≠1) :
 
 end SevenEighths.CenteredMomentRetainedReflection
 
-end
+
 
 end OAI

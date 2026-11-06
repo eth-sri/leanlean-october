@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.SelectedExponents
 
@@ -6,76 +7,79 @@ public import OAI.NumberTheory.DirichletL.QuadraticSieve.SelectedExponents
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
+
+section
+variable {α : ℝ} (hexp : HasSieveExponent α) (hα1 hα : 1≤α) (hα2 : α≤2) (η : ℝ) (hη : 0<η) (hη1 : η≤1) (l A : ℕ) (hl : 4≤η*l) (hA : 4≤η*A)
 
 theorem lifting_annular_scale_bounds (j : Fin 7) : 1≤(2:ℝ)^j.val ∧ (2:ℝ)^j.val≤64 := by
   refine ⟨one_le_pow₀ (by norm_num),?_⟩
@@ -84,9 +88,10 @@ theorem lifting_annular_scale_bounds (j : Fin 7) : 1≤(2:ℝ)^j.val ∧ (2:ℝ)
   norm_num at hh
   exact hh
 
-theorem HasSieveExponent.lifted_annular_selected {α : ℝ} (hexp : HasSieveExponent α)
-    (hα1 : 1≤α) (hα2 : α≤2) (η : ℝ) (hη : 0<η) (hη1 : η≤1)
-    (l A : ℕ) (hl : 4≤η*l) (hA : 4≤η*A) :
+include hexp hα1 hα2 hη hη1 hl hA in
+theorem HasSieveExponent.lifted_annular_selected    
+             
+          :
     ∃ C : ℝ, 0<C ∧ ∀ (M N : ℝ),
       1≤M → 28≤N → N^(2-1/α)≤M →
       1≤selectedPoissonK fixedCutoffBase M N η →
@@ -141,9 +146,10 @@ theorem HasSieveExponent.lifted_annular_selected {α : ℝ} (hexp : HasSieveExpo
       exact hr.2
     _ = _ := by ring
 
-theorem HasSieveExponent.ball_selected_high {α : ℝ} (hexp : HasSieveExponent α)
-    (hα1 : 1≤α) (hα2 : α≤2) (η : ℝ) (hη : 0<η) (hη1 : η≤1)
-    (l A : ℕ) (hl : 4≤η*l) (hA : 4≤η*A) :
+include hexp hα1 hα2 hη hη1 hl hA in
+theorem HasSieveExponent.ball_selected_high    
+             
+          :
     ∃ C : ℝ, 0<C ∧ ∀ (M N : ℝ),
       1≤M → 28≤N → N^(2-1/α)≤M →
       1≤selectedPoissonK fixedCutoffBase M N η →
@@ -169,15 +175,12 @@ theorem HasSieveExponent.ball_selected_high {α : ℝ} (hexp : HasSieveExponent 
       2*(7*(C*(M*N)^(260*η)*M*∑J,‖liftingFreeCoefficient N a J‖^2)+
         7*(C*(M*N)^(260*η)*M*∑J,‖liftingDividedCoefficient N a J‖^2)) := by linarith
     _ = _ := by
-      calc
-        _ = sieveNorm (selectedPoissonK fixedCutoffBase M N η) N*(∑J,‖a J‖^2)+
-          (14*C)*(M*N)^(260*η)*M*((∑J,‖liftingFreeCoefficient N a J‖^2)+
-            (∑J,‖liftingDividedCoefficient N a J‖^2)) := by ring
-        _ = _ := by rw [he]; ring
+      grind
 
-theorem HasSieveExponent.low_threshold {α : ℝ} (hexp : HasSieveExponent α)
-    (hα : 1≤α) (hα2 : α≤2) (η : ℝ) (hη : 0<η) (hη1 : η≤1)
-    (c : ℝ) (hc : 4≤c) :
+include hexp hα hα2 hη hη1 in
+theorem HasSieveExponent.low_threshold    
+             
+     c  (hc : 4≤c) :
     ∃ C : ℝ, 0<C ∧ ∀ M N : ℝ, 1≤M → 1≤N → N^(2-1/α)≤M → M≤N^2 →
       sieveNorm (selectedPoissonK c M N η) N≤C*(M*N)^(6*η)*M := by
   obtain ⟨C,hC,hrev⟩ := hexp.reverse η hη
@@ -207,14 +210,12 @@ theorem HasSieveExponent.low_threshold {α : ℝ} (hexp : HasSieveExponent α)
   have hmain : (selectedPoissonK c M N η)^α≤c^α*(M*N)^(2*η)*M := by
     apply (improved_threshold_low α c η N M (by linarith) hc0 hN0 hM0 hthreshold).trans
     have hp : (M*N)^(η*α)≤(M*N)^(2*η) := Real.rpow_le_rpow_of_exponent_le hP (by nlinarith)
-    exact mul_le_mul (mul_le_mul_of_nonneg_left hp (Real.rpow_nonneg hc0.le _))
-      hNM hN0.le (by positivity)
+    exact (by gcongr <;> first | assumption | positivity | linarith)
   have hR : 1≤(M*N)^(2*η) := Real.one_le_rpow hP (by positivity)
   have hsum : N+(selectedPoissonK c M N η)^α≤(1+c^α)*(M*N)^(2*η)*M := by
     calc
       _ ≤ M+c^α*(M*N)^(2*η)*M := add_le_add hNM hmain
-      _ ≤ (M*N)^(2*η)*M+c^α*(M*N)^(2*η)*M := by
-        exact add_le_add (le_mul_of_one_le_left hM0.le hR) le_rfl
+      _ ≤ (M*N)^(2*η)*M+c^α*(M*N)^(2*η)*M := add_le_add (le_mul_of_one_le_left hM0.le hR) le_rfl
       _ = _ := by ring
   have hpowers : (M*N)^(4*η)*(M*N)^(2*η)=(M*N)^(6*η) := by
     rw [←Real.rpow_add hP0]
@@ -226,12 +227,14 @@ theorem HasSieveExponent.low_threshold {α : ℝ} (hexp : HasSieveExponent α)
     _ = C*c^η*(1+c^α)*((M*N)^(4*η)*(M*N)^(2*η))*M := by ring
     _ = _ := by rw [hpowers]
 
+end
+
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
+ 
 namespace SecondPassArithmetic
 
-theorem normLogBin_le_log_upper (x Y : ℝ) (hx : 0<x) (hxy : x≤Y) (hY : 1≤Y) :
+theorem normLogBin_le_log_upper  x Y  (hx : 0<x) (hxy : x≤Y) (hY : 1≤Y) :
     (normLogBin x:ℝ)≤Real.log Y := by
   have hh : (normLogBin x:ℝ)≤normLogBin Y := by exact_mod_cast normLogBin_mono hx hxy
   exact hh.trans (Nat.floor_le (Real.log_nonneg hY))
@@ -240,10 +243,13 @@ end SecondPassArithmetic
 
 namespace CanonicalQuadraticSieve
 
-theorem sieveNorm_small_columns (M N : ℝ) (hM : 1≤M) (hN : 1≤N) (hN28 : N≤28) :
+section
+variable {α : ℝ} (hexp : HasSieveExponent α) (hα1 : 1≤α) (hα2 : α≤2)
+
+theorem sieveNorm_small_columns  M N  (hM : 1≤M) (hN : 1≤N) (hN28 : N≤28) :
     sieveNorm M N≤785*QuadraticInitialBound.initialSieveConstant*M := by
   have hceil : (⌈N⌉₊:ℝ)≤28 := by
-    exact_mod_cast (Nat.ceil_le.mpr hN28 : ⌈N⌉₊≤28)
+    simp_all
   have hs : (⌈N⌉₊:ℝ)^2≤784 := by
     nlinarith [Nat.cast_nonneg (α:=ℝ) ⌈N⌉₊]
   have hc := QuadraticInitialBound.initialSieveConstant_pos
@@ -254,8 +260,9 @@ theorem sieveNorm_small_columns (M N : ℝ) (hM : 1≤M) (hN : 1≤N) (hN28 : N�
     _ ≤ QuadraticInitialBound.initialSieveConstant*(785*M) := mul_le_mul_of_nonneg_left ht hc.le
     _ = _ := by ring
 
-theorem HasSieveExponent.shell_threshold {α : ℝ} (hexp : HasSieveExponent α)
-    (hα1 : 1≤α) (hα2 : α≤2) :
+include hexp hα1 hα2 in
+theorem HasSieveExponent.shell_threshold    
+        :
     ∀ρ : ℝ, 0<ρ → ∃C : ℝ, 0<C ∧ ∀M N : ℝ,
       1≤M → 1≤N → N^(2-1/α)≤M →
       ∀a : idealRange N → ℂ, CoefficientOnShell N N a →
@@ -323,15 +330,18 @@ theorem HasSieveExponent.shell_threshold {α : ℝ} (hexp : HasSieveExponent α)
       (show CL+CH≤C by dsimp [C]; linarith only [hI])
       (Real.rpow_nonneg (by positivity) _))
 
-theorem HasSieveExponent.improve {α : ℝ} (hexp : HasSieveExponent α)
-    (hα1 : 1≤α) (hα2 : α≤2) : HasSieveExponent (2-1/α) := by
+include hexp hα1 hα2 in
+theorem HasSieveExponent.improve    
+        : HasSieveExponent (2-1/α) := by
   have hα : 0<α := by linarith
   have hfrac : 1/α≤1 := (div_le_one hα).mpr hα1
   have hpos : 0≤1/α := by positivity
   apply hasSieveExponent_of_shell_threshold (2-1/α) (by linarith) (by linarith)
   exact hexp.shell_threshold hα1 hα2
 
-open ActualEisensteinCubic CompletedGauss
+end
+
+open   CompletedGauss
 
 theorem hasSieveExponent_one : HasSieveExponent 1 :=
   hasSieveExponent_one_of_improvement (fun _α hα hα2 h => h.improve hα.le hα2)
@@ -347,6 +357,6 @@ namespace SecondPassArithmetic
 
 end SecondPassArithmetic
 
-end
+
 
 end OAI

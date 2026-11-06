@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Analysis.Real.Sqrt
@@ -34,19 +35,22 @@ variable {ι : Type*} [Fintype ι]
 /-! ### Vectors -/
 
 /-- The squared norm `‖v‖² = ∑ |v_i|²`. -/
-noncomputable def sqNorm (v : ι → ℂ) : ℝ := ∑ i, ‖v i‖ ^ 2
+noncomputable def sqNorm (v : ι → ℂ)  := ∑ i, ‖v i‖ ^ 2
+
+section
+variable (M : Matrix ι ι ℂ) (u v : ι → ℂ)
 
 /-- `‖v‖² ≥ 0`. -/
-theorem sqNorm_nonneg (v : ι → ℂ) : 0 ≤ sqNorm v :=
+theorem sqNorm_nonneg   : 0 ≤ sqNorm v :=
   sum_nonneg fun _ _ => sq_nonneg _
 
 /-- `⟨v, v⟩ = ‖v‖²`. -/
-theorem star_dotProduct_self (v : ι → ℂ) : star v ⬝ᵥ v = (sqNorm v : ℂ) := by
+theorem star_dotProduct_self   : star v ⬝ᵥ v = (sqNorm v : ℂ) := by
   simp only [dotProduct, sqNorm, Pi.star_apply, Complex.ofReal_sum, Complex.ofReal_pow]
   exact sum_congr rfl fun i _ => Complex.conj_mul' (v i)
 
 /-- Cauchy–Schwarz: `|⟨u, v⟩|² ≤ ‖u‖² ‖v‖²`. -/
-theorem norm_star_dotProduct_sq_le (u v : ι → ℂ) :
+theorem norm_star_dotProduct_sq_le   :
     ‖star u ⬝ᵥ v‖ ^ 2 ≤ sqNorm u * sqNorm v := by
   have h : ‖star u ⬝ᵥ v‖ ≤ ∑ i, ‖u i‖ * ‖v i‖ := by
     refine (norm_sum_le _ _).trans_eq (sum_congr rfl fun i _ => ?_)
@@ -54,9 +58,11 @@ theorem norm_star_dotProduct_sq_le (u v : ι → ℂ) :
   exact (pow_le_pow_left₀ (norm_nonneg _) h 2).trans (sum_mul_sq_le_sq_mul_sq _ _ _)
 
 /-- The adjoint: `⟨u, M v⟩ = ⟨M^* u, v⟩`. -/
-theorem star_dotProduct_mulVec (M : Matrix ι ι ℂ) (u v : ι → ℂ) :
+theorem star_dotProduct_mulVec     :
     star u ⬝ᵥ (M *ᵥ v) = star (Mᴴ *ᵥ u) ⬝ᵥ v := by
   rw [Matrix.dotProduct_mulVec, Matrix.star_mulVec, Matrix.conjTranspose_conjTranspose]
+
+end
 
 /-- Compression: `‖∑_P c_P v_P‖² ≤ (∑_P |c_P|²) ∑_P ‖v_P‖²`. -/
 theorem sqNorm_sum_smul_le {κ : Type*} (T : Finset κ) (c : κ → ℂ) (v : κ → ι → ℂ) :
@@ -79,20 +85,21 @@ noncomputable def halfPow [DecidableEq ι] (A : Matrix ι ι ℂ) : ℕ → Matr
 
 variable [DecidableEq ι]
 
+section
+variable (A : Matrix ι ι ℂ) {m : ℕ → ℝ} (hm : ∀ k, 0 ≤ m k) (hlog : ∀ k, m (k + 1) ^ 2 ≤ m k * m (k + 2)) (R : ℕ)
+
 /-- Consecutive factors are adjoint: `halfPow A (k + 2) = M^* halfPow A (k + 1)` with
 `halfPow A (k + 1) = M halfPow A k`. -/
-theorem halfPow_add_two (A : Matrix ι ι ℂ) (k : ℕ) :
+theorem halfPow_add_two    k  :
     halfPow A (k + 2) = (if Even k then Aᴴ else A)ᴴ * halfPow A (k + 1) := by
   rw [halfPow]
   congr 1
   by_cases hk : Even k
-  · rw [ite_eq_right_iff.2 fun h => absurd h (Nat.even_add_one.not.2 (not_not.2 hk)),
-      ite_eq_left_iff.2 fun h => absurd hk h, Matrix.conjTranspose_conjTranspose]
-  · rw [ite_eq_left_iff.2 fun h => absurd (Nat.even_add_one.2 hk) h,
-      ite_eq_right_iff.2 fun h => absurd h hk]
+  · simp_all
+  simp_all
 
 /-- `halfPow A (2r) = B^r` and `halfPow A (2r + 1) = A^* B^r`. -/
-theorem halfPow_two_mul (A : Matrix ι ι ℂ) (r : ℕ) :
+theorem halfPow_two_mul    r  :
     halfPow A (2 * r) = (A * Aᴴ) ^ r ∧ halfPow A (2 * r + 1) = Aᴴ * (A * Aᴴ) ^ r := by
   induction r with
   | zero => simp [halfPow]
@@ -105,7 +112,7 @@ theorem halfPow_two_mul (A : Matrix ι ι ℂ) (r : ℕ) :
     rw [halfPow, h₁, ite_eq_left_iff.2 fun h => absurd (by simp [parity_simps]) h]
 
 /-- `(halfPow A R)^* halfPow A R = B^R`. -/
-theorem conjTranspose_halfPow_mul_halfPow (A : Matrix ι ι ℂ) (R : ℕ) :
+theorem conjTranspose_halfPow_mul_halfPow     :
     (halfPow A R)ᴴ * halfPow A R = (A * Aᴴ) ^ R := by
   have hB : (A * Aᴴ)ᴴ = A * Aᴴ := by
     rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose]
@@ -118,9 +125,10 @@ theorem conjTranspose_halfPow_mul_halfPow (A : Matrix ι ι ℂ) (R : ℕ) :
 
 /-! ### Spectral Hölder -/
 
+include hm hlog in
 /-- A nonnegative log-convex sequence satisfies `m_1^R ≤ m_0^{R - 1} m_R`. -/
-theorem pow_le_of_logConvex {m : ℕ → ℝ} (hm : ∀ k, 0 ≤ m k)
-    (hlog : ∀ k, m (k + 1) ^ 2 ≤ m k * m (k + 2)) (R : ℕ) :
+theorem pow_le_of_logConvex    
+        :
     m 1 ^ (R + 1) ≤ m 0 ^ R * m (R + 1) := by
   -- the ratios increase: `m_1 m_{k+1} ≤ m_0 m_{k+2}`
   have hratio : ∀ k, m 1 * m (k + 1) ≤ m 0 * m (k + 2) := by
@@ -145,10 +153,12 @@ theorem pow_le_of_logConvex {m : ℕ → ℝ} (hm : ∀ k, 0 ≤ m k)
           mul_le_mul_of_nonneg_left (hratio R) (pow_nonneg (hm 0) _)
       _ = m 0 ^ (R + 1) * m (R + 2) := by ring
 
+end
+
 /-- Spectral Hölder for a family of vectors: with `m_k = ∑_c ‖halfPow A k v_c‖²`,
 `(∑_c ‖A^* v_c‖²)^R ≤ (∑_c ‖v_c‖²)^{R - 1} m_R`. -/
 theorem sum_sqNorm_pow_le {κ : Type*} (A : Matrix ι ι ℂ) (T : Finset κ) (v : κ → ι → ℂ)
-    (R : ℕ) :
+     R  :
     (∑ c ∈ T, sqNorm (Aᴴ *ᵥ v c)) ^ (R + 1) ≤
       (∑ c ∈ T, sqNorm (v c)) ^ R * ∑ c ∈ T, sqNorm (halfPow A (R + 1) *ᵥ v c) := by
   set m : ℕ → ℝ := fun k => ∑ c ∈ T, sqNorm (halfPow A k *ᵥ v c) with hm
@@ -168,7 +178,7 @@ theorem sum_sqNorm_pow_le {κ : Type*} (A : Matrix ι ι ℂ) (T : Finset κ) (v
           Matrix.conjTranspose_conjTranspose, Matrix.mulVec_mulVec, ← halfPow,
           star_dotProduct_self]
       have := norm_star_dotProduct_sq_le (halfPow A k *ᵥ v c) (halfPow A (k + 2) *ᵥ v c)
-      rwa [heq, Complex.norm_real, Real.norm_of_nonneg (sqNorm_nonneg _)] at this
+      simp_all
     have hsum : m (k + 1) ≤ √(m k) * √(m (k + 2)) :=
       (sum_le_sum fun c _ => hterm c).trans
         (Real.sum_sqrt_mul_sqrt_le T (fun c => sqNorm_nonneg _) fun c => sqNorm_nonneg _)
@@ -211,17 +221,15 @@ theorem sum_ite_conjTranspose_mul (W : Matrix ι ι ℂ) (π : ι → β) :
   rw [sum_comm]
   refine sum_congr rfl fun s' _ => ?_
   rw [sum_ite_eq, ite_eq_left (mem_image_of_mem π (mem_univ s))]
-  by_cases h : π s = π s'
-  · rw [ite_eq_left h.symm, ite_eq_left h]
-  · rw [ite_eq_right fun h' => h h'.symm, ite_eq_right h]
+  grind
 
 /-- PD §3.3 for an abstract matrix. The indices carry positions `π`, the positions carry
 cells, `A` joins only cells at distance at most `w`, at most `N` positions lie in a cell, and
 `f` is constant on positions with `|f|² ≤ σ`. Then
 `|⟨f, A f⟩|^{2M} ≤ (2w + 1)^M ‖f‖^{2(2M - 1)} N σ |∑_P ⟨u_P, (A A^*)^M u_P⟩|`
 with `M = R + 1`. -/
-theorem norm_pow_le_of_cells (A : Matrix ι ι ℂ) (π : ι → β) (cell : β → ℤ) (f : ι → ℂ)
-    {w N : ℕ} {σ : ℝ} (hσ : 0 ≤ σ) (R : ℕ)
+theorem norm_pow_le_of_cells (A : Matrix ι ι ℂ) (π : ι → β) (cell : β → ℤ)  f 
+    {w N : ℕ}  {σ}  (hσ : 0 ≤ σ)  R 
     (hA : ∀ s s', A s s' ≠ 0 → |cell (π s) - cell (π s')| ≤ w)
     (hf : ∀ s s', π s = π s' → f s = f s')
     (hN : ∀ j, ((univ.image π).filter fun P => cell P = j).card ≤ N)
@@ -240,14 +248,7 @@ theorem norm_pow_le_of_cells (A : Matrix ι ι ℂ) (π : ι → β) (cell : β 
     have hloc : ∀ s, (A *ᵥ gj (cell (π s))) s = (A *ᵥ f) s := by
       intro s
       simp only [Matrix.mulVec, dotProduct]
-      refine sum_congr rfl fun s' _ => ?_
-      by_cases h : A s s' = 0
-      · rw [h, zero_mul, zero_mul]
-      · have h' : |cell (π s') - cell (π s)| ≤ w := by
-          rw [abs_sub_comm]
-          exact hA s s' h
-        simp only [hgj]
-        rw [ite_eq_left h']
+      grind
     simp only [dotProduct]
     rw [sum_comm]
     refine sum_congr rfl fun s _ => ?_
@@ -279,10 +280,7 @@ theorem norm_pow_le_of_cells (A : Matrix ι ι ℂ) (π : ι → β) (cell : β 
     refine mul_le_mul_of_nonneg_right ?_ (sq_nonneg _)
     have hsub : Js.filter (fun j => |cell (π s) - j| ≤ w) ⊆
         Icc (cell (π s) - w) (cell (π s) + w) := by
-      intro j hj
-      have := abs_le.1 (mem_filter.1 hj).2
-      rw [mem_Icc]
-      constructor <;> linarith
+      grind
     have hcard := card_le_card hsub
     rw [Int.card_Icc, show cell (π s) + w + 1 - (cell (π s) - w) = ((2 * w + 1 : ℕ) : ℤ) by
       push_cast; ring, Int.toNat_natCast] at hcard
@@ -299,10 +297,7 @@ theorem norm_pow_le_of_cells (A : Matrix ι ι ℂ) (π : ι → β) (cell : β 
   have hFπ : ∀ s, F (π s) = f s := by
     intro s
     have h : ∃ s', π s' = π s := ⟨s, rfl⟩
-    rw [hF]
-    dsimp only
-    rw [dite_eq_left h]
-    exact hf _ _ h.choose_spec
+    grind
   -- compression in each cell
   have hcomp : ∀ j, sqNorm (W *ᵥ fj j) ≤
       (N * σ) * ∑ P ∈ Ps.filter (fun P => cell P = j), sqNorm (W *ᵥ u P) := by
@@ -312,11 +307,7 @@ theorem norm_pow_le_of_cells (A : Matrix ι ι ℂ) (π : ι → β) (cell : β 
       simp only [hfj, hu, Finset.sum_apply, Pi.smul_apply, smul_eq_mul, mul_ite, mul_one,
         mul_zero]
       rw [sum_ite_eq]
-      by_cases h : cell (π s) = j
-      · rw [ite_eq_left h, ite_eq_left (mem_filter.2 ⟨mem_image_of_mem _ (mem_univ _), h⟩),
-          hFπ]
-      · rw [ite_eq_right h, ite_eq_right
-          (show π s ∉ Ps.filter (fun P => cell P = j) from fun hm => h (mem_filter.1 hm).2)]
+      grind
     rw [hfj', Matrix.mulVec_sum]
     simp_rw [Matrix.mulVec_smul]
     refine (sqNorm_sum_smul_le _ _ _).trans
@@ -336,8 +327,7 @@ theorem norm_pow_le_of_cells (A : Matrix ι ι ℂ) (π : ι → β) (cell : β 
     rw [sum_fiberwise_of_maps_to fun P hP => ?_, ← conjTranspose_halfPow_mul_halfPow,
       sum_ite_conjTranspose_mul, Complex.norm_real,
       Real.norm_of_nonneg (sum_nonneg fun _ _ => sqNorm_nonneg _)]
-    obtain ⟨s, -, rfl⟩ := mem_image.1 hP
-    exact mem_image_of_mem _ (mem_univ s)
+    grind
   -- assemble
   have hhold := sum_sqNorm_pow_le A Js fj R
   rw [hpart] at hhold

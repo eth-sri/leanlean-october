@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.Contractions
 
@@ -6,7 +7,7 @@ public import Erdos821.P3Clean.Contractions
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P3Clean
@@ -23,7 +24,7 @@ theorem normBound_equiv {alpha beta : Type*} (mass : alpha → ℝ)
   simpa only [Finset.sum_map, Equiv.toEmbedding_apply, Equiv.symm_apply_apply] using h
 
 theorem normBound_subtype_project {alpha : Type*} (mass : alpha → ℝ)
-    (K : alpha → alpha → ℂ) (keep : alpha → Prop) (C : ℝ)
+    (K : alpha → alpha → ℂ) (keep : alpha → Prop)  C 
     (hm : ∀ a, 0 ≤ mass a) (hC : 0 ≤ C)
     (hK : NormBound (fun a : {a // keep a} => mass a.val) (fun a b => K a.val b.val) C) :
     NormBound mass (projectKernel keep K) C := by
@@ -52,10 +53,7 @@ theorem normBound_subtype_project {alpha : Type*} (mass : alpha → ℝ)
     apply Finset.sum_congr rfl
     intro a _
     by_cases ha : keep a
-    · simp only [ite_eq_left ha]
-      apply Finset.sum_congr rfl
-      intro b _
-      by_cases hb : keep b <;> simp [ha, hb]
+    · grind
     · simp [ha]
   rw [he]
   have hs : (∑ a ∈ s.filter keep, mass a * ‖f a‖ ^ 2) ≤ ∑ a ∈ s, mass a * ‖f a‖ ^ 2 :=
@@ -64,10 +62,7 @@ theorem normBound_subtype_project {alpha : Type*} (mass : alpha → ℝ)
   have ht : (∑ b ∈ t.filter keep, mass b * ‖g b‖ ^ 2) ≤ ∑ b ∈ t, mass b * ‖g b‖ ^ 2 :=
     Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
       (fun b _ _ => mul_nonneg (hm b) (sq_nonneg _))
-  exact h.trans (mul_le_mul
-    (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hs) hC)
-    (Real.sqrt_le_sqrt ht) (Real.sqrt_nonneg _)
-    (mul_nonneg hC (Real.sqrt_nonneg _)))
+  exact h.trans ((by gcongr <;> first | assumption | positivity | linarith))
 
 
 end Erdos821.P3Clean

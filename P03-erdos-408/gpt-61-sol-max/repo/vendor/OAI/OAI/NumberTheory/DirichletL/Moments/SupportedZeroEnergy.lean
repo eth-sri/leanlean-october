@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.ZeroMeanBridge
 public import OAI.NumberTheory.DirichletL.Moments.SourceMass
@@ -15,22 +16,22 @@ open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRow
 open CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentZeroMode
 open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentFirstLocalization
 open CenteredMomentZeroMeanBridge EisensteinSchwartzPoisson HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
 
-theorem idealZeroEnergy_filter (S : Finset (Ideal O)) (hS : ∀ I∈S,Supported I)
-    (c : Ideal O → ℂ) (K : ℝ) (p : Ideal O → Prop) [DecidablePred p]
+
+section
+variable (S : Finset (Ideal ActualEisensteinCubic.O))
+
+theorem idealZeroEnergy_filter    hS 
+     c   K   p  [DecidablePred p]
     (hc : ∀ I∈S, ¬p I → c I=0) :
     idealZeroEnergy S hS c K =
       idealZeroEnergy (S.filter p) (fun I h => hS I (Finset.mem_filter.mp h).1) c K := by
   let e : S.filter p → S := fun I => ⟨I.val,(Finset.mem_filter.mp I.property).1⟩
   let ep : (S.filter p) × (S.filter p) → S × S := fun q => (e q.1,e q.2)
-  have he : Function.Injective e := by
-    intro I J h
-    apply Subtype.ext
-    exact congrArg (fun x : S => x.val) h
+  
   have hep : Function.Injective ep := by
     intro q r h
-    exact Prod.ext (he (congrArg Prod.fst h)) (he (congrArg Prod.snd h))
+    aesop
   let f : S × S → ℂ := fun q => (c q.1.val * star (c q.2.val)) *
     (((K / ‖eisEmbedding (idealColumn S q.1 * idealColumn S q.2)‖^2 : ℝ) : ℂ) *
       CenteredMomentRowNorm.pairFourier (idealColumn S q.1) (idealColumn S q.2)
@@ -48,15 +49,17 @@ theorem idealZeroEnergy_filter (S : Finset (Ideal O)) (hS : ∀ I∈S,Supported 
   have ht := hep.tsum_eq hs
   simpa only [tsum_fintype,Fintype.sum_prod_type,f,ep,e,idealZeroEnergy,idealColumn] using ht.symm
 
-def activeColumns (S : Finset (Ideal O)) (c : Ideal O → ℂ) : Finset (Ideal O) :=
+def activeColumns (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ)  :=
   (supportedColumns S).filter (fun I => c I≠0)
 
-lemma activeColumns_supported (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (I : Ideal O) (hI : I∈activeColumns S c) : Supported I :=
+lemma activeColumns_supported   (c : Ideal ActualEisensteinCubic.O → ℂ)
+     I  (hI : I∈activeColumns S c) : Supported I :=
   (Finset.mem_filter.mp (Finset.mem_filter.mp hI).1).2
 
-theorem zeroEnergy_eq_active_original (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+end
+
+theorem zeroEnergy_eq_active_original  η   m A   t 
+     S   c   W   K  :
     zeroEnergy η m A t S c W K =
       idealZeroEnergy (activeColumns S c) (activeColumns_supported S c)
         (fun I => c I*rowWeight η m A 1 t I) K * paperRadialFourier W 0 := by
@@ -66,15 +69,18 @@ theorem zeroEnergy_eq_active_original (η : Character) (m A : O) (t : ℝ)
     (fun I => c I*rowWeight η m A 1 t I) K (fun I => c I≠0)
     (fun I _ h => by simp only [not_not] at h; rw [h,zero_mul])
 
-theorem finiteColumnCoefficient_witness {ι : Type*} [Fintype ι]
-    (S : Finset (Tuple ι)) (β : Tuple ι → ℂ) (I : Ideal O)
+section
+variable {ι : Type*} [Fintype ι] (S : Finset (Tuple ι))
+
+theorem finiteColumnCoefficient_witness    
+      (β : Tuple ι → ℂ)  I 
     (hI : finiteColumnCoefficient S β I≠0) :
     ∃ v∈S, β v≠0 ∧ finiteTupleProduct v=I := by
   obtain ⟨v,hv,hne⟩ := Finset.exists_ne_zero_of_sum_ne_zero hI
-  exact ⟨v,(Finset.mem_filter.mp hv).1,hne,(Finset.mem_filter.mp hv).2⟩
+  aesop
 
-theorem finite_tuple_fiber_card {ι : Type*} [Fintype ι]
-    (S : Finset (Tuple ι)) (I : Ideal O) (hI : I≠0) :
+theorem finite_tuple_fiber_card    
+       I  (hI : I≠0) :
     (S.filter (fun v => finiteTupleProduct v=I)).card ≤
       (idealDivisors I).card^(Fintype.card ι+2) := by
   let T := S.filter (fun v => finiteTupleProduct v=I)
@@ -90,24 +96,25 @@ theorem finite_tuple_fiber_card {ι : Type*} [Fintype ι]
   simpa only [Fintype.card_coe,Fintype.card_fun,Fintype.card_sum,Fintype.card_fin,T]
     using Fintype.card_le_of_injective f hf
 
-theorem finiteColumnCoefficient_norm_le {ι : Type*} [Fintype ι]
-    (S : Finset (Tuple ι)) (β : Tuple ι → ℂ) (B : ℝ) (hB : 0≤B)
-    (hβ : ∀ v∈S, finiteTupleProduct v≠0 → ‖β v‖≤B) (I : Ideal O) (hI : I≠0) :
+theorem finiteColumnCoefficient_norm_le    
+       β   B  (hB : 0≤B)
+    (hβ : ∀ v∈S, finiteTupleProduct v≠0 → ‖β v‖≤B)  I  (hI : I≠0) :
     ‖finiteColumnCoefficient S β I‖ ≤ B*((idealDivisors I).card:ℝ)^(Fintype.card ι+2) := by
   calc
     _ ≤ ∑ v∈S.filter (fun v => finiteTupleProduct v=I),‖β v‖ := norm_sum_le _ _
     _ ≤ ∑ _v∈S.filter (fun v => finiteTupleProduct v=I),B := by
       apply Finset.sum_le_sum
-      intro v hv
-      exact hβ v (Finset.mem_filter.mp hv).1 ((Finset.mem_filter.mp hv).2 ▸ hI)
+      simp_all
     _ = B*((S.filter (fun v => finiteTupleProduct v=I)).card:ℝ) := by simp; ring
     _ ≤ _ := by
       apply mul_le_mul_of_nonneg_left _ hB
       exact_mod_cast finite_tuple_fiber_card S I hI
 
-theorem active_tuple_zero_energy_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
+end
+
+theorem active_tuple_zero_energy_bound  N  (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ {ι : Type*} [Fintype ι], Fintype.card ι≤N →
-      ∀ (η : Character) (m A : O) (t : ℝ) (S : Finset (Tuple ι))
+      ∀ (η : Character) (m A : ActualEisensteinCubic.O) (t : ℝ) (S : Finset (Tuple ι))
         (β : Tuple ι → ℂ) (W : 𝓢(ℝ,ℂ)) (X K B : ℝ),
       1≤X → 0≤K → 0≤B →
       (∀ v∈S,finiteTupleProduct v≠0 → ‖β v‖≤B) →
@@ -127,12 +134,12 @@ theorem active_tuple_zero_energy_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
   let Q := activeColumns (finiteColumns S) c
   have hQ : ∀ I∈Q,Supported I := activeColumns_supported _ _
   have hX0 : 0<X := zero_lt_one.trans_le hX
-  have hNX (I : Ideal O) (hI : I∈Q) : (Ideal.absNorm I:ℝ)≤X :=
+  have hNX (I : Ideal ActualEisensteinCubic.O) (hI : I∈Q) : (Ideal.absNorm I:ℝ)≤X :=
     hN I (Finset.mem_filter.mp hI).1 (Finset.mem_filter.mp hI).2
   have hbase : 1≤(1+D)*X^δ := by
     have hxδ : 1≤X^δ := Real.one_le_rpow hX hδ.le
     nlinarith
-  have hcoeff (I : Ideal O) (hI : I∈Q) :
+  have hcoeff (I : Ideal ActualEisensteinCubic.O) (hI : I∈Q) :
       ‖c I*rowWeight η m A 1 t I‖ ≤ B*((1+D)^(N+2)*X^(ε/4)) := by
     have hI0 := (hQ I hI).1
     have hdI : ((idealDivisors I).card:ℝ) ≤ (1+D)*X^δ := by

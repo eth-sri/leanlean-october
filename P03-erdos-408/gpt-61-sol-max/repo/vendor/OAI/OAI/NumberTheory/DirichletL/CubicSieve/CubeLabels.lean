@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Arithmetic.SquarefreeDivisors
 
@@ -10,79 +11,83 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
 
 section
-open scoped BigOperators Classical
+ 
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
+ 
 open MixedCrossSeparation (crossSymbol quadraticCrossPhase)
 
-private theorem cross_sixth {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (i k : ι) (hik : i ≠ k) :
+section
+variable {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (hg : ∀ i, lambda ∉ Ideal.span {p i})
+include ι p hcop hg
+
+private theorem cross_sixth  
+       
+     
+      (i k : ι) (hik : i ≠ k) :
     crossSymbol p hg i k ^ 6 = 1 := by
   have hnot : p k ∉ Ideal.span {p i} := by
     intro hm
@@ -94,33 +99,28 @@ private theorem cross_sixth {ι : Type*}
   simpa only [crossSymbol, map_pow, ite_eq_right hnot] using
     canonicalSextic_sixth_power_mask (Ideal.span {p i}) (hg i) (p k)
 
-theorem reverse_cross_eq_quadratic {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+theorem reverse_cross_eq_quadratic  
+       
+     
+     
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (i k : ι) (hik : i ≠ k) :
     crossSymbol p hg k i = crossSymbol p hg i k *
       (crossSymbol p hg i k ^ 3 * crossSymbol p hg k i ^ 3) := by
   have hr : crossSymbol p hg i k ^ 2 = crossSymbol p hg k i ^ 2 :=
     canonicalSextic_sq_reciprocity_primary (Ideal.span {p i}) (Ideal.span {p k})
       (hg i) (hg k) (p i) (p k) rfl rfl (hpr i) (hpr k)
-  symm
-  calc
-    _ = crossSymbol p hg i k ^ 4 *
-        (crossSymbol p hg k i ^ 2 * crossSymbol p hg k i) := by ring
-    _ = crossSymbol p hg i k ^ 6 * crossSymbol p hg k i := by rw [← hr]; ring
-    _ = _ := by rw [cross_sixth p hcop hg i k hik, one_mul]
+  grind [crossSymbol, cross_sixth]
 
-private theorem local_quadratic_sq {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (i k : ι) (hik : i ≠ k) :
+private theorem local_quadratic_sq  
+       
+     
+      (i k : ι) (hik : i ≠ k) :
     (crossSymbol p hg i k ^ 3 * crossSymbol p hg k i ^ 3) ^ 2 = 1 := by
-  rw [mul_pow, ← pow_mul, ← pow_mul]
-  norm_num only [show 3 * 2 = 6 by decide, cross_sixth p hcop hg i k hik,
-    cross_sixth p hcop hg k i hik.symm, one_mul]
+  grind [cross_sixth]
 
-private theorem crt_exponent_table (side parityBit ε₁ ε₂ : Bool)
+end
+
+private theorem crt_exponent_table  side parityBit ε₁ ε₂ 
     (he : conductorExponent parityBit ε₁ ε₂ ≠ 0) :
     ((if side then 5 else 1) + (conductorExponent parityBit ε₁ ε₂).val) % 6 =
       ((if side then 5 else 1) * crtExponent side parityBit ε₁ ε₂) % 6 := by
@@ -166,7 +166,7 @@ theorem active_cube_cross_local {ι : Type*}
         congr 1
         exact crt_exponent_table true parityBit ε₁ ε₂ he
 
-def cubeOddSupport {ι : Type*} (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) : Finset ι :=
+def cubeOddSupport {ι } (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)  :=
   B.filter fun k => (conductorExponent (parity (v k)) (ε₁ k) (ε₂ k)).val % 2 = 1
 
 def mixedCubeCross {ι : Type*}
@@ -177,7 +177,11 @@ def mixedCubeCross {ι : Type*}
     crossSymbol p hg i k ^ (if side then 5 else 1) *
       crossSymbol p hg k i ^ (conductorExponent (parity (v k)) (ε₁ k) (ε₂ k)).val
 
-private theorem cube_cross_local_if {ι : Type*}
+section
+variable {ι : Type*}
+include ι
+
+private theorem cube_cross_local_if  
     (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
@@ -197,15 +201,14 @@ private theorem cube_cross_local_if {ι : Type*}
     rw [pow_eq_pow_mod _ (local_quadratic_sq p hcop hg i k hik)]
     by_cases ho : (conductorExponent parityBit ε₁ ε₂).val % 2 = 1
     · simp [ho]
-    · have hz : (conductorExponent parityBit ε₁ ε₂).val % 2 = 0 := by omega
-      simp [ hz]
+    simp_all
 
-theorem mixedCubeCross_eq_row_quadratic {ι : Type*} [DecidableEq ι]
+theorem mixedCubeCross_eq_row_quadratic   [DecidableEq ι]
     (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (U B : Finset ι) (hd : Disjoint U B)
-    (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (side : Bool) :
+    (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)  side  :
     mixedCubeCross p hg U B v ε₁ ε₂ side =
       (if side then star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg U
           (crtLabel p B v ε₁ ε₂ side))
@@ -234,33 +237,40 @@ theorem mixedCubeCross_eq_row_quadratic {ι : Type*} [DecidableEq ι]
     _ = _ := by
       congr 1
       · rw [hr]
-        cases side <;> simp only [Bool.false_eq_true, ↓reduceIte, star_prod]
+        norm_num
       · simp only [quadraticCrossPhase, cubeOddSupport, Finset.prod_filter]
+
+end
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical
-open UniqueFactorizationMonoid
+ 
+ 
 namespace QuadraticSquarefreeKernel
 abbrev O := ActualEisensteinCubic.O
 
-def squarePart (I : Ideal O) : Ideal O := (exists_sq_mul_squarefree I).choose
+def squarePart (I : Ideal O)  := (exists_sq_mul_squarefree I).choose
 
-def squarefreePart (I : Ideal O) : Ideal O :=
+def squarefreePart (I : Ideal O)  :=
   (exists_sq_mul_squarefree I).choose_spec.choose
 
-theorem squarePart_sq_mul_squarefreePart (I : Ideal O) :
+section
+variable (I : Ideal O)
+include I
+
+theorem squarePart_sq_mul_squarefreePart   :
     squarePart I ^ 2 * squarefreePart I = I :=
   (exists_sq_mul_squarefree I).choose_spec.choose_spec.1
 
-theorem squarefree_squarefreePart (I : Ideal O) : Squarefree (squarefreePart I) :=
+theorem squarefree_squarefreePart   : Squarefree (squarefreePart I) :=
   (exists_sq_mul_squarefree I).choose_spec.choose_spec.2
 
-theorem squarePart_ne_zero {I : Ideal O} (hI : I ≠ 0) : squarePart I ≠ 0 := by
+end
+
+theorem squarePart_ne_zero  {I}  (hI : I ≠ 0) : squarePart I ≠ 0 := by
   intro hz
   have h := squarePart_sq_mul_squarefreePart I
-  rw [hz, zero_pow (by decide : 2 ≠ 0), zero_mul] at h
-  exact hI h.symm
+  simp_all
 
 theorem squarefree_decomposition_unique {A B D E : Ideal O}
     (hA : A ≠ 0) (hB : B ≠ 0) (hD : Squarefree D) (hE : Squarefree E)
@@ -287,7 +297,7 @@ theorem squarefree_decomposition_unique {A B D E : Ideal O}
     apply (associated_iff_normalizedFactors_eq_normalizedFactors hD.ne_zero hE.ne_zero).mpr
     exact Multiset.ext.mpr (fun P => (hcount P).2)
 
-theorem squarePart_mul_squarefree {A D : Ideal O} (hA : A ≠ 0) (hD : Squarefree D) :
+theorem squarePart_mul_squarefree  {A D}  (hA : A ≠ 0) (hD : Squarefree D) :
     squarePart (A ^ 2 * D) = A ∧ squarefreePart (A ^ 2 * D) = D :=
   squarefree_decomposition_unique
     (squarePart_ne_zero (mul_ne_zero (pow_ne_zero _ hA) hD.ne_zero)) hA
@@ -304,32 +314,38 @@ def decompositionEquiv : {I : Ideal O // I ≠ 0} ≃
     · exact Subtype.ext (squarePart_mul_squarefree p.1.property p.2.property).1
     · exact Subtype.ext (squarePart_mul_squarefree p.1.property p.2.property).2
 
-theorem norm_decomposition (I : Ideal O) :
+theorem norm_decomposition  I  :
     Ideal.absNorm (squarePart I) ^ 2 * Ideal.absNorm (squarefreePart I) = Ideal.absNorm I := by
   simpa only [map_mul, map_pow] using congrArg Ideal.absNorm (squarePart_sq_mul_squarefreePart I)
 
-open ActualEisensteinCubic QuadraticInitialBound CompletedGauss
+open   QuadraticInitialBound CompletedGauss
 
-theorem quadraticRow_mul {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S : Finset ι) (a b : O) :
+section
+variable {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hg : ∀ i, lambda ∉ P i) (S : Finset ι)
+include ι P hg S
+
+theorem quadraticRow_mul      
+         a b  :
     quadraticRow P hg S (a * b) = quadraticRow P hg S a * quadraticRow P hg S b := by
   rw [quadraticRow, finiteSquarefreeRow_mul, mul_pow]
   rfl
 
-theorem quadraticRow_square {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S : Finset ι) (a : O) :
+theorem quadraticRow_square      
+         a  :
     quadraticRow P hg S (a ^ 2) = rowCoprimeMask P S a := by
   have heq : quadraticRow P hg S (a ^ 2) = finiteSquarefreeRow P hg S (a ^ 6) := by
     simp only [quadraticRow, finiteSquarefreeRow, map_pow, ← Finset.prod_pow, ← pow_mul]
   rw [heq, finiteSquarefreeRow_sixth_power]
   rfl
 
+end
+
 end QuadraticSquarefreeKernel
 end
 
 namespace QuadraticMainBoundary
-open scoped BigOperators Classical
-open UniqueFactorizationMonoid
+ 
+ 
 abbrev O := ActualEisensteinCubic.O
 open QuadraticSquarefreeKernel
 
@@ -337,13 +353,19 @@ def cutoffDifference (K : ℝ) (H D : Ideal O) : ℝ :=
   (if (Ideal.absNorm (H * D) : ℝ) ≤ K then 1 else 0) -
     (if (Ideal.absNorm H : ℝ) ≤ K then 1 else 0)
 
-theorem norm_pos {I : Ideal O} (hI : I ≠ 0) : 0 < (Ideal.absNorm I : ℝ) := by
+section
+variable {I : Ideal O} (hI : I ≠ 0)
+include I hI
+
+theorem norm_pos     : 0 < (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.pos_iff_ne_zero.mpr
     (fun h => hI (Ideal.absNorm_eq_zero_iff.mp h))
 
-theorem norm_one_le {I : Ideal O} (hI : I ≠ 0) : 1 ≤ (Ideal.absNorm I : ℝ) := by
+theorem norm_one_le     : 1 ≤ (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr
     (fun h => hI (Ideal.absNorm_eq_zero_iff.mp h))
+
+end
 
 theorem norm_le_of_dvd {I J : Ideal O} (hJ : J ≠ 0) (hIJ : I ∣ J) :
     (Ideal.absNorm I : ℝ) ≤ Ideal.absNorm J := by
@@ -351,7 +373,15 @@ theorem norm_le_of_dvd {I J : Ideal O} (hJ : J ≠ 0) (hIJ : I ∣ J) :
     (Nat.pos_iff_ne_zero.mpr (fun h => hJ (Ideal.absNorm_eq_zero_iff.mp h)))
     (map_dvd Ideal.absNorm hIJ)
 
-theorem cutoffDifference_nonzero_iff (K : ℝ) (H D : Ideal O) (hD : D ≠ 0) :
+section
+variable (K : ℝ)
+include K
+
+section
+variable (H D : Ideal O) (hD : D ≠ 0)
+include H D hD
+
+theorem cutoffDifference_nonzero_iff       :
     cutoffDifference K H D ≠ 0 ↔
       (Ideal.absNorm H : ℝ) ≤ K ∧ K < (Ideal.absNorm (H * D) : ℝ) := by
   have hmono : (Ideal.absNorm H : ℝ) ≤ Ideal.absNorm (H * D) := by
@@ -360,30 +390,34 @@ theorem cutoffDifference_nonzero_iff (K : ℝ) (H D : Ideal O) (hD : D ≠ 0) :
   unfold cutoffDifference
   split_ifs <;> simp_all ; linarith
 
-theorem cutoffDifference_eq_neg_one_of_nonzero (K : ℝ) (H D : Ideal O) (hD : D ≠ 0)
+theorem cutoffDifference_eq_neg_one_of_nonzero      
     (h : cutoffDifference K H D ≠ 0) : cutoffDifference K H D = -1 := by
   obtain ⟨hH, hHD⟩ := (cutoffDifference_nonzero_iff K H D hD).mp h
   simp only [cutoffDifference, ite_eq_right (not_le.mpr hHD), ite_eq_left hH]
   norm_num
 
-theorem cutoffDifference_eq_zero_of_product_le (K : ℝ) {H D E : Ideal O}
+end
+
+theorem cutoffDifference_eq_zero_of_product_le   {H D E : Ideal O}
     (hD : D ≠ 0) (hE : E ≠ 0)
     (hB : (Ideal.absNorm (H * D * E) : ℝ) ≤ K) : cutoffDifference K H D = 0 := by
   by_contra h
   have hh := (cutoffDifference_nonzero_iff K H D hD).mp h
   have he := norm_one_le hE
   rw [map_mul, Nat.cast_mul] at hB
-  have hp := Nat.cast_nonneg (Ideal.absNorm (H * D)) (α := ℝ)
+  
   nlinarith
+
+end
 
 end QuadraticMainBoundary
 
-open scoped BigOperators Classical
+ 
 namespace QuadraticDivisorCancellation
-open ActualEisensteinCubic ConcreteTraceCRT QuadraticInitialBound QuadraticSquarefreeKernel
+open     QuadraticInitialBound QuadraticSquarefreeKernel
 
 theorem double_divisor_factorization {κ : Type*} [DecidableEq κ]
-    (z : κ → ℂ) (T U : Finset κ) (hTU : Disjoint T U) :
+    (z : κ → ℂ)  T U  (hTU : Disjoint T U) :
     (∑ D ∈ T.powerset, ∑ E ∈ (T ∪ U).powerset,
       (-1 : ℂ) ^ E.card * (∏ i ∈ D, z i) * ∏ i ∈ E, z i) =
     (∏ i ∈ T, (1 - z i ^ 2)) *

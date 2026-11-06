@@ -6,16 +6,16 @@ public import OAI.NumberTheory.DirichletL.Detector.TuplePrime
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve ProbeEuler ProbeLocal
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 theorem indexedCompensatedHigh_principal_continued {K : ℕ} (η : HeckeFamily.Character)
     (S : Finset Id) (hS : SourceExclusions S) (P : Fin K→PrimeIdeal)
-    (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S) (x w z : ℂ)
+    (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)  x w z 
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     indexedCompensatedHigh η S (fun i=>primaryGenerator (P i).val) 1 x w z=
       (HeckeFamily.LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
@@ -37,6 +37,6 @@ theorem indexedCompensatedHigh_principal_continued {K : ℕ} (η : HeckeFamily.C
     Finset.prod_image hP.injOn]
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

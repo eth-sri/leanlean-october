@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.Blueprint.Graph
 public import Mathlib.Algebra.Order.Star.Real
@@ -7,14 +8,17 @@ public import Mathlib.Algebra.Order.Star.Real
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α → ℂ) (R C : ℝ)
+section
+variable {α : Type*} (mass w : α → ℝ)
+
+theorem finite_support_schur     (K : α → α → ℂ)  R C 
     (hm : ∀ a, 0 ≤ mass a) (hw : ∀ a, 0 < w a) (hR : 0 ≤ R) (hC : 0 ≤ C)
     (hrow : ∀ a (t : Finset α), ∑ b ∈ t, ‖K a b‖ * w b ≤ R * w a)
     (hcol : ∀ b (s : Finset α), ∑ a ∈ s, mass a * ‖K a b‖ * w a ≤ C * mass b * w b) :
@@ -37,8 +41,7 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
     mul_nonneg (div_nonneg (mul_nonneg (mul_nonneg (hm u.1) (hK u.1 u.2))
       (hw u.1).le) (hw u.2).le) (sq_nonneg _)
   have hsq (u : α × α) : rho u ^ 2 = F u * G u := by
-    dsimp only [rho, F, G]
-    field_simp [ne_of_gt (hw u.1), ne_of_gt (hw u.2)]
+    grind
   have hrowT (a : α) : (∑ b ∈ t, ‖K a b‖ * w b) ≤ R * w a := hrow a t
   have hcolS (b : α) : (∑ a ∈ s, mass a * ‖K a b‖ * w a) ≤ C * mass b * w b := hcol b s
   have hFs : (∑ u ∈ S, F u) ≤ R * U := by
@@ -52,11 +55,7 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
         calc
           _ = (mass a * ‖f a‖ ^ 2 / w a) * (∑ b ∈ t, ‖K a b‖ * w b) := by
             rw [Finset.mul_sum]
-            apply Finset.sum_congr rfl
-            intro b _
-            dsimp only [F]
-            simp only [div_eq_mul_inv]
-            ring
+            grind
           _ ≤ (mass a * ‖f a‖ ^ 2 / w a) * (R * w a) :=
             mul_le_mul_of_nonneg_left (hrowT a) ha
           _ = R * (mass a * ‖f a‖ ^ 2) := by
@@ -73,11 +72,7 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
         calc
           _ = (‖g b‖ ^ 2 / w b) * (∑ a ∈ s, mass a * ‖K a b‖ * w a) := by
             rw [Finset.mul_sum]
-            apply Finset.sum_congr rfl
-            intro a _
-            dsimp only [G]
-            simp only [div_eq_mul_inv]
-            ring
+            grind
           _ ≤ (‖g b‖ ^ 2 / w b) * (C * mass b * w b) :=
             mul_le_mul_of_nonneg_left (hcolS b) hb
           _ = C * (mass b * ‖g b‖ ^ 2) := by
@@ -102,10 +97,9 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
       _ = ∑ a ∈ s, ∑ b ∈ t, rho (a, b) := by simp only [hnormEntry]
       _ = ∑ u ∈ S, rho u := (Finset.sum_product s t rho).symm
   have hpos : 0 ≤ ∑ u ∈ S, rho u := Finset.sum_nonneg (fun u _ =>
-    mul_nonneg (mul_nonneg (mul_nonneg (hm u.1) (hK u.1 u.2)) (norm_nonneg _)) (norm_nonneg _))
+    (by bound))
   let B : ℝ := Real.sqrt (R * C) * Real.sqrt U * Real.sqrt V
-  have hB : 0 ≤ B := mul_nonneg (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
-    (Real.sqrt_nonneg _)
+  have hB : 0 ≤ B := (by positivity)
   have hBsq : B ^ 2 = (R * U) * (C * V) := by
     dsimp only [B]
     simp only [mul_pow, Real.sq_sqrt (mul_nonneg hR hC), Real.sq_sqrt hU, Real.sq_sqrt hV]
@@ -122,8 +116,8 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
 
 /-- A countable Schur certificate also controls arbitrary local restrictions
 and phases that are dominated by the original absolute matrix entries. -/
-theorem weightedBounds_domination {α : Type*} (mass w : α → ℝ)
-    (K H : α → α → ℂ) (C : ℝ) (hm : ∀ a, 0 ≤ mass a) (hw : ∀ a, 0 < w a)
+theorem weightedBounds_domination    
+    (K H : α → α → ℂ)  C  (hm : ∀ a, 0 ≤ mass a) (hw : ∀ a, 0 < w a)
     (hC : 0 ≤ C) (hH : WeightedBounds mass w H C)
     (hKH : ∀ a b, ‖K a b‖ ≤ ‖H a b‖) : NormBound mass K C := by
   have hb := finite_support_schur mass w K C C hm hw hC hC
@@ -144,7 +138,9 @@ theorem weightedBounds_domination {α : Type*} (mass w : α → ℝ)
       _ ≤ _ := (hH.2 b).2
   simpa only [Real.sqrt_mul_self hC] using hb hrow hcol
 
-theorem normBound_add {α : Type*} (mass : α → ℝ) (K H : α → α → ℂ) (C D : ℝ)
+end
+
+theorem normBound_add {α : Type*} (mass : α → ℝ) (K H : α → α → ℂ)  C D 
     (hK : NormBound mass K C) (hH : NormBound mass H D) :
     NormBound mass (fun a b => K a b + H a b) (C + D) := by
   intro s t f g

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedForcing
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
@@ -17,7 +17,7 @@ open InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlap
 open InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
 open InverseInitialEnergyCallerWindow
-local notation "Eis"=>ActualEisensteinCubic.O
+
 variable {σ:Type*} [DecidableEq σ]
 
 open InverseInitialCommonTransform InverseInitialLargePool
@@ -25,23 +25,23 @@ open InverseInitialExcludedPool InverseInitialExcludedForcing
 theorem original_tuples_excluded_fourier
     (W wFresh:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
     (hs:Function.support W⊆Set.Icc a₀ b₀)(hW:ContDiff ℝ ∞ W)
-    (E:Finset (Ideal Eis))(hE:∀Q∈E,Prime Q)
-    (I:Finset σ)(L:σ→Finset (Ideal Eis))(hL:∀i∈I,∀P∈L i,Prime P)
-    (a:σ→Ideal Eis→ℂ)(j:Ideal Eis)(hj0:j≠0)
+    (E:Finset (Ideal ActualEisensteinCubic.O))(hE:∀Q∈E,Prime Q)
+    (I:Finset σ)(L:σ→Finset (Ideal ActualEisensteinCubic.O))(hL:∀i∈I,∀P∈L i,Prime P)
+    (a:σ→Ideal ActualEisensteinCubic.O→ℂ) j (hj0:j≠0)
     (hP:∀q∈I.pi L,Admissible (j*survivingProduct I q))
     (hcop:∀q∈I.pi L,Pairwise (Function.onFun IsCoprime (fun i:I=>q i.val i.property)))
     (hPE:∀q∈I.pi L,outside E (j*survivingProduct I q))
-    (η:Ideal Eis→*ℂ)(hη:∀c,¬outside E c→η c=0)(u:Eis)(Z r z G:ℝ)(hZ:0<Z)(ell lo hi:σ→ℝ)
+     η (hη:∀c,¬outside E c→η c=0) u  Z r z G (hZ:0<Z)(ell lo hi:σ→ℝ)
     (hell:∑i∈I,ell i=z-G)(jlo jhi:ℝ)
     (hj:((j.absNorm:ℝ)/Z^G)∈Set.Icc jlo jhi)
     (ha:∀i∈I,∀q∈L i,a i q≠0→slotRatio Z ell i q∈Set.Icc (lo i) (hi i))
     (hFresh:∀(v:σ→ℝ)(yj yc:ℝ),(∀i∈I,v i∈Set.Icc (lo i) (hi i))→
       yj∈Set.Icc jlo jhi→0<yc→W (yj*yc/(∏i∈I,v i))≠0→wFresh yc=1)
-    (F:Finset (Ideal Eis))(hF:∀c∈F,Admissible c)(hFE:∀c∈F,outside E c)
+     F  hF (hFE:∀c∈F,outside E c)
     (hsub:tupleColumns (originalOutside (originalSource Z r b₀) E) (I.pi L)
-      (fun q:∀i∈I,Ideal Eis=>j*survivingProduct I q) j⊆F) :
+      (fun q:∀i∈I,Ideal ActualEisensteinCubic.O=>j*survivingProduct I q) j⊆F) :
     let S := originalSource Z r b₀
-    let P := fun q:∀i∈I,Ideal Eis=>j*survivingProduct I q
+    let P := fun q:∀i∈I,Ideal ActualEisensteinCubic.O=>j*survivingProduct I q
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i=>by rw [poolPrimary_span F hF i];infer_instance
     (∑q∈I.pi L,(∏i∈I.attach,a i.val (q i.val i.property))*
@@ -113,6 +113,6 @@ theorem original_tuples_excluded_fourier
 
 end SevenEighths.InverseInitialExcludedFourier
 
-end
+
 
 end OAI

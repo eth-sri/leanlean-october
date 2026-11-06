@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S34.KernelTransport
 
@@ -8,7 +9,7 @@ set_option autoImplicit false
 open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
-noncomputable section
+
 open Blueprint.Analytic
 
 theorem sum_quad_reorder {α β γ δ M : Type*} [Fintype α] [Fintype β]
@@ -37,11 +38,7 @@ theorem transpose_kernel_pairing {α β : Type*} [Fintype α] [Fintype β]
   apply Finset.sum_congr rfl
   intro E _
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro X _
-  apply Finset.sum_congr rfl
-  intro Y _
-  ring
+  grind
 
-end
+
 end Erdos821.S34Core

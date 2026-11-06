@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralBase
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralEntry
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralEntry
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
@@ -39,11 +40,10 @@ lemma rowClosedMarked_central_size (eta a rho x w z : ℂ) (alpha eps : ℝ)
       (1-evenRatio (Ideal.absNorm (Ideal.span {p})) a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x)) (coordV Q z))‖≤4*Q^(-10*eps) := by
     rw [div_eq_mul_inv,norm_mul]
     have hh := mul_le_mul ht hr (norm_nonneg _) (by positivity)
-    exact hh.trans_eq (by change (2*Q^(1-x.re-w.re))*2=4*Q^(-10*eps);rw [he];ring)
+    exact hh.trans_eq (by grind)
   dsimp only [Q] at hdiv
   have hh := (norm_add_le _ _).trans (add_le_add hrem hdiv)
-  simp only [sub_add_cancel] at hh
-  exact hh.trans (by change 128*Q^(1/2-x.re)+4*Q^(-10*eps)≤132*Q^(-10*eps);nlinarith)
+  grind
 
 include hc in
 theorem ramifiedClosed_central_defect (eta a rho x w z : ℂ) (alpha eps : ℝ)
@@ -65,6 +65,6 @@ theorem ramifiedClosed_central_defect (eta a rho x w z : ℂ) (alpha eps : ℝ)
     hb (norm_nonneg _) (by norm_num : (0:ℝ)≤3/2)).trans_eq
   ring
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

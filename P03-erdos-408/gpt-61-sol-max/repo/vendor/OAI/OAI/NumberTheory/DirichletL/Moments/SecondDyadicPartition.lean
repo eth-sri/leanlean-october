@@ -15,7 +15,7 @@ open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPois
 open CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow
 open CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization
 open CenteredMomentSmooth CenteredMomentLogDyadic CenteredMomentDyadicCount
-local notation "O" => ActualEisensteinCubic.O
+
 
 abbrev Blocks (a b : Fin 4→ℝ) := ∀ i : Fin 4,↥(indices (a i) (b i))
 
@@ -30,10 +30,10 @@ theorem dyadic_product_partition (a b q : Fin 4→ℝ)
   simp_rw [he]
   simp
 
-theorem physical_kernel_dyadic_partition (C D I J : Ideal O)
+theorem physical_kernel_dyadic_partition  C D I J 
     (hC : Supported C) (hD : Supported D) (hI : Supported I) (hJ : Supported J)
-    (A h : O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K)
-    (a b : Fin 4→ℝ) (ha : ∀i,0<a i)
+     A h  (hA : A≠0) (hh : h≠0)  W   K R  (hK : 0<K)
+     a b  (ha : ∀i,0<a i)
     (hband : ∀i, (![secondEffectiveScale C D A K,normValue h,
       (Ideal.absNorm I:ℝ),(Ideal.absNorm J:ℝ)] : Fin 4→ℝ) i∈Set.Icc (a i) (b i)) :
     physicalKernel C D W K R (A*h) I J=

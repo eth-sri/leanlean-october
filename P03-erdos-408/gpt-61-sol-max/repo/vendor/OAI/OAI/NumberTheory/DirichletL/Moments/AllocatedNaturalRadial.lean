@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Moments.AmplificationChildSourceCaps
 
 public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskRadialEnergy
@@ -19,9 +22,9 @@ open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivi
 open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
 open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentEligibleEnergy
 open CenteredMomentCommonAllocationSum CenteredMomentRadialEligibleEnergy
-local notation "O" => HeckeFamily.O
 
-lemma profile_support (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) :
+
+lemma profile_support (V : Plain)  U   hU   t  :
     Function.support (V.profile U hU t : ℝ→ℂ)⊆Set.Icc (V.a/max 1 V.b) (max 1 V.b) := by
   by_cases h : 1≤U*V.b
   · rw [V.profile_retained U hU t h]
@@ -30,19 +33,19 @@ lemma profile_support (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) :
   · rw [V.profile_zero U hU t (lt_of_not_ge h)]
     simp
 
-def naturalCharacter (η : Character) (z : O) : Character :=
+def naturalCharacter (η : Character) (z : HeckeFamily.O)  :=
   if h : z≠0 then (naturalRow η z h).character else η
 
-lemma naturalCharacter_eq (η : Character) (z : O) (hz : z≠0) :
+lemma naturalCharacter_eq  η   z   hz  :
     naturalCharacter η z=(naturalRow η z hz).character := by simp [naturalCharacter,hz]
 
 variable {α : Type*} [Fintype α] [DecidableEq α]
 
-def Shared (F : Finset α) (b M : α→ℝ) (C ε : ℝ) : Prop :=
-  ∀(R : Finset (Ideal O))(hR : ∀I∈R,Prime I)
-      (χ : O→Character)(W₁ W₂ : 𝓢(ℝ,ℂ))(X₁ X₂ a₁ b₁ a₂ b₂ : ℝ)
-      (pool : α→Finset (Ideal O))(β : α→Ideal O→ℂ)(P : α→ℝ)
-      (keep : O→Prop)(Φ : 𝓢(ℝ,ℂ))(K E : ℝ),
+def Shared (F : Finset α) (b M : α→ℝ) (C ε : ℝ)  :=
+  ∀(R : Finset (Ideal HeckeFamily.O))(hR : ∀I∈R,Prime I)
+      (χ : HeckeFamily.O→Character)(W₁ W₂ : 𝓢(ℝ,ℂ))(X₁ X₂ a₁ b₁ a₂ b₂ : ℝ)
+      (pool : α→Finset (Ideal HeckeFamily.O))(β : α→Ideal HeckeFamily.O→ℂ)(P : α→ℝ)
+      (keep : HeckeFamily.O→Prop)(Φ : 𝓢(ℝ,ℂ))(K E : ℝ),
       0<X₁ → 0<X₂ → 0≤b₁ → 0≤b₂ →
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a₁ b₁ →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a₂ b₂ →
@@ -60,7 +63,10 @@ def Shared (F : Finset α) (b M : α→ℝ) (C ε : ℝ) : Prop :=
         ∏j∈F,naturalSlot ((χ z).excludePrimes R hR) (pool j) (β j) (P j)) keep Φ K≤
         C*(Ideal.absNorm (∏I∈R,I):ℝ)^ε*E
 
-theorem uniform_shared (b M : α→ℝ) (hM : ∀i,0≤M i) (ε : ℝ) (hε : 0<ε) :
+section
+variable (b M : α→ℝ)
+
+theorem uniform_shared   (hM : ∀i,0≤M i) (ε : ℝ) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀T : Finset α,∀F : Finset T,
       Shared F (fun i=>b i) (fun i=>M i) C ε := by
   have he (T : Finset α) (F : Finset T) : ∃C : ℝ,0<C ∧ Shared F (fun i=>b i) (fun i=>M i) C ε :=
@@ -80,27 +86,27 @@ theorem uniform_shared (b M : α→ℝ) (hM : ∀i,0≤M i) (ε : ℝ) (hε : 0<
     (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hCB
       (Real.rpow_nonneg (Nat.cast_nonneg _) _)) hE)
 
-def commonChild (s : Input α) (τ : Character) (v : ℝ) (C R : Ideal O)
-    (B : actualAllocations s.pools C) (L : Ideal O)
+def commonChild (s : Input α) (τ : Character) (v : ℝ) (C R : Ideal HeckeFamily.O)
+    (B : actualAllocations s.pools C) (L )
     (a : Allocation L (Finset.univ : Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (V₁ V₂ : Plain) (left : Bool) (z : O) (D₁ D₂ : Finset (Ideal O))
-    (J : Finset (CenteredMomentCommonProfile.liveIndices B.val)) : ℂ :=
+    (V₁ V₂ : Plain) (left : Bool) (z : HeckeFamily.O) (D₁ D₂ : Finset (Ideal HeckeFamily.O))
+    (J : Finset (CenteredMomentCommonProfile.liveIndices B.val))  :=
   let d:=commonData (withHeight s τ v) C R B
   if left then child (naturalCharacter τ z) L a V₁ V₂ d.slots d.coefficient d.P v
     d.X₁ d.X₂ d.X₁_pos d.X₂_pos D₁ D₂ J
   else child (naturalCharacter τ z) L a V₁ V₂ d.slots d.coefficient d.P v
     d.Y₁ d.Y₂ d.Y₁_pos d.Y₂_pos D₁ D₂ J
 
-theorem allocated_radial_bound (b M : α→ℝ) (C₀ ε : ℝ)
-    (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
+theorem allocated_radial_bound   (C₀ ε : ℝ)
+    (D : Ideal HeckeFamily.O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
     (hb : Shared (liveIndices D a) b M C₀ ε)
-    (η : Character) (R : Ideal O) (hR : R≠0) (V₁ V₂ : Plain)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ)
+    (η : Character) (R : Ideal HeckeFamily.O) (hR : R≠0) (V₁ V₂ : Plain)
+    (pool : α→Finset (Ideal HeckeFamily.O)) (β : α→Ideal HeckeFamily.O→ℂ) (P : α→ℝ)
     (hprime : ∀i,∀I∈pool i,Prime I) (hP : ∀i,0<P i)
     (hβ : ∀i,∀I∈pool i,‖β i I‖≤M i)
     (hs : ∀i,∀I∈pool i,β i I≠0 → (I.absNorm:ℝ)≤b i*P i)
     (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂)
-    (r : Radial) (hkeep : ∀z,r.keep z → z≠0) (E : ℝ) (hE : 0≤E)
+    (r : Radial) (hkeep : ∀z,r.keep z → z≠0)  E  (hE : 0≤E)
     (hchild : ∀D₁∈(CompletedGauss.primeSupport R).powerset,
       ∀D₂∈(CompletedGauss.primeSupport R).powerset,∀J∈(liveIndices D a).powerset,
       radialEnergy (fun z=>child (naturalCharacter η z) D a V₁ V₂ pool β P t X₁ X₂
@@ -134,13 +140,13 @@ theorem allocated_radial_bound (b M : α→ℝ) (C₀ ε : ℝ)
     simp only [excluded,norm_mul,hphase,one_mul]
   · rfl
 
-omit [DecidableEq α] in
-lemma common_nonzero (s : Input α) (C : Ideal O) (B : actualAllocations s.pools C) : C≠0 := by
-  rw [←(Finset.mem_filter.mp B.property).2]
-  exact Finset.prod_ne_zero_iff.mpr (fun i _=>alloc_ne s C B i)
+end
 
-lemma child_energy_eq_radial (s : Data α) (r : Radial) (D : Ideal O)
-    (a : Allocation D (Finset.univ : Finset (α⊕Fin 2))) :
+omit [DecidableEq α] in
+lemma common_nonzero (s : Input α)  C  (B : actualAllocations s.pools C) : C≠0 := by solve_by_elim [_root_.OAI.SevenEighths.CenteredMomentAmplificationChildSourceCaps.allocation_ne]
+
+lemma child_energy_eq_radial (s : Data α)  r   D 
+     a  :
     childEnergy s r D a=
       radialEnergy (fun z=>allocatedPositiveRow s.η s.m s.A z s.t s.slots s.coefficient s.P
         D a s.W₁ s.W₂ s.X₁ s.X₂) r.keep r.profile r.scale+
@@ -159,10 +165,10 @@ lemma child_energy_eq_radial (s : Data α) (r : Radial) (D : Ideal O)
   unfold Radial.weight
   split_ifs <;> ring
 
-def CommonBound (b M : α→ℝ) (C₀ ε : ℝ) : Prop :=
+def CommonBound (b M : α→ℝ) (C₀ ε : ℝ)  :=
   ∀s : Input α,(∀i,s.hi i≤b i) → (∀i,s.M i≤M i) →
-    ∀(τ : Character) (v : ℝ) (C R : Ideal O),R≠0 → ∀B : actualAllocations s.pools C,
-    ∀(L : Ideal O) (a : Allocation L (Finset.univ : Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2))),
+    ∀(τ : Character) (v : ℝ) (C R : Ideal HeckeFamily.O),R≠0 → ∀B : actualAllocations s.pools C,
+    ∀(L : Ideal HeckeFamily.O) (a : Allocation L (Finset.univ : Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2))),
     ∀V₁ V₂ : Plain,V₁.W=s.W₁ → V₂.W=s.W₂ → ∀r : Radial,(∀z,r.keep z → z≠0) →
     ∀E₁ E₂ : ℝ,0≤E₁ → 0≤E₂ →
     (∀D₁∈(CompletedGauss.primeSupport (R*C)).powerset,
@@ -174,7 +180,7 @@ def CommonBound (b M : α→ℝ) (C₀ ε : ℝ) : Prop :=
     childEnergy (commonData (withHeight s τ v) C R B) r L a≤
       C₀*(Ideal.absNorm (R*C).radical:ℝ)^ε*(E₁+E₂)
 
-theorem actual_common_radial_energy (b M : α→ℝ) (hM : ∀i,0≤M i) (ε : ℝ) (hε : 0<ε) :
+theorem actual_common_radial_energy (b M : α→ℝ) (hM : ∀i,0≤M i)  ε  (hε : 0<ε) :
     ∃C₀ : ℝ,0<C₀ ∧ CommonBound b M C₀ ε := by
   obtain ⟨C₀,hC₀,hbound⟩:=uniform_shared b M hM ε hε
   refine ⟨C₀,hC₀,?_⟩

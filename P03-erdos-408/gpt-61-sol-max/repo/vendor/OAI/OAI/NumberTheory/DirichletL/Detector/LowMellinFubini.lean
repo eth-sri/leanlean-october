@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowRowMellin
 
@@ -6,17 +7,21 @@ public import OAI.NumberTheory.DirichletL.Detector.LowRowMellin
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma lowRowMellinIntegrand_common_support (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
-    (hW1 : HasCompactSupport W1) (hΩ : HasCompactSupport Ω)
-    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+section
+variable (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Set.Icc a0 b0) (hWs : ContDiff ℝ ∞ W0) (hW1 : HasCompactSupport W1) (hΩ : HasCompactSupport Ω) (hΩ0 : Ω 0=0) (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (v : ℝ) (B : PhysicalRowIndex→ℂ)
+
+include hW1 hΩ hX hY in
+lemma lowRowMellinIntegrand_common_support    
+       
+          :
     ∃R : Finset PhysicalRowIndex,∀v : ℝ,∀r∉R,
       lowRowMellinIntegrand C W0 W1 Ω X Y r v=0 := by
   have hs := (idealWindow_finite_support W1 hW1 Y hY).preimage
@@ -28,25 +33,24 @@ lemma lowRowMellinIntegrand_common_support (C : CalibrationData) (W0 W1 Ω : ℝ
   by_cases h : W1 ((Ideal.absNorm r.1.val:ℝ)/Y)=0
   · unfold lowRowMellinIntegrand
     rw [lowAdditiveCoefficient_outer_zero C W1 Y r.1 r.2 v h,mul_zero]
-  · have ho : Ω (elementNorm r.2/lowPhysicalScale C X Y)=0 := by
-      by_contra ho
-      exact hr ⟨h,ho⟩
-    simp [lowRowMellinIntegrand,ho]
+  grind [elementNorm, lowPhysicalScale, lowRowMellinIntegrand]
 
-lemma lowRowMellinIntegrand_mul_summable (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
-    (hW1 : HasCompactSupport W1) (hΩ : HasCompactSupport Ω)
-    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (v : ℝ) (B : PhysicalRowIndex→ℂ) :
+include hW1 hΩ hX hY in
+lemma lowRowMellinIntegrand_mul_summable    
+       
+              :
     Summable (fun r=>lowRowMellinIntegrand C W0 W1 Ω X Y r v*B r) := by
   obtain ⟨R,hR⟩ := lowRowMellinIntegrand_common_support C W0 W1 Ω hW1 hΩ X Y hX hY
   apply summable_of_ne_finset_zero (s:=R)
   intro r hr
   rw [hR v r hr,zero_mul]
 
-lemma lowRowMellinIntegrand_sum_integrable (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
-    (a0 b0 : ℝ) (ha0 : 0<a0) (hW0 : Function.support W0⊆Set.Icc a0 b0)
-    (hWs : ContDiff ℝ ∞ W0) (hW1 : HasCompactSupport W1)
-    (hΩ : HasCompactSupport Ω) (hΩ0 : Ω 0=0)
-    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (B : PhysicalRowIndex→ℂ) :
+include ha0 hW0 hWs hW1 hΩ hΩ0 hX hY in
+lemma lowRowMellinIntegrand_sum_integrable    
+         
+       
+       
+            :
     Integrable (fun v : ℝ=>∑'r : PhysicalRowIndex,lowRowMellinIntegrand C W0 W1 Ω X Y r v*B r) := by
   obtain ⟨R,hR⟩ := lowRowMellinIntegrand_common_support C W0 W1 Ω hW1 hΩ X Y hX hY
   have he (v : ℝ) : (∑'r : PhysicalRowIndex,lowRowMellinIntegrand C W0 W1 Ω X Y r v*B r)=
@@ -57,11 +61,12 @@ lemma lowRowMellinIntegrand_sum_integrable (C : CalibrationData) (W0 W1 Ω : ℝ
   simp_rw [he]
   exact integrable_finsetSum R (fun r _=>(lowRowMellinIntegrand_integrable C W0 W1 Ω a0 b0 ha0 hW0 hWs hΩ0 X Y hX hY r).mul_const _)
 
-lemma lowRowMellinIntegrand_tsum_integral (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
-    (a0 b0 : ℝ) (ha0 : 0<a0) (hW0 : Function.support W0⊆Set.Icc a0 b0)
-    (hWs : ContDiff ℝ ∞ W0) (hW1 : HasCompactSupport W1)
-    (hΩ : HasCompactSupport Ω) (hΩ0 : Ω 0=0)
-    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (B : PhysicalRowIndex→ℂ) :
+include ha0 hW0 hWs hW1 hΩ hΩ0 hX hY in
+lemma lowRowMellinIntegrand_tsum_integral    
+         
+       
+       
+            :
     (∑'r : PhysicalRowIndex,∫v : ℝ,lowRowMellinIntegrand C W0 W1 Ω X Y r v*B r)=
       ∫v : ℝ,∑'r : PhysicalRowIndex,lowRowMellinIntegrand C W0 W1 Ω X Y r v*B r := by
   obtain ⟨R,hR⟩ := lowRowMellinIntegrand_common_support C W0 W1 Ω hW1 hΩ X Y hX hY
@@ -74,9 +79,10 @@ lemma lowRowMellinIntegrand_tsum_integral (C : CalibrationData) (W0 W1 Ω : ℝ�
   simp_rw [he]
   exact (integral_finsetSum R (fun r _=>(lowRowMellinIntegrand_integrable C W0 W1 Ω a0 b0 ha0 hW0 hWs hΩ0 X Y hX hY r).mul_const _)).symm
 
-theorem physicalRowWeight_tsum_low_mellin (C : CalibrationData) (W0 W1 : ℝ→ℂ)
-    (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
+include ha0 ha1 hW0 in
+theorem physicalRowWeight_tsum_low_mellin    
+         
+      (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hWs : ContDiff ℝ ∞ W0) (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (B : PhysicalRowIndex→ℂ) :
     (∑'r : PhysicalRowIndex,physicalRowWeight C W0 W1 X Y r*B r)=
       (Real.sqrt (lowPhysicalScale C X Y):ℂ)⁻¹*(1/(2*Real.pi):ℂ)*
@@ -92,7 +98,9 @@ theorem physicalRowWeight_tsum_low_mellin (C : CalibrationData) (W0 W1 : ℝ→�
   congr 2
   exact lowRowMellinIntegrand_tsum_integral C W0 W1 Ω a0 b0 ha0 hW0 hWs hW1c hΩ hΩ0 X Y hX hY B
 
-end SevenEighths.ProbePhysical
 end
+
+end SevenEighths.ProbePhysical
+
 
 end OAI

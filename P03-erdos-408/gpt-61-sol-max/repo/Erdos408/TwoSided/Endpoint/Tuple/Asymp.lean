@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Asymp
 
@@ -19,8 +20,13 @@ namespace Erdos408.TwoSided.TupleHigh
 
 open Filter
 
+section
+variable {a b : ℝ} (ha : 0 ≤ a) (hab : a < b) (C : ℝ) (ha₁ : a < 1) {c : ℝ} (hc : 0 < c) (D : ℝ)
+
+
+include ha hab in
 /-- Eventually `D L^C exp(L^a) ≤ exp(L^b)`, for `0 ≤ a < b`. -/
-theorem eventually_mul_rpow_mul_exp_le_exp {a b : ℝ} (ha : 0 ≤ a) (hab : a < b) (C D : ℝ) :
+theorem eventually_mul_rpow_mul_exp_le_exp         :
     ∀ᶠ x : ℝ in atTop,
       D * Real.log x ^ C * Real.exp (Real.log x ^ a) ≤ Real.exp (Real.log x ^ b) := by
   have hb : 0 < b := lt_of_le_of_lt ha hab
@@ -51,9 +57,10 @@ theorem eventually_mul_rpow_mul_exp_le_exp {a b : ℝ} (ha : 0 ≤ a) (hab : a <
         ring_nf
     _ ≤ Real.exp (L ^ b) := Real.exp_le_exp.2 (by linarith)
 
+include ha ha₁ hc in
 /-- Eventually `D exp(L^a) ≤ exp(c L / T²⁰)`, for `0 ≤ a < 1` and `c > 0`. -/
-theorem eventually_mul_exp_rpow_le_margin {a : ℝ} (ha : 0 ≤ a) (ha₁ : a < 1) {c : ℝ}
-    (hc : 0 < c) (D : ℝ) :
+theorem eventually_mul_exp_rpow_le_margin        
+        :
     ∀ᶠ x : ℝ in atTop,
       D * Real.exp (Real.log x ^ a) ≤
         Real.exp (c * Real.log x / Real.log (Real.log x) ^ 20) := by
@@ -96,8 +103,9 @@ theorem eventually_mul_exp_rpow_le_margin {a : ℝ} (ha : 0 ≤ a) (ha₁ : a < 
         rw [Real.exp_add, Real.exp_log hD]
     _ ≤ _ := Real.exp_le_exp.2 h₃
 
+include hc in
 /-- Eventually `D exp(L / T²²) ≤ exp(c L / T²⁰)`, for `c > 0`. -/
-theorem eventually_mul_exp_div_le_margin {c : ℝ} (hc : 0 < c) (D : ℝ) :
+theorem eventually_mul_exp_div_le_margin       :
     ∀ᶠ x : ℝ in atTop,
       D * Real.exp (Real.log x / Real.log (Real.log x) ^ 22) ≤
         Real.exp (c * Real.log x / Real.log (Real.log x) ^ 20) := by
@@ -110,7 +118,7 @@ theorem eventually_mul_exp_div_le_margin {c : ℝ} (hc : 0 < c) (D : ℝ) :
   set L := Real.log x
   set T := Real.log L
   have hT1 : 1 ≤ T := le_trans (by linarith [Real.sqrt_nonneg (2 / c)]) hT
-  have hT0 : 0 < T := by linarith
+  
   rcases le_or_gt D 0 with hD | hD
   · have : D * Real.exp (L / T ^ 22) ≤ 0 := mul_nonpos_of_nonpos_of_nonneg hD (by positivity)
     linarith [Real.exp_pos (c * L / T ^ 20)]
@@ -137,5 +145,7 @@ theorem eventually_mul_exp_div_le_margin {c : ℝ} (hc : 0 < c) (D : ℝ) :
   calc D * Real.exp (L / T ^ 22) = Real.exp (Real.log D + L / T ^ 22) := by
         rw [Real.exp_add, Real.exp_log hD]
     _ ≤ _ := Real.exp_le_exp.2 h₃
+
+end
 
 end Erdos408.TwoSided.TupleHigh

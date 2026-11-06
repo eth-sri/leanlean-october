@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.BoxSum
 
@@ -16,9 +17,13 @@ namespace Erdos408.TypeII
 
 open Finset Real
 
+section
+variable {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → ℝ} (hΦ : IsCutoff κ CΦ M x Φ)
+include κ CΦ x M Φ hΦ
+
 /-- A cutoff in the class is Lipschitz with constant `M₁ T^{C_Φ}`. -/
-theorem abs_sub_le_of_isCutoff {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → ℝ}
-    (hΦ : IsCutoff κ CΦ M x Φ) (a b : ℝ) :
+theorem abs_sub_le_of_isCutoff      
+       a b  :
     |Φ a - Φ b| ≤ M 1 * logLog x ^ (CΦ * 1) * |a - b| := by
   obtain ⟨hsmooth, -, -, hder⟩ := hΦ
   have hdiff : Differentiable ℝ Φ := hsmooth.differentiable (by simp)
@@ -30,12 +35,12 @@ theorem abs_sub_le_of_isCutoff {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → 
   simpa [Real.norm_eq_abs] using h
 
 /-- The derivative bound of a cutoff is nonnegative. -/
-theorem cutoff_deriv_bound_nonneg {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → ℝ}
-    (hΦ : IsCutoff κ CΦ M x Φ) (r : ℕ) : 0 ≤ M r * logLog x ^ (CΦ * r) :=
+theorem cutoff_deriv_bound_nonneg      
+       r  : 0 ≤ M r * logLog x ^ (CΦ * r) :=
   (abs_nonneg _).trans (hΦ.2.2.2 r 0)
 
 /-- The frozen cutoff on a box. -/
-theorem abs_cutoff_freeze_le {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → ℝ} (hΦ : IsCutoff κ CΦ M x Φ)
+theorem abs_cutoff_freeze_le        
     (hx : 0 < x) (hκ : 1 < κ) {lam mu δ : ℝ} (hlam : 0 ≤ lam) (hmu : 0 ≤ mu) (hδ0 : 0 ≤ δ)
     (hδ1 : δ ≤ 1) {m n : ℕ} (hm1 : lam < m) (hm2 : (m : ℝ) ≤ lam * (1 + δ)) (hn1 : mu < n)
     (hn2 : (n : ℝ) ≤ mu * (1 + δ)) :
@@ -54,7 +59,6 @@ theorem abs_cutoff_freeze_le {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → �
     push_cast at h1
     split_ifs
     · have : 0 ≤ (3 * δ * (κ * x + 1) + 1) / x := by
-        have : 0 ≤ κ * x := by positivity
         positivity
       positivity
     · exact le_rfl
@@ -90,5 +94,7 @@ theorem abs_cutoff_freeze_le {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → �
     have h4 : 3 * δ * (lam * mu) ≤ 3 * δ * (κ * x + 1) :=
       mul_le_mul_of_nonneg_left hlm (by positivity)
     constructor <;> linarith
+
+end
 
 end Erdos408.TypeII

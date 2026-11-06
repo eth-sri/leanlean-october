@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.SurvivingEnergy
 
@@ -8,19 +9,24 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open InverseReflectedNormalization InverseKernelSourceUniform
-noncomputable section
+
 variable {φ : Type*} [Fintype φ]
 
-lemma reciprocal_annulus_normalization (r Qn Qb kn kb : ℝ)
-    (hr : 0<r) (hn : 0<Qn) (hb : 0<Qb) (hkn : 0<kn) (hkb : 0<kb) :
+section
+variable (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3) (Z T tau C r QK QP Qn Qb kn kb R A D1 D2 : ℝ) (hT : 0<T) (htau : 0<tau) (hC : 0<C) (hr : 0<r) (hK : 0<QK) (hP : 0<QP) (hn : 0<Qn) (hb : 0<Qb) (hkn : 0<kn) (hkb : 0<kb)
+
+
+include hr hn hb hkn hkb in
+lemma reciprocal_annulus_normalization  
+              :
     1/(r*Real.sqrt Qn*Qb) = Real.sqrt kn*kb/(r*Real.sqrt (kn*Qn)*(kb*Qb)) := by
   rw [Real.sqrt_mul hkn.le]
-  have hs : Real.sqrt kn≠0 := (Real.sqrt_pos.mpr hkn).ne'
-  field_simp
+  field_simp <;> ring
 
-theorem physical_scalar_extracted (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
-    (r Qn Qb kn kb R A : ℝ)
-    (hr : 0<r) (hn : 0<Qn) (hb : 0<Qb) (hkn : 0<kn) (hkb : 0<kb) :
+include hr hn hb hkn hkb in
+theorem physical_scalar_extracted      
+     
+              :
     A/(r*Real.sqrt Qn*Qb)*smallScalar R =
       (A*Real.sqrt kn*kb)*extractedOutsideScalar F jF e r
         (kn*Qn/Ideal.absNorm (frozenExtracted F jF e 1))
@@ -29,15 +35,13 @@ theorem physical_scalar_extracted (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ�
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v)
   unfold extractedOutsideScalar
   rw [mul_div_cancel₀ _ (hp 1),mul_div_cancel₀ _ (hp 2)]
-  have h := reciprocal_annulus_normalization r Qn Qb kn kb hr hn hb hkn hkb
-  calc
-    _ = A*(1/(r*Real.sqrt Qn*Qb))*smallScalar R := by ring
-    _ = _ := by rw [h]; ring
+  grind [reciprocal_annulus_normalization, Real.sqrt, smallScalar]
 
-theorem annular_kernel_threshold (Z T tau C r QK QP Qn Qb kn kb D1 D2 : ℝ)
-    (hT : 0<T) (htau : 0<tau) (hC : 0<C) (hr : 0<r)
-    (hK : 0<QK) (hP : 0<QP) (hn : 0<Qn) (hb : 0<Qb)
-    (hkn : 0<kn) (hkb : 0<kb) (h1 : 0<D1) (h2 : 0<D2) :
+include hT htau hC hr hK hP hn hb hkn hkb in
+theorem annular_kernel_threshold  
+           
+           
+        (h1 : 0<D1) (h2 : 0<D2) :
     Real.logb Z (kn*Qn/D1)+3*Real.logb Z (kb*Qb/D2)+3*Real.logb Z r-
       Real.logb Z (kernelCenter (T/(27*tau^2*C^2)*r^3) QK QP Qn Qb) =
     Real.logb Z (27*tau^2*C^2*QK^2*QP^2*kn*kb^3/(T*D1*D2^3)) := by
@@ -57,6 +61,8 @@ theorem annular_kernel_threshold (Z T tau C r QK QP Qn Qb kn kb D1 D2 : ℝ)
   norm_num
 
 end
+
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

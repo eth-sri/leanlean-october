@@ -13,7 +13,7 @@ namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-def GhostAnalyticParametersTask (F : FixedData) (r : MemoryParameters F) : Prop :=
+def GhostAnalyticParametersTask (F ) (r : MemoryParameters F)  :=
   ∃ Cv : ℝ, 0 ≤ Cv ∧ ∃ x₀ : ℝ, ∀ x ≥ x₀, ∀ P : PrimeGroups,
     P.Admissible F x →
     (∀ g, 0 < P.V g ∧ P.V g ≤ F.vMax) ∧
@@ -21,12 +21,12 @@ def GhostAnalyticParametersTask (F : FixedData) (r : MemoryParameters F) : Prop 
     (∀ g : P.BigGroup, ∑ p : P.Prime g.val, tiltedMu F P (N x) g.val p ≤ 2) ∧
     (Real.exp (4 * max 1 F.vMax * r.v / r.rho)) ^ P.bigGroups.card ≤ (L x) ^ Cv
 
-def EmptyBoundaryMassTask : Prop :=
+def EmptyBoundaryMassTask  :=
   ∀ (F : FixedData) (J : ℕ), ∃ x₀ : ℝ, ∀ x ≥ x₀, ∀ P : PrimeGroups,
     P.Admissible F x → ∀ m : ℕ, ∀ A : Model F P J m,
       initialMemoryBoundaryMass A (N x) ≤ 2
 
-def BigPrimeNondivTask : Prop :=
+def BigPrimeNondivTask  :=
   ∀ (F : FixedData) (C₂ : ℝ), ∃ x₀ : ℝ, ∀ x ≥ x₀, ∀ P : PrimeGroups,
     P.Admissible F x → ∀ k : ℤ, 0 < |k| → (|k| : ℝ) ≤ (L x) ^ C₂ →
       ∀ g : P.BigGroup, ∀ p : P.Prime g.val, ¬ (p.val : ℤ) ∣ k

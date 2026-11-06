@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Foundation
 
@@ -13,15 +14,27 @@ open CompletedGauss ConcretePrimeRowBridge
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
+section
+variable {ι : Type*} [Fintype ι]
+include ι
+
+section
+variable (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+include P
+
+section
+variable (hc : Pairwise (Function.onFun IsCoprime P)) [Fintype (O ⧸ ∏ i, P i)] [∀ i, Fintype (O ⧸ P i)] (hgood : ∀ i, goodLambda ∉ P i) (j : ι → ℕ) (hχ : ∀ i, actualSextic (P i) (hgood i) ^ j i ≠ 1) (ψ : AddChar (O ⧸ ∏ i, P i) ℂ) (h : O ⧸ ∏ i, P i)
+include hc hgood j hχ ψ h
+
 theorem canonical_finite_prime_gauss_transform_scalar_of_nontrivial
-    {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hc : Pairwise (Function.onFun IsCoprime P))
-    [Fintype (O ⧸ ∏ i, P i)] [∀ i, Fintype (O ⧸ P i)]
-    (hgood : ∀ i, goodLambda ∉ P i)
-    (j : ι → ℕ)
-    (hχ : ∀ i, actualSextic (P i) (hgood i) ^ j i ≠ 1)
-    (ψ : AddChar (O ⧸ ∏ i, P i) ℂ) (h : O ⧸ ∏ i, P i) :
+       
+       
+     
+       
+     
+     
+     
+        :
     (∑ x : O ⧸ ∏ i, P i, finiteSexticQuotientRow P hc hgood j x * ψ (h * x)) =
       (finiteSexticQuotientRow P hc hgood j h)⁻¹ *
         ∑ x : O ⧸ ∏ i, P i, finiteSexticQuotientRow P hc hgood j x * ψ x := by
@@ -32,30 +45,36 @@ theorem canonical_finite_prime_gauss_transform_scalar_of_nontrivial
     hχ h
 
 theorem canonical_finite_prime_gauss_transform_conj_of_nontrivial
-    {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hc : Pairwise (Function.onFun IsCoprime P))
-    [Fintype (O ⧸ ∏ i, P i)] [∀ i, Fintype (O ⧸ P i)]
-    (hgood : ∀ i, goodLambda ∉ P i)
-    (j : ι → ℕ)
-    (hχ : ∀ i, actualSextic (P i) (hgood i) ^ j i ≠ 1)
-    (ψ : AddChar (O ⧸ ∏ i, P i) ℂ) (h : O ⧸ ∏ i, P i) :
+       
+       
+     
+       
+     
+     
+     
+        :
     (∑ x : O ⧸ ∏ i, P i, finiteSexticQuotientRow P hc hgood j x * ψ (h * x)) =
       star (finiteSexticQuotientRow P hc hgood j h) *
         ∑ x : O ⧸ ∏ i, P i, finiteSexticQuotientRow P hc hgood j x * ψ x := by
   rw [canonical_finite_prime_gauss_transform_scalar_of_nontrivial P hc hgood j hχ ψ,
     finiteSexticQuotientRow_inv_eq_star P hc hgood j h]
 
-theorem canonical_principal_gauss_transform_of_nontrivial {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
+end
+
+section
+variable (hcop : Pairwise (Function.onFun IsCoprime P))
+include hcop
+
+theorem canonical_principal_gauss_transform_of_nontrivial    
+       
+     
     [Fintype (O ⧸ ∏ i, P i)] [∀ i, Fintype (O ⧸ P i)]
     (hgood : ∀ i, goodLambda ∉ P i)
     (j : ι → ℕ)
     (hχ : ∀ i, actualSextic (P i) (hgood i) ^ j i ≠ 1)
     (c : O) (hc : Ideal.span {c} = ∏ i, P i)
     [Fintype (O ⧸ Ideal.span {c})]
-    (ψ : AddChar (O ⧸ Ideal.span {c}) ℂ) (h : O ⧸ Ideal.span {c}) :
+    (ψ : AddChar (O ⧸ Ideal.span {c}) ℂ)  h  :
     (∑ r : O ⧸ Ideal.span {c}, principalSexticRow P hcop hgood j c hc r * ψ (h * r)) =
       star (principalSexticRow P hcop hgood j c hc h) *
         ∑ r : O ⧸ Ideal.span {c}, principalSexticRow P hcop hgood j c hc r * ψ r := by
@@ -81,15 +100,23 @@ theorem canonical_principal_gauss_transform_of_nontrivial {ι : Type*} [Fintype 
   change (∑ r : O ⧸ Ideal.span {c}, row (e r) * ψ (h * r)) =
     star (row (e h)) * ∑ r : O ⧸ Ideal.span {c}, row (e r) * ψ r
   rw [hleft, hbase]
-  exact canonical_finite_prime_gauss_transform_conj_of_nontrivial P hcop hgood j hχ φ (e h)
+  solve_by_elim [canonical_finite_prime_gauss_transform_conj_of_nontrivial]
 
-theorem canonical_radial_poisson_of_nontrivial {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hgood : ∀ i, goodLambda ∉ P i)
-    (j : ι → ℕ)
-    (hχ : ∀ i, actualSextic (P i) (hgood i) ^ j i ≠ 1)
-    (W : 𝓢(ℝ, ℂ)) (scale : ℝ) (hscale : 0 < scale) :
+section
+variable (hgood : ∀ i, goodLambda ∉ P i) (j : ι → ℕ) (hχ : ∀ i, actualSextic (P i) (hgood i) ^ j i ≠ 1)
+include hgood j hχ
+
+section
+variable (W : 𝓢(ℝ, ℂ)) (scale : ℝ) (hscale : 0 < scale)
+include W scale hscale
+
+theorem canonical_radial_poisson_of_nontrivial    
+       
+     
+     
+     
+     
+          :
     let c := finitePrimeModulus P
     let hc0 := finitePrimeModulus_ne_zero P
     let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc0
@@ -115,9 +142,7 @@ theorem canonical_radial_poisson_of_nontrivial {ι : Type*} [Fintype ι]
   have ht (h : O) :
       (∑ r : O ⧸ Ideal.span {c}, row r * ψ (Ideal.Quotient.mk (Ideal.span {c}) h * r)) =
         star (finiteSexticRow P hgood j h) * (∑ r, row r * ψ r) := by
-    rw [canonical_principal_gauss_transform_of_nontrivial P hcop hgood j hχ c
-      (span_finitePrimeModulus P) ψ,
-      principalSexticRow_mk P hcop hgood j c (span_finitePrimeModulus P) h]
+    solve_by_elim [canonical_principal_gauss_transform_of_nontrivial]
   have hp := actual_radial_paper_poisson_trace W scale hscale c hc0 row
   change (∑' z : O, row (Ideal.Quotient.mk (Ideal.span {c}) z) *
     W (‖eisEmbedding z‖ ^ 2 / scale)) =
@@ -126,16 +151,15 @@ theorem canonical_radial_poisson_of_nontrivial {ι : Type*} [Fintype ι]
           ψ (Ideal.Quotient.mk (Ideal.span {c}) h * r)) *
           paperRadialFourier W (scale * ‖eisEmbedding h‖ ^ 2 / ‖eisEmbedding c‖ ^ 2) at hp
   simp_rw [ht] at hp
-  simpa only [row, principalSexticRow_mk P hcop hgood j c
-    (span_finitePrimeModulus P)] using hp
+  assumption
 
-theorem canonical_radial_poisson_normalized_of_nontrivial {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hgood : ∀ i, goodLambda ∉ P i)
-    (j : ι → ℕ)
-    (hχ : ∀ i, actualSextic (P i) (hgood i) ^ j i ≠ 1)
-    (W : 𝓢(ℝ, ℂ)) (scale : ℝ) (hscale : 0 < scale) :
+theorem canonical_radial_poisson_normalized_of_nontrivial    
+       
+     
+     
+     
+     
+          :
     let c := finitePrimeModulus P
     (∑' z : O, finiteSexticRow P hgood j z * W (‖eisEmbedding z‖ ^ 2 / scale)) =
       ((scale : ℂ) * canonicalNormalizedGauss P hcop hgood j / (‖eisEmbedding c‖ : ℂ)) *
@@ -164,18 +188,19 @@ theorem canonical_radial_poisson_normalized_of_nontrivial {ι : Type*} [Fintype 
   change ((scale / ‖eisEmbedding c‖ ^ 2 : ℝ) : ℂ) * (G * ∑' h : O, F h) =
     ((scale : ℂ) * (G / (‖eisEmbedding c‖ : ℂ)) / (‖eisEmbedding c‖ : ℂ)) *
       ∑' h : O, F h
-  have hn : (‖eisEmbedding c‖ : ℂ) ≠ 0 := by
-    exact Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr
+  have hn : (‖eisEmbedding c‖ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr
       (eisEmbedding_ne_zero (finitePrimeModulus_ne_zero P)))
   push_cast
   field_simp
 
-theorem norm_canonicalGaussSum_of_nontrivial {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hgood : ∀ i, goodLambda ∉ P i)
-    (j : ι → ℕ)
-    (hχ : ∀ i, actualSextic (P i) (hgood i) ^ j i ≠ 1) :
+end
+
+theorem norm_canonicalGaussSum_of_nontrivial    
+       
+     
+     
+     
+      :
     ‖canonicalGaussSum P hcop hgood j‖ = ‖eisEmbedding (finitePrimeModulus P)‖ := by
   classical
   let c := finitePrimeModulus P
@@ -201,29 +226,33 @@ theorem norm_canonicalGaussSum_of_nontrivial {ι : Type*} [Fintype ι]
     simpa only [Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card] using
       eisEmbedding_norm_sq_eq_absNorm_span c
   rw [hcard] at hnormsq
-  exact (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp hnormsq
+  aesop
 
-theorem norm_canonicalNormalizedGauss_of_nontrivial {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hgood : ∀ i, goodLambda ∉ P i)
-    (j : ι → ℕ)
-    (hχ : ∀ i, actualSextic (P i) (hgood i) ^ j i ≠ 1) :
+theorem norm_canonicalNormalizedGauss_of_nontrivial    
+       
+     
+     
+     
+      :
     ‖canonicalNormalizedGauss P hcop hgood j‖ = 1 := by
   have hn : ‖eisEmbedding (finitePrimeModulus P)‖ ≠ 0 :=
     norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (finitePrimeModulus_ne_zero P))
   change ‖canonicalGaussSum P hcop hgood j /
     (‖eisEmbedding (finitePrimeModulus P)‖ : ℂ)‖ = 1
-  rw [norm_div,
-    norm_canonicalGaussSum_of_nontrivial P hcop hgood j hχ,
-    Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _), div_self hn]
+  simp_all [norm_canonicalGaussSum_of_nontrivial]
 
-theorem canonical_polya_vinogradov_of_nontrivial {ι : Type*} [Fintype ι] [Nonempty ι]
+end
+
+end
+
+end
+
+theorem canonical_polya_vinogradov_of_nontrivial     [Nonempty ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hg : ∀ i, goodLambda ∉ P i) (j : ι → ℕ)
+    (hg : ∀ i, goodLambda ∉ P i)  j 
     (hχ : ∀ i, actualSextic (P i) (hg i) ^ j i ≠ 1)
-    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+     W   M  (hM : 0 < M) :
     ‖∑' z : O, finiteSexticRow P hg j z * W (‖eisEmbedding z‖ ^ 2 / M)‖ ≤
       pvControl W * ‖eisEmbedding (finitePrimeModulus P)‖ := by
   let c := finitePrimeModulus P
@@ -271,14 +300,16 @@ theorem canonical_polya_vinogradov_of_nontrivial {ι : Type*} [Fintype ι] [None
     _ ≤ q * pvControl W := mul_le_mul_of_nonneg_left hbound hq.le
     _ = _ := mul_comm _ _
 
+end
+
 theorem canonical_masked_polya_vinogradov_of_nontrivial
     {α ι : Type*} [DecidableEq α] [Fintype ι] [Nonempty ι]
     (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
     (S : Finset α) (Q : ι → Ideal O) [∀ i, (Q i).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime Q))
-    (hg : ∀ i, goodLambda ∉ Q i) (j : ι → ℕ)
+    (hg : ∀ i, goodLambda ∉ Q i)  j 
     (hχ : ∀ i, actualSextic (Q i) (hg i) ^ j i ≠ 1)
-    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+     W   M  (hM : 0 < M) :
     ‖∑' z : O, rowCoprimeMask P S z * finiteSexticRow Q hg j z *
         W (‖eisEmbedding z‖ ^ 2 / M)‖ ≤
       (2 : ℝ) ^ S.card * (pvControl W * ‖eisEmbedding (finitePrimeModulus Q)‖) := by
@@ -302,12 +333,12 @@ theorem canonical_masked_polya_vinogradov_of_nontrivial
             (finiteSexticRow_norm_le_one Q hg j _) (norm_nonneg _) zero_le_one
           _ = 1 := one_mul _
       exact (mul_le_of_le_one_left (norm_nonneg _) hmul).trans hp
-    _ = _ := by simp only [Finset.sum_const, Finset.card_powerset, nsmul_eq_mul, Nat.cast_pow, Nat.cast_ofNat]
+    _ = _ := by simp_all
 
-def cubicExponent (negative : Bool) : ℕ := if negative then 4 else 2
+def cubicExponent (negative : Bool)  := if negative then 4 else 2
 
 theorem cubicExponent_nonprincipal (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) (negative : Bool) :
+    (hg : goodLambda ∉ P)  negative  :
     actualSextic P hg ^ cubicExponent negative ≠ 1 := by
   let χ := actualSextic P hg ^ 2
   have hχ : χ ≠ 1 := by
@@ -325,8 +356,7 @@ theorem cubicExponent_nonprincipal (P : Ideal O) [P.IsMaximal]
       _ = χ ^ 3 := (pow_succ χ 2).symm
       _ = 1 := h3
   cases negative with
-  | false => simpa only [cubicExponent, Bool.false_eq_true, ite_false,
-      ] using hχ
+  | false => assumption
   | true =>
       have he : actualSextic P hg ^ 4 = χ ^ 2 := by
         rw [show (4 : ℕ) = 2 * 2 by decide, pow_mul]

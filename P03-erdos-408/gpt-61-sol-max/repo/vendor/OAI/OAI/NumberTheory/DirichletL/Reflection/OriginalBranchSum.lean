@@ -11,18 +11,18 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {a c₀ : Eis} {mode : Bool}
+
+
+variable {a c₀ : ActualEisensteinCubic.O} {mode : Bool}
 
 theorem original_surviving_energy_sum
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c₀ mode)) (hc₀ : c₀≠0)
-    (ρ : ℝ) (hρ : 0<ρ) (kK kP η : ℝ) (hkK : 0<kK) (hkP : 0<kP) (hηpos : 0<η) :
+    (ρ : ℝ) (hρ : 0<ρ)  kK kP η  (hkK : 0<kK) (hkP : 0<kP) (hηpos : 0<η) :
     ∃ Z₀ C : ℝ, 1<Z₀ ∧ 0<C ∧
-    ∀ (J I F B R Q₀ : Ideal Eis) (_hJ : J≠0) (_hI : I≠0) (_hF : F≠0) (_hB : B≠0) (_hR : R≠0),
+    ∀ (J I F B R Q₀ : Ideal ActualEisensteinCubic.O) (_hJ : J≠0) (_hI : I≠0) (_hF : F≠0) (_hB : B≠0) (_hR : R≠0),
       rowPowerfulPart J=rowPowerfulPart I → rowMaskPart J (B*F*R)=rowMaskPart I (B*F*R) →
     ∀ (A : Finset (FreeReflection.pool J (B*F*R) Q₀))
-      (column : Ideal Eis→Ideal Eis→ℂ)
+      (column : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ)
       (Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d δ π Ck CO CH Cf X QK QP ε Lscale Lrow Lslot : ℝ)
       (i : ℕ×ℕ×ℕ),
       Z₀≤Z → 0<Ck → 0<CO → 0<CH → 0<Cf → 0<X → 0<QK → 0<QP →
@@ -86,7 +86,7 @@ theorem original_surviving_energy_sum
       simp only [Finset.sum_const,nsmul_eq_mul]
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_right hcbr (Real.rpow_nonneg (lt_trans zero_lt_one hz').le _)
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

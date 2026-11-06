@@ -20,7 +20,7 @@ variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
   {A : Model F P J m} (Q : ResiduePath A n)
 
 def spanGhostFactor (S : LifespanAssignment P n) (i : Fin (n + 1))
-    (g : P.BigGroup) (p : P.Prime g.val) : ℝ :=
+    (g : P.BigGroup) (p : P.Prime g.val)  :=
   (if Q.ghostBirthAt g p (S g p) i then
     -eta F n i * (p.val * baselinePrime F n p.val : ℝ)⁻¹ else 1) *
   (if Q.ghostStopAt g p (S g p) i then -eta F n i else 1) *
@@ -30,7 +30,7 @@ def spanGhostFactor (S : LifespanAssignment P n) (i : Fin (n + 1))
 
 end ResiduePath
 
-def SpanGhostWeightTask : Prop :=
+def SpanGhostWeightTask  :=
   ∀ (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
     (Q : ResiduePath A n) (S : LifespanAssignment P n),
     (∀ g, P.V g ≠ 0) → ∀ hS : Q.lifespanValid S,

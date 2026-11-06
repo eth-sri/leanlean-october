@@ -16,7 +16,7 @@ open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithm
 open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialDyadicAssembly InverseInitialProfile
-local notation "O"=>ActualEisensteinCubic.O
+
 variable {ι : Type*} [DecidableEq ι]
 
 theorem pointSource_erase_mem (pool : Finset ι) (S : Finset (Source (ι:=ι) 0))
@@ -43,7 +43,7 @@ theorem pointSource_supports (pool : Finset ι) (S : Finset (Source (ι:=ι) 0))
 def idealIndex : Fin 5→Fin 6 := ![0,1,2,4,5]
 
 omit [DecidableEq ι] in
-theorem sourceKey_norm_coordinate (p : ι→O) (x : Point ι) (i : Fin 5) :
+theorem sourceKey_norm_coordinate (p : ι→ActualEisensteinCubic.O) (x : Point ι)  i  :
     primeProductNorm p (InverseInitialHighFrequencyTail.sourceKey x i)=coordinates p x (idealIndex i) := by
   have hn (A : Finset ι) : ((sourceIdeal p A).absNorm:ℝ)=primeProductNorm p A := by
     rw [sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span]
@@ -51,7 +51,7 @@ theorem sourceKey_norm_coordinate (p : ι→O) (x : Point ι) (i : Fin 5) :
   fin_cases i <;> simp [InverseInitialHighFrequencyTail.sourceKey,coordinates,physicalCoordinates,idealIndex,hn]
 
 omit [DecidableEq ι] in
-theorem sourceNorms_erase (p : ι→O) (x : Point ι) (i : Fin 4) :
+theorem sourceNorms_erase (p : ι→ActualEisensteinCubic.O) (x : Point ι)  i  :
     sourceNorms p (erasePoint x) i=coordinates p x (InverseSecondChildWindows.outerIndex i) := by
   have he : InverseInitialEnergyCallerModes.sourcePoint (erasePoint x) x.left x.right=x := by
     cases x
@@ -60,7 +60,7 @@ theorem sourceNorms_erase (p : ι→O) (x : Point ι) (i : Fin 4) :
 
 omit [DecidableEq ι] in
 theorem live_mass_radial_gate
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (a b : Fin 4→ℝ) (Z D m η τ bW : ℝ) (hZ : 1<Z) (hη : 0≤η)
     (hbW : 0<bW) (hfixed : 64*bW^2≤Z^η)
     (x : Point ι) (hx : Valid x)

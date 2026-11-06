@@ -6,13 +6,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicLossBudget
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical Topology ContDiff
 open Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeReciprocalGrowth
 
-theorem scaled_direct_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
+theorem scaled_direct_bound  e κ  (he : 0<e) (he' : e<1/1000)
     (hκ : 0<κ) (hκ' : κ≤1) :
     ∃ C : ℝ, 0<C ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι → Character)
       (hχ : ∀ j, (χ j).residue≠1) (T a : ℝ) (i : ℕ),
@@ -80,14 +80,13 @@ theorem scaled_direct_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
   have heC : 8*Cb+E*Real.pi≤C := by dsimp [C]; nlinarith [Real.pi_pos]
   calc
     _ ≤ (2*Cb*Real.pi)*C₂*U^((a-1/2+6*e)*r+2*κ+η)+
-        (8*Cb)*Cn*U^(2*R+2+η)/(1+V)^n+(E*Real.pi)*Cn*U^(2*R+2+η)/(1+V)^n := by
-      exact add_le_add (add_le_add hc hj) ht
+        (8*Cb)*Cn*U^(2*R+2+η)/(1+V)^n+(E*Real.pi)*Cn*U^(2*R+2+η)/(1+V)^n := add_le_add (add_le_add hc hj) ht
     _ = (2*Cb*Real.pi)*C₂*U^((a-1/2+6*e)*r+2*κ+η)+
         (8*Cb+E*Real.pi)*Cn*U^(2*R+2+η)/(1+V)^n := by ring
     _ ≤ _ := by gcongr
 
 end SevenEighths.HeckeDyadic
 
-end
+
 
 end OAI

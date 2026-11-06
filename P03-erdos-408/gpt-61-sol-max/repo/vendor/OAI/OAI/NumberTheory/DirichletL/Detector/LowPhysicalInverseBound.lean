@@ -7,17 +7,17 @@ public import OAI.NumberTheory.DirichletL.Detector.LowInverseNormalize
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-theorem low_physical_inverse_normalized (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
-    (a b aCut bCut ε : ℝ) (ha : 0<a) (haCut : 0<aCut) (hbCut : 0<bCut)
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+theorem low_physical_inverse_normalized  η   S 
+     hS  (hbad : fixedBadPrimes⊆S)
+     {K}   ell  (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
+     a b aCut bCut ε  (ha : 0<a)  haCut   hbCut 
     (hε : 0<ε) (hε1 : ε≤1) :
     ∃degree : ℕ,∃C : ℝ,0<C ∧ ∀ᶠZ : ℝ in Filter.atTop,1<Z ∧
     ∀(T : Fin K→Finset PrimeIdeal),(∀i P,P∈T i→Supported P.val)→
@@ -58,7 +58,7 @@ theorem low_physical_inverse_normalized (η : HeckeFamily.Character) (S : Finset
   have hz : 0<Z := lt_trans zero_lt_one hZ.1
   have hL : 0<L := lowUnselectedProduct_norm_pos _
     (fun i n hn=>canonicalSlotSupport_nonzero _ (hT i) n hn) J p
-  have hnormE (i : Fin K) (n : O) (hn : n∈canonicalSlotSupport (T i)) :
+  have hnormE (i : Fin K) (n : ActualEisensteinCubic.O) (hn : n∈canonicalSlotSupport (T i)) :
       a*Z^(ell i)≤elementNorm n ∧ elementNorm n≤b*Z^(ell i) := by
     obtain ⟨P,hP,rfl⟩ := Finset.mem_image.mp hn
     rw [primaryTuple_norm P (hT i P hP)]
@@ -105,6 +105,6 @@ theorem low_physical_inverse_normalized (η : HeckeFamily.Character) (S : Finset
         _≤_ := by gcongr ; linarith
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

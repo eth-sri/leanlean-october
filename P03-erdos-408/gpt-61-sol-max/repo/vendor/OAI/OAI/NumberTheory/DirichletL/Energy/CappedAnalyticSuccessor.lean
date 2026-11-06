@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.CappedLowStage
 public import OAI.NumberTheory.DirichletL.Energy.NaturalHighStage
@@ -11,7 +12,7 @@ public import OAI.NumberTheory.DirichletL.Energy.CappedBandTransport
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
@@ -28,7 +29,7 @@ open CenteredMomentEnergySourceCapSchedule CenteredMomentNaturalFixedRaySource
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_successor
@@ -55,8 +56,7 @@ theorem actual_successor
   have hr:0<r:=(bounds Mcap Bs κ ε hMcap.le hBs hκ0 hε).2.2.2.1
   have hr1:r/4≤1:=by
     have hh:=bounds Mcap Bs κ ε hMcap.le hBs hκ0 hε
-    have hrs:r≤amplification ε/100:=min_le_left _ _
-    linarith [hh.2.1]
+    grind
   have hMp:0≤Mp:=bandWidth_nonneg Mcap Bs ε hMcap.le hBs hε _
   have hMc:0<Mc:=band_positive Mcap Bs ε hMcap hBs hε k
   have hMpM:Mp≤Mcap:=bandWidth_le _ _ _ _
@@ -71,7 +71,7 @@ theorem actual_successor
     request_le_final Mcap Bmask L ε hMcap.le hmask k hk
   have hRange:=range_nonneg Mcap Bmask L hMcap.le hmask (count Mcap ε)
   have hA:0≤A:=by dsimp [A];positivity
-  have hMA:Mp≤A:=by dsimp [A];linarith [range_nonneg Mcap Bmask L hMcap.le hmask (count Mcap ε)]
+  have hMA:Mp≤A:=by linarith
   have hready:readyBudget A Bmask≤Bs:=
     readyBudget_le_schedule Mcap Bmask L ε A Bmask hMcap.le hmask le_rfl le_rfl
   have hdrop:Mp-amplification ε/2≤Mc:=parent_drop Mcap Bs ε hε k
@@ -82,7 +82,7 @@ theorem actual_successor
     hMcap.le hmask hMpM hr1 k hk
   have hhighL:max Lc Mp≤Lp:=by
     have hh:max Lc Mp≤Lreq:=max_le hreq.2.1 (hMpM.trans hreq.2.2)
-    have hg:0≤max Lreq Mp:=hreq.1.trans (le_max_left _ _)
+    
     have hx:=le_max_left Lreq Mp
     linarith
   have href:Mp+Bmask+Mc/100≤Lreq:=by
@@ -105,9 +105,9 @@ theorem actual_successor
     rw [hLlow,hLexact]
     exact actual_contours Mcap Bmask Lc Mp Mc d hMcap.le hmask hMpM hMcM hd1
   have hLgrowLow:Lgrow≤Llow:=by rw [hLlow];exact le_max_left _ _
-  have hLgrowReq:Lgrow≤Lreq:=hLgrowLow.trans hLlowReq
+  
   have hzeroCap:max Mp (2*Lgrow)≤Lp:=by
-    have hm:Mp≤Lreq:=hMpM.trans hreq.2.2
+    
     have hh:=le_max_left Lreq Mp
     apply max_le <;> linarith
   have hzeroReady:readyBudget (max Mp (2*Lgrow)) Bmask≤Bs:=by

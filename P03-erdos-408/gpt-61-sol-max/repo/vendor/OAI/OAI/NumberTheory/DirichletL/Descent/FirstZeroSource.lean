@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
@@ -23,10 +23,10 @@ variable {ι : Type*} [DecidableEq ι]
 include hinj hc in
 theorem first_variable_zero_common_bound
     (pool : Finset ι) (b : CubeCoordinates ι) (labels : Finset (Ideal O))
-    (a : Finset ι→Ideal O→ℂ) (Ψ₁ Ψ₂ : O→*ℂ)
+    (a : Finset ι→Ideal O→ℂ)  Ψ₁ Ψ₂ 
     (hΨ₁ : ∀u,‖Ψ₁ u‖≤1) (hΨ₂ : ∀u,‖Ψ₂ u‖≤1)
-    (m₁ m₂ : O) (H₁ H₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ))
-    (Γ G₁ G₂ L K : ℝ) (hΓ : 0≤Γ) (hG₁ : 0≤G₁) (hG₂ : 0≤G₂) (hL : 0<L)
+     m₁ m₂   H₁ H₂   W 
+     Γ G₁ G₂ L K  (hΓ : 0≤Γ) (hG₁ : 0≤G₁) (hG₂ : 0≤G₂) (hL : 0<L)
     (ha : ∀C∈(pool\b.support).powerset,∀I∈labels,‖a C I‖≤Γ)
     (hH₁ : ∀U,‖H₁ U‖≤G₁) (hH₂ : ∀U,‖H₂ U‖≤G₂) (hsupp : ∀U,H₁ U≠0→primeProductNorm p U≤L) :
     ‖∑C∈(pool\b.support).powerset,∑I∈labels,a C I*
@@ -74,7 +74,7 @@ theorem first_variable_zero_common_bound
       _ ≤ ∑C∈boundedPrimeSupports p (pool\b.support) (L),∑I∈labels,‖a C I*z C I‖:=
         (norm_sum_le _ _).trans (Finset.sum_le_sum (fun C hC=>norm_sum_le _ _))
       _ ≤ ∑C∈boundedPrimeSupports p (pool\b.support) (L),∑I∈labels,Q:=
-        Finset.sum_le_sum (fun C hC=>Finset.sum_le_sum (fun I hI=>hpnt C hC I hI))
+        Finset.sum_le_sum (fun C hC=>Finset.sum_le_sum (hpnt C hC))
       _ = ((boundedPrimeSupports p (pool\b.support) (L)).card:ℝ)*(labels.card:ℝ)*Q:=by simp;ring
       _ ≤ _ := mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_right (boundedPrimeSupports_card_positive p hp hinj _ _ hL) (Nat.cast_nonneg _)) hQ
@@ -144,6 +144,6 @@ theorem full_variable_first_zero_bound (ε : ℝ) (hε : 0<ε) :
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

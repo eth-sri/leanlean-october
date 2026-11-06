@@ -14,7 +14,7 @@ namespace SevenEighths.CenteredMomentPrimeGlobal
 open HeckeFamily HeckePrimeRay HeckeZeroSupremum
 
 lemma zeroMaximum_le_beta {ι : Type*} [Fintype ι]
-    (χ : ι→Character) (hχ : ∀i,(χ i).residue≠1) (T : ℝ)
+    (χ : ι→Character)  hχ   T 
     (hbeta : (51/100:ℝ)≤beta) :
     HeckeDetectorZeros.zeroMaximum χ hχ T≤beta := by
   apply Finset.max'_le
@@ -29,7 +29,7 @@ variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-theorem ray_prime_global_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
+theorem ray_prime_global_squared  W   A B  (hA : 0<A)
     (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W)
     (R dmax τ ε e slack η σmin σmax κ : ℝ)
     (hR : 0≤R) (hdmax : 0≤dmax) (hτ : 0<τ) (hε : 0<ε) (he : 0<e)

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import OAI.NumberTheory.DirichletL.Inversion.KernelSourceUniform
@@ -16,23 +17,28 @@ open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge JointLogSeparation
 namespace SevenEighths.InverseClippingProfiles
 
-def logWindow (v : ℝ → ℂ) (L ρ : ℝ) (y : ℝ) : ℂ := v ((y + ρ) / L)
+def logWindow (v : ℝ → ℂ) (L ρ : ℝ) (y : ℝ)  := v ((y + ρ) / L)
 
-def rootedWindow (v : ℝ → ℂ) (L ρ a H : ℝ) (y : ℝ) : ℂ :=
+def rootedWindow (v : ℝ → ℂ) (L ρ a H : ℝ) (y : ℝ)  :=
   (Real.exp (a * y - H * L) : ℂ) * logWindow v L ρ y
 
-lemma logWindow_contDiff (v : ℝ → ℂ) (hv : ContDiff ℝ ∞ v) (L ρ : ℝ) :
-    ContDiff ℝ ∞ (logWindow v L ρ) := by
-  exact hv.comp ((contDiff_id.add contDiff_const).div_const L)
+section
+variable (v : ℝ → ℂ) (hv : ContDiff ℝ ∞ v) (M B L ρ a H : ℝ) (hL : 0 < L) (hρ : |ρ| ≤ B * L)
 
-lemma rootedWindow_contDiff (v : ℝ → ℂ) (hv : ContDiff ℝ ∞ v) (L ρ a H : ℝ) :
+include hv in
+lemma logWindow_contDiff       :
+    ContDiff ℝ ∞ (logWindow v L ρ) := hv.comp ((contDiff_id.add contDiff_const).div_const L)
+
+include hv in
+lemma rootedWindow_contDiff       :
     ContDiff ℝ ∞ (rootedWindow v L ρ a H) := by
   apply ContDiff.mul _ (logWindow_contDiff v hv L ρ)
   exact Complex.ofRealCLM.contDiff.comp
     (Real.contDiff_exp.comp ((contDiff_const.mul contDiff_id).sub contDiff_const))
 
-lemma logWindow_support (v : ℝ → ℂ) (M B L ρ : ℝ)
-    (hL : 0 < L) (hρ : |ρ| ≤ B * L)
+include hL hρ in
+lemma logWindow_support    
+       
     (hv : Function.support v ⊆ Set.Icc (-M) M) :
     Function.support (logWindow v L ρ) ⊆ Set.Icc (-(M+B)*L) ((M+B)*L) := by
   intro y hy
@@ -43,8 +49,9 @@ lemma logWindow_support (v : ℝ → ℂ) (M B L ρ : ℝ)
   have hr := abs_le.mp hρ
   constructor <;> nlinarith
 
-lemma rootedWindow_compact (v : ℝ → ℂ) (M B L ρ a H : ℝ)
-    (hL : 0 < L) (hρ : |ρ| ≤ B * L)
+include hL hρ in
+lemma rootedWindow_compact    
+       
     (hv : Function.support v ⊆ Set.Icc (-M) M) :
     HasCompactSupport (rootedWindow v L ρ a H) := by
   apply HasCompactSupport.of_support_subset_isCompact isCompact_Icc
@@ -52,21 +59,20 @@ lemma rootedWindow_compact (v : ℝ → ℂ) (M B L ρ a H : ℝ)
   apply logWindow_support v M B L ρ hL hρ hv
   exact (mul_ne_zero_iff.mp hy).2
 
+end
+
 def rootSchwartz (v : 𝓢(ℝ, ℂ)) (M B L ρ a H : ℝ)
     (hL : 0 < L) (hρ : |ρ| ≤ B * L)
-    (hv : Function.support v ⊆ Set.Icc (-M) M) : 𝓢(ℝ, ℂ) :=
+    (hv : Function.support v ⊆ Set.Icc (-M) M)  :=
   (rootedWindow_compact v M B L ρ a H hL hρ hv).toSchwartzMap
     (rootedWindow_contDiff v (v.smooth ⊤) L ρ a H)
 
-@[simp] lemma rootSchwartz_apply (v : 𝓢(ℝ, ℂ)) (M B L ρ a H y : ℝ)
-    (hL : 0 < L) (hρ : |ρ| ≤ B * L)
-    (hv : Function.support v ⊆ Set.Icc (-M) M) :
-    rootSchwartz v M B L ρ a H hL hρ hv y = rootedWindow v L ρ a H y := rfl
 
-def rootDerivativeBound (v : 𝓢(ℝ, ℂ)) (a : ℝ) (n : ℕ) : ℝ :=
+
+def rootDerivativeBound (v : 𝓢(ℝ, ℂ)) (a : ℝ) (n : ℕ)  :=
   ∑ i ∈ Finset.range (n+1), (2:ℝ)^i * (1+|a|)^i * derivativeSeminormSum v 0 i
 
-def momentOrder (J : ℕ) : ℕ := J + (volume : Measure ℝ).integrablePower
+def momentOrder (J : ℕ)  := J + (volume : Measure ℝ).integrablePower
 
 theorem clipping_ratio_of_column_witness (w : ℝ → ℂ) (Z N q a b : ℝ)
     (hZ : 1 < Z) (hq : 1 ≤ q) (hb : 1 ≤ b)
@@ -88,38 +94,46 @@ theorem clipping_ratio_of_column_witness (w : ℝ → ℂ) (Z N q a b : ℝ)
 
 open InverseMoment
 
-def firstRootExponent (y : Fin 9 → ℝ) : ℝ :=
+def firstRootExponent (y : Fin 9 → ℝ)  :=
   -y 3-y 4/2-y 5-(y 7+y 8)/2
 
-def secondRootExponent (y : Fin 6 → ℝ) : ℝ :=
+def secondRootExponent (y : Fin 6 → ℝ)  :=
   -y 1-y 2-(y 4+y 5)/2
 
 def firstRootSlope : Fin 9 → ℝ := ![0,0,0,-1,-(1/2),-1,0,-(1/2),-(1/2)]
 def secondRootSlope : Fin 6 → ℝ := ![0,-1,-1,0,-(1/2),-(1/2)]
 
-lemma inverseNormWindow_exp (V : ℝ → ℂ) (y : ℝ) :
+section
+variable (V : ℝ → ℂ) (y : ℝ)
+
+lemma inverseNormWindow_exp     :
     inverseNormWindow V y = (Real.exp (-y) : ℂ)*V y := by
   simp only [inverseNormWindow, Real.exp_neg, Complex.ofReal_inv, div_eq_mul_inv]
   ring
 
-lemma inverseRootWindow_exp (V : ℝ → ℂ) (y : ℝ) :
+lemma inverseRootWindow_exp     :
     inverseRootWindow V y = (Real.exp (-(y/2)) : ℂ)*V y := by
   rw [inverseRootWindow, ← Real.exp_half, Real.exp_neg, Complex.ofReal_inv]
   ring
 
-theorem firstRootWindows_exp (V : Fin 9 → ℝ → ℂ) (i : Fin 9) (y : ℝ) :
+end
+
+section
+variable (V : Fin 9 → ℝ → ℂ) (f : ℝ → ℂ) (ρ θ t : ℝ)
+
+theorem firstRootWindows_exp    i   y  :
     firstRootWindows V i y = (Real.exp (firstRootSlope i*y) : ℂ)*V i y := by
   fin_cases i <;> simp [firstRootWindows, firstRootSlope, inverseNormWindow_exp,
     inverseRootWindow_exp, neg_mul]
   all_goals left; congr 1; ring
 
-theorem secondRootWindows_exp (V : Fin 6 → ℝ → ℂ) (i : Fin 6) (y : ℝ) :
+theorem secondRootWindows_exp  V   i   y  :
     secondRootWindows V i y = (Real.exp (secondRootSlope i*y) : ℂ)*V i y := by
   fin_cases i <;> simp [secondRootWindows, secondRootSlope, inverseNormWindow_exp,
     inverseRootWindow_exp, neg_mul]
   all_goals left; congr 1; ring
 
-theorem firstRootWindows_prod (V : Fin 9 → ℝ → ℂ) (y : Fin 9 → ℝ) :
+theorem firstRootWindows_prod    y  :
     (∏ i, firstRootWindows V i (y i)) =
       (Real.exp (firstRootExponent y) : ℂ) * ∏ i, V i (y i) := by
   simp_rw [firstRootWindows_exp]
@@ -130,7 +144,7 @@ theorem firstRootWindows_prod (V : Fin 9 → ℝ → ℂ) (y : Fin 9 → ℝ) :
   norm_num
   ring
 
-theorem secondRootWindows_prod (V : Fin 6 → ℝ → ℂ) (y : Fin 6 → ℝ) :
+theorem secondRootWindows_prod  V   y  :
     (∏ i, secondRootWindows V i (y i)) =
       (Real.exp (secondRootExponent y) : ℂ) * ∏ i, V i (y i) := by
   simp_rw [secondRootWindows_exp]
@@ -141,7 +155,7 @@ theorem secondRootWindows_prod (V : Fin 6 → ℝ → ℂ) (y : Fin 6 → ℝ) :
   norm_num
   ring
 
-theorem fourier_phase_shift (f : ℝ → ℂ) (θ t : ℝ) :
+theorem fourier_phase_shift     :
     (𝓕 (fun y => logPhase θ y * f y)) t = (𝓕 f) (t-θ) := by
   simp only [Real.fourier_eq', logPhase, smul_eq_mul]
   apply integral_congr_ae
@@ -152,14 +166,14 @@ theorem fourier_phase_shift (f : ℝ → ℂ) (θ t : ℝ) :
   push_cast
   ring
 
-theorem fourier_translate (f : ℝ → ℂ) (ρ t : ℝ) :
+theorem fourier_translate     :
     (𝓕 (fun y => f (y+ρ))) t = logPhase t ρ * (𝓕 f) t := by
   have h := congrFun
     (VectorFourier.fourierIntegral_comp_add_right Real.fourierChar
       (volume : Measure ℝ) (innerₗ ℝ) f ρ) t
   change _ = Real.fourierChar (inner ℝ ρ t) • (𝓕 f) t at h
   have h' : (𝓕 (fun y => f (y+ρ))) t = Real.fourierChar (inner ℝ ρ t) • (𝓕 f) t := by
-    simpa only [Real.fourier_eq, VectorFourier.fourierIntegral, Function.comp_def, innerₗ_apply_apply] using h
+    assumption
   rw [h']
   simp only [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, logPhase]
   congr 2
@@ -167,16 +181,18 @@ theorem fourier_translate (f : ℝ → ℂ) (ρ t : ℝ) :
   push_cast
   ring
 
-theorem fourier_translated_twist (f : ℝ → ℂ) (ρ θ t : ℝ) :
+theorem fourier_translated_twist     :
     (𝓕 (fun y => logPhase θ y * f (y+ρ))) t =
       logPhase (t-θ) ρ * (𝓕 f) (t-θ) := by
   rw [fourier_phase_shift, fourier_translate]
 
-theorem norm_fourier_translated_twist (f : ℝ → ℂ) (ρ θ t : ℝ) :
+theorem norm_fourier_translated_twist     :
     ‖(𝓕 (fun y => logPhase θ y * f (y+ρ))) t‖ = ‖(𝓕 f) (t-θ)‖ := by
   rw [fourier_translated_twist, norm_mul, logPhase_norm, one_mul]
 
-theorem translated_twist_moment_uniform (g : 𝓢(ℝ, ℂ)) (J : ℕ) :
+end
+
+theorem translated_twist_moment_uniform (g : 𝓢(ℝ, ℂ))  J  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ ρ θ : ℝ,
       Integrable (fun t : ℝ => (1+‖t‖)^J *
         ‖(𝓕 (fun y => logPhase θ y * g (y+ρ))) t‖) ∧

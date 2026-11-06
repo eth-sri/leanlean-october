@@ -7,31 +7,31 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongGeometry
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
 open CanonicalRowCompletion FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstLabelCell InverseMomentFirstChildWindows
-local notation "O"=>ActualEisensteinCubic.O
+
 
 theorem actual_live_bin_rank_children
-    (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
+    (S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
     (Z N V M cutoff eta L b window bW Qwidth z c eps A Mnext Fnext cnext tau:ℝ)
     (j:ℕ)(hZ:1<Z)(hL:1≤L)(heta:0≤eta)(heta1:eta≤1)
     (hcut:0<cutoff)(hsmall:eta≤cutoff/32)(hV:0≤V)(hparentcap:N+V≤L)
     (hbW:bW≤Z^eta)(hlog:1≤eta*Real.log Z)(hexp:Real.exp 1≤Z^eta)
     (hbin:2≤Z^eta)(hb:1≤b)(hbt:b≤Z^(6*eta))(hwindow:Real.exp window≤Z^(4*eta))
     (hne:(progressingCubes S D (Z^(cutoff-V)) (activeCubeLogBin S D bW (Z^N) j)).Nonempty)
-    (base Ψ:O→*ℂ)(hΨ:CanonicalCoefficientClass.IsBaseRayTwist base Ψ)(m:O)(hm:m≠0)
+    (base Ψ:ActualEisensteinCubic.O→*ℂ)(hΨ:CanonicalCoefficientClass.IsBaseRayTwist base Ψ)(m:ActualEisensteinCubic.O)(hm:m≠0)
     (hparent:CanonicalMargins (N+V) M Qwidth z c)
-    (hpuncture:(Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z^Qwidth)
+    (hpuncture:(Ideal.absNorm (Ideal.span {m}:Ideal ActualEisensteinCubic.O).radical:ℝ)≤Z^Qwidth)
     (hMc:M-3*(cutoff/2)/2≤Mnext)(hFc:N+V+15*eta≤Fnext)(hcc:cnext≤c-7*eta)
     {σ:Type}[DecidableEq σ](slots:Finset σ)
-    (lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
-    (ω₁ ω₂:𝓢(ℝ,ℂ))(K degree:ℕ):
+     lists 
+     a 
+     ω₁ ω₂  K degree :
     let F:=InitialMeanSquare.outsideSquarefreeIdeals S D;
     let hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad;
     letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
@@ -68,6 +68,6 @@ theorem actual_live_bin_rank_children
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

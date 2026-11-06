@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.ReflectedDual
 
@@ -11,17 +12,21 @@ open scoped BigOperators Classical
 open CompletedGauss CubicEisenstein ConcreteTraceCRT LocalReflectionBrackets
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+
 noncomputable local instance markedPhaseFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
 
-def markedActiveExponent (S : Finset ι) (j : ι → ℕ) (i : ι) : ℕ := if i ∈ S then 0 else j i
+def markedActiveExponent (S : Finset ι) (j : ι → ℕ) (i : ι)  := if i ∈ S then 0 else j i
 
-theorem mixedActiveBracket_eq_signed [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode)
-    (i : ι) (x : Eis) :
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal] (hp : ∀ i, p i ≠ 0) (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode)
+include hp hg j S D
+
+theorem mixedActiveBracket_eq_signed  
+       
+         
+     i   x  :
     mixedActiveBracket hp hg j S D i x = (if i ∈ S then (-1 : ℂ) else 1) *
       ((((actualSextic (Ideal.span {p i}) (hg i))⁻¹) ^ 2) (D.sigma i) *
         phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i))
@@ -32,11 +37,11 @@ theorem mixedActiveBracket_eq_signed [∀ i, (Ideal.span {p i}).IsMaximal]
   · simp only [mixedActiveBracket, markedActiveExponent, hi,
       phase, bracket, show (0 : ℕ) ≠ 4 by decide, ↓reduceIte, inv_pow, map_mul]
     ring
-  · simp only [mixedActiveBracket, markedActiveExponent, hi, ite_false, one_mul]
+  simp_all [mixedActiveBracket, markedActiveExponent]
 
-theorem mixedActiveBracket_product [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode) (x : Eis) :
+theorem mixedActiveBracket_product  
+       
+          (x : Eis) :
     (∏ i, mixedActiveBracket hp hg j S D i x) =
       (-1 : ℂ) ^ S.card * D.bracketProduct hp hg (markedActiveExponent S j) x := by
   simp_rw [mixedActiveBracket_eq_signed]
@@ -47,11 +52,13 @@ theorem mixedActiveBracket_product [∀ i, (Ideal.span {p i}).IsMaximal]
   rw [hsign]
   rfl
 
+end
+
 theorem mixed_model_coefficient [∀ i, (Ideal.span {p i}).IsMaximal]
     (D : ControlledStratumArithmetic p N a0 c0 mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))
-    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (j : ι → ℕ) (S : Finset ι) (u : Eisˣ) (m : ℕ) (I J : Ideal Eis) :
+     hp   hc0  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+     j   S   u   m   I J  :
     s.amplitude u m I J *
       (star D.fixedFactor * ShortDraftCusp.A4BadPhase c0 hc0
         (D.matrix (fun _ => 1) 1 1) D.U (s.modelDualNumerator u m I J)) *

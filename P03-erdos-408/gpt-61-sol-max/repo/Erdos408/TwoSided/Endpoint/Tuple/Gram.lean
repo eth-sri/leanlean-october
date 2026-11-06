@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.OneSided.Major.Sparse
 
 public import Erdos408.OneSided.Analysis.Divisor
 public import Erdos408.TwoSided.Setup
@@ -25,129 +28,20 @@ open Filter Finset
 /-- The duality (`TT*`) bound: if each row of the Gram matrix
 `G_{ii'} = ∑_n e_i(n) \overline{e_{i'}(n)}` has absolute sum at most `R`, then
 `∑_i |∑_n c_n e_i(n)|² ≤ R ∑_n |c_n|²`. -/
-theorem sum_norm_sq_le_of_gram_rowSum {ι : Type*} (I : Finset ι) (S : Finset ℕ)
-    (e : ι → ℕ → ℂ) (c : ℕ → ℂ) {R : ℝ} (hR0 : 0 ≤ R)
-    (hR : ∀ i ∈ I, ∑ i' ∈ I, ‖∑ n ∈ S, e i n * starRingEnd ℂ (e i' n)‖ ≤ R) :
-    ∑ i ∈ I, ‖∑ n ∈ S, c n * e i n‖ ^ 2 ≤ R * ∑ n ∈ S, ‖c n‖ ^ 2 := by
-  set b : ι → ℂ := fun i => ∑ n ∈ S, c n * e i n
-  set G : ι → ι → ℂ := fun i i' => ∑ n ∈ S, e i n * starRingEnd ℂ (e i' n)
-  set v : ℕ → ℂ := fun n => ∑ i ∈ I, starRingEnd ℂ (b i) * e i n
-  set Q := ∑ i ∈ I, ‖b i‖ ^ 2
-  have hQ0 : 0 ≤ Q := sum_nonneg fun i _ => by positivity
-  have hc0 : 0 ≤ ∑ n ∈ S, ‖c n‖ ^ 2 := sum_nonneg fun n _ => by positivity
-  -- `Q = ∑_n c_n v_n`
-  have hQv : (Q : ℂ) = ∑ n ∈ S, c n * v n := by
-    simp only [Q, v, Complex.ofReal_sum, Complex.ofReal_pow, ← Complex.conj_mul', mul_sum]
-    rw [sum_comm]
-    refine sum_congr rfl fun i _ => ?_
-    simp only [b, mul_sum]
-    exact sum_congr rfl fun n _ => by ring
-  -- `∑_n |v_n|² = ∑_{i, i'} \bar b_i b_{i'} G_{ii'}`
-  have hvG : ((∑ n ∈ S, ‖v n‖ ^ 2 : ℝ) : ℂ) =
-      ∑ i ∈ I, ∑ i' ∈ I, starRingEnd ℂ (b i) * b i' * G i i' := by
-    simp only [Complex.ofReal_sum, Complex.ofReal_pow, ← Complex.conj_mul', v, G, map_sum,
-      map_mul, Complex.conj_conj, sum_mul, mul_sum]
-    rw [sum_comm]
-    refine sum_congr rfl fun i _ => ?_
-    rw [sum_comm]
-    exact sum_congr rfl fun i' _ => sum_congr rfl fun n _ => by ring
-  -- the Gram matrix is Hermitian
-  have hGsymm : ∀ i i', ‖G i' i‖ = ‖G i i'‖ := by
-    intro i i'
-    have h : G i' i = starRingEnd ℂ (G i i') := by
-      simp only [G, map_sum, map_mul, Complex.conj_conj]
-      exact sum_congr rfl fun n _ => mul_comm _ _
-    rw [h, Complex.norm_conj]
-  -- `∑_n |v_n|² ≤ R Q`, by `2|ab| ≤ |a|² + |b|²`
-  have hv : ∑ n ∈ S, ‖v n‖ ^ 2 ≤ R * Q := by
-    have h₁ : ∑ n ∈ S, ‖v n‖ ^ 2 ≤
-        ∑ i ∈ I, ∑ i' ∈ I, (‖b i‖ ^ 2 * ‖G i i'‖ + ‖b i'‖ ^ 2 * ‖G i' i‖) / 2 := by
-      have h := congrArg norm hvG
-      rw [Complex.norm_real, Real.norm_of_nonneg (sum_nonneg fun n _ => by positivity)] at h
-      rw [h]
-      refine (norm_sum_le _ _).trans (sum_le_sum fun i _ => (norm_sum_le _ _).trans
-        (sum_le_sum fun i' _ => ?_))
-      rw [norm_mul, norm_mul, Complex.norm_conj, hGsymm]
-      nlinarith [mul_nonneg (sq_nonneg (‖b i‖ - ‖b i'‖)) (norm_nonneg (G i' i))]
-    have h₂ : ∑ i ∈ I, ∑ i' ∈ I, (‖b i‖ ^ 2 * ‖G i i'‖ + ‖b i'‖ ^ 2 * ‖G i' i‖) / 2 =
-        ∑ i ∈ I, ‖b i‖ ^ 2 * ∑ i' ∈ I, ‖G i i'‖ := by
-      simp only [add_div, sum_add_distrib]
-      rw [sum_comm (f := fun i i' => ‖b i'‖ ^ 2 * ‖G i' i‖ / 2), ← sum_add_distrib]
-      refine sum_congr rfl fun i _ => ?_
-      rw [← sum_add_distrib, mul_sum]
-      exact sum_congr rfl fun i' _ => by ring
-    rw [h₂] at h₁
-    refine h₁.trans ?_
-    rw [mul_comm R, sum_mul]
-    exact sum_le_sum fun i hi => mul_le_mul_of_nonneg_left (hR i hi) (by positivity)
-  -- `Q² ≤ (∑ |c_n|²)(∑ |v_n|²)`, by Cauchy–Schwarz
-  have hQ : Q ^ 2 ≤ (∑ n ∈ S, ‖c n‖ ^ 2) * (R * Q) := by
-    have h : Q ≤ ∑ n ∈ S, ‖c n‖ * ‖v n‖ := by
-      have := congrArg norm hQv
-      rw [Complex.norm_real, Real.norm_of_nonneg hQ0] at this
-      rw [this]
-      exact (norm_sum_le _ _).trans_eq (sum_congr rfl fun n _ => norm_mul _ _)
-    calc Q ^ 2 ≤ (∑ n ∈ S, ‖c n‖ * ‖v n‖) ^ 2 := pow_le_pow_left₀ hQ0 h 2
-      _ ≤ (∑ n ∈ S, ‖c n‖ ^ 2) * ∑ n ∈ S, ‖v n‖ ^ 2 := sum_mul_sq_le_sq_mul_sq _ _ _
-      _ ≤ _ := mul_le_mul_of_nonneg_left hv hc0
-  rcases hQ0.eq_or_lt with h | h
-  · rw [← h]
-    positivity
-  · nlinarith
+alias sum_norm_sq_le_of_gram_rowSum := _root_.SharedProofs.sum_norm_sq_le_of_gram_rowSum
 
 /-- `∑_{m' ∈ S} 1/|m - m'| ≤ 2 (1 + log N)` for `S` and `m` in an integer interval of
 length `N`, the term `m' = m` being `0`. -/
-theorem sum_inv_abs_intCast_sub_le {S : Finset ℤ} {lo hi m : ℤ} (hS : S ⊆ Icc lo hi)
-    (hm : m ∈ Icc lo hi) :
-    ∑ m' ∈ S, |((m - m' : ℤ) : ℝ)|⁻¹ ≤ 2 * (1 + Real.log (hi - lo + 1).toNat) := by
-  -- shift `[lo, hi]` to `[1, N]`
-  set f : ℤ → ℕ := fun l => (l - lo + 1).toNat
-  have hf : ∀ l ∈ Icc lo hi, ((f l : ℕ) : ℤ) = l - lo + 1 := fun l hl =>
-    Int.toNat_of_nonneg (by rw [mem_Icc] at hl; omega)
-  have hfmem : ∀ l ∈ Icc lo hi, f l ∈ Icc 1 (hi - lo + 1).toNat := by
-    intro l hl
-    have h := hf l hl
-    rw [mem_Icc] at hl ⊢
-    omega
-  have hcast : ∀ l ∈ Icc lo hi, ((f l : ℕ) : ℝ) = ((l - lo + 1 : ℤ) : ℝ) := fun l hl => by
-    rw [← hf l hl, Int.cast_natCast]
-  have hinj : Set.InjOn f S := fun l hl l' hl' h => by
-    have h₁ := hf l (hS hl)
-    have h₂ := hf l' (hS hl')
-    rw [h] at h₁
-    omega
-  calc ∑ m' ∈ S, |((m - m' : ℤ) : ℝ)|⁻¹ = ∑ m' ∈ S, |((f m : ℕ) : ℝ) - f m'|⁻¹ := by
-        refine sum_congr rfl fun m' hm' => ?_
-        rw [hcast m hm, hcast m' (hS hm')]
-        push_cast
-        ring_nf
-    _ = ∑ n ∈ S.image f, |((f m : ℕ) : ℝ) - n|⁻¹ :=
-        (sum_image (f := fun n : ℕ => |((f m : ℕ) : ℝ) - n|⁻¹) hinj).symm
-    _ ≤ ∑ n ∈ Icc 1 (hi - lo + 1).toNat, |((f m : ℕ) : ℝ) - n|⁻¹ := by
-        refine sum_le_sum_of_subset_of_nonneg (fun n hn => ?_) fun n _ _ => by positivity
-        obtain ⟨l, hl, rfl⟩ := mem_image.1 hn
-        exact hfmem l (hS hl)
-    _ ≤ _ := OneSided.sum_inv_abs_sub_le (hfmem m hm)
+alias sum_inv_abs_intCast_sub_le := _root_.SharedProofs.sum_inv_abs_intCast_sub_le
 
 /-- `n^{ia} \overline{n^{ib}} = n^{i(a - b)}` for `n ≠ 0`. -/
-theorem natCast_cpow_mul_I_mul_conj_cpow {n : ℕ} (hn : n ≠ 0) (a b : ℝ) :
-    (n : ℂ) ^ ((a : ℂ) * Complex.I) * starRingEnd ℂ ((n : ℂ) ^ ((b : ℂ) * Complex.I)) =
-      (n : ℂ) ^ (((a - b : ℝ) : ℂ) * Complex.I) := by
-  rw [OneSided.natCast_cpow_mul_I hn, OneSided.natCast_cpow_mul_I hn,
-    OneSided.natCast_cpow_mul_I hn, ← Complex.exp_conj, ← Complex.exp_add]
-  congr 1
-  simp only [map_mul, Complex.conj_ofReal, Complex.conj_I]
-  push_cast
-  ring
+alias natCast_cpow_mul_I_mul_conj_cpow := _root_.SharedProofs.natCast_cpow_mul_I_mul_conj_cpow
 
 /-- `|n^{it}| = 1` for `n ≥ 1`. -/
-theorem norm_natCast_cpow_ofReal_mul_I {n : ℕ} (hn : 0 < n) (t : ℝ) :
-    ‖(n : ℂ) ^ ((t : ℂ) * Complex.I)‖ = 1 := by
-  rw [Complex.norm_natCast_cpow_of_pos hn]
-  simp
+alias norm_natCast_cpow_ofReal_mul_I := _root_.SharedProofs.norm_natCast_cpow_ofReal_mul_I
 
 /-- `|(⌊R⌋, ⌊2R⌋]| ≤ R + 1` for `R ≥ 0`. -/
-theorem card_Ioc_floor_le {R : ℝ} (hR : 0 ≤ R) : (#(Ioc ⌊R⌋₊ ⌊2 * R⌋₊) : ℝ) ≤ R + 1 := by
+theorem card_Ioc_floor_le  {R}  (hR : 0 ≤ R) : (#(Ioc ⌊R⌋₊ ⌊2 * R⌋₊) : ℝ) ≤ R + 1 := by
   rw [Nat.card_Ioc]
   rcases le_or_gt ⌊R⌋₊ ⌊2 * R⌋₊ with h | h
   · rw [Nat.cast_sub h]
@@ -179,7 +73,6 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
   have hL0 : 0 < L := by linarith
   have hR0 : 0 < R := lt_of_lt_of_le (Real.exp_pos _) hR₁
   have hR1 : 1 ≤ R := le_trans (Real.one_le_exp (by
-    have : 0 < Real.log L := Real.log_pos (by linarith)
     positivity)) hR₁
   set T₀ := x * L ^ (Cm + 2) with hT₀
   -- `L^{C_m + 2} ≤ x / 9`
@@ -324,8 +217,7 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
     have hMle : (M : ℝ) ≤ 2 * T₀ := Int.floor_le _
     rw [hcast]
     have hpos : (0 : ℝ) < 2 * M + 1 := by
-      have : (0 : ℝ) ≤ M := by exact_mod_cast hM0
-      linarith
+      positivity
     rw [show 2 * L = Real.log (x ^ 2) by rw [Real.log_pow]; push_cast; ring]
     refine Real.log_le_log hpos ?_
     have : 4 * T₀ ≤ x * x / 2 := by

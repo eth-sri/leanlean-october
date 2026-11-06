@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Analytic.ProxyTwist
 
 public import Erdos408.TwoSided.Endpoint.Tuple.Split
 public import Mathlib.Analysis.Real.Pi.Bounds
@@ -39,19 +42,14 @@ theorem sum_ite_and_three (s sp U : Finset ℕ) (A B C : ℕ → Prop) [Decidabl
     refine sum_congr rfl fun pl _ => ?_
     by_cases hB : B pl
     · rw [ite_eq_left hB, sum_filter]
-      refine sum_congr rfl fun u _ => ?_
-      by_cases hC : C u
-      · rw [ite_eq_left ⟨hA, hB, hC⟩, ite_eq_left hC]
-      · rw [ite_eq_right fun h => hC h.2.2, ite_eq_right hC]
-    · rw [ite_eq_right hB]
-      exact sum_eq_zero fun u _ => ite_eq_right fun h => hB h.2.1
-  · rw [ite_eq_right hA]
-    exact sum_eq_zero fun pl _ => sum_eq_zero fun u _ => ite_eq_right fun h => hA h.1
+      simp_all
+    simp_all
+  simp_all
 
 /-- The term `J_m(t) = (YV)⁻¹ ∑_{(p_s, p_l, u) ∈ m} χ(p_l) ψ₁(p_s p_l u/Y) c_u
 (p_s p_l u)^{i(t + σ)}` of one box, pair of classes and character `m`. -/
-noncomputable def boxTerm (Y V : ℝ) (s sp : Finset ℕ) {k : ℕ} (cf : ℕ → ℂ) (ψ₁ : ℝ → ℂ)
-    (σ : ℝ) (m : ((ℕ × ℕ) × ℕ) × ((ℕ × ℕ) × DirichletCharacter ℂ k)) (t : ℝ) : ℂ :=
+noncomputable def boxTerm (Y V : ℝ) (s sp : Finset ℕ) {k } (cf : ℕ → ℂ) (ψ₁ : ℝ → ℂ)
+    (σ : ℝ) (m : ((ℕ × ℕ) × ℕ) × ((ℕ × ℕ) × DirichletCharacter ℂ k)) (t : ℝ)  :=
   (((Y * V)⁻¹ : ℝ) : ℂ) *
     ∑ ps ∈ s.filter (fun p => boxIndex p = m.1.1.1 ∧ p % k = m.2.1.1),
       ∑ pl ∈ sp.filter (fun p => boxIndex p = m.1.1.2),
@@ -59,9 +57,12 @@ noncomputable def boxTerm (Y V : ℝ) (s sp : Finset ℕ) {k : ℕ} (cf : ℕ �
           m.2.2 pl * (ψ₁ ((ps * pl * u : ℕ) / Y) *
             (cf u * ((ps * pl * u : ℕ) : ℂ) ^ (((t + σ : ℝ) : ℂ) * Complex.I)))
 
+section
+variable {Y V : ℝ}
+
 /-- `J_m` is continuous when the sets avoid `0`. -/
-theorem continuous_boxTerm {Y V : ℝ} {s sp : Finset ℕ} (hs : ∀ p ∈ s, 0 < p)
-    (hsp : ∀ p ∈ sp, 0 < p) {k : ℕ} (cf : ℕ → ℂ) (ψ₁ : ℝ → ℂ) (σ : ℝ)
+theorem continuous_boxTerm    {s sp}  (hs : ∀ p ∈ s, 0 < p)
+    (hsp : ∀ p ∈ sp, 0 < p) {k : ℕ}  cf   ψ₁   σ 
     (m : ((ℕ × ℕ) × ℕ) × ((ℕ × ℕ) × DirichletCharacter ℂ k)) :
     Continuous (boxTerm Y V s sp cf ψ₁ σ m) := by
   unfold boxTerm
@@ -79,13 +80,13 @@ theorem continuous_boxTerm {Y V : ℝ} {s sp : Finset ℕ} (hs : ∀ p ∈ s, 0 
 /-- **E6 (boxes, classes and characters).** For `p_s p_l < Y`, spare primes coprime to `k`
 and all variables in the boxes below `N₀`: the twisted polynomial of the tuple sum is
 `∑_m c_χ(h, αβ) J_m(t)`. -/
-theorem twistedPoly_eq_sum_boxTerm {Y V : ℝ} (hY : 0 < Y) (s sp : Finset ℕ)
+theorem twistedPoly_eq_sum_boxTerm   (hY : 0 < Y) (s sp : Finset ℕ)
     (hs : ∀ p ∈ s, 0 < p) (hsp : ∀ p ∈ sp, 0 < p)
     (hsmall : ∀ ps ∈ s, ∀ pl ∈ sp, ((ps * pl : ℕ) : ℝ) < Y) (ψ₁ : ℝ → ℂ)
-    (hψ : ∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) (cf : ℕ → ℂ) (σ : ℝ) {k : ℕ} (hk : 1 ≤ k) (h : ℤ)
-    {N₀ : ℕ} (hN₀s : ∀ p ∈ s, boxIndex p < N₀) (hN₀sp : ∀ p ∈ sp, boxIndex p < N₀)
+    (hψ : ∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) (cf : ℕ → ℂ) (σ : ℝ)  {k}  (hk : 1 ≤ k)  h 
+     {N₀}  (hN₀s : ∀ p ∈ s, boxIndex p < N₀) (hN₀sp : ∀ p ∈ sp, boxIndex p < N₀)
     (hN₀U : ∀ u ∈ Ioc 1 ⌊2 * Y⌋₊, boxIndex u < N₀) (hcop : ∀ p ∈ sp, Nat.Coprime p k)
-    (t : ℝ) :
+     t  :
     twistedPoly Y (fun w => ψ₁ (w / Y) * (w : ℂ) ^ ((σ : ℂ) * Complex.I) * ((V⁻¹ : ℝ) : ℂ) *
         ∑ ps ∈ s.filter (· ∣ w), ∑ pl ∈ sp.filter (· ∣ w / ps), cf (w / ps / pl)) h k t =
       ∑ m ∈ boxSet N₀ k, Erdos821.P5Marked.cchi k h m.2.2 (m.2.1.1 * m.2.1.2) *
@@ -129,9 +130,11 @@ theorem twistedPoly_eq_sum_boxTerm {Y V : ℝ} (hY : 0 < Y) (s sp : Finset ℕ)
   unfold InBox
   ring
 
+end
+
 /-- The spare primes of the box `(2^j, 2^{j+1}]` form the interval `(max(2^j, A), min(2^{j+1}, B)]`
 of primes. -/
-theorem spareBox_eq {A B : ℝ} (hB : 0 ≤ B) (j : ℕ) :
+theorem spareBox_eq {A B : ℝ} (hB : 0 ≤ B)  j  :
     ((Iic ⌊B⌋₊).filter fun p : ℕ => p.Prime ∧ A < p).filter (fun p => boxIndex p = j) =
       (Ioc ⌊max ((2 : ℝ) ^ j) A⌋₊ ⌊min (2 * (2 : ℝ) ^ j) B⌋₊).filter Nat.Prime := by
   ext p
@@ -166,7 +169,7 @@ structure TupleFacts (c Cm x : ℝ) : Prop where
   big : 28 ≤ Real.log x
 
 /-- The growth facts hold eventually. -/
-theorem eventually_tupleFacts {c : ℝ} (hc : 0 < c) (Cm : ℝ) :
+theorem eventually_tupleFacts  {c}  (hc : 0 < c)  Cm  :
     ∀ᶠ x : ℝ in atTop, TupleFacts c Cm x := by
   filter_upwards [eventually_boxScales Cm,
     eventually_mul_exp_rpow_le_margin (by norm_num : (0 : ℝ) ≤ 0.47) (by norm_num) hc 8,
@@ -183,9 +186,9 @@ theorem eventually_tupleFacts {c : ℝ} (hc : 0 < c) (Cm : ℝ) :
   linarith
 
 /-- `|G| ≤ (#s_P (PV)⁻¹) (P/Y) (#s_N ∑_u |c_u|)`. -/
-theorem norm_boxPoly_le {Y P V : ℝ} (hY : 0 < Y) (hP : 0 < P) (hV : 0 < V)
-    {sP spN uR : Finset ℕ} (hsP : ∀ n ∈ sP, 0 < n) (hspN : ∀ n ∈ spN, 0 < n)
-    (huR : ∀ n ∈ uR, 0 < n) {k : ℕ} (χ : DirichletCharacter ℂ k) (c : ℕ → ℂ) (τ : ℝ) :
+theorem norm_boxPoly_le  {Y P V}  (hY : 0 < Y) (hP : 0 < P) (hV : 0 < V)
+     {sP spN uR}  (hsP : ∀ n ∈ sP, 0 < n) (hspN : ∀ n ∈ spN, 0 < n)
+    (huR : ∀ n ∈ uR, 0 < n) {k : ℕ} (χ : DirichletCharacter ℂ k)  c   τ  :
     ‖boxPoly Y P V sP spN uR χ c τ‖ ≤
       (#sP * (P * V)⁻¹) * (P / Y * (#spN * ∑ u ∈ uR, ‖c u‖)) := by
   rw [boxPoly, norm_mul, norm_mul, norm_mul, Complex.norm_real,
@@ -210,7 +213,7 @@ theorem norm_boxPoly_le {Y P V : ℝ} (hY : 0 < Y) (hP : 0 < P) (hV : 0 < V)
   gcongr
 
 /-- `⌊2^l⌋ = 2^l` and `⌊2 · 2^l⌋ = 2^{l+1}`. -/
-theorem floor_two_pow (l : ℕ) :
+theorem floor_two_pow  l  :
     ⌊(2 : ℝ) ^ l⌋₊ = 2 ^ l ∧ ⌊2 * (2 : ℝ) ^ l⌋₊ = 2 ^ (l + 1) := by
   constructor
   · exact_mod_cast Nat.floor_natCast (2 ^ l)
@@ -271,13 +274,11 @@ theorem boxData_of_mem {x c Cm CU vlo : ℝ} (hc : 0 < c) (hf : TupleFacts c Cm 
   have ru₂ : (u : ℝ) ≤ 2 * 2 ^ l := by rw [pow_succ] at hul₂; exact_mod_cast (by omega)
   have hn : ((ps * pl * u : ℕ) : ℝ) = ps * pl * u := by push_cast; ring
   rw [hn] at hn₁ hn₂
-  have hP0 : (0 : ℝ) < 2 ^ i := by positivity
-  have hN0 : (0 : ℝ) < 2 ^ j := by positivity
-  have hR0 : (0 : ℝ) < 2 ^ l := by positivity
+  
+  
+  
   have h27 : 1 ≤ Real.exp (Real.log x ^ (0.27 : ℝ)) := Real.one_le_exp (by positivity)
-  have hP1 : (1 : ℝ) ≤ 2 * 2 ^ i := by
-    have : (2 : ℝ) ≤ ps := by exact_mod_cast hpsP.two_le
-    linarith
+  
   -- `PNR < p_s p_l u ≤ 2Y` and `Y ≤ 8PNR`
   have hPNR : (2 : ℝ) ^ i * 2 ^ j * 2 ^ l ≤ 2 * Y := by
     have : (2 : ℝ) ^ i * 2 ^ j * 2 ^ l ≤ ps * pl * u := by gcongr
@@ -328,7 +329,7 @@ theorem boxData_of_mem {x c Cm CU vlo : ℝ} (hc : 0 < c) (hf : TupleFacts c Cm 
         _ ≤ 2 * Y := hPNR
     have h₂ : 2 * Y ≤ 2 * x * Real.exp (Real.log x ^ (0.47 : ℝ)) := by linarith
     have h₃ : 8 * Real.exp (Real.log x ^ (0.47 : ℝ)) ≤ e := hf.m47
-    have h₄ : (2 : ℝ) ^ l * e ≤ 8 * x * Real.exp (Real.log x ^ (0.47 : ℝ)) := by linarith
+    
     have h₅ : 8 * x * Real.exp (Real.log x ^ (0.47 : ℝ)) ≤ x * e := by nlinarith
     exact le_of_mul_le_mul_right (by linarith) he0
   · intro p hp
@@ -353,7 +354,7 @@ theorem boxData_of_mem {x c Cm CU vlo : ℝ} (hc : 0 < c) (hf : TupleFacts c Cm 
     linarith
 
 /-- The conclusion of `eventually_integral_boxPoly_le_of_twist` at `x`. -/
-def BoxTwistBound (x Cm CU vlo As : ℝ) : Prop :=
+def BoxTwistBound (x Cm CU vlo As : ℝ)  :=
   ∀ (Y P N R V lo hi : ℝ) (sP uR : Finset ℕ) (k : ℕ) (χ : DirichletCharacter ℂ k)
     (c : ℕ → ℂ), BoxData x Cm CU vlo Y P N R V lo hi sP uR k c →
     ∀ A' E κ' : ℝ, PrimeTwistBound x A' E Cm κ' → IntegerKernelBound x Cm κ' →
@@ -366,23 +367,27 @@ def BoxTwistBound (x Cm CU vlo As : ℝ) : Prop :=
             (9 * (1 + |κ'|) * Real.log x ^ (2 * CU + 4))
 
 /-- `BoxTwistBound` holds eventually (`eventually_integral_boxPoly_le_of_twist`). -/
-theorem eventually_boxTwistBound (Cm CU vlo As : ℝ) (hvlo : 0 < vlo) (hCm : 0 ≤ Cm)
+theorem eventually_boxTwistBound  Cm CU vlo As  (hvlo : 0 < vlo) (hCm : 0 ≤ Cm)
     (hAs : 0 < As) : ∀ᶠ x : ℝ in atTop, BoxTwistBound x Cm CU vlo As :=
   eventually_integral_boxPoly_le_of_twist Cm CU vlo As hvlo hCm hAs
 
-/-- `|Y^{is}| = 1` for `Y > 0`. -/
-theorem norm_ofReal_cpow_mul_I {Y : ℝ} (hY : 0 < Y) (s : ℝ) :
-    ‖(Y : ℂ) ^ ((s : ℂ) * Complex.I)‖ = 1 := by
-  rw [ofReal_cpow_mul_I hY, Complex.norm_exp_ofReal_mul_I]
+section
+variable {L K KA At Cm Cf E₁ E₂ Mb Y E B' T₀ t σ t₁ t₂ : ℝ} {a : ℝ → ℂ} (hai : Integrable a) (ha₁ : (∫ ξ, ‖a ξ‖) ≤ L ^ K) (hat : (∫ ξ in {ξ : ℝ | L ^ Cf < |ξ|}, ‖a ξ‖) ≤ KA * L ^ (-At)) {G : ℝ → ℂ} (hGc : Continuous G) (hMb : ∀ τ, ‖G τ‖ ≤ Mb) (hY : 0 < Y) {ξ : ℝ}
 
+include hY in
+/-- `|Y^{is}| = 1` for `Y > 0`. -/
+theorem norm_ofReal_cpow_mul_I     (s : ℝ) :
+    ‖(Y : ℂ) ^ ((s : ℂ) * Complex.I)‖ = 1 := by solve_by_elim [_root_.SharedProofs.shared_norm_ofReal_cpow_mul_I]
+
+include hai ha₁ hat hGc hMb hY in
 /-- **The energy of a separated term.** If `J(t) = ∫ a(ξ) Y^{-2πiξ} G(t + σ + 2πξ) dξ` with
 `G` continuous and bounded, the mean squares of `G` over the shifted intervals are `≤ E₁` for
 `|ξ| ≤ L^{C_sep}` and `≤ E₂` always, `∫ |a| ≤ L^K` and the tail of `a` is `≤ K_A L^{-A_t}`,
 then `∫ |J|² ≤ L^K (E₁ L^K + E₂ K_A L^{-A_t})`. -/
-theorem integral_sq_le_of_separated {L K KA At Cf E₁ E₂ Mb Y σ t₁ t₂ : ℝ} {a : ℝ → ℂ}
-    (hai : Integrable a) (ha₁ : (∫ ξ, ‖a ξ‖) ≤ L ^ K)
-    (hat : (∫ ξ in {ξ : ℝ | L ^ Cf < |ξ|}, ‖a ξ‖) ≤ KA * L ^ (-At)) {G : ℝ → ℂ}
-    (hGc : Continuous G) (hMb : ∀ τ, ‖G τ‖ ≤ Mb) (hY : 0 < Y) {J : ℝ → ℂ}
+theorem integral_sq_le_of_separated    
+       
+       
+          {J : ℝ → ℂ}
     (hJ : ∀ t, J t = ∫ ξ, a ξ * (Y : ℂ) ^ (((-(2 * Real.pi * ξ) : ℝ) : ℂ) * Complex.I) *
       G (t + σ + 2 * Real.pi * ξ)) (h₁₂ : t₁ ≤ t₂) (hE₁0 : 0 ≤ E₁) (hE₂0 : 0 ≤ E₂)
     (hE₁ : ∀ ξ : ℝ, |ξ| ≤ L ^ Cf →
@@ -391,8 +396,7 @@ theorem integral_sq_le_of_separated {L K KA At Cf E₁ E₂ Mb Y σ t₁ t₂ : 
       ∫ τ in t₁ + (σ + 2 * Real.pi * ξ)..t₂ + (σ + 2 * Real.pi * ξ), ‖G τ‖ ^ 2 ≤ E₂) :
     ∫ t in t₁..t₂, ‖J t‖ ^ 2 ≤ L ^ K * (E₁ * L ^ K + E₂ * (KA * L ^ (-At))) := by
   have hh : Continuous (Function.uncurry fun ξ τ => ‖G (τ + (σ + 2 * Real.pi * ξ))‖) := by
-    have : Continuous fun p : ℝ × ℝ => p.2 + (σ + 2 * Real.pi * p.1) := by fun_prop
-    exact (hGc.comp this).norm
+    fun_prop
   have hen := integral_sq_le_of_le_integral_split (c := 1) (M := Mb) (R := L ^ Cf)
     (h := fun ξ τ => ‖G (τ + (σ + 2 * Real.pi * ξ))‖) h₁₂ hai.norm (fun ξ => norm_nonneg _)
     hh (fun _ _ => norm_nonneg _) (fun ξ τ => hMb _) hE₁0 (E₂ := E₂)
@@ -410,24 +414,23 @@ theorem integral_sq_le_of_separated {L K KA At Cf E₁ E₂ Mb Y σ t₁ t₂ : 
       rw [norm_mul, norm_mul, norm_ofReal_cpow_mul_I hY, mul_one, add_assoc])
   refine hen.trans ?_
   have hW0 : 0 ≤ ∫ ξ, ‖a ξ‖ := integral_nonneg fun ξ => norm_nonneg _
-  have htail0 : 0 ≤ ∫ ξ in {ξ : ℝ | L ^ Cf < |ξ|}, ‖a ξ‖ :=
-    setIntegral_nonneg (measurableSet_lt measurable_const continuous_abs.measurable)
-      fun ξ _ => norm_nonneg _
+  
   rw [one_pow, one_mul]
   gcongr
   exact hW0.trans ha₁
 
+include hai in
 /-- Separation of one term: `J_m(t) = ∫ a(ξ) Y^{-2πiξ} G(t + σ + 2πξ) dξ`. -/
-theorem boxTerm_eq_integral {a : ℝ → ℂ} (hai : Integrable a) {ψ₁ : ℝ → ℂ}
+theorem boxTerm_eq_integral      {ψ₁} 
     (harep : ∀ y : ℝ, 0 < y →
       ψ₁ y = ∫ ξ, a ξ * (y : ℂ) ^ (((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I))
-    {Y V : ℝ} (hY : 0 < Y) (s sp spN : Finset ℕ) {k : ℕ} (cf : ℕ → ℂ) (σ : ℝ)
+     {Y V}  (hY : 0 < Y)  s sp spN  {k : ℕ}  cf   σ 
     (i j l α β : ℕ) (χ : DirichletCharacter ℂ k)
     (hsp : sp.filter (fun p => boxIndex p = j) = spN)
     (hsm : ∀ n ∈ s.filter (fun p => boxIndex p = i ∧ p % k = α), 0 < n)
     (hspN : ∀ n ∈ spN, 0 < n)
     (hUm : ∀ n ∈ (Ioc 1 ⌊2 * Y⌋₊).filter (fun u => boxIndex u = l ∧ u % k = β), 0 < n)
-    (t : ℝ) :
+     t  :
     boxTerm Y V s sp cf ψ₁ σ (((i, j), l), ((α, β), χ)) t =
       ∫ ξ, a ξ * (Y : ℂ) ^ (((-(2 * Real.pi * ξ) : ℝ) : ℂ) * Complex.I) *
         boxPoly Y (2 ^ i) V (s.filter (fun p => boxIndex p = i ∧ p % k = α)) spN
@@ -447,7 +450,7 @@ theorem integral_boxTerm_le {x c Cm Cf CU vlo As K KA At : ℝ} (hc : 0 < c) (hv
     (harep : ∀ y : ℝ, 0 < y →
       ψ₁ y = ∫ ξ, a ξ * (y : ℂ) ^ (((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I))
     (hat : (∫ ξ in {ξ : ℝ | Real.log x ^ Cf < |ξ|}, ‖a ξ‖) ≤ KA * Real.log x ^ (-At))
-    {s : Finset ℕ} {V A B : ℝ} {cf : ℕ → ℂ} {Y σ : ℝ} {k : ℕ}
+    {s : Finset ℕ} {V A B : ℝ}  {cf}   {Y σ}  {k : ℕ}
     (hs : ∀ p ∈ s, p.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ p ∧
       (p : ℝ) ≤ Real.exp (Real.log x ^ (0.36 : ℝ)))
     (hV : vlo ≤ V) (hA : Real.exp (c * Real.log x / Real.log (Real.log x) ^ 20) ≤ A)
@@ -456,7 +459,7 @@ theorem integral_boxTerm_le {x c Cm Cf CU vlo As K KA At : ℝ} (hc : 0 < c) (hv
     (hψs : ∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2)
     (hY₁ : x * Real.exp (Real.log x ^ (0.38 : ℝ)) ≤ Y)
     (hY₂ : Y ≤ x * Real.exp (Real.log x ^ (0.47 : ℝ)))
-    (hk₁ : 1 ≤ k) (hk₂ : (k : ℝ) ≤ Real.log x ^ Cm) {t₁ t₂ : ℝ} (h₁₂ : t₁ ≤ t₂)
+    (hk₁ : 1 ≤ k) (hk₂ : (k : ℝ) ≤ Real.log x ^ Cm)  {t₁ t₂}  (h₁₂ : t₁ ≤ t₂)
     (hlen : t₂ - t₁ ≤ 4 * (x * Real.log x ^ (Cm + 2)))
     (hrange : ∀ t ∈ Set.Icc t₁ t₂, ∀ ξ : ℝ, |ξ| ≤ Real.log x ^ Cf →
       Real.log x ^ E ≤ |t + (σ + 2 * Real.pi * ξ)| ∧
@@ -544,7 +547,7 @@ theorem integral_boxTerm_le {x c Cm Cf CU vlo As K KA At : ℝ} (hc : 0 < c) (hv
 /-- The shifted times `τ = t + σ + 2πξ`, for `L^{B'} ≤ |t| ≤ T₀`, `|σ| ≤ L^{C_m}` and
 `|ξ| ≤ L^{C_sep}`, satisfy `L^E ≤ |τ|` and `|τ| + 2 ≤ 2T₀`, once `B' ≥ max(C_m, C_sep) + 2`,
 `B' ≥ E + max(C_m, C_sep) + 2` and `L ≥ 28`. -/
-theorem shifted_range {L Cm Cf E B' T₀ t σ ξ : ℝ} (hL : 28 ≤ L) (hCf : 0 < Cf)
+theorem shifted_range   (hL : 28 ≤ L) (hCf : 0 < Cf)
     (hB₁ : max Cm Cf + 2 ≤ B') (hB₂ : E + (max Cm Cf + 2) ≤ B')
     (ht₁ : L ^ B' ≤ |t|) (ht₂ : |t| ≤ T₀)
     (hσ : |σ| ≤ L ^ Cm) (hξ : |ξ| ≤ L ^ Cf) :
@@ -583,9 +586,11 @@ theorem shifted_range {L Cm Cf E B' T₀ t σ ξ : ℝ} (hL : 28 ≤ L) (hCf : 0
     linarith
 
 /-- `L^a L^b L^c L^d L^e = L^{a+b+c+d+e}` for `L > 0`. -/
-theorem rpow_mul_five {L : ℝ} (hL : 0 < L) (a b c d e : ℝ) :
+theorem rpow_mul_five   (hL : 0 < L) (a b c d e : ℝ) :
     L ^ a * L ^ b * L ^ c * L ^ d * L ^ e = L ^ (a + b + c + d + e) := by
   rw [Real.rpow_add hL, Real.rpow_add hL, Real.rpow_add hL, Real.rpow_add hL]
+
+end
 
 /-- **The bookkeeping.** With `n ≤ 64 L^{3C_m + 3}` indices, `2A_s ≥ A₀ + D`,
 `2A' = A₀ + D - 1` and `A_t ≥ A₀ + D - K`, `D = 6C_m + 6 + 2K + 2C_U + 5`:
@@ -602,7 +607,7 @@ theorem tupleBound_le {L Cm K CU As A' At A₀ KA κ' vlo n : ℝ} (hL : 1 ≤ L
         L ^ (-A₀) := by
   have hL0 : 0 < L := by linarith
   set Q := L ^ (6 * Cm + 6) with hQ
-  have hQ0 : 0 < Q := by positivity
+  
   -- `n² ≤ 4096 Q`
   have hn2 : n * n ≤ 4096 * Q := by
     have h := mul_le_mul hn hn hn0 (by positivity)
@@ -655,7 +660,7 @@ theorem tupleBound_le {L Cm K CU As A' At A₀ KA κ' vlo n : ℝ} (hL : 1 ≤ L
     _ = 4096 * (1 + Cκ + C₃) * L ^ (-A₀) := by ring
 
 /-- The boxes below `N₀ = ⌈3L⌉` cover `[1, x²]`, and `1 ≤ N₀ ≤ 4L`. -/
-theorem boxCount_facts {x : ℝ} (hx0 : 0 < x) (hL : 1 ≤ Real.log x) :
+theorem boxCount_facts  {x}  (hx0 : 0 < x) (hL : 1 ≤ Real.log x) :
     1 ≤ ⌈3 * Real.log x⌉₊ ∧ (⌈3 * Real.log x⌉₊ : ℝ) ≤ 4 * Real.log x ∧
       x ^ 2 ≤ (2 : ℝ) ^ ⌈3 * Real.log x⌉₊ := by
   set L := Real.log x

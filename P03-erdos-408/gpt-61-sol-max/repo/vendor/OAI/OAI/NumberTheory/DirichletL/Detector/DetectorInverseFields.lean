@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Dictionary.InverseRawUniform
 
 public import OAI.NumberTheory.DirichletL.Detector.DetectorInverseRawField
 public import OAI.NumberTheory.DirichletL.Detector.DetectorInverseMarkedField
@@ -18,13 +20,9 @@ local notation "O"=>HeckeFamily.O
 variable (M:Ideal O)[NeZero M]
 local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
-local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
-private lemma raw_mono (data:RowData)(W:ℝ→ℂ)(c κ A B:ℝ)
-    (hAB:A≤B)(h:RawMoment data W c κ A):RawMoment data W c κ B:=by
-  intro X D hX hD hcap rows hrows
-  apply (h X D hX hD hcap rows hrows).trans
-  gcongr
+
+private alias raw_mono := _root_.SharedProofs.rawMoment_mono
 
 theorem source_batch_inverse_fields {Δ:ℝ}{D:Parameters.HighData Δ}
     (S:SourceData D)(counts:CountParameters M H D.t):

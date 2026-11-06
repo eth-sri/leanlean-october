@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateLabels
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+
+variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
 include hp
 
@@ -22,11 +22,11 @@ theorem actual_cell_triple_margins
     (hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (hs : ActualSecondSourceConditions p source) (hk : ∀x∈source,x.second.frequency≠0)
-    (d : BlockIndex) (m : O) (hm : m≠0)
+    (d : BlockIndex) (m : ActualEisensteinCubic.O) (hm : m≠0)
     (Z r ell V M Q z c A B t j eta : ℝ) (hZ : 1<Z)
     (hparent : CanonicalMargins (r+3*ell+V) M Q z c)
     (hA : 0≤A) (ht : 0≤t) (hV : 0≤V) (hj : 0≤j) (heta : 0≤eta) (hbin : 2≤Z^eta)
-    (hQ : (Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z^Q)
+    (hQ : (Ideal.absNorm (Ideal.span {m}:Ideal ActualEisensteinCubic.O).radical:ℝ)≤Z^Q)
     (h1 : ∀x∈source,‖eisEmbedding (primeProduct p x.cube.support x.cube.leftExponent)‖^2≤Z^(ell+eta))
     (h2 : ∀x∈source,‖eisEmbedding (primeProduct p x.cube.support x.cube.rightExponent)‖^2≤Z^(ell+eta))
     (hT : ∀x∈source,(Ideal.absNorm x.quotient:ℝ)≤Z^(t+eta))
@@ -49,6 +49,6 @@ theorem actual_cell_triple_margins
       (h1 x hxs) (h2 x hxs) (hT x hxs)
 
 end SevenEighths.InverseMoment
-end
+
 
 end OAI

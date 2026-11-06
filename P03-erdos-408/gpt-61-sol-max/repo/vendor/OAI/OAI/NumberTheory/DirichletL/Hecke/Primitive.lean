@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.IdealBridge
 public import OAI.NumberTheory.DirichletL.Hecke.MellinIdentity
@@ -24,7 +25,7 @@ instance : Fintype (O ⧸ Ideal.span {c}) := by
   exact Fintype.ofFinite _
 
 def character (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1) : Character :=
+    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)  :=
   Character.ofResidue (Ideal.span {c}) (span_ne_bot c) χ hu
 
 omit [NeZero c] in
@@ -34,17 +35,21 @@ theorem inverse_unit_trivial (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   intro u
   rw [MulChar.inv_apply_eq_inv', hu, inv_one]
 
-def scale : ℝ := GaussianTheta.parameter c 1
+def scale  := GaussianTheta.parameter c 1
 
 theorem scale_pos : 0 < scale c := GaussianTheta.parameter_pos c 1 zero_lt_one
 
 omit [NeZero c] in
-theorem parameter_eq_scale_mul (t : ℝ) : GaussianTheta.parameter c t = scale c * t := by
+theorem parameter_eq_scale_mul  t  : GaussianTheta.parameter c t = scale c * t := by
   unfold scale GaussianTheta.parameter
   ring
 
-theorem gaussianTheta_eq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1) (t : ℝ) :
+section
+variable (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
+include χ hu
+
+theorem gaussianTheta_eq  
+       t  :
     GaussianTheta.theta c χ t = HeckeTheta.theta (coefficients (character c χ hu))
       (scale c * t) := by
   unfold GaussianTheta.theta HeckeTheta.theta
@@ -64,9 +69,9 @@ theorem gaussianTheta_eq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   push_cast
   ring
 
-def pair (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
+def pair (χ )
     (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) : WeakFEPair ℂ :=
+    (hp : FiniteFourier.IsPrimitiveOnIdeals χ)  :=
   PeriodicThetaRegularity.primitivePair
     (coefficients (character c χ hu))
     (coefficients (character c χ⁻¹ (inverse_unit_trivial c χ hu)))
@@ -78,26 +83,26 @@ def pair (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
         gaussianTheta_eq c χ⁻¹ (inverse_unit_trivial c χ hu)] at h
       simpa only [mul_one_div] using h)
 
-@[simp] theorem pair_f (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (t : ℝ) :
-    (pair c χ hu hp).f t = GaussianTheta.theta c χ t :=
-  (gaussianTheta_eq c χ hu t).symm
+section
+variable (hp : FiniteFourier.IsPrimitiveOnIdeals χ)
+include hp
 
-@[simp] theorem pair_g (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (t : ℝ) :
-    (pair c χ hu hp).g t = GaussianTheta.theta c χ⁻¹ t :=
-  (gaussianTheta_eq c χ⁻¹ (inverse_unit_trivial c χ hu) t).symm
 
-def completedL (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
+
+
+
+def completedL (χ )
     (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (s : ℂ) : ℂ :=
+    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (s : ℂ)  :=
   (pair c χ hu hp).Λ s / 6
 
-theorem pair_completed_eq_right (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ} (hs : 1 < s.re) :
+section
+variable {s : ℂ}
+include s
+
+theorem pair_completed_eq_right  
+     
+        (hs : 1 < s.re) :
     (pair c χ hu hp).Λ s = (scale c : ℂ) ^ (-s) *
       HeckeTheta.completed (coefficients (character c χ hu)) s := by
   let w := coefficients (character c χ hu)
@@ -117,52 +122,57 @@ theorem pair_completed_eq_right (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       dsimp only
       rw [HeckeTheta.theta_eq_pair w ht, HeckeTheta.pair_f₀]
 
-theorem pair_completed_eq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
+section
+variable (h0 : s ≠ 0) (h1 : s ≠ 1)
+include h0 h1
+
+theorem pair_completed_eq  
+     
+            :
     (pair c χ hu hp).Λ s = (scale c : ℂ) ^ (-s) *
       HeckeTheta.completed (coefficients (character c χ hu)) s :=
   HeckeMellinIdentity.scaled_eq (pair c χ hu hp)
     (HeckeTheta.pair (coefficients (character c χ hu))) rfl (HeckeTheta.pair_k _)
     (scale c) (scale_pos c) (fun _ hs => pair_completed_eq_right c χ hu hp hs) h0 h1
 
-theorem symm_completed_eq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
+theorem symm_completed_eq  
+     
+            :
     (pair c χ hu hp).symm.Λ s =
       (pair c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv).Λ s := by
   apply HeckeMellinIdentity.eq_of_f (pair c χ hu hp).symm
     (pair c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv) rfl rfl _ rfl h0 h1
-  intro t _
-  change (pair c χ hu hp).g t = _
-  rw [pair_g, pair_f]
+  solve_by_elim
 
-theorem completedL_functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
+theorem completedL_functional_equation  
+     
+            :
     completedL c χ hu hp (1-s) = TraceCharacter.normalizedGauss c χ *
       completedL c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv s := by
   have h := (pair c χ hu hp).functional_equation s
   change (pair c χ hu hp).Λ (1-s) = TraceCharacter.normalizedGauss c χ *
     (pair c χ hu hp).symm.Λ s at h
-  rw [symm_completed_eq c χ hu hp h0 h1] at h
-  unfold completedL
-  rw [h]
-  ring
+  grind [symm_completed_eq, completedL]
 
-theorem completedL_eq_gamma_mul_LFunction (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ}
-    (h0 : s ≠ 0) (h1 : s ≠ 1) (hΓ : Complex.Gamma s ≠ 0) :
+theorem completedL_eq_gamma_mul_LFunction  
+     
+       
+        (hΓ : Complex.Gamma s ≠ 0) :
     completedL c χ hu hp s = (scale c : ℂ)^(-s) * (Real.pi : ℂ)^(-s) *
       Complex.Gamma s * LFunction (character c χ hu) s := by
   unfold completedL
   rw [pair_completed_eq c χ hu hp h0 h1]
   unfold LFunction continuedLattice HeckeTheta.latticeL
   simp only [Complex.cpow_neg]
-  have hπ : (Real.pi : ℂ)^s ≠ 0 := by
-    exact (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [Real.pi_ne_zero])
-  field_simp
+  field_simp <;> ring
+
+end
+
+end
+
+end
+
+end
 
 end SevenEighths.HeckePrimitive
 

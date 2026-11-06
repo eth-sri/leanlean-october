@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.HistoryResourceTasks
 public import Erdos821.S2.HistoryBirths
@@ -17,7 +18,10 @@ open Erdos821.Blueprint.Graph
 
 variable {P : PrimeGroups}
 
-theorem memory_indices_partition {g : P.Group} (z : P.Memory g) (B : Finset (Fin z.card)) :
+section
+variable {g : P.Group}
+
+theorem memory_indices_partition   (z : P.Memory g) (B : Finset (Fin z.card)) :
     deleteMemoryIndices z B + B.val.map (memoryEntry z) = z := by
   have hb : B.val ≤ (Finset.univ : Finset (Fin z.card)).val :=
     (Multiset.le_iff_subset B.nodup).mpr (fun i _ => Finset.mem_univ i)
@@ -25,14 +29,13 @@ theorem memory_indices_partition {g : P.Group} (z : P.Memory g) (B : Finset (Fin
     Multiset.sub_add_cancel hb
   rw [deleteMemoryIndices_eq_map, ← Multiset.map_add, he, memoryEntry_enumeration]
 
-def selectedPendingPrimes {g : P.Group} (z : P.Memory g) (B : Finset (Fin z.card)) :
-    Multiset (P.Prime g) := B.val.map (fun i => (memoryEntry z i).1)
+def selectedPendingPrimes {g } (z : P.Memory g) (B : Finset (Fin z.card))  := B.val.map (fun i => (memoryEntry z i).1)
 
-theorem pendingPrimes_add_ghost {g : P.Group} (z w : P.Memory g) :
+theorem pendingPrimes_add_ghost   (z w : P.Memory g) :
     pendingPrimes (z + w) = pendingPrimes z + pendingPrimes w :=
   Multiset.map_add _ _ _
 
-theorem pendingPrimes_birthBatch {g : P.Group} {b : ℕ} (p : Fin b → P.Prime g) :
+theorem pendingPrimes_birthBatch    {b}   p  :
     pendingPrimes (zeroBirthBatch p) = ∑ i : Fin b, ({p i} : Multiset (P.Prime g)) := by
   calc
     _ = (List.ofFn p : Multiset (P.Prime g)) := by
@@ -41,15 +44,16 @@ theorem pendingPrimes_birthBatch {g : P.Group} {b : ℕ} (p : Fin b → P.Prime 
       rw [Finset.val_univ_fin, Multiset.map_coe, List.ofFn_eq_map]
     _ = _ := (sum_singletons_eq_map Finset.univ p).symm
 
+end
+
 theorem ghost_live_conservation {M : ℕ} {s t : P.MemoryState M}
-    (c : GhostChoice s t) (hc : ghostChoiceValid c) (g : P.BigGroup) :
+    (c : GhostChoice s t) (hc : ghostChoiceValid c)  g  :
     pendingPrimes (t.2.2 g) + selectedPendingPrimes (s.2.2 g) (c.1 g) =
       pendingPrimes (s.2.2 g) + ∑ h : Fin (c.2.1 g).val, ({c.2.2 g h} : Multiset (P.Prime g.val)) := by
   have hs : pendingPrimes (deleteMemoryIndices (s.2.2 g) (c.1 g)) +
       selectedPendingPrimes (s.2.2 g) (c.1 g) = pendingPrimes (s.2.2 g) := by
     have he := congrArg pendingPrimes (memory_indices_partition (s.2.2 g) (c.1 g))
-    simpa only [pendingPrimes, Multiset.map_add, Multiset.map_map, Function.comp_def,
-      selectedPendingPrimes] using he
+    simp_all [pendingPrimes, selectedPendingPrimes]
   have ht : pendingPrimes (t.2.2 g) = pendingPrimes (deleteMemoryIndices (s.2.2 g) (c.1 g)) +
       ∑ h : Fin (c.2.1 g).val, ({c.2.2 g h} : Multiset (P.Prime g.val)) := by
     have he := congrArg pendingPrimes (hc g).2

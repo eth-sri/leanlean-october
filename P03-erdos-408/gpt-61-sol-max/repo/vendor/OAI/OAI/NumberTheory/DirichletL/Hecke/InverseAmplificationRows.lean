@@ -11,7 +11,7 @@ open scoped Classical BigOperators
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily UniqueFactorizationMonoid
 
-def SixthFree (I : Ideal O) : Prop := ∀ P, (normalizedFactors I).count P<6
+def SixthFree (I : Ideal O)  := ∀ P, (normalizedFactors I).count P<6
 
 theorem ideal_decomposition_unique {I J A B : Ideal O}
     (hI : I≠0) (hJ : J≠0) (hA : A≠0) (hB : B≠0)
@@ -42,14 +42,14 @@ theorem ideal_decomposition_unique {I J A B : Ideal O}
 abbrev FreeRow := {u : O // u≠0 ∧ SixthFree (Ideal.span {u})}
 abbrev NonzeroIdeal := UnrestrictedIdealReindex.NonzeroIdeal
 
-def rowMap (p : FreeRow×NonzeroIdeal) : O :=
+def rowMap (p : FreeRow×NonzeroIdeal)  :=
   p.1.val*(ConcretePrimeRowBridge.idealGenerator p.2.val)^6
 
-theorem rowMap_ne_zero (p : FreeRow×NonzeroIdeal) : rowMap p≠0 :=
+theorem rowMap_ne_zero  p  : rowMap p≠0 :=
   mul_ne_zero p.1.property.1 (pow_ne_zero _ (ConcretePrimeRowBridge.idealGenerator_ne_zero
     p.2.val p.2.property))
 
-theorem rowMap_span (p : FreeRow×NonzeroIdeal) :
+theorem rowMap_span  p  :
     Ideal.span {rowMap p}=Ideal.span {p.1.val}*p.2.val^6 := by
   unfold rowMap
   rw [←Ideal.span_singleton_mul_span_singleton,←Ideal.span_singleton_pow,
@@ -73,7 +73,7 @@ theorem rowMap_injective : Function.Injective rowMap := by
       q.2.val q.2.property)) hpq
   · exact ha
 
-theorem rowMap_norm (p : FreeRow×NonzeroIdeal) :
+theorem rowMap_norm  p  :
     (Ideal.span {rowMap p}).absNorm=(Ideal.span {p.1.val}).absNorm*p.2.val.absNorm^6 := by
   rw [rowMap_span,map_mul,map_pow]
 

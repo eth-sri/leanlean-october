@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceRayPrime
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskEnergy
@@ -19,7 +20,7 @@ open CenteredMomentSecondHeightFamily
 local notation "O" => HeckeFamily.O
 
 lemma natural_slot_eq {η : Character} {z : O} (F : NaturalRow η z)
-    (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P t : ℝ) :
+     pool   β   P t  :
     naturalSlot F.character pool (heightCoefficient β t) P=
       normalizedSlot η fixedBadMask 1 z pool β t P := by
   unfold naturalSlot normalizedSlot rowSlot
@@ -34,8 +35,8 @@ variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-theorem natural_slot_product {α : Type*} [DecidableEq α]
-    (F : Finset α) (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
+theorem natural_slot_product  {α}  [DecidableEq α]
+     F   W  (a b : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W)
     (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hloss : 0<loss)
     (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
@@ -62,7 +63,7 @@ theorem natural_slot_product {α : Type*} [DecidableEq α]
   filter_upwards [hbound η₀,eventually_gt_atTop (1:ℝ)] with Z hz hZ
   intro θ w σ v t T hw hwL hσlo hσhi hT hv η z hz0 N hmod Q hQM hex A hAF
   have hZ0 : 0<Z := zero_lt_one.trans hZ
-  have hk : 0≤κ := by linarith
+  
   have hh : 1≤1+|t|+T := by linarith [abs_nonneg t]
   have hslot (i : α) (hi : i∈A) :
       ‖naturalSlot N.character (primePool M H b (Z^(w i)))

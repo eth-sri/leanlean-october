@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.KernelActualSource
 public import OAI.NumberTheory.DirichletL.Reflection.WeightedSourceSum
@@ -11,23 +12,23 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-abbrev CoprimeSourceIndex (K : Ideal Eis) (Pset nset bset : Finset (Ideal Eis)) :=
+variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
+
+abbrev CoprimeSourceIndex (K ) (Pset nset bset : Finset (Ideal ActualEisensteinCubic.O)) :=
   {P : Pset // IsCoprime K P.val} × (nset × bset)
 
-instance (K : Ideal Eis) (Pset nset bset : Finset (Ideal Eis)) :
+instance (K : Ideal ActualEisensteinCubic.O) (Pset nset bset : Finset (Ideal ActualEisensteinCubic.O)) :
     Fintype (CoprimeSourceIndex K Pset nset bset) := inferInstanceAs
       (Fintype ({P : Pset // IsCoprime K P.val} × (nset × bset)))
 
 theorem weightedPhysicalReflectedRow_eq_coprime_source
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset nset bset : Finset (Ideal Eis))
+    (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K)
+    (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ)  jF  (Pset nset bset : Finset (Ideal ActualEisensteinCubic.O))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (r aw : Ideal Eis→ℂ) (w : Ideal Eis→Ideal Eis→ℂ) (u : Eisˣ) (m : ℕ) :
+     r aw   w   u   m  :
     weightedPhysicalReflectedRow F K hK S jF Pset nset bset D s hc r aw w u m =
       ∑ x : CoprimeSourceIndex K Pset nset bset,
         r K*aw x.1.val.val*w x.2.1.val x.2.2.val*
@@ -38,15 +39,13 @@ theorem weightedPhysicalReflectedRow_eq_coprime_source
   · intro P hP
     simp only [Set.mem_ofPred_eq] at hP
     simp only [dite_eq_left hP]
-    rw [Finset.sum_coe_sort nset (fun n : Ideal Eis => ∑ b : bset,
+    rw [Finset.sum_coe_sort nset (fun n : Ideal ActualEisensteinCubic.O => ∑ b : bset,
       r K*aw P.val*w n b.val*actualMixedCoefficient F K hK (S P.val) jF (D P hP) s hc u m n b.val)]
     apply Finset.sum_congr rfl
     intro n hn
-    exact (Finset.sum_coe_sort bset (fun b : Ideal Eis =>
+    exact (Finset.sum_coe_sort bset (fun b : Ideal ActualEisensteinCubic.O =>
       r K*aw P.val*w n b*actualMixedCoefficient F K hK (S P.val) jF (D P hP) s hc u m n b)).symm
-  · intro P hP
-    simp only [Set.mem_ofPred_eq] at hP
-    simp only [dite_eq_right hP,mul_zero,Finset.sum_const_zero]
+  simp_all
 
 end
 end SevenEighths.InverseReflectedPhase

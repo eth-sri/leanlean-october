@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Analytic.IntegerKernel
 public import Erdos408.Analytic.PrimeTwist
@@ -51,7 +52,7 @@ open Filter Real
 
 /-- E6–E8: the proxy sum is `O(x L^{-1-c'})`, uniformly in `2 ≤ j ≤ J_c`, the
 admissible slots, coefficients `0 ≤ 𝔟 ≤ 1`, and cutoffs in the class. -/
-theorem eventually_abs_proxySum_le (h₂ : TwoSidedCorrelation) (q cw : ℝ) (hq : 0 < q)
+theorem eventually_abs_proxySum_le (h₂ : TwoSidedCorrelation)  q cw  (hq : 0 < q)
     (hq₁ : q < 1) (hcw : 0 < cw) (hcw₁ : cw ≤ (1 - q) ^ 2 / 3) :
     ∀ (K : ℕ) (CN c Ch Cj κ CΦ : ℝ) (M : ℕ → ℝ), 1 ≤ K → 0 < c → 1 < κ →
       ∃ C c' : ℝ, 0 < c' ∧ ∀ᶠ x : ℝ in atTop,
@@ -90,8 +91,6 @@ theorem eventually_abs_proxySum_le (h₂ : TwoSidedCorrelation) (q cw : ℝ) (hq
   refine hbound.trans ?_
   have hL : 0 < Real.log x := Real.log_pos hx
   have hpos : 0 ≤ x / Real.log x * Real.log x ^ (-c') := by
-    have := rpow_pos_of_pos hL (-c')
-    have : 0 < x := by linarith
     positivity
   rw [mul_assoc, mul_assoc]
   refine mul_le_mul_of_nonneg_right ?_ hpos

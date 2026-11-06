@@ -24,11 +24,11 @@ open CenteredMomentSourceInputTailUniform CenteredMomentSourceMass
 open CenteredMomentSourceProfileMass CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := energyOriginalSourceDecidableSum
 
-def lowerProduct (N : ℕ) (aslot a : ℝ) : ℝ := (min 1 aslot)^N*a*a
 
-lemma lowerProduct_pos (N : ℕ) {aslot a : ℝ} (hs : 0 < aslot) (ha : 0 < a) :
+def lowerProduct (N : ℕ) (aslot a : ℝ)  := (min 1 aslot)^N*a*a
+
+lemma lowerProduct_pos  N   {aslot a}  (hs : 0 < aslot) (ha : 0 < a) :
     0 < lowerProduct N aslot a := by unfold lowerProduct; positivity
 
 section Source
@@ -70,7 +70,7 @@ theorem low_admission (hZ : 1 < Z)
   have h2 := raw_log_le_length Z X₂ hZ hX₂
   constructor <;> linarith [hv.1,hv.2]
 
-theorem lower_product_admission (N : ℕ) (hN : Fintype.card ι ≤ N) :
+theorem lower_product_admission  N  (hN : Fintype.card ι ≤ N) :
     0 < lowerProduct N aslot a ∧
     lowerProduct N aslot a ≤ (∏ i, (s).lo i)*a*a ∧
     lowerProduct N aslot a ≤ (∏ i, (s₀).lo i)*a*a := by
@@ -104,7 +104,7 @@ theorem original_scale_caps {Z X₁ X₂ M L κ : ℝ} (w : ι → ℝ)
   · apply (Real.logb_le_iff_le_rpow hZ hX₂).mp
     linarith [length_nonneg Z X₁ hZ]
 
-theorem eventually_scale_admission (b L ε : ℝ) (hL : 0 ≤ L) (hε : 0 < ε) :
+theorem eventually_scale_admission  b L ε  (hL : 0 ≤ L) (hε : 0 < ε) :
     ∀ᶠ Z : ℝ in atTop, 1 < Z ∧
     ∀ (ι : Type*) [Fintype ι] [DecidableEq ι],
     ∀ (Q : Ideal O) [NeZero Q] (H : Subgroup (O ⧸ Q)ˣ)

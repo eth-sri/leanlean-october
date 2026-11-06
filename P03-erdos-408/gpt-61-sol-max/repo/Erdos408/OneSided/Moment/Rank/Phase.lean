@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Memory.Partition
 public import Mathlib.Data.Finset.Pairwise
@@ -39,11 +40,11 @@ variable {α : Type*} [Fintype α] [DecidableEq α]
 def unitRoot (P : ℕ) : ℂ := Complex.exp (2 * Real.pi * Complex.I / P)
 
 /-- `ζ` has modulus one. -/
-theorem norm_unitRoot {P : ℕ} (hP : 0 < P) : ‖unitRoot P‖ = 1 :=
+theorem norm_unitRoot  {P}  (hP : 0 < P) : ‖unitRoot P‖ = 1 :=
   (Complex.isPrimitiveRoot_exp P hP.ne').norm'_eq_one hP.ne'
 
 /-- For `p, p' < P`, `P` divides `p + (P - 1) p'` exactly when `p = p'`. -/
-theorem dvd_add_mul_iff {P p p' : ℕ} (hP : 0 < P) (hp : p < P) (hp' : p' < P) :
+theorem dvd_add_mul_iff  {P p p'}  (hP : 0 < P) (hp : p < P) (hp' : p' < P) :
     P ∣ p + (P - 1) * p' ↔ p = p' := by
   obtain ⟨P, rfl⟩ : ∃ P', P = P' + 1 := ⟨P - 1, by omega⟩
   rw [Nat.add_sub_cancel]
@@ -65,7 +66,7 @@ def fourierFactor (P k : ℕ) : Option ℕ → Option ℕ → ℂ
 
 /-- **The Fourier average**: for values below `P`, the average of the Fourier factors over
 `k < P` is the indicator that both values are performed and equal. -/
-theorem fourierFactor_average {P : ℕ} (hP : 0 < P) {o o' : Option ℕ}
+theorem fourierFactor_average {P : ℕ} (hP : 0 < P)  {o o'} 
     (ho : ∀ p, o = some p → p < P) (ho' : ∀ p, o' = some p → p < P) :
     (P : ℂ)⁻¹ * ∑ k ∈ range P, fourierFactor P k o o' = if o ≠ none ∧ o = o' then 1 else 0 := by
   have hP' : (P : ℂ) ≠ 0 := by exact_mod_cast hP.ne'
@@ -96,9 +97,13 @@ theorem fourierFactor_average {P : ℕ} (hP : 0 < P) {o o' : Option ℕ}
 
 /-! ### Pivots -/
 
+section
+variable {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSystems α)
+include 𝒞 h𝒞
+
 /-- A block system has a pivot map: on each block it is constant, with its value in the
 block. -/
-theorem exists_pivot {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSystems α) :
+theorem exists_pivot     :
     ∃ piv : α → α, ∀ C ∈ 𝒞, ∀ a ∈ C, piv a ∈ C ∧ ∀ a' ∈ C, piv a' = piv a := by
   classical
   rcases isEmpty_or_nonempty α with hα | hα
@@ -115,17 +120,15 @@ theorem exists_pivot {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSystems 
     have h := hblk a (mem_biUnion.2 ⟨C, hC, ha⟩)
     Set.PairwiseDisjoint.elim_finset hdisj h.1 hC a h.2 ha
   refine ⟨fun a => rep (blk a), fun C hC a ha => ⟨?_, fun a' ha' => ?_⟩⟩
-  · show rep (blk a) ∈ C
-    rw [key C hC a ha]
-    exact hrep C hC
+  · grind
   · simp only [key C hC a ha, key C hC a' ha']
 
 open scoped Classical in
 /-- With a pivot map, a block is realized when each of its addresses is performed with the
 value of its pivot. -/
-theorem prod_blockRealized_eq {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSystems α)
+theorem prod_blockRealized_eq    
     {piv : α → α} (hpiv : ∀ C ∈ 𝒞, ∀ a ∈ C, piv a ∈ C ∧ ∀ a' ∈ C, piv a' = piv a)
-    (β : α → Option ℕ) :
+     β  :
     (∏ C ∈ 𝒞, if BlockRealized β C then 1 else 0 : ℂ) =
       ∏ a ∈ 𝒞.biUnion id, if β a ≠ none ∧ β a = β (piv a) then 1 else 0 := by
   obtain ⟨-, hdisj, hcard⟩ := mem_filter.1 h𝒞
@@ -135,17 +138,16 @@ theorem prod_blockRealized_eq {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ bloc
   have hiff : BlockRealized β C ↔ ∀ a ∈ C, β a ≠ none ∧ β a = β (piv a) := by
     constructor
     · rintro ⟨p, hp⟩ a ha
-      exact ⟨by simp [hp a ha], by rw [hp a ha, hp _ (hpiv C hC a ha).1]⟩
+      simp_all
     · intro h
       obtain ⟨p, hp⟩ := Option.ne_none_iff_exists'.1 (h c hc).1
       -- `β a = β (piv a) = β (piv c) = β c = p`
       refine ⟨p, fun a ha => ?_⟩
-      rw [(h a ha).2, (hpiv C hC c hc).2 a ha, ← (h c hc).2, hp]
+      grind
   simp only [prod_boole, id]
-  by_cases h : BlockRealized β C
-  · rw [ite_eq_left_of_eq_true _ _ (eq_true h), ite_eq_left_of_eq_true _ _ (eq_true (hiff.1 h))]
-  · rw [ite_eq_right_of_eq_false _ _ (eq_false h),
-      ite_eq_right_of_eq_false _ _ (eq_false (mt hiff.2 h))]
+  simp_all
+
+end
 
 /-! ### The local phases -/
 
@@ -159,8 +161,8 @@ def blockPhase (P : ℕ) (U : Finset α) (piv : α → α) (κ : α → ℕ) (a 
 
 omit [Fintype α] in
 /-- The local phases have modulus at most one. -/
-theorem norm_blockPhase_le {P : ℕ} (hP : 0 < P) (U : Finset α) (piv : α → α) (κ : α → ℕ)
-    (a : α) (o : Option ℕ) : ‖blockPhase P U piv κ a o‖ ≤ 1 := by
+theorem norm_blockPhase_le {P : ℕ} (hP : 0 < P) (U : Finset α)  piv   κ 
+     a   o  : ‖blockPhase P U piv κ a o‖ ≤ 1 := by
   unfold blockPhase
   split_ifs
   · rcases o with _ | p
@@ -180,21 +182,12 @@ theorem prod_fourierFactor_eq (P : ℕ) {U : Finset α} {piv : α → α}
     -- both sides are `ζ` to a power: the pairs `(a, piv a)` regroup by pivot
     have hL : ∀ a, (if a ∈ U then fourierFactor P (κ a) (β a) (β (piv a)) else 1) =
         if a ∈ U then unitRoot P ^ (κ a * (val a + (P - 1) * val (piv a))) else 1 := by
-      intro a
-      split_ifs with ha
-      · rw [hval a ha, hval _ (hpiv a ha)]
-        rfl
-      · rfl
+      aesop
     have hR : ∀ a, blockPhase P U piv κ a (β a) =
         if a ∈ U then
           unitRoot P ^ (val a * (κ a + (P - 1) * ∑ a' ∈ U with piv a' = a, κ a'))
         else 1 := by
-      intro a
-      unfold blockPhase
-      split_ifs with ha
-      · rw [hval a ha]
-        rfl
-      · rfl
+      grind [blockPhase]
     simp only [hL, hR, Fintype.prod_ite_mem, prod_pow_eq_pow_sum]
     congr 1
     -- `∑_{a ∈ U} κ_a val(piv a) = ∑_{a ∈ U} val a ∑_{piv a' = a} κ_{a'}`
@@ -218,18 +211,20 @@ theorem prod_fourierFactor_eq (P : ℕ) {U : Finset α} {piv : α → α}
     push Not at hperf
     obtain ⟨a, ha, hnone⟩ := hperf
     have hβ : β a = none := by
-      rcases h : β a with _ | p
-      · rfl
-      · exact (hnone p h).elim
+      aesop
     rw [prod_eq_zero (mem_univ a) (by simp [ha, hβ, fourierFactor]),
       prod_eq_zero (mem_univ a) (by simp [blockPhase, ha, hβ])]
 
 open scoped Classical in
+section
+variable {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSystems α)
+include 𝒞 h𝒞
+
 /-- **The local phases of a block system**: for `P` larger than every performed value, the
 realization indicator of a block system is the average over frequency vectors `κ < P` of a
 product of local phases `ψ_κ(a, β_a)`, each of modulus at most one and equal to `1` off the
 addresses of the blocks. -/
-theorem exists_blockPhase {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSystems α) {P : ℕ}
+theorem exists_blockPhase      {P} 
     (hP : 0 < P) :
     ∃ ψ : (α → ℕ) → α → Option ℕ → ℂ,
       (∀ κ a o, ‖ψ κ a o‖ ≤ 1) ∧
@@ -241,8 +236,7 @@ theorem exists_blockPhase {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSys
   obtain ⟨piv, hpiv⟩ := exists_pivot h𝒞
   set U := 𝒞.biUnion id with hU
   have hpivU : ∀ a ∈ U, piv a ∈ U := fun a ha => by
-    obtain ⟨C, hC, haC⟩ := mem_biUnion.1 ha
-    exact mem_biUnion.2 ⟨C, hC, (hpiv C hC a haC).1⟩
+    grind
   refine ⟨blockPhase P U piv, norm_blockPhase_le hP U piv, fun κ a ha => by
     simp [blockPhase, ha], fun β hβ => ?_⟩
   have hP' : (P : ℂ) ≠ 0 := by exact_mod_cast hP.ne'
@@ -270,8 +264,8 @@ theorem exists_blockPhase {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSys
 /-! ### Rank and addresses -/
 
 /-- A block system of rank `r` has at most `2r` addresses: each block has `|C| ≤ 2(|C| - 1)`. -/
-theorem card_biUnion_le_two_mul_blockRank {𝒞 : Finset (Finset α)}
-    (h𝒞 : 𝒞 ∈ blockSystems α) : #(𝒞.biUnion id) ≤ 2 * blockRank 𝒞 := by
+theorem card_biUnion_le_two_mul_blockRank  
+      : #(𝒞.biUnion id) ≤ 2 * blockRank 𝒞 := by
   classical
   obtain ⟨-, hdisj, hcard⟩ := mem_filter.1 h𝒞
   rw [card_biUnion hdisj, blockRank, mul_sum]
@@ -281,7 +275,7 @@ theorem card_biUnion_le_two_mul_blockRank {𝒞 : Finset (Finset α)}
     omega
 
 /-- The rank of a block system is at most the number of addresses. -/
-theorem blockRank_le_card {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSystems α) :
+theorem blockRank_le_card     :
     blockRank 𝒞 ≤ Fintype.card α := by
   classical
   obtain ⟨-, hdisj, -⟩ := mem_filter.1 h𝒞
@@ -289,5 +283,7 @@ theorem blockRank_le_card {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSys
         rw [card_biUnion hdisj, blockRank]
         exact sum_le_sum fun C _ => Nat.sub_le _ _
     _ ≤ Fintype.card α := card_le_univ _
+
+end
 
 end Erdos408.OneSided

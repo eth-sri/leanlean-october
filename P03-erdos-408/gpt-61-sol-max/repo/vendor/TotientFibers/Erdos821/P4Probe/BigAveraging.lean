@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.PatternBridgeTasks
 public import Erdos821.P4Probe.AverageOrthogonality
@@ -14,8 +15,8 @@ open Blueprint.Graph
 
 noncomputable section
 
-abbrev BigSite (P : PrimeGroups) (M : ℕ) := P.BigGroup × Fin M
-abbrev BigAlphabet (P : PrimeGroups) (M : ℕ) : BigSite P M → Type := fun z => P.Prime z.1.val
+abbrev BigSite (P : PrimeGroups) (M ) := P.BigGroup × Fin M
+abbrev BigAlphabet (P ) (M ) : BigSite P M → Type := fun z => P.Prime z.1.val
 
 local instance bigSiteDecidableEq (P : PrimeGroups) (M : ℕ) : DecidableEq (BigSite P M) := Classical.decEq _
 
@@ -25,17 +26,19 @@ def flattenBig (P : PrimeGroups) (M : ℕ) : P.BigLabels M ≃ ProductSample (Bi
   left_inv _ := rfl
   right_inv _ := rfl
 
-def bigFlatWeight (P : PrimeGroups) (M : ℕ) : ∀ z : BigSite P M, BigAlphabet P M z → ℝ :=
+def bigFlatWeight (P ) (M ) : ∀ z : BigSite P M, BigAlphabet P M z → ℝ :=
   fun z p => P.mu z.1.val p
 
-def bigFlatSet (P : PrimeGroups) (M : ℕ) (S : P.BigGroup → Finset (Fin M)) : Finset (BigSite P M) :=
+def bigFlatSet (P ) (M ) (S : P.BigGroup → Finset (Fin M)) : Finset (BigSite P M) :=
   Finset.univ.filter (fun z => z.2 ∈ S z.1)
 
-lemma bigFlatWeight_eq (P : PrimeGroups) (M : ℕ) (a : P.BigLabels M) :
-    productWeight (bigFlatWeight P M) (flattenBig P M a) = P.idealMass a := by
-  exact Fintype.prod_prod_type (fun z : BigSite P M => P.mu z.1.val (a z.1 z.2))
+section
+variable (P : PrimeGroups) (M : ℕ) (hV : ∀ g, 0 < P.V g) (S : P.BigGroup → Finset (Fin M)) (f : P.BigLabels M → ℂ) (a : P.BigLabels M)
 
-lemma bigFlat_sqNorm (P : PrimeGroups) (M : ℕ) (f : P.BigLabels M → ℂ) :
+lemma bigFlatWeight_eq       :
+    productWeight (bigFlatWeight P M) (flattenBig P M a) = P.idealMass a := Fintype.prod_prod_type (fun z : BigSite P M => P.mu z.1.val (a z.1 z.2))
+
+lemma bigFlat_sqNorm       :
     productSqNorm (bigFlatWeight P M) (fun a => f ((flattenBig P M).symm a)) =
       ∑ a, P.idealMass a * ‖f a‖ ^ 2 := by
   unfold productSqNorm
@@ -45,8 +48,8 @@ lemma bigFlat_sqNorm (P : PrimeGroups) (M : ℕ) (f : P.BigLabels M → ℂ) :
   rw [bigFlatWeight_eq]
   simp [flattenBig]
 
-lemma bigFlat_average (P : PrimeGroups) (M : ℕ) (S : P.BigGroup → Finset (Fin M))
-    (f : P.BigLabels M → ℂ) (a : P.BigLabels M) :
+lemma bigFlat_average      
+        :
     productAverage (bigFlatWeight P M) (bigFlatSet P M S)
       (fun y => f ((flattenBig P M).symm y)) (flattenBig P M a) =
       bigCoordinateAverage P M S f a := by
@@ -59,10 +62,11 @@ lemma bigFlat_average (P : PrimeGroups) (M : ℕ) (S : P.BigGroup → Finset (Fi
       (flattenBig P M).symm (mixCoords (bigFlatSet P M S) (flattenBig P M a) (flattenBig P M y)) := by
     funext g i
     by_cases hi : i ∈ S g <;> simp [flattenBig, mixCoords, bigFlatSet, hi]
-  exact congrArg (fun z => (P.idealMass y : ℂ) * f z) he
+  simp_all
 
-lemma bigCoordinateAverage_sqNorm_le (P : PrimeGroups) (M : ℕ) (hV : ∀ g, 0 < P.V g)
-    (S : P.BigGroup → Finset (Fin M)) (f : P.BigLabels M → ℂ) :
+include hV in
+lemma bigCoordinateAverage_sqNorm_le      
+        :
     (∑ a, P.idealMass a * ‖bigCoordinateAverage P M S f a‖ ^ 2) ≤
       ∑ a, P.idealMass a * ‖f a‖ ^ 2 := by
   have h := productAverage_sqNorm_le (bigFlatWeight P M)
@@ -79,10 +83,13 @@ lemma bigCoordinateAverage_sqNorm_le (P : PrimeGroups) (M : ℕ) (hV : ∀ g, 0 
   rw [hf, bigFlat_sqNorm] at h
   exact h
 
-lemma bigCoordinateAverage_norm_le (P : PrimeGroups) (M : ℕ) (hV : ∀ g, 0 < P.V g)
-    (S : P.BigGroup → Finset (Fin M)) (f : P.BigLabels M → ℂ) :
+include hV in
+lemma bigCoordinateAverage_norm_le      
+        :
     idealVectorNorm P M (bigCoordinateAverage P M S f) ≤ idealVectorNorm P M f :=
   Real.sqrt_le_sqrt (bigCoordinateAverage_sqNorm_le P M hV S f)
+
+end
 
 end
 end Erdos821.P4Probe

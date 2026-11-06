@@ -9,9 +9,9 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
-noncomputable section
 
-theorem frequencyTwist_fourier_moment (J : ℕ) (g : 𝓢(ℝ, ℂ)) :
+
+theorem frequencyTwist_fourier_moment  J   g  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ θ : ℝ,
       (∫ t : ℝ, (1 + ‖t‖)^J * ‖(𝓕 (frequencyTwist g θ)) t‖) ≤
         C * (1 + ‖θ‖)^(J + (volume : Measure ℝ).integrablePower) := by
@@ -38,7 +38,7 @@ theorem frequencyTwist_fourier_moment (J : ℕ) (g : 𝓢(ℝ, ℂ)) :
     ring
   simpa only [one_mul, hlin, add_mul, C, H, K, mul_assoc, mul_add] using hh
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

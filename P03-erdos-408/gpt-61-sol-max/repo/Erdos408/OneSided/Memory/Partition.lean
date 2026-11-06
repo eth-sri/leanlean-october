@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Data.Nat.Factorial.Basic
@@ -29,20 +30,20 @@ open Finset
 variable {α : Type*} [Fintype α] [DecidableEq α]
 
 /-- The performed values of `β` are pairwise distinct. -/
-def BirthsDistinct (β : α → Option ℕ) : Prop :=
+def BirthsDistinct (β : α → Option ℕ)  :=
   ∀ a a' p, β a = some p → β a' = some p → a = a'
 
 /-- The block `C` is realized: every address of `C` is performed, all with one prime. -/
-def BlockRealized (β : α → Option ℕ) (C : Finset α) : Prop :=
+def BlockRealized (β : α → Option ℕ) (C : Finset α)  :=
   ∃ p, ∀ a ∈ C, β a = some p
 
 open scoped Classical in
 /-- The collections of pairwise disjoint blocks of size at least two. -/
-def blockSystems (α : Type*) [Fintype α] [DecidableEq α] : Finset (Finset (Finset α)) :=
+def blockSystems (α ) [Fintype α] [DecidableEq α] : Finset (Finset (Finset α)) :=
   univ.filter fun 𝒞 => (𝒞 : Set (Finset α)).PairwiseDisjoint id ∧ ∀ C ∈ 𝒞, 2 ≤ #C
 
 /-- The rank `r(𝒞) = ∑_{C ∈ 𝒞} (|C| - 1)` of a block system. -/
-def blockRank (𝒞 : Finset (Finset α)) : ℕ := ∑ C ∈ 𝒞, (#C - 1)
+def blockRank (𝒞 : Finset (Finset α))  := ∑ C ∈ 𝒞, (#C - 1)
 
 /-- The coefficient `∏_{C ∈ 𝒞} (-1)^{|C| - 1} (|C| - 1)!` of a block system. -/
 def blockCoef (𝒞 : Finset (Finset α)) : ℤ := ∏ C ∈ 𝒞, (-1) ^ (#C - 1) * (#C - 1).factorial
@@ -51,19 +52,14 @@ def blockCoef (𝒞 : Finset (Finset α)) : ℤ := ∏ C ∈ 𝒞, (-1) ^ (#C - 
 
 open scoped Classical in
 /-- The block systems whose blocks all lie in `S`. -/
-private def blockSystemsIn (S : Finset α) : Finset (Finset (Finset α)) :=
+private def blockSystemsIn (S : Finset α)  :=
   (blockSystems α).filter fun 𝒞 => ∀ C ∈ 𝒞, C ⊆ S
 
 /-- Membership in `blockSystemsIn S`. -/
 private theorem mem_blockSystemsIn {S : Finset α} {𝒞 : Finset (Finset α)} :
     𝒞 ∈ blockSystemsIn S ↔
       (𝒞 : Set (Finset α)).PairwiseDisjoint id ∧ ∀ C ∈ 𝒞, 2 ≤ #C ∧ C ⊆ S := by
-  simp only [blockSystemsIn, blockSystems, mem_filter, mem_univ, true_and, and_assoc]
-  constructor
-  · rintro ⟨hd, h2, hS⟩
-    exact ⟨hd, fun C hC => ⟨h2 C hC, hS C hC⟩⟩
-  · rintro ⟨hd, h⟩
-    exact ⟨hd, fun C hC => (h C hC).1, fun C hC => (h C hC).2⟩
+  grind [blockSystemsIn, blockSystems]
 
 /-- Every block system lies in `univ`. -/
 private theorem blockSystemsIn_univ : blockSystemsIn (univ : Finset α) = blockSystems α :=
@@ -100,15 +96,7 @@ private theorem sum_blockSystemsIn_insert {M : Type*} [AddCommMonoid M] {a : α}
   rw [← sum_filter_not_add_sum_filter _ fun 𝒞 => ∃ C ∈ 𝒞, a ∈ C]
   congr 1
   · refine sum_congr ?_ fun _ _ => rfl
-    ext 𝒞
-    simp only [mem_filter, mem_blockSystemsIn, not_exists, not_and]
-    constructor
-    · rintro ⟨⟨hd, h⟩, haC⟩
-      exact ⟨hd, fun C hC =>
-        ⟨(h C hC).1, (subset_insert_iff_of_notMem (haC C hC)).1 (h C hC).2⟩⟩
-    · rintro ⟨hd, h⟩
-      exact ⟨⟨hd, fun C hC => ⟨(h C hC).1, (h C hC).2.trans (subset_insert a T)⟩⟩,
-        fun C hC haC => ha ((h C hC).2 haC)⟩
+    grind [mem_blockSystemsIn]
   · rw [sum_sigma']
     symm
     refine sum_bij (fun x _ => insert (insert a x.1) x.2) ?_ ?_ ?_ fun _ _ => rfl
@@ -125,11 +113,7 @@ private theorem sum_blockSystemsIn_insert {M : Type*} [AddCommMonoid M] {a : α}
         show Disjoint (insert a B) C
         exact disjoint_insert_left.2
           ⟨fun h => ha (mem_sdiff.1 (hCT h)).1, disjoint_sdiff.mono_right hCT⟩
-      · refine (forall_mem_insert _ _ _).2 ⟨⟨?_, insert_subset_insert a hBT⟩, fun C hC =>
-          ⟨(h C hC).1, (h C hC).2.trans (sdiff_subset.trans (subset_insert a T))⟩⟩
-        rw [card_insert_of_notMem haB]
-        have := hB.card_pos
-        omega
+      grind
     · rintro ⟨B₁, 𝒞₁⟩ hx₁ ⟨B₂, 𝒞₂⟩ hx₂ h
       dsimp only at h
       simp only [mem_sigma, mem_filter, mem_powerset] at hx₁ hx₂
@@ -137,8 +121,7 @@ private theorem sum_blockSystemsIn_insert {M : Type*} [AddCommMonoid M] {a : α}
       have h𝒞₂ := insert_notMem_of_mem_blockSystemsIn (B' := B₂) ha hx₂.2
       have hB : insert a B₁ = insert a B₂ := by
         have h₁ := mem_insert_self (insert a B₁) 𝒞₁
-        rw [h, mem_insert] at h₁
-        exact h₁.resolve_right (insert_notMem_of_mem_blockSystemsIn ha hx₂.2)
+        grind [insert_notMem_of_mem_blockSystemsIn]
       obtain rfl : B₁ = B₂ :=
         calc B₁ = (insert a B₁).erase a := (erase_insert fun h => ha (hx₁.1.1 h)).symm
           _ = (insert a B₂).erase a := by rw [hB]
@@ -168,7 +151,7 @@ private theorem sum_blockSystemsIn_insert {M : Type*} [AddCommMonoid M] {a : α}
 /-! ### Distinctness on a set of addresses -/
 
 /-- The performed values of `β` on `S` are pairwise distinct. -/
-private def DistinctOn (β : α → Option ℕ) (S : Finset α) : Prop :=
+private def DistinctOn (β : α → Option ℕ) (S : Finset α)  :=
   ∀ a ∈ S, ∀ a' ∈ S, ∀ p, β a = some p → β a' = some p → a = a'
 
 omit [Fintype α] [DecidableEq α] in
@@ -187,8 +170,7 @@ private theorem distinctOn_sdiff_iff {β : α → Option ℕ} {T P B : Finset α
   constructor
   · intro h
     refine ⟨h.mono (sdiff_subset_sdiff subset_rfl hB), card_le_one.2 fun x hx x' hx' => ?_⟩
-    simp only [mem_sdiff, mem_filter] at hx hx'
-    exact h x (mem_sdiff.2 ⟨hx.1.1, hx.2⟩) x' (mem_sdiff.2 ⟨hx'.1.1, hx'.2⟩) p hx.1.2 hx'.1.2
+    aesop
   · rintro ⟨hd, hc⟩ x hx x' hx' q hq hq'
     simp only [mem_sdiff] at hx hx'
     by_cases hxp : β x = some p
@@ -218,8 +200,8 @@ private theorem distinctOn_insert_iff {β : α → Option ℕ} {a : α} {T P : F
     intro x hx x' hx' q hq hq'
     rcases mem_insert.1 hx with rfl | hxT <;> rcases mem_insert.1 hx' with rfl | hxT'
     · rfl
-    · exact absurd (hq'.trans (hq.symm.trans hβ)) (hT x' hxT')
-    · exact absurd (hq.trans (hq'.symm.trans hβ)) (hT x hxT)
+    · simp_all
+    · simp_all
     · exact hd x hxT x' hxT' q hq hq'
 
 omit [Fintype α] [DecidableEq α] in
@@ -245,13 +227,8 @@ private theorem indicator_card_eq_zero (P : Finset α) :
       have h₃ : ((j + 2).factorial : ℤ) = (j + 2) * (j + 1).factorial := by
         push_cast [Nat.factorial_succ]
         ring
-      simp only [h₁, h₂, h₃, Nat.choose_self, Nat.sub_self, nsmul_eq_mul]
-      simp
-      ring
-    · have : ¬j + 2 - k ≤ 1 := by
-        have := mem_range.1 hk
-        omega
-      simp [this]
+      grind
+    grind
 
 open scoped Classical in
 /-- The signed weight `(-1)^{|C| - 1} (|C| - 1)! [C realized]` of a block. -/
@@ -271,20 +248,10 @@ private theorem distinctOn_insert_indicator (β : α → Option ℕ) {a : α} {T
   cases hβ : β a with
   | none =>
     have hw : ∀ B, blockWeight β (insert a B) = 0 := fun B => by
-      have : ¬BlockRealized β (insert a B) := fun ⟨p, hp⟩ => by
-        have := hp a (mem_insert_self a B)
-        rw [hβ] at this
-        cases this
-      simp only [blockWeight, this, ↓reduceIte, mul_zero]
+      simp_all [BlockRealized, insert, blockWeight]
     have hD : DistinctOn β (insert a T) ↔ DistinctOn β T := by
       refine ⟨fun h => h.mono (subset_insert a T), fun h x hx x' hx' p hp hp' => ?_⟩
-      rcases mem_insert.1 hx with rfl | hxT
-      · rw [hβ] at hp
-        cases hp
-      rcases mem_insert.1 hx' with rfl | hxT'
-      · rw [hβ] at hp'
-        cases hp'
-      exact h x hxT x' hxT' p hp hp'
+      aesop
     simp only [hD, hw, zero_mul, sum_const_zero, add_zero]
   | some p =>
     obtain ⟨P, hP⟩ : ∃ P, P = T.filter (β · = some p) := ⟨_, rfl⟩
@@ -295,24 +262,15 @@ private theorem distinctOn_insert_indicator (β : α → Option ℕ) {a : α} {T
         subst hP
         constructor
         · rintro ⟨q, hq⟩ x hx
-          have hqp : q = p := by
-            have := hq a (mem_insert_self a B)
-            rw [hβ] at this
-            exact (Option.some_inj.1 this).symm
-          exact mem_filter.2 ⟨hB hx, hqp ▸ hq x (mem_insert_of_mem hx)⟩
+          grind
         · intro h
           exact ⟨p, (forall_mem_insert _ _ _).2 ⟨hβ, fun x hx => (mem_filter.1 (h hx)).2⟩⟩
-      rw [blockWeight, card_insert_of_notMem fun h => ha (hB h), Nat.add_sub_cancel]
-      by_cases h : B ⊆ P <;> simp [h, hR]
+      grind [blockWeight]
     have hsub : P.powerset.filter (·.Nonempty) ⊆ T.powerset.filter (·.Nonempty) :=
       filter_subset_filter _ (powerset_mono.2 hPT)
     have hzero : ∀ B ∈ T.powerset.filter (·.Nonempty), B ∉ P.powerset.filter (·.Nonempty) →
         blockWeight β (insert a B) * (if DistinctOn β (T \ B) then 1 else 0) = 0 := by
-      intro B hB hB'
-      simp only [mem_filter, mem_powerset] at hB hB'
-      have : ¬B ⊆ P := fun h => hB' ⟨h, hB.2⟩
-      rw [hw B hB.1]
-      simp [this]
+      grind
     rw [← sum_subset hsub hzero]
     have hT := distinctOn_sdiff_iff hP (empty_subset _)
     rw [sdiff_empty, sdiff_empty] at hT
@@ -343,8 +301,7 @@ private theorem distinctOn_indicator_eq (β : α → Option ℕ) (S : Finset α)
   induction S using Finset.strongInduction with
   | H S ih =>
     obtain rfl | ⟨a, haS⟩ := S.eq_empty_or_nonempty
-    · rw [blockSystemsIn_empty, sum_singleton, prod_empty]
-      simp [DistinctOn]
+    · simp_all [blockSystemsIn_empty, DistinctOn]
     obtain ⟨T, ha, rfl⟩ : ∃ T, a ∉ T ∧ insert a T = S :=
       ⟨S.erase a, notMem_erase a S, insert_erase haS⟩
     rw [sum_blockSystemsIn_insert ha, distinctOn_insert_indicator β ha, ih T (ssubset_insert ha)]
@@ -358,12 +315,12 @@ private theorem distinctOn_indicator_eq (β : α → Option ℕ) (S : Finset α)
 
 /-- The coefficient mass `∑ ∏_{C ∈ 𝒞} (|C| - 1)!` of the block systems of rank `r` inside
 `S`. -/
-private def rankMass (r : ℕ) (S : Finset α) : ℕ :=
+private def rankMass (r : ℕ) (S : Finset α)  :=
   ∑ 𝒞 ∈ blockSystemsIn S, if blockRank 𝒞 = r then ∏ C ∈ 𝒞, (#C - 1).factorial else 0
 
 /-- The arithmetic step of the rank bound:
 `n^{2r} + ∑_{1 ≤ k ≤ r} C(n, k) k! n^{2(r - k)} ≤ (n + 1)^{2r}`. -/
-private theorem rank_step_le (n r : ℕ) :
+private theorem rank_step_le  n r  :
     n ^ (2 * r) + ∑ k ∈ range (n + 1), n.choose k •
         (if 0 < k ∧ k ≤ r then k.factorial * n ^ (2 * (r - k)) else 0) ≤
       (n + 1) ^ (2 * r) := by
@@ -395,8 +352,7 @@ private theorem rank_step_le (n r : ℕ) :
         rw [add_comm]
         congr 1
         refine sum_congr rfl fun k hk => ?_
-        have : 0 < k + 1 ∧ k + 1 ≤ r := ⟨k.succ_pos, mem_range.1 hk⟩
-        simp only [this, and_self, ↓reduceIte]
+        simp_all
     _ ≤ ∑ k ∈ range (r + 1), n ^ (2 * r - k) * (2 * r).choose k :=
         sum_le_sum fun k hk =>
           Nat.le_mul_of_pos_right _ (Nat.choose_pos (by have := mem_range.1 hk; omega))
@@ -411,8 +367,7 @@ private theorem rankMass_le (r : ℕ) (S : Finset α) : rankMass r S ≤ #S ^ (2
   induction S using Finset.strongInduction generalizing r with
   | H S ih =>
     obtain rfl | ⟨a, haS⟩ := S.eq_empty_or_nonempty
-    · rw [rankMass, blockSystemsIn_empty, sum_singleton, card_empty]
-      rcases r with _ | r <;> simp [blockRank]
+    · grind [rankMass, blockSystemsIn_empty, blockRank]
     obtain ⟨T, ha, rfl⟩ : ∃ T, a ∉ T ∧ insert a T = S :=
       ⟨S.erase a, notMem_erase a S, insert_erase haS⟩
     have hB : ∀ B ∈ T.powerset.filter (·.Nonempty),
@@ -429,10 +384,7 @@ private theorem rankMass_le (r : ℕ) (S : Finset α) : rankMass r S ≤ #S ^ (2
             ∏ C ∈ insert (insert a B) 𝒞, (#C - 1).factorial else 0) =
           (#B).factorial *
             if blockRank 𝒞 = r - #B ∧ #B ≤ r then ∏ C ∈ 𝒞, (#C - 1).factorial else 0 := by
-        intro 𝒞 h𝒞
-        have hX := insert_notMem_of_mem_blockSystemsIn (B' := B) ha h𝒞
-        rw [blockRank, blockRank, sum_insert hX, prod_insert hX, hcard, mul_ite, mul_zero]
-        split_ifs <;> first | rfl | (exfalso; omega)
+        grind [insert_notMem_of_mem_blockSystemsIn, blockRank]
       rw [sum_congr rfl h𝒞, ← mul_sum]
       by_cases hr : #B ≤ r
       · have h0 : 0 < #B ∧ #B ≤ r := ⟨hBne.card_pos, hr⟩
@@ -458,7 +410,7 @@ private theorem rankMass_le (r : ℕ) (S : Finset α) : rankMass r S ≤ #S ^ (2
 open scoped Classical in
 /-- **The partition identity**: the indicator of distinct performed values is the signed sum
 over block systems of their realization indicators. -/
-theorem birthsDistinct_indicator_eq (β : α → Option ℕ) :
+theorem birthsDistinct_indicator_eq  β  :
     (if BirthsDistinct β then 1 else 0 : ℤ) =
       ∑ 𝒞 ∈ blockSystems α, blockCoef 𝒞 * ∏ C ∈ 𝒞, if BlockRealized β C then 1 else 0 := by
   have h := distinctOn_indicator_eq β univ
@@ -472,7 +424,7 @@ theorem birthsDistinct_indicator_eq (β : α → Option ℕ) :
 
 /-- **The rank coefficients**: the block systems of rank `r` have total coefficient mass at
 most `|α|^{2r}`. -/
-theorem sum_abs_blockCoef_le (r : ℕ) :
+theorem sum_abs_blockCoef_le  r  :
     ∑ 𝒞 ∈ (blockSystems α).filter (fun 𝒞 => blockRank 𝒞 = r), |blockCoef 𝒞| ≤
       (Fintype.card α : ℤ) ^ (2 * r) := by
   have h := rankMass_le r (univ : Finset α)
@@ -483,8 +435,7 @@ theorem sum_abs_blockCoef_le (r : ℕ) :
         push_cast
         refine sum_congr rfl fun 𝒞 _ => ?_
         rw [blockCoef, abs_prod]
-        refine prod_congr rfl fun C _ => ?_
-        rw [abs_mul, abs_pow, abs_neg, abs_one, one_pow, one_mul, Nat.abs_cast]
+        norm_num
     _ ≤ (Fintype.card α : ℤ) ^ (2 * r) := by exact_mod_cast h
 
 end Erdos408.OneSided

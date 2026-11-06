@@ -15,11 +15,11 @@ open CenteredMomentSecondSectorColumns CenteredMomentSecondScaled CenteredMoment
 open CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors
 open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
 open CenteredMomentSecondExceptionalPairBound RayFourExpansion
-local notation "O"=>HeckeFamily.O
+
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-theorem live_right_divisor_norm (D I L:Ideal O)(hD:D≠0)(hI:I≠0)
-    (β:Ideal O→ℂ)(H:ℝ)(hβ:∀J,β J≠0→(J.absNorm:ℝ)≤H)
+theorem live_right_divisor_norm (D I L:Ideal HeckeFamily.O)(hD:D≠0)(hI:I≠0)
+    (β:Ideal HeckeFamily.O→ℂ) H (hβ:∀J,β J≠0→(J.absNorm:ℝ)≤H)
     (hne:β (D*I)≠0)(hLI:L∣I):
     (L.absNorm:ℝ)≤H/(D.absNorm:ℝ):=by
   have hDpos:(0:ℝ)<D.absNorm:=by
@@ -33,10 +33,14 @@ theorem live_right_divisor_norm (D I L:Ideal O)(hD:D≠0)(hI:I≠0)
   apply (le_div_iff₀ hDpos).mpr
   simpa only [mul_comm] using hb
 
+section
+variable (D:Ideal HeckeFamily.O) (hD:Supported D) (S:Finset (Ideal HeckeFamily.O)) (β:Ideal HeckeFamily.O→ℂ) (H:ℝ) (hβ:∀J,β J≠0→(J.absNorm:ℝ)≤H) (L:Ideal HeckeFamily.O) (hL:H/(D.absNorm:ℝ)<L.absNorm) (η:Character) (t:ℝ) (A:HeckeFamily.O) (ξ:RayCharacter)
+include D hD S β H hβ L hL η t A ξ
+
 theorem right_divisor_coefficient_zero
-    (D:Ideal O)(hD:Supported D)(S:Finset (Ideal O))(β:Ideal O→ℂ)(H:ℝ)
-    (hβ:∀J,β J≠0→(J.absNorm:ℝ)≤H)(L:Ideal O)(hL:H/(D.absNorm:ℝ)<L.absNorm)
-    (η:Character)(t:ℝ)(A:O)(ξ:RayCharacter)(I:sectorPool D hD.1 S):
+         
+       
+         I :
     divisorCoefficient L (sectorElement D hD.1 S)
       (movingCoefficient A (sectorElement D hD.1 S)
         (fun I:sectorPool D hD.1 S=>β (D*I)*heightCoeff η t I)) ξ I=0:=by
@@ -51,9 +55,9 @@ theorem right_divisor_coefficient_zero
   · rfl
 
 theorem right_divisor_row_zero
-    (D:Ideal O)(hD:Supported D)(S:Finset (Ideal O))(β:Ideal O→ℂ)(H:ℝ)
-    (hβ:∀J,β J≠0→(J.absNorm:ℝ)≤H)(L:Ideal O)(hL:H/(D.absNorm:ℝ)<L.absNorm)
-    (η:Character)(t:ℝ)(A:O)(ξ:RayCharacter)(v:sectorPool D hD.1 S→ℂ)(z:O):
+         
+       
+        (v:sectorPool D hD.1 S→ℂ) z :
     rowPolynomial Finset.univ (sectorElement D hD.1 S)
       (fun I=>divisorCoefficient L (sectorElement D hD.1 S)
         (movingCoefficient A (sectorElement D hD.1 S)
@@ -64,11 +68,13 @@ theorem right_divisor_row_zero
   exact mul_eq_zero_of_left
     (mul_eq_zero_of_left (right_divisor_coefficient_zero D hD S β H hβ L hL η t A ξ I) _) _
 
+end
+
 theorem originalPair_filter_right {ι:Type*}[Fintype ι][DecidableEq ι]
-    (s:Input ι)(η:Character)(χ ξ:RayCharacter)(A:O)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(R seed:Ideal O)
-    (t w X Y H:ℝ)(Ds:Finset (Ideal O))(rows:Finset O)
-    (hβ:∀I:Ideal O,finiteColumnCoefficient (Fintype.piFinset s.pools)
+    (s:Input ι) η  χ ξ  A 
+     C D  hC  hD  R seed 
+     t w X Y H  Ds  rows 
+    (hβ:∀I:Ideal HeckeFamily.O,finiteColumnCoefficient (Fintype.piFinset s.pools)
       (profileCoefficient R s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed) I≠0→
       (I.absNorm:ℝ)≤H):
     originalPair s η χ ξ A C D hC hD R seed t w X Y Ds rows=

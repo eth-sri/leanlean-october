@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailScale
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailScal
 
 namespace OAI
 
-noncomputable section
+
 
 namespace SevenEighths.InverseInitialHighFrequencyTail
 
@@ -16,7 +17,7 @@ theorem initial_tail_power_cost (A : ℕ) (Z L Lcap m D τ : ℝ)
     (128*L)^7*Z^(m-D)/((min 1 (Z^m/L^3))^2*(1+Z^τ)^A) ≤
       128^7*Z^(16*Lcap-τ*A) := by
   have hz : 0<Z := zero_lt_one.trans_le hZ
-  have hl : 0<L := zero_lt_one.trans_le hL
+  
   have hbase : Z^(-4*Lcap)≤min 1 (Z^m/L^3) := by
     apply le_min
     · exact Real.rpow_le_one_of_one_le_of_nonpos hZ (by linarith)
@@ -56,6 +57,6 @@ theorem initial_tail_rapid_order (Lcap saving τ : ℝ) (hτ : 0<τ) :
 
 end SevenEighths.InverseInitialHighFrequencyTail
 
-end
+
 
 end OAI

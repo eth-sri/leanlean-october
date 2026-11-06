@@ -19,7 +19,7 @@ the log cell and the prime group restrict that label to an interval.
 Apply HarmonicCharacters, divide by the group mass, and average the other
 labels. Precision is absolute and uniform in the cell width/location.
 Use no owned blueprint placeholder. -/
-def CharacterCellTask : Prop :=
+def CharacterCellTask  :=
   HarmonicCharacters → ∀ (P : Geometry) (m : ℕ) (qexp D : ℝ),
     0 < qexp → 0 < D → ∃ K : ℝ, 0 < K ∧ ∀ᶠ x in atTop,
       ∀ G : PrimeGroups, Admissible P x G → ∀ k, bigSlots G k m →

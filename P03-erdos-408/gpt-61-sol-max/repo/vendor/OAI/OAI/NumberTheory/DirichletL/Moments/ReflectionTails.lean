@@ -7,19 +7,23 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentComparisonReflection
 open HeckeFamily EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
-local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
-lemma ideal_norm_rpow_summable (B : ℕ) (hB : 2≤B) :
-    Summable (fun I : NI=>(I.val.absNorm:ℝ)^(-(B:ℝ))) := by
+
+
+section
+variable (η : Character) (F : ℝ→ℂ) (A B : ℕ) (hB : 2≤B) (D Y : ℝ) (hY : 0<Y) (hF : ∀x : ℝ,0<x → x^B*‖F x‖≤D) (R : ℝ)
+
+include hB in
+lemma ideal_norm_rpow_summable     :
+    Summable (fun I : UnrestrictedIdealReindex.NonzeroIdeal=>(I.val.absNorm:ℝ)^(-(B:ℝ))) := by
   have hb : (1:ℝ)<B := by exact_mod_cast (by omega : 1<B)
   have hs := (CubicEisenstein.fullIdealWeight_summable_norm (B:ℂ)
     (by simpa using hb)).comp_injective
-      (Subtype.val_injective : Function.Injective (fun I : NI=>I.val))
+      (Subtype.val_injective : Function.Injective (fun I : UnrestrictedIdealReindex.NonzeroIdeal=>I.val))
   apply hs.congr
   intro I
   rw [Function.comp_apply,CubicEisenstein.fullIdealWeight,ite_eq_right I.property]
@@ -28,8 +32,9 @@ lemma ideal_norm_rpow_summable (B : ℕ) (hB : 2≤B) :
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hi]
   simp
 
-lemma plain_term_rapid_bound (η : Character) (F : ℝ→ℂ) (B : ℕ) (D Y : ℝ)
-    (hY : 0<Y) (hF : ∀x : ℝ,0<x → x^B*‖F x‖≤D) (I : NI) :
+include hY hF in
+lemma plain_term_rapid_bound        
+        (I : UnrestrictedIdealReindex.NonzeroIdeal) :
     ‖idealCoeff η I.val*F ((I.val.absNorm:ℝ)/Y)‖≤
       (D*Y^B)*(I.val.absNorm:ℝ)^(-(B:ℝ)) := by
   have hi : 0<(I.val.absNorm:ℝ) := HeckeDyadic.norm_pos I
@@ -45,21 +50,23 @@ lemma plain_term_rapid_bound (η : Character) (F : ℝ→ℂ) (B : ℕ) (D Y : �
       rw [Real.rpow_neg hi.le,Real.rpow_natCast,div_pow]
       field_simp
 
-theorem plain_rapid_summable (η : Character) (F : ℝ→ℂ) (B : ℕ) (hB : 2≤B)
-    (D Y : ℝ) (hY : 0<Y) (hF : ∀x : ℝ,0<x → x^B*‖F x‖≤D) :
-    Summable (fun I : NI=>idealCoeff η I.val*F ((I.val.absNorm:ℝ)/Y)) := by
+include hB hY hF in
+theorem plain_rapid_summable        
+          :
+    Summable (fun I : UnrestrictedIdealReindex.NonzeroIdeal=>idealCoeff η I.val*F ((I.val.absNorm:ℝ)/Y)) := by
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _)
     (plain_term_rapid_bound η F B D Y hY hF)
     ((ideal_norm_rpow_summable B hB).mul_left (D*Y^B))
 
-theorem plain_rapid_bound (B : ℕ) (hB : 2≤B) :
+include hB in
+theorem plain_rapid_bound     :
     ∃C : ℝ,0<C ∧ ∀(η : Character)(F : ℝ→ℂ)(D Y : ℝ),0≤D → 0<Y →
       (∀x : ℝ,0<x → x^B*‖F x‖≤D) →
       ‖HeckeDyadic.polynomial η false F Y 0 0‖≤C*D*(Y^B/Real.sqrt Y) := by
-  let C := 1+∑' I : NI,(I.val.absNorm:ℝ)^(-(B:ℝ))
+  let C := 1+∑' I : UnrestrictedIdealReindex.NonzeroIdeal,(I.val.absNorm:ℝ)^(-(B:ℝ))
   have hs := ideal_norm_rpow_summable B hB
-  have hnon : 0≤∑' I : NI,(I.val.absNorm:ℝ)^(-(B:ℝ)) :=
+  have hnon : 0≤∑' I : UnrestrictedIdealReindex.NonzeroIdeal,(I.val.absNorm:ℝ)^(-(B:ℝ)) :=
     tsum_nonneg (fun I=>Real.rpow_nonneg (HeckeDyadic.norm_pos I).le _)
   refine ⟨C,by dsimp [C];linarith,?_⟩
   intro η F D Y hD hY hF
@@ -67,8 +74,7 @@ theorem plain_rapid_bound (B : ℕ) (hB : 2≤B) :
   have hh := ht.norm.tsum_le_tsum (plain_term_rapid_bound η F B D Y hY hF)
     (hs.mul_left (D*Y^B))
   rw [tsum_mul_left] at hh
-  have hb : ‖∑' I : NI,idealCoeff η I.val*F ((I.val.absNorm:ℝ)/Y)‖≤D*Y^B*C := by
-    exact (norm_tsum_le_tsum_norm ht.norm).trans (hh.trans
+  have hb : ‖∑' I : UnrestrictedIdealReindex.NonzeroIdeal,idealCoeff η I.val*F ((I.val.absNorm:ℝ)/Y)‖≤D*Y^B*C := (norm_tsum_le_tsum_norm ht.norm).trans (hh.trans
       (mul_le_mul_of_nonneg_left (by dsimp [C];linarith) (by positivity)))
   rw [polynomial_plain η F Y hY,norm_mul,norm_inv,Complex.norm_real,
     Real.norm_of_nonneg (Real.sqrt_nonneg Y)]
@@ -76,7 +82,7 @@ theorem plain_rapid_bound (B : ℕ) (hB : 2≤B) :
     _≤(Real.sqrt Y)⁻¹*(D*Y^B*C):=mul_le_mul_of_nonneg_left hb (by positivity)
     _=C*D*(Y^B/Real.sqrt Y):=by ring
 
-lemma discarded_rapid_control (F : ℝ→ℂ) (A B : ℕ) (D R : ℝ)
+lemma discarded_rapid_control      
     (hD : 0≤D) (hR : 0<R) (hF : ∀x : ℝ,0<x → x^(B+A)*‖F x‖≤D) :
     ∀x : ℝ,0<x → x^B*‖(CenteredMomentSectorLocalization.discardedWeight R x:ℂ)*F x‖≤D/R^A := by
   intro x hx
@@ -95,8 +101,10 @@ lemma discarded_rapid_control (F : ℝ→ℂ) (A B : ℕ) (D R : ℝ)
     _=x^(B+A)*‖F x‖ :=by rw [pow_add];ring
     _≤D :=hF x hx
 
+end
+
 end SevenEighths.CenteredMomentComparisonReflection
 
-end
+
 
 end OAI

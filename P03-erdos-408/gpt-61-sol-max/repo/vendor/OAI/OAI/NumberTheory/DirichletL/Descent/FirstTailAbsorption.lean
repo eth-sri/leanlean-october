@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open SecondPassArithmetic
-noncomputable section
 
-lemma first_tail_fixed_cap (K D E U₁ U₂ B G₁ G₂ P H : ℝ) (A : ℕ)
+
+lemma first_tail_fixed_cap (K D E U₁ U₂ B G₁ G₂ P H : ℝ)  A 
     (hK : 0<K) (hD : 0<D) (hE : 0<E) (hU₁ : 0<U₁) (hU₂ : 0<U₂) (hB : 1≤B)
     (hG₁ : 0≤G₁) (hG₂ : 0≤G₂) (hP : 0≤P) (hH : 0≤H)
     (hKb : K≤B) (hKi : K⁻¹≤B) (hDb : D≤B) (hEb : E≤B) (h₁ : U₁≤B) (h₂ : U₂≤B) :
@@ -64,7 +64,7 @@ theorem choose_first_tail_order (Lcap tau saving : ℝ) (hL : 0≤Lcap) (htau : 
     _ = (65536*G₁*G₂*P)*((Z^Lcap)^19/(1+Z^tau)^A) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hdecay (by positivity)
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

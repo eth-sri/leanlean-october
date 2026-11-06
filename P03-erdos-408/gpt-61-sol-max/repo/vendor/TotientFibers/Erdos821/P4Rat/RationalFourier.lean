@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.Blueprint.Analytic
 public import OAI.NumberTheory.PrimeGaps.MultiplicativeSieve
@@ -18,14 +19,14 @@ open Blueprint.Analytic
 Suggested proof: coefficient = normalized character transform of the unit
 phase; reconstruct by DirichletCharacter.sum_char_inv_mul_char_eq, and use
 OAI.LargePrimeGaps.character_transform_bound for the L1 estimate. -/
-def RationalFourierTask : Prop :=
+def RationalFourierTask  :=
   ∀ (r : ℕ) (u : ℤ), 1 ≤ r →
     ∃ c : DirichletCharacter ℂ r → ℂ,
       (∑ ψ, ‖c ψ‖) ≤ Real.sqrt (r.totient : ℝ) ∧
       ∀ n : ℕ, Nat.Coprime n r →
         e ((u : ℝ) * n / r) = ∑ ψ, c ψ * ψ (n : ZMod r)
 
-lemma rf_e_norm (t : ℝ) : ‖e t‖ = 1 := by
+lemma rf_e_norm  t  : ‖e t‖ = 1 := by
   unfold e
   have h : (2 * Real.pi * t * Complex.I : ℂ) = ((2 * Real.pi * t : ℝ) : ℂ) * Complex.I := by
     push_cast
@@ -33,7 +34,7 @@ lemma rf_e_norm (t : ℝ) : ‖e t‖ = 1 := by
   rw [h]
   exact Complex.norm_exp_ofReal_mul_I _
 
-lemma rf_e_add_int (t : ℝ) (k : ℤ) : e (t + (k : ℝ)) = e t := by
+lemma rf_e_add_int  t  (k : ℤ) : e (t + (k : ℝ)) = e t := by
   have hcast : (((t + (k : ℝ)) : ℝ) : ℂ) = ((t : ℝ) : ℂ) + ((k : ℤ) : ℂ) := by
     push_cast
     ring
@@ -47,7 +48,10 @@ lemma rf_e_add_int (t : ℝ) (k : ℤ) : e (t + (k : ℝ)) = e t := by
   unfold e
   rw [harg, Complex.exp_add, h1, mul_one]
 
-lemma rf_e_nat_mod (r : ℕ) (hr : 0 < r) (u : ℤ) (n : ℕ) :
+section
+variable (r : ℕ)
+
+lemma rf_e_nat_mod   (hr : 0 < r) (u : ℤ) (n : ℕ) :
     e ((u : ℝ) * (n : ℝ) / (r : ℝ)) = e ((u : ℝ) * ((n % r : ℕ) : ℝ) / (r : ℝ)) := by
   have hr_ne : (r : ℝ) ≠ 0 := by exact_mod_cast ne_of_gt hr
   have hdivmod : n / r * r + n % r = n := by
@@ -65,18 +69,20 @@ lemma rf_e_nat_mod (r : ℕ) (hr : 0 < r) (u : ℤ) (n : ℕ) :
   rw [hsplit]
   exact rf_e_add_int _ _
 
-noncomputable def rf_unitPhase (r : ℕ) (u : ℤ) (v : (ZMod r)ˣ) : ℂ :=
+noncomputable def rf_unitPhase (r ) (u : ℤ) (v : (ZMod r)ˣ)  :=
   e ((u : ℝ) * ((v.val.val : ℕ) : ℝ) / (r : ℝ))
 
-lemma rf_unitPhase_norm (r : ℕ) (u : ℤ) (v : (ZMod r)ˣ) : ‖rf_unitPhase r u v‖ = 1 :=
+lemma rf_unitPhase_norm    u   v  : ‖rf_unitPhase r u v‖ = 1 :=
   rf_e_norm _
 
-noncomputable def rf_coeff (r : ℕ) [NeZero r] (u : ℤ) (ψ : DirichletCharacter ℂ r) : ℂ :=
+noncomputable def rf_coeff (r : ℕ) [NeZero r] (u : ℤ) (ψ : DirichletCharacter ℂ r)  :=
   ((r.totient : ℂ))⁻¹ * ∑ v : (ZMod r)ˣ, rf_unitPhase r u v * star (ψ (v.val : ZMod r))
 
-lemma rf_star_eq (r : ℕ) [NeZero r] (ψ : DirichletCharacter ℂ r) (v : (ZMod r)ˣ) :
+lemma rf_star_eq   [NeZero r] (ψ : DirichletCharacter ℂ r) (v : (ZMod r)ˣ) :
     star (ψ (v.val : ZMod r)) = ψ ((v.val : ZMod r)⁻¹) := by
   simpa [RCLike.star_def] using OAI.LargePrimeGaps.conj_character_unit (q := r) ψ v
+
+end
 
 theorem RationalFourierTask_proof : RationalFourierTask := by
   intro r u hr
@@ -93,19 +99,14 @@ theorem RationalFourierTask_proof : RationalFourierTask := by
   · -- L1 bound
     have hnorm_c : ∀ ψ, ‖rf_coeff r u ψ‖
         = (r.totient : ℝ)⁻¹ * ‖∑ v : (ZMod r)ˣ, rf_unitPhase r u v * star (ψ (v.val : ZMod r))‖ := by
-      intro ψ
-      unfold rf_coeff
-      rw [norm_mul]
-      have hnorm_inv : ‖((r.totient : ℂ))⁻¹‖ = (r.totient : ℝ)⁻¹ := by
-        rw [norm_inv, Complex.norm_natCast]
-      rw [hnorm_inv]
+      simp_all [rf_coeff]
     have hsum_f : (∑ v : (ZMod r)ˣ, ‖rf_unitPhase r u v‖ ^ 2) = (r.totient : ℝ) := by
       have h1 : ∀ v : (ZMod r)ˣ, ‖rf_unitPhase r u v‖ ^ 2 = (1 : ℝ) := by
         intro v
         rw [rf_unitPhase_norm, one_pow]
       simp [h1, ZMod.card_units_eq_totient]
     have hbound := OAI.LargePrimeGaps.character_transform_bound
-      (q := r) (fun v => rf_unitPhase r u v)
+      (q := r) (rf_unitPhase r u)
     rw [hsum_f] at hbound
     have hstar_inv : ∀ (ψ : DirichletCharacter ℂ r) (v : (ZMod r)ˣ),
         rf_unitPhase r u v * star (ψ (v.val : ZMod r))
@@ -117,11 +118,7 @@ theorem RationalFourierTask_proof : RationalFourierTask := by
         = ∑ ψ : DirichletCharacter ℂ r,
           ‖∑ v : (ZMod r)ˣ, rf_unitPhase r u v * ψ⁻¹ (v.val : ZMod r)‖ ^ 2 := by
       apply Finset.sum_congr rfl
-      intro ψ _
-      have hInner : (∑ v : (ZMod r)ˣ, rf_unitPhase r u v * star (ψ (v.val : ZMod r)))
-          = ∑ v : (ZMod r)ˣ, rf_unitPhase r u v * ψ⁻¹ (v.val : ZMod r) :=
-        Finset.sum_congr rfl (fun v _ => hstar_inv ψ v)
-      rw [hInner]
+      grind
     have hBij : (∑ ψ : DirichletCharacter ℂ r,
           ‖∑ v : (ZMod r)ˣ, rf_unitPhase r u v * ψ⁻¹ (v.val : ZMod r)‖ ^ 2)
         = ∑ ψ : DirichletCharacter ℂ r,
@@ -185,12 +182,7 @@ theorem RationalFourierTask_proof : RationalFourierTask := by
       exact DirichletCharacter.sum_char_inv_mul_char_eq (R := ℂ)
         (a := (v.val : ZMod r)) v.isUnit (un.val : ZMod r)
     have hf_un : rf_unitPhase r u un = e ((u : ℝ) * (n : ℝ) / (r : ℝ)) := by
-      unfold rf_unitPhase
-      have hval : ((un.val.val : ℕ)) = n % r := by
-        rw [hun]
-        exact ZMod.val_natCast r n
-      rw [hval]
-      exact (rf_e_nat_mod r hr_pos u n).symm
+      simp_all [rf_unitPhase, rf_e_nat_mod]
     have hRHS : (∑ ψ : DirichletCharacter ℂ r, rf_coeff r u ψ * ψ ((n : ℕ) : ZMod r))
         = ∑ ψ : DirichletCharacter ℂ r, rf_coeff r u ψ * ψ (un.val : ZMod r) := by
       apply Finset.sum_congr rfl
@@ -234,17 +226,12 @@ theorem RationalFourierTask_proof : RationalFourierTask := by
       have h2 : rf_unitPhase r u un * (if un.val = un.val then ((r.totient : ℕ) : ℂ) else 0)
           = rf_unitPhase r u un * ((r.totient : ℕ) : ℂ) := by
         rw [ite_eq_left rfl]
-      have hEq := Finset.sum_eq_single un (fun v _ hv => h1 v hv) (fun hmem => absurd (Finset.mem_univ un) hmem)
+      have hEq := Finset.sum_eq_single un (fun v _ hv => h1 v hv) (absurd (Finset.mem_univ un))
       rw [h2] at hEq
       exact hEq
     have hfin : ((r.totient : ℕ) : ℂ)⁻¹ * (rf_unitPhase r u un * ((r.totient : ℕ) : ℂ))
         = rf_unitPhase r u un := by
-      have h : ((r.totient : ℕ) : ℂ)⁻¹ * ((r.totient : ℕ) : ℂ) = 1 :=
-        inv_mul_cancel₀ hphi_neC
-      calc ((r.totient : ℕ) : ℂ)⁻¹ * (rf_unitPhase r u un * ((r.totient : ℕ) : ℂ))
-          = rf_unitPhase r u un * (((r.totient : ℕ) : ℂ)⁻¹ * ((r.totient : ℕ) : ℂ)) := by ring
-        _ = rf_unitPhase r u un * 1 := by rw [h]
-        _ = rf_unitPhase r u un := mul_one _
+      field_simp <;> ring
     -- goal after rw [hswap] + simp_rw [hInner] is e = φ⁻¹ * ∑_v ...
     rw [hcollapse, hfin]
     exact hf_un.symm

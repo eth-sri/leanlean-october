@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Moments.SecondUniformSubsetSource
 
 public import OAI.NumberTheory.DirichletL.Energy.FirstGaussianCoefficients
 
@@ -14,31 +17,33 @@ open HeckeFamily CenteredMomentFiniteProfileExceptional
 open CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl
 open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondWindowBudget
 open QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
 
-def losses (epsilon delta theta B:ℝ):Fin 4→ℝ:=
+
+def losses (epsilon delta theta B:ℝ):=
   ![2*delta+epsilon,2*epsilon+2*delta+2*(5*B+1)*theta,0,0]
 
-private lemma control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(h:S⊆T):
-    p.control S≤p.control T:=by
-  unfold Profiles.control
-  exact mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 0))
-    (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 1))
-    (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
+section
+variable {a b : ℝ} (p : Profiles a b)
 
-private lemma zero_control_le {a b:ℝ}(p:Profiles a b)(U:Finset (ℕ×ℕ))(h:(0,0)∈U):
+private lemma control_mono    {S T} (h:S⊆T):
+    p.control S≤p.control T:= by solve_by_elim [_root_.OAI.SevenEighths.CenteredMomentSecondUniformSubsetSource.control_mono]
+
+public alias _root_.SharedProofs.control_mono := control_mono
+
+
+private lemma zero_control_le    U (h:(0,0)∈U):
     SchwartzMap.seminorm ℝ 0 0 (p.profile 0)*
       SchwartzMap.seminorm ℝ 0 0 (p.profile 1)≤p.control U:=by
   unfold Profiles.control
   exact mul_le_mul (Seminorm.le_def.mp (Finset.le_sup (f:=schwartzSeminormFamily ℝ ℝ ℂ) h) (p.profile 0))
     (Seminorm.le_def.mp (Finset.le_sup (f:=schwartzSeminormFamily ℝ ℝ ℂ) h) (p.profile 1)) (apply_nonneg _ _) (sourceControl_nonneg _ _)
 
-theorem actual_weights {a b:ℝ}(N:ℕ)(upper b1 b2 Amax loFloor:ℝ)
-    (Cm Ce Cd Ct Cc cost epsilon delta theta B:ℝ)
-    (Jprofile Jchild degree:ℕ)(Sp Tchild Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ))
+theorem actual_weights   N  upper b1 b2 Amax loFloor 
+     Cm Ce Cd Ct Cc cost epsilon delta theta B 
+     Jprofile Jchild degree  Sp Tchild Sf  W 
     (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(_hAmax:0≤Amax)(hlo:0<loFloor)
     (hCm:0≤Cm)(hCe:0≤Ce)(hCd:0≤Cd)(hCt:0≤Ct)(hCc:0≤Cc)(hcost:0≤cost):
-    ∃U:Finset (ℕ×ℕ),∃J:ℕ,∀Q:Ideal O,∀Kfix:ℝ,0≤Kfix→∃C:ℝ,0<C ∧
+    ∃U:Finset (ℕ×ℕ),∃J:ℕ,∀Q:Ideal HeckeFamily.O,∀Kfix:ℝ,0≤Kfix→∃C:ℝ,0<C ∧
     ∀p:Profiles a b,∀Z t height A seed C0 C1:ℝ,
       0<Z→0≤height→0≤A→A≤Amax→1≤seed→0≤C0→0≤C1→
     let Ebase:=Cc*(C0+C1)*diagonalControl W*(p.control Tchild)^2*(1+height)^degree;
@@ -111,7 +116,7 @@ theorem actual_weights {a b:ℝ}(N:ℕ)(upper b1 b2 Amax loFloor:ℝ)
     exact pow_le_pow_right₀ hH (by dsimp [J];omega)
   have hHone:1≤H^J:=one_le_pow₀ hH
   have hC01:0≤C0+C1:=add_nonneg hC0 hC1
-  have hCplus:0≤C0+C1+1:=by positivity
+  
   have hD (j:Fin 4): (![D0,D1,D2,D3] j)≤C:=by
     fin_cases j <;> simp only [Matrix.cons_val,Fin.reduceFinMk] <;> dsimp [C] <;> linarith
   have hbase (d:ℝ)(hd0:0≤d)(hdC:d≤C)(ell:ℝ):
@@ -174,6 +179,8 @@ theorem actual_weights {a b:ℝ}(N:ℕ)(upper b1 b2 Amax loFloor:ℝ)
           _≤D3*(C0+C1+1)*(p.control U)^2:=mul_le_mul_of_nonneg_right
             (le_mul_of_one_le_right hD3 (le_add_of_nonneg_left hC01)) (sq_nonneg _)
           _≤_:=le_mul_of_one_le_right (by positivity) hHone
+
+end
 
 end SevenEighths.CenteredMomentEnergyFirstGaussianProfileWeights
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Frame.Frame
 public import Erdos821.S34.FrameTasks
@@ -21,12 +22,12 @@ theorem cellFrameTask_proof : CellFrameTask :=
 /-- A frame acts on its finite set of occupied cells, even when the cell
 index type itself is infinite. -/
 theorem frame_any_cell {α κ γ : Type} [Fintype α] [Fintype γ] [DecidableEq κ]
-    (w : α → ℝ) (c : α → κ) (χ : γ → α → ℂ) (ξ δ : ℝ)
+    (w : α → ℝ) (c : α → κ) (χ : γ → α → ℂ)  ξ δ 
     (hw : ∀ x, 0 ≤ w x) (hχ : ∀ a x, ‖χ a x‖ ≤ 1)
     (hξ : 0 < ξ) (hδ : 0 ≤ δ)
     (hgram : ∀ j : κ, ξ ≤ frameCellMass w c j → ∀ a b : γ, a ≠ b →
       ‖∑ x, if c x = j then (w x : ℂ) * star (χ a x) * χ b x else 0‖ ≤ δ)
-    (f : α → ℂ) :
+     f  :
     weightedFrameNorm w (frameCellApply w c χ ξ f) ≤
       (1 + (Fintype.card γ : ℝ) * δ / ξ) * weightedFrameNorm w f := by
   let cells := Finset.univ.image c
@@ -48,17 +49,17 @@ theorem frame_any_cell {α κ γ : Type} [Fintype α] [Fintype γ] [DecidableEq 
     simp only [frameCellApply, hk]
   rwa [ha] at ht
 
-def cellApply (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ)
-    (h ξ : ℝ) (f : Tuple G k → ℂ) (X : Tuple G k) : ℂ :=
+def cellApply (G ) (k ) (Q : ℕ)
+    (h ξ : ℝ) (f : Tuple G k → ℂ) (X : Tuple G k)  :=
   expect G k (fun D => cellKernel G k Q h ξ (product G k D) (product G k X) * f D)
 
-theorem cell_operator_norm (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ)
-    (h ξ δ : ℝ) (hξ : 0 < ξ) (hδ : 0 ≤ δ)
+theorem cell_operator_norm  G   k   Q 
+     h ξ δ  (hξ : 0 < ξ) (hδ : 0 ≤ δ)
     (hgram : ∀ j : ℤ, ξ ≤ cellMass G k h j →
       ∀ χ ∈ primitiveCharacters Q, ∀ ψ ∈ primitiveCharacters Q, χ ≠ ψ →
       ‖expect G k (fun z => if cell h (product G k z) = j then
         star (charValue χ (product G k z)) * charValue ψ (product G k z) else 0)‖ ≤ δ)
-    (f : Tuple G k → ℂ) :
+     f  :
     tupleNorm G k (cellApply G k Q h ξ f) ≤
       (1 + (Q : ℝ) ^ 2 * δ / ξ) * tupleNorm G k f := by
   let w := tupleWeight G k
@@ -72,7 +73,7 @@ theorem cell_operator_norm (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ)
       ‖∑ z, if c z = j then (w z : ℂ) * star (χ a z) * χ b z else 0‖ ≤ δ := by
     have he : a.val ≠ b.val := fun he => hab (Subtype.ext he)
     have ht := hgram j hj a.val a.property b.val b.property he
-    simpa only [expect, w, c, χ, mul_ite, mul_zero, mul_assoc] using ht
+    grind [expect]
   have hf := frame_any_cell w c χ ξ δ hw
     (fun a z => primitiveCharacterTask_proof.2 Q a.val (product G k z)) hξ hδ hg f
   have hk (D X : Tuple G k) : frameCellKernel w c χ ξ D X =
@@ -100,8 +101,7 @@ theorem cell_operator_norm (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ)
     _ ≤ (1 + (Fintype.card ↥(primitiveCharacters Q) : ℝ) * δ / ξ) * tupleNorm G k f := hf
     _ ≤ _ := by
       apply mul_le_mul_of_nonneg_right _ (Real.sqrt_nonneg _)
-      exact add_le_add (le_refl 1)
-        (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hc hδ) hξ.le)
+      bound
 
 end
 end Erdos821.S34Core

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowPeriodFilter
 public import OAI.NumberTheory.DirichletL.Reflection.PunctureAbsorption
@@ -11,12 +12,16 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss RayFourExpansion SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma physicalRayPeriodicBase_support (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) (σ : RayRing) (χ : RayCharacter)
-    (n : O) (hn : physicalRayPeriodicBase η S hS σ χ n≠0) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+section
+variable (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+include η S hS
+
+lemma physicalRayPeriodicBase_support    
+      (hbad : fixedBadPrimes⊆S) (σ : RayRing) (χ : RayCharacter)
+     n  (hn : physicalRayPeriodicBase η S hS σ χ n≠0) :
     IsCoprime (Ideal.span {n}) (lowPeriodIdeal η S hS) := by
   let C := calibrationForSet S hS
   let D := calibrationLowData S hS
@@ -35,27 +40,31 @@ lemma physicalRayPeriodicBase_support (η : HeckeFamily.Character) (S : Finset I
     (calibration_generator_bad S hS hbad).2 n hc heta
 
 def lowTruePeriodGenerator (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) : O := ConcretePrimeRowBridge.idealGenerator (lowPeriodIdeal η S hS)
+    (hS : ∀P∈S,P.IsMaximal)  := ConcretePrimeRowBridge.idealGenerator (lowPeriodIdeal η S hS)
 
-lemma lowPeriodIdeal_ne_zero (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) : lowPeriodIdeal η S hS≠0 := by
+lemma lowPeriodIdeal_ne_zero    
+      : lowPeriodIdeal η S hS≠0 := by
   unfold lowPeriodIdeal
   apply mul_ne_zero
   · exact lowBaseModulus_ne_zero η _ _ (calibrationForSet S hS).generator_ne_zero _
   · apply Ideal.span_singleton_eq_bot.not.mpr
     norm_num
 
-lemma lowTruePeriodGenerator_ne_zero (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) : lowTruePeriodGenerator η S hS≠0 :=
+lemma lowTruePeriodGenerator_ne_zero    
+      : lowTruePeriodGenerator η S hS≠0 :=
   ConcretePrimeRowBridge.idealGenerator_ne_zero _ (lowPeriodIdeal_ne_zero η S hS)
 
-lemma lowTruePeriodGenerator_span (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) : Ideal.span {lowTruePeriodGenerator η S hS}=lowPeriodIdeal η S hS :=
+lemma lowTruePeriodGenerator_span    
+      : Ideal.span {lowTruePeriodGenerator η S hS}=lowPeriodIdeal η S hS :=
   ConcretePrimeRowBridge.span_idealGenerator _
 
-lemma physicalRayPeriodicBase_zero_true_puncture (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) (σ : RayRing) (χ : RayCharacter)
-    (n : O) (hn : ¬IsCoprime (lowTruePeriodGenerator η S hS) n) :
+section
+variable (hbad : fixedBadPrimes⊆S) (σ : RayRing) (χ : RayCharacter)
+include hbad σ χ
+
+lemma physicalRayPeriodicBase_zero_true_puncture    
+           
+     n  (hn : ¬IsCoprime (lowTruePeriodGenerator η S hS) n) :
     physicalRayPeriodicBase η S hS σ χ n=0 := by
   by_contra hh
   apply hn
@@ -63,57 +72,58 @@ lemma physicalRayPeriodicBase_zero_true_puncture (η : HeckeFamily.Character) (S
   rw [lowTruePeriodGenerator_span]
   exact (physicalRayPeriodicBase_support η S hS hbad σ χ n hh).symm
 
-theorem physical_row_absorb_true_period (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) (σ : RayRing) (χ : RayCharacter)
-    (f z : O) :
+theorem physical_row_absorb_true_period    
+           
+     f z  :
     rowTwist (physicalRayPeriodicBase η S hS σ χ)
       ((calibrationForSet S hS).generator*lowTruePeriodGenerator η S hS) f z=
-    rowTwist (physicalRayPeriodicBase η S hS σ χ) (calibrationForSet S hS).generator f z := by
-  exact InverseReflectedPhase.rowTwist_absorb_puncture _ _ _ f z
+    rowTwist (physicalRayPeriodicBase η S hS σ χ) (calibrationForSet S hS).generator f z := InverseReflectedPhase.rowTwist_absorb_puncture _ _ _ f z
     (calibration_generator_bad S hS hbad).1 (calibration_generator_bad S hS hbad).2
     (physicalRayPeriodicBase_zero_true_puncture η S hS hbad σ χ)
 
+end
+
 def lowReflectionPeriod (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) : Id :=
+    (hS : ∀P∈S,P.IsMaximal)  :=
   lowBaseModulus η (calibrationForSet S hS) (calibrationForSet S hS).generator (calibrationLowData S hS)
 
-lemma lowReflectionPeriod_ne_zero (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) : lowReflectionPeriod η S hS≠0 :=
+lemma lowReflectionPeriod_ne_zero    
+      : lowReflectionPeriod η S hS≠0 :=
   lowBaseModulus_ne_zero η _ _ (calibrationForSet S hS).generator_ne_zero _
 
-lemma lowReflectionPeriod_actual (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (σ : RayRing) (χ : RayCharacter) :
+lemma lowReflectionPeriod_actual    
+       σ   χ  :
     CanonicalCoefficientClass.FactorsModulo (lowReflectionPeriod η S hS) (physicalRayPeriodicBase η S hS σ χ) ∧
-      ∀n : O,‖physicalRayPeriodicBase η S hS σ χ n‖≤1 := by
-  exact ⟨lowPeriodicBase_periodic η _ _ _ _ _ χ,lowPeriodicBase_norm η _ _ _ _ _ χ⟩
+      ∀n : ActualEisensteinCubic.O,‖physicalRayPeriodicBase η S hS σ χ n‖≤1 := ⟨lowPeriodicBase_periodic η _ _ _ _ _ χ,lowPeriodicBase_norm η _ _ _ _ _ χ⟩
 
 def lowReflectionMask (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) : O :=
+    (hS : ∀P∈S,P.IsMaximal)  :=
   (calibrationForSet S hS).generator*lowTruePeriodGenerator η S hS
 
-lemma lowReflectionMask_ne_zero (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) : lowReflectionMask η S hS≠0 :=
+lemma lowReflectionMask_ne_zero    
+      : lowReflectionMask η S hS≠0 :=
   mul_ne_zero (calibrationForSet S hS).generator_ne_zero (lowTruePeriodGenerator_ne_zero η S hS)
 
-lemma lowReflectionMask_bad (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) :
-    ConcretePrimeRowBridge.goodLambda∣lowReflectionMask η S hS ∧ (2:O)∣lowReflectionMask η S hS := by
-  exact ⟨dvd_mul_of_dvd_left (calibration_generator_bad S hS hbad).1 _,
+lemma lowReflectionMask_bad    
+      (hbad : fixedBadPrimes⊆S) :
+    ConcretePrimeRowBridge.goodLambda∣lowReflectionMask η S hS ∧ (2:ActualEisensteinCubic.O)∣lowReflectionMask η S hS := ⟨dvd_mul_of_dvd_left (calibration_generator_bad S hS hbad).1 _,
     dvd_mul_of_dvd_left (calibration_generator_bad S hS hbad).2 _⟩
 
-lemma lowReflectionMask_period (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) : lowPeriodIdeal η S hS∣Ideal.span {lowReflectionMask η S hS} := by
+lemma lowReflectionMask_period    
+      : lowPeriodIdeal η S hS∣Ideal.span {lowReflectionMask η S hS} := by
   rw [lowReflectionMask,←Ideal.span_singleton_mul_span_singleton,lowTruePeriodGenerator_span]
   exact dvd_mul_left _ _
 
-lemma physical_markedCompletedT_absorb_true_period (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) (σ : RayRing) (χ : RayCharacter)
-    (f z : O) (W : ℝ→ℂ) (X : ℝ) (mark : Id→ℂ) :
+lemma physical_markedCompletedT_absorb_true_period    
+      (hbad : fixedBadPrimes⊆S)  σ   χ 
+     f z   W   X   mark  :
     InverseMoment.markedCompletedT
       (rowTwist (physicalRayPeriodicBase η S hS σ χ) (lowReflectionMask η S hS) f z) W X mark=
     InverseMoment.markedCompletedT
       (rowTwist (physicalRayPeriodicBase η S hS σ χ) (calibrationForSet S hS).generator f z) W X mark := by
-  rw [lowReflectionMask,physical_row_absorb_true_period η S hS hbad σ χ]
+  grind [lowReflectionMask, physical_row_absorb_true_period, S]
+
+end
 
 end SevenEighths.ProbePhysical
 end

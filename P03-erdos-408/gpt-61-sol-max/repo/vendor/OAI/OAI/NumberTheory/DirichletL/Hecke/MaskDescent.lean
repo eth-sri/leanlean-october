@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.ModulusRefinement
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.HeckeMaskDescent
@@ -15,7 +15,12 @@ open HeckeFamily CenteredExceptionalProfile CanonicalQuadraticSieve ConcretePrim
 open UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
-theorem exists_coprime_shift (a c r : O) (hac : IsCoprime a c) (hr : r ≠ 0) :
+section
+variable (a c : O) (χ χ' ψ : Character) (r : O) (hac : IsCoprime a c) (hr : r ≠ 0) (he : ∀ n, elementCoeff χ' n =
+      if IsCoprime n r then elementCoeff χ n else 0) (Q : Ideal O)
+
+include hac hr in
+theorem exists_coprime_shift       :
     ∃ t : O, IsCoprime (a+t*c) r := by
   let : StrongNormalizationMonoid O := UniqueFactorizationMonoid.strongNormalizationMonoid
   let s := (normalizedFactors r).filter (fun p => ¬p ∣ a)
@@ -36,7 +41,7 @@ theorem exists_coprime_shift (a c r : O) (hac : IsCoprime a c) (hr : r ≠ 0) :
     have ht : p ∣ s.prod*c := dvd_mul_of_dvd_left (hpq.dvd.trans (Multiset.dvd_prod hqs)) c
     exact hpa (by convert dvd_sub hpnew ht using 1 ; ring)
 
-theorem exists_primitive_above (χ : Character) (Q : Ideal O)
+theorem exists_primitive_above    
     (hdesc : FiniteConductor.FactorsThroughIdeal χ.residue
       (Q.map (Ideal.Quotient.mk χ.modulus))) :
     ∃ ψ : Character, FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
@@ -53,9 +58,9 @@ theorem exists_primitive_above (χ : Character) (Q : Ideal O)
   · exact (Ideal.le_comap_map).trans hQK
   · exact IdealCharacter.ofResidue_source_mask χ.modulus K χ.residue φ χ.unit_trivial hu hmask
 
-theorem descent_of_mask (χ χ' ψ : Character) (r : O) (hr : r ≠ 0)
-    (he : ∀ n, elementCoeff χ' n =
-      if IsCoprime n r then elementCoeff χ n else 0)
+include hr he in
+theorem descent_of_mask      
+     
     (hind : InducedBy χ' ψ) :
     FiniteConductor.FactorsThroughIdeal χ.residue
       (ψ.modulus.map (Ideal.Quotient.mk χ.modulus)) := by
@@ -102,9 +107,9 @@ theorem descent_of_mask (χ χ' ψ : Character) (r : O) (hr : r ≠ 0)
   change χ.residue (Ideal.Quotient.mk χ.modulus n) = ψ.residue (Ideal.Quotient.mk ψ.modulus n) at heq
   simpa only [hnχ,hnψ,map_one] using heq
 
-theorem inducedBy_mask (χ χ' ψ : Character) (r : O)
-    (he : ∀ n, elementCoeff χ' n =
-      if IsCoprime n r then elementCoeff χ n else 0)
+include he in
+theorem inducedBy_mask    
+     
     (hind : InducedBy χ ψ) : InducedBy χ' ψ := by
   intro I
   by_cases hI : I = 0
@@ -132,9 +137,9 @@ theorem inducedBy_mask (χ χ' ψ : Character) (r : O)
       exact hc ((CenteredMomentExceptionalPair.idealCoeff_ne_zero_iff χ' I).mp hn).2
     rw [ite_eq_right hc,hz]
 
-theorem fixed_inducing_mask_iff (χ χ' : Character) (r : O) (hr : r ≠ 0)
-    (he : ∀ n, elementCoeff χ' n =
-      if IsCoprime n r then elementCoeff χ n else 0) (Q : Ideal O) :
+include hr he in
+theorem fixed_inducing_mask_iff      
+        :
     (∃ ψ : Character, FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
       Q ≤ ψ.modulus ∧ InducedBy χ' ψ) ↔
     (∃ ψ : Character, FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
@@ -146,8 +151,10 @@ theorem fixed_inducing_mask_iff (χ χ' : Character) (r : O) (hr : r ≠ 0)
     exact ⟨ρ,hρ,hQ.trans hmod,hindρ⟩
   · rintro ⟨ψ,hprim,hQ,hind⟩
     exact ⟨ψ,hprim,hQ,inducedBy_mask χ χ' ψ r he hind⟩
-end SevenEighths.HeckeMaskDescent
 
 end
+end SevenEighths.HeckeMaskDescent
+
+
 
 end OAI

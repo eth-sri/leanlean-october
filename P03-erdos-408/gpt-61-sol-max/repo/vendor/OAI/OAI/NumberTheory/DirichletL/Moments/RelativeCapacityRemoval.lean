@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SlotNormalization
 
 namespace OAI
 
-noncomputable section
+section
 
 open scoped Classical BigOperators ContDiff Topology
 namespace SevenEighths.CenteredMomentRelativeCapacityRemoval
@@ -18,11 +18,14 @@ open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
 open CenteredMomentSecondHeightFamily Filter
 local notation "O"=>HeckeFamily.O
 variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 include hH
 
-theorem relative_slots_uniform {ι:Type*}[Fintype ι]
+section
+variable {ι:Type*} [Fintype ι]
+
+theorem relative_slots_uniform   
     (W:ι→ℝ→ℂ)(a b:ι→ℝ)(ha:∀i,0<a i)
     (hWs:∀i,Function.support (W i)⊆Set.Icc (a i) (b i))(hW:∀i,ContDiff ℝ ∞ (W i))
     (Lmod Lslot loss lo hi κ:ℝ)(hLm:0≤Lmod)(hLs:0≤Lslot)(hloss:0<loss)
@@ -62,7 +65,7 @@ theorem relative_slots_uniform {ι:Type*}[Fintype ι]
     _≤_:=pow_le_pow_right₀ (by linarith [abs_nonneg t])
       (Finset.single_le_sum (fun j _=>Nat.zero_le _) (Finset.mem_univ i))
 
-theorem actual_relative_capacity_removal {ι:Type*}[Fintype ι][DecidableEq ι]
+theorem actual_relative_capacity_removal   [DecidableEq ι]
     (W:ι→ℝ→ℂ)(a b:ι→ℝ)(ha:∀i,0<a i)
     (hWs:∀i,Function.support (W i)⊆Set.Icc (a i) (b i))(hW:∀i,ContDiff ℝ ∞ (W i))
     (Lmod Lslot ε lo hi κ:ℝ)(hLm:0≤Lmod)(hLs:0≤Lslot)(hε:0<ε)
@@ -146,6 +149,8 @@ theorem actual_relative_capacity_removal {ι:Type*}[Fintype ι][DecidableEq ι]
   congr 3
   ext i
   simp
+
+end
 
 end SevenEighths.CenteredMomentRelativeCapacityRemoval
 

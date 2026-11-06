@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Endpoint.Low.Model
 
@@ -26,25 +27,25 @@ open Filter Finset
 /-! ### Step 1: the progression sums -/
 
 /-- The smooth weight `ψ₁(w/Y) w^{iτ}`. -/
-noncomputable def lowWeight (ψ₁ : ℝ → ℂ) (Y τ : ℝ) (w : ℕ) : ℂ :=
+noncomputable def lowWeight (ψ₁ : ℝ → ℂ) (Y τ : ℝ) (w : ℕ)  :=
   ψ₁ (w / Y) * (w : ℂ) ^ ((τ : ℂ) * Complex.I)
 
 /-- The marks `H_m(n) = 𝒲(n) W_S^b(n)` with `S = unsharedSlots C`. -/
-noncomputable def marks (x q q₀ : ℝ) {r : ℕ} (a : Fin r → ℝ) {ι : Type} [Fintype ι]
-    [DecidableEq ι] (P : ι → Finset ℕ) {J : ℕ} (C : ι → Finset (Fin J))
-    (b : (ι → Fin (J + 1) → ℕ) → ℂ) (n : ℕ) : ℂ :=
+noncomputable def marks (x q q₀ : ℝ) {r : ℕ} (a : Fin r → ℝ) {ι } [Fintype ι]
+    [DecidableEq ι] (P : ι → Finset ℕ) {J } (C : ι → Finset (Fin J))
+    (b : (ι → Fin (J + 1) → ℕ) → ℂ) (n : ℕ)  :=
   (markedWeight Finset.univ q (fun i => band x (a i)) n : ℂ) *
     markedListWeight P q₀ (unsharedSlots C) b n
 
 /-- The progression sum `P_m = ∑_{w ≤ 2Y, m ∣ w} ψ₁(w/Y) w^{iτ} e(hw/k) H(w)`. -/
-noncomputable def progSum (ψ₁ : ℝ → ℂ) (Y τ : ℝ) (h : ℤ) (k : ℕ) (H : ℕ → ℂ) (m : ℕ) : ℂ :=
+noncomputable def progSum (ψ₁ : ℝ → ℂ) (Y τ : ℝ) (h : ℤ) (k : ℕ) (H : ℕ → ℂ) (m : ℕ)  :=
   ∑ w ∈ (Icc 1 ⌊2 * Y⌋₊).filter (m ∣ ·), lowWeight ψ₁ Y τ w * addTwist h k w * H w
 
 /-- **Step 1.** The endpoint polynomial in terms of the progression sums. -/
 theorem twistedPoly_eq (x q q₀ : ℝ) {r d : ℕ} (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ)
     (Bc : (Fin d → ℕ) → ℝ) {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ)
-    {J : ℕ} (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ) {ψ₁ : ℝ → ℂ}
-    (hψs : ∀ y, ψ₁ y ≠ 0 → 1 ≤ y) {Y : ℝ} (hY : 1 ≤ Y) (σ : ℝ) (h : ℤ) (k : ℕ) (t : ℝ) :
+    {J : ℕ} (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ)  {ψ₁} 
+    (hψs : ∀ y, ψ₁ y ≠ 0 → 1 ≤ y)  {Y}  (hY : 1 ≤ Y)  σ   h   k   t  :
     twistedPoly Y (endpointCoeff x q q₀ a u v Bc P C b ψ₁ Y σ) h k t =
       (Y : ℂ)⁻¹ * (∑ Q ∈ slotTuples x u v, (Bc (Fin.init Q) : ℂ) *
           progSum ψ₁ Y (σ + t) h k (marks x q q₀ a P C b) (∏ i, Q i) -
@@ -64,10 +65,7 @@ theorem twistedPoly_eq (x q q₀ : ℝ) {r d : ℕ} (a : Fin r → ℝ) (u v : F
     refine sum_subset (Icc_subset_Icc_left (Nat.one_le_iff_ne_zero.2
       (Nat.ceil_pos.2 hY0).ne')) fun w hw hw' => ?_
     have hwY : (w : ℝ) < Y := by
-      have : w < ⌈Y⌉₊ := by
-        by_contra h'
-        exact hw' (mem_Icc.2 ⟨not_lt.1 h', (mem_Icc.1 hw).2⟩)
-      exact Nat.lt_ceil.1 this
+      simp_all
     have hψ : ψ₁ (w / Y) = 0 := by
       by_contra h'
       have := hψs _ h'
@@ -113,7 +111,7 @@ theorem twistedPoly_eq (x q q₀ : ℝ) {r d : ℕ} (a : Fin r → ℝ) (u v : F
 `|∑_Q B(init Q) P_{l_Q} - C_B P_1| ≤ 2αY ∑_Q 1/l_Q + β (#Q + ∑_Q 1/l_Q)`. -/
 theorem norm_combine_le {d : ℕ} {Ts : Finset (Fin (d + 1) → ℕ)} {Bc : (Fin d → ℕ) → ℝ}
     (hBc : ∀ Q, |Bc Q| ≤ 1) (hl : ∀ Q ∈ Ts, 0 < ∏ i, Q i) {Pm : ℕ → ℂ} {Θ : ℂ}
-    {α β Y : ℝ}
+     {α β Y} 
     (hΔ : ∀ Q ∈ Ts, ‖Pm (∏ i, Q i) - Θ / ((∏ i, Q i : ℕ) : ℂ)‖ ≤
       α * Y / (∏ i, Q i : ℕ) + β)
     (hΔ₁ : ‖Pm 1 - Θ‖ ≤ α * Y + β) :
@@ -161,31 +159,27 @@ theorem norm_combine_le {d : ℕ} {Ts : Finset (Fin (d + 1) → ℕ)} {Bc : (Fin
           rw [sum_add_distrib, ← mul_sum, sum_const, nsmul_eq_mul, mul_comm β]
   have h₂ : ‖(CB : ℂ) * (Pm 1 - Θ)‖ ≤ Sinv * (α * Y + β) := by
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-    exact mul_le_mul hCB hΔ₁ (norm_nonneg _) ((abs_nonneg _).trans hCB)
-  calc _ ≤ α * Y * Sinv + β * #Ts + Sinv * (α * Y + β) := add_le_add h₁ h₂
-    _ = _ := by ring
+    gcongr <;> first | assumption | positivity | linarith
+  grind
 
 /-! ### The cutoff piece -/
 
 /-- A continuous piece supported in `[1, 2]` vanishes at `1`, so `ψ₁(y) ≠ 0` forces
 `y > 1`. -/
 theorem one_lt_of_ne_zero {ψ₁ : ℝ → ℂ} (hc : Continuous ψ₁)
-    (hs : ∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) {y : ℝ} (hy : ψ₁ y ≠ 0) : 1 < y := by
+    (hs : ∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2)  {y}  (hy : ψ₁ y ≠ 0) : 1 < y := by
   have hsub : Set.Iio (1 : ℝ) ⊆ {y | ψ₁ y = 0} := by
-    intro z hz
-    by_contra h
-    exact absurd (hs z h).1 (not_le.2 hz)
+    grind
   have hcl : closure (Set.Iio (1 : ℝ)) ⊆ {y | ψ₁ y = 0} :=
     (IsClosed.closure_subset_iff (isClosed_eq hc continuous_const)).2 hsub
   rw [closure_Iio] at hcl
   have h1 : ψ₁ 1 = 0 := hcl (Set.mem_Iic.2 le_rfl)
-  refine lt_of_le_of_ne (hs y hy).1 fun h => hy ?_
-  rw [← h, h1]
+  grind
 
 /-! ### Growth facts (O2) -/
 
 /-- `K L^a ≤ L^b` eventually, for `a < b`. -/
-theorem eventually_mul_log_rpow_le (K : ℝ) {a b : ℝ} (hab : a < b) :
+theorem eventually_mul_log_rpow_le  K  {a b : ℝ} (hab : a < b) :
     ∀ᶠ x : ℝ in atTop, K * Real.log x ^ a ≤ Real.log x ^ b := by
   filter_upwards [((tendsto_rpow_atTop (sub_pos.2 hab)).comp
       Real.tendsto_log_atTop).eventually_ge_atTop K,
@@ -208,8 +202,12 @@ theorem eventually_rpow_lt_exp_rpow (A : ℝ) {g : ℝ} (hg : 0 < g) :
   rw [← Real.rpow_mul (by linarith), mul_div_cancel₀ _ hg.ne'] at hx'
   rwa [one_lt_div (by positivity)] at hx'
 
+section
+variable {c : ℝ} (hc : 0 < c)
+include c hc
+
 /-- `3 L^{0.47} ≤ (c/2) L / T²⁰` eventually. -/
-theorem eventually_three_rpow_le {c : ℝ} (hc : 0 < c) :
+theorem eventually_three_rpow_le     :
     ∀ᶠ x : ℝ in atTop,
       3 * Real.log x ^ (0.47 : ℝ) ≤ c / 2 * Real.log x / Real.log (Real.log x) ^ 20 := by
   filter_upwards [Sieve.eventually_mul_rpow_le_log_rpow 1 20 (show (0 : ℝ) < 1 / 2 by norm_num),
@@ -233,7 +231,7 @@ theorem eventually_three_rpow_le {c : ℝ} (hc : 0 < c) :
 
 /-- `K L^C e^{2 L^{0.47}} ≤ exp((c/2) L / T²⁰)` eventually: the slot margin `x^{-ε/2}`
 absorbs the model mass, the moduli and the twists. -/
-theorem eventually_mul_exp_le {c : ℝ} (hc : 0 < c) (K C : ℝ) :
+theorem eventually_mul_exp_le     (K C : ℝ) :
     ∀ᶠ x : ℝ in atTop, K * Real.log x ^ C * Real.exp (2 * Real.log x ^ (0.47 : ℝ)) ≤
       Real.exp (c / 2 * Real.log x / Real.log (Real.log x) ^ 20) := by
   filter_upwards [eventually_three_rpow_le hc,
@@ -261,8 +259,10 @@ theorem eventually_mul_exp_le {c : ℝ} (hc : 0 < c) (K C : ℝ) :
     _ = Real.exp (3 * L ^ (0.47 : ℝ)) := by rw [← Real.exp_add]; ring_nf
     _ ≤ _ := Real.exp_le_exp.2 h3
 
+end
+
 /-- `L ≤ x^{1 - c/T²⁰}` eventually. -/
-theorem eventually_log_le_rpow (c : ℝ) :
+theorem eventually_log_le_rpow  c  :
     ∀ᶠ x : ℝ in atTop,
       Real.log x ≤ x ^ (1 - c / Real.log (Real.log x) ^ 20) := by
   filter_upwards [Sieve.tendsto_logLog.eventually_ge_atTop (max 1 (2 * c)),

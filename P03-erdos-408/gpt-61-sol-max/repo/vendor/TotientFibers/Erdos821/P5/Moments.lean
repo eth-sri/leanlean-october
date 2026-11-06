@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.Descent.FirstPriorityEnergy
 
 public import Erdos821.P5.Basic
 public import Mathlib.Algebra.Order.Chebyshev
@@ -12,27 +15,35 @@ open scoped BigOperators
 namespace Erdos821.P5Core
 open Blueprint.Analytic
 
-def tupleProduct {s : Finset ℕ} {j : ℕ} (z : Fin j → ↥s) : ℕ :=
+def tupleProduct {s : Finset ℕ} {j } (z : Fin j → ↥s)  :=
   ∏ i, (z i).val
 
-def primePowerCoefficient (s : Finset ℕ) (b : ℕ → ℂ) (j n : ℕ) : ℂ :=
+def primePowerCoefficient (s : Finset ℕ) (b : ℕ → ℂ) (j n : ℕ)  :=
   ∑ z : Fin j → ↥s, if tupleProduct z = n then
     ∏ i, b (z i).val / ((z i).val : ℂ) else 0
 
-theorem tupleProduct_pos {s : Finset ℕ} {j : ℕ} (z : Fin j → ↥s)
-    (hprime : ∀ p ∈ s, p.Prime) : 0 < tupleProduct z := by
-  exact Finset.prod_pos (fun i _ => (hprime _ (z i).property).pos)
+section
+variable {s : Finset ℕ} {j : ℕ} (z : Fin j → ↥s)
 
-theorem tupleProduct_le {s : Finset ℕ} {j : ℕ} (z : Fin j → ↥s) :
+theorem tupleProduct_pos      
+    (hprime : ∀ p ∈ s, p.Prime) : 0 < tupleProduct z := Finset.prod_pos (fun i _ => (hprime _ (z i).property).pos)
+
+theorem tupleProduct_le       :
     tupleProduct z ≤ (s.sup id) ^ j := by
   calc
     tupleProduct z ≤ ∏ _i : Fin j, s.sup id :=
       Finset.prod_le_prod (fun i _ => Finset.le_sup (f := id) (z i).property)
     _ = _ := by simp
 
+end
+
+section
+variable (s : Finset ℕ) (b : ℕ → ℂ) (j n : ℕ) (hprime : ∀ p ∈ s, p.Prime)
+
+include hprime in
 /-- Expanding the power retains repeated primes and all ordered tuples. -/
-theorem prime_polynomial_power (s : Finset ℕ) (b : ℕ → ℂ) (j : ℕ)
-    (hprime : ∀ p ∈ s, p.Prime) (t : ℝ) :
+theorem prime_polynomial_power      
+       t  :
     dp (Finset.Icc 1 ((s.sup id) ^ j)) (primePowerCoefficient s b j) t =
       (primePolynomial s b t) ^ j := by
   classical
@@ -43,12 +54,7 @@ theorem prime_polynomial_power (s : Finset ℕ) (b : ℕ → ℂ) (j : ℕ)
       ∑ z ∈ (Finset.univ : Finset (Fin j → ↥s)).filter
         (fun z => tupleProduct z = n), w z * mellin (tupleProduct z) t := by
     rw [primePowerCoefficient, Finset.sum_mul, Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro z _
-    by_cases h : tupleProduct z = n
-    · simp only [h, ite_true]
-      rfl
-    · simp only [h, ite_false, zero_mul]
+    grind
   have hmellin (z : Fin j → ↥s) :
       mellin (tupleProduct z) t = ∏ i, mellin (z i).val t := by
     rw [tupleProduct, Nat.cast_prod]
@@ -70,9 +76,10 @@ theorem prime_polynomial_power (s : Finset ℕ) (b : ℕ → ℂ) (j : ℕ)
       exact (Finset.sum_subtype s (by simp)
         (fun p => b p / (p : ℂ) * mellin p t)).symm
 
+include hprime in
 /-- Unique factorization bounds ordered prime-product fibers, including repeated primes. -/
-theorem prime_product_fiber_card (s : Finset ℕ) (j n : ℕ)
-    (hprime : ∀ p ∈ s, p.Prime) :
+theorem prime_product_fiber_card    
+      :
     ((Finset.univ : Finset (Fin j → ↥s)).filter
       (fun z => tupleProduct z = n)).card ≤ Nat.factorial j := by
   classical
@@ -106,15 +113,12 @@ theorem prime_product_fiber_card (s : Finset ℕ) (j n : ℕ)
 
 /-- A finite fiber Cauchy bound, independent of the prime-polynomial application. -/
 theorem norm_sum_sq_le_card_mul_sum {ι : Type*} (s : Finset ι) (f : ι → ℂ) :
-    ‖∑ n ∈ s, f n‖ ^ 2 ≤ (s.card : ℝ) * ∑ n ∈ s, ‖f n‖ ^ 2 := by
-  calc
-    ‖∑ n ∈ s, f n‖ ^ 2 ≤ (∑ n ∈ s, ‖f n‖) ^ 2 :=
-      pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2
-    _ ≤ _ := sq_sum_le_card_mul_sum_sq
+    ‖∑ n ∈ s, f n‖ ^ 2 ≤ (s.card : ℝ) * ∑ n ∈ s, ‖f n‖ ^ 2 := by solve_by_elim [_root_.OAI.SevenEighths.InverseMoment.priority_norm_sum_sq]
 
+include hprime in
 /-- The growing-power moment has exactly the factorial cost, for any finite index set. -/
-theorem prime_polynomial_moment (s : Finset ℕ) (b : ℕ → ℂ) (j : ℕ)
-    (hprime : ∀ p ∈ s, p.Prime) (r : Finset ℕ) :
+theorem prime_polynomial_moment      
+       r  :
     (∑ n ∈ r, ‖primePowerCoefficient s b j n‖ ^ 2) ≤
       Nat.factorial j * (∑ p ∈ s, ‖b p‖ ^ 2 / (p : ℝ) ^ 2) ^ j := by
   classical
@@ -147,5 +151,7 @@ theorem prime_polynomial_moment (s : Finset ℕ) (b : ℕ → ℂ) (j : ℕ)
       rw [← Fintype.sum_pow (fun p : ↥s => ‖b p.val‖ ^ 2 / (p.val : ℝ) ^ 2) j]
       congr 1
       exact (Finset.sum_subtype s (by simp) (fun p => ‖b p‖ ^ 2 / (p : ℝ) ^ 2)).symm
+
+end
 
 end Erdos821.P5Core

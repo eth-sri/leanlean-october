@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceAttachment
 
@@ -11,16 +12,12 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
-omit [DecidableEq ι] in
-@[simp] theorem secondParentOf_attach {Jo : ℕ} (parent : SecondParentSource ι Jo)
-    (x : SecondExpansionData ι) : secondParentOf (attachSecondExpansion parent x) = parent := rfl
 
-def attachedSecondFamily {Jo : ℕ} (parents : Finset (SecondParentSource ι Jo))
-    (source : SecondParentSource ι Jo → Finset (SecondExpansionData ι)) :
-    Finset (MarkedSecondSource ι Jo 0) :=
+def attachedSecondFamily {Jo } (parents : Finset (SecondParentSource ι Jo))
+    (source : SecondParentSource ι Jo → Finset (SecondExpansionData ι))  :=
   parents.biUnion (fun parent => (source parent).image (attachSecondExpansion parent))
 
 omit [DecidableEq ι] in
@@ -54,7 +51,7 @@ theorem sum_attachedSecondFamily {Jo : ℕ} (parents : Finset (SecondParentSourc
     obtain ⟨z,hz,he⟩ := Finset.mem_image.mp hy
     exact hab (congrArg secondParentOf he).symm
 
-variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
@@ -75,7 +72,7 @@ theorem attached_family_conditions {Jo : ℕ} (parents : Finset (SecondParentSou
   · intro x hx; exact ha (secondParentOf x) (h x hx).1
   · intro x hx; exact hC (secondParentOf x) (h x hx).1
   · intro x hx; exact hD (secondParentOf x) (h x hx).1
-  · intro x hx; exact hE (secondParentOf x) (h x hx).1 x.second (h x hx).2
+  · grind
   · intro x hx i; exact hold (secondParentOf x) (h x hx).1 i
   · intro x hx i; exact Fin.elim0 i
   · intro x hx; exact hq (secondParentOf x) (h x hx).1

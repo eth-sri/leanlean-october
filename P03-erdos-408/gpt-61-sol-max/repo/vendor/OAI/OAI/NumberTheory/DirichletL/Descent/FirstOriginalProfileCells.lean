@@ -12,16 +12,15 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseSecondSourceBlocks
-local notation "O" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
 
-def originalNorms (x : OriginalIndex ι) : Fin 6→ℝ :=
+variable {ι : Type*} [DecidableEq ι]
+variable (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
+
+def originalNorms (x : OriginalIndex ι)  :=
   sourceNorms (leftNorm p) (rightNorm p) (commonNorm p) (activeNorm p)
     (fun x=>divisorElement p x.1) (fun x=>x.2.2) x
 
-def originalOuterCell (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) :
-    Finset (FirstOriginalOuter ι) :=
+def originalOuterCell (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex)  :=
   (firstOriginalOuter pool Q).filter (fun x=>∀i:Fin 5,
     dyadIndex (originalNorms p ⟨x,(1,1)⟩ i.castSucc)=k i.castSucc)
 
@@ -32,8 +31,8 @@ lemma originalNorms_outer (x : OriginalIndex ι) (i : Fin 5) :
   fin_cases i <;> simp [Fin.castSucc,leftNorm,rightNorm,commonNorm,activeNorm]
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
-theorem original_cell_subset (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (labels : Finset (Ideal O)) (Y : ℝ) (k : SourceIndex) :
+theorem original_cell_subset  pool   Q 
+     labels   Y   k  :
     sourceCell (originalNorms p)
       (firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y) k ⊆
     firstGlobalRetainedSource p (originalOuterCell p pool Q k) (fun _=>labels) (fun x=>x.1) Y := by
@@ -47,7 +46,7 @@ theorem original_cell_subset (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   exact congrFun hk i.castSucc
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
-lemma original_outer_cell_subset (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) :
+lemma original_outer_cell_subset  pool   Q   k  :
     originalOuterCell p pool Q k⊆firstOriginalOuter pool Q := Finset.filter_subset _ _
 
 end SevenEighths.InverseMomentFirstOriginalProfile

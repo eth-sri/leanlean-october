@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.FinitePairing
 
@@ -13,7 +14,7 @@ open Blueprint.Graph
 
 noncomputable section
 
-lemma finite_schur {β : Type*} [Fintype β] (mass : β → ℝ) (K : β → β → ℂ) (C : ℝ)
+lemma finite_schur  {β}  [Fintype β] (mass : β → ℝ) (K : β → β → ℂ)  C 
     (hm : ∀ a, 0 ≤ mass a) (hC : 0 ≤ C)
     (hrow : ∀ a, ∑ b, ‖K a b‖ ≤ C)
     (hcol : ∀ b, ∑ a, mass a * ‖K a b‖ ≤ C * mass b) :
@@ -67,16 +68,14 @@ lemma finite_schur {β : Type*} [Fintype β] (mass : β → ℝ) (K : β → β 
         simp only [norm_mul, norm_star, Complex.norm_real, Real.norm_eq_abs,
           abs_of_nonneg (hm a), w]
         ring
-  have hNF : 0 ≤ ∑ a, mass a * ‖f a‖ ^ 2 :=
-    Finset.sum_nonneg (fun a _ => mul_nonneg (hm a) (sq_nonneg _))
-  have hNG : 0 ≤ ∑ b, mass b * ‖g b‖ ^ 2 :=
-    Finset.sum_nonneg (fun b _ => mul_nonneg (hm b) (sq_nonneg _))
+  
+  
   calc
     _ ≤ Real.sqrt (∑ z : β × β, w z * ‖f z.1‖ ^ 2) *
         Real.sqrt (∑ z : β × β, w z * ‖g z.2‖ ^ 2) := hnorm.trans hcs
     _ ≤ Real.sqrt (C * ∑ a, mass a * ‖f a‖ ^ 2) *
         Real.sqrt (C * ∑ b, mass b * ‖g b‖ ^ 2) :=
-      mul_le_mul (Real.sqrt_le_sqrt hu) (Real.sqrt_le_sqrt hv) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+      (by gcongr <;> first | assumption | positivity | linarith)
     _ = _ := by
       rw [Real.sqrt_mul hC, Real.sqrt_mul hC]
       calc

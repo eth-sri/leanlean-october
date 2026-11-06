@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Graph.Restore.Strip
 
@@ -27,7 +28,7 @@ variable {ι : Type} [Fintype ι] [DecidableEq ι] {J : ℕ}
 
 /-- The factor of the label mass at one slot. -/
 noncomputable def slotMass (P : ι → Finset ℕ) (S : ι → Finset (Fin J)) (g : ι) (i : Fin J)
-    (v : ℕ) : ℝ :=
+    (v : ℕ)  :=
   if i ∈ S g then (harmonicMass (P g) * v)⁻¹ else 1
 
 omit [DecidableEq ι] in
@@ -56,14 +57,16 @@ lemma sum_slotMass {P : ι → Finset ℕ} (hV : ∀ g, harmonicMass (P g) ≠ 0
   by_cases hi : i ∈ S g
   · simp only [hi, ite_true, mul_inv]
     rw [← mul_sum]
-    have h : ∑ p ∈ P g, (p : ℝ)⁻¹ = harmonicMass (P g) := by simp [harmonicMass]
-    rw [h]
-    exact inv_mul_cancel₀ (hV g)
+    simp_all [harmonicMass]
   · simp [hi]
 
+section
+variable {P : ι → Finset ℕ} (hV : ∀ g, harmonicMass (P g) ≠ 0) (S : ι → Finset (Fin J)) {g₀ : ι} {i₀ j₀ : Fin J} (hi₀ : i₀ ∈ S g₀)
+
+include hV in
 /-- The mass of the labels equal to `p` in the slots `R ⊆ S g₀` is `μ_{g₀}(p)^{|R|}`. -/
-lemma sum_labelMass_mul_prod_ite {P : ι → Finset ℕ} (hV : ∀ g, harmonicMass (P g) ≠ 0)
-    (S : ι → Finset (Fin J)) {g₀ : ι} {R : Finset (Fin J)} (hR : R ⊆ S g₀) {p : ℕ}
+lemma sum_labelMass_mul_prod_ite    
+        {R : Finset (Fin J)} (hR : R ⊆ S g₀)  {p} 
     (hp : p ∈ P g₀) :
     ∑ a ∈ auxLabels P S, labelMass P S a * ∏ i ∈ R, (if a g₀ i = p then 1 else 0) =
       (harmonicMass (P g₀) * p)⁻¹ ^ R.card := by
@@ -73,8 +76,7 @@ lemma sum_labelMass_mul_prod_ite {P : ι → Finset ℕ} (hV : ∀ g, harmonicMa
       ∏ i ∈ R, (if a g₀ i = p then (1 : ℝ) else 0) = ∏ g, ∏ i, e g i (a g i) := by
     intro a
     rw [Fintype.prod_eq_single g₀ fun g hg => prod_eq_one fun i _ => by simp [e, hg]]
-    rw [← Fintype.prod_ite_mem R]
-    exact prod_congr rfl fun i _ => by by_cases hi : i ∈ R <;> simp [e, hi]
+    aesop
   simp_rw [hprod, labelMass_eq_prod, ← prod_mul_distrib]
   rw [sum_auxLabels_prod P S fun g i v => slotMass P S g i v * e g i v]
   rw [Fintype.prod_eq_single g₀ fun g hg => prod_eq_one fun i _ => by
@@ -87,9 +89,10 @@ lemma sum_labelMass_mul_prod_ite {P : ι → Finset ℕ} (hV : ∀ g, harmonicMa
   · simp only [hi, ite_false, e, and_false, mul_one]
     exact sum_slotMass hV S g₀ i
 
+include hV hi₀ in
 /-- The mass of the labels satisfying `Q` in one slot `i₀ ∈ S g₀`. -/
-lemma sum_labelMass_mul_ite {P : ι → Finset ℕ} (hV : ∀ g, harmonicMass (P g) ≠ 0)
-    (S : ι → Finset (Fin J)) {g₀ : ι} {i₀ : Fin J} (hi₀ : i₀ ∈ S g₀) (Q : ℕ → Prop)
+lemma sum_labelMass_mul_ite    
+             Q 
     [DecidablePred Q] :
     ∑ a ∈ auxLabels P S, labelMass P S a * (if Q (a g₀ i₀) then 1 else 0) =
       ∑ p ∈ (P g₀).filter Q, (harmonicMass (P g₀) * p)⁻¹ := by
@@ -99,20 +102,17 @@ lemma sum_labelMass_mul_ite {P : ι → Finset ℕ} (hV : ∀ g, harmonicMass (P
     have hmem : a g₀ i₀ ∈ P g₀ := by
       have := mem_auxLabels.1 ha g₀ i₀
       rwa [ite_eq_left hi₀] at this
-    simp only [prod_singleton]
-    rw [sum_ite_eq]
-    by_cases hQ : Q (a g₀ i₀)
-    · rw [ite_eq_left hQ, ite_eq_left (mem_filter.2 ⟨hmem, hQ⟩)]
-    · rw [ite_eq_right hQ, ite_eq_right fun h => hQ (mem_filter.1 h).2]
+    simp_all
   rw [sum_congr rfl fun a ha => by rw [hsplit a ha], sum_congr rfl fun a _ => mul_sum _ _ _,
     sum_comm]
   refine sum_congr rfl fun p hp => ?_
   rw [sum_labelMass_mul_prod_ite hV S (singleton_subset_iff.2 hi₀) (mem_filter.1 hp).1,
     card_singleton, pow_one]
 
+include hV hi₀ in
 /-- The mass of the labels coinciding in two slots `i₀ ≠ j₀` of `S g₀`. -/
-lemma sum_labelMass_mul_ite_eq {P : ι → Finset ℕ} (hV : ∀ g, harmonicMass (P g) ≠ 0)
-    (S : ι → Finset (Fin J)) {g₀ : ι} {i₀ j₀ : Fin J} (hi₀ : i₀ ∈ S g₀) (hj₀ : j₀ ∈ S g₀)
+lemma sum_labelMass_mul_ite_eq    
+            (hj₀ : j₀ ∈ S g₀)
     (hij : i₀ ≠ j₀) :
     ∑ a ∈ auxLabels P S, labelMass P S a * (if a g₀ i₀ = a g₀ j₀ then 1 else 0) =
       ∑ p ∈ P g₀, (harmonicMass (P g₀) * p)⁻¹ ^ 2 := by
@@ -122,16 +122,14 @@ lemma sum_labelMass_mul_ite_eq {P : ι → Finset ℕ} (hV : ∀ g, harmonicMass
     have hmem : a g₀ j₀ ∈ P g₀ := by
       have := mem_auxLabels.1 ha g₀ j₀
       rwa [ite_eq_left hj₀] at this
-    simp only [prod_pair hij, mul_ite, mul_one, mul_zero]
-    rw [sum_ite_eq, ite_eq_left hmem]
+    simp_all
   rw [sum_congr rfl fun a ha => by rw [hsplit a ha], sum_congr rfl fun a _ => mul_sum _ _ _,
     sum_comm]
   refine sum_congr rfl fun p hp => ?_
   rw [sum_labelMass_mul_prod_ite hV S (by
-    intro i hi
-    rcases mem_insert.1 hi with rfl | hi
-    · exact hi₀
-    · rw [mem_singleton.1 hi]; exact hj₀) hp, card_pair hij]
+    grind) hp, card_pair hij]
+
+end
 
 end Restore
 

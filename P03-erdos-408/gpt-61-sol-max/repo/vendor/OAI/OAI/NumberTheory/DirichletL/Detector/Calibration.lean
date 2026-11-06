@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.Physical
 public import Mathlib.Algebra.Group.Pi.Units
@@ -31,7 +32,7 @@ def crtCharacter {ι T : Type*} [Fintype ι] [CommRing T]
 
 theorem crtCharacter_pow_six {ι T : Type*} [Fintype ι] [CommRing T]
     (R : ι → Type*) [∀ i, Field (R i)] (e : T ≃+* ∀ i, R i)
-    (χ : ∀ i, MulChar (R i) ℂ) (hχ : ∀ i, χ i ^ 6 = 1) :
+     χ  (hχ : ∀ i, χ i ^ 6 = 1) :
     crtCharacter R e χ ^ 6 = 1 := by
   apply MulChar.ext
   intro x
@@ -44,7 +45,11 @@ theorem crtCharacter_pow_six {ι T : Type*} [Fintype ι] [CommRing T]
   have he := congrArg (fun f : MulChar (R i) ℂ => f (e x i)) (hχ i)
   simpa only [MulChar.pow_apply' _ (by decide : (6 : ℕ) ≠ 0), MulChar.one_apply hu] using he
 
-theorem residue_char_ne_two_of_lambda_mem (P : Ideal O) [P.IsMaximal]
+section
+variable (P : Ideal O) [P.IsMaximal]
+include P
+
+theorem residue_char_ne_two_of_lambda_mem    
     (hg : goodLambda ∈ P) : ringChar (O ⧸ P) ≠ 2 := by
   let : Field (O ⧸ P) := Ideal.Quotient.field _
   intro hc
@@ -54,12 +59,11 @@ theorem residue_char_ne_two_of_lambda_mem (P : Ideal O) [P.IsMaximal]
   have h3m : (3 : O) ∈ P := by rw [hk]; exact P.mul_mem_right k hg
   have h3 : (3 : O ⧸ P) = 0 := by
     simpa only [map_ofNat] using Ideal.Quotient.eq_zero_iff_mem.mpr h3m
-  have h2 : (2 : O ⧸ P) = 0 := by
-    exact (ringChar.spec (O ⧸ P) 2).mpr (by rw [hc])
+  have h2 : (2 : O ⧸ P) = 0 := (ringChar.spec (O ⧸ P) 2).mpr (by rw [hc])
   have h1 : (1 : O ⧸ P) = 0 := by linear_combination h3 - h2
   exact one_ne_zero h1
 
-theorem exists_local_calibration (P : Ideal O) [P.IsMaximal] :
+theorem exists_local_calibration     :
     ∃ χ : MulChar (O ⧸ P) ℂ, χ ≠ 1 ∧ χ ^ 6 = 1 := by
   let : Field (O ⧸ P) := Ideal.Quotient.field _
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
@@ -86,16 +90,18 @@ theorem exists_local_calibration (P : Ideal O) [P.IsMaximal] :
           MulChar.ringHomComp_one]
       rw [show (6 : ℕ) = 2 * 3 by decide, pow_mul, h2, one_pow]
 
-def localCalibration (P : Ideal O) [P.IsMaximal] : MulChar (O ⧸ P) ℂ :=
+def localCalibration (P : Ideal O) [P.IsMaximal]  :=
   Classical.choose (exists_local_calibration P)
 
-theorem localCalibration_nonprincipal (P : Ideal O) [P.IsMaximal] :
+theorem localCalibration_nonprincipal     :
     localCalibration P ≠ 1 := (Classical.choose_spec (exists_local_calibration P)).1
 
-theorem localCalibration_pow_six (P : Ideal O) [P.IsMaximal] :
+theorem localCalibration_pow_six     :
     localCalibration P ^ 6 = 1 := (Classical.choose_spec (exists_local_calibration P)).2
 
-def calibrationFromPrimes {ι : Type*} [Fintype ι]
+end
+
+def calibrationFromPrimes {ι } [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime P)) : CalibrationData := by
   letI (i : ι) : Field (O ⧸ P i) := Ideal.Quotient.field _
@@ -107,16 +113,20 @@ def calibrationFromPrimes {ι : Type*} [Fintype ι]
       ((Ideal.quotEquivOfEq (span_finitePrimeModulus P)).trans
         (IdealGaussCRT.quotientProdEquivPi P hcop)) (fun i => localCalibration (P i)) }
 
-theorem calibrationFromPrimes_pow_six {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P)) :
+section
+variable {ι : Type*} [Fintype ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime P))
+include ι P hcop
+
+theorem calibrationFromPrimes_pow_six    
+       
+      :
     (calibrationFromPrimes P hcop).residue ^ 6 = 1 := by
   let (i : ι) : Field (O ⧸ P i) := Ideal.Quotient.field _
   exact crtCharacter_pow_six _ _ _ (fun i => localCalibration_pow_six (P i))
 
-theorem calibrationFromPrimes_tau_norm {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P)) :
+theorem calibrationFromPrimes_tau_norm    
+       
+      :
     ‖(calibrationFromPrimes P hcop).tau‖ = 1 := by
   let b := finitePrimeModulus P
   have hb : b ≠ 0 := finitePrimeModulus_ne_zero P
@@ -131,7 +141,7 @@ theorem calibrationFromPrimes_tau_norm {ι : Type*} [Fintype ι]
   have hψ : ψ.IsPrimitive := GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive b hb
   have hg := IdealGaussCRT.norm_gauss_finite_crt_sq (fun i => O ⧸ P i) e
     (fun i => localCalibration (P i)) ψ (fun i => localCalibration_nonprincipal (P i))
-    (fun i => IdealGaussCRT.coordinateAddChar_isPrimitive _ e ψ hψ i)
+    (IdealGaussCRT.coordinateAddChar_isPrimitive _ e ψ hψ)
   have hcard : (Fintype.card (O ⧸ Ideal.span {b}) : ℝ) = elementNorm b := by
     rw [← Nat.card_eq_fintype_card]
     rfl
@@ -151,38 +161,43 @@ theorem calibrationFromPrimes_tau_norm {ι : Type*} [Fintype ι]
   rw [tsum_fintype, norm_div, hn, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (Real.sqrt_nonneg _), div_self (Real.sqrt_pos.mpr hQ).ne']
 
+end
+
 def calibrationForSet (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) : CalibrationData := by
   letI (P : S) : P.val.IsMaximal := hS P.val P.property
   exact calibrationFromPrimes (fun P : S => P.val)
     (fun P Q hPQ => Ideal.isCoprime_of_isMaximal (fun h => hPQ (Subtype.ext h)))
 
-theorem calibrationForSet_excluded (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) :
+section
+variable (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)
+include S hS
+
+theorem calibrationForSet_excluded     :
     (calibrationForSet S hS).excluded = S := by
   change Finset.univ.image (fun P : S => P.val) = S
   ext P
   simp
 
-theorem calibrationForSet_span (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) :
+theorem calibrationForSet_span     :
     Ideal.span {(calibrationForSet S hS).generator} = ∏ P ∈ S, P := by
   change Ideal.span {finitePrimeModulus (fun P : S => P.val)} = _
   rw [span_finitePrimeModulus]
   exact Finset.prod_coe_sort S (fun P : Ideal O => P)
 
-theorem calibrationForSet_pow_six (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) :
+theorem calibrationForSet_pow_six     :
     (calibrationForSet S hS).residue ^ 6 = 1 := by
   let (P : S) : P.val.IsMaximal := hS P.val P.property
   unfold calibrationForSet
   apply calibrationFromPrimes_pow_six
 
-theorem calibrationForSet_tau_norm (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) :
+theorem calibrationForSet_tau_norm     :
     ‖(calibrationForSet S hS).tau‖ = 1 := by
-  let (P : S) : P.val.IsMaximal := hS P.val P.property
-  unfold calibrationForSet
-  apply calibrationFromPrimes_tau_norm
+  grind [calibrationForSet, calibrationFromPrimes_tau_norm]
 
-theorem calibrationForSet_tau_ne_zero (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) :
-    (calibrationForSet S hS).tau ≠ 0 := by
-  exact norm_ne_zero_iff.mp (by rw [calibrationForSet_tau_norm]; norm_num)
+theorem calibrationForSet_tau_ne_zero     :
+    (calibrationForSet S hS).tau ≠ 0 := norm_ne_zero_iff.mp (by rw [calibrationForSet_tau_norm]; norm_num)
+
+end
 
 end SevenEighths.ProbePhysical
 end

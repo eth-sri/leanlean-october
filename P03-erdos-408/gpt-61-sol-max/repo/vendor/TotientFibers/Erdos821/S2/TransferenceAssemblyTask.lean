@@ -28,9 +28,9 @@ structure MemoryTransferenceProofs : Prop where
   absoluteRoot : AbsoluteClosedRootTask
   crt : Erdos821.Blueprint.Graph.uniform_residue_replacement_statement
 
-def LocalTransferenceAssemblyTask : Prop :=
+def LocalTransferenceAssemblyTask  :=
   MemoryTransferenceProofs → Erdos821.Blueprint.Graph.local_transference_statement
 
-def AbsolutePhysicalPacketTask : Prop := AbsolutePhysicalBounds
+def AbsolutePhysicalPacketTask  := AbsolutePhysicalBounds
 
 end Erdos821.S2Core

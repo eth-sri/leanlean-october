@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.ProjectionSelector
 public import Erdos821.P4Probe.ProjectionTasks
@@ -15,8 +16,8 @@ noncomputable section
 
 variable {s M : ℕ} {α : Fin s → Type} [∀ g, Fintype (α g)]
 
-abbrev RowSite (s M : ℕ) := Fin s × Fin M
-abbrev FlatAlphabet (α : Fin s → Type) (M : ℕ) : RowSite s M → Type := fun z => α z.1
+abbrev RowSite (s M ) := Fin s × Fin M
+abbrev FlatAlphabet (α : Fin s → Type) (M ) : RowSite s M → Type := fun z => α z.1
 
 local instance rowSiteDecidableEq (s M : ℕ) : DecidableEq (RowSite s M) := Classical.decEq _
 
@@ -31,8 +32,7 @@ def flatWeight (w : ∀ g, α g → ℝ) : ∀ z : RowSite s M, FlatAlphabet α 
 
 omit [(g : Fin s) → Fintype (α g)] in
 lemma flatWeight_eq (w : ∀ g, α g → ℝ) (x : ProbeSample α M) :
-    productWeight (flatWeight w) (flattenRows x) = sampleWeight w x := by
-  exact Fintype.prod_prod_type (fun z : RowSite s M => w z.1 (x z.1 z.2))
+    productWeight (flatWeight w) (flattenRows x) = sampleWeight w x := Fintype.prod_prod_type (fun z : RowSite s M => w z.1 (x z.1 z.2))
 
 lemma flatSqNorm_eq (w : ∀ g, α g → ℝ) (f : ProbeSample α M → ℂ) :
     productSqNorm (flatWeight w) (fun x => f (flattenRows.symm x)) = sampleSqNorm w f := by
@@ -47,10 +47,13 @@ omit [(g : Fin s) → Fintype (α g)] in
 lemma flat_replace (I : Finset (RowSite s M)) (x y : ProbeSample α M) :
     flattenRows.symm (mixCoords I (flattenRows x) (flattenRows y)) = replaceCoords I x y := by
   funext g i
-  by_cases hi : (g, i) ∈ I <;> simp [flattenRows, mixCoords, replaceCoords, hi]
+  simp_all [flattenRows, mixCoords, replaceCoords]
 
-lemma flat_average (w : ∀ g, α g → ℝ) (I : Finset (RowSite s M))
-    (f : ProbeSample α M → ℂ) (x : ProbeSample α M) :
+section
+variable (w : ∀ g, α g → ℝ) (hsum : ∀ g, ∑ a, w g a = 1) (tail I : Finset (RowSite s M)) (f : ProbeSample α M → ℂ) (x : ProbeSample α M)
+
+lemma flat_average    
+        :
     productAverage (flatWeight w) I (fun y => f (flattenRows.symm y)) (flattenRows x) =
       averageCoords w I f x := by
   unfold productAverage averageCoords
@@ -59,8 +62,9 @@ lemma flat_average (w : ∀ g, α g → ℝ) (I : Finset (RowSite s M))
   intro y
   simp only [flatWeight_eq, flat_replace]
 
-lemma flat_fullProbe (w : ∀ g, α g → ℝ) (hsum : ∀ g, ∑ a, w g a = 1)
-    (tail I : Finset (RowSite s M)) (f : ProbeSample α M → ℂ) (x : ProbeSample α M) :
+include hsum in
+lemma flat_fullProbe    
+          :
     productProbeProjection (flatWeight w) tail I (fun y => f (flattenRows.symm y)) (flattenRows x) =
       fullProbeComponent w tail I f x := by
   unfold productProbeProjection productFull fullProbeComponent
@@ -70,8 +74,9 @@ lemma flat_fullProbe (w : ∀ g, α g → ℝ) (hsum : ∀ g, ∑ a, w g a = 1)
   rw [Finset.union_comm U tail, flat_average]
   congr!
 
-lemma flat_fullProbe_energy (w : ∀ g, α g → ℝ) (hsum : ∀ g, ∑ a, w g a = 1)
-    (tail I : Finset (RowSite s M)) (f : ProbeSample α M → ℂ) :
+include hsum in
+lemma flat_fullProbe_energy    
+        :
     sampleSqNorm w (fullProbeComponent w tail I f) =
       ∑ S ∈ (Finset.univ : Finset (RowSite s M)).powerset,
         if I ⊆ S ∧ Disjoint tail S then
@@ -85,6 +90,8 @@ lemma flat_fullProbe_energy (w : ∀ g, α g → ℝ) (hsum : ∀ g, ∑ a, w g 
   rw [← flatSqNorm_eq, hfun]
   convert productProbeProjection_energy (flatWeight w) (fun z => hsum z.1) tail I
     (fun y => f (flattenRows.symm y)) using 1
+
+end
 
 end
 end Erdos821.P4Probe

@@ -20,7 +20,10 @@ open CanonicalQuadraticSieve CanonicalRowCompletion
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
 
-theorem deletedBase_zero_unsupported (data:RowData)(I:Ideal O)(hI:¬Supported I) :
+section
+variable (data:RowData)
+
+theorem deletedBase_zero_unsupported   I (hI:¬Supported I) :
     idealCoeff (deletedBase data) I=0 := by
   unfold deletedBase excluded
   rw [idealCoeff_excludePrimes,baseCharacter_coeff,
@@ -29,7 +32,7 @@ theorem deletedBase_zero_unsupported (data:RowData)(I:Ideal O)(hI:¬Supported I)
 
 def deletedSelectedSource (data:RowData)(M:Ideal O)[NeZero M]
     (H:Subgroup (O⧸M)ˣ)(W:ℝ→ℂ)(V:ι→ℝ→ℂ)
-    (Z r σ freq bW:ℝ)(b ell:ι→ℝ)(ζ:ι→ℂ)(u:O) : ℂ :=
+    (Z r σ freq bW:ℝ)(b ell:ι→ℝ)(ζ:ι→ℂ)(u:O)  :=
   ∑p∈Fintype.piFinset (fun i=>livePrimes M H (V i) (b i) (Z^(ell i))),
     (star (∏i,primeProfile (V i) (Z^(ell i)) (ζ i) (p i))/
       idealCoeff (deletedBase data) (∏i,p i))*
@@ -38,9 +41,9 @@ def deletedSelectedSource (data:RowData)(M:Ideal O)[NeZero M]
       (∏i,p i) (idealCoeff (deletedBase data)).toMonoidHom (fun _=>1)
       (twistedProfile W σ freq) Z r (∑i,ell i) u
 
-theorem deleted_physical_slots_norm_initial (data:RowData)(u:NonzeroElement)
+theorem deleted_physical_slots_norm_initial  (u:NonzeroElement)
     (M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)(W:ℝ→ℂ)(V:ι→ℝ→ℂ)
-    (Z r σ freq bW:ℝ)(a b ell:ι→ℝ)(ζ:ι→ℂ)(hZ:0<Z)
+     Z r σ freq bW (a b ell:ι→ℝ) ζ (hZ:0<Z)
     (hW:∀x,W x≠0→x≤bW)(hV:∀i x,V i x≠0→x∈Set.Icc (a i) (b i))
     (hlarge:∀i,((deletedBase data).modulus.absNorm:ℝ)<a i*Z^(ell i)) :
     ‖polynomial ((data.character u).excludePrimes (excluded data)
@@ -77,7 +80,7 @@ theorem deleted_physical_slots_norm_initial (data:RowData)(u:NonzeroElement)
   rw [originalTotal_supported_source _ _ _ (deletedBase_zero_unsupported data)]
   rfl
 
-theorem marked_fixed_deletion (data:RowData)(rows:Finset NonzeroElement)
+theorem marked_fixed_deletion  (rows:Finset NonzeroElement)
     (W:ℝ→ℂ)(X σ t bW:ℝ)(hX:0<X)(hW:∀x,W x≠0→x≤bW)
     (mark:NonzeroElement→ℂ) :
     (∑u∈rows,‖polynomial (data.character u) true W X σ t*mark u‖^2)≤
@@ -89,6 +92,8 @@ theorem marked_fixed_deletion (data:RowData)(rows:Finset NonzeroElement)
   simpa only [one_mul] using InverseInitialExcludedEnergy.marked_family rows data.character
     (excluded data) (reflectionExcludedPrimes_prime (basePeriod data)) W X σ t bW hX hW mark
     (fun _=>1) (fun _ _=>zero_le_one)
+
+end
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 

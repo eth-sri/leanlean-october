@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
@@ -12,19 +13,24 @@ namespace Erdos821.S34Core
 
 noncomputable section
 
-def bilinearDecay (U V r : ℝ) : ℝ :=
+def bilinearDecay (U V r : ℝ)  :=
   1 / V + 1 / r + Real.log (2 * r) / U + r * Real.log (2 * r) / (U * V)
 
-theorem bilinear_scale_sqrt_bound (U V r H : ℝ)
-    (hU : 0 < U) (hV : 0 < V) (hr : 1 ≤ r) (hH : 0 ≤ H) :
+section
+variable (U V r H Q S Y : ℝ) (hU : 0 < U) (hV : 0 < V) (hr : 1 ≤ r)
+
+
+include hU hV hr in
+theorem bilinear_scale_sqrt_bound  
+          (hH : 0 ≤ H) :
     Real.sqrt (2 * H / U) * Real.sqrt (2 * H / V) *
         Real.sqrt (U + (1 + V / r) * (U + r * Real.log (2 * r))) ≤
       4 * H * Real.sqrt (bilinearDecay U V r) := by
   let F := U + (1 + V / r) * (U + r * Real.log (2 * r))
-  have hrpos : 0 < r := by linarith
+  
   have hlog : 0 ≤ Real.log (2 * r) := Real.log_nonneg (by linarith)
-  have hF : 0 ≤ F := by dsimp [F]; positivity
-  have hUV : 0 < U * V := mul_pos hU hV
+  
+  
   have he : F / (U * V) = 2 / V + 1 / r + Real.log (2 * r) / U + r * Real.log (2 * r) / (U * V) := by
     dsimp [F]
     field_simp
@@ -51,21 +57,23 @@ theorem bilinear_scale_sqrt_bound (U V r H : ℝ)
       mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hB) (by positivity)
     _ = _ := by rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 4)]; norm_num; ring
 
-theorem bilinear_decay_minor_bound (U V r Q S Y : ℝ)
-    (hU : 0 < U) (hV : 0 < V) (hr : 1 ≤ r) (hQ : 0 < Q) (hS : 0 < S)
+include hU hV hr in
+theorem bilinear_decay_minor_bound  
+          (hQ : 0 < Q) (hS : 0 < S)
     (hrQ : Q < r) (hrS : r ≤ U * V / S)
     (hlog : Real.log (2 * r) ≤ Y) :
     bilinearDecay U V r ≤ 1 / V + 1 / Q + Y / U + Y / S := by
-  have hrpos : 0 < r := by linarith
+  
   have hlog0 : 0 ≤ Real.log (2 * r) := Real.log_nonneg (by linarith)
   unfold bilinearDecay
   apply add_le_add
-  · exact add_le_add (add_le_add (le_refl _) (one_div_le_one_div_of_le hQ hrQ.le))
-      (div_le_div_of_nonneg_right hlog hU.le)
+  · bound
   · have hnum := mul_le_mul hrS hlog hlog0 (by positivity : 0 ≤ U * V / S)
     calc
       _ ≤ (U * V / S) * Y / (U * V) := div_le_div_of_nonneg_right hnum (mul_pos hU hV).le
       _ = _ := by field_simp
+
+end
 
 end
 end Erdos821.S34Core

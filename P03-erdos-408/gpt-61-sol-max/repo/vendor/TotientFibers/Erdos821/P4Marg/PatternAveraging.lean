@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.PatternAveragingTask
 public import Erdos821.P4Probe.PatternMasses
@@ -17,29 +18,31 @@ noncomputable section
 
 variable {P : PrimeGroups} {J ell m : ℕ}
 
-def replaceBigLabels {P : PrimeGroups} {M : ℕ}
+def replaceBigLabels {P : PrimeGroups} {M }
     (S : P.BigGroup → Finset (Fin M)) (a y : P.BigLabels M) : P.BigLabels M :=
   fun g i => if i ∈ S g then y g i else a g i
 
-lemma slot_injective (ν : Pattern P J ell m) : Function.Injective ν.slot := by
+section
+variable (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (side : Bool) (g : P.BigGroup) (S : P.BigGroup → Finset (Fin (J + ell))) (hS : ∀ g i, ν.shared g.val i → i ∉ S g) (a y b : P.BigLabels (J + ell))
+
+
+lemma slot_injective   : Function.Injective ν.slot := by
   intro i j hij
   apply Fin.ext
   simpa [Pattern.slot] using congrArg Fin.val hij
 
-lemma slot_not_mem_patternSideCoordinates (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (g : P.BigGroup) (i : Fin J)
+lemma slot_not_mem_patternSideCoordinates  
+          (i : Fin J)
     (hi : i ∉ ν.changed g.val) :
     ν.slot i ∉ patternSideCoordinates ν block side g := by
   intro hmem
   by_cases hb : block g = side
   · simp only [patternSideCoordinates, hb, ite_true] at hmem
-    obtain ⟨j, hj, hslot⟩ := Finset.mem_image.mp hmem
-    have hji : j = i := slot_injective ν hslot
-    exact hi (hji ▸ hj)
+    grind [slot_injective]
   · simp [patternSideCoordinates, hb] at hmem
 
-lemma shared_not_mem_patternSideCoordinates (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool) (g : P.BigGroup)
+lemma shared_not_mem_patternSideCoordinates  
+         
     (i : Fin (J + ell)) (hi : ν.shared g.val i) :
     i ∉ patternSideCoordinates ν block side g := by
   intro hmem
@@ -47,28 +50,26 @@ lemma shared_not_mem_patternSideCoordinates (ν : Pattern P J ell m)
   · simp only [patternSideCoordinates, hb, ite_true] at hmem
     obtain ⟨j, hj, hslot⟩ := Finset.mem_image.mp hmem
     obtain ⟨j', hshared, hnot⟩ := hi
-    have hji : j' = j := slot_injective ν (hshared.trans hslot.symm)
-    exact hnot (hji ▸ hj)
+    grind [slot_injective, hnot]
   · simp [patternSideCoordinates, hb] at hmem
 
-lemma sharedLabelMass_replace_eq (ν : Pattern P J ell m)
-    (S : P.BigGroup → Finset (Fin (J + ell)))
-    (hS : ∀ g i, ν.shared g.val i → i ∉ S g)
-    (a y : P.BigLabels (J + ell)) :
+include hS in
+lemma sharedLabelMass_replace_eq  
+     
+     
+      :
     sharedLabelMass ν (replaceBigLabels S a y) = sharedLabelMass ν a := by
   unfold sharedLabelMass
   apply Finset.prod_congr rfl
   intro g _
   apply Finset.prod_congr rfl
-  intro i _
-  by_cases hi : ν.shared g.val i
-  · simp [hi, replaceBigLabels, hS g i hi]
-  · simp [hi]
+  grind [replaceBigLabels]
 
-lemma matchesBig_replace_left (ν : Pattern P J ell m)
-    (S : P.BigGroup → Finset (Fin (J + ell)))
-    (hS : ∀ g i, ν.shared g.val i → i ∉ S g)
-    (a y b : P.BigLabels (J + ell)) :
+include hS in
+lemma matchesBig_replace_left  
+     
+     
+      :
     ν.matchesBig (replaceBigLabels S a y) b ↔ ν.matchesBig a b := by
   constructor
   · intro h g i hi
@@ -78,10 +79,11 @@ lemma matchesBig_replace_left (ν : Pattern P J ell m)
     have hnot := hS g i hi
     simpa [replaceBigLabels, hnot] using h g i hi
 
-lemma matchesBig_replace_right (ν : Pattern P J ell m)
-    (S : P.BigGroup → Finset (Fin (J + ell)))
-    (hS : ∀ g i, ν.shared g.val i → i ∉ S g)
-    (a b y : P.BigLabels (J + ell)) :
+include hS in
+lemma matchesBig_replace_right  
+     
+     
+     a b y  :
     ν.matchesBig a (replaceBigLabels S b y) ↔ ν.matchesBig a b := by
   constructor
   · intro h g i hi
@@ -91,33 +93,29 @@ lemma matchesBig_replace_right (ν : Pattern P J ell m)
     have hnot := hS g i hi
     simpa [replaceBigLabels, hnot] using h g i hi
 
-lemma sharedPrefixProduct_replace_eq (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool)
-    (a y : P.BigLabels (J + ell)) :
+lemma sharedPrefixProduct_replace_eq  
+       
+      :
     sharedPrefixProduct ν (replaceBigLabels (patternSideCoordinates ν block side) a y) =
       sharedPrefixProduct ν a := by
   unfold sharedPrefixProduct
   apply Finset.prod_congr rfl
   intro g _
   apply Finset.prod_congr rfl
-  intro i _
-  by_cases hi : i ∈ ν.changed g.val
-  · simp [hi]
-  · simp [hi, replaceBigLabels,
-      slot_not_mem_patternSideCoordinates ν block side g i hi]
+  simp_all [replaceBigLabels, slot_not_mem_patternSideCoordinates]
 
-lemma DBig_replace_side_eq (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool)
-    (a y : P.BigLabels (J + ell)) (u : P.BigAux J) :
+lemma DBig_replace_side_eq  
+       
+       u  :
     ν.DBig (replaceBigLabels (patternSideCoordinates ν block side) a y) u =
       ν.DBig a u := by
   rw [DBig_split ν block (replaceBigLabels (patternSideCoordinates ν block side) a y) u,
     DBig_split ν block a u,
     sharedPrefixProduct_replace_eq ν block side a y]
 
-lemma selectedEndpoint_replace_other (ν : Pattern P J ell m)
-    (block : P.BigGroup → Bool) (side : Bool)
-    (a y : P.BigLabels (J + ell)) :
+lemma selectedEndpoint_replace_other  
+       
+      :
     selectedEndpoint ν block (!side)
       (replaceBigLabels (patternSideCoordinates ν block side) a y) =
     selectedEndpoint ν block (!side) a := by
@@ -125,28 +123,29 @@ lemma selectedEndpoint_replace_other (ν : Pattern P J ell m)
   apply Finset.prod_congr rfl
   intro g _
   apply Finset.prod_congr rfl
-  intro i _
-  by_cases h : block g = !side ∧ i ∈ ν.changed g.val
-  · have hb : block g ≠ side := by
-      cases side <;> simp_all
-    simp [h, replaceBigLabels, patternSideCoordinates]
-  · simp [h]
+  simp_all [replaceBigLabels, patternSideCoordinates]
+
+end
 
 def patternDensity (ν : Pattern P J ell m) (θ ζ : ℝ)
-    (a b : P.BigLabels (J + ell)) : ℂ :=
+    (a b : P.BigLabels (J + ell))  :=
   ∑ u : P.BigAux J,
     if ν.matchesBig a b then
       ((ν.bigAuxMass u / sharedLabelMass ν a : ℝ) * ν.coefficient a b u *
         imaginaryPower (ν.DBig a u) ζ * phase (θ * ν.DBig a u))
     else 0
 
-def modelDensity {F : FixedData} (A : Model F P J m) (θ ζ : ℝ)
-    (a b : P.BigLabels (J + F.ell)) : ℂ :=
+def modelDensity {F } (A : Model F P J m) (θ ζ : ℝ)
+    (a b : P.BigLabels (J + F.ell))  :=
   ∑ v, patternDensity (A.pattern v) θ ζ a b
 
-lemma signedPattern_coefficient_source_mix (hj : m ≤ J)
-    (block : P.BigGroup → Bool) (Q : ℕ) (h ξ : ℝ)
-    (c : ProbeChoice P m block) (a y b : P.BigLabels (J + ell)) (u : P.BigAux J) :
+section
+variable (hj : m ≤ J) (block : P.BigGroup → Bool) (Q : ℕ) (h ξ : ℝ) (c : ProbeChoice P m block) (ν : Pattern P J ell m) (S : P.BigGroup → Finset (Fin (J + ell))) (hS : ∀ g i, ν.shared g.val i → i ∉ S g) (θ ζ : ℝ) (a y b : P.BigLabels (J + ell))
+
+
+lemma signedPattern_coefficient_source_mix  
+         
+        (u : P.BigAux J) :
     (signedPattern (ell := ell) hj block Q h ξ c).coefficient
         (replaceBigLabels
           (patternSideCoordinates (signedPattern (ell := ell) hj block Q h ξ c) block false) a y) b u =
@@ -165,9 +164,9 @@ lemma signedPattern_coefficient_source_mix (hj : m ≤ J)
       (choiceBase (ell := ell) hj c.val) block false a y
   rw [hendpoint]
 
-lemma signedPattern_coefficient_target_mix (hj : m ≤ J)
-    (block : P.BigGroup → Bool) (Q : ℕ) (h ξ : ℝ)
-    (c : ProbeChoice P m block) (a b y : P.BigLabels (J + ell)) (u : P.BigAux J) :
+lemma signedPattern_coefficient_target_mix  
+         
+      (a b y : P.BigLabels (J + ell)) (u : P.BigAux J) :
     (signedPattern (ell := ell) hj block Q h ξ c).coefficient a
         (replaceBigLabels
           (patternSideCoordinates (signedPattern (ell := ell) hj block Q h ξ c) block true) b y) u =
@@ -186,10 +185,11 @@ lemma signedPattern_coefficient_target_mix (hj : m ≤ J)
       (choiceBase (ell := ell) hj c.val) block true b y
   rw [hendpoint]
 
-lemma patternDensity_replace_left (ν : Pattern P J ell m)
-    (S : P.BigGroup → Finset (Fin (J + ell)))
-    (hS : ∀ g i, ν.shared g.val i → i ∉ S g)
-    (θ ζ : ℝ) (a y b : P.BigLabels (J + ell))
+include hS in
+lemma patternDensity_replace_left  
+     
+     
+       
     (hcoef : ∀ u, ν.coefficient (replaceBigLabels S a y) b u = ν.coefficient a b u)
     (hDBig : ∀ u, ν.DBig (replaceBigLabels S a y) u = ν.DBig a u) :
     patternDensity ν θ ζ (replaceBigLabels S a y) b = patternDensity ν θ ζ a b := by
@@ -198,29 +198,25 @@ lemma patternDensity_replace_left (ν : Pattern P J ell m)
   by_cases hm : ν.matchesBig a b
   · simp only [ite_eq_left hm]
     rw [sharedLabelMass_replace_eq ν S hS a y]
-    apply Finset.sum_congr rfl
-    intro u _
-    rw [hcoef u, hDBig u]
+    grind
   · simp only [ite_eq_right hm]
 
-lemma patternDensity_replace_right (ν : Pattern P J ell m)
-    (S : P.BigGroup → Finset (Fin (J + ell)))
-    (hS : ∀ g i, ν.shared g.val i → i ∉ S g)
-    (θ ζ : ℝ) (a b y : P.BigLabels (J + ell))
+include hS in
+lemma patternDensity_replace_right  
+     
+     
+      (a b y : P.BigLabels (J + ell))
     (hcoef : ∀ u, ν.coefficient a (replaceBigLabels S b y) u = ν.coefficient a b u) :
     patternDensity ν θ ζ a (replaceBigLabels S b y) = patternDensity ν θ ζ a b := by
   unfold patternDensity
   rw [matchesBig_replace_right ν S hS a b y]
-  by_cases hm : ν.matchesBig a b
-  · simp only [ite_eq_left hm]
-    apply Finset.sum_congr rfl
-    intro u _
-    rw [hcoef u]
-  · simp only [ite_eq_right hm]
+  grind
 
-lemma onePattern_idealRaw_eq_density (F : FixedData)
-    (ν : Pattern P J F.ell m) (hV : ∀ g, 0 < P.V g) (θ ζ : ℝ)
-    (a b : P.BigLabels (J + F.ell)) :
+end
+
+lemma onePattern_idealRaw_eq_density  F 
+     ν  (hV : ∀ g, 0 < P.V g)  θ ζ 
+     a b  :
     ((onePatternFamily F P J m ν).model 1 ζ).idealRaw θ a b =
       (P.idealMass b : ℂ) *
         modelDensity ((onePatternFamily F P J m ν).model 1 ζ) θ ζ a b := by
@@ -228,10 +224,15 @@ lemma onePattern_idealRaw_eq_density (F : FixedData)
     idealRaw_eq_targetMass
       (A := (onePatternFamily F P J m ν).model 1 ζ) hV θ a b
 
-lemma modelDensity_replace_left {F : FixedData} (A : Model F P J m)
-    (S : P.BigGroup → Finset (Fin (J + F.ell)))
-    (hS : ∀ v g i, (A.pattern v).shared g.val i → i ∉ S g)
-    (θ ζ : ℝ) (a y b : P.BigLabels (J + F.ell))
+section
+variable {F : FixedData} (A : Model F P J m) (S : P.BigGroup → Finset (Fin (J + F.ell))) (hS : ∀ v g i, (A.pattern v).shared g.val i → i ∉ S g) (θ ζ : ℝ)
+
+
+include hS in
+lemma modelDensity_replace_left    
+     
+     
+      (a y b : P.BigLabels (J + F.ell))
     (hcoef : ∀ v u,
       (A.pattern v).coefficient (replaceBigLabels S a y) b u =
         (A.pattern v).coefficient a b u)
@@ -240,21 +241,22 @@ lemma modelDensity_replace_left {F : FixedData} (A : Model F P J m)
     modelDensity A θ ζ (replaceBigLabels S a y) b = modelDensity A θ ζ a b := by
   unfold modelDensity
   apply Finset.sum_congr rfl
-  intro v _
-  exact patternDensity_replace_left (A.pattern v) S (hS v) θ ζ a y b (hcoef v) (hDBig v)
+  grind [patternDensity_replace_left]
 
-lemma modelDensity_replace_right {F : FixedData} (A : Model F P J m)
-    (S : P.BigGroup → Finset (Fin (J + F.ell)))
-    (hS : ∀ v g i, (A.pattern v).shared g.val i → i ∉ S g)
-    (θ ζ : ℝ) (a b y : P.BigLabels (J + F.ell))
+include hS in
+lemma modelDensity_replace_right    
+     
+     
+      (a b y : P.BigLabels (J + F.ell))
     (hcoef : ∀ v u,
       (A.pattern v).coefficient a (replaceBigLabels S b y) u =
         (A.pattern v).coefficient a b u) :
     modelDensity A θ ζ a (replaceBigLabels S b y) = modelDensity A θ ζ a b := by
   unfold modelDensity
   apply Finset.sum_congr rfl
-  intro v _
-  exact patternDensity_replace_right (A.pattern v) S (hS v) θ ζ a b y (hcoef v)
+  solve_by_elim [patternDensity_replace_right]
+
+end
 
 lemma bigCoordinateAverage_eq_self_of_replace_invariant (P : PrimeGroups) (M : ℕ)
     (hV : ∀ g, 0 < P.V g) (S : P.BigGroup → Finset (Fin M))
@@ -289,18 +291,11 @@ theorem PatternAveragingTask_proof : P4Probe.PatternAveragingTask := by
   let gB := bigCoordinateAverage P (J + F.ell) S₁ g
   change idealFullPair K f g = idealFullPair K fA gB
   have hK : K = fun a b => (P.idealMass b : ℂ) * H a b := by
-    funext a b
-    exact onePattern_idealRaw_eq_density F ν hV θ ζ a b
+    grind [onePattern_idealRaw_eq_density]
   have hS₀ : ∀ v g i, (A.pattern v).shared g.val i → i ∉ S₀ g := by
-    intro v g i hi
-    change ν.shared g.val i at hi
-    change i ∉ patternSideCoordinates ν block false g
-    exact shared_not_mem_patternSideCoordinates ν block false g i hi
+    solve_by_elim [shared_not_mem_patternSideCoordinates]
   have hS₁ : ∀ v g i, (A.pattern v).shared g.val i → i ∉ S₁ g := by
-    intro v g i hi
-    change ν.shared g.val i at hi
-    change i ∉ patternSideCoordinates ν block true g
-    exact shared_not_mem_patternSideCoordinates ν block true g i hi
+    solve_by_elim [shared_not_mem_patternSideCoordinates]
   have hKfixed : ∀ b,
       bigCoordinateAverage P (J + F.ell) S₀ (fun a => K a b) = fun a => K a b := by
     intro b
@@ -310,34 +305,19 @@ theorem PatternAveragingTask_proof : P4Probe.PatternAveragingTask := by
     have hcoef : ∀ v u,
         (A.pattern v).coefficient (replaceBigLabels S₀ a y) b u =
           (A.pattern v).coefficient a b u := by
-      intro v u
-      change ν.coefficient (replaceBigLabels S₀ a y) b u = ν.coefficient a b u
-      exact signedPattern_coefficient_source_mix (ell := F.ell) hj block Q h ξ c a y b u
+      solve_by_elim [signedPattern_coefficient_source_mix]
     have hDBig : ∀ v u,
         (A.pattern v).DBig (replaceBigLabels S₀ a y) u = (A.pattern v).DBig a u := by
-      intro v u
-      change ν.DBig (replaceBigLabels S₀ a y) u = ν.DBig a u
-      exact DBig_replace_side_eq ν block false a y u
+      solve_by_elim [DBig_replace_side_eq]
     have hdensity := modelDensity_replace_left A S₀ hS₀ θ ζ a y b hcoef hDBig
-    calc
-      K (replaceBigLabels S₀ a y) b = (P.idealMass b : ℂ) * H (replaceBigLabels S₀ a y) b := by
-        rw [hK]
-      _ = (P.idealMass b : ℂ) * H a b := by
-        exact congrArg (fun z => (P.idealMass b : ℂ) * z) hdensity
-      _ = K a b := by rw [hK]
+    grind
   have hHfixed : ∀ a,
-      bigCoordinateAverage P (J + F.ell) S₁ (fun b => H a b) = fun b => H a b := by
+      bigCoordinateAverage P (J + F.ell) S₁ (H a) = H a := by
     intro a
     apply bigCoordinateAverage_eq_self_of_replace_invariant P (J + F.ell) hV S₁
-      (fun b => H a b)
+      (H a)
     intro b y
-    have hcoef : ∀ v u,
-        (A.pattern v).coefficient a (replaceBigLabels S₁ b y) u =
-          (A.pattern v).coefficient a b u := by
-      intro v u
-      change ν.coefficient a (replaceBigLabels S₁ b y) u = ν.coefficient a b u
-      exact signedPattern_coefficient_target_mix (ell := F.ell) hj block Q h ξ c a b y u
-    exact modelDensity_replace_right A S₁ hS₁ θ ζ a b y hcoef
+    solve_by_elim [signedPattern_coefficient_target_mix, modelDensity_replace_right]
   have hsource := idealFullPair_source_average
     P (J + F.ell) S₀ K hKfixed f g
   have hsource' :
@@ -346,12 +326,7 @@ theorem PatternAveragingTask_proof : P4Probe.PatternAveragingTask := by
     simpa only [hK] using hsource
   have htarget := idealFullPair_target_average
     P (J + F.ell) S₁ H hHfixed fA g
-  calc
-    idealFullPair K f g =
-        idealFullPair (fun a b => (P.idealMass b : ℂ) * H a b) f g := by rw [hK]
-    _ = idealFullPair (fun a b => (P.idealMass b : ℂ) * H a b) fA g := hsource'.symm
-    _ = idealFullPair (fun a b => (P.idealMass b : ℂ) * H a b) fA gB := htarget.symm
-    _ = idealFullPair K fA gB := by rw [hK]
+  grind
 
 end
 end Erdos821.P4Marg

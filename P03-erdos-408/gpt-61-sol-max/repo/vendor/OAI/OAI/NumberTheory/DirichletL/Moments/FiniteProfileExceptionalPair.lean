@@ -13,22 +13,22 @@ namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
 open CenteredMomentExceptionalAllocationShell ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+
 universe u
 structure Profiles (lo hi:ℝ) where
   profile : Fin 2→𝓢(ℝ,ℂ)
   support : ∀i,Function.support (profile i:ℝ→ℂ)⊆Set.Icc lo hi
 
-def Profiles.control {lo hi:ℝ} (p:Profiles lo hi) (R:Finset (ℕ×ℕ)) : ℝ :=
+def Profiles.control {lo hi} (p:Profiles lo hi) (R:Finset (ℕ×ℕ))  :=
   sourceControl R (p.profile 0)*sourceControl R (p.profile 1)
 
-lemma Profiles.control_nonneg {lo hi:ℝ} (p:Profiles lo hi) (R:Finset (ℕ×ℕ)) : 0≤p.control R :=
+lemma Profiles.control_nonneg {lo hi:ℝ} (p:Profiles lo hi)  R  : 0≤p.control R :=
   mul_nonneg (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
 
 variable {lo hi:ℝ}
 def ProfileAdmissible {ι:Type u} [Fintype ι] (s:Data ι) (p:Profiles lo hi)
-    (Q:Ideal O) (Z B r:ℝ) (z:O):Prop:=
-  (∀i,1≤s.P i) ∧ s.m≠0 ∧ s.A≠0 ∧ z≠0 ∧ goodLambda∣s.m ∧ (2:O)∣s.m ∧
+    (Q:Ideal HeckeFamily.O) (Z B r:ℝ) (z:HeckeFamily.O):=
+  (∀i,1≤s.P i) ∧ s.m≠0 ∧ s.A≠0 ∧ z≠0 ∧ goodLambda∣s.m ∧ (2:HeckeFamily.O)∣s.m ∧
   (HeckeRowClosure.rowConductorBound s.η s.m 1 (s.A*z):ℝ)≤Z^B ∧
   CenteredExceptionalProfile.FixedInducingRow s.η Q s.m s.A z ∧
   s.W₁=p.profile 0 ∧ s.W₂=p.profile 1 ∧

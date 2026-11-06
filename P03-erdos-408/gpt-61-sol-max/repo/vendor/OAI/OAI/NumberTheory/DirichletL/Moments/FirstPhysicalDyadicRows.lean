@@ -16,31 +16,36 @@ open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
 open CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization
 open CenteredMomentFirstAmplificationChoice CenteredMomentRowNorm
-local notation "O" => HeckeFamily.O
 
-def activeRows (rows : Finset O) (n : Fin 4→ℤ) : Finset O :=
+
+def activeRows (rows : Finset HeckeFamily.O) (n : Fin 4→ℤ)  :=
   rows.filter (fun h => h∈dyadRows (n 1))
 
-lemma mem_activeRows (rows : Finset O) (n : Fin 4→ℤ) (h : O) :
+section
+variable (rows : Finset HeckeFamily.O) (n : Fin 4→ℤ)
+
+lemma mem_activeRows      h  :
     h∈activeRows rows n ↔ h∈rows ∧ dyadicWeight (n 1) (normValue h)≠0 := by
   simp only [activeRows,Finset.mem_filter,mem_dyadRows]
 
-lemma activeRows_nonzero (rows : Finset O) (n : Fin 4→ℤ) (h : O)
+lemma activeRows_nonzero      h 
     (hh : h∈activeRows rows n) : h≠0 :=
   dyadRows_ne_zero (n 1) h (Finset.mem_filter.mp hh).2
 
-lemma activeRows_norm (rows : Finset O) (n : Fin 4→ℤ) (h : O)
+lemma activeRows_norm      h 
     (hh : h∈activeRows rows n) :
     1≤normValue h ∧ dyadicScale (n 1)/4<normValue h ∧ normValue h<dyadicScale (n 1) :=
   ⟨normValue_ge_one h (activeRows_nonzero rows n h hh),
     dyadicWeight_support (n 1) ((mem_activeRows rows n h).mp hh).2⟩
 
-lemma activeRows_scale_gt_one (rows : Finset O) (n : Fin 4→ℤ)
+lemma activeRows_scale_gt_one    
     (hne : (activeRows rows n).Nonempty) : 1<dyadicScale (n 1) := by
   obtain ⟨h,hh⟩:=hne
   exact (activeRows_norm rows n h hh).1.trans_lt (activeRows_norm rows n h hh).2.2
 
-lemma row_log_window (n : ℤ) (h : O) :
+end
+
+lemma row_log_window  n   h  :
     logAnnulus (Real.log (‖eisEmbedding h‖^2/dyadicScale n)) =
       (dyadicWeight n (normValue h):ℂ) := by
   by_cases hh : h=0
@@ -48,16 +53,16 @@ lemma row_log_window (n : ℤ) (h : O) :
     simp only [map_zero,norm_zero,zero_pow (by decide : 2≠0),zero_div,Real.log_zero,
       logAnnulus,Real.exp_zero]
     rw [annulus_zero_high 1 le_rfl]
-    rw [show normValue (0:O)=0 by simp [normValue_eq_embedding],
+    rw [show normValue (0:HeckeFamily.O)=0 by simp [normValue_eq_embedding],
       dyadicWeight_zero_nonpos n 0 le_rfl,Complex.ofReal_zero]
   · rw [←normValue_eq_embedding]
     exact (actual_dyadic_log_window n (normValue h)
       (zero_lt_one.trans_le (normValue_ge_one h hh))).symm
 
-theorem block_activeRows (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (c : Ideal O→ℂ) (C D : Ideal O)
-    (hC : Supported C) (hD : Supported D) (E : Finset (CommonIndex C D))
-    (rows : Finset O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (n : Fin 4→ℤ) :
+theorem block_activeRows  η   m A   t 
+     S   c   C D 
+     hC   hD   E 
+     rows   W   K   n  :
     block η m A t S c C D hC hD E rows W (fun _=>logAnnulus) K
       (dyadicScale (n 0)) (dyadicScale (n 1)) (dyadicScale (n 2)) (dyadicScale (n 3)) =
     block η m A t S c C D hC hD E (activeRows rows n) W (fun _=>logAnnulus) K

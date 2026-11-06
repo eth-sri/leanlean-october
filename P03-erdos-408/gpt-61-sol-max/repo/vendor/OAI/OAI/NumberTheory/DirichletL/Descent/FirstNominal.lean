@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstProfileIdentity
 
@@ -10,18 +11,16 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 noncomputable section
 
-def firstRootScale (s : Fin 9 → ℝ) : ℝ :=
+def firstRootScale (s : Fin 9 → ℝ)  :=
   s 3 * Real.sqrt (s 4) * s 5 * Real.sqrt (s 7) * Real.sqrt (s 8)
 
-theorem firstRootScale_pos (s : Fin 9 → ℝ) (hs : ∀ i, 0 < s i) :
+theorem firstRootScale_pos  s  (hs : ∀ i, 0 < s i) :
     0 < firstRootScale s := by
-  unfold firstRootScale
-  exact mul_pos (mul_pos (mul_pos (mul_pos (hs 3) (Real.sqrt_pos.2 (hs 4)))
-    (hs 5)) (Real.sqrt_pos.2 (hs 7))) (Real.sqrt_pos.2 (hs 8))
+  simp_all [firstRootScale]
 
-theorem firstNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (V : Fin 9 → ℝ → ℂ) (s q : Fin 9 → ℝ)
-    (hs : ∀ i, 0 < s i) (hq : ∀ i, 0 < q i) (K : ℝ) :
+theorem firstNormProfile_nominal  W₁ W₂   Φ 
+     V   s q 
+    (hs : ∀ i, 0 < s i) (hq : ∀ i, 0 < q i)  K  :
     firstNormProfile (fun x => W₁ (x/(s 0*s 2*s 5*s 7)))
       (fun x => W₂ (x/(s 1*s 2*s 5*s 8))) Φ
       (fun i y => V i (y-Real.log (s i))) K q =

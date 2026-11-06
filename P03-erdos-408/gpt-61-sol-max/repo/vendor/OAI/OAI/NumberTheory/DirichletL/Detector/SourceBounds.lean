@@ -7,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.GaussNorm
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open CubicEisenstein ProbePhase ProbeRow
-local notation "O" => ActualEisensteinCubic.O
 
-theorem bareCongruenceCoefficient_norm_le (A s : O) (hA : A≠0) (hs : s≠0) (H : O) :
+
+theorem bareCongruenceCoefficient_norm_le  A s   hA  (hs : s≠0)  H  :
     ‖bareCongruenceCoefficient A s hA H‖ ≤
       (Ideal.absNorm (Ideal.span {s}):ℝ)*(Ideal.absNorm (Ideal.span {A}):ℝ) := by
   apply congruenceCoefficient_norm_le A s hA hs
@@ -23,8 +23,8 @@ theorem bareCongruenceCoefficient_norm_le (A s : O) (hA : A≠0) (hs : s≠0) (H
     exact idealRowHom_norm _ _
 
 theorem bareSourceCoefficient_norm_le (η : HeckeFamily.Character)
-    (I : Ideal O) (hI : CubicSieve.Admissible I) (A s : O)
-    (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s})) (H : O) :
+    (I : Ideal ActualEisensteinCubic.O) (hI : CubicSieve.Admissible I)  A s 
+     hA  (hs : Supported (Ideal.span {s}))  H  :
     ‖bareSourceCoefficient η I hI.2 A s (supportedElement_ne_zero A hA) H‖ ≤
       (Ideal.absNorm (Ideal.span {s}):ℝ)*(Ideal.absNorm (Ideal.span {A}):ℝ) := by
   have hR : ‖reciprocitySign A s‖≤1 := sexticReciprocityPhase_norm A s
@@ -45,6 +45,6 @@ theorem bareSourceCoefficient_norm_le (η : HeckeFamily.Character)
       (supportedElement_ne_zero s hs) H
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

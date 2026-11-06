@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstTailScale
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstTailScale
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
@@ -16,24 +17,22 @@ open CenteredMomentCommonSupport CenteredMomentCanonicalFirst CenteredMomentSupp
 open CenteredMomentFirstScale CenteredMomentFirstDiscarded CenteredMomentActive
 open CenteredMomentCompleteCommon IdealMobiusDivisorSum CenteredMomentFirstDiscardedEnergy
 open CenteredMomentSourceInputFirstTailUniform
-local notation "O"=>ActualEisensteinCubic.O
 
-lemma local_tail_denominator_mono (Tlocal Tupper H Z ξ:ℝ)(A:ℕ)(B:ℝ)
+
+lemma local_tail_denominator_mono (Tlocal Tupper H Z ξ:ℝ) A  B 
     (hT:0<Tlocal)(hupper:Tlocal≤Tupper)(hB:0≤B)(hZ:0≤Z):
     B/((min 1 (kernelReference Tlocal H))^2*(1+Z^(ξ/4))^A)≤
       B/((min 1 (kernelReference Tupper H))^2*(1+Z^(ξ/4))^A):=by
   have hu:0<Tupper:=hT.trans_le hupper
-  have hk:kernelReference Tupper H≤kernelReference Tlocal H:=by
-    exact div_le_div_of_nonneg_left (Real.exp_pos _).le hT hupper
+  have hk:kernelReference Tupper H≤kernelReference Tlocal H:=div_le_div_of_nonneg_left (Real.exp_pos _).le hT hupper
   have hm:0<min 1 (kernelReference Tupper H):=lt_min zero_lt_one (kernelReference_pos _ _ hu)
-  have hp:0≤Z^(ξ/4):=Real.rpow_nonneg hZ _
+  
   apply div_le_div_of_nonneg_left hB (by positivity)
-  apply mul_le_mul_of_nonneg_right _ (by positivity)
-  exact pow_le_pow_left₀ hm.le (min_le_min_left 1 hk) 2
+  bound
 
-theorem local_discarded_pair_bound (A : ℕ) (ε : ℝ) (hε : 0<ε) :
+theorem local_discarded_pair_bound  A  (ε : ℝ) (hε : 0<ε) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ),0<C ∧
-      ∀ (W : 𝓢(ℝ,ℂ)) (I J : Ideal O)
+      ∀ (W : 𝓢(ℝ,ℂ)) (I J : Ideal ActualEisensteinCubic.O)
         (hI : CanonicalQuadraticSieve.Supported I) (hJ : CanonicalQuadraticSieve.Supported J)
         (K X HN Tsec Z Csec ξ : ℝ),
       0<K → 0<X → 1<Z → 1≤Csec →
@@ -59,7 +58,7 @@ theorem local_discarded_pair_bound (A : ℕ) (ε : ℝ) (hε : 0<ε) :
           ((min 1 (kernelReference Tsec HN))^2*(1+Z^(ξ/4))^A) :=
       Finset.sum_le_sum (fun E hE => by
         let Tlocal:=firstNominalScale I J (∏ P∈E,P.val) K X
-        have hE0:(∏ P∈E,P.val)≠(0:Ideal O):=by
+        have hE0:(∏ P∈E,P.val)≠(0:Ideal ActualEisensteinCubic.O):=by
           have he:=primeSubsetGenerator_ne_zero (fun P:CommonIndex I J=>P.val) E
           have hh:=Ideal.span_singleton_eq_bot.not.mpr he
           simpa only [primeSubsetGenerator,span_idealGenerator,Ideal.zero_eq_bot] using hh
@@ -79,6 +78,6 @@ theorem local_discarded_pair_bound (A : ℕ) (ε : ℝ) (hε : 0<ε) :
 
 end SevenEighths.CenteredMomentSourceInputFirstSectorTail
 
-end
+
 
 end OAI

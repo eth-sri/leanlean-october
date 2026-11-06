@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyOriginalProfileControl
@@ -20,7 +20,7 @@ open CenteredMomentEnergyState CenteredMomentFirstCanonicalFamily CenteredMoment
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 omit [DecidableEq ι] in
-lemma slot_product_le (s:Input ι)(N:ℕ)(C:ℝ)(hC:1≤C)
+lemma slot_product_le (s:Input ι) N  C (hC:1≤C)
     (hN:Fintype.card ι≤N)(hM:∀i,s.M i≤C): (∏i,s.M i)≤C^N := by
   calc
     _≤∏_i:ι,C:=Finset.prod_le_prod₀ (fun i _=>(s.M_ge_one i).trans' zero_le_one) (fun i _=>hM i)
@@ -28,8 +28,8 @@ lemma slot_product_le (s:Input ι)(N:ℕ)(C:ℝ)(hC:1≤C)
     _≤C^N:=pow_le_pow_right₀ hC hN
 
 omit [DecidableEq ι] in
-lemma plain_control_le {a b:ℝ}(s:Input ι)(p:Profiles a b)(S:Finset (ℕ×ℕ))
-    (N:ℕ)(C:ℝ)(hC:1≤C)(hN:Fintype.card ι≤N)(hM:∀i,s.M i≤C):
+lemma plain_control_le {a b:ℝ}(s:Input ι)(p:Profiles a b) S 
+     N  C (hC:1≤C)(hN:Fintype.card ι≤N)(hM:∀i,s.M i≤C):
     plainControl s (p.profile 0) (p.profile 1)≤C^N*p.control (insert (0,0) S) := by
   have h0 (i:Fin 2):SchwartzMap.seminorm ℝ 0 0 (p.profile i)≤
       sourceControl (insert (0,0) S) (p.profile i):=
@@ -41,14 +41,14 @@ lemma plain_control_le {a b:ℝ}(s:Input ι)(p:Profiles a b)(S:Finset (ℕ×ℕ)
   simpa only [plainControl,Profiles.control,mul_assoc] using hh
 
 omit [DecidableEq ι] in
-lemma plain_control_sq_le {a b:ℝ}(s:Input ι)(p:Profiles a b)(S:Finset (ℕ×ℕ))
-    (N:ℕ)(C:ℝ)(hC:1≤C)(hN:Fintype.card ι≤N)(hM:∀i,s.M i≤C):
+lemma plain_control_sq_le {a b:ℝ}(s:Input ι)(p:Profiles a b) S 
+     N  C (hC:1≤C)(hN:Fintype.card ι≤N)(hM:∀i,s.M i≤C):
     (plainControl s (p.profile 0) (p.profile 1))^2≤C^(2*N)*(p.control (insert (0,0) S))^2 := by
   have hh:=pow_le_pow_left₀ (plainControl_nonneg _ _ _) (plain_control_le s p S N C hC hN hM) 2
   simpa only [mul_pow,←pow_mul,Nat.mul_comm N 2] using hh
 
 omit [DecidableEq ι] in
-lemma lower_product (s:Input ι)(N:ℕ)(a:ℝ)(ha:0<a)
+lemma lower_product (s:Input ι) N  a (ha:0<a)
     (hN:Fintype.card ι≤N)(hlo:∀i,a≤s.lo i):
     (min 1 a)^N≤∏i,s.lo i := by
   have hm:0≤min 1 a:=le_min zero_le_one ha.le
@@ -58,10 +58,10 @@ lemma lower_product (s:Input ι)(N:ℕ)(a:ℝ)(ha:0<a)
     _≤∏i,s.lo i:=Finset.prod_le_prod₀ (fun _ _=>hm) (fun i _=>(min_le_right _ _).trans (hlo i))
 
 local notation "O"=>HeckeFamily.O
-section Input
+
 variable {ι : Type*} [Fintype ι]
 variable (Q : Ideal O) [NeZero Q]
-local instance : Finite (O ⧸ Q) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne Q)
+
 variable (H : Subgroup (O ⧸ Q)ˣ) (hH : RayOrthogonality.globalUnits Q ≤ H)
 variable (η₀ : Character) (θ : ι → RayQuotient.Characters Q H)
 variable (W : ℝ → ℂ) (hW : Continuous W)
@@ -76,7 +76,7 @@ variable (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂) (hsame : Y₁ * Y₂ = X₁ * X�
 local notation "inp" => CenteredMomentEnergyNaturalInputMatches.input Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
   w σ freq hσ state p ha t X₁ X₂ Y₁ Y₂ hX₁ hX₂ hY₁ hY₂ hsame
 
-end Input
+
 end SevenEighths.CenteredMomentEnergyOriginalProfileControl
 
 end

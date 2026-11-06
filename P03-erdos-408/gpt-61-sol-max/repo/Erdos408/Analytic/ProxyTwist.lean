@@ -1,4 +1,6 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
 
 public import Erdos408.Analytic.IntegerKernel
 public import Erdos408.Analytic.PNT
@@ -52,7 +54,7 @@ open Filter Real Finset MeasureTheory ArithmeticFunction
 
 /-- Partial summation against a counting function with linear main term `ρ (y - a)` and
 error at most `B`. -/
-private theorem norm_sum_mul_sub_integral_le (c : ℕ → ℂ) {f f' : ℝ → ℂ} {a b B M : ℝ} (ρ : ℂ)
+private theorem norm_sum_mul_sub_integral_le (c : ℕ → ℂ) {f f' : ℝ → ℂ}  {a b B M}   ρ 
     (ha : 0 ≤ a) (hab : a ≤ b) (hf : ∀ y ∈ Set.Icc a b, HasDerivAt f (f' y) y)
     (hf' : ContinuousOn f' (Set.Icc a b)) (hM : ∀ y ∈ Set.Icc a b, ‖f' y‖ ≤ M)
     (hB : ∀ y ∈ Set.Icc a b, ‖∑ m ∈ Ioc ⌊a⌋₊ ⌊y⌋₊, c m - ρ * (y - a)‖ ≤ B) :
@@ -64,9 +66,7 @@ private theorem norm_sum_mul_sub_integral_le (c : ℕ → ℂ) {f f' : ℝ → �
     intro y hy
     rw [hc', ← Finset.sum_filter]
     congr 1
-    ext m
-    simp only [mem_filter, mem_Icc, mem_Ioc]
-    omega
+    grind
   have hderiv : Set.EqOn (deriv f) f' (Set.Icc a b) := fun y hy ↦ (hf y hy).deriv
   have hf'int : IntegrableOn f' (Set.Icc a b) := hf'.integrableOn_Icc
   have hdint : IntegrableOn (deriv f) (Set.Icc a b) :=
@@ -109,7 +109,7 @@ private theorem norm_sum_mul_sub_integral_le (c : ℕ → ℂ) {f f' : ℝ → �
     (intervalIntegrable_iff_integrableOn_Icc_of_le hab).mpr (hf'.mul (by fun_prop)).integrableOn_Icc
   have hint4 : IntervalIntegrable f volume a b :=
     (intervalIntegrable_iff_integrableOn_Icc_of_le hab).mpr
-      (HasDerivAt.continuousOn fun y hy ↦ hf y hy).integrableOn_Icc
+      (HasDerivAt.continuousOn hf).integrableOn_Icc
   rw [intervalIntegral.integral_add hint3 (by simpa using hint4)] at hibp
   simp only [mul_one, sub_self, mul_zero, sub_zero] at hibp
   have hmain : ∫ y in Set.Ioc a b, deriv f y * (ρ * (y - a)) =
@@ -135,9 +135,7 @@ private theorem norm_sum_mul_sub_integral_le (c : ℕ → ℂ) {f f' : ℝ → �
     simp only [hR, hsum' y hy'.1]
     exact mul_le_mul (hM y hy') this (norm_nonneg _) ((norm_nonneg _).trans (hM y hy'))
   calc _ = ‖f b * R b - ∫ y in Set.Ioc a b, deriv f y * R y‖ := by
-          congr 1
-          simp only [hR, hsum' b hab]
-          ring
+          grind
     _ ≤ ‖f b‖ * B + M * B * (b - a) := by
           refine (norm_sub_le _ _).trans (add_le_add ?_ hRint)
           rw [norm_mul]
@@ -147,28 +145,36 @@ private theorem norm_sum_mul_sub_integral_le (c : ℕ → ℂ) {f f' : ℝ → �
 /-! ### The twisted logarithmic weight -/
 
 /-- The twisted logarithmic weight `u^{it} / log u`. -/
-private noncomputable def twistWeight (t u : ℝ) : ℂ :=
+private noncomputable def twistWeight (t u : ℝ)  :=
   (u : ℂ) ^ ((t : ℂ) * Complex.I) / (Real.log u : ℂ)
 
 /-- The derivative of `twistWeight t`. -/
-private noncomputable def twistWeightDeriv (t u : ℝ) : ℂ :=
+private noncomputable def twistWeightDeriv (t u : ℝ)  :=
   (t : ℂ) * Complex.I * (u : ℂ) ^ ((t : ℂ) * Complex.I - 1) / (Real.log u : ℂ) -
     (u : ℂ) ^ ((t : ℂ) * Complex.I) * (u⁻¹ : ℝ) / (Real.log u : ℂ) ^ 2
 
+section
+variable {u : ℝ} (hu : 0 < u) (t : ℝ) {k : ℕ}
+
+include hu in
 /-- A pure imaginary power of a positive real has norm one. -/
-private theorem norm_ofReal_cpow_mul_I {u : ℝ} (hu : 0 < u) (t : ℝ) :
+private theorem norm_ofReal_cpow_mul_I       :
     ‖(u : ℂ) ^ ((t : ℂ) * Complex.I)‖ = 1 := by
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hu]
   simp
 
+public alias _root_.SharedProofs.shared_norm_ofReal_cpow_mul_I := norm_ofReal_cpow_mul_I
+
+
+include hu in
 /-- The derivative of `y ↦ y^{it}` at `u > 0`. -/
-private theorem hasDerivAt_ofReal_cpow_mul_I {u : ℝ} (hu : 0 < u) (t : ℝ) :
+private theorem hasDerivAt_ofReal_cpow_mul_I       :
     HasDerivAt (fun y : ℝ ↦ (y : ℂ) ^ ((t : ℂ) * Complex.I))
       ((t : ℂ) * Complex.I * (u : ℂ) ^ ((t : ℂ) * Complex.I - 1)) u :=
   (Complex.hasStrictDerivAt_cpow_const (Complex.ofReal_mem_slitPlane.mpr hu)).hasDerivAt.comp_ofReal
 
 /-- The derivative of `u^{it} / log u` at `u > 1`. -/
-private theorem hasDerivAt_twistWeight {u : ℝ} (hu : 1 < u) (t : ℝ) :
+private theorem hasDerivAt_twistWeight   (hu : 1 < u) (t : ℝ) :
     HasDerivAt (twistWeight t) (twistWeightDeriv t u) u := by
   have hu0 : 0 < u := by linarith
   have hlog : (Real.log u : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (Real.log_pos hu).ne'
@@ -182,7 +188,7 @@ private theorem hasDerivAt_twistWeight {u : ℝ} (hu : 1 < u) (t : ℝ) :
     field_simp
 
 /-- The derivative of the twisted weight is continuous on `u > 1`. -/
-private theorem continuousOn_twistWeightDeriv (t : ℝ) :
+private theorem continuousOn_twistWeightDeriv   :
     ContinuousOn (twistWeightDeriv t) (Set.Ioi 1) := by
   intro u hu
   have hu0 : (0 : ℝ) < u := lt_trans one_pos hu
@@ -199,7 +205,7 @@ private theorem continuousOn_twistWeightDeriv (t : ℝ) :
     (((hc _).mul hi).div (hl.pow 2) (pow_ne_zero 2 hlog))
 
 /-- `|u^{it} / log u| ≤ 1` for `u ≥ e`. -/
-private theorem norm_twistWeight_le {u : ℝ} (hu : Real.exp 1 ≤ u) (t : ℝ) :
+private theorem norm_twistWeight_le   (hu : Real.exp 1 ≤ u) (t : ℝ) :
     ‖twistWeight t u‖ ≤ 1 := by
   have hu0 : 0 < u := lt_of_lt_of_le (Real.exp_pos 1) hu
   have hlog : 1 ≤ Real.log u := by rwa [Real.le_log_iff_exp_le hu0]
@@ -208,7 +214,7 @@ private theorem norm_twistWeight_le {u : ℝ} (hu : Real.exp 1 ≤ u) (t : ℝ) 
   exact div_le_one_of_le₀ hlog (by linarith)
 
 /-- `|(u^{it} / log u)'| ≤ (|t| + 1) / u` for `u ≥ e`. -/
-private theorem norm_twistWeightDeriv_le {u : ℝ} (hu : Real.exp 1 ≤ u) (t : ℝ) :
+private theorem norm_twistWeightDeriv_le   (hu : Real.exp 1 ≤ u) (t : ℝ) :
     ‖twistWeightDeriv t u‖ ≤ (|t| + 1) / u := by
   have hu0 : 0 < u := lt_of_lt_of_le (Real.exp_pos 1) hu
   have hlog : 1 ≤ Real.log u := by rwa [Real.le_log_iff_exp_le hu0]
@@ -223,17 +229,15 @@ private theorem norm_twistWeightDeriv_le {u : ℝ} (hu : Real.exp 1 ≤ u) (t : 
     abs_of_pos (inv_pos.mpr hu0)]
   have h1 : |t| * 1 * u⁻¹ / Real.log u ≤ |t| / u := by
     rw [mul_one, ← div_eq_mul_inv]
-    exact div_le_self (div_nonneg (abs_nonneg t) hu0.le) hlog
+    bound
   have h2 : 1 * u⁻¹ / Real.log u ^ 2 ≤ 1 / u := by
-    rw [one_mul, one_div]
-    exact div_le_self (inv_nonneg.mpr hu0.le) (one_le_pow₀ hlog)
-  calc _ ≤ |t| / u + 1 / u := add_le_add h1 h2
-    _ = (|t| + 1) / u := by ring
+    bound
+  grind
 
 /-! ### Character sums in progressions -/
 
 /-- A sum over the residues `0 ≤ r < k` is a sum over `ZMod k`. -/
-private theorem sum_range_eq_sum_zmod {k : ℕ} [NeZero k] (g : ZMod k → ℂ) :
+private theorem sum_range_eq_sum_zmod   [NeZero k] (g : ZMod k → ℂ) :
     ∑ r ∈ range k, g r = ∑ a : ZMod k, g a := by
   refine Finset.sum_nbij' (fun r ↦ (r : ZMod k)) (fun a ↦ a.val) (by simp) ?_ ?_ ?_ ?_
   · intro a _
@@ -247,9 +251,9 @@ private theorem sum_range_eq_sum_zmod {k : ℕ} [NeZero k] (g : ZMod k → ℂ) 
 
 open scoped Classical in
 /-- The sum of a Dirichlet character over a complete residue system. -/
-private theorem sum_range_char {k : ℕ} [NeZero k] (χ : DirichletCharacter ℂ k) :
+private theorem sum_range_char   [NeZero k] (χ : DirichletCharacter ℂ k) :
     ∑ r ∈ range k, χ r = if χ = 1 then (k.totient : ℂ) else 0 := by
-  rw [sum_range_eq_sum_zmod (fun a ↦ χ a)]
+  rw [sum_range_eq_sum_zmod (χ)]
   split_ifs with h
   · subst h
     classical
@@ -257,7 +261,7 @@ private theorem sum_range_char {k : ℕ} [NeZero k] (χ : DirichletCharacter ℂ
   · exact MulChar.sum_eq_zero_of_ne_one h
 
 /-- A character sum splits along the residue classes modulo `k`. -/
-private theorem sum_char_mul_eq_sum_range {k : ℕ} [NeZero k] (χ : DirichletCharacter ℂ k)
+private theorem sum_char_mul_eq_sum_range   [NeZero k] (χ : DirichletCharacter ℂ k)
     (S : Finset ℕ) (F : ℕ → ℂ) :
     ∑ m ∈ S, χ m * F m = ∑ r ∈ range k, χ r * ∑ m ∈ S with m ≡ r [MOD k], F m := by
   rw [← Finset.sum_fiberwise_of_maps_to (g := fun m ↦ m % k) (t := range k)
@@ -274,14 +278,12 @@ private theorem sum_char_mul_eq_sum_range {k : ℕ} [NeZero k] (χ : DirichletCh
     rw [← hm', ← ZMod.natCast_mod]
 
 /-- The number of `m ∈ (M, N]` in a residue class modulo `k` is `(N - M) / k + O(1)`. -/
-private theorem abs_card_filter_modEq_sub_le {k : ℕ} (hk : 0 < k) (r : ℕ) {M N : ℕ} (hMN : M ≤ N) :
+private theorem abs_card_filter_modEq_sub_le   (hk : 0 < k)  r   {M N}  (hMN : M ≤ N) :
     |(#{m ∈ Ioc M N | m ≡ r [MOD k]} : ℝ) - ((N : ℝ) - M) / k| ≤ 2 := by
   have hsplit : #{m ∈ range (N + 1) | m ≡ r [MOD k]} =
       #{m ∈ range (M + 1) | m ≡ r [MOD k]} + #{m ∈ Ioc M N | m ≡ r [MOD k]} := by
     have hr : range (N + 1) = range (M + 1) ∪ Ioc M N := by
-      ext m
-      simp only [mem_range, mem_union, mem_Ioc]
-      omega
+      grind
     rw [hr, filter_union, card_union_of_disjoint]
     refine disjoint_filter_filter (disjoint_left.mpr fun m h1 h2 ↦ ?_)
     simp only [mem_range, mem_Ioc] at h1 h2
@@ -307,7 +309,7 @@ private theorem abs_card_filter_modEq_sub_le {k : ℕ} (hk : 0 < k) (r : ℕ) {M
   constructor <;> linarith
 
 /-- A character sum over `(M, N]` is `(N - M) / k ∑_r χ(r) + O(k)`. -/
-private theorem norm_sum_Ioc_char_sub_le {k : ℕ} [NeZero k] (χ : DirichletCharacter ℂ k) {M N : ℕ}
+private theorem norm_sum_Ioc_char_sub_le   [NeZero k] (χ : DirichletCharacter ℂ k) {M N : ℕ}
     (hMN : M ≤ N) :
     ‖∑ m ∈ Ioc M N, χ m - (((N : ℝ) - M) / k : ℝ) * ∑ r ∈ range k, χ r‖ ≤ 2 * k := by
   have h := sum_char_mul_eq_sum_range χ (Ioc M N) (fun _ ↦ 1)
@@ -325,10 +327,12 @@ private theorem norm_sum_Ioc_char_sub_le {k : ℕ} [NeZero k] (χ : DirichletCha
         exact (mul_le_of_le_one_right (abs_nonneg _) hχ).trans hcount
     _ = 2 * k := by simp [mul_comm]
 
+end
+
 /-! ### The multiplicative structure of the damped weight -/
 
 /-- The local value `w_p` of the damped weight: `g_j(p^e) = w_p^e`. -/
-private noncomputable def dampedLocal (x : ℝ) (j p : ℕ) : ℝ :=
+private noncomputable def dampedLocal (x : ℝ) (j p : ℕ)  :=
   if p ∈ candidatePrimes x then (j : ℝ)⁻¹ else if (p : ℝ) ≤ proxyCutoff x then 0 else 1
 
 /-- The damped weight as an arithmetic function, `n ↦ ∏_{p^e ∥ n} w_p^e`. -/
@@ -337,16 +341,20 @@ private noncomputable def dampedFun (x : ℝ) (j : ℕ) : ArithmeticFunction ℝ
     ite_eq_left rfl⟩
 
 /-- The Möbius transform `λ = g_j * μ` of the damped weight. -/
-private noncomputable def dampedMobius (x : ℝ) (j : ℕ) : ArithmeticFunction ℝ :=
+private noncomputable def dampedMobius (x : ℝ) (j : ℕ)  :=
   dampedFun x j * (ArithmeticFunction.moebius : ArithmeticFunction ℝ)
 
+section
+variable (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (p : ℕ)
+
 /-- The local values `w_p` are nonnegative. -/
-private theorem dampedLocal_nonneg (x : ℝ) {j : ℕ} (p : ℕ) : 0 ≤ dampedLocal x j p := by
+private theorem dampedLocal_nonneg       : 0 ≤ dampedLocal x j p := by
   unfold dampedLocal
   split_ifs <;> positivity
 
+include hj in
 /-- The local values `w_p` are at most one. -/
-private theorem dampedLocal_le_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (p : ℕ) :
+private theorem dampedLocal_le_one         :
     dampedLocal x j p ≤ 1 := by
   unfold dampedLocal
   split_ifs
@@ -354,27 +362,34 @@ private theorem dampedLocal_le_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (p : ℕ) 
   · exact zero_le_one
   · exact le_rfl
 
+end
+
 /-- `g_j(n) = ∏_{p^e ∥ n} w_p^e` for `n ≠ 0`. -/
 private theorem dampedFun_apply {x : ℝ} {j n : ℕ} (hn : n ≠ 0) :
     dampedFun x j n = n.factorization.prod fun p e ↦ dampedLocal x j p ^ e := by
   simp [dampedFun, hn]
 
+section
+variable (x : ℝ) (j : ℕ) {P : Finset ℕ} {n p : ℕ} (hp : p.Prime) (e : ℕ) (hn : n ≠ 0)
+
 /-- The damped weight is multiplicative. -/
-private theorem isMultiplicative_dampedFun (x : ℝ) (j : ℕ) : (dampedFun x j).IsMultiplicative := by
+private theorem isMultiplicative_dampedFun     : (dampedFun x j).IsMultiplicative := by
   rw [IsMultiplicative.iff_ne_zero]
   refine ⟨by simp [dampedFun_apply one_ne_zero], fun {m n} hm hn hmn ↦ ?_⟩
   rw [dampedFun_apply (mul_ne_zero hm hn), dampedFun_apply hm, dampedFun_apply hn,
     Nat.factorization_mul hm hn,
     Finsupp.prod_add_index_of_disjoint (by simpa using hmn.disjoint_primeFactors)]
 
+include hp in
 /-- `g_j(p^e) = w_p^e`. -/
-private theorem dampedFun_prime_pow (x : ℝ) (j : ℕ) {p : ℕ} (hp : p.Prime) (e : ℕ) :
+private theorem dampedFun_prime_pow           :
     dampedFun x j (p ^ e) = dampedLocal x j p ^ e := by
   rw [dampedFun_apply (pow_ne_zero e hp.ne_zero), hp.factorization_pow,
     Finsupp.prod_single_index (by simp)]
 
+include hn in
 /-- The prime factors of `stripPrimes P n` are those of `n` outside `P`. -/
-private theorem mem_primeFactors_stripPrimes {P : Finset ℕ} {n p : ℕ} (hn : n ≠ 0) :
+private theorem mem_primeFactors_stripPrimes       :
     p ∈ (stripPrimes P n).primeFactors ↔ p ∈ n.primeFactors ∧ p ∉ P := by
   have hne : stripPrimes P n ≠ 0 := by
     unfold stripPrimes
@@ -388,17 +403,17 @@ private theorem mem_primeFactors_stripPrimes {P : Finset ℕ} {n p : ℕ} (hn : 
     have hq' := mem_filter.mp hq
     have hqp := Nat.prime_of_mem_primeFactors hq'.1
     have := (Nat.prime_dvd_prime_iff_eq hp hqp).mp (hp.dvd_of_dvd_pow hpq)
-    subst this
-    exact ⟨⟨hp, Nat.dvd_of_mem_primeFactors hq'.1, hn⟩, hq'.2⟩
+    simp_all
   · rintro ⟨⟨hp, hdvd, -⟩, hP⟩
     refine ⟨hp, ?_, hne⟩
     unfold stripPrimes
     refine (dvd_pow_self p ?_).trans (Finset.dvd_prod_of_mem _ (mem_filter.mpr
       ⟨Nat.mem_primeFactors.mpr ⟨hp, hdvd, hn⟩, hP⟩))
-    exact (Nat.Prime.factorization_pos_of_dvd hp hn hdvd).ne'
+    aesop
 
+include hn in
 /-- The damped weight is the multiplicative function `dampedFun`. -/
-private theorem dampedWeight_eq_dampedFun (x : ℝ) (j : ℕ) {n : ℕ} (hn : n ≠ 0) :
+private theorem dampedWeight_eq_dampedFun         :
     dampedWeight x j n = dampedFun x j n := by
   classical
   rw [dampedFun_apply hn, Finsupp.prod, Nat.support_factorization,
@@ -424,22 +439,23 @@ private theorem dampedWeight_eq_dampedFun (x : ℝ) (j : ℕ) {n : ℕ} (hn : n 
       (Nat.dvd_of_mem_primeFactors hp'.1)).ne'
 
 /-- `λ = g_j * μ` is multiplicative. -/
-private theorem isMultiplicative_dampedMobius (x : ℝ) (j : ℕ) :
+private theorem isMultiplicative_dampedMobius     :
     (dampedMobius x j).IsMultiplicative :=
   (isMultiplicative_dampedFun x j).mul isMultiplicative_moebius.intCast
 
 /-- `λ * 1 = g_j`. -/
-private theorem dampedMobius_mul_zeta (x : ℝ) (j : ℕ) :
+private theorem dampedMobius_mul_zeta     :
     dampedMobius x j * (ArithmeticFunction.zeta : ArithmeticFunction ℝ) = dampedFun x j := by
   rw [dampedMobius, mul_assoc, coe_moebius_mul_coe_zeta (R := ℝ), mul_one]
 
 /-- `g_j(n) = ∑_{d ∣ n} λ(d)`. -/
-private theorem sum_divisors_dampedMobius (x : ℝ) (j n : ℕ) :
+private theorem sum_divisors_dampedMobius   (j n : ℕ) :
     ∑ d ∈ n.divisors, dampedMobius x j d = dampedFun x j n := by
   rw [← coe_mul_zeta_apply, dampedMobius_mul_zeta]
 
+include hp in
 /-- `λ(p^{e+1}) = w_p^{e+1} - w_p^e`. -/
-private theorem dampedMobius_prime_pow_succ (x : ℝ) (j : ℕ) {p : ℕ} (hp : p.Prime) (e : ℕ) :
+private theorem dampedMobius_prime_pow_succ           :
     dampedMobius x j (p ^ (e + 1)) = dampedLocal x j p ^ (e + 1) - dampedLocal x j p ^ e := by
   have h := fun e ↦ sum_divisors_dampedMobius x j (p ^ e)
   simp only [Nat.sum_divisors_prime_pow hp, dampedFun_prime_pow x j hp] at h
@@ -447,11 +463,11 @@ private theorem dampedMobius_prime_pow_succ (x : ℝ) (j : ℕ) {p : ℕ} (hp : 
   ring
 
 /-- `λ(1) = 1`. -/
-private theorem dampedMobius_one (x : ℝ) (j : ℕ) : dampedMobius x j 1 = 1 :=
+private theorem dampedMobius_one     : dampedMobius x j 1 = 1 :=
   (isMultiplicative_dampedMobius x j).map_one
 
 /-- `|λ(n)| ≤ 1`. -/
-private theorem abs_dampedMobius_le (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (n : ℕ) :
+private theorem abs_dampedMobius_le   {j : ℕ} (hj : 1 ≤ j) (n : ℕ) :
     |dampedMobius x j n| ≤ 1 := by
   rcases eq_or_ne n 0 with rfl | hn
   · simp
@@ -470,9 +486,15 @@ private theorem abs_dampedMobius_le (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (n : ℕ)
   have := pow_nonneg h0 e
   constructor <;> linarith
 
+end
+
+section
+variable {x : ℝ} {j n : ℕ} (hj : 1 ≤ j) (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x) {k : ℕ} (χ : DirichletCharacter ℂ k) {a b : ℝ} (hx : 0 ≤ Real.log x) {G : Finset ℕ} (hG : G ∈ doublingGroups x a b) {p : ℕ} (hp : p.Prime)
+
+include hP in
 /-- `λ` is supported on `Y`-smooth numbers, once the candidate primes lie below `Y`. -/
-private theorem mem_factoredNumbers_of_dampedMobius_ne_zero {x : ℝ} {j n : ℕ}
-    (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x) (h : dampedMobius x j n ≠ 0) :
+private theorem mem_factoredNumbers_of_dampedMobius_ne_zero    
+      (h : dampedMobius x j n ≠ 0) :
     n ∈ Nat.factoredNumbers (primesIcc 2 (proxyCutoff x)) := by
   have hn : n ≠ 0 := by
     rintro rfl
@@ -489,16 +511,15 @@ private theorem mem_factoredNumbers_of_dampedMobius_ne_zero {x : ℝ} {j n : ℕ
     obtain ⟨e, he⟩ : ∃ e, n.factorization p = e + 1 :=
       Nat.exists_eq_add_one.mpr (Nat.Prime.factorization_pos_of_dvd hpp hn
         (Nat.dvd_of_mem_primeFactors hpn))
-    have hP' : p ∉ candidatePrimes x := fun hc ↦ hY (hP p hc)
-    rw [he, dampedMobius_prime_pow_succ x j hpp, dampedLocal, ite_eq_right hP', ite_eq_right hY]
-    simp
+    grind [candidatePrimes, dampedMobius_prime_pow_succ, dampedLocal]
   simp only [primesIcc, mem_filter, mem_Icc]
   refine ⟨⟨?_, Nat.le_floor hY⟩, hpp⟩
   simpa using hpp.two_le
 
+include hj hp in
 /-- The local Euler factor `∑_e λ(p^e) χ(p)^e p^{-e} = (1 - z) / (1 - w z)` with `z = χ(p)/p`. -/
-private theorem tsum_dampedMobius_prime_pow {x : ℝ} {j : ℕ} (hj : 1 ≤ j) {k : ℕ}
-    (χ : DirichletCharacter ℂ k) {p : ℕ} (hp : p.Prime) :
+private theorem tsum_dampedMobius_prime_pow        
+          :
     ∑' e : ℕ, (dampedMobius x j (p ^ e) : ℂ) * χ (p ^ e : ℕ) / ((p ^ e : ℕ) : ℂ) =
       (1 - χ p / p) / (1 - dampedLocal x j p * χ p / p) := by
   set z : ℂ := χ p / p with hz
@@ -519,9 +540,6 @@ private theorem tsum_dampedMobius_prime_pow {x : ℝ} {j : ℕ} (hj : 1 ≤ j) {
     intro e
     rw [dampedMobius_prime_pow_succ x j hp, Nat.cast_pow, map_pow, Nat.cast_pow, hz, hw]
     push_cast
-    have : (p : ℂ) ≠ 0 := by exact_mod_cast hp.ne_zero
-    simp only [mul_pow, div_pow]
-    field_simp
     ring
   have hgeom : Summable fun e : ℕ ↦ (w - 1) * z * (w * z) ^ e :=
     (summable_geometric_of_norm_lt_one hwz).mul_left _
@@ -543,10 +561,11 @@ private theorem tsum_dampedMobius_prime_pow {x : ℝ} {j : ℕ} (hj : 1 ≤ j) {
   field_simp
   ring
 
+include hj hP in
 /-- The Euler product of `λ(d) χ(d) / d` over `Y`-smooth numbers. -/
-private theorem hasSum_dampedMobius_char {x : ℝ} {j : ℕ} (hj : 1 ≤ j)
-    (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x) {k : ℕ}
-    (χ : DirichletCharacter ℂ k) :
+private theorem hasSum_dampedMobius_char      
+       
+      :
     HasSum (fun d : ℕ ↦ (dampedMobius x j d : ℂ) * χ d / d)
       (∏ p ∈ primesIcc 2 (proxyCutoff x),
         (1 - χ p / p) / (1 - dampedLocal x j p * χ p / p)) := by
@@ -583,10 +602,11 @@ private theorem hasSum_dampedMobius_char {x : ℝ} {j : ℕ} (hj : 1 ≤ j)
   refine prod_congr rfl fun p hp ↦ ?_
   rw [← tsum_dampedMobius_prime_pow hj χ (hprime p hp)]
 
+include hx hG in
 /-- The primes of the groups `[e^y, e^{2y})`, `y = 2^i L^a`, `2y ≤ L^b`, lie in
 `[exp(L^a), exp(L^b)]`. -/
-private theorem mem_doublingGroups {x a b : ℝ} (hx : 0 ≤ Real.log x) {G : Finset ℕ}
-    (hG : G ∈ doublingGroups x a b) {p : ℕ} (hp : p ∈ G) :
+private theorem mem_doublingGroups      
+        (hp : p ∈ G) :
     p.Prime ∧ Real.exp (Real.log x ^ a) ≤ p ∧ (p : ℝ) ≤ Real.exp (Real.log x ^ b) := by
   obtain ⟨i, hi, rfl⟩ := mem_image.mp hG
   have hi' := (mem_filter.mp hi).2
@@ -615,7 +635,7 @@ private theorem mem_doublingGroups {x a b : ℝ} (hx : 0 ≤ Real.log x) {G : Fi
       _ ≤ Real.log x ^ b := hi'
 
 /-- The candidate primes are primes in `[exp(L^{0.28}), exp(L^{0.45})]`. -/
-private theorem mem_candidatePrimes {x : ℝ} {p : ℕ} (hx : 1 ≤ Real.log x)
+private theorem mem_candidatePrimes     (hx : 1 ≤ Real.log x)
     (hp : p ∈ candidatePrimes x) :
     p.Prime ∧ Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ p ∧
       (p : ℝ) ≤ Real.exp (Real.log x ^ (45 / 100 : ℝ)) := by
@@ -628,16 +648,20 @@ private theorem mem_candidatePrimes {x : ℝ} {p : ℕ} (hx : 1 ≤ Real.log x)
     refine ⟨h1, (Real.exp_le_exp.mpr ?_).trans h2, h3⟩
     exact Real.rpow_le_rpow_of_exponent_le hx (by norm_num)
 
+public alias _root_.SharedProofs.permuted_mem_candidatePrimes := mem_candidatePrimes
+
+
 /-- The candidate primes are prime. -/
-private theorem prime_of_mem_candidatePrimes {x : ℝ} {p : ℕ} (hp : p ∈ candidatePrimes x) :
+private theorem prime_of_mem_candidatePrimes     (hp : p ∈ candidatePrimes x) :
     p.Prime := by
   obtain ⟨G, hG, hpG⟩ := mem_biUnion.mp hp
   rcases mem_union.mp hG with hG | hG <;>
   · obtain ⟨i, -, rfl⟩ := mem_image.mp hG
     exact (mem_filter.mp hpG).2
 
+include hp in
 /-- The principal character at a prime `p` is `[p ∤ k]`. -/
-private theorem one_apply_prime {k p : ℕ} (hp : p.Prime) :
+private theorem one_apply_prime     :
     (1 : DirichletCharacter ℂ k) p = if p ∣ k then 0 else 1 := by
   split_ifs with h
   · refine MulChar.map_nonunit _ fun hu ↦ ?_
@@ -646,7 +670,7 @@ private theorem one_apply_prime {k p : ℕ} (hp : p.Prime) :
   · exact MulChar.one_apply ((ZMod.isUnit_iff_coprime p k).mpr (hp.coprime_iff_not_dvd.mpr h))
 
 /-- The principal Euler product times `φ(k) / k` is exactly `D_j`. -/
-private theorem totient_div_mul_prod_eq_dampedDensity {x : ℝ} {j k : ℕ} (hk : 1 ≤ k)
+private theorem totient_div_mul_prod_eq_dampedDensity     (hk : 1 ≤ k)
     (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x)
     (hkY : (k : ℝ) ≤ proxyCutoff x) (hkP : ∀ p ∈ candidatePrimes x, k < p) :
     ((k.totient : ℂ) / k) * ∏ p ∈ primesIcc 2 (proxyCutoff x),
@@ -670,8 +694,7 @@ private theorem totient_div_mul_prod_eq_dampedDensity {x : ℝ} {j k : ℕ} (hk 
     ext p
     simp only [mem_filter, Nat.mem_primeFactors]
     constructor
-    · rintro ⟨hp, hdvd⟩
-      exact ⟨hprime p hp, hdvd, by omega⟩
+    · grind
     · rintro ⟨hp, hdvd, -⟩
       refine ⟨hmem p hp ?_, hdvd⟩
       exact (Nat.cast_le.mpr (Nat.le_of_dvd (by omega) hdvd)).trans hkY
@@ -726,10 +749,12 @@ private theorem totient_div_mul_prod_eq_dampedDensity {x : ℝ} {j k : ℕ} (hk 
   push_cast
   rfl
 
+end
+
 /-! ### Rankin's trick -/
 
 /-- Rankin's majorant `∏_{p ∈ s} (1 - p^{ε - 1})⁻¹ = ∑_{d s-factored} d^{ε - 1}`. -/
-private noncomputable def rankinProd (s : Finset ℕ) (ε : ℝ) : ℝ :=
+private noncomputable def rankinProd (s : Finset ℕ) (ε : ℝ)  :=
   ∏ p ∈ s with p.Prime, (1 - (p : ℝ) ^ (ε - 1))⁻¹
 
 /-- The completely multiplicative function `n ↦ n^r`. -/
@@ -740,8 +765,12 @@ private noncomputable def natRpowHom (r : ℝ) : ℕ →* ℝ where
     push_cast
     exact Real.mul_rpow (Nat.cast_nonneg m) (Nat.cast_nonneg n)
 
+section
+variable (s : Finset ℕ) {Y ε X : ℝ} (hε0 : 0 ≤ ε) {N : ℝ} (hε : ε < 1) (hX : 0 < X) (hN : 0 < N) (F : Finset ℕ)
+
+include hε in
 /-- Rankin's series `∑_{d s-factored} d^{ε - 1}` converges to `rankinProd s ε`. -/
-private theorem hasSum_rankin (s : Finset ℕ) {ε : ℝ} (hε : ε < 1) :
+private theorem hasSum_rankin       :
     HasSum ((Nat.factoredNumbers s).indicator fun d : ℕ ↦ (d : ℝ) ^ (ε - 1)) (rankinProd s ε) := by
   have h := (EulerProduct.summable_and_hasSum_factoredNumbers_prod_filter_prime_geometric
     (f := natRpowHom (ε - 1)) (fun {p} hp ↦ ?_) s).2
@@ -752,22 +781,23 @@ private theorem hasSum_rankin (s : Finset ℕ) {ε : ℝ} (hε : ε < 1) :
     exact Real.rpow_lt_one_of_one_lt_of_neg (by exact_mod_cast hp.one_lt) (by linarith)
 
 /-- The terms of Rankin's series are nonnegative. -/
-private theorem rankin_indicator_nonneg (s : Finset ℕ) (ε : ℝ) (d : ℕ) :
+private theorem rankin_indicator_nonneg   (ε : ℝ)  d  :
     0 ≤ (Nat.factoredNumbers s).indicator (fun d : ℕ ↦ (d : ℝ) ^ (ε - 1)) d :=
   Set.indicator_nonneg (fun _ _ ↦ by positivity) d
 
+include hε in
 /-- A finite part of Rankin's series is at most its sum. -/
-private theorem sum_rpow_le_rankinProd (s : Finset ℕ) {ε : ℝ} (hε : ε < 1) (F : Finset ℕ)
+private theorem sum_rpow_le_rankinProd        
     (hF : ∀ d ∈ F, d ∈ Nat.factoredNumbers s) :
     ∑ d ∈ F, (d : ℝ) ^ (ε - 1) ≤ rankinProd s ε := by
   have h := sum_le_hasSum F (fun d _ ↦ rankin_indicator_nonneg s ε d) (hasSum_rankin s hε)
-  refine le_of_eq_of_le (sum_congr rfl fun d hd ↦ ?_) h
-  rw [Set.indicator_of_mem (hF d hd)]
+  simp_all
 
+include hε0 hε hX in
 /-- Rankin's bound for the tail `∑_{d ≥ X} 1/d` over `s`-factored numbers. -/
-private theorem sum_inv_le_rankinProd (s : Finset ℕ) {ε X : ℝ} (hε0 : 0 ≤ ε) (hε : ε < 1)
-    (hX : 0 < X)
-    (F : Finset ℕ) (hF : ∀ d ∈ F, d ∈ Nat.factoredNumbers s ∧ X ≤ d) :
+private theorem sum_inv_le_rankinProd        
+     
+      (hF : ∀ d ∈ F, d ∈ Nat.factoredNumbers s ∧ X ≤ d) :
     ∑ d ∈ F, (1 : ℝ) / d ≤ X ^ (-ε) * rankinProd s ε := by
   have hR := sum_rpow_le_rankinProd s hε F fun d hd ↦ (hF d hd).1
   calc ∑ d ∈ F, (1 : ℝ) / d ≤ ∑ d ∈ F, X ^ (-ε) * (d : ℝ) ^ (ε - 1) := by
@@ -781,9 +811,10 @@ private theorem sum_inv_le_rankinProd (s : Finset ℕ) {ε X : ℝ} (hε0 : 0 �
     _ = X ^ (-ε) * ∑ d ∈ F, (d : ℝ) ^ (ε - 1) := by rw [mul_sum]
     _ ≤ X ^ (-ε) * rankinProd s ε := by gcongr
 
+include hε hN in
 /-- Rankin's bound for the number of `s`-factored numbers up to `N`. -/
-private theorem card_le_rankinProd (s : Finset ℕ) {ε N : ℝ} (hε : ε < 1) (hN : 0 < N)
-    (F : Finset ℕ) (hF : ∀ d ∈ F, d ∈ Nat.factoredNumbers s ∧ (d : ℝ) ≤ N) :
+private theorem card_le_rankinProd        
+      (hF : ∀ d ∈ F, d ∈ Nat.factoredNumbers s ∧ (d : ℝ) ≤ N) :
     (F.card : ℝ) ≤ N ^ (1 - ε) * rankinProd s ε := by
   have hR := sum_rpow_le_rankinProd s hε F fun d hd ↦ (hF d hd).1
   rw [card_eq_sum_ones, Nat.cast_sum, Nat.cast_one]
@@ -800,9 +831,10 @@ private theorem card_le_rankinProd (s : Finset ℕ) {ε N : ℝ} (hε : ε < 1) 
     _ = N ^ (1 - ε) * ∑ d ∈ F, (d : ℝ) ^ (ε - 1) := by rw [mul_sum]
     _ ≤ N ^ (1 - ε) * rankinProd s ε := by gcongr
 
+include hε0 hε in
 /-- Rankin's bound for the tail of a series supported on `s`-factored numbers and dominated
 by `1/d`. -/
-private theorem norm_sub_sum_range_le_rankinProd (s : Finset ℕ) {ε : ℝ} (hε0 : 0 ≤ ε) (hε : ε < 1)
+private theorem norm_sub_sum_range_le_rankinProd        
     {F : ℕ → ℂ} {a : ℂ} (hF : HasSum F a)
     (hFle : ∀ d, ‖F d‖ ≤ (Nat.factoredNumbers s).indicator (fun d : ℕ ↦ (1 : ℝ) / d) d)
     {M : ℕ} (hM : 1 ≤ M) :
@@ -823,7 +855,7 @@ private theorem norm_sub_sum_range_le_rankinProd (s : Finset ℕ) {ε : ℝ} (h�
       rw [h1]
       exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow_of_nonpos hM0 hd (by linarith))
         (Real.rpow_nonneg hd0.le _)
-    · rw [Set.indicator_of_notMem hn, hg, Set.indicator_of_notMem hn, mul_zero]
+    simp_all
   have h := tsum_of_norm_bounded hgt hle
   rw [hFt.tsum_eq] at h
   refine h.trans (mul_le_mul_of_nonneg_left ?_ (Real.rpow_nonneg hM0.le _))
@@ -831,7 +863,7 @@ private theorem norm_sub_sum_range_le_rankinProd (s : Finset ℕ) {ε : ℝ} (h�
   linarith
 
 /-- `(1 - v)⁻¹ ≤ exp(4 v)` for `0 ≤ v ≤ 3/4`. -/
-private theorem inv_one_sub_le_exp {v : ℝ} (hv0 : 0 ≤ v) (hv : v ≤ 3 / 4) :
+private theorem inv_one_sub_le_exp  {v}  (hv0 : 0 ≤ v) (hv : v ≤ 3 / 4) :
     (1 - v)⁻¹ ≤ Real.exp (4 * v) := by
   have h1 : 0 < 1 - v := by linarith
   refine (inv_le_iff_one_le_mul₀ h1).mpr ?_
@@ -839,8 +871,9 @@ private theorem inv_one_sub_le_exp {v : ℝ} (hv0 : 0 ≤ v) (hv : v ≤ 3 / 4) 
   have h3 : 1 ≤ (4 * v + 1) * (1 - v) := by nlinarith
   exact h3.trans (mul_le_mul_of_nonneg_right (by linarith) h1.le)
 
+include hε0 in
 /-- Rankin's majorant over the primes up to `Y` is at most `exp(4 Y^ε ∑_{p ≤ Y} 1/p)`. -/
-private theorem rankinProd_le {Y ε : ℝ} (hε0 : 0 ≤ ε) (hε : ε ≤ 1 / 2) :
+private theorem rankinProd_le     (hε : ε ≤ 1 / 2) :
     rankinProd (primesIcc 2 Y) ε ≤
       Real.exp (4 * Y ^ ε * ∑ p ∈ primesIcc 2 Y, (1 : ℝ) / p) := by
   have hprime : ∀ p ∈ primesIcc 2 Y, p.Prime := fun p hp ↦ (mem_filter.mp hp).2
@@ -873,22 +906,24 @@ private theorem rankinProd_le {Y ε : ℝ} (hε0 : 0 ≤ ε) (hε : ε ≤ 1 / 2
     refine (inv_one_sub_le_exp hv0 hv).trans (Real.exp_le_exp.mpr ?_)
     have : (p : ℝ) ^ (ε - 1) ≤ Y ^ ε * (1 / p) := by
       rw [Real.rpow_sub hp0, Real.rpow_one, div_eq_mul_one_div]
-      exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow hp0.le hpY hε0) (by positivity)
+      bound
     linarith
+
+end
 
 /-! ### The density and the prime harmonic sum -/
 
 /-- `exp(-2u) ≤ 1 - u` for `0 ≤ u ≤ 1/2`. -/
-private theorem exp_neg_two_mul_le_one_sub {u : ℝ} (hu0 : 0 ≤ u) (hu : u ≤ 1 / 2) :
+private theorem exp_neg_two_mul_le_one_sub  {u}  (hu0 : 0 ≤ u) (hu : u ≤ 1 / 2) :
     Real.exp (-(2 * u)) ≤ 1 - u := by
   rw [Real.exp_neg]
   have h1 := Real.add_one_le_exp (2 * u)
   have h2 : 1 ≤ (1 - u) * (2 * u + 1) := by nlinarith
   rw [inv_le_iff_one_le_mul₀ (Real.exp_pos _)]
-  exact h2.trans (mul_le_mul_of_nonneg_left h1 (by linarith))
+  nlinarith
 
 /-- `D_j ≥ exp(-2 ∑_{p ≤ Y} 1/p)`. -/
-private theorem exp_le_dampedDensity (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
+private theorem exp_le_dampedDensity  x   {j}  (hj : 1 ≤ j) :
     Real.exp (-(2 * ∑ p ∈ primesIcc 2 (proxyCutoff x), (1 : ℝ) / p)) ≤ dampedDensity x j := by
   have hprime : ∀ p ∈ primesIcc 2 (proxyCutoff x), p.Prime := fun p hp ↦ (mem_filter.mp hp).2
   have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
@@ -898,14 +933,12 @@ private theorem exp_le_dampedDensity (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
     refine prod_le_prod₀ (fun _ _ ↦ (Real.exp_pos _).le) fun p hp ↦ ?_
     have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (hprime p hp).two_le
     exact exp_neg_two_mul_le_one_sub (by positivity)
-      (by rw [div_le_div_iff₀ (by linarith) (by norm_num)]; linarith)
+      (by bound)
   have hB : 1 ≤ ∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹ := by
     refine one_le_prod₀ fun p hp ↦ ?_
     have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (prime_of_mem_candidatePrimes hp).two_le
     have h1 : (j : ℝ)⁻¹ / p ≤ 1 / 2 := by
-      rw [div_le_div_iff₀ (by linarith) (by norm_num)]
-      have := inv_le_one_of_one_le₀ hj'
-      linarith
+      bound
     have h2 : 0 ≤ (j : ℝ)⁻¹ / p := by positivity
     exact one_le_inv₀ (by linarith) |>.mpr (by linarith)
   exact mul_le_mul hA hB zero_le_one (prod_nonneg fun p hp ↦ by
@@ -932,8 +965,12 @@ private theorem exists_sum_primesIcc_inv_le : ∃ C : ℝ, ∀ Y : ℝ, 2 ≤ Y 
 
 /-! ### Sums over divisors -/
 
+section
+variable (x : ℝ) (j : ℕ) {k : ℕ} (χ : DirichletCharacter ℂ k) (f : ℝ → ℂ) {A B B' : ℕ} (hB : B ≤ B')
+
+include hB in
 /-- Exchanging `∑_{n ∈ (A, B]} ∑_{d ∣ n}`, for any `B' ≥ B`. -/
-private theorem sum_Ioc_sum_divisors {A B B' : ℕ} (hB : B ≤ B') (F : ℕ → ℕ → ℂ) :
+private theorem sum_Ioc_sum_divisors     (F : ℕ → ℕ → ℂ) :
     ∑ n ∈ Ioc A B, ∑ d ∈ n.divisors, F d n =
       ∑ d ∈ Icc 1 B', ∑ m ∈ Ioc (A / d) (B / d), F d (d * m) := by
   rw [Finset.sum_comm' (t' := Icc 1 B') (s' := fun d ↦ (Ioc A B).filter (d ∣ ·))]
@@ -964,12 +1001,12 @@ private theorem sum_Ioc_sum_divisors {A B B' : ℕ} (hB : B ≤ B') (F : ℕ →
       have hn : 0 < n := by omega
       exact ⟨⟨⟨h1, h2⟩, hdvd⟩, Nat.pos_of_dvd_of_pos hdvd hn,
         (Nat.le_of_dvd hn hdvd).trans (h2.trans hB)⟩
-    · rintro ⟨⟨⟨h1, h2⟩, hdvd⟩, -⟩
-      exact ⟨⟨h1, h2⟩, hdvd, by omega⟩
+    aesop
 
+include hB in
 /-- The damped sum as a sum over the divisors `d` of its Möbius transform. -/
-private theorem sum_dampedFun_eq (x : ℝ) (j : ℕ) {k : ℕ} (χ : DirichletCharacter ℂ k) (f : ℝ → ℂ)
-    {A B B' : ℕ} (hB : B ≤ B') :
+private theorem sum_dampedFun_eq          
+        :
     ∑ n ∈ Ioc A B, (dampedFun x j n : ℂ) * (χ n * f n) =
       ∑ d ∈ Icc 1 B', (dampedMobius x j d : ℂ) * χ d *
         ∑ m ∈ Ioc (A / d) (B / d), χ m * f ((d : ℝ) * m) := by
@@ -985,6 +1022,8 @@ private theorem sum_dampedFun_eq (x : ℝ) (j : ℕ) {k : ℕ} (χ : DirichletCh
   push_cast
   rw [map_mul]
   ring
+
+end
 
 /-! ### The inner sums -/
 
@@ -1022,7 +1061,7 @@ private theorem norm_sum_twistWeight_scaled_sub_le (c : ℕ → ℂ) (t : ℝ) (
     rw [norm_smul, Real.norm_eq_abs, abs_of_pos hd0]
     refine mul_le_mul_of_nonneg_left ?_ hd0.le
     refine (norm_twistWeightDeriv_le (hlo.trans (hmem y hy)) t).trans ?_
-    exact div_le_div_of_nonneg_left (by positivity) hlo0 (hmem y hy)
+    bound
   have hab : lo / d ≤ hi / d := div_le_div_of_nonneg_right hlohi hd0.le
   have h := norm_sum_mul_sub_integral_le c ρ (by positivity) hab hderiv hcont hM hB
   have hint : ∫ y in lo / d..hi / d, twistWeight t (d * y) =
@@ -1042,7 +1081,7 @@ private theorem norm_sum_twistWeight_scaled_sub_le (c : ℕ → ℂ) (t : ℝ) (
   linarith
 
 /-- The inner sum `T_d = ∑_{m ∈ I/d} χ(m) (dm)^{it} / log(dm)`. -/
-private noncomputable def innerSum {k : ℕ} (χ : DirichletCharacter ℂ k) (t lo hi : ℝ) (d : ℕ) : ℂ :=
+private noncomputable def innerSum {k } (χ : DirichletCharacter ℂ k) (t lo hi : ℝ) (d : ℕ)  :=
   ∑ m ∈ Ioc ⌊lo / d⌋₊ ⌊hi / d⌋₊, χ m * twistWeight t ((d : ℝ) * m)
 
 /-- The damped twisted sum is `∑_d λ(d) χ(d) T_d`. -/
@@ -1054,9 +1093,13 @@ private theorem sum_dampedFun_eq_innerSum (x : ℝ) (j : ℕ) {k : ℕ} (χ : Di
   refine sum_congr rfl fun d _ ↦ ?_
   rw [innerSum, Nat.floor_div_natCast, Nat.floor_div_natCast]
 
+section
+variable {x : ℝ} {j : ℕ} (hj : 1 ≤ j) (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x) {k : ℕ} (χ : DirichletCharacter ℂ k) (t : ℝ) {lo hi ε : ℝ} (hlo : Real.exp 1 ≤ lo) (hlohi : lo ≤ hi)
+
+include hlo hlohi in
 /-- Trivially, `‖T_d‖ ≤ (hi - lo) / d + 1`. -/
-private theorem norm_innerSum_le {k : ℕ} (χ : DirichletCharacter ℂ k) (t : ℝ) {lo hi : ℝ}
-    (hlo : Real.exp 1 ≤ lo) (hlohi : lo ≤ hi) {d : ℕ} (hd : 1 ≤ d) :
+private theorem norm_innerSum_le        
+        {d : ℕ} (hd : 1 ≤ d) :
     ‖innerSum χ t lo hi d‖ ≤ (hi - lo) / d + 1 := by
   have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
   have hlo0 : 0 ≤ lo := ((Real.exp_pos 1).trans_le hlo).le
@@ -1080,10 +1123,11 @@ private theorem norm_innerSum_le {k : ℕ} (χ : DirichletCharacter ℂ k) (t : 
   rw [Nat.cast_sub (Nat.floor_le_floor (div_le_div_of_nonneg_right hlohi hd0.le)), sub_div]
   linarith
 
+include hj hP hlo hlohi in
 /-- The divisors `d > D₀` contribute `O(H D₀^{-ε} Π + hi^{1-ε} Π)` by Rankin's trick. -/
-private theorem norm_sum_large_divisors_le {x : ℝ} {j : ℕ} (hj : 1 ≤ j)
-    (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x) {k : ℕ}
-    (χ : DirichletCharacter ℂ k) (t : ℝ) {lo hi ε : ℝ} (hlo : Real.exp 1 ≤ lo) (hlohi : lo ≤ hi)
+private theorem norm_sum_large_divisors_le      
+       
+             
     (hε0 : 0 ≤ ε) (hε : ε < 1) {D₀ B' : ℕ} (hB' : B' ≤ max ⌊hi⌋₊ D₀) :
     ‖∑ d ∈ (Icc 1 B').filter (D₀ < ·), (dampedMobius x j d : ℂ) * χ d * innerSum χ t lo hi d‖ ≤
       (hi - lo) * (((D₀ : ℝ) + 1) ^ (-ε) * rankinProd (primesIcc 2 (proxyCutoff x)) ε) +
@@ -1094,11 +1138,8 @@ private theorem norm_sum_large_divisors_le {x : ℝ} {j : ℕ} (hj : 1 ≤ j)
   have hFs : ∀ d ∈ F, d ∈ Nat.factoredNumbers s := fun d hd ↦
     mem_factoredNumbers_of_dampedMobius_ne_zero hP (mem_filter.mp hd).2
   have hFd : ∀ d ∈ F, 1 ≤ d ∧ D₀ < d ∧ d ≤ ⌊hi⌋₊ := by
-    intro d hd
-    have h1 := mem_filter.mp (mem_filter.mp hd).1
-    have h2 := mem_Icc.mp h1.1
-    exact ⟨h2.1, h1.2, by have := h2.2; have := h1.2; omega⟩
-  have hlo0 : 0 ≤ lo := ((Real.exp_pos 1).trans_le hlo).le
+    grind
+  
   have hhi0 : 0 < hi := ((Real.exp_pos 1).trans_le hlo).trans_le hlohi
   rw [← sum_filter_of_ne (p := fun d ↦ dampedMobius x j d ≠ 0) fun d _ h h0 ↦ h (by simp [h0])]
   refine (norm_sum_le _ _).trans ?_
@@ -1122,8 +1163,10 @@ private theorem norm_sum_large_divisors_le {x : ℝ} {j : ℕ} (hj : 1 ≤ j)
     (Nat.cast_le.mpr (hFd d hd).2.2).trans (Nat.floor_le hhi0.le)⟩
   exact add_le_add (mul_le_mul_of_nonneg_left hinv (sub_nonneg.mpr hlohi)) hcard
 
+end
+
 /-- The mean `k⁻¹ ∑_{r < k} χ(r)` of a character over a period, `[χ = 1] φ(k)/k`. -/
-private noncomputable def charMean {k : ℕ} (χ : DirichletCharacter ℂ k) : ℂ :=
+private noncomputable def charMean {k } (χ : DirichletCharacter ℂ k)  :=
   (∑ r ∈ range k, χ r) / k
 
 /-- The mean of a character over a period has norm at most one. -/
@@ -1139,8 +1182,13 @@ private theorem norm_charMean_le {k : ℕ} (χ : DirichletCharacter ℂ k) : ‖
   simp
 
 open scoped Classical in
+section
+variable {x : ℝ} {j : ℕ} (hj : 1 ≤ j) (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x) {c C : ℝ} (hc1 : c ≤ 1) (hPNT : ∀ (k : ℕ) [NeZero k] (χ : DirichletCharacter ℂ k) (y : ℝ), 2 ≤ y →
+      ‖∑ n ∈ Icc 1 ⌊y⌋₊, (ArithmeticFunction.vonMangoldt n : ℂ) * χ n -
+          (if χ = 1 then (y : ℂ) else 0)‖ ≤ C * (k : ℝ) ^ C * y ^ (1 - c)) {k : ℕ} (χ : DirichletCharacter ℂ k) (t : ℝ) {lo hi ε K : ℝ} (hlo : Real.exp 1 ≤ lo) (hlohi : lo ≤ hi) (A N : ℕ) {B : ℝ}
+
 /-- The principal mean times the Euler product of `λ χ / d` is `[χ = 1] D_j`. -/
-private theorem charMean_mul_prod_eq {x : ℝ} {j k : ℕ} [NeZero k]
+private theorem charMean_mul_prod_eq     [NeZero k]
     (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x)
     (hkY : (k : ℝ) ≤ proxyCutoff x) (hkP : ∀ p ∈ candidatePrimes x, k < p)
     (χ : DirichletCharacter ℂ k) :
@@ -1154,7 +1202,7 @@ private theorem charMean_mul_prod_eq {x : ℝ} {j k : ℕ} [NeZero k]
   · simp
 
 /-- The character count in `(lo/d, y]` has main term `charMean χ (y - lo/d)`. -/
-private theorem norm_sum_char_sub_charMean_le {k : ℕ} [NeZero k] (χ : DirichletCharacter ℂ k)
+private theorem norm_sum_char_sub_charMean_le   [NeZero k] (χ : DirichletCharacter ℂ k)
     {a y : ℝ} (ha : 0 ≤ a) (hay : a ≤ y) :
     ‖∑ m ∈ Ioc ⌊a⌋₊ ⌊y⌋₊, χ m - charMean χ * ((y : ℂ) - (a : ℂ))‖ ≤ 2 * k + 1 := by
   have hk : (0 : ℝ) < k := by exact_mod_cast NeZero.pos k
@@ -1190,7 +1238,7 @@ private theorem norm_sum_char_sub_charMean_le {k : ℕ} [NeZero k] (χ : Dirichl
     _ ≤ 2 * k + 1 := (norm_add_le _ _).trans (add_le_add h1 h2)
 
 /-- Low frequencies: `T_d = charMean χ · d⁻¹ ∫ u^{it} / log u + O(k (|t| + 1))`. -/
-private theorem norm_innerSum_sub_le {k : ℕ} [NeZero k] (χ : DirichletCharacter ℂ k) (t : ℝ)
+private theorem norm_innerSum_sub_le   [NeZero k] (χ : DirichletCharacter ℂ k) (t : ℝ)
     {lo hi : ℝ} (hlo : Real.exp 1 ≤ lo) (hlohi : lo ≤ hi) (hhi : hi - lo ≤ lo) {d : ℕ}
     (hd : 1 ≤ d) :
     ‖innerSum χ t lo hi d - charMean χ * (((d : ℂ))⁻¹ * ∫ u in lo..hi, twistWeight t u)‖ ≤
@@ -1201,18 +1249,19 @@ private theorem norm_innerSum_sub_le {k : ℕ} [NeZero k] (χ : DirichletCharact
     fun y hy ↦ ?_
   exact norm_sum_char_sub_charMean_le χ (div_nonneg hlo0 hd0.le) hy.1
 
+include hlo hlohi in
 /-- The twisted weight integrates to at most `hi - lo`. -/
-private theorem norm_integral_twistWeight_le (t : ℝ) {lo hi : ℝ} (hlo : Real.exp 1 ≤ lo)
-    (hlohi : lo ≤ hi) : ‖∫ u in lo..hi, twistWeight t u‖ ≤ hi - lo := by
+private theorem norm_integral_twistWeight_le      
+      : ‖∫ u in lo..hi, twistWeight t u‖ ≤ hi - lo := by
   refine (intervalIntegral.norm_integral_le_of_norm_le_const (C := 1) fun u hu ↦ ?_).trans_eq ?_
-  · rw [Set.uIoc_of_le hlohi] at hu
-    exact norm_twistWeight_le (hlo.trans hu.1.le) t
+  · grind [norm_twistWeight_le]
   · rw [one_mul, abs_of_nonneg (sub_nonneg.mpr hlohi)]
 
 open scoped Classical in
+include hj hP in
 /-- The damped sum at low frequencies: `∑ g_j χ n^{it} / log n = [χ = 1] D_j ∫ + error`. -/
-private theorem norm_sum_dampedFun_sub_le {x : ℝ} {j : ℕ} (hj : 1 ≤ j)
-    (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x) {k : ℕ} [NeZero k]
+private theorem norm_sum_dampedFun_sub_le      
+        [NeZero k]
     (hkY : (k : ℝ) ≤ proxyCutoff x) (hkP : ∀ p ∈ candidatePrimes x, k < p)
     (χ : DirichletCharacter ℂ k) (t : ℝ) {lo hi ε : ℝ} (hlo : Real.exp 1 ≤ lo)
     (hlohi : lo ≤ hi) (hhi : hi - lo ≤ lo) (hε0 : 0 ≤ ε) (hε : ε < 1) (D₀ : ℕ) :
@@ -1228,9 +1277,7 @@ private theorem norm_sum_dampedFun_sub_le {x : ℝ} {j : ℕ} (hj : 1 ≤ j)
   have hsplit := sum_filter_add_sum_filter_not (Icc 1 B') (D₀ < ·)
     fun d ↦ (dampedMobius x j d : ℂ) * χ d * innerSum χ t lo hi d
   have hsmall : (Icc 1 B').filter (fun d ↦ ¬ D₀ < d) = Icc 1 D₀ := by
-    ext d
-    simp only [mem_filter, mem_Icc, not_lt, B']
-    omega
+    grind
   rw [hsmall] at hsplit
   have hmain : (if χ = 1 then (dampedDensity x j : ℂ) * J else 0) = charMean χ * a * J := by
     rw [charMean_mul_prod_eq hP hkY hkP χ]
@@ -1247,12 +1294,8 @@ private theorem norm_sum_dampedFun_sub_le {x : ℝ} {j : ℕ} (hj : 1 ≤ j)
       simp only [Nat.cast_zero, div_zero, add_zero]
       refine sum_nbij' (· + 1) (· - 1) (fun i hi ↦ ?_) (fun i hi ↦ ?_) (fun i _ ↦ by simp)
         (fun i hi ↦ ?_) (fun i _ ↦ by push_cast; rfl)
-      · simp only [mem_range] at hi
-        simp only [mem_Icc]
-        omega
-      · simp only [mem_Icc] at hi
-        simp only [mem_range]
-        omega
+      · grind
+      · grind
       · simp only [mem_Icc] at hi
         omega
     rw [hr, mul_sum, ← sum_add_distrib]
@@ -1304,7 +1347,7 @@ private theorem norm_sum_dampedFun_sub_le {x : ℝ} {j : ℕ} (hj : 1 ≤ j)
         linarith
 
 /-- `T_d = d^{it} ∑_{m ∈ I/d} χ(m) m^{it} / log(dm)`. -/
-private theorem innerSum_eq {k : ℕ} (χ : DirichletCharacter ℂ k) (t lo hi : ℝ) (d : ℕ) :
+private theorem innerSum_eq     (t lo hi : ℝ) (d : ℕ) :
     innerSum χ t lo hi d = (d : ℂ) ^ ((t : ℂ) * Complex.I) *
       ∑ m ∈ Ioc ⌊lo / d⌋₊ ⌊hi / d⌋₊, χ m * (m : ℂ) ^ ((t : ℂ) * Complex.I) *
         twistWeight 0 ((d : ℝ) * m) := by
@@ -1318,12 +1361,13 @@ private theorem innerSum_eq {k : ℕ} (χ : DirichletCharacter ℂ k) (t lo hi :
   rw [h]
   ring
 
+include hj hP hlo hlohi in
 /-- High frequencies: given kernel bounds `K / d` on the inner sums for `d ≤ D₀`, the damped
 sum is `O(K Π + H D₀^{-ε} Π + hi^{1-ε} Π)`. -/
-private theorem norm_sum_dampedFun_le_of_kernel {x : ℝ} {j : ℕ} (hj : 1 ≤ j)
-    (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x) {k : ℕ}
-    (χ : DirichletCharacter ℂ k) (t : ℝ) {lo hi ε K : ℝ} (hlo : Real.exp 1 ≤ lo)
-    (hlohi : lo ≤ hi) (hhi : hi - lo ≤ lo) (hε0 : 0 ≤ ε) (hε : ε < 1) (D₀ : ℕ) (hK0 : 0 ≤ K)
+private theorem norm_sum_dampedFun_le_of_kernel      
+       
+           
+      (hhi : hi - lo ≤ lo) (hε0 : 0 ≤ ε) (hε : ε < 1) (D₀ : ℕ) (hK0 : 0 ≤ K)
     (hK : ∀ d : ℕ, 1 ≤ d → d ≤ D₀ → ∀ y ∈ Set.Icc (lo / d) (hi / d),
       ‖∑ m ∈ Ioc ⌊lo / d⌋₊ ⌊y⌋₊, χ m * (m : ℂ) ^ ((t : ℂ) * Complex.I)‖ ≤ K / d) :
     ‖∑ n ∈ Ioc ⌊lo⌋₊ ⌊hi⌋₊, (dampedFun x j n : ℂ) * (χ n * twistWeight t n)‖ ≤
@@ -1336,9 +1380,7 @@ private theorem norm_sum_dampedFun_le_of_kernel {x : ℝ} {j : ℕ} (hj : 1 ≤ 
   have hsplit := sum_filter_add_sum_filter_not (Icc 1 B') (D₀ < ·)
     fun d ↦ (dampedMobius x j d : ℂ) * χ d * innerSum χ t lo hi d
   have hsmall : (Icc 1 B').filter (fun d ↦ ¬ D₀ < d) = Icc 1 D₀ := by
-    ext d
-    simp only [mem_filter, mem_Icc, not_lt, B']
-    omega
+    grind
   rw [hsmall] at hsplit
   rw [sum_dampedFun_eq_innerSum x j χ t (le_max_left _ _), ← hsplit]
   have htail := norm_sum_large_divisors_le hj hP χ t hlo hlohi hε0 hε (D₀ := D₀) (B' := B') le_rfl
@@ -1381,7 +1423,7 @@ private theorem norm_sum_dampedFun_le_of_kernel {x : ℝ} {j : ℕ} (hj : 1 ≤ 
 /-! ### The prime sum -/
 
 /-- There are at most `√N (log₂ N + 1)` proper prime powers up to `N`. -/
-private theorem card_isPrimePow_not_prime_le (N : ℕ) :
+private theorem card_isPrimePow_not_prime_le   :
     #{n ∈ Ioc 0 N | IsPrimePow n ∧ ¬ n.Prime} ≤ Nat.sqrt N * (Nat.log 2 N + 1) := by
   classical
   have hsub : {n ∈ Ioc 0 N | IsPrimePow n ∧ ¬ n.Prime} ⊆
@@ -1404,11 +1446,11 @@ private theorem card_isPrimePow_not_prime_le (N : ℕ) :
     · refine Nat.lt_succ_of_le (Nat.le_log_of_pow_le one_lt_two ?_)
       exact (Nat.pow_le_pow_left hp.two_le e).trans hN
   refine (card_le_card hsub).trans (card_image_le.trans ?_)
-  rw [card_product, Nat.card_Icc, card_range, Nat.add_sub_cancel]
+  simp_all
 
 /-- Replacing `∑ χ(p) p^{it}` by `∑ Λ(n) χ(n) n^{it} / log n` costs the proper prime powers. -/
-private theorem norm_sum_vonMangoldt_sub_sum_prime_le {k : ℕ} (χ : DirichletCharacter ℂ k) (t : ℝ)
-    (A N : ℕ) :
+private theorem norm_sum_vonMangoldt_sub_sum_prime_le      
+      :
     ‖∑ n ∈ Ioc A N, (ArithmeticFunction.vonMangoldt n : ℂ) * χ n * twistWeight t n -
         ∑ n ∈ Ioc A N, ((if n.Prime then 1 else 0 : ℝ) : ℂ) *
           (χ n * (n : ℂ) ^ ((t : ℂ) * Complex.I))‖ ≤
@@ -1449,18 +1491,15 @@ private theorem norm_sum_vonMangoldt_sub_sum_prime_le {k : ℕ} (χ : DirichletC
   rw [← sum_filter, sum_const, nsmul_eq_mul, mul_one]
   have hsub : (Ioc A N).filter (fun n ↦ IsPrimePow n ∧ ¬ n.Prime) ⊆
       (Ioc 0 N).filter (fun n ↦ IsPrimePow n ∧ ¬ n.Prime) := by
-    intro n hn
-    simp only [mem_filter, mem_Ioc] at hn ⊢
-    exact ⟨⟨hn.2.1.pos, hn.1.2⟩, hn.2⟩
+    gcongr <;> first | assumption | positivity | linarith
   exact_mod_cast (card_le_card hsub).trans (card_isPrimePow_not_prime_le N)
 
 open scoped Classical in
+include hc1 hPNT in
 /-- Low frequencies: partial summation of the prime number theorem in progressions. -/
-private theorem norm_sum_vonMangoldt_sub_le {c C : ℝ} (hc1 : c ≤ 1)
-    (hPNT : ∀ (k : ℕ) [NeZero k] (χ : DirichletCharacter ℂ k) (y : ℝ), 2 ≤ y →
-      ‖∑ n ∈ Icc 1 ⌊y⌋₊, (ArithmeticFunction.vonMangoldt n : ℂ) * χ n -
-          (if χ = 1 then (y : ℂ) else 0)‖ ≤ C * (k : ℝ) ^ C * y ^ (1 - c))
-    {k : ℕ} [NeZero k] (χ : DirichletCharacter ℂ k) (t : ℝ) {lo hi : ℝ}
+private theorem norm_sum_vonMangoldt_sub_le    
+     
+      [NeZero k] (χ : DirichletCharacter ℂ k) (t : ℝ) {lo hi : ℝ}
     (hlo : Real.exp 1 ≤ lo) (hlohi : lo ≤ hi) (hhi : hi - lo ≤ lo) :
     ‖∑ n ∈ Ioc ⌊lo⌋₊ ⌊hi⌋₊, (ArithmeticFunction.vonMangoldt n : ℂ) * χ n * twistWeight t n -
         (if χ = 1 then ∫ u in lo..hi, twistWeight t u else 0)‖ ≤
@@ -1509,8 +1548,8 @@ private theorem norm_sum_vonMangoldt_sub_le {c C : ℝ} (hc1 : c ≤ 1)
     linarith
 
 /-- High frequencies: partial summation of bounds for `∑ χ(p) p^{-1+it}`. -/
-private theorem norm_sum_prime_le_of_twist {k : ℕ} (χ : DirichletCharacter ℂ k) (t : ℝ)
-    {lo hi B : ℝ} (hlo : 0 ≤ lo) (hlohi : lo ≤ hi)
+private theorem norm_sum_prime_le_of_twist      
+      (hlo : 0 ≤ lo) (hlohi : lo ≤ hi)
     (hB : ∀ y ∈ Set.Icc lo hi, ‖∑ p ∈ (Ioc ⌊lo⌋₊ ⌊y⌋₊).filter Nat.Prime,
       χ p * (p : ℂ) ^ ((-1 : ℂ) + (t : ℂ) * Complex.I)‖ ≤ B) :
     ‖∑ n ∈ Ioc ⌊lo⌋₊ ⌊hi⌋₊,
@@ -1539,6 +1578,8 @@ private theorem norm_sum_prime_le_of_twist {k : ℕ} (χ : DirichletCharacter �
     ring
   · simp
 
+end
+
 /-! ### The parameters at scale `x` -/
 
 /-- `T = log log x → ∞`. -/
@@ -1546,7 +1587,7 @@ private theorem tendsto_logLog : Tendsto logLog atTop atTop :=
   Real.tendsto_log_atTop.comp Real.tendsto_log_atTop
 
 /-- Exponentials beat polynomials: `C T^n ≤ exp(a T)` for large `T`. -/
-private theorem eventually_mul_pow_le_exp {a : ℝ} (ha : 0 < a) (n : ℕ) (C : ℝ) :
+private theorem eventually_mul_pow_le_exp  {a}  (ha : 0 < a)  n   C  :
     ∀ᶠ T : ℝ in atTop, C * T ^ n ≤ Real.exp (a * T) := by
   have h := (tendsto_exp_div_pow_atTop n).comp (tendsto_id.const_mul_atTop ha)
   filter_upwards [h.eventually_ge_atTop ((|C| + 1) / a ^ n), eventually_ge_atTop 1]
@@ -1562,7 +1603,7 @@ private theorem eventually_mul_pow_le_exp {a : ℝ} (ha : 0 < a) (n : ℕ) (C : 
   linarith
 
 /-- The presieve exponent is at least `c₂ / T²¹`. -/
-private theorem presieveExponent_ge {c Ch x : ℝ} (hc : 0 < c) (hT : 1 ≤ logLog x) :
+private theorem presieveExponent_ge  {c Ch x}  (hc : 0 < c) (hT : 1 ≤ logLog x) :
     c / (4 * (8 * |Ch| + 11)) / logLog x ^ 21 ≤ presieveExponent c Ch x := by
   set T := logLog x
   have hs0 : 0 ≤ logLogLog x := Real.log_nonneg hT
@@ -1580,8 +1621,8 @@ private theorem presieveExponent_ge {c Ch x : ℝ} (hc : 0 < c) (hT : 1 ≤ logL
     rw [sieveDepth]
     push_cast
     nlinarith [abs_nonneg Ch]
-  have hT0 : 0 < T := by linarith
-  have hd0 : 0 < 4 * (sieveDepth Ch x : ℝ) + 3 := by positivity
+  
+  
   rw [presieveExponent]
   calc c / (4 * (8 * |Ch| + 11)) / T ^ 21 = c / T ^ 20 / 4 / ((8 * |Ch| + 11) * T) := by
         field_simp
@@ -1589,7 +1630,7 @@ private theorem presieveExponent_ge {c Ch x : ℝ} (hc : 0 < c) (hT : 1 ≤ logL
         gcongr
 
 /-- The inequalities between the parameters that hold for large `x`. -/
-private theorem eventually_params (c Ch : ℝ) (hc : 0 < c) (M Cm K : ℝ) :
+private theorem eventually_params  c Ch  (hc : 0 < c)  M Cm K  :
     ∀ᶠ x : ℝ in atTop, 1 < Real.log x ∧ 1 ≤ logLog x ∧
       M * logLog x ≤ presieveExponent c Ch x * Real.log x - Real.log 2 ∧
       M * logLog x + 1 ≤ presieveExponent c Ch x * logLog x ^ 25 ∧
@@ -1624,7 +1665,7 @@ private theorem eventually_params (c Ch : ℝ) (hc : 0 < c) (M Cm K : ℝ) :
       eventually_mul_pow_le_exp (by norm_num : (0 : ℝ) < 55 / 100) 25 1,
       eventually_mul_pow_le_exp one_pos 25 2] with T h1 h2 h3 h4 h5 h6 h7 h8 h9
     have hT0 : 0 < T := by linarith
-    have hpow : ∀ n : ℕ, 0 < T ^ n := fun n ↦ pow_pos hT0 n
+    have hpow : ∀ n : ℕ, 0 < T ^ n := pow_pos hT0
     simp only [one_mul, pow_one] at h4 h5 h6 h7 h8 h9
     have hMc : |M| + 1 ≤ T * c₂ := (div_le_iff₀ hc₂0).mp (by linarith)
     have hKc : 2 * |K| + 1 ≤ T * c₂ := (div_le_iff₀ hc₂0).mp h3
@@ -1697,10 +1738,13 @@ private theorem eventually_params (c Ch : ℝ) (hc : 0 < c) (M Cm K : ℝ) :
 
 /-! ### The centered coefficient -/
 
+section
+variable (x γ : ℝ) (j : ℕ) {x' Cm κ : ℝ} (hIK : IntegerKernelBound x' Cm κ) {k : ℕ} (hk : 1 ≤ k) (hkx : (k : ℝ) ≤ Real.log x' ^ Cm) (χ : DirichletCharacter ℂ k) (t : ℝ) {A N : ℕ} (lo hi : ℝ) {H l a : ℝ}
+
 /-- Above the cutoff, the centered twisted sum is the prime sum minus `D_j⁻¹` times the damped
 sum. -/
-private theorem sum_centered_eq (x γ : ℝ) (j : ℕ) {k : ℕ} (χ : DirichletCharacter ℂ k) (t : ℝ)
-    {A N : ℕ} (hA : ∀ n ∈ Ioc A N, x ^ γ < n) :
+private theorem sum_centered_eq          
+      (hA : ∀ n ∈ Ioc A N, x ^ γ < n) :
     ∑ n ∈ Ioc A N, χ n * (n : ℂ) ^ ((t : ℂ) * Complex.I) *
         (((if n.Prime ∧ x ^ γ < n then 1 else 0 : ℝ) : ℂ) - (unstrippedProxy x γ j n : ℂ)) =
       ∑ n ∈ Ioc A N, ((if n.Prime then 1 else 0 : ℝ) : ℂ) *
@@ -1723,8 +1767,8 @@ private theorem sum_centered_eq (x γ : ℝ) (j : ℕ) {k : ℕ} (χ : Dirichlet
     ring
 
 /-- The summands vanish at or below the cutoff `x^γ`, so the interval may start there. -/
-private theorem sum_centered_eq_max (x γ : ℝ) (j : ℕ) {k : ℕ} (χ : DirichletCharacter ℂ k)
-    (t lo hi : ℝ)
+private theorem sum_centered_eq_max        
+     
     (hγ : 0 ≤ x ^ γ) :
     ∑ n ∈ Ioc ⌊lo⌋₊ ⌊hi⌋₊, χ n * (n : ℂ) ^ ((t : ℂ) * Complex.I) *
         (((if n.Prime ∧ x ^ γ < n then 1 else 0 : ℝ) : ℂ) - (unstrippedProxy x γ j n : ℂ)) =
@@ -1735,10 +1779,7 @@ private theorem sum_centered_eq_max (x γ : ℝ) (j : ℕ) {k : ℕ} (χ : Diric
   refine sum_subset (fun n hn ↦ ?_) fun n hn hn' ↦ ?_
   · simp only [mem_Ioc] at hn ⊢
     refine ⟨lt_of_le_of_lt ?_ hn.1, hn.2⟩
-    rcases le_total lo 0 with h | h
-    · rw [Nat.floor_eq_zero.mpr (by linarith)]
-      exact Nat.zero_le _
-    · exact Nat.floor_le_floor (le_max_left _ _)
+    bound
   · have hle : ¬ x ^ γ < n := by
       intro hlt
       apply hn'
@@ -1751,13 +1792,13 @@ private theorem sum_centered_eq_max (x γ : ℝ) (j : ℕ) {k : ℕ} (χ : Diric
 /-! ### Numerical bounds -/
 
 /-- `H^{-a} ≤ exp(-a l)` when `log H ≥ l`. -/
-private theorem rpow_neg_le_exp {H l a : ℝ} (hH : 0 < H) (hl : l ≤ Real.log H) (ha : 0 ≤ a) :
+private theorem rpow_neg_le_exp   (hH : 0 < H) (hl : l ≤ Real.log H) (ha : 0 ≤ a) :
     H ^ (-a) ≤ Real.exp (-(a * l)) := by
   rw [Real.rpow_def_of_pos hH, Real.exp_le_exp]
   nlinarith
 
 /-- The proper prime powers up to `N ≤ 2H` number at most `14 H^{3/4}`. -/
-private theorem sqrt_mul_log_le {N : ℕ} {H : ℝ} (hH : 1 ≤ H) (hN : (N : ℝ) ≤ 2 * H) :
+private theorem sqrt_mul_log_le     (hH : 1 ≤ H) (hN : (N : ℝ) ≤ 2 * H) :
     (Nat.sqrt N : ℝ) * (Nat.log 2 N + 1) ≤ 14 * H ^ (3 / 4 : ℝ) := by
   rcases Nat.eq_zero_or_pos N with rfl | hN0
   · simp only [Nat.sqrt_zero, Nat.cast_zero, zero_mul]
@@ -1771,7 +1812,7 @@ private theorem sqrt_mul_log_le {N : ℕ} {H : ℝ} (hH : 1 ≤ H) (hN : (N : �
     have h := Nat.pow_log_le_self 2 hN0.ne'
     have : ((2 ^ Nat.log 2 N : ℕ) : ℝ) ≤ N := by exact_mod_cast h
     have := Real.log_le_log (by positivity) this
-    rwa [Nat.cast_pow, Real.log_pow, Nat.cast_ofNat] at this
+    simp_all
   have hlogle : Real.log N ≤ (N : ℝ) ^ (1 / 4 : ℝ) / (1 / 4) :=
     Real.log_le_rpow_div (Nat.cast_nonneg N) (by norm_num)
   have hq : (1 : ℝ) ≤ (N : ℝ) ^ (1 / 4 : ℝ) := Real.one_le_rpow hN1 (by norm_num)
@@ -1803,10 +1844,11 @@ private theorem sqrt_mul_log_le {N : ℕ} {H : ℝ} (hH : 1 ≤ H) (hN : (N : �
     _ ≤ 7 * (2 * H ^ (3 / 4 : ℝ)) := by gcongr; exact hN34.trans h2
     _ = 14 * H ^ (3 / 4 : ℝ) := by ring
 
+include hIK hk hkx in
 /-- The integer kernel bound (AC3) at scale `H / d` bounds the twisted character sums over
 subintervals of `I / d`. -/
-private theorem norm_sum_char_cpow_le_of_kernel {x' Cm κ : ℝ} (hIK : IntegerKernelBound x' Cm κ)
-    {k : ℕ} (hk : 1 ≤ k) (hkx : (k : ℝ) ≤ Real.log x' ^ Cm) (χ : DirichletCharacter ℂ k)
+private theorem norm_sum_char_cpow_le_of_kernel    
+           
     {t H lo hi : ℝ} (ht1 : 1 ≤ |t|) (htx : |t| ≤ x' ^ 3) (hH0 : 0 < H)
     (hHx : H ≤ x') (hHlo : H ≤ lo) (hhi : hi ≤ 2 * H) {d : ℕ} (hd : 1 ≤ d)
     (hHd : Real.exp (Real.log x' / Real.log (Real.log x') ^ 22) ≤ H / d) :
@@ -1840,6 +1882,8 @@ private theorem norm_sum_char_cpow_le_of_kernel {x' Cm κ : ℝ} (hIK : IntegerK
   apply le_of_eq
   field_simp
 
+end
+
 
 
 /-! ### The parameters at a fixed large `x` -/
@@ -1866,12 +1910,16 @@ private theorem candidate_facts {x Cm : ℝ} (hL1 : 1 < Real.log x)
       linarith
     exact h2.trans ((Real.exp_le_exp.mpr h1).trans hY45)
 
+section
+variable {x CM : ℝ} (hCM : ∀ Y : ℝ, 2 ≤ Y → ∑ p ∈ primesIcc 2 Y, (1 : ℝ) / p ≤ Real.log (Real.log Y) + CM) (hL1 : 1 < Real.log x) (hT1 : 1 ≤ logLog x) (hF8 : 2 * logLog x ^ 25 ≤ Real.log x) (hY2 : 2 ≤ proxyCutoff x) {j : ℕ} (hj : 1 ≤ j) {N k : ℕ} {H lo hi t ε R D T M A' C₀ c₁ Cm' K' E : ℝ} (hk : 1 ≤ k) (hkexp : (k : ℝ) ≤ Real.exp (Cm' * T)) {W : ℝ} (hH1 : 1 ≤ H) (hN : (N : ℝ) ≤ 2 * H) (hHhi : H ≤ hi) (hHlo : H ≤ lo) (hlohi : lo ≤ hi) (hhi : hi ≤ 2 * H) (hMT : M * T ≤ Real.log H) (hMA : 4 * A' ≤ M) (hc₁0 : 0 < c₁) (hc₁1 : c₁ ≤ 1) (hMc : A' + Cm' * |C₀| + E ≤ c₁ * M) (ht : |t| ≤ K' ^ E * Real.exp (E * T)) (hE0 : 0 ≤ E) (hK' : 1 ≤ K') (hε0 : 0 ≤ ε) {κ₃ L' : ℝ} (hH0 : 0 < H) (hR0 : 0 ≤ R) (hD0 : 0 < D) (hW : 0 ≤ W) (hRD : R * D⁻¹ ≤ W * Real.exp (14 * T)) (hHε : H ^ (-(ε / 2)) ≤ Real.exp (-(M / 2 * T))) (hM : 2 * (A' + 14) ≤ M) (hT0 : 0 ≤ T)
+
+include hCM hL1 hT1 hF8 hY2 hj in
 /-- Rankin's exponent `ε = 1 / log Y = T²⁵ / L`, the majorant `Π ≤ exp(12 (T + |C_M|))`, and
 `D_j⁻¹ ≤ exp(2 (T + |C_M|))`. -/
-private theorem rankin_facts {x CM : ℝ}
-    (hCM : ∀ Y : ℝ, 2 ≤ Y → ∑ p ∈ primesIcc 2 Y, (1 : ℝ) / p ≤ Real.log (Real.log Y) + CM)
-    (hL1 : 1 < Real.log x) (hT1 : 1 ≤ logLog x) (hF8 : 2 * logLog x ^ 25 ≤ Real.log x)
-    (hY2 : 2 ≤ proxyCutoff x) {j : ℕ} (hj : 1 ≤ j) :
+private theorem rankin_facts  
+     
+         
+          :
     0 ≤ 1 / Real.log (proxyCutoff x) ∧ 1 / Real.log (proxyCutoff x) ≤ 1 / 2 ∧
       1 / Real.log (proxyCutoff x) = logLog x ^ 25 / Real.log x ∧
       0 ≤ rankinProd (primesIcc 2 (proxyCutoff x)) (1 / Real.log (proxyCutoff x)) ∧
@@ -1883,7 +1931,7 @@ private theorem rankin_facts {x CM : ℝ}
   set T := logLog x
   set Y := proxyCutoff x with hYdef
   have hL0 : 0 < L := by linarith
-  have hT25 : 0 < T ^ 25 := by positivity
+  
   have hlogY : Real.log Y = L / T ^ 25 := Real.log_exp _
   have hε : 1 / Real.log Y = T ^ 25 / L := by
     rw [hlogY]
@@ -1901,7 +1949,7 @@ private theorem rankin_facts {x CM : ℝ}
   have hsum : ∑ p ∈ primesIcc 2 Y, (1 : ℝ) / p ≤ T + |CM| := by
     have := hCM Y hY2
     linarith [le_abs_self CM]
-  have hsum0 : 0 ≤ ∑ p ∈ primesIcc 2 Y, (1 : ℝ) / p := sum_nonneg fun p _ ↦ by positivity
+  
   have hR : rankinProd (primesIcc 2 Y) (1 / Real.log Y) ≤ Real.exp (12 * T + 12 * |CM|) := by
     refine (rankinProd_le hε0 hε2).trans (Real.exp_le_exp.mpr ?_)
     rw [hYε]
@@ -1932,9 +1980,10 @@ private theorem rankin_facts {x CM : ℝ}
 
 /-! ### The error terms at scale `H` -/
 
+include hH1 hN hMT hMA hT0 in
 /-- The proper prime powers: `√N (log₂ N + 1) ≤ 14 H exp(-A' T)`. -/
-private theorem primePower_term_le {N : ℕ} {H T M A' : ℝ} (hH1 : 1 ≤ H) (hN : (N : ℝ) ≤ 2 * H)
-    (hMT : M * T ≤ Real.log H) (hMA : 4 * A' ≤ M) (hT0 : 0 ≤ T) :
+private theorem primePower_term_le        
+          :
     (Nat.sqrt N : ℝ) * (Nat.log 2 N + 1) ≤ H * (14 * Real.exp (-(A' * T))) := by
   have hH0 : 0 < H := by linarith
   refine (sqrt_mul_log_le hH1 hN).trans ?_
@@ -1947,19 +1996,20 @@ private theorem primePower_term_le {N : ℕ} {H T M A' : ℝ} (hH1 : 1 ≤ H) (h
   rw [h1]
   nlinarith
 
+include hk hkexp hH1 hHhi hhi hMT hc₁0 hc₁1 hMc ht hE0 hK' hT0 in
 /-- The prime number theorem error: `2 C₀ k^{C₀} hi^{1 - c₁} (|t| + 2) ≤ 4 |C₀| (K'^E + 2) H
 exp(-A' T)`. -/
-private theorem pnt_term_le {k : ℕ} {H hi t T M A' C₀ c₁ Cm' K' E : ℝ} (hk : 1 ≤ k)
-    (hkexp : (k : ℝ) ≤ Real.exp (Cm' * T)) (hH1 : 1 ≤ H) (hHhi : H ≤ hi) (hhi : hi ≤ 2 * H)
-    (hMT : M * T ≤ Real.log H) (hc₁0 : 0 < c₁) (hc₁1 : c₁ ≤ 1)
-    (hMc : A' + Cm' * |C₀| + E ≤ c₁ * M) (ht : |t| ≤ K' ^ E * Real.exp (E * T)) (hE0 : 0 ≤ E)
-    (hK' : 1 ≤ K') (hT0 : 0 ≤ T) :
+private theorem pnt_term_le      
+           
+         
+         
+        :
     2 * C₀ * (k : ℝ) ^ C₀ * hi ^ (1 - c₁) * (|t| + 2) ≤
       H * (4 * |C₀| * (K' ^ E + 2) * Real.exp (-(A' * T))) := by
   have hH0 : 0 < H := by linarith
   have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast hk
   have hhi0 : 0 < hi := by linarith
-  have hKE : 1 ≤ K' ^ E := Real.one_le_rpow hK' hE0
+  
   have hET : 1 ≤ Real.exp (E * T) := Real.one_le_exp (by positivity)
   -- `C₀ k^{C₀} ≤ |C₀| exp(|C₀| C_m' T)`
   have hC : C₀ * (k : ℝ) ^ C₀ ≤ |C₀| * Real.exp (|C₀| * Cm' * T) := by
@@ -2006,11 +2056,12 @@ private theorem pnt_term_le {k : ℕ} {H hi t T M A' C₀ c₁ Cm' K' E : ℝ} (
     _ ≤ 4 * |C₀| * (K' ^ E + 2) * H * Real.exp (-(A' * T)) := by gcongr
     _ = _ := by ring
 
+include hH1 hHlo hlohi hhi hε0 hR0 hD0 hW hRD hHε hM hT0 in
 /-- The Rankin terms: `D⁻¹ (2 (hi - lo) D₀^{-ε} Π + hi^{1-ε} Π) ≤ 4 W H exp(-A' T)`. -/
-private theorem rankin_term_le {H lo hi ε R D T M A' W : ℝ} (hH1 : 1 ≤ H) (hHlo : H ≤ lo)
-    (hlohi : lo ≤ hi) (hhi : hi ≤ 2 * H) (hε0 : 0 ≤ ε) (hR0 : 0 ≤ R) (hD0 : 0 < D) (hW : 0 ≤ W)
-    (hRD : R * D⁻¹ ≤ W * Real.exp (14 * T)) (hHε : H ^ (-(ε / 2)) ≤ Real.exp (-(M / 2 * T)))
-    (hM : 2 * (A' + 14) ≤ M) (hT0 : 0 ≤ T) :
+private theorem rankin_term_le      
+               
+       
+        :
     D⁻¹ * (2 * ((hi - lo) * (((⌊Real.sqrt H⌋₊ : ℝ) + 1) ^ (-ε) * R)) + hi ^ (1 - ε) * R) ≤
       H * (4 * W * Real.exp (-(A' * T))) := by
   have hH0 : 0 < H := by linarith
@@ -2030,7 +2081,7 @@ private theorem rankin_term_le {H lo hi ε R D T M A' W : ℝ} (hH1 : 1 ≤ H) (
       (by linarith)
     have h4 : H ^ (-ε) ≤ H ^ (-(ε / 2)) := Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
     rw [e]
-    exact mul_le_mul (by linarith) (h3.trans h4) (Real.rpow_nonneg hhi0.le _) (by linarith)
+    exact (by gcongr <;> first | assumption | positivity | linarith)
   have hσ : H ^ (-(ε / 2)) * (W * Real.exp (14 * T)) ≤ W * Real.exp (-(A' * T)) := by
     have hW0 : 0 ≤ W * Real.exp (14 * T) := mul_nonneg hW (Real.exp_pos _).le
     calc H ^ (-(ε / 2)) * (W * Real.exp (14 * T)) ≤
@@ -2042,7 +2093,7 @@ private theorem rankin_term_le {H lo hi ε R D T M A' W : ℝ} (hH1 : 1 ≤ H) (
           nlinarith
   have hsum : 2 * ((hi - lo) * (((⌊Real.sqrt H⌋₊ : ℝ) + 1) ^ (-ε) * R)) + hi ^ (1 - ε) * R ≤
       4 * H * H ^ (-(ε / 2)) * R := by
-    have hd : 0 ≤ hi - lo := by linarith
+    
     have hd' : hi - lo ≤ H := by linarith
     have hp : 0 ≤ ((⌊Real.sqrt H⌋₊ : ℝ) + 1) ^ (-ε) := Real.rpow_nonneg (by positivity) _
     have : (hi - lo) * (((⌊Real.sqrt H⌋₊ : ℝ) + 1) ^ (-ε) * R) ≤ H * (H ^ (-(ε / 2)) * R) :=
@@ -2056,17 +2107,18 @@ private theorem rankin_term_le {H lo hi ε R D T M A' W : ℝ} (hH1 : 1 ≤ H) (
     _ ≤ 4 * H * (W * Real.exp (-(A' * T))) := by gcongr
     _ = H * (4 * W * Real.exp (-(A' * T))) := by ring
 
+include hH1 hD0 in
 /-- The small divisors at low frequency:
 `D⁻¹ D₀ (2k + 1)(|t| + 2) ≤ 3 (K'^E + 2) W H exp(-A' T)`. -/
-private theorem smallDivisor_term_le {k : ℕ} {H t D T M A' Cm' K' E W : ℝ} (hH1 : 1 ≤ H)
-    (hD0 : 0 < D) (hDinv : D⁻¹ ≤ W * Real.exp (2 * T)) (hkexp : (k : ℝ) ≤ Real.exp (Cm' * T))
+private theorem smallDivisor_term_le      
+      (hDinv : D⁻¹ ≤ W * Real.exp (2 * T)) (hkexp : (k : ℝ) ≤ Real.exp (Cm' * T))
     (ht : |t| ≤ K' ^ E * Real.exp (E * T)) (hMT : M * T ≤ Real.log H)
     (hM : 2 * (A' + Cm' + E + 2) ≤ M) (hE0 : 0 ≤ E) (hK' : 1 ≤ K') (hCm' : 0 ≤ Cm')
     (hT0 : 0 ≤ T) :
     D⁻¹ * (⌊Real.sqrt H⌋₊ * ((2 * k + 1) * (|t| + 2))) ≤
       H * (3 * (K' ^ E + 2) * W * Real.exp (-(A' * T))) := by
   have hH0 : 0 < H := by linarith
-  have hKE : 1 ≤ K' ^ E := Real.one_le_rpow hK' hE0
+  
   have hET : 1 ≤ Real.exp (E * T) := Real.one_le_exp (by positivity)
   have hCT : 1 ≤ Real.exp (Cm' * T) := Real.one_le_exp (by positivity)
   have hW : 0 ≤ W := by
@@ -2096,10 +2148,11 @@ private theorem smallDivisor_term_le {k : ℕ} {H t D T M A' Cm' K' E W : ℝ} (
     _ ≤ 3 * (K' ^ E + 2) * W * H * Real.exp (-(A' * T)) := by gcongr
     _ = _ := by ring
 
+include hH0 hR0 hD0 hRD in
 /-- The kernel terms at high frequency:
 `D⁻¹ 2 K_I Π ≤ 4 |κ₃| W H exp(-A' T)`, with `K_I = k |κ₃| H ((1 + |t|)⁻¹ + exp(-L'^{0.95}))`. -/
-private theorem kernel_term_le {k : ℕ} {H t R D T M A' Cm' E W κ₃ L' : ℝ} (hH0 : 0 < H)
-    (hR0 : 0 ≤ R) (hD0 : 0 < D) (hRD : R * D⁻¹ ≤ W * Real.exp (14 * T))
+private theorem kernel_term_le      
+         
     (hkexp : (k : ℝ) ≤ Real.exp (Cm' * T)) (ht : (1 + |t|)⁻¹ ≤ Real.exp (-(E * T)))
     (hL' : Real.exp (-L' ^ (0.95 : ℝ)) ≤ Real.exp (-(M * T)))
     (hE : A' + Cm' + 14 ≤ E) (hM : A' + Cm' + 14 ≤ M) (hT0 : 0 ≤ T) :
@@ -2133,8 +2186,9 @@ private theorem kernel_term_le {k : ℕ} {H t R D T M A' Cm' E W κ₃ L' : ℝ}
 /-! ### The two frequency ranges -/
 
 open scoped Classical in
+include hj in
 /-- Low frequencies: the prime and proxy main terms cancel, up to `O(H exp(-A' T))`. -/
-private theorem low_frequency_bound {x : ℝ} {j : ℕ} (hj : 1 ≤ j) {k : ℕ} [NeZero k]
+private theorem low_frequency_bound         [NeZero k]
     (χ : DirichletCharacter ℂ k) (t : ℝ) {H lo hi c₁ C₀ T M A' Cm' K' E W : ℝ}
     (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x) (hkY : (k : ℝ) ≤ proxyCutoff x)
     (hkP : ∀ p ∈ candidatePrimes x, k < p) (hc₁0 : 0 < c₁) (hc₁1 : c₁ ≤ 1)
@@ -2191,7 +2245,7 @@ private theorem low_frequency_bound {x : ℝ} {j : ℕ} (hj : 1 ≤ j) {k : ℕ}
     rw [hid]
     refine (norm_sub_le _ _).trans (add_le_add ((norm_sub_le _ _).trans (add_le_add h1 h2)) ?_)
     rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hD0]
-    exact mul_le_mul_of_nonneg_left h3 (inv_nonneg.mpr hD0.le)
+    bound
   refine hnorm.trans ?_
   have hN : ((⌊hi⌋₊ : ℕ) : ℝ) ≤ 2 * H := (Nat.floor_le (by linarith)).trans hhi
   have t1 := pnt_term_le (k := k) (t := t) (C₀ := C₀) (by have := NeZero.pos k; omega) hkexp
@@ -2203,8 +2257,9 @@ private theorem low_frequency_bound {x : ℝ} {j : ℕ} (hj : 1 ≤ j) {k : ℕ}
   rw [mul_add D⁻¹]
   nlinarith
 
+include hj in
 /-- High frequencies: the prime and proxy sums are each `O(H exp(-A' T))`. -/
-private theorem high_frequency_bound {x : ℝ} {j : ℕ} (hj : 1 ≤ j) {k : ℕ}
+private theorem high_frequency_bound        
     (χ : DirichletCharacter ℂ k) (t : ℝ) {H lo hi T M A' Cm' E W κ₂ κ₃ L' B : ℝ}
     (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x)
     (hlo : Real.exp 1 ≤ lo) (hH1 : 1 ≤ H) (hHlo : H ≤ lo) (hlohi : lo ≤ hi) (hhi : hi ≤ 2 * H)
@@ -2237,7 +2292,7 @@ private theorem high_frequency_bound {x : ℝ} {j : ℕ} (hj : 1 ≤ j) {k : ℕ
     have := (mul_nonneg hR0 (inv_nonneg.mpr hD0.le)).trans hRD
     exact (mul_nonneg_iff_of_pos_right (Real.exp_pos _)).mp this
   have hKI0 : 0 ≤ k * |κ₃| * H * ((1 + |t|)⁻¹ + Real.exp (-L' ^ (0.95 : ℝ))) :=
-    mul_nonneg (by positivity) (add_nonneg (inv_nonneg.mpr (by positivity)) (Real.exp_pos _).le)
+    (by positivity)
   have h1 := norm_sum_prime_le_of_twist χ t hlo0 hlohi hB
   have h2 := norm_sum_dampedFun_le_of_kernel hj hP χ t hlo hlohi hhi' hε0 (by linarith)
     ⌊Real.sqrt H⌋₊ hKI0 fun d hd hdD y hy ↦ (hK d hd hdD y hy).trans_eq (by ring)
@@ -2264,23 +2319,27 @@ private theorem high_frequency_bound {x : ℝ} {j : ℕ} (hj : 1 ≤ j) {k : ℕ
           rankinProd (primesIcc 2 (proxyCutoff x)) (1 / Real.log (proxyCutoff x))) := by
     rw [← mul_add]
     exact mul_le_mul_of_nonneg_left (h2.trans (by linarith)) (inv_nonneg.mpr hD0.le)
-  have e : H * ((3 * |κ₂| + 4 * |κ₃| * W + 4 * W) * Real.exp (-(A' * T))) =
-      H * (3 * |κ₂| * Real.exp (-(A' * T))) + H * (4 * |κ₃| * W * Real.exp (-(A' * T))) +
-        H * (4 * W * Real.exp (-(A' * T))) := by ring
+  
   linarith
+
+end
 
 
 /-! ### Assembly -/
 
+section
+variable {c Ch A Cm Kan x γ H c₁ C₀ E₂ κ₂ κ₃ CM A' Cm' K' E M ε : ℝ} (hx : 0 < x) (hK' : 1 ≤ K') (hL1 : 1 < Real.log x) (hT1 : 1 ≤ logLog x) {W : ℝ}
+
+include hx hL1 hT1 in
 /-- The scale `H ≥ x^γ / 2` satisfies `log H ≥ γ L - log 2 ≥ M T`, and Rankin's saving
 `H^{-ε/2} ≤ exp(-(M/2) T)` holds. -/
-private theorem scale_facts {x γ H M ε : ℝ} (hx : 0 < x) (hL1 : 1 < Real.log x)
-    (hT1 : 1 ≤ logLog x) (hM1 : 1 ≤ M) (hF2 : M * logLog x ≤ γ * Real.log x - Real.log 2)
+private theorem scale_facts      
+      (hM1 : 1 ≤ M) (hF2 : M * logLog x ≤ γ * Real.log x - Real.log 2)
     (hF1 : M * logLog x + 1 ≤ γ * logLog x ^ 25) (hε : ε = logLog x ^ 25 / Real.log x)
     (hε2 : ε ≤ 1 / 2) (hH : x ^ γ / 2 ≤ H) :
     0 < H ∧ Real.exp 1 ≤ H ∧ γ * Real.log x - Real.log 2 ≤ Real.log H ∧
       M * logLog x ≤ Real.log H ∧ H ^ (-(ε / 2)) ≤ Real.exp (-(M / 2 * logLog x)) := by
-  have hL0 : 0 < Real.log x := by linarith
+  
   have hxγ : x ^ γ = Real.exp (γ * Real.log x) := by rw [Real.rpow_def_of_pos hx, mul_comm]
   have hH0 : 0 < H := lt_of_lt_of_le (by rw [hxγ]; positivity) hH
   have hlogH : γ * Real.log x - Real.log 2 ≤ Real.log H := by
@@ -2303,10 +2362,11 @@ private theorem scale_facts {x γ H M ε : ℝ} (hx : 0 < x) (hL1 : 1 < Real.log
     have : ε * Real.log 2 ≤ 1 := by nlinarith
     nlinarith
 
+include hx hK' hL1 hT1 in
 /-- At `x' = x^{K'}`: `log x' = K' L ≥ L`, `log log x' ≥ T`, and the scale threshold
 `exp(log x' / (log log x')²²)` of the contracts is at most `exp(K' L / T²²)`. -/
-private theorem xprime_facts {x K' : ℝ} (hx : 0 < x) (hK' : 1 ≤ K') (hL1 : 1 < Real.log x)
-    (hT1 : 1 ≤ logLog x) :
+private theorem xprime_facts        
+      :
     Real.log (x ^ K') = K' * Real.log x ∧ Real.log x ≤ Real.log (x ^ K') ∧
       Real.exp (Real.log (x ^ K') / Real.log (Real.log (x ^ K')) ^ 22) ≤
         Real.exp (K' * Real.log x / logLog x ^ 22) := by
@@ -2320,12 +2380,11 @@ private theorem xprime_facts {x K' : ℝ} (hx : 0 < x) (hK' : 1 ≤ K') (hL1 : 1
   rw [hlog]
   rw [hlog] at hTT
   have hT0 : 0 < logLog x := by linarith
-  exact div_le_div_of_nonneg_left (by positivity) (by positivity)
-    (pow_le_pow_left₀ hT0.le hTT 22)
+  exact (by bound)
 
 open scoped Classical in
 /-- The bound above the cutoff, in both frequency ranges. -/
-private theorem proxyTwist_reduced {x c₁ C₀ E₂ κ₂ κ₃ A' Cm' K' E M W : ℝ} {j k : ℕ} [NeZero k]
+private theorem proxyTwist_reduced   {j k : ℕ} [NeZero k]
     (χ : DirichletCharacter ℂ k) (t : ℝ) {H lo hi : ℝ} (hj : 1 ≤ j)
     (hP : ∀ p ∈ candidatePrimes x, (p : ℝ) ≤ proxyCutoff x) (hkY : (k : ℝ) ≤ proxyCutoff x)
     (hkP : ∀ p ∈ candidatePrimes x, k < p) (hc₁0 : 0 < c₁) (hc₁1 : c₁ ≤ 1)
@@ -2389,8 +2448,7 @@ private theorem proxyTwist_reduced {x c₁ C₀ E₂ κ₂ κ₃ A' Cm' K' E M W
     have ht1 : 1 ≤ |t| := hU1.trans htU.le
     have hsqrtH : Real.sqrt H ≤ H := by
       refine Real.sqrt_le_iff.mpr ⟨by linarith, ?_⟩
-      rw [sq]
-      exact le_mul_of_one_le_left (by linarith) hH1
+      bound
     have hscale' : Real.exp (Real.log (x ^ K') / Real.log (Real.log (x ^ K')) ^ 22) ≤
         Real.sqrt H := hthr.trans hscale
     have hlogx'1 : 1 ≤ Real.log (x ^ K') := by linarith
@@ -2449,7 +2507,7 @@ private theorem proxyTwist_reduced {x c₁ C₀ E₂ κ₂ κ₃ A' Cm' K' E M W
 
 open scoped Classical in
 /-- AC1 at a fixed large `x`, from the parameter inequalities and the analytic inputs. -/
-private theorem proxyTwist_at {c Ch A Cm Kan x c₁ C₀ E₂ κ₂ κ₃ CM A' Cm' K' E M : ℝ}
+private theorem proxyTwist_at  
     (hc₁0 : 0 < c₁) (hc₁1 : c₁ ≤ 1)
     (hPNT : ∀ (k : ℕ) [NeZero k] (χ : DirichletCharacter ℂ k) (y : ℝ), 2 ≤ y →
       ‖∑ n ∈ Icc 1 ⌊y⌋₊, (ArithmeticFunction.vonMangoldt n : ℂ) * χ n -
@@ -2471,7 +2529,7 @@ private theorem proxyTwist_at {c Ch A Cm Kan x c₁ C₀ E₂ κ₂ κ₃ CM A' 
     (hx1 : 1 < x) {j : ℕ} (hj : 1 ≤ j) {H lo hi : ℝ}
     (hH : x ^ presieveExponent c Ch x / 2 ≤ H) (hHK : H ≤ x ^ Kan) (hHlo : H ≤ lo)
     (hhi : hi ≤ 2 * H) {k : ℕ} (hk : 1 ≤ k) (hkL : (k : ℝ) ≤ Real.log x ^ Cm)
-    (χ : DirichletCharacter ℂ k) {t : ℝ} (ht : |t| ≤ x ^ Kan) :
+    (χ : DirichletCharacter ℂ k)  {t}  (ht : |t| ≤ x ^ Kan) :
     ‖(H : ℂ)⁻¹ * ∑ n ∈ Finset.Ioc ⌊lo⌋₊ ⌊hi⌋₊,
         χ n * (n : ℂ) ^ ((t : ℂ) * Complex.I) *
           (((if n.Prime ∧ x ^ presieveExponent c Ch x < n then 1 else 0 : ℝ) : ℂ) -
@@ -2519,8 +2577,7 @@ private theorem proxyTwist_at {c Ch A Cm Kan x c₁ C₀ E₂ κ₂ κ₃ CM A' 
   have hκ0 : 0 ≤ (14 + 4 * |C₀| * (K' ^ E + 2) + 3 * (K' ^ E + 2) * Real.exp (14 * |CM|) +
       8 * Real.exp (14 * |CM|) + 3 * |κ₂| + 4 * |κ₃| * Real.exp (14 * |CM|)) := by
     have : 0 ≤ K' ^ E + 2 := by
-      have := Real.rpow_nonneg (by linarith : (0 : ℝ) ≤ K') E
-      linarith
+      positivity
     positivity
   rcases le_or_gt hi lo' with hhilo | hhilo
   · have hempty : Ioc ⌊lo'⌋₊ ⌊hi⌋₊ = ∅ :=
@@ -2537,6 +2594,8 @@ private theorem proxyTwist_at {c Ch A Cm Kan x c₁ C₀ E₂ κ₂ κ₃ CM A' 
     hc₁1 hPNT hPTx hIKx hx hL1 hT1 hF5 (he.trans hHlo') hH1 hHlo' hhilo.le hhi hHx htx hscale hk
     hkx hkexp hε0 hε2 hR0 hRD hD0 hDinv hHε hMT hK'1 hE2 hE hMA hMc hM hA'0 hCm'0
   exact h.trans (mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hA hκ0) hH0.le)
+
+end
 
 /-- The damped-proxy twist bound (AC1). -/
 theorem eventually_proxyTwist (c Ch Cj A Cm Kan : ℝ) (hc : 0 < c) :
@@ -2576,8 +2635,7 @@ theorem eventually_proxyTwist (c Ch Cj A Cm Kan : ℝ) (hc : 0 < c) :
     have := le_max_right E₂ 0
     linarith
   have hQ0 : 0 ≤ (A' + Cm' * |C₀| + E) / c₁ := by
-    have : 0 ≤ Cm' * |C₀| := by positivity
-    exact div_nonneg (by linarith) hc₁0.le
+    positivity
   have hMA : 4 * A' ≤ M := by linarith
   have hMM : 2 * (A' + Cm' + E + 2) ≤ M := by linarith
   have hM1 : 1 ≤ M := by linarith
@@ -2585,9 +2643,7 @@ theorem eventually_proxyTwist (c Ch Cj A Cm Kan : ℝ) (hc : 0 < c) :
     have e : c₁ * ((A' + Cm' * |C₀| + E) / c₁) = A' + Cm' * |C₀| + E :=
       mul_div_cancel₀ _ hc₁0.ne'
     have : 0 ≤ c₁ * (4 * A' + 2 * (A' + Cm' + E + 2) + 1) := by positivity
-    have : c₁ * M = c₁ * ((A' + Cm' * |C₀| + E) / c₁) +
-        c₁ * (4 * A' + 2 * (A' + Cm' + E + 2) + 1) := by ring
-    linarith
+    grind
   -- the prime number theorem with exponent `c₁ ≤ 1`
   have hPNT' : ∀ (k : ℕ) [NeZero k] (χ : DirichletCharacter ℂ k) (y : ℝ), 2 ≤ y →
       ‖∑ n ∈ Icc 1 ⌊y⌋₊, (ArithmeticFunction.vonMangoldt n : ℂ) * χ n -

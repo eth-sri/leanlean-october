@@ -38,7 +38,7 @@ section Basic
 variable [Norm E] [Norm F] {f : ι × α → E} {g : α → F} {l : Filter α}
 
 /-- If f = O(g) uniformly on `s`, then f_i = O(g) for any i.` -/
-theorem isBigO_of_isBigOUniformly (h : f =O[𝓟 s ×ˢ l] (g ∘ Prod.snd)) {i : ι}
+theorem isBigO_of_isBigOUniformly (h : f =O[𝓟 s ×ˢ l] (g ∘ Prod.snd))  {i} 
     (hi : i ∈ s) : (fun x ↦ f (i, x)) =O[l] g := by
   obtain ⟨C, hC⟩ := h.bound
   obtain ⟨t, htl, ht⟩ := hC.exists_mem
@@ -47,7 +47,7 @@ theorem isBigO_of_isBigOUniformly (h : f =O[𝓟 s ×ˢ l] (g ∘ Prod.snd)) {i 
   exact fun y hy ↦ ht _ <| huv ⟨hu hi, hy⟩
 
 /-- If f = Ω(g) uniformly on `s`, then f_i = Ω(g) for any i.` -/
-theorem isBigO_rev_of_isBigOUniformly_rev (h : (g ∘ Prod.snd) =O[𝓟 s ×ˢ l] f) {i : ι}
+theorem isBigO_rev_of_isBigOUniformly_rev (h : (g ∘ Prod.snd) =O[𝓟 s ×ˢ l] f)  {i} 
     (hi : i ∈ s) : g =O[l] fun x ↦ f (i, x) := by
   obtain ⟨C, hC⟩ := h.bound
   obtain ⟨t, htl, ht⟩ := hC.exists_mem
@@ -56,7 +56,7 @@ theorem isBigO_rev_of_isBigOUniformly_rev (h : (g ∘ Prod.snd) =O[𝓟 s ×ˢ l
   exact fun y hy ↦ ht (i, y) <| huv ⟨hu hi, hy⟩
 
 /-- If f = Θ(g) uniformly on `s`, then f_i = Θ(g) for any i.` -/
-theorem isTheta_of_isThetaUniformly (h : f =Θ[𝓟 s ×ˢ l] (g ∘ Prod.snd)) {i : ι}
+theorem isTheta_of_isThetaUniformly (h : f =Θ[𝓟 s ×ˢ l] (g ∘ Prod.snd))  {i} 
     (hi : i ∈ s) : (fun x ↦ f (i, x)) =Θ[l] g :=
   ⟨isBigO_of_isBigOUniformly h.1 hi, isBigO_rev_of_isBigOUniformly_rev h.2 hi⟩
 
@@ -82,7 +82,7 @@ theorem isLittleO_const_snd_atTop [NoMaxOrder α] [ClosedIciTopology α] (c : F)
 
 end Order
 
-section ContinuousOn
+
 
 variable [TopologicalSpace ι] {C : ι → E} {c : F}
 
@@ -90,10 +90,14 @@ section IsBigO
 
 variable [SeminormedAddGroup E] [Norm F]
 
+section
+variable (hf : ContinuousOn C s) (hs : IsCompact s) (hc : ‖c‖ ≠ 0) (l : Filter α)
+include hf hs hc l
+
 /-- A family of constant functions `f (i, x) = C i` is uniformly bounded w.r.t. `s` by
 `⨆ i ∈ s, ‖C i‖`, if `s` is compact and `C` is continuous. -/
 theorem _root_.ContinuousOn.const_isBigOWithUniformlyOn_isCompact
-    (hf : ContinuousOn C s) (hs : IsCompact s) (hc : ‖c‖ ≠ 0) (l : Filter α) :
+            :
     IsBigOWith (sSup (norm '' (C '' s)) / ‖c‖) (𝓟 s ×ˢ l)
     (fun (i, _x) ↦ C i) fun _ => c := by
   refine isBigOWith_iff.mpr <| eventually_of_mem ?_ (fun x hx ↦ ?_) (U := s ×ˢ Set.univ)
@@ -106,20 +110,30 @@ theorem _root_.ContinuousOn.const_isBigOWithUniformlyOn_isCompact
 /-- A family of constant functions `f (i, x) = C i` is uniformly O(1) w.r.t. `s`,
 if `s` is compact and `C` is continuous. -/
 theorem _root_.ContinuousOn.const_isBigOUniformlyOn_isCompact
-    (hf : ContinuousOn C s) (hs : IsCompact s) (hc : ‖c‖ ≠ 0) (l : Filter α) :
+            :
     (fun (i, _x) ↦ C i) =O[𝓟 s ×ˢ l] fun _ => c :=
   (hf.const_isBigOWithUniformlyOn_isCompact hs hc l).isBigO
 
+end
+
 end IsBigO
 
-section IsTheta
+
 
 variable [NormedAddGroup E] [SeminormedAddGroup F]
+
+section
+variable (hf : ContinuousOn C s) (hs : IsCompact s)
+include hf hs
+
+section
+variable (hC : ∀ i ∈ s, C i ≠ 0) (l : Filter α)
+include hC l
 
 /-- A family of constant functions `f (i, x) = C i` is uniformly bounded below w.r.t. `s` by
 `⊓ i ∈ s, ‖C i‖`, if `s` is compact and `C` is continuous. -/
 theorem _root_.ContinuousOn.const_isBigOWithUniformlyOn_isCompact_rev
-    (hf : ContinuousOn C s) (hs : IsCompact s) (hC : ∀ i ∈ s, C i ≠ 0) (l : Filter α) :
+            :
     IsBigOWith (‖c‖ / sInf (norm '' (C '' s))) (𝓟 s ×ˢ l)
     (fun _ => c) fun (i, _x) ↦ C i := by
   refine isBigOWith_iff.mpr <| eventually_of_mem ?_ (fun x hx ↦ ?_) (U := s ×ˢ Set.univ)
@@ -136,19 +150,23 @@ theorem _root_.ContinuousOn.const_isBigOWithUniformlyOn_isCompact_rev
 /-- A family of constant functions `f (i, x) = C i` is uniformly Ω(1) w.r.t. `s`,
 if `s` is compact and `C` is continuous with no zeros on `s`. -/
 theorem _root_.ContinuousOn.const_isBigOUniformlyOn_isCompact_rev
-    (hf : ContinuousOn C s) (hs : IsCompact s) (hC : ∀ i ∈ s, C i ≠ 0) (l : Filter α) :
+            :
     (fun _ => c) =O[𝓟 s ×ˢ l] (fun (i, _x) ↦ C i) :=
   (hf.const_isBigOWithUniformlyOn_isCompact_rev hs hC l).isBigO
 
+end
+
 /-- A family of constant functions `f (i, x) = C i` is uniformly Θ(1) w.r.t. `s`,
 if `s` is compact and `C` is continuous with no zeros on `s`. -/
-theorem _root_.ContinuousOn.const_isThetaUniformlyOn_isCompact (hf : ContinuousOn C s)
-    (hs : IsCompact s) (hc : ‖c‖ ≠ 0) (hC : ∀ i ∈ s, C i ≠ 0) (l : Filter α) :
+theorem _root_.ContinuousOn.const_isThetaUniformlyOn_isCompact  
+      (hc : ‖c‖ ≠ 0) (hC : ∀ i ∈ s, C i ≠ 0) (l : Filter α) :
     (fun (i, _x) ↦ C i) =Θ[𝓟 s ×ˢ l] fun _ => c :=
   ⟨hf.const_isBigOUniformlyOn_isCompact hs hc l,
     hf.const_isBigOUniformlyOn_isCompact_rev hs hC l⟩
 
-end IsTheta
+end
 
-end ContinuousOn
+
+
+
 end Asymptotics

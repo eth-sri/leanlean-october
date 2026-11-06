@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.CubicSieve.Gauss
 
@@ -9,21 +10,18 @@ namespace OAI
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-noncomputable section
+
 local notation "O" => ActualEisensteinCubic.O
 
-lemma primeIndex_product (I : Ideal O) (hI : Admissible I) :
-    (∏ P : PrimeIndex I, P.val) = I := by
-  have hI0 := primaryGenerator_ne_zero_ideal I hI.2
-  have hnodup := (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hI0).mp hI.1
-  have hv : (CompletedGauss.primeSupport I).val = UniqueFactorizationMonoid.normalizedFactors I := by
-    simpa only [CompletedGauss.primeSupport, Multiset.toFinset_val] using hnodup.dedup
-  calc
-    _ = ∏ P ∈ CompletedGauss.primeSupport I, P := Finset.prod_coe_sort _ _
-    _ = (CompletedGauss.primeSupport I).val.prod := (Finset.prod_val _).symm
-    _ = I := by rw [hv]; exact Ideal.prod_normalizedFactors_eq_self hI0
+section
+variable (I : Ideal O) (hI : Admissible I)
+include I hI
 
-theorem gaussTwo_norm_one (I : Ideal O) (hI : Admissible I) : ‖gaussTwo I hI.2‖ = 1 := by
+lemma primeIndex_product     :
+    (∏ P : PrimeIndex I, P.val) = I := have hI0 : I ≠ 0 := OAI.CompletedGauss.primaryGenerator_ne_zero_ideal I hI.right;
+Eq.symm (Eq.symm (Finset.prod_coe_sort (OAI.CompletedGauss.primeSupport I) fun P => P) ▸ Eq.symm (Finset.prod_val (OAI.CompletedGauss.primeSupport I))) ▸ Eq.mpr (congrArg (fun _a => _a.prod = I) (Multiset.Nodup.dedup ((UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hI0).mp hI.left))) (Ideal.prod_normalizedFactors_eq_self hI0)
+
+theorem gaussTwo_norm_one     : ‖gaussTwo I hI.2‖ = 1 := by
   let c := primaryGenerator I
   let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hI.2
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
@@ -48,9 +46,7 @@ theorem gaussTwo_norm_one (I : Ideal O) (hI : Admissible I) : ‖gaussTwo I hI.2
   have hrow (x : O ⧸ Ideal.span {c}) : (∏ P : PrimeIndex I, χ P (e x P)) =
       CompletedGauss.cubicRow I hI.2 ((Ideal.quotEquivOfEq (primaryGenerator_spec I hI.2).1) x) := by
     obtain ⟨z, rfl⟩ := Ideal.Quotient.mk_surjective x
-    dsimp only [c] at z ⊢
-    simp only [e, c, RingEquiv.trans_apply, Ideal.quotEquivOfEq_mk,
-      IdealGaussCRT.quotientProdEquivPi_mk, CompletedGauss.cubicRow_mk, χ]
+    rfl
   simp_rw [hrow] at hnormsq
   have hcard : (Fintype.card (O ⧸ Ideal.span {c}) : ℝ) = ‖eisEmbedding c‖ ^ 2 := by
     symm
@@ -65,6 +61,8 @@ theorem gaussTwo_norm_one (I : Ideal O) (hI : Admissible I) : ‖gaussTwo I hI.2
   exact div_self (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hI.2))
 
 end
+
+
 end SevenEighths.CubicSieve
 
 end OAI

@@ -21,16 +21,16 @@ variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-def relativeCharacter (η₀ : Character) (θ : RayQuotient.Characters M H) : Character :=
+def relativeCharacter (η₀ : Character) (θ : RayQuotient.Characters M H)  :=
   (HeckeRayQuotient.character M H hH θ).product η₀.inverse
 
-lemma relativeCharacter_ideal (η₀ : Character) (θ : RayQuotient.Characters M H) (I : Ideal O) :
+lemma relativeCharacter_ideal  η₀   θ   I  :
     idealCoeff (relativeCharacter M H hH η₀ θ) I=
       idealCoeff (HeckeRayQuotient.character M H hH θ) I*idealCoeff η₀.inverse I :=
   idealCoeff_product _ _ _
 
-lemma relativeCharacter_fixedQ (η₀ : Character) (θ : RayQuotient.Characters M H)
-    (Q : Ideal O) (hQM : Q≤M) (hQη : Q≤η₀.modulus) :
+lemma relativeCharacter_fixedQ  η₀   θ 
+     Q  (hQM : Q≤M) (hQη : Q≤η₀.modulus) :
     Q≤(relativeCharacter M H hH η₀ θ).modulus := le_inf hQM hQη
 
 end SevenEighths.CenteredMomentNaturalFixedRaySource

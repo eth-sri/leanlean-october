@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import Erdos821.P3Edge.AuxSum
 
 public import Erdos821.P3Clean.Structure
 
@@ -6,7 +8,7 @@ public import Erdos821.P3Clean.Structure
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.P3Clean
@@ -15,7 +17,7 @@ open Erdos821.Blueprint.Graph
 
 variable {P : PrimeGroups}
 
-theorem V_pos_of_prime (g : P.Group) (p : P.Prime g) : 0 < P.V g := by
+theorem V_pos_of_prime  g  (p : P.Prime g) : 0 < P.V g := by
   unfold PrimeGroups.V
   apply Finset.sum_pos'
   · intro n hn
@@ -23,18 +25,12 @@ theorem V_pos_of_prime (g : P.Group) (p : P.Prime g) : 0 < P.V g := by
   · refine ⟨p.val, p.property, ?_⟩
     exact inv_pos.mpr (by exact_mod_cast (P.prime g p.val p.property).pos)
 
-theorem mu_pos (g : P.Group) (p : P.Prime g) : 0 < P.mu g p := by
+theorem mu_pos  g   p  : 0 < P.mu g p := by
   unfold PrimeGroups.mu
   exact inv_pos.mpr (mul_pos (V_pos_of_prime g p)
     (by exact_mod_cast (P.prime g p.val p.property).pos))
 
-theorem mu_sum (g : P.Group) (hV : P.V g ≠ 0) : (∑ p : P.Prime g, P.mu g p) = 1 := by
-  classical
-  have hsum : (∑ p : P.Prime g, (p.val : ℝ)⁻¹) = P.V g := by
-    symm
-    exact Finset.sum_subtype (P.primes g) (fun _ => Iff.rfl) (fun p => (p : ℝ)⁻¹)
-  simp only [PrimeGroups.mu, mul_inv_rev]
-  rw [← Finset.sum_mul, hsum, mul_inv_cancel₀ hV]
+alias mu_sum := _root_.Erdos821.P3Edge.mu_sum_eq_one
 
 theorem bigAuxMass_sum {J ell m : ℕ} (ν : Pattern P J ell m)
     (hV : ∀ g : P.BigGroup, P.V g.val ≠ 0) : (∑ u : P.BigAux J, ν.bigAuxMass u) = 1 := by

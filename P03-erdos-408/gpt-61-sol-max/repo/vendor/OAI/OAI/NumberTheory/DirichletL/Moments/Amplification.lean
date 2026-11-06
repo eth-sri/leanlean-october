@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LocalPhysical
 public import OAI.NumberTheory.DirichletL.Detector.Sextic
@@ -9,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Unequal
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplification
@@ -18,8 +19,16 @@ open CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysica
 open CenteredMomentUnequal
 local notation "O" => ActualEisensteinCubic.O
 
-theorem gauss_prime_power_one (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ) :
+section
+variable (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+include p hp
+
+section
+variable (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ)
+include hg hc n
+
+theorem gauss_prime_power_one      
+          :
     sexticGauss (p^(n+1)) (pow_ne_zero _ hp.ne_zero) 1 =
       if n = 0 then primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 else 0 := by
   rw [sexticGauss_prime_power p hp hg]
@@ -30,12 +39,10 @@ theorem gauss_prime_power_one (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal
   · subst n
     norm_num
   · have hn0 : ¬0 = n := Ne.symm hn
-    have hpos : ¬n ≤ 0 := by omega
-    simp only [ite_eq_right hn,ite_eq_right hn0,ite_eq_right hpos,show ¬n+1 ≤ 0 by omega,ite_false,sub_self]
-    split_ifs <;> rfl
+    simp_all
 
-theorem gauss_prime_power_six (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ) :
+theorem gauss_prime_power_six      
+          :
     sexticGauss (p^(n+1)) (pow_ne_zero _ hp.ne_zero) (p^6) =
       if n = 5 then (Ideal.absNorm (Ideal.span {p}) : ℂ)^5 *
         ((Ideal.absNorm (Ideal.span {p}) : ℂ)-1)
@@ -52,17 +59,14 @@ theorem gauss_prime_power_six (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal
     · subst n
       simp only [hn5,show ¬6 ∣ 6+1 by decide,ite_false,ite_true,
         pow_succ (actualSextic (Ideal.span {p}) hg) 6,h6,one_mul]
-    · rw [ite_eq_right hn5,ite_eq_right hn6]
-      by_cases hd : 6 ∣ n+1
-      · have hlarge : 6 < n := by omega
-        simp only [hd,ite_true,show ¬n+1 ≤ 6 by omega,ite_false,
-          show ¬n ≤ 6 by omega,sub_self]
-      · simp only [hd,ite_false,show ¬6=n from Ne.symm hn6]
+    grind
 
-theorem gauss_prime_power_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+end
+
+theorem gauss_prime_power_unchanged      
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ)
-    (hn0 : n ≠ 0) (hn5 : n ≠ 5) (hn6 : n ≠ 6) (h : O) (hph : ¬p ∣ h) :
+    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)  n 
+    (hn0 : n ≠ 0) (hn5 : n ≠ 5) (hn6 : n ≠ 6)  h  (hph : ¬p ∣ h) :
     sexticGauss (p^(n+1)) (pow_ne_zero _ hp.ne_zero) (h*p^6) =
       sexticGauss (p^(n+1)) (pow_ne_zero _ hp.ne_zero) h := by
   have hcop : IsCoprime h (p^(n+1)) :=
@@ -73,8 +77,10 @@ theorem gauss_prime_power_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsM
     gauss_prime_power_six p hp hg hc,gauss_prime_power_one p hp hg hc]
   simp only [hn0,hn5,hn6,ite_false,mul_zero]
 
-theorem gauss_sixth_frequency (a : O) (ha : Supported (Ideal.span {a}))
-    (p h : O) (hcop : IsCoprime p a) :
+end
+
+theorem gauss_sixth_frequency  a   ha 
+     p h  (hcop : IsCoprime p a) :
     sexticGauss a (supportedElement_ne_zero a ha) (p^6*h) =
       sexticGauss a (supportedElement_ne_zero a ha) h := by
   rw [sexticGauss_unit_scale a ha (p^6) h hcop.pow_left,
@@ -82,6 +88,6 @@ theorem gauss_sixth_frequency (a : O) (ha : Supported (Ideal.span {a}))
 
 end SevenEighths.CenteredMomentAmplification
 
-end
+
 
 end OAI

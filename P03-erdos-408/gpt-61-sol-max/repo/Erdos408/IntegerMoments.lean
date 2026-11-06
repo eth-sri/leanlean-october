@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos408.Extraction.Sieve.Composite
 
 public import Erdos408.Mertens
 public import Mathlib.Data.Nat.Prime.Factorial
@@ -26,13 +29,16 @@ namespace Erdos408
 
 open Finset
 
+section
+variable {x : ℝ} (hx : 0 ≤ x) {p : ℕ} (hp : p.Prime) (N : ℕ)
+
 /-- `mem_primesIoc_one` with the bound `p ≤ ⌊x⌋₊` in `ℕ`. -/
-private lemma mem_primesIoc_one' {x : ℝ} {p : ℕ} :
+private lemma mem_primesIoc_one'     :
     p ∈ primesIoc 1 x ↔ p.Prime ∧ p ≤ ⌊x⌋₊ :=
   mem_primesIoc_one.trans (and_congr_right fun hp => (Nat.le_floor_iff' hp.ne_zero).symm)
 
 /-- `∑_{n ≤ N} F n = F (N!)`. -/
-private lemma sum_F_Icc (N : ℕ) : ∑ n ∈ Icc 1 N, F n = F N.factorial := by
+private lemma sum_F_Icc   : ∑ n ∈ Icc 1 N, F n = F N.factorial := by
   induction N with
   | zero => simp [F_one]
   | succ N ih =>
@@ -40,7 +46,7 @@ private lemma sum_F_Icc (N : ℕ) : ∑ n ∈ Icc 1 N, F n = F N.factorial := by
       F_mul N.succ_ne_zero N.factorial_ne_zero, add_comm]
 
 /-- `F (⌊x⌋!) = ∑_{q ≤ x} v_q(⌊x⌋!) F q`. -/
-private lemma F_factorial (x : ℝ) :
+private lemma F_factorial  x  :
     F ⌊x⌋₊.factorial = ∑ q ∈ primesIoc 1 x, ⌊x⌋₊.factorial.factorization q * F q := by
   rw [F_eq_sum_factorization (Nat.factorial_ne_zero _)]
   refine sum_subset (fun q hq => ?_) (fun q _ hq => ?_)
@@ -48,15 +54,17 @@ private lemma F_factorial (x : ℝ) :
     exact mem_primesIoc_one'.2 ⟨hp, hp.dvd_factorial.1 (Nat.dvd_of_mem_primeFactors hq)⟩
   · rw [Finsupp.notMem_support_iff.1 (by rwa [Nat.support_factorization]), zero_mul]
 
+include hp in
 /-- Legendre's formula gives `N / p ≤ v_p(N!)`. -/
-private lemma div_le_factorization_factorial {p : ℕ} (hp : p.Prime) (N : ℕ) :
+private lemma div_le_factorization_factorial       :
     N / p ≤ N.factorial.factorization p := by
   rw [Nat.factorization_factorial hp (by omega : Nat.log p N < Nat.log p N + 2)]
   simpa using single_le_sum (f := fun i => N / p ^ i) (fun _ _ => Nat.zero_le _)
     (show 1 ∈ Ico 1 (Nat.log p N + 2) by simp)
 
+include hx hp in
 /-- Legendre's formula gives `v_p(⌊x⌋!) ≤ x / (p - 1) = x / p + x / (p (p - 1))`. -/
-private lemma factorization_factorial_le {x : ℝ} (hx : 0 ≤ x) {p : ℕ} (hp : p.Prime) :
+private lemma factorization_factorial_le         :
     (⌊x⌋₊.factorial.factorization p : ℝ) ≤ x / p + x / (p * (p - 1)) := by
   have hp1 : (1 : ℝ) < p := by exact_mod_cast hp.one_lt
   have hp0 : (p : ℝ) ≠ 0 := by positivity
@@ -68,8 +76,9 @@ private lemma factorization_factorial_le {x : ℝ} (hx : 0 ≤ x) {p : ℕ} (hp 
   calc _ ≤ x / (p - 1) := (Nat.cast_le.2 (Nat.factorization_factorial_le_div_pred hp _)).trans h
     _ = _ := by field_simp; ring
 
+include hx in
 /-- `⌊x⌋ / d` is within `1` of `x / d`. -/
-private lemma abs_floor_div_sub_le {x : ℝ} (hx : 0 ≤ x) (d : ℕ) :
+private lemma abs_floor_div_sub_le      d  :
     |((⌊x⌋₊ / d : ℕ) : ℝ) - x / d| ≤ 1 := by
   rw [← Nat.floor_div_natCast]
   have h0 : 0 ≤ x / d := div_nonneg hx d.cast_nonneg
@@ -89,8 +98,7 @@ private lemma sum_log_div_mul_pred_le_aux {N : ℕ} (hN : 1 ≤ N) :
     have hlog : Real.log (N + 1) - Real.log N ≤ 1 / N := by
       rw [← Real.log_div (by positivity) (by positivity)]
       have h := Real.log_le_sub_one_of_pos (x := (N + 1) / N) (by positivity)
-      have h' : ((N : ℝ) + 1) / N - 1 = 1 / N := by field_simp; ring
-      linarith
+      grind
     have hmul : ((N : ℝ) + 1) * (Real.log (N + 1) - Real.log N) ≤ 2 := by
       have := mul_le_mul_of_nonneg_left hlog (by positivity : (0 : ℝ) ≤ N + 1)
       have h' : ((N : ℝ) + 1) * (1 / N) ≤ 2 := by
@@ -107,7 +115,7 @@ private lemma sum_log_div_mul_pred_le_aux {N : ℕ} (hN : 1 ≤ N) :
     linarith
 
 /-- `∑_{2 ≤ n ≤ N} log n / (n (n - 1)) ≤ 2`. -/
-private lemma sum_log_div_mul_pred_le (N : ℕ) :
+private lemma sum_log_div_mul_pred_le   :
     ∑ n ∈ Icc 2 N, Real.log n / (n * (n - 1)) ≤ 2 := by
   rcases Nat.eq_zero_or_pos N with rfl | hN
   · simp
@@ -117,7 +125,7 @@ private lemma sum_log_div_mul_pred_le (N : ℕ) :
   linarith [sum_log_div_mul_pred_le_aux hN]
 
 /-- `∑_{q ≤ x} F q / (q (q - 1)) ≤ 2 / log 2`. -/
-private lemma sum_F_div_mul_pred_le (x : ℝ) :
+private lemma sum_F_div_mul_pred_le  x  :
     ∑ q ∈ primesIoc 1 x, (F q : ℝ) / (q * (q - 1)) ≤ 2 / Real.log 2 := by
   have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
   calc _ ≤ ∑ q ∈ primesIoc 1 x, Real.log q / (q * (q - 1)) / Real.log 2 := by
@@ -137,8 +145,9 @@ private lemma sum_F_div_mul_pred_le (x : ℝ) :
           exact div_nonneg (Real.log_nonneg (by linarith)) (by nlinarith)
     _ ≤ 2 / Real.log 2 := div_le_div_of_nonneg_right (sum_log_div_mul_pred_le _) h2.le
 
+include hx in
 /-- `∑_{q ≤ x} F q ≤ x log 4 / log 2`. -/
-private lemma sum_F_primesIoc_le {x : ℝ} (hx : 0 ≤ x) :
+private lemma sum_F_primesIoc_le     :
     ∑ q ∈ primesIoc 1 x, (F q : ℝ) ≤ Real.log 4 * x / Real.log 2 := by
   have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
   calc _ ≤ ∑ q ∈ primesIoc 1 x, Real.log q / Real.log 2 :=
@@ -146,8 +155,9 @@ private lemma sum_F_primesIoc_le {x : ℝ} (hx : 0 ≤ x) :
     _ = (∑ q ∈ primesIoc 1 x, Real.log q) / Real.log 2 := by rw [sum_div]
     _ ≤ _ := div_le_div_of_nonneg_right (sum_log_primesIoc_le hx) h2.le
 
+include hx in
 /-- `∑_{q ≤ x} F q (x / (q (q - 1)) + 1) ≤ (2 + log 4) / log 2 · x`. -/
-private lemma sum_F_error_le {x : ℝ} (hx : 0 ≤ x) :
+private lemma sum_F_error_le     :
     ∑ q ∈ primesIoc 1 x, (F q : ℝ) * (x / (q * (q - 1)) + 1) ≤
       (2 + Real.log 4) / Real.log 2 * x := by
   calc _ = x * ∑ q ∈ primesIoc 1 x, (F q : ℝ) / (q * (q - 1)) +
@@ -158,6 +168,8 @@ private lemma sum_F_error_le {x : ℝ} (hx : 0 ≤ x) :
         add_le_add (mul_le_mul_of_nonneg_left (sum_F_div_mul_pred_le x) hx)
           (sum_F_primesIoc_le hx)
     _ = _ := by ring
+
+end
 
 /-- The first integer moment: `∑_{n ≤ x} F n = x B(x) + O(x)`. -/
 theorem integer_first_moment : ∃ K : ℝ, ∀ x : ℝ, 2 ≤ x →
@@ -184,17 +196,20 @@ theorem integer_first_moment : ∃ K : ℝ, ∀ x : ℝ, 2 ≤ x →
   constructor <;> linarith
 
 /-- `F` summed over the distinct prime factors. -/
-private noncomputable def distinctF (n : ℕ) : ℕ :=
+private noncomputable def distinctF (n : ℕ)  :=
   ∑ q ∈ n.primeFactors, F q
 
+section
+variable {x : ℝ} {n : ℕ}
+
 /-- `distinctF n ≤ F n`, since every prime factor has multiplicity at least one. -/
-private lemma distinctF_le_F {n : ℕ} (hn : n ≠ 0) : distinctF n ≤ F n := by
+private lemma distinctF_le_F   (hn : n ≠ 0) : distinctF n ≤ F n := by
   rw [distinctF, F_eq_sum_factorization hn]
   refine sum_le_sum fun q hq => Nat.le_mul_of_pos_left _ (Nat.pos_of_ne_zero ?_)
   exact Finsupp.mem_support_iff.1 (by rwa [Nat.support_factorization])
 
 /-- For `1 ≤ n ≤ x`, the prime factors of `n` are the primes `q ≤ x` dividing `n`. -/
-private lemma primeFactors_eq_filter {x : ℝ} {n : ℕ} (hn : n ∈ Icc 1 ⌊x⌋₊) :
+private lemma primeFactors_eq_filter     (hn : n ∈ Icc 1 ⌊x⌋₊) :
     n.primeFactors = {q ∈ primesIoc 1 x | q ∣ n} := by
   obtain ⟨h1, h2⟩ := mem_Icc.1 hn
   ext q
@@ -202,16 +217,18 @@ private lemma primeFactors_eq_filter {x : ℝ} {n : ℕ} (hn : n ∈ Icc 1 ⌊x�
   constructor
   · rintro ⟨hp, hq, -⟩
     exact ⟨⟨hp, (Nat.le_of_dvd h1 hq).trans h2⟩, hq⟩
-  · rintro ⟨⟨hp, -⟩, hq⟩
-    exact ⟨hp, hq, by omega⟩
+  aesop
+
+end
+
+section
+variable (x : ℝ)
 
 /-- `#{n ≤ N : d ∣ n} = N / d`. -/
-private lemma card_filter_dvd_Icc (N d : ℕ) : #{n ∈ Icc 1 N | d ∣ n} = N / d := by
-  rw [← Nat.Ioc_filter_dvd_card_eq_div N d]
-  rfl
+private alias card_filter_dvd_Icc := _root_.Erdos408.Sieve.card_filter_dvd_Icc
 
 /-- `∑_{n ≤ x} distinctF n = ∑_{q ≤ x} F q ⌊x / q⌋`. -/
-private lemma sum_distinctF (x : ℝ) :
+private lemma sum_distinctF   :
     ∑ n ∈ Icc 1 ⌊x⌋₊, distinctF n = ∑ q ∈ primesIoc 1 x, F q * (⌊x⌋₊ / q) := by
   rw [sum_congr rfl fun n hn => by rw [distinctF, primeFactors_eq_filter hn, sum_filter],
     sum_comm]
@@ -219,7 +236,7 @@ private lemma sum_distinctF (x : ℝ) :
   rw [← sum_filter, sum_const, card_filter_dvd_Icc, smul_eq_mul, mul_comm]
 
 /-- `∑_{n ≤ x} distinctF(n)² = ∑_{q, r ≤ x} F q F r ⌊x / lcm(q, r)⌋`. -/
-private lemma sum_distinctF_sq (x : ℝ) :
+private lemma sum_distinctF_sq   :
     ∑ n ∈ Icc 1 ⌊x⌋₊, distinctF n ^ 2 =
       ∑ q ∈ primesIoc 1 x, ∑ r ∈ primesIoc 1 x, F q * F r * (⌊x⌋₊ / Nat.lcm q r) := by
   have h : ∀ n ∈ Icc 1 ⌊x⌋₊, distinctF n ^ 2 = ∑ q ∈ primesIoc 1 x,
@@ -239,7 +256,7 @@ private lemma sum_distinctF_sq (x : ℝ) :
 
 /-- `∑_{n ≤ x} distinctF(n)²` split into the diagonal `q = r` and the pairs `q ≠ r` with
 `q r ≤ x`. -/
-private lemma sum_distinctF_sq_eq (x : ℝ) :
+private lemma sum_distinctF_sq_eq   :
     ∑ n ∈ Icc 1 ⌊x⌋₊, (distinctF n : ℝ) ^ 2 = ∑ q ∈ primesIoc 1 x,
       ((F q : ℝ) ^ 2 * (⌊x⌋₊ / q : ℕ) +
         ∑ r ∈ primesIoc 1 (x / q) with r ≠ q, (F q : ℝ) * F r * (⌊x⌋₊ / (q * r) : ℕ)) := by
@@ -266,13 +283,15 @@ private lemma sum_distinctF_sq_eq (x : ℝ) :
       omega
     rw [← Nat.div_div_eq_div_mul, Nat.div_eq_of_lt hrx, Nat.cast_zero, mul_zero]
 
+end
+
 /-- The second integer moment: `∑_{n ≤ x} F(n)² = x (C(x) + D(x)) + O(x log x)`. -/
 theorem integer_second_moment : ∃ K : ℝ, ∀ x : ℝ, 2 ≤ x →
     |∑ n ∈ Finset.Icc 1 ⌊x⌋₊, (F n : ℝ) ^ 2 - x * (harmonicFSq x + harmonicFPair x)| ≤
       K * x * Real.log x := by
   obtain ⟨E, hE0, hE⟩ := mertens_first
   have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  have h4 : 0 < Real.log 4 := Real.log_pos (by norm_num)
+  
   set K₁ := (2 + Real.log 4) / Real.log 2 with hK₁
   refine ⟨(2 * K₁ + 2 * Real.log 4 / Real.log 2 + Real.log 4 * E / Real.log 2 ^ 2) /
     Real.log 2, fun x hx => ?_⟩

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularInputAmplification
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentFirstAmplifiedPowerBudget
@@ -24,17 +24,17 @@ open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
 open CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
 open CenteredMomentFirstScale
 open CenteredMomentChildRows CenteredMomentHeckeExpansion
-local notation "O"=>ActualEisensteinCubic.O
-local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
+
+
 
 open CenteredMomentAmplificationChildInput CenteredMomentCommonRadialData
 open CenteredMomentCommonAllocationSum CenteredMomentSecondHeightFamily
 
 open CenteredMomentFirstAnnularInput CenteredMomentFirstErrorAllocationPower
-theorem eventually_input_power_amplification {ι : Type*} [Fintype ι]
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+theorem eventually_input_power_amplification  {ι}  [Fintype ι]
+    (M : Ideal ActualEisensteinCubic.O) [NeZero M]  H 
     (hH : RayOrthogonality.globalUnits M≤H)
-    (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
+    (Sbad : Finset (Ideal ActualEisensteinCubic.O)) (hbad : fixedBadPrimes⊆Sbad)
     (sigma loss BR Bs Mmax b eta Csec xi reserve : ℝ)
     (hsigma : 0<sigma) (hloss : 0<loss) (hM : 0≤Mmax) (hb : 0≤b) (hgap : eta<sigma/6)
     (hC : 1≤Csec) (hxi : 0≤xi) (hreserve : 0<reserve) :
@@ -48,8 +48,8 @@ theorem eventually_input_power_amplification {ι : Type*} [Fintype ι]
         ∀ s : Input ι,s.η=η →
           (∀ i,Function.support (s.W i)⊆Set.Iic b) →
           ∀ (z : ι→ℝ),(∀i,z i≤eta) → (∀i,s.P i=Z^(z i)) →
-          ∀ (R seed : Ideal O),R≠0 → seed≠0 → (R.absNorm:ℝ)≤Z^BR → (seed.absNorm:ℝ)≤Z^Bs →
-          ∀ (d cLog : ℝ),∀ (I J E : Ideal O),E≠0 → ∀ (K X Tsec : ℝ),0<K → 0<X →
+          ∀ (R seed : Ideal ActualEisensteinCubic.O),R≠0 → seed≠0 → (R.absNorm:ℝ)≤Z^BR → (seed.absNorm:ℝ)≤Z^Bs →
+          ∀ (d cLog : ℝ),∀ (I J E : Ideal ActualEisensteinCubic.O),E≠0 → ∀ (K X Tsec : ℝ),0<K → 0<X →
           Tsec≤Csec*firstNominalScale I J E K X →
           ∀ (H0 : ℝ),0<H0 → H0≤4*frequencyRadius Tsec Z xi → 8*H0≤Z^Mmax →
           ∀ (amain:Fin 4→ℝ) (aerror:elementPool P→Fin 3→RayCharacter→Fin 4→ℝ)
@@ -104,8 +104,7 @@ theorem eventually_input_power_amplification {ι : Type*} [Fintype ι]
     intro p i
     have hd:=elementPool_data _ (fun Q hQ=>(hdata Q hQ).1)
       (fun Q hQ=>(hdata Q hQ).2.1) p.val p.property
-    have hcop:∀j,∀Q∈(activeInput s).slots j,IsCoprime (Ideal.span {p.val}) Q:=by
-      exact original_slot_coprime (original s R seed).active Z sigma b eta hZ.le hb hsep z hz hlen
+    have hcop:∀j,∀Q∈(activeInput s).slots j,IsCoprime (Ideal.span {p.val}) Q:=original_slot_coprime (original s R seed).active Z sigma b eta hZ.le hb hsep z hz hlen
         hsupp (original s R seed).active_slot
         (fun j Q hQ=>s.prime j Q ((original s R seed).active_subset _ hQ))
         (Ideal.span {p.val}) (hdata _ hd.2.1).1 (hdata _ hd.2.1).2.2.1
@@ -146,10 +145,10 @@ theorem eventually_input_power_amplification {ι : Type*} [Fintype ι]
       simp only [←mul_assoc,←Finset.sum_mul]
       ring
 
-theorem eventually_original_subsets_power_amplification {Ω : Type*} [Fintype Ω]
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+theorem eventually_original_subsets_power_amplification  {Ω}  [Fintype Ω]
+    (M : Ideal ActualEisensteinCubic.O) [NeZero M]  H 
     (hH : RayOrthogonality.globalUnits M≤H)
-    (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
+    (Sbad : Finset (Ideal ActualEisensteinCubic.O)) (hbad : fixedBadPrimes⊆Sbad)
     (sigma loss BR Bs Mmax b eta Csec xi reserve : ℝ)
     (hsigma : 0<sigma) (hloss : 0<loss) (hM : 0≤Mmax) (hb : 0≤b) (hgap : eta<sigma/6)
     (hC : 1≤Csec) (hxi : 0≤xi) (hreserve : 0<reserve) :
@@ -163,8 +162,8 @@ theorem eventually_original_subsets_power_amplification {Ω : Type*} [Fintype Ω
         ∀ A:Finset Ω,∀ s : Input A,s.η=η →
           (∀ i,Function.support (s.W i)⊆Set.Iic b) →
           ∀ (z : A→ℝ),(∀i,z i≤eta) → (∀i,s.P i=Z^(z i)) →
-          ∀ (R seed : Ideal O),R≠0 → seed≠0 → (R.absNorm:ℝ)≤Z^BR → (seed.absNorm:ℝ)≤Z^Bs →
-          ∀ (d cLog : ℝ),∀ (I J E : Ideal O),E≠0 → ∀ (K X Tsec : ℝ),0<K → 0<X →
+          ∀ (R seed : Ideal ActualEisensteinCubic.O),R≠0 → seed≠0 → (R.absNorm:ℝ)≤Z^BR → (seed.absNorm:ℝ)≤Z^Bs →
+          ∀ (d cLog : ℝ),∀ (I J E : Ideal ActualEisensteinCubic.O),E≠0 → ∀ (K X Tsec : ℝ),0<K → 0<X →
           Tsec≤Csec*firstNominalScale I J E K X →
           ∀ (H0 : ℝ),0<H0 → H0≤4*frequencyRadius Tsec Z xi → 8*H0≤Z^Mmax →
           ∀ (amain:Fin 4→ℝ) (aerror:elementPool P→Fin 3→RayCharacter→Fin 4→ℝ)

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialRayAttachment
 public import OAI.NumberTheory.DirichletL.Descent.MarkBounds
@@ -7,22 +8,26 @@ public import OAI.NumberTheory.DirichletL.Descent.MarkBounds
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
 open InverseInitialRayAttachment
-local notation "O"=>ActualEisensteinCubic.O
-local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 
-theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
+
+
+section
+variable (eps b B:ℝ) (heps:0<eps) (hb:0<b)
+include eps b B heps hb
+
+theorem marked_coefficient_mass    (_hB:0≤B):
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,λ₀∉Ideal.span {p i})(_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (pool:Finset ι)(Ψ:O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)(m c d:O)
+      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})(_hinj:Function.Injective (fun i=>Ideal.span {p i}))
+      (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)(m c d:ActualEisensteinCubic.O)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,∀q∈lists i,‖a i q‖≤1)→
       ∀(W:ℝ→ℂ),(∀x,‖W x‖≤B)→(∀x,W x≠0→x≤b)→∀X:ℝ,0<X→
@@ -32,7 +37,7 @@ theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
   refine ⟨128*b*(Cm*b^(eps/2)*B)^2+1,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj pool Ψ hΨ m c d slots lists a hdis ha W hW hs X hX
   let T:=pool.powerset.filter (fun A=>W (primeProductNorm p A/X)≠0)
-  have hXb:0<b*X:=mul_pos hb hX
+  
   have hnorm:∀A∈T,primeProductNorm p A≤b*X:=by
     intro A hA
     exact (div_le_iff₀ hX).mp (hs _ (Finset.mem_filter.mp hA).2)
@@ -74,7 +79,7 @@ theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
     _≤∑_A∈T,(Cm*(b*X)^(eps/2)*B)^2:=by
       apply Finset.sum_le_sum
       intro A hA
-      exact pow_le_pow_left₀ (norm_nonneg _) (hcoeff A hA) 2
+      bound
     _=(T.card:ℝ)*(Cm*(b*X)^(eps/2)*B)^2:=by simp
     _≤(128*(b*X))*(Cm*(b*X)^(eps/2)*B)^2:=mul_le_mul_of_nonneg_right hcard (sq_nonneg _)
     _=(128*b*(Cm*b^(eps/2)*B)^2)*X^(1+eps):=by
@@ -88,18 +93,18 @@ theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
         _=_:=by rw [hh]
     _≤_:=by nlinarith [Real.rpow_nonneg hX.le (1+eps)]
 
-theorem marked_normalized_zero (eps b B:ℝ)(heps:0<eps)(hb:0<b)(hB:0≤B)
-    (Φ:𝓢(ℝ,ℂ)):
+theorem marked_normalized_zero    (hB:0≤B)
+     Φ :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,λ₀∉Ideal.span {p i})(_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (pool:Finset ι)(Ψ:O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)(m c d:O)
+      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})(_hinj:Function.Injective (fun i=>Ideal.span {p i}))
+      (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)(m c d:ActualEisensteinCubic.O)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,∀q∈lists i,‖a i q‖≤1)→
       ∀(W:ℝ→ℂ),(∀x,‖W x‖≤B)→(∀x,W x≠0→x≤b)→∀X Y:ℝ,0<X→0<Y→
-      ∀K:Finset ι→Finset ι→Finset O,
-      (∀G∈pool.powerset,∀E∈G.powerset,(0:O)∈K G E)→
+      ∀K:Finset ι→Finset ι→Finset ActualEisensteinCubic.O,
+      (∀G∈pool.powerset,∀E∈G.powerset,(0:ActualEisensteinCubic.O)∈K G E)→
       ‖(X⁻¹:ℂ)*truncatedSecondZero p hg pool Ψ m c d
         (fun A=>primeMark slots lists a A*W (primeProductNorm p A/X)) Φ Y K‖≤C*Y*X^eps := by
   obtain ⟨Cm,hCm,hm⟩:=marked_coefficient_mass eps b B heps hb hB
@@ -118,8 +123,10 @@ theorem marked_normalized_zero (eps b B:ℝ)(heps:0<eps)(hb:0<b)(hB:0≤B)
       field_simp
     _≤_:=by nlinarith [mul_nonneg hY.le (Real.rpow_nonneg hX.le eps)]
 
+end
+
 end SevenEighths.InverseInitialZeroMode
 
-end
+
 
 end OAI

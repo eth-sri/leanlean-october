@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondOriginalChildren
 public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
 
 namespace OAI
 
-noncomputable section
+section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondSupportedChildren
@@ -25,17 +26,17 @@ open Filter
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
 open CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass
 open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentSecondOriginalChildren
-local notation "O" => ActualEisensteinCubic.O
+
 
 theorem right_source_energy_zero
-    (D:Ideal O) (hD:Supported D) (S:Finset (Ideal O)) (β:Ideal O→ℂ) (Hsource:ℝ)
+    (D:Ideal ActualEisensteinCubic.O) (hD:Supported D) (S:Finset (Ideal ActualEisensteinCubic.O)) (β:Ideal ActualEisensteinCubic.O→ℂ) (Hsource:ℝ)
     (hβ:∀I,β I≠0→(I.absNorm:ℝ)≤Hsource)
-    (L:Ideal O) (hL:Hsource/(D.absNorm:ℝ)<L.absNorm)
-    (keep:O→Prop) (f:Ideal O→ℂ) (Φ:𝓢(ℝ,ℂ)) (H:ℝ) :
+     L  (hL:Hsource/(D.absNorm:ℝ)<L.absNorm)
+     keep   f   Φ   H  :
     sourceRestrictedEnergy keep (residualPool D hD.1 S)
       (fun I=>if IsCoprime D I ∧ L∣I then β (D*I) else 0) f Φ H=0 := by
   have hc (I:supportedColumns (residualPool D hD.1 S)) :
-      (if IsCoprime D (I:Ideal O) ∧ L∣(I:Ideal O) then β (D*I) else 0)=0 := by
+      (if IsCoprime D (I:Ideal ActualEisensteinCubic.O) ∧ L∣(I:Ideal ActualEisensteinCubic.O) then β (D*I) else 0)=0 := by
     split_ifs with hi
     · by_contra hn
       exact (not_le_of_gt hL) (live_right_divisor_norm D I L hD.1
@@ -44,42 +45,42 @@ theorem right_source_energy_zero
   simp only [sourceRestrictedEnergy,restrictedEnergy,rowPolynomial,hc,zero_mul,
     Finset.sum_const_zero,norm_zero,zero_pow (by decide:2≠0),ite_self,tsum_zero]
 
-theorem actual_block_from_supported_envelopes (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ) (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
+theorem actual_block_from_supported_envelopes  W   decay J₁ J₂  (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
     ∃C0:ℝ,0<C0 ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀r:ℝ,0<r →
-      ∀(η:Character) (τ:RayCharacter→Character) (t:ℝ) (S:Finset (Ideal O)) (β:Ideal O→ℂ)
-        (C D:Ideal O) (hC:Supported C) (hD:Supported D),
+      ∀(η:Character) (τ:RayCharacter→Character) (t:ℝ) (S:Finset (Ideal ActualEisensteinCubic.O)) (β:Ideal ActualEisensteinCubic.O→ℂ)
+        (C D:Ideal ActualEisensteinCubic.O) (hC:Supported C) (hD:Supported D),
       primeSupport C=primeSupport D → ∀U:Finset (CommonIndex C D),
       let A:=commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U
-      (∀χ:RayCharacter,∀I:Ideal O,Supported I → (IsCoprime C I ∨ IsCoprime D I) → ∀v:ℝ,
+      (∀χ:RayCharacter,∀I:Ideal ActualEisensteinCubic.O,Supported I → (IsCoprime C I ∨ IsCoprime D I) → ∀v:ℝ,
         heightCoeff (τ χ) v I=heightCoeff η v I*idealRowHom A I*rayCharacter χ (primaryGenerator I)) →
       ∀Hsource:ℝ,(∀I,β I≠0→(I.absNorm:ℝ)≤Hsource) →
       Hsource/(D.absNorm:ℝ)≤Z^B →
-      ∀(R:ℝ) (rows:Finset O) (ρ x:O→ℝ) (X Y:ℝ),0<X → 0<Y →
-      ∀(Q:Ideal O) (m:O) (χ₀:RayCharacter),Q≤Ideal.span {(72:O)} →
-      ConcretePrimeRowBridge.goodLambda∣m → (2:O)∣m →
+      ∀(R:ℝ) (rows:Finset ActualEisensteinCubic.O) (ρ x:ActualEisensteinCubic.O→ℝ) (X Y:ℝ),0<X → 0<Y →
+      ∀(Q:Ideal ActualEisensteinCubic.O) (m:ActualEisensteinCubic.O) (χ₀:RayCharacter),Q≤Ideal.span {(72:ActualEisensteinCubic.O)} →
+      ConcretePrimeRowBridge.goodLambda∣m → (2:ActualEisensteinCubic.O)∣m →
       (∀z∈rows,nonexceptional η χ₀ Q m A z) →
       ∀(Φ:𝓢(ℝ,ℂ)) (H:ℝ),0<H →
-      (∀z:O,0≤(Φ (normValue z/H)).re) → (∀z∈rows,1≤(Φ (normValue z/H)).re) →
+      (∀z:ActualEisensteinCubic.O,0≤(Φ (normValue z/H)).re) → (∀z∈rows,1≤(Φ (normValue z/H)).re) →
       ∀E₁ E₂:ℝ,
       0≤E₁ → 0≤E₂ →
-      (∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal O)),(L.absNorm:ℝ)≤Hsource/(D.absNorm:ℝ) → Squarefree L → ∀χ:RayCharacter,∀v:ℝ,
+      (∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal ActualEisensteinCubic.O)),(L.absNorm:ℝ)≤Hsource/(D.absNorm:ℝ) → Squarefree L → ∀χ:RayCharacter,∀v:ℝ,
         sourceRestrictedEnergy (nonexceptional η χ Q m A) (residualPool C hC.1 S)
           (fun I=>if IsCoprime C I ∧ L∣I then β (C*I) else 0)
           (heightCoeff (τ χ) v) Φ H≤(E₁/(Ideal.absNorm L:ℝ))*(1+‖v‖)^(2*J₁)) →
-      (∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal O)),(L.absNorm:ℝ)≤Hsource/(D.absNorm:ℝ) → Squarefree L → ∀χ:RayCharacter,∀v:ℝ,
+      (∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal ActualEisensteinCubic.O)),(L.absNorm:ℝ)≤Hsource/(D.absNorm:ℝ) → Squarefree L → ∀χ:RayCharacter,∀v:ℝ,
         sourceRestrictedEnergy (nonexceptional η χ Q m A) (residualPool D hD.1 S)
           (fun I=>if IsCoprime D I ∧ L∣I then β (D*I) else 0)
           (heightCoeff (τ χ) v) Φ H≤(E₂/(Ideal.absNorm L:ℝ))*(1+‖v‖)^(2*J₂)) →
       (1+r)^decay*‖∑z∈rows,retainedScalar C D U R z*
         ∑I:sectorPool C hC.1 S,∑J:sectorPool D hD.1 S,
-          (if IsCoprime (I:Ideal O) (J:Ideal O) then
+          (if IsCoprime (I:Ideal ActualEisensteinCubic.O) (J:Ideal ActualEisensteinCubic.O) then
             idealCorrelation (C*I) (D*J)
               ((supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 S I⟩)
               ((supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 S J⟩) (A*z) else 0)*
             ((β (C*I)*heightCoeff η t I)*star (β (D*J)*heightCoeff η t J))*
               wholeKernel W (fun _=>logAnnulus) r (ρ z) (x z)
-                (Real.log ((Ideal.absNorm (I:Ideal O):ℝ)/X))
-                (Real.log ((Ideal.absNorm (J:Ideal O):ℝ)/Y))‖≤
+                (Real.log ((Ideal.absNorm (I:Ideal ActualEisensteinCubic.O):ℝ)/X))
+                (Real.log ((Ideal.absNorm (J:Ideal ActualEisensteinCubic.O):ℝ)/Y))‖≤
         C0*Z^δ*(windowBudget J₁ t E₁*windowBudget J₂ t E₂) := by
   obtain ⟨K,hK,hkernel⟩:=CenteredMomentSecondSquarefreeBlock.actual_block_from_squarefree_source W decay J₁ J₂
   obtain ⟨Cm,hCm,hmass⟩:=CenteredMomentMobiusHarmonicMass.full_mass_subpower B δ hB hδ
@@ -88,22 +89,20 @@ theorem actual_block_from_supported_envelopes (W : 𝓢(ℝ,ℂ)) (decay J₁ J�
   refine ⟨hZ.1,?_⟩
   intro r hr η τ t S β C D hC hD hCD U A hτ Hsource hβ hn R rows ρ x X Y hX hY Q m χ₀ hQ hmLam hm2
     hrows Φ H hH hΦ hmajor E₁ E₂ hE₁ hE₂ hleft hright
-  let live (L:Ideal O):Prop:=(L.absNorm:ℝ)≤Hsource/(D.absNorm:ℝ)
-  let Ds:=divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal O))
-  let coarse (L:Ideal O):ℝ:=QuadraticInitialBound.diagonalControl Φ*max 1 H*
+  let live (L:Ideal ActualEisensteinCubic.O):Prop:=(L.absNorm:ℝ)≤Hsource/(D.absNorm:ℝ)
+  let Ds:=divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal ActualEisensteinCubic.O))
+  let coarse (L:Ideal ActualEisensteinCubic.O):ℝ:=QuadraticInitialBound.diagonalControl Φ*max 1 H*
     (∑I∈residualPool C hC.1 S,‖if IsCoprime C I ∧ L∣I then β (C*I) else 0‖)^2
-  have hcoarse (L:Ideal O):0≤coarse L:=
+  have hcoarse (L:Ideal ActualEisensteinCubic.O):0≤coarse L:=
     mul_nonneg (mul_nonneg (QuadraticInitialBound.diagonalControl_nonneg Φ) (by positivity)) (sq_nonneg _)
-  let F₁:Ideal O→ℝ:=fun L=>if live L then E₁/(L.absNorm:ℝ) else coarse L
-  let F₂:Ideal O→ℝ:=fun L=>if live L then E₂/(L.absNorm:ℝ) else 0
-  have hF₁ (L:Ideal O):0≤F₁ L:=by
+  let F₁:Ideal ActualEisensteinCubic.O→ℝ:=fun L=>if live L then E₁/(L.absNorm:ℝ) else coarse L
+  let F₂:Ideal ActualEisensteinCubic.O→ℝ:=fun L=>if live L then E₂/(L.absNorm:ℝ) else 0
+  have hF₁ (L:Ideal ActualEisensteinCubic.O):0≤F₁ L:=by
     dsimp only [F₁];split_ifs
     · exact div_nonneg hE₁ (Nat.cast_nonneg _)
     · exact hcoarse L
-  have hF₂ (L:Ideal O):0≤F₂ L:=by
-    dsimp only [F₂];split_ifs
-    · exact div_nonneg hE₂ (Nat.cast_nonneg _)
-    · exact le_rfl
+  have hF₂ (L:Ideal ActualEisensteinCubic.O):0≤F₂ L:=by
+    positivity
   have hk:=hkernel r hr η τ t S β C D hC hD hCD U hτ R rows ρ x X Y hX hY Q m χ₀ hQ hmLam hm2
     hrows Φ H hH hΦ hmajor F₁ F₂ hF₁ hF₂
     (by
@@ -151,7 +150,7 @@ theorem actual_block_from_supported_envelopes (W : 𝓢(ℝ,ℂ)) (decay J₁ J�
     _=_:=by ring
 
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
+
 
 end SevenEighths.CenteredMomentSecondSupportedChildren
 

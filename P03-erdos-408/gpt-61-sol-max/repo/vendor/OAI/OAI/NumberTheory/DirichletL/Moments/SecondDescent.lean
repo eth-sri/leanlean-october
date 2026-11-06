@@ -1,4 +1,6 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
 
 public import OAI.NumberTheory.DirichletL.Moments.ChildAssembly
 public import OAI.NumberTheory.DirichletL.Moments.PlainChildEnergy
@@ -7,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Moments.PlainChildEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDescent
 open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
 open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay
 open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentPlainChildEnergy RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+
 
 private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ)
     (r : ℝ) (hr : 0 ≤ r) (B : α → ℝ)
@@ -23,17 +25,20 @@ private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ
   calc
     _ ≤ r*∑ i ∈ S, ‖a i*f i‖ := mul_le_mul_of_nonneg_left (norm_sum_le _ _) hr
     _ = ∑ i ∈ S, ‖a i‖*(r*‖f i‖) := by simp only [Finset.mul_sum,norm_mul]; congr 1; funext i; ring
-    _ ≤ _ := Finset.sum_le_sum (fun i hi => mul_le_mul_of_nonneg_left (hB i hi) (norm_nonneg _))
+    _ ≤ _ := (by bound)
 
-theorem finite_ray_divisor_bound (L : Finset (Ideal O)) (D E : O)
-    (F : Ideal O → RayCharacter → RayCharacter → ℂ)
-    (r C : ℝ) (hr : 0 ≤ r) (hC : 0 ≤ C) (B₁ B₂ : Ideal O → ℝ)
+public alias _root_.SharedProofs.weighted_norm_sum := weighted_norm_sum
+
+
+theorem finite_ray_divisor_bound (L : Finset (Ideal ActualEisensteinCubic.O)) (D E : ActualEisensteinCubic.O)
+    (F : Ideal ActualEisensteinCubic.O → RayCharacter → RayCharacter → ℂ)
+    (r C : ℝ) (hr : 0 ≤ r) (hC : 0 ≤ C) (B₁ B₂ : Ideal ActualEisensteinCubic.O → ℝ)
     (hB₁ : ∀ I ∈ L, 0 ≤ B₁ I) (hB₂ : ∀ I ∈ L, 0 ≤ B₂ I)
     (hF : ∀ I ∈ L, ∀ χ ξ, r*‖F I χ ξ‖ ≤ C*(B₁ I*B₂ I)) :
     r*‖∑ I ∈ L, (UniqueFactorizationMonoid.moebius I : ℂ)*
       ∑ χ : RayCharacter, ∑ ξ : RayCharacter, pairCoeff (phaseTable D E) χ ξ * F I χ ξ‖ ≤
       (256*C)*∑ I ∈ L, ‖(UniqueFactorizationMonoid.moebius I : ℂ)‖*(B₁ I*B₂ I) := by
-  have he (I : Ideal O) (hI : I ∈ L) :
+  have he (I : Ideal ActualEisensteinCubic.O) (hI : I ∈ L) :
       r*‖∑ χ : RayCharacter, ∑ ξ : RayCharacter,
         pairCoeff (phaseTable D E) χ ξ*F I χ ξ‖ ≤ (256*C)*(B₁ I*B₂ I) := by
     calc
@@ -61,6 +66,6 @@ theorem finite_ray_divisor_bound (L : Finset (Ideal O)) (D E : O)
 
 end SevenEighths.CenteredMomentSecondDescent
 
-end
+
 
 end OAI

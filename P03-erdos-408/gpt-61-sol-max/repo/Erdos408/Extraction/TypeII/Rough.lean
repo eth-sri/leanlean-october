@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import PrimeNumberTheoremAnd.IEANTN.Mertens
 
@@ -26,7 +27,7 @@ namespace Erdos408.TypeII
 open Finset Real ArithmeticFunction
 
 /-- The number of `Y`-rough `b ≤ n`: those whose prime factors all exceed `Y`. -/
-noncomputable def roughCount (Y : ℝ) (n : ℕ) : ℕ :=
+noncomputable def roughCount (Y : ℝ) (n : ℕ)  :=
   ((Icc 1 n).filter fun b => ∀ p : ℕ, p ∈ b.primeFactors → Y < p).card
 
 /-- Below `Y` the only rough number is `1`. -/
@@ -61,7 +62,7 @@ theorem sum_log_div_le (n : ℕ) : ∑ b ∈ Icc 1 n, Real.log ((n : ℝ) / b) �
 
 /-- A rough multiple `b ≤ n` of `d ≥ 1` is `d c` with `c ≤ n / d` rough, so there are at
 most `Φ(n / d)` of them. -/
-theorem card_rough_dvd_le {Y : ℝ} {n d : ℕ} (hd : 0 < d) :
+theorem card_rough_dvd_le {Y : ℝ}  {n d}  (hd : 0 < d) :
     (((Icc 1 n).filter fun b => ∀ p : ℕ, p ∈ b.primeFactors → Y < p).filter (d ∣ ·)).card ≤
       roughCount Y (n / d) := by
   unfold roughCount
@@ -73,11 +74,9 @@ theorem card_rough_dvd_le {Y : ℝ} {n d : ℕ} (hd : 0 < d) :
     dsimp only
     rw [Nat.mul_div_cancel_left c hd]
     have hc : 0 < c := by
-      rcases Nat.eq_zero_or_pos c with rfl | h
-      · simp at h1
-      · exact h
+      nlinarith
     refine ⟨⟨hc, (Nat.le_div_iff_mul_le hd).2 (by linarith [Nat.mul_comm d c])⟩, fun p hp => ?_⟩
-    exact hr p (Nat.primeFactors_mono (Dvd.intro_left d rfl) (by positivity) hp)
+    grind
   · intro b hb b' hb' h
     rw [mem_coe, mem_filter] at hb hb'
     obtain ⟨c, rfl⟩ := hb.2
@@ -90,7 +89,7 @@ large. -/
 theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C₁ ≤ Real.log Y →
     ∀ n : ℕ, (roughCount Y n : ℝ) ≤ A * n / Real.log Y + 1 := by
   set E : ℝ := Real.log 4 + 4 with hE
-  have hE0 : 0 < E := by have := Real.log_nonneg (show (1 : ℝ) ≤ 4 by norm_num); linarith
+  have hE0 : 0 < E := by positivity
   refine ⟨2 * (2 + E), 4 * E + 1, by positivity, fun Y hY hlY n => ?_⟩
   have hℓ : 0 < Real.log Y := by linarith
   set A : ℝ := 2 * (2 + E) with hA
@@ -136,8 +135,7 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
       · rintro ⟨⟨⟨h1, hbn⟩, hr⟩, hdb, hb0⟩
         exact ⟨⟨⟨⟨h1, hbn⟩, hr⟩, hdb⟩, Nat.pos_of_dvd_of_pos hdb (by omega),
           (Nat.le_of_dvd (by omega) hdb).trans hbn⟩
-      · rintro ⟨⟨⟨⟨h1, hbn⟩, hr⟩, hdb⟩, -⟩
-        exact ⟨⟨⟨h1, hbn⟩, hr⟩, hdb, by omega⟩
+      grind
   -- each `d` contributes at most `Λ(d) (A n / (d log Y) + 1)`, and only for `d > Y`
   have hterm : ∀ d ∈ Icc 1 n, Λ d * ((R.filter (d ∣ ·)).card : ℝ) ≤
       if Y < d then Λ d * (A * n / (d * Real.log Y) + 1) else 0 := by
@@ -168,7 +166,7 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
     have hcard := (card_rough_dvd_le (Y := Y) (n := n) (d := d) (by omega))
     have hih := ih (n / d) hdiv
     have hnd : ((n / d : ℕ) : ℝ) ≤ n / d := Nat.cast_div_le
-    have hd0 : (0 : ℝ) < d := by exact_mod_cast hd1
+    
     calc ((R.filter (d ∣ ·)).card : ℝ) ≤ roughCount Y (n / d) := by exact_mod_cast hcard
       _ ≤ A * ((n / d : ℕ) : ℝ) / Real.log Y + 1 := hih
       _ ≤ A * (n / d) / Real.log Y + 1 := by gcongr
@@ -197,9 +195,7 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
   have hpsi : ∑ d ∈ Icc 1 n, Λ d ≤ E * n := by
     have := Chebyshev.psi_le_const_mul_self (x := (n : ℝ)) (by positivity)
     rw [Chebyshev.psi, Nat.floor_natCast] at this
-    have hIcc : Icc 1 n = Ioc 0 n := by ext b; simp only [mem_Icc, mem_Ioc]; omega
-    rw [hIcc]
-    linarith
+    assumption
   have hsum : ∑ b ∈ R, Real.log b ≤
       A * n / Real.log Y * (Real.log n - Real.log Y + 2 * E) + E * n := by
     rw [hswap]
@@ -210,9 +206,7 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
           ∑ d ∈ (Icc 1 n).filter (fun d : ℕ => Y < d), Λ d := by
       rw [mul_sum, ← sum_add_distrib]
       refine sum_congr rfl fun d hd => ?_
-      have : (0 : ℝ) < d := by
-        have := (mem_Icc.1 (mem_filter.1 hd).1).1; exact_mod_cast this
-      field_simp
+      ring
     rw [this]
     have h1 : ∑ d ∈ (Icc 1 n).filter (fun d : ℕ => Y < d), Λ d ≤ ∑ d ∈ Icc 1 n, Λ d :=
       sum_le_sum_of_subset_of_nonneg (filter_subset _ _) fun _ _ _ => vonMangoldt_nonneg
@@ -231,9 +225,6 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
       nlinarith
     have hAn : A * n / Real.log Y * Real.log Y = A * n := by field_simp
     nlinarith
-  show ((roughCount Y n : ℕ) : ℝ) ≤ _
-  unfold roughCount
-  rw [← hR]
-  linarith
+  grind [roughCount]
 
 end Erdos408.TypeII

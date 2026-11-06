@@ -5,6 +5,7 @@ Authors: Adam Benenson
 -/
 
 module
+public import Mathlib.Tactic
 
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.Approximation
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.Transfer
@@ -52,27 +53,28 @@ open MeasureTheory Set
 
 noncomputable section
 
-section Volume
+
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
 
 /-- Borel σ-algebra on the model space `E`. -/
 local instance instMeasurableSpaceEL2CompactnessFrechetKolmogorov : MeasurableSpace E := borel E
 local instance instBorelSpaceEL2CompactnessFrechetKolmogorov : BorelSpace E := ⟨rfl⟩
-local instance instOpensMeasurableSpaceEL2CompactnessFrechetKolmogorov :
-    OpensMeasurableSpace E := by infer_instance
-local instance instMeasurableAddEL2CompactnessFrechetKolmogorov : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegEL2CompactnessFrechetKolmogorov : MeasurableNeg E := by
-  infer_instance
+
+
+
 
 variable {K : Set E} {ψ : E → ℝ}
 
+section
+variable (hK : IsCompact K) (hKm : MeasurableSet K)
+include hK hKm
+
 lemma norm_smoothL2_sub_extendByZeroL2_le_of_integral_translateL2_sub_extendByZeroL2_le
-    (hK : IsCompact K) (hKm : MeasurableSet K)
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
-    (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1) {η : ℝ} (hη : 0 ≤ η)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))
+       
+     hψc   hψcs  (hψ0 : ∀ x, 0 ≤ ψ x)
+    (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1)  {η}  (hη : 0 ≤ η)
+     u 
     (htrans :
       ∫ t,
           ‖(translateL2 (μ := (volume : Measure E)) (-t))
@@ -90,10 +92,14 @@ lemma norm_smoothL2_sub_extendByZeroL2_le_of_integral_translateL2_sub_extendByZe
         (E := E) (K := K) (ψ := ψ) (hK := hK) (hKm := hKm) hψc hψcs hψ0 hψint u
   exact (sq_le_sq₀ (norm_nonneg _) hη).1 hsq
 
+section
+variable {R : ℝ} (hR : 0 ≤ R) {A : Set (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))} (hA : A ⊆ Metric.closedBall (0 : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) R)
+include R hR A hA
+
 theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small
-    (hK : IsCompact K) (hKm : MeasurableSet K) {R : ℝ} (hR : 0 ≤ R)
-    {A : Set (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))}
-    (hA : A ⊆ Metric.closedBall (0 : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) R)
+           
+     
+     
     (hApprox :
       ∀ ε : ℝ, 0 < ε →
         ∃ ψ : E → ℝ, Continuous ψ ∧ HasCompactSupport ψ ∧ (∀ x, 0 ≤ ψ x) ∧
@@ -165,9 +171,9 @@ theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral
   exact Set.mem_iUnion.2 ⟨y, Set.mem_iUnion.2 ⟨hyT, hxBall⟩⟩
 
 theorem isCompact_closure_extendByZeroL2_image_of_forall_exists_translationIntegral_small
-    (hK : IsCompact K) (hKm : MeasurableSet K) {R : ℝ} (hR : 0 ≤ R)
-    {A : Set (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))}
-    (hA : A ⊆ Metric.closedBall (0 : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) R)
+           
+     
+     
     (hApprox :
       ∀ ε : ℝ, 0 < ε →
         ∃ ψ : E → ℝ, Continuous ψ ∧ HasCompactSupport ψ ∧ (∀ x, 0 ≤ ψ x) ∧
@@ -181,11 +187,14 @@ theorem isCompact_closure_extendByZeroL2_image_of_forall_exists_translationInteg
     IsCompact (closure (extendByZeroL2 (E := E) (K := K) hKm '' A)) := by
   have ht :
       TotallyBounded (extendByZeroL2 (E := E) (K := K) hKm '' A) :=
-    totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small
-      (E := E) (K := K) hK hKm hR hA hApprox
+    (by solve_by_elim [totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small])
   exact (ht.closure).isCompact_of_isClosed isClosed_closure
 
-end Volume
+end
+
+end
+
+
 
 end
 

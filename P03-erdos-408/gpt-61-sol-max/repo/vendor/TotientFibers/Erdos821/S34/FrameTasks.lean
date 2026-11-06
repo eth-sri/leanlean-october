@@ -13,21 +13,21 @@ namespace Erdos821.S34Core
 noncomputable section
 
 def frameCellMass {α κ : Type*} [Fintype α] [DecidableEq κ]
-    (w : α → ℝ) (cell : α → κ) (j : κ) : ℝ :=
+    (w : α → ℝ) (cell : α → κ) (j : κ)  :=
   ∑ x, if cell x = j then w x else 0
 
-def frameCellKernel {α κ γ : Type*} [Fintype α] [Fintype γ] [DecidableEq κ]
-    (w : α → ℝ) (cell : α → κ) (χ : γ → α → ℂ) (ξ : ℝ) (D X : α) : ℂ :=
+def frameCellKernel {α κ γ } [Fintype α] [Fintype γ] [DecidableEq κ]
+    (w : α → ℝ) (cell : α → κ) (χ : γ → α → ℂ) (ξ : ℝ) (D X : α)  :=
   if cell D = cell X ∧ ξ ≤ frameCellMass w cell (cell X) then
     (frameCellMass w cell (cell X) : ℂ)⁻¹ * ∑ c, star (χ c D) * χ c X
   else 0
 
-def frameCellApply {α κ γ : Type*} [Fintype α] [Fintype γ] [DecidableEq κ]
+def frameCellApply {α κ γ } [Fintype α] [Fintype γ] [DecidableEq κ]
     (w : α → ℝ) (cell : α → κ) (χ : γ → α → ℂ) (ξ : ℝ)
-    (f : α → ℂ) (X : α) : ℂ :=
+    (f : α → ℂ) (X : α)  :=
   ∑ D, (w D : ℂ) * frameCellKernel w cell χ ξ D X * f D
 
-def weightedFrameNorm {α : Type*} [Fintype α] (w : α → ℝ) (f : α → ℂ) : ℝ :=
+def weightedFrameNorm {α } [Fintype α] (w : α → ℝ) (f : α → ℂ)  :=
   Real.sqrt (∑ x, w x * ‖f x‖ ^ 2)
 
 /-- §3 conditional frame estimate. Weights need not have total mass one.
@@ -35,7 +35,7 @@ There is no cell-count cost: distinct cells are orthogonal blocks.
 Suggested route: weighted vectors sqrt(w x) χ(c,x) / sqrt(cell mass),
 then OAI.LargePrimeGaps.norm_sum_smul_sq_le_gram and gram_large_sieve
 (OAI.NumberTheory.PrimeGaps.AdditiveSieve, prebuilt). -/
-def CellFrameTask : Prop :=
+def CellFrameTask  :=
   ∀ (α κ γ : Type) [Fintype α] [Fintype κ] [Fintype γ] [DecidableEq κ]
     (w : α → ℝ) (cell : α → κ) (χ : γ → α → ℂ) (ξ δ : ℝ),
     (∀ x, 0 ≤ w x) → (∀ c x, ‖χ c x‖ ≤ 1) → 0 < ξ → 0 ≤ δ →

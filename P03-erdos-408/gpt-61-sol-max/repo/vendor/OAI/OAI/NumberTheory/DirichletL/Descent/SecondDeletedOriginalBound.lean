@@ -12,7 +12,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open JointLogSeparation
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -40,7 +40,7 @@ theorem actual_second_deleted_mode_original_bound
     (hrows : ∀ x∈source,x.second.frequency ∈ nonzeroChildFrequencyBall (actualSecondMultiplier p x) R)
     (K : ℕ) (ho : Jo ≤ 2*K) (hJ₁ : J₁.card ≤ K) (hJ₂ : J₂.card ≤ K)
     (w : MarkedSecondSource ι Jo 0 → ℂ) (hw : ∀ x∈source,‖w x‖ ≤ 1)
-    (A : ℝ) (hA : 0 ≤ A)
+     A  (hA : 0 ≤ A)
     (hleft : ∀ γ∈actualSecondTriples p 1 1 source,
       secondLabelEnergy K (labels.filter Squarefree) (nonzeroChildFrequencyBall 1 R)
         (secondModeLeft p hp hcop hg pool Ψ m z (slots₁\J₁) lists₁ a₁ ω₁ X t) γ ≤ A)
@@ -68,7 +68,7 @@ theorem actual_second_deleted_mode_original_bound
   exact mul_le_mul_of_nonneg_left
     (Finset.sum_le_sum_of_subset_of_nonneg hΓ (fun γ _ _=>tripleDivisorWeight_nonneg K γ)) hA
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

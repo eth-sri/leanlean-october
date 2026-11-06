@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Major.Mellin.Smooth
 public import Mathlib.Analysis.Normed.Operator.Prod
@@ -23,20 +24,20 @@ namespace Erdos408.OneSided.Mellin
 open ContDiff Real
 
 /-- `y(ζ, z) = X e^z (e^{ζ/X} - 1)`, so that `y(X log(w/w'), log w') = X(w - w')`. -/
-noncomputable def logGap (X : ℝ) (p : ℝ × ℝ) : ℝ := exp p.2 * (X * (exp (p.1 / X) - 1))
+noncomputable def logGap (X : ℝ) (p : ℝ × ℝ)  := exp p.2 * (X * (exp (p.1 / X) - 1))
 
 /-- The cut-off kernel `Φ(ζ, z) = φ(y(ζ, z)) ψ(ζ/4) ψ(z/4)`. -/
-noncomputable def gapKernel (φ : ℝ → ℂ) (X : ℝ) (p : ℝ × ℝ) : ℂ :=
+noncomputable def gapKernel (φ : ℝ → ℂ) (X : ℝ) (p : ℝ × ℝ)  :=
   φ (logGap X p) * ((plateau (p.1 / 4) * plateau (p.2 / 4) : ℝ) : ℂ)
 
 /-- `y` is smooth. -/
-theorem contDiff_logGap (X : ℝ) : ContDiff ℝ ∞ (logGap X) :=
+theorem contDiff_logGap  X  : ContDiff ℝ ∞ (logGap X) :=
   (contDiff_exp.comp contDiff_snd).mul (contDiff_const.mul
     ((contDiff_exp.comp (contDiff_fst.div_const X)).sub contDiff_const))
 
 /-- Composing with a projection does not increase the derivatives. -/
 theorem norm_iteratedFDeriv_comp_clm_le {L : ℝ × ℝ →L[ℝ] ℝ} (hL : ‖L‖ ≤ 1) {h : ℝ → ℝ}
-    (hh : ContDiff ℝ ∞ h) (j : ℕ) (p : ℝ × ℝ) :
+    (hh : ContDiff ℝ ∞ h)  j   p  :
     ‖iteratedFDeriv ℝ j (h ∘ L) p‖ ≤ ‖iteratedDeriv j h (L p)‖ := by
   rw [L.iteratedFDeriv_comp_right hh p (by exact_mod_cast le_top),
     ← norm_iteratedFDeriv_eq_norm_iteratedDeriv]
@@ -45,7 +46,7 @@ theorem norm_iteratedFDeriv_comp_clm_le {L : ℝ × ℝ →L[ℝ] ℝ} (hL : ‖
     (Finset.prod_le_one₀ (fun _ _ => norm_nonneg _) fun _ _ => hL)
 
 /-- `|e^t - 1| ≤ |t| e^{|t|}`. -/
-theorem abs_exp_sub_one_le_mul (t : ℝ) : |exp t - 1| ≤ |t| * exp |t| := by
+theorem abs_exp_sub_one_le_mul  t  : |exp t - 1| ≤ |t| * exp |t| := by
   rcases le_total 0 t with ht | ht
   · rw [abs_of_nonneg ht, abs_of_nonneg (by linarith [add_one_le_exp t])]
     have h := add_one_le_exp (-t)
@@ -58,8 +59,12 @@ theorem abs_exp_sub_one_le_mul (t : ℝ) : |exp t - 1| ≤ |t| * exp |t| := by
   · rw [abs_of_nonpos ht, abs_of_nonpos (by linarith [exp_le_one_iff.2 ht])]
     nlinarith [add_one_le_exp t, one_le_exp (neg_nonneg.2 ht)]
 
+section
+variable {X : ℝ} (hX : 2 ≤ X)
+include X hX
+
 /-- The derivatives of `g(ζ) = X(e^{ζ/X} - 1)` are at most `20 e^{10}` for `|ζ| ≤ 20`. -/
-theorem norm_iteratedDeriv_gap_le {X : ℝ} (hX : 2 ≤ X) (j : ℕ) {ζ : ℝ} (hζ : |ζ| ≤ 20) :
+theorem norm_iteratedDeriv_gap_le      j   {ζ}  (hζ : |ζ| ≤ 20) :
     ‖iteratedDeriv j (fun ζ => X * (exp (ζ / X) - 1)) ζ‖ ≤ 20 * exp 10 := by
   have hX0 : 0 < X := by linarith
   have hq : |ζ| / X ≤ 10 := by
@@ -89,8 +94,8 @@ theorem norm_iteratedDeriv_gap_le {X : ℝ} (hX : 2 ≤ X) (j : ℕ) {ζ : ℝ} 
       _ ≤ 20 * exp 10 := by nlinarith [exp_pos 10]
 
 /-- The derivatives of `y` are at most `A = 16 e^{20} (20 e^{10})` on the ball of radius `20`. -/
-theorem norm_iteratedFDeriv_logGap_le {X : ℝ} (hX : 2 ≤ X) {i : ℕ} (hi : i ≤ 4)
-    {p : ℝ × ℝ} (hp : ‖p‖ ≤ 20) :
+theorem norm_iteratedFDeriv_logGap_le      {i}  (hi : i ≤ 4)
+     {p}  (hp : ‖p‖ ≤ 20) :
     ‖iteratedFDeriv ℝ i (logGap X) p‖ ≤ 16 * exp 20 * (20 * exp 10) := by
   have h1 : ‖p.1‖ ≤ 20 := (le_max_left _ _).trans hp
   have h2 : ‖p.2‖ ≤ 20 := (le_max_right _ _).trans hp
@@ -126,15 +131,17 @@ theorem norm_iteratedFDeriv_logGap_le {X : ℝ} (hX : 2 ≤ X) {i : ℕ} (hi : i
   rw [mul_assoc 16]
   exact mul_le_mul_of_nonneg_right h16 (by positivity)
 
+end
+
 /-- `Φ` is smooth when `φ` is. -/
-theorem contDiff_gapKernel {φ : ℝ → ℂ} (hφ : ContDiff ℝ ∞ φ) (X : ℝ) :
+theorem contDiff_gapKernel  {φ}  (hφ : ContDiff ℝ ∞ φ)  X  :
     ContDiff ℝ ∞ (gapKernel φ X) :=
   (hφ.comp (contDiff_logGap X)).mul (Complex.ofRealCLM.contDiff.comp
     ((contDiff_plateau.comp (contDiff_fst.div_const 4)).mul
       (contDiff_plateau.comp (contDiff_snd.div_const 4))))
 
 /-- `Φ` vanishes outside the ball of radius `20`. -/
-theorem gapKernel_eq_zero (φ : ℝ → ℂ) (X : ℝ) {p : ℝ × ℝ} (hp : 20 < ‖p‖) :
+theorem gapKernel_eq_zero  φ   X   {p}  (hp : 20 < ‖p‖) :
     gapKernel φ X p = 0 := by
   rcases lt_max_iff.1 hp with h | h
   · have : 5 ≤ |p.1 / 4| := by
@@ -167,10 +174,7 @@ theorem exists_norm_iteratedFDeriv_gapKernel_le : ∃ B : ℝ, 0 ≤ B ∧ ∀ (
   have hQ0 : 0 ≤ Q := (norm_nonneg _).trans (hQ 0 (Nat.zero_le _) 0)
   set A : ℝ := 16 * exp 20 * (20 * exp 10) with hA
   have hA1 : 1 ≤ A := by
-    have h20 := add_one_le_exp 20
-    have h10 := add_one_le_exp 10
-    calc (1 : ℝ) ≤ 16 * 1 * (20 * 1) := by norm_num
-      _ ≤ 16 * exp 20 * (20 * exp 10) := by gcongr <;> linarith
+    bound
   refine ⟨16 * (24 * A ^ 4) * Q, by positivity, fun φ X K hφ hX hK n hn p => ?_⟩
   have hK0 : 0 ≤ K := (norm_nonneg _).trans (hK 0 (Nat.zero_le _) 0)
   rcases le_or_gt ‖p‖ 20 with hp | hp
@@ -217,7 +221,7 @@ theorem exists_norm_iteratedFDeriv_gapKernel_le : ∃ B : ℝ, 0 ≤ B ∧ ∀ (
     positivity
 
 /-- `|log w - log w'| ≤ |w - w'|` for `w, w' ≥ 1`. -/
-theorem abs_log_sub_log_le {w w' : ℝ} (hw : 1 ≤ w) (hw' : 1 ≤ w') :
+theorem abs_log_sub_log_le  {w w'}  (hw : 1 ≤ w) (hw' : 1 ≤ w') :
     |log w - log w'| ≤ |w - w'| := by
   have h : ∀ a b : ℝ, 1 ≤ a → 1 ≤ b → log a - log b ≤ |a - b| := fun a b ha hb => by
     rw [← log_div (by positivity) (by positivity)]
@@ -227,17 +231,12 @@ theorem abs_log_sub_log_le {w w' : ℝ} (hw : 1 ≤ w) (hw' : 1 ≤ w') :
     · rw [abs_of_nonneg hab]
       nlinarith
     · nlinarith [abs_nonneg (a - b)]
-  rw [abs_le]
-  constructor
-  · have := h w' w hw' hw
-    rw [abs_sub_comm] at this
-    linarith
-  · exact h w w' hw hw'
+  grind
 
 /-- For `w, w' ≥ 1` and `w' ≤ 16`, the cut-off kernel is `φ(X(w - w'))`, when `φ` vanishes
 outside `(-5, 5)`. -/
-theorem gapKernel_log {φ : ℝ → ℂ} (hφ : ∀ y, 5 ≤ |y| → φ y = 0) {X : ℝ} (hX : 0 < X)
-    {w w' : ℝ} (hw : 1 ≤ w) (hw' : 1 ≤ w') (hw'16 : w' ≤ 16) :
+theorem gapKernel_log  {φ}  (hφ : ∀ y, 5 ≤ |y| → φ y = 0)  {X}  (hX : 0 < X)
+     {w w'}  (hw : 1 ≤ w) (hw' : 1 ≤ w') (hw'16 : w' ≤ 16) :
     gapKernel φ X (X * (log w - log w'), log w') = φ (X * (w - w')) := by
   -- `y(X log(w/w'), log w') = X(w - w')`
   have hy : logGap X (X * (log w - log w'), log w') = X * (w - w') := by

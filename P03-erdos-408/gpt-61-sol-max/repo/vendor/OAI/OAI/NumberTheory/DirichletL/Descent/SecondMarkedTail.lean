@@ -12,12 +12,12 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open InversePrincipalEnergy InverseSecondPrincipalCaller
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
-local notation "O" => ActualEisensteinCubic.O
+
+
 
 theorem marked_radial_uniform_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ Cm : ℝ, 0 < Cm ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → O) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+      (p : ι → ActualEisensteinCubic.O) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
       (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
@@ -40,7 +40,7 @@ theorem marked_radial_uniform_bound (ε : ℝ) (hε : 0 < ε) :
       (V.norm_le_seminorm ℝ _) (norm_nonneg _) (by positivity)).trans
     gcongr
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralExpansion
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralExpansion
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralBranchProduct
 
@@ -38,7 +39,7 @@ theorem three_branch_bound {N : ℕ} (L R E : ℝ)
     (fun j=>add_nonneg (norm_nonneg _) (norm_nonneg _)) hT
   have hpoint (j : Fin N) : (‖A j‖+‖B j‖)+y j≤y j*((E+2)*p j) := by
     have h := hp j
-    have hp0 : 0≤p j := zero_le_one.trans h
+    
     have he := mul_nonneg (show 0≤E+1 by linarith) (show 0≤p j-1 by linarith)
     have hm := mul_nonneg (hy j) he
     nlinarith [hA j,hB j]
@@ -51,6 +52,6 @@ theorem three_branch_bound {N : ℕ} (L R E : ℝ)
     _ = _ := by simp only [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_fin];ring
 end SevenEighths.ProbeCentralBranchProduct
 
-end
+
 
 end OAI

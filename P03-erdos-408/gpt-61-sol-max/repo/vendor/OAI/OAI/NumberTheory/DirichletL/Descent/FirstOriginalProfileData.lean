@@ -14,21 +14,21 @@ namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 open CompletedHeight FourierBridge
-local notation "O" => ActualEisensteinCubic.O
-abbrev OriginalIndex (ι : Type*) := Σ _ : FirstOriginalOuter ι,Ideal O×O
-variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
-def leftNorm (x : OriginalIndex ι) : ℝ := ‖eisEmbedding (aLabel p x.1.1.support x.1.1.rightBit)‖^2
-def rightNorm (x : OriginalIndex ι) : ℝ := ‖eisEmbedding (aLabel p x.1.1.support x.1.1.leftBit)‖^2
-def commonNorm (x : OriginalIndex ι) : ℝ := primeProductNorm p x.1.2.1
-def activeNorm (x : OriginalIndex ι) : ℝ := primeProductNorm p (cubeActiveSupport x.1.1.support
+abbrev OriginalIndex (ι ) := Σ _ : FirstOriginalOuter ι,Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O
+variable {ι : Type*} [DecidableEq ι]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+
+def leftNorm (x : OriginalIndex ι)  := ‖eisEmbedding (aLabel p x.1.1.support x.1.1.rightBit)‖^2
+def rightNorm (x : OriginalIndex ι)  := ‖eisEmbedding (aLabel p x.1.1.support x.1.1.leftBit)‖^2
+def commonNorm (x : OriginalIndex ι)  := primeProductNorm p x.1.2.1
+def activeNorm (x : OriginalIndex ι)  := primeProductNorm p (cubeActiveSupport x.1.1.support
   (fun i=>x.1.1.leftExponent i+x.1.1.rightExponent i) x.1.1.leftBit x.1.1.rightBit)
-def divisorElement (k : FirstOriginalOuter ι) : O := primeSubsetGenerator (fun i=>Ideal.span {p i}) k.2.2
+def divisorElement (k : FirstOriginalOuter ι)  := primeSubsetGenerator (fun i=>Ideal.span {p i}) k.2.2
 
 include hp in
 theorem original_source_positive (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (labels : Finset (Ideal O)) (Y : ℝ) :
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (Y : ℝ) :
     ∀x∈firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun k=>k.1) Y,
       0<leftNorm p x ∧ 0<rightNorm p x ∧ 0<commonNorm p x ∧ 0<activeNorm p x ∧
       divisorElement p x.1≠0 ∧ x.2.2≠0 := by
@@ -44,7 +44,7 @@ theorem original_source_positive (pool : Finset ι) (Q : Finset (ι→₀ℕ))
 
 include hp in
 theorem original_source_norms_ge_one (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (labels : Finset (Ideal O)) (Y : ℝ) :
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (Y : ℝ) :
     ∀x∈firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun k=>k.1) Y,
       ∀i,1≤InverseMomentFirstChildWindows.sourceNorms (leftNorm p) (rightNorm p) (commonNorm p)
         (activeNorm p) (fun x=>divisorElement p x.1) (fun x=>x.2.2) x i := by
@@ -60,8 +60,8 @@ theorem original_source_norms_ge_one (pool : Finset ι) (Q : Finset (ι→₀ℕ
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem original_weight_bound (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ) (Γ Y : ℝ)
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)
+     R   Γ Y 
     (hΓ : 0≤Γ) (hβ : ∀I∈labels,∀v∈Q,‖β I v‖≤Γ) :
     ∀k∈firstOriginalOuter pool Q,∀x∈firstRetainedSource p labels k.1 Y,
       ‖firstOriginalWeight p β R k x‖≤Γ^2 := by
@@ -71,8 +71,8 @@ theorem original_weight_bound (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   exact (firstOriginalWeight_norm_le p β R k x).trans
     (reopenedPairCoefficient_bound Q labels β Γ hΓ hβ k.1 hb.1 k.2.1 x.1 hf)
 
-theorem actual_old_profile (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om⊆Set.Icc a b) (theta x : ℝ) (hx : 0<x) :
+theorem actual_old_profile  om   a b   ha 
+     hs   theta x  (hx : 0<x) :
     InverseMomentFirstProfileUniform.positiveSource (priorityLogWindow om a b ha hs false) 1 theta x=
       normTwistedSource om theta x ∧
     InverseMomentFirstProfileUniform.positiveSource (priorityLogWindow om a b ha hs true) 1 (-theta) x=

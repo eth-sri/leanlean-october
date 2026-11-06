@@ -1,4 +1,7 @@
 module
+public import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Erdos821.P3Edge.AuxSum
 
 public import Erdos821.P4Probe.Family
 public import Mathlib.Algebra.Order.Star.Real
@@ -14,12 +17,18 @@ open Blueprint.Graph
 
 noncomputable section
 
-lemma graph_mu_pos (P : PrimeGroups) (g : P.Group) (hV : 0 < P.V g)
-    (p : P.Prime g) : 0 < P.mu g p := by
-  have hp : 0 < (p.val : ℝ) := by exact_mod_cast (P.prime g p.val p.property).pos
-  exact inv_pos.mpr (mul_pos hV hp)
+section
+variable (P : PrimeGroups)
+include P
 
-lemma graph_mu_sum (P : PrimeGroups) (g : P.Group) (hV : 0 < P.V g) :
+section
+variable (g : P.Group) (hV : 0 < P.V g)
+include g hV
+
+lemma graph_mu_pos      
+     p  : 0 < P.mu g p := by solve_by_elim [_root_.Erdos821.P3Edge.mu_pos_of_V_pos]
+
+lemma graph_mu_sum       :
     ∑ p : P.Prime g, P.mu g p = 1 := by
   have hs : ∑ p : P.Prime g, (p.val : ℝ)⁻¹ = P.V g := by
     change (∑ p ∈ (P.primes g).attach, (p.val : ℝ)⁻¹) =
@@ -28,13 +37,19 @@ lemma graph_mu_sum (P : PrimeGroups) (g : P.Group) (hV : 0 < P.V g) :
   simp only [PrimeGroups.mu, mul_inv_rev]
   rw [← Finset.sum_mul, hs, mul_inv_cancel₀ hV.ne']
 
-lemma idealMass_pos (P : PrimeGroups) (M : ℕ) (hV : ∀ g, 0 < P.V g)
+end
+
+section
+variable (M : ℕ) (hV : ∀ g, 0 < P.V g)
+include M hV
+
+lemma idealMass_pos      
     (a : P.BigLabels M) : 0 < P.idealMass a := by
   apply Finset.prod_pos
   intro g _
   exact Finset.prod_pos (fun i _ => graph_mu_pos P g.val (hV g.val) (a g i))
 
-lemma idealMass_sum (P : PrimeGroups) (M : ℕ) (hV : ∀ g, 0 < P.V g) :
+lemma idealMass_sum       :
     ∑ a : P.BigLabels M, P.idealMass a = 1 := by
   unfold PrimeGroups.idealMass
   trans ∏ g : P.BigGroup, ∑ a : Fin M → P.Prime g.val, ∏ i, P.mu g.val (a i)
@@ -45,6 +60,10 @@ lemma idealMass_sum (P : PrimeGroups) (M : ℕ) (hV : ∀ g, 0 < P.V g) :
   trans ∏ _i : Fin M, ∑ a : P.Prime g.val, P.mu g.val a
   · exact (Fintype.prod_sum (fun (_i : Fin M) (a : P.Prime g.val) => P.mu g.val a)).symm
   · simp only [graph_mu_sum P g.val (hV g.val), Finset.prod_const_one]
+
+end
+
+end
 
 lemma bigAuxMass_sum {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J ell m)
     (hV : ∀ g, 0 < P.V g) : ∑ u : P.BigAux J, ν.bigAuxMass u = 1 :=
@@ -67,9 +86,7 @@ lemma weighted_sqrt_cauchy {β : Type*} [Fintype β]
     (f := fun z => w z * a z) (g := fun z => w z * b z)
     (fun z _ => mul_nonneg (hw z) (ha z))
     (fun z _ => mul_nonneg (hw z) (hb z))
-    (fun z _ => le_of_eq (by
-      rw [mul_pow, mul_pow, Real.sq_sqrt (ha z), Real.sq_sqrt (hb z)]
-      ring))
+    (fun z _ => (by grind))
   have hsa : 0 ≤ ∑ z, w z * a z := Finset.sum_nonneg (fun z _ => mul_nonneg (hw z) (ha z))
   have hsb : 0 ≤ ∑ z, w z * b z := Finset.sum_nonneg (fun z _ => mul_nonneg (hw z) (hb z))
   have hsq : (Real.sqrt (∑ z, w z * a z) * Real.sqrt (∑ z, w z * b z)) ^ 2 =

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.SpatialDerivatives
 public import OAI.NumberTheory.DirichletL.CubicSieve.FirstCoreCutoff
@@ -11,76 +12,76 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical SchwartzMap
+ 
 
 namespace EisensteinSchwartzPoisson
-open ActualEisensteinCubic ConcreteTraceCRT
+ 
 
-def nonzeroLatticeEnvelopeConstant : ℝ :=
+def nonzeroLatticeEnvelopeConstant  :=
   4 * (1 + Real.pi) ^ 2 + 4 * eisensteinCauchyMass
 
 theorem nonzeroLatticeEnvelopeConstant_nonneg :
@@ -89,7 +90,7 @@ theorem nonzeroLatticeEnvelopeConstant_nonneg :
   unfold nonzeroLatticeEnvelopeConstant
   positivity
 
-theorem scaled_cauchy_nonzero_mass (t : ℝ) (ht : 0 < t) :
+theorem scaled_cauchy_nonzero_mass  t  (ht : 0 < t) :
     t * (∑' h : {h : O // h ≠ 0},
       ((1 + t * ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹) ≤
         nonzeroLatticeEnvelopeConstant := by
@@ -97,7 +98,7 @@ theorem scaled_cauchy_nonzero_mass (t : ℝ) (ht : 0 < t) :
   have hF (x : ℝ) (hx : 0 ≤ x) : (1 + x) ^ 2 * ‖F x‖ ≤ 1 := by
     dsimp only [F]
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
-    rw [mul_inv_cancel₀ (by positivity : (1 + x) ^ 2 ≠ 0)]
+    bound
   have hh := lattice_profile_nonzero_scaled_bound F 1 (by norm_num) hF t ht
   change t * (∑' h : {h : O // h ≠ 0}, ‖F (t * ‖eisEmbedding h.val‖ ^ 2)‖) ≤
     nonzeroLatticeEnvelopeConstant * 1 at hh
@@ -106,7 +107,7 @@ theorem scaled_cauchy_nonzero_mass (t : ℝ) (ht : 0 < t) :
     mul_one] using hh
 
 theorem nonzero_lattice_envelope_sum
-    (t C : ℝ) (ht : 0 < t) (hC : 0 ≤ C)
+     t C  (ht : 0 < t) (hC : 0 ≤ C)
     (f : {h : O // h ≠ 0} → ℝ) (hf : ∀ h, 0 ≤ f h)
     (hbound : ∀ h, (1 + t * ‖eisEmbedding h.val‖ ^ 2) ^ 2 * f h ≤ C) :
     Summable f ∧ t * (∑' h, f h) ≤ nonzeroLatticeEnvelopeConstant * C := by
@@ -134,19 +135,19 @@ end EisensteinSchwartzPoisson
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open     EisensteinSchwartzPoisson
 
-def originalMiddleDecayConstant (W : 𝓢(ℝ, ℂ)) : ℝ :=
+def originalMiddleDecayConstant (W : 𝓢(ℝ, ℂ))  :=
   (actual_middle_radial_block_bound.{0, 0, 0} W 2).choose
 
-def dualMiddleDecayConstant (W : 𝓢(ℝ, ℂ)) : ℝ :=
+def dualMiddleDecayConstant (W : 𝓢(ℝ, ℂ))  :=
   (actual_dual_middle_radial_block_bound.{0, 0, 0} W 2).choose
 
-theorem originalMiddleDecayConstant_nonneg (W : 𝓢(ℝ, ℂ)) :
+theorem originalMiddleDecayConstant_nonneg  W  :
     0 ≤ originalMiddleDecayConstant W :=
   (actual_middle_radial_block_bound.{0, 0, 0} W 2).choose_spec.1
 
-theorem dualMiddleDecayConstant_nonneg (W : 𝓢(ℝ, ℂ)) :
+theorem dualMiddleDecayConstant_nonneg  W  :
     0 ≤ dualMiddleDecayConstant W :=
   (actual_dual_middle_radial_block_bound.{0, 0, 0} W 2).choose_spec.1
 
@@ -169,7 +170,7 @@ variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
 
 def originalMiddleAt (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (h : O) : ℝ :=
+    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (h : O)  :=
   ∑ D : S, ∑ E : T, ∑ i,
     (Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ)) /
       ((Ideal.absNorm D.val : ℝ) * (Ideal.absNorm E.val : ℝ))) *
@@ -179,7 +180,7 @@ def originalMiddleAt (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
 
 def dualMiddleAt (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (h : O) : ℝ :=
+    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (h : O)  :=
   ∑ D : S, ∑ E : T, ∑ i,
     (Real.sqrt ((M / F) / (Ideal.absNorm (rows i) : ℝ)) /
       ((Ideal.absNorm D.val : ℝ) * (Ideal.absNorm E.val : ℝ))) *
@@ -261,13 +262,11 @@ theorem actual_original_middle_all_frequencies
   obtain ⟨hs, hv⟩ := nonzero_lattice_envelope_sum t (2 * t * C) ht (by positivity)
     _ (fun h => originalMiddleAt_nonneg W S T rows left right (a h.val) (b h.val) M h.val) hpoint
   refine ⟨hs, (mul_le_mul_iff_right₀ ht).mp ?_⟩
-  calc
-    _ ≤ nonzeroLatticeEnvelopeConstant * (2 * t * C) := hv
-    _ = _ := by dsimp only [C]; ring
+  linarith
 
 end
 
-theorem dual_middle_scale_identity (M F B N : ℝ)
+theorem dual_middle_scale_identity  M F B N 
     (hM : 0 < M) (hF : 0 < F) (hB : 0 < B) (hN : 0 < N) :
     Real.sqrt ((M / F) / B) = (M / (F * N)) * (N * Real.sqrt (F / (M * B))) := by
   apply (sq_eq_sq₀ (Real.sqrt_nonneg _) (by positivity)).mp
@@ -301,7 +300,7 @@ theorem actual_dual_middle_all_frequencies
   let t := (N * Real.sqrt (F / (M * B))) / (D₁ * D₂)
   let r := M / (F * N)
   have ht : 0 < t := by dsimp only [t]; positivity
-  have hr0 : 0 < r := by dsimp only [r]; positivity
+  
   let C := dualMiddleDecayConstant W * Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N a₀ b₀)
   have hC : 0 ≤ C := mul_nonneg (dualMiddleDecayConstant_nonneg W) (Real.sqrt_nonneg _)
   have hpoint (h : {h : O // h ≠ 0}) :
@@ -339,18 +338,16 @@ theorem actual_dual_middle_all_frequencies
   obtain ⟨hs, hv⟩ := nonzero_lattice_envelope_sum t ((2 * t * r) * C) ht (by positivity)
     _ (fun h => dualMiddleAt_nonneg W S T rows left right (a h.val) (b h.val) M F h.val) hpoint
   refine ⟨hs, (mul_le_mul_iff_right₀ ht).mp ?_⟩
-  calc
-    _ ≤ nonzeroLatticeEnvelopeConstant * ((2 * t * r) * C) := hv
-    _ = _ := by dsimp only [C, r]; ring
+  linarith
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open     EisensteinSchwartzPoisson
 
-def divisorExponentConstant {α : ℝ} (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss) : ℝ :=
+def divisorExponentConstant {α } (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)  :=
   (h.divisor_pair deltaLoss hδ).choose
 
-theorem divisorExponentConstant_pos {α : ℝ} (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss) :
+theorem divisorExponentConstant_pos {α : ℝ} (h : HasSieveExponent α)  deltaLoss   hδ  :
     0 < divisorExponentConstant h deltaLoss hδ := (h.divisor_pair deltaLoss hδ).choose_spec.1
 
 theorem divisor_cost_with_constant {α : ℝ} (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)
@@ -384,7 +381,7 @@ theorem dual_middle_scale_shape (M F B N D T α : ℝ)
     (hD : D ≤ T * (N * Real.sqrt (F / (M * B)))) :
     (M / (F * N)) * (N + B ^ α * D) ≤
       M / F + T * Real.sqrt (M / F) * B ^ (α - 1 / 2) := by
-  have hratio : 0 ≤ M / (F * N) := by positivity
+  
   calc
     _ ≤ (M / (F * N)) * (N + B ^ α * (T * (N * Real.sqrt (F / (M * B))))) := by gcongr
     _ = M / F + T * (Real.sqrt ((M / F) / B) * B ^ α) := by
@@ -468,20 +465,20 @@ theorem HasSieveExponent.dual_middle_block
 end CanonicalQuadraticSieve
 
 namespace CubicEisenstein
-open Filter
-open scoped BigOperators Classical Topology Matrix MatrixGroups
+ 
+open scoped       Matrix MatrixGroups
 
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
+open   CubicKubota  
 
 def integralComplexMatrix : SL(2,O) →* SL(2,ℂ) := Matrix.SpecialLinearGroup.map eisEmbedding
 
-@[simp] lemma integralComplexMatrix_apply (M : SL(2,O)) (i j : Fin 2) :
+@[simp] lemma integralComplexMatrix_apply  M   i j  :
     integralComplexMatrix M i j = eisEmbedding (M i j) := rfl
 
 lemma integralComplexMatrix_levelThree (M : levelThree) :
     integralComplexMatrix (M : SL(2,O)) = complexMatrix M := rfl
 
-lemma row_wedge_gram (u v : Fin 2 → ℂ) :
+lemma row_wedge_gram  u v  :
     Complex.normSq (u 0*v 1-u 1*v 0) +
       Complex.normSq (u 0*star (v 0)+u 1*star (v 1)) = rowEnergy u * rowEnergy v := by
   simp only [rowEnergy,← Complex.normSq_eq_norm_sq,Complex.normSq_apply,
@@ -489,12 +486,12 @@ lemma row_wedge_gram (u v : Fin 2 → ℂ) :
     Complex.star_def,Complex.conj_re,Complex.conj_im]
   ring
 
-lemma row_wedge_le_energy (u v : Fin 2 → ℂ) :
+lemma row_wedge_le_energy  u v  :
     Complex.normSq (u 0*v 1-u 1*v 0) ≤ rowEnergy u * rowEnergy v := by
   rw [← row_wedge_gram u v]
   exact le_add_of_nonneg_right (Complex.normSq_nonneg _)
 
-lemma bottom_row_wedge_mul (g h : SL(2,ℂ)) :
+lemma bottom_row_wedge_mul  g h  :
     complexBottomRow (g*h) 0 * complexBottomRow h 1 -
       complexBottomRow (g*h) 1 * complexBottomRow h 0 = g 1 0 := by
   have hd : h 0 0*h 1 1-h 0 1*h 1 0=1 := by
@@ -502,7 +499,7 @@ lemma bottom_row_wedge_mul (g h : SL(2,ℂ)) :
   simp only [complexBottomRow,Matrix.SpecialLinearGroup.coe_mul,Matrix.mul_apply,Fin.sum_univ_two]
   linear_combination g 1 0 * hd
 
-theorem hyperbolicHeight_mul_bound (g : SL(2,ℂ)) (w : HyperbolicSpace) :
+theorem hyperbolicHeight_mul_bound (g : SL(2,ℂ))  w  :
     hyperbolicHeight (g • w) * hyperbolicHeight w * Complex.normSq (g 1 0) ≤ 1 := by
   induction w using Quotient.inductionOn with
   | _ h =>
@@ -520,12 +517,12 @@ theorem hyperbolicHeight_mul_bound (g : SL(2,ℂ)) (w : HyperbolicSpace) :
     rw [he]
     exact (div_le_one hp).mpr hw
 
-lemma one_le_normSq_embedding (c : O) (hc : c≠0) : 1 ≤ Complex.normSq (eisEmbedding c) := by
+lemma one_le_normSq_embedding  c  (hc : c≠0) : 1 ≤ Complex.normSq (eisEmbedding c) := by
   rw [Complex.normSq_eq_norm_sq,eisEmbedding_norm_sq_eq_absNorm_span]
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hc))
 
-theorem integral_hyperbolicHeight_mul_le_one (M : SL(2,O)) (hc : M 1 0≠0) (w : HyperbolicSpace) :
+theorem integral_hyperbolicHeight_mul_le_one  M  (hc : M 1 0≠0)  w  :
     hyperbolicHeight (integralComplexMatrix M • w) * hyperbolicHeight w ≤ 1 := by
   have hb := hyperbolicHeight_mul_bound (integralComplexMatrix M) w
   have hc1 := one_le_normSq_embedding (M 1 0) hc
@@ -535,17 +532,17 @@ theorem integral_hyperbolicHeight_mul_le_one (M : SL(2,O)) (hc : M 1 0≠0) (w :
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+ 
+open scoped       MatrixGroups
 
 namespace CubicEisenstein
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
+open   CubicKubota  
 
-lemma cosetHeight_pos (x : CuspCosets) (w : HyperbolicSpace) : 0<cosetHeight x w := by
+lemma cosetHeight_pos  x   w  : 0<cosetHeight x w := by
   induction x using Quotient.inductionOn with
   | _ M => exact (cosetHeight_cosetOf M w).symm ▸ hyperbolicHeight_pos _
 
-lemma cosetHeight_rightEquiv (M : levelThree) (x : CuspCosets) (w : HyperbolicSpace) :
+lemma cosetHeight_rightEquiv  M   x   w  :
     cosetHeight (rightEquiv M x) w = cosetHeight x (complexMatrix M • w) := by
   induction x using Quotient.inductionOn with
   | _ N =>
@@ -571,33 +568,32 @@ lemma high_coset_unique (Y : ℝ) (hY : 1≤Y) (w : HyperbolicSpace)
       have hn := lt_of_le_of_lt hY hy
       nlinarith [mul_pos (sub_pos.mpr hm) (sub_pos.mpr hn)]
 
-lemma high_cosets_finite (Y : ℝ) (hY : 1≤Y) (w : HyperbolicSpace) :
+lemma high_cosets_finite  Y  (hY : 1≤Y)  w  :
     Set.Finite {x : CuspCosets | Y<cosetHeight x w} := by
   have h : Set.Subsingleton {x : CuspCosets | Y<cosetHeight x w} :=
     fun x hx y hy => high_coset_unique Y hY w x y hx hy
   exact h.finite
 
-def cuspCutoffTerm (Y : ℝ) (F : ℝ → ℂ) (x : CuspCosets) (w : HyperbolicSpace) : ℂ :=
+def cuspCutoffTerm (Y : ℝ) (F : ℝ → ℂ) (x : CuspCosets) (w : HyperbolicSpace)  :=
   if Y<cosetHeight x w then (cosetCharacter x)⁻¹ * F (cosetHeight x w) else 0
 
-lemma cuspCutoffTerm_finiteSupport (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ) (w : HyperbolicSpace) :
+lemma cuspCutoffTerm_finiteSupport  Y  (hY : 1≤Y)  F   w  :
     Function.HasFiniteSupport (fun x => cuspCutoffTerm Y F x w) := by
   apply (high_cosets_finite Y hY w).subset
   intro x hx
   by_contra hn
   simp only [Function.mem_support] at hx
-  change ¬Y<cosetHeight x w at hn
-  exact hx (by simp [cuspCutoffTerm,hn])
+  grind [cosetHeight, cuspCutoffTerm]
 
-lemma cuspCutoffTerm_summable (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ) (w : HyperbolicSpace) :
+lemma cuspCutoffTerm_summable  Y  (hY : 1≤Y)  F   w  :
     Summable (fun x => cuspCutoffTerm Y F x w) :=
   summable_of_hasFiniteSupport (cuspCutoffTerm_finiteSupport Y hY F w)
 
-def cuspCutoffCorrection (Y : ℝ) (F : ℝ → ℂ) (w : HyperbolicSpace) : ℂ :=
+def cuspCutoffCorrection (Y : ℝ) (F : ℝ → ℂ) (w : HyperbolicSpace)  :=
   ∑'x,cuspCutoffTerm Y F x w
 
-lemma cuspCutoffTerm_automorphy (Y : ℝ) (F : ℝ → ℂ) (M : levelThree)
-    (x : CuspCosets) (w : HyperbolicSpace) :
+lemma cuspCutoffTerm_automorphy  Y   F   M 
+     x   w  :
     cuspCutoffTerm Y F x (complexMatrix M • w) =
       complexCharacter M * cuspCutoffTerm Y F (rightEquiv M x) w := by
   have hM : complexCharacter M≠0 := by
@@ -608,8 +604,8 @@ lemma cuspCutoffTerm_automorphy (Y : ℝ) (F : ℝ → ℂ) (M : levelThree)
   simp only [cuspCutoffTerm,cosetHeight_rightEquiv,cosetCharacter_rightEquiv]
   split_ifs <;> simp [mul_inv_rev,hM,mul_assoc,mul_left_comm,mul_comm]
 
-theorem cuspCutoffCorrection_automorphy (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
-    (M : levelThree) (w : HyperbolicSpace) :
+theorem cuspCutoffCorrection_automorphy  Y  (hY : 1≤Y)  F 
+     M   w  :
     cuspCutoffCorrection Y F (complexMatrix M • w) = complexCharacter M*cuspCutoffCorrection Y F w := by
   have hsum := cuspCutoffTerm_summable Y hY F w
   have hreindex := (rightEquiv M).hasSum_iff.mpr hsum.hasSum
@@ -617,8 +613,8 @@ theorem cuspCutoffCorrection_automorphy (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
   exact (cuspCutoffTerm_summable Y hY F (complexMatrix M • w)).hasSum.unique
     (hscale.congr_fun (fun x => cuspCutoffTerm_automorphy Y F M x w))
 
-lemma cuspCutoffCorrection_eq (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
-    (w : HyperbolicSpace) (x : CuspCosets) (hx : Y<cosetHeight x w) :
+lemma cuspCutoffCorrection_eq  Y  (hY : 1≤Y)  F 
+     w   x  (hx : Y<cosetHeight x w) :
     cuspCutoffCorrection Y F w = (cosetCharacter x)⁻¹*F (cosetHeight x w) := by
   unfold cuspCutoffCorrection
   rw [tsum_eq_single x]
@@ -627,7 +623,7 @@ lemma cuspCutoffCorrection_eq (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
     have hn : ¬Y<cosetHeight y w := fun hh => hy (high_coset_unique Y hY w y x hh hx)
     simp [cuspCutoffTerm,hn]
 
-lemma hyperbolicHeight_upperPoint (z : ℂ) (v : ℝ) (hv : 0<v) :
+lemma hyperbolicHeight_upperPoint  z   v   hv  :
     hyperbolicHeight (upperPoint z v hv)=v := by
   have h := hyperbolicHeight_action_upperPoint 1 z v hv
   simpa [Matrix.one_apply] using h

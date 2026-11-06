@@ -6,13 +6,17 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailGeom
 
 namespace OAI
 
-noncomputable section
+
 
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open InverseInitialProfile
 
+section
+variable (Z D m B θ H η τ b C d v n₁ n₂ hnorm : ℝ)
+
+
 theorem actual_annulus_radial_lower
-    (Z D m B θ H b C d v n₁ n₂ hnorm : ℝ)
+     
     (hZ : 0<Z) (hb : 0<b) (hd : 0<d) (hv : 0<v)
     (hn₁ : 0<n₁) (hn₂ : 0<n₂)
     (hC : Z^B/4≤C) (hdiv : d≤Z^θ) (hfreq : Z^H/4≤hnorm)
@@ -39,7 +43,7 @@ theorem actual_annulus_radial_lower
     _ ≤ _ := mul_le_mul_of_nonneg_right hscale hh
 
 theorem actual_annulus_high_gate
-    (Z D m B θ H η τ b C d v n₁ n₂ hnorm : ℝ)
+     
     (hZ : 1≤Z) (hη : 0≤η) (hb : 0<b) (hd : 0<d) (hv : 0<v)
     (hn₁ : 0<n₁) (hn₂ : 0<n₂)
     (hC : Z^B/4≤C) (hdiv : d≤Z^θ) (hfreq : Z^H/4≤hnorm)
@@ -55,8 +59,10 @@ theorem actual_annulus_high_gate
     _ = Z^(τ+η) := (Real.rpow_add hz τ η).symm
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
 
+end
+
 end SevenEighths.InverseInitialHighFrequencyTail
 
-end
+
 
 end OAI

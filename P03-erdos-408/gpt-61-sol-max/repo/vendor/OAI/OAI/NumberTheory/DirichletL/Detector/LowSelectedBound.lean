@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.LowActualReflectedEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.LowOriginalEnergy
@@ -11,9 +12,9 @@ noncomputable section
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
+local instance : Fintype ActualEisensteinCubic.Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 lemma gaussianFixedWindow_support : Function.support gaussianFixedWindow⊆Set.Icc (1/2:ℝ) 2 := by
   intro y hy
@@ -21,19 +22,19 @@ lemma gaussianFixedWindow_support : Function.support gaussianFixedWindow⊆Set.I
   · by_contra h; exact hy (gaussianFixedWindow_small y (le_of_lt (lt_of_not_ge h)))
   · by_contra h; exact hy (gaussianFixedWindow_large y (le_of_lt (lt_of_not_ge h)))
 
-lemma lowReflectionMask_bad_ideals (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) :
+lemma lowReflectionMask_bad_ideals  η   S 
+     hS  (hbad : fixedBadPrimes⊆S) :
     ∀P∈fixedBadPrimes,P∣Ideal.span {lowReflectionMask η S hS}*(1:Id) := by
   intro P hP
   rw [mul_one,lowReflectionMask,←Ideal.span_singleton_mul_span_singleton,calibrationForSet_span]
   exact dvd_mul_of_dvd_left (Finset.dvd_prod_of_mem (fun P : Id=>P) (hbad hP)) _
 
-theorem low_selected_physical_energy (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    (K : ℕ) (Ck ε : ℝ) (hCk : 0<Ck) (hε : 0<ε) (hε1 : ε≤1) :
+theorem low_selected_physical_energy  η   S 
+     hS  (hbad : fixedBadPrimes⊆S)
+     K   Ck ε  (hCk : 0<Ck) (hε : 0<ε) (hε1 : ε≤1) :
     ∃degree : ℕ,∃C Z₀ : ℝ,0<C ∧ 1<Z₀ ∧
     ∀(Z d ell0 shift : ℝ),Z₀≤Z→0≤d→d≤1/6→0≤ell0→ell0≤1/6-d+ε→|shift|≤ε→
-    ∀(R : Finset O),(∀z∈R,z≠0 ∧ elementNorm z≤Ck*Z^(5/6-2*d))→
+    ∀(R : Finset ActualEisensteinCubic.O),(∀z∈R,z≠0 ∧ elementNorm z≤Ck*Z^(5/6-2*d))→
     ∀(T : Fin K→Finset PrimeIdeal),(∀i P,P∈T i→Supported P.val)→
       (∀i P,P∈T i→P.val∉S)→Pairwise (fun i j=>Disjoint (T i) (T j))→
     ∀(J : Finset (Fin K))(H : SelectedSlot J→ℝ),
@@ -67,7 +68,7 @@ theorem low_selected_physical_energy (η : HeckeFamily.Character) (S : Finset Id
   have hcard : Fintype.card (SelectedSlot J)≤K := by
     simpa only [Fintype.card_coe,Finset.card_univ,Fintype.card_fin] using
       Finset.card_le_card (Finset.subset_univ (Finset.univ\J))
-  have hrow (χ : RayCharacter) (u : Oˣ) :
+  have hrow (χ : RayCharacter) (u : ActualEisensteinCubic.Oˣ) :
       (∑I∈lowIdealRows R,‖lowActualIdealPolynomial L
         (fun i I=>lowSingleSlotWeight η (W i.val) (Y i.val) t (primaryGenerator I))
         (rowTwist (physicalRayPeriodicBase η S hS σ χ) (lowReflectionMask η S hS)
@@ -94,16 +95,16 @@ theorem low_selected_physical_energy (η : HeckeFamily.Character) (S : Finset Id
   apply (lowSelectedInverseRow_actual_reflected_energy η S hS hbad T hT hout hdis J W Y
     (Z^(1+ell0+shift)) t σ R (fun z hz=>(hR z hz).1)).trans
   have hh := Finset.sum_le_sum (fun χ (_ : χ∈(Finset.univ:Finset RayCharacter))=>
-    Finset.sum_le_sum (fun u (_ : u∈(Finset.univ:Finset Oˣ))=>hrow χ u))
+    Finset.sum_le_sum (fun u (_ : u∈(Finset.univ:Finset ActualEisensteinCubic.Oˣ))=>hrow χ u))
   have hm := mul_le_mul_of_nonneg_left hh lowCorrectionEnergy_nonneg
   simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,low_unit_card] at hm
   simp only [Nat.cast_ofNat,Real.norm_eq_abs] at hm ⊢
   apply hm.trans
   dsimp [C0]
   have hc0 := lowCorrectionEnergy_nonneg
-  have hcount : 0≤(Fintype.card RayCharacter:ℝ) := Nat.cast_nonneg _
+  
   have hzpos : 0≤Z^((5/6-2*d)+507*ε) := Real.rpow_nonneg (le_trans zero_le_one (hZ₀.le.trans hZ)) _
-  have htpos : 0≤(1+|t|)^degree := by positivity
+  
   calc
     _=(lowCorrectionEnergy*(Fintype.card RayCharacter:ℝ)*6*C)*(1+|t|)^degree*
         Z^((5/6-2*d)+507*ε) := by ring

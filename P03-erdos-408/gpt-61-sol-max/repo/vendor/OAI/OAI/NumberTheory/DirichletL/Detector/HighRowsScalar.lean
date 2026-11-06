@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.UnramifiedScalar
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.UnramifiedScalar
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
@@ -15,7 +16,11 @@ variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
 include hc
 
-theorem row_even_kzero (r m j : ℕ) (hj : j<6) :
+section
+variable (r m j : ℕ) (hj : j<6)
+include r m j hj
+
+theorem row_even_kzero     :
     positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) (6*r+5) 0 (j+6*m) =
       if r+1≤m then
         (Ideal.absNorm (Ideal.span {p}):ℂ)^(6*r+5)*((Ideal.absNorm (Ideal.span {p}):ℂ)-1)
@@ -25,12 +30,9 @@ theorem row_even_kzero (r m j : ℕ) (hj : j<6) :
   by_cases hm : r+1≤m
   · rw [ite_eq_left hm,ite_eq_left (by omega),ite_eq_left (by omega),pow_succ]
     ring
-  · rw [ite_eq_right hm,ite_eq_right (by omega)]
-    by_cases hb : j=5 ∧ m=r
-    · rw [ite_eq_left hb,ite_eq_left (by omega),zero_sub]
-    · rw [ite_eq_right hb,ite_eq_right (by omega),sub_self]
+  grind
 
-theorem row_squarefree_kone (r m j : ℕ) (hj : j<6) :
+theorem row_squarefree_kone     :
     positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) (6*r) 1 (j+6*m) =
       ((actualSextic (Ideal.span {p}) hg (-1))⁻¹ *
         primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1) *
@@ -41,16 +43,12 @@ theorem row_squarefree_kone (r m j : ℕ) (hj : j<6) :
   by_cases hpos : 1≤j+6*m
   · rw [ite_eq_left ⟨rfl,hpos⟩,gaussValuationTable,ite_eq_left (by omega : 6∣6*r)]
     congr 1
-    by_cases hb : 6*r+1<j+6*m
-    · rw [ite_eq_left hb,ite_eq_left (by omega),ite_eq_left (by omega),pow_succ]
-      ring
-    · rw [ite_eq_right hb,ite_eq_right (by omega)]
-      by_cases he : j=1 ∧ m=r
-      · rw [ite_eq_left he,ite_eq_left (by omega),zero_sub]
-      · rw [ite_eq_right he,ite_eq_right (by omega),sub_self]
+    grind
   · rw [ite_eq_right (by omega),ite_eq_right (by omega),ite_eq_right (by omega),mul_zero]
 
-end SevenEighths.ProbePrimePower
 end
+
+end SevenEighths.ProbePrimePower
+
 
 end OAI

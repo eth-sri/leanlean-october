@@ -5,6 +5,7 @@ Authors: Adam Benenson
 -/
 
 module
+public import Mathlib.Tactic
 
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.ArzelaAscoli
 public import Mathlib.MeasureTheory.Function.LpSpace.Basic
@@ -39,7 +40,7 @@ open MeasureTheory Set
 
 noncomputable section
 
-section Volume
+
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
 
@@ -48,15 +49,13 @@ local instance instMeasurableSpaceEL2CompactnessTransfer : MeasurableSpace E := 
 local instance instBorelSpaceEL2CompactnessTransfer : BorelSpace E := ⟨rfl⟩
 local instance instOpensMeasurableSpaceEL2CompactnessTransfer : OpensMeasurableSpace E := by
   infer_instance
-local instance instMeasurableAddEL2CompactnessTransfer : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegEL2CompactnessTransfer : MeasurableNeg E := by
-  infer_instance
+
+
 
 variable {K : Set E} {ψ : E → ℝ}
 
-private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : MeasurableSet K)
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) :
+private lemma dist_smoothL2_le_mul_dist_smoothBCF  hK   hKm 
+     hψc   hψcs  :
     ∀ u v : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K),
       dist (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u)
           (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs v) ≤
@@ -88,7 +87,7 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
   have hBuBv : 0 ≤ ‖Bu - Bv‖ := norm_nonneg _
   -- Work on `F := Su - Sv` and restrict to the finite-measure set `s`.
   let F : (E →₂[(volume : Measure E)] ℝ) := Su - Sv
-  let g : E → ℝ := fun x => (F : E → ℝ) x
+  let g : E → ℝ := (F : E → ℝ)
   have hg : MeasureTheory.MemLp g (2 : ℝ≥0∞) (volume : Measure E) := MeasureTheory.Lp.memLp F
   have hg_restrict : MeasureTheory.MemLp g (2 : ℝ≥0∞) μs := hg.restrict s
   let Fs : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) μs := hg_restrict.toLp g
@@ -148,12 +147,8 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
         smoothFun (E := E) (K := K) ψ u x -
           smoothFun (E := E) (K := K) ψ v x = 0 := by
     intro x hx
-    have hu_supp : Function.support (smoothFun (E := E) (K := K) ψ u) ⊆ s := by
-      exact
-        (support_smoothFun_subset_add_tsupport (E := E) (K := K) (ψ := ψ) u)
-    have hv_supp : Function.support (smoothFun (E := E) (K := K) ψ v) ⊆ s := by
-      exact
-        (support_smoothFun_subset_add_tsupport (E := E) (K := K) (ψ := ψ) v)
+    have hu_supp : Function.support (smoothFun (E := E) (K := K) ψ u) ⊆ s := (support_smoothFun_subset_add_tsupport (E := E) (K := K) (ψ := ψ) u)
+    have hv_supp : Function.support (smoothFun (E := E) (K := K) ψ v) ⊆ s := (support_smoothFun_subset_add_tsupport (E := E) (K := K) (ψ := ψ) v)
     have hu0 : smoothFun (E := E) (K := K) ψ u x = 0 := by
       have : x ∉ Function.support (smoothFun (E := E) (K := K) ψ u) := fun hx' => hx (hu_supp hx')
       simpa [Function.support] using this
@@ -223,8 +218,7 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
     · simp [hxmem, hx hxmem]
     · simp [hxmem]
   have hFext_ae' :
-      (Fext : E → ℝ) =ᵐ[(volume : Measure E)] g := by
-    exact hFext_ae.trans (hindicator.trans hF_ind)
+      (Fext : E → ℝ) =ᵐ[(volume : Measure E)] g := hFext_ae.trans (hindicator.trans hF_ind)
   have hFext_eq : Fext = F := by
     refine MeasureTheory.Lp.ext ?_
     simpa [g, F] using hFext_ae'
@@ -239,8 +233,8 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
   -- Convert to the `dist` statement.
   simpa [Su, Sv, Bu, Bv, F, dist_eq_norm, mS, mul_assoc] using hnorm_F
 
-theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : MeasurableSet K)
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) {R : ℝ} (hR : 0 ≤ R) :
+theorem smoothL2_image_closedBall_isCompact  hK   hKm 
+     hψc   hψcs   {R}  (hR : 0 ≤ R) :
     IsCompact
         (closure
           (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs '' Metric.closedBall (0 : _) R)) := by
@@ -248,7 +242,7 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
   let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
   let s : Set E := Kψ (K := K) (ψ := ψ)
   have hs_compact : IsCompact s := isCompact_Kψ (K := K) (ψ := ψ) hK hψcs
-  have hs : MeasurableSet s := hs_compact.measurableSet
+  
   have hs_lt_top : (volume : Measure E) s < (⊤ : ℝ≥0∞) :=
     hs_compact.measure_lt_top (μ := (volume : Measure E))
   let μs : Measure E := (volume : Measure E).restrict s
@@ -329,8 +323,7 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
       refine ⟨tL2, htL2_fin, ?_⟩
       intro w hw
       rcases hw with ⟨u, huU, rfl⟩
-      have hBu : (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u) ∈ A := by
-        exact ⟨u, huU, rfl⟩
+      have hBu : (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u) ∈ A := ⟨u, huU, rfl⟩
       have : smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u ∈ ⋃ x ∈ t, Metric.ball x deltaLoss :=
         htCover hBu
       rcases mem_iUnion.1 this with ⟨f, hf⟩
@@ -353,8 +346,7 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
         have : mS * dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u)
                 (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs (uOf f')) < ε := by
           have : mS * dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u)
-                  (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs (uOf f')) < mS * deltaLoss := by
-            exact mul_lt_mul_of_pos_left hdist' hmSpos
+                  (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs (uOf f')) < mS * deltaLoss := mul_lt_mul_of_pos_left hdist' hmSpos
           have hmul : mS * deltaLoss = ε := by
             have hmS_ne : mS ≠ 0 := ne_of_gt hmSpos
             calc
@@ -376,7 +368,7 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
     isCompact_iff_totallyBounded_isComplete.2 ⟨hTB_closure, hcomplete⟩
   simpa [B, U] using hcompact_closure
 
-end Volume
+
 
 end
 

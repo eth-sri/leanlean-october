@@ -17,27 +17,32 @@ open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourc
 open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
 open CenteredMomentFirstSecondInputGates CenteredMomentFirstAnnularInput
 open CenteredMomentOriginalCommonHarmonic CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
-local instance {α : Type*} : DecidableEq α := Classical.decEq _
+
+
 variable {ι : Type*} [Fintype ι]
 
-def errorInput (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) (Q : Ideal O) (k : ℕ)
+def errorInput (s : Input ι) (C R ) (B )
+    (τ ) (t ) (Q ) (k )
     (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
-    (υ : Character) (v : ℝ) : Input (liveIndices Bp.val) :=
+    (υ : Character) (v : ℝ)  :=
   child (activeInput (child s C R B τ t)) (Q^k) (R*C) Bp υ v
 
-lemma active_endpoints (s : Input ι) (b b₁ b₂ : ℝ) (he : Endpoints b b₁ b₂ s) :
+section
+variable (s : Input ι) (N : ℕ) (b b₁ b₂ ε : ℝ) (hb : 1≤b) (h₁ : 1≤b₁) (h₂ : 1≤b₂)
+
+
+lemma active_endpoints     (he : Endpoints b b₁ b₂ s) :
     Endpoints b b₁ b₂ (activeInput s) := he
 
-theorem error_caps (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 1≤b₁) (h₂ : 1≤b₂)
+include hb h₁ h₂ in
+theorem error_caps          
     (s : Input ι) (hc : Fintype.card ι≤N) (he : Endpoints b b₁ b₂ s)
-    (C R : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
+     C R   B   τ   t 
     (hne : frozenCoefficient B.val C R s.ν s.W s.P≠0)
-    (Q : Ideal O) (hQ : Q≠0) (k : ℕ)
+     Q  (hQ : Q≠0)  k 
     (hslot : ∀i,∀I∈(activeInput (child s C R B τ t)).slots i,IsCoprime Q I)
-    (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
-    (υ : Character) (v : ℝ) :
+     Bp 
+     υ   v  :
     let d := errorInput s C R B τ t Q k Bp υ v;
     let H := volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k);
     0<H ∧ 0≤sourceRadius d ∧ volume d≤geometry N b b₁ b₂*H ∧
@@ -68,19 +73,20 @@ theorem error_caps (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 1≤b₁) 
   exact hr.2.trans ((mul_le_mul_of_nonneg_left hv (show 0≤b^N*b₁*b₂ by positivity)).trans_eq (by
     unfold geometry;rw [show 2*N=N+N by omega,pow_add];ring))
 
-theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
-    (hb : 1≤b) (h₁ : 1≤b₁) (h₂ : 1≤b₂) (hε : 0<ε) :
+include hb h₁ h₂ in
+theorem eventually_active_error_ready    
+          (hε : 0<ε) :
     ∀ᶠZ : ℝ in atTop,1<Z ∧ ∀{ι : Type*}[Fintype ι],∀s : Input ι,
     Fintype.card ι≤N → Endpoints b b₁ b₂ s →
-    ∀(C R seed : Ideal O)(B : actualAllocations s.pools C)(τ : Character)(t : ℝ),
+    ∀(C R seed : Ideal HeckeFamily.O)(B : actualAllocations s.pools C)(τ : Character)(t : ℝ),
     R≠0 → frozenCoefficient B.val C R s.ν s.W s.P≠0 →
-    ∀(Q : Ideal O),Q≠0 → ∀k : ℕ,
+    ∀(Q : Ideal HeckeFamily.O),Q≠0 → ∀k : ℕ,
     (∀i,∀I∈(activeInput (child s C R B τ t)).slots i,IsCoprime Q I) →
     ∀(Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
       (υ : Character)(v K A D P q ξ : ℝ),
     0<K → 0≤ξ → s.W₁ 0=0 → s.W₂ 0=0 →
     volume s≤Z^A → K⁻¹≤Z^D → (R.absNorm:ℝ)≤Z^P → (υ.modulus.absNorm:ℝ)≤Z^q →
-    (∃I : Ideal O,(original (errorInput s C R B τ t Q k Bp υ v) ((R*C)*(Q^k)) seed).beta I≠0) →
+    (∃I : Ideal HeckeFamily.O,(original (errorInput s C R B τ t Q k Bp υ v) ((R*C)*(Q^k)) seed).beta I≠0) →
     Ready (errorInput s C R B τ t Q k Bp υ v) ((R*C)*(Q^k)) K Z ξ
       (exponent A D P q ε ξ) := by
   filter_upwards [eventual_geometry (geometry N b b₁ b₂) ε
@@ -134,6 +140,8 @@ theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
     hυ.trans (hpow h₄),hpunct.trans (hpow h₃),nominal_pos d K hK,
     hpoly.2.2.1.trans (hpow ((by linarith : 2*A+D+ε≤2*A+D+ε+ξ/2).trans h₂)),
     hpoly.2.2.2.1,hpoly.2.2.2.2.trans (hpow h₂)⟩
+
+end
 
 end SevenEighths.CenteredMomentFirstSecondActiveErrorGates
 

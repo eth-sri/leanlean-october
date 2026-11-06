@@ -7,7 +7,7 @@ public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 
 namespace OAI
 
-noncomputable section
+
 open scoped ContDiff
 namespace SevenEighths.Parameters
 
@@ -40,6 +40,6 @@ theorem exists_probe_window : ∃ (w : ℝ→ℝ) (W : SchwartzMap ℝ ℂ),
     exact (hr ⟨x,rfl⟩).1
 end SevenEighths.Parameters
 
-end
+
 
 end OAI

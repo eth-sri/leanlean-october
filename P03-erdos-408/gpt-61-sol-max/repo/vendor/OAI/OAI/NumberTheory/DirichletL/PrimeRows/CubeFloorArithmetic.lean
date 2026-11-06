@@ -1,4 +1,6 @@
 module
+import Batteries.Tactic.Alias
+import OAI.NumberTheory.DirichletL.PrimeRows.CubePrimeBound
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeSlotExponent
 public import OAI.NumberTheory.DirichletL.Detector.CentralCubeNorm
@@ -19,9 +21,7 @@ local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZ
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
-theorem floorPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
+alias floorPoolOutside := _root_.OAI.SevenEighths.ProbeHighRowFamily.poolOutside
 
 theorem actual_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
@@ -33,7 +33,7 @@ theorem actual_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin �
     (hmax : ∀P∈S,P.IsMaximal)
     (ell : Fin N→ℝ) (hell : Function.Injective ell)
     (hello : ∀j,dmax*rmin≤ell j) (hellhi : ∀j,ell j≤dmin*R)
-    (W : Fin N→ℝ→ℂ)
+     W 
     (hWs : ∀j,Function.support (W j)⊆Ioo c b) (hW : ∀j,ContDiff ℝ ∞ (W j)) (hWB : ∀j t,‖W j t‖≤A)
     (hellsum : ∑j,ell j=1/6) :
     ∃C : ℝ,0<C ∧ ∀η : Character,∀ᶠ Z : ℝ in atTop,
@@ -78,8 +78,7 @@ theorem actual_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin �
     dsimp only at hh
     let g : Fin N→ℝ := fun j=>HeckePrimeAmplitudeBins.amplitude (Y j) ((51/100:ℝ)-1/2) mesh
       (HeckePrimeRow.canonicalPrimeAmplitude M H u.val (W j) b (Y j) z)
-    have hellpos (j : Fin N) : 0≤ell j := by
-      exact (mul_nonneg hdmax hrmin.le).trans (hello j)
+    have hellpos (j : Fin N) : 0≤ell j := (mul_nonneg hdmax hrmin.le).trans (hello j)
     have hq := weightedMean_bounds Finset.univ (fun j=>ell j/d) g (1/50)
       (fun j _=>div_nonneg (hellpos j) hd0.le)
       (by rw [source_slot_length_sum _ _ _ hellsum];positivity)

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.S2.MemoryIdentity
 public import Erdos821.S2.FourierClosure
@@ -8,20 +9,16 @@ public import Erdos821.P3Adj.Weight
 
 @[expose] public section
 
-noncomputable section
+section
 open scoped BigOperators
 
 namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-theorem baselinePrime_le_one (F : FixedData) (n p : ℕ) : baselinePrime F n p ≤ 1 := by
-  have hs : 0 ≤ ∑ i : Fin (n + 1), eta F n i :=
-    Finset.sum_nonneg (fun i _ => (Erdos821.P3Adj.eta_pos F n i).le)
-  unfold baselinePrime
-  exact sub_le_self _ (mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg p)) hs)
+theorem baselinePrime_le_one  F   n p  : baselinePrime F n p ≤ 1 := sub_le_self 1 (mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg p)) (Finset.sum_nonneg fun i x => LT.lt.le (Erdos821.P3Adj.eta_pos F n i)))
 
-theorem bigBaseline_norm_le_one (F : FixedData) (P : PrimeGroups) (n : ℕ)
+theorem bigBaseline_norm_le_one  F   P   n 
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 ≤ baselinePrime F n p.val) :
     ‖(bigBaseline F P n : ℂ)‖ ≤ 1 := by
   have h0 : 0 ≤ bigBaseline F P n := by
@@ -44,7 +41,7 @@ theorem bigBaseline_norm_le_one (F : FixedData) (P : PrimeGroups) (n : ℕ)
 
 theorem closedResidueExpression_norm_le_memory_bound
     {F : FixedData} {P : PrimeGroups} {J m : ℕ} (A : Model F P J m)
-    (n : ℕ) (rho C : ℝ)
+     n  (rho C : ℝ)
     (hId : ∀ theta : ℝ, residueExpression A n theta =
       (bigBaseline F P n : ℂ) * distinctMemoryExpression A n rho theta)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 ≤ baselinePrime F n p.val)
@@ -52,7 +49,7 @@ theorem closedResidueExpression_norm_le_memory_bound
     ‖closedResidueExpression A n‖ ≤ C := by
   rw [← integral_residueExpression A n]
   have h := intervalIntegral.norm_integral_le_of_norm_le_const
-    (a := (0 : ℝ)) (b := 1) (C := C) (f := fun theta => residueExpression A n theta)
+    (a := (0 : ℝ)) (b := 1) (C := C) (f := residueExpression A n)
     (fun theta _ => by
       rw [hId theta, norm_mul]
       exact (mul_le_mul (bigBaseline_norm_le_one F P n hb) (hMem theta)

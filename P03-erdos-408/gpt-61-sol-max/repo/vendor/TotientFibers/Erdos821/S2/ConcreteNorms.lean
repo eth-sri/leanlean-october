@@ -13,26 +13,32 @@ public import Erdos821.S2Tail.TailAbsorption
 
 @[expose] public section
 
-noncomputable section
+section
 namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-theorem concrete_truncated_memory_estimate (F : FixedData) (r : MemoryParameters F)
-    (hBoundary : EmptyBoundaryMassTask) (hRare : MemoryRareTask F r)
-    (hHigh : HighRankMemoryTask F r) : UniformTruncatedMemoryEstimate F r :=
+section
+variable (F : FixedData) (r : MemoryParameters F) (hBoundary : EmptyBoundaryMassTask) (hRare : MemoryRareTask F r) (hHigh : HighRankMemoryTask F r)
+include F r hBoundary hRare hHigh
+
+theorem concrete_truncated_memory_estimate    
+       
+      : UniformTruncatedMemoryEstimate F r :=
   RestoredMemoryNormTask_proof F r
     (Erdos821.S2Gpar.GhostAnalyticParametersTask_proof F r) hBoundary
     (MemoryEdgeAbsoluteTask_proof F r) hRare (MemoryCleanTask_proof F r)
     (Erdos821.S2Contr.WholeEdgeContractionTask_proof F r) LowRankMemoryTask_proof hHigh
 
-theorem concrete_full_memory_estimate (F : FixedData) (r : MemoryParameters F)
-    (hBoundary : EmptyBoundaryMassTask) (hRare : MemoryRareTask F r)
-    (hHigh : HighRankMemoryTask F r) (hFull : FullMemoryNormTask F r) :
+theorem concrete_full_memory_estimate    
+       
+      (hFull : FullMemoryNormTask F r) :
     UniformFullMemoryEstimate F r :=
   hFull (Erdos821.S2Gpar.GhostAnalyticParametersTask_proof F r) hBoundary
     (MemoryEdgeAbsoluteTask_proof F r) (concrete_truncated_memory_estimate F r hBoundary hRare hHigh)
     Erdos821.S2Tail.TailAbsorptionTask_proof
+
+end
 
 
 end Erdos821.S2Core

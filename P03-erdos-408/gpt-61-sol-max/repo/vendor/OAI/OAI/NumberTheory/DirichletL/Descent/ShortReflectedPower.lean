@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.ShortReflectedEnergy
 
@@ -6,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Descent.ShortReflectedEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open InverseTerminalWidths InverseReflectedPhase CompletedHeight
-local notation "Eis"=>ActualEisensteinCubic.O
+
 universe v
 
 theorem short_harmonic_small_power (L e:ℝ) (hL:0≤L) (he:0<e):
@@ -21,7 +22,7 @@ theorem short_harmonic_small_power (L e:ℝ) (hL:0≤L) (he:0<e):
   let a:=e/(2*(L+1))
   have ha:0<a:=by dsimp [a]; positivity
   let B:=256*(2+1/(a*Real.log 2))
-  have hlog:0<Real.log 2:=Real.log_pos (by norm_num)
+  
   have hB:0<B:=by dsimp [B]; positivity
   refine ⟨B^2,pow_pos hB _,?_⟩
   intro Z h hZ hh hhL
@@ -41,6 +42,6 @@ theorem short_harmonic_small_power (L e:ℝ) (hL:0≤L) (he:0<e):
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

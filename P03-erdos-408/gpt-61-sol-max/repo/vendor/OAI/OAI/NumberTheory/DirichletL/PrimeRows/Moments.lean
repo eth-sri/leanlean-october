@@ -24,15 +24,19 @@ def momentData (η : Character) : RowData where
 
 def momentElement (u : FreeRow) : NonzeroElement := ⟨u.val,u.property.1⟩
 
-theorem momentData_coeff (η : Character) (u : FreeRow) (I : Ideal O) :
+theorem momentData_coeff  η   u   I  :
     idealCoeff ((momentData η).character (momentElement u)) I=
       idealCoeff η I*idealRowHom (rowMaskElement^6*u.val) I := by
   simpa only [momentData,momentElement,one_pow,mul_one] using
     idealCoeff_eq_row η ((momentData η).character (momentElement u)) rowMaskElement 1 u.val
       ((momentData η).character_spec (momentElement u)) I
 
-theorem momentData_prime_outside (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (η : Character) (u : FreeRow)
+section
+variable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)
+include S hS hbad
+
+theorem momentData_prime_outside    
+      (η : Character) (u : FreeRow)
     (P : PrimeIdeal) (hP : P.val∉S) :
     idealCoeff ((momentData η).character (momentElement u)) P.val=
       idealCoeff η P.val*idealRowHom u.val P.val := by
@@ -41,8 +45,8 @@ theorem momentData_prime_outside (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   rw [momentData_coeff,idealRowHom_argument_mul,
     idealRowHom_prime_sixth_mask rowMaskElement P.val hg,ite_eq_left hc,one_mul]
 
-theorem numerator_moment_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (u : FreeRow) (I : Ideal O) :
+theorem numerator_moment_coeff    
+       u   I  :
     idealCoeff (rowCharacter S hS u) I=
       idealCoeff ((momentData (fixedSourcePrincipal S hS)).character (momentElement u)) I := by
   have he : idealCoeff (rowCharacter S hS u)=
@@ -58,8 +62,8 @@ theorem numerator_moment_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
         fixedSourcePrincipal_prime,ite_eq_right hP,one_mul]
   exact congrArg (fun F : Ideal O→*₀ℂ => F I) he
 
-theorem denominator_moment_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (η : Character) (u : FreeRow) (I : Ideal O) :
+theorem denominator_moment_coeff    
+       η   u   I  :
     idealCoeff ((targetRow η u).excludePrimes S hS) I=
       conj (idealCoeff ((momentData (η.inverse.excludePrimes S hS)).character
         (momentElement u)) I) := by
@@ -77,6 +81,8 @@ theorem denominator_moment_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
         excludedTarget_prime,ite_eq_right hP,idealCoeff_inverse_conj,map_mul]
       simp only [starRingEnd_self_apply]
   simpa only [idealCoeff_inverse_conj] using congrArg (fun F : Ideal O→*₀ℂ => F I) he
+
+end
 
 end SevenEighths.ProbeHighRowFamily
 

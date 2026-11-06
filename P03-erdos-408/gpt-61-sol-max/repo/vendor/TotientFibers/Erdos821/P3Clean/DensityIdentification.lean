@@ -13,11 +13,11 @@ namespace Erdos821.P3Clean
 
 open Erdos821.Blueprint.Graph
 
-def densityNormalizedKernel {α : Type*} (density : α → ℝ) (K : α → α → ℂ) (a b : α) : ℂ :=
+def densityNormalizedKernel {α : Type*} (density : α → ℝ) (K : α → α → ℂ) (a b : α)  :=
   (Real.sqrt (density a) : ℂ) / (Real.sqrt (density b) : ℂ) * K a b
 
 theorem normBound_density_identification {α : Type*} (mass density : α → ℝ)
-    (K : α → α → ℂ) (C : ℝ) (hd : ∀ a, 0 < density a)
+     K   C  (hd : ∀ a, 0 < density a)
     (hK : NormBound mass (densityNormalizedKernel density K) C) :
     NormBound (fun a => mass a * density a) K C := by
   intro s t f g

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralError
 
@@ -6,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralError
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeEuler
 open ProbeLocal
 
-lemma unramifiedSelected_central_error (Q a e : ℝ) (A eta v x w z : ℂ)
+lemma unramifiedSelected_central_error (Q a e : ℝ)  A eta v x w z 
     (hQ : 4≤Q) (ha : (51/100:ℝ)≤a) (ha1 : a≤1) (he : 0<e) (he1 : e≤1/1000)
     (hA : ‖A‖≤1) (heta : ‖eta‖=1) (hv : ‖v‖=1)
     (hx : x.re=a+16*e) (hw : w.re=1-a-6*e) (hz : z.re=17/50) :
@@ -29,7 +30,7 @@ lemma unramifiedSelected_central_error (Q a e : ℝ) (A eta v x w z : ℂ)
     (Real.rpow_le_rpow_of_exponent_le hQ1 (by rw [hw];linarith))
   have hq : ‖(Q:ℂ)^(-w)‖≤Q^(6*e) := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hQ0,Complex.neg_re]
-    exact Real.rpow_le_rpow_of_exponent_le hQ1 (by rw [hw];linarith)
+    gcongr <;> first | assumption | positivity | linarith
   obtain ⟨hVT,hDT,hET,hBET⟩ := central_unramified_error_weights Q a e A eta v x w z
     hQ ha ha1 he he1 hA heta.le hv.le hx hw hz
   have hi := selected_phase_identities Q eta v x w hQ0 heta hv
@@ -40,6 +41,6 @@ lemma unramifiedSelected_central_error (Q a e : ℝ) (A eta v x w z : ℂ)
   simpa only [unramifiedSelected,unramifiedClosed,unramifiedMarked] using hh
 
 end SevenEighths.ProbeEuler
-end
+
 
 end OAI

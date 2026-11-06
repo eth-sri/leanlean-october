@@ -11,7 +11,7 @@ open MeasureTheory
 namespace Erdos821.P5Core
 open Blueprint.Analytic
 
-def integerAdditivePolynomial (s : Finset ℤ) (a : ℤ → ℂ) (θ : ℝ) : ℂ :=
+def integerAdditivePolynomial (s : Finset ℤ) (a : ℤ → ℂ) (θ : ℝ)  :=
   ∑ n ∈ s, a n * e (θ * n)
 
 /-- Pure finite Fourier identities and the abstract major/minor arc bound.
@@ -27,7 +27,7 @@ the restricted G square integral is at most its global B bound.
 Arcs crossing 0 or 1 are allowed because only their intersection with
 [0,1] is used. Delta=0 and empty finite supports/arc sets are included.
 Export exactly this proposition and audit all three components. -/
-def FourierArcTask : Prop :=
+def FourierArcTask  :=
   (∀ (s t : Finset ℤ) (a b : ℤ → ℂ) (d : ℤ),
     (∑ n ∈ s, ∑ m ∈ t, if m = n + d then star (a n) * b m else 0) =
       ∫ θ in (0 : ℝ)..1,

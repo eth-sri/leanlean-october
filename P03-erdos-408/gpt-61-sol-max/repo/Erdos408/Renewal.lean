@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Mertens
 
@@ -53,7 +54,7 @@ private lemma primesIoc_natCast (m n : ℕ) :
 private lemma exists_sum_F_div_le : ∃ V : ℝ, 0 ≤ V ∧ ∀ y t : ℝ, 1 ≤ y → y ≤ t → t ≤ 2 * y →
     ∑ q ∈ primesIoc y t, (F q : ℝ) / q ≤ V := by
   obtain ⟨E, hE0, hE⟩ := mertens_first
-  have hl2 : 0 < log 2 := log_pos one_lt_two
+  
   refine ⟨(log 2 + E) / log 2, by positivity, fun y t hy hyt ht => ?_⟩
   calc ∑ q ∈ primesIoc y t, (F q : ℝ) / q
       ≤ ∑ q ∈ primesIoc y t, log q / q / log 2 := by
@@ -101,19 +102,20 @@ private lemma exists_harmonicF_bounds : ∃ E : ℝ, ∀ x : ℝ, 1 ≤ x →
 /-! ### Elementary estimates -/
 
 /-- A sum dominated by the increments of `g` is at most the total increment. -/
-private lemma sum_Ico_le_sub {a g : ℕ → ℝ} {m n : ℕ} (hmn : m ≤ n)
+private lemma sum_Ico_le_sub {a g : ℕ → ℝ}  {m n}  (hmn : m ≤ n)
     (h : ∀ k, m ≤ k → k < n → a k ≤ g (k + 1) - g k) : ∑ k ∈ Ico m n, a k ≤ g n - g m := by
   induction n, hmn using Nat.le_induction with
   | base => simp
   | succ n hmn ih =>
     rw [sum_Ico_succ_top hmn]
-    have h1 := ih fun k hk hkn => h k hk (by omega)
-    have h2 := h n hmn (by omega)
-    linarith
+    grind
+
+section
+variable (n : ℕ)
 
 /-- A sequence oscillating by at most `ρ n → 0` after `n` converges, within `ρ n` of the
 limit at `n`. -/
-private lemma exists_abs_sub_le {u ρ : ℕ → ℝ} {N : ℕ} (hρ : Tendsto ρ atTop (nhds 0))
+private lemma exists_abs_sub_le {u ρ : ℕ → ℝ}  {N}  (hρ : Tendsto ρ atTop (nhds 0))
     (h : ∀ n, N ≤ n → ∀ m, n ≤ m → |u m - u n| ≤ ρ n) :
     ∃ a, ∀ n, N ≤ n → |u n - a| ≤ ρ n := by
   have hu : CauchySeq u := by
@@ -124,24 +126,29 @@ private lemma exists_abs_sub_le {u ρ : ℕ → ℝ} {N : ℕ} (hρ : Tendsto ρ
   obtain ⟨a, ha⟩ := cauchySeq_tendsto_of_complete hu
   refine ⟨a, fun n hn => ?_⟩
   rw [abs_sub_comm]
-  exact le_of_tendsto ((ha.sub_const _).abs) (eventually_atTop.2 ⟨n, fun m hm => h n hn m hm⟩)
+  exact le_of_tendsto ((ha.sub_const _).abs) (eventually_atTop.2 ⟨n, h n hn⟩)
 
 /-- Eventually `log x ^ n ≤ x`. -/
-private lemma eventually_log_pow_le (n : ℕ) : ∀ᶠ x : ℝ in atTop, log x ^ n ≤ x := by
+private lemma eventually_log_pow_le   : ∀ᶠ x : ℝ in atTop, log x ^ n ≤ x := by
   filter_upwards [isLittleO_pow_log_id_atTop.bound one_pos, eventually_ge_atTop 1] with x hx hx1
   rwa [norm_of_nonneg (pow_nonneg (log_nonneg hx1) _), id, norm_of_nonneg (by linarith),
     one_mul] at hx
 
 /-- Eventually `log k ^ n ≤ k` for naturals. -/
-private lemma eventually_log_pow_le_nat (n : ℕ) : ∀ᶠ k : ℕ in atTop, log k ^ n ≤ k :=
+private lemma eventually_log_pow_le_nat   : ∀ᶠ k : ℕ in atTop, log k ^ n ≤ k :=
   tendsto_natCast_atTop_atTop.eventually (eventually_log_pow_le n)
+
+end
 
 /-- `log k → ∞` along the naturals. -/
 private lemma tendsto_log_nat : Tendsto (fun k : ℕ => log k) atTop atTop :=
   tendsto_log_atTop.comp tendsto_natCast_atTop_atTop
 
+section
+variable {k : ℕ} (hk : 3 ≤ k)
+
 /-- `(log log x)ⁿ → ∞` for `n ≠ 0`. -/
-private lemma tendsto_log_log_pow (n : ℕ) (hn : n ≠ 0) :
+private lemma tendsto_log_log_pow  n  (hn : n ≠ 0) :
     Tendsto (fun x : ℝ => log (log x) ^ n) atTop atTop :=
   (tendsto_pow_atTop hn).comp (tendsto_log_atTop.comp tendsto_log_atTop)
 
@@ -158,17 +165,17 @@ private lemma pow_five_sub_bounds {x y : ℝ} (hx : 0 ≤ x) (hxy : x ≤ y) :
     nlinarith [mul_le_mul_of_nonneg_right h2 hx, mul_le_mul_of_nonneg_right h1 (sq_nonneg x),
       mul_le_mul_of_nonneg_right hxy (pow_nonneg hx 3)]
   have hs2 : y ^ 4 + y ^ 3 * x + y ^ 2 * x ^ 2 + y * x ^ 3 + x ^ 4 ≤ 5 * y ^ 4 := by
-    nlinarith [mul_le_mul_of_nonneg_left hxy (pow_nonneg hy 3),
-      mul_le_mul_of_nonneg_left h1 (sq_nonneg y), mul_le_mul_of_nonneg_left h2 hy]
+    nlinarith
   have hyx : 0 ≤ y - x := by linarith
   rw [e]
   constructor
   · nlinarith [mul_le_mul_of_nonneg_left hs1 hyx]
   · nlinarith [mul_le_mul_of_nonneg_left hs2 hyx]
 
+include hk in
 /-- For `k ≥ 3`, `x = log k` and `y = log (k + 1)` satisfy `1 ≤ x < y ≤ 2 x` and
 `1 / (2 k) ≤ y - x ≤ 1 / k`. -/
-private lemma log_succ_bounds {k : ℕ} (hk : 3 ≤ k) :
+private lemma log_succ_bounds     :
     1 ≤ log k ∧ log k ≤ log (k + 1) ∧ log (k + 1) ≤ 2 * log k ∧
       1 / (2 * k) ≤ log (k + 1) - log k ∧ log (k + 1) - log k ≤ 1 / k := by
   have hk' : (3 : ℝ) ≤ k := by exact_mod_cast hk
@@ -188,8 +195,9 @@ private lemma log_succ_bounds {k : ℕ} (hk : 3 ≤ k) :
     rw [add_div, div_self hk0.ne'] at this ⊢
     linarith
 
+include hk in
 /-- The increments of `-13 / log⁵ k` dominate `1 / (k log⁶ k)`. -/
-private lemma one_div_mul_log_pow_six_le {k : ℕ} (hk : 3 ≤ k) :
+private lemma one_div_mul_log_pow_six_le     :
     1 / (k * log k ^ 6) ≤ 13 / log k ^ 5 - 13 / log (k + 1) ^ 5 := by
   obtain ⟨hx1, hxy, hy2, hd1, -⟩ := log_succ_bounds hk
   have hk0 : (0 : ℝ) < k := Nat.cast_pos.2 (by omega)
@@ -210,8 +218,9 @@ private lemma one_div_mul_log_pow_six_le {k : ℕ} (hk : 3 ≤ k) :
     mul_nonneg (mul_nonneg (by positivity : (0 : ℝ) ≤ x ^ 10) (by linarith : 0 ≤ y - x))
       hk0.le]
 
+include hk in
 /-- For `log k ≥ 160`, the increments of `64 k / log⁵ k` dominate `1 / log⁵ k`. -/
-private lemma one_div_log_pow_five_le {k : ℕ} (hk : 3 ≤ k) (hlog : 160 ≤ log k) :
+private lemma one_div_log_pow_five_le     (hlog : 160 ≤ log k) :
     1 / log k ^ 5 ≤ 64 * (k + 1) / log (k + 1) ^ 5 - 64 * k / log k ^ 5 := by
   obtain ⟨hx1, hxy, hy2, -, hd2⟩ := log_succ_bounds hk
   have hk0 : (0 : ℝ) < k := Nat.cast_pos.2 (by omega)
@@ -236,8 +245,9 @@ private lemma one_div_log_pow_five_le {k : ℕ} (hk : 3 ≤ k) (hlog : 160 ≤ l
     mul_le_mul_of_nonneg_left hy5 (by positivity : (0 : ℝ) ≤ x ^ 5),
     mul_nonneg (by positivity : (0 : ℝ) ≤ x ^ 9) (by linarith : (0 : ℝ) ≤ x - 160)]
 
+include hk in
 /-- On the dyad `[2^k, 2^{k+1}]` with `k ≥ 3`, `log t ≍ k` and `log log t ≥ log k / 2`. -/
-private lemma dyad_log_bounds {k : ℕ} (hk : 3 ≤ k) {t : ℝ} (ht : 2 ^ k ≤ t)
+private lemma dyad_log_bounds      {t}  (ht : 2 ^ k ≤ t)
     (ht' : t ≤ 2 ^ (k + 1)) :
     k * log 2 ≤ log t ∧ log t ≤ (k + 1) * log 2 ∧ log k / 2 ≤ log (log t) := by
   have hk' : (3 : ℝ) ≤ k := by exact_mod_cast hk
@@ -261,30 +271,37 @@ private lemma dyad_log_bounds {k : ℕ} (hk : 3 ≤ k) {t : ℝ} (ht : 2 ^ k ≤
     have h3 : log (k * log 2) ≤ log (log t) := log_le_log hkl h1
     linarith
 
+end
+
 /-! ### The renewal product -/
 
 /-- The dyadic prime harmonic sum `h_k = ∑_{2^k < p ≤ 2^{k+1}} 1 / p`. -/
-noncomputable def dyadH (k : ℕ) : ℝ :=
+noncomputable def dyadH (k : ℕ)  :=
   ∑ p ∈ primesIoc (2 ^ k) (2 ^ (k + 1)), (1 : ℝ) / p
 
 /-- The renewal product `P_K = ∏_{j < K} (1 + h_j)`. -/
-noncomputable def dyadP (K : ℕ) : ℝ :=
+noncomputable def dyadP (K : ℕ)  :=
   ∏ j ∈ range K, (1 + dyadH j)
 
+section
+variable (K : ℕ)
+
 /-- `h_k ≥ 0`. -/
-private lemma dyadH_nonneg (k : ℕ) : 0 ≤ dyadH k :=
+private lemma dyadH_nonneg  k  : 0 ≤ dyadH k :=
   sum_nonneg fun _ _ => by positivity
 
 /-- `P_K > 0`. -/
-private lemma dyadP_pos (K : ℕ) : 0 < dyadP K :=
+private lemma dyadP_pos   : 0 < dyadP K :=
   prod_pos fun j _ => by linarith [dyadH_nonneg j]
 
 /-- `P_{K+1} = P_K (1 + h_K)`. -/
-private lemma dyadP_succ (K : ℕ) : dyadP (K + 1) = dyadP K * (1 + dyadH K) :=
+private lemma dyadP_succ   : dyadP (K + 1) = dyadP K * (1 + dyadH K) :=
   prod_range_succ _ _
 
+end
+
 /-- Dyadic blocks of a prime sum add up to the sum over `(2^K, 2^{K'}]`. -/
-private lemma sum_Ico_dyad (g : ℕ → ℝ) {K K' : ℕ} (hKK' : K ≤ K') :
+private lemma sum_Ico_dyad (g : ℕ → ℝ)  {K K'}  (hKK' : K ≤ K') :
     ∑ j ∈ Ico K K', ∑ p ∈ primesIoc (2 ^ j) (2 ^ (j + 1)), g p =
       ∑ p ∈ primesIoc (2 ^ K) (2 ^ K'), g p := by
   induction K', hKK' using Nat.le_induction with
@@ -318,9 +335,7 @@ private lemma exists_dyadH_le : ∃ c : ℝ, 0 ≤ c ∧ ∀ k : ℕ, 1 ≤ k �
     at h
   rw [add_div, div_self hk0.ne'] at h
   have hlog := log_le_sub_one_of_pos (x := (k + 1) / k) (by positivity)
-  rw [add_div, div_self hk0.ne', add_sub_cancel_left] at hlog
-  rw [add_div]
-  linarith
+  grind
 
 /-- The renewal product is `c K + O(1)` for some `c > 0`. -/
 private lemma exists_dyadP_sub : ∃ c E : ℝ, 0 < c ∧ 0 ≤ E ∧
@@ -369,7 +384,7 @@ private lemma exists_dyadP_sub : ∃ c E : ℝ, 0 < c ∧ 0 ≤ E ∧
     rw [hsplit, show Ev / K = E / K + 2 * ch ^ 2 / K by rw [add_div]]
     exact (abs_sub _ _).trans (add_le_add h1 (by rw [abs_of_nonneg h3]; exact h2))
   obtain ⟨c₀, hc₀⟩ := exists_abs_sub_le (tendsto_const_div_atTop_nhds_zero_nat Ev) hv
-  have hEv : 0 ≤ Ev := by positivity
+  
   refine ⟨exp c₀, 2 * exp c₀ * Ev, exp_pos _, by positivity, ?_⟩
   filter_upwards [eventually_ge_atTop 1,
     tendsto_natCast_atTop_atTop.eventually_ge_atTop (4 * Ev)] with K hK hKE
@@ -398,8 +413,8 @@ private lemma exists_sum_dyadH_le : ∃ E : ℝ, 0 ≤ E ∧ ∀ K : ℕ, 1 ≤ 
   have hl2 : 0 < log 2 := log_pos one_lt_two
   refine ⟨dyadH 0 + E₂ + E₁ / log 2, by linarith [dyadH_nonneg 0, div_nonneg hE₁0 hl2.le],
     fun K hK => ?_⟩
-  have hK0 : (0 : ℝ) < K := Nat.cast_pos.2 hK
-  have hlogK : 0 ≤ log K := log_nonneg (Nat.one_le_cast.2 hK)
+  
+  
   -- `∑_{k < K} h_k = h_0 + ∑_{1 ≤ k < K} h_k`
   have hS : ∑ k ∈ range K, dyadH k ≤ log K + (dyadH 0 + E₂) := by
     rw [range_eq_Ico, sum_eq_sum_Ico_succ_bot hK]
@@ -438,8 +453,8 @@ private lemma exists_sum_dyadH_le : ∃ E : ℝ, 0 ≤ E ∧ ∀ K : ℕ, 1 ≤ 
 
 /-- Telescoping: if `X_{k+1} = X_k (1 + h_k) + f_k` for `k ≥ k₀`, then
 `X_K / P_K = X_{k₀} / P_{k₀} + ∑_{k₀ ≤ k < K} f_k / P_{k+1}`. -/
-private lemma div_dyadP_eq {X f : ℕ → ℝ} {k₀ : ℕ}
-    (hX : ∀ k, k₀ ≤ k → X (k + 1) = X k * (1 + dyadH k) + f k) {K : ℕ} (hK : k₀ ≤ K) :
+private lemma div_dyadP_eq {X f : ℕ → ℝ}  {k₀} 
+    (hX : ∀ k, k₀ ≤ k → X (k + 1) = X k * (1 + dyadH k) + f k)  {K}  (hK : k₀ ≤ K) :
     X K / dyadP K = X k₀ / dyadP k₀ + ∑ k ∈ Ico k₀ K, f k / dyadP (k + 1) := by
   induction K, hK using Nat.le_induction with
   | base => simp
@@ -453,7 +468,7 @@ private lemma div_dyadP_eq {X f : ℕ → ℝ} {k₀ : ℕ}
 
 /-- Abel's inequality: if the partial sums of `a` over `(m, j]` are at most `M` and `w`
 decreases to `w (n + 1) ≥ 0`, then `|∑_{m < i ≤ n} a i w i| ≤ M w (m + 1)`. -/
-private lemma abs_sum_Ioc_mul_le {a w : ℕ → ℝ} {m n : ℕ} {M : ℝ} (hmn : m ≤ n)
+private lemma abs_sum_Ioc_mul_le {a w : ℕ → ℝ}  {m n}   {M}  (hmn : m ≤ n)
     (hw : ∀ i, m < i → w (i + 1) ≤ w i) (hw0 : 0 ≤ w (n + 1))
     (hS : ∀ j, m ≤ j → j ≤ n → |∑ i ∈ Ioc m j, a i| ≤ M) :
     |∑ i ∈ Ioc m n, a i * w i| ≤ M * w (m + 1) := by
@@ -492,18 +507,16 @@ private lemma abs_sum_Ioc_mul_le {a w : ℕ → ℝ} {m n : ℕ} {M : ℝ} (hmn 
 `[2^k, 2^{k+1}]`, then `∑_{2^k < p ≤ 2^{k+1}} (g p - Φ(2^k)) / p = O(ε + V / k)`. -/
 private lemma abs_sum_dyad_sub_le {K₀ : ℝ} (hK₀ : 0 ≤ K₀)
     (hπ : ∀ x : ℝ, 2 ≤ x → ((primesIoc 1 x).card : ℝ) ≤ K₀ * x / log x)
-    {g : ℕ → ℝ} {Φ : ℝ → ℝ} {k : ℕ} (hk : 1 ≤ k) {ε V : ℝ}
+    {g : ℕ → ℝ} {Φ : ℝ → ℝ} {k : ℕ} (hk : 1 ≤ k)  {ε V} 
     (hA : ∀ t : ℝ, 2 ^ k ≤ t → t ≤ 2 ^ (k + 1) →
       |∑ p ∈ primesIoc 1 t, g p - (primesIoc 1 t).card * Φ t| ≤ 2 ^ k * ε)
     (hV : ∀ t : ℝ, 2 ^ k ≤ t → t ≤ 2 ^ (k + 1) → |Φ t - Φ (2 ^ k)| ≤ V) :
     |∑ p ∈ primesIoc (2 ^ k) (2 ^ (k + 1)), (g p - Φ (2 ^ k)) / p| ≤
       2 * ε + 4 * K₀ * V / (k * log 2) := by
-  have hl2 : 0 < log 2 := log_pos one_lt_two
-  have hk0 : (0 : ℝ) < k := Nat.cast_pos.2 hk
+  
+  
   have h2k : (0 : ℝ) < 2 ^ k := by positivity
-  have hV0 : 0 ≤ V := by
-    have := hV (2 ^ k) le_rfl (by rw [pow_succ]; linarith)
-    rwa [sub_self, abs_zero] at this
+  
   set φ := Φ (2 ^ k)
   set M := 2 ^ k * ε + K₀ * 2 ^ (k + 1) * V / (k * log 2)
   -- `|A(t) - π(t) Φ(2^k)| ≤ M` on the dyad
@@ -543,9 +556,9 @@ private lemma abs_sum_dyad_sub_le {K₀ : ℝ} (hK₀ : 0 ≤ K₀)
         primesIoc_natCast, sum_filter]
     rw [e]
     refine (abs_sub _ _).trans ?_
-    linarith [hM j hjr hjr', hM (2 ^ k) le_rfl (by rw [pow_succ]; linarith)]
+    grind
   rw [hsum]
-  have hNpos : (0 : ℝ) < N := by rw [← hN]; exact h2k
+  
   have hN2 : N ≤ 2 * N := by rw [two_mul]; exact Nat.le_add_left N N
   refine (abs_sum_Ioc_mul_le hN2 (fun i hi => ?_) (by positivity) hpartial).trans ?_
   · have : (0 : ℝ) < i := Nat.cast_pos.2 (Nat.zero_lt_of_lt hi)
@@ -560,6 +573,9 @@ private lemma abs_sum_dyad_sub_le {K₀ : ℝ} (hK₀ : 0 ≤ K₀)
 
 /-! ### From dyads to reals -/
 
+section
+variable {V : ℝ} (hV : ∀ y t : ℝ, 1 ≤ y → y ≤ t → t ≤ 2 * y → ∑ q ∈ primesIoc y t, (F q : ℝ) / q ≤ V) {k : ℕ} {t : ℝ} (ht : 2 ^ k ≤ t) (ht' : t ≤ 2 ^ (k + 1)) {K : ℝ}
+
 /-- A property eventually true of reals holds on `[2^k, ∞)` for large `k`. -/
 private lemma eventually_dyad {P : ℝ → Prop} (h : ∀ᶠ t : ℝ in atTop, P t) :
     ∀ᶠ k : ℕ in atTop, ∀ t : ℝ, 2 ^ k ≤ t → P t := by
@@ -569,7 +585,7 @@ private lemma eventually_dyad {P : ℝ → Prop} (h : ∀ᶠ t : ℝ in atTop, P
 
 /-- Bounds `C K^n / log⁵ K` on the dyads `[2^K, 2^{K+1})` give bounds
 `K' L^n / T⁵` for large `x`. -/
-private lemma exists_of_dyadic {G : ℝ → ℝ} {n : ℕ} {C : ℝ}
+private lemma exists_of_dyadic {G : ℝ → ℝ}  {n}  {C : ℝ}
     (h : ∀ᶠ K : ℕ in atTop, ∀ x : ℝ, 2 ^ K ≤ x → x < 2 ^ (K + 1) →
       |G x| ≤ C * K ^ n / log K ^ 5) :
     ∃ K' : ℝ, ∀ᶠ x : ℝ in atTop, |G x| ≤ K' * log x ^ n / log (log x) ^ 5 := by
@@ -619,10 +635,11 @@ private lemma exists_of_dyadic {G : ℝ → ℝ} {n : ℕ} {C : ℝ}
 
 /-! ### The first renewal -/
 
+include hV ht ht' in
 /-- The variation of `B` on a dyad is `O(1)`. -/
-private lemma abs_harmonicF_sub_le {V : ℝ}
-    (hV : ∀ y t : ℝ, 1 ≤ y → y ≤ t → t ≤ 2 * y → ∑ q ∈ primesIoc y t, (F q : ℝ) / q ≤ V)
-    {k : ℕ} {t : ℝ} (ht : 2 ^ k ≤ t) (ht' : t ≤ 2 ^ (k + 1)) :
+private lemma abs_harmonicF_sub_le  
+     
+            :
     |harmonicF t - harmonicF (2 ^ k)| ≤ V := by
   have hsplit := sum_primesIoc_add (fun q => (F q : ℝ) / q) (one_le_pow₀ one_le_two) ht
   have hpos : 0 ≤ ∑ q ∈ primesIoc (2 ^ k) t, (F q : ℝ) / q := sum_nonneg fun _ _ => by
@@ -632,18 +649,18 @@ private lemma abs_harmonicF_sub_le {V : ℝ}
   exact hV _ t (one_le_pow₀ one_le_two) ht (by rw [← pow_succ']; exact ht')
 
 /-- The first renewal step: `B_{k+1} = B_k (1 + h_k) + O(log⁻⁶ k)`. -/
-private lemma exists_harmonicF_step {K : ℝ}
+private lemma exists_harmonicF_step  
     (h : ∀ᶠ t : ℝ in atTop,
       |primeF t - (primesIoc 1 t).card * harmonicF t| ≤ K * t / log (log t) ^ 6) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ k : ℕ in atTop,
       |harmonicF (2 ^ (k + 1)) - harmonicF (2 ^ k) * (1 + dyadH k)| ≤ C / log k ^ 6 := by
   obtain ⟨V, hV0, hV⟩ := exists_sum_F_div_le
   obtain ⟨K₀, hK₀, hπ⟩ := card_primesIoc_le
-  have hl2 : 0 < log 2 := log_pos one_lt_two
+  
   refine ⟨256 * |K| + 4 * K₀ * V / log 2, by positivity, ?_⟩
   filter_upwards [eventually_dyad h, eventually_ge_atTop 3, eventually_log_pow_le_nat 6]
     with k hk hk3 hlog6
-  have hk0 : (0 : ℝ) < k := Nat.cast_pos.2 (by omega)
+  
   have hlogk := (log_succ_bounds hk3).1
   have h2k : (1 : ℝ) ≤ 2 ^ k := one_le_pow₀ one_le_two
   have h2k' : (2 : ℝ) ^ k ≤ 2 ^ (k + 1) := pow_le_pow_right₀ one_le_two k.le_succ
@@ -674,13 +691,11 @@ private lemma exists_harmonicF_step {K : ℝ}
       field_simp
     have h3 : 0 ≤ 4 * K₀ * V / log 2 := by positivity
     have h4 := mul_le_mul_of_nonneg_left h1 h3
-    rw [h2, add_div]
-    simp only [mul_one_div] at h4 ⊢
-    linarith [show 2 * (128 * |K| / log k ^ 6) = 256 * |K| / log k ^ 6 by ring]
+    grind
 
 /-- The first renewal: if `A₁(t) = π(t) B(t) + O(t T⁻⁶)`, then there is
 `1 / log 3 ≤ α ≤ 1 / log 2` with `B(x) = α L + O(L T⁻⁵)`. -/
-theorem first_renewal {K : ℝ}
+theorem first_renewal  
     (h : ∀ᶠ t : ℝ in Filter.atTop,
       |primeF t - (primesIoc 1 t).card * harmonicF t| ≤ K * t / Real.log (Real.log t) ^ 6) :
     ∃ α K' : ℝ, 1 / Real.log 3 ≤ α ∧ α ≤ 1 / Real.log 2 ∧ ∀ᶠ x : ℝ in Filter.atTop,
@@ -700,7 +715,7 @@ theorem first_renewal {K : ℝ}
       |e k| / dyadP (k + 1) ≤ C₃ * (13 / log k ^ 5 - 13 / log (k + 1) ^ 5) := by
     intro k hk
     obtain ⟨hk3, hek, -, hPk⟩ := hk₁ k hk
-    have hk0 : (0 : ℝ) < k := Nat.cast_pos.2 (by omega)
+    
     have hlk : 0 < log k := by linarith [(log_succ_bounds hk3).1]
     push_cast at hPk
     calc |e k| / dyadP (k + 1) ≤ C / log k ^ 6 / (c * k / 2) :=
@@ -719,7 +734,6 @@ theorem first_renewal {K : ℝ}
         linarith [show C₃ * (13 / log k ^ 5 - 13 / log (k + 1) ^ 5) =
           13 * C₃ / log k ^ 5 - 13 * C₃ / log (k + 1) ^ 5 by ring]
     have hN'0 : 0 ≤ 13 * C₃ / log N' ^ 5 := by
-      have := log_nonneg (Nat.one_le_cast.2 (show 1 ≤ N' by have := (hk₁ N hN).1; omega))
       positivity
     calc |∑ k ∈ Ico N N', e k / dyadP (k + 1)| ≤ ∑ k ∈ Ico N N', |e k| / dyadP (k + 1) := by
           refine (abs_sum_le_sum_abs _ _).trans (le_of_eq (sum_congr rfl fun k _ => ?_))
@@ -737,7 +751,7 @@ theorem first_renewal {K : ℝ}
     intro x hx hx'
     have hN3 := (hk₁ N hN).1
     have hlN := (log_succ_bounds hN3).1
-    have hN0 : (0 : ℝ) < N := Nat.cast_pos.2 (by omega)
+    
     set u := (N : ℝ) / log N ^ 5
     have hl5 : 1 ≤ log N ^ 5 := one_le_pow₀ hlN
     have hu : log N ≤ u := by
@@ -814,10 +828,11 @@ theorem first_renewal {K : ℝ}
 
 /-! ### The second renewal -/
 
+include hV ht ht' in
 /-- The variation of `C` on a dyad is `O(k)`. -/
-private lemma abs_harmonicFSq_sub_le {V : ℝ}
-    (hV : ∀ y t : ℝ, 1 ≤ y → y ≤ t → t ≤ 2 * y → ∑ q ∈ primesIoc y t, (F q : ℝ) / q ≤ V)
-    {k : ℕ} {t : ℝ} (ht : 2 ^ k ≤ t) (ht' : t ≤ 2 ^ (k + 1)) :
+private lemma abs_harmonicFSq_sub_le  
+     
+            :
     |harmonicFSq t - harmonicFSq (2 ^ k)| ≤ (k + 1) * V := by
   have hl2 : 0 < log 2 := log_pos one_lt_two
   have hsplit := sum_primesIoc_add (fun q => (F q : ℝ) ^ 2 / q) (one_le_pow₀ one_le_two) ht
@@ -841,29 +856,35 @@ private lemma abs_harmonicFSq_sub_le {V : ℝ}
         mul_le_mul_of_nonneg_left (hV _ t (one_le_pow₀ one_le_two) ht
           (by rw [← pow_succ']; exact ht')) (by positivity)
 
-/-- The second renewal step: `C_{k+1} = C_k (1 + h_k) + D_k h_k + O(k / log⁵ k)`. -/
-private lemma exists_harmonicFSq_step {α K : ℝ}
-    (h : ∀ᶠ t : ℝ in atTop,
+end
+
+section
+variable {α K : ℝ} (h : ∀ᶠ t : ℝ in atTop,
       |primeFSq t - (primesIoc 1 t).card * (harmonicFSq t + harmonicFPair t)| ≤
-        K * t * log t / log (log t) ^ 6)
-    (hD : ∀ᶠ x : ℝ in atTop,
-      |harmonicFPair x - α ^ 2 / 2 * log x ^ 2| ≤ K * log x ^ 2 / log (log x) ^ 5) :
+        K * t * log t / log (log t) ^ 6) (hD : ∀ᶠ x : ℝ in atTop,
+      |harmonicFPair x - α ^ 2 / 2 * log x ^ 2| ≤ K * log x ^ 2 / log (log x) ^ 5)
+
+include h hD in
+/-- The second renewal step: `C_{k+1} = C_k (1 + h_k) + D_k h_k + O(k / log⁵ k)`. -/
+private lemma exists_harmonicFSq_step  
+     
+      :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ k : ℕ in atTop,
       |harmonicFSq (2 ^ (k + 1)) - harmonicFSq (2 ^ k) * (1 + dyadH k) -
         harmonicFPair (2 ^ k) * dyadH k| ≤ C * k / log k ^ 5 := by
   obtain ⟨V, hV0, hV⟩ := exists_sum_F_div_le
   obtain ⟨K₀, hK₀, hπ⟩ := card_primesIoc_le
-  have hl2 : 0 < log 2 := log_pos one_lt_two
+  
   set a := α ^ 2 / 2
   have ha : 0 ≤ a := by positivity
   set W := 2 * V + 256 * |K| * log 2 ^ 2 + 3 * a * log 2 ^ 2
   refine ⟨512 * |K| * log 2 + 4 * K₀ * W / log 2, by positivity, ?_⟩
   filter_upwards [eventually_dyad h, eventually_dyad hD, eventually_ge_atTop 3,
     eventually_log_pow_le_nat 6] with k hk hDk hk3 hlog6
-  have hk0 : (0 : ℝ) < k := Nat.cast_pos.2 (by omega)
+  
   have hk3' : (3 : ℝ) ≤ k := by exact_mod_cast hk3
   have hlogk := (log_succ_bounds hk3).1
-  have hL0 : 0 < log k := by linarith
+  
   have h2k : (1 : ℝ) ≤ 2 ^ k := one_le_pow₀ one_le_two
   have h2k' : (2 : ℝ) ^ k ≤ 2 ^ (k + 1) := pow_le_pow_right₀ one_le_two k.le_succ
   set u := (k : ℝ) / log k ^ 5
@@ -970,10 +991,10 @@ private lemma exists_harmonicFSq_step {α K : ℝ}
       (512 * |K| * log 2 + 4 * K₀ * W / log 2) * u by simp only [u]; ring]
     linarith
 
+include hD in
 /-- The cross term on dyads: `D_k = a k² + O(k² / log⁵ k)` with `a = α² log² 2 / 2`. -/
-private lemma eventually_abs_harmonicFPair_sub_le {α K : ℝ}
-    (hD : ∀ᶠ x : ℝ in atTop,
-      |harmonicFPair x - α ^ 2 / 2 * log x ^ 2| ≤ K * log x ^ 2 / log (log x) ^ 5) :
+private lemma eventually_abs_harmonicFPair_sub_le  
+      :
     ∀ᶠ k : ℕ in atTop, |harmonicFPair (2 ^ k) - α ^ 2 / 2 * log 2 ^ 2 * k ^ 2| ≤
       32 * |K| * log 2 ^ 2 * (k ^ 2 / log k ^ 5) := by
   filter_upwards [eventually_dyad hD, eventually_ge_atTop 3] with k hk hk3
@@ -984,8 +1005,7 @@ private lemma eventually_abs_harmonicFPair_sub_le {α K : ℝ}
     rw [hl2k]; ring]
   calc _ ≤ K * log ((2 : ℝ) ^ k) ^ 2 / log (log ((2 : ℝ) ^ k)) ^ 5 := hk _ le_rfl
     _ ≤ |K| * log ((2 : ℝ) ^ k) ^ 2 / (log k / 2) ^ 5 :=
-        div_le_div₀ (by positivity) (mul_le_mul_of_nonneg_right (le_abs_self K)
-          (sq_nonneg _)) (by positivity) (pow_le_pow_left₀ (by positivity) hT 5)
+        (by bound)
     _ = 32 * |K| * log 2 ^ 2 * (k ^ 2 / log k ^ 5) := by
         rw [hl2k, div_pow]; field_simp; norm_num
 
@@ -1025,8 +1045,7 @@ private lemma abs_renewal_term_le {a c EP ch C₂ K₃ D e : ℝ} {k : ℕ} (ha 
       abs_div, abs_mul, abs_of_pos hP0, abs_of_pos hk0]
     calc a / c * dyadH k * (k * |c * k - dyadP (k + 1)| / dyadP (k + 1))
         ≤ a / c * dyadH k * (k * (c + EP) / (c * k / 2)) :=
-          mul_le_mul_of_nonneg_left (div_le_div₀ (by positivity)
-            (mul_le_mul_of_nonneg_left hck hk0.le) (by positivity) hPk'') (by positivity)
+          mul_le_mul_of_nonneg_left ((by gcongr <;> first | assumption | positivity | linarith)) (by positivity)
       _ = 2 * a * (c + EP) / c ^ 2 * dyadH k := by field_simp
   have b3 : |e / dyadP (k + 1)| ≤ 2 * C₂ / c / log k ^ 5 := by
     rw [abs_div, abs_of_pos hP0]
@@ -1040,20 +1059,18 @@ private lemma abs_renewal_term_le {a c EP ch C₂ K₃ D e : ℝ} {k : ℕ} (ha 
     (a / c * dyadH k * (k * (c * k - dyadP (k + 1)) / dyadP (k + 1)))
   linarith
 
+include h hD in
 /-- The second renewal on dyads: `C_N = a N² + O(N² / log⁵ N)` with `a = α² log² 2 / 2`. -/
-private lemma exists_harmonicFSq_dyad {α K : ℝ}
-    (h : ∀ᶠ t : ℝ in atTop,
-      |primeFSq t - (primesIoc 1 t).card * (harmonicFSq t + harmonicFPair t)| ≤
-        K * t * log t / log (log t) ^ 6)
-    (hD : ∀ᶠ x : ℝ in atTop,
-      |harmonicFPair x - α ^ 2 / 2 * log x ^ 2| ≤ K * log x ^ 2 / log (log x) ^ 5) :
+private lemma exists_harmonicFSq_dyad  
+     
+      :
     ∃ C : ℝ, ∀ᶠ N : ℕ in atTop,
       |harmonicFSq (2 ^ N) - α ^ 2 / 2 * log 2 ^ 2 * N ^ 2| ≤ C * (N * (N / log N ^ 5)) := by
   obtain ⟨c, EP, hc, hEP, hP⟩ := exists_dyadP_sub
   obtain ⟨ch, hch0, hch⟩ := exists_dyadH_le
   obtain ⟨Es, hEs0, hEs⟩ := exists_sum_dyadH_le
   obtain ⟨C₂, hC₂0, hC₂⟩ := exists_harmonicFSq_step h hD
-  have hl2 : 0 < log 2 := log_pos one_lt_two
+  
   set a := α ^ 2 / 2 * log 2 ^ 2
   have ha : 0 ≤ a := by positivity
   set X : ℕ → ℝ := fun k => harmonicFSq (2 ^ k)
@@ -1083,7 +1100,7 @@ private lemma exists_harmonicFSq_dyad {α K : ℝ}
   filter_upwards [eventually_ge_atTop k₁, hP, eventually_log_pow_le_nat 6] with N hN hPN hlog6
   have hN3 := (hk₁ N hN).1
   have hlN := (log_succ_bounds hN3).1
-  have hN0 : (0 : ℝ) < N := Nat.cast_pos.2 (by omega)
+  
   have hN1 : (1 : ℝ) ≤ N := Nat.one_le_cast.2 (by omega)
   set u := (N : ℝ) / log N ^ 5
   have hu : log N ≤ u := by
@@ -1098,7 +1115,6 @@ private lemma exists_harmonicFSq_dyad {α K : ℝ}
         push_cast
         exact one_div_log_pow_five_le hk3 hlk
     have h0 : 0 ≤ 64 * (k₁ : ℝ) / log k₁ ^ 5 := by
-      have := (log_succ_bounds (hk₁ k₁ le_rfl).1).1
       positivity
     have e2 : 64 * (N : ℝ) / log N ^ 5 = 64 * u := by simp only [u]; ring
     linarith
@@ -1157,7 +1173,7 @@ private lemma exists_harmonicFSq_dyad {α K : ℝ}
   show |X N - a * N ^ 2| ≤ _
   rw [e3]
   have t1 := abs_add_le (dyadP N * (X N / dyadP N - a / c * N)) (a / c * N * (dyadP N - c * N))
-  have hC₇ : 0 ≤ C₇ * u := (abs_nonneg _).trans hmain
+  
   have b1 : |dyadP N * (X N / dyadP N - a / c * N)| ≤ (c + EP) * C₇ * (N * u) := by
     rw [abs_mul, abs_of_pos hPpos]
     have hPN' : dyadP N ≤ (c + EP) * N := by
@@ -1176,7 +1192,7 @@ private lemma exists_harmonicFSq_dyad {α K : ℝ}
 
 /-- The second renewal: if `A₂(t) = π(t) (C(t) + D(t)) + O(t L T⁻⁶)` and
 `D(x) = α² L² / 2 + O(L² T⁻⁵)`, then `C(x) = α² L² / 2 + O(L² T⁻⁵)`. -/
-theorem second_renewal {α K : ℝ}
+theorem second_renewal  
     (h : ∀ᶠ t : ℝ in Filter.atTop,
       |primeFSq t - (primesIoc 1 t).card * (harmonicFSq t + harmonicFPair t)| ≤
         K * t * Real.log t / Real.log (Real.log t) ^ 6)
@@ -1188,14 +1204,14 @@ theorem second_renewal {α K : ℝ}
         K' * Real.log x ^ 2 / Real.log (Real.log x) ^ 5 := by
   obtain ⟨C, hC⟩ := exists_harmonicFSq_dyad h hD
   obtain ⟨V, hV0, hV⟩ := exists_sum_F_div_le
-  have hl2 : 0 < log 2 := log_pos one_lt_two
+  
   set a := α ^ 2 / 2 * log 2 ^ 2
-  have ha : 0 ≤ a := by positivity
+  
   refine exists_of_dyadic (C := C + 2 * V + 3 * a) ?_
   filter_upwards [hC, eventually_ge_atTop 3, eventually_log_pow_le_nat 6] with N hN hN3 hlog6
   intro x hx hx'
   have hlN := (log_succ_bounds hN3).1
-  have hN0 : (0 : ℝ) < N := Nat.cast_pos.2 (by omega)
+  
   have hN3' : (3 : ℝ) ≤ N := by exact_mod_cast hN3
   set u := (N : ℝ) / log N ^ 5
   have hu : log N ≤ u := by
@@ -1235,5 +1251,7 @@ theorem second_renewal {α K : ℝ}
       (harmonicFSq (2 ^ N) - a * N ^ 2) + (a * N ^ 2 - α ^ 2 / 2 * log x ^ 2) := by ring
   rw [e4]
   linarith
+
+end
 
 end Erdos408

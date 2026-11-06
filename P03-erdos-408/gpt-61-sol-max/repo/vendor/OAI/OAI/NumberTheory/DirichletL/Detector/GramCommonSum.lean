@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCommonParam
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CenteredMomentCorrelation
@@ -15,7 +15,7 @@ variable {A : Type*} [CommRing A] [IsDomain A]
 omit [IsDomain A] in
 lemma fullModulusCorrelation_solutions (C n₁ n₂ k : A)
     [Fintype (ResidueQ (C*n₁))] [Fintype (ResidueQ (C*n₂))]
-    (χ : MulChar (ResidueQ (C*n₁)) ℂ) (ψ : MulChar (ResidueQ (C*n₂)) ℂ) :
+     χ   ψ  :
     fullModulusCorrelation (C*n₁) (C*n₂) χ ψ (C*k)=
       ∑p : Solutions C n₁ n₂ k,χ p.val.1*star (ψ p.val.2) := by
   unfold fullModulusCorrelation fullCorrelation
@@ -39,6 +39,6 @@ theorem fullModulusCorrelation_parameter (C n₁ n₂ a b k : A) (hC : C≠0) (h
   exact Fintype.sum_equiv (solutionEquiv C n₁ n₂ a b k hC hn₁ hab) _ _ (fun _=>rfl)
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

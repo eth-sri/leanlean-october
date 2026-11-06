@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Decomposition.Bound
 public import Erdos408.OneSided.Decomposition.Eventually
@@ -184,8 +185,8 @@ theorem eventually_square_decomposition {C CX alo ahi g : ℝ} (hCX : 1 ≤ CX)
       ((K : ℝ) ^ 2 + (((K * J : ℕ) : ℝ) ^ 2 + 2 * (K * J : ℕ))) * ε ≤ L ^ (-D') := by
     refine le_trans ?_ hdecay
     rw [hLE]
-    have hL4 : 0 ≤ L ^ (4 * C) * L ^ 3 := by positivity
-    have hexp : 0 ≤ Real.exp (-L ^ alo) := (Real.exp_pos _).le
+    
+    
     calc 16 * (L ^ (4 * C) * L ^ 3 * (160 + 1408 * L ^ (3 * A₀))) *
           ((K : ℝ) ^ 2 + (((K * J : ℕ) : ℝ) ^ 2 + 2 * (K * J : ℕ))) * ε
         ≤ 16 * (L ^ (4 * C) * L ^ 3 * (1568 * L ^ (3 * |A₀|))) *

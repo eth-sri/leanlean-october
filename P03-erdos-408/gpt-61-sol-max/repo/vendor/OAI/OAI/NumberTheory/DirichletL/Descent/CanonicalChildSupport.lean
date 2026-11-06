@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.FirstCanonicalChildren
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstCanonicalChildren
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.InverseMoment
@@ -40,7 +41,7 @@ lemma canonical_supported_prod {α:Type*}(S:Finset α)(f:α→Ideal O)
     exact (Multiset.notMem_zero P hP).elim
   | @insert i S hi ih =>
     rw [Finset.prod_insert hi,supported_mul_iff]
-    exact ⟨hf i (Finset.mem_insert_self _ _),ih (fun j hj=>hf j (Finset.mem_insert_of_mem hj))⟩
+    simp_all
 
 include hp hg hc in
 omit [DecidableEq ι] in
@@ -84,6 +85,6 @@ theorem actual_cell_labels_admissible {Jo Jn:ℕ}(S:Finset (MarkedSecondSource �
 
 end SevenEighths.InverseMoment
 
-end
+
 
 end OAI

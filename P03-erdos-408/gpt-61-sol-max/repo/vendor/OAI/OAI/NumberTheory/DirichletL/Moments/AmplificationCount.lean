@@ -7,15 +7,19 @@ public import OAI.NumberTheory.DirichletL.CenteredExceptionalCount
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationCount
 open UniqueFactorizationMonoid CenteredExceptionalCount
 local notation "O" => ActualEisensteinCubic.O
 
-theorem primeDivisors_product_dvd (S : Finset (Ideal O))
-    (hP : ∀ P ∈ S, Prime P) (I : Ideal O) (hd : ∀ P ∈ S, P ∣ I) :
+section
+variable (S : Finset (Ideal O)) (hP : ∀ P ∈ S, Prime P) (I : Ideal O) (hI : I ≠ 0) (hd : ∀ P ∈ S, P ∣ I) (F : Finset (O × O)) (y : O) (hy : y ≠ 0) (hprime : ∀ x ∈ F, Prime x.2) (hprimary : ∀ x ∈ F, ConcretePrimeRowBridge.goodLambda^2 ∣ x.2-1) (hrow : ∀ x ∈ F, x.2^6*x.1 = y) (Z ℓ B : ℝ) (hZ : 1 < Z) (hℓ : 0 < ℓ)
+
+include hP hd in
+theorem primeDivisors_product_dvd  
+          :
     (∏ P ∈ S, P) ∣ I := by
   apply Finset.prod_dvd_of_coprime _ hd
   intro P hPS Q hQS hPQ
@@ -23,9 +27,10 @@ theorem primeDivisors_product_dvd (S : Finset (Ideal O))
   let : Q.IsMaximal := (Ideal.isPrime_of_prime (hP Q hQS)).isMaximal (hP Q hQS).ne_zero
   exact Ideal.isCoprime_of_isMaximal hPQ
 
-theorem large_prime_divisor_count (S : Finset (Ideal O)) (hP : ∀ P ∈ S, Prime P)
-    (I : Ideal O) (hI : I ≠ 0) (hd : ∀ P ∈ S, P ∣ I)
-    (Z ℓ B : ℝ) (hZ : 1 < Z) (hℓ : 0 < ℓ)
+include hP hI hd hZ hℓ in
+theorem large_prime_divisor_count    
+         
+         
     (hlower : ∀ P ∈ S, Z^ℓ ≤ (Ideal.absNorm P : ℝ))
     (hupper : (Ideal.absNorm I : ℝ) ≤ Z^B) : (S.card : ℝ) ≤ B/ℓ := by
   have hpow : Z ^ (ℓ * (S.card : ℝ)) ≤ Z^B := by
@@ -59,11 +64,12 @@ theorem indexed_large_prime_divisor_count {α : Type*} (S : Finset α) (P : α �
       exact hlower i hi) hupper
   simpa only [Finset.card_image_of_injOn hinj] using hb
 
-theorem amplified_row_fiber_count (F : Finset (O × O)) (y : O) (hy : y ≠ 0)
-    (hprime : ∀ x ∈ F, Prime x.2)
-    (hprimary : ∀ x ∈ F, ConcretePrimeRowBridge.goodLambda^2 ∣ x.2-1)
-    (hrow : ∀ x ∈ F, x.2^6*x.1 = y)
-    (Z ℓ B : ℝ) (hZ : 1 < Z) (hℓ : 0 < ℓ)
+include hy hprime hprimary hrow hZ hℓ in
+theorem amplified_row_fiber_count      
+     
+     
+     
+         
     (hlower : ∀ x ∈ F, Z^ℓ ≤ (Ideal.absNorm (Ideal.span {x.2}) : ℝ))
     (hupper : (Ideal.absNorm (Ideal.span {y}) : ℝ) ≤ Z^B) : (F.card : ℝ) ≤ B/ℓ := by
   apply indexed_large_prime_divisor_count F (fun x => Ideal.span {x.2}) ?_
@@ -82,8 +88,10 @@ theorem amplified_row_fiber_count (F : Finset (O × O)) (y : O) (hy : y ≠ 0)
     rw [Ideal.dvd_iff_le,Ideal.span_singleton_le_span_singleton,← hrow x hx]
     exact (dvd_pow_self x.2 (by decide : 6 ≠ 0)).trans (dvd_mul_right _ _)
 
+end
+
 theorem positive_pushforward_bound {α β : Type*} [DecidableEq β]
-    (S : Finset α) (f : α → β) (g : β → ℝ) (C : ℝ)
+    (S : Finset α) (f : α → β) (g : β → ℝ)  C 
     (hg : ∀ y ∈ S.image f, 0 ≤ g y)
     (hf : ∀ y ∈ S.image f, ((S.filter (fun x => f x = y)).card : ℝ) ≤ C) :
     (∑ x ∈ S, g (f x)) ≤ C * ∑ y ∈ S.image f, g y := by
@@ -101,6 +109,6 @@ theorem positive_pushforward_bound {α β : Type*} [DecidableEq β]
 
 end SevenEighths.CenteredMomentAmplificationCount
 
-end
+
 
 end OAI

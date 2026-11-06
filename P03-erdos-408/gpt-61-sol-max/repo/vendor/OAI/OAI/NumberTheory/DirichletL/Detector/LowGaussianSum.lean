@@ -6,14 +6,14 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGaussianCentral
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical ContDiff SchwartzMap
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-lemma low_dyad_norm_split (f : ℕ→ℂ) (p : ℕ→Prop) [DecidablePred p]
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+lemma low_dyad_norm_split (f : ℕ→ℂ)  p  [DecidablePred p]
     (hc : Summable (fun j=>if p j then 0 else ‖f j‖))
     (hr : Summable (fun j=>if p j then ‖f j‖ else 0)) :
     Summable f ∧ ‖∑'j,f j‖≤(∑'j,if p j then 0 else ‖f j‖)+(∑'j,if p j then ‖f j‖ else 0) := by
@@ -24,12 +24,12 @@ lemma low_dyad_norm_split (f : ℕ→ℂ) (p : ℕ→Prop) [DecidablePred p]
   apply (norm_tsum_le_tsum_norm hn).trans_eq
   exact (tsum_congr he).trans (hc.tsum_add hr)
 
-theorem low_all_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
+theorem low_all_gaussian_dyads  η  (S : Finset Id)
+     hS  (hbad : fixedBadPrimes⊆S)
+     {K}   ell  (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
     (a b ε : ℝ) (ha : 0<a) (hε : 0<ε) (hε1 : ε<1)
-    (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
-    (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 B0 B1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+     V   hV 
+     W0 W1  (a0 b0 a1 b1 B0 B1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hab1 : a1<b1) (hB0 : 0≤B0) (hB1 : 0≤B1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hW0s : ContDiff ℝ ∞ W0) (hW1s : ContDiff ℝ ∞ W1)
@@ -63,6 +63,6 @@ theorem low_all_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
     _=_ := by ring
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

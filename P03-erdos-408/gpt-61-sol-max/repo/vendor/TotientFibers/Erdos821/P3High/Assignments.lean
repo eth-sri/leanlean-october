@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3High.PerAssignment
 
@@ -36,25 +37,26 @@ instance pivotAssignmentFintype {n B : ℕ} (pi : Finset (Finset (AddrIdx P (J +
   infer_instance
 
 /-- The prescribed value of an address of the collection: its block's value. -/
-def blockTarget {n B : ℕ} (pi : Finset (Finset (AddrIdx P (J + F.ell) n B)))
-    (hpi : BirthCollection pi) (values : PivotAssignment pi hpi)
-    (j : AddrIdx P (J + F.ell) n B) : ℕ :=
+def blockTarget {n B } (pi : Finset (Finset (AddrIdx P (J + F.ell) n B)))
+    (hpi ) (values : PivotAssignment pi hpi)
+    (j : AddrIdx P (J + F.ell) n B)  :=
   if hj : j ∈ performedAddressSet pi then (values (blockContaining pi j hj)).val else 0
 
-theorem prescribed_of_compatible {A : Model F P J m} {n B : ℕ} (H : MemoryHistory A n)
-    (pi : Finset (Finset (AddrIdx P (J + F.ell) n B))) (hpi : BirthCollection pi)
+section
+variable {A : Model F P J m} {n B : ℕ} (H : MemoryHistory A n) (x : ℝ) (hP : P.Admissible F x) (hcut : (n + 1 : ℝ) ≤ Real.exp ((L x) ^ F.c) / 2) (pi : Finset (Finset (AddrIdx P (J + F.ell) n B))) (hpi : BirthCollection pi)
+
+
+theorem prescribed_of_compatible      
+       
     (values : PivotAssignment pi hpi) (hc : PivotCompatible H pi hpi values) :
     Prescribed B H (performedAddressSet pi) (blockTarget pi hpi values) := by
   intro j hj
   have hmem := blockContaining_mem pi j hj
   have h := hc (blockContaining pi j hj) j hmem
-  refine ⟨h.1, ?_⟩
-  rw [h.2]
-  unfold blockTarget
-  rw [dite_eq_left hj]
+  simp_all [blockTarget]
 
 /-- The literal high-rank expression is covered by the prescriptions of block values. -/
-theorem highRank_le_assign (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
+theorem highRank_le_assign (A : Model F P J m)  n B   rho theta 
     (pi : Finset (Finset (AddrIdx P (J + F.ell) n B))) (hpi : BirthCollection pi) :
     highRankHistoryExpression A n B rho theta pi ≤
       ∑ values : PivotAssignment pi hpi, ∑' H : MemoryHistory A n,
@@ -90,10 +92,10 @@ theorem highRank_le_assign (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
             then ‖(mkH d).Weight rho theta‖ else 0)
           (fun v _ => by split_ifs <;> simp) (Finset.mem_univ values)
   · rw [ite_eq_right hc]
-    exact Finset.sum_nonneg fun v _ => by split_ifs <;> simp
+    positivity
 
-theorem muHat_le_block {n B : ℕ} (pi : Finset (Finset (AddrIdx P (J + F.ell) n B)))
-    (hpi : BirthCollection pi) (C : {C // C ∈ pi}) (p : P.Prime (blockPivotGroup pi hpi C).val)
+theorem muHat_le_block    
+      (C : {C // C ∈ pi}) (p : P.Prime (blockPivotGroup pi hpi C).val)
     (hμ : ∀ (g : P.BigGroup) (q : P.Prime g.val), 0 < tiltedMu F P n g.val q)
     (j : AddrIdx P (J + F.ell) n B) :
     muHat F P n (birthAddressGroup ((Fintype.equivFin _).symm j)) p.val ≤
@@ -109,10 +111,11 @@ theorem muHat_le_block {n B : ℕ} (pi : Finset (Finset (AddrIdx P (J + F.ell) n
     rw [h0]
     exact (hμ _ _).le
 
+include hP hcut in
 /-- Summing the prescription products over the block values: one tilted moment per block. -/
-theorem assign_sum_le {n B : ℕ} (x : ℝ) (hP : P.Admissible F x)
-    (hcut : (n + 1 : ℝ) ≤ Real.exp ((L x) ^ F.c) / 2)
-    (pi : Finset (Finset (AddrIdx P (J + F.ell) n B))) (hpi : BirthCollection pi) :
+theorem assign_sum_le      
+     
+        :
     ∑ values : PivotAssignment pi hpi, ∏ j ∈ performedAddressSet pi,
         2 * muHat F P n (birthAddressGroup ((Fintype.equivFin _).symm j))
           (blockTarget pi hpi values j) ≤
@@ -133,7 +136,7 @@ theorem assign_sum_le {n B : ℕ} (x : ℝ) (hP : P.Admissible F x)
           (blockTarget pi hpi values j)) = ∏ C : {C // C ∈ pi}, H C (values C) := by
     intro values
     unfold performedAddressSet
-    rw [Finset.prod_biUnion (s := pi) (t := id) (by exact hpi.2), ← Finset.prod_coe_sort pi]
+    rw [Finset.prod_biUnion (s := pi) (t := id) (hpi.2), ← Finset.prod_coe_sort pi]
     apply Finset.prod_congr rfl
     intro C _
     apply Finset.prod_congr rfl
@@ -178,8 +181,7 @@ theorem assign_sum_le {n B : ℕ} (x : ℝ) (hP : P.Admissible F x)
       _ = 4 * (2 * X) ^ r := by rw [hr, Nat.add_sub_cancel, pow_succ, mul_pow]; ring
       _ ≤ 4 ^ r * (2 * X) ^ r := by
           apply mul_le_mul_of_nonneg_right _ (pow_nonneg (by linarith) _)
-          calc (4 : ℝ) = 4 ^ 1 := (pow_one 4).symm
-            _ ≤ 4 ^ r := pow_le_pow_right₀ (by norm_num) hr1
+          bound
       _ = (8 * X) ^ (C.val.card - 1) := by rw [hr, Nat.add_sub_cancel, ← mul_pow]; ring
   calc (∏ C : {C // C ∈ pi}, ∑ p : P.Prime (blockPivotGroup pi hpi C).val, H C p)
       ≤ ∏ C : {C // C ∈ pi}, (8 * X) ^ (C.val.card - 1) :=
@@ -190,5 +192,7 @@ theorem assign_sum_le {n B : ℕ} (x : ℝ) (hP : P.Admissible F x)
         rw [Finset.prod_pow_eq_pow_sum, birthRank]
         congr 1
         exact Finset.sum_coe_sort pi (fun C => C.card - 1)
+
+end
 
 end Erdos821.P3High

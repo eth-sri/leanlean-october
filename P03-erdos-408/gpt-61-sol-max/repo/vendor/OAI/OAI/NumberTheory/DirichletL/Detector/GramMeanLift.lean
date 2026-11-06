@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramMean
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
@@ -17,7 +17,7 @@ theorem joint_mean_of_local_factor (Q P : Ideal O) [P.IsMaximal]
     (hg : goodLambda∉P) (hchar : ringChar (O⧸P)≠2)
     (c e : ℕ) (hc : 1≤c) (he : ¬6∣e) (hcop : IsCoprime Q (P^c))
     [Fintype (O⧸Q)] [Fintype (O⧸P^c)] [Fintype (O⧸Q*P^c)]
-    (F : O→O→ℂ) (hF : ∀x z y,x-z∈Q → F x y=F z y) (d : O) :
+    (F : O→O→ℂ) (hF : ∀x z y,x-z∈Q → F x y=F z y)  d  :
     (∑x : O⧸Q*P^c,∑y : O⧸Q*P^c,
       (actualSextic P hg^e) (Ideal.Quotient.mk P (d*x.out))*F x.out y.out)=0 := by
   let E := Ideal.quotientMulEquivQuotientProd Q (P^c) hcop
@@ -42,6 +42,6 @@ theorem joint_mean_of_local_factor (Q P : Ideal O) [P.IsMaximal]
   rw [hp,hf]
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

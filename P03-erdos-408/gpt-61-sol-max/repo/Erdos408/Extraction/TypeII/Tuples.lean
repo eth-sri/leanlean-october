@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.TypeII.Euler
 public import Mathlib.Data.Fin.Tuple.Finset
@@ -22,8 +23,11 @@ namespace Erdos408.TypeII
 
 open Finset
 
+section
+variable {M : Type*} [AddCommMonoid M] (S : Finset ℕ) {r : ℕ}
+
 /-- Splitting a tuple sum at coordinate `i`. -/
-theorem sum_piFinset_succ_eq {M : Type*} [AddCommMonoid M] (S : Finset ℕ) {r : ℕ}
+theorem sum_piFinset_succ_eq        
     (i : Fin (r + 1)) (G : (Fin (r + 1) → ℕ) → M) :
     ∑ m ∈ Fintype.piFinset (fun _ : Fin (r + 1) => S), G m =
       ∑ m₀ ∈ S, ∑ m' ∈ Fintype.piFinset (fun _ : Fin r => S), G (i.insertNth m₀ m') := by
@@ -34,13 +38,13 @@ theorem sum_piFinset_succ_eq {M : Type*} [AddCommMonoid M] (S : Finset ℕ) {r :
   rfl
 
 /-- The product of `i.insertNth m₀ m'` is `m₀ ∏ m'`. -/
-theorem prod_insertNth {r : ℕ} (i : Fin (r + 1)) (m₀ : ℕ) (m' : Fin r → ℕ) :
+theorem prod_insertNth {r : ℕ} (i : Fin (r + 1))  m₀   m'  :
     ∏ k, (i.insertNth m₀ m' : Fin (r + 1) → ℕ) k = m₀ * ∏ k, m' k := by
   rw [Fin.prod_univ_succAbove _ i]
   simp
 
 /-- Telescoping a difference of products over tuples. -/
-theorem sum_prod_sub_prod_eq (S : Finset ℕ) (Ψ : ℕ → ℝ) (A B : ℕ → ℝ) (r : ℕ) :
+theorem sum_prod_sub_prod_eq (S : Finset ℕ) (Ψ : ℕ → ℝ) (A B : ℕ → ℝ)  r  :
     ∑ m ∈ Fintype.piFinset (fun _ : Fin (r + 1) => S),
         Ψ (∏ k, m k) * (∏ k, A (m k) - ∏ k, B (m k)) =
       ∑ i : Fin (r + 1), ∑ m₀ ∈ S, ∑ m' ∈ Fintype.piFinset (fun _ : Fin r => S),
@@ -53,10 +57,7 @@ theorem sum_prod_sub_prod_eq (S : Finset ℕ) (Ψ : ℕ → ℝ) (A B : ℕ → 
       Ψ (∏ k, m k) * ∏ k, A (m k) := by simp [hH]
   have h1 : H (r + 1) = ∑ m ∈ Fintype.piFinset (fun _ : Fin (r + 1) => S),
       Ψ (∏ k, m k) * ∏ k, B (m k) := by
-    simp only [hH]
-    refine sum_congr rfl fun m _ => ?_
-    congr 1
-    exact prod_congr rfl fun k _ => by simp [k.isLt]
+    grind
   have hstep : ∀ i : Fin (r + 1), H i - H (i + 1) =
       ∑ m₀ ∈ S, ∑ m' ∈ Fintype.piFinset (fun _ : Fin r => S),
         Ψ (m₀ * ∏ k, m' k) * (A m₀ - B m₀) *
@@ -72,15 +73,7 @@ theorem sum_prod_sub_prod_eq (S : Finset ℕ) (Ψ : ℕ → ℝ) (A B : ℕ → 
         (if ((i.succAbove k : Fin (r + 1)) : ℕ) < (i : ℕ) + 1 then B else A) =
           (if i.succAbove k < i then B else A) := by
       intro k
-      have hne : i.succAbove k ≠ i := Fin.succAbove_ne i k
-      have : ((i.succAbove k : Fin (r + 1)) : ℕ) < (i : ℕ) + 1 ↔ i.succAbove k < i := by
-        rw [Fin.lt_def]
-        constructor
-        · intro h
-          have : ((i.succAbove k : Fin (r + 1)) : ℕ) ≠ i := fun h' => hne (Fin.ext h')
-          omega
-        · intro h; omega
-      simp only [this]
+      norm_num
     have hsame' : ∀ k : Fin r,
         (if ((i.succAbove k : Fin (r + 1)) : ℕ) < (i : ℕ) then B else A) =
           (if i.succAbove k < i then B else A) := by
@@ -98,9 +91,9 @@ theorem sum_prod_sub_prod_eq (S : Finset ℕ) (Ψ : ℕ → ℝ) (A B : ℕ → 
 
 /-- The mass bound with a counting bound `∑_{a ≤ w} v_0(a) ≤ c w` on the first factor. -/
 theorem sum_prod_le_mass_count {S : Finset ℕ} (hS : ∀ a ∈ S, 1 ≤ a) {r : ℕ}
-    (v : Fin (r + 1) → ℕ → ℝ) (hv : ∀ k a, 0 ≤ v k a) {c : ℝ}
+    (v : Fin (r + 1) → ℕ → ℝ) (hv : ∀ k a, 0 ≤ v k a)  {c} 
     (hc : ∀ w : ℝ, 0 ≤ w → ∑ a ∈ S, (if (a : ℝ) ≤ w then v 0 a else 0) ≤ c * w)
-    {X : ℝ} (hX : 0 ≤ X) :
+     {X}  (hX : 0 ≤ X) :
     ∑ m ∈ Fintype.piFinset (fun _ : Fin (r + 1) => S),
         (if ((∏ k, m k : ℕ) : ℝ) ≤ X then ∏ k, v k (m k) else 0) ≤
       c * X * ∏ k : Fin r, ∑ a ∈ S, v k.succ a / a := by
@@ -136,20 +129,22 @@ theorem sum_prod_le_mass_count {S : Finset ℕ} (hS : ∀ a ∈ S, 1 ≤ a) {r :
         field_simp
 
 /-- Regrouping a tuple sum by the product. -/
-theorem sum_piFinset_eq_sum_fiber {M : Type*} [AddCommMonoid M] (S : Finset ℕ) {r : ℕ}
-    (G : ℕ → (Fin r → ℕ) → M) {T : Finset ℕ}
+theorem sum_piFinset_eq_sum_fiber        
+    (G : ℕ → (Fin r → ℕ) → M)  {T} 
     (hT : ∀ m ∈ Fintype.piFinset (fun _ : Fin r => S), ∏ k, m k ∈ T) :
     ∑ m ∈ Fintype.piFinset (fun _ : Fin r => S), G (∏ k, m k) m =
       ∑ n ∈ T, ∑ m ∈ Fintype.piFinset (fun _ : Fin r => S) with ∏ k, m k = n, G n m := by
   rw [← sum_fiberwise_of_maps_to hT]
   exact sum_congr rfl fun n _ => sum_congr rfl fun m hm => by rw [(mem_filter.1 hm).2]
 
+end
+
 /-- The ordered factorizations of `n` into `r` factors. -/
-def factorizationTuples (r n : ℕ) : Finset (Fin r → ℕ) :=
+def factorizationTuples (r n : ℕ)  :=
   (Fintype.piFinset fun _ : Fin r => n.divisors).filter fun m => ∏ k, m k = n
 
 /-- There are at most `r^{Ω(n)}` ordered factorizations of `n` into `r` factors. -/
-theorem card_factorizationTuples_le (r : ℕ) {n : ℕ} (hn : n ≠ 0) :
+theorem card_factorizationTuples_le  r   {n}  (hn : n ≠ 0) :
     ((factorizationTuples r n).card : ℝ) ≤ cmul (fun _ => (r : ℝ)) n := by
   induction n using Nat.strong_induction_on with
   | _ n ih =>
@@ -170,8 +165,7 @@ theorem card_factorizationTuples_le (r : ℕ) {n : ℕ} (hn : n ≠ 0) :
       refine filter_eq_empty_iff.2 fun m _ hm => h1 ?_
       rw [← hm]
       simp
-    rw [this, card_empty, Nat.cast_zero]
-    exact cmul_nonneg (fun _ _ => le_rfl) n
+    simp_all
   have hp := Nat.minFac_prime h1
   set p := n.minFac with hpdef
   have hpn : p ∣ n := Nat.minFac_dvd n
@@ -229,7 +223,7 @@ theorem card_factorizationTuples_le (r : ℕ) {n : ℕ} (hn : n ≠ 0) :
       have hkk' : k ≠ idx m' := hidx' ▸ hkk
       rw [Function.update_of_ne hkk, Function.update_of_ne hkk'] at this
       exact this
-  have hcard := card_le_card_of_injOn φ (fun m hm => hmaps m hm) hinj
+  have hcard := card_le_card_of_injOn φ (hmaps) hinj
   rw [card_product, card_univ, Fintype.card_fin] at hcard
   have hih := ih n' hn'lt hn'0
   calc ((factorizationTuples r n).card : ℝ) ≤ r * (factorizationTuples r n').card := by

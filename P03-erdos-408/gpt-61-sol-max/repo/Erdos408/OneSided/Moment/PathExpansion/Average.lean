@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.Lines
 
@@ -12,7 +13,7 @@ product over the band primes of functions of `ℓ p` is the product of the avera
 
 @[expose] public section
 
-noncomputable section
+section
 
 namespace Erdos408.OneSided
 
@@ -42,4 +43,4 @@ theorem lineAverage_prod (x : ℝ) (d : Data K) (φ : ℕ → ℕ → ℂ) :
   congr 1
   refine sum_congr rfl fun f _ => ?_
   rw [← prod_attach]
-  exact prod_congr rfl fun p _ => by simp only [p.2, dite_true]
+  simp_all

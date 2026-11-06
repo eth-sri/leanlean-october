@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.Logarithmic
 public import OAI.NumberTheory.DirichletL.Hecke.EulerLog
@@ -18,13 +19,13 @@ def eulerLog (η : Character) : ℂ → ℂ :=
   if η.residue = 1 then HeckeEulerLog.principalEulerLog (idealCoeff η)
   else HeckeEulerLog.eulerLog (idealCoeff η)
 
-def innerBound : ℝ := 3+HeckeEulerLog.eulerLogBound
+def innerBound  := 3+HeckeEulerLog.eulerLogBound
 
 theorem innerBound_ge_one : 1 ≤ innerBound := by
   unfold innerBound
   linarith [HeckeEulerLog.eulerLogBound_ge_one]
 
-theorem actual_inner_log (η : Character) (t : ℝ) :
+theorem actual_inner_log  η  (t : ℝ) :
     DifferentiableOn ℂ (eulerLog η) (ball ((2 : ℂ)+t*Complex.I) (1/2)) ∧
     EqOn (Complex.exp ∘ eulerLog η) (regular η) (ball ((2 : ℂ)+t*Complex.I) (1/2)) ∧
     ∀ z ∈ closedBall ((2 : ℂ)+t*Complex.I) (49/100), ‖eulerLog η z‖ ≤ innerBound := by
@@ -45,13 +46,13 @@ theorem actual_inner_log (η : Character) (t : ℝ) :
     obtain ⟨hd,he,hb⟩ := HeckeEulerLog.continued_inner_disk (idealCoeff η)
       (idealCoeff_norm_le_one η) (regular η) hright t
     simp only [eulerLog, ite_eq_right hη]
-    refine ⟨hd,he,?_⟩
-    intro z hz
-    have h := hb z hz
-    unfold innerBound
-    linarith
+    grind [innerBound]
 
-theorem disk_control (e ε : ℝ) (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
+section
+variable (e ε : ℝ) (he : 0<e) (he' : e<1/1000) (hε : 0<ε)
+include e ε he he' hε
+
+theorem disk_control         :
     ∃ D B : ℝ, 0<D ∧ 0≤B ∧ ∀ (η : Character),
       FiniteFourier.IsPrimitiveOnIdeals η.residue → ∀ a t : ℝ,
       1/2≤a → a≤1 →
@@ -66,8 +67,8 @@ theorem disk_control (e ε : ℝ) (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
   obtain ⟨hE,hEL,hEb⟩ := actual_inner_log η t
   exact hb η hp a t (eulerLog η) ha ha' hzero hE hEL hEb
 
-theorem primitive_reciprocal_subpower (e ε : ℝ)
-    (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
+theorem primitive_reciprocal_subpower  
+          :
     ∃ D : ℝ, 0<D ∧ ∀ (η : Character), FiniteFourier.IsPrimitiveOnIdeals η.residue →
       ∀ s : ℂ, HeckeZeroSupremum.beta+8*e ≤ s.re →
         ‖HeckeReciprocal.reciprocal η s‖ ≤ D*(complexity η s.im)^ε := by
@@ -87,13 +88,15 @@ theorem primitive_reciprocal_subpower (e ε : ℝ)
       exact closedBall_subset_closedBall (by linarith) h
     have hz := hbound s hmem
     have hr := reciprocal_norm_le_regular_inverse η (by linarith : HeckeZeroSupremum.beta<s.re)
-    have hcp : 0 ≤ (complexity η s.im)^ε := by linarith
+    
     nlinarith [norm_nonneg (regular η s)]
   · have hr := HeckeReciprocalBound.reciprocal_norm_le η (by norm_num : (1 : ℝ)<2)
       (le_of_not_ge hs2)
     have hp0 : 0 ≤ D+HeckeReciprocalBound.bound 2 := by linarith
     exact hr.trans ((by linarith : HeckeReciprocalBound.bound 2 ≤ D+HeckeReciprocalBound.bound 2).trans
       (le_mul_of_one_le_right hp0 hcomp))
+
+end
 
 end SevenEighths.HeckeLogarithmicActual
 

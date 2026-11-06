@@ -11,24 +11,24 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRankinRadical
 open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentDivisorAllocation
-local notation "O" => ActualEisensteinCubic.O
 
-def commonRadical (I J : Ideal O) : Ideal O :=
+
+def commonRadical (I J : Ideal ActualEisensteinCubic.O)  :=
   ∏ P ∈ primeSupport I ∩ primeSupport J,P
 
-theorem commonRadical_ne_zero (I J : Ideal O) : commonRadical I J ≠ 0 :=
+theorem commonRadical_ne_zero  I J  : commonRadical I J ≠ 0 :=
   support_product_ne_zero Finset.inter_subset_left
 
-theorem commonRadical_squarefree (I J : Ideal O) : Squarefree (commonRadical I J) :=
+theorem commonRadical_squarefree  I J  : Squarefree (commonRadical I J) :=
   squarefree_support_product Finset.inter_subset_left
 
-theorem commonRadical_support (I J : Ideal O) :
+theorem commonRadical_support  I J  :
     primeSupport (commonRadical I J)=primeSupport I∩primeSupport J := by
   unfold primeSupport commonRadical
   rw [factors_support_product Finset.inter_subset_left]
   simp [primeSupport]
 
-theorem old_mask_dvd_commonRadical (s I J : Ideal O) (hs : Squarefree s)
+theorem old_mask_dvd_commonRadical  s I J  (hs : Squarefree s)
     (hI : I ≠ 0) (hJ : J ≠ 0) (hsI : s ∣ I) (hsJ : s ∣ J) :
     s ∣ commonRadical I J := by
   apply (squarefree_dvd_iff s _ hs).mpr
@@ -43,11 +43,11 @@ theorem old_mask_dvd_commonRadical (s I J : Ideal O) (hs : Squarefree s)
       using hd.trans hsJ
   exact Finset.dvd_prod_of_mem id (Finset.mem_inter.mpr ⟨hi,hj⟩)
 
-theorem old_mask_radical_count {α : Type*} (S : Finset α) (I J : α → Ideal O)
-    (s : Ideal O) (hs : Squarefree s) (hs0 : s ≠ 0)
+theorem old_mask_radical_count {α : Type*} (S : Finset α) (I J : α → Ideal ActualEisensteinCubic.O)
+    (s : Ideal ActualEisensteinCubic.O) (hs : Squarefree s) (hs0 : s ≠ 0)
     (hI : ∀ a ∈ S,I a ≠ 0) (hJ : ∀ a ∈ S,J a ≠ 0)
     (hsi : ∀ a ∈ S,s ∣ I a) (hsj : ∀ a ∈ S,s ∣ J a)
-    (Y : ℝ) (hY : 0 ≤ Y)
+     Y  (hY : 0 ≤ Y)
     (hN : ∀ a ∈ S,(Ideal.absNorm (commonRadical (I a) (J a)):ℝ) ≤ Y) :
     ((S.image (fun a => commonRadical (I a) (J a))).card:ℝ) ≤
       128*Y/(Ideal.absNorm s:ℝ) := by

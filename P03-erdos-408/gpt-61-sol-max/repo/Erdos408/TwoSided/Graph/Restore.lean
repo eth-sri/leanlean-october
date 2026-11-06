@@ -31,6 +31,11 @@ namespace Erdos408.TwoSided
 
 open Filter
 
+section
+variable (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ) (d : ℕ) (B₀ κ CΨ : ℝ) (M : ℕ → ℝ) (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hc : 0 < c) (hκ : 1 < κ) (m₀ J : ℕ)
+
+
+include hq hq₁ hq₀ hq₀₁ hvlo halo hahi hc hκ in
 /-- **Lemma G5 (raw pattern).** For every `J` there is `C_r` such that, eventually, for
 groups as in (6.1) and all admissible data, the raw cutoff pairing (no free slots, kernel `1`)
 is the raw correlation up to `L^{C_r} e^{-L^{0.27}}`. With `C = ∅`, `D_C = 1` and
@@ -38,10 +43,10 @@ is the raw correlation up to `L^{C_r} e^{-L^{0.27}}`. With `C = ∅`, `D_C = 1` 
 `W₁ = markedListWeight P q₀ (unsharedSlots ∅) 1` (one prime per group:
 `∑_ℓ 1 = ∏_g ω_g`). The suppressed restrictions (two equal shared labels in a group, or a
 shared label dividing `w (w + 1)`) have mass `O(s_P J² + J L) sup μ`. -/
-theorem exists_norm_cutoffPairing_raw_sub_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ)
-    (CN c : ℝ) (d : ℕ) (B₀ κ CΨ : ℝ) (M : ℕ → ℝ) (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀)
-    (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hc : 0 < c)
-    (hκ : 1 < κ) (J : ℕ) :
+theorem exists_norm_cutoffPairing_raw_sub_le    
+                 
+             
+        :
     ∃ Cr : ℝ, ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
@@ -63,7 +68,7 @@ theorem exists_norm_cutoffPairing_raw_sub_le (q q₀ c₀ C₀ vlo vhi alo ahi :
   have hx0 : 0 < x := lt_of_lt_of_le (by linarith) hxκ
   have hΨ : ∀ y, |Ψ y| ≤ M 0 := fun y => by simpa using hcu.2.2 0 y
   have h := hx P big hadm (fun _ => ∅) (fun g => by simp) (fun _ _ _ => 1) 1
-    (fun _ _ _ => by simp) (fun p p' a => Restore.pad_invariant_one p p' a)
+    (fun _ _ _ => by simp) (Restore.pad_invariant_one)
     (centeredCore x q a u v Bc) G Ψ (hF r a u v Bc hin hsl hBc)
     (hFinv P big hadm r a u v Bc hin hsl) hco hΨ hcu.2.1
   rw [one_mul] at h
@@ -74,6 +79,7 @@ theorem exists_norm_cutoffPairing_raw_sub_le (q q₀ c₀ C₀ vlo vhi alo ahi :
   rw [hraw]
   exact h
 
+include hq hq₁ hq₀ hq₀₁ hvlo halo hahi hc hκ in
 /-- **Lemma G5 (comparison patterns).** For every `m₀, J` there is `C_r` such that,
 eventually, for groups as in (6.1), all admissible data and every comparison pattern
 `(A, B, φ, φ', ψ, ψ')` with coefficient `β`, the cutoff pairing of the pattern is
@@ -81,10 +87,10 @@ eventually, for groups as in (6.1), all admissible data and every comparison pat
 restrictions of the raw case, a shared label equal to a free label and the label ban (a free
 label equal to an unshared endpoint label) are suppressed; a banned label divides `D_C` and one
 endpoint, hence both. These restrictions have mass `O(J (L + m₀ s_P) + m₀ L) sup μ`. -/
-theorem exists_norm_cutoffPairing_sub_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ)
-    (CN c : ℝ) (d : ℕ) (B₀ κ CΨ : ℝ) (M : ℕ → ℝ) (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀)
-    (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hc : 0 < c)
-    (hκ : 1 < κ) (m₀ J : ℕ) :
+theorem exists_norm_cutoffPairing_sub_le    
+                 
+             
+        :
     ∃ Cr : ℝ, ∀ᶠ x : ℝ in atTop,
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
@@ -109,10 +115,12 @@ theorem exists_norm_cutoffPairing_sub_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ
   have hΨ : ∀ y, |Ψ y| ≤ M 0 := fun y => by simpa using hcu.2.2 0 y
   have h := hx P big hadm (fun h => Aν h ∪ Bν h) (fun g => (hpat.1 g).2)
     (comparisonKernel Aν Bν β φ φ' ψ ψ') ‖β‖ (norm_comparisonKernel_le hpat.2.2.2.1)
-    (fun p p' a => Restore.pad_invariant_comparison Aν Bν β φ φ' ψ ψ' p p' a)
+    (Restore.pad_invariant_comparison Aν Bν β φ φ' ψ ψ')
     (centeredCore x q a u v Bc) G Ψ (hF r a u v Bc hin hsl hBc)
     (hFinv P big hadm r a u v Bc hin hsl) hco hΨ hcu.2.1
   rw [← Restore.stripSum_comparison_eq]
   exact h
+
+end
 
 end Erdos408.TwoSided

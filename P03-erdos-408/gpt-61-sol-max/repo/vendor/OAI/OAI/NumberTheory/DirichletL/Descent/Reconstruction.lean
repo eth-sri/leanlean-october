@@ -11,16 +11,16 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-def supportedHybridRow (S : Finset (Ideal Eis × Ideal Eis)) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ) (k : Ideal Eis) : ℂ :=
+
+def supportedHybridRow (S : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O)) (Pset : Finset (Ideal ActualEisensteinCubic.O))
+    (a : Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ) (k : Ideal ActualEisensteinCubic.O)  :=
   ∑ p ∈ S, ∑ P ∈ Pset, a P / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ) * beta p.1 p.2 *
     (quadraticRow k (primaryGenerator (p.1 * p.2)) * inverseCubicKernel P p.1 *
       (if IsCoprime P p.2 then 1 else 0) * (if IsCoprime k P then 1 else 0))
 
-theorem supportedHybridRow_product (nset bset Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ) (k : Ideal Eis) :
+theorem supportedHybridRow_product  nset bset Pset 
+     a   beta   k  :
     supportedHybridRow (nset ×ˢ bset) Pset a beta k = hybridRow Pset nset bset a beta k := by
   simp only [supportedHybridRow, hybridRow, hybridInner, Finset.sum_product,
     Finset.mul_sum]
@@ -37,9 +37,9 @@ theorem supportedHybridRow_product (nset bset Pset : Finset (Ideal Eis))
   intro b hb
   ring
 
-def reconstructedHybridTerm (a : Ideal Eis → ℂ)
-    (beta : Ideal Eis → Ideal Eis → ℂ) (k : Ideal Eis) (P : Ideal Eis)
-    (d : HybridColumnData) : ℂ :=
+def reconstructedHybridTerm (a : Ideal ActualEisensteinCubic.O → ℂ)
+    (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ) (k : Ideal ActualEisensteinCubic.O) (P : Ideal ActualEisensteinCubic.O)
+    (d : HybridColumnData)  :=
   a P / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ) *
     beta (d.common * d.residualN) ((d.common * d.residualB) * d.square ^ 2) *
     ((if IsCoprime k d.square then 1 else 0) *
@@ -49,12 +49,12 @@ def reconstructedHybridTerm (a : Ideal Eis → ℂ)
       (if IsCoprime P (d.residualB * d.square) then 1 else 0))
 
 theorem supportedHybridRow_reconstruct
-    (S : Finset (Ideal Eis × Ideal Eis)) (Pset : Finset (Ideal Eis))
+     S   Pset 
     (hS : ∀ p ∈ S, Squarefree p.1 ∧ p.2 ≠ 0 ∧
       primaryGenerator p.1 ≠ 0 ∧ primaryGenerator p.2 ≠ 0)
     (hP : ∀ P ∈ Pset, primaryGenerator P ≠ 0)
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ)
-    (k : Ideal Eis) (hk : Admissible k) :
+     a   beta 
+     k  (hk : Admissible k) :
     supportedHybridRow S Pset a beta k =
       ∑ d ∈ hybridColumnSupport S, ∑ P ∈ Pset, reconstructedHybridTerm a beta k P d := by
   unfold supportedHybridRow

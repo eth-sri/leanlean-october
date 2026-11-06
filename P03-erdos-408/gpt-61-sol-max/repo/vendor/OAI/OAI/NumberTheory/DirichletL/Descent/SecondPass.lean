@@ -12,15 +12,15 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def canonicalMarkedSplit (F V A : Finset ι) (Ψ : Eis →* ℂ) (m r c d e k : Eis)
+def canonicalMarkedSplit (F V A : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m r c d e k : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (W : ℝ → ℂ) (X : ℝ) : ℂ :=
+    (W : ℝ → ℂ) (X : ℝ)  :=
   ∑ J ∈ slots.powerset, primeMark J lists a (A ∪ V) *
     finiteCanonicalMarkedRow p hp hcop hg F Ψ (m * r)
       (c * e * ∏ i ∈ V, p i) (d * e * k)

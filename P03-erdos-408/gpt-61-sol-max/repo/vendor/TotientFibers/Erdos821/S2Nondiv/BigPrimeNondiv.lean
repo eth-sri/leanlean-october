@@ -5,7 +5,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 @[expose] public section
 
-noncomputable section
+section
 
 open Filter
 open Asymptotics

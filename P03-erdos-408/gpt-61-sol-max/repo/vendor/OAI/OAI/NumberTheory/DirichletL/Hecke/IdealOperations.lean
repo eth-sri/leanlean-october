@@ -13,11 +13,11 @@ namespace SevenEighths.HeckeFamily
 
 private instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 
-theorem idealCoeff_product (χ ψ : Character) (I : Ideal O) :
+theorem idealCoeff_product  χ ψ   I  :
     idealCoeff (χ.product ψ) I = idealCoeff χ I * idealCoeff ψ I :=
   IdealCharacter.ofResidue_product _ _ _ _ _ _ I
 
-theorem exists_primitive_character (χ : Character) :
+theorem exists_primitive_character  χ  :
     ∃ ψ : Character,
       χ.modulus ≤ ψ.modulus ∧
       FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
@@ -30,7 +30,7 @@ theorem exists_primitive_character (χ : Character) :
     IdealCharacter.exists_primitive_associate χ.modulus χ.residue χ.unit_trivial
   exact ⟨Character.ofResidue M hM₀ φ hφ, hM, hprim, hnorm, hmask⟩
 
-theorem exists_primitive_product_character (χ ψ : Character) :
+theorem exists_primitive_product_character  χ ψ  :
     ∃ ρ : Character,
       χ.modulus ⊓ ψ.modulus ≤ ρ.modulus ∧
       FiniteFourier.IsPrimitiveOnIdeals ρ.residue ∧

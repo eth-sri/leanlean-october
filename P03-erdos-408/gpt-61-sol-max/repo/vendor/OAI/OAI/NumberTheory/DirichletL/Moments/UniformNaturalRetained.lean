@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformRetainedEnergy
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformNaturalRetained
@@ -66,6 +66,6 @@ theorem actual_natural_retained_energy (epsilon Cscale xi : ℝ)
 
 end SevenEighths.CenteredMomentUniformNaturalRetained
 
-end
+
 
 end OAI

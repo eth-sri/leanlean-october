@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionMass
 
@@ -12,17 +13,17 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentCommonMaskExpansion
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
 open UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
 
-def naturalSlot (χ : Character) (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) : ℂ :=
+
+def naturalSlot (χ : Character) (pool : Finset (Ideal HeckeFamily.O)) (β : Ideal HeckeFamily.O→ℂ) (P : ℝ)  :=
   (Real.sqrt P:ℂ)⁻¹ * ∑ I∈pool,idealCoeff χ I*β I
 
-def profileSlot (χ : Character) (pool : Finset (Ideal O))
-    (ν : Ideal O→ℂ) (W : ℝ→ℂ) (P : ℝ) : ℂ :=
+def profileSlot (χ : Character) (pool : Finset (Ideal HeckeFamily.O))
+    (ν : Ideal HeckeFamily.O→ℂ) (W : ℝ→ℂ) (P : ℝ)  :=
   naturalSlot χ pool (fun I=>ν I*W ((I.absNorm:ℝ)/P)) P
 
-lemma outside_prime (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
-    (I : Ideal O) (hI : Prime I) : outside R I ↔ I∉R := by
+lemma outside_prime  R  (hR : ∀ I∈R,Prime I)
+     I  (hI : Prime I) : outside R I ↔ I∉R := by
   constructor
   · intro h hi
     exact h I hi dvd_rfl
@@ -30,14 +31,14 @@ lemma outside_prime (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
     have he : J=I := (prime_dvd_prime_iff_eq (hR J hj) hI).mp hd
     exact h (he ▸ hj)
 
-lemma deleted_prime (χ : Character) (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
-    (I : Ideal O) (hI : Prime I) :
+lemma deleted_prime  χ   R   hR 
+     I  (hI : Prime I) :
     idealCoeff (χ.excludePrimes R hR) I = if I∈R then 0 else idealCoeff χ I := by
   have h:=deleted_coefficient χ R hR ⟨I,hI.ne_zero⟩
   simpa only [outside_prime R hR I hI,ite_not] using h
 
-theorem naturalSlot_delete (χ : Character) (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
-    (pool : Finset (Ideal O)) (hp : ∀ I∈pool,Prime I) (β : Ideal O→ℂ) (P : ℝ) :
+theorem naturalSlot_delete  χ   R   hR 
+     pool  (hp : ∀ I∈pool,Prime I)  β   P  :
     naturalSlot (χ.excludePrimes R hR) pool β P =
       naturalSlot χ pool β P - naturalSlot χ (pool∩R) β P := by
   unfold naturalSlot
@@ -45,9 +46,7 @@ theorem naturalSlot_delete (χ : Character) (R : Finset (Ideal O)) (hR : ∀ I�
   rw [←mul_sub,hinter,Finset.sum_filter,←Finset.sum_sub_distrib]
   congr 1
   apply Finset.sum_congr rfl
-  intro I hi
-  rw [deleted_prime χ R hR I (hp I hi)]
-  by_cases h:I∈R <;> simp [h]
+  grind [deleted_prime]
 
 lemma prod_sub_expansion {α : Type*} [DecidableEq α] (F : Finset α) (a b : α→ℂ) :
     (∏i∈F,(a i-b i))=∑J∈F.powerset,(-1:ℂ)^J.card*(∏i∈J,b i)*(∏i∈F\J,a i) := by
@@ -58,21 +57,21 @@ lemma prod_sub_expansion {α : Type*} [DecidableEq α] (F : Finset α) (a b : α
   rw [he,Finset.prod_add]
   simp only [Finset.prod_neg]
 
-def plainCoefficient (χ : Character) (D : Finset (Ideal O)) : ℂ :=
+def plainCoefficient (χ : Character) (D : Finset (Ideal HeckeFamily.O))  :=
   (moebius (∏I∈D,I):ℂ)*(idealCoeff χ (∏I∈D,I)/(Real.sqrt (Ideal.absNorm (∏I∈D,I):ℝ):ℂ))
 
 variable {α : Type*} [DecidableEq α]
 
-def signedCoefficient (χ : Character) (R D₁ D₂ : Finset (Ideal O))
-    (J : Finset α) (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ) : ℂ :=
+def signedCoefficient (χ : Character) (R D₁ D₂ : Finset (Ideal HeckeFamily.O))
+    (J : Finset α) (pool : α→Finset (Ideal HeckeFamily.O)) (β : α→Ideal HeckeFamily.O→ℂ) (P : α→ℝ)  :=
   plainCoefficient χ D₁*plainCoefficient χ D₂*(-1:ℂ)^J.card*
     ∏i∈J,naturalSlot χ (pool i∩R) (β i) (P i)
 
-theorem simultaneous_deletion (χ : Character) (R : Finset (Ideal O))
+theorem simultaneous_deletion (χ : Character) (R : Finset (Ideal HeckeFamily.O))
     (hR : ∀ I∈R,Prime I) (W₁ W₂ : 𝓢(ℝ,ℂ)) (X₁ X₂ : ℝ)
     (hX₁ : 0<X₁) (hX₂ : 0<X₂) (F : Finset α)
-    (pool : α→Finset (Ideal O)) (hp : ∀i∈F,∀I∈pool i,Prime I)
-    (β : α→Ideal O→ℂ) (P : α→ℝ) :
+     pool  (hp : ∀i∈F,∀I∈pool i,Prime I)
+     β   P  :
     HeckeDyadic.polynomial (χ.excludePrimes R hR) false W₁ X₁ 0 0 *
       HeckeDyadic.polynomial (χ.excludePrimes R hR) false W₂ X₂ 0 0 *
       (∏i∈F,naturalSlot (χ.excludePrimes R hR) (pool i) (β i) (P i)) =
@@ -101,13 +100,13 @@ theorem simultaneous_deletion (χ : Character) (R : Finset (Ideal O))
   dsimp only [signedCoefficient,plainCoefficient]
   ring
 
-def slotMass (R pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) : ℝ :=
+def slotMass (R pool : Finset (Ideal HeckeFamily.O)) (β : Ideal HeckeFamily.O→ℂ) (P : ℝ)  :=
   (Real.sqrt P)⁻¹ * ∑I∈pool∩R,‖β I‖
 
-lemma slotMass_nonneg (R pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) :
+lemma slotMass_nonneg  R pool   β   P  :
     0≤slotMass R pool β P := by unfold slotMass;positivity
 
-lemma naturalSlot_norm (χ : Character) (R pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) :
+lemma naturalSlot_norm  χ   R pool   β   P  :
     ‖naturalSlot χ (pool∩R) β P‖≤slotMass R pool β P := by
   rw [naturalSlot,norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (Real.sqrt_nonneg _)]
@@ -118,7 +117,7 @@ lemma naturalSlot_norm (χ : Character) (R pool : Finset (Ideal O)) (β : Ideal 
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one χ I)
 
-lemma plainCoefficient_norm (χ : Character) (D : Finset (Ideal O))
+lemma plainCoefficient_norm  χ   D 
     (hD : ∀I∈D,Prime I) : ‖plainCoefficient χ D‖≤weight (∏I∈D,I) := by
   rw [plainCoefficient,subset_product_moebius D hD]
   simp only [norm_mul,norm_pow,norm_neg,norm_one,one_pow,one_mul,norm_div,
@@ -126,8 +125,8 @@ lemma plainCoefficient_norm (χ : Character) (D : Finset (Ideal O))
   exact (div_le_div_of_nonneg_right (idealCoeff_norm_le_one χ _) (Real.sqrt_nonneg _)).trans_eq
     (by simp only [weight,one_div])
 
-lemma slot_point_mass (I : Ideal O) (hI : Prime I) (β : Ideal O→ℂ)
-    (P b M : ℝ) (hP : 0<P) (hM : 0≤M) (hβ : ‖β I‖≤M)
+lemma slot_point_mass (I : Ideal HeckeFamily.O) (hI : Prime I) (β : Ideal HeckeFamily.O→ℂ)
+     P b M  (hP : 0<P) (hM : 0≤M) (hβ : ‖β I‖≤M)
     (hs : β I≠0 → (I.absNorm:ℝ)≤b*P) :
     (Real.sqrt P)⁻¹*‖β I‖≤(Real.sqrt (max 1 b)*M)*weight I := by
   by_cases hz : β I=0
@@ -148,22 +147,21 @@ lemma slot_point_mass (I : Ideal O) (hI : Prime I) (β : Ideal O→ℂ)
       mul_le_mul hi hβ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (weight_nonneg _))
     _=_ := by ring
 
-lemma slotMass_bound (R pool : Finset (Ideal O)) (hp : ∀I∈pool,Prime I)
-    (β : Ideal O→ℂ) (P b M : ℝ) (hP : 0<P) (hM : 0≤M)
+lemma slotMass_bound (R pool : Finset (Ideal HeckeFamily.O)) (hp : ∀I∈pool,Prime I)
+    (β : Ideal HeckeFamily.O→ℂ)  P b M  (hP : 0<P) (hM : 0≤M)
     (hβ : ∀I∈pool,‖β I‖≤M) (hs : ∀I∈pool,β I≠0 → (I.absNorm:ℝ)≤b*P) :
     slotMass R pool β P≤(Real.sqrt (max 1 b)*M)*∑I∈R,weight I := by
   unfold slotMass
   rw [Finset.mul_sum]
   calc
     _≤∑I∈pool∩R,(Real.sqrt (max 1 b)*M)*weight I :=
-      Finset.sum_le_sum (fun I hi=>slot_point_mass I (hp I (Finset.mem_inter.mp hi).1)
-        β P b M hP hM (hβ I (Finset.mem_inter.mp hi).1) (hs I (Finset.mem_inter.mp hi).1))
+      Finset.sum_le_sum (fun I hi=>(by simp_all [slot_point_mass]))
     _=(Real.sqrt (max 1 b)*M)*∑I∈pool∩R,weight I := (Finset.mul_sum _ _ _).symm
     _≤_ := mul_le_mul_of_nonneg_left
       (Finset.sum_le_sum_of_subset_of_nonneg Finset.inter_subset_right (fun I hi hn=>weight_nonneg I))
       (mul_nonneg (Real.sqrt_nonneg _) hM)
 
-lemma one_add_sum_weight (R : Finset (Ideal O)) :
+lemma one_add_sum_weight  R  :
     1+∑I∈R,weight I≤∏I∈R,(1+weight I) := by
   induction R using Finset.induction_on with
   | empty => simp
@@ -173,7 +171,7 @@ lemma one_add_sum_weight (R : Finset (Ideal O)) :
     have hs:0≤∑J∈R,weight J:=Finset.sum_nonneg (fun J _=>weight_nonneg J)
     nlinarith
 
-lemma deletion_le_euler (R : Finset (Ideal O)) (hR : ∀I∈R,Prime I) :
+lemma deletion_le_euler  R  (hR : ∀I∈R,Prime I) :
     (∏I∈R,(1+weight I))≤∏I∈R,localMass I := by
   apply Finset.prod_le_prod₀ (fun I hi=>by linarith [weight_nonneg I])
   intro I hi
@@ -181,20 +179,20 @@ lemma deletion_le_euler (R : Finset (Ideal O)) (hR : ∀I∈R,Prime I) :
   have h:=weight_nonneg I
   nlinarith
 
-lemma euler_ge_one (R : Finset (Ideal O)) (hR : ∀I∈R,Prime I) :
+lemma euler_ge_one  R  (hR : ∀I∈R,Prime I) :
     1≤∏I∈R,localMass I :=
   (show 1≤∏I∈R,(1+weight I) by
     linarith [Finset.sum_nonneg (s:=R) (fun I _=>weight_nonneg I),one_add_sum_weight R]).trans
     (deletion_le_euler R hR)
 
-def coefficientMajorant (R D₁ D₂ : Finset (Ideal O)) (J : Finset α)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ) : ℝ :=
+def coefficientMajorant (R D₁ D₂ : Finset (Ideal HeckeFamily.O)) (J : Finset α)
+    (pool : α→Finset (Ideal HeckeFamily.O)) (β : α→Ideal HeckeFamily.O→ℂ) (P : α→ℝ)  :=
   weight (∏I∈D₁,I)*weight (∏I∈D₂,I)*∏i∈J,slotMass R (pool i) (β i) (P i)
 
 omit [DecidableEq α] in
-lemma signedCoefficient_norm (χ : Character) (R : Finset (Ideal O)) (hR : ∀I∈R,Prime I)
-    (D₁ D₂ : Finset (Ideal O)) (hD₁ : D₁⊆R) (hD₂ : D₂⊆R) (J : Finset α)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ) :
+lemma signedCoefficient_norm  χ   R  (hR : ∀I∈R,Prime I)
+     D₁ D₂  (hD₁ : D₁⊆R) (hD₂ : D₂⊆R) (J : Finset α)
+    (pool : α→Finset (Ideal HeckeFamily.O)) (β : α→Ideal HeckeFamily.O→ℂ) (P : α→ℝ) :
     ‖signedCoefficient χ R D₁ D₂ J pool β P‖≤coefficientMajorant R D₁ D₂ J pool β P := by
   simp only [signedCoefficient,norm_mul,norm_pow,norm_neg,norm_one,one_pow,mul_one,norm_prod]
   apply mul_le_mul
@@ -204,12 +202,12 @@ lemma signedCoefficient_norm (χ : Character) (R : Finset (Ideal O)) (hR : ∀I�
   · positivity
   · exact mul_nonneg (weight_nonneg _) (weight_nonneg _)
 
-def uniformMajorant (R D₁ D₂ : Finset (Ideal O)) (J : Finset α) (b M : α→ℝ) : ℝ :=
+def uniformMajorant (R D₁ D₂ : Finset (Ideal HeckeFamily.O)) (J : Finset α) (b M : α→ℝ)  :=
   weight (∏I∈D₁,I)*weight (∏I∈D₂,I)*
     ∏i∈J,(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I)
 
 omit [DecidableEq α] in
-lemma uniformMajorant_nonneg (R D₁ D₂ : Finset (Ideal O)) (J : Finset α)
+lemma uniformMajorant_nonneg  R D₁ D₂  (J : Finset α)
     (b M : α→ℝ) (hM : ∀i∈J,0≤M i) :
     0≤uniformMajorant R D₁ D₂ J b M := by
   apply mul_nonneg (mul_nonneg (weight_nonneg _) (weight_nonneg _))
@@ -218,9 +216,9 @@ lemma uniformMajorant_nonneg (R D₁ D₂ : Finset (Ideal O)) (J : Finset α)
     (Finset.sum_nonneg (fun I _=>weight_nonneg I)))
 
 omit [DecidableEq α] in
-lemma signedCoefficient_uniform (χ : Character) (R : Finset (Ideal O)) (hR : ∀I∈R,Prime I)
-    (D₁ D₂ : Finset (Ideal O)) (hD₁ : D₁⊆R) (hD₂ : D₂⊆R) (J : Finset α)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P b M : α→ℝ)
+lemma signedCoefficient_uniform  χ   R  (hR : ∀I∈R,Prime I)
+     D₁ D₂  (hD₁ : D₁⊆R) (hD₂ : D₂⊆R) (J : Finset α)
+    (pool : α→Finset (Ideal HeckeFamily.O)) (β : α→Ideal HeckeFamily.O→ℂ) (P b M : α→ℝ)
     (hp : ∀i∈J,∀I∈pool i,Prime I) (hP : ∀i∈J,0<P i) (hM : ∀i∈J,0≤M i)
     (hβ : ∀i∈J,∀I∈pool i,‖β i I‖≤M i)
     (hs : ∀i∈J,∀I∈pool i,β i I≠0 → (I.absNorm:ℝ)≤b i*P i) :
@@ -232,7 +230,7 @@ lemma signedCoefficient_uniform (χ : Character) (R : Finset (Ideal O)) (hR : �
       (hP i hi) (hM i hi) (hβ i hi) (hs i hi))
 
 omit [DecidableEq α] in
-lemma uniformMajorant_mass (R : Finset (Ideal O)) (F : Finset α) (b M : α→ℝ) :
+lemma uniformMajorant_mass  R  (F : Finset α) (b M : α→ℝ) :
     (∑D₁∈R.powerset,∑D₂∈R.powerset,∑J∈F.powerset,uniformMajorant R D₁ D₂ J b M)=
       (∏I∈R,(1+weight I))^2*
         ∏i∈F,(1+(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I)) := by
@@ -243,12 +241,12 @@ lemma uniformMajorant_mass (R : Finset (Ideal O)) (F : Finset α) (b M : α→�
   ring
 
 omit [DecidableEq α] in
-lemma uniformMajorant_mass_le (R : Finset (Ideal O)) (hR : ∀I∈R,Prime I)
+lemma uniformMajorant_mass_le  R  (hR : ∀I∈R,Prime I)
     (F : Finset α) (b M : α→ℝ) (hM : ∀i∈F,0≤M i) :
     (∑D₁∈R.powerset,∑D₂∈R.powerset,∑J∈F.powerset,uniformMajorant R D₁ D₂ J b M)≤
       (∏i∈F,max 1 (Real.sqrt (max 1 (b i))*M i)) * (∏I∈R,localMass I)^(2+F.card) := by
   rw [uniformMajorant_mass]
-  have hE:=euler_ge_one R hR
+  
   have hp (i : α) (hi : i∈F) :
       1+(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I)≤
         max 1 (Real.sqrt (max 1 (b i))*M i)*(∏I∈R,localMass I) := by
@@ -276,7 +274,7 @@ omit [DecidableEq α] in
 
 theorem uniform_mass_subpower (F : Finset α) (b M : α→ℝ) (hM : ∀i∈F,0≤M i)
     (ε : ℝ) (hε : 0<ε) :
-    ∃ C : ℝ,0<C ∧ ∀ (R : Finset (Ideal O)) (_hR : ∀I∈R,Prime I),
+    ∃ C : ℝ,0<C ∧ ∀ (R : Finset (Ideal HeckeFamily.O)) (_hR : ∀I∈R,Prime I),
       (∑D₁∈R.powerset,∑D₂∈R.powerset,∑J∈F.powerset,uniformMajorant R D₁ D₂ J b M)≤
         C*(Ideal.absNorm (∏I∈R,I):ℝ)^ε := by
   let n:ℕ:=2+F.card

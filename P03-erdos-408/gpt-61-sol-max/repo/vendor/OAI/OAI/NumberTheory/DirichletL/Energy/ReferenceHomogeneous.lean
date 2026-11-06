@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceReflection
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceReflection
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
@@ -17,7 +18,7 @@ open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 open CenteredMomentUniformReflectionProfile CenteredExceptionalProfile CenteredMomentLattice
-local notation "O"=>HeckeFamily.O
+
 
 open CenteredMomentEnergyReferenceReflection CenteredMomentFiniteProfileExceptional
 
@@ -30,8 +31,8 @@ theorem natural_reference_reflection_homogeneous (a b bΦ epsilon xi saving L:�
         (Wlong Wshort:𝓢(ℝ,ℂ)),
       Function.support (Wlong:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (Wshort:ℝ→ℂ)⊆Set.Icc a b →
-      ∀(α:Type*)(F:Finset α)(pool:α→Finset (Ideal O))
-        (β:α→Ideal O→ℂ)(P:α→ℝ)(t along bshort E:ℝ),
+      ∀(α:Type*)(F:Finset α)(pool:α→Finset (Ideal HeckeFamily.O))
+        (β:α→Ideal HeckeFamily.O→ℂ)(P:α→ℝ)(t along bshort E:ℝ),
       s.width≤L+along → 0≤E →
       (∀v:ℝ,∀j k:Fin 2,∀x∈Set.Icc 0 (max 0 (s.width-along+xi)*Real.log Z),
         radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false
@@ -93,12 +94,10 @@ theorem natural_reference_reflection_homogeneous (a b bΦ epsilon xi saving L:�
   have hG:(G:ℝ→ℂ)=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t:=rfl
   simp only [hG,CenteredMomentNaturalMaskedFloor.twist_polynomial _ Wlong a b ha hsLong t] at hh
   apply hh.trans_eq
-  dsimp only [Src]
-  rw [show (1+‖t‖)^(2*n)=((1+‖t‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
 end SevenEighths.CenteredMomentEnergyReferenceHomogeneous
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.TwoSided.Comparison.ArcsCore
 public import Erdos408.TwoSided.Comparison.Multiplier
@@ -111,7 +112,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   set L := Real.log x with hLdef
   set Y := y₀ * (x * U * U') with hYdef
   have hκ0 : 0 < κ := by linarith only [hκ]
-  have he2 : 0 < Real.exp 2 := Real.exp_pos 2
+  
   have hM0sq : 0 ≤ M0 ^ 2 := sq_nonneg _
   have hκe : 0 ≤ 4 * κ * Real.exp 2 := by positivity
   have hκ2 : 0 ≤ 16 * κ ^ 2 := by positivity
@@ -121,7 +122,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   have hx10 : 10 ≤ x := by linarith only [hF7, hκ0, hκe, hκ2]
   have hx0 : 0 < x := by linarith only [hx10]
   have hy₀0 : 0 < y₀ := lt_of_lt_of_le (by positivity) hy₀
-  have he1 : Real.exp 1 ≤ 4 := (Real.exp_one_lt_d9).le.trans (by norm_num)
+  
   have he1' : 0 < Real.exp 1 := Real.exp_pos 1
   -- the coefficients of the bilinear form
   set 𝒰 : ℕ → ℂ := endpointCoeff x q q₀ a u v Bc P (fun g => A g ∪ B g)
@@ -137,7 +138,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   have h𝔅 : comparisonBilinear x q q₀ a u v Bc P A B φ φ' ψ ψ' G ψ₁ Y σ =
       ∑ l ∈ auxLabels P (fun g => A g ∪ B g),
         cl l * ∑ w ∈ Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊, 𝒰 w * 𝒱 (w + D l) := rfl
-  have hK0 : 0 ≤ 4 * Kmin + 8 * Real.sqrt K₃ := by positivity
+  
   have hRHS0 : 0 ≤ (4 * Kmin + 8 * Real.sqrt K₃) * (L ^ (-Am) +
       L ^ (2 * Carc + CB / 2) * (Real.sqrt Ξ₀ + L ^ (-A₀))) := by positivity
   -- if no label has `φ(D_A) φ'(D_B) ≠ 0`, then `𝔅 = 0`
@@ -205,7 +206,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
       linarith only [hF2]
     have h₂ : Real.exp (L ^ (0.38 : ℝ)) ≤ y₀ * (U * U') := by
       calc Real.exp (L ^ (0.38 : ℝ)) = (4 * κ)⁻¹ * (4 * κ * Real.exp (L ^ (0.38 : ℝ))) := by
-            rw [← mul_assoc, inv_mul_cancel₀ (by positivity), one_mul]
+            field_simp <;> ring
         _ ≤ y₀ * (U * U') := mul_le_mul hy₀ h₁ (by positivity) hy₀0.le
     calc x * Real.exp (L ^ (0.38 : ℝ)) ≤ x * (y₀ * (U * U')) :=
           mul_le_mul_of_nonneg_left h₂ hx0.le
@@ -286,7 +287,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
     have : (4 * κ)⁻¹ * (4 * κ * Real.exp 2) ≤ y₀ * x :=
       mul_le_mul hy₀ (by linarith only [hF7, hκ2, hκ0]) (by positivity) hy₀0.le
     rwa [show (4 * κ)⁻¹ * (4 * κ * Real.exp 2) = Real.exp 2 by
-      rw [← mul_assoc, inv_mul_cancel₀ (by positivity), one_mul]] at this
+      field_simp <;> ring] at this
   have hsupp : ∀ l ∈ auxLabels P (fun g => A g ∪ B g), cl l ≠ 0 →
       ∀ n ∈ Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊, n + D l ∈ Finset.Icc 0 ⌊3 * Y⌋₊ := by
     intro l _ hcl0 n hn

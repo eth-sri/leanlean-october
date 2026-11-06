@@ -7,16 +7,16 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPeriodicPoisson
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
 open ConcretePrimeRowBridge UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
-local notation "Joint" => ProbeGramPeriodicPoisson.Joint
 
-theorem literal_nonexceptional_block (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
+
+theorem literal_nonexceptional_block  A  (hA : 2<A)  a₀ b₀ 
     (ha₀ : 0<a₀) (hab : a₀<b₀) :
     ∃H : Finset (ℕ×ℕ),∃K : ℝ,0<K ∧
       ∀{ι : Type*}[Fintype ι],∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
@@ -27,7 +27,7 @@ theorem literal_nonexceptional_block (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
       ∀(p : Id)[_hpmax : p.IsMaximal],p≠0→∀_hgp : goodLambda∉p,
       ringChar (O⧸p)≠2→(¬p∣jointFixedModulus S hS)→(¬p∣∏i,P i)→
       (¬6∣(normalizedFactors (Ideal.span {k})).count p)→
-      ∀(W : SchwartzMap Joint ℂ),ProbeGramAnnularLattice.AnnularSupport a₀ b₀ W→
+      ∀(W : SchwartzMap ProbeGramPeriodicPoisson.Joint ℂ),ProbeGramAnnularLattice.AnnularSupport a₀ b₀ W→
       ∀(d : O)(N : ℝ),0<N→
       Summable (fun m : O×O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
         W (ProbeGramLatticeDecay.physicalPoint N m)) ∧
@@ -69,6 +69,6 @@ theorem literal_nonexceptional_block (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
   exact_mod_cast hMN
 
 end SevenEighths.ProbeGramCommon
-end
+
 
 end OAI

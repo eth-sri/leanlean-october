@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondHeightFamily
 
 namespace OAI
 
-noncomputable section
+
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSectorChildren
@@ -16,24 +16,24 @@ open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecon
 open CenteredMomentSecondSectorColumns CenteredMomentSecondHeightFamily CenteredMomentSupport
 open CenteredMomentSecondScaled CenteredMomentSupportedCorrelation CenteredMomentChildAssembly
 open CenteredMomentFixedRay CenteredMomentMobiusRegroup RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+
 
 theorem sector_correlation_children (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O → ℂ) (C D : Ideal O)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O → ℂ) (C D : Ideal ActualEisensteinCubic.O)
     (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (A₀ : O) (rows : Finset O) (q : O → ℂ) (K : O → Ideal O → Ideal O → ℂ) :
+    (A₀ : ActualEisensteinCubic.O) (rows : Finset ActualEisensteinCubic.O) (q : ActualEisensteinCubic.O → ℂ) (K : ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ) :
     let a := sectorElement C hC.1 S
     let b := sectorElement D hD.1 S
     let c := fun I : sectorPool C hC.1 S => β (C*I)*heightCoeff η t I
     let d := fun J : sectorPool D hD.1 S => β (D*J)*heightCoeff η t J
     (∑ z∈rows,q z*∑ I : sectorPool C hC.1 S,∑ J : sectorPool D hD.1 S,
-      (if IsCoprime (I:Ideal O) (J:Ideal O) then
+      (if IsCoprime (I:Ideal ActualEisensteinCubic.O) (J:Ideal ActualEisensteinCubic.O) then
         idealCorrelation (C*I) (D*J)
           ((supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 S I⟩)
           ((supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 S J⟩) (A₀*z)
         else 0)*(c I*star (d J))*K z I J)=
-      ∑ L∈divisorPool Finset.univ (fun J : sectorPool D hD.1 S => (J:Ideal O)),
+      ∑ L∈divisorPool Finset.univ (fun J : sectorPool D hD.1 S => (J:Ideal ActualEisensteinCubic.O)),
         (UniqueFactorizationMonoid.moebius L:ℂ)*
           ∑ χ : RayCharacter,∑ ξ : RayCharacter,
             pairCoeff (phaseTable (primaryGenerator C) (primaryGenerator D)) χ ξ*
@@ -57,13 +57,13 @@ theorem sector_correlation_children (η : Character) (t : ℝ)
     (fun I => β (C*I)*heightCoeff η t I) (fun J => β (D*J)*heightCoeff η t J)
     (fun z I J => K z I J)
   have hcop (I : sectorPool C hC.1 S) (J : sectorPool D hD.1 S) :
-      IsCoprime (sectorElement C hC.1 S I) (sectorElement D hD.1 S J) ↔ IsCoprime (I:Ideal O) (J:Ideal O) := by
+      IsCoprime (sectorElement C hC.1 S I) (sectorElement D hD.1 S J) ↔ IsCoprime (I:Ideal ActualEisensteinCubic.O) (J:Ideal ActualEisensteinCubic.O) := by
     rw [←Ideal.isCoprime_span_singleton_iff,sectorElement_span,sectorElement_span]
   simp_rw [hcop,sectorElement_span] at he
   simpa only [idealCorrelation,primaryGenerator_mul,sectorElement] using he
 
 end SevenEighths.CenteredMomentSecondSectorChildren
 
-end
+
 
 end OAI

@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstTransport
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
-lemma height_slab_integral_wzx (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
+
+lemma height_slab_integral_wzx (f : HeightSpace→ℂ)  H  (hH : 0≤H)
     (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure) :
     (∫p : HeightSpace in {t : HeightSpace | |t.1.1|≤H},f p ∂heightMeasure)=
       ∫w : ℝ,∫z : ℝ,∫x : ℝ in -H..H,f ((x,z),w) := by
@@ -39,6 +39,6 @@ variable {ι : Type*} [Fintype ι]
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

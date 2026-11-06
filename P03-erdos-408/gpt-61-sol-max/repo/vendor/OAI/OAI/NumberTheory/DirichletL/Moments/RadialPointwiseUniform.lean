@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Moments.RadialPointwiseEnergy
 
@@ -13,11 +14,11 @@ namespace SevenEighths.CenteredMomentRadialPointwiseUniform
 open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
 open CenteredMomentRadialPointwiseEnergy CenteredMomentUniformDivisorShell
 open CenteredMomentSlotRatios
-local notation "O" => ActualEisensteinCubic.O
+
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
-def Bound (ι:Type*) [Fintype ι] [DecidableEq ι] (C ε:ℝ) : Prop :=
-  ∀(s:Data ι) (r:Radial) (D:Ideal O),Squarefree D →
+def Bound (ι) [Fintype ι] [DecidableEq ι] (C ε:ℝ)  :=
+  ∀(s:Data ι) (r:Radial) (D:Ideal ActualEisensteinCubic.O),Squarefree D →
     ∀E Z:ℝ,0≤E → 1<Z → (∀a∈s.toSource.active D,childEnergy s r D a≤E) →
     energy s r D≤C*(Ideal.absNorm D:ℝ)^(2*ε)*Z^(s.toSource.allowance Z)*
       (s.profileFactor*E)/(Ideal.absNorm D:ℝ)
@@ -36,12 +37,11 @@ def Bound (ι:Type*) [Fintype ι] [DecidableEq ι] (C ε:ℝ) : Prop :=
   apply (hb J s r I hI E Z hE hZ hc).trans
   apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg _)
   apply mul_le_mul_of_nonneg_right _ (mul_nonneg s.profile_nonneg hE)
-  apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg (by linarith) _)
-  exact mul_le_mul_of_nonneg_right hd (Real.rpow_nonneg (Nat.cast_nonneg _) _)
+  bound
 
  theorem actual_uniform_divisor (lo hi:ι→ℝ) (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
     ∃C:ℝ,0<C ∧ ∀(J:Finset ι) (s:Data J),(∀i:J,s.lo i=lo i) → (∀i:J,s.hi i=hi i) →
-      ∀(r:Radial) (D:Ideal O),Squarefree D → ∀E Z:ℝ,0≤E → 1<Z →
+      ∀(r:Radial) (D:Ideal ActualEisensteinCubic.O),Squarefree D → ∀E Z:ℝ,0≤E → 1<Z →
       (Ideal.absNorm D:ℝ)≤Z^B → (∀a∈s.toSource.active D,childEnergy s r D a≤E) →
       energy s r D≤C*Z^δ*(s.profileFactor*E)/(Ideal.absNorm D:ℝ) := by
   let ε:ℝ:=δ/(2*(B+1))
@@ -65,8 +65,7 @@ def Bound (ι:Type*) [Fintype ι] [DecidableEq ι] (C ε:ℝ) : Prop :=
   apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg _)
   apply mul_le_mul_of_nonneg_right _ (mul_nonneg s.profile_nonneg hE)
   calc
-    _≤C*Z^δ*A:=mul_le_mul (mul_le_mul_of_nonneg_left hp hC.le) ha
-      (Real.rpow_nonneg hz.le _) (by positivity)
+    _≤C*Z^δ*A:=(by bound)
     _=_:=by ring
 
 end SevenEighths.CenteredMomentRadialPointwiseUniform

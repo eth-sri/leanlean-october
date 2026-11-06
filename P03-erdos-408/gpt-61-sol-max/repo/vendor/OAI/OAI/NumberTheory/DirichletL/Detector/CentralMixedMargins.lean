@@ -6,13 +6,17 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralDyadicWeight
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeDetectorRowCount ProbeCentralExponent
 
-lemma balanced_count_range (δ x Δ loss : ℝ) (hδ : 0≤δ) (hd : δ≤5/6)
-    (hx : 0≤x) (hx' : x≤1/2) (hΔ : 0≤Δ) (hΔ' : Δ≤1/8)
-    (hl : 0≤loss) (hl' : loss≤1/32) :
+section
+variable (δ x q Δ loss ζ μ v d other saving : ℝ) (hδ : 0≤δ) (hd : δ≤5/6) (hx : 0≤x) (hx' : x≤1/2) (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hl : 0≤loss) (hl' : loss≤1/32) (hζ : 0≤ζ) (hv : v≤13/16+ζ) (hμ : 0≤μ) (hdv : d-v≤μ)
+
+include hδ hd hx hx' hΔ hΔ' hl hl' in
+lemma balanced_count_range      
+           
+        :
     let R := Endpoint.balancedRowCount δ (1/2-x)+Δ/4+loss
     1-δ≤R ∧ R≤3/2 := by
   have ht := balanced_cutoff_bounds hδ hd hx hx'
@@ -22,10 +26,11 @@ lemma balanced_count_range (δ x Δ loss : ℝ) (hδ : 0≤δ) (hd : δ≤5/6)
   unfold Endpoint.balancedRowCount
   constructor <;> nlinarith
 
-lemma balanced_mixed_margin (δ x Δ loss ζ μ v d : ℝ)
-    (hδ : 0≤δ) (hd : δ≤5/6) (hx : 0≤x) (hx' : x≤1/2)
-    (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hl : 0≤loss) (hl' : loss≤1/32)
-    (hζ : 0≤ζ) (hv : v≤13/16+ζ) (hμ : 0≤μ) (hdv : d-v≤μ) :
+include hδ hd hx hx' hΔ hΔ' hl hl' hζ hv hμ hdv in
+lemma balanced_mixed_margin  
+           
+           
+            :
     let R := Endpoint.balancedRowCount δ (1/2-x)+Δ/4+loss
     mixedSourceExponent ((1+δ)/2) v d R (δ*x)-(3/16+Δ)≤
       -49/440640-(51/64)*Δ+(13/16)*loss+2*ζ+(3/2)*μ := by
@@ -39,7 +44,7 @@ lemma balanced_mixed_margin (δ x Δ loss ζ μ v d : ℝ)
     (by dsimp [R];linarith [hr.1]) hr.2 hμ hdv
   linarith
 
-lemma high_mixed_margin (δ q Δ loss ζ μ v d : ℝ)
+lemma high_mixed_margin  
     (hδ : 5/6≤δ) (hd : δ≤1) (hq : q≤δ/2)
     (hl : 0≤loss) (hl' : loss≤1/32)
     (hζ : 0≤ζ) (hv : v≤13/16+ζ) (hμ : 0≤μ) (hdv : d-v≤μ) :
@@ -52,17 +57,20 @@ lemma high_mixed_margin (δ q Δ loss ζ μ v d : ℝ)
     (by linarith) (by linarith) hμ hdv
   linarith
 
-lemma balanced_mixed_saving (δ x Δ loss ζ μ v d other saving : ℝ)
-    (hδ : 0≤δ) (hd : δ≤5/6) (hx : 0≤x) (hx' : x≤1/2)
-    (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hl : 0≤loss) (hl' : loss≤1/32)
-    (hζ : 0≤ζ) (hv : v≤13/16+ζ) (hμ : 0≤μ) (hdv : d-v≤μ)
+include hδ hd hx hx' hΔ hΔ' hl hl' hζ hv hμ hdv in
+lemma balanced_mixed_saving  
+           
+           
+           
     (hbudget : (13/16)*loss+2*ζ+(3/2)*μ+other+saving≤49/440640) :
     mixedSourceExponent ((1+δ)/2) v d
       (Endpoint.balancedRowCount δ (1/2-x)+Δ/4+loss) (δ*x)+other≤3/16+Δ-saving := by
   have hm := balanced_mixed_margin δ x Δ loss ζ μ v d hδ hd hx hx' hΔ hΔ' hl hl' hζ hv hμ hdv
   linarith
-end SevenEighths.ProbeHighRowFamily
 
 end
+end SevenEighths.ProbeHighRowFamily
+
+
 
 end OAI

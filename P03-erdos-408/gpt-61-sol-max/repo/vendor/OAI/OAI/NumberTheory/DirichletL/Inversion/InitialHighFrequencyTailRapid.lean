@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTail
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailPower
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailPowe
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
@@ -42,7 +43,7 @@ theorem original_physical_tail_rapid (Lcap saving τ : ℝ) (hτ : 0<τ) :
   obtain ⟨A,hA⟩ := initial_tail_rapid_order Lcap saving τ hτ
   obtain ⟨s,C₀,hC₀,hraw⟩ := original_physical_tail A
   let R : ℝ := ∑ρ : SecondRayIndex,‖secondRayCoefficient ρ‖
-  have hR : 0≤R := Finset.sum_nonneg (fun _ _=>norm_nonneg _)
+  
   refine ⟨s,128^7*(R+1)*C₀,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj hc Ψ hΨ j slots lists a hdis ha W₁ W₂ Φ
     Z D m L Γ B₁ B₂ hZ hL hcap hsize hm hmd hΓ hB₁ hB₂ hW₁ hW₂ pool S w
@@ -51,7 +52,7 @@ theorem original_physical_tail_rapid (Lcap saving τ : ℝ) (hτ : 0<τ) :
   have hb := hraw p hp hcop hg hinj hc Ψ hΨ j slots lists a hdis ha W₁ W₂ Φ
     Z D m L (Z^τ) Γ B₁ B₂ hz hL (by positivity) hΓ hB₁ hB₂ hW₁ hW₂
     pool S w hvalid hw hpool hnorm hleft hright htail
-  have hs : 0≤s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ := apply_nonneg _ _
+  
   apply hb.trans
   calc
     _ = ((128*L)^7*Z^(m-D)/((min 1 (Z^m/L^3))^2*(1+Z^τ)^A))*
@@ -65,6 +66,6 @@ theorem original_physical_tail_rapid (Lcap saving τ : ℝ) (hτ : 0<τ) :
 
 end SevenEighths.InverseInitialHighFrequencyTail
 
-end
+
 
 end OAI

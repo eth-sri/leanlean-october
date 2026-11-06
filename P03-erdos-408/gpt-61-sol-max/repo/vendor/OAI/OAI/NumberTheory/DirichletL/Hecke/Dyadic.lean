@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalBound
 
@@ -19,14 +20,14 @@ instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injectiv
 
 def norm (I : NonzeroIdeal) : ℝ := I.val.absNorm
 
-theorem norm_pos (I : NonzeroIdeal) : 0 < norm I := by
+theorem norm_pos  I  : 0 < norm I := by
   unfold norm
   exact_mod_cast Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr I.property)
 
-def coefficient (χ : Character) (inverse : Bool) (I : Ideal O) : ℂ :=
+def coefficient (χ : Character) (inverse : Bool) (I : Ideal O)  :=
   if inverse then (UniqueFactorizationMonoid.moebius I : ℂ)*idealCoeff χ I else idealCoeff χ I
 
-theorem coefficient_norm_le (χ : Character) (inverse : Bool) (I : Ideal O) :
+theorem coefficient_norm_le  χ   inverse   I  :
     ‖coefficient χ inverse I‖ ≤ 1 := by
   cases inverse
   · exact idealCoeff_norm_le_one χ I
@@ -35,27 +36,27 @@ theorem coefficient_norm_le (χ : Character) (inverse : Bool) (I : Ideal O) :
     exact (mul_le_of_le_one_left (norm_nonneg _) (CubicEisenstein.norm_ideal_moebius_le_one I)).trans
       (idealCoeff_norm_le_one χ I)
 
-@[simp] theorem coefficient_zero (χ : Character) (inverse : Bool) : coefficient χ inverse 0 = 0 := by
+@[simp] theorem coefficient_zero  χ   inverse  : coefficient χ inverse 0 = 0 := by
   cases inverse
   · exact idealCoeff_zero χ
   · change (UniqueFactorizationMonoid.moebius (0 : Ideal O) : ℂ)*idealCoeff χ 0 = 0
     rw [idealCoeff_zero, mul_zero]
 
-def shift (σ ω : ℝ) : ℂ := (σ : ℂ)-(ω : ℂ)*Complex.I
+def shift (σ ω : ℝ)  := (σ : ℂ)-(ω : ℂ)*Complex.I
 
-@[simp] theorem shift_re (σ ω : ℝ) : (shift σ ω).re = σ := by simp [shift]
+@[simp] theorem shift_re  σ ω  : (shift σ ω).re = σ := by simp [shift]
 
 def summand (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
-    (D σ ω : ℝ) (I : NonzeroIdeal) : ℂ :=
+    (D σ ω : ℝ) (I : NonzeroIdeal)  :=
   coefficient χ inverse I.val * W (norm I/D) * ((norm I/D : ℝ) : ℂ)^(-shift σ ω)
 
-def polynomial (χ : Character) (inverse : Bool) (W : ℝ → ℂ) (D σ ω : ℝ) : ℂ :=
+def polynomial (χ : Character) (inverse : Bool) (W : ℝ → ℂ) (D σ ω : ℝ)  :=
   (D : ℂ)^(-(1/2 : ℂ)) * ∑' I : NonzeroIdeal, summand χ inverse W D σ ω I
 
-def series (χ : Character) (inverse : Bool) (s : ℂ) : ℂ :=
+def series (χ : Character) (inverse : Bool) (s : ℂ)  :=
   if inverse then HeckeReciprocal.reciprocal χ s else LFunction χ s
 
-theorem series_eq_tsum (χ : Character) (inverse : Bool) {s : ℂ} (hs : 1 < s.re) :
+theorem series_eq_tsum  χ   inverse   {s}  (hs : 1 < s.re) :
     series χ inverse s =
       ∑' I : NonzeroIdeal, coefficient χ inverse I.val * (norm I : ℂ)^(-s) := by
   have he : (∑' I : NonzeroIdeal, coefficient χ inverse I.val *
@@ -67,8 +68,7 @@ theorem series_eq_tsum (χ : Character) (inverse : Bool) {s : ℂ} (hs : 1 < s.r
     intro I hI hi
     subst I
     exact hI (by
-      change coefficient χ inverse 0 * CubicEisenstein.fullIdealWeight s 0 = 0
-      rw [coefficient_zero, zero_mul])
+      norm_num)
   have hc : (∑' I : NonzeroIdeal, coefficient χ inverse I.val * (norm I : ℂ)^(-s)) =
       ∑' I : Ideal O, coefficient χ inverse I * CubicEisenstein.fullIdealWeight s I := by
     rw [← he]

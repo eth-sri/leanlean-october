@@ -11,7 +11,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWindowHeight
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
 
@@ -31,8 +31,8 @@ open CenteredMomentSecondCanonical
 open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
 open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
 open ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
+
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 

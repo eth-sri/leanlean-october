@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
@@ -12,19 +13,19 @@ noncomputable section
 open scoped BigOperators
 namespace SevenEighths.ProbeCentralExponent
 
-def sourceExponent (a d R q : ℝ) : ℝ :=
+def sourceExponent (a d R q : ℝ)  :=
   (17/48)*(1/2-17/50)+a+17/50-1-a*(23/48)-d*(17/50)+d*R+
     d*(a-1/2)+(1/6)*(17/50-1/2+q)
 
-def relativeExponent (δ d R q : ℝ) : ℝ :=
+def relativeExponent (δ d R q : ℝ)  :=
   -1/48+(2/3)*δ+q/6-(13/16)*(1-R)+(d-13/16)*(R+δ/2-17/50)
 
-lemma original_exponent_identity (a d R q : ℝ) :
+lemma original_exponent_identity  a d R q  :
     sourceExponent a d R q=3/16+relativeExponent (2*a-1) d R q := by
   unfold sourceExponent relativeExponent
   ring
 
-lemma relative_extend (δ d R q ζ : ℝ) (hζ : 0≤ζ) (hd : d≤13/16+ζ)
+lemma relative_extend  δ d R q ζ  (hζ : 0≤ζ) (hd : d≤13/16+ζ)
     (hslo : 0≤R+δ/2-17/50) (hshi : R+δ/2-17/50≤2) :
     relativeExponent δ d R q≤relativeExponent δ (13/16) R q+2*ζ := by
   have hh := mul_le_mul_of_nonneg_right (show d-13/16≤ζ by linarith) hslo
@@ -32,7 +33,7 @@ lemma relative_extend (δ d R q ζ : ℝ) (hζ : 0≤ζ) (hd : d≤13/16+ζ)
   unfold relativeExponent
   nlinarith
 
-lemma balanced_source_margin (δ x R Δ loss ζ d : ℝ)
+lemma balanced_source_margin  δ x R Δ loss ζ d 
     (hδ : 0≤δ) (hδ1 : δ≤5/6) (hx : 0≤x) (hx1 : x≤1/2)
     (hR : R≤Endpoint.balancedRowCount δ (1/2-x)+Δ/4+loss)
     (hζ : 0≤ζ) (hd : d≤13/16+ζ)
@@ -42,39 +43,26 @@ lemma balanced_source_margin (δ x R Δ loss ζ d : ℝ)
   have hb := Endpoint.balanced_endpoint_margin hδ hδ1
     (show 0≤1/2-x by linarith) (show 1/2-x≤1/2 by linarith)
   have he := relative_extend δ d R (δ*x) ζ hζ hd hslo hshi
-  rw [original_exponent_identity]
-  have hid : 2*((1+δ)/2)-1=δ := by ring
-  rw [hid]
-  unfold Endpoint.balancedExponent at hb
-  unfold relativeExponent at he ⊢
-  nlinarith
+  grind [original_exponent_identity, Endpoint.balancedExponent, relativeExponent]
 
-lemma high_source_margin (δ R q Δ loss ζ d : ℝ)
+lemma high_source_margin  δ R q Δ loss ζ d 
     (hq : q≤δ/2) (hR : R≤1-δ+loss)
     (hζ : 0≤ζ) (hd : d≤13/16+ζ)
     (hslo : 0≤R+δ/2-17/50) (hshi : R+δ/2-17/50≤2) :
     sourceExponent ((1+δ)/2) d R q-(3/16+Δ)≤
       -1/48-δ/16-Δ+(13/16)*loss+2*ζ := by
   have he := relative_extend δ d R q ζ hζ hd hslo hshi
-  rw [original_exponent_identity]
-  have hid : 2*((1+δ)/2)-1=δ := by ring
-  rw [hid]
-  unfold relativeExponent at he ⊢
-  nlinarith
+  grind [original_exponent_identity, relativeExponent]
 
-lemma floor_source_margin (q Δ ζ d : ℝ) (hq : q≤1/100)
+lemma floor_source_margin  q Δ ζ d  (hq : q≤1/100)
     (hζ : 0≤ζ) (hd : d≤13/16+ζ) :
     sourceExponent (51/100) d 1 q-(3/16+Δ)≤-7/1200-Δ+2*ζ := by
-  have he := relative_extend (1/50) d 1 q ζ hζ hd (by norm_num) (by norm_num)
-  rw [original_exponent_identity]
-  norm_num only at *
-  unfold relativeExponent at he ⊢
-  nlinarith
+  grind [relative_extend, original_exponent_identity, relativeExponent]
 
-def realLoss (N : ℕ) (d e eps heightLoss mesh : ℝ) : ℝ :=
+def realLoss (N : ℕ) (d e eps heightLoss mesh : ℝ)  :=
   (105/8)*e+12*d*e+d*eps*(N+8)+heightLoss+mesh/6
 
-lemma realLoss_bound (N : ℕ) (d e eps heightLoss mesh : ℝ)
+lemma realLoss_bound  N   d e eps heightLoss mesh 
     (hd : d≤1) (he : 0≤e) (heps : 0≤eps) :
     realLoss N d e eps heightLoss mesh≤26*e+(N+8)*eps+heightLoss+mesh/6 := by
   have h1 := mul_le_mul_of_nonneg_right hd he

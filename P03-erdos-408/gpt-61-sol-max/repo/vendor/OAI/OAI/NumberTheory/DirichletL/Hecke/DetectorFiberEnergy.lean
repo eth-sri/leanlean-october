@@ -8,18 +8,22 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwisePlain
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorFiberEnergy
 open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorRowwisePolynomial
 
-theorem inverse_energy {Row Label : Type*} (rows : Finset Row) (χ : Row→Label→Character)
-    (U a ε tstar T allowance : ℝ) (i : ℕ) (ha : 0≤a)
-    (w : ∀ u,Witness (χ u) U a ε tstar T allowance i)
-    (label : Label) (W : ℝ→ℂ) (D wa wb E : ℝ) (P : Row→ℂ)
-    (hD : 0<D) (hwb : 0≤wb) (hs : Function.support W⊆Icc wa wb) (hE : 0≤E)
-    (height : ℝ) (hh : 0≤height) (hfreq : 2*Real.pi*allowance+(3*i : ℕ)*T≤height)
+section
+variable {Row Label : Type*} (rows : Finset Row) (χ : Row→Label→Character) (U a ε tstar T allowance : ℝ) (i : ℕ) (ha : 0≤a) (w : ∀ u,Witness (χ u) U a ε tstar T allowance i) (label : Label) (W : ℝ→ℂ) (D wa wb E : ℝ) (P : Row→ℂ) (hD : 0<D) (hwb : 0≤wb) (hs : Function.support W⊆Icc wa wb) (hE : 0≤E) (height : ℝ) (hh : 0≤height) (hfreq : 2*Real.pi*allowance+(3*i : ℕ)*T≤height)
+include Row Label rows χ U a ε tstar T allowance i ha w label W D wa wb E P hD hwb hs hE height hh hfreq
+
+theorem inverse_energy      
+         
+     
+           
+           
+         
     (hraw : ∀ n : ℕ,n≤2 → ∀ s∈Icc (0 : ℝ) 1,∀ t∈Icc (-height) height,
       ∑ u∈rows,‖polynomial (χ u label) true ((logProfile^[n]) W) D s t*P u‖^2≤E) :
     ∑ u∈rows,‖polynomial (χ u label) true W D (w u).zero.re (w u).frequency*P u‖^2≤
@@ -40,12 +44,12 @@ theorem inverse_energy {Row Label : Type*} (rows : Finset Row) (χ : Row→Label
   refine hb.trans ?_
   nlinarith
 
-theorem plain_energy {Row Label : Type*} (rows : Finset Row) (χ : Row→Label→Character)
-    (U a ε tstar T allowance : ℝ) (i : ℕ) (ha : 0≤a)
-    (w : ∀ u,Witness (χ u) U a ε tstar T allowance i)
-    (label : Label) (W : ℝ→ℂ) (D wa wb E : ℝ) (P : Row→ℂ)
-    (hD : 0<D) (hwb : 0≤wb) (hs : Function.support W⊆Icc wa wb) (hE : 0≤E)
-    (height : ℝ) (hh : 0≤height) (hfreq : 2*Real.pi*allowance+(3*i : ℕ)*T≤height)
+theorem plain_energy      
+         
+     
+           
+           
+         
     (hraw : ∀ j k : ℕ,j+k≤2 → ∀ s∈Icc (0 : ℝ) 1,∀ t∈Icc (-height) height,
       ∑ u∈rows,‖polynomial (χ u label) false ((logProfile^[j]) W) D s t*
         polynomial (χ u label) false ((logProfile^[k]) W) D s t*P u‖^2≤E) :
@@ -66,8 +70,10 @@ theorem plain_energy {Row Label : Type*} (rows : Finset Row) (χ : Row→Label�
   refine hb.trans ?_
   nlinarith
 
+end
+
 end SevenEighths.HeckeDetectorFiberEnergy
 
-end
+
 
 end OAI

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.Moment.RootReplacement.Tube
 public import Erdos408.OneSided.Moment.RootReplacement.Grid
@@ -39,8 +40,7 @@ variable {K : ℕ}
 open scoped Classical in
 /-- The cubes on whose roots the indicator of `ω` is not constant, equal to its value at the
 lower corner. -/
-def badCubes (x : ℝ) (d : Data K) (Y d₀ : ℝ) (n : ℕ) (ω : Conf x d Y d₀) :
-    Finset (ℕ × ℕ × ℕ) :=
+def badCubes (x ) (d : Data K) (Y d₀ ) (n : ℕ) (ω : Conf x d Y d₀)  :=
   (cubeIndices n).filter fun i => ∃ P₀ ∈ cubeRoots (d₀ * Y * d.Hm) d.Hn n i,
     confInd x d Y d₀ ω P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) ≠
       confInd x d Y d₀ ω (d₀ * Y * d.Hm * (1 + i.1 / n)) (d.Hn * (1 + i.2.1 / n)) (i.2.2 / n)
@@ -55,8 +55,8 @@ theorem inCube_of_mem_cubeRoots {U V : ℝ} {n : ℕ} {i : ℕ × ℕ × ℕ} {P
   exact ⟨Nat.ceil_le.1 (mem_Icc.1 h₁).1, h₂, Nat.ceil_le.1 (mem_Icc.1 h₃).1, h₄, h₅, h₆⟩
 
 /-- The lower corner of a cube lies in the real cube. -/
-theorem inCube_corner {U V : ℝ} (hU : 0 < U) (hV : 0 < V) {n : ℕ} (hn : 1 ≤ n)
-    (i : ℕ × ℕ × ℕ) :
+theorem inCube_corner  {U V}  (hU : 0 < U) (hV : 0 < V)  {n}  (hn : 1 ≤ n)
+     i  :
     InCube U V n i (U * (1 + i.1 / n)) (V * (1 + i.2.1 / n)) (i.2.2 / n) := by
   have hn' : (0 : ℝ) < n := by exact_mod_cast hn
   have h : ∀ a : ℝ, a / n < (a + 1) / n := fun a => div_lt_div_of_pos_right (by linarith) hn'
@@ -69,8 +69,8 @@ theorem inCube_corner {U V : ℝ} (hU : 0 < U) (hV : 0 < V) {n : ℕ} (hn : 1 �
 open scoped Classical in
 /-- A bad cube is made bad by some visit: the indicator of one visit differs between a root
 of the cube and its corner, so `visitBad_of_ne` applies. -/
-theorem badCubes_subset (x : ℝ) (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm)
-    (hV : 0 < d.Hn) {n : ℕ} (hn : 1 ≤ n) (ω : Conf x d Y d₀) :
+theorem badCubes_subset  x  (d : Data K)  {Y d₀}  (hU : 0 < d₀ * Y * d.Hm)
+    (hV : 0 < d.Hn)  {n}  (hn : 1 ≤ n) (ω : Conf x d Y d₀) :
     badCubes x d Y d₀ n ω ⊆ univ.biUnion fun j => (cubeIndices n).filter
       (VisitBad x d Y (d₀ * Y * d.Hm) d.Hn (ω j).1.2 n (ω j).1.1.1) := by
   intro i hi
@@ -85,14 +85,13 @@ theorem badCubes_subset (x : ℝ) (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y
     exact hne (prod_congr rfl fun j _ => h j)
   have hiff := fun h => hj (by unfold visitInd; exact if_congr h rfl rfl)
   obtain ⟨hi₁, hi₂, hi₃⟩ : i.1 < 15 * n ∧ i.2.1 < n ∧ i.2.2 < n := by
-    simp only [cubeIndices, mem_product, mem_range] at hi
-    exact hi
+    grind [cubeIndices]
   exact mem_biUnion.2 ⟨j, mem_univ _, mem_filter.2 ⟨hi, visitBad_of_ne hU hV hn hi₁ hi₂ hi₃ _
     (inCube_of_mem_cubeRoots hP₀) (inCube_corner hU hV hn i) hiff⟩⟩
 
 /-- **RR6 (boundary cubes)**: eventually, a live configuration with `c(ω) ≠ 0` has at most
 `n² exp(L^{1/2})` bad cubes, for every `n ≥ 1`. -/
-theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) (A₀ : ℝ) :
+theorem eventually_card_badCubes_le  {C CX alo ahi g}  (hahi : ahi < 1 / 5)  A₀  :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       ∀ n : ℕ, 1 ≤ n → ∀ ω : Conf x d (2 ^ j) (2 ^ k), ConfLive ω →
         confCoeff A₀ x d (2 ^ j) (2 ^ k) ω ≠ 0 →
@@ -108,8 +107,7 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
   have hHm : 1 ≤ d.Hm := (Real.one_le_rpow hx hγ).trans hd.Hm_ge
   have hHn : 1 ≤ d.Hn := (Real.one_le_rpow hx hγ).trans hd.Hn_ge
   have hU₁ : 1 ≤ 2 ^ k * 2 ^ j * d.Hm := by
-    have := mul_le_mul hd₁ hY₁ zero_le_one (by positivity)
-    nlinarith
+    bound
   have hU : 0 < (2 : ℝ) ^ k * 2 ^ j * d.Hm := by linarith
   have hV : 0 < d.Hn := by linarith
   have hUV : 1 ≤ 2 ^ k * 2 ^ j * d.Hm * d.Hn := by nlinarith
@@ -141,8 +139,7 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
   have hMS : Λ ^ (K * (padCount x + 1)) ≤ Λ ^ (K * (padCount x + 2)) :=
     pow_le_pow_right₀ (by linarith) (by gcongr; omega)
   have hN : (1 : ℝ) ≤ ((2 * momentPower x : ℕ) : ℝ) := by
-    have : 1 ≤ 2 * momentPower x := by omega
-    exact_mod_cast this
+    bound
   have hz : ∀ j', |((ω j').1.1.1.2 : ℝ)| ≤
       2560 * ((2 * momentPower x : ℕ) : ℝ) * (Λ ^ (K * (padCount x + 2))) ^ 2 := by
     intro j'

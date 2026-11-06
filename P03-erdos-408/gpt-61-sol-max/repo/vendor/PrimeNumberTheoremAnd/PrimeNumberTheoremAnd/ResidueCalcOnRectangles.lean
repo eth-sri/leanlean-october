@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.Analysis.Complex.Convex
@@ -17,34 +18,34 @@ open scoped Interval
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] {f g : ℂ → E} {z w p c A : ℂ}
   {x x₁ x₂ y y₁ y₂ σ : ℝ}
 
-noncomputable def HIntegral (f : ℂ → E) (x₁ x₂ y : ℝ) : E :=
+noncomputable def HIntegral (f : ℂ → E) (x₁ x₂ y : ℝ)  :=
     ∫ x in x₁..x₂, f (x + y * I)
 
-noncomputable def VIntegral (f : ℂ → E) (x y₁ y₂ : ℝ) : E :=
+noncomputable def VIntegral (f : ℂ → E) (x y₁ y₂ : ℝ)  :=
     I • ∫ y in y₁..y₂, f (x + y * I)
 
-noncomputable def HIntegral' (f : ℂ → E) (x₁ x₂ y : ℝ) : E :=
+noncomputable def HIntegral' (f : ℂ → E) (x₁ x₂ y : ℝ)  :=
     (1 / (2 * π * I)) • HIntegral f x₁ x₂ y
 
 /-- A `RectangleIntegral` of a function `f` is one over a rectangle
   determined by `z` and `w` in `ℂ`. -/
-noncomputable def RectangleIntegral (f : ℂ → E) (z w : ℂ) : E :=
+noncomputable def RectangleIntegral (f : ℂ → E) (z w : ℂ)  :=
     HIntegral f z.re w.re z.im - HIntegral f z.re w.re w.im +
     VIntegral f w.re z.im w.im - VIntegral f z.re z.im w.im
 
 /-- A `RectangleIntegral'` of a function `f` is one over a rectangle
   determined by `z` and `w` in `ℂ`, divided by `2 * π * I`. -/
-noncomputable abbrev RectangleIntegral' (f : ℂ → E) (z w : ℂ) : E :=
+noncomputable abbrev RectangleIntegral' (f : ℂ → E) (z w : ℂ)  :=
     (1 / (2 * π * I)) • RectangleIntegral f z w
 
 /- An UpperUIntegral is the integral of a function over a |\_| shape. -/
 
 /- A LowerUIntegral is the integral of a function over a |-| shape. -/
 
-noncomputable def VerticalIntegral (f : ℂ → E) (σ : ℝ) : E :=
+noncomputable def VerticalIntegral (f : ℂ → E) (σ : ℝ)  :=
     I • ∫ t : ℝ, f (σ + t * I)
 
-noncomputable abbrev VerticalIntegral' (f : ℂ → E) (σ : ℝ) : E :=
+noncomputable abbrev VerticalIntegral' (f : ℂ → E) (σ : ℝ)  :=
     (1 / (2 * π * I)) • VerticalIntegral f σ
 
 lemma verticalIntegral_split_three (a b : ℝ)
@@ -59,11 +60,14 @@ lemma verticalIntegral_split_three (a b : ℝ)
 
 /-- A function is `HolomorphicOn` a set if it is complex
   differentiable on that set. -/
-abbrev HolomorphicOn (f : ℂ → E) (s : Set ℂ) : Prop :=
+abbrev HolomorphicOn (f : ℂ → E) (s : Set ℂ)  :=
     DifferentiableOn ℂ f s
 
+section
+variable (h : Set.EqOn f g (RectangleBorder z w))
+
 theorem existsDifferentiableOn_of_bddAbove [CompleteSpace E]
-    {s : Set ℂ} {c : ℂ} (hc : s ∈ nhds c)
+     {s}   {c}  (hc : s ∈ nhds c)
     (hd : HolomorphicOn f (s \ {c}))
     (hb : BddAbove (norm ∘ f '' (s \ {c}))) :
     ∃ (g : ℂ → E),
@@ -80,7 +84,8 @@ theorem HolomorphicOn.vanishesOnRectangle [CompleteSpace E]
   integral_boundary_rect_eq_zero_of_differentiableOn f z w
     (f_holo.mono hU)
 
-theorem RectangleIntegral_congr (h : Set.EqOn f g (RectangleBorder z w)) :
+include h in
+theorem RectangleIntegral_congr   :
     RectangleIntegral f z w = RectangleIntegral g z w := by
   unfold RectangleIntegral VIntegral
   congrm ?_ - ?_ + I • ?_ - I • ?_
@@ -90,11 +95,14 @@ theorem RectangleIntegral_congr (h : Set.EqOn f g (RectangleBorder z w)) :
   · exact Or.inr ⟨by simp, by simpa⟩
   · exact Or.inl <| Or.inl <| Or.inr ⟨by simp, by simpa⟩
 
-theorem RectangleIntegral'_congr (h : Set.EqOn f g (RectangleBorder z w)) :
+include h in
+theorem RectangleIntegral'_congr   :
     RectangleIntegral' f z w = RectangleIntegral' g z w := by
   rw [RectangleIntegral', RectangleIntegral_congr h]
 
-def RectangleBorderIntegrable (f : ℂ → E) (z w : ℂ) : Prop :=
+end
+
+def RectangleBorderIntegrable (f : ℂ → E) (z w : ℂ)  :=
     IntervalIntegrable (fun x => f (x + z.im * I)) volume z.re w.re ∧
     IntervalIntegrable (fun x => f (x + w.im * I)) volume z.re w.re ∧
     IntervalIntegrable (fun y => f (w.re + y * I)) volume z.im w.im ∧
@@ -159,31 +167,7 @@ lemma RectangleIntegralHSplit {a x₀ x₁ y₀ y₁ : ℝ}
     Complex.I_im, mul_one, mul_zero, add_zero, zero_add, sub_self]
   have h₁ := integral_add_adjacent_intervals f_int_x₀_a_bot f_int_a_x₁_bot
   have h₂ := integral_add_adjacent_intervals f_int_x₀_a_top f_int_a_x₁_top
-  have h₁' :
-      (∫ (x : ℝ) in x₀..a, f (↑x + ↑y₀ * I)) +
-          ∫ (x : ℝ) in a..x₁, f (↑y₀ * I + ↑x) =
-        ∫ (x : ℝ) in x₀..x₁, f (↑x + ↑y₀ * I) := by
-    simpa [add_comm] using h₁
-  have h₂' :
-      (∫ (x : ℝ) in x₀..a, f (↑x + ↑y₁ * I)) +
-          ∫ (x : ℝ) in a..x₁, f (↑y₁ * I + ↑x) =
-        ∫ (x : ℝ) in x₀..x₁, f (↑x + ↑y₁ * I) := by
-    simpa [add_comm] using h₂
-  rw [← h₁', ← h₂']
-  have hcomm₁ :
-      ∫ (x : ℝ) in a..x₁, f (↑y₀ * I + ↑x) =
-        ∫ (x : ℝ) in a..x₁, f (↑x + ↑y₀ * I) := by
-    apply intervalIntegral.integral_congr
-    intro x _
-    exact congrArg f (by ring)
-  have hcomm₂ :
-      ∫ (x : ℝ) in a..x₁, f (↑y₁ * I + ↑x) =
-        ∫ (x : ℝ) in a..x₁, f (↑x + ↑y₁ * I) := by
-    apply intervalIntegral.integral_congr
-    intro x _
-    exact congrArg f (by ring)
-  rw [hcomm₁, hcomm₂]
-  abel
+  grind
 
 lemma RectangleIntegralHSplit' {a x₀ x₁ y₀ y₁ : ℝ}
     (ha : a ∈ [[x₀, x₁]])
@@ -288,32 +272,41 @@ lemma RectanglePullToNhdOfPole' [CompleteSpace E] {z₀ z₁ z₂ z₃ p : ℂ}
   simp only [re_add_im] at *
   linear_combination (norm := module) h₁ + h₂ + h₃ + h₄ + h₅ + h₆ + h₇ + h₈
 
-theorem RectangleIntegral.const_smul (f : ℂ → E) (z w c : ℂ) :
-    RectangleIntegral (fun s => c • f s) z w = c • RectangleIntegral f z w := by
-  simp [RectangleIntegral, HIntegral, VIntegral, smul_add, smul_sub, smul_smul, mul_comm]
+section
+variable (f) (z) (w) (c) (p)
 
-theorem RectangleIntegral.translate (f : ℂ → E) (z w p : ℂ) :
+
+
+theorem RectangleIntegral.translate     :
     RectangleIntegral (fun s => f (s - p)) z w = RectangleIntegral f (z - p) (w - p) := by
   simp_rw [RectangleIntegral, HIntegral, VIntegral, sub_re, sub_im,
     ← intervalIntegral.integral_comp_sub_right]
   congr <;> ext <;> congr 1 <;> simp [Complex.ext_iff]
 
-theorem RectangleIntegral.translate' (f : ℂ → E) (z w p : ℂ) :
+theorem RectangleIntegral.translate'     :
     RectangleIntegral' (fun s => f (s - p)) z w = RectangleIntegral' f (z - p) (w - p) := by
   simp_rw [RectangleIntegral', RectangleIntegral.translate]
+
+end
 
 lemma Complex.inv_re_add_im : (x + y * I)⁻¹ = (x - I * y) / (x ^ 2 + y ^ 2) := by
   rw [Complex.inv_def, div_eq_mul_inv]
   congr <;> simp [conj_ofReal, normSq] <;> ring
 
-lemma sq_add_sq_ne_zero (hy : y ≠ 0) : x ^ 2 + y ^ 2 ≠ 0 := by
+section
+variable (hy : y ≠ 0)
+
+include hy in
+lemma sq_add_sq_ne_zero   : x ^ 2 + y ^ 2 ≠ 0 := by
   linarith [sq_nonneg x, sq_pos_iff.mpr hy]
 
-lemma continuous_self_div_sq_add_sq (hy : y ≠ 0) :
+include hy in
+lemma continuous_self_div_sq_add_sq   :
     Continuous fun x => x / (x ^ 2 + y ^ 2) :=
   continuous_id.div (continuous_id.pow 2 |>.add continuous_const) (fun _ => sq_add_sq_ne_zero hy)
 
-lemma integral_self_div_sq_add_sq (hy : y ≠ 0) :
+include hy in
+lemma integral_self_div_sq_add_sq   :
     ∫ x in x₁..x₂, x / (x ^ 2 + y ^ 2) =
     Real.log (x₂ ^ 2 + y ^ 2) / 2 - Real.log (x₁ ^ 2 + y ^ 2) / 2 := by
   let f (x : ℝ) : ℝ := Real.log (x ^ 2 + y ^ 2) / 2
@@ -326,7 +319,8 @@ lemma integral_self_div_sq_add_sq (hy : y ≠ 0) :
   simp_rw [← e2.deriv]
   exact integral_deriv_eq_sub (fun _ _ => e2.differentiableAt) (e4.intervalIntegrable _ _)
 
-lemma integral_const_div_sq_add_sq (hy : y ≠ 0) :
+include hy in
+lemma integral_const_div_sq_add_sq   :
     ∫ x in x₁..x₂, y / (x ^ 2 + y ^ 2) = arctan (x₂ / y) - arctan (x₁ / y) := by
   nth_rewrite 1 [← div_mul_cancel₀ x₁ hy, ← div_mul_cancel₀ x₂ hy]
   simp_rw [← mul_integral_comp_mul_right, ← intervalIntegral.integral_const_mul,
@@ -336,7 +330,8 @@ lemma integral_const_div_sq_add_sq (hy : y ≠ 0) :
     ring
 
 set_option backward.isDefEq.respectTransparency false in
-lemma integral_const_div_self_add_im (hy : y ≠ 0) :
+include hy in
+lemma integral_const_div_self_add_im   :
     ∫ x : ℝ in x₁..x₂, A / (x + y * I) =
     A * (Real.log (x₂ ^ 2 + y ^ 2) / 2 - Real.log (x₁ ^ 2 + y ^ 2) / 2) -
     A * I * (arctan (x₂ / y) - arctan (x₁ / y)) := by
@@ -359,6 +354,8 @@ lemma integral_const_div_self_add_im (hy : y ≠ 0) :
   simp_rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_ofReal,
     integral_self_div_sq_add_sq hy, integral_const_div_sq_add_sq hy]
 
+end
+
 lemma integral_const_div_re_add_self (hx : x ≠ 0) :
     ∫ y : ℝ in y₁..y₂, A / (x + y * I) =
     A / I * (Real.log (y₂ ^ 2 + (-x) ^ 2) / 2 - Real.log (y₁ ^ 2 + (-x) ^ 2) / 2) -
@@ -377,7 +374,7 @@ lemma integral_const_div_re_add_self (hx : x ≠ 0) :
   have l2 : -x ≠ 0 := by rwa [neg_ne_zero]
   simp_rw [l1, integral_const_div_self_add_im l2]
 
-lemma ResidueTheoremAtOrigin' {z w c : ℂ}
+lemma ResidueTheoremAtOrigin'  {z w c} 
     (h1 : z.re < 0) (h2 : z.im < 0) (h3 : 0 < w.re) (h4 : 0 < w.im) :
     RectangleIntegral (fun s => c / s) z w = 2 * I * π * c := by
   simp only [RectangleIntegral, HIntegral, VIntegral, smul_eq_mul]
@@ -448,21 +445,9 @@ The simple-pole `residue`, `sumResiduesIn`, the `HasSimplePolesOn` scaffold, and
 residue theorem `RectangleIntegral'_eq_sumResiduesIn`. Extracted from `CH2.lean` as general,
 reusable contour-integration lemmas (see issue #1537). -/
 
-/-- Every pole of `f` in `s` is at most simple: the meromorphic order is `≥ -1` everywhere on `s`
-(no poles of order `≤ -2`).
 
-**Temporary scaffold.** The placeholder `residue` below (and Mathlib's current residue-theorem API)
-is only correct for simple poles, so this hypothesis is added to Lemma 5.1 / Proposition 5.2 and
-their sub-lemmas to make them provable with the present API. It holds in the intended applications
-(e.g. `ζ'/ζ`, whose poles are all simple) and is to be removed once Mathlib gains general
-higher-order residue support. -/
-def HasSimplePolesOn (f : ℂ → ℂ) (s : Set ℂ) : Prop :=
-  ∀ z ∈ s, (-1 : ℤ) ≤ meromorphicOrderAt f z
 
-lemma HasSimplePolesOn.mono {f : ℂ → ℂ} {s t : Set ℂ}
-    (h : HasSimplePolesOn f t) (hst : s ⊆ t) : HasSimplePolesOn f s := by
-  intro z hz
-  exact h z (hst hz)
+
 
 -- If two functions `f g : ℂ → ℂ` agree on a `codiscreteWithin R` full set, and `φ : ℝ → ℂ` is
 -- an analytic non-constant path mapping `[a,b]` into `R`, then `∫ f(φ x) dx = ∫ g(φ x) dx`.

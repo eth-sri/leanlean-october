@@ -5,6 +5,7 @@ Authors: Adam Benenson
 -/
 
 module
+public import Mathlib.Tactic
 
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.Smoothing
 public import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
@@ -44,25 +45,22 @@ open MeasureTheory Set
 
 noncomputable section
 
-section Volume
+
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
 
 /-- Borel σ-algebra on the model space `E`. -/
 local instance instMeasurableSpaceEL2CompactnessCompactness : MeasurableSpace E := borel E
 local instance instBorelSpaceEL2CompactnessCompactness : BorelSpace E := ⟨rfl⟩
-local instance instOpensMeasurableSpaceEL2CompactnessCompactness : OpensMeasurableSpace E := by
-  infer_instance
-local instance instMeasurableAddEL2CompactnessCompactness : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegEL2CompactnessCompactness : MeasurableNeg E := by
-  infer_instance
+
+
+
 
 variable {K : Set E}
 variable {ψ : E → ℝ}
 
 /-- The natural compact codomain for smoothing on `K` by a compactly supported kernel `ψ`. -/
-def Kψ : Set E :=
+def Kψ  :=
   K + tsupport ψ
 
 omit [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] in
@@ -83,19 +81,17 @@ def smoothOn (hKm : MeasurableSet K) (hψc : Continuous ψ) (hψcs : HasCompactS
 /-- `smoothFun` packaged as a `BoundedContinuousFunction` on the compact set `K + tsupport ψ`. -/
 def smoothBCF (hK : IsCompact K) (hKm : MeasurableSet K) (hψc : Continuous ψ)
     (hψcs : HasCompactSupport ψ)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
-    BoundedContinuousFunction (↥(Kψ (K := K) (ψ := ψ))) ℝ :=
+    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))  :=
   letI : CompactSpace ↥(Kψ (K := K) (ψ := ψ)) :=
     isCompact_iff_compactSpace.1 (isCompact_Kψ (K := K) (ψ := ψ) hK hψcs)
   BoundedContinuousFunction.mkOfCompact (smoothOn (E := E) (K := K) (ψ := ψ) hKm hψc hψcs u)
 
-@[simp] lemma smoothBCF_apply (hK : IsCompact K) (hKm : MeasurableSet K) (hψc : Continuous ψ)
-    (hψcs : HasCompactSupport ψ)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))
-    (x : ↥(Kψ (K := K) (ψ := ψ))) :
+@[simp] lemma smoothBCF_apply  hK   hKm   hψc 
+     hψcs 
+     u 
+     x  :
     smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x =
-      smoothFun (E := E) (K := K) ψ u x := by
-  rfl
+      smoothFun (E := E) (K := K) ψ u x := rfl
 
 omit [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] in
 lemma uniformContinuous_ψ (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) :
@@ -113,18 +109,11 @@ lemma uniformContinuous_ψ (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ)
   -- to the topological support.
   have hx' : ¬ dist (ψ x) 0 < ε := by
     simpa [Set.mem_compl_iff, Set.mem_ofPred_eq] using hx
-  have hxε : ε ≤ dist (ψ x) 0 := le_of_not_gt (by simpa [gt_iff_lt] using hx')
+  
   have hx0 : ψ x ≠ 0 := by
     intro hψ0
-    have : dist (ψ x) 0 = 0 := by simp [hψ0]
-    have : ε ≤ 0 := by simpa [this] using hxε
-    exact not_lt_of_ge this hε
-  have hx_supp : x ∈ Function.support ψ := by
-    simpa [Function.support] using hx0
-  have hx_tsupp : x ∈ tsupport ψ := by
-    have : x ∈ closure (Function.support ψ) := subset_closure hx_supp
-    simpa [tsupport] using this
-  exact hx_tsupp
+    simp_all
+  grind [Function.support, tsupport, closure]
 
 /-!
 The remainder of the compactness proof (Arzelà–Ascoli on the family `smoothBCF '' closedBall`)
@@ -134,7 +123,7 @@ We intentionally keep the helper lemmas above in this file so the final proof ca
 only reference re-usable bounds.
 -/
 
-end Volume
+
 
 end
 

@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Analysis.Complex.Norm
@@ -14,20 +15,24 @@ namespace OAI
 
 namespace SevenEighths.Detector
 
-theorem exists_small_increment (M : ℕ → ℝ) {n : ℕ} (hn : 0 < n)
-    {lo hi e : ℝ} (hlo : lo ≤ M 0) (hhi : M n ≤ hi)
+section
+variable (M : ℕ → ℝ) {n : ℕ} (hn : 0 < n) {lo hi base x e : ℝ} (he : 0 < e)
+
+include hn in
+theorem exists_small_increment      
+      (hlo : lo ≤ M 0) (hhi : M n ≤ hi)
     (hwidth : hi - lo ≤ n * e) :
     ∃ i < n, M (i + 1) - M i ≤ e := by
   by_contra h
   have hinc : ∀ i ∈ Finset.range n, e < M (i + 1) - M i := by
-    intro i hi
-    exact lt_of_not_ge (fun hle => h ⟨i, Finset.mem_range.mp hi, hle⟩)
+    grind
   have hs := Finset.sum_lt_sum_of_nonempty (Finset.nonempty_range_iff.mpr (Nat.ne_of_gt hn)) hinc
   simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul,
     Finset.sum_range_sub] at hs
   linarith
 
-theorem exists_grid_rounding {base x e : ℝ} (he : 0 < e) (hx : base ≤ x) :
+include he in
+theorem exists_grid_rounding     (hx : base ≤ x) :
     ∃ k : ℕ, base + e * k ≤ x ∧ x < base + e * k + e := by
   let k := ⌊(x - base) / e⌋₊
   have hnonneg : 0 ≤ (x - base) / e := div_nonneg (sub_nonneg.mpr hx) he.le
@@ -37,8 +42,9 @@ theorem exists_grid_rounding {base x e : ℝ} (he : 0 < e) (hx : base ≤ x) :
   have hhi' := (div_lt_iff₀ he).mp hhi
   refine ⟨k, ?_, ?_⟩ <;> dsimp [k] <;> nlinarith
 
-theorem exists_buffered_bin (M : ℕ → ℝ) {n : ℕ} (hn : 0 < n)
-    {e : ℝ} (he : 0 < e)
+include hn he in
+theorem exists_buffered_bin      
+       
     (hbound : ∀ j ≤ n, (51 / 100 : ℝ) ≤ M j ∧ M j ≤ 1)
     (hwidth : (49 / 100 : ℝ) ≤ n * e) :
     ∃ i < n, ∃ k : ℕ,
@@ -47,9 +53,9 @@ theorem exists_buffered_bin (M : ℕ → ℝ) {n : ℕ} (hn : 0 < n)
   obtain ⟨i, hi, hstep⟩ := exists_small_increment M hn (e := e)
     (hbound 0 (Nat.zero_le _)).1 (hbound n le_rfl).2 (by linarith)
   obtain ⟨k, hklo, hkhi⟩ := exists_grid_rounding he (hbound i hi.le).1
-  refine ⟨i, hi, k, ?_, hklo, hkhi, ?_⟩
-  · exact hklo.trans (hbound i hi.le).2
-  · linarith
+  grind
+
+end
 
 theorem simultaneous_saturation {U δ r m ε A B : ℝ}
     (hU : 1 < U) (hδ : (1 / 50 : ℝ) ≤ δ) (hε : 0 ≤ ε)
@@ -64,7 +70,7 @@ theorem simultaneous_saturation {U δ r m ε A B : ℝ}
   have hBcoarse : B ≤ U ^ (δ * m + ε) := by
     apply hupperB.trans
     exact Real.rpow_le_rpow_of_exponent_le hU.le
-      (by have h := mul_le_mul_of_nonneg_left (min_le_left m (1 - m)) hδ0; linarith)
+      (by bound)
   have hpupper : A * B ≤ U ^ (δ * r + ε + (δ * min m (1 - m) + ε)) := by
     rw [Real.rpow_add hU0]
     exact mul_le_mul hupperA hupperB hB (Real.rpow_nonneg hU0.le _)

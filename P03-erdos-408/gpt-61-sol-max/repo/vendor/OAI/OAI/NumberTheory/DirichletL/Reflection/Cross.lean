@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Reflection.Frozen
 
@@ -8,10 +9,13 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped BigOperators Classical
-noncomputable section
 
-theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (x : ι → ι → ℂ) (l : ι → ℂ) (a b : ℕ) (A B U : Finset ι)
+
+section
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] (x : ι → ι → ℂ) (l : ι → ℂ) (a b : ℕ)
+
+theorem ordered_cross_partition_on      
+           A B U 
     (hd : Disjoint A B) (hu : A ∪ B = U) :
     (∏ i ∈ U, ((∏ k ∈ U.erase i, x i k ^ (if i ∈ A then a else b)) * l i)) =
       (∏ i ∈ A, (∏ k ∈ A.erase i, x i k ^ a) * l i) *
@@ -20,24 +24,16 @@ theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
   have hA (i : ι) (hi : i ∈ A) :
       (∏ k ∈ U.erase i, x i k ^ (if i ∈ A then a else b)) =
         (∏ k ∈ A.erase i, x i k ^ a) * (∏ k ∈ B, x i k ^ a) := by
-    have hn : i ∉ B := fun hb => Finset.disjoint_left.mp hd hi hb
+    have hn : i ∉ B := Finset.disjoint_left.mp hd hi
     have he : U.erase i = A.erase i ∪ B := by
-      rw [← hu]
-      ext k
-      by_cases hk : k = i
-      · subst k; simp [hn]
-      · simp [hk]
+      aesop
     rw [he, ite_eq_left hi, Finset.prod_union (hd.mono_left (Finset.erase_subset _ _))]
   have hB (i : ι) (hi : i ∈ B) :
       (∏ k ∈ U.erase i, x i k ^ (if i ∈ A then a else b)) =
         (∏ k ∈ B.erase i, x i k ^ b) * (∏ k ∈ A, x i k ^ b) := by
     have hn : i ∉ A := fun ha => Finset.disjoint_left.mp hd ha hi
     have he : U.erase i = B.erase i ∪ A := by
-      rw [← hu]
-      ext k
-      by_cases hk : k = i
-      · subst k; simp [hn]
-      · simp [hk, or_comm]
+      grind
     rw [he, ite_eq_right hn, Finset.prod_union (hd.symm.mono_left (Finset.erase_subset _ _))]
   have hpA : (∏ i ∈ A, ((∏ k ∈ U.erase i,
       x i k ^ (if i ∈ A then a else b)) * l i)) =
@@ -69,8 +65,8 @@ theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
       simp only [Finset.prod_mul_distrib]
       ring
 
-theorem ordered_cross_frozen_partition {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (x : ι → ι → ℂ) (l : ι → ℂ) (a b : ℕ) (R P F : Finset ι)
+theorem ordered_cross_frozen_partition      
+           R P F 
     (hRP : Disjoint R P) (hF : Disjoint (R ∪ P) F)
     (hu : (R ∪ P) ∪ F = Finset.univ) :
     (∏ i ∈ R ∪ P, (∏ k ∈ Finset.univ.erase i,
@@ -85,13 +81,9 @@ theorem ordered_cross_frozen_partition {ι : Type*} [Fintype ι] [DecidableEq ι
         x i k ^ (if i ∈ R then a else b))*ll i := by
     apply Finset.prod_congr rfl
     intro i hi
-    have hn : i ∉ F := fun hf => Finset.disjoint_left.mp hF hi hf
+    have hn : i ∉ F := Finset.disjoint_left.mp hF hi
     have he : Finset.univ.erase i = (R ∪ P).erase i ∪ F := by
-      rw [← hu]
-      ext k
-      by_cases hk : k = i
-      · subst k; simp [hn]
-      · simp [hk,or_assoc]
+      grind
     rw [he,Finset.prod_union (hF.mono_left (Finset.erase_subset _ _))]
     dsimp [ll]
     ring
@@ -106,6 +98,8 @@ theorem ordered_cross_frozen_partition {ι : Type*} [Fintype ι] [DecidableEq ι
     simp [ll,hn]
 
 end
+
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

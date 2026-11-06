@@ -8,16 +8,16 @@ public import OAI.NumberTheory.DirichletL.Detector.RadialIdentity
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open ProbeCompleted ProbeRow CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
-theorem physical_spectral_coefficient_scale (S : Finset (Ideal O)) (D I J : Ideal O)
-    (η : HeckeFamily.Character) (C : CalibrationData) (s : O) (hs : Supported (Ideal.span {s}))
-    (hI : Supported I) (hJ : Supported J) (hsf : Squarefree I)
-    (hcop : IsCoprime C.generator (completedIndex I J)) (X : ℝ) (hX : 0<X) (t : ℂ) (H : O) :
+
+theorem physical_spectral_coefficient_scale  S   D I J 
+     η   C   s   hs 
+     hI   hJ  (hsf : Squarefree I)
+    (hcop : IsCoprime C.generator (completedIndex I J))  X  (hX : 0<X)  t   H  :
     let A := completedIndex I J
     let hA := supportedElement_ne_zero A (supported_completed _ _
       ((supported_span_primaryGenerator_iff I).mpr hI) ((supported_span_primaryGenerator_iff J).mpr hJ))
@@ -52,6 +52,6 @@ theorem physical_spectral_coefficient_scale (S : Finset (Ideal O)) (D I J : Idea
   convert hh using 1 <;> ring
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

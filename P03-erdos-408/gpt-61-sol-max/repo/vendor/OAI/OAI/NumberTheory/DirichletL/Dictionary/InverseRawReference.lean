@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawInputBound
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawInitialEnergy
@@ -10,7 +11,7 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawCompact
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap Topology
 open Filter
@@ -24,10 +25,14 @@ open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawInitia
 open DetectorDictionaryInverseRawInput DetectorDictionaryInverseRawInputBound
 open DetectorDictionaryInverseRawConjugateGates DetectorDictionaryInverseRawRealRadial
 open DetectorDictionaryInverseRawGeometry IdealMobiusDivisorSum
-local notation "O"=>HeckeFamily.O
 
-theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
-    (hs:Function.support W⊆Set.Icc a b)(hc:0<c)(hκ:0<κ):
+
+section
+variable (W:𝓢(ℝ,ℂ)) (a b c κ:ℝ) (ha:0<a) (hb:0<b) (hs:Function.support W⊆Set.Icc a b) (hc:0<c) (hκ:0<κ)
+include W a b c κ ha hb hs hc hκ
+
+theorem raw_reference_large     
+       :
     ∃J:ℕ,∀data:RowData,∃C H₀:ℝ,0<C ∧ 1<H₀ ∧
       ∀(t H D:ℝ),H₀≤H→1≤D→D^(1+c)≤H→∀rows:Finset NonzeroElement,
       (∀u∈rows,((Ideal.span {u.val}).absNorm:ℝ)≤H)→
@@ -37,7 +42,7 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
   obtain ⟨η,τ,π,eps,hη,hτ,hπ,heps,hηone,hηgap,hτgap,hcost⟩:=
     raw_fixed_reserves c (κ/2) hc (by positivity)
   let gap:=capacityGap c/4
-  have hgap:0<gap:=by dsimp [gap];exact div_pos (capacityGap_pos c hc) (by norm_num)
+  have hgap:0<gap:=by bound
   have hηsmall:η≤gap/50:=by dsimp [gap];nlinarith
   have hτsmall:τ≤gap/50:=by dsimp [gap];nlinarith
   let Wbar:=SecondPassIntegration.conjugateProfile W
@@ -63,7 +68,7 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
     exact (hs ((mul_ne_zero_iff.mp hx).1)).2
   have hraw:=raw_rows_le_initial Φ hΦ hone data (childLogTest W t) H D c b Btree 2 0 0
     hHp hD hc hcapacity hb.le hWt rows hrows
-  have hterm (j:Ideal O)(hj:j∈T):
+  have hterm (j:Ideal HeckeFamily.O)(hj:j∈T):
       smoothedEnergy Φ H (initialFunction data (childLogTest W t) H b Btree 2 D 0 0 j)≤
         C*H^(1+15*η+π+eps+κ/4)*(1+‖t‖)^(2*J):=by
     obtain ⟨hrlo,hr₁,hr₂,hex,hrcap,hDH⟩:=hgeom D hD hcapacity j hj
@@ -96,14 +101,12 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
       funext x
       simp [twistedProfile,HeckeDyadic.shift]
     rw [hf,smoothedEnergy_eq_complex_norm Φ hΦ hreal H hHpos]
-    have he: (∑'u:O,Φ (‖eisEmbedding u‖^2/H)*
+    have he: (∑'u:HeckeFamily.O,Φ (‖eisEmbedding u‖^2/H)*
         (‖originalTotalPolynomial F 1 (idealCoeff (deletedBase data)).toMonoidHom
           (fun _=>1) (childLogTest W t) H r 0 u‖^2:ℝ))=
-        (∑'u:O,Φ (‖eisEmbedding u‖^2/H)*
+        (∑'u:HeckeFamily.O,Φ (‖eisEmbedding u‖^2/H)*
         (‖((H^(-r/2):ℝ):ℂ)*SecondPassArithmetic.inputConjugateRow
-          (poolPrimary F) (poolPrimary_good F (InitialMeanSquare.outsideSquarefree_admissible
-            (reflectionExcludedPrimes (deletedPeriod (basePeriod data))) Dpool
-            (reflectionExcludedPrimes_bad (deletedPeriod (basePeriod data)))))
+          (poolPrimary F) (poolPrimary_good F ((by assumption)))
           Finset.univ (elementCharacter (conjugateIdealCharacter
             (idealCoeff (deletedBase data)).toMonoidHom)) 1 1 1
           (initialTest (poolPrimary F) (fun _=>1) (childLogTest Wbar (-t)) H r) u‖^2:ℝ)):=by
@@ -133,8 +136,8 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
       nlinarith [mul_le_mul_of_nonneg_left hh
         (show 0≤Ctotal*(1+‖t‖)^(2*J) by dsimp [Ctotal];positivity)]
 
-theorem raw_reference_moment (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
-    (hs:Function.support W⊆Set.Icc a b)(hc:0<c)(hκ:0<κ):
+theorem raw_reference_moment     
+       :
     ∃J:ℕ,∀data:RowData,∃C:ℝ,0<C ∧ ∀t:ℝ,
       RawMoment data (childLogTest W t) c κ (C*(1+‖t‖)^(2*J)) := by
   obtain ⟨J,hlarge⟩:=raw_reference_large W a b c κ ha hb hs hc hκ
@@ -146,8 +149,10 @@ theorem raw_reference_moment (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
   refine ⟨C+C₀,add_pos hC hC₀,?_⟩
   exact hcomplete data c κ C J hc.le hκ.le hC.le hlarge
 
+end
+
 end SevenEighths.DetectorDictionaryInverseRawReference
 
-end
+
 
 end OAI

@@ -21,18 +21,17 @@ namespace Erdos821.Blueprint.Analytic
 noncomputable section
 attribute [local instance] Classical.propDecidable
 
-def L (x : ℝ) : ℝ := Real.log x
-def T (x : ℝ) : ℝ := Real.log (L x)
-def W (x : ℝ) : ℝ := Real.exp (Real.sqrt (L x))
-def e (t : ℝ) : ℂ := Complex.exp (2 * Real.pi * t * Complex.I)
-def mellin (n t : ℝ) : ℂ := Complex.exp (Complex.I * t * Real.log n)
-def rough (y : ℝ) (n : ℕ) : Prop :=
-  0 < n ∧ ∀ p : ℕ, p.Prime → p ∣ n → y < (p : ℝ)
+def L (x : ℝ)  := Real.log x
+def T (x : ℝ)  := Real.log (L x)
 
-def dp (s : Finset ℕ) (c : ℕ → ℂ) (t : ℝ) : ℂ :=
+def e (t : ℝ)  := Complex.exp (2 * Real.pi * t * Complex.I)
+def mellin (n t : ℝ)  := Complex.exp (Complex.I * t * Real.log n)
+
+
+def dp (s : Finset ℕ) (c : ℕ → ℂ) (t : ℝ)  :=
   ∑ n ∈ s, c n * mellin n t
 
-def sqNorm (s : Finset ℕ) (c : ℕ → ℂ) : ℝ := ∑ n ∈ s, ‖c n‖ ^ 2
+def sqNorm (s : Finset ℕ) (c : ℕ → ℂ)  := ∑ n ∈ s, ‖c n‖ ^ 2
 
 structure Geometry where
   a : ℝ
@@ -57,11 +56,11 @@ structure PrimeGroups where
   prime : ∀ g p, p ∈ primes g → p.Prime
   disjoint : ∀ g h, g ≠ h → Disjoint (primes g) (primes h)
 
-def PrimeGroups.big (G : PrimeGroups) : Finset (Fin G.size) := Finset.univ \ G.small
-def mass (G : PrimeGroups) (g : Fin G.size) : ℝ := ∑ p ∈ G.primes g, 1 / (p : ℝ)
-def mu (G : PrimeGroups) (g : Fin G.size) (p : ℕ) : ℝ := 1 / (mass G g * p)
+def PrimeGroups.big (G : PrimeGroups)  := Finset.univ \ G.small
+def mass (G : PrimeGroups) (g : Fin G.size)  := ∑ p ∈ G.primes g, 1 / (p : ℝ)
+def mu (G : PrimeGroups) (g : Fin G.size) (p : ℕ)  := 1 / (mass G g * p)
 
-def Admissible (P : Geometry) (x : ℝ) (G : PrimeGroups) : Prop :=
+def Admissible (P : Geometry) (x : ℝ) (G : PrimeGroups)  :=
   (P.c₀ * T x ≤ G.small.card ∧ (G.small.card : ℝ) ≤ P.C₀ * T x) ∧
   (P.c₀ * T x ≤ G.big.card ∧ (G.big.card : ℝ) ≤ P.C₀ * T x) ∧
   (∀ g, P.vmin ≤ mass G g ∧ mass G g ≤ P.vmax) ∧
@@ -71,54 +70,54 @@ def Admissible (P : Geometry) (x : ℝ) (G : PrimeGroups) : Prop :=
   (∀ g, g ∈ G.big → ∃ lo hi : ℝ, ∀ p : ℕ,
     p ∈ G.primes g ↔ p.Prime ∧ lo ≤ (p : ℝ) ∧ (p : ℝ) ≤ hi)
 
-abbrev Label (G : PrimeGroups) (g : Fin G.size) := {p : ℕ // p ∈ G.primes g}
+abbrev Label (G : PrimeGroups) (g ) := {p : ℕ // p ∈ G.primes g}
 abbrev Tuple (G : PrimeGroups) (k : Fin G.size → ℕ) := ∀ g, Fin (k g) → Label G g
 
-def product (G : PrimeGroups) (k : Fin G.size → ℕ) (z : Tuple G k) : ℕ :=
+def product (G ) (k ) (z : Tuple G k)  :=
   ∏ g, ∏ j, (z g j).val
 
-def tupleWeight (G : PrimeGroups) (k : Fin G.size → ℕ) (z : Tuple G k) : ℝ :=
+def tupleWeight (G ) (k ) (z : Tuple G k)  :=
   ∏ g, ∏ j, mu G g (z g j).val
 
-def expect (G : PrimeGroups) (k : Fin G.size → ℕ) (f : Tuple G k → ℂ) : ℂ :=
+def expect (G ) (k ) (f : Tuple G k → ℂ)  :=
   ∑ z, (tupleWeight G k z : ℂ) * f z
 
-def tupleNorm (G : PrimeGroups) (k : Fin G.size → ℕ) (f : Tuple G k → ℂ) : ℝ :=
+def tupleNorm (G ) (k ) (f : Tuple G k → ℂ)  :=
   Real.sqrt (∑ z, tupleWeight G k z * ‖f z‖ ^ 2)
 
-def rho (G : PrimeGroups) (k : Fin G.size → ℕ) (n : ℕ) : ℝ :=
+def rho (G : PrimeGroups) (k : Fin G.size → ℕ) (n : ℕ)  :=
   ∑ z, if product G k z = n then tupleWeight G k z else 0
 
-def bigSlots (G : PrimeGroups) (k : Fin G.size → ℕ) (m : ℕ) : Prop :=
+def bigSlots (G : PrimeGroups) (k : Fin G.size → ℕ) (m : ℕ)  :=
   (∑ g, k g) > 0 ∧ ∀ g, k g ≤ m ∧ (g ∈ G.small → k g = 0)
 
-abbrev CharacterIndex (Q : ℕ) := (r : Fin Q) × DirichletCharacter ℂ (r.val + 1)
+abbrev CharacterIndex (Q ) := (r : Fin Q) × DirichletCharacter ℂ (r.val + 1)
 
-def primitiveCharacters (Q : ℕ) : Finset (CharacterIndex Q) :=
+def primitiveCharacters (Q ) : Finset (CharacterIndex Q) :=
   Finset.univ.filter fun χ => χ.2.IsPrimitive
 
-def charValue {Q : ℕ} (χ : CharacterIndex Q) (n : ℕ) : ℂ := χ.2 (n : ZMod (χ.1.val + 1))
+def charValue {Q } (χ : CharacterIndex Q) (n : ℕ)  := χ.2 (n : ZMod (χ.1.val + 1))
 
-def cell (h : ℝ) (n : ℕ) : ℤ := ⌊Real.log n / h⌋
-def cellMass (G : PrimeGroups) (k : Fin G.size → ℕ) (h : ℝ) (j : ℤ) : ℝ :=
+def cell (h : ℝ) (n : ℕ)  := ⌊Real.log n / h⌋
+def cellMass (G : PrimeGroups) (k : Fin G.size → ℕ) (h : ℝ) (j : ℤ)  :=
   ∑ z, if cell h (product G k z) = j then tupleWeight G k z else 0
 
 def cellKernel (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ) (h ξ : ℝ)
-    (D X : ℕ) : ℂ :=
+    (D X : ℕ)  :=
   if cell h D = cell h X ∧ ξ ≤ cellMass G k h (cell h X) then
     (cellMass G k h (cell h X) : ℂ)⁻¹ *
       ∑ χ ∈ primitiveCharacters Q, star (charValue χ D) * charValue χ X
   else 0
 
 /-- §3, eq. ideal-product-atom, including all zero-probability fibers. -/
-abbrev product_atom_bound_statement : Prop :=
+abbrev product_atom_bound_statement  :=
   ∀ (P : Geometry) (m : ℕ),
     ∀ᶠ x in atTop, ∀ G : PrimeGroups, Admissible P x G →
       ∀ k, bigSlots G k m → ∀ n : ℕ, 0 < n →
       rho G k n ≤ L x ^
         (P.C₀ * (Real.log (Nat.factorial m) + m * Real.log (max 1 P.vmin⁻¹))) / n
 /-- §3, Lemma integer bilinear estimate. Origins N and M are unrestricted. -/
-abbrev integer_bilinear_statement : Prop :=
+abbrev integer_bilinear_statement  :=
   ∀ (C : ℝ) (_ : 0 < C),
     ∃ K : ℝ, 0 < K ∧ ∀ (U V N M α β : ℝ) (u : ℤ) (r : ℕ)
       (s t : Finset ℤ) (a b : ℤ → ℂ),
@@ -129,12 +128,12 @@ abbrev integer_bilinear_statement : Prop :=
       ‖∑ n ∈ s, ∑ v ∈ t, a n * b v * e (α * n * v)‖ ≤
         K * Real.sqrt (∑ n ∈ s, ‖a n‖ ^ 2) * Real.sqrt (∑ v ∈ t, ‖b v‖ ^ 2) *
           Real.sqrt (U + (1 + V / r) * (U + r * Real.log (2 * r)))
-abbrev cell_kernel_sup_statement : Prop :=
+abbrev cell_kernel_sup_statement  :=
   ∀ (G : PrimeGroups) (k : Fin G.size → ℕ)
     (Q : ℕ) (h ξ : ℝ) (_ : 0 < ξ) (D X : ℕ),
     ‖cellKernel G k Q h ξ D X‖ ≤ (Q : ℝ) ^ 2 / ξ
-def comparisonError (G : PrimeGroups) (a b : Fin G.size → ℕ)
-    (Q : ℕ) (h ξ α ζ : ℝ) (f : Tuple G b → ℂ) (g : Tuple G a → ℂ) : ℂ :=
+def comparisonError (G ) (a b )
+    (Q : ℕ) (h ξ α ζ : ℝ) (f : Tuple G b → ℂ) (g : Tuple G a → ℂ)  :=
   expect G b fun XB => expect G a fun XA =>
     star (f XB) * g XA *
       (mellin (product G a XA * product G b XB) ζ * e (α * product G a XA * product G b XB) -
@@ -144,7 +143,7 @@ def comparisonError (G : PrimeGroups) (a b : Fin G.size → ℕ)
         mellin (product G a DA * product G b DB) ζ * e (α * product G a DA * product G b DB))
 
 /-- §3 comparison kernel; Q is rounded down, h and ξ are exact real powers. -/
-abbrev comparison_kernel_statement : Prop :=
+abbrev comparison_kernel_statement  :=
   ∀ (P : Geometry) (m : ℕ) (A C₄ : ℝ)
     (_ : 0 < A) (_ : 0 ≤ C₄),
     ∃ qexp hexp ξexp : ℝ, 0 < qexp ∧ 0 < hexp ∧ 0 < ξexp ∧
@@ -156,28 +155,18 @@ abbrev comparison_kernel_statement : Prop :=
             (L x ^ (-ξexp)) α ζ f g‖ ≤ L x ^ (-A) * tupleNorm G b f * tupleNorm G a g
 -- `inclusion_exclusion` is proved in `Erdos821/Leaves/`.
 
-def omegaGroup (G : PrimeGroups) (g : Fin G.size) (n : ℕ) : ℕ :=
-  ((G.primes g).filter fun p => p ∣ n).card
-def omega (G : PrimeGroups) (n : ℕ) : ℕ := ∑ g, omegaGroup G g n
+
+
 
 -- `mark_sup` is proved in `Erdos821/Leaves/`.
 
-structure Endpoint where
-  alpha : ℕ → ℂ
-  residual : ℕ → ℂ
-  modulus : ℕ
-  positive : 0 < modulus
-  chi : DirichletCharacter ℂ modulus
-  sigma₀ : ℝ
-  sigma₁ : ℝ
-  lo : ℝ
-  hi : ℝ
 
-def CutoffBound (x C lo hi : ℝ) (Ψ : ℝ → ℂ) (bounds : ℕ → ℝ) : Prop :=
+
+def CutoffBound (x C lo hi : ℝ) (Ψ : ℝ → ℂ) (bounds : ℕ → ℝ)  :=
   ContDiff ℝ ∞ Ψ ∧ Function.support Ψ ⊆ Set.Icc lo hi ∧
   ∀ j y, ‖iteratedDeriv j Ψ y‖ ≤ bounds j * L x ^ (C * (j + 1))
 
-def primePolynomial (s : Finset ℕ) (b : ℕ → ℂ) (t : ℝ) : ℂ :=
+def primePolynomial (s : Finset ℕ) (b : ℕ → ℂ) (t : ℝ)  :=
   dp s (fun p => b p / (p : ℂ)) t
 def occupied (s : Finset ℕ) (b : ℕ → ℂ) (threshold Tmax : ℝ) : Set ℤ :=
   {j | ∃ t : ℝ, (j : ℝ) ≤ t ∧ t ≤ (j : ℝ) + 1 ∧

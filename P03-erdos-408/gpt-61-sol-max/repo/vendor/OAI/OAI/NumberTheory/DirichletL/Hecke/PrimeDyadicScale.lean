@@ -7,13 +7,17 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 
 namespace OAI
 
-noncomputable section
+
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic HeckeDeletionBounds HeckeLogarithmic
 
-theorem binCost_le_log (χ : Character) (B U H η : ℝ)
-    (hB : 0≤B) (hU : 2≤U) (hQ : (χ.modulus.absNorm : ℝ)≤U)
-    (hheight : (3+|H|)^2≤U^η) :
+section
+variable (χ : Character) (B U H η ε : ℝ) (hB : 0≤B) (hU : 2≤U) (hQ : (χ.modulus.absNorm : ℝ)≤U) (hη : 0≤η) (hε : 0<ε) (hheight : (3+|H|)^2≤U^η)
+
+include hB hU hQ hheight in
+theorem binCost_le_log    
+         
+      :
     binCost B χ H ≤ (B*(2+η)+localBound (1/2))*Real.log U := by
   have hUp : 0<U := by linarith
   have hcp : 0<complexity χ H := (Real.exp_pos 1).trans_le (complexity_ge_exp χ H)
@@ -38,20 +42,22 @@ theorem binCost_le_log (χ : Character) (B U H η : ℝ)
         (mul_le_mul_of_nonneg_left hrlog (localBound_pos (by norm_num : (0 : ℝ)<1/2)).le)
     _ = _ := by ring
 
-theorem binCost_le_power (χ : Character) (B U H η ε : ℝ)
-    (hB : 0≤B) (hU : 2≤U) (hQ : (χ.modulus.absNorm : ℝ)≤U)
-    (hη : 0≤η) (hε : 0<ε) (hheight : (3+|H|)^2≤U^η) :
+include hB hU hQ hη hε hheight in
+theorem binCost_le_power    
+         
+          :
     binCost B χ H ≤ ((B*(2+η)+localBound (1/2))/ε)*U^ε := by
   apply (binCost_le_log χ B U H η hB hU hQ hheight).trans
-  have hc : 0≤B*(2+η)+localBound (1/2) := by
-    exact add_nonneg (mul_nonneg hB (by linarith))
+  have hc : 0≤B*(2+η)+localBound (1/2) := add_nonneg (mul_nonneg hB (by linarith))
       (localBound_pos (by norm_num : (0 : ℝ)<1/2)).le
   have hh := mul_le_mul_of_nonneg_left
     (Real.log_le_rpow_div (by linarith : 0≤U) hε) hc
   convert hh using 1 ; ring
 
+end
+
 end SevenEighths.HeckePrimeDyadic
 
-end
+
 
 end OAI

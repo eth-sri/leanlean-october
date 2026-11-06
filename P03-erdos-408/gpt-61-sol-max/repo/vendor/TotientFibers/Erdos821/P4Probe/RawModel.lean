@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P4Probe.RawKernel
 
@@ -17,8 +18,8 @@ def rawFamily (F : FixedData) (P : PrimeGroups) (J m : ℕ) : Family F P J m whe
   count := 1
   pattern := fun _ => rawPattern P J F.ell m
 
-lemma rawModel_idealRaw_eq (F : FixedData) (P : PrimeGroups) (J m : ℕ)
-    (hV : ∀ g, 0 < P.V g) (θ ζ : ℝ) (a b : P.BigLabels (J + F.ell)) :
+lemma rawModel_idealRaw_eq  F   P   J m 
+    (hV : ∀ g, 0 < P.V g)  θ ζ   a b  :
     ((rawFamily F P J m).model 1 ζ).idealRaw θ a b = rawPrefixKernel P J F.ell θ ζ a b := by
   have hcoef (u : P.BigAux J) : (rawPattern P J F.ell m).coefficient a b u = 1 := rfl
   have hs : (∑ u : P.BigAux J, ((rawPattern P J F.ell m).bigAuxMass u : ℂ)) = 1 := by
@@ -31,16 +32,10 @@ lemma rawModel_idealRaw_eq (F : FixedData) (P : PrimeGroups) (J m : ℕ)
     rw [← Finset.sum_mul, ← Finset.sum_mul, ← Finset.sum_mul, hs, one_mul]
   · simp [hp]
 
-lemma rawModel_normBound (F : FixedData) (P : PrimeGroups) (J m : ℕ)
-    (hV : ∀ g, 0 < P.V g) (θ ζ : ℝ) :
+lemma rawModel_normBound  F   P   J m 
+    (hV : ∀ g, 0 < P.V g)  θ ζ  :
     NormBound (P.idealMass (M := J + F.ell))
-      (((rawFamily F P J m).model 1 ζ).idealRaw θ) 1 := by
-  have hk : (((rawFamily F P J m).model 1 ζ).idealRaw θ) =
-      rawPrefixKernel P J F.ell θ ζ := by
-    funext a b
-    exact rawModel_idealRaw_eq F P J m hV θ ζ a b
-  rw [hk]
-  exact rawPrefixKernel_normBound P J F.ell hV θ ζ
+      (((rawFamily F P J m).model 1 ζ).idealRaw θ) 1 := Eq.mpr (congrArg (fun _a => Erdos821.Blueprint.Graph.NormBound P.idealMass _a 1) (funext fun a => funext (Erdos821.P4Probe.rawModel_idealRaw_eq F P J m hV θ ζ a))) (Erdos821.P4Probe.rawPrefixKernel_normBound P J F.ell hV θ ζ)
 
 end
 end Erdos821.P4Probe

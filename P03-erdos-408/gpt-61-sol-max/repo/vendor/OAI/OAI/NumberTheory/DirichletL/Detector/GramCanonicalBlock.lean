@@ -12,22 +12,22 @@ open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
 open ConcreteTraceCRT UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def canonicalLatticeBlock (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
-    (C : SupportedIdeal) (k : GramFrequency) (d : O) (W : ℝ→ℂ) (U : SchwartzMap ℝ ℂ)
-    (v T N : ℝ) : ℂ :=
-  ∑'m : O×O,canonicalJoint S hS σ C k (d*m.1) (d*m.2)*
+    (C : SupportedIdeal) (k : GramFrequency) (d : ActualEisensteinCubic.O) (W : ℝ→ℂ) (U : SchwartzMap ℝ ℂ)
+    (v T N : ℝ)  :=
+  ∑'m : ActualEisensteinCubic.O×ActualEisensteinCubic.O,canonicalJoint S hS σ C k (d*m.1) (d*m.2)*
     shellProfile W v U T (‖eisEmbedding m.1‖^2/N) (‖eisEmbedding m.2‖^2/N)
 
-theorem canonical_nonexceptional_block (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
+theorem canonical_nonexceptional_block  A B  (hA : 2<A)  a₀ b₀ 
     (ha₀ : 0<a₀) (hab : a₀<b₀) :
     ∃(J : ℕ)(H : Finset (ℕ×ℕ)),
       ∀(W : ℝ→ℂ)(_hs : Function.support W⊆Set.Icc a₀ b₀)(_hW : ContDiff ℝ ∞ W),
       ∃K : ℝ,0<K ∧ ∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
       (C : SupportedIdeal)(k : GramFrequency),¬ExceptionalFrequency S hS C k→
-      ∀(d : O)(U : SchwartzMap ℝ ℂ)(v T N : ℝ),0≤T→0<N→
+      ∀(d : ActualEisensteinCubic.O)(U : SchwartzMap ℝ ℂ)(v T N : ℝ),0≤T→0<N→
         ‖canonicalLatticeBlock S hS σ C k d W U v T N‖≤
         K*H.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J/(1+T)^B*
           (Ideal.absNorm C.val:ℝ)*N^2*

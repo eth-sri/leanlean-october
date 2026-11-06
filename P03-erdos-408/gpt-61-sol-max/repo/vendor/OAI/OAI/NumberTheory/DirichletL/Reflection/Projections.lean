@@ -10,26 +10,26 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 
 variable {φ σ : Type*} [Fintype φ] [Fintype σ]
-variable {a c : Eis} {mode : Bool}
+variable {a c : ActualEisensteinCubic.O} {mode : Bool}
 
-def actualRowPhase (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (jF : φ → ℕ)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (u : Eisˣ) (m : ℕ) : ℂ :=
+def actualRowPhase (F : PrimeFamily φ) (K ) (hK : Admissible K) (jF : φ → ℕ)
+    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (u : ActualEisensteinCubic.Oˣ) (m : ℕ)  :=
   sourceRowPhase s (F.sum (PrimeFamily.residual K hK)).generator_ne_zero
     (F.sum (PrimeFamily.residual K hK)).generator_good (Sum.elim jF (fun _ => 1))
     (Finset.univ.image Sum.inr) (Finset.univ.image Sum.inl) u m
 
 def actualSlotPhase (F : PrimeFamily φ) (S : PrimeFamily σ) (jF : φ → ℕ)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (u : Eisˣ) (m : ℕ) : ℂ :=
+    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (u : ActualEisensteinCubic.Oˣ) (m : ℕ)  :=
   sourceSlotPhase s (F.sum S).generator_ne_zero (F.sum S).generator_good
     (Sum.elim jF (fun _ => 0)) (Finset.univ.image Sum.inr) (Finset.univ.image Sum.inl) u m
 
 omit [Fintype σ] in
-theorem sourceRowPhase_eq_actual (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : PrimeFamily σ) (jF : φ → ℕ)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (u : Eisˣ) (m : ℕ) :
+theorem sourceRowPhase_eq_actual  F   K   hK 
+     S   jF 
+    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))  u   m  :
     sourceRowPhase s (F.reflected K hK S).generator_ne_zero
       (F.reflected K hK S).generator_good (reflectedExponent jF)
       (residualIndices φ (PrimeIndex K) σ) (frozenIndices φ (PrimeIndex K) σ) u m =
@@ -59,9 +59,9 @@ theorem sourceRowPhase_eq_actual (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admi
   simpa only [actualRowPhase,residualIndices,frozenIndices,Finset.image_image,
     Function.comp_def,f,Sum.elim_inl,Sum.elim_inr] using hh
 
-theorem sourceSlotPhase_eq_actual (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : PrimeFamily σ) (jF : φ → ℕ)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (u : Eisˣ) (m : ℕ) :
+theorem sourceSlotPhase_eq_actual  F   K   hK 
+     S   jF 
+    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))  u   m  :
     sourceSlotPhase s (F.reflected K hK S).generator_ne_zero
       (F.reflected K hK S).generator_good (reflectedExponent jF)
       (slotIndices φ (PrimeIndex K) σ) (frozenIndices φ (PrimeIndex K) σ) u m =

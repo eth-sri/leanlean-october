@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.BigAverage
 public import Erdos821.P3Clean.ActiveSymmetry
@@ -18,7 +19,7 @@ open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
-def actSmall {M : ℕ} (p : SmallPermutations P M) (a : SmallLabels P M) : SmallLabels P M :=
+def actSmall {M } (p : SmallPermutations P M) (a : SmallLabels P M) : SmallLabels P M :=
   fun g i => a g (p g i)
 
 theorem act_joinPermutations {M : ℕ} (p : SmallPermutations P M) (q : P.BigPermutations M)
@@ -43,7 +44,7 @@ def smallCoordinatePermEquiv {M B : ℕ} (p : SmallPermutations P M) :
     · funext g i; simp [actSmall]
     · rfl
 
-theorem coordinateMass_actSmall (F : FixedData) (J n B : ℕ)
+theorem coordinateMass_actSmall  F   J n B 
     (p : SmallPermutations P (J + F.ell)) (a : CoordinateState P (J + F.ell) B) :
     coordinateMass F J n B (smallCoordinatePermEquiv p a) = coordinateMass F J n B a := by
   rw [coordinateMass_eq_memoryMass, coordinateMass_eq_memoryMass]
@@ -55,14 +56,14 @@ theorem coordinateMass_actSmall (F : FixedData) (J n B : ℕ)
   simp only [permuteActive, act_joinPermutations] at h
   exact h
 
-def averageSmallCoordinateKernel {M B : ℕ}
-    (K : CoordinateState P M B → CoordinateState P M B → ℂ) (a b : CoordinateState P M B) : ℂ :=
+def averageSmallCoordinateKernel {M B }
+    (K : CoordinateState P M B → CoordinateState P M B → ℂ) (a b : CoordinateState P M B)  :=
   smallSymmetryFactor P M * ∑ p : SmallPermutations P M, ∑ q : SmallPermutations P M,
     K (smallCoordinatePermEquiv p a) (smallCoordinatePermEquiv q b)
 
-theorem normBound_averageSmallCoordinateKernel (F : FixedData) (J n B : ℕ)
+theorem normBound_averageSmallCoordinateKernel  F   J n B 
     (K : CoordinateState P (J + F.ell) B → CoordinateState P (J + F.ell) B → ℂ)
-    (C : ℝ) (hK : NormBound (coordinateMass F J n B) K C) :
+     C  (hK : NormBound (coordinateMass F J n B) K C) :
     NormBound (coordinateMass F J n B) (averageSmallCoordinateKernel K) C := by
   let T := SmallPermutations P (J + F.ell) × SmallPermutations P (J + F.ell)
   let w : T → ℝ := fun _ => (Fintype.card T : ℝ)⁻¹
@@ -88,8 +89,8 @@ theorem normBound_averageSmallCoordinateKernel (F : FixedData) (J n B : ℕ)
   rw [he] at h
   exact h
 
-theorem averageSmallCoordinateKernel_clean (A : Model F P J m) (n : ℕ) (theta : ℝ) (i : Fin n)
-    {B : ℕ} (a b : CoordinateState P (J + F.ell) B) :
+theorem averageSmallCoordinateKernel_clean (A : Model F P J m)  n   theta   i 
+     {B}   a b  :
     averageSmallCoordinateKernel (bigAveragedRawKernel A n theta (edgeForward i) (B := B)) a b =
       cleanEdgeKernel A n 1 theta i ((cutoffStateCoordinates P (J + F.ell) B).symm a).val
         ((cutoffStateCoordinates P (J + F.ell) B).symm b).val := by
@@ -111,12 +112,6 @@ theorem averageSmallCoordinateKernel_clean (A : Model F P J m) (n : ℕ) (theta 
   apply Finset.sum_congr rfl
   intro p _
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro q _
-  apply Finset.sum_congr rfl
-  intro r _
-  apply Finset.sum_congr rfl
-  intro s _
   ring
 
 end Erdos821.P3Clean

@@ -11,9 +11,9 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma prime_dvd_cube_mul (P H A : Ideal Eis) (hP : Prime P) :
+
+lemma prime_dvd_cube_mul (P H A : Ideal ActualEisensteinCubic.O) (hP : Prime P) :
     P∣H^3*A ↔ P∣H ∨ P∣A := by
   constructor
   · intro h
@@ -26,11 +26,11 @@ lemma prime_dvd_cube_mul (P H A : Ideal Eis) (hP : Prime P) :
 
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
-def cubeActiveSlots (H : Ideal Eis) (S : PrimeFamily σ) : Finset σ :=
+def cubeActiveSlots (H : Ideal ActualEisensteinCubic.O) (S : PrimeFamily σ)  :=
   Finset.univ.filter (fun i => ¬S.ideal i∣H)
 
 omit [DecidableEq σ] in
-lemma cube_shifted_mark (H A : Ideal Eis) (S : PrimeFamily σ) :
+lemma cube_shifted_mark (H A : Ideal ActualEisensteinCubic.O) (S : PrimeFamily σ) :
     (∏ i,if S.ideal i∣H^3*A then (1:ℂ) else 0)=
       ∏ i∈cubeActiveSlots H S,if S.ideal i∣A then (1:ℂ) else 0 := by
   rw [cubeActiveSlots,Finset.prod_filter]

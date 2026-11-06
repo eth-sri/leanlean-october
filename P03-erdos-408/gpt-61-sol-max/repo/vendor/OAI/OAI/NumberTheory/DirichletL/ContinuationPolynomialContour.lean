@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.ContinuationContour
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.PoissonSummation
@@ -13,31 +14,33 @@ open MeasureTheory Set Filter Asymptotics Complex
 open scoped Topology
 namespace SevenEighths.Continuation
 
-def polynomialGaussian (n : ℕ) (y : ℝ) : ℝ :=
+def polynomialGaussian (n : ℕ) (y : ℝ)  :=
   (1+|y|^n)*Real.exp (-(y^2))
 
-theorem polynomialGaussian_nonneg (n : ℕ) (y : ℝ) : 0 ≤ polynomialGaussian n y := by
+section
+variable (F : ℂ → ℂ) {a b C : ℝ} (n : ℕ) (y : ℝ) (E : ℝ → ℝ) (hE : Integrable E) (heven : ∀ y, E (-y)=E y) (hlim : Tendsto E atTop (𝓝 0)) (hab : a ≤ b) (hhol : DifferentiableOn ℂ F {s : ℂ | a ≤ s.re ∧ s.re ≤ b})
+
+theorem polynomialGaussian_nonneg     : 0 ≤ polynomialGaussian n y := by
   unfold polynomialGaussian
   positivity
 
-theorem polynomialGaussian_even (n : ℕ) (y : ℝ) :
+theorem polynomialGaussian_even     :
     polynomialGaussian n (-y) = polynomialGaussian n y := by
   simp [polynomialGaussian]
 
-theorem polynomialGaussian_integrable (n : ℕ) : Integrable (polynomialGaussian n) := by
+theorem polynomialGaussian_integrable   : Integrable (polynomialGaussian n) := by
   have hp := (integrable_rpow_mul_exp_neg_mul_sq
     (by norm_num : (0 : ℝ)<1) (show (-1 : ℝ)<(n : ℝ) by linarith [Nat.cast_nonneg (α := ℝ) n])).norm
   have hg := integrable_exp_neg_mul_sq (b := 1) (by norm_num)
   have he : (fun y : ℝ => ‖y^(n : ℝ)*Real.exp (-1*y^2)‖) =
       fun y : ℝ => |y|^n*Real.exp (-(y^2)) := by
-    funext y
-    simp [Real.rpow_natCast, norm_mul, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+    simp_all
   rw [he] at hp
   convert hg.add hp using 1
   funext y
   simp [polynomialGaussian, add_mul]
 
-theorem polynomialGaussian_tendsto (n : ℕ) :
+theorem polynomialGaussian_tendsto   :
     Tendsto (polynomialGaussian n) atTop (𝓝 0) := by
   have hp := tendsto_rpow_abs_mul_exp_neg_mul_sq_cocompact
     (by norm_num : (0 : ℝ)<1) (n : ℝ)
@@ -48,10 +51,11 @@ theorem polynomialGaussian_tendsto (n : ℕ) :
   change Tendsto (fun y : ℝ => (1+|y|^n)*Real.exp (-(y^2))) atTop (𝓝 0)
   simpa [Real.rpow_natCast, add_mul] using hg.add hp'
 
-theorem vertical_integral_eq_of_even_envelope (F : ℂ → ℂ) {a b C : ℝ}
-    (E : ℝ → ℝ) (hE : Integrable E) (heven : ∀ y, E (-y)=E y)
-    (hlim : Tendsto E atTop (𝓝 0)) (hab : a ≤ b)
-    (hhol : DifferentiableOn ℂ F {s : ℂ | a ≤ s.re ∧ s.re ≤ b})
+include hE heven hlim hab hhol in
+theorem vertical_integral_eq_of_even_envelope    
+         
+       
+     
     (hbound : ∀ x ∈ Icc a b, ∀ y : ℝ, ‖F ((x : ℂ)+y*I)‖ ≤ C*E y) :
     (∫ y : ℝ, F ((a : ℂ)+y*I)) = ∫ y : ℝ, F ((b : ℂ)+y*I) := by
   have hc (x : ℝ) (hx : x ∈ Icc a b) : Continuous (fun y : ℝ => F ((x : ℂ)+y*I)) :=
@@ -72,14 +76,17 @@ theorem vertical_integral_eq_of_even_envelope (F : ℂ → ℂ) {a b C : ℝ}
   · simpa only [Complex.ofReal_neg, Complex.ofReal_one, neg_one_mul] using hhorizontal (-1) (by simpa only [neg_one_mul] using heven)
   · simpa only [Complex.ofReal_one, one_mul] using hhorizontal 1 (by simp)
 
-theorem vertical_integral_eq_of_polynomial_gaussian_bound (F : ℂ → ℂ)
-    {a b C : ℝ} (n : ℕ) (hab : a ≤ b)
-    (hhol : DifferentiableOn ℂ F {s : ℂ | a ≤ s.re ∧ s.re ≤ b})
+include hab hhol in
+theorem vertical_integral_eq_of_polynomial_gaussian_bound  
+         
+     
     (hbound : ∀ x ∈ Icc a b, ∀ y : ℝ,
       ‖F ((x : ℂ)+y*I)‖ ≤ C*polynomialGaussian n y) :
     (∫ y : ℝ, F ((a : ℂ)+y*I)) = ∫ y : ℝ, F ((b : ℂ)+y*I) :=
   vertical_integral_eq_of_even_envelope F _ (polynomialGaussian_integrable n)
     (polynomialGaussian_even n) (polynomialGaussian_tendsto n) hab hhol hbound
+
+end
 
 end SevenEighths.Continuation
 

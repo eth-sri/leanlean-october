@@ -7,22 +7,22 @@ public import OAI.NumberTheory.DirichletL.Detector.LowCentralGeometry
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
-theorem low_selected_nominal_energy (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
-    (Ck b ε : ℝ) (hCk : 0<Ck) (hε : 0<ε) (hε1 : ε≤1) :
+local notation "Id" => Ideal ActualEisensteinCubic.O
+
+theorem low_selected_nominal_energy  η   S 
+     hS  (hbad : fixedBadPrimes⊆S)
+     {K}   ell  (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
+     Ck b ε  (hCk : 0<Ck) (hε : 0<ε) (hε1 : ε≤1) :
     ∃degree : ℕ,∃C : ℝ,0<C ∧ ∀ᶠZ : ℝ in Filter.atTop,1<Z ∧
     ∀(T : Fin K→Finset PrimeIdeal),(∀i P,P∈T i→Supported P.val)→
       (∀i P,P∈T i→P.val∉S)→Pairwise (fun i j=>Disjoint (T i) (T j))→
       (∀i P,P∈T i→(Ideal.absNorm P.val:ℝ)≤b*Z^(ell i))→
-    ∀(J : Finset (Fin K))(R : Finset O),
+    ∀(J : Finset (Fin K))(R : Finset ActualEisensteinCubic.O),
       (∀z∈R,z≠0 ∧ elementNorm z≤Ck*Z^(5/6-2*lowUnselectedLength ell J))→
     ∀X : ℝ,0<X→Z^(1+lowSelectedLength ell J-ε/2)≤X→X≤Z^(1+lowSelectedLength ell J+ε/2)→
     ∀(W : Fin K→ℝ→ℂ),(∀i x,‖W i x‖≤1)→∀(Y : Fin K→ℝ)(t : ℝ)(σ : RayRing),
@@ -46,6 +46,6 @@ theorem low_selected_nominal_energy (η : HeckeFamily.Character) (S : Finset Id)
     (fun i P hP=>(hnorm i.val P hP).trans (le_max_right _ _)) (hc.2 J) W hW Y t σ
 
 end SevenEighths.ProbePhysical
-end
+
 
 end OAI

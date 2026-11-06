@@ -6,23 +6,28 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialRetainedSupport
 open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CompletedGauss
 open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
 open InverseInitialKernelBridge SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
+
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,goodLambda∉Ideal.span {p i})
 
-theorem live_cutoffs (hpr:∀i,goodLambda^2∣p i-1)
-    (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
-    (Z D m:ℝ)(x:Point ι)(hx:Valid x)(ρ:SecondRayIndex)
-    (hne:physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ≠0):
+section
+variable (hpr : ∀i,goodLambda^2∣p i-1) (Ψ : ActualEisensteinCubic.O→*ℂ) (j : ActualEisensteinCubic.O) (σ : Finset ι→ℂ) (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m b : ℝ) (hZ : 0<Z) (hs₁ : Function.support W₁⊆Set.Iic b) (hs₂ : Function.support W₂⊆Set.Iic b) (x : Point ι) (hx : Valid x) (ρ : SecondRayIndex) (hne : physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ≠0)
+
+
+include hpr hx hne in
+theorem live_cutoffs  
+         
+        
+     :
     W₁ (coordinates p x 0*coordinates p x 2*coordinates p x 4/Z^D)≠0 ∧
     W₂ (coordinates p x 0*coordinates p x 2*coordinates p x 5/Z^D)≠0 := by
   rw [physicalTerm_extracted p hp hcop hg hpr Ψ j σ W₁ W₂ Φ Z D m x hx ρ] at hne
@@ -31,16 +36,19 @@ theorem live_cutoffs (hpr:∀i,goodLambda^2∣p i-1)
   exact ⟨(mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hk).1).1).2,
     (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hk).1).2⟩
 
-theorem live_whole_columns (hpr:∀i,goodLambda^2∣p i-1)
-    (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
-    (Z D m b:ℝ)(hZ:0<Z)(hs₁:Function.support W₁⊆Set.Iic b)
-    (hs₂:Function.support W₂⊆Set.Iic b)(x:Point ι)(hx:Valid x)(ρ:SecondRayIndex)
-    (hne:physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ≠0):
+include hpr hZ hs₁ hs₂ hx hne in
+theorem live_whole_columns  
+         
+       
+        
+     :
     coordinates p x 0*coordinates p x 2*coordinates p x 4≤b*Z^D ∧
     coordinates p x 0*coordinates p x 2*coordinates p x 5≤b*Z^D := by
   obtain ⟨h₁,h₂⟩:=live_cutoffs p hp hcop hg hpr Ψ j σ W₁ W₂ Φ Z D m x hx ρ hne
   exact ⟨(div_le_iff₀ (Real.rpow_pos_of_pos hZ D)).mp (hs₁ h₁),
     (div_le_iff₀ (Real.rpow_pos_of_pos hZ D)).mp (hs₂ h₂)⟩
+
+end
 
 include hp in
 omit [DecidableEq ι] [∀i,(Ideal.span {p i}).IsMaximal] in
@@ -53,9 +61,9 @@ theorem ideal_coordinates_one (x:Point ι):
   exact ⟨hi _,hi _,hi _,hi _,hi _⟩
 
 theorem live_ideal_caps (hpr:∀i,goodLambda^2∣p i-1)
-    (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
+    (Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(σ:Finset ι→ℂ)(W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
     (Z D m b:ℝ)(hZ:0<Z)(hs₁:Function.support W₁⊆Set.Iic b)
-    (hs₂:Function.support W₂⊆Set.Iic b)(x:Point ι)(hx:Valid x)(ρ:SecondRayIndex)
+    (hs₂:Function.support W₂⊆Set.Iic b) x (hx:Valid x)(ρ:SecondRayIndex)
     (hne:physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ≠0):
     coordinates p x 0≤b*Z^D ∧ coordinates p x 1≤b*Z^D ∧
     coordinates p x 2≤b*Z^D ∧ coordinates p x 4≤b*Z^D ∧
@@ -81,6 +89,6 @@ theorem live_ideal_caps (hpr:∀i,goodLambda^2∣p i-1)
 
 end SevenEighths.InverseInitialRetainedSupport
 
-end
+
 
 end OAI

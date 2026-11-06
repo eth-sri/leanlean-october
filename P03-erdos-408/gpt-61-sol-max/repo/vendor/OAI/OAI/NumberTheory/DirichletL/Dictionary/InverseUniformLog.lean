@@ -15,16 +15,16 @@ namespace SevenEighths.DetectorDictionaryInverseUniform
 open HeckeInverseAmplification HeckeDetectorCoefficientTransfer HeckeDetectorDyadicProfiles
 open HeckeDetectorRowwisePolynomial CenteredMomentDetectorDictionary
 
-lemma logTest_apply (W : ℝ→ℂ) (n : ℕ) (x : ℝ) :
+lemma logTest_apply  W   n   x  :
     logTest W n x=(Real.log x:ℂ)^n*W x := by
   induction n with
   | zero => simp [logTest]
   | succ n ih => simp only [logTest,logProfile,ih,pow_succ];ring
 
-def baseProfile (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (R : ℝ) : ℝ→ℂ :=
+def baseProfile (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (R : ℝ)  :=
   logTest (orientedProfile reverse (ratioProfile V W R)) n
 
-lemma baseProfile_support (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (R : ℝ) :
+lemma baseProfile_support  reverse   n   V W   R  :
     Function.support (baseProfile reverse n V W R)⊆Function.support W := by
   apply (logTest_support _ _).trans
   cases reverse
@@ -32,7 +32,7 @@ lemma baseProfile_support (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (R : ℝ)
   · rw [orientedProfile,ite_eq_left rfl,conjugate_profile_support]
     exact ratioProfile_support V W R
 
-lemma baseProfile_smooth (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (R a b : ℝ)
+lemma baseProfile_smooth  reverse   n   V W  (R a b : ℝ)
     (ha : 0<a) (hV : ContDiff ℝ ∞ V) (hW : ContDiff ℝ ∞ W)
     (hs : Function.support W⊆Icc a b) : ContDiff ℝ ∞ (baseProfile reverse n V W R) := by
   apply logTest_smooth _ n a b ha
@@ -46,11 +46,11 @@ lemma baseProfile_smooth (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (R a b : �
     · exact hv
     · exact conjugate_profile_smooth _ hv
 
-def inverseLogFamily (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (p : ℝ×ℝ) (x : ℝ) : ℂ :=
+def inverseLogFamily (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (p : ℝ×ℝ) (x : ℝ)  :=
   Real.exp (-p.1*x) • ((x:ℂ)^n*
     (orientedProfile reverse V (p.2*Real.exp x)*orientedProfile reverse W (Real.exp x)))
 
-lemma inverseLogFamily_smooth (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ)
+lemma inverseLogFamily_smooth  reverse   n   V W 
     (hV : ContDiff ℝ ∞ V) (hW : ContDiff ℝ ∞ W) :
     ContDiff ℝ ∞ (Function.uncurry (inverseLogFamily reverse n V W)) := by
   have hv : ContDiff ℝ ∞ (orientedProfile reverse V) := by
@@ -66,14 +66,14 @@ lemma inverseLogFamily_smooth (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ)
     (((Complex.ofRealCLM.contDiff.comp (contDiff_snd : ContDiff ℝ ∞ (fun p : (ℝ×ℝ)×ℝ=>p.2))).pow n).mul
       ((hv.comp (by fun_prop)).mul (hw.comp (by fun_prop))))
 
-lemma inverseLogFamily_eq (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (p : ℝ×ℝ) (x : ℝ) :
+lemma inverseLogFamily_eq  reverse   n   V W   p   x  :
     inverseLogFamily reverse n V W p x=realInterpolatedLog (baseProfile reverse n V W p.2) p x := by
   unfold inverseLogFamily realInterpolatedLog baseProfile
   rw [logTest_apply,Real.log_exp]
   cases reverse <;> simp [orientedProfile,ratioProfile,map_mul]
 
-lemma inverseLogFamily_support (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (a b : ℝ)
-    (ha : 0<a) (hs : Function.support W⊆Icc a b) (p : ℝ×ℝ) :
+lemma inverseLogFamily_support  reverse   n   V W   a b 
+    (ha : 0<a) (hs : Function.support W⊆Icc a b)  p  :
     Function.support (inverseLogFamily reverse n V W p)⊆Icc (-(|Real.log a|+|Real.log b|)) (|Real.log a|+|Real.log b|) := by
   have he : inverseLogFamily reverse n V W p=realInterpolatedLog (baseProfile reverse n V W p.2) p :=
     funext (inverseLogFamily_eq reverse n V W p)

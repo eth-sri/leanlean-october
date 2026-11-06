@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.PrincipalSlotEstimate
 public import OAI.NumberTheory.DirichletL.PrincipalMellinResidues
@@ -17,7 +18,7 @@ open MeasureTheory Set Filter Asymptotics Complex
 namespace SevenEighths.PrincipalSignalComparison
 open HeckeFamily PrincipalSlotEstimate ProbeEuler ProbeLocal Continuation HeckeSignal
 
-theorem raw_inverse_ae_reciprocal (χ : Character) (a : ℝ) :
+theorem raw_inverse_ae_reciprocal  χ  (a : ℝ) :
     (fun t : ℝ => (LFunction χ ((a : ℂ)+t*I))⁻¹) =ᵐ[volume]
       (fun t => HeckeReciprocal.reciprocal χ ((a : ℂ)+t*I)) := by
   filter_upwards [Measure.ae_ne volume (0 : ℝ)] with t ht
@@ -29,14 +30,14 @@ theorem raw_inverse_ae_reciprocal (χ : Character) (a : ℝ) :
 
 variable {κ ι : Type*}
 
-def slotMass (T : κ → Finset ι) (w : κ → ι → ℝ) (j : κ) : ℝ := ∑ p ∈ T j, w j p
+def slotMass (T : κ → Finset ι) (w : κ → ι → ℝ) (j : κ)  := ∑ p ∈ T j, w j p
 
 def slotProduct (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ)
-    (A η : κ → ι → ℂ) (s : ℂ) : ℂ :=
+    (A η : κ → ι → ℂ) (s : ℂ)  :=
   ∏ j ∈ S, ∑ p ∈ T j, (w j p : ℂ) * principalSlot (Q j p) (A j p) (η j p) s
 
 def slotRatio (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ)
-    (A η : κ → ι → ℂ) (s : ℂ) : ℂ :=
+    (A η : κ → ι → ℂ) (s : ℂ)  :=
   slotProduct S T w Q A η s / PrincipalSlotEstimate.principalScalar S (slotMass T w)
 
 structure SlotBounds (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ)
@@ -51,9 +52,13 @@ structure SlotBounds (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι →
 
 def slotErrorConstant (S : Finset κ) : ℝ := S.card * 2 ^ S.card * 1440
 
-theorem slotRatio_error (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ)
-    (A η : κ → ι → ℂ) {P : ℝ} (h : SlotBounds S T w Q A η P)
-    {s : ℂ} (hs : 7/8 ≤ s.re) :
+section
+variable (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ) {P : ℝ} (h : SlotBounds S T w Q A η P) {s : ℂ} (hs : 7/8 ≤ s.re)
+include S T w Q A η P h s hs
+
+theorem slotRatio_error      
+         
+        :
     ‖slotRatio S T w Q A η s - 1‖ ≤ slotErrorConstant S * P ^ (-(7/8 : ℝ)) := by
   change ‖(∏ j ∈ S, ∑ p ∈ T j, (w j p : ℂ) * principalSlot (Q j p) (A j p) (η j p) s) /
     PrincipalSlotEstimate.principalScalar S (fun j => ∑ p ∈ T j, w j p) - 1‖ ≤ _
@@ -61,20 +66,22 @@ theorem slotRatio_error (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι 
     weighted_principal_product_error_linear S T w Q A η s P h.lower hs h.small
       h.weight_nonneg h.norm_lower h.phase_bound h.target_unit h.mass_pos
 
-theorem slotRatio_bound (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ)
-    (A η : κ → ι → ℂ) {P : ℝ} (h : SlotBounds S T w Q A η P)
-    {s : ℂ} (hs : 7/8 ≤ s.re) :
+theorem slotRatio_bound      
+         
+        :
     ‖slotRatio S T w Q A η s‖ ≤ 1 + slotErrorConstant S * P ^ (-(7/8 : ℝ)) := by
   have hn := norm_add_le (slotRatio S T w Q A η s - 1) (1 : ℂ)
   rw [sub_add_cancel, norm_one] at hn
   linarith [slotRatio_error S T w Q A η h hs]
 
-theorem principalSlot_differentiableAt {Q : ℝ} {A η s : ℂ}
+end
+
+theorem principalSlot_differentiableAt  {Q}   {A η s} 
     (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7/8 ≤ s.re) :
     DifferentiableAt ℂ (principalSlot Q A η) s := by
   have hQ0 : 0 < Q := by linarith
   have hQ4 : 4 ≤ Q := by linarith
-  have hQnz : (Q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hQ0.ne'
+  
   have hQslit : (Q : ℂ) ∈ slitPlane := Complex.ofReal_mem_slitPlane.mpr hQ0
   have hg := principal_geometric_bounds hQ hη hs
   have hV := one_sub_ne_zero_of_norm_le_half _ hg.1
@@ -90,12 +97,12 @@ theorem principalSlot_differentiableAt {Q : ℝ} {A η s : ℂ}
   have hk := coordK_differentiable Q hQ0 η 1
   have hp : DifferentiableAt ℂ (principalMarked Q A η) s := by
     unfold principalMarked markedFactor
-    fun_prop (disch := first | assumption | exact Or.inl hQnz)
+    fun_prop
   have hb : Differentiable ℂ (fun s : ℂ => star η * (Q : ℂ)^s) :=
     (differentiable_id.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hQ0.ne'))).const_mul _
   have hrep : DifferentiableAt ℂ (principalReplacement Q A η) s := by
     unfold principalReplacement compensatedReplacement
-    fun_prop (disch := first | assumption | exact Or.inl hQnz)
+    fun_prop
   exact hrep.div (unramifiedClosed_differentiableAt Q hQ0 A η 1 s 1 (1/6) hR hV hD)
     (principal_correction_ne_zero hQ hA hη hs)
 
@@ -112,20 +119,24 @@ theorem slotRatio_continuous_line (S : Finset κ) (T : κ → Finset ι)
       (by simpa using ha)).continuousAt.comp (by fun_prop)
   unfold slotRatio slotProduct
   apply Continuous.div_const
-  apply continuous_finsetProd
-  intro j hj
-  apply continuous_finsetSum
-  intro p hp
-  exact continuous_const.mul (hc j hj p hp)
+  fun_prop
 
 def slotResidue (χ : Character) (H : ℂ → ℂ) (a Z : ℝ)
-    (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ) : ℂ :=
+    (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ)  :=
   (1/(2*Real.pi) : ℂ) * ∫ t : ℝ,
     (Z : ℂ)^(((a : ℂ)+t*I)-11/16) * Complex.exp ((((a : ℂ)+t*I)-5/6)^2) *
       H ((a : ℂ)+t*I) / LFunction χ ((a : ℂ)+t*I) *
         slotRatio S T w Q A η ((a : ℂ)+t*I)
 
-theorem slotResidue_eq_reciprocal (χ : Character) (H : ℂ → ℂ) (a Z : ℝ)
+section
+variable (χ : Character)
+include χ
+
+section
+variable (H : ℂ → ℂ)
+include H
+
+theorem slotResidue_eq_reciprocal      a Z 
     (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ) :
     slotResidue χ H a Z S T w Q A η = (1/(2*Real.pi) : ℂ) * ∫ t : ℝ,
       gaussianContourIntegrand (quotient χ H) (-11/16) Z ((a : ℂ)+t*I) *
@@ -139,26 +150,26 @@ theorem slotResidue_eq_reciprocal (χ : Character) (H : ℂ → ℂ) (a Z : ℝ)
   push_cast
   ring_nf
 
-def kernel (χ : Character) (H : ℂ → ℂ) (a Z : ℝ) (t : ℝ) : ℂ :=
+def kernel (χ : Character) (H : ℂ → ℂ) (a Z : ℝ) (t : ℝ)  :=
   gaussianContourIntegrand (quotient χ H) (-11/16) Z ((a : ℂ)+t*I)
 
-def kernelEnvelope (a C Z : ℝ) : ℝ :=
+def kernelEnvelope (a C Z : ℝ)  :=
   Z^(a-11/16) * Real.exp ((a-5/6)^2) * ((3/2)*C)
 
-theorem kernel_continuous (χ : Character) (H : ℂ → ℂ)
+theorem kernel_continuous    
     (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    {a Z : ℝ} (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a)
+     {a Z}  (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a)
     (hZ : 0 < Z) : Continuous (kernel χ H a Z) := by
   have hh := gaussianContourIntegrand_differentiableOn
     (HeckeSignalShift.quotient_holomorphic χ H hH ha hβ) (-11/16) hZ
   exact hh.continuousOn.comp_continuous (by fun_prop)
     (by intro t; simpa using And.intro (le_refl a) ha2)
 
-theorem kernel_norm_bound (χ : Character) (H : ℂ → ℂ)
+theorem kernel_norm_bound    
     (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s-1‖ ≤ 1/2)
-    {a C Z : ℝ} (ha : 7/8 < a) (ha2 : a ≤ 2) (hC : 0 ≤ C) (hZ : 0 < Z)
+     {a C Z}  (ha : 7/8 < a) (ha2 : a ≤ 2) (hC : 0 ≤ C) (hZ : 0 < Z)
     (hR : ∀ s : ℂ, a ≤ s.re → ‖HeckeReciprocal.reciprocal χ s‖ ≤ C*(1+|s.im|^2))
-    (t : ℝ) : ‖kernel χ H a Z t‖ ≤ kernelEnvelope a C Z * polynomialGaussian 2 t := by
+     t  : ‖kernel χ H a Z t‖ ≤ kernelEnvelope a C Z * polynomialGaussian 2 t := by
   have hq := HeckeSignalShift.quotient_polynomial_bound χ H hb 2 ha hC
     (fun s hs _ => hR s hs) (s := (a : ℂ)+t*I) (by simpa using And.intro (le_refl a) ha2)
   simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.I_im,
@@ -170,9 +181,13 @@ theorem kernel_norm_bound (χ : Character) (H : ℂ → ℂ)
         (((3/2)*C)*(1+|t|^2))*Real.exp (-(t^2)) := by gcongr
     _ = _ := by unfold kernelEnvelope polynomialGaussian; ring_nf
 
-theorem kernel_integrable (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s-1‖ ≤ 1/2)
+section
+variable (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re}) (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s-1‖ ≤ 1/2)
+include hH hb
+
+theorem kernel_integrable    
+     
+     
     {a C Z : ℝ} (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a)
     (hC : 0 ≤ C) (hZ : 0 < Z)
     (hR : ∀ s : ℂ, a ≤ s.re → ‖HeckeReciprocal.reciprocal χ s‖ ≤ C*(1+|s.im|^2)) :
@@ -181,14 +196,14 @@ theorem kernel_integrable (χ : Character) (H : ℂ → ℂ)
     (kernel_continuous χ H hH ha ha2 hβ hZ).aestronglyMeasurable
     (ae_of_all _ (kernel_norm_bound χ H hb ha ha2 hC hZ hR))
 
-theorem slotResidue_bound_of_reciprocal_bound (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s-1‖ ≤ 1/2)
-    {a C : ℝ} (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a)
+theorem slotResidue_bound_of_reciprocal_bound    
+     
+     
+     {a C}  (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a)
     (hC : 0 ≤ C)
     (hR : ∀ s : ℂ, a ≤ s.re → ‖HeckeReciprocal.reciprocal χ s‖ ≤ C*(1+|s.im|^2))
     (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ)
-    {P Z : ℝ} (h : SlotBounds S T w Q A η P) (hZ : 1 ≤ Z) :
+     {P Z}  (h : SlotBounds S T w Q A η P) (hZ : 1 ≤ Z) :
     Integrable (fun t : ℝ => kernel χ H a Z t * slotRatio S T w Q A η ((a : ℂ)+t*I)) ∧
       ‖slotResidue χ H a Z S T w Q A η - signal χ H (-11/16) Z‖ ≤
         (HeckeSignalShift.infinityConstant a C 2 * slotErrorConstant S) *
@@ -203,7 +218,7 @@ theorem slotResidue_bound_of_reciprocal_bound (χ : Character) (H : ℂ → ℂ)
   refine ⟨hint, ?_⟩
   have herror (t : ℝ) := slotRatio_error S T w Q A η h
     (s := (a : ℂ)+t*I) (by simpa using ha.le)
-  have heint := hg.mul_bdd (hc.sub continuous_const).aestronglyMeasurable (ae_of_all _ herror)
+  
   have heq : slotResidue χ H a Z S T w Q A η - signal χ H (-11/16) Z =
       (1/(2*Real.pi) : ℂ) * ∫ t : ℝ,
         kernel χ H a Z t * (slotRatio S T w Q A η ((a : ℂ)+t*I) - 1) := by
@@ -214,15 +229,9 @@ theorem slotResidue_bound_of_reciprocal_bound (χ : Character) (H : ℂ → ℂ)
       ((∫ t : ℝ, kernel χ H a Z t * slotRatio S T w Q A η ((a : ℂ)+t*I)) -
         ∫ t : ℝ, kernel χ H a Z t) = _
     rw [← integral_sub hint hg]
-    congr 1
-    apply integral_congr_ae
-    filter_upwards [] with t
-    change kernel χ H a Z t * _ - kernel χ H a Z t = _
-    ring_nf
+    grind
   rw [heq, norm_mul]
-  have he0 : 0 ≤ slotErrorConstant S * P^(-(7/8 : ℝ)) := by
-    unfold slotErrorConstant
-    positivity
+  
   have hbnd (t : ℝ) :
       ‖kernel χ H a Z t * (slotRatio S T w Q A η ((a : ℂ)+t*I)-1)‖ ≤
         (kernelEnvelope a C Z * (slotErrorConstant S * P^(-(7/8 : ℝ)))) *
@@ -245,11 +254,11 @@ theorem slotResidue_bound_of_reciprocal_bound (χ : Character) (H : ℂ → ℂ)
   unfold kernelEnvelope HeckeSignalShift.infinityConstant
   ring_nf
 
-theorem exists_slotResidue_bound (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s-1‖ ≤ 1/2)
-    {a : ℝ} (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a)
-    (S : Finset κ) :
+theorem exists_slotResidue_bound    
+     
+     
+     {a}  (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a)
+     S  :
     ∃ D : ℝ, 0 ≤ D ∧ ∀ (T : κ → Finset ι) (w Q : κ → ι → ℝ)
       (A η : κ → ι → ℂ) (P Z : ℝ), SlotBounds S T w Q A η P → 1 ≤ Z →
       Integrable (fun t : ℝ => kernel χ H a Z t * slotRatio S T w Q A η ((a : ℂ)+t*I)) ∧
@@ -264,7 +273,9 @@ theorem exists_slotResidue_bound (χ : Character) (H : ℂ → ℂ)
   · intro T w Q A η P Z h hZ
     exact slotResidue_bound_of_reciprocal_bound χ H hH hb ha ha2 hβ hC hR S T w Q A η h hZ
 
-theorem raw_slot_integrable (χ : Character) (H : ℂ → ℂ) (a Z : ℝ)
+end
+
+theorem raw_slot_integrable      a Z 
     (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ)
     (hi : Integrable (fun t : ℝ => kernel χ H a Z t * slotRatio S T w Q A η ((a : ℂ)+t*I))) :
     Integrable (fun t : ℝ =>
@@ -278,9 +289,11 @@ theorem raw_slot_integrable (χ : Character) (H : ℂ → ℂ) (a Z : ℝ)
   push_cast
   ring_nf
 
+end
+
 private instance : IsPrincipalIdealRing HeckeFamily.O := IsCyclotomicExtension.Rat.three_pid K
 
-theorem idealCoeff_norm_one_of_coprime (χ : Character) (J : Ideal HeckeFamily.O)
+theorem idealCoeff_norm_one_of_coprime    J 
     (hJ : J ≠ ⊥) (hc : IsCoprime J χ.modulus) : ‖idealCoeff χ J‖ = 1 := by
   let := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
   let : Fintype (HeckeFamily.O ⧸ χ.modulus) := Fintype.ofFinite _
@@ -292,9 +305,15 @@ theorem idealCoeff_norm_one_of_coprime (χ : Character) (J : Ideal HeckeFamily.O
   rw [IdealCharacter.value, ite_eq_right hJ, ← hu]
   exact FiniteRayExpansion.norm_char_unit χ.residue u
 
+end
+
 open ProbePhysical ActualEisensteinCubic CompletedGauss
 
-theorem prime_coprime_of_norm_gt (η : Character) (P : PrimeIdeal)
+section
+variable (η : Character)
+include η
+
+theorem prime_coprime_of_norm_gt   (P : PrimeIdeal)
     (hN : Ideal.absNorm η.modulus < Ideal.absNorm P.val) : IsCoprime P.val η.modulus := by
   let : P.val.IsPrime := Ideal.isPrime_of_prime P.property
   let : P.val.IsMaximal := Ideal.IsPrime.isMaximal inferInstance P.property.ne_zero
@@ -305,23 +324,35 @@ theorem prime_coprime_of_norm_gt (η : Character) (P : PrimeIdeal)
     (Ideal.absNorm_eq_zero_iff.not.mpr η.modulus_ne_bot)
   exact (Nat.not_le_of_gt hN) (Nat.le_of_dvd hn (Ideal.absNorm_dvd_absNorm_of_le hle))
 
-def sourceCorrection (η : Character) (E : Finset (Ideal HeckeFamily.O)) (s : ℂ) : ℂ :=
+def sourceCorrection (η : Character) (E : Finset (Ideal HeckeFamily.O)) (s : ℂ)  :=
   globalClosedCorrection η E s 1 (1/6)
 
-theorem sourceCorrection_differentiable (η : Character) (E : Finset (Ideal HeckeFamily.O))
-    (hE : SourceExclusions E) :
+section
+variable (E : Finset (Ideal HeckeFamily.O)) (hE : SourceExclusions E)
+include E hE
+
+theorem sourceCorrection_differentiable    
+      :
     DifferentiableOn ℂ (sourceCorrection η E) {s : ℂ | 7/8 < s.re} :=
   (globalClosedCorrection_analytic_x η E hE.tail 1 (1/6) (by norm_num) (by norm_num)).differentiableOn
 
-theorem sourceCorrection_bound (η : Character) (E : Finset (Ideal HeckeFamily.O))
-    (hE : SourceExclusions E) (s : ℂ) (hs : 7/8 < s.re) :
+theorem sourceCorrection_bound    
+       s  (hs : 7/8 < s.re) :
     ‖sourceCorrection η E s - 1‖ ≤ 1/2 :=
   globalClosedCorrection_bound η E hE.tail s 1 (1/6) hs.le (by norm_num) (by norm_num)
 
+end
+
+end
+
 open PrincipalMellinResidues
 
-theorem source_normalizer_cast (S : Finset κ) (T : κ → Finset ι) (w : κ → ι → ℝ)
-    {Z ℓ : ℝ} (hZ : 0 < Z) :
+section
+variable (S : Finset κ) (T : κ → Finset ι) (w : κ → ι → ℝ) {Z ℓ : ℝ} (hZ : 0 < Z)
+include S T w Z ℓ hZ
+
+theorem source_normalizer_cast      
+        :
     (Probe.principalScalar S Z ℓ (slotMass T w) : ℂ) =
       (Z : ℂ)^(((-ℓ/6 : ℝ) : ℂ)) * PrincipalSlotEstimate.principalScalar S (slotMass T w) := by
   simp only [Probe.principalScalar, PrincipalSlotEstimate.principalScalar,
@@ -329,13 +360,15 @@ theorem source_normalizer_cast (S : Finset κ) (T : κ → Finset ι) (w : κ �
     Complex.ofReal_cpow hZ.le]
   ring_nf
 
-theorem source_normalizer_ne_zero (S : Finset κ) (T : κ → Finset ι)
-    (w : κ → ι → ℝ) {Z ℓ : ℝ} (hZ : 0 < Z)
+theorem source_normalizer_ne_zero    
+         
     (hm : ∀ j ∈ S, 0 < slotMass T w j) :
     (Probe.principalScalar S Z ℓ (slotMass T w) : ℂ) ≠ 0 :=
   Complex.ofReal_ne_zero.mpr (Probe.principalScalar_ne_zero S hZ hm)
 
-theorem source_power_identity {Z : ℝ} (hZ : 0 < Z) (s : ℂ) :
+end
+
+theorem source_power_identity  {Z}  (hZ : 0 < Z) (s : ℂ) :
     ((Z^(17/48 : ℝ) : ℝ) : ℂ)^(1/3 : ℂ) * (Z : ℂ)^(s-5/6) =
       (Z : ℂ)^(((-(1/6 : ℝ)/6 : ℝ) : ℂ)) * (Z : ℂ)^(s-11/16) := by
   have hz : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
@@ -345,9 +378,13 @@ theorem source_power_identity {Z : ℝ} (hZ : 0 < Z) (s : ℂ) :
   push_cast
   ring_nf
 
-theorem normalized_source_double_residue (W0 W1 : SchwartzMap ℝ ℂ)
-    (M : Ideal HeckeFamily.O) [NeZero M] (χ : Character)
-    (Y Z : ℝ) (hZ : 0 < Z) (s : ℂ) (H B : ℂ → ℂ → ℂ)
+section
+variable (W0 W1 : SchwartzMap ℝ ℂ) (M : Ideal HeckeFamily.O) [NeZero M] (χ : Character)
+include W0 W1 M χ
+
+theorem normalized_source_double_residue  
+         
+     Y Z  (hZ : 0 < Z)  s   H B 
     (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ)
     (hc : sourceResidueConstant W0 W1 M ≠ 0)
     (hB : B 1 (1/6) = slotProduct S T w Q A η s) :
@@ -360,30 +397,25 @@ theorem normalized_source_double_residue (W0 W1 : SchwartzMap ℝ ℂ)
   have hp := source_power_identity hZ s
   have hz : (Z : ℂ)^(((-(1/6 : ℝ)/6 : ℝ) : ℂ)) ≠ 0 :=
     (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [hZ.ne'])
-  rw [hp]
-  simp only [slotRatio, div_eq_mul_inv, mul_inv_rev]
-  calc
-    _ = (sourceResidueConstant W0 W1 M * (sourceResidueConstant W0 W1 M)⁻¹) *
-        ((Z : ℂ)^(((-(1/6 : ℝ)/6 : ℝ) : ℂ)) *
-          ((Z : ℂ)^(((-(1/6 : ℝ)/6 : ℝ) : ℂ)))⁻¹) *
-        ((Z : ℂ)^(s-11/16) * Complex.exp ((s-5/6)^2) * H 1 (1/6) *
-          (LFunction χ s)⁻¹ * (slotProduct S T w Q A η s *
-            (PrincipalSlotEstimate.principalScalar S (slotMass T w))⁻¹)) := by ring_nf
-    _ = _ := by rw [mul_inv_cancel₀ hc, mul_inv_cancel₀ hz]; ring_nf
+  grind [slotRatio, sourceResidueConstant, Complex.exp, LFunction, slotProduct, S, PrincipalSlotEstimate.principalScalar, slotMass]
 
 def sourceResidueIntegral (W0 W1 : SchwartzMap ℝ ℂ) (M : Ideal HeckeFamily.O) [NeZero M]
-    (χ : Character) (a X Y Z : ℝ) (H B : ℂ → ℂ → ℂ → ℂ) : ℂ :=
+    (χ : Character) (a X Y Z : ℝ) (H B : ℂ → ℂ → ℂ → ℂ)  :=
   verticalIntegral a (fun s => fixedPrincipalResidue M ^ 2 / 6 *
     sourceMultiplier W0 W1 X Y Z χ s (H s) (B s) 1 (1/6))
 
-theorem sourceResidueIntegral_normalized (W0 W1 : SchwartzMap ℝ ℂ)
-    (M : Ideal HeckeFamily.O) [NeZero M] (χ : Character) (a Y Z : ℝ) (hZ : 0 < Z)
-    (H B : ℂ → ℂ → ℂ → ℂ) (S : Finset κ) (T : κ → Finset ι)
-    (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ)
-    (hc : sourceResidueConstant W0 W1 M ≠ 0)
-    (hm : ∀ j ∈ S, 0 < slotMass T w j)
-    (hB : ∀ t : ℝ, B ((a : ℂ)+t*I) 1 (1/6) =
-      slotProduct S T w Q A η ((a : ℂ)+t*I)) :
+section
+variable (a Y Z : ℝ) (hZ : 0 < Z) (H B : ℂ → ℂ → ℂ → ℂ) (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ) (hc : sourceResidueConstant W0 W1 M ≠ 0) (hm : ∀ j ∈ S, 0 < slotMass T w j) (hB : ∀ t : ℝ, B ((a : ℂ)+t*I) 1 (1/6) =
+      slotProduct S T w Q A η ((a : ℂ)+t*I))
+include a Y Z hZ H B S T w Q A η hc hm hB
+
+theorem sourceResidueIntegral_normalized  
+             
+         
+       
+     
+     
+      :
     sourceResidueConstant W0 W1 M * (Probe.principalScalar S Z (1/6) (slotMass T w) : ℂ) ≠ 0 ∧
     sourceResidueIntegral W0 W1 M χ a (Z^(17/48 : ℝ)) Y Z H B /
       (sourceResidueConstant W0 W1 M * (Probe.principalScalar S Z (1/6) (slotMass T w) : ℂ)) =
@@ -395,16 +427,15 @@ theorem sourceResidueIntegral_normalized (W0 W1 : SchwartzMap ℝ ℂ)
   congr 1
   apply integral_congr_ae
   filter_upwards [] with t
-  exact normalized_source_double_residue W0 W1 M χ Y Z hZ _ (H _) (B _) S T w Q A η hc (hB _)
+  solve_by_elim [normalized_source_double_residue]
 
-theorem source_double_residue_integrable (W0 W1 : SchwartzMap ℝ ℂ)
-    (M : Ideal HeckeFamily.O) [NeZero M] (χ : Character) (a Y Z : ℝ) (hZ : 0 < Z)
-    (H B : ℂ → ℂ → ℂ → ℂ) (S : Finset κ) (T : κ → Finset ι)
-    (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ)
-    (hc : sourceResidueConstant W0 W1 M ≠ 0)
-    (hm : ∀ j ∈ S, 0 < slotMass T w j)
-    (hB : ∀ t : ℝ, B ((a : ℂ)+t*I) 1 (1/6) =
-      slotProduct S T w Q A η ((a : ℂ)+t*I))
+theorem source_double_residue_integrable  
+             
+         
+       
+     
+     
+     
     (hi : Integrable (fun t : ℝ => kernel χ (fun s => H s 1 (1/6)) a Z t *
       slotRatio S T w Q A η ((a : ℂ)+t*I))) :
     Integrable (fun t : ℝ => fixedPrincipalResidue M ^ 2 / 6 *
@@ -418,9 +449,13 @@ theorem source_double_residue_integrable (W0 W1 : SchwartzMap ℝ ℂ)
   exact ((div_eq_iff hn).mp (normalized_source_double_residue W0 W1 M χ Y Z hZ _
     (H _) (B _) S T w Q A η hc (hB _))).symm
 
+end
+
+end
+
 theorem exists_normalized_actual_source_bound (E : Finset (Ideal HeckeFamily.O))
     (hE : SourceExclusions E) (η : Character) {a : ℝ}
-    (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a) (S : Finset κ) :
+    (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a)  S  :
     letI : NeZero (∏ p ∈ E, p) := ⟨fixedPrimeProduct_ne_zero E hE.prime⟩
     ∃ D : ℝ, 0 ≤ D ∧ ∀ (W0 W1 : SchwartzMap ℝ ℂ) (T : κ → Finset PrimeIdeal)
       (w : κ → PrimeIdeal → ℝ) (P Y Z : ℝ) (B : ℂ → ℂ → ℂ → ℂ),

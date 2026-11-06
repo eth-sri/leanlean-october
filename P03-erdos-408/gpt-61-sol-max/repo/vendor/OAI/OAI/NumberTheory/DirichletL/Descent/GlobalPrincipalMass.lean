@@ -14,23 +14,27 @@ open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
-abbrev Core (ι : Type*) := CubeCoordinates ι×Finset ι×Finset ι
 
-def core {ι : Type*} {Jo : ℕ} (x : Source ι Jo) : Core ι :=
+abbrev Core (ι ) := CubeCoordinates ι×Finset ι×Finset ι
+
+def core {ι } {Jo } (x : Source ι Jo)  :=
   (x.cube,x.firstCommon,x.quotientSupport)
 
-def divisorTarget {ι : Type*} [DecidableEq ι] (p : ι→O) (q : Core ι) : Ideal O :=
+def divisorTarget {ι } [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (q : Core ι)  :=
   sourceIdeal p q.1.support*sourceIdeal p q.2.1*sourceIdeal p q.2.2
 
-lemma divisorTarget_ne_zero {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal] (q : Core ι) : divisorTarget p q≠0 :=
+section
+variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O)
+include ι p
+
+lemma divisorTarget_ne_zero       (hp : ∀i,p i≠0)
+    [∀i,(Ideal.span {p i}).IsMaximal]  q  : divisorTarget p q≠0 :=
   mul_ne_zero (mul_ne_zero (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _))
     (sourceIdeal_ne_zero p hp _)
 
-lemma firstDivisor_dvd_target {ι : Type*} [DecidableEq ι] (p : ι→O)
-    [∀i,(Ideal.span {p i}).IsMaximal] {Jo : ℕ} (x : Source ι Jo) (hx : SourceValid p x) :
+lemma firstDivisor_dvd_target      
+    [∀i,(Ideal.span {p i}).IsMaximal]  {Jo}  (x : Source ι Jo) (hx : SourceValid p x) :
     sourceIdeal p x.firstDivisor∣divisorTarget p (core x) := by
   have hd := sourceIdeal_dvd p _ _ hx.first_divisor
   rw [sourceIdeal_union p _ _ hx.common_disjoint] at hd
@@ -40,10 +44,10 @@ lemma firstDivisor_dvd_target {ι : Type*} [DecidableEq ι] (p : ι→O)
   rw [mul_comm (sourceIdeal p x.firstCommon)]
   exact dvd_mul_right _ _
 
-theorem core_fiber_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+theorem core_fiber_card       (hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i=>Ideal.span {p i})) {Jo : ℕ}
-    (S : Finset (Source ι Jo)) (q : Core ι)
+    (S : Finset (Source ι Jo))  q 
     (hS : ∀x∈S,SourceValid p x) (hq : ∀x∈S,core x=q) :
     S.card≤(idealDivisors (divisorTarget p q)).card^(Jo+1) := by
   let D := idealDivisors (divisorTarget p q)
@@ -70,8 +74,10 @@ theorem core_fiber_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p 
   have hh := Fintype.card_le_of_injective encode hi
   simpa only [Fintype.card_coe,Fintype.card_prod,Fintype.card_fun,Fintype.card_fin,D,pow_succ,mul_comm] using hh
 
-theorem core_fiber_small_power (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
-    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
+end
+
+theorem core_fiber_small_power  Jmax  (eps : ℝ) (heps : 0<eps) :
+    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→ActualEisensteinCubic.O)(_hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(q : Core ι),
@@ -95,8 +101,8 @@ theorem core_fiber_small_power (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
   push_cast
   field_simp
 
-lemma divisorTarget_norm_bound {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal] (q : Core ι) (B V T : ℝ)
+lemma divisorTarget_norm_bound {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
+    [∀i,(Ideal.span {p i}).IsMaximal]  q   B V T 
     (hB : 0≤B) (hV : 0≤V) (_hT : 0≤T)
     (hb₁ : ‖eisEmbedding (primeProduct p q.1.support q.1.leftExponent)‖^2≤B)
     (hb₂ : ‖eisEmbedding (primeProduct p q.1.support q.1.rightExponent)‖^2≤B)

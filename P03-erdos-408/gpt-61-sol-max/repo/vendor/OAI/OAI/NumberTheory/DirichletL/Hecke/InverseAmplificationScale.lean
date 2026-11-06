@@ -13,19 +13,19 @@ open MeasureTheory Set Complex
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge HeckeDetectorRowwise
 
-def scaleProfile (W : ℝ→ℂ) (y : ℝ) : ℂ := -W y/2-(y : ℂ)*deriv W y
+def scaleProfile (W : ℝ→ℂ) (y : ℝ)  := -W y/2-(y : ℂ)*deriv W y
 
-def scaleSum (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O)) (l : ℝ) : ℂ :=
+def scaleSum (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O)) (l : ℝ)  :=
   Complex.exp (-(l : ℂ)/2)*∑ J∈S,
     coefficient χ true J*W ((J.absNorm : ℝ)*Real.exp (-l))
 
-theorem scaleProfile_continuous (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) :
+theorem scaleProfile_continuous  W  (hW : ContDiff ℝ ∞ W) :
     Continuous (scaleProfile W) := by
   have hd := hW.continuous_deriv (by simp)
   unfold scaleProfile
   fun_prop
 
-theorem scaleProfile_support (W : ℝ→ℂ) (a b : ℝ)
+theorem scaleProfile_support  W   a b 
     (hs : Function.support W⊆Icc a b) : Function.support (scaleProfile W)⊆Icc a b := by
   intro y hy
   by_contra hn
@@ -35,13 +35,13 @@ theorem scaleProfile_support (W : ℝ→ℂ) (a b : ℝ)
     exact fun h => hn ((closure_minimal hs isClosed_Icc) h)
   exact hy (by simp [scaleProfile,hw,hd])
 
-theorem scaleSum_continuous (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
+theorem scaleSum_continuous  χ   W   S 
     (hW : Continuous W) : Continuous (scaleSum χ W S) := by
   unfold scaleSum
   fun_prop
 
-theorem scaleSum_deriv (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
-    (hW : Differentiable ℝ W) (l : ℝ) :
+theorem scaleSum_deriv  χ   W   S 
+    (hW : Differentiable ℝ W)  l  :
     HasDerivAt (scaleSum χ W S) (scaleSum χ (scaleProfile W) S l) l := by
   have hE : HasDerivAt (fun t : ℝ => Complex.exp (-(t : ℂ)/2))
       (Complex.exp (-(l : ℂ)/2)*(-(1 : ℂ)/2)) l := by
@@ -73,15 +73,15 @@ theorem scaleSum_deriv (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
     push_cast
     ring
 
-theorem scale_normalization (l : ℝ) :
+theorem scale_normalization  l  :
     ((Real.exp l : ℝ) : ℂ)^(-(1/2 : ℂ))=Complex.exp (-(l : ℂ)/2) := by
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (Real.exp_pos l).ne'),
     ←Complex.ofReal_log (Real.exp_pos l).le,Real.log_exp]
   congr 1
   ring
 
-theorem scaleSum_eq_polynomial (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
-    (l : ℝ) (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/Real.exp l)≠0 → J∈S) :
+theorem scaleSum_eq_polynomial  χ   W   S 
+     l  (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/Real.exp l)≠0 → J∈S) :
     scaleSum χ W S l=polynomial χ true W (Real.exp l) 0 0 := by
   rw [polynomial_eq_finite χ true W (Real.exp l) 0 0 S hc,scale_normalization]
   simp only [HeckeDyadic.shift,ofReal_zero,zero_mul,sub_self,neg_zero,Complex.cpow_zero,mul_one]

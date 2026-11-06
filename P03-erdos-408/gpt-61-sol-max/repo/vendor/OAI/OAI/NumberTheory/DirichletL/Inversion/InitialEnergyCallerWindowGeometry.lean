@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindows
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
@@ -15,8 +15,8 @@ open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerGeometry
 open InverseInitialProfile InverseInitialKernelBridge ConcreteTraceCRT
-local notation "Eis"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
+
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)
 
 theorem retained_source_windows
     (S:Finset (Source (ι:=ι) 0))(ψ:Fin 4→ℝ→ℂ)(lo hi:Fin 4→ℝ)
@@ -53,6 +53,6 @@ include hp
 
 end SevenEighths.InverseInitialEnergyCallerWindowGeometry
 
-end
+
 
 end OAI

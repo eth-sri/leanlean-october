@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.CoprimeBilinearBound
 public import OAI.NumberTheory.DirichletL.CubicSieve.RayExpansion
@@ -12,76 +13,76 @@ noncomputable section
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
 
-open scoped BigOperators Classical
+ 
 namespace CanonicalQuadraticSieve
 
 section
-open ConcretePrimeRowBridge ActualEisensteinCubic CompletedGauss ConcreteTraceCRT
+open ConcretePrimeRowBridge   CompletedGauss  
 
-theorem primaryGenerator_admissible (I : Ideal O) (hI : Admissible I) : primaryGenerator I ≠ 0 :=
+theorem primaryGenerator_admissible  I  (hI : Admissible I) : primaryGenerator I ≠ 0 :=
   PrimaryIdealUnitReindex.primaryGenerator_ne_zero_of_good_factors I hI.1
     (fun P hP => (hI.2.2 P hP).1)
 
@@ -92,7 +93,7 @@ theorem primaryGenerator_inj_on_admissible {I J : Ideal O}
     _ = Ideal.span {primaryGenerator J} := by rw [heq]
     _ = J := (primaryGenerator_spec J (primaryGenerator_admissible J hJ)).1
 
-theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
+theorem sieveNorm_initial  M N  (hM : 1 ≤ M) (hN : 1 ≤ N) :
     sieveNorm M N ≤ QuadraticInitialBound.initialSieveConstant * (M + (⌈N⌉₊ : ℝ) ^ 2) := by
   let F := idealRange N
   let R := (idealRange M).image primaryGenerator
@@ -129,9 +130,7 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     intro J _
     rw [quadraticRow_eq F hF J.val J.property z]
     simp only [aext, dite_eq_left J.property]
-    change a J * (idealSexticRow F hFp hFg J.val z) ^ 3 =
-      (idealSexticRow F hFp hFg J.val z) ^ 3 * a J
-    exact mul_comm _ _
+    ring
   have he := QuadraticInitialBound.ideal_initial_quadratic_sieve F hFp hFg
     (fun I hI => (hF I hI).2.1) hchar ⌈N⌉₊ hnat hnorm aext M hM R hR
   have heR : (∑ z ∈ R, ‖∑ I ∈ F, aext I * (idealSexticRow F hFp hFg I z) ^ 3‖ ^ 2) =
@@ -151,19 +150,24 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
 
 end
 
-open ActualEisensteinCubic CompletedGauss
+open   CompletedGauss
 
-def idealQuotient (D I : Ideal O) : Ideal O := if h : D ∣ I then h.choose else 0
+def idealQuotient (D I : Ideal O)  := if h : D ∣ I then h.choose else 0
 
-theorem idealQuotient_mul {D I : Ideal O} (h : D ∣ I) : D * idealQuotient D I = I := by
+section
+variable {D I : Ideal O} (h : D ∣ I) {J : Ideal O} (hI : Admissible I) (hD0 : D ≠ 0) (hD : D ∣ I)
+
+include h in
+theorem idealQuotient_mul     : D * idealQuotient D I = I := by
   rw [idealQuotient, dite_eq_left h]
   exact h.choose_spec.symm
 
-theorem idealQuotient_dvd {D I : Ideal O} (h : D ∣ I) : idealQuotient D I ∣ I := by
+include h in
+theorem idealQuotient_dvd     : idealQuotient D I ∣ I := by
   refine ⟨D, ?_⟩
   rw [mul_comm, idealQuotient_mul h]
 
-theorem idealQuotient_injective_on (D : Ideal O) :
+theorem idealQuotient_injective_on  D  :
     Set.InjOn (idealQuotient D) {I | D ∣ I} := by
   intro I hI J hJ heq
   calc
@@ -171,18 +175,21 @@ theorem idealQuotient_injective_on (D : Ideal O) :
     _ = D * idealQuotient D J := by rw [heq]
     _ = J := idealQuotient_mul hJ
 
-theorem admissible_of_dvd {I J : Ideal O} (hI : Admissible I) (hJI : J ∣ I) : Admissible J := by
+include hI in
+theorem admissible_of_dvd     (hJI : J ∣ I) : Admissible J := by
   have hJ : J ≠ 0 := ne_zero_of_dvd_ne_zero hI.1 hJI
   refine ⟨hJ, hI.2.1.squarefree_of_dvd hJI, ?_⟩
   intro P hP
   have hfac := (UniqueFactorizationMonoid.dvd_iff_normalizedFactors_le_normalizedFactors hJ hI.1).mp hJI
   exact hI.2.2 P (Multiset.mem_of_le hfac hP)
 
-theorem admissible_idealQuotient {D I : Ideal O} (hI : Admissible I) (hD : D ∣ I) :
+include hI hD in
+theorem admissible_idealQuotient       :
     Admissible (idealQuotient D I) := admissible_of_dvd hI (idealQuotient_dvd hD)
 
-theorem idealQuotient_norm_le {D I : Ideal O} (hD0 : D ≠ 0) (hD : D ∣ I)
-    (N : ℝ) (hN : (Ideal.absNorm I : ℝ) ≤ N) :
+include hD0 hD in
+theorem idealQuotient_norm_le      
+     N  (hN : (Ideal.absNorm I : ℝ) ≤ N) :
     (Ideal.absNorm (idealQuotient D I) : ℝ) ≤ N / (Ideal.absNorm D : ℝ) := by
   have hp : (0 : ℝ) < Ideal.absNorm D := by
     exact_mod_cast Nat.pos_of_ne_zero (fun h => hD0 (Ideal.absNorm_eq_zero_iff.mp h))
@@ -193,11 +200,13 @@ theorem idealQuotient_norm_le {D I : Ideal O} (hD0 : D ≠ 0) (hD : D ∣ I)
     _ = (Ideal.absNorm I : ℝ) := by rw [idealQuotient_mul hD]
     _ ≤ N := hN
 
+end
+
 theorem quotient_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
     [DecidableEq m] [DecidableEq n]
     (D : Ideal O) (hD : D ≠ 0) (rows : m → Ideal O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
-    (hdiv : ∀ j, D ∣ cols j) (M N : ℝ)
+    (hdiv : ∀ j, D ∣ cols j)  M N 
     (hrows : ∀ i, Admissible (rows i) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ M)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
     ‖FiniteSieveOperator.operator (fun i j =>
@@ -205,20 +214,20 @@ theorem quotient_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
       sieveNorm M (N / (Ideal.absNorm D : ℝ)) := by
   apply family_squared_norm_le rows (fun j => idealQuotient D (cols j)) hr
   · intro j k heq
-    exact hc (idealQuotient_injective_on D (hdiv j) (hdiv k) heq)
+    solve_by_elim [idealQuotient_injective_on]
   · exact hrows
   · intro j
     exact ⟨admissible_idealQuotient (hcols j).1 (hdiv j),
       idealQuotient_norm_le hD (hdiv j) N (hcols j).2⟩
 
-def quotientMatrix {m n : Type*} (D : Ideal O) (rows : m → Ideal O) (cols : n → Ideal O) :
+def quotientMatrix {m n } (D : Ideal O) (rows : m → Ideal O) (cols : n → Ideal O) :
     Matrix m n ℂ := fun i j => if D ∣ cols j then
       quadraticRow (idealQuotient D (cols j)) (primaryGenerator (rows i)) else 0
 
 theorem quotientMatrix_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
     [DecidableEq m] [DecidableEq n]
     (D : Ideal O) (hD : D ≠ 0) (rows : m → Ideal O) (cols : n → Ideal O)
-    (hr : Function.Injective rows) (hc : Function.Injective cols) (M N : ℝ)
+    (hr : Function.Injective rows) (hc : Function.Injective cols)  M N 
     (hrows : ∀ i, Admissible (rows i) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ M)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
     ‖FiniteSieveOperator.operator (quotientMatrix D rows cols)‖ ^ 2 ≤
@@ -259,27 +268,32 @@ theorem quotientMatrix_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
 end CanonicalQuadraticSieve
 
 section
-open MeasureTheory
-open scoped FourierTransform SchwartzMap ContDiff
+ 
+ 
 namespace FourierBridge
 
-def fourierSeminormBound (k : ℕ) (C : ℝ) : ℝ :=
+def fourierSeminormBound (k : ℕ) (C : ℝ)  :=
   (2 : ℝ) ^ k * (k + 1) *
     (2 ^ (volume : Measure ℝ).integrablePower *
       ∫ t : ℝ, (1 + ‖t‖) ^ (-(volume : Measure ℝ).integrablePower : ℝ)) * C
 
-def fourierPointBound (k : ℕ) (C : ℝ) : ℝ :=
+def fourierPointBound (k : ℕ) (C : ℝ)  :=
   2 ^ k * (fourierSeminormBound 0 C + fourierSeminormBound k C)
 
-theorem fourierPointBound_nonneg (k : ℕ) (C : ℝ) (hC : 0 ≤ C) :
+section
+variable (g : 𝓢(ℝ, ℂ)) (k : ℕ) (S C : ℝ) (hS : 0 ≤ S) (hC : 0 ≤ C)
+
+include hC in
+theorem fourierPointBound_nonneg       :
     0 ≤ fourierPointBound k C := by unfold fourierPointBound fourierSeminormBound; positivity
 
-theorem uniform_fourier_pointwise (g : 𝓢(ℝ, ℂ)) (k : ℕ) (S C : ℝ)
-    (hS : 0 ≤ S) (hC : 0 ≤ C)
+include hS hC in
+theorem uniform_fourier_pointwise      
+       
     (hsource : ∀ i ≤ k,
       S * ((SchwartzMap.seminorm ℝ 0 i) g +
         (SchwartzMap.seminorm ℝ (volume : Measure ℝ).integrablePower i) g) ≤ C)
-    (t : ℝ) :
+     t  :
     S * (1 + ‖t‖) ^ k * ‖(𝓕 g) t‖ ≤ fourierPointBound k C := by
   have h0 : S * (SchwartzMap.seminorm ℝ 0 0) (𝓕 g) ≤ fourierSeminormBound 0 C :=
     uniform_fourier_seminorm_transfer g 0 S C hS hC
@@ -299,8 +313,9 @@ theorem uniform_fourier_pointwise (g : 𝓢(ℝ, ℂ)) (k : ℕ) (S C : ℝ)
     _ = (2 : ℝ) ^ k * (S * ‖(𝓕 g) t‖ + S * (‖t‖ ^ k * ‖(𝓕 g) t‖)) := by ring
     _ ≤ (2 : ℝ) ^ k * (S * (SchwartzMap.seminorm ℝ 0 0) (𝓕 g) +
           S * (SchwartzMap.seminorm ℝ k 0) (𝓕 g)) := by gcongr
-    _ ≤ fourierPointBound k C := by
-      exact mul_le_mul_of_nonneg_left (add_le_add h0 hk) (by positivity)
+    _ ≤ fourierPointBound k C := mul_le_mul_of_nonneg_left (add_le_add h0 hk) (by positivity)
+
+end
 
 end FourierBridge
 
@@ -312,7 +327,7 @@ theorem coupled_positive_log_separation_envelope
     (hM : ∀ j, 0 ≤ M j)
     (hWwindow : ∀ j z, W j z ≠ 0 → |z| ≤ M j)
     (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0))
-    (A J : ℕ) (CF : ℝ) (hCF : 0 ≤ CF)
+     A J  (CF : ℝ) (hCF : 0 ≤ CF)
     (hEuler : ∀ i ≤ J + (volume : Measure ℝ).integrablePower,
       ∀ x : ℝ, 0 < x →
         (1 + x) ^ A * ‖eulerDeriv F i x‖ ≤ CF) :
@@ -342,7 +357,7 @@ theorem coupled_positive_log_separation_envelope
   have hm : 0 < m := Real.exp_pos _
   have hm1 : m ≤ 1 := by
     dsimp [m]
-    simpa using (Real.exp_le_exp.mpr (show -Lwin ≤ 0 by linarith))
+    simp_all
   obtain ⟨V, CW, hVc, hVs, hVone, hCW, hVderiv, hwindow⟩ :=
     FourierBridge.exists_complex_smooth_cutoff_with_derivative_bounds T K hT
   let P : ℝ := momentConstant K Lwin CW CF
@@ -409,7 +424,7 @@ theorem coupled_positive_log_separation_envelope
       (m ^ A * (1 + R) ^ A) P (by positivity) hP hsource t
     have hb : (1 + R) ^ A * (1 + ‖t‖) ^ J * ‖b t‖ ≤ Bpoint / m ^ A := by
       apply (le_div_iff₀ (pow_pos hm A)).mpr
-      simpa only [g, b, Bpoint, mul_assoc, mul_left_comm, mul_comm] using hpoint
+      linarith
     exact hb.trans (div_le_div_of_nonneg_right (le_add_of_nonneg_left hB) (by positivity))
 
 end LocalLogFourier
@@ -421,7 +436,7 @@ theorem paperRadialFourier_log_separation_envelope
     (W : 𝓢(ℝ, ℂ)) (V : ι → ℝ → ℂ) (a M : ι → ℝ)
     (hM : ∀ j, 0 ≤ M j)
     (hVwindow : ∀ j z, V j z ≠ 0 → |z| ≤ M j)
-    (A J : ℕ) :
+     A J  :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ R : ℝ, 0 < R →
       ∃ b : 𝓢(ℝ, ℂ),
         (∀ y : ι → ℝ,
@@ -442,10 +457,10 @@ theorem paperRadialFourier_log_separation_envelope
 end EisensteinSchwartzPoisson
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
+ 
+ 
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
+ 
 open FirstCauchyArithmetic (supportMobius supportRay supportIdealFamily supportIdealFamily_pos
   supportIdealFamily_good recoveredSupport)
 open ConcretePrimeRowBridge (conjugateIdealRowSum)

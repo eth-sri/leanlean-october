@@ -12,29 +12,29 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
+
 
 structure SecondProfileData (ι : Type*) where
   common : Finset ι
   overlap : Finset ι
   extractedLeft : Finset ι
   extractedRight : Finset ι
-  rayLeft : Eis →* ℂ
-  rayRight : Eis →* ℂ
-  puncture : Eis
-  quotient : Eis
-  oldLabel : Eis
-  oldDivisor : Eis
-  divisor : Eis
-  frequency : Eis
+  rayLeft : ActualEisensteinCubic.O →* ℂ
+  rayRight : ActualEisensteinCubic.O →* ℂ
+  puncture : ActualEisensteinCubic.O
+  quotient : ActualEisensteinCubic.O
+  oldLabel : ActualEisensteinCubic.O
+  oldDivisor : ActualEisensteinCubic.O
+  divisor : ActualEisensteinCubic.O
+  frequency : ActualEisensteinCubic.O
 
-def secondActualNorms {ι : Type*} (p : ι → Eis) (x : SecondProfileData ι)
-    (N M : Finset ι) : Fin 6 → ℝ :=
+def secondActualNorms {ι } (p : ι → ActualEisensteinCubic.O) (x : SecondProfileData ι)
+    (N M : Finset ι)  :=
   ![primeProductNorm p x.common, ‖eisEmbedding x.divisor‖^2,
     primeProductNorm p x.overlap, ‖eisEmbedding x.frequency‖^2,
     primeProductNorm p N, primeProductNorm p M]
 
-lemma secondActualNorms_pos {ι : Type*} (p : ι → Eis) (hp : ∀ i, p i ≠ 0)
+lemma secondActualNorms_pos {ι : Type*} (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0)
     (x : SecondProfileData ι) (he : x.divisor ≠ 0) (hk : x.frequency ≠ 0) (N M : Finset ι) :
     ∀ i, 0 < secondActualNorms p x N M i := by
   intro i
@@ -47,7 +47,7 @@ lemma secondActualNorms_pos {ι : Type*} (p : ι → Eis) (hp : ∀ i, p i ≠ 0
   · exact primeProductNorm_pos p hp M
 
 def secondActualCoefficient {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (x : SecondProfileData ι) (slots₁ slots₂ : Finset σ)
@@ -60,7 +60,7 @@ def secondActualCoefficient {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
     primeMark slots₂ lists₂ a₂ (x.extractedRight ∪ (x.overlap ∪ M)))
 
 def actualSecondProfileRow {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (F : Finset ι) (x : SecondProfileData ι) (slots₁ slots₂ : Finset σ)
@@ -76,12 +76,12 @@ def actualSecondProfileRow {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
         W₂ (primeProductNorm p x.common*primeProductNorm p U/X)) Φ Y)
 
 theorem actualSecondProfileRow_eq_whole {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (F : Finset ι) (x : SecondProfileData ι) (slots₁ slots₂ : Finset σ)
-    (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
-    (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Y X : ℝ) :
+     lists₁ lists₂   a₁ a₂ 
+     W₁ W₂   Φ   Y X  :
     actualSecondProfileRow p hp hcop hg F x slots₁ slots₂ lists₁ lists₂ a₁ a₂ W₁ W₂ Φ Y X =
       ∑ N ∈ (F \ x.overlap).powerset, ∑ M ∈ (F \ x.overlap).powerset,
         secondActualCoefficient p hp hcop hg x slots₁ slots₂ lists₁ lists₂ a₁ a₂ N M *

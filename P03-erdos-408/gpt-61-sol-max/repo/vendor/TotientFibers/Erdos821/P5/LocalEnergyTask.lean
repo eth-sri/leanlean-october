@@ -12,7 +12,7 @@ open MeasureTheory
 namespace Erdos821.P5Core
 open Blueprint.Analytic
 
-def localAdditivePolynomial (s : Finset ℕ) (a : ℕ → ℂ) (θ : ℝ) : ℂ :=
+def localAdditivePolynomial (s : Finset ℕ) (a : ℕ → ℂ) (θ : ℝ)  :=
   ∑ n ∈ s, a n * e (θ * n)
 
 /-- §4 local Fourier to Mellin energy, source eq. local-mellin-energy.
@@ -27,7 +27,7 @@ its u-dependent amplitude, and integrate by parts twice in u to obtain
 (1+|s|)⁻²*(1+|h*t|)⁻ʲ decay (use a larger decay index first).
 Minkowski and Plancherel in u leave H⁻²*Y*h²=Y⁻¹, proving this contract.
 No arithmetic or unproved blueprint interface is required. -/
-def LocalMellinEnergyTask : Prop :=
+def LocalMellinEnergyTask  :=
   ∀ j : ℕ, 2 ≤ j → ∃ K : ℝ, 0 < K ∧
     ∀ (Y H : ℝ) (s : Finset ℕ) (a : ℕ → ℂ),
       10 ≤ Y → 1 ≤ H → H ≤ Y / 10 →

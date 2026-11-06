@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicLengths
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicLengths
 
 namespace OAI
 
-noncomputable section
+
 
 open scoped Classical Topology
 open Filter
@@ -15,11 +16,15 @@ namespace SevenEighths.HeckeDetectorSimultaneousSupport
 open HeckeFamily HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
 open HeckeDetectorDyadicGeometry HeckeDetectorSaturation HeckeDetectorNormalized
 
-theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
-    (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)
-    (hτzero : τ<dmin/2) (hτheight : 4*τ<dmin*η)
-    (hε : 0<ε) (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hη : 0≤η)
-    (hbudget : 12*e*((22 : ℝ)+2)+8*κ+2*η≤ε/2) :
+section
+variable (dmin dmax τ ε e κ η : ℝ) (I : ℕ) (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ) (hτzero : τ<dmin/2) (hτheight : 4*τ<dmin*η) (hε : 0<ε) (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hη : 0≤η) (hbudget : 12*e*((22 : ℝ)+2)+8*κ+2*η≤ε/2)
+include dmin dmax τ ε e κ η I hdmin hdmax hτ hτzero hτheight hε he he' hκ hκ' hη hbudget
+
+theorem from_actual_zero    
+         
+       
+               
+      :
     ∃ Z₀ : ℝ, ∀ Z : ℝ, Z₀≤Z → ∀ d : ℝ, dmin≤d → d≤dmax →
       ∀ {ι : Type*} [Fintype ι] (χ : ι→Character) (hχ : ∀ j, (χ j).residue≠1)
         (a : ℝ) (i : ℕ), i≤I → 51/100≤a → a≤1 →
@@ -64,7 +69,7 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
   have hUS : US≤U := (le_max_right _ _).trans ((le_max_right _ _).trans hlarge)
   have hU2 : 2≤U := by linarith
   have hU1 : 1<U := by linarith
-  have hUp : 0<U := by linarith
+  
   have hρlo : 51/100≤ρ.re := ha.trans hρ
   have hρhi : ρ.re≤1 := le_of_lt (lt_of_not_ge (fun hh =>
     LFunction_ne_zero_of_one_le_re (χ j) hh (Or.inr (hχ j)) hzero))
@@ -100,11 +105,11 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
     (by linarith [hsupport.2]),hs.2.1,hs.2.2⟩
   linarith [hsupport.2,hs.1]
 
-theorem from_actual_maximum (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
-    (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)
-    (hτzero : τ<dmin/2) (hτheight : 4*τ<dmin*η)
-    (hε : 0<ε) (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hη : 0≤η)
-    (hbudget : 12*e*((22 : ℝ)+2)+8*κ+2*η≤ε/2) :
+theorem from_actual_maximum    
+         
+       
+               
+      :
     ∃ Z₀ : ℝ, ∀ Z : ℝ, Z₀≤Z → ∀ d : ℝ, dmin≤d → d≤dmax →
       ∀ {ι : Type*} [Fintype ι] (χ : ι→Character) (hχ : ∀ j, (χ j).residue≠1)
         (a : ℝ) (i : ℕ), i≤I → 51/100<a → a≤1 →
@@ -134,8 +139,10 @@ theorem from_actual_maximum (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
   exact ⟨j,ρ,hzero,hρ,him,hZ₀ Z hZ d hd hd' χ hχ a i hi ha.le ha' hnext j
     (hQ j) ρ hzero hρ him tstar ht ht'⟩
 
+end
+
 end SevenEighths.HeckeDetectorSimultaneousSupport
 
-end
+
 
 end OAI

@@ -10,15 +10,15 @@ namespace OAI
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_completed_rows_energy_uniform_degree
     (lo hi : ℝ) (hlo : 0<lo)
-    (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (L cstar η : ℝ) (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η)
-    (hη1 : η≤1) (hηc : η≤cstar/100000) (rmax : ℕ) :
+     W  (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
+     L cstar η  (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η)
+    (hη1 : η≤1) (hηc : η≤cstar/100000)  rmax  :
     ∃ (degree : ℕ), ∀ (q : ℕ) (_hq : q≠0), ∃ (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
     ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (F : Ideal Eis) (_hF : Squarefree F)
       (m : Eis) (_hm : m≠0) (Z N V M z₀ margin hhat d : ℝ),
@@ -86,7 +86,7 @@ theorem canonical_completed_rows_energy_uniform_degree
   calc
     _ = (D*C)*(1+‖θ‖)^degree*(Z^(cstar/32)*Z^(N+V-cstar/16)) := by ring
     _ = _ := by rw [←Real.rpow_add hz]; congr 2; ring
-end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

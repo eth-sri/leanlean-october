@@ -16,11 +16,11 @@ variable {ι : Type*} [Fintype ι] {α : ι → Type*} [∀ i, Fintype (α i)]
 
 abbrev PartialSample (S : Finset ι) (α : ι → Type*) := ∀ i : {i // i ∈ S}, α i.val
 
-def partialProductWeight (w : ∀ i, α i → ℝ) (S : Finset ι)
-    (a : PartialSample S α) : ℝ := ∏ i, w i.val (a i)
+def partialProductWeight (w : ∀ i, α i → ℝ) (S )
+    (a : PartialSample S α)  := ∏ i, w i.val (a i)
 
 omit [(i : ι) → Fintype (α i)] in
-lemma productWeight_split (w : ∀ i, α i → ℝ) (S : Finset ι) (y : ProductSample α) :
+lemma productWeight_split (w : ∀ i, α i → ℝ)  S   y  :
     productWeight w y = partialProductWeight w S (fun i => y i.val) *
       productWeight (fun i : {i // i ∉ S} => w i.val) (fun i => y i.val) := by
   convert (Fintype.prod_subtype_mul_prod_subtype (fun i => i ∈ S)

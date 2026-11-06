@@ -10,14 +10,14 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-def actualMixedCoefficient (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
+variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
+
+def actualMixedCoefficient (F : PrimeFamily φ) (K ) (hK )
     (S : PrimeFamily σ) (jF : φ → ℕ)
     (D : ControlledStratumArithmetic (F.reflected K hK S).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
-    (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) : ℂ :=
+    (u : ActualEisensteinCubic.Oˣ) (m : ℕ) (n b : Ideal ActualEisensteinCubic.O)  :=
   s.amplitude u m n b *
     (star D.fixedFactor * ShortDraftCusp.A4BadPhase c hc (D.matrix (fun _ => 1) 1 1) D.U
       (s.modelDualNumerator u m n b)) *
@@ -25,12 +25,12 @@ def actualMixedCoefficient (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible
       (F.reflected K hK S).generator_good (reflectedExponent jF)
       (slotIndices φ (PrimeIndex K) σ) D i (s.modelDualNumerator u m n b)
 
-theorem actualMixedCoefficient_factor (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : PrimeFamily σ) (jF : φ → ℕ)
+theorem actualMixedCoefficient_factor (F : PrimeFamily φ)  K   hK 
+     S   jF 
     (D : ControlledStratumArithmetic (F.reflected K hK S).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
     (hcop : Pairwise (Function.onFun IsCoprime (F.reflected K hK S).ideal))
-    (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) (hb : primaryGenerator b ≠ 0) :
+     u   m   n b  (hb : primaryGenerator b ≠ 0) :
     actualMixedCoefficient F K hK S jF D s hc u m n b =
       ((-1:ℂ)^(Fintype.card σ)*actualRowPhase F K hK jF s u m*actualSlotPhase F S jF s u m*
         sourceFrozenPhase D s (F.reflected K hK S).generator_ne_zero

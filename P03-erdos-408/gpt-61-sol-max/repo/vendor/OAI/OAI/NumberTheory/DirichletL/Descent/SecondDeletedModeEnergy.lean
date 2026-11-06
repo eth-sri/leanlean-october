@@ -12,7 +12,7 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open JointLogSeparation
-noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -77,7 +77,7 @@ theorem actual_second_deleted_mode_branch_energy
   dsimp only [phase]
   ring
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

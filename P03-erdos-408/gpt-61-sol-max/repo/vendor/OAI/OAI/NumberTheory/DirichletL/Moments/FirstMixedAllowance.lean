@@ -15,22 +15,22 @@ open CanonicalQuadraticSieve CenteredMomentCompleteCommon CenteredMomentCanonica
 open CenteredMomentRankinRadical CenteredMomentFirstCanonicalAllowance
 open CenteredMomentFirstPhysicalLedger CenteredMomentFirstScale CenteredMomentSectorLocalization
 open CenteredMomentDescentLedger CenteredMomentFirstExceptionalPaidScales
-local notation "O"=>ActualEisensteinCubic.O
 
-def allowance (C D:Ideal O)(Z:ℝ):ℝ:=
+
+def allowance (C D:Ideal ActualEisensteinCubic.O)(Z:ℝ):=
   max (3*Real.logb Z (C.absNorm:ℝ)-5*Real.logb Z (D.absNorm:ℝ)-
     Real.logb Z ((Ideal.span {activeConductor C D}).absNorm:ℝ)) 0/6
 
-def extractedAllowance (I J:Ideal O)(Z:ℝ):ℝ:=
+def extractedAllowance (I J:Ideal ActualEisensteinCubic.O)(Z:ℝ):=
   max (3*Real.logb Z ((commonPart I J).absNorm:ℝ)-
     5*Real.logb Z ((commonPart J I).absNorm:ℝ)-
     Real.logb Z ((Ideal.span {activeConductor I J}).absNorm:ℝ)) 0/6
 
-lemma allowance_nonneg (C D:Ideal O)(Z:ℝ):0≤allowance C D Z:=by
+lemma allowance_nonneg  C D  Z :0≤allowance C D Z:=by
   unfold allowance;positivity
 
-lemma actual_allowance_sum (C D:Ideal O)(hC:Supported C)(hD:Supported D)
-    (hCD:CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)(Z:ℝ)(hZ:1<Z):
+lemma actual_allowance_sum  C D (hC:Supported C)(hD:Supported D)
+    (hCD:CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) Z (hZ:1<Z):
     allowance C D Z+
       max (3*Real.logb Z (D.absNorm:ℝ)-5*Real.logb Z (C.absNorm:ℝ)-
         Real.logb Z ((Ideal.span {activeConductor C D}).absNorm:ℝ)) 0/6≤

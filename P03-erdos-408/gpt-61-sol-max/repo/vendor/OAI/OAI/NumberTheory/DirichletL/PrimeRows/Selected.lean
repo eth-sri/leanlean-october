@@ -14,16 +14,16 @@ open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+
 
 def continuedCompensatedLocal (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
-    (x w z B q : ℂ) : ℂ :=
+    (x w z B q : ℂ)  :=
   ProbeLocal.compensatedReplacement (coordV P.val.absNorm z)
     (coordW P.val.absNorm (idealRowHom u.val P.val) w)
     (coordD P.val.absNorm (idealCoeff η P.val) (idealRowHom u.val P.val) x)
     (continuedMarkedLocal η u P hs x w z) B q
 
-theorem localNormalization_coordinates (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) :
+theorem localNormalization_coordinates  η   u   P   x w z  :
     localNormalization η u P x w z=
       (1-coordV P.val.absNorm z)*(1-coordW P.val.absNorm (idealRowHom u.val P.val) w)/
         (1-coordD P.val.absNorm (idealCoeff η P.val) (idealRowHom u.val P.val) x) := by
@@ -37,11 +37,11 @@ theorem row_phase_ramified (u : FreeRow) (P : PrimeIdeal) (hP : P.val∣Ideal.sp
   have hu : u.val∈P.val := (Ideal.dvd_iff_le.mp hP) (Ideal.subset_span (by simp))
   exact idealRowHom_zero_of_dvd u.val P.property (dvd_refl _) hu
 
-theorem continuedCompensatedLocal_ramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hP : P.val∣Ideal.span {u.val}) (x w z : ℂ) :
+theorem continuedCompensatedLocal_ramified  η   u   P 
+     hs  (hP : P.val∣Ideal.span {u.val})  x w z  :
     let p := primaryGenerator P.val
     let hp := supported_primeGenerator_prime P hs
-    letI : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+    letI : (Ideal.span {p}:Ideal HeckeFamily.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
     let hg := (supported_prime_data p hp ((span_primaryGenerator_of_supported P.val hs).symm ▸ hs)).1
     continuedCompensatedLocal η u P hs x w z
       (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w))=
@@ -52,7 +52,7 @@ theorem continuedCompensatedLocal_ramified (η : Character) (u : FreeRow) (P : P
   let p := primaryGenerator P.val
   have hp : Prime p := supported_primeGenerator_prime P hs
   have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  let : (Ideal.span {p}:Ideal HeckeFamily.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
   have hg := supported_prime_data p hp hsp
   have he := ramifiedSelected_eq_replacement p hp hg.1 (targetMonoid η p) (actualACube η p)

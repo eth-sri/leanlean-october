@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.Extraction.Allocation.Failure.Eventually
 
@@ -20,7 +21,7 @@ open Finset Filter Real
 noncomputable section
 
 /-- The decay exponent `a = θ / 4500` of E6. -/
-def failureDecay : ℝ := chernoffTheta / 4500
+def failureDecay  := chernoffTheta / 4500
 
 /-- `a > 0`. -/
 lemma failureDecay_pos : 0 < failureDecay := by
@@ -47,13 +48,10 @@ lemma one_sub_pow_le_exp {n : ℕ} {T : ℝ} (hn : T / 15 ≤ n) :
     _ ≤ Real.exp (-(failureDecay * T)) := by
         refine exp_le_exp.2 ?_
         unfold failureDecay
-        have : chernoffTheta / 4500 * T ≤ chernoffTheta * (1 / 4) / 75 * n := by
-          have := mul_le_mul_of_nonneg_left hn (show 0 ≤ chernoffTheta / 300 by positivity)
-          linarith
-        linarith
+        nlinarith
 
 /-- For large `x`, each family's free-factor sum is small, uniformly in `2 ≤ j ≤ J_c`. -/
-theorem eventually_freeFactorSum_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 1 < κ) :
+theorem eventually_freeFactorSum_le  {c}  (hc : 0 < c)  Ch Cj κ  (hκ : 1 < κ) :
     ∀ᶠ x : ℝ in atTop, ∀ j' : ℕ, j' + 1 ≤ compositeCutoff Cj x →
       ∀ F ∈ ({smallGroups x, bigGroups x} : Finset (Finset (Finset ℕ))),
         freeFactorSum x (presieveExponent c Ch x) (1 / 4) j' (⌊κ * x⌋₊ + 1) F ≤
@@ -91,7 +89,7 @@ lemma final_le {a T L X x κ S₁ S₂ : ℝ} (ha0 : 0 < a) (ha1 : a ≤ 1) (hT 
       Real.exp (-T))) :
     Real.exp (a / 4 * T) * (S₁ + S₂) ≤ 20 * κ * (x / L) * L ^ (-(a / 2)) := by
   have hL0 : 0 < L := by rw [← hLT]; exact exp_pos T
-  have hxκ : 0 ≤ 2 * κ * x := hX0.trans hX
+  
   -- `e^{-T} ≤ e^{-aT}` and the bracket is at most `5 e^{-3aT/4}`
   have h1 : Real.exp (-T) ≤ Real.exp (-(a * T)) := exp_le_exp.2 (by nlinarith)
   have h2 : Real.exp (-(a * T)) ≤ Real.exp (-(3 * a * T / 4)) := exp_le_exp.2 (by nlinarith)

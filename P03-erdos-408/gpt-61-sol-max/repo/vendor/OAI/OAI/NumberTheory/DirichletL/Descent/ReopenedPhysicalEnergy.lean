@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ReopenedPhysicalSplit
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-noncomputable section
+
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
@@ -59,7 +59,7 @@ theorem original_reopened_physical_energy
   exact original_reopened_physical_split p hp hcop hg hinj hc hpr pool Q hQ labels hlabels
     β Ψ m mark W rowMajorant K hK R hR
 
-end
+
 end SevenEighths.InverseMoment
 
 end OAI

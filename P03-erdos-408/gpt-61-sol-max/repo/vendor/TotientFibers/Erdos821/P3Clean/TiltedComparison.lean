@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos821.P3Clean.DensityBounds
 public import Erdos821.P3Clean.AuxiliaryBan
@@ -25,13 +26,13 @@ def cleanBigMultiplier (F : FixedData) (n : ℕ) (ν : Pattern P J F.ell m)
   (Real.sqrt (freshDensity F n ν a) * Real.sqrt (freshDensity F n ν b) : ℝ) *
     (if bigBan ν a b u then 1 else 0)
 
-theorem cleanBigMultiplier_average_error (F : FixedData) (n : ℕ)
-    (ν : Pattern P J F.ell m) (D atom : ℝ) (hD : 1 ≤ D)
+theorem cleanBigMultiplier_average_error (F : FixedData)  n 
+    (ν : Pattern P J F.ell m)  D atom  (hD : 1 ≤ D)
     (hV : ∀ g : P.BigGroup, P.V g.val ≠ 0)
     (hatom : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, P.mu g.val p ≤ atom)
     (hsqrt : ∀ a b, 1 ≤ Real.sqrt (freshDensity F n ν a) * Real.sqrt (freshDensity F n ν b) ∧
       Real.sqrt (freshDensity F n ν a) * Real.sqrt (freshDensity F n ν b) ≤ D)
-    (a b : P.BigLabels (J + F.ell)) :
+     a b  :
     (∑ u : P.BigAux J, ν.bigAuxMass u * ‖cleanBigMultiplier F n ν a b u - 1‖) ≤
       (D - 1) + D * ((Fintype.card P.BigGroup : ℝ) * J * (J + F.ell) * (2 * atom)) := by
   have hs := hsqrt a b
@@ -40,9 +41,7 @@ theorem cleanBigMultiplier_average_error (F : FixedData) (n : ℕ)
     by_cases h : bigBan ν a b u
     · simp only [cleanBigMultiplier, ite_eq_left h, mul_one, mul_zero, add_zero]
       rw [← Complex.ofReal_one, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
-      rw [abs_of_nonneg (by linarith : 0 ≤
-        Real.sqrt (freshDensity F n ν a) * Real.sqrt (freshDensity F n ν b) - 1)]
-      linarith
+      grind
     · simp only [cleanBigMultiplier, ite_eq_right h, mul_zero, zero_sub, norm_neg, norm_one, mul_one]
       linarith
   calc
@@ -56,7 +55,10 @@ theorem cleanBigMultiplier_average_error (F : FixedData) (n : ℕ)
     _ ≤ _ := add_le_add_right (mul_le_mul_of_nonneg_left
       (bigAuxMass_ban_probability ν hV atom hatom a b) (zero_le_one.trans hD)) _
 
-theorem normalizedTiltedBannedRaw_forward (A : Model F P J m) (n : ℕ) (theta : ℝ)
+section
+variable (A : Model F P J m) (n : ℕ)
+
+theorem normalizedTiltedBannedRaw_forward      theta 
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val) :
     densityNormalizedKernel (activeDensity F n) (tiltedBannedRaw A n theta true) =
       idealMultiplierRaw A theta (fun v => cleanBigMultiplier F n (A.pattern v)) := by
@@ -79,29 +81,17 @@ theorem normalizedTiltedBannedRaw_forward (A : Model F P J m) (n : ℕ) (theta :
               Real.sqrt (freshDensity F n (A.pattern v) b) : ℝ) := by
         exact_mod_cast h
       simp only [Complex.ofReal_mul, Complex.ofReal_div] at hc ⊢
-      calc
-        _ = (((A.pattern v).bigAuxMass u : ℂ) *
-            ((Real.sqrt (activeDensity F n a) : ℂ) / (Real.sqrt (activeDensity F n b) : ℂ) *
-              (tiltedFreshMass F n (A.pattern v) b : ℂ))) *
-            ((A.pattern v).coefficient a b u * imaginaryPower ((A.pattern v).DBig a u) A.zeta) *
-            phase (theta * ((A.pattern v).DBig a u : ℝ)) := by ring
-        _ = _ := by rw [hc]; ring
-    · have hg : ¬ ((A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u) := fun h => hban h.2
-      simp only [ite_eq_left hm, ite_eq_right hg, cleanBigMultiplier, ite_eq_right hban, mul_zero]
-  · have hg : ¬ ((A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u) := fun h => hm h.1
-    simp only [ite_eq_right hm, ite_eq_right hg, mul_zero]
+      grind
+    grind [bigBan, cleanBigMultiplier]
+  grind
 
-theorem densityNormalizedKernel_averageBig (n : ℕ)
+theorem densityNormalizedKernel_averageBig  n 
     (K : P.BigLabels (J + F.ell) → P.BigLabels (J + F.ell) → ℂ) :
     densityNormalizedKernel (activeDensity F n) (averageBigKernel K) =
       averageBigKernel (densityNormalizedKernel (activeDensity F n) K) := by
   funext a b
   simp only [densityNormalizedKernel, averageBigKernel, activeDensity_actBig,
     Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro p _
-  apply Finset.sum_congr rfl
-  intro q _
   ring
 
 theorem averageBigKernel_sub (K H : P.BigLabels (J + F.ell) → P.BigLabels (J + F.ell) → ℂ) :
@@ -110,7 +100,7 @@ theorem averageBigKernel_sub (K H : P.BigLabels (J + F.ell) → P.BigLabels (J +
   funext a b
   simp only [averageBigKernel, Finset.sum_sub_distrib, mul_sub]
 
-theorem normBound_tiltedBannedKernel_forward (A : Model F P J m) (n : ℕ) (theta C D atom : ℝ)
+theorem normBound_tiltedBannedKernel_forward      theta C D atom 
     (hD : 1 ≤ D) (hat : 0 ≤ atom)
     (hV : ∀ g : P.BigGroup, P.V g.val ≠ 0)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
@@ -126,10 +116,9 @@ theorem normBound_tiltedBannedKernel_forward (A : Model F P J m) (n : ℕ) (thet
   have hd : 0 ≤ delta := by unfold delta; positivity
   have herr := normBound_idealMultiplierRaw_average A theta delta hd
     (fun v a b u => cleanBigMultiplier F n (A.pattern v) a b u - 1)
-    (fun v a b => cleanBigMultiplier_average_error F n (A.pattern v) D atom hD hV hatom
-      (hsqrt v) a b) hV
+    (fun v a b => (by solve_by_elim [cleanBigMultiplier_average_error])) hV
   have havg := normBound_averageBigKernel P.idealMass _ _
-    (fun p a => bigProductMass_actBig (fun g q => P.mu g.val q) p a) herr
+    (bigProductMass_actBig (fun g q => P.mu g.val q)) herr
   have he : averageBigKernel
       (idealMultiplierRaw A theta (fun v a b u => cleanBigMultiplier F n (A.pattern v) a b u - 1)) =
       fun a b => densityNormalizedKernel (activeDensity F n) (tiltedBannedKernel A n theta true) a b -
@@ -160,6 +149,8 @@ theorem normBound_tiltedBannedKernel_forward (A : Model F P J m) (n : ℕ) (thet
   have ht := normBound_density_identification P.idealMass (activeDensity F n)
     (tiltedBannedKernel A n theta true) _ (activeDensity_pos F n hb) hn
   simpa only [← tiltedIdealMass_density] using ht
+
+end
 
 
 end Erdos821.P3Clean

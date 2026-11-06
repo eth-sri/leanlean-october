@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBranchGeometry
 
@@ -6,18 +7,18 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBranchGeometry
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowWindow
 open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
 open CenteredMomentEnergyReferenceLowBranchGeometry
-local notation "O"=>HeckeFamily.O
 
-lemma reflection_window_length (Z R x:ℝ)(hZ:1<Z)(hR:0≤R)
+
+lemma reflection_window_length  Z R x (hZ:1<Z)(hR:0≤R)
     (hx:x∈Set.Icc 0 (R*Real.log Z)):
     length Z (Real.exp x)≤R ∧ Real.exp x≤Z^R:=by
-  have hlog:0<Real.log Z:=Real.log_pos hZ
+  
   have hexp:Real.exp x≤Z^R:=by
     rw [Real.rpow_def_of_pos (zero_lt_one.trans hZ)]
     apply Real.exp_le_exp.mpr
@@ -31,6 +32,6 @@ lemma reflection_window_length (Z R x:ℝ)(hZ:1<Z)(hR:0≤R)
 
 end SevenEighths.CenteredMomentEnergyReferenceLowWindow
 
-end
+
 
 end OAI

@@ -12,7 +12,7 @@ namespace Erdos821.S2Core
 
 open Erdos821.Blueprint.Graph
 
-def HistoryReconstructionTask : Prop :=
+def HistoryReconstructionTask  :=
   LifespanClassificationTask → HistoryAnchorTask →
   ∀ (F : FixedData) (P : PrimeGroups) (J m n : ℕ) (A : Model F P J m)
     (H : MemoryHistory A n),

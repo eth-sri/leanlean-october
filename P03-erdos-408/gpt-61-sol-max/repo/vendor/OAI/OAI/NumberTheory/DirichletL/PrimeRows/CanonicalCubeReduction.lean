@@ -7,18 +7,18 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFiniteIntegral
 
 namespace OAI
 
-noncomputable section
+
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-local notation "O" => HeckeFamily.O
+
 variable {ι : Type*} [Fintype ι]
 
 theorem canonical_probe_minus_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2) (hζ : 0<ζ) (hζ' : ζ≤1/48) (hτ : 0<τ)
     (ha : 0<a) (hb : 0<b) (hB : 0≤B) (hβ : (7/8:ℝ)≤HeckeZeroSupremum.beta)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
@@ -46,7 +46,7 @@ theorem canonical_probe_minus_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
   intro η Z hZ T hT hdis length hl0 hl hpool W hWS hWB alpha base H idx ψ hbin
   have h0' := h0 η Z hZ T hT hdis length hl0 hl W hWS hWB
   let R := rowBand (Z^(1/100:ℝ)) (Z^((13/16:ℝ)+ζ))
-  have hR (u : FreeRow) (hu : u∈R) : u.val≠1 ∧ ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤Z^((13/16:ℝ)+ζ) :=
+  have hR (u : FreeRow) (hu : u∈R) : u.val≠1 ∧ ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤Z^((13/16:ℝ)+ζ) :=
     ⟨(mem_rowBand.mp hu).1,(mem_rowBand.mp hu).2.2.le⟩
   have h1' := h1 η Z hZ R hR T hT hdis length hl hpool W hWB alpha base H idx ψ hbin
   have hQ := HeckeLogarithmicInput.modulus_norm_ge_one η
@@ -69,6 +69,6 @@ theorem canonical_probe_minus_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
 
 end SevenEighths.ProbeHighRowFamily
 
-end
+
 
 end OAI

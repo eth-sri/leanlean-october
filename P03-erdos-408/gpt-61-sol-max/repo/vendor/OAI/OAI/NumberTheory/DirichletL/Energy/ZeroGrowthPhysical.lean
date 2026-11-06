@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthPhysicalReindex
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalHighPhysical
@@ -95,7 +96,7 @@ theorem actual_growth_physical
   dsimp only
   intro hfour
   let src:=emptyBalanced s p ha t X₁ X₂ hX₁ hX₂ α
-  let θ:(∅:Finset α)→RayQuotient.Characters M H:=fun i=>isEmptyElim i
+  let θ:(∅:Finset α)→RayQuotient.Characters M H:=isEmptyElim
   have hmatch:CenteredMomentAllocatedRayDictionary.Matches M H hH src η₀ θ
       (fun _=>0) (fun _=>0) (fun _=>0) Wslot bslot Z:=by
     constructor <;> intro i <;> exact isEmptyElim i
@@ -106,17 +107,17 @@ theorem actual_growth_physical
   have hK:=CenteredMomentEnergyNaturalSourceAdmission.radial_admission s
   have hbound:=hphysical ∅ θ Z hZbaseLe εchild C₀ C₁ hC₀ hC₁ hzero hpos
     (fun _=>0) (fun _=>0) (fun _=>0) 0 (mesh Mschedule Bschedule κ ε) hmesh.le
-    (fun i=>isEmptyElim i)
-    (fun i=>isEmptyElim i)
-    (fun i=>isEmptyElim i)
-    (fun i=>isEmptyElim i)
-    (fun i=>isEmptyElim i)
-    (fun i=>isEmptyElim i) (by norm_num)
-    (fun i=>isEmptyElim i) src hmatch
-    (fun i=>isEmptyElim i)
-    (fun i=>isEmptyElim i)
-    (fun i=>isEmptyElim i)
-    (fun i=>isEmptyElim i) (by simp) le_rfl le_rfl
+    (isEmptyElim)
+    (isEmptyElim)
+    (isEmptyElim)
+    (isEmptyElim)
+    (isEmptyElim)
+    (isEmptyElim) (by norm_num)
+    (isEmptyElim) src hmatch
+    (isEmptyElim)
+    (isEmptyElim)
+    (isEmptyElim)
+    (isEmptyElim) (by simp) le_rfl le_rfl
     hb hb (le_max_right _ _) (le_max_right _ _) (by simp)
     s.puncture 1 s.puncture_ne_zero s.puncture_bound squarefree_one one_ne_zero
     s.radial.scale hK.1 p rfl rfl
@@ -125,8 +126,7 @@ theorem actual_growth_physical
     (columnLoss Mschedule Bschedule ε k) hr.le hdecl
     (by
       change length Z X₁+length Z X₂+6*κ*(∑i:(∅:Finset α),(0:ℝ))≤_
-      simpa only [Finset.sum_const_zero,mul_zero,add_zero] using
-        le_max_right s.width (length Z X₁+length Z X₂))
+      norm_num)
     (hgate.2.1.trans (le_max_left _ _)) hgate.2.1 (by linarith)
     hn.2.2 (by simp [lowerFactor]) (le_max_left _ _)
     hfour.1 hfour.2.1 hfour.2.2.1 hfour.2.2.2 (hn.1.2 k εchild hchild)

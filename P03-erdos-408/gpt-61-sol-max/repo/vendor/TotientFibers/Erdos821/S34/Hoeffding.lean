@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Mathlib.Algebra.Order.Ring.Star
 public import Mathlib.Algebra.Order.Star.Real
@@ -12,9 +13,12 @@ open scoped BigOperators
 
 namespace Erdos821.S34.Proofs
 
+section
+variable (M m ell : ℕ) (p w : ℝ) (hp : 0 ≤ p) (k j : ℕ) (hm : 1 ≤ m)
+
 /-- The fraction of cardinality-j subsets containing m probes and omitting ell
 coordinates. All divisions are real divisions. -/
-theorem hoeffding_fraction (M m ell j : ℕ) (hml : m + ell ≤ M)
+theorem hoeffding_fraction   (hml : m + ell ≤ M)
     (hmj : m ≤ j) (hje : j + ell ≤ M) :
     (Nat.choose (M - m - ell) (j - m) : ℝ) / Nat.choose M j =
       ((Nat.descFactorial j m : ℝ) * Nat.descFactorial (M - j) ell) /
@@ -36,17 +40,7 @@ theorem hoeffding_fraction (M m ell j : ℕ) (hml : m + ell ≤ M)
         Nat.choose M j * Nat.descFactorial j m * Nat.descFactorial (M - j) ell := by
     apply Nat.mul_right_cancel
       (Nat.mul_pos (Nat.factorial_pos (j - m)) (Nat.factorial_pos (M - j - ell)))
-    calc
-      _ = Nat.descFactorial M (m + ell) *
-          (Nat.choose (M - m - ell) (j - m) *
-            Nat.factorial (j - m) * Nat.factorial (M - j - ell)) := by ring
-      _ = Nat.descFactorial M (m + ell) * Nat.factorial (M - m - ell) := by rw [hc]
-      _ = Nat.factorial M := by simpa [Nat.mul_comm] using hM
-      _ = Nat.choose M j * (Nat.factorial (j - m) * Nat.descFactorial j m) *
-          (Nat.factorial (M - j - ell) * Nat.descFactorial (M - j) ell) := by
-        rw [hj, hl]
-        exact hcM.symm
-      _ = _ := by ring
+    grind
   have hchoose : (Nat.choose M j : ℝ) ≠ 0 := by
     exact_mod_cast (Nat.choose_pos hjM).ne'
   have hfall : (Nat.descFactorial M (m + ell) : ℝ) ≠ 0 := by
@@ -82,7 +76,7 @@ private theorem prod_one_sub_lower {ι : Type*} [DecidableEq ι]
 
 /-- Half of M^k is a lower bound for the falling factorial when the total
 excluded fraction is at most one half. -/
-theorem descFactorial_half (M k : ℕ) (hk : 2 ≤ k) (hM : k * (k - 1) ≤ M) :
+theorem descFactorial_half   (hk : 2 ≤ k) (hM : k * (k - 1) ≤ M) :
     (M : ℝ) ^ k / 2 ≤ (Nat.descFactorial M k : ℝ) := by
   have hkM : k ≤ M := calc
     k = k * 1 := by simp
@@ -123,14 +117,16 @@ theorem descFactorial_half (M k : ℕ) (hk : 2 ≤ k) (hM : k * (k - 1) ≤ M) :
       mul_le_mul_of_nonneg_left hprod (by positivity)
     _ = _ := hfall.symm
 
-private theorem rpow_weight_pow (p w : ℝ) (hp : 0 ≤ p) (k j : ℕ)
+include hp in
+private theorem rpow_weight_pow      
     (he : w * (k : ℝ) = j) : (p ^ w) ^ k = p ^ j := by
   rw [← Real.rpow_natCast, ← Real.rpow_mul hp, he, Real.rpow_natCast]
 
+include hm in
 /-- The elementary beta-function maximum needed for probe suppression,
 obtained from weighted AM–GM. -/
-theorem beta_power_bound (m ell : ℕ) (hm : 1 ≤ m) (he : 1 ≤ ell)
-    (t : ℝ) (ht₀ : 0 ≤ t) (ht₁ : t ≤ 1) :
+theorem beta_power_bound     (he : 1 ≤ ell)
+     t  (ht₀ : 0 ≤ t) (ht₁ : t ≤ 1) :
     t ^ m * (1 - t) ^ ell ≤ (ell : ℝ) ^ ell / (m : ℝ) ^ ell := by
   let S : ℝ := (m : ℝ) + ell
   let wm : ℝ := (m : ℝ) / S
@@ -173,9 +169,10 @@ theorem beta_power_bound (m ell : ℕ) (hm : 1 ≤ m) (he : 1 ≤ ell)
     (pow_le_pow_left₀ hwepos.le hwe ell) (pow_nonneg hwepos.le ell) (by norm_num : (0 : ℝ) ≤ 1)
   simpa only [one_mul, div_pow] using hbeta.trans hbound
 
+include hm in
 /-- The suppression bound for a symmetric component containing all m probes
 and excluding all ell averaged coordinates. -/
-theorem hoeffding_fraction_bound (M m ell j : ℕ) (hm : 1 ≤ m) (he : 1 ≤ ell)
+theorem hoeffding_fraction_bound     (he : 1 ≤ ell)
     (hM : (m + ell) * (m + ell - 1) ≤ M) (hj : j ≤ M) :
     ((Nat.descFactorial j m : ℝ) * Nat.descFactorial (M - j) ell) /
       Nat.descFactorial M (m + ell) ≤ 2 * (ell : ℝ) ^ ell / (m : ℝ) ^ ell := by
@@ -205,12 +202,11 @@ theorem hoeffding_fraction_bound (M m ell j : ℕ) (hm : 1 ≤ m) (he : 1 ≤ el
   have hepow : (Nat.descFactorial (M - j) ell : ℝ) ≤ (M - j : ℕ) ^ ell := by
     exact_mod_cast Nat.descFactorial_le_pow (M - j) ell
   have hnum := mul_le_mul hjpow hepow (by positivity) (by positivity)
-  have hn := hnum.trans hnpow
+  
   have hd := mul_le_mul_of_nonneg_left (descFactorial_half M (m + ell) hk hM) hc
   apply (div_le_iff₀ hdpos).mpr
-  have hfinal : (Nat.descFactorial j m : ℝ) * Nat.descFactorial (M - j) ell ≤
-      2 * c * Nat.descFactorial M (m + ell) := by
-    nlinarith [hn, hd]
-  simpa only [c, div_eq_mul_inv, mul_assoc] using hfinal
+  grind
+
+end
 
 end Erdos821.S34.Proofs

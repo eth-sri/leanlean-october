@@ -19,7 +19,11 @@ local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZer
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
-theorem ray_prime_bounded_scale (W : ℝ→ℂ) (A B lo hi D : ℝ) (hA : 0<A)
+section
+variable (W : ℝ→ℂ) (A B lo hi Z T D P κ loss : ℝ)
+
+
+theorem ray_prime_bounded_scale     (hA : 0<A)
     (hWs : Function.support W⊆Icc A B) (hW : Continuous W) (_hD : 1≤D) :
     ∃C : ℝ,0<C ∧ ∀(χ : Character)(P σ freq : ℝ),1≤P → P≤D → lo≤σ → σ≤hi →
       ‖rayPrimePolynomial M H χ W B P σ freq‖≤C := by
@@ -56,7 +60,7 @@ theorem ray_prime_bounded_scale (W : ℝ→ℂ) (A B lo hi D : ℝ) (hA : 0<A)
     _ ≤ ∑ _I∈S,Cw := Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _=>hCw.le)
     _ ≤ _ := by simp only [Finset.sum_const,nsmul_eq_mul];nlinarith
 
-lemma lifted_scale_power (Z T D P κ loss : ℝ) (hZ : 0<Z) (hT : 0<T) (hD : D≠0)
+lemma lifted_scale_power   (hZ : 0<Z) (hT : 0<T) (hD : D≠0)
     (hU : 1<(Z*T)^D) (hP : 0<P) :
     ((Z*T)^D)^(κ*Real.logb ((Z*T)^D) P+2*(loss/(2*D)))=
       P^κ*Z^loss*T^loss := by
@@ -69,10 +73,17 @@ lemma lifted_scale_power (Z T D P κ loss : ℝ) (hZ : 0<Z) (hT : 0<T) (hD : D�
   rw [he,Real.mul_rpow hZ.le hT.le]
   ring
 
-theorem ray_prime_all_height_large (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
-    (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W)
-    (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (_hLs : 0≤Lslot) (hloss : 0<loss)
-    (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
+end
+
+section
+variable (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A) (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W) (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (_hLs hLs : 0≤Lslot) (hloss : 0<loss) (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ)
+
+
+include hA hWs hW hLm _hLs hloss hbeta hκ in
+theorem ray_prime_all_height_large      
+       
+           
+        :
     ∃C Z₀ : ℝ,0<C ∧ 1<Z₀ ∧ ∀ Z P : ℝ,Z₀≤Z → 1≤P → P≤Z^Lslot →
     ∀χ : Character,(χ.modulus.absNorm:ℝ)≤Z^Lmod →
       (∀θ : RayQuotient.Characters M H,(twistedFamily M H hH χ θ).residue≠1) →
@@ -153,10 +164,11 @@ theorem ray_prime_all_height_large (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   rw [lifted_scale_power Z (3+|freq|) d P κ loss hz hT hd.ne' hU (zero_lt_one.trans_le hP)]
   ring
 
-theorem ray_prime_all_height_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
-    (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W)
-    (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hloss : 0<loss)
-    (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
+include hA hWs hW hLm hLs hloss hbeta hκ in
+theorem ray_prime_all_height_squared      
+       
+           
+        :
     ∃degree : ℕ,∃C Z₀ : ℝ,0<C ∧ 1<Z₀ ∧ ∀ Z P : ℝ,Z₀≤Z → 1≤P → P≤Z^Lslot →
     ∀χ : Character,(χ.modulus.absNorm:ℝ)≤Z^Lmod →
       (∀θ : RayQuotient.Characters M H,(twistedFamily M H hH χ θ).residue≠1) →
@@ -204,6 +216,8 @@ theorem ray_prime_all_height_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     _ ≤ C0*P^κ*Z^loss*((3:ℝ)^degree*(1+|freq|)^degree) :=
       mul_le_mul_of_nonneg_left hheight (by positivity)
     _ = _ := by ring
+
+end
 
 end SevenEighths.CenteredMomentPrimeHeight
 end

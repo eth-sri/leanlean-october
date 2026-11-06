@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityPhysical
 
@@ -12,8 +13,8 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
 open InverseFirstPriorityParents
 variable {ι:Type*} [DecidableEq ι] {Jo:ℕ}
-def eraseFirstQuotient (x:Source ι Jo):Source ι Jo:= {x with quotientSupport:=∅}
-def fillFirstQuotient (x:Source ι Jo)(D:Finset ι):Source ι Jo:={x with quotientSupport:=D}
+def eraseFirstQuotient (x:Source ι Jo):= {x with quotientSupport:=∅}
+def fillFirstQuotient (x:Source ι Jo)(D:Finset ι):={x with quotientSupport:=D}
 omit [DecidableEq ι] in
 @[simp] theorem erase_fillFirstQuotient (x:Source ι Jo)(D:Finset ι):
     eraseFirstQuotient (fillFirstQuotient x D)=eraseFirstQuotient x:=rfl
@@ -22,7 +23,7 @@ omit [DecidableEq ι] in
     eraseFirstQuotient x=x:=by cases x;simpa [eraseFirstQuotient] using hx.symm
 
 def globalParentSource (outer:Finset (Source ι Jo))(pool:Finset ι)
-    (selector:Source ι Jo→Finset ι→ℂ):Finset (Source ι Jo):=
+    (selector:Source ι Jo→Finset ι→ℂ):=
   outer.biUnion (fun x=>(pool.powerset.filter (fun D=>selector x D≠0)).image (fillFirstQuotient x))
 
 omit [DecidableEq ι] in
@@ -40,11 +41,7 @@ theorem sum_globalParentSource {A:Type*}[AddCommMonoid A]
     apply Finset.disjoint_left.mpr
     intro z hz hz'
     obtain ⟨D,hD,rfl⟩:=Finset.mem_image.mp hz
-    obtain ⟨E,hE,he⟩:=Finset.mem_image.mp hz'
-    have he':=congrArg eraseFirstQuotient he
-    simp only [erase_fillFirstQuotient,eraseFirstQuotient_eq _ (houter x hx),
-      eraseFirstQuotient_eq _ (houter y hy)] at he'
-    exact hxy he'.symm
+    grind [eraseFirstQuotient, erase_fillFirstQuotient, eraseFirstQuotient_eq]
 
 end SevenEighths.InverseMoment
 

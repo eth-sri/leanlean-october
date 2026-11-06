@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionPower
 
@@ -6,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionPower
 
 namespace OAI
 
-noncomputable section
+section
 open scoped Classical BigOperators SchwartzMap
 open Filter
 
@@ -24,21 +25,15 @@ variable {α:Type*}[Fintype α][DecidableEq α]
 
 omit [DecidableEq α] in
 lemma energy_swap (η:Character)(m A:O)(t:ℝ)(W₁ W₂:ℝ→ℂ)
-    (pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)(X₁ X₂:ℝ)
-    (keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(K:ℝ):
+    (pool:α→Finset (Ideal O)) β  P  X₁ X₂ 
+     keep  Φ  K :
     energy η m A t W₁ W₂ pool β P X₁ X₂ keep Φ K=
       energy η m A t W₂ W₁ pool β P X₂ X₁ keep Φ K:=by
   unfold energy
   apply tsum_congr
-  intro z
-  have hh:positiveSlotRow η m A z W₁ W₂ pool β P t X₁ X₂=
-      positiveSlotRow η m A z W₂ W₁ pool β P t X₂ X₁:=by
-    unfold positiveSlotRow
-    rw [mul_comm X₁ X₂]
-    ring
-  rw [hh]
+  grind [hh, positiveSlotRow]
 
-theorem balanced_four_scale_gates (Z width X₁ X₂:ℝ)(hZ:1<Z)(hwidth:0<width)
+theorem balanced_four_scale_gates  Z width X₁ X₂ (hZ:1<Z)(hwidth:0<width)
     (hX₁:0<X₁)(hX₂:0<X₂)
     (hshort:width/4≤min (length Z X₁) (length Z X₂)):
     Z^(width/4)≤X₁ ∧ Z^(width/4)≤X₂ ∧
@@ -50,12 +45,7 @@ theorem balanced_four_scale_gates (Z width X₁ X₂:ℝ)(hZ:1<Z)(hwidth:0<width
   have hraw (X:ℝ)(hX:0<X)(h:width/4≤length Z X):
       length Z X=Real.logb Z X ∧ width/4≤Real.logb Z X:=by
     have he:=CenteredMomentEnergyReferenceLowBranchGeometry.length_eq_max_log Z X hZ hX
-    have hp:0<Real.logb Z X:=by
-      by_contra hn
-      rw [he,max_eq_left (le_of_not_gt hn)] at h
-      linarith
-    refine ⟨he.trans (max_eq_right hp.le),?_⟩
-    rwa [he,max_eq_right hp.le] at h
+    grind
   obtain ⟨he₁,hr₁⟩:=hraw X₁ hX₁ h₁
   obtain ⟨he₂,hr₂⟩:=hraw X₂ hX₂ h₂
   refine ⟨?_,?_,le_refl _,?_,?_⟩
@@ -69,7 +59,7 @@ theorem balanced_four_scale_gates (Z width X₁ X₂:ℝ)(hZ:1<Z)(hwidth:0<width
   · rw [he₁,he₂,Real.logb_mul hX₁.ne' hX₂.ne']
 
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 end SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetric

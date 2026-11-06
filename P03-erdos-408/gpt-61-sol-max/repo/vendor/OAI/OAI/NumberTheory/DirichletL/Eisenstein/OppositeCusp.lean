@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.SourceQuotient
 
@@ -12,85 +13,90 @@ namespace CubicEisenstein
 
 open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
+ 
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open   Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+ 
+open Filter    
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+ 
+open   RationalPrimeExtraction ShortDraftLatticeCount
+ 
+ 
+ 
+open EisensteinEmbedding ConcreteTraceCRT  
+ 
+ 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal      
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open scoped ContDiff    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+open   Set
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 section
 
-open scoped BigOperators Classical MatrixGroups Matrix
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open scoped     MatrixGroups Matrix
+open     CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 local notation "Eis" => ActualEisensteinCubic.O
 
 abbrev PrimaryLower:={c:Eis//(3:Eis)∣c-1}
 abbrev OppositeData:=Σc:PrimaryLower,{x:Eis//IsCoprime c.val x}
 
-lemma primaryLower_primary (c:PrimaryLower):lambda^2∣c.val-1:=lambda_sq_dvd_three.trans c.2
-lemma primaryLower_ne_zero (c:PrimaryLower):c.val≠0:=primary_ne_zero c.val (primaryLower_primary c)
+section
+variable (c : PrimaryLower)
+
+lemma primaryLower_primary  :lambda^2∣c.val-1:=lambda_sq_dvd_three.trans c.2
+lemma primaryLower_ne_zero  :c.val≠0:=primary_ne_zero c.val (primaryLower_primary c)
+
+end
 
 def oppositeDataToPrimitive (p:OppositeData):PrimitiveRow:=
   ⟨![-3*p.2.val,p.1.val],by
@@ -109,7 +115,7 @@ lemma oppositeDataToPrimitive_bijective:Function.Bijective oppositeDataToPrimiti
     subst d
     have hxy:x=y:=by
       have he:-(3:Eis)*x=-(3:Eis)*y:=congrFun hrow 0
-      exact mul_left_cancel₀ (by norm_num : -(3:Eis)≠0) he
+      simp_all
     subst y
     rfl
   · intro r
@@ -126,21 +132,21 @@ lemma oppositeDataToPrimitive_bijective:Function.Bijective oppositeDataToPrimiti
       ring
     · rfl
 
-def oppositeDataEquiv:OppositeData≃PrimitiveRow:=
+def oppositeDataEquiv:=
   Equiv.ofBijective oppositeDataToPrimitive oppositeDataToPrimitive_bijective
 
 def oppositeMatrix:SL(2,ℂ):=⟨!![0,-1;1,0],by simp [Matrix.det_fin_two]⟩
 
-lemma rowOperator_opposite (v:Fin 2→ℂ):rowOperator oppositeMatrix v=![v 1,-v 0]:=by
+lemma rowOperator_opposite  v :rowOperator oppositeMatrix v=![v 1,-v 0]:=by
   rw [rowOperator_apply]
   funext i
   fin_cases i <;> simp [oppositeMatrix,Matrix.vecMul,dotProduct,Fin.sum_univ_two]
 
-def oppositeEisenstein (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ):ℂ:=
+def oppositeEisenstein (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ):=
   eisenstein (oppositeMatrix*upperSection z v hv) s
 
-lemma rowHeight_eq_shiftedHeightKernel (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ)
-    (c d:Eis) (hc:c≠0):
+lemma rowHeight_eq_shiftedHeightKernel  z   v  (hv:0<v)  s 
+     c d  (hc:c≠0):
     ((v/(‖eisEmbedding c*z+eisEmbedding d‖^2+‖eisEmbedding c‖^2*v^2):ℝ):ℂ)^s=
       ((‖eisEmbedding c‖^2:ℝ):ℂ)^(-s)*
         shiftedHeightKernel v s (eisEmbedding d/eisEmbedding c) z:=by
@@ -158,19 +164,23 @@ lemma rowHeight_eq_shiftedHeightKernel (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ)
     Complex.ofReal_mul,Complex.mul_cpow_ofReal_nonneg hnorm.le hv.le]
   ring
 
-def oppositeTerm (z:ℂ) (v:ℝ) (s:ℂ) (c x:Eis):ℂ:=
+def oppositeTerm (z:ℂ) (v:ℝ) (s:ℂ) (c x:Eis):=
   eisEmbedding (symbol (3*x) c)*
     ((v/(‖eisEmbedding c*z+eisEmbedding (3*x)‖^2+‖eisEmbedding c‖^2*v^2):ℝ):ℂ)^s
 
-lemma oppositeTerm_eq_shifted (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ)
-    (c x:Eis) (hc:c≠0):
+section
+variable (z : ℂ) (v : ℝ) (hv : 0<v) (s : ℂ)
+
+include hv in
+lemma oppositeTerm_eq_shifted        
+     c x  (hc:c≠0):
     oppositeTerm z v s c x=
       (eisEmbedding (symbol (3*x) c)*((‖eisEmbedding c‖^2:ℝ):ℂ)^(-s))*
         shiftedHeightKernel v s (eisEmbedding (3*x)/eisEmbedding c) z:=by
   rw [oppositeTerm,rowHeight_eq_shiftedHeightKernel z v hv s c (3*x) hc]
   ring
 
-lemma opposite_summand (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (p:OppositeData):
+lemma opposite_summand          p :
     summand (oppositeMatrix*upperSection z v hv) s
       (primitiveRowEquiv.symm (oppositeDataEquiv p))=
       oppositeTerm z v s p.1.val p.2.val:=by
@@ -199,6 +209,8 @@ lemma opposite_summand (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (p:OppositeData):
     simp only [Complex.ofReal_div,inv_div]
   rw [hi,Complex.inv_cpow_ofReal_nonneg (div_nonneg hp.le hv.le),Complex.cpow_neg]
 
+end
+
 def primaryLowerIdealEquiv:PrimaryLower≃GoodIdeal where
   toFun c:=⟨Ideal.span {c.val},by rw [primaryGenerator_span c.val (primaryLower_ne_zero c) (primaryLower_primary c)];exact primaryLower_ne_zero c⟩
   invFun I:=⟨primaryGenerator I.val,three_dvd_primary_sub_one _ (primaryGenerator_spec I.val I.2).2⟩
@@ -209,14 +221,14 @@ end
 
 section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+ 
+open     CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 local notation "Eis" => ActualEisensteinCubic.O
 
-abbrev CoprimeElement (c:Eis):={x:Eis//IsCoprime c x}
+abbrev CoprimeElement (c):={x:Eis//IsCoprime c x}
 
-def cubicResidueElementMap (c:Eis) (p:CubicUnitResidue c×Eis):CoprimeElement c:=
+def cubicResidueElementMap (c) (p:CubicUnitResidue c×Eis):CoprimeElement c:=
   ⟨GaussianShiftedPartition.representative c p.1.val+c*p.2,by
     apply (isUnit_quotient_span_iff c _).mp
     have hc:Ideal.Quotient.mk (Ideal.span {c}) c=0:=
@@ -224,7 +236,7 @@ def cubicResidueElementMap (c:Eis) (p:CubicUnitResidue c×Eis):CoprimeElement c:
     simpa only [map_add,map_mul,hc,zero_mul,add_zero,
       GaussianShiftedPartition.representative_spec] using p.1.2⟩
 
-lemma cubicResidueElementMap_bijective (c:Eis) (hc:c≠0):
+lemma cubicResidueElementMap_bijective  c  (hc:c≠0):
     Function.Bijective (cubicResidueElementMap c):=by
   have hmod (r:CubicUnitResidue c) (n:Eis):
       Ideal.Quotient.mk (Ideal.span {c})
@@ -255,11 +267,11 @@ lemma cubicResidueElementMap_bijective (c:Eis) (hc:c≠0):
     change GaussianShiftedPartition.representative c r.val+c*n=x.val
     linear_combination -hn
 
-def cubicResidueElementEquiv (c:Eis) (hc:c≠0):
+def cubicResidueElementEquiv (c) (hc:c≠0):
     CubicUnitResidue c×Eis≃CoprimeElement c:=
   Equiv.ofBijective (cubicResidueElementMap c) (cubicResidueElementMap_bijective c hc)
 
-lemma oppositeTerm_shift (z:ℂ) (v:ℝ) (s:ℂ) (c x n:Eis):
+lemma oppositeTerm_shift  z   v   s   c x n :
     oppositeTerm z v s c (x+c*n)=oppositeTerm (z+3*eisEmbedding n) v s c x:=by
   have hsym:symbol (3*(x+c*n)) c=symbol (3*x) c:=symbol_congr ⟨3*n,by ring⟩
   have harg:eisEmbedding c*z+eisEmbedding (3*(x+c*n))=
@@ -268,7 +280,7 @@ lemma oppositeTerm_shift (z:ℂ) (v:ℝ) (s:ℂ) (c x n:Eis):
     ring
   rw [oppositeTerm,oppositeTerm,hsym,harg]
 
-def oppositeGaussSum (h c:Eis):ℂ:=
+def oppositeGaussSum (h c:Eis):=
   ∑'r:CubicUnitResidue c,
     eisEmbedding (symbol (3*GaussianShiftedPartition.representative c r.val) c)*
       residueAdditive h c (3*GaussianShiftedPartition.representative c r.val)
@@ -296,10 +308,10 @@ theorem oppositeGaussSum_eq (h:Eis) (c:PrimaryLower):
     simpa only [mul_one] using (primary_coprime_three c.val hp).symm)
   simpa only [symbol_one_numerator c.val hp,map_one,one_mul,mul_one,mul_comm h 9] using hs
 
-def oppositeArithmeticSeries (s:ℂ) (h:Eis):ℂ:=
+def oppositeArithmeticSeries (s:ℂ) (h:Eis):=
   ∑'c:PrimaryLower,((‖eisEmbedding c.val‖^2:ℝ):ℂ)^(-s)*oppositeGaussSum h c.val
 
-theorem oppositeArithmeticSeries_eq (s:ℂ) (h:Eis):
+theorem oppositeArithmeticSeries_eq  s   h :
     oppositeArithmeticSeries s h=unramifiedCubicGaussSeries s (9*h):=by
   rw [oppositeArithmeticSeries,←primaryLowerIdealEquiv.symm.tsum_eq,unramifiedCubicGaussSeries]
   apply tsum_congr
@@ -314,11 +326,14 @@ end
 
 section
 
-open MeasureTheory Set Filter Module
-open scoped BigOperators Classical ENNReal MatrixGroups Matrix
-open ActualEisensteinCubic ConcreteTraceCRT
+open       Module
+open scoped     ENNReal MatrixGroups Matrix
+ 
 
-lemma continuous_inverse_fixed_left_operator (a:SL(2,ℂ)) (v:ℝ) (hv:0<v):
+section
+variable (a : SL(2,ℂ)) (v : ℝ) (hv : 0<v) (s freq : ℂ) (hs : 2<s.re)
+
+lemma continuous_inverse_fixed_left_operator      :
     Continuous (fun z:ℂ=>rowOperator (a*upperSection z v hv)⁻¹):=by
   have he (z:ℂ):rowOperator (a*upperSection z v hv)⁻¹=
       (rowOperator a⁻¹).comp (rowOperator (upperSection z v hv)⁻¹):=by
@@ -327,7 +342,7 @@ lemma continuous_inverse_fixed_left_operator (a:SL(2,ℂ)) (v:ℝ) (hv:0<v):
   simp_rw [he]
   exact continuous_const.clm_comp (continuous_inverse_upper_operator v hv)
 
-lemma exists_fixed_left_rowBound (a:SL(2,ℂ)) (v:ℝ) (hv:0<v):
+lemma exists_fixed_left_rowBound      :
     ∃C:ℝ,0<C ∧ ∀z∈periodDomain,rowBound (a*upperSection z v hv)≤C:=by
   have hc:Continuous (fun z:ℂ=>rowBound (a*upperSection z v hv)):=
     continuous_const.mul (continuous_const.add (continuous_inverse_fixed_left_operator a v hv).norm)
@@ -338,8 +353,8 @@ lemma exists_fixed_left_rowBound (a:SL(2,ℂ)) (v:ℝ) (hv:0<v):
   apply (hC ?_).trans (le_max_right _ _)
   exact ⟨z,by simpa only [Metric.mem_closedBall,dist_zero_right] using norm_mem_periodDomain z hz,rfl⟩
 
-lemma continuous_fixed_left_summand (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
-    (s:ℂ) (x:CuspCosets):
+lemma continuous_fixed_left_summand      
+       x :
     Continuous (fun z:ℂ=>summand (a*upperSection z v hv) s x):=by
   simp_rw [summand,←rowOperator_mul,rowEnergy_upperSection]
   apply continuous_const.mul
@@ -353,8 +368,9 @@ lemma continuous_fixed_left_summand (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
     exact div_pos (heightDenominator_pos z v hv _
       (rowOperator_ne_zero a _ (embeddedRow_ne_zero x))) hv
 
-lemma fixed_left_summable_majorant (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
-    (s:ℂ) (hs:2<s.re):
+include hs in
+lemma fixed_left_summable_majorant      
+       :
     ∃M:CuspCosets→ℝ,Summable M ∧ (∀x,0≤M x) ∧
       ∀z∈periodDomain,∀x,‖summand (a*upperSection z v hv) s x‖≤M x:=by
   obtain ⟨C,hC,hbound⟩:=exists_fixed_left_rowBound a v hv
@@ -370,8 +386,9 @@ lemma fixed_left_summable_majorant (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
     exact mul_le_mul_of_nonneg_right
       (Real.rpow_le_rpow (rowBound_pos _).le (hbound z hz) (by linarith)) (by positivity)
 
-theorem hasSum_integral_fixed_left_Eisenstein (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
-    (s freq:ℂ) (hs:2<s.re):
+include hs in
+theorem hasSum_integral_fixed_left_Eisenstein      
+       :
     HasSum (fun x:CuspCosets=>∫z in periodDomain,
       summand (a*upperSection z v hv) s x*ShortDraftTrace.breveE (-freq*z))
       (∫z in periodDomain,eisenstein (a*upperSection z v hv) s*ShortDraftTrace.breveE (-freq*z)):=by
@@ -394,17 +411,23 @@ theorem hasSum_integral_fixed_left_Eisenstein (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
 
 end
 
+end
+
 section
 
-open MeasureTheory Set Filter
-open scoped BigOperators Classical ENNReal
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+ 
+open scoped     ENNReal
+open     CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
-def oppositeIntegral (v:ℝ) (s freq:ℂ) (c x:Eis):ℂ:=
+def oppositeIntegral (v:ℝ) (s freq:ℂ) (c x:Eis):=
   ∫z in periodDomain,oppositeTerm z v s c x*ShortDraftTrace.breveE (-freq*z)
 
-theorem hasSum_oppositeIntegrals (v:ℝ) (hv:0<v) (s freq:ℂ) (hs:2<s.re):
+section
+variable (v : ℝ) (hv : 0<v) (s freq : ℂ) (hs : 2<s.re) (h : Eis)
+
+include hs in
+theorem hasSum_oppositeIntegrals        :
     HasSum (fun p:OppositeData=>oppositeIntegral v s freq p.1.val p.2.val)
       (∫z in periodDomain,oppositeEisenstein z v hv s*ShortDraftTrace.breveE (-freq*z)):=by
   have hh:=(oppositeDataEquiv.trans primitiveRowEquiv.symm).hasSum_iff.mpr
@@ -416,13 +439,15 @@ theorem hasSum_oppositeIntegrals (v:ℝ) (hv:0<v) (s freq:ℂ) (hs:2<s.re):
     dsimp only [Equiv.trans_apply]
     rw [opposite_summand]
 
-lemma oppositeTerm_integrable (v:ℝ) (hv:0<v) (s:ℂ) (hs:1<s.re)
-    (c x:Eis) (hc:c≠0):Integrable (fun z=>oppositeTerm z v s c x):=by
+include hv in
+lemma oppositeTerm_integrable       (hs:1<s.re)
+     c x  (hc:c≠0):Integrable (fun z=>oppositeTerm z v s c x):=by
   simp_rw [oppositeTerm_eq_shifted _ v hv s c x hc]
   exact (shiftedHeightKernel_integrable v hv s _ hs).const_mul _
 
-lemma oppositeIntegral_sum_translate (v:ℝ) (hv:0<v) (s:ℂ) (hs:1<s.re)
-    (h c x:Eis) (hc:c≠0):
+include hv in
+lemma oppositeIntegral_sum_translate       (hs:1<s.re)
+     h c x  (hc:c≠0):
     (∑'n:Eis,oppositeIntegral v s (cuspFrequency h) c (x+c*n))=
       ∫z:ℂ,oppositeTerm z v s c x*ShortDraftTrace.breveE (-cuspFrequency h*z):=by
   have hint:=trace_mul_integrable (fun z=>oppositeTerm z v s c x)
@@ -435,8 +460,9 @@ lemma oppositeIntegral_sum_translate (v:ℝ) (hv:0<v) (s:ℂ) (hs:1<s.re)
     dsimp only [oppositeIntegral]
     rw [oppositeTerm_shift,cuspFrequency_negative_period]
 
-lemma oppositeTerm_fourier_integral (v:ℝ) (hv:0<v) (s freq:ℂ)
-    (c x:Eis) (hc:c≠0):
+include hv in
+lemma oppositeTerm_fourier_integral      
+     c x  (hc:c≠0):
     (∫z:ℂ,oppositeTerm z v s c x*ShortDraftTrace.breveE (-freq*z))=
       ((v:ℂ)^(2-s)*sourceFourierKernel s (freq*v))*
         ((‖eisEmbedding c‖^2:ℝ):ℂ)^(-s)*
@@ -447,8 +473,9 @@ lemma oppositeTerm_fourier_integral (v:ℝ) (hv:0<v) (s freq:ℂ)
     traceIntegral_shiftedHeightKernel v hv s (eisEmbedding (3*x)/eisEmbedding c) freq]
   ring_nf
 
-lemma oppositeDenominator_integral_formula (v:ℝ) (hv:0<v) (s:ℂ) (hs:2<s.re)
-    (h:Eis) (c:PrimaryLower):
+include hv hs in
+lemma oppositeDenominator_integral_formula        
+      (c:PrimaryLower):
     (∑'x:CoprimeElement c.val,oppositeIntegral v s (cuspFrequency h) c.val x.val)=
       ((v:ℂ)^(2-s)*sourceFourierKernel s (cuspFrequency h*v))*
         ((‖eisEmbedding c.val‖^2:ℝ):ℂ)^(-s)*oppositeGaussSum h c.val:=by
@@ -470,7 +497,7 @@ lemma oppositeDenominator_integral_formula (v:ℝ) (hv:0<v) (s:ℂ) (hs:2<s.re)
     oppositeTerm_fourier_integral v hv s (cuspFrequency h) c.val _ (primaryLower_ne_zero c)]
   exact tsum_mul_left
 
-lemma unramifiedCubicGaussSeries_twentySeven (s:ℂ) (h:Eis):
+lemma unramifiedCubicGaussSeries_twentySeven    :
     unramifiedCubicGaussSeries s (27*h)=unramifiedCubicGaussSeries s h:=by
   apply tsum_congr
   intro I
@@ -480,7 +507,8 @@ lemma unramifiedCubicGaussSeries_twentySeven (s:ℂ) (h:Eis):
     cubicUnitGaussSum_cube_shift h (primaryGenerator I.val) 3 I.2 hp
       (primary_coprime_three _ hp)
 
-theorem oppositeEisenstein_fourier (v:ℝ) (hv:0<v) (s:ℂ) (hs:2<s.re) (h:Eis):
+include hs in
+theorem oppositeEisenstein_fourier          :
     (∫z in periodDomain,oppositeEisenstein z v hv s*
       ShortDraftTrace.breveE (-cuspFrequency h*z))=
       ((v:ℂ)^(2-s)*sourceFourierKernel s (cuspFrequency h*v))*
@@ -499,23 +527,22 @@ theorem oppositeEisenstein_fourier (v:ℝ) (hv:0<v) (s:ℂ) (hs:2<s.re) (h:Eis):
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
+end
+
+ 
+open scoped       ENNReal
 
 local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
-local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
-local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
+
+
 
 abbrev PeriodTorusL2 := Lp ℂ 2 (volume : Measure (UnitAddTorus (Fin 2)))
 
 def periodIocCube : Set (Fin 2→ℝ) := {x | ∀i,x i∈Set.Ioc 0 (0+1)}
 
-def periodCovolumeDensity : ℝ≥0∞ := ENNReal.ofReal (2/(9*Real.sqrt 3))
+def periodCovolumeDensity  := ENNReal.ofReal (2/(9*Real.sqrt 3))
 
-lemma periodCovolumeDensity_ne_zero : periodCovolumeDensity≠0 := by
-  exact ne_of_gt (ENNReal.ofReal_pos.mpr (by positivity))
+lemma periodCovolumeDensity_ne_zero : periodCovolumeDensity≠0 := ne_of_gt (ENNReal.ofReal_pos.mpr (by positivity))
 
 lemma periodIocCube_measurable : MeasurableSet periodIocCube :=
   MeasurableSet.univ_pi' (fun _ => measurableSet_Ioc)
@@ -523,7 +550,7 @@ lemma periodIocCube_measurable : MeasurableSet periodIocCube :=
 lemma periodIocCube_ae : periodCube=ᵐ[volume]periodIocCube := by
   simpa only [periodIocCube,zero_add] using periodCube_ae_Ioc
 
-def periodSection (t : UnitAddTorus (Fin 2)) : ℂ :=
+def periodSection (t : UnitAddTorus (Fin 2))  :=
   periodVector ((UnitAddTorus.measurableEquivPiIoc (fun _ : Fin 2 => (0:ℝ)) t).val)
 
 lemma periodSection_measurableEmbedding : MeasurableEmbedding periodSection :=
@@ -537,9 +564,9 @@ lemma periodTorus_measurable : Measurable periodTorus := by
   exact AddCircle.measurable_mk'.comp
     ((measurable_pi_apply i).comp periodBasis.equivFunL.continuous.measurable)
 
-lemma periodTorus_section (t : UnitAddTorus (Fin 2)) : periodTorus (periodSection t)=t := by
+lemma periodTorus_section  t  : periodTorus (periodSection t)=t := by
   rw [periodSection,periodTorus_periodVector]
-  exact (UnitAddTorus.measurableEquivPiIoc (fun _ : Fin 2 => (0:ℝ))).symm_apply_apply t
+  simp_all
 
 lemma periodVector_Ioc_measurePreserving :
     MeasurePreserving periodVector (volume.restrict periodIocCube)
@@ -570,31 +597,32 @@ lemma periodSection_torus_ae :
   apply (Measure.ae_ennreal_smul_measure_iff periodCovolumeDensity_ne_zero).mp
   rw [←periodSection_measurePreserving.map_eq]
   apply periodSection_measurableEmbedding.ae_map_iff.mpr
-  exact Eventually.of_forall (fun t => by dsimp only; rw [periodTorus_section])
+  simp_all [periodTorus_section]
 
 lemma periodSection_memLp (f : ℂ→ℂ) (hf : MemLp f 2 (volume.restrict periodDomain)) :
     MemLp (f ∘ periodSection) 2 volume :=
   (hf.smul_measure (by simp [periodCovolumeDensity])).comp_measurePreserving
     periodSection_measurePreserving
 
-def periodTorusL2Lift (f : ℂ→ℂ) (hf : MemLp f 2 (volume.restrict periodDomain)) : PeriodTorusL2 :=
+def periodTorusL2Lift (f : ℂ→ℂ) (hf : MemLp f 2 (volume.restrict periodDomain))  :=
   (periodSection_memLp f hf).toLp (f ∘ periodSection)
 
-lemma periodTorusL2Lift_ae (f : ℂ→ℂ) (hf : MemLp f 2 (volume.restrict periodDomain)) :
+section
+variable (f g : ℂ→ℂ) (hf : MemLp f 2 (volume.restrict periodDomain))
+
+lemma periodTorusL2Lift_ae     :
     periodTorusL2Lift f hf=ᵐ[volume]f ∘ periodSection :=
   MemLp.coeFn_toLp (periodSection_memLp f hf)
 
-lemma periodTorusL2Lift_pullback (f : ℂ→ℂ) (hf : MemLp f 2 (volume.restrict periodDomain)) :
+lemma periodTorusL2Lift_pullback     :
     (fun z => periodTorusL2Lift f hf (periodTorus z))=ᵐ[volume.restrict periodDomain]f := by
   have he := periodTorus_measurePreserving.quasiMeasurePreserving.ae_eq_comp (periodTorusL2Lift_ae f hf)
   have he' := (Measure.ae_ennreal_smul_measure_iff periodCovolumeDensity_ne_zero).mp he
   filter_upwards [he',periodSection_torus_ae] with z hz hsec
-  change periodTorusL2Lift f hf (periodTorus z)=f (periodSection (periodTorus z)) at hz
-  rw [hsec] at hz
-  exact hz
+  simp_all
 
-lemma periodTorusL2Lift_frequency_integral (f : ℂ→ℂ)
-    (hf : MemLp f 2 (volume.restrict periodDomain)) (h : ActualEisensteinCubic.O) :
+lemma periodTorusL2Lift_frequency_integral  
+       h  :
     (∫z in periodDomain,periodTorusL2Lift f hf (periodTorus z)*
       ShortDraftTrace.breveE (-cuspFrequency h*z))=
     ∫z in periodDomain,f z*ShortDraftTrace.breveE (-cuspFrequency h*z) := by
@@ -602,8 +630,9 @@ lemma periodTorusL2Lift_frequency_integral (f : ℂ→ℂ)
   filter_upwards [periodTorusL2Lift_pullback f hf] with z hz
   rw [hz]
 
-theorem periodDomain_L2_ext (f g : ℂ→ℂ)
-    (hf : MemLp f 2 (volume.restrict periodDomain))
+include hf in
+theorem periodDomain_L2_ext  
+     
     (hg : MemLp g 2 (volume.restrict periodDomain))
     (h : ∀h : ActualEisensteinCubic.O,
       (∫z in periodDomain,f z*ShortDraftTrace.breveE (-cuspFrequency h*z))=
@@ -615,6 +644,8 @@ theorem periodDomain_L2_ext (f g : ℂ→ℂ)
     rw [periodTorusL2Lift_frequency_integral,periodTorusL2Lift_frequency_integral,h]
   filter_upwards [periodTorusL2Lift_pullback f hf,periodTorusL2Lift_pullback g hg] with z hz hz'
   rw [←hz,←hz',he]
+
+end
 
 end CubicEisenstein
 

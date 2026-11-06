@@ -1,4 +1,5 @@
 module
+public import Mathlib.Tactic
 
 public import Erdos408.OneSided.RootResidue
 public import Erdos408.OneSided.Pairing.Endpoint
@@ -34,7 +35,7 @@ open Finset
 
 /-- For `x l + y m = 1`, at most `|R|²` matrices of `SL₂(R)` have `l u + m c = 0` in their
 first row: `g ↦ (x c - y u, x d - y v)` is injective on them. -/
-theorem card_filter_specialLinearGroup_le {R : Type*} [CommRing R] [Fintype R] [DecidableEq R]
+theorem card_filter_specialLinearGroup_le  {R}  [CommRing R] [Fintype R] [DecidableEq R]
     {l m x y : R} (h : x * l + y * m = 1) :
     (univ.filter fun g : Matrix.SpecialLinearGroup (Fin 2) R => l * g 0 0 + m * g 0 1 = 0).card ≤
       Fintype.card R ^ 2 := by
@@ -88,30 +89,30 @@ theorem card_filter_specialLinearGroup_le {R : Type*} [CommRing R] [Fintype R] [
 /-! ### Root ratios in the box -/
 
 /-- The box `[U, 16U] × [V, 2V]` of primitive positions. -/
-noncomputable def rootBox (U V : ℝ) : Finset (ℕ × ℕ) :=
+noncomputable def rootBox (U V : ℝ)  :=
   ((Icc ⌈U⌉₊ ⌊16 * U⌋₊) ×ˢ (Icc ⌈V⌉₊ ⌊2 * V⌋₊)).filter fun P => Nat.Coprime P.1 P.2
 
 /-- The positions are the box at `U = d₀ Y H_m`, `V = H_n`. -/
-theorem positions_eq_rootBox {K : ℕ} (d : Data K) (Y d₀ : ℝ) :
+theorem positions_eq_rootBox {K : ℕ} (d : Data K)  Y d₀  :
     positions d Y d₀ = rootBox (d₀ * Y * d.Hm) d.Hn :=
   rfl
 
 /-- The root ratio is `c / u` with `c = rootC u v`. -/
-theorem rootRatio_eq (P : ℕ × ℕ) : rootRatio P = (rootC P.1 P.2 : ℝ) / P.1 :=
+theorem rootRatio_eq  P  : rootRatio P = (rootC P.1 P.2 : ℝ) / P.1 :=
   rfl
 
 /-- `r ≥ 0`. -/
-theorem rootRatio_nonneg (P : ℕ × ℕ) : 0 ≤ rootRatio P := by
+theorem rootRatio_nonneg  P  : 0 ≤ rootRatio P := by
   rw [rootRatio_eq]
   positivity
 
 /-- `r < 1` for `u > 0`, since `c < u`. -/
-theorem rootRatio_lt_one {P : ℕ × ℕ} (hP : 0 < P.1) : rootRatio P < 1 := by
+theorem rootRatio_lt_one  {P}  (hP : 0 < P.1) : rootRatio P < 1 := by
   rw [rootRatio_eq, div_lt_one (by exact_mod_cast hP)]
   exact_mod_cast RootResidue.rootC_lt hP P.2
 
 /-- `|σ(S)| ≤ 2`, from the tail bound at `K = 1`. -/
-theorem abs_coprimeDensity_le (S : ℕ) : |RootResidue.coprimeDensity S| ≤ 2 := by
+theorem abs_coprimeDensity_le  S  : |RootResidue.coprimeDensity S| ≤ 2 := by
   have h := RootResidue.abs_coprimeDensity_sub_le S one_pos
   simpa [RootResidue.densityTerm] using h
 
@@ -126,7 +127,7 @@ theorem mem_rootBox_bounds {U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V) {P : ℕ ×
 
 /-- The positions of the box on the upper faces `u = 16U` or `v = 2V` number at most
 `16U + V + 2`. -/
-theorem card_rootBox_face_le {U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V) :
+theorem card_rootBox_face_le  {U V}  (hU : 0 ≤ U) (hV : 0 ≤ V) :
     (#{P ∈ rootBox U V | ¬ ((P.1 : ℝ) < 16 * U ∧ (P.2 : ℝ) < 2 * V)} : ℝ) ≤
       16 * U + V + 2 := by
   have hsub : {P ∈ rootBox U V | ¬ ((P.1 : ℝ) < 16 * U ∧ (P.2 : ℝ) < 2 * V)} ⊆
@@ -171,11 +172,11 @@ theorem exists_card_rootBox_lt_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ
     l * g 0 0 + m * g 0 1 = 0
   set E := C * U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ))
   set n := (Fintype.card (Matrix.SpecialLinearGroup (Fin 2) (ZMod S)) : ℝ)
-  have hn : 0 < n := Nat.cast_pos.2 Fintype.card_pos
+  
   have hS1 : (1 : ℝ) ≤ S := by exact_mod_cast NeZero.one_le
   have hU0 : 0 < U := by linarith
   have hV0 : 0 < V := by linarith
-  have hm0 : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) := by positivity
+  
   -- the root matrix of a primitive position
   set M : ℕ × ℕ → Matrix (Fin 2) (Fin 2) (ZMod S) := fun P =>
     !![(P.1 : ZMod S), (rootC P.1 P.2 : ZMod S); (P.2 : ZMod S), (rootD P.1 P.2 : ZMod S)]
@@ -224,7 +225,7 @@ theorem exists_card_rootBox_lt_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ
         30 * U * V * (β - α) / (S : ℝ) ^ 3 := by
       have he : primitiveDensity * U * V * (16 - 1) * (2 - 1) * (β - α) / n =
           primitiveDensity / n * (15 * U * V * (β - α)) := by ring
-      have hβα : 0 ≤ β - α := by linarith
+      
       rw [he, ← hdens, abs_mul, abs_div, abs_of_pos (by positivity : (0 : ℝ) < (S : ℝ) ^ 3),
         abs_of_nonneg (by positivity : 0 ≤ 15 * U * V * (β - α))]
       have hσ := abs_coprimeDensity_le S
@@ -233,9 +234,7 @@ theorem exists_card_rootBox_lt_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ
             gcongr
         _ = 30 * U * V * (β - α) / (S : ℝ) ^ 3 := by ring
     have hE : E ≤ max C 0 * U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ)) := by
-      have : 0 ≤ U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ)) := by positivity
-      simp only [E]
-      nlinarith [le_max_left C 0]
+      bound
     rw [abs_le] at h
     have := (abs_le.1 hmain).2
     linarith [h.2]
@@ -316,8 +315,8 @@ theorem exists_card_rootBox_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2
 /-- CRT: for coprime `G, a` and `(z, a) = 1`, the conditions `G ∣ u` and `a ∣ z c + z₁ u`
 imply a unimodular congruence `l u + m c = 0` mod `G a`. With `e G + f a = 1`, take
 `l = f a + z₁ e G`, `m = z e G`, `x = f a` and `y = z' e G`, where `z' z ≡ 1 (mod a)`. -/
-theorem exists_unimodular_of_dvd {G a : ℕ} (hGa : Nat.Coprime G a) {z : ℤ}
-    (hz : IsCoprime z (a : ℤ)) (z₁ : ℤ) :
+theorem exists_unimodular_of_dvd  {G a}  (hGa : Nat.Coprime G a)  {z} 
+    (hz : IsCoprime z (a : ℤ))  z₁  :
     ∃ l m x y : ZMod (G * a), x * l + y * m = 1 ∧ ∀ u c : ℕ, (G : ℤ) ∣ u →
       (a : ℤ) ∣ z * c + z₁ * u → l * u + m * c = 0 := by
   obtain ⟨e, f, hef⟩ := Nat.isCoprime_iff_coprime.2 hGa
@@ -350,7 +349,7 @@ theorem exists_unimodular_of_dvd {G a : ℕ} (hGa : Nat.Coprime G a) {z : ℤ}
       (f * t + e * t' : ZMod (G * a)) * hGa0
 
 /-- `⌊z r⌋ ∈ {j, -j, -j - 1}` for `j = ⌊|z| r⌋` and `r ≥ 0`. -/
-theorem floor_mul_mem {z : ℤ} {r : ℝ} (hr : 0 ≤ r) :
+theorem floor_mul_mem {z : ℤ}  {r}  (hr : 0 ≤ r) :
     ⌊(z : ℝ) * r⌋ ∈ ({(⌊(z.natAbs : ℝ) * r⌋₊ : ℤ), -(⌊(z.natAbs : ℝ) * r⌋₊ : ℤ),
       -(⌊(z.natAbs : ℝ) * r⌋₊ : ℤ) - 1} : Finset ℤ) := by
   have habs : ((z.natAbs : ℕ) : ℝ) = |(z : ℝ)| := by
@@ -412,8 +411,7 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
       rw [mem_filter] at hP ⊢
       obtain ⟨hbox, hG, ha, h₁, h₂⟩ := hP
       refine ⟨hbox, hcong _ _ hG ?_, h₁, h₂⟩
-      rwa [show z * (rootC P.1 P.2 : ℤ) + (k - n) * (P.1 : ℤ) =
-        z * (rootC P.1 P.2 : ℕ) + (k - n) * (P.1 : ℕ) by rfl] at ha
+      assumption
     have := h U V hU hV (G * a) hS l m x y hxy (f j) (f (j + 1)) (hf0 j) (hmono j) (hf1 _)
     rw [Nat.cast_mul] at this
     exact (Nat.cast_le.2 (card_le_card hsub)).trans (this.trans_eq (by simp only [E]; ring))
@@ -452,7 +450,7 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
     rw [sum_range_sub (f := f)]
     simp only [f, Nat.cast_zero, zero_div, div_self hN0.ne']
     rw [min_eq_left hβ, max_eq_right hαβ, min_eq_right (hα.trans hαβ), max_eq_left hα]
-  have hE : 0 ≤ E := by positivity
+  
   have hGa0 : (0 : ℝ) < (G : ℝ) * a := by
     have : (0 : ℝ) < ((G * a : ℕ) : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero hS.ne_zero
     exact_mod_cast this

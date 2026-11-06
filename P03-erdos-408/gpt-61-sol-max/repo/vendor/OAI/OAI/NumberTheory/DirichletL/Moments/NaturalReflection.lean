@@ -13,11 +13,14 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentNaturalReflection
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentNaturalPrimitive
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 
-lemma polynomial_coeff_congr (χ ψ : Character)
-    (h : ∀I,idealCoeff χ I=idealCoeff ψ I) (W : ℝ→ℂ) (X : ℝ) :
+local instance : IsPrincipalIdealRing HeckeFamily.O := IsCyclotomicExtension.Rat.three_pid K
+
+section
+variable (χ ψ : Character)
+
+lemma polynomial_coeff_congr  
+    (h : ∀I,idealCoeff χ I=idealCoeff ψ I)  W   X  :
     HeckeDyadic.polynomial χ false W X 0 0=HeckeDyadic.polynomial ψ false W X 0 0 := by
   unfold HeckeDyadic.polynomial
   congr 1
@@ -26,16 +29,16 @@ lemma polynomial_coeff_congr (χ ψ : Character)
   unfold HeckeDyadic.summand HeckeDyadic.coefficient
   rw [h]
 
-lemma inverse_deletion_coeff (χ ψ : Character) (S : Finset (Ideal O))
-    (hS : ∀P∈S,Prime P) (h : ∀I,idealCoeff χ I=idealCoeff (ψ.excludePrimes S hS) I)
-    (I : Ideal O) : idealCoeff χ.inverse I=idealCoeff (ψ.inverse.excludePrimes S hS) I := by
+lemma inverse_deletion_coeff    S 
+     hS  (h : ∀I,idealCoeff χ I=idealCoeff (ψ.excludePrimes S hS) I)
+     I  : idealCoeff χ.inverse I=idealCoeff (ψ.inverse.excludePrimes S hS) I := by
   rw [idealCoeff_inverse_conj,h,idealCoeff_excludePrimes,idealCoeff_excludePrimes,
     idealCoeff_inverse_conj]
   split_ifs <;> simp
 
-theorem primitive_character_deleted (ψ : Character)
+theorem primitive_character_deleted  
     (hp : FiniteFourier.IsPrimitiveOnIdeals ψ.residue) (hn : ψ.residue≠1) :
-    ∃G : ℂ,‖G‖=1 ∧ ∀(S : Finset (Ideal O))(hS : ∀P∈S,Prime P)
+    ∃G : ℂ,‖G‖=1 ∧ ∀(S : Finset (Ideal HeckeFamily.O))(hS : ∀P∈S,Prime P)
       (W : 𝓢(ℝ,ℂ))(X : ℝ),0<X →
       (∀D∈S.powerset,Summable (reflectedTerm ψ ψ.inverse S hS (paperRadialFourier W)
         X (ψ.modulus.absNorm:ℝ) D)) ∧
@@ -54,7 +57,7 @@ theorem primitive_character_deleted (ψ : Character)
   rw [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span] at hh
   exact hh
 
-theorem original_natural_reflection (χ : Character) (hn : χ.residue≠1) :
+theorem original_natural_reflection   (hn : χ.residue≠1) :
     ∃(ψ : Character)(G : ℂ),FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧ ψ.residue≠1 ∧ ‖G‖=1 ∧
       let S := redundantSet χ.modulus ψ.modulus
       let hS := redundantSet_prime χ.modulus ψ.modulus
@@ -74,7 +77,7 @@ theorem original_natural_reflection (χ : Character) (hn : χ.residue≠1) :
   have hh := hreflection _ (redundantSet_prime χ.modulus ψ.modulus) W X hX
   exact ⟨hh.1,(polynomial_coeff_congr χ _ hcoeff W X).trans hh.2⟩
 
-theorem original_inverse_reflection (χ : Character) (hn : χ.residue≠1) :
+theorem original_inverse_reflection   (hn : χ.residue≠1) :
     ∃(ψ : Character)(G : ℂ),FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧ ψ.residue≠1 ∧ ‖G‖=1 ∧
       let S := redundantSet χ.modulus ψ.modulus
       ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm ∧
@@ -98,6 +101,8 @@ theorem original_inverse_reflection (χ : Character) (hn : χ.residue≠1) :
   unfold reflectedTerm
   rw [←polynomial_coeff_congr χ.inverse _
     (inverse_deletion_coeff χ ψ _ (redundantSet_prime χ.modulus ψ.modulus) hcoeff)]
+
+end
 
 end SevenEighths.CenteredMomentNaturalReflection
 
