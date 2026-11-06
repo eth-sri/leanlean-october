@@ -1,5 +1,5 @@
 module
-public import KKP.SpectralWitness
+public import KKP.Graph
 @[expose] public section
 
 /-! # The connected counterexample family and its exact positive spectral gap -/
@@ -17,10 +17,16 @@ theorem connected_counterexample_family (s : ℕ) (hs : 3 ≤ s) :
         BN.lambda1 (bridgeGraph s) ^ 2 + BN.lambda2 (bridgeGraph s) ^ 2 -
           (4 / 3 : ℝ) * ((bridgeGraph s).edgeFinset.card : ℝ) ∧
       (4 / 3 : ℝ) * ((bridgeGraph s).edgeFinset.card : ℝ) <
-        BN.lambda1 (bridgeGraph s) ^ 2 + BN.lambda2 (bridgeGraph s) ^ 2 := by
-  refine ⟨forbidden_chromaticNumber, forbidden_color_critical,
-    bridgeGraph_connected s (by omega), bridgeGraph_free s, bridgeGraph_edge_count s (by omega),
-    ?_, bridgeGraph_ordered_excess s hs⟩
-  have h := bridgeGraph_spectral_gap s hs
-  rwa [BN.F_adjMatrix_eq (bridgeGraph s) (bridgeGraph_noncomplete s hs)] at h
+        BN.lambda1 (bridgeGraph s) ^ 2 + BN.lambda2 (bridgeGraph s) ^ 2 :=
+  ⟨forbidden_chromaticNumber, forbidden_color_critical, bridgeGraph_connected s (by omega),
+    bridgeGraph_free s, bridgeGraph_edge_count s (by omega), bridgeGraph_spectral_gap s hs,
+    bridgeGraph_spectral_excess s hs⟩
+
+/-- The connected counterexamples have arbitrarily large edge counts. -/
+theorem unbounded_connected_counterexamples (B : ℕ) :
+    ∃ s : ℕ, 3 ≤ s ∧ B ≤ (bridgeGraph s).edgeFinset.card ∧
+      (bridgeGraph s).Connected ∧ forbiddenGraph.Free (bridgeGraph s) ∧
+      (4 / 3 : ℝ) * ((bridgeGraph s).edgeFinset.card : ℝ) <
+        BN.lambda1 (bridgeGraph s) ^ 2 + BN.lambda2 (bridgeGraph s) ^ 2 :=
+  unbounded_counterexamples B
 end KKP
