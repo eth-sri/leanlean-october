@@ -120,7 +120,7 @@ theorem orderNerveComparablePath_affine (v : P → ℝ) {a b : P}
   · simpa only [orderNerveComparablePath, dif_pos hab] using
       orderNerveAffineEdgePath_affine v hab t
   · simp only [orderNerveComparablePath, dif_neg hab, Path.symm_apply, Function.comp_apply]
-    rw [orderNerveAffineEdgePath_affine v (h.resolve_left hab), unitInterval.coe_symm_eq]
+    rw [orderNerveAffineEdgePath_affine, unitInterval.coe_symm_eq]
     ring
 
 /-- Collapsing vertices is allowed: the affine path formula is natural for

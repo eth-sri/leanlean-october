@@ -9,7 +9,6 @@ public import RequestProject.OrderNerveDecoding
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V]
 
 /-- Every cellular two-cycle in the actual Davis complex is the boundary of a finitely

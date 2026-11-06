@@ -37,7 +37,6 @@ namespace Davis
 
 open RACG Mirror
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 

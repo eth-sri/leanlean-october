@@ -34,7 +34,6 @@ namespace FiniteChains
 namespace Comb
 namespace SpanningTree
 
-universe u
 
 /-! ### Compatible spanning trees along a chain -/
 

@@ -7,7 +7,6 @@ public import RequestProject.TopologicalSingular.SingularChainH1
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X]
 
 theorem simplexOne_boundary_endpoints (z : Domain 1) (hz : z ∈ simplexBoundary 1) :

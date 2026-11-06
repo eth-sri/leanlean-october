@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X : Complex2.{u}} {x y : X.V} {p : List (X.E × Bool)}
 
 theorem shiftV_reverse_cancel (hp : IsPath X.src X.tgt p x y) (v : UV X x) :

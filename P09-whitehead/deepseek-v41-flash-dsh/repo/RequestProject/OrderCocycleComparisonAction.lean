@@ -6,7 +6,6 @@ public import RequestProject.OrderCocycleFlatSections
 
 /-! Comparing arbitrary nonabelian cocycles by their action on a torsor. -/
 namespace FiniteChains.Comb.OrdCocycle
-universe u v
 variable {P : Type u} [Preorder P] {G : Type v} [Group G]
 
 structure ComparisonPoint (G : Type v) where

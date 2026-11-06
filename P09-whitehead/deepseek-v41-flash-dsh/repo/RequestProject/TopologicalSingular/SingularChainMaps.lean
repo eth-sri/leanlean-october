@@ -17,15 +17,11 @@ namespace FiniteChains.TopologicalSingular
 
 open Set Topology
 
-universe u v w
 
 variable {X : Type u} {Y : Type v} {Z : Type w}
 variable [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]
 
 def simplexMap (f : C(X, Y)) (n : ℕ) (σ : Simplex X n) : Simplex Y n := f.comp σ
-
-@[simp] theorem simplexMap_apply (f : C(X, Y)) (n : ℕ) (σ : Simplex X n) (z : Domain n) :
-    simplexMap f n σ z = f (σ z) := rfl
 
 theorem face_simplexMap (f : C(X, Y)) {n : ℕ} (i : Fin (n + 2)) (σ : Simplex X (n + 1)) :
     face i (simplexMap f (n + 1) σ) = simplexMap f n (face i σ) := rfl
@@ -47,7 +43,7 @@ theorem map_comp (f : C(X, Y)) (g : C(Y, Z)) (n : ℕ) :
     map (g.comp f) n = (map g n).comp (map f n) := by
   apply Finsupp.lhom_ext
   intro σ a
-  simp only [LinearMap.comp_apply, map_single]
+  simp
   rfl
 
 theorem map_boundary (f : C(X, Y)) (n : ℕ) (c : Chain X (n + 1)) :
@@ -63,7 +59,7 @@ theorem augmentation_map (f : C(X, Y)) (c : Chain X 0) : augmentation (map f 0 c
   have he : augmentation.comp (map f 0) = augmentation := by
     apply Finsupp.lhom_ext
     intro σ a
-    simp only [LinearMap.comp_apply, map_single, augmentation_single]
+    simp
   exact DFunLike.congr_fun he c
 
 end FiniteChains.TopologicalSingular

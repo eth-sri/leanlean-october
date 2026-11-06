@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 noncomputable def ordNerveChain0 : (P →₀ ℤ) →ₗ[ℤ] Nerve.Ch P :=

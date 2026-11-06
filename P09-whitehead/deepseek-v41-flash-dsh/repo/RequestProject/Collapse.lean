@@ -82,7 +82,7 @@ theorem collapsible_erase (hcard : ∀ f, (inc f).card ≤ 2) {S : Finset T}
     refine ⟨c, hcC, f, ?_⟩
     have hsub : ({t, c} : Finset T) ⊆ inc f := by
       intro z hz
-      simp only [Finset.mem_insert, Finset.mem_singleton] at hz
+      simp at hz
       rcases hz with rfl | rfl <;> assumption
     have hcard2 : ({t, c} : Finset T).card = 2 := by
       rw [Finset.card_pair]
@@ -114,11 +114,11 @@ theorem collapsible_erase (hcard : ∀ f, (inc f).card ≤ 2) {S : Finset T}
     ext z
     constructor
     · intro hz
-      simp only [Finset.mem_inter, Finset.mem_erase] at hz
+      simp at hz
       have : z ∈ inc f ∩ S := Finset.mem_inter.2 ⟨hz.1, hz.2.2⟩
       rwa [hf] at this
     · intro hz
-      simp only [Finset.mem_singleton] at hz
+      simp at hz
       subst hz
       have hzf : z ∈ inc f ∩ S := by rw [hf]; simp
       simp only [Finset.mem_inter] at hzf
@@ -159,15 +159,6 @@ theorem exists_isCollapse_of_connected (hcard : ∀ f, (inc f).card ≤ 2) {S : 
     (hconn : Connected inc S) {t₀ : T} (ht₀ : t₀ ∈ S) (hfree : HasFreeFace inc S t₀) :
     ∃ l : List T, IsCollapse inc l S :=
   exists_isCollapse hcard S.card S rfl (collapsible_of_connected hconn ht₀ hfree)
-
-/-! ### A nonempty instance -/
-
-/-- Two top cells glued along one face, with a free face on each side: the smallest
-instance of the collapse theorem. -/
-def exInc : Fin 3 → Finset (Fin 2)
-  | 0 => {0}
-  | 1 => {0, 1}
-  | 2 => {1}
 
 end Collapse
 end FiniteChains

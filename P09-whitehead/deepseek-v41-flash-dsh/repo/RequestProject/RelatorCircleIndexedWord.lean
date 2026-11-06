@@ -10,7 +10,6 @@ public import Mathlib.Data.List.OfFn
 successive letter. This is a list identity, including the final closing
 edge, not merely an equality of free-group elements. Pending verification. -/
 
-noncomputable section
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false

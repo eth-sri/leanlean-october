@@ -7,7 +7,6 @@ public import RequestProject.OrderComplexGluing
 
 /-! Actual path components of an order complex, as labels of its vertices. -/
 namespace FiniteChains.Comb
-universe u
 variable (P : Type u) [Preorder P]
 
 def orderComponentSetoid : Setoid P where

@@ -18,20 +18,17 @@ variable {α : Type*} [DecidableEq α] (N : Subgroup (FreeGroup α)) [N.Normal]
 theorem coverFoxGradient_mul {v : FreeGroup α} (hv : v ∈ N) (w : FreeGroup α) :
     coverFoxGradient N (v * w) = coverFoxGradient N v + coverFoxGradient N w := by
   apply Finsupp.ext
-  intro i
-  exact congrFun (foxVec_mul hv w) i
+  exact congrFun (foxVec_mul hv w)
 
 theorem coverFoxGradient_inv {v : FreeGroup α} (hv : v ∈ N) :
     coverFoxGradient N v⁻¹ = -coverFoxGradient N v := by
   apply Finsupp.ext
-  intro i
-  exact congrFun (foxVec_inv hv) i
+  exact congrFun (foxVec_inv hv)
 
 theorem coverFoxGradient_zpow {v : FreeGroup α} (hv : v ∈ N) (n : ℤ) :
     coverFoxGradient N (v ^ n) = n • coverFoxGradient N v := by
   apply Finsupp.ext
-  intro i
-  exact congrFun (foxVec_zpow hv n) i
+  exact congrFun (foxVec_zpow hv n)
 
 theorem coverFoxGradient_conj {r : FreeGroup α} (hr : r ∈ N) (f : FreeGroup α) :
     coverFoxGradient N (f * r * f⁻¹) = qgrp N f • coverFoxGradient N r := by
@@ -42,7 +39,7 @@ theorem coverFoxGradient_conj {r : FreeGroup α} (hr : r ∈ N) (f : FreeGroup �
 
 @[simp] theorem coverFoxGradient_one : coverFoxGradient N (1 : FreeGroup α) = 0 := by
   ext i
-  simp [coverFoxGradient]
+  simp
 
 theorem coverFoxGradient_eq_zero_iff {w : FreeGroup α} (hw : w ∈ N) :
     coverFoxGradient N w = 0 ↔ w ∈ ⁅N, N⁆ := by
@@ -92,8 +89,7 @@ theorem exists_mem_of_coverFirstBoundary_eq_zero (c : α →₀ CoverRing N)
   obtain ⟨r, hr, he⟩ := foxProj_mem_foxMod N b hprojb
   refine ⟨r, hr, ?_⟩
   apply Finsupp.ext
-  intro i
-  exact congrFun (hfoxb.symm.trans he) i
+  exact congrFun (hfoxb.symm.trans he)
 
 variable {J : Type*} (ρ : J → FreeGroup α)
 
@@ -150,8 +146,7 @@ theorem exists_mem_normalClosure_of_coverSecondBoundary (hρ : ∀ j, ρ j ∈ N
       refine ⟨w, hw, ?_⟩
       rw [coverSecondBoundary_single]
       apply Finsupp.ext
-      intro i
-      exact congrFun he i
+      exact congrFun he
 
 /-- The integral Hurewicz membership calculation for arbitrary presentations. -/
 theorem coverFoxGradient_mem_range_iff (hρ : ∀ j, ρ j ∈ N)

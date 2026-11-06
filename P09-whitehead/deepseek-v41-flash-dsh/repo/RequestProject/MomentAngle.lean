@@ -172,8 +172,7 @@ theorem card_cofaces (L : ASC V) (g : Cube V) :
   · intro j hj k hk hjk
     simp only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and] at hj hk
     by_contra hne
-    have hval : Function.update g j CubeCoord.free j
-        = Function.update g k CubeCoord.free j := congrFun hjk j
+    have hval := congrFun hjk j
     simp only [Function.update_apply, if_neg hne] at hval
     exact hj.1 hval.symm
 

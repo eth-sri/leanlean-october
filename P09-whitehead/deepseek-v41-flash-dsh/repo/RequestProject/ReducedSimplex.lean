@@ -110,7 +110,7 @@ theorem reducedSimplex_interior_nonempty (n : ℕ) : (interior (reducedSimplex n
   let c : ℝ := 1 / ((n : ℝ) + 1)
   have hc : 0 < c := by dsimp [c]; positivity
   have hsum : (∑ _ : Fin n, c) < 1 := by
-    simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+    simp
     dsimp [c]
     rw [mul_one_div]
     exact (div_lt_one (by positivity)).mpr (by linarith)

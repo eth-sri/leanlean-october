@@ -6,7 +6,6 @@ public import RequestProject.CombPi2
 
 /-! An injective fundamental-group inclusion embeds its genuine universal-cover vertices. -/
 namespace FiniteChains.Comb
-universe u
 variable {X Y : Complex2.{u}}
 
 theorem univLiftV_deckV (f : Hom X Y) (a : X.V) (g : Pi1 X a) (v : UV X a) :

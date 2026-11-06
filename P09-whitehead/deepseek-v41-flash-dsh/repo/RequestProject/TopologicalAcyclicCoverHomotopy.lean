@@ -9,7 +9,6 @@ public import RequestProject.TopologicalSingular.MathlibComparison
 original statement. The covering is the concrete pullback, and its total
 space is compared with the original total space by the actual projection. -/
 
-noncomputable section
 namespace Whitehead
 open scoped Topology unitInterval
 

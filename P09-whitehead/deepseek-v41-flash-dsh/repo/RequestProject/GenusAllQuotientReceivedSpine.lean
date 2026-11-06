@@ -17,7 +17,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
-universe u
 variable {K : Complex2.{u}} (T : SpanningTree K)
   {G H : Type u} [Group G] [Group H]
   (φ : PresGroup (SpanningTree.treeRel T) →* G) (η : G →* H)

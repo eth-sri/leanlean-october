@@ -14,7 +14,6 @@ noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped Topology
 
-universe u
 variable {J K X E : Type u} [TopologicalSpace X]
   [NormedAddCommGroup E]
 

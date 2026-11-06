@@ -6,7 +6,6 @@ public import RequestProject.PresUniversalFoxColumns
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} [DecidableEq α] (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 

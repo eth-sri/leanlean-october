@@ -35,12 +35,6 @@ arbitrary.
 
 namespace FiniteChains
 
-universe u v
-
-/-- The majority vote of three booleans. -/
-def maj3 (a b c : Bool) : Bool := (a && b) || (b && c) || (a && c)
-
-@[simp] theorem maj3_self (a : Bool) : maj3 a a a = a := by cases a <;> rfl
 
 /-- A **wall space**: a family of walls on `X`, each wall `i` splitting `X` into the two
 sides `side i x = true` and `side i x = false`; distinct points are separated by some wall,
@@ -72,46 +66,6 @@ dual into the shape required by `FiniteChains.RollerModel`.
 section Coordinates
 
 variable [DecidableEq ι]
-
-variable (S) in
-/-- The orientation obtained from the base orientation of `x₀` by flipping the walls in `A`. -/
-def flipOn (x₀ : X) (A : Finset ι) : ι → Bool :=
-  fun i => if i ∈ A then !S.side i x₀ else S.side i x₀
-
-@[simp] theorem flipOn_empty (x₀ : X) : S.flipOn x₀ (∅ : Finset ι) = fun i => S.side i x₀ := by
-  funext i; simp [flipOn]
-
-/-- Distinct coordinates give distinct orientations. -/
-theorem flipOn_injective (x₀ : X) : Function.Injective (S.flipOn x₀) := by
-  intro A B h
-  ext i
-  have hi := congrFun h i
-  simp only [flipOn] at hi
-  constructor
-  · intro hA
-    by_contra hB
-    rw [if_pos hA, if_neg hB] at hi
-    simp at hi
-  · intro hB
-    by_contra hA
-    rw [if_neg hA, if_pos hB] at hi
-    simp at hi
-
-variable (S) in
-/-- The halfspace coordinates of a point of `X`: the (finite) set of walls separating it from
-the base point. -/
-noncomputable def coord (x₀ x : X) : Finset ι := (S.fin x x₀).toFinset
-
-theorem flipOn_coord (x₀ x : X) : S.flipOn x₀ (S.coord x₀ x) = fun i => S.side i x := by
-  funext i
-  by_cases h : S.side i x = S.side i x₀
-  · simp [flipOn, coord, Set.Finite.mem_toFinset, h]
-  · simp only [flipOn, coord, Set.Finite.mem_toFinset, Set.mem_setOf_eq, if_pos h]
-    cases hb : S.side i x <;> simp_all
-
-@[simp] theorem coord_self (x₀ : X) : S.coord x₀ x₀ = (∅ : Finset ι) := by
-  apply flipOn_injective x₀
-  rw [flipOn_coord, flipOn_empty]
 
 end Coordinates
 

@@ -6,7 +6,6 @@ public import RequestProject.TopologicalSingular.SmallRefinementStep
 
 namespace FiniteChains.SingularSubdivision
 open TopologicalSingular
-universe u v
 variable {X : Type u} [TopologicalSpace X] {ι : Type v}
 
 noncomputable def smallRefinementNextMap (U : ι → Set X) (hU : ∀ i, IsOpen (U i))

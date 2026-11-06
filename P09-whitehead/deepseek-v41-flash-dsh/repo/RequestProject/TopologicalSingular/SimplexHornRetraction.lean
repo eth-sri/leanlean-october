@@ -25,7 +25,6 @@ face of a normalized simplex boundary by its attaching map through all the other
 
 open scoped Topology Topology.Homotopy unitInterval
 
-noncomputable section
 
 namespace FiniteChains.TopologicalSingular
 
@@ -94,11 +93,9 @@ theorem sum_simplexHornRetractCoords (i : Fin (d + 2))
     (z : stdSimplex ℝ (Fin (d + 2))) :
     ∑ k, simplexHornRetractCoords i z k = 1 := by
   rw [Fin.sum_univ_succAbove _ i]
-  simp only [simplexHornRetractCoords_same, simplexHornRetractCoords_succAbove,
-    Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
-    nsmul_eq_mul]
+  simp
   have hz := z.2.2
-  rw [Fin.sum_univ_succAbove _ i] at hz
+  rw [Fin.sum_univ_succAbove] at hz
   norm_num at hz ⊢
   linarith
 

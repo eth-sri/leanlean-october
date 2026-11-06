@@ -6,7 +6,6 @@ public import RequestProject.OrderPosetCovering
 
 /-! The actual fiber product of a poset covering along a monotone map. -/
 namespace FiniteChains.Comb
-universe u
 variable {P Q R : Type u} [Preorder P] [Preorder Q] [Preorder R]
 
 def PosetCoverPullback (f : P → Q) (g : R → Q) :=

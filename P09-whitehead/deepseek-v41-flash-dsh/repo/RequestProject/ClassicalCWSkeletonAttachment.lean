@@ -64,11 +64,6 @@ def skeletonAttachmentOrigin (n : ℕ) : C(DiskAttachment (skeletonAttachingMap 
     (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ))
     ⟨Subtype.val, continuous_subtype_val⟩ (characteristicDiskFamily C n) (fun _ => rfl)
 
-@[simp] theorem skeletonAttachmentOrigin_old (n : ℕ) (x : SkeletonCarrier C n) :
-    skeletonAttachmentOrigin C n
-      (old (skeletonAttachingMap C n)
-        (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) x) = x.val := rfl
-
 @[simp] theorem skeletonAttachmentOrigin_cell (n : ℕ)
     (j : RelCWComplex.cell C n) (x : ClosedUnitBall (Fin n → ℝ)) :
     skeletonAttachmentOrigin C n
@@ -244,12 +239,12 @@ theorem skeletonAttachmentOrigin_isClosedMap (n : ℕ) :
       (hA.preimage (old_continuous _ _))
   · right
     subst m
-    rw [origin_image_inter_top_cell C n j A]
+    rw [origin_image_inter_top_cell]
     letI : CompactSpace (ClosedUnitBall (Fin n → ℝ)) :=
       isCompact_iff_compactSpace.mp (by
         convert isCompact_closedBall (0 : Fin n → ℝ) 1 using 1
         ext x
-        simp only [Metric.mem_closedBall, dist_zero_right]
+        simp
         rfl)
     have hc : IsClosed ((fun x : ClosedUnitBall (Fin n → ℝ) =>
         cell (skeletonAttachingMap C n)
@@ -299,11 +294,6 @@ def skeletonAsDiskAttachment (n : ℕ) :
         (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) x := by
   rw [← skeletonAttachmentHomeomorph_old_eq C n x]
   exact (skeletonAttachmentHomeomorph C n).symm_apply_apply _
-
-@[simp] theorem skeletonAttachmentHomeomorph_old (n : ℕ) (x : SkeletonCarrier C n) :
-    (skeletonAttachmentHomeomorph C n
-      (old (skeletonAttachingMap C n)
-        (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) x)).val = x.val := rfl
 
 @[simp] theorem skeletonAttachmentHomeomorph_cell (n : ℕ)
     (j : RelCWComplex.cell C n) (x : ClosedUnitBall (Fin n → ℝ)) :

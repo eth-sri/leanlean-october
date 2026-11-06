@@ -23,7 +23,6 @@ namespace FiniteChains.SingularSubdivision
 
 open Set Topology TopologicalSingular AffineVertexChains
 
-universe u v
 variable {X : Type u} [TopologicalSpace X] {ι : Type v}
 
 noncomputable def smallChains (U : ι → Set X) (n : ℕ) : Submodule ℤ (Chain X n) :=
@@ -80,7 +79,7 @@ theorem iterated_subdivide_small_of_le (U : ι → Set X) {k l : ℕ} (hkl : k �
     (n : ℕ) {c : Chain X n} (hc : ((subdivide n)^[k]) c ∈ smallChains U n) :
     ((subdivide n)^[l]) c ∈ smallChains U n := by
   obtain ⟨a, rfl⟩ := Nat.exists_eq_add_of_le hkl
-  rw [Nat.add_comm k a, Function.iterate_add_apply]
+  rw [Nat.add_comm, Function.iterate_add_apply]
   exact iterated_subdivide_mem_small U a n hc
 
 theorem standardVertices_mesh (n : ℕ) : MeshBound (standardVertices n) 1 := by

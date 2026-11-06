@@ -45,7 +45,7 @@ theorem surfaceCharacterCocycle_gSig (x : Fin q × Bool) :
   have h := (presCoc (genusW characterRel characterA characterB q) characterGen
     (characterRel_read q)).readPath_htpy
       (genus_hread characterRel characterA characterB q PUnit.unit.{1} (x.1.val, x.2))
-  simp only [List.nil_append, revPath_nil, List.append_nil] at h
+  simp at h
   rw (config := { transparency := .default }) [h]
   have hl : genusLw characterA characterB q PUnit.unit.{1} (x.1.val, x.2) =
       [((x.1.val, x.2), true)] := by

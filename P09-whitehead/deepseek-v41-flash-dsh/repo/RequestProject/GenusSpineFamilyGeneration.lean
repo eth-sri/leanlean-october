@@ -37,7 +37,7 @@ theorem fox_wordHom_chainRule {A B : Type*} [Fintype A] [DecidableEq A]
       MonoidAlgebra.mapDomainRingHom ℤ φ (fox i w) * fox b (φ (FreeGroup.of i)) := by
   induction w using FreeGroup.induction_on with
   | one => simp
-  | of j => simp [fox_of]
+  | of j => simp
   | inv_of j ih =>
       rw [map_inv, fox_inv, ih]
       simp only [fox_inv, map_neg, map_mul, groupRingMap_grp]
@@ -45,7 +45,7 @@ theorem fox_wordHom_chainRule {A B : Type*} [Fintype A] [DecidableEq A]
       apply Finset.sum_congr rfl
       intro i hi
       rw [map_inv]
-      simp only [neg_mul, mul_assoc]
+      simp
   | mul v w hv hw =>
       rw [map_mul, fox_mul, hv, hw]
       simp only [fox_mul, map_add, map_mul, groupRingMap_grp, add_mul]
@@ -82,7 +82,7 @@ theorem fox_filling_wordHom {A B J : Type*} [Fintype A] [DecidableEq A]
     rw [fox_wordHom_chainRule, map_sum]
     exact Finset.sum_congr rfl (fun i _ => by rw [map_mul, hcoeff])
   have hcol (j : J) := hfox (σ j)
-  rw [hfox w]
+  rw [hfox]
   simp_rw [hcol, Finset.mul_sum, ← mul_assoc]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
@@ -162,9 +162,9 @@ theorem finiteSpineFamily_surfaceWord (s : Sx) :
     intro a
     simp
   rw [markedSpineSurfaceWord, map_commWord, map_commWord]
-  simp only [blockSubst_of_inl]
+  simp
   simp_rw [← MonoidHom.comp_apply, hm]
-  rw [← map_commWord, hrho s]
+  rw [← map_commWord, hrho]
 
 /-- Actual B1 for the arbitrary genus family, with no geometric hypothesis left. -/
 theorem finiteSpineFamilyFilling_isFilling :
@@ -284,7 +284,7 @@ theorem finiteSpineFamilyB2_of_individual (hB2 : FiniteSpineIndividualB2 ρ q u)
       simpa only [finiteSpineFactor_internalMatrix ρ q u hrho,
         finiteSpineFactorRingHom] using hv z)
   refine ⟨r, fun m => ?_⟩
-  rw [finiteSpineFamilyFilling_coeff ρ q u hrho]
+  rw [finiteSpineFamilyFilling_coeff]
   exact hr m
 
 /-- Actual arbitrary-family finite-support generation, with B1 and injection

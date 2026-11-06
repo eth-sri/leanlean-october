@@ -81,7 +81,7 @@ theorem rootedCapped_liftPath (g : PresGroup (cappedSpinePresentation q))
       change rootedCappedEdgeGerm q (SpanningTree.liftGerm _ _ g eb) :: _ =
         uLiftPath (((markedSpineToFullCube q).onE eb.1, eb.2) ::
           mapPath (markedSpineToFullCube q) p) _
-      rw [uLiftPath_cons hs, he]
+      rw [uLiftPath_cons, he]
       apply congrArg₂ List.cons
       · exact rootedCapped_liftGerm q g eb
       · exact ih _ hp

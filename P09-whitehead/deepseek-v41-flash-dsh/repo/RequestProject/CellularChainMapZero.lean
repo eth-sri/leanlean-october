@@ -6,7 +6,6 @@ public import RequestProject.UnivCoverIncl
 
 /-! Vertex-chain naturality of actual cellular maps. -/
 namespace FiniteChains.Comb
-universe u
 variable {X Y : Complex2.{u}}
 
 noncomputable def chain0 (f : Hom X Y) : (X.V →₀ ℤ) →ₗ[ℤ] (Y.V →₀ ℤ) :=

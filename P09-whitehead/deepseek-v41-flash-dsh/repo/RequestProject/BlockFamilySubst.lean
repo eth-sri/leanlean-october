@@ -57,7 +57,6 @@ namespace BlockFamily
 
 open MonoidAlgebra
 
-universe u
 
 variable {α Jr Sx : Type u} {Zt Mt : Sx → Type u}
 
@@ -75,8 +74,8 @@ def genEmb (s : Sx) : α ⊕ Zt s → α ⊕ (Σ s : Sx, Zt s) :=
 theorem genEmb_injective (s : Sx) : Function.Injective (genEmb (α := α) (Zt := Zt) s) := by
   rintro (i | z) (i' | z') h
   · exact congrArg Sum.inl (Sum.inl_injective h)
-  · exact absurd h (by simp [genEmb])
-  · exact absurd h (by simp [genEmb])
+  · exact absurd h (by simp)
+  · exact absurd h (by simp)
   · have h' : (⟨s, z⟩ : Σ s : Sx, Zt s) = ⟨s, z'⟩ := Sum.inr_injective h
     exact congrArg Sum.inr (eq_of_heq (Sigma.mk.inj h').2)
 
@@ -85,7 +84,7 @@ is outside the range of `genEmb s`. -/
 theorem inr_ne_genEmb {s s' : Sx} (hs : s ≠ s') (z : Zt s') (x : α ⊕ Zt s) :
     (Sum.inr ⟨s', z⟩ : α ⊕ (Σ s : Sx, Zt s)) ≠ genEmb s x := by
   cases x with
-  | inl i => simp [genEmb]
+  | inl i => simp
   | inr w =>
       simp only [genEmb_inr, ne_eq, Sum.inr.injEq]
       intro h
@@ -336,8 +335,8 @@ theorem augPres_cellsF_eq_zero {y : Jr ⊕ Sx → MonoidAlgebra ℤ (PresGroup �
       augPres (substPresF ρ bsub) (coeffF ρ bsub hfill x) = augPres ρ x :=
     fun x => augQ_mapDomain (substHomF ρ bsub hfill) x
   cases k with
-  | inl j => rw [cellsF_inl, haug, hy (Sum.inl j)]
-  | inr p => rw [cellsF_inr, map_mul, haug, hy (Sum.inr p.1), zero_mul]
+  | inl j => rw [cellsF_inl, haug, hy]
+  | inr p => rw [cellsF_inr, map_mul, haug, hy, zero_mul]
 
 variable (ρ bsub hfill c)
 

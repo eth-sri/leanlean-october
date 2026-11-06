@@ -19,7 +19,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains.Comb.OrdCocycle
 open SpanningTree
 open scoped Classical
-universe u v
 variable {P : Type u} [Preorder P] {G : Type v} [Group G]
   (T : SpanningTree (orderCx P)) (φ : PresGroup (treeRel T) →* G)
 
@@ -37,7 +36,7 @@ theorem fromTreeReceiver_readGerm (e : (orderCx P).E × Bool) :
   cases side
   · change (if h : a ≤ b then φ (wordClass T [ordPos h]) else 1)⁻¹ =
       φ (wordClass T [ordNeg hab])
-    rw [dif_pos hab]
+    rw [dif_pos]
     have hr : wordClass T [ordNeg hab] = (wordClass T [ordPos hab])⁻¹ := by
       change QuotientGroup.mk (pathWord T [ordNeg hab]) =
         (QuotientGroup.mk (pathWord T [ordPos hab]))⁻¹
@@ -45,7 +44,7 @@ theorem fromTreeReceiver_readGerm (e : (orderCx P).E × Bool) :
       rfl
     rw [hr, map_inv]
   · change (if h : a ≤ b then φ (wordClass T [ordPos h]) else 1) = _
-    rw [dif_pos hab]
+    rw [dif_pos]
     rfl
 
 theorem fromTreeReceiver_readPath (p : List ((orderCx P).E × Bool)) :
@@ -74,7 +73,6 @@ end FiniteChains.Comb.OrdCocycle
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb BlockFamily
-universe v
 variable (q₀ : ℕ) [NeZero q₀] {G : Type v} [Group G]
   (φ : PresGroup (namedSpinePresentation q₀) →* G)
 
@@ -142,7 +140,6 @@ end FiniteChains.Davis.Genus
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily
-universe v
 variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (q : ℕ) [NeZero q] (u : Fin q × Bool → FreeGroup α)
   (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
@@ -181,7 +178,7 @@ theorem namedBaseCocycle_marked (x : Fin q × Bool) :
   let w := genusNonemptyW ep aa bb q
   have hh := (namedBaseCocycle ρ q u hrho j).readPath_htpy
     (genusNonempty_hread ep aa bb q PUnit.unit.{1} (x.1.val, x.2))
-  simp only [List.nil_append, revPath_nil, List.append_nil] at hh
+  simp at hh
   rw [hh]
   have hl : genusLw aa bb q PUnit.unit.{1} (x.1.val, x.2) = [(Sum.inr x, true)] :=
     namedLw_eq q PUnit.unit x

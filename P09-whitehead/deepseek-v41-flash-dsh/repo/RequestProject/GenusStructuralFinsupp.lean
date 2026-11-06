@@ -18,7 +18,6 @@ open scoped Classical
 
 namespace FiniteChains.BlockFamily
 
-universe u
 
 variable {α Jr S : Type u} {Z M : S → Type u}
   [DecidableEq α] [DecidableEq S] [∀ s, DecidableEq (Z s)]
@@ -86,13 +85,6 @@ def finiteSpineFamilyStructuralMap :
     (familyFiniteSpineWordBlock_filled σ q u hσ)
     (finiteSpineFamilyFilling σ q u)
     (finiteSpineFamilyFilling_isFilling σ q u hσ)
-
-@[simp] theorem finiteSpineFamilyStructuralMap_cells
-    (y : (Jr ⊕ S) →₀ MonoidAlgebra ℤ (PresGroup σ)) :
-    (finiteSpineFamilyStructuralMap σ q u hσ).cells y =
-      fsCellsF σ (familyFiniteSpineWordBlock q u)
-        (familyFiniteSpineWordBlock_filled σ q u hσ)
-        (finiteSpineFamilyFilling σ q u) y := rfl
 
 /-- Actual equation (3.3) for the simultaneous genus replacement. -/
 theorem finiteSpineFamilyStructuralMap_generates :

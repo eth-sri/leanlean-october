@@ -228,7 +228,7 @@ theorem allNamedSurfaceMarkingChains_coefficient
   | single x n =>
       change normalizedWeakChain1To _ _
         (allNamedAttachingMarkingChains q ρ u hrho (Finsupp.single x n)) _ = _
-      rw [allNamedAttachingMarkingChains, Finsupp.linearCombination_single ℤ, map_zsmul,
+      rw [allNamedAttachingMarkingChains, Finsupp.linearCombination_single, map_zsmul,
         Finsupp.smul_apply, allNamedAttachingMarkingPath_cons,
         normalizedWeakChain1To_positive_first_coefficient _ _ _ _
           (allNamedSurfaceFirst q ρ u hrho x.1 x.2) _ rfl
@@ -355,8 +355,7 @@ theorem allNamedSurfaceMarkingChains_translate (g : QuotientMarkingGroup q ρ u)
       (allNamedAttachingMarkingChains q ρ u hrho (ReceivedTree.translateCellChain g c))) = _
   rw [allNamedAttachingMarkingChains_translate, ← chain1_comp_apply,
     namedSurfaceForward_deck_square, chain1_comp_apply,
-    normalizeOrdChain1_strict_map (namedSurfaceDeck ρ q u g)
-      (namedSurfaceDeck ρ q u g).strictMono]
+    normalizeOrdChain1_strict_map]
   rfl
 
 theorem allNamedSurfaceMarkingChains_multiply

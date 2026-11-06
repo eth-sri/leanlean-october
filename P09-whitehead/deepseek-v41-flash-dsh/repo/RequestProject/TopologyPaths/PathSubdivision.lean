@@ -21,7 +21,6 @@ namespace FiniteChains.PathSubdivision
 open Set Topology
 open scoped unitInterval
 
-universe u v
 
 noncomputable def intervalPath (a b : unitInterval) : Path a b where
   toFun s := ⟨(1 - (s : ℝ)) * a + s * b,by

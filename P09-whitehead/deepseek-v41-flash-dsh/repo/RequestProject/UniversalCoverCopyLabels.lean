@@ -17,7 +17,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.UniversalCopy
-universe u
 variable {L E : Complex2.{u}} (f : Hom L E) (a : L.V)
 
 def map (g : Pi1 E (f.onV a)) : Hom (uCover L a) (uCover E (f.onV a)) :=

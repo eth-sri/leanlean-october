@@ -37,7 +37,7 @@ theorem not_isOfFinOrder_ofAdd_one : ¬ IsOfFinOrder (Multiplicative.ofAdd (1 : 
   intro n hn h
   have h2 : Multiplicative.toAdd ((Multiplicative.ofAdd (1 : ℤ)) ^ n) = 0 := by
     rw [h]; rfl
-  simp [toAdd_pow] at h2
+  simp at h2
   omega
 
 section FreeProduct

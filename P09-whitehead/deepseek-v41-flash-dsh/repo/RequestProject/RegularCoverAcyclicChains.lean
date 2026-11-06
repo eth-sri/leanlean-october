@@ -14,7 +14,6 @@ final Lean verification. -/
 noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb
-universe v
 variable {D K : Complex2} (T : SpanningTree D) (hD : IsAcyclic D)
   (p : Hom D K)
 
@@ -24,9 +23,6 @@ def regularCoverChainStages (n : ℕ) : ℕ → Complex2 :=
 def regularCoverChainInclusion (n i : ℕ) :
     Hom (regularCoverChainStages T hD p n i) (regularCoverChainStages T hD p n (i + 1)) :=
   (acyclicRelativeCellChain T hD n).descInc p i
-
-@[simp] theorem regularCoverChainStages_zero (n : ℕ) :
-    regularCoverChainStages T hD p n 0 = K := rfl
 
 theorem regularCoverChainInclusion_V (n i : ℕ) :
     Function.Injective (regularCoverChainInclusion T hD p n i).onV :=

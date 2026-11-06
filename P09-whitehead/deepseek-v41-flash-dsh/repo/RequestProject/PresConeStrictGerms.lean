@@ -6,7 +6,6 @@ public import RequestProject.PresConeExcursionReplacement
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 /-- Actual relator apices are maximal vertices in the actual presentation poset. -/

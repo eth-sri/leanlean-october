@@ -8,7 +8,6 @@ public import RequestProject.PresPosetConnected
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
 
@@ -33,7 +32,7 @@ theorem presGroup_wordVal_eq_one (j : J) :
     intro i
     simp
   change FreeGroup.lift _ (FreeGroup.mk (w j)) = 1
-  rw [hlift, hw j]
+  rw [hlift, hw]
   exact (QuotientGroup.eq_one_iff _).2
     (Subgroup.subset_normalClosure (Set.mem_range.2 ⟨j, rfl⟩))
 

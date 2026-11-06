@@ -7,7 +7,6 @@ public import RequestProject.RoseStrictEdges
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α P : Type u} [PartialOrder P] (f : P → Rose α) (hf : IsPosetCover f)
 
 /-- Exactly the two actual lifted incidences enter each actual rose edge-end vertex. -/

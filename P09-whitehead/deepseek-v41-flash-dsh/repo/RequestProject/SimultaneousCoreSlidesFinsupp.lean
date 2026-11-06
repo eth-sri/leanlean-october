@@ -15,7 +15,6 @@ noncomputable section
 namespace FiniteChains
 open BlockFamily
 
-universe u
 variable {C S I R : Type u} [Ring R]
 
 @[simp] theorem fsOldOneIncl_single (c : C) (a : R) :
@@ -102,8 +101,8 @@ theorem coreSlideForward_aug_zero (lam : S → C →₀ R) (ε : R →+* ℤ)
     apply Finset.sum_eq_zero
     intro k hk
     change ε (x k * _) = 0
-    rw [map_mul, hx k, zero_mul]
+    rw [map_mul, hx, zero_mul]
   change ε (x j - coreSlideCorrection lam x j) = 0
-  rw [map_sub, hx j, hc, sub_self]
+  rw [map_sub, hx, hc, sub_self]
 
 end FiniteChains

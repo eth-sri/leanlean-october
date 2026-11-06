@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q] {f : P → Q}
 
 theorem exists_cover_zigzag_contraction (hf : IsPosetCover f)

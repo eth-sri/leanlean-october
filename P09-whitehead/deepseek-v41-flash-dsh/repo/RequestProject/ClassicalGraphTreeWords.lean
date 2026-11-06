@@ -43,7 +43,7 @@ theorem treeLetters_revPath (l : List (J × Bool)) :
   induction l with
   | nil => rfl
   | cons g l ih =>
-    rw [Comb.revPath_cons (X := graphCx r)]
+    rw [Comb.revPath_cons]
     rw [treeLetters_append, ih]
     by_cases h : T.isTree g.1
     · simp only [treeLetters, Comb.revGerm, h, dite_true, List.append_nil]
@@ -135,7 +135,7 @@ theorem collapsedWordPath_homotopic_treeWord (l : List (J × Bool)) {a b : V}
         simp only [treeRoseWordPath, treeLetters, dif_pos hg]
       rw [ht]
       exact ((Path.Homotopic.refl _).hcomp (ih hl.2)).trans (Path.Homotopic.refl_trans _)
-    · rw [collapsedGermPath_nonTree r hr T g hg]
+    · rw [collapsedGermPath_nonTree]
       have ht : treeRoseWordPath r T (g :: l) =
           (germPath (graphSrc (roseAttaching _)) (graphTgt (roseAttaching _))
             (old (roseAttaching _) _) (graphEdgePath (roseAttaching _))

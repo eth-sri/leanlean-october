@@ -16,7 +16,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
 /-- The actual cover edges, expressed in lifted-order nerve coordinates. -/
@@ -81,7 +80,7 @@ theorem universalNerveChain2_single_mem_incOn (S : P → Prop)
       S (uOrderEnd (uOrderHomInv.onF t).1.2.1) ∧
       S (uOrderEnd (uOrderHomInv.onF t).1.2.2) at ht
     intro v hv
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at hv
+    simp at hv
     rcases hv with rfl | rfl | rfl
     · exact ht.1
     · exact ht.2.1
@@ -105,7 +104,6 @@ end FiniteChains.Comb
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

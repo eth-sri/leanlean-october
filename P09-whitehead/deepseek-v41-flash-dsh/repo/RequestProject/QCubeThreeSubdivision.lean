@@ -30,7 +30,7 @@ theorem threeFacet_uw_spx (c : QCube A) {u v w : V}
   apply threeFacet_uv_spx c huv (Ne.symm hvw)
   rw [hs]
   ext x
-  simp only [Finset.mem_insert, Finset.mem_singleton]
+  simp
   tauto
 
 theorem threeFacet_vw_spx (c : QCube A) {u v w : V}
@@ -39,7 +39,7 @@ theorem threeFacet_vw_spx (c : QCube A) {u v w : V}
   apply threeFacet_uv_spx c (Ne.symm huv) (Ne.symm huw)
   rw [hs]
   ext x
-  simp only [Finset.mem_insert, Finset.mem_singleton]
+  simp
   tauto
 
 noncomputable def cubeThreeSquareBoundary (c : QCube A) (u v w : V)

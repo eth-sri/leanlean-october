@@ -26,7 +26,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open Comb Cell
-universe u
 variable {κ ι : Type u} {M : ℕ} [NeZero M]
   {vc : Fin M → κ} {ec : Fin M → ι} (hc : Compat vc ec)
 

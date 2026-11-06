@@ -29,7 +29,6 @@ namespace Davis
 
 open RACG Mirror Comb Cell
 
-universe u
 
 section Cells
 

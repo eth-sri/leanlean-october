@@ -39,7 +39,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace RACG
 
-universe u
 
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 
@@ -90,9 +89,6 @@ def parTr : Tr A → V → ZMod 2 :=
   Quotient.lift (fun l : {l : List V // IsRed A.rel l} => parList l.1)
     (fun _ _ h => parList_ceq A h)
 
-@[simp] theorem parTr_mkTr (l : List V) (h : IsRed A.rel l) :
-    parTr A (mkTr A l h) = parList l := rfl
-
 /-- An elementary move changes the parity vector by the corresponding generator. -/
 theorem parTr_act (s : V) (t : Tr A) : parTr A (act A s t) = eVec s + parTr A t := by
   classical
@@ -111,7 +107,7 @@ theorem parTr_act (s : V) (t : Tr A) : parTr A (act A s t) = eVec s + parTr A t 
         show parList (popStart s l.1) = eVec s + parList l.1
         rw [h1]
         funext v
-        simp only [Pi.add_apply]
+        simp
         have h0 : eVec s v + eVec s v = 0 := zmod2_add_self _
         linear_combination (norm := ring_nf) -h0
       · have hact : (actRep A s l).1 = s :: l.1 := actRep_of_not_canStart A hc
@@ -129,7 +125,7 @@ noncomputable def phi (x : CayGroup A) : V → ZMod 2 :=
   parTr A ((x : Equiv.Perm (Tr A)) (oneTr A))
 
 theorem cword_append (l m : List V) : cword A (l ++ m) = cword A l * cword A m :=
-  Subtype.ext (by simpa using wordPerm_append A l m)
+  Subtype.ext (by exact wordPerm_append A l m)
 
 theorem phi_cword (l : List V) : phi A (cword A l) = parList l := by
   induction l with

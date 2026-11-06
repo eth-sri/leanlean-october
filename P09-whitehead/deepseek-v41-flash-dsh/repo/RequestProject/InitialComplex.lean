@@ -44,7 +44,6 @@ namespace FiniteChains
 open MonoidAlgebra
 open scoped commutatorElement IsMulCommutative
 
-universe u
 
 variable {I J : Type u}
 
@@ -153,7 +152,7 @@ theorem commutator_yEl_eq_one (hM : ExpSurjective r) (i : I) :
     exact (xEl_eq_commutator r i).symm
   have hrel : ∀ j, FreeGroup.lift (fun i => ⁅yEl r i false, yEl r i true⁆) (r j) = 1 := by
     intro j
-    rw [hlift, lift_xEl r]
+    rw [hlift, lift_xEl]
     exact mk_relY r (Sum.inl j)
   exact eq_one_of_expCol_surjective _ hu r hrel hM i
 
@@ -214,12 +213,12 @@ theorem proj_fox_commutator {β : Type*} [DecidableEq β] (Nsub : Subgroup (Free
     show (QuotientGroup.mk' Nsub) (FreeGroup.of A * FreeGroup.of B * (FreeGroup.of A)⁻¹)
       = (QuotientGroup.mk' Nsub) (FreeGroup.of B)
     rw [map_mul, map_mul, map_inv]
-    simp only [QuotientGroup.mk'_apply]
+    simp
     rw [hcomm.eq, mul_inv_cancel_right]
   have hcom1 : (QuotientGroup.mk ⁅FreeGroup.of A, FreeGroup.of B⁆ : FreeGroup β ⧸ Nsub) = 1 := by
     show (QuotientGroup.mk' Nsub) ⁅FreeGroup.of A, FreeGroup.of B⁆ = 1
     rw [map_commutatorElement]
-    simp only [QuotientGroup.mk'_apply]
+    simp
     exact commutatorElement_eq_one_iff_commute.2 hcomm
   have hq1 : qgrp Nsub (FreeGroup.of A * FreeGroup.of B * (FreeGroup.of A)⁻¹)
       = qgrp Nsub (FreeGroup.of B) :=
@@ -306,7 +305,7 @@ theorem foxMatrix_inr_cross (hM : ExpSurjective r) (i : I) (s : Bool) (c : Cross
     ⁅(FreeGroup.of (Sum.inr (p, u)) : FreeGroup (GenY I)), FreeGroup.of (Sum.inr (q, v))⁆) = _
   rw [proj_fox_commutator (relSub (relY r)) (Sum.inr (p, u)) (Sum.inr (q, v))
     (Sum.inr (i, s)) (commute_yEl hM p q u v), ← yRing_eq_qgrp, ← yRing_eq_qgrp]
-  simp [Prod.ext_iff]
+  simp
 
 /-! ### The evaluation homomorphism -/
 

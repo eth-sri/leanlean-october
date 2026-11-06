@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
-universe u v w
 variable {P : Type u} [Preorder P] {G : Type v} [Group G]
   {Ω : Type w} [MulAction G Ω] (c : OrdCocycle P G)
 

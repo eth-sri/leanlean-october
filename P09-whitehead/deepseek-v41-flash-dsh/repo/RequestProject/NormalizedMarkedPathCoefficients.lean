@@ -15,7 +15,6 @@ set_option backward.isDefEq.respectTransparency.types false
 set_option maxHeartbeats 1600000
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 def normalizedWeakChain1To (f : P → Q) (hf : Monotone f) :

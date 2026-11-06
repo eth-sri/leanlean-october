@@ -11,7 +11,6 @@ by the explicitly constructed pre-substitution degree-one polygon.
 
 This file does not assert the original topological MainClaim.
 -/
-noncomputable section
 open scoped Classical
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false

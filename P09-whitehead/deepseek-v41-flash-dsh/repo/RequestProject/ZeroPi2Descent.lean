@@ -38,7 +38,6 @@ Applying this to the cellular pushout of `RequestProject/CombPushout.lean` gives
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 /-! ### Uniqueness of lifts along a covering -/
 
@@ -65,7 +64,7 @@ theorem lift_onV_eq (hq : IsCovering q) (hX : IsConnected X)
     rw [hx]; exact isPath_mapPath B hm
   have hmap : mapPath q (mapPath A m) = mapPath q (mapPath B m) := by
     simp only [mapPath, List.map_map, Function.comp_def]
-    exact List.map_congr_left fun eb _ => by rw [hE eb.1]
+    exact List.map_congr_left fun eb _ => by rw [hE]
   have hlists := liftPath_unique hq (mapPath A m) (mapPath B m) (A.onV x) _ _ hA hB hmap
   rw [← hlists] at hB
   exact isPath_endpoint_eq hA hB
@@ -76,9 +75,9 @@ theorem lift_onE_eq (hq : IsCovering q) (hE : ∀ e, q.onE (A.onE e) = q.onE (B.
   intro e
   have h1 : germSrc Z.src Z.tgt (A.onE e, true) = A.onV (X.src e) := A.src_onE e
   have h2 : germSrc Z.src Z.tgt (B.onE e, true) = A.onV (X.src e) := by
-    rw [germSrc_true, B.src_onE e, hV]
+    rw [germSrc_true, B.src_onE, hV]
   have h3 : (q.onE (A.onE e, true).1, (A.onE e, true).2)
-      = (q.onE (B.onE e, true).1, (B.onE e, true).2) := by rw [hE e]
+      = (q.onE (B.onE e, true).1, (B.onE e, true).2) := by rw [hE]
   exact congrArg Prod.fst (liftGerm_unique hq h1 h2 h3)
 
 /-- **Uniqueness of lifts, on two-cells.** -/

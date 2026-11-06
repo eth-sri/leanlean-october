@@ -6,7 +6,6 @@ public import RequestProject.TopologicalSingular.SimplexPrismRetraction
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 
 noncomputable def simplexPrismBoundaryValue (f : C(Domain n, X))
@@ -40,12 +39,11 @@ theorem simplexPrismBoundaryValue_continuous (f : C(Domain n, X))
   have hT : IsClosed T := (simplexBoundary_isClosed n).preimage continuous_subtype_val.snd
   have hu : S ∪ T = Set.univ := by
     ext w
-    simp only [Set.mem_union, Set.mem_univ, iff_true]
+    simp
     exact w.property
   have hcS : ContinuousOn (simplexPrismBoundaryValue f H) S := by
     apply (f.continuous.comp continuous_subtype_val.snd).continuousOn.congr
-    intro w hw
-    exact simplexPrismBoundaryValue_bottom f H hH w hw
+    exact simplexPrismBoundaryValue_bottom f H hH
   have hcT : ContinuousOn (simplexPrismBoundaryValue f H) T := by
     rw [continuousOn_iff_continuous_restrict]
     have hc : Continuous (fun w : T => H (w.val.val.1, ⟨w.val.val.2, w.property⟩)) := by
@@ -87,7 +85,7 @@ theorem simplexHomotopyExtension_boundary (f : C(Domain n, X))
     exact z.property
   change simplexPrismBoundaryValue f H (simplexPrismRetraction n (t, z.val)) = _
   rw [simplexPrismBoundaryValue_side f H _ hz]
-  apply congrArg H
+  apply congrArg
   apply Prod.ext
   · exact congrArg (fun w : I × Domain n => w.1) he
   · exact Subtype.ext (congrArg (fun w : I × Domain n => w.2) he)

@@ -11,7 +11,6 @@ final Lean verification. -/
 
 namespace FiniteChains.Comb
 open CategoryTheory
-universe u
 variable (P : Type u) [PartialOrder P]
 
 def vertexNerveEquiv : P ≃ (nerve P).nonDegenerate 0 where

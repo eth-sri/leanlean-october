@@ -7,7 +7,6 @@ public import RequestProject.PresCoverCylinderRelatorBoundary
 
 namespace FiniteChains.PresModel
 open Comb
-universe u v
 variable {α J : Type u} {G : Type v} [Group G]
   (w : J → List (α × Bool)) (hpos : ∀ j, 0 < (w j).length)
   (gen : α → G) (hrel : ∀ j, wordVal gen (w j) = 1)

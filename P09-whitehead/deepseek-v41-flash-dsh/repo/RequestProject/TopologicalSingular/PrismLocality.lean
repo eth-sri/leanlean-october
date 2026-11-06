@@ -7,7 +7,6 @@ public import RequestProject.TopologicalSingular.SingularPrism
 namespace FiniteChains.SingularPrism
 open TopologicalSingular
 open scoped unitInterval
-universe u v w
 variable {A : Type u} {B : Type v} {X : Type w}
   [TopologicalSpace A] [TopologicalSpace B] [TopologicalSpace X]
   {f g : C(A, X)} {f' g' : C(B, X)}

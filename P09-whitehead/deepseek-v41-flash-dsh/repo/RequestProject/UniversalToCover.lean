@@ -34,7 +34,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {D K : Complex2.{u}} {p : Hom D K} {x₀ : K.V} {d₀ : D.V}
 
@@ -165,7 +164,7 @@ theorem tgt_coverE (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (ce : UE K x�
   have hcond : endV ce.1.1 = germSrc K.src K.tgt (ce.1.2, true) := ce.2
   have h := coverV_extend hcov hd (c := ce.1.1) (eb := (ce.1.2, true)) hcond
     (x := coverGerm hcov hd ce) (coverGerm_spec hcov hd ce).1 (coverGerm_spec hcov hd ce).2
-  rw [h, coverGerm_eq hcov hd ce, germTgt_true]
+  rw [h, coverGerm_eq, germTgt_true]
 
 /-! ### The lift on two-cells -/
 
@@ -219,7 +218,7 @@ theorem isPath_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) :
   | cons x L ih =>
       intro a b h
       refine ⟨?_, ?_⟩
-      · rw [germSrc_mapUP hcov hd x, h.1]
+      · rw [germSrc_mapUP, h.1]
       · have := ih (germTgt (uCover K x₀).src (uCover K x₀).tgt x) b h.2
         rwa [← germTgt_mapUP hcov hd x] at this
 

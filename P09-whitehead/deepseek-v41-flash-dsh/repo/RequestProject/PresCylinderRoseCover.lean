@@ -8,7 +8,6 @@ public import RequestProject.PosetCoverTargetIso
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool))
 
 def cylinderRoseSet : Set (CylBase w) := {p | ∃ x : Rose α, p = cylIn (aHom w) x}

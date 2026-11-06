@@ -34,7 +34,6 @@ namespace Davis
 
 open RACG Mirror Comb
 
-universe u v
 
 /-! ### A cancellation rule for homotopies -/
 
@@ -168,13 +167,13 @@ def StarCh (t : P) (σ : NeSpx (cmpRel P)) : Prop := ∀ x ∈ σ.1, x ≤ t
 omit [DecidableEq P] in
 theorem starCh_spx1 {t x : P} (h : x ≤ t) : StarCh t (spx1 x) := by
   intro a ha
-  simp only [spx1_val, Finset.mem_singleton] at ha
+  simp at ha
   exact ha ▸ h
 
 theorem starCh_spx2 {t x y : P} (hxy : x ≤ y) (hx : x ≤ t) (hy : y ≤ t) :
     StarCh t (spx2 hxy) := by
   intro a ha
-  simp only [spx2_val, Finset.mem_insert, Finset.mem_singleton] at ha
+  simp at ha
   rcases ha with rfl | rfl
   exacts [hx, hy]
 
@@ -192,9 +191,6 @@ def insCh (t : P) (σ : NeSpx (cmpRel P)) (hσ : StarCh t σ) : NeSpx (cmpRel P)
       · exact Or.inl (hσ a ha)
       · exact isSimplex_cmpRel_iff.1 σ.2.2 a ha b hb⟩
 
-@[simp] theorem insCh_val (t : P) (σ : NeSpx (cmpRel P)) (hσ : StarCh t σ) :
-    (insCh t σ hσ).1 = insert t σ.1 := rfl
-
 /-- **The filling tool.**  A loop of the subdivision all of whose chains consist of faces of one
 fixed cell `t` is null-homotopic: the closed star of a cell is a cone. -/
 theorem htpy_nil_of_star (t : P) {v : NeSpx (cmpRel P)} (hv : StarCh t v)
@@ -208,7 +204,7 @@ theorem htpy_nil_of_star (t : P) {v : NeSpx (cmpRel P)} (hv : StarCh t v)
   · rintro ⟨σ, hσ⟩
     exact Finset.subset_insert t σ.1
   · rintro ⟨σ, hσ⟩ a ha
-    simp only [spx1_val, Finset.mem_singleton] at ha
+    simp at ha
     subst ha
     exact Finset.mem_insert_self _ _
 
@@ -287,7 +283,7 @@ theorem chainMax_monotone : Monotone (chainMax (P := P)) := by
 @[simp] theorem chainMax_spx2 {x y : P} (h : x ≤ y) : chainMax (spx2 h) = y := by
   have hmem := chainMax_mem (spx2 h)
   have hy : y ≤ chainMax (spx2 h) := le_chainMax (spx2 h) (by simp)
-  simp only [spx2_val, Finset.mem_insert, Finset.mem_singleton] at hmem
+  simp at hmem
   rcases hmem with hx | hy'
   · refine le_antisymm ?_ hy
     rw [hx]

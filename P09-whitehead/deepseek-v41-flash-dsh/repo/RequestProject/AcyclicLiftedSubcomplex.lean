@@ -12,7 +12,6 @@ Unverified source. -/
 noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb.AcyclicLiftedSubcomplex
-universe u
 variable {D X : Complex2.{u}} (i : Hom D X)
   (hiV : Function.Injective i.onV) (hiE : Function.Injective i.onE)
   (hiF : Function.Injective i.onF) (hconn : IsConnected D) (d₀ : D.V) (ht : Pi1Trivial i)

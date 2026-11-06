@@ -42,7 +42,7 @@ theorem fsCells_eq_zero_of_hom_trivial {ρ : J → FreeGroup A} {τ : L → Free
     by_cases h : j = k
     · subst k
       simp
-    · simp [Ne.symm h]
+    · simp
   rw [hdec, f.cells_finset_sum]
   apply Finset.sum_eq_zero
   intro j hj
@@ -83,7 +83,7 @@ omit [DecidableEq A] in
 theorem addRelsCellsFS_add (v w : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
     addRelsCellsFS ρ ν (v + w) = addRelsCellsFS ρ ν v + addRelsCellsFS ρ ν w := by
   ext j : 1
-  cases j <;> simp [map_add]
+  cases j <;> simp
 
 theorem addRelsCellsFS_boundary (v : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) (a : A) :
     coverSecondBoundary (relSub (addRels ρ ν)) (addRels ρ ν) (addRelsCellsFS ρ ν v) a =

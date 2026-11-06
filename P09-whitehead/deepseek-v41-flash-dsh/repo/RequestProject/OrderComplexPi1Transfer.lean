@@ -29,7 +29,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {P Q R : Type u} [Preorder P] [Preorder Q] [Preorder R]
 
@@ -96,7 +95,7 @@ theorem mapPath_liftPathIn_mapPath {Bp : P → Prop} {f : Q → P} (hf : Monoton
         refine Subtype.ext (Prod.ext ?_ ?_)
         · exact hgf e.1.1.1
         · exact hgf e.1.1.2
-      · simpa [mapPath] using hrest
+      · exact hrest
 
 /-- The image of an edge path under a monotone map with values in `Bp` lies inside `Bp`. -/
 theorem pathIn_mapPath_of_image {Bp : P → Prop} {f : Q → P} (hf : Monotone f)
@@ -128,9 +127,9 @@ theorem htpy_nil_of_injIn {Bp : P → Prop} (hinj : InjIn (fun _ : P => True) Bp
     htpy_lift_of_htpyIn hIn (hfB y) (hfB y) hpB (pathIn_nil Bp)
   have hpush := mapPath_htpy (orderCxMap g hg) hlift
   rw [mapPath_liftPathIn_mapPath hf hfB hg hgf p hpB] at hpush
-  simp only [orderCxMap_onV] at hpush
-  rw [hgf y] at hpush
-  simpa [mapPath, liftPathIn] using hpush
+  simp at hpush
+  rw [hgf] at hpush
+  exact hpush
 
 /-- **Injectivity of the induced map of fundamental groups.** -/
 theorem pi1Map_injective_of_injIn {Bp : P → Prop} (hinj : InjIn (fun _ : P => True) Bp)

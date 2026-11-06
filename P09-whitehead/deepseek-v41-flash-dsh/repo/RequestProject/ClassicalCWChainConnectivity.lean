@@ -11,7 +11,6 @@ public import RequestProject.TreeChain
 original-cell models. The input is exactly connectedness of the given
 CW subcomplexes. Unverified source. -/
 
-noncomputable section
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false

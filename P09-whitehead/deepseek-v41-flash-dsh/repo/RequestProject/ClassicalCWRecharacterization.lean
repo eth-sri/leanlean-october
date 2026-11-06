@@ -32,7 +32,7 @@ theorem recharacterizationMap_old (n : ℕ) (j : RelCWComplex.cell (Set.univ : S
 theorem recharacterizationMap_open (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set L) n) :
     recharacterizationMap e n j '' ball 0 1 = CWComplex.openCell (C := (Set.univ : Set L)) n j := by
   by_cases hj : j ∈ Set.range (e.cellIndex n)
-  · rw [recharacterizationMap, dif_pos hj, ClosedEmbeddingCW.imageCharacteristic_image]
+  · rw [recharacterizationMap, dif_pos, ClosedEmbeddingCW.imageCharacteristic_image]
     change e.map '' CWComplex.openCell (C := (Set.univ : Set K)) n (Classical.choose hj) = _
     rw [e.openCell_image, Classical.choose_spec hj]
   · rw [recharacterizationMap, dif_neg hj]
@@ -49,7 +49,7 @@ theorem recharacterizationMap_closed (n : ℕ) (j : RelCWComplex.cell (Set.univ 
     recharacterizationMap e n j '' closedBall 0 1 =
       CWComplex.closedCell (C := (Set.univ : Set L)) n j := by
   by_cases hj : j ∈ Set.range (e.cellIndex n)
-  · rw [recharacterizationMap, dif_pos hj, ClosedEmbeddingCW.imageCharacteristic_image]
+  · rw [recharacterizationMap, dif_pos, ClosedEmbeddingCW.imageCharacteristic_image]
     change e.map '' CWComplex.closedCell (C := (Set.univ : Set K)) n (Classical.choose hj) = _
     rw [image_closedCell, Classical.choose_spec hj]
   · rw [recharacterizationMap, dif_neg hj]

@@ -8,7 +8,6 @@ public import RequestProject.ZeroPi2Descent
 /-! A connected simply connected cellular covering is the actual path-class universal cover. -/
 
 namespace FiniteChains.Comb
-universe u
 variable {D K : Complex2.{u}} {p : Hom D K} {d₀ : D.V}
 
 theorem coverV_surjective (hcov : IsCovering p) (hconn : IsConnected D) :

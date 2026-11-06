@@ -6,7 +6,6 @@ public import RequestProject.NerveDegreeGluing
 
 /-! Homogeneous positive-degree fillings transfer from an actual induced subposet. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P Q : Type u}
 
 theorem lengthProjection_cmap (f : P → Q) (n : ℕ) (c : Ch P) :
@@ -16,8 +15,7 @@ theorem lengthProjection_cmap (f : P → Q) (n : ℕ) (c : Ch P) :
     (F := (lengthProjection n).comp (cmap f))
     (G := (cmap f).comp (lengthProjection n)) ?_ c
   intro l
-  simp only [AddMonoidHom.coe_comp, Function.comp_apply, cmap_of, lengthProjection_of,
-    List.length_map]
+  simp
   split_ifs <;> simp
 
 variable [Preorder P]

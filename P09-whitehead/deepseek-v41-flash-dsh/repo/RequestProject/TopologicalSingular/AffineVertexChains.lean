@@ -26,7 +26,6 @@ namespace FiniteChains.AffineVertexChains
 
 open Set Topology VertexChains
 
-universe u v
 variable {E : Type u} {F : Type v}
 variable [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
 variable {A : Set E} {B : Set F} (hA : Convex ℝ A) (hB : Convex ℝ B)
@@ -100,7 +99,7 @@ theorem affineEval_naturality (f : E →L[ℝ] F) (hf : MapsTo f A B) {n : ℕ} 
   intro z
   apply Subtype.ext
   change f (∑ i, z.val i • (v i).val) = ∑ i, z.val i • f (v i).val
-  simp only [map_sum, map_smul]
+  simp
 
 theorem center_naturality (f : E →L[ℝ] F) (hf : MapsTo f A B) (n : ℕ) (v : Vertices A n) :
     restriction f hf (center hA n v) = center hB n (restriction f hf ∘ v) :=
@@ -114,9 +113,8 @@ theorem realize_naturality (f : E →L[ℝ] F) (hf : MapsTo f A B) (n : ℕ)
       (realize hB n).comp (VertexChains.map (restriction f hf) n) := by
     apply Finsupp.lhom_ext
     intro v r
-    simp only [LinearMap.comp_apply, realize_single, TopologicalSingular.map_single,
-      VertexChains.map_single]
-    rw [affineEval_naturality hA hB f hf]
+    simp
+    rw [affineEval_naturality]
   exact DFunLike.congr_fun he c
 
 noncomputable def standardVertices (d : ℕ) : Vertices (TopologicalSingular.Domain d) d :=

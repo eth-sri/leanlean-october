@@ -26,21 +26,21 @@ theorem qThreeOrientedFaces_subdivision (c : QCube A) (u v w : V)
         (threeFacet_vw_spx c (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne) hs s) := by
     rw [qSquare_subdivision_single _ 1 hvw
       (threeFacet_vw_spx c (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne) hs s)]
-    simp only [one_smul]
+    simp
     rfl
   have h1 (s : ZMod 2) : qSquareChainSubdivision (Finsupp.single (f (1, s)) 1) =
       cubeSquareSubdivision (qCubeFacet c v s) u w (Ne.symm (hvw.trans huv).ne)
         (threeFacet_uw_spx c (Ne.symm huv.ne) (Ne.symm hvw.ne) hs s) := by
     rw [qSquare_subdivision_single _ 1 (hvw.trans huv)
       (threeFacet_uw_spx c (Ne.symm huv.ne) (Ne.symm hvw.ne) hs s)]
-    simp only [one_smul]
+    simp
     rfl
   have h2 (s : ZMod 2) : qSquareChainSubdivision (Finsupp.single (f (2, s)) 1) =
       cubeSquareSubdivision (qCubeFacet c w s) u v (Ne.symm huv.ne)
         (threeFacet_uv_spx c (Ne.symm (hvw.trans huv).ne) (Ne.symm hvw.ne) hs s) := by
     rw [qSquare_subdivision_single _ 1 huv
       (threeFacet_uv_spx c (Ne.symm (hvw.trans huv).ne) (Ne.symm hvw.ne) hs s)]
-    simp only [one_smul]
+    simp
     rfl
   change qSquareChainSubdivision (Finsupp.lmapDomain ℤ ℤ f threeOrientedFaces) = _
   simp only [threeOrientedFaces, map_sub, map_add,
@@ -71,7 +71,7 @@ theorem qThreeFacetCycle_subdivision (c : QCube A) (u v w : V)
   have hcoeff := qThreeFace_cycle_coefficients c u v w huv hvw hs z hz
   have he : z = z (0, 0) • threeOrientedFaces := by
     ext i
-    rw [Finsupp.smul_apply, threeOrientedFaces_apply, hcoeff i]
+    rw [Finsupp.smul_apply, threeOrientedFaces_apply, hcoeff]
     rfl
   refine ⟨z (0, 0), ?_⟩
   conv_lhs => rw [← hrecon, he, map_smul, map_smul]

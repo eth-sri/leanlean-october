@@ -33,7 +33,6 @@ namespace Comb
 
 open MonoidAlgebra
 
-universe u
 
 variable {α : Type u} [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
 variable {Nsub : Subgroup (FreeGroup α)} [Nsub.Normal]

@@ -82,13 +82,13 @@ theorem coefAt_qgrp_of_ne {s u : FreeGroup α}
 theorem foxVec_mul' (u v : FreeGroup α) (x : α) :
     foxVec Nsub (u * v) x = foxVec Nsub u x + qgrp Nsub u * foxVec Nsub v x := by
   show proj Nsub (fox x (u * v)) = proj Nsub (fox x u) + qgrp Nsub u * proj Nsub (fox x v)
-  rw [fox_mul, map_add, _root_.map_mul (proj Nsub), proj_grp]
+  rw [fox_mul, map_add, _root_.map_mul, proj_grp]
 
 /-- The rule for inverses, valid for arbitrary words. -/
 theorem foxVec_inv' (u : FreeGroup α) (x : α) :
     foxVec Nsub u⁻¹ x = -(qgrp Nsub u⁻¹ * foxVec Nsub u x) := by
   show proj Nsub (fox x u⁻¹) = -(qgrp Nsub u⁻¹ * proj Nsub (fox x u))
-  rw [fox_inv, map_neg, _root_.map_mul (proj Nsub), proj_grp]
+  rw [fox_inv, map_neg, _root_.map_mul, proj_grp]
 
 @[simp] theorem foxVec_of (x y : α) :
     foxVec Nsub (FreeGroup.of y) x = if x = y then 1 else 0 := by
@@ -128,7 +128,7 @@ theorem coefAt_foxVec_rep (q : FreeGroup α ⧸ Nsub) {s : FreeGroup α} (hs : s
           cases b with
           | true =>
               have hqrep : rep Nsub q = t' * FreeGroup.of y := hstep
-              rw [hqrep, foxVec_mul' Nsub, coefAt_add, hIH, zero_add]
+              rw [hqrep, foxVec_mul', coefAt_add, hIH, zero_add]
               by_cases hxy : x = y
               · subst hxy
                 rw [foxVec_of, if_pos rfl, mul_one]
@@ -258,7 +258,7 @@ theorem eq_zero_of_forall_coefHom {M : Type*} [AddCommGroup M] {Idx : Type*} (g 
         obtain ⟨d, hd⟩ := ih
         refine ⟨-d, ?_⟩
         rw [hd, Finsupp.sum_neg_index (by simp)]
-        simp [neg_smul, Finsupp.sum_neg]
+        simp
   obtain ⟨d, rfl⟩ := key a (hgen a)
   have hd : ∀ i, d i = 0 := by
     intro i
@@ -377,7 +377,7 @@ theorem closure_schreierClass (a : Additive (Abelianization Nsub)) :
       exact closure_properSchreierSet Nsub
     have htop : Subgroup.map Nsub.subtype (⊤ : Subgroup Nsub) = Nsub := by
       ext x
-      simp [Subgroup.mem_map]
+      simp
     have := Subgroup.map_injective (f := Nsub.subtype) Subtype.val_injective (hmap.trans htop.symm)
     rw [this]
     trivial
@@ -424,7 +424,6 @@ theorem foxVec_eq_zero_iff {w : FreeGroup α} (hw : w ∈ Nsub) :
         (schreierCoef_schreierClass_of_ne Nsub) ?_
       intro i
       rw [schreierCoef_apply, foxAbAdd_of]
-      show coefAt Nsub (rep Nsub i.1.1) (foxVec Nsub w i.1.2) = 0
       rw [h0]
       rfl
     have hcomm : (⟨w, hw⟩ : Nsub) ∈ commutator Nsub := by

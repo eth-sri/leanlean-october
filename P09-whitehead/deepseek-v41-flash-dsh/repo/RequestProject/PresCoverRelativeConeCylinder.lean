@@ -14,7 +14,6 @@ set_option maxHeartbeats 1600000
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → PresPos w) (hf : IsPosetCover f) (hpos : ∀ j, 0 < (w j).length)
 

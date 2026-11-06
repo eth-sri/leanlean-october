@@ -31,7 +31,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
 variable (ρ : J → FreeGroup α) (w₀ : FreeGroup (Option α))
@@ -48,6 +47,6 @@ theorem augQ_mapDomain {G G' : Type*} [Group G] [Group G'] (f : G →* G')
   | single g m =>
       show (MonoidAlgebra.lift ℤ ℤ G' 1).toRingHom (MonoidAlgebra.mapDomain f (single g m)) = _
       rw [MonoidAlgebra.mapDomain_single]
-      simp [MonoidAlgebra.lift_apply]
+      simp
 
 end FiniteChains

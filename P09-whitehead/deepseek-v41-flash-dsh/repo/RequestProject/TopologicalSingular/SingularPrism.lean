@@ -13,7 +13,6 @@ namespace FiniteChains.SingularPrism
 
 open Set Topology TopologicalSingular
 
-universe u v
 variable {X : Type u} {Y : Type v} [TopologicalSpace X] [TopologicalSpace Y]
 variable {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g)
 

@@ -72,7 +72,7 @@ theorem sat_sInf_of_finitelyDetermined {ι : Type*} (Sat : Subgroup G → ι →
     exists_lower_bound_of_chain hC hne (F.image wit)
       (by
         intro x hx
-        simp only [Finset.coe_image, Set.mem_image, Finset.mem_coe] at hx
+        simp at hx
         obtain ⟨g, -, rfl⟩ := hx
         exact hwitC g)
   have hagree : ∀ g ∈ F, (g ∈ sInf C ↔ g ∈ N) := by

@@ -31,7 +31,6 @@ namespace Davis
 
 open RACG Mirror Comb PresModel Cell
 
-universe u
 
 section Reading
 
@@ -63,25 +62,25 @@ theorem att_V (p : Fin M) :
     surfAtt hM hvlab helb hc (spx1 (cV hc p)) = iRose w (vertLab (w j₀) p.val) := by
   rw [surfAtt, nerveAtt_spx1]
   show iRose w (vlab (vc p)) = _
-  rw [hvlab p]
+  rw [hvlab]
 
 theorem att_E (p : Fin M) :
     surfAtt hM hvlab helb hc (spx1 (cE hc p)) = iRose w (edgeLab (w j₀) p.val) := by
   rw [surfAtt, nerveAtt_spx1]
   show iRose w (elb (ec p)) = _
-  rw [helb p]
+  rw [helb]
 
 theorem att_VE (p : Fin M) :
     surfAtt hM hvlab helb hc (spx2 (cV_le_cE hc p)) = iRose w (edgeLab (w j₀) p.val) := by
   rw [surfAtt, nerveAtt_spx2]
   show iRose w (elb (ec p)) = _
-  rw [helb p]
+  rw [helb]
 
 theorem att_V1E (p : Fin M) :
     surfAtt hM hvlab helb hc (spx2 (cV1_le_cE hc p)) = iRose w (edgeLab (w j₀) p.val) := by
   rw [surfAtt, nerveAtt_spx2]
   show iRose w (elb (ec p)) = _
-  rw [helb p]
+  rw [helb]
 
 /-! ### The image of one boundary edge -/
 
@@ -121,11 +120,11 @@ theorem htpy_mapPath_bdEdge (p : Fin M) (rv rv' re : Rose α)
   subst hv
   subst hv'
   subst he
-  rw [mapPath_bdEdge hM hvlab helb hc p h1 (le_refl _) h2]
+  rw [mapPath_bdEdge]
   have hcancel := htpy_ordNeg_ordPos (le_refl (iRose w (edgeLab (w j₀) p.val)))
   have hh := hcancel.congr_append (r := [ordPos h1]) (s := [ordNeg h2])
     (isPath_ordPos h1) (isPath_ordNeg h2)
-  simpa using hh
+  exact hh
 
 /-! ### The letter read along the boundary -/
 
@@ -204,7 +203,7 @@ theorem htpy_mapPath_letter (k : ℕ) (hk : k < (w j₀).length) :
       (isPath_bdEdge hc (cyc M (2 * k + 1)))
   have hcomb := Htpy.append_congr hpathA hpathB hA hB
   rw [mapPath_append, letterLoop_eq' q]
-  simpa [PresModel.ptBase, PresModel.iRose] using hcomb
+  exact hcomb
 
 end Reading
 

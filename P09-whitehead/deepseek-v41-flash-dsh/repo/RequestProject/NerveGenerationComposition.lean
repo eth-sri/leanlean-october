@@ -6,7 +6,6 @@ public import RequestProject.NerveDegreeGluing
 
 /-! Compose positive-degree generation while retaining finite homogeneous fillings. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P : Type u} [Preorder P]
 
 theorem generatesDegreeIn_trans {U B C : P → Prop} {n : ℕ}

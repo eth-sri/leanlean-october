@@ -7,7 +7,6 @@ public import RequestProject.RelativeTreeExtension
 /-! Cell inclusions between relative tree extensions with the same
 extra generators. Pending final Lean verification. -/
 
-noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb.RelativeTreeExtension
 open SpanningTree

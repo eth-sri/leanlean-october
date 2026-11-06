@@ -9,7 +9,6 @@ public import RequestProject.PresChainTopologicalFinsupp
 /-! Necessity for arbitrary connected cellular two-complexes and arbitrary cellular chains. -/
 
 namespace FiniteChains.Comb
-universe u
 
 structure TopChainFS (K : Complex2.{u}) (n : ℕ) where
   /-- The stages of the chain. -/

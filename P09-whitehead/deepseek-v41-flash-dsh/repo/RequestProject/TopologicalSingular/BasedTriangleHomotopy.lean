@@ -8,7 +8,6 @@ public import RequestProject.TopologicalSingular.SimplexPrismRetraction
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
 theorem basedTriangleSquare_const

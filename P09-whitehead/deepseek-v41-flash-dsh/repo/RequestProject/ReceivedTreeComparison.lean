@@ -13,7 +13,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
-universe u
 variable {K Y : Complex2.{u}} (T : SpanningTree K) (f : Hom K Y)
   {G : Type u} [Group G] (φ : PresGroup (treeRel T) →* G)
   (ψ : G →* Pi1 Y (f.onV T.root))
@@ -66,7 +65,7 @@ theorem comparison_liftPath (g : G) {a b : K.V} {p : List (K.E × Bool)}
     rw [liftPath_cons, List.map_cons]
     change receiverGerm T f ψ (liftGerm T φ g e) :: _ =
       uLiftPath ((f.onE e.1, e.2) :: mapPath f p) _
-    rw [uLiftPath_cons hs, he]
+    rw [uLiftPath_cons, he]
     apply congrArg₂ List.cons
     · exact comparison_liftGerm T f φ ψ hψ g e
     · exact ih _ hp

@@ -8,13 +8,11 @@ public import RequestProject.TreeCoverRelativeBoundary
 No finiteness assumption on the original cells or cover is used.
 Pending final Lean verification. -/
 
-noncomputable section
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.SpanningTree
-universe u
 variable {K : Complex2.{u}} (T : SpanningTree K)
   (N : Subgroup (FreeGroup (NonTree T))) [N.Normal]
   [DecidableEq (NonTree T)] (hN : ∀ f, treeRel T f ∈ N)
@@ -45,12 +43,12 @@ theorem coverComplex_isAcyclic_of_treeCover
   refine ⟨?_, ?_, ?_⟩
   · intro a b hab
     apply h.h2
-    apply piE_injective_of_same_boundary T N hN
+    apply piE_injective_of_same_boundary
     · rw [bdry1_bdry2, bdry1_bdry2]
-    · rw [piE_bdry2 (hN := hN), piE_bdry2 (hN := hN), hab]
+    · rw [piE_bdry2, piE_bdry2, hab]
   · intro z hz
     have hlift : bdry1 (treeCover T N hN) (sectionE T N z) = 0 := by
-      rw [bdry1_sectionE (hN := hN), hz, map_zero]
+      rw [bdry1_sectionE, hz, map_zero]
     obtain ⟨a, ha⟩ := h.h1 (sectionE T N z) hlift
     exact ⟨a, by rw [← piE_bdry2 (hN := hN), ha, piE_sectionE]⟩
   · intro z hz

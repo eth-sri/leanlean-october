@@ -6,7 +6,6 @@ public import RequestProject.NerveDegreeTransfer
 
 /-! Reflection of actual fillings under deletion of an acyclic attaching piece. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P : Type u} [Preorder P]
 
 /-- A homogeneous chain in `B` that bounds in `U` already bounds in `B`. -/

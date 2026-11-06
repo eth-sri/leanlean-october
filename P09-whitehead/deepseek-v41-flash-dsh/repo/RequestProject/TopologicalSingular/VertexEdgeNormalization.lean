@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] [PathConnectedSpace X]
 
 noncomputable def vertexNormalizationHomotopy (x : X) (tau : Simplex X 0) :

@@ -8,7 +8,6 @@ public import RequestProject.ClassicalCWCellEmbedding
 stage. Thus the common ambient complex in HasChain is constructed from
 the extensions themselves. -/
 
-noncomputable section
 namespace Whitehead
 
 namespace CWCellEmbedding

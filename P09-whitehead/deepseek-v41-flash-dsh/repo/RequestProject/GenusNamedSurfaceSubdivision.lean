@@ -25,7 +25,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {P X : Type u} [PartialOrder P] [DecidableEq P]
   [PartialOrder X] (g : P →o X)
   (a : Qpos (cmpRel P) X (nerveAtt g))

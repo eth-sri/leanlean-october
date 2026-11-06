@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
 def OrdTet (P : Type u) [PartialOrder P] :=
@@ -100,7 +99,7 @@ theorem ordNormalization_chain_identity (c : OrdTri P →₀ ℤ) :
   induction c using Finsupp.induction_linear with
   | zero => simp
   | add c d hc hd =>
-    simp only [map_add]
+    simp
     rw [add_sub_add_comm, hc, hd]
     abel
   | single t n =>

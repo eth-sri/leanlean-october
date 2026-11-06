@@ -34,7 +34,6 @@ namespace Davis
 
 open RACG Mirror Comb
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V} {X : Type u} [Preorder X]
   {att : NeSpx A →o X}
@@ -92,7 +91,7 @@ theorem existsUnique_up_old {p : Sph A} {c : QCube A} (hle : qProjCube p ≤ c) 
     exact this
   · rw [qProjCube_eq_iff]
     refine ⟨rfl, fun v hv => ?_⟩
-    have hv' : v ∉ (chamberPt p.rep c.isSimplex).spx := by simpa using hv
+    have hv' : v ∉ (chamberPt p.rep c.isSimplex).spx := by exact hv
     rw [phi_rep_eq_of_inChamber (chamberPt_inChamber p.rep c.isSimplex) hv']
     have hvp : v ∉ p.spx := fun hc => hv (hle.1 hc)
     rw [← qProjCube_sgn_of_not_mem hvp]
@@ -112,9 +111,9 @@ theorem existsUnique_up_inChamber {w : CayGroup A} (hw : IsGamma A w) {c : QCube
   refine ⟨chamberPt w c.isSimplex, ⟨chamberPt_inChamber w c.isSimplex, ?_⟩, ?_⟩
   · rw [qProjCube_eq_iff]
     refine ⟨rfl, fun v hv => ?_⟩
-    have hv' : v ∉ (chamberPt w c.isSimplex).spx := by simpa using hv
+    have hv' : v ∉ (chamberPt w c.isSimplex).spx := by exact hv
     rw [phi_rep_eq_of_inChamber (chamberPt_inChamber w c.isSimplex) hv']
-    rw [show phi A w v = 0 from by simpa using congrFun (show phi A w = 0 from hw) v]
+    rw [show phi A w v = 0 from by exact congrFun (show phi A w = 0 from hw) v]
     exact (congrFun hsgn v).symm
   · rintro r ⟨hwr, hrc⟩
     refine eq_of_inChamber_spx_eq (x := w) hwr (chamberPt_inChamber w c.isSimplex) ?_
@@ -258,7 +257,7 @@ theorem zProj_down (z : Zpos A X (IsGamma A) att) (q : Qpos A X att)
           have hzero : ∀ v, v ∉ p.1.spx → phi A p.1.rep v = 0 := by
             intro v hv
             rw [← qProjCube_sgn_of_not_mem hv]
-            simpa using congrFun hsgn v
+            exact congrFun hsgn v
           obtain ⟨g, ⟨hg, hgp⟩, huniq⟩ := existsUnique_isGamma_inChamber hzero
           refine ⟨zNew ⟨g, hg⟩ y, ⟨⟨hgp, hne, hy⟩, rfl⟩, ?_⟩
           rintro (r' | ⟨v, y'⟩) ⟨hle, hproj⟩
@@ -325,7 +324,7 @@ theorem pi1Map_qNew_eq_comp (w : {w : CayGroup A // IsGamma A w}) (x : X) :
         (Comb.mapPath (orderCxMap (zProj (A := A) (X := X) (att := att)) zProj_monotone)
           (Comb.mapPath (orderCxMap (zNew (A := A) (X := X) (M := IsGamma A) (att := att) w)
             (zNew_monotone w)) l.1))
-      rw [mapPath_zProj_zNew w l.1]
+      rw [mapPath_zProj_zNew]
       exact Comb.Htpy.refl _
 
 /-- **The inclusion of the base poset in the quotient is injective on fundamental groups.**
@@ -335,7 +334,7 @@ The covering datum comes from the construction: `Z → Q` is the covering
 theorem pi1Map_qNew_injective (x : X) :
     Function.Injective
       (Comb.pi1Map (orderCxMap (qNew (A := A) (X := X) (att := att)) qNew_monotone) x) := by
-  rw [pi1Map_qNew_eq_comp ⟨1, isGamma_one⟩ x]
+  rw [pi1Map_qNew_eq_comp]
   exact pi1Map_zNew_covering_injective
     (orderCxMap (zProj (A := A) (X := X) (att := att)) zProj_monotone)
     isCovering_orderCxMap_zProj ⟨1, isGamma_one⟩ x

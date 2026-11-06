@@ -10,7 +10,6 @@ vertices along specified connector paths. The result is an actual path and
 an actual path homotopy; no fundamental-group surjectivity is assumed.
 Pending Lean verification. -/
 
-noncomputable section
 open scoped Classical unitInterval
 open Set
 
@@ -35,10 +34,7 @@ theorem concat_conjugate {n : ℕ} (p a : Fin (n + 1) → X)
     change Path.Homotopic (((C 0).symm.trans (Path.refl (p 0))).trans (C 0))
       (Path.refl (a 0))
     apply Path.Homotopic.Quotient.eq.mp
-    simp only [Path.Homotopic.Quotient.mk_trans,
-      Path.Homotopic.Quotient.mk_symm, Path.Homotopic.Quotient.mk_refl,
-      Path.Homotopic.Quotient.trans_refl,
-      Path.Homotopic.Quotient.symm_trans]
+    simp
   | succ n ih =>
     have hi := Path.Homotopic.Quotient.eq.mpr
       (ih (p ∘ Fin.castSucc) (a ∘ Fin.castSucc) (fun i => C i.castSucc)
@@ -53,8 +49,7 @@ theorem concat_conjugate {n : ℕ} (p a : Fin (n + 1) → X)
               (C (Fin.castSucc (Fin.last n)))))
           (Path.Homotopic.Quotient.mk (((C (Fin.castSucc (Fin.last n))).symm.trans
             (F (Fin.last n))).trans (C (Fin.last (n + 1))))) := by
-        simp only [Path.Homotopic.Quotient.mk_trans, Path.Homotopic.Quotient.mk_symm,
-          Path.Homotopic.Quotient.trans_assoc]
+        simp
         rw [← Path.Homotopic.Quotient.trans_assoc
             (Path.Homotopic.Quotient.mk (C (Fin.castSucc (Fin.last n))))
             (Path.Homotopic.Quotient.mk (C (Fin.castSucc (Fin.last n)))).symm
@@ -110,8 +105,7 @@ theorem replace_of_open_cover {ι : Type} (U : ι → Set X)
     exact hj hs
   choose G hGA hG using hloc
   have hcat := concat_conjugate points (a ∘ points) (fun i => C (points i)) F G hG
-  have hsub : Path.Homotopic (Path.concat points F)
-      (p.subpath (ts 0) (ts (Fin.last n))) := Path.Homotopic.concat_subpath p ts
+  have hsub := Path.Homotopic.concat_subpath p ts
   have hcat' : Path.Homotopic
       (((C (points 0)).symm.trans (p.subpath (ts 0) (ts (Fin.last n)))).trans
         (C (points (Fin.last n)))) (Path.concat (a ∘ points) G) :=
@@ -142,7 +136,7 @@ theorem replace_of_open_cover {ι : Type} (U : ι → Set X)
       rw [ht0', ht1']
       congr 1
       apply Subtype.ext
-      simp [Set.Icc.convexComb]
+      simp
     have hc := hcat'.pathCast (congrArg a hp0.symm) (congrArg a hp1.symm)
     rw [Path.cast_trans _ _ (congrArg a hp0.symm) hp1.symm (congrArg a hp1.symm),
       Path.cast_trans _ _ (congrArg a hp0.symm) hp0.symm hp1.symm,

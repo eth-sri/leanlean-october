@@ -6,7 +6,6 @@ public import RequestProject.TopologicalSingular.SquareSubdivisionGeometry
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
 noncomputable def leftSquareSweep (p : GenLoop (Fin 2) X x) :

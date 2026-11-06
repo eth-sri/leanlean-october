@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X : Complex2.{u}} {a : X.V}
 
 /-- A null-homotopic loop has a finite chain filling after lifting at any cover vertex. -/

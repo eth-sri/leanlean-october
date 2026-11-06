@@ -13,7 +13,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
-universe u t s
 variable {α β J K : Type u} {G : Type t} {H : Type s} [Group G] [Group H]
 variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
   (h : PresWordEmbedding w v) (a : α → G) (b : β → H) (φ : G →* H)

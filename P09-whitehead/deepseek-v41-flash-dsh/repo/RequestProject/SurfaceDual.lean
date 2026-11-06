@@ -194,7 +194,7 @@ theorem conn_inn_zero (p : Fin M) :
         intro r hr
         have : r = 0 := by
           apply Fin.ext
-          simpa [Fin.val_zero] using hr
+          exact hr
         subst this
         exact ReflTransGen.refl
     | succ n ih =>

@@ -80,7 +80,7 @@ theorem vanishesMod_iff_quotRingHom_eq_zero (M : Subgroup G) [M.Normal] (x : Mon
     refine Finset.sum_congr rfl fun h _ => ?_
     rw [Finsupp.single_apply]
     congr 1
-    simp only [eq_iff_iff, QuotientGroup.mk'_apply]
+    simp
     rw [QuotientGroup.eq]
     constructor
     · intro hh
@@ -97,7 +97,7 @@ theorem vanishesMod_iff_quotRingHom_eq_zero (M : Subgroup G) [M.Normal] (x : Mon
   · intro h
     ext q
     induction q using QuotientGroup.induction_on with
-    | H g => rw [hval g]; simpa using h g
+    | H g => rw [hval]; simpa using h g
   · intro h g
     rw [← hval g, h]
     simp
@@ -134,7 +134,7 @@ theorem forall_foxSat_iff_injective (b : I → J → MonoidAlgebra ℤ G)
       exact (vanishesMod_iff_quotRingHom_eq_zero M _).1 (hbd i)
     have hz : redVec M v = 0 := h (by rw [hu, map_zero])
     have := congrArg (fun w : J →₀ MonoidAlgebra ℤ (G ⧸ M) => w j) hz
-    simpa using this
+    exact this
 
 /-- **Lemma 2.1 for a pair of normal subgroups.**  If `C ≤ N` are normal subgroups of `G`
 with `N/C` torsion-free abelian, then injectivity of the boundary reduced modulo `N`
@@ -175,7 +175,7 @@ theorem foxSat_commutator (b : I → J → MonoidAlgebra ℤ G)
     (h : ∀ v : J →₀ MonoidAlgebra ℤ G, FoxSat b v N) :
     ∀ v : J →₀ MonoidAlgebra ℤ G, FoxSat b v ⁅N, N⁆ := by
   have hle : ⁅N, N⁆ ≤ N := Subgroup.commutator_le_left N N
-  rw [forall_foxSat_iff_injective b hcol]
+  rw [forall_foxSat_iff_injective]
   exact injective_boundaryMap_of_injective b hcol ⁅N, N⁆ N hle
     ((forall_foxSat_iff_injective b hcol N).1 h)
 

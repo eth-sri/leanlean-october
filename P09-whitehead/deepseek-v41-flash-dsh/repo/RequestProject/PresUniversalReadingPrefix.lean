@@ -8,7 +8,6 @@ public import RequestProject.PresReadingLetterPrefix
 
 namespace FiniteChains.PresModel
 open Comb
-universe u v
 variable {α J : Type u} {G : Type v} [Group G]
   (w : J → List (α × Bool)) (gen : α → G)
   (hrel : ∀ j, wordVal gen (w j) = 1) (a : PresPos w)

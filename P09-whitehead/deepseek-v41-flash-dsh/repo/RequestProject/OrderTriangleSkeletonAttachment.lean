@@ -146,22 +146,6 @@ def triangleAttachmentHomeomorph : DiskAttachment (triangleAttaching P) ≃ₜ T
   (triangleReparametrizationHomeomorph P).trans
     (skeletonAttachmentHomeomorph (Set.univ : Set (orderNerveRealization P)) 2)
 
-@[simp] theorem triangleAttachmentHomeomorph_old (x : OneSkeleton P) :
-    (triangleAttachmentHomeomorph P
-      (old (triangleAttaching P) (boundaryFamilyInclusion (StrictOrdTri P) _) x)).val = x.val := rfl
-
-@[simp] theorem triangleAttachmentHomeomorph_cell (t : StrictOrdTri P)
-    (x : ClosedUnitBall (Fin 2 → ℝ)) :
-    (triangleAttachmentHomeomorph P
-      (cell (triangleAttaching P) (boundaryFamilyInclusion (StrictOrdTri P) _) ⟨t, x⟩)).val =
-        triangleDiskMap P t x := by
-  change (skeletonAttachmentHomeomorph (Set.univ : Set (orderNerveRealization P)) 2
-    (triangleReparametrizationHomeomorph P (cell _ _ ⟨t, x⟩))).val = _
-  rw [triangleReparametrizationHomeomorph]
-  erw [diskAttachmentQuotientReparametrization_cell]
-  rw [skeletonAttachmentHomeomorph_cell]
-  exact triangleDiskMap_characteristic P t x
-
 /-- When the nerve is two-dimensional, these are all the cells of the
 actual realization, not just an auxiliary finite or truncated space. -/
 def triangleAttachmentRealizationHomeomorph [Nonempty P]

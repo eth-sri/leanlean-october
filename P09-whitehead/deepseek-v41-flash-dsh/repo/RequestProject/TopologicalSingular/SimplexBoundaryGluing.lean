@@ -11,14 +11,13 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 
 theorem simplex_face_coordinate_zero (i : Fin (n + 2)) (z : Domain n) :
     (stdSimplex.map (SimplexCategory.δ i) z).val i = 0 := by
   change (FunOnFinite.linearMap ℝ ℝ i.succAbove z.val) i = 0
   rw [FunOnFinite.linearMap_apply_apply]
-  simp [Fin.succAbove_ne]
+  simp
 
 noncomputable def simplexFaceBoundary (i : Fin (n + 2)) : C(Domain n, simplexBoundary (n + 1)) where
   toFun z := ⟨stdSimplex.map (SimplexCategory.δ i) z, ⟨i, simplex_face_coordinate_zero i z⟩⟩

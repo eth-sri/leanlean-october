@@ -7,7 +7,6 @@ public import RequestProject.StrictOrderComplex
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α : Type u}
 
 def roseBaseEdge (i : α) (b : Bool) : StrictOrdEdge (Rose α) :=

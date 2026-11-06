@@ -25,7 +25,6 @@ namespace Comb
 
 open MonoidAlgebra
 
-universe u
 
 variable {α : Type u} [Fintype α] [DecidableEq α]
 variable {J : Type u} [Fintype J] [DecidableEq J] (ρ : J → FreeGroup α)

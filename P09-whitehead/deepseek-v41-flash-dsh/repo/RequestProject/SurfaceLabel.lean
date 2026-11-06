@@ -32,7 +32,6 @@ namespace Davis
 
 open RACG Mirror Comb PresModel Cell
 
-universe u
 
 section Label
 
@@ -179,13 +178,13 @@ theorem iCirc_cEdg_le_apex (p : Fin M) : iCirc w (cEdg w j₀ p) ≤ apexOf w j�
 omit [NeZero M] [DecidableEq κ] [DecidableEq ι] helb in
 theorem iCirc_cVtx_le_dia (p : Fin M) :
     iCirc w (cVtx w j₀ p) ≤ iRose w (vlab (vc p)) := by
-  rw [hvlab p, ← aFun_cVtx hM p]
+  rw [hvlab, ← aFun_cVtx hM p]
   exact iCirc_le_iRose_aFun w _
 
 omit [NeZero M] [DecidableEq κ] [DecidableEq ι] hvlab in
 theorem iCirc_cEdg_le_bed (p : Fin M) :
     iCirc w (cEdg w j₀ p) ≤ iRose w (elb (ec p)) := by
-  rw [helb p, ← aFun_cEdg hM p]
+  rw [helb, ← aFun_cEdg hM p]
   exact iCirc_le_iRose_aFun w _
 
 omit [NeZero M] [DecidableEq κ] [DecidableEq ι] hvlab in
@@ -205,14 +204,14 @@ theorem iCirc_cVtx_succ_le_bed (p : Fin M) :
 omit [NeZero M] [DecidableEq κ] [DecidableEq ι] in
 theorem vlab_le_elb (p : Fin M) : iRose w (vlab (vc p)) ≤ iRose w (elb (ec p)) := by
   refine (iRose_monotone w) ?_
-  rw [hvlab p, helb p]
+  rw [hvlab, helb]
   exact vertLab_le_edgeLab' hM p
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem vlab_succ_le_elb (p : Fin M) :
     iRose w (vlab (vc (p + 1))) ≤ iRose w (elb (ec p)) := by
   refine (iRose_monotone w) ?_
-  rw [hvlab (p + 1), helb p]
+  rw [hvlab, helb]
   exact vertLab_succ_le_edgeLab' hM p
 
 omit [DecidableEq κ] [DecidableEq ι] in
@@ -347,10 +346,6 @@ def gHom : SCell vc ec hc →o PresPos w where
     rintro x y (rfl | h)
     · exact le_refl _
     · exact gLab_le_of_plt hM hvlab helb h
-
-omit [DecidableEq κ] [DecidableEq ι] in
-@[simp] theorem gHom_apply (x : Cell κ ι M) :
-    gHom hM hvlab helb hc (toS vc ec hc x) = gLab w j₀ vc ec vlab elb x := rfl
 
 /-- **The attaching map of the surface block**: the marking, read on the chains of the
 barycentric subdivision. -/

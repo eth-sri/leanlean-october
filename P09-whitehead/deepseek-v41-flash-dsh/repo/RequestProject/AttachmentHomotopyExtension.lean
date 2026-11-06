@@ -10,12 +10,10 @@ public import RequestProject.BallHomotopyExtension
 Currying in the compact time coordinate proves joint continuity on the
 quotient attachment even when infinitely many cells are adjoined. -/
 
-noncomputable section
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u
 variable {A D X : Type u} [TopologicalSpace A] [TopologicalSpace D] [TopologicalSpace X]
 
 /-- The ordinary homotopy extension property, retaining both equations as

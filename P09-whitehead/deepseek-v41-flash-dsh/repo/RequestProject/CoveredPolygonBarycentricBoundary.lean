@@ -90,6 +90,6 @@ theorem subdivisionFundamental_boundary :
     Comb.bdry2 (orderCx (NeSpx (cmpRel P))) (barycentricChain2 (decodeOrdNerve2 D.fundamental)) =
       pathChain (D.subdivisionBoundaryPath hc f M) := by
   rw [barycentricChain2_boundary, D.decodedFundamental_boundary,
-    D.barycentricChain1_boundaryEdges hc f]
+    D.barycentricChain1_boundaryEdges]
 
 end FiniteChains.Davis.CoveredPolygon

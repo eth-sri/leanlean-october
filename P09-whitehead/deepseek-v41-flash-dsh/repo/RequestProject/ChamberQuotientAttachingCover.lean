@@ -10,7 +10,6 @@ public import RequestProject.BlockSpinePres
 /-! The actual intersection cover is a cover of the original attaching simplex poset. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

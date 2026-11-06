@@ -17,7 +17,6 @@ left descents `FiniteChains.RACG.IsDesc`.  The main result is the right-angled d
 namespace FiniteChains
 namespace RACG
 
-universe u
 
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 
@@ -50,10 +49,10 @@ noncomputable def cword (l : List V) : CayGroup A :=
 @[simp] theorem cword_nil : cword A [] = 1 := Subtype.ext (by simp)
 
 theorem cword_ceq {l m : List V} (h : CEq A.rel l m) : cword A l = cword A m :=
-  Subtype.ext (by simpa using wordPerm_ceq A h)
+  Subtype.ext (by exact wordPerm_ceq A h)
 
 theorem gen_mul_gen (s : V) : gen A s * gen A s = 1 :=
-  Subtype.ext (by simpa [gen] using actPerm_mul_self A s)
+  Subtype.ext (by exact actPerm_mul_self A s)
 
 theorem cword_apply_one {l : List V} (hl : IsRed A.rel l) :
     ((cword A l : CayGroup A) : Equiv.Perm (Tr A)) (oneTr A) = mkTr A l hl :=
@@ -104,7 +103,7 @@ theorem clen_inv (x : CayGroup A) : clen A x⁻¹ = clen A x := by
     simpa [clen_cword A hl] using this
   have h1 := key x
   have h2 := key x⁻¹
-  simp only [inv_inv] at h2
+  simp at h2
   omega
 
 /-- `s` is a left descent of `x`: multiplying by `s` on the left shortens `x`. -/

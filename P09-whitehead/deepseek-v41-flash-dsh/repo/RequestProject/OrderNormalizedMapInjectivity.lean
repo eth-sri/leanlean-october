@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 /-- A monotone map injective on the vertices supporting a strict two-chain reflects
@@ -56,7 +55,7 @@ theorem normalizedStrictChain2_zero_of_injOn (f : P → Q) (hf : Monotone f)
           change (if h : f t.1.1.1 < f t.1.1.2.1 ∧ f t.1.1.2.1 < f t.1.1.2.2 then
             Finsupp.single (⟨(f t.1.1.1, f t.1.1.2.1, f t.1.1.2.2), h⟩ : StrictOrdTri Q) 1
             else 0) = Finsupp.single (image t) 1
-          rw [dif_pos (hstrict t)]
+          rw [dif_pos]
         rw [hn]
         simp
   have hz' : Finsupp.mapDomain image z = 0 := by rw [← hmap, hrecon, hz]

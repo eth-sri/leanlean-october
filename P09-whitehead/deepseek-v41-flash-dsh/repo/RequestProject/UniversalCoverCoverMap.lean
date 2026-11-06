@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X Y : Complex2.{u}} {p : Hom X Y} (hp : IsCovering p) (a : X.V)
 include hp
 

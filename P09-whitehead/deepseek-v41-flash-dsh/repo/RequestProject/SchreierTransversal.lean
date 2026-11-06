@@ -65,7 +65,6 @@ theorem clen_eq_zero_iff {q : FreeGroup α ⧸ Nsub} : clen Nsub q = 0 ↔ q = 1
   · rintro rfl
     have : clen Nsub (1 : FreeGroup α ⧸ Nsub) ≤ ([] : List (α × Bool)).length :=
       clen_le Nsub (by
-        show (QuotientGroup.mk (1 : FreeGroup α) : FreeGroup α ⧸ Nsub) = 1
         rfl)
     simpa using this
 

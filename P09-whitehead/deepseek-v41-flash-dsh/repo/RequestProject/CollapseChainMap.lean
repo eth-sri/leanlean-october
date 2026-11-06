@@ -149,11 +149,11 @@ theorem cmap_sum (l : List (T × F)) [DecidableEq T] (s : Finset T) (c : T → R
       have hsplit : (fun g => ∑ u ∈ insert t s, c u * d u g)
           = (fun g => c t * d t g) + (fun g => ∑ u ∈ s, c u * d u g) := by
         funext g
-        simp only [Pi.add_apply]
+        simp
         rw [Finset.sum_insert ht]
       rw [hsplit, cmap_add, cmap_leftMul, ih]
       funext g
-      simp only [Pi.add_apply]
+      simp
       rw [Finset.sum_insert ht]
 
 /-- **The chain map of a collapse kills every combination of boundaries of collapsed

@@ -15,7 +15,6 @@ set_option maxHeartbeats 1600000
 
 namespace FiniteChains.PresModel.PresCocycleCover
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool))
   (N : Subgroup (FreeGroup α)) [N.Normal] (hword : ∀ j, FreeGroup.mk (w j) ∈ N)
 

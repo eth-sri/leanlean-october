@@ -132,9 +132,9 @@ theorem genus_old_cover_spine_adjust_filling (hf : IsPosetCover f)
     (z - b) ((Inc _).sub_mem hz hbi) hzd hzc
   refine ⟨d + c, ?_, y, hy, ?_⟩
   · rw (config := { transparency := .default }) [map_add, hc, add_zero]
-  · simp only [map_add]
+  · simp
     have he' := congrArg (fun x : Ch P => x + b) he
-    simp only [sub_add_cancel] at he'
+    simp at he'
     rw (config := { transparency := .default }) [he']
     dsimp only [b]
     abel

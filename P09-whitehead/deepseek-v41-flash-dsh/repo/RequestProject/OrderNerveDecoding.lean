@@ -13,7 +13,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open FreeAbelianGroup
-universe u
 variable {P : Type u} [PartialOrder P]
 
 noncomputable def decodeOrdEdgeList : List P → OrdEdge P →₀ ℤ

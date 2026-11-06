@@ -14,7 +14,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V]
 
 /-- Degree-two exactness in the actual path-class universal cover, retaining its full

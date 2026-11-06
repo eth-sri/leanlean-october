@@ -13,7 +13,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X Y : Complex2.{u}}
 theorem pathChain_map_edges (f : X.E → Y.E) (p : List (X.E × Bool)) :
     pathChain (p.map (fun eb => (f eb.1, eb.2))) = Finsupp.mapDomain f (pathChain p) := by

@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable (P : Type u) [PartialOrder P]
 
 def StrictOrdEdge := {p : P × P // p.1 < p.2}
@@ -111,7 +110,7 @@ theorem normalizeOrdGerm_htpy (e : (orderCx P).E × Bool) :
     cases o with
     | false =>
       have he := htpy_revPath (isPath_ordPos (le_refl a)) (htpy_ordSelf_nil a)
-      simpa [mapPath, revPath, revGerm, ordPos, ordNeg, Bool.not, orderCx] using he.symm
+      exact he.symm
     | true => exact (htpy_ordSelf_nil a).symm
   · exact Htpy.refl _
 

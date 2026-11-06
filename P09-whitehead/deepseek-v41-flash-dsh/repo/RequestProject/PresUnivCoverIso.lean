@@ -33,7 +33,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {α J : Type u} [DecidableEq α] (ρ : J → FreeGroup α)
 
@@ -74,16 +73,6 @@ theorem uvWord_injective : Function.Injective (uvWord ρ) := by
           = Pi1.mk ⟨q.1, isPath_of_subsingleton _ _ _ _ _⟩ :=
         (pi1PresEquiv ρ).injective hl
       exact Quotient.sound (Quotient.exact hpi)
-
-theorem uvWord_bijective : Function.Bijective (uvWord ρ) :=
-  ⟨uvWord_injective ρ, uvWord_surjective ρ⟩
-
-/-- The identification of the vertices of the two universal covers. -/
-noncomputable def uvEquiv : UV (presComplex ρ) PUnit.unit ≃ PresGroup ρ :=
-  Equiv.ofBijective _ (uvWord_bijective ρ)
-
-@[simp] theorem uvEquiv_apply (c : UV (presComplex ρ) PUnit.unit) :
-    uvEquiv ρ c = uvWord ρ c := rfl
 
 /-! ### Extending a class by an edge multiplies its word by a generator -/
 
@@ -199,10 +188,6 @@ theorem mem_pi2_iff_bdry2_eq_zero (u : (uCover (presComplex ρ) PUnit.unit).F �
     have hinj : Function.Injective (chain1 (presUnivHom ρ)) :=
       Finsupp.mapDomain_injective (uvEdge_bijective ρ).1
     exact hinj (by rw [hu, map_zero])
-
-@[simp] theorem presUnivHom_onV : (presUnivHom ρ).onV = uvWord ρ := rfl
-@[simp] theorem presUnivHom_onE : (presUnivHom ρ).onE = uvEdge ρ := rfl
-@[simp] theorem presUnivHom_onF : (presUnivHom ρ).onF = uvFace ρ := rfl
 
 /-! ### Naturality in an inclusion of presentations -/
 

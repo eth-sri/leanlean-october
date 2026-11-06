@@ -40,11 +40,11 @@ theorem htpy_nil_mapPath_le_iff {f g : P → Q} (hf : Monotone f) (hg : Monotone
   constructor
   · intro h
     have hh := h.congr_append (isPath_ordNeg (hfg a)) (isPath_ordPos (hfg a))
-    exact hnat.trans (hh.trans (by simpa using htpy_ordNeg_ordPos (hfg a)))
+    exact hnat.trans (hh.trans (by exact htpy_ordNeg_ordPos (hfg a)))
   · intro h
     apply htpy_nil_of_conjugate (isPath_ordPos (hfg a))
       (isPath_mapPath (orderCxMap f hf) hp)
-    simpa [revPath, revGerm, ordPos, ordNeg, Bool.not] using hnat.symm.trans h
+    exact hnat.symm.trans h
 
 /-- An explicit three-step order contraction gives simple connectedness. -/
 theorem simplyConnected_orderCx_of_zigzag {f g : P → P}

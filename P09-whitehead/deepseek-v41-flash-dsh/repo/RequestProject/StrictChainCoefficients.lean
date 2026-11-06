@@ -31,7 +31,7 @@ theorem ordTriangleCoefficient_encode (t : OrdTri P) (c : OrdTri P →₀ ℤ) :
       constructor
       · intro h
         apply Subtype.ext
-        simp only [List.cons.injEq, and_true] at h
+        simp at h
         exact Prod.ext h.1 (Prod.ext h.2.1 h.2.2)
       · rintro rfl
         rfl

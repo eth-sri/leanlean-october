@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
 /-- Actual collapse normalization commutes with the edge boundary. -/
@@ -28,7 +27,6 @@ end FiniteChains.Comb
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → CylBase w) (hf : IsPosetCover f)
 

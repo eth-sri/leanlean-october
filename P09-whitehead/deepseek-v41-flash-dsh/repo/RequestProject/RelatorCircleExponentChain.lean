@@ -20,7 +20,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains.PresModel
 open Comb
 open scoped Classical
-universe u
 variable {A J : Type u}
 
 def roseIntegerBaseEdge (a : A) (b : Bool) : StrictOrdEdge (Rose A) :=

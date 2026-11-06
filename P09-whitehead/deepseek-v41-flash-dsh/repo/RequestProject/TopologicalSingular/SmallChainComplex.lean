@@ -22,7 +22,6 @@ namespace FiniteChains.SingularSubdivision
 
 open CategoryTheory CategoryTheory.Limits TopologicalSingular Set
 
-universe u v
 variable {X : Type u} [TopologicalSpace X] {ι : Type v}
 
 noncomputable def smallBoundary (U : ι → Set X) (n : ℕ) :

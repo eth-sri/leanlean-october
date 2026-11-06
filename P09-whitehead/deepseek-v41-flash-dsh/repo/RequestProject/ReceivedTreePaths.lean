@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
-universe u
 variable {K : Complex2.{u}} (T : SpanningTree K) {G : Type u} [Group G]
   (φ : PresGroup (treeRel T) →* G)
 
@@ -36,7 +35,7 @@ theorem germValue_revGerm (e : K.E × Bool) :
 
 theorem germValue_false_eq_inv (e : K.E) :
     germValue T φ (e, false) = (germValue T φ (e, true))⁻¹ := by
-  simpa [revGerm] using germValue_revGerm T φ (e, true)
+  exact germValue_revGerm T φ (e, true)
 
 theorem germValue_false_mul_true (e : K.E) :
     germValue T φ (e, false) * germValue T φ (e, true) = 1 := by

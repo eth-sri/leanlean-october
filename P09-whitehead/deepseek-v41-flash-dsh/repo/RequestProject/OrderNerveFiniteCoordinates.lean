@@ -7,7 +7,6 @@ public import RequestProject.OrderNerveRealizationMapCoordinates
 /-! Exact barycentric-coordinate reconstruction for a finite poset. This is
 used to split an actual cone point into its radial coordinate and base point. -/
 
-noncomputable section
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false

@@ -44,7 +44,7 @@ theorem orderSmallHomotopyZeroFill_exists {P : Type} [PartialOrder P]
   apply orderSingularCarrierChains_zero_bounds σ.val σ.property
   · exact Submodule.sub_mem _ (orderSingularCarrierChains_single σ.val 1)
       (orderSmallVertexSimplex_carrier σ 1)
-  · simp only [map_sub, augmentation_single, sub_self]
+  · simp
 
 noncomputable def orderSmallHomotopy0 {P : Type} [PartialOrder P] :
     smallChains (orderNerveRealizationOpenStar P) 0 →ₗ[ℤ] Chain (orderNerveRealization P) 1 :=

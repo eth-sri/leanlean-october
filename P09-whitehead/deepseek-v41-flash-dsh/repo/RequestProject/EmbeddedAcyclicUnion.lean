@@ -10,10 +10,8 @@ have many different names, but copies meeting at a vertex have identical
 cell images.  Finite-support label filters give global H1 fillings and H2
 vanishing without assuming a decomposition of cycles. Unverified source. -/
 
-noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb.AcyclicCopies
-universe u v
 variable {D X : Complex2.{u}} {G : Type v} (φ : G → Hom D X)
   (hV : ∀ g, Function.Injective (φ g).onV)
   (hE : ∀ g, Function.Injective (φ g).onE)
@@ -171,7 +169,7 @@ theorem one_cycle_filling (c : X.E →₀ ℤ)
   · intro f hf
     by_contra hn
     have hz' : (∑ s : {s : Set X.V // s ∈ S}, y s) f = 0 := by
-      simp only [Finsupp.finset_sum_apply]
+      simp
       apply Finset.sum_eq_zero
       intro s _
       by_contra hs

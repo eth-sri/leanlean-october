@@ -15,7 +15,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.VertexChains
 
-universe u v
 variable {V : Type u} {W : Type v}
 variable (center : ∀ n, Vertices V n → V)
 

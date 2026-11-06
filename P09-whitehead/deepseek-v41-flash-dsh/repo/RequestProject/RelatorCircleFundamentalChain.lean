@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 /-- The four signed actual incidence edges for one letter of the attaching circle. -/

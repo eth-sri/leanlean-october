@@ -36,7 +36,6 @@ namespace FiniteChains
 namespace Comb
 namespace SpanningTree
 
-universe u
 
 variable {K : Complex2.{u}} (T : SpanningTree K)
 
@@ -177,7 +176,6 @@ theorem loopOf_mul {p q : List (K.E × Bool)} {a m b : K.V}
     (hp : IsPath K.src K.tgt p a m) (hq : IsPath K.src K.tgt q m b) :
     loopOf T hp * loopOf T hq = loopOf T (hp.append hq) := by
   refine Quotient.sound ?_
-  show Htpy K T.root T.root (conjPath T p a m ++ conjPath T q m b) (conjPath T (p ++ q) a b)
   have hcancel : Htpy K m m (revPath (T.treePath m) ++ T.treePath m) [] :=
     htpy_revPath_append (T.treePath_isPath m)
   have hleft : IsPath K.src K.tgt (T.treePath a ++ p) T.root m :=
@@ -267,7 +265,7 @@ theorem loopOf_single_eq_one_of_isTree {g : K.E × Bool} (hg : T.isTree g.1) :
     have h := loopOf_rev T (isPath_single (T.up a ha))
     rw [loopOf_up T ha, inv_one] at h
     rw [loopOf_eq T (isPath_single (revGerm (T.up a ha)))
-      (isPath_revPath (isPath_single (T.up a ha))) (by simp [revPath]) (by simp) (by simp)]
+      (isPath_revPath (isPath_single (T.up a ha))) (by simp) (by simp) (by simp)]
     exact h
 
 theorem freeToPi1_germWord (g : K.E × Bool) :
@@ -295,11 +293,11 @@ theorem freeToPi1_pathWord {l : List (K.E × Bool)} {a b : K.V}
   induction l generalizing a with
   | nil =>
       cases hl
-      simp [pathWord]
+      simp
   | cons g l ih =>
       obtain ⟨ha, hrest⟩ := hl
       subst ha
-      rw [pathWord_cons, map_mul, freeToPi1_germWord T g, ih hrest]
+      rw [pathWord_cons, map_mul, freeToPi1_germWord, ih]
       exact loopOf_mul T (isPath_single g) hrest
 
 theorem freeToPi1_treeRel (f : K.F) : freeToPi1 T (treeRel T f) = 1 := by

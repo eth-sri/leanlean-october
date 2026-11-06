@@ -13,7 +13,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
 theorem universalNerveChain1_uOrderHom (c : OrdEdge (UOrder P a) →₀ ℤ) :
@@ -32,7 +31,6 @@ end FiniteChains.Comb
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

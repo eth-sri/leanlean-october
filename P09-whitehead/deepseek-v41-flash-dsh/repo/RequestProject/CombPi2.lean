@@ -30,7 +30,6 @@ condition (1) of Theorem A.
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {X Y Z : Complex2.{u}}
 
@@ -44,7 +43,7 @@ theorem endpt_mapPath (h : Hom X Y) : ∀ (q : List (X.E × Bool)) (a : X.V),
   | cons eb t ih =>
       intro a
       show endpt Y (germTgt Y.src Y.tgt (h.onE eb.1, eb.2)) (mapPath h t) = _
-      rw [germTgt_onE h eb]
+      rw [germTgt_onE]
       exact ih (germTgt X.src X.tgt eb)
 
 variable (x₀ : X.V)
@@ -134,7 +133,7 @@ theorem uLiftPath_univLiftV (h : Hom X Y) : ∀ (q : List (X.E × Bool)) (c : UV
       intro c w hq
       have hc : endV c = germSrc X.src X.tgt eb := hq.1
       have hc' : endV (univLiftV x₀ h c) = germSrc Y.src Y.tgt (h.onE eb.1, eb.2) := by
-        rw [endV_univLiftV, germSrc_onE h eb, hc]
+        rw [endV_univLiftV, germSrc_onE, hc]
       have hnext : IsPath X.src X.tgt t (endV (extend eb c)) w := by
         rw [endV_extend hc]; exact hq.2
       show uLiftPath ((h.onE eb.1, eb.2) :: mapPath h t) (univLiftV x₀ h c) = _

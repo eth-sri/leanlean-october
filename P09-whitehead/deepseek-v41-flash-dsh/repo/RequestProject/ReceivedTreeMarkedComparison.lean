@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
-universe u
 variable {K Y : Complex2.{u}} (T : SpanningTree K) (f : Hom K Y)
   {G : Type u} [Group G] (φ : PresGroup (treeRel T) →* G)
   (ψ : G →* Pi1 Y (f.onV T.root))
@@ -39,7 +38,7 @@ theorem comparison_markedChainMap (p : I → Loop K T.root) (c : (G × I) →₀
     chain1 (comparison T f φ ψ hψ) (markedChainMap T φ (fun i => (p i).1) c) =
       geometricMarkedChainMap T f ψ p c := by
   induction c using Finsupp.induction_linear with
-  | zero => simp [chain1, LinearMap.map_zero]
+  | zero => simp
   | add c d hc hd => rw (config := { transparency := .default }) [map_add, map_add, hc, hd, map_add]
   | single x n =>
     obtain ⟨g, i⟩ := x

@@ -45,7 +45,6 @@ The ingredients, all proved here for the model of `RequestProject/RACGGroup.lean
 namespace FiniteChains
 namespace RACG
 
-universe u
 
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 
@@ -64,7 +63,7 @@ theorem clen_mul_gen (x : CayGroup A) (s : V) :
 /-- Right descents of `x` are the left descents of `x⁻¹`. -/
 theorem isRDesc_iff_isDesc (x : CayGroup A) (s : V) : IsRDesc A x s ↔ IsDesc A x⁻¹ s := by
   unfold IsRDesc IsDesc
-  rw [clen_mul_gen A x s, clen_inv A x]
+  rw [clen_mul_gen, clen_inv]
 
 /-- **The descent set is a simplex of `L`**: two distinct right descents commute. -/
 theorem rdesc_rel {x : CayGroup A} {s r : V} (hsr : s ≠ r) (hs : IsRDesc A x s)
@@ -205,7 +204,7 @@ theorem clen_cword_mul {T : Set V} (hT : Commuting A T) {x : CayGroup A}
       have iht := ih (fun b hb => hl b (by simp [hb])) hnd.of_cons
       have hnot : ¬ IsDesc A (cword A t * x) a :=
         not_isDesc_cword_mul A hT hx (hl a (by simp)) t
-          (fun b hb => hl b (by simp [hb])) (by simpa using (List.nodup_cons.1 hnd).1)
+          (fun b hb => hl b (by simp [hb])) (by exact (List.nodup_cons.1 hnd).1)
       have hstep := clen_gen_mul_of_not_desc A hnot
       rw [cword_cons, mul_assoc, hstep, iht]
       simp [Nat.add_right_comm]

@@ -55,7 +55,7 @@ theorem cut_first (n : ℕ) :
 theorem cut_last (n : ℕ) :
     cut n ∘ (Fin.last (n + 1)).succAbove = (fun _ : Fin (n + 1) => (0 : Fin 2)) := by
   funext k
-  simp only [Function.comp_apply, Fin.succAbove_last, cut, Fin.val_castSucc]
+  simp
   exact if_pos (Nat.le_of_lt_succ k.isLt)
 
 theorem base_left {n : ℕ} (i : Fin (n + 1)) (j : Fin (n + 2)) (h : j ≤ i.castSucc) :

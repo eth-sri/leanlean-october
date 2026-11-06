@@ -62,9 +62,6 @@ theorem relator_compat (j : J) : σ (h.cell j) = FreeGroup.map h.gen (ρ j) := b
 def groupHom : PresGroup ρ →* PresGroup σ :=
   presInclGroupHom h.gen ρ σ h.cell (h.relator_compat ρ σ hw hv)
 
-@[simp] theorem groupHom_mk (x : FreeGroup α) :
-    h.groupHom ρ σ hw hv (QuotientGroup.mk x) = QuotientGroup.mk (FreeGroup.map h.gen x) := rfl
-
 /-- The lifted path class has the actual induced group coordinate. -/
 theorem universal_reading_map (p : UOrder (PresPos w) (ptBase w)) :
     (presGroupCocycle σ v hv).readVertex (ptBase v) (h.universalMap p) =

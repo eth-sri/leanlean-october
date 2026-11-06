@@ -106,7 +106,7 @@ theorem card_inter_insert {x y z z' : P} (hxy : x ≠ y) (hz : z ∉ ({x, y} : F
   have hset : (insert z ({x, y} : Finset P)) ∩ (insert z' ({x, y} : Finset P))
       = ({x, y} : Finset P) := by
     ext w
-    simp only [Finset.mem_inter, Finset.mem_insert, Finset.mem_singleton] at *
+    simp at *
     constructor
     · rintro ⟨hw1, hw2⟩
       rcases hw1 with rfl | hw1
@@ -223,15 +223,13 @@ theorem conn_face_step (hfe : FaceEdges S) {f f' v e v' e' : P} (hadj : FaceAdj 
   have hf' : S.rk f' = 2 := by have := S.rk_lt_of_lt hdf'; have := S.rk_le_two f'; omega
   obtain ⟨w, -, -, hwd, -, -⟩ := S.two_vertices d hd
   have hw : S.rk w = 0 := by have := S.rk_lt_of_lt hwd; omega
-  have s1 : ReflTransGen (TriAdj (orderComplex P)) ({v, e, f} : Finset P)
-      ({w, d, f} : Finset P) := S.conn_in_face hfe hf hv hve hef hw hwd hdf
+  have s1 := S.conn_in_face hfe hf hv hve hef hw hwd hdf
   have s2 : ReflTransGen (TriAdj (orderComplex P)) ({w, d, f} : Finset P)
       ({w, d, f'} : Finset P) := by
     by_cases hff' : f = f'
     · subst hff'; exact ReflTransGen.refl
     · exact ReflTransGen.single (triAdj_face hwd hdf hdf' hff')
-  have s3 : ReflTransGen (TriAdj (orderComplex P)) ({w, d, f'} : Finset P)
-      ({v', e', f'} : Finset P) := S.conn_in_face hfe hf' hw hwd hdf' hv' hv'e' he'f'
+  have s3 := S.conn_in_face hfe hf' hw hwd hdf' hv' hv'e' he'f'
   exact (s1.trans s2).trans s3
 
 omit [Fintype P] in

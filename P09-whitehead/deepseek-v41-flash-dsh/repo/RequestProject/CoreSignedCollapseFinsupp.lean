@@ -122,7 +122,7 @@ omit [DecidableEq A] [DecidableEq B] in
 omit [DecidableEq A] [DecidableEq B] in
 @[simp] theorem cellsFS_zero : cellsFS core extra target rev hword 0 = 0 := by
   ext j : 1
-  simp [cellsFS_apply]
+  simp
 
 omit [DecidableEq A] [DecidableEq B] in
 theorem cellsFS_add (v w : (M ⊕ J) →₀ MonoidAlgebra ℤ (PresGroup (corePres core extra))) :
@@ -136,7 +136,7 @@ omit [DecidableEq A] [DecidableEq B] in
     (a : MonoidAlgebra ℤ (PresGroup (corePres core extra))) :
     cellsFS core extra target rev hword (Finsupp.single (Sum.inl m) a) = 0 := by
   ext j : 1
-  simp [cellsFS_apply]
+  simp
 
 omit [DecidableEq A] [DecidableEq B] in
 @[simp] theorem cellsFS_single_extra (j : J)

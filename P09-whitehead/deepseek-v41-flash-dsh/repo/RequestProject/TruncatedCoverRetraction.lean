@@ -30,10 +30,6 @@ def truncatedCoverSection (p : P) : TruncatedCover f :=
 theorem truncatedCoverSection_monotone (hf : Monotone f) :
     Monotone (truncatedCoverSection f) := fun _ _ h => ⟨h, oldCellIncl_monotone (hf h)⟩
 
-omit [DecidableEq V] [PartialOrder P] in
-@[simp] theorem truncatedCoverRetraction_section (p : P) :
-    truncatedCoverRetraction f (truncatedCoverSection f p) = p := rfl
-
 theorem truncatedCover_le_section_retraction (p : TruncatedCover f) :
     p ≤ truncatedCoverSection f (truncatedCoverRetraction f p) := by
   refine ⟨le_refl _, ?_⟩

@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u v
 variable {X : Complex2.{u}} {G : Type v} [Group G]
 
 /-- The cellular self-map supplied by a deck transformation. -/

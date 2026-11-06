@@ -19,7 +19,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u v
 
 section EmbeddedHomology
 variable {D X : Complex2.{u}} (f : Hom D X)

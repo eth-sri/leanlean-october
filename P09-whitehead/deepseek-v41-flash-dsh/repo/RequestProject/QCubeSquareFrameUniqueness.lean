@@ -18,7 +18,7 @@ theorem qSquare_frame_unique (c : QSquare A) {a b : V}
   have hr : qSquareRight c ∈ ({a, b} : Finset V) := by
     rw [← hs, qSquare_free_directions]
     simp
-  simp only [Finset.mem_insert, Finset.mem_singleton] at hl hr
+  simp at hl hr
   have horder := qSquare_directions_decreasing c
   rcases hl with hl | hl <;> rcases hr with hr | hr
   · rw [hl, hr] at horder

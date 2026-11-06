@@ -16,7 +16,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 variable {α J : Type u}
 
@@ -111,7 +110,7 @@ theorem rel_cmap (h : PresChainFS ρ n) : ∀ (r : ℕ) (j : J),
   | 0, j => h.rel_base j
   | r + 1, j => by
       have hg : h.gmap (r + 1) = h.genIncl r ∘ h.gmap r := funext fun i => gmap_succ h r i
-      rw [cmap_succ, h.rel_incl r (h.cmap r j), rel_cmap h r j, FreeGroup.map.comp, hg]
+      rw [cmap_succ, h.rel_incl, rel_cmap, FreeGroup.map.comp, hg]
 
 /-- The relators of `X_r` generate its relator subgroup, so an inclusion of generating sets
 that carries relators to relators induces a map of the presented groups. -/

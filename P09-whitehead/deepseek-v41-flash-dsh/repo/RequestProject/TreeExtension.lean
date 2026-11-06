@@ -39,7 +39,6 @@ namespace FiniteChains
 namespace Comb
 namespace SpanningTree
 
-universe u
 
 variable {X Y : Complex2.{u}}
 
@@ -110,7 +109,7 @@ theorem imDist_step {a : Y.V} (ha : imDist h a ≠ 0) :
     have := imDist_le h hpath
     simpa [hlen'] using this
   have h3 : q.length + 1 = imDist h a := by
-    simp only [List.length_cons] at hlen
+    simp at hlen
     omega
   omega
 
@@ -142,7 +141,7 @@ noncomputable def extHt (a : Y.V) : ℕ :=
 
 theorem extHt_of_zero {a : Y.V} (hz : imDist h a = 0) :
     extHt h hconn x₀ T a = T.ht (imPre h hconn x₀ hz) := by
-  rw [extHt, dif_pos hz]
+  rw [extHt, dif_pos]
 
 theorem extHt_of_ne {a : Y.V} (hz : imDist h a ≠ 0) :
     extHt h hconn x₀ T a =
@@ -173,7 +172,7 @@ theorem extUp_of_zero {a : Y.V} (ha : a ≠ h.onV T.root) (hz : imDist h a = 0) 
     extUp h hconn x₀ T a ha =
       (h.onE (T.up (imPre h hconn x₀ hz) (imPre_ne_root h hconn x₀ T ha hz)).1,
         (T.up (imPre h hconn x₀ hz) (imPre_ne_root h hconn x₀ T ha hz)).2) := by
-  rw [extUp, dif_pos hz]
+  rw [extUp, dif_pos]
 
 theorem extUp_of_ne {a : Y.V} (ha : a ≠ h.onV T.root) (hz : imDist h a ≠ 0) :
     extUp h hconn x₀ T a ha = upChoice h hconn x₀ hz := by
@@ -261,8 +260,6 @@ spanning tree of `Y` meets `X` exactly in the spanning tree of `X`. -/
 def nonTreeIncl (e : NonTree T) : NonTree T' :=
   ⟨h.onE e.1, fun hc => e.2 ((hiff e.1).1 hc)⟩
 
-@[simp] theorem nonTreeIncl_coe (e : NonTree T) : (nonTreeIncl hiff e : Y.E) = h.onE e.1 := rfl
-
 theorem nonTreeIncl_injective (hE : Function.Injective h.onE) :
     Function.Injective (nonTreeIncl hiff) := by
   intro a b hab
@@ -283,10 +280,10 @@ theorem germWord_onE (g : X.E × Bool) :
 theorem pathWord_mapPath (l : List (X.E × Bool)) :
     pathWord T' (mapPath h l) = FreeGroup.map (nonTreeIncl hiff) (pathWord T l) := by
   induction l with
-  | nil => simp [mapPath]
+  | nil => simp
   | cons g l ih =>
       have hcons : mapPath h (g :: l) = (h.onE g.1, g.2) :: mapPath h l := rfl
-      rw [hcons, pathWord_cons, ih, germWord_onE hiff g, pathWord_cons, map_mul]
+      rw [hcons, pathWord_cons, ih, germWord_onE, pathWord_cons, map_mul]
 
 /-- **The relators of the collapse of `X` are relators of the collapse of `Y`.**  Together with
 `FiniteChains.Comb.SpanningTree.nonTreeIncl_injective` this exhibits the collapse of `X` as a
@@ -294,7 +291,7 @@ subpresentation of the collapse of `Y`, in the sense used by `FiniteChains.PresC
 theorem treeRel_onF (f : X.F) :
     treeRel T' (h.onF f) = FreeGroup.map (nonTreeIncl hiff) (treeRel T f) := by
   have hatt : Y.att (h.onF f) = mapPath h (X.att f) := h.att_onF f
-  rw [treeRel, hatt, pathWord_mapPath hiff, treeRel]
+  rw [treeRel, hatt, pathWord_mapPath, treeRel]
 
 end Presentation
 

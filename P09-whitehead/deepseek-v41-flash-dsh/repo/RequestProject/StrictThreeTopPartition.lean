@@ -15,7 +15,7 @@ theorem strictThreeChain_top_partition (y : StrictOrdTet (QCube A) →₀ ℤ) :
       y.filter (fun t => t.1.2.2.2 = c) := by
   classical
   ext t
-  simp only [Finsupp.finset_sum_apply]
+  simp
   by_cases ht : y t = 0
   · simp [Finsupp.filter_apply, ht]
   · rw [Finset.sum_eq_single t.1.2.2.2]

@@ -29,7 +29,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {P Q : Type u} [Preorder P] [Preorder Q]
 
@@ -64,7 +63,7 @@ theorem htpy_square_neg {f g : P → Q} (hf : Monotone f) (hg : Monotone g)
     (htpy_ordPos_ordNeg (hg h)).congr_append
       (show IsPath (orderCx Q).src (orderCx Q).tgt [ordNeg (hf h), ordPos (hfg a)] (f b) (g a)
         from ⟨rfl, rfl, rfl⟩) (isPath_nil' (g a))
-  simp only [List.nil_append, List.cons_append, List.append_nil] at h1 h2 h3 ⊢
+  simp at h1 h2 h3 ⊢
   exact (h3.symm.trans h1.symm).trans h2
 
 /-- **The naturality homotopy.**  For two monotone maps with `f ≤ g` pointwise, the image of a
@@ -108,7 +107,7 @@ theorem htpy_mapPath_le {f g : P → Q} (hf : Monotone f) (hg : Monotone g)
               (isPath_mapPath (orderCxMap g hg) hrest')
               (htpy_square_pos hf hg hfg hab) (Htpy.refl _)
           have hgoal := h1.trans h2
-          simpa [mapPath, orderCxMap, ordPos, ordNeg, List.append_assoc] using hgoal
+          exact hgoal
       | false =>
           have hub : u = b := hu
           subst hub
@@ -129,7 +128,7 @@ theorem htpy_mapPath_le {f g : P → Q} (hf : Monotone f) (hg : Monotone g)
               (isPath_mapPath (orderCxMap g hg) hrest')
               (htpy_square_neg hf hg hfg hab) (Htpy.refl _)
           have hgoal := h1.trans h2
-          simpa [mapPath, orderCxMap, ordPos, ordNeg, List.append_assoc] using hgoal
+          exact hgoal
 
 /-- **The conjugation form of the naturality homotopy for a loop.**  The image of a loop under
 `g` is homotopic to the image under `f` conjugated by the edge at the basepoint. -/
@@ -152,7 +151,7 @@ theorem htpy_loop_mapPath_le {f g : P → Q} (hf : Monotone f) (hg : Monotone g)
       ([] ++ [ordNeg (hfg u), ordPos (hfg u)] ++ mapPath (orderCxMap g hg) p)
       ([] ++ [] ++ mapPath (orderCxMap g hg) p) :=
     (htpy_ordNeg_ordPos (hfg u)).congr_append (isPath_nil' (g u)) hgp
-  simp only [List.nil_append, List.append_nil, List.cons_append] at h1 h2 ⊢
+  simp at h1 h2 ⊢
   exact (h2.symm.trans h1.symm)
 
 end Comb

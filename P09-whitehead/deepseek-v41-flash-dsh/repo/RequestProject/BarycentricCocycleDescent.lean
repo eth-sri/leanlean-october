@@ -9,7 +9,6 @@ public import RequestProject.OrderCocycleFlatSections
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 open scoped Classical
-universe u v w
 variable {P : Type u} [PartialOrder P] [DecidableEq P]
   {G : Type v} [Group G] (c : OrdCocycle (NeSpx (cmpRel P)) G)
 
@@ -41,7 +40,7 @@ theorem edgeHop_read_via {a b : P} (hab : a ≤ b) (σ : NeSpx (cmpRel P))
     c.readPath (edgeHop hab) = c.val (spx1 a) σ * (c.val (spx1 b) σ)⁻¹ := by
   have hσ : spx2 hab ≤ σ := by
     intro x hx
-    simp only [spx2_val, Finset.mem_insert, Finset.mem_singleton] at hx
+    simp at hx
     rcases hx with rfl | rfl
     exacts [ha, hb]
   rw [← c.comp (spx1_le_spx2_left hab) hσ,
@@ -63,7 +62,7 @@ theorem barycentricSection_flat (s : P → Ω)
   intro σ τ hστ
   have hm : spx1 (chainMax σ) ≤ σ := by
     intro x hx
-    simp only [spx1_val, Finset.mem_singleton] at hx
+    simp at hx
     subst x
     exact chainMax_mem σ
   have hread := hs (chainMax_monotone hστ)

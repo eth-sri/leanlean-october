@@ -18,7 +18,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.IdentityChains
 open Comb Comb.StrictNormalized
-universe u
 variable {α J : Type u} (w : J → List (α × Bool))
 
 theorem roseProjection_relatorBoundary (p : PresCoverRelator w id) :
@@ -115,7 +114,6 @@ end FiniteChains.PresModel.IdentityChains
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u}
 
 /-- An acyclic actual strict presentation complex has a bijective exponent

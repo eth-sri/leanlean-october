@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
 open scoped Classical
-universe u
 variable {K : Complex2.{u}} (T : SpanningTree K) {G : Type u} [Group G]
   (φ : PresGroup (treeRel T) →* G) {I : Type u}
 

@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable (P : Type u) [PartialOrder P]
 
 /-- Actual path classes, with the lifted comparability order rather than any extra data. -/

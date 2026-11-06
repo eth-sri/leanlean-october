@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X Y : Complex2.{u}} (a : X.V) (f : Hom X Y)
 
 /-- Projection of an actual lifted two-chain agrees with the ordinary cellular image. -/

@@ -11,7 +11,6 @@ of Whitehead.MainClaim. The original CW model, matrix condition, and
 initial comparison are all supplied by constructions. This source has
 not yet undergone the final Lean verification. -/
 
-noncomputable section
 open scoped Classical
 
 namespace Whitehead

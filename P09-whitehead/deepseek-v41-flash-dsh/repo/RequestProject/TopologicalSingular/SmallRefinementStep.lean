@@ -6,7 +6,6 @@ public import RequestProject.TopologicalSingular.SubdivisionSupport
 
 namespace FiniteChains.SingularSubdivision
 open TopologicalSingular
-universe u v
 variable {X : Type u} [TopologicalSpace X] {ι : Type v}
 
 structure SmallRefinementStage (U : ι → Set X) (n : ℕ) where
@@ -27,7 +26,7 @@ theorem all_zero_chains_small (U : ι → Set X) (hcover : ∀ x, ∃ i, x ∈ U
   | add c d hc hd => exact Submodule.add_mem _ hc hd
   | single σ r =>
     obtain ⟨i, hi⟩ := hcover (σ (stdSimplex.vertex 0))
-    apply single_mem_small U 0 σ r
+    apply single_mem_small
     refine ⟨i, fun z => ?_⟩
     letI : Subsingleton (Domain 0) := inferInstanceAs (Subsingleton (stdSimplex ℝ (Fin 1)))
     rwa [show z = stdSimplex.vertex 0 from Subsingleton.elim _ _]

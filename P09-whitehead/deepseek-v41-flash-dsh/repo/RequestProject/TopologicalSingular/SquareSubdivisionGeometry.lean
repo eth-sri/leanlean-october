@@ -72,12 +72,12 @@ theorem rectangle_common_edge (a : I) (z : Domain 1) :
 theorem leftRectangle_horizontal_boundary (a v : I) (hv : v = 0 ∨ v = 1) (z : Domain 1) :
     leftRectangle a (cubeEdge 1 v z) ∈ Cube.boundary (Fin 2) := by
   refine ⟨1, ?_⟩
-  simpa [leftRectangle, cubeEdge, Whitehead.squareEdge] using hv
+  exact hv
 
 theorem rightRectangle_horizontal_boundary (a v : I) (hv : v = 0 ∨ v = 1) (z : Domain 1) :
     rightRectangle a (cubeEdge 1 v z) ∈ Cube.boundary (Fin 2) := by
   refine ⟨1, ?_⟩
-  simpa [rightRectangle, cubeEdge, Whitehead.squareEdge] using hv
+  exact hv
 
 theorem leftRectangle_outer_boundary (a : I) (z : Domain 1) :
     leftRectangle a (cubeEdge 0 0 z) ∈ Cube.boundary (Fin 2) := by

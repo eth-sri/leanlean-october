@@ -8,7 +8,6 @@ public import RequestProject.BarycentricCocycleDescent
 /-! Boundary flat sections extend across the actual closed polygon surface. -/
 namespace FiniteChains.Davis.SurfaceSection
 open RACG Mirror Comb Cell
-universe u v w
 variable {κ ι : Type u} {M : ℕ} [NeZero M]
   {vc : Fin M → κ} {ec : Fin M → ι} (hc : Compat vc ec)
   {G : Type v} [Group G] {Ω : Type w} [MulAction G Ω]
@@ -110,7 +109,6 @@ end FiniteChains.Davis.SurfaceSection
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb Cell
-universe u v w
 variable {κ ι : Type u} {M : ℕ} [NeZero M] [DecidableEq κ] [DecidableEq ι]
   {vc : Fin M → κ} {ec : Fin M → ι} (hc : Compat vc ec)
   {G : Type v} [Group G] {Ω : Type w} [MulAction G Ω]

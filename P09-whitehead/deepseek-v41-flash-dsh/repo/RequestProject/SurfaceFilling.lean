@@ -30,7 +30,6 @@ namespace Davis
 
 open RACG Mirror Comb Cell
 
-universe u
 
 section Filling
 
@@ -101,12 +100,11 @@ theorem htpy_ray_step (p : Fin M) :
       htpy_append_right ((isPath_delta hc p).append (isPath_revPath (isPath_delta hc p)))
         (isPath_gam hc p) (htpy_append_revPath (isPath_delta hc p))
     refine h1.trans ?_
-    simpa [List.append_assoc] using h3
+    exact h3
   have e1 : Htpy (sdCx hc) (spx1 (cC hc)) (spx1 (cV hc (p + 1)))
       (ray hc p ++ bdEdge hc p)
       (alph hc p ++ (delta hc p ++ (gg hc p ++ delta hc (p + 1)))) := by
-    simpa [ray, List.append_assoc] using
-      htpy_append_left (isPath_ray hc p) (isPath_bdEdge hc p) hA
+    exact htpy_append_left (isPath_ray hc p) (isPath_bdEdge hc p) hA
   have e2 : Htpy (sdCx hc) (spx1 (cC hc)) (spx1 (cV hc (p + 1)))
       (alph hc p ++ (delta hc p ++ (gg hc p ++ delta hc (p + 1))))
       (alph hc p ++ (gam hc p ++ delta hc (p + 1))) := by
@@ -114,13 +112,11 @@ theorem htpy_ray_step (p : Fin M) :
         ((delta hc p ++ gg hc p) ++ delta hc (p + 1)) (gam hc p ++ delta hc (p + 1)) :=
       htpy_append_right ((isPath_delta hc p).append (isPath_gg hc p))
         (isPath_delta hc (p + 1)) hD
-    simpa [List.append_assoc] using
-      htpy_append_left (isPath_alph hc p)
+    exact htpy_append_left (isPath_alph hc p)
         (((isPath_delta hc p).append (isPath_gg hc p)).append (isPath_delta hc (p + 1))) inner
   have e3 : Htpy (sdCx hc) (spx1 (cC hc)) (spx1 (cV hc (p + 1)))
       (alph hc p ++ (gam hc p ++ delta hc (p + 1))) (ray hc (p + 1)) := by
-    simpa [ray, List.append_assoc] using
-      htpy_append_right ((isPath_alph hc p).append (isPath_gam hc p))
+    exact htpy_append_right ((isPath_alph hc p).append (isPath_gam hc p))
         (isPath_delta hc (p + 1)) hC
   exact e1.trans (e2.trans e3)
 
@@ -176,7 +172,7 @@ theorem htpy_bdPath (n : ℕ) :
         refine (show Htpy (sdCx hc) (spx1 (cV hc (cyc M 0))) (spx1 (cV hc (cyc M n + 1)))
             (bdPath hc (n + 1))
             (revPath (ray hc (cyc M 0)) ++ (ray hc (cyc M n) ++ bdEdge hc (cyc M n)))
-          from by simpa [bdPath, List.append_assoc] using h1).trans h2
+          from by exact h1).trans h2
       rw [cyc_succ]
       exact h3
 

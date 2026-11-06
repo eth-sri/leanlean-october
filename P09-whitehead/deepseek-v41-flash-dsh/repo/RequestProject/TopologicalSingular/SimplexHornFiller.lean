@@ -143,8 +143,8 @@ theorem simplexHornFiller_face (i : Fin (d + 2))
   rw [show simplexHornFiller i g hg (faceMap (i.succAbove j) y) =
       simplexHornFillFun i g (faceMap (i.succAbove j) y) from rfl,
     simplexHornFillFun_eq i g hg _ j hregion]
-  apply congrArg (g j)
-  apply faceMap_injective (i.succAbove j)
+  apply congrArg
+  apply faceMap_injective
   rw [faceMap_simplexHornFillFaceMap,
     simplexHornRetract_eq_self_of_mem i hmem]
 

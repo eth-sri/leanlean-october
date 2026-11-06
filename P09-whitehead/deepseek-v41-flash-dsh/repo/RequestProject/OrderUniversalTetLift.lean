@@ -9,7 +9,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
 /-- Every actual lifted nerve tetrahedron is an actual tetrahedron in the lifted order. -/

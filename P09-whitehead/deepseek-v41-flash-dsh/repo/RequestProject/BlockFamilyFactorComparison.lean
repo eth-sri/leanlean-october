@@ -86,11 +86,6 @@ def factorToFamily (hfill : FilledF ρ bsub) (s : Sx) :
       exact (QuotientGroup.eq_one_iff _).2
         (Subgroup.subset_normalClosure ⟨Sum.inr ⟨s, m⟩, rfl⟩))
 
-@[simp] theorem factorToFamily_mk (hfill : FilledF ρ bsub) (s : Sx)
-    (w : FreeGroup (α ⊕ (Σ _ : PUnit.{1}, Zt s))) :
-    factorToFamily ρ bsub hfill s (QuotientGroup.mk w) =
-      QuotientGroup.mk (FreeGroup.map (individualGenEmb (Zt := Zt) s) w) := rfl
-
 /-- The original group maps to an individual factor by the single substitution,
 with the original relator indexing restored. -/
 def individualBase
@@ -98,26 +93,6 @@ def individualBase
     (s : Sx) : PresGroup ρ →* IndividualGroup ρ bsub s :=
   (substHomF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s) (hone s)).comp
     (oneEquiv ρ s).toMonoidHom
-
-@[simp] theorem individualBase_mk
-    (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
-    (s : Sx) (w : FreeGroup α) :
-    individualBase ρ bsub hone s (QuotientGroup.mk w) =
-      QuotientGroup.mk (FreeGroup.map (Sum.inl (β := Σ _ : PUnit.{1}, Zt s)) w) := rfl
-
-/-- Compatibility of the actual factor maps with the common original group. -/
-theorem factorToFamily_comp_individualBase (hfill : FilledF ρ bsub)
-    (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s)) (s : Sx) :
-    (factorToFamily ρ bsub hfill s).comp (individualBase ρ bsub hone s) =
-      substHomF ρ bsub hfill := by
-  apply MonoidHom.ext
-  intro x
-  induction x using QuotientGroup.induction_on with
-  | _ w =>
-      change factorToFamily ρ bsub hfill s
-        (individualBase ρ bsub hone s (QuotientGroup.mk w)) =
-          substHomF ρ bsub hfill (QuotientGroup.mk w)
-      rw [individualBase_mk, factorToFamily_mk, individualGenEmb_old, substHomF_mk]
 
 /-- The block free group maps to its own individual substituted factor. -/
 def individualBlockFree (s : Sx) : FreeGroup (α ⊕ Zt s) →* IndividualGroup ρ bsub s :=
@@ -192,28 +167,6 @@ theorem familyToAmalgam_comp_factor (hfill : FilledF ρ bsub)
   intro x
   induction x using QuotientGroup.induction_on with
   | _ w => exact DFunLike.congr_fun hw w
-
-/-- The inverse comparison, obtained from the wide pushout universal property. -/
-def amalgamToFamily (hfill : FilledF ρ bsub)
-    (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s)) :
-    Monoid.PushoutI (individualBase ρ bsub hone) →* PresGroup (substPresF ρ bsub) :=
-  Monoid.PushoutI.lift (factorToFamily ρ bsub hfill) (substHomF ρ bsub hfill)
-    (factorToFamily_comp_individualBase ρ bsub hfill hone)
-
-@[simp] theorem amalgamToFamily_of (hfill : FilledF ρ bsub)
-    (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
-    (s : Sx) (x : IndividualGroup ρ bsub s) :
-    amalgamToFamily ρ bsub hfill hone (Monoid.PushoutI.of s x) =
-      factorToFamily ρ bsub hfill s x := by
-  simp [amalgamToFamily]
-
-@[simp] theorem amalgamToFamily_base (hfill : FilledF ρ bsub)
-    (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
-    (x : PresGroup ρ) :
-    amalgamToFamily ρ bsub hfill hone
-        (Monoid.PushoutI.base (individualBase ρ bsub hone) x) =
-      substHomF ρ bsub hfill x := by
-  simp [amalgamToFamily]
 
 /-- Each individual factor embeds when every individual substitution embeds the original group.
 The only injectivity input concerns the already constructed individual base maps. -/

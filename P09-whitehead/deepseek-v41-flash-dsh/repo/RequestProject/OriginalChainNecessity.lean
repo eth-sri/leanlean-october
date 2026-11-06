@@ -9,7 +9,6 @@ public import RequestProject.TopologicalAcyclicCoverHomotopy
 /-! The original necessity direction, with one fixed presentation chosen
 before any chain length or ambient CW complex. The result is an actual
 regular topological cover of the original space. Unverified source. -/
-noncomputable section
 open scoped Classical
 namespace Whitehead
 open FiniteChains FiniteChains.ClassicalCW FiniteChains.PresModel

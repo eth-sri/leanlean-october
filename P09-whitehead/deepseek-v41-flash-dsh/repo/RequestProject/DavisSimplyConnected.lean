@@ -29,7 +29,6 @@ namespace Davis
 
 open RACG Mirror Comb
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
@@ -108,8 +107,8 @@ theorem nullIn_upto_insert (n : ℕ) (hnull : NullIn (Upto (A := A) n))
   | empty =>
       intro _
       constructor
-      · exact nullIn_congr (fun p => by simp [Upto]) hnull
-      · exact connectedIn_congr (fun p => by simp [Upto]) hconn
+      · exact nullIn_congr (fun p => by simp) hnull
+      · exact connectedIn_congr (fun p => by simp) hconn
   | @insert x S hxS hSfin ih =>
       intro hlen
       obtain ⟨hprevNull, hprevConn⟩ := ih (fun y hy => hlen y (Set.mem_insert_of_mem _ hy))

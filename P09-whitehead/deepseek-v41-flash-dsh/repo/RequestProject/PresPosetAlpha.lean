@@ -33,7 +33,6 @@ namespace PresModel
 
 open Comb
 
-universe u
 
 variable {α J : Type u} (w : J → List (α × Bool))
 
@@ -191,7 +190,7 @@ theorem htpy_wordLoop_nil (j : J) :
   have h2 : Htpy (orderCx (PresPos w)) (ptBase w) (ptBase w)
       [ordNeg (hfg u), ordPos (hfg u)] [] := htpy_ordNeg_ordPos (hfg u)
   refine hnat.trans (h1.trans ?_)
-  simpa using h2
+  exact h2
 
 /-! ### The comparison homomorphism -/
 
@@ -253,19 +252,6 @@ theorem mk_presWords (ρ : J → FreeGroup α) (j : J) :
 
 /-- **The poset model of the presentation complex of `ρ`.** -/
 noncomputable abbrev presModelPos (ρ : J → FreeGroup α) : Type u := PresPos (presWords ρ)
-
-/-- **The marked comparison homomorphism** of the presentation `ρ` with its poset model: the
-class of a generator goes to the loop of that generator. -/
-noncomputable def alphaHom (ρ : J → FreeGroup α) :
-    PresGroup ρ →* Pi1 (orderCx (presModelPos ρ)) (ptBase (presWords ρ)) :=
-  QuotientGroup.lift _ (alphaFree (presWords ρ)) (by
-    refine Subgroup.normalClosure_le_normal ?_
-    rintro _ ⟨j, rfl⟩
-    have h := alphaFree_relator (presWords ρ) j
-    rwa [mk_presWords ρ j] at h)
-
-@[simp] theorem alphaHom_mk (ρ : J → FreeGroup α) (x : FreeGroup α) :
-    alphaHom ρ (QuotientGroup.mk x) = alphaFree (presWords ρ) x := rfl
 
 end PresModel
 end FiniteChains

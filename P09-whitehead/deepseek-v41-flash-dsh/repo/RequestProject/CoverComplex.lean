@@ -44,7 +44,6 @@ namespace Comb
 
 open MonoidAlgebra
 
-universe u
 
 variable {α : Type u} [Fintype α] [DecidableEq α]
 variable {J : Type u} [Fintype J] [DecidableEq J]
@@ -143,7 +142,6 @@ theorem liftPath_isPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
       (q * QuotientGroup.mk (FreeGroup.mk L)) := by
   induction L generalizing q with
   | nil =>
-      show q = q * QuotientGroup.mk (FreeGroup.mk ([] : List (α × Bool)))
       rw [show FreeGroup.mk ([] : List (α × Bool)) = 1 from rfl]
       simp
   | cons a L ih =>
@@ -225,8 +223,8 @@ theorem coords_single (β : Type u) [Fintype β] [DecidableEq β] (q : FreeGroup
   · subst h
     rw [Pi.single_eq_same, MonoidAlgebra.coeff_single, Finsupp.single_apply]
     by_cases hq : q = q'
-    · simp [hq]
-    · simp [hq]
+    · simp
+    · simp
   · rw [Pi.single_eq_of_ne h]
     simp [Ne.symm h]
 
@@ -253,7 +251,7 @@ theorem coords_pathChain_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ 
           rw [proj_grp, qgrp, QuotientGroup.mk_inv, MonoidAlgebra.single_mul_single, mul_one]
           rfl
         rw [liftPath_cons_false, pathChain_cons]
-        simp only [Bool.false_eq_true, if_false, map_add, map_neg]
+        simp
         rw [ih (q * (qof Nsub i₀)⁻¹)]
         funext i
         rw [Pi.add_apply, Pi.neg_apply, coords_single, mk_cons_false, fox_mul, fox_inv,
@@ -270,7 +268,7 @@ theorem coords_pathChain_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ 
           rw [proj_grp, qgrp, MonoidAlgebra.single_mul_single, mul_one]
           rfl
         rw [liftPath_cons_true, pathChain_cons]
-        simp only [if_true, map_add]
+        simp
         rw [ih (q * qof Nsub i₀)]
         funext i
         rw [Pi.add_apply, coords_single, mk_cons_true, fox_mul, map_add, map_mul, mul_add,

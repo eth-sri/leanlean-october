@@ -5,7 +5,6 @@ public import RequestProject.PresCoverRelatorChains
 @[expose] public section
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
 theorem strictBelowCongr_val {a b : P} (h : a = b) (p : StrictBelow a) :
@@ -16,7 +15,6 @@ end FiniteChains.Comb
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → PresPos w) (hf : IsPosetCover f) (v : P) (j : J) (hv : f v = apexOf w j)
 

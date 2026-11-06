@@ -32,7 +32,6 @@ is used.
 namespace FiniteChains
 namespace Nerve
 
-universe u
 
 variable {P : Type u} [Preorder P] {Q : Type u} [Preorder Q]
 
@@ -43,7 +42,7 @@ theorem cmap_comp (f : P → Q) {R : Type u} (g : Q → R) (x : Ch P) :
     cmap g (cmap f x) = cmap (g ∘ f) x := by
   refine ext_apply (F := (cmap g).comp (cmap f)) (G := cmap (g ∘ f)) ?_ x
   intro l
-  simp [Function.comp_def]
+  simp
 
 /-- The image of an increasing chain under a monotone map all of whose values satisfy `B` is
 supported on `B`. -/

@@ -8,7 +8,6 @@ public import RequestProject.OrderComparableOneHomotopy
 
 /-! Finite positive-degree fillings for covered posets with a two-leg contraction. -/
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q] {f : P → Q}
 
 theorem strict_oneCycle_cover_roof (hf : IsPosetCover f) (g : Q → Q)

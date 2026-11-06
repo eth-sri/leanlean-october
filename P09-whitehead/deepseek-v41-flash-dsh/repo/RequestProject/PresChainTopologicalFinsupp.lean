@@ -9,7 +9,6 @@ public import RequestProject.PresentationChainFinsupp
 
 namespace FiniteChains
 
-universe u
 
 variable {α J : Type u}
 

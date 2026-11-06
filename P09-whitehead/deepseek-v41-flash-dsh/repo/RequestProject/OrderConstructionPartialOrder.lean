@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 
 instance cylP_partialOrder {X S : Type u} [PartialOrder X] [PartialOrder S]
     (a : S →o X) : PartialOrder (CylP a) :=

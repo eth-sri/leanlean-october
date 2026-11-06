@@ -99,7 +99,7 @@ theorem squareFlag_internal_boundary (c : QCube A) (a b : V) (hne : a ≠ b)
     exact (squareFacetIndex_lt c a b hs (i.1, i.2.1)).ne
   have hb : Comb.bdry2 (strictOrderCx (QCube A)) (Finsupp.single t 1) =
       Finsupp.single e01 1 + Finsupp.single e12 1 - Finsupp.single e02 1 := by
-    rw [Comb.bdry2_single (X := strictOrderCx (QCube A)), one_smul]
+    rw [Comb.bdry2_single, one_smul]
     simp [strictOrderCx, pathChain, e01, e12, e02]
     abel
   rw [hb, map_sub, map_add, squareRadialCoordinates_off_top c a b hne hs e01 h01 1,

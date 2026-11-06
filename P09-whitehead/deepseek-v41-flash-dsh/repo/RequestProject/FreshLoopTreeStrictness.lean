@@ -9,7 +9,6 @@ trees. Ordinary strictness by a fresh edge alone would not suffice.
  -/
 
 namespace FiniteChains.Comb
-universe u
 
 variable {X Y : Complex2.{u}}
 

@@ -84,7 +84,7 @@ theorem truncatedRetraction_pi1_surjective_at (a : TruncatedCell A) :
   have hA := hs.congr_append (isPath_nil' (truncatedCellRetraction a))
     (p.2.append (isPath_ordNeg (le_refl (truncatedCellRetraction a))))
   have hB := hn.congr_append p.2 (isPath_nil' (truncatedCellRetraction a))
-  simp only [List.nil_append, List.append_nil, revPath_nil] at hA hB
+  simp at hA hB
   have hh := hA.trans hB
   simpa [loopSetoid, ordPos, ordNeg, lp, e, truncatedRetractionHom, truncatedSectionHom, mapPath, orderCxMap,
     List.map_map, Function.comp_def, revPath, revGerm] using hh

@@ -7,7 +7,6 @@ public import RequestProject.TopologicalSingular.ContractibleSingularChains
 @[expose] public section
 
 namespace FiniteChains.TopologicalSingular
-universe u
 variable {X : Type u} [TopologicalSpace X]
 
 /-- Exactness in a contractible subspace gives a filling that stays in it. -/
@@ -17,7 +16,7 @@ theorem contractible_supported_cycle_bounds (A : Set X) [ContractibleSpace A]
     ∃ b : Chain X (n + 2), b ∈ subChains A (n + 2) ∧ boundary (n + 1) b = c := by
   obtain ⟨a, rfl⟩ := hc
   have ha : boundary n a = 0 := by
-    apply map_inclusion_injective A n
+    apply map_inclusion_injective
     rw [map_boundary, hz, map_zero]
   obtain ⟨b, hb⟩ := contractible_cycle_bounds n a ha
   refine ⟨map (inclusion A) (n + 2) b, ⟨b, rfl⟩, ?_⟩

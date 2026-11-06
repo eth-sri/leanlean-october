@@ -46,7 +46,6 @@ namespace Davis
 
 open RACG Mirror
 
-universe u
 
 variable {V : Type u} [DecidableEq V]
 
@@ -156,20 +155,6 @@ theorem chamberPt_inChamber (x : CayGroup A) {σ : Finset V} (hσ : IsSimplex A 
   have := Subgroup.inv_mem _ h
   rw [mul_inv_rev, inv_inv] at this
   exact this
-
-/-- **Uniqueness of the cell of a given type in a chamber.** -/
-theorem eq_chamberPt {x : CayGroup A} {p : Sph A} (hp : InChamber x p) :
-    p = chamberPt x p.isSimplex := by
-  have hT : Commuting A (p.spx : Set V) := commuting_of_isSimplex p.isSimplex
-  have huniq := existsUnique_shortest_coset A hT x
-  have h1 : x⁻¹ * p.rep ∈ specialSub A (p.spx : Set V) ∧
-      ∀ s ∈ (p.spx : Set V), ¬ IsRDesc A p.rep s := by
-    refine ⟨?_, fun s hs => p.no_rdesc s (Finset.mem_coe.1 hs)⟩
-    have := Subgroup.inv_mem _ hp
-    rwa [mul_inv_rev, inv_inv] at this
-  have h2 := (existsUnique_shortest_coset A hT x).choose_spec.1
-  refine Sph.ext' ?_ rfl
-  exact huniq.unique h1 h2
 
 /-! ### The chamber is a cone -/
 

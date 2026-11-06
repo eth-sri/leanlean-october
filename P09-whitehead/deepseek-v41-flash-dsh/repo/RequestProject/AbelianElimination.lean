@@ -26,7 +26,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
-universe u v
 
 variable {I : Type u} {H : Type v} [Group H]
 
@@ -115,7 +114,7 @@ theorem eq_one_of_expCol_surjective {J : Type*} (u : I → H) (hu : ∀ i k, Com
   have key : Gm.comp expVecHom = FreeGroup.lift U := by
     refine FreeGroup.ext_hom _ _ fun i => ?_
     show Additive.toMul (g (Multiplicative.toAdd (expVecHom (FreeGroup.of i)))) = _
-    rw [expVecHom_of, FreeGroup.lift_apply_of, hg_single i 1, zpow_one]
+    rw [expVecHom_of, FreeGroup.lift_apply_of, hg_single, zpow_one]
   have hsub : ∀ w : FreeGroup I, ((FreeGroup.lift U w : Subgroup.closure S) : H)
       = FreeGroup.lift u w := by
     intro w
@@ -128,7 +127,7 @@ theorem eq_one_of_expCol_surjective {J : Type*} (u : I → H) (hu : ∀ i k, Com
     intro j
     have h1 : FreeGroup.lift U (r j) = 1 := by
       apply Subtype.ext
-      rw [hsub (r j), hrel j]
+      rw [hsub, hrel]
       rfl
     have h2 : Gm (expVecHom (r j)) = 1 := by
       rw [← MonoidHom.comp_apply, key, h1]
@@ -139,7 +138,7 @@ theorem eq_one_of_expCol_surjective {J : Type*} (u : I → H) (hu : ∀ i k, Com
     intro c
     rw [Finsupp.linearCombination_apply, Finsupp.sum, map_sum]
     refine Finset.sum_eq_zero fun j _ => ?_
-    rw [AddMonoidHom.map_zsmul, hcol j, smul_zero]
+    rw [AddMonoidHom.map_zsmul, hcol, smul_zero]
   intro i
   obtain ⟨c, hc⟩ := hsurj (Finsupp.single i 1)
   have h0 : g (Finsupp.single i (1 : ℤ)) = 0 := by rw [← hc]; exact hzero c

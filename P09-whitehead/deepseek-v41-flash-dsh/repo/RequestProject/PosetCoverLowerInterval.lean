@@ -6,7 +6,6 @@ public import RequestProject.StrictTopLinkChains
 @[expose] public section
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q] {f : P → Q}
 def strictBelowCongr {a b : P} (h : a = b) : StrictBelow a ≃o StrictBelow b := by
   cases h

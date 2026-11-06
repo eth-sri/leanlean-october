@@ -7,7 +7,6 @@ public import RequestProject.StrictOrderChains
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool))
 
 /-- Valid attaching-circle positions are downward closed in the actual circle order. -/

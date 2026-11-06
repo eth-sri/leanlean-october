@@ -7,7 +7,6 @@ public import RequestProject.SurfaceFullCubeFilling
 /-! The actual link poset of the restored positive corner. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 
 theorem positiveCorner_le_iff (c : QCube A) :

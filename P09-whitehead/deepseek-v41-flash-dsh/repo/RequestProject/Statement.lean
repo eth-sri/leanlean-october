@@ -12,7 +12,6 @@ public import Mathlib.Algebra.Category.ModuleCat.Colimits
 /-! Definitions used in the statement of Theorem A. They are identical to those in
 `Challenge.lean`; the theorem itself is stated and proved in `Solution.lean`. -/
 
-noncomputable section
 
 namespace Whitehead
 

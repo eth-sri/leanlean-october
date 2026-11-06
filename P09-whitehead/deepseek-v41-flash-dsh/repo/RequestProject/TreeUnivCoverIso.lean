@@ -40,7 +40,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 /-! ### Cancelling a common prefix and suffix from a homotopy -/
 
@@ -59,7 +58,7 @@ theorem htpy_of_congr_append {X : Complex2.{u}} {a b c d : X.V}
     have hlss : IsPath X.src X.tgt (l ++ (s ++ revPath s)) a b := hl.append hss
     have e1 : revPath r ++ (r ++ l ++ s) ++ revPath s
         = (revPath r ++ r) ++ (l ++ (s ++ revPath s)) := by
-      simp [List.append_assoc]
+      simp
     have h1 : Htpy X a b ((revPath r ++ r) ++ (l ++ (s ++ revPath s)))
         ([] ++ (l ++ (s ++ revPath s))) :=
       Htpy.append_congr hrl hlss (htpy_revPath_append hr) (Htpy.refl _)
@@ -141,7 +140,7 @@ theorem uvQ_injective {x₀ : K.V} {c d : UV K x₀} (hq : uvQ (T := T) c = uvQ 
       have hloop : loopOf T hp = loopOf T hq' := by
         refine (pi1EquivPres T).injective ?_
         show pi1ToPres T (loopOf T hp) = pi1ToPres T (loopOf T hq')
-        rw [uvQ_conjPath hp, uvQ_conjPath hq']
+        rw [uvQ_conjPath, uvQ_conjPath]
         exact hq
       have hhtpy : Htpy K T.root T.root (conjPath T p.1 x₀ (endpt K x₀ p.1))
           (conjPath T q.1 x₀ (endpt K x₀ p.1)) := Quotient.exact hloop

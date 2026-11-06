@@ -8,7 +8,6 @@ public import Mathlib.CategoryTheory.Endomorphism
 namespace FiniteChains.Comb
 open CategoryTheory
 open scoped Classical
-universe u v w
 
 variable {P : Type u} [Preorder P] {C : Type v} [Groupoid.{w} C]
 

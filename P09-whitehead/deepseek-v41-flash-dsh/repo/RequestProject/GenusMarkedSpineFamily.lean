@@ -30,7 +30,7 @@ theorem familyFiniteSpineWordBlock_consequence (s : Sx) :
       FreeGroup.map (Sum.inl (β := SpinePresentationGen (q s))) (ρ (Sum.inr s)) := by
     rw [map_commWord]
     simp only [φ, blockSubst_of_inl]
-    rw [← map_commWord, hrho s]
+    rw [← map_commWord, hrho]
   rw [← hv]
   apply map_mem_normalClosure φ ?_ (markedSpine_surface_mem (q s))
   rintro v ⟨m, rfl⟩

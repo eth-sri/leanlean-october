@@ -83,24 +83,23 @@ theorem fpred_val_pos {n : Fin (8 * q)} {a : ℕ} (hv : n.val = a) (hpos : 0 < a
 
 theorem genus_pairs : EdgePairs (gec q) := by
   intro i
-  have hq := Nat.pos_of_neZero q
-  have hi := i.isLt
+  have hq := i.isLt
   have hh : i.val / 2 / 4 < q := by omega
   have hmlt : 8 * (i.val / 2 / 4) + 2 * (if i.val / 2 % 4 < 2 then i.val / 2 % 4 + 2
       else i.val / 2 % 4 - 2) + (1 - i.val % 2) < 8 * q := by
     split_ifs <;> omega
   refine ⟨⟨_, hmlt⟩, ?_, ?_, ?_⟩
   · rw [Ne, Fin.ext_iff]
-    simp only []
+    simp
     split_ifs <;> omega
   · rw [gec_eq_iff']
-    refine ⟨?_, ?_, ?_⟩ <;> simp only [] <;> split_ifs <;> omega
+    refine ⟨?_, ?_, ?_⟩ <;> simp <;> split_ifs <;> omega
   · intro k hk
     rw [gec_eq_iff'] at hk
     obtain ⟨h1, h2, h3⟩ := hk
     have hk8 := k.isLt
     rw [Fin.ext_iff, Fin.ext_iff]
-    simp only []
+    simp
     split_ifs at h3 ⊢ <;> omega
 
 theorem genus_noLoop : NoLoopSide (gvc q) := by
@@ -231,24 +230,24 @@ theorem conn_within_block (h : ℕ) (hh : h < q) (t : ℕ) (ht : t < 4) :
   have e2 := e1.tail (cornerAdj_step2 q h hh)
   have e3 := e2.tail (cornerAdj_step3 q h hh)
   interval_cases t
-  · simpa using ReflTransGen.refl
-  · simpa using e3
-  · simpa using e2
-  · simpa using e1
+  · exact ReflTransGen.refl
+  · exact e3
+  · exact e2
+  · exact e1
 
 /-- **The corner `8h` of every commutator is joined to the corner `0`.** -/
 theorem conn_block_zero (h : ℕ) (hh : h < q) :
     ReflTransGen (CornerAdj (gvc q) (gec q)) ⟨0, by have := Nat.pos_of_neZero q; omega⟩
       ⟨8 * h, by omega⟩ := by
   induction h with
-  | zero => simpa using ReflTransGen.refl
+  | zero => exact ReflTransGen.refl
   | succ n ih =>
       have hn : n < q := by omega
       have h1 := ih hn
       have h2 := conn_within_block q n hn 1 (by omega)
       have h3 := ReflTransGen.single (cornerAdj_step4 q n (by omega))
       have h2' : ReflTransGen (CornerAdj (gvc q) (gec q)) (⟨8 * n, by omega⟩ : Fin (8 * q))
-          ⟨8 * n + 2, by omega⟩ := by simpa using h2
+          ⟨8 * n + 2, by omega⟩ := by exact h2
       exact (h1.trans h2').trans h3
 
 /-- Every corner of the polygon is joined to the corner `0`. -/
@@ -261,7 +260,7 @@ theorem conn_even_zero (p : Fin (8 * q)) (hp : p.val % 2 = 0) :
   have hwithin := conn_within_block q (p.val / 8) hh (p.val % 8 / 2) (by omega)
   have hval : (⟨8 * (p.val / 8) + 2 * (p.val % 8 / 2), by omega⟩ : Fin (8 * q)) = p := by
     apply Fin.ext
-    simp only []
+    simp
     omega
   rw [hval] at hwithin
   exact hblock.trans hwithin
@@ -271,8 +270,7 @@ of identified sides are glued to each other. -/
 theorem genus_cornersConnected : CornersConnected (gvc q) (gec q) := by
   have hq := Nat.pos_of_neZero q
   intro i j hij
-  have hi8 := i.isLt
-  have hj8 := j.isLt
+  have hi8 := j.isLt
   by_cases hi : i.val % 2 = 0
   · -- both positions are corners of the polygon
     have hj : j.val % 2 = 0 := by
@@ -288,11 +286,11 @@ theorem genus_cornersConnected : CornersConnected (gvc q) (gec q) := by
       rw [gvc_even q hj, gvc_odd q hi] at hij
       simp at hij
     rw [gvc_odd q hi, gvc_odd q hj] at hij
-    simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide] at hij
+    simp at hij
     obtain ⟨h1, h2⟩ := hij
     have h2' : i.val / 2 % 4 % 2 = j.val / 2 % 4 % 2 := by
       by_cases ha : i.val / 2 % 4 % 2 = 1 <;> by_cases hb : j.val / 2 % 4 % 2 = 1 <;>
-        simp [ha, hb] at h2 ⊢ <;> omega
+        simp at h2 ⊢ <;> omega
     by_cases heq : i.val = j.val
     · have hijeq : i = j := Fin.ext heq
       rw [hijeq]
@@ -302,7 +300,7 @@ theorem genus_cornersConnected : CornersConnected (gvc q) (gec q) := by
       refine ReflTransGen.single ?_
       refine cornerAdj_of_vals q (a := i.val) (b := i.val + 3)
         (by rw [gvc_odd q hi, gvc_odd q hj]
-            simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide]
+            simp
             exact ⟨h1, by omega⟩) rfl
         (by rw [fpred_val_pos q (a := j.val) rfl (by omega)]; omega) (by omega) (by omega) ?_
       rw [if_neg (by omega), if_pos (by omega)]
@@ -311,7 +309,7 @@ theorem genus_cornersConnected : CornersConnected (gvc q) (gec q) := by
       refine ReflTransGen.single (cornerAdj_symm ?_)
       refine cornerAdj_of_vals q (a := j.val) (b := j.val + 3)
         (by rw [gvc_odd q hi, gvc_odd q hj]
-            simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide]
+            simp
             exact ⟨h1.symm, by omega⟩) rfl
         (by rw [fpred_val_pos q (a := i.val) rfl (by omega)]; omega) (by omega) (by omega) ?_
       rw [if_neg (by omega), if_pos (by omega)]

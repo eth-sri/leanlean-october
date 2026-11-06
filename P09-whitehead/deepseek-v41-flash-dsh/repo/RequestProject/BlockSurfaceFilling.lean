@@ -45,7 +45,6 @@ namespace Davis
 
 open RACG Mirror Comb PresModel BlockFamily
 
-universe u v
 
 /-! ### Products of commutators -/
 

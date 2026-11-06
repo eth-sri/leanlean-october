@@ -13,7 +13,6 @@ public import RequestProject.FinitePosetCycleNaturality
 circle. All statements concern the continuous attaching maps themselves.
 Pending Lean verification. -/
 
-noncomputable section
 open scoped Classical unitInterval Topology
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false

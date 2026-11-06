@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory
-universe u
 
 theorem shortComplexCycleClass_smul (S : ShortComplex (ModuleCat.{u} ℤ))
     (r : ℤ) (c : S.X₂) (hc : S.g c = 0) :

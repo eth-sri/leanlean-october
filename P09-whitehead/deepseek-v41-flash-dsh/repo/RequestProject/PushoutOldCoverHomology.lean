@@ -9,10 +9,8 @@ public import RequestProject.EmbeddedAcyclicUnion
 cover of K ∪ D L.  This discharges the old-part H1/H2 exactness used in
 regular-cover descent, for arbitrary cell sets. Unverified source. -/
 
-noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb.PushoutOldCover
-universe u v
 variable {D K L : Complex2.{u}} {Q : Type v} [Group Q]
   (p : Hom D K) (hp : IsCovering p) (a : DeckAction D Q) (hr : IsRegular p a)
   (he : ∀ q e, p.onE (a.smulE q e) = p.onE e)

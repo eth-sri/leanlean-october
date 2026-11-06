@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 theorem relatorCircle_boundary_left
@@ -71,8 +70,7 @@ theorem relatorCircleNext_injective : Function.Injective (relatorCircleNext w j)
   intro k l he
   have he' := congrArg Fin.val he
   change (k.val + 1) % (w j).length = (l.val + 1) % (w j).length at he'
-  have hk := k.isLt
-  have hl := l.isLt
+  have hk := l.isLt
   apply Fin.ext
   by_cases hks : k.val + 1 < (w j).length <;>
     by_cases hls : l.val + 1 < (w j).length

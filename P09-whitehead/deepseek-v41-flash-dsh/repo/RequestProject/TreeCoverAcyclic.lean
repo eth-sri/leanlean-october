@@ -32,7 +32,6 @@ namespace FiniteChains
 namespace Comb
 namespace SpanningTree
 
-universe u
 
 variable {K : Complex2.{u}} (T : SpanningTree K)
 variable (N : Subgroup (FreeGroup (NonTree T))) [N.Normal]
@@ -93,7 +92,7 @@ theorem germQ_true_eq_qof {e : K.E} (h : ¬ T.isTree e) :
 
 theorem germQ_false_eq_qof_inv {e : K.E} (h : ¬ T.isTree e) :
     germQ T N (e, false) = (qof N (⟨e, h⟩ : NonTree T))⁻¹ := by
-  rw [germQ_false_eq_inv, germQ_true_eq_qof (N := N) h]
+  rw [germQ_false_eq_inv, germQ_true_eq_qof]
 
 variable (T)
 
@@ -131,13 +130,13 @@ omit [N.Normal] in
 @[simp] theorem piV_single (x : CovQ T N × K.V) (n : ℤ) :
     piV T N (Finsupp.single x n) = Finsupp.single x.1 n := by
   rw [piV]
-  simp [Finsupp.lmapDomain_apply]
+  simp
 
 omit [N.Normal] in
 @[simp] theorem iotaV_single (q : CovQ T N) (n : ℤ) :
     iotaV T N (Finsupp.single q n) = Finsupp.single (q, T.root) n := by
   rw [iotaV]
-  simp [Finsupp.lmapDomain_apply]
+  simp
 
 /-- **Deleting the tree edges from a lifted path** gives the lift of the word it spells. -/
 theorem piE_pathChain_liftK (L : List (K.E × Bool)) (q : CovQ T N) :
@@ -257,7 +256,6 @@ theorem augC_piV (c : (CovQ T N × K.V) →₀ ℤ) :
   | single x n =>
       obtain ⟨q, a⟩ := x
       rw [piV_single]
-      show augC (coverComplex N (treeRel T) hN) (Finsupp.single q n) = _
       rw [augC_single, augC_single]
 
 /-! ### Contracting the tree and lifting the generators -/
@@ -308,7 +306,7 @@ theorem bdry1_sectionE (u : (CovQ T N × NonTree T) →₀ ℤ) :
   | single x n =>
       obtain ⟨q, ε⟩ := x
       have hpath := liftK_isPath (T := T) (N := N) (isPath_loopPath (T := T) ε) q
-      rw [wordQ_loopPath (N := N)] at hpath
+      rw [wordQ_loopPath] at hpath
       rw [sectionE, Finsupp.linearCombination_single, map_smul, bdry1_single]
       have hb : bdry1 (treeCover T N hN) (pathChain (liftK T N (loopPath T ε) q))
           = Finsupp.single ((q * qof N ε, T.root) : CovQ T N × K.V) (1 : ℤ)
@@ -387,12 +385,12 @@ theorem tree_edge_endpoints {e : K.E} {a : K.V} (ha : a ≠ T.root) (hup : (T.up
   · right
     have hg : T.up a ha = (e, false) := Prod.ext hup hb
     rw [hg] at hsrc htgt
-    simp only [germSrc_false, germTgt_false] at hsrc htgt
+    simp at hsrc htgt
     exact ⟨htgt, hsrc⟩
   · left
     have hg : T.up a ha = (e, true) := Prod.ext hup hb
     rw [hg] at hsrc htgt
-    simp only [germSrc_true, germTgt_true] at hsrc htgt
+    simp at hsrc htgt
     exact ⟨hsrc, htgt⟩
 
 omit [Fintype (NonTree T)] [DecidableEq (NonTree T)] in
@@ -529,7 +527,7 @@ theorem support_isTree_of_piE_eq_zero {z : (CovQ T N × K.E) →₀ ℤ} (h : pi
   by_contra hnt
   have hval := piE_apply (N := N) z x.1 ⟨x.2, hnt⟩
   rw [h] at hval
-  exact (Finsupp.mem_support_iff.1 hx) (by simpa using hval.symm)
+  exact (Finsupp.mem_support_iff.1 hx) (by exact hval.symm)
 
 end SpanningTree
 end Comb

@@ -45,7 +45,7 @@ theorem pointed_triangle_stick_represents_square (p : GenLoop (Fin 2) X x) :
     apply ContinuousMap.ext
     intro z
     change p (stickSimplex_surjective 2 (stdSimplex.map (SimplexCategory.δ i) z)).choose = x
-    apply GenLoop.boundary p
+    apply GenLoop.boundary
     apply (stickSimplex_mem_bdry_iff 2 _).mp
     rw [(stickSimplex_surjective 2 (stdSimplex.map (SimplexCategory.δ i) z)).choose_spec]
     exact ⟨i, simplex_face_coordinate_zero i z⟩

@@ -7,7 +7,6 @@ public import RequestProject.RelatorCircleEdges
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 /-- The actual attaching map preserves strict comparability on each valid relator circle. -/

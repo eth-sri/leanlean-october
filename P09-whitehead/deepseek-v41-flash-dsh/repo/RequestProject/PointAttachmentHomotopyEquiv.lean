@@ -19,7 +19,6 @@ namespace FiniteChains.RelativeAttachment
 open Topology
 open scoped Classical unitInterval Topology
 
-universe u
 variable {A X D : Type u} [TopologicalSpace X] [TopologicalSpace D]
 
 theorem attachmentQuotientMap_isQuotientMap (r : A → X) (i : A → D) :
@@ -88,9 +87,6 @@ theorem pointCell_mem_old_iff (x : X) (d c : D) :
 def pointProjection (x : X) (d : D) : C(PointAttachment x d, X) :=
   desc (fun _ : PUnit => x) (fun _ : PUnit => d)
     (ContinuousMap.id X) (ContinuousMap.const D x) (fun _ => rfl)
-
-@[simp] theorem pointProjection_old (x : X) (d : D) (y : X) :
-    pointProjection x d (pointOld x d y) = y := rfl
 
 @[simp] theorem pointProjection_cell (x : X) (d c : D) :
     pointProjection x d (pointCell x d c) = x := desc_cell ..

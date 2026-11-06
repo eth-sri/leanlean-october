@@ -16,7 +16,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u v
 variable {D : Type u} [TopologicalSpace D] (S : Set D)
 
 abbrev FullCylinderBoundary :=

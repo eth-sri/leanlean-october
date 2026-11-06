@@ -32,7 +32,6 @@ namespace FiniteChains
 
 namespace SquareComplex
 
-universe u
 
 variable {Vx : Type u} {S : SquareComplex Vx}
 

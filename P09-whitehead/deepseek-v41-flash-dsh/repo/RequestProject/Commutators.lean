@@ -31,7 +31,7 @@ noncomputable def expSumTotal : FreeGroup α →* Multiplicative (α →₀ ℤ)
 theorem expSumTotal_apply (w : FreeGroup α) (i : α) :
     Multiplicative.toAdd (expSumTotal w) i = Multiplicative.toAdd (expSum i w) := by
   induction w using FreeGroup.induction_on with
-  | one => simp [expSumTotal]
+  | one => simp
   | of k =>
       simp [expSumTotal, expSum, FreeGroup.lift_apply_of, Finsupp.single_apply, eq_comm]
   | inv_of k h =>
@@ -39,12 +39,12 @@ theorem expSumTotal_apply (w : FreeGroup α) (i : α) :
         map_inv _ _
       have h2 : expSum i (FreeGroup.of k)⁻¹ = (expSum i (FreeGroup.of k))⁻¹ := map_inv _ _
       rw [h1, h2]
-      simpa [Finsupp.neg_apply] using congrArg Neg.neg h
+      exact congrArg Neg.neg h
   | mul u v hu hv =>
       have h1 : expSumTotal (u * v) = expSumTotal u * expSumTotal v := map_mul _ _ _
       have h2 : expSum i (u * v) = expSum i u * expSum i v := map_mul _ _ _
       rw [h1, h2]
-      simpa [Finsupp.add_apply] using congrArg₂ (· + ·) hu hv
+      exact congrArg₂ (· + ·) hu hv
 
 /-- A word with vanishing exponent sums lies in the commutator subgroup. -/
 theorem mem_commutator_of_expSum_eq_zero (w : FreeGroup α)
@@ -55,8 +55,8 @@ theorem mem_commutator_of_expSum_eq_zero (w : FreeGroup α)
     have h0 : Multiplicative.toAdd (expSumTotal w) = 0 := by
       ext i
       rw [expSumTotal_apply]
-      simpa using h i
-    simpa using h0
+      exact h i
+    exact h0
   -- the retraction of the abelianization onto the free abelian group on the generators
   set psi : Multiplicative (α →₀ ℤ) →* Abelianization (FreeGroup α) :=
     MonoidHom.mk' (fun x => Additive.toMul
@@ -64,7 +64,7 @@ theorem mem_commutator_of_expSum_eq_zero (w : FreeGroup α)
           (fun k => (zmultiplesHom (Additive (Abelianization (FreeGroup α))))
             (Additive.ofMul (Abelianization.of (FreeGroup.of k))))
           (Multiplicative.toAdd x)))
-      (fun x y => by simp [map_add]) with hpsi
+      (fun x y => by simp) with hpsi
   set phi : Abelianization (FreeGroup α) →* Multiplicative (α →₀ ℤ) :=
     Abelianization.lift expSumTotal with hphi
   have hcomp : psi.comp phi = MonoidHom.id (Abelianization (FreeGroup α)) := by

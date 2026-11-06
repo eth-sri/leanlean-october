@@ -8,7 +8,6 @@ public import RequestProject.TopologicalSingular.TriangleBasedNormalization
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
 theorem simplex_face_eq_faceMap {n : ℕ} (i : Fin (n + 2)) (z : Domain n) :

@@ -50,7 +50,7 @@ theorem graphRoseHomotopyEquiv_natural (f : C(DiskAttachment r, DiskAttachment s
       cell s (boundaryFamilyInclusion K _) ⟨h.onE j, x⟩) :
     (graphRoseMap r s T U h ht).comp (graphRoseHomotopyEquiv r hr T).toFun =
       (graphRoseHomotopyEquiv s hs U).toFun.comp f := by
-  apply hom_ext r (boundaryFamilyInclusion J (Fin 1 → ℝ))
+  apply hom_ext
   · intro v
     change graphRoseMap r s T U h ht (graphRoseHomotopyEquiv r hr T (old _ _ v)) =
       graphRoseHomotopyEquiv s hs U (f (old _ _ v))

@@ -6,7 +6,6 @@ public import RequestProject.StrictOrderComplex
 @[expose] public section
 
 namespace FiniteChains.Comb.IsPosetCover
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q] {f : P → Q}
   (hf : IsPosetCover f)
 

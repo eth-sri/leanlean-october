@@ -9,7 +9,6 @@ public import RequestProject.OrderNerveRealizationOpenStars
 connectedness. Components give clopen induced subcomplexes; the argument
 works with arbitrarily many vertices and cells. Unverified source. -/
 
-noncomputable section
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology
 open scoped Classical

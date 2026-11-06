@@ -40,7 +40,6 @@ namespace Davis
 
 open RACG Mirror Comb
 
-universe u
 
 /-- The cells of the polygon with identified boundary. -/
 inductive Cell (κ ι : Type u) (M : ℕ) : Type u

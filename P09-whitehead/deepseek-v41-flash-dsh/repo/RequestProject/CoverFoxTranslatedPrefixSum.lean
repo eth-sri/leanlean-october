@@ -25,6 +25,6 @@ theorem coverFox_translated_prefix_sum (g : FreeGroup α ⧸ N)
   apply Finset.sum_congr rfl
   intro k _
   by_cases h : i = l[k.val].1 <;>
-    simp [h, MonoidAlgebra.single_mul_single]
+    simp
 
 end FiniteChains

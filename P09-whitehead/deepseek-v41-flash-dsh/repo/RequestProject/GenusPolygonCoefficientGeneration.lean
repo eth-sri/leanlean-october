@@ -7,7 +7,6 @@ public import RequestProject.GenusPolygonCoefficientBoundaryBridge
 /-! The actual marking boundary supplies polygon relativity automatically.
 Consequently a fixed degree-one geometric reference generates every vector
 satisfying the internal B2 equations. Written, unverified proof terms. -/
-noncomputable section
 open scoped Classical
 
 set_option backward.defeqAttrib.useBackward true
@@ -15,7 +14,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q I : Type u} [PartialOrder P] [PartialOrder Q]
 
 theorem normalizedWeakChain1To_paths_boundary_support

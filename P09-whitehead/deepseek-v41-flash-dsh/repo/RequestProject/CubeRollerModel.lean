@@ -43,16 +43,12 @@ descending neighbours span the three-cube with bottom vertex `A \ {p, q, r}`.
 
 namespace FiniteChains
 
-universe u
 
 variable {ι : Type u} [DecidableEq ι]
 
 /-- The majority vote (median) of three finite sets: an element belongs to it when it belongs
 to at least two of them. -/
 def medFinset (A B C : Finset ι) : Finset ι := (A ∩ B) ∪ (B ∩ C) ∪ (A ∩ C)
-
-theorem medFinset_empty (A B : Finset ι) : medFinset A B ∅ = A ∩ B := by
-  simp [medFinset]
 
 /-- The **Roller model** of a CAT(0) cube complex based at one of its vertices: the vertices
 are recorded as the finite sets of hyperplanes separating them from the base vertex, so that
@@ -83,17 +79,6 @@ def Vtx : Type u := {A : Finset ι // A ∈ M.W}
 noncomputable instance : LinearOrder M.Vtx := IsWellOrder.linearOrder WellOrderingRel
 
 variable {M}
-
-theorem inter_mem {A B : Finset ι} (hA : A ∈ M.W) (hB : B ∈ M.W) : A ∩ B ∈ M.W := by
-  have h := M.med_mem hA hB M.base_mem
-  rwa [medFinset_empty] at h
-
-variable (M) in
-/-- The fourth vertex of the square spanned by two descending neighbours: their
-intersection. -/
-def medR (_w u v : M.Vtx) : M.Vtx := ⟨u.1 ∩ v.1, inter_mem u.2 v.2⟩
-
-@[simp] theorem medR_val (w u v : M.Vtx) : (M.medR w u v).1 = u.1 ∩ v.1 := rfl
 
 end RollerModel
 

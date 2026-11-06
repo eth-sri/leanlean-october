@@ -16,7 +16,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 theorem cellularOrderHom_vertex_monotone (f : Hom (orderCx P) (orderCx Q)) :
@@ -312,7 +311,7 @@ theorem transportedUniversalPolygonAttachingChain_normalized :
       (barycentricChain2 (decodeOrdNerve2 (universalPolygon q).fundamental)))))) = _
   rw [decodeOrdNerve2_encode]
   rw [← chain2_comp_apply, hs, chain2_comp_apply,
-    normalizeOrdChain2_strict_map _ (universalPolygonToNamedSurface_strictMono ρ q u),
+    normalizeOrdChain2_strict_map,
     barycentricChain2_lastVertex]
   exact universalPolygonToNamedSurface_fundamental ρ q u
 

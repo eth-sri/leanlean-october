@@ -13,7 +13,6 @@ noncomputable section
 namespace FiniteChains.RelativeAttachment
 open Topology
 
-universe u
 variable {A B D Y : Type u} [TopologicalSpace B] [TopologicalSpace D]
   [TopologicalSpace Y] (r : A → B) (i : A → D)
   (f : C(B, Y)) (g : C(D, Y))

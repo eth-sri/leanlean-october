@@ -11,7 +11,6 @@ public import RequestProject.NerveLowerMapFillings
 /-! Every one-cycle of the actual lifted base star has a finite filling there. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

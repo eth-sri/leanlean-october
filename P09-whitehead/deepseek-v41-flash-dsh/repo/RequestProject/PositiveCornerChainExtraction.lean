@@ -13,7 +13,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 
 noncomputable def cornerSurfaceMap : Hom (orderCx (Set.Ioi (positiveCorner A)))

@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 def uOrdTetMap (f : P → Q) (hf : Monotone f) (a : P) (t : UOrdTet P a) : UOrdTet Q (f a) :=

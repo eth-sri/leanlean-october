@@ -17,7 +17,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 /-- Image of a finite nonempty chain under a monotone map. Repeated images

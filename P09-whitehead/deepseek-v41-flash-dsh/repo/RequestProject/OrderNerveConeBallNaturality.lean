@@ -8,7 +8,6 @@ public import Mathlib.Order.Hom.WithTopBot
 /-! The actual radial cone/disk identification commutes with a relabelling
 of its boundary poset when the boundary parametrizations agree. -/
 
-noncomputable section
 namespace FiniteChains.Comb
 open RelativeAttachment
 open scoped Classical unitInterval

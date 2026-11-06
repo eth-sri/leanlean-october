@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} [DecidableEq α] (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
@@ -33,7 +32,7 @@ theorem presUniversalGroupRingBoundary_actual_fox
   rw [Finsupp.smul_apply]
   by_cases hi : i = ((w p.val.2)[k.val]).1
   · subst i
-    simp only [Finsupp.single_eq_same]
+    simp
     cases hb : ((w p.val.2)[k.val]).2 <;>
       simp
   · simp [hi]

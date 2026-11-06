@@ -6,7 +6,6 @@ public import RequestProject.OrderNerveOneDecoding
 
 namespace FiniteChains.Comb
 open FreeAbelianGroup
-universe u
 variable {P : Type u}
 
 @[simp] theorem decodeOrdNerve0_of (l : List P) :

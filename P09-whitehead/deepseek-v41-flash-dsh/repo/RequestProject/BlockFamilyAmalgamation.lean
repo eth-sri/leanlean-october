@@ -10,7 +10,6 @@ public import Mathlib.GroupTheory.PushoutI
 
 namespace FiniteChains.BlockFamily
 
-universe u v
 
 variable {α Jr Sx : Type u} {Zt Mt : Sx → Type u}
   {ρ : Jr ⊕ Sx → FreeGroup α}
@@ -29,8 +28,8 @@ theorem injective_substHomF_of_separate_receivers
   let B : BlockMaps ρ bsub (Monoid.PushoutI.base j) :=
     { b := fun s => (Monoid.PushoutI.of s).comp (b s)
       mark := fun s a => by
-        rw [MonoidHom.comp_apply, hmark s a, Monoid.PushoutI.of_apply_eq_base]
-      rel := fun s m => by rw [MonoidHom.comp_apply, hrel s m, map_one] }
+        rw [MonoidHom.comp_apply, hmark, Monoid.PushoutI.of_apply_eq_base]
+      rel := fun s m => by rw [MonoidHom.comp_apply, hrel, map_one] }
   exact B.injective_substHomF hfill (Monoid.PushoutI.base_injective hj)
 
 end FiniteChains.BlockFamily
@@ -81,9 +80,6 @@ noncomputable def oneEquiv (s : Sx) : PresGroup ρ ≃* PresGroup (oneRel ρ s) 
   QuotientGroup.congr _ _ (MulEquiv.refl _) (by
     rw [MulEquiv.coe_monoidHom_refl, Subgroup.map_id]
     simp only [relSub, range_oneRel])
-
-@[simp] theorem oneEquiv_mk (s : Sx) (w : FreeGroup α) :
-    oneEquiv ρ s (QuotientGroup.mk w) = QuotientGroup.mk w := rfl
 
 /-- Injectivity of every individual substitution implies injectivity of their simultaneous
 substitution, even for an infinite or empty family of entries. -/

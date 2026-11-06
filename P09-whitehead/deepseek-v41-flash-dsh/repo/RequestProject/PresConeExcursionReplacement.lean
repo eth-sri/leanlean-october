@@ -9,7 +9,6 @@ public import RequestProject.ConeAdjBaseCover
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 /-- Actual mapped circle paths remain below their actual presentation apex. -/

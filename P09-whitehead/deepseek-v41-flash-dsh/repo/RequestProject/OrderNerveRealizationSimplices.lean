@@ -35,7 +35,7 @@ theorem orderNerveRealizationSimplex_operator (P : Type) [PartialOrder P]
     SimplexCategory.toTop.map a ≫ orderNerveRealizationSimplex P s =
       orderNerveRealizationSimplex P ((nerve P).map a.op s) := by
   unfold orderNerveRealizationSimplex
-  rw [← Category.assoc, SSet.toTopSimplex.inv.naturality a, Category.assoc,
+  rw [← Category.assoc, SSet.toTopSimplex.inv.naturality, Category.assoc,
     Functor.comp_map, ← Functor.map_comp]
   congr 2
 

@@ -118,7 +118,7 @@ theorem blockInclusion_surface_chain (s : {s // p s})
       rw [Finsupp.mapDomain_add, PresMorFS.cells_add, hx, hy,
         Finsupp.mapRange_add', Finsupp.mapDomain_add]
   | single m a =>
-      simp only [Finsupp.mapDomain_single, Finsupp.mapRange_single]
+      simp
       change Finsupp.mapDomain (blockCellIncl core hcore extra hpt)
         ((Finsupp.single (Sum.inr ⟨s, m⟩) a).mapRange _ _) = _
       rw [Finsupp.mapRange_single, Finsupp.mapDomain_single]

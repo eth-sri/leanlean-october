@@ -39,7 +39,6 @@ namespace FiniteChains
 
 open RollerBridge
 
-universe u
 
 variable {ι : Type u} [DecidableEq ι]
 
@@ -54,18 +53,6 @@ structure GatedRollerModel (ι : Type u) [DecidableEq ι] extends RollerModel ι
 namespace GatedRollerModel
 
 variable (M : GatedRollerModel ι)
-
-/-- The graph of the model: two vertices are adjacent when they differ in exactly one
-hyperplane. -/
-def graph : SimpleGraph M.Vtx where
-  Adj u v := dsym u.1 v.1 = 1
-  symm := ⟨fun u v h => by rwa [dsym_comm]⟩
-  loopless := ⟨fun u h => by
-    have h' : dsym u.1 u.1 = 1 := h
-    rw [dsym_self] at h'
-    exact Nat.zero_ne_one h'⟩
-
-@[simp] theorem graph_adj {u v : M.Vtx} : (M.graph).Adj u v ↔ dsym u.1 v.1 = 1 := Iff.rfl
 
 end GatedRollerModel
 

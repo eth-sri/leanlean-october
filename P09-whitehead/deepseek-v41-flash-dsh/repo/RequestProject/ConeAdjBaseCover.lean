@@ -7,7 +7,6 @@ public import RequestProject.PosetCoverTargetIso
 @[expose] public section
 
 namespace FiniteChains.Comb
-universe u
 variable {P T R : Type u} [PartialOrder P] [PartialOrder R] {S : T → P → Prop}
 
 def coneAdjBaseSet : Set (ConeAdj S) := Set.range (ConeAdj.inc (S := S))

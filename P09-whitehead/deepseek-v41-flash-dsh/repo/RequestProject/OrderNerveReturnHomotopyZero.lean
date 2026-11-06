@@ -53,7 +53,7 @@ theorem orderReturnHomotopyZero_identity (c : ComposableArrows P 0 →₀ ℤ) :
     apply Finsupp.lhom_ext'
     intro s
     apply LinearMap.ext_ring
-    simp only [LinearMap.comp_apply, Finsupp.lsingle_apply, LinearMap.sub_apply]
+    simp
     change Nerve.bdry (orderReturnHomotopyZero (Finsupp.single s 1)) = _
     rw [orderReturnHomotopyZero_single]
     exact (orderReturnHomotopyZero_fill s).choose_spec.2.2

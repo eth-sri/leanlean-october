@@ -8,7 +8,6 @@ public import RequestProject.SurfaceFilling
 /-! A flat section on the boundary extends through the actual polygon fan. -/
 namespace FiniteChains.Davis.SurfaceSection
 open RACG Mirror Comb Cell
-universe u v w
 variable {κ ι : Type u} {M : ℕ} [NeZero M]
   {vc : Fin M → κ} {ec : Fin M → ι} (hc : Compat vc ec)
   {G : Type v} [Group G] {Ω : Type w} [MulAction G Ω]

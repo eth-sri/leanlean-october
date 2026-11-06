@@ -19,10 +19,6 @@ variable {P Q : Type} [PartialOrder P] [PartialOrder Q] (v : Q)
 def lowerConeMap : WithTop P → Set.Iic v := WithTop.recTopCoe
   ⟨v, le_rfl⟩ (fun p => ⟨(e p).val, (e p).property.le⟩)
 
-@[simp] theorem lowerConeMap_top : lowerConeMap v e ⊤ = ⟨v, le_rfl⟩ := rfl
-@[simp] theorem lowerConeMap_coe (p : P) :
-    lowerConeMap v e (p : WithTop P) = ⟨(e p).val, (e p).property.le⟩ := rfl
-
 theorem lowerConeMap_bijective : Function.Bijective (lowerConeMap v e) := by
   constructor
   · intro a b h

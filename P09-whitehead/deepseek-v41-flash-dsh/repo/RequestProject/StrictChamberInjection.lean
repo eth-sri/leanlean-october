@@ -9,7 +9,6 @@ public import RequestProject.ChamberQuotientCover
 
 namespace FiniteChains.Davis
 open RACG Comb
-universe u
 variable {V X : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   [PartialOrder X] {att : NeSpx A →o X}
 

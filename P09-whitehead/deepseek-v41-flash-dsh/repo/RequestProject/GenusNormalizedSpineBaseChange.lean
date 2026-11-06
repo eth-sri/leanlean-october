@@ -7,7 +7,6 @@ public import RequestProject.GenusReceivedSpineCover
 
 /-! Exact sheet and marking coordinates of the normalized reference after
 arbitrary substitutions. Pending final Lean verification. -/
-noncomputable section
 open scoped Classical
 
 set_option backward.defeqAttrib.useBackward true
@@ -15,7 +14,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
-universe u
 variable {G H E : Type u} [Group G] [Group H] (φ : G →* H)
 
 /-- Changing the receiving group retains each cell coordinate and pushes

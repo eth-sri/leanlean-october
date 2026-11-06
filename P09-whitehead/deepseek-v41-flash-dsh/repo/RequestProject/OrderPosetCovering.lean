@@ -26,7 +26,6 @@ interval bijections; no finiteness, connectivity or freeness of a group action i
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {P Q : Type u} [Preorder P] [Preorder Q]
 

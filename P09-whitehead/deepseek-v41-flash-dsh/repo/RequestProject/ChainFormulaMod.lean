@@ -33,7 +33,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 variable {G : Type u} [Group G] {I J : Type u}
 
@@ -51,7 +50,6 @@ theorem exists_nsmul_mapDomain_iff {A B : Type*} (psi : A → B) (hpsi : Functio
     have hq : (MonoidAlgebra.mapDomain psi z).coeff (psi q) = z.coeff q := Finsupp.mapDomain_apply_of_injective hpsi z.coeff q
     refine ⟨y.coeff (psi q), ?_⟩
     rw [← hq, hy]
-    show ((m • y : MonoidAlgebra ℤ B).coeff (psi q) : ℤ) = (m : ℤ) * y.coeff (psi q)
     rw [MonoidAlgebra.coeff_smul_apply, nsmul_eq_mul]
   · rintro ⟨y, rfl⟩
     refine ⟨MonoidAlgebra.mapDomain psi y, ?_⟩
@@ -163,7 +161,7 @@ theorem vanishesModN_mono {r : ℕ} (m : ℕ) (x : MonoidAlgebra ℤ G)
   have key : ∀ d : ℕ, ∃ y, MonoidAlgebra.mapDomainRingHom ℤ (h.phi (r + d)) x = m • y := by
     intro d
     induction d with
-    | zero => simpa using hx
+    | zero => exact hx
     | succ d ih =>
         obtain ⟨y, hy⟩ := ih
         have hstep : MonoidAlgebra.mapDomainRingHom ℤ

@@ -47,7 +47,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {P Q : Type u} [Preorder P] [Preorder Q]
 
@@ -98,7 +97,7 @@ theorem simplyConnectedIn_of_simplyConnected {J : P → Prop}
     (fun x => x.2) hnull
   rw [show mapPath (orderCxMap (fun x : {x : P // J x} => (x : P)) monotone_subtypeVal)
       (liftPathIn l hl) = l from mapPath_liftPathIn l hl] at h
-  simpa [mapPath] using h
+  exact h
 
 /-! ### The retraction on paths -/
 
@@ -315,7 +314,7 @@ theorem htpyIn_retrGerm_of_pathIn_B (hJsc : SimplyConnectedIn J) (hj0 : J j0)
       refine h1.trans ?_
       have h2 : (revPath (γ s) ++ γ s) ++ ([eb] ++ (revPath (γ t) ++ γ t)) =
           revPath (γ s) ++ (γ s ++ ([eb] ++ revPath (γ t))) ++ γ t := by
-        simp [List.append_assoc]
+        simp
       rw [h2]
       refine hconj.trans ?_
       simpa using HtpyIn.refl (A := A) (a := s) (b := t) (revPath (γ s) ++ γ t)
@@ -397,7 +396,7 @@ theorem htpyIn_retrPath_of_pathIn_B (hJsc : SimplyConnectedIn J) (hj0 : J j0) :
           (revPath (γ m) ++ γ v) =
           revPath (γ (germSrc (orderCx P).src (orderCx P).tgt eb)) ++
             (γ m ++ revPath (γ m)) ++ γ v := by
-        simp [List.append_assoc]
+        simp
       rw [hrw]
       simpa using hmid
 
@@ -668,7 +667,7 @@ theorem injIn_of_monotone_retraction {C B : P → Prop} (hBC : ∀ x, B x → C 
     htpy_lift_of_htpyIn hnull hvC hvC hlC (pathIn_nil C)
   have hpush := htpyIn_mapPath (C := B) f hf hfB hlift
   rw [mapPath_liftPathIn_of_fix f hf hfix l hlC hl, hfix ⟨v, hvC⟩ hv] at hpush
-  simpa [mapPath, liftPathIn] using hpush
+  exact hpush
 
 /-! ### Passing to an increasing exhaustion -/
 

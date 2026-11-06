@@ -44,7 +44,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 section
 

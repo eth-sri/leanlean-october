@@ -42,7 +42,6 @@ the combinatorial data really is the data of a connected graph with one-coordina
 
 namespace FiniteChains
 
-universe u
 
 variable {ι : Type u} [DecidableEq ι]
 

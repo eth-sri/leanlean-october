@@ -27,7 +27,6 @@ free group maps to `π₁` by sending a generator to the corresponding edge loop
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {α : Type u} [DecidableEq α] {J : Type u}
 
@@ -115,7 +114,7 @@ theorem freeToPi1_mk (l : List (α × Bool)) :
     freeToPi1 ρ (FreeGroup.mk l) = loopClass ρ l := by
   induction l with
   | nil =>
-      simp only [freeToPi1, FreeGroup.lift_mk, List.map_nil, List.prod_nil]
+      simp
       rfl
   | cons eb l ih =>
       obtain ⟨i, b⟩ := eb

@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α P : Type u} [PartialOrder P] (f : P → Rose α) (hf : IsPosetCover f)
 
 /-- Selected coordinates detect finite chains whose boundary is supported on the base fibre. -/
@@ -114,7 +113,7 @@ theorem roseCover_chain_reconstruct (c : StrictOrdEdge P →₀ ℤ)
 theorem roseCover_cycle_reconstruct (c : StrictOrdEdge P →₀ ℤ)
     (hc : FiniteChains.Comb.bdry1 (strictOrderCx P) c = 0) :
     roseCoverRealizeGeneratorCoordinates f hf (roseCoverGeneratorCoordinates f hf c) = c := by
-  apply roseCover_chain_reconstruct f hf c
+  apply roseCover_chain_reconstruct
   intro v _
   rw [hc, Finsupp.zero_apply]
 

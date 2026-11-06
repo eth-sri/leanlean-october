@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
 noncomputable def uOrderHomInv : Hom (uCover (orderCx P) a) (orderCx (UOrder P a)) :=
@@ -47,7 +46,7 @@ theorem uOrder_complex_simplyConnected : SimplyConnected (orderCx (UOrder P a)) 
   have hi := mapPath_htpy uOrderHomInv h
   change Htpy (orderCx (UOrder P a)) (uOrderHomInv.onV v) (uOrderHomInv.onV v)
     (mapPath uOrderHomInv (mapPath uOrderHom p)) [] at hi
-  rw [uOrderHomInv_path p] at hi
+  rw [uOrderHomInv_path] at hi
   simpa only [uOrderHomInv_vertex] using hi
 
 end FiniteChains.Comb

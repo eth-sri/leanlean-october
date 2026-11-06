@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X : Complex2.{u}} {o a b : X.V}
 
 /-- Path extension commutes with every actual deck transformation. -/
@@ -29,7 +28,7 @@ theorem deckV_loop_base (l : Loop X o) :
   rw [h]
   apply Quotient.sound
   change Htpy X o (endpt X o (l.1 ++ [])) (l.1 ++ []) l.1
-  simp only [List.append_nil]
+  simp
   exact Htpy.refl _
 
 /-- The endpoint after a path is the translated reference endpoint at its target. -/

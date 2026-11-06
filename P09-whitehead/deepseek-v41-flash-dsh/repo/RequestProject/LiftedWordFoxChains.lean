@@ -17,7 +17,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X : Complex2.{u}} {a : X.V} {I : Type u}
   (N : Subgroup (FreeGroup I)) [N.Normal]
   (p : I → Loop X a) (ψ : (FreeGroup I ⧸ N) →* Pi1 X a)
@@ -78,7 +77,7 @@ theorem loopCoefficientChainMap_liftPath (l : List (I × Bool)) (g : FreeGroup I
     loopCoefficientChainMap N p ψ (pathChain (liftPath (Nsub := N) l g)) =
       pathChain (uLiftPath (wordPath p l) (loopCoefficientVertex N ψ g)) := by
   induction l generalizing g with
-  | nil => simp [wordPath_nil]
+  | nil => simp
   | cons ib l ih =>
       obtain ⟨i, b⟩ := ib
       cases b with

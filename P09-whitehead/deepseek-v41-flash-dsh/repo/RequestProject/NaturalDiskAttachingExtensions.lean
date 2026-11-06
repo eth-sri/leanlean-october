@@ -88,10 +88,6 @@ def naturalDiskBackward : C(DiskAttachment r₁, DiskAttachment r₀) :=
         naturalDiskExtension r₀ r₁ H (1, boundaryFamilyInclusion J E a)
       rw [naturalDiskExtension_boundary, H.apply_one])
 
-@[simp] theorem naturalDiskBackward_old (x : X) :
-    naturalDiskBackward r₀ r₁ H (old r₁ (boundaryFamilyInclusion J E) x) =
-      old r₀ (boundaryFamilyInclusion J E) x := rfl
-
 @[simp] theorem naturalDiskBackward_cell (d : DiskFamily J E) :
     naturalDiskBackward r₀ r₁ H (cell r₁ (boundaryFamilyInclusion J E) d) =
       naturalDiskExtension r₀ r₁ H (1, d) := by
@@ -123,7 +119,7 @@ include hH in
 theorem naturalDiskBackward_natural :
     (diskFamilyMap r₀ s₀ f i h₀).comp (naturalDiskBackward r₀ r₁ H) =
       (naturalDiskBackward s₀ s₁ G).comp (diskFamilyMap r₁ s₁ f i h₁) := by
-  apply hom_ext r₁ (boundaryFamilyInclusion J E)
+  apply hom_ext
   · intro x
     rfl
   · rintro ⟨j, x⟩

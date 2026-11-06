@@ -16,7 +16,6 @@ set_option maxHeartbeats 800000
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

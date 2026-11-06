@@ -33,7 +33,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u v
 
 variable {P : Type u} [Preorder P] {G : Type v} [Group G]
 
@@ -95,9 +94,9 @@ theorem readPath_cancels {l l' : List ((orderCx P).E × Bool)}
     (h : Cancels (orderCx P) l l') : c.readPath l = c.readPath l' := by
   rcases h with ⟨p, q, g, hl, hl'⟩ | ⟨p, q, t, hl, hl'⟩
   · subst hl; subst hl'
-    simp only [c.readPath_append, c.readPath_cons, c.readGerm_revGerm, mul_inv_cancel_left]
+    simp
   · subst hl; subst hl'
-    simp only [c.readPath_append, c.readPath_att, one_mul, mul_one]
+    simp
 
 /-- Homotopic paths have the same value. -/
 theorem readPath_htpy {a b : P} {l l' : List ((orderCx P).E × Bool)}
@@ -118,9 +117,6 @@ def monodromy (x : P) : Pi1 (orderCx P) x →* G where
   map_mul' := by
     rintro ⟨p⟩ ⟨q⟩
     exact c.readPath_append p.1 q.1
-
-@[simp] theorem monodromy_mk (x : P) (p : Loop (orderCx P) x) :
-    c.monodromy x (Pi1.mk p) = c.readPath p.1 := rfl
 
 end OrdCocycle
 

@@ -14,7 +14,6 @@ noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u
 variable {D P K : Type u} [TopologicalSpace D] [TopologicalSpace P] [TopologicalSpace K]
 
 def attachmentBaseMapEquivOfHomotopicId (S : Set D) (hS : IsClosed S)
@@ -58,14 +57,6 @@ def attachmentBaseMapEquivOfHomotopicId (S : Set D) (hS : IsClosed S)
         exact (attachingBackwardMap_cell S hext a (h.comp a) Hatt d).symm }
   exact ContinuousMap.HomotopyEquiv.ofHomotopicSection C F ⟨HT.symm⟩
 
-@[simp] theorem attachmentBaseMapEquivOfHomotopicId_toFun (S : Set D) (hS : IsClosed S)
-    (hext : HasHomotopyExtension (Subtype.val : S → D))
-    (hfull : HasHomotopyExtension (Subtype.val : FullCylinderBoundary S → I × D))
-    (a : C(S, P)) (h : C(P, P))
-    (H : ContinuousMap.Homotopy (ContinuousMap.id P) h) :
-    (attachmentBaseMapEquivOfHomotopicId S hS hext hfull a h H).toFun =
-      attachmentBaseMap a Subtype.val Subtype.val_injective h := rfl
-
 /-- Change of the base by an actual homotopy equivalence induces an actual
 homotopy equivalence on the attached spaces. Its forward map is precisely
 the universal pushout map extending the original base map and disk maps. -/
@@ -95,12 +86,5 @@ def attachmentBaseChangeHomotopyEquiv (S : Set D) (hS : IsClosed S)
     (a : C(S, P)) (e : ContinuousMap.HomotopyEquiv P K) :
     (attachmentBaseChangeHomotopyEquiv S hS hext hfull a e).toFun =
       attachmentBaseMap a Subtype.val Subtype.val_injective e.toFun := rfl
-
-@[simp] theorem attachmentBaseChangeHomotopyEquiv_old (S : Set D) (hS : IsClosed S)
-    (hext : HasHomotopyExtension (Subtype.val : S → D))
-    (hfull : HasHomotopyExtension (Subtype.val : FullCylinderBoundary S → I × D))
-    (a : C(S, P)) (e : ContinuousMap.HomotopyEquiv P K) (p : P) :
-    attachmentBaseChangeHomotopyEquiv S hS hext hfull a e (old a Subtype.val p) =
-      old (e.toFun ∘ a) Subtype.val (e p) := rfl
 
 end FiniteChains.RelativeAttachment

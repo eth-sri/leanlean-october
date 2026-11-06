@@ -39,7 +39,6 @@ This file works with the faithful, map-carrying form throughout.
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 /-! ### Chains with explicit inclusions -/
 
@@ -48,9 +47,6 @@ def inclFrom (c : ℕ → Complex2.{u}) (inc : ∀ i, Hom (c i) (c (i + 1))) :
     ∀ i, Hom (c 0) (c i)
   | 0 => Hom.id (c 0)
   | i + 1 => (inc i).comp (inclFrom c inc i)
-
-@[simp] theorem inclFrom_succ (c : ℕ → Complex2.{u}) (inc : ∀ i, Hom (c i) (c (i + 1)))
-    (i : ℕ) : inclFrom c inc (i + 1) = (inc i).comp (inclFrom c inc i) := rfl
 
 /-- **A relative chain of Proposition 3.7 carrying its inclusions.**  The chain is indexed by
 all of `ℕ` (a chain of length `n` is extended by repeating its last term); the conditions of
@@ -102,11 +98,6 @@ variable (K : Complex2.{u}) (p : Hom (c 0) K)
 noncomputable def desc : ℕ → Complex2.{u}
   | 0 => K
   | i + 1 => pushoutComplex p (inclFrom c R.inc (i + 1)) (R.inclV (i + 1)) (R.inclE (i + 1))
-
-@[simp] theorem desc_zero : R.desc K p 0 = K := rfl
-
-@[simp] theorem desc_succ (i : ℕ) : R.desc K p (i + 1) =
-    pushoutComplex p (inclFrom c R.inc (i + 1)) (R.inclV (i + 1)) (R.inclE (i + 1)) := rfl
 
 /-! ### The induced maps of pushouts are inclusions -/
 

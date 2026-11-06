@@ -140,7 +140,6 @@ theorem gSig_boundary_path (x : Fin q × Bool) :
     exact Nat.mod_eq_of_lt (markedBoundaryPos q x true).isLt
   rw [h₀, h₁]
 
-universe v
 variable {G : Type v} [Group G]
   (c : OrdCocycle (NeSpx (cmpRel (SCell (gvc q) (gec q) (gc q)))) G)
 
@@ -149,8 +148,8 @@ theorem read_bdEdge (p : Fin (8 * q)) :
       (barycentricCocycle c).val (cV (gc q) p) (cE (gc q) p) *
         ((barycentricCocycle c).val (cV (gc q) (p + 1)) (cE (gc q) p))⁻¹ := by
   rw [bdEdge, OrdCocycle.readPath_append, ← revPath_edgeHop, OrdCocycle.readPath_revPath,
-    barycentricCocycle_val c (cV_le_cE (gc q) p),
-    barycentricCocycle_val c (cV1_le_cE (gc q) p)]
+    barycentricCocycle_val,
+    barycentricCocycle_val]
 
 def boundaryMarkValue (d : OrdCocycle (SCell (gvc q) (gec q) (gc q)) G) (x : Fin q × Bool) : G :=
   d.val (.vtx none) (.bed (x.1, x.2, false)) *

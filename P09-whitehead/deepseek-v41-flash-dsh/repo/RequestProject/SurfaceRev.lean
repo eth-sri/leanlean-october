@@ -31,7 +31,6 @@ namespace Davis
 
 open RACG Mirror Comb Cell
 
-universe u
 
 /-! ### Classes of loops -/
 

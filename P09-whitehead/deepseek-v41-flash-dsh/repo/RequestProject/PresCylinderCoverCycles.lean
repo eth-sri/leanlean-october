@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   {f : P → CylBase w} (hf : IsPosetCover f)
 include hf

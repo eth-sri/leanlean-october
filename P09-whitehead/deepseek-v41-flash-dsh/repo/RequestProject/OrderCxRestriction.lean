@@ -15,7 +15,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {K : Complex2.{u}} {P : Type u} [Preorder P]
   (k : Hom K (orderCx P)) (S : P → Prop) (hk : ∀ v, S (k.onV v))
 
@@ -89,9 +88,6 @@ def orderCxRestrict : Hom K (orderCx {p : P // S p}) where
         (fun eb => ((subposetHom S).onE eb.1, eb.2))
     rw [List.map_map, k.att_onF]
     congr 1
-
-@[simp] theorem orderCxRestrict_onV (v : K.V) :
-    (orderCxRestrict k S hk).onV v = ⟨k.onV v, hk v⟩ := rfl
 
 /-- Forgetting the support proofs recovers the original cellular map on every cell. -/
 theorem orderCxRestrict_projects :

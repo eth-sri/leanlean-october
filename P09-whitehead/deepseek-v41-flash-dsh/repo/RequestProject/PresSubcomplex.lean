@@ -43,7 +43,6 @@ theorem toWord_map (f : α → β) (hf : Function.Injective f) (w : FreeGroup α
 
 namespace Comb
 
-universe u
 
 variable {α β : Type u} [DecidableEq α] [DecidableEq β] {J K : Type u}
 
@@ -73,13 +72,4 @@ def presInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGrou
 
 end Comb
 
-namespace PresChain
-
-universe u
-
-variable {α J : Type u} {ρ : J → FreeGroup α} {n : ℕ} (h : PresChain ρ n)
-
-variable [DecidableEq α]
-
-end PresChain
 end FiniteChains

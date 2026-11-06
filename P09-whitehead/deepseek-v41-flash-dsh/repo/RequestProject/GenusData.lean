@@ -205,7 +205,7 @@ theorem genus_compat : Compat (gvc q) (gec q) := by
     congrArg (fun x => x.2.2) hij
   have h2' : i.val / 2 % 4 % 2 = j.val / 2 % 4 % 2 := by
     by_cases hA : i.val / 2 % 4 % 2 = 1 <;> by_cases hB : j.val / 2 % 4 % 2 = 1 <;>
-      simp [hA, hB] at h2 ⊢ <;> omega
+      simp at h2 ⊢ <;> omega
   have hsucci : (i + 1).val = (i.val + 1) % (8 * q) := fin_succ_val i
   have hsuccj : (j + 1).val = (j.val + 1) % (8 * q) := fin_succ_val j
   by_cases hsame : i.val / 2 % 4 = j.val / 2 % 4
@@ -213,7 +213,7 @@ theorem genus_compat : Compat (gvc q) (gec q) := by
     have hpar : i.val % 2 = j.val % 2 := by
       rw [hsame] at h3
       by_cases hA : i.val % 2 = 1 <;> by_cases hB : j.val % 2 = 1 <;>
-        simp [hA, hB] at h3 ⊢
+        simp at h3 ⊢
       all_goals omega
     have hij' : i.val = j.val := by omega
     have : i = j := Fin.ext hij'
@@ -224,7 +224,7 @@ theorem genus_compat : Compat (gvc q) (gec q) := by
       intro hp
       rw [hp] at h3
       by_cases hA : 2 ≤ i.val / 2 % 4 <;> by_cases hB : 2 ≤ j.val / 2 % 4 <;>
-        simp [hA, hB] at h3 <;> omega
+        simp at h3 <;> omega
     refine Or.inr ⟨?_, ?_⟩
     · -- `vc i = vc (j+1)`
       rcases Nat.lt_or_ge (i.val % 2) 1 with hI | hI
@@ -246,7 +246,7 @@ theorem genus_compat : Compat (gvc q) (gec q) := by
         have hJ1o : (j + 1).val % 2 = 1 := by rw [hJ1v]; omega
         have hJ1h : (j + 1).val / 2 = j.val / 2 := by rw [hJ1v]; omega
         rw [gvc, gvc, if_neg (by omega), if_neg (by omega)]
-        simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide]
+        simp
         omega
     · -- `vc (i+1) = vc j`
       rcases Nat.lt_or_ge (i.val % 2) 1 with hI | hI
@@ -257,7 +257,7 @@ theorem genus_compat : Compat (gvc q) (gec q) := by
         have hI1v : (i + 1).val = i.val + 1 := by rw [hsucci, Nat.mod_eq_of_lt hIlt]
         have hI1h : (i + 1).val / 2 = i.val / 2 := by rw [hI1v]; omega
         rw [gvc, gvc, if_neg (by omega), if_neg (by omega)]
-        simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide]
+        simp
         omega
       · -- `i+1` is a corner, and so is `j`
         have hIo : i.val % 2 = 1 := by omega

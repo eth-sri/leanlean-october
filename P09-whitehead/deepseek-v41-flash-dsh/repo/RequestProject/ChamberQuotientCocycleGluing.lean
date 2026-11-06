@@ -20,7 +20,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
-universe u v w
 variable {P Q : Type u} [Preorder P] [Preorder Q]
   {G : Type v} [Group G] {H : Type w} [Group H]
 
@@ -64,7 +63,6 @@ end FiniteChains.Comb.OrdCocycle
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 open scoped Classical
-universe u v
 variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [Preorder X] {att : NeSpx A →o X}
   {G : Type v} [Group G]
@@ -155,8 +153,8 @@ theorem quotientCocycleValue_comp {a b c : Qpos A X att} (hab : a ≤ b) (hbc : 
                 (old.val e f * k (positiveOldSimplex f hf)) *
                   (k (positiveOldSimplex f hf))⁻¹ := by group
             _ = _ := by rw [hg]; group
-        rw [quotientCocycleValue_mixed old base k x e he,
-          quotientCocycleValue_mixed old base k x f hf]
+        rw [quotientCocycleValue_mixed,
+          quotientCocycleValue_mixed]
         change (base.val x (att (positiveOldSimplex e he)) *
             (k (positiveOldSimplex e he))⁻¹) * old.val e f = _
         rw [mul_assoc, ht, ← mul_assoc, base.comp hx (att.monotone hef)]
@@ -166,8 +164,8 @@ theorem quotientCocycleValue_comp {a b c : Qpos A X att} (hab : a ≤ b) (hbc : 
       | inl f =>
         have hf : f.1.sgn = 0 := hbc.1
         have hy : y ≤ att (positiveOldSimplex f hf) := new_le_positiveOld hbc
-        rw [quotientCocycleValue_mixed old base k y f hf,
-          quotientCocycleValue_mixed old base k x f hf]
+        rw [quotientCocycleValue_mixed,
+          quotientCocycleValue_mixed]
         change base.val x y * (base.val y (att (positiveOldSimplex f hf)) * _) = _
         rw [← mul_assoc, base.comp hab hy]
 
@@ -238,7 +236,6 @@ end FiniteChains.Davis
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
-universe v
 variable (q : ℕ) [NeZero q] {X : Type} [Preorder X]
   (att : NeSpx (cmpRel (GenusVertex q)) →o X) {G : Type v} [Group G]
   (old : OrdCocycle (QOld (cmpRel (GenusVertex q))) G) (base : OrdCocycle X G)

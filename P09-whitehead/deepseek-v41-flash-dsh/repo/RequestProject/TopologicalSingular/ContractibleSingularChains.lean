@@ -17,7 +17,6 @@ namespace FiniteChains.TopologicalSingular
 
 open Set Topology SingularPrism
 
-universe u v
 variable {X : Type u} {Y : Type v} [TopologicalSpace X] [TopologicalSpace Y]
 
 noncomputable def constantCone (y : Y) (n : ℕ) : Chain X n →ₗ[ℤ] Chain Y (n + 1) :=

@@ -37,7 +37,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 /-! ### Functoriality of the order complex -/
 
@@ -174,8 +173,8 @@ theorem htpy_nil_of_pathIn (hA : SimplyConnected (orderCx {p : P // A p}))
   have hlift := isPath_liftPathIn l hl hv hv hp
   have hnull := hA ⟨v, hv⟩ (liftPathIn l hl) hlift
   have := mapPath_htpy (subposetHom A) hnull
-  rw [mapPath_liftPathIn l hl] at this
-  simpa [mapPath, subposetHom] using this
+  rw [mapPath_liftPathIn] at this
+  exact this
 
 end Lift
 
@@ -359,7 +358,7 @@ theorem htpy_nil_of_pathIn_union {A B U : P → Prop}
               have hlen2 : t₂.length ≤ n := by
                 have h1 : t₂.length ≤ t.length := by
                   rw [hteq]; simp
-                simp only [List.length_cons] at hlen
+                simp at hlen
                 omega
               have hUt₂ : PathIn U t₂ := by
                 have hUt' : PathIn U (t₁ ++ t₂) := by rw [← hteq]; exact hUt

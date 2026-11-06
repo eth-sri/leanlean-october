@@ -13,7 +13,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
 open scoped Classical
-universe u
 variable {G : Type u} [Group G]
 
 /-- Read one cell coordinate while retaining its full group-ring coefficient. -/
@@ -28,7 +27,7 @@ theorem cellCoefficient_single {E : Type u} (e : E) (g : G) (j : E) (n : ℤ) :
       if j = e then MonoidAlgebra.single g n else 0 := by
   classical
   rw [cellCoefficient, Finsupp.linearCombination_single]
-  split_ifs <;> simp [MonoidAlgebra.smul_single]
+  split_ifs <;> simp
 
 theorem cellCoefficient_apply {E : Type u} (e : E) (c : (G × E) →₀ ℤ) (g : G) :
     (cellCoefficient e c).coeff g = c (g, e) := by

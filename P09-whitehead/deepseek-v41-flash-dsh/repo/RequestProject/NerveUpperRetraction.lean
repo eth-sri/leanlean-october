@@ -6,7 +6,6 @@ public import RequestProject.NerveBoundaryReflection
 
 /-! Both chain comparisons for a genuine monotone upper retraction. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P Q : Type u} [Preorder P]
 
 theorem cmap_eq_of_eqOn_incOn {B : P → Prop} (f g : P → Q)

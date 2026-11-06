@@ -16,7 +16,6 @@ open Set Topology
 
 namespace FiniteChains.RelativeAttachment
 
-universe u
 variable (J E : Type u) [NormedAddCommGroup E]
 
 abbrev DiskFamily := Σ _ : J, ClosedUnitBall E
@@ -95,7 +94,7 @@ omit [TopologicalSpace X] in
 theorem diskCharacteristicFun_interior (j : J) (x : {x : E // ‖x‖ < 1}) :
     diskCharacteristicFun r x₀ j x.val =
       fresh r (boundaryFamilyInclusion J E) (interiorDiskPoint j x) := by
-  rw [diskCharacteristicFun_closed r x₀ j x.val x.property.le]
+  rw [diskCharacteristicFun_closed]
   exact cell_of_not_mem r _ _ (interiorDiskPoint j x).property
 
 theorem diskCharacteristicFun_restrict_isEmbedding (j : J) :

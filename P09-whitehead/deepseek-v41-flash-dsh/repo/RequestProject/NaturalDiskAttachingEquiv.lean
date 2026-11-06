@@ -60,7 +60,7 @@ def naturalDiskAttachingEquiv (r₀ r₁ : C(BoundaryFamily J E, X))
 theorem naturalDiskAttachingEquiv_toFun (r₀ r₁ : C(BoundaryFamily J E, X))
     (H : r₀.Homotopy r₁) :
     (naturalDiskAttachingEquiv r₀ r₁ H).toFun = naturalDiskBackward r₁ r₀ H.symm := by
-  apply hom_ext r₀ (boundaryFamilyInclusion J E)
+  apply hom_ext
   · intro x
     rfl
   · intro d
@@ -80,12 +80,6 @@ theorem naturalDiskAttachingEquiv_toFun (r₀ r₁ : C(BoundaryFamily J E, X))
     change (naturalDiskReparam r₁).symm
       (naturalDiskReparam r₁ (naturalDiskExtension r₁ r₀ H.symm (1, d))) = _
     rw [Homeomorph.symm_apply_apply, naturalDiskBackward_cell]
-
-@[simp] theorem naturalDiskAttachingEquiv_old (r₀ r₁ : C(BoundaryFamily J E, X))
-    (H : r₀.Homotopy r₁) (x : X) :
-    naturalDiskAttachingEquiv r₀ r₁ H (old r₀ (boundaryFamilyInclusion J E) x) =
-      old r₁ (boundaryFamilyInclusion J E) x := by
-  rw [naturalDiskAttachingEquiv_toFun, naturalDiskBackward_old]
 
 theorem naturalDiskAttachingEquiv_natural
     {K Y : Type} [TopologicalSpace Y]

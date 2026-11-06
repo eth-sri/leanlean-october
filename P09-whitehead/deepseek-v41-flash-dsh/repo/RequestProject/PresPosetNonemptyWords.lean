@@ -5,7 +5,6 @@ public import RequestProject.PresPosetAlpha
 @[expose] public section
 
 namespace FiniteChains.PresModel
-universe u
 variable {α J : Type u}
 
 /-- Nonempty attaching-word representatives, using a cancelling pair. -/

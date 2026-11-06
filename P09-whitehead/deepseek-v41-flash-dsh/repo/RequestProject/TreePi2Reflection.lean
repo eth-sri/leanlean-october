@@ -10,7 +10,6 @@ back to the original graph without losing its vanishing on pi2.
  -/
 
 namespace FiniteChains.Comb.SpanningTree
-universe u
 variable {X Y : Complex2.{u}} {TX : SpanningTree X} {TY : SpanningTree Y}
   [DecidableEq (NonTree TX)] [DecidableEq (NonTree TY)]
   {h : Hom X Y} (hiff : ∀ e : X.E, TY.isTree (h.onE e) ↔ TX.isTree e)

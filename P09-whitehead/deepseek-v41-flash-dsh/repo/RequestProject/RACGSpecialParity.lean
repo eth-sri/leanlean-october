@@ -27,7 +27,6 @@ faces of a cube of `C(L)` lift uniquely to faces of a chamber of the Davis compl
 namespace FiniteChains
 namespace RACG
 
-universe u
 
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 

@@ -8,7 +8,6 @@ public import RequestProject.TopologicalSingular.BasedTriangleHurewicz
 
 namespace FiniteChains.TopologicalSingular
 open scoped Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] [SimplyConnectedSpace X]
 
 noncomputable def normalizedTriangleChain (x : X) : Chain X 2 →ₗ[ℤ] Chain X 2 :=

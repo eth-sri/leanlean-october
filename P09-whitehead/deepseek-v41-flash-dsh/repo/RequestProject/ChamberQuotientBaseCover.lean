@@ -9,7 +9,6 @@ public import RequestProject.UniversalCoverPi1Injection
 /-! The actual lifted inserted base covers the original base poset. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

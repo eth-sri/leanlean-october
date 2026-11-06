@@ -87,7 +87,6 @@ theorem prismMap_last (n : ℕ) (z : Domain n) :
     change stdSimplex.map ((Fin.last n).predAbove ∘ (Fin.last n).succ.succAbove) z = z
     rw [base_next, stdSimplex.map_id_apply]
 
-universe u v
 variable {X : Type u} {Y : Type v} [TopologicalSpace X] [TopologicalSpace Y]
 variable {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g)
 

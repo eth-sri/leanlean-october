@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
-universe u v
 variable {G : Type u} {I : Type v}
 
 /-- Integer coefficients on group/cell pairs are the corresponding group-ring cell coefficients. -/
@@ -27,7 +26,7 @@ theorem groupCellChainEquiv_single (g : G) (i : I) (n : ℤ) :
   simp only [groupCellChainEquiv, LinearEquiv.trans_apply, Finsupp.domLCongr_single,
     Finsupp.mapRange.linearEquiv_apply]
   change Finsupp.mapRange _ _ (Finsupp.single (i, g) n).curry = _
-  rw [Finsupp.curry_single (i, g) n]
-  simp [Finsupp.mapRange_single, MonoidAlgebra.coeffLinearEquiv_symm_apply]
+  rw [Finsupp.curry_single]
+  simp
 
 end FiniteChains

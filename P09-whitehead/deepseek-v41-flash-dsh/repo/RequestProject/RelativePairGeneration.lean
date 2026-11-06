@@ -67,7 +67,7 @@ theorem pairSubstitution_generator_fox (i : PairGen A Z) (j : A ⊕ Z) :
             simp [commutatorElement_def, fox_mul, fox_inv, fox_of]
     | inr p =>
         cases j with
-        | inl a => simp [fox_of]
+        | inl a => simp
         | inr z =>
             have hpz : p.1 ≠ z := by simpa [pairOldCoordinate] using h
             obtain ⟨p, b⟩ := p

@@ -10,7 +10,6 @@ public import Mathlib.Data.Set.Finite.Lattice
 finitely many original open cells. The proof uses the actual weak topology
 and closure-finiteness axioms. Pending Lean verification. -/
 
-noncomputable section
 open scoped Classical
 open Set Topology
 
@@ -124,7 +123,7 @@ theorem IsCompact.finite_lower_support {K : Set X} (hK : IsCompact K) (d : ℕ)
     have hdm : (d : ℕ∞) ≤ m := by exact_mod_cast Nat.le_of_not_gt h
     exact Set.disjoint_left.mp (CWComplex.disjoint_skeletonLT_openCell (C := (Set.univ : Set X))
       (j := j) hdm) (hKd hx) hj
-  simp only [Set.mem_iUnion]
+  simp
   refine ⟨m, hmd, j, ?_, RelCWComplex.openCell_subset_closedCell m j hj⟩
   exact (Set.Finite.mem_toFinset (hI m)).mpr ⟨x, hx, hj⟩
 

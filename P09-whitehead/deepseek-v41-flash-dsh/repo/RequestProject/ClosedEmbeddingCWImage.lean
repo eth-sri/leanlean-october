@@ -18,7 +18,6 @@ open Set Topology Metric
 
 namespace FiniteChains.ClosedEmbeddingCW
 
-universe u
 variable {X Y : Type u} [TopologicalSpace X] [TopologicalSpace Y] [Nonempty X]
   [CWComplex (Set.univ : Set X)] (f : X → Y) (hf : IsClosedEmbedding f)
 
@@ -74,7 +73,6 @@ end FiniteChains.ClosedEmbeddingCW
 
 namespace FiniteChains.RelativeAttachment
 
-universe u
 variable {A X D : Type u} [TopologicalSpace A] [TopologicalSpace X] [TopologicalSpace D]
   [T2Space X] [Nonempty X] [CWComplex (Set.univ : Set X)]
 

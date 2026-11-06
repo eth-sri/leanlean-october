@@ -34,7 +34,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u v
 
 variable {X Y Z : Complex2.{u}}
 
@@ -215,7 +214,7 @@ theorem htpy_append_revPath {p : List (X.E × Bool)} {a b : X.V}
         exact ⟨rfl, by simp, by simp [hs]⟩
       rw [hrw]
       refine hcongr.trans ?_
-      simpa using hlast
+      exact hlast
 
 theorem htpy_revPath_append {p : List (X.E × Bool)} {a b : X.V}
     (hp : IsPath X.src X.tgt p a b) : Htpy X b b (revPath p ++ p) [] := by
@@ -342,7 +341,7 @@ theorem mapPath_htpy (h : Hom X Y) {a b : X.V} {p q : List (X.E × Bool)}
     · refine Or.inr ⟨mapPath h p', mapPath h q', h.onF f, ?_, ?_⟩
       · rw [hlEq]
         have hatt : mapPath h (X.att f) = Y.att (h.onF f) := by
-          rw [h.att_onF f]; rfl
+          rw [h.att_onF]; rfl
         simp [hatt]
       · rw [hl'Eq]; simp
   induction hpq with

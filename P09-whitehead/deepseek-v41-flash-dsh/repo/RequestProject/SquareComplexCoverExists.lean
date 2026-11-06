@@ -33,7 +33,6 @@ namespace FiniteChains
 
 namespace SquareComplex
 
-universe u
 
 variable {Vx : Type u}
 
@@ -43,31 +42,8 @@ def UnivVx (S : SquareComplex Vx) (b₀ : Vx) : Type u := Σ y : Vx, Quotient (w
 
 variable {S : SquareComplex Vx} {b₀ : Vx}
 
-/-- Appending an edge to a homotopy class of walks. -/
-def extendCls {y z : Vx} (h : S.adj y z) (c : Quotient (walkSetoid S b₀ y)) :
-    Quotient (walkSetoid S b₀ z) :=
-  Quotient.lift
-    (fun w : (toSimpleGraph S).Walk b₀ y => Quotient.mk (walkSetoid S b₀ z)
-      (w.append (SimpleGraph.Walk.cons h SimpleGraph.Walk.nil)))
-    (fun _ _ hpq => Quotient.sound (walkHtpy_append_right hpq _)) c
-
-@[simp] theorem extendCls_mk {y z : Vx} (h : S.adj y z) (w : (toSimpleGraph S).Walk b₀ y) :
-    extendCls (b₀ := b₀) h (Quotient.mk (walkSetoid S b₀ y) w)
-      = Quotient.mk (walkSetoid S b₀ z)
-          (w.append (SimpleGraph.Walk.cons h SimpleGraph.Walk.nil)) := rfl
-
 /-- The projection of the universal cover to the base. -/
 def univProj (S : SquareComplex Vx) (b₀ : Vx) : UnivVx S b₀ → Vx := Sigma.fst
-
-@[simp] theorem univProj_apply (P : UnivVx S b₀) : univProj S b₀ P = P.1 := rfl
-
-/-! ### The universal cover is connected and simply connected -/
-
-/-- The base point of the universal cover. -/
-def univBase (S : SquareComplex Vx) (b₀ : Vx) : UnivVx S b₀ :=
-  ⟨b₀, Quotient.mk (walkSetoid S b₀ b₀) SimpleGraph.Walk.nil⟩
-
-@[simp] theorem univProj_univBase : univProj S b₀ (univBase S b₀) = b₀ := rfl
 
 end SquareComplex
 

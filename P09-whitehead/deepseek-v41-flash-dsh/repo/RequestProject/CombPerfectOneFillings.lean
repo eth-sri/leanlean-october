@@ -5,7 +5,6 @@ public import RequestProject.CellularHomotopyChain
 @[expose] public section
 
 namespace FiniteChains.Comb
-universe u
 variable (X : Complex2.{u})
 
 /-- Edge chains modulo actual finite face boundaries. -/
@@ -74,7 +73,7 @@ theorem oneCycle_filling_of_loop_fillings (a : X.V) (hX : IsConnected X)
       change bdry2 X (Finsupp.linearCombination ℤ f (Finsupp.single e n)) = _
       rw [Finsupp.linearCombination_single, map_smul, hf, bdry1_single,
         map_smul, map_sub, hs, hs, smul_sub, smul_add, smul_sub]
-      simp only [Finsupp.smul_single, smul_eq_mul, mul_one]
+      simp
       abel
   exact ⟨t c, by rw [ht, hc, map_zero, sub_zero]⟩
 

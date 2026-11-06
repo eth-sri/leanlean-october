@@ -8,7 +8,6 @@ public import RequestProject.FreePaddingNaturality
 These identities are on the actual group-ring coefficients, not only on
 homology classes. Awaiting the final Lean verification phase. -/
 
-noncomputable section
 open scoped Classical
 
 namespace FiniteChains.PresInclusionFS
@@ -43,7 +42,7 @@ theorem square_group :
           (FreeGroup.map b).comp (FreeGroup.map g) := by
         apply FreeGroup.ext_hom
         intro x
-        simp only [MonoidHom.comp_apply, FreeGroup.map.of]
+        simp
         exact congrArg FreeGroup.of (hgen x)
       exact congrArg (fun h : FreeGroup A →* FreeGroup E =>
         (QuotientGroup.mk (h w) : PresGroup υ)) hm
@@ -60,7 +59,7 @@ theorem square_cells (x : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
   | single j r =>
       change cells σ υ k l hσυ (cells ρ σ a c hρσ (Finsupp.single j r)) =
         cells τ υ b d hτυ (cells ρ τ g f hρτ (Finsupp.single j r))
-      rw [cells_single, cells_single, cells_single, cells_single, hcell j]
+      rw [cells_single, cells_single, cells_single, cells_single, hcell]
       congr 1
       change MonoidAlgebra.mapDomainRingHom ℤ (groupHom σ υ k l hσυ)
         (MonoidAlgebra.mapDomainRingHom ℤ (groupHom ρ σ a c hρσ) r) =

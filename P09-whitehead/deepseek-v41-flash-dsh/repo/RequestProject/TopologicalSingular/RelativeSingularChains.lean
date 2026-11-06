@@ -18,7 +18,6 @@ namespace FiniteChains.TopologicalSingular
 
 open Set Topology
 
-universe u
 
 variable {X : Type u} [TopologicalSpace X]
 

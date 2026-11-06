@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open MonoidAlgebra
-universe u
 variable {α J : Type u} {Nsub : Subgroup (FreeGroup α)} [Nsub.Normal]
 variable {Q K : Type u} [Group Q]
 
@@ -36,8 +35,8 @@ theorem fs_mapDomain_prodMap_id_apply (Φ : (FreeGroup α ⧸ Nsub) →* Q)
         rw [Finsupp.single_eq_same, MonoidAlgebra.mapDomain_single, MonoidAlgebra.coeff_single, Finsupp.single_apply,
           Finsupp.single_apply]
         by_cases hq : Φ q₀ = q
-        · simp [hq]
-        · simp [hq, Prod.ext_iff]
+        · simp
+        · simp
       · have hne : ((Φ q₀, j₀) : Q × J) ≠ (q, j) := fun hEq => hj (congrArg Prod.snd hEq).symm
         rw [Finsupp.single_eq_of_ne hj, Finsupp.single_apply, if_neg hne]
         simp
@@ -68,7 +67,7 @@ theorem fs_mapDomain_prodMap_eq_zero_iff (Φ : (FreeGroup α ⧸ Nsub) →* Q) (
     have h0 : Finsupp.mapDomain (Prod.map (⇑Φ) (id : J → J)) u = 0 := by
       refine Finsupp.ext fun p => ?_
       obtain ⟨q, j⟩ := p
-      rw [fs_mapDomain_prodMap_id_apply Φ u q j, h j]
+      rw [fs_mapDomain_prodMap_id_apply, h]
       simp
     rw [h0, Finsupp.mapDomain_zero]
 

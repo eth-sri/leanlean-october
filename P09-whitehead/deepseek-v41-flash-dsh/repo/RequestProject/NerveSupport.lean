@@ -39,7 +39,6 @@ how the contractions of `RequestProject/NervePrism.lean` are stated.  In particu
 namespace FiniteChains
 namespace Nerve
 
-universe u
 
 open FreeAbelianGroup
 
@@ -83,7 +82,7 @@ theorem mem_closure_image_of_iff (S : Set X) (x : FreeAbelianGroup X) :
             exact hsup y (by rw [hsupport]; exact Finset.mem_cons_of_mem hy)
           have hsingle : (equivFinsupp X).symm (Finsupp.single a b) = b • FreeAbelianGroup.of a := by
             apply (equivFinsupp X).injective
-            simp [equivFinsupp]
+            simp
           rw [map_add, hsingle]
           refine AddSubgroup.add_mem _ ?_ (ih hfS)
           exact AddSubgroup.zsmul_mem _
@@ -174,7 +173,7 @@ theorem consList_bdryOn_mem_incOn (A : P → Prop) :
         · exact hall b (List.mem_append.2 (Or.inr (List.mem_cons_of_mem _ h)))
       · refine ih (pre ++ [a]) (by simpa using hchain) ?_
         intro b hb
-        simp only [List.append_assoc, List.cons_append, List.nil_append] at hb
+        simp at hb
         exact hall b (by simpa using hb)
 
 theorem bdryOn_mem_incOn {A : P → Prop} {l : List P} (hl : List.IsChain (· ≤ ·) l)

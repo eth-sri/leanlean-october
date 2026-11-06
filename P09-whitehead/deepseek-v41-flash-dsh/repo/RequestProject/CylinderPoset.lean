@@ -36,7 +36,6 @@ computes `π₁`.
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 open Nerve
 
@@ -95,10 +94,6 @@ def cylOuter (s : Sg) : CylP a := Sum.inr s
 
 /-- The retraction of the cylinder onto its base. -/
 def cylRetr : CylP a → X := Sum.elim id a
-
-@[simp] theorem cylRetr_cylIn (x : X) : cylRetr a (cylIn a x) = x := rfl
-
-@[simp] theorem cylRetr_cylOuter (s : Sg) : cylRetr a (cylOuter a s) = a s := rfl
 
 theorem cylIn_injective : Function.Injective (cylIn a) := fun _ _ h => Sum.inl_injective h
 

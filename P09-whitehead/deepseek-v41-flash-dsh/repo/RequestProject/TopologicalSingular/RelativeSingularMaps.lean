@@ -16,7 +16,6 @@ namespace FiniteChains.TopologicalSingular
 
 open Set Topology
 
-universe u v w
 variable {X : Type u} {Y : Type v} {Z : Type w}
 variable [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]
 

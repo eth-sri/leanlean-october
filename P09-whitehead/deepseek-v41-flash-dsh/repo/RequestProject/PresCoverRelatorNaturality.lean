@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 theorem strictOrderCxMap_onF_injective (k : P → Q) (hm : StrictMono k)
     (hi : Function.Injective k) : Function.Injective (strictOrderCxMap k hm).onF := by
@@ -25,7 +24,6 @@ end FiniteChains.Comb
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P Q : Type u} [PartialOrder P] [PartialOrder Q]
   (w : J → List (α × Bool)) (f : P → PresPos w) (hf : IsPosetCover f)
   (hpos : ∀ j, 0 < (w j).length)

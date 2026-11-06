@@ -9,7 +9,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.StrictNormalized
-universe u
 variable {P Q R : Type u} [PartialOrder P] [PartialOrder Q] [PartialOrder R]
 
 /-- The normalized strict edge-chain map of an arbitrary monotone map. -/

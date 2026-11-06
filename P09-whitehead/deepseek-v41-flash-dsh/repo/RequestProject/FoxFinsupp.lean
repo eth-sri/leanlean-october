@@ -105,14 +105,4 @@ theorem coverFirstBoundary_coverSecondBoundary {J : Type*} (ρ : J → FreeGroup
   intro j hj
   rw [map_smul, coverFoxGradient_isCycle N (hρ j), smul_zero]
 
-noncomputable def linearFoxGradient :
-    FreeGroupRing α →ₗ[ℤ] (α →₀ FreeGroupRing α) :=
-  (Finsupp.linearCombination ℤ (fun g => foxGradient g)).comp (MonoidAlgebra.coeffLinearEquiv ℤ).toLinearMap
-
-@[simp] theorem linearFoxGradient_single (g : FreeGroup α) (n : ℤ) :
-    linearFoxGradient (MonoidAlgebra.single g n) = n • foxGradient g :=
-  by
-    change Finsupp.linearCombination ℤ (fun g => foxGradient g) (Finsupp.single g n) = _
-    exact Finsupp.linearCombination_single ℤ n g
-
 end FiniteChains

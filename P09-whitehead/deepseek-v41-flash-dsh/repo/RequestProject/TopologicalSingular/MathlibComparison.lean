@@ -55,7 +55,7 @@ theorem freeComplexMathlibIso_natural {X Y : TopCat.{0}} (f : X ⟶ Y) :
   intro σ r
   change Finsupp.mapDomain _ (Finsupp.mapDomain _ (Finsupp.single σ r)) =
     Finsupp.mapDomain _ (Finsupp.mapDomain _ (Finsupp.single σ r))
-  simp only [Finsupp.mapDomain_single]
+  simp
   rfl
 
 /-- The actual explicit singular chain complex computes the coefficients and

@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [Preorder P] [Preorder Q]
   (f : P → Q) (hf : Monotone f) (c : Q) (hc : ∀ x, c ≤ f x)
   {o : Q} (k : UV (orderCx Q) o) (hk : endV k = c)
@@ -47,7 +46,7 @@ theorem coneCoverFan_path_boundary {a b : P} {p : List ((orderCx P).E × Bool)}
         simp [coneCoverPath, pathChain_cons, germSrc, germTgt, orderCx]
         abel
       · have he := coneCoverFace_boundary f hf c hc k hk e
-        simp only [↓reduceIte]
+        simp
         rw [coneCoverFan, Finsupp.linearCombination_single, one_smul, he]
         simp [coneCoverPath, pathChain_cons, germSrc, germTgt, orderCx]
         abel

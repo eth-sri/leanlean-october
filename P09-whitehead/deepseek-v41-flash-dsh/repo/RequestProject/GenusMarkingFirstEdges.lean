@@ -95,7 +95,7 @@ theorem markingBaseFlag_eq_iff (i j : Fin q × Bool) (b c : Bool) :
         ({markingBaseCell q, markingBedCell q j c} : Finset (MarkingSurfaceCell q)) := by
       rw [← ht]
       simp
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hm
+    simp at hm
     rcases hm with hm | hm
     · cases hm
     · have he : (i.1, i.2, b) = (j.1, j.2, c) := Cell.bed.inj hm

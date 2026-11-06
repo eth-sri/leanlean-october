@@ -15,7 +15,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open Comb
-universe u v
 
 def commutatorLetterBlock {ι : Type u} (p : ι × ι) : List (ι × Bool) :=
   [(p.1, true), (p.2, true), (p.1, false), (p.2, false)]

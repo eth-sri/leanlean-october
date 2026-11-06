@@ -58,7 +58,7 @@ theorem nsmul_eq_zero_iff_of_ne {G : Type*} (m : ℕ) (hm : m ≠ 0) (x : Monoid
       exact hg
     rcases mul_eq_zero.1 this with h' | h'
     · exact absurd (Nat.cast_eq_zero.1 h') hm
-    · simpa using h'
+    · exact h'
   · rintro rfl
     simp
 

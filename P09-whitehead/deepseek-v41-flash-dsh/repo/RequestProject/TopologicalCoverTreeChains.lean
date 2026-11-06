@@ -12,7 +12,6 @@ comparison. The displayed comparison is the outstanding geometric input;
 no covering, matrix, strictness, or spherical-generation premise is hidden.
 This is an intermediate theorem, not Whitehead.MainClaim. Pending Lean check. -/
 
-noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb
 open CategoryTheory PresModel SpanningTree

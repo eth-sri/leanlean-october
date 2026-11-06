@@ -5,7 +5,6 @@ public import RequestProject.ConeAdjPoset
 @[expose] public section
 
 namespace FiniteChains.Comb
-universe u
 
 /-- A null loop obtained by closing a path with a reverse path proves the two paths homotopic. -/
 theorem htpy_of_append_rev_null {X : Complex2.{u}} {a b : X.V}

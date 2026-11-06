@@ -6,7 +6,6 @@ public import RequestProject.PresConeStrictGerms
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 /-- An actual strict-edge excursion through a relator apex has a genuine cylinder path replacement. -/

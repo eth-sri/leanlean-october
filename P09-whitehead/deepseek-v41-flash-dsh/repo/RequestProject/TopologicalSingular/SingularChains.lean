@@ -26,7 +26,6 @@ namespace FiniteChains.TopologicalSingular
 open Set Topology CategoryTheory Opposite AlgebraicTopology
 open scoped Simplicial
 
-universe u v
 
 abbrev Domain (n : ℕ) := stdSimplex ℝ (Fin (n + 1))
 
@@ -84,8 +83,7 @@ theorem boundary_single (n : ℕ) (σ : Simplex X (n + 1)) (a : ℤ) :
     boundary n (Finsupp.single σ a) =
       ∑ i : Fin (n + 2), (-1 : ℤ) ^ (i : ℕ) • Finsupp.single (face i σ) a := by
   rw [boundary_eq_sum]
-  simp only [LinearMap.sum_apply, LinearMap.smul_apply, Finsupp.lmapDomain_apply,
-    Finsupp.mapDomain_single]
+  simp
 
 theorem boundary_squared (n : ℕ) :
     (boundary (X := X) n).comp (boundary (n + 1)) = 0 := by

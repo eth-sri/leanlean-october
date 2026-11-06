@@ -8,7 +8,6 @@ public import RequestProject.TopologicalSingular.Pi2HurewiczHom
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology
 open scoped Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
 theorem basedTriangle_eq_of_zero_coordinate (tau : Simplex X 2)
@@ -34,7 +33,7 @@ noncomputable def basedTriangleCycle (tau : Simplex X 2) (x : X) : Chain X 2 :=
 theorem basedTriangleCycle_boundary (tau : Simplex X 2)
     (h : ∀ i : Fin 3, face i tau = ContinuousMap.const (Domain 1) x) :
     boundary 1 (basedTriangleCycle tau x) = 0 := by
-  rw [basedTriangleCycle, map_sub, boundary_two_single, boundary_constant_two, h 0, h 1, h 2]
+  rw [basedTriangleCycle, map_sub, boundary_two_single, boundary_constant_two, h, h, h]
   abel
 
 /-- Exact chain identity; no subdivision or comparison hypothesis is used. -/

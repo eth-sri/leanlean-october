@@ -23,7 +23,4 @@ def acyclicRelativeCellChain (n : ℕ) :
     RelativeCellChain (acyclicRelativeStages T hD n) (n + 1) :=
   actualRelativeChain T (expMatrix_bijective_of_acyclic T hD) n
 
-@[simp] theorem acyclicRelativeStages_zero (n : ℕ) :
-    acyclicRelativeStages T hD n 0 = D := rfl
-
 end FiniteChains.Comb

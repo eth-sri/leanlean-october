@@ -10,7 +10,6 @@ acyclic core. All cycle computations use finite-support chains. The
 pointwise Fox and first-order augmentation calculations are those of the
 original construction; no finite presentation is substituted for the core. -/
 
-noncomputable section
 open scoped Classical
 
 set_option backward.defeqAttrib.useBackward true
@@ -25,8 +24,7 @@ variable {I J : Type} [LinearOrder I] [DecidableEq I] (r : J → FreeGroup I)
 omit [LinearOrder I] in
 theorem expSurjective_of_expMatrix_surjective
     (h : Function.Surjective (expMatrix r)) : ExpSurjective r := by
-  have he : expCol r = fun j => expVec (r j) := funext (expCol_eq_expVec r)
-  rw [ExpSurjective, he]
+  have he := funext (expCol_eq_expVec r)
   exact h
 
 /-- A supported cycle can be read through any additive coefficient

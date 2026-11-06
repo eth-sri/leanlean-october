@@ -6,7 +6,6 @@ public import RequestProject.NerveMaximalDeletion
 
 /-! Simultaneous deletion of an arbitrary family of maximal cells uses only finite supports. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P : Type u} [PartialOrder P]
   {C T : P → Prop} (hTC : ∀ p, T p → C p)
   (hmax : ∀ p, T p → ∀ x, C x → p ≤ x → x = p)

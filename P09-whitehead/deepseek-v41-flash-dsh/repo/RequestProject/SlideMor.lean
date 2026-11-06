@@ -34,7 +34,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
 variable (ρ : J → FreeGroup α) (j₀ : J) (u : FreeGroup α)
@@ -48,20 +47,6 @@ group descends to the two presented groups. -/
 def slideGroupHom : PresGroup ρ →* PresGroup (slideRel ρ j₀ u) :=
   QuotientGroup.map _ _ (MonoidHom.id _) (by
     rw [Subgroup.comap_id, relSub_slideRel ρ j₀ u hu])
-
-omit [Fintype α] [DecidableEq α] [Fintype J] in
-/-- The inverse identification. -/
-def slideGroupHomInv : PresGroup (slideRel ρ j₀ u) →* PresGroup ρ :=
-  QuotientGroup.map _ _ (MonoidHom.id _) (by
-    rw [Subgroup.comap_id, relSub_slideRel ρ j₀ u hu])
-
-omit [Fintype α] [DecidableEq α] [Fintype J] in
-@[simp] theorem slideGroupHom_mk (w : FreeGroup α) :
-    slideGroupHom ρ j₀ u hu (QuotientGroup.mk w) = QuotientGroup.mk w := rfl
-
-omit [Fintype α] [DecidableEq α] [Fintype J] in
-@[simp] theorem slideGroupHomInv_mk (w : FreeGroup α) :
-    slideGroupHomInv ρ j₀ u hu (QuotientGroup.mk w) = QuotientGroup.mk w := rfl
 
 /-! ### Rule 2 as a structural map -/
 

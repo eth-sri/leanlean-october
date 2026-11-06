@@ -13,7 +13,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α : Type u}
 
 /-- Concrete paths from the rose base along the chosen spanning tree. -/

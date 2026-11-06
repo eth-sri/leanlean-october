@@ -8,7 +8,6 @@ public import RequestProject.CellularChainMapZero
 cell labels. Pending final Lean verification. -/
 
 namespace FiniteChains.Comb
-universe u
 variable {X Y : Complex2.{u}} (f : Hom X Y)
 
 theorem augC_chain0 (z : X.V →₀ ℤ) : augC Y (chain0 f z) = augC X z := by

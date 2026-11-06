@@ -14,7 +14,6 @@ original presentation group. No finiteness of the index sets is needed.
 namespace FiniteChains
 namespace SurfaceWordExpansion
 
-universe u
 
 variable {α Jr I : Type u}
   (ρ : Jr ⊕ PUnit.{u + 1} → FreeGroup α) (w : I → FreeGroup α) (ps : List (I × I))

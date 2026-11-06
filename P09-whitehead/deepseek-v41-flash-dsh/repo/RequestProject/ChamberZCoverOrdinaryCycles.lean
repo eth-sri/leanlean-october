@@ -8,7 +8,6 @@ public import RequestProject.PosetCoverConeCycles
 /-! Genuine finite fillings in actual lifted ordinary chambers. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {M : CayGroup A → Prop} {att : NeSpx A →o X}
   {P : Type u} [PartialOrder P] {f : P → Zpos A X M att}

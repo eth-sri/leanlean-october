@@ -101,7 +101,7 @@ theorem foxBoundaryK_bMod (b : I → J → MonoidAlgebra ℤ G) (v : J →₀ Mo
   classical
   have hsupp : (coeffVec k G v).support ⊆ v.support := by
     intro j hj
-    simp only [Finsupp.mem_support_iff, coeffVec_apply] at hj ⊢
+    simp at hj ⊢
     intro h
     exact hj (by rw [h, map_zero])
   rw [foxBoundaryK, foxBoundary, map_sum,
@@ -109,7 +109,7 @@ theorem foxBoundaryK_bMod (b : I → J → MonoidAlgebra ℤ G) (v : J →₀ Mo
       map_mul (coeffHom k G) (v j) (b i j))]
   refine Finset.sum_subset hsupp ?_
   intro j _ hj
-  simp only [Finsupp.mem_support_iff, not_not, coeffVec_apply] at hj
+  simp at hj
   rw [coeffVec_apply, hj, zero_mul]
 
 /-! ### The requirement modulo `m` is injectivity of the boundary over `ZMod m` -/
@@ -123,12 +123,11 @@ theorem vanishesModN_iff_zmod (m : ℕ) (M : Subgroup G) [M.Normal] (x : MonoidA
   · intro h
     apply MonoidAlgebra.coeff_injective
     refine Finsupp.ext fun q => ?_
-    show (((quotRingHom ℤ M x).coeff q : ℤ) : ZMod m) = 0
     exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2 (h q)
   · intro h q
     refine (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 ?_
     have := congrArg (fun z : MonoidAlgebra (ZMod m) (G ⧸ M) => z.coeff q) h
-    simpa using this
+    exact this
 
 /-- **The requirements modulo `m` are exactly the injectivity of the Fox boundary over
 `ZMod m`.**  This is the analogue over `ZMod m` of
@@ -164,11 +163,11 @@ theorem forall_foxSatMod_iff_injective (m : ℕ) (b : I → J → MonoidAlgebra 
     rw [vanishesModN_iff_zmod]
     have hzero : boundaryMapK (ZMod m) bm hc M (redVecK (ZMod m) M (coeffVec (ZMod m) G v)) = 0 := by
       refine Finsupp.ext fun i => ?_
-      rw [key v i, Finsupp.coe_zero, Pi.zero_apply]
+      rw [key, Finsupp.coe_zero, Pi.zero_apply]
       exact (vanishesModN_iff_zmod m M _).1 (hbd i)
     have hz : redVecK (ZMod m) M (coeffVec (ZMod m) G v) = 0 := h (by rw [hzero, map_zero])
     have := congrArg (fun z : J →₀ MonoidAlgebra (ZMod m) (G ⧸ M) => z j) hz
-    simpa using this
+    exact this
 
 /-! ### Lemma 2.1 over `𝔽ₚ` -/
 

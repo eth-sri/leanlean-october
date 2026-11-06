@@ -33,7 +33,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {X : Complex2.{u}}
 
@@ -59,7 +58,7 @@ theorem endpt_append (a : X.V) (p q : List (X.E × Bool)) :
     endpt X a (p ++ q) = endpt X (endpt X a p) q := by
   induction p generalizing a with
   | nil => rfl
-  | cons eb t ih => simpa using ih (germTgt X.src X.tgt eb)
+  | cons eb t ih => exact ih (germTgt X.src X.tgt eb)
 
 /-! ### The vertices of the universal cover -/
 
@@ -210,7 +209,7 @@ theorem extendList_append (q r : List (X.E × Bool)) (c : UV X x₀) :
     extendList (q ++ r) c = extendList r (extendList q c) := by
   induction q generalizing c with
   | nil => rfl
-  | cons eb t ih => simpa using ih (extend eb c)
+  | cons eb t ih => exact ih (extend eb c)
 
 /-- Extending the class of `p` by a path `q` issued from its endpoint gives the class of the
 concatenation. -/
@@ -298,7 +297,7 @@ noncomputable def uLiftPath : List (X.E × Bool) → UV X x₀ → List (UE X x�
 theorem uLiftPath_cons {eb : X.E × Bool} {t : List (X.E × Bool)} {c : UV X x₀}
     (h : endV c = germSrc X.src X.tgt eb) :
     uLiftPath (eb :: t) c = liftGerm c eb h :: uLiftPath t (extend eb c) := by
-  rw [uLiftPath, dif_pos h]
+  rw [uLiftPath, dif_pos]
 
 /-- The attaching path of a two-cell of the universal cover. -/
 noncomputable def uAtt (cf : UF X x₀) : List (UE X x₀ × Bool) :=
@@ -311,8 +310,6 @@ theorem germSrc_liftGerm {c : UV X x₀} {eb : X.E × Bool}
   cases b with
   | true => rfl
   | false =>
-      show uTgt (⟨(extend (e, false) c, e), _⟩ : UE X x₀) = c
-      show extend (e, true) (extend (e, false) c) = c
       exact extend_revGerm (eb := (e, false)) h
 
 theorem germTgt_liftGerm {c : UV X x₀} {eb : X.E × Bool}
@@ -564,7 +561,7 @@ theorem htpy_step_uLiftPath {c : UV X x₀} {l l' : List (X.E × Bool)} {w : X.V
     by_cases hnil : X.att f = []
     · -- a two-cell with empty attaching path cancels nothing
       rw [hnil]
-      simp only [List.append_nil]
+      simp
       exact Htpy.refl _
     · obtain ⟨g, t, hgt⟩ : ∃ g t, X.att f = g :: t := by
         cases hc : X.att f with
@@ -686,7 +683,6 @@ theorem simplyConnected_univCover : SimplyConnected (uCover X x₀) := by
           exact hext
         have h1 : Htpy X x₀ (endpt X x₀ p.1) (p.1 ++ q) p.1 := by
           have := Quotient.exact hclass
-          show Htpy X x₀ (endpt X x₀ p.1) (p.1 ++ q) p.1
           have h' : Htpy X x₀ (endpt X x₀ (p.1 ++ q)) (p.1 ++ q) p.1 := this
           rwa [hendpq] at h'
         set v := endpt X x₀ p.1 with hvdef
@@ -700,13 +696,13 @@ theorem simplyConnected_univCover : SimplyConnected (uCover X x₀) := by
         have hqA : Htpy X v v q (revPath p.1 ++ (p.1 ++ q)) := by
           have := hC.symm
           rw [hD] at this
-          simpa using this
+          exact this
         exact (hqA.trans hA).trans hB
   -- and therefore so is `L` upstairs
   have := htpy_uLiftPath (c := c) (q := q) (q' := []) hq hnull
   rw [hext] at this
   rw [hLq]
-  simpa using this
+  exact this
 
 /-! ### The deck action -/
 
@@ -731,9 +727,6 @@ def deckV (γ : Pi1 X x₀) (c : UV X x₀) : UV X x₀ :=
     rw [endpt_deckP]
     exact Htpy.append_congr g.2 p.2 hg hp) γ c
 
-@[simp] theorem deckV_mk (g : Loop X x₀) (p : PathFrom X x₀) :
-    deckV (Quotient.mk _ g) (UV.mk p) = UV.mk (deckP g p) := rfl
-
 @[simp] theorem endV_deckV (γ : Pi1 X x₀) (c : UV X x₀) : endV (deckV γ c) = endV c := by
   induction γ using Quotient.ind with
   | _ g =>
@@ -744,9 +737,7 @@ theorem deckV_one (c : UV X x₀) : deckV (1 : Pi1 X x₀) c = c := by
   induction c using UV.ind with
   | h p =>
       refine Quotient.sound ?_
-      show Htpy X x₀ (endpt X x₀ (deckP ⟨[], rfl⟩ p).1) (deckP (⟨[], rfl⟩ : Loop X x₀) p).1 p.1
-      show Htpy X x₀ (endpt X x₀ ([] ++ p.1)) ([] ++ p.1) p.1
-      simpa using Htpy.refl (X := X) (a := x₀) (b := endpt X x₀ p.1) p.1
+      exact Htpy.refl (X := X) (a := x₀) (b := endpt X x₀ p.1) p.1
 
 theorem deckV_mul (γ δ : Pi1 X x₀) (c : UV X x₀) :
     deckV (γ * δ) c = deckV γ (deckV δ c) := by
@@ -881,7 +872,6 @@ theorem isRegular_univProj : IsRegular (univProj X x₀) (univDeck X x₀) := by
               induction γ using Quotient.ind with
               | _ g =>
                   refine Quotient.sound ?_
-                  show Htpy X x₀ x₀ g.1 (r.1 ++ revPath p.1)
                   have hg : Htpy X x₀ (endpt X x₀ (g.1 ++ p.1)) (g.1 ++ p.1) r.1 :=
                     Quotient.exact hγ
                   have hgp : IsPath X.src X.tgt (g.1 ++ p.1) x₀ (endpt X x₀ r.1) :=

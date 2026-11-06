@@ -40,7 +40,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {K D L : Complex2.{u}}
 
@@ -176,12 +175,6 @@ noncomputable def pushoutComplex : Complex2.{u} where
     · exact isPath_map (src := L.src) (tgt := L.tgt) (pushV p i) (pushE p i)
         (psrc_pushE p i hiV hiE) (ptgt_pushE p i hiV hiE) (L.att_isLoop f.1)
 
-@[simp] theorem pushoutComplex_src_inl (e : K.E) :
-    (pushoutComplex p i hiV hiE).src (Sum.inl e) = Sum.inl (K.src e) := rfl
-
-@[simp] theorem pushoutComplex_tgt_inl (e : K.E) :
-    (pushoutComplex p i hiV hiE).tgt (Sum.inl e) = Sum.inl (K.tgt e) := rfl
-
 theorem pushoutComplex_src_pushE (e : L.E) :
     (pushoutComplex p i hiV hiE).src (pushE p i e) = pushV p i (L.src e) :=
   psrc_pushE p i hiV hiE e
@@ -300,21 +293,6 @@ noncomputable def pushoutLift (f : Hom K M) (g : Hom L M)
           rw [g.att_onF]
           simp only [List.map_map]
           exact List.map_congr_left (fun eb _ => by simp [Function.comp, lE eb.1]) }
-
-@[simp] theorem pushoutLift_onV (f : Hom K M) (g : Hom L M)
-    (hV : ∀ d, g.onV (i.onV d) = f.onV (p.onV d))
-    (hE : ∀ d, g.onE (i.onE d) = f.onE (p.onE d)) :
-    (pushoutLift p i hiV hiE f g hV hE).onV = Sum.elim f.onV (fun w : OffV i => g.onV w.1) := rfl
-
-@[simp] theorem pushoutLift_onE (f : Hom K M) (g : Hom L M)
-    (hV : ∀ d, g.onV (i.onV d) = f.onV (p.onV d))
-    (hE : ∀ d, g.onE (i.onE d) = f.onE (p.onE d)) :
-    (pushoutLift p i hiV hiE f g hV hE).onE = Sum.elim f.onE (fun w : OffE i => g.onE w.1) := rfl
-
-@[simp] theorem pushoutLift_onF (f : Hom K M) (g : Hom L M)
-    (hV : ∀ d, g.onV (i.onV d) = f.onV (p.onV d))
-    (hE : ∀ d, g.onE (i.onE d) = f.onE (p.onE d)) :
-    (pushoutLift p i hiV hiE f g hV hE).onF = Sum.elim f.onF (fun w : OffF i => g.onF w.1) := rfl
 
 /-! ### Finiteness -/
 

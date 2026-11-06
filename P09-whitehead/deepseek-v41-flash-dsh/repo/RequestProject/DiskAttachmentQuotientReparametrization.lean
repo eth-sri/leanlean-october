@@ -171,11 +171,6 @@ def diskAttachmentQuotientReparametrization :
     (boundaryFamilyInclusion J E) f g hbd (old_injective r _)
     (reparametrizedDiskEvaluation_separation r e q hint) hnew hq'
 
-@[simp] theorem diskAttachmentQuotientReparametrization_old (x : X) :
-    diskAttachmentQuotientReparametrization r e q b hb hq hint hinj
-      (old (reparametrizedAttaching r e b) (boundaryFamilyInclusion J E) x) =
-        old r (boundaryFamilyInclusion K E) x := rfl
-
 @[simp] theorem diskAttachmentQuotientReparametrization_cell (d : DiskFamily J E) :
     diskAttachmentQuotientReparametrization r e q b hb hq hint hinj
       (cell (reparametrizedAttaching r e b) (boundaryFamilyInclusion J E) d) =

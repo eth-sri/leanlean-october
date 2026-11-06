@@ -46,9 +46,6 @@ def baseRel (core : M → FreeGroup A) : M ⊕ ExtraCell A → FreeGroup (GenY A
   letI : LinearOrder A := chosenOrder A
   relY core
 
-@[simp] theorem baseRel_core (core : M → FreeGroup A) (m : M) :
-    baseRel core (Sum.inl m) = FreeGroup.map Sum.inl (core m) := rfl
-
 def extra (core : M → FreeGroup A) : ExtraCell A → FreeGroup (A ⊕ ExtraGen A) :=
   fun c => FreeGroup.map generatorEmbedding (baseRel core (Sum.inr c))
 

@@ -7,7 +7,6 @@ public import RequestProject.CombHurewicz1Pres
 /-! Integral chain witnesses for edge-path homotopies in arbitrary cellular two-complexes. -/
 
 namespace FiniteChains.Comb
-universe u
 variable {X : Complex2.{u}}
 
 theorem pathChain_revPath (p : List (X.E × Bool)) :

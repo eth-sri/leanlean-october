@@ -17,7 +17,7 @@ theorem foxWordPathBoundary_prefix_sum (i : α) (g : FreeGroup α)
   | nil => simp [foxWordPathBoundary]
   | cons p l ih =>
     rw [foxWordPathBoundary, ih]
-    simp only [List.length_cons]
+    simp
     rw [Fin.sum_univ_succ]
     simp only [Fin.val_zero, List.take_zero, ← FreeGroup.one_eq_mk, mul_one,
       List.getElem_cons_zero, Fin.val_succ, List.take_succ_cons, List.getElem_cons_succ]

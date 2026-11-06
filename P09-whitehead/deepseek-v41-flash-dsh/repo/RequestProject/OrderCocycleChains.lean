@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
-universe u v
 variable {P : Type u} [Preorder P] {M : Type v} [AddCommGroup M]
   (c : OrdCocycle P (Multiplicative M))
 
@@ -21,7 +20,7 @@ noncomputable def chain1 : ((orderCx P).E →₀ ℤ) →ₗ[ℤ] M :=
 theorem chain1_pathChain (p : List ((orderCx P).E × Bool)) :
     c.chain1 (pathChain p) = Multiplicative.toAdd (c.readPath p) := by
   induction p with
-  | nil => simp [chain1, readPath, pathChain]
+  | nil => simp
   | cons eb p ih =>
       rw [pathChain_cons, map_add, ih, readPath_cons]
       change _ = Multiplicative.toAdd (c.readGerm eb) + _

@@ -22,7 +22,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open Nerve
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 theorem decodeOrdNerve2_cmap_homogeneous (f : P → Q) (hf : Monotone f)
@@ -43,7 +42,7 @@ theorem uOrderEdge_deck (g : Pi1 (orderCx P) a) (e : OrdEdge (UOrder P a)) :
   · rfl
   · apply Subtype.ext
     change (endV (deckV g e.1.1), endV (deckV g e.1.2)) = (endV e.1.1, endV e.1.2)
-    simp only [endV_deckV]
+    simp
 
 theorem uOrderHomInv_deckE (g : Pi1 (orderCx P) a) (e : UE (orderCx P) a) :
     uOrderHomInv.onE (deckE g e) =
@@ -249,9 +248,7 @@ def namedQuotientNerveMultiple
     namedAttachingNerveMultiple ρ q u c (MonoidAlgebra.single g n) =
       n • cmap (namedAttachingDeck ρ q u g) c := by
   unfold namedAttachingNerveMultiple
-  simp only [LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
-    MonoidAlgebra.coeffLinearEquiv_apply, MonoidAlgebra.coeff_single,
-    Finsupp.linearCombination_single]
+  simp
 
 @[simp] theorem namedQuotientNerveMultiple_single
     (c : Ch (UOrder (namedQuotientPos ρ q u) (namedQuotientBase ρ q u)))
@@ -259,9 +256,7 @@ def namedQuotientNerveMultiple
     namedQuotientNerveMultiple ρ q u c (MonoidAlgebra.single g n) =
       n • cmap (uOrderDeck g) c := by
   unfold namedQuotientNerveMultiple
-  simp only [LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
-    MonoidAlgebra.coeffLinearEquiv_apply, MonoidAlgebra.coeff_single,
-    Finsupp.linearCombination_single]
+  simp
 
 theorem namedAttachingNerveMultiple_mem_inc (c : Ch (namedAttachingCover q ρ u))
     (hc : c ∈ Inc _) (w : MonoidAlgebra ℤ (NamedPolygonDeckGroup ρ q u)) :

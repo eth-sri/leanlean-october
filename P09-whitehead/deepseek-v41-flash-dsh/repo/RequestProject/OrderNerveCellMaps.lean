@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 theorem ordNerveChain2_chain2 (f : P → Q) (hf : Monotone f) (c : OrdTri P →₀ ℤ) :

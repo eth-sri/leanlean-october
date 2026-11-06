@@ -56,7 +56,6 @@ only an integer-valued metric.
 
 namespace FiniteChains
 
-universe u
 
 open SimpleGraph
 
@@ -86,34 +85,6 @@ structure MedianSimpleGraph (Vx : Type u) where
 namespace MedianSimpleGraph
 
 variable {Vx : Type u} (M : MedianSimpleGraph Vx)
-
-/-- A median graph, viewed as a metric with a unique median: the distance is the graph
-distance, and the edges are exactly the pairs at distance one
-(`MedianSimpleGraph.dist_eq_one_iff_adj`). -/
-noncomputable def toMedianGraph : MedianGraph Vx where
-  dist := M.G.dist
-  base := M.base
-  dist_self := fun _ => SimpleGraph.dist_self
-  eq_of_dist_eq_zero := by
-    intro x y h
-    rcases SimpleGraph.dist_eq_zero_iff_eq_or_not_reachable.mp h with h | h
-    · exact h
-    · exact absurd (M.conn.preconnected x y) h
-  dist_comm := fun _ _ => SimpleGraph.dist_comm
-  dist_triangle := fun _ _ _ => M.conn.dist_triangle
-  med := M.med
-  med_ab := M.med_ab
-  med_bc := M.med_bc
-  med_ac := M.med_ac
-  med_unique := M.med_unique
-  dim_le := by
-    intro w s hs
-    refine M.dim_le w s fun a ha => ⟨?_, (hs a ha).2⟩
-    exact SimpleGraph.dist_eq_one_iff_adj.mp (hs a ha).1
-
-@[simp] theorem toMedianGraph_dist (x y : Vx) : M.toMedianGraph.dist x y = M.G.dist x y := rfl
-
-@[simp] theorem toMedianGraph_base : M.toMedianGraph.base = M.base := rfl
 
 end MedianSimpleGraph
 

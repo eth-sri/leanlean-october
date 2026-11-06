@@ -33,7 +33,6 @@ namespace FiniteChains
 
 namespace SquareComplex
 
-universe u v
 
 variable {Vx : Type u} {S : SquareComplex Vx}
 
@@ -110,7 +109,7 @@ theorem walkHtpy_append_left {a b c : Vx} (u : (toSimpleGraph S).Walk a b)
     {p q : (toSimpleGraph S).Walk b c} (h : S.WalkHtpy p q) :
     S.WalkHtpy (u.append p) (u.append q) := by
   induction u with
-  | nil => simpa [SimpleGraph.Walk.nil_append] using h
+  | nil => exact h
   | @cons a' b' c' hadj r ih =>
       rw [WalkHtpy, SimpleGraph.Walk.cons_append, SimpleGraph.Walk.cons_append,
         SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_cons]
@@ -130,10 +129,10 @@ theorem walkHtpy_append_right {a b c : Vx} {p q : (toSimpleGraph S).Walk a b}
   intro a' ha' b' hb'
   have hlast : p.support.getLast? = some b := (isWalkFrom_support' p).2.2
   rw [hlast] at ha'
-  simp only [Option.mem_def, Option.some.injEq] at ha'
+  simp at ha'
   subst ha'
   have hv : S.IsWalk v.support := isWalk_support v
-  rw [SimpleGraph.Walk.support_eq_cons v] at hv
+  rw [SimpleGraph.Walk.support_eq_cons] at hv
   exact isWalk_junction hv hb'
 
 /-! ### Reversing a homotopy -/
@@ -141,7 +140,7 @@ theorem walkHtpy_append_right {a b c : Vx} {p q : (toSimpleGraph S).Walk a b}
 theorem Move.append_left {l l' : List Vx} (h : S.Move l l') (pre : List Vx) :
     S.Move (pre ++ l) (pre ++ l') := by
   induction pre with
-  | nil => simpa using h
+  | nil => exact h
   | cons a t ih => exact Move.cons a ih
 
 theorem Move.reverse {l l' : List Vx} (h : S.Move l l') : S.Move l.reverse l'.reverse := by
@@ -201,8 +200,7 @@ theorem walkHtpy_append_reverse : ∀ {a b : Vx} (p : (toSimpleGraph S).Walk a b
       have hsupp : S.WalkHomotopic ((q.append q.reverse).append
             (SimpleGraph.Walk.cons hadj.symm SimpleGraph.Walk.nil)).support [c', a'] := by
         refine WalkHomotopic.trans hstep ?_
-        simp only [SimpleGraph.Walk.nil_append, SimpleGraph.Walk.support_cons,
-          SimpleGraph.Walk.support_nil]
+        simp
         exact WalkHomotopic.refl _
       have hcons : S.WalkHomotopic (a' :: ((q.append q.reverse).append
             (SimpleGraph.Walk.cons hadj.symm SimpleGraph.Walk.nil)).support) [a', c', a'] := by
@@ -218,7 +216,7 @@ theorem walkHtpy_append_reverse : ∀ {a b : Vx} (p : (toSimpleGraph S).Walk a b
         exact ⟨hadj, S.adj_symm hadj, by simp⟩
       rw [WalkHtpy, hrw, SimpleGraph.Walk.support_cons]
       refine hcons.trans ?_
-      simpa using WalkHomotopic.of_walkMove hback
+      exact WalkHomotopic.of_walkMove hback
 
 /-! ### The boundary of a square contracts -/
 

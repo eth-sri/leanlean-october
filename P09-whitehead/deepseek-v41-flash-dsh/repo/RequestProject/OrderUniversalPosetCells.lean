@@ -6,7 +6,6 @@ public import RequestProject.OrderUniversalPosetCover
 
 /-! Actual edge and triangle coordinates of the universal-cover order complex. -/
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
 def uOrderEdge (e : OrdEdge (UOrder P a)) : UE (orderCx P) a :=

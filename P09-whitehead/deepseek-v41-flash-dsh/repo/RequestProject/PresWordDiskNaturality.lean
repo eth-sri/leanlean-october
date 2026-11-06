@@ -35,7 +35,7 @@ theorem classicalPresWordAttaching_natural (z : BoundaryFamily J (Fin 2 → ℝ)
       classicalPresWordAttaching v hv ⟨h.cell z.1, z.2⟩ := by
   change diskRoseMap h.gen (orderRoseRealizationHomeomorph A (actualPresWordAttaching w hw z)) =
     orderRoseRealizationHomeomorph B (actualPresWordAttaching v hv ⟨h.cell z.1, z.2⟩)
-  rw [← orderRoseRealizationHomeomorph_natural h, h.actualPresWordAttaching_natural hw hv z]
+  rw [← orderRoseRealizationHomeomorph_natural h, h.actualPresWordAttaching_natural]
 
 def orderRoseMapContinuous : C(orderNerveRealization (PresModel.Rose A),
     orderNerveRealization (PresModel.Rose B)) :=

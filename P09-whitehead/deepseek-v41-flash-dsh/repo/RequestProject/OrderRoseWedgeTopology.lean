@@ -88,7 +88,7 @@ theorem roseSimplex_copy_lift {n : SimplexCategory}
   let t : (nerve (Rose PUnit.{1})).obj (Opposite.op n) :=
     (show Monotone p from fun i j hij =>
       (roseCopy a).le_iff_le.mp (by
-        rw [hp i, hp j]
+        rw [hp, hp]
         exact leOfHom (s.map (homOfLE hij)))).functor
   exact ⟨t, CategoryTheory.Functor.ext hp⟩
 

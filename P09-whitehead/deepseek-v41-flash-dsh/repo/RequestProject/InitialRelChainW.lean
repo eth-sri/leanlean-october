@@ -41,7 +41,6 @@ into exactly that shape, giving **the base case, of length one, of the extension
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {I J : Type u} [LinearOrder I] [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
 variable (r : J → FreeGroup I)

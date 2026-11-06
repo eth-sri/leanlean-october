@@ -15,7 +15,6 @@ open Set Topology
 
 namespace FiniteChains.RelativeAttachment
 
-universe u
 variable {J E X : Type u} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [TopologicalSpace X]
 

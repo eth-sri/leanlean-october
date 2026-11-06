@@ -40,7 +40,7 @@ theorem genus_collapse_suffix_cover_homology (hf : IsPosetCover f)
       (fun p => genusCollapseStage q (left ++ right) (f p)) 3 := by
   induction right generalizing left with
   | nil =>
-    simp only [List.append_nil]
+    simp
     constructor
     · intro z hz _ hcyc
       exact ⟨z, hz, 0, AddSubgroup.zero_mem _, hcyc, by simp⟩

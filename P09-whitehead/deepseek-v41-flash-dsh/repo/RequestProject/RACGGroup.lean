@@ -36,7 +36,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace RACG
 
-universe u
 
 /-- A **commutation graph**: a symmetric irreflexive relation on the alphabet `V`.  Two letters
 related by `rel` are the generators of a `(s t)² = 1` relation of the right-angled Coxeter
@@ -151,7 +150,7 @@ noncomputable def actPerm (s : V) : Equiv.Perm (Tr A) := (act_involutive A s).to
 @[simp] theorem actPerm_apply (s : V) (t : Tr A) : actPerm A s t = act A s t := rfl
 
 theorem actPerm_inv (s : V) : (actPerm A s)⁻¹ = actPerm A s :=
-  inv_eq_of_mul_eq_one_left (by ext t; simpa using act_involutive A s t)
+  inv_eq_of_mul_eq_one_left (by ext t; exact act_involutive A s t)
 
 theorem act_mkTr_of_canStart {s : V} {l : List V} (hl : IsRed A.rel l)
     (h : canStart A.rel s l) :
@@ -242,11 +241,11 @@ theorem act_comm {s r : V} (h : A.rel s r) (t : Tr A) :
 theorem actPerm_mul_comm {s r : V} (h : A.rel s r) :
     actPerm A s * actPerm A r = actPerm A r * actPerm A s := by
   ext t
-  simpa using act_comm A h t
+  exact act_comm A h t
 
 theorem actPerm_mul_self (s : V) : actPerm A s * actPerm A s = 1 := by
   ext t
-  simpa using act_involutive A s t
+  exact act_involutive A s t
 
 /-- The permutation of reduced traces determined by a word. -/
 noncomputable def wordPerm (l : List V) : Equiv.Perm (Tr A) := (l.map (actPerm A)).prod
@@ -300,7 +299,7 @@ theorem wordPerm_apply_one : ∀ {l : List V} (h : IsRed A.rel l),
       have ht : IsRed A.rel t := h.1
       have hna : ¬ canStart A.rel a t := h.2
       have : wordPerm A (a :: t) (oneTr A) = act A a (wordPerm A t (oneTr A)) := by
-        simp [wordPerm_cons]
+        simp
       rw [this, wordPerm_apply_one ht, act_mkTr_of_not_canStart A ht hna]
 
 /-- A word that is not reduced can be shortened without changing its action. -/
@@ -354,7 +353,7 @@ theorem trLen_act (s : V) (t : Tr A) :
       · left
         rw [show (Quotient.mk (redSetoid A) ⟨l, hl⟩ : Tr A) = mkTr A l hl from rfl,
           act_mkTr_of_canStart A hl hc]
-        simpa using length_popStart A.rel_symm hc
+        exact length_popStart A.rel_symm hc
       · right
         rw [show (Quotient.mk (redSetoid A) ⟨l, hl⟩ : Tr A) = mkTr A l hl from rfl,
           act_mkTr_of_not_canStart A hl hc]

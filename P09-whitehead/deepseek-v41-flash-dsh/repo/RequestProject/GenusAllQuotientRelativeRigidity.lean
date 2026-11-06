@@ -8,7 +8,6 @@ public import RequestProject.GenusAllQuotientReceivedSpine
 /-! Recover the entire named relation vector from its genuine geometric
 relative class. The scalar remains in the full quotient group until the last
 coefficient-retraction step. These proof terms are not yet Lean-verified. -/
-noncomputable section
 open scoped Classical
 
 set_option backward.defeqAttrib.useBackward true

@@ -69,10 +69,10 @@ theorem foxLin_mul (i : α) (a b : FreeGroupRing α) :
           abel
       | single h m =>
           rw [MonoidAlgebra.single_mul_single, foxLin_single, foxLin_single, foxLin_single,
-            aug_single, fox_mul, single_eq_smul_grp g n, smul_mul_assoc, smul_smul]
+            aug_single, fox_mul, single_eq_smul_grp, smul_mul_assoc, smul_smul]
           simp only [smul_add, zsmul_eq_mul, Int.cast_mul, mul_assoc]
           rw [← mul_assoc (m : FreeGroupRing α), (Int.cast_commute m (grp g)).eq, mul_assoc]
           congr 1
-          rw [← mul_assoc, ← mul_assoc, ← Int.cast_mul, ← Int.cast_mul, mul_comm n m]
+          rw [← mul_assoc, ← mul_assoc, ← Int.cast_mul, ← Int.cast_mul, mul_comm]
 
 end FiniteChains

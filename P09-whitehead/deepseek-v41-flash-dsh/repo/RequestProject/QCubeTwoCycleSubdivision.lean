@@ -67,7 +67,7 @@ theorem cubeTwoCycle_is_squareSubdivision (hcell : Function.Injective cell)
     apply squareChainSubdivision_off_cells
     intro i he
     apply hdim
-    rw [he, hspx i]
+    rw [he, hspx]
     simp [hne i]
 
 /-- The recovered cubical coefficients are genuine cycles for the facet boundary map. -/

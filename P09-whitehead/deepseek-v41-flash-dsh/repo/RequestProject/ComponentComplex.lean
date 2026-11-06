@@ -36,7 +36,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {A X Y Z : Complex2.{u}}
 
@@ -121,8 +120,6 @@ noncomputable def liftGerms (X : Complex2.{u}) (x₀ : X.V) (l : List (X.E × Bo
     List (CE X x₀ × Bool) :=
   l.filterMap fun eb => if h : Reach X x₀ (X.src eb.1) then some (⟨eb.1, h⟩, eb.2) else none
 
-@[simp] theorem liftGerms_nil (X : Complex2.{u}) (x₀ : X.V) : liftGerms X x₀ [] = [] := rfl
-
 @[simp] theorem liftGerms_append (X : Complex2.{u}) (x₀ : X.V) (l l' : List (X.E × Bool)) :
     liftGerms X x₀ (l ++ l') = liftGerms X x₀ l ++ liftGerms X x₀ l' := by
   simp [liftGerms, List.filterMap_append]
@@ -141,7 +138,7 @@ def cForget (eb : CE X x₀ × Bool) : X.E × Bool := (eb.1.1, eb.2)
   induction L with
   | nil => rfl
   | cons eb L ih =>
-      rw [List.map_cons, liftGerms_cons (eb := cForget eb) eb.1.2, ih]
+      rw [List.map_cons, liftGerms_cons, ih]
       rfl
 
 theorem map_cForget_liftGerms {l : List (X.E × Bool)}
@@ -204,14 +201,6 @@ noncomputable def component (x₀ : X.V) : Complex2.{u} where
   att f := liftGerms X x₀ (X.att f.1)
   att_isLoop f := isPath_liftGerms f.2 f.2 (X.att_isLoop f.1)
 
-@[simp] theorem component_V (x₀ : X.V) : (component X x₀).V = CV X x₀ := rfl
-@[simp] theorem component_E (x₀ : X.V) : (component X x₀).E = CE X x₀ := rfl
-@[simp] theorem component_F (x₀ : X.V) : (component X x₀).F = CF X x₀ := rfl
-@[simp] theorem component_src (x₀ : X.V) : (component X x₀).src = cSrc := rfl
-@[simp] theorem component_tgt (x₀ : X.V) : (component X x₀).tgt = cTgt := rfl
-@[simp] theorem component_att (x₀ : X.V) (f : CF X x₀) :
-    (component X x₀).att f = liftGerms X x₀ (X.att f.1) := rfl
-
 instance (x₀ : X.V) [Finite X.E] : Finite (component X x₀).E := by
   show Finite (CE X x₀); unfold CE; infer_instance
 
@@ -236,15 +225,6 @@ noncomputable def componentIncl (x₀ : X.V) : Hom (component X x₀) X where
   att_onF f := by
     refine (map_cForget_liftGerms ?_).symm
     exact reach_of_mem_path (X.att_isLoop f.1) f.2
-
-@[simp] theorem componentIncl_onV (x₀ : X.V) (v : (component X x₀).V) :
-    (componentIncl X x₀).onV v = v.1 := rfl
-
-@[simp] theorem componentIncl_onE (x₀ : X.V) (e : (component X x₀).E) :
-    (componentIncl X x₀).onE e = e.1 := rfl
-
-@[simp] theorem componentIncl_onF (x₀ : X.V) (f : (component X x₀).F) :
-    (componentIncl X x₀).onF f = f.1 := rfl
 
 theorem componentIncl_injective_onF (x₀ : X.V) :
     Function.Injective (componentIncl X x₀).onF := fun _ _ h => Subtype.ext h
@@ -274,10 +254,6 @@ noncomputable def Hom.toComponent (f : Hom A X) (x₀ : X.V)
     show liftGerms X x₀ (X.att (f.onF c)) = _
     rw [hL, liftGerms_map_cForget]
 
-@[simp] theorem toComponent_onV (f : Hom A X) (x₀ : X.V)
-    (h : ∀ v : A.V, Reach X x₀ (f.onV v)) (v : A.V) :
-    (f.toComponent x₀ h).onV v = ⟨f.onV v, h v⟩ := rfl
-
 /-! ### Homotopies take place inside the component -/
 
 /-- An elementary homotopy of the ambient complex between paths issued from a reachable
@@ -286,8 +262,7 @@ theorem step_liftGerms {a b : X.V} (ha : Reach X x₀ a) (hb : Reach X x₀ b)
     {l l' : List (X.E × Bool)} (hstep : Step X a b l l') :
     Htpy (component X x₀) ⟨a, ha⟩ ⟨b, hb⟩ (liftGerms X x₀ l) (liftGerms X x₀ l') := by
   obtain ⟨hl, hl', hc⟩ := hstep
-  have hPl : IsPath (component X x₀).src (component X x₀).tgt (liftGerms X x₀ l)
-      ⟨a, ha⟩ ⟨b, hb⟩ := isPath_liftGerms ha hb hl
+  have hPl := isPath_liftGerms ha hb hl
   have hPl' : IsPath (component X x₀).src (component X x₀).tgt (liftGerms X x₀ l')
       ⟨a, ha⟩ ⟨b, hb⟩ := isPath_liftGerms ha hb hl'
   rcases hc with ⟨p, q, eb, hlEq, hl'Eq⟩ | ⟨p, q, f, hlEq, hl'Eq⟩
@@ -296,8 +271,8 @@ theorem step_liftGerms {a b : X.V} (ha : Reach X x₀ a) (hb : Reach X x₀ b)
     have hsrc : Reach X x₀ (X.src eb.1) := reach_of_mem_path hl ha eb hmem
     refine Htpy.of_step ⟨hPl, hPl', Or.inl ⟨liftGerms X x₀ p, liftGerms X x₀ q,
       (⟨eb.1, hsrc⟩, eb.2), ?_, ?_⟩⟩
-    · rw [hlEq, liftGerms_append, liftGerms_cons hsrc,
-        liftGerms_cons (eb := revGerm eb) hsrc]
+    · rw [hlEq, liftGerms_append, liftGerms_cons,
+        liftGerms_cons]
       rfl
     · rw [hl'Eq, liftGerms_append]
   · by_cases hatt : X.att f = []
@@ -370,8 +345,7 @@ theorem zeroPi2_comp_right (g : Hom Y Z) (f : Hom X Y) (hz : ZeroPi2 g) :
   have hcycle : chain2 (univLift X f x₀) c ∈ Pi2 Y (f.onV x₀) :=
     mem_pi2_chain2_univLift f hc
   have hg := hz (f.onV x₀) (chain2 (univLift X f x₀) c) hcycle
-  have hfun : ∀ F : UF X x₀, (univLift Y g (f.onV x₀)).onF ((univLift X f x₀).onF F)
-      = (univLift X (g.comp f) x₀).onF F := fun F => univLiftF_comp g f x₀ F
+  have hfun := fun F => univLiftF_comp g f x₀ F
   have : Finsupp.mapDomain (univLift X (g.comp f) x₀).onF c
       = Finsupp.mapDomain (univLift Y g (f.onV x₀)).onF
         (Finsupp.mapDomain (univLift X f x₀).onF c) := by

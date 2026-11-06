@@ -71,7 +71,7 @@ theorem orderNerveExplicitSingularMap_single {P : Type} [PartialOrder P]
     (orderNerveExplicitSingularMap P).f n (Finsupp.single s r) =
       Finsupp.single (orderNerveSingularSimplex s) r := by
   change Finsupp.mapDomain _ (Finsupp.mapDomain _ (Finsupp.single s r)) = _
-  simp only [Finsupp.mapDomain_single]
+  simp
   rfl
 
 end FiniteChains.Comb

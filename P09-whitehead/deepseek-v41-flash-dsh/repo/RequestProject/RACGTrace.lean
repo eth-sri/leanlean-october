@@ -39,7 +39,6 @@ Main results:
 namespace FiniteChains
 namespace RACG
 
-universe u
 
 variable {V : Type u}
 
@@ -132,8 +131,7 @@ theorem canStart_swap {s : V} {l l' : List V} (h : Swap Cm l l') :
     canStart Cm s l ↔ canStart Cm s l' := by
   induction h with
   | @head a b hab q =>
-      have hba : Cm b a := hsymm hab
-      simp only [canStart_cons]
+      have hba := hsymm hab
       constructor
       · rintro (rfl | ⟨hsa, rfl | ⟨hsb, hq⟩⟩) <;> tauto
       · rintro (rfl | ⟨hsb, rfl | ⟨hsa, hq⟩⟩) <;> tauto
@@ -183,7 +181,7 @@ theorem ceq_popStart {s : V} {l : List V} (h : canStart Cm s l) :
   | cons a t ih =>
       by_cases hat : a = s
       · subst hat
-        simp only [popStart_cons, if_pos]
+        simp
         exact CEq.refl _
       · rcases h with h | ⟨hsa, ht⟩
         · exact absurd h hat
@@ -197,7 +195,7 @@ omit hirr in
 theorem length_popStart {s : V} {l : List V} (h : canStart Cm s l) :
     (popStart s l).length + 1 = l.length := by
   have := (ceq_popStart hsymm h).length_eq
-  simpa using this.symm
+  exact this.symm
 
 omit hsymm in
 /-- `popStart` respects traces. -/

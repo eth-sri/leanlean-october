@@ -23,7 +23,6 @@ finite chains) of the poset of nonempty faces.
 
 namespace FiniteChains
 
-universe u
 
 variable {V : Type u}
 

@@ -12,14 +12,12 @@ two-cycle is a finite sum of images of genuine cycles in copies of the
 universal cover of L. The component filters, fillings and old H2 vanishing
 are all constructed in the imported files. Unverified source. -/
 
-noncomputable section
 open scoped Classical
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.PushoutRelativeCopies
-universe u v
 variable {D K L : Complex2.{u}} {Q : Type v} [Group Q]
   (p : Hom D K) (hp : IsCovering p) (a : DeckAction D Q) (hr : IsRegular p a)
   (he : ∀ q e, p.onE (a.smulE q e) = p.onE e)

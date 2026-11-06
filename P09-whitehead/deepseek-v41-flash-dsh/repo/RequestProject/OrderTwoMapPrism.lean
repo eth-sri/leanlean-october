@@ -13,7 +13,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
   (f g : P → Q) (hf : Monotone f) (hg : Monotone g) (hfg : ∀ x, f x ≤ g x)
 

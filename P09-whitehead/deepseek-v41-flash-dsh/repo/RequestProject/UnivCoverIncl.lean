@@ -26,7 +26,6 @@ namespace Comb
 
 open MonoidAlgebra
 
-universe u
 
 /-! ### The chain map induced by a cellular map -/
 
@@ -69,7 +68,7 @@ theorem bdry2_chain2 (p : Hom X Y) (u : X.F →₀ ℤ) :
   | single f n =>
       show bdry2 Y (Finsupp.mapDomain p.onF (Finsupp.single f n))
         = Finsupp.mapDomain p.onE (bdry2 X (Finsupp.single f n))
-      rw [Finsupp.mapDomain_single, bdry2_single, bdry2_single, p.att_onF f, pathChain_map,
+      rw [Finsupp.mapDomain_single, bdry2_single, bdry2_single, p.att_onF, pathChain_map,
         Finsupp.mapDomain_smul]
 
 /-! ### The lift of an inclusion of presentations to the universal covers -/
@@ -93,10 +92,10 @@ theorem liftPath_map {Nsub : Subgroup (FreeGroup α)} [Nsub.Normal]
       · have hq : Ψ (q * (qof Nsub i)⁻¹) = Ψ q * (qof Msub (f i))⁻¹ := by
           rw [map_mul, map_inv, hΨ]
         simp only [List.map_cons, liftPath_cons_false]
-        rw [← hq, ih (q * (qof Nsub i)⁻¹)]
+        rw [← hq, ih]
       · have hq : Ψ (q * qof Nsub i) = Ψ q * qof Msub (f i) := by rw [map_mul, hΨ]
         simp only [List.map_cons, liftPath_cons_true]
-        rw [← hq, ih (q * qof Nsub i)]
+        rw [← hq, ih]
 
 /-- The map of fundamental groups induced by an inclusion of presentations. -/
 def presInclGroupHom (f : α → β) (ρ : J → FreeGroup α) (σ : K → FreeGroup β) (g : J → K)
@@ -144,11 +143,4 @@ def univCoverInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → Fre
 
 end Comb
 
-namespace PresChain
-
-universe u
-
-variable {α J : Type u} {ρ : J → FreeGroup α} {n : ℕ} (h : PresChain ρ n)
-
-end PresChain
 end FiniteChains

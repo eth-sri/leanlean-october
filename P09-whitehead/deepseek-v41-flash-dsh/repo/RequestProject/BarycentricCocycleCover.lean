@@ -15,7 +15,6 @@ noncomputable section
 open scoped Classical
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {P Q G : Type u} [PartialOrder P] [PartialOrder Q] [Group G]
   (f : NeSpx (cmpRel P) → Q) (hf : Monotone f)
   (c : OrdCocycle Q G) (a : Q) (hc : IsConnected (orderCx Q))
@@ -75,7 +74,7 @@ theorem barycentricCoverRealization_monotone :
   have htop := chainMax_monotone hστ
   have hσ : spx1 (chainMax σ).point ≤ descendedSurfaceSimplex f hf c σ := by
     intro p hp
-    simp only [spx1_val, Finset.mem_singleton] at hp
+    simp at hp
     subst p
     exact descendedSurfaceSimplex_top f hf c σ
   have hτ : descendedSurfaceSimplex f hf c σ ≤ descendedSurfaceSimplex f hf c τ :=

@@ -142,7 +142,7 @@ theorem genus_hread (s : PUnit) (x : ℕ × Bool) :
       = letterLoop (genusW ρ a b q) (sLet a b k) := by
     simp [genusLw, wordLoop, hkdef]
   rw [hword]
-  simpa using hmain
+  exact hmain
 
 /-! ### The relator of the block -/
 

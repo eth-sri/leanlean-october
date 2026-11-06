@@ -9,7 +9,6 @@ public import RequestProject.PresPosetConnected
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool))
   (hpos : ∀ j, 0 < (w j).length)
 

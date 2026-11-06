@@ -156,10 +156,6 @@ def genusSpineCutCell (σ : NeSpx (cmpRel (GenusVertex q))) (hσ : σ.1.card ≤
     change σ.1.card - 1 < 2
     omega)⟩
 
-@[simp] theorem genusSpineCellToOld_cutCell (σ : NeSpx (cmpRel (GenusVertex q)))
-    (hσ : σ.1.card ≤ 2) :
-    genusSpineCellToOld q (genusSpineCutCell q σ hσ) = posQCube σ := rfl
-
 instance : Nonempty (GenusSpineCell q) :=
   ⟨genusSpineCutCell q (spx1 (cC (gc q))) (by simp [spx1_val])⟩
 

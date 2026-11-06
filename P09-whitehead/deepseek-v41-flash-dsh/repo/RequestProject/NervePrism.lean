@@ -48,7 +48,6 @@ identity to the constant map `c_d`, and the constant map is killed by adjoining 
 namespace FiniteChains
 namespace Nerve
 
-universe u
 
 open FreeAbelianGroup
 
@@ -117,7 +116,7 @@ theorem bdry_consMap (a : P) (x : Ch P) : bdry (consMap a x) = x - consMap a (bd
 theorem bdry_bdry (x : Ch P) : bdry (bdry x) = 0 := by
   refine ext_apply (F := bdry.comp bdry) (G := 0) ?_ x
   intro l
-  simp only [AddMonoidHom.coe_comp, Function.comp_apply, bdry_of, AddMonoidHom.zero_apply]
+  simp
   induction l with
   | nil => simp
   | cons a t ih =>
@@ -144,7 +143,7 @@ theorem cmap_consMap (f : P → Q) (a : P) (x : Ch P) :
 theorem cmap_bdry (f : P → Q) (x : Ch P) : cmap f (bdry x) = bdry (cmap f x) := by
   refine ext_apply (F := (cmap f).comp bdry) (G := bdry.comp (cmap f)) ?_ x
   intro l
-  simp only [AddMonoidHom.coe_comp, Function.comp_apply, bdry_of, cmap_of]
+  simp
   induction l with
   | nil => simp
   | cons a t ih =>
@@ -192,8 +191,8 @@ theorem bdry_prism_add_prism_bdry (f g : P → P) (x : Ch P) :
         (consMap (g a) (cmap g X) - consMap (f a) (cmap g X) +
             consMap (f a) (consMap (g a) (bdry (cmap g X)))) -
           (prism f g X - consMap (f a) (bdry (prism f g X))) := by
-      rw [prism_consMap, map_sub, bdry_consMap (f a) (consMap (g a) (cmap g X)),
-        bdry_consMap (f a) (prism f g X), bdry_consMap (g a) (cmap g X), map_sub]
+      rw [prism_consMap, map_sub, bdry_consMap,
+        bdry_consMap, bdry_consMap, map_sub]
       abel
     have h2 : prism f g (bdry (consMap a X)) =
         prism f g X - (consMap (f a) (consMap (g a) (bdry (cmap g X))) -
@@ -216,7 +215,7 @@ theorem bdry_prism_add_prism_bdry (f g : P → P) (x : Ch P) :
   | nil => simp [prismOn]
   | cons a t ih =>
       have := key a (of t) ih
-      simpa using this
+      exact this
 
 /-! ### Increasing chains -/
 

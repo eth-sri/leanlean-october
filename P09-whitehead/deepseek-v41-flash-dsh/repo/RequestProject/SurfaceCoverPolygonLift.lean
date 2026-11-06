@@ -374,7 +374,7 @@ theorem polygonCoverReconstruct_coefficients (hM : 2 ≤ M)
   | single v n =>
     rw (config := { transparency := .default }) [polygonCoverReconstruct, Finsupp.linearCombination_single, map_smul,
       polygonCoverFilling_pole_coefficients hc f hf hM]
-    simp [Finsupp.smul_single]
+    simp
 
 /-- Every genuine relative two-chain in every actual surface cover is exactly
 the finite sum of genuine lifted polygon fillings with its actual pole

@@ -9,7 +9,6 @@ public import RequestProject.FinitePosetCycleNaturality
 parametrization exactly. No independent choice of circle coordinates is
 made on the larger presentation. Pending Lean verification. -/
 
-noncomputable section
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
 

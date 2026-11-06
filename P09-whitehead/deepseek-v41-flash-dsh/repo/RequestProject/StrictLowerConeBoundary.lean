@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 theorem strictTopConeEdgeChain_filter_top (f : P → Q) (hf : StrictMono f)
@@ -45,7 +44,7 @@ theorem strictLowerCone_internal_boundary_reflects_cycle (c : P)
           (fun t : (strictOrderCx P).F => t.1.2.2 = c) = 0) :
     bdry2 (strictOrderCx (Set.Iio c)) z = 0 := by
   have hzero := strictLowerChain_filter_top c z
-  simp only [strictLowerIncl] at hzero
+  simp at hzero
   rw (config := { transparency := .default }) [strictTopConeTriangleChain_boundary, Finsupp.filter_sub,
     strictTopConeEdgeChain_filter_top, hzero, sub_zero] at hz
   apply strictTopConeEdgeChain_injective Subtype.val (fun _ _ h => h) c

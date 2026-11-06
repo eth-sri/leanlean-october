@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
   (f : P → Q) (hf : StrictMono f) (c : Q) (hc : ∀ x, f x < c)
 
@@ -25,7 +24,7 @@ theorem strictTopConeTriangleTetrahedron_boundary (t : (strictOrderCx P).F) :
     strictOrdTetBoundary (strictTopConeTriangleTetrahedron f hf c hc t) =
       strictTopConeEdgeChain f hf c hc (bdry2 (strictOrderCx P) (Finsupp.single t 1)) -
         Finsupp.single ((strictOrderCxMap f hf).onF t) 1 := by
-  rw [bdry2_single (X := strictOrderCx P)]
+  rw [bdry2_single]
   simp only [one_smul]
   simp only [pathChain, strictOrderCx, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
   simp [map_add, map_neg, Finsupp.linearCombination_single, strictOrdTetBoundary, strictTopConeTriangleTetrahedron, strictTopConeEdgeChain, strictTopConeEdgeTriangle,
@@ -33,7 +32,7 @@ theorem strictTopConeTriangleTetrahedron_boundary (t : (strictOrderCx P).F) :
   rw (config := { transparency := .default }) [map_add, map_add, map_neg]
   rw (config := { transparency := .default }) [Finsupp.linearCombination_single,
     Finsupp.linearCombination_single, Finsupp.linearCombination_single]
-  simp only [one_smul]
+  simp
   abel
 
 theorem strictTopConeTriangleChain_boundary (z : (strictOrderCx P).F →₀ ℤ) :
@@ -49,6 +48,6 @@ theorem strictTopConeTriangleChain_boundary (z : (strictOrderCx P).F →₀ ℤ)
         strictTopConeTriangleTetrahedron_boundary, smul_sub]
       change _ = _ - Finsupp.mapDomain (strictOrderCxMap f hf).onF (Finsupp.single t n)
       rw [Finsupp.mapDomain_single]
-      simp [bdry2]
+      simp
 
 end FiniteChains.Comb

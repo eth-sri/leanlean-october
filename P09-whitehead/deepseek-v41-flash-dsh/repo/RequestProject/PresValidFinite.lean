@@ -9,7 +9,6 @@ public import RequestProject.OrderNerveRealizationFinite
 
 namespace FiniteChains.PresModel
 open Comb CategoryTheory
-universe u
 
 instance cPos_finite : Finite CPos := by
   let index : CPos → Fin 4
@@ -34,29 +33,6 @@ instance rose_finite {α : Type u} [Finite α] : Finite (Rose α) := by
   | edg a b => exact ⟨some (a, some b), rfl⟩
 
 variable {α J : Type u} (w : J → List (α × Bool))
-
-/-- Actual word positions have bounded finite indices, even though the old model
-uses all natural numbers for its unused positions. -/
-instance validPresPos_finite [Finite α] [Finite J] : Finite (ValidPresPos w) := by
-  let decode : Rose α ⊕ ((Σ j : J, Fin (w j).length × CPos) ⊕ J) → ValidPresPos w
-    | .inl r => ⟨iRose w r, trivial⟩
-    | .inr (.inl ⟨j, k, t⟩) => ⟨iCirc w (TCirc.pt w j k.val t), k.isLt⟩
-    | .inr (.inr j) => ⟨apexOf w j, trivial⟩
-  apply Finite.of_surjective decode
-  rintro ⟨p, hp⟩
-  cases p with
-  | inl p =>
-    cases p with
-    | inl r => exact ⟨.inl r, rfl⟩
-    | inr c =>
-      obtain ⟨j, k, t⟩ := c
-      exact ⟨.inr (.inl ⟨j, ⟨k, hp⟩, t⟩), rfl⟩
-  | inr j => exact ⟨.inr (.inr j), rfl⟩
-
-instance validPresPos_hasDimensionLE : (nerve (ValidPresPos w)).HasDimensionLE 2 :=
-  orderNerve_hasDimensionLE (fun p : ValidPresPos w => presPosDimension w p.val)
-    ((presPosDimension_strictMono w).comp (fun _ _ h => h)) 2
-    (fun p => presPosDimension_le_two w p.val)
 
 end FiniteChains.PresModel
 

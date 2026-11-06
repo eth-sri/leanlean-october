@@ -11,7 +11,6 @@ two-skeleton. This is the cover used with strict cellular acyclicity.
 Unverified source. -/
 
 namespace FiniteChains.Comb.IsPosetCover
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q] {f : P → Q}
   (hf : IsPosetCover f)
 

@@ -10,7 +10,6 @@ public import RequestProject.PresCoverRoseFibreEquiv
 noncomputable section
 namespace FiniteChains.PresModel.PresCocycleCover
 open Comb
-universe u
 variable {α J G : Type u} [Group G] (w : J → List (α × Bool))
   (gen : α → G) (hrel : ∀ j, wordVal gen (w j) = 1)
 
@@ -114,7 +113,7 @@ theorem circleInclusion_sheet (p : PresCoverRelator w (projection w gen hrel))
   rw [hx, hp] at he
   change _ * trivFun w gen p.val.2 (cylOuter (aHom w) x.val) = p.val.1.sheet at he
   rw [← he]
-  simp only [mul_assoc, mul_inv_cancel, mul_one]
+  simp
 
 /-- Actual midpoint sheet equals the signed-letter Fox prefix, including inverse letters. -/
 theorem relatorLetterMidpoint_sheet (p : PresCoverRelator w (projection w gen hrel))

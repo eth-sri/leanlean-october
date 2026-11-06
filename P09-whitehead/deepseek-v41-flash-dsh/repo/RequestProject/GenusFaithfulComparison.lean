@@ -22,7 +22,6 @@ theorem pi1Conj_empty_apply {K : Complex2} (a : K.V) (z : Pi1 K a) :
 end FiniteChains.Comb
 
 namespace FiniteChains.Comb.OrdCocycle
-universe v w
 variable {P : Type} [Preorder P] {G : Type v} [Group G] {H : Type w} [Group H]
 
 theorem monodromy_baseEq (c : OrdCocycle P G) {a b : P} (h : a = b)
@@ -131,7 +130,7 @@ theorem namedBaseAlpha_marked (x : Fin q × Bool) :
   apply Quotient.sound
   have hh := genusNonempty_hread (namedPres ρ q u) (namedA (α := α) q)
     (namedB (α := α) q) q PUnit.unit.{1} (x.1.val, x.2)
-  simp only [List.nil_append, revPath_nil, List.append_nil] at hh
+  simp at hh
   have hl : genusLw (namedA (α := α) q) (namedB (α := α) q) q
       PUnit.unit.{1} (x.1.val, x.2) = [(Sum.inr x, true)] := namedLw_eq q PUnit.unit x
   rw (config := { transparency := .default }) [hl] at hh
@@ -266,7 +265,7 @@ theorem singleSpineNamedReceiver_internal (z : SpinePresentationGen q) :
     (genEmb (α := α) (Zt := fun _ : PUnit.{1} => SpinePresentationGen q) PUnit.unit)
     (blockSubst (Zt := fun _ : PUnit.{1} => SpinePresentationGen q) (fun _ => u) PUnit.unit
       (FreeGroup.map Sum.swap (FreeGroup.of (Sum.inl z))))) = _
-  simp only [FreeGroup.map.of, Sum.swap_inl, blockSubst_of_inr, genEmb_inr]
+  simp
   rfl
 
 theorem finiteSpineToQuotient_source :

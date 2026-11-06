@@ -41,7 +41,7 @@ theorem ruleOne_group_square :
   intro g
   induction g using QuotientGroup.induction_on with
   | H w =>
-      simp only [MonoidHom.comp_apply, relativeRuleOneMap_hom_mk]
+      simp
       change QuotientGroup.mk (FreeGroup.map id (pairSubstitution w)) =
         (relativeRuleOneMap core (restrictedExtra extra t)).hom
           (QuotientGroup.mk (FreeGroup.map id w))

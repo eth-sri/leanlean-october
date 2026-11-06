@@ -6,7 +6,6 @@ public import RequestProject.NervePrism
 
 /-! A three-leg order contraction supplies actual augmented nerve fillings. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P : Type u} [Preorder P]
 
 theorem exists_bdry_eq_of_cycle_threeLeg (r g : P → P) (d : P)

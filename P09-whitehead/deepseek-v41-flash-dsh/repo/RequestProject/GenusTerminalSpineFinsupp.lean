@@ -130,7 +130,7 @@ theorem actualTerminalSpineFS_composite_trivial
       (terminalStructuralMapFS q u ρ hrho)).hom g = 1 := by
   apply hom_eq_one_of_gens
   rintro (a | k)
-  · rw [hcoreTriv a, map_one]
+  · rw [hcoreTriv, map_one]
   · change (QuotientGroup.mk (FreeGroup.map Sum.inl (FreeGroup.of (Sum.inr k))) :
       PresGroup (addRels (substPresF ρ (familyFiniteSpineWordBlock q u))
         (terminalSpineCaps (A := A) (K := K) q))) = 1

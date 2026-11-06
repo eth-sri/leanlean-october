@@ -17,7 +17,6 @@ namespace FiniteChains.SingularSubdivision
 
 open Set Topology TopologicalSingular
 
-universe u v
 variable {X : Type u} [TopologicalSpace X] {ι : Type v}
 
 theorem iterated_subdivide_zero (k n : ℕ) : ((subdivide (X := X) n)^[k]) 0 = 0 := by

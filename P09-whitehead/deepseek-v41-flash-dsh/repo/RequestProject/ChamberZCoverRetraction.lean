@@ -10,7 +10,6 @@ public import RequestProject.OrderUniversalPosetCover
 /-! The actual marked-chamber retraction on covering posets. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {M : CayGroup A → Prop} {att : NeSpx A →o X}
   {P : Type u} [PartialOrder P] {f : P → Zpos A X M att}

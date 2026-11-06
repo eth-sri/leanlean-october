@@ -28,7 +28,6 @@ namespace FiniteChains
 
 namespace SquareComplex
 
-universe u v
 
 variable {Vt : Type u} {Vb : Type v} {T : SquareComplex Vt} {B : SquareComplex Vb} {p : Vt → Vb}
 
@@ -101,7 +100,7 @@ theorem liftEnd_spec (hp : IsCovering T B p) : ∀ {b c : Vb} (w : (toSimpleGrap
       refine ⟨x :: lt, isWalk_cons hw ?_, by simp, ?_, ?_⟩
       · intro y hy
         rw [hh] at hy
-        simp only [Option.some.injEq] at hy
+        simp at hy
         subst hy
         exact hxy
       · cases hlt : lt with

@@ -5,7 +5,6 @@ public import RequestProject.OrderComplexPi1Transfer
 @[expose] public section
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [Preorder P] [Preorder Q]
 
 /-- An actual order isomorphism is surjective on based fundamental groups. -/

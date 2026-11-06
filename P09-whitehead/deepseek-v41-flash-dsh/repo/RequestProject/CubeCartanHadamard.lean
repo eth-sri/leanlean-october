@@ -62,7 +62,6 @@ namespace FiniteChains
 
 open Finsupp
 
-universe u
 
 /-- Combinatorial data of an at most three-dimensional cube complex, seen from a base
 vertex: heights, descending neighbours and the squares and cubes they span. -/
@@ -122,17 +121,10 @@ variable (S)
 /-- The edge from `w` down to a descending neighbour `a`. -/
 def edge (w a : Vx) : S.EdgeC := (w, a)
 
-@[simp] theorem edge_eq_iff {w a w' a' : Vx} : S.edge w a = S.edge w' a' ↔ w = w' ∧ a = a' :=
-  Prod.ext_iff
-
 /-- The square spanned at `w` by two distinct descending neighbours `x`, `y`. -/
 def sqCell (w x y : Vx) (hx : x ∈ S.dn w) (hy : y ∈ S.dn w) (hne : x ≠ y) : S.SqC :=
   if h : x < y then ⟨(w, x, y), hx, hy, h⟩
   else ⟨(w, y, x), hy, hx, lt_of_le_of_ne (not_lt.mp h) (Ne.symm hne)⟩
-
-@[simp] theorem sqCell_top (w x y : Vx) (hx : x ∈ S.dn w) (hy : y ∈ S.dn w) (hne : x ≠ y) :
-    (S.sqCell w x y hx hy hne).top = w := by
-  unfold sqCell; split <;> rfl
 
 /-! ## The chain complex -/
 
@@ -147,13 +139,6 @@ def sqCell (w x y : Vx) (hx : x ∈ S.dn w) (hy : y ∈ S.dn w) (hne : x ≠ y) 
 /-- Explicit constructor for a square, with its projections as simp lemmas. -/
 def sq3 (w x y : Vx) (hx : x ∈ S.dn w) (hy : y ∈ S.dn w) (h : x < y) : S.SqC :=
   ⟨(w, x, y), hx, hy, h⟩
-
-@[simp] theorem sq3_top (w x y : Vx) (hx : x ∈ S.dn w) (hy : y ∈ S.dn w) (h : x < y) :
-    (S.sq3 w x y hx hy h).top = w := rfl
-@[simp] theorem sq3_x (w x y : Vx) (hx : x ∈ S.dn w) (hy : y ∈ S.dn w) (h : x < y) :
-    (S.sq3 w x y hx hy h).x = x := rfl
-@[simp] theorem sq3_y (w x y : Vx) (hx : x ∈ S.dn w) (hy : y ∈ S.dn w) (h : x < y) :
-    (S.sq3 w x y hx hy h).y = y := rfl
 
 /-! ## Every two-cycle is a boundary -/
 

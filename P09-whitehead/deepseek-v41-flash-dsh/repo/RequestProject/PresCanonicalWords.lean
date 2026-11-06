@@ -6,7 +6,6 @@ public import RequestProject.PresSubcomplex
 @[expose] public section
 
 namespace FiniteChains.PresModel
-universe u
 variable {α β J K : Type u} [DecidableEq α] [DecidableEq β]
 
 /-- Reduced words with a cancelling pair. Choosing a compatible generator makes

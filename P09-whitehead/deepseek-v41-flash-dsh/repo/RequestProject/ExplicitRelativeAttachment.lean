@@ -21,7 +21,6 @@ set_option backward.isDefEq.respectTransparency false
 
 namespace FiniteChains.RelativeAttachment
 
-universe u
 variable {A X D : Type u}
 
 /-- The old points and the interior points are distinct summands. The base
@@ -48,7 +47,7 @@ theorem old_injective (r : A → X) (i : A → D) : Function.Injective (old r i)
 @[simp] theorem cell_of_not_mem (r : A → X) (i : A → D) (d : D)
     (hd : d ∉ Set.range i) : cell r i d = Sum.inr ⟨d, hd⟩ := by
   unfold cell
-  rw [dite_eq_right hd]
+  rw [dite_eq_right]
 
 theorem cell_boundary (r : A → X) (i : A → D) (hi : Function.Injective i) (a : A) :
     cell r i (i a) = old r i (r a) := by
@@ -106,13 +105,13 @@ theorem cell_preimage_fresh_image (r : A → X) (i : A → D)
     by_cases hd : d ∈ Set.range i
     · have he' : Sum.inr v = Sum.inl (r (Classical.choose hd)) := by
         simp only [fresh, cell] at he
-        rw [dite_eq_left hd] at he
+        rw [dite_eq_left] at he
         exact he
       exact (Sum.inr_ne_inl he').elim
     · have hvd : v = ⟨d, hd⟩ := by
         apply Sum.inr_injective
         simp only [fresh, cell] at he
-        rw [dite_eq_right hd] at he
+        rw [dite_eq_right] at he
         exact he
       exact ⟨v, hv, congrArg Subtype.val hvd⟩
   · rintro ⟨v, hv, rfl⟩

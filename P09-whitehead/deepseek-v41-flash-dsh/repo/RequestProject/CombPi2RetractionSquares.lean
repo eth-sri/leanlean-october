@@ -13,7 +13,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X Y Z X' Y' : Complex2.{u}}
 
 theorem zeroPi2_comp_left (g : Hom Y Z) (f : Hom X Y) (hz : ZeroPi2 f) :

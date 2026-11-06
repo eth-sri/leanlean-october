@@ -17,7 +17,6 @@ namespace FiniteChains.TopologicalSingular
 
 open Set Topology
 
-universe u
 
 variable {X : Type u} [TopologicalSpace X]
 
@@ -58,7 +57,7 @@ theorem pathCone_single [PathConnectedSpace X] (root : X) (σ : Simplex X 0) (a 
     pathCone root (Finsupp.single σ a) =
       Finsupp.single (pathSimplex (PathConnectedSpace.somePath root (zeroSimplexEquiv σ))) a := by
   rw [pathCone, Finsupp.linearCombination_single, Finsupp.smul_single]
-  simp only [smul_eq_mul, mul_one]
+  simp
 
 theorem boundary_pathCone [PathConnectedSpace X] (root : X) (c : Chain X 0) :
     boundary 0 (pathCone root c) = c - augmentation c • Finsupp.single (ContinuousMap.const _ root) 1 := by

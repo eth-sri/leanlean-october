@@ -14,7 +14,6 @@ set_option maxHeartbeats 800000
 
 namespace FiniteChains.PresModel.IdentityChains
 open Comb Comb.StrictNormalized
-universe u
 variable {α J : Type u} (w : J → List (α × Bool))
 
 def cover : IsPosetCover (id : PresPos w → PresPos w) :=

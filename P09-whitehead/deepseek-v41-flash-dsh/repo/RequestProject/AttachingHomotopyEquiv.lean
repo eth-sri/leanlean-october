@@ -13,7 +13,6 @@ noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u
 variable {D P : Type u} [TopologicalSpace D] [TopologicalSpace P]
 
 theorem exists_attachingDiskExtension (S : Set D)

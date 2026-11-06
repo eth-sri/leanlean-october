@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 
 /-- Paths from a chosen vertex fill every augmented cellular zero-cycle. -/
 theorem zeroCycle_filling_of_connected (X : Complex2.{u}) (a : X.V)

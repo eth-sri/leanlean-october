@@ -6,7 +6,6 @@ public import RequestProject.OrderUniversalPosetCells
 @[expose] public section
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
 /-- The genuine universal-cover endpoint strictly raises comparable vertices. -/
@@ -20,7 +19,6 @@ end FiniteChains.Comb
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u}
 
 /-- Dimension two persists in the actual path-class universal cover. -/

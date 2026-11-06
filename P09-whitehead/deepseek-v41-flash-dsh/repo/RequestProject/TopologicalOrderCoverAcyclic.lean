@@ -14,7 +14,6 @@ The total space, projection, and deck action are constructed from the
 given actual covering; acyclicity follows from its actual homeomorphism.
 Unverified source. -/
 
-noncomputable section
 namespace FiniteChains.Comb.TopologicalOrderCover
 open CategoryTheory Topology
 open scoped Classical

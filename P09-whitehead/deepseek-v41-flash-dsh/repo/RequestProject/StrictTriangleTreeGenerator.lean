@@ -15,7 +15,6 @@ stabilization of the descended chain. Awaiting final Lean verification. -/
 noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb.SpanningTree
-universe u
 variable {P : Type u} [PartialOrder P]
 
 theorem nonempty_nonTree_of_strictTriangle (T : SpanningTree (strictOrderCx P))

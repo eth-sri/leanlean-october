@@ -38,7 +38,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {P Q : Type u} [Preorder P] [Preorder Q]
 
@@ -147,11 +146,8 @@ theorem htpyIn_append_revPath {A : P → Prop} {p : List ((orderCx P).E × Bool)
       obtain ⟨ha, hrest⟩ := hp
       subst ha
       obtain ⟨hebA, hpA'⟩ := pathIn_of_cons hpA
-      have hih : HtpyIn A (germTgt (orderCx P).src (orderCx P).tgt eb)
-          (germTgt (orderCx P).src (orderCx P).tgt eb) (p ++ revPath p) [] := ih hrest hpA'
-      have hebPath : IsPath (orderCx P).src (orderCx P).tgt [eb]
-          (germSrc (orderCx P).src (orderCx P).tgt eb)
-          (germTgt (orderCx P).src (orderCx P).tgt eb) := isPath_single eb
+      have hih := ih hrest hpA'
+      have hebPath := isPath_single eb
       have hrevPath : IsPath (orderCx P).src (orderCx P).tgt [revGerm eb]
           (germTgt (orderCx P).src (orderCx P).tgt eb)
           (germSrc (orderCx P).src (orderCx P).tgt eb) := by
@@ -164,7 +160,7 @@ theorem htpyIn_append_revPath {A : P → Prop} {p : List ((orderCx P).E × Bool)
           ([eb] ++ (p ++ revPath p) ++ [revGerm eb]) ([eb] ++ [] ++ [revGerm eb]) :=
         hih.congr_append hebPath hrevPath hsingleA hrevA
       have hrw : (eb :: p) ++ revPath (eb :: p) = [eb] ++ (p ++ revPath p) ++ [revGerm eb] := by
-        simp [revPath, List.append_assoc]
+        simp
       have hlast : HtpyIn A (germSrc (orderCx P).src (orderCx P).tgt eb)
           (germSrc (orderCx P).src (orderCx P).tgt eb) [eb, revGerm eb] [] := by
         refine HtpyIn.of_step ⟨⟨?_, rfl, Or.inl ⟨[], [], eb, rfl, rfl⟩⟩, ?_, pathIn_nil A⟩
@@ -173,7 +169,7 @@ theorem htpyIn_append_revPath {A : P → Prop} {p : List ((orderCx P).E × Bool)
         · exact pathIn_cons hebA (pathIn_cons hebA (pathIn_nil A))
       rw [hrw]
       refine hcongr.trans ?_
-      simpa using hlast
+      exact hlast
 
 theorem htpyIn_revPath_append {A : P → Prop} {p : List ((orderCx P).E × Bool)} {a b : P}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b) (hpA : PathIn A p) :

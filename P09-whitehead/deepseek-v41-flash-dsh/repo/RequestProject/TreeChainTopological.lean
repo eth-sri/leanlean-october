@@ -36,7 +36,6 @@ namespace FiniteChains
 namespace Comb
 namespace SpanningTree
 
-universe u
 
 /-! ### Naturality of the identification of the two models -/
 
@@ -59,7 +58,7 @@ theorem uvQ_univLiftV {x₀ : X.V} (c : UV X x₀) :
   | h p =>
       show wordQ TY (relTree TY) (mapPath h p.1) = _
       show QuotientGroup.mk (pathWord TY (mapPath h p.1)) = _
-      rw [pathWord_mapPath hiff]
+      rw [pathWord_mapPath]
       rfl
 
 omit [Fintype (NonTree TX)] [Fintype X.F] [DecidableEq X.F] [Fintype (NonTree TY)]
@@ -74,7 +73,7 @@ theorem uvFace_univLiftF (hE : Function.Injective h.onE) {x₀ : X.V} (F : UF X 
   show ((uvQ (T := TY) (univLiftV x₀ h F.1.1), h.onF F.1.2) : (treeUniv TY).F)
     = Prod.map (presInclGroupHom (nonTreeIncl hiff) (treeRel TX) (treeRel TY) h.onF
         (treeRel_onF hiff)) h.onF (uvQ (T := TX) F.1.1, F.1.2)
-  rw [uvQ_univLiftV hiff]
+  rw [uvQ_univLiftV]
   rfl
 
 omit [Fintype (NonTree TX)] [Fintype X.F] [DecidableEq X.F] [Fintype (NonTree TY)]

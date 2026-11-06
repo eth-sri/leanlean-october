@@ -7,7 +7,6 @@ public import RequestProject.TopologicalSingular.SimplexLinearHomotopy
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
 theorem basedTetrahedron_eq_of_two_zero_coordinates (tau : Simplex X 3)

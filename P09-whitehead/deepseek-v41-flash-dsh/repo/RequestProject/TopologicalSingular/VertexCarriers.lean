@@ -11,7 +11,6 @@ public import Mathlib.LinearAlgebra.Finsupp.Supported
 
 namespace FiniteChains.VertexChains
 
-universe u
 variable {V : Type u}
 
 theorem map_mem_of_supported {ι M : Type*} [AddCommGroup M] [Module ℤ M]
@@ -47,8 +46,7 @@ theorem cone_mem_carried (S : Set V) (p : V) (hp : p ∈ S) (n : ℕ) {c : Chain
   intro v hv
   rw [cone_single]
   apply single_mem_carried
-  intro i
-  exact Fin.cases hp (fun j => hv j) i
+  exact Fin.cases hp (fun j => hv j)
 
 variable (center : ∀ n, Vertices V n → V) (S : Set V)
 variable (hcenter : ∀ n v, (∀ i, v i ∈ S) → center n v ∈ S)

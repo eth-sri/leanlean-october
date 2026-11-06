@@ -8,7 +8,6 @@ public import RequestProject.SquareMovingBasepoint
 /-! Invariance of the challenge's actual based-square zero condition under ordinary
 homotopies and homotopy equivalences. Base points need not be fixed by the homotopies. -/
 
-noncomputable section
 
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
@@ -68,7 +67,7 @@ theorem killsPi2_homotopyEquiv_postcomp_iff (e : ContinuousMap.HomotopyEquiv Y Z
     have hk := killsPi2_postcompose (e.toFun.comp f) e.invFun h
     change KillsPi2 ((e.invFun.comp e.toFun).comp f) at hk
     have hh : ((e.invFun.comp e.toFun).comp f).Homotopic f := by
-      simpa using e.left_inv.comp (ContinuousMap.Homotopic.refl f)
+      exact e.left_inv.comp (ContinuousMap.Homotopic.refl f)
     exact (killsPi2_homotopic_iff hh).mp hk
   · exact killsPi2_postcompose f e.toFun
 
@@ -80,7 +79,7 @@ theorem killsPi2_homotopyEquiv_precomp_iff (e : ContinuousMap.HomotopyEquiv X Y)
     have hk := killsPi2_precompose e.invFun (f.comp e.toFun) h
     change KillsPi2 (f.comp (e.toFun.comp e.invFun)) at hk
     have hh : (f.comp (e.toFun.comp e.invFun)).Homotopic f := by
-      simpa using (ContinuousMap.Homotopic.refl f).comp e.right_inv
+      exact (ContinuousMap.Homotopic.refl f).comp e.right_inv
     exact (killsPi2_homotopic_iff hh).mp hk
   · exact killsPi2_precompose e.toFun f
 

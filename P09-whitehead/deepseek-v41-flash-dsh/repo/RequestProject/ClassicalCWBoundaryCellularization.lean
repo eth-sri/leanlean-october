@@ -145,7 +145,7 @@ theorem boundaryFamily_into_oneSkeleton (K : Whitehead.TwoComplex) {J : Type}
   letI : CompactSpace (UnitBoundary (Fin 2 → ℝ)) := isCompact_iff_compactSpace.mp (by
     convert isCompact_sphere (0 : Fin 2 → ℝ) 1 using 1
     ext x
-    simp only [Metric.mem_sphere, dist_zero_right]
+    simp
     rfl)
   intro j
   obtain ⟨support, hsupport⟩ := IsCompact.finite_lower_support (isCompact_range (ι.comp (q j)).continuous) 2

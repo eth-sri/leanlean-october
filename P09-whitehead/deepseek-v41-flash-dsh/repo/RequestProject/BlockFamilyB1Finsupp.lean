@@ -40,7 +40,7 @@ theorem fsRingMapBoundary_mapRange (φ : R →+* S) (A : J → I →₀ R)
     fsRingMapBoundary φ A (y.mapRange φ (map_zero _)) =
       (Finsupp.linearCombination R A y).mapRange φ (map_zero _) := by
   induction y using Finsupp.induction_linear with
-  | zero => simp [fsRingMapBoundary]
+  | zero => simp
   | add y z hy hz =>
       rw [Finsupp.mapRange_add, map_add, map_add, Finsupp.mapRange_add, hy, hz] <;>
         exact fun a b => map_add φ a b
@@ -129,7 +129,6 @@ end GroupMap
 
 namespace BlockFamily
 
-universe u
 
 section ChainColumns
 
@@ -327,7 +326,7 @@ theorem fsCycle_preimage (c : ∀ s, Mt s →₀ R')
   obtain ⟨y, hy, _, _⟩ := fsCellsBase_preimage_of_internal_zero ρ bsub c hblock x
     (fun s z => congrArg (fun v => v (Sum.inr ⟨s, z⟩)) hx)
   refine ⟨y, ?_, hy⟩
-  apply fsOldOneIncl_injective (Z := Σ s, Zt s)
+  apply fsOldOneIncl_injective
   rw [map_zero]
   have h := LinearMap.congr_fun (fsCellsBase_chainMap ρ bsub hfill c hc) y
   change coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub)

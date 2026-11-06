@@ -92,7 +92,7 @@ theorem augH_cosetBasis_repr_single [H.Normal] [IsMulCommutative H] (q : Q) (a :
     augH k H ((cosetBasis (k := k) (H := H)).repr (single q a) c) =
       (quotRingHom k H (single q a)).coeff (cosetQuotEquiv H c) := by
   classical
-  rw [cosetBasis_repr_single (k := k) (H := H) q a, quotRingHom_single (k := k) (H := H) q a]
+  rw [cosetBasis_repr_single, quotRingHom_single]
   by_cases hc : c = Quotient.mk (QuotientGroup.rightRel H) q
   · subst hc
     rw [Finsupp.single_eq_same, augH_single, cosetQuotEquiv_mk, MonoidAlgebra.coeff_single, Finsupp.single_eq_same]
@@ -124,7 +124,7 @@ theorem augH_cosetBasis_repr [H.Normal] [IsMulCommutative H] (x : MonoidAlgebra 
       RingHom.toAddMonoidHom_eq_coe]
     exact augH_cosetBasis_repr_single q a c
   have := congrArg (fun g : MonoidAlgebra k Q →+ k => g x) hLM
-  simpa [hL, hM] using this
+  exact this
 
 variable (k H)
 
@@ -172,6 +172,6 @@ theorem mapRange_augH_vecCoords [H.Normal] [IsMulCommutative H] {ι : Type*}
   ext ⟨i, c⟩
   by_cases hi : u i = 0
   · simp [hi]
-  · simpa using augH_cosetBasis_repr (u i) c
+  · exact augH_cosetBasis_repr (u i) c
 
 end FiniteChains

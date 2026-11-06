@@ -7,7 +7,6 @@ public import RequestProject.GenusSurfaceMarkingCoefficients
 /-! The boundary of the actual polygon reconstruction recovers the complete
 marked boundary before old-chain comparison. No independent marking-scalar
 hypothesis remains.  -/
-noncomputable section
 open scoped Classical
 
 set_option backward.defeqAttrib.useBackward true
@@ -16,7 +15,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open Nerve
-universe u
 variable {P : Type u} [PartialOrder P]
 
 theorem decodeOrdNerve2_boundary_of_encoded_boundary

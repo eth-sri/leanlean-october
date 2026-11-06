@@ -31,7 +31,6 @@ This file proves the corresponding statement:
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {α : Type u} [DecidableEq α] {J : Type u}
 
@@ -58,7 +57,6 @@ theorem expVec_single_germ (x : α × Bool) :
   cases b
   · have h1 : FreeGroup.mk [(a, false)] = (FreeGroup.of a)⁻¹ := rfl
     rw [h1, map_inv, expVec_of]
-    show Multiplicative.ofAdd (-Finsupp.single a (1 : ℤ)) = _
     rw [pathChain_cons]
     simp
   · have h1 : FreeGroup.mk [(a, true)] = FreeGroup.of a := rfl

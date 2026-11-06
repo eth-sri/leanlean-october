@@ -12,7 +12,7 @@ theorem domain_zero_coordinate_face {n : ℕ} (z : Domain (n + 1)) (i : Fin (n +
     (hi : z.val i = 0) : ∃ w : Domain n, stdSimplex.map (SimplexCategory.δ i) w = z := by
   let w : Domain n := ⟨fun j => z.val (i.succAbove j), fun j => z.property.1 _, by
     have hs := z.property.2
-    rw [Fin.sum_univ_succAbove (fun j => z.val j) i, hi, zero_add] at hs
+    rw [Fin.sum_univ_succAbove, hi, zero_add] at hs
     exact hs⟩
   refine ⟨w, ?_⟩
   apply Subtype.ext

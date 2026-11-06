@@ -11,7 +11,6 @@ Both inverse homotopies remain the actual backtrack construction. Unverified. -/
 noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical ContinuousMap
-universe u
 variable {D P : Type u} [TopologicalSpace D] [TopologicalSpace P]
   (S : Set D) (a₀ a₁ : C(S, P)) (H : a₀.Homotopy a₁)
   (L₀ : C(I × D, Space a₀ Subtype.val))

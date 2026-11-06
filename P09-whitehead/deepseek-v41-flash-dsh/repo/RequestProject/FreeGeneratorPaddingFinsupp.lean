@@ -74,7 +74,7 @@ theorem coefficients_proj (x : FreeGroupRing A) :
         (Finsupp.mapDomain (QuotientGroup.mk' (relSub ρ)) (Finsupp.single w a)) =
         Finsupp.mapDomain (QuotientGroup.mk' (relSub (rel ρ f)))
           (Finsupp.mapDomain (FreeGroup.map f) (Finsupp.single w a))
-      simp only [Finsupp.mapDomain_single]
+      simp
       rfl
 
 variable [DecidableEq A] [DecidableEq B]

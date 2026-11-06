@@ -18,7 +18,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
 theorem stickSimplex_mem_codimTwo_of_mem_cubeCodimTwo {d : ℕ} (t : Fin d → I)

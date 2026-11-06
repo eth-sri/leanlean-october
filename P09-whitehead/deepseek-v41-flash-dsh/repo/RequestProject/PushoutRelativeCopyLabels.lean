@@ -17,7 +17,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.PushoutRelativeCopies
-universe u
 variable {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
   (hiV : Function.Injective i.onV) (hiE : Function.Injective i.onE)
   (hiF : Function.Injective i.onF) (a : L.V)

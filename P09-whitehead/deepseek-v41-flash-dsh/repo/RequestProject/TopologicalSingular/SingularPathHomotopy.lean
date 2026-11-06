@@ -12,7 +12,6 @@ namespace FiniteChains.TopologicalSingular
 
 open Set Topology
 
-universe u
 variable {X : Type u} [TopologicalSpace X]
 
 theorem boundary_two_single (σ : Simplex X 2) (r : ℤ) :

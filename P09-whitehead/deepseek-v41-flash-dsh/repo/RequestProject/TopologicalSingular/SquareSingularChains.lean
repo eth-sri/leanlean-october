@@ -89,7 +89,6 @@ theorem squareFundamentalChain_boundary_supported :
     · exact single_mem_subChains _ 1 _ 1 (cubeEdge_boundary 1 1 (Or.inr rfl))
   · exact single_mem_subChains _ 1 _ 1 (cubeEdge_boundary 0 0 (Or.inl rfl))
 
-universe u v
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
 noncomputable def squareCycle (p : GenLoop (Fin 2) X x) : Chain X 2 :=

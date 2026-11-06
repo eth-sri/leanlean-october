@@ -27,7 +27,6 @@ bridge: spanning trees themselves.
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {K : Complex2.{u}}
 
@@ -119,7 +118,7 @@ theorem isTree_of_mem_treePath (a : K.V) {g : K.E × Bool} (hg : g ∈ T.treePat
         rw [T.treePath_of_ne ha, List.mem_append] at hg
         rcases hg with hg | hg
         · exact ih _ hlt (a := T.parent a ha) hg rfl
-        · simp only [List.mem_singleton] at hg
+        · simp at hg
           subst hg
           exact T.isTree_up ha
 
@@ -176,7 +175,7 @@ theorem exists_of_isConnected (hconn : IsConnected K) (r : K.V) :
       have := hle a _ hpath
       simpa [hlen'] using this
     have h3 : q.length + 1 = d a := by
-      simp only [List.length_append, List.length_singleton] at hlen
+      simp at hlen
       omega
     have hmt : germTgt K.src K.tgt (revGerm g) = m := by simpa using hgs
     rw [hmt]

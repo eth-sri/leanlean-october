@@ -40,7 +40,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 /-! ### Maps out of a simply connected complex -/
 

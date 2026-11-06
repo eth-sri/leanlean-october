@@ -13,7 +13,6 @@ namespace FiniteChains.AffineVertexChains
 
 open Set Topology VertexChains
 
-universe u v
 variable {E : Type u} {F : Type v}
 variable [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
 variable {A : Set E} {B : Set F} (hA : Convex ℝ A) (hB : Convex ℝ B)
@@ -22,7 +21,7 @@ theorem realize_subdivide_naturality (f : E →L[ℝ] F) (hf : MapsTo f A B) (n 
     (c : VertexChains.Chain A n) :
     TopologicalSingular.map (restriction f hf) n (realize hA n (subdivide (center hA) n c)) =
       realize hB n (subdivide (center hB) n (VertexChains.map (restriction f hf) n c)) := by
-  rw [realize_naturality hA hB]
+  rw [realize_naturality]
   have he := DFunLike.congr_fun
     (subdivide_naturality (center hA) (center hB) (restriction f hf)
       (center_naturality hA hB f hf) n) c
@@ -34,7 +33,7 @@ theorem realize_subdivideHomotopy_naturality (f : E →L[ℝ] F) (hf : MapsTo f 
     TopologicalSingular.map (restriction f hf) (n + 1)
         (realize hA (n + 1) (subdivideHomotopy (center hA) n c)) =
       realize hB (n + 1) (subdivideHomotopy (center hB) n (VertexChains.map (restriction f hf) n c)) := by
-  rw [realize_naturality hA hB]
+  rw [realize_naturality]
   have he := DFunLike.congr_fun
     (subdivideHomotopy_naturality (center hA) (center hB) (restriction f hf)
       (center_naturality hA hB f hf) n) c

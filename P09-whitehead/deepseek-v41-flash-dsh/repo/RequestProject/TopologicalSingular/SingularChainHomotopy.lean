@@ -25,7 +25,6 @@ namespace FiniteChains.TopologicalSingular
 
 open CategoryTheory AlgebraicTopology
 
-universe u
 variable {X Y Z : Type u} [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]
 
 noncomputable def simplicesMap (f : C(X, Y)) : simplices X ⟶ simplices Y where

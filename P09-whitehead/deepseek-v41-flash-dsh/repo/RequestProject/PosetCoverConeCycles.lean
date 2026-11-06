@@ -8,7 +8,6 @@ public import RequestProject.PosetCoverDownTransform
 
 /-! Genuine strict cycle fillings in arbitrary covers of a lower cone. -/
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q] {f : P → Q}
 
 theorem strict_twoCycle_cover_lower_cone (hf : IsPosetCover f) (b : Q)

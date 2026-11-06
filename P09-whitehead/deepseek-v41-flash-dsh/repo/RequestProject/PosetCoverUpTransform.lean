@@ -5,7 +5,6 @@ public import RequestProject.PosetCoverDownTransform
 @[expose] public section
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q] {f : P → Q}
 namespace IsPosetCover
 variable (hf : IsPosetCover f)

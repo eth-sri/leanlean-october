@@ -39,7 +39,6 @@ namespace PresModel
 
 open Comb
 
-universe u
 
 variable {α J : Type u}
 
@@ -111,12 +110,6 @@ variable (w : J → List (α × Bool))
 
 /-- An element of a circle. -/
 def pt (j : J) (k : ℕ) (t : CPos) : TCirc w := (j, k, t)
-
-@[simp] theorem pt_fst (j : J) (k : ℕ) (t : CPos) : (pt w j k t).1 = j := rfl
-
-@[simp] theorem pt_snd_snd (j : J) (k : ℕ) (t : CPos) : (pt w j k t).2.2 = t := rfl
-
-@[simp] theorem pt_eq (j : J) (k : ℕ) (t : CPos) : pt w j k t = (j, k, t) := rfl
 
 /-- The cyclic successor of a position of the word of the relator `j`. -/
 def csucc (j : J) (k : ℕ) : ℕ := (k + 1) % (w j).length
@@ -342,8 +335,6 @@ def letterLoop (p : α × Bool) : List ((orderCx (PresPos w)).E × Bool) :=
 /-- The loop read off a word. -/
 def wordLoop (l : List (α × Bool)) : List ((orderCx (PresPos w)).E × Bool) :=
   l.flatMap (letterLoop w)
-
-@[simp] theorem wordLoop_nil : wordLoop w ([] : List (α × Bool)) = [] := rfl
 
 @[simp] theorem wordLoop_append (l l' : List (α × Bool)) :
     wordLoop w (l ++ l') = wordLoop w l ++ wordLoop w l' := by

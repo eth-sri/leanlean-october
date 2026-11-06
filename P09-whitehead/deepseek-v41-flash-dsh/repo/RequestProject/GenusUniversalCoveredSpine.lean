@@ -21,7 +21,6 @@ set_option backward.isDefEq.respectTransparency.types false
 set_option maxHeartbeats 1600000
 
 namespace FiniteChains.Comb
-universe u
 variable {K Y Z : Complex2.{u}}
 
 theorem universal_pi1Map_comp (f : Hom K Y) (g : Hom Y Z) (a : K.V)

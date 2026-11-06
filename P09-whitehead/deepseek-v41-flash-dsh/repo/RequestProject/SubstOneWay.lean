@@ -42,7 +42,6 @@ two marking equalities `bq s (of (inl h)) = j [u_h]` of the surface generators.
 namespace FiniteChains
 namespace BlockFamily
 
-universe u v
 
 variable {α Jr Sx : Type u} {Zt Mt : Sx → Type u}
 
@@ -70,8 +69,6 @@ def gen : α ⊕ (Σ s : Sx, Zt s) → H :=
   Sum.elim (fun a => j (QuotientGroup.mk (FreeGroup.of a)))
     (fun p => B.b p.1 (FreeGroup.of (Sum.inr p.2)))
 
-@[simp] theorem gen_inl (a : α) : B.gen (Sum.inl a) = j (QuotientGroup.mk (FreeGroup.of a)) := rfl
-
 @[simp] theorem gen_inr (s : Sx) (z : Zt s) :
     B.gen (Sum.inr ⟨s, z⟩) = B.b s (FreeGroup.of (Sum.inr z)) := rfl
 
@@ -92,7 +89,7 @@ theorem lift_gen_map_genEmb (s : Sx) (w : FreeGroup (α ⊕ Zt s)) :
     refine FreeGroup.ext_hom _ _ ?_
     rintro (a | z)
     · simpa [gen] using (B.mark s a).symm
-    · simp [gen]
+    · simp
   exact DFunLike.congr_fun key w
 
 /-- Every relator of the substituted presentation dies under the lift of `gen`. -/
@@ -195,7 +192,7 @@ theorem injective_substHomF_of_markedBlock {H : Type v} [Group H]
     intro s
     refine FreeGroup.ext_hom _ _ ?_
     rintro (x | z)
-    · rw [MonoidHom.comp_apply, blockSubst_of_inl, hmark s x]
+    · rw [MonoidHom.comp_apply, blockSubst_of_inl, hmark]
       have hcomp : (bb s).comp (FreeGroup.map (Sum.inl (β := Zt s)))
           = j.comp (QuotientGroup.mk' (relSub ρ)) := by
         refine FreeGroup.ext_hom _ _ fun a => ?_
@@ -208,7 +205,7 @@ theorem injective_substHomF_of_markedBlock {H : Type v} [Group H]
     simp [hbb]
   have hrel' : ∀ (s : Sx) (m : Mt s), bb s (blockSubst (Zt := Zt) u s (beta s m)) = 1 := by
     intro s m
-    rw [← MonoidHom.comp_apply, key s]
+    rw [← MonoidHom.comp_apply, key]
     exact hrel s m
   have hmaps : BlockMaps ρ (fun s m => blockSubst u s (beta s m)) j :=
     { b := bb, mark := hmark', rel := hrel' }

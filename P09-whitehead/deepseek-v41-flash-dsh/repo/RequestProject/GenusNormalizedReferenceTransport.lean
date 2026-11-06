@@ -16,7 +16,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {K X Y : Complex2.{u}}
 
 theorem univLiftV_extendList (f : Hom X Y) (a : X.V)

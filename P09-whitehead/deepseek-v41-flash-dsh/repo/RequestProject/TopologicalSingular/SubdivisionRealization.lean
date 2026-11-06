@@ -14,7 +14,6 @@ namespace FiniteChains.AffineVertexChains
 
 open Set Topology VertexChains
 
-universe u
 variable {E : Type u} [NormedAddCommGroup E] [NormedSpace ℝ E]
 variable {A : Set E} (hA : Convex ℝ A)
 
@@ -74,7 +73,6 @@ namespace FiniteChains.SingularSubdivision
 
 open TopologicalSingular AffineVertexChains
 
-universe u v
 variable {X : Type u} {Y : Type v} [TopologicalSpace X] [TopologicalSpace Y]
 
 theorem iterated_subdivide_naturality (f : C(X, Y)) (k n : ℕ) (c : Chain X n) :

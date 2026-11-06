@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
-universe u
 variable {P G : Type u} [PartialOrder P] [Group G] (c : OrdCocycle P G)
 
 def coverBase (a : P) : c.Cover := ⟨a, 1⟩
@@ -29,7 +28,7 @@ theorem coverGerm_sheet (e : (orderCx c.Cover).E × Bool) :
   | false =>
     change e.val.2.sheet * (c.val e.val.1.point e.val.2.point)⁻¹ = e.val.1.sheet
     rw [← e.property.2]
-    simp only [mul_assoc, mul_inv_cancel, mul_one]
+    simp
 
 theorem coverPath_sheet {a b : c.Cover} {p : List ((orderCx c.Cover).E × Bool)}
     (hp : IsPath (orderCx c.Cover).src (orderCx c.Cover).tgt p a b) :

@@ -10,7 +10,6 @@ relator labels. This completes actual zero-arrow preservation for rules
 1, 2 and 3, with no commuting-square hypothesis. Unverified source.
 -/
 
-noncomputable section
 open scoped Classical
 
 set_option backward.defeqAttrib.useBackward true

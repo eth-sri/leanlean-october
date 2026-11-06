@@ -52,12 +52,6 @@ def partitionFlatten : C(PartitionAttachment r p, DiskAttachment r) :=
     (fun a => (cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J E).injective
       ⟨a.1.val, a.2⟩).symm)
 
-@[simp] theorem partitionFlatten_old (x : X) :
-    partitionFlatten r p
-      (old (partitionRestAttaching r p) (boundaryFamilyInclusion {j // ¬p j} E)
-        (old (partitionFirstAttaching r p) (boundaryFamilyInclusion {j // p j} E) x)) =
-      old r (boundaryFamilyInclusion J E) x := rfl
-
 @[simp] theorem partitionFlatten_firstCell (d : DiskFamily {j // p j} E) :
     partitionFlatten r p
       (old (partitionRestAttaching r p) (boundaryFamilyInclusion {j // ¬p j} E)
@@ -118,11 +112,6 @@ def partitionRegroup : C(DiskAttachment r, PartitionAttachment r p) :=
         ⟨old (partitionFirstAttaching r p) (boundaryFamilyInclusion {j // p j} E),
           old_continuous _ _⟩)
     (partitionCellMap r p) (partitionCellMap_boundary r p)
-
-@[simp] theorem partitionRegroup_old (x : X) :
-    partitionRegroup r p (old r (boundaryFamilyInclusion J E) x) =
-      old (partitionRestAttaching r p) (boundaryFamilyInclusion {j // ¬p j} E)
-        (old (partitionFirstAttaching r p) (boundaryFamilyInclusion {j // p j} E) x) := rfl
 
 @[simp] theorem partitionRegroup_firstCell (d : DiskFamily {j // p j} E) :
     partitionRegroup r p (cell r (boundaryFamilyInclusion J E) ⟨d.1.val, d.2⟩) =

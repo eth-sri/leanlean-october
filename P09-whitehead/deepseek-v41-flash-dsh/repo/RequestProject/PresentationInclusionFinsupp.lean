@@ -41,7 +41,7 @@ theorem coefficients_proj (x : FreeGroupRing A) :
         (Finsupp.mapDomain (QuotientGroup.mk' (relSub ρ)) (Finsupp.single w a)) =
         Finsupp.mapDomain (QuotientGroup.mk' (relSub τ))
           (Finsupp.mapDomain (FreeGroup.map g) (Finsupp.single w a))
-      simp only [Finsupp.mapDomain_single]
+      simp
       rfl
 
 variable [DecidableEq A] [DecidableEq B]
@@ -52,7 +52,7 @@ theorem gradient (j : J) :
       Finsupp.mapDomain g ((coverFoxGradient (relSub ρ) (ρ j)).mapRange
         (coefficients ρ τ g f hrel) (map_zero _)) := by
   ext b : 1
-  rw [hrel j]
+  rw [hrel]
   by_cases hb : b ∈ Set.range g
   · obtain ⟨a, rfl⟩ := hb
     rw [Finsupp.mapDomain_apply_of_injective hg]

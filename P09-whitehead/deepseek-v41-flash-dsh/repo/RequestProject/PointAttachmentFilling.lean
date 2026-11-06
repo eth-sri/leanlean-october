@@ -16,7 +16,6 @@ namespace FiniteChains.RelativeAttachment
 open Topology
 open scoped Topology
 
-universe u
 variable {X C S D : Type u} [TopologicalSpace X] [TopologicalSpace C]
   [TopologicalSpace S] [TopologicalSpace D]
   (x : X) (c : C) (b : S ≃ₜ C) (i : C(S, D)) (hi : Function.Injective i)
@@ -134,10 +133,6 @@ def pointAttachmentFillingHomeomorph :
 @[simp] theorem pointAttachmentFillingHomeomorph_old (y : X) :
     pointAttachmentFillingHomeomorph x c b i hi (pointOld x (i (b.symm c)) y) =
       pointFillBase x c b i y := attachmentQuotientHomeomorph_old ..
-
-@[simp] theorem pointAttachmentFillingHomeomorph_cell (d : D) :
-    pointAttachmentFillingHomeomorph x c b i hi (pointCell x (i (b.symm c)) d) =
-      pointFillDisk x c b i d := attachmentQuotientHomeomorph_cell ..
 
 variable {E : Type u} [NormedAddCommGroup E] [NormedSpace ℝ E]
 

@@ -15,7 +15,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q R : Type u} [PartialOrder P] [PartialOrder Q] [PartialOrder R]
   (f : P → Q) (hf : IsPosetCover f) (g : R → Q) (hg : Monotone g)
 

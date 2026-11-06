@@ -58,7 +58,6 @@ theorem foxBoundary_support_finite
 
 section Compactness
 
-universe u
 
 /-- Section 2's algebraic compactness conclusion for arbitrarily many cells. Only the
 boundary of an individual cell must be finite; no finiteness assumption is imposed on

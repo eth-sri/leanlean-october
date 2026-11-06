@@ -38,7 +38,6 @@ namespace Davis
 
 open RACG Mirror Comb Nerve
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V} {X : Type u} [Preorder X]
   {M : CayGroup A → Prop} {att : NeSpx A →o X}

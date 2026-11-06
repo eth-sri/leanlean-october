@@ -33,7 +33,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 variable {α γ : Type u} [DecidableEq γ]
 variable {J L : Type u}
@@ -111,7 +110,7 @@ variable [DecidableEq α]
 theorem IsBlock.foxMatrix_block (i : α) (j : J) :
     foxMatrixPres τ (f i) (g j) = hb.ringHom (foxMatrixPres ρ i j) := by
   have hfox : @fox γ _ (f i) (τ (g j)) = freeRingMap f (fox i (ρ j)) := by
-    rw [hb.rel_eq j]
+    rw [hb.rel_eq]
     exact fox_map f hb.gen_injective i (ρ j)
   show quotRingHom ℤ (relSub τ) (fox (f i) (τ (g j))) = _
   rw [hfox, hb.quot_freeRingMap]

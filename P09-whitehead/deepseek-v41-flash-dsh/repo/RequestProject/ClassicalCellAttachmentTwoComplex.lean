@@ -25,7 +25,7 @@ theorem closedUnitBall_connectedSpace {E : Type*} [NormedAddCommGroup E]
   apply isConnected_iff_connectedSpace.mp
   convert isConnected_closedBall (E := E) (x := (0 : E)) (r := (1 : ℝ)) zero_le_one using 1
   ext x
-  simp only [Metric.mem_closedBall, dist_zero_right]
+  simp
   rfl
 
 /-- Every new disk meets the old connected space along its nonempty

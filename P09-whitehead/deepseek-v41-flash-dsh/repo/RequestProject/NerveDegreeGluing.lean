@@ -8,7 +8,6 @@ public import RequestProject.NerveDegree
 /-! Relative generation in a specified degree needs intersection fillings only
 one degree lower, and does not require augmented acyclicity of disconnected pieces. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P : Type u} [Preorder P]
 
 /-- All homogeneous increasing cycles of list length `n` supported on `U` bound. -/

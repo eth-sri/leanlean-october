@@ -27,7 +27,7 @@ theorem bdryOn_ofFn {P : Type*} (n : ℕ) (v : Fin (n + 1) → P) :
     rw [neg_smul]
     congr 1
     rw [consMap_of, List.ofFn_succ]
-    simp only [Fin.succ_succAbove_zero, Fin.succ_succAbove_succ]
+    simp
 
 end FiniteChains.Nerve
 

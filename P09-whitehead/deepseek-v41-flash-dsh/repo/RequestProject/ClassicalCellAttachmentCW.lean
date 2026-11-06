@@ -42,14 +42,6 @@ def attachmentCharacteristic (m : ℕ) : AttachmentCell (X := X) (J := J) n m �
       subst m
       exact diskCharacteristic r x₀ j
 
-@[simp] theorem attachmentCharacteristic_old (m : ℕ)
-    (j : RelCWComplex.cell (Set.univ : Set X) m) :
-    attachmentCharacteristic n r hr x₀ m (Sum.inl j) =
-      ClosedEmbeddingCW.imageCharacteristic
-        (old r (boundaryFamilyInclusion J (Fin n → ℝ)))
-        (old_isClosedEmbedding r _ hr (boundaryFamilyInclusion_isClosedEmbedding J (Fin n → ℝ)))
-        m j := rfl
-
 @[simp] theorem attachmentCharacteristic_new (j : J) :
     attachmentCharacteristic n r hr x₀ n (Sum.inr ⟨j, rfl⟩) =
       diskCharacteristic r x₀ j := rfl

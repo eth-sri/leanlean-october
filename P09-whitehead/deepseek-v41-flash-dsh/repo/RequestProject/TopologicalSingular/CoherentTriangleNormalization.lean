@@ -7,7 +7,6 @@ public import RequestProject.TopologicalSingular.TriangleBasedNormalization
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] [SimplyConnectedSpace X]
 
 theorem normalizedEdgeHomotopies_coherent (x : X) (tau : Simplex X 2)

@@ -9,7 +9,6 @@ public import RequestProject.OrderUniversalPosetCover
 realization in a universal order cover. Pending final Lean verification. -/
 
 namespace FiniteChains.Comb.OrdCocycle
-universe u
 variable {P G : Type u} [PartialOrder P] [Group G] (c : OrdCocycle P G)
 
 /-- The sheet is multiplied on the right when a comparability is traversed. -/
@@ -48,7 +47,7 @@ theorem coverProjection_isPosetCover : IsPosetCover (Cover.point (c := c)) := by
 
   · intro a p hp
     refine ⟨⟨p, a.sheet * (c.val p a.point)⁻¹⟩,
-      ⟨⟨hp, by simp only [mul_assoc, inv_mul_cancel, mul_one]⟩, rfl⟩, ?_⟩
+      ⟨⟨hp, by simp⟩, rfl⟩, ?_⟩
     rintro ⟨b, g⟩ ⟨h, hb⟩
     change b = p at hb
     subst b

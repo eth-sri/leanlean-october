@@ -9,7 +9,6 @@ public import RequestProject.PresConeBallNaturality
 The proof uses the actual old/cone quotient cover and the actual radial
 disk coordinates; no relative-model comparison is assumed. -/
 
-noncomputable section
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false

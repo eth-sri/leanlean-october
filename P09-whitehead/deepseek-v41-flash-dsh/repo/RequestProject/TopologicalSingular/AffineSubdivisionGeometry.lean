@@ -19,7 +19,6 @@ namespace FiniteChains.AffineVertexChains
 
 open Set Topology VertexChains
 
-universe u
 variable {E : Type u} [NormedAddCommGroup E] [NormedSpace ℝ E]
 variable {A : Set E} (hA : Convex ℝ A)
 

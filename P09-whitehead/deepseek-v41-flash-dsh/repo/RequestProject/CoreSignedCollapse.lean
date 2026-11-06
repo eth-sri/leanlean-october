@@ -41,15 +41,6 @@ def dropCore : FreeGroup (A ⊕ B) →* FreeGroup B :=
     simp
   exact DFunLike.congr_fun h w
 
-@[simp] theorem dropCore_map_inr (w : FreeGroup B) :
-    dropCore (A := A) (FreeGroup.map Sum.inr w) = w := by
-  have h : (dropCore (A := A) (B := B)).comp (FreeGroup.map Sum.inr) =
-      MonoidHom.id _ := by
-    apply FreeGroup.ext_hom
-    intro b
-    simp
-  exact DFunLike.congr_fun h w
-
 variable (core : M → FreeGroup A) (extra : J → FreeGroup (A ⊕ B))
   (target : J → FreeGroup B) (rev : J → Bool)
   (hword : ∀ j, dropCore (extra j) = if rev j then (target j)⁻¹ else target j)
@@ -99,7 +90,7 @@ theorem coefficientMap_fox (b : B) (w : FreeGroup (A ⊕ B)) :
   congr 1
   symm
   apply fox_subst_coordinate
-  rintro (a | b') <;> simp [fox_of]
+  rintro (a | b') <;> simp
 
 theorem quotientFox_inv_relator (b : B) (j : J) :
     quotRingHom ℤ (relSub target) (fox b (target j)⁻¹) =
@@ -125,7 +116,7 @@ theorem matrix_extra (b : B) (j : J) :
       if rev j then -foxMatrixPres target b j else foxMatrixPres target b j := by
   change coefficientMap core extra target rev hword
     (quotRingHom ℤ _ (fox (Sum.inr b) (extra j))) = _
-  rw [coefficientMap_fox, hword j]
+  rw [coefficientMap_fox, hword]
   cases h : rev j
   · rfl
   · exact quotientFox_inv_relator target b j

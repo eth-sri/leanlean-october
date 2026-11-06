@@ -49,7 +49,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 variable {G : Type u} [Group G] {I J : Type u}
 

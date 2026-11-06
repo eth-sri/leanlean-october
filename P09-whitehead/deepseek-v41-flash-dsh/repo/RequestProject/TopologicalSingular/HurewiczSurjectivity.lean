@@ -72,9 +72,4 @@ theorem singularHurewicz2_surjective (x : X) : Function.Surjective (singularHure
   change (homologyMathlibIso (TopCat.of X) 2).hom (pi2CycleClass x a) = q
   rw [ha, hh]
 
-theorem singularHurewicz2Hom_surjective (x : X) : Function.Surjective (singularHurewicz2Hom x) := by
-  intro q
-  obtain ⟨a, ha⟩ := singularHurewicz2_surjective x q.toAdd
-  exact ⟨a, ha⟩
-
 end FiniteChains.TopologicalSingular

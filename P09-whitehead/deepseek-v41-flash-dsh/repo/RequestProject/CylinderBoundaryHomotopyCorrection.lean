@@ -9,11 +9,9 @@ public import RequestProject.BallCylinderHomotopyExtension
 /-! Turn a homotopy with a contractible boundary track into a homotopy
 relative to that boundary. Endpoint maps are retained exactly. -/
 
-noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u
 variable {D Z : Type u} [TopologicalSpace D] [TopologicalSpace Z]
 
 theorem homotopyRel_of_boundaryContraction (S : Set D) (hS : IsClosed S)

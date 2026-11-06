@@ -7,7 +7,6 @@ public import RequestProject.OrderConstructionConnected
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 /-- Consecutive actual circle corners lie in the same actual edge-path component. -/

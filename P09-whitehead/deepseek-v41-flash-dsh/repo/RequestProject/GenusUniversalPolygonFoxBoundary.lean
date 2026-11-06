@@ -15,7 +15,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u v
 theorem wordPath_map_values {X Y : Complex2.{u}} {a : X.V} {b : Y.V} {I : Type v}
     (f : Hom X Y) (p : I → Loop X a) (r : I → Loop Y b)
     (hr : ∀ i, (r i).1 = mapPath f (p i).1) (l : List (I × Bool)) :

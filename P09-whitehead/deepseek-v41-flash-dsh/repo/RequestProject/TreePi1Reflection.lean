@@ -8,7 +8,6 @@ public import RequestProject.TreeChainTopological
 collapse, at every original vertex. Pending final Lean verification. -/
 
 namespace FiniteChains.Comb.SpanningTree
-universe u
 variable {X Y : Complex2.{u}} {TX : SpanningTree X} {TY : SpanningTree Y}
   [DecidableEq (NonTree TX)] [DecidableEq (NonTree TY)]
   {h : Hom X Y} (hiff : ∀ e : X.E, TY.isTree (h.onE e) ↔ TX.isTree e)
@@ -22,7 +21,7 @@ theorem pi1Trivial_of_pi1Trivial_presInclHom
   intro a p hp
   have hword : wordClass TY (mapPath h p) = 1 := by
     change (QuotientGroup.mk (pathWord TY (mapPath h p)) : PresGroup (treeRel TY)) = 1
-    rw [pathWord_mapPath hiff]
+    rw [pathWord_mapPath]
     exact hzero (QuotientGroup.mk (pathWord TX p))
   have hlo : loopOf TY (isPath_mapPath h hp) = 1 := by
     apply (pi1EquivPres TY).injective

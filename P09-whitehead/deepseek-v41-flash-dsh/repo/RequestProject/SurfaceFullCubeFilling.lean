@@ -9,7 +9,6 @@ public import RequestProject.CellularHomotopyChain
 /-! Concrete fillings of the cut-surface loops in the full cube quotient. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 
 /-- Restore the deleted all-positive corner of the cube quotient. -/

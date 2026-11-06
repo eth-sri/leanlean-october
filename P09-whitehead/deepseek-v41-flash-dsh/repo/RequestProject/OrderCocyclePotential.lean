@@ -9,14 +9,13 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
-universe u v
 variable {P : Type u} [Preorder P] {G : Type v} [Group G]
   (c : OrdCocycle P G)
 
 @[simp] theorem readPath_revPath (p : List ((orderCx P).E × Bool)) :
     c.readPath (revPath p) = (c.readPath p)⁻¹ := by
   induction p with
-  | nil => simp [revPath, readPath]
+  | nil => simp
   | cons e p ih =>
     rw [revPath_cons, readPath_append, readPath_cons, readPath_nil,
       readGerm_revGerm, ih, mul_one, readPath_cons, mul_inv_rev]

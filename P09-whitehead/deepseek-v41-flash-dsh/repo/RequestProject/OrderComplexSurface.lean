@@ -36,7 +36,6 @@ namespace FiniteChains
 
 namespace ASC
 
-universe u
 
 variable {P : Type u} [PartialOrder P]
 
@@ -101,8 +100,7 @@ theorem isChain_pair_iff {x y : P} :
     · exact h (by simp) (by simp) hxy
   · intro h
     rintro a ha b hb hab
-    simp only [Finset.coe_insert, Finset.coe_singleton, Set.mem_insert_iff,
-      Set.mem_singleton_iff] at ha hb
+    simp at ha hb
     rcases ha with rfl | rfl <;> rcases hb with rfl | rfl
     · exact absurd rfl hab
     · exact h
@@ -131,7 +129,7 @@ theorem neighbours_iff (_S : SurfaceRank P) {x y z : P} (hxy : x < y) :
     (z ∉ ({x, y} : Finset P) ∧ insert z ({x, y} : Finset P) ∈ (orderComplex P).faces) ↔
       (z ≠ x ∧ z ≠ y ∧ (z ≤ x ∨ x ≤ z) ∧ (z ≤ y ∨ y ≤ z)) := by
   rw [mem_orderComplex_triple hxy.le]
-  simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
+  simp
   tauto
 
 theorem neighbours_zero_one (S : SurfaceRank P) {x y z : P} (hxy : x < y) (hx : S.rk x = 0)

@@ -7,7 +7,6 @@ public import RequestProject.CylinderPoset
 @[expose] public section
 
 namespace FiniteChains.Comb
-universe u
 
  theorem cylP_isConnected {X S : Type u} [Preorder X] [Preorder S]
     (a : S →o X) (hc : IsConnected (orderCx X)) : IsConnected (orderCx (CylP a)) := by

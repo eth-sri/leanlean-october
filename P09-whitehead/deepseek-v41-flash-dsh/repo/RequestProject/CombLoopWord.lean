@@ -26,7 +26,6 @@ loops**.  This file provides exactly that dictionary for `FiniteChains.Comb.Pi1`
 namespace FiniteChains
 namespace Comb
 
-universe u v
 
 variable {X : Complex2.{u}} {a : X.V} {G : Type v}
 

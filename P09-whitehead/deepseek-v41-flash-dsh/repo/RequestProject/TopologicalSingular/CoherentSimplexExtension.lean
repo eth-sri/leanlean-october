@@ -7,7 +7,6 @@ public import RequestProject.TopologicalSingular.CoherentPrism
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 
 variable (lo : Simplex X n → Simplex X n)

@@ -43,12 +43,6 @@ def finiteSpineFactorToFamily (s : Sx) :
   factorToFamily ρ (familyFiniteSpineWordBlock q u)
     (familyFiniteSpineWordBlock_filled ρ q u hrho) s
 
-@[simp] theorem finiteSpineFactorToFamily_mk (s : Sx)
-    (w : FreeGroup (α ⊕ (Σ _ : PUnit.{1}, SpinePresentationGen (q s)))) :
-    finiteSpineFactorToFamily ρ q u hrho s (QuotientGroup.mk w) =
-      QuotientGroup.mk (FreeGroup.map
-        (individualGenEmb (Zt := fun t => SpinePresentationGen (q t)) s) w) := rfl
-
 /-- Every actual individual spine factor embeds, for an arbitrary family of genera. -/
 theorem finiteSpineFactorToFamily_injective (s : Sx) :
     Function.Injective (finiteSpineFactorToFamily ρ q u hrho s) :=

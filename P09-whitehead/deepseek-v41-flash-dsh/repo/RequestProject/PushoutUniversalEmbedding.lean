@@ -19,7 +19,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u v
 
 namespace EdgeLabels
 variable {X : Complex2.{u}} {G : Type v} [Group G]
@@ -27,8 +26,6 @@ variable {X : Complex2.{u}} {G : Type v} [Group G]
 def vertexRead (w : X.E → G) (hw : ∀ f, read w (X.att f) = 1) (a : X.V) : UV X a → G :=
   Quotient.lift (fun p : PathFrom X a => read w p.val) (fun _ _ h => read_htpy w hw h)
 
-@[simp] theorem vertexRead_mk (w : X.E → G) (hw : ∀ f, read w (X.att f) = 1)
-    (a : X.V) (p : PathFrom X a) : vertexRead w hw a (UV.mk p) = read w p.val := rfl
 end EdgeLabels
 
 namespace PushoutSheets

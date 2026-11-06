@@ -18,7 +18,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {D K L : Complex2.{u}}
 
 namespace RootPaths
@@ -82,7 +81,7 @@ theorem read_pushPath (l : List (L.E × Bool)) :
   induction l with
   | nil => rfl
   | cons e l ih =>
-      simp only [List.map_cons, EdgeLabels.read_cons, ih]
+      simp
       congr 1
       rcases e with ⟨e, b⟩
       cases b <;> simp [EdgeLabels.germ, labels_pushE p i hiV hiE hD hL d₀ ht]

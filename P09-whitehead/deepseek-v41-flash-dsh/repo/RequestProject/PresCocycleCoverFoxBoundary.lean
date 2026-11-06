@@ -8,7 +8,6 @@ public import RequestProject.CoverComplexFinsupp
 
 namespace FiniteChains.PresModel.PresCocycleCover
 open Comb
-universe u
 variable {α J : Type u} [DecidableEq α] (w : J → List (α × Bool))
   (N : Subgroup (FreeGroup α)) [N.Normal]
 

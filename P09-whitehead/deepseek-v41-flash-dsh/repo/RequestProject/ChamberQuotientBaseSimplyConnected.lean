@@ -13,7 +13,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 
@@ -62,8 +61,7 @@ theorem qLiftedBase_simplyConnected (a : Qpos A X att)
     apply pi1Map_qNew_injective (A := A) (att := att) (qBaseCoverEnd (X := X) a b)
     rw (config := { transparency := .default }) [map_one]
     exact Quotient.sound hq
-  have hl : Htpy (orderCx X) (qBaseCoverEnd (X := X) a b) (qBaseCoverEnd (X := X) a b)
-      (mapPath beta p) [] := Quotient.exact hcl
+  have hl := Quotient.exact hcl
   obtain ⟨m, _, hmap, hpm⟩ := lift_htpy hcov hp hl
   have hm : m = [] := List.map_eq_nil_iff.mp hmap
   rwa [hm] at hpm

@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
-universe u
 variable (P : Type u) [PartialOrder P]
 
 /-- The project's actual weak edges are precisely Mathlib poset-nerve one-simplices. -/

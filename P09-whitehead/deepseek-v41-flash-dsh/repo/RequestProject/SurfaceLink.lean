@@ -36,7 +36,6 @@ namespace Davis
 
 open Cell ASC Relation
 
-universe u
 
 section Link
 
@@ -81,7 +80,7 @@ theorem conn_rad (n : ℕ) : ∀ p : Fin M, p.val = n →
   induction n with
   | zero =>
       intro p hp
-      have hp0 : p = 0 := Fin.ext (by simpa using hp)
+      have hp0 : p = 0 := Fin.ext (by exact hp)
       subst hp0
       exact ReflTransGen.refl
   | succ n ih =>

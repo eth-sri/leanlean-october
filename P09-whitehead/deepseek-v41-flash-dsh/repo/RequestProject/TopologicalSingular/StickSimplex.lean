@@ -34,7 +34,6 @@ addition argument.
 
 open scoped Topology Topology.Homotopy unitInterval
 
-noncomputable section
 
 namespace FiniteChains.TopologicalSingular
 
@@ -100,11 +99,6 @@ def stickSimplex : (d : ℕ) → C(I^Fin d, stdSimplex ℝ (Fin (d + 1)))
               (((continuous_apply j).comp continuous_subtype_val).comp hrec) }
 
 @[simp]
-theorem stickSimplex_zero (t : I^Fin 0) :
-    stickSimplex 0 t = stdSimplex.vertex (0 : Fin 1) :=
-  rfl
-
-@[simp]
 theorem stickSimplex_succ_zero (d : ℕ) (t : I^Fin (d + 1)) :
     stickSimplex (d + 1) t 0 = 1 - (t 0 : ℝ) :=
   rfl
@@ -127,7 +121,7 @@ theorem stickSimplex_cons_val (d : ℕ) (a : I) (t : I^Fin d) :
       (Fin.cons (1 - (a : ℝ))
         (fun i => (a : ℝ) * stickSimplex d t i) : Fin (d + 2) → ℝ) := by
   rw [stickSimplex_succ_val]
-  simp only [Fin.cons_zero, Fin.cons_succ]
+  simp
 
 /-! ### Cubical faces -/
 
@@ -155,7 +149,7 @@ theorem faceMap_zero_val {d : ℕ} (s : stdSimplex ℝ (Fin (d + 1))) :
   · change (faceMap (0 : Fin (d + 2)) s).1 0 = 0
     exact faceMap_coe_same 0 s
   · change (faceMap (0 : Fin (d + 2)) s).1 k.succ = s.1 k
-    simpa using faceMap_coe_succAbove (0 : Fin (d + 2)) s k
+    exact faceMap_coe_succAbove (0 : Fin (d + 2)) s k
 
 theorem faceMap_succ_val {d : ℕ} (i : Fin (d + 1))
     (s : stdSimplex ℝ (Fin (d + 1))) :
@@ -166,7 +160,7 @@ theorem faceMap_succ_val {d : ℕ} (i : Fin (d + 1))
   change (@Fin.insertNth (d + 1) (fun _ : Fin (d + 2) => ℝ) i.succ
       (0 : ℝ) (⇑s : Fin (d + 1) → ℝ)) = _
   rw [← Fin.cons_self_tail (⇑s : Fin (d + 1) → ℝ), Fin.insertNth_succ_cons]
-  simp only [Fin.cons_zero, Fin.cons_succ]
+  simp
 
 theorem mul_insertNth_zero {d : ℕ} (i : Fin (d + 1)) (a : ℝ) (f : Fin d → ℝ) :
     (fun j : Fin (d + 1) => a *
@@ -424,7 +418,7 @@ theorem stickSimplex_injective_of_not_mem_boundary : ∀ (d : ℕ) (t u : I^Fin 
       intro t u ht hu hstick
       have hheadReal : (t 0 : ℝ) = (u 0 : ℝ) := by
         have hzero := congrArg (fun z : stdSimplex ℝ (Fin (d + 2)) => z 0) hstick
-        simp only [stickSimplex_succ_zero] at hzero
+        simp at hzero
         linarith
       have hhead : t 0 = u 0 := Subtype.ext hheadReal
       have ht0 : (t 0 : ℝ) ≠ 0 := by
@@ -441,7 +435,7 @@ theorem stickSimplex_injective_of_not_mem_boundary : ∀ (d : ℕ) (t u : I^Fin 
         apply stdSimplex.ext
         funext j
         have hsucc := congrArg (fun z : stdSimplex ℝ (Fin (d + 2)) => z j.succ) hstick
-        simp only [stickSimplex_succ_succ] at hsucc
+        simp at hsucc
         rw [← hheadReal] at hsucc
         exact mul_left_cancel₀ ht0 hsucc
       have htail := ih (fun j => t j.succ) (fun j => u j.succ)

@@ -48,7 +48,7 @@ theorem freeIntegerCoproductIso_inv_natural {ι κ : Type} (f : ι → κ) :
   intro i
   apply ModuleCat.hom_ext
   ext
-  simp [ModuleCat.free, sigmaConst]
+  simp
   change (freeIntegerCoproductIso κ).inv
       (Sigma.ι (fun _ : κ => ModuleCat.of ℤ ℤ) (f i) 1) =
     Finsupp.mapDomain f ((freeIntegerCoproductIso ι).inv

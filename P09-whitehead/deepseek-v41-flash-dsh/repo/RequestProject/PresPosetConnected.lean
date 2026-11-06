@@ -7,7 +7,6 @@ public import RequestProject.PresPosetNonemptyWords
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u}
 
 theorem rose_isConnected : IsConnected (orderCx (Rose α)) := by

@@ -21,7 +21,6 @@ namespace FiniteChains.SingularSubdivision
 
 open TopologicalSingular AffineVertexChains
 
-universe u v
 variable {X : Type u} {Y : Type v} [TopologicalSpace X] [TopologicalSpace Y]
 
 noncomputable def fromModel {k l : ℕ} (m : Chain (Domain k) l) : Chain X k →ₗ[ℤ] Chain X l :=

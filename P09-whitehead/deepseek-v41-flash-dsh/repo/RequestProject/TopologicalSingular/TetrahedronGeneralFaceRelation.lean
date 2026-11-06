@@ -74,7 +74,7 @@ theorem tetrahedron_pi2_alternating_sum_eq_zero (tau : Simplex X 3)
       ∑ i : Fin 4, (-1 : ℤ) ^ (i : ℕ) • f i = (f 0 + f 2) - (f 1 + f 3) := by
     norm_num [Fin.sum_univ_four]
     abel
-  rw [hsum (tetrahedronFacePi2Class tau hedge),
-    tetrahedron_pi2_general_face_relation tau hedge, sub_self]
+  rw [hsum,
+    tetrahedron_pi2_general_face_relation, sub_self]
 
 end FiniteChains.TopologicalSingular

@@ -41,7 +41,6 @@ chains of every finite length (so `(1) ⇒ (2)`).
 
 namespace FiniteChains
 
-universe u
 
 /-- The notions of Theorem A, as an abstract interface. -/
 structure TwoComplexData where
@@ -128,57 +127,6 @@ variable {W}
 
 variable (W)
 
-/-- The remaining input for `(2) ⇒ (1)`: relative chains exist over any acyclic complex,
-acyclic covers are acyclic, and the descent of Proposition 3.11. -/
-structure SufficiencyInputs where
-  rel : ∀ D : W.Cx, W.Acyclic D → RelativeInputs W D
-  acyclic_of_cover : ∀ D K : W.Cx, W.IsAcyclicCover D K → W.Acyclic D
-  /-- **Proposition 3.11**: a relative chain over an acyclic regular cover `D` of `K`
-  descends to a chain of Cockcroft complexes over `K` with all maps zero on `π₂`. -/
-  descent : ∀ (K D : W.Cx) (c : ℕ → W.Cx) (n : ℕ), W.IsAcyclicCover D K →
-      IsRelativeChain W D c n →
-      ∃ e : ℕ → W.Cx, e 0 = K ∧ IsZeroChain W e n ∧ ∀ i ≤ n, W.Cockcroft (e i)
-
 variable {W}
-
-/-!
-## Input from Section 2: Fox boundaries and the requirements (2.2)
--/
-
-/-- The input of Section 2 for a fixed complex `K`.  `Req` indexes the requirements (2.2),
-one for each finitely supported coefficient vector, integrally and modulo every prime;
-`Sat N v` says that the requirement `v` holds for the normal subgroup `N`, i.e. that the
-Fox boundary `∂_{2,N}` does not kill `v`. -/
-structure NecessityInputs (W : TwoComplexData) (K : W.Cx) where
-  /-- The fundamental group `G = π₁(K)`. -/
-  G : Type u
-  grp : Group G
-  /-- The requirements (2.2). -/
-  Req : Type u
-  /-- `Sat N v` : the requirement `v` is satisfied by the normal subgroup `N`. -/
-  Sat : @Subgroup G grp → Req → Prop
-  /-- **Formula (2.3)**: a chain of `n` inclusions starting at `K` supplies `n+1` normal
-  subgroups of `G` such that a requirement failing at one stage holds at all later
-  stages. -/
-  chain_subgroups : ∀ (c : ℕ → W.Cx) (n : ℕ), c 0 = K → IsZeroChain W c n →
-      ∃ M : ℕ → @Subgroup G grp, (∀ r, @Subgroup.Normal G grp (M r)) ∧
-        ∀ r v, ¬ Sat (M r) v → ∀ s, r < s → s ≤ n → Sat (M s) v
-  /-- Each requirement depends on finitely many decisions `g ∈ M`.  For the Fox
-  requirements this is proved in `FoxRequirement.lean`
-  (`FiniteChains.foxSat_finitelyDetermined`). -/
-  det : @FinitelyDetermined G grp Req Sat
-  /-- Requirements pass to intersections of decreasing chains of normal subgroups. -/
-  sat_sInf_chain : ∀ C : Set (@Subgroup G grp), IsChain (· ≤ ·) C → C.Nonempty →
-      (∀ N ∈ C, @Subgroup.Normal G grp N ∧ ∀ v, Sat N v) → ∀ v, Sat (sInf C) v
-  /-- **Lemma 2.1**: if `N` satisfies all requirements then so does `[N, N]`.  For the Fox
-  requirements this is proved in `FoxCommutator.lean`
-  (`FiniteChains.foxSat_commutator_forall`), assuming only that `N/[N, N]` is torsion
-  free. -/
-  sat_commutator : ∀ N : @Subgroup G grp, @Subgroup.Normal G grp N → (∀ v, Sat N v) →
-      ∀ v, Sat ⁅N, N⁆ v
-  /-- A perfect normal subgroup satisfying all requirements yields the acyclic regular
-  cover `K_N`: `H₁(K_N) = N/[N,N] = 0` and `H₂(K_N) = ker ∂_{2,N} = 0`. -/
-  cover_of_perfect : ∀ N : @Subgroup G grp, @Subgroup.Normal G grp N → (∀ v, Sat N v) →
-      ⁅N, N⁆ = N → HasAcyclicRegularCover W K
 
 end FiniteChains

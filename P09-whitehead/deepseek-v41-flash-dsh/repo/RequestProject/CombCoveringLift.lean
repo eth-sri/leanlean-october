@@ -29,7 +29,6 @@ hypothesis is used.
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 /-! ### Endpoints of edge paths -/
 
@@ -68,7 +67,7 @@ theorem liftGerm_unique (hcov : IsCovering p) {a : X.V} {x y : X.E × Bool}
     (hx : germSrc X.src X.tgt x = a) (hy : germSrc X.src X.tgt y = a)
     (h : (p.onE x.1, x.2) = (p.onE y.1, y.2)) : x = y := by
   have hs : germSrc Y.src Y.tgt (p.onE x.1, x.2) = p.onV a := by
-    rw [germSrc_onE p x, hx]
+    rw [germSrc_onE, hx]
   obtain ⟨z, -, hz⟩ := exists_unique_liftGerm hcov a hs
   rw [hz x ⟨hx, rfl⟩, hz y ⟨hy, h.symm⟩]
 
@@ -108,7 +107,7 @@ theorem exists_liftPathAt (hcov : IsCovering p) :
       obtain ⟨ha, hrest⟩ := hl
       obtain ⟨x, ⟨hx1, hx2⟩, -⟩ := exists_unique_liftGerm hcov a ha.symm
       have hstep : p.onV (germTgt X.src X.tgt x) = germTgt Y.src Y.tgt eb := by
-        rw [← hx2, germTgt_onE p x]
+        rw [← hx2, germTgt_onE]
       obtain ⟨m, c, hm, hmap⟩ := ih (germTgt X.src X.tgt x) b (by rw [hstep]; exact hrest)
       refine ⟨x :: m, c, ⟨hx1.symm, hm⟩, ?_⟩
       show (p.onE x.1, x.2) :: mapPath p m = eb :: l

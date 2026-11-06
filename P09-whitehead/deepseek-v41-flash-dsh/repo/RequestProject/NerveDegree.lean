@@ -8,7 +8,6 @@ public import RequestProject.NerveSupport
 
 namespace FiniteChains.Nerve
 open FreeAbelianGroup
-universe u
 variable {P : Type u}
 
 /-- Retain precisely the basis lists of length `n`. The augmentation has length zero. -/
@@ -27,8 +26,7 @@ theorem lengthProjection_consMap_succ (n : ℕ) (a : P) (c : Ch P) :
   apply ext_apply (F := (lengthProjection (n + 1)).comp (consMap a))
     (G := (consMap a).comp (lengthProjection n))
   intro l
-  simp only [AddMonoidHom.coe_comp, Function.comp_apply, consMap_of, lengthProjection_of,
-    List.length_cons, Nat.add_right_cancel_iff]
+  simp
   split_ifs <;> simp
 
 theorem lengthProjection_consMap_zero (a : P) (c : Ch P) :
@@ -43,7 +41,7 @@ theorem lengthProjection_bdryOn (n : ℕ) (l : List P) :
     lengthProjection n (bdryOn l) = if l.length = n + 1 then bdryOn l else 0 := by
   classical
   induction l generalizing n with
-  | nil => simp [bdryOn]
+  | nil => simp
   | cons a l ih =>
     cases n with
     | zero =>

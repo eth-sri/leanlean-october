@@ -91,14 +91,14 @@ theorem boundaryMapK_redVecK (b : I → J → MonoidAlgebra k G)
   classical
   have hsupp : (redVecK k M v).support ⊆ v.support := by
     intro j hj
-    simp only [Finsupp.mem_support_iff, redVecK_apply] at hj ⊢
+    simp at hj ⊢
     intro h
     exact hj (by rw [h, map_zero])
   rw [boundaryMapK_apply_coord, foxBoundaryK, map_sum,
     Finset.sum_congr rfl (fun j (_ : j ∈ v.support) => map_mul (quotRingHom k M) (v j) (b i j))]
   refine Finset.sum_subset hsupp ?_
   intro j _ hj
-  simp only [Finsupp.mem_support_iff, not_not, redVecK_apply] at hj
+  simp at hj
   rw [redVecK_apply, hj, zero_mul]
 
 /-- Reduction of coefficient vectors is surjective. -/
@@ -178,7 +178,7 @@ theorem injective_boundaryMapK_of_injective [IsDomain k] (b : I → J → Monoid
               (reduceVecQ k H (boundaryMapK k b hcol C (Finsupp.single j 1))) := by
           refine Finsupp.ext fun i => ?_
           simp only [Finsupp.mapRange_apply, Finsupp.smul_apply, smul_eq_mul, map_mul]
-        rw [reduceLinQ_single, Finsupp.mapRange_single, hsmul, hcolumn j]
+        rw [reduceLinQ_single, Finsupp.mapRange_single, hsmul, hcolumn]
         conv_rhs => rw [boundaryMapK, Finsupp.linearCombination_single]
   -- the reduced map is injective, so Lemma 2.1 applies
   have hred : Function.Injective (reduceLinQ k H (boundaryMapK k b hcol C)) := by

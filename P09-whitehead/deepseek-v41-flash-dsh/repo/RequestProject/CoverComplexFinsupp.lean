@@ -15,7 +15,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains.Comb
 
 open MonoidAlgebra
-universe u
 
 variable {α J : Type u} [DecidableEq α] (N : Subgroup (FreeGroup α)) [N.Normal]
 
@@ -63,8 +62,7 @@ theorem fsCoords_pathChain_liftPath_apply (L : List (α × Bool))
           rw [proj_grp, qgrp, QuotientGroup.mk_inv, MonoidAlgebra.single_mul_single, mul_one]
           rfl
         rw [liftPath_cons_false, pathChain_cons]
-        simp only [Bool.false_eq_true, if_false, map_add, map_neg,
-          Finsupp.add_apply, Finsupp.neg_apply]
+        simp
         rw [ih, fsCoords_single, mk_cons_false, fox_mul, fox_inv,
           map_add, map_neg, map_mul, map_mul, mul_add, mul_neg,
           ← mul_assoc, ← mul_assoc, ← hq]

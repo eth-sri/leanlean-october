@@ -18,7 +18,7 @@ theorem fs_coverSecondBoundary_apply (u : J →₀ CoverRing (relSub ρ)) (i : �
   rw [coverSecondBoundary, Finsupp.linearCombination_apply, Finsupp.sum_apply]
   apply Finset.sum_congr rfl
   intro j hj
-  simp only [Finsupp.smul_apply, smul_eq_mul]
+  simp
   change u j * proj (relSub ρ) (fox i (ρ j)) = _
   rw [foxMatrixPres, proj_eq_quotRingHom]
 

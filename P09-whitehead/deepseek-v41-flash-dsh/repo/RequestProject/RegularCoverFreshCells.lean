@@ -9,10 +9,8 @@ public import RequestProject.FreshLoopTreeStrictness
 cellular chain: a fresh loop or a fresh face at every step. Thus tree
 collapse cannot erase their strict inclusions. Pending final Lean check. -/
 
-noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb
-universe u
 
 namespace RelativeCellChain
 variable {c : ℕ → Complex2.{u}} {n : ℕ} (R : RelativeCellChain c n)

@@ -66,7 +66,7 @@ theorem qThreeCutFaceChain_cycle (r : QThreeCube A →₀ ℤ)
     simpBdry (qThreeCutFaceChain r) = 0 := by
   funext σ
   have he := qThreeCoordinateChain_boundary r (posCube σ)
-  rw [hpos σ, bdry_posCube] at he
+  rw [hpos, bdry_posCube] at he
   simpa only [simpBdry, qThreeCutFaceChain_apply, Pi.zero_apply] using he
 
 omit [LinearOrder V] in

@@ -9,7 +9,6 @@ public import RequestProject.OrderNerveDecoding
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {M : CayGroup A → Prop} {att : NeSpx A →o X}
 

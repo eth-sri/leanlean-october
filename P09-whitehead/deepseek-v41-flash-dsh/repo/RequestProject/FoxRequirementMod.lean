@@ -158,7 +158,7 @@ theorem quotRingHom_apply_mk (M : Subgroup G) [M.Normal] (x : MonoidAlgebra ℤ 
   refine Finset.sum_congr rfl fun h _ => ?_
   rw [Finsupp.single_apply]
   congr 1
-  simp only [eq_iff_iff, QuotientGroup.mk'_apply]
+  simp
   rw [QuotientGroup.eq]
   constructor
   · intro hh
@@ -207,7 +207,6 @@ theorem dvd_coeff_iff_nsmul (m : ℕ) {H : Type*} (z : MonoidAlgebra ℤ H) :
     exact ⟨divCoeff m z, (nsmul_divCoeff m z h).symm⟩
   · rintro ⟨y, rfl⟩ q
     refine ⟨y.coeff q, ?_⟩
-    show ((m • y : MonoidAlgebra ℤ H).coeff q : ℤ) = (m : ℤ) * y.coeff q
     rw [MonoidAlgebra.coeff_smul_apply, nsmul_eq_mul]
 
 /-- Vanishing modulo `m` in the form used in the chain argument: the reduction is `m` times
@@ -237,7 +236,7 @@ theorem liftsMod_of_foxSatMod (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (N : Subg
     have hcoord : quotRingHom ℤ N (foxBoundary b v i) = m • w i := by
       rw [← boundaryMap_redVec b hcol N v i]
       have := congrArg (fun z : I →₀ MonoidAlgebra ℤ (G ⧸ N) => z i) hw
-      simpa using this
+      exact this
     rw [hcoord]
     exact ⟨(w i).coeff q, by
       show ((m • w i : MonoidAlgebra ℤ (G ⧸ N)).coeff q : ℤ) = (m : ℤ) * (w i).coeff q
@@ -250,6 +249,6 @@ theorem liftsMod_of_foxSatMod (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (N : Subg
   refine (nsmul_divCoeff m (redVec N v j) ?_).symm
   intro q
   have := (vanishesModN_iff_dvd_coeff m N (v j)).1 (hv j) q
-  simpa [redVec_apply] using this
+  exact this
 
 end FiniteChains

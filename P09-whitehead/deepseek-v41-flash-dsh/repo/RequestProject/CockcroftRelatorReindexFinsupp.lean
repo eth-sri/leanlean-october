@@ -20,7 +20,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains.RelatorReindex
 open BlockFamily
 
-universe u
 variable {A J K : Type u} [DecidableEq A]
   (ρ : J → FreeGroup A) (τ : K → FreeGroup A) (e : J ≃ K)
   (hrel : ∀ j, τ (e j) = ρ j)

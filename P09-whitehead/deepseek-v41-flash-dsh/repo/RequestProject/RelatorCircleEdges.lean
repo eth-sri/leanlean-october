@@ -6,7 +6,6 @@ public import RequestProject.PresConeLinkOrderIso
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 theorem tCirc_strict_of_lt_relation {x y : TCirc w} (h : TCirc.lt w x y) : x < y := by

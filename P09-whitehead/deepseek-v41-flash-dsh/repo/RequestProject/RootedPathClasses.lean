@@ -9,7 +9,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X : Complex2.{u}} {o a b c : X.V}
 
 /-- The actual based loop obtained by joining a path to chosen paths from the root. -/

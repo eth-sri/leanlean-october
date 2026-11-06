@@ -7,7 +7,6 @@ public import RequestProject.PresValidFinite
 
 namespace FiniteChains.PresModel
 open scoped Classical
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 instance relatorCircle_finite : Finite (RelatorCircle w j) := by

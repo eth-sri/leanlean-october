@@ -23,7 +23,7 @@ theorem topologicalSimplex_zero_coordinate_face {n : ℕ}
   let w : stdSimplex ℝ (Fin (n + 1)) :=
     ⟨fun j => zold.val (i.succAbove j), fun j => zold.property.1 _, by
       have hs := zold.property.2
-      rw [Fin.sum_univ_succAbove (fun j : Fin (n + 2) => zold.val j) i,
+      rw [Fin.sum_univ_succAbove,
         hiold, zero_add] at hs
       exact hs⟩
   refine ⟨ULift.up ((TopologicalSingular.simplexCoordinates n).symm w), ?_⟩

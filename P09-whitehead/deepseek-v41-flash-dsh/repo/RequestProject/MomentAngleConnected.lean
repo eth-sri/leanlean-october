@@ -155,13 +155,13 @@ theorem exists_pair_of_triAdj {L : ASC V} {σ σ' : Finset V} (h : TriAdj L σ �
   obtain ⟨c', hc'⟩ := Finset.card_eq_one.1 hdiff'
   have hcmem : c ∈ σ \ σ' := by rw [hc]; simp
   have hc'mem : c' ∈ σ' \ σ := by rw [hc']; simp
-  simp only [Finset.mem_sdiff] at hcmem hc'mem
+  simp at hcmem hc'mem
   refine ⟨c, c', ?_, hcmem.1, hcmem.2, hc'mem.1, hc'mem.2, ?_⟩
   · rintro rfl
     exact hcmem.2 hc'mem.1
   · apply Finset.eq_of_subset_of_card_le
     · intro z hz
-      simp only [Finset.mem_insert, Finset.mem_erase]
+      simp
       by_cases hzc' : z = c'
       · exact Or.inl hzc'
       · refine Or.inr ⟨?_, ?_⟩

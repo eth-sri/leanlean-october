@@ -55,7 +55,6 @@ namespace Davis
 
 open RACG Mirror Comb PresModel BlockFamily
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
@@ -108,16 +107,6 @@ variable {α J : Type u} (ρ : J → FreeGroup α) (att : NeSpx A →o presModel
   (cb : List ((orderCx (presModelPos ρ)).E × Bool)) (T : SpanningTree (orderCx (QOld A)))
 
 end Spine
-
-/-! ### The marked presentation of the block and the application -/
-
-/-- **The internal generators `Z` of the block**: the edges of the two-dimensional order complex
-of the block outside the chosen spanning tree of its one-skeleton. -/
-abbrev spineGens (T : SpanningTree (orderCx (QOld A))) : Type u := SpanningTree.NonTree T
-
-/-- **The relators of the marked block presentation** `B_q = ⟨s_h, t_h, Z ∣ β_m⟩`: the two-cells
-of the block, and one marking relator per distinguished generator. -/
-abbrev spineRels (Su : Type u) : Type u := (orderCx (QOld A)).F ⊕ Su
 
 section Application
 

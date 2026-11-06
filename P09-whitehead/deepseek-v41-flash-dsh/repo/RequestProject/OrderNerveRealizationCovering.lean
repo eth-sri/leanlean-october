@@ -26,8 +26,8 @@ theorem open_iff_of_sheet {E X : Type*}
       convert hh using 1
       ext z
       change (e z).val ∈ W ↔ f z.val ∈ W ∧ z.val ∈ U
-      rw [he z]
-      simp only [z.property, and_true]
+      rw [he]
+      simp
     have hv := e.isOpen_preimage.mp hp
     have hi := hV.isOpenMap_subtype_val _ hv
     have hr : (Subtype.val : V → X) '' (Subtype.val ⁻¹' W) = W := by

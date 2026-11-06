@@ -6,7 +6,6 @@ public import RequestProject.StrictTopConeThreeChains
 
 /-! The genuine strict cone maps preserve all finite-chain coefficients. -/
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
   (f : P → Q) (hf : StrictMono f) (c : Q) (hc : ∀ x, f x < c) (hfi : Function.Injective f)
 

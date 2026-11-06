@@ -13,7 +13,6 @@ moved, relative to endpoints already in its one-skeleton, into that original
 one-skeleton. The conclusion retains the original space and cells.
 Pending Lean verification. -/
 
-noncomputable section
 open scoped Classical
 open Set Topology
 

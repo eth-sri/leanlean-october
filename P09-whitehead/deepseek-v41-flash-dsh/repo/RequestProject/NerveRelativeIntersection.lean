@@ -6,7 +6,6 @@ public import RequestProject.NerveIntersectionGeneration
 
 /-! Relative chains, whose boundary need only lie in the intersection. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P : Type u} [Preorder P]
 
 /-- Ambient generation and one-degree-lower fillings in the other piece give

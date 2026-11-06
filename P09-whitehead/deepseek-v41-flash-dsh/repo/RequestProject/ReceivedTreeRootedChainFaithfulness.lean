@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
-universe u
 variable {K : Complex2.{u}} (T : SpanningTree K) {G : Type u} [Group G]
   (φ : PresGroup (treeRel T) →* G)
 
@@ -132,7 +131,7 @@ theorem edgeChains_eq_of_nonTree_coordinates (c d : (G × K.E) →₀ ℤ)
     (hb : ∀ g v, v ≠ T.root →
       bdry1 (cover T φ) c (g, v) = bdry1 (cover T φ) d (g, v)) : c = d := by
   apply sub_eq_zero.mp
-  apply edgeChain_eq_zero_of_nonTree_coordinates T φ
+  apply edgeChain_eq_zero_of_nonTree_coordinates
   · intro i
     rw [map_sub, hc, sub_self]
   · intro g v hv

@@ -64,7 +64,7 @@ theorem exists_mapSquare_lift {E X : Type} [TopologicalSpace E] [TopologicalSpac
     intro t
     have he := congrFun (hp.liftHomotopy_lifts H (ContinuousMap.const _ e) H0) (1, t)
     change p (F (1, t)) = q (fun i => 1 * t i) at he
-    simp only [one_mul] at he
+    simp at he
     exact he
 
   have hbase : G z = e := by

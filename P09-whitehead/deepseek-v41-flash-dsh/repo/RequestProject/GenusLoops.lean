@@ -236,7 +236,7 @@ theorem bdPath_block (n : ℕ) :
   have a2 : 8 * n + 2 + 2 + 2 = 8 * n + 6 := by omega
   have a1 : 8 * n + 2 + 2 = 8 * n + 4 := by omega
   rw [a2, a1]
-  simp [List.append_assoc]
+  simp
 
 theorem bcl_succ (n : ℕ) (hn : n < q) :
     bcl q (n + 1) = bcl q n * (gGen q (n, false) * gGen q (n, true)

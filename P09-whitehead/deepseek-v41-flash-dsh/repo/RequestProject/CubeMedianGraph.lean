@@ -42,7 +42,6 @@ Everything else is proved:
 
 namespace FiniteChains
 
-universe u
 
 /-- A **median graph**, recorded through its distance function: a metric with values in `ℕ`
 together with a median operation assigning to three vertices the unique vertex lying on a

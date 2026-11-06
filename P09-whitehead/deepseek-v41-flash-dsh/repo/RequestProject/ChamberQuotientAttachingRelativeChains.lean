@@ -8,7 +8,6 @@ public import RequestProject.ChamberQuotientAttachingCover
 /-! Relative old-cell fillings with the prescribed boundary in the actual attaching cover. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

@@ -37,7 +37,6 @@ namespace FiniteChains
 
 namespace SquareComplex
 
-universe u
 
 variable {Vx : Type u} [DecidableEq Vx] {S : SquareComplex Vx}
 
@@ -46,9 +45,6 @@ def toSimpleGraph (S : SquareComplex Vx) : SimpleGraph Vx where
   Adj := S.adj
   symm := ⟨fun _ _ h => S.adj_symm h⟩
   loopless := ⟨S.adj_irrefl⟩
-
-omit [DecidableEq Vx] in
-@[simp] theorem toSimpleGraph_adj (a b : Vx) : (toSimpleGraph S).Adj a b ↔ S.adj a b := Iff.rfl
 
 end SquareComplex
 

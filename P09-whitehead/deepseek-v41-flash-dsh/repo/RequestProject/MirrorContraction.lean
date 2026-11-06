@@ -33,7 +33,6 @@ chamber `F_w` is contractible.
 namespace FiniteChains
 namespace Mirror
 
-universe u
 
 variable {V : Type u} [DecidableEq V]
 

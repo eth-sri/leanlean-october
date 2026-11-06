@@ -20,7 +20,6 @@ the paper:
 namespace FiniteChains
 namespace RACG
 
-universe u
 
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 

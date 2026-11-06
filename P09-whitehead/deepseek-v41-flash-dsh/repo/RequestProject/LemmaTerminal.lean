@@ -65,7 +65,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 /-! ### A map which kills the fundamental group is zero on Hurewicz-trivial chains -/
 
@@ -86,7 +85,7 @@ theorem mapDomainRingHom_eq_single_augPres (h : PresGroup ρ →* PresGroup ρ')
   | add x y hx hy => rw [map_add, map_add, hx, hy, MonoidAlgebra.single_add]
   | single g m =>
       show MonoidAlgebra.mapDomain h (MonoidAlgebra.single g m) = _
-      rw [MonoidAlgebra.mapDomain_single, htriv g]
+      rw [MonoidAlgebra.mapDomain_single, htriv]
       exact congrArg (MonoidAlgebra.single (1 : PresGroup ρ') ·) (augQ_single _ _ _).symm
 
 omit [Fintype α] [DecidableEq α] [Fintype J] [Fintype α'] [DecidableEq α'] [Fintype J'] in
@@ -112,12 +111,6 @@ variable (ρ : J → FreeGroup α) (ν : L → FreeGroup α)
 `a_z` and `b_z`) are adjoined as further individual relators, the generators being
 unchanged. -/
 def addRels : J ⊕ L → FreeGroup α := Sum.elim ρ ν
-
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] [Fintype L] [DecidableEq L] in
-@[simp] theorem addRels_inl (j : J) : addRels ρ ν (Sum.inl j) = ρ j := rfl
-
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] [Fintype L] [DecidableEq L] in
-@[simp] theorem addRels_inr (l : L) : addRels ρ ν (Sum.inr l) = ν l := rfl
 
 omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] [Fintype L] [DecidableEq L] in
 theorem relSub_le_relSub_addRels : relSub ρ ≤ relSub (addRels ρ ν) := by
@@ -165,59 +158,6 @@ omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] [Fintype L] [Deci
 theorem augPres_addRelsRingHom (z : MonoidAlgebra ℤ (PresGroup ρ)) :
     augPres (addRels ρ ν) (addRelsRingHom ρ ν z) = augPres ρ z :=
   augQ_mapDomain (addRelsHom ρ ν) z
-
-/-- The map on two-chains induced by the terminal extension: the old coefficients are read in
-the new group ring, and the new two-cells receive the coefficient `0`. -/
-noncomputable def addRelsCells (y : J → MonoidAlgebra ℤ (PresGroup ρ)) :
-    J ⊕ L → MonoidAlgebra ℤ (PresGroup (addRels ρ ν)) :=
-  Sum.elim (fun j => addRelsRingHom ρ ν (y j)) (fun _ => 0)
-
-omit [Fintype α] [DecidableEq J] [DecidableEq L] in
-theorem isFoxCycle_addRelsCells {y : J → MonoidAlgebra ℤ (PresGroup ρ)} (hy : IsFoxCycle ρ y) :
-    IsFoxCycle (addRels ρ ν) (addRelsCells ρ ν y) := by
-  intro i
-  rw [Fintype.sum_sum_type]
-  have hL : ∑ l : L, addRelsCells ρ ν y (Sum.inr l) * foxMatrixPres (addRels ρ ν) i (Sum.inr l)
-      = 0 := by
-    refine Finset.sum_eq_zero fun l _ => ?_
-    show (0 : MonoidAlgebra ℤ (PresGroup (addRels ρ ν))) * _ = 0
-    rw [zero_mul]
-  have hJ : ∀ j : J, addRelsCells ρ ν y (Sum.inl j) * foxMatrixPres (addRels ρ ν) i (Sum.inl j)
-      = addRelsRingHom ρ ν (y j * foxMatrixPres ρ i j) := by
-    intro j
-    rw [foxMatrix_addRels_inl, map_mul]
-    rfl
-  rw [hL, add_zero, Finset.sum_congr rfl fun j _ => hJ j, ← map_sum, hy i, map_zero]
-
-/-- **The terminal extension as a structural map.**  This is the inclusion `T(P) ⊂ Q(P)` of
-Lemma 3.10 together with its effect on two-chains. -/
-noncomputable def addRelsMor : PresMor ρ (addRels ρ ν) where
-  hom := addRelsHom ρ ν
-  cells := addRelsCells ρ ν
-  cells_add := by
-    intro y z
-    funext p
-    cases p with
-    | inl j => exact map_add (addRelsRingHom ρ ν) _ _
-    | inr l => show (0 : MonoidAlgebra ℤ (PresGroup (addRels ρ ν))) = 0 + 0; rw [add_zero]
-  cells_smul := by
-    intro c y
-    funext p
-    cases p with
-    | inl j => exact map_mul (addRelsRingHom ρ ν) c (y j)
-    | inr l => show (0 : MonoidAlgebra ℤ (PresGroup (addRels ρ ν))) = _ * 0; rw [mul_zero]
-  cells_cycle := fun _ hy => isFoxCycle_addRelsCells ρ ν hy
-  cells_aug := by
-    intro y hy p
-    cases p with
-    | inl j =>
-        show augPres (addRels ρ ν) (addRelsRingHom ρ ν (y j)) = 0
-        rw [augPres_addRelsRingHom, hy j]
-    | inr l => show augPres (addRels ρ ν) 0 = 0; rw [map_zero]
-
-omit [Fintype α] [DecidableEq J] [DecidableEq L] in
-@[simp] theorem addRelsMor_hom_mk (w : FreeGroup α) :
-    (addRelsMor ρ ν).hom (QuotientGroup.mk w) = QuotientGroup.mk w := rfl
 
 end AddRels
 

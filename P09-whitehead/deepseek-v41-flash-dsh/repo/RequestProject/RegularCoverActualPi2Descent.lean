@@ -11,9 +11,7 @@ theorem. The explicit edge/face compatibility records actual deck maps,
 which the older vertex-only `IsRegular` predicate does not encode.
 Unverified source. -/
 
-noncomputable section
 namespace FiniteChains.Comb
-universe u v
 variable {D K : Complex2.{u}} {Q : Type v} [Group Q]
   (p : Hom D K) (hp : IsCovering p) (a : DeckAction D Q) (hr : IsRegular p a)
   (he : ∀ q e, p.onE (a.smulE q e) = p.onE e)

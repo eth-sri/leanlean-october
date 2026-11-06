@@ -11,10 +11,8 @@ bijective exponent boundary of its actual spanning-tree presentation.
 The one-sheeted covers identify both original cell complexes exactly.
 Pending final Lean verification. -/
 
-noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb
-universe u
 
 theorem bdry2_presComplex_eq_expMatrix {A J : Type u} [DecidableEq A]
     (ρ : J → FreeGroup A) : bdry2 (presComplex ρ) = FiniteChains.expMatrix ρ := by

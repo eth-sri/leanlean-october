@@ -103,8 +103,8 @@ theorem graphConnector_eq_radial (hr : Continuous r)
           (unitBoundaryInclusion _ (graphSnapBoundary d.val.2)) t⟩ =
       cell r (boundaryFamilyInclusion J (Fin 1 → ℝ))
         ⟨d.val.1, ⟨((1 - (t : ℝ)) + (t : ℝ) / ‖d.val.2.val‖) • d.val.2.val, _⟩⟩
-    apply congrArg (cell r (boundaryFamilyInclusion J (Fin 1 → ℝ)))
-    apply congrArg (Sigma.mk d.val.1)
+    apply congrArg
+    apply congrArg
     apply Subtype.ext
     change Path.segment d.val.2.val (graphSnapBoundary d.val.2).val t =
       ((1 - (t : ℝ)) + (t : ℝ) / ‖d.val.2.val‖) • d.val.2.val

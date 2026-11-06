@@ -32,12 +32,6 @@ def relatorCircleMap (j : J) : RelatorCircle w j ↪o RelatorCircle v (h.cell j)
   inj' := fun _ _ he => Subtype.ext (h.circleFun_injective (congrArg Subtype.val he))
   map_rel_iff' := h.circleFun_le_iff _ _
 
-@[simp] theorem relatorCircleMap_val (j : J) (x : RelatorCircle w j) :
-    (h.relatorCircleMap j x).val = h.circleFun x.val := rfl
-
-@[simp] theorem relatorCircleMap_position (j : J) (x : RelatorCircle w j) :
-    (h.relatorCircleMap j x).val.2 = x.val.2 := rfl
-
 @[simp] theorem relatorCircleMap_index (j : J) (x : RelatorCircle w j) :
     (relatorCircleIndexEquiv v (h.cell j) (h.relatorCircleMap j x)).val =
       (relatorCircleIndexEquiv w j x).val := rfl

@@ -35,7 +35,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 /-! ### Transport of the lifting property along isomorphisms -/
 

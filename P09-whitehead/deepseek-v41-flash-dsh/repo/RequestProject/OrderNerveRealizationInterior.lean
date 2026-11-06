@@ -86,7 +86,7 @@ theorem orderNerveRealization_nonDegenerate_interior_dimension_eq {P : Type}
   have ht := (PartialOrder.mem_nerve_nonDegenerate_iff_injective t.val).mp t.property
   have hc := Nat.card_congr ((Equiv.ofInjective s.val.obj hs).trans
     ((Set.equivOfEq hrange).trans (Equiv.ofInjective t.val.obj ht).symm))
-  simp only [Nat.card_eq_fintype_card, Fintype.card_fin, SimplexCategory.len_mk] at hc
+  simp at hc
   omega
 
 end FiniteChains.Comb

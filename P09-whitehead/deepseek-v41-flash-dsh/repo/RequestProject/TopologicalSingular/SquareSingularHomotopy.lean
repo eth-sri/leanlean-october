@@ -9,7 +9,6 @@ public import RequestProject.TopologicalCoverPi2
 namespace FiniteChains.SingularPrism
 open TopologicalSingular
 open scoped unitInterval
-universe u v
 variable {X : Type u} {Y : Type v} [TopologicalSpace X] [TopologicalSpace Y]
 variable {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g)
 
@@ -38,7 +37,6 @@ end FiniteChains.SingularPrism
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
 /-- An actual homotopy relative to the square boundary gives an explicit

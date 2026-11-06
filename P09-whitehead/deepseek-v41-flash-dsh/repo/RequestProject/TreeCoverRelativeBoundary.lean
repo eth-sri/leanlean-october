@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.SpanningTree
-universe u
 variable {K : Complex2.{u}} (T : SpanningTree K)
   (N : Subgroup (FreeGroup (NonTree T))) [N.Normal]
   (hN : ∀ f, treeRel T f ∈ N)
@@ -22,7 +21,7 @@ theorem piE_injective_of_same_boundary (c d : (CovQ T N × K.E) →₀ ℤ)
     (he : piE T N c = piE T N d) : c = d := by
   classical
   apply sub_eq_zero.mp
-  apply treeChain_eq_zero (T := T) (N := N) (hN := hN)
+  apply treeChain_eq_zero
   · apply support_isTree_of_piE_eq_zero (T := T) (N := N)
     rw [map_sub, he, sub_self]
   · rw [map_sub, hb, sub_self]

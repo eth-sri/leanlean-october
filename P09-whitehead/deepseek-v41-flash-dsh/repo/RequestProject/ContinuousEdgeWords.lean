@@ -32,8 +32,6 @@ def realize : (l : List (E × Bool)) → {a b : V} →
       ((germPath src tgt v edge g).cast (congrArg v h.1) rfl).trans
         (realize l h.2)
 
-@[simp] theorem realize_nil (a : V) : realize src tgt v edge [] (a := a) rfl = Path.refl (v a) := rfl
-
 theorem realize_append (l m : List (E × Bool)) {a b c : V}
     (hl : Comb.IsPath src tgt l a b) (hm : Comb.IsPath src tgt m b c) :
     Path.Homotopic
@@ -124,8 +122,7 @@ theorem isWord_of_open_cover {ι : Type} (U : ι → Set X)
     exact hj hs
   have hcat := PathReplacement.concat_conjugate points (v ∘ a ∘ points)
     (fun i => C (points i)) F G (fun _ => Path.Homotopic.refl _)
-  have hsub : Path.Homotopic (Path.concat points F)
-      (p.subpath (ts 0) (ts (Fin.last n))) := Path.Homotopic.concat_subpath p ts
+  have hsub := Path.Homotopic.concat_subpath p ts
   have hcat' : Path.Homotopic
       (((C (points 0)).symm.trans (p.subpath (ts 0) (ts (Fin.last n)))).trans
         (C (points (Fin.last n)))) (Path.concat (v ∘ a ∘ points) G) :=

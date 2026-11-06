@@ -23,7 +23,6 @@ points is the conjugation by that path.  This file provides it:
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {X : Complex2.{u}} {a b : X.V} {c : List (X.E × Bool)}
 
@@ -58,9 +57,6 @@ def pi1Conj (hc : IsPath X.src X.tgt c a b) : Pi1 X b →* Pi1 X a where
       simp [List.append_assoc]
     rw [hrw₁, hrw₂] at hmain
     exact hmain.symm
-
-@[simp] theorem pi1Conj_mk (hc : IsPath X.src X.tgt c a b) (p : Loop X b) :
-    pi1Conj hc (Pi1.mk p) = Pi1.mk (conjLoop hc p) := rfl
 
 /-- Conjugation only depends on the homotopy class of the conjugating path. -/
 theorem pi1Conj_congr {c' : List (X.E × Bool)} (hc : IsPath X.src X.tgt c a b)

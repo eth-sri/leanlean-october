@@ -8,7 +8,6 @@ public import RequestProject.OrderNerveRealizationMapCoordinates
 /-! The explicit cycle boundary parametrization is natural under a map
 preserving the ordered vertex enumeration. Pending Lean verification. -/
 
-noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 

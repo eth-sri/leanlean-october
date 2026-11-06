@@ -34,7 +34,6 @@ The definitions are the standard cellular ones:
 namespace FiniteChains
 namespace Comb
 
-universe u v
 
 /-! ### Edge paths -/
 

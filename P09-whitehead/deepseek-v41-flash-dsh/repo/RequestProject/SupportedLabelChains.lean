@@ -9,10 +9,8 @@ boundary identity below requires homogeneity only at cells in its actual
 support.  Thus it applies to a union of components inside a larger complex.
 Unverified source. -/
 
-noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb
-universe u v w
 
 theorem finsupp_filter_of_constant_label {I : Type u} {J : Type v}
     (label : I → J) (j : J) (c : I →₀ ℤ) (k : J)

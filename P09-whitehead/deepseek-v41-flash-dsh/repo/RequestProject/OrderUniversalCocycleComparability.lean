@@ -6,7 +6,6 @@ public import RequestProject.OrderUniversalPoset
 @[expose] public section
 
 namespace FiniteChains.Comb.OrdCocycle
-universe u v
 variable {P : Type u} [PartialOrder P] {G : Type v} [Group G]
   (c : OrdCocycle P G) (a : P)
 

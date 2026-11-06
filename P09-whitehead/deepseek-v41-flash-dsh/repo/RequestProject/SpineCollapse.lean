@@ -100,7 +100,7 @@ theorem mem_topCubes_of_move {L : ASC V} {f g : Cube V} (h : Move L f g)
   -- `freeSet g = insert c' ((freeSet f).erase c)`
   have hset : freeSet g = insert c' ((freeSet f).erase c) := by
     ext v
-    simp only [mem_freeSet, Finset.mem_insert, Finset.mem_erase]
+    simp
     constructor
     · intro hv
       by_cases hvc' : v = c'
@@ -117,7 +117,7 @@ theorem mem_topCubes_of_move {L : ASC V} {f g : Cube V} (h : Move L f g)
         · rw [← hagree v hvc hvc']; exact hv
   have hc : c ∈ freeSet f := by simpa using hfc
   have hc' : c' ∉ (freeSet f).erase c := by
-    simp only [Finset.mem_erase, mem_freeSet, not_and]
+    simp
     intro _
     exact hfc'
   rw [hset, Finset.card_insert_of_notMem hc', Finset.card_erase_of_mem hc, hf.2]
@@ -224,7 +224,7 @@ theorem hedge_of_edgeInTwoTriangles {L : ASC V} (h : ASC.EdgeInTwoTriangles L)
     refine le_trans (Finset.card_le_card (?_ : _ ⊆ ({v₁, v₂} : Finset V))) (by
       simpa only [Finset.card_singleton] using Finset.card_insert_le v₁ {v₂})
     intro j hj
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
+    simp at hj
     rcases huniq j ⟨hj.1, hj.2⟩ with rfl | rfl <;> simp
   · have : ((univ.filter fun j => j ∉ e).filter fun j => insert j e ∈ L.faces) = ∅ := by
       refine Finset.filter_eq_empty_iff.2 ?_

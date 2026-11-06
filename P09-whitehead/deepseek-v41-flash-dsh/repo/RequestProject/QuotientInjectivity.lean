@@ -123,7 +123,7 @@ theorem eq_zero_of_reduction_indep {κ ι : Type*} (ε : R →+* S)
           refine Finset.sum_congr rfl fun j _ => ?_
           rw [hw]
           simp only [smul_sub, smul_smul]
-          rw [mul_comm (c j) a]
+          rw [mul_comm]
         rw [hcalc, hsum1, hcoord, smul_smul, neg_smul, sub_neg_eq_add, ← add_smul]
         have : a * -c j₀ + c j₀ * a = 0 := by ring
         rw [this, zero_smul]

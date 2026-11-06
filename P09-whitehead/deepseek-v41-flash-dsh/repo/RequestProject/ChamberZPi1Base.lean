@@ -45,7 +45,6 @@ namespace Davis
 
 open RACG Mirror Comb
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V} {X : Type u} [Preorder X]
   {M : CayGroup A → Prop} {att : NeSpx A →o X}
@@ -121,7 +120,6 @@ theorem injIn_zchamber_base {w : CayGroup A} (hw : M w) :
     (fun z z' h => zChamberRetr_monotone hw h) ?_ ?_
   · intro z
     obtain ⟨x, hx⟩ := zChamberRetr_mem hw z
-    show InZBaseAt w (zChamberRetr hw z).1
     rw [hx]
     exact rfl
   · rintro ⟨p | ⟨u, x⟩, hz⟩ hb
@@ -246,7 +244,7 @@ theorem injIn_zupto {w0 : CayGroup A} (hw0 : M w0) :
       have hcond : RACG.clen A w0 ≤ n ∨ w0 ∈ {x : CayGroup A | RACG.clen A x = n + 1} := by
         rcases Nat.lt_or_ge (RACG.clen A w0) (n + 1) with h' | h'
         · exact Or.inl (by omega)
-        · exact Or.inr (by simp only [Set.mem_setOf_eq]; omega)
+        · exact Or.inr (by simp; omega)
       have hstep := injIn_zupto_insert hw0 n ih {x : CayGroup A | RACG.clen A x = n + 1}
         (level_finite A (n + 1)) (fun _ hy => hy) hcond
       refine injIn_congr_left (fun z => ?_) hstep

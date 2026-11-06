@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [Preorder P] [Preorder Q]
   (f : P → Q) (hf : Monotone f) (c : Q) (hc : ∀ x, c ≤ f x)
   {o : Q} (k : UV (orderCx Q) o) (hk : endV k = c)
@@ -80,7 +79,7 @@ theorem coneCoverFace_att (e : (orderCx P).E) :
     (coneCoverReference f c hc k e.1.2) = k at hcancel
   change uLiftPath [(coneRadial f c hc e.1.1, true),
     ((orderCxMap f hf).onE e, true), (coneRadial f c hc e.1.2, false)] k = _
-  rw [uLiftPath_cons hk]
+  rw [uLiftPath_cons]
   change (Comb.liftGerm k (coneRadial f c hc e.1.1, true) hk) ::
     uLiftPath [((orderCxMap f hf).onE e, true), (coneRadial f c hc e.1.2, false)]
       (coneCoverReference f c hc k e.1.1) = _

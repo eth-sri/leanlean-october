@@ -25,7 +25,7 @@ theorem stationaryPi2Chain_single_of_based (x : X) (a : PointedSingularTriangle 
 
 theorem stationaryPi2Chain_basedTriangleCycle (x : X) (a : PointedSingularTriangle X x) :
     stationaryPi2Chain x (basedTriangleCycle a.map x) = a.pi2 := by
-  rw [basedTriangleCycle, map_sub, stationaryPi2Chain_single_of_based x a 1]
+  rw [basedTriangleCycle, map_sub, stationaryPi2Chain_single_of_based]
   have hc := stationaryPi2Chain_single_of_based x (PointedSingularTriangle.constant x) 1
   change stationaryPi2Chain x (Finsupp.single (ContinuousMap.const (Domain 2) x) 1) =
     (1 : ℤ) • (PointedSingularTriangle.constant x).pi2 at hc

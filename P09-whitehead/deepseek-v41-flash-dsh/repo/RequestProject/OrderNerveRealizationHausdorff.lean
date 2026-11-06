@@ -44,12 +44,12 @@ theorem orderNerveRealizationCoordinates_injective (P : Type) [PartialOrder P] :
   have hrange : Set.range s.val.obj = Set.range t.val.obj := by
     ext p
     rw [← orderNerveAffineSimplex_indicator_pos_iff s.val z hz p,
-      ← orderNerveAffineSimplex_indicator_pos_iff t.val w hw p, hv p]
+      ← orderNerveAffineSimplex_indicator_pos_iff t.val w hw p, hv]
   have hs := (PartialOrder.mem_nerve_nonDegenerate_iff_strictMono s.val).mp s.property
   have ht := (PartialOrder.mem_nerve_nonDegenerate_iff_strictMono t.val).mp t.property
   have hc := Nat.card_congr ((Equiv.ofInjective s.val.obj hs.injective).trans
     ((Set.equivOfEq hrange).trans (Equiv.ofInjective t.val.obj ht.injective).symm))
-  simp only [Nat.card_eq_fintype_card, Fintype.card_fin, SimplexCategory.len_mk] at hc
+  simp at hc
   have hnm : n = m := by omega
   subst m
   have hst : s = t := by

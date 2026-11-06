@@ -18,7 +18,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelatorReindex
 
-universe u
 variable {A J K : Type u} [Fintype A] [DecidableEq A] [Fintype J] [Fintype K]
   (ρ : J → FreeGroup A) (τ : K → FreeGroup A) (e : J ≃ K)
   (hrel : ∀ j, τ (e j) = ρ j)
@@ -44,7 +43,7 @@ theorem coefficientMap_quot (x : FreeGroupRing A) :
   | single g n =>
       change MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ (MonoidAlgebra.single g n)) =
         MonoidAlgebra.mapDomain _ (MonoidAlgebra.single g n)
-      simp only [MonoidAlgebra.mapDomain_single]
+      simp
       rfl
 
 omit [Fintype A] [Fintype J] [Fintype K] in

@@ -253,9 +253,8 @@ theorem mem_relIdeal_of_proj_eq_zero (b : FreeGroupRing α) (hb : proj Nsub b = 
         have hgen : grp ((φ g)⁻¹ * g) - 1 ∈ relIdeal Nsub :=
           Submodule.subset_span ⟨_, hmem, rfl⟩
         have h1 : grp (φ g) * (grp ((φ g)⁻¹ * g) - 1) ∈ relIdeal Nsub := by
-          simpa [smul_eq_mul] using Submodule.smul_mem (relIdeal Nsub) (grp (φ g)) hgen
-        simpa [smul_eq_mul] using
-          Submodule.smul_mem (relIdeal Nsub) (((n : ℤ) : FreeGroupRing α)) h1
+          exact Submodule.smul_mem (relIdeal Nsub) (grp (φ g)) hgen
+        exact Submodule.smul_mem (relIdeal Nsub) (((n : ℤ) : FreeGroupRing α)) h1
   have hb' := key b
   rwa [hmap, sub_zero] at hb'
 

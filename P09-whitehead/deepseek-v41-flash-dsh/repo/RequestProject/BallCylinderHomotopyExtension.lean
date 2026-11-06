@@ -16,7 +16,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u
 variable (E : Type u) [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 abbrev FullBallCylinderBoundary :=

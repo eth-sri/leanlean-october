@@ -10,7 +10,6 @@ public import RequestProject.NerveBoundaryReflection
 /-! Actual relative degree-two vanishing for the old/attaching pair in the Q cover. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

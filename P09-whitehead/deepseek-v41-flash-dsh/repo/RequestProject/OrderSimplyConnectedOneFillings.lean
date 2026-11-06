@@ -12,7 +12,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
 /-- A componentwise path contraction gives actual finite cellular fillings.
@@ -33,7 +32,7 @@ theorem order_oneCycle_filling_of_simplyConnected (hsc : SimplyConnected (orderC
     let l := p e.1.1 ++ [(e, true)] ++ revPath (p e.1.2)
     have hrev : IsPath (orderCx P).src (orderCx P).tgt (revPath (p e.1.2))
         e.1.2 (r e.1.1) := by
-      rw [hr e]
+      rw [hr]
       exact isPath_revPath (hp e.1.2)
     have hl : IsPath (orderCx P).src (orderCx P).tgt l (r e.1.1) (r e.1.1) :=
       ((hp e.1.1).append (show IsPath (orderCx P).src (orderCx P).tgt

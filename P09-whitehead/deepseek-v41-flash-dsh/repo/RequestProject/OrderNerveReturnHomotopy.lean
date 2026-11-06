@@ -52,7 +52,7 @@ theorem orderReturnHomotopyNextMap_identity {n : ℕ} (H : OrderReturnHomotopySt
     apply Finsupp.lhom_ext'
     intro s
     apply LinearMap.ext_ring
-    simp only [LinearMap.comp_apply, Finsupp.lsingle_apply, LinearMap.sub_apply]
+    simp
     change Nerve.bdry (orderReturnHomotopyNextMap H (Finsupp.single s 1)) = _
     rw (config := { transparency := .default }) [orderReturnHomotopyNextMap_single]
     exact (orderReturnHomotopyNext_fill H s).choose_spec.2.2

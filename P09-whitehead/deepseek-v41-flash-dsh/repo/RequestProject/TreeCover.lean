@@ -34,7 +34,6 @@ namespace FiniteChains
 namespace Comb
 namespace SpanningTree
 
-universe u
 
 variable {K : Complex2.{u}} (T : SpanningTree K)
 variable (N : Subgroup (FreeGroup (NonTree T))) [N.Normal]
@@ -70,7 +69,7 @@ theorem germQ_revGerm (g : K.E × Bool) : germQ T N (revGerm g) = (germQ T N g)�
 
 theorem germQ_false_eq_inv (e : K.E) :
     germQ T N (e, false) = (germQ T N (e, true))⁻¹ := by
-  simpa [revGerm] using germQ_revGerm (T := T) (N := N) (e, true)
+  exact germQ_revGerm (T := T) (N := N) (e, true)
 
 theorem germQ_false_mul_true (e : K.E) :
     germQ T N (e, false) * germQ T N (e, true) = 1 := by
@@ -147,7 +146,7 @@ theorem liftK_isPath {L : List (K.E × Bool)} {a b : K.V} (hL : IsPath K.src K.t
   | nil =>
       have hab : a = b := hL
       subst hab
-      simp [wordQ]
+      simp
   | cons g L ih =>
       obtain ⟨ha, hrest⟩ := hL
       subst ha

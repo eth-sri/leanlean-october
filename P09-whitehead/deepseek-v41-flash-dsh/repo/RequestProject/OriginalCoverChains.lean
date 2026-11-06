@@ -10,7 +10,6 @@ an actual connected acyclic regular covering gives strict chains of
 arbitrary positive length starting with the original CW cells.
 Source assembled; final Lean verification remains outstanding. -/
 
-noncomputable section
 open scoped Classical
 namespace Whitehead
 open FiniteChains FiniteChains.Comb FiniteChains.ClassicalCW FiniteChains.PresModel

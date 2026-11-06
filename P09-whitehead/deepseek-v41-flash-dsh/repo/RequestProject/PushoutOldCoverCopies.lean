@@ -9,7 +9,6 @@ vertex agree after a genuine deck transformation of D, on all cells.
 These facts supply the component partition for supported descent chains.
 Unverified source. -/
 
-noncomputable section
 open scoped Classical
 
 set_option backward.defeqAttrib.useBackward true
@@ -17,7 +16,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.PushoutOldCover
-universe u v
 variable {D K L : Complex2.{u}} {Q : Type v} [Group Q]
   (p : Hom D K) (hp : IsCovering p) (a : DeckAction D Q) (hr : IsRegular p a)
   (he : ∀ q e, p.onE (a.smulE q e) = p.onE e)

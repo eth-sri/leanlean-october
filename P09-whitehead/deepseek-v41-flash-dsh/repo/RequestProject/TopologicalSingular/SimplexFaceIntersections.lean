@@ -6,7 +6,6 @@ public import RequestProject.TopologicalSingular.TriangleBasedNormalization
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 
 /-- The two orders of inserting the missing coordinates give the same face. -/

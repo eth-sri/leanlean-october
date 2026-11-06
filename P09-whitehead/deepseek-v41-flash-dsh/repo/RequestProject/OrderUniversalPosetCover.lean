@@ -7,7 +7,6 @@ public import RequestProject.OrderPosetCovering
 
 /-! Unique interval lifts in the genuine path-class universal-cover order. -/
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
 theorem uOrderStep_le (v : UOrder P a) (q : P) (h : uOrderEnd v ≤ q) :

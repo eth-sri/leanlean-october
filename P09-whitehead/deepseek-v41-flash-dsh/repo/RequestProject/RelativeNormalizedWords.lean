@@ -23,7 +23,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
-universe v
 variable {A J B K : Type v} [dA : DecidableEq A] [dB : DecidableEq B]
   {ρ : J → FreeGroup A} {τ : K → FreeGroup B}
 
@@ -233,7 +232,7 @@ theorem coreCorrection_mem (N : Subgroup (FreeGroup (PairGen A Z)))
   refine Subgroup.list_prod_mem _ ?_
   intro x hx
   obtain ⟨c, _, rfl⟩ := List.mem_map.mp hx
-  simp only [Function.comp_apply, map_zpow]
+  simp
   exact N.zpow_mem (hN c) (v c)
 
 /-- Simultaneous rule 2 does not change the presented group. No ordering

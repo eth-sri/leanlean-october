@@ -38,7 +38,6 @@ namespace FiniteChains
 
 namespace SquareComplex
 
-universe u v w
 
 variable {Vx : Type u}
 
@@ -75,7 +74,7 @@ theorem isWalkFrom_support {G : SimpleGraph Vx} (hadj : ∀ u v : Vx, G.Adj u v 
         exact hadj _ _ hab
       · rw [SimpleGraph.Walk.support_cons, hzr]
         rw [hzr] at hql
-        simpa using hql
+        exact hql
 
 variable {Vt : Type u} {Vb : Type v} {Vs : Type w}
 variable {T : SquareComplex Vt} {B : SquareComplex Vb} {p : Vt → Vb}

@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u}
 
 theorem rose_strict_triangles_empty : IsEmpty (StrictOrdTri (Rose α)) := by

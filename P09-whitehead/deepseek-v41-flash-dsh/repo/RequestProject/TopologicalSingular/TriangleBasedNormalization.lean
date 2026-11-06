@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 
 theorem simplex_face_coordinate_succAbove (i : Fin (n + 2)) (z : Domain n) (j : Fin (n + 1)) :

@@ -52,7 +52,7 @@ theorem markedSpineToOldHom_mark (x : Fin q × Bool) :
       pi1Map (genusSpineToOld q) (spineBase q) (Pi1.mk (spineMarkedLoop q x)) := by
   change namedSpineToOldEquiv q
     (QuotientGroup.mk (FreeGroup.map Sum.swap (FreeGroup.of (Sum.inl x)))) = _
-  simp only [FreeGroup.map.of, Sum.swap_inl]
+  simp
   exact namedSpineToOld_marked q x
 
 /-- The surface word is a consequence of the actual reordered finite spine relators. -/
@@ -90,8 +90,8 @@ theorem markedSpine_filled {α Jr Sx : Type}
       obtain ⟨m, rfl⟩ := hz
       exact Subgroup.subset_normalClosure ⟨m, rfl⟩) (markedSpine_surface_mem q)
   rw [map_commWord] at h
-  simp only [BlockFamily.blockSubst_of_inl] at h
-  rw [hrho s, map_commWord]
+  simp at h
+  rw [hrho, map_commWord]
   exact h
 
 /-- The actual geometric block map supplies the relator checks for substitution.

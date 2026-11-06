@@ -48,7 +48,6 @@ namespace BlockMor
 
 open MonoidAlgebra
 
-universe u
 
 variable {α Z J M : Type u}
 

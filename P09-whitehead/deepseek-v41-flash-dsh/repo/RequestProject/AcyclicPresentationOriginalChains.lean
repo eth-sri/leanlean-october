@@ -12,7 +12,6 @@ literal original CW complex. Acyclicity of the original space and its actual
 word-disk homotopy equivalence supply the exponent-boundary isomorphism;
 the final theorems have no independent matrix hypothesis. -/
 
-noncomputable section
 namespace FiniteChains.RelativeNormalForm
 open PresModel
 open scoped Classical

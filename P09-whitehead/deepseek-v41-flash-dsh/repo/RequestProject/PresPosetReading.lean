@@ -35,7 +35,6 @@ namespace PresModel
 
 open Comb
 
-universe u v
 
 variable {α J : Type u} (w : J → List (α × Bool)) {G : Type v} [Group G] (gen : α → G)
 
@@ -118,7 +117,7 @@ def prefixVal (j : J) (k : ℕ) : G := wordVal gen ((w j).take k)
 theorem prefixVal_succ (j : J) {k : ℕ} (hk : k < (w j).length) :
     prefixVal w gen j (k + 1) = prefixVal w gen j k * letterVal gen (w j)[k] := by
   have hsplit : (w j).take (k + 1) = (w j).take k ++ [(w j)[k]] := by
-    rw [List.take_add_one, List.getElem?_eq_getElem hk]
+    rw [List.take_add_one, List.getElem?_eq_getElem]
     rfl
   rw [prefixVal, prefixVal, hsplit, wordVal_append, wordVal_single]
 
@@ -141,7 +140,7 @@ theorem prefixVal_csucc (hrel : ∀ j : J, wordVal gen (w j) = 1) (j : J) {k : �
   · rw [TCirc.csucc, Nat.mod_eq_of_lt hlt]
   · have hlen : (w j).length = k + 1 := heq.symm
     have h0 : TCirc.csucc w j k = 0 := by rw [TCirc.csucc, hlen, Nat.mod_self]
-    rw [h0, prefixVal_zero, prefixVal, ← hlen, List.take_length, hrel j]
+    rw [h0, prefixVal_zero, prefixVal, ← hlen, List.take_length, hrel]
 
 /-- **The trivialisation is parallel for the cocycle**: this is the cocycle identity for a
 comparability of the attaching circle and the cone point over it. -/
@@ -190,8 +189,8 @@ theorem trivVal_step (hrel : ∀ j : J, wordVal gen (w j) = 1) {x y : TCirc w} (
       exact (Option.some.injEq _ _ ▸ this.symm) ▸ rfl
     rw [hpk, letterVal]
     cases hp2 : p.2 with
-    | true => simp [mul_inv_rev]
-    | false => simp [mul_inv_rev]
+    | true => simp
+    | false => simp
 
 /-- **The cocycle of the model.**  The hypothesis is that every relator word evaluates to `1`,
 which is what makes the trivialisation over a two-cell consistent. -/
@@ -218,7 +217,6 @@ def reading (hrel : ∀ j : J, wordVal gen (w j) = 1) :
 /-- **The reading homomorphism reads the generators.** -/
 theorem reading_genClass (hrel : ∀ j : J, wordVal gen (w j) = 1) (i : α) :
     reading w gen hrel (genClass w i) = gen i := by
-  show (presCoc w gen hrel).readPath (genLoop w i) = gen i
   show roseVal gen Rose.base (Rose.edg i false) *
       ((roseVal gen (Rose.mid i) (Rose.edg i false))⁻¹ *
         (roseVal gen (Rose.mid i) (Rose.edg i true) *

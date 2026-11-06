@@ -39,8 +39,8 @@ theorem cellCoefficient_translate (g : G) (c : (G × I) →₀ ℤ) (i : I) :
       rw (config := { transparency := .default }) [translateCellChain, Finsupp.mapDomain_single, cellCoefficient_single,
         cellCoefficient_single]
       by_cases h : x.2 = i
-      · simp only [h, ↓reduceIte, MonoidAlgebra.single_mul_single, one_mul]
-      · simp only [h, ↓reduceIte, mul_zero]
+      · simp
+      · simp
 
 theorem cellCoefficient_multiply (w : MonoidAlgebra ℤ G)
     (c : (G × I) →₀ ℤ) (i : I) :

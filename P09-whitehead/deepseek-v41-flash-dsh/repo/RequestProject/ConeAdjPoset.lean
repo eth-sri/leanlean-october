@@ -32,7 +32,6 @@ Also provided:
 namespace FiniteChains
 namespace Comb
 
-universe u v
 
 /-! ### Pullback of a cocycle -/
 
@@ -104,13 +103,6 @@ instance : Preorder (ConeAdj S) where
             cases r with
             | inl z => exact hqr.elim
             | inr t'' => exact hpq.trans hqr
-
-@[simp] theorem inc_le_inc {p q : P} : (inc p : ConeAdj S) ≤ inc q ↔ p ≤ q := Iff.rfl
-
-@[simp] theorem inc_le_apex {p : P} {t : T} :
-    (inc p : ConeAdj S) ≤ apex t ↔ ∃ r, S t r ∧ p ≤ r := Iff.rfl
-
-@[simp] theorem not_apex_le_inc {p : P} {t : T} : ¬ (apex t : ConeAdj S) ≤ inc p := id
 
 theorem inc_monotone : Monotone (inc : P → ConeAdj S) := fun _ _ h => h
 

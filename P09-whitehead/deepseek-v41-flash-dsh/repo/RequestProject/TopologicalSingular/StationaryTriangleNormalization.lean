@@ -35,7 +35,7 @@ theorem stationaryTriangle_exists (x : X) (tau : Simplex X 2) :
     intro i t z
     change tau (stdSimplex.map (SimplexCategory.δ i) z) =
       stationaryEdgeHomotopy x (face i tau) (t, z)
-    rw [htau i, stationaryEdgeHomotopy_constant]
+    rw [htau, stationaryEdgeHomotopy_constant]
     exact congrArg (fun f : Simplex X 1 => f z) (htau i)
   · obtain ⟨g, F, hF⟩ := simplex_face_homotopy_extension tau
       (fun i => (stationaryEdgeHomotopy x (face i tau)).toContinuousMap)

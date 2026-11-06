@@ -16,7 +16,6 @@ noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u v
 variable (E : Type u) [NormedAddCommGroup E]
 
 abbrev ClosedUnitBall := {x : E // ‖x‖ ≤ 1}

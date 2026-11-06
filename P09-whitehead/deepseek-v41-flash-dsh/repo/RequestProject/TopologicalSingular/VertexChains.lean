@@ -23,7 +23,6 @@ namespace FiniteChains.VertexChains
 
 open CategoryTheory AlgebraicTopology
 
-universe u v
 abbrev Vertices (V : Type u) (n : ℕ) := Fin (n + 1) → V
 abbrev Chain (V : Type u) (n : ℕ) := Vertices V n →₀ ℤ
 
@@ -57,8 +56,7 @@ theorem boundary_single (n : ℕ) (v : Vertices V (n + 1)) (r : ℤ) :
     boundary n (Finsupp.single v r) =
       ∑ i : Fin (n + 2), (-1 : ℤ) ^ i.val • Finsupp.single (face i v) r := by
   rw [boundary_eq_sum]
-  simp only [LinearMap.sum_apply, LinearMap.smul_apply, Finsupp.lmapDomain_apply,
-    Finsupp.mapDomain_single]
+  simp
 
 theorem boundary_boundary (n : ℕ) (c : Chain V (n + 2)) : boundary n (boundary (n + 1) c) = 0 := by
   have h := congrArg ModuleCat.Hom.hom (AlternatingFaceMapComplex.d_squared (modules V) n)
@@ -152,7 +150,7 @@ theorem map_cone (f : V → W) (p : V) (n : ℕ) (c : Chain V n) :
   have he : (map f (n + 1)).comp (cone p n) = (cone (f p) n).comp (map f n) := by
     apply Finsupp.lhom_ext
     intro v r
-    simp only [LinearMap.comp_apply, cone_single, map_single]
+    simp
     congr 1
     funext i
     exact Fin.cases rfl (fun _ => rfl) i

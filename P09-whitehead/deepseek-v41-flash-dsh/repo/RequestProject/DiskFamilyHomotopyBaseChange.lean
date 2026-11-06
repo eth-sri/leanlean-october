@@ -21,7 +21,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u
 variable (J E : Type u) [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 def diskFamilyBoundarySet : Set (DiskFamily J E) :=

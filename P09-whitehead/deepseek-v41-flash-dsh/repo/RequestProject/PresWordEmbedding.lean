@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α β γ J K L : Type u}
 
 /-- Literal inclusions of labelled attaching words. This retains positions, including
@@ -147,25 +146,6 @@ def posMap : PresPos w ↪o PresPos v where
   inj' := h.posFun_injective
   map_rel_iff' := h.posFun_le_iff _ _
 
-theorem valid_iff (p : PresPos w) :
-    h.posFun p ∈ presValidVertices v ↔ p ∈ presValidVertices w := by
-  cases p with
-  | inr j => exact Iff.rfl
-  | inl p =>
-    cases p with
-    | inl r => exact Iff.rfl
-    | inr c =>
-      change c.2.1 < (v (h.cell c.1)).length ↔ c.2.1 < (w c.1).length
-      rw [h.word_length]
-
-/-- An actual order embedding of the finite-position models. -/
-def validMap : ValidPresPos w ↪o ValidPresPos v where
-  toFun p := ⟨h.posFun p.val, (h.valid_iff p.val).mpr p.property⟩
-  inj' := fun _ _ he => Subtype.ext (h.posFun_injective (congrArg Subtype.val he))
-  map_rel_iff' := h.posFun_le_iff _ _
-
-@[simp] theorem validMap_base : h.validMap (validPresBase w) = validPresBase v := rfl
-
 def refl (w : J → List (α × Bool)) : PresWordEmbedding w w where
   gen := Function.Embedding.refl _
   cell := Function.Embedding.refl _
@@ -177,15 +157,6 @@ def trans (k : PresWordEmbedding v z) : PresWordEmbedding w z where
   word j := by
     rw [Function.Embedding.trans_apply, k.word, h.word, List.map_map]
     rfl
-
-@[simp] theorem validMap_refl (p : ValidPresPos w) : (refl w).validMap p = p := by
-  apply Subtype.ext
-  rcases p with ⟨p, hp⟩
-  cases p with
-  | inr j => rfl
-  | inl p => cases p with
-    | inl r => cases r <;> rfl
-    | inr c => rfl
 
 end PresWordEmbedding
 end FiniteChains.PresModel

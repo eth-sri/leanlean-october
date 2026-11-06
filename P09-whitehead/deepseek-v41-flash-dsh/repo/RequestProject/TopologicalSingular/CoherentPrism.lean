@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval
-universe u
 variable {X : Type u} [TopologicalSpace X]
 
 noncomputable def simplexHomotopyPrism {n : ℕ} {f g : Simplex X n} (H : f.Homotopy g) :
@@ -69,9 +68,9 @@ theorem coherentPrism_identity (c : Chain X (n + 1)) :
     boundary (n + 1) (homotopyFamilyPrism (n + 1) hi H c) +
       homotopyFamilyPrism n lo L (boundary n c) = simplexFamilyMap (n + 1) hi c - c := by
   induction c using Finsupp.induction_linear with
-  | zero => simp only [map_zero, add_zero, sub_zero]
+  | zero => simp
   | add a b ha hb =>
-    simp only [map_add]
+    simp
     linear_combination (norm := abel) ha + hb
   | single tau r =>
     have hr : Finsupp.single tau r = r • Finsupp.single tau 1 := by simp

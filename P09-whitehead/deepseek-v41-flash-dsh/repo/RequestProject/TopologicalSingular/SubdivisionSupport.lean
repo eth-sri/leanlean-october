@@ -6,7 +6,6 @@ public import RequestProject.TopologicalSingular.RelativeSingularMaps
 @[expose] public section
 
 namespace FiniteChains.TopologicalSingular
-universe u
 variable {X : Type u} [TopologicalSpace X]
 
 /-- Subspace chains are precisely chains whose basis simplices stay in the subspace. -/
@@ -43,7 +42,6 @@ end FiniteChains.TopologicalSingular
 
 namespace FiniteChains.SingularSubdivision
 open TopologicalSingular
-universe u
 variable {X : Type u} [TopologicalSpace X]
 
 theorem fromModel_mem_subChains (A : Set X) {k l : ℕ} (m : Chain (Domain k) l)

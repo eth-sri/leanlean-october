@@ -32,7 +32,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 variable {S : Type u} {α : S → Type u} {J : S → Type u} (ρ : ∀ s, J s → FreeGroup (α s))
 

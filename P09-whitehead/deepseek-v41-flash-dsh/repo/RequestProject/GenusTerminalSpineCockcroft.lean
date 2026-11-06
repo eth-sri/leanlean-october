@@ -74,7 +74,7 @@ theorem terminalNamedWordMap_mark (s : S) (x : Fin (q s) × Bool) :
   change FreeGroup.map (genEmb (Zt := fun s => SpinePresentationGen (q s)) s)
     (blockSubst (Zt := fun _ : PUnit.{1} => SpinePresentationGen (q s))
       (fun _ => u s) PUnit.unit (FreeGroup.map Sum.swap (FreeGroup.of (Sum.inr x)))) = _
-  simp only [FreeGroup.map.of, Sum.swap_inr, blockSubst_of_inl]
+  simp
   have h : (FreeGroup.map (genEmb (Zt := fun s => SpinePresentationGen (q s)) s)).comp
       (FreeGroup.map (Sum.inl : A ⊕ K → (A ⊕ K) ⊕ SpinePresentationGen (q s))) =
       FreeGroup.map (Sum.inl : A ⊕ K → (A ⊕ K) ⊕ (Σ s, SpinePresentationGen (q s))) := by

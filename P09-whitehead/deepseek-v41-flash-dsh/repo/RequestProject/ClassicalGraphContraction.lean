@@ -37,8 +37,7 @@ theorem graphEdgeContraction_exists (j : J) : ∃ H : C(I × I, (DiskAttachment 
     refine ⟨H, ?_, ?_, ?_, ?_⟩
     · intro s
       change Path.tailContraction _ _ (0, unitInterval.symm s) = _
-      simp only [Path.tailContraction_zero, Path.symm_apply, Function.comp_apply,
-        unitInterval.symm_symm]
+      simp
     · intro s
       exact Path.tailContraction_one _ _ _
     · intro t
@@ -133,8 +132,5 @@ def graphContraction : ContinuousMap.Homotopy (ContinuousMap.id (DiskAttachment 
           (1, cell r (boundaryFamilyInclusion J (Fin 1 → ℝ)) d) = _
         rw [attachmentHomotopyPasting_cell]
         exact (graphEdgeContraction_spec r root Q hQ d.1).2.1 _
-
-@[simp] theorem graphContraction_old (t : I) (a : V) :
-    graphContraction r root Q hQ (t, (old r (boundaryFamilyInclusion J (Fin 1 → ℝ))) a) = Q a t := rfl
 
 end FiniteChains.ClassicalGraphModel

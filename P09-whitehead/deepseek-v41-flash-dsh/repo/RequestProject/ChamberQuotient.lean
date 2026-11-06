@@ -36,7 +36,6 @@ namespace Davis
 
 open RACG Mirror Comb
 
-universe u
 
 variable {V : Type u} [DecidableEq V] {A : CommRel V} {X : Type u} [Preorder X]
 
@@ -170,7 +169,7 @@ theorem phi_rep_eq_of_inChamber {x : CayGroup A} {p : Sph A} (h : InChamber x p)
     have := phi_mul A p.rep (p.rep⁻¹ * x)
     rwa [mul_inv_cancel_left] at this
   have hzero : phi A (p.rep⁻¹ * x) v = 0 :=
-    phi_eq_zero_of_mem_specialSub A h (by simpa using hv)
+    phi_eq_zero_of_mem_specialSub A h (by exact hv)
   rw [congrFun hmul v, Pi.add_apply, hzero, add_zero]
 
 /-- `p ≤ q` puts the representative of `p` in the coset of `q`. -/
@@ -206,8 +205,6 @@ noncomputable def qProjCube (p : Sph A) : QCube A where
   isSimplex := p.isSimplex
   sgn_eq_zero v hv := by simp [qProjSgn, hv]
 
-@[simp] theorem qProjCube_spx (p : Sph A) : (qProjCube p).spx = p.spx := rfl
-
 theorem qProjCube_sgn_of_not_mem {p : Sph A} {v : V} (hv : v ∉ p.spx) :
     (qProjCube p).sgn v = phi A p.rep v := by simp [qProjCube, qProjSgn, hv]
 
@@ -229,20 +226,18 @@ theorem not_isMarkedApex_of_qProjCube_eq {r : Sph A} {c : QCube A}
   rintro ⟨hemp, hrep⟩
   refine hc ⟨by rw [← h]; exact hemp, ?_⟩
   funext v
-  show c.sgn v = 0
   have hv : v ∉ r.spx := by rw [show r.spx = ∅ from hemp]; simp
   rw [← h, qProjCube_sgn_of_not_mem hv]
-  simpa using congrFun (show phi A r.rep = 0 from hrep) v
+  exact congrFun (show phi A r.rep = 0 from hrep) v
 
 theorem not_vplus_qProjCube {p : Sph A} (hp : ¬ IsMarkedApex (IsGamma A) p) :
     ¬ ((qProjCube p).spx = ∅ ∧ (qProjCube p).sgn = 0) := by
   rintro ⟨hemp, hsgn⟩
   refine hp ⟨hemp, ?_⟩
   funext v
-  show phi A p.rep v = 0
   have hv : v ∉ p.spx := by rw [show p.spx = ∅ from hemp]; simp
   rw [← qProjCube_sgn_of_not_mem hv]
-  simpa using congrFun hsgn v
+  exact congrFun hsgn v
 
 /-- **The projection `Z → Q`.** -/
 noncomputable def zProj : Zpos A X (IsGamma A) att → Qpos A X att
@@ -263,11 +258,10 @@ theorem zProj_monotone : Monotone (zProj (A := A) (X := X) (att := att)) := by
   · obtain ⟨hne, hx⟩ := h.2
     refine ⟨?_, hne, hx⟩
     funext w
-    show (qProjCube q.1).sgn w = 0
     by_cases hw : w ∈ q.1.spx
     · exact (qProjCube q.1).sgn_eq_zero w hw
     · rw [qProjCube_sgn_of_not_mem hw, phi_rep_eq_of_inChamber h.1 hw]
-      simpa using congrFun (show phi A u.1 = 0 from u.2) w
+      exact congrFun (show phi A u.1 = 0 from u.2) w
   · exact h.2
 
 /-! ### Surjectivity -/
@@ -283,14 +277,13 @@ theorem exists_zOld_qProjCube (c : QCube A) :
   refine ⟨chamberPt w c.isSimplex, ?_⟩
   rw [qProjCube_eq_iff]
   refine ⟨rfl, fun v hv => ?_⟩
-  rw [phi_rep_eq_of_inChamber (chamberPt_inChamber w c.isSimplex) (by simpa using hv), hw]
+  rw [phi_rep_eq_of_inChamber (chamberPt_inChamber w c.isSimplex) (by exact hv), hw]
 
 /-- **The projection is onto.** -/
 theorem zProj_surjective : Function.Surjective (zProj (A := A) (X := X) (att := att)) := by
   rintro (⟨c, hc⟩ | x)
   · obtain ⟨p, hp⟩ := exists_zOld_qProjCube c
     refine ⟨zOld p (not_isMarkedApex_of_qProjCube_eq hc hp), ?_⟩
-    show qOld _ _ = qOld c hc
     exact congrArg Sum.inl (Subtype.ext hp)
   · exact ⟨zNew ⟨1, isGamma_one⟩ x, rfl⟩
 

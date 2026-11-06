@@ -91,7 +91,7 @@ theorem germ_ends_iff {B : P → Prop} (e : (orderCx P).E × Bool) :
       (B (germSrc (orderCx P).src (orderCx P).tgt e) ∧
         B (germTgt (orderCx P).src (orderCx P).tgt e)) := by
   obtain ⟨e, b⟩ := e
-  cases b <;> simp only [germSrc, germTgt, Bool.false_eq_true, if_false, if_true]
+  cases b <;> simp
   · exact and_comm
   · rfl
 
@@ -152,7 +152,7 @@ theorem normalizeOrdGerm_properties {C : P → Prop} (e : (orderCx P).E × Bool)
   classical
   unfold normalizeOrdGerm
   split_ifs with h
-  · exact ⟨pathIn_nil _, by simp [mapPath]⟩
+  · exact ⟨pathIn_nil _, by simp⟩
   · constructor
     · exact pathIn_cons hC (pathIn_nil _)
     · intro g hg

@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory
-universe u
 
 noncomputable def shortComplexCycleClass (S : ShortComplex (ModuleCat.{u} ℤ))
     (c : S.X₂) (hc : S.g c = 0) : S.homology :=

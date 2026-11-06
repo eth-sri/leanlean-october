@@ -9,7 +9,6 @@ marking paths.
 -/
 open scoped Classical
 namespace FiniteChains.Comb
-universe u
 
 theorem pathChain_apply_zero_of_edge_absent {E : Type u} (p : List (E × Bool))
     (e : E) (hp : ∀ b ∈ p, b.1 ≠ e) : pathChain p e = 0 := by
@@ -70,7 +69,7 @@ theorem liftedMarking_first_coefficient
     exact (hp l).2
   have hzero := liftedPathChain_apply_zero_of_edge_absent (extend (edge l, true) (v k))
     hrest (liftedMarkedFirstEdge b edge tail hp v hv j i) (ht i l)
-  rw [uLiftPath_cons hstart, liftGerm_true, pathChain_cons]
+  rw [uLiftPath_cons, liftGerm_true, pathChain_cons]
   simp only [↓reduceIte, Finsupp.add_apply, hzero, add_zero]
   have hinj := liftedMarkedFirstEdge_injective b edge tail hp v hv he hv'
   change Finsupp.single (liftedMarkedFirstEdge b edge tail hp v hv k l) (1 : ℤ)

@@ -43,7 +43,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 variable {γ δ Mc Ex : Type u} [Fintype γ] [DecidableEq γ] [Fintype δ] [DecidableEq δ]
   [Fintype Mc] [Fintype Ex]
@@ -53,14 +52,6 @@ the core and the extra generators, together with the extra relators. -/
 def corePres (core : Mc → FreeGroup γ) (extra : Ex → FreeGroup (γ ⊕ δ)) :
     Mc ⊕ Ex → FreeGroup (γ ⊕ δ) :=
   Sum.elim (fun m => FreeGroup.map Sum.inl (core m)) extra
-
-omit [Fintype γ] [DecidableEq γ] [Fintype δ] [DecidableEq δ] [Fintype Mc] [Fintype Ex] in
-@[simp] theorem corePres_inl (core : Mc → FreeGroup γ) (extra : Ex → FreeGroup (γ ⊕ δ))
-    (m : Mc) : corePres core extra (Sum.inl m) = FreeGroup.map Sum.inl (core m) := rfl
-
-omit [Fintype γ] [DecidableEq γ] [Fintype δ] [DecidableEq δ] [Fintype Mc] [Fintype Ex] in
-@[simp] theorem corePres_inr (core : Mc → FreeGroup γ) (extra : Ex → FreeGroup (γ ⊕ δ))
-    (e : Ex) : corePres core extra (Sum.inr e) = extra e := rfl
 
 omit [Fintype γ] [Fintype δ] in
 /-- The exponent sum of a core generator in a word of the core does not change when the word is
@@ -77,7 +68,7 @@ theorem expSum_map_inl (i : γ) (w : FreeGroup γ) :
         = Multiplicative.toAdd (expSum i (FreeGroup.of k)) := by
       rw [expSum_of, expSum_of]
       simp
-    exact Multiplicative.toAdd.injective (by simp [h1, h2])
+    exact Multiplicative.toAdd.injective (by simp)
   exact congrArg Multiplicative.toAdd (DFunLike.congr_fun h w)
 
 /-! ### The collapse onto the wedge of the blocks -/

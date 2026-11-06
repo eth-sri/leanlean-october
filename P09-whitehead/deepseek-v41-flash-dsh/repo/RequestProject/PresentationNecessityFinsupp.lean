@@ -47,8 +47,7 @@ theorem fs_liftsMod_of_foxSatMod (p : ℕ)
       (presSub ρ Nt) p h)
   intro c
   apply Finsupp.ext
-  intro i
-  exact fs_bdry2_ringEquivPres ρ Nt hR c i
+  exact fs_bdry2_ringEquivPres ρ Nt hR c
 
 include hR in
 theorem fs_injective_boundary_of_foxSat
@@ -62,8 +61,7 @@ theorem fs_injective_boundary_of_foxSat
       ED (boundaryMap (foxMatrixPres ρ) (foxMatrixPres_col_finite ρ) (presSub ρ Nt) c) := by
     intro c
     apply Finsupp.ext
-    intro i
-    exact fs_bdry2_ringEquivPres ρ Nt hR c i
+    exact fs_bdry2_ringEquivPres ρ Nt hR c
   have hinj := (forall_foxSat_iff_injective (foxMatrixPres ρ)
     (foxMatrixPres_col_finite ρ) (presSub ρ Nt)).mp h
   intro c d he
@@ -127,12 +125,11 @@ theorem fs_isMulTorsionFree_of_foxSatMod_pres (N : Subgroup (PresGroup ρ)) [N.N
     rw [hNeq]
     exact hmod
   have hk := fs_hkey_presSub ρ Nt hR hm hρ
-  apply isMulTorsionFree_map_commutator_of_pow N
+  apply isMulTorsionFree_map_commutator_of_pow
   rwa [hNeq] at hk
 
 section Compactness
 
-universe u
 
 /-- The algebraic necessity conclusion for an arbitrary presentation, with the homological
 torsion-freeness input discharged by the finitely supported Hurewicz calculation. -/

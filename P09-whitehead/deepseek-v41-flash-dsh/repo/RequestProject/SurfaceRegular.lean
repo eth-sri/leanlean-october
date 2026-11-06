@@ -34,7 +34,6 @@ namespace Davis
 
 open Cell ASC
 
-universe u
 
 /-! ### Arithmetic of the boundary cycle -/
 
@@ -51,8 +50,7 @@ theorem succ_mod_eq (n m : ℕ) (h : n < m) : (n + 1) % m = if n + 1 = m then 0 
 def fpred (p : Fin M) : Fin M := ⟨(p.val + (M - 1)) % M, Nat.mod_lt _ (Nat.pos_of_neZero M)⟩
 
 theorem fpred_val (p : Fin M) : (fpred p).val = if p.val = 0 then M - 1 else p.val - 1 := by
-  have hM := Nat.pos_of_neZero M
-  have h := p.isLt
+  have hM := p.isLt
   show (p.val + (M - 1)) % M = _
   split
   · next he => rw [he, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]
@@ -61,8 +59,7 @@ theorem fpred_val (p : Fin M) : (fpred p).val = if p.val = 0 then M - 1 else p.v
       rw [hrw, Nat.add_mod_left, Nat.mod_eq_of_lt (by omega)]
 
 theorem fpred_add_one (p : Fin M) : fpred p + 1 = p := by
-  have hM := Nat.pos_of_neZero M
-  have h := p.isLt
+  have hM := p.isLt
   apply Fin.ext
   rw [fin_succ_val, fpred_val]
   split
@@ -72,8 +69,7 @@ theorem fpred_add_one (p : Fin M) : fpred p + 1 = p := by
 theorem fin_add_one_injective (a b : Fin M) (hab : a + 1 = b + 1) : a = b := by
   have := congrArg Fin.val hab
   rw [fin_succ_val, fin_succ_val, succ_mod_eq _ _ a.isLt, succ_mod_eq _ _ b.isLt] at this
-  have ha := a.isLt
-  have hb := b.isLt
+  have ha := b.isLt
   apply Fin.ext
   split at this <;> split at this <;> omega
 
@@ -139,7 +135,7 @@ theorem lt_bed_iff {i : Fin M} {x : Cell κ ι M} :
   rw [lt_iff_plt]
   cases x with
   | vtx v =>
-      simp only [Cell.vtx.injEq]
+      simp
       constructor
       · rintro ⟨j, hj, hv⟩
         rcases hc j i hj with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rcases hv with hv | hv

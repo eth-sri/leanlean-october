@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
-universe u v
 variable {P : Type u} [Preorder P] {G : Type v} [Group G]
   (c : OrdCocycle P G) (a : P)
 
@@ -18,9 +17,6 @@ variable {P : Type u} [Preorder P] {G : Type v} [Group G]
 def readVertex : UV (orderCx P) a → G :=
   Quotient.lift (fun p : PathFrom (orderCx P) a => c.readPath p.val)
     (fun _ _ h => c.readPath_htpy h)
-
-@[simp] theorem readVertex_mk (p : PathFrom (orderCx P) a) :
-    c.readVertex a (UV.mk p) = c.readPath p.val := rfl
 
 @[simp] theorem readVertex_base : c.readVertex a (UV.base (orderCx P) a) = 1 := rfl
 
@@ -40,7 +36,7 @@ theorem readVertex_extend (e : (orderCx P).E × Bool) (p : UV (orderCx P) a)
   | h p =>
     change c.readPath (extendP e p).val = c.readPath p.val * c.readGerm e
     rw [extendP_pos h, c.readPath_append]
-    simp only [c.readPath_cons, c.readPath_nil, mul_one]
+    simp
 
 /-- Faithful monodromy makes actual vertex reading injective on each actual endpoint fibre. -/
 theorem readVertex_fibre_injective (hc : Function.Injective (c.monodromy a))
@@ -63,6 +59,6 @@ theorem readVertex_fibre_surjective (hc : Function.Surjective (c.monodromy a))
   obtain ⟨g, hg⟩ := hc (z * (c.readVertex a p)⁻¹)
   refine ⟨deckV g p, endV_deckV g p, ?_⟩
   rw [c.readVertex_deck, hg]
-  simp [mul_assoc]
+  simp
 
 end FiniteChains.Comb.OrdCocycle

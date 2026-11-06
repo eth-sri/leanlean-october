@@ -18,7 +18,6 @@ No equality of base points or connectedness hypothesis is used.
 
 namespace FiniteChains.Comb
 
-universe u
 
 variable {K : Complex2.{u}} {x y : K.V} {a : List (K.E × Bool)}
   (ha : IsPath K.src K.tgt a x y)
@@ -42,9 +41,6 @@ def pathTransportV (c : UV K y) : UV K x :=
       (pathTransportP ha p).1 (pathTransportP ha q).1
     rw [endpt_pathTransportP]
     exact Htpy.append_congr ha p.2 (Htpy.refl _) hpq) c
-
-@[simp] theorem pathTransportV_mk (p : PathFrom K y) :
-    pathTransportV ha (UV.mk p) = UV.mk (pathTransportP ha p) := rfl
 
 @[simp] theorem endV_pathTransportV (c : UV K y) :
     endV (pathTransportV ha c) = endV c := by

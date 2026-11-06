@@ -38,7 +38,6 @@ namespace Davis
 
 open RACG Mirror Comb Nerve
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
@@ -84,7 +83,7 @@ theorem acyclicIn_upto_insert (n : ℕ) (hprev : AcyclicIn (Upto (A := A) n)) :
   induction S, hS using Set.Finite.induction_on with
   | empty =>
       intro _
-      exact Nerve.acyclicIn_congr (fun p => by simp [Upto]) hprev
+      exact Nerve.acyclicIn_congr (fun p => by simp) hprev
   | @insert x S hxS hSfin ih =>
       intro hlen
       have hPrevAcyc := ih (fun y hy => hlen y (Set.mem_insert_of_mem _ hy))

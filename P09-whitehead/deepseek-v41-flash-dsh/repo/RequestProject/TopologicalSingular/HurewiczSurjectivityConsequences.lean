@@ -25,7 +25,6 @@ theorem singularH2_map_eq_zero_of_killsPi2 (x : X) (f : C(X, Y)) (hf : Whitehead
     (((singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj (ModuleCat.of ℤ ℤ)).map (TopCat.ofHom f)) = 0 := by
   apply ModuleCat.hom_ext
   apply LinearMap.ext
-  intro q
-  exact singularH2_pushdown_zero_of_killsPi2 x f hf q
+  exact singularH2_pushdown_zero_of_killsPi2 x f hf
 
 end FiniteChains.TopologicalSingular

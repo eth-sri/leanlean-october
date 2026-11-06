@@ -25,7 +25,6 @@ noncomputable section
 
 namespace FiniteChains.BlockFamily
 
-universe u
 
 section Chains
 

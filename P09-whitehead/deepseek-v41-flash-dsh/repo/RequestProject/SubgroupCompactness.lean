@@ -144,7 +144,7 @@ theorem exists_normal_subgroup_forall {ι : Type*} (Sat : Subgroup G → ι → 
     intro N hN
     refine ⟨by simp, ?_, ?_, ?_⟩
     · intro a b ha hb
-      simp only [decide_eq_true_eq] at ha hb ⊢
+      simp at ha hb ⊢
       exact N.mul_mem ha hb
     · intro a ha
       simp only [decide_eq_true_eq] at ha ⊢

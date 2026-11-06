@@ -7,7 +7,6 @@ public import RequestProject.PosetCoverStrictEdgeLift
 @[expose] public section
 
 namespace FiniteChains.Comb.OrdCocycle
-universe u
 variable {P G : Type u} [PartialOrder P] [Group G] (c : OrdCocycle P G)
 
 /-- Sheet coordinates on an actual fibre of the cocycle covering. -/

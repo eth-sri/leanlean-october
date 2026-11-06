@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
-universe u
 variable {α β J K P Q : Type u} [PartialOrder P] [PartialOrder Q]
 variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
   (h : PresWordEmbedding w v) (hw : ∀ j, 0 < (w j).length) (hv : ∀ j, 0 < (v j).length)

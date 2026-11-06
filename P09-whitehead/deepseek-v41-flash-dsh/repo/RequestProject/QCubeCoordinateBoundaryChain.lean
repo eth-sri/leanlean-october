@@ -28,7 +28,7 @@ theorem qCubeCoordinateFacetChain_apply (c : QCube A) (g : Cube V) :
       qCubeToCoordinate (qCubeFacetIndex c i) = g
   · obtain ⟨i, rfl⟩ := hg
     rw [Finset.sum_eq_single i]
-    · simp only [Finsupp.single_eq_same]
+    · simp
       exact (cubeBdry_actual_facet c i.1.1 i.1.2 i.2).symm
     · intro j _ hji
       have hne : qCubeToCoordinate (qCubeFacetIndex c j) ≠

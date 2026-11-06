@@ -8,7 +8,6 @@ public import RequestProject.ZeroPi2Descent
 
 /-! The actual path-class cover gauge determined by a spanning tree and a cellular map. -/
 namespace FiniteChains.Comb.SpanningTree
-universe u
 variable {K Y : Complex2.{u}} (T : SpanningTree K) (f : Hom K Y)
 
 noncomputable def mappedTreeReference (a : K.V) : UV Y (f.onV T.root) :=

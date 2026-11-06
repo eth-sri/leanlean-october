@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α P : Type u} [PartialOrder P] (f : P → Rose α) (hf : IsPosetCover f)
 
 /-- Actual lifted midpoint vertices, with their actual generator label. -/

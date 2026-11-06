@@ -6,7 +6,6 @@ public import RequestProject.PosetCoverUpTransform
 
 /-! Lift a comparable map from a previously chosen lift, preserving its sheet. -/
 namespace FiniteChains.Comb.IsPosetCover
-universe u
 variable {P Q R : Type u} [PartialOrder P] [PartialOrder Q] [Preorder R]
   {f : P → Q} (hf : IsPosetCover f)
 

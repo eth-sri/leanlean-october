@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {Y : Type u} [TopologicalSpace Y] {n : ℕ}
 
 /-- Coordinatewise straight-line interpolation stays in the standard simplex. -/

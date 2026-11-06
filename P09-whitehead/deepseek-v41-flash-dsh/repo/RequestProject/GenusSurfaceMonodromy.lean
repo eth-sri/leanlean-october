@@ -8,7 +8,6 @@ public import RequestProject.SurfaceCocycleExtension
 /-! The actual marked loops control all nonabelian surface monodromy. -/
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb Cell
-universe v w
 variable (q : ℕ) [NeZero q] {G : Type v} [Group G]
   {Ω : Type w} [MulAction G Ω]
   (d : OrdCocycle (SCell (gvc q) (gec q) (gc q)) G) (x₀ : Ω)

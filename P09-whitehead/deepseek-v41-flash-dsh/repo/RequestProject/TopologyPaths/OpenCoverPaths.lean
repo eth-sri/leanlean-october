@@ -19,7 +19,6 @@ namespace FiniteChains.OpenCoverPaths
 open Set Topology CategoryTheory
 open scoped unitInterval
 
-universe u v
 
 variable {X : Type u} [TopologicalSpace X]
 

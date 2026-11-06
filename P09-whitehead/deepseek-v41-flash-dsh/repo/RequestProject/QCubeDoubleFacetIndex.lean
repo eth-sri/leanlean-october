@@ -45,15 +45,15 @@ theorem qThreeEdgeCell_spx (c : QCube A) (u v w : V)
     (qThreeEdgeCell c u v w i).spx = if i.1 = 0 then {w} else if i.1 = 1 then {v} else {u} := by
   have h0 : (c.spx.erase u).erase v = {w} := by
     ext x
-    simp only [hs, Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
+    simp
     aesop
   have h1 : (c.spx.erase u).erase w = {v} := by
     ext x
-    simp only [hs, Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
+    simp
     aesop
   have h2 : (c.spx.erase v).erase w = {u} := by
     ext x
-    simp only [hs, Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
+    simp
     aesop
   obtain ⟨e, s, t⟩ := i
   fin_cases e

@@ -27,7 +27,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u v w x
 
 variable {H : Type u} {G : Type v} [Group H] [Group G]
   {J : Type w} [Fintype J] {I : Type x}
@@ -97,10 +96,10 @@ theorem principal_cycles_baseChange (f : H →* G) (hf : Function.Injective f)
   · rintro a b _ _ ⟨r, hr⟩ ⟨s, hs⟩
     refine ⟨r + s, fun j => ?_⟩
     change a j + b j = (r + s) * MonoidAlgebra.mapDomainRingHom ℤ f (c j)
-    rw [hr j, hs j, add_mul]
+    rw [hr, hs, add_mul]
   · rintro a z _ ⟨r, hr⟩
     refine ⟨a * r, fun j => ?_⟩
     change a * z j = (a * r) * MonoidAlgebra.mapDomainRingHom ℤ f (c j)
-    rw [hr j, mul_assoc]
+    rw [hr, mul_assoc]
 
 end FiniteChains

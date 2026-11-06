@@ -9,10 +9,8 @@ public import RequestProject.CombCoveringLift
 The base map itself identifies old cells; source/base vertices and the
 covering lifting uniqueness recover them. Unverified source. -/
 
-noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb.PushoutSheets
-universe u v
 variable {D K L : Complex2.{u}} {Q : Type v} [Group Q]
   (p : Hom D K) (hp : IsCovering p) (a : DeckAction D Q) (hr : IsRegular p a)
   (he : ∀ q e, p.onE (a.smulE q e) = p.onE e)

@@ -38,7 +38,6 @@ namespace FiniteChains
 
 namespace ASC
 
-universe u
 
 variable {V : Type u} [DecidableEq V]
 
@@ -68,16 +67,6 @@ theorem le_or_le_of_isChain {s : Set P} (hs : IsChain (· ≤ ·) s) {x y : P} (
   · exact hs hx hy hxy
 
 end Chains
-
-instance faceDecidableEq (K : ASC V) : DecidableEq K.Face := fun a b =>
-  decidable_of_iff (a.1 = b.1) (by
-    constructor
-    · intro h; exact Subtype.ext h
-    · intro h; rw [h])
-
-/-- The poset of faces of a complex on a finite vertex type is finite. -/
-noncomputable instance faceFintype (K : ASC V) [Fintype V] : Fintype K.Face :=
-  Fintype.ofInjective (fun a : K.Face => (a.1 : Finset V)) (fun _ _ h => Subtype.ext h)
 
 /-! ### Every vertex of the subdivision lies in a triangle -/
 

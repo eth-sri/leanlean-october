@@ -13,7 +13,6 @@ noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped Topology
 
-universe u
 variable {A A' P P' D D' : Type u}
   [TopologicalSpace P] [TopologicalSpace P']
   [TopologicalSpace D] [TopologicalSpace D']

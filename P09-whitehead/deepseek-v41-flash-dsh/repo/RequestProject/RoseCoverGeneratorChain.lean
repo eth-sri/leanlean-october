@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α P : Type u} [PartialOrder P] (f : P → Rose α) (hf : IsPosetCover f)
 
 /-- The actual incidence from a lifted midpoint to its chosen end. -/
@@ -38,9 +37,9 @@ theorem roseCoverGeneratorChain_boundary (p : roseCoverMidpoints f) :
         Finsupp.single (roseCoverMidpointBaseEdge f hf p false).val.1 1 := by
   unfold roseCoverGeneratorChain
   rw [map_sub, map_add, map_sub]
-  rw [bdry1_single (X := strictOrderCx P), bdry1_single (X := strictOrderCx P),
-    bdry1_single (X := strictOrderCx P), bdry1_single (X := strictOrderCx P)]
-  simp only [one_smul]
+  rw [bdry1_single, bdry1_single,
+    bdry1_single, bdry1_single]
+  simp
   change (Finsupp.single (roseCoverMidpointEndEdge f hf p false).val.2 1 -
       Finsupp.single (roseCoverMidpointBaseEdge f hf p false).val.1 1) -
     (Finsupp.single (roseCoverMidpointEndEdge f hf p false).val.2 1 -
@@ -75,10 +74,10 @@ theorem roseCoverGeneratorChain_coordinates (p : roseCoverMidpoints f) :
   change (roseCoverGeneratorChain f hf p) e.val =
     (Finsupp.single (roseCoverMidpointEdge f hf p) 1) e
   unfold roseCoverGeneratorChain
-  simp only [Finsupp.sub_apply, Finsupp.add_apply]
+  simp
   rw [Finsupp.single_eq_of_ne (Ne.symm (hn false)), Finsupp.single_eq_of_ne (Ne.symm hm),
     Finsupp.single_eq_of_ne (Ne.symm (hn true))]
-  simp only [sub_zero, zero_add]
+  simp
   have heq : (roseCoverMidpointEndEdge f hf p true = e.val) ↔
       (roseCoverMidpointEdge f hf p = e) := by
     constructor

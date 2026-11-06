@@ -16,7 +16,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u v
 variable {X Y : Complex2.{u}} {G : Type v} [Group G]
 
 namespace EdgeLabels
@@ -146,11 +145,11 @@ theorem read_classOf {p : List (X.E × Bool)} {b c : X.V} (hp : IsPath X.src X.t
   | cons e p ih =>
       obtain ⟨hb, hp⟩ := hp
       subst hb
-      rw [EdgeLabels.read_cons, r.germ_classOf, ih hp]
+      rw [EdgeLabels.read_cons, r.germ_classOf, ih]
       exact r.classOf_mul (isPath_single e) hp
 
 theorem edge_rel (f : X.F) : EdgeLabels.read r.edge (X.att f) = 1 := by
-  rw [r.read_classOf (X.att_isLoop f)]
+  rw [r.read_classOf]
   have h : Htpy X (X.base f) (X.base f) (X.att f) [] :=
     Htpy.of_step ⟨X.att_isLoop f, rfl, Or.inr ⟨[], [], f, by simp, rfl⟩⟩
   exact (r.classOf_htpy (q := []) (X.att_isLoop f) rfl h).trans (r.classOf_nil _)

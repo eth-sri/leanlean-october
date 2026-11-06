@@ -213,7 +213,7 @@ theorem cycle_mem_span_subgroup_cycles (A : ι → J → MonoidAlgebra ℤ H)
   have hdecomp : v = ∑ C ∈ S, fun j =>
       single (Quotient.out C) (1 : ℤ) * subRingHom H (slice H (Quotient.out C) (v j)) := by
     funext j
-    simp only [Finset.sum_apply]
+    simp
     refine (sum_cosetPieces_of_subset H (v j) S ?_).symm
     exact Finset.subset_biUnion_of_mem
       (fun j => (v j).coeff.support.image (fun p => (QuotientGroup.mk p : G ⧸ H)))
@@ -224,6 +224,6 @@ theorem cycle_mem_span_subgroup_cycles (A : ι → J → MonoidAlgebra ℤ H)
     ⟨fun j => slice H (Quotient.out C) (v j), hslice (Quotient.out C), rfl⟩
   have := Submodule.smul_mem (Submodule.span (MonoidAlgebra ℤ G) (subgroupCycles H A))
     (single (Quotient.out C) (1 : ℤ)) (Submodule.subset_span hmem)
-  simpa [Pi.smul_def, smul_eq_mul] using this
+  exact this
 
 end FiniteChains

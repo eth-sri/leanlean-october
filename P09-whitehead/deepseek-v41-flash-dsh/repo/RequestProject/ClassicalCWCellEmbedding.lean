@@ -71,9 +71,6 @@ def imageSubcomplex (e : CWCellEmbedding K L) : CWComplex.Subcomplex (Set.univ :
 def imageHomeomorph (e : CWCellEmbedding K L) : K ≃ₜ (e.imageSubcomplex : Set L) :=
   e.closedEmbedding.isEmbedding.toHomeomorph
 
-@[simp] theorem imageHomeomorph_val (e : CWCellEmbedding K L) (x : K) :
-    (e.imageHomeomorph x).val = e.map x := rfl
-
 def imageCellEquiv (e : CWCellEmbedding K L) (m : ℕ) :
     RelCWComplex.cell (Set.univ : Set K) m ≃
       {j : RelCWComplex.cell (Set.univ : Set L) m // j ∈ e.imageSubcomplex.I m} :=

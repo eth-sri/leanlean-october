@@ -77,12 +77,11 @@ theorem canonicalRelators_natural {i k : Fin (n + 1)} (hik : i ≤ k)
       simp only [canonicalRelators, canonicalCellInclusion, StabilizedDiskPresentation.withDummy,
         Function.Embedding.coeFn_mk, Sum.map_inl]
       rw (config := { transparency := .default }) [roseWord_loop_natural K C hC hconn hik j]
-      simp only [FreeGroup.map.mk, List.map_map]
+      simp
       rfl
   | inr u =>
       cases u
-      simp only [canonicalRelators, canonicalCellInclusion, StabilizedDiskPresentation.withDummy,
-        Function.Embedding.coeFn_mk, Sum.map_inr, FreeGroup.map.of]
+      simp
       rfl
 
 def canonicalWords (i : Fin (n + 1)) :

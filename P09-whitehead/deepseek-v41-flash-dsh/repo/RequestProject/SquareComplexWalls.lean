@@ -60,7 +60,6 @@ square is not simply connected (`FiniteChains.cycleFourNoSquare_not_simplyConnec
 
 namespace FiniteChains
 
-universe u
 
 /-- A **square complex**, recorded combinatorially: a simple graph (`adj`) together with a
 predicate `sq a b c d` saying that `a, b, c, d` are, in this cyclic order, the vertices of a
@@ -136,7 +135,7 @@ theorem Move.getLast?_eq {l l' : List Vx} (h : S.Move l l') : l.getLast? = l'.ge
       rcases hm.ne_nil with ⟨h1, h2⟩
       rcases List.exists_cons_of_ne_nil h1 with ⟨a, t, rfl⟩
       rcases List.exists_cons_of_ne_nil h2 with ⟨b, t', rfl⟩
-      simpa using ih
+      exact ih
 
 theorem Move.isWalk {l l' : List Vx} (h : S.Move l l') (hl : S.IsWalk l) : S.IsWalk l' := by
   induction h with
@@ -155,7 +154,7 @@ theorem Move.isWalk {l l' : List Vx} (h : S.Move l l') (hl : S.IsWalk l) : S.IsW
       rcases List.exists_cons_of_ne_nil h2 with ⟨b, t', rfl⟩
       rw [IsWalk, List.isChain_cons_cons] at hl ⊢
       have hhead := hm.head?_eq
-      simp only [List.head?_cons, Option.some.injEq] at hhead
+      simp at hhead
       subst hhead
       exact ⟨hl.1, ih hl.2⟩
 
@@ -181,13 +180,6 @@ def crossings (χ : Vx → Vx → ZMod 2) : List Vx → ZMod 2
   | a :: b :: t => χ a b + crossings χ (b :: t)
   | _ => 0
 
-@[simp] theorem crossings_nil (χ : Vx → Vx → ZMod 2) : crossings χ [] = 0 := rfl
-
-@[simp] theorem crossings_singleton (χ : Vx → Vx → ZMod 2) (a : Vx) : crossings χ [a] = 0 := rfl
-
-@[simp] theorem crossings_cons_cons (χ : Vx → Vx → ZMod 2) (a b : Vx) (t : List Vx) :
-    crossings χ (a :: b :: t) = χ a b + crossings χ (b :: t) := rfl
-
 /-- A **wall label**: a symmetric labelling of the edges by `ZMod 2` taking the same value on
 opposite sides of every square.  The characteristic function of a hyperplane — a family of edges
 closed under the relation "opposite sides of a square" — is such a labelling. -/
@@ -210,43 +202,9 @@ theorem isWalk_junction {y z : Vx} {r : List Vx} (h : S.IsWalk (y :: r))
   cases r with
   | nil => simp at hz
   | cons c r' =>
-      simp only [List.head?_cons, Option.some.injEq] at hz
+      simp at hz
       subst hz
       exact (List.isChain_cons_cons.mp h).1
-
-/-! ### Walls are two-sided -/
-
-/-! ### Edges lying in no square -/
-
-/-! ### Wall systems and halfspace (Roller) coordinates
-
-A *wall system* records the hyperplanes of the complex: a family of square-closed edge labels such
-that every edge crosses exactly one of them.  In a connected, simply connected complex each wall is
-two-sided by `SquareComplex.exists_side`, so every vertex `v` acquires the set of walls separating
-it from the base vertex; it is finite, it is empty at the base vertex, and along an edge it changes
-by exactly one wall.  These are precisely the coordinates on which `FiniteChains.RollerModel` is
-built. -/
-
-/-- A **wall system** on a square complex: a family `χ i` of square-closed edge labels (the
-hyperplanes) such that each edge crosses exactly one of them. -/
-structure WallSystem (S : SquareComplex Vx) (ι : Type*) where
-  /-- The characteristic function of the `i`-th wall. -/
-  χ : ι → Vx → Vx → ZMod 2
-  /-- Each member of the family is square-closed and symmetric. -/
-  isWall : ∀ i, S.IsWallLabel (χ i)
-  /-- Every edge crosses exactly one wall. -/
-  edge_unique : ∀ u v : Vx, S.adj u v → ∃! i : ι, χ i u v = 1
-
-/-- The set of walls separating any two vertices is finite: the wall pseudometric of a connected,
-simply connected square complex with a wall system is well defined. -/
-theorem separating_finite {ι : Type*} {σ : ι → Vx → ZMod 2} {x₀ : Vx}
-    (hfin : ∀ v : Vx, {i : ι | σ i v ≠ σ i x₀}.Finite) (u v : Vx) :
-    {i : ι | σ i u ≠ σ i v}.Finite := by
-  refine Set.Finite.subset ((hfin u).union (hfin v)) ?_
-  intro i hi
-  by_contra hcon
-  simp only [Set.mem_union, Set.mem_setOf_eq, not_or, not_not] at hcon
-  exact hi (by rw [hcon.1, hcon.2])
 
 end SquareComplex
 

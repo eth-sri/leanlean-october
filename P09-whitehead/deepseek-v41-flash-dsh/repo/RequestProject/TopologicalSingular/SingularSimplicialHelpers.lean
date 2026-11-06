@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
-universe u
 variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 
 noncomputable def singularDegeneracy (i : Fin (n + 1)) (tau : Simplex X n) :

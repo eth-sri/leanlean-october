@@ -7,7 +7,6 @@ public import RequestProject.OrderCocycleFlatSections
 
 /-! Extending a flat boundary section across the actual triangulated collar. -/
 namespace FiniteChains.Comb.OrdCocycle
-universe u v w
 variable {P : Type u} [Preorder P] {G : Type v} [Group G]
   {Ω : Type w} [MulAction G Ω] (c : OrdCocycle P G) (s : P → Ω)
 
@@ -34,7 +33,6 @@ end FiniteChains.Comb.OrdCocycle
 
 namespace FiniteChains.Davis.SurfaceSection
 open RACG Mirror Comb Cell
-universe u v w
 variable {κ ι : Type u} {M : ℕ} [NeZero M]
   {vc : Fin M → κ} {ec : Fin M → ι} (hc : Compat vc ec)
   {G : Type v} [Group G] {Ω : Type w} [MulAction G Ω]

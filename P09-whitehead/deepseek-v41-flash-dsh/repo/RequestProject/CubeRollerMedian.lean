@@ -28,7 +28,6 @@ The combinatorial content is elementary but worth recording:
 
 namespace FiniteChains
 
-universe u
 
 namespace RollerBridge
 
@@ -36,11 +35,6 @@ variable {ι : Type u} [DecidableEq ι]
 
 /-- The number of hyperplanes separating two vertices. -/
 def dsym (A B : Finset ι) : ℕ := (A \ B).card + (B \ A).card
-
-@[simp] theorem dsym_self (A : Finset ι) : dsym A A = 0 := by simp [dsym]
-
-theorem dsym_comm (A B : Finset ι) : dsym A B = dsym B A := by
-  simp only [dsym]; omega
 
 end RollerBridge
 

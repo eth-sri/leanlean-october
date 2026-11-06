@@ -8,11 +8,9 @@ public import Mathlib.Topology.Homeomorph.Lemmas
 /-! Disk and cylinder homotopy extension for arbitrary disjoint families.
 The construction never puts a finiteness condition on the family. -/
 
-noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u
 variable {J : Type u} {D : J → Type u} [∀ j, TopologicalSpace (D j)]
 
 def sigmaCylinderHomeomorph : (Σ j, I × D j) ≃ₜ I × (Σ j, D j) where

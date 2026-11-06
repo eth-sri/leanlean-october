@@ -114,7 +114,7 @@ theorem coneBallQuotient_fibers (a b : I × orderNerveRealization P) :
   change _ ↔ ballRadialQuotient E (a.1, e a.2) =
     ballRadialQuotient E (b.1, e b.2)
   rw [ballRadialQuotient_eq_iff]
-  simp only [e.injective.eq_iff]
+  simp
 
 /-- Extend a boundary homeomorphism radially over the actual order cone. -/
 def orderNerveWithTopBallHomeomorph :

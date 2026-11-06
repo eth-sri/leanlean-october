@@ -21,7 +21,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
-universe u
 
 variable {α J α' J' α'' J'' : Type u}
   [DecidableEq α] [DecidableEq α'] [DecidableEq α'']
@@ -79,10 +78,6 @@ def comp (g : PresMorFS τ υ) (f : PresMorFS ρ τ) : PresMorFS ρ υ where
   cells_cycle := fun y hy => g.cells_cycle _ (f.cells_cycle y hy)
   cells_aug := fun y hy => g.cells_aug _ (f.cells_aug y hy)
 
-@[simp] theorem comp_cells (g : PresMorFS τ υ) (f : PresMorFS ρ τ)
-    (y : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
-    (g.comp f).cells y = g.cells (f.cells y) := rfl
-
 def castTarget {τ' : J' → FreeGroup α'} (f : PresMorFS ρ τ) (h : τ = τ') :
     PresMorFS ρ τ' := h ▸ f
 
@@ -139,10 +134,10 @@ theorem fsIsCockcroft_of_generates (f : PresMorFS ρ τ) (hf : FSGenerates f)
   | zero => intro j; simp
   | add x z _ _ hx hz =>
       intro j
-      rw [Finsupp.add_apply, map_add, hx j, hz j, add_zero]
+      rw [Finsupp.add_apply, map_add, hx, hz, add_zero]
   | smul a x _ hx =>
       intro j
-      rw [Finsupp.smul_apply, smul_eq_mul, map_mul, hx j, mul_zero]
+      rw [Finsupp.smul_apply, smul_eq_mul, map_mul, hx, mul_zero]
 
 /-- The terminal use of (3.3): killing the original cycle images suffices
 to kill every cycle of the replacement. -/

@@ -5,7 +5,6 @@ public import RequestProject.OrderNormalizationHomotopy
 @[expose] public section
 
 namespace FiniteChains.Comb
-universe u
 variable (P : Type u) [PartialOrder P]
 
 /-- The actual order-nerve three-boundary with codomain its genuine two-cycle module. -/

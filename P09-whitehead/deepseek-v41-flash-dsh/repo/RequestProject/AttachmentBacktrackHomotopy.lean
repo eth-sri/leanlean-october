@@ -10,7 +10,6 @@ public import RequestProject.CylinderBoundaryHomotopyCorrection
 boundary contraction is explicit; full-cylinder extension makes the disk
 homotopy stationary on the attaching boundary. -/
 
-noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
@@ -36,7 +35,6 @@ theorem backtrackTime_one : backtrackTime 1 = 0 := by
   apply Subtype.ext
   norm_num [backtrackTime]
 
-universe u
 variable {D P : Type u} [TopologicalSpace D] [TopologicalSpace P]
 
 /-- The composite of the two actual collar maps is homotopic to the
@@ -109,7 +107,7 @@ theorem attachingBacktrack_homotopic_id (S : Set D) (hS : IsClosed S)
   have hJ₁ (t : I) (a : S) : J (1, (t, a)) = f₀ a.val := by
     change old a₀ Subtype.val (H (unitInterval.symm 1 * backtrackTime t, a)) =
       cell a₀ Subtype.val a.val
-    simp only [unitInterval.symm_one, zero_mul, H.apply_zero]
+    simp
     exact (cell_boundary a₀ Subtype.val Subtype.val_injective a).symm
   have hJl (s : I) (a : S) : J (s, (0, a)) = f₀ a.val := by
     change old a₀ Subtype.val (H (unitInterval.symm s * backtrackTime 0, a)) =

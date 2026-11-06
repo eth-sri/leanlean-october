@@ -35,7 +35,6 @@ theorem fox_subst_coordinate [DecidableEq α] [DecidableEq β]
       rw [map_mul, fox_mul, fox_mul, map_add, hu, hv, map_mul, groupRingMap_grp]
 
 namespace BlockFamily
-universe u
 variable {A S : Type u} {I Z : S → Type u}
   [DecidableEq A] [∀ s, DecidableEq (I s)] [∀ s, DecidableEq (Z s)]
 
@@ -50,7 +49,7 @@ theorem fox_blockSubst_internal (u : ∀ s, I s → FreeGroup A) (s : S)
   · rw [blockSubst_of_inl,
       fox_map_of_not_mem_range Sum.inl (fun _ => Sum.inr_ne_inl)]
     simp
-  · simp only [blockSubst_of_inr, fox_of, Sum.inr.injEq]
+  · simp
 
 end BlockFamily
 end FiniteChains

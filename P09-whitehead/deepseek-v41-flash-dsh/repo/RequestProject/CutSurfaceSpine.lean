@@ -229,7 +229,7 @@ theorem cutSurface_cmap_eq_zero {L : ASC V} {o : Finset V → ℤ} (hcyc : simpB
     have htl : t ∈ l := Collapse.mem_list_of_isCollapse hl t ht
     rw [← hmap] at htl
     obtain ⟨p, hp, hp1⟩ := List.mem_map.1 htl
-    exact ⟨p.2, by rw [← hp1]; simpa using hp⟩
+    exact ⟨p.2, by rw [← hp1]; exact hp⟩
   exact CollapseChain.cmap_eq_zero_of_isBoundary hchain hsub hx
 
 end FiniteChains

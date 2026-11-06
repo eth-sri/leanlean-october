@@ -16,7 +16,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u v
 
 theorem pushE_eq_inr_imp {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
     (hi : Function.Injective i.onE) (e : L.E) (w : OffE i)

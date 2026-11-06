@@ -25,7 +25,6 @@ and that is enough:
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 variable {P Q : Type u} [Preorder P] [Preorder Q]
 

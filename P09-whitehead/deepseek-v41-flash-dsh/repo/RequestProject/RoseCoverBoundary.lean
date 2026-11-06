@@ -10,7 +10,6 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α P : Type u} [PartialOrder P] (f : P → Rose α) (hf : IsPosetCover f)
 
 /-- The midpoint boundary equation for the actual finite chain complex of a rose cover. -/
@@ -35,7 +34,7 @@ theorem roseCover_boundary_mid (v : P) (i : α) (hv : f v = Rose.mid i)
   | zero => simp
   | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]; ring
   | single e n =>
-    rw [bdry1_single (X := strictOrderCx P)]
+    rw [bdry1_single]
     have ht := roseCover_mid_no_incoming f hf v i hv e
     by_cases he : e = l
     · subst e
@@ -70,7 +69,7 @@ theorem roseCover_boundary_end (q : P) (i : α) (b : Bool) (hq : f q = Rose.edg 
   | zero => simp
   | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]; ring
   | single e n =>
-    rw [bdry1_single (X := strictOrderCx P)]
+    rw [bdry1_single]
     have hs := roseCover_end_no_outgoing f hf q i b hq e
     by_cases he : e = l
     · subst e

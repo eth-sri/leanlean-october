@@ -42,7 +42,7 @@ theorem qCubeFacet_comm (c : QCube A) {v w : V} (hne : v ≠ w) (s t : ZMod 2) :
   apply QCube.ext'
   · change (c.spx.erase v).erase w = (c.spx.erase w).erase v
     ext x
-    simp only [Finset.mem_erase]
+    simp
     tauto
   · intro x _
     change Function.update (Function.update c.sgn v s) w t x =

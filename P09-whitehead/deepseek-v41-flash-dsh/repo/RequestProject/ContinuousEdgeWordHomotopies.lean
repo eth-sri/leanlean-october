@@ -11,7 +11,6 @@ public import Mathlib.Data.List.OfFn
 paths. These statements concern continuous paths, not only their fundamental
 group classes. Pending Lean verification. -/
 
-noncomputable section
 open scoped Classical unitInterval Topology
 
 set_option backward.defeqAttrib.useBackward true
@@ -34,7 +33,7 @@ variable {K : Comb.Complex2} {X Y : Type} [TopologicalSpace X] [TopologicalSpace
 theorem reversed_single (g : K.E × Bool) :
     (germPath K.src K.tgt v edge g).symm.Homotopic
       (realize K.src K.tgt v edge [Comb.revGerm (X := K) g]
-        (by simp [Comb.IsPath])) := by
+        (by simp)) := by
   rcases g with ⟨e, b⟩
   cases b
   · simpa [Comb.germSrc, Comb.germTgt, germPath, Comb.revGerm, Bool.not, Bool.not_false, realize, Path.cast_rfl_rfl,
@@ -54,13 +53,13 @@ theorem realize_revPath (l : List (K.E × Bool)) {a b : K.V}
     obtain ⟨rfl, ht⟩ := hl
     rw [realize_congr_list K.src K.tgt v edge
       (Comb.isPath_revPath (p := g :: l) ⟨rfl, ht⟩)
-      ((Comb.isPath_revPath ht).append (by simp [Comb.IsPath])) (Comb.revPath_cons g l)]
+      ((Comb.isPath_revPath ht).append (by simp)) (Comb.revPath_cons g l)]
     change ((germPath K.src K.tgt v edge g).trans
       (realize K.src K.tgt v edge l ht)).symm.Homotopic _
     rw [Path.trans_symm]
     exact ((ih ht).hcomp (reversed_single v edge g)).trans
       (realize_append K.src K.tgt v edge (Comb.revPath l) [Comb.revGerm g]
-        (Comb.isPath_revPath ht) (by simp [Comb.IsPath]))
+        (Comb.isPath_revPath ht) (by simp))
 
 end FiniteChains.ContinuousEdgeWords
 
@@ -98,7 +97,7 @@ theorem concat_homotopic_realize_ofFn (n : ℕ)
   induction n with
   | zero =>
     rw [Path.concat_zero]
-    have he : List.ofFn g = ([] : List (E × Bool)) := by simp only [List.ofFn_zero]
+    have he : List.ofFn g = ([] : List (E × Bool)) := by simp
     rw [realize_congr_list src tgt v edge (Comb.isPath_ofFn src tgt 0 a g hs ht)
       (show Comb.IsPath src tgt [] (a 0) (a (Fin.last 0)) from rfl) he]
     exact Path.Homotopic.refl _

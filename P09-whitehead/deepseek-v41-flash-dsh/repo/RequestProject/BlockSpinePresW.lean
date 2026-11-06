@@ -26,7 +26,6 @@ namespace Davis
 
 open RACG Mirror Comb PresModel BlockFamily
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 

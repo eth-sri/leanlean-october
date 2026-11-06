@@ -122,7 +122,7 @@ theorem cosetCombination_apply (F : RightCosets H →₀ MonoidAlgebra k H) (q :
       exact Quotient.out_eq c
   have hsum : (∑ c ∈ F.support, F c • single (cosetRep H c) (1 : k) : MonoidAlgebra k Q).coeff q
       = ∑ c ∈ F.support, (F c • single (cosetRep H c) (1 : k) : MonoidAlgebra k Q).coeff q := by
-    simp [MonoidAlgebra.coeff_sum]
+    simp
   rw [hsum, Finset.sum_congr rfl hterm, Finset.sum_ite_eq F.support]
   by_cases hq : Quotient.mk (QuotientGroup.rightRel H) q ∈ F.support
   · rw [if_pos hq]

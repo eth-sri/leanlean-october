@@ -6,7 +6,6 @@ public import RequestProject.PosetCoverDownTransform
 
 /-! The two legs of a contraction lift into the same sheet of a poset cover. -/
 namespace FiniteChains.Comb.IsPosetCover
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q] {f : P → Q}
 variable (hf : IsPosetCover f) (g : Q → Q) (hg : ∀ q, g q ≤ q)
   (b : Q) (hb : ∀ q, g q ≤ b)

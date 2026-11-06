@@ -47,13 +47,13 @@ theorem reducedSimplexToStandard_positive_iff (n : ℕ) (x : reducedSimplex n) :
   · intro h
     constructor
     · intro j
-      simpa using h j.succ
+      exact h j.succ
     · have h0 := h 0
-      simp only [Fin.cons_zero] at h0
+      simp at h0
       linarith
   · rintro ⟨hp, hs⟩ i
     refine Fin.cases ?_ (fun j => ?_) i
-    · simpa using sub_pos.mpr hs
-    · simpa using hp j
+    · exact sub_pos.mpr hs
+    · exact hp j
 
 end FiniteChains

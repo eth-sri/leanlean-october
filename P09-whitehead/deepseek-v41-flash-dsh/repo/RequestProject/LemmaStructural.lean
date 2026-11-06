@@ -47,7 +47,6 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 /-- A finite presentation, bundled with the finiteness data used by the Fox calculus. -/
 structure PresPoint : Type (u + 1) where

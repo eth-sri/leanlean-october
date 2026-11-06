@@ -32,7 +32,6 @@ namespace Comb
 
 open MonoidAlgebra
 
-universe u
 
 variable {α J : Type u} [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J]
 variable (ρ : J → FreeGroup α)
@@ -48,7 +47,7 @@ theorem augQ_coords (v : ((FreeGroup α ⧸ relSub ρ) × J) →₀ ℤ) (j : J)
   | zero => simp
   | add v w hv hw =>
       rw [map_add, Finsupp.mapDomain_add]
-      simp only [Finsupp.add_apply, Pi.add_apply, map_add] at *
+      simp at *
       rw [hv, hw]
   | single qj n =>
       obtain ⟨q, j₀⟩ := qj

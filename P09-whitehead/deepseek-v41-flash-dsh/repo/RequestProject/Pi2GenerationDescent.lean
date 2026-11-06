@@ -36,7 +36,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 /-! ### Changing the base vertex of the universal cover -/
 
@@ -64,9 +63,6 @@ def shiftV (hq : IsPath X.src X.tgt q y₀ w₀) (c : UV X w₀) : UV X y₀ :=
     show Htpy X y₀ (endpt X y₀ (shiftP hq p).1) (shiftP hq p).1 (shiftP hq p').1
     rw [endpt_shiftP]
     exact Htpy.append_congr hq p.2 (Htpy.refl q) hpp) c
-
-@[simp] theorem shiftV_mk (hq : IsPath X.src X.tgt q y₀ w₀) (p : PathFrom X w₀) :
-    shiftV hq (UV.mk p) = UV.mk (shiftP hq p) := rfl
 
 @[simp] theorem endV_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) (c : UV X w₀) :
     endV (shiftV hq c) = endV c := by
@@ -154,12 +150,6 @@ noncomputable def shiftHom (hq : IsPath X.src X.tgt q y₀ w₀) :
     show uLiftPath (X.att F.1.2) (shiftV hq F.1.1) = _
     exact uLiftPath_shiftV hq (X.att F.1.2) F.1.1 (X.base F.1.2) hatt
 
-@[simp] theorem onE_shiftHom (hq : IsPath X.src X.tgt q y₀ w₀) (E : UE X w₀) :
-    ((shiftHom hq).onE E).1.2 = E.1.2 := rfl
-
-@[simp] theorem onF_shiftHom (hq : IsPath X.src X.tgt q y₀ w₀) (F : UF X w₀) :
-    ((shiftHom hq).onF F).1.2 = F.1.2 := rfl
-
 end Shift
 
 /-! ### Spherical classes coming from a subcomplex -/
@@ -212,13 +202,13 @@ theorem zeroPi2_chain_of_generated (ι : Hom L E) (k : Hom L L') (ι' : Hom L' E
         = (univProj E' (j.onV x₀)).onE (B.onE e) := by
       intro e
       show j.onE ((φ.onE e).1).2 = ι'.onE (k.onE (e.1.2))
-      rw [hφE e]
+      rw [hφE]
       exact congrArg (fun h : Hom L E' => h.onE e.1.2) hsq
     have hF : ∀ f, (univProj E' (j.onV x₀)).onF (A.onF f)
         = (univProj E' (j.onV x₀)).onF (B.onF f) := by
       intro f
       show j.onF ((φ.onF f).1).2 = ι'.onF (k.onF (f.1.2))
-      rw [hφF f]
+      rw [hφF]
       exact congrArg (fun h : Hom L E' => h.onF f.1.2) hsq
     have hbase : A.onV (UV.base L l₀) = B.onV (UV.base L l₀) := by
       show A.onV (UV.base L l₀) = shiftV hqpath ((univLift L' ι' (k.onV l₀)).onV

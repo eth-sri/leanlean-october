@@ -7,7 +7,6 @@ public import RequestProject.TopologicalSingular.SingularEdgeNullHomotopy
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] [SimplyConnectedSpace X]
 
 noncomputable def edgeVertexNullHomotopy (x : X) (tau : Simplex X 1) :

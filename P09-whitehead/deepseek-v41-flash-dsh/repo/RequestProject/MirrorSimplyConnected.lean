@@ -46,7 +46,6 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains
 namespace Comb
 
-universe u
 
 /-! ### The order complex of a preorder -/
 
@@ -101,13 +100,13 @@ theorem isPath_nil' (a : P) :
 theorem htpy_ordPos_ordNeg {a b : P} (h : a ≤ b) :
     Htpy (orderCx P) a a [ordPos h, ordNeg h] [] := by
   have := htpy_append_revPath (X := orderCx P) (isPath_single (X := orderCx P) (ordPos h))
-  simpa [revPath, revGerm, Bool.not, Bool.not_true, Bool.not_false, ordPos, ordNeg, germSrc, germTgt, orderCx] using this
+  exact this
 
 /-- Backtrack cancellation for an edge traversed backwards and then forwards. -/
 theorem htpy_ordNeg_ordPos {a b : P} (h : a ≤ b) :
     Htpy (orderCx P) b b [ordNeg h, ordPos h] [] := by
   have := htpy_append_revPath (X := orderCx P) (isPath_single (X := orderCx P) (ordNeg h))
-  simpa [revPath, revGerm, Bool.not, Bool.not_true, Bool.not_false, ordPos, ordNeg, germSrc, germTgt, orderCx] using this
+  exact this
 
 /-- **The triangular relation**: `[a,b][b,c] ≃ [a,c]` for a chain `a ≤ b ≤ c`. -/
 theorem htpy_orderCx_tri {a b c : P} (hab : a ≤ b) (hbc : b ≤ c) :
@@ -125,7 +124,7 @@ theorem htpy_orderCx_tri {a b c : P} (hab : a ≤ b) (hbc : b ≤ c) :
       [ordPos hac] := by
     refine Htpy.of_step ⟨hfull, isPath_ordPos hac, Or.inr ?_⟩
     exact ⟨[], [ordPos hac], (⟨(a, b, c), hab, hbc⟩ : OrdTri P), rfl, rfl⟩
-  simpa using h1.trans h2
+  exact h1.trans h2
 
 end OrderComplex
 
@@ -207,7 +206,7 @@ theorem htpy_ordNeg_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
       ([] ++ [] ++ ordPth d rho hle htop b) :=
     (htpy_ordNeg_ordPos hab).congr_append (c := b) (d := d) (isPath_nil' b)
       (isPath_ordPth d rho hle htop b)
-  simp only [List.nil_append, List.cons_append] at h1 h2 ⊢
+  simp at h1 h2 ⊢
   exact h1.trans h2
 
 /-- **Every edge path is the standard one**: for a path `p` from `σ` to `τ` one has
@@ -240,7 +239,7 @@ theorem htpy_path_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
           have h2 := htpy_ordNeg_ordPth d rho hle htop hmono hab
           have hgoal : Htpy (orderCx P) b d ((ordNeg hab :: p) ++ ordPth d rho hle htop y)
               (ordPth d rho hle htop b) := by
-            simp only [List.cons_append] at h1 ⊢
+            simp at h1 ⊢
             exact h1.trans h2
           rw [hxb]
           exact hgoal
@@ -257,7 +256,7 @@ theorem htpy_path_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
           have h2 := htpy_ordPos_ordPth d rho hle htop hmono hab
           have hgoal : Htpy (orderCx P) a d ((ordPos hab :: p) ++ ordPth d rho hle htop y)
               (ordPth d rho hle htop a) := by
-            simp only [List.cons_append] at h1 ⊢
+            simp at h1 ⊢
             exact h1.trans h2
           rw [hxa]
           exact hgoal
@@ -298,7 +297,6 @@ end Comb
 
 namespace Mirror
 
-universe u
 
 variable {V : Type u} [DecidableEq V]
 

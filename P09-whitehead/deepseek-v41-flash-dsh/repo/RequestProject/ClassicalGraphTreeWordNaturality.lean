@@ -10,7 +10,6 @@ Thus the resulting rose relators retain their original cell labels and
 the expected generator injection, before taking free-group quotients.
 Unverified source. -/
 
-noncomputable section
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
 open scoped Classical
@@ -60,7 +59,7 @@ theorem BoundaryWords.eraseTree_loop_natural (b : BoundaryWords r) :
     ((b.map h).eraseTree s U).loopWord =
       ((b.eraseTree r T).loopWord).map
         (fun g => (graphNonTreeMap r s T U h ht g.1, g.2)) := by
-  rw [BoundaryWords.eraseTree_natural r s T U h ht b]
+  rw [BoundaryWords.eraseTree_natural]
   exact BoundaryWords.loopWord_map (graphRoseCombinatorialMap r s T U h ht) (b.eraseTree r T)
 
 end FiniteChains.ClassicalGraphModel

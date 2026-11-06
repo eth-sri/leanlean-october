@@ -8,7 +8,6 @@ public import RequestProject.PosetCoverUpTransform
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
 
 theorem presPos_apex_maximal (j : J) (p : PresPos w) (hp : apexOf w j ≤ p) :

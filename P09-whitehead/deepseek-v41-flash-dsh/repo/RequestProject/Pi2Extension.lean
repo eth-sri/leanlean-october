@@ -80,13 +80,12 @@ theorem mul_one_sub_single_eq_zero {t : G} (ht : ¬ IsOfFinOrder t)
     exact Finsupp.mem_support_iff.mpr (key n)
   have hinj : Function.Injective (fun n : ℕ => g * (t ^ n)⁻¹) := by
     intro a b hab
-    simp only [mul_right_inj, inv_inj] at hab
+    simp at hab
     exact injective_pow_iff_not_isOfFinOrder.mpr ht hab
   exact (Set.infinite_range_of_injective hinj) (Set.Finite.subset x.coeff.support.finite_toSet hsub)
 
 end Regular
 
-universe u
 
 variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
 variable (ρ : J → FreeGroup α) (w₀ : FreeGroup (Option α))
@@ -96,32 +95,6 @@ variable (ρ : J → FreeGroup α) (w₀ : FreeGroup (Option α))
 def extRel : Option J → FreeGroup (Option α)
   | none => w₀
   | some j => FreeGroup.map Option.some (ρ j)
-
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] in
-@[simp] theorem extRel_none : extRel ρ w₀ none = w₀ := rfl
-
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] in
-@[simp] theorem extRel_some (j : J) :
-    extRel ρ w₀ (some j) = FreeGroup.map Option.some (ρ j) := rfl
-
-/-- The map `π₁(K) → π₁(K')` induced by the extension. -/
-def extHom : PresGroup ρ →* PresGroup (extRel ρ w₀) :=
-  QuotientGroup.map _ _ (FreeGroup.map Option.some) (by
-    refine Subgroup.normalClosure_le_normal ?_
-    rintro _ ⟨j, rfl⟩
-    refine Subgroup.mem_comap.2 ?_
-    have : FreeGroup.map Option.some (ρ j) = extRel ρ w₀ (some j) := rfl
-    rw [this]
-    exact Subgroup.subset_normalClosure (Set.mem_range_self _))
-
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] in
-@[simp] theorem extHom_mk (w : FreeGroup α) :
-    extHom ρ w₀ (QuotientGroup.mk w) = QuotientGroup.mk (FreeGroup.map Option.some w) := rfl
-
-/-- The ring map of group rings induced by `extHom`. -/
-noncomputable def extRingHom :
-    MonoidAlgebra ℤ (PresGroup ρ) →+* MonoidAlgebra ℤ (PresGroup (extRel ρ w₀)) :=
-  MonoidAlgebra.mapDomainRingHom ℤ (extHom ρ w₀)
 
 /-! ### The two relators used in rule 1 -/
 
