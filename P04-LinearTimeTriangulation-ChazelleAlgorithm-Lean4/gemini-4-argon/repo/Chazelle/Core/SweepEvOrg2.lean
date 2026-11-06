@@ -89,14 +89,11 @@ theorem orgIdx_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO
   obtain ⟨-, -, k6, -, -, -, -⟩ := hK
   obtain ⟨m2, m1, -, hS, -, -⟩ := hO
   have hSle := J.right.sideS_lt J.right.sideBeta
-  have hm := J.right.one_le
-  set i := c.nreg oE - 6 with hi
-  set S := J.right.sideS J.right.sideBeta with hSdef
-  set m := J.right.m with hmdef
+  set i := c.nreg oE - 6
+  set S := J.right.sideS J.right.sideBeta
+  set m := J.right.m
   -- the block
-  have e6 : c.nreg 240612 = 6 := k6
   have eS : c.nreg 240643 = S := hS
-  have e2 : c.nreg 240640 = 2 * m := m2
   have eE : c.nreg 242210 = c.nreg oE := rfl
   have hb := IRS.block (P := P) [.subN oT oE K6, .subN oU c2m cS] hI (by
     simp only [okB, okI, oT, oU, sw]
@@ -124,14 +121,14 @@ theorem orgIdx_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO
         (c'.nreg oT) % (2 * m) = (S + i) % (2 * m) ∧ ∀ r, r ≠ oT → c'.nreg r = c₁.nreg r) := by
     by_cases hlt : c₁.nreg oT < c₁.nreg oU
     · rw [v1, v2] at hlt
-      refine (IRS.ifT (by rw [v1, v2]; exact hlt) (IRS.reg (P := P) hI₁
+      refine (IRS.ifT (by rwa [v1, v2]) (IRS.reg (P := P) hI₁
         (iscr_sw (by simp [oT, sw]) (by simp [oT, sw])) (Exec.addN hI₁.hw oT oT cS
           (by rw [v1, c1S]; omega)))).mono (by omega) ?_
       rintro c' rfl
       simp only [upd_same, v1, c1S]
       refine ⟨by simp, by omega, by rw [add_comm], fun r hr => by simp [upd, hr]⟩
     · rw [v1, v2] at hlt
-      refine (IRS.ifF (by rw [v1, v2]; exact hlt) (IRS.reg (P := P) hI₁
+      refine (IRS.ifF (by rwa [v1, v2]) (IRS.reg (P := P) hI₁
         (iscr_sw (by simp [oT, sw]) (by simp [oT, sw])) (Exec.subN hI₁.hw oT oT oU))).mono (by omega) ?_
       rintro c' rfl
       simp only [upd_same, v1, v2]
@@ -159,7 +156,6 @@ theorem orgIdx_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO
       o1 cm (by unfold cm oT sw; omega) (by unfold cm oU sw; omega), m1]
   have hsIdx : J.right.sideIdx J.right.sideBeta i = Chazelle.Chain.sideE m (c₄.nreg oT) := by
     rw [Chazelle.Chain.sideIdx_eq, v3]
-  have hmodlt : c₄.nreg oT < 2 * m := by rw [v3]; exact Nat.mod_lt _ (by omega)
   by_cases hlt : c₄.nreg cm < c₄.nreg oT
   · refine (IRS.ifT hlt (IRS.reg (P := P) hI₄ (iscr_sw (by simp [oJ, sw]) (by simp [oJ, sw]))
       (Exec.subN hI₄.hw oJ c2m oT))).mono (by omega) ?_

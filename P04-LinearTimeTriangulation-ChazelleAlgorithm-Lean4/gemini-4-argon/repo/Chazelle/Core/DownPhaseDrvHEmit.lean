@@ -54,14 +54,14 @@ theorem qES_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n e : ℕ} (h
       exec_block
       · rw [h64, hK.one]; omega
       by_cases hlt : e + 1 < n
-      · refine spec_ifLtN_true (by config_simp; rw [h64, hK.one, hK.nn]; exact hlt) ?_
+      · refine spec_ifLtN_true (by config_simp; rwa [h64, hK.one, hK.nn]) ?_
         exec_block
         refine ⟨by omega, ?_, rfl⟩
         config_simp
         rw [hK.nn, h64, hK.two]
         simp only [qE, hlt, ↓reduceIte, Bool.false_eq_true, ↓reduceIte]
         omega
-      · refine spec_ifLtN_false (by config_simp; rw [h64, hK.one, hK.nn]; exact hlt) ?_
+      · refine spec_ifLtN_false (by config_simp; rwa [h64, hK.one, hK.nn]) ?_
         exec_block
         refine ⟨by omega, ?_, rfl⟩
         config_simp
@@ -196,10 +196,10 @@ theorem rcS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n ee se δ : 
     · rw [h50, h71]; omega
     · config_simp; rw [h50, h71, hK.nn]; omega
     by_cases hv : ee + δ + n - 1 - se < n
-    · refine spec_ifLtN_true (by config_simp; rw [h50, h71, hK.nn, hK.one, h48]; exact hv) ?_
+    · refine spec_ifLtN_true (by config_simp; rwa [h50, h71, hK.nn, hK.one, h48]) ?_
       refine spec_skip ‹_› ⟨by omega, ?_, rfl⟩
       config_simp; simp only [h50, h71, hK.nn, hK.one, h48, hm, hv, ↓reduceIte]
-    · refine spec_ifLtN_false (by config_simp; rw [h50, h71, hK.nn, hK.one, h48]; exact hv) ?_
+    · refine spec_ifLtN_false (by config_simp; rwa [h50, h71, hK.nn, hK.one, h48]) ?_
       exec_block
       refine ⟨by omega, ?_, rfl⟩
       config_simp; simp only [h50, h71, hK.nn, hK.one, h48, hm, hv, ↓reduceIte]
@@ -221,10 +221,10 @@ theorem rsS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n se rc : ℕ
       exec_block
       · rw [h48, hK.one]; omega
       by_cases hv : se + 1 < n
-      · refine spec_ifLtN_true (by config_simp; rw [h48, hK.one, hK.nn]; exact hv) ?_
+      · refine spec_ifLtN_true (by config_simp; rwa [h48, hK.one, hK.nn]) ?_
         refine spec_skip ‹_› ⟨by omega, ?_, rfl⟩
         config_simp; simp only [h48, hK.one, ↓reduceIte, Nat.mod_eq_of_lt hv]
-      · refine spec_ifLtN_false (by config_simp; rw [h48, hK.one, hK.nn]; exact hv) ?_
+      · refine spec_ifLtN_false (by config_simp; rwa [h48, hK.one, hK.nn]) ?_
         exec_block
         · omega
         refine ⟨by omega, ?_, rfl⟩
@@ -237,12 +237,12 @@ theorem rsS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n se rc : ℕ
       · rw [h48, h73]; omega
       refine spec_seq ?_
       by_cases hv : se + rc < n
-      · refine spec_ifLtN_true (by config_simp; rw [h48, h73, hK.nn]; exact hv) ?_
+      · refine spec_ifLtN_true (by config_simp; rwa [h48, h73, hK.nn]) ?_
         refine spec_skip ‹_› ?_
         exec_block
         refine ⟨by omega, ?_, rfl⟩
         config_simp; simp only [h48, h73, hK.nn, hK.one, Bool.false_eq_true, ↓reduceIte, hm, hv]
-      · refine spec_ifLtN_false (by config_simp; rw [h48, h73, hK.nn]; exact hv) ?_
+      · refine spec_ifLtN_false (by config_simp; rwa [h48, h73, hK.nn]) ?_
         exec_block
         refine ⟨by omega, ?_, rfl⟩
         config_simp; simp only [h48, h73, hK.nn, hK.one, Bool.false_eq_true, ↓reduceIte, hm, hv]
@@ -335,7 +335,7 @@ theorem runS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ} {
   · have hr : runItems li n s e = [] := by unfold runItems; simp [h0]
     refine ⟨d₃, k₁ + (k₂ + (k₃ + (0 + 1))), .seq e₁ (.seq e₂ (.seq e₃
       (.ifLtN_true (by rw [v73, K₃.one, h0]; omega) (.skip e₃.wb_right)))), by omega,
-      by rw [hr, List.append_nil]; exact B₃, v72', fun a _ => by rw [hm₁₃], f₁₃⟩
+      by rwa [hr, List.append_nil], v72', fun a _ => by rw [hm₁₃], f₁₃⟩
   · obtain ⟨d₄, k₄, e₄, hk₄, v74, m₄, f₄⟩ := rsS_exec (P := P) d₃ e₃.wb_right K₃
       (by rw [f₃.1 _ (by decide), f₂.1 _ (by decide), f₁.1 _ (by decide), h48]) v73 hs hrc hW3
     have K₄ := K₃.frame f₄ (by decide)
@@ -345,7 +345,7 @@ theorem runS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ} {
     refine ⟨d₅, k₁ + (k₂ + (k₃ + ((k₄ + k₅) + 2))), .seq e₁ (.seq e₂ (.seq e₃
       (.ifLtN_false (by rw [v73, K₃.one]; omega) (.seq e₄ e₅)))), by omega, ?_, ?_,
       fun a ha => ?_, ?_⟩
-    · rw [runItems_of_ne h0]; exact B₅
+    · rwa [runItems_of_ne h0]
     · rw [f₅.1 _ (by decide), f₄.1 _ (by decide), v72']
     · rw [m₅ a ha, m₄, hm₁₃]
     · exact (f₁₃.trans (f₄.mono (fun q hq => by

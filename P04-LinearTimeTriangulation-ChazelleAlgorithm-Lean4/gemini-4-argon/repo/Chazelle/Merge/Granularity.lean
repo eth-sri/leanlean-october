@@ -103,7 +103,7 @@ theorem mem_sdiff_of_not_touches (hF : ChordSystem D F) {S : Set (Set Point)} (h
   have hcT : c ∉ S \ {c} := fun h => h.2 rfl
   obtain ⟨P, R₁, R₂, h⟩ := exists_removal_split hF hS hc
   have hins := insert_sdiff_self hc
-  have hX' : X ∈ regionsIn D (insert c (S \ {c})) := by rw [hins]; exact hX
+  have hX' : X ∈ regionsIn D (insert c (S \ {c})) := by rwa [hins]
   rcases h.mem_cases hX' with ⟨hXT, hXP⟩ | rfl | rfl
   · refine ⟨hXT, ?_⟩
     rw [← h.exits_other hF hT hXT hXP, hins]
@@ -156,7 +156,7 @@ theorem IsSplit.eq_pair_of_touches (hF : ChordSystem D F) {S : Set (Set Point)} 
     (hU : U ∈ regionsIn D S) (hcU : TouchesIn D c U) : U = R₁ ∨ U = R₂ := by
   have hT : S \ {c} ⊆ F := fun _ h => hS h.1
   have hcT : c ∉ S \ {c} := fun h => h.2 rfl
-  have hU' : U ∈ regionsIn D (insert c (S \ {c})) := by rw [insert_sdiff_self hc]; exact hU
+  have hU' : U ∈ regionsIn D (insert c (S \ {c})) := by rwa [insert_sdiff_self hc]
   exact (h.touches_iff hF hT (hS hc) hcT U hU').1 hcU
 
 /-! ### Which chords can become removable -/
@@ -197,7 +197,7 @@ theorem removable_of_removable_sdiff (hF : ChordSystem D F)
     exact ⟨by rw [← hins']; exact hs'.mem_of_ne hX hXP, e⟩
   obtain ⟨hUS, eU⟩ := hold U hU hcU
   obtain ⟨hVS, eV⟩ := hold V hV hcV
-  refine ⟨hc, U, hUS, V, hVS, hne, hcU, hcV, by rw [eU, eV]; exact hlow, ?_⟩
+  refine ⟨hc, U, hUS, V, hVS, hne, hcU, hcV, by rwa [eU, eV], ?_⟩
   -- the merged region of `c` is not touched by `c'`, so its weight is unchanged
   intro W hW' hUW
   have hS1 : S \ {c} ⊆ F := fun _ h => hS h.1

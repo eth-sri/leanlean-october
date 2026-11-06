@@ -118,7 +118,6 @@ theorem sortBack_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       (∀ a, a < c.nreg ALLOC → c'.rmem a = c.rmem a) ∧ c'.output = c.output ∧
       c'.nreg 40000 = D ∧ c'.nreg 42000 = T ∧ c'.nreg 42001 = 2 * L.length ∧
       (∀ r, 43000 ≤ r → r < 44000 → c'.nreg r = c.nreg r) := by
-  have hW1 : 1 ≤ W := by unfold hostWords at hWn; omega
   -- the sort's inputs
   obtain ⟨c₁, k₁, e₁, hk₁, v3, v4, g₁, m₁, rr₁, rm₁, o₁⟩ : ∃ c₁ k₁,
       Exec P W (block [.copyN 30003 210055, .copyN 30004 210054]) c c₁ k₁ ∧ k₁ = 2 ∧
@@ -134,8 +133,8 @@ theorem sortBack_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by decide) (by decide)
   -- the sort
   have hcmp := evCmp_ok (P := P) (W := W) hG hWn (m₀ := c₁.nmem) (A₀ := c₁.nreg ALLOC)
-    (D := D) (T := T) (M := M) (L := L) (by omega) (by rw [hA₁, m₁]; exact hwf)
-    (by rw [m₁]; exact hM) hL (by rw [m₁]; exact hR) (by omega) c₁.nreg
+    (D := D) (T := T) (M := M) (L := L) (by omega) (by rwa [hA₁, m₁])
+    (by rwa [m₁]) hL (by rwa [m₁]) (by omega) c₁.nreg
   have hJ₁ : EvJ c₁.nmem (c₁.nreg ALLOC) D T (2 * L.length) c₁.nreg c₁ :=
     ⟨by rw [g₁ _ (by decide) (by decide), h40], by rw [g₁ _ (by decide) (by decide), h42],
       by rw [g₁ _ (by decide) (by decide), h42'], fun _ _ => rfl, fun _ _ _ => rfl⟩
@@ -145,7 +144,7 @@ theorem sortBack_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     (P := P) (W := W) hcmp (by decide)
     (fun a b d h1 h2 => evLeB_trans M (Qof P) L _ a b d h1 h2)
     (fun a b => evLeB_total M (Qof P) L _ a b) w₁ hJ₁ (evJ_stable _ _ _ _ _ _)
-    (seg c.nmem X len) hseg (by rw [v4, seg_length]) (by rw [v3, seg_length, hA₁]; exact hX)
+    (seg c.nmem X len) hseg (by rw [v4, seg_length]) (by rwa [v3, seg_length, hA₁])
     (by rw [seg_length, hA₁]; omega)
   rw [seg_length] at hk₂ s₂ hLs
   obtain ⟨j1, j2, j3, j4, j5⟩ := J₂
@@ -159,8 +158,6 @@ theorem sortBack_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
         simpa [Finset.mem_insert, Finset.mem_singleton] using hr) hra
   have b21 : ∀ r, 210000 ≤ r → r < 220000 → bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) :=
     fun r h1 h2 => by simp [bandOf, bSort, bSign, bBuild]; omega
-  have b3 : ∀ r, 30000 ≤ r → r < 40000 → bandOf r = bSort := fun r h1 h2 => by
-    simp [bandOf, bSort]; omega
   obtain ⟨c₄, k₄, e₄, hk₄, w₄, hs₄, hm₄, hf₄⟩ := copyBack_exec (P := P) e₃.wb_right
     (X := X) (src := c₂.nreg 30005) (len := len) (by rw [hc₃]; simp)
     (by rw [g₃ _ (by decide), hb2 _ (b21 _ (by norm_num) (by norm_num)) (by decide),
@@ -178,14 +175,14 @@ theorem sortBack_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   refine ⟨c₄, k₁ + (k₂ + (1 + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, w₄, ?_, ?_,
     fun a ha hX' => ?_, ?_, ?_, fun r hr hcb hra => ?_, fun r hr hcb => ?_, fun a ha => ?_, ?_,
     ?_, ?_, ?_, fun r h1 h2 => ?_⟩
-  · rw [hs₄, show c₃.nmem = c₂.nmem from rfl, hLs]; exact hperm
+  · rwa [hs₄, show c₃.nmem = c₂.nmem from rfl, hLs]
   · rw [hs₄, show c₃.nmem = c₂.nmem from rfl, hLs]
     refine hsort.imp_of_mem fun {a b} ha hb hab => ?_
     have ha' := hcodes a (hperm.mem_iff.1 ha)
     have hb' := hcodes b (hperm.mem_iff.1 hb)
     unfold evLeB at hab; rw [ite_eq_left ha', ite_eq_left hb'] at hab
     simpa using hab
-  · rw [hm₄ a hX', show c₃.nmem = c₂.nmem from rfl, F₂.2.2.1 a (by rw [hA₁]; exact ha), m₁]
+  · rw [hm₄ a hX', show c₃.nmem = c₂.nmem from rfl, F₂.2.2.1 a (by rwa [hA₁]), m₁]
   · rw [g₄ _ (by decide), g₃ _ (by decide)]; omega
   · rw [g₄ _ (by decide), g₃ _ (by decide)]; omega
   · have h56 : r ≠ 210056 := fun h => by subst h; simp [Bcb] at hcb
@@ -194,7 +191,7 @@ theorem sortBack_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       subst h; exact hr (by simp [bandOf, bSort]))
   · rw [hf₄.2.1 r hcb, show c₃.rreg = c₂.rreg from rfl,
       F₂.2.1 r (by simpa [Finset.mem_insert, Finset.mem_singleton] using hr), rr₁]
-  · rw [hf₄.2.2.1, show c₃.rmem = c₂.rmem from rfl, F₂.2.2.2.1 a (by rw [hA₁]; exact ha), rm₁]
+  · rw [hf₄.2.2.1, show c₃.rmem = c₂.rmem from rfl, F₂.2.2.2.1 a (by rwa [hA₁]), rm₁]
   · rw [hf₄.2.2.2, show c₃.output = c₂.output from rfl, F₂.2.2.2.2.1, o₁]
   · rw [g₄ _ (by decide), g₃ _ (by decide), j1]
   · rw [g₄ _ (by decide), g₃ _ (by decide), j2]

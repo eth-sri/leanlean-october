@@ -1,6 +1,6 @@
 module
 
-public import Chazelle.Machine.Relocate
+public import Chazelle.Machine.Basic
 
 /-!
 # A structured language and a cost-exact compiler
@@ -42,6 +42,77 @@ public import Chazelle.Machine.Relocate
 
 namespace Chazelle
 
+namespace Machine
+
+@[expose] public section
+
+/-! ### Placement of a program inside a larger one -/
+
+/-- The program `p` sits verbatim at address `base` inside `q`. -/
+def SubAt (p q : Program) (base : ℕ) : Prop :=
+  ∀ i ins, p[i]? = some ins → q[base + i]? = some ins
+
+@[simp] theorem SubAt.nil (q : Program) (base : ℕ) : SubAt [] q base := by
+  intro i ins h; simp at h
+
+theorem SubAt.cons_iff {ins : Instr} {p q : Program} {base : ℕ} :
+    SubAt (ins :: p) q base ↔ q[base]? = some ins ∧ SubAt p q (base + 1) := by
+  constructor
+  · intro h
+    refine ⟨by simpa using h 0 ins rfl, fun i ins' hi => ?_⟩
+    have := h (i + 1) ins' (by simpa using hi)
+    rw [show base + 1 + i = base + (i + 1) by omega]; exact this
+  · rintro ⟨h0, h⟩ i ins' hi
+    cases i with
+    | zero => simp at hi; subst hi; simpa using h0
+    | succ i =>
+      simp only [List.getElem?_cons_succ] at hi
+      have := h i ins' hi
+      rw [show base + (i + 1) = base + 1 + i by omega]; exact this
+
+theorem SubAt.head {ins : Instr} {p q : Program} {base : ℕ} (h : SubAt (ins :: p) q base) :
+    q[base]? = some ins :=
+  (SubAt.cons_iff.mp h).1
+
+theorem SubAt.tail {ins : Instr} {p q : Program} {base : ℕ} (h : SubAt (ins :: p) q base) :
+    SubAt p q (base + 1) :=
+  (SubAt.cons_iff.mp h).2
+
+theorem SubAt.singleton_iff {ins : Instr} {q : Program} {base : ℕ} :
+    SubAt [ins] q base ↔ q[base]? = some ins := by
+  simp [SubAt.cons_iff]
+
+theorem SubAt.append_iff {p₁ p₂ q : Program} {base : ℕ} :
+    SubAt (p₁ ++ p₂) q base ↔ SubAt p₁ q base ∧ SubAt p₂ q (base + p₁.length) := by
+  constructor
+  · intro h
+    refine ⟨fun i ins hi => h i ins ?_, fun i ins hi => ?_⟩
+    · rwa [List.getElem?_append_left (List.getElem?_eq_some_iff.mp hi).1]
+    · have := h (p₁.length + i) ins (by
+        rwa [List.getElem?_append_right (Nat.le_add_right _ _), Nat.add_sub_cancel_left])
+      rwa [← Nat.add_assoc] at this
+  · rintro ⟨h₁, h₂⟩ i ins hi
+    by_cases hlt : i < p₁.length
+    · rw [List.getElem?_append_left hlt] at hi; exact h₁ i ins hi
+    · rw [List.getElem?_append_right (Nat.le_of_not_lt hlt)] at hi
+      have := h₂ _ ins hi
+      rwa [Nat.add_assoc, Nat.add_sub_cancel' (Nat.le_of_not_lt hlt)] at this
+
+theorem SubAt.of_append_left {p₁ p₂ q : Program} {base : ℕ} (h : SubAt (p₁ ++ p₂) q base) :
+    SubAt p₁ q base :=
+  (SubAt.append_iff.mp h).1
+
+theorem SubAt.of_append_right {p₁ p₂ q : Program} {base : ℕ} (h : SubAt (p₁ ++ p₂) q base) :
+    SubAt p₂ q (base + p₁.length) :=
+  (SubAt.append_iff.mp h).2
+
+theorem SubAt.append_left (p₁ p₂ : Program) : SubAt p₁ (p₁ ++ p₂) 0 := by
+  intro i ins hi
+  rwa [Nat.zero_add, List.getElem?_append_left (List.getElem?_eq_some_iff.mp hi).1]
+
+end
+end Machine
+
 namespace Instr
 
 @[expose] public section
@@ -75,60 +146,6 @@ noncomputable def effect (P : Polygon) : Instr → Config → Option Config
 
 variable {P : Polygon} {c : Config}
 
-@[simp] theorem effect_inputSize (r : ℕ) :
-    (Instr.inputSize r).effect P c = some { c with nreg := upd c.nreg r P.n } := rfl
-@[simp] theorem effect_constN (r k : ℕ) :
-    (Instr.constN r k).effect P c = some { c with nreg := upd c.nreg r k } := rfl
-@[simp] theorem effect_copyN (r a : ℕ) :
-    (Instr.copyN r a).effect P c = some { c with nreg := upd c.nreg r (c.nreg a) } := rfl
-@[simp] theorem effect_addN (r a b : ℕ) :
-    (Instr.addN r a b).effect P c =
-      some { c with nreg := upd c.nreg r (c.nreg a + c.nreg b) } := rfl
-@[simp] theorem effect_subN (r a b : ℕ) :
-    (Instr.subN r a b).effect P c =
-      some { c with nreg := upd c.nreg r (c.nreg a - c.nreg b) } := rfl
-@[simp] theorem effect_loadN (r a : ℕ) :
-    (Instr.loadN r a).effect P c =
-      some { c with nreg := upd c.nreg r (c.nmem (c.nreg a)) } := rfl
-@[simp] theorem effect_storeN (a r : ℕ) :
-    (Instr.storeN a r).effect P c =
-      some { c with nmem := upd c.nmem (c.nreg a) (c.nreg r) } := rfl
-@[simp] theorem effect_constR (r : ℕ) (z : ℤ) :
-    (Instr.constR r z).effect P c = some { c with rreg := upd c.rreg r (z : ℝ) } := rfl
-@[simp] theorem effect_copyR (r a : ℕ) :
-    (Instr.copyR r a).effect P c = some { c with rreg := upd c.rreg r (c.rreg a) } := rfl
-@[simp] theorem effect_addR (r a b : ℕ) :
-    (Instr.addR r a b).effect P c =
-      some { c with rreg := upd c.rreg r (c.rreg a + c.rreg b) } := rfl
-@[simp] theorem effect_subR (r a b : ℕ) :
-    (Instr.subR r a b).effect P c =
-      some { c with rreg := upd c.rreg r (c.rreg a - c.rreg b) } := rfl
-@[simp] theorem effect_mulR (r a b : ℕ) :
-    (Instr.mulR r a b).effect P c =
-      some { c with rreg := upd c.rreg r (c.rreg a * c.rreg b) } := rfl
-theorem effect_divR (r a b : ℕ) (hb : c.rreg b ≠ 0) :
-    (Instr.divR r a b).effect P c =
-      some { c with rreg := upd c.rreg r (c.rreg a / c.rreg b) } := by
-  simp [effect, hb]
-@[simp] theorem effect_loadR (r a : ℕ) :
-    (Instr.loadR r a).effect P c =
-      some { c with rreg := upd c.rreg r (c.rmem (c.nreg a)) } := rfl
-@[simp] theorem effect_storeR (a r : ℕ) :
-    (Instr.storeR a r).effect P c =
-      some { c with rmem := upd c.rmem (c.nreg a) (c.rreg r) } := rfl
-@[simp] theorem effect_readX (r a : ℕ) :
-    (Instr.readX r a).effect P c =
-      some { c with rreg := upd c.rreg r (P.vtx (c.nreg a)).1 } := rfl
-@[simp] theorem effect_readY (r a : ℕ) :
-    (Instr.readY r a).effect P c =
-      some { c with rreg := upd c.rreg r (P.vtx (c.nreg a)).2 } := rfl
-@[simp] theorem effect_emit (a b d : ℕ) :
-    (Instr.emit a b d).effect P c =
-      some { c with output := c.output ++ [(c.nreg a, c.nreg b, c.nreg d)] } := rfl
-@[simp] theorem effect_halt : (Instr.halt).effect P c = none := rfl
-@[simp] theorem effect_jump (l : ℕ) : (Instr.jump l).effect P c = none := rfl
-@[simp] theorem effect_brLtN (a b l : ℕ) : (Instr.brLtN a b l).effect P c = none := rfl
-@[simp] theorem effect_brLtR (a b l : ℕ) : (Instr.brLtR a b l).effect P c = none := rfl
 
 /-- The effect is insensitive to the program counter. -/
 theorem effect_setPc (ins : Instr) (p : ℕ) :
@@ -209,8 +226,6 @@ def compile : Stmt → ℕ → Program
       .brLtR a b (base + 2) :: .jump (base + 3 + codeSize body) ::
         compile body (base + 2) ++ [.jump base]
 
-@[simp] theorem codeSize_skip : codeSize .skip = 0 := rfl
-@[simp] theorem codeSize_instr (i : Instr) : codeSize (.instr i) = 1 := rfl
 @[simp] theorem codeSize_seq (s t : Stmt) : codeSize (.seq s t) = codeSize s + codeSize t := rfl
 @[simp] theorem codeSize_ifLtN (a b : ℕ) (t e : Stmt) :
     codeSize (.ifLtN a b t e) = codeSize t + codeSize e + 2 := rfl
@@ -241,16 +256,8 @@ def block : List Instr → Stmt
 @[simp] theorem block_cons (i : Instr) (l : List Instr) :
     block (i :: l) = .seq (.instr i) (block l) := rfl
 
-@[simp] theorem codeSize_block (l : List Instr) : codeSize (block l) = l.length := by
-  induction l with
-  | nil => rfl
-  | cons i l ih => simp [block, ih, Nat.add_comm]
 
-/-- A block compiles to exactly its list of instructions, at any base address. -/
-@[simp] theorem compile_block (l : List Instr) (base : ℕ) : compile (block l) base = l := by
-  induction l generalizing base with
-  | nil => rfl
-  | cons i l ih => simp [block, compile, ih]
+
 
 end Stmt
 
@@ -373,17 +380,8 @@ theorem mulR (r a b : ℕ) :
     Exec P W (.instr (.mulR r a b)) c { c with rreg := upd c.rreg r (c.rreg a * c.rreg b) } 1 :=
   .instr (by simp) rfl hw hw
 
-theorem divR (r a b : ℕ) (hb : c.rreg b ≠ 0) :
-    Exec P W (.instr (.divR r a b)) c { c with rreg := upd c.rreg r (c.rreg a / c.rreg b) } 1 :=
-  .instr (by simp) (Instr.effect_divR r a b hb) hw hw
 
-theorem loadR (r a : ℕ) :
-    Exec P W (.instr (.loadR r a)) c { c with rreg := upd c.rreg r (c.rmem (c.nreg a)) } 1 :=
-  .instr (by simp) rfl hw hw
 
-theorem storeR (a r : ℕ) :
-    Exec P W (.instr (.storeR a r)) c { c with rmem := upd c.rmem (c.nreg a) (c.rreg r) } 1 :=
-  .instr (by simp) rfl hw hw
 
 theorem readX (r a : ℕ) :
     Exec P W (.instr (.readX r a)) c { c with rreg := upd c.rreg r (P.vtx (c.nreg a)).1 } 1 :=
@@ -501,7 +499,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     RunsTo q P W k { c with pc := base } { c' with pc := base + codeSize s } := by
   induction h generalizing q base with
   | @skip c hw =>
-    exact (RunsTo.zero (wordsBounded_setPc.mpr hw)).cast_end (setPc_congr (by simp))
+    exact RunsTo.zero hw
   | @instr ins c c' hs he hw hw' =>
     have hq0 : q[base]? = some ins := SubAt.singleton_iff.mp hq
     have hst : step q P { c with pc := base } = some { c' with pc := base + 1 } := by

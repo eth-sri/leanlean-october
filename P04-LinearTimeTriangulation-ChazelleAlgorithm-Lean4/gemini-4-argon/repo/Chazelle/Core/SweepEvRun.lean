@@ -97,8 +97,7 @@ theorem loop_irs {W : ℕ} {c₀ : Config} {body : Stmt} {Kb : ℕ}
       rintro c' ⟨cw, cs, co, hIR⟩
       have hkeep := (iter_keep hIR).1
       have hk' : c'.nreg K1 = 1 := by
-        rw [hkeep _ (keepR_of (by unfold K1 sw; omega)) (by unfold KR kE kH kN kL sP dF lC K1 sw; omega)]
-        exact hk
+        rwa [hkeep _ (keepR_of (by unfold K1 sw; omega)) (by unfold KR kE kH kN kL sP dF lC K1 sw; omega)]
       by_cases hd : c'.nreg dF = 0
       · obtain ⟨hL', hlt⟩ := hstep c cw cs co c' hLc hIR hd
         exact ⟨⟨hk', Or.inl hL'⟩, by rw [hμ c' hL', hμ c hLc]; omega⟩

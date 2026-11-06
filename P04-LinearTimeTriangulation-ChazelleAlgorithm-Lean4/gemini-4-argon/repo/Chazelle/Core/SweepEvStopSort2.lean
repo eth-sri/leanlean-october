@@ -112,11 +112,11 @@ theorem ssCw_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d) {
   have e₁ := Exec.loadN (P := P) hw srV srS
   have e₂ := Exec.storeN (P := P) e₁.wb_right R srV
   have e₃ := Exec.addN (P := P) e₂.wb_right srS srS K1 (by
-    simp only; rw [upd_other _ _ _ nVS, upd_other _ _ _ nK1.1, hK1]; exact hs)
+    simp only; rwa [upd_other _ _ _ nVS, upd_other _ _ _ nK1.1, hK1])
   have e₄ := Exec.addN (P := P) e₃.wb_right R R K1 (by
     simp only
-    rw [upd_other _ _ _ hR2, upd_other _ _ _ hR1, upd_other _ _ _ nK1.2, upd_other _ _ _ nK1.1,
-      hK1]; exact ht)
+    rwa [upd_other _ _ _ hR2, upd_other _ _ _ hR1, upd_other _ _ _ nK1.2, upd_other _ _ _ nK1.1,
+      hK1])
   refine ⟨_, Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_cons e₃ (Exec.block_cons e₄
     (Exec.block_nil e₄.wb_right)))), ?_, ?_, fun r a b c' => ?_, ?_, rfl, rfl, rfl⟩
   · simp only
@@ -186,20 +186,18 @@ theorem ssWr_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d)
       (∀ r, r ≠ sr1 → r ≠ sr2 → r ≠ sr3 → r ≠ sr4 → r ≠ srS → r ≠ srD → r ≠ srE → r ≠ srV → r ≠ sC →
         d'.nreg r = d.nreg r) ∧
       d'.rreg = d.rreg ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
-  set Src := d.nreg gRB + 11 * d.nreg srX with hSrc
-  set D := d.nreg sB + 5 * d.nreg sC with hD
-  set E := d.nreg aB + 5 * d.nreg sC with hE
-  set m := d.nmem with hm
+  set Src := d.nreg gRB + 11 * d.nreg srX
+  set D := d.nreg sB + 5 * d.nreg sC
+  set E := d.nreg aB + 5 * d.nreg sC
+  set m := d.nmem
   obtain ⟨vS, vD, vE, vo⟩ := ssWrHead_val d.nmem d.nreg
   have e₀ := exec_regB (P := P) ssWrHead hw (ssWrHead_ok d.nmem d.nreg (by omega) (by omega) (by omega))
-  set d₀ : Config := { d with nreg := regB d.nmem ssWrHead d.nreg } with hd₀
+  set d₀ : Config := { d with nreg := regB d.nmem ssWrHead d.nreg }
   have p0S : d₀.nreg srS = Src := by show regB _ _ _ srS = _; rw [vS]; omega
   have p0D : d₀.nreg srD = D := by show regB _ _ _ srD = _; rw [vD]; omega
   have p0E : d₀.nreg srE = E := by show regB _ _ _ srE = _; rw [vE]; omega
   have p0o : ∀ r, r ≠ sr1 → r ≠ sr2 → r ≠ sr3 → r ≠ sr4 → r ≠ srS → r ≠ srD → r ≠ srE →
       d₀.nreg r = d.nreg r := vo
-  have p0K : d₀.nreg K1 = 1 := by
-    rw [p0o K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hK1
   have hSDv : Src + 11 ≤ D := by omega
   have hDEv : D + 5 ≤ E := by omega
   have hCW : d.nreg sC + 1 ≤ W := by omega
@@ -216,7 +214,7 @@ theorem ssWr_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d)
       ∃ d'', Exec P W (block (ssCw srD)) d' d'' 4 ∧ St (nd + 1) ne (u + 1) d'' := by
     intro nd ne u d' ⟨w', s1, s2, s3, s4, s5, s6, s7, s8⟩ hnd hne hu
     have hK : d'.nreg K1 = 1 := by
-      rw [s5 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hK1
+      rwa [s5 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]
     have hu11 : u < 11 := by rw [← hu]; unfold ssOff; split_ifs <;> omega
     obtain ⟨d'', ex, t1, t2, t3, t4, t5, t6, t7⟩ := ssCw_exec (P := P) (R := srD) w' hK (by ssoSrt)
       (by ssoSrt) (by ssoSrt) (by rw [s1]; omega) (by rw [s2]; omega)
@@ -230,7 +228,7 @@ theorem ssWr_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d)
       ∃ d'', Exec P W (block (ssCw srE)) d' d'' 4 ∧ St 5 (ne + 1) (u + 1) d'' := by
     intro ne u d' ⟨w', s1, s2, s3, s4, s5, s6, s7, s8⟩ hne hu
     have hK : d'.nreg K1 = 1 := by
-      rw [s5 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hK1
+      rwa [s5 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]
     obtain ⟨d'', ex, t1, t2, t3, t4, t5, t6, t7⟩ := ssCw_exec (P := P) (R := srE) w' hK (by ssoSrt)
       (by ssoSrt) (by ssoSrt) (by rw [s1]; omega) (by rw [s3]; omega)
     refine ⟨d'', ex, ex.wb_right, by rw [t1, s1]; omega, ?_, by rw [t2, s3]; omega, ?_,
@@ -245,14 +243,14 @@ theorem ssWr_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d)
   -- skip word `2`
   obtain ⟨w₂, s21, s22, s23, s24, s25, s26, s27, s28⟩ := S2
   have hK₂ : d₂.nreg K1 = 1 := by
-    rw [s25 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hK1
+    rwa [s25 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]
   have x₃ := Exec.addN (P := P) w₂ srS srS K1 (by rw [s21, hK₂]; omega)
   set d₃ : Config := { d₂ with nreg := upd d₂.nreg srS (d₂.nreg srS + d₂.nreg K1) } with hd₃
   have S3 : St 2 0 3 d₃ := by
     refine ⟨x₃.wb_right, by simp only [hd₃, upd_same]; rw [s21, hK₂], ?_, ?_, s24,
       fun r a b c' e f g h i => ?_, s26, s27, s28⟩
-    · simp only [hd₃]; rw [upd_other _ _ _ (show srD ≠ srS by ssoSrt)]; exact s22
-    · simp only [hd₃]; rw [upd_other _ _ _ (show srE ≠ srS by ssoSrt)]; exact s23
+    · simp only [hd₃]; rwa [upd_other _ _ _ (show srD ≠ srS by ssoSrt)]
+    · simp only [hd₃]; rwa [upd_other _ _ _ (show srE ≠ srS by ssoSrt)]
     · simp only [hd₃]; rw [upd_other _ _ _ f]; exact s25 r a b c' e f g h i
   obtain ⟨d₄, x₄, S4⟩ := stepD 2 0 3 d₃ S3 (by norm_num) (by norm_num) rfl
   obtain ⟨d₅, x₅, S5⟩ := stepD 3 0 4 d₄ S4 (by norm_num) (by norm_num) rfl
@@ -264,10 +262,10 @@ theorem ssWr_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d)
   obtain ⟨d₁₁, x₁₁, S11⟩ := stepE 4 10 d₁₀ S10 (by norm_num) rfl
   obtain ⟨w₁₁, -, -, -, s114, s115, s116, s117, s118⟩ := S11
   have hK₁₁ : d₁₁.nreg K1 = 1 := by
-    rw [s115 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hK1
+    rwa [s115 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]
   have hC₁₁ : d₁₁.nreg sC = d.nreg sC :=
     s115 sC (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)
-  have x₁₂ := Exec.addN (P := P) w₁₁ sC sC K1 (by rw [hC₁₁, hK₁₁]; exact hCW)
+  have x₁₂ := Exec.addN (P := P) w₁₁ sC sC K1 (by rwa [hC₁₁, hK₁₁])
   refine ⟨_, _, .seq e₀ (.seq x₁ (.seq x₂ (.seq x₃ (.seq x₄ (.seq x₅ (.seq x₆ (.seq x₇ (.seq x₈
     (.seq x₉ (.seq x₁₀ (.seq x₁₁ x₁₂))))))))))), by simp [ssWrHead], s114, ?_,
     fun r a b c' e f g h i j => ?_, s116, s117, s118⟩

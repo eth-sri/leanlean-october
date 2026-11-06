@@ -74,7 +74,7 @@ theorem below_iff {r x : ℕ} (hr : r < R) (hx : ValidC R K pch σ x) :
         intro x hc hv hm
         rcases valid_range hK hRR h hch hisdn hI hna hv with ⟨a, b⟩ | ⟨a, b⟩
         · -- a chord node: descend to the child on the side of `r`
-          set k := x / 2 with hkdef
+          set k := x / 2
           have hxk : x = 2 * k := by omega
           have hmk : r ∈ gc k := by simpa [compOf, a] using hm
           obtain ⟨s, hs, hrs⟩ : ∃ s, s ≤ 1 ∧ r ∈ sideSet R prg pch isdn chOf s k := by
@@ -92,7 +92,7 @@ theorem below_iff {r x : ℕ} (hr : r < R) (hx : ValidC R K pch σ x) :
             rw [hck]
             apply Finset.card_lt_card
             refine Finset.ssubset_iff_subset_ne.2 ⟨Finset.inter_subset_left, fun e => ?_⟩
-            have : w ∈ gc k ∩ sideSet R prg pch isdn chOf s k := by rw [e]; exact hw1
+            have : w ∈ gc k ∩ sideSet R prg pch isdn chOf s k := by rwa [e]
             exact hw2 (Finset.mem_inter.1 this).2
           obtain ⟨i, hi⟩ := ih _ (by omega) v1 (by rw [v2]; exact Finset.mem_inter.2 ⟨hmk, hrs⟩)
           refine ⟨i + 1, ?_⟩
@@ -170,8 +170,8 @@ theorem chord_reach {e : ℕ} (he : e < K) :
     obtain ⟨hr, -⟩ := final_cut hK hRR h hch hisdn hI hna he
     obtain ⟨-, -, -, -, -, h6⟩ := hI.i1 e he hr
     have hv : ValidC R K pch σ (2 * e) :=
-      Or.inl ⟨by omega, by rw [show 2 * e / 2 = e by omega]; exact he, by
-        rw [show 2 * e / 2 = e by omega]; exact hr⟩
+      Or.inl ⟨by omega, by rwa [show 2 * e / 2 = e by omega], by
+        rwa [show 2 * e / 2 = e by omega]⟩
     rcases h6 with ⟨-, a2, a3, -⟩ | ⟨p, hp, -, a1, a2, -⟩
     · rw [← hn, a2, a3]; rfl
     · rw [← hn, ← a2, Function.iterate_succ_apply, parentCode_eq hK hRR h hch hisdn hI hna hv]

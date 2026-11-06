@@ -45,8 +45,8 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
     (hgap : ∀ x, M.IsCut F x → 0 ≤ x → x < M.W.n →
       ¬ (off M.W.n g (p₀ + t₀) < off M.W.n g x ∧ off M.W.n g x < off M.W.n g (pK + tK))) :
     BeforeFaces M pK tK G := by
-  set n := M.W.n with hndef
-  set o := off (n : ℝ) g with hodef
+  set n := M.W.n
+  set o := off (n : ℝ) g
   have hn : 0 < n := by omega
   obtain ⟨x0, x1⟩ := Corr.key_mem hp₀ ht₀.1.le ht₀.2
   obtain ⟨k0, k1⟩ := Corr.key_mem hpK htK0 htK1
@@ -88,7 +88,7 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
         · exact hgap _ hcut r0 r1 ⟨h1, by rw [hoy] at h2; linarith⟩
         · rw [hoy] at h1; linarith
       exact hnot hQA (hsep'.2 (hnot hQB))
-    rw [heq]; exact hfU
+    rwa [heq]
   refine ⟨min δ 1, lt_min hδ0 one_pos, fun htp s hs0 hs1 hs2 => ?_, fun ht s hs0 hs1 => ?_⟩
   · refine key pK (tK - s) s hpK ⟨by linarith, by linarith⟩ hs0
       (lt_of_lt_of_le hs1 (min_le_left _ _)) (Or.inl (by ring))
@@ -133,7 +133,7 @@ theorem sidePt_off_zero (hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨k0, k1⟩ := Corr.key_mem hp ht0 ht1
   have hk := off_inj hg0 hgn k0 k1 hg0 hgn (by rw [h0, off_self])
   obtain ⟨rfl, rfl⟩ := sideKey_inj ht0 ht1 le_rfl zero_lt_one
-    (show (p : ℝ) + t = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) + 0 by rw [add_zero]; exact hk)
+    (show (p : ℝ) + t = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) + 0 by rwa [add_zero])
   rw [Chazelle.Chain.sidePt_zero]
   have := hC.A1 0 (Nat.zero_le _)
   rw [add_zero, add_zero, Nat.mod_eq_of_lt hC.hg, Nat.mod_eq_of_lt hC.hg'] at this
@@ -171,7 +171,6 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
     (hBL : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) <
       ((rL1 J + rL2 J : ℕ) : ℝ)) : h ∈ Cand J S₂ L := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
-  have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
   obtain ⟨k0, k1⟩ := Corr.key_mem hB.1 hB.2.1 hB.2.2.1
@@ -180,7 +179,7 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
   · rcases (off_nonneg k0 hgn).lt_or_eq with hpos | hzero
     · -- a proper position of the stretch, or the split vertex
       obtain ⟨hpd, hoff⟩ := hC.decomp hB.1 hB.2.1 hB.2.2.1
-      set dB := dOf (chainModel J.whole).W.n (6 + tpos J.whole J.m₁) pB with hdB
+      set dB := dOf (chainModel J.whole).W.n (6 + tpos J.whole J.m₁) pB
       rw [hoff] at hpos hBL
       have hdL : dB < rL1 J + rL2 J := by
         have : (dB : ℝ) < ((rL1 J + rL2 J : ℕ) : ℝ) := by linarith [hB.2.1]
@@ -190,8 +189,7 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
       · obtain ⟨rfl, hdr⟩ := hsplit
         rw [hdr] at hB hBpt hdL
         refine ⟨hh, Or.inr (Or.inr ?_)⟩
-        rw [← sidePt_split J hP hS₂.2.1 hS₂.1 hdL]
-        exact hBpt
+        rwa [← sidePt_split J hP hS₂.2.1 hS₂.1 hdL]
       · have hsec : tB = 0 → dB ≠ 0 ∧ dB ≠ rL1 J := by
           intro ht0
           refine ⟨fun h0 => ?_, fun h1 => hsplit ⟨ht0, h1⟩⟩
@@ -204,8 +202,7 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
         exact ⟨hh, Or.inl ⟨c, hc, hhc, V', labS_trans J h1 h2,
           touches_of_sideOf J hS₂.2.1 hc hVs'⟩⟩
     · refine ⟨hh, Or.inr (Or.inl ?_)⟩
-      rw [← sidePt_off_zero J hP hS₂.2.1 hS₂.1 hB.1 hB.2.1 hB.2.2.1 hzero.symm]
-      exact hBpt
+      rwa [← sidePt_off_zero J hP hS₂.2.1 hS₂.1 hB.1 hB.2.1 hB.2.2.1 hzero.symm]
   · exact ⟨hh, Or.inr (Or.inl hv)⟩
   · exact ⟨hh, Or.inr (Or.inr ht)⟩
 
@@ -215,7 +212,7 @@ theorem rlabel_region (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hR : RLabel J S₂ G V) : ∃ V' ∈ (chainModel J.right).regions S₂, RLabel J S₂ G V' := by
   have hC := corr_right0 J hP hS₂ hS₂f
   obtain ⟨d, hd, t, ht, hnc, hfG, -⟩ := hR
-  set P₂ := (6 + tpos J.right 0 + dq (rL1 J) (rδ J) d) % (chainModel J.right).W.n with hP₂
+  set P₂ := (6 + tpos J.right 0 + dq (rL1 J) (rδ J) d) % (chainModel J.right).W.n
   have hP₂n : P₂ < (chainModel J.right).W.n := Nat.mod_lt _ hC.n₂_pos
   have hnc₂ : ¬ (chainModel J.right).IsCut S₂ ((P₂ : ℝ) + t) := by
     rintro ⟨c, hc, q, u, hA, hk⟩
@@ -268,7 +265,7 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
-  set o := off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) with hodef
+  set o := off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ)
   obtain ⟨kK0, kK1⟩ := Corr.key_mem hpK htK0 htK1
   -- a chord of `F₂⁺` attached at a cut key of the `C₁` part after `x₀` is attached at `K`
   have hatK : ∀ {h : Set Point} {pz : ℕ} {tz : ℝ}, h ∈ F₂plus J S₂ →
@@ -337,8 +334,8 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
       · exact Or.inr (Or.inr hk)
     · obtain ⟨e₁, e₂, d, pb, pb', tb, tb', ρ, he₁, he₂, hne, hd0, hd, hA₁, hA₂, hB₁, hB₂, hBne₁,
         hBne₂, hout₁, hout₂, hρ, hS₁, hS₂', ht₁, ht₂⟩ := hT
-      set W := (chainModel J.whole).W with hWdef
-      set A := (6 + tpos J.whole J.m₁ + d) % W.n with hAdef
+      set W := (chainModel J.whole).W
+      set A := (6 + tpos J.whole J.m₁ + d) % W.n
       obtain ⟨-, hy₁, -⟩ := hM.attach_seg (hFs he₁) hA₁ hB₁ (Ne.symm hBne₁)
       obtain ⟨-, hy₂, -⟩ := hM.attach_seg (hFs he₂) hA₂ hB₂ (Ne.symm hBne₂)
       have hx₁ : (sidePt W pb tb).1 ≠ (sidePt W A 0).1 :=

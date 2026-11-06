@@ -65,7 +65,7 @@ theorem counted_of_wt {M : Model} {s m : ℕ} (hs : s < M.W.n) (hm : 0 < m) (hmn
   set S : Set ℕ := {p | p < n ∧ ∃ t : ℝ, 0 < t ∧ t < 1 ∧
     sideInArc (s : ℝ) (((s + m) % n : ℕ) : ℝ) (p + t)} with hS
   set T : Set ℕ := {p | p < n ∧ M.counted p ∧ ∃ t : ℝ, 0 < t ∧ t < 1 ∧
-    sideInArc (s : ℝ) (((s + m) % n : ℕ) : ℝ) (p + t)} with hT
+    sideInArc (s : ℝ) (((s + m) % n : ℕ) : ℝ) (p + t)}
   have hSe : S = (fun d => (s + d) % n) '' Set.Iio m := by
     ext p
     simp only [hS, Set.mem_ofPred_eq, Set.mem_image, Set.mem_Iio]

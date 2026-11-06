@@ -95,7 +95,7 @@ theorem pc0_ab {x y : WPos} {N : ℕ} (hx : ProperPos (chainModel C) Q N x)
     have hxy : x.edge = y.edge := by
       have := pcEdge_D (n := 2 * C.m + 7) hxn hyn
       rw [← hD, h0] at this
-      unfold pcEdge at this; rw [Nat.add_zero, Nat.mod_eq_of_lt hxn] at this; exact this
+      unfold pcEdge at this; rwa [Nat.add_zero, Nat.mod_eq_of_lt hxn] at this
     exact ⟨hx0, (piece0_nowrap hx hy hxy hxn hwt).le, hy1.le⟩
   · rw [ite_eq_left h0, ite_eq_right hD]; exact ⟨hx0, hx1.le, le_rfl⟩
   · rw [ite_eq_right h0, ite_eq_left hD]; exact ⟨le_rfl, hy0, hy1.le⟩
@@ -134,12 +134,12 @@ theorem segSet_full {N : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q N x)
     refine ⟨d, hd, ?_⟩
     obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (by omega)
     obtain ⟨a0, ab, b1⟩ := pc0_ab hx hy hxn hyn hwt d
-    rw [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV]; exact hp
+    rwa [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV]
   · rintro ⟨d, hd, hp⟩
     refine ⟨d, hd, ?_⟩
     obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (by omega)
     obtain ⟨a0, ab, b1⟩ := pc0_ab hx hy hxn hyn hwt d
-    rw [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV] at hp; exact hp
+    rwa [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV] at hp
 
 end ShootCut
 

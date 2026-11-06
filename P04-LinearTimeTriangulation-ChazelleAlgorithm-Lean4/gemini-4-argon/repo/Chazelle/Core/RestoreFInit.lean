@@ -94,7 +94,6 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
   obtain ⟨hg3, hT⟩ := hhalf P c.nmem (c.nreg 81004) (c.nreg ALLOC) hX
   obtain ⟨hTn, hTv⟩ := hT P.n le_rfl
   have hAW := hw.1 ALLOC
-  have h4 : c.nreg 81004 ≠ 0 ∨ c.nreg 81004 = 0 := by omega
   -- the input size
   have e1 := Exec.inputSize (P := P) hw 81020 hnW
   set c₁ : Config := { c with nreg := upd c.nreg 81020 P.n } with hc₁
@@ -108,7 +107,7 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
     norm_num [hTv]
     (repeat' apply And.intro) <;> omega
   have e2 := execB (P := P) fIniL hw₁ ok2
-  set c₂ : Config := { c₁ with nreg := regB c₁.nmem fIniL c₁.nreg } with hc₂
+  set c₂ : Config := { c₁ with nreg := regB c₁.nmem fIniL c₁.nreg }
   have hw₂ : WordsBounded W c₂ := e2.wb_right
   have v₂ : ∀ q, c₂.nreg q = regB c.nmem fIniL c₁.nreg q := fun q => rfl
   have f₂ : ∀ q, ¬ IniW q → c₂.nreg q = c.nreg q := fun q hq => by
@@ -124,9 +123,6 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
   have c00 : c₂.nreg 81000 = c.nreg 81000 := f₂ _ (by unfold IniW; omega)
   have c12 : c₂.nreg 81012 = 1 := by rw [v₂]; simp [fIniL, regB, regI, upd]
   have c14 : c₂.nreg 81014 = 3 := by rw [v₂]; simp [fIniL, regB, regI, upd]
-  have hv : ∀ q, q ∈ [81007, 81011, 81012, 81013, 81014, 81015, 81016, 81024, 81023, 81022] →
-      ∀ c' : Config, (∀ r, r ∉ [81017, 81019, 81021, 81025, 81028] → c'.nreg r = c₂.nreg r) →
-      c'.nreg q = c₂.nreg q := fun q hq c' h => h q (by simp at hq ⊢; omega)
   have vals : c₂.nreg 81007 = 0 ∧ c₂.nreg 81011 = 0 ∧ c₂.nreg 81012 = 1 ∧ c₂.nreg 81013 = 2 ∧
       c₂.nreg 81014 = 3 ∧ c₂.nreg 81015 = 5 ∧ c₂.nreg 81016 = 7 ∧ c₂.nreg 81024 = 10 ∧
       c₂.nreg 81020 = P.n ∧ c₂.nreg 81023 = P.n / 2 ∧ c₂.nreg 81022 = 2 * (P.n / 2) := by

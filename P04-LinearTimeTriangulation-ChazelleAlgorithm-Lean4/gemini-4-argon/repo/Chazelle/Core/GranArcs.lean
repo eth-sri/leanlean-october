@@ -89,8 +89,8 @@ theorem exists_pos_after_both {p : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) {
     ∃ t' ∈ Ioo (0 : ℝ) 1, A (p + t') ∧ B (p + t') := by
   obtain ⟨ε, h1, h2, h3⟩ := ((WalkAx.exists_pos_after ht ht1).and (hA.and hB)).exists
   refine ⟨t + ε, h1, ?_, ?_⟩
-  · rw [← add_assoc]; exact h2
-  · rw [← add_assoc]; exact h3
+  · rwa [← add_assoc]
+  · rwa [← add_assoc]
 
 /-! ## Weights -/
 
@@ -171,9 +171,9 @@ theorem isArc_empty_iff (hM : WalkAx M) {U : Set Point} (hU : U ∈ M.regions �
       obtain ⟨V, hV, hfV⟩ := hM.exists_faces_of_not_cut (empty_subset _) finite_empty hp
         ⟨ht0, ht1⟩ (fun ⟨c, hc, _⟩ => absurd hc (notMem_empty c))
       have hD : M.regions ∅ = {M.D} := Chazelle.Chain.regionsIn_empty hM.preconn hM.nonempty
-      have e1 : U = M.D := by rw [hD] at hU; exact hU
-      have e2 : V = M.D := by rw [hD] at hV; exact hV
-      rw [e1, ← e2]; exact hfV
+      have e1 : U = M.D := by rwa [hD] at hU
+      have e2 : V = M.D := by rwa [hD] at hV
+      rwa [e1, ← e2]
 
 /-- The weight of the only region of the empty family is `size`. -/
 theorem weight_empty (hM : WalkAx M) {U : Set Point} (hU : U ∈ M.regions ∅) :

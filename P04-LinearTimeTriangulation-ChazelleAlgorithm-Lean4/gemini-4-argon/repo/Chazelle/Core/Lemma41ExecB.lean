@@ -49,7 +49,7 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
   have hWn' : 128 * P.n + 3 ≤ W := by unfold hostWords at hWh; omega
   have hRaw := hR.holds
   have hΛ : 1 ≤ c.nmem h := by omega
-  obtain ⟨t0, t1, t2, t3, tS0, tS1, tS1lt, tpow, thalf, tent⟩ := tab_lt hR (by omega) hΛ
+  obtain ⟨t3, tS0, tS1, tS1lt, tpow, thalf, tent⟩ := tab_lt hR (by omega) hΛ
   obtain ⟨S, hS⟩ : ∃ S, c.nmem (h + 1) = S := ⟨_, rfl⟩
   obtain ⟨T, hT⟩ : ∃ T, c.nmem (h + 2) = T := ⟨_, rfl⟩
   obtain ⟨D, hD⟩ : ∃ D, c.nmem (h + 3) = D := ⟨_, rfl⟩
@@ -58,8 +58,6 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
   rw [hT] at tent s22
   have hltg : lam ≤ topGrade P.n + 1 := by have := hRaw.1; omega
   have hpl : 2 ^ lam = 2 * 2 ^ (lam - 1) := by rw [← pow_succ']; congr 1; omega
-  have hj2l : (cover lam (a + L) a).length ≤ 2 * lam := cover_length_le (by omega) (by omega)
-  have hsq : 40 * lam ^ 2 + 160 * lam = (20 * lam + 80) * (2 * lam) := by ring
   -- 6. the cover
   have hCR : CovRegs c5 lam (a + L) D (S + 2) T A := ⟨s11, s26, s24, s20, s21, s22, s27⟩
   have hent5 : ∀ g, g ≤ lam - 1 → ∀ i, (i + 1) * 2 ^ g ≤ a + L →
@@ -92,7 +90,7 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
       by omega, by nlinarith⟩
   obtain ⟨c6, k6, e6, hk6, hw6, h614, h615, hrec, hm65, fr6, hrr6, hrm6, ho6⟩ :=
     coverS_exec (P := P) hw5 hCR hCT (by omega) s10 (by omega) (by omega) s14 s15
-  set j := (cover lam (a + L) a).length with hj
+  set j := (cover lam (a + L) a).length
   -- 7. the base of the leaves
   obtain ⟨c7, k7, e7, hk7, hw7, b66, fr7, hm7, hrr7, hrm7, ho7⟩ := baseB_exec (P := P) hw6
   have c75 : ∀ r, r ≠ 160066 → ¬ CovRG r → c7.nreg r = c5.nreg r := fun r a1 a2 => by
@@ -101,19 +99,19 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     rw [c75 _ (by rw [hAl]; decide) (by rw [hAl]; unfold CovRG AscRG; decide)]; exact h5A
   -- 8. the level array of the leaves
   obtain ⟨c8, k8, e8, hk8, hw8, h8A, h8Ak, hent8, hm87, fr8, hrr8, hrm8, ho8⟩ :=
-    l0S_exec (P := P) hw7 c7A (by rw [fr7 _ (by decide)]; exact h615)
-      (by rw [fr7 _ (by decide)]; exact h614)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s24)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s81)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s82)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s87)
+    l0S_exec (P := P) hw7 c7A (by rwa [fr7 _ (by decide)])
+      (by rwa [fr7 _ (by decide)])
+      (by rwa [c75 _ (by decide) (by unfold CovRG AscRG; decide)])
+      (by rwa [c75 _ (by decide) (by unfold CovRG AscRG; decide)])
+      (by rwa [c75 _ (by decide) (by unfold CovRG AscRG; decide)])
+      (by rwa [c75 _ (by decide) (by unfold CovRG AscRG; decide)])
       (by nlinarith)
   have m65 : ∀ x, x < A + 7 → c6.nmem x = c5.nmem x := fun x hx => hm65 x (Or.inl hx)
   have m86 : ∀ x, x < A + 7 + 6 * j → c8.nmem x = c6.nmem x := fun x hx => by
     rw [hm87 x (Or.inl hx), hm7]
   have hLev : LevelAt P c8.nmem (A + 7 + 8 * j) (A + 7 + 6 * j) A (leafShp lam (a + L) a) :=
     leaves_levelAt hR (by omega) hlΛ (by omega) (by omega) (by omega)
-      (fun x hx => m5c x hx) hhost (by rw [hT]; exact hrec) m65
+      (fun x hx => m5c x hx) hhost (by rwa [hT]) m65
       (fun k hk => by
         obtain ⟨u1, u2⟩ := hent8 k hk
         exact ⟨u1, by rw [u2, hm7]⟩)

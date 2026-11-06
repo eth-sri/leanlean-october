@@ -278,12 +278,12 @@ theorem chordPost_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 
           obtain ⟨d₃, k₃, e₃, hk₃, f₃, b₃, g₃⟩ := ltZS_exec (P := P) hG (by omega) hv htv d₂
             e₂.wb_right hq₂ (by rw [a121]; exact hv.hz_lt)
           rw [a120, a121] at g₃
-          exact ⟨d₃, k₃, e₃, hk₃, f₃, b₃, by rw [ite_eq_right hσ]; exact g₃⟩
+          exact ⟨d₃, k₃, e₃, hk₃, f₃, b₃, by rwa [ite_eq_right hσ]⟩
         · have hσ : V.σb = 1 := hpos.1 rfl
           obtain ⟨d₃, k₃, e₃, hk₃, f₃, b₃, g₃⟩ := gtZS_exec (P := P) hG (by omega) hv htv d₂
             e₂.wb_right hq₂ (by rw [a121]; exact hv.hz_lt)
           rw [a120, a121] at g₃
-          exact ⟨d₃, k₃, e₃, hk₃, f₃, b₃, by rw [ite_eq_left hσ]; exact g₃⟩
+          exact ⟨d₃, k₃, e₃, hk₃, f₃, b₃, by rwa [ite_eq_left hσ]⟩
       have one₃ : d₃.nreg 120011 = 1 := (f₃.1 _ (by decide)).trans hq₂.one
       have w₃ := e₃.wb_right
       obtain ⟨d₄, e₄, v₄, v₄'⟩ : ∃ d₄, Exec P W (.instr (.subN 120143 120011 120128)) d₃ d₄ 1 ∧
@@ -302,7 +302,7 @@ theorem chordPost_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 
         constructor
         · intro h hc; have := g₃.2 hc; omega
         · intro h; have := mt g₃.1 h; omega
-    · have hq12 : d₁.nreg 120147 ≠ d₁.nreg 120023 := by rw [v147, hq₁.hz]; exact heq
+    · have hq12 : d₁.nreg 120147 ≠ d₁.nreg 120023 := by rwa [v147, hq₁.hz]
       obtain ⟨k', ex', hk'⟩ := ifEq_ne_exec (S := .seq (if pos then foundPos else foundNeg)
         (.seq (if pos then gtZS else ltZS) (.instr (.subN 120143 120011 120128)))) hq12
         (.skip e₁.wb_right)
@@ -329,12 +329,12 @@ theorem chordPost_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 
       obtain ⟨d', k', e', hk', b', f', g'⟩ := tail false (t - 1) (by omega)
         ⟨fun h => absurd h (by simp), fun h => absurd h hσ'⟩ hjc d e.wb_right hqd (md.trans m₀)
         (by rw [rd _ (by decide) (by decide) (by decide), v₀]) v145
-      refine ⟨d', _, .seq e₀ (.ifLtN_true (by rw [hq₀.σb, hq₀.one]; exact hσ)
-        (.ifLtN_true (by rw [hq₀.zero, t₀]; exact ht0) (.seq e e'))), by omega, b', ?_, ?_⟩
+      refine ⟨d', _, .seq e₀ (.ifLtN_true (by rwa [hq₀.σb, hq₀.one])
+        (.ifLtN_true (by rwa [hq₀.zero, t₀]) (.seq e e'))), by omega, b', ?_, ?_⟩
       · rw [f']; unfold FoundC; rw [ite_eq_right hσ', hjc]; simp [ht0]
       · intro hF; unfold FoundC at hF; rw [ite_eq_right hσ', hjc] at hF; exact g' hF.2
-    · refine ⟨c₀, _, .seq e₀ (.ifLtN_true (by rw [hq₀.σb, hq₀.one]; exact hσ)
-        (.ifLtN_false (by rw [hq₀.zero, t₀]; exact ht0) (.skip w₀))), by omega,
+    · refine ⟨c₀, _, .seq e₀ (.ifLtN_true (by rwa [hq₀.σb, hq₀.one])
+        (.ifLtN_false (by rwa [hq₀.zero, t₀]) (.skip w₀))), by omega,
         by rw [v₀]; omega, ?_, ?_⟩
       · rw [v₀]; unfold FoundC; rw [ite_eq_right hσ']; simp [ht0]
       · intro hF; unfold FoundC at hF; rw [ite_eq_right hσ'] at hF; exact absurd hF.1 ht0
@@ -355,12 +355,12 @@ theorem chordPost_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 
       obtain ⟨d', k', e', hk', b', f', g'⟩ := tail true t htK
         ⟨fun _ => hσ', fun _ => rfl⟩ hjc d e.wb_right hqd (md.trans m₀)
         (by rw [rd _ (by decide) (by decide), v₀]) v145
-      refine ⟨d', _, .seq e₀ (.ifLtN_false (by rw [hq₀.σb, hq₀.one]; exact hσ)
-        (.ifLtN_true (by rw [hq₀.K, t₀]; exact htK) (.seq e e'))), by omega, b', ?_, ?_⟩
+      refine ⟨d', _, .seq e₀ (.ifLtN_false (by rwa [hq₀.σb, hq₀.one])
+        (.ifLtN_true (by rwa [hq₀.K, t₀]) (.seq e e'))), by omega, b', ?_, ?_⟩
       · rw [f']; unfold FoundC; rw [ite_eq_left hσ', hjc]; simp [htK]
       · intro hF; unfold FoundC at hF; rw [ite_eq_left hσ', hjc] at hF; exact g' hF.2
-    · refine ⟨c₀, _, .seq e₀ (.ifLtN_false (by rw [hq₀.σb, hq₀.one]; exact hσ)
-        (.ifLtN_false (by rw [hq₀.K, t₀]; exact htK) (.skip w₀))), by omega,
+    · refine ⟨c₀, _, .seq e₀ (.ifLtN_false (by rwa [hq₀.σb, hq₀.one])
+        (.ifLtN_false (by rwa [hq₀.K, t₀]) (.skip w₀))), by omega,
         by rw [v₀]; omega, ?_, ?_⟩
       · rw [v₀]; unfold FoundC; rw [ite_eq_left hσ']; simp [htK]
       · intro hF; unfold FoundC at hF; rw [ite_eq_left hσ'] at hF; exact absurd hF.1 htK

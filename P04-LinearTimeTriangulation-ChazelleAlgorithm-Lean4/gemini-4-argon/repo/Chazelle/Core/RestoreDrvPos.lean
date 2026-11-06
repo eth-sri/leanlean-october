@@ -128,7 +128,7 @@ theorem vtx2_not_mem (hG : GoodModel M) (Q : Polygon) :
   · have hsimp := (FactsInterior.interiorWalk_spec hQ').1
     have hn3 : 3 ≤ (interiorWalk Q').n := Jordan.simple_three_le hsimp
     obtain ⟨s, hs0, hs1, he⟩ := arcSet01_sub (by show 2 ≤ (interiorWalk Q').n; omega) hx
-    set W := interiorWalk Q' with hWd
+    set W := interiorWalk Q'
     have hv : ∀ q, q < W.n → sidePt W q 0 = W.vtx q := fun q _ => by
       unfold sidePt; rw [Geometry.lerp_zero]
     have hs01 : ∀ s : ℝ, lerp (W.vtx 0) (W.vtx 1) s = sidePt W 0 s := fun s => by
@@ -136,7 +136,7 @@ theorem vtx2_not_mem (hG : GoodModel M) (Q : Polygon) :
     rcases hs1.lt_or_eq with hs1 | rfl
     · have := FactsInterior.pos_unique hsimp (p := 2) (p' := 0) (t := 0) (t' := s)
         (by omega) (by omega) le_rfl (by norm_num) hs0 hs1
-        (by rw [hv 2 (by omega), ← hs01]; exact he)
+        (by rwa [hv 2 (by omega), ← hs01])
       omega
     · have := FactsInterior.pos_unique hsimp (p := 2) (p' := 1) (t := 0) (t' := 0)
         (by omega) (by omega) le_rfl (by norm_num) le_rfl (by norm_num)
@@ -200,16 +200,15 @@ theorem oracle_pos {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → ℕ} {X 
        by simp [hcS, setQ, bandReg, bShoot]⟩
     have hWA : c.nreg ALLOC ≤ W := hw.1 ALLOC
     have := shooter_cost_pos hsh (W := W + F γ) hwS ⟨hG, by omega,
-      by rw [r13, hA]; exact hX, by rw [r9, r13]; exact hcap,
-      by rw [r0, hA]; exact hwf, by rw [r0]; exact hreg, M, by rw [r0]; exact hMD, hOk,
+      by rwa [r13, hA], by rwa [r9, r13],
+      by rwa [r0, hA], by rwa [r0], M, by rwa [r0], hOk,
       by rw [r1, r2]; exact properPos0 _ _ _, by rw [r3, r4]; exact properPos0 _ _ _,
       by rw [r1]; omega, by rw [r3]; omega, Or.inl r2, Or.inl r4,
       by rw [r1, r2, r3, r4, r9]; exact (arcWt01 _).trans hγ,
       .walk ⟨2, 0⟩, ⟨hn2, Nat.zero_le _⟩, hO, Or.inl ⟨2, rfl⟩,
       by rw [r1, r2, r3, r4]; exact vtx2_not_mem hGM _⟩
       (by rw [hA, r9]; omega)
-    rw [r9] at this
-    exact this
+    rwa [r9] at this
   · set cC := setQ c bCut MD γ g with hcC
     have r0 : rd cC bCut 0 = MD := by simp [hcC, rd, setQ, bandReg, bCut]
     have r1 : rd cC bCut 1 = 0 := by simp [hcC, rd, setQ, bandReg, bCut]
@@ -223,14 +222,13 @@ theorem oracle_pos {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → ℕ} {X 
     have hA : cC.nreg ALLOC = c.nreg ALLOC := setQ_alloc c (by decide)
     have hWA : c.nreg ALLOC ≤ W := hw.1 ALLOC
     have := cutter_cost_pos hcu (W := W + G γ) hwC ⟨hG, by omega,
-      by rw [r13, hA]; exact hX, by rw [r9, r13]; exact hcap,
-      by rw [r0, hA]; exact hwf, M, by rw [r0]; exact hMD, hOk,
+      by rwa [r13, hA], by rwa [r9, r13],
+      by rwa [r0, hA], M, by rwa [r0], hOk,
       by rw [r1, r2]; exact properPos0 _ _ _, by rw [r3, r4]; exact properPos0 _ _ _,
       by rw [r1]; omega, by rw [r3]; omega, Or.inl r2, Or.inl r4,
       by rw [r1, r2, r3, r4, r9]; exact (arcWt01 _).trans hγ⟩
       (by rw [hA, r9]; omega)
-    rw [r9] at this
-    exact this
+    rwa [r9] at this
 
 end
 

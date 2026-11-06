@@ -59,7 +59,6 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       c'.nreg 50210 = 1 ∧ ∃ sp : SymPt, SymPtIn c' 50211 sp ∧ sp.Lt P.n ∧
         sp.eval (Qof P) = (chainModel C).pos (Qof P) ⟨e, hc⟩ := by
   have hW := hE.hW
-  have hm1 := C.one_le
   have hNW := hE.NW
   have hNn := hE.n_eq
   have hmN := C.m_lt
@@ -76,7 +75,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     (exec_frameB e₁ (B := fun r => r == 50120 || r == 50143) (by decide)).2.2.1
     (fun r hr => r₁ r (ne_of_mem_of_not_mem hr (by decide)) (ne_of_mem_of_not_mem hr (by decide)))
   have hlt : e - 6 < 2 * C.m := by omega
-  set i := e - 6 with hi
+  set i := e - 6
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, s₁, i₁, l₁, v₁, x₁⟩ := tvLoad_exec c₁ hE₁ (i := i) q20
     hlt.le (dst := 50130) (by norm_num)
   have w₂ := e₂.wb_right
@@ -100,7 +99,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have q32 : c₅.nreg 50032 = 1 := by
     rw [r₅ _ (by decide) (by decide) (by decide), hE₄.r32]
   obtain ⟨hEi, hx⟩ := tour_abs hE.hG hE.hP hreg hNn hlt x₁ x₂ l₁ l₂ v₁ v₂
-    (hc := hc) (by rw [show i + 6 = e by omega]; exact ht)
+    (hc := hc) (by rwa [show i + 6 = e by omega])
   have hc1 : 1 ≤ hc := by
     rcases Nat.eq_zero_or_pos hc with rfl | h
     · exact absurd (show (chainModel C).param (Qof P) ⟨e, 0⟩ = 0 from rfl) (ne_of_gt ht)
@@ -115,7 +114,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     config_simp; rw [q02, q32]
   obtain ⟨q10, q11⟩ := q
   have ex : Exec P W absInt c c₆ (k₁ + (k₂ + (1 + (k₄ + (k₅ + k₆))) + 1)) :=
-    .seq e₁ (.ifLtN_true (by rw [q20, q43]; exact hlt) (.seq e₂ (.seq e₃ (.seq e₄
+    .seq e₁ (.ifLtN_true (by rwa [q20, q43]) (.seq e₂ (.seq e₃ (.seq e₄
       (.seq e₅ e₆)))))
   refine ⟨c₆, _, ex, by have := hE.hlen; omega, q10, _, q11, ⟨hEi, by omega⟩, ?_⟩
   have hne := ne_of_param_pos ht

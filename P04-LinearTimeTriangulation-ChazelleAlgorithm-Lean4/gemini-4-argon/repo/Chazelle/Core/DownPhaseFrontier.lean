@@ -51,10 +51,9 @@ theorem mem_hostPoly_boundary {z : Point} :
     rw [hn, hostPoly_vtx hi, hostPoly_vtx (Nat.mod_lt _ (by omega))] at hz
     exact ⟨i, hi, hz⟩
   · rintro ⟨i, hi, hz⟩
-    refine ⟨i, by rw [hn]; exact hi, ?_⟩
+    refine ⟨i, by rwa [hn], ?_⟩
     unfold Polygon.edge
-    rw [hn, hostPoly_vtx hi, hostPoly_vtx (Nat.mod_lt _ (by omega))]
-    exact hz
+    rwa [hn, hostPoly_vtx hi, hostPoly_vtx (Nat.mod_lt _ (by omega))]
 
 /-- **A host edge** consists of walk points and of points of chords of `S` in the domain. -/
 theorem hostEdge_cases (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
@@ -127,7 +126,7 @@ theorem hostFilled_sub (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S
   intro x hx
   by_contra hxQ
   have hH : (hostPoly Q S R).Simple := hostPts_simple hQ hFam hne hR
-  set w : Point := (max (coordBound (hostPoly Q S R)) (coordBound Q) + 1, 0) with hw
+  set w : Point := (max (coordBound (hostPoly Q S R)) (coordBound Q) + 1, 0)
   have hwQ : w ∉ Q.filled := Chazelle.Jordan.far_not_mem_filled Q (Or.inl (by
     show coordBound Q < max (coordBound (hostPoly Q S R)) (coordBound Q) + 1
     linarith [le_max_right (coordBound (hostPoly Q S R)) (coordBound Q)]))
@@ -185,7 +184,7 @@ theorem region_sub_intHost (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily
   obtain ⟨u, hu, hdu⟩ := Metric.mem_closure_iff.1
     (Chazelle.Jordan.boundary_subset_closure_interior hH hqb) r hr
   have huD : u ∈ M.D := intHost_sub hQ hFam hne hR hu
-  have huR : u ∈ R := hnear u (by rw [mem_ball, dist_comm]; exact hdu) huD
+  have huR : u ∈ R := hnear u (by rwa [mem_ball, dist_comm]) huD
   exact FactsInterior.subset_interior hH (Chazelle.Chain.regionsIn_isPreconnected hR) hRb huR hu.1
 
 /-- **The frontier of the region lies on the boundary of its host polygon.** -/
@@ -209,14 +208,13 @@ theorem frontier_sub_hostBd (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamil
       exit_chordGap hM hF hfin hR h2 hc ⟨w, ⟨hwc, hwD⟩, hw⟩
     apply hwb
     refine mem_hostPoly_boundary.2 ⟨i, hi, ?_⟩
-    rw [e1, e2, hostPt_eq M.W hA.2.1 hA.2.2.1, hostPt_eq M.W hB.2.1 hB.2.2.1, ← hcs]
-    exact hwc
+    rwa [e1, e2, hostPt_eq M.W hA.2.1 hA.2.2.1, hostPt_eq M.W hB.2.1 hB.2.2.1, ← hcs]
   · push Not at hwc
     have hfree : w ∈ freeIn M.D S := ⟨hwD, fun ⟨c, hc, hwc'⟩ => hwc c hc hwc'⟩
     obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.1 (hsys.isOpen_freeIn subset_rfl) w hfree
     obtain ⟨u, hu, hdu⟩ := Metric.mem_closure_iff.1 hw ε hε
     have hsub := Chazelle.Chain.subset_regionsIn_of_inter hR (convex_ball w ε).isPreconnected
-      hball ⟨u, by rw [mem_ball, dist_comm]; exact hdu, hu⟩
+      hball ⟨u, by rwa [mem_ball, dist_comm], hu⟩
     exact hwR (hsub (mem_ball_self hε))
 
 /-- Mod arithmetic: `i + 1 ≡ j + 1` forces `i = j` below the modulus. -/
@@ -318,8 +316,8 @@ theorem kept_chord (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     rcases hs0.lt_or_eq with h0 | h0
     · rcases hs1.lt_or_eq with h1 | h1
       · exact absurd (hopen s ⟨h0, h1⟩) heD
-      · subst h1; rw [Chazelle.Geometry.lerp_one]; exact hBset
-    · subst h0; rw [Chazelle.Geometry.lerp_zero]; exact hAset
+      · subst h1; rwa [Chazelle.Geometry.lerp_one]
+    · subst h0; rwa [Chazelle.Geometry.lerp_zero]
   obtain ⟨yg, ag, bg, hchg, hcgeq⟩ := hF hcg
   -- the open part misses `∂H`
   have hOH : ∀ x, a < x → x < b → ((x, y) : Point) ∉ (hostPoly Q S R).boundary := by
@@ -387,8 +385,8 @@ theorem kept_chord (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       obtain ⟨hyy, ha'e, heb'⟩ := hec'
       simp only at hyy ha'e heb'
       subst hyy
-      have ha'lt : a' < e := lt_of_le_of_ne ha'e (fun h => hch'.left_not (by rw [h]; exact heD))
-      have heb'lt : e < b' := lt_of_le_of_ne heb' (fun h => hch'.right_not (by rw [← h]; exact heD))
+      have ha'lt : a' < e := lt_of_le_of_ne ha'e (fun h => hch'.left_not (by rwa [h]))
+      have heb'lt : e < b' := lt_of_le_of_ne heb' (fun h => hch'.right_not (by rwa [← h]))
       rcases heab with rfl | rfl
       · set δ := min (b' - e) (b - e) / 2 with hδ
         have h1 : 0 < δ := by have := lt_min (sub_pos.2 heb'lt) (sub_pos.2 hab); rw [hδ]; linarith
@@ -420,8 +418,8 @@ theorem kept_adm (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   rcases hza.lt_or_eq with h1 | h1
   · rcases hzb.lt_or_eq with h2 | h2
     · rw [hz]; exact hin _ h1 h2
-    · exact absurd (by rw [hz, h2] at hzD; exact hzD) hlb
-  · exact absurd (by rw [hz, ← h1] at hzD; exact hzD) hla
+    · exact absurd (by rwa [hz, h2] at hzD) hlb
+  · exact absurd (by rwa [hz, ← h1] at hzD) hla
 
 end
 

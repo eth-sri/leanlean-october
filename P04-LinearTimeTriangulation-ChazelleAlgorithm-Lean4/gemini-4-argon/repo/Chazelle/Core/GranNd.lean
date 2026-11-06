@@ -63,19 +63,16 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ c' k, Exec P W posStmt c c' k ∧ k ≤ locCost 5100 N.arcs.length ∧
       Frame {bLocate, bSign} c c' k ∧ 0 < c'.nreg 50105 ∧ c'.nreg 50105 - 1 < N.arcs.length ∧
       pk M (Qof P) N (c'.nreg 50105 - 1) = M.key (Qof P) ⟨c.nreg 50002, c.nreg 50003⟩ := by
-  set B := c.nreg 50001 with hBdef
-  set A := N.arcs.length with hAdef
-  set AB := c.nmem (B + 4) with hABdef
-  set SB := c.nmem (B + 6) with hSBdef
-  set x : WPos := ⟨c.nreg 50002, c.nreg 50003⟩ with hxdef
-  set A₀ := c.nreg ALLOC with hA₀
+  set B := c.nreg 50001
+  set A := N.arcs.length
+  set AB := c.nmem (B + 4)
+  set SB := c.nmem (B + 6)
+  set x : WPos := ⟨c.nreg 50002, c.nreg 50003⟩
+  set A₀ := c.nreg ALLOC
   have hA1 : c.nmem (B + 1) = A := hN.2.1
   have hsl : N.seq.length = A := seq_length hNF
   have hseq : ∀ i, i < A → c.nmem (SB + i) = N.seq.getD i 0 := fun i hi =>
     hN.2.2.2.2.2.2.2.2.1 i (by omega)
-  have hA0 : 0 < A := by
-    obtain ⟨j, hj, -⟩ := cut_pk hNF hGM hcut
-    omega
   have hL : 1 ≤ Nat.clog 2 A + 1 := by omega
   have hcostW : c.nreg ALLOC + (5100 + 20 + searchCost 275 A) ≤ W := by
     have : 5100 + 20 + searchCost 275 A ≤ locCost 5100 A := by
@@ -115,7 +112,7 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have al₂ : c₂.nreg ALLOC = A₀ := (f₂.1 _ (by decide)).trans al₁
   have m₂ : c₂.nmem = c.nmem := f₂.2.2.1.trans m₁
   -- 3. the search
-  set d := dirCode M x.edge with hd
+  set d := dirCode M x.edge
   have hJ₂ : CmpJ x d AB A SB A₀ c.nmem c₂ :=
     ⟨q500, q501, by rw [q502, d₁], q503, q504, q505, fun a _ => by rw [m₂]⟩
   have hcmp := keyCmp_predOK hG hW x hx.2.2 d AB A SB A₀ c.nmem hAB (by omega)
@@ -123,9 +120,9 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       KeyPred M (Qof P) x (N.arc (N.seq.getD i 0)).s) := fun i hi => by
     rw [hseq i hi]
     exact cmpPr_eq hN x hx hst (seq_lt hNF hi)
-  obtain ⟨c₃, k₃, e₃, hk₃, hJ₃, hF₃, ht₃, hpre₃, hpost₃⟩ := searchStmt_exec hcmp
+  obtain ⟨c₃, k₃, e₃, hk₃, hF₃, ht₃, hpre₃, hpost₃⟩ := searchStmt_exec hcmp
     (by decide) w₂ hJ₂ (by rw [al₂]; exact cmpJ_stable x d AB A SB A₀ c.nmem)
-    (by rw [q103, q104, al₂]; exact hSB)
+    (by rwa [q103, q104, al₂])
     (fun i j hij hj hprj => by
       rw [q103, m₂] at hprj ⊢
       rw [q104] at hj
@@ -133,7 +130,7 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (by rw [al₂, q104]; omega)
   rw [q104] at ht₃ hk₃ hpost₃
   rw [q103, m₂] at hpre₃ hpost₃
-  set t := c₃.nreg 50105 with htdef
+  set t := c₃.nreg 50105
   obtain ⟨tpos, tlt, tpk⟩ := pos_pick hNF hne hGM (x := x) hx1 hcut ht₃
     (fun i hi => (hpr i (by omega)).1 (hpre₃ i hi))
     (fun hi hk => by

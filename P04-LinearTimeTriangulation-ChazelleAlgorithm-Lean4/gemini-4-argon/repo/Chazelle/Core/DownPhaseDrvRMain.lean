@@ -165,7 +165,7 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
   refine ⟨c₃, k₁ + (k₂ + k₃), Exec.seq e₁ (Exec.seq e₂ e₃),
     ⟨hw₃, hE₃, ?_, ?_, ?_, h15₃, ?_⟩, hF.mono subset_rfl (by omega), ?_⟩
   · rw [hlam₃]; omega
-  · rw [hlam₃]; exact hInv₃
+  · rwa [hlam₃]
   · rw [hg₃, ite_eq_left hn₀n, ite_eq_left hn₀n, hl₃]
   · rw [hlam₃, hA3, hA2]; omega
   · rw [hlam₃]; omega
@@ -245,7 +245,7 @@ theorem downPhaseH_of_parts {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {
       (by rw [hA3, hA2]) (fun a _ => by rw [hm₃, hm₂])
   have hE₃ : EnvD X P W c₃ := hE₁.frame hX (hF₂.trans hF₃) (by simp [bCore, bDownDrv])
   have hI₃ : LoopI X cnt n₀ f (κB * (P.n + 1) + 1) P W c₃ := by
-    refine ⟨hw₃, hE₃, by rw [hl3], by rw [hl3]; exact hInv₃, ?_, h15₃, ?_⟩
+    refine ⟨hw₃, hE₃, by rw [hl3], by rwa [hl3], ?_, h15₃, ?_⟩
     · rw [hg₃, hl₃]
     · rw [hl3, hA3, hA2]; omega
   -- the level loop
@@ -278,7 +278,7 @@ theorem downPhaseH_of_parts {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {
       have hA : (upd c₅.nreg 230003 (c₅.nreg 210006)) ALLOC = c₅.nreg ALLOC := by
         rw [Machine.upd_other]; unfold ALLOC; omega
       show Robust ((upd c₅.nreg 230003 (c₅.nreg 210006)) ALLOC) c₅.nmem _
-      rw [hA]; exact hN
+      rwa [hA]
     · have := hNF.2.2.2.choose_spec.2.2.2.2.2.1 k hk
       rwa [show (Qof P).n = P.n from shear_n _ _] at this
   · have hF₆ : Frame {bCore} c₅ { c₅ with nreg := upd c₅.nreg 230003 (c₅.nreg 210006) } 1 :=

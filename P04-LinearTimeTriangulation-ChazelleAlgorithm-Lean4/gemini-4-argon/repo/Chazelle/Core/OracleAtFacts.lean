@@ -62,13 +62,13 @@ theorem QAt.qmem (h : QAt P m O E V H C N B k) {W : ℕ} (hEW : E ≤ W) : QMem 
   have hPOS := h.POS_le
   refine ⟨?_, fun j hj => ?_, fun v hv => ?_⟩
   · have := h.POS_le; omega
-  · have hjN : j < N.arcs.length := by rw [← h.hA]; exact hj
+  · have hjN : j < N.arcs.length := by rwa [← h.hA]
     obtain ⟨e1, e2⟩ := h.edges_lt hjN
-    refine ⟨by rw [arcSe_eq hm hj]; exact e1, by rw [arcEe_eq hm hj]; exact e2,
+    refine ⟨by rwa [arcSe_eq hm hj], by rwa [arcEe_eq hm hj],
       (h.pos j hj).1, by omega, by omega⟩
-  · have hvA : v < N.arcs.length := by rw [← h.hA]; exact hv
+  · have hvA : v < N.arcs.length := by rwa [← h.hA]
     have hj0 : nodeArc0 m V v = sj N v := by
-      have := hm.nf.2.2.2.2.2.2.2.2.1 v (by rw [NFLoc.seq_length hN]; exact hvA)
+      have := hm.nf.2.2.2.2.2.2.2.2.1 v (by rwa [NFLoc.seq_length hN])
       unfold nodeArc0 sj; rw [← hm.SB]; exact this
     have hj0A : sj N v < N.arcs.length := NFLoc.seq_lt hN hvA
     have hr : nodeReg m V v = rgi N v := by
@@ -77,7 +77,7 @@ theorem QAt.qmem (h : QAt P m O E V H C N B k) {W : ℕ} (hEW : E ≤ W) : QMem 
     have hrR : rgi N v < N.regions.length := (hA.1 _ hj0A).1
     obtain ⟨hna, -, -, hlist, -⟩ := hm.nf.2.2.2.2.2.2.2.1 _ hrR
     have hna' : nodeNa m V v = (N.region (rgi N v)).arcs.length := by
-      unfold nodeNa; rw [hr, ← hm.RB]; exact hna
+      unfold nodeNa; rwa [hr, ← hm.RB]
     obtain ⟨hr1, hr2⟩ := h.regs _ hrR
     have hls : nodeLs m V v = m (V.RB + 5 * rgi N v + 1) := by unfold nodeLs; rw [hr]
     have hne : 0 < (N.region (rgi N v)).arcs.length := by
@@ -115,10 +115,10 @@ theorem QAt.mdDesc (h : QAt P m O E V H C N B k) : ChainDescAt m (V.MD + 1) (Qof
   have e0 := e 0 (by omega); have e1 := e 1 (by omega); have e2 := e 2 (by omega)
   have e3 := e 3 (by omega); have e4 := e 4 (by omega)
   simp only [Nat.add_zero] at e0
-  refine ⟨by rw [e0]; exact hH, hP, by rw [e1]; exact h1, ?_, ?_, ?_⟩
-  · rw [show V.MD + 1 + 2 = V.MD + 1 + 2 from rfl, e2]; exact h2
-  · rw [e3]; exact h3
-  · rw [e4]; exact h4
+  refine ⟨by rwa [e0], hP, by rwa [e1], ?_, ?_, ?_⟩
+  · rwa [show V.MD + 1 + 2 = V.MD + 1 + 2 from rfl, e2]
+  · rwa [e3]
+  · rwa [e4]
 
 theorem QAt.modelDesc (h : QAt P m O E V H C N B k) :
     ModelDescAt m V.MD (Qof P) (chainModel C) :=

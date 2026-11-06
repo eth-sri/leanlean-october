@@ -109,8 +109,8 @@ theorem end_off_iff (_hP : J.P.Simple) {P : Polygon} {N : NF}
   have hboxy : |y| < J.right.radius := by
     have hmid := hH.open_mem ((l + r) / 2) (by linarith [hH.lt]) (by linarith [hH.lt])
     exact (J.right.dom_subset_box hmid).2
-  have hcl := posClass_of (C := J.right) hatt.1 hatt.2.1 hatt.2.2.1 (by rw [hyy]; exact hboxy)
-    (Or.inl (by rw [hyy]; exact hy))
+  have hcl := posClass_of (C := J.right) hatt.1 hatt.2.1 hatt.2.2.1 (by rwa [hyy])
+    (Or.inl (by rwa [hyy]))
   refine ⟨hcl, ⟨fun hn => ?_, fun h6 => ?_⟩⟩
   · rcases hcl with (h | h) | ⟨h6, hlt⟩ | ⟨h6, hz⟩
     · omega
@@ -124,8 +124,7 @@ theorem end_off_iff (_hP : J.P.Simple) {P : Polygon} {N : NF}
       have hm := J.right.sideWalk_tour_pt_mem J.right.sideBeta (i := 2 * J.right.m) (t := 0)
         le_rfl (fun _ => rfl) le_rfl one_pos
       show sidePt (chainModel J.right).W _ _ ∈ _
-      rw [cm_W, h6, hz]
-      exact hm
+      rwa [cm_W, h6, hz]
   · rcases hcl with (h | h) | ⟨h6', -⟩ | ⟨h6', -⟩
     · exact not_mem_set_of_abs J.right (wall_abs J.right (Qof P) (Or.inl h))
     · exact not_mem_set_of_abs J.right (wall_abs J.right (Qof P) (Or.inr h))
@@ -205,8 +204,8 @@ theorem stOrig_facts (hP : J.P.Simple) {P : Polygon} {N : NF}
     have hboxy : |y| < J.right.radius := by
       have hmid := hH.open_mem ((l + r) / 2) (by linarith [hH.lt]) (by linarith [hH.lt])
       exact (J.right.dom_subset_box hmid).2
-    refine ⟨fun hd => ?_, by rw [hyy]; exact hy, by rw [hyy, ← radius_right]; exact hboxy,
-      fun h => absurd rfl h, fun _ => by rw [← radius_right]; exact hx⟩
+    refine ⟨fun hd => ?_, by rwa [hyy], by rwa [hyy, ← radius_right],
+      fun h => absurd rfl h, fun _ => by rwa [← radius_right]⟩
     have hb' := (J.whole.dom_subset_box hd).1
     rw [← radius_right, hx] at hb'
     exact lt_irrefl _ hb'
@@ -287,7 +286,7 @@ theorem stop_complete (hP : J.P.Simple) {P : Polygon} {N : NF}
   · obtain ⟨b, hb, rfl⟩ := code_of_dir hσ
     refine ⟨0, 0, b, ⟨by norm_num, hb, fun h => absurd h (by norm_num), fun h => absurd h
       (by norm_num)⟩, ?_, ?_⟩
-    · unfold stOrig; rw [ite_eq_left rfl]; exact hf
+    · unfold stOrig; rwa [ite_eq_left rfl]
     · rw [stopSet_eq]; unfold stOrig; rw [ite_eq_left rfl]
   · obtain ⟨k, hk, rfl⟩ := chord_of_mem hc
     have hσ : σ = 1 ∨ σ = -1 := by rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
@@ -300,8 +299,8 @@ theorem stop_complete (hP : J.P.Simple) {P : Polygon} {N : NF}
       · rw [dirOf_zero] at h1; norm_num at h1
       · rw [h, h2]
     obtain ⟨-, hiff⟩ := end_off_iff hP hN hk (s := 1 - b)
-    refine ⟨1, k, b, ⟨by norm_num, hb, fun _ => ⟨hk, hiff.1 (by rw [← hpos, hab]; exact hoff)⟩,
-      fun h => absurd h (by norm_num)⟩, by rw [hab]; exact hf, ?_⟩
+    refine ⟨1, k, b, ⟨by norm_num, hb, fun _ => ⟨hk, hiff.1 (by rwa [← hpos, hab])⟩,
+      fun h => absurd h (by norm_num)⟩, by rwa [hab], ?_⟩
     rw [stopSet_eq, hab]
   · obtain ⟨b, hb, rfl⟩ := code_of_dir hσ
     by_cases ht : J.right.topIdx = 0
@@ -310,10 +309,10 @@ theorem stop_complete (hP : J.P.Simple) {P : Polygon} {N : NF}
         rw [ht, ← Merge.Junction.whole_vertex_add, Nat.add_zero]; rfl
       refine ⟨0, 0, b, ⟨by norm_num, hb, fun h => absurd h (by norm_num), fun h => absurd h
         (by norm_num)⟩, ?_, ?_⟩
-      · unfold stOrig; rw [ite_eq_left rfl, ← hv]; exact hf
+      · unfold stOrig; rwa [ite_eq_left rfl, ← hv]
       · rw [stopSet_eq]; unfold stOrig; rw [ite_eq_left rfl, hv]
     · refine ⟨2, 0, b, ⟨le_rfl, hb, fun h => absurd h (by norm_num), fun _ => ht⟩, ?_, ?_⟩
-      · unfold stOrig; rw [ite_eq_right (by norm_num), ite_eq_right (by norm_num)]; exact hf
+      · unfold stOrig; rwa [ite_eq_right (by norm_num), ite_eq_right (by norm_num)]
       · rw [stopSet_eq]; unfold stOrig; rw [ite_eq_right (by norm_num), ite_eq_right (by norm_num)]
 
 /-! ## The first hit of `C` -/
@@ -322,13 +321,13 @@ theorem stop_complete (hP : J.P.Simple) {P : Polygon} {N : NF}
 theorem free_left {a : Point} {σ : ℝ} (hf : FreeAt J.whole a σ) (ha : a.2 ≤ J.left.top.2) :
     FreeAt J.left a σ := by
   filter_upwards [hf] with t ht
-  exact J.mem_left_dom_of_whole (by rw [rayPt_snd]; exact ha) ht
+  exact J.mem_left_dom_of_whole (by rwa [rayPt_snd]) ht
 
 /-- **Freeness for `C`** gives freeness for `C₂` (not above its top). -/
 theorem free_right {a : Point} {σ : ℝ} (hf : FreeAt J.whole a σ) (ha : a.2 ≤ J.right.top.2) :
     FreeAt J.right a σ := by
   filter_upwards [hf] with t ht
-  exact J.mem_right_dom_of_whole (by rw [rayPt_snd]; exact ha) ht
+  exact J.mem_right_dom_of_whole (by rwa [rayPt_snd]) ht
 
 /-- **The first hit of `C`** is that of `C₂`, or (not above the top of `C₁`) that of `C₁`. -/
 theorem hit_cases {a : Point} (ha : a.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :

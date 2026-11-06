@@ -46,13 +46,13 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
       (∀ r, PReg r → c'.nreg r = c.nreg r) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
       SInv P J N₂ (c₀.nreg (sw 200)) (c₀.nreg (sw 300)) (c₀.nreg (sw 301))
         (c₀.nreg (sw 302)) (c₀.nreg ALLOC) c'.nmem (c₀.nreg (sw 201)) (2 * k + s + 1)) := by
-  set AS := c₀.nreg (sw 200) with hASd
-  set S := c₀.nreg (sw 201) with hSd
-  set AL := c₀.nreg (sw 300) with hALd
-  set E := c₀.nreg (sw 301) with hEd
-  set AT := c₀.nreg (sw 302) with hATd
-  set B := c₀.nreg ALLOC with hBd
-  set j := 2 * k + s with hjd
+  set AS := c₀.nreg (sw 200)
+  set S := c₀.nreg (sw 201)
+  set AL := c₀.nreg (sw 300)
+  set E := c₀.nreg (sw 301)
+  set AT := c₀.nreg (sw 302)
+  set B := c₀.nreg ALLOC
+  set j := 2 * k + s
   have hK : Consts c := e.hA.hK.fix hI
   have hst := e.hA.hstops
   have hlog := e.hA.hlog
@@ -84,7 +84,7 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     simp only [hc₁, regB, regI]; rw [upd_same, upd_other _ _ _ (by unfold oK ipS sw; omega), hs]
   refine IRS.seq (K₁ := 11100) (K₂ := kTb κL (c₀.nreg TLR) - 2 - 11100)
     (orgHead_irs hI₁ e.hA.hK (e.hA.ctxR hI₁) e.hA.hNF₂ (e.nw hI₁) le_rfl
-      (by rw [vK]; exact hkK) (by rw [vS]; exact hs1) (by unfold kTb at hroom; omega)) ?_ |>.mono
+      (by rwa [vK]) (by rwa [vS]) (by unfold kTb at hroom; omega)) ?_ |>.mono
     (by unfold kTb; omega) (fun _ h => h)
   rintro c₂ hI₂ hA₂ hA₂' ⟨-, -, -, -, vE, vC, -, -, fr₂, hAl₂, hm₂⟩
   rw [vK, vS] at vE vC
@@ -142,7 +142,7 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   have q1 : c₄.nreg lsxE = c.nmem (AT + 3 * j + 1) := by rw [g3, mem3 _ (by omega)]
   have q2 : c₄.nreg lsxH = c.nmem (AT + 3 * j + 2) := by rw [g4, mem3 _ (by omega)]
   refine IRS.seq (K₁ := κL * (c₀.nreg TLR + 1)) (K₂ := 12)
-    (e.search hls hI₄ (by rw [q1, q2]; exact pw) (by unfold kTb at hroom; omega)) ?_ |>.mono
+    (e.search hls hI₄ (by rwa [q1, q2]) (by unfold kTb at hroom; omega)) ?_ |>.mono
     (by unfold kTb; omega) (fun _ h => h)
   rintro c₅ hI₅ hA₅ hA₅' ⟨s1, s2, sfr, sA, sm⟩
   have hq : (⟨c₄.nreg lsxE, c₄.nreg lsxH⟩ : WPos) =
@@ -151,7 +151,7 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   rw [hq] at s1 s2
   have od₄ := e.odc (m := c₄.nmem) hI₄.hm
   simp only [rd_sw] at od₄
-  have hf₄ : c₄.nmem (AT + 3 * (2 * k + s)) = 1 := by rw [mc c₄ hI₄ _ (by omega)]; exact hf
+  have hf₄ : c₄.nmem (AT + 3 * (2 * k + s)) = 1 := by rwa [mc c₄ hI₄ _ (by omega)]
   obtain ⟨ht, e1, e2, hvl⟩ := tab_step od₄ e.hA.hNF₂ rfl hkK hs1 hvo hf₄ s1 s2
   -- registers after the search
   have k5 : ∀ r, sw 4100 ≤ r → r ≤ sw 4129 → r ≠ ipV → r ≠ ipE → r ≠ ipH → r ≠ ipA →
@@ -175,9 +175,9 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     rw [sfr _ (not_oracle_sw (by unfold ipH sw; omega) (by unfold ipH sw; omega))
       (by unfold LSet ipH sw; omega) (by unfold ALLOC ipH sw; omega), g2]
   have c3E : c₃.nreg oE = (endPos N₂ k s).edge := by
-    rw [fr₃ _ (by unfold oE ipV sw; omega)]; exact vE
+    rwa [fr₃ _ (by unfold oE ipV sw; omega)]
   have c3C : c₃.nreg oC = nhgt (chainModel J.right) (Qof P) (endPos N₂ k s) := by
-    rw [fr₃ _ (by unfold oC ipV sw; omega)]; exact vC
+    rwa [fr₃ _ (by unfold oC ipV sw; omega)]
   have hK₅ : Consts c₅ := e.hA.hK.fix hI₅
   refine (slotSt_irs hI₅ hK₅ k5B rfl k5S le_rfl (by
     have := hI₅.hw.1 ALLOC
@@ -201,12 +201,10 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     have hS₅ := hS.congr m5 (by omega) (by omega) (by omega)
     have hv' : SlotVal P J ⟨c₅.nreg ipE, c₅.nreg ipH⟩ ((2 * k + s) % 2)
         (logPt P J c₄.nmem AL (c₅.nreg lsI)) := by
-      rw [k5E, k5H, c3E, c3C, show (2 * k + s) % 2 = s by omega]
-      exact hvl
+      rwa [k5E, k5H, c3E, c3C, show (2 * k + s) % 2 = s by omega]
     have h := hS₅.tabStep (m₂ := c₄.nmem) (fun a ha => (mc c₄ hI₄ a ha).trans
       (mc c₅ hI₅ a ha).symm) (by omega) (by omega) (by omega) ht e1 e2 hv'
-    rw [show (2 * k + s) % 2 = s by omega] at h
-    exact h
+    rwa [show (2 * k + s) % 2 = s by omega] at h
 
 set_option maxHeartbeats 4000000 in
 /-- **A table entry.** -/
@@ -227,7 +225,6 @@ theorem tbOne_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   have htw := e.hA.htabw
   simp only [rd_sw] at htw
   have hAc := hI.hA
-  have hWc := hI.hw.1 ALLOC
   have hsr' : sr < sw 4100 ∨ sw 4129 < sr := by
     rcases hsr with rfl | rfl <;> simp [K0, K1, sw]
   unfold tbOne
@@ -243,14 +240,14 @@ theorem tbOne_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
         (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipF, sw])
   have hS₁ : SInv P J N₂ (c₀.nreg (sw 200)) (c₀.nreg (sw 300)) (c₀.nreg (sw 301))
       (c₀.nreg (sw 302)) (c₀.nreg ALLOC) c₁.nmem (c₀.nreg (sw 201)) (2 * k + s) := by
-    rw [lm]; exact hS
+    rwa [lm]
   have hK₁ : Consts c₁ := e.hA.hK.fix hI₁
   by_cases hf : c₁.nreg ipF < c₁.nreg K1
   · refine (IRS.ifT (K := 0) hf (IRS.skip hI₁ (Q := fun c' =>
       (∀ r, PReg r → c'.nreg r = c.nreg r) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
       SInv P J N₂ (c₀.nreg (sw 200)) (c₀.nreg (sw 300)) (c₀.nreg (sw 301))
         (c₀.nreg (sw 302)) (c₀.nreg ALLOC) c'.nmem (c₀.nreg (sw 201)) (2 * k + s + 1))
-      ⟨hp1, hA₁, hS₁.tabSkip (fun h => by rw [l3, ← lm] at hf; rw [hK₁.2.1] at hf; omega)⟩)).mono
+      ⟨hp1, hA₁, hS₁.tabSkip (fun h => by rw [l3, ← lm, hK₁.2.1] at hf; omega)⟩)).mono
       (by omega) (fun _ h => h)
   · have od := e.odc (m := c.nmem) hI.hm
     simp only [rd_sw] at od
@@ -308,8 +305,7 @@ theorem tbB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   · simp only [regI]
     rw [upd_other _ _ _ (by unfold ALLOC ipJ sw; omega)]; omega
   · simp only
-    rw [show 2 * (c.nreg ipJ + 1) = 2 * c.nreg ipJ + 1 + 1 by ring]
-    exact h3
+    rwa [show 2 * (c.nreg ipJ + 1) = 2 * c.nreg ipJ + 1 + 1 by ring]
 
 /-- **The table loop.** -/
 theorem tbLoop_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
@@ -343,8 +339,8 @@ theorem tbLoop_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
         hr).mono le_rfl ?_
       rintro d' ⟨g1, g2, g3, g4⟩
       exact ⟨⟨fun r hr hrJ => (g2 r hr hrJ).trans (d1 r hr hrJ), by omega, by omega,
-        by rw [g1]; exact g4⟩, by omega⟩)
-    hI ⟨fun _ _ _ => rfl, le_rfl, by omega, by rw [hJ]; exact hS⟩ (by rw [hJ]; simpa using hroom)
+        by rwa [g1]⟩, by omega⟩)
+    hI ⟨fun _ _ _ => rfl, le_rfl, by omega, by rwa [hJ]⟩ (by rw [hJ]; simpa using hroom)
   rw [hJ] at h
   simp only [Nat.sub_zero] at h
   refine h.mono le_rfl ?_

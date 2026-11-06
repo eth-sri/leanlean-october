@@ -37,7 +37,6 @@ theorem inE_iff (hS : Stretch M Cα g g' L) {p : ℕ} (hp : p < (chainModel Cα)
       rw [show p + (chainModel Cα).W.n - g' = (p - g') + (chainModel Cα).W.n by omega,
         Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
     rw [e]
-    have hc : ((p - g' : ℕ) : ℝ) = (p : ℝ) - g' := by push_cast [Nat.cast_sub hge]; ring
     constructor
     · rintro ⟨-, h2, h3⟩
       refine ⟨?_, ?_⟩

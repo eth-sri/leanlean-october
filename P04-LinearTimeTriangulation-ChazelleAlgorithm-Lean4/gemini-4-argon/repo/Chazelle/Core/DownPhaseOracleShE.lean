@@ -123,12 +123,12 @@ theorem setTwoB_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   · config_simp; rw [hS.r1, hS.r18]; omega
   · omega
   by_cases h : s.e₁ + 2 < P.n
-  · refine spec_ifLtN_true (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
+  · refine spec_ifLtN_true (by config_simp; rwa [hS.r1, hS.r18, hS.r10]) ?_
     refine spec_skip ‹_› ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
     · rw [hS.r1, hS.r18, Nat.mod_eq_of_lt h]
     · rw [hS.r18]
     · rw [hS.r18]
-  · refine spec_ifLtN_false (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
+  · refine spec_ifLtN_false (by config_simp; rwa [hS.r1, hS.r18, hS.r10]) ?_
     exec_block
     refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
     · rw [hS.r1, hS.r18, hS.r10, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
@@ -187,9 +187,9 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
     have hiv : ivV (c.nreg 170014) (c.nreg 170019) (c.nreg 170072) = iv (Qof P) q := by
       rw [kq]; exact hS.ivv q
     refine ⟨by omega, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
-    · config_simp; rw [hiv]; rw [hQ] at hpp; exact hpp
-    · config_simp; rw [hiv, mi_n]; exact hlt
-    · config_simp; rw [hiv]; exact hpos
+    · config_simp; rw [hiv]; rwa [hQ] at hpp
+    · config_simp; rwa [hiv, mi_n]
+    · config_simp; rwa [hiv]
   | onEdge e h =>
     obtain ⟨k0, ke, kh⟩ := hsb
     refine spec_ifLtN_false (by rw [k0, hS.r11]; omega) ?_
@@ -197,8 +197,8 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
     refine spec_seq ?_
     exec_block
     have w := ‹WordsBounded W { c with nreg := upd c.nreg 170095 (c.nreg 170072) }›
-    have he : e < P.n := by have := hbs.1; rw [hQ] at this; exact this
-    have hh : h < P.n := by have := hbs.2.1; rw [hQ] at this; exact this
+    have he : e < P.n := by have := hbs.1; rwa [hQ] at this
+    have hh : h < P.n := by have := hbs.2.1; rwa [hQ] at this
     obtain ⟨c₂, k₂, e₂, hk₂, i96, ir, im, irr, irm, io⟩ := iEdgeF_exec (P := P) _ w
       (by config_simp; exact hS.r11) (by config_simp; exact hS.r10) (by config_simp; exact hS.r19)
       (by config_simp; rw [ke]; omega)
@@ -212,9 +212,9 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
     · omega
     · config_simp; rw [b73, b11]; omega
     refine ⟨by omega, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
-    · config_simp; rw [hie, b73, b11]; rw [hQ] at hpp; exact hpp
-    · config_simp; rw [hie, mi_n]; exact hlt
-    · config_simp; rw [hie, b73, b11]; exact hpos
+    · config_simp; rw [hie, b73, b11]; rwa [hQ] at hpp
+    · config_simp; rwa [hie, mi_n]
+    · config_simp; rwa [hie, b73, b11]
 
 
 end exec

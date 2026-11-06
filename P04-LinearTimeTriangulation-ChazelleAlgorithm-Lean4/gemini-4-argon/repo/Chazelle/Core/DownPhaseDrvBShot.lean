@@ -45,9 +45,6 @@ def sgnD (d : ℕ) : ℝ := if d = 0 then 1 else -1
 theorem sgnD_cases (d : ℕ) : sgnD d = 1 ∨ sgnD d = -1 := by
   unfold sgnD; split_ifs <;> simp
 
-theorem sgnD_mul_self (d : ℕ) : sgnD d * sgnD d = 1 := by
-  rcases sgnD_cases d with h | h <;> rw [h] <;> norm_num
-
 /-! ## Candidates -/
 
 variable {Q : Polygon}
@@ -158,8 +155,7 @@ theorem cand_min (hQ : Q.Simple) {i : ℕ} (hi : i < Q.n) {σ : ℝ} (hσ : σ =
   have hx : edgeXAt Q q i = (chordEnd Q i σ).1 :=
     mul_left_cancel₀ hσ0 (le_antisymm hmin h1)
   have := strad_open hc.2.1
-  rw [hx] at this
-  exact this
+  rwa [hx] at this
 
 /-! ## Walk edges -/
 
@@ -234,7 +230,7 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
       ProperPos (interiorModel Q) Q Q.n (recOf (vtrip li Q.n i d w)).lpos ∧
       ProperPos (interiorModel Q) Q Q.n (recOf (vtrip li Q.n i d w)).rpos ∧
       (vtrip li Q.n i d w).1 < Q.n := by
-  set I := interiorModel Q with hI
+  set I := interiorModel Q
   set W := interiorWalk Q with hWdef
   set σ := sgnD d with hσdef
   have hσ := sgnD_cases d
@@ -267,18 +263,16 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
     field_simp
     ring
   have hposz : I.pos Q ⟨w, i + 1⟩ = z := by
-    simp only [Model.pos]; rw [hpart]; exact hzt'
+    simp only [Model.pos]; rwa [hpart]
   -- the chord as a segment between its two ends
   have hc : chordSet Q i σ ∈ chords Q := ⟨i, σ, hi, hσ, hdir, rfl⟩
   have hHC := FullDegInt.hc_full hQ hc
   have hadm : chordSet Q i σ ∈ I.Adm := hHC
   have hM := walkAx_interiorModel hQ
   obtain ⟨A, B, hAB, hcAB, -, hopen, hWA, hWB⟩ := hM.ends _ hadm
-  have hσσ : σ * σ = 1 := sgnD_mul_self d
   have hpos := Visibility.chordParam_pos hQ hi hdir
   have hvb : Q.vtx i ∈ Q.boundary := ⟨i, hi, Geometry.left_mem_segment _ _⟩
   have hzb : z ∈ Q.boundary := Visibility.chordEnd_mem_boundary hQ hi hdir
-  have hD : I.D = Q.filled \ Q.boundary := rfl
   have hend : ∀ x ∈ chordSet Q i σ, x ∈ Q.boundary → x = A ∨ x = B := by
     intro x hx hxb
     rw [hcAB] at hx
@@ -290,7 +284,6 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
     · left; rw [hs, ← hs0, Geometry.lerp_zero]
   have hvA := hend _ (Geometry.left_mem_segment _ _) hvb
   have hzA := hend _ (Geometry.right_mem_segment _ _) hzb
-  have hvz : Q.vtx i ≠ z := (Visibility.chordEnd_ne_vtx hQ hi hdir).symm
   have hWEv : WalkEnd I.W (chordSet Q i σ) (Q.vtx i) := by
     rcases hvA with h | h <;> rw [h] <;> assumption
   have hWEz : WalkEnd I.W (chordSet Q i σ) z := by
@@ -301,7 +294,7 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
     obtain ⟨p, s, hA, hps⟩ := hWEv.1
     rw [hIW] at hA hps
     obtain ⟨hp, hs0, hs1, -⟩ := id hA
-    have := FactsInterior.pos_unique hWs hp (by rw [hWn]; exact hwvn) hs0 hs1 le_rfl one_pos
+    have := FactsInterior.pos_unique hWs hp (by rwa [hWn]) hs0 hs1 le_rfl one_pos
       (by rw [hps, Chazelle.Chain.sidePt_zero, hWv])
     obtain ⟨rfl, rfl⟩ := this
     exact hA
@@ -316,7 +309,6 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
   have pv : ProperPos I Q Q.n ⟨wv, i + 1⟩ := ⟨by rw [hparv], by rw [hparv]; exact one_pos, hi⟩
   have pz : ProperPos I Q Q.n ⟨w, i + 1⟩ := ⟨by rw [hpart]; exact ht.1.le,
     by rw [hpart]; exact ht.2, hi⟩
-  have hv1 : (Q.vtx i).1 = ((Q.vtx i).1, (Q.vtx i).2).1 := rfl
   -- the two directions
   unfold vtrip
   by_cases hd0 : d = 0
@@ -334,8 +326,8 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
     unfold CRec.Attached
     rw [hset]
     refine ⟨?_, ?_⟩
-    · show SideAttach W _ wv (I.param Q ⟨wv, i + 1⟩); rw [hparv]; exact attv
-    · show SideAttach W _ w (I.param Q ⟨w, i + 1⟩); rw [hpart]; exact attz
+    · show SideAttach W _ wv (I.param Q ⟨wv, i + 1⟩); rwa [hparv]
+    · show SideAttach W _ w (I.param Q ⟨w, i + 1⟩); rwa [hpart]
   · rw [ite_eq_right hd0]
     have hσ1 : σ = -1 := by rw [hσdef]; unfold sgnD; rw [ite_eq_right hd0]
     have hlt : z.1 < (Q.vtx i).1 := by
@@ -350,8 +342,8 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
     unfold CRec.Attached
     rw [hset]
     refine ⟨?_, ?_⟩
-    · show SideAttach W _ w (I.param Q ⟨w, i + 1⟩); rw [hpart]; exact attz
-    · show SideAttach W _ wv (I.param Q ⟨wv, i + 1⟩); rw [hparv]; exact attv
+    · show SideAttach W _ w (I.param Q ⟨w, i + 1⟩); rwa [hpart]
+    · show SideAttach W _ wv (I.param Q ⟨wv, i + 1⟩); rwa [hparv]
 
 end
 

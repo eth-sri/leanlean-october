@@ -209,7 +209,7 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
     refine ⟨_, e, ⟨e.wb_right, LFr.nreg hf2 (fun r hr => ?_), ?_, ?_⟩, ?_, rfl⟩
     · rw [Machine.upd_other _ _ _ (fun h => hr (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩))))]
     · simp only [Machine.upd_same]; rw [hone, hv2]; omega
-    · simp only [Machine.upd_same]; rw [hone, hv2]; exact hL2
+    · simp only [Machine.upd_same]; rwa [hone, hv2]
     · simp only [Machine.upd_same]; rw [hone, hv2]
   obtain ⟨c1, k1, e1, hk1, hw1, hm1, hX1, hr1, hrr1, hrm1, ho1⟩ : ∃ c1 k1,
       Exec P W (block [.addN 130141 130105 130140, .loadN 130142 130141]) c c1 k1 ∧ k1 = 2 ∧
@@ -240,11 +240,11 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
   · -- blocked: skip
     obtain ⟨c3, e3, hD3, hv3, hm3⟩ := fin c1 hw1 hf1 hv1 (by
       rw [hm1]; exact hI.inv.skip (Or.inl hvb))
-    refine ⟨c3, 2 + (4 + 1), .seq (hk1 ▸ e1) (.seq (ifNe1_skip hw1 hone1 (by rw [hX1]; exact hvb))
+    refine ⟨c3, 2 + (4 + 1), .seq (hk1 ▸ e1) (.seq (ifNe1_skip hw1 hone1 (by rwa [hX1]))
       e3), hD3, ?_⟩
     have := hpot c3 hv3 (hm3.trans hm1)
     omega
-  · have hX1' : c1.nreg 130142 ≠ 1 := by rw [hX1]; exact hvb
+  · have hX1' : c1.nreg 130142 ≠ 1 := by rwa [hX1]
     -- load the label
     obtain ⟨c2, k2, e2, hk2, hw2, hm2, hX2, hr2, hrr2, hrm2, ho2⟩ : ∃ c2 k2,
         Exec P W (block [.addN 130141 130106 130140, .loadN 130142 130141]) c1 c2 k2 ∧ k2 = 2 ∧
@@ -270,7 +270,7 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
     · -- labelled: skip
       obtain ⟨c3, e3, hD3, hv3, hm3⟩ := fin c2 hw2 hf2 hv2 (by
         rw [hm2]; exact hI.inv.skip (Or.inr (by simp only [Lay.env_nv]; omega)))
-      have hlt2 : c2.nreg 130142 < c2.nreg 130110 := by rw [hX2, hRc2.rn]; exact hl
+      have hlt2 : c2.nreg 130142 < c2.nreg 130110 := by rwa [hX2, hRc2.rn]
       have eU : Exec P W unlabB c1 c2 (k2 + (0 + 1)) :=
         Exec.seq e2 (.ifLtN_true hlt2 (.skip hw2))
       obtain ⟨k', e', hk'⟩ := ifNe1_run (P := P) (W := W) hone1 hX1' eU
@@ -312,14 +312,13 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
           (labV Y c4.nmem) (levV Y c4.nmem) (parV Y c4.nmem) (qV Y c4.nmem) (c4.nreg 130121)
           (c4.nreg 130121) := by
         have := hOI.inv
-        rw [henv3, hlab3, hht] at this
-        exact this
+        rwa [henv3, hlab3, hht] at this
       have hf4 : LFr Y cE c4 := hf3.trans (LFr.of_fr hOI.fr)
       have hv4 : c4.nreg 130140 = c.nreg 130140 := by
         rw [hOI.fr.1 _ (by unfold Scr; omega), hr3 _ (by decide) (by decide), hv2]
       have hL4 := hI.inv.bfs hok hs hlt hB
       obtain ⟨c5, e5, hD5, hv5, hm5⟩ := fin c4 hOI.wb hf4 hv4 hL4
-      have hge2 : ¬ c2.nreg 130142 < c2.nreg 130110 := by rw [hX2, hRc2.rn]; exact hl
+      have hge2 : ¬ c2.nreg 130142 < c2.nreg 130110 := by rwa [hX2, hRc2.rn]
       have eU : Exec P W unlabB c1 c4 (k2 + ((2 + k4) + 2)) :=
         Exec.seq e2 (.ifLtN_false hge2 (Exec.seq e3 e4))
       obtain ⟨k', e', hk'⟩ := ifNe1_run (P := P) (W := W) hone1 hX1' eU
@@ -332,7 +331,6 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
           ∑ x ∈ unlab Y c.nmem, (Y.env cE.nmem).deg x := hsum
       unfold drvPot
       rw [hv5, hm5]
-      have hsl : c.nreg 130140 + 1 ≤ Y.nv := hlt
       omega
 
 end drv
@@ -351,7 +349,6 @@ theorem labelStmt_exec (hY : Y.Good W) {c : Config} (hw : WordsBounded W c) (hR 
     (hok : (Y.env c.nmem).OK) (hs : (Y.env c.nmem).Sym) :
     ∃ c' k, Exec P W labelStmt c c' k ∧ k ≤ 120 * Y.nv + 50 * Y.N + 10 ∧ WordsBounded W c' ∧
       LFr Y c c' ∧
-      (∀ x, x < Y.nv → (Y.env c.nmem).vb x ≠ 1 → labV Y c'.nmem x < Y.nv) ∧
       ∀ x y, x < Y.nv → y < Y.nv → (Y.env c.nmem).vb x ≠ 1 → (Y.env c.nmem).vb y ≠ 1 →
         (labV Y c'.nmem x = labV Y c'.nmem y ↔ (Y.env c.nmem).Reach x y) := by
   have := hY.wn
@@ -368,7 +365,6 @@ theorem labelStmt_exec (hY : Y.Good W) {c : Config} (hw : WordsBounded W c) (hR 
   have hf3 : LFr Y c c3 := LFr.nreg hf12
     (fun r hr => Machine.upd_other _ _ _ (fun h => hr (Or.inr (Or.inr (Or.inr
       ⟨by omega, by omega⟩)))))
-  have henv3 : Y.env c3.nmem = Y.env c.nmem := hf3.env hY
   have hD3 : DI Y W c c3 := ⟨e3.wb_right, hf3, by simp [c3], by
     simp only [c3, Machine.upd_same]
     exact Env.LInv.init (fun x hx => hlab2 x hx)⟩
@@ -385,7 +381,7 @@ theorem labelStmt_exec (hY : Y.Good W) {c : Config} (hw : WordsBounded W c) (hR 
   have hL4 := hD4.inv
   rw [hv4] at hL4
   obtain ⟨hfin1, hfin2⟩ := hL4.final hok hs
-  refine ⟨c4, 1 + (k2 + (1 + k4)), .seq e1 (.seq e2 (.seq e3 e4)), ?_, hD4.wb, hD4.fr, hfin1,
+  refine ⟨c4, 1 + (k2 + (1 + k4)), .seq e1 (.seq e2 (.seq e3 e4)), ?_, hD4.wb, hD4.fr,
     hfin2⟩
   -- the cost
   have hU3 : unlab Y c3.nmem = Finset.range Y.nv := by

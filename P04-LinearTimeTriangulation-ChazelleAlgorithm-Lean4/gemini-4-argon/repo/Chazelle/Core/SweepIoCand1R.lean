@@ -90,11 +90,10 @@ theorem tourB_irs (hT : TabBody tabB κT) (hS : ShrBody shrB κS) (hBr : BruteBo
   have hK₃ := hA.hK.fix hI₃
   have hns := normS_irs (dsc := sw 21) (pe := tE) (ph := tH) (o := nO) hI₃ hK₃
     (AEnv.ctxR hA hI₃) (by unfold tE tH sw; omega) (by unfold nO tE tH sw; omega)
-    (by show regB _ _ _ tE < _; rw [p1, eE]; exact hqE)
-    (by show ProperPos _ _ _ ⟨regB _ _ _ tE, regB _ _ _ tH⟩; rw [p1, p2, eE, eH]; exact hpp)
+    (by show regB _ _ _ tE < _; rwa [p1, eE])
+    (by show ProperPos _ _ _ ⟨regB _ _ _ tE, regB _ _ _ tH⟩; rwa [p1, p2, eE, eH])
     (fun h => by
       exfalso
-      have : regB c₂.nmem prepL c₂.nreg tE = c.nreg qE := by rw [p1, eE]
       simp only at h
       omega)
     (by simp only; rw [hA3]; omega)
@@ -117,7 +116,7 @@ theorem tourB_irs (hT : TabBody tabB κT) (hS : ShrBody shrB κS) (hBr : BruteBo
   have nb : ∀ q, 240000 ≤ q → q < 250000 → bandOf q ∉ oracleBands := fun q h1 h2 =>
     not_oracle_sw h1 h2
   have h34' : c₂.nreg (sw 34) = 2 * J.right.m + 7 := by
-    rw [hI₂.hin _ (by unfold IFix sw; omega)]; exact h34
+    rwa [hI₂.hin _ (by unfold IFix sw; omega)]
   have k1 : c₂.nreg K1 = 1 := hK₂.2.1
   have hNF : c₂.nmem (c₂.nreg (sw 4)) = N₂.nChords := by
     rw [hI₂.hin _ (by unfold IFix sw; omega)]
@@ -149,8 +148,7 @@ theorem tourB_irs (hT : TabBody tabB κT) (hS : ShrBody shrB κS) (hBr : BruteBo
   have vH : c₅.nreg tH = nhgt (chainModel J.right) (Qof P) ⟨c.nreg qE, c.nreg qH⟩ := by
     rw [t2 tH (by unfold OutM tH sw; omega), n2, p1, p2, eE, eH]
   have hd := dec_irs hT hS hBr hsh hBs hXl tree vH (by rw [← hKK]; omega)
-  rw [← hKK] at hd
-  exact hd
+  rwa [← hKK] at hd
 
 set_option maxRecDepth 200000 in
 set_option maxHeartbeats 1000000 in
@@ -211,8 +209,7 @@ theorem cand1P_irs (hT : TabBody tabB κT) (hS : ShrBody shrB κS) (hBr : BruteB
     · rw [eE, hK₁.2.2.2.2.2.2] at e'
       have ht := tourB_irs hT hS hBr hsh hBs hXl hA hq hend hKB hI₁ hM
         (by rintro (h | h) <;> contradiction) (by rw [← hLK, ← hKK]; omega)
-      rw [← hLK, ← hKK] at ht
-      exact ht
+      rwa [← hLK, ← hKK] at ht
 
 end Cand1
 

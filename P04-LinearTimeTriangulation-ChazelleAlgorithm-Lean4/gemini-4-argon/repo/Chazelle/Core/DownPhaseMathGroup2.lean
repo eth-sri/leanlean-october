@@ -97,7 +97,7 @@ theorem partner_key {x : WPos} (hx : ChordPos N x) {m : ℕ}
   have h3 := three_le_nk hQ hN.1 hne hR
   obtain ⟨i₀, hi₀, hcases⟩ := partner_spec (exit_record hQ hdh hN hne hR hRC hx harc)
   obtain ⟨hi₀n, ht₀⟩ := (hRC i₀).1 hi₀
-  set c₀ := (N.chord i₀).toSet (interiorModel Q) Q with hc₀
+  set c₀ := (N.chord i₀).toSet (interiorModel Q) Q
   obtain ⟨hc₀S, hAl, ekl, -, -, -⟩ := chordPos_attach hN hi₀n (Or.inl rfl)
   obtain ⟨-, hAr, ekr, -, -, -⟩ := chordPos_attach hN hi₀n (Or.inr rfl)
   -- the chord is attached at `x` and at the partner
@@ -119,10 +119,10 @@ theorem partner_key {x : WPos} (hx : ChordPos N x) {m : ℕ}
   -- after the end: the chord continues to the next host key
   have hex : hk (interiorModel Q) (N.F (interiorModel Q) Q) R m ∈
       exitKeys (interiorModel Q) (N.F (interiorModel Q) Q) R :=
-    ⟨c₀, hc₀S, ht₀, _, _, hAx, by rw [hkm]; exact ekx⟩
-  have hAp' := DownMath.arcGap_prev_of_end hQ hN.1 hne hR hm (by rw [hkm]; exact harc)
+    ⟨c₀, hc₀S, ht₀, _, _, hAx, by rwa [hkm]⟩
+  have hAp' := DownMath.arcGap_prev_of_end hQ hN.1 hne hR hm (by rwa [hkm])
   obtain ⟨-, hnext⟩ := end_chord hQ hN.1 hne hR hm hex hAp'
-  obtain ⟨p', t', hA', he'⟩ := hnext c₀ hc₀S ht₀ _ _ hAx (by rw [hkm]; exact ekx)
+  obtain ⟨p', t', hA', he'⟩ := hnext c₀ hc₀S ht₀ _ _ hAx (by rwa [hkm])
   have hz : hk (interiorModel Q) (N.F (interiorModel Q) Q) R
       ((m + 1) % nk (interiorModel Q) (N.F (interiorModel Q) Q) R) =
       (interiorModel Q).key Q (partner N r x) := by

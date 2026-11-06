@@ -39,7 +39,7 @@ variable {m : ℕ → ℕ} {N : NF}
 
 theorem ChordRecOK.recs (h : ChordRecOK P C V m N) {i : ℕ} (hi : i < V.K) :
     chH m V i = (N.chord i).h ∧ chL m V i = (N.chord i).lp ∧ chR m V i = (N.chord i).rp := by
-  have := h.nf.2.2.2.2.2.1 i (by rw [← h.K]; exact hi)
+  have := h.nf.2.2.2.2.2.1 i (by rwa [← h.K])
   rw [h.CB] at this
   exact ⟨this.1, this.2.1, this.2.2.1⟩
 
@@ -53,7 +53,7 @@ theorem ChordRecOK.facts (h : ChordRecOK P C V m N) {i : ℕ} (hi : i < V.K) :
     EndFacts P C V (chL m V i) (chH m V i) ∧ EndFacts P C V (chR m V i) (chH m V i) := by
   obtain ⟨e1, e2, e3⟩ := h.recs hi
   rw [e1, e2, e3]
-  exact chord_facts h.hT h.hN (by rw [← h.K]; exact hi)
+  exact chord_facts h.hT h.hN (by rwa [← h.K])
 
 theorem xv_c0 {w h : ℕ} (hc : xpClass w = 0) : xv P C V w h = -C.radius := by
   unfold xv; rw [ite_eq_left hc]
@@ -113,13 +113,11 @@ theorem chord_disjoint (h : ChordRecOK P C V m N) {a b : ℕ} (ha : a < V.K) (hb
   set rb := xv P C V (chR m V b) (chH m V a)
   by_contra hc
   push Not at hc
-  have hab' := Ha.lt
   have hbb := Hb.lt
   -- a point inside both
   set x := (lb + min ra rb) / 2 with hx
   have hmin : lb < min ra rb := lt_min hc hbb
   have hx1 : lb < x := by rw [hx]; linarith
-  have hx2 : x < min ra rb := by rw [hx]; linarith
   have hxa : ((x, y) : Point) ∈ hseg y la ra :=
     ⟨rfl, by show la ≤ x; linarith, by show x ≤ ra; linarith [min_le_left ra rb]⟩
   have hxb : ((x, y) : Point) ∈ hseg y lb rb :=
@@ -129,8 +127,8 @@ theorem chord_disjoint (h : ChordRecOK P C V m N) {a b : ℕ} (ha : a < V.K) (hb
     have hs : (N.chord a).toSet (chainModel C) (Qof P) = (N.chord b).toSet (chainModel C) (Qof P) := by
       rw [Sa, Sb, e1, e2]
     obtain ⟨-, hinj, -⟩ := h.hN
-    exact hab (hinj a b (show a < N.chords.length by rw [← h.K]; exact ha)
-      (show b < N.chords.length by rw [← h.K]; exact hb) hs)
+    exact hab (hinj a b (show a < N.chords.length by rwa [← h.K])
+      (show b < N.chords.length by rwa [← h.K]) hs)
   · rcases hp with e | e
     · have := congrArg Prod.fst e; simp only at this; linarith
     · have := congrArg Prod.fst e; simp only at this; linarith [min_le_right ra rb]
@@ -237,8 +235,8 @@ theorem chPr_mono (h : ChordRecOK P C V m N) :
   · intro hσ hg
     apply h2 hσ
     by_cases hab : a = b
-    · rw [← hab]; exact hg
-    have hd := chord_disjoint h ha hb hab hh (by rw [hA', h1]; exact hx)
+    · rwa [← hab]
+    have hd := chord_disjoint h ha hb hab hh (by rwa [hA', h1])
     rw [hA', h1] at hd
     exact endGtZ_mono ERa.good ERb.good (by linarith [Hb.lt]) hg
   · intro hσ

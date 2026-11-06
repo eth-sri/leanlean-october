@@ -35,11 +35,11 @@ theorem deg_leH (hS : GoodH R S t) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD 
     (hU : U ∈ regionsIn (dom R S) G) :
     {c | c ∈ G ∧ TouchesIn (dom R S) c U}.ncard ≤ 2 * (t + 1) := by
   classical
-  set D := dom R S with hD
+  set D := dom R S
   obtain ⟨q, hqf, rfl⟩ := hU
   obtain ⟨sL, sR, y₁, y₂, h⟩ := exists_trapH hS hfull hqf.1 hqf.2
-  set T := tr sL sR y₁ y₂ with hTdef
-  set U := connectedComponentIn (freeIn D G) q with hUdef
+  set T := tr sL sR y₁ y₂
+  set U := connectedComponentIn (freeIn D G) q
   have hUT : U ⊆ T := h.region_subsetH hS hfull hqf
   have hTD : T ⊆ D := h.tr_subset_domH hS
   have hqT : q ∈ T := hUT (mem_connectedComponentIn hqf)

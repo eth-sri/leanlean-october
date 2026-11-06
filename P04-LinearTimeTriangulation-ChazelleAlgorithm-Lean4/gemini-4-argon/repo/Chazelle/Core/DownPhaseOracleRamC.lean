@@ -183,18 +183,18 @@ theorem normA_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) :
   by_cases h0 : c.nreg 170012 < c.nreg 170004
   · refine spec_ifLtN_true (by config_simp; exact h0) ?_
     by_cases h1 : c.nreg 170004 - 1 < iv (Qof P) s.e₂
-    · refine spec_ifLtN_true (by config_simp; rw [hS.r11, hσ]; exact h1) ?_
+    · refine spec_ifLtN_true (by config_simp; rwa [hS.r11, hσ]) ?_
       refine spec_skip ‹_› ⟨by omega, ?_, fun r a b d e f => ?_, rfl, rfl, rfl, rfl⟩
       · config_simp; unfold nh; rw [hS.r4, ite_eq_right (by rw [hS.r4] at h1; omega)]
       · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
     by_cases h2 : iv (Qof P) s.e₂ < c.nreg 170004 - 1
-    · refine spec_ifLtN_false (by config_simp; rw [hS.r11, hσ]; exact h1)
-        (spec_ifLtN_true (by config_simp; rw [hS.r11, hσ]; exact h2) ?_)
+    · refine spec_ifLtN_false (by config_simp; rwa [hS.r11, hσ])
+        (spec_ifLtN_true (by config_simp; rwa [hS.r11, hσ]) ?_)
       refine spec_skip ‹_› ⟨by omega, ?_, fun r a b d e f => ?_, rfl, rfl, rfl, rfl⟩
       · config_simp; unfold nh; rw [hS.r4, ite_eq_right (by rw [hS.r4] at h2; omega)]
       · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
-    · refine spec_ifLtN_false (by config_simp; rw [hS.r11, hσ]; exact h1)
-        (spec_ifLtN_false (by config_simp; rw [hS.r11, hσ]; exact h2) ?_)
+    · refine spec_ifLtN_false (by config_simp; rwa [hS.r11, hσ])
+        (spec_ifLtN_false (by config_simp; rwa [hS.r11, hσ]) ?_)
       exec_block
       all_goals first | omega | skip
       refine ⟨by omega, ?_, fun r a b d e f => ?_, rfl, rfl, rfl, rfl⟩
@@ -219,11 +219,11 @@ theorem normB_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   exec_block
   · config_simp; rw [hS.r3, hS.r10]; omega
   by_cases hc : s.e₂ + P.n - s.e₁ < P.n
-  · refine spec_ifLtN_true (by config_simp; rw [hS.r3, hS.r10, hS.r1]; exact hc) ?_
+  · refine spec_ifLtN_true (by config_simp; rwa [hS.r3, hS.r10, hS.r1]) ?_
     refine spec_skip ‹_› ⟨by omega, ?_, ?_⟩
     · config_simp; rw [hS.r3, hS.r10, hS.r1, dOf_eq h1 h2, ite_eq_left hc]
     · simp only [Config.nreg_mk, upd_upd_same, upd_same]
-  · refine spec_ifLtN_false (by config_simp; rw [hS.r3, hS.r10, hS.r1]; exact hc) ?_
+  · refine spec_ifLtN_false (by config_simp; rwa [hS.r3, hS.r10, hS.r1]) ?_
     exec_block
     refine ⟨by omega, ?_, ?_⟩
     · config_simp; rw [hS.r3, hS.r10, hS.r1, dOf_eq h1 h2, ite_eq_right hc]
@@ -307,8 +307,6 @@ theorem ltPrep_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
     unfold ltSlots
     exec_block
     all_goals first | omega | skip
-    have hlb := hS.lb
-    have hlb1 := hS.lb1
     have hQ : (Qof P).n = P.n := shear_n _ _
     refine ⟨by omega, ⟨by config_simp, ?_⟩, ⟨by config_simp, ?_⟩, ⟨by config_simp, ?_⟩,
       ⟨by config_simp, ?_⟩⟩
@@ -409,17 +407,16 @@ theorem ltS_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
       obtain ⟨c₁, k₁, e₁, hk₁, s1, s2, s3, s4, F₁⟩ := ltPrep_exec c hw hS he1 h30
       have k12 : c₁.nreg 170012 = 0 := by
         rw [F₁.1 _ (by unfold Bprep; decide)]; exact hS.r12
-      have hl : ∀ {i}, i < P.n → i < P.n := fun h => h
       obtain ⟨c₂, k₂, e₂, hk₂, b₂, t₂⟩ := ltKer_exec c₁ e₁.wb_right hS.good hW k12
-        (by have := iv_lt (Q := Qof P) (p := s.e₁) (by rw [hQ]; exact he1); rwa [hQ] at this) (by
+        (by have := iv_lt (Q := Qof P) (p := s.e₁) (by rwa [hQ]); rwa [hQ] at this) (by
           have := iv_lt (Q := Qof P) (p := (s.e₁ + 1) % P.n) (by rw [hQ]; exact Nat.mod_lt _ (by omega))
           rwa [hQ] at this)
         (by unfold hI; split_ifs
-            · have := iv_lt (Q := Qof P) (p := s.e₁) (by rw [hQ]; exact he1); rwa [hQ] at this
+            · have := iv_lt (Q := Qof P) (p := s.e₁) (by rwa [hQ]); rwa [hQ] at this
             · omega)
         (by omega) s1 s2 s3 s4
       refine ⟨c₂, _, .seq e₁ e₂, by omega, b₂, ?_⟩
-      rw [t₂, param_lt_iff_iw hD (by rw [hQ]; exact hn) (by rw [hQ]; exact he1), hQ]
+      rw [t₂, param_lt_iff_iw hD (by rwa [hQ]) (by rwa [hQ]), hQ]
       have : hI (Qof P) s.e₁ h₂ = h₂ - 1 := by unfold hI; rw [ite_eq_right (by omega)]
       rw [this]
   exact ⟨c', k, ex, hk, b, t, exec_frameB ex wr_ltS⟩
@@ -439,7 +436,6 @@ theorem normC_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
     ∃ c' k, Exec P W normC c c' k ∧ k ≤ 850 ∧ c'.nreg 170031 = eeOf (Qof P) s.e₁ s.h₁ s.e₂ h₂ ∧
       (∀ r, r ≠ 170031 → BltS r = false → c'.nreg r = c.nreg r) := by
   have hQ : (Qof P).n = P.n := shear_n _ _
-  have hW := hS.nW
   unfold normC eeOf
   rw [hQ]
   by_cases hd : c.nreg 170012 < c.nreg 170102
@@ -522,7 +518,7 @@ theorem normI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
     (fun a _ => by rw [hc₂]) (by rw [kb _ (by decide)])
   have h2n : nh (Qof P) s.e₂ s.h₂ ≤ P.n := le_trans nh_le hh2
   obtain ⟨c₃, k₃, e₃, hk₃, c31, kc⟩ := normC_exec c₂ e₂.wb_right S₂ he1 he2 hh1 hx0
-    (h₂ := nh (Qof P) s.e₂ s.h₂) (by rw [kb _ (by decide)]; exact a30) h2n b102
+    (h₂ := nh (Qof P) s.e₂ s.h₂) (by rwa [kb _ (by decide)]) h2n b102
   have S₃ : SEnv P W O s c₃ := S₂.keep (fun r h1 h2 => kc r (by omega)
       (by unfold BltS Bk; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
     (fun a _ => by rw [(exec_frameB e₃ (wr_normC)).2.2.1]) (by
@@ -531,12 +527,12 @@ theorem normI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
     (h₂ := nh (Qof P) s.e₂ s.h₂) (by rw [hQ]; omega)
   rw [hQ] at hee
   obtain ⟨c₄, k₄, e₄, hk₄, d32, hc₄⟩ := normD_exec c₃ e₃.wb_right S₃
-    (h₂ := nh (Qof P) s.e₂ s.h₂) (by rw [kc _ (by decide) (by decide), kb _ (by decide)]; exact a30)
+    (h₂ := nh (Qof P) s.e₂ s.h₂) (by rwa [kc _ (by decide) (by decide), kb _ (by decide)])
     c31 (by omega)
   have ex : Exec P W normI c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   refine ⟨c₄, _, ex, by omega, ?_, ?_, d32, exec_frameB ex wr_normI⟩
   · rw [hc₄]; simp only [Config.nreg_mk, upd]
-    rw [kc _ (by decide) (by decide), kb _ (by decide)]; exact a30
+    rwa [kc _ (by decide) (by decide), kb _ (by decide)]
   · rw [hc₄]; simp only [Config.nreg_mk, upd]; exact c31
 
 end exec2

@@ -244,7 +244,7 @@ theorem kE_const (hsort : E.Pairwise (codeLe (interiorModel Q) Q L)) {a b : ℕ}
 theorem gs_of_mem {m : ℕ} (hm : m ∈ gapStarts (interiorModel Q) Q L E) :
     ∃ k, k < (gapStarts (interiorModel Q) Q L E).length ∧ DrvD.gs (interiorModel Q) Q L E k = m := by
   obtain ⟨k, hk, hkm⟩ := List.mem_iff_getElem.1 hm
-  exact ⟨k, hk, by rw [DrvD.gs_eq hk]; exact hkm⟩
+  exact ⟨k, hk, by rwa [DrvD.gs_eq hk]⟩
 
 theorem gs_strict {k k' : ℕ} (hk : k < (gapStarts (interiorModel Q) Q L E).length)
     (_hk' : k' < (gapStarts (interiorModel Q) Q L E).length)
@@ -341,7 +341,6 @@ theorem key_e_eq {j : ℕ} (hj : j + 1 < (BuildNF.buildNF (interiorModel Q) Q L 
   rw [hA] at hj
   unfold st
   rw [DrvD.key_e hK hE hj, DrvD.key_s hK hj]
-  have h1 := DrvD.gs_succ (M := interiorModel Q) (Q := Q) (L := L) hE (j := j) hj
   have h2 := DrvD.gs_lt_gs (M := interiorModel Q) (Q := Q) (L := L) (E := E)
     (show j < j + 1 by omega) hj
   refine kE_const hsort (by omega) (DrvD.gs_lt_len hj) fun m hm1 hm2 hm => ?_

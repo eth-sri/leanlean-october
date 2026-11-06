@@ -281,14 +281,14 @@ theorem face_par_eqvGen {y : V} (hy : y ≠ T.root) {d : D} (hd : d ∈ T.coDart
     apply Finset.card_nbij' (fun e => M.fperm e) (fun e => M.fperm.symm e)
     · intro e he
       simp only [Bh, A, Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at he ⊢
-      rw [M.face_fperm_apply, M.vert_fperm]; exact he
+      rwa [M.face_fperm_apply, M.vert_fperm]
     · intro e he
       simp only [Bh, A, Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at he ⊢
       have h1 : M.face (M.fperm.symm e) = M.face e := by
         rw [← M.face_fperm_apply (M.fperm.symm e), Equiv.apply_symm_apply]
       have h2 : M.head (M.fperm.symm e) = M.vert e := by
         rw [← M.vert_fperm, Equiv.apply_symm_apply]
-      rw [h1, h2]; exact he
+      rwa [h1, h2]
     · intro e _; simp
     · intro e _; simp
   have hLE : (A \ Bh).card = (Bh \ A).card := by
@@ -335,7 +335,7 @@ theorem face_par_eqvGen {y : V} (hy : y ≠ T.root) {d : D} (hd : d ∈ T.coDart
     simp only [A, Bh, Finset.coe_erase, Finset.coe_sdiff, Finset.coe_filter, Finset.mem_univ,
       true_and, Set.mem_sdiff, Set.mem_ofPred_eq, Set.mem_singleton_iff, not_and]
     refine ⟨⟨⟨hKo, hin⟩, fun _ => ?_⟩, ?_⟩
-    · rw [M.head_opp]; exact hout'
+    · rwa [M.head_opp]
     · intro h
       have : e = M.opp (T.par y) := by rw [← h, M.opp_opp]
       rw [this] at hKe
@@ -363,7 +363,7 @@ theorem eqvGen_face_rot {d : D} (hd : d ∈ T.coDarts) {v : V}
       subst he
       exact T.face_par_eqvGen hx hd (iff_of_false hv1 hv2)
     · have hxv : T.parent x = v := by
-        rw [T.parent_of_ne hx]; exact he
+        rwa [T.parent_of_ne hx]
       have hiff : T.IsAnc x (M.vert d) ↔ T.IsAnc x (M.head d) := by
         refine iff_of_false (fun h => hv1 ?_) (fun h => hv2 ?_)
         · rw [← hxv]; exact (T.isAnc_parent_self x).trans T h
@@ -426,7 +426,7 @@ theorem eqvGen_faceRel_coDarts (hM : M.Connected) (f g : F) :
     obtain ⟨d0, hd0⟩ := M.face_surj f
     obtain ⟨dg, hdg⟩ := M.face_surj g
     have := hM.of_face {d | M.face d ∈ K}
-      (fun d e hde hd => by rw [Set.mem_ofPred_eq, ← hde]; exact hd)
+      (fun d e hde hd => by rwa [Set.mem_ofPred_eq, ← hde])
       (fun d hd => hopp d hd) (d := d0) (by simp [hK, hd0, EqvGen.refl]) dg
     exact hfg (by simpa [hK, hdg] using this)
   have hBtree : ∀ d ∈ B, T.IsTreeDart d := by
@@ -482,8 +482,7 @@ theorem eqvGen_faceRel_coDarts (hM : M.Connected) (f g : F) :
       have h1 := T.level_head_par u' hu'
       have hv' : M.head (T.par u') = u := by
         have : M.vert (M.opp (T.par u')) = M.head (M.opp (T.par u)) := hv
-        rw [M.head_opp, T.vert_par u hu] at this
-        exact this
+        rwa [M.head_opp, T.vert_par u hu] at this
       rw [hv'] at h1
       have := hL u'
       omega

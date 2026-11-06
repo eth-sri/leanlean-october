@@ -65,8 +65,8 @@ theorem wok_transfer (hαa0 : 0 ≤ αa) (hαa : 0 < αa → αa < L → αa = d
     (hda : ¬ (ℓ < da ∧ da ≤ x)) (hdb : ¬ (ℓ < db ∧ db ≤ x))
     (hx : WOK L da db αa αb sa sb x) : WOK L da db αa αb sa sb u := by
   obtain ⟨hx0, hxL, -, -, ga, gb⟩ := hx
-  refine ⟨by linarith, by linarith, fun h => hda ⟨by rw [← h]; exact hℓu, by rw [← h]; exact hux⟩,
-    fun h => hdb ⟨by rw [← h]; exact hℓu, by rw [← h]; exact hux⟩,
+  refine ⟨by linarith, by linarith, fun h => hda ⟨by rwa [← h], by rwa [← h]⟩,
+    fun h => hdb ⟨by rwa [← h], by rwa [← h]⟩,
     gend_transfer hαa0 hαa hℓ hℓu hux hxL hda hdb ga,
     gend_transfer hαb0 hαb hℓ hℓu hux hxL hdb hda gb⟩
 

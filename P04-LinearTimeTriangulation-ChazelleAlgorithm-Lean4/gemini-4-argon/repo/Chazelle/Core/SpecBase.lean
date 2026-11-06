@@ -309,8 +309,6 @@ noncomputable def arcWt (a b : ℝ) : ℕ :=
 noncomputable def weight (F : Set (Set Point)) (U : Set Point) : ℕ :=
   sSup ((fun ab : ℝ × ℝ => M.arcWt ab.1 ab.2) '' {ab | M.IsArc F U ab.1 ab.2})
 
-/-- **Conformal** (p. 495): every region has at most four exit chords. -/
-def Conformal (F : Set (Set Point)) : Prop := ∀ U ∈ M.regions F, M.deg F U ≤ 4
 
 /-- Regions have at most `d` exit chords (the bounded-degree relaxation used between the fusion
 and the restoration of conformality, p. 508). -/
@@ -332,7 +330,6 @@ def Granular (F : Set (Set Point)) (γ : ℕ) : Prop := M.Semigranular F γ ∧ 
 theorem Granular.semigranular {F : Set (Set Point)} {γ : ℕ} (h : M.Granular F γ) :
     M.Semigranular F γ := h.1
 
-theorem Conformal.degLe {F : Set (Set Point)} (h : M.Conformal F) : M.DegLe F 4 := h
 
 /-- The number of counted walk edges (the size of the curve: `2 m` for a chain, `n` for the
 interior of a polygon). -/

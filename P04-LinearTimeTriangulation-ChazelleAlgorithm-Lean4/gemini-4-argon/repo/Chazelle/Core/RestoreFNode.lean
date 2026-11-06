@@ -108,7 +108,6 @@ theorem node_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       NodeRaw E c₀ Cα Nα k c c') := by
   obtain ⟨r30, r31, r32, r33, r34, r35⟩ := hR
   have hS := hP.hS
-  have hn : 0 < E.M.W.n := by have := hS.hg; omega
   have hsimp : Cα.P.Simple := by rw [hP.hQ]; exact (shearInvariance (epsOf E.P) E.P).1 hE.hG.1
   have hGα : GoodModel (chainModel Cα) := Or.inl ⟨Cα, hsimp, rfl⟩
   have hMα := walkAx_of_goodModel hGα
@@ -170,14 +169,14 @@ theorem node_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have hWm := hP.hWm
   have hJ₁ : c₁.nreg 81140 < E.M.W.n ∧
       ProperPos E.M (Qof E.P) E.P.n ⟨c₁.nreg 81140, c₁.nreg 81141⟩ := by
-    rw [F1 81140 (by omega) (by omega), F1 81141 (by omega) (by omega)]; exact hJ
+    rwa [F1 81140 (by omega) (by omega), F1 81141 (by omega) (by omega)]
   have fl₁ : c₁.nreg 81007 = c.nreg 81007 := F1 _ (by omega) (by omega)
   -- the left end
   refine (FRS.seq (K₂ := efK E + wsK + 10 + 25 + scK + 4) (endFull_fs hE hB hBT hI₁ hw₁
     (s := 81160) (p := 81153) (σ := 1) ⟨by norm_num, by norm_num⟩ (Or.inl rfl) le_rfl
     (by rw [s1.2.2.2.1]; exact hP.hwf) (by rw [s1.2.2.2.1]; exact hP.hD) hWm
-    (by rw [s1.2.1]; exact h6) (by rw [s1.1]; exact hgn) (by rw [s1.2.2.2.2.2, s1.2.1]; omega)
-    (by rw [u53, u55]; exact hpA) (candE c₁ 81153 _ 0 s1 u53 u52 u55 hat.1 hpA) hJ₁
+    (by rwa [s1.2.1]) (by rwa [s1.1]) (by rw [s1.2.2.2.2.2, s1.2.1]; omega)
+    (by rwa [u53, u55]) (candE c₁ 81153 _ 0 s1 u53 u52 u55 hat.1 hpA) hJ₁
     (by unfold ndK at hroom; omega)) (fun c₂ hI₂ hA₂ ⟨hw₂, f₂, m₂, R₂⟩ => ?_)).mono
     (by omega) (fun _ h => h)
   have e2 : ∀ q, 81100 ≤ q → q ≤ 81159 → c₂.nreg q = c₁.nreg q :=
@@ -192,13 +191,13 @@ theorem node_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have v21 : c₂.nreg 81121 = k := by rw [e2 _ (by norm_num) (by norm_num), u21]
   have hJ₂ : c₂.nreg 81140 < E.M.W.n ∧
       ProperPos E.M (Qof E.P) E.P.n ⟨c₂.nreg 81140, c₂.nreg 81141⟩ := by
-    rw [e2 81140 (by norm_num) (by norm_num), e2 81141 (by norm_num) (by norm_num)]; exact hJ₁
+    rwa [e2 81140 (by norm_num) (by norm_num), e2 81141 (by norm_num) (by norm_num)]
   -- the right end
   refine (FRS.seq (K₂ := wsK + 10 + 25 + scK + 4) (endFull_fs hE hB hBT hI₂ hw₂
     (s := 81170) (p := 81154) (σ := 0) ⟨by norm_num, by norm_num⟩ (Or.inr rfl) (by norm_num)
     (by rw [s2.2.2.2.1]; exact hP.hwf) (by rw [s2.2.2.2.1]; exact hP.hD) hWm
-    (by rw [s2.2.1]; exact h6) (by rw [s2.1]; exact hgn) (by rw [s2.2.2.2.2.2, s2.2.1]; omega)
-    (by rw [v54, v55]; exact hpB) (candE c₂ 81154 _ 0 s2 v54 v52 v55 hat.2 hpB) hJ₂
+    (by rwa [s2.2.1]) (by rwa [s2.1]) (by rw [s2.2.2.2.2.2, s2.2.1]; omega)
+    (by rwa [v54, v55]) (candE c₂ 81154 _ 0 s2 v54 v52 v55 hat.2 hpB) hJ₂
     (by unfold ndK at hroom; omega)) (fun c₃ hI₃ hA₃ ⟨hw₃, f₃, m₃, R₃⟩ => ?_)).mono
     (by omega) (fun _ h => h)
   have e3 : ∀ q, 81100 ≤ q → q ≤ 81169 → c₃.nreg q = c₂.nreg q :=
@@ -222,9 +221,9 @@ theorem node_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   -- the witness
   refine (FRS.seq (K₂ := 10 + 25 + scK + 4) (wsel_fs hE hB hI₃
     (R₂.2.2.2.2.2.2.congr (fun j hj => e3 _ (by omega) (by omega))) R₃.2.2.2.2.2.2
-    (by rw [s3.1]; exact hgn) (by rw [s3.2.2.1]; exact hLn) (by rw [s3.2.1, s3.2.2.1]; omega)
-    (by rw [s3.2.2.1]; exact hL0) (by rw [s3.2.1, s3.2.2.1]; exact hpA')
-    (by rw [s3.2.1, s3.2.2.1]; exact hpB')
+    (by rwa [s3.1]) (by rwa [s3.2.2.1]) (by rw [s3.2.1, s3.2.2.1]; omega)
+    (by rwa [s3.2.2.1]) (by rwa [s3.2.1, s3.2.2.1])
+    (by rwa [s3.2.1, s3.2.2.1])
     (by unfold ndK at hroom; omega)) (fun c₄ hI₄ hA₄ ⟨x81, xC, xAll, f₄⟩ => ?_)).mono
     (by omega) (fun _ h => h)
   have e4 : ∀ q, 81000 ≤ q → q ≤ 81179 → c₄.nreg q = c₃.nreg q :=
@@ -233,7 +232,7 @@ theorem node_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have x21 : c₄.nreg 81121 = k := by rw [e4 _ (by norm_num) (by norm_num), w21]
   -- the children
   refine (FRS.seq (K₂ := 25 + scK + 4) (kidLoad_fs hE hB hI₄ (N := Nα)
-    (by rw [s4.2.2.2.2.1]; exact hP.hNW) (by rw [x21, hdec]; exact hk))
+    (by rw [s4.2.2.2.2.1]; exact hP.hNW) (by rwa [x21, hdec]))
     (fun c₅ hI₅ hA₅ ⟨kl, kh, f₅⟩ => ?_)).mono (by omega) (fun _ h => h)
   rw [x21] at kl kh
   have s5 := sT s4 (fun q a b => f₅ q (by omega) (by omega) (by omega))
@@ -241,8 +240,8 @@ theorem node_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     rw [f₅ _ (by norm_num) (by norm_num) (by norm_num), e4 _ (by norm_num) (by norm_num), w56]
   -- the reference arc
   refine (FRS.seq (K₂ := scK + 4) (refLoad_fs hE hB hI₅ (N := Nα)
-    (by rw [s5.2.2.2.2.1]; exact hP.hNW) (by rw [y56]; exact hdn) (by rw [y56]; exact har)
-    (by rw [y56]; exact hj)) (fun c₆ hI₆ hA₆ ⟨rs, rh, f₆⟩ => ?_)).mono (by omega) (fun _ h => h)
+    (by rw [s5.2.2.2.2.1]; exact hP.hNW) (by rwa [y56]) (by rwa [y56])
+    (by rwa [y56])) (fun c₆ hI₆ hA₆ ⟨rs, rh, f₆⟩ => ?_)).mono (by omega) (fun _ h => h)
   rw [y56] at rs rh
   have e64 : ∀ q, 81120 ≤ q → q < 83000 → c₆.nreg q = c₄.nreg q := fun q a b => by
     rw [f₆ q (by omega) (by omega) (by omega) (by omega), f₅ q (by omega) (by omega) (by omega)]
@@ -295,19 +294,19 @@ theorem node_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
         f₄ q (by omega) (by omega) (by unfold WsW KeyW; omega),
         f₃ q a b (by unfold EndW KeyW VertW; omega), f₂ q a b (by unfold EndW KeyW VertW; omega),
         F1 q (by omega) (by omega)]
-    · rw [g07 _ (by norm_num) (by norm_num)]; exact m₃ (m₂ (by rw [fl₁]; exact h1))
+    · rw [g07 _ (by norm_num) (by norm_num)]; exact m₃ (m₂ (by rwa [fl₁]))
   by_cases hc : c₆.nreg 81011 < c₆.nreg 81181
   · have h1 : c₄.nreg 81181 = 1 := by rw [z11, z81] at hc; omega
     obtain ⟨xu, xe, -⟩ := xC h1
-    have hu : c₄.nreg 81180 < L := by have := xu.1; rw [s3.2.2.1] at this; exact this
+    have hu : c₄.nreg 81180 < L := by have := xu.1; rwa [s3.2.2.1] at this
     have hpU : PosOK Cα (Qof E.P) E.P.n ⟨c₆.nreg 81183, 0⟩ := by
       rw [z83, xe, s3.2.1]
       refine ⟨by show g' + c₄.nreg 81180 < (chainModel Cα).W.n; rw [Stretch.nα]; omega,
         ⟨le_of_eq rfl, by show (0 : ℝ) < 1; norm_num, Nat.zero_le _⟩,
         fun _ => by show 6 ≤ g' + c₄.nreg 81180; omega⟩
     refine (FRS.ifT hc (sideCh_fs hE hB hI₆ (by rw [s6.2.2.2.1]; exact hP.hwf)
-      (by rw [s6.2.2.2.1]; exact hP.hD) hWm (by rw [z53, z55]; exact hpA)
-      (by rw [z54, z55]; exact hpB) hpU (by rw [rs, rh]; exact hpS)
+      (by rw [s6.2.2.2.1]; exact hP.hD) hWm (by rwa [z53, z55])
+      (by rwa [z54, z55]) hpU (by rwa [rs, rh])
       (by unfold ndK at hroom; omega))).mono (by omega) (fun c' ⟨sa, sb, fS⟩ => ?_)
     rw [z53, z54, z55, z83, rs, rh, z18] at sa
     rw [z53, z54, z55, z83, rs, rh, z19] at sb

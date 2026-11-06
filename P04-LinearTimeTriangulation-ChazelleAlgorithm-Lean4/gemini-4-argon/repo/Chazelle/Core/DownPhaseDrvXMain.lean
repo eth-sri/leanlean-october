@@ -43,7 +43,7 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
   obtain ⟨XEh, SF⟩ := hA P W c L E C NR hG hW h02 hli2 hLne hL hperm hsort hdeg hNw hr hHost hHBA
     hCP hCs hCm hMDwf hMD hCD hNRw hNR hroom
   obtain ⟨sM3, sM4, sM5, sHB, sBR, sBN1, sR0, sPn, sMD, sm, sHB1, sBR3, sBN7, sR1, sRA, s7⟩ := SF
-  set N := BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E with hNdef
+  set N := BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E
   set v := xvOf P c C N NR with hvdef
   have hK : v.K = NR.chords.length := rfl
   have hA0 := XEh.hA0
@@ -96,8 +96,7 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
   -- the allocator
   have hal : d4.nreg ALLOC = c.nreg ALLOC + 5 * NR.chords.length := by
     show d4.nreg 9999 = _
-    rw [g4 9999 (by decide) (by decide) (by decide), f3.1 9999 (by decide), o2 9999 (by decide)]
-    exact a99
+    rwa [g4 9999 (by decide) (by decide) (by decide), f3.1 9999 (by decide), o2 9999 (by decide)]
   have hlen := xL_length_le P v NR v.K
   have hKc : c.nmem (c.nreg 217006) = NR.chords.length := sBR
   refine ⟨d4, k1 + (k2 + (k3 + k4)), ex, ?_, ⟨fun q hq1 hq2 => ?_, ?_⟩, ?_⟩
@@ -134,7 +133,7 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
       rw [← rcR]
       simp only [hchR]
     have X' : XHyp P (decide (c.nreg 217002 = 1)) L' E' reg' (c.nreg 217001) C' NR' :=
-      ⟨hG, by rw [decide_eq_true_iff]; exact hli2, hLne', hL', hperm', hsort', hregs',
+      ⟨hG, by rwa [decide_eq_true_iff], hLne', hL', hperm', hsort', hregs',
         by have := hr; simp only [NF.nRegions] at this ⊢; rw [← rr]; exact this, hCP', hCs',
         hCm', hNR'⟩
     obtain ⟨pS, pN, pA, pO⟩ := hB P (decide (c.nreg 217002 = 1)) L' E' reg' (c.nreg 217001) C'
@@ -143,7 +142,7 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
     have e10 : d4.nreg 217010 = c.nreg ALLOC := b10.trans g3.r36
     have e12 : d4.nreg 217012 = c.nreg ALLOC + 3 * NR.chords.length := b12.trans g3.r37
     refine ⟨xL P v NR v.K, by omega, by omega, by omega, by omega, by rw [b11, c38],
-      by rw [m4, e10]; exact cl, pS, pN, pA,
+      by rwa [m4, e10], pS, pN, pA,
       fun q hq => ⟨?_, pO q hq⟩⟩
     rw [m4, e12, ← keyBkt_congr ra]
     exact cb q hq

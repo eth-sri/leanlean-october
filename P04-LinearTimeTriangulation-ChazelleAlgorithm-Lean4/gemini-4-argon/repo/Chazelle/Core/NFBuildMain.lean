@@ -42,7 +42,6 @@ theorem sortCost_le (K : ℕ) :
   have h2 : 2 * K * (Nat.clog 2 (2 * K) + 1) ≤ 2 * K * (Nat.clog 2 K + 2) :=
     Nat.mul_le_mul_left _ (by omega)
   have h3 : K ≤ K * (Nat.clog 2 K + 1) := Nat.le_mul_of_pos_right _ (by omega)
-  have h4 : 2 * K * (Nat.clog 2 K + 2) = 2 * (K * (Nat.clog 2 K + 1)) + 2 * K := by ring
   nlinarith
 
 theorem seg_getD {m : ℕ → ℕ} {a n : ℕ} {E : List ℕ} (h : seg m a n = E) {j : ℕ} (hj : j < n) :
@@ -190,8 +189,8 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
   obtain ⟨hG, hWn, hwf, M, L, hM, hgood, hlen, hBL, hCL, hok⟩ := hpre
   simp only [rd, bandReg, bBuild] at hwf hM hlen hBL hCL ⊢
   norm_num at hwf hM hlen hBL hCL ⊢
-  set K := L.length with hKdef
-  set A₀ := c.nreg ALLOC with hA₀
+  set K := L.length
+  set A₀ := c.nreg ALLOC
   have hA : c.nreg 9999 = A₀ := rfl
   have hX : 1 ≤ K * (Nat.clog 2 K + 1) + 1 := by omega
   have hKX : K ≤ K * (Nat.clog 2 K + 1) := Nat.le_mul_of_pos_right _ (by omega)
@@ -199,8 +198,7 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
     have h := hcost
     beta_reduce at h
     simp only [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd] at h
-    rw [hlen] at h
-    exact h
+    rwa [hlen] at h
   have hsc := sortCost_le K
   unfold κBuild at hcost'
   -- the first instruction
@@ -220,14 +218,14 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
     have hc0A : c₀.nreg ALLOC = A₀ := g₀ 9999 (by norm_num)
     rw [hc0A] at d2 hrec e1
     have hm₀ : c₀.nmem = c.nmem := by rw [hc₀]
-    set SE := c₁.nreg 30005 with hSEdef
-    set H := c₁.nreg 9999 with hHdef
+    set SE := c₁.nreg 30005
+    set H := c₁.nreg 9999
     have e2' : SE + 2 * K ≤ H := e2
     have hElen : E.length = 2 * K := by rw [hperm.length_eq, List.length_range]
     have hlow₁ : ∀ a, a < A₀ → c₁.nmem a = c.nmem a := fun a ha => by
-      rw [F₁.2.2.1 a (by rw [hc0A]; exact ha), hm₀]
-    have hAH : A₀ ≤ H := by have := F₁.2.2.2.2.2.1; rw [hc0A] at this; exact this
-    have hHk : H ≤ A₀ + k₁ := by have := F₁.2.2.2.2.2.2; rw [hc0A] at this; exact this
+      rw [F₁.2.2.1 a (by rwa [hc0A]), hm₀]
+    have hAH : A₀ ≤ H := by have := F₁.2.2.2.2.2.1; rwa [hc0A] at this
+    have hHk : H ≤ A₀ + k₁ := by have := F₁.2.2.2.2.2.2; rwa [hc0A] at this
     obtain ⟨hM₁, hwf₁⟩ := desc_agree hwf hM hlow₁
     have hI : BuildNF.Input M (Qof P) L E :=
       ⟨walkAx_of_goodModel hgood, hok, hperm,
@@ -236,7 +234,7 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
       obtain ⟨a1, a2, a3⟩ := hCL i hi
       exact ⟨by rw [hlow₁ _ (by omega), a1], by rw [hlow₁ _ (by omega), a2],
         by rw [hlow₁ _ (by omega), a3]⟩
-    obtain ⟨c₂, k₂, x₂, hk₂, hk₂', w₂, F₂, h40003, h9999, hlow, hNF⟩ := phaseB_exec (P := P) hG
+    obtain ⟨c₂, k₂, x₂, hk₂, hk₂', F₂, h40003, h9999, hlow, hNF⟩ := phaseB_exec (P := P) hG
       hWn c₁ w₁ (M := M) (L := L) (E := E) (D := c.nreg 40000) (T := A₀) (SE := SE)
       (B := c.nreg 40001) (H := H) hI hK d1 d2 d3 d4 d5 d6 d7 rfl rfl
       (modelDescWF_mono hwf₁ hAH) hM₁ hrec (by omega) hCL₁ (by omega)
@@ -248,13 +246,13 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
     · rw [hlen]; unfold costA at hk₁; unfold κBuild; nlinarith
     · obtain rfl := NFLoc.modelDesc_unique hM hM'
       obtain rfl := BuildNF.chordListAt_unique hCL hL' (hlen.symm.trans hlen')
-      exact ⟨E, hperm, hsort, by rw [h40003]; exact hAH, by rw [h40003]; exact hNF⟩
+      exact ⟨E, hperm, hsort, by rwa [h40003], by rwa [h40003]⟩
     · refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
       · rw [F₂.1 r (BphaseB_false hr hra), F₁.1 r hr hra, g₀ r (by
           intro h; subst h; simp [bandOf, bSort, bSign] at hr)]
       · rw [exec_frameM2 x₂ wrM2_phaseB r (BRb_false hr), F₁.2.1 r hr]
       · rw [hlow a (by omega), hlow₁ a ha]
-      · rw [F₂.2.2.1, F₁.2.2.2.1 a (by rw [hc0A]; exact ha)]
+      · rw [F₂.2.2.1, F₁.2.2.2.1 a (by rwa [hc0A])]
       · rw [F₂.2.2.2, F₁.2.2.2.2.1]
       · show A₀ ≤ c₂.nreg 9999; rw [h9999]; omega
       · show c₂.nreg 9999 ≤ A₀ + _; rw [h9999]; omega
@@ -262,7 +260,7 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
     have hK0 : K = 0 := by omega
     have t₀ : ¬ c₀.nreg 43250 < c₀.nreg 40002 := by
       rw [g₀ 40002 (by norm_num), hlen, hc₀]; simp; omega
-    obtain ⟨c', k, x, hk, hk', w', F', h40003, h9999, hlow, hNF⟩ := zeroCase_exec (P := P) hWn c₀
+    obtain ⟨c', k, x, hk, hk', F', h40003, h9999, hlow, hNF⟩ := zeroCase_exec (P := P) hWn c₀
       w₀ (M := M) (L := L) (E := []) (D := c.nreg 40000) (H := A₀) hK0
       (g₀ _ (by norm_num)) (by rw [g₀ 9999 (by norm_num)]; rfl) hwf hM (by nlinarith)
     have X : Exec P W buildStmt c c' (1 + (k + 2)) := .seq x₀ (.ifLtN_false t₀ x)
@@ -270,7 +268,7 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
     · obtain rfl := NFLoc.modelDesc_unique hM hM'
       obtain rfl := BuildNF.chordListAt_unique hCL hL' (hlen.symm.trans hlen')
       refine ⟨[], by rw [show L.length = 0 from hK0]; simp, List.Pairwise.nil, by rw [h40003], ?_⟩
-      rw [h40003]; exact hNF
+      rwa [h40003]
     · have F₀ : FrameM BphaseB c c₀ := exec_frameM x₀ (by decide)
       have R' : ∀ r, BRb r = false → c'.rreg r = c.rreg r := fun r hr =>
         (exec_frameM2 x wrM2_zeroCase r hr).trans (by rw [hc₀])

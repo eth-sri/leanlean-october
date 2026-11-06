@@ -59,8 +59,8 @@ theorem pcSet_congr (M : Model) (sE : ℕ) (a : ℝ) {D D' : ℕ} {b b' : ℝ} {
   ext x
   simp only [mem_iUnion, List.mem_range, exists_prop]
   constructor
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [← h d (by omega)]; exact hx⟩
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [h d (by omega)]; exact hx⟩
+  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rwa [← h d (by omega)]⟩
+  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rwa [h d (by omega)]⟩
 
 theorem nat_split (k n : ℕ) : (k : ℝ) = ((k % n : ℕ) : ℝ) + ((k / n : ℕ) : ℤ) * (n : ℝ) := by
   rw [Int.cast_natCast]; exact_mod_cast (Nat.mod_add_div' k n).symm
@@ -131,7 +131,6 @@ theorem piece0_D_le {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
     (hyn : y.edge < 2 * C.m + 7)
     (hwt : (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) ≤ 1) :
     pcD (2 * C.m + 7) x.edge y.edge ≤ 9 := by
-  have hnw := piece0_nowrap hx hy
   rw [arcWt_chain C Q hx hy] at hwt
   have hm := C.one_le
   have hc := le_keyCeil y.edge ((chainModel C).param Q y)
@@ -213,7 +212,6 @@ theorem piece0_union {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x
   have kx := key_range hx hxn
   have ky := key_range hy hyn
   rw [← hnW] at kx ky
-  have hL := len_le (M.W.n : ℝ) (M.key Q x) (M.key Q y) kx.1 ky.2
   have hend := piece0_end hx hy hxn hyn hwt
   have hstep := arcSet_step M kx.1 kx.2 ky.1 ky.2 0
   simp only [Int.cast_zero, zero_mul, add_zero] at hstep

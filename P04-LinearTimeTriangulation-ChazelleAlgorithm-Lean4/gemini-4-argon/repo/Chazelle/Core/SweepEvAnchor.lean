@@ -146,8 +146,8 @@ theorem anchor_not_inside (hP : J.P.Simple) {S₂ : Set (Set Point)}
     exact_mod_cast hC.hg
   have hAB := pt_ne_of_off_ne hP hS₂ hS₂f he hA hB (by linarith : oW J (pa + ta) ≠ oW J (pb + tb))
   have := no_cross_off hC.hM hC.hF hC.hfin he hZ (Ne.symm hZe) hA hB hAB hZK hZz hg0 hgn
-    (by rw [← oW_eq, ← oW_eq]; linarith) (by rw [← oW_eq, ← oW_eq]; exact h1)
-    (by rw [← oW_eq, ← oW_eq]; exact h2)
+    (by rw [← oW_eq, ← oW_eq]; linarith) (by rwa [← oW_eq, ← oW_eq])
+    (by rwa [← oW_eq, ← oW_eq])
   rw [← oW_eq, ← oW_eq, ← oW_eq] at this
   linarith [this.1]
 
@@ -211,10 +211,9 @@ theorem closed_nested (hP : J.P.Simple) {S₂ : Set (Set Point)}
     exact_mod_cast hC.hg
   have hAB := pt_ne_of_off_ne hP hS₂ hS₂f hc hA hB hab.ne
   have := no_cross_off hC.hM hC.hF hC.hfin hc he hce hA hB hAB hQ hQ' hg0 hgn
-    (by rw [← oW_eq, ← oW_eq]; exact hab) (by rw [← oW_eq, ← oW_eq]; exact h1)
-    (by rw [← oW_eq, ← oW_eq]; exact h2)
-  rw [← oW_eq, ← oW_eq, ← oW_eq] at this
-  exact this
+    (by rwa [← oW_eq, ← oW_eq]) (by rwa [← oW_eq, ← oW_eq])
+    (by rwa [← oW_eq, ← oW_eq])
+  rwa [← oW_eq, ← oW_eq, ← oW_eq] at this
 
 /-- The keys of the attachments of a chord. -/
 theorem attach_key_mem {e : Set Point} {q : ℕ} {s : ℝ}

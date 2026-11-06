@@ -52,11 +52,10 @@ theorem farChk_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
         else ((chainModel J.right).pos (Qof P) ⟨c.nreg oFE, c.nreg oFC⟩).1 <
             ((chainModel J.left).pos (Qof P) ⟨c.nreg (eA + 1), c.nreg (eA + 2)⟩).1) ∧
       EFr (fun r => cAW ≤ r ∧ r ≤ cFr) c c') := by
-  have hK := hK₀.fix hI
   have hG := hctx1.1
   have hPW : P.n + 3 ≤ W := by have := hctx1.2.1; unfold hostWords at this; omega
-  set x₁ := ((chainModel J.left).pos (Qof P) ⟨c.nreg (eA + 1), c.nreg (eA + 2)⟩).1 with hx₁
-  set x₂ := ((chainModel J.right).pos (Qof P) ⟨c.nreg oFE, c.nreg oFC⟩).1 with hx₂
+  set x₁ := ((chainModel J.left).pos (Qof P) ⟨c.nreg (eA + 1), c.nreg (eA + 2)⟩).1
+  set x₂ := ((chainModel J.right).pos (Qof P) ⟨c.nreg oFE, c.nreg oFC⟩).1
   refine IRS.seq (K₁ := 16707) (K₂ := 17293) (callAbs_irs (dsc := CD₁) (re := eA + 1)
     (rh := eA + 2) (o := cAW) hI hctx1
     ⟨by unfold CD₁ sw; norm_num, by unfold CD₁ sw; norm_num, by unfold eA sw; norm_num,
@@ -76,8 +75,8 @@ theorem farChk_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
     (rh := oFC) (o := cAF) hI₁ hctx2'
     ⟨by norm_num [sw], by norm_num [sw], by unfold oFE sw; norm_num, by unfold oFE sw; norm_num,
       by unfold oFC sw; norm_num, by unfold oFC sw; norm_num⟩
-    ⟨by unfold cAF sw; norm_num, by unfold cAF sw; norm_num⟩ (by rw [eFE]; exact he2)
-    (by rw [eFE, eFC]; exact hpp2) (by rw [eFE, eFC]; exact hy2) (by omega)) ?_ |>.mono
+    ⟨by unfold cAF sw; norm_num, by unfold cAF sw; norm_num⟩ (by rwa [eFE])
+    (by rwa [eFE, eFC]) (by rwa [eFE, eFC]) (by omega)) ?_ |>.mono
     (by norm_num) (fun _ h => h)
   rintro c₂ hI₂ hA₂ hA₂' ⟨hr₂, k₂, ha₂, hm₂⟩
   rw [eFE, eFC] at hr₂
@@ -109,8 +108,7 @@ theorem farChk_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
       by rw [h]⟩) hra, ha₃, hm₃⟩
   by_cases hd : c₂.nreg K0 < c₂.nreg oD
   · rw [k02, eD] at hd
-    have hd1 : c.nreg oD = 1 ∨ 1 < c.nreg oD := by omega
-    refine IRS.mono (K := 269 + 2) (IRS.ifT (by rw [k02, eD]; exact hd) (callAbsCmp_irs (a := cAW)
+    refine IRS.mono (K := 269 + 2) (IRS.ifT (by rwa [k02, eD]) (callAbsCmp_irs (a := cAW)
       (b := cAF) (o := cFr) hI₂ hG hPW ⟨by unfold cAW sw; norm_num, by unfold cAW sw; norm_num,
         by unfold cAF sw; norm_num, by unfold cAF sw; norm_num⟩
       ⟨by unfold cFr sw; norm_num, by unfold cFr sw; norm_num⟩ hr₁' hr₂ hroom2)) (by norm_num) ?_
@@ -119,7 +117,7 @@ theorem farChk_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
     refine ⟨hb.congr (by rw [ite_eq_left h1]), fr3 c' k₃ ha₃ hm₃⟩
   · rw [k02, eD] at hd
     have h0 : c.nreg oD ≠ 1 := by omega
-    refine IRS.mono (K := 269 + 2) (IRS.ifF (by rw [k02, eD]; exact hd) (callAbsCmp_irs (a := cAF)
+    refine IRS.mono (K := 269 + 2) (IRS.ifF (by rwa [k02, eD]) (callAbsCmp_irs (a := cAF)
       (b := cAW) (o := cFr) hI₂ hG hPW ⟨by unfold cAF sw; norm_num, by unfold cAF sw; norm_num,
         by unfold cAW sw; norm_num, by unfold cAW sw; norm_num⟩
       ⟨by unfold cFr sw; norm_num, by unfold cFr sw; norm_num⟩ hr₂ hr₁' hroom2)) (by norm_num) ?_
@@ -185,7 +183,6 @@ theorem tabAddrL_val (m f : ℕ → ℕ) :
       ∀ q, q ≠ cTA → regB m tabAddrL f q = f q := by
   have hK : oK ≠ cTA := by unfold oK cTA sw; omega
   have hS : oS ≠ cTA := by unfold oS cTA sw; omega
-  have hB : cTB ≠ cTA := by unfold cTB cTA sw; omega
   refine ⟨?_, fun q hq => regB_other _ _ _ (fun i hi => by
     simp only [tabAddrL, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
@@ -208,8 +205,7 @@ theorem tabW_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hT : c₀.nreg ALLO
   have hsA : IScr cTA := iscr_sw' (by norm_num) (by norm_num)
   have hK' : oK ≠ cTA := by unfold oK cTA sw; omega
   have hS' : oS ≠ cTA := by unfold oS cTA sw; omega
-  have hB' : cTB ≠ cTA := by unfold cTB cTA sw; omega
-  set A := c.nreg cTB + 3 * (2 * c.nreg oK + c.nreg oS) with hA
+  set A := c.nreg cTB + 3 * (2 * c.nreg oK + c.nreg oS)
   have hok : okB W c.nmem tabAddrL c.nreg := by
     simp only [tabAddrL, okB, okI, regI, upd_same, upd_other _ _ _ hK', upd_other _ _ _ hS']
     refine ⟨hsA, ⟨hsA, by omega⟩, ⟨hsA, by omega⟩, ⟨hsA, by omega⟩, ⟨hsA, by omega⟩, ⟨hsA, by omega⟩,
@@ -220,7 +216,7 @@ theorem tabW_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hT : c₀.nreg ALLO
   have nE2 : eA + 2 ≠ cTA := by unfold eA cTA sw; omega
   refine IRS.seq (K₁ := 10) (K₂ := 6) (IRS.block tabAddrL hI hok) ?_
   rintro c₁ hI₁ - - hc1
-  have a1 : c₁.nreg cTA = A := by rw [hc1]; exact va
+  have a1 : c₁.nreg cTA = A := by rwa [hc1]
   have o1 : ∀ q, q ≠ cTA → c₁.nreg q = c.nreg q := fun q hq => by rw [hc1]; exact vo q hq
   have m1 : c₁.nmem = c.nmem := by rw [hc1]
   refine IRS.seq (K₁ := 1) (K₂ := 5) (IRS.store hI₁ (by rw [a1]; omega)) ?_
@@ -234,7 +230,7 @@ theorem tabW_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hT : c₀.nreg ALLO
     rw [hc3]; simp only [regB, regI, upd_same]; rw [r2, a1, o1 _ nK1, k1]
   have o3 : ∀ q, q ≠ cTA → c₃.nreg q = c.nreg q := fun q hq => by
     rw [hc3]; simp only [regB, regI]; rw [upd_other _ _ _ hq, r2, o1 q hq]
-  have m3 : c₃.nmem = upd c.nmem A 1 := by rw [hc3]; exact m2
+  have m3 : c₃.nmem = upd c.nmem A 1 := by rwa [hc3]
   refine IRS.seq (K₁ := 1) (K₂ := 3) (IRS.store hI₃ (by rw [a3]; omega)) ?_
   rintro c₄ hI₄ - - hc4
   have r4 : c₄.nreg = c₃.nreg := by rw [hc4]
@@ -247,7 +243,7 @@ theorem tabW_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hT : c₀.nreg ALLO
     rw [hc5]; simp only [regB, regI, upd_same]; rw [r4, a3, o3 _ nK1, k1]
   have o5 : ∀ q, q ≠ cTA → c₅.nreg q = c.nreg q := fun q hq => by
     rw [hc5]; simp only [regB, regI]; rw [upd_other _ _ _ hq, r4, o3 q hq]
-  have m5 : c₅.nmem = upd (upd c.nmem A 1) (A + 1) (c.nreg cME) := by rw [hc5]; exact m4
+  have m5 : c₅.nmem = upd (upd c.nmem A 1) (A + 1) (c.nreg cME) := by rwa [hc5]
   refine (IRS.store hI₅ (by rw [a5]; omega)).mono (by norm_num) ?_
   rintro c' hc'
   rw [hc']

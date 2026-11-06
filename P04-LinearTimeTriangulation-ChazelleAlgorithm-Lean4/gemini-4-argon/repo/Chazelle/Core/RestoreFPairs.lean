@@ -99,7 +99,7 @@ theorem innerLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     rw [g07]
     rcases Nat.lt_or_ge j (d.nreg 81031) with h | h
     · exact (dd j h).mono m₁
-    · rw [show j = d.nreg 81031 by omega]; exact pd
+    · rwa [show j = d.nreg 81031 by omega]
   · obtain ⟨hP1, hex⟩ := hP
     obtain ⟨cw, cf, cm, cle, cd⟩ := hP1
     have c32 : c'.nreg 81032 = k := by
@@ -172,7 +172,7 @@ theorem outerLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have v30 : c'.nreg 81030 = d.nreg 81030 + 1 := by
       rw [e']; simp [regB, regI, upd, k1, i₂]
     have g07 : c'.nreg 81007 = c₂.nreg 81007 := f' _ (by norm_num)
-    have g07' : c₂.nreg 81007 = 1 → c'.nreg 81007 = 1 := fun h => by rw [g07]; exact h
+    have g07' : c₂.nreg 81007 = 1 → c'.nreg 81007 = 1 := fun h => by rwa [g07]
     have c32 : c'.nreg 81032 = k := by
       rw [f' _ (by norm_num), f₂ _ (by norm_num) (by norm_num) nPair32 (by norm_num),
         f₁ _ (by norm_num), d32]
@@ -181,7 +181,7 @@ theorem outerLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       fun h => g07' (m₂ (by rw [f₁ _ (by norm_num)]; exact dm h)),
       by omega, fun i hi j hj => ?_⟩, by omega⟩
     rcases Nat.lt_or_ge i (d.nreg 81030) with h | h
-    · exact ((dd i h j hj).mono (fun h => m₂ (by rw [f₁ _ (by norm_num)]; exact h))).mono g07'
+    · exact ((dd i h j hj).mono (fun h => m₂ (by rwa [f₁ _ (by norm_num)]))).mono g07'
     · rw [show i = d.nreg 81030 by omega]; exact (pd j hj).mono g07'
   · obtain ⟨hP1, hex⟩ := hP
     obtain ⟨cw, cf, cm, cle, cd⟩ := hP1

@@ -110,8 +110,8 @@ theorem items_seg {key act : ℕ → ℕ} (hinj : ∀ v w, v < μ → w < μ →
     rw [hact w hw (by omega)]; exact ⟨hw, hbw⟩
   · rintro ⟨hv, hbv⟩
     refine ⟨plPos μ bo key v, ?_, ?_, hact v hv (by omega)⟩
-    · have := plPos_ge (μ := μ) (bo := bo) (key := key) v; rw [hbv] at this; exact this
-    · have := plPos_lt (μ := μ) (bo := bo) (key := key) hv; rw [hbv] at this; exact this
+    · have := plPos_ge (μ := μ) (bo := bo) (key := key) v; rwa [hbv] at this
+    · have := plPos_lt (μ := μ) (bo := bo) (key := key) hv; rwa [hbv] at this
 
 theorem inj_seg {key act : ℕ → ℕ} (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w)
     (hact : ∀ v, v < μ → bo v < μ → act (plPos μ bo key v) = v) {b : ℕ} (hb : b < μ) :
@@ -155,8 +155,8 @@ theorem SInv.init {k : ℕ} {H : Finset ℕ} {slab : ℕ → ℕ} {Adj : ℕ →
     rw [hi, hi', Finset.disjoint_left]
     intro v h1 h2; simp only [Finset.mem_filter] at h1 h2
     exact hpq (by rw [← h1.2, ← h2.2])
-  · obtain ⟨b, -, h2, rfl⟩ := mem_segL.mp hp; rw [len_seg]; exact h2
-  · obtain ⟨b, -, h2, rfl⟩ := mem_finL.mp hp; rw [len_seg]; exact h2
+  · obtain ⟨b, -, h2, rfl⟩ := mem_segL.mp hp; rwa [len_seg]
+  · obtain ⟨b, -, h2, rfl⟩ := mem_finL.mp hp; rwa [len_seg]
   · have hb : bo v < μ := by by_contra h; exact hvH ((hH v hv).mpr h)
     refine ⟨seg μ bo (bo v), lv_iff.mpr ⟨bo v, hb, rfl⟩, ?_⟩
     rw [items_seg hinj hact hb]; simp [hv]

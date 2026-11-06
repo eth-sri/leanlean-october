@@ -147,7 +147,7 @@ theorem exists_exit_at_start (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
     (hfin : F.Finite) (hne : F.Nonempty) {U : Set Point} (hU : U ∈ M.regions F) {a b : ℝ}
     (harc : M.IsArc F U a b) :
     ∃ c ∈ {c | c ∈ F ∧ TouchesIn M.D c U}, ∃ p t, SideAttach M.W c p t ∧ a = p + t := by
-  set T := {c | c ∈ F ∧ TouchesIn M.D c U} with hT
+  set T := {c | c ∈ F ∧ TouchesIn M.D c U}
   have hTF : T ⊆ F := fun c hc => hc.1
   have hTfin : T.Finite := hfin.subset hTF
   have hsys := hM.sys F hF hfin
@@ -166,7 +166,7 @@ theorem exists_exit_at_start (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   obtain ⟨u, hu⟩ := Chazelle.Chain.regionsIn_nonempty hU
   have hVfree : V ⊆ freeIn M.D T :=
     (Chazelle.Chain.regionsIn_subset hV).trans (Chazelle.Chain.freeIn_anti M.D hTF)
-  set VT := connectedComponentIn (freeIn M.D T) v with hVT
+  set VT := connectedComponentIn (freeIn M.D T) v
   have hVVT : V ⊆ VT :=
     (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hVfree
   have hVTr : VT ∈ M.regions T := ⟨v, hVfree hv, rfl⟩

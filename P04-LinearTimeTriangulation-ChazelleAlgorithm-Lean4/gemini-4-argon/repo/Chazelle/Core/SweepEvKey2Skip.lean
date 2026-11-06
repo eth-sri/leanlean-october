@@ -82,8 +82,7 @@ theorem stopLabs_congr {m m' : ℕ → ℕ} {A i : ℕ} (h : ∀ t, t < 4 → m'
     intro t ht
     rw [List.mem_range] at ht
     have := h (2 + t) (by omega)
-    rw [← Nat.add_assoc] at this
-    exact this
+    rwa [← Nat.add_assoc] at this
   · rfl
 
 theorem skInv_zero (hS : SkCtx P J c d₀) (hsC : c.nreg sP ≤ c.nreg sC) (hN : d₀.nreg kqN ≤ 4)
@@ -110,7 +109,6 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
     fun r hr => fr.kkeep (nSk r hr).1 (nSk r hr).2
   have eSC : d.nreg sC = c.nreg sC := (kp _ (Or.inl rfl)).trans hS.hsC
   have eSB : d.nreg sB = c.nreg sB := (kp _ (Or.inr (Or.inl rfl))).trans hS.hsB
-  have eAB : d.nreg aB = c.nreg aB := (kp _ (Or.inr (Or.inr (Or.inl rfl)))).trans hS.haB
   have eKE : d.nreg kE = d₀.nreg kE := kp _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))
   have eKH : d.nreg kH = d₀.nreg kH := kp _ (Or.inr (Or.inr (Or.inr (Or.inr rfl))))
   have hAd : c.nreg ALLOC ≤ d.nreg ALLOC := hS.hA.trans fr.2.1
@@ -118,15 +116,14 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
     (fr.2.2 x (lt_of_lt_of_le hx hS.hA)).trans (hS.hm x hx)
   have hKd := E.hK.fix hId
   have hW4 : 4 ≤ W := by omega
-  set o' := offK P J (d₀.nreg kE) (d₀.nreg kH) with ho'
+  set o' := offK P J (d₀.nreg kE) (d₀.nreg kH)
   unfold skipS
   by_cases hsd : d.nreg sP < d.nreg sC
-  · have hs : c.nreg sP + j < c.nreg sC := by rw [hsP, eSC] at hsd; exact hsd
+  · have hs : c.nreg sP + j < c.nreg sC := by rwa [hsP, eSC] at hsd
     set i := c.nreg sP + j with hi
     refine IRS.mono (K := 11102 + K + 2) (IRS.ifT hsd ?_) (by omega) (fun _ h => h)
     have hsBA := hS.hsBA
     have haBA := hS.haBA
-    have h5 : 5 * i + 5 ≤ 5 * c.nreg sC := by omega
     refine (IRS.seq (K₁ := 7) (K₂ := 11095 + K) (ldStop_irs hId hKd.2.1 (by rw [eSB, hsP]; omega))
       ?_).mono (by omega) (fun _ h => h)
     rintro d₁ hI₁ hA₁ hA₁' ⟨s1, s2, s3, s4⟩
@@ -183,10 +180,10 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
     by_cases h2 : d₂.nreg K0 < d₂.nreg kqO
     · rw [k02] at h2
       have hlt : o' < offK P J (stopE c i) (stopH c i) := b1.2.1 (by have := b1.1; omega)
-      refine IRS.mono (K := 0 + 2) (IRS.ifT (by rw [k02]; exact h2) (IRS.skip hI₂ rfl)) (by omega) ?_
+      refine IRS.mono (K := 0 + 2) (IRS.ifT (by rwa [k02]) (IRS.skip hI₂ rfl)) (by omega) ?_
       rintro d' rfl
-      refine hstop d₂ ⟨j, ⟨fr02, by rw [eSP2], hjC, hj2, hoff, by rw [eN2]; exact hN,
-        by rw [lb2]; exact hlb, by rw [eA2]; exact hA1, by rw [eA2]; exact hAiff⟩, fun _ => ?_⟩
+      refine hstop d₂ ⟨j, ⟨fr02, by rw [eSP2], hjC, hj2, hoff, by rwa [eN2],
+        by rwa [lb2], by rwa [eA2], by rwa [eA2]⟩, fun _ => ?_⟩
       rw [eSP2]
       exact ne_of_gt hlt
     · rw [k02] at h2
@@ -198,22 +195,21 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
         · rw [← hoff (c.nreg sP) le_rfl (by omega)]
           exact hS.hsort _ _ (by omega) hs
       have heq : offK P J (stopE c i) (stopH c i) = o' := le_antisymm (not_lt.1 hnlt) hle
-      refine IRS.mono (K := 85 + K + 2) (IRS.ifF (by rw [k02]; exact h2) ?_) (by omega)
+      refine IRS.mono (K := 85 + K + 2) (IRS.ifF (by rwa [k02]) ?_) (by omega)
         (fun _ h => h)
       have eAB2 : d₂.nreg aB = c.nreg aB := by
         rw [fr02.kkeep (nSk aB (Or.inr (Or.inr (Or.inl rfl)))).1 (nSk aB (Or.inr (Or.inr (Or.inl rfl)))).2]
         exact hS.haB
-      have hAd2 : c.nreg ALLOC ≤ d₂.nreg ALLOC := hAd.trans (hA₁.trans hA₂)
       have hmem2 : ∀ x, x < c.nreg ALLOC → d₂.nmem x = c.nmem x := fun x hx => by
         rw [hm₂ x (lt_of_lt_of_le hx (hAd.trans hA₁)), s4, hmem x hx]
-      refine IRS.seq (K₁ := 84) (K₂ := 1 + K) (stopLab_irs hI₂ E.hK (by rw [eN2]; exact hN)
+      refine IRS.seq (K₁ := 84) (K₂ := 1 + K) (stopLab_irs hI₂ E.hK (by rwa [eN2])
         (by rw [eAB2, eSP2]; omega) hW4) ?_ |>.mono (by omega) (fun _ h => h)
       rintro d₃ hI₃ hA₃ hA₃' ⟨t1, t2, t3, t4, t5, t6⟩
       rw [eAB2, eSP2, stopLabs_congr (m := c.nmem) (fun t ht => hmem2 _ (by omega))] at t4
       rw [eAB2, eSP2, hmem2 _ (by omega)] at t5 t6
       have hK₃ := E.hK.fix hI₃
       have eSP3 : d₃.nreg sP = i := by
-        rw [t1 _ (by unfold KStR LblR; kqr)]; exact eSP2
+        rwa [t1 _ (by unfold KStR LblR; kqr)]
       refine IRS.seq (K₁ := 1) (K₂ := K) (IRS.block [.addN sP sP K1] hI₃
         ⟨⟨iscr_sw' (by norm_num) (by norm_num), by rw [eSP3, hK₃.2.1]; omega⟩, trivial⟩) ?_
       rintro d₄ hI₄ hA₄ hA₄' hd₄
@@ -236,12 +232,12 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
         ?_, ?_, ?_⟩
       · rcases Nat.lt_or_ge i' i with h | h
         · exact hoff i' h1 h
-        · rw [show i' = i by omega]; exact heq
+        · rwa [show i' = i by omega]
       · rw [lb4, t4, lb2, hlb, ← kqAddLs_append, ← List.flatMap_singleton (f := stopLabs c.nmem
           (c.nreg aB)) (x := i), ← List.flatMap_append, List.range'_1_concat]
       · by_cases hf : c.nmem (c.nreg aB + 5 * i) = 1
         · rw [eA4, t5 hf]
-        · rw [eA4, t6 hf, eA2]; exact hA1
+        · rwa [eA4, t6 hf, eA2]
       · by_cases hf : c.nmem (c.nreg aB + 5 * i) = 1
         · rw [eA4, t5 hf]
           exact ⟨fun _ => ⟨i, by omega, by omega, hf⟩, fun _ => rfl⟩
@@ -253,7 +249,7 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
             rcases Nat.lt_or_ge i' i with h | h
             · exact h
             · exact absurd (show i' = i by omega ▸ h3) hf
-  · have hs : ¬ c.nreg sP + j < c.nreg sC := by rw [hsP, eSC] at hsd; exact hsd
+  · have hs : ¬ c.nreg sP + j < c.nreg sC := by rwa [hsP, eSC] at hsd
     refine IRS.mono (K := 0 + 2) (IRS.ifF hsd (IRS.skip hId rfl)) (by omega) ?_
     rintro d' rfl
     exact hstop d ⟨j, ⟨fr, hsP, hjC, hj2, hoff, hN, hlb, hA1, hAiff⟩, fun h => by omega⟩
@@ -268,8 +264,7 @@ theorem skip2_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hS : SkCtx P J 
     (fun _ h => h)).mono le_rfl (fun _ h => h)
   refine ⟨2, h2, fun hlt => ?_⟩
   obtain ⟨-, hsP, -, -, hoff, -⟩ := h2
-  rw [hsP]
-  rw [← hoff (c.nreg sP) le_rfl (by omega)]
+  rw [hsP, ← hoff (c.nreg sP) le_rfl (by omega)]
   exact ne_of_gt (hS.htwo _ (by omega))
 
 end

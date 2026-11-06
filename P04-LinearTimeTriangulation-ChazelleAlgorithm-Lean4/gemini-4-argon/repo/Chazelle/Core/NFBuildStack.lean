@@ -88,7 +88,7 @@ theorem openList_snoc_close {u : List ℕ} {x : ℕ} {rest : List ℕ} (hx : u.c
     (hlist : openList u = x :: rest) : openList (u ++ [x]) = rest := by
   have hxu : x ∈ u.reverse := by rw [mem_reverse]; exact count_pos_iff.1 (by omega)
   obtain ⟨a, b, hab⟩ := List.append_of_mem hxu
-  have hcnt : u.reverse.count x = 1 := by rw [count_reverse]; exact hx
+  have hcnt : u.reverse.count x = 1 := by rwa [count_reverse]
   rw [hab, count_append, count_cons_self] at hcnt
   have hxa : x ∉ a := fun h => by have := count_pos_iff.2 h; omega
   have hxb : x ∉ b := fun h => by have := count_pos_iff.2 h; omega

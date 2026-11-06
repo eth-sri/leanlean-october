@@ -161,7 +161,7 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
       omega
     · obtain ⟨k₁, k₂, h₁, h₂, hk⟩ := hM.two_cuts hF (Set.nonempty_iff_ne_empty.2 hFe)
       have hnoF' : ∀ k, ¬ M.IsCut F' k := by
-        rintro k ⟨c, hc, -⟩; rw [hF'e] at hc; exact hc
+        rintro k ⟨c, hc, -⟩; rwa [hF'e] at hc
       obtain ⟨f, hfK, hfmin⟩ := Set.exists_min_image {x | M.IsCut F x} id hK ⟨k₁, h₁⟩
       obtain ⟨g, hgK, hgmax⟩ := Set.exists_max_image {x | M.IsCut F x} id hK ⟨k₁, h₁⟩
       simp only [id] at hfmin hgmax

@@ -31,7 +31,7 @@ theorem hostPt_mir (hQ : Q.Simple) {x' : ℝ} (hx0 : 0 ≤ x') (hxn : x' < (inte
   have h := modelMir_interior hQ
   have hn := h.walk.n_pos
   have hc := h.walk.c_lt
-  set p := ⌊x'⌋₊ with hp
+  set p := ⌊x'⌋₊
   set t := x' - ⌊x'⌋₊ with ht
   have ht0 : 0 ≤ t := by rw [ht]; linarith [Nat.floor_le hx0]
   have ht1 : t < 1 := by rw [ht]; linarith [Nat.lt_floor_add_one x']
@@ -78,7 +78,7 @@ theorem hostKeys_mir (hQ : Q.Simple) (_hFam : (interiorModel Q).ChordFamily Q S)
         rwa [image_mir_image_mir]
       rw [h.walk.sideAttach_mir hp hA'.2.1 hA'.2.2.1] at hA''
       refine ⟨mir '' c', mem_mirF.1 hc', ?_, _, _, hA'', ?_⟩
-      · rw [← hT, image_mir_image_mir]; exact ht'
+      · rwa [← hT, image_mir_image_mir]
       · rw [posMir_key hc hp hA'.2.1 hA'.2.2.1]
     · -- a vertex key
       right
@@ -128,11 +128,11 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
         rk (interiorModel Q).W.n (Q.n - 1) (hk (interiorModel Q) S R
           ((a + nk (interiorModel Q) S R - 1 - j) % nk (interiorModel Q) S R)) := by
   classical
-  set I := interiorModel Q with hI
-  set I' := interiorModel Q.mir with hI'
-  set K := nk I S R with hK
-  set n := I.W.n with hn
-  set c := Q.n - 1 with hcdef
+  set I := interiorModel Q
+  set I' := interiorModel Q.mir
+  set K := nk I S R
+  set n := I.W.n
+  set c := Q.n - 1
   have h := modelMir_interior hQ
   have hc : c < n := h.walk.c_lt
   have hM : WalkAx I := walkAx_interiorModel hQ
@@ -143,7 +143,7 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
     hostKeys_bounds (hk_mem hM hF hfin hi)
   -- the number of host keys `≤ c`
   have hex : ∃ i, K ≤ i ∨ (c : ℝ) < hk I S R i := ⟨K, Or.inl le_rfl⟩
-  set a := Nat.find hex with ha
+  set a := Nat.find hex
   have haK : a ≤ K := Nat.find_min' hex (Or.inl le_rfl)
   have hlow : ∀ i, i < a → hk I S R i ≤ c := by
     intro i hi
@@ -156,7 +156,7 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
     · omega
     · rcases hai.lt_or_eq with h2 | h2
       · exact lt_trans h1 (hk_strictMono (U := R) hM hF hfin h2 hi)
-      · rw [← h2]; exact h1
+      · rwa [← h2]
   -- the index map
   set σ : ℕ → ℕ := fun j => (a + K - 1 - j) % K with hσ
   have hσlo : ∀ j, j < a → σ j = a - 1 - j := by
@@ -183,10 +183,9 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
   have hL'len : L'.length = K := by simp [hL']
   have hL'get : ∀ j, j < K → L'.getD j 0 = rk n c (hk I S R (σ j)) := by
     intro j hj
-    rw [List.getD_eq_getElem _ _ (by rw [hL'len]; exact hj)]
+    rw [List.getD_eq_getElem _ _ (by rwa [hL'len])]
     simp [hL']
   -- strictly increasing
-  have hcn : (c : ℝ) < n := by exact_mod_cast hc
   have hmono : ∀ j j', j < j' → j' < K → L'.getD j 0 < L'.getD j' 0 := by
     intro j j' hjj hj'
     rw [hL'get j (by omega), hL'get j' hj']
@@ -232,7 +231,7 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
   have hsortL' : L'.Pairwise (· < ·) := by
     rw [List.pairwise_iff_getElem]
     intro j j' hj hj' hjj
-    have := hmono j j' hjj (by rw [← hL'len]; exact hj')
+    have := hmono j j' hjj (by rwa [← hL'len])
     rwa [List.getD_eq_getElem _ _ hj, List.getD_eq_getElem _ _ hj'] at this
   have heq : hostKeyList I' (mirF S) (mir '' R) = L' := by
     rw [hostKeyList_eq hfin']
@@ -272,7 +271,7 @@ theorem chordGap_mir {g : ℕ} (hC : ChordGap (interiorModel Q) S R g) {j : ℕ}
     obtain ⟨b1, b2, b3⟩ := posMir_bounds (c := Q.n - 1) (p' := q) hn hAq.2.1 hAq.2.2.1
     have hpp := posMir_posMir hc hAq.1 hAq.2.2.1
     refine ⟨?_, posMir_key hc hAq.1 hAq.2.1 hAq.2.2.1, ?_⟩
-    · rw [h.walk.sideAttach_mir b1 b2 b3, hpp]; exact hAq
+    · rwa [h.walk.sideAttach_mir b1 b2 b3, hpp]
     · rw [h.walk.sidePt_mir b1, hpp]
   obtain ⟨hB', hk', hs'⟩ := hmir p' t' hA'
   obtain ⟨hB, hk0, hs⟩ := hmir p t hA

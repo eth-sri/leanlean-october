@@ -106,8 +106,7 @@ theorem ChainCtx.hostReg {P : Polygon} {W : ℕ} {c : Config} {dsc : ℕ} {C : C
     ∀ H', HostAt c.nmem (c.nmem (c.nreg dsc)) H' → HostRegular P.n H' := by
   obtain ⟨-, -, -, ⟨H, hC, hreg⟩, -, -⟩ := h
   intro H' hH'
-  rw [← NFLoc.hostAt_unique hC.1 hH']
-  exact hreg
+  rwa [← NFLoc.hostAt_unique hC.1 hH']
 
 /-! ## A generic call -/
 
@@ -152,7 +151,7 @@ theorem callP_irs {ins outs : List (ℕ × ℕ)} {s : Stmt} {B' : Finset ℕ}
       have := hin3 p hp
       rw [hpa] at this
       exact absurd this (by decide))
-  set c₁ : Config := { c with nreg := regB c.nmem (cps ins) c.nreg } with hc₁def
+  set c₁ : Config := { c with nreg := regB c.nmem (cps ins) c.nreg }
   have hpre₁ : Pre P W c₁ := hpre c₁ rfl hA1 e1 e2
   refine IRS.seq (IRS.callO hs hB hI₁ hpre₁ (by
     show regB c.nmem (cps ins) c.nreg ALLOC + K ≤ W
@@ -178,7 +177,7 @@ theorem callP_irs {ins outs : List (ℕ × ℕ)} {s : Stmt} {B' : Finset ℕ}
     omega
   · intro a ha
     show c₂.nmem a = c.nmem a
-    exact hm₂ a (by show a < regB c.nmem (cps ins) c.nreg ALLOC; rw [hA1]; exact ha)
+    exact hm₂ a (by show a < regB c.nmem (cps ins) c.nreg ALLOC; rwa [hA1])
 
 end
 
@@ -261,9 +260,9 @@ theorem callArr_irs {dsc re rh rd o : ℕ} {C : Chain} (hI : IInv W c₀ c)
       obtain ⟨g0, g1, g2, g3⟩ := e1
       refine primPre_of (hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])) ?_
       refine ⟨⟨?_, ?_, ?_⟩, hctx.2.2.2.2.1, hctx.2.2.2.2.2⟩
-      · rw [g1]; exact he
-      · rw [g1, g2]; exact hpp
-      · rw [g1, g2]; exact hy)
+      · rwa [g1]
+      · rwa [g1, g2]
+      · rwa [g1, g2])
     (by simp only [List.length_cons, List.length_nil]; omega)
   refine h.mono (by simp) ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
@@ -271,12 +270,12 @@ theorem callArr_irs {dsc re rh rd o : ℕ} {C : Chain} (hI : IInv W c₀ c)
   obtain ⟨g0, g1, g2, g3⟩ := e1
   obtain ⟨k0, k1, k2⟩ := f1
   obtain ⟨H, hC, -⟩ := hctx.2.2.2.1
-  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hm, g0]; exact hC
+  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwa [hm, g0]
   have hres := hpost H C hC₁
   unfold ArrOut ArrRes at hres
   rw [g1, g2, g3] at hres
   obtain ⟨r1, r2, r3⟩ := hres
-  refine ⟨⟨by rw [k0]; exact r1, fun hf => ?_, fun hf => ?_⟩, fun r hr h0 h1 h2 hra => hk r hr
+  refine ⟨⟨by rwa [k0], fun hf => ?_, fun hf => ?_⟩, fun r hr h0 h1 h2 hra => hk r hr
     (by simp only [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]; omega)
     hra, hA, hm'⟩
   · rw [k0] at hf; rw [k1, k2]; exact r2 hf
@@ -296,9 +295,9 @@ theorem absRec_transport {c c' : Config} {r r' : ℕ} {x R : ℝ} (h : AbsRec P 
   · exact Or.inr (Or.inl ⟨by rw [h0, k], hx⟩)
   · refine Or.inr (Or.inr ⟨by rw [h0, k], hx, s, ?_, hl, he⟩)
     have e2 : c'.nreg (r' + 1 + 1) = c.nreg (r + 1 + 1) := by
-      rw [show r' + 1 + 1 = r' + 2 by ring, show r + 1 + 1 = r + 2 by ring]; exact h2
+      rwa [show r' + 1 + 1 = r' + 2 by ring, show r + 1 + 1 = r + 2 by ring]
     have e3 : c'.nreg (r' + 1 + 2) = c.nreg (r + 1 + 2) := by
-      rw [show r' + 1 + 2 = r' + 3 by ring, show r + 1 + 2 = r + 3 by ring]; exact h3
+      rwa [show r' + 1 + 2 = r' + 3 by ring, show r + 1 + 2 = r + 3 by ring]
     cases s with
     | vtx i => exact ⟨by rw [h1]; exact hs.1, by rw [e2]; exact hs.2⟩
     | onEdge e k => exact ⟨by rw [h1]; exact hs.1, by rw [e2]; exact hs.2.1, by rw [e3]; exact hs.2.2⟩
@@ -339,9 +338,9 @@ theorem callAbs_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
       obtain ⟨g0, g1, g2⟩ := e1
       have hctx₁ := hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])
       refine primPre_of hctx₁ ⟨⟨?_, ?_, ?_⟩, ?_⟩
-      · rw [g1]; exact he
-      · rw [g1, g2]; exact hpp
-      · rw [g1, g2]; exact hy
+      · rwa [g1]
+      · rwa [g1, g2]
+      · rwa [g1, g2]
       · rw [hm, g0]; exact hctx.hostReg)
     (by simp only [List.length_cons, List.length_nil]; omega)
   refine h.mono (by simp) ?_
@@ -350,7 +349,7 @@ theorem callAbs_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
   obtain ⟨g0, g1, g2⟩ := e1
   obtain ⟨k0, k1, k2, k3⟩ := f1
   obtain ⟨H, hC, -⟩ := hctx.2.2.2.1
-  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hm, g0]; exact hC
+  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwa [hm, g0]
   have hres := hpost H C hC₁
   unfold AbsKeyOut at hres
   rw [g1, g2] at hres
@@ -452,13 +451,13 @@ theorem callOff_irs {dsc ex hx ey hy g o : ℕ} {C : Chain} (hI : IInv W c₀ c)
       obtain ⟨g0, g1, g2, g3, g4, g5⟩ := e1
       have hctx₁ := hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])
       refine primPre_of hctx₁ ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, hctx.2.2.2.2.2⟩
-      · rw [g1]; exact hex
-      · rw [g3]; exact hey
-      · rw [g5]; exact hg
-      · rw [g1, g2]; exact hpx
-      · rw [g3, g4]; exact hpy
-      · rw [g1, g2]; exact h6x
-      · rw [g3, g4]; exact h6y)
+      · rwa [g1]
+      · rwa [g3]
+      · rwa [g5]
+      · rwa [g1, g2]
+      · rwa [g3, g4]
+      · rwa [g1, g2]
+      · rwa [g3, g4])
     (by simp only [List.length_cons, List.length_nil]; omega)
   refine h.mono (by simp) ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
@@ -466,7 +465,7 @@ theorem callOff_irs {dsc ex hx ey hy g o : ℕ} {C : Chain} (hI : IInv W c₀ c)
   obtain ⟨g0, g1, g2, g3, g4, g5⟩ := e1
   obtain ⟨k0, k1⟩ := f1
   obtain ⟨H, hC, -⟩ := hctx.2.2.2.1
-  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hm, g0]; exact hC
+  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwa [hm, g0]
   have hres := hpost H C hC₁
   unfold OffOut at hres
   simp only [g1, g2, g3, g4, g5] at hres

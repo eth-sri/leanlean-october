@@ -156,8 +156,8 @@ theorem image_hseg {y a b : ℝ} (hy : |y| < bnd C C') :
         (inv_pos.2 kk_pos) z.1
       rwa [inv_inv] at this
     refine ⟨w, ⟨rfl, ?_, ?_⟩, ?_⟩
-    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rw [hinv]; exact hz2
-    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rw [hinv]; exact hz3
+    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rwa [hinv]
+    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rwa [hinv]
     · apply Prod.ext
       · simp only [phi, stretchPt, w]; exact hinv
       · simp only [phi, stretchPt, w]; rw [hy', hz1]
@@ -210,11 +210,11 @@ theorem augChords_transfer {y a b : ℝ} (hy : |y| < bnd C C')
     have hinv : stretch (bnd C C') (kk C C') w = x := by
       have := stretch_inv (B := bnd C C') (k := (kk C C')⁻¹) bnd_nonneg (inv_pos.2 kk_pos) x
       rwa [inv_inv] at this
-    have hw := hh.open_mem w (by rw [← sig_lt_iff (C := C) (C' := C'), hinv]; exact hx1)
-      (by rw [← sig_lt_iff (C := C) (C' := C'), hinv]; exact hx2)
+    have hw := hh.open_mem w (by rwa [← sig_lt_iff (C := C) (C' := C'), hinv])
+      (by rwa [← sig_lt_iff (C := C) (C' := C'), hinv])
     have := (h.phi_mem_dom_iff (w, y)).2 hw
     simpa only [phi, stretchPt, hinv, hy'] using this
-  · rw [← h.top_eq]; exact hy''
+  · rwa [← h.top_eq]
 
 end Twin
 

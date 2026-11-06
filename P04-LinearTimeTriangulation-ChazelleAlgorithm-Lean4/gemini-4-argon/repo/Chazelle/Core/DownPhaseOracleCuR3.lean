@@ -114,7 +114,7 @@ theorem trI_exec (c : Config) (hw : WordsBounded W c) {n u₀ g₀ w : ℕ}
   by_cases hlt : c₁.nreg 170237 < c₁.nreg 170010
   · have ex : Exec P W trI c c₁ (k₁ + (0 + 1)) := .seq e₁ (.ifLtN_true hlt (.skip w₁))
     refine ⟨c₁, _, ex, by omega, by omega, ?_, am, F₁⟩
-    rw [a37]; unfold trE; rw [ite_eq_left (by rw [← a37, ← a10]; exact hlt)]
+    rw [a37]; unfold trE; rw [ite_eq_left (by rwa [← a37, ← a10])]
   · obtain ⟨c₂, k₂, e₂, hk₂, b37, bm⟩ : ∃ c₂ k₂, Exec P W (block [.subN 170237 170237 170010])
         c₁ c₂ k₂ ∧ k₂ = 1 ∧ c₂.nreg 170237 = c₁.nreg 170237 - c₁.nreg 170010 ∧
         c₂.nmem = c₁.nmem := by
@@ -124,7 +124,7 @@ theorem trI_exec (c : Config) (hw : WordsBounded W c) {n u₀ g₀ w : ℕ}
       (block [.subN 170237 170237 170010]) = true)
     have ex : Exec P W trI c c₂ (k₁ + (k₂ + 2)) := .seq e₁ (.ifLtN_false hlt e₂)
     refine ⟨c₂, _, ex, by omega, by omega, ?_, by rw [bm, am], F₁.trans F₂⟩
-    rw [b37, a37, a10]; unfold trE; rw [ite_eq_right (by rw [← a37, ← a10]; exact hlt)]
+    rw [b37, a37, a10]; unfold trE; rw [ite_eq_right (by rwa [← a37, ← a10])]
 
 theorem mvW_exec (c : Config) (hw : WordsBounded W c) {src dst : ℕ}
     (h11 : c.nreg 170011 = 1) (h34 : c.nreg 170234 = src) (h22 : c.nreg 170222 = dst)
@@ -249,7 +249,7 @@ theorem cpBody_exec (c : Config) (hw : WordsBounded W c) {n u₀ g₀ src dst : 
     rw [bm, upd_other _ _ _ (by omega), am, upd_other _ _ _ (by omega)]
   obtain ⟨c₃, k₃, e₃, hk₃, hk₃', d34, d22, dm, F₃⟩ := mvT_exec (P := P) c₂ e₂.wb_right
     (by rw [p10, q10, h10]) (by rw [p11, q11, h11]) (by rw [p32, q32, h32]) (by rw [p33, q33, h33])
-    b34 b22 (by omega) (by omega) (by rw [m2]; exact ht2)
+    b34 b22 (by omega) (by omega) (by rwa [m2])
   obtain ⟨s10, s11, s32, s33, s35, s23⟩ := keep F₃
   have m3 : c₃.nmem (src + 3) = c.nmem (src + 3) := by
     rw [dm, upd_other _ _ _ (by omega), bm, upd_other _ _ _ (by omega), am,
@@ -302,8 +302,8 @@ theorem cpBody_exec (c : Config) (hw : WordsBounded W c) {n u₀ g₀ src dst : 
       (dst + 4) (c.nmem (src + 4))) (dst + 5) (c.nmem (src + 5))) (dst + 6) (c.nmem (src + 6)) a := by
     intro a
     rw [lm, jm, ← m6, im, ← m5, gm, ← m4, fm, ← m3, dm, ← m2, bm, ← m1, am]
-  refine ⟨c₈, _, ex, by omega, by omega, by rw [lr _ (by decide) (by decide)]; exact j34,
-    by rw [lr _ (by decide) (by decide)]; exact j22, l35, l23, fun a ha => ?_, ?_, ?_, ?_, ?_, ?_,
+  refine ⟨c₈, _, ex, by omega, by omega, by rwa [lr _ (by decide) (by decide)],
+    by rwa [lr _ (by decide) (by decide)], l35, l23, fun a ha => ?_, ?_, ?_, ?_, ?_, ?_,
     ?_, ?_, (frameM_mono (F₁.trans (F₂.trans (F₃.trans (F₄.trans (F₅.trans (F₆.trans F₇))))))
       bmv_bcp).trans F₈⟩
   · rw [mem]; exact upd7_lo ha
@@ -328,7 +328,7 @@ theorem cpLoop_exec (c : Config) (hw : WordsBounded W c) {n L q g₀ u₀ O : �
       BuildRam.FrameM Bcp c c' := by
   set d₀ := c.nreg 170222 with hd₀
   set n₀ := c.nreg 170223 with hn₀
-  set m₀ := c.nmem with hm₀
+  set m₀ := c.nmem
   let I : Config → Prop := fun d => WordsBounded W d ∧ ∃ i, i ≤ q ∧ d.nreg 170235 = i ∧
     d.nreg 170234 = L + 1 + 7 * i ∧ d.nreg 170222 = d₀ + 7 * i ∧ d.nreg 170223 = n₀ + i ∧
     (∀ a, a < d₀ → d.nmem a = m₀ a) ∧
@@ -338,7 +338,7 @@ theorem cpLoop_exec (c : Config) (hw : WordsBounded W c) {n L q g₀ u₀ O : �
     whileLtN_pot2 (P := P) (a := 170235) (b := 170231) (body := cpBody) I
       (fun d => 42 * (q - d.nreg 170235)) (fun d => d.nreg 170222) (fun _ h => h.1)
       (fun d ⟨wd, i, hiq, d35, d34, d22, d23, dlo, dout, dF⟩ hlt => by
-        have d31 : d.nreg 170231 = q := by rw [dF.1 _ (by decide)]; exact h31
+        have d31 : d.nreg 170231 = q := by rwa [dF.1 _ (by decide)]
         rw [d35, d31] at hlt
         have dsrc : ∀ f, f < 7 → d.nmem (L + 1 + 7 * i + f) = m₀ (L + 1 + 7 * i + f) :=
           fun f hf => dlo _ (by omega)
@@ -367,7 +367,7 @@ theorem cpLoop_exec (c : Config) (hw : WordsBounded W c) {n L q g₀ u₀ O : �
           · rw [a6, dsrc 6 (by omega)]; rfl)
       (c := c) ⟨hw, 0, by omega, h35, by omega, by omega, by omega, fun a _ => rfl,
         fun j hj => absurd hj (by omega), BuildRam.FrameM.refl _ _⟩
-  have r31 : c'.nreg 170231 = q := by rw [F.1 _ (by decide)]; exact h31
+  have r31 : c'.nreg 170231 = q := by rwa [F.1 _ (by decide)]
   rw [r35, r31] at hex
   have hi : i = q := by omega
   subst hi

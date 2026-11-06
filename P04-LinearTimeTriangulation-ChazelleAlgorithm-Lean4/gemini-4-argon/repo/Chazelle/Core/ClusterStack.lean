@@ -56,8 +56,8 @@ theorem items_congr {act act' : ℕ → ℕ} {p : ℕ × ℕ}
   ext v
   simp only [mem_items]
   constructor
-  · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rw [← h i a b]; exact c⟩
-  · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rw [h i a b]; exact c⟩
+  · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rwa [← h i a b]⟩
+  · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rwa [h i a b]⟩
 
 section stack
 
@@ -335,7 +335,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
         obtain ⟨i, a, b, _⟩ := mem_items.mp hvt
         unfold len scls; simp only at a b; omega
       exact ⟨scls e t, hcls_live t ht hpos, hvt⟩
-    · exact ⟨q, hold_live q hq hqp, by rw [hold q hq hqp]; exact hvq⟩
+    · exact ⟨q, hold_live q hq hqp, by rwa [hold q hq hqp]⟩
   · -- off
     rcases hlive q hq with ⟨h1, h2⟩ | ⟨t, ht, rfl, _⟩
     · rw [hold q h1 h2] at hv
@@ -364,8 +364,8 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
         obtain ⟨i, a, b, _⟩ := mem_items.mp hxt
         unfold len scls; simp only at a b; omega
       exact ⟨scls e t, hcls_live t ht hpos, hxt, hyt⟩
-    · exact ⟨q, hold_live q hq hqp, by rw [hold q hq hqp]; exact hxq,
-        by rw [hold q hq hqp]; exact hyq⟩
+    · exact ⟨q, hold_live q hq hqp, by rwa [hold q hq hqp],
+        by rwa [hold q hq hqp]⟩
   · -- `D ∪ sep` stays off `H`
     rw [Finset.disjoint_union_left]
     exact ⟨hI.hD, Finset.disjoint_left.mpr (fun v hv => (hsep_off v hv).2)⟩
@@ -406,8 +406,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
         fun t ht => items_card (hS.scls_inj ht)
       rw [← Finset.sum_congr rfl (fun t ht => hcard t (Finset.mem_range.mp ht)),
         ← Finset.card_biUnion (fun t ht t' ht' htt' => hS.scls_disj (Finset.mem_range.mp ht)
-          (Finset.mem_range.mp ht') htt')]
-      rw [← items_card (hI.inj p hLp)]
+          (Finset.mem_range.mp ht') htt'), ← items_card (hI.inj p hLp)]
       refine Finset.card_le_card (fun v hv => ?_)
       obtain ⟨t, ht, hvt⟩ := Finset.mem_biUnion.mp hv
       exact (hnew_items t (Finset.mem_range.mp ht) v hvt).1
@@ -450,8 +449,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
         fun t ht => items_card (hS.scls_inj ht)
       rw [← Finset.sum_congr rfl (fun t ht => hcard t (Finset.mem_range.mp ht)),
         ← Finset.card_biUnion (fun t ht t' ht' htt' => hS.scls_disj (Finset.mem_range.mp ht)
-          (Finset.mem_range.mp ht') htt')]
-      rw [← items_card (hI.inj p hLp)]
+          (Finset.mem_range.mp ht') htt'), ← items_card (hI.inj p hLp)]
       refine Finset.card_le_card (fun v hv => ?_)
       obtain ⟨t, ht, hvt⟩ := Finset.mem_biUnion.mp hv
       exact (hnew_items t (Finset.mem_range.mp ht) v hvt).1

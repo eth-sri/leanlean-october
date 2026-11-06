@@ -104,7 +104,7 @@ theorem length_evs (_h : Input M Q L E) : (evs M Q L E).length = E.length := len
 /-- The key of the walk position of the `m`-th event is the `m`-th key. -/
 theorem key_s {m : ℕ} (hm : m < E.length) :
     M.key Q (wposOf L (E.getD m 0)) = kap (evs M Q L E) m := by
-  rw [key_wposOf, BuildSort.kap_eq (by rw [h.length_evs]; exact hm)]
+  rw [key_wposOf, BuildSort.kap_eq (by rwa [h.length_evs])]
   unfold evs
   rw [getElem_map, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hm, Option.getD_some]
 
@@ -181,7 +181,7 @@ theorem regionCorr : RegionCorr M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L
   · have := h2 _ _ (labelOK_lab hr) (labelOK_lab hr') heq
     rw [← ridx_lab r, ← ridx_lab r', this]
   · obtain ⟨ℓ, hℓ, hU⟩ := h3 U hU
-    exact ⟨ridx ℓ, ridx_lt hℓ, by unfold regF; rw [lab_ridx]; exact hU⟩
+    exact ⟨ridx ℓ, ridx_lt hℓ, by unfold regF; rwa [lab_ridx]⟩
 
 /-- **The sides of the chord records.** -/
 theorem sides_rec {i : ℕ} (hi : i < L.length) :
@@ -244,7 +244,7 @@ omit h in
 /-- The arc record at index `j` (with chords). -/
 theorem arc_eq {j : ℕ} (hK : L.length ≠ 0) (hj : j < (arcList M Q L E).length) :
     (buildNF M Q L E).arc j = arcRec M Q L E ((gapStarts M Q L E)[j]'(by
-      unfold arcList at hj; rw [ite_eq_right hK, length_map] at hj; exact hj)) := by
+      unfold arcList at hj; rwa [ite_eq_right hK, length_map] at hj)) := by
   unfold NF.arc buildNF
   simp only
   unfold arcList
@@ -276,21 +276,19 @@ theorem arcRec_isArc {m : ℕ} (hK : L.length ≠ 0) (hm : m ∈ gapStarts M Q L
   simp only [arcRec]
   rw [lab_ridx]
   rcases hgap with hlast | hlt
-  · have hS : (evs M Q L E).length = m + 1 := by rw [hlev, hlast]
-    rw [hlast, Nat.mod_self, show word M Q L E = (evs M Q L E).map Prod.fst from rfl, ← hlev,
+  · rw [hlast, Nat.mod_self, show word M Q L E = (evs M Q L E).map Prod.fst from rfl, ← hlev,
       hC.label_ends.2, show m = (evs M Q L E).length - 1 by omega]
     exact hC.arc_of_wrap (Nat.pos_of_ne_zero hK)
   · have hm1 : m + 1 < E.length := by
       rcases lt_or_ge (m + 1) E.length with h1 | h1
       · exact h1
       · exfalso
-        have h1' : m + 1 = (evs M Q L E).length := by rw [hlev]; omega
         have h0 : kap (evs M Q L E) (m + 1) = 0 := by
           unfold kap; rw [List.getD_eq_default _ _ (by omega)]
-        have := (hC.kap_bounds (m := m) (by rw [hlev]; exact hml)).1
+        have := (hC.kap_bounds (m := m) (by rwa [hlev])).1
         linarith
     rw [Nat.mod_eq_of_lt hm1]
-    exact hC.arc_of_gap (by rw [hlev]; exact hm1) hlt
+    exact hC.arc_of_gap (by rwa [hlev]) hlt
 
 /-- Two arcs with the same keys of regions of the computed normal form have the same region. -/
 theorem reg_eq_of_arcs (hK : L.length ≠ 0) {r r' : ℕ} (hr : r < L.length + 1)
@@ -347,9 +345,9 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
     · obtain ⟨rfl, rfl⟩ := hC.gap_of_arc_empty hK harc
       refine ⟨0, by rw [hA]; simp, ?_, ?_, ?_⟩
       · rw [harc0]; show 0 = r; omega
-      · rw [harc0]; exact hkey0
-      · rw [harc0]; exact hkey0
-    · intro r hr j; rw [← harcsN]; exact hlast r (by rw [nRegions]; exact hr) j
+      · rwa [harc0]
+      · rwa [harc0]
+    · intro r hr j; rw [← harcsN]; exact hlast r (by rwa [nRegions]) j
   · have hA : arcList M Q L E = (gapStarts M Q L E).map (arcRec M Q L E) := by
       unfold arcList; rw [ite_eq_right hK]
     have hlenA : (arcList M Q L E).length = (gapStarts M Q L E).length := by rw [hA, length_map]
@@ -374,7 +372,7 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
         have hml' := (hmem k' hk').1
         rcases hgap with hlast | hgap
         · omega
-        · exact hgap.trans_le (BuildSort.kap_mono hC.sorted hlt (by rw [hlev]; exact hml'))
+        · exact hgap.trans_le (BuildSort.kap_mono hC.sorted hlt (by rwa [hlev]))
       rcases lt_or_gt_of_ne hne with hlt | hlt
       · exact (key_lt j j' hj1 hj1' hlt).ne hkey
       · exact (key_lt j' j hj1' hj1 hlt).ne hkey.symm
@@ -401,7 +399,7 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
         exact (h.reg_eq_of_arcs hK hr hreg harc harc').symm
       · rw [arc_eq hK hjA]; simp only [hjm]; exact h.key_arcRec_s hmE
       · rw [arc_eq hK hjA]; simp only [hjm]; exact h.key_arcRec_e hmE
-    · intro r hr j; rw [← harcsN]; exact hlast r (by rw [nRegions]; exact hr) j
+    · intro r hr j; rw [← harcsN]; exact hlast r (by rwa [nRegions]) j
 
 /-! ## Regions and the sequence -/
 
@@ -472,13 +470,13 @@ theorem regionsOK : RegionsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L :
     constructor
     · intro hx
       obtain ⟨j, hj, rfl⟩ := List.mem_map.1 hx
-      have hj' := (h4 r (by rw [nRegions]; exact hr) j).1 (by rw [h.region_eq hr]; exact hj)
+      have hj' := (h4 r (by rwa [nRegions]) j).1 (by rwa [h.region_eq hr])
       obtain ⟨-, harc⟩ := h1 j hj'.1
       rw [hj'.2] at harc
       exact ⟨(M.key Q ((buildNF M Q L E).arc j).s, M.key Q ((buildNF M Q L E).arc j).e), harc, rfl⟩
     · rintro ⟨ab, harc, rfl⟩
       obtain ⟨j, hj, hjr, hs, he⟩ := h3 r hr ab.1 ab.2 harc
-      have hjr' := (h4 r (by rw [nRegions]; exact hr) j).2 ⟨hj, hjr⟩
+      have hjr' := (h4 r (by rwa [nRegions]) j).2 ⟨hj, hjr⟩
       rw [h.region_eq hr] at hjr'
       refine List.mem_map.2 ⟨j, hjr', ?_⟩
       show M.arcWt (M.key Q ((buildNF M Q L E).arc j).s) (M.key Q ((buildNF M Q L E).arc j).e) = _
@@ -549,7 +547,6 @@ theorem properPos_arcs {j : ℕ} (hj : j < (arcList M Q L E).length) :
 and no decomposition. -/
 theorem isNF : IsNF M Q (buildNF M Q L E) ∧
     (buildNF M Q L E).chords.map (fun r => (r.h, r.lp, r.rp)) = L ∧ (buildNF M Q L E).dec = [] := by
-  have hC := h.ctx
   refine ⟨⟨?_, fun i i' hi hi' heq => ?_, fun i hi => ?_, regF, h.regionCorr, h.chordSidesOK,
     h.arcsOK, h.regionsOK, h.seqOK, fun i hi => ?_, fun j hj => h.properPos_arcs hj⟩, ?_, rfl⟩
   · rw [h.F_eq]; exact h.valid.1

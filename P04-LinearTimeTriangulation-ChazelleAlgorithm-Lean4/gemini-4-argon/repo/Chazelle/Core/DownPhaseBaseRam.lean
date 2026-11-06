@@ -129,7 +129,7 @@ theorem mem1_keep {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have hg := getD_keepL (li := li) (n := n) hi hk
   rw [← hj] at hg
   have hkc : ∀ s, s < 2 → keptC li n L (2 * i + s) = true := fun s hs => by
-    unfold keptC; rw [show (2 * i + s) / 2 = i by omega]; exact hk
+    unfold keptC; rwa [show (2 * i + s) / 2 = i by omega]
   have hnc : ∀ s, s < 2 → newCode li n L (2 * i + s) = 2 * j + s := fun s hs => by
     unfold newCode; rw [show (2 * i + s) / 2 = i by omega, ← hj]; omega
   rw [hm a]
@@ -179,7 +179,7 @@ theorem mem1_drop {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   simp only [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
   have hle := rankF_le (keepX li n) L i
   have hkc : ∀ s, s < 2 → keptC li n L (2 * i + s) = false := fun s hs => by
-    unfold keptC; rw [show (2 * i + s) / 2 = i by omega]; exact hk
+    unfold keptC; rwa [show (2 * i + s) / 2 = i by omega]
   rw [hm a]
   unfold mem1
   rw [hr]

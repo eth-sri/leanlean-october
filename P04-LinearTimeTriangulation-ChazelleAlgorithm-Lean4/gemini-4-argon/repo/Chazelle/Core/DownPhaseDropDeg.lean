@@ -35,11 +35,10 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
     (hW : ∀ c ∈ F, c ∉ F' → ∀ z ∈ c, z.2 ≤ ys)
     {d : ℕ} (hd : ∀ U ∈ regionsIn D F, {c | c ∈ F ∧ TouchesIn D c U}.ncard ≤ d) :
     ∀ W ∈ regionsIn D F', {c | c ∈ F' ∧ TouchesIn D c W}.ncard ≤ d := by
-  set U : Set Point := Ioo (-R) R ×ˢ Ioo (-R) yp with hUdef
-  set Up : Set Point := Ioo (-R) R ×ˢ Ioo ys yp with hUpdef
+  set U : Set Point := Ioo (-R) R ×ˢ Ioo (-R) yp
+  set Up : Set Point := Ioo (-R) R ×ˢ Ioo ys yp
   have hUo : IsOpen U := isOpen_Ioo.prod isOpen_Ioo
   have hUpc : IsPreconnected Up := isPreconnected_Ioo.prod isPreconnected_Ioo
-  have hUD' : U ⊆ D := fun z hz => hUD z hz.1.1 hz.1.2 hz.2.1 hz.2.2
   have hUpF : Up ⊆ freeIn D F := by
     intro z hz
     refine ⟨hUD z hz.1.1 hz.1.2 (by linarith [hz.2.1]) hz.2.2, ?_⟩
@@ -50,7 +49,7 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
   set p0 : Point := (0, (ys + yp) / 2)
   have hp0 : p0 ∈ Up := ⟨⟨by simp [p0]; linarith, by simp [p0]; linarith⟩,
     ⟨by simp [p0]; linarith, by simp [p0]; linarith⟩⟩
-  set X := connectedComponentIn (freeIn D F) p0 with hXdef
+  set X := connectedComponentIn (freeIn D F) p0
   have hXr : X ∈ regionsIn D F := ⟨p0, hUpF hp0, rfl⟩
   have hXo : IsOpen X := hsys.regionsIn_open subset_rfl hXr
   have hUpX : Up ⊆ X := hUpc.subset_connectedComponentIn hp0 hUpF
@@ -73,7 +72,7 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
     have hwY : w ∈ Y := mem_connectedComponentIn hw
     obtain ⟨v, hvY, hvX⟩ := mem_closure_iff.1 hwc Y hYo hwY
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hYr hXr with h | h
-    · rw [← h]; exact hwY
+    · rwa [← h]
     · exact absurd (h.le_bot ⟨hvY, hvX⟩) (fun h => h)
   intro W hWr
   have hWF' : W ⊆ freeIn D F' := Chazelle.Chain.regionsIn_subset hWr

@@ -113,8 +113,8 @@ theorem SEnv.transport {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {
   have r4 := hr lE (Or.inr (Or.inr (Or.inr (Or.inl rfl))))
   have r5 := hr lH (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))
   have r6 := hr lD (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr rfl)))))
-  exact ⟨hG, hW3, hctx.transport r1 hm hA, hNF, by rw [r2]; exact htag, by rw [r2]; exact hMod, hR,
-    by rw [r3]; exact hn, by rw [r4]; exact hE, by rw [r5]; exact hH, by rw [r6]; exact hD, hy⟩
+  exact ⟨hG, hW3, hctx.transport r1 hm hA, hNF, by rwa [r2], by rwa [r2], hR,
+    by rwa [r3], by rwa [r4], by rwa [r5], by rwa [r6], hy⟩
 
 /-- The registers of the environment lie outside the scan's writes. -/
 theorem SEnv.keep {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : WPos} {d : ℕ}
@@ -334,7 +334,7 @@ theorem scanBody_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
     exact kk q (fun h => hX (Or.inl (Or.inl h)))
   · rw [r3 ALLOC (by unfold sT ALLOC sw; omega), ← hA1]; exact fr2.2.1
   · intro a ha
-    rw [hm3, fr2.2.2 a (by rw [hA1]; exact ha), hm1]
+    rw [hm3, fr2.2.2 a (by rwa [hA1]), hm1]
 
 /-! ## The head of the loop over the chords of a region -/
 
@@ -364,7 +364,6 @@ theorem scanHeadL_val (m f : ℕ → ℕ) {rr : ℕ} (hrr : ¬ SSet rr) (hk2 : f
   have e3 : f 240616 = 3 := hk3
   unfold SSet sw at hrr
   have n1 : rr ≠ 241130 := by omega
-  have n2 : rr ≠ 241131 := by omega
   simp only [scanHeadL, regB, regI, upd, sX, sY, sR5, sNc, sCl, sT, K2, K3, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e2, e3, n1]
   exact ⟨congrArg m (by ring), congrArg m (by ring), trivial⟩
@@ -376,7 +375,6 @@ theorem scanHeadL_ok (m f : ℕ → ℕ) {rr : ℕ} (hrr : ¬ SSet rr) (hk2 : f 
   have hb' : f 241142 + 5 * f rr + 3 ≤ W := hb
   unfold SSet sw at hrr
   have n1 : rr ≠ 241130 := by omega
-  have n2 : rr ≠ 241131 := by omega
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
     iscr_sw (by omega) (by omega)
   simp only [scanHeadL, okB, okI, regI, upd, sX, sY, sR5, sNc, sCl, sT, K2, K3, sw]
@@ -517,7 +515,7 @@ theorem scanR_irs {rr : ℕ} (hrr : ¬ SSet rr) {C : Chain} {N : NF} {Mod : ℕ 
       obtain ⟨fr, hle, hst⟩ := hc
       rw [hreg c' fr sNc (Or.inl rfl), w1] at ht
       have hn0 : 0 < n := by omega
-      have hn0' : 0 < (N.region r).chords.length := by rw [← hn]; exact hn0
+      have hn0' : 0 < (N.region r).chords.length := by rwa [← hn]
       have b2 := robust_addr3 (b := B + 7) (a := B + 5) (o := 5 * r + 3) (t := 0)
         (v := (N.region r).chords.getD 0 0)
         (fun m' hm' => by
@@ -535,11 +533,11 @@ theorem scanR_irs {rr : ℕ} (hrr : ¬ SSet rr) {C : Chain} {N : NF} {Mod : ℕ 
         rw [hreg c' fr sCl (Or.inr (Or.inl rfl)), w2 hn0, m' (B + 7) (by omega),
           m' (B + 5) (by omega), m' _ (by rw [e2]; omega)]
       obtain ⟨L', a', s', g', d'⟩ := hst
-      refine (scanBody_irs hI' hK hS' hr hNW' hEA' hC3' hCl' (by rw [← hn]; exact ht) a'
+      refine (scanBody_irs hI' hK hS' hr hNW' hEA' hC3' hCl' (by rwa [← hn]) a'
         hroom').mono le_rfl ?_
       rintro c'' ⟨hst2, t2, fr2⟩
       refine ⟨⟨fr.trans fr2, by rw [t2]; omega, ?_⟩, by rw [t2]; omega⟩
-      rw [t2, take_succ_getD (l := (N.region r).chords) (by rw [← hn]; exact ht)]
+      rw [t2, take_succ_getD (l := (N.region r).chords) (by rwa [← hn])]
       exact AccStep.trans s' g' d' hst2)
     hI₁ ⟨XFr.refl _ _, by rw [w3]; omega, by rw [w3]; exact AccStep.init hacc₁⟩ (by
       rw [w3, hA1, Nat.sub_zero]; unfold scanRK at hroom; omega)

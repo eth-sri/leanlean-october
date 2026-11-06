@@ -71,7 +71,7 @@ theorem up_not_corner (hQ : Q.Simple) (T : Top Q C) {p : ℕ} (hp : p < (interio
       ((interiorWalk Q).vtx ((p + (interiorWalk Q).n - 1) % (interiorWalk Q).n) - C.top) := by
   intro hc
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec hQ
-  set W := interiorWalk Q with hW
+  set W := interiorWalk Q
   have hup : ∀ ε : ℝ, 0 < ε → sideLeft W p 0 (C.top + ε • (C.slitTop - C.top)) := by
     intro ε hε
     rw [Chazelle.Chain.sideLeft_zero]
@@ -86,7 +86,7 @@ theorem up_not_corner (hQ : Q.Simple) (T : Top Q C) {p : ℕ} (hp : p < (interio
   have hrad : C.top.2 < C.radius := C.top_snd_lt_radius
   set ε := rC / (2 * (C.radius - C.top.2)) with hε
   have hε0 : 0 < ε := div_pos hrC (by linarith)
-  set y := C.top + ε • (C.slitTop - C.top) with hy
+  set y := C.top + ε • (C.slitTop - C.top)
   have hy2 : y.2 = C.top.2 + ε * (C.radius - C.top.2) := by
     show (C.top + ε • (C.slitTop - C.top)).2 = _
     simp only [Prod.snd_add, Prod.smul_snd, Prod.snd_sub, smul_eq_mul]
@@ -107,7 +107,7 @@ theorem up_not_corner (hQ : Q.Simple) (T : Top Q C) {p : ℕ} (hp : p < (interio
   have hyb : y ∈ ball (sidePt W p 0) rC := by rw [hpt, mem_ball, hdist]; linarith
   have hyD : y ∈ Q.filled \ Q.boundary := by
     by_contra hyD
-    exact hclean y hyb (by rw [hWb, hWf]; exact hyD) (hup ε hε0)
+    exact hclean y hyb (by rwa [hWb, hWf]) (hup ε hε0)
   have := T.filled_below_top hQ hyD.1
   rw [hy2] at this
   linarith
@@ -173,7 +173,7 @@ theorem sA_inner (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
     · rw [hs]; right; omega
   · intro hL
     rcases C.sideS_mod C.sideBeta with ⟨hs, -⟩ | ⟨hs, hT0, hb⟩
-    · rw [hs]; exact hTm
+    · rwa [hs]
     · rw [hs]
       by_contra hcon
       push Not at hcon

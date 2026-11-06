@@ -113,7 +113,7 @@ theorem bitT_irs {dsc bt : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Consts c�
   have hctx₁ : ChainCtx P W c₁ dsc C := hctx.transport (r1 _ (by unfold sZ sw; omega)
     (by unfold sZ sw; omega)) (fun a _ => by rw [m1]) (by rw [hA1])
   have rK6 : c₁.nreg K6 = 6 := by rw [r1 _ (by unfold sZ K6 sw; omega) (by unfold sZ K6 sw; omega)]; exact hKc.2.2.1
-  have rK0 : c₁.nreg K0 = 0 := by rw [r1 _ (by unfold sZ K0 sw; omega) (by unfold sZ K0 sw; omega)]; exact k0
+  have rK0 : c₁.nreg K0 = 0 := by rwa [r1 _ (by unfold sZ K0 sw; omega) (by unfold sZ K0 sw; omega)]
   have hm1 := C.one_le
   have hn := cm_n C
   -- 2. the top
@@ -158,7 +158,6 @@ theorem bitT_irs {dsc bt : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Consts c�
     · intro h; exact not_lt.1 (fun h' => by have := o2.2 h'; omega)
     · intro h; have : c₃.nreg kO ≠ 1 := fun h' => absurd (o2.1 h') (not_lt.2 h); omega
   · simp only; rw [kb r h2]
-    have hsw : ∀ x, sw 3230 ≤ x → x < sw 3300 → True := fun _ _ _ => trivial
     rw [f3 r h1 (fun h => h3 (by rw [h]; unfold kO sw; norm_num)) h4,
       f2 r h1 (by
         by_contra hh; push Not at hh
@@ -216,7 +215,7 @@ theorem bitsQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) {
     have hA1 : regB c.nmem [.copyN b₁ K1] c.nreg ALLOC = c.nreg ALLOC := v1 _ (by unfold ALLOC; omega)
     have hq1 : regB c.nmem [.copyN b₁ K1] c.nreg qH = c.nreg qH := v1 _ (by unfold qH sw; omega)
     refine (bitT_irs hI₁ hK hctx₁ hd (by rcases hb with ⟨-, rfl⟩ | ⟨-, rfl⟩ <;> simp)
-      (by simp only; rw [hq1]; exact hqH)
+      (by simp only; rwa [hq1])
       (by simp only; rw [hA1]; omega)).mono le_rfl ?_
     rintro c' ⟨q1, q2, q3, q4, q5⟩
     simp only [hq1, hA1] at q1 q2 q3 q4 q5
@@ -263,7 +262,6 @@ theorem store4_irs {v0 v1 v2 v3 : ℕ} (hI : IInv W c₀ c) (hK : Consts c₀)
   have k3 : c.nreg K3 = 3 := hKc.2.2.2.2.2.2
   have stA : IScr tAq := iscr_sw (by unfold tAq sw; norm_num) (by unfold tAq sw; norm_num)
   have pRA : pR ≠ tAq := by unfold pR tAq sw; norm_num
-  have K1A : K1 ≠ tAq := by unfold K1 tAq sw; norm_num
   have K2A : K2 ≠ tAq := by unfold K2 tAq sw; norm_num
   have K3A : K3 ≠ tAq := by unfold K3 tAq sw; norm_num
   unfold store4

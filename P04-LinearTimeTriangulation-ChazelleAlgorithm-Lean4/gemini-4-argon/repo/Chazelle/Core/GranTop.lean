@@ -66,8 +66,7 @@ theorem granular_empty {M : Model} {F : Set (Set Point)} {γ : ℕ} (hF : F = �
     rw [Merge.contractionCondIn_iff]
     intro c hc
     have := hc.1
-    rw [hF] at this
-    exact this
+    rwa [hF] at this
   exact this
 
 set_option maxHeartbeats 4000000 in
@@ -88,13 +87,13 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
   rw [e2] at hdeg hroom
   rw [e3] at hsemi
   rw [e0, e1, e2, e3]
-  set MD := c.nreg 90000 with hMDd
+  set MD := c.nreg 90000
   set NFH := c.nreg 90001 with hNFHd
-  set D := c.nreg 90002 with hDd
-  set γ := c.nreg 90003 with hγd
+  set D := c.nreg 90002
+  set γ := c.nreg 90003
   have hK : c.nmem NFH = N.nChords := hNW.nfAt.1
   rw [hK] at hroom ⊢
-  set K := N.nChords with hKd
+  set K := N.nChords
   set X := K * (Nat.clog 2 K + 1) + 1 with hXd
   have hX1 : 1 ≤ X := by omega
   have hκ : 12 + κB + κD * (D + 1) ≤ κGran κB κD D := by
@@ -115,9 +114,9 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
     subst this
     have hch := NFLoc.nfAt_chords_eq hNW.nfAt hN₀
     refine ⟨N', hA, hW, ?_, hN, ?_, ?_, hdec⟩
-    · rw [F_congr hch, hF]; exact hsub
-    · rw [hF]; exact hdg
-    · rw [hF]; exact hgr
+    · rwa [F_congr hch, hF]
+    · rwa [hF]
+    · rwa [hF]
   obtain ⟨c₁, k₁, e₁, hk₁, p19, p10, R₁, rr₁, m₁, rm₁, o₁⟩ :=
     pre_exec (P := P) c hw (le_trans (by unfold hostWords; omega) hWh)
   have w₁ := e₁.wb_right
@@ -146,19 +145,19 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
     have hm₂ : c₂.nmem = c.nmem := by rw [m₂, m₁]
     obtain ⟨c₃, k₃, e₃, hk₃, ⟨N', hA', hW', hN', hF', hdec'⟩, F₃⟩ := bd_exec (L := []) hsB hsD
       e₂.wb_right hG hWh (by rw [R₂ _ (by decide) (by decide), q0])
-      (by rw [R₂ _ (by decide) (by decide), q2]) s28 s95 (by rw [A₂, hm₂]; exact hwf)
-      (by rw [hm₂]; exact hMD) hGM (fun i hi => by simp at hi) (by rw [A₂]; simp)
+      (by rw [R₂ _ (by decide) (by decide), q2]) s28 s95 (by rwa [A₂, hm₂])
+      (by rwa [hm₂]) hGM (fun i hi => by simp at hi) (by rw [A₂]; simp)
       ⟨by rw [show {c | ∃ x ∈ ([] : List (ℕ × ℕ × ℕ)), c = (recOf x).toSet M (Qof P)} =
           N.F M (Qof P) from hl]; exact hNF.1, List.nodup_nil, fun x hx => by simp at hx,
         fun x hx => by simp at hx⟩
-      (by rw [hl]; exact hdeg)
+      (by rwa [hl])
       (by rw [A₂]; unfold costBD; simp; omega)
     have e₁₂ : Exec P W (.ifLtN 90010 90019 emptyS mainStmt) c₁ c₂ (k₂ + 1) :=
       .ifLtN_true (by rw [p10, p19]; omega) e₂
     refine ⟨c₃, _, .seq e₁ (.seq e₁₂ e₃), ?_, ?_, ?_⟩
     · unfold costBD at hk₃; simp at hk₃; omega
     · rw [A₂] at hA'
-      exact post c₃ [] N' (by rw [hl]) (by rw [hl]; exact hdeg)
+      exact post c₃ [] N' (by rw [hl]) (by rwa [hl])
         (by rw [hl]; exact granular_empty hFe hsemi) hA' hW' hN' hF' hdec'
     · exact ((F₁.trans (F₂.mono (le_refl _) (by omega : k₂ ≤ k₂ + 1))).trans F₃).mono
         (by decide) (by omega)
@@ -171,8 +170,8 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
     have hct := cost_total (κB := κB) (κD := κD) (D := D) hAr hRr (le_refl K)
     rw [← hXd] at hct
     obtain ⟨c₂, k₂, L, e₂, hk₂, s00, s02, s95, hLK, hlist, hLB, hok, hsub, hdg, hgr, G₂⟩ :=
-      main_exec (P := P) w₁ q0 q1 q2 q3 hG hWh (by rw [A₁, m₁]; exact hwf)
-        (by rw [m₁]; exact hMD) hGM (by rw [A₁, m₁]; exact hNW) hNF hne hdeg hsemi
+      main_exec (P := P) w₁ q0 q1 q2 q3 hG hWh (by rwa [A₁, m₁])
+        (by rwa [m₁]) hGM (by rwa [A₁, m₁]) hNF hne hdeg hsemi
         (by rw [A₁]; nlinarith)
     have hmono : costBD κB κD D L.length ≤ costBD κB κD D K := costBD_mono hLK
     have A₂ := G₂.2.2.2.2.2.2

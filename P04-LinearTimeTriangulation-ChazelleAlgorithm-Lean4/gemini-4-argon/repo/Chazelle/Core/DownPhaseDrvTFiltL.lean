@@ -158,7 +158,6 @@ theorem fBody_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
       have hp : d₅.nreg 190018 < d₅.nreg 190037 := by rw [h18, f5]; omega
       have hjK : j + 1 ≤ L₀.length := by
         have := DownBase.rankF_lt_length (keepT li n c₀) (0, 0, 0) ht (by rw [← hx]; exact hk)
-        have h2 := (List.length_filter_le (keepT li n c₀) L₀)
         omega
       obtain ⟨d₆, k₆, e₆', hk₆, w35, w36, r₆, mm₆, rr₆, rm₆, o₆⟩ :=
         fKeep_exec (P := P) d₅ e₅.wb_right h35 h36 h17 (by omega) (by omega)
@@ -210,7 +209,7 @@ theorem fLoop_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
     (hR : RecsT m₀ CB L₀) (hCB : L₀.length = 0 ∨ CB + 5 * L₀.length ≤ B')
     (hBW : B' + 3 * L₀.length + 3 ≤ W) {cI d : Config} (hw : WordsBounded W d)
     (hI : FInv m₀ li n c₀ L₀ CB B' cI d) (h0 : d.nreg 190030 = 0) :
-    ∃ d' k, Exec P W fLoop d d' k ∧ WordsBounded W d' ∧ FInv m₀ li n c₀ L₀ CB B' cI d' ∧
+    ∃ d' k, Exec P W fLoop d d' k ∧ FInv m₀ li n c₀ L₀ CB B' cI d' ∧
       d'.nreg 190030 = L₀.length ∧ 3 * L₀.length ≤ k ∧ k ≤ 54 * L₀.length + 2 := by
   obtain ⟨d', k, e, ⟨hw', hI'⟩, htest, hk, hψ⟩ := SortR.whileLtN_potential_lb (P := P) (W := W)
     (a := 190030) (b := 190023) (body := fBody)
@@ -225,7 +224,7 @@ theorem fLoop_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
     ⟨hw, hI⟩
   have hi := hI'.i_le
   rw [hI'.rK] at htest
-  refine ⟨d', k, e, hw', hI', by omega, ?_, ?_⟩
+  refine ⟨d', k, e, hI', by omega, ?_, ?_⟩
   · rw [h0] at hψ; have : d'.nreg 190030 = L₀.length := by omega
     rw [this] at hψ; omega
   · rw [h0] at hk; omega

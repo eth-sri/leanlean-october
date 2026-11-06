@@ -35,8 +35,8 @@ theorem isEar_of_diagonal_two {s : ℕ} (hd : IsDiagonal P s 2)
     IsEar P ((s + 1) % P.n) := by
   have hn : 0 < P.n := by have := hd.2.1; omega
   refine ⟨?_, ?_⟩
-  · rw [prevIdx_succ_mod P hn, isDiagonal_mod_iff]; exact hd
-  · rw [prevIdx_succ_mod P hn, mod_add_one_mod]; exact hin
+  · rwa [prevIdx_succ_mod P hn, isDiagonal_mod_iff]
+  · rwa [prevIdx_succ_mod P hn, mod_add_one_mod]
 
 /-- The filled region of an arc of an interior diagonal lies in the filled region of `P`. -/
 theorem filled_arc_subset {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
@@ -81,8 +81,7 @@ theorem isEar_of_arc {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
         rw [segment_comm] at hpf
         exact hpA (chord_subset_boundary_arc P s L hpf)
     · exact hsub.trans (filled_arc_subset P hP hd hin)
-  rw [show s + (k - 1) + 1 = s + k by omega] at hkey
-  exact hkey
+  rwa [show s + (k - 1) + 1 = s + k by omega] at hkey
 
 /-- **Two apexes strictly inside opposite chains of a diagonal are never adjacent.**  Index
 arithmetic modulo `N = L + 1`: for a diagonal `(s', L')` of a polygon with `N` vertices, and
@@ -114,7 +113,7 @@ theorem apex_not_both_endpoints {N L s' L' k₁ k₂ : ℕ} (hN : N = L + 1)
     · have hEq : L' + k₂ + 1 = N := by omega
       rw [hEq, Nat.add_mod_right] at e
       have := rot_index_inj (n := N) (s := s') (i := 0) (j := k₁) hN0 (by omega)
-        (by rw [Nat.add_zero]; exact e)
+        (by rwa [Nat.add_zero])
       omega
   · -- `a₂ = 0` is the successor of `a₁ = L`
     have e : (s' + (k₁ + 1)) % N = (s' + (L' + k₂)) % N := by
@@ -140,7 +139,7 @@ theorem exists_ear_in_arc_aux (m : ℕ) : ∀ Q : Polygon, Q.n = m → Q.Simple 
     subst hL2
     exact ⟨1, one_pos, one_lt_two, isEar_of_diagonal_two Q hd hin⟩
   · -- `L ≥ 3`: cut the arc along a diagonal
-    set A := Q.arc s L with hAdef
+    set A := Q.arc s L
     have hA : A.Simple := simple_arc Q s L hQ hd
     have hAn : A.n = L + 1 := n_arc Q s L
     have hA4 : 4 ≤ A.n := by omega
@@ -151,7 +150,7 @@ theorem exists_ear_in_arc_aux (m : ℕ) : ∀ Q : Polygon, Q.n = m → Q.Simple 
     have hL'n : L' ≤ A.n := by have := hd'.2.1; omega
     have hin'' : Chazelle.segment (A.vtx ((s' + L') % A.n % A.n))
         (A.vtx (((s' + L') % A.n + (A.n - L')) % A.n)) ⊆ A.filled := by
-      rw [Nat.mod_mod, compl_arc_last_index A s' L' hL'n, segment_comm]; exact hin'
+      rwa [Nat.mod_mod, compl_arc_last_index A s' L' hL'n, segment_comm]
     obtain ⟨k₂, hk₂0, hk₂, he₂⟩ := ih A.n hAm A rfl hA _ _ hd'' hin''
     rw [compl_arc_index, Nat.add_assoc] at he₂
     rcases apex_not_both_endpoints hAn hk₁0 hk₁ hk₂0 hk₂ hd'.2.1 with ⟨h0, hL⟩ | ⟨h0, hL⟩

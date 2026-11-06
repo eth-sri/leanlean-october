@@ -86,7 +86,6 @@ theorem pos_mem_set_iff (_hP : C.P.Simple) {Q : Polygon} {x : WPos}
     (h1 : (chainModel C).param Q x < 1) (hnorm : x.hgt = 0 ↔ (chainModel C).param Q x = 0) :
     (chainModel C).pos Q x ∈ C.set ↔
       (6 ≤ x.edge ∧ x.edge ≤ 2 * C.m + 5) ∨ (x.edge = 2 * C.m + 6 ∧ x.hgt = 0) := by
-  have hn := cm_n C
   show sidePt (chainModel C).W x.edge ((chainModel C).param Q x) ∈ C.set ↔ _
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
   rw [hW] at hx ⊢

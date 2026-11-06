@@ -44,13 +44,11 @@ theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : �
     (hav : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) τ s ∉ c) :
     0 < sideCross (M.W.vtx ((p + 1) % M.W.n) - M.W.vtx p) ((τ, 0) : Point) ∨
       0 < sideCross ((τ, 0) : Point) (M.W.vtx ((p + M.W.n - 1) % M.W.n) - M.W.vtx p) := by
-  have hne := hM.nd p hp
   obtain ⟨d, hd, -, hcD, -⟩ := attached_opposite hM hc hA hτ hav
-  have hn0 : 0 < M.W.n := by omega
   have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
-  set v := M.W.vtx p with hv
-  set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
-  set b := M.W.vtx ((p + 1) % M.W.n) with hb
+  set v := M.W.vtx p
+  set a := M.W.vtx ((p + M.W.n - 1) % M.W.n)
+  set b := M.W.vtx ((p + 1) % M.W.n)
   have hsecv : ∀ x, sideLeft M.W p 0 x ↔ sideCcw (b - v) (x - v) (a - v) :=
     fun x => sideLeft_zero _ _ _
   have hττ : τ * τ = 1 := by rcases hτ with rfl | rfl <;> norm_num
@@ -85,7 +83,7 @@ theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : �
         rw [← h3]
       · simp only [lerp_snd, rayPt_snd]
         rw [show (M.W.vtx ((p + 1) % M.W.n)).2 = b.2 from rfl, hb2]; ring
-    rw [e]; exact hmem
+    rwa [e]
   rcases hdp with ⟨-, h2, -⟩ | ⟨-, h2⟩ | ⟨-, -, h3⟩ | ⟨h1, h2, h3⟩
   · exact Or.inl h2
   · exact h2

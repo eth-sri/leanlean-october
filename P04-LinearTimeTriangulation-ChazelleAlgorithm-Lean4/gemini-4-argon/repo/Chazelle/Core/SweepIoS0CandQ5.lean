@@ -111,15 +111,11 @@ theorem candQ_spec {ls : Stmt} {κL : ℕ} (hLs : LSearchOK ls κL) :
   have hX : AuxCore P J N₂ c₀ := core_of_aux hAux
   rw [hbL, hbR] at hacc ⊢
   have hK := hA.hK
-  have hKc := hK.fix hI
-  set zp := c.nreg zP with hzpdef
-  set zh := c.nreg zPh with hzhdef
-  set d := c.nreg qD with hddef
+  set zp := c.nreg zP
+  set zh := c.nreg zPh
+  set d := c.nreg qD
   have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := hI.hm
-  have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
   have hA0 := hI.hA
-  have fix : ∀ k, k < 700 → c.nreg (sw k) = c₀.nreg (sw k) := fun k hk =>
-    hI.hin _ (by unfold IFix sw; omega)
   -- copy the query position
   have hcost : cIn.length + (κL * (c₀.nreg TLR + 1) + (checkK + 2)) ≤
       qK κL * (c₀.nreg TLR + 1) := by
@@ -132,7 +128,7 @@ theorem candQ_spec {ls : Stmt} {κL : ℕ} (hLs : LSearchOK ls κL) :
     (IRS.block cIn hI (cIn_ok _ _)) ?_ |>.mono hcost (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
   obtain ⟨v1E, v1H, k1⟩ := cIn_val c.nmem c.nreg
-  set c₁ : Config := { c with nreg := regB c.nmem cIn c.nreg } with hc₁
+  set c₁ : Config := { c with nreg := regB c.nmem cIn c.nreg }
   have nk1 : ∀ q, (q < sw 4020 ∨ sw 4021 < q) → c₁.nreg q = c.nreg q := fun q hq =>
     k1 q (by unfold lsxE sw at *; omega) (by unfold lsxH sw at *; omega)
   have fix1 : ∀ k, k < 700 → c₁.nreg (sw k) = c₀.nreg (sw k) := fun k hk =>
@@ -189,18 +185,18 @@ theorem candQ_spec {ls : Stmt} {κL : ℕ} (hLs : LSearchOK ls κL) :
       rw [k2 r hr (fun h => hq (by right; unfold LSet at h; unfold sw at *; omega)) hra]
       exact k1 r (fun h => hq (by subst h; right; unfold lsxE sw; omega))
         (fun h => hq (by subst h; right; unfold lsxH sw; omega)),
-    by rw [hAc₁] at hal2; exact hal2, fun a ha => by rw [hm2 a (by rw [hAc₁]; exact ha)]⟩
+    by rwa [hAc₁] at hal2, fun a ha => by rw [hm2 a (by rwa [hAc₁])]⟩
   have hd₂ : c₂.nreg qD = d := nk2 qD (nob (by unfold qD sw; omega) (by unfold qD sw; omega))
     (by unfold qD sw; omega) (by unfold qD ALLOC sw; omega)
   have hacc₂ : AccOK P accA (ModB J 1 1) J.whole.radius z (dirOf d) L c₂ :=
     hacc.transport (fun j hj => nk2 (accA + j) (nob (by unfold accA sw; omega)
       (by unfold accA sw; omega)) (by unfold accA sw; omega) (by unfold accA ALLOC sw; omega))
   have hxE2 : c₂.nreg lsxE = zp := by
-    rw [k2 _ (nob (by unfold lsxE sw; omega) (by unfold lsxE sw; omega))
-      (by unfold LSet lsxE sw; omega) (by unfold lsxE ALLOC sw; omega)]; exact hxE1
+    rwa [k2 _ (nob (by unfold lsxE sw; omega) (by unfold lsxE sw; omega))
+      (by unfold LSet lsxE sw; omega) (by unfold lsxE ALLOC sw; omega)]
   have hxH2 : c₂.nreg lsxH = zh := by
-    rw [k2 _ (nob (by unfold lsxH sw; omega) (by unfold lsxH sw; omega))
-      (by unfold LSet lsxH sw; omega) (by unfold lsxH ALLOC sw; omega)]; exact hxH1
+    rwa [k2 _ (nob (by unfold lsxH sw; omega) (by unfold lsxH sw; omega))
+      (by unfold LSet lsxH sw; omega) (by unfold lsxH ALLOC sw; omega)]
   have h301 : c₂.nreg (sw 301) = rd c₀ bSweep 301 := hI₂.hin _ (by unfold IFix sw; omega)
   -- the final assembly from the completeness of the slot read
   have fin : ∀ c' L', AccOK P accA (ModB J 1 1) J.whole.radius z (dirOf d) L' c' → L ⊆ L' →
@@ -228,10 +224,10 @@ theorem candQ_spec {ls : Stmt} {κL : ℕ} (hLs : LSearchOK ls κL) :
     exact ⟨⟨L', hacc', hLL, hsnd, hst, htb⟩, frQ_partFr hfr⟩
   refine IRS.ite (fun ht => ?_) (fun ht => ?_)
   · rw [h301] at ht
-    refine (check_irs hA hX hI₂ hz hzs hz2 hzP hzPp (by rw [hd₂]; exact harr) hxE2 hxH2 ht
-      hs1' hs2' (by rw [hd₂]; exact hacc₂) (by
+    refine (check_irs hA hX hI₂ hz hzs hz2 hzP hzPp (by rwa [hd₂]) hxE2 hxH2 ht
+      hs1' hs2' (by rwa [hd₂]) (by
         have : c₂.nreg ALLOC ≤ c.nreg ALLOC + κL * (c₀.nreg TLR + 1) := by
-          rw [hAc₁] at hA₂'; exact hA₂'
+          rwa [hAc₁] at hA₂'
         have := hcost
         omega)).mono le_rfl ?_
     rintro c' ⟨L', hacc', hLL, hsnd, hHC, hfr⟩

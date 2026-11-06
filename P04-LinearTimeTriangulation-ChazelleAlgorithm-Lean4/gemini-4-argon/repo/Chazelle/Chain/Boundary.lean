@@ -64,33 +64,13 @@ open Chazelle.Jordan
 
 /-! ### Open polygonal paths -/
 
-/-- The crossing sum (in `ZMod 2`) of the open polygonal path through the vertex list `L`: the
-sum of `crossInd z a b` over consecutive pairs `a, b` of `L`. -/
-noncomputable def pathSum (z : Point) : List Point → ZMod 2
-  | [] => 0
-  | [_] => 0
-  | a :: b :: l => crossInd z a b + pathSum z (b :: l)
 
-/-- The point set of the open polygonal path through the vertex list `L`: the union of the
-segments joining consecutive vertices. -/
-def pathSet : List Point → Set Point
-  | [] => ∅
-  | [_] => ∅
-  | a :: b :: l => Chazelle.segment a b ∪ pathSet (b :: l)
 
-@[simp] theorem pathSum_nil (z : Point) : pathSum z [] = 0 := rfl
 
-@[simp] theorem pathSum_singleton (z a : Point) : pathSum z [a] = 0 := rfl
 
-@[simp] theorem pathSum_cons_cons (z a b : Point) (l : List Point) :
-    pathSum z (a :: b :: l) = crossInd z a b + pathSum z (b :: l) := rfl
 
-@[simp] theorem pathSet_nil : pathSet [] = ∅ := rfl
 
-@[simp] theorem pathSet_singleton (a : Point) : pathSet [a] = ∅ := rfl
 
-@[simp] theorem pathSet_cons_cons (a b : Point) (l : List Point) :
-    pathSet (a :: b :: l) = Chazelle.segment a b ∪ pathSet (b :: l) := rfl
 
 /-! ### Index form, and closed walks as polygons -/
 

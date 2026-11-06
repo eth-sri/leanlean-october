@@ -58,7 +58,7 @@ theorem nf_recs_eq {m : ℕ → ℕ} {B : ℕ} {M M' : Model} {Q Q' : Polygon} {
   refine ⟨list_ext_getD' ⟨0, 0, 0, 0, 0⟩ (by omega) fun i hi => ?_, hA,
     list_ext_getD' ⟨[], [], 0⟩ (by omega) fun q hq => ?_,
     list_ext_getD' 0 (by rw [hl, hl', hA]) fun t ht => by
-      rw [← hs t ht, ← hs' t (by rw [hl', ← hA, ← hl]; exact ht)]⟩
+      rw [← hs t ht, ← hs' t (by rwa [hl', ← hA, ← hl])]⟩
   · obtain ⟨a1, a2, a3, a4, a5⟩ := hc i hi
     obtain ⟨b1, b2, b3, b4, b5⟩ := hc' i (by omega)
     change N.chord i = N'.chord i
@@ -130,9 +130,9 @@ theorem asmTask : AsmTask := by
   have hpre' := hpre
   obtain ⟨-, -, -, -, -, H₀, J₀, N₁₀, N₂₀, hpa₀⟩ := hpre'
   have hpa : PreAt X Ok P c H₀ J₀ N₁₀ N₂₀ := hpa₀
-  set K := c.nmem (rd c bSweep 3) + c.nmem (rd c bSweep 4) + 1 with hKd
-  set M := F (rd c bSweep 5) + Nat.clog 2 K + 1 with hMd
-  set D := rd c bSweep 6 with hDd
+  set K := c.nmem (rd c bSweep 3) + c.nmem (rd c bSweep 4) + 1
+  set M := F (rd c bSweep 5) + Nat.clog 2 K + 1
+  set D := rd c bSweep 6
   have hM1 : 1 ≤ M := by omega
   have hcost : cost (fun D => κI' + κR D + 5) F P c = (κI' + κR D + 5) * K * M := rfl
   rw [hcost] at hroom ⊢
@@ -151,44 +151,33 @@ theorem asmTask : AsmTask := by
   have e5 : c₀.nreg (sw 5) = rd c bSweep 5 := hkeep 5 (by norm_num)
   have e6 : c₀.nreg (sw 6) = rd c bSweep 6 := hkeep 6 (by norm_num)
   have hA₀ : c₀.nreg ALLOC ≤ c.nreg ALLOC + k₀ := fr₀.2.2.2.2.2.2
-  have hA₀' : c.nreg ALLOC ≤ c₀.nreg ALLOC := fr₀.2.2.2.2.2.1
   obtain ⟨c', k₁, e₁, hk₁, hII, hIFr, hout⟩ := hR sh Bs F X Ok P W c₀ J₀ N₁₀ N₂₀ E hw₀ (by
     rw [e5, e6, hK1, hK2]; show c₀.nreg ALLOC + κR D * K * M ≤ W; omega)
   rw [e5, e6, hK1, hK2] at hk₁
   have hk₁' : k₁ ≤ κR D * K * M := hk₁
-  obtain ⟨hOut, s1, s2, l1, l2, t1, z1, z2⟩ := hout
+  obtain ⟨hOut, -, s2, -, l2, t1, z1, z2⟩ := hout
   rw [hK1, hK2] at z1 z2
   rw [hK2] at t1
   obtain ⟨f200, f201, f300, f301, f302, fo⟩ := finCfg_val c'
   have hw' := e₁.wb_right
-  have eTB : c'.nreg cTB = c₀.nreg cTB := hII.hin _ (by unfold IFix cTB sw; omega)
   refine ⟨finCfg c', k₀ + (k₁ + 5), .seq e₀ (.seq e₁ (fin_exec hw')), by omega,
-    ⟨fun j hj => ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun H J N₂ hJ hN₂ hNF₂ => ?_⟩, ?_⟩
+    ⟨fun j hj => ?_, ?_, ?_, ?_, ?_, ?_, fun H J N₂ hJ hN₂ hNF₂ => ?_⟩, ?_⟩
   · rw [fo _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega)
       (by unfold sw; omega) (by unfold sw; omega), hII.hin _ (by unfold IFix sw; omega)]
     exact hkeep j hj
-  · show c.nreg ALLOC ≤ (finCfg c').nreg (sw 200)
-    rw [f200]; omega
   · show (finCfg c').nreg (sw 200) + 5 * (finCfg c').nreg (sw 201) ≤ (finCfg c').nreg ALLOC
-    rw [f200, f201, fo _ (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)
+    rwa [f200, f201, fo _ (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)
       (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)]
-    exact s2
-  · show c.nreg ALLOC ≤ (finCfg c').nreg (sw 300)
-    rw [f300]; omega
   · show (finCfg c').nreg (sw 300) + 7 * (finCfg c').nreg (sw 301) ≤ (finCfg c').nreg ALLOC
-    rw [f300, f301, fo _ (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)
+    rwa [f300, f301, fo _ (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)
       (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)]
-    exact l2
-  · show c.nreg ALLOC ≤ (finCfg c').nreg (sw 302)
-    rw [f302, eTB]; have := E.hT; omega
   · show (finCfg c').nreg (sw 302) + 3 * (2 * c.nmem (rd c bSweep 4)) ≤ (finCfg c').nreg ALLOC
-    rw [f302, fo _ (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)
+    rwa [f302, fo _ (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)
       (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega) (by unfold ALLOC sw; omega)]
-    exact t1
   · show (finCfg c').nreg (sw 201) ≤ _
-    rw [f201]; exact z1
+    rwa [f201]
   · show (finCfg c').nreg (sw 301) ≤ _
-    rw [f301]; exact z2
+    rwa [f301]
   · have hJJ : J₀ = J := junction_unique hpa.1 hJ
     subst hJJ
     obtain ⟨hc, ha, hr, hs⟩ := nf_recs_eq nN2 hN₂ hpa.2.2.2.2.2.2.2.1 hNF₂

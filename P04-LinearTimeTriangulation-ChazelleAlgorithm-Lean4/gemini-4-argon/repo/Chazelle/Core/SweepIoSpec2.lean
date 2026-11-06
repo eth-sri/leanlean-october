@@ -65,7 +65,6 @@ structure ABase (P : Polygon) (W : ℕ) (X : MemCtx) (Ok : Polygon → Model →
     ((Qof P).vtx (q.2.1 - 1)).2
   hend : i = 1 → ∃ L₁ : List (ℕ × ℕ × ℕ), L = sweepEndQ N₂.chords ++ L₁ ∧ L₁.length ≤ 3
   hres : c₀.nreg (sw 11) = c₀.nreg ALLOC
-  hTLR : c₀.nreg TLR ≤ Nat.clog 2 (N₁.nChords + N₂.nChords + 1) + 6
 
 /-- The point of the query `j`. -/
 noncomputable def qPt (J : Merge.Junction) (P : Polygon) (i : ℕ) (L : List (ℕ × ℕ × ℕ)) (j : ℕ) :

@@ -47,7 +47,7 @@ theorem attach_sup {W : Polygon} {f c : Set Point} {p : ℕ} {t : ℝ} (hA : Sid
     {e b : Point} (hfe : f = Chazelle.segment (sidePt W p t) e) (he : e ≠ sidePt W p t)
     (hcb : c = Chazelle.segment (sidePt W p t) b) (hec : e ∈ c) : SideAttach W c p t := by
   obtain ⟨hp, ht, ht1, -, r, hr, hl⟩ := hA
-  set q := sidePt W p t with hq
+  set q := sidePt W p t
   have hd : 0 < dist e q := dist_pos.2 he
   refine ⟨hp, ht, ht1, by rw [hcb]; exact Geometry.left_mem_segment _ _, min r (dist e q),
     lt_min hr hd, fun x hx hxq hxd => hl x ?_ hxq (lt_of_lt_of_le hxd (min_le_left _ _))⟩
@@ -87,7 +87,7 @@ theorem pieceAt_of_agree {C' : Chain} (hC'P : C'.P = J.P) {g g' L : ℕ}
   rw [counted_iff_box _ (Nat.mod_lt _ (by omega))]
   rw [mod_succ_mod] at hc ⊢
   rw [hA d hd.le, hA (d + 1) hd] at hc
-  rw [hR]; exact hc
+  rwa [hR]
 
 /-- The offset from a later base of a stretch. -/
 theorem dOf_shift {n g s p : ℕ} (hg : g < n) (hp : p < n) (hs : s ≤ dOf n g p) :
@@ -113,22 +113,22 @@ theorem side_two_pieces (_hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
         dOf (chainModel J.whole).W.n (6 + tpos J.whole J₀) p <
           (if 2 * J.whole.m - tpos J.whole J₀ < ℓ then ℓ + 7 else ℓ) →
         dOf (chainModel J.whole).W.n gA p < LA ∨ dOf (chainModel J.whole).W.n gB p < LB := by
-  set C := J.whole with hC
-  set W := (chainModel C).W with hW
-  set W' := (chainModel C').W with hW'
+  set C := J.whole
+  set W := (chainModel C).W
+  set W' := (chainModel C').W
   have hR := radius_of_P J hC'P
   have hn := cm_n C
   have hn' := cm_n C'
-  set τ := tpos C J₀ with hτ
-  set τ' := tpos C' J₀' with hτ'
+  set τ := tpos C J₀
+  set τ' := tpos C' J₀'
   have hτlt := tpos_lt C J₀
   have hτ'lt := tpos_lt C' J₀'
-  set g := 6 + τ with hg_def
-  set g' := 6 + τ' with hg'_def
+  set g := 6 + τ
+  set g' := 6 + τ'
   have hg : g < W.n := by rw [hn]; omega
   have hg' : g' < W'.n := by rw [hn']; omega
-  set s := 2 * C.m - τ with hs_def
-  set s' := 2 * C'.m - τ' with hs'_def
+  set s := 2 * C.m - τ
+  set s' := 2 * C'.m - τ'
   have hstart : W.vtx g = J.shared := by
     have := walk_tour C J₀ 0 (by omega)
     rw [add_zero, Nat.mod_eq_of_lt hg] at this
@@ -140,14 +140,14 @@ theorem side_two_pieces (_hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     have hpc := pieceAt_of_agree J hC'P hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA
     refine ⟨g, g', ℓ + 7, g, g', ℓ + 7, hpc, hpc, Or.inl hstart, Or.inl hstart,
       fun p _ hin => Or.inl ?_⟩
-    rw [ite_eq_left hsl] at hin; exact hin
+    rwa [ite_eq_left hsl] at hin
   push Not at hsl
   by_cases hsl' : ℓ ≤ s'
   · -- case N
     have hA := agree_N hT hsl hsl'
     have hpc := pieceAt_of_agree J hC'P hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA
     refine ⟨g, g', ℓ, g, g', ℓ, hpc, hpc, Or.inl hstart, Or.inl hstart, fun p _ hin => Or.inl ?_⟩
-    rw [ite_eq_right (not_lt.2 hsl)] at hin; exact hin
+    rwa [ite_eq_right (not_lt.2 hsl)] at hin
   -- case G
   push Not at hsl'
   have hA1 := agree_G1 hT hsl hsl'
@@ -159,8 +159,7 @@ theorem side_two_pieces (_hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   have hpt : W.vtx ((g + s') % W.n) = C'.top := by
     rw [hA1 s' le_rfl]
     have := walk_box C' J₀' 0 (by omega)
-    rw [add_zero] at this
-    exact this
+    rwa [add_zero] at this
   refine ⟨g, g', s', _, _, ℓ - s', hpc1, hpc2, Or.inl hstart, Or.inr hpt, fun p hp hin => ?_⟩
   rw [ite_eq_right (not_lt.2 hsl)] at hin
   by_cases hD : dOf W.n g p < s'
@@ -224,10 +223,9 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     (hadj : Adj (chainModel J.whole) S' R ((g + d) % (chainModel J.whole).W.n) t) :
     f ∈ TypeI J C' Si S' R g g' L ∨ f ∈ CrossX (chainModel J.whole) S' R g L := by
   obtain ⟨c, hc, hfc, hnear⟩ := hpar
-  have hpc' := hpc
   obtain ⟨hg, hg', hLn, hLn', hAg, hcntP⟩ := hpc
-  set M := chainModel J.whole with hMdef
-  set M' := chainModel C' with hM'def
+  set M := chainModel J.whole
+  set M' := chainModel C'
   have hM : WalkAx M := walkAx_chainModel hP
   have hM' : WalkAx M' := walkAx_chainModel hS.simple
   have hn : 0 < M.W.n := by omega
@@ -242,7 +240,7 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
   rcases hc with hci | hcj
   · left
     refine ⟨hf.1, d, t, hd, ht0, ht1, hdt, hA, hadj, c, hci, ?_⟩
-    set q := sidePt M'.W ((g' + d) % M'.W.n) t with hq
+    set q := sidePt M'.W ((g' + d) % M'.W.n) t
     have hqf : q ∈ f := hAf'.2.2.2.1
     have hqD : q ∉ M.D := by rw [← hq']; exact hM.trace _ hA.1 t ht0 ht1.le
     have hqD' : q ∉ C'.dom := hM'.trace _ hAf'.1 t ht0 ht1.le
@@ -268,13 +266,12 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     · exact Or.inr ⟨hf, d, t, hd, ht0, ht1, hdt, hA, hadj, pb, tb, hB, hBne, hX⟩
     exfalso
     push Not at hX
-    set dB := dOf M.W.n g pb with hdB
+    set dB := dOf M.W.n g pb
     have hpb : (g + dB) % M.W.n = pb := add_dOf hg hB.1
     have hoB : off M.W.n g (pb + tb) = dB + tb := off_key' hg hB.1 hB.2.1 hB.2.2.1
     have hdBL : dB < L := by
       have : (dB : ℝ) < L := by rw [hoB] at hX; linarith [hX.2, hB.2.1]
       exact_mod_cast this
-    have hB' : SideAttach M.W f ((g + dB) % M.W.n) tb := by rw [hpb]; exact hB
     -- the two attachment points of `f` are on `C'`
     have hmemB : sidePt M.W pb tb ∈ C'.set := by
       rw [← hpb, hAg.sidePt_eq hdBL tb]
@@ -299,8 +296,8 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     have hq₀C : q₀ ∈ C'.set := by
       rcases hA0 with h1 | h1 <;> rcases hB0 with h2 | h2 <;> rcases hq0 with h3 | h3
       all_goals first
-        | (rw [h3, ← h1]; exact hmemA)
-        | (rw [h3, ← h2]; exact hmemB)
+        | (rwa [h3, ← h1])
+        | (rwa [h3, ← h2])
         | (exfalso; exact hBne (h2.trans h1.symm))
     exact hsh (hjend c hcj q₀ hq₀ hq₀C ▸ hq₀f)
 

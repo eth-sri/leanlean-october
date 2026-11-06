@@ -115,7 +115,6 @@ def ixLoop : Stmt := .whileLtN 70200 70201 ixBody
 /-- The invariant of the index loop. -/
 structure IXI (W K S : ℕ) (c₀ c : Config) : Prop where
   wb : WordsBounded W c
-  i_le : c.nreg 70200 ≤ K
   alloc : c.nreg ALLOC = S + c.nreg 70200
   regs : ∀ r, r ≠ 70200 → r ≠ ALLOC → c.nreg r = c₀.nreg r
   low : ∀ a, a < S → c.nmem a = c₀.nmem a
@@ -157,7 +156,7 @@ theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg
       · simp (disch := omega) only [hA, hi, ALLOC]
     obtain ⟨q0, qA, qr, qm, qrr, qrm, qo⟩ := q
     have hI' : IXI W K S c₀ c' := by
-      refine ⟨e.wb_right, by omega, by rw [qA, q0], fun r a1 a2 => by rw [qr r a1 a2,
+      refine ⟨e.wb_right, by rw [qA, q0], fun r a1 a2 => by rw [qr r a1 a2,
         hI.regs r a1 a2], fun a ha => by rw [qm, upd_other _ _ _ (by omega), hI.low a ha],
         fun j hj => ?_, by rw [qrr, hI.rr], by rw [qrm, hI.rm], by rw [qo, hI.out]⟩
       rw [q0] at hj

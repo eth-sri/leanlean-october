@@ -57,7 +57,7 @@ theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     · simp only [h, ne_eq, not_false_eq_true, iff_true]; exact hblt _ (hlt v hv) h
   unfold placeS
   have e1 := Exec.constN (P := P) hw 130860 0 (by omega)
-  set c1 := { c with nreg := upd c.nreg 130860 0 } with hc1
+  set c1 := { c with nreg := upd c.nreg 130860 0 }
   have f1 : PFr StDRG (PlMem g) c c1 :=
     ⟨fun r hr => by simp only [c1, Machine.upd_other _ _ _ (show r ≠ 130860 by
         unfold StDRG at hr; omega)], rfl, rfl, rfl, fun a _ => rfl⟩
@@ -95,7 +95,7 @@ theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
           have := cntLt_succ bo g.μ (bo v); have := cntLt_le bo g.μ (bo v + 1)
           omega) hW
       refine ⟨c4, k4, e4, hk4, hw4, hi4, by
-        rw [hf4.1 _ (by unfold PLRG; omega)]; exact hn3,
+        rwa [hf4.1 _ (by unfold PLRG; omega)],
         hf3.trans (hf4.mono (fun r h => by unfold PLRG at h; unfold StDRG; omega)
           (fun a h => h)), ?_⟩
       rw [hm4]

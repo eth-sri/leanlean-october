@@ -143,7 +143,7 @@ gaps between them are arc gaps. -/
 theorem arc_keys (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.Nonempty)
     (hU : U ∈ M.regions F) {l r : ℝ} (harc : M.IsArc F U l r) :
     ∃ i_l d, ArcData M F U l r i_l d := by
-  set N := nk M F U with hN
+  set N := nk M F U
   set n : ℝ := (M.W.n : ℝ)
   obtain ⟨hcl, hcr, hlr⟩ := WalkAx.arc_cuts hne harc
   have hlK : l ∈ hostKeys M F U := by
@@ -156,7 +156,7 @@ theorem arc_keys (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.N
   obtain ⟨i_r, hir, hr⟩ := exists_hk hM hF hfin hrK
   have hne' : i_l ≠ i_r := fun h => hlr (by rw [← hl, ← hr, h])
   have hN2 : 2 ≤ N := by omega
-  set d := (i_r + N - i_l) % N with hd
+  set d := (i_r + N - i_l) % N
   have hdN : d < N := Nat.mod_lt _ (by omega)
   have hid : (i_l + d) % N = i_r := add_steps_mod hil hir
   have hd0 : 0 < d := by
@@ -255,7 +255,6 @@ theorem hostPt_wrap_lerp (W : Polygon) (hn : 0 < W.n) {p : ℕ} (hp : p < 2 * W.
     hostPt W (wrapK W.n y) =
       Chazelle.Geometry.lerp (W.vtx (p % W.n)) (W.vtx ((p % W.n + 1) % W.n)) (y - p) := by
   set n := W.n
-  have hnr : (0 : ℝ) < n := by exact_mod_cast hn
   rcases hy2.lt_or_eq with hy2 | hy2
   · -- inside the edge
     have ht0 : 0 ≤ y - p := by linarith
@@ -342,7 +341,7 @@ theorem arc_piece (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {l r : �
   have hrb : 0 ≤ r ∧ r < n := hA.hr ▸ hb _ (Nat.mod_lt _ (by omega))
   have hur : unwrapK n l r < l + n := (unwrapK_bounds hlb hrb).2
   have ha0 : 0 ≤ ukey M F U i_l j := le_trans hlb.1 hla
-  set p := ⌊ukey M F U i_l j⌋₊ with hp
+  set p := ⌊ukey M F U i_l j⌋₊
   have hpa : (p : ℝ) ≤ ukey M F U i_l j := Nat.floor_le ha0
   have hap : ukey M F U i_l j < p + 1 := Nat.lt_floor_add_one _
   -- no vertex key inside the piece

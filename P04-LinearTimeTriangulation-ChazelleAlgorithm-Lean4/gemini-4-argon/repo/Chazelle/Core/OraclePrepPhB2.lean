@@ -86,17 +86,16 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   have hA0 := arcs_pos hsimp hN
   obtain ⟨hNB7, hABb, hSBb⟩ := NFLoc.nfWithin_bounds hNFw hN hA0
   have hNFc : NFAt c.nmem NB N := hNFw c.nmem hagree
-  have hmn : C.m < P.n := by have := C.m_lt; rw [hCQ, hQn] at this; exact this
+  have hmn : C.m < P.n := by have := C.m_lt; rwa [hCQ, hQn] at this
   have hm1 := C.one_le
   have hW8 : 8 * P.n + 32 ≤ W := by unfold hostWords at hHW; omega
-  set MD := c.nreg 120040 with hMDdef
-  set L := c.nreg 120042 with hLdef
+  set MD := c.nreg 120040
+  set L := c.nreg 120042
   -- 1. the star chords
   have e4 : c.nmem (NB + 4) = m₀ (NB + 4) := hagree _ (by omega)
   have e6 : c.nmem (NB + 6) = m₀ (NB + 6) := hagree _ (by omega)
   have hM := rgMem_of hNFc hN
   rw [e4, e6] at hM
-  obtain ⟨-, -, -, hAo⟩ := NFLoc.isNF_arcs hN
   have hρR : ∀ p, p < N.arcs.length →
       (fun j => (N.arc j).reg) ((fun p => N.seq.getD p 0) p) < N.regions.length := fun p hp => by
     obtain ⟨reg, -, hA, -⟩ := NFLoc.isNF_arcs hN
@@ -125,14 +124,14 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       hW := hW8
       CQ := hCQ
       simple := hsimp
-      s_lt := by rw [hCQ, hQn] at hsl; exact hsl
+      s_lt := by rwa [hCQ, hQn] at hsl
       isNF := hN
       loc := zloc_of (m := c₁.nmem) (MD := MD) (TB := MD + 6) (L := L) hHW hsimp hD hwf hNFw hN
         (fun a ha => by rw [mem₁ a (by omega), hagree a ha])
-        (by rw [mem₁ _ (by omega)]; exact hMD0)
+        (by rwa [mem₁ _ (by omega)])
         (fun i hi => by rw [mem₁ _ (by omega)]; exact hmdc i hi) hA₀MD le_rfl
         (fun j hj => by rw [mem₁ _ (by omega), ← hTB]; exact htab j hj) hAlt
-        (by rw [← hTB]; exact hTBA) (by omega) hVMD PL₁.rNB hVTB hVL hVA PL₁.rAB PL₁.rSB (by simp [hV])
+        (by rwa [← hTB]) (by omega) hVMD PL₁.rNB hVTB hVL hVA PL₁.rAB PL₁.rSB (by simp [hV])
       pk := hpk.congr fun r hr => K₁ r (by
         simp only [BFR, BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
       rMD := rfl
@@ -144,7 +143,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       rSB := rfl
       r3 := by rw [K₁ _ (by decide)]; exact h205 }
   set A₃ := A₁ + N.regions.length + 2 * chCap N.arcs.length with hA₃
-  obtain ⟨c₂, k₂, e₂, hk₂, F₂, a9₂, z93, z94, z95, pairsZ, -⟩ := zipStage_exec (P := P)
+  obtain ⟨c₂, k₂, e₂, hk₂, F₂, a9₂, z93, z94, z95, pairsZ⟩ := zipStage_exec (P := P)
     e₁.wb_right hZ a9₁ (by omega) (by rw [hVA]; unfold zCap chCap at *; omega)
   rw [hVA] at a9₂ z94 pairsZ hk₂
   rw [hVL] at hk₂
@@ -161,17 +160,17 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     simp only [List.length_append]; omega
   have hnI : (starList (OracleQ.rgi N) N.arcs.length).length ≤ N.arcs.length := starList_length _ _
   -- 3. the deduplication
-  set n := (OracleQ.zipRaw C (Qof P) N).length with hn
-  set nI := (starList (OracleQ.rgi N) N.arcs.length).length with hnIdef
-  set CH1 := A₁ + N.regions.length with hCH1
-  set CH2 := A₁ + N.regions.length + chCap N.arcs.length with hCH2
+  set n := (OracleQ.zipRaw C (Qof P) N).length
+  set nI := (starList (OracleQ.rgi N) N.arcs.length).length
+  set CH1 := A₁ + N.regions.length
+  set CH2 := A₁ + N.regions.length + chCap N.arcs.length
   have hsc := sortCost_mono 20 hnraw
   have hchc : chCap N.arcs.length = 3 * N.arcs.length + 5 := rfl
   have hzc : zCap N.arcs.length = 2 * N.arcs.length + 5 := rfl
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, mem₃, rm₃, o₃, al3a, al3b, v1, v2, v8, Dl, cnt, hDl, pairsD,
       hnd, hmem⟩ := dedupStage_exec (P := P) e₂.wb_right (CH1 := CH1) (CH2 := CH2) (nI := nI)
-    (by rw [K₂ _ (by decide)]; exact b72) (by rw [K₂ _ (by decide)]; exact b73)
-    (by rw [K₂ _ (by decide)]; exact b74) z93 z94 z95
+    (by rwa [K₂ _ (by decide)]) (by rwa [K₂ _ (by decide)])
+    (by rwa [K₂ _ (by decide)]) z93 z94 z95
     (by rw [k12₂ _ (by norm_num) (by norm_num)]; exact PL₁.one)
     (by rw [k12₂ _ (by norm_num) (by norm_num)]; exact PL₁.zero) a9₂
     (by omega) (by omega) (by omega)
@@ -200,7 +199,6 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     · config_simp; rw [g30, g48, g11, cnt]; omega
     · exact ⟨rfl, by config_simp; rw [g30, g48, g11], by config_simp; rw [g30, g48, g11, cnt]⟩
   have ex : Exec P W phB c c₄ _ := .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  have hA₄ : A₃ + 2 * zCap N.arcs.length = A₃ + 4 * N.arcs.length + 10 := by rw [hzc]; ring
   have k12₄ : ∀ r, 120010 ≤ r → r ≤ 120049 → c₄.nreg r = c.nreg r := fun r a b => by
     have h4 : (decide (r = 60034 ∨ r = 60037)) = false := by
       simp only [decide_eq_false_iff_not]; omega
@@ -258,7 +256,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     · rw [F₄.2.2.1, mem₃ _ (Or.inl (by omega)), mem₃ _ (Or.inr (Or.inl ⟨by omega,
         by omega⟩)), F₂.2.2.1 _ (by omega), F₂.2.2.1 _ (by omega)]
       exact pairs₁ t ht
-    · rw [F₄.2.2.1]; exact pairsD
+    · rwa [F₄.2.2.1]
   · rw [List.length_append]; omega
   · rw [hAL] at al3a; rw [List.length_append, hAL, F₄.1 _ (by decide)]; omega
   · rw [hmem x]
@@ -266,8 +264,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     · rintro ⟨i, hi, rfl⟩
       obtain ⟨p1, p2⟩ := pairsZ i hi
       rw [z93, z94] at *
-      rw [p1, p2]
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi]
+      rw [p1, p2, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi]
       exact List.getElem_mem hi
     · intro hx
       obtain ⟨i, hi, e⟩ := List.getElem_of_mem hx

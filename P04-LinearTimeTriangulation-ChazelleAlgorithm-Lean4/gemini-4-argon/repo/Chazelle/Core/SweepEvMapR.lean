@@ -118,16 +118,16 @@ theorem mapGap_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hM
   unfold mapGap
   by_cases h1 : c.nreg cLL < c.nreg cD
   · rw [hM.ll, hd] at h1
-    refine IRS.mono (K := 5 + 2) (IRS.ifT (by rw [hM.ll, hd]; exact h1) ?_) (by norm_num) (fun _ h => h)
+    refine IRS.mono (K := 5 + 2) (IRS.ifT (by rwa [hM.ll, hd]) ?_) (by norm_num) (fun _ h => h)
     by_cases h2 : c.nreg cD < c.nreg cLE
     · rw [hM.le, hd] at h2
-      refine IRS.mono (K := 0 + 2) (IRS.ifT (by rw [hM.le, hd]; exact h2) (IRS.skip hI rfl))
+      refine IRS.mono (K := 0 + 2) (IRS.ifT (by rwa [hM.le, hd]) (IRS.skip hI rfl))
         (by norm_num) ?_
       rintro c' rfl
       refine ⟨hd, by omega, ⟨fun h => by omega, fun h => absurd ⟨hδ, h1, h2⟩ h.2.1⟩,
         fun h => by omega, fun _ _ _ _ => rfl, rfl⟩
     · rw [hM.le, hd] at h2
-      refine IRS.mono (K := 2 + 2) (IRS.ifF (by rw [hM.le, hd]; exact h2) (IRS.block _ hI
+      refine IRS.mono (K := 2 + 2) (IRS.ifF (by rwa [hM.le, hd]) (IRS.block _ hI
         ⟨hsp, ⟨hsc, hW⟩, trivial⟩)) (by norm_num) ?_
       rintro c' rfl
       unfold MapPost
@@ -141,11 +141,11 @@ theorem mapGap_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hM
         unfold ψ; rw [ite_eq_left ⟨hδ, h1⟩, ite_eq_right h2]
       · rw [upd_other _ _ _ h2', upd_other _ _ _ h3']
   · rw [hM.ll, hd] at h1
-    refine IRS.mono (K := 5 + 2) (IRS.ifF (by rw [hM.ll, hd]; exact h1) ?_) (by norm_num) (fun _ h => h)
+    refine IRS.mono (K := 5 + 2) (IRS.ifF (by rwa [hM.ll, hd]) ?_) (by norm_num) (fun _ h => h)
     have hψ : ψ J d = d := by unfold ψ; rw [ite_eq_right (fun h => h1 h.2)]
     by_cases h3 : c.nreg cD < c.nreg cLL
     · rw [hM.ll, hd] at h3
-      refine IRS.mono (K := 1 + 2) (IRS.ifT (by rw [hM.ll, hd]; exact h3) (irs_const hI hsc hW))
+      refine IRS.mono (K := 1 + 2) (IRS.ifT (by rwa [hM.ll, hd]) (irs_const hI hsc hW))
         (by norm_num) ?_
       rintro c' ⟨v1, v2, v3⟩
       refine ⟨by rw [v2 _ nV.symm, hd], by omega, ⟨fun _ => ⟨hdE, fun h => h1 h.2.1,
@@ -153,15 +153,15 @@ theorem mapGap_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hM
         fun r _ h2' _ => v2 r h2', v3⟩
     · rw [hM.ll, hd] at h3
       have hdl : d = lL1 J := by omega
-      refine IRS.mono (K := 3 + 2) (IRS.ifF (by rw [hM.ll, hd]; exact h3) ?_) (by norm_num) (fun _ h => h)
+      refine IRS.mono (K := 3 + 2) (IRS.ifF (by rwa [hM.ll, hd]) ?_) (by norm_num) (fun _ h => h)
       by_cases h4 : c.nreg K0 < c.nreg (eA + 2)
       · rw [k0] at h4
-        refine IRS.mono (K := 0 + 2) (IRS.ifT (by rw [k0]; exact h4) (IRS.skip hI rfl)) (by norm_num) ?_
+        refine IRS.mono (K := 0 + 2) (IRS.ifT (by rwa [k0]) (IRS.skip hI rfl)) (by norm_num) ?_
         rintro c' rfl
         refine ⟨hd, by omega, ⟨fun h => by omega, fun h => absurd ⟨hδ, hdl, by omega⟩ h.2.2⟩,
           fun h => by omega, fun _ _ _ _ => rfl, rfl⟩
       · rw [k0] at h4
-        refine IRS.mono (K := 1 + 2) (IRS.ifF (by rw [k0]; exact h4) (irs_const hI hsc hW))
+        refine IRS.mono (K := 1 + 2) (IRS.ifF (by rwa [k0]) (irs_const hI hsc hW))
           (by norm_num) ?_
         rintro c' ⟨v1, v2, v3⟩
         refine ⟨by rw [v2 _ nV.symm, hd], by omega, ⟨fun _ => ⟨hdE, fun h => h1 h.2.1,
@@ -177,21 +177,18 @@ theorem mapC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c₀)
     IRS P W c₀ mapC c 20 (fun c' => MapPost J c c'
       ((c.nreg (eA + 1) + (chainModel J.left).W.n - b₁ J) % (chainModel J.left).W.n)
       (c.nreg (eA + 2))) := by
-  have hK := hK₀.fix hI
   have hM := hM₀.fix hI
-  have k0 : c.nreg K0 = 0 := hK.1
-  set n₁ := (chainModel J.left).W.n with hn₁
+  set n₁ := (chainModel J.left).W.n
   have hb : b₁ J < n₁ := by
     have := tpos_lt J.left J.m₁
     have hn : n₁ = 2 * J.left.m + 7 := cm_n J.left
     have hm1 : J.left.m = J.m₁ := rfl
     unfold b₁; split_ifs <;> omega
-  set pA := c.nreg (eA + 1) with hpAd
+  set pA := c.nreg (eA + 1)
   set d := (pA + n₁ - b₁ J) % n₁ with hdd
   have hsD : IScr cD := iscr_sw' (by norm_num) (by norm_num)
   have hsV : IScr cV := iscr_sw' (by norm_num) (by norm_num)
   have hsP : IScr cPs := iscr_sw' (by norm_num) (by norm_num)
-  have nD : ∀ r, r = cD → r ≠ eA + 2 := by rintro r rfl; unfold cD eA sw; omega
   -- 1. `cD := pA + n₁ - b₁`
   have hok1 : okB W c.nmem [.addN cD (eA + 1) cN1, .subN cD cD cB1] c.nreg :=
     ⟨⟨hsD, by rw [hM.n1]; omega⟩, hsD, trivial⟩
@@ -246,16 +243,15 @@ theorem mapC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c₀)
     exact ⟨a1, a2, a3, a4, fun r h1 h2 h3 => by rw [a5 r h1 h2 h3]; exact o3 r h1 h2 h3,
       by rw [a6, hm2]⟩
   -- 4. the tests
-  have hI₃' := hI₃
   have hK3 : Consts { c₂ with nreg := f₃ } := hK₀.fix hI₃
   have hM3 : MapK J { c₂ with nreg := f₃ } := hM₀.fix hI₃
   by_cases hE : f₃ cD < f₃ cE1
-  · have hdE : d < E₁ J := by have := hM3.e1; simp only at this; rw [d3, this] at hE; exact hE
+  · have hdE : d < E₁ J := by have := hM3.e1; simp only at this; rwa [d3, this] at hE
     refine IRS.mono (K := 11 + 2) (IRS.ifT hE ?_) (by norm_num) (fun _ h => h)
     have k03 : f₃ K0 = 0 := hK3.1
     by_cases hδ : f₃ K0 < f₃ cLD
     · have hδ' : 0 < lδ J := by
-        have := hM3.ld; simp only at this; rw [k03, this] at hδ; exact hδ
+        have := hM3.ld; simp only at this; rwa [k03, this] at hδ
       refine IRS.mono (K := 7 + 2) (IRS.ifT hδ ?_) (by norm_num) (fun _ h => h)
       exact (mapGap_irs hI₃ hK3 hM3 d3 v3 p3 hδ' hdE (by omega)).mono le_rfl lift
     · have hδ' : lδ J = 0 := by
@@ -267,7 +263,7 @@ theorem mapC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c₀)
         fun r _ h2 _ => w2 r h2, w3⟩
       rw [w2 _ nVP.symm]; simp only; rw [p3]
       unfold ψ; rw [ite_eq_right (by omega)]
-  · have hdE : ¬ d < E₁ J := by have := hM3.e1; simp only at this; rw [d3, this] at hE; exact hE
+  · have hdE : ¬ d < E₁ J := by have := hM3.e1; simp only at this; rwa [d3, this] at hE
     refine IRS.mono (K := 0 + 2) (IRS.ifF hE (IRS.skip hI₃ rfl)) (by norm_num) ?_
     rintro c' rfl
     refine lift _ ⟨d3, by simp only; omega,

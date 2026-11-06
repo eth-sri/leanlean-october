@@ -128,8 +128,6 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
   obtain ⟨gt₀, ft₀⟩ := geo_ptAns J Q hP.t₀
   obtain ⟨gs₁, fs₁⟩ := geo_ptAns J Q hP.t'₁
   obtain ⟨gs₀, fs₀⟩ := geo_ptAns J Q hP.t'₀
-  have hS : sideChain J 0 = J.left := rfl
-  have hS' : sideChain J 1 = J.right := rfl
   -- the cap pieces
   have gk : geoQ J Q 0 k₀ ∪ geoQ J Q 1 k₁ ⊆ capQ J ∧
       (∀ x ∈ capQ J, FreeAt J.whole x.1 x.2 → x ∈ geoQ J Q 0 k₀ ∪ geoQ J Q 1 k₁) := by
@@ -174,7 +172,7 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
     · obtain ⟨e0, e1⟩ := hc2 hx
       subst e0 e1
       exact ⟨fun q hq => by simp at hq, fun q hq => by simp at hq⟩
-  set Z := fuseZ J (N₁.F (chainModel J.left) Q) (N₂.F (chainModel J.right) Q) with hZ
+  set Z := fuseZ J (N₁.F (chainModel J.left) Q) (N₂.F (chainModel J.right) Q)
   have zv₁ : (J.whole.vertex J.m₁, (1 : ℝ)) ∈ Z := Or.inl (Or.inl (Or.inr (Or.inl rfl)))
   have zv₀ : (J.whole.vertex J.m₁, (-1 : ℝ)) ∈ Z := Or.inl (Or.inl (Or.inr (Or.inr rfl)))
   have zt₁ : (J.whole.vertex J.left.topIdx, (1 : ℝ)) ∈ Z :=
@@ -192,7 +190,7 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
   have zk : capQ J ⊆ Z := fun x h => Or.inr h
   have sing : ∀ {i : ℕ} {l : List (ℕ × ℕ × ℕ)} {y : Point × ℝ}, geoQ J Q i l ⊆ {y} → y ∈ Z →
       geoQ J Q i l ⊆ Z := fun h hy x hx => by
-    have := h hx; rw [Set.mem_singleton_iff] at this; rw [this]; exact hy
+    have := h hx; rw [Set.mem_singleton_iff] at this; rwa [this]
   have mono : ∀ {i : ℕ} {A B : List (ℕ × ℕ × ℕ)}, (∀ q ∈ A, q ∈ B) →
       geoQ J Q i A ⊆ geoQ J Q i B := fun h x ⟨q, hq, hx⟩ => ⟨q, h q hq, hx⟩
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩

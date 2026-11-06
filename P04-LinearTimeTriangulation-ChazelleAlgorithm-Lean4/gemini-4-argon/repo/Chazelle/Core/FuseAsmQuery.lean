@@ -94,11 +94,11 @@ theorem queryOK_ends (J : Merge.Junction) (Q : Polygon) (i : ℕ) (r : CRec)
     ⟨hpr, by show 1 ≤ r.h + 1; omega, by show r.h + 1 ≤ Q.n; omega, htr0, htr1, ?_, ?_⟩,
     by rw [pl, hL], by rw [pr, hR]⟩
   · show (M.pos Q r.lpos).2 ≤ C.top.2
-    rw [pl]; exact hytop
+    rwa [pl]
   · show sideLeft M.W r.lp (M.param Q r.lpos) ((M.pos Q r.lpos).1 + dirOf 1, (M.pos Q r.lpos).2)
     rw [ray_one]; simpa [dirOf] using secL
   · show (M.pos Q r.rpos).2 ≤ C.top.2
-    rw [pr]; exact hytop
+    rwa [pr]
   · show sideLeft M.W r.rp (M.param Q r.rpos) ((M.pos Q r.rpos).1 + dirOf 0, (M.pos Q r.rpos).2)
     rw [ray_one]; simpa [dirOf] using secR
 
@@ -157,7 +157,7 @@ theorem arrival_of_free (J : Merge.Junction) (hP : J.P.Simple) (i : ℕ) {z : Po
     (hf : Merge.FreeAt J.whole z σ) :
     ∃ p t, Sweep.Arrival (chainModel (sideChain J i)).W z (-σ) p t := by
   set C := sideChain J i
-  have hPC : C.P.Simple := by rw [sideChain_P]; exact hP
+  have hPC : C.P.Simple := by rwa [sideChain_P]
   obtain ⟨u, hu, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hf
   have hu0 : (0 : ℝ) < u := hu
   set T := u / 2
@@ -185,7 +185,7 @@ theorem arrival_of_free (J : Merge.Junction) (hP : J.P.Simple) (i : ℕ) {z : Po
   refine ⟨p, t, hp, ht0, ht1, hpt', ?_⟩
   rw [neg_neg]
   have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ T) := by
-    rw [hpt']; exact hl'
+    rwa [hpt']
   have := (Sweep.sideLeft_rayPt_iff _ p t σ hT one_pos).1 h1
   rwa [hpt'] at this
 
@@ -211,8 +211,8 @@ theorem queryOK_of_arrival (J : Merge.Junction) (Q : Polygon) (i : ℕ) {p h ρ 
   obtain ⟨hp, ht0, ht1, hpt, hl⟩ := hA
   have hpos : (chainModel (sideChain J i)).pos Q ⟨p, h + 1⟩ = z := by
     rw [Gran.pos_eq_sidePt]; simp only; rw [hpar, hpt]
-  refine ⟨⟨hp, by show 1 ≤ h + 1; omega, hh, by simp only; rw [hpar]; exact ht0, by simp only; rw [hpar]; exact ht1,
-    by simp only; rw [hpos]; exact hz2, ?_⟩, hpos⟩
+  refine ⟨⟨hp, by show 1 ≤ h + 1; omega, hh, by simp only; rwa [hpar], by simp only; rwa [hpar],
+    by simp only; rwa [hpos], ?_⟩, hpos⟩
   simp only
   rw [hpos, hpar, ray_one]
   simpa using hl

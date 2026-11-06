@@ -58,8 +58,7 @@ theorem regions_reach {M : Model} {Q : Polygon} {F : Set (Set Point)} (hM : Good
   have hW := walkAx_of_goodModel hM
   have hsys := hW.sys F hF.2.1 hF.1
   have h := hsys.dualGraph_reachable hW.preconn hW.nonempty subset_rfl U hU V hV
-  rw [SimpleGraph.reachable_iff_reflTransGen] at h
-  exact h
+  rwa [SimpleGraph.reachable_iff_reflTransGen] at h
 
 section tree
 
@@ -150,7 +149,7 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
   obtain ⟨-, hcount, -⟩ := regionTree M Q (N.F M Q) hM hfam
   refine ⟨fun i hi => ⟨(hsides i hi).1, (hsides i hi).2.1⟩,
     fun i hi e => (hcr i hi).1 (by rw [e]), hlists, fun r hr => (hregs r hr).2.1,
-    by rw [← hRcard, ← hFcard]; exact hcount, ?_, ?_⟩
+    by rwa [← hRcard, ← hFcard], ?_, ?_⟩
   · -- connectivity
     intro r s hr hs
     have hpath := regions_reach hM hfam (hcorr.1 r hr) (hcorr.1 s hs)
@@ -173,15 +172,13 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
         have t2 := (htouchIdx i hi a ha).1 h2
         have hab : b ≠ a := fun e => hne (by rw [e])
         refine ⟨a, ha, rfl, hpb.tail ⟨i, hi, ?_⟩⟩
-        have hne' := (hcr i hi).1
         rcases t1 with e1 | e1 <;> rcases t2 with e2 | e2
         · exact absurd (e1.symm.trans e2) hab
         · exact Or.inl ⟨e1, e2⟩
         · exact Or.inr ⟨e2, e1⟩
         · exact absurd (e1.symm.trans e2) hab
     obtain ⟨b, hb, e, hp⟩ := key _ hpath (hcorr.1 s hs)
-    rw [hregInj _ _ hb hs e] at hp
-    exact hp
+    rwa [hregInj _ _ hb hs e] at hp
   · -- the degree
     intro r hr
     classical

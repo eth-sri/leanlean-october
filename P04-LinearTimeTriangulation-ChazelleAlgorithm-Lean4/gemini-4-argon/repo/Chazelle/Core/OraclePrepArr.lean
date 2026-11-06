@@ -64,7 +64,7 @@ theorem mdS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {D
   have v₁₁ : c₁.nreg 120011 = 1 := by rw [hr₁ _ (by decide), h1]
   -- the copy loop
   let J : Config → Prop := JK c₁ (fun r => decide (r = 110033) || decide (r = 120013)) A₀
-  obtain ⟨c₂, k₂, e₂, hk₂, r₂, rr₂, mm₂, rm₂, o₂, -, -⟩ := scatS_exec (P := P) (W := W)
+  obtain ⟨c₂, k₂, e₂, hk₂, r₂, rr₂, mm₂, rm₂, o₂, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 110039) (rn := 110038) (r1 := 120011) (ra := 110037) (rv := 110036) (body := mdBody)
     (B := fun r => decide (110035 ≤ r ∧ r ≤ 110037)) (by decide) (by decide) (by decide)
     (by decide) (by decide) J A₀
@@ -140,7 +140,7 @@ theorem posTS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
   have v30 : c₁.nreg 120030 = A := by rw [hr₁ _ (by decide), hA]
   have v11 : c₁.nreg 120011 = 1 := by rw [hr₁ _ (by decide), h1]
   let J : Config → Prop := JK c₁ (fun r => decide (r = 120031) || decide (r = 120046)) A₀
-  obtain ⟨c₂, k₂, e₂, hk₂, r₂, rr₂, mm₂, rm₂, o₂, -, -⟩ := scatS_exec (P := P) (W := W)
+  obtain ⟨c₂, k₂, e₂, hk₂, r₂, rr₂, mm₂, rm₂, o₂, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 110049) (rn := 120030) (r1 := 120011) (ra := 110047) (rv := 110046) (body := posBody)
     (B := fun r => decide (110044 ≤ r ∧ r ≤ 110047)) (by decide) (by decide) (by decide)
     (by decide) (by decide) J A₀
@@ -253,7 +253,7 @@ theorem tbS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {A
         have gl : d.nreg 110041 = A + K + 1 := by
           rw [hr _ (by decide) (by decide) (by decide), n₁]; config_simp
         rw [hx, gl] at ht
-        have hjl : j < Lf := by rw [hLf, Nat.lt_clog_iff_pow_lt (by norm_num)]; exact ht
+        have hjl : j < Lf := by rwa [hLf, Nat.lt_clog_iff_pow_lt (by norm_num)]
         obtain ⟨d', k', e', hk', n', m', rr', rm', o'⟩ : ∃ d' k', Exec P W tbBody d d' k' ∧ k' = 4 ∧
             d'.nreg = upd (upd (upd d.nreg 110042 (A₀ + j)) 110040 (2 ^ j + 2 ^ j)) 120042 (j + 1) ∧
             d'.nmem = upd d.nmem (A₀ + j) (2 ^ j) ∧ d'.rreg = d.rreg ∧ d'.rmem = d.rmem ∧

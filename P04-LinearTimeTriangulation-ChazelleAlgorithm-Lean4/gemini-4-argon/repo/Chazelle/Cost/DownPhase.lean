@@ -62,7 +62,6 @@ theorem downOverhead_eq (lam : ℕ) :
 
 theorem downOverhead_nonneg (lam : ℕ) : 0 ≤ downOverhead lam := by
   rw [downOverhead_eq]
-  have := two_rpow_pos (-(lam : ℝ) / 375)
   positivity
 
 /-- `downOverhead λ ≤ λ³ 2^(-λ/375)`. -/
@@ -130,7 +129,7 @@ theorem downStep_cost_le {K k : ℝ} (hK : 0 ≤ K) (hk : 0 ≤ k) {lam l : ℕ}
     (hl : lam ≤ l) {R : ℝ} (hR : R ≤ K * ((2 : ℝ) ^ l / (2 : ℝ) ^ (ceilBeta lam) + 1)) :
     R * (k * lemma41Bound (ceilBeta lam + 11)) ≤
       4096 * K * k * ((2 : ℝ) ^ l * downOverhead lam) := by
-  set c := ceilBeta lam with hcdef
+  set c := ceilBeta lam
   set μ := c + 11 with hμdef
   have hμl : μ ≤ lam := ceilBeta_add_eleven_le h14
   have hcl : c ≤ lam := by omega
@@ -155,7 +154,6 @@ theorem downStep_cost_le {K k : ℝ} (hK : 0 ≤ K) (hk : 0 ≤ k) {lam l : ℕ}
       congr 1
       rw [hμR]
       ring
-    have h2c : (0 : ℝ) < (2 : ℝ) ^ c := by positivity
     have hcl' : (2 : ℝ) ^ c ≤ (2 : ℝ) ^ l := pow_le_pow_right₀ (by norm_num) (hcl.trans hl)
     have hq : (2 : ℝ) ^ (-((μ : ℕ) : ℝ) / 75) ≤ (2 : ℝ) ^ (-(lam : ℝ) / 375) := by
       refine le_trans (two_rpow_le_two_rpow ?_) (two_rpow_neg_ceilBeta_le lam)
@@ -168,12 +166,10 @@ theorem downStep_cost_le {K k : ℝ} (hK : 0 ≤ K) (hk : 0 ≤ k) {lam l : ℕ}
         2048 * (((2 : ℝ) ^ l + (2 : ℝ) ^ c) * (2 : ℝ) ^ (-((μ : ℕ) : ℝ) / 75)) := by
       field_simp
     rw [e]
-    have h2l : (0 : ℝ) ≤ (2 : ℝ) ^ l := by positivity
     have : ((2 : ℝ) ^ l + (2 : ℝ) ^ c) * (2 : ℝ) ^ (-((μ : ℕ) : ℝ) / 75) ≤
         (2 * (2 : ℝ) ^ l) * (2 : ℝ) ^ (-(lam : ℝ) / 375) :=
       mul_le_mul (by linarith) hq hq0 (by positivity)
     nlinarith
-  have hP0 : (0 : ℝ) ≤ (μ : ℝ) ^ 2 * (Nat.clog 2 μ : ℝ) := by positivity
   have hE0 : (0 : ℝ) ≤ (2 : ℝ) ^ l / (2 : ℝ) ^ c + 1 := by positivity
   have hq75 : (0 : ℝ) ≤ (2 : ℝ) ^ ((74 / 75 : ℝ) * μ) := (two_rpow_pos _).le
   calc K * ((2 : ℝ) ^ l / (2 : ℝ) ^ c + 1) *
@@ -192,10 +188,6 @@ theorem downStep_cost_le {K k : ℝ} (hK : 0 ≤ K) (hk : 0 ≤ k) {lam l : ℕ}
 
 /-! ### Theorem 4.3: the linear total -/
 
-/-- The explicit constant of the whole algorithm:
-`304 (c₀ + 34200³ c₁ + 27 c₂) + b + 4500³ · 3000 · a + c₃`. -/
-@[expose] noncomputable def totalConst (c₀ c₁ c₂ a b c₃ : ℝ) : ℝ :=
-  304 * upSlackConst c₀ c₁ c₂ + (b + 4500 ^ 3 * 3000 * a) + c₃
 
 end
 

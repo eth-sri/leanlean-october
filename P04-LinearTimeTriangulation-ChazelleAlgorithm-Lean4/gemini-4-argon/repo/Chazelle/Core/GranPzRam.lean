@@ -47,20 +47,20 @@ theorem chPts_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
         (H.pts P.n)[(s + sideE m (((if b = 1 then T else 2 * m - T) + i) % (2 * m) + 1)) %
           (H.pts P.n).length]? = some sp₂ ∧
         SymPtIn c' 50040 sp₁ ∧ SymPtIn c' 50043 sp₂ ∧ sp₁.Lt P.n ∧ sp₂.Lt P.n := by
-  set N := (H.pts P.n).length with hNdef
+  set N := (H.pts P.n).length
   have hn0 : 0 < P.n := by have := hG.1.1; omega
   have hLt := hostWF_pts hwf hn0
   obtain ⟨c₁, k₁, e₁, hk₁, k78, k79, f₁⟩ := chIdx_exec (P := P) c hw h32 h53 h54 h55 h56 hi hT
     (by omega)
   have w₁ := e₁.wb_right
-  set j := ((if b = 1 then T else 2 * m - T) + i) % (2 * m) with hj
+  set j := ((if b = 1 then T else 2 * m - T) + i) % (2 * m)
   have hjm : j < 2 * m := Nat.mod_lt _ (by omega)
   have hk1 : sideE m j ≤ m := Chain.sideE_le (by omega)
   have hk2 : sideE m (j + 1) ≤ m := Chain.sideE_le (by omega)
   have g₁ := fun r (hr : Bl [50058, 50059, 50089, 50077, 50078, 50090, 50079] r = false) =>
     f₁.1 r hr
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, n63, E₂⟩ := cnt_exec (P := P) (n := P.n) c₁ w₁
-    (by rw [f₁.2.2.1]; exact hH) ((g₁ _ (by decide)).trans h60) haW (by omega)
+    (by rwa [f₁.2.2.1]) ((g₁ _ (by decide)).trans h60) haW (by omega)
   have g₂ := fun r (hr : Bhost r = false) => f₂.1 r hr
   obtain ⟨c₃, k₃, e₃, hk₃, q87, q91, r₃⟩ : ∃ c₃ k₃, Exec P W
       (block [.copyN 50087 50063, .copyN 50091 50078]) c₂ c₃ k₃ ∧ k₃ = 2 ∧

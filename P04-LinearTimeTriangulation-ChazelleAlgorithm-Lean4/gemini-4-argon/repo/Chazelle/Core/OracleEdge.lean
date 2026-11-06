@@ -200,13 +200,12 @@ theorem mem_scanSet_iff (Q : Polygon) (N : NF) (p : ℕ) (x : Point) :
   · rintro ⟨k, hk, i, hi, hidx, hx⟩
     refine ⟨k, hk, ?_⟩
     unfold wseg
-    rw [hidx, ite_eq_left (show 6 ≤ i + 6 ∧ i + 6 < 2 * C.m + 6 by omega), show i + 6 - 6 = i by omega, ← tour_seg]
-    exact hx
+    rwa [hidx, ite_eq_left (show 6 ≤ i + 6 ∧ i + 6 < 2 * C.m + 6 by omega), show i + 6 - 6 = i by omega, ← tour_seg]
   · rintro ⟨k, hk, hx⟩
     unfold wseg at hx
     split_ifs at hx with hw
     · refine ⟨k, hk, scanIdx (chainModel C).W.n N p k - 6, by omega, by omega, ?_⟩
-      rw [tour_seg]; exact hx
+      rwa [tour_seg]
     · exact absurd hx (Set.notMem_empty x)
 
 end Tour

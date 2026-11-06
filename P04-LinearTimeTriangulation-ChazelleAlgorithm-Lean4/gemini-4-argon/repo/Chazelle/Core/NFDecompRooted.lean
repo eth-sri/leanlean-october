@@ -371,8 +371,7 @@ theorem sz_lt {a c : ℕ} (hac : AncX R prg pch rem a c) (hne : a ≠ c) (hc : c
     rintro ⟨-, hca⟩
     exact hne (AncX.antisymm h hac hca hc)
   have := Finset.card_le_card hsub
-  rw [Finset.card_insert_of_notMem hna] at this
-  exact this
+  rwa [Finset.card_insert_of_notMem hna] at this
 
 end sizes2
 

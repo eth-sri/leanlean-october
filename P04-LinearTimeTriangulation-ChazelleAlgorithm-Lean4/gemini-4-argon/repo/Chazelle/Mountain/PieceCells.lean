@@ -74,7 +74,7 @@ theorem allDiagonals_not_mem_boundary (hP : P.Simple) {d : ℕ × ℕ} (hd : d �
     {p : Point} (hp : p ∈ diagSeg P d) (h1 : p ≠ P.vtx d.1) (h2 : p ≠ P.vtx d.2) :
     p ∉ P.boundary := by
   obtain ⟨s, L, hD, hs, hsL, -⟩ := allDiagonals_isDiagonal hP hd
-  have := hD.2.2 p (by rw [hs, hsL]; exact hp) (by rw [hs]; exact h1) (by rw [hsL]; exact h2)
+  have := hD.2.2 p (by rwa [hs, hsL]) (by rwa [hs]) (by rwa [hsL])
   exact this
 
 /-- **A point of a piece segment lying on the boundary of `P` and different from its endpoints
@@ -88,24 +88,24 @@ theorem IsPieceEdge.edge_of_mem_boundary (hP : P.Simple) {x y : ℕ} (hx : x < P
     by_cases hxg : x = g
     · exact Or.inl ⟨hxg, by rw [h, hxg]⟩
     · exfalso
-      have hq' : q ∈ P.edge x := by unfold Polygon.edge; rw [← h]; exact hq
+      have hq' : q ∈ P.edge x := by unfold Polygon.edge; rwa [← h]
       have := (hP.2.2 x g hx hg hxg).subset ⟨hq', hqg⟩
       rcases this.1 with e | e
       · exact hqx e
-      · exact hqy (by rw [h]; exact e)
+      · exact hqy (by rwa [h])
   · -- the segment is edge `y`
     by_cases hyg : y = g
     · exact Or.inr ⟨hyg, by rw [h, hyg]⟩
     · exfalso
       have hq' : q ∈ P.edge y := by
-        unfold Polygon.edge; rw [← h, Geometry.segment_comm]; exact hq
+        unfold Polygon.edge; rwa [← h, Geometry.segment_comm]
       have := (hP.2.2 y g hy hg hyg).subset ⟨hq', hqg⟩
       rcases this.1 with e | e
       · exact hqy e
-      · exact hqx (by rw [h]; exact e)
+      · exact hqx (by rwa [h])
   · exact absurd ⟨g, hg, hqg⟩ (allDiagonals_not_mem_boundary hP h hq hqx hqy)
   · exact absurd ⟨g, hg, hqg⟩ (allDiagonals_not_mem_boundary hP h
-      (by unfold diagSeg; rw [Geometry.segment_comm]; exact hq) hqy hqx)
+      (by unfold diagSeg; rwa [Geometry.segment_comm]) hqy hqx)
 
 /-- **A vertex of `P` on a piece segment is one of its endpoints.** -/
 theorem IsPieceEdge.vtx_eq_of_mem (hP : P.Simple) {x y z : ℕ} (hx : x < P.n) (hy : y < P.n)
@@ -212,7 +212,7 @@ theorem IsPiece.mem_boundary_cases {l : List ℕ} (hl : IsPiece P l) {p : Point}
   rw [he] at hpk
   rcases (hl.edge_at hk).segment_cases (hl.getD_lt hk) (hl.getD_lt hk1) with h | ⟨d, hd, h⟩
   · exact Or.inl (h hpk)
-  · exact Or.inr ⟨d, hd, by rw [← h]; exact hpk⟩
+  · exact Or.inr ⟨d, hd, by rwa [← h]⟩
 
 /-- A point of a piece segment in the closure of a set of interior points of `Q` lies on the
 boundary of `Q`. -/
@@ -244,9 +244,9 @@ theorem IsPiece.nbr_of_boundary (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l
       P.vtx w = (subPoly P l).vtx ((k + 1) % l.length) := by
   set Q := subPoly P l with hQdef
   have hQ : Q.Simple := hl.simple
-  have hkQ : k < Q.n := by rw [hQdef, n_subPoly]; exact hk
+  have hkQ : k < Q.n := by rwa [hQdef, n_subPoly]
   have hc := hl.getD_lt hk
-  set c := l.getD k 0 with hcdef
+  set c := l.getD k 0
   obtain ⟨r, hr, hball⟩ := Chazelle.Existence.boundary_near_vtx hQ hkQ
   have htend : Tendsto (lerp (P.vtx c) (P.vtx w)) (𝓝[>] 0) (𝓝 (P.vtx c)) := by
     have := (continuous_lerp (P.vtx c) (P.vtx w)).tendsto 0
@@ -260,7 +260,7 @@ theorem IsPiece.nbr_of_boundary (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l
     lerp_ne_left (hpe.vtx_ne hP hc hw) hs.1
   have hxseg : lerp (P.vtx c) (P.vtx w) s ∈ Chazelle.segment (P.vtx c) (P.vtx w) :=
     lerp_mem_segment _ _ hs.1.le hs.2.le
-  have hsb' : lerp (P.vtx c) (P.vtx w) s ∈ ball (Q.vtx k) r := by rw [hvk]; exact hsb
+  have hsb' : lerp (P.vtx c) (P.vtx w) s ∈ ball (Q.vtx k) r := by rwa [hvk]
   rcases hball _ hsb' hsB with h | h
   · -- the previous edge of `Q`
     have hpk : prevIdx Q k < l.length := by
@@ -345,8 +345,8 @@ theorem diag_of_mem_region (hP : P.Simple) (D : TrapData P) {p : Point} (hp : p 
   rcases hd with hd | hd
   · obtain ⟨D', hD', rfl⟩ := hd
     rcases D'.segment_cases hP hD' hpd with e | e | e
-    · exact absurd (by rw [← e]; exact hp) (D.not_mem_region_of_vtx hP (D'.top_lt hP))
-    · exact absurd (by rw [← e]; exact hp) (D.not_mem_region_of_vtx hP (D'.bot_lt hP))
+    · exact absurd (by rwa [← e]) (D.not_mem_region_of_vtx hP (D'.top_lt hP))
+    · exact absurd (by rwa [← e]) (D.not_mem_region_of_vtx hP (D'.bot_lt hP))
     · have heq : D.region = D'.region :=
         (regions_eq_or_disjoint (D.region_mem_regions hP) (D'.region_mem_regions hP)).resolve_right
           (fun hdis => Set.disjoint_left.1 hdis hp e)
@@ -354,7 +354,7 @@ theorem diag_of_mem_region (hP : P.Simple) (D : TrapData P) {p : Point} (hp : p 
       have ht : D.top = D'.top := congrArg Prod.fst hdiag
       have hb : D.bot = D'.bot := congrArg Prod.snd hdiag
       refine ⟨?_, ?_⟩
-      · unfold NonAdj; rw [ht, hb]; exact hD'
+      · unfold NonAdj; rwa [ht, hb]
       · have h0 : det (P.vtx D'.top) (P.vtx D'.bot) p = 0 :=
           Geometry.det_eq_zero_of_mem_segment hpd
         rw [ht, hb, Geometry.det_swap12, h0, neg_zero]
@@ -527,7 +527,6 @@ theorem mem_diagSeg_of_det (hP : P.Simple) (D : TrapData P) {z : Point} (hz : z 
     (hdet : det (P.vtx D.bot) (P.vtx D.top) z = 0) : z ∈ diagSeg P D.diag := by
   have hb2 := D.bot_snd hP
   have ht2 := D.top_snd hP
-  have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have hz1 : D.y₁ < z.2 := hz.1
   have hz2 : z.2 < D.y₂ := hz.2.1
   rw [D.det_bot_top hP] at hdet
@@ -559,8 +558,7 @@ theorem det_side (hP : P.Simple) (D : TrapData P) (hna : D.NonAdj) {h : ℝ} (h1
     rw [hd', lerp_snd]
     rw [ht2, hb2, hs]; field_simp; ring
   have hdet0 : det (P.vtx D.bot) (P.vtx D.top) d = 0 := by
-    rw [Geometry.det_swap12]
-    rw [Geometry.det_eq_zero_of_mem_segment (lerp_mem_segment _ _ hs0.le hs1.le), neg_zero]
+    rw [Geometry.det_swap12, Geometry.det_eq_zero_of_mem_segment (lerp_mem_segment _ _ hs0.le hs1.le), neg_zero]
   have key : ∀ X : ℝ, det (P.vtx D.bot) (P.vtx D.top) (X, h) = (d.1 - X) * (D.y₂ - D.y₁) := by
     intro X
     have e1 := D.det_bot_top hP (X, h)
@@ -569,9 +567,9 @@ theorem det_side (hP : P.Simple) (D : TrapData P) (hna : D.NonAdj) {h : ℝ} (h1
     simp only at e1
     nlinarith
   have hdi : edgeX P D.i h < d.1 := by
-    have := hd.2.2.1; rw [hd2] at this; exact this
+    have := hd.2.2.1; rwa [hd2] at this
   have hdj : d.1 < edgeX P D.j h := by
-    have := hd.2.2.2; rw [hd2] at this; exact this
+    have := hd.2.2.2; rwa [hd2] at this
   refine ⟨?_, ?_⟩
   · rw [key]; exact mul_pos (by linarith) hne
   · rw [key]; exact mul_neg_of_neg_of_pos (by linarith) hne
@@ -625,7 +623,7 @@ theorem gap_top (hP : P.Simple) (D : TrapData P) {a b : ℝ}
     intro k hk h
     have h1 : (P.vtx k).1 = x := (congrArg Prod.fst h).symm
     have h2 : (P.vtx k).2 = D.y₂ := (congrArg Prod.snd h).symm
-    exact hnov k hk h2 (by rw [h1]; exact hx1) (by rw [h1]; exact hx2)
+    exact hnov k hk h2 (by rwa [h1]) (by rwa [h1])
   have hi : edgeX P D.i D.y₂ < x := lt_of_le_of_lt ha hx1
   have hj : x < edgeX P D.j D.y₂ := lt_of_lt_of_le hx2 hb
   -- the end point on `e` lies on no horizontal segment through the gap which is an edge
@@ -737,7 +735,6 @@ theorem cellL_subset_of_bot (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) (D
     simp only [add_zero] at this
     exact this.mono_left nhdsWithin_le_nhds
   obtain ⟨δ, ⟨⟨h1, h2⟩, h3⟩, hδ⟩ := ((htend.eventually hev).and self_mem_nhdsWithin).exists
-  have hδ' : (0 : ℝ) < δ := hδ
   have hreg : ((x, D.y₁ + δ) : Point) ∈ D.region := h1 (by simp only; linarith)
   exact D.cellL_subset_intQ hP hl ⟨hreg, fun _ => h3⟩ h2
 
@@ -764,7 +761,6 @@ theorem cellR_subset_of_bot (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) (D
     simp only [add_zero] at this
     exact this.mono_left nhdsWithin_le_nhds
   obtain ⟨δ, ⟨⟨h1, h2⟩, h3⟩, hδ⟩ := ((htend.eventually hev).and self_mem_nhdsWithin).exists
-  have hδ' : (0 : ℝ) < δ := hδ
   have hreg : ((x, D.y₁ + δ) : Point) ∈ D.region := h1 (by simp only; linarith)
   exact D.cellR_subset_intQ hP hl ⟨hreg, fun _ => h3⟩ h2
 
@@ -784,17 +780,16 @@ theorem exists_trapData_above (hP : P.Simple) {y₀ a b : ℝ} (hab : a < b)
   have hzi : z ∈ P.filled \ P.boundary := hint x₀ hxa hxb
   obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.1 (isOpen_filled_sdiff_boundary hP) z hzi
   obtain ⟨g, hg, hgle⟩ := exists_pos_le_of_pos (fun k => (P.vtx k).2 - y₀) P.n
-  set U := ball z ρ ∩ {p : Point | p.2 < y₀ + g} with hU
+  set U := ball z ρ ∩ {p : Point | p.2 < y₀ + g}
   have hUo : IsOpen U := isOpen_ball.inter (isOpen_lt continuous_snd continuous_const)
   have hzU : z ∈ U := ⟨mem_ball_self hρ, by simp only [hz, mem_ofPred_eq]; linarith⟩
   obtain ⟨q, ⟨hqb, hqg⟩, hqf, hq1, hq2⟩ := exists_free_of_isOpen hP hUo hzU hzi
   simp only [hz] at hq1 hq2
   obtain ⟨i, j, y₁, y₂, hT, hreg⟩ := exists_isTrap_region_eq hP hqf
   let D : TrapData P := ⟨q, i, j, y₁, y₂, hqf, hT⟩
-  have hDreg : D.region = trapSet P i j y₁ y₂ := rfl
   -- the vertical segment from `z` up to `q` lies in the region
   have hV : ∀ y, y₀ < y → y ≤ q.2 → ((x₀, y) : Point) ∈ trapSet P i j y₁ y₂ := by
-    set V := (fun y : ℝ => ((x₀, y) : Point)) '' Ioc y₀ q.2 with hVdef
+    set V := (fun y : ℝ => ((x₀, y) : Point)) '' Ioc y₀ q.2
     have hVc : IsPreconnected V :=
       isPreconnected_Ioc.image _ (by fun_prop : Continuous fun y : ℝ => ((x₀, y) : Point)).continuousOn
     have hqV : q ∈ V := ⟨q.2, ⟨hq2, le_rfl⟩, by rw [← hq1]⟩

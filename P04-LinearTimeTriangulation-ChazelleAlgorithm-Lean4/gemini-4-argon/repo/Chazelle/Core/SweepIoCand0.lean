@@ -159,7 +159,7 @@ theorem t3_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body can
     (main_irs hM hLab hSC hsh hBs hXl hA hAux hI₂ hQ hfr₂ hst₂ hl hzL hzs hbR
       (by have := kmain_le (κL := κL) (κS := κS) (c₀ := c₀) (F := F); omega)).mono kmain_le
       (fun _ h => h)
-  have hn₁ : c.nreg qE < 2 * J.m₁ + 7 := by have := q.he; rw [cm_n] at this; exact this
+  have hn₁ : c.nreg qE < 2 * J.m₁ + 7 := by have := q.he; rwa [cm_n] at this
   refine (IRS.ite (K := 2 + Kbr κL κS c₀ F) (fun h1 => ?_) (fun h1 => ?_)).mono (by omega)
     (fun _ h => h)
   · refine (hmain fun hzs => ?_).mono (by omega) (fun _ h => h)
@@ -254,7 +254,6 @@ theorem cls0_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body c
     rw [hI₃.hin _ (by unfold IFix sw; omega)]
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, h45, -⟩ := hA.hst
     exact h45 1 (by norm_num)
-  have hKbr := kmain_le (κL := κL) (κS := κS) (c₀ := c₀) (F := F)
   refine (IRS.ite (K := 2 + (2 + Kt3 κL κS c₀ F)) (fun h1 => ?_) (fun h1 => ?_)).mono (by omega)
     (fun _ h => h)
   · -- a positive parameter: not the shared vertex

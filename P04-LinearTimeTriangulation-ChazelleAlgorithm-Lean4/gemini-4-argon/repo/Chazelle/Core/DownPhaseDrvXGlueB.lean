@@ -48,7 +48,7 @@ end GlueB
 theorem postMath : PostMath := by
   intro P li L E reg r C NR v X hm hT hβ hli hH
   obtain ⟨i0, g, Y⟩ := X.ctx
-  set K := NR.chords.length with hKdef
+  set K := NR.chords.length
   -- the values agree with the chain, the bit and the host
   have hxT : ∀ t, xT P v NR t = xTriple (Qof P).n
       (regHost li (Qof P).n (buildNF (interiorModel (Qof P)) (Qof P) L E) r) li C.m C.topIdx
@@ -97,7 +97,7 @@ theorem postMath : PostMath := by
       obtain ⟨t, htK, rfl⟩ := List.getElem_of_mem hc
       have hct : NR.chord t = NR.chords[t] := by
         unfold NF.chord; rw [List.getD_eq_getElem _ _ htK]
-      have ht : t ∈ kl P v NR K := mem_kl.2 ⟨htK, (hkR t htK).2 (by rw [hct]; exact hne)⟩
+      have ht : t ∈ kl P v NR K := mem_kl.2 ⟨htK, (hkR t htK).2 (by rwa [hct])⟩
       refine ⟨xT P v NR t, List.mem_map.2 ⟨t, ht, rfl⟩, ?_⟩
       rw [hset t ht, hct]
   · -- no repetition
@@ -122,7 +122,7 @@ theorem postMath : PostMath := by
     have ht : (kl P v NR K)[q / 2] ∈ kl P v NR K := List.getElem_mem hq2
     have hget : (xL P v NR K).getD (q / 2) (0, 0, 0) = xT P v NR ((kl P v NR K)[q / 2]) := by
       unfold xL
-      rw [List.getD_eq_getElem _ _ (by rw [List.length_map]; exact hq2), List.getElem_map]
+      rw [List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getElem_map]
     unfold endPos
     rw [hget]
     split_ifs

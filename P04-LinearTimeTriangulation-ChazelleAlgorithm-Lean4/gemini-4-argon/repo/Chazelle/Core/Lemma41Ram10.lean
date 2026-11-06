@@ -133,7 +133,7 @@ theorem rbS_exec {c : Config} (hw : WordsBounded W c) {B J : ℕ} {e : ℕ → �
         have r80 : c2.nreg 160080 = 2 := by
           rw [fr2 _ (by unfold RbBRG; omega) (by rw [hAl]; omega), r1 _ (by unfold RbRG; omega)]
           exact h80
-        set kk := J - 1 - t with hkk
+        set kk := J - 1 - t
         have hek := hcell kk (by omega)
         obtain ⟨c3, k3, e3, hk3, hw3, q95, q96, q97, qA, qm0, qm1, qm, fr3, hrr3, hrm3, ho3⟩ :=
           rbBody_exec (P := P) hw2 h95 (h96 htest) h97 hA2 r24 r80 (by omega) (by omega)
@@ -159,14 +159,13 @@ theorem rbS_exec {c : Config} (hw : WordsBounded W c) {B J : ℕ} {e : ℕ → �
         · rw [qm _ (by omega) (by omega)]; exact hout a (by omega)
         · rw [fr3 r h1 h2]; exact fr2 r h1 h2
         · rw [q97, h97]; omega)
-      ⟨0, ⟨hw1, i97, by rw [r1 _ (by unfold RbRG; omega)]; exact h64, by rw [i95]; simp,
+      ⟨0, ⟨hw1, i97, by rwa [r1 _ (by unfold RbRG; omega)], by rw [i95]; simp,
         by rw [r1 _ (by unfold RbRG; rw [hAl]; omega), hA]; simp,
         fun h => by rw [i96, h63 (by omega)]; congr 1, fun k a1 a2 => by omega,
         fun a _ => rfl, fun r _ _ => rfl, rfl, rfl, rfl⟩, Nat.zero_le _⟩
   have htJ' : t = J := by rw [h97', h64'] at htest; omega
   have hk' : k ≤ 13 * J + 2 := by
     have := hk; simp only [i97, Nat.sub_zero] at this; exact this
-  have hψ' : c'.nreg ALLOC ≤ c1.nreg ALLOC + k := hψ
   have hA1 : c1.nreg ALLOC = B := by rw [r1 _ (by unfold RbRG; rw [hAl]; omega)]; exact hA
   refine ⟨c', k1 + k, .seq e1 e', by omega, hw', by rw [hA', htJ'], by omega,
     by rw [fr' _ (by unfold RbBRG; omega) (by rw [hAl]; omega)]; exact i94,

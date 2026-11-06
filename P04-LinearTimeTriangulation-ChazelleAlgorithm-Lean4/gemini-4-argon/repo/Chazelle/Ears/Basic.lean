@@ -129,8 +129,7 @@ theorem det_ear_ne_zero (hP : P.Simple) (hi : i < P.n) (he : IsEar P i) :
     det (P.vtx (prevIdx P i)) (P.vtx i) (P.vtx ((i + 1) % P.n)) ≠ 0 := by
   have h := det_ne_zero_of_simple_three _ (simple_earArc P i hP he) (n_arc P _ _)
   obtain ⟨h0, h1, h2⟩ := vtx_earArc P i hi
-  rw [h0, h1, h2] at h
-  exact h
+  rwa [h0, h1, h2] at h
 
 /-- Relabelling the triangle `(0, 1, 2)` of the ear arc gives the ear triangle. -/
 theorem relabel_ear (hi : i < P.n) :
@@ -147,8 +146,7 @@ theorem weakTriangulates_clip (hP : P.Simple) (hi : i < P.n) (he : IsEar P i)
   have h₁ : WeakTriangulates (P.arc (prevIdx P i) 2) [(0, 1, 2)] :=
     weakTriangulates_triangle _ (simple_earArc P i hP he) (n_arc P _ _)
   have := weakTriangulates_of_diagonal hP he.1 (chord_ear_subset_filled P i hi he) h₁ h
-  rw [List.map_cons, List.map_nil, List.singleton_append, relabel_ear P i hi] at this
-  exact this
+  rwa [List.map_cons, List.map_nil, List.singleton_append, relabel_ear P i hi] at this
 
 end
 

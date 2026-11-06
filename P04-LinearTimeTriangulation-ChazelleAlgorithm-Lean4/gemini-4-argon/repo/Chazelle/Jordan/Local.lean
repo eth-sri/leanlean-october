@@ -227,12 +227,12 @@ theorem simple_vtx_succ_ne {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n
 
 theorem lerp_ne_left {u v : Point} (huv : u ≠ v) {t : ℝ} (ht : 0 < t) : lerp u v t ≠ u := by
   intro h
-  have h' : lerp u v t = lerp u v 0 := by rw [lerp_zero]; exact h
+  have h' : lerp u v t = lerp u v 0 := by rwa [lerp_zero]
   exact ht.ne' (lerp_injective huv h')
 
 theorem lerp_ne_right {u v : Point} (huv : u ≠ v) {t : ℝ} (ht : t < 1) : lerp u v t ≠ v := by
   intro h
-  have h' : lerp u v t = lerp u v 1 := by rw [lerp_one]; exact h
+  have h' : lerp u v t = lerp u v 1 := by rwa [lerp_one]
   exact ht.ne (lerp_injective huv h')
 
 /-- A point of the open edge `i` lies on no other edge. -/
@@ -612,7 +612,7 @@ theorem vertex_sector {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ
       Chazelle.segment (P.vtx i) (P.vtx ((i + 1) % P.n)) ⊆ {P.vtx i} := by
     intro p hp
     have : p ∈ P.edge j ∩ P.edge i := by
-      rw [edge_prevIdx P hi]; exact hp
+      rwa [edge_prevIdx P hi]
     rw [simple_edge_inter hP hjn hi hji] at this
     obtain ⟨h1, h2⟩ := this
     rw [hsucc] at h1
@@ -637,8 +637,7 @@ theorem vertex_sector {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ
     · by_cases hkj : k = j
       · subst hkj
         left
-        rw [← edge_prevIdx P hi]
-        exact hxk
+        rwa [← edge_prevIdx P hi]
       · exact absurd hxk (hball x hx k (by simp [Finset.mem_erase, hki, hkj, hk]))
   exact sectorSide_exists hav hvb hmeet hr hS hσ
 

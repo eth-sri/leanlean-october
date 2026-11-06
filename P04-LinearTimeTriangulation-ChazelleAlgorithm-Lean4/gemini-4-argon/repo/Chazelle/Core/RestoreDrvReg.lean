@@ -108,7 +108,7 @@ theorem hregKeep {P : Polygon} {m m' : ℕ → ℕ} {D E : ℕ} {M : Model}
     m' D = 0 → ∀ H C, ChainDescAt m' (D + 1) (Qof P) H C → HostRegular (Qof P).n H := by
   intro h0 H C hC
   have hD := hwf.1
-  have h0' : m D = 0 := by rw [← he D (by omega)]; exact h0
+  have h0' : m D = 0 := by rwa [← he D (by omega)]
   rcases hMD with ⟨-, H₀, C₀, hC₀, -⟩ | ⟨h1, -, -⟩
   · obtain ⟨-, -, hEb, -⟩ := (hwf.2 h0').2 H₀ C₀ hC₀
     have hH : HostAt m' (m (D + 1)) H₀ := Gran.hostAt_agree' hC₀.1 hEb he
@@ -126,7 +126,7 @@ theorem simpKeep {P : Polygon} {m m' : ℕ → ℕ} {D E : ℕ} {M : Model}
     m' D = 0 → ∀ H C, ChainDescAt m' (D + 1) (Qof P) H C → C.P.Simple := by
   intro h0 H C hC
   have hD := hwf.1
-  have h0' : m D = 0 := by rw [← he D (by omega)]; exact h0
+  have h0' : m D = 0 := by rwa [← he D (by omega)]
   rcases hMD with ⟨-, H₀, C₀, hC₀, -⟩ | ⟨h1, -, -⟩
   · obtain ⟨-, -, hEb, -⟩ := (hwf.2 h0').2 H₀ C₀ hC₀
     have hH : HostAt m' (m (D + 1)) H₀ := Gran.hostAt_agree' hC₀.1 hEb he
@@ -296,7 +296,7 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   have hE' : RegGood E c₀ := ⟨hF, hG, hWh, hX, hcap, hA₀, hwf, hMD, hreg, hsimp, hGM, hOk, hfull, hNW, hNF,
     hregs, hdeg, hsg, hlow, wb₀, r00, r03, r04, r06, r12, r14, r19, r20, r23, r24, r40, r41, r18,
     r43, halloc, hlist₀, hroom₀⟩
-  set r := c.nreg 80040 with hrdef
+  set r := c.nreg 80040
   have reg8 : ∀ q, 80000 ≤ q → q < 81000 → q ≠ 80040 → q ≠ 80041 → q ≠ 80042 → q ≠ 80018 →
       q ≠ 80043 → c.nreg q = c₀.nreg q := hI.regs
   have c00 : c.nreg 80000 = E.MD := by
@@ -342,10 +342,10 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
         M.DegLe (N.F M (Qof E.P)) (c₁.nreg 81005) ∧
         M.Semigranular (N.F M (Qof E.P)) (c₁.nreg 81003) ∧ c₁.nreg 81002 < N.nRegions := by
     rw [a0, a1, a2, a3, a4, a5, c00, c12, c04, c06, c19]
-    refine ⟨hG, hWh, ?_, hcap _ hag₁, hwf₁.mono (by rw [A₁]; exact hA0c),
+    refine ⟨hG, hWh, ?_, hcap _ hag₁, hwf₁.mono (by rwa [A₁]),
       hregKeep hwf hMD hreg hag₁, simpKeep hwf hMD hsimp hag₁, E.M, E.N, hMD₁, hGM,
-      hOk, hNW₁, hNF, hdeg, hsg, by rw [← hR]; exact hr⟩
-    exact E.X.mono _ _ _ _ _ (by rw [A₁]; exact hA0c)
+      hOk, hNW₁, hNF, hdeg, hsg, by rwa [← hR]⟩
+    exact E.X.mono _ _ _ _ _ (by rwa [A₁])
       (E.X.local_ _ _ _ _ _ (fun a ha => (hag₁ a ha).symm) hX)
   have hcostle : costF E.κf E.F E.G E.Hc E.dcap E.γ + 20 = E.Bf := rfl
   have hroomF : c₁.nreg ALLOC + E.κf (c₁.nreg 81005) * E.F (c₁.nreg 81003) *
@@ -362,16 +362,16 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   have w₂ := e₂.wb_right
   -- the flag is `1` and the chord is sound
   have hNAt₁ : NFAt c₁.nmem (c₁.nreg 81001) E.N := by rw [a1, c12]; exact hNW₁.nfAt
-  have hMD₁' : ModelDescAt c₁.nmem (c₁.nreg 81000) (Qof E.P) E.M := by rw [a0, c00]; exact hMD₁
+  have hMD₁' : ModelDescAt c₁.nmem (c₁.nreg 81000) (Qof E.P) E.M := by rwa [a0, c00]
   obtain ⟨hsnd, hcpl⟩ := P₂ E.M E.N E.reg hMD₁' hNAt₁ hNF hregs
   obtain ⟨hRC, -, -, hRO⟩ := hregs
   have hdegr : E.M.deg (E.N.F E.M (Qof E.P)) (E.reg r) = degOf E.N r :=
-    Gran.deg_region hNF hRC hRO (by rw [← hR]; exact hr)
-  have hflag : c₂.nreg 81007 = 1 := hcpl (by rw [a6, c03]; exact hfull)
-    (by rw [a6, c03, a2, hdegr]; exact hhigh)
+    Gran.deg_region hNF hRC hRO (by rwa [← hR])
+  have hflag : c₂.nreg 81007 = 1 := hcpl (by rwa [a6, c03])
+    (by rwa [a6, c03, a2, hdegr])
   obtain ⟨s1, s2, s3, s4⟩ := hsnd hflag
   rw [a2] at s4
-  set t : ℕ × ℕ × ℕ := (c₂.nreg 81008, c₂.nreg 81009, c₂.nreg 81010) with htdef
+  set t : ℕ × ℕ × ℕ := (c₂.nreg 81008, c₂.nreg 81009, c₂.nreg 81010)
   have hgood : FoundOK E.M (Qof E.P) E.N E.reg r t := ⟨s1, s2, s3, s4⟩
   -- append
   have d43 : c₂.nreg 80043 = E.LB + 3 * (E.K + newL.length) := by
@@ -406,7 +406,7 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   · -- the frame
     have RF₁ : RF dBands E.A₀ c c₁ k₁ := rf_of_regs (fun q hq => R₁ q (by
       rcases hq with hq | hq <;> [left; right] <;> omega)) rr₁ m₁ rm₁ o₁
-    have RF₂ : RF dBands E.A₀ c₁ c₂ k₂ := RF.of_frame F₂ (by rw [A₁]; exact hA0c)
+    have RF₂ : RF dBands E.A₀ c₁ c₂ k₂ := RF.of_frame F₂ (by rwa [A₁])
     have RF₃ : RF dBands E.A₀ c₂ c₃ (k₃ + 1) := by
       have hA₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := R₃ _ (by decide) (by decide)
       have b43 : bandOf 80043 ∈ dBands := by rw [band8 (by norm_num) (by norm_num)]; exact mem_dBands_8
@@ -444,12 +444,6 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   have c03 : c.nreg 80003 = E.D := by
     rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
       hE.r03]
-  have c20 : c.nreg 80020 = 1 := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-      hE.r20]
-  have c23 : c.nreg 80023 = 5 := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-      hE.r23]
   have hdw := hI.deg_word hE hr
   obtain ⟨r, hrdef⟩ : ∃ r, c.nreg 80040 = r := ⟨_, rfl⟩
   rw [hrdef] at hr hdw
@@ -481,10 +475,10 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
       (∀ q, 80000 ≤ q → q < 81000 → q ≠ 80018 → q ≠ 80043 → c₂.nreg q = c₁.nreg q) := by
     by_cases hhigh : E.D < degOf E.N r
     · obtain ⟨c₂, k₂, t, e₂, hk₂, RF₂, w₂, hgood, t18, t43, tlist, tlow, treg⟩ :=
-        call_step hE hI₁ (by rw [r1]; exact hr) (by rw [r1]; exact hhigh)
+        call_step hE hI₁ (by rwa [r1]) (by rwa [r1])
       rw [r1] at hgood
       refine ⟨c₂, k₂ + 1, newL ++ [(r, t)],
-        .ifLtN_true (by rw [R₁ _ (by decide), c03, l42]; exact hhigh) e₂, by omega,
+        .ifLtN_true (by rwa [R₁ _ (by decide), c03, l42]) e₂, by omega,
         RF₂.mono subset_rfl (by omega), w₂, ?_, ?_, ?_, ?_, ?_, tlow, treg⟩
       · rw [List.map_append, hI.hfst, hrdef, highList_succ, ite_eq_left hhigh]; rfl
       · intro p hp
@@ -493,8 +487,8 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
         · simp only [List.mem_singleton] at hp; subst hp; exact hgood
       · rw [t18, hI₁.cnt, List.length_append, List.length_singleton]; ring
       · rw [t43, hI₁.dst, List.length_append, List.length_singleton]; ring
-      · rw [List.map_append, ← List.append_assoc]; exact tlist
-    · refine ⟨c₁, 2, newL, .ifLtN_false (by rw [R₁ _ (by decide), c03, l42]; exact hhigh)
+      · rwa [List.map_append, ← List.append_assoc]
+    · refine ⟨c₁, 2, newL, .ifLtN_false (by rwa [R₁ _ (by decide), c03, l42])
         (.skip w₁), by omega, RF.refl _ _, w₁, ?_, hI.hgood, hI₁.cnt, hI₁.dst, hI₁.list,
         fun _ _ => rfl, fun _ _ _ _ _ => rfl⟩
       rw [hI.hfst, hrdef, highList_succ, ite_eq_right hhigh, List.append_nil]
@@ -532,9 +526,9 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   have RFall : RF dBands E.A₀ c c₃ (k₁ + (k₂ + k₃)) := RF₁.trans (RF₂.trans RF₃)
   have hBf : costF E.κf E.F E.G E.Hc E.dcap E.γ + 20 = E.Bf := rfl
   refine ⟨c₃, k₁ + (k₂ + k₃), newL', .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, by omega,
-    by rw [t41, t40]; ring, by rw [t40]; exact hfst₂, hgood₂,
-    by rw [R₃ _ (by decide) (by decide)]; exact cnt₂,
-    by rw [R₃ _ (by decide) (by decide)]; exact dst₂, by rw [m₃]; exact list₂,
+    by rw [t41, t40]; ring, by rwa [t40], hgood₂,
+    by rwa [R₃ _ (by decide) (by decide)],
+    by rwa [R₃ _ (by decide) (by decide)], by rwa [m₃],
     fun a ha => by rw [m₃, low₂ a ha, m₁]; exact hI.low a ha,
     fun q q1 q2 q3 q4 q5 q6 q7 => ?_, ?_, ?_⟩, RFall, by omega, by rw [t40, hrdef]⟩
   · rw [R₃ q q4 q3, reg₂ q q1 q2 q6 q7]; exact hI₁.regs q q1 q2 q3 q4 q5 q6 q7
@@ -561,9 +555,8 @@ theorem reg_exec {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀) :
     (fun c ⟨_, h⟩ => h.wb)
     (fun c ⟨newL, I⟩ ht => by
       have t : c.nreg 80040 < E.R := by
-        rw [I.regs 80014 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
+        rwa [I.regs 80014 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
           (by omega), hE.r14] at ht
-        exact ht
       obtain ⟨c', k, newL', e, I', RF', hk, h40⟩ := regBody_step hE I t
       exact ⟨c', k, e, ⟨newL', I'⟩, RF', hk, by omega⟩) ⟨[], I0⟩
   have hR' : c'.nreg 80040 = E.R := by

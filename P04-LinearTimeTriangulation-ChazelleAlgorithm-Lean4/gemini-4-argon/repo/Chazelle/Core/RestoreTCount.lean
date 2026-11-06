@@ -79,9 +79,9 @@ theorem cRead_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
       c'.nreg 83049 = (N.chord (chordAt N (c₀.nreg 83002) (c.nreg 83030))).rp ∧
       Agr c c' [83032, 83047, 83048, 83049]) := by
   have hil := (chordAt_lt hE ht).1
-  set i := chordAt N (c₀.nreg 83002) (c.nreg 83030) with hidef
+  set i := chordAt N (c₀.nreg 83002) (c.nreg 83030)
   have h1 := tRegItem_exec (f := 3) (tr := 83030) (Or.inr rfl) (by unfold InR; omega) hE hI
-    (by rw [ite_eq_right (by decide)]; exact ht) (by omega)
+    (by rwa [ite_eq_right (by decide)]) (by omega)
   rw [ite_eq_right (by decide)] at h1
   refine RS.mono (K := 20 + (1 + (14 + (1 + (14 + 14))))) ?_ (by norm_num) (fun _ h => h)
   refine RS.seq (RS.op h1) fun c₁ hI₁ hA₁ ⟨v₁, h8₁⟩ =>
@@ -90,7 +90,7 @@ theorem cRead_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
   have q2 : c₂.nreg 83032 = i := by rw [hc₂, upd_eq, v₁]; rfl
   have a2 : Agr c c₂ [83032] := (Agr.of_band h8₁ []).trans (Agr.of_upd hc₂)
   refine RS.seq (chF_rs (f := 0) (d := 83047) (by norm_num) (by unfold Scr; omega) hE hI₂
-    (by rw [q2]; exact hil) (by omega)) fun c₃ hI₃ hA₃ ⟨v₃, a₃⟩ => ?_
+    (by rwa [q2]) (by omega)) fun c₃ hI₃ hA₃ ⟨v₃, a₃⟩ => ?_
   have q3 : c₃.nreg 83032 = i := by rw [a₃ _ (by norm_num) (by norm_num) (by simp), q2]
   have e23 : c₃.nreg 83023 = 1 := hI₃.h23
   have hh : (N.chord i).h < P.n := by
@@ -103,10 +103,10 @@ theorem cRead_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
   have q4 : c₄.nreg 83032 = i := by rw [h₄, upd_ne (by norm_num), q3]
   have v4 : c₄.nreg 83047 = (N.chord i).h + 1 := by rw [h₄, upd_eq, v₃, e23, q2]; rfl
   refine RS.seq (chF_rs (f := 1) (d := 83048) (by norm_num) (by unfold Scr; omega) hE hI₄
-    (by rw [q4]; exact hil) (by omega)) fun c₅ hI₅ hA₅ ⟨v₅, a₅⟩ => ?_
+    (by rwa [q4]) (by omega)) fun c₅ hI₅ hA₅ ⟨v₅, a₅⟩ => ?_
   have q5 : c₅.nreg 83032 = i := by rw [a₅ _ (by norm_num) (by norm_num) (by simp), q4]
   refine (chF_rs (f := 2) (d := 83049) (by norm_num) (by unfold Scr; omega) hE hI₅
-    (by rw [q5]; exact hil) (by omega)).mono le_rfl fun c₆ ⟨v₆, a₆⟩ => ?_
+    (by rwa [q5]) (by omega)).mono le_rfl fun c₆ ⟨v₆, a₆⟩ => ?_
   refine ⟨?_, ?_, ?_, ((((a2.trans a₃).trans (Agr.of_upd h₄)).trans a₅).trans a₆).mono
     (by simp)⟩
   · rw [a₆ _ (by norm_num) (by norm_num) (by simp), a₅ _ (by norm_num) (by norm_num) (by simp),
@@ -159,20 +159,20 @@ theorem cCmps_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : Ke
   have g1 := g a₁ (by simp)
   refine RS.seq (kcmp_rs hK (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
     (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (by omega) hE hI₁
-    (by rw [g1 83048 (by simp), g1 83047 (by simp)]; exact hL)
-    (by rw [g1 83012 (by simp), g1 83013 (by simp)]; exact hf) (by omega))
+    (by rwa [g1 83048 (by simp), g1 83047 (by simp)])
+    (by rwa [g1 83012 (by simp), g1 83013 (by simp)]) (by omega))
     fun c₂ hI₂ hA₂ ⟨b62, b63, a₂⟩ => ?_
   have g2 := g (a₁.trans a₂) (by simp)
   refine RS.seq (kcmp_rs hK (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
     (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (by omega) hE hI₂
-    (by rw [g2 83049 (by simp), g2 83047 (by simp)]; exact hR)
-    (by rw [g2 83005 (by simp), g2 83006 (by simp)]; exact hx) (by omega))
+    (by rwa [g2 83049 (by simp), g2 83047 (by simp)])
+    (by rwa [g2 83005 (by simp), g2 83006 (by simp)]) (by omega))
     fun c₃ hI₃ hA₃ ⟨b64, b65, a₃⟩ => ?_
   have g3 := g ((a₁.trans a₂).trans a₃) (by simp)
   refine (kcmp_rs hK (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
     (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (by omega) hE hI₃
-    (by rw [g3 83049 (by simp), g3 83047 (by simp)]; exact hR)
-    (by rw [g3 83012 (by simp), g3 83013 (by simp)]; exact hf) (by omega)).mono le_rfl
+    (by rwa [g3 83049 (by simp), g3 83047 (by simp)])
+    (by rwa [g3 83012 (by simp), g3 83013 (by simp)]) (by omega)).mono le_rfl
     fun c₄ ⟨b66, b67, a₄⟩ => ?_
   unfold keyAt at *
   rw [g1 83048 (by simp), g1 83047 (by simp), g1 83012 (by simp), g1 83013 (by simp)] at b62 b63
@@ -223,7 +223,7 @@ theorem cUpd_rs {kx kf kL kR : ℝ} (hI : TInv W c₀ c) (b56 : BitIs c 83056 (k
       c'.nreg 83068 ≤ 1 ∧ (c'.nreg 83068 = 1 ↔ sideInArc kx kf kL ∨ sideInArc kx kf kR) ∧
       c'.nreg 83069 ≤ 1 ∧ (c'.nreg 83069 = 1 ↔ sideInArc kf kx kL ∨ sideInArc kf kx kR) ∧
       Agr c c' [83068, 83069]) := by
-  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rw [hI.h23] at this; exact this
+  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rwa [hI.h23] at this
   unfold cUpd
   refine RS.mono (K := 1 + (1 + (7 + (7 + (7 + 7))))) ?_ (by norm_num) (fun _ h => h)
   refine RS.seq (RS.const hI (r := 83068) (v := 0) (by unfold Scr; omega) (by omega))
@@ -297,7 +297,7 @@ theorem countBody_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK 
     RS P W c₀ (countBody kc) c (countKB Kk) (fun c' => CountI M P N c₀ f cS c' ∧
       c'.nreg 83030 = c.nreg 83030 + 1) := by
   obtain ⟨hL, htL, n53, n54, b56, b57, f12, f13, aS⟩ := hA
-  have ht' : c.nreg 83030 < (N.region (c₀.nreg 83002)).chords.length := by rw [← hL]; exact ht
+  have ht' : c.nreg 83030 < (N.region (c₀.nreg 83002)).chords.length := by rwa [← hL]
   obtain ⟨hil, -⟩ := chordAt_lt hE ht'
   have hpos := hE.chordPosG hil
   unfold countBody countKB
@@ -310,7 +310,7 @@ theorem countBody_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK 
   have hLp : PosG M (Qof P) P.n ⟨c₁.nreg 83048, c₁.nreg 83047⟩ := by rw [s1, s2]; exact hpos.1
   have hRp : PosG M (Qof P) P.n ⟨c₁.nreg 83049, c₁.nreg 83047⟩ := by rw [s1, s3]; exact hpos.2
   have hfp : PosG M (Qof P) P.n ⟨c₁.nreg 83012, c₁.nreg 83013⟩ := by
-    rw [g1 83012 (by simp), g1 83013 (by simp), f12, f13]; exact hf
+    rwa [g1 83012 (by simp), g1 83013 (by simp), f12, f13]
   refine RS.seq (cCmps_rs hK hE hI₁ hLp hRp hfp (by unfold countKB at hroom; omega))
     fun c₂ hI₂ hA₂ ⟨b60, b61, b62, b63, b64, b65, b66, b67, a₂⟩ => ?_
   have i5 := hI₁.hin 83005 (by norm_num) (by norm_num)
@@ -338,7 +338,6 @@ theorem countBody_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK 
       c₃.nreg q = c.nreg q := fun q hq => by
     simp only [List.mem_cons, List.not_mem_nil, or_false] at hq
     exact a13 q (by omega) (by omega) (by simp; omega)
-  have e23 : c₃.nreg 83023 = 1 := hI₃.h23
   have hcl : c.nreg 83053 ≤ c.nreg 83030 := by rw [n53]; exact cntP_le _ _
   have hcl' : c.nreg 83054 ≤ c.nreg 83030 := by rw [n54]; exact cntP_le _ _
   have hW31 := hI.hw.1 83031
@@ -409,12 +408,12 @@ theorem count_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : Ke
         2 ≤ cntP (fun t => SideHit M P N (M.key (Qof P) f) (M.key (Qof P) (xOf c₀))
           (chordAt N (c₀.nreg 83002) t)) (N.region (c₀.nreg 83002)).chords.length) ∧
       Agr c c' countW) := by
-  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rw [hI.h23] at this; exact this
+  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rwa [hI.h23] at this
   have hW2 : 2 ≤ W := by have := hE.hW; unfold hostWords at this; omega
   have i5 := hI.hin 83005 (by norm_num) (by norm_num)
   have i6 := hI.hin 83006 (by norm_num) (by norm_num)
   have hx : PosG M (Qof P) P.n ⟨c.nreg 83005, c.nreg 83006⟩ := by rw [i5, i6]; exact hE.xPosG
-  have hfp : PosG M (Qof P) P.n ⟨c.nreg 83012, c.nreg 83013⟩ := by rw [hf12, hf13]; exact hf
+  have hfp : PosG M (Qof P) P.n ⟨c.nreg 83012, c.nreg 83013⟩ := by rwa [hf12, hf13]
   unfold countS countK
   unfold countK at hroom
   refine RS.seq (kcmp_rs hK (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)

@@ -56,7 +56,6 @@ theorem shared_eq_top (hv : ¬ VNotTop J) : J.shared = J.whole.top := by
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
   have hτ := tpos_lt J.whole J.m₁
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
-  have h1 := J.one_le_m₁
   rcases vtop_cases J hv with hA | hB
   · have := walk_tour J.whole J.m₁ 0 (by omega)
     rw [add_zero, hA, add_zero, Nat.mod_eq_of_lt (by omega), tourV_right J (Nat.zero_le _),
@@ -198,7 +197,7 @@ theorem cut_of_genuine_gen (hP : J.P.Simple) {a : Point}
   · unfold Merge.shoot
     rw [hhit]
     exact attach_whole_of_arrival J hP hσ hτ hd hsec hA
-  · exact off_left_gen J (by rw [← lL1_add_lL2 J]; exact hd) hA.2.1 hA.2.2.1
+  · exact off_left_gen J (by rwa [← lL1_add_lL2 J]) hA.2.1 hA.2.2.1
 
 /-! ## Detection on the box block of `C` (`¬ VNotTop`) -/
 
@@ -256,7 +255,7 @@ theorem genuine_of_attach_box (hP : J.P.Simple) (hv : ¬ VNotTop J)
   have hA₁ := (hB.sideAttach_iff hn hn₁ hd hsec _).1 hA
   have hpt : sidePt (chainModel J.left).W
       ((2 * J.left.m + 6 + d) % (chainModel J.left).W.n) t = rayPt a σ T := by
-    rw [← hB.sidePt_eq hd t]; exact hend
+    rwa [← hB.sidePt_eq hd t]
   refine ⟨⟨hT0, fun s h0 h1 => dom_left J (hdom s h0 h1) (by simpa [rayPt] using ha₁), ?_⟩, ?_⟩
   · rw [← hpt]
     exact hM₁.trace _ hA₁.1 t hA₁.2.1 hA₁.2.2.1.le
@@ -282,12 +281,12 @@ theorem genuine_of_attach_box (hP : J.P.Simple) (hv : ¬ VNotTop J)
       rcases hσ with rfl | rfl <;> linarith
     have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
     have hdist : dist (rayPt (rayPt a σ T) (-σ) s) (rayPt a σ T) < r := by
-      rw [dist_rayPt _ hnσ hs0.le]; exact hsr
-    have hl := hnear _ hmem (by rw [hpt]; exact hne) (by rw [hpt]; exact hdist)
+      rwa [dist_rayPt _ hnσ hs0.le]
+    have hl := hnear _ hmem (by rwa [hpt]) (by rwa [hpt])
     have h1 : sideLeft (chainModel J.left).W ((2 * J.left.m + 6 + d) % (chainModel J.left).W.n) t
         (rayPt (sidePt (chainModel J.left).W
           ((2 * J.left.m + 6 + d) % (chainModel J.left).W.n) t) (-σ) s) := by
-      rw [hpt]; exact hl
+      rwa [hpt]
     have := (sideLeft_rayPt_iff _ _ t (-σ) hs0 one_pos).1 h1
     rwa [hpt] at this
 

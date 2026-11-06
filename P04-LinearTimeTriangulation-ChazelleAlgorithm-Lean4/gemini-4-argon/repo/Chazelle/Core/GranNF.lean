@@ -240,10 +240,8 @@ theorem deg_region (hNF : IsNF M Q N) (_hRC : RegionCorr M Q N reg)
   have hinj : Set.InjOn (fun i => cs M Q N i) {i | i ∈ (N.region r).chords} := by
     intro i hi i' hi' h
     exact cs_inj hNF ((hmem i).1 hi).1 ((hmem i').1 hi').1 h
-  rw [e, hinj.ncard_image]
-  rw [show {i | i ∈ (N.region r).chords} = ((N.region r).chords.toFinset : Set ℕ) by
-    ext; simp]
-  rw [Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd]
+  rw [e, hinj.ncard_image, show {i | i ∈ (N.region r).chords} = ((N.region r).chords.toFinset : Set ℕ) by
+    ext; simp, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd]
 
 omit hN in
 /-- **Chord `i` touches exactly the regions `up` and `dn` of its record**, which differ. -/
@@ -257,7 +255,7 @@ theorem touch_iff_side (hNF : IsNF M Q N) (hM : WalkAx M) (hRC : RegionCorr M Q 
   -- a point of the open part of the chord
   have hc : cs M Q N i ∈ M.Adm := F_adm hNF (cs_mem hi)
   obtain ⟨a, b, -, hcab, -, hopen, -, -⟩ := hM.ends _ hc
-  set z := Geometry.lerp a b (1 / 2) with hz
+  set z := Geometry.lerp a b (1 / 2)
   have hzD : z ∈ M.D := hopen _ ⟨by norm_num, by norm_num⟩
   have hzc : z ∈ cs M Q N i := by
     rw [hcab]; exact Geometry.lerp_mem_segment a b (by norm_num) (by norm_num)

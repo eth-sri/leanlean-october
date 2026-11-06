@@ -67,7 +67,7 @@ theorem codeS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB 
           simp only [List.mem_cons, List.not_mem_nil, or_false, not_or] at hy
           config_simp; rw [Machine.upd_other _ _ _ hy.2.2.2], rfl, rfl, rfl⟩
       · config_simp; rw [Machine.upd_other _ _ _ (Ne.symm hd.2.2.2), hxr1, hR1.one]; ring
-  · refine ifEqN_ne (by rw [r51', hxr1]; exact hbx) ?_
+  · refine ifEqN_ne (by rwa [r51', hxr1]) ?_
     rw [ite_eq_right hbx]
     have hpx := hp hbx
     obtain ⟨c2, k2, e2, rfl, m2, s2, r52⟩ := ldF_rel (P := P) e1.wb_right 60052 4 60051
@@ -159,11 +159,11 @@ theorem fillS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB 
     have hw4 := e4.wb_right
     clear hw
     by_cases hd : fv c.nmem A R 5 ch = 1
-    · refine ifEqN_eq (by rw [r56, hR4.one]; exact hd) ?_
+    · refine ifEqN_eq (by rwa [r56, hR4.one]) ?_
       exec_block
       refine ⟨by omega, ?_⟩
       rw [hlo, hhi, ite_eq_left hd, ite_eq_left hd, r53', r55']
-    · refine ifEqN_ne (by rw [r56, hR4.one]; exact hd) ?_
+    · refine ifEqN_ne (by rwa [r56, hR4.one]) ?_
       exec_block
       intro k' hk'
       refine ⟨by omega, ?_⟩
@@ -185,31 +185,23 @@ theorem fillS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB 
   obtain ⟨bhi1, bhi2⟩ := hF.best hi hhiR.1 hhiR.2
   obtain ⟨c6, k6, e6, hk6, m6, s6, r59⟩ := codeS_exec (P := P) hw5 hR5 hAW (d := 60059) (xr := 60057)
     (x := lo) (by decide) (by decide) (by rw [hc5def]; config_simp)
-    hloR.1 (by rw [hc5def]; config_simp; rw [m14]; exact blo1)
-    (by rw [hc5def]; config_simp; rw [m14]; exact blo2)
+    hloR.1 (by rw [hc5def]; config_simp; rwa [m14])
+    (by rw [hc5def]; config_simp; rwa [m14])
   rw [hc5def] at r59; simp only [m14] at r59
   have hR6 := hR5.of_same s6 (by simp [Prot])
   obtain ⟨c7, k7, e7, hk7, m7, s7, r60⟩ := codeS_exec (P := P) e6.wb_right hR6 hAW (d := 60060)
     (xr := 60058) (x := hi) (by decide) (by decide)
     (by rw [s6.1 _ (by simp), hc5def]; config_simp)
-    hhiR.1 (by rw [m6, hc5def]; config_simp; rw [m14]; exact bhi1)
-    (by rw [m6, hc5def]; config_simp; rw [m14]; exact bhi2)
+    hhiR.1 (by rw [m6, hc5def]; config_simp; rwa [m14])
+    (by rw [m6, hc5def]; config_simp; rwa [m14])
   rw [m6, hc5def] at r60; simp only [m14] at r60
   have hR7 := hR6.of_same s7 (by simp [Prot])
-  have m17 : c7.nmem = c.nmem := by rw [m7, m6, hc5def]; exact m14
+  have m17 : c7.nmem = c.nmem := by rwa [m7, m6, hc5def]
   have s17 : Same [60030, 60053, 60054, 60055, 60056, 60057, 60058, 60059, 60060, 60051, 60052] c c7 :=
     (((s14.mono (by simp)).trans (s45.mono (by simp))).trans (s6.mono (by simp))).trans (s7.mono (by simp))
   have r20 : c7.nreg 60020 = e := by rw [s17.1 _ (by simp), h20]
   have r59' : c7.nreg 60059 = code (tv c.nmem A R 9) (tv c.nmem A R 4) lo := by
     rw [s7.1 _ (by simp), r59]
-  have hcodeR : ∀ x, x < R → fv c.nmem A R 8 x = x →
-      code (tv c.nmem A R 9) (tv c.nmem A R 4) x ≤ 2 * R + 1 := by
-    intro x hx htx
-    obtain ⟨b1, b2⟩ := hF.best x hx htx
-    unfold code; rw [tv_lt hx]
-    split_ifs with hb
-    · omega
-    · rw [tv_lt b1]; have := b2 hb; omega
   refine spec_seq ⟨c5, k5, e5, spec_seq ⟨c6, k6, e6, spec_seq ⟨c7, k7, e7, ?_⟩⟩⟩
   obtain ⟨c8, k8, e8, rfl, m8, s8⟩ := stF_rel (P := P) e7.wb_right 17 60020 60059 (by decide)
     (by rw [show fb 17 = 60117 from rfl, hR7.b 17 (by norm_num), r20]; omega)
@@ -235,8 +227,7 @@ theorem fillS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB 
     simp only [show fb 17 = 60117 from rfl, show fb 18 = 60118 from rfl,
       show fb 12 = 60112 from rfl, hR7.b 17 (by norm_num), hR8.b 18 (by norm_num),
       hR9.b 12 (by norm_num), s9.1 60020 (by simp), s8.1 60020 (by simp), r20]
-    rw [fv_store heR hu, fv_store heR hu, fv_store heR hu, m17]
-    rw [s8.1 60060 (by simp),
+    rw [fv_store heR hu, fv_store heR hu, fv_store heR hu, m17, s8.1 60060 (by simp),
       s9.1 60010 (by simp), s8.1 60010 (by simp), s17.1 60010 (by simp), hR.zero, r59']
     have r60' : c7.nreg 60060 = code (tv c.nmem A R 9) (tv c.nmem A R 4) hi := r60
     rw [r60']
@@ -293,7 +284,7 @@ theorem chkS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
     ((s1.mono (by simp)).trans (s2.mono (by simp))).trans (s3.mono (by simp))
   refine spec_seq ⟨c1, 2, e1, spec_seq ⟨c2, 2, e2, spec_seq ⟨c3, 2, e3, ?_⟩⟩⟩
   by_cases hact : fv c.nmem A R 13 t = 1
-  · refine ifEqN_eq (by rw [r64, hR3.one]; exact hact) ?_
+  · refine ifEqN_eq (by rwa [r64, hR3.one]) ?_
     obtain ⟨c4, k4, e4, rfl, m4, s4, r65⟩ := ldF_rel (P := P) e3.wb_right 60065 9 60055
       (by rw [show fb 9 = 60109 from rfl, hR3.b 9 (by norm_num), s3.1 _ (by simp), r55]; omega)
     rw [show fb 9 = 60109 from rfl, hR3.b 9 (by norm_num), s3.1 _ (by simp), r55, m13] at r65
@@ -305,7 +296,7 @@ theorem chkS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
     have r53' : c4.nreg 60053 = ch := by
       rw [s4.1 _ (by simp), s3.1 _ (by simp), s2.1 _ (by simp), r53]
     by_cases hbest : fv c.nmem A R 9 t = ch
-    · refine ifEqN_eq (by rw [r65, r53']; exact hbest) ?_
+    · refine ifEqN_eq (by rwa [r65, r53']) ?_
       -- cut the chord
       have r20 : c4.nreg 60020 = e := by rw [s14.1 _ (by simp), h20]
       have r55' : c4.nreg 60055 = t := by rw [s4.1 _ (by simp), s3.1 _ (by simp), r55]
@@ -340,11 +331,11 @@ theorem chkS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
           c8.nmem = c7.nmem ∧ Same [60030, 60062, 60063] c7 c8 ∧ c8.nreg 60062 = y := by
         have r20' : c7.nreg 60020 = e := by rw [s7.1 _ (by simp), r20'']
         by_cases hs2 : fv c.nmem A R 15 t = 2
-        · refine ifEqN_eq (by rw [r61, hR7.two]; exact hs2) ?_
+        · refine ifEqN_eq (by rwa [r61, hR7.two]) ?_
           refine spec_instr (Exec.addN e7.wb_right _ _ _ (by rw [r20']; omega)) fun _ => ?_
           refine ⟨by omega, rfl, Same.upd1 (by simp), ?_⟩
           config_simp; rw [r20', hydef, ite_eq_left hs2]; ring
-        · refine ifEqN_ne (by rw [r61, hR7.two]; exact hs2) ?_
+        · refine ifEqN_ne (by rwa [r61, hR7.two]) ?_
           have hcR := hF.cpar t htR htt hact hs2
           obtain ⟨c8, k8, e8, rfl, m8, s8, r63⟩ := ldF_rel (P := P) e7.wb_right 60063 14 60055
             (by rw [show fb 14 = 60114 from rfl, hR7.b 14 (by norm_num), s7.1 _ (by simp), r55'']; omega)
@@ -380,11 +371,11 @@ theorem chkS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
           · subst h; simp [hact, hbest, hydef]
           · simp [h1, h2, h3]
         · simp [hue]
-    · refine ifEqN_ne (by rw [r65, r53']; exact hbest) (spec_skip e4.wb_right ?_)
+    · refine ifEqN_ne (by rwa [r65, r53']) (spec_skip e4.wb_right ?_)
       intro k' hk'
       refine ⟨by omega, s14.mono (by simp), fun a _ => by rw [m14], fun f u _ _ => ?_⟩
       rw [m14, ite_eq_right (fun hh => hbest hh.2.1)]
-  · refine ifEqN_ne (by rw [r64, hR3.one]; exact hact) (spec_skip e3.wb_right ?_)
+  · refine ifEqN_ne (by rwa [r64, hR3.one]) (spec_skip e3.wb_right ?_)
     intro k' hk'
     refine ⟨by omega, s13.mono (by simp), fun a _ => by rw [m13], fun f u _ _ => ?_⟩
     rw [m13, ite_eq_right (fun hh => hact hh.1)]
@@ -447,7 +438,7 @@ theorem cpBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
   rw [show fb 12 = 60112 from rfl, hR.b 12 (by norm_num), h20] at r66
   change c1.nreg 60066 = fv c.nmem A R 12 e at r66
   have hR1 := hR.of_same s1 (by simp [Prot])
-  have hF1 : CPFacts c1.nmem A R K := by rw [m1]; exact hF
+  have hF1 : CPFacts c1.nmem A R K := by rwa [m1]
   have r20 : c1.nreg 60020 = e := by rw [s1.1 _ (by simp), h20]
   -- the middle, with its effect
   have hmid : ∃ c2 k2, Exec P W (ifEqN 60066 60011 fillS
@@ -458,9 +449,9 @@ theorem cpBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       ∀ f u, f < 19 → u < R → fv c2.nmem A R f u =
         if u = e ∧ CPF f then cpv c.nmem A R K f e else fv c.nmem A R f u := by
     by_cases hp : fv c.nmem A R 12 e = 1
-    · refine ifEqN_eq (by rw [r66, hR1.one]; exact hp) ?_
+    · refine ifEqN_eq (by rwa [r66, hR1.one]) ?_
       obtain ⟨c2, k2, e2, hk2, s2, hm2, hv2⟩ := fillS_exec (P := P) e1.wb_right hR1 hAW hF1 r20 he
-        (by rw [m1]; exact hp) (by rw [m1]; exact hpt hp)
+        (by rwa [m1]) (by rw [m1]; exact hpt hp)
       refine ⟨c2, k2, e2, by omega, s2.mono (by simp), fun a ha => by rw [hm2 a ha, m1],
         fun f u hf hu => ?_⟩
       rw [hv2 f u hf hu, m1]
@@ -473,7 +464,7 @@ theorem cpBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
         · have : f ≠ 11 ∧ f ≠ 12 ∧ f ≠ 16 ∧ f ≠ 17 ∧ f ≠ 18 := by unfold CPF at hcf; omega
           simp [this, hcf]
       · simp [hue]
-    · refine ifEqN_ne (by rw [r66, hR1.one]; exact hp) ?_
+    · refine ifEqN_ne (by rwa [r66, hR1.one]) ?_
       obtain ⟨c2, k2, e2, rfl, m2, s2, r67⟩ := ldF_rel (P := P) e1.wb_right 60067 11 60020
         (by rw [show fb 11 = 60111 from rfl, hR1.b 11 (by norm_num), r20]; omega)
       rw [show fb 11 = 60111 from rfl, hR1.b 11 (by norm_num), r20, m1] at r67
@@ -482,7 +473,7 @@ theorem cpBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       have m12 : c2.nmem = c.nmem := by rw [m2, m1]
       refine spec_seq ⟨c2, 2, e2, ?_⟩
       by_cases hr : fv c.nmem A R 11 e = 1
-      · refine ifEqN_eq (by rw [r67, hR2.one]; exact hr) (spec_skip e2.wb_right ?_)
+      · refine ifEqN_eq (by rwa [r67, hR2.one]) (spec_skip e2.wb_right ?_)
         intro k' hk'
         refine ⟨by omega, s2.mono (by simp), fun a _ => by rw [m12], fun f u hf hu => ?_⟩
         rw [m12]
@@ -493,8 +484,8 @@ theorem cpBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
               ite_eq_right (fun hh => hh.1 hr)]
           · rw [ite_eq_right (fun hh => hcf hh.2)]
         · rw [ite_eq_right (fun hh => hue hh.1)]
-      · refine ifEqN_ne (by rw [r67, hR2.one]; exact hr) ?_
-        have hF2 : CPFacts c2.nmem A R K := by rw [m12]; exact hF
+      · refine ifEqN_ne (by rwa [r67, hR2.one]) ?_
+        have hF2 : CPFacts c2.nmem A R K := by rwa [m12]
         obtain ⟨c3, k3, e3, hk3, s3, hm3, hv3⟩ := chkS_exec (P := P) e2.wb_right hR2 hAW hF2
           (by rw [s2.1 _ (by simp), r20]) he
         refine ⟨c3, k3, e3, fun k' hk' => fun k'' hk'' => ⟨by omega,
@@ -584,7 +575,7 @@ theorem cpS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
       obtain ⟨e, hedef⟩ : ∃ e, d.nreg 60020 = e := ⟨_, rfl⟩
       rw [hedef] at htest hjd hvd
       have heR : e < R := by omega
-      have hs := hstat d (by rw [hedef]; exact hvd)
+      have hs := hstat d (by rwa [hedef])
       have h6 := hs 6 (by norm_num) (by unfold CPF; omega)
       have h3 := hs 3 (by norm_num) (by unfold CPF; omega)
       have h8 := hs 8 (by norm_num) (by unfold CPF; omega)

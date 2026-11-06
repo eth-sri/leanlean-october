@@ -1,7 +1,8 @@
 module
 
 public import Chazelle.Merge.Augmented
-public import Chazelle.Chain.Weight
+public import Chazelle.Chain.Arcs
+public import Chazelle.Chain.Granular
 
 /-!
 # Conformality restoration (Chazelle §3.2, Lemmas 3.3 and 3.4), Euclidean part
@@ -357,8 +358,7 @@ theorem mem_regionsIn_of_interiorChords_eq_empty (hF : ChordSystem D F) {S : Set
       subset_regionsIn_of_inter hR (hF.chord_inter_nonempty_isPreconnected he).2
         (hF.chord_inter_subset_freeIn hS he heS) ⟨q, ⟨hqe, hqS.1⟩, hq⟩
     have hmem : e ∈ interiorChords D F S R := ⟨he, heS, hsub⟩
-    rw [h] at hmem
-    exact hmem
+    rwa [h] at hmem
   have heq : R = connectedComponentIn (freeIn D F) p := by
     apply Subset.antisymm
     · exact (regionsIn_isPreconnected hR).subset_connectedComponentIn hp hRF
@@ -455,8 +455,7 @@ theorem splitStatement_aux (hF : ChordSystem D F) {Δ n : ℕ} (ih : SplitStatem
   have hΔ' : ∀ U ∈ regionsIn D F, U ⊆ R₂ → (exitsIn D F U).ncard ≤ Δ :=
     fun U hU hUR => hΔ U hU (hUR.trans h.sub₂)
   have hdeg' : Δ < (exitsIn D W' R₂).ncard := by
-    rw [hcount, ha₁, ← h.ncard_exits hF hS he heS hW]
-    exact hdeg
+    rwa [hcount, ha₁, ← h.ncard_exits hF hS he heS hW]
   obtain ⟨f, hf, hfS', hfR₂, hQ⟩ := ih (insert e S) W' R₂ hS' hW'3 h.mem₂ hint hΔ' hdeg'
   have hfS : f ∉ S := fun h' => hfS' (mem_insert_of_mem e h')
   have hfe : f ≠ e := fun h' => hfS' (h' ▸ mem_insert e S)
@@ -490,7 +489,7 @@ theorem splitStatement_aux (hF : ChordSystem D F) {Δ n : ℕ} (ih : SplitStatem
     rw [hPs.ncard_exits hF hT he heT hW_T]
     have hP₁mem : P₁ ∈ regionsIn D (insert f (insert e S)) := by rw [← hswap]; exact hPs.mem₁
     have hP₂mem : P₂ ∈ regionsIn D (insert f (insert e S)) := by rw [← hswap]; exact hPs.mem₂
-    have hR₁' : R₁ ∈ regionsIn D (insert e (insert f S)) := by rw [hswap]; exact hR₁mem
+    have hR₁' : R₁ ∈ regionsIn D (insert e (insert f S)) := by rwa [hswap]
     rcases (hPs.touches_iff hF hT he heT R₁ hR₁').1 htR₁ with h1 | h1
     · have hP₂R₂ : P₂ ⊆ R₂ := hK P₂ hP₂mem (hPs.sub₂.trans hPR)
         (fun h' => hPs.ne (h1.symm.trans h'.symm))
@@ -725,19 +724,7 @@ theorem potential_le (hF : ChordSystem D F) (hD : IsPreconnected D) (hne : D.Non
     rw [ncard_insert_of_notMem hcS hSfin]
     omega
 
-/-- **One step of conformality restoration** (p. 512): some region `R` of `S` has more than `Δ`
-exit chords, and the chord `e` of the full map inside `R` given by Lemma 3.3 is added; `e`
-separates the exit chords of `R` into two groups of at least two. -/
-def ConfStep (D : Set Point) (F : Set (Set Point)) (Δ : ℕ) (S S' : Set (Set Point)) : Prop :=
-  ∃ R ∈ regionsIn D S, Δ < (exitsIn D S R).ncard ∧ ∃ e ∈ F, e ∉ S ∧ e ∩ D ⊆ R ∧
-    S' = insert e S ∧ ∀ P ∈ regionsIn D (insert e S), P ⊆ R → 2 ≤ (exitsIn D S P).ncard
 
-/-- A restoration step adds exactly one chord of the full map. -/
-theorem ConfStep.subset (hF : ChordSystem D F) {Δ : ℕ} {S S' : Set (Set Point)}
-    (h : ConfStep D F Δ S S') (hS : S ⊆ F) : S' ⊆ F ∧ S ⊆ S' ∧ S'.ncard = S.ncard + 1 := by
-  obtain ⟨-, -, -, e, he, heS, -, rfl, -⟩ := h
-  exact ⟨insert_subset he hS, subset_insert e S,
-    ncard_insert_of_notMem heS (hF.finite.subset hS)⟩
 
 /-! ### The chain instances -/
 

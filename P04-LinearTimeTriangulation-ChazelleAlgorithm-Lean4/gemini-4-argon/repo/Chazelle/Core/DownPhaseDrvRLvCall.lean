@@ -52,7 +52,7 @@ theorem callH {sH : Stmt} {κH : ℕ} (hH : HostMeets sH κH) (c : Config) (hw :
         (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) j).pts (Qof P).n).length := by
   obtain ⟨c', k, ex, hk, ⟨hkeep, hpost⟩, hfr⟩ := hH P W c hw
     ⟨hG, hWh, hli, hli', L, E, hL, hok, hperm, hsort, hdeg, hnf,
-      by rw [hj0, nRegions_bnf]; exact hj⟩ hroom
+      by rwa [hj0, nRegions_bnf]⟩ hroom
   have hdec : decide (c.nreg 215002 = 1) = decide (Mountain.LeftInside (Qof P)) :=
     decide_eq_decide.mpr hli'
   obtain ⟨h1, h2, h3, -, h5⟩ := hpost L E hL hok hperm hsort hnf.nfAt
@@ -87,19 +87,19 @@ theorem callR {O : OracleIface} {sR : Stmt} {κR : ℕ} (hR : RegMeets O sR κR)
           IsCanonicalNF (chainModel (hostChainOf (Qof P) H h3)) (Qof P) N (c'.nreg 219212)
             regCap := by
   obtain ⟨c', k, ex, hk, ⟨hkeep, a10, a11, a12, a12', hwfd, hpost⟩, hfr⟩ := hR P W c hw
-    ⟨hG, hWh, by rw [h05]; exact hX, by rw [h02]; exact h7, by rw [h02, h05]; exact hμg,
-      by rw [h03, h02], by rw [h02, h04]; exact hg0, by rw [h04]; exact hg1,
-      by rw [h02, h04]; exact hg2, by rw [h04, h05]; exact hcap,
-      H, by rw [h00]; exact hHA, by rw [h00]; exact hHB, h20, hwf, hreg, hsimp, h01,
-      by rw [h01]; exact h3, by rw [h03]; exact hrun⟩
-    (by show c.nreg ALLOC + κR * (lemma41Nat (c.nreg 219202) + 1) ≤ W; rw [h02]; exact hroom)
+    ⟨hG, hWh, by rwa [h05], by rwa [h02], by rwa [h02, h05],
+      by rw [h03, h02], by rwa [h02, h04], by rwa [h04],
+      by rwa [h02, h04], by rwa [h04, h05],
+      H, by rwa [h00], by rwa [h00], h20, hwf, hreg, hsimp, h01,
+      by rwa [h01], by rwa [h03]⟩
+    (by show c.nreg ALLOC + κR * (lemma41Nat (c.nreg 219202) + 1) ≤ W; rwa [h02])
   have hk' : k ≤ κR * (lemma41Nat μ + 1) := by
     have : k ≤ κR * (lemma41Nat (c.nreg 219202) + 1) := hk
     rwa [h02] at this
   obtain ⟨hrob, N, hN, hc⟩ := hpost H (hostChainOf (Qof P) H h3) (by rw [h00]; exact hHA.holds)
     rfl rfl (hostChainOf_m _ _ h3)
   rw [h00] at hrob
-  exact ⟨c', k, ex, hk', hfr, hkeep, a10, a11, by rw [← h04]; exact a12, by rw [← h04]; exact a12',
+  exact ⟨c', k, ex, hk', hfr, hkeep, a10, a11, by rwa [← h04], by rwa [← h04],
     hwfd, hrob, N, hN, hc⟩
 
 open Classical in
@@ -164,16 +164,16 @@ theorem callX {sX : Stmt} {κX : ℕ} (hX : ExtMeets sX κX) (c : Config) (hw : 
   have hNR0 : c.nmem (c.nreg 217006) = NR.chords.length := hNR.nfAt.1
   obtain ⟨c', k, ex, hk, ⟨hkeep, hpost⟩, hfr⟩ := hX P W c hw
     ⟨hG, hWh, hli, hli', L, E, C, NR, hL, hok, hperm, hsort, hdeg, hnf,
-      by rw [hj0, nRegions_bnf]; exact hj, by rw [hdec, hj0, h03]; exact hHA,
-      by rw [hdec, hj0, h03]; exact hHB, by rw [hdec, hj0]; exact h04,
-      by rw [hdec, hj0]; exact hCP, hCs, hCm, by rw [h05]; exact hmwf, by rw [h05]; exact hmdA,
-      by rw [hdec, hj0, h05]; exact hcd, hNR, hNRi⟩
-    (by show c.nreg ALLOC + κX * (c.nmem (c.nreg 217006) + 1) ≤ W; rw [hNR0]; exact hroom)
+      by rwa [hj0, nRegions_bnf], by rwa [hdec, hj0, h03],
+      by rwa [hdec, hj0, h03], by rwa [hdec, hj0],
+      by rwa [hdec, hj0], hCs, hCm, by rwa [h05], by rwa [h05],
+      by rwa [hdec, hj0, h05], hNR, hNRi⟩
+    (by show c.nreg ALLOC + κX * (c.nmem (c.nreg 217006) + 1) ≤ W; rwa [hNR0])
   have hk' : k ≤ κX * (NR.chords.length + 1) := by
     have : k ≤ κX * (c.nmem (c.nreg 217006) + 1) := hk
     rwa [hNR0] at this
   obtain ⟨Lx, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10⟩ := hpost L E C NR reg hL hok hperm hsort
-    hnf.nfAt hregs (by rw [hdec, hj0]; exact hCP) hCs hCm hNR.nfAt hNRi
+    hnf.nfAt hregs (by rwa [hdec, hj0]) hCs hCm hNR.nfAt hNRi
   rw [hj0] at x7 x10
   exact ⟨c', k, ex, hk', hfr, hkeep, Lx, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10⟩
 

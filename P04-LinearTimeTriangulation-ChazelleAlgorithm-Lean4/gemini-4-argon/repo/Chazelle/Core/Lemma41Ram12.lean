@@ -94,7 +94,6 @@ theorem tree_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
       have hj2 : 2 ≤ ns.length := by omega
       set t := lvTgt Gl ns.length γ₀ with ht
       have hcl := clog_half hj2
-      have hcl1 : 1 ≤ Nat.clog 2 ns.length := by omega
       have hfl : fuseLoss = 1 := rfl
       have htg : γ₀ + fuseLoss ≤ t := by
         rw [ht]; unfold lvTgt; split_ifs <;> omega
@@ -107,19 +106,19 @@ theorem tree_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
           r ≠ 160014 → r ≠ 160033 → r ≠ 160034 → c.nreg r = cs.nreg r :=
         fun r h1 h2 h3 h4 h5 => cr r h2 (by omega) (nl r (by omega) h3 h4 h5)
       have c32 : c.nreg 160032 = Gl := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s32
+        rwa [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]
       have c00 : c.nreg 160000 = hX := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s00
+        rwa [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]
       have c24 : c.nreg 160024 = 1 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s24
+        rwa [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]
       have c80 : c.nreg 160080 = 2 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s80
+        rwa [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]
       have c81 : c.nreg 160081 = 5 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s81
+        rwa [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]
       have c83 : c.nreg 160083 = 3 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s83
+        rwa [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]
       have c84 : c.nreg 160084 = 4 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s84
+        rwa [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]
       obtain ⟨c1, k1, e1, hk1, hw1, hA1, hA1', l14, l33, ⟨B', l66, hB', hL'⟩, lm, lrm, lo, lr, lrr,
           lX, lcap⟩ :=
         level_exec hG hWh hWn hMM hXc hOk hw (A0 := c.nreg ALLOC) (B := B) (hp := hp) (hX := hX)

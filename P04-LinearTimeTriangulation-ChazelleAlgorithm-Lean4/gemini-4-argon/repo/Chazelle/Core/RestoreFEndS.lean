@@ -80,8 +80,8 @@ theorem endSdC_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (ir _ (by omega) (by omega)) (ir _ (by omega) (by omega)) (ir _ (by omega) (by omega))
     (ir _ (by omega) (by omega)) (nk _ (by omega) (by omega)) (nk _ (by omega) (by omega))
     (nk _ (by omega) (by omega)) (nk _ (by omega) (by omega))
-    (by rw [g₁ _ (by omega) (by omega), g₁ _ (by omega) (by omega)]; exact hxE)
-    (by rw [j₁ _ (Or.inl rfl), j₁ _ (Or.inr rfl)]; exact hxJ) (by omega))
+    (by rwa [g₁ _ (by omega) (by omega), g₁ _ (by omega) (by omega)])
+    (by rwa [j₁ _ (Or.inl rfl), j₁ _ (Or.inr rfl)]) (by omega))
     (fun c₂ hI₂ hA₂ ⟨b2, b3, f₂⟩ => ?_)).mono (by omega) (fun _ h => h)
   rw [g₁ (s + 1) (by omega) (by omega), g₁ (s + 2) (by omega) (by omega), j₁ 81140 (Or.inl rfl),
     j₁ 81141 (Or.inr rfl)] at b2 b3
@@ -91,8 +91,8 @@ theorem endSdC_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (ir _ (by omega) (by omega)) (ir _ (by omega) (by omega)) (ir _ (by omega) (by omega))
     (ir _ (by omega) (by omega)) (nk _ (by omega) (by omega)) (nk _ (by omega) (by omega))
     (nk _ (by omega) (by omega)) (nk _ (by omega) (by omega))
-    (by rw [g₂ _ (by omega) (by omega), g₂ _ (by omega) (by omega)]; exact hxJ)
-    (by rw [g₂ _ (by omega) (by omega), g₂ _ (by omega) (by omega)]; exact hxF) (by omega))
+    (by rwa [g₂ _ (by omega) (by omega), g₂ _ (by omega) (by omega)])
+    (by rwa [g₂ _ (by omega) (by omega), g₂ _ (by omega) (by omega)]) (by omega))
     (fun c₃ hI₃ hA₃ ⟨b4, b5, f₃⟩ => ?_)).mono (by omega) (fun _ h => h)
   rw [g₂ 81140 (by omega) (by omega), g₂ 81141 (by omega) (by omega),
     g₂ (s + 3) (by omega) (by omega), g₂ (s + 4) (by omega) (by omega)] at b4 b5
@@ -166,7 +166,7 @@ theorem endSd_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
     have hJ' : PosG E.M (Qof E.P) E.P.n ⟨c.nreg 81140, c.nreg 81141⟩ :=
       posG_of_vlo hE hI hJ.1 hJ.2 hv
     refine (endSdC_fs hE hB hI₁ ⟨by omega, hs2⟩ (by rw [r1, r2]; exact hxE h5')
-      (by rw [r3, r4]; exact hxF h5') (by rw [r40, r41]; exact hJ')
+      (by rw [r3, r4]; exact hxF h5') (by rwa [r40, r41])
       (by omega)).mono le_rfl
       (fun c' ⟨b, f⟩ => ⟨b.1, fun _ _ => by rw [← r1, ← r2, ← r3, ← r4, ← r40, ← r41]; exact b.2,
         fin c' f⟩)
@@ -188,7 +188,7 @@ theorem endSd_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   · have h51 : c.nreg (s + 5) = 1 := by rw [k0, q5] at a1; omega
     refine (FRS.ifT a1 ?_).mono (K := 33086) le_rfl (fun _ h => h)
     by_cases a2 : c₁.nreg 81011 < c₁.nreg 81141
-    · exact (FRS.ifT a2 (run h51 (Or.inl (by rw [k0, q41] at a2; exact a2)))).mono (by omega)
+    · exact (FRS.ifT a2 (run h51 (Or.inl (by rwa [k0, q41] at a2)))).mono (by omega)
         (fun _ h => h)
     refine (FRS.ifF a2 ?_).mono (K := 33084) (by omega) (fun _ h => h)
     by_cases a3 : c₁.nreg 81140 < c₁.nreg 81021

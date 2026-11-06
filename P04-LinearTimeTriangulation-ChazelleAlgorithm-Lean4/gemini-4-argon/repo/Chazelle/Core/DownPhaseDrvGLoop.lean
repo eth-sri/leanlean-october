@@ -29,7 +29,6 @@ structure LInv (P : Polygon) (W : ℕ) (R : RData) (V : ℕ → ℕ) (Lb Rb i : 
   r04 : e.nreg 219004 = (R.leaves P).length
   env : REnv R e
   r24 : e.nreg 219224 = R.T + 3 * i
-  il : i ≤ (R.leaves P).length
   room : e.nreg ALLOC + ((R.leaves P).length - i) * Lb + Rb ≤ W
   st : ∃ pos γ, e.nreg 219221 = pos ∧ GapsLe 64 ((R.leaves P).drop i) pos (R.NP - 1) ∧
     ((i = 0 ∧ pos = 0 ∧ e.nreg 219222 = 0) ∨
@@ -58,7 +57,7 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
     ∃ e' k, Exec P W (lfBody sp sM) e e' k ∧
       LInv P W R V (lfB (pcB κP (κ 130) κs (lemma41Nat R.μ))) Rb (i + 1) e' ∧
       k ≤ lfB (pcB κP (κ 130) κs (lemma41Nat R.μ)) ∧ Frame drvBands e e' k := by
-  set pc := pcB κP (κ 130) κs (lemma41Nat R.μ) with hpc
+  set pc := pcB κP (κ 130) κs (lemma41Nat R.μ)
   set x := (R.leaves P).getD i (0, 0, 0) with hx
   have hxL : x ∈ R.leaves P := by rw [hx, List.getD_eq_getElem _ _ hi]; exact List.getElem_mem hi
   have hQn : (Qof P).n = P.n := shear_n _ _
@@ -82,7 +81,6 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
   rw [← hx] at t1 t2 t3
   have t3' : e.nmem (R.T + 3 * i + 1 + 1) = x.2.2 := t3
   have hTA := hF.hTA
-  have hAW : e.nreg ALLOC ≤ W := by omega
   have hTW : R.T + 3 * (R.leaves P).length ≤ W := by have := E.alloc; omega
   -- load the leaf
   obtain ⟨e₁, k₁, ex₁, hk₁, v26, v27, v28, m₁, f₁⟩ : ∃ e₁ k₁, Exec P W lfLoad e e₁ k₁ ∧ k₁ = 5 ∧
@@ -160,7 +158,7 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
           · exact hj)
         (by have h1 : lfB pc = 2 * pc + 30 := rfl; rw [hA₂, hA₁]; omega)
       refine ⟨e₃, k₂ + k₃ + 1, if pos = 0 then R.γ₀ else γ + 1, .ifLtN_true (by
-        rw [p₁, v26]; exact hlt) (.seq ex₂ ex₃), by omega, ex₃.wb_right, E₃,
+        rwa [p₁, v26]) (.seq ex₂ ex₃), by omega, ex₃.wb_right, E₃,
         by rw [show pos + (x.1 - pos) = x.1 by omega] at A₃; split_ifs at A₃ ⊢ <;> exact A₃,
         ?_, ?_, fun q hq => ?_, fun q hq hq' => ?_, ?_⟩
       · split_ifs <;> omega
@@ -175,7 +173,7 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
     · have heq : pos = x.1 := by omega
       rcases hst with ⟨-, hp0, -⟩ | ⟨hi0, hp0, A, h1, h2, -⟩
       · omega
-      refine ⟨e₁, 0 + 2, γ, .ifLtN_false (by rw [p₁, v26]; exact hlt) (.skip hw₁), by omega, hw₁,
+      refine ⟨e₁, 0 + 2, γ, .ifLtN_false (by rwa [p₁, v26]) (.skip hw₁), by omega, hw₁,
         E₁, by rw [← heq]; exact A.keep fr₁ fun q hq => u₁ q (by omega), h1, by omega,
         fun q _ => rfl, fun q _ _ => rfl, ?_⟩
       exact frame_refl _ _ _
@@ -229,7 +227,7 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
   have s04 : e₅.nreg 219004 = (R.leaves P).length := by
     rw [u₅ _ (by simp [bandOf, bDownDrv]) (by omega), u₄ _ (by omega), u₃ _ (by simp),
       u₁ _ (by omega), hI.r04]
-  have hNPW : R.NP ≤ W := by have := hw₅.1 219201; rw [E₅.r201] at this; exact this
+  have hNPW : R.NP ≤ W := by have := hw₅.1 219201; rwa [E₅.r201] at this
   -- advance
   obtain ⟨e₆, k₆, ex₆, hk₆, y21, y20, y24, m₆, f₆⟩ : ∃ e₆ k₆, Exec P W lfAdv e₅ e₆ k₆ ∧ k₆ = 3 ∧
       e₆.nreg 219221 = x.1 + x.2.1 ∧ e₆.nreg 219220 = i + 1 ∧ e₆.nreg 219224 = R.T + 3 * (i + 1) ∧
@@ -254,7 +252,7 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
   have A₆ : AccOK P R e₆ (x.1 + x.2.1) (γ₁ + 1) := A₅.keep fr₆ fun q hq => f₆.1 q (by
     simp only [decide_eq_false_iff_not]; omega)
   refine ⟨e₆, k₁ + (k₃ + ((k₄ + k₅) + k₆)), .seq ex₁ (.seq ex₃ (.seq (.seq ex₄ ex₅) ex₆)),
-    ⟨ex₆.wb_right, fun q hq hq' => ?_, y20, by rw [f₆.1 _ (by decide), s04], E₆, y24, by omega,
+    ⟨ex₆.wb_right, fun q hq hq' => ?_, y20, by rw [f₆.1 _ (by decide), s04], E₆, y24,
       ?_,
       x.1 + x.2.1, γ₁ + 1, y21, g3, Or.inr ⟨by omega, by omega, A₆, by omega, by omega, x8⟩⟩,
     by unfold lfB; omega, ?_⟩
@@ -299,7 +297,7 @@ theorem finCon_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
       γ ≤ R.γ₀ + 2 * (R.leaves P).length ∧
       (∀ q, bandOf q = bDownDrv → (q < 218000 ∨ 220000 ≤ q) → e'.nreg q = e.nreg q) ∧
       Frame drvBands e e' k := by
-  set pc := pcB κP (κ 130) κs (lemma41Nat R.μ) with hpc
+  set pc := pcB κP (κ 130) κs (lemma41Nat R.μ)
   have E := hI.env
   have hw := hI.wb
   have hNP3 := hF.hNP3
@@ -353,7 +351,7 @@ theorem finCon_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
         · exact hj)
       (by rw [hA₂]; omega)
     refine ⟨e₃, k₂ + k₃ + 1, if pos = 0 then R.γ₀ else γ + 1, .ifLtN_true (by
-      rw [hpos, E.r223]; exact hlt) (.seq ex₂ ex₃), by omega, ex₃.wb_right, E₃,
+      rwa [hpos, E.r223]) (.seq ex₂ ex₃), by omega, ex₃.wb_right, E₃,
       by rw [show pos + (R.NP - 1 - pos) = R.NP - 1 by omega] at A₃; split_ifs at A₃ ⊢ <;> exact A₃,
       ?_, ?_, fun q hq hq' => by rw [u₃ q hq (by omega), u₂ q (by omega)], ?_⟩
     · split_ifs <;> omega
@@ -366,8 +364,8 @@ theorem finCon_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
   · have heq : pos = R.NP - 1 := by omega
     rcases hst with ⟨-, hp0, -⟩ | ⟨hi0, hp0, A, h1, h2, -⟩
     · omega
-    refine ⟨e, 0 + 2, γ, .ifLtN_false (by rw [hpos, E.r223]; exact hlt) (.skip hw), by omega, hw,
-      E, by rw [← heq]; exact A, h1, by omega, fun q _ _ => rfl, frame_refl _ _ _⟩
+    refine ⟨e, 0 + 2, γ, .ifLtN_false (by rwa [hpos, E.r223]) (.skip hw), by omega, hw,
+      E, by rwa [← heq], h1, by omega, fun q _ _ => rfl, frame_refl _ _ _⟩
 
 end exec
 

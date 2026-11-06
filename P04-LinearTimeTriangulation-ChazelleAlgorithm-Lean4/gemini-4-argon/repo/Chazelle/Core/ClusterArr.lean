@@ -69,7 +69,7 @@ theorem affStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
     (rn := 130552) (body := affBody) (Rg := ArrRG) (by unfold ArrRG; omega)
     (by unfold ArrRG; omega) (bOut := bO) (n := n) (j₀ := 0) (B := 4) (fun i => a + i)
     e0.wb_right (by simp only [Machine.upd_same])
-    (by simp only; rw [Machine.upd_other _ _ _ (by omega)]; exact hn) (Nat.zero_le _)
+    (by simp only; rwa [Machine.upd_other _ _ _ (by omega)]) (Nat.zero_le _)
     (fun j c2 _ hjn hw2 hi2 hf2 => by
       have r0 : ∀ r, ¬ ArrRG r → c2.nreg r = c.nreg r := (hf1.trans hf2).1
       have rO := (r0 130550 (by unfold ArrRG; omega)).trans hO
@@ -99,7 +99,7 @@ theorem shStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
     (rn := 130552) (body := shBody) (Rg := ArrRG) (by unfold ArrRG; omega)
     (by unfold ArrRG; omega) (bOut := bO) (n := n) (j₀ := 0) (B := 6)
     (fun i => a + c.nmem (bI + i)) e0.wb_right (by simp only [Machine.upd_same])
-    (by simp only; rw [Machine.upd_other _ _ _ (by omega)]; exact hn) (Nat.zero_le _)
+    (by simp only; rwa [Machine.upd_other _ _ _ (by omega)]) (Nat.zero_le _)
     (fun j c2 _ hjn hw2 hi2 hf2 => by
       have hf12 := hf1.trans hf2
       have r0 : ∀ r, ¬ ArrRG r → c2.nreg r = c.nreg r := hf12.1
@@ -132,7 +132,7 @@ theorem eqStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
     (rn := 130552) (body := eqBody) (Rg := ArrRG) (by unfold ArrRG; omega)
     (by unfold ArrRG; omega) (bOut := bO) (n := n) (j₀ := 0) (B := 10)
     (fun i => if c.nmem (bI + i) = i then 1 else 0) e0.wb_right (by simp only [Machine.upd_same])
-    (by simp only; rw [Machine.upd_other _ _ _ (by omega)]; exact hn) (Nat.zero_le _)
+    (by simp only; rwa [Machine.upd_other _ _ _ (by omega)]) (Nat.zero_le _)
     (fun j c2 _ hjn hw2 hi2 hf2 => by
       have hf12 := hf1.trans hf2
       have r0 : ∀ r, ¬ ArrRG r → c2.nreg r = c.nreg r := hf12.1

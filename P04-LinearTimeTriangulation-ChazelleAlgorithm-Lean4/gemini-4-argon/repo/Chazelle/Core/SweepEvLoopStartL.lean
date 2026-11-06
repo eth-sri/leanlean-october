@@ -133,8 +133,8 @@ theorem stLab_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       simp [regB, regI, upd, kN]
     have vo : ∀ q, q ≠ kL → q ≠ kN → regB c₁.nmem [.copyN kL fR, .constN kN 1] c₁.nreg q =
         c₁.nreg q := fun q h1 h2 => by simp [regB, regI, upd_other _ _ _ h1, upd_other _ _ _ h2]
-    refine ⟨fun h1 => by omega, fun _ => ⟨vN, by show regB _ _ _ kL < _; rw [vL]; exact r1,
-      by show BeforeFaces _ _ _ (regOf _ _ _ (regB _ _ _ kL)); rw [vL]; exact hb1'⟩,
+    refine ⟨fun h1 => by omega, fun _ => ⟨vN, by show regB _ _ _ kL < _; rwa [vL],
+      by show BeforeFaces _ _ _ (regOf _ _ _ (regB _ _ _ kL)); rwa [vL]⟩,
       fun r hr hfp hlb hra => ?_, ?_, fun a ha => m1 a ha⟩
     · show regB _ _ _ r = _
       rw [vo r (fun h => hlb (Or.inr (by subst h; omega))) (fun h => hlb (Or.inl h))]
@@ -165,7 +165,7 @@ theorem stGap_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hW1 : 2 ≤ W := by have := E.hWh; unfold hostWords at this; omega
   unfold stGap
   refine IRS.ite (K := fposK 1 (c₀.nreg TLR) + fposK 2 (c₀.nreg TLR) + 3) (fun h => ?_) (fun h => ?_)
-  · have hδ : 0 < rδ J := by rw [hK₀.1, g4] at h; exact h
+  · have hδ : 0 < rδ J := by rwa [hK₀.1, g4] at h
     -- the first gap region
     have hok1 : okB W c.nmem gap1L c.nreg := by
       simp only [gap1L, okB, okI]
@@ -188,7 +188,7 @@ theorem stGap_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     have vR2 : regB c₁.nmem [.copyN gR fR] c₁.nreg gR = c₁.nreg fR := by simp [regB, regI]
     have vo2 : ∀ q, q ≠ gR → regB c₁.nmem [.copyN gR fR] c₁.nreg q = c₁.nreg q := fun q h =>
       by simp [regB, regI, upd_other _ _ _ h]
-    set c₂ : Config := { c₁ with nreg := regB c₁.nmem [.copyN gR fR] c₁.nreg } with hc₂
+    set c₂ : Config := { c₁ with nreg := regB c₁.nmem [.copyN gR fR] c₁.nreg }
     have kk2 : ∀ q, q ≠ gR → bandOf q ∉ oracleBands → ¬ FPR q → q ≠ ALLOC →
         c₂.nreg q = c.nreg q := fun q h1 h2 h3 h4 => (vo2 q h1).trans (k1 q h2 h3 h4)
     have cst : ∀ k, (k = 41 ∨ k = 42 ∨ k = 44) → c₂.nreg (sw k) = c.nreg (sw k) := by
@@ -238,14 +238,12 @@ theorem stGap_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       exact vR2
     have eR0 : regB c₃.nmem [.copyN (gR + 1) fR, .constN gN 2] c₃.nreg (gR + 0) = c₁.nreg fR := by
       rw [vo3 (gR + 0) (by simp [gR, sw]) (by simp [gR, gN, sw]), Nat.add_zero, gR3]
-    have ev : (6 + tpos J.right 0 + rL1 J + rδ J) % (chainModel J.right).W.n =
-        (6 + tpos J.right 0 + rL1 J + rδ J) % (chainModel J.right).W.n := rfl
     refine ⟨by rw [show ({ c₃ with nreg := _ } : Config).nreg gN = 2 from vN3], fun i hi => ?_,
       fun V hV => ?_, fun r hr hfp hgr hra => ?_, ?_, fun a ha => ?_⟩
-    · have hi' : i < 2 := by rw [show ({ c₃ with nreg := _ } : Config).nreg gN = 2 from vN3] at hi; exact hi
+    · have hi' : i < 2 := by rwa [show ({ c₃ with nreg := _ } : Config).nreg gN = 2 from vN3] at hi
       interval_cases i
-      · show regB _ _ _ (gR + 0) < _; rw [eR0]; exact r1
-      · show regB _ _ _ (gR + 1) < _; rw [vR3]; exact r3
+      · show regB _ _ _ (gR + 0) < _; rwa [eR0]
+      · show regB _ _ _ (gR + 1) < _; rwa [vR3]
     · obtain ⟨-, hVr, hfac⟩ := hV
       have e1 := hRC.1 _ r1
       have e3 := hRC.1 _ r3

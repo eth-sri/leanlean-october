@@ -33,7 +33,7 @@ theorem strLabTask : StrLabTask := by
   obtain ⟨fr, κF, HF⟩ := faceRTask
   refine ⟨slProg fr, fun D => 11041 + κF D, ?_⟩
   intro sh Bs F X Ok P W c₀ c J N₁ N₂ E hI hE hpp hy hex h0 hL hroom
-  set T := c₀.nreg TLR with hT
+  set T := c₀.nreg TLR
   set D := c₀.nreg (sw 6) with hD
   have hP := E.hP
   have hfx := E.fx hI
@@ -47,7 +47,6 @@ theorem strLabTask : StrLabTask := by
   set t := (chainModel J.whole).param (Qof P) x0 with ht
   -- 1. the normalisation
   beta_reduce at hroom
-  have hT1 : 11041 ≤ 11041 * (T + 1) := Nat.le_mul_of_pos_right _ (Nat.succ_pos T)
   have hsplit : (11041 + κF D) * (T + 1) = 11041 * (T + 1) + κF D * (T + 1) := by ring
   have hroom1 : c.nreg ALLOC + 11015 ≤ W := by omega
   unfold slProg
@@ -59,7 +58,7 @@ theorem strLabTask : StrLabTask := by
       by unfold slfSE slfSH sw; omega⟩ hE hpp (fun _ _ _ _ => hy) hroom1) ?_ |>.mono
     (by show 11015 + (26 + κF D * (T + 1)) ≤ (11041 + κF D) * (T + 1); omega) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' ⟨n1, n2, n3, n4, n5⟩
-  set H := nhgt (chainModel J.whole) (Qof P) x0 with hH
+  set H := nhgt (chainModel J.whole) (Qof P) x0
   obtain ⟨hppH, hparH, -, hH0⟩ := nhgt_facts hpp
   rw [← ht] at hparH
   rw [hparH] at hH0
@@ -70,7 +69,7 @@ theorem strLabTask : StrLabTask := by
   have hfx₁ := E.fx hI₁
   -- the offset
   have hgn : gW J < (chainModel J.whole).W.n := by unfold gW; rw [hn]; omega
-  set d := dOf (chainModel J.whole).W.n (gW J) (c.nreg slfSE) with hd
+  set d := dOf (chainModel J.whole).W.n (gW J) (c.nreg slfSE)
   have hoff : oW J (c.nreg slfSE + t) = d + t := off_key' hgn hE hpp.1 hpp.2.1
   rw [hoff] at h0 hL
   have hdL : d < Lst J := by
@@ -93,9 +92,9 @@ theorem strLabTask : StrLabTask := by
   have hK₁ := E.hK.fix hI₁
   refine IRS.seq (K₁ := 26) (K₂ := κF D * (T + 1)) (slAr_irs (n := (chainModel J.whole).W.n)
     (g := gW J) (g' := 6 + tpos J.right 0) (n₂ := (chainModel J.right).W.n) hI₁
-    (by rw [c1E]; exact hE) (by rw [hfx₁.nw, hn]) hfx₁.gw hgn e41 (by rw [hfx₁.n2, hn₂])
-    (by rw [hn₂]; omega) hK₁.1 hK₁.2.1 (by rw [e42, e44, c1E]; exact hq)
-    (by rw [e42, e44, c1E]; exact hq1) (by have := E.hWn; omega) (by rw [hn, hn₂]; omega)
+    (by rwa [c1E]) (by rw [hfx₁.nw, hn]) hfx₁.gw hgn e41 (by rw [hfx₁.n2, hn₂])
+    (by rw [hn₂]; omega) hK₁.1 hK₁.2.1 (by rwa [e42, e44, c1E])
+    (by rwa [e42, e44, c1E]) (by have := E.hWn; omega) (by rw [hn, hn₂]; omega)
     (by rw [e44, hn₂]; omega)) ?_
   rintro c₂ hI₂ - - ⟨v1, v2, v3, v4, kp⟩
   simp only [e42, e44, c1E, c1H] at v1 v2 v3 v4
@@ -116,7 +115,7 @@ theorem strLabTask : StrLabTask := by
     intro htp
     rw [fr_key, hpar]
     refine noParCut J (Qof P) _ e hP E.hNF₂.1 he hno d t hdL htp hpp.2.1 ?_
-    rw [← hEd]; exact heA
+    rwa [← hEd]
   have hcases : t = 0 ∨ 0 < t := hpp.1.eq_or_lt.imp (fun h => h.symm) id
   have hfp : (chainModel J.right).param (Qof P) ⟨c₂.nreg fpE, c₂.nreg fpH⟩ = 0 ∨
       ¬ (chainModel J.right).IsCut (N₂.F (chainModel J.right) (Qof P))
@@ -141,17 +140,17 @@ theorem strLabTask : StrLabTask := by
         · exact h
       exact ⟨hcpAn, hppA, Or.inr (hnc htp)⟩
   have kA : c₂.nreg ALLOC = c₁.nreg ALLOC := kp.1 _ (by unfold SlArW ALLOC sw; omega)
-  refine (HF sh Bs F X Ok P W c₀ c₂ J N₁ N₂ E hI₂ (by rw [hcpA]; exact hcpAn)
-    (by rw [hcpA, v2]; exact hppA) hfp hq_pos.1 hq_pos.2.1 hq_pos.2.2 (by
+  refine (HF sh Bs F X Ok P W c₀ c₂ J N₁ N₂ E hI₂ (by rwa [hcpA])
+    (by rwa [hcpA, v2]) hfp hq_pos.1 hq_pos.2.1 hq_pos.2.2 (by
       rw [kA]; show c₁.nreg ALLOC + κF D * (T + 1) ≤ W; omega)).mono le_rfl ?_
   rintro c' ⟨f1, f2, f3, f4, f5, f6, f7⟩
   refine ⟨f1, f2, ⟨d, hdL, hd0, hEd, ?_, fun htp => ?_, fun ht0 => ?_⟩, fun a ha => ?_, ?_,
     fun r hr hS hrA => ?_⟩
-  · rw [hcpA, v2, hpar] at f3; exact f3
+  · rwa [hcpA, v2, hpar] at f3
   · have hH' : H ≠ 0 := fun h => htp.ne' (hH0.1 h)
-    rw [hv3, v4, ite_eq_right hH', ite_eq_right hH', hpar] at f4; exact f4
+    rwa [hv3, v4, ite_eq_right hH', ite_eq_right hH', hpar] at f4
   · have hH' : H = 0 := hH0.2 ht0
-    rw [hv3, v4, ite_eq_left hH', ite_eq_left hH'] at f4; exact f4
+    rwa [hv3, v4, ite_eq_left hH', ite_eq_left hH'] at f4
   · rw [f5 a (by rw [kA]; omega), kp.2, n5 a ha]
   · rw [kA] at f6; omega
   · have hS' : ¬ (FRR r ∨ (sw 4096 ≤ r ∧ r < sw 4100) ∨ (sw 4110 ≤ r ∧ r < sw 4200)) := hS

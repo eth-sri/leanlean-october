@@ -121,16 +121,16 @@ theorem tie_codes (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {e o : ℕ}
   have hAw : SideAttach M.W (chordSet M Q L i') p t := by
     have : SideAttach M.W (chordSet M Q L i') (crec L i').rp (M.param Q (crec L i').rpos) :=
       hattI'.2
-    rw [hpos'.1, hpos'.2] at this; exact this
+    rwa [hpos'.1, hpos'.2] at this
   -- directions
   have hptE : sidePt M.W p t = M.pos Q (crec L i).lpos := rfl
   have hE : ∀ z ∈ chordSet M Q L i, (sidePt M.W p t).1 ≤ z.1 := by
-    rintro z ⟨-, hz, -⟩; rw [hptE]; exact hz
+    rintro z ⟨-, hz, -⟩; rwa [hptE]
   have hptW : sidePt M.W p t = M.pos Q (crec L i').rpos := by
     show sidePt M.W p t = sidePt M.W (crec L i').rp (M.param Q (crec L i').rpos)
     rw [hpos'.1, hpos'.2]
   have hW : ∀ z ∈ chordSet M Q L i', z.1 ≤ (sidePt M.W p t).1 := by
-    rintro z ⟨-, -, hz⟩; rw [hptW]; exact hz
+    rintro z ⟨-, -, hz⟩; rwa [hptW]
   -- the other ends
   have hBe := hattI.2
   have hBe' : sidePt M.W (crec L i).rp (M.param Q (crec L i).rpos) ≠ sidePt M.W p t := by
@@ -141,7 +141,7 @@ theorem tie_codes (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {e o : ℕ}
   have hBw := hattI'.1
   have hBw' : sidePt M.W (crec L i').lp (M.param Q (crec L i').lpos) ≠ sidePt M.W p t := by
     intro h'
-    have : M.pos Q (crec L i').lpos = M.pos Q (crec L i').rpos := by rw [← hptW]; exact h'
+    have : M.pos Q (crec L i').lpos = M.pos Q (crec L i').rpos := by rwa [← hptW]
     have hlt := pos_lt' hM hL hi'
     rw [this] at hlt; exact lt_irrefl _ hlt
   have hedge : (wposOf L e).edge = p := by rw [wposOf_even hee]; rfl
@@ -157,13 +157,11 @@ theorem tie_codes (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {e o : ℕ}
   · obtain ⟨ht0, hlt⟩ := BuildOrder.tie_rule_down hM hadm hfin (chordSet_mem hi) (chordSet_mem hi')
       hAe hAw hE hW hdown hBe hBe' hBw hBw'
     simp only
-    rw [hkl, hkr', ht0, add_zero]
-    exact hlt
+    rwa [hkl, hkr', ht0, add_zero]
   · obtain ⟨ht0, hlt⟩ := BuildOrder.tie_rule_up hM hadm hfin (chordSet_mem hi) (chordSet_mem hi')
       hAe hAw hE hW hup hBe hBe' hBw hBw'
     simp only
-    rw [hkl, hkr', ht0, add_zero]
-    exact hlt
+    rwa [hkl, hkr', ht0, add_zero]
 
 /-- **The comparator implies the event order** (for distinct codes of a valid chord list). -/
 theorem evLe_of_codeLe (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {c c' : ℕ}
@@ -178,7 +176,7 @@ theorem evLe_of_codeLe (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {c c' : ℕ}
     have hA' := attach_wposOf hL hc'
     have heq' : ((wposOf L c).edge : ℝ) + M.param Q (wposOf L c) =
         (wposOf L c').edge + M.param Q (wposOf L c') := by
-      rw [← Model.key, ← Model.key, key_wposOf, key_wposOf]; exact heq
+      rwa [← Model.key, ← Model.key, key_wposOf, key_wposOf]
     obtain ⟨hpe, hpt⟩ := sideKey_inj hA.2.1 hA.2.2.1 hA'.2.1 hA'.2.2.1 heq'
     have hi : c / 2 < L.length := by omega
     have hi' : c' / 2 < L.length := by omega
@@ -199,7 +197,7 @@ theorem evLe_of_codeLe (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {c c' : ℕ}
     have hadm : famOf M Q L ⊆ M.Adm := hL.1.2.1
     -- the common position
     have hA'' : SideAttach M.W (chordSet M Q L (c' / 2)) (wposOf L c).edge
-        (M.param Q (wposOf L c)) := by rw [hpe, hpt]; exact hA'
+        (M.param Q (wposOf L c)) := by rwa [hpe, hpt]
     have hsp : sidePt M.W (wposOf L c).edge (M.param Q (wposOf L c)) = M.pos Q (wposOf L c) := rfl
     have hEast : ∀ d, d % 2 = 0 → ∀ z ∈ chordSet M Q L (d / 2), (M.pos Q (wposOf L d)).1 ≤ z.1 := by
       intro d hd z hz; rw [wposOf_even hd]; exact hz.2.1

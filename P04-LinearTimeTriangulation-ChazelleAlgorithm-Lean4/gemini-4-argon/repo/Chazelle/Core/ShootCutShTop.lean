@@ -203,15 +203,15 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
   intro P W c hw hpre hcost
   obtain ⟨hG, hHW, hX, hcap, hMDWF, hG10, M, hMD, hOk, hsP, heP, hs1, he1, hin1, hin2, hwt, o,
     hoLt, hoIn, hoK, hzA⟩ := hpre
-  set MD := c.nreg 140000 with hMDd
-  set γ := c.nreg 140009 with hγd
-  set h := c.nreg 140013 with hhd
-  set A₀ := c.nreg ALLOC with hA₀
-  set m₀ := c.nmem with hm₀
-  set s : WPos := ⟨c.nreg 140001, c.nreg 140002⟩ with hsd
-  set e : WPos := ⟨c.nreg 140003, c.nreg 140004⟩ with hed
-  set R := rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3) with hRd
-  set σ := dirOf (c.nreg 140008) with hσd
+  set MD := c.nreg 140000
+  set γ := c.nreg 140009
+  set h := c.nreg 140013
+  set A₀ := c.nreg ALLOC
+  set m₀ := c.nmem
+  set s : WPos := ⟨c.nreg 140001, c.nreg 140002⟩
+  set e : WPos := ⟨c.nreg 140003, c.nreg 140004⟩
+  set R := rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3)
+  set σ := dirOf (c.nreg 140008)
   replace hX : Robust A₀ m₀ (fun m' => GradeRaw O P m' h A₀) := hX
   replace hcap : γ ≤ 2 ^ (m₀ h - 1) := hcap
   replace hMDWF : ModelDescWF P A₀ m₀ MD := hMDWF
@@ -255,14 +255,13 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
     omega
   have hlog := Nat.log_le_clog 2 γ
   have hR1 : 1 ≤ R := one_le_rpowCeil γ
-  set T := Nat.clog 2 γ + 1 with hT
+  set T := Nat.clog 2 γ + 1
   have hTR : T ≤ T * R := Nat.le_mul_of_pos_right _ hR1
   have hκ : κs O = 18900 * (2 * O.κ + 600503) + 3000000 := rfl
   have hbig : 3000000 * T ≤ κs O * T * R := by
     have a : 3000000 * T ≤ κs O * T := Nat.mul_le_mul_right _ (by rw [hκ]; omega)
     have b : κs O * T ≤ κs O * T * R := Nat.le_mul_of_pos_right _ hR1
     omega
-  have hκ3 : 3000000 ≤ κs O := by rw [hκ]; omega
   -- the inputs of the core
   obtain ⟨c₁, e₁, v₁, k₁, rr₁, m₁, rm₁, o₁⟩ := copies_exec (P := P) (W := W)
     [(150000, 140000), (150001, 140001), (150002, 140002), (150003, 140003), (150004, 140004),
@@ -280,11 +279,11 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
     originIn_of_eq hoIn fun j h1 h2 => g₁ j (by omega)
   have q00 : c₁.nreg 140000 = MD := g₁ _ (by norm_num)
   have qA : c₁.nreg ALLOC = A₀ := g₁ ALLOC (by decide)
-  have hD₁ : ChainDescAt c₁.nmem (c₁.nreg 140000 + 1) (Qof P) H C := by rw [m₁, q00]; exact hD
+  have hD₁ : ChainDescAt c₁.nmem (c₁.nreg 140000 + 1) (Qof P) H C := by rwa [m₁, q00]
   have hwf₁ : ChainWF P (c₁.nreg ALLOC) c₁.nmem (c₁.nreg 140000 + 1) := by
-    rw [m₁, q00, qA]; exact hwfC
+    rwa [m₁, q00, qA]
   have hreg₁ : ∀ H', HostAt c₁.nmem (c₁.nmem (c₁.nreg 140000 + 1)) H' → HostRegular P.n H' := by
-    rw [m₁, q00]; exact hreg
+    rwa [m₁, q00]
   have hroom₁ : c₁.nreg ALLOC + 15800 ≤ W := by rw [qA]; omega
   have hMD₁ : c₁.nreg 140000 + 1 ≤ W := by rw [q00]; omega
   obtain ⟨c₂, k₂, e₂, hk₂, E₂, Og₂, f₂, h403⟩ := orig_exec (P := P) (W := W) (H := H) (C := C)
@@ -309,13 +308,13 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
   obtain ⟨c₄, k₄, ps, e₄, hk₄, hI₄, arc, hok, hl, hm₄⟩ := core_exec S
     (shEmit_ok (c₀ := c₂) (PcOK P C m₀ h γ) Nmax) (ps₀ := []) (MD := MD)
     (mode := c₃.nreg 150020) (s := s) (e := e) hD (by omega) rfl c₃ e₃.wb_right
-    (fun a _ => by rw [m₃, mem₂]) (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v00)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v01)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v02)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v03)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v04)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v09)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v13) rfl hI₃ hsP heP hs1 he1 hin2 hwt
+    (fun a _ => by rw [m₃, mem₂]) (by rwa [g₃ _ (by norm_num) (by norm_num)])
+    (by rwa [g₃ _ (by norm_num) (by norm_num)])
+    (by rwa [g₃ _ (by norm_num) (by norm_num)])
+    (by rwa [g₃ _ (by norm_num) (by norm_num)])
+    (by rwa [g₃ _ (by norm_num) (by norm_num)])
+    (by rwa [g₃ _ (by norm_num) (by norm_num)])
+    (by rwa [g₃ _ (by norm_num) (by norm_num)]) rfl hI₃ hsP heP hs1 he1 hin2 hwt
   rw [List.nil_append] at hI₄
   have hq : ps.length ≤ Nmax := by linarith
   -- the finish of the records
@@ -327,19 +326,16 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
   have hmem₅ : ∀ a, a < A₀ → c₅.nmem a = m₀ a := fun a ha => by rw [mem₅]; exact hm₄ a ha
   have Fph : Frame oracleBands c₂ c₅ (k₃ + (k₄ + k₅)) :=
     ⟨fun r hr ha => FM.1 r (Bph_false hr ha),
-      fun r hr => BuildRam.exec_frameM2 exph wrM2_shPh r (BphR_false hr), fun a ha => by rw [hmem₅ a (by rw [← A₂]; exact ha), mem₂],
+      fun r hr => BuildRam.exec_frameM2 exph wrM2_shPh r (BphR_false hr), fun a ha => by rw [hmem₅ a (by rwa [← A₂]), mem₂],
       fun a _ => by rw [FM.2.2.1], FM.2.2.2, by rw [A₂, a₅]; omega, by rw [A₂]; omega⟩
   -- the loop
-  set q := ps.length with hqd
-  set K := O.κ * (R + 1) + 600500 with hKd
+  set q := ps.length
+  set K := O.κ * (R + 1) + 600500
   have hlq : q ≤ 2100 * T := by omega
   have hlb : 9 * q * (K + 2) ≤ 18900 * (2 * O.κ + 600503) * (T * R) :=
     loop_budget (κO := O.κ) hR1 hlq
   have hsplit : κs O * T * R = 18900 * (2 * O.κ + 600503) * (T * R) + 3000000 * (T * R) := by
     rw [hκ]; ring
-  have hTR' : 1 + 9 * q ≤ 3000000 * (T * R) := by
-    have : T ≤ T * R := hTR
-    omega
   have hQs : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   have hsin : s.hgt = 0 ∨ |((chainModel C).pos (Qof P) s).2| < C.radius := by
     rcases hin1 with h' | h'
@@ -359,7 +355,7 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
       simp only [Bph, K1, ALLOC, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega
     exact kph r hb
   have E₅ : ShEnv P W H C (o.eval (chainModel C) (Qof P)) σ c₅ := E₂.of_agree kenv
-    (fun a ha => by rw [hmem₅ a (by rw [← A₂]; exact ha), mem₂]) (by rw [A₂, a₅]; omega)
+    (fun a ha => by rw [hmem₅ a (by rwa [← A₂]), mem₂]) (by rw [A₂, a₅]; omega)
   have korg : ∀ r, 140234 ≤ r → r < 140241 → c₅.nreg r = c₂.nreg r := fun r a b => by
     have hb : Bph r = false := by
       simp only [Bph, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
@@ -414,14 +410,14 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
         (fun q hq => pcOK_keys (hok q hq))).symm
     rw [hAeq] at hB₆
     obtain ⟨-, hb1, hb2⟩ := hB₆
-    refine ⟨fun hf => ?_, fun hf => hb1 (by rw [← u10]; exact hf)⟩
-    have hf' : c₆.nreg 140210 = 1 := by rw [← u10]; exact hf
+    refine ⟨fun hf => ?_, fun hf => hb1 (by rwa [← u10])⟩
+    have hf' : c₆.nreg 140210 = 1 := by rwa [← u10]
     obtain ⟨x, -, hF, hpp, hlt, hpos⟩ := hb2 hf'
     refine ⟨σ * (x - (o'.eval (chainModel C) (Qof P)).1), hF, ?_, ?_, ?_⟩
     · show ProperPos (chainModel C) (Qof P) P.n ⟨c₇.nreg 140011, c₇.nreg 140012⟩
-      rw [u11, u12]; exact hpp
+      rwa [u11, u12]
     · show c₇.nreg 140011 < (chainModel C).W.n
-      rw [u11]; exact hlt
+      rwa [u11]
     · show (chainModel C).pos (Qof P) ⟨c₇.nreg 140011, c₇.nreg 140012⟩ =
         Visibility.rayPt (o'.eval (chainModel C) (Qof P)) σ
           (σ * (x - (o'.eval (chainModel C) (Qof P)).1))

@@ -191,7 +191,7 @@ theorem uturn_zero (hne : (interiorWalk Q).vtx 0 ≠ C.top) :
   unfold Chain.sideTour
   rw [Chain.sideIdx_eq]
   -- the residue before `i0`
-  set q := (C.sideS C.sideBeta + (i0 C li - 1)) % (2 * C.m) with hq
+  set q := (C.sideS C.sideBeta + (i0 C li - 1)) % (2 * C.m)
   have hqlt : q < 2 * C.m := Nat.mod_lt _ (by omega)
   have hsucc : (q + 1) % (2 * C.m) = if li then 0 else C.m := by
     rw [← hr, show C.sideS C.sideBeta + i0 C li = (C.sideS C.sideBeta + (i0 C li - 1)) + 1 by

@@ -81,9 +81,9 @@ theorem corner_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hkm1 : kIdx (nk (interiorModel Q) S R) g i_l + (j - 1) + 1 =
       kIdx (nk (interiorModel Q) S R) g i_l + j := by omega
   rw [hkm1, Nat.sub_add_cancel hj0] at hv1'
-  set k := kIdx (nk (interiorModel Q) S R) g i_l + j with hkdef
-  set v := (hostChain Q S R g h3).vertex k with hvdef
-  set W := (interiorModel Q).W with hW
+  set k := kIdx (nk (interiorModel Q) S R) g i_l + j
+  set v := (hostChain Q S R g h3).vertex k
+  set W := (interiorModel Q).W
   have hv : v = W.vtx (p % W.n) := by
     rw [hv0, hK, hpK, sub_self, Chazelle.Geometry.lerp_zero]
   have hτ₁ : 0 < ukey (interiorModel Q) S R i_l (j + 1) - p := by rw [hpK, ← hK]; linarith
@@ -101,7 +101,7 @@ theorem corner_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hprev : (hostChain Q S R g h3).vertex (kIdx (nk (interiorModel Q) S R) g i_l + (j - 1)) - v =
       (1 - (ukey (interiorModel Q) S R i_l (j - 1) - p')) • (W.vtx (p' % W.n) - v) := by
     have hB : v = lerp (W.vtx (p' % W.n)) (W.vtx ((p' % W.n + 1) % W.n)) 1 := by
-      rw [Chazelle.Geometry.lerp_one]; exact hvB
+      rwa [Chazelle.Geometry.lerp_one]
     rw [hv0', hB, ExtG.lerp_sub_lerp, Chazelle.Geometry.lerp_one]
     apply Prod.ext <;> simp <;> ring
   have hPn : p % W.n < W.n := Nat.mod_lt _ hn
@@ -109,7 +109,7 @@ theorem corner_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
     have hpp : p = p' + 1 := by rw [hpK, hp'K]
     rw [hpp, prev_mod hn]
   refine ⟨p % W.n, hPn, ?_, hv, fun y => ?_⟩
-  · have hK2 : K < 2 * W.n := by rw [← hpK]; exact hpn
+  · have hK2 : K < 2 * W.n := by rwa [← hpK]
     rw [hK, wrapK_nat hn hK2, hpK]
   · rw [Chazelle.Chain.sideLeft_zero, hPprev, ← hv]
     exact ExtG.sideLeftOf_scale hτ₀ hτ₁ hprev hnext
@@ -126,8 +126,8 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hdN : d < nk (interiorModel Q) S R := hA.hdN
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec X.hQ
   obtain ⟨P, hPn, hPkey, hvP, hsec⟩ := corner_inner (g := g) (h3 := h3) X hA hj0 hjd
-  set C := hostChain Q S R g h3 with hC
-  set W := (interiorModel Q).W with hW
+  set C := hostChain Q S R g h3
+  set W := (interiorModel Q).W
   set k := kIdx (nk (interiorModel Q) S R) g i_l + j with hkdef
   set v := C.vertex k with hvdef
   -- the slit direction is in the left sector
@@ -139,8 +139,7 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
     have e2 : C.topIdx - 1 = kIdx (nk (interiorModel Q) S R) g i_l + (j - 1) := by
       rw [← hT, hkdef]; omega
     unfold sideLeftOf
-    rw [← e1, ← e2, ← htop]
-    exact hbeta
+    rwa [← e1, ← e2, ← htop]
   have hup : ∀ ε : ℝ, 0 < ε → sideLeft W P 0 (v + ε • (C.slitTop - v)) := by
     intro ε hε
     rw [← hsec]
@@ -168,7 +167,7 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hrad : v.2 < C.radius := by rw [← htop]; exact C.top_snd_lt_radius
   set ε := min r₀ rC / (2 * (C.radius - v.2)) with hε
   have hε0 : 0 < ε := div_pos (lt_min hr₀ hrC) (by linarith)
-  set y := v + ε • (C.slitTop - v) with hy
+  set y := v + ε • (C.slitTop - v)
   have hy2 : y.2 = v.2 + ε * (C.radius - v.2) := by
     show (v + ε • (C.slitTop - v)).2 = _
     simp only [Prod.snd_add, Prod.smul_snd, Prod.snd_sub, smul_eq_mul]
@@ -185,14 +184,13 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
       abs_of_pos hpos, max_eq_right hpos.le, hε]
     have : C.radius - v.2 ≠ 0 := by linarith
     field_simp
-  have hmin := lt_min hr₀ hrC
   have hyb₀ : y ∈ ball (sidePt W P 0) r₀ := by
     rw [hvP', mem_ball, hdist]; have := min_le_left r₀ rC; linarith
   have hybC : y ∈ ball (sidePt W P 0) rC := by
     rw [hvP', mem_ball, hdist]; have := min_le_right r₀ rC; linarith
   have hyD : y ∈ (interiorModel Q).D := by
     by_contra hyD
-    exact hclean y hybC (by rw [hWb, hWf]; exact hyD) (hup ε hε0)
+    exact hclean y hybC (by rwa [hWb, hWf]) (hup ε hε0)
   have hyR := hnear y hyb₀ hyD
   have := region_below_top (g := g) (h3 := h3) X.hQ X.hFam X.hne X.hR y hyR
   rw [htop, hy2] at this

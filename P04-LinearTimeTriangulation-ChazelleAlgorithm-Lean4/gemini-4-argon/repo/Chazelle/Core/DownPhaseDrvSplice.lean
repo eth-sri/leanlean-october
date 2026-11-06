@@ -100,8 +100,7 @@ theorem splice_ok (hperm : E.Perm (List.range (2 * L.length)))
       refine hsort.imp_of_mem fun {a b} ha hb hab => ?_
       have ha' := List.mem_range.1 (hperm.mem_iff.1 ha)
       have hb' := List.mem_range.1 (hperm.mem_iff.1 hb)
-      rw [codeLeB_iff, codeLe_append ha' hb']
-      exact hab
+      rwa [codeLeB_iff, codeLe_append ha' hb']
     have hE₂ : E₂.Pairwise (fun a b => codeLeB M Q (L ++ L₂) a b = true) :=
       hsort₂.imp fun h => (codeLeB_iff _ _).2 h
     have h := List.pairwise_merge (le := codeLeB M Q (L ++ L₂))

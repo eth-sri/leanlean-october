@@ -72,7 +72,7 @@ theorem upPhase_of (hV : O.Valid) (hL41 : Lemma41Spec O) (hBr : BruteSpec) :
   rw [hA0, hS0] at hSet
   have hbud' : A0 + (K * P.n + K + 300 * P.n + 300) ≤ W := by
     have hKn : (K + 300) * (P.n + 1) = K * P.n + K + 300 * P.n + 300 := by ring
-    have := hbud; beta_reduce at this; rw [hA0, hKn] at this; exact this
+    have := hbud; beta_reduce at this; rwa [hA0, hKn] at this
   have hWh : hostWords P.n ≤ W := by unfold hostWords; omega
   obtain ⟨sS0, sS1, sST, sSA⟩ := hSet.holds
   have h230 : c.nreg 230000 = S := hS0
@@ -98,14 +98,14 @@ theorem upPhase_of (hV : O.Valid) (hL41 : Lemma41Spec O) (hBr : BruteSpec) :
   obtain ⟨c4, k4, e4, hk4, hw4, r05, A4e, w0, w1, w2, w3, r07, r08, r09, r10, r11, r12, r14, r19,
       r15, r16, r35, r36, mw4, fr4, hrr4, hrm4, ho4⟩ :=
     initR_exec (P := P) (S := S) (D := A0) (n1 := P.n - 1) hw3 A3e
-      (by rw [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)]; exact i00)
+      (by rwa [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)])
       (by rw [fr3 _ (by unfold bandOf bL41; omega) (by omega) (by rw [hAl]; omega)]; exact j03)
-      (by rw [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)]; exact i28)
-      (by rw [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)]; exact i20)
-      (by rw [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)]; exact i21)
-      (by rw [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)]; exact i22)
-      (by rw [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)]; exact i25)
-      (by rw [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)]; exact i29)
+      (by rwa [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)])
+      (by rwa [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)])
+      (by rwa [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)])
+      (by rwa [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)])
+      (by rwa [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)])
+      (by rwa [u3 _ (by omega) (by omega) (by unfold HalfRG; omega) (by omega)])
       (by omega) (by omega)
   have u4 : ∀ r, 170000 ≤ r → r < 170080 → ¬ HalfRG r → r ≠ 170004 → ¬ InitRRG r →
       c4.nreg r = c1.nreg r := fun r a b h1 h2 h3 => by
@@ -213,7 +213,7 @@ theorem upPhase_of (hV : O.Valid) (hL41 : Lemma41Spec O) (hBr : BruteSpec) :
     refine ⟨C0, N, ⟨rfl, by show gradeStart (topGrade P.n) 0 = 0; unfold gradeStart; simp,
       by show gradeLen P.n (topGrade P.n) 0 + 1 = P.n; rw [gradeLen_top hn]; omega⟩, ?_, hc⟩
     show Robust (c6.nreg ALLOC) c6.nmem fun m => NFAt m (c6.nreg 230002) N
-    rw [hm6, o2, hA6]; exact hNW
+    rwa [hm6, o2, hA6]
   · refine ⟨hout, fun r h1 => ?_, fun a ha => by rw [hm6, mem5 a (by omega)],
       fun a ha => ?_, by rw [ho6, o5, ho4, ho3, ho2, ho1], by omega, by omega⟩
     · have hb : OutB (bandOf r) := by

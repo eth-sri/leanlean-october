@@ -49,15 +49,15 @@ theorem desc_agree' {P : Polygon} {E : ℕ} {m m' : ℕ → ℕ} {D : ℕ} {M : 
     have hH' : HostAt m' (m' (D + 1)) H := by
       rw [e1]; exact hostAt_agree' hH (by omega) hm
     have hC' : ChainDescAt m' (D + 1) (Qof P) H C :=
-      ⟨hH', hP, by rw [hm _ (by omega)]; exact h2, by rw [hm _ (by omega)]; exact h3,
-        by rw [hm _ (by omega)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
-    refine ⟨Or.inl ⟨by rw [e0]; exact h0, H, C, hC', rfl⟩, hD, fun _ => ⟨hC6, fun H' C' hC'' => ?_⟩⟩
+      ⟨hH', hP, by rwa [hm _ (by omega)], by rwa [hm _ (by omega)],
+        by rwa [hm _ (by omega)], by rwa [hm _ (by omega)]⟩
+    refine ⟨Or.inl ⟨by rwa [e0], H, C, hC', rfl⟩, hD, fun _ => ⟨hC6, fun H' C' hC'' => ?_⟩⟩
     have hHH := NFLoc.hostAt_unique hC''.1 hC'.1
     subst hHH
     have hCC := NFLoc.chain_eq_of_desc hC'' hC'
     subst hCC
-    exact ⟨hl, hwfH, by rw [e1]; exact hHE, hs⟩
-  · refine ⟨Or.inr ⟨by rw [e0]; exact h1, by rw [hm _ (by omega)]; exact hbit, rfl⟩, hD,
+    exact ⟨hl, hwfH, by rwa [e1], hs⟩
+  · refine ⟨Or.inr ⟨by rwa [e0], by rwa [hm _ (by omega)], rfl⟩, hD,
       fun h0 => absurd (e0.symm.trans h0) (by omega)⟩
 
 /-! ## The stages of one position -/
@@ -136,11 +136,11 @@ theorem posB_exec (c : Config) (hw : WordsBounded W c) {j A Nb : ℕ} (h70 : c.n
   by_cases hlt : j + 1 < A
   · obtain ⟨c', k, e, hk, hm, hr⟩ := fin c 1 hw (by rw [h85, ite_eq_left hlt]) h70 h39 rfl
       (fun _ _ => rfl) (by omega)
-    exact ⟨c', _, .seq (.ifLtN_true (by rw [h85, h11]; exact hlt) (.skip hw)) e, by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_true (by rwa [h85, h11]) (.skip hw)) e, by omega, hm, hr⟩
   · have e₁ := Exec.constN (P := P) hw 90085 0 (by omega)
     obtain ⟨c', k, e, hk, hm, hr⟩ := fin _ 3 e₁.wb_right (by simp [upd, ite_eq_right hlt])
       (by simp [upd, h70]) (by simp [upd, h39]) rfl (fun q hq => by simp [upd, hq]) le_rfl
-    exact ⟨c', _, .seq (.ifLtN_false (by rw [h85, h11]; exact hlt) e₁) e, by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_false (by rwa [h85, h11]) e₁) e, by omega, hm, hr⟩
 
 theorem posC_exec (c : Config) (hw : WordsBounded W c) {j A Pb : ℕ} (h70 : c.nreg 90070 = j)
     (h11 : c.nreg 90011 = A) (h19 : c.nreg 90019 = 1) (h40 : c.nreg 90040 = Pb)
@@ -165,12 +165,12 @@ theorem posC_exec (c : Config) (hw : WordsBounded W c) {j A Pb : ℕ} (h70 : c.n
     obtain ⟨c', k, e, hk, hm, hr⟩ := fin _ 2 e₁.wb_right
       (by simp [upd, h11, h19, show ¬ 0 < j by omega]) (by simp [upd, h70]) (by simp [upd, h40])
       rfl (fun q hq => by simp [upd, hq]) (by omega)
-    exact ⟨c', _, .seq (.ifLtN_true (by rw [h70, h19]; exact hj) e₁) e, by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_true (by rwa [h70, h19]) e₁) e, by omega, hm, hr⟩
   · have e₁ := Exec.subN (P := P) hw 90085 90070 90019
     obtain ⟨c', k, e, hk, hm, hr⟩ := fin _ 3 e₁.wb_right
       (by simp [upd, h70, h19, show 0 < j by omega]) (by simp [upd, h70]) (by simp [upd, h40])
       rfl (fun q hq => by simp [upd, hq]) le_rfl
-    exact ⟨c', _, .seq (.ifLtN_false (by rw [h70, h19]; exact hj) e₁) e, by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_false (by rwa [h70, h19]) e₁) e, by omega, hm, hr⟩
 
 theorem posD_exec (c : Config) (hw : WordsBounded W c) {j SB AB : ℕ} (h70 : c.nreg 90070 = j)
     (h17 : c.nreg 90017 = SB) (h15 : c.nreg 90015 = AB) (h19 : c.nreg 90019 = 1)
@@ -211,12 +211,12 @@ theorem posE_exec (c : Config) (hw : WordsBounded W c) {j kind e Gb : ℕ}
     obtain ⟨c', k, e', hk', hm, hr⟩ := fin _ 2 e₁.wb_right
       (by simp [upd, h110, h89, bB, show kind = 0 by omega]) (by simp [upd, h70])
       (by simp [upd, h41]) rfl (fun q hq => by simp [upd, hq]) (by omega)
-    exact ⟨c', _, .seq (.ifLtN_true (by rw [h23, h19]; exact hk) e₁) e', by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_true (by rwa [h23, h19]) e₁) e', by omega, hm, hr⟩
   · have e₁ := Exec.copyN (P := P) hw 90088 90110
     obtain ⟨c', k, e', hk', hm, hr⟩ := fin _ 3 e₁.wb_right
       (by simp [upd, h110, bB, show kind ≠ 0 by omega]) (by simp [upd, h70])
       (by simp [upd, h41]) rfl (fun q hq => by simp [upd, hq]) le_rfl
-    exact ⟨c', _, .seq (.ifLtN_false (by rw [h23, h19]; exact hk) e₁) e', by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_false (by rwa [h23, h19]) e₁) e', by omega, hm, hr⟩
 
 theorem posF_exec (c : Config) (hw : WordsBounded W c) {j Zb : ℕ} (h70 : c.nreg 90070 = j)
     (h42 : c.nreg 90042 = Zb) (h19 : c.nreg 90019 = 1) (hb : Zb + j + 1 ≤ W) :
@@ -471,7 +471,7 @@ theorem posLoop_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
     (body := posBody) (PosI W A (c₀.nmem MD) d M (Qof P) edge hgt c₀)
     (fun c => A - c.nreg 90070) 6050 (fun _ h => h.wb)
     (fun c I ht => by
-      have t : c.nreg 90070 < A := by rw [I.regs 90011 (by decide), hE.h11] at ht; exact ht
+      have t : c.nreg 90070 < A := by rwa [I.regs 90011 (by decide), hE.h11] at ht
       obtain ⟨c', k, e, I', hk, hi⟩ := posBody_exec (P := P) hE I t
       exact ⟨c', k, e, I', hk, by omega⟩) q
   have hK' : c'.nreg 90070 = A := by

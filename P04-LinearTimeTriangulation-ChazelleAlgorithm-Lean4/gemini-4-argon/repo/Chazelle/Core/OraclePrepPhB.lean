@@ -46,7 +46,7 @@ theorem starStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W
     hNBA hSA hABA hρR (by omega)
   have hM₁ : RgMem c₁.nmem AB SB A σ rg := hM.congr (X := A₁) F₁.2.2.1 hSA hABA
   have K : ∀ r, BFR r = false → c₁.nreg r = c.nreg r := F₁.1
-  obtain ⟨c₂, k₂, e₂, hk₂, F₂, b9, b72, b73, -, b74, pairs⟩ := iS_exec (P := P) e₁.wb_right hM₁
+  obtain ⟨c₂, k₂, e₂, hk₂, F₂, b9, b72, b73, b74, pairs⟩ := iS_exec (P := P) e₁.wb_right hM₁
     (by rw [K _ (by decide), hAB]) (by rw [K _ (by decide), hSB]) (by rw [K _ (by decide), hA])
     (by rw [K _ (by decide), h1]) a60 a9 (by omega) (by omega) (by omega) hρR afr (by omega)
   refine ⟨c₂, _, .seq e₁ e₂, by omega,
@@ -66,7 +66,7 @@ theorem zipStage_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {
       PF (fun r => BZS r || BSP r) A₃ c c' ∧ c'.nreg 9999 = A₃ + 2 * zCap V.A ∧
       c'.nreg 110293 = A₃ ∧ c'.nreg 110294 = A₃ + zCap V.A ∧
       c'.nreg 110295 = (OracleQ.zipRaw C (Qof P) N).length ∧
-      PairsAt c'.nmem A₃ (A₃ + zCap V.A) (OracleQ.zipRaw C (Qof P) N) ∧ ZEnv P W lo C N V c' := by
+      PairsAt c'.nmem A₃ (A₃ + zCap V.A) (OracleQ.zipRaw C (Qof P) N) := by
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, a9, a93, a94, a97, a95, pairs₁, Z₁⟩ :=
     zS_exec (P := P) hw h hAl hlo (by omega)
   have hA : V.A = N.arcs.length := h.loc.holds.1.A
@@ -87,7 +87,7 @@ theorem zipStage_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {
       emitted (OracleQ.zipEk C (Qof P) N) V.A) ++ OracleQ.zipSp C (Qof P) N := by
     rw [hA]; rfl
   refine ⟨c₂, _, .seq e₁ e₂, by omega, (F₁.mono (fun r hr => by simp [hr]) le_rfl).trans ?_, by rw [r₂ _ (by decide), a9],
-    by rw [r₂ _ (by decide), a93], by rw [r₂ _ (by decide), a94], ?_, ?_, Z₂⟩
+    by rw [r₂ _ (by decide), a93], by rw [r₂ _ (by decide), a94], ?_, ?_⟩
   · refine ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => mem₂ a (Or.inl (by omega)),
       fun a _ => by rw [rm₂], by rw [o₂]⟩
     · simp only [Bool.or_eq_false_iff] at hr; exact r₂ r hr.2
@@ -178,12 +178,12 @@ theorem dedupStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded 
     (by rw [R₂ _ (by decide), v3]) (by rw [R₂ _ (by decide), v6]) hC hZ hZ12 (by omega)
     (by omega)
   set D := emitted (dedupF n (fun i => (c.nmem (Z1 + i), c.nmem (Z2 + i)))
-    (fun t => c₁.nmem (c₁.nreg 60007 + t))) n with hD
+    (fun t => c₁.nmem (c₁.nreg 60007 + t))) n
   have hDl : D.length ≤ n := emitted_length_le _ _
   have K3 : ∀ r, BDB r = false → r ≠ 60010 → r ≠ 60003 → r ≠ 60014 → r ≠ 60008 →
       c₃.nreg r = c₁.nreg r := fun r a b d e f => by rw [r₃ r a b d e, R₂ r f]
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, fun r hr hra => ?_, fun r hr => ?_,
-    fun a ha => ?_, fun a ha => by rw [rm₃, F₁.2.2.2.1 a (by rw [hA₄]; exact ha)],
+    fun a ha => ?_, fun a ha => by rw [rm₃, F₁.2.2.2.1 a (by rwa [hA₄])],
     by rw [o₃, F₁.2.2.2.2], ?_, ?_, ?_, ?_, ?_, D, ?_, hDl, pairs₃, dedup_nodup hsort,
     fun x => mem_dedup hsurj hlt⟩
   · have h6 : ¬ bandOf r = 6 := fun h => hr (by simp [dBands, bDecomp, h])
@@ -196,11 +196,11 @@ theorem dedupStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded 
     exact F₁.2.1 r hr
   · rw [mem₃ a (by omega)]
     exact F₁.2.2.1 a (by rw [hA₄]; omega)
-  · rw [hAL, K3 _ (by decide) (by decide) (by decide) (by decide) (by decide)]; exact al1a
-  · rw [hAL, K3 _ (by decide) (by decide) (by decide) (by decide) (by decide)]; exact al1b
+  · rwa [hAL, K3 _ (by decide) (by decide) (by decide) (by decide) (by decide)]
+  · rwa [hAL, K3 _ (by decide) (by decide) (by decide) (by decide) (by decide)]
   · rw [K3 _ (by decide) (by decide) (by decide) (by decide) (by decide), v1]
   · rw [K3 _ (by decide) (by decide) (by decide) (by decide) (by decide), v2]
-  · rw [r₃ _ (by decide) (by decide) (by decide) (by decide)]; rw [hc₂]; config_simp; exact v3
+  · rw [r₃ _ (by decide) (by decide) (by decide) (by decide), hc₂]; config_simp; exact v3
   · rw [cnt₃]
 
 end

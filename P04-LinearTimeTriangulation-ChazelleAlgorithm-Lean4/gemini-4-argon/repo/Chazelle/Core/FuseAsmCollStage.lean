@@ -23,15 +23,15 @@ theorem chordList_agree {m m' : ℕ → ℕ} {B E : ℕ} {L : List (ℕ × ℕ �
     (h : ChordListAt m B L) (hE : B + 3 * L.length ≤ E) (he : ∀ a, a < E → m' a = m a) :
     ChordListAt m' B L := fun i hi => by
   obtain ⟨h0, h1, h2⟩ := h i hi
-  exact ⟨by rw [he _ (by omega)]; exact h0, by rw [he _ (by omega)]; exact h1,
-    by rw [he _ (by omega)]; exact h2⟩
+  exact ⟨by rwa [he _ (by omega)], by rwa [he _ (by omega)],
+    by rwa [he _ (by omega)]⟩
 
 theorem resultList_agree {m m' : ℕ → ℕ} {B E : ℕ} {R : List (ℕ × ℕ × ℕ × ℕ)}
     (h : ResultListAt m B R) (hE : B + 4 * R.length ≤ E) (he : ∀ a, a < E → m' a = m a) :
     ResultListAt m' B R := fun i hi => by
   obtain ⟨h0, h1, h2, h3⟩ := h i hi
-  exact ⟨by rw [he _ (by omega)]; exact h0, by rw [he _ (by omega)]; exact h1,
-    by rw [he _ (by omega)]; exact h2, by rw [he _ (by omega)]; exact h3⟩
+  exact ⟨by rwa [he _ (by omega)], by rwa [he _ (by omega)],
+    by rwa [he _ (by omega)], by rwa [he _ (by omega)]⟩
 
 /-- The arguments of the first collection loop. -/
 def clSet : Stmt := block [.constN 70110 0, .constN 70116 3, .constN 70117 4, .constN 70118 2,
@@ -88,13 +88,13 @@ theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   have c08 : c₁.nreg 70108 = 0 := by rw [tr _ (by decide) (by decide), h08]
   -- the first loop
   have I0 : CLQI W L₀ R₀ (c.nreg 70150) (c.nreg 70153) A [] c₁ c₁ :=
-    ⟨w₁, by omega, by rw [t13, t12]; ring, by rw [t15, t12]; ring,
+    ⟨w₁, by rw [t13, t12]; ring, by rw [t15, t12]; ring,
       by rw [a₁, t12]; simp [collectQ], by rw [t10, t12]; simp [collectQ],
       fun _ _ _ _ _ _ _ _ => rfl, fun _ _ => rfl, by rw [t12]; simp [collectQ]; intro i hi; simp at hi,
       rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', I₂, h₂⟩ := clqLoop_exec (P := P) (L := L₀) (R := R₀)
     (pre := []) c05 c08 t16 t17 t18 (by rw [t11, hl₀]) hl₀.symm
-    (by rw [tm]; exact hR₀) (by rw [tm]; exact hL₀) (by omega) (by omega)
+    (by rwa [tm]) (by rwa [tm]) (by omega) (by omega)
     (by simp only [List.length_nil]; omega) (by simp only [List.length_nil]; omega)
     R₀.length c₁ I0 (by rw [t12]; simp)
   have tk0 : L₀.take (c₂.nreg 70112) = L₀ := by rw [h₂]; exact List.take_of_length_le (by omega)
@@ -104,7 +104,7 @@ theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   have i2l := I₂.list
   rw [tk0, tk0'] at i2a i2c i2l
   have w₂ := I₂.wb
-  set C₀ := collectQ L₀ R₀ with hC₀
+  set C₀ := collectQ L₀ R₀
   have hC₀l : C₀.length ≤ L₀.length := collectQ_length_le _ _
   have g₂ : ∀ r, r ≠ 70110 → r ≠ 70112 → r ≠ 70113 → r ≠ 70114 → r ≠ 70115 → r ≠ 70119 →
       r ≠ ALLOC → c₂.nreg r = c₁.nreg r := I₂.regs
@@ -151,7 +151,7 @@ theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   have n₃ : c₃.nreg 70110 = C₀.length := by
     rw [ur _ (by decide) (by decide) (by decide) (by decide), i2c]; simp
   have J0 : CLQI W L₁ R₁ (c.nreg 70151) (c.nreg 70155) A C₀ c₃ c₃ :=
-    ⟨w₃, by omega, by rw [u13, u12]; ring, by rw [u15, u12]; ring,
+    ⟨w₃, by rw [u13, u12]; ring, by rw [u15, u12]; ring,
       by rw [a₃, u12]; simp [collectQ], by rw [n₃, u12]; simp [collectQ],
       fun _ _ _ _ _ _ _ _ => rfl, fun _ _ => rfl,
       by rw [u12, um]; simp only [List.take_zero, collectQ, List.zip_nil_left, List.filter_nil,
@@ -167,7 +167,7 @@ theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   have i4c := I₄.cnt
   have i4l := I₄.list
   rw [tk1, tk1'] at i4a i4c i4l
-  set C₁ := collectQ L₁ R₁ with hC₁
+  set C₁ := collectQ L₁ R₁
   have hC₁l : C₁.length ≤ L₁.length := collectQ_length_le _ _
   have ex : Exec P W collectS c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have g₄ : ∀ r, r ≠ 70110 → r ≠ 70112 → r ≠ 70113 → r ≠ 70114 → r ≠ 70115 → r ≠ 70119 →
@@ -180,7 +180,7 @@ theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   have a₄ : c₄.nreg ALLOC = A + 3 * (C₀ ++ C₁).length := i4a
   have hlen : (C₀ ++ C₁).length ≤ L₀.length + L₁.length := by
     rw [List.length_append]; omega
-  refine ⟨c₄, _, ex, by omega, ?_, i4c, by rw [a₄, hA], by rw [hA]; exact i4l,
+  refine ⟨c₄, _, ex, by omega, ?_, i4c, by rw [a₄, hA], by rwa [hA],
     ⟨fun r hr ha => ?_, fun r _ => by rw [I₄.rr, urr, I₂.rr, trr], fun a ha => ?_,
       fun a _ => by rw [I₄.rm, urm, I₂.rm, trm], by rw [I₄.out, uou, I₂.out, tou],
       by rw [a₄, hA]; omega, by rw [a₄, hA]; omega⟩, regs⟩

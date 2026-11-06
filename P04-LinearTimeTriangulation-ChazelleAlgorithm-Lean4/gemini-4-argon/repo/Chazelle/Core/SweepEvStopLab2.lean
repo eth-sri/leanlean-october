@@ -38,7 +38,7 @@ theorem slb_sub_same_way (_hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨y₁, a₁, b₁, hH₁, -, rfl, -, -⟩ := Merge.augChords_spec (F₂plus_subset J hS₂ he)
   have hy1 : y₁ ≤ J.right.top.2 := by
     have := F₂plus_snd_le J hS₂ he hwe
-    rw [hwe.1] at this; exact this
+    rwa [hwe.1] at this
   obtain ⟨hwy, hwa, hwb⟩ := hwc
   obtain ⟨hwy₁, hwa₁, hwb₁⟩ := hwe
   have hyy : y₁ = y := hwy₁.symm.trans hwy
@@ -77,10 +77,8 @@ theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hM₂ := hC.hM₂
   have hw : sidePt (chainModel J.whole).W ((gW J + d) % (chainModel J.whole).W.n) 0 =
       sidePt (chainModel J.right).W (cpA J d) 0 := hC.sidePt_eq hd 0
-  set w := sidePt (chainModel J.whole).W ((gW J + d) % (chainModel J.whole).W.n) 0 with hwd
+  set w := sidePt (chainModel J.whole).W ((gW J + d) % (chainModel J.whole).W.n) 0
   have hwe : w ∈ e := hA.2.2.2.1
-  have hwe' : w ∈ e' := hA'.2.2.2.1
-  have hwc' : w ∈ c' := by rw [hw]; exact hcA.2.2.2.1
   have hwc'' : w ∈ c'' := by rw [hw]; exact hA''.2.2.2.1
   have dE := hM.attach_dir (hC.hF he) hA
   have dE' := hM.attach_dir (hC.hF he') hA'
@@ -107,19 +105,18 @@ theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       rcases dC' with h' | h'
       · exact (dir_not_both hM (hC.hF he') hA' (fun z hz => h' z (he'c' hz)) h).elim
       · exact h'
-  have hcA' : SideAttach (chainModel J.right).W c' (cpA J d) 0 := hcA
   rcases hopp with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · -- `e` east, `e'` and `c'` west
     have hc'w := hc'way.2 h2
     rcases dC'' with h3 | h3
     · exact absurd (slb_sub_same_way hP hS₂.2.1 he hc'' hwe hwc'' (Or.inl ⟨h1, h3⟩))
         (hnf c'' hc'')
-    · exact hM₂.attach_west_unique hS₂.2.1 hc'' hc' hA'' hcA (by rw [← hw]; exact h3)
-        (by rw [← hw]; exact hc'w)
+    · exact hM₂.attach_west_unique hS₂.2.1 hc'' hc' hA'' hcA (by rwa [← hw])
+        (by rwa [← hw])
   · have hc'e := hc'way.1 h2
     rcases dC'' with h3 | h3
-    · exact hM₂.attach_east_unique hS₂.2.1 hc'' hc' hA'' hcA (by rw [← hw]; exact h3)
-        (by rw [← hw]; exact hc'e)
+    · exact hM₂.attach_east_unique hS₂.2.1 hc'' hc' hA'' hcA (by rwa [← hw])
+        (by rwa [← hw])
     · exact absurd (slb_sub_same_way hP hS₂.2.1 he hc'' hwe hwc'' (Or.inr ⟨h1, h3⟩))
         (hnf c'' hc'')
 

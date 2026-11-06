@@ -79,7 +79,6 @@ theorem cost_le {R K K₂ M ν Λ κc κS κr X : ℕ} (hR : R = K + 1) (hK₂ :
     calc R * ν ≤ R * (κc * Λ) := Nat.mul_le_mul_left _ h1
       _ = κc * (R * Λ) := by ring
   have hy : R ≤ R * Λ := Nat.le_mul_of_pos_right _ hΛ
-  have hR1 : 1 ≤ R := by omega
   -- the gather
   have hg : (8 * K₂ + (35 * M + 32) * R + 26) + (5 * K₂ + 1) + 2 ≤
       61 * (R * Λ) + 48 * (κc * (R * Λ)) := by

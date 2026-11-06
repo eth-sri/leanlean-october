@@ -94,8 +94,7 @@ theorem OK.congr {R R' : BTree} (hR : R.OK) (hn : R'.n = R.n) (hq : ∀ i, i < R
     refine ⟨j, hj, ?_⟩
     have hne : R.q i ≠ R.q 0 := fun h => by
       have := hR.q_inj i hi 0 hR.n_pos h; omega
-    rw [hq j (by omega), hq i hi, hp _ (hR.q_lt i hi) hne]
-    exact hqj
+    rwa [hq j (by omega), hq i hi, hp _ (hR.q_lt i hi) hne]
 
 /-- The parent function only reads the queue head and the parents. -/
 theorem up_congr {R R' : BTree} (hq0 : R'.q 0 = R.q 0)

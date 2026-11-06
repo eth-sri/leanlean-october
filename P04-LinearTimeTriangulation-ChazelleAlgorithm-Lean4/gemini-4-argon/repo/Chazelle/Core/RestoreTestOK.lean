@@ -92,9 +92,9 @@ theorem record_ok {Q : Polygon} {x f : WPos} {h σb lp rp : ℕ} {T : ℝ} (_hσ
       rw [px, pf, chordOf, hfx, hd, hy, min_eq_left (by linarith), max_eq_right (by linarith)]
     refine ⟨e, ?_, ?_⟩
     · show SideAttach M.W _ x.edge (M.param Q ⟨x.edge, h + 1⟩)
-      rw [qx, e]; exact hA
+      rwa [qx, e]
     · show SideAttach M.W _ f.edge (M.param Q ⟨f.edge, h + 1⟩)
-      rw [qf, e]; exact hB
+      rwa [qf, e]
   · obtain ⟨rfl, rfl⟩ := hlr.2 h1
     have hd : dirOf σb = -1 := by unfold dirOf; rw [ite_eq_right h1]
     have e : (recOf (h, f.edge, x.edge)).toSet M Q = chordOf (M.pos Q x) (dirOf σb) T := by
@@ -102,9 +102,9 @@ theorem record_ok {Q : Polygon} {x f : WPos} {h σb lp rp : ℕ} {T : ℝ} (_hσ
       rw [px, pf, chordOf, hfx, hd, hy, min_eq_right (by linarith), max_eq_left (by linarith)]
     refine ⟨e, ?_, ?_⟩
     · show SideAttach M.W _ f.edge (M.param Q ⟨f.edge, h + 1⟩)
-      rw [qf, e]; exact hB
+      rwa [qf, e]
     · show SideAttach M.W _ x.edge (M.param Q ⟨x.edge, h + 1⟩)
-      rw [qx, e]; exact hA
+      rwa [qx, e]
 
 
 /-- The candidate and a point of its ray at a positive parameter differ. -/
@@ -176,7 +176,7 @@ theorem test_post {W : ℕ} {c₀ c' : Config} (hE : TGood P W M N c₀)
       hA hB ⟨t1, t2⟩
     rw [t15]
     have hQn : (Qof P).n = P.n := shear_n _ _
-    refine ⟨hat, by rw [hQn]; exact hE.hh, by rw [he]; exact hadm, ?_⟩
+    refine ⟨hat, by rw [hQn]; exact hE.hh, by rwa [he], ?_⟩
     rw [he]
     have hAB : sidePt M.W (xOf c₀).edge (M.param (Qof P) (xOf c₀)) ≠
         sidePt M.W (c'.nreg 83012) (M.param (Qof P) ⟨c'.nreg 83012, c'.nreg 83013⟩) := by

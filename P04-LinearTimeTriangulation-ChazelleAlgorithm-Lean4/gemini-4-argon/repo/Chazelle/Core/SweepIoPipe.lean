@@ -143,7 +143,6 @@ theorem hitParam_le_of_onCB (C : Chain) {z : Point} {σ τ : ℝ} (hτ : 0 < τ)
 theorem winner_eq {P : Polygon} {A : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {J : Merge.Junction}
     {z : Point} {σ : ℝ} {L : Set ℝ} {c : Config} (hacc : AccOK P A Mod R₀ z σ L c)
     (hgood : ∀ τ ∈ L, 0 < τ ∧ OnCB J.whole (rayPt z σ τ)) (hT : J.whole.hitParam z σ ∈ L) :
-    c.nreg A = 1 ∧ c.nreg (A + 3) ≤ 2 ∧
       ProperPos (chainModel (Mod (c.nreg (A + 3)))) (Qof P) P.n ⟨c.nreg (A + 1), c.nreg (A + 2)⟩ ∧
       c.nreg (A + 1) < (chainModel (Mod (c.nreg (A + 3)))).W.n ∧
       (chainModel (Mod (c.nreg (A + 3)))).pos (Qof P) ⟨c.nreg (A + 1), c.nreg (A + 2)⟩ =
@@ -157,7 +156,7 @@ theorem winner_eq {P : Polygon} {A : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {J 
   have e : τ = J.whole.hitParam z σ :=
     le_antisymm (hmin _ hT) (hitParam_le_of_onCB J.whole (hgood τ hτ).1 (hgood τ hτ).2)
   rw [e] at hpos
-  exact ⟨hA, ht, hpp, he, hpos⟩
+  exact ⟨ hpp, he, hpos⟩
 
 /-! ## The winner in the walk of `C` -/
 

@@ -168,7 +168,6 @@ theorem vtx_keys_split {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) {k : ℝ} (hk0 : 
       have hq1 : q + 1 = n := by omega
       rw [hq1, Nat.mod_self] at h ⊢
       push_cast at h ⊢
-      have hq' : (q : ℝ) + 1 = n := by exact_mod_cast hq1
       rw [ite_eq_right (by linarith)] at h
       rw [ite_eq_left (by linarith), ite_eq_right (by linarith)]
       rcases h with (h | h) | h | h

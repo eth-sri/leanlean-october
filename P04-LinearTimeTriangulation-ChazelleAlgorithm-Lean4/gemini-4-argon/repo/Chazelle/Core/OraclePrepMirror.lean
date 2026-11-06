@@ -72,12 +72,10 @@ theorem vaIdx_succ_ne {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
     vaIdx C w ≠ vaIdx C (w + 1) := by
   have hm := C.one_le
   have hmn := C.m_lt
-  have hS := C.sideS_lt C.sideBeta
   unfold vaIdx tj
   rw [show w + 1 - 6 = (w - 6) + 1 by omega]
   set S := C.sideS C.sideBeta
   set i := w - 6
-  have hi : i < 2 * C.m := by omega
   -- the two chain indices differ by one
   obtain ⟨k, k', hk, hk', hkk⟩ : ∃ k k', sideE C.m ((S + i) % (2 * C.m)) = k ∧
       sideE C.m ((S + (i + 1)) % (2 * C.m)) = k' ∧ (k' = k + 1 ∨ k = k' + 1) := by
@@ -241,9 +239,9 @@ theorem rev_idx {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
   unfold vaIdx tj
   set S := C.sideS C.sideBeta
   set R := rT C
-  set M := 2 * C.m with hM
+  set M := 2 * C.m
   have hRdef : R = (4 * C.m - 2 * S) % M := rfl
-  set i := w - 6 with hi
+  set i := w - 6
   have hiM : i < M := by omega
   -- the mirrored tour index
   obtain ⟨i', hi', hi'M⟩ : ∃ i', mirW1 C w - 6 = i' ∧ (i' = (if i < R then R - 1 - i else R + M - 1 - i)) := by

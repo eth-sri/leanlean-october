@@ -54,7 +54,7 @@ theorem walk_pos_at {M : Model} {Q : Polygon} {p h : ℕ} {X : Point}
     show (if (M.wa p).2 = (M.wb p).2 then 0 else _) = _
     rw [ite_eq_right hne, hXh]
   have hd : (M.wb p).2 - (M.wa p).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hne)
-  refine ⟨?_, by rw [hpar]; exact h0, ?_⟩
+  refine ⟨?_, by rwa [hpar], ?_⟩
   · show lerp (M.wa p) (M.wb p) (M.param Q ⟨p, h + 1⟩) = X
     rw [hpar]; exact hXe.symm
   · rw [hpar]
@@ -134,11 +134,10 @@ theorem k1_hit (hD : DistinctHeights Q) (hS : Q.Simple) {p₀ x0 w dir : ℕ}
     obtain ⟨j, hj⟩ : ∃ j, e' = x0 + j := ⟨e' - x0, by omega⟩
     have hj' : e' - x0 = j := by omega
     rw [hj']
-    have hjw : j < w := by omega
     have hEe := SweepPrim.edge_heights_ne hD hn2 he'
     rw [Nat.mod_eq_of_lt (show e' + 1 < Q.n by omega)] at hEe
     have hXe' : X ∈ Chazelle.segment (Q.vtx e') (Q.vtx (e' + 1)) := by
-      rw [← edge_eq _ (by omega)]; exact hXe
+      rwa [← edge_eq _ (by omega)]
     rcases hdir with rfl | rfl
     · rw [ite_eq_left rfl]
       have ha : M.W.vtx (p₀ + j) = Q.vtx e' := by
@@ -155,7 +154,7 @@ theorem k1_hit (hD : DistinctHeights Q) (hS : Q.Simple) {p₀ x0 w dir : ℕ}
         exact (atEnd hEe hXe' (by rw [hXh, hhe])).symm
       · rw [ite_eq_right hhe]
         obtain ⟨hp, h0, h1⟩ := walk_pos_at (M := M) (Q := Q) (p := p₀ + j) (h := h)
-          (by rw [hwa, hwb]; exact hEe) (by rw [hwa, hwb]; exact hXe') hXh
+          (by rwa [hwa, hwb]) (by rwa [hwa, hwb]) hXh
           (by rw [hwb, hXh]; intro he; exact hhe (hvinj _ _ hh (by omega) he))
         exact ⟨_, rfl, by simp only; omega, ⟨h0, h1, by show h + 1 ≤ Q.n; omega⟩, hp⟩
     · rw [ite_eq_right (by norm_num : ¬ (0 = 1))]
@@ -170,7 +169,7 @@ theorem k1_hit (hD : DistinctHeights Q) (hS : Q.Simple) {p₀ x0 w dir : ℕ}
       have hwa : M.wa p = Q.vtx (e' + 1) := ha
       have hwb : M.wb p = Q.vtx e' := by rw [wv _ (by omega), hb]
       have hXr : X ∈ Chazelle.segment (Q.vtx (e' + 1)) (Q.vtx e') := by
-        rw [Chazelle.Geometry.segment_comm]; exact hXe'
+        rwa [Chazelle.Geometry.segment_comm]
       by_cases hhe : h = e'
       · rw [ite_eq_left hhe]
         refine ⟨_, rfl, by simp only; omega, hpp _, ?_⟩
@@ -178,7 +177,7 @@ theorem k1_hit (hD : DistinctHeights Q) (hS : Q.Simple) {p₀ x0 w dir : ℕ}
         exact (atEnd (Ne.symm hEe) hXr (by rw [hXh, hhe])).symm
       · rw [ite_eq_right hhe]
         obtain ⟨hp, h0, h1⟩ := walk_pos_at (M := M) (Q := Q) (p := p) (h := h)
-          (by rw [hwa, hwb]; exact Ne.symm hEe) (by rw [hwa, hwb]; exact hXr) hXh
+          (by rw [hwa, hwb]; exact Ne.symm hEe) (by rwa [hwa, hwb]) hXh
           (by rw [hwb, hXh]; intro he; exact hhe (hvinj _ _ hh he' he))
         exact ⟨_, rfl, by simp only; omega, ⟨h0, h1, by show h + 1 ≤ Q.n; omega⟩, hp⟩
   -- outside the block: `X` is an end of the chain

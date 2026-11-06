@@ -353,11 +353,11 @@ theorem arcCntLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
           e₂.nreg = e₁.nreg ∧
           e₂.nmem = regMem m₀ CA R (cntF key (j + 1)) fC (wmaxF key wt (j + 1)) := by
         by_cases hlt : wmaxF key wt j (key j) < wt j
-        · refine spec_ifLtN_true (by rw [v9, v7]; exact hlt)
+        · refine spec_ifLtN_true (by rwa [v9, v7])
             (spec_instr (Exec.storeN w₁ _ _) fun _ => ⟨by omega, rfl, ?_⟩)
           simp only
           rw [v8, v7, m₁, regMem_W _ _ _ _ _ _ hkj, wmaxF_update _ _ _ hlt]
-        · refine spec_ifLtN_false (by rw [v9, v7]; exact hlt) (spec_skip w₁ ⟨by omega, rfl, ?_⟩)
+        · refine spec_ifLtN_false (by rwa [v9, v7]) (spec_skip w₁ ⟨by omega, rfl, ?_⟩)
           rw [m₁, wmaxF_same _ _ _ hlt]
       have w₂ := x₂.wb_right
       have e1011 : e₂.nreg 43011 = 1 := by rw [v1', g₁ _ (by omega), r4]
@@ -498,13 +498,13 @@ theorem chCntLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ}
           rw [m₂, hrd, m₁, regMem_C _ _ _ _ _ _ hvj, cnt2_update_ne u v j hne]
         by_cases a1 : u j < v j
         · obtain ⟨e₂, k₂, x₂, hk₂, g₂, m₂⟩ := inc (by omega)
-          exact ⟨e₂, _, .ifLtN_true (by rw [v3, v4]; exact a1) x₂, by omega, g₂, m₂⟩
+          exact ⟨e₂, _, .ifLtN_true (by rwa [v3, v4]) x₂, by omega, g₂, m₂⟩
         by_cases a2 : v j < u j
         · obtain ⟨e₂, k₂, x₂, hk₂, g₂, m₂⟩ := inc (by omega)
-          exact ⟨e₂, _, .ifLtN_false (by rw [v3, v4]; exact a1)
-            (.ifLtN_true (by rw [v3, v4]; exact a2) x₂), by omega, g₂, m₂⟩
-        · refine ⟨e₁, _, .ifLtN_false (by rw [v3, v4]; exact a1)
-            (.ifLtN_false (by rw [v3, v4]; exact a2) (.skip w₁)), by omega, fun _ _ => rfl, ?_⟩
+          exact ⟨e₂, _, .ifLtN_false (by rwa [v3, v4])
+            (.ifLtN_true (by rwa [v3, v4]) x₂), by omega, g₂, m₂⟩
+        · refine ⟨e₁, _, .ifLtN_false (by rwa [v3, v4])
+            (.ifLtN_false (by rwa [v3, v4]) (.skip w₁)), by omega, fun _ _ => rfl, ?_⟩
           rw [m₁, cnt2_update_eq u v j (by omega)]
       have w₂ := x₂.wb_right
       have e1011 : e₂.nreg 43011 = 1 := by rw [g₂ _ (by omega), g₁ _ (by omega), r4]

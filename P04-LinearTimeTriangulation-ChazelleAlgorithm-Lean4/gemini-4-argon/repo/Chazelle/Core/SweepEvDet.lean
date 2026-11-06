@@ -60,7 +60,6 @@ theorem det_of_evInv (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hS₂f := hS₂.1
   have hC := corr_right0 J hP hS₂a hS₂f
   have hM := hC.hM
-  have hL0 : (0 : ℝ) ≤ Lst J := Nat.cast_nonneg _
   -- a non-cut position just before `K*`, after `K`
   obtain ⟨Rb, hRb, -, w, u, hw, hu, hncw, hfw, h1, h2, hgw⟩ := before_region_exists' hP hS₂a hS₂f
     hpK htK0 htK1 (by linarith) (show 0 < oW J (pK + tK) - oK by linarith)

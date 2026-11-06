@@ -133,7 +133,6 @@ theorem halfS_exec {c : Config} (hw : WordsBounded W c) {n D : ℕ}
   rw [h40', h42'] at htest
   have hk' : k ≤ 9 * (n + 2) + 2 := by
     have := hk; simp only [i40, Nat.sub_zero] at this; exact this
-  have hψ' : c'.nreg ALLOC ≤ c1.nreg ALLOC + k := hψ
   have hA1 : c1.nreg ALLOC = D := by rw [r1 _ (by unfold HalfRG; rw [hAl]; omega)]; exact hA
   refine ⟨c', k1 + k, .seq e1 e, ?_, hw', h03', by omega, by omega, by omega,
     fun x hx => hent x (by omega), hlow, fr', hrr', hrm', ho'⟩

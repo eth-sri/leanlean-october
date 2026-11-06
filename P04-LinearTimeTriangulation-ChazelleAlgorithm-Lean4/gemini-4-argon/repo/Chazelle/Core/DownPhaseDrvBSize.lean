@@ -78,18 +78,17 @@ theorem arcs_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
     ((BuildNF.buildNF (interiorModel Q) Q L E).region r).arcs.length ≤
       (interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q)
         (reg r) + 1 := by
-  set N := BuildNF.buildNF (interiorModel Q) Q L E with hN
-  set S := N.F (interiorModel Q) Q with hS
+  set N := BuildNF.buildNF (interiorModel Q) Q L E
+  set S := N.F (interiorModel Q) Q
   have hR := B.hregs.1.1 r hr
   obtain ⟨hfin, hcard⟩ := arcsPerRegion (interiorModel Q) Q S (Or.inr ⟨Q, B.hQ, rfl⟩) B.fam _ hR
   set f : ℕ → ℝ × ℝ := fun j => ((interiorModel Q).key Q (N.arc j).s,
-    (interiorModel Q).key Q (N.arc j).e) with hf
+    (interiorModel Q).key Q (N.arc j).e)
   have hmem : ∀ j ∈ (N.region r).arcs, f j ∈ {ab : ℝ × ℝ | (interiorModel Q).IsArc S (reg r) ab.1 ab.2} := by
     intro j hj
     obtain ⟨hjA, hjr⟩ := (B.hregs.2.2.1.2.2.2 r hr j).1 hj
     have := (B.hregs.2.2.1.1 j hjA).2
-    rw [hjr] at this
-    exact this
+    rwa [hjr] at this
   have hinj : Set.InjOn f {j | j ∈ (N.region r).arcs} := by
     intro j hj j' hj' he
     obtain ⟨hjA, hjr⟩ := (B.hregs.2.2.1.2.2.2 r hr j).1 hj
@@ -142,7 +141,7 @@ theorem regPts_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
     rw [wlist_length, DownMath.regHost_pts]
     split_ifs
     · exact hlen
-    · rw [List.length_reverse]; exact hlen
+    · rwa [List.length_reverse]
   rw [hlenP]
   have hM := walkAx_interiorModel B.hQ
   have hnk := DownDrv.nk_le hM B.fam.2.1 B.fam.1 (reg r)
@@ -182,7 +181,7 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
     (hwt _ hR))
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
   have hA := DrvD.arcs_length (M := interiorModel Q) (Q := Q) (E := E) B.hK
-  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rw [← hA]; exact hjA
+  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rwa [← hA]
   obtain ⟨sn, s0, s1⟩ := evPos_ok B (DrvD.gs_lt_len hjA')
   obtain ⟨en, e0, e1⟩ := evPos_ok B (Nat.mod_lt (DrvD.gs (interiorModel Q) Q L E j + 1) hE)
   rw [← DrvD.arc_s B.hK hjA'] at sn s0 s1
@@ -278,8 +277,8 @@ theorem n_le_of_empty {Q : Polygon} (hQ : Q.Simple) {E : List ℕ} (hE : E = [])
     (hwt : (interiorModel Q).Semigranular
       ((BuildNF.buildNF (interiorModel Q) Q [] E).F (interiorModel Q) Q) γ) : Q.n ≤ γ := by
   subst hE
-  set I := interiorModel Q with hI
-  set N := BuildNF.buildNF I Q [] [] with hN
+  set I := interiorModel Q
+  set N := BuildNF.buildNF I Q [] []
   have hL : ChordTriplesOK I Q [] := ⟨⟨by simp, by simp, by simp⟩, by simp, by simp, by simp⟩
   have hNF : IsNF I Q N := DownMath.isNF_build hQ hL (by simp) (by simp)
   obtain ⟨-, -, -, reg, hRC, -, hAO, -⟩ := id hNF

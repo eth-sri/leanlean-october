@@ -124,13 +124,13 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
         exact Nat.mul_le_mul (by omega) (by omega)
       omega
     · refine ⟨⟨hS c c₁ k₁ hE e₁.wb_right F01, hG, hHW, ?_, ?_, i30, i31, ?_⟩, ?_, ?_, hOk, ?_, ?_⟩
-      · rw [hM1, k1 R (by omega)]; exact hMD
-      · rw [hM1, hA1, k1 _ (by omega)]; exact hmwf
+      · rwa [hM1, k1 R (by omega)]
+      · rwa [hM1, hA1, k1 _ (by omega)]
       · rw [i34, k1 R (by omega)]
-      · rw [hM1, hA1, k1 _ (by omega)]; exact hX
-      · rw [hM1, k1 _ (by omega), k1 _ (by omega)]; exact hcap
-      · rw [k1 _ (by omega)]; exact i35
-      · rw [hM1, k1 R (by omega)]; exact hreg
+      · rwa [hM1, hA1, k1 _ (by omega)]
+      · rwa [hM1, k1 _ (by omega), k1 _ (by omega)]
+      · rwa [k1 _ (by omega)]
+      · rwa [hM1, k1 R (by omega)]
     · exact originIn_copy ho (k1 _ (by omega)) (k1 _ (by omega)) (k1 _ (by omega))
     · rw [i28, sofJ_zero]
       refine ⟨by rw [i20]; omega, fun h => by rw [i20] at h; omega, fun _ => fun t _ h => ?_⟩
@@ -146,7 +146,7 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
     rw [hK2] at hlt
     -- load the arc
     obtain ⟨c₂, k₂, e₂, hk₂, pc₂, f₂⟩ := loadArc_exec (P := P) (R := R) cc hwc c31 (by
-      rw [hptr]; have hWc := hwc.1 ALLOC; omega)
+      rw [hptr]; omega)
     have k2 : ∀ r, ¬ (R + 38 ≤ r ∧ r < R + 44) → c₂.nreg r = cc.nreg r := fun r hr =>
       f₂.1 r (by simp only [decide_eq_false_iff_not]; exact hr)
     have harc : pieceR c₂ (rL R 0) = arcAt c.nmem AB j := by
@@ -165,10 +165,10 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
     have hkl : ∀ ℓ, ℓ ≤ 3 → c₂.nreg (R + 30 + ℓ) = ℓ := by
       intro ℓ hℓ
       interval_cases ℓ
-      · rw [k2 _ (by omega)]; exact c30
-      · rw [k2 _ (by omega)]; exact c31
-      · rw [k2 _ (by omega)]; exact c32
-      · rw [k2 _ (by omega)]; exact c33
+      · rwa [k2 _ (by omega)]
+      · rwa [k2 _ (by omega)]
+      · rwa [k2 _ (by omega)]
+      · rwa [k2 _ (by omega)]
     have hhl2 : holeList c₂ R = hl := by
       simp only [hhl, holeList]
       rw [k2 _ (by omega), hin 9 (by omega)]
@@ -188,11 +188,10 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
         (k2 (R + 22) (by omega))
     obtain ⟨hpok, hwt⟩ := harcs j hjK'
     have hA2 : c₂.nreg ALLOC = cc.nreg ALLOC := k2 _ (by unfold ALLOC; omega)
-    have hroomj : cc.nreg ALLOC + (A - j) * Bi ≤ W := hrm
     have hKj : Bi ≤ (A - j) * Bi := Nat.le_mul_of_pos_left _ (by omega)
     obtain ⟨c₃, k₃, e₃, hk₃, b₃, fr₃⟩ := levG_exec hsh hBs hXl hR hRB hBo hS hk hBk hx hBx hol hof hoy
       3 0 c₂ (sofJ M Q hl c.nmem AB j) (by omega) e₂.wb_right ctx₂ ho₂
-      (by rw [harc]; exact hpok)
+      (by rwa [harc])
       (fun j' _ hj' hj'' => by
         rw [hkl j' (by omega), k2 _ (by omega), hin 9 (by omega)] at hj''
         have := hholes j' (by omega)
@@ -277,8 +276,7 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
   have hcost : k₁ + kL ≤ shotCostG Fg K A := by
     unfold shotCostG
     have h1 : (Bi + 2) * A ≤ (16 * G) * A := Nat.mul_le_mul_right _ (by rw [hBi, hlc]; omega)
-    rw [Nat.add_one_mul, Nat.mul_comm A]
-    rw [← hG']
+    rw [Nat.add_one_mul, Nat.mul_comm A, ← hG']
     omega
   refine ⟨c', k₁ + kL, .seq e₁ eL, hcost, ?_, fT⟩
   -- the postcondition

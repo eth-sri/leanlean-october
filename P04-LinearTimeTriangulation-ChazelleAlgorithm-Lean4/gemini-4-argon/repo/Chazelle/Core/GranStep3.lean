@@ -162,8 +162,7 @@ theorem sides_rm {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) (μ : ℕ) :
       · exact hne (e0.trans e1.symm)
     · have hP' : (if st.cl E (st.s1 i) = st.cl E (st.s0 c) ∨ st.cl E (st.s1 i) = st.cl E (st.s1 c)
           then P else st.cl E (st.s1 i)) ≠ P := he ▸ hP
-      rw [ite_eq_right (fun h' => hP (ite_eq_left h'))] at he
-      rw [ite_eq_right (fun h' => hP' (ite_eq_left h'))] at he
+      rw [ite_eq_right (fun h' => hP (ite_eq_left h')), ite_eq_right (fun h' => hP' (ite_eq_left h'))] at he
       exact hne he
   · by_cases hZP : Z = P
     · subst hZP
@@ -271,10 +270,9 @@ theorem cls_rm (hlow : st.deg (st.s0 c) < 3 ∨ st.deg (st.s1 c) < 3) {x : ℕ}
       rw [ite_eq_right (fun h' => hxX h'.1)]
     obtain ⟨d1, w1, n1, m1, l1⟩ := h.cls x hxR
     rw [hcl, hdeg, hexl]
-    refine ⟨by rw [deg_other hE h hc hs hcx hxP]; exact d1, ?_, n1, fun i => ?_, l1⟩
+    refine ⟨by rwa [deg_other hE h hc hs hcx hxP], ?_, n1, fun i => ?_, l1⟩
     · show Function.update st.wt (st.s0 c) μ x = _
-      rw [Function.update_of_ne hxX, weight_other' hE h hc hs hcx hxP]
-      exact w1
+      rwa [Function.update_of_ne hxX, weight_other' hE h hc hs hcx hxP]
     · rw [m1]
       simp only [mem_sdiff, mem_singleton_iff]
       constructor

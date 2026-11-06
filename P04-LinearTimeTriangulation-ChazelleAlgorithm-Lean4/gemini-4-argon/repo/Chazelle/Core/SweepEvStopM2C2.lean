@@ -68,9 +68,9 @@ theorem m2c_lh_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   refine IRS.seq (IRS.block (m2cSet e h) hI (m2cSet_ok _ _ e h)) ?_
   rintro c₁ hI₁ - - hc1
   obtain ⟨vE, vH, vD, vo⟩ := m2cSet_val c.nmem c.nreg he hh
-  have v1E : c₁.nreg lE = c.nreg e := by rw [hc1]; exact vE
-  have v1H : c₁.nreg lH = c.nreg h := by rw [hc1]; exact vH
-  have v1D : c₁.nreg lD = c.nreg oB := by rw [hc1]; exact vD
+  have v1E : c₁.nreg lE = c.nreg e := by rwa [hc1]
+  have v1H : c₁.nreg lH = c.nreg h := by rwa [hc1]
+  have v1D : c₁.nreg lD = c.nreg oB := by rwa [hc1]
   have k1 : ∀ q, q ≠ lE → q ≠ lH → q ≠ lD → c₁.nreg q = c.nreg q := fun q a b d => by
     rw [hc1]; exact vo q a b d
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
@@ -87,7 +87,7 @@ theorem m2c_lh_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     (Or.inr ⟨by simp [gCD2, sw], by simp [gCD2, sw]⟩) (Or.inl ⟨by simp [sw], by simp [sw]⟩)
     (Or.inl ⟨by simp [sw], by simp [sw]⟩) ⟨by simp [r2F, sw], by simp [r2F, sw]⟩ hI₁ E.hK E.hG
     E.hWh hM₁ E.hP E.hNF₂ E.hX E.hcap E.hOk₂ E.hsg₂ E.hdeg₂ hnr (x := ⟨c.nreg e, c.nreg h⟩) v1E v1H
-    (by rw [v1D]; exact hb) hxe hpp hcl hy hon (Gd := Gd) (by rw [v1D]; exact hGd)
+    (by rwa [v1D]) hxe hpp hcl hy hon (Gd := Gd) (by rwa [v1D])
     (by rw [hA1]; omega)).mono le_rfl ?_
   rintro c' ⟨hres, hfr⟩
   rw [v1D] at hres

@@ -76,8 +76,8 @@ theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctH
   suffices hiff : (Spans Q e hz ∧ 0 < σ * (xe Q e hz - z.1)) ↔ HitC Q s hz σ zo ci by
     unfold edgeHit at hspec
     by_cases h : HitC Q s hz σ zo ci
-    · rw [ite_eq_left h, vOf_of_spans h.1]; rw [ite_eq_left (hiff.2 h)] at hspec; exact hspec
-    · rw [ite_eq_right h]; rw [ite_eq_right (fun h' => h (hiff.1 h'))] at hspec; exact hspec
+    · rw [ite_eq_left h, vOf_of_spans h.1]; rwa [ite_eq_left (hiff.2 h)] at hspec
+    · rw [ite_eq_right h]; rwa [ite_eq_right (fun h' => h (hiff.1 h'))] at hspec
   unfold HitC
   rw [← he_def]
   rcases hzo with rfl | ⟨rfl, hz1⟩
@@ -123,7 +123,7 @@ theorem fold_step {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeigh
       · have hb := hall cb rfl
         have hcb := spans_of_vOf_pos (show FirstHit S z σ (vOf Q s hz σ z cb) from hS).1
         have hlt : vOf Q s hz σ z ci < vOf Q s hz σ z cb := by
-          rw [vOf_of_spans hh.1, vOf_of_spans hcb, better_iff hσ]; exact hb
+          rwa [vOf_of_spans hh.1, vOf_of_spans hcb, better_iff hσ]
         show some (vOf Q s hz σ z ci) = some (min (vOf Q s hz σ z cb) (vOf Q s hz σ z ci))
         rw [min_eq_right hlt.le]
     · rw [ite_eq_right (fun h => hall h.2)]

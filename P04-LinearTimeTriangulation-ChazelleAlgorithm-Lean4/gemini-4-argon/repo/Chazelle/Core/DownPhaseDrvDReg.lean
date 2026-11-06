@@ -25,7 +25,7 @@ open Machine Machine.Stmt Programs SignK BuildRam
 theorem RegI.deg_word {E : REnv} {c₀ : Config} {newL : List (ℕ × (ℕ × ℕ × ℕ))} {c : Config}
     (hE : RGood E c₀) (hI : RegI E c₀ newL c) (hr : c.nreg 216030 < E.R) :
     c.nmem (c.nreg 216031) = Restore.degOf E.N (c.nreg 216030) := by
-  have hrN : c.nreg 216030 < E.N.nRegions := by rw [E.nRegions_N]; exact hr
+  have hrN : c.nreg 216030 < E.N.nRegions := by rwa [E.nRegions_N]
   have hareas := (Gran.nf_areas hE.hNW).2.2.1 _ hrN
   rw [hI.ptr, hI.low _ (by omega)]
   have := ((hE.hNW.nfAt).2.2.2.2.2.2.2.1 _ hrN).2.1
@@ -89,10 +89,10 @@ theorem regBody_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
       c₂.nreg 216030 = r ∧ c₂.nreg 216031 = c₁.nreg 216031 := by
     by_cases hhigh : 4 < Restore.degOf E.N r
     · obtain ⟨c₂, k₂, t, e₂, hk₂, RF₂, w₂, hfound, hbk, h20, h21, h22, hlist, hlow, hreg, h30,
-        h31, hctx⟩ := call_step hE hI₁ (by rw [r1]; exact hr) (by rw [r1]; exact hhigh)
+        h31, hctx⟩ := call_step hE hI₁ (by rwa [r1]) (by rwa [r1])
       rw [r1] at hfound hbk hlist h30
       refine ⟨c₂, k₂ + 1, newL ++ [(r, t)],
-        .ifLtN_true (by rw [c04, d1]; exact hhigh) e₂, by omega,
+        .ifLtN_true (by rwa [c04, d1]) e₂, by omega,
         RF₂.mono subset_rfl (by omega), ⟨?_, ?_, hbk, ?_, ?_, ?_, hlist, hlow, hreg, hctx, w₂⟩,
         h30, h31⟩
       · rw [List.map_append, hI.hfst, hrd, Restore.highList_succ, ite_eq_left hhigh]; rfl
@@ -103,7 +103,7 @@ theorem regBody_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
       · rw [h20, List.length_append, List.length_singleton]
       · rw [h21, List.length_append, List.length_singleton]
       · rw [h22, List.length_append, List.length_singleton]
-    · refine ⟨c₁, 2, newL, .ifLtN_false (by rw [c04, d1]; exact hhigh) (.skip e₁.wb_right),
+    · refine ⟨c₁, 2, newL, .ifLtN_false (by rwa [c04, d1]) (.skip e₁.wb_right),
         by unfold REnv.Bf; omega, Restore.RF.refl _ _,
         ⟨by rw [hI.hfst, hrd, Restore.highList_succ, ite_eq_right hhigh, List.append_nil], hI.hgood,
           hI₁.hbk, hI₁.cnt, hI₁.dst, hI₁.dstB, hI₁.list, fun _ _ => rfl, fun _ _ => rfl, rfl,
@@ -121,7 +121,7 @@ theorem regBody_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
     have := hE.room
     have : E.R ≤ (E.Bf + 2) * E.R := Nat.le_mul_of_pos_left _ (by omega)
     omega
-  have hareas := (Gran.nf_areas hE.hNW).2.2.1 r (by rw [E.nRegions_N]; exact hr)
+  have hareas := (Gran.nf_areas hE.hNW).2.2.1 r (by rwa [E.nRegions_N])
   have hB₀W : E.B₀ + 5 ≤ E.W := by
     have h1 := hE.alloc; have h2 := hE.wb.1 ALLOC
     have h3 : E.BK = E.B₀ + 3 * E.R := rfl
@@ -150,14 +150,14 @@ theorem regBody_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
         exact g3 q hq.1 hq.2, fun q _ => by rw [R₃], by rw [R₃], by rw [R₃], by rw [R₃]⟩
   have RFall := RF₁.trans (RF₂.trans RF₃)
   refine ⟨c₃, 1 + (k₂ + k₃), newL', .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, ?_, ?_, ?_, hgood₂,
-    by rw [m3]; exact hbk₂, by rw [g3 _ (by norm_num) (by norm_num), h20],
+    by rwa [m3], by rw [g3 _ (by norm_num) (by norm_num), h20],
     by rw [g3 _ (by norm_num) (by norm_num), h21], by rw [g3 _ (by norm_num) (by norm_num), h22],
-    by rw [m3]; exact hlist₂, fun a ha => by rw [m3, hlow₂ a ha]; exact hI.low a ha,
+    by rwa [m3], fun a ha => by rw [m3, hlow₂ a ha]; exact hI.low a ha,
     fun q hq => ?_, by rw [g3 _ (by norm_num) (by norm_num), hctx₂]; exact hI₁.rctx,
     le_trans hI.alloc RFall.2.2.2.2.2.1, ?_⟩, RFall, by omega, by rw [t30, hrd]⟩
   · rw [t30]; omega
   · rw [t31, t30, hp1]; ring
-  · rw [t30]; exact hfst₂
+  · rwa [t30]
   · unfold FixR at hq
     rw [g3 q (by omega) (by omega), hreg₂ q hq, hI₁.regs q hq]
   · have h1 := hI.room
@@ -187,8 +187,7 @@ theorem reg_exec {E : REnv} {c₀ : Config} (hE : RGood E c₀) :
     (fun c ⟨_, h⟩ => h.wb)
     (fun c ⟨newL, I⟩ ht => by
       have t : c.nreg 216030 < E.R := by
-        rw [I.regs 216013 (Or.inl ⟨by norm_num, by norm_num⟩), hE.r13] at ht
-        exact ht
+        rwa [I.regs 216013 (Or.inl ⟨by norm_num, by norm_num⟩), hE.r13] at ht
       obtain ⟨c', k, newL', e, I', RF', hk, h30⟩ := regBody_step hE I t
       exact ⟨c', k, e, ⟨newL', I'⟩, RF', hk, by omega⟩) ⟨[], hE.regI⟩
   have hR' : c'.nreg 216030 = E.R := by

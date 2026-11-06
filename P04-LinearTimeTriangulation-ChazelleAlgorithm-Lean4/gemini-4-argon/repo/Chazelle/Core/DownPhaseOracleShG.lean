@@ -112,11 +112,11 @@ theorem queryI_exec {sh : Stmt} {F : ℕ → ℕ}
   have Fr₁ : Frame ioBands c c₁ k₁ := frameIO_of_frameB (B := Bnorm) (fun r hr => io_of_band (by
     simp only [Bnorm, Bk, Bool.or_eq_true, decide_eq_true_eq] at hr; omega)) F₁ k₁
   have hB₁ : BestI P c₁ ∅ (s.o.eval (Qof P)) (dirOf s.dir) :=
-    bestI_empty (by rw [f₁ _ (by decide)]; exact h70)
+    bestI_empty (by rwa [f₁ _ (by decide)])
   set A := (interiorModel (Qof P)).arcSet ((interiorModel (Qof P)).key (Qof P) ⟨s.e₁, s.h₁⟩)
     ((interiorModel (Qof P)).key (Qof P) ⟨s.e₂, s.h₂⟩) with hAd
-  set z := s.o.eval (Qof P) with hzd
-  set σ := dirOf s.dir with hσd
+  set z := s.o.eval (Qof P)
+  set σ := dirOf s.dir
   have bandSet : ∀ {d d' : Config}, FrameB Bset d d' → ∀ r, (r < 170033 ∨ 170038 ≤ r) →
       d'.nreg r = d.nreg r := fun F r hr => F.1 r (by
         simp only [Bset, decide_eq_false_iff_not]; omega)
@@ -145,16 +145,15 @@ theorem queryI_exec {sh : Stmt} {F : ℕ → ℕ}
         rw [bandSet Fs _ (by unfold ALLOC; omega), f₁ _ (by decide)]
       obtain ⟨c₃, k₃, e₃, hk₃, hB₃, S₃, F₃, g₃⟩ := sqS_exec hsh c₂ e₂.wb_right S₂
         (by rw [b33, S₁.r1]) (by rw [b34, S₁.r2]) (by rw [b35, a31]) (by rw [b36, a30]) (by rw [b37, a32])
-        hsub hLγ ho1 ho2 hol (by rw [← hset]; exact hoA) (bestSet Fs hB₁)
+        hsub hLγ ho1 ho2 hol (by rwa [← hset]) (bestSet Fs hB₁)
         (by rw [hA₂]; exact room_one hroom hlog)
       refine ⟨c₃, _, .ifLtN_true hcond (.seq e₂ e₃), cost_one hk₂ hk₃ hlog,
-        by rw [hAd, hset]; exact hB₃, S₃,
+        by rwa [hAd, hset], S₃,
         ((frameIO_of_frameB (fun r h => bset_io h) Fs k₂).trans F₃).mono (by simp) (by omega)⟩
     · -- two sub-queries
       push Not at hL
       have hcond : ¬ c₁.nreg 170032 < c₁.nreg 170010 := by rw [a32, S₁.r10, ← hQ]; omega
       obtain ⟨hsubA, hsubB, hset, hwn⟩ := plan_two q (by omega)
-      have hnγ : P.n ≤ s.γ := by rw [← hQ]; exact hwn ▸ hwt
       -- the first sub-query
       obtain ⟨c₂, k₂, e₂, hk₂, b33, b34, b35, b36, b37, Fs⟩ := setTwoA_exec (P := P) c₁ w₁ (by omega)
       have S₂ := keepSet Fs S₁
@@ -173,12 +172,12 @@ theorem queryI_exec {sh : Stmt} {F : ℕ → ℕ}
         (by rw [hA₂]; exact room_one hroom hlogA)
       -- the second sub-query
       have c31 : c₃.nreg 170031 = eeOf (Qof P) s.e₁ s.h₁ s.e₂ (nh (Qof P) s.e₂ s.h₂) := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a31
+        rwa [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]
       have c30 : c₃.nreg 170030 = nh (Qof P) s.e₂ s.h₂ := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a30
+        rwa [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]
       have c32 : c₃.nreg 170032 = spanL (eeOf (Qof P) s.e₁ s.h₁ s.e₂ (nh (Qof P) s.e₂ s.h₂))
           (nh (Qof P) s.e₂ s.h₂) := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a32
+        rwa [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]
       obtain ⟨c₄, k₄, e₄, hk₄, d33, d34, d35, d36, d37, Ft⟩ := setTwoB_exec (P := P) c₃
         e₃.wb_right S₃ he1
       have S₄ := keepSet Ft S₃
@@ -207,8 +206,7 @@ theorem queryI_exec {sh : Stmt} {F : ℕ → ℕ}
         cost_two hk₂ hk₃ hk₄ hk₅ hlogA hlogB, ?_, S₅,
         ((((frameIO_of_frameB (fun r h => bset_io h) Fs k₂).trans F₃).trans
           (frameIO_of_frameB (fun r h => bset_io h) Ft k₄)).trans F₅).mono (by simp) (by omega)⟩
-      rw [hAd, hset, ← Set.union_assoc]
-      exact hB₅
+      rwa [hAd, hset, ← Set.union_assoc]
   obtain ⟨c₂, k₂, e₂, hk₂, hB₂, S₂, F₂⟩ := hbr
   -- the answer
   obtain ⟨c₃, k₃, e₃, hk₃, hhit, hno, F₃⟩ := outI_exec c₂ e₂.wb_right S₂ hB₂
@@ -220,8 +218,7 @@ theorem queryI_exec {sh : Stmt} {F : ℕ → ℕ}
     rw [Set.empty_union] at h1
     exact ⟨t, h1, h2, h3, h4⟩
   · have := hno h
-    rw [Set.empty_union] at this
-    exact this
+    rwa [Set.empty_union] at this
 
 end exec
 

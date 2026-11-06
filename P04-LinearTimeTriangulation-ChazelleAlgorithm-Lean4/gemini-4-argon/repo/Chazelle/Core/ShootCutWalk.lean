@@ -63,7 +63,6 @@ theorem sideE_up {i d : ℕ} (hJ : tJ C i + d ≤ C.m) :
 theorem sideE_down {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : tJ C i + d ≤ 2 * C.m) :
     sideE C.m (tJ C (i + d)) = sideE C.m (tJ C i) - d := by
   have h1 := C.one_le
-  have hlt := tJ_lt C i
   rcases (show tJ C i + d < 2 * C.m ∨ tJ C i + d = 2 * C.m by omega) with h | h
   · rw [tJ_add C h]
     unfold sideE
@@ -90,8 +89,7 @@ theorem run_up (hP : C.P = H.poly Q) {i d : ℕ} (hJ : tJ C i + d ≤ C.m) (hi :
   simp only [NFLoc.itemCnt] at hsucc
   -- host index
   have hidx : (C.s + sideE C.m (tJ C (i + d))) % C.P.n = NFLoc.preLen Q.n H r + (t + d) := by
-    rw [sideE_up C hJ, ← Nat.add_assoc, Nat.add_mod, hu, Nat.mod_eq_of_lt (show d < C.P.n by omega)]
-    rw [Nat.mod_eq_of_lt (by omega)]
+    rw [sideE_up C hJ, ← Nat.add_assoc, Nat.add_mod, hu, Nat.mod_eq_of_lt (show d < C.P.n by omega), Nat.mod_eq_of_lt (by omega)]
     omega
   have hpt : (H.pts Q.n)[(C.s + sideE C.m (tJ C (i + d))) % C.P.n]? =
       some (SymPt.vtx ((a + (t + d)) % Q.n)) := by
@@ -102,7 +100,6 @@ theorem run_up (hP : C.P = H.poly Q) {i d : ℕ} (hJ : tJ C i + d ≤ C.m) (hi :
     NFLoc.chain_vertex_host C hP _ hpt]
   show Q.vtx _ = _
   congr 1
-  have hn : 0 < Q.n := by omega
   rw [← Nat.add_assoc, Nat.add_mod, Nat.mod_eq_of_lt (show d < Q.n by omega),
     Nat.mod_eq_of_lt hq]
 
@@ -121,12 +118,10 @@ theorem run_down (hP : C.P = H.poly Q) {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : t
   simp only [NFLoc.itemCnt] at hsucc
   have hkd : d ≤ sideE C.m (tJ C i) := by
     have := sideE_down C (d := d) hm hJ
-    have hle := Chazelle.Chain.sideE_le (m := C.m) (j := tJ C i) (tJ_lt C i).le
     unfold sideE at *
     split_ifs at * <;> omega
   have hidx : (C.s + sideE C.m (tJ C (i + d))) % C.P.n = NFLoc.preLen Q.n H r + (t - d) := by
     rw [sideE_down C hm hJ]
-    have hpos : 0 < C.P.n := C.n_pos
     have e := Nat.div_add_mod (C.s + sideE C.m (tJ C i)) C.P.n
     rw [hu] at e
     have e2 : C.s + (sideE C.m (tJ C i) - d) =

@@ -185,7 +185,7 @@ theorem shInit_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBo
   have c36 : c₂.nreg (R + 36) = c.nreg (R + 1) := by rw [k2 _ (by simp [initConsts]), a36]
   have r6 : c₂.nreg (R + 6) = c.nreg (R + 6) := by
     rw [k2 _ (by simp [initConsts]), f₁.1 _ (by simp)]
-  have e₃ := Exec.addN (P := P) e₂.wb_right (R + 34) (R + 34) (R + 31) (by rw [c34, b31]; exact hD)
+  have e₃ := Exec.addN (P := P) e₂.wb_right (R + 34) (R + 34) (R + 31) (by rwa [c34, b31])
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg (R + 34) (c₂.nreg (R + 34) + c₂.nreg (R + 31)) }
     with hc₃
   have w₃ := e₃.wb_right
@@ -208,11 +208,8 @@ theorem shInit_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBo
     all_goals first
       | exact hv | exact hb
       | (rw [upd_other _ _ _ (by omega), k3 _ (by omega)]; assumption)
-      | (rw [upd_other _ _ _ (by omega)]; exact d34)
+      | (rwa [upd_other _ _ _ (by omega)])
   unfold shInit
-  have ex₃ : Exec P W (.seq (block (copies [(R + 36, R + 1), (R + 34, R)]))
-      (.seq (block (consts (initConsts R))) (.instr (.addN (R + 34) (R + 34) (R + 31))))) c c₃ _ :=
-    .seq e₁ (.seq e₂ e₃)
   have r6' : c₃.nreg (R + 6) = c.nreg (R + 6) := by rw [k3 _ (by omega), r6]
   have o31 : c₃.nreg (R + 31) = 1 := by rw [k3 _ (by omega), b31]
   by_cases g1 : c₃.nreg (R + 6) < c₃.nreg (R + 31)
@@ -282,7 +279,6 @@ theorem loadArc_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsB
     unfold loadArc
     exact Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_cons e₃ (Exec.block_cons e₄
       (Exec.block_cons e₅ (Exec.block_cons e₆ (Exec.block_cons e₇ (Exec.block_nil e₇.wb_right)))))))
-  have m : c₇.nmem = c.nmem := rfl
   refine ⟨c₇, 7, ex, rfl, ?_, exec_frameB ex (by simp [loadArc, wr, block, wrOK])⟩
   simp only [pieceR, posR, arcAt, Nat.mul_zero, Nat.add_zero, Prod.mk.injEq, WPos.mk.injEq]
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
@@ -300,12 +296,12 @@ theorem stepArc_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsB
     ∃ c' k, Exec P W (stepArc R) c c' k ∧ k = 2 ∧ c'.nreg (R + 28) = c.nreg (R + 28) + 1 ∧
       c'.nreg (R + 36) = c.nreg (R + 36) + 4 ∧
       FrameB (fun r => r == R + 28 || r == R + 36) c c' := by
-  have e₁ := Exec.addN (P := P) hw (R + 28) (R + 28) (R + 31) (by rw [h31]; exact hj)
+  have e₁ := Exec.addN (P := P) hw (R + 28) (R + 28) (R + 31) (by rwa [h31])
   set c₁ : Config := { c with nreg := upd c.nreg (R + 28) (c.nreg (R + 28) + c.nreg (R + 31)) }
     with hc₁
   have r₁ : ∀ r, r ≠ R + 28 → c₁.nreg r = c.nreg r := fun r h => by rw [hc₁]; simp [upd, h]
   have e₂ := Exec.addN (P := P) e₁.wb_right (R + 36) (R + 36) (R + 37)
-    (by rw [r₁ _ (by omega), r₁ _ (by omega), h37]; exact hA)
+    (by rwa [r₁ _ (by omega), r₁ _ (by omega), h37])
   set c₂ : Config := { c₁ with nreg := upd c₁.nreg (R + 36) (c₁.nreg (R + 36) + c₁.nreg (R + 37)) }
     with hc₂
   have ex : Exec P W (stepArc R) c c₂ 2 := by

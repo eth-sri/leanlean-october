@@ -147,7 +147,6 @@ theorem hchain_topIdx_leaf (hC : C.P = H.poly (Qof P)) (hsm : C.s + C.m < (H.pts
     (hle : ∀ j, j ≤ C.m → IOrc.Y P (a + j) ≤ IOrc.Y P (a + T)) : C.topIdx = T := by
   have ev : ∀ j, j ≤ C.m → (C.vertex j).2 = IOrc.Y P (a + j) := fun j hj => by
     rw [hchain_vertex_lt hC (by omega), hpt j hj]; rfl
-  have h1 : C.topIdx ≤ T := C.topIdx_min hT (fun i hi => by rw [ev i hi, ev T hT]; exact hle i hi)
   by_contra hne
   have h2 := C.vertex_snd_le_top hT
   unfold Chain.top at h2
@@ -234,8 +233,7 @@ theorem lkTo_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m₀
     (hp : p < (H.pts P.n).length) (hd : 50080 ≤ d) :
     ∃ c' k, Exec P W (lkTo src d) c c' k ∧ k ≤ 1737 ∧ HostEnv W HB H.length m₀ c' ∧
       SymPtIn c' d (pt H P.n p) ∧
-      (∀ r, Bhost r = false → r ≠ d → r ≠ d + 1 → r ≠ d + 2 → c'.nreg r = c.nreg r) ∧
-      c'.nmem = c.nmem := by
+      (∀ r, Bhost r = false → r ≠ d → r ≠ d + 1 → r ≠ d + 2 → c'.nreg r = c.nreg r) := by
   have hw := hE.wb
   obtain ⟨c₁, k₁, e₁, hk₁, v71, r₁, m₁⟩ : ∃ c₁ k₁, Exec P W (block [.copyN 50071 src])
       c c₁ k₁ ∧ k₁ = 1 ∧ c₁.nreg 50071 = p ∧ (∀ r, r ≠ 50071 → c₁.nreg r = c.nreg r) ∧
@@ -261,7 +259,7 @@ theorem lkTo_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m₀
     · simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2, ite_eq_right h3]
   have ex : Exec P W (lkTo src d) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   refine ⟨c₃, _, ex, by omega, ⟨e₃.wb_right, ?_, ?_, ?_, ?_, ?_, by rw [m₃]; exact E₂.mem⟩, s₃,
-    fun r h0 h1 h2 h3 => ?_, by rw [m₃, F₂.2.2.1, m₁]⟩
+    fun r h0 h1 h2 h3 => ?_⟩
   all_goals try (rw [r₃ _ (by omega) (by omega) (by omega)])
   · exact E₂.h60
   · exact E₂.h61
@@ -293,7 +291,7 @@ theorem nbrS_exec (c : Config) (hw : WordsBounded W c) {s T N : ℕ} (h01 : c.nr
   have n₁ : c₁.nreg 218012 = N := by rw [r₁ _ (by norm_num) (by norm_num) (by norm_num), h12]
   by_cases hc : c₁.nreg 218052 < c₁.nreg 218012
   · refine spec_seq ⟨c₁, k₁, e₁, spec_ifLtN_true hc (spec_skip w₁ ⟨by omega, v50, v51, ?_, r₁, m₁⟩)⟩
-    rw [v52, Nat.mod_eq_of_lt (by rw [v52, n₁] at hc; exact hc)]
+    rw [v52, Nat.mod_eq_of_lt (by rwa [v52, n₁] at hc)]
   · refine spec_seq ⟨c₁, k₁, e₁, spec_ifLtN_false hc ?_⟩
     exec_block
     · omega
@@ -432,15 +430,15 @@ theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
     by rw [r₁ _ (by decide) (by decide) (by decide)]; exact hE.h69, by rw [m₁]; exact hE.mem⟩
   have hNpos : 0 < N := by omega
   -- the three points
-  obtain ⟨c₂, k₂, e₂, hk₂, E₂, sA₂, r₂, m₂⟩ := lkTo_exec E c₁ E₁ v51 (by omega)
+  obtain ⟨c₂, k₂, e₂, hk₂, E₂, sA₂, r₂⟩ := lkTo_exec E c₁ E₁ v51 (by omega)
     (d := 218053) (by norm_num)
-  obtain ⟨c₃, k₃, e₃, hk₃, E₃, sV₃, r₃, m₃⟩ := lkTo_exec E c₂ E₂ (src := 218050) (p := s + T)
-    (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide)]; exact v50)
+  obtain ⟨c₃, k₃, e₃, hk₃, E₃, sV₃, r₃⟩ := lkTo_exec E c₂ E₂ (src := 218050) (p := s + T)
+    (by rwa [r₂ _ (by decide) (by decide) (by decide) (by decide)])
     (by omega) (d := 218056) (by norm_num)
-  obtain ⟨c₄, k₄, e₄, hk₄, E₄, sB₄, r₄, m₄⟩ := lkTo_exec E c₃ E₃ (src := 218052)
+  obtain ⟨c₄, k₄, e₄, hk₄, E₄, sB₄, r₄⟩ := lkTo_exec E c₃ E₃ (src := 218052)
     (p := (s + T + 1) % N)
-    (by rw [r₃ _ (by decide) (by decide) (by decide) (by decide),
-      r₂ _ (by decide) (by decide) (by decide) (by decide)]; exact v52)
+    (by rwa [r₃ _ (by decide) (by decide) (by decide) (by decide),
+      r₂ _ (by decide) (by decide) (by decide) (by decide)])
     (by rw [hN]; exact Nat.mod_lt _ hNpos) (d := 218059) (by norm_num)
   have sA₃ : SymPtIn c₃ 218053 (pt H P.n (s + T - 1)) := by
     refine symPtIn_copy sA₂ ?_ ?_ ?_

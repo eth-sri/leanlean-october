@@ -67,7 +67,7 @@ theorem fSetup_exec (c : Config) (hw : WordsBounded W c) {A Bn K₀ CB b : ℕ}
     (hK : c.nmem Bn = K₀) (hCB : c.nmem (Bn + 3) = CB) (hb : c.nreg 190001 = b)
     (hroom : A + 6 + 3 * K₀ + 10 ≤ W) :
     ∃ c' k, Exec P W fSetup c c' k ∧ k = 19 ∧ c'.nreg 190021 = A ∧ c'.nreg 190022 = A + 6 ∧
-      c'.nreg 190023 = K₀ ∧ c'.nreg 190024 = CB ∧ c'.nreg 190017 = 1 ∧ c'.nreg 190018 = 0 ∧
+      c'.nreg 190023 = K₀ ∧ c'.nreg 190017 = 1 ∧ c'.nreg 190018 = 0 ∧
       c'.nreg 9999 = A + 6 + 3 * K₀ ∧ c'.nreg 190030 = 0 ∧ c'.nreg 190031 = CB ∧
       c'.nreg 190035 = A + 6 ∧ c'.nreg 190036 = 0 ∧
       (∀ r, (r < 190017 ∨ 190043 < r) → r ≠ 9999 → c'.nreg r = c.nreg r) ∧
@@ -79,7 +79,7 @@ theorem fSetup_exec (c : Config) (hw : WordsBounded W c) {A Bn K₀ CB b : ℕ}
   all_goals try omega
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hA, hBn, hK, hCB, hb]; omega)
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r a1 a2 => ?_, fun a => ?_, rfl,
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r a1 a2 => ?_, fun a => ?_, rfl,
     rfl, rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hA, hBn, hK, hCB, hb]
@@ -103,9 +103,9 @@ theorem recsT_of_nfAt {A : ℕ} {m m' : ℕ → ℕ} {B : ℕ} {N : NF}
       List.getElem?_eq_getElem hi', Option.getD_some]
   rw [hg]
   refine ⟨?_, ?_, ?_⟩
-  · rw [hm _ (by omega)]; exact e1
-  · rw [hm _ (by omega)]; exact e2
-  · rw [hm _ (by omega)]; exact e3
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
 
 /-- The list of a full pass, in memory. -/
 theorem chordListAt_memT {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {B' : ℕ}
@@ -144,14 +144,13 @@ theorem filtS_exec (c : Config) (hw : WordsBounded W c) {N : NF} {li : Bool} {n 
       (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
       (∀ r, (r < 190017 ∨ 190043 < r) → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  set A := c.nreg ALLOC with hA
-  set Bn := c.nreg 230002 with hBn
+  set A := c.nreg ALLOC
+  set Bn := c.nreg 230002
   have hNA := hN.holds
   obtain ⟨hBnA, -⟩ := nfAt_robust_bound hN
-  set K₀ := N.chords.length with hK₀
+  set K₀ := N.chords.length
   have hlen₀ : (triplesOf N).length = K₀ := by unfold triplesOf; rw [List.length_map]
-  obtain ⟨c₁, k₁, e₁, hk₁, v21, v22, v23, v24, v17, v18, v99, v30, v31, v35, v36, g₁, mm₁,
-    rr₁, rm₁, o₁⟩ := fSetup_exec (P := P) c hw (A := A) (Bn := Bn) (K₀ := K₀)
+  obtain ⟨c₁, k₁, e₁, hk₁, v21, v22, v23, v17, v18, v99, v30, v31, v35, v36, g₁, mm₁, rr₁, rm₁, o₁⟩ := fSetup_exec (P := P) c hw (A := A) (Bn := Bn) (K₀ := K₀)
       (CB := c.nmem (Bn + 3)) (b := if li then 1 else 0) rfl rfl hBnA hNA.1 rfl h01 (by omega)
   have hlow₁ : ∀ a, a < A → c₁.nmem a = c.nmem a := fun a ha => by
     rw [mm₁, ite_eq_right (by omega), ite_eq_right (by omega)]
@@ -182,7 +181,7 @@ theorem filtS_exec (c : Config) (hw : WordsBounded W c) {N : NF} {li : Bool} {n 
       rw [hlen₀]
       have : c.nmem (Bn + 3) + 5 * (K₀ - 1) + 4 < A := this
       omega
-  obtain ⟨c₂, k₂, e₂, hw₂, hI₂, h30, hk₂, hk₂'⟩ := fLoop_exec (P := P) hR hCB
+  obtain ⟨c₂, k₂, e₂, hI₂, h30, hk₂, hk₂'⟩ := fLoop_exec (P := P) hR hCB
     (by rw [hlen₀]; omega) e₁.wb_right hI₁ v30
   rw [hlen₀] at hk₂ hk₂' h30
   have g₂ : ∀ r, (r < 190030 ∨ 190039 < r) → c₂.nreg r = c₁.nreg r := hI₂.fr

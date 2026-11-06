@@ -73,9 +73,9 @@ theorem hseg_inter_eq_openHSeg {D : Set Point} {y a b : ℝ} (h : IsHChordIn D y
   · rintro ⟨⟨h1, h2, h3⟩, hpD⟩
     refine ⟨h1, lt_of_le_of_ne h2 fun e => ?_, lt_of_le_of_ne h3 fun e => ?_⟩
     · apply h.left_not
-      rw [show ((a, y) : Point) = p from Prod.ext e h1.symm]; exact hpD
+      rwa [show ((a, y) : Point) = p from Prod.ext e h1.symm]
     · apply h.right_not
-      rw [show ((b, y) : Point) = p from Prod.ext e.symm h1.symm]; exact hpD
+      rwa [show ((b, y) : Point) = p from Prod.ext e.symm h1.symm]
   · rintro ⟨h1, h2, h3⟩
     refine ⟨⟨h1, h2.le, h3.le⟩, ?_⟩
     have := h.open_mem p.1 h2 h3
@@ -300,8 +300,7 @@ theorem convex_halfDisk (w : Point) (r τ : ℝ) : Convex ℝ (halfDisk w r τ) 
   · exact add_pos_of_pos_of_nonneg (mul_pos ha' hp) (mul_nonneg hb hq.le)
   · rw [← ha', zero_add] at hab
     subst hab
-    rw [← ha', zero_mul, zero_add, one_mul]
-    exact hq
+    rwa [← ha', zero_mul, zero_add, one_mul]
 
 theorem isPreconnected_halfDisk (w : Point) (r τ : ℝ) : IsPreconnected (halfDisk w r τ) :=
   (convex_halfDisk w r τ).isPreconnected
@@ -312,9 +311,9 @@ theorem vert_mem_halfDisk {w : Point} {r τ s : ℝ} (hτ : τ = 1 ∨ τ = -1) 
   simp only [sub_self, abs_zero, add_sub_cancel_left]
   rcases hτ with rfl | rfl
   · simp only [one_mul]
-    exact ⟨⟨by linarith, by rw [abs_of_pos hs0]; exact hsr⟩, hs0⟩
+    exact ⟨⟨by linarith, by rwa [abs_of_pos hs0]⟩, hs0⟩
   · simp only [neg_one_mul, abs_neg, mul_neg, neg_neg]
-    exact ⟨⟨by linarith, by rw [abs_of_pos hs0]; exact hsr⟩, hs0⟩
+    exact ⟨⟨by linarith, by rwa [abs_of_pos hs0]⟩, hs0⟩
 
 theorem halfDisk_mono {w w' : Point} {r r' τ : ℝ} (hh : w'.2 = w.2) (hb : ball w' r' ⊆ ball w r) :
     halfDisk w' r' τ ⊆ halfDisk w r τ := by
@@ -339,7 +338,7 @@ theorem halfDisk_inter_nonempty {w w' : Point} {r r' τ : ℝ} (hτ : τ = 1 ∨
       rcases hτ with rfl | rfl <;> simp [hsr]
     refine ⟨⟨hx, habs⟩, ?_⟩
     have : τ * (τ * s) = s := by rcases hτ with rfl | rfl <;> ring
-    rw [this]; exact hs0
+    rwa [this]
   · rw [← hh]
     exact vert_mem_halfDisk hτ hs0 hsr'
 
@@ -398,7 +397,6 @@ theorem ChordSystem.halfDisk_all (hF : ChordSystem D F) {S : Set (Set Point)} {c
   have hopen : hseg y a b ∩ D = openHSeg y a b := hseg_inter_eq_openHSeg h
   rw [hopen] at hcR hex ⊢
   set T : Set ℝ := {x | ∃ r > (0 : ℝ), ball ((x, y) : Point) r ⊆ R ∧ halfDisk (x, y) r τ ⊆ U}
-    with hT
   -- `T` is open
   have hTopen : IsOpen T := by
     rw [Metric.isOpen_iff]
@@ -455,10 +453,9 @@ theorem ChordSystem.exists_halfDisk_subset (hF : ChordSystem D F) {S : Set (Set 
     ∃ w ∈ c ∩ D, ∃ r > (0 : ℝ), ∃ τ : ℝ, (τ = 1 ∨ τ = -1) ∧
       ball w r ⊆ connectedComponentIn (freeIn D S) z₀ ∧ halfDisk w r τ ⊆ U := by
   have hS' : insert c S ⊆ F := insert_subset hc hS
-  set A := freeIn D S with hA
-  set A' := freeIn D (insert c S) with hA'
-  set R := connectedComponentIn A z₀ with hR
-  have hA'A : A' ⊆ A := freeIn_anti D (subset_insert c S)
+  set A := freeIn D S
+  set A' := freeIn D (insert c S)
+  set R := connectedComponentIn A z₀
   have hA'eq : A' = A \ c := freeIn_insert D c S
   have hz₀A : z₀ ∈ A := hF.chord_inter_subset_freeIn hS hc hcS hz₀
   have hcR : c ∩ D ⊆ R :=
@@ -492,7 +489,7 @@ theorem ChordSystem.exists_halfDisk_subset (hF : ChordSystem D F) {S : Set (Set 
   obtain ⟨w, hw, hwc⟩ := hex
   obtain ⟨r, hr, hb, hline⟩ := hF.exists_ball_chord hc hRopen hcR hw
   obtain ⟨q, hqU, hdq⟩ := Metric.mem_closure_iff.1 hwc r hr
-  have hqb : q ∈ ball w r := by rw [mem_ball, dist_comm]; exact hdq
+  have hqb : q ∈ ball w r := by rwa [mem_ball, dist_comm]
   have hqc : q ∉ c := by
     intro hqc
     have := hUA' hqU
@@ -518,8 +515,8 @@ theorem ChordSystem.regionsIn_insert (hF : ChordSystem D F) {S : Set (Set Point)
       regionsIn D (insert c S) = (regionsIn D S \ {R}) ∪ {R₁, R₂} := by
   have hS' : insert c S ⊆ F := insert_subset hc hS
   obtain ⟨z₀, hz₀⟩ := (hF.chord_inter_nonempty_isPreconnected hc).1
-  set A := freeIn D S with hA
-  set A' := freeIn D (insert c S) with hA'
+  set A := freeIn D S
+  set A' := freeIn D (insert c S)
   set R := connectedComponentIn A z₀ with hR
   have hA'A : A' ⊆ A := freeIn_anti D (subset_insert c S)
   have hA'eq : A' = A \ c := freeIn_insert D c S

@@ -77,7 +77,7 @@ theorem dir_correct {M : Model} {Q : Polygon} (hDH : DistinctHeights Q) {Cα : C
       · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at h'; omega
     have hhs : h = (Cα.s + Cα.m) % Q.n := by
       by_contra hne'; exact hDH h _ hh hlt hne' (by rw [hy, e])
-    rw [ite_eq_right (by rw [hhs]; exact hne)]
+    rw [ite_eq_right (by rwa [hhs])]
     intro d hd'; rw [hd d hd', ShootCut.tourV_down Cα hd']
 
 end

@@ -179,7 +179,7 @@ theorem copyL_exec {c : Config} (hw : WordsBounded W c) {g T T' Al : ℕ}
   have hjg : j = g := by
     rw [j50, fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega), h07] at htest; omega
   subst hjg
-  exact ⟨c', k, e, by rw [h50] at hk; omega, hw', jA, by rw [hA] at hψ; exact hψ, hcp, hmem, fr,
+  exact ⟨c', k, e, by rw [h50] at hk; omega, hw', jA, by rwa [hA] at hψ, hcp, hmem, fr,
     hrr, hrm, ho⟩
 
 end proofs

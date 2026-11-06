@@ -90,7 +90,7 @@ theorem cand_single {S : Set Point} (hσ : σ = 1 ∨ σ = -1) {X : Point} (hXS 
     rw [← hx]; ring_nf; rw [show σ ^ 2 = σ * σ by ring, hσ2]; ring
   by_cases hpos : 0 < σ * (X.1 - z.1)
   · rw [ite_eq_left hpos]
-    refine ⟨fun _ => ⟨hpos, by rw [rayPt_of_x hσ hX]; exact hXS, fun t' h1 h2 hS => ?_⟩,
+    refine ⟨fun _ => ⟨hpos, by rwa [rayPt_of_x hσ hX], fun t' h1 h2 hS => ?_⟩,
       fun h => absurd rfl h⟩
     have := key t' hS; linarith
   · rw [ite_eq_right hpos]
@@ -229,9 +229,6 @@ theorem seg_on (hσ : σ = 1 ∨ σ = -1) (h : U.2 = V.2) (hz : z.2 = U.2) (hzS 
     push Not at hU hV
     have e0 : σ * (z.1 + σ * t) = σ * z.1 + t := by rw [mul_add, ← mul_assoc, hσ2, one_mul]
     have e1 : σ * (z.1 + σ * t) = σ * (U.1 + u * (V.1 - U.1)) := by rw [he]
-    have e2 : t = (1 - u) * (σ * (U.1 - z.1)) + u * (σ * (V.1 - z.1)) := by
-      have : σ * z.1 + t = σ * (U.1 + u * (V.1 - U.1)) := by rw [← e0, e1]
-      linarith [this]
     have p1 : (1 - u) * (σ * (U.1 - z.1)) ≤ 0 :=
       mul_nonpos_of_nonneg_of_nonpos (by linarith) hU
     have p2 : u * (σ * (V.1 - z.1)) ≤ 0 := mul_nonpos_of_nonneg_of_nonpos h0 hV

@@ -196,7 +196,7 @@ theorem cntBody_exec {P : Polygon} {W : ℕ} {Hh len : ℕ} {m : ℕ → ℕ} {c
   refine spec_seq (spec_instr (Exec.loadN hw 50065 50064) fun hw₁ => ?_)
   by_cases hk : m (Hh + 1 + 3 * i) < 1
   · rw [ite_eq_left hk] at hacc ⊢
-    refine spec_seq (spec_ifLtN_true (by config_simp; rw [ha, hm, h67]; exact hk) ?_)
+    refine spec_seq (spec_ifLtN_true (by config_simp; rwa [ha, hm, h67]) ?_)
     exec_block
     · config_simp; rw [ha, h68]; omega
     · config_simp; rw [ha, h68, hm, ad]; omega
@@ -210,7 +210,7 @@ theorem cntBody_exec {P : Polygon} {W : ℕ} {Hh len : ℕ} {m : ℕ → ℕ} {c
     simp only [upd]
     split_ifs <;> first | rfl | omega
   · rw [ite_eq_right hk] at hacc ⊢
-    refine spec_seq (spec_ifLtN_false (by config_simp; rw [ha, hm, h67]; exact hk)
+    refine spec_seq (spec_ifLtN_false (by config_simp; rwa [ha, hm, h67])
       (spec_instr (Exec.addN hw₁ _ _ _ (by config_simp; rw [h67]; omega)) fun hw₂ => ?_))
     exec_block
     · config_simp; rw [hi, h67]; omega
@@ -348,7 +348,7 @@ theorem lookBody_exec {P : Polygon} {W Hh p : ℕ} {H : Host} {m : ℕ → ℕ} 
   obtain ⟨E, h71, hil, hs⟩ := hI
   have hw := E.wb
   rw [E.h61] at ht
-  set i := d.nreg 50062 with hi
+  set i := d.nreg 50062
   rcases hs with ⟨hacc, hpi, ha⟩ | ⟨hdone, -⟩
   swap
   · omega
@@ -358,9 +358,9 @@ theorem lookBody_exec {P : Polygon} {W Hh p : ℕ} {H : Host} {m : ℕ → ℕ} 
   have hle := preLen_mono P.n H (show i + 1 ≤ H.length by omega)
   rw [preLen_length] at hle
   have hmem : H[i] ∈ H := List.getElem_mem ht
-  set k := m (Hh + 1 + 3 * i) with hk
-  set a := m (Hh + 2 + 3 * i) with hak
-  set b := m (Hh + 3 + 3 * i) with hbk
+  set k := m (Hh + 1 + 3 * i)
+  set a := m (Hh + 2 + 3 * i)
+  set b := m (Hh + 3 + 3 * i)
   -- the loads
   obtain ⟨d₁, k₁, e₁, hk₁, l65, l66, l72⟩ : ∃ d₁ k₁, Exec P W (block [.loadN 50065 50064,
       .addN 50070 50064 50067, .loadN 50066 50070, .addN 50070 50070 50067,
@@ -396,7 +396,7 @@ theorem lookBody_exec {P : Polygon} {W Hh p : ℕ} {H : Host} {m : ℕ → ℕ} 
   · -- a run
     have hk0 : k = 0 := by omega
     have hrun : H[i] = .run a b := by rw [hitem.1]; simp [itemOf, hk0]
-    have hab : a < P.n ∧ b < P.n := by have := hwf _ hmem; rw [hrun] at this; exact this
+    have hab : a < P.n ∧ b < P.n := by have := hwf _ hmem; rwa [hrun] at this
     rw [ite_eq_left hkind] at hcnt
     obtain ⟨d₂, k₂, e₂, hk₂, l73⟩ : ∃ d₂ k₂, Exec P W (block [.addN 50073 50063 50072,
         .addN 50073 50073 50067]) d₁ d₂ k₂ ∧ k₂ = 2 ∧
@@ -445,9 +445,9 @@ theorem lookBody_exec {P : Polygon} {W Hh p : ℕ} {H : Host} {m : ℕ → ℕ} 
       obtain ⟨E₃, p₃⟩ := env d₃ e₃.wb_right (f₃.2.2.1.trans f₂.2.2.1) (fun r hr => by
         rw [f₃.1 r (Bl_mono hr (by intro x hx; simp at hx ⊢; omega)),
           h2 r (ne_of_Bl hr (by simp))])
-      have t1 : d₁.nreg 50065 < d₁.nreg 50067 := by rw [l65, g67]; exact hkind
+      have t1 : d₁.nreg 50065 < d₁.nreg 50067 := by rwa [l65, g67]
       have t2 : d₂.nreg 50071 < d₂.nreg 50073 := by
-        rw [h2 _ (by omega), g71, l73]; exact hf
+        rwa [h2 _ (by omega), g71, l73]
       refine ⟨d₃, k₁ + ((k₂ + (k₃ + 1)) + 1),
         .seq e₁ (.ifLtN_true t1 (.seq e₂ (.ifLtN_true t2 e₃))),
         ⟨E₃, p₃, by omega, Or.inr ⟨o62, .vtx ((a + (p - preLen P.n H i)) % P.n), ?_,
@@ -471,9 +471,9 @@ theorem lookBody_exec {P : Polygon} {W Hh p : ℕ} {H : Host} {m : ℕ → ℕ} 
           h2 r (ne_of_Bl hr (by simp))])
       have hpre' : preLen P.n H (i + 1) = preLen P.n H i + (b + 1) := by
         rw [hpre, hrun]; rfl
-      have t1 : d₁.nreg 50065 < d₁.nreg 50067 := by rw [l65, g67]; exact hkind
+      have t1 : d₁.nreg 50065 < d₁.nreg 50067 := by rwa [l65, g67]
       have t2 : ¬ d₂.nreg 50071 < d₂.nreg 50073 := by
-        rw [h2 _ (by omega), g71, l73]; exact hf
+        rwa [h2 _ (by omega), g71, l73]
       refine ⟨d₃, k₁ + ((k₂ + (k₃ + 2)) + 1),
         .seq e₁ (.ifLtN_true t1 (.seq e₂ (.ifLtN_false t2 e₃))),
         ⟨E₃, p₃, by omega, Or.inl ⟨?_, ?_, ?_⟩⟩, by omega, by omega⟩
@@ -504,10 +504,10 @@ theorem lookBody_exec {P : Polygon} {W Hh p : ℕ} {H : Host} {m : ℕ → ℕ} 
       have hsp : (H.pts P.n)[p]? = some (if k = 1 then SymPt.vtx a else SymPt.onEdge a b) := by
         rw [pts_getElem? P.n H ht hpi (by rw [← hcnt]; omega), hp0, hitem.1]
         rcases hk12 with h1 | h1 <;> simp [itemOf, HostItem.pts, h1]
-      have t1 : ¬ d₁.nreg 50065 < d₁.nreg 50067 := by rw [l65, g67]; exact hkind
+      have t1 : ¬ d₁.nreg 50065 < d₁.nreg 50067 := by rwa [l65, g67]
       have t2 : upd d₁.nreg 50073 (d₁.nreg 50063 + d₁.nreg 50067) 50071 <
           upd d₁.nreg 50073 (d₁.nreg 50063 + d₁.nreg 50067) 50073 := by
-        config_simp; rw [g71, g63, g67]; exact hf
+        config_simp; rwa [g71, g63, g67]
       refine ⟨d₃, k₁ + ((1 + (k₃ + 1)) + 2),
         .seq e₁ (.ifLtN_false t1 (.seq e₂ (.ifLtN_true t2 e₃))),
         ⟨E₃, p₃, by omega, Or.inr ⟨o62, _, hsp, ?_⟩⟩, by omega, by omega⟩
@@ -532,10 +532,10 @@ theorem lookBody_exec {P : Polygon} {W Hh p : ℕ} {H : Host} {m : ℕ → ℕ} 
         simp only [upd]
         rw [ite_eq_right (ne_of_Bl hr (by simp))])
       have hpre' : preLen P.n H (i + 1) = preLen P.n H i + 1 := by rw [hpre, ← hcnt]
-      have t1 : ¬ d₁.nreg 50065 < d₁.nreg 50067 := by rw [l65, g67]; exact hkind
+      have t1 : ¬ d₁.nreg 50065 < d₁.nreg 50067 := by rwa [l65, g67]
       have t2 : ¬ upd d₁.nreg 50073 (d₁.nreg 50063 + d₁.nreg 50067) 50071 <
           upd d₁.nreg 50073 (d₁.nreg 50063 + d₁.nreg 50067) 50073 := by
-        config_simp; rw [g71, g63, g67]; exact hf
+        config_simp; rwa [g71, g63, g67]
       refine ⟨d₃, k₁ + ((1 + (k₃ + 2)) + 2),
         .seq e₁ (.ifLtN_false t1 (.seq e₂ (.ifLtN_false t2 e₃))),
         ⟨E₃, p₃, by omega, Or.inl ⟨?_, ?_, ?_⟩⟩, by omega, by omega⟩

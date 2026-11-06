@@ -76,7 +76,7 @@ theorem det_lerp_left (b c p q : Point) (t : ℝ) :
 /-- The determinant is affine in its last argument along `x + t • v`. -/
 theorem det_add_smul (a b x v : Point) (t : ℝ) :
     det a b (x + t • v) = det a b x + t * det a b (a + v) := by
-  unfold det; simp only [add_fst, add_snd, smul_fst, smul_snd]; ring
+  unfold det; dsimp; ring
 
 /-- The determinant vanishes on the segment: `c ∈ segment a b → det a b c = 0`. -/
 theorem det_eq_zero_of_mem_segment {a b c : Point} (h : c ∈ Chazelle.segment a b) :
@@ -129,13 +129,12 @@ theorem det_bary_sum (a b c x : Point) : det x b c + det a x c + det a b x = det
 /-- The barycentric reconstruction identity (in vector form). -/
 theorem det_smul_eq_bary_combination (a b c x : Point) :
     det a b c • x = det x b c • a + det a x c • b + det a b x • c := by
-  unfold det; ext <;> simp only [add_fst, add_snd, smul_fst, smul_snd] <;> ring
+  unfold det; ext <;> dsimp <;> ring
 
 /-- Multilinearity: `det` of a convex combination in the last slot. -/
 theorem det_smul_add_smul_add_smul (a b p q r : Point) (u v w : ℝ) (huvw : u + v + w = 1) :
     det a b (u • p + v • q + w • r) = u * det a b p + v * det a b q + w * det a b r := by
-  unfold det
-  simp only [add_fst, add_snd, smul_fst, smul_snd]
+  unfold det; dsimp
   have hw : w = 1 - u - v := by linarith
   subst hw; ring
 

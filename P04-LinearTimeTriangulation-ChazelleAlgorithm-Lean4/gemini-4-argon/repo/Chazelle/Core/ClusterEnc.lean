@@ -115,7 +115,7 @@ theorem reach_iff (h : EnvEnc G M' eV eD) (u w : V') :
         refine ⟨M'.head d, rfl, Relation.ReflTransGen.tail hw' ⟨d, hdb, h.eV_inj hve, rfl,
           by first | exact hu, hw⟩⟩
     obtain ⟨w', hw', hr'⟩ := key _ hr
-    rw [h.eV_inj hw']; exact hr'
+    rwa [h.eV_inj hw']
   · intro hr
     induction hr with
     | refl => exact Relation.ReflTransGen.refl

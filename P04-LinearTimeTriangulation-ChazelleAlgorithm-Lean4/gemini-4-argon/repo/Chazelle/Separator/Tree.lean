@@ -117,7 +117,7 @@ theorem eq_of_isAnc_of_not_parent {v u : V} (h : T.IsAnc v u) (hp : ¬ T.IsAnc v
   obtain ⟨n, hn⟩ := h
   rcases n with _ | n
   · exact hn
-  · exact absurd ⟨n, by rw [← Function.iterate_succ_apply]; exact hn⟩ hp
+  · exact absurd ⟨n, by rwa [← Function.iterate_succ_apply]⟩ hp
 
 /-- A non-root vertex is not an ancestor of its parent. -/
 theorem not_isAnc_parent {v : V} (hv : v ≠ T.root) : ¬ T.IsAnc v (T.parent v) := by

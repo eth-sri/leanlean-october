@@ -78,9 +78,9 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
   simp only [Nat.reduceAdd] at b3 b7 b8 b9 b10
   have hq' : c.nmem (A + 12 + 3 * R + r) = q := hprg
   have ht' : c.nmem (A + 12 + 8 * R + q) = t := htop
-  set a := fv c.nmem A R 7 r with hadef
-  set sT := fv c.nmem A R 7 t with hsdef
-  set bv := fv c.nmem A R 10 t with hbvdef
+  set a := fv c.nmem A R 7 r
+  set sT := fv c.nmem A R 7 t
+  set bv := fv c.nmem A R 10 t
   set v := min a (sT - a) with hvdef
   -- the first block
   obtain ⟨c1, k1, e1, rfl, hc1⟩ : ∃ c1 k1, Exec P W (block [
@@ -122,10 +122,10 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
       (.instr (.copyN 60049 60048))) c1 c2 k2 ∧ k2 ≤ 3 ∧
       c2 = { c1 with nreg := upd c1.nreg 60049 v } := by
     by_cases hlt : a < sT - a
-    · refine spec_ifLtN_true (by rw [r44, r48]; exact hlt)
+    · refine spec_ifLtN_true (by rwa [r44, r48])
         (spec_instr (Exec.copyN hw1 _ _) fun _ => ⟨by omega, ?_⟩)
       rw [r44, hvdef, ← ite_lt_min, ite_eq_left hlt]
-    · refine spec_ifLtN_false (by rw [r44, r48]; exact hlt)
+    · refine spec_ifLtN_false (by rwa [r44, r48])
         (spec_instr (Exec.copyN hw1 _ _) fun _ => ⟨by omega, ?_⟩)
       rw [r48, hvdef, ← ite_lt_min, ite_eq_right hlt]
   subst hc2
@@ -144,12 +144,12 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
   have hR3 : DRegs A R K CB RB LB c3 := by
     refine (hR1.of_same (l := [60049]) (Same.upd1 (by simp)) (by simp [Prot])).of_same s3
       (by simp [Prot])
-  have m3' : c3.nmem = upd c.nmem (A + 12 + 8 * R + r) t := by rw [m3]; exact m1
+  have m3' : c3.nmem = upd c.nmem (A + 12 + 8 * R + r) t := by rwa [m3]
   have s13 : Same [60030, 60043, 60046, 60044, 60047, 60048, 60049, 60050] c c3 :=
     ((s1.mono (by simp)).trans ((Same.upd1 (l := [60030, 60043, 60046, 60044, 60047, 60048, 60049,
       60050]) (by simp)))).trans (s3.mono (by simp))
   by_cases hup : bv < v
-  · refine spec_ifLtN_true (by rw [hbv, r49]; exact hup) ?_
+  · refine spec_ifLtN_true (by rwa [hbv, r49]) ?_
     have b9' := hR3.b 9 (by norm_num); have b10' := hR3.b 10 (by norm_num)
     simp only [Nat.reduceAdd] at b9' b10'
     have r46' : c3.nreg 60046 = t := by rw [s3.1 _ (by simp)]; config_simp; exact r46
@@ -172,12 +172,10 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
     · rw [hc4]; config_simp; rw [m3', fv_store ht hu, fv_store ht hu, fv_store hr hu]
       by_cases h8 : f = 8 ∧ u = r
       · rw [ite_eq_left h8]
-        have : ¬ (f = 9 ∧ u = t) := fun hh => by omega
-        have : ¬ (f = 10 ∧ u = t) := fun hh => by omega
         simp [*]
       · simp only [ite_eq_right h8, hup, true_and]
         split_ifs <;> first | rfl | omega
-  · refine spec_ifLtN_false (by rw [hbv, r49]; exact hup) (spec_skip hw3 ?_)
+  · refine spec_ifLtN_false (by rwa [hbv, r49]) (spec_skip hw3 ?_)
     refine ⟨by omega, s13, fun x hx => ?_, fun f u hf hu => ?_⟩
     · rw [m3', fv_store_out (by norm_num) hr hx]
     · rw [m3', fv_store hr hu]
@@ -270,11 +268,11 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       have r40' : c3.nreg 60040 = r := by rw [s23.1 _ (by simp), r40]
       refine spec_seq ⟨c2, 2, e2, spec_seq ⟨c3, 2, e3, ?_⟩⟩
       by_cases hrem : fv c.nmem A R 11 (fv c.nmem A R 4 r) = 1
-      · refine ifEqN_eq (by rw [r42, hR3.one]; exact hrem) ?_
+      · refine ifEqN_eq (by rwa [r42, hR3.one]) ?_
         obtain ⟨c4, k4, e4, hk4, s4, hm4, hv4⟩ :=
           htopB c3 e3.wb_right hR3 r40' m13 (Or.inr hrem)
         exact ⟨c4, k4, e4, by omega, s23.trans (s4.mono (by simp)) |>.mono (by simp), hm4, hv4⟩
-      · refine ifEqN_ne (by rw [r42, hR3.one]; exact hrem) ?_
+      · refine ifEqN_ne (by rwa [r42, hR3.one]) ?_
         obtain ⟨c4, k4, e4, hk4, s4, hm4, hv4⟩ := ntBr_exec (P := P) e3.wb_right hR3 hAW r40' hr hpg htp
           (by rw [m13]) (by rw [m13])
         refine ⟨c4, k4, e4, fun k' hk' => ⟨by omega, (s23.mono (by simp)).trans (s4.mono (by simp)),
@@ -282,7 +280,7 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
         rw [hv4 f u hf hu, m13]
         have hnc : ¬ (r = 0 ∨ fv c.nmem A R 11 (fv c.nmem A R 4 r) = 1) := by tauto
         simp only [p2, ← hrdef, ite_eq_right hnc, t3Of]
-        set T := fv c.nmem A R 8 (fv c.nmem A R 3 r) with hT
+        set T := fv c.nmem A R 8 (fv c.nmem A R 3 r)
         set v := min (fv c.nmem A R 7 r) (fv c.nmem A R 7 T - fv c.nmem A R 7 r) with hv
         rcases (show f = 8 ∨ f = 9 ∨ f = 10 ∨ (f ≠ 8 ∧ f ≠ 9 ∧ f ≠ 10) by omega) with
           h8 | h9 | h10 | ⟨h8, h9, h10⟩
@@ -399,7 +397,7 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
         rw [h.pos_ord i htest] at this
         exact (hP2.1 _ hpR this).1
       obtain ⟨d', k', e', hk', hf'', h20', hv''⟩ := p2Body_exec (P := P) hwd hRd hAW hidef htest
-        (by rw [hv1 i htest]; exact hr)
+        (by rwa [hv1 i htest])
         (fun h0 => by rw [hv1 i htest] at h0 ⊢; rw [hv4 _ hr]; have := h.pch_lt _ hr h0; omega)
         (fun h0 => by rw [hv1 i htest] at h0 ⊢; rw [hv3 _ hr]; exact h.prg_lt _ hr h0)
         (fun h0 => by
@@ -418,9 +416,9 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
         intro u hu
         obtain ⟨a1, a2, a3⟩ := hc u hu
         refine ⟨?_, ?_, ?_⟩
-        · show fv d'.nmem A R 8 u = _; rw [hv'' 8 u (by norm_num) hu]; exact a1
-        · show fv d'.nmem A R 9 u = _; rw [hv'' 9 u (by norm_num) hu]; exact a2
-        · show fv d'.nmem A R 10 u = _; rw [hv'' 10 u (by norm_num) hu]; exact a3
+        · show fv d'.nmem A R 8 u = _; rwa [hv'' 8 u (by norm_num) hu]
+        · show fv d'.nmem A R 9 u = _; rwa [hv'' 9 u (by norm_num) hu]
+        · show fv d'.nmem A R 10 u = _; rwa [hv'' 10 u (by norm_num) hu]
       · rw [hv'' f u hf hu]
         simp only [h8, h9, h10, ite_false]
         exact hvd f u hf h8 h9 h10 hu)

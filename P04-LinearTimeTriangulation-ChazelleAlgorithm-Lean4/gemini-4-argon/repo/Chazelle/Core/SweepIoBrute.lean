@@ -113,13 +113,12 @@ theorem bruteSpec : BruteSpec := by
   · refine hcomp hf ?_
     obtain ⟨p, t, hp, ht0, ht1, ⟨j, hj, hin⟩, hpt⟩ :=
       exit_in_arcs J.left hP hNF (Q := Qof P) (dirOf_cases _) hzt hf
-    refine ⟨p, t, hp, ht0, ht1, ⟨j, by rw [hN1]; exact hj, ?_⟩, fun g hg => absurd hg
+    refine ⟨p, t, hp, ht0, ht1, ⟨j, by rwa [hN1], ?_⟩, fun g hg => absurd hg
       (List.not_mem_nil), hpt.symm⟩
     rw [w1, w7 j hj]
     obtain ⟨⟨hps, -, -⟩, ⟨hpe, -, -⟩⟩ := arc_end_facts hP hNF hj
     unfold nArc
-    rw [(Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1]
-    exact hin
+    rwa [(Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1]
   · intro r hr h1 h2 h3 hrA
     rw [k2 r hr (fun h => h1 (by unfold RS at h; unfold sw; omega))
       (by unfold accA sw at *; omega) hrA]

@@ -55,20 +55,18 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧
       SInv P J N₂ (c₀.nreg (sw 200)) (c₀.nreg (sw 300)) (c₀.nreg (sw 301))
         (c₀.nreg (sw 302)) (c₀.nreg ALLOC) c'.nmem (c.nreg ipX + 1) 0) := by
-  set AS := c₀.nreg (sw 200) with hASd
-  set S := c₀.nreg (sw 201) with hSd
-  set AL := c₀.nreg (sw 300) with hALd
-  set E := c₀.nreg (sw 301) with hEd
-  set AT := c₀.nreg (sw 302) with hATd
-  set B := c₀.nreg ALLOC with hBd
-  set x := c.nreg ipX with hxd
+  set AS := c₀.nreg (sw 200)
+  set S := c₀.nreg (sw 201)
+  set AL := c₀.nreg (sw 300)
+  set E := c₀.nreg (sw 301)
+  set AT := c₀.nreg (sw 302)
+  set B := c₀.nreg ALLOC
+  set x := c.nreg ipX
   have hK : Consts c := e.hA.hK.fix hI
   have hst := e.hA.hstops
   have hlog := e.hA.hlog
   have htw := e.hA.htabw
   simp only [rd_sw] at hst hlog htw
-  have hAc := hI.hA
-  have hWc := hI.hw.1 ALLOC
   have od := e.odc (m := c.nmem) hI.hm
   simp only [rd_sw] at od
   obtain ⟨pw, hkind, hb1, hkk⟩ := od.stopR hx
@@ -97,7 +95,7 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
       (by unfold lsxH ALLOC sw; omega)).trans l2
   -- the search
   refine IRS.seq (K₁ := κL * (c₀.nreg TLR + 1)) (K₂ := 13)
-    (e.search hls hI₂ (by rw [q1, q2]; exact pw) (by unfold kSt at hroom; omega)) ?_ |>.mono
+    (e.search hls hI₂ (by rwa [q1, q2]) (by unfold kSt at hroom; omega)) ?_ |>.mono
     (by unfold kSt; omega) (fun _ h => h)
   rintro c₃ hI₃ hA₃ hA₃' ⟨s1, s2, sfr, sA, sm⟩
   have hq : (⟨c₂.nreg lsxE, c₂.nreg lsxH⟩ : WPos) =
@@ -178,13 +176,11 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     have hS₃ := hS.congr m3 (by omega) (by omega) (by omega)
     have hv' : SlotVal P J ⟨c₃.nreg ipE, c₃.nreg ipH⟩ (sOf (c₂.nmem (AS + 5 * x + 4)))
         (logPt P J c₂.nmem AL (c₃.nreg lsI)) := by
-      rw [k3E, k3H, o1, o2, mc c₂ hI₂ (AS + 5 * x + 4) (by omega)]
-      exact hv
+      rwa [k3E, k3H, o1, o2, mc c₂ hI₂ (AS + 5 * x + 4) (by omega)]
     have r4 : c₃.nmem (AS + 5 * x + 4) = c.nmem (AS + 5 * x + 4) := mc c₃ hI₃ _ (by omega)
     have h := hS₃.stopStep (m₂ := c₂.nmem) (fun a ha => (mc c₂ hI₂ a ha).trans
       (mc c₃ hI₃ a ha).symm) (by omega) (by omega) (by omega) ht e1 e2 hv'
-    rw [r4] at h
-    exact h
+    rwa [r4] at h
 
 /-- **The stop loop.** -/
 theorem stLoop_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
@@ -213,9 +209,9 @@ theorem stLoop_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
       rw [f201 d hId] at hlt
       refine (IRS.withInv (stB_irs hls e hId ((d1 ipB hpB).trans hB) (by omega) hlt d4 hr)).mono le_rfl ?_
       rintro d' ⟨⟨g1, g2, g3, g4⟩, hId'⟩
-      refine ⟨⟨fun r hr => (g2 r hr).trans (d1 r hr), by omega, by omega, by rw [g1]; exact g4,
+      refine ⟨⟨fun r hr => (g2 r hr).trans (d1 r hr), by omega, by omega, by rwa [g1],
         f201 d' hId'⟩, by omega⟩)
-    hI ⟨fun _ _ => rfl, le_rfl, by omega, by rw [hx]; exact hS, f201 c hI⟩ (by rw [hx]; simpa using hroom)
+    hI ⟨fun _ _ => rfl, le_rfl, by omega, by rwa [hx], f201 c hI⟩ (by rw [hx]; simpa using hroom)
   rw [hx] at h
   simp only [Nat.sub_zero] at h
   refine h.mono le_rfl ?_

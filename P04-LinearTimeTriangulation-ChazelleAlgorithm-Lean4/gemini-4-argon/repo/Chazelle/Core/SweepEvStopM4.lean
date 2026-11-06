@@ -167,7 +167,7 @@ theorem parent_key_iff (hP : J.P.Simple) {P : Polygon} {N : NF}
   have hpt := endPos_pt hN hi hb
   have hσ := dirOf_cases' b
   have hiff := parent_vt_iff hP hS₂ haR hb hf hc
-  set c := (N.chord i).toSet (chainModel J.right) (Qof P) with hcdef
+  set c := (N.chord i).toSet (chainModel J.right) (Qof P)
   unfold Model.key
   constructor
   · intro hk
@@ -199,8 +199,8 @@ theorem parent_key_iff (hP : J.P.Simple) {P : Polygon} {N : NF}
       show (chainModel J.right).pos (Qof P) (endPos N i (1 - b)) = a
       rw [hpt]
       rcases hend with ⟨rfl, h⟩ | ⟨rfl, h⟩
-      · rw [ite_eq_left rfl]; exact h
-      · rw [ite_eq_right (by norm_num)]; exact h
+      · rwa [ite_eq_left rfl]
+      · rwa [ite_eq_right (by norm_num)]
     obtain ⟨e1, e2⟩ := hM.attach_unique (hS₂ hc) hAt hA' (by rw [hpa, hA.2.2.2.1])
     rw [e1, e2]
 

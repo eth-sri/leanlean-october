@@ -133,7 +133,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (ir _ (by norm_num) (by norm_num)) (ir _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
-    (by rw [mD c₁ p1]; exact hwf) (by rw [mD c₁ p1]; exact hC) hWm
+    (by rwa [mD c₁ p1]) (by rwa [mD c₁ p1]) hWm
     (mA c₁ p1) (mU c₁ p1 hI₁) (by omega)) (fun c₂ hI₂ hA₂ ⟨b2, _, f₂⟩ => ?_)).mono
     (by omega) (fun _ h => h)
   have p2 : ∀ q, Rd q → c₂.nreg q = c.nreg q := fun q hq => by
@@ -144,7 +144,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (ir _ (by norm_num) (by norm_num)) (ir _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
-    (by rw [mD c₂ p2]; exact hwf) (by rw [mD c₂ p2]; exact hC) hWm
+    (by rwa [mD c₂ p2]) (by rwa [mD c₂ p2]) hWm
     (mU c₂ p2 hI₂) (mB c₂ p2) (by omega)) (fun c₃ hI₃ hA₃ ⟨b4, _, f₃⟩ => ?_)).mono
     (by omega) (fun _ h => h)
   have p3 : ∀ q, Rd q → c₃.nreg q = c.nreg q := fun q hq => by
@@ -167,7 +167,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (ir _ (by norm_num) (by norm_num)) (ir _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
-    (by rw [mD c₄ p4]; exact hwf) (by rw [mD c₄ p4]; exact hC) hWm
+    (by rwa [mD c₄ p4]) (by rwa [mD c₄ p4]) hWm
     (mA c₄ p4) (mS c₄ p4) (by omega)) (fun c₅ hI₅ hA₅ ⟨b10, b11, f₅⟩ => ?_)).mono
     (by omega) (fun _ h => h)
   have p5 : ∀ q, Rd q → c₅.nreg q = c.nreg q := fun q hq => by
@@ -178,7 +178,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (ir _ (by norm_num) (by norm_num)) (ir _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
-    (by rw [mD c₅ p5]; exact hwf) (by rw [mD c₅ p5]; exact hC) hWm
+    (by rwa [mD c₅ p5]) (by rwa [mD c₅ p5]) hWm
     (mS c₅ p5) (mB c₅ p5) (by omega)) (fun c₆ hI₆ hA₆ ⟨b12, _, f₆⟩ => ?_)).mono
     (by omega) (fun _ h => h)
   have p6 : ∀ q, Rd q → c₆.nreg q = c.nreg q := fun q hq => by
@@ -242,10 +242,10 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     p4 81153 (by simp [Rd]), p4 81155 (by simp [Rd]), p4 81108 (by simp [Rd]),
     p4 81109 (by simp [Rd]), p5 81108 (by simp [Rd]), p5 81109 (by simp [Rd]),
     p5 81154 (by simp [Rd]), p5 81155 (by simp [Rd])] at b14
-  set kA := (chainModel Cα).key (Qof E.P) ⟨c.nreg 81153, c.nreg 81155⟩ with hkA
-  set kB := (chainModel Cα).key (Qof E.P) ⟨c.nreg 81154, c.nreg 81155⟩ with hkB
-  set kU := (chainModel Cα).key (Qof E.P) ⟨c.nreg 81183, 0⟩ with hkU
-  set kS := (chainModel Cα).key (Qof E.P) ⟨c.nreg 81108, c.nreg 81109⟩ with hkS
+  set kA := (chainModel Cα).key (Qof E.P) ⟨c.nreg 81153, c.nreg 81155⟩
+  set kB := (chainModel Cα).key (Qof E.P) ⟨c.nreg 81154, c.nreg 81155⟩
+  set kU := (chainModel Cα).key (Qof E.P) ⟨c.nreg 81183, 0⟩
+  set kS := (chainModel Cα).key (Qof E.P) ⟨c.nreg 81108, c.nreg 81109⟩
   have hY : ((kA < kB ∧ (kA < kS ∧ kS < kB)) ∨ (¬ kA < kB ∧ (kA < kS ∨ kS < kB))) ∨
       (¬ kA < kS ∧ ¬ kS < kA) ↔ (kS = kA ∨ sideInArc kA kB kS) := by
     constructor

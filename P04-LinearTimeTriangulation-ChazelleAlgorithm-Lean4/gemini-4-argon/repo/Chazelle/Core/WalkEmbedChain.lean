@@ -82,8 +82,7 @@ theorem walk_tour (J d : ℕ) (hd : tpos C J + d ≤ 2 * C.m) :
   congr 2
   have h := (bS_add_tpos C J).add_right d
   unfold Nat.ModEq at h
-  rw [← Nat.add_assoc]
-  exact h
+  rwa [← Nat.add_assoc]
 
 theorem box_mod {e : ℕ} (he0 : 1 ≤ e) (he : e ≤ 7) : (2 * C.m + 6 + e) % (2 * C.m + 7) = e - 1 := by
   rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
@@ -155,7 +154,6 @@ theorem counted_iff_box {p : ℕ} (hp : p < (chainModel C).W.n) :
       C.set_subset_box (C.vertex_mem_set (C.sideIdx_le _ _))⟩
   · rintro ⟨h1, h2⟩
     by_contra hc
-    have hR := C.radius_pos
     rcases (show p ≤ 5 ∨ p = 2 * C.m + 6 by omega) with hp5 | rfl
     · interval_cases p
       · exact slitTop_not_mem_box C h1
@@ -215,7 +213,7 @@ theorem agree_Sh (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e) (hR : C
   have htop := top_eq_of_box hT hss hsl.le
   have ht := tpos_lt C J
   have ht' := tpos_lt C' J'
-  set s := 2 * C.m - tpos C J with hs
+  set s := 2 * C.m - tpos C J
   intro d hd
   rcases le_or_gt d s with h1 | h1
   · rw [walk_tour C J d (by omega), walk_tour C' J' d (by omega)]
@@ -348,7 +346,6 @@ theorem tourV_right_end : tourV J.right 0 (2 * J.m₂) = J.shared := by
 
 /-- If the top of `C` lies strictly inside `C₁`, it is the top of `C₁`. -/
 theorem left_topIdx_eq (h : J.whole.topIdx < J.m₁) : J.left.topIdx = J.whole.topIdx := by
-  have hT := J.whole.topIdx_le
   apply le_antisymm
   · refine J.left.topIdx_min (by rw [Merge.Junction.left_m]; omega) fun i hi => ?_
     rw [Merge.Junction.left_m] at hi
@@ -446,7 +443,6 @@ theorem left_box_eq (h : 2 * J.whole.m - tpos J.whole (J.m₁ + 2 * J.m₂) < 2 
 theorem right_box_eq (h : 2 * J.whole.m - tpos J.whole J.m₁ < 2 * J.m₂) :
     2 * J.right.m - tpos J.right 0 = 2 * J.whole.m - tpos J.whole J.m₁ := by
   have h1 := J.one_le_m₁
-  have h2 := J.one_le_m₂
   have hT := J.whole.topIdx_le
   simp only [Merge.Junction.whole_m, Merge.Junction.right_m] at hT h ⊢
   unfold tpos bS Chain.sideS at *

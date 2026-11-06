@@ -208,17 +208,17 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
       · exact hI₁.hin _ (by unfold TBR IFix sw; omega) |>.trans (hI.hin _ (by unfold TBR IFix sw; omega)).symm
       · exact hI₁.hin _ (by unfold TLR IFix sw; omega) |>.trans (hI.hin _ (by unfold TLR IFix sw; omega)).symm)
     hm1 hA₁
-  set j := c₁.nreg lJ with hjd
+  set j := c₁.nreg lJ
   have hrsl : ∀ r ∈ Sweep.nbrRegs N j, r < N.nRegions := nbrRegs_lt hL.hNF hj1
   have hrs3 : (Sweep.nbrRegs N j).length = 3 := by simp [Sweep.nbrRegs]
   have hGl : gatherK N (Sweep.nbrRegs N j) ≤ 11 + 3 * (regK Da + 2) := by
     have := gatherK_le (N := N) (rs := Sweep.nbrRegs N j) (Da := Da)
       (fun r hr => hAr r (hrsl r hr))
-    rw [hrs3] at this; exact this
+    rwa [hrs3] at this
   have hKl : (regArcs N (Sweep.nbrRegs N j)).length ≤ 3 * Da := by
     have := regArcs_length_le (N := N) (rs := Sweep.nbrRegs N j) (Da := Da)
       (fun r hr => hAr r (hrsl r hr))
-    rw [hrs3] at this; exact this
+    rwa [hrs3] at this
   -- 2. the gather
   refine IRS.seq (K₂ := 11200 + (shotOfferK (F (c₀.nreg (sw 5))) (3 * Da) + lhScanK Dc Dc Dc))
     ((lhGather_irs (rs := Sweep.nbrRegs N j) hI₁ hK hL₁ hrs3 hrsl
@@ -244,8 +244,8 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
   have h2 : c₂.nreg lH = c.nreg lH := i2 _ (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))
   -- 3. the holes
   refine IRS.seq (K₂ := shotOfferK (F (c₀.nreg (sw 5))) (3 * Da) + lhScanK Dc Dc Dc)
-    (lhHoles_irs hI₂ hK hL₂.hctx (by rw [e2]; exact he) (by rw [e2, h2]; exact hpp)
-      (by rw [e2, h2]; exact hy) (by rw [e2, h2]; exact hloc)
+    (lhHoles_irs hI₂ hK hL₂.hctx (by rwa [e2]) (by rwa [e2, h2])
+      (by rwa [e2, h2]) (by rwa [e2, h2])
       (by unfold localK at hroom; omega)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨hho, fr3, hA3, hm3⟩
   rw [e2, h2] at hho
@@ -290,10 +290,10 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
   -- 4. the shot and its offer
   refine IRS.seq (K₂ := lhScanK Dc Dc Dc)
     ((lhShotOffer_irs hsh hBs hXl (rs := Sweep.nbrRegs N j) (L := L) hI₃ hK hL₃ hX hcap hOk hsg
-      (by rw [e3]; exact he) (by rw [e3, h3]; exact hpp) (by rw [e3, h3]; exact hy)
-      (regArcs_lt hL.hNF hrsl) gK3 (by rw [gB3, hA3, g3]) (by rw [gB3, hm3]; exact g4)
-      (by rw [e3, h3]; exact hho) (by rw [e3, h3, d3]; exact hacc₃) (by rw [t3]; exact htag)
-      (by rw [t3]; exact hMod) hR (by rw [n3]; exact hn)
+      (by rwa [e3]) (by rwa [e3, h3]) (by rwa [e3, h3])
+      (regArcs_lt hL.hNF hrsl) gK3 (by rw [gB3, hA3, g3]) (by rwa [gB3, hm3])
+      (by rwa [e3, h3]) (by rwa [e3, h3, d3]) (by rwa [t3])
+      (by rwa [t3]) hR (by rwa [n3])
       (by
         have := shotOfferK_mono (Fg := F (c₀.nreg (sw 5))) hKl
         unfold localK at hroom; omega)).mono
@@ -342,8 +342,8 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
   have hr2 : (N.arc (sj N (succP N.arcs.length j))).reg < N.nRegions :=
     hrsl _ (by simp [Sweep.nbrRegs])
   have hS₄ : SEnv P W C N Mod R₀ ⟨c.nreg lE, c.nreg lH⟩ (c.nreg lD) c₄ :=
-    ⟨hL.hG, hW3, hL₄.hctx, hL.hNF, by rw [t4]; exact htag, by rw [t4]; exact hMod, hR,
-      by rw [n4]; exact hn, e4, h4, d4, by rw [← hR]; exact hy⟩
+    ⟨hL.hG, hW3, hL₄.hctx, hL.hNF, by rwa [t4], by rwa [t4], hR,
+      by rwa [n4], e4, h4, d4, by rwa [← hR]⟩
   have hsc := lhScanK_mono (hCh _ hr0) (hCh _ hr1) (hCh _ hr2)
   -- 5. the chords
   refine (lhScan_irs hI₄ hK hS₄ rfl hL₄.hNW hL₄.hE r0 r1 r2 hr0 hr1 hr2 a₁
@@ -363,9 +363,9 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
     · exact Or.inr h
   · obtain ⟨h, hxh, hhn, hyz, hsec, hzt⟩ := hgeo
     obtain ⟨hfree, hmem⟩ := Sweep.local_hit_mem C hL.hP hD hL.hNF
-      (x := ⟨c.nreg lE, c.nreg lH⟩) hxh (by rw [hQn]; exact hhn) he hpp.1 hpp.2.1 hyz hsec hy
+      (x := ⟨c.nreg lE, c.nreg lH⟩) hxh (by rwa [hQn]) he hpp.1 hpp.2.1 hyz hsec hy
       hzt hj1 hl1 hl2 (gathered_keys hL.hNF hrsl (m := c₃.nmem) (AB := c₃.nreg gBase)
-        (by rw [gB3, hm3]; exact g4)) hho.2.2.2
+        (by rwa [gB3, hm3])) hho.2.2.2
     refine ⟨hfree, ?_⟩
     rcases hmem with hlo | ⟨r, hr, k, hk, hca, hpos⟩
     · exact s₂ (comp₁ hfree hzt hlo)
@@ -377,7 +377,7 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
       obtain ⟨τ, hτ, hτpos⟩ := d₂ hzt k hk' hca
       have hne : dirOf (c.nreg lD) ≠ 0 := by rcases hσ' with h | h <;> rw [h] <;> norm_num
       have := Chazelle.Visibility.rayPt_injective _ hne (hτpos.symm.trans hpos)
-      rw [← this]; exact hτ
+      rwa [← this]
   · have hS : ¬ SSet r := fun h => h2 (by unfold SSet sw at h; unfold LHW sw; omega)
     rw [fr5.1 r h1 hS (by unfold LHW sw at h2; unfold accA sw; omega)
       (fun h => h2 (by subst h; unfold lO LHW sw; omega))

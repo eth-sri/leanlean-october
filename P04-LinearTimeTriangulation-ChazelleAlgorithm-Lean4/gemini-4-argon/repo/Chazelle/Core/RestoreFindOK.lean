@@ -56,7 +56,6 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
       ((10 ^ 9 * ((t * (f + 1) + 20) * (h + a + 1)) + 22) * g + 2)) + 3) * k + 4) + 2) * k + 2)) ≤
       10 ^ 10 * (t + 21) * (d + 2) ^ 2 * f * g * (h + a + 1) := by
   set S := h + a + 1 with hS
-  have hS1 : 1 ≤ S := by omega
   set T := t * (f + 1) + 20 with hT
   -- the piece bound
   have hTf : T ≤ 2 * (t + 20) * f := by
@@ -66,14 +65,10 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
     nlinarith
   -- the pair bound
   set P := 10 ^ 9 * 2 * (t + 21) * f * S with hP
-  have hP1 : 1 ≤ P := by
-    rw [hP]; have : 1 ≤ (t + 21) * f * S := Nat.one_le_iff_ne_zero.2 (by positivity)
-    nlinarith
   have hpair : 70 + 11040 + 11040 + 7 + g + 3 + ((10 ^ 9 * (T * S) + 22) * g + 2) + 3 ≤
       (P + 22200) * g := by
     have : (10 ^ 9 * (T * S) + 22) * g ≤ P * g := Nat.mul_le_mul_right _ hKp
     nlinarith
-  have hk1 : k + 1 ≤ d + 2 := by omega
   -- the loops
   have hloop : 30 + (17 + (((((70 + 11040 + 11040 + 7 + g + 3 +
       ((10 ^ 9 * (T * S) + 22) * g + 2)) + 3) * k + 4) + 2) * k + 2)) ≤
@@ -140,12 +135,12 @@ theorem findOK_of {sh cu : Stmt} {Bs Bc Bo : Finset ℕ} {F G H : ℕ → ℕ} {
     have hch : (E.N.region E.r).chords ≠ [] := fun h => by
       rw [hkdef] at ht; unfold kOf at ht; rw [ite_eq_left h] at ht; omega
     have hk' : k = (E.N.region E.r).arcs.length := by rw [hkdef]; unfold kOf; rw [ite_eq_right hch]
-    exact hE.arcOK hch (by rw [← hk']; exact ht)
+    exact hE.arcOK hch (by rwa [← hk'])
   have hPG : ∀ t, t < k → PGood E c₀ Kp t := fun t ht => by
     have hch : (E.N.region E.r).chords ≠ [] := fun h => by
       rw [hkdef] at ht; unfold kOf at ht; rw [ite_eq_left h] at ht; omega
     have hk' : k = (E.N.region E.r).arcs.length := by rw [hkdef]; unfold kOf; rw [ite_eq_right hch]
-    exact pgood_of hE hch (by rw [← hk']; exact ht) k0K_le
+    exact pgood_of hE hch (by rwa [← hk']) k0K_le
       (fun Cα N γ' hQ hcan hγ' hm => k1K_le hE hQ hcan hγ' hm)
   have hrun : FRS B P W c₀ (.seq aCntS (outerLoop cu (testS sh))) c₀
       (17 + ((outerK E Kp k + 2) * k + 2)) (fun c' => FWin E c' ∧

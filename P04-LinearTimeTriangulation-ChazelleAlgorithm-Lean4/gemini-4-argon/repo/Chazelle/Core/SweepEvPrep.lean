@@ -67,7 +67,7 @@ variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 theorem allocOne_irs (hI : IInv W c₀ c) (hK1 : c.nreg K1 = 1) (hroom : c.nreg ALLOC + 1 ≤ W) :
     IRS P W c₀ (.instr (.addN ALLOC ALLOC K1)) c 1
       (fun c' => c' = { c with nreg := upd c.nreg ALLOC (c.nreg ALLOC + 1) }) := by
-  have ex := Exec.addN (P := P) hI.hw ALLOC ALLOC K1 (by rw [hK1]; exact hroom)
+  have ex := Exec.addN (P := P) hI.hw ALLOC ALLOC K1 (by rwa [hK1])
   rw [hK1] at ex
   exact IRS.ofExec hI ex le_rfl (fun r _ hr => upd_other _ _ _ hr) rfl (fun _ _ => rfl) rfl rfl
     (by simp) (by simp) rfl
@@ -122,7 +122,7 @@ theorem allocLoop_irs (hI : IInv W c₀ c) (hK : Consts c) {U : ℕ} (hU : c.nre
     (hAU : c.nreg ALLOC ≤ U) (hroom : c.nreg ALLOC + 3 * (U - c.nreg ALLOC) ≤ W) :
     IRS P W c₀ allocLoop c (3 * (U - c.nreg ALLOC) + 2) (fun c' =>
       c'.nreg ALLOC = U ∧ (∀ r, r ≠ ALLOC → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
-  set A := c.nreg ALLOC with hA
+  set A := c.nreg ALLOC
   have k1 : c.nreg K1 = 1 := hK.2.1
   have nU : pU ≠ ALLOC := by unfold pU ALLOC sw; omega
   have n1 : K1 ≠ ALLOC := by unfold K1 ALLOC sw; omega
@@ -196,10 +196,10 @@ theorem prepTask : PrepTask := by
   have hK : Consts c := E.hK.fix hI
   have h2 : c.nmem (c.nreg (sw 4)) = N₂.nChords := (E.nw₂' hI).nfAt.1
   have h1 : c.nmem (c.nreg (sw 3)) = N₁.nChords := (nw₁' E hI).nfAt.1
-  set K₁ := N₁.nChords with hK₁
-  set K₂ := N₂.nChords with hK₂
-  set t := K₁ + K₂ + 1 with ht
-  set A := c.nreg ALLOC with hA
+  set K₁ := N₁.nChords
+  set K₂ := N₂.nChords
+  set t := K₁ + K₂ + 1
+  set A := c.nreg ALLOC
   have hTB : c.nreg cTB = A := hAc.symm
   refine IRS.mono (K := 9 + ((4 * (A + 6 * K₂ - A) + 2) + (14 + (3 * (A + 6 * K₂ + 112 * t -
     (A + 6 * K₂)) + 2)))) ?_ (by omega) (fun _ h => h)

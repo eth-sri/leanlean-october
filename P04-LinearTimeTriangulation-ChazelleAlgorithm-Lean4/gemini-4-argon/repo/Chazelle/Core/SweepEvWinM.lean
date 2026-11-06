@@ -177,7 +177,7 @@ theorem key_map {P : Polygon} (hP : J.P.Simple) {e h : ℕ} (hpw : PosW P J e h)
     (hL : (Lst J : ℝ) ≤ offK P J e h) :
     offK P J e h = (Lst J : ℝ) + (kr J e : ℝ) + (chainModel J.whole).param (Qof P) ⟨e, h⟩ ∧
       kd J e < E₁ J ∧ (0 < lδ J → kd J e < lL1 J ∨ lL1 J + lδ J ≤ kd J e) ∧
-      ψ J (kd J e) = kr J e ∧ mEdge J (kd J e) = e ∧ MValid J (kd J e) (1 / 2) ∧
+      ψ J (kd J e) = kr J e ∧
       (chainModel J.left).param (Qof P) ⟨ke₁ J e, h⟩ = (chainModel J.whole).param (Qof P) ⟨e, h⟩ ∧
       (∀ s, sidePt (chainModel J.whole).W e s = sidePt (chainModel J.left).W (ke₁ J e) s) := by
   obtain ⟨he, hpp, -⟩ := hpw
@@ -208,19 +208,19 @@ theorem key_map {P : Polygon} (hP : J.P.Simple) {e h : ℕ} (hpw : PosW P J e h)
     refine ⟨hE, fun h => ?_, fun h => ?_, fun h => absurd h (by norm_num)⟩
     · rcases hgap h.1 with h' | h' <;> omega
     · rcases hgap h.1 with h' | h' <;> omega
-  refine ⟨?_, hE, hgap, hψ, hm, hv, ?_, fun s => ?_⟩
+  refine ⟨?_, hE, hgap, hψ, ?_, fun s => ?_⟩
   · rw [hoff, hr]; push_cast [hLD]; ring
   · have := param_corr hP hv (by norm_num) (Qof P) h
     rw [hm] at this; exact this.symm
   · have := edge_corr hP hv (by norm_num) s
-    rw [hm] at this; exact this
+    rwa [hm] at this
 
 /-- The key of the key position in the walk of `C₁` has `b₁`-offset `kd + t₀`. -/
 theorem key₁_off {P : Polygon} (hP : J.P.Simple) {e h : ℕ} (hpw : PosW P J e h)
     (hL : (Lst J : ℝ) ≤ offK P J e h) :
     off (chainModel J.left).W.n (b₁ J) ((chainModel J.left).key (Qof P) ⟨ke₁ J e, h⟩) =
       (kd J e : ℝ) + (chainModel J.whole).param (Qof P) ⟨e, h⟩ := by
-  obtain ⟨-, hE, -, -, -, -, hpar, -⟩ := key_map hP hpw hL
+  obtain ⟨-, hE, -, -, hpar, -⟩ := key_map hP hpw hL
   have hpp := hpw.2.1
   unfold Model.key
   simp only
@@ -400,12 +400,11 @@ theorem wend_map (hP : J.P.Simple) {dE eE hE : ℕ} (hdE : dE < E₁ J) (hg : Ga
   have hm : mEdge J dE < (chainModel J.whole).W.n := by
     unfold mEdge; exact Nat.mod_lt _ (by have := win_gW_lt (J := J); omega)
   have hpp' : ProperPos (chainModel J.whole) (Qof P) P.n ⟨mEdge J dE, hE⟩ := by
-    rw [ProperPos, hpar]; exact hpp
+    rwa [ProperPos, hpar]
   refine ⟨posW_of_inner hm hpp' ?_, ?_⟩
   · rw [win_pos_eq_sidePt, hpar]
     simp only
-    rw [hpt]
-    exact hy
+    rwa [hpt]
   · rw [win_offK_eq hm hpp', hpar]
     unfold mEdge
     rw [dOf_add_mod win_gW_lt (Lst_ψ_lt hP hdE)]
@@ -434,7 +433,7 @@ theorem wend_cut {dE eE : ℕ} {tE : ℝ} {G : Set (Set Point)} (hdE : dE < E₁
       rfl, ?_⟩
     · rcases hg h.1 with h' | h' <;> omega
     · rcases hg h.1 with h' | h' <;> omega
-    · rw [hheE]; exact hcut
+    · rwa [hheE]
   · obtain ⟨h1, he0, hg'⟩ := h0 hz.symm
     refine ⟨dE - 1, 1, ⟨by omega, fun h => ?_, fun h => ?_, fun h => absurd h one_ne_zero⟩,
       zero_le_one, le_rfl, ?_, ?_⟩
@@ -468,8 +467,7 @@ theorem gap_pt (hP : J.P.Simple) (hδ : 0 < lδ J) :
   obtain ⟨-, h7, hl1, hb, hτp, hτl, -⟩ := gap_facts hP hδ
   have hn₁ := win_n₁_eq (J := J)
   have hm1 : J.left.m = J.m₁ := rfl
-  rw [hb, hl1, h7, hn₁]
-  rw [show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁ + 7) = 6 + (2 * J.left.m + 7) by
+  rw [hb, hl1, h7, hn₁, show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁ + 7) = 6 + (2 * J.left.m + 7) by
       omega, Nat.add_mod_right, Nat.mod_eq_of_lt (show 6 < 2 * J.left.m + 7 by omega),
     show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁) = 2 * J.left.m + 6 by omega,
     Nat.mod_eq_of_lt (show 2 * J.left.m + 6 < 2 * J.left.m + 7 by omega)]
@@ -508,8 +506,7 @@ theorem mem_loSet {M : Model} {Q : Polygon} {N : NF} {n' : ℕ} {m : ℕ → ℕ
   rw [hg k hk, hkd]
   unfold nArc
   simp only
-  rw [(Restore.normOf_facts hs).2.2.2.1, (Restore.normOf_facts he).2.2.2.1]
-  exact hc
+  rwa [(Restore.normOf_facts hs).2.2.2.1, (Restore.normOf_facts he).2.2.2.1]
 
 end Gath
 
@@ -562,8 +559,8 @@ theorem cover_arc (hP : J.P.Simple) (hN : IsNF (chainModel J.left) (Qof P) N₁)
   have hb0 : (0 : ℝ) ≤ b₁ J := Nat.cast_nonneg _
   have hbn : (b₁ J : ℝ) < M.W.n := by exact_mod_cast b₁_lt
   refine mem_loSet hg hl hpp hol hp ht0 ht1.le ?_
-  refine cIn_of_U hb0 hbn hsn he0 hen hx0 hxn hyr.1 hyr.2 hab hin (by rw [hy]; exact hlt) ?_
-  rw [hy]; exact hup
+  refine cIn_of_U hb0 hbn hsn he0 hen hx0 hxn hyr.1 hyr.2 hab hin (by rwa [hy]) ?_
+  rwa [hy]
 
 end Cover
 

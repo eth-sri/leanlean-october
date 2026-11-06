@@ -46,9 +46,9 @@ theorem open_of_mem {y a b : ℝ} (h : IsHChordIn D y a b) {z : Point} (hz : z �
   obtain ⟨hzy, hza, hzb⟩ := hz
   refine ⟨lt_of_le_of_ne hza fun e => h.left_not ?_, lt_of_le_of_ne hzb fun e => h.right_not ?_⟩
   · have : ((a, y) : Point) = z := point_ext e hzy.symm
-    rw [this]; exact hzD
+    rwa [this]
   · have : ((b, y) : Point) = z := point_ext e.symm hzy.symm
-    rw [this]; exact hzD
+    rwa [this]
 
 /-- Two chords sharing a point of the domain are equal. -/
 theorem eq_of_common {c c' : Set Point} (hc : HCD D c) (hc' : HCD D c') {z : Point} (hz : z ∈ c)
@@ -93,7 +93,7 @@ theorem side_iff {c : Set Point} (hc : HCD D c) {y₀ : ℝ} {w₀ : Point} (hw�
     by_contra hge
     push Not at hge
     have hne : z.1 ≠ w₀.1 := fun e => hw₀ (by
-      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rw [this]; exact hzD)
+      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rwa [this])
     have := between_mem h hz' hz'D hz hzD hlt.le (lt_of_le_of_ne hge (Ne.symm hne)).le
     apply hw₀
     have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (by rw [hy, hw₀y])
@@ -131,7 +131,7 @@ theorem side_chords_eq (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
     refine ⟨lt_of_le_of_ne h1 fun e => hw.2 (h.memL hS (hwy ▸ hY1) (hwy ▸ hY2) ?_),
       lt_of_le_of_ne h2 fun e => hw.2 (h.memR hS (hwy ▸ hY1) (hwy ▸ hY2) ?_)⟩
     · rw [hwy]; exact e.symm
-    · rw [hwy]; exact e
+    · rwa [hwy]
   have key : ∀ {c c' : Set Point} {z z' : Point}, HCD (dom R S) c → HCD (dom R S) c' → z ∈ c →
       z' ∈ c' → z ∈ dom R S → z' ∈ dom R S → z.2 = Y → z'.2 = Y →
       xAt sL Y ≤ z.1 ∧ z.1 ≤ xAt sR Y → xAt sL Y ≤ z'.1 ∧ z'.1 ≤ xAt sR Y → z.1 ≤ z'.1 →
@@ -148,9 +148,9 @@ theorem side_chords_eq (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
       have he := hS.distinct v _ hv hw (hvY ▸ hYR) hvY
       have hsv : s = v.1 := by rw [he]
       have hzv : z.1 ≠ v.1 := fun e => hvD (by
-        rw [show v = z from point_ext e.symm (hvY.trans hzy.symm)]; exact hzD)
+        rwa [show v = z from point_ext e.symm (hvY.trans hzy.symm)])
       have hz'v : z'.1 ≠ v.1 := fun e => hvD (by
-        rw [show v = z' from point_ext e.symm (hvY.trans hz'y.symm)]; exact hz'D)
+        rwa [show v = z' from point_ext e.symm (hvY.trans hz'y.symm)])
       rcases lt_or_gt_of_ne hzv with h3 | h3
       · have := hside.1 h3; linarith [lt_of_le_of_ne h2 (hsv ▸ hz'v.symm)]
       · linarith [lt_of_le_of_ne h1 (hsv ▸ hzv)]
@@ -201,11 +201,11 @@ theorem deg_le_four (hS : Good R S) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD
     (hU : U ∈ regionsIn (dom R S) G) :
     {c | c ∈ G ∧ TouchesIn (dom R S) c U}.ncard ≤ 4 := by
   classical
-  set D := dom R S with hD
+  set D := dom R S
   obtain ⟨q, hqf, rfl⟩ := hU
   obtain ⟨sL, sR, y₁, y₂, h⟩ := exists_trap hS hfull hqf.1 hqf.2
-  set T := tr sL sR y₁ y₂ with hTdef
-  set U := connectedComponentIn (freeIn D G) q with hUdef
+  set T := tr sL sR y₁ y₂
+  set U := connectedComponentIn (freeIn D G) q
   have hUT : U ⊆ T := h.region_subset hS hfull hqf
   have hTD : T ⊆ D := h.tr_subset_dom hS
   have hqT : q ∈ T := hUT (mem_connectedComponentIn hqf)

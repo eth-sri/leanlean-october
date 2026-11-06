@@ -81,7 +81,7 @@ theorem forLoopPot {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
-    exact ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', by omega⟩
+    exact ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwa [h1, h2]) e₁ e₂, hI', by omega⟩
 
 end loops
 
@@ -119,12 +119,12 @@ theorem runBody_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ e : Config}
     · config_simp; rw [r29, h0]; omega
     · rw [← Nat.add_assoc, hsucc]
       by_cases hlt : (a + t) % n + 1 < n
-      · refine spec_ifLtN_true (by config_simp; rw [r30, h0, hrn]; exact hlt) ?_
+      · refine spec_ifLtN_true (by config_simp; rwa [r30, h0, hrn]) ?_
         refine spec_skip ‹_› ?_
         refine ⟨by omega, ?_, ?_, by config_simp, rfl⟩
         · config_simp; rw [r29, h0]
         · config_simp; simp only [hlt, ↓reduceIte]; rw [r30, h0]
-      · refine spec_ifLtN_false (by config_simp; rw [r30, h0, hrn]; exact hlt) ?_
+      · refine spec_ifLtN_false (by config_simp; rwa [r30, h0, hrn]) ?_
         refine spec_instr (Machine.Exec.copyN ‹_› _ _) fun _ => ?_
         refine ⟨by omega, ?_, ?_, by config_simp, rfl⟩
         · config_simp; rw [r29, h0]

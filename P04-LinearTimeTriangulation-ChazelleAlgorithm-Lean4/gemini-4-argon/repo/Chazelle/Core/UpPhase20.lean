@@ -41,7 +41,6 @@ theorem sq_le_two_pow (p : ℕ) : (p + 3) ^ 2 ≤ 16 * 2 ^ p := by
 /-- `γ'_{g+1}` is small against the word bound. -/
 theorem gradeGran_succ_le {n g : ℕ} (hn : 2 ≤ n) (hg : g ≤ topGrade n) :
     gradeGran (g + 1) + g + 3 ≤ 128 * n := by
-  have h2 := two_pow_le_of_le_top hn hg
   have hp := two_pow_le_of_le_top hn (le_refl (topGrade n))
   have hsq := sq_le_two_pow g
   have hgp : 2 ^ g ≤ 2 ^ topGrade n := Nat.pow_le_pow_right (by norm_num) hg
@@ -73,7 +72,6 @@ theorem gradesL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB :
   set F := gT κB κL κG O.κ P.n with hF
   obtain ⟨A0, hA0⟩ : ∃ A0, c.nreg ALLOC = A0 := ⟨_, rfl⟩
   rw [hA0] at hW ⊢
-  have hWn : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
   let I : Config → Prop := fun c' => ∃ g h' R', g ≤ p + 1 ∧ WordsBounded W c' ∧
     GradeInv O P c' g h' hp R' S D ∧ A0 ≤ c'.nreg ALLOC ∧
     c'.nreg ALLOC ≤ A0 + ∑ j ∈ Finset.range g, F j ∧

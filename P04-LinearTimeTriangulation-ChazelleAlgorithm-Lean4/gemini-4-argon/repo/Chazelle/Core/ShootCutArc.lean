@@ -143,7 +143,7 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
   set Q := Qof P
   set ks := M.key Q s
   set ke := M.key Q e
-  set T := ks + len (n : ℝ) ks ke with hT
+  set T := ks + len (n : ℝ) ks ke
   have hn0 : (0 : ℝ) < (n : ℝ) := by rw [hn]; positivity
   have kS := key_range hs hs1
   have kE := key_range he he1
@@ -178,9 +178,9 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
       have hl := upath_chained hloop
       rcases hfin with ⟨rfl, _⟩ | ⟨rfl, _⟩
       · exact ⟨e, hp₁s, by rw [hp₁e]; exact Chained.append' hl ⟨rfl, rfl⟩⟩
-      · exact ⟨_, hp₁s, by rw [hp₁e, List.append_nil]; exact hl⟩
+      · exact ⟨_, hp₁s, by rwa [hp₁e, List.append_nil]⟩
     obtain ⟨y, hy⟩ := hc
-    rw [Chained.last hy hne]; exact hy
+    rwa [Chained.last hy hne]
   refine ⟨hne, hp₁s, hlast, fun i hi => Chained.get hch i hi, fun i hi => ?_, hkp, ?_⟩
   swap
   · intro pc hpc
@@ -192,8 +192,7 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
       · rw [List.mem_singleton] at hpc; subst hpc; exact ⟨Or.inr rfl, Or.inl rfl⟩
       · simp at hpc
   have := e6_of_kpath hn0 hkp (by linarith) (fun pc hpc => pcOK_keys (hok pc hpc)) hne i hi
-  rw [hlast] at this
-  exact this
+  rwa [hlast] at this
 
 end ShootCut
 

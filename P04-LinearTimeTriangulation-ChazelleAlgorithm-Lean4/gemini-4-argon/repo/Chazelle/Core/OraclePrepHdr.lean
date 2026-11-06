@@ -38,7 +38,6 @@ theorem stores_exec {P : Polygon} {W : ℕ} (L : List ℕ) {c : Config} (hw : Wo
     exact ⟨c, 0, .skip hw, rfl, by simpa using hp, fun _ _ => rfl, fun i hi => by simp at hi,
       fun _ _ => rfl, rfl, rfl, rfl⟩
   | cons r L ih =>
-    have hr : r ≠ 110005 := hL r (by simp)
     obtain ⟨c₁, k₁, e₁, hk₁, v5, R₁, m₁, rr₁, rm₁, o₁⟩ : ∃ c₁ k₁, Exec P W
         (block [.storeN 110005 r, .addN 110005 110005 120011]) c c₁ k₁ ∧ k₁ = 2 ∧
         c₁.nreg 110005 = p + 1 ∧ (∀ r', r' ≠ 110005 → c₁.nreg r' = c.nreg r') ∧
@@ -104,9 +103,9 @@ theorem hdrS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
   have hl : hdrRegs.length = 18 := rfl
   refine ⟨c₂, _, .seq e₁ e₂, by rw [hk₁, hk₂, hl], by rw [R₂ _ (by decide), a3],
     by rw [R₂ _ (by decide), a9], fun r a b d e => by rw [R₂ r d, R₁ r a b d e],
-    fun i hi h3 => ?_, ?_, fun a ha => by rw [mo a (by rw [hl]; exact ha), m₁],
+    fun i hi h3 => ?_, ?_, fun a ha => by rw [mo a (by rwa [hl]), m₁],
     by rw [rr₂, rr₁], by rw [rm₂, rm₁], by rw [o₂, o₁]⟩
-  · rw [mm i (by rw [hl]; exact hi)]
+  · rw [mm i (by rwa [hl])]
     have hne : hdrRegs.getD i 0 ≠ 110003 ∧ hdrRegs.getD i 0 ≠ 110004 ∧
         hdrRegs.getD i 0 ≠ 110005 ∧ hdrRegs.getD i 0 ≠ 9999 := by
       interval_cases i <;> simp_all [hdrRegs]

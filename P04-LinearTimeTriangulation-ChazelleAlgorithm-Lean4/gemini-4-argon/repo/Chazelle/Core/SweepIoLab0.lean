@@ -150,7 +150,7 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
     (search_irs hls hA hI hz hzPn hpp harr (by omega)) ?_).mono
     (le_trans (le_of_eq rfl) hcost) (fun _ h => h)
   rintro c₂ hI₂ hA₂ hA₂' ⟨t_le, t_lt, t_ge, fr2, m2⟩
-  set t := c₂.nreg S0C.lsI with ht
+  set t := c₂.nreg S0C.lsI
   set G := c₂.nreg ALLOC with hG
   -- 2. the gap regions
   refine IRS.seq (K₁ := gapK (c₀.nreg TLR)) (K₂ := 3 + (slotK * 12 + (2 + (gB (c₀.nreg (sw 6)) + symShotK (F (c₀.nreg (sw 5))) (18 * (c₀.nreg (sw 6) + 1))))))
@@ -163,7 +163,7 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
       iscr_sw (by decide) (by decide), trivial⟩).mono (by simp [eIn]) (fun _ h => h)) ?_
   rintro c₄ hI₄ hA₄ hA₄' rfl
   obtain ⟨e2v, e1v, e0v, eo⟩ := eIn_val c₃.nmem c₃.nreg k3.2.1
-  set c₄ : Config := { c₃ with nreg := regB c₃.nmem eIn c₃.nreg } with hc₄
+  set c₄ : Config := { c₃ with nreg := regB c₃.nmem eIn c₃.nreg }
   have tl3 : c₃.nreg S0C.lsI = t :=
     g4 _ (nO _ (by decide) (by decide)) (by decide) (by decide) (by decide)
   have eA4 : c₄.nreg ALLOC = G + 6 := by
@@ -205,7 +205,7 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
       (by simp [gIn]) (fun _ h => h)) ?_
   rintro c₆ hI₆ hA₆ hA₆' rfl
   obtain ⟨n6, c6v, go⟩ := gIn_val c₅.nmem c₅.nreg
-  set c₆ : Config := { c₅ with nreg := regB c₅.nmem gIn c₅.nreg } with hc₆
+  set c₆ : Config := { c₅ with nreg := regB c₅.nmem gIn c₅.nreg }
   have egL6 : c₆.nreg gL = G := by
     show regB _ _ _ _ = _
     rw [go _ (by decide) (by decide), s2 _ (by unfold SlotW gL sV sA sX sN sE sw; omega)
@@ -253,7 +253,7 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
         rw [List.getD_eq_getElem _ _ (by simp [slotPairs]; omega)]; exact List.getElem_mem _
       exact slot_lt _ _ (hitems _ hmem).2.2.2.2
   -- 6. the gather
-  set rs : List ℕ := (List.range 18).map (fun i => c₆.nmem (G + i)) with hrs_def
+  set rs : List ℕ := (List.range 18).map (fun i => c₆.nmem (G + i))
   have hrs_len : rs.length = 18 := by simp [rs]
   have hrs_get : ∀ j, j < 18 → rs.getD j 0 = c₆.nmem (G + j) := fun j hj => by
     simp [rs, List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range hj]
@@ -284,7 +284,7 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
   -- 7. the shot
   have hlen : (regArcs N₂ rs).length ≤ 18 * (c₀.nreg (sw 6) + 1) := by
     have := regArcs_length_le hArs
-    rw [hrs_len] at this; exact this
+    rwa [hrs_len] at this
   have keep7 : ∀ r, bandOf r ∉ oracleBands → ¬ (sw 1000 ≤ r ∧ r ≤ sw 1119) →
       ¬ (sw 4000 ≤ r ∧ r ≤ sw 4037) → r ≠ ALLOC → c₇.nreg r = c.nreg r := by
     intro r h1 h2 h3 h4
@@ -359,9 +359,8 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
       refine ⟨6 + idx, by omega, ?_⟩
       rw [← add_assoc, slotw idx hidx', h1, hev, h2 c₄ hK₄]
       unfold slotVal
-      rw [hI4m (rd c₀ bSweep 300 + 7 * e + 2) (by omega),
+      rwa [hI4m (rd c₀ bSweep 300 + 7 * e + 2) (by omega),
         ite_eq_left ⟨by omega, hkn⟩, hI4m (rd c₀ bSweep 300 + 7 * e + 3 + k) (by omega)]
-      exact hkV
     have hti := logIdx_cases hA t_le t_lt t_ge hlsl hlsrec hidx
     obtain ⟨q, hq18, hqV⟩ : ∃ q, q < 18 ∧
         regOf (chainModel J.right) (Qof P) N₂ (c₆.nmem (G + q)) = V := by
@@ -390,8 +389,8 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
           refine ⟨3 + ii, by omega, ?_⟩
           rw [← add_assoc, gap2 ii hii3, List.getD_eq_getElem _ _ hii, hir, hrV]
     obtain ⟨hfreeR, hexit⟩ := exit_mem_gather hP hN (rs := rs) (m := c₇.nmem)
-      (A := c₆.nreg ALLOC) w4 (valid q hq18) (mem_rs q hq18) hzt hσ (by rw [hqV]; exact hray)
-    exact hcomp hfreeR (by rw [w1, w2]; exact hexit)
+      (A := c₆.nreg ALLOC) w4 (valid q hq18) (mem_rs q hq18) hzt hσ (by rwa [hqV])
+    exact hcomp hfreeR (by rwa [w1, w2])
   · unfold sw at h2 h3 h4
     rw [k8 r h1 (by unfold RS; omega) (by unfold accA sw; omega) h5]
     exact keep7 r h1 (by unfold sw; omega) (by unfold sw; omega) h5

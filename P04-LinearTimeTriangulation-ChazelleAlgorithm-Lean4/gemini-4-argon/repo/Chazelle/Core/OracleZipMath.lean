@@ -48,7 +48,6 @@ theorem same_point_of_opp {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m) {
     rcases (by omega : (z - a - b : ℤ) = 0 ∨ (z - a - b : ℤ) = 1) with e | e
     · left; rw [← h1, e]; simp
     · right; rw [← h1, e]; simp
-  have hm := C.one_le
   rcases h with h | h
   · rcases hint (2 * C.m) (by push_cast; linarith) with h0 | h1
     · have ht0 : t = 0 := by linarith
@@ -93,8 +92,7 @@ theorem same_point_of_opp {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m) {
       have : ((a + b : ℕ) : ℝ) = 0 := by push_cast; linarith
       exact_mod_cast this
     unfold tk
-    rw [← hadef, ← hbdef]
-    rw [show a = 0 by omega, show b = 0 by omega]
+    rw [← hadef, ← hbdef, show a = 0 by omega, show b = 0 by omega]
 
 /-- A walk position with key in `[6, 2 m + 6]` is a tour position, up to the closing vertex. -/
 theorem tour_norm {p : ℕ} (hp : p < 2 * C.m + 7) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1)
@@ -150,7 +148,6 @@ theorem same_point_of_sum {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : p' < 2 * C.
     have := hk; have := hk'
     linarith
   obtain ⟨w, hw⟩ := hAz
-  have hA0 : 0 ≤ A := by rw [hAdef]; positivity
   have hA4 : A < 4 * C.m := by
     rw [hAdef]; push_cast
     have : ((tj C i : ℕ) : ℝ) + 1 ≤ 2 * C.m := by exact_mod_cast hA
@@ -262,7 +259,6 @@ theorem int_of_noCut_left (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainModel
   set s := sk (chainModel C) Q N p
   set e := ek (chainModel C) Q N p
   have hsL : ¬ (L < s ∧ s ≤ κ) := fun h => hno s h.1 h.2 hs
-  have heL : ¬ (L < e ∧ e ≤ κ) := fun h => hno e h.1 h.2 he
   unfold sideInArc at hκ ⊢
   split_ifs at hκ ⊢ with h
   · constructor
@@ -282,7 +278,6 @@ theorem int_of_noCut_right (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainMode
   obtain ⟨hs, he, -, -⟩ := arc_facts hN hne hq
   set s := sk (chainModel C) Q N q
   set e := ek (chainModel C) Q N q
-  have hsL : ¬ (κ ≤ s ∧ s < R) := fun h => hno s h.1 h.2 hs
   have heL : ¬ (κ ≤ e ∧ e < R) := fun h => hno e h.1 h.2 he
   unfold sideInArc at hκ ⊢
   split_ifs at hκ ⊢ with h
@@ -429,7 +424,6 @@ theorem zip_core (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
     right; right
     rw [Finset.mem_filter] at hc
     obtain ⟨hc, c1, c2, c3⟩ := hc
-    have hcL' : c = a + b - L := by linarith
     have he := end_eq_of hN hne hq (hCu.mem_toFinset.1 hc) (show a + b - κ < c by linarith)
       (fun x h1 h2 => hin2 x h1 (by linarith))
     rw [he]
@@ -511,7 +505,7 @@ theorem zip_cases (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
     have hmk : ∀ x, 6 < x → x < κT C → mk C x = 6 + κT C - x := fun x a b => by
       unfold mk; rw [ite_eq_left b.le]
     have hq' : sideInArc (sk (chainModel C) Q N q) (ek (chainModel C) Q N q) (6 + κT C - κ) := by
-      rw [← hmk κ h6' hlt, ← e]; exact i2
+      rwa [← hmk κ h6' hlt, ← e]
     rcases zip_core hN hP hne hp hq h6' hlt hmk i1 hq' with ⟨a1, a2⟩ | ⟨a1, a2, a3⟩ | ⟨a1, a2, a3⟩
     · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨by linarith, a1, a2⟩)))
     · exact Or.inr (Or.inl ⟨Or.inl ⟨a1, a2⟩, a3⟩)
@@ -522,7 +516,7 @@ theorem zip_cases (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
       fun x a b => by unfold mk; rw [ite_eq_right (not_le.2 a)]; ring
     have hq' : sideInArc (sk (chainModel C) Q N q) (ek (chainModel C) Q N q)
         (κT C + (2 * C.m + 6) - κ) := by
-      rw [← hmk κ hgt hl', ← e]; exact i2
+      rwa [← hmk κ hgt hl', ← e]
     rcases zip_core hN hP hne hp hq hgt hl' hmk i1 hq' with ⟨a1, a2⟩ | ⟨a1, a2, a3⟩ | ⟨a1, a2, a3⟩
     · exact Or.inr (Or.inr (Or.inr (Or.inr ⟨a1, a2⟩)))
     · exact Or.inr (Or.inl ⟨Or.inr ⟨a1, a2⟩, a3⟩)
@@ -556,11 +550,11 @@ theorem zipRel_of_mk {p q : ℕ} {κ : ℝ} (h6 : 6 ≤ κ) (h7 : κ ≤ 2 * C.m
   obtain ⟨p₁, t₁, h1, h2, h3, e1⟩ := key_decomp h6 h7
   obtain ⟨p₂, t₂, h1', h2', h3', e2⟩ := key_decomp a1 a2
   have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
-  refine ⟨p₁, p₂, t₁, t₂, by rw [hnW]; exact h1, by rw [hnW]; exact h1', h2, h3, h2', h3',
-    pt_on_chain h1 h2 h3 (by rw [e1]; exact h6) (by rw [e1]; exact h7), ?_,
-    by rw [e1]; exact hp, by rw [e2]; exact hq⟩
-  exact same_point_of_sum C h1 h1' h2 h3 h2' h3' (by rw [e1]; exact h6) (by rw [e1]; exact h7)
-    (by rw [e2]; exact a1) (by rw [e2]; exact a2) (z := z) (by rw [e1, e2]; exact hz)
+  refine ⟨p₁, p₂, t₁, t₂, by rwa [hnW], by rwa [hnW], h2, h3, h2', h3',
+    pt_on_chain h1 h2 h3 (by rwa [e1]) (by rwa [e1]), ?_,
+    by rwa [e1], by rwa [e2]⟩
+  exact same_point_of_sum C h1 h1' h2 h3 h2' h3' (by rwa [e1]) (by rwa [e1])
+    (by rwa [e2]) (by rwa [e2]) (z := z) (by rwa [e1, e2])
 
 /-- The top keys have one point: the top. -/
 theorem top_keys_same {x y : ℝ} (hx : TopKey C x) (hy : TopKey C y) :
@@ -599,8 +593,6 @@ theorem zipRel_of_gen (hN : IsNF (chainModel C) Q N) (_hP : C.P.Simple)
   have hT6 := κT_ge C
   have hT7 := κT_lt C
   have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
-  obtain ⟨-, -, hne_p, -⟩ := arc_facts hN hne hp
-  obtain ⟨-, -, hne_q, -⟩ := arc_facts hN hne hq
   -- points just after the start / before the end of an arc are inside it
   have after_start : ∀ r, r < N.arcs.length → After C Q N r (sk (chainModel C) Q N r) := by
     intro r hr
@@ -626,8 +618,8 @@ theorem zipRel_of_gen (hN : IsNF (chainModel C) Q N) (_hP : C.P.Simple)
       ⟨h6T, ⟨δ, hδ, hA⟩, ⟨δ', hδ', hB⟩⟩ | ⟨⟨δ, hδ, hA⟩, ⟨δ', hδ', hB⟩⟩
   · -- the top
     obtain ⟨p₁, p₂, a1, a2, b1, b2, c⟩ := top_keys_same hx hy
-    refine ⟨p₁, p₂, 0, 0, by rw [hnW]; exact a1, by rw [hnW]; exact a2, le_rfl, one_pos, le_rfl,
-      one_pos, ?_, c, by rw [add_zero, b1]; exact i1, by rw [add_zero, b2]; exact i2⟩
+    refine ⟨p₁, p₂, 0, 0, by rwa [hnW], by rwa [hnW], le_rfl, one_pos, le_rfl,
+      one_pos, ?_, c, by rwa [add_zero, b1], by rwa [add_zero, b2]⟩
     have hx6 : 6 ≤ x ∧ x ≤ 2 * C.m + 6 := by
       rcases hx with rfl | rfl | rfl <;> constructor <;> linarith
     exact pt_on_chain a1 le_rfl one_pos (by rw [b1]; simp; exact hx6.1)
@@ -673,7 +665,6 @@ theorem zipRel_of_gen (hN : IsNF (chainModel C) Q N) (_hP : C.P.Simple)
     rw [hmk _ (by rw [hme]; linarith) (by rw [hme]; linarith), hme]
     convert hBe ε hε0 hε2 using 1; ring
   · -- the first half from its ends
-    have hmk6 : mk C 6 = κT C := by unfold mk; rw [ite_eq_left hT6]; ring
     set ε := min (min δ δ') (κT C - 6) / 2 with hε
     have hε0 : 0 < ε := by
       have := lt_min (lt_min hδ hδ') (show 0 < κT C - 6 by linarith); linarith
@@ -720,7 +711,6 @@ theorem ek_eq_sk_succ (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
 /-- Points just after the start of an arc are inside it. -/
 theorem after_start (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainModel C) Q).Nonempty)
     {r : ℕ} (hr : r < N.arcs.length) : After C Q N r (sk (chainModel C) Q N r) := by
-  obtain ⟨-, -, hne', -⟩ := arc_facts hN hne hr
   by_cases h : sk (chainModel C) Q N r < ek (chainModel C) Q N r
   · refine ⟨ek (chainModel C) Q N r - sk (chainModel C) Q N r, by linarith, fun ε e1 e2 => ?_⟩
     unfold sideInArc; rw [ite_eq_left h]; constructor <;> linarith
@@ -730,7 +720,6 @@ theorem after_start (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainModel C) Q)
 /-- Points just before the end of an arc are inside it. -/
 theorem before_end (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainModel C) Q).Nonempty)
     {r : ℕ} (hr : r < N.arcs.length) : Before C Q N r (ek (chainModel C) Q N r) := by
-  obtain ⟨-, -, hne', -⟩ := arc_facts hN hne hr
   by_cases h : sk (chainModel C) Q N r < ek (chainModel C) Q N r
   · refine ⟨ek (chainModel C) Q N r - sk (chainModel C) Q N r, by linarith, fun ε e1 e2 => ?_⟩
     unfold sideInArc; rw [ite_eq_left h]; constructor <;> linarith

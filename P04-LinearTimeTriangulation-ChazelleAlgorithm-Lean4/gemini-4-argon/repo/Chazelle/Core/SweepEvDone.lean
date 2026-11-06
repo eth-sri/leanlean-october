@@ -65,7 +65,7 @@ theorem done_iter_mem (hIt : IterRel P J N₁ N₂ c cw cs co c')
     hIt
   have hAs : cs.nreg ALLOC = cw.nreg ALLOC := hRr ALLOC (by unfold ALLOC bF sw; omega)
     (by unfold ALLOC bN sw; omega)
-  rw [hB.memT x (by omega) (by rw [hT', ← hT]; exact hxT), hRm, hWm x hx]
+  rw [hB.memT x (by omega) (by rwa [hT', ← hT]), hRm, hWm x hx]
 
 end done
 

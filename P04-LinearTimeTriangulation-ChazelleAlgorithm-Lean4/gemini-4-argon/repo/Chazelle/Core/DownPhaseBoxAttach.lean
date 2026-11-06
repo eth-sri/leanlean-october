@@ -197,8 +197,7 @@ theorem attach_transfer {d : Set Point} {y : ℝ} (hdy : ∀ z ∈ d, z.2 = y) {
   have hL := hnear z hz hzne hzd
   have hz2 : s.2 = z.2 := (hdy s hmem).trans (hdy z hz).symm
   obtain ⟨κ, hκ, eX⟩ := h.scale_pt (Or.inl hz2)
-  rw [sideLeft_eq, eN, eP, hpt, eX, sideCcw_smul hα hκ hβ]
-  exact hL
+  rwa [sideLeft_eq, eN, eP, hpt, eX, sideCcw_smul hα hκ hβ]
 
 end Twin
 

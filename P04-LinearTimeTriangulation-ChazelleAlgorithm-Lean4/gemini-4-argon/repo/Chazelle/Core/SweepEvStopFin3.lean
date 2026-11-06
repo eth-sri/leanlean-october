@@ -62,7 +62,7 @@ theorem slfCmp_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   refine (callOff_irs (P := P) (C := J.whole) hI (E.ctxW' hI)
     ⟨by unfold sw; omega, by unfold sw; omega, hr.1, hr.2.1, hr.2.2.1, hr.2.2.2.1, hr.2.2.2.2.1,
       hr.2.2.2.2.2, by unfold K0 sw; omega, by unfold K0 sw; omega, by unfold cGW sw; omega,
-      by unfold cGW sw; omega⟩ ho hex hyn (by rw [hgw]; exact hgn) hpp
+      by unfold cGW sw; omega⟩ ho hex hyn (by rwa [hgw]) hpp
     (by rw [k0]; exact ⟨le_rfl, zero_lt_one, Nat.zero_le _⟩) h6 (fun _ => h6y) hroom).mono le_rfl ?_
   rintro c' ⟨b1, b2, fr, hA, hm⟩
   rw [hgw, k0] at b1 b2
@@ -70,7 +70,7 @@ theorem slfCmp_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       (e : ℝ) + (chainModel J.whole).param (Qof P) ⟨e, h⟩ := fun _ _ => rfl
   have hy0 : off (chainModel J.whole).W.n (gW J : ℝ)
       ((chainModel J.whole).key (Qof P) ⟨c.nreg y, 0⟩) = v := by
-    rw [hk]; exact hv
+    rwa [hk]
   rw [hy0] at b1 b2
   exact ⟨b1, b2, fr, hA, hm⟩
 
@@ -120,7 +120,7 @@ def SlfPos (P : Polygon) (J : Merge.Junction) (c : Config) (e h : ℕ) : Prop :=
 
 theorem SlfPos.congr {e h : ℕ} {c c' : Config} (hp : SlfPos P J c e h) (he : c'.nreg e = c.nreg e)
     (hh : c'.nreg h = c.nreg h) : SlfPos P J c' e h := by
-  unfold SlfPos at *; rw [he, hh]; exact hp
+  unfold SlfPos at *; rwa [he, hh]
 
 theorem slfOff_congr {e h : ℕ} {c c' : Config} (he : c'.nreg e = c.nreg e)
     (hh : c'.nreg h = c.nreg h) : slfOff P J c' e h = slfOff P J c e h := by
@@ -139,7 +139,6 @@ theorem slfCmp2_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     unfold gW; rw [cm_n]; have := tpos_lt J.whole J.m₁; omega
   have hLn := Lst_lt_n J
   have hgl := (E.hM.fix hI).gl
-  have hgw := E.gw' hI
   have hcl : 240000 ≤ cGL ∧ cGL < 250000 := by unfold cGL sw; omega
   have hcw : 240000 ≤ cGW ∧ cGW < 250000 := by unfold cGW sw; omega
   refine IRS.seq (K₁ := 11008) (K₂ := 11008) (slfCmp_irs E hI ⟨hr.1, hr.2.1, hr.2.2.1, hr.2.2.2,
@@ -155,7 +154,7 @@ theorem slfCmp2_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   have h1 := k1 hx hr.2.2.1 hr.2.2.2 (by omega) (by omega)
   have hp1 := hp.congr e1 h1
   refine (slfCmp_irs E hI₁ ⟨hr.1, hr.2.1, hr.2.2.1, hr.2.2.2, hcw.1, hcw.2⟩ ⟨by omega, by omega⟩
-    hp1.1 hp1.2.1 hp1.2.2 (by rw [E.gw' hI₁]; exact hgn) (by rw [E.gw' hI₁]; unfold gW; omega)
+    hp1.1 hp1.2.1 hp1.2.2 (by rwa [E.gw' hI₁]) (by rw [E.gw' hI₁]; unfold gW; omega)
     (v := 0) (by rw [E.gw' hI₁, add_zero, oW_def]; exact off_self _ _) (by omega)).mono le_rfl ?_
   rintro c₂ ⟨-, b2, fr2, hA2, hm2⟩
   rw [slfOff_congr e1 h1] at b2
@@ -182,7 +181,6 @@ theorem slfOffs_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   have r1 : 240000 ≤ a1F + 1 ∧ a1F + 1 < 250000 ∧ 240000 ≤ a1F + 2 ∧ a1F + 2 < 250000 := by
     unfold a1F sw; omega
   have hO : 240700 ≤ slfO ∧ slfO + 3 < 250000 := by unfold slfO sw; omega
-  have k0 := (E.hK.fix hI).1
   unfold slfOffs
   refine IRS.seq (K₁ := 2 * 11008) (K₂ := 2 * 11008 + 5) (slfCmp2_irs E hI r0 hO
     (by unfold oF0 slfO sw; omega) (by unfold oF0 slfO sw; omega) hp₀ (by omega)) ?_

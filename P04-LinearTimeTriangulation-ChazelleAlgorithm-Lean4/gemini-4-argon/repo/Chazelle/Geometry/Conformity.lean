@@ -271,7 +271,7 @@ theorem conforming_of_disjoint_interiors {a b c d e f : Point}
   obtain ⟨φ, u, h₁, h₂⟩ := geometric_hahn_banach_open_open
     (convex_triangle a b c).interior isOpen_interior
     (convex_triangle d e f).interior isOpen_interior hdisj
-  set φl : Point →ₗ[ℝ] ℝ := (φ : Point →ₗ[ℝ] ℝ) with hφl
+  set φl : Point →ₗ[ℝ] ℝ := (φ : Point →ₗ[ℝ] ℝ)
   have hφl_apply : ∀ x, φl x = φ x := fun _ => rfl
   -- `φ ≤ u` on the first closed triangle, `φ ≥ u` on the second
   have hT₁ : ∀ x ∈ convexHull ℝ ({a, b, c} : Set Point), φl x ≤ u := by
@@ -294,7 +294,7 @@ theorem conforming_of_disjoint_interiors {a b c d e f : Point}
     rw [← hφl_apply, h0] at h1 h2
     simp at h1 h2
     linarith
-  set L : Set Point := {x | φl x = u} with hLdef
+  set L : Set Point := {x | φl x = u}
   have hL : Convex ℝ L := convex_level φl u
   obtain ⟨ψ, hψ⟩ := exists_injOn_level hφ0 u
   -- the intersection lies on the line

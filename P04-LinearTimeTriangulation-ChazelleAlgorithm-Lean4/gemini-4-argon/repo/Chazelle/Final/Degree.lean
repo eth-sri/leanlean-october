@@ -77,7 +77,6 @@ theorem fst_eq_crossX {v a p : Point} (hp : p ∈ Chazelle.segment v a) (hh : p.
 /-- An open interval contains a point different from two given reals. -/
 theorem exists_Ioo_avoid {lo hi : ℝ} (h : lo < hi) (c₁ c₂ : ℝ) :
     ∃ x, lo < x ∧ x < hi ∧ x ≠ c₁ ∧ x ≠ c₂ := by
-  have hd : 0 < hi - lo := by linarith
   by_cases hA : lo + (hi - lo) / 4 ≠ c₁ ∧ lo + (hi - lo) / 4 ≠ c₂
   · exact ⟨_, by linarith, by linarith, hA.1, hA.2⟩
   by_cases hB : lo + (hi - lo) / 2 ≠ c₁ ∧ lo + (hi - lo) / 2 ≠ c₂
@@ -98,8 +97,6 @@ theorem piece3_between_aux {m M x x' z : ℝ} (hmM : m ≤ M) (hxm : x ≠ m) (h
     (hxm' : x' ≠ m) (hxM' : x' ≠ M) (h : piece3 m M x = piece3 m M x')
     (hz1 : min x x' ≤ z) (hz2 : z ≤ max x x') : z ≠ m ∧ z ≠ M := by
   unfold piece3 at h
-  have hz1' := hz1
-  have hz2' := hz2
   by_cases ha : x < m
   · by_cases hb : x' < m
     · have := max_lt ha hb
@@ -152,9 +149,9 @@ theorem ncard_le_three_of_near {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k <
       ∃ x, |x - (P.vtx k).1| < r ∧ ((x, h) : Point) ∈ R ∧ x ≠ c₁ h ∧ x ≠ c₂ h) :
     S.ncard ≤ 3 := by
   obtain ⟨r, hr, hball⟩ := boundary_near_vtx hP hk
-  set v := P.vtx k with hv
-  set a := P.vtx (prevIdx P k) with ha
-  set b := P.vtx ((k + 1) % P.n) with hb
+  set v := P.vtx k
+  set a := P.vtx (prevIdx P k)
+  set b := P.vtx ((k + 1) % P.n)
   have hSfin : S.Finite := (regions_finite hP).subset hS
   have hF' : F ≤ 𝓝 v.2 := hF.trans nhdsWithin_le_nhds
   -- a common height `h`
@@ -164,8 +161,7 @@ theorem ncard_le_three_of_near {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k <
   have hev2 : ∀ᶠ h in F, h ≠ v.2 := Filter.mem_of_superset (hF self_mem_nhdsWithin) fun _ h => h
   have hev3 : ∀ᶠ h in F, |h - v.2| < r := by
     refine hF' (Filter.mem_of_superset (Metric.ball_mem_nhds v.2 hr) fun h hh => ?_)
-    rw [Metric.mem_ball, Real.dist_eq] at hh
-    exact hh
+    rwa [Metric.mem_ball, Real.dist_eq] at hh
   have hev4 : ∀ᶠ h in F, ∀ j ∈ Iio P.n, (P.vtx j).2 ≠ h := by
     refine (Set.finite_Iio P.n).eventually_all.2 fun j _ => ?_
     by_cases hj : (P.vtx j).2 = v.2
@@ -176,8 +172,8 @@ theorem ncard_le_three_of_near {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k <
       exact Ne.symm hh
   obtain ⟨h, h1, h2, h3, h4⟩ := (hev1.and (hev2.and (hev3.and hev4))).exists
   choose! x hx using h1
-  set c₁ := crossX v a h with hc₁
-  set c₂ := crossX v b h with hc₂
+  set c₁ := crossX v a h
+  set c₂ := crossX v b h
   -- two witnesses in the same piece lie in the same region
   have key : ∀ R ∈ S, ∀ R' ∈ S, piece3 (min c₁ c₂) (max c₁ c₂) (x R) =
       piece3 (min c₁ c₂) (max c₁ c₂) (x R') → R = R' := by
@@ -185,7 +181,7 @@ theorem ncard_le_three_of_near {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k <
     obtain ⟨hxR1, hxR2, hxR3, hxR4⟩ := hx R hR
     obtain ⟨hxR1', hxR2', hxR3', hxR4'⟩ := hx R' hR'
     set T : Set Point := (fun z : ℝ => ((z, h) : Point)) '' Icc (min (x R) (x R'))
-      (max (x R) (x R')) with hT
+      (max (x R) (x R'))
     have hTc : IsPreconnected T :=
       isPreconnected_Icc.image _ (Continuous.continuousOn (by fun_prop))
     have hpT : ((x R, h) : Point) ∈ T := ⟨x R, ⟨min_le_left _ _, le_max_left _ _⟩, rfl⟩

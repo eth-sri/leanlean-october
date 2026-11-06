@@ -94,7 +94,7 @@ theorem pass_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} {s
   refine ⟨fun i h1 h2 hs => passMem_act (hi - lo) hdAP i h1 (by omega) hs,
     fun i h1 h2 hs => passMem_pos (hi - lo) hdAP
       (fun a b c d e' f => hinj a b c (by omega) e' (by omega)) i h1 (by omega) hs,
-    fun a h1 h2 => passMem_keep (hi - lo) (by rw [hj]; exact h1)
+    fun a h1 h2 => passMem_keep (hi - lo) (by rwa [hj])
       (fun i a' b c => h2 i a' (by omega) c), by rw [passMem_ptr_eq, hj]⟩
 
 /-- **The three passes**: each class lands in its range of `ACT`, the positions of its items are
@@ -150,7 +150,7 @@ theorem passes_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} 
     have := hit i' b c; omega
   obtain ⟨b1, b2, b3, b4⟩ := pass_spec (sel := s1) (e := e1) hL (m := (passA m S lo hi f).1) hlh hhi
     (by omega) (fun i h1 h2 => by rw [tA i h1 h2]; exact hit i h1 h2)
-    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rw [← tA i h1 h2, ← tA i' h3 h4]; exact h))
+    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rwa [← tA i h1 h2, ← tA i' h3 h4]))
     (by omega)
   have hB1 : (passB m S lo hi f).1 =
       (passMem (passA m S lo hi f).1 s1 S.bACT S.bPOS S.bTMP lo e1 (hi - lo)).1 := by
@@ -162,16 +162,12 @@ theorem passes_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} 
     rw [tA i' b c]; have := hit i' b c; omega
   obtain ⟨c1, c2, c3, c4⟩ := pass_spec (sel := s2) (e := e2) hL (m := (passB m S lo hi f).1) hlh hhi
     (by omega) (fun i h1 h2 => by rw [tB i h1 h2]; exact hit i h1 h2)
-    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rw [← tB i h1 h2, ← tB i' h3 h4]; exact h))
+    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rwa [← tB i h1 h2, ← tB i' h3 h4]))
     (by omega)
   have hC1 : (passC m S lo hi f).1 =
       (passMem (passB m S lo hi f).1 s2 S.bACT S.bPOS S.bTMP lo e2 (hi - lo)).1 := by
     unfold passC; rw [hB2]
   have hC2 : (passC m S lo hi f).2 = e3 := by unfold passC; rw [hB2, c4, he3]
-  have hr0 : ∀ i, lo ≤ i → i < hi → cntS s0 lo i ≤ cntS s0 lo hi := fun i _ h =>
-    cntS_mono (by omega)
-  have hr1 : ∀ i, lo ≤ i → i < hi → cntS s1 lo i ≤ cntS s1 lo hi := fun i _ h =>
-    cntS_mono (by omega)
   have hlt : ∀ (sel : ℕ → Prop) i, lo ≤ i → i < hi → sel i → cntS sel lo i < cntS sel lo hi :=
     fun sel i h1 h2 h3 => cntS_lt h1 h2 h3
   refine ⟨fun i h1 h2 hs => ?_, fun i h1 h2 hs => ?_, fun i h1 h2 hs => ?_, fun a h1 h2 => ?_,
@@ -191,7 +187,6 @@ theorem passes_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} 
       (Or.inr (Or.inl ⟨rfl, h⟩))) (by omega)
     have hn2 : ¬ s2 i := fun h => absurd (huniq i 0 2 h1 h2 (Or.inl ⟨rfl, hs⟩)
       (Or.inr (Or.inr ⟨rfl, h⟩))) (by omega)
-    have hv := hit i h1 h2
     rw [hC1, c3 _ (by omega) (fun i' b c d => by
         rw [tB i' b c]; intro h
         have := hinj i i' h1 h2 b c (by omega)
@@ -202,7 +197,6 @@ theorem passes_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} 
         subst this; exact hn1 d), hA1, a2 i h1 h2 hs]
   · have hn2 : ¬ s2 i := fun h => absurd (huniq i 1 2 h1 h2 (Or.inr (Or.inl ⟨rfl, hs⟩))
       (Or.inr (Or.inr ⟨rfl, h⟩))) (by omega)
-    have hv := hit i h1 h2
     rw [hC1, c3 _ (by omega) (fun i' b c d => by
         rw [tB i' b c]; intro h
         have := hinj i i' h1 h2 b c (by omega)

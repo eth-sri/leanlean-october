@@ -71,9 +71,9 @@ theorem init_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   obtain ⟨c₈, k₈, e₈, hk₈, I₈, G₈⟩ := initB_exec (P := P) I₅ hG hWh hwf hMD hGM hNW hNF hne
     (by rw [I₅.alloc]; show c.nreg ALLOC + (dmOf N.nChords N.arcs.length N.nRegions D 0).oEnd + _ ≤ W
         omega)
-  set E := envOf M P N reg γ D (c.nmem MD) (c.nmem (MD + 3)) with hEd
-  set d := dmOf N.nChords N.arcs.length N.nRegions D (c.nreg ALLOC) with hd
-  set st := st0 E d c₈.nmem with hst
+  set E := envOf M P N reg γ D (c.nmem MD) (c.nmem (MD + 3))
+  set d := dmOf N.nChords N.arcs.length N.nRegions D (c.nreg ALLOC)
+  set st := st0 E d c₈.nmem
   have hE : E.Good := envOf_good hMD hGM hNF hRC hCS hRO hne
   have henc : Enc c₈.nmem d st := by
     refine ⟨fun i hi => (I₈.live i hi).1, fun i hi => (I₈.live i hi).2.1,

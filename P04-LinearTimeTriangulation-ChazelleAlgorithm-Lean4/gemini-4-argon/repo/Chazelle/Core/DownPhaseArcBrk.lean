@@ -58,15 +58,6 @@ theorem seg_spec (h : BrkInc β N) (hN : 1 ≤ N) {x : ℝ} (hx0 : β 0 ≤ x) (
     intro j hj i hi hij
     rw [hS, Finset.mem_filter, Finset.mem_Ico] at hj ⊢
     exact ⟨⟨hi, by omega⟩, le_trans (h.le hij (by omega)) hj.2⟩
-  have hcard : ∀ k, k ≤ N - 1 → (∀ i, 1 ≤ i → i ≤ k → β i ≤ x) → k ≤ S.card := by
-    intro k hk hall
-    have : Finset.Icc 1 k ⊆ S := by
-      intro i hi
-      rw [Finset.mem_Icc] at hi
-      rw [hS, Finset.mem_filter, Finset.mem_Ico]
-      exact ⟨⟨hi.1, by omega⟩, hall i hi.1 hi.2⟩
-    have := Finset.card_le_card this
-    simpa using this
   have hsub : S ⊆ Finset.Icc 1 S.card := by
     intro j hj
     rw [Finset.mem_Icc]
@@ -75,7 +66,7 @@ theorem seg_spec (h : BrkInc β N) (hN : 1 ≤ N) {x : ℝ} (hx0 : β 0 ≤ x) (
       rw [Finset.mem_Icc] at hi; exact hdown j hj i hi.1 hi.2
     have := Finset.card_le_card this
     simpa using this
-  set k := S.card with hk
+  set k := S.card
   have hkN : k ≤ N - 1 := by
     have : S ⊆ Finset.Ico 1 N := Finset.filter_subset _ _
     have := Finset.card_le_card this
@@ -83,7 +74,7 @@ theorem seg_spec (h : BrkInc β N) (hN : 1 ≤ N) {x : ℝ} (hx0 : β 0 ≤ x) (
   have hmem : ∀ j, j ∈ S ↔ 1 ≤ j ∧ j ≤ k := by
     intro j
     constructor
-    · intro hj; have := hsub hj; rw [Finset.mem_Icc] at this; exact this
+    · intro hj; have := hsub hj; rwa [Finset.mem_Icc] at this
     · rintro ⟨h1, h2⟩
       by_contra hn
       -- then `S ⊆ [1, j - 1]`, too small
@@ -98,10 +89,10 @@ theorem seg_spec (h : BrkInc β N) (hN : 1 ≤ N) {x : ℝ} (hx0 : β 0 ≤ x) (
   show k < N ∧ β k ≤ x ∧ x < β (k + 1)
   refine ⟨by omega, ?_, ?_⟩
   · rcases Nat.eq_zero_or_pos k with h0 | h0
-    · rw [h0]; exact hx0
+    · rwa [h0]
     · exact (Finset.mem_filter.1 ((hmem k).2 ⟨h0, le_rfl⟩)).2
   · by_cases hk1 : k + 1 = N
-    · rw [hk1]; exact hxN
+    · rwa [hk1]
     · by_contra hlt
       push Not at hlt
       have : k + 1 ∈ S := by
@@ -229,7 +220,6 @@ theorem brk_int_iff (h : BrkInc β N) (hN : 1 ≤ N) {c₀ : ℕ} {x : ℝ} (hx0
       rw [this]; push_cast; ring
     rw [e] at hk'
     unfold brk at hk'
-    have hpos : 0 < β (seg β N x + 1) - β (seg β N x) := by linarith
     have : (x - β (seg β N x)) / (β (seg β N x + 1) - β (seg β N x)) = 0 := by linarith
     rw [div_eq_zero_iff] at this
     rcases this with h' | h'

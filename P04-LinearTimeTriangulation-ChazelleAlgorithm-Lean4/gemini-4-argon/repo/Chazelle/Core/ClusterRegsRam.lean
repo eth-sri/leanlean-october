@@ -92,7 +92,7 @@ theorem regsS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have hG1 : GR g c1 := hG.frame (fun r hr => g1 r (by unfold GRReg at hr; omega))
   have cp : ∀ d s, (d, s) ∈ regCopies → c1.nreg d = c.nreg s := fun d s h => h1 _ h
   have e2 := Exec.addN (P := P) hw1 130681 130014 130014 (by rw [hG1.rN]; omega)
-  set c2 := { c1 with nreg := upd c1.nreg 130681 (c1.nreg 130014 + c1.nreg 130014) } with hc2
+  set c2 := { c1 with nreg := upd c1.nreg 130681 (c1.nreg 130014 + c1.nreg 130014) }
   have k12 : ∀ r, r ≠ 130681 → c2.nreg r = c1.nreg r := fun r h => by
     simp only [c2]; rw [Machine.upd_other _ _ _ h]
   have hG2 : GR g c2 := hG1.frame (fun r hr => k12 r (by unfold GRReg at hr; omega))
@@ -129,65 +129,32 @@ theorem regsS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       hG2.rL, by rw [k12 _ (by omega), cp 130327 130085 (by decide), hG.rUP]; ring,
       by rw [k12 _ (by omega), cp 130620 130084 (by decide), hG.rbase 54 (by omega), g.base_eq]; ring,
       fun r _ _ _ => rfl, rfl, rfl, rfl, rfl⟩ (Nat.zero_le _)
-  have kk3 : ∀ r, r ≠ 130327 → r ≠ 130620 → r ≠ 130880 → r ≠ 130681 → c3.nreg r = c1.nreg r :=
-    fun r a1 a2 a3 a4 => by rw [hk23 r a1 a2 a3, k12 r a4]
-  have R : ∀ d s, (d, s) ∈ regCopies → d ≠ 130327 → d ≠ 130620 → d ≠ 130880 → d ≠ 130681 →
-      c3.nreg d = c.nreg s := fun d s h a1 a2 a3 a4 => by rw [kk3 d a1 a2 a3 a4]; exact cp d s h
+  have kk3 (r) (a : r ≠ 130327 ∧ r ≠ 130620 ∧ r ≠ 130880 ∧ r ≠ 130681 := by omega) :
+      c3.nreg r = c1.nreg r := (hk23 r a.1 a.2.1 a.2.2.1).trans (k12 r a.2.2.2)
+  have R (d s) (h : (d, s) ∈ regCopies := by decide)
+      (a : d ≠ 130327 ∧ d ≠ 130620 ∧ d ≠ 130880 ∧ d ≠ 130681 := by omega) :
+      c3.nreg d = c.nreg s := (kk3 d a).trans (cp d s h)
+  have rb (d j) (h : (d, 130030 + j) ∈ regCopies := by decide)
+      (a : d ≠ 130327 ∧ d ≠ 130620 ∧ d ≠ 130880 ∧ d ≠ 130681 ∧ j ≤ 54 := by omega) :
+      c3.nreg d = g.base j :=
+    (R d (130030 + j) h ⟨a.1, a.2.1, a.2.2.1, a.2.2.2.1⟩).trans (hG.rbase j a.2.2.2.2)
   have hlen : regCopies.length = 43 := rfl
-  refine ⟨c3, regCopies.length + (1 + k3), .seq e1 (.seq e2 e3), by omega, hw3, ?_,
-    by rw [R 130704 130009 (by decide) (by omega) (by omega) (by omega) (by omega)]; exact hG.zero,
-    fun r hr => ?_, by rw [hm3]; exact hm1, by rw [hr3]; exact hr1, by rw [hrm3]; exact hrm1,
-    by rw [ho3]; exact ho1⟩
-  · refine ⟨by rw [kk3 _ (by omega) (by omega) (by omega) (by omega), g1 _ (by omega)]; exact hG.one,
-      by rw [kk3 _ (by omega) (by omega) (by omega) (by omega), g1 _ (by omega)]; exact hG.zero,
-      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-    · rw [R 130320 130073 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 43 (by omega)]; rfl
-    · rw [R 130321 130030 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 0 (by omega)]; rfl
-    · rw [R 130322 130059 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 29 (by omega)]; rfl
-    · rw [R 130323 130070 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 40 (by omega)]; rfl
-    · rw [R 130324 130017 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rL]; rfl
-    · rw [R 130325 130058 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 28 (by omega)]; rfl
-    · rw [R 130326 130085 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rUP]; rfl
-    · rw [h327]; rfl
-    · rw [R 130328 130014 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rN]; rfl
-    · rw [R 130345 130017 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rL]; rfl
-    · rw [R 130601 130033 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 3 (by omega)]; rfl
-    · rw [R 130602 130084 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 54 (by omega)]; rfl
-    · rw [R 130603 130070 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 40 (by omega)]; rfl
-    · rw [R 130604 130017 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rL]; rfl
-    · rw [R 130605 130036 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 6 (by omega)]; rfl
-    · rw [R 130606 130074 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 44 (by omega)]; rfl
-    · rw [R 130607 130078 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 48 (by omega)]; rfl
-    · rw [R 130608 130011 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rμ]; rfl
-    · rw [h620]; rfl
-    · rw [R 130632 130041 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 11 (by omega)]; rfl
-    · rw [R 130633 130047 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 17 (by omega)]; rfl
-    · rw [R 130634 130056 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 26 (by omega)]; rfl
-    · rw [R 130635 130059 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 29 (by omega)]; rfl
-    · rw [R 130636 130058 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 28 (by omega)]; rfl
-    · rw [R 130650 130075 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 45 (by omega)]; rfl
-    · rw [R 130651 130073 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 43 (by omega)]; rfl
-    · rw [R 130652 130074 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 44 (by omega)]; rfl
-    · rw [R 130653 130078 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 48 (by omega)]; rfl
-    · rw [R 130654 130030 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 0 (by omega)]; rfl
-    · rw [R 130655 130059 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 29 (by omega)]; rfl
-    · rw [R 130674 130016 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rs]; rfl
-    · rw [R 130675 130011 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rμ]; rfl
-    · rw [R 130680 130037 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 7 (by omega)]; rfl
-    · rw [hk23 _ (by omega) (by omega) (by omega), h681]; rfl
-    · rw [R 130682 130014 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rN]; rfl
-    · rw [R 130692 130069 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 39 (by omega)]; rfl
-    · rw [R 130694 130067 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 37 (by omega)]; rfl
-    · rw [R 130695 130068 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 38 (by omega)]; rfl
-    · rw [R 130696 130023 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rV]; rfl
-    · rw [R 130697 130021 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rO]; rfl
-    · rw [R 130698 130039 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 9 (by omega)]; rfl
-    · rw [R 130700 130076 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 46 (by omega)]; rfl
-  · unfold RegRG at hr
-    rw [kk3 _ (by omega) (by omega) (by omega) (by omega)]
-    exact h2 r (fun p hp h => by
-      have := (show ∀ p ∈ regCopies, 130300 ≤ p.1 ∧ p.1 ≤ 130889 by decide) p hp; omega)
+  refine ⟨c3, regCopies.length + (1 + k3), .seq e1 (.seq e2 e3), by omega, hw3,
+    ⟨(kk3 _).trans ((g1 _ (by omega)).trans hG.one),
+     (kk3 _).trans ((g1 _ (by omega)).trans hG.zero),
+     rb _ 43, rb _ 0, rb _ 29, rb _ 40, (R _ _).trans hG.rL, rb _ 28, (R _ _).trans hG.rUP, h327,
+     (R _ _).trans hG.rN, (R _ _).trans hG.rL, rb _ 3, rb _ 54, rb _ 40, (R _ _).trans hG.rL,
+     rb _ 6, rb _ 44, rb _ 48, (R _ _).trans hG.rμ, h620, rb _ 11, rb _ 17, rb _ 26, rb _ 29,
+     rb _ 28, rb _ 45, rb _ 43, rb _ 44, rb _ 48, rb _ 0, rb _ 29, (R _ _).trans hG.rs,
+     (R _ _).trans hG.rμ, rb _ 7, (hk23 _ (by omega) (by omega) (by omega)).trans h681,
+     (R _ _).trans hG.rN, rb _ 39, rb _ 37,
+     rb _ 38, (R _ _).trans hG.rV, (R _ _).trans hG.rO, rb _ 9, rb _ 46⟩,
+    (R 130704 130009).trans hG.zero,
+    fun r hr => ?_, hm3.trans hm1, hr3.trans hr1, hrm3.trans hrm1, ho3.trans ho1⟩
+  unfold RegRG at hr
+  rw [kk3 _]
+  exact h2 r (fun p hp h => by
+    have := (show ∀ p ∈ regCopies, 130300 ≤ p.1 ∧ p.1 ≤ 130889 by decide) p hp; omega)
 
 end proofs
 

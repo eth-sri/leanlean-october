@@ -265,7 +265,7 @@ theorem ray_path (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point
     ∀ (n : ℕ) (t₁ : ℝ) (R : Set Point), ({t : ℝ | rayPt z σ t ∈ C.set} ∩ Ioo 0 t₁).ncard = n →
       0 < t₁ → t₁ ≤ T → R ∈ (chainModel C).regions F →
       (∀ᶠ t in 𝓝[<] t₁, rayPt z σ t ∈ R) → Relation.ReflTransGen (RayStep C F z σ T) U R := by
-  set X := {t : ℝ | rayPt z σ t ∈ C.set} with hXdef
+  set X := {t : ℝ | rayPt z σ t ∈ C.set}
   intro n
   induction n using Nat.strong_induction_on with
   | _ n ih =>

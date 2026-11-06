@@ -56,9 +56,9 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
   have hP : J.P.Simple := E.hP
   have hP₁ : J.left.P.Simple := E.hP
   have hNF := E.hNF₁
-  set x₀ := M.key (Qof P) ⟨ke₁ J e, h⟩ with hx₀
-  obtain ⟨hoff, hkdE, hgap0, hψ0, hm0, hv0, hpar, hpt⟩ := key_map hP hpw hL
-  set t₀ := (chainModel J.whole).param (Qof P) ⟨e, h⟩ with ht₀
+  set x₀ := M.key (Qof P) ⟨ke₁ J e, h⟩
+  obtain ⟨hoff, hkdE, hgap0, hψ0, hpar, hpt⟩ := key_map hP hpw hL
+  set t₀ := (chainModel J.whole).param (Qof P) ⟨e, h⟩
   have ht00 : 0 ≤ t₀ := hpw.2.1.1
   have ht01 : t₀ < 1 := hpw.2.1.2.1
   have hu0 : off M.W.n (b₁ J) x₀ = (kd J e : ℝ) + t₀ := key₁_off hP hpw hL
@@ -68,7 +68,7 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
   have hppx : ProperPos M (Qof P) P.n ⟨ke₁ J e, h⟩ := by
     refine ⟨?_, ?_, hpw.2.1.2.2⟩ <;> rw [hpar] <;> [exact ht00; exact ht01]
   have hxr := key₁_range (Q := Qof P) hke hppx
-  set a := OracleQ.sj N₁ o' with ha
+  set a := OracleQ.sj N₁ o'
   have hal : a < N₁.arcs.length := NFLoc.seq_lt hNF ho'
   set l := regArcs N₁ [(N₁.arc a).reg] with hl
   obtain ⟨hreg, hmem⟩ := arc_mem_region hNF hal
@@ -77,7 +77,7 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
     rw [hl, regArcs_single] at hj
     obtain ⟨-, -, -, reg, -, -, hA, -⟩ := hNF
     exact ((hA.2.2.2 _ hreg j).1 hj).1
-  have hol : a ∈ l := by rw [hl, regArcs_single]; exact hmem
+  have hol : a ∈ l := by rwa [hl, regArcs_single]
   -- the valid offsets beyond the key are beyond it in the walk of `C₁`
   have hbeyond : ∀ (d : ℕ) (t : ℝ), MValid J d t → 0 ≤ t → t < 1 →
       offK P J e h < (Lst J : ℝ) + ψ J d + t → off M.W.n (b₁ J) x₀ < d + t := by
@@ -111,7 +111,7 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
   have hab := (OracleQ.arc_facts hNF hFne ho').2.2.1
   have hcutE := (OracleQ.arc_facts hNF hFne ho').2.1
   obtain ⟨-, ⟨hpe, hee, -⟩⟩ := arc_end_facts hP₁ hNF hal
-  set eE := (N₁.arc a).e.edge with heEd
+  set eE := (N₁.arc a).e.edge
   set tE := M.param (Qof P) (N₁.arc a).e with htEd
   have htE0 : 0 ≤ tE := hpe.1
   have htE1 : tE < 1 := hpe.2.1
@@ -124,7 +124,7 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
       ((d : ℝ) + t ≤ dE + tE ∨ (dE : ℝ) + tE < kd J e + t₀) →
       sidePt M.W ((b₁ J + d) % M.W.n) t ∈ ShotList.loSet M (Qof P) c'.nmem (c'.nreg wGB) l.length [] :=
     fun d t hd ht0 ht1 hlt hup => cover_arc hP hNF hg hll ho' hol hxr.1 hxr.2 hab hin hd ht0 ht1
-      (by rw [hu0]; exact hlt) (by rw [hUE, hu0]; exact hup)
+      (by rwa [hu0]) (by rwa [hUE, hu0])
   rw [hUE', hUx] at hdec
   rcases hdec with ⟨hX, hc⟩ | ⟨hX, hnp, hδ, hd0, hl1d, hdE, hwE, hwH⟩ |
       ⟨hX, hnp, hncl, hdE, hwE, hwH⟩

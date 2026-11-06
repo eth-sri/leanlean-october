@@ -81,9 +81,6 @@ theorem lvRegD_exec (c : Config) (hw : WordsBounded W c) {T j p ℓ b tot : ℕ}
       c'.nmem (T + 3 * j + 2) = b ∧
       (∀ a, (a < T + 3 * j ∨ T + 3 * j + 3 ≤ a) → c'.nmem a = c.nmem a) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  have wp := hw.1 217010
-  have wl := hw.1 217011
-  have wb := hw.1 217012
   unfold lvRegD
   exec_block
   all_goals try (config_simp; (try simp only [h09, h10, h14, h17, h11, h12, ht]); omega)

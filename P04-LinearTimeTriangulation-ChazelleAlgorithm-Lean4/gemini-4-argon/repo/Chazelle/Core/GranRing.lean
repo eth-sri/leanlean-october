@@ -96,8 +96,6 @@ theorem sideInArc_mono_iff {f : ℕ → ℝ} {A : ℕ}
   have e1 := key a b ha hb
   have e2 := key a i ha hi
   have e3 := key i b hi hb
-  have e4 := key i a hi ha
-  have e5 := key b i hb hi
   simp only [Nat.cast_lt]
   by_cases hab : a < b
   · rw [ite_eq_left (e1.2 hab), ite_eq_left hab, e2, e3]
@@ -198,7 +196,7 @@ theorem ringOK_unlink {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h :
       obtain ⟨a, b, c, e⟩ := (h j hj hjL).1
       have hnd : nxt j ≠ d := by
         intro hnd
-        have h1 : IsPredIn Lv A d j := ⟨hj, hjL, hjd, by rw [← hnd]; exact e⟩
+        have h1 : IsPredIn Lv A d j := ⟨hj, hjL, hjd, by rwa [← hnd]⟩
         exact hjp (pred_unique h1 (h.pred hd hdL))
       exact ⟨a, ⟨b, hnd⟩, c, fun i hi hiL => e i hi hiL.1⟩
   · by_cases hjs : j = s
@@ -208,7 +206,7 @@ theorem ringOK_unlink {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h :
       obtain ⟨a, b, c, e⟩ := (h j hj hjL).2
       have hpd : prv j ≠ d := by
         intro hpd
-        have h1 : IsSuccIn Lv A d j := ⟨hj, hjL, hjd, by rw [← hpd]; exact e⟩
+        have h1 : IsSuccIn Lv A d j := ⟨hj, hjL, hjd, by rwa [← hpd]⟩
         exact hjs (succ_unique h1 (h.succ hd hdL))
       exact ⟨a, ⟨b, hpd⟩, c, fun i hi hiL => e i hi hiL.1⟩
 

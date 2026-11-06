@@ -111,7 +111,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       (intro r hr ha; simp (disch := omega) only [Machine.upd_other])
   obtain ⟨q05, q08, q16, q17, q01, q30, q00, q02, qA, qr, qm, qrr, qrm, qo⟩ := q
   -- the indices
-  have I0 : IXI W K A₀ c₁ c₁ := ⟨e₁.wb_right, by omega, by rw [qA, q00]; rfl, fun _ _ _ => rfl,
+  have I0 : IXI W K A₀ c₁ c₁ := ⟨e₁.wb_right, by rw [qA, q00]; rfl, fun _ _ _ => rfl,
     fun _ _ => rfl, fun j hj => by omega, rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', I₂, h₂⟩ := ixLoop_exec (P := P) q05 q01 (by omega) K c₁ I0
     (by omega)
@@ -145,7 +145,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   obtain ⟨c₄, k₄, e₄, hk₄, hJ₄, fr₄, b₄, b₄', L', hL', hperm, hsorted⟩ :=
     SortR.sortStmt_exec (P := P) cmp (by decide) (le3_trans c₃.nmem T K)
       (le3_total c₃.nmem T K) e₃.wb_right hJ (by rw [a₃]; exact cmp3J_stable _ _ _ _ _)
-      (List.range K) (by rw [List.length_range, s03, sm₃]; exact hseg)
+      (List.range K) (by rwa [List.length_range, s03, sm₃])
       (by rw [List.length_range, s04]) (by rw [List.length_range, s03, a₃])
       (by rw [List.length_range, a₃]; omega)
   rw [List.length_range] at hk₄ b₄' hL'
@@ -176,11 +176,10 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       exact ⟨j, hj, rfl⟩
     exact List.mem_range.1 (hperm.subset hmem)
   have a₅ : c₅.nreg ALLOC = LB := by rw [tr₅ _ (by decide), hLB]
-  have hK4 : k₄ ≤ SortR.sortCost 40 K := hk₄
   have hLBb : LB ≤ A₀ + K + k₄ := by rw [← hLB, ← a₃]; exact fr₄.2.2.2.2.2.2
-  have hBL : B' + K ≤ LB := by rw [← hB', ← hLB]; exact b₄'
+  have hBL : B' + K ≤ LB := by rwa [← hB', ← hLB]
   have D0 : DSI W K T B' LB c₅.nmem c₅ c₅ := by
-    refine ⟨e₅.wb_right, by rw [t20]; omega, by rw [t21, t20]; simp, fun h => by rw [t20] at h; omega,
+    refine ⟨e₅.wb_right, by rw [t21, t20]; simp, fun h => by rw [t20] at h; omega,
       by rw [a₅, t20]; simp [ddp], by rw [t20]; intro i hi; simp [ddp] at hi,
       by rw [t19, t20]; simp [ddp], fun _ _ => rfl, fun _ _ _ => rfl, rfl, rfl, rfl⟩
   obtain ⟨c₆, k₆, e₆, hk₆, hk₆', D₆, h₆⟩ := dsLoop_exec (P := P) (m₀ := c₅.nmem) t05 t08 t16 t30
@@ -210,7 +209,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       unfold trip; rw [hm _ (by omega), hm _ (by omega), hm _ (by omega)]
     unfold le3 at h ⊢
     simp only [haK, hbK, ite_true] at h ⊢
-    rw [← ht a haK, ← ht b hbK]; exact h
+    rwa [← ht a haK, ← ht b hbK]
   obtain ⟨hmemD, hnodD, hlenD⟩ := dd_spec (m := c.nmem) (T := T) hperm hsorted'
   rw [← hDdd] at hmemD hnodD hlenD
   have hc6 := D₆.cnt
@@ -220,7 +219,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   have ha6 := D₆.alloc
   rw [h₆] at ha6
   have r42 : c₆.nreg 70242 = LB := by rw [D₆.regs _ (by norm_num) (by decide), t42]
-  refine ⟨c₆, _, ex, ?_, ?_, fun r h1 h2 => ?_, ?_, ?_, D, by rw [r42]; exact hl6, hc6, hlenD,
+  refine ⟨c₆, _, ex, ?_, ?_, fun r h1 h2 => ?_, ?_, ?_, D, by rwa [r42], hc6, hlenD,
     hmemD, hnodD⟩
   · have := hlenD; unfold ddCost; omega
   · have a4 : A₀ + K ≤ LB := by rw [← hLB, ← a₃]; exact fr₄.2.2.2.2.2.1

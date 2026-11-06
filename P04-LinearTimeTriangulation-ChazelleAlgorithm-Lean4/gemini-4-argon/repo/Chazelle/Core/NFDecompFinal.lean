@@ -285,7 +285,7 @@ theorem up_step {x : ℕ} (hx : ValidC R K pch σ x) :
     · rw [hp, e1]
       have h2 : 2 * p % 2 = 0 := by omega
       have h3 : 2 * p / 2 = p := by omega
-      refine ⟨Or.inl ⟨h2, by rw [h3]; exact hp', by rw [h3]; exact hrp⟩, ?_⟩
+      refine ⟨Or.inl ⟨h2, by rwa [h3], by rwa [h3]⟩, ?_⟩
       simp only [compOf, ite_eq_left a, ite_eq_left h2, h3]
       exact e3
   · obtain ⟨-, h2⟩ := hI.i5 _ b c d
@@ -297,11 +297,11 @@ theorem up_step {x : ℕ} (hx : ValidC R K pch σ x) :
     · rw [hp, e1]
       have h2 : 2 * p % 2 = 0 := by omega
       have h3 : 2 * p / 2 = p := by omega
-      refine ⟨Or.inl ⟨h2, by rw [h3]; exact hp', by rw [h3]; exact hrp⟩, ?_⟩
+      refine ⟨Or.inl ⟨h2, by rwa [h3], by rwa [h3]⟩, ?_⟩
       simp only [compOf, ite_eq_right a', ite_eq_left h2, h3]
       intro v hv
       rw [Finset.mem_singleton] at hv
-      rw [hv]; exact e3
+      rwa [hv]
 
 /-- The chain of parents from a leaf stays among placed codes containing the leaf. -/
 theorem chain_mem {r : ℕ} (hr : r < R) (i : ℕ) :
@@ -312,7 +312,7 @@ theorem chain_mem {r : ℕ} (hr : r < R) (i : ℕ) :
     simp only [Function.iterate_zero, id]
     have a : (2 * r + 1) % 2 = 1 := by omega
     have b : (2 * r + 1) / 2 = r := by omega
-    refine ⟨valid_of_range hK hRR h hch hisdn hI hna (Or.inr ⟨a, by rw [b]; exact hr⟩), ?_⟩
+    refine ⟨valid_of_range hK hRR h hch hisdn hI hna (Or.inr ⟨a, by rwa [b]⟩), ?_⟩
     simp only [compOf, ite_eq_right (show (2 * r + 1) % 2 ≠ 0 by omega), b,
       Finset.mem_singleton]
   | succ i ih =>

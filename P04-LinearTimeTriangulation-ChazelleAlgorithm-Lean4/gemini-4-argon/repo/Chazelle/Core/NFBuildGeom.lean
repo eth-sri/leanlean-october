@@ -40,7 +40,6 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hUo z₀ hz₀
   -- a point of `U` at a generic height
   set B : Set ℝ := {y | ∃ i < M.W.n, (M.W.vtx i).2 = y} ∪ {y | ∃ c ∈ F, ∃ x ∈ c, x.2 = y}
-    with hB
   have hBfin : B.Finite := by
     refine Set.Finite.union ?_ (finite_chord_heights hsys)
     have : {y | ∃ i < M.W.n, (M.W.vtx i).2 = y} = (fun i => (M.W.vtx i).2) '' Iio M.W.n := by
@@ -63,7 +62,7 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   obtain ⟨s, hs, hseg, p, hp, t, ht, hq, hup⟩ := hM.reach z hzD hzv
   set q : Point := (z.1 + s, z.2) with hqdef
   -- the segment from `z` to `q` (half-open) is in `U`
-  set L := (fun s' : ℝ => ((z.1 + s', z.2) : Point)) '' Ico 0 s with hL
+  set L := (fun s' : ℝ => ((z.1 + s', z.2) : Point)) '' Ico 0 s
   have hLc : IsPreconnected L :=
     isPreconnected_Ico.image _ (by fun_prop : Continuous fun s' : ℝ => ((z.1 + s', z.2) : Point)).continuousOn
   have hLF : L ⊆ freeIn M.D F := by
@@ -80,7 +79,7 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hne := hM.nd p hp
   set u := M.W.vtx p
   set v := M.W.vtx ((p + 1) % M.W.n)
-  set H : Set Point := ball q (min r₁ r₂) ∩ {x | 0 < 1 * det u v x} with hH
+  set H : Set Point := ball q (min r₁ r₂) ∩ {x | 0 < 1 * det u v x}
   have hHc : IsPreconnected H := ((convex_ball _ _).inter (convex_det_pos _ _ 1)).isPreconnected
   have hHF : H ⊆ freeIn M.D F := by
     rintro x ⟨hx1, hx2⟩
@@ -89,7 +88,7 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     by_contra hxD
     refine hcl x ?_ hxD ?_
     · rw [hq]; exact ball_subset_ball (min_le_right _ _) hx1
-    · rw [sideLeft_edge hne ht]; exact hx2
+    · rwa [sideLeft_edge hne ht]
   -- a point of the segment lies in the half-disk
   have hq0 : det u v q = 0 := by
     rw [← hq]; exact Geometry.det_lerp_self _ _ _
@@ -175,7 +174,7 @@ theorem not_touches_of_split (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   set x := lerp (sidePt M.W pc tc) e s
   have hxi : x ∈ i ∩ M.D := ⟨by rw [hie]; exact lerp_mem_segment _ _ hs0.le hs1.le,
     hopen s ⟨hs0, hs1⟩⟩
-  have hxK : x ∈ connectedComponentIn (M.D \ j) k₂ := hsecr _ (by rw [mem_ball]; exact hdist) hleft
+  have hxK : x ∈ connectedComponentIn (M.D \ j) k₂ := hsecr _ (by rwa [mem_ball]) hleft
   have hsub : i ∩ M.D ⊆ M.D \ j := fun y hy =>
     ⟨hy.2, fun hyj => hsys.inter_subset_compl hi hj hij ⟨hy.1, hyj⟩ hy.2⟩
   have hcon := (hsys.chord_inter_nonempty_isPreconnected hi).2.subset_connectedComponentIn

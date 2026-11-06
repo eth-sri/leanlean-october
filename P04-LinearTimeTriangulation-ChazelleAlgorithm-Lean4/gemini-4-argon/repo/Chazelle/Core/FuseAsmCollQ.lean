@@ -73,7 +73,6 @@ theorem clqCopy_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
 structure CLQI (W : ℕ) (L : List (ℕ × ℕ × ℕ)) (R : List (ℕ × ℕ × ℕ × ℕ)) (QB RB LB : ℕ)
     (pre : List (ℕ × ℕ × ℕ)) (c₀ c : Config) : Prop where
   wb : WordsBounded W c
-  i_le : c.nreg 70112 ≤ R.length
   cur : c.nreg 70113 = RB + 4 * c.nreg 70112
   qcur : c.nreg 70115 = QB + 3 * c.nreg 70112
   alloc : c.nreg ALLOC = LB + 3 * (pre ++ collectQ (L.take (c.nreg 70112))
@@ -136,7 +135,7 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
   set c₁ : Config := { c with nreg := upd c.nreg 70114 (c.nmem (c.nreg 70113)) } with hc₁
   have v14 : c₁.nreg 70114 = r.1 := by
     rw [hc₁]; simp only [upd_same]; rw [hcur]
-    have := hmem 0 (by omega); simp only [add_zero] at this; rw [this]; exact q0
+    have := hmem 0 (by omega); simp only [add_zero] at this; rwa [this]
   have q₁ : ∀ x, x ≠ 70114 → c₁.nreg x = c.nreg x := fun x hx => by
     rw [hc₁]; simp [upd_other _ _ _ hx]
   have hw₁ : WordsBounded W c₁ := e₁.wb_right
@@ -178,13 +177,13 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
         have hl : ChordListAt c₂.nmem LB C0 := fun i hi => by
           obtain ⟨b0, b1, b2⟩ := hlist i hi
           refine ⟨?_, ?_, ?_⟩
-          · rw [mo _ (Or.inl (by omega))]; exact b0
-          · rw [mo _ (Or.inl (by omega))]; exact b1
-          · rw [mo _ (Or.inl (by omega))]; exact b2
+          · rwa [mo _ (Or.inl (by omega))]
+          · rwa [mo _ (Or.inl (by omega))]
+          · rwa [mo _ (Or.inl (by omega))]
         refine chordListAt_append hl ?_ ?_ ?_
         · rw [m0, hqmem, p1]
-        · rw [m1, hmem 2 (by omega)]; exact q2
-        · rw [m2, hmem 3 (by omega)]; exact q3
+        · rwa [m1, hmem 2 (by omega)]
+        · rwa [m2, hmem 3 (by omega)]
       · rw [R₂ x a1 a2 a3 a4]
         exact q₁ x a2
     · rw [ite_eq_right hf, List.append_nil] at hc0
@@ -201,7 +200,7 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
         fun x _ a2 _ _ => q₁ x a2, rfl, rfl, rfl⟩
       · rw [q₁ _ (by decide), hA0, hc0]
       · rw [q₁ _ (by decide), h10, hc0]
-      · rw [hc0]; have := hI.list; rw [hj] at this; exact this
+      · rw [hc0]; have := hI.list; rwa [hj] at this
   have hw₂ := e₂.wb_right
   have c205 : c₂.nreg 70105 = 1 := (q₂ _ (by decide) (by decide) (by decide) (by decide)).trans r05
   have c216 : c₂.nreg 70116 = 3 := (q₂ _ (by decide) (by decide) (by decide) (by decide)).trans r16
@@ -226,10 +225,10 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
     all_goals ring
   have ex : Exec P W clqBody c c₃ ((1 + 0) + (k₂ + k₃)) :=
     .seq (.seq e₁ (.skip hw₁)) (.seq e₂ e₃)
-  refine ⟨c₃, _, ex, ⟨e₃.wb_right, by rw [u12]; omega, by rw [u13, u12], by rw [u15, u12],
-    by rw [u12, u₃ _ (by decide) (by decide) (by decide)]; exact a₂,
-    by rw [u12, u₃ _ (by decide) (by decide) (by decide)]; exact n₂,
-    fun x a1 a2 a3 a4 a5 a6 a7 => ?_, fun a ha => ?_, by rw [um₃, u12]; exact l₂,
+  refine ⟨c₃, _, ex, ⟨e₃.wb_right, by rw [u13, u12], by rw [u15, u12],
+    by rwa [u12, u₃ _ (by decide) (by decide) (by decide)],
+    by rwa [u12, u₃ _ (by decide) (by decide) (by decide)],
+    fun x a1 a2 a3 a4 a5 a6 a7 => ?_, fun a ha => ?_, by rwa [um₃, u12],
     by rw [urr₃, rr₂, hI.rr], by rw [urm₃, rm₂, hI.rm], by rw [uo₃, o₂, hI.out]⟩,
     by omega, by omega, by rw [u12, hj]⟩
   · rw [u₃ x a2 a3 a5, q₂ x a1 a4 a6 a7, hreg x a1 a2 a3 a4 a5 a6 a7]
@@ -263,7 +262,7 @@ theorem clqLoop_exec {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
     have h11' : c.nreg 70111 = R.length := by
       rw [hI.regs 70111 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
         (by decide), h11]
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [h11']; exact ht) e e₂, by omega, by omega,
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rwa [h11']) e e₂, by omega, by omega,
       hI'', hK⟩
 
 end

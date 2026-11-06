@@ -50,9 +50,9 @@ theorem open_of_mem {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a b)
   obtain ⟨hzy, hza, hzb⟩ := hz
   refine ⟨lt_of_le_of_ne hza fun e => h.left_not ?_, lt_of_le_of_ne hzb fun e => h.right_not ?_⟩
   · have : ((a, y) : Point) = z := point_ext e hzy.symm
-    rw [this]; exact hzD
+    rwa [this]
   · have : ((b, y) : Point) = z := point_ext e.symm hzy.symm
-    rw [this]; exact hzD
+    rwa [this]
 
 /-- Two chords sharing a point of the domain are equal. -/
 theorem eq_of_common {c c' : Set Point} (hc : HC Q c) (hc' : HC Q c') {z : Point} (hz : z ∈ c)
@@ -176,9 +176,9 @@ theorem side_chords_eq (hQ : Q.Simple) (hDH : DistinctHeights Q) {T : Set Point}
       push Not at hall
       obtain ⟨s, hs1, hs2, hsD⟩ := hall
       have hs1' : z.1 < s := lt_of_le_of_ne hs1 fun e => hsD (by
-        rw [← e, ← hzy]; exact hzD)
+        rwa [← e, ← hzy])
       have hs2' : s < z'.1 := lt_of_le_of_ne hs2 fun e => hsD (by
-        rw [e, ← hz'y]; exact hz'D)
+        rwa [e, ← hz'y])
       have hsl : xl < s := by linarith
       have hsr : s < xr := by linarith
       have hb : ((s, y₀) : Point) ∈ Q.boundary := by
@@ -208,7 +208,7 @@ theorem side_iff {c : Set Point} (hc : HC Q c) {y₀ : ℝ} {w₀ : Point}
     by_contra hge
     push Not at hge
     have hne : z.1 ≠ w₀.1 := fun e => hw₀ (by
-      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rw [this]; exact hzD)
+      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rwa [this])
     have := between_mem h hz' hz'D hz hzD hlt.le (lt_of_le_of_ne hge (Ne.symm hne)).le
     apply hw₀
     have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (by rw [hy, hw₀y])
@@ -222,14 +222,14 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
     (hU : U ∈ regionsIn (Q.filled \ Q.boundary) G) :
     {c | c ∈ G ∧ TouchesIn (Q.filled \ Q.boundary) c U}.ncard ≤ 4 := by
   classical
-  set D := Q.filled \ Q.boundary with hD
+  set D := Q.filled \ Q.boundary
   obtain ⟨q, hqf, rfl⟩ := hU
   have hfreeR : freeIn D G ⊆ freeRegion Q := fun p hp =>
     ⟨hp.1, fun ⟨c, hc, hpc⟩ => hp.2 ⟨c, hfull hc, hpc⟩⟩
   have hqR := hfreeR hqf
   obtain ⟨i, j, y₁, y₂, h⟩ := Visibility.exists_isTrap hQ hqR
   set T := trapSet Q i j y₁ y₂ with hTdef
-  set U := connectedComponentIn (freeIn D G) q with hUdef
+  set U := connectedComponentIn (freeIn D G) q
   have hUT : U ⊆ T := by
     rw [hTdef, ← h.region_eq hQ hqR]
     exact isPreconnected_connectedComponentIn.subset_connectedComponentIn
@@ -327,7 +327,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         _ ≤ 2 := by rw [ncard_singleton]; norm_num
     · push Not at hA
       obtain ⟨k₀, hk₀, hk₀y, -⟩ := h.top_vertex
-      set w₀ := Q.vtx k₀ with hw₀
+      set w₀ := Q.vtx k₀
       have hw₀D : w₀ ∉ D := fun hm => hm.2 (Existence.vtx_mem_boundary Q hk₀)
       have htop : ∀ c ∈ E₁, ∃ z ∈ c, z ∈ D ∧ z ∈ closure U ∧ z.2 = y₂ := by
         rintro c hc
@@ -380,7 +380,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         _ ≤ 2 := by rw [ncard_singleton]; norm_num
     · push Not at hA
       obtain ⟨k₀, hk₀, hk₀y, -⟩ := h.bot_vertex
-      set w₀ := Q.vtx k₀ with hw₀
+      set w₀ := Q.vtx k₀
       have hw₀D : w₀ ∉ D := fun hm => hm.2 (Existence.vtx_mem_boundary Q hk₀)
       have hbot : ∀ c ∈ E₂, ∃ z ∈ c, z ∈ D ∧ z ∈ closure U ∧ z.2 = y₁ := by
         rintro c hc

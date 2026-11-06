@@ -75,10 +75,10 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     (hdir : DirInterior H j σ) :
     DirInterior Q i σ ∧ chordSet Q i σ = chordSet H j σ ∧ chordSet Q i σ ∈ chords Q ∧
       chordSet Q i σ ∉ S ∧ chordSet Q i σ ∩ (interiorModel Q).D ⊆ R := by
-  set D := Q.filled \ Q.boundary with hD
+  set D := Q.filled \ Q.boundary
   have hRfree := region_sub_free hR
   have hRD : R ⊆ D := fun z hz => (hRfree hz).1
-  have hsub : H.filled \ H.boundary ⊆ D := by rw [hHR]; exact hRD
+  have hsub : H.filled \ H.boundary ⊆ D := by rwa [hHR]
   have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
   set v := Q.vtx i with hvdef
   have hin : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt v σ t ∈ H.filled \ H.boundary := by
@@ -108,9 +108,9 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     obtain ⟨y, a, b, hch, rfl⟩ := hFam.2.1 hc
     obtain ⟨hzy, hza, hzb⟩ := hzc
     have hza' : a < z.1 := lt_of_le_of_ne hza fun e => hch.left_not (by
-      rw [show ((a, y) : Point) = z from Prod.ext e hzy.symm]; exact hzD)
+      rwa [show ((a, y) : Point) = z from Prod.ext e hzy.symm])
     have hzb' : z.1 < b := lt_of_le_of_ne hzb fun e => hch.right_not (by
-      rw [show ((b, y) : Point) = z from Prod.ext e.symm hzy.symm]; exact hzD)
+      rwa [show ((b, y) : Point) = z from Prod.ext e.symm hzy.symm])
     -- a ray point just before `z` lies on the chord
     set δ := min (t / 2) (min (z.1 - a) (b - z.1) / 2) with hδ
     have hδ0 : 0 < δ := lt_min (by linarith) (by
@@ -146,7 +146,6 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     rw [← hHR]; exact hint t h1 (hTQ ▸ h2)
   refine ⟨hdirQ, hcs, ⟨i, σ, hi, hσ, hdirQ, rfl⟩, fun hS => ?_, ?_⟩
   · -- a point of the open chord would be free and on a chord of `S`
-    have hT := Visibility.chordParam_pos hQ hi hdirQ
     have hmem : rayPt v σ (chordParam Q i σ / 2) ∈ chordSet Q i σ := by
       rw [himg]; exact ⟨_, ⟨by linarith, by linarith⟩, rfl⟩
     exact (hRfree (hinR _ (by linarith) (by linarith))).2 ⟨_, hS, hmem⟩
@@ -204,7 +203,7 @@ theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
     (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) {k : ℕ} (hkn : k < Q.n)
     (hcl : Q.vtx k ∈ closure R) :
     ∃ j, j < (hostPoly Q S R).n ∧ (hostPoly Q S R).vtx j = Q.vtx k := by
-  set M := interiorModel Q with hMdef
+  set M := interiorModel Q
   have hM : WalkAx M := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
@@ -221,8 +220,8 @@ theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
   suffices hend : Q.vtx k = hostPt M.W (hk M S R i) ∨
       Q.vtx k = hostPt M.W (hk M S R ((i + 1) % nk M S R)) by
     rcases hend with e | e
-    · exact ⟨i, by rw [hHn]; exact hi, by rw [hostPoly_vtx hi, e]⟩
-    · exact ⟨_, by rw [hHn]; exact hsi, by rw [hostPoly_vtx hsi, e]⟩
+    · exact ⟨i, by rwa [hHn], by rw [hostPoly_vtx hi, e]⟩
+    · exact ⟨_, by rwa [hHn], by rw [hostPoly_vtx hsi, e]⟩
   obtain ⟨k', hk', hkv⟩ := exists_walk_vtx (Q := Q) hkn
   rcases gap_cases hM hF hfin hne hR hN2 hi with ⟨a', b', harc, hsub⟩ | ⟨c, hc, p, p', t, t', hA,
       hB, ha, hb, hAB⟩
@@ -304,8 +303,7 @@ theorem missing_found (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   obtain ⟨j, hj, hjv⟩ := vtx_mem_hostPoly hQ hFam hne hR hi hcl
   refine ⟨R, hR, i, σ, hi, hσ, rfl, hdir, hcR, j, hj, hjv, ?_⟩
   unfold DirInterior
-  rw [hjv, ← region_eq_intHost hQ hFam hne hR]
-  exact hev
+  rwa [hjv, ← region_eq_intHost hQ hFam hne hR]
 
 /-! ## No chord is emitted twice -/
 

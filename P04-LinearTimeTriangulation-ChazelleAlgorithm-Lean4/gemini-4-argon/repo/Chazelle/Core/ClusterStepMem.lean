@@ -128,7 +128,7 @@ theorem stepMem {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m2 : ℕ → ℕ} {
   have hit : ∀ i, lo ≤ i → i < hi → m2 (S.bTMP + i) < S.μ := fun i a b => by
     rw [h2tmp i a b]; exact hact i a b
   have hinj2 : ∀ i i', lo ≤ i → i < hi → lo ≤ i' → i' < hi → m2 (S.bTMP + i) = m2 (S.bTMP + i') →
-      i = i' := fun i i' a b c d e => hinj i i' a b c d (by rw [← h2tmp i a b, ← h2tmp i' c d]; exact e)
+      i = i' := fun i i' a b c d e => hinj i i' a b c d (by rwa [← h2tmp i a b, ← h2tmp i' c d])
   obtain ⟨A1, A2, A3, A4, A5, A6⟩ := passes_spec hL (f := f) hlh hhi hit hinj2 hsum
   have hu : ∀ i t t', lo ≤ i → i < hi → ((t = 0 ∧ s0 i) ∨ (t = 1 ∧ s1 i) ∨ (t = 2 ∧ s2 i)) →
       ((t' = 0 ∧ s0 i) ∨ (t' = 1 ∧ s1 i) ∨ (t' = 2 ∧ s2 i)) → t = t' := by
@@ -137,7 +137,7 @@ theorem stepMem {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m2 : ℕ → ℕ} {
     rcases h1 with ⟨rfl, h1⟩ | ⟨rfl, h1⟩ | ⟨rfl, h1⟩ <;>
       rcases h2 with ⟨rfl, h2⟩ | ⟨rfl, h2⟩ | ⟨rfl, h2⟩ <;> first | rfl | tauto
   obtain ⟨P0, P1, P2⟩ := A6 hu
-  set mP := (passC m2 S lo hi f).1 with hmP
+  set mP := (passC m2 S lo hi f).1
   -- `TMP` and the marks are untouched by the passes
   have hPt : ∀ i, lo ≤ i → i < hi → mP (S.bTMP + i) = m (S.bACT + i) := by
     intro i a b
@@ -157,7 +157,7 @@ theorem stepMem {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m2 : ℕ → ℕ} {
       rw [hPd i a (by omega)] at c
       exact ⟨i, a, by omega, (h2df i a (by omega)).mp c, d⟩
     · rintro ⟨i, a, b, c, d⟩
-      refine ⟨i, a, by omega, ?_, by rw [hPt i a b]; exact d⟩
+      refine ⟨i, a, by omega, ?_, by rwa [hPt i a b]⟩
       rw [hPt i a b, hPd i a b]; exact (h2df i a b).mpr c
   have hmS : ∀ x, mS x = if ∃ i, lo ≤ i ∧ i < hi ∧ mk i ∧ x = S.bPOS + m (S.bACT + i)
       then S.μ else mP x := by
@@ -184,13 +184,13 @@ theorem stepMem {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m2 : ℕ → ℕ} {
     exact A4 x h1 (fun i c d _ => by have := hit i c d; omega)
   · have := cntS_lt a b h (i' := hi)
     have hs' : cntS s0 lo hi + cntS s1 lo hi + cntS s2 lo hi ≤ hi - lo := hsum
-    rw [hmS, ite_eq_right (hnoPOS _ (by omega))]; rw [A1 i a b h, h2tmp i a b]
+    rw [hmS, ite_eq_right (hnoPOS _ (by omega)), A1 i a b h, h2tmp i a b]
   · have := cntS_lt a b h (i' := hi)
     have hs' : cntS s0 lo hi + cntS s1 lo hi + cntS s2 lo hi ≤ hi - lo := hsum
-    rw [hmS, ite_eq_right (hnoPOS _ (by omega))]; rw [A2 i a b h, h2tmp i a b]
+    rw [hmS, ite_eq_right (hnoPOS _ (by omega)), A2 i a b h, h2tmp i a b]
   · have := cntS_lt a b h (i' := hi)
     have hs' : cntS s0 lo hi + cntS s1 lo hi + cntS s2 lo hi ≤ hi - lo := hsum
-    rw [hmS, ite_eq_right (hnoPOS _ (by omega))]; rw [A3 i a b h, h2tmp i a b]
+    rw [hmS, ite_eq_right (hnoPOS _ (by omega)), A3 i a b h, h2tmp i a b]
   · rw [hmS, ite_eq_left ⟨i, a, b, h, rfl⟩]
   · rw [hmS, ite_eq_right (hnotmk i a b (Or.inl h)), ← h2tmp i a b, P0 i a b h]
   · rw [hmS, ite_eq_right (hnotmk i a b (Or.inr (Or.inl h))), ← h2tmp i a b, P1 i a b h]

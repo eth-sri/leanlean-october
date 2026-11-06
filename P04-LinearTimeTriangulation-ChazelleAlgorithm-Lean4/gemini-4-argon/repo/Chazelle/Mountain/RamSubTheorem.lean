@@ -88,14 +88,14 @@ theorem sOuterInv_push {σ : ℝ} {c₀ : Config} {out : List Polygon.Triangle} 
     unfold stackS
     rw [e61, e63, enm, stk_shift_push]
     exact congrArg _ hst₂
-  have hkQ : c.nreg 64 < (subPoly P l).n := by rw [n_subPoly]; exact hk
+  have hkQ : c.nreg 64 < (subPoly P l).n := by rwa [n_subPoly]
   have hwalk := walk_of_lt (subPoly P l) σ hkQ (stackS c)
   refine ⟨⟨hw', hC', hT', hF', by omega, ?_, ?_⟩, ?_⟩
   · intro x hx
     rw [hs'] at hx
     rcases List.mem_cons.1 hx with rfl | hx
     · exact hk
-    · exact hlt₂ x (by rw [hst₂]; exact hx)
+    · exact hlt₂ x (by rwa [hst₂])
   · rw [e64, hs', eout, hout₂, List.append_assoc, ← List.map_append, ← hout, hwalk]
   · unfold subOuterPot
     rw [e64, hs', hwalk, List.length_append]
@@ -113,7 +113,7 @@ theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ :
   obtain ⟨hdisj, hWb, hWs⟩ := hL
   obtain ⟨hw, hC, hT, hF, htop, hlt, hout⟩ := hI
   obtain ⟨h60, h61, h62, h65, h68, h70, hr70, hr72⟩ := hC
-  have hk : c.nreg 64 < l.length := by rw [h62] at ht; exact ht
+  have hk : c.nreg 64 < l.length := by rwa [h62] at ht
   unfold subOuterBody
   refine spec_seq (spec_instr (Exec.constN hw 69 1 (by omega)) fun hw₁ => ?_)
   have hs₁ : stackS { c with nreg := upd c.nreg 69 1 } = stackS c :=
@@ -124,7 +124,7 @@ theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ :
     ⟨by config_simp; exact h60, by config_simp; exact h61, by config_simp; exact h62,
       by config_simp; exact h65, by config_simp; exact h68, by config_simp; exact h70,
       by config_simp; exact hr70, by config_simp; exact hr72⟩
-    hT (by config_simp) (by config_simp; exact htop) (by rw [hs₁]; exact hlt)
+    hT (by config_simp) (by config_simp; exact htop) (by rwa [hs₁])
     (by config_simp)) ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨hC₂, hT₂, hF₂, h64₂, htop₂, hlt₂, hout₂, hst₂⟩
   rw [hs₁] at hk₂ hout₂ hst₂
@@ -279,7 +279,7 @@ theorem subSignStmt_exec (c : Config) (hc : WordsBounded W c) (h72 : c.rreg 72 =
   rintro c₁ k₁ hk₁ hw₁ ⟨hdet, hfr, hn, hnm, hrm, hout⟩
   have e72 : c₁.rreg 72 = c.rreg 72 := hfr 72 (by decide) (by decide) (by decide)
   by_cases hpos : 0 < det (c.rreg 61, c.rreg 62) (c.rreg 63, c.rreg 64) (c.rreg 65, c.rreg 66)
-  · refine spec_ifLtR_true (by rw [e72, h72, hdet]; exact hpos)
+  · refine spec_ifLtR_true (by rwa [e72, h72, hdet])
       (spec_instr (Exec.constR hw₁ 70 1) fun hw₂ => ?_)
     refine ⟨by omega, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
       by config_simp; exact hnm, by config_simp; exact hrm, by config_simp; exact hout⟩
@@ -289,7 +289,7 @@ theorem subSignStmt_exec (c : Config) (hc : WordsBounded W c) (h72 : c.rreg 72 =
     · config_simp
       rw [Machine.upd_other _ _ _ (by omega)]
       exact hfr r (by omega) (by omega) (by omega)
-  · refine spec_ifLtR_false (by rw [e72, h72, hdet]; exact hpos)
+  · refine spec_ifLtR_false (by rwa [e72, h72, hdet])
       (spec_instr (Exec.constR hw₁ 70 (-1)) fun hw₂ => ?_)
     refine ⟨by omega, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
       by config_simp; exact hnm, by config_simp; exact hrm, by config_simp; exact hout⟩
@@ -372,7 +372,7 @@ theorem mountainSub_exec (hM : IsMountain (subPoly P l)) (c : Config) (hc : Word
       (∀ r, (r < 61 ∨ 72 < r) → c'.rreg r = c.rreg r) ∧
       (∀ a, (a < c.nreg 61 ∨ c.nreg 61 + l.length ≤ a) → c'.nmem a = c.nmem a) ∧
       c'.rmem = c.rmem := by
-  have h3 : 3 ≤ l.length := by have := hM.1.1; rw [n_subPoly] at this; exact this
+  have h3 : 3 ≤ l.length := by have := hM.1.1; rwa [n_subPoly] at this
   obtain ⟨hσ, hpos⟩ := mountainSign_spec (subPoly P l) hM
   obtain ⟨c', k, ex, hk, hout, hF⟩ :=
     mountainSubStmt_exec_sign (P := P) h3 c hc ⟨hdisj, hWb, hWs⟩ hm htab
@@ -380,7 +380,7 @@ theorem mountainSub_exec (hM : IsMountain (subPoly P l)) (c : Config) (hc : Word
   rw [n_subPoly] at hlen
   obtain ⟨hn, hr, hnm, hrm⟩ := hF
   refine ⟨c', k, mountainSign (subPoly P l), ex, hσ, hpos, by omega, hout, hn, hr,
-    fun a ha => hnm a (by rw [hm]; exact ha), hrm⟩
+    fun a ha => hnm a (by rwa [hm]), hrm⟩
 
 end main
 

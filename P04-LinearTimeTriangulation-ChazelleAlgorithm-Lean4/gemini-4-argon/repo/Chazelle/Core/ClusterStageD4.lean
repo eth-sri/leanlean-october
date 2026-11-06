@@ -82,7 +82,6 @@ theorem stkS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) {s
       have hlen := segL_length_le s g.μ bo j
       have mj : c2.nmem (g.base 42 + j) = cntLt bo g.μ (j + 1) := by
         rw [hf2.2.2.2.2 _ (by simp only [hAm]; omega)]; exact hcnt j hj
-      have hle := cntLt_le bo g.μ (j + 1)
       obtain ⟨c3, k3, e3, hk3, hw3, h670, h671, htp3, h703, hf3, hm3, hrr3, hrm3, ho3⟩ : ∃ c3 k3, Exec P W
           (block [.addN 130872 130072 130870, .loadN 130671 130872, .copyN 130670 130871])
           c2 c3 k3 ∧ k3 = 3 ∧ WordsBounded W c3 ∧ c3.nreg 130670 = cntLt bo g.μ j ∧
@@ -99,23 +98,23 @@ theorem stkS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) {s
       obtain ⟨c4, k4, e4, hk4, hw4, hm4, htp4, hr4, hrr4, hrm4, ho4⟩ := pushOne_exec (P := P) hw3 0 (s := s) (bS := g.base 46)
         (tp := 2 * (segL s g.μ bo j).length)
         (by omega) (by rw [hf3 _ (by unfold StkRG; omega), r1]) h670 h671
-        (by rw [hf3 _ (by unfold StkRG; omega), hf2.1 _ (by unfold StkRG; omega)]; exact hs)
-        (by rw [hf3 _ (by unfold StkRG; omega), hf2.1 _ (by unfold StkRG; omega)]; exact hS)
-        (by rw [htp3]; exact htp2) (by omega)
+        (by rwa [hf3 _ (by unfold StkRG; omega), hf2.1 _ (by unfold StkRG; omega)])
+        (by rwa [hf3 _ (by unfold StkRG; omega), hf2.1 _ (by unfold StkRG; omega)])
+        (by rwa [htp3]) (by omega)
       have hpush : (c4.nmem, c4.nreg 130701) = pushF (g.base 46) s (cntLt bo g.μ j)
           (cntLt bo g.μ (j + 1)) (c3.nmem, 2 * (segL s g.μ bo j).length) := by
         rw [hm4, htp4]; unfold pushF; split_ifs <;> rfl
       obtain ⟨hL5, htp5, hout5⟩ := pushF_stk (bS := g.base 46) (s := s) (a := cntLt bo g.μ j)
         (b := cntLt bo g.μ (j + 1)) (q := (c3.nmem, 2 * (segL s g.μ bo j).length))
-        (L := segL s g.μ bo j) (by rw [hm3]; exact hL2) rfl
+        (L := segL s g.μ bo j) (by rwa [hm3]) rfl
       rw [← hpush] at hL5 htp5 hout5
       have hlen' := segL_length_le s g.μ bo (j + 1)
       have r1' : c4.nreg 130001 = 1 := by
         rw [hr4 _ (by omega) (by omega) (by omega), hf3 _ (by unfold StkRG; omega), r1]
       have h70' : c4.nreg 130870 = j := by
-        rw [hr4 _ (by omega) (by omega) (by omega)]; exact h703
+        rwa [hr4 _ (by omega) (by omega) (by omega)]
       have h671' : c4.nreg 130671 = cntLt bo g.μ (j + 1) := by
-        rw [hr4 _ (by omega) (by omega) (by omega)]; exact h671
+        rwa [hr4 _ (by omega) (by omega) (by omega)]
       obtain ⟨c6, k6, e6, hk6, hw6, h70'', h71'', hr6, hm6, hrr6, hrm6, ho6⟩ : ∃ c6 k6, Exec P W
           (block [.copyN 130871 130671, .addN 130870 130870 130001]) c4 c6 k6 ∧ k6 = 2 ∧
           WordsBounded W c6 ∧ c6.nreg 130870 = j + 1 ∧ c6.nreg 130871 = cntLt bo g.μ (j + 1) ∧
@@ -131,10 +130,10 @@ theorem stkS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) {s
           segL s g.μ bo j := rfl
       refine ⟨c6, k3 + (k4 + k6), .seq e3 (.seq e4 e6), by omega, hw6, h70'', ?_, h71'', ?_,
         ?_, ?_⟩
-      · rw [hr6 _ (by omega) (by omega), hr4 _ (by omega) (by omega) (by omega),
-          hf3 _ (by unfold StkRG; omega)]; exact hn2
-      · rw [hr6 _ (by omega) (by omega), hseg]; exact htp5
-      · rw [hm6, hseg]; exact hL5
+      · rwa [hr6 _ (by omega) (by omega), hr4 _ (by omega) (by omega) (by omega),
+          hf3 _ (by unfold StkRG; omega)]
+      · rwa [hr6 _ (by omega) (by omega), hseg]
+      · rwa [hm6, hseg]
       · refine hf2.trans ⟨fun r hr => ?_, ?_, ?_, ?_, fun a ha => ?_⟩
         · unfold StkRG at hr
           rw [hr6 _ (by omega) (by omega), hr4 _ (by omega) (by omega) (by omega),

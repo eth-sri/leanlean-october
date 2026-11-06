@@ -39,7 +39,6 @@ theorem regLoopSpec_of {s : Stmt} {κR : ℕ} (hS : RegStepSpec s κR) : RegLoop
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hpre.hG.1
   obtain ⟨-, -, -, reg, g1, g2, g3, g4, -⟩ := DownMath.isNF_build hQ hpre.hok hpre.hperm hpre.hsort
   set Ev : BEnv := ⟨P, W, L, E, reg, c.nmem, c.nreg 210001, c.nreg 210005, c.nreg 212019, S₀, Cm⟩
-    with hEv
   -- sizes
   set X := (S₀ + 1) * (Cm + 1) with hXdef
   have hX : 1 ≤ X := Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
@@ -65,7 +64,7 @@ theorem regLoopSpec_of {s : Stmt} {κR : ℕ} (hS : RegStepSpec s κR) : RegLoop
       have ht' : t < ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs.length := by
         have hn : Ev.nRg r = (Ev.N.region r).arcs.length := by
           unfold BEnv.nRg; rw [ite_eq_right (show ¬ Ev.K = 0 from hK)]
-        rw [← hn]; exact ht
+        rwa [← hn]
       apply hpre.hCm r hr
       rw [List.getD_eq_getElem _ _ ht']; exact List.getElem_mem ht'
   -- bounds of the initialisation
@@ -110,7 +109,7 @@ theorem regLoopSpec_of {s : Stmt} {κR : ℕ} (hS : RegStepSpec s κR) : RegLoop
       fun a _ => by rw [hmem1], fun a _ => by rw [f1.2.2.2.1], f1.2.2.2.2, ?_, ?_⟩ <;>
       rw [hal1]; omega
   -- the loop
-  set A := c.nreg ALLOC with hAdef
+  set A := c.nreg ALLOC
   let I : Config → Prop := fun d => ∃ r, r ≤ L.length + 1 ∧ RSt Ev r d ∧
     d.nreg 212013 = L.length + 1 ∧ d.nreg ALLOC ≤ A + r * (κR * X) ∧
     ∀ q, (FixB q ∨ q = 212013 ∨ q = 216006) → d.nreg q = d1.nreg q
@@ -121,7 +120,7 @@ theorem regLoopSpec_of {s : Stmt} {κR : ℕ} (hS : RegStepSpec s κR) : RegLoop
       (B := DrvR.drvBands) (A₀ := c.nreg 212019) I (fun d => L.length + 1 - d.nreg 212014) (κR * X)
       (fun d ⟨_, _, h, _⟩ => h.wb)
       (fun d ⟨r, hr, rst, h13, hal, keep⟩ hlt => by
-        have hr1 : r < L.length + 1 := by rw [rst.r14, h13] at hlt; exact hlt
+        have hr1 : r < L.length + 1 := by rwa [rst.r14, h13] at hlt
         have hroomr : d.nreg ALLOC + κR * (Ev.S₀ + 1) * (Ev.Cm + 1) ≤ Ev.W := by
           show d.nreg ALLOC + κR * (S₀ + 1) * (Cm + 1) ≤ W
           rw [hper]
@@ -129,7 +128,7 @@ theorem regLoopSpec_of {s : Stmt} {κR : ℕ} (hS : RegStepSpec s κR) : RegLoop
           rw [Nat.add_mul, Nat.one_mul] at this
           omega
         obtain ⟨d'', k, ex, hk, rst'', rf, kp⟩ := hS Ev hE r d hr1 rst hroomr
-        have hk' : k ≤ κR * X := by rw [← hper]; exact hk
+        have hk' : k ≤ κR * X := by rwa [← hper]
         refine ⟨d'', k, ex, ⟨r + 1, by omega, rst'', by rw [kp _ (Or.inr (Or.inl rfl)), h13],
           ?_, fun q hq => (kp q hq).trans (keep q hq)⟩, rf, hk', ?_⟩
         · have := rf.2.2.2.2.2.2
@@ -148,7 +147,6 @@ theorem regLoopSpec_of {s : Stmt} {κR : ℕ} (hS : RegStepSpec s κR) : RegLoop
   refine ⟨d', k1 + k', .seq e1 e', hk, ?_, hRF1.trans rf'⟩
   -- the postcondition
   have hout := rst'.out
-  have hTL : Ev.TL (Ev.K + 1) = tagLB Ev.li Ev.Q Ev.L Ev.E := Ev.TL_all
   obtain ⟨m1, m2, m3, m4⟩ := bktMath Ev hE (fun q => d'.nmem (Ev.BK + q)) (d'.nreg 212018)
     hout.bk hout.bk0 rst'.mx
   have hnl : (newLB (liBit c.nmem (c.nreg 210001)) (Qof P) L E).length =

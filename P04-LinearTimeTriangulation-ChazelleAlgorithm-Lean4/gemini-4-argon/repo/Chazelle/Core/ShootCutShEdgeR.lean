@@ -97,9 +97,9 @@ theorem candFrom_exec (c : Config) (hw : WordsBounded W c) (hW1 : 1 ≤ W) {A e 
   refine ⟨c₂, _, .seq e₁ e₂, rfl, ⟨by simp [hc₂], fun h' => by simp [hc₂] at h', fun _ =>
     ⟨x, absRec_copy' hx (by rw [g _ (by norm_num), w1]) (by rw [g _ (by norm_num), w2])
       (by rw [g _ (by norm_num), w3]) (by rw [g _ (by norm_num), w4]), hF,
-      by rw [g _ (by norm_num), g _ (by norm_num), w5, w6]; exact hp,
-      by rw [g _ (by norm_num), w5]; exact hen,
-      by rw [g _ (by norm_num), g _ (by norm_num), w5, w6]; exact hpos⟩⟩, ?_⟩
+      by rwa [g _ (by norm_num), g _ (by norm_num), w5, w6],
+      by rwa [g _ (by norm_num), w5],
+      by rwa [g _ (by norm_num), g _ (by norm_num), w5, w6]⟩⟩, ?_⟩
   refine ⟨fun r hr => ?_, fun r _ => by rw [show c₂.rreg = c₁.rreg from rfl, rr₁], by
     show c₁.nmem = c.nmem; exact m₁, by show c₁.rmem = c.rmem; exact rm₁,
     by show c₁.output = c.output; exact o₁⟩

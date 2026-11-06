@@ -23,10 +23,10 @@ open Chazelle.Chain (SideAttach sidePt)
 set_option maxHeartbeats 4000000 in
 theorem slfEmits_spec : SlfEmitsSpec := by
   intro sh Bs F X Ok P W c₀ c J N₁ N₂ E hI hD arr0 pw0 arr1 pw1 bit0 bit1 hax hR0 hR1 hroom
-  set kind := c.nreg oKd with hkind
-  set k := c.nreg oKk with hkk
+  set kind := c.nreg oKd
+  set k := c.nreg oKk
   set b := c.nreg oB with hbb
-  set e := stopSet J (Qof P) N₂ kind k b with he
+  set e := stopSet J (Qof P) N₂ kind k b
   have hb : b ≤ 1 := hD.ok.2.1
   obtain ⟨i1, i2, -⟩ := orig_attach E.hP E.hNF₂ hD
   obtain ⟨A0, pt0⟩ := i1 _ _ arr0
@@ -55,7 +55,7 @@ theorem slfEmits_spec : SlfEmitsSpec := by
   refine IRS.seq (K₁ := 37) (K₂ := 37) (slfMaybe_irs (bitr := slfO) (hX _ (Or.inl rfl))
     (hX _ (Or.inr (Or.inl rfl))) (hX _ (Or.inr (Or.inr (Or.inl rfl)))) hI₁
     (by rw [rr1 _ (Or.inr (Or.inl rfl))]; exact hK.1) (by rw [rr1 _ (Or.inr (Or.inr (Or.inl rfl)))]; exact hK.2.1)
-    (by rw [c1RB]; exact hR0) (by rw [c1RB, c1RC]; have := hI.hw.1 ALLOC; omega)
+    (by rwa [c1RB]) (by rw [c1RB, c1RC]; have := hI.hw.1 ALLOC; omega)
     (by rw [c1O]; exact bit0.1)) ?_
   rintro c₂ hI₂ - - ⟨g2, w2, m2, r2⟩
   simp only [c1O, c1RC, c1RB] at g2 w2 m2
@@ -76,13 +76,13 @@ theorem slfEmits_spec : SlfEmitsSpec := by
       (by unfold K0 slfDc sw; omega)]; exact hK.1)
     (by rw [c2r _ (by unfold K1 slfX sw; omega) (by unfold K1 gRC sw; omega)
       (by unfold K1 slfDc sw; omega)]; exact hK.2.1)
-    (by rw [c2RB]; exact hR0) (by rw [c2RB]; have := hI.hw.1 ALLOC; omega)
+    (by rwa [c2RB]) (by rw [c2RB]; have := hI.hw.1 ALLOC; omega)
     (by rw [c2O4]; exact bit1.1)).mono (by norm_num) ?_
   rintro c' ⟨g3, w3, m3, r3⟩
   simp only [c2O4, c2RB] at g3 w3 m3
   -- the facts
-  set t₀ := (chainModel J.whole).param (Qof P) ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩ with ht₀
-  set t₁ := (chainModel J.whole).param (Qof P) ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩ with ht₁
+  set t₀ := (chainModel J.whole).param (Qof P) ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩
+  set t₁ := (chainModel J.whole).param (Qof P) ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩
   have hE0 : c.nreg slfO ≠ 1 → (Lst J : ℝ) ≤ oW J (c.nreg (oF0 + 1) + t₀) := fun h => by
     have := bit0.2; unfold slfOff at this; by_contra hc; push Not at hc
     exact h (this.2 hc)
@@ -141,8 +141,6 @@ theorem slfEmits_spec : SlfEmitsSpec := by
     refine ⟨slfRawV hD (d := 1 - b) (by omega) A1 pt1 (hE1 h) pw1 (hax ⟨_, _, A1, hE1 h⟩) q1 q2 q3,
       q1⟩
   -- the post
-  have hO0 : c.nreg slfO ≤ 1 := bit0.1
-  have hO4 : c.nreg (slfO + 4) ≤ 1 := bit1.1
   refine ⟨by rw [g3, g2]; omega, by rw [g3, g2]; split_ifs <;> omega, fun i hi1 hi2 => ?_,
     fun _ p t hA hL => ?_, fun a ha hs => ?_, ?_, fun r hr hS hrA => ?_⟩
   · -- validity

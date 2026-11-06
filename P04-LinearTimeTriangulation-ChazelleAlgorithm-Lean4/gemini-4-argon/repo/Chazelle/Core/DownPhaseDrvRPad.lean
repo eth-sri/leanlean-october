@@ -62,7 +62,7 @@ theorem padS_exec {src : ℕ} {c : Config} (hw : WordsBounded W c) (hs : c.nreg 
   have a69 : (upd (upd c.nreg 210068 (c.nreg src)) 210069 1) 210069 = 1 := upd_same _ _ _
   have aA : (upd (upd c.nreg 210068 (c.nreg src)) 210069 1) 9999 = c.nreg 9999 := by
     rw [upd_other _ _ _ (by decide), upd_other _ _ _ (by decide)]
-  have e₃ := padLoop_exec (P := P) _ _ e₂.wb_right a69 (by dsimp only; rw [a68, aA]; exact hs) rfl
+  have e₃ := padLoop_exec (P := P) _ _ e₂.wb_right a69 (by dsimp only; rwa [a68, aA]) rfl
   refine ⟨_, (Exec.seq e₁ (Exec.seq e₂ e₃)).cast (by dsimp only; rw [a68, aA]; ring),
     fun r h1 h2 => ?_, rfl, rfl, rfl, rfl, e₃.wb_right⟩
   simp only [upd_other _ _ _ h1, upd_other _ _ _ h2]

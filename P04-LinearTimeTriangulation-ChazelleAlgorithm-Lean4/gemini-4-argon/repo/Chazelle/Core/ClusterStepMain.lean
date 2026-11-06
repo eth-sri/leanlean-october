@@ -71,9 +71,6 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
   intro s0 s1 s2 e1 e2 e3 q
   have hq : q = pushF S.bSTK S.s e2 e3 (pushF S.bSTK S.s e1 e2 (pushF S.bSTK S.s lo e1
       (sepMem (passC m2 S lo hi f).1 S.bTMP S.bPOS S.bDF S.μ lo (hi - lo), tp))) := rfl
-  have hs0 : s0 = SelI m2 S f f := rfl
-  have hs1 : s1 = SelI m2 S (2 * S.N + m2 (S.bFP + f)) f := rfl
-  have hs2 : s2 = SelI m2 S (S.N + f) f := rfl
   have he1 : e1 = lo + cntS s0 lo hi := rfl
   have he2 : e2 = e1 + cntS s1 lo hi := rfl
   have he3 : e3 = e2 + cntS s2 lo hi := rfl
@@ -107,7 +104,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
   rw [← hm2] at Sel0 Sel1 Sel2
   obtain ⟨Ccov, Cuniq, Chalf, Cedge⟩ := cls_facts hSF hD hgood hch
   -- the class predicates
-  set Q : ℕ → ℕ → Prop := fun t i => QC m S T a f t (m (S.bACT + i)) with hQ
+  set Q : ℕ → ℕ → Prop := fun t i => QC m S T a f t (m (S.bACT + i))
   have hQ0 : ∀ i, lo ≤ i → i < hi → (s0 i ↔ Q 0 i) := fun i i1 i2 => Sel0 i i1 i2
   have hQ1 : ∀ i, lo ≤ i → i < hi → (s1 i ↔ Q 1 i) := fun i i1 i2 => Sel1 i i1 i2
   have hQ2 : ∀ i, lo ≤ i → i < hi → (s2 i ↔ Q 2 i) := fun i i1 i2 => Sel2 i i1 i2
@@ -131,7 +128,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
         (by omega)
   refine ⟨hsum, ?_⟩
   -- the boundaries
-  set E := e4 lo e1 e2 e3 with hE
+  set E := e4 lo e1 e2 e3
   have hE0 : E 0 = lo := rfl
   have hE1 : E 1 = e1 := rfl
   have hE2 : E 2 = e2 := rfl
@@ -157,7 +154,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
     · rw [ite_eq_right (fun h => hmk h.2)]
       exact ⟨fun h => absurd ((hD.df _ (hactμ i i1 i2)).mp h) (hnD i i1 i2), fun h => absurd h hmk⟩
   obtain ⟨SM1, SM2, SM3, SM4, SM5, SM6, SM7, SM8, SM9, SM10⟩ := stepMem hL (f := f)
-    (mk := fun i => markN T a f (m (S.bACT + i))) hlh (by rw [hμ]; exact hhi)
+    (mk := fun i => markN T a f (m (S.bACT + i))) hlh (by rwa [hμ])
     (fun i i1 i2 => by rw [hμ]; exact hactμ i i1 i2) hinj h2tmp h2df hsum
     (fun i i1 i2 => ⟨fun ⟨x, y⟩ => absurd (hQu i i1 i2 0 1 (by omega) (by omega) ((hQ0 i i1 i2).mp x)
         ((hQ1 i i1 i2).mp y)) (by omega),
@@ -170,11 +167,11 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       · exact hQmk 0 i ((hQ0 i i1 i2).mp h)
       · exact hQmk 1 i ((hQ1 i i1 i2).mp h)
       · exact hQmk 2 i ((hQ2 i i1 i2).mp h))
-  set mS := sepMem (passC m2 S lo hi f).1 S.bTMP S.bPOS S.bDF S.μ lo (hi - lo) with hmS
+  set mS := sepMem (passC m2 S lo hi f).1 S.bTMP S.bPOS S.bDF S.μ lo (hi - lo)
   clear_value mS
   have SM1' : ∀ x, ¬ (S.bACT + lo ≤ x ∧ x < S.bACT + e3) → ¬ (S.bPOS ≤ x ∧ x < S.bPOS + S.μ) →
       mS x = m2 x := by
-    rw [he3, he2, he1]; exact SM1
+    rwa [he3, he2, he1]
   -- uniform statements
   have hA : ∀ t, t < 3 → ∀ i, lo ≤ i → i < hi → Q t i →
       mS (S.bACT + (E t + cntS (Q t) lo i)) = m (S.bACT + i) := by
@@ -205,10 +202,10 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
   have hloc : ∀ x, lo ≤ x → x < e3 → ∃ t, t < 3 ∧ E t ≤ x ∧ x < E (t + 1) := by
     intro x h1 h2
     by_cases c1 : x < E 1
-    · exact ⟨0, by omega, by rw [hE0]; exact h1, c1⟩
+    · exact ⟨0, by omega, by rwa [hE0], c1⟩
     · by_cases c2 : x < E 2
       · exact ⟨1, by omega, by omega, c2⟩
-      · exact ⟨2, by omega, by omega, by rw [hE3]; exact h2⟩
+      · exact ⟨2, by omega, by omega, by rwa [hE3]⟩
   -- the pushes
   have hstk0 : rest = stkList m S.bSTK rest.length := by
     have h := hD.stack
@@ -264,7 +261,6 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
     obtain ⟨i, i1, i2, i3, i4⟩ := hdec t ht x hx1 hx2
     exact ⟨t, i, ht, i1, i2, i3, i4, by rw [← i4]; exact hact_in t ht i i1 i2 i3⟩
   set sep := (items (fun i => m (S.bACT + i)) (lo, hi)).filter (fun v => markN T a f v)
-    with hsep
   have hSplit : SplitOK (μ := μ) (k := k) (Adj := AdjN M) (fun i => m (S.bACT + i))
       (fun i => q.1 (S.bACT + i)) (lo, hi) E sep := by
     refine ⟨fun i h hi' => hact_out i hi' (by rcases h with h | h; left; exact h; right; omega),
@@ -311,10 +307,10 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       refine Cedge d t t' ht ht' ⟨?_, ?_⟩ ⟨?_, ?_⟩
       · rw [hd1, ← hx']; exact hmem i i1 i2
       · have : (M.vert d : ℕ) = m (S.bACT + i) := by rw [hd1, hx']
-        rw [this]; exact i3
+        rwa [this]
       · rw [hd2, ← hy']; exact hmem i' j1 j2
       · have : (M.head d : ℕ) = m (S.bACT + i') := by rw [hd2, hy']
-        rw [this]; exact j3
+        rwa [this]
     · have hv0 := hmem lo le_rfl (by omega)
       refine card_mark_le (T := T) (a := a) (ha := ha) f _ (hD.sinv.lt _ hlv) c
         (slabN T c k (m (S.bACT + lo))) k (fun v hv => ?_)
@@ -346,7 +342,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       omega
   have SI' := SInv.split hD.sinv hSplit hnews hnd hD.rng
   set fin' := fin ∪ ((Finset.range 3).image (scls E)).filter
-    (fun q => 0 < len q ∧ len q ≤ S.s) with hfin'
+    (fun q => 0 < len q ∧ len q ≤ S.s)
   -- classification of the new live segments
   have hlive : ∀ p', Lv (news ++ rest) fin' p' →
       (Lv ((lo, hi) :: rest) fin p' ∧ p' ≠ (lo, hi)) ∨
@@ -388,7 +384,6 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
     intro i v h hv
     have hf := hSF.first ⟨v, hv⟩
     simp only at hf
-    have hfN : m (S.bFIRST + v) < N := by rw [hf]; exact Fin.isLt _
     unfold keyOf
     rw [h, hstat (S.bFIRST + v) (Or.inl (by omega)), hstat _ (Or.inl (by omega))]
   refine ⟨news, fin', D ∪ sep, ⟨SI', ?_, ?_, ?_, ?_, ?_, P3.1, ?_⟩, P3.2.1, hstat, ?_⟩
@@ -411,7 +406,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       rw [hact_out i hiμ (by omega)]
       have hw : m (S.bACT + i) < μ := hD.sinv.lt p' hold _ (mem_items.mpr ⟨i, h1, h2, rfl⟩)
       have hpi := hD.pos_in p' hold i h1 h2
-      rw [hpos' _ hw, SM9 _ (by rw [hμ]; exact hw) (fun j j1 j2 e => ?_),
+      rw [hpos' _ hw, SM9 _ (by rwa [hμ]) (fun j j1 j2 e => ?_),
         h2o _ (by omega) (by omega)]
       · exact hpi
       · have := hD.pos_in _ hlv j j1 j2
@@ -432,7 +427,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
         rw [hP t ht j j1 j2 hQt]
         exact ⟨scls E t, hcls_live t ht (by unfold len scls; omega), hi'.1, hi'.2,
           hact_in t ht j j1 j2 hQt⟩
-    · rw [SM9 w (by rw [hμ]; exact hw) (fun j j1 j2 e => hex ⟨j, j1, j2, e⟩),
+    · rw [SM9 w (by rwa [hμ]) (fun j j1 j2 e => hex ⟨j, j1, j2, e⟩),
         h2o _ (by omega) (by omega)]
       rcases hD.pos_out w hw with h | ⟨p'', hp'', h1, h2, h3⟩
       · exact Or.inl h
@@ -447,7 +442,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
             · exact Or.inl (List.mem_append_right _ h)
           · exact Or.inr (Finset.mem_union_left _ h)
         obtain ⟨hio, hiμ⟩ := hold_pos p'' hp'' hne _ h1 h2
-        exact ⟨p'', hlv', h1, h2, by rw [hact_out _ hiμ (by omega)]; exact h3⟩
+        exact ⟨p'', hlv', h1, h2, by rwa [hact_out _ hiμ (by omega)]⟩
   · -- the stack entries are sorted
     intro p' hp' i i' h1 h2 h3
     rcases List.mem_append.mp hp' with hn | hr

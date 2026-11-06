@@ -96,7 +96,7 @@ theorem big_of_ge {A B lam : ℕ} (h : cntLam A B ≤ lam) :
   set L := cntL A B
   rw [Setup.ceilBeta_eq lam, Setup.ceilBeta_eq]
   unfold cntLam at h
-  set b := (lam + 4) / 5 with hb
+  set b := (lam + 4) / 5
   have hbL : 5 * L + 16 ≤ b := by omega
   have hb' : (b + 11 + 4) / 5 + L ≤ b := by omega
   have hpow : 2 ^ ((b + 11 + 4) / 5) * 2 ^ L ≤ 2 ^ b := by
@@ -105,7 +105,7 @@ theorem big_of_ge {A B lam : ℕ} (h : cntLam A B ≤ lam) :
   constructor
   · calc 8 * A * 2 ^ ((b + 11 + 4) / 5) ≤ 2 ^ L * 2 ^ ((b + 11 + 4) / 5) :=
           Nat.mul_le_mul_right _ (by omega)
-      _ ≤ 2 ^ b := by rw [mul_comm]; exact hpow
+      _ ≤ 2 ^ b := by rwa [mul_comm]
   · omega
 
 /-! ## One level -/
@@ -155,7 +155,6 @@ theorem step_arith {p b b' K K' n c c' A B G : ℕ}
       calc 4 * A * B * K ≤ 4 * A * B * (K * X) := Nat.mul_le_mul_left _ this
         _ ≤ 4 * A * B * (2 * c * P) := Nat.mul_le_mul_left _ hK2
         _ = 8 * A * B * c * P := by ring
-    have hP1 : 1 ≤ P := Nat.one_le_two_pow
     calc K' * Y ≤ A * (K * Y) + A * Y + A * B * n + 4 * A * B * K := e0
       _ ≤ 2 * A * c * P + A * Y + 2 * A * B * P + 8 * A * B * c * P := by omega
       _ ≤ cntG A B c * P + cntG A B c * Y := by
@@ -165,7 +164,7 @@ theorem step_arith {p b b' K K' n c c' A B G : ℕ}
       _ ≤ c' * P + c' * Y :=
           Nat.add_le_add (Nat.mul_le_mul_right _ hc) (Nat.mul_le_mul_right _ hc)
       _ = c' * (P + Y) := by ring
-  · have hK2' : K * X ≤ 2 * (c' * P) := by rw [← mul_assoc]; exact hK2
+  · have hK2' : K * X ≤ 2 * (c' * P) := by rwa [← mul_assoc]
     have eKY : 4 * (A * (K * Y)) ≤ c' * P := by
       have : 8 * (A * (K * Y)) ≤ 2 * (c' * P) := by
         calc 8 * (A * (K * Y)) = K * (8 * A * Y) := by ring

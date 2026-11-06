@@ -103,8 +103,8 @@ theorem SlotOK.keep {P : Polygon} {m m' : ℕ → ℕ} {E E' Hγ e₁ : ℕ} {Va
   have hr : ∀ i, i < sl.q → rdPc m' sl.L i = rdPc m sl.L i := fun i hi =>
     rdPc_congr he (by have : 7 * i + 7 ≤ 7 * sl.q := by omega
                       omega)
-  refine ⟨C, ℓ, off, sa, ea, S, hu, by rw [he _ (by omega)]; exact hq, hq1, by omega,
-    by rw [hr 0 (by omega)]; exact h0, by rw [hr _ (by omega)]; exact hl,
+  refine ⟨C, ℓ, off, sa, ea, S, hu, by rwa [he _ (by omega)], hq1, by omega,
+    by rwa [hr 0 (by omega)], by rwa [hr _ (by omega)],
     fun i hi => by rw [hr i (by omega), hr (i + 1) hi]; exact hc i hi,
     fun i hi => by rw [hr i (by omega)]; exact ht i hi,
     fun i hi => by rw [hr i hi]; exact (hv i hi).keep he hE, r1, r2, r3, r4, r5⟩
@@ -126,10 +126,10 @@ theorem slotOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb : �
     simp [hps]
   -- the order facts in list form
   have h0' : (chainModel C).key (Qof P) (ps[0]'(List.length_pos_iff.2 hne)).s =
-      (chainModel C).key (Qof P) sa := by rw [hget]; exact h0
+      (chainModel C).key (Qof P) sa := by rwa [hget]
   have hl' : (chainModel C).key (Qof P) (ps[ps.length - 1]'(by
       have := List.length_pos_iff.2 hne; omega)).e = (chainModel C).key (Qof P) ea := by
-    rw [hget, hlen]; exact hl
+    rwa [hget, hlen]
   have hc' : ∀ i (hi : i + 1 < ps.length), (chainModel C).key (Qof P) (ps[i]'(by omega)).e =
       (chainModel C).key (Qof P) (ps[i + 1]'hi).s := fun i hi => by
     rw [hget, hget]; exact hc i (by omega)

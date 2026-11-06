@@ -208,20 +208,19 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
     ∃ c' k, Exec P W wstep c c' k ∧ k ≤ 1120 ∧ FrameB BW c c' ∧ BestOK P.n V.s V.m c' ∧
       bestOf c' = wupd (Qof P) C V.s V.hz (sgnOf V.σb) V.zo (bestOf c) (c.nreg 120070) := by
   have hmn : C.m < P.n := by
-    have := C.m_lt; rw [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this; exact this
-  have hm1 := C.one_le
+    have := C.m_lt; rwa [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this
   suffices H : ∃ c' k, Exec P W wstep c c' k ∧ k ≤ 1120 ∧ BestOK P.n V.s V.m c' ∧
       bestOf c' = wupd (Qof P) C V.s V.hz (sgnOf V.σb) V.zo (bestOf c) (c.nreg 120070) by
     obtain ⟨c', k, ex, hk, hb', hv'⟩ := H
     exact ⟨c', k, ex, hk, exec_frameB ex wr_wstep, hb', hv'⟩
-  set w := c.nreg 120070 with hw_def
+  set w := c.nreg 120070
   by_cases h6 : w < 6
-  · refine ⟨c, _, .ifLtN_true (by rw [hq.six]; exact h6) (.skip hw), by omega, hb, ?_⟩
+  · refine ⟨c, _, .ifLtN_true (by rwa [hq.six]) (.skip hw), by omega, hb, ?_⟩
     unfold wupd; rw [ite_eq_right (by omega)]
   by_cases hE : w < 2 * C.m + 6
   swap
-  · refine ⟨c, _, .ifLtN_false (by rw [hq.six]; exact h6)
-      (.ifLtN_false (by rw [hq.tEnd, hv.m]; exact hE) (.skip hw)), by omega, hb, ?_⟩
+  · refine ⟨c, _, .ifLtN_false (by rwa [hq.six])
+      (.ifLtN_false (by rwa [hq.tEnd, hv.m]) (.skip hw)), by omega, hb, ?_⟩
     unfold wupd; rw [ite_eq_right (by omega)]
   -- the tour edge `i = w - 6`
   obtain ⟨c₁, k₁, e₁, hk₁, v₁, r₁⟩ : ∃ c₁ k₁, Exec P W
@@ -239,7 +238,6 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
   rw [v₁, r₁ _ (by decide), hq.twoM, hv.m] at v₂
   have htj : c₂.nreg 120071 = tj C (w - 6) := by
     rw [v₂]; unfold tj; rw [← hv.sS, Nat.add_comm]
-  have hu := tj_lt C (w - 6)
   have R₂ : ∀ r, r ≠ 120071 → c₂.nreg r = c.nreg r := fun r h => (r₂ r h).trans (r₁ r h)
   -- the chain edge
   obtain ⟨c₃, k₃, e₃, hk₃, v₃, r₃⟩ : ∃ c₃ k₃, Exec P W
@@ -248,7 +246,7 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
       c₃.nreg 120060 = tci C (w - 6) ∧ (∀ r, r ≠ 120060 → c₃.nreg r = c₂.nreg r) := by
     have hm2 : c₂.nreg 120016 = C.m := by rw [R₂ _ (by decide), hq.m, hv.m]
     by_cases hlt : tj C (w - 6) < C.m
-    · refine ⟨_, _, .ifLtN_true (by rw [htj, hm2]; exact hlt) (Exec.copyN e₂.wb_right _ _),
+    · refine ⟨_, _, .ifLtN_true (by rwa [htj, hm2]) (Exec.copyN e₂.wb_right _ _),
         by omega, ?_, fun r hr => ?_⟩
       · config_simp; rw [htj]; unfold tci; rw [ite_eq_left hlt]
       · config_simp; upd_solve
@@ -262,25 +260,24 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
         · config_simp
           rw [R₂ _ (by decide), R₂ _ (by decide), hq.twoM, hq.one, htj, hv.m]
         · config_simp; upd_solve
-      refine ⟨c₃, _, .ifLtN_false (by rw [htj, hm2]; exact hlt) e₃, by omega, ?_, r₃⟩
+      refine ⟨c₃, _, .ifLtN_false (by rwa [htj, hm2]) e₃, by omega, ?_, r₃⟩
       rw [v₃]; unfold tci; rw [ite_eq_right hlt]
   have R₃ : ∀ r, r ≠ 120071 → r ≠ 120060 → c₃.nreg r = c.nreg r := fun r h1 h2 =>
     (r₃ r h2).trans (R₂ r h1)
   have hq₃ : QConst P V c₃ := hq.congr fun r h1 h2 => R₃ r (by omega) (by omega)
   have hb₃ : BestOK P.n V.s V.m c₃ := by
     unfold BestOK
-    rw [R₃ 120050 (by decide) (by decide), R₃ 120051 (by decide) (by decide),
+    rwa [R₃ 120050 (by decide) (by decide), R₃ 120051 (by decide) (by decide),
       R₃ 120052 (by decide) (by decide)]
-    exact hb
-  obtain ⟨c₄, k₄, e₄, hk₄, -, hb₄, v₄⟩ := edgeT_exec (P := P) hG (by omega) hD c₃ e₃.wb_right
+  obtain ⟨c₄, k₄, e₄, hk₄, hb₄, v₄⟩ := edgeT_exec (P := P) hG (by omega) hD c₃ e₃.wb_right
     (hq₃.econst hv) (by rw [v₃]; have := tci_lt C (w - 6); omega) (mb := V.m)
     (by rw [v₃, hv.m]; exact tci_lt C (w - 6)) hb₃
   have hbo₃ : bestOf c₃ = bestOf c := by
     unfold bestOf
     rw [R₃ 120050 (by decide) (by decide), R₃ 120052 (by decide) (by decide)]
   rw [v₃, hbo₃] at v₄
-  refine ⟨c₄, _, .ifLtN_false (by rw [hq.six]; exact h6)
-    (.ifLtN_true (by rw [hq.tEnd, hv.m]; exact hE) (.seq e₁ (.seq e₂ (.seq e₃ e₄)))),
+  refine ⟨c₄, _, .ifLtN_false (by rwa [hq.six])
+    (.ifLtN_true (by rwa [hq.tEnd, hv.m]) (.seq e₁ (.seq e₂ (.seq e₃ e₄)))),
     by omega, hb₄, ?_⟩
   rw [v₄]; unfold wupd; rw [ite_eq_left ⟨by omega, hE⟩]
 
@@ -310,7 +307,7 @@ theorem wupd_step {P : Polygon} {C : Chain} {V : QV} {z : Point} (hs : SemOK P C
   by_cases h : 6 ≤ w ∧ w < 2 * C.m + 6
   · rw [ite_eq_left h, ite_eq_left h]
     exact fold_step hs.hv.CQ hs.hv.s.symm hs.hD (tci_lt C _) hs.zy hs.σ hs.zo hS
-  · rw [ite_eq_right h, ite_eq_right h, Set.union_empty]; exact hS
+  · rwa [ite_eq_right h, ite_eq_right h, Set.union_empty]
 
 end
 

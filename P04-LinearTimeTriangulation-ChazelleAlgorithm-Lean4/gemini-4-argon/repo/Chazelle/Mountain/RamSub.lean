@@ -125,7 +125,7 @@ theorem sFrame_trans {c₀ c₁ c₂ : Config} (h₁ : SFrame c₀ c₁) (h₂ :
   have e62 : c₁.nreg 62 = c₀.nreg 62 := n₁ 62 (by omega)
   refine ⟨fun r hr => by rw [n₂ r hr, n₁ r hr], fun r hr => by rw [r₂ r hr, r₁ r hr],
     fun a ha => ?_, by rw [q₂, q₁]⟩
-  rw [m₂ a (by rw [e61, e62]; exact ha), m₁ a ha]
+  rw [m₂ a (by rwa [e61, e62]), m₁ a ha]
 
 /-- A step that changes nothing but the natural registers `63 … 74`, the real registers
 `61 … 72` and the output keeps the frame. -/
@@ -223,8 +223,8 @@ theorem subTestStmt_exec (c : Config) (hc : WordsBounded W c) (h65 : c.nreg 65 =
   refine spec_seq ?_
   exec_block
   · exact hs
-  · config_simp; rw [h65]; exact hcb
-  · config_simp; rw [h65]; exact hbb
+  · config_simp; rwa [h65]
+  · config_simp; rwa [h65]
   · config_simp; exact hkb
   refine spec_seq (spec_use (detInto_exec (P := P) 67 68 69 61 62 63 64 65 66 (by decide)
     (by decide) (by decide)
@@ -334,7 +334,7 @@ theorem sInnerInv_stop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.T
     (eout : c'.output = c.output) :
     SInnerInv P W l base sbase σ k c₀ oF sF c' ∧ subInnerPot P l σ k c' = 0 := by
   have hs' : stackS c' = stackS c := stackS_congr e61 e63 enm
-  refine ⟨⟨hw', hC', hT', hF', by rw [e64, h64], by omega, by rw [hs']; exact hlt,
+  refine ⟨⟨hw', hC', hT', hF', by rw [e64, h64], by omega, by rwa [hs'],
     Or.inr ⟨e69, ?_, ?_⟩⟩, ?_⟩
   · rw [eout, ← hout, hpl, List.map_nil, List.append_nil]
   · rw [hs', ← hst, hpl2]
@@ -369,7 +369,7 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
       obtain h | h : c.nreg 63 = 0 ∨ c.nreg 63 = 1 := by omega
       · rw [h]; exact popLoop_nil _ σ k
       · rw [h]; exact popLoop_singleton _ σ k _
-    refine spec_ifLtN_true (by rw [h68]; exact hlt2)
+    refine spec_ifLtN_true (by rwa [h68])
       (spec_instr (Exec.constN hw 69 0 (Nat.zero_le _)) fun hw' => ?_)
     obtain ⟨hI', hp'⟩ := sInnerInv_stop (P := P) (W := W) (c₀ := c₀) hw'
       ⟨by config_simp; exact h60, by config_simp; exact h61, by config_simp; exact h62,
@@ -393,7 +393,7 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
       hlt _ (by rw [hs]; exact List.mem_cons_of_mem _ List.mem_cons_self)
     have ea1 : c.nreg 61 + c.nreg 63 - 1 = c.nreg 61 + (c.nreg 63 - 1) := by omega
     have ea2 : c.nreg 61 + c.nreg 63 - 1 - 1 = c.nreg 61 + (c.nreg 63 - 2) := by omega
-    refine spec_ifLtN_false (by rw [h68]; exact hlt2) ?_
+    refine spec_ifLtN_false (by rwa [h68]) ?_
     refine spec_seq (spec_use (subTestStmt_exec (P := P) c hw h65 (by rw [h61]; omega)
       (by rw [ea1, h60]; omega) (by rw [ea2, h60]; omega) (by rw [h60, h64]; omega)) ?_)
     rintro c₁ k₁ hk₁ hw₁ ⟨e72, e73, e74, e71, efr, erf, enm, erm, eout⟩
@@ -430,7 +430,7 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
       have hconv' := hconv
       rw [vtx_subPoly_getD P l hbm, vtx_subPoly_getD P l hcm, vtx_subPoly_getD P l hk]
         at hconv'
-      refine spec_ifLtR_true (by rw [e71, r72, hr70, hr72]; exact hconv') ?_
+      refine spec_ifLtR_true (by rwa [e71, r72, hr70, hr72]) ?_
       unfold subPopStmt
       exec_block
       obtain ⟨hI', hp'⟩ := sInnerInv_pop (P := P) (W := W) (c₀ := c₀) ‹WordsBounded _ _›
@@ -451,7 +451,7 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
       have hconv' := hconv
       rw [vtx_subPoly_getD P l hbm, vtx_subPoly_getD P l hcm, vtx_subPoly_getD P l hk]
         at hconv'
-      refine spec_ifLtR_false (by rw [e71, r72, hr70, hr72]; exact hconv')
+      refine spec_ifLtR_false (by rwa [e71, r72, hr70, hr72])
         (spec_instr (Exec.constN hw₁ 69 0 (Nat.zero_le _)) fun hw' => ?_)
       have hpl : popLoop (subPoly P l) σ k (stackS c) = ([], stackS c, 1) := by
         rw [hs, popLoop_cons_cons, ite_eq_right hconv]
@@ -502,7 +502,7 @@ theorem subInnerLoop_exec (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
     unfold subInnerPot; rw [ite_eq_right (by omega)]
   rcases hflag' with ⟨hf', -, -⟩ | ⟨-, hout', hst'⟩
   · exfalso; apply hexit; rw [hf', hC'.2.2.2.2.2.1]; omega
-  · exact ⟨c', k', ex, by rw [← hpot]; exact hk', hC', hT', hF', h64', htop', hlt', hout', hst'⟩
+  · exact ⟨c', k', ex, by rwa [← hpot], hC', hT', hF', h64', htop', hlt', hout', hst'⟩
 
 end inner
 

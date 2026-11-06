@@ -108,12 +108,12 @@ theorem rec9_append {mem mem' : ℕ → ℕ} {L : ℕ} {ps : List Pc} {pc : Pc}
   rcases (show i < ps.length ∨ i = ps.length by omega) with hlt | rfl
   · rw [List.getElem_append_left hlt]
     obtain ⟨a0, a1, a2, a3, a4, a58⟩ := hold i hlt
-    refine ⟨by rw [hsame _ (by omega)]; exact a0, by rw [hsame _ (by omega)]; exact a1,
-      by rw [hsame _ (by omega)]; exact a2, by rw [hsame _ (by omega)]; exact a3,
-      by rw [hsame _ (by omega)]; exact a4, fun hk => ?_⟩
+    refine ⟨by rwa [hsame _ (by omega)], by rwa [hsame _ (by omega)],
+      by rwa [hsame _ (by omega)], by rwa [hsame _ (by omega)],
+      by rwa [hsame _ (by omega)], fun hk => ?_⟩
     obtain ⟨b5, b6, b7, b8⟩ := a58 hk
-    exact ⟨by rw [hsame _ (by omega)]; exact b5, by rw [hsame _ (by omega)]; exact b6,
-      by rw [hsame _ (by omega)]; exact b7, by rw [hsame _ (by omega)]; exact b8⟩
+    exact ⟨by rwa [hsame _ (by omega)], by rwa [hsame _ (by omega)],
+      by rwa [hsame _ (by omega)], by rwa [hsame _ (by omega)]⟩
   · rw [List.getElem_append_right (le_refl _)]
     simp only [Nat.sub_self, List.getElem_cons_zero]
     exact ⟨h0, h1, h2, h3, h4, h58⟩
@@ -186,7 +186,7 @@ theorem shEmit_ok {P : Polygon} {W A₀ : ℕ} {m₀ : ℕ → ℕ} {c₀ : Conf
       rw [hmin] at hp
       have htake : ps.take Nmax = ps := List.take_of_length_le hlt.le
       rw [htake] at hrec
-      set p := A₀ + 1 + 9 * ps.length with hpdef
+      set p := A₀ + 1 + 9 * ps.length
       have t₀ : c.nreg 140100 < c.nreg 140107 := by rw [hp, hL]; omega
       obtain ⟨c₁, k₁, e₁, hk₁, q00, q0, q1, q2, q3, q4, q5, q6, q7, q8, qm, qr⟩ :=
         shStore_exec (P := P) c hw hp h1 (by omega)
@@ -195,10 +195,10 @@ theorem shEmit_ok {P : Polygon} {W A₀ : ℕ} {m₀ : ℕ → ℕ} {c₀ : Conf
         fun a ha => by rw [qm a (by omega)]; exact hm a ha, ?_, ?_,
         fun r a b => by rw [qr r (by omega)]; exact hkeep r a b⟩, fun r hr => ?_,
         fun a ha => qm a (by omega)⟩
-      · rw [qr _ (by decide)]; exact hA
-      · rw [qr _ (by omega)]; exact hB
-      · rw [qr _ (by omega)]; exact h1
-      · rw [qr _ (by omega)]; exact hL
+      · rwa [qr _ (by decide)]
+      · rwa [qr _ (by omega)]
+      · rwa [qr _ (by omega)]
+      · rwa [qr _ (by omega)]
       · rw [q00, List.length_append, List.length_singleton, min_eq_left (by omega)]
         omega
       · rw [List.take_of_length_le (by simp; omega)]
@@ -219,7 +219,7 @@ theorem shEmit_ok {P : Polygon} {W A₀ : ℕ} {m₀ : ℕ → ℕ} {c₀ : Conf
       refine ⟨c, _, .ifLtN_false t₀ (.skip hw), by omega, ⟨hA, hB, h1, hL, hLW, hm, ?_, ?_,
         hkeep⟩, fun _ _ => rfl, fun _ _ => rfl⟩
       · rw [hp, List.length_append, List.length_singleton, min_eq_right (by omega)]
-      · rw [List.take_append_of_le_length (by omega)]; exact hrec
+      · rwa [List.take_append_of_le_length (by omega)]
 
 /-! ## The set-up and the finish -/
 
@@ -244,7 +244,7 @@ theorem shInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
     refine ⟨rfl, ?_, ?_, ?_, fun x hx => ?_, rfl⟩
     all_goals first | (config_simp; done) | skip
     simp only [upd]; split_ifs <;> first | rfl | omega
-  have hAa : da.nreg 9999 = A₀ := by rw [ra _ (by omega)]; exact hA
+  have hAa : da.nreg 9999 = A₀ := by rwa [ra _ (by omega)]
   obtain ⟨db, kb, eb, hkb, b01, b00, rb, mb⟩ : ∃ d₁ k₁, Exec P W shInitB da d₁ k₁ ∧
       k₁ = 2 ∧ d₁.nreg 140101 = A₀ ∧ d₁.nreg 140100 = A₀ + 1 ∧
       (∀ x, x ≠ 140101 → x ≠ 140100 → d₁.nreg x = da.nreg x) ∧ d₁ = { da with nreg := d₁.nreg } := by
@@ -268,11 +268,11 @@ theorem shInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
     rw [ite_eq_right (by omega), rb x (by omega) (by omega), ra x hx]
   have g₁ : ∀ x, x ≠ 140107 → d₁.nreg x = db.nreg x := fun x hx => by
     simp only [hd₁, upd]; rw [ite_eq_right hx]
-  have o03 : d₁.nreg 140103 = 1 := by rw [g₁ _ (by omega)]; exact b03
-  have o08 : d₁.nreg 140108 = 18900 := by rw [g₁ _ (by omega)]; exact b08
-  have o01 : d₁.nreg 140101 = A₀ := by rw [g₁ _ (by omega)]; exact b01
-  have o00 : d₁.nreg 140100 = A₀ + 1 := by rw [g₁ _ (by omega)]; exact b00
-  have o09 : d₁.nreg 140109 = 1 := by rw [g₁ _ (by omega), rb _ (by omega) (by omega)]; exact a09
+  have o03 : d₁.nreg 140103 = 1 := by rwa [g₁ _ (by omega)]
+  have o08 : d₁.nreg 140108 = 18900 := by rwa [g₁ _ (by omega)]
+  have o01 : d₁.nreg 140101 = A₀ := by rwa [g₁ _ (by omega)]
+  have o00 : d₁.nreg 140100 = A₀ + 1 := by rwa [g₁ _ (by omega)]
+  have o09 : d₁.nreg 140109 = 1 := by rwa [g₁ _ (by omega), rb _ (by omega) (by omega)]
   have o07 : d₁.nreg 140107 = A₀ + 1 + 18900 := by
     simp only [hd₁, upd, ↓reduceIte]; rw [b00, b08]
   have m₁ : d₁ = { d with nreg := d₁.nreg } := by
@@ -329,7 +329,6 @@ theorem shInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
         (by rw [pow_succ]; omega)
       omega
   have hmul := Nat.mul_le_mul_left 18900 ht
-  have hlog' := Nat.mul_le_mul_left 2100 hlog
   have hmem : d₂.nmem = d.nmem := by rw [hm₂]
   refine ⟨d₂, ka + (kb + (1 + k₂)), 2100 * t + 2100, .seq ea (.seq eb (.seq ec e₂)), ?_,
     ⟨by rw [hr₂ _ (by rw [hAl]; omega)]; exact hA, h1, h3, by rw [h7]; ring, by linarith,
@@ -352,7 +351,7 @@ theorem shFin_exec {P : Polygon} {W A₀ Nmax : ℕ} {m₀ : ℕ → ℕ} {c₀ 
   have hAl : ALLOC = 9999 := rfl
   obtain ⟨hA, -, h1, -, hLW, -, hp, -, -⟩ := hI
   rw [min_eq_left hq] at hp
-  set E := A₀ + 1 + 9 * ps.length with hE
+  set E := A₀ + 1 + 9 * ps.length
   let Inv : Config → Prop := fun c => WordsBounded W c ∧ c.nreg ALLOC ≤ E ∧
     (∀ x, x ≠ ALLOC → c.nreg x = d.nreg x) ∧ c = { d with nreg := c.nreg }
   obtain ⟨d₂, k₂, e₂, ⟨hw₂, hA₂, hr₂, hm₂⟩, hx₂, hk₂, hψ⟩ :=

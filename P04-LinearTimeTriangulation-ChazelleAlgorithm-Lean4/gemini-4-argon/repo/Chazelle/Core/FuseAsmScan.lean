@@ -161,8 +161,7 @@ theorem dsPrev_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
   refine ⟨c₆, _, ex, by omega, ?_, fun r a b d => by rw [r₆ r b, r₅ r a d, g4 r a b d], ?_, ?_,
     ?_, ?_⟩
-  · have mm : ∀ x, c₅.nmem x = c.nmem x := fun x => by rw [m₅, m₄, m₃, m₂, m₁]
-    have A2 : c₂.nreg 70228 = if c.nreg 70224 ≠ c.nmem (T + 3 * p) then 1 else 0 := by
+  · have A2 : c₂.nreg 70228 = if c.nreg 70224 ≠ c.nmem (T + 3 * p) then 1 else 0 := by
       rw [f₂, r₁ _ (by decide) (by decide), v27, h28.symm.trans (r₁ _ (by decide) (by decide)).symm]
     have A4 : c₄.nreg 70228 = if c.nreg 70225 ≠ c.nmem (T + 3 * p + 1) then 1
         else c₂.nreg 70228 := by
@@ -212,7 +211,6 @@ theorem stl_getD {m₀ : ℕ → ℕ} {T B K j : ℕ} (hj : j < K) :
 /-- The invariant of the scan. -/
 structure DSI (W K T B LB : ℕ) (m₀ : ℕ → ℕ) (c₀ c : Config) : Prop where
   wb : WordsBounded W c
-  j_le : c.nreg 70220 ≤ K
   cur : c.nreg 70221 = B + c.nreg 70220
   prev : 0 < c.nreg 70220 → c.nreg 70223 = m₀ (B + (c.nreg 70220 - 1))
   alloc : c.nreg ALLOC = LB + 3 * (ddp (stl m₀ T B K) (0, 0, 0) (c.nreg 70220)).length
@@ -300,12 +298,12 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
       (by omega) (by omega)]
   have q28 : c₂.nreg 70108 = 0 := by rw [g2 _ (by norm_num), r08]
   have hAc : c₂.nreg ALLOC = LB + 3 * (ddp (stl m₀ T B K) (0, 0, 0) j).length := by
-    rw [g2 _ (by decide)]; rw [hI.alloc, hj]
+    rw [g2 _ (by decide), hI.alloc, hj]
   have hdl := ddp_length_le (stl m₀ T B K) (0, 0, 0) j
   have hlist := hI.list
   rw [hj] at hlist
   have h19 : c₂.nreg 70219 = (ddp (stl m₀ T B K) (0, 0, 0) j).length := by
-    rw [g2 _ (by norm_num)]; rw [hI.cnt, hj]
+    rw [g2 _ (by norm_num), hI.cnt, hj]
   obtain ⟨c₃, k₃, e₃, hk₃, a₃, m₃, l₃, n₃, q₃, rr₃, rm₃, o₃⟩ : ∃ c₃ k₃, Exec P W
       (.ifLtN 70108 70228 dsCopy .skip) c₂ c₃ k₃ ∧ k₃ ≤ 9 ∧
       c₃.nreg ALLOC = LB + 3 * (ddp (stl m₀ T B K) (0, 0, 0) (j + 1)).length ∧
@@ -326,9 +324,9 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
       · refine chordListAt_append (fun i hi => ?_) ?_ ?_ ?_
         · obtain ⟨b0, b1, b2⟩ := hlist i hi
           refine ⟨?_, ?_, ?_⟩
-          · rw [mo _ (Or.inl (by omega)), m₂, m₁]; exact b0
-          · rw [mo _ (Or.inl (by omega)), m₂, m₁]; exact b1
-          · rw [mo _ (Or.inl (by omega)), m₂, m₁]; exact b2
+          · rwa [mo _ (Or.inl (by omega)), m₂, m₁]
+          · rwa [mo _ (Or.inl (by omega)), m₂, m₁]
+          · rwa [mo _ (Or.inl (by omega)), m₂, m₁]
         · rw [n0, r₂ _ (by decide) (by decide) (by decide), v24, stl_getD ht, mT0, hx]; rfl
         · rw [n1, r₂ _ (by decide) (by decide) (by decide), v25, stl_getD ht, mT 1 (by omega),
             hx]; rfl
@@ -338,12 +336,12 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
       rw [List.append_nil]
       refine ⟨c₂, _, .ifLtN_false (by rw [q28, v2]; omega) (.skip e₂.wb_right), by omega, hAc,
         fun a _ => by rw [m₂, m₁], ?_, h19, fun _ _ _ => rfl, rfl, rfl, rfl⟩
-      rw [m₂, m₁]; exact hlist
+      rwa [m₂, m₁]
   -- advance
   have g3 : ∀ r, (r < 70219 ∨ 70229 < r) → r ≠ ALLOC → c₃.nreg r = c.nreg r := fun r hr ha => by
     rw [q₃ r ha (by omega), g2 r (by omega)]
   have q22 : c₃.nreg 70222 = x := by
-    rw [q₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide)]; exact v22
+    rwa [q₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide)]
   have q21 : c₃.nreg 70221 = B + j := by
     rw [q₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide),
       r₁ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide), hI.cur, hj]
@@ -365,8 +363,8 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
       q22, q21, q20, q05]
     all_goals ring
   have ex : Exec P W dsBody c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  refine ⟨c₄, _, ex, ⟨e₄.wb_right, by omega, by rw [u21, u20], fun _ => by rw [u23, u20, Nat.add_sub_cancel, hx],
-    by rw [u20, ← a₃, r₄ _ (by decide) (by decide) (by decide)], by rw [u20, m₄]; exact l₃,
+  refine ⟨c₄, _, ex, ⟨e₄.wb_right, by rw [u21, u20], fun _ => by rw [u23, u20, Nat.add_sub_cancel, hx],
+    by rw [u20, ← a₃, r₄ _ (by decide) (by decide) (by decide)], by rwa [u20, m₄],
     by rw [u20, ← n₃, r₄ _ (by decide) (by decide) (by decide)],
     fun a ha => by rw [m₄, m₃ a (by omega), hI.low a ha],
     fun r hr ha => by rw [r₄ r (by omega) (by omega) (by omega), g3 r hr ha, hreg r hr ha],
@@ -392,7 +390,7 @@ theorem dsLoop_exec {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
     obtain ⟨c', k, e, hI', hk, hk3, hc'⟩ := dsBody_step (P := P) hI ht h05 h08 h16 hitems hTB hBL hW
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := dsLoop_exec h05 h08 h16 h30 hitems hTB hBL hW n c' hI'
       (by omega)
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [h30']; exact ht) e e₂, by omega, by omega, hI'', hK⟩
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rwa [h30']) e e₂, by omega, by omega, hI'', hK⟩
 
 end
 

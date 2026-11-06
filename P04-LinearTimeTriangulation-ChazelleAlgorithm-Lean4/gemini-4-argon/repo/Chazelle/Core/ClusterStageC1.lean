@@ -115,7 +115,7 @@ theorem halfS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
         by_cases hp : c3.nreg 130822 < c3.nreg 130001
         · have e := Exec.constN (P := P) hw3 130822 1 (by omega)
           rw [h22, h1] at hp
-          refine ⟨_, 1 + 1, .ifLtN_true (by rw [h22, h1]; exact hp) e, by omega, e.wb_right,
+          refine ⟨_, 1 + 1, .ifLtN_true (by rwa [h22, h1]) e, by omega, e.wb_right,
             ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, rfl, ?_, ?_, ?_, ?_⟩
           · simp only [Machine.upd_other _ _ _ (show r ≠ 130822 by
               unfold HRG at hr; omega)]
@@ -143,7 +143,7 @@ theorem halfS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
               · rw [h21, h1]; omega
               · omega
               · exact h1
-          exact ⟨c5, k5 + 2, .ifLtN_false (by rw [h22, h1]; exact hp) e5, by omega, hw5, hf5, hm5,
+          exact ⟨c5, k5 + 2, .ifLtN_false (by rwa [h22, h1]) e5, by omega, hw5, hf5, hm5,
             h5a, h5b, h5c, h5d⟩
       have e6 := Exec.addN (P := P) hw4 130820 130820 130001 (by rw [h20', h1']; omega)
       have hf6 : PFr HRG Am c4 { c4 with nreg := upd c4.nreg 130820 (c4.nreg 130820 +
@@ -154,7 +154,7 @@ theorem halfS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
         hf2.trans ((hf3.trans (hf4.trans hf6)).mono (fun r h => by
           simp only [HRG, StCRG] at h ⊢; omega) (fun a h => h)), fun w hw => ?_⟩
       · simp only [Machine.upd_same, h20', h1']
-      · rw [(hf3.trans (hf4.trans hf6)).1 130824 (by unfold HRG; omega)]; exact hn2
+      · rwa [(hf3.trans (hf4.trans hf6)).1 130824 (by unfold HRG; omega)]
       · simp only [Machine.upd_other _ _ _ (show (130821 : ℕ) ≠ 130820 by omega)]
         exact h21'
       · simp only [Machine.upd_other _ _ _ (show (130822 : ℕ) ≠ 130820 by omega)]
@@ -320,7 +320,7 @@ theorem resS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
         hf2.trans ((hf3.trans (hf4.trans hf6)).mono (fun r h => by
           simp only [RRG, StCRG] at h ⊢; omega) (fun a h => h)), fun l hl => ?_⟩
       · simp only [Machine.upd_same, h28', h1']
-      · rw [(hf3.trans (hf4.trans hf6)).1 130011 (by unfold RRG; omega)]; exact hn2
+      · rwa [(hf3.trans (hf4.trans hf6)).1 130011 (by unfold RRG; omega)]
       · simp only [Machine.upd_other _ _ _ (show (130829 : ℕ) ≠ 130828 by omega)]
         exact h29'
       · show c4.nmem _ = _

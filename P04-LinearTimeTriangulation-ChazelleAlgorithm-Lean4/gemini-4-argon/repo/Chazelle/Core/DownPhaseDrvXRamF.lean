@@ -55,7 +55,7 @@ theorem hpt_lt {n : ℕ} {H : Host} (hwf : HostWF n H) (hn : 0 < n) {k : ℕ}
     obtain ⟨t, -, ht⟩ := hin
     rw [← ht]; exact Nat.mod_lt _ hn
   · simp only [HostItem.pts, List.mem_singleton] at hin
-    rw [hin]; exact hw
+    rwa [hin]
 
 theorem pEdge_lt (li : Bool) {n : ℕ} {s : SymPt} (hs : s.Lt n) : pEdge li n s < n := by
   have hn : 0 < n := by cases s <;> simp only [SymPt.Lt] at hs <;> omega

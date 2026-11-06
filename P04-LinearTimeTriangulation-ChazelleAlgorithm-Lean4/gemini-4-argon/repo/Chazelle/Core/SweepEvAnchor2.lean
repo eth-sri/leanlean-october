@@ -183,10 +183,9 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
-  have hL0 : (0 : ℝ) ≤ Lst J := Nat.cast_nonneg _
   set o' := oW J (pK + tK) with ho'
   set oy := oW J (pK + (tK + s)) with hoydef
-  set ox := oW J (p + t) with hoxdef
+  set ox := oW J (p + t)
   have hZnb : ¬ EvBrk J Z := fun h => by have := h pz tz hZz; linarith
   -- attachments are not at `y` nor at `x`, and offsets determine positions
   have hcg : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (u : ℝ), SideAttach (chainModel J.whole).W e q u →
@@ -260,8 +259,8 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     hlab X hX hXK hZnb (Or.inr fun e' he' hA' hne => by
       rcases hall e' he' hA' with h | h
       · exact absurd h hne
-      · rw [h]; exact hcbrk) Mk hMk (-dX) (by rcases hdX.cases with h | h <;> simp [h]) hMkZ
-  suffices hGM' : G = Mk by rw [hGM']; exact hMval
+      · rwa [h]) Mk hMk (-dX) (by rcases hdX.cases with h | h <;> simp [h]) hMkZ
+  suffices hGM' : G = Mk by rwa [hGM']
   -- `c` at `qb`
   have hcA := F₂plus_subset J hS₂a hc
   have hdq : DirAt (chainModel J.whole).W Y qb sb (-dY) := dirAt_other hP hcA hA hB hAB hdY
@@ -313,8 +312,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       exact dirAt_unique hP hcA hB this hdq
     have hRa'c : SideOf (chainModel J.whole) dY Y Ra' := by
       have := haft' Ra' hRa' hWa'
-      rw [hdY', neg_neg, ← hYX'] at this
-      exact this
+      rwa [hdY', neg_neg, ← hYX'] at this
     have hnE : ¬ EvEncl J S₂ (oW J (qb + (sb + s₁))) := by
       refine noEncl_of_closed hP hS₂a hS₂f hZ hZK hZz hzL hLst hKqb.le ?_ (by rw [hoy₁]; linarith)
         hy₁x (fun e he q u hQ h => hgapy₁ _ ⟨e, he, q, u, hQ, rfl⟩ (attach_key_mem hQ).1
@@ -402,7 +400,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         rw [← hYX'] at hdX'; exact dirAt_unique hP hcA hB hdX' hdq
       have hRa's : SideOf (chainModel J.whole) (-dY) X'' Ra' := by
         have := haft' Ra' hRa' hWa'
-        rw [hdY'e, ← hs'Y'] at this; exact this
+        rwa [hdY'e, ← hs'Y'] at this
       rcases lt_or_gt_of_ne hcb with hlt | hgt
       · -- (iii) `qc` before `qb`: the region before `qc` is the region after `qb`: impossible
         exfalso
@@ -466,7 +464,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         rw [← hs'X'] at hdX'; exact dirAt_unique hP hs'A hs'B hdX' hds
       have hRa'c : SideOf (chainModel J.whole) dY Y Ra' := by
         have := haft' Ra' hRa' hWa'
-        rw [hdY'e, neg_neg, ← hYY'] at this; exact this
+        rwa [hdY'e, neg_neg, ← hYY'] at this
       have hRM : Ra' = Mk := hMeq Ra' hRa' hRa'c
       rcases lt_or_gt_of_ne hcb with hlt | hgt
       · -- (iii) `qc` before `qb`: the position after `qb` is not enclosed

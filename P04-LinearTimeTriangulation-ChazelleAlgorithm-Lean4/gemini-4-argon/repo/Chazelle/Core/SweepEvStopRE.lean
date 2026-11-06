@@ -140,12 +140,12 @@ theorem winPos {C : Chain} {Q : Polygon} {n : ℕ} {a : Point} {σ τ : ℝ} {x 
     (hy : |a.2| < C.radius) :
     PosClass C Q x ∧ (rayPt a σ τ ∈ C.set ∨
       (|(rayPt a σ τ).1| = C.radius ∧ |(rayPt a σ τ).2| < C.radius)) := by
-  have hy' : |((chainModel C).pos Q x).2| < C.radius := by rw [hpos, rayPt_snd]; exact hy
+  have hy' : |((chainModel C).pos Q x).2| < C.radius := by rwa [hpos, rayPt_snd]
   rcases hon with h | h | h
   · refine ⟨posClass_of he hpp.1 hpp.2.1 hy' (Or.inl ?_), Or.inl h⟩
     rw [hpos]; exact C.snd_le_top_of_mem_set h
-  · refine ⟨posClass_of he hpp.1 hpp.2.1 hy' (Or.inr (by rw [hpos]; exact h)), Or.inr ⟨h, ?_⟩⟩
-    rw [rayPt_snd]; exact hy
+  · refine ⟨posClass_of he hpp.1 hpp.2.1 hy' (Or.inr (by rwa [hpos])), Or.inr ⟨h, ?_⟩⟩
+    rwa [rayPt_snd]
   · rw [rayPt_snd] at h; rw [h] at hy; exact absurd hy (lt_irrefl _)
 
 /-- **The selected position in the walk of `C`.** -/
@@ -179,7 +179,7 @@ theorem winConv_irs {J : Merge.Junction} (hP : J.P.Simple) (hI : IInv W c₀ c) 
     have eE : c'.nreg wnE = c₁.nreg wnE := b2 _ (by unfold wnE wnH sw; omega)
     have eH : c'.nreg wnH = c.nreg (r1F + 2) := by
       rw [b1, k1 _ (by unfold CvSet wnE cX cT cDd r1F sw; omega)]
-    refine ⟨by rw [eE]; exact v1, ?_, by rw [eE, eH, v3, a4], fun r hr hr2 => ?_, by rw [b3, m1]⟩
+    refine ⟨by rwa [eE], ?_, by rw [eE, eH, v3, a4], fun r hr hr2 => ?_, by rw [b3, m1]⟩
     · rw [eE, eH]
       exact ⟨by rw [v2]; exact a2.1, by rw [v2]; exact a2.2.1, a2.2.2⟩
     · rw [b2 r hr2, k1 r hr]
@@ -196,7 +196,7 @@ theorem winConv_irs {J : Merge.Junction} (hP : J.P.Simple) (hI : IInv W c₀ c) 
     have eE : c'.nreg wnE = c₁.nreg wnE := b2 _ (by unfold wnE wnH sw; omega)
     have eH : c'.nreg wnH = c.nreg (r2F + 2) := by
       rw [b1, k1 _ (by unfold CvSet wnE cX cT cDd r2F sw; omega)]
-    refine ⟨by rw [eE]; exact v1, ?_, by rw [eE, eH, v3, a4], fun r hr hr2 => ?_, by rw [b3, m1]⟩
+    refine ⟨by rwa [eE], ?_, by rw [eE, eH, v3, a4], fun r hr hr2 => ?_, by rw [b3, m1]⟩
     · rw [eE, eH]
       exact ⟨by rw [v2]; exact a2.1, by rw [v2]; exact a2.2.1, a2.2.2⟩
     · rw [b2 r hr2, k1 r hr]
@@ -226,8 +226,8 @@ theorem stWin_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hb : b ≤ 1 := hD.ok.2.1
   have hσ := SweepStop.dirOf_cases' b
   obtain ⟨-, ha2, hay, -, -⟩ := stOrig_facts hP E.hNF₂ hD.ok
-  set a := stOrig J (Qof P) N₂ kind k b with ha
-  set σ := dirOf b with hσdef
+  set a := stOrig J (Qof P) N₂ kind k b
+  set σ := dirOf b
   have hf : FreeAt J.whole a σ := hD.free
   have hf2 : FreeAt J.right a σ := free_right hf ha2
   have hK := E.hK.fix hI
@@ -317,7 +317,7 @@ theorem stWin_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       k1 _ (by unfold oNB sw; omega) (by unfold oNB sw; omega) (by unfold oNB wC1 sw; omega)
         (by unfold oNB wC2 sw; omega) (by unfold oNB wBit sw; omega), hNB]
   have hyZ : |((chainModel J.whole).pos (Qof P) ⟨c₂.nreg wnE, c₂.nreg wnH⟩).2| < J.whole.radius := by
-    rw [v3, hfar, rayPt_snd]; exact hay
+    rwa [v3, hfar, rayPt_snd]
   refine (callArr_irs hI₂ hfx₂.ctxW ⟨by unfold sw; omega, by unfold sw; omega,
     by unfold wnE sw; omega, by unfold wnE sw; omega, by unfold wnH sw; omega,
     by unfold wnH sw; omega, by unfold oNB sw; omega, by unfold oNB sw; omega⟩

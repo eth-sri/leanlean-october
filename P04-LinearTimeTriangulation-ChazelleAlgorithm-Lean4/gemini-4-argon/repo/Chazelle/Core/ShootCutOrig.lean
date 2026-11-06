@@ -132,7 +132,7 @@ theorem pos_eq_onEdge (M : Model) (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {p h
   have hQnh := edge_nh hD hn he
   unfold Model.pos Model.param
   simp only
-  rw [ite_eq_right (by rw [ha, hb]; exact hnh), ha, hb]
+  rw [ite_eq_right (by rwa [ha, hb]), ha, hb]
   have hy : (lerp (sp₁.eval Q) (sp₂.eval Q)
       (((Q.vtx h).2 - (sp₁.eval Q).2) / ((sp₂.eval Q).2 - (sp₁.eval Q).2))).2 = (Q.vtx h).2 :=
     hpar_snd hnh _

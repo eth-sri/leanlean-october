@@ -135,9 +135,8 @@ theorem endRun_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have wc : ∀ {c' c'' : Config}, FWin E c' → (∀ q, 81007 ≤ q → q ≤ 81010 → c''.nreg q = c'.nreg q) →
       FWin E c'' := fun hw' h => by
     unfold FWin
-    rw [h 81007 (by norm_num) (by norm_num), h 81008 (by norm_num) (by norm_num),
+    rwa [h 81007 (by norm_num) (by norm_num), h 81008 (by norm_num) (by norm_num),
       h 81009 (by norm_num) (by norm_num), h 81010 (by norm_num) (by norm_num)]
-    exact hw'
   -- the candidate
   have ok1 : okB E.W c.nmem (endCandL s σ) c.nreg := by
     simp only [endCandL, okB, okI]
@@ -214,7 +213,7 @@ theorem endRun_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     rw [k₆ q h1 h2, g5 q (by omega) (by omega) (by omega) (by omega), k₂ q h1 h2,
       f₁ q (by omega) (by unfold VertW; omega)]
   have m26 : c₂.nreg 81007 = 1 → c₆.nreg 81007 = 1 := fun h => m₆ (by
-    rw [g5 _ (by norm_num) (by omega) (by omega) (by omega)]; exact h)
+    rwa [g5 _ (by norm_num) (by omega) (by omega) (by omega)])
   have s5 : c₆.nreg (s + 5) = c₄.nreg (s + 5) := by
     rw [k₆ _ (by omega) (by omega), f₅ _ (by omega)]
   have s3 : c₆.nreg (s + 3) = c₂.nreg 83012 := by
@@ -225,18 +224,18 @@ theorem endRun_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     rw [f₃ _ (by omega) (by omega), k₂ _ (by omega) (by omega), u8]
   have i21 : c₃.nreg 81021 = c.nreg 81021 := by
     rw [hI₃.hin _ (by unfold FFix; omega), hI.hin _ (by unfold FFix; omega)]
-  refine ⟨w₆, back, fun h => m26 (m₂ (by rw [fl₁ _ (by norm_num) (by norm_num)]; exact h)),
-    fun reg hregs hch hc2 σb hσb hg => ?_, by rw [s5]; exact v₄, fun h => ?_, fun hz => ?_⟩
+  refine ⟨w₆, back, fun h => m26 (m₂ (by rwa [fl₁ _ (by norm_num) (by norm_num)])),
+    fun reg hregs hch hc2 σb hσb hg => ?_, by rwa [s5], fun h => ?_, fun hz => ?_⟩
   · rcases (show σb = σ ∨ σb = 1 - σ by omega) with rfl | rfl
-    · exact m26 (g₂ reg hregs hch (by rw [u61]; exact hc2) (by rw [u60, u63]; exact hg))
+    · exact m26 (g₂ reg hregs hch (by rwa [u61]) (by rwa [u60, u63]))
     · refine g₆ reg hregs hch ?_ ?_
-      · rw [g5 81061 (by norm_num) (by omega) (by omega) (by omega),
-          k₂ _ (by norm_num) (by norm_num), u61]; exact hc2
-      · rw [u₅, g5 81060 (by norm_num) (by omega) (by omega) (by omega), k₂ _ (by norm_num) (by norm_num), u60]; exact hg
-  · rw [s5] at h; have := (b₄.1 h).1; rw [i8] at this; exact this
-  · have hout := o₂ (by rw [fl₁ _ (by norm_num) (by norm_num)]; exact hz)
+      · rwa [g5 81061 (by norm_num) (by omega) (by omega) (by omega),
+          k₂ _ (by norm_num) (by norm_num), u61]
+      · rwa [u₅, g5 81060 (by norm_num) (by omega) (by omega) (by omega), k₂ _ (by norm_num) (by norm_num), u60]
+  · rw [s5] at h; have := (b₄.1 h).1; rwa [i8] at this
+  · have hout := o₂ (by rwa [fl₁ _ (by norm_num) (by norm_num)])
     obtain ⟨t0, t1, -⟩ := hout
-    refine ⟨c₁, c₂, o₂ (by rw [fl₁ _ (by norm_num) (by norm_num)]; exact hz), u60, u61, u63, s3,
+    refine ⟨c₁, c₂, o₂ (by rwa [fl₁ _ (by norm_num) (by norm_num)]), u60, u61, u63, s3,
       s4, ?_, m26⟩
     rw [s5, b₄, i8, f₃ _ (by omega) (by omega), f₃ _ (by omega) (by omega), u3, u4, i21]
     constructor

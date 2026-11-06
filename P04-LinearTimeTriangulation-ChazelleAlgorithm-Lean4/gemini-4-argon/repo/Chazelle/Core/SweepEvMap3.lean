@@ -57,7 +57,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
     linarith
   have hpD : p = (gW J + (Lst J + (D - Lst J))) % (chainModel J.whole).W.n := by
     rw [show Lst J + (D - Lst J) = D by omega, hDdef, add_dOf hg hp]
-  set r := D - Lst J with hr
+  set r := D - Lst J
   -- the left stretch
   have viaLeft : ∀ r' : ℕ, r' < llen J → p = (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + r') %
       (chainModel J.whole).W.n → (t = 0 → r' ≠ 0 ∧ r' ≠ lL1 J) →
@@ -69,9 +69,9 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
           ((b₁ J + d) % (chainModel J.left).W.n) t := by
     intro r' hr' hp' hsec d hd hvd hmd
     rw [hp'] at hA hend
-    obtain ⟨hg', hArr⟩ := genuine_of_attach J hP ha₁ hσ hfree (by rw [lL1_add_lL2]; exact hr')
+    obtain ⟨hg', hArr⟩ := genuine_of_attach J hP ha₁ hσ hfree (by rwa [lL1_add_lL2])
       hsec hA hend
-    exact ⟨hg', d, hvd, hmd, by rw [hd]; exact hArr⟩
+    exact ⟨hg', d, hvd, hmd, by rwa [hd]⟩
   -- the box block of `C`
   have viaBox : ∀ (hv : ¬ VNotTop J) (r'' : ℕ), r'' < 7 →
       p = (2 * J.whole.m + 6 + r'') % (chainModel J.whole).W.n → (t = 0 → 1 ≤ r'') →
@@ -84,7 +84,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
     intro hv r'' hr'' hp' hsec d hd hvd hmd
     rw [hp'] at hA hend
     obtain ⟨hg', hArr⟩ := genuine_of_attach_box J hP hv ha₁ hσ hfree hr'' hsec hA hend
-    exact ⟨hg', d, hvd, hmd, by rw [hd]; exact hArr⟩
+    exact ⟨hg', d, hvd, hmd, by rwa [hd]⟩
   -- the point of the arrival position is the point of `p`
   have hpt₁ : ∀ e₁, Sweep.Arrival (chainModel J.left).W (rayPt a σ (J.whole.hitParam a σ)) σ e₁ t →
       sidePt (chainModel J.left).W e₁ t ≠ J.shared := by
@@ -103,7 +103,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
     have hL := lL1_add_lL2 J
     have hrl : r < llen J := by omega
     have hpL : p = (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + r) % (chainModel J.whole).W.n := by
-      rw [left_edge_eq, hlOff]; exact hpD
+      rwa [left_edge_eq, hlOff]
     by_cases hsp : t = 0 ∧ r = lL1 J ∧ lL1 J < llen J
     · -- the split vertex
       obtain ⟨ht, hrl1, hlt⟩ := hsp
@@ -134,8 +134,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
         · have e6 : (b₁ J + (lL1 J + 7)) % (chainModel J.left).W.n = 6 := by
             rw [hb, hl1, hn₁, hm1, show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁ + 7) =
               6 + (2 * J.m₁ + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-          rw [e6, hp6]
-          exact hvtop
+          rwa [e6, hp6]
         · rw [mEdge_def, hψ2, hpD, hrl1]
         · rw [hb, hl1, hn₁, hm1, show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁ + 7) =
             6 + (2 * J.m₁ + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega), ht]
@@ -143,8 +142,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
     · have hsec : t = 0 → r ≠ 0 ∧ r ≠ lL1 J := by
         intro ht
         refine ⟨fun h0 => hnv ?_, fun h => hsp ⟨ht, h, by omega⟩⟩
-        rw [hpL, h0, ht, add_zero, Nat.mod_eq_of_lt (by omega)]
-        exact hvM
+        rwa [hpL, h0, ht, add_zero, Nat.mod_eq_of_lt (by omega)]
       -- the position `dq r` of the walk of `C₁`
       have hdq : dq (lL1 J) (lδ J) r < E₁ J := by
         rw [hE₁]; unfold dq; split_ifs <;> omega
@@ -160,10 +158,10 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
       · unfold dq; split_ifs <;> omega
       · unfold dq; split_ifs <;> omega
       · intro ht h
-        have hArr := (genuine_of_attach J hP ha₁ hσ hfree (by rw [lL1_add_lL2]; exact hrl) hsec
+        have hArr := (genuine_of_attach J hP ha₁ hσ hfree (by rwa [lL1_add_lL2]) hsec
           (hpL ▸ hA) (hpL ▸ hend)).2
         rw [← hb] at hArr
-        exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rw [ht]; exact h)
+        exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rwa [ht])
       · rw [mEdge_def, hψ, ← hpD]
   · obtain ⟨hτ0, hδ0, hl1, hl2, hll⟩ := nvt_left J hP hVNT
     have hψ : ∀ d, ψ J d = d := fun d => by unfold ψ; rw [ite_eq_right (by omega)]
@@ -182,22 +180,20 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
         have hsec : t = 0 → 1 ≤ r := by
           intro ht; by_contra h0
           apply hnv
-          rw [hpB, ht, show r = 0 by omega, add_zero, Nat.mod_eq_of_lt (by omega)]
-          exact htopC
+          rwa [hpB, ht, show r = 0 by omega, add_zero, Nat.mod_eq_of_lt (by omega)]
         refine viaBox hVNT r hr7 hpB hsec r (by rw [hb]) ⟨by omega, hgap r, hsplit r, ?_⟩ ?_
         · intro ht h
           have hArr := (genuine_of_attach_box J hP hVNT ha₁ hσ hfree hr7 hsec (hpB ▸ hA)
             (hpB ▸ hend)).2
           rw [← hb] at hArr
-          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rw [ht]; exact h)
+          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rwa [ht])
         · rw [mEdge_def, hψ, ← hpD]
       · have hpL : p = (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + (r - 7)) % (chainModel J.whole).W.n := by
           rw [left_edge_eq, hlo, hpD]; congr 1; omega
         have hsec : t = 0 → r - 7 ≠ 0 ∧ r - 7 ≠ lL1 J := by
           intro ht
           refine ⟨fun h0 => hnv ?_, by omega⟩
-          rw [hpL, h0, ht, add_zero, Nat.mod_eq_of_lt (by omega)]
-          exact hvM
+          rwa [hpL, h0, ht, add_zero, Nat.mod_eq_of_lt (by omega)]
         refine viaLeft (r - 7) (by omega) hpL hsec r ?_ ⟨by omega, hgap r, hsplit r, ?_⟩ ?_
         · unfold dq; rw [ite_eq_left (by omega), hb, hτ0, hn₁]
           rw [show 2 * J.left.m + 6 + r = (6 + 0 + (r - 7)) + (2 * J.left.m + 7) by omega,
@@ -211,7 +207,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
             rw [show 2 * J.left.m + 6 + r = (6 + 0 + (r - 7)) + (2 * J.left.m + 7) by omega,
               Nat.add_mod_right]
           rw [e] at hArr
-          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rw [ht]; exact h)
+          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rwa [ht])
         · rw [mEdge_def, hψ, ← hpD]
     · obtain ⟨hτs, hlo, hLst⟩ := caseC_facts J hVNT hbox
       have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right hbox]
@@ -223,8 +219,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
         have hsec : t = 0 → r ≠ 0 ∧ r ≠ lL1 J := by
           intro ht
           refine ⟨fun h0 => hnv ?_, by omega⟩
-          rw [hpL, h0, ht, add_zero, Nat.mod_eq_of_lt (by omega)]
-          exact hvM
+          rwa [hpL, h0, ht, add_zero, Nat.mod_eq_of_lt (by omega)]
         refine viaLeft r (by omega) hpL hsec r ?_ ⟨by omega, hgap r, hsplit r, ?_⟩ ?_
         · unfold dq; rw [ite_eq_left (by omega), hb]
         · intro ht h
@@ -234,15 +229,14 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
               (b₁ J + r) % (chainModel J.left).W.n := by
             unfold dq; rw [ite_eq_left (by omega), hb]
           rw [e] at hArr
-          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rw [ht]; exact h)
+          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rwa [ht])
         · rw [mEdge_def, hψ, ← hpD]
       · have hpB : p = (2 * J.whole.m + 6 + (r - 2 * J.m₁)) % (chainModel J.whole).W.n := by
           rw [hpD]; congr 1; unfold gW; omega
         have hsec : t = 0 → 1 ≤ r - 2 * J.m₁ := by
           intro ht; by_contra h0
           apply hnv
-          rw [hpB, ht, show r - 2 * J.m₁ = 0 by omega, add_zero, Nat.mod_eq_of_lt (by omega)]
-          exact htopC
+          rwa [hpB, ht, show r - 2 * J.m₁ = 0 by omega, add_zero, Nat.mod_eq_of_lt (by omega)]
         have e : (b₁ J + r) % (chainModel J.left).W.n =
             (2 * J.left.m + 6 + (r - 2 * J.m₁)) % (chainModel J.left).W.n := by
           rw [hb, hτ0]; congr 1; omega
@@ -252,7 +246,7 @@ theorem map_complete (hP : J.P.Simple) {a : Point} (ha₁ : a.2 ≤ J.left.top.2
           have hArr := (genuine_of_attach_box J hP hVNT ha₁ hσ hfree (by omega) hsec (hpB ▸ hA)
             (hpB ▸ hend)).2
           rw [← e] at hArr
-          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rw [ht]; exact h)
+          exact hpt₁ _ (by rw [ht] at hArr ⊢; exact hArr) (by rwa [ht])
         · rw [mEdge_def, hψ, ← hpD]
 
 end MapComplete

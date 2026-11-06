@@ -175,14 +175,14 @@ theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
   have hu := hsub.hu
   have hee := sub_ee_le hsub
   have hcap : L ≤ 2 ^ (s.m₀ s.h - 1) := hLγ.trans hS.cap
-  set x := (interiorModel (Qof P)).param (Qof P) ⟨u, sh₀⟩ with hx
-  set y := (ee : ℝ) + (interiorModel (Qof P)).param (Qof P) ⟨(u + ee) % (Qof P).n, eh⟩ with hy
+  set x := (interiorModel (Qof P)).param (Qof P) ⟨u, sh₀⟩
+  set y := (ee : ℝ) + (interiorModel (Qof P)).param (Qof P) ⟨(u + ee) % (Qof P).n, eh⟩
   have hyL : y ≤ L := sub_y_le hsub
-  set C := ch (Qof P) u L h1 h2 with hCd
+  set C := ch (Qof P) u L h1 h2
   have hsubC : oset (interiorWalk (Qof P)) u x y ⊆ C.set := oset_sub_set hu h1 h2 hyL
   -- the chain
   obtain ⟨c₁, k₁, e₁, hk₁, hk₁', C₁, d78, dA, dm, dr, drr, drm, dout⟩ := chainI_exec c hw hS h33 h37
-    (by rw [← hQ]; exact hu) h1 h2 hcap (by omega)
+    (by rwa [← hQ]) h1 h2 hcap (by omega)
   have F₁ : Frame ioBands c c₁ k₁ := frame_chainI hk₁' dA dm dr drr drm dout
   have w₁ := e₁.wb_right
   have g₁ : ∀ r, 170000 ≤ r → r < 180000 → BSQ r = false → c₁.nreg r = c.nreg r :=
@@ -193,9 +193,9 @@ theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
   have hB₁ : BestI P c₁ Sp (s.o.eval (Qof P)) (dirOf s.dir) := hB.keep (fun r r1 r2 => dr r
     (by simp only [Bchain, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
     (by unfold ALLOC; omega))
-  have b34 : c₁.nreg 170034 = sh₀ := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h34
-  have b35 : c₁.nreg 170035 = ee := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h35
-  have b36 : c₁.nreg 170036 = eh := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h36
+  have b34 : c₁.nreg 170034 = sh₀ := by rwa [g₁ _ (by norm_num) (by norm_num) (by decide)]
+  have b35 : c₁.nreg 170035 = ee := by rwa [g₁ _ (by norm_num) (by norm_num) (by decide)]
+  have b36 : c₁.nreg 170036 = eh := by rwa [g₁ _ (by norm_num) (by norm_num) (by decide)]
   have hτ : tau (Qof P) u L h1 h2 < 2 * L := tau_lt
   -- the arc blocks keep the chain state and the best hit
   have keepArc : ∀ {d d' : Config}, FrameB Barc d d' → CEnv P W O s u L h1 h2 d →
@@ -234,9 +234,9 @@ theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
     rw [bandShot g₃ r r1 r2 hr, bandArc Fa r r1 r2 hr, g₁ r r1 r2 hr]
   · -- two chain arcs meeting at the top
     push Not at hs
-    have hb : c₁.nreg 170037 < c₁.nreg 170077 := by rw [C₁.r37, C₁.r77]; exact hs
+    have hb : c₁.nreg 170037 < c₁.nreg 170077 := by rwa [C₁.r37, C₁.r77]
     obtain ⟨harcA, harcB⟩ := chainArcs_two hsub hs hLγ
-    set L₁ := 2 * L - tau (Qof P) u L h1 h2 with hL₁
+    set L₁ := 2 * L - tau (Qof P) u L h1 h2
     have hle : L₁ ≤ ee := by rcases hsub.hee with ⟨-, h'⟩ | ⟨-, h', -⟩ <;> omega
     have hx1 : x ≤ (L₁ : ℝ) := by
       have := hsub.hs.2.1
@@ -265,11 +265,11 @@ theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
         rw [Fa.1 _ (by decide), dA]; omega)
     -- the second arc
     have c35 : c₃.nreg 170035 = ee := by
-      rw [bandShot g₃ _ (by norm_num) (by norm_num) (by decide),
-        bandArc Fa _ (by norm_num) (by norm_num) (by decide)]; exact b35
+      rwa [bandShot g₃ _ (by norm_num) (by norm_num) (by decide),
+        bandArc Fa _ (by norm_num) (by norm_num) (by decide)]
     have c36 : c₃.nreg 170036 = eh := by
-      rw [bandShot g₃ _ (by norm_num) (by norm_num) (by decide),
-        bandArc Fa _ (by norm_num) (by norm_num) (by decide)]; exact b36
+      rwa [bandShot g₃ _ (by norm_num) (by norm_num) (by decide),
+        bandArc Fa _ (by norm_num) (by norm_num) (by decide)]
     obtain ⟨c₄, k₄, e₄, hk₄, a1', a2', a3', a4', Fb⟩ := arcTwoB_exec (P := P) c₃ e₃.wb_right
       C₃.r77 c35 c36 C₃.r89 (by omega)
     have C₄ := keepArc Fb C₃
@@ -287,7 +287,7 @@ theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
     refine ⟨c₅, _, ex, by omega, ?_, C₅.env,
       ((((F₁.trans Fa').trans F₃).trans Fb').trans F₅).mono (by simp) (by omega),
       fun r r1 r2 hr => ?_⟩
-    · rw [Set.union_assoc, hU] at hB₅; exact hB₅
+    · rwa [Set.union_assoc, hU] at hB₅
     · rw [bandShot g₅ r r1 r2 hr, bandArc Fb r r1 r2 hr, bandShot g₃ r r1 r2 hr,
         bandArc Fa r r1 r2 hr, g₁ r r1 r2 hr]
 

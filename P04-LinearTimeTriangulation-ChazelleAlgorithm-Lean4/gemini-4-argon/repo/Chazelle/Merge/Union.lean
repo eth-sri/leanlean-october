@@ -185,7 +185,7 @@ theorem hitSet_eq_rayHitSet (C : Chain) {v : Point} (hv : v.2 ≤ C.top.2) (σ :
     C.hitSet v σ = rayHitSet C.radius C.set v σ := by
   ext t
   simp only [Chain.hitSet, rayHitSet, mem_ofPred_eq, mem_compl_iff]
-  rw [not_mem_dom_iff C (by rw [rayPt_snd]; exact hv)]
+  rw [not_mem_dom_iff C (by rwa [rayPt_snd])]
 
 /-- The first-hit parameter of a chain ignores the slit below the top. -/
 theorem hitParam_eq_rayHit (C : Chain) {v : Point} (hv : v.2 ≤ C.top.2) (σ : ℝ) :
@@ -328,13 +328,11 @@ theorem whole_set : J.whole.set = J.left.set ∪ J.right.set := by
     · right
       refine ⟨k - J.m₁, by rw [right_m]; omega, ?_⟩
       have hk' : k = J.m₁ + (k - J.m₁) := by omega
-      rw [hk', whole_chainEdge_add] at hp
-      exact hp
+      rwa [hk', whole_chainEdge_add] at hp
   · rintro (⟨k, hk, hp⟩ | ⟨j, hj, hp⟩)
     · exact ⟨k, by rw [whole_m]; rw [left_m] at hk; omega, hp⟩
     · refine ⟨J.m₁ + j, by rw [whole_m]; rw [right_m] at hj; omega, ?_⟩
-      rw [whole_chainEdge_add]
-      exact hp
+      rwa [whole_chainEdge_add]
 
 /-- `C₁ ⊆ C`. -/
 theorem left_set_subset : J.left.set ⊆ J.whole.set := by
@@ -359,8 +357,7 @@ theorem left_top_le : J.left.top.2 ≤ J.whole.top.2 :=
 theorem right_top_le : J.right.top.2 ≤ J.whole.top.2 := by
   have h := J.whole.vertex_snd_le_top (j := J.m₁ + J.right.topIdx)
     (by rw [whole_m]; have := J.right.topIdx_le; rw [right_m] at this; omega)
-  rw [whole_vertex_add] at h
-  exact h
+  rwa [whole_vertex_add] at h
 
 /-- **The two chains meet exactly in the shared vertex** (for a simple polygon). -/
 theorem left_inter_right (hP : J.P.Simple) : J.left.set ∩ J.right.set = {J.shared} := by
@@ -370,7 +367,7 @@ theorem left_inter_right (hP : J.P.Simple) : J.left.set ∩ J.right.set = {J.sha
     rw [right_m] at hj
     have hn := J.add_le
     have hpk' : p ∈ J.whole.chainEdge k := hpk
-    have hpj' : p ∈ J.whole.chainEdge (J.m₁ + j) := by rw [whole_chainEdge_add]; exact hpj
+    have hpj' : p ∈ J.whole.chainEdge (J.m₁ + j) := by rwa [whole_chainEdge_add]
     have hwP : J.whole.P.Simple := hP
     obtain ⟨h1, h2⟩ := mem_chainEdge_inter J.whole hwP (a := k) (b := J.m₁ + j)
       (by show k < J.P.n; omega) (by show J.m₁ + j < J.P.n; omega) (by omega) hpk' hpj'

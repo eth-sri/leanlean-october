@@ -120,7 +120,7 @@ theorem frTail_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       ⟨by rw [hfO]; unfold sw; norm_num, by rw [hfO]; unfold sw; norm_num,
         by rw [hfO]; unfold sw at hye ⊢; omega, by rw [hfO]; unfold sw at hyh ⊢; omega,
         by rw [hfO]; unfold sw at hye ⊢; omega, by rw [hfO]; unfold sw at hyh ⊢; omega, hyy⟩
-      (by rw [vye]; exact hYe) (by rw [vye, vyh]; exact hYpp) (by rw [vye, vyh]; exact hYy)
+      (by rwa [vye]) (by rwa [vye, vyh]) (by rwa [vye, vyh])
       (by omega)) ?_) (by norm_num) (fun _ h => h)
   rintro c₁ hI₁ - hA₁' ⟨v1e, v1h, k1, hA1, hm1⟩
   rw [vye, vyh] at v1h
@@ -138,7 +138,6 @@ theorem frTail_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have kq : ∀ q, (sw 4000 ≤ q ∧ q < sw 5000) ∨ (sw 600 ≤ q ∧ q < sw 700) ∨
       (sw 1100 ≤ q ∧ q < sw 1200) → c₁.nreg q = c.nreg q := fun q hq => by
     obtain ⟨a, b, d⟩ := nsw q hq; exact keep1 q a b d
-  have hK₁ := E.hK.fix hI₁
   -- 2. the default
   refine IRS.seq (IRS.block [.copyN dst lR1] hI₁ ⟨iscr_sw hd.1 hd.2, trivial⟩) ?_
   rintro c₂ hI₂ hA₂ hA₂' hc2
@@ -176,7 +175,7 @@ theorem frTail_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     rw [hc3]; simp only [regB, regI, upd, ite_true]; exact e2pe
   have v3H : c₃.nreg frGH = c.nreg ph := by
     rw [hc3]; simp only [regB, regI, upd, ite_true]
-    rw [ite_eq_right (show ph ≠ frGE from fun h => hfrGEph h.symm)]; exact e2ph
+    rwa [ite_eq_right (show ph ≠ frGE from fun h => hfrGEph h.symm)]
   have k3 : ∀ r, r ≠ frGE → r ≠ frGH → c₃.nreg r = c₂.nreg r := fun r h1 h2 => by
     rw [hc3]; simp only [regB, regI, upd, ite_eq_right h1, ite_eq_right h2]
   have hm3 : c₃.nmem = c₂.nmem := by rw [hc3]
@@ -189,7 +188,7 @@ theorem frTail_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       by rw [hfO, hfrGE]; unfold sw; omega, by rw [hfO, hfrGH]; unfold sw; omega,
       by rw [hfO, hfrGE]; unfold sw; omega, by rw [hfO, hfrGH]; unfold sw; omega,
       by rw [hfrGE, hfrGH]; unfold sw; omega⟩
-    (by rw [v3E]; exact hxe) (by rw [v3E, v3H]; exact hxpp)
+    (by rwa [v3E]) (by rwa [v3E, v3H])
     (fun h => by rw [v3E] at h; omega) (by omega)) ?_
   rintro c₄ hI₄ hA₄ hA₄' ⟨v4E, v4H, k4, hA4, hm4⟩
   rw [v3E] at v4E

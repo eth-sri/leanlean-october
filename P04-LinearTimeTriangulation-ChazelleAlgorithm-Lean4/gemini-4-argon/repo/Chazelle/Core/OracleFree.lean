@@ -51,7 +51,7 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
     ((x, ((Qof P).vtx V.hz).2) : Point) ∉ ⋃₀ N.F (chainModel C) (Qof P) := by
   rintro ⟨c, ⟨r, hr, rfl⟩, hmem⟩
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
-  have hiK : i < V.K := by rw [h.K]; exact hi
+  have hiK : i < V.K := by rwa [h.K]
   have hrec : N.chords[i] = N.chord i := by unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]
   rw [hrec] at hmem
   obtain ⟨q, hq, rfl⟩ := h.surj hiK
@@ -86,8 +86,8 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
           exact hnot ⟨h.lt t htK, Or.inl (by omega)⟩
         · rw [hh, hhz]
       have hf : FoundC V m t := by
-        refine ⟨by rw [ite_eq_left hσ]; exact htK, ?_⟩
-        unfold jCOf; rw [ite_eq_left hσ]; exact hHt
+        refine ⟨by rwa [ite_eq_left hσ], ?_⟩
+        unfold jCOf; rwa [ite_eq_left hσ]
       have hnear := h2 hf
       unfold nearC jCOf at hnear; rw [ite_eq_left hσ, ite_eq_left hσ] at hnear
       obtain ⟨-, -, -, -, ELt, -⟩ := h.facts (h.lt t htK)
@@ -117,7 +117,7 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
         · rw [← hh, hhz]
       have hf : FoundC V m t := by
         refine ⟨by rw [ite_eq_right hσ]; omega, ?_⟩
-        unfold jCOf; rw [ite_eq_right hσ]; exact hHt
+        unfold jCOf; rwa [ite_eq_right hσ]
       have hnear := h2 hf
       unfold nearC jCOf at hnear; rw [ite_eq_right hσ, ite_eq_right hσ] at hnear
       obtain ⟨-, -, hCt, -, ELt, ERt⟩ := h.facts (h.lt (t - 1) (by omega))
@@ -129,7 +129,7 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
         by_cases hq' : chAt m V q = chAt m V (t - 1)
         · rw [hq']
         · have := chord_disjoint h (h.lt q hq) (h.lt (t - 1) (by omega)) hq' (by rw [hhz, hHt])
-            (by rw [hhz, hHt]; exact hx)
+            (by rwa [hhz, hHt])
           rw [hhz, hHt] at this
           linarith [hCt.lt]
       linarith
@@ -205,7 +205,6 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
     have hc := hbD cD rfl
     rw [hv.m] at hc
     exact ⟨hsp, hpos, hmem, abs_fst_lt_radius_of_mem ⟨cD, hc, hmem⟩⟩
-  have hsσ := sgnOf_cases V.σb
   have htK := hpart.1
   by_cases hA : FoundC V m t ∧ (bD = none ∨ CBof P C V bD (nearC V m t))
   · -- the near end of the chord next to the origin

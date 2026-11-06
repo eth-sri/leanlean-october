@@ -180,10 +180,6 @@ noncomputable def HostR1Spec : Prop :=
     let S := N.F (interiorModel Q) Q
     let H := regHost (decide (Mountain.LeftInside Q)) Q.n N r
     HostWF Q.n H ∧ HostRegular Q.n H ∧ (H.poly Q).Simple ∧
-      (H.poly Q).filled \ (H.poly Q).boundary = reg r ∧
-      (H.poly Q).boundary ⊆ Q.boundary ∪ ⋃₀ S ∧
-      (∀ j, j < (DownHost.hostPoly Q S (reg r)).n →
-        ∃ j', j' < (H.poly Q).n ∧ (H.poly Q).vtx j' = (DownHost.hostPoly Q S (reg r)).vtx j) ∧
       ∀ C : Chain, C.P = H.poly Q → C.s = 0 → C.m + 1 = C.P.n → DownDrv.ExtractOK Q S (reg r) C
 
 end

@@ -105,15 +105,15 @@ theorem lctx_of {Ok : Polygon → Model → Prop} {C : Chain} {N : NF} {E md cd 
   have hC' : ChainDescAt c.nmem (c₀.nreg md + 1) (Qof P) H C := chainDescAt_copy hC hEb he hc
   have hw' : ChainWF P (c.nreg ALLOC) c.nmem (c₀.nreg md + 1) :=
     chainWF_copy hwf hC he hc (by have := hmw.1; have := hI.hA; omega) hI.hA
-  have hm0' : c.nmem (c₀.nreg md) = 0 := by rw [he _ (by have := hmw.1; omega)]; exact hm0
+  have hm0' : c.nmem (c₀.nreg md) = 0 := by rwa [he _ (by have := hmw.1; omega)]
   have eTB : c.nreg TBR = c₀.nreg TBR := hI.hin _ (by unfold IFix TBR sw; omega)
   have eTL : c.nreg TLR = c₀.nreg TLR := hI.hin _ (by unfold IFix TLR sw; omega)
-  refine ⟨hG, hWh, ⟨hG, hWh, by rw [hcd]; exact hw', ⟨H, by rw [hcd]; exact hC', hreg⟩, hP, hWm⟩,
+  refine ⟨hG, hWh, ⟨hG, hWh, by rwa [hcd], ⟨H, by rwa [hcd], hreg⟩, hP, hWm⟩,
     by rw [hcd, hmd], by rw [hmd]; exact Or.inl ⟨hm0', H, C, hC', rfl⟩,
     by rw [hmd]; exact ⟨by have := hmw.1; have := hI.hA; omega, fun _ => hw'⟩,
-    by rw [hmd]; exact hm0', hP, by rw [hnf]; exact hS.hNW.transport (fun a ha => he a
+    by rwa [hmd], hP, by rw [hnf]; exact hS.hNW.transport (fun a ha => he a
       (by have := hS.hE; omega)), by have := hS.hE; have := hI.hA; omega, hS.hNF,
-    fun j hj => ?_, by rw [eTL]; exact hS.hbig, by rw [eTB]; exact hTB,
+    fun j hj => ?_, by rw [eTL]; exact hS.hbig, by rwa [eTB],
     by rw [eTB, eTL]; have := hI.hA; omega⟩
   rw [eTL] at hj
   rw [eTB, he _ (by omega)]
@@ -156,7 +156,7 @@ theorem setL_ok (m f : ℕ → ℕ) {md nf nr e t : ℕ} (_hmd : OutL md) (hW : 
     s 1106 (by norm_num) (by norm_num), ⟨s 1107 (by norm_num) le_rfl, ht⟩, trivial⟩
   have e1 : upd f lMD (f md) lMD = f md := upd_same _ _ _
   have e2 : upd f lMD (f md) K1 = f K1 := upd_other _ _ _ (by unfold K1 lMD sw; omega)
-  rw [e1, e2, hk]; exact hW
+  rwa [e1, e2, hk]
 
 /-- **A local hit with its inputs.** -/
 def lhs (md nf nr e t : ℕ) (sh : Stmt) : Stmt := .seq (block (setL md nf nr e t)) (localHit sh)
@@ -243,17 +243,16 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
     exact hacc.transport (fun j hj => r1 _ (by unfold OutL accA sw; omega))
   have h := localHit_irs (x := ⟨c₁.nreg lE, c₁.nreg lH⟩) (d := c₁.nreg lD) (Da := c₀.nreg (sw 6) + 1)
     (Dc := c₀.nreg (sw 6)) hsh hBs hXl hI₁ hA.hK hL hA.hX hA.hcap hS.hOk hS.hsg hAr hCh rfl rfl rfl
-    (by rw [v4]; exact he) (by rw [v4, v5]; exact hpp) (by rw [v4, v5, hz]; exact hy)
-    (by rw [v4, v5, hz]; exact hloc)
-    hacc₁ (by rw [v8]; exact ht) (by rw [v8]; exact hMod) hR
+    (by rwa [v4]) (by rwa [v4, v5]) (by rwa [v4, v5, hz])
+    (by rwa [v4, v5, hz])
+    hacc₁ (by rwa [v8]) (by rwa [v8]) hR
     (by rw [v7, hI.hin _ hfr]; exact hS.hnr)
     (by rw [eTL]; unfold lhsK at hroom; omega)
   rw [eTL] at h
   refine h.mono le_rfl ?_
   rintro c' ⟨⟨L', a', s', g', geo'⟩, fr, hA', hm'⟩
   rw [v4, v5, v6, hz] at a' g'
-  rw [v4, v5, v6] at geo'
-  rw [hz] at geo'
+  rw [v4, v5, v6, hz] at geo'
   have hAA : c₁.nreg ALLOC = c.nreg ALLOC := r1 ALLOC (by unfold OutL ALLOC sw; omega)
   refine ⟨⟨L', a', s', g', fun hg => (geo' hg).2⟩, fun r h1 h2 h3 => ?_, by omega,
     fun a ha => ?_⟩

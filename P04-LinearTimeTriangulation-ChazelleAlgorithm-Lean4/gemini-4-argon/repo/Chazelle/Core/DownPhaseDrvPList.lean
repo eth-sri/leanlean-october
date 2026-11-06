@@ -110,12 +110,12 @@ theorem bruteCall_exec {sB : Stmt} {κB : ℕ} (hBm : BruteM sB κB) (c : Config
       _ = 274625 := by norm_num
   have hcost : κB * (c₂.nreg 180001 + 1) ^ 3 ≤ κB * 274625 := Nat.mul_le_mul_left _ hpow
   obtain ⟨c₃, k₃, e₃, hk₃, ⟨CQ, N₀, hCQ, hCs, hCm, hN₀, hcan⟩, F₃⟩ := hBm P W c₂ w₂
-    ⟨hG, hW, by rw [rdB1, v01]; exact hm1, by rw [rdB0, rdB1, v00, v01]; exact ham,
+    ⟨hG, hW, by rwa [rdB1, v01], by rwa [rdB0, rdB1, v00, v01],
       by rw [rdB2]; exact hγ1.1, by rw [rdB1, rdB2]; exact hγ1.2⟩
     (by show c₂.nreg ALLOC + κB * (rd c₂ bBrute 1 + 1) ^ 3 ≤ W
         rw [rdB1, hA₂]; have := hcost; omega)
   replace hk₃ : k₃ ≤ κB * 274625 := hk₃.trans (by show κB * (rd c₂ bBrute 1 + 1) ^ 3 ≤ _
-                                                  rw [rdB1]; exact hcost)
+                                                  rwa [rdB1])
   have w₃ := e₃.wb_right
   -- the output
   obtain ⟨c₄, k₄, e₄, hk₄, v15, r₄⟩ : ∃ c₄ k₄, Exec P W (block [.copyN 218015 180003]) c₃ c₄ k₄ ∧
@@ -141,17 +141,15 @@ theorem bruteCall_exec {sB : Stmt} {κB : ℕ} (hBm : BruteM sB κB) (c : Config
   · rw [r₄]; simp only [upd_same]
     have hA₄ : upd c₃.nreg 218015 (c₃.nreg 180003) ALLOC = c₃.nreg ALLOC := by simp [upd, ALLOC]
     rw [hA₄]
-    rw [rdB3] at hN₀
-    exact hN₀
-  · rw [rdB2] at hcan; exact hcan
-  · rw [v02']; exact v02
+    rwa [rdB3] at hN₀
+  · rwa [rdB2] at hcan
+  · rwa [v02']
 
 theorem seven_le_clog {m : ℕ} (hm : 65 ≤ m) : 7 ≤ Nat.clog 2 m := by
   by_contra h
   push Not at h
   have h1 : m ≤ 2 ^ Nat.clog 2 m := Nat.le_pow_clog (by norm_num) m
   have h2 : 2 ^ Nat.clog 2 m ≤ 2 ^ 6 := Nat.pow_le_pow_right (by norm_num) (by omega)
-  have : (2 : ℕ) ^ 6 = 64 := by norm_num
   omega
 
 set_option maxHeartbeats 4000000 in
@@ -210,14 +208,14 @@ theorem l41Call_exec {O : OracleIface} {sL : Stmt} {κL : ℕ} (hLm : L41M O sL 
     Nat.mul_le_mul_left _ (Nat.add_le_add_right (lemma41Nat_mono hgμ) 1)
   -- the call
   obtain ⟨c₃, k₃, e₃, hk₃, ⟨CQ, N₀, hCQ, hCs, hCm, hN₀, hcan⟩, F₃⟩ := hLm P W c₂ w₂
-    ⟨hG, hW, by rw [rdL0, v0, hm₂, hA₂]; exact hgr, by rw [rdL0, rdL3, v0, v3, hm₂]; omega,
-      by rw [rdL3, v3]; exact hg7, by rw [rdL1, rdL2, v1, v2]; exact ham,
-      by rw [rdL2, rdL3, v2, v3]; exact hgm, by rw [rdL2, rdL3, v2, v3]; exact hmg⟩
+    ⟨hG, hW, by rwa [rdL0, v0, hm₂, hA₂], by rw [rdL0, rdL3, v0, v3, hm₂]; omega,
+      by rwa [rdL3, v3], by rwa [rdL1, rdL2, v1, v2],
+      by rwa [rdL2, rdL3, v2, v3], by rwa [rdL2, rdL3, v2, v3]⟩
     (by show c₂.nreg ALLOC + κL * (lemma41Nat (rd c₂ bL41 3) + 1) ≤ W
         rw [rdL3, v3, hA₂]; omega)
   replace hk₃ : k₃ ≤ κL * (lemma41Nat μ + 1) := hk₃.trans (by
     show κL * (lemma41Nat (rd c₂ bL41 3) + 1) ≤ _
-    rw [rdL3, v3]; exact hcost)
+    rwa [rdL3, v3])
   rw [rdL1, v1] at hCs
   rw [rdL2, v2] at hCm
   rw [rdL3, v3] at hcan
@@ -248,8 +246,7 @@ theorem l41Call_exec {O : OracleIface} {sL : Stmt} {κL : ℕ} (hLm : L41M O sL 
       r₂ r (by unfold bandOf at hr; omega), r₁ r h19 h23]
   · rw [r₄]; simp only [upd_same]
     have hA₄ : upd c₃.nreg 218015 (c₃.nreg 160004) ALLOC = c₃.nreg ALLOC := by simp [upd, ALLOC]
-    rw [hA₄]
-    exact hN₀
+    rwa [hA₄]
 
 /-- Lemma 2.3 on the normal form of a leaf. -/
 theorem k0_count {Q : Polygon} {CQ : Chain} {N₀ : NF} {γ' : ℕ} (hP : CQ.P.Simple)
@@ -265,7 +262,6 @@ theorem gradeGran_ge_one (g : ℕ) : 1 ≤ gradeGran g :=
   (Nat.one_le_two_pow).trans (gradeGran_ge g)
 
 theorem gradeGran_ge_two {g : ℕ} (hg : 1 ≤ g) : 2 ≤ gradeGran g := by
-  have h1 := DrvT.le_gradeGran g
   have h2 : 1 ≤ 2 ^ Cost.ceilBeta g := Nat.one_le_two_pow
   have : gradeGran g = 2 ^ Cost.ceilBeta g + fuseLoss * (g * (Nat.clog 2 g + 2)) := rfl
   have hf : fuseLoss = 1 := rfl
@@ -311,7 +307,7 @@ theorem nf0_exec {O : OracleIface} {sL sB : Stmt} {κL κB : ℕ} (hLm : L41M O 
       bruteCall_exec hBm c hw hG hW h21 hm1 (by omega) ham (by omega)
     have hT := htwin CQ hCQ hCs hCm
     obtain ⟨hok, hdeg, hwt⟩ := leaf_list hG hCQ hT hCHs hcan
-    have hK := k0_count (by rw [hCQ]; exact hQs) hcan
+    have hK := k0_count (by rwa [hCQ]) hcan
     rw [hCm] at hK
     have hK₀ : N₀.chords.length ≤ 108360 := by
       have : N₀.chords.length ≤ N₀.chords.length * (γ' + 1) := Nat.le_mul_of_pos_right _ (by omega)
@@ -331,7 +327,7 @@ theorem nf0_exec {O : OracleIface} {sL sB : Stmt} {κL κB : ℕ} (hLm : L41M O 
           have : μ = 0 := by omega
           rw [this] at hμm; simp at hμm; omega
         have := gradeGran_ge_two hμ1; omega
-    refine ⟨c₁, _, Exec.ifLtN_true (by rw [h22]; exact h64) e₁, by omega,
+    refine ⟨c₁, _, Exec.ifLtN_true (by rwa [h22]) e₁, by omega,
       Frame.mono F₁ le_rfl (by omega), fun r hr a b d => r₁ r hr a, N₀, hN₀, hok, hdeg,
       semigranular_mono hwt hγle, ?_, ?_⟩
     · have : 1950480 ≤ 1950480 * (lemma41Nat μ + 1) := Nat.le_mul_of_pos_right _ (by omega)
@@ -343,7 +339,7 @@ theorem nf0_exec {O : OracleIface} {sL sB : Stmt} {κL κB : ℕ} (hLm : L41M O 
       l41Call_exec hLm c hw hG hW hgr h21 (by omega) hμm hμΛ ham (by omega)
     have hT := htwin CQ hCQ hCs hCm
     obtain ⟨hok, hdeg, hwt⟩ := leaf_list hG hCQ hT hCHs hcan
-    have hK := k0_count (by rw [hCQ]; exact hQs) hcan
+    have hK := k0_count (by rwa [hCQ]) hcan
     rw [hCm] at hK
     have hK2 : N₀.chords.length * 2 ^ Cost.ceilBeta g ≤ 2520 * 2 ^ g := by
       have h1 : N₀.chords.length * 2 ^ Cost.ceilBeta g ≤ N₀.chords.length * (gradeGran g + 1) :=
@@ -353,7 +349,7 @@ theorem nf0_exec {O : OracleIface} {sL sB : Stmt} {κL κB : ℕ} (hLm : L41M O 
     have hKc := kcost_le hg1 hK2
     have hmono := lemma41Nat_mono hgμ
     have hγle : 2 * gradeGran g ≤ c.nreg 218007 := (Nat.mul_le_mul_left 2 (gradeGran_mono hgμ)).trans hγ
-    refine ⟨c₁, _, Exec.ifLtN_false (by rw [h22]; exact h64) e₁, by omega,
+    refine ⟨c₁, _, Exec.ifLtN_false (by rwa [h22]) e₁, by omega,
       Frame.mono F₁ le_rfl (by omega), r₁, N₀, hN₀, hok, hdeg, semigranular_mono hwt hγle, ?_, ?_⟩
     · have : 35280 * lemma41Nat g ≤ 1950480 * (lemma41Nat μ + 1) := by nlinarith
       omega
@@ -426,7 +422,7 @@ theorem listS_exec {O : OracleIface} {sL sB : Stmt} {κL κB : ℕ} (hLm : L41M 
       refine ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => ?_⟩
       simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2]
     have ex := Exec.ifLtN_true (e := leafS sL sB) hk e₁
-    obtain ⟨hok, hdeg, hwt⟩ := conn_list (P := P) hCHs (γ := c.nreg 218007) (by rw [hCm]; exact h2m)
+    obtain ⟨hok, hdeg, hwt⟩ := conn_list (P := P) hCHs (γ := c.nreg 218007) (by rwa [hCm])
     have G₁ : Frame DrvR.drvBands c c₁ k₁ := frame_of_wr e₁
       (B := fun r => decide (218016 ≤ r ∧ r < 218018))
       (by simp only [connS, wr, block, wrOK]; decide) (fun r hr => by
@@ -448,12 +444,12 @@ theorem listS_exec {O : OracleIface} {sL sB : Stmt} {κL κB : ℕ} (hLm : L41M 
       have := lst_cost κL κB μ (lemma41Nat μ + 1) (by omega)
       omega
     obtain ⟨c₁, k₁, e₁, hk₁, F₁, r₁, N₀, hN₀, hok, hdeg, hwt, hKc, hK₀⟩ := nf0_exec hLm hBm c hw
-      hG hW hgr h21 h22 hm1 (by rw [hμ]; exact hμm) (by rw [hμ]; exact hμΛ) ham
-      (by rw [hμ]; exact hγ) CH hCHs (htwin hk1) hroom'
+      hG hW hgr h21 h22 hm1 (by rwa [hμ]) (by rwa [hμ]) ham
+      (by rwa [hμ]) CH hCHs (htwin hk1) hroom'
     rw [hμ] at hk₁ hKc hK₀
     have w₁ := e₁.wb_right
     have h21₁ : c₁.nreg 218021 = 1 := by
-      rw [r₁ _ (by decide) (by decide) (by decide) (by decide)]; exact h21
+      rwa [r₁ _ (by decide) (by decide) (by decide) (by decide)]
     have hA₁ := F₁.2.2.2.2.2.2
     obtain ⟨c₂, k₂, e₂, hk₂, hk₂', v16, v17, v99, hCL, hlow, r₂, rr₂, rm₂, o₂⟩ :=
       dropS_exec (P := P) c₁ w₁ hN₀ h21₁ (by
@@ -477,7 +473,7 @@ theorem listS_exec {O : OracleIface} {sL sB : Stmt} {κL κB : ℕ} (hLm : L41M 
     · intro r hr h1 h2
       rw [r₂ r (by omega) (by omega) h2 (by unfold ALLOC bandOf at *; omega),
         r₁ r hr (by omega) (by omega) (by omega)]
-    · rw [v16]; exact hCL
+    · rwa [v16]
     · rw [v17]
     · rw [v16, v99]
 

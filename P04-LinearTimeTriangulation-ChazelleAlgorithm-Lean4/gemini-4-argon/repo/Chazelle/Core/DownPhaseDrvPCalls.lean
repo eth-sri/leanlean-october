@@ -182,7 +182,7 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
       refine ⟨d', k, e, ⟨e.wb_right, ?_, ?_, fun r h1 h2 => (r' r h1 h2).trans (rd' r h1 h2),
         m''.trans md, rr''.trans rrd, rm''.trans rmd, o''.trans od⟩, by omega, ?_⟩
       · rw [v23', v19', pd, pow_succ]; ring
-      · intro _; rw [v19', Nat.add_sub_cancel, ← pd]; exact ht
+      · intro _; rwa [v19', Nat.add_sub_cancel, ← pd]
       · rw [v19']
         rw [pd] at ht
         have : d.nreg 218019 < Nat.clog 2 m := by

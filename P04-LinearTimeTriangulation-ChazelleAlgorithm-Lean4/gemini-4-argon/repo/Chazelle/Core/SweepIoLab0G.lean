@@ -118,7 +118,7 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
     ((IRS.block gS0 hI (gS0_ok _ _ hmdW)).mono (by simp [gS0]) (fun _ h => h)) ?_
   rintro c₁ hI₁ hA₁ hA₁' rfl
   obtain ⟨v1, v2, v3, v4, v5, v6, vo⟩ := gS0_val c.nmem c.nreg
-  set c₁ : Config := { c with nreg := regB c.nmem gS0 c.nreg } with hc₁
+  set c₁ : Config := { c with nreg := regB c.nmem gS0 c.nreg }
   have eA1 : c₁.nreg ALLOC = c.nreg ALLOC :=
     vo ALLOC (by unfold ALLOC gL sw; omega) (by unfold ALLOC sw; omega)
   have eT1 : c₁.nreg TLR = c₀.nreg TLR := hI₁.hin _ (by unfold IFix TLR sw; omega)
@@ -170,7 +170,7 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
   · rw [fr4' gL (nO _ (by decide) (by decide)) (by decide) (by decide),
       k32 _ (Or.inr (Or.inr (Or.inr (Or.inr rfl))))]
     show regB _ _ _ _ = _; rw [v1]
-  · rw [hm4 a (by rw [eA3]; omega), hm3, hm2 a (by rw [eA1]; exact ha)]
+  · rw [hm4 a (by rw [eA3]; omega), hm3, hm2 a (by rwa [eA1])]
   · have h3' : ¬ (sw 1108 ≤ r ∧ r ≤ sw 1119) :=
       fun h => h3 ⟨le_trans (show sw 1100 ≤ sw 1108 by decide) h.1, h.2⟩
     have h3e : r ≠ lE := by rintro rfl; exact h3 (by decide)

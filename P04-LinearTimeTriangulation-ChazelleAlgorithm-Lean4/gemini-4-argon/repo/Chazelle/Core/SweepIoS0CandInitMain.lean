@@ -107,7 +107,6 @@ theorem body_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   have hS₂ : SInv P J N₂ (c.nreg (sw 200)) (c.nreg (sw 300)) (c.nreg (sw 301))
       (c.nreg (sw 302)) (c.nreg ALLOC) c₂.nmem 0 0 :=
     SInv.zero (fun a h1 h2 => z3 a h1 (by omega))
-  have hfix : ∀ k, k < 700 → c.nreg (sw k) = c.nreg (sw k) := fun _ _ => rfl
   refine IRS.seq (K₁ := (kSt κL (c.nreg TLR) + 2) * c.nreg (sw 201) + 2) (K₂ := ((2 * (kTb κL (c.nreg TLR) + 9) + 3) * N₂.nChords + 2))
     (stLoop_irs hls e hI₂ b2 (by omega) ((z2 _ (nA _ (Or.inr (Or.inl rfl)))).trans a3) hS₂
       (by omega)) ?_
@@ -152,7 +151,7 @@ theorem initPart (hL : LSearchSpec) : InitPartSpec := by
     · simp only
       rw [upd_other _ _ _ (nS r hr)]
       exact r₁ r hr hra
-    · simp only; rw [upd_other _ _ _ hsA]; exact a₁
+    · simp only; rwa [upd_other _ _ _ hsA]
     · simp only; rw [upd_other _ _ _ hsA]; omega
   · simp only
     rw [upd_other _ _ _ (by unfold sB sw; omega)]
@@ -170,7 +169,7 @@ theorem initPart (hL : LSearchSpec) : InitPartSpec := by
     simp only [rd_sw] at hlog hst htw
     refine auxCore_of_sinv ?_ ?_ ?_ ?_ ?_
     · simp only
-      rw [hB, hAl, fx 301 (by norm_num) (by norm_num)]; exact q2
+      rwa [hB, hAl, fx 301 (by norm_num) (by norm_num)]
     · simp only
       rw [hAl, fx 300 (by norm_num) (by norm_num), fx 301 (by norm_num) (by norm_num)]; omega
     · simp only
@@ -178,10 +177,9 @@ theorem initPart (hL : LSearchSpec) : InitPartSpec := by
     · simp only
       rw [hAl, fx 302 (by norm_num) (by norm_num)]; omega
     · simp only
-      rw [hB, fx 200 (by norm_num) (by norm_num), fx 201 (by norm_num) (by norm_num),
+      rwa [hB, fx 200 (by norm_num) (by norm_num), fx 201 (by norm_num) (by norm_num),
         fx 300 (by norm_num) (by norm_num), fx 301 (by norm_num) (by norm_num),
         fx 302 (by norm_num) (by norm_num)]
-      exact q3
 
 end main
 

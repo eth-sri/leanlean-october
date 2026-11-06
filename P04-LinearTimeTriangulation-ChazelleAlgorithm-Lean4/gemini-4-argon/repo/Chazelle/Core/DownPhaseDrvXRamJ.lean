@@ -156,7 +156,7 @@ theorem loopS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBound
               split_ifs <;> first | omega | rfl
       · obtain ⟨m', d38, d45, d46⟩ := bn hk
         rw [xL_not hk]
-        exact ⟨d38, d45, d46, fun a ha => by rw [m']; exact cmem a ha, by rw [m']; exact clist,
+        exact ⟨d38, d45, d46, fun a ha => by rw [m']; exact cmem a ha, by rwa [m'],
           fun q hq => by rw [m']; exact cbkt q hq, cf.trans bf⟩)
     hI0 (Nat.zero_le _)
   have hk : k' ≤ 24002 * v.K + 2 := by

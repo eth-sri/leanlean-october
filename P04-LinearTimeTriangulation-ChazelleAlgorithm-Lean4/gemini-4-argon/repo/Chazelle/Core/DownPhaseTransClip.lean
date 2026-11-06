@@ -37,8 +37,8 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
         (lerp (P.vtx i) (P.vtx ((i + 1) % P.n)) t₀).2) : Point) ∈ P.filled ↔
       (((lerp (P.vtx i) (P.vtx ((i + 1) % P.n)) t₀).1 + ε,
         (lerp (P.vtx i) (P.vtx ((i + 1) % P.n)) t₀).2) : Point) ∉ P.filled) := by
-  set u := P.vtx i with hu
-  set v := P.vtx ((i + 1) % P.n) with hv
+  set u := P.vtx i
+  set v := P.vtx ((i + 1) % P.n)
   set w := lerp u v t₀ with hw
   obtain ⟨r, hr, hstrip⟩ := Chazelle.Jordan.strip hP hi ht₀
   have hcont1 : Continuous (fun δ : ℝ => offset u v t₀ δ) := by unfold offset; fun_prop
@@ -51,12 +51,11 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
     (hcont2.tendsto 0).mono_left nhdsWithin_le_nhds (by rw [h0']; exact ball_mem_nhds w hr)
   obtain ⟨δ, hδs, hδ1, hδ2, hδ0⟩ := ((Chazelle.Jordan.edge_sides hP hi ht₀).and
     (hev1.and (hev2.and self_mem_nhdsWithin))).exists
-  have hδ0' : (0 : ℝ) < δ := hδ0
   have huv : u ≠ v := fun e => hh (by rw [e])
   have hsq := Chazelle.Jordan.sqLen_pos huv
   -- the two half-disks
-  set Hp := ball w r ∩ {x | 0 < (1 : ℝ) * Chazelle.det u v x} with hHp
-  set Hm := ball w r ∩ {x | 0 < (-1 : ℝ) * Chazelle.det u v x} with hHm
+  set Hp := ball w r ∩ {x | 0 < (1 : ℝ) * Chazelle.det u v x}
+  set Hm := ball w r ∩ {x | 0 < (-1 : ℝ) * Chazelle.det u v x}
   have hpre : ∀ σ : ℝ, IsPreconnected (ball w r ∩ {x | 0 < σ * Chazelle.det u v x}) := fun σ =>
     ((convex_ball w r).inter (Chazelle.Jordan.convex_det_pos u v σ)).isPreconnected
   have hsub : ∀ σ : ℝ, ball w r ∩ {x | 0 < σ * Chazelle.det u v x} ⊆ P.boundaryᶜ := fun σ =>
@@ -111,7 +110,7 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
       show 0 < -1 * _; rw [hdp]; nlinarith⟩
     have e1 := FactsInterior.filled_iff_of_preconnected hP (hpre 1) (hsub 1) hmH hL
     have e2 := FactsInterior.filled_iff_of_preconnected hP (hpre (-1)) (hsub (-1)) hpH hR
-    rw [e1, e2]; exact hLR
+    rwa [e1, e2]
 
 variable {Q : Polygon} {C : Chain}
 
@@ -126,26 +125,26 @@ theorem sub_chord {y a b x : ℝ} (hab : a ≤ x ∧ x ≤ b)
   have hclo : IsClosed {t : ℝ | ((t, y) : Point) ∉ Q.filled \ Q.boundary} :=
     hDo.isClosed_compl.preimage hcont
   -- the left end
-  set A := Icc a x ∩ {t : ℝ | ((t, y) : Point) ∉ Q.filled \ Q.boundary} with hA
+  set A := Icc a x ∩ {t : ℝ | ((t, y) : Point) ∉ Q.filled \ Q.boundary}
   have hAc : IsClosed A := isClosed_Icc.inter hclo
   have hAne : A.Nonempty := ⟨a, ⟨le_rfl, hab.1⟩, ha⟩
   have hAbdd : BddAbove A := ⟨x, fun t ht => ht.1.2⟩
   have ha'A := hAc.csSup_mem hAne hAbdd
-  set a' := sSup A with ha'
-  have ha'x : a' < x := lt_of_le_of_ne ha'A.1.2 (fun e => ha'A.2 (by rw [e]; exact hx))
+  set a' := sSup A
+  have ha'x : a' < x := lt_of_le_of_ne ha'A.1.2 (fun e => ha'A.2 (by rwa [e]))
   have hleft : ∀ t, a' < t → t ≤ x → ((t, y) : Point) ∈ Q.filled \ Q.boundary := by
     intro t ht1 ht2
     by_contra hn
     have : t ≤ a' := le_csSup hAbdd ⟨⟨le_trans ha'A.1.1 ht1.le, ht2⟩, hn⟩
     linarith
   -- the right end
-  set B := Icc x b ∩ {t : ℝ | ((t, y) : Point) ∉ Q.filled \ Q.boundary} with hB
+  set B := Icc x b ∩ {t : ℝ | ((t, y) : Point) ∉ Q.filled \ Q.boundary}
   have hBc : IsClosed B := isClosed_Icc.inter hclo
   have hBne : B.Nonempty := ⟨b, ⟨hab.2, le_rfl⟩, hb⟩
   have hBbdd : BddBelow B := ⟨x, fun t ht => ht.1.1⟩
   have hb'B := hBc.csInf_mem hBne hBbdd
-  set b' := sInf B with hb'
-  have hxb' : x < b' := lt_of_le_of_ne hb'B.1.1 (fun e => hb'B.2 (by rw [← e]; exact hx))
+  set b' := sInf B
+  have hxb' : x < b' := lt_of_le_of_ne hb'B.1.1 (fun e => hb'B.2 (by rwa [← e]))
   have hright : ∀ t, x ≤ t → t < b' → ((t, y) : Point) ∈ Q.filled \ Q.boundary := by
     intro t ht1 ht2
     by_contra hn
@@ -238,10 +237,10 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
     obtain ⟨rfl, rfl⟩ := hs_eq _ _ _ _ e e'
     have hmn : C.m < Q.n := by have := T.hm; omega
     have hsucc : (C.m + 1) % Q.n = 0 := by rw [T.hm, Nat.mod_self]
-    have hh' : (Q.vtx C.m).2 ≠ (Q.vtx ((C.m + 1) % Q.n)).2 := by rw [hsucc]; exact hh
+    have hh' : (Q.vtx C.m).2 ≠ (Q.vtx ((C.m + 1) % Q.n)).2 := by rwa [hsucc]
     obtain ⟨ε₀, hε₀, hcross⟩ := cross_sides hQ hmn hs hh'
     rw [hsucc, ← e] at hcross
-    set ε := min (ε₀ / 2) (min ((b₁ - a₁) / 2) ((b₂ - b₁) / 2)) with hεd
+    set ε := min (ε₀ / 2) (min ((b₁ - a₁) / 2) ((b₂ - b₁) / 2))
     have hε0 : 0 < ε := lt_min (by linarith) (lt_min (by linarith [hc₁.lt]) (by linarith [hc₂.lt]))
     have hε1 : ε < ε₀ := by have := min_le_left (ε₀ / 2) (min ((b₁ - a₁) / 2) ((b₂ - b₁) / 2)); linarith
     have hε2 : ε < b₁ - a₁ := by
@@ -296,7 +295,7 @@ theorem chordFamily_pieces (T : Top Q C) {F₀ : Set (Set Point)}
     obtain ⟨h, hh', a, b, rfl⟩ := hF₀.2.2 c hc
     obtain ⟨y', a', b', hc', rfl⟩ := hd.1
     have e := hdc (show ((a', y') : Point) ∈ hseg y' a' b' from ⟨rfl, le_rfl, hc'.lt.le⟩)
-    refine ⟨h, by rw [← T.hP]; exact hh', a', b', ?_⟩
+    refine ⟨h, by rwa [← T.hP], a', b', ?_⟩
     rw [show y' = (C.P.vtx h).2 from e.1, T.hP]
   · exact Set.ncard_le_ncard_of_injOn f (fun d hd => hf d hd) hinj hF₀.1
 

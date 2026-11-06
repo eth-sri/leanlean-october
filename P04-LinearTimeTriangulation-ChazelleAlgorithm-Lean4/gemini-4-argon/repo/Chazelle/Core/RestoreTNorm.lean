@@ -93,7 +93,6 @@ theorem tNormK_rs {s : ℕ} (hs : Scr s ∧ Scr (s + 1) ∧ Scr (s + 2) ∧ Scr 
   obtain ⟨h1, h2, h3, h4, -⟩ := hs
   unfold Scr at h1 h2 h3 h4
   have i22 := hI.h22
-  have i23 := hI.h23
   have inR : ∀ r, Scr r → InR r := fun r hr => by unfold Scr at hr; unfold InR; omega
   have hk := kcmp_rs (P := P) (W := W) gKey_ok (a := s) (b := 83022) (d := s) (e := s + 1)
     (u := s + 2) (v := s + 3) (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
@@ -146,16 +145,16 @@ theorem tNorm_rs {s : ℕ} (hs : Scr s ∧ Scr (s + 1) ∧ Scr (s + 2) ∧ Scr (
     have hz : c.nreg (s + 1) = 0 := by rw [i22] at hh; omega
     refine RS.ifF hh (RS.skip hI ⟨rfl, ?_, Agr.refl _ _⟩)
     unfold normOf; rw [ite_eq_left (by rw [hz]; rfl)]; rw [hz]
-  have h0 : 0 < c.nreg (s + 1) := by rw [i22] at hh; exact hh
+  have h0 : 0 < c.nreg (s + 1) := by rwa [i22] at hh
   refine RS.ifT hh ?_
   refine RS.mono (K := 1 + (11010 + 6 + 2 + 2)) ?_ (by norm_num) (fun _ h => h)
   refine RS.seq (RS.const hI (r := s + 4) (v := 6) (by unfold Scr; omega)
     (by have := hE.hW; unfold hostWords at this; omega)) fun c₁ hI₁ hA₁ hc₁ => ?_
   have k1 : ∀ r, r ≠ s + 4 → c₁.nreg r = c.nreg r := fun r hr => by rw [hc₁, upd_ne hr]
   have p1 : ProperPos M (Qof P) P.n ⟨c₁.nreg s, c₁.nreg (s + 1)⟩ := by
-    rw [k1 s (by omega), k1 (s + 1) (by omega)]; exact hp
-  have e1 : c₁.nreg s < M.W.n := by rw [k1 s (by omega)]; exact he
-  have z1 : 0 < c₁.nreg (s + 1) := by rw [k1 (s + 1) (by omega)]; exact h0
+    rwa [k1 s (by omega), k1 (s + 1) (by omega)]
+  have e1 : c₁.nreg s < M.W.n := by rwa [k1 s (by omega)]
+  have z1 : 0 < c₁.nreg (s + 1) := by rwa [k1 (s + 1) (by omega)]
   have a1 : Agr c c₁ [s + 4] := Agr.of_upd hc₁
   have fin : ∀ c₂, (c₂.nreg s = c₁.nreg s ∧ ⟨c₂.nreg s, c₂.nreg (s + 1)⟩ =
       normOf M (Qof P) ⟨c₁.nreg s, c₁.nreg (s + 1)⟩ ∧ Agr c₁ c₂ [s + 1, s + 2, s + 3]) →
@@ -165,7 +164,7 @@ theorem tNorm_rs {s : ℕ} (hs : Scr s ∧ Scr (s + 1) ∧ Scr (s + 2) ∧ Scr (
       refine ⟨by rw [q1, k1 s (by omega)], by rw [q2, k1 s (by omega), k1 (s + 1) (by omega)],
         (a1.trans q3).mono (by simp)⟩
   have hroom1 : c₁.nreg ALLOC + normK ≤ W := by
-    have := hI₁.hA; rw [k1 _ (by unfold ALLOC; omega)]; exact hroom
+    have := hI₁.hA; rwa [k1 _ (by unfold ALLOC; omega)]
   have i21 := hI₁.h21
   have i23 := hI₁.h23
   rcases hE.kind with ⟨hz, C, hMC⟩ | ⟨h1', hMi, -⟩
@@ -173,7 +172,7 @@ theorem tNorm_rs {s : ℕ} (hs : Scr s ∧ Scr (s + 1) ∧ Scr (s + 2) ∧ Scr (
     refine RS.ifT (by rw [i21, i23, hz]; omega) ?_
     by_cases hb : c₁.nreg s < c₁.nreg (s + 4)
     · -- a box edge: the parameter is positive
-      have h6 : c.nreg s < 6 := by rw [k1 s (by omega), hc₁, upd_eq] at hb; exact hb
+      have h6 : c.nreg s < 6 := by rwa [k1 s (by omega), hc₁, upd_eq] at hb
       have hpos : 0 < M.param (Qof P) ⟨c.nreg s, c.nreg (s + 1)⟩ := by
         subst hMC
         exact box_param_pos C (x := ⟨c.nreg s, c.nreg (s + 1)⟩) h6 hp.1 (hy C rfl)

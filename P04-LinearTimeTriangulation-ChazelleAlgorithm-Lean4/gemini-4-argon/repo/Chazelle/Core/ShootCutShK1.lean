@@ -48,8 +48,8 @@ theorem ShEnv.of_agree {c c' : Config} (E : ShEnv P W H C z σ c)
       have a2 := E.hD.1.1
       rw [hB'] at a1
       rw [← a1, hm _ (by omega), a2]
-    exact chainDesc_agree' h' hB5 (by rw [hB', hlen']; exact hHA) (fun a ha => (hm a ha).symm)
-  refine ⟨E.hG, E.hW, by rw [e403]; exact hD', ⟨by rw [e403]; omega, fun H' C' h' => ?_⟩,
+    exact chainDesc_agree' h' hB5 (by rwa [hB', hlen']) (fun a ha => (hm a ha).symm)
+  refine ⟨E.hG, E.hW, by rwa [e403], ⟨by rw [e403]; omega, fun H' C' h' => ?_⟩,
     fun H' h' => ?_, by rw [hr K1 (by unfold envR; simp) (by decide)]; exact E.k1, ?_, ?_, ?_,
     E.hσ⟩
   · rw [e403] at h'
@@ -60,7 +60,7 @@ theorem ShEnv.of_agree {c c' : Config} (E : ShEnv P W H C z σ c)
       have a1 := h'.1
       have a2 := E.hD.1.1
       rw [← a1, hm _ (by omega), a2]
-    exact E.hreg H' (hostAt_agree' h' (by rw [hlen']; exact hHA) (fun a ha => (hm a ha).symm))
+    exact E.hreg H' (hostAt_agree' h' (by rwa [hlen']) (fun a ha => (hm a ha).symm))
   · exact E.ox.copy (hr _ (by unfold envR; simp) (by decide)) (hr _ (by unfold envR; simp)
       (by decide)) (hr _ (by unfold envR; simp) (by decide)) (hr _ (by unfold envR; simp)
       (by decide))

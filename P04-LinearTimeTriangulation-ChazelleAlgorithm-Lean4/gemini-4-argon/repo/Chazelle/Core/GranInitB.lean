@@ -106,15 +106,14 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
     ∃ c' k, Exec P W initB c₅ c' k ∧
       k ≤ 6052 * N.arcs.length + N.nChords * (2 * NFLoc.locCost 5100 N.arcs.length + 32) + 12 ∧
       InitEnd P W MD NFH D γ M N c c' ∧ GF (c.nreg ALLOC) c₅ c' k := by
-  set b0 := c.nreg ALLOC with hb0
+  set b0 := c.nreg ALLOC
   set K := N.nChords with hKd
   set A := N.arcs.length with hAd
-  set R := N.nRegions with hRd
-  set d := dmOf K A R D b0 with hd
+  set R := N.nRegions
+  set d := dmOf K A R D b0
   have hdb : d.b0 = b0 := rfl
   obtain ⟨y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15⟩ := d.lay
   have yN0 : d.oNd0 = 3 * d.K := rfl
-  have yN1 : d.oNd1 = 4 * d.K := rfl
   have hdK : d.K = K := rfl
   have hdA : d.A = A := rfl
   have hdR : d.R = R := rfl
@@ -142,8 +141,8 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
           rw [hmem5 _ (by omega)]; exact hN.2.2.2.2.2.2.2.2.1 u (by omega)
         obtain ⟨-, s1, s2, -⟩ := hN.2.2.2.2.2.2.1 _ ha
         refine ⟨by omega, by rw [e1]; omega, ?_, ?_⟩
-        · rw [e1, hmem5 _ (by omega)]; exact s1
-        · rw [e1, hmem5 _ (by omega)]; exact s2
+        · rwa [e1, hmem5 _ (by omega)]
+        · rwa [e1, hmem5 _ (by omega)]
       edge_lt := fun u hu => edge_lt' hNF hne hu
       hgt_le := fun u hu => by
         obtain ⟨-, -, -, -, -, -, -, -, -, -, hpp⟩ := id hNF
@@ -175,10 +174,10 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
       chords := fun i hi => by
         obtain ⟨a0, a1, a2, -, -⟩ := hN.2.2.2.2.2.1 i hi
         have := aCh i hi
-        exact ⟨by rw [hmem6 _ (by omega)]; exact a0, by rw [hmem6 _ (by omega)]; exact a1,
-          by rw [hmem6 _ (by omega)]; exact a2⟩,
+        exact ⟨by rwa [hmem6 _ (by omega)], by rwa [hmem6 _ (by omega)],
+          by rwa [hmem6 _ (by omega)]⟩,
       cbB := hcb,
-      room := by rw [al6, ← al5]; exact hroom,
+      room := by rwa [al6, ← al5],
       cnt0 := fun j hj => (R₆ j hj).1 }
   have hW5 : 5 ≤ W := by omega
   obtain ⟨c₇, k₇, e₇, hk₇, I₇, i₇, a₇⟩ := ndLoop_exec (P := P) w₆ hNE hW5
@@ -202,7 +201,6 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
   have m8 : ∀ a, a < c₆.nreg ALLOC → (a < d.b0 + d.oNd0 ∨ d.b0 + d.oDeg ≤ a) →
       (a < d.b0 + d.oCnt ∨ d.b0 + d.oNxt ≤ a) → c₈.nmem a = c₆.nmem a := fun a h1 h2 h3 => by
     rw [fm, I₇.mem a h1 h2 h3]
-  have hA6 := al6
   have hBp : ∀ r, bandOf r ∉ granBands → Bpos r = false := by
     intro r hr
     simp only [Bpos, Binit, Bpz, NFLoc.Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]
@@ -263,9 +261,9 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
     change c₅.nmem (b0 + 2 * K + u) = _ at l3
     change c₈.nmem (b0 + u) = 1 ∧ c₈.nmem (b0 + K + u) = _ ∧ c₈.nmem (b0 + 2 * K + u) = _
     refine ⟨?_, ?_, ?_⟩
-    · rw [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]; exact l1
-    · rw [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]; exact l2
-    · rw [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]; exact l3
+    · rwa [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]
+    · rwa [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]
+    · rwa [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]
   · intro u hu
     change u < d.cap at hu
     change c₈.nmem (b0 + d.oStk + u) = u
@@ -285,9 +283,9 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
       c₈.nmem (b0 + d.oExb + x) = b0 + d.oEx + D * x ∧
       ∀ t, t < D → c₈.nmem (b0 + d.oEx + D * x + t) = _
     refine ⟨?_, ?_, ?_, fun t ht => ?_⟩
-    · rw [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]; exact l1
-    · rw [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]; exact l2
-    · rw [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]; exact l3
+    · rwa [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]
+    · rwa [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]
+    · rwa [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]
     · have hs' := slot_lt (R := R) (D := D) (x := x) hx ht
       rw [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]
       exact l4 t ht
@@ -309,12 +307,12 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
       (rdArr c₈.nmem (b0 + d.oNd1)) j
     rw [fm]; exact this
   · intro u hu
-    have := I₇.nd0 u (by rw [i₇]; exact hu)
+    have := I₇.nd0 u (by rwa [i₇])
     rw [fm]
     change c₇.nmem (d.b0 + 3 * d.K + u) < A ∧ _ at this
     exact this
   · intro u hu
-    have := I₇.nd1 u (by rw [i₇]; exact hu)
+    have := I₇.nd1 u (by rwa [i₇])
     rw [fm]
     change c₇.nmem (d.b0 + 4 * d.K + u) < A ∧ _ at this
     exact this

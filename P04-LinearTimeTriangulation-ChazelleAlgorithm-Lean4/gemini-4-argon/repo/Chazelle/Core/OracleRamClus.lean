@@ -166,7 +166,7 @@ theorem card_positions (hO : OrdOK m V W) (l : ℕ) :
   constructor
   · rintro ⟨i, ⟨hi, hl⟩, rfl⟩; exact ⟨hO.lt i hi, hl⟩
   · rintro ⟨hu, hl⟩
-    exact ⟨rkOf m V u, ⟨(hO.rk u hu).1, by rw [(hO.rk u hu).2]; exact hl⟩, (hO.rk u hu).2⟩
+    exact ⟨rkOf m V u, ⟨(hO.rk u hu).1, by rwa [(hO.rk u hu).2]⟩, (hO.rk u hu).2⟩
 
 theorem cntFrom_le (l i : ℕ) : cntFrom m V l i ≤
     ((Finset.range V.μ).filter fun j => lab m V (ordAt m V j) = l).card := by
@@ -210,12 +210,11 @@ theorem leftBody_inv {P : Polygon} {W : ℕ} {V : QV} {c₀ : Config} {l r0 : �
   have hmem : c.nmem = c₀.nmem := h.fr.2.2.1
   have hf1 : c.nreg 120114 = 1 := by have := h.f_le; rw [hq'.zero] at ht; omega
   have hw := h.wb
-  have stopF : ∀ c' : Config, Exec P W leftBody c c' 1 → True := fun _ _ => trivial
   by_cases hi0 : 0 < (c.nreg 120113)
   swap
   · -- at the left end
     obtain ⟨c₁, e₁, v₁, r₁⟩ := const_exec (P := P) hw 120114 0 (by omega)
-    refine ⟨c₁, _, .ifLtN_false (by rw [hq'.zero]; exact hi0) e₁, ⟨e₁.wb_right, ?_, ?_, ?_, ?_,
+    refine ⟨c₁, _, .ifLtN_false (by rwa [hq'.zero]) e₁, ⟨e₁.wb_right, ?_, ?_, ?_, ?_,
       ?_, ?_⟩, ?_⟩
     · exact h.fr.trans (FrameB.mono (exec_frameB e₁ (B := fun r => decide (r = 120114))
         (by decide)) fun r hr => by simp only [decide_eq_true_eq] at hr ⊢; omega)
@@ -255,7 +254,7 @@ theorem leftBody_inv {P : Polygon} {W : ℕ} {V : QV} {c₀ : Config} {l r0 : �
       rw [x118, r₁ _ (by omega), h.rl, heq]
     obtain ⟨c₂, e₂, v₂, r₂⟩ := copy_exec (P := P) w₁ 120113 120115
     rw [x115] at v₂
-    refine ⟨c₂, _, .ifLtN_true (by rw [hq'.zero]; exact hi0) (.seq e₁ (ifEq_eq_exec hq12 e₂)),
+    refine ⟨c₂, _, .ifLtN_true (by rwa [hq'.zero]) (.seq e₁ (ifEq_eq_exec hq12 e₂)),
       ⟨e₂.wb_right, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_⟩
     · exact h.fr.trans (fr₁.trans (FrameB.mono (exec_frameB e₂ (B := fun r => decide (r = 120113))
         (by decide)) fun r hr => by simp only [decide_eq_true_eq] at hr ⊢; omega))
@@ -265,24 +264,24 @@ theorem leftBody_inv {P : Polygon} {W : ℕ} {V : QV} {c₀ : Config} {l r0 : �
     · intro j hj hjr
       rw [v₂] at hj
       rcases Nat.eq_or_lt_of_le hj with e | e
-      · rw [← e]; exact heq
+      · rwa [← e]
       · exact h.blk j (by omega) hjr
     · intro hf; rw [r₂ _ (by decide), r₁ _ (by omega)] at hf; omega
     · rw [v₂, r₂ _ (by decide), r₁ _ (by omega), cntBelow_pred hi0 heq]; omega
   · -- stop
     have hq12 : c₁.nreg 120118 ≠ c₁.nreg 120112 := by
-      rw [x118, r₁ _ (by omega), h.rl]; exact heq
+      rwa [x118, r₁ _ (by omega), h.rl]
     obtain ⟨c₂, e₂, v₂, r₂⟩ := const_exec (P := P) w₁ 120114 0 (by omega)
     obtain ⟨k', ex', hk'⟩ := ifEq_ne_exec (S := .instr (.copyN 120113 120115)) hq12 e₂
-    refine ⟨c₂, _, .ifLtN_true (by rw [hq'.zero]; exact hi0) (.seq e₁ ex'),
+    refine ⟨c₂, _, .ifLtN_true (by rwa [hq'.zero]) (.seq e₁ ex'),
       ⟨e₂.wb_right, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_⟩
     · exact h.fr.trans (fr₁.trans (FrameB.mono (exec_frameB e₂ (B := fun r => decide (r = 120114))
         (by decide)) fun r hr => by simp only [decide_eq_true_eq] at hr ⊢; omega))
     · rw [r₂ _ (by decide), r₁ _ (by omega)]; exact h.rl
     · rw [v₂]; omega
-    · rw [r₂ _ (by decide), r₁ _ (by omega)]; exact hir
+    · rwa [r₂ _ (by decide), r₁ _ (by omega)]
     · intro j hj; rw [r₂ _ (by decide), r₁ _ (by omega)] at hj; exact h.blk j hj
-    · intro _; right; rw [r₂ _ (by decide), r₁ _ (by omega)]; exact heq
+    · intro _; right; rwa [r₂ _ (by decide), r₁ _ (by omega)]
     · rw [v₂, r₂ _ (by decide), r₁ _ (by omega), hf1]; omega
 
 /-! ## The forward walk -/
@@ -325,7 +324,7 @@ theorem fwdBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
   swap
   · obtain ⟨c₁, e₁, v₁, r₁⟩ := const_exec (P := P) hw 120114 0 (by omega)
     have f₁ := fconst c₁ e₁
-    refine ⟨c₁, _, .ifLtN_false (by rw [h.q.μ]; exact hiμ) e₁, ⟨e₁.wb_right, h.q.frame f₁ BC_const,
+    refine ⟨c₁, _, .ifLtN_false (by rwa [h.q.μ]) e₁, ⟨e₁.wb_right, h.q.frame f₁ BC_const,
       ?_, h.fr.trans f₁, by rw [r₁ _ (by decide)]; exact h.rl, by rw [v₁]; omega,
       by rw [r₁ _ (by decide)]; exact h.lo_le, by rw [r₁ _ (by decide)]; exact h.i_le,
       by rw [r₁ _ (by decide)]; exact h.blk, fun _ => by
@@ -373,7 +372,7 @@ theorem fwdBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
   · have hq12 : c₁.nreg 120118 = c₁.nreg 120112 := by
       rw [x118, r₁ _ (by decide) (by decide) (by decide), h.rl, heq]
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, hb₂, hit₂⟩ := nodeScan_exec (P := P) hG hW hs c₁ w₁ hq₁ hb₁
-      (by rw [m₁, hmem]; exact hm)
+      (by rwa [m₁, hmem])
       (S := S ∪ {x | ∃ j, lo ≤ j ∧ j < (c.nreg 120113) ∧ x ∈ nodePts c₀.nmem V C (ordAt c₀.nmem V j)})
       (by rw [hbo₁]; exact h.hit)
     rw [x90, m₁, hmem] at hk₂ hit₂
@@ -391,11 +390,11 @@ theorem fwdBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
         simp only [BC, Bool.or_eq_true, decide_eq_true_eq]; omega
     have ex : Exec P W (.seq nodeScanS (.instr (.addN 120113 120113 120011))) c₁ c₃ (k₂ + 1) :=
       .seq e₂ e₃
-    refine ⟨c₃, _, .ifLtN_true (by rw [h.q.μ]; exact hiμ) (.seq e₁ (ifEq_eq_exec hq12 ex)),
+    refine ⟨c₃, _, .ifLtN_true (by rwa [h.q.μ]) (.seq e₁ (ifEq_eq_exec hq12 ex)),
       ⟨e₃.wb_right, hq₂.frame f₃ BC_const, ?_, h.fr.trans (fr₁.trans (f₂'.trans f₃)), ?_, ?_,
         by rw [v₃]; have := h.lo_le; omega, by rw [v₃]; omega, ?_, ?_, ?_⟩, ?_⟩
     · unfold BestOK
-      rw [r₃ 120050 (by decide), r₃ 120051 (by decide), r₃ 120052 (by decide)]; exact hb₂
+      rwa [r₃ 120050 (by decide), r₃ 120051 (by decide), r₃ 120052 (by decide)]
     · rw [r₃ _ (by decide), f₂.1 _ (by decide), r₁ _ (by decide) (by decide) (by decide)]
       exact h.rl
     · rw [r₃ _ (by decide), f₂.1 _ (by decide), r₁ _ (by decide) (by decide) (by decide)]
@@ -424,14 +423,13 @@ theorem fwdBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
         · rintro (⟨j, h1, h2, hx⟩ | hx)
           · exact ⟨j, h1, by omega, hx⟩
           · exact ⟨(c.nreg 120113), h.lo_le, by omega, hx⟩
-      rw [e, ← Set.union_assoc]
-      exact hit₂
+      rwa [e, ← Set.union_assoc]
     · have hk2' : k₂ ≤ NC := hk₂.trans (hNC _ hu)
       rw [v₃, r₃ _ (by decide), f₂.1 _ (by decide), r₁ _ (by decide) (by decide) (by decide),
         hf1, cntFrom_succ hiμ heq, Nat.mul_add, Nat.mul_one]
       omega
   · have hq12 : c₁.nreg 120118 ≠ c₁.nreg 120112 := by
-      rw [x118, r₁ _ (by decide) (by decide) (by decide), h.rl]; exact heq
+      rwa [x118, r₁ _ (by decide) (by decide) (by decide), h.rl]
     obtain ⟨c₂, e₂, v₂, r₂⟩ := const_exec (P := P) w₁ 120114 0 (by omega)
     obtain ⟨k', ex', hk'⟩ := ifEq_ne_exec
       (S := .seq nodeScanS (.instr (.addN 120113 120113 120011))) hq12 e₂
@@ -441,13 +439,13 @@ theorem fwdBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
         simp only [BC, Bool.or_eq_true, decide_eq_true_eq]; omega
     have R : ∀ r, r ≠ 120114 → r ≠ 120090 → r ≠ 120116 → r ≠ 120118 → c₂.nreg r = c.nreg r :=
       fun r h1 h2 h3 h4 => (r₂ r h1).trans (r₁ r h2 h3 h4)
-    refine ⟨c₂, _, .ifLtN_true (by rw [h.q.μ]; exact hiμ) (.seq e₁ ex'),
+    refine ⟨c₂, _, .ifLtN_true (by rwa [h.q.μ]) (.seq e₁ ex'),
       ⟨e₂.wb_right, hq₁.frame f₂ BC_const, ?_, h.fr.trans (fr₁.trans f₂),
         by rw [R _ (by decide) (by decide) (by decide) (by decide)]; exact h.rl, by rw [v₂]; omega,
         by rw [R _ (by decide) (by decide) (by decide) (by decide)]; exact h.lo_le,
         by rw [R _ (by decide) (by decide) (by decide) (by decide)]; exact h.i_le,
         by rw [R _ (by decide) (by decide) (by decide) (by decide)]; exact h.blk,
-        fun _ => by right; rw [R _ (by decide) (by decide) (by decide) (by decide)]; exact heq,
+        fun _ => by right; rwa [R _ (by decide) (by decide) (by decide) (by decide)],
         ?_⟩, ?_⟩
     · unfold BestOK
       rw [R 120050 (by decide) (by decide) (by decide) (by decide),
@@ -494,8 +492,8 @@ theorem clusS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
     · config_simp; rw [hq.RK, hu₀]; omega
     · omega
     · refine ⟨rfl, ?_, ?_, by config_simp, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-      · config_simp; rw [hq.LAB, hu₀]; exact hl
-      · config_simp; rw [hq.RK, hu₀]; exact hr0
+      · config_simp; rwa [hq.LAB, hu₀]
+      · config_simp; rwa [hq.RK, hu₀]
       · config_simp; upd_solve
   obtain ⟨x112, x113, x114, r₁, m₁, rr₁, rm₁, o₁⟩ := v₁
   have fr₁ : FrameB (fun r => decide (120111 ≤ r ∧ r ≤ 120114)) c c₁ :=
@@ -506,11 +504,11 @@ theorem clusS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
   have L₀ : LInv P W V c₁ l r0 c₁ := by
     refine ⟨e₁.wb_right, FrameB.refl _ _, x112, by omega, by omega, fun j h1 h2 => ?_,
       fun h => by omega⟩
-    rw [m₁, show j = r0 by omega, hr0u]; exact hl
+    rwa [m₁, show j = r0 by omega, hr0u]
   obtain ⟨c₂, k₂, e₂, L₂, hex₂, hk₂⟩ := Exec.whileLtN_potential (a := 120012) (b := 120114)
     (LInv P W V c₁ l r0) (fun d => 13 * (cntBelow c₁.nmem V l (d.nreg 120113) + d.nreg 120114))
     (fun _ h => h.wb)
-    (fun d hd ht => leftBody_inv (P := P) hq₁ (by rw [m₁]; exact hO) hr0μ hd ht) L₀
+    (fun d hd ht => leftBody_inv (P := P) hq₁ (by rwa [m₁]) hr0μ hd ht) L₀
   have hq₂ : QConst P V c₂ := hq₁.frame L₂.fr fun r h1 h2 => by
     simp only [decide_eq_false_iff_not, not_and, not_le]; omega
   have hf2 : c₂.nreg 120114 = 0 := by rw [hq₂.zero] at hex₂; omega
@@ -526,13 +524,13 @@ theorem clusS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
   have R₃ : ∀ r, (r < 120111 ∨ 120118 < r) → c₃.nreg r = c.nreg r := fun r hr => by
     rw [r₃ r (by omega), L₂.fr.1 r (by simp only [decide_eq_false_iff_not, not_and, not_le]; omega),
       r₁ r (by omega)]
-  have x3 : c₃.nreg 120113 = lo := by rw [r₃ _ (by decide)]; exact hlo
+  have x3 : c₃.nreg 120113 = lo := by rwa [r₃ _ (by decide)]
   have F₀ : FInv P W C V z c₃ S l lo c₃ := by
     refine ⟨e₃.wb_right, hq₂.frame fr₃ fun r h1 h2 => by simp only [decide_eq_false_iff_not]; omega,
       ?_, FrameB.refl _ _, ?_, by rw [v₃], by rw [x3], by rw [x3]; omega,
       fun j h1 h2 => by rw [x3] at h2; omega, fun h => by rw [v₃] at h; omega, ?_⟩
     · unfold BestOK
-      rw [R₃ 120050 (by omega), R₃ 120051 (by omega), R₃ 120052 (by omega)]; exact hb
+      rwa [R₃ 120050 (by omega), R₃ 120051 (by omega), R₃ 120052 (by omega)]
     · rw [r₃ _ (by decide), L₂.fr.1 _ (by decide), x112]
     · have hbo : bestOf c₃ = bestOf c := by
         unfold bestOf; rw [R₃ 120050 (by omega), R₃ 120052 (by omega)]
@@ -540,12 +538,12 @@ theorem clusS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
       have : {x | ∃ j, lo ≤ j ∧ j < lo ∧ x ∈ nodePts c₃.nmem V C (ordAt c₃.nmem V j)} = ∅ := by
         ext x; simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false]
         rintro ⟨j, h1, h2, -⟩; omega
-      rw [this, Set.union_empty]; exact hS
+      rwa [this, Set.union_empty]
   obtain ⟨c₄, k₄, e₄, F₄, hex₄, hk₄⟩ := Exec.whileLtN_potential (a := 120012) (b := 120114)
     (FInv P W C V z c₃ S l lo)
     (fun d => (NC + 60) * cntFrom c₃.nmem V l (d.nreg 120113) + 60 * d.nreg 120114)
     (fun _ h => h.wb)
-    (fun d hd ht => fwdBody_inv (P := P) hG hW hs (by rw [mm]; exact hm) (by rw [mm]; exact hO)
+    (fun d hd ht => fwdBody_inv (P := P) hG hW hs (by rwa [mm]) (by rwa [mm])
       (fun u hu => by rw [mm]; exact hNC u hu) hd ht) F₀
   have hf4 : c₄.nreg 120114 = 0 := by rw [F₄.q.zero] at hex₄; omega
   obtain ⟨hi, hhi⟩ : ∃ hi, c₄.nreg 120113 = hi := ⟨_, rfl⟩
@@ -555,10 +553,10 @@ theorem clusS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
   have hhiμ : hi ≤ V.μ := by rw [← hhi]; exact F₄.i_le
   -- the block is `[lo, hi)`
   have m13 : c₁.nmem = c₃.nmem := by rw [m₁, mm]
-  have hO3 : OrdOK c₃.nmem V W := by rw [mm]; exact hO
+  have hO3 : OrdOK c₃.nmem V W := by rwa [mm]
   rw [← mm]
   have hblkL : ∀ j, lo ≤ j → j ≤ r0 → lab c₃.nmem V (ordAt c₃.nmem V j) = l := by
-    intro j h1 h2; rw [← m13]; exact L₂.blk j (by rw [hlo]; exact h1) h2
+    intro j h1 h2; rw [← m13]; exact L₂.blk j (by rwa [hlo]) h2
   have hr0hi : r0 < hi := by
     by_contra hc
     push Not at hc
@@ -566,7 +564,7 @@ theorem clusS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
     · omega
     · exact h' (hblkL hi hlo4 hc)
   have hstop' : lo = 0 ∨ lab c₃.nmem V (ordAt c₃.nmem V (lo - 1)) ≠ l := by
-    rw [← m13]; exact hstop
+    rwa [← m13]
   have hmemb : ∀ j, j < V.μ → (lab c₃.nmem V (ordAt c₃.nmem V j) = l ↔ lo ≤ j ∧ j < hi) := by
     intro j hj
     constructor
@@ -576,7 +574,7 @@ theorem clusS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
         exact lab_ne_left hO3 hloμ (hblkL lo le_rfl hlo_r0) hstop' hc hjl
       · by_contra hc; push Not at hc
         exact lab_ne_right hO3 hr0hi (hblkL r0 hlo_r0 le_rfl) hstop4 hc hj hjl
-    · rintro ⟨h1, h2⟩; exact F₄.blk j h1 (by rw [hhi]; exact h2)
+    · rintro ⟨h1, h2⟩; exact F₄.blk j h1 (by rwa [hhi])
   refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), ?_, ?_, F₄.b, ?_⟩
   · -- the cost
     have hcs := card_positions hO3 l
@@ -610,8 +608,8 @@ theorem clusS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
       constructor
       · rintro ⟨u, hu, hul, hx⟩
         obtain ⟨hru, hru'⟩ := hO3.rk u hu
-        have := (hmemb _ hru).1 (by rw [hru']; exact hul)
-        exact ⟨rkOf c₃.nmem V u, this.1, this.2, by rw [hru']; exact hx⟩
+        have := (hmemb _ hru).1 (by rwa [hru'])
+        exact ⟨rkOf c₃.nmem V u, this.1, this.2, by rwa [hru']⟩
       · rintro ⟨j, h1, h2, hx⟩
         have hjμ : j < V.μ := by omega
         exact ⟨ordAt c₃.nmem V j, hO3.lt j hjμ, (hmemb j hjμ).2 ⟨h1, h2⟩, hx⟩

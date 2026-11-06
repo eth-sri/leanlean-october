@@ -71,7 +71,7 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   unfold hostWords at hWn
   have hm2 := S.hm2'
   have hm1 := C.one_le
-  set n := 2 * C.m + 7 with hn
+  set n := 2 * C.m + 7
   -- the flags of the uncounted block
   obtain ⟨d₁, k₁, e₁, hk₁, o38, o37, r₁, m₁⟩ := uFlag_exec (P := P) d hw 150001 150038 150037
     (by omega) (by omega) (by omega) R.h01 hs1 R.chain.h96 R.chain.h91 R.h32 (by omega)
@@ -131,11 +131,11 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     simp only [hd₄, upd]; rw [ite_eq_right (by omega), r₃ _ (by omega), r₂ _ (by omega) (by omega)]
     exact o37
   have b39 : d₄.nreg 150039 = if e.edge ≤ 5 ∨ e.edge = 2 * C.m + 6 then 1 else 0 := by
-    simp only [hd₄, upd]; rw [ite_eq_right (by omega), r₃ _ (by omega)]; exact o39
+    simp only [hd₄, upd]; rwa [ite_eq_right (by omega), r₃ _ (by omega)]
   have b30 : d₄.nreg 150030 = uIx e.edge := by
-    simp only [hd₄, upd]; rw [ite_eq_right (by omega), r₃ _ (by omega)]; exact o30
+    simp only [hd₄, upd]; rwa [ite_eq_right (by omega), r₃ _ (by omega)]
   have b41 : d₄.nreg 150041 = fOf C.m e.edge := by
-    simp only [hd₄, upd]; rw [ite_eq_right (by omega)]; exact o41
+    simp only [hd₄, upd]; rwa [ite_eq_right (by omega)]
   have b43 : d₄.nreg 150043 = 0 := by simp [hd₄]
   -- the first piece
   obtain ⟨d₅, k₅, p₁, ex₅, hk₅, hI₅, hp₁, hp₁s, hdone, hndone, kp₅, mem₅⟩ :=
@@ -178,7 +178,7 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     have hf : 6 ≤ F % n ∧ F % n ≤ 2 * C.m + 5 := by
       rw [hF]; unfold fOf; split_ifs <;> omega
     have hUof : Uof U₀ n (U₀ % n) = U₀ := Uof_eq (by omega) le_rfl (by omega)
-    have L : LStat C U₀ F γ := ⟨hUF, hFU, hf.1, hf.2, fun v L hv hvF h6 hL => le_trans
+    have L : LStat C U₀ F γ := ⟨hFU, hf.1, hf.2, fun v L hv hvF h6 hL => le_trans
       (arcWt_ge C kS kE ⟨0, by ring⟩ (T_unw ks ke _) hTle h6 hL
         (by have : (U₀ : ℝ) ≤ v := by exact_mod_cast hv
             linarith)
@@ -188,10 +188,10 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     have hL0 : LoopI P C H Hh MD h γ mode s e m₀ A₀ W I (ps₀ ++ [p₁]) U₀ F
         (mu C (Qof P).n H F U₀) d₆ d₆ := by
       refine ⟨w₆, R₅.of_frame' (fun r h1 h2 h3 h4 => r₆ r h4) (by rw [r₆ _ (by omega)]; exact R₅.h90)
-        (by rw [r₆ _ (by omega)]; exact c91) (by rw [r₆ _ (by omega)]; exact R₅.h92)
+        (by rwa [r₆ _ (by omega)]) (by rw [r₆ _ (by omega)]; exact R₅.h92)
         (by rw [r₆ _ (by omega)]; exact R₅.chain.h93) (by rw [r₆ _ (by omega)]; exact R₅.chain.h96),
         fun a ha => by rw [m₆]; exact hm₅ a ha, fun _ _ _ _ _ => rfl, by rw [a40]; omega,
-        by rw [a40]; omega, by rw [a40, hUof]; exact hUF, ?_, [], ?_, by simpa using hI₆,
+        by rw [a40]; omega, by rwa [a40, hUof], ?_, [], ?_, by simpa using hI₆,
         by simp, by rw [a40, hUof]; simp⟩
       · rw [o42, a40, hUof, show d₅.nreg 150040 = U₀ % n by rw [h40, hU₀],
           show d₅.nreg 150041 = F % n by rw [← a41, r₆ _ (by omega)]]
@@ -239,7 +239,6 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     · simp only [List.length_cons, List.length_append]
       have e1 : 2 * (Nat.log 2 γ + 1) * mu C (Qof P).n H F U₀ ≤ 2 * (Nat.log 2 γ + 1) * 1031 :=
         Nat.mul_le_mul_left _ hμ
-      have e2 : 2 * (Nat.log 2 γ + 1) * 1031 + 3 ≤ 2100 * (Nat.log 2 γ + 1) := by omega
       omega
   · -- a single piece
     have hd : Done C.m s.edge e.edge := by

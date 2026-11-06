@@ -129,9 +129,6 @@ theorem fused_eq_shots (S₁ S₂ : Set (Set Point)) :
 
 /-! ## The answers of the sweep -/
 
-/-- The triples of the answers with flag `1`. -/
-def collect (R : List (ℕ × ℕ × ℕ × ℕ)) : List (ℕ × ℕ × ℕ) :=
-  (R.filter (fun r => r.1 == 1)).map (fun r => r.2)
 
 /-- The geometric queries of a query list of side `i`. -/
 def geoQ (Q : Polygon) (i : ℕ) (L : List (ℕ × ℕ × ℕ)) : Set (Point × ℝ) :=

@@ -77,7 +77,6 @@ theorem tab' : TabInv P J N₂ c' (keyOff P J c') := by
     hmK x (by omega) (Or.inl (by rw [elB, elC]; omega))
   have hTs : ∀ x, x < c.nreg cTB + 6 * N₂.nChords → cs.nmem x = c.nmem x := fun x hx =>
     hmemS x (by omega)
-  have hlt := (stp_next_key S.E S.L S.hI S.hd).1
   intro j hj
   rw [eTB']
   obtain ⟨o0, o1, o2⟩ := S.L.tab j hj
@@ -97,7 +96,7 @@ theorem tab' : TabInv P J N₂ c' (keyOff P J c') := by
     · exact f0
   refine ⟨?_, ?_, fun hv hlt' p t hA hpt hL hle => ?_⟩
   · rcases hslot with ⟨s0, -, -⟩ | ⟨e, h', -, f0, -⟩
-    · rw [s0, hTs _ (by omega)]; exact o0
+    · rwa [s0, hTs _ (by omega)]
     · rw [f0]
   · intro hf
     rcases hslot with ⟨s0, s1, s2⟩ | ⟨e, h', hmA, f0, f1, f2⟩

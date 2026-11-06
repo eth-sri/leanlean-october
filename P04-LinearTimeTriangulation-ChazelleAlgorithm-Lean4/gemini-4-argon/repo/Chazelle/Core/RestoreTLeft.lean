@@ -49,7 +49,7 @@ theorem iLeft_ok_edge (hE : TGood P W M N c₀) (hI : TInv W c₀ c) (hv : c₀.
     rw [hleft]; intro h; have := t₁.2 h; omega
   · have ex := Exec.seq e₁ (Exec.ifLtN_false (t := .instr (.constN 50210 0)) h2 (.skip hw₁))
     refine ⟨_, _, ex, by omega, ⟨by omega, ?_⟩, s₁.mono (by omega)⟩
-    rw [hleft]; exact t₁
+    rwa [hleft]
 
 /-- **The sector test of both models.** -/
 def gLeft : Stmt := .ifLtN 83021 83023 tLeft iLeft

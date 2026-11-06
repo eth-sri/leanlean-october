@@ -46,7 +46,6 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hUo z₀ hz₀
   -- a point of `U` at a generic height
   set B : Set ℝ := {y | ∃ i < M.W.n, (M.W.vtx i).2 = y} ∪ {y | ∃ c ∈ F, ∃ x ∈ c, x.2 = y}
-    with hB
   have hBfin : B.Finite := by
     refine Set.Finite.union ?_ (WalkAx.finite_chord_heights hsys)
     have : {y | ∃ i < M.W.n, (M.W.vtx i).2 = y} = (fun i => (M.W.vtx i).2) '' Iio M.W.n := by
@@ -69,7 +68,7 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   obtain ⟨s, hs, hseg, p, hp, t, ht, hq, hup⟩ := hM.reach z hzD hzv
   set q : Point := (z.1 + s, z.2) with hqdef
   -- the segment from `z` to `q` (half-open) is in `U`
-  set L := (fun s' : ℝ => ((z.1 + s', z.2) : Point)) '' Ico 0 s with hL
+  set L := (fun s' : ℝ => ((z.1 + s', z.2) : Point)) '' Ico 0 s
   have hLc : IsPreconnected L :=
     isPreconnected_Ico.image _ (by fun_prop : Continuous fun s' : ℝ => ((z.1 + s', z.2) : Point)).continuousOn
   have hLF : L ⊆ freeIn M.D F := by
@@ -86,7 +85,7 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hne := hM.nd p hp
   set u := M.W.vtx p
   set v := M.W.vtx ((p + 1) % M.W.n)
-  set H : Set Point := ball q (min r₁ r₂) ∩ {x | 0 < 1 * det u v x} with hH
+  set H : Set Point := ball q (min r₁ r₂) ∩ {x | 0 < 1 * det u v x}
   have hHc : IsPreconnected H := ((convex_ball _ _).inter (convex_det_pos _ _ 1)).isPreconnected
   have hHF : H ⊆ freeIn M.D F := by
     rintro x ⟨hx1, hx2⟩
@@ -95,7 +94,7 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     by_contra hxD
     refine hcl x ?_ hxD ?_
     · rw [hq]; exact ball_subset_ball (min_le_right _ _) hx1
-    · rw [sideLeft_edge hne ht]; exact hx2
+    · rwa [sideLeft_edge hne ht]
   -- a point of the segment lies in the half-disk
   have hq0 : det u v q = 0 := by
     rw [← hq]; exact Geometry.det_lerp_self _ _ _
@@ -157,7 +156,7 @@ theorem arcEdge_of_noVertex (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a <
     (hbn : b < W.n) (_hab : a ≠ b) (hnv : ∀ k : ℕ, k < W.n → ¬ sideInArc a b k) :
     ∀ z ∈ Chazelle.segment (hostPt W a) (hostPt W b), ∃ p, p < W.n ∧ ∃ t : ℝ, 0 ≤ t ∧ t < 1 ∧
       z = sidePt W p t ∧ (if a < b then a ≤ p + t ∧ p + t ≤ b else a ≤ p + t ∨ p + t ≤ b) := by
-  set p := ⌊a⌋₊ with hpdef
+  set p := ⌊a⌋₊
   have hp : (p : ℝ) ≤ a := Nat.floor_le ha0
   have hp1 : a < p + 1 := Nat.lt_floor_add_one a
   have hpn : p < W.n := by
@@ -208,7 +207,7 @@ theorem arcEdge_of_noVertex (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a <
   have hlerp : lerp (sidePt W p (a - p)) (sidePt W p t'') s =
       sidePt W p (a - p + s * (t'' - (a - p))) := lerp_lerp _ _ _ _ _
   rw [hlerp]
-  set u := a - p + s * (t'' - (a - p)) with hu
+  set u := a - p + s * (t'' - (a - p))
   have hu0 : a - p ≤ u := by nlinarith
   have hu1 : u ≤ t'' := by nlinarith
   rcases (hu1.trans ht''1).lt_or_eq with hlt1 | heq1
@@ -305,7 +304,7 @@ theorem three_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F) (hne
     (hU : U ∈ (interiorModel Q).regions F) :
     ∃ x ∈ hostKeys (interiorModel Q) F U, ∃ y ∈ hostKeys (interiorModel Q) F U,
       ∃ z ∈ hostKeys (interiorModel Q) F U, x ≠ y ∧ x ≠ z ∧ y ≠ z := by
-  set M := interiorModel Q with hMdef
+  set M := interiorModel Q
   have hM : WalkAx M := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
@@ -362,7 +361,7 @@ of the host keys of `U`, in increasing key order, form a simple polygon (the bou
 theorem hostPts_simple (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F)
     (hne : F.Nonempty) (hU : U ∈ (interiorModel Q).regions F) :
     (⟨hostPts (interiorModel Q) F U⟩ : Polygon).Simple := by
-  set M := interiorModel Q with hMdef
+  set M := interiorModel Q
   have hM : WalkAx M := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
@@ -401,7 +400,7 @@ theorem hostPts_simple (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F
   have hVlen : (hostPts M F U).length = N := by simp [hostPts, hLdef, hN]
   have hVget : ∀ i, i < N → (hostPts M F U).getD i (0, 0) = hostPt M.W (κ i) := by
     intro i hi
-    have hi' : i < (hostPts M F U).length := by rw [hVlen]; exact hi
+    have hi' : i < (hostPts M F U).length := by rwa [hVlen]
     rw [List.getD_eq_getElem _ _ hi']
     simp only [hostPts, List.getElem_map, hκ]
     rw [List.getD_eq_getElem _ _ hi]
@@ -472,7 +471,7 @@ theorem hostPts_simple (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F
       (hzp ▸ sidePt_mem_boundary hp ht0 ht1.le)
   refine KeyHost.simple (W := M.W) (D := M.D) (pp := fun i => ⌊κ i⌋₊)
     (tt := fun i => κ i - ⌊κ i⌋₊) ⟨?_, hWspec.1, ?_, ?_, ?_, ?_, ?_, hbd, ?_, ?_⟩
-  · rw [hVlen]; exact hN3
+  · rwa [hVlen]
   · intro i hi
     rw [hVlen] at hi
     have hb := hostKeys_bounds (hκmem i hi)

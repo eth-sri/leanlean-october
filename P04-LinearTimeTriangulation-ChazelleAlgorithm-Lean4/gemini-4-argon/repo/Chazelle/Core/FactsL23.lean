@@ -54,7 +54,7 @@ theorem card_mul_le_of_granular_deg (hG : G.IsTree) (Δ : ℕ) (hdeg : ∀ v, G.
     (hgran : ∀ u v, G.Adj u v → (G.degree u < 3 ∨ G.degree v < 3) → γ ≤ w u + w v) :
     (Fintype.card V - 1) * γ ≤ 2 * (Δ + 2) * ∑ v, w v := by
   classical
-  set L := (univ : Finset V).filter (fun v => G.degree v ≤ 2) with hL
+  set L := (univ : Finset V).filter (fun v => G.degree v ≤ 2)
   set DL := (univ : Finset G.Dart).filter (fun d => d.fst ∈ L) with hDL
   have h1 : Fintype.card V - 1 ≤ 2 * #DL := by
     rw [hDL, Chazelle.Chain.card_dart_fst_filter G L]
@@ -214,7 +214,7 @@ theorem two_cuts (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hne :
   obtain ⟨c, hc⟩ := hne
   obtain ⟨a, b, hab, -, -, -, ⟨⟨pa, ta, hA, hAa⟩, -⟩, ⟨⟨pb, tb, hB, hBb⟩, -⟩⟩ := hM.ends c (hF hc)
   exact ⟨pa + ta, pb + tb, ⟨c, hc, pa, ta, hA, rfl⟩, ⟨c, hc, pb, tb, hB, rfl⟩,
-    key_ne_of_pt_ne hA hB (by rw [hAa, hBb]; exact hab)⟩
+    key_ne_of_pt_ne hA hB (by rwa [hAa, hBb])⟩
 
 /-- Positions just after a key `p + t` of `[0, n)` are inside the walk edge `p`. -/
 theorem exists_pos_after {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
@@ -247,7 +247,7 @@ theorem arc_of_gap (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
   -- a position just after `l`
   obtain ⟨ε, hε1, hε2⟩ := ((exists_pos_after hA₁.2.1 hA₁.2.2.1).and
     (eventually_after_start hlr)).exists
-  have hy : sideInArc l r (p₁ + (t₁ + ε)) := by rw [← add_assoc, ← hl₁]; exact hε2
+  have hy : sideInArc l r (p₁ + (t₁ + ε)) := by rwa [← add_assoc, ← hl₁]
   obtain ⟨X, hX, hfX⟩ := hM.exists_faces_of_not_cut hF hfin hA₁.1 hε1 (hfree _ hy)
   refine ⟨X, hX, (cut_bounds ⟨c₁, hc₁, p₁, t₁, hA₁, hl₁⟩).1,
     (cut_bounds ⟨c₁, hc₁, p₁, t₁, hA₁, hl₁⟩).2, (cut_bounds hr).1, (cut_bounds hr).2,
@@ -261,7 +261,7 @@ theorem arc_of_gap (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
     have hsame := cyc_same hy hin (hfree _ · ⟨c, hc, pa, ta, hA, rfl⟩)
       (hfree _ · ⟨c, hc, pb, tb, hB, rfl⟩) (key_ne_of_pt_ne hA hB hAB)
     exact (iff_not_self (hiff.trans (not_congr hsame.symm))).elim
-  rw [heq]; exact hfU
+  rwa [heq]
 
 /-- **The arc around a non-cut key**: a non-cut key of `[0, n)` of a nonempty family lies inside
 an arc of some region. -/
@@ -563,7 +563,7 @@ theorem sum_exitVerts_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm
   -- the regions with an exit chord attached at `p`
   have hp4 : ∀ p, (R.filter fun U => p ∈ exitVerts M F U).card ≤ 4 := by
     intro p
-    set Cp := {c | c ∈ F ∧ SideAttach M.W c p 0} with hCp
+    set Cp := {c | c ∈ F ∧ SideAttach M.W c p 0}
     have hCp2 : Cp.ncard ≤ 2 := hM.ncard_chords_at_le hF hfin p
     have hCpf : Cp.Finite := hfin.subset fun c hc => hc.1
     -- the two regions touched by each chord
@@ -622,7 +622,7 @@ theorem not_semigranular_zero (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ 
     have : p₀ ∈ ({p : ℕ | p < M.W.n ∧ M.counted p ∧
         ∃ t : ℝ, 0 < t ∧ t < 1 ∧ sideInArc l r (p + t)} : Set ℕ) :=
       ⟨hp₀, hc₀, t, ht.1, ht.2, hin⟩
-    rw [h0] at this; exact this
+    rwa [h0] at this
   have hbdd : BddAbove ((fun ab : ℝ × ℝ => M.arcWt ab.1 ab.2) '' {ab | M.IsArc F X ab.1 ab.2}) :=
     ((hM.arcs_bound hF hfin hX).1.image _).bddAbove
   have hle : M.arcWt l r ≤ M.weight F X := le_csSup hbdd ⟨(l, r), harc, rfl⟩
@@ -641,7 +641,7 @@ theorem lemma23_walk (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
   have hDne := hM.nonempty
   have hRfin := hsys.regionsIn_finite hD hDne subset_rfl
   let _ : Fintype (regionsIn M.D F) := hRfin.fintype
-  set G := Chazelle.Chain.dualTreeIn M.D F with hG
+  set G := Chazelle.Chain.dualTreeIn M.D F
   have hTree : G.IsTree := hsys.dual_isTree hD hDne subset_rfl
   have hdegG : ∀ U : regionsIn M.D F, G.degree U = M.deg F U := by
     intro U
@@ -658,11 +658,11 @@ theorem lemma23_walk (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
     have hufree : (u : Set Point) ⊆ freeIn M.D (F \ {c}) :=
       (Chazelle.Chain.regionsIn_subset hu).trans
         (Chazelle.Chain.freeIn_anti M.D (fun d hd => hd.1))
-    set W' := connectedComponentIn (freeIn M.D (F \ {c})) x₀ with hW'
+    set W' := connectedComponentIn (freeIn M.D (F \ {c})) x₀
     have hW'r : W' ∈ M.regions (F \ {c}) := ⟨x₀, hufree hx₀, rfl⟩
     have huW : (u : Set Point) ⊆ W' :=
       (Chazelle.Chain.regionsIn_isPreconnected hu).subset_connectedComponentIn hx₀ hufree
-    have hlow' : M.deg F u < 3 ∨ M.deg F v < 3 := by rw [← hdegG, ← hdegG]; exact hlow
+    have hlow' : M.deg F u < 3 ∨ M.deg F v < 3 := by rwa [← hdegG, ← hdegG]
     have hγ := hgran.2 c hc u hu v hv hne' hcu hcv hlow' W' hW'r huW
     have hwt := hM.weight_merged_le hF hfin hc hu hv hne' hcu hcv hW'r huW
     have hE : (chordVerts M c).ncard ≤ (exitVerts M F u).ncard :=

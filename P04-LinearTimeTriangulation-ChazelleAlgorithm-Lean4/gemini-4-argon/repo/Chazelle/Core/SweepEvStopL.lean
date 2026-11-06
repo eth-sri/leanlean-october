@@ -37,8 +37,8 @@ theorem KLe.trans {a b c : ℝ × ℕ} (h1 : KLe a b) (h2 : KLe b c) : KLe a c :
   unfold KLe at *
   rcases h1 with h1 | ⟨h1, h1'⟩ <;> rcases h2 with h2 | ⟨h2, h2'⟩
   · exact Or.inl (h1.trans h2)
-  · exact Or.inl (by rw [← h2]; exact h1)
-  · exact Or.inl (by rw [h1]; exact h2)
+  · exact Or.inl (by rwa [← h2])
+  · exact Or.inl (by rwa [h1])
   · exact Or.inr ⟨h1.trans h2, h1'.trans h2'⟩
 
 theorem KLe.total (a b : ℝ × ℕ) : KLe a b ∨ KLe b a := by
@@ -59,10 +59,6 @@ theorem KLt.ne {a b : ℝ × ℕ} (h : KLt a b) : a ≠ b := by
   rintro rfl
   rcases h with h | ⟨-, h⟩ <;> exact lt_irrefl _ h
 
-theorem KLt.le {a b : ℝ × ℕ} (h : KLt a b) : KLe a b := by
-  rcases h with h | ⟨h1, h2⟩
-  · exact Or.inl h
-  · exact Or.inr ⟨h1, h2.le⟩
 
 theorem KLt.fst_le {a b : ℝ × ℕ} (h : KLt a b) : a.1 ≤ b.1 := by
   rcases h with h | ⟨h1, -⟩
@@ -128,14 +124,14 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
           rw [hkl] at h2
           rcases h2 with h2 | ⟨h2, h2'⟩ <;> rcases hlt with h3 | ⟨h3, h3'⟩
           · exact Or.inl (h2.trans h3)
-          · exact Or.inl (by rw [← h3]; exact h2)
-          · exact Or.inl (by rw [h2]; exact h3)
+          · exact Or.inl (by rwa [← h3])
+          · exact Or.inl (by rwa [h2])
           · exact Or.inr ⟨h2.trans h3, h2'.trans h3'⟩
-        · simp at hy; rw [hy, hkl]; exact hlt
+        · simp at hy; rwa [hy, hkl]
     refine ⟨fun y hy => ?_, ?_, fun j hj x'' hx'' => ?_, fun x'' _ hx'' => ?_, fun h' => by omega⟩
     · rcases List.mem_append.1 hy with hy | hy
       · exact h.sub y hy
-      · simp at hy; rw [hy]; exact hxL
+      · simp at hy; rwa [hy]
     · rw [List.pairwise_append]
       exact ⟨h.inc, List.pairwise_singleton _ _, fun a ha b hb => by
         simp at hb; rw [hb]; exact hlast a ha⟩

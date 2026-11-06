@@ -71,8 +71,7 @@ theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have b36 := g.base_eq 36; have b42 := g.base_eq 42; have b43 := g.base_eq 43
   have b44 := g.base_eq 44; have b45 := g.base_eq 45; have b48 := g.base_eq 48
   have b49 := g.base_eq 49
-  have hA0 : g.A0 = g.base 0 := by omega
-  set bo := blkOf g.μ lev hl blk with hbo
+  set bo := blkOf g.μ lev hl blk
   set key : ℕ → ℕ := fun v => c.nmem (g.base 29 + c.nmem (g.base 0 + v)) with hkey
   -- the memory reads survive every step
   have rd : ∀ c' : Config, PFr StDRG (DMem g) c c' →
@@ -110,9 +109,9 @@ theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     unfold InvRG at h; unfold StDRG; omega) (fun a h => by unfold DMem; omega))
   have hG3 : GR g c3 := hG.frame (fun r hr => f3.1 r (by unfold GRReg at hr; unfold StDRG; omega))
   have rd3 := rd c3 f3
-  set inv : ℕ → ℕ := fun p => c3.nmem (g.base 32 + p) with hinvd
+  set inv : ℕ → ℕ := fun p => c3.nmem (g.base 32 + p)
   have hinvpre : ∀ i, i < g.N → inv (c.nmem (g.base 29 + i)) = i := fun i hi => by
-    have := hinv3 i hi; rw [rd2.1 _ (by omega)] at this; exact this
+    have := hinv3 i hi; rwa [rd2.1 _ (by omega)] at this
   have hsurj := surj_range hpre_lt hpre_inj
   have hinv_lt : ∀ p, p < g.N → inv p < g.N ∧ c.nmem (g.base 29 + inv p) = p := fun p hp => by
     obtain ⟨i, hi, rfl⟩ := hsurj p hp

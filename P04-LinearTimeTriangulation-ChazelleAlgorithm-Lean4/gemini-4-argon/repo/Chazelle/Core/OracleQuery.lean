@@ -77,7 +77,7 @@ theorem mem_nodeScan (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
       rw [e, hek]; exact harc.2.2.2.1
     have hsn := hkey _ hs hsk'
     have hen := hkey _ he hek'
-    exact mem_scan C Q N hs he hsn hen hxC (by rw [hsk, hek]; exact hmem)
+    exact mem_scan C Q N hs he hsn hen hxC (by rwa [hsk, hek])
 
 /-- A ray point in the open box at height at most the top that lies on an arc is on the chain. -/
 theorem mem_set_of_arcSet {x : Point} (hbox : x ∈ Chain.box C.radius) (hy : x.2 ≤ C.top.2)
@@ -163,7 +163,7 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
     {S : Set Point} (hS1 : ∀ i, SN i → nodeScan C Q N i ⊆ S) (hSC : S ⊆ C.set)
     {best : Option ℝ} (hbest : Sweep.FirstHitOpt S z σ best) :
     (∀ t, best = some t → FirstHit C.set z σ t) ∧ (best = none → NoHit C.set z σ) := by
-  set F := N.F (chainModel C) Q with hFdef
+  set F := N.F (chainModel C) Q
   have hFam : (chainModel C).ChordFamily Q F := hN.1
   have hfin := finite_crossings C (fun k _ => vertex_snd_ne C hD) z hσ
   -- the initial part of the ray is free
@@ -203,7 +203,7 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
         show (chainModel C).key Q (N.arc (N.seq.getD p 0)).e = b
         rw [hpj, hjb]
       show rayPt z σ T ∈ (chainModel C).arcSet (sk (chainModel C) Q N p) (ek (chainModel C) Q N p)
-      rw [hsk, hek]; exact hmem
+      rwa [hsk, hek]
     -- no node of `D*` is hit before `T`
     have hDh : ∀ i, Dm i → ∀ s, 0 < s → s < T →
         ¬ ArcHit C F (rgNode reg N B i) (rayPt z σ s) := by
@@ -223,7 +223,7 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
         exact not_arcHit_empty hh
     obtain ⟨iU, hiU, hsel⟩ := cluster_query_nodes C hP hFam (rgNode reg N B) (bookGraph B)
       (conn_of_graphOK hN hR hA hB) (cross_of_graphOK hP hN hR hA hB) Dm ℓ hlab hz hσ hT hbox
-      hfin hnoF hDh hU hUi (iR := iR) (by rw [hrgR]; exact hR.1 r hr) (by rw [hrgR]; exact hRi)
+      hfin hnoF hDh hU hUi (iR := iR) (by rw [hrgR]; exact hR.1 r hr) (by rwa [hrgR])
     have hSN : SN iU := hSN iU (by
       rcases hsel with h | ⟨-, h⟩
       · exact Or.inl h
@@ -247,7 +247,7 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
     have hSfirst : FirstHit S z σ t₀ := Sweep.firstHit_of_subset hSC hfirst hinS
     refine ⟨fun t ht => ?_, fun hn => ?_⟩
     · subst ht
-      rw [Sweep.firstHit_unique hbest hSfirst]; exact hfirst
+      rwa [Sweep.firstHit_unique hbest hSfirst]
     · subst hn
       exact absurd hinS (hbest t₀ hT0)
   · -- the true hit is the side of the box: no hit at all

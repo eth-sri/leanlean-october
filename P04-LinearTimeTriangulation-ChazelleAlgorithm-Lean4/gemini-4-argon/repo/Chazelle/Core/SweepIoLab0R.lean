@@ -184,7 +184,7 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
         (IRS.block (addrL e) hI₁ (addrL_ok _ _ e hK₁.2.2.2.2.2.1
           hK₁.2.2.2.2.2.2 hb)) ?_
       rintro c₃ hI₃ hA₃ hA₃' rfl
-      set c₃ : Config := { c₁ with nreg := regB c₁.nmem (addrL e) c₁.nreg } with hc₃
+      set c₃ : Config := { c₁ with nreg := regB c₁.nmem (addrL e) c₁.nreg }
       obtain ⟨a1, a2⟩ := addrL_val c₁.nmem c₁.nreg e hK₁.2.2.2.2.2.1
         hK₁.2.2.2.2.2.2
       have o3 : ∀ q, ¬ SlotW q → c₃.nreg q = c.nreg q := fun q hq => by
@@ -289,7 +289,7 @@ theorem slots_irs : ∀ (l : List (ℕ × ℕ)) {c : Config}, IInv W c₀ c → 
     have hl' : ∀ q ∈ l, ¬ SlotW q.1 ∧ ¬ SlotW q.2 ∧ q.1 ≠ ALLOC ∧ q.2 ≠ ALLOC ∧
         c₁.nreg q.2 ≤ 3 := fun q hq => by
       obtain ⟨a, b, d, f, g⟩ := hl q (List.mem_cons_of_mem _ hq)
-      exact ⟨a, b, d, f, by rw [o1 _ b f]; exact g⟩
+      exact ⟨a, b, d, f, by rwa [o1 _ b f]⟩
     refine (slots_irs l hI₁ hK hl' (by rw [r300, r301, e1]; omega) (by rw [rgL, e1]; omega)
       (by rw [e1]; nlinarith)).mono le_rfl ?_
     rintro c' ⟨f1, f2, f3, f4⟩

@@ -73,13 +73,13 @@ theorem ShotCtx.frame {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Mod
   have r0 : c'.nreg R = c.nreg R := by simpa using hr 0 (Or.inl (by omega))
   obtain ⟨mw', h0', hC'⟩ := modelDesc_keep hmwf h0 hC he hA
   obtain ⟨-, -, hEb, -⟩ := (hmwf.2 h0).2 H C hC
-  refine ⟨hG, hHW, ?_, ?_, by rw [r0]; exact mw', by rw [r0]; exact h0', by rw [r0]; exact hC',
+  refine ⟨hG, hHW, ?_, ?_, by rwa [r0], by rwa [r0], by rwa [r0],
     by rw [hr 34 (Or.inr (by omega)), r0, h34], ?_, hOk, hm, by rw [hr 30 (Or.inr (by omega)), h30],
     by rw [hr 31 (Or.inr (by omega)), h31], ⟨by rw [hr 35 (Or.inr (by omega))]; exact hσ.1,
       by rw [hr 35 (Or.inr (by omega)), hr 6 (Or.inl (by omega))]; exact hσ.2⟩⟩
   · rw [hr 8 (Or.inl (by omega))]
     exact X.mono P _ _ _ _ hA (X.local_ P _ _ _ _ (fun a ha => (he a ha).symm) hX)
-  · rw [hr 8 (Or.inl (by omega)), hr 7 (Or.inl (by omega)), hXl P c.nmem c'.nmem _ _ he hX]; exact hcap
+  · rwa [hr 8 (Or.inl (by omega)), hr 7 (Or.inl (by omega)), hXl P c.nmem c'.nmem _ _ he hX]
   · intro H' hH'
     rw [r0] at hH'
     have hb : c'.nmem (c.nreg R + 1) = c.nmem (c.nreg R + 1) := he _ (by
@@ -154,7 +154,7 @@ theorem leaf_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
         (o.eval (chainModel C) (Qof P)) (dirOf (c.nreg (R + 6))) ∧
       FrameR oracleBands (WrLeaf R) c c' k := by
   have h := hR; unfold RegsOK at h
-  set M := chainModel C with hM
+  set M := chainModel C
   set Q := Qof P
   set z := o.eval M Q
   set σ := dirOf (c.nreg (R + 6))
@@ -176,28 +176,25 @@ theorem leaf_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     · exact s5
     · exact s6
     · exact s7
-  have hpc : pieceR c₁ 140001 = pieceR c (R + 70) := by
-    simp only [pieceR, posR, Prod.mk.injEq, WPos.mk.injEq]
-    exact ⟨⟨s1, s2⟩, s3, s4⟩
   -- the shot
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, fr₂⟩ := hsh P W c₁ e₁.wb_right
-    ⟨hG, hHW, by rw [rd_shoot, s13, hM1, hA1]; exact hX,
-      by rw [rd_shoot, rd_shoot, s9, s13, hM1]; exact hcap,
-      by rw [rd_shoot, s0, hM1, hA1]; exact hmwf,
+    ⟨hG, hHW, by rwa [rd_shoot, s13, hM1, hA1],
+      by rwa [rd_shoot, rd_shoot, s9, s13, hM1],
+      by rwa [rd_shoot, s0, hM1, hA1],
       fun _ H' C' hC' => by
         rw [rd_shoot, s0, hM1] at hC'
         rw [show (Qof P).n = P.n from shear_n _ _]; exact hreg H' hC'.1, M,
-      by rw [rd_shoot, s0, hM1]; exact hMD, hOk,
-      by rw [rd_shoot, rd_shoot, s1, s2]; exact hp1, by rw [rd_shoot, rd_shoot, s3, s4]; exact hp2,
-      by rw [rd_shoot, s1]; exact he1, by rw [rd_shoot, s3]; exact he2,
-      by rw [rd_shoot, rd_shoot, s1, s2]; exact hi1, by rw [rd_shoot, rd_shoot, s3, s4]; exact hi2,
-      by rw [rd_shoot, rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4, s9]; exact hwt,
-      o, hol, hO1, hof, by rw [rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4]; exact hon⟩
+      by rwa [rd_shoot, s0, hM1], hOk,
+      by rwa [rd_shoot, rd_shoot, s1, s2], by rwa [rd_shoot, rd_shoot, s3, s4],
+      by rwa [rd_shoot, s1], by rwa [rd_shoot, s3],
+      by rwa [rd_shoot, rd_shoot, s1, s2], by rwa [rd_shoot, rd_shoot, s3, s4],
+      by rwa [rd_shoot, rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4, s9],
+      o, hol, hO1, hof, by rwa [rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4]⟩
     (by rw [hA1]; show _ + F (rd c₁ bShoot 9) ≤ W; rw [rd_shoot, s9]; omega)
   replace hk₂ : k₂ ≤ F (c.nreg (R + 7)) := by
     have h2 : k₂ ≤ F (rd c₁ bShoot 9) := hk₂
-    rw [rd_shoot, s9] at h2; exact h2
-  have post := post₂ M o (by rw [rd_shoot, s0, hM1]; exact hMD) hO1
+    rwa [rd_shoot, s9] at h2
+  have post := post₂ M o (by rwa [rd_shoot, s0, hM1]) hO1
   simp only [rd_shoot, Nat.reduceAdd, s1, s2, s3, s4, s8] at post
   obtain ⟨hhit, hnoh⟩ := post
   -- registers of the caller's block survive the shot
@@ -237,8 +234,8 @@ theorem leaf_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   obtain ⟨t, htA, hpp, hpe, hpos⟩ := hhit hflag
   obtain ⟨-, hHW2, -, -, hmwf2, h02, hC2, h342, hreg2, -, -, h302, h312, hσb2⟩ := ctx₂
   obtain ⟨c₃, k₃, e₃, hk₃, best₃, f₃⟩ := leafHit_exec (P := P) hR c₂ w₂ hG hHW2
-    (H := H) (C := C) (by rw [h342]; exact hmwf2.2 h02) (by rw [h342]; exact hC2)
-    (by rw [h342]; exact hreg2) htA hpe hpp hpos hoy h302 h312 hσb2
+    (H := H) (C := C) (by rw [h342]; exact hmwf2.2 h02) (by rwa [h342])
+    (by rwa [h342]) htA hpe hpp hpos hoy h302 h312 hσb2
     (by rw [hR2 6 (by omega)]) best₂ (by omega)
   refine ⟨c₃, _, .seq e₁ (.seq e₂ (.ifLtN_false g1 (.ifLtN_false g2 e₃))), by omega, best₃, ?_⟩
   have F23 : FrameR oracleBands (WrLeaf R) c₂ c₃ k₃ := FrameR.of_frameB f₃ (fun r hr => by

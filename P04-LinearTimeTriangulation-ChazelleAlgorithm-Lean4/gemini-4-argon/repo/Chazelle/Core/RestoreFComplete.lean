@@ -48,7 +48,7 @@ theorem closedArc_unwrap {n a b x : ℝ} (ha : 0 ≤ a ∧ a < n) (hb : 0 ≤ b 
     split_ifs at * with h1
     · exact lt_of_le_of_ne h1 hab
     · linarith [ha.2, hb.1]
-  have hc := cyc_unwrap ha ha hb hx (by rw [unwrapK_self]; exact hub)
+  have hc := cyc_unwrap ha ha hb hx (by rwa [unwrapK_self])
   rw [unwrapK_self] at hc
   constructor
   · rintro (h | rfl | rfl)
@@ -98,7 +98,7 @@ theorem not_countOK_same_arc {M : Model} {S : Set (Set Point)} {R : Set Point} {
     have hk := (cyc_unwrap ha hk₁ hk₂ hpt h2).1 hin
     have hub : a < unwrapK M.W.n a b := by linarith
     have : sideInArc a b ((p : ℝ) + t) :=
-      (cyc_unwrap ha ha hb hpt (by rw [unwrapK_self]; exact hub)).2
+      (cyc_unwrap ha ha hb hpt (by rwa [unwrapK_self])).2
         ⟨by rw [unwrapK_self]; linarith [hk.1], by linarith [hk.2]⟩
     exact hnc _ this ⟨c, hc.1, p, t, hat, rfl⟩
   rintro ⟨c1, c2⟩
@@ -169,7 +169,7 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
       have hci : E.N.chord i = r' := by
         unfold NF.chord; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi,
           Option.getD_some, hir]
-      have := ((hRg E.r hr).1 i).2 ⟨hi, by rw [hci]; exact htc⟩
+      have := ((hRg E.r hr).1 i).2 ⟨hi, by rwa [hci]⟩
       rw [h0] at this; exact List.not_mem_nil this
     omega
   have hne : S.Nonempty := by
@@ -201,14 +201,13 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
   have hkne : (X.edge : ℝ) + 0 ≠ (po : ℝ) + tq :=
     key_attach_ne ⟨le_rfl, one_pos⟩ ⟨hOA.2.1, hOA.2.2.1⟩ hne'
   refine ⟨X, σ, T, po, tq, ti, tj, ⟨hch, hgc, hXA, hOA, hne', fun C hC => ?_, hti, htj,
-    by unfold aK bK; rw [hai, hbi]; exact hX₁, by unfold aK bK; rw [haj, hbj]; exact hX₂, ?_,
+    by unfold aK bK; rwa [hai, hbi], by unfold aK bK; rwa [haj, hbj], ?_,
     hcnt⟩⟩
   · have hXX : X = ⟨X.edge, 0⟩ := by cases X; simp only at hX0 ⊢; rw [hX0]
     have h1 := hpr C hC
     rw [← hXX, hpos]
     have h2 := chain_vtx_mem C (Qof E.P) h1.1 h1.2
-    rw [← hC, pos_eq_sidePt, param_vtx, Chazelle.Chain.sidePt_zero] at h2
-    exact h2
+    rwa [← hC, pos_eq_sidePt, param_vtx, Chazelle.Chain.sidePt_zero] at h2
   · intro hab
     unfold aK at hab
     rw [hai, haj] at hab

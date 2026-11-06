@@ -48,13 +48,13 @@ theorem mem_boundary_three (h3 : P.n = 3) {p : Point} :
   · rintro ⟨i, hi, hp⟩
     rw [h3] at hi
     interval_cases i
-    · exact Or.inl (by rw [← edge_zero_three P h3]; exact hp)
-    · exact Or.inr (Or.inl (by rw [← edge_one_three P h3]; exact hp))
-    · exact Or.inr (Or.inr (by rw [← edge_two_three P h3]; exact hp))
+    · exact Or.inl (by rwa [← edge_zero_three P h3])
+    · exact Or.inr (Or.inl (by rwa [← edge_one_three P h3]))
+    · exact Or.inr (Or.inr (by rwa [← edge_two_three P h3]))
   · rintro (hp | hp | hp)
-    · exact ⟨0, by omega, by rw [edge_zero_three P h3]; exact hp⟩
-    · exact ⟨1, by omega, by rw [edge_one_three P h3]; exact hp⟩
-    · exact ⟨2, by omega, by rw [edge_two_three P h3]; exact hp⟩
+    · exact ⟨0, by omega, by rwa [edge_zero_three P h3]⟩
+    · exact ⟨1, by omega, by rwa [edge_one_three P h3]⟩
+    · exact ⟨2, by omega, by rwa [edge_two_three P h3]⟩
 
 /-- The boundary of a polygon with three vertices lies in the triangle of its vertices. -/
 theorem boundary_subset_triangle (h3 : P.n = 3) :
@@ -148,7 +148,7 @@ theorem mem_boundary_of_not_mem_interior_triangle (h3 : P.n = 3)
   rcases Geometry.mem_edge_of_not_mem_interior hdet hz hint with h | h | h
   · exact Or.inl h
   · exact Or.inr (Or.inl h)
-  · exact Or.inr (Or.inr (by rw [segment_comm]; exact h))
+  · exact Or.inr (Or.inr (by rwa [segment_comm]))
 
 /-! ### Escaping along a ray -/
 

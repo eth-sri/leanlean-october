@@ -75,15 +75,14 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
     rcases Nat.lt_or_ge i ls.length with h | h
     · rw [List.getD_append _ _ _ _ h]
       obtain ⟨a0, a1, a2, a3, a4, a5, a6⟩ := hrec i h
-      have hi' : i < c.nreg lC := hlen ▸ h
       refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-      · rw [hm _ (by omega) (by omega)]; exact a0
-      · rw [hm _ (by omega) (by omega)]; exact a1
-      · rw [hm _ (by omega) (by omega)]; exact a2
-      · rw [hm _ (by omega) (by omega)]; exact a3
-      · rw [hm _ (by omega) (by omega)]; exact a4
-      · rw [hm _ (by omega) (by omega)]; exact a5
-      · rw [hm _ (by omega) (by omega)]; exact a6
+      · rwa [hm _ (by omega) (by omega)]
+      · rwa [hm _ (by omega) (by omega)]
+      · rwa [hm _ (by omega) (by omega)]
+      · rwa [hm _ (by omega) (by omega)]
+      · rwa [hm _ (by omega) (by omega)]
+      · rwa [hm _ (by omega) (by omega)]
+      · rwa [hm _ (by omega) (by omega)]
     · have hil : i = ls.length := by omega
       rw [List.getD_append_right _ _ _ _ h, show i - ls.length = 0 by omega, hil, hlen]
       simp only [List.getD_cons_zero]
@@ -148,8 +147,7 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
       rcases Nat.lt_or_ge (i + 1) es.length with h | h
       · rw [List.getD_append _ _ _ _ (by omega), List.getD_append _ _ _ _ h]
         exact hcons i h
-      · have hi' : i + 1 = es.length := by omega
-        have hlen' : es.length = ys.length + 1 := by rw [hys]; simp
+      · have hlen' : es.length = ys.length + 1 := by rw [hys]; simp
         have e1 : (es ++ [x']).getD i (0, 0, ∅) = xc := by
           rw [List.getD_append _ _ _ _ (by omega), hys,
             List.getD_append_right _ _ _ _ (by omega), show i - ys.length = 0 by omega]

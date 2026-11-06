@@ -75,8 +75,8 @@ theorem Kept.not_mem {r : ℕ} {B : Finset ℕ} (h : Kept r) (hsub : ∀ b ∈ B
     (h23 : bCore ∉ B) (h17 : bUp ∉ B) : bandOf r ∉ B := by
   rcases h with ⟨h1 | h1, -⟩ | ⟨h, -⟩
   · intro hm; have := hsub _ hm; unfold OutB at h1; omega
-  · rw [h1]; exact h23
-  · rw [h]; exact h17
+  · rwa [h1]
+  · rwa [h]
 
 /-- A register of an outside band is outside a set of phase bands. -/
 theorem OutB.not_mem {r : ℕ} {B : Finset ℕ} (h : OutB (bandOf r))

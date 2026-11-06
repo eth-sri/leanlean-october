@@ -77,15 +77,15 @@ theorem l41_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
       ((gradeCtx O).local_ _ _ _ _ _ (fun x hx => (m8c x hx).symm) hX)
   have hst0 : TreeSt P W (gradeCtx O) c8 (c8.nreg ALLOC) A h (gradeGran lam) a L
       (leafShp lam (a + L) a) (gradeGran (lam - 1)) c8 := by
-    refine ⟨hw8, by rw [s8_14, hlen0], by rw [s8 _ (by decide)]; exact s33,
-      ⟨A + 7 + 6 * j, s8_66, by rw [h8A, hlen0]; omega, by rw [h8A]; exact hLev⟩,
+    refine ⟨hw8, by rw [s8_14, hlen0], by rwa [s8 _ (by decide)],
+      ⟨A + 7 + 6 * j, s8_66, by rw [h8A, hlen0]; omega, by rwa [h8A]⟩,
       leafShp_consec _ _ _, by omega, leafShp_first (lam := lam) (b := a + L) (a := a) (by omega),
       by rw [leafShp_sum]; omega, fun k hk => (hgran0 k hk).1,
-      fun k hk => (hgran0 k hk).2, fun h1 => by omega, by rw [hlen0]; exact hG0cl, le_rfl,
+      fun k hk => (hgran0 k hk).2, fun h1 => by omega, by rwa [hlen0], le_rfl,
       fun _ _ => rfl, fun _ _ => rfl, rfl, fun _ _ _ _ => rfl, fun _ _ _ => rfl, hXs, rfl⟩
   have hPI : PInv (gradeGran (lam - 1)) (gradeGran lam) j L (leafKb lam a L)
       (leafShp lam (a + L) a) (gradeGran (lam - 1)) := by
-    refine ⟨by omega, by omega, by rw [leafShp_sum]; omega, by rw [hlen0]; exact hG0cl,
+    refine ⟨by omega, by omega, by rw [leafShp_sum]; omega, by rwa [hlen0],
       le_rfl, le_rfl, fun x hx hxl => ?_⟩
     obtain ⟨k, hk, rfl⟩ := List.getElem_of_mem hx
     have := (hgran0 k hk).1
@@ -111,10 +111,10 @@ theorem l41_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     omega
   obtain ⟨c9, k9, ns', γ', e9, hk9, h9A, hlen', hst9⟩ :=
     tree_exec hG hWh hWn hMM (gradeCtx_capLocal O) (fun C hC => okModel_chain hG C hC)
-      (by rw [s8 _ (by decide)]; exact s32) (by rw [s8 _ (by decide)]; exact s00)
-      (by rw [s8 _ (by decide)]; exact s24) (by rw [s8 _ (by decide)]; exact s80)
-      (by rw [s8 _ (by decide)]; exact s81) (by rw [s8 _ (by decide)]; exact s83)
-      (by rw [s8 _ (by decide)]; exact s84) hGcapX (by omega) j (leafShp lam (a + L) a)
+      (by rwa [s8 _ (by decide)]) (by rwa [s8 _ (by decide)])
+      (by rwa [s8 _ (by decide)]) (by rwa [s8 _ (by decide)])
+      (by rwa [s8 _ (by decide)]) (by rwa [s8 _ (by decide)])
+      (by rwa [s8 _ (by decide)]) hGcapX (by omega) j (leafShp lam (a + L) a)
       (gradeGran (lam - 1)) c8 (by omega) hst0
       (by rw [h8A]; omega)
   obtain ⟨hw9, -, -, ⟨B9, h9_66, hB9, hLev9⟩, -, -, hfirst, hsum, -, -, hone, -, hAs9, hm98,
@@ -134,7 +134,7 @@ theorem l41_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     rw [fr98 _ (bandOK_l41 (by decide) (by decide)) (by unfold LvRG PairRG DescRG RbRG; decide)
       (by rw [hAl]; decide), s8 _ (by decide)]; exact s24
   have hB9W : B9 + 1 ≤ W := by have := hw9.1 ALLOC; omega
-  obtain ⟨c10, k10, e10, hk10, hw10, t04, fr10, hm10, hrr10, hrm10, ho10⟩ :=
+  obtain ⟨c10, k10, e10, hk10, t04, fr10, hm10, hrr10, hrm10, ho10⟩ :=
     epiB_exec (P := P) hw9 h9_66 s9_24 hB9W
   have c10A : c10.nreg ALLOC = c9.nreg ALLOC :=
     fr10 _ (by rw [hAl]; decide) (by rw [hAl]; decide)
@@ -145,8 +145,8 @@ theorem l41_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     ⟨C, N, hCP, hCs', hCm', ?_, hc⟩, ?_⟩
   · have hs : k5 + (k8 + (k9 + k10)) ≤ 40 * lam ^ 2 + 169 * lam + 84 + 11 * j +
         Nat.clog 2 j * (lvBound κ F G H (gradeGran lam) (gradeGran (lam - 1)) j L (leafKb lam a L) + 2) := by omega
-    rw [hBig2] at hs; exact hs
-  · rw [c10A, hm10, t04]; exact hNW
+    rwa [hBig2] at hs
+  · rwa [c10A, hm10, t04]
   · refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun x hx => ?_, fun x hx => ?_, ?_, ?_, ?_⟩
     · obtain ⟨hr1, hr2⟩ := bandOf_not_l41 hr
       rw [fr10 r (by omega) (by omega), fr98 r hr2 (nLv r hr1) hra,

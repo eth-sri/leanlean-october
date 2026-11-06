@@ -48,11 +48,8 @@ theorem unwrap_sub {n l r a b x₀ : ℝ} (hl : 0 ≤ l ∧ l < n) (hr : 0 ≤ r
     (hlr : l < unwrapK n l r) (hab : a ≠ b) (hxab : sideInArc a b x₀)
     (hxlr : sideInArc l r x₀) (hla : ¬ sideInArc a b l) (hra : ¬ sideInArc a b r) :
     unwrapK n l a < unwrapK n l b ∧ unwrapK n l b ≤ unwrapK n l r := by
-  have e2 := (cyc_unwrap hl hl hr hx (by rw [unwrapK_self]; exact hlr)).1 hxlr
+  have e2 := (cyc_unwrap hl hl hr hx (by rwa [unwrapK_self])).1 hxlr
   rw [unwrapK_self] at e2
-  have hbx := unwrapK_bounds hl hx
-  have hbb := unwrapK_bounds hl hb
-  have hba := unwrapK_bounds hl ha
   have hne : unwrapK n l a ≠ unwrapK n l b := fun e => hab (by
     rw [← wrapK_unwrapK (l := l) ha, ← wrapK_unwrapK (l := l) hb, e])
   rcases lt_or_gt_of_ne hne with h | h
@@ -125,7 +122,7 @@ theorem arcWt_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
     (aa := unwrapK (interiorModel Q).W.n l a) (bb := unwrapK (interiorModel Q).W.n l b)
     ?_ h1 ?_ ?_ ?_ harc.2.2.2.2.2.1 harc.2.2.2.2.2.2
   · rw [hl0]; exact (unwrapK_bounds hlb ha).1
-  · rw [hA.hud]; exact h2
+  · rwa [hA.hud]
   · intro x hx0 hxn hx
     exact ⟨unwrapK (interiorModel Q).W.n l x, (cyc_unwrap hlb ha hb ⟨hx0, hxn⟩ h1).1 hx,
       wrapK_unwrapK ⟨hx0, hxn⟩⟩
@@ -139,7 +136,7 @@ theorem arcWt_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
       ⟨ArcT.wrapK_nonneg hxx0 hxx2, ArcT.wrapK_lt hn hxx0 hxx2⟩
     have e := unwrapK_wrapK hlb.1 hn hlo hhi
     refine (cyc_unwrap hlb ha hb hy h1).2 ?_
-    rw [e]; exact hxx
+    rwa [e]
 
 /-- **(X2) The weight transfer.** -/
 theorem weight_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)

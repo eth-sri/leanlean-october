@@ -177,7 +177,7 @@ theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw :
     · rw [gb _ (by decide) (by decide), s07, DownMath.run_pts_length]
     · rw [gb _ (by decide) (by decide), gs _ (by decide), c16]
     · rw [gb _ (by decide) (by decide), gs _ (by decide), c04]
-    · rw [mb, ms]; exact cL
+    · rwa [mb, ms]
     · rw [mb, ms, cm x hx, m₁]
     · have f₃ : FrameM Bitem d₂ d₃ := exec_frameM e₃ (by decide)
       have up : FrameM Bitem d₁ d₂ :=

@@ -139,10 +139,10 @@ theorem lhGeo_boxL {P : Polygon} {x : WPos} {d : ℕ} (he : x.edge = 1 ∨ x.edg
   have hp : (chainModel J.left).param (Qof P) x = (chainModel J.right).param (Qof P) x :=
     hpar.symm
   refine ⟨⟨h, hxh, hhn, ?_, ?_, ?_⟩, hx, hp⟩
-  · rw [hx]; exact hyz
+  · rwa [hx]
   · rw [hx, hp]
     exact (sideLeft_congr ht ha hb _).1 hsec
-  · rw [hx]; exact h₁
+  · rwa [hx]
 
 /-- **An arrival position** at a point with a height code naming its height satisfies `LHGeo`
 with that code. -/
@@ -154,14 +154,14 @@ theorem lhGeo_arr {P : Polygon} {C : Chain} {z : Point} {σ : ℝ} {p : ℕ} {t 
   obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := harr
   rw [neg_neg] at hsec
   have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-    rw [hpt]; exact hsec
-  have hy : ((Qof P).vtx h).2 = (sidePt (chainModel C).W p t).2 := by rw [hpt]; exact hhz
+    rwa [hpt]
+  have hy : ((Qof P).vtx h).2 = (sidePt (chainModel C).W p t).2 := by rwa [hpt]
   have epar := param_of_arrival (Qof P) ht0 ht1 hy hsec'
   have epos := pos_of_arrival (Qof P) ht0 ht1 hy hsec'
   rw [hpt] at epos
-  refine ⟨⟨h, rfl, hh, by rw [epos]; exact hhz, ?_, by rw [epos]; exact htop⟩, epos, epar⟩
+  refine ⟨⟨h, rfl, hh, by rwa [epos], ?_, by rwa [epos]⟩, epos, epar⟩
   simp only
-  rw [epos, epar, hd]; exact hsec
+  rwa [epos, epar, hd]
 
 /-- **An endpoint query** starts at the origin `endOrigin j` in the direction `endDir j`. -/
 theorem endQ_facts {Q : Polygon} {N : NF} (hN : IsNF (chainModel J.right) Q N) {j : ℕ}
@@ -170,7 +170,7 @@ theorem endQ_facts {Q : Polygon} {N : NF} (hN : IsNF (chainModel J.right) Q N) {
     (chainModel J.right).pos Q ⟨e, h⟩ = endOrigin J Q N j ∧ dirOf d = endDir j := by
   obtain ⟨h1, h2⟩ := endOrigin_eq J hN hj
   have hl : N.nChords = N.chords.length := rfl
-  have hj' : j < 2 * N.chords.length := by rw [← hl]; exact hj
+  have hj' : j < 2 * N.chords.length := by rwa [← hl]
   unfold sweepEndQ at hq
   rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range hj'] at hq
   simp only [Option.map_some, Option.getD_some] at hq

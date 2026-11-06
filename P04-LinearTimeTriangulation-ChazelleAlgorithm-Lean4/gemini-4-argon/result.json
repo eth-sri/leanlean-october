@@ -1,0 +1,17 @@
+{
+  "problem_idx": 4,
+  "key": "PALOMAR-2026-10-05-000003-v2",
+  "model_name": "Gemini 4 Argon",
+  "model_id": "gemini-4-argon",
+  "harness": "Antigravity 1.3.5",
+  "status": "verified",
+  "verified": true,
+  "failure_label": null,
+  "verification_note": "Fresh verification passed.",
+  "baseline_tokens": 4338771,
+  "final_tokens": 4269827,
+  "compression_percent": 1.5890214072141626,
+  "credited_compression_percent": 1.5890214072141626,
+  "cost": 93.3975027,
+  "elapsed_seconds": 43207.250914360004
+}

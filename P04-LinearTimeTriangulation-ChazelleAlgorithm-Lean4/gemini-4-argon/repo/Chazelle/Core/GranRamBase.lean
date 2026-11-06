@@ -141,7 +141,6 @@ theorem Enc.set_live (h : Enc m d st) {k : ℕ} (hk : k < d.K) (v : ℕ) :
     rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
     exact h.exb x hx
   · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
     rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
     exact h.ex x t hx ht
   · intro j hj
@@ -196,7 +195,6 @@ theorem Enc.set_s0 (h : Enc m d st) {k : ℕ} (hk : k < d.K) (v : ℕ) :
     rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
     exact h.exb x hx
   · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
     rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
     exact h.ex x t hx ht
   · intro j hj
@@ -251,7 +249,6 @@ theorem Enc.set_s1 (h : Enc m d st) {k : ℕ} (hk : k < d.K) (v : ℕ) :
     rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
     exact h.exb x hx
   · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
     rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
     exact h.ex x t hx ht
   · intro j hj
@@ -306,7 +303,6 @@ theorem Enc.set_deg (h : Enc m d st) {k : ℕ} (hk : k < d.R) (v : ℕ) :
     rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
     exact h.exb x hx
   · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
     rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
     exact h.ex x t hx ht
   · intro j hj
@@ -361,7 +357,6 @@ theorem Enc.set_wt (h : Enc m d st) {k : ℕ} (hk : k < d.R) (v : ℕ) :
     rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
     exact h.exb x hx
   · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
     rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
     exact h.ex x t hx ht
   · intro j hj

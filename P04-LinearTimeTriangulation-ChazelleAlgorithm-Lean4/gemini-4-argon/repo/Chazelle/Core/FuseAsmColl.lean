@@ -41,18 +41,6 @@ theorem chordListAt_append {m : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ × 
     rw [e]
     exact ⟨h0, h1, h2⟩
 
-/-- The invariant of the collection loop. -/
-structure CLI (W : ℕ) (R : List (ℕ × ℕ × ℕ × ℕ)) (RB LB : ℕ) (c₀ c : Config) : Prop where
-  wb : WordsBounded W c
-  i_le : c.nreg 70112 ≤ R.length
-  cur : c.nreg 70113 = RB + 4 * c.nreg 70112
-  alloc : c.nreg ALLOC = LB + 3 * (collect (R.take (c.nreg 70112))).length
-  regs : ∀ r, r ≠ 70112 → r ≠ 70113 → r ≠ 70114 → r ≠ 70119 → r ≠ ALLOC → c.nreg r = c₀.nreg r
-  low : ∀ a, a < LB → c.nmem a = c₀.nmem a
-  list : ChordListAt c.nmem LB (collect (R.take (c.nreg 70112)))
-  rr : c.rreg = c₀.rreg
-  rm : c.rmem = c₀.rmem
-  out : c.output = c₀.output
 
 end
 

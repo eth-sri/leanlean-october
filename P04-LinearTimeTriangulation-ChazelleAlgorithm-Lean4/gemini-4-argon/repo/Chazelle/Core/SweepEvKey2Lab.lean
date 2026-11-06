@@ -96,11 +96,11 @@ theorem anchL_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hN : c.nreg kqN �
   have lb1 : lblOf c₁ kqN kqL = lblOf c kqN kqL := kqLblOf_eq fun q hq =>
     a4 q (nL q hq).1 (nL q hq).2.1 (nL q hq).2.2.1
   have eN1 : c₁.nreg kqN = c.nreg kqN := a4 _ (by kqr) (by kqr) (by kqr)
-  set m := c.nmem with hm
-  set x := c.nreg kqX with hx
+  set m := c.nmem
+  set x := c.nreg kqX
   by_cases h0 : c₁.nreg K0 < c₁.nreg kqY
   · rw [hK₁.1, a3] at h0
-    refine IRS.mono (K := 66 + 2) (IRS.ifT (by rw [hK₁.1, a3]; exact h0) ?_) (by norm_num)
+    refine IRS.mono (K := 66 + 2) (IRS.ifT (by rwa [hK₁.1, a3]) ?_) (by norm_num)
       (fun _ h => h)
     refine IRS.seq (K₁ := 2) (K₂ := 64) (ldNext_irs (Or.inl rfl) hI₁ hK₁.2.1 (by omega)) ?_
     rintro c₂ hI₂ - - ⟨b1, b2, b3, b4⟩
@@ -125,7 +125,7 @@ theorem anchL_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hN : c.nreg kqN �
     have mem3 : c₃.nmem = m := by rw [d4, b4, a5]
     by_cases h1 : c₃.nreg K1 < c₃.nreg kqY
     · rw [hK₃.2.1, eY3] at h1
-      refine IRS.mono (K := 32 + 2) (IRS.ifT (by rw [hK₃.2.1, eY3]; exact h1) ?_) le_rfl
+      refine IRS.mono (K := 32 + 2) (IRS.ifT (by rwa [hK₃.2.1, eY3]) ?_) le_rfl
         (fun _ h => h)
       refine IRS.seq (K₁ := 2) (K₂ := 30) (ldNext_irs (Or.inl rfl) hI₃ hK₃.2.1 (by omega)) ?_
       rintro c₄ hI₄ - - ⟨e1, e2, e3, e4⟩
@@ -142,17 +142,17 @@ theorem anchL_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hN : c.nreg kqN �
       · rw [f3 q (fun h => hq (Or.inr (Or.inr (Or.inr (Or.inr h))))),
           e3 q (nA q hq).2.1 (fun h => hq (Or.inr (Or.inr (Or.inl h)))), fr3 q hq]
     · rw [hK₃.2.1, eY3] at h1
-      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [hK₃.2.1, eY3]; exact h1) (IRS.skip hI₃ rfl))
+      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [hK₃.2.1, eY3]) (IRS.skip hI₃ rfl))
         (by norm_num) ?_
       rintro c' rfl
       refine ⟨eA3, d1, ?_, fr3, mem3⟩
       rw [d2, show min (m (x + 1)) 2 = 1 by omega]
       simp [addLs]
   · rw [hK₁.1, a3] at h0
-    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [hK₁.1, a3]; exact h0) (IRS.skip hI₁ rfl))
+    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [hK₁.1, a3]) (IRS.skip hI₁ rfl))
       (by norm_num) ?_
     rintro c' rfl
-    refine ⟨a1, by rw [eN1]; exact hN, ?_, fun q hq => a4 q (nA q hq).1 (nA q hq).2.1 (nA q hq).2.2,
+    refine ⟨a1, by rwa [eN1], ?_, fun q hq => a4 q (nA q hq).1 (nA q hq).2.1 (nA q hq).2.2,
       a5⟩
     rw [lb1, show min (m (x + 1)) 2 = 0 by omega]
     simp [addLs]

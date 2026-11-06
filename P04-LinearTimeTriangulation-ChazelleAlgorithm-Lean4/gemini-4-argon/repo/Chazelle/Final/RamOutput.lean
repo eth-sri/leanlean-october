@@ -104,7 +104,7 @@ theorem nodeSeq_eq_iterate {mem : ℕ → ℕ} {NB : ℕ} {S : LState} {c : List
 theorem walk_map_getD {S : LState} {c : List ℕ} (hc : IsCyc S c) {i : ℕ} (hi : i < c.length)
     {s : ℕ} (hs : s < c.length) :
     ((walk S (c.getD i 0) c.length).map S.vtx).getD s 0 = S.vtx (c.getD ((i + s) % c.length) 0) := by
-  rw [walk_eq_rotate hc hi, List.map_rotate, getD_rotate_of_lt i (by rw [List.length_map]; exact hs),
+  rw [walk_eq_rotate hc hi, List.map_rotate, getD_rotate_of_lt i (by rwa [List.length_map]),
     List.length_map, getD_map_of_lt S.vtx (Nat.mod_lt _ (by omega)), Nat.add_comm s i]
 
 /-! ### Counting marks -/
@@ -267,7 +267,7 @@ theorem ringBody_inv {MB NN NB : ℕ} {S : LState} {d : List ℕ} {i : ℕ} {c�
     rw [hfn 244 (by decide) (by decide) (by decide) (by decide), h244]
   have e249 : c.nreg 249 = NB := by
     rw [hfn 249 (by decide) (by decide) (by decide) (by decide), h249]
-  set m := c.nreg 247 with hmdef
+  set m := c.nreg 247
   set x := d.getD ((i + m) % d.length) 0 with hx
   have hxd : x ∈ d := getD_mem_of_lt (Nat.mod_lt _ hl)
   have hxN : x < NN := hdlt x hxd
@@ -478,7 +478,7 @@ theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB N
   -- the piece: a mountain in `Q`, hence (transfer) in `P`
   have hpiece : IsPiece Q l := isPiece_walk hQ hD hR hp hd hi
   have hQn : Q.n = P.n := by rw [hQe]; exact Core.shear_n ε P
-  have hmount := mountain_transfer (P := P) (ε := ε) (by rw [← hQe]; exact hag)
+  have hmount := mountain_transfer (P := P) (ε := ε) (by rwa [← hQe])
     (fun x hx => hQn ▸ hpiece.lt x hx) (by rw [← hQe]; exact Chazelle.Mountain.piece_isMountain hQ hpiece)
   obtain ⟨c₄, k₄, ex₄, hk₄, ⟨T, hT, hout₄⟩, hfn₄, -, hnm₄, -⟩ :=
     pieceTri_exec (P := P) (W := W) hmount c₃ hw₃ hin
@@ -529,7 +529,7 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
   have hR := hX.repr
   have hcnt := hX.cnt
   rw [h240] at ht
-  set z := c.nreg 242 with hzdef
+  set z := c.nreg 242
   have hl3 := hX.lay3
   have hl4 := hX.lay4
   unfold outBody
@@ -556,7 +556,7 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
       | skip
     · config_simp; rw [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244]
       omega
-    · config_simp; rw [hmem₁]; exact hB
+    · config_simp; rwa [hmem₁]
     · config_simp
       rw [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244, hdiff d hd]
       constructor
@@ -572,7 +572,7 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
             exact (hdiff d hd).1 hd'
           · exact absurd hy (hR.disj (hdcs d' hd') hd (Ne.symm hdd) hzd')
     · config_simp; rw [hmem₁]; exact hmark y hy
-    · config_simp; rw [hc₁]; exact hout
+    · config_simp; rwa [hc₁]
     · unfold outPot
       config_simp
       rw [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244, hmem₁]
@@ -591,7 +591,7 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
       · exact hR.disj hd (hdcs d' hd') hdd hy hyd'
     have e244 := r1 244 (by decide) (by decide)
     refine spec_seq (spec_ifLtN_true (by rw [e245, hm0]; omega) ?_)
-    refine spec_use (pieceOut_exec hX hd hi c₁ hw₁ (by rw [hmem₁]; exact hB)
+    refine spec_use (pieceOut_exec hX hd hi c₁ hw₁ (by rwa [hmem₁])
       (by rw [r1 240 (by decide) (by decide), h240])
       (by rw [r1 241 (by decide) (by decide), h241])
       (by rw [r1 242 (by decide) (by decide), hdi])
@@ -676,7 +676,6 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
     · unfold outPot
       config_simp
       rw [R2 242 (by omega), R2 244 (by omega), h244]
-      have hk : k₂ ≤ 121 * d.length + 44 := hk₂
       have h3 : 3 ≤ d.length := by
         have := hi; have := (hR.cyc d hd).1
         by_contra h3
@@ -758,7 +757,7 @@ theorem outStmt_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB
       simp only [List.not_mem_nil, false_iff, not_exists, not_and]
       intro y _ h; omega
     · have e : c₃.nmem = c₂.nmem := by rw [hc₃]
-      rw [e, hzero y (by rw [e242₂]; exact hy)]
+      rw [e, hzero y (by rwa [e242₂])]
       simp
   obtain ⟨c₄, k₄, ex₄, ⟨hw₄, hz₄, h240₄, -, -, -, -, -, -, -, done, hdn, hdcs, hdiff, -, acc, hF,
     hT, hout₄⟩, hexit₄, hk₄⟩ := Exec.whileLtN_potential (P := P)
@@ -789,8 +788,7 @@ theorem outStmt_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB
     obtain ⟨D, hD, hp⟩ := hX.enum
     have hrot : List.Forall₂ (fun m' p => ∃ r, p.1 = m'.rotate r) (done.map (List.map S.vtx))
         acc := by
-      rw [List.forall₂_map_left_iff]
-      exact hF
+      rwa [List.forall₂_map_left_iff]
     refine ⟨_, triangulates_of_pairs hX.simple hD ((hperm.map _).trans hp) hrot hT, ?_⟩
     rw [hout₄, hc₃]
     config_simp

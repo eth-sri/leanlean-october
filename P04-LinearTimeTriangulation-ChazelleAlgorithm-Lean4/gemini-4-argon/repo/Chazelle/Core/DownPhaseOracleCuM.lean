@@ -120,7 +120,7 @@ theorem trP_spec {x : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
   have hmi : (interiorModel Q).W.n = Q.n := mi_n
   have hend := S.hend
   have h6 := S.h6
-  set d := x.edge - g₀ with hd
+  set d := x.edge - g₀
   have hxe : x.edge = g₀ + d := by omega
   have hxe' : x.edge = (g₀ + d) % (chainModel C).W.n := by
     rw [hcm, Nat.mod_eq_of_lt (by omega)]; omega
@@ -204,15 +204,15 @@ theorem trP_arc {x y : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
   have hn := S.hn
   have hu := S.hu
   rw [trP_key S hx hx0 hx1, trP_key S hy hy0 hy1]
-  set tx := (chainModel C).param Q x with htx
-  set ty := (chainModel C).param Q y with hty
+  set tx := (chainModel C).param Q x
+  set ty := (chainModel C).param Q y
   have tx0 := hx.1
   have tx1 := hx.2.1
   have ty0 := hy.1
   have ty1 := hy.2.1
   simp only [key_eq] at hxy hx0 hy1 ⊢
-  set dx := x.edge - g₀ with hdx
-  set dy := y.edge - g₀ with hdy
+  set dx := x.edge - g₀
+  set dy := y.edge - g₀
   have hxe : x.edge = g₀ + dx := by omega
   have hye : y.edge = g₀ + dy := by omega
   have hdxy : dx ≤ dy := by
@@ -225,11 +225,9 @@ theorem trP_arc {x y : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
     have : (e : ℝ) = (y.edge : ℝ) - x.edge := by rw [hye']; push_cast; ring
     rw [this]; linarith
   have hey : (e : ℝ) + ty ≤ ℓ - dx := by
-    have h1 : (y.edge : ℝ) + ty ≤ g₀ + ℓ := hy1
     have : (e : ℝ) = (y.edge : ℝ) - x.edge := by rw [hye']; push_cast; ring
     have : (x.edge : ℝ) = g₀ + dx := by exact_mod_cast hxe
     linarith
-  have hdyℓ : dy ≤ ℓ := by omega
   have hmod : ((u₀ + dx) % Q.n + e) % Q.n = (u₀ + dy) % Q.n := by
     rw [Nat.mod_add_mod, show u₀ + dx + e = u₀ + dy by omega]
   have hmodc : (x.edge + e) % (chainModel C).W.n = y.edge := by
@@ -281,7 +279,7 @@ theorem trP_arc {x y : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
   · -- the weights
     have hci : ∀ p, p < (interiorModel Q).W.n →
         ((interiorModel Q).counted p ↔ 0 ≤ p ∧ p < (interiorModel Q).W.n) := fun p hp => by
-      rw [hmi] at hp ⊢; exact interiorModel_counted_iff Q p (by rw [hmi]; exact hp)
+      rw [hmi] at hp ⊢; exact interiorModel_counted_iff Q p (by rwa [hmi])
     have hkc : keyCeil e ty ≤ e + 1 := keyCeil_le_succ
     have hkc' : keyCeil e ty = e ∨ (keyCeil e ty = e + 1 ∧ 0 < ty) := by
       unfold keyCeil; split_ifs with h
@@ -312,7 +310,6 @@ theorem trP_agree {x : WPos} (hx : g₀ ≤ x.edge) {a L' : ℕ} (h : x.edge - g
       ((x.edge + a) % (chainModel C).W.n) L' := by
   intro d hd
   have hmi : (interiorModel Q).W.n = Q.n := mi_n
-  have hcm := str_cmn S
   have hend := S.hend
   have := S.agree (x.edge - g₀ + a + d) (by omega)
   have e1 : (((trP Q.n u₀ g₀ x).edge + a) % Q.n + d) % Q.n =
@@ -372,7 +369,6 @@ theorem trP_pieceWalk {s e : WPos} {Cα : Chain} (hpw : PieceWalk (chainModel C)
         (∀ d, d ≤ Cα.m → (interiorModel Q).W.vtx (((trP Q.n u₀ g₀ s).edge + d) %
           (interiorModel Q).W.n) = Cα.vertex (Cα.m - d))) := by
   obtain ⟨hs, he, hsn, hee, g', hg', hw⟩ := hpw
-  have hcm := str_cmn S
   have hmi : (interiorModel Q).W.n = Q.n := mi_n
   have hend := S.hend
   have hn := S.hn
@@ -400,16 +396,15 @@ theorem trP_pieceWalk {s e : WPos} {Cα : Chain} (hpw : PieceWalk (chainModel C)
     unfold trP; simp only
     rw [hmi, Nat.mod_add_mod, ← hdiff, show u₀ + (s.edge - g₀) + Cα.m = u₀ + (s.edge + Cα.m - g₀) by
       omega]
-  refine ⟨⟨hs, he, by rw [hmi]; exact hts, hte, g', hg', ?_⟩, ?_⟩
+  refine ⟨⟨hs, he, by rwa [hmi], hte, g', hg', ?_⟩, ?_⟩
   · rcases hw with hw | ⟨L₁, h1, h2, h3, hw1, hw2⟩
-    · exact Or.inl (walkAgree_trans hA (by rw [hsl]; exact hw))
+    · exact Or.inl (walkAgree_trans hA (by rwa [hsl]))
     · refine Or.inr ⟨L₁, h1, h2, h3, walkAgree_trans (L := L₁)
-        (fun d hd => hA d (by omega)) (by rw [hsl]; exact hw1), ?_⟩
+        (fun d hd => hA d (by omega)) (by rwa [hsl]), ?_⟩
       have hB := trP_agree S hs0' (a := L₁) (L' := Cα.m - L₁) (by omega)
       rw [hmi]
       refine walkAgree_trans hB ?_
-      rw [Nat.mod_mod]
-      exact hw2
+      rwa [Nat.mod_mod]
   · rcases hvl with hv | hv
     · left; intro d hd; rw [hA d hd]; exact hv d hd
     · right; intro d hd; rw [hA d hd]; exact hv d hd

@@ -111,7 +111,6 @@ structure PassMem (m : ℕ → ℕ) (W lo hi bTMP bACT bPOS bDF bFIRST bFPRE μ 
   dFP : bFIRST + μ ≤ bPOS ∨ bPOS + μ ≤ bFIRST
   dRA : bFPRE + N ≤ bACT + lo ∨ bACT + hi ≤ bFPRE
   dRP : bFPRE + N ≤ bPOS ∨ bPOS + μ ≤ bFPRE
-  dAP : bACT + hi ≤ bPOS ∨ bPOS + μ ≤ bACT + lo
 
 section proofs
 
@@ -157,7 +156,6 @@ theorem passMem_other (m0 : ℕ → ℕ) (sel : ℕ → Prop) {bACT bPOS bTMP lo
   | zero => rfl
   | succ j ih =>
     have hp := passMem_ptr m0 sel bACT bPOS bTMP lo e j
-    have hmono := passMem_ptr_mono m0 sel bACT bPOS bTMP lo e (Nat.le_succ j)
     by_cases hs : sel (lo + j)
     · have e1 : passMem m0 sel bACT bPOS bTMP lo e (j + 1) =
           (upd (upd (passMem m0 sel bACT bPOS bTMP lo e j).1
@@ -264,7 +262,7 @@ theorem ctestB_exec {c : Config} (hw : WordsBounded W c) {bACT bPOS v p mode a b
   · -- mode 0: never
     rw [hm1', hone1] at hm0
     have hnt : ¬ ClassTest mode a b κ := by unfold ClassTest; omega
-    exact fin c1 _ (.ifLtN_true (by rw [hm1', hone1]; exact hm0) (.skip hw1)) (by omega) hw1
+    exact fin c1 _ (.ifLtN_true (by rwa [hm1', hone1]) (.skip hw1)) (by omega) hw1
       (by rw [ite_eq_right hnt, hm1]) (by rw [ite_eq_right hnt, hp1]) (fun _ _ _ _ => rfl) rfl rfl rfl
   · by_cases hm2 : c1.nreg 130001 < c1.nreg 130637
     · -- mode 2: outside the interval
@@ -340,7 +338,6 @@ theorem passBody_exec {c : Config} (hw : WordsBounded W c) {m0 : ℕ → ℕ}
   set q := passMem m0 sel bACT bPOS bTMP lo e j
   have hit : ∀ i, lo ≤ i → i < hi → m0 (bTMP + i) < μ := hM.item_lt
   have hq := passMem_ptr_mono m0 sel bACT bPOS bTMP lo e (show j ≤ hi - lo by omega)
-  have hq0 := passMem_ptr m0 sel bACT bPOS bTMP lo e j
   have hqh : q.2 ≤ hi := le_trans hq hfin
   -- reads outside the written ranges
   have hread : ∀ x, ¬ (bACT + lo ≤ x ∧ x < bACT + hi) → ¬ (bPOS ≤ x ∧ x < bPOS + μ) →
@@ -426,7 +423,7 @@ theorem passBody_exec {c : Config} (hw : WordsBounded W c) {m0 : ℕ → ℕ}
         by_cases hs : sel i
         · rw [ite_eq_left (hselc.mp hs), ite_eq_left hs]
         · rw [ite_eq_right (fun h => hs (hselc.mpr h)), ite_eq_right hs]
-      · rw [h4r _ (by omega) (by omega) (by omega), r3 _ (by omega) (by omega)]; exact h1i
+      · rwa [h4r _ (by omega) (by omega) (by omega), r3 _ (by omega) (by omega)]
       · rw [h4r r (by unfold PassRG at hr; omega) (by unfold PassRG at hr; omega)
           (by unfold PassRG at hr; omega), r3 r (by unfold PassRG at hr; omega)
           (by unfold PassRG at hr; omega)]
@@ -439,7 +436,7 @@ theorem passBody_exec {c : Config} (hw : WordsBounded W c) {m0 : ℕ → ℕ}
   have e3 := Exec.addN (P := P) hw2 130657 130657 130001 (by rw [h2i, hC2.one]; omega)
   refine ⟨_, k1 + (k2 + 1), .seq e1 (.seq e2 e3), by omega, e3.wb_right, h2m, ?_, ?_,
     fun r hr => ?_, hrr2.trans hrr1, hrm2.trans hrm1, ho2.trans ho1⟩
-  · simp only [Machine.upd_apply]; rw [ite_eq_right (by omega)]; exact h2p
+  · simp only [Machine.upd_apply]; rwa [ite_eq_right (by omega)]
   · simp only [Machine.upd_same, h2i, hC2.one]
   · simp only [Machine.upd_apply]
     rw [ite_eq_right (by unfold PassRG at hr; omega), h2r r hr]
@@ -480,13 +477,13 @@ theorem passStmt_exec {c : Config} (hw : WordsBounded W c)
         passBody_exec (P := P) (j := i - lo) hw2 hC2 hM hlo hfin (by omega) hm2 hp2
           (by rw [hi2]; omega)
       refine ⟨c3, k3, e3, hk3, hw3, by rw [hi3]; omega, by
-        rw [hr3 _ (by unfold PassRG; omega)]; exact hn2, by
+        rwa [hr3 _ (by unfold PassRG; omega)], by
         rw [hm3, show i + 1 - lo = i - lo + 1 by omega], by
         rw [hp3, show i + 1 - lo = i - lo + 1 by omega], fun r hr => (hr3 r hr).trans (hr2 r hr),
         hrr3.trans hrr2, hrm3.trans hrm2, ho3.trans ho2, by omega⟩)
     (j₀ := lo) ⟨e0.wb_right, by simp [hC.rlo], by
       simp only [Machine.upd_apply]; rw [ite_eq_right (by omega)]; exact hC.rhi, by simp [m0, passMem],
-      by simp only [Machine.upd_apply, Nat.sub_self]; rw [ite_eq_right (by omega)]; exact hptr,
+      by simp only [Machine.upd_apply, Nat.sub_self]; rwa [ite_eq_right (by omega)],
       fun r hr => by
         simp only [Machine.upd_apply]; rw [ite_eq_right (by unfold PassRG at hr; omega)],
       rfl, rfl, rfl, le_rfl⟩ hlh

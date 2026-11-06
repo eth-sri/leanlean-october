@@ -31,7 +31,7 @@ theorem stepTask : StepTask := by
   obtain ⟨hmlt, hmeas, -, -⟩ := stp_meas_step E L hI hd
   obtain ⟨hstops, hso⟩ := stp_stops_c' E L hI hd
   obtain ⟨esB, eaB, esC, -, -⟩ := stp_arrays_c' E L hI hd
-  obtain ⟨-, hptr, hptrL, -⟩ := stp_ptr_c' E L hI hd
+  obtain ⟨hptr, hptrL, -⟩ := stp_ptr_c' E L hI hd
   obtain ⟨hlabR, hinv⟩ := S.labels
   have hsome := stp_key_some hI hd
   obtain ⟨-, -, -, -, -, -, -, -, -, hkN4, -⟩ := hI.2.2.2.2.2.2.2 hsome
@@ -71,7 +71,7 @@ theorem stepTask : StepTask := by
       exact L.gapR i hi
     gap := fun V hV => by
       obtain ⟨i, hi, hiV⟩ := L.gap V hV
-      exact ⟨i, by rw [egN]; exact hi, by rw [egR i (by omega)]; exact hiV⟩
+      exact ⟨i, by rwa [egN], by rwa [egR i (by omega)]⟩
     ptr := hptr
     ptrL := hptrL
     log := S.log'

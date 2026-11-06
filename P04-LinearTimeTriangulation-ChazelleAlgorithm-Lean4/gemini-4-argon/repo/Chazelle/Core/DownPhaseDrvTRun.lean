@@ -58,7 +58,7 @@ theorem trans_cost_le {n K K₀ : ℕ} (hn : 3 ≤ n) (hK : K ≤ K₀)
     (hK₀ : K₀ * (gradeGran (topGrade n) + 1) ≤ 840 * (2 * (n - 1) + 1)) :
     (14 * n + 120) + (260 * n + 1950) + (54 * K₀ + 21) + 3 +
       (κBuild * (K * (Nat.clog 2 K + 1) + 1) + 4) + 5 ≤ κT * (n + 1) := by
-  set p := topGrade n with hp
+  set p := topGrade n
   have hnp : n - 1 ≤ 2 ^ p := Nat.le_pow_clog (by norm_num) _
   have hgp : p ≤ gradeGran p := le_gradeGran p
   have hK₀n : K₀ ≤ 1680 * n := by

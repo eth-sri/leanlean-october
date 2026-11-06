@@ -61,22 +61,17 @@ theorem dropAug : DropAugSpec := by
   intro P W c hw hpre hcost
   obtain ⟨hG, hWn, hDA, hli, L, hlen, hBL, hCL, hok, hSEL, hperm, hsort⟩ := hpre
   simp only [rd, bandReg, bDown, Nat.reduceMul, Nat.reduceAdd] at hDA hli hlen hBL hCL hSEL hperm hsort hcost ⊢
-  set K := L.length with hK
-  set D := c.nreg 200000 with hD
-  set B := c.nreg 200001 with hB
-  set SE := c.nreg 200003 with hSE
-  set A₀ := c.nreg ALLOC with hA₀
+  set K := L.length
+  set D := c.nreg 200000
+  set B := c.nreg 200001
+  set SE := c.nreg 200003
+  set A₀ := c.nreg ALLOC
   have hA : c.nreg 9999 = A₀ := rfl
   set li := liBit c.nmem D with hlidef
-  set E := seg c.nmem SE (2 * K) with hEdef
+  set E := seg c.nmem SE (2 * K)
   have hEl : E.length = 2 * K := seg_length
   set X := A₀ + 3 * K with hX
-  set SE' := A₀ + 5 * K with hSE'
-  have hcost' : A₀ + 80 * (K + 1) ≤ W := by
-    have h := hcost
-    beta_reduce at h
-    rw [hlen] at h
-    exact h
+  set SE' := A₀ + 5 * K
   have hnW : P.n ≤ W := by unfold hostWords at hWn; omega
   have hQn : (Qof P).n = P.n := shear_n _ _
   -- setup
@@ -145,7 +140,7 @@ theorem dropAug : DropAugSpec := by
           Nat.add_zero]
         rw [ite_eq_right (by omega)] }
   have hrk : rankF (keepX li P.n) L K ≤ K := rankF_le _ _ _
-  obtain ⟨c₅, k₅, e₅, hw₅, hI₅, h5t, hk₅, hk₅'⟩ := dLoop2_exec (P := P) (m₁ := m₁)
+  obtain ⟨c₅, k₅, e₅, hI₅, h5t, hk₅, hk₅'⟩ := dLoop2_exec (P := P) (m₁ := m₁)
     (fun t ht => by
       rw [hm₁]; unfold mem1
       rw [ite_eq_right (by omega), ite_eq_right (by omega)]
@@ -166,19 +161,18 @@ theorem dropAug : DropAugSpec := by
     rw [g51 _ (by norm_num) (by norm_num) (by norm_num), s006]
   have f9999 : c₅.nreg 9999 = A₀ + 7 * K := by
     rw [g51 _ (by norm_num) (by norm_num) (by norm_num), s9999]
-  set L' := keepL li P.n L with hL'
+  set L' := keepL li P.n L
   have hL'len : L'.length = rankF (keepX li P.n) L K := (rankF_length _ _).symm
   have f005 : c₅.nreg 200005 = L'.length := by
     rw [g5 _ (by norm_num), m005, hI₃.r118, h3i, hL'len]
-  have hK' : L'.length ≤ K := by rw [hL'len]; exact hrk
+  have hK' : L'.length ≤ K := by rwa [hL'len]
   have hK2 : (keepL li P.n L).length ≤ K := hK'
   have hmem5 : ∀ a, c₅.nmem a = mem2 m₁ li P.n L E SE' E.length a := fun a => by
     rw [hI₅.mem, h5t]
   have hEt : E.take E.length = E := List.take_length
   have hdlen : (dropE li P.n L E).length = 2 * L'.length := by
     have := (dropE_perm (li := li) (n := P.n) hperm).length_eq
-    rw [List.length_range] at this
-    exact this
+    rwa [List.length_range] at this
   have hCL' : ChordListAt c₅.nmem A₀ L' := by
     intro i hi
     have hm : ∀ q, q < 3 → c₅.nmem (A₀ + 3 * i + q) = tw L' (3 * i + q) := fun q hq => by
@@ -217,7 +211,7 @@ theorem dropAug : DropAugSpec := by
     omega
   · obtain rfl := BuildNF.chordListAt_unique hCL hL₂ (hlen.symm.trans hlen₂)
     rw [hQn]
-    refine ⟨by rw [f004], ?_, by rw [f004]; exact hCL', f005, ?_, ?_, by rw [f006]; exact hseg,
+    refine ⟨by rw [f004], ?_, by rwa [f004], f005, ?_, ?_, by rwa [f006],
       hfam, chordTriplesOK_keepL hok, dropE_perm hperm, dropE_pairwise _ _ hperm hsort⟩
     · rw [f004]; show _ ≤ c₅.nreg 9999; rw [f9999]; omega
     · rw [f006]; show A₀ ≤ A₀ + 5 * K; omega

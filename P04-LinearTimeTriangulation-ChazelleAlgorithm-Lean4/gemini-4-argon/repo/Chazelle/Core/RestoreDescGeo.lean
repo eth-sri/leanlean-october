@@ -51,7 +51,7 @@ theorem sector_sub_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Ad
     obtain ⟨hxD, hxc⟩ := hfree x hx hxl
     exact ⟨hxD, fun ⟨c, hc, hxc'⟩ => hB c hc (hxc c hc hxc')⟩)
   set L := ball (sidePt M.W p t) r₁ ∩
-    {x | sideLeftOf (sidePrev M.W p t) (sidePt M.W p t) (sideNext M.W p) x} with hL
+    {x | sideLeftOf (sidePrev M.W p t) (sidePt M.W p t) (sideNext M.W p) x}
   have hLfree : L ⊆ freeIn M.D S := by
     intro x hx
     obtain ⟨hxD, hxc⟩ := hfree x hx.1 hx.2
@@ -103,7 +103,7 @@ theorem ray_avoids (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) {p :
     (hdom : ∀ s, 0 < s → s < T → rayPt (sidePt M.W p t) σ s ∈ M.D) :
     ∀ c ∈ S, ∀ s, 0 < s → s < T → rayPt (sidePt M.W p t) σ s ∉ c := by
   intro c hc s₀ hs₀ hs₀T hz
-  set w := sidePt M.W p t with hw
+  set w := sidePt M.W p t
   have hwD : w ∉ M.D := hM.trace p hp t ht0 ht1.le
   obtain ⟨u, v, huv, hcuv, hy, hopen, hu, hv⟩ := hM.ends c (hS hc)
   have hout : ∀ x, WalkEnd M.W c x → x ∉ M.D := by
@@ -135,7 +135,6 @@ theorem ray_avoids (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) {p :
   have key : ∀ a b : Point, c = Chazelle.segment a b → a.2 = w.2 → b.2 = w.2 →
       (∀ s ∈ Ioo (0 : ℝ) 1, lerp a b s ∈ M.D) → f a ≤ 0 → T ≤ f b → False := by
     intro a b hcab ha2 hb2 hab hfa hfb
-    have hT : 0 < T := lt_trans hs₀ hs₀T
     -- `w` is on the segment, hence its end `a`
     have hfa0 : f a = 0 := by
       by_contra hne
@@ -201,7 +200,7 @@ theorem ray_in_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) (
     (hdom : ∀ s, 0 < s → s < T → rayPt (sidePt M.W p t) σ s ∈ M.D)
     (hout : rayPt (sidePt M.W p t) σ T ∉ M.D) :
     chordOf (sidePt M.W p t) σ T ∉ S ∧ chordOf (sidePt M.W p t) σ T ∩ M.D ⊆ R := by
-  set w := sidePt M.W p t with hw
+  set w := sidePt M.W p t
   have hcut : ¬ M.IsCut S (p + t) := harc.2.2.2.2.2.1 _ hin
   have hav := ray_avoids hM hS hp ht0 ht1 hcut hσ hsec hdom
   constructor
@@ -217,7 +216,7 @@ theorem ray_in_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) (
       rintro _ ⟨s, hs, rfl⟩
       exact ⟨hdom s hs.1 hs.2, fun ⟨c, hc, hxc⟩ => hav c hc s hs.1 hs.2 hxc⟩
     obtain ⟨r₁, hr₁, hsub⟩ := sector_sub_region hM hS hfin hR harc hp ht0 ht1 hin
-    set s₁ := min (T / 2) (r₁ / 2) with hs₁
+    set s₁ := min (T / 2) (r₁ / 2)
     have hs₁0 : 0 < s₁ := lt_min (by linarith) (by linarith)
     have hs₁T : s₁ < T := lt_of_le_of_lt (min_le_left _ _) (by linarith)
     have hs₁r : s₁ < r₁ := lt_of_le_of_lt (min_le_right _ _) (by linarith)
@@ -226,8 +225,8 @@ theorem ray_in_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) (
       · rw [mem_ball, Prod.dist_eq, rayPt_fst, rayPt_snd, dist_self, Real.dist_eq,
           add_sub_cancel_left]
         rcases hσ with rfl | rfl
-        · rw [one_mul, abs_of_pos hs₁0, max_eq_left hs₁0.le]; exact hs₁r
-        · rw [neg_one_mul, abs_neg, abs_of_pos hs₁0, max_eq_left hs₁0.le]; exact hs₁r
+        · rwa [one_mul, abs_of_pos hs₁0, max_eq_left hs₁0.le]
+        · rwa [neg_one_mul, abs_neg, abs_of_pos hs₁0, max_eq_left hs₁0.le]
       · exact (Sweep.sideLeft_rayPt_iff M.W p t σ hs₁0 one_pos).2 hsec
     have hIR := Chazelle.Chain.subset_regionsIn_of_inter hR hIc hIf hmeet
     rintro x ⟨hx, hxD⟩
@@ -481,7 +480,7 @@ theorem inner_exit (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)}
       rayPt (sidePt M.W p t) σ T ∉ M.D ∧ chordOf (sidePt M.W p t) σ T ∈ M.Adm ∧
       chordOf (sidePt M.W p t) σ T ∉ S ∧ chordOf (sidePt M.W p t) σ T ∩ M.D ⊆ R := by
   have hM := walkAx_of_goodModel hGM
-  set w := sidePt M.W p t with hw
+  set w := sidePt M.W p t
   obtain ⟨r₁, hr₁, hsub⟩ := sector_sub_region hM hFam.2.1 hFam.1 hR harc hp ht0 ht1 hin
   have hini : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w σ s ∈ R := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hr₁] with s hs hs'
@@ -540,7 +539,7 @@ theorem attach_ray_left {W : Polygon} {c : Set Point} {p : ℕ} {t : ℝ} (hA : 
     sideLeft W p t (rayPt (sidePt W p t) σ 1) := by
   obtain ⟨-, -, -, -, r, hr, hleft⟩ := hA
   set w := sidePt W p t
-  set s := min (L₀ / 2) (r / 2) with hs
+  set s := min (L₀ / 2) (r / 2)
   have hs0 : 0 < s := lt_min (by linarith) (by linarith)
   have hsL : s < L₀ := lt_of_le_of_lt (min_le_left _ _) (by linarith)
   have hsr : s < r := lt_of_le_of_lt (min_le_right _ _) (by linarith)
@@ -550,7 +549,7 @@ theorem attach_ray_left {W : Polygon} {c : Set Point} {p : ℕ} {t : ℝ} (hA : 
     rw [lerp_rayPt, div_mul_cancel₀ _ hL₀.ne']
   have hd := dist_rayPt w hσ hs0.le
   have hne : rayPt w σ s ≠ w := fun h => by rw [h, dist_self] at hd; linarith
-  exact (Sweep.sideLeft_rayPt_iff W p t σ hs0 one_pos).1 (hleft _ hmem hne (by rw [hd]; exact hsr))
+  exact (Sweep.sideLeft_rayPt_iff W p t σ hs0 one_pos).1 (hleft _ hmem hne (by rwa [hd]))
 
 end
 

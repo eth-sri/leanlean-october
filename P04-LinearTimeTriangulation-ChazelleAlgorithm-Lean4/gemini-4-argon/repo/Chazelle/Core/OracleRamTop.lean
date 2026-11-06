@@ -60,9 +60,9 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
       (c'.nreg 120053 = 1 → c'.nreg 120005 = 0) := by
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, s₁⟩ := sgnS_exec (P := P) hG (by omega) 1 (by norm_num)
     (.vtx 120022) (.vtx 120023) (.vtx 120022) c hw (by decide) (by decide) (by decide) rfl rfl rfl
-    (show c.nreg 120022 < P.n by rw [hq.tv]; exact htv)
+    (show c.nreg 120022 < P.n by rwa [hq.tv])
     (show c.nreg 120023 < P.n by rw [hq.hz]; exact hv.hz_lt)
-    (show c.nreg 120022 < P.n by rw [hq.tv]; exact htv)
+    (show c.nreg 120022 < P.n by rwa [hq.tv])
   simp only [SignTest, SymPt.eval, hq.tv, hq.hz] at s₁
   have hz₁ : c₁.nreg 120012 = 0 := (f₁.1 _ (by decide)).trans hq.zero
   have w₁ := e₁.wb_right
@@ -74,7 +74,7 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
     refine ⟨c', _, .seq e₁ ex, by omega, (FrameB.mono f₁ fun r hr => by simp [hr]).trans
       (FrameB.mono f fun r hr => by
         simp only [Bool.or_eq_true, decide_eq_true_eq] at hr
-        rcases hr with hr | hr <;> simp [hr]), h1, by rw [h2]; exact s₁, h3⟩
+        rcases hr with hr | hr <;> simp [hr]), h1, by rwa [h2], h3⟩
   by_cases hb : c₁.nreg 10010 = 1
   · obtain ⟨c₂, k₂, e₂, hk₂, v₂⟩ : ∃ c₂ k₂, Exec P W (block [.constN 120005 0, .constN 120053 1])
         c₁ c₂ k₂ ∧ k₂ = 2 ∧ c₂.nreg 120005 = 0 ∧ c₂.nreg 120053 = 1 := by

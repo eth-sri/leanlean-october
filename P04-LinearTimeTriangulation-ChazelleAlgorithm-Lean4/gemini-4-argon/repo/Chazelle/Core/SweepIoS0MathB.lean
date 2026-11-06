@@ -64,7 +64,7 @@ theorem labels_of_log (hP : J.P.Simple) {S₂ : Set (Set Point)}
       LabIn J S₂ (es.getD j d).1 (es.getD j d).2.1 (es.getD j d).2.2 :=
     fun j hj => hlog.2.2.2.2.2.2 _ (getD_mem hj d)
   -- the offsets
-  set x := oW J ((pz : ℝ) + tz) with hx
+  set x := oW J ((pz : ℝ) + tz)
   set k := oW J (((es.getD i d).1 : ℝ) + (es.getD i d).2.1) with hk
   have hxn : x < (chainModel J.whole).W.n := off_lt (Corr.key_mem hpz htz0 htz1).2 hg0
   -- the next cut after the entry `i`

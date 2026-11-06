@@ -88,8 +88,7 @@ theorem nfWithin_lt {f : ℕ} {N : NF} (hN : NFWithin m f A N) : f < A := by
 
 /-- **The cells of the grade table lie below the bound.** -/
 theorem tab_lt {O : OracleIface} {P : Polygon} {h : ℕ}
-    (hR : Robust A m fun m' => GradeRaw O P m' h A) (hn : 2 ≤ P.n) (hΛ : 1 ≤ m h) :
-    h < A ∧ h + 1 < A ∧ h + 2 < A ∧ h + 3 < A ∧
+    (hR : Robust A m fun m' => GradeRaw O P m' h A) (hn : 2 ≤ P.n) (hΛ : 1 ≤ m h) : h + 3 < A ∧
     m (m (h + 1)) = P.n ∧ m (m (h + 1) + 1) = topGrade P.n ∧ m (h + 1) + 1 < A ∧
     (∀ i, i ≤ topGrade P.n + 1 → m (m (h + 1) + 2 + i) = 2 ^ i ∧
       m (m (h + 1) + topGrade P.n + 4 + i) = Cost.ceilBeta i ∧
@@ -106,10 +105,10 @@ theorem tab_lt {O : OracleIface} {P : Polygon} {h : ℕ}
   have h3 : h + 3 < A := ptr_lt hR (p := h + 3) (y := 2) (v := 1) fun m' _ hm' => by
     have := hm'.2.2.1 2 hn; simpa using this
   have h2 : h + 2 < A := bound3_lt hR (p := h + 2) (u := 0) (w := 3 * 0) fun m' he hm' => by
-    obtain ⟨-, -, -, -, hwf, -⟩ := hm'.2.2.2 0 0 (by rw [he h h0]; exact hΛ)
+    obtain ⟨-, -, -, -, hwf, -⟩ := hm'.2.2.2 0 0 (by rwa [he h h0])
       (by unfold gradeCount; omega)
     have := hwf.1; omega
-  refine ⟨h0, h1, h2, h3, hG.2.1.1, hG.2.1.2.1, ?_, fun i hi => ?_, fun y hy => ?_,
+  refine ⟨ h3, hG.2.1.1, hG.2.1.2.1, ?_, fun i hi => ?_, fun y hy => ?_,
     fun g i hg hi => ?_⟩
   · exact addr_lt hR (v := topGrade P.n) fun m' he hm' => by
       have := hm'.2.1.2.1; rwa [he _ h1] at this
@@ -127,7 +126,7 @@ theorem tab_lt {O : OracleIface} {P : Polygon} {h : ℕ}
       exact this
   · refine ⟨hG.2.2.1 y hy, addr_lt hR (v := y / 2) fun m' he hm' => ?_⟩
     have := hm'.2.2.1 y hy; rwa [he _ h3] at this
-  · have hgi : ∀ m' : ℕ → ℕ, (∀ a, a < A → m' a = m a) → g < m' h := fun m' he => by rw [he h h0]; exact hg
+  · have hgi : ∀ m' : ℕ → ℕ, (∀ a, a < A → m' a = m a) → g < m' h := fun m' he => by rwa [he h h0]
     have hT : m (h + 2) + g < A := bound2_lt hR (p := m (h + 2) + g) (u := 3 * i)
       fun m' he hm' => by
         obtain ⟨-, -, -, -, hwf, -⟩ := hm'.2.2.2 g i (hgi m' he) hi
@@ -135,11 +134,11 @@ theorem tab_lt {O : OracleIface} {P : Polygon} {h : ℕ}
     have hO : m (m (h + 2) + g) + 3 * i + 2 < A := ptr_lt hR (y := 2) (v := gradeGran g)
       fun m' he hm' => by
         obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, e3⟩ := hm'.2.2.2 g i (hgi m' he) hi
-        rw [he _ h2, he _ hT] at e3; exact e3
+        rwa [he _ h2, he _ hT] at e3
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, e3⟩ := hG.2.2.2 g i hg hi
     refine ⟨hT, hO, e3, addr_lt hR (v := gradeGran g) fun m' he hm' => ?_⟩
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, e4⟩ := hm'.2.2.2 g i (hgi m' he) hi
-    rw [he _ h2, he _ hT, he _ hO] at e4; exact e4
+    rwa [he _ h2, he _ hT, he _ hO] at e4
 
 end
 

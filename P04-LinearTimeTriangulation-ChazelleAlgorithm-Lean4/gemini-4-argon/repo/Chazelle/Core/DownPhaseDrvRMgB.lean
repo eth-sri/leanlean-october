@@ -118,8 +118,8 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       c₁.nreg 50091 = C1.topIdx ∧ FrameB Btop c c₁ := by
     have q44 := hK.r44; have q45 := hK.r45
     have hD1W : D1 + 4 ≤ W := by omega
-    have t1' : c.nmem (D1 + 4) = C1.topIdx := by rw [show D1 + 4 = D1 + 1 + 3 by ring]; exact t1
-    have t2' : c.nmem (D2 + 4) = C2.topIdx := by rw [show D2 + 4 = D2 + 1 + 3 by ring]; exact t2
+    have t1' : c.nmem (D1 + 4) = C1.topIdx := by rwa [show D1 + 4 = D1 + 1 + 3 by ring]
+    have t2' : c.nmem (D2 + 4) = C2.topIdx := by rwa [show D2 + 4 = D2 + 1 + 3 by ring]
     obtain ⟨c₁, k₁, e₁, hk₁, v20, v23, v21, v25, v60, v61, v67, v68, v69, s52, n87, k91, m₁⟩ :
         ∃ c₁ k₁, Exec P W mgLoad c c₁ k₁ ∧ k₁ = 17 ∧ c₁.nreg 219120 = C1.topIdx ∧
         c₁.nreg 219123 = c.nmem (D1 + 5) ∧ c₁.nreg 219121 = ma + C2.topIdx ∧
@@ -133,7 +133,6 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
         (try simp only [← hD1, ← hD2, q44, q45, h12, h00, h07, h01, t1', t2'])
     refine ⟨c₁, k₁, e₁, hk₁, v20, v23, v21, v25, ⟨e₁.wb_right, v60, v61, v67, v68, v69, m₁⟩, s52,
       n87, k91, exec_frameB e₁ (by decide)⟩
-  have hNP' : (H.pts P.n).length = NP := hNP.symm
   -- the first top point
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, E₂, sp₁, hsp₁, in₁⟩ := NFLoc.hostPt_exec (P := P) c₁ E₁ hHA hwf
     (by omega) (by omega) (by omega) s52 (by rw [n87, hNP]) k91 (by omega) (by omega)

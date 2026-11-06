@@ -89,12 +89,12 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
           c'.nreg r = c.nreg r) ∧
       (∀ r, bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) → c'.rreg r = c.rreg r) ∧
       (∀ a, a < c.nreg ALLOC → c'.rmem a = c.rmem a) ∧ c'.output = c.output := by
-  set K := L.length with hKd
-  set K₂ := L₂.length with hK₂d
+  set K := L.length
+  set K₂ := L₂.length
   set A₃ := c.nreg ALLOC with hA₃
   have hlen : (L ++ L₂).length = K + K₂ := List.length_append
   obtain ⟨hP, hS⟩ := DownDrv.splice_ok hperm hsort hperm₂ hsort₂
-  set E' := DownDrv.splice M (Qof P) (L ++ L₂) E E₂ with hE'd
+  set E' := DownDrv.splice M (Qof P) (L ++ L₂) E E₂
   have hcodes : ∀ x ∈ E ++ E₂, x < 2 * (L ++ L₂).length := by
     intro x hx
     rw [hlen]
@@ -109,7 +109,7 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
   obtain ⟨c₄, k₄, e₄, hk₄, w₄, m71, mA, mseg, mlow, mfr, mrr, mrm, mout⟩ :=
     splC_exec (P := P) (W := W) hG hWn c hw (D := D) (T := T) (SE := SE) (Rb := Rb) (K := K)
       (K₂ := K₂) (M := M) (L' := L ++ L₂) (E := E) (E₂ := E₂) h27 h28 h29 h04 h48 h34 h40 h42
-      (by rw [h42', hlen]) hlen hwf hM hok hrec (by rw [hlen]; exact hT) hE hSE hE₂ hRb hcodes
+      (by rw [h42', hlen]) hlen hwf hM hok hrec (by rwa [hlen]) hE hSE hE₂ hRb hcodes
       (by omega)
   rw [← hA₃] at m71 mA mlow
   have hmseg : seg c₄.nmem (c₄.nreg 210071) (2 * (K + K₂)) = E' := mseg
@@ -139,32 +139,32 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
   have f₆ := exec_frameM e₆ wrM_spl7
   have w₆ := e₆.wb_right
   have a6 : c₆.nreg ALLOC = A₃ + 4 * (K + K₂) := by
-    rw [f₆.1 _ (by decide)]; exact q9
+    rwa [f₆.1 _ (by decide)]
   have hm6 : ∀ a, a < A₃ → c₆.nmem a = c.nmem a := fun a ha => by rw [hm₆, pnm, mlow a ha]
   obtain ⟨hM₆, hwf₆⟩ := desc_agree hwf hM (m' := c₆.nmem) hm6
   have hwf₆' : ModelDescWF P (c₆.nreg ALLOC) c₆.nmem D := hwf₆.mono (by rw [a6]; omega)
   have hCL₆ : ChordListAt c₆.nmem A₀ (L ++ L₂) := fun i hi => by
     obtain ⟨x1, x2, x3⟩ := hCL i hi
     rw [hlen] at hi
-    exact ⟨by rw [hm6 _ (by omega)]; exact x1, by rw [hm6 _ (by omega)]; exact x2,
-      by rw [hm6 _ (by omega)]; exact x3⟩
+    exact ⟨by rwa [hm6 _ (by omega)], by rwa [hm6 _ (by omega)],
+      by rwa [hm6 _ (by omega)]⟩
   have hseg₆ : seg c₆.nmem (A₃ + 2 * (K + K₂)) (2 * (K + K₂)) = E' := by
-    rw [hm₆, pnm, ← m71]; exact hmseg
+    rwa [hm₆, pnm, ← m71]
   -- the sorted build
   have H7 := hB P W c₆ w₆
     (by
       simp only [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd]
-      refine ⟨hG, hWn, by rw [v0]; exact hwf₆', M, L ++ L₂, E', by rw [v0]; exact hM₆, hgood,
-        by rw [v2, hlen], by rw [v1, a6, hlen]; omega, by rw [v1]; exact hCL₆, hok,
-        by rw [v4, a6, hlen]; omega, by rw [v4, hlen]; exact hseg₆, hP, hS⟩)
+      refine ⟨hG, hWn, by rwa [v0], M, L ++ L₂, E', by rwa [v0], hgood,
+        by rw [v2, hlen], by rw [v1, a6, hlen]; omega, by rwa [v1], hok,
+        by rw [v4, a6, hlen]; omega, by rwa [v4, hlen], hP, hS⟩)
     (by
       simp only [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd]
       rw [a6, v2]; omega)
   obtain ⟨c₇, k₇, e₇, hk₇, post₇, fr₇⟩ := H7
   simp only [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd] at hk₇ post₇
   rw [v2] at hk₇
-  obtain ⟨o1, o2, -, -, -⟩ := post₇ M (L ++ L₂) (by rw [v0]; exact hM₆) (by rw [v2, hlen])
-    (by rw [v1]; exact hCL₆)
+  obtain ⟨o1, o2, -, -, -⟩ := post₇ M (L ++ L₂) (by rwa [v0]) (by rw [v2, hlen])
+    (by rwa [v1])
   rw [v4, hlen, hseg₆] at o2
   rw [a6] at o1
   obtain ⟨fr7, rr7, nm7, rm7, out7, al7, au7⟩ := fr₇
@@ -202,7 +202,7 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
   · rw [u4, a8]; omega
   · rw [u4, seg_congr (m' := c₆.nmem) fun i hi => hm8 _ (by omega), hseg₆]
   · rw [u5]; omega
-  · rw [u5, hm₈, a8]; exact o2
+  · rwa [u5, hm₈, a8]
   · rw [hm8 a (by omega), hm6 a ha]
   · rw [f₈.1 r (by simp only [decide_eq_false_iff_not]; omega)]
     rw [fr7 r (by

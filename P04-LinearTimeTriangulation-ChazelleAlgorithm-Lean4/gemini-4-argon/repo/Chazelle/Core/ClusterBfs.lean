@@ -190,7 +190,7 @@ theorem InvIn.push {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
       (Function.update q t (G.head (G.rot^[j] (G.first (q h))))) h (t + 1) (j + 1) := by
   set e := G.rot^[j] (G.first (q h)) with he_def
   set w := G.head e with hw_def
-  set u := q h with hu_def
+  set u := q h
   obtain ⟨hI0, hht, _, hcur⟩ := hI
   have hqh : q h < G.nv := hI0.qlt h hht
   have hfirst := hp.ok.first_lt _ hqh
@@ -213,12 +213,12 @@ theorem InvIn.push {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
     Function.update_of_ne hv _ _
   have hreach_u := hI0.reach h hht
   refine ⟨⟨by have := hI0.ht; omega, by omega, by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-    ?_⟩, by omega, by rw [hq' h hht]; exact hj, ?_⟩
+    ?_⟩, by omega, by rwa [hq' h hht], ?_⟩
   · rw [hq' 0 hI0.t0]; exact hI0.q0
   · intro i hi
     rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl
     · rw [hq' i hi]; exact hI0.qlt i hi
-    · rw [hqt]; exact hwn
+    · rwa [hqt]
   · intro i hi k hk hik
     rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl <;>
       rcases Nat.lt_succ_iff_lt_or_eq.mp hk with hk | rfl
@@ -259,12 +259,12 @@ theorem InvIn.push {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
     · obtain ⟨p1, p2, p3, k, hk, p4, p5⟩ := hI0.par i hi hi0
       unfold ParOK
       rw [hq' i hi, hpar' i hi, hlev' i hi]
-      exact ⟨p1, p2, p3, k, hk, by rw [hq' k (by omega)]; exact p4,
-        by rw [hq' k (by omega), hlev' k (by omega)]; exact p5⟩
+      exact ⟨p1, p2, p3, k, hk, by rwa [hq' k (by omega)],
+        by rwa [hq' k (by omega), hlev' k (by omega)]⟩
     · unfold ParOK
       rw [hqt, Function.update_self, hlevw]
       refine ⟨he, hdb, rfl, h, hht, ?_, ?_⟩
-      · rw [hq' h hht]; exact hve
+      · rwa [hq' h hht]
       · rw [hq' h hht, hlev' h hht]
   · intro i hi e' he' hve'
     rw [hq' i (by have := hI0.ht; omega)] at hve' ⊢

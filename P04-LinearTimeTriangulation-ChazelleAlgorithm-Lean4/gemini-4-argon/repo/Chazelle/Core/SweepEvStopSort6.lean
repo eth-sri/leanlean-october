@@ -41,11 +41,11 @@ set_option maxRecDepth 20000 in
 /-- **Task S: sort and dedupe the raw stop records.** -/
 theorem sortTask : SortTask := by
   refine ⟨ssSrt, 40000, fun sh Bs F X Ok P W c₀ c J N₁ N₂ E hI hrec hRB hroom => ?_⟩
-  set S := c.nreg gRC with hSd
-  set A := c.nreg ALLOC with hAd
-  set RB := c.nreg gRB with hRBd
-  set m₀ := c.nmem with hm₀
-  set d2 := c.nreg (sw 2) with hd2
+  set S := c.nreg gRC
+  set A := c.nreg ALLOC
+  set RB := c.nreg gRB
+  set m₀ := c.nmem
+  set d2 := c.nreg (sw 2)
   have hY : S * (Nat.clog 2 S + 1) ≤ (S + 1) * (Nat.clog 2 (S + 1) + 1) := ss_clog_mono S
   have hX1 : S + 1 ≤ (S + 1) * (Nat.clog 2 (S + 1) + 1) := Nat.le_mul_of_pos_right _ (by omega)
   have hsc : sortCost 12000 S = 12030 * (S * (Nat.clog 2 S + 1) + 1) := rfl
@@ -82,7 +82,7 @@ theorem sortTask : SortTask := by
   have kr₂ : ∀ r, 240000 ≤ r → r < 250000 → r < sw 3000 ∨ sw 3003 < r →
       c₂.nreg r = c.nreg r := fun r h1 h2 h3 => by
     rw [r₂ r (by omega) (by omega)]; exact kr₁ r h1 h2 h3
-  have A₂ : c₂.nreg ALLOC = A + S := by rw [r₂ ALLOC (by ssoSrt) (by ssoSrt)]; exact a₁
+  have A₂ : c₂.nreg ALLOC = A + S := by rwa [r₂ ALLOC (by ssoSrt) (by ssoSrt)]
   have ctx₂ : SsCtx J d2 RB S A m₀ c₂ := by
     refine ⟨kr₂ (sw 2) (by ssoSrt) (by ssoSrt) (by ssoSrt),
       (kr₂ cGW (by simp [cGW, sw]) (by simp [cGW, sw]) (by simp [cGW, sw])).trans hgw,
@@ -103,8 +103,7 @@ theorem sortTask : SortTask := by
   have hk₃' : k₃ ≤ 12030 * (Y + 1) := by
     have : k₃ ≤ sortCost 12000 (c₂.nreg 30004) := hk₃
     rw [v4, hsc] at this; omega
-  set SBv := c₃.nreg 30005 with hSBv
-  have p1' : A + S ≤ SBv := by have := p1; rw [A₂] at this; exact this
+  set SBv := c₃.nreg 30005
   have p2' : SBv + S ≤ c₃.nreg ALLOC := by have := p2; rw [show rd c₂ bSort 4 = S from v4] at this
                                            exact this
   set L := seg c₃.nmem SBv S with hL
@@ -112,9 +111,9 @@ theorem sortTask : SortTask := by
     rw [show rd c₂ bSort 3 = A from v3]
     exact ss_seg_range (fun i hi => t₁ i hi)
   have pperm' : L.Perm (List.range S) := by
-    have := pperm; rw [show rd c₂ bSort 4 = S from v4] at this; rw [hLr] at this; exact this
+    have := pperm; rwa [show rd c₂ bSort 4 = S from v4, hLr] at this
   have ppair' : L.Pairwise fun a b => ssLe P J m₀ RB S a b = true := by
-    have := ppair; rw [show rd c₂ bSort 4 = S from v4] at this; exact this
+    have := ppair; rwa [show rd c₂ bSort 4 = S from v4] at this
   have hLm : ∀ x ∈ L, x < S := fun x hx => List.mem_range.1 (pperm'.mem_iff.1 hx)
   have hLlen : L.length = S := by rw [hL, seg_length]
   have hLs : L.Pairwise (fun x y => KLe (ssKey P J m₀ RB x) (ssKey P J m₀ RB y)) :=
@@ -125,12 +124,12 @@ theorem sortTask : SortTask := by
   have kr₃ : ∀ r, 240000 ≤ r → r < 250000 → c₃.nreg r = c₂.nreg r := fun r h1 h2 =>
     fr₃.1 r (fb r h1 h2) (by unfold ALLOC; omega)
   have hB1 : A + S ≤ c₃.nreg ALLOC := le_trans (by rw [A₂]) fr₃.2.2.2.2.2.1
-  have hB1' : c₃.nreg ALLOC ≤ A + S + k₃ := by have := fr₃.2.2.2.2.2.2; rw [A₂] at this; exact this
-  set B1 := c₃.nreg ALLOC with hB1d
+  have hB1' : c₃.nreg ALLOC ≤ A + S + k₃ := by have := fr₃.2.2.2.2.2.2; rwa [A₂] at this
+  set B1 := c₃.nreg ALLOC
   -- 4. the output arrays
   have e₄ := exec_regB (P := P) ssAllocL e₃.wb_right (ssAllocL_ok c₃.nmem c₃.nreg (by
     rw [kr₃ gRC (by ssoSrt) (by ssoSrt), kr₂ gRC (by ssoSrt) (by ssoSrt) (by ssoSrt)]; omega))
-  set c₄ : Config := { c₃ with nreg := regB c₃.nmem ssAllocL c₃.nreg } with hc₄
+  set c₄ : Config := { c₃ with nreg := regB c₃.nmem ssAllocL c₃.nreg }
   obtain ⟨vSB, vsB, vaB, vAl, vsC, vqJ, vo⟩ := ssAllocL_val c₃.nmem c₃.nreg
   have gS₃ : c₃.nreg gRC = S := by
     rw [kr₃ gRC (by ssoSrt) (by ssoSrt), kr₂ gRC (by ssoSrt) (by ssoSrt) (by ssoSrt)]
@@ -240,8 +239,8 @@ theorem sortTask : SortTask := by
       by_contra h; rw [List.getElem?_eq_none (by omega)] at hn; cases hn
     obtain ⟨y, hy, hk⟩ := hD.cov n (by omega) i hn
     exact ⟨y, hy, hk⟩
-  · rw [b1₅]; exact hst
-  · rw [b2₅]; exact hax
+  · rwa [b1₅]
+  · rwa [b2₅]
   · rw [b1₅]; omega
   · rw [b1₅, A₅]; omega
   · rw [b2₅]; omega

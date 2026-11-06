@@ -84,7 +84,6 @@ theorem m1c_noRes {C : Chain} {a : Point} {σ : ℝ} {G : Prop} (hI : IInv W c�
   refine (IRS.instr1 (i := .constN r1F 0) hI ⟨iscr_sw (by unfold r1F sw; omega)
     (by unfold r1F sw; omega), Nat.zero_le _⟩).mono le_rfl ?_
   rintro c' rfl
-  have h0 : c.nreg r1F = c.nreg r1F := rfl
   have e0 : regI c.nmem (.constN r1F 0) c.nreg r1F = 0 := upd_same _ _ _
   refine ⟨⟨by show regI c.nmem (.constN r1F 0) c.nreg r1F ≤ 1; rw [e0]; omega,
     fun h => by

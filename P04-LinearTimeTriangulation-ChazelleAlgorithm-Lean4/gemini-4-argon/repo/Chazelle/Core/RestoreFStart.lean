@@ -218,9 +218,9 @@ theorem cnt_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem aCntL c.nreg q := fun q => by rw [h₁]
   have v30 : c₁.nreg 81030 = 0 := by rw [e₁]; simp [aCntL, regB, regI, upd]
   have v32 : c₁.nreg 81032 = (E.N.region E.r).arcs.length := by
-    rw [e₁]; simp [aCntL, regB, regI, upd, k5, e01, e02]; rw [e5]; exact hna
+    rw [e₁]; simp [aCntL, regB, regI, upd, k5, e01, e02]; rwa [e5]
   have v15 : c₁.nreg 81115 = (E.N.region E.r).chords.length := by
-    rw [e₁]; simp [aCntL, regB, regI, upd, k5, k2, e01, e02]; rw [e5]; exact hnc
+    rw [e₁]; simp [aCntL, regB, regI, upd, k5, k2, e01, e02]; rwa [e5]
   have f₁ : ∀ q, q ≠ 81134 → q ≠ 81121 → q ≠ 81114 → q ≠ 81115 → q ≠ 81030 → q ≠ 81032 →
       c₁.nreg q = c.nreg q := fun q a b d e f g => by
     rw [e₁, regB_other _ _ _ (fun i hi => ?_)]

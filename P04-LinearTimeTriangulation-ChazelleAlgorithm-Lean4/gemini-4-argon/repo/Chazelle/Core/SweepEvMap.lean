@@ -61,7 +61,6 @@ theorem vtx_tpos' (C : Chain) {k : ℕ} (hk : k ≤ C.m) :
     (chainModel C).W.vtx (6 + tpos C k) = C.vertex k := by
   have hn := cm_n C
   have hτ := tpos_lt C k
-  have h1 := C.one_le
   have := walk_tour C k 0 (by omega)
   rw [Nat.add_zero, Nat.mod_eq_of_lt (by rw [hn]; omega)] at this
   rw [this]
@@ -87,12 +86,10 @@ theorem nvt_left (hP : J.P.Simple) (hv : ¬ VNotTop J) :
     split_ifs
     · rw [show J.m₁ + 2 * J.m₁ - J.m₁ = 2 * J.m₁ by omega, Nat.mod_self]
     · rw [show J.m₁ + 2 * J.m₁ - (2 * J.m₁ - J.m₁) = 2 * J.m₁ by omega, Nat.mod_self]
-  have hτw := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   have hA : ¬ 2 * J.whole.m - tpos J.whole (J.m₁ + 2 * J.m₂) < 2 * J.m₁ := by
     rw [tpos_second J]
     have hτ0 := tpos_lt J.whole J.m₁
-    have h2 := J.right.one_le
     have hm2 : J.right.m = J.m₂ := rfl
     rcases vtop_cases J hv with h | h
     · rw [h, zero_add, Nat.mod_eq_of_lt (show 2 * J.m₂ < 2 * J.whole.m by omega)]
@@ -120,7 +117,6 @@ theorem caseC_facts (hv : ¬ VNotTop J) (hle : ¬ Lst J < lOff J) :
     tpos J.whole J.m₁ = 0 ∧ lOff J = Lst J ∧ Lst J = 2 * J.m₂ := by
   have hτ := tpos_lt J.whole J.m₁
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
-  have h2 := J.right.one_le
   have hm2 : J.right.m = J.m₂ := rfl
   have hc := vtop_cases J hv
   rw [Lst_rlen, lOff_eq] at *

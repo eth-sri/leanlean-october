@@ -349,11 +349,11 @@ theorem prune (hM : WalkAx M) {S : Set (Set Point)} (_hS : S ⊆ M.Adm) (hfin : 
     (hxa : (px : ℝ) + tx ≠ pa + ta) (hxa' : (px : ℝ) + tx ≠ pa' + ta') :
     ¬ sideInArc aj bj (pa' + ta') ∧ ∀ y, sideInArc aj bj y →
       (sideInArc (pa + ta) (pa' + ta') (px + tx) ↔ sideInArc (pa + ta) (pa' + ta') y) := by
-  set n : ℝ := (M.W.n : ℝ) with hn
-  set ka : ℝ := (pa : ℝ) + ta with hkad
-  set ka' : ℝ := (pa' : ℝ) + ta' with hka'd
-  set kx : ℝ := (px : ℝ) + tx with hkxd
-  set kx' : ℝ := (px' : ℝ) + tx' with hkx'd
+  set n : ℝ := (M.W.n : ℝ)
+  set ka : ℝ := (pa : ℝ) + ta
+  set ka' : ℝ := (pa' : ℝ) + ta'
+  set kx : ℝ := (px : ℝ) + tx
+  set kx' : ℝ := (px' : ℝ) + tx'
   obtain ⟨hka0, hkan⟩ := key_range hA
   obtain ⟨hka'0, hka'n⟩ := key_range hA'
   obtain ⟨hkx0, hkxn⟩ := key_range hX
@@ -389,7 +389,6 @@ theorem prune (hM : WalkAx M) {S : Set (Set Point)} (_hS : S ⊆ M.Adm) (hfin : 
     closedArc_rot (n := n) (g := ka) hka0 hkan ha0 han hb0 hbn hx0 hxn
   have o0 : off n ka ka = 0 := WalkEmbed.off_self n ka
   have on0 : ∀ {x}, 0 ≤ x → 0 ≤ off n ka x := fun h => WalkEmbed.off_nonneg h hkan
-  have onn : ∀ {x}, x < n → off n ka x < n := fun h => WalkEmbed.off_lt h hka0
   have oinj : ∀ {x y}, 0 ≤ x → x < n → 0 ≤ y → y < n → off n ka x = off n ka y → x = y :=
     fun hx0 hxn hy0 hyn h => off_inj hka0 hkan hx0 hxn hy0 hyn h
   have hi' : sideInArc (off n ka ai) (off n ka bi) 0 := by
@@ -402,9 +401,9 @@ theorem prune (hM : WalkAx M) {S : Set (Set Point)} (_hS : S ⊆ M.Adm) (hfin : 
     refine countOK_mono hfin (fun u hu h => ?_) (fun u hu h => ?_) hgood
     · obtain ⟨hu0, hun⟩ := WalkAx.cut_bounds hu
       have hdom := cyc_dom_open (on0 hai0) (on0 hbj0) (on0 hkx0) habo hi'
-        (by rw [← rot hai0 hain hbi0 hbin haj0 hajn]; exact hF1)
-        (by rw [← rot hai0 hain hbi0 hbin hbj0 hbjn]; exact hF1')
-        (by rw [← o0, ← rot haj0 hajn hbj0 hbjn hka0 hkan]; exact hF2)
+        (by rwa [← rot hai0 hain hbi0 hbin haj0 hajn])
+        (by rwa [← rot hai0 hain hbi0 hbin hbj0 hbjn])
+        (by rwa [← o0, ← rot haj0 hajn hbj0 hbjn hka0 hkan])
         ((rot haj0 hajn hbj0 hbjn hka'0 hka'n).1 ha') ((crot hai0 hain hbi0 hbin hkx0 hkxn).1 hkx)
         ((crot haj0 hajn hbj0 hbjn hkx'0 hkx'n).1 hkx')
         (fun h => hxx (oinj hkx0 hkxn hkx'0 hkx'n h))
@@ -415,9 +414,9 @@ theorem prune (hM : WalkAx M) {S : Set (Set Point)} (_hS : S ⊆ M.Adm) (hfin : 
       exact (rot hka0 hkan hka'0 hka'n hu0 hun).2 this
     · obtain ⟨hu0, hun⟩ := WalkAx.cut_bounds hu
       have hdom := cyc_dom_open (on0 hai0) (on0 hbj0) (on0 hkx0) habo hi'
-        (by rw [← rot hai0 hain hbi0 hbin haj0 hajn]; exact hF1)
-        (by rw [← rot hai0 hain hbi0 hbin hbj0 hbjn]; exact hF1')
-        (by rw [← o0, ← rot haj0 hajn hbj0 hbjn hka0 hkan]; exact hF2)
+        (by rwa [← rot hai0 hain hbi0 hbin haj0 hajn])
+        (by rwa [← rot hai0 hain hbi0 hbin hbj0 hbjn])
+        (by rwa [← o0, ← rot haj0 hajn hbj0 hbjn hka0 hkan])
         ((rot haj0 hajn hbj0 hbjn hka'0 hka'n).1 ha') ((crot hai0 hain hbi0 hbin hkx0 hkxn).1 hkx)
         ((crot haj0 hajn hbj0 hbjn hkx'0 hkx'n).1 hkx')
         (fun h => hxx (oinj hkx0 hkxn hkx'0 hkx'n h))
@@ -436,7 +435,7 @@ theorem prune (hM : WalkAx M) {S : Set (Set Point)} (_hS : S ⊆ M.Adm) (hfin : 
       have hdom := cyc_dom_same (on0 hai0) habo hi'
         ((crot hai0 hain hbi0 hbin hkx0 hkxn).1 hkx)
         (fun h => hxa' (oinj hkx0 hkxn hka'0 hka'n h))
-        (by rw [← rot hai0 hain hbi0 hbin hka'0 hka'n]; exact hF4')
+        (by rwa [← rot hai0 hain hbi0 hbin hka'0 hka'n])
         (by rw [← rot hai0 hain hbi0 hbin hu0 hun]; exact fun h => hnoi _ h hu)
       rw [heq] at h
       have := hdom.1 ((rot hkx0 hkxn hka'0 hka'n hu0 hun).1 h)
@@ -446,7 +445,7 @@ theorem prune (hM : WalkAx M) {S : Set (Set Point)} (_hS : S ⊆ M.Adm) (hfin : 
       have hdom := cyc_dom_same (on0 hai0) habo hi'
         ((crot hai0 hain hbi0 hbin hkx0 hkxn).1 hkx)
         (fun h => hxa' (oinj hkx0 hkxn hka'0 hka'n h))
-        (by rw [← rot hai0 hain hbi0 hbin hka'0 hka'n]; exact hF4')
+        (by rwa [← rot hai0 hain hbi0 hbin hka'0 hka'n])
         (by rw [← rot hai0 hain hbi0 hbin hu0 hun]; exact fun h => hnoi _ h hu)
       rw [heq] at h
       have := hdom.2 ((rot hka'0 hka'n hkx0 hkxn hu0 hun).1 h)

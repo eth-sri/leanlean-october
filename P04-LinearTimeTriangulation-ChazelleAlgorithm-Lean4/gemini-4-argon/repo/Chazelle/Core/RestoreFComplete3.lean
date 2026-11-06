@@ -73,7 +73,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
   obtain ⟨c₃, hI₃, hcp, h40, h41, hdone⟩ := hpd
   have hE₃ := hE.rebase hI₃
   have hM := walkAx_of_goodModel hE.hGM
-  set L := c₃.nreg 81076 with hLdef
+  set L := c₃.nreg 81076
   have hT := tile_of_cut hE hG.hch hG.hti hcp
   have hcp' := hcp
   obtain ⟨hLq, -, hq1, -, -, -, -, hk0w, hk1w, hpos, hkind⟩ := hcp'
@@ -107,7 +107,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
       show VSet E ((c₃.nmem (prOf L i') + t) % E.M.W.n)
       rw [e]; exact hG.hVX) σb hσb (by
       show GoodAt (E.re c₃) reg ((c₃.nmem (prOf L i') + t) % E.M.W.n) σb
-      rw [e]; exact hGA)
+      rwa [e])
   · -- a kind-1 piece
     obtain ⟨Hs, Cα, N, γ', hK, J, hV, htest, hst1, hst2⟩ := hPD.2 hk1
     obtain ⟨-, Hs', Cα', N', hCD', -, -, hset', hwt', hPW', -, -⟩ := hk1w i' hi' hk1
@@ -115,7 +115,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
     subst hCC
     obtain ⟨hpw0, hpw3, -, hpwe, -⟩ := hPW'
     set n := E.M.W.n with hndef
-    set s := c₃.nmem (L + 1 + 7 * i' + 0) with hsdef
+    set s := c₃.nmem (L + 1 + 7 * i' + 0)
     have hs : s < n := (hpos i' hi').2.2.1
     have hmn : Cα'.m < n := hK.hmn
     have hm1 := Cα'.one_le
@@ -124,7 +124,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
     have kE : peK E c₃.nmem L i' = (((s + Cα'.m) % n : ℕ) : ℝ) := by
       unfold peK; simp only at hpw3 hpwe; rw [hpw3, hpwe]; exact key_vtx' _ _ _
     have hwt'' : E.M.arcWt (s : ℝ) (((s + Cα'.m) % n : ℕ) : ℝ) = Cα'.m := by
-      rw [← kS, ← kE]; exact hwt'
+      rwa [← kS, ← kE]
     have hcnt := counted_of_wt (M := E.M) hs (by omega) hmn hwt''
     rw [kS, kE] at hcl
     obtain ⟨d, hd, hdx⟩ := closed_offset hs hmn (by omega) hXe hcl
@@ -193,7 +193,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
         hdσ g1 g2 g3 g4 g5 hXj g6
       exact hst1 hone reg _ _ _ _ d regα Tα hD haj htc
     · obtain ⟨hs1', hs2'⟩ := hst2 (by omega)
-      set L₁ := 2 * Cα'.m - WalkEmbed.tpos Cα' J with hL₁
+      set L₁ := 2 * Cα'.m - WalkEmbed.tpos Cα' J
       rcases (show d < L₁ ∨ d = L₁ ∨ L₁ < d by omega) with h1 | h1 | h1
       · obtain ⟨g1, g2, g3, g4, g5, g6⟩ := hgood s d hdx
         obtain ⟨regα, Tα, hD⟩ := descGood_mk hE₃ hregs hG.hch (arc_isArc hE hregs hG.hti) hAj

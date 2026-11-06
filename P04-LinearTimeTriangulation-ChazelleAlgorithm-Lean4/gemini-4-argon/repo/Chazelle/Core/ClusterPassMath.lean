@@ -52,11 +52,6 @@ theorem cntS_lt {i i' : ℕ} (hlo : lo ≤ i) (h : i < i') (hs : sel i) :
   have := cntS_mono (sel := sel) (lo := lo) (show i + 1 ≤ i' by omega)
   omega
 
-theorem cntS_le (i : ℕ) : cntS sel lo i ≤ i - lo := by
-  classical
-  unfold cntS
-  exact (Finset.card_filter_le _ _).trans (by rw [Nat.card_Ico])
-
 open Classical in
 theorem passMem_succ (j : ℕ) :
     passMem m0 sel bACT bPOS bTMP lo e (j + 1) =
@@ -93,7 +88,6 @@ theorem passMem_act (j : ℕ)
     intro i h1 h2 hs
     have hp := passMem_ptr_eq (m0 := m0) (sel := sel) (bACT := bACT) (bPOS := bPOS)
       (bTMP := bTMP) (lo := lo) (e := e) j
-    have hc := cntS_le (sel := sel) (lo := lo) (lo + j)
     have hcm := cntS_succ (sel := sel) (lo := lo) (show lo ≤ lo + j by omega)
     rw [show lo + j + 1 = lo + (j + 1) by omega] at hcm
     have hci : lo ≤ i → i < lo + j → sel i → cntS sel lo i < cntS sel lo (lo + j) :=
@@ -135,7 +129,6 @@ theorem passMem_pos (j : ℕ)
     intro i h1 h2 hs
     have hp := passMem_ptr_eq (m0 := m0) (sel := sel) (bACT := bACT) (bPOS := bPOS)
       (bTMP := bTMP) (lo := lo) (e := e) j
-    have hc := cntS_le (sel := sel) (lo := lo) (lo + j)
     have hcm := cntS_succ (sel := sel) (lo := lo) (show lo ≤ lo + j by omega)
     rw [show lo + j + 1 = lo + (j + 1) by omega] at hcm
     have hci : lo ≤ i → i < lo + j → sel i → cntS sel lo i < cntS sel lo (lo + j) :=

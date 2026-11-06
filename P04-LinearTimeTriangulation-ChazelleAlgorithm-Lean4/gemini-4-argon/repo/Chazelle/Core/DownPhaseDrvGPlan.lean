@@ -133,7 +133,7 @@ theorem runLeaves_gaps {n C p a ℓ : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (hℓ :
           rw [lastEnd_append, g2, k2]
         rw [hl]
         refine ⟨gapsLe_append _ _ e _ _ g1 ?_, by omega, by omega⟩
-        rw [g2]; exact k1
+        rwa [g2]
 
 /-! ## The gaps of a host -/
 

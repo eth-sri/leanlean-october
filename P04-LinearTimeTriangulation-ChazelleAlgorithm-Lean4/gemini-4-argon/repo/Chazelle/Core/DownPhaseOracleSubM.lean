@@ -136,7 +136,7 @@ of `Q` taken modulo `n`. -/
 theorem sideBeta_ch {C : Chain} (hC : C.P = Q) (hD : DistinctHeights Q) (hT0 : 0 < C.topIdx)
     {v : ℕ} (hv : v = (C.s + C.topIdx) % Q.n) :
     C.sideBeta = true ↔ BetaF (Q.vtx ((v + Q.n - 1) % Q.n)) (Q.vtx v) (Q.vtx ((v + 1) % Q.n)) := by
-  have hDH : DistinctHeights C.P := by rw [hC]; exact hD
+  have hDH : DistinctHeights C.P := by rwa [hC]
   have hn : 1 < Q.n := by have := C.add_one_le; have := C.one_le; rw [hC] at *; omega
   have eA : C.vertex (C.topIdx - 1) = Q.vtx ((v + Q.n - 1) % Q.n) := by
     show C.P.vtx ((C.s + (C.topIdx - 1)) % C.P.n) = _

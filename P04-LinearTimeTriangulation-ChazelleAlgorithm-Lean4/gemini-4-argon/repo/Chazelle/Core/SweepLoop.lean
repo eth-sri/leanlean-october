@@ -112,8 +112,7 @@ theorem after_side {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : GoodMo
   obtain ⟨U, hU, hS⟩ := side_region_exists hM hFam.2.1 hFam.1 he hρ
   have hfac := (faced_or_middle hGM hFam he hA hρ hU hS hdir).1 huniq
   have hd2 : -dir * dir = -1 := by rcases hdir with ⟨rfl, -⟩ | ⟨rfl, -⟩ <;> norm_num
-  rw [after_unique hA.2.2.1 hG hU hW (hfac.1 hd2)]
-  exact hS
+  rwa [after_unique hA.2.2.1 hG hU hW (hfac.1 hd2)]
 
 /-- **The region faced just before a uniquely attached chord** lies on its side `dir` (item
 (c)). -/
@@ -129,8 +128,7 @@ theorem before_side {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : GoodM
   obtain ⟨U, hU, hS⟩ := side_region_exists hM hFam.2.1 hFam.1 he hρ
   have hfac := (faced_or_middle hGM hFam he hA hρ hU hS hdir).1 huniq
   have hd2 : dir * dir = 1 := by rcases hdir with ⟨rfl, -⟩ | ⟨rfl, -⟩ <;> norm_num
-  rw [before_unique hA.2.1 hG hU hW (hfac.2 hd2)]
-  exact hS
+  rwa [before_unique hA.2.1 hG hU hW (hfac.2 hd2)]
 
 /-- **The regions faced around a tie** (item (c)): at a tie whose leaving edge goes down, the
 region faced just after is below the east chord and the region faced just before is below the
@@ -159,16 +157,16 @@ theorem after_side_tie {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : Go
   refine ⟨fun hdn hW => ?_, fun hdn hW => ?_, fun hup hW => ?_, fun hup hW => ?_⟩
   · obtain ⟨-, -, h, -⟩ := fe (Or.inr rfl) hUe hSe
     have hfac := (h hdn).2 rfl
-    rw [after_unique hAe.2.2.1 hG hUe hW (hfac.1 (by norm_num))]; exact hSe
+    rwa [after_unique hAe.2.2.1 hG hUe hW (hfac.1 (by norm_num))]
   · obtain ⟨-, -, h, -⟩ := fw (Or.inr rfl) hUw hSw
     have hfac := (h hdn).2 rfl
-    rw [before_unique hAw.2.1 hG hUw hW (hfac.2 (by norm_num))]; exact hSw
+    rwa [before_unique hAw.2.1 hG hUw hW (hfac.2 (by norm_num))]
   · obtain ⟨-, -, -, h⟩ := fw (Or.inl rfl) hUw' hSw'
     have hfac := (h hup).2 rfl
-    rw [after_unique hAw.2.2.1 hG hUw' hW (hfac.1 (by norm_num))]; exact hSw'
+    rwa [after_unique hAw.2.2.1 hG hUw' hW (hfac.1 (by norm_num))]
   · obtain ⟨-, -, -, h⟩ := fe (Or.inl rfl) hUe' hSe'
     have hfac := (h hup).2 rfl
-    rw [before_unique hAe.2.1 hG hUe' hW (hfac.2 (by norm_num))]; exact hSe'
+    rwa [before_unique hAe.2.1 hG hUe' hW (hfac.2 (by norm_num))]
 
 /-! ## Transparent blocks (the stack rule) -/
 

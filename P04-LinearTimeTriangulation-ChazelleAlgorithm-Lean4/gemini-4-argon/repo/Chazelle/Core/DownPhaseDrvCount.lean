@@ -114,10 +114,10 @@ theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
     obtain ⟨r1, hr1, hs1⟩ := hA.2.2.2.2
     obtain ⟨r2, hr2, hs2⟩ := hAe.2.2.2.2
     obtain ⟨x, hx, hxe, hxd⟩ := near_end hab (lt_min hr (lt_min hr1 hr2)) e hee
-    have hxc : x ∈ c := by rw [hcab]; exact hx
-    have h1 := hs1 x hxc (by rw [hP]; exact hxe)
+    have hxc : x ∈ c := by rwa [hcab]
+    have h1 := hs1 x hxc (by rwa [hP])
       (by rw [hP]; exact lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_left _ _)))
-    have h2 := hs2 x hxc (by rw [hPe]; exact hxe)
+    have h2 := hs2 x hxc (by rwa [hPe])
       (by rw [hPe]; exact lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_right _ _)))
     exact hdisj x (lt_of_lt_of_le hxd (min_le_left _ _)) h1 h2
   rcases hend with h | h
@@ -148,7 +148,7 @@ theorem ncard_biUnion_le_two {E : Set (Set Point)} (hE : E.Finite) (f : Set Poin
 /-- **The exit keys of a region number at most twice its degree.** -/
 theorem exitKeys_ncard_le (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (U : Set Point) :
     (exitKeys M F U).ncard ≤ 2 * M.deg F U := by
-  set E := {c | c ∈ F ∧ TouchesIn M.D c U} with hE
+  set E := {c | c ∈ F ∧ TouchesIn M.D c U}
   have hEfin : E.Finite := hfin.subset fun c hc => hc.1
   have hsub : exitKeys M F U ⊆ ⋃ c ∈ E, attachKeys M c := by
     rintro x ⟨c, hc, ht, p, t, hA, rfl⟩
@@ -214,8 +214,7 @@ theorem sum_vtxIdx_eq {T : Set (Set Point)} (hT : T.Finite) (hTR : T ⊆ M.regio
   | empty => simp
   | @insert U T hUT hT ih =>
     rw [finsum_mem_insert _ hUT hT, Set.biUnion_insert,
-      ih (fun V hV => hTR (mem_insert_of_mem U hV))]
-    rw [ncard_union_eq _ (hVfin U) (hT.biUnion fun V _ => hVfin V)]
+      ih (fun V hV => hTR (mem_insert_of_mem U hV)), ncard_union_eq _ (hVfin U) (hT.biUnion fun V _ => hVfin V)]
     rw [Set.disjoint_iUnion₂_right]
     intro V hV
     exact vtxIdx_disjoint (hTR (mem_insert U T)) (hTR (mem_insert_of_mem U hV))

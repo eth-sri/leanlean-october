@@ -59,7 +59,6 @@ theorem convQ_sem {J : Merge.Junction} {H : Host} (hI : IInv W c₀ c) (hK : Con
     ⟨iscr_sw (by unfold zE sw; norm_num) (by unfold zE sw; norm_num), by unfold zE cX sw; omega,
       by unfold zE cT sw; omega, by unfold zE cDd sw; omega⟩
   have v35 : c.nreg (sw 35) = 2 * J.whole.m + 7 := by rw [r 35 (by norm_num), h35]
-  have hnC : ∀ C : Chain, (chainModel C).W.n = 2 * C.m + 7 := fun C => cm_n C
   rcases sideChain_cases J hi with ⟨rfl, hC⟩ | ⟨rfl, hC⟩
   · rw [hC] at hcls ⊢
     have ht : c.nreg sSide < c.nreg K1 := by rw [hs, k1]; norm_num
@@ -75,7 +74,7 @@ theorem convQ_sem {J : Merge.Junction} {H : Host} (hI : IInv W c₀ c) (hK : Con
     have t2 := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
     refine (IRS.ifT ht (convS_irs (Or.inr rfl) (Or.inl rfl) hpe hpo hI hK (by rw [v33]; omega)
       (by rw [v46, v33]; omega) (by rw [v33]; omega) (by rw [v45, v35]; omega)
-      (by rw [v35]; exact hWm))).mono (by norm_num) ?_
+      (by rwa [v35]))).mono (by norm_num) ?_
     rintro c' ⟨h1, h2, h3⟩
     obtain ⟨a1, a2, a3⟩ := convL_val hst hP hcls
     simp only [rr (sw 45) (by unfold sw; norm_num) (by unfold sw; norm_num),
@@ -100,7 +99,7 @@ theorem convQ_sem {J : Merge.Junction} {H : Host} (hI : IInv W c₀ c) (hK : Con
     have t2 := tpos_lt J.whole J.m₁
     refine (IRS.ifF ht (convS_irs (Or.inl rfl) (Or.inr rfl) hpe hpo hI hK (by rw [v34]; omega)
       (by rw [v41, v34]; omega) (by rw [v34]; omega) (by rw [v40, v35]; omega)
-      (by rw [v35]; exact hWm))).mono (by norm_num) ?_
+      (by rwa [v35]))).mono (by norm_num) ?_
     rintro c' ⟨h1, h2, h3⟩
     obtain ⟨a1, a2, a3⟩ := convR_val hst hP hcls
     simp only [rr (sw 40) (by unfold sw; norm_num) (by unfold sw; norm_num),
@@ -128,8 +127,6 @@ theorem winVal_sem {J : Merge.Junction} {H : Host} (hI : IInv W c₀ c)
       (chainModel J.whole).pos (Qof P) ⟨winVal c, c.nreg (accA + 2)⟩ = rayPt z σ T := by
   have rr : ∀ x, 240000 ≤ x → x < 240700 → c.nreg x = c₀.nreg x := fun x h1 h2 =>
     hI.hin _ ⟨h1, h2⟩
-  have hy : ∀ C : Chain, C.P = J.P → |((chainModel C).pos (Qof P)
-      ⟨c.nreg (accA + 1), c.nreg (accA + 2)⟩).2| < C.radius → True := fun _ _ _ => trivial
   unfold winVal
   split_ifs with h1 h2
   · have hM : ModB J (c.nreg bL) (c.nreg bR) (c.nreg (accA + 3)) = J.left := by
@@ -212,7 +209,6 @@ theorem qry_run {c0 c1 : Stmt} {X : MemCtx} {Ok : Polygon → Model → Prop}
     IRS P W c₀ (qryP c0 c1) c (87100 + Kc) (QryPost J P i L j c) := by
   have hA := hB.hA
   have hK := hA.hK
-  have hKc := hK.fix hI
   have hQn : (Qof P).n = P.n := shear_n _ _
   set q := L.getD j (0, 0, 0) with hq_def
   have hqL : q ∈ L := by rw [hq_def, List.getD_eq_getElem _ _ hj]; exact List.getElem_mem hj
@@ -222,7 +218,6 @@ theorem qry_run {c0 c1 : Stmt} {X : MemCtx} {Ok : Polygon → Model → Prop}
   have hzq : (chainModel (sideChain J i)).pos (Qof P) ⟨q.1, q.2.1⟩ = z := rfl
   obtain ⟨hcls, hzR, hzts, hzt, hzC⟩ := query_facts J hqOK
   rw [hzq] at hzR hzts hzt hzC
-  have hσ := Sweep.dirOf_cases q.2.2
   have hLm := hB.hLm
   have hAc : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
   obtain ⟨g1, g2, g3⟩ := hB.hLat j hj
@@ -244,7 +239,7 @@ theorem qry_run {c0 c1 : Stmt} {X : MemCtx} {Ok : Polygon → Model → Prop}
     (by unfold tAq ALLOC sw; omega)
   -- 2. the position in the walk of `C`
   refine (IRS.seq (K₂ := 87070 + Kc) (convQ_sem hI₁ hK hA.hst hA.hP hA.hWm hB.hi (hside c₁ hI₁)
-    (by rw [e1, e2]; exact hcls)) ?_).mono (by omega) (fun _ h => h)
+    (by rwa [e1, e2])) ?_).mono (by omega) (fun _ h => h)
   rintro c₂ hI₂ hA₂ hA₂' ⟨v1, v2, v3, v4, v5⟩
   rw [e1, e2] at v2 v3
   rw [hzq] at v3
@@ -259,9 +254,9 @@ theorem qry_run {c0 c1 : Stmt} {X : MemCtx} {Ok : Polygon → Model → Prop}
   -- 3. the flag
   obtain ⟨-, hq1, hqn, hp0, hp1, -, -⟩ := hqOK
   have hpp2 : ProperPos (chainModel J.whole) (Qof P) P.n ⟨c₂.nreg zE, c₂.nreg qH⟩ := by
-    rw [e2']; exact ⟨by rw [v2]; exact hp0, by rw [v2]; exact hp1, by rw [← hQn]; exact hqn⟩
+    rw [e2']; exact ⟨by rwa [v2], by rwa [v2], by rwa [← hQn]⟩
   refine (IRS.seq (K₂ := 52063 + Kc) (flagS_irs hI₂ hA.hP (hA.ctxW hI₂) v1 hpp2
-    (by rw [e2']; exact v3) hzR hzC (by omega)) ?_).mono (by omega) (fun _ h => h)
+    (by rwa [e2']) hzR hzC (by omega)) ?_).mono (by omega) (fun _ h => h)
   rintro c₃ hI₃ hA₃ hA₃' ⟨u1, u2, u3, u4, u5, u6⟩
   rw [e3'] at u2 u3
   have k3 : ∀ r, bandOf r ∉ oracleBands → r ≠ zF → r ≠ zP → r ≠ zPh → r ≠ ALLOC →
@@ -287,7 +282,7 @@ theorem qry_run {c0 c1 : Stmt} {X : MemCtx} {Ok : Polygon → Model → Prop}
   · -- not free: the zero record
     have hz0 : ¬ FreeAt J.whole z (dirOf q.2.2) := fun h => by
       have := u2.2 h; rw [hKc3.2.1] at hf; omega
-    refine (IRS.ifT hf (store4_irs hI₃ hK (by rne) (by rne) (by rne) (by rw [hR3]; exact hslotA)
+    refine (IRS.ifT hf (store4_irs hI₃ hK (by rne) (by rne) (by rne) (by rwa [hR3])
       (by rw [hR3]; omega))).mono (by omega) ?_
     rintro c' ⟨w1, w2⟩
     have k0 : c₃.nreg K0 = 0 := hKc3.1
@@ -319,7 +314,7 @@ theorem qry_run {c0 c1 : Stmt} {X : MemCtx} {Ok : Polygon → Model → Prop}
   refine (IRS.ifF hf (K := 52061 + Kc) ?_).mono (by omega) (fun _ h => h)
   -- 5. the bits
   refine (IRS.seq (K₂ := 35095 + Kc) (bitsQ_irs hI₃ hK hB.hi (hside c₃ hI₃) (hA.ctxL hI₃)
-    (hA.ctxR hI₃) (by rw [q3H]; exact ⟨hq1, by rw [← hQn]; exact hqn⟩)
+    (hA.ctxR hI₃) (by rw [q3H]; exact ⟨hq1, by rwa [← hQn]⟩)
     (fun h0 => by
       rw [q3H, hvz]; have := hzts; subst h0; simpa [sideChain] using this)
     (fun h1 => by
@@ -359,10 +354,10 @@ theorem qry_run {c0 c1 : Stmt} {X : MemCtx} {Ok : Polygon → Model → Prop}
   have q5bL : c₅.nreg bL = c₄.nreg bL := v5 _ (by rne)
   have q5bR : c₅.nreg bR = c₄.nreg bR := v5 _ (by rne)
   have hQS : QState P J i z c₅ := by
-    refine ⟨by rw [q5E, q5H, q5D]; exact hB.hq q hqL, by rw [q5E, q5H]; exact hqht,
-      by rw [q5E, q5H]; exact hzq, by rw [q5zE]; exact v1, by rw [q5zE, q5H, ← e2']; exact hpp2,
-      by rw [q5zE, q5H, ← e2']; rw [e2']; exact v3, by rw [q5D]; exact hfree,
-      by rw [q5P]; exact a1, by rw [q5P, q5Ph]; exact a2, by rw [q5P, q5Ph, q5D]; exact a3,
+    refine ⟨by rw [q5E, q5H, q5D]; exact hB.hq q hqL, by rwa [q5E, q5H],
+      by rwa [q5E, q5H], by rwa [q5zE], by rwa [q5zE, q5H, ← e2'],
+      by rwa [q5zE, q5H, ← e2', e2'], by rwa [q5D],
+      by rwa [q5P], by rwa [q5P, q5Ph], by rwa [q5P, q5Ph, q5D],
       by rw [q5bL]; exact ⟨b1, b2⟩, by rw [q5bR]; exact ⟨b3, b4⟩⟩
   have hend5 : i = 1 → c₅.nreg qJ < 2 * N₂.nChords →
       (c₅.nreg qE, c₅.nreg qH, c₅.nreg qD) =
@@ -388,7 +383,7 @@ theorem qry_run {c0 c1 : Stmt} {X : MemCtx} {Ok : Polygon → Model → Prop}
   refine (IRS.seq (K₂ := 35068) hdisp ?_).mono (by omega) (fun _ h => h)
   rintro c₆ hI₆ hA₆ hA₆' ⟨⟨Lc, hacc, hgood, hhit⟩, cf1, cf2, cf3⟩
   rw [q5D] at hacc hgood hhit
-  obtain ⟨wf, wt, wpp, we, wpos⟩ := winner_eq hacc hgood hhit
+  obtain ⟨wpp, we, wpos⟩ := winner_eq hacc hgood hhit
   have s6 : ∀ r, 240000 ≤ r → r < 250000 → ¬ (sw 1000 ≤ r ∧ r < sw 3200) →
       ¬ (sw 3230 ≤ r ∧ r < sw 3400) → ¬ (sw 4000 ≤ r ∧ r < sw 5000) → c₆.nreg r = c₅.nreg r :=
     fun r h1 h2 a b d => cf1 r (not_oracle_sw h1 h2) a b d (by rne)
@@ -402,8 +397,8 @@ theorem qry_run {c0 c1 : Stmt} {X : MemCtx} {Ok : Polygon → Model → Prop}
   have hmR : J.right.m ≤ J.whole.m := sideChain_m_le J 1
   have hWm := hA.hWm
   -- 8. the winner in the walk of `C`
-  refine (IRS.seq (K₂ := 35038) (winQ_irs hI₆ hK ⟨by rw [q6bL, q5bL]; exact b1,
-      by rw [q6bR, q5bR]; exact b3⟩ (fun t0 l1 => ?_) (fun t1 r1 => ?_)) ?_).mono (by omega)
+  refine (IRS.seq (K₂ := 35038) (winQ_irs hI₆ hK ⟨by rwa [q6bL, q5bL],
+      by rwa [q6bR, q5bR]⟩ (fun t0 l1 => ?_) (fun t1 r1 => ?_)) ?_).mono (by omega)
     (fun _ h => h)
   · have hM : ModB J (c₆.nreg bL) (c₆.nreg bR) (c₆.nreg (accA + 3)) = J.left := by
       unfold ModB; rw [ite_eq_left ⟨t0, l1⟩]
@@ -445,8 +440,8 @@ theorem qry_run {c0 c1 : Stmt} {X : MemCtx} {Ok : Polygon → Model → Prop}
     rw [s7 zPh (by rne) (by rne) (by rne) (by rne) (by rne) (by rne) (by rne), q5Ph]
   have hA7 : c₇.nreg ALLOC = c₆.nreg ALLOC := y3 _ (by rne) (by rne) (by rne) (by rne) (by rne)
   -- 9. the record
-  refine (IRS.seq (K₂ := 8) (recS_irs hI₇ hK hA.hP (hA.ctxW hI₇) hzt (by rw [q7D]; exact hfree)
-    rfl (by rw [q7D, q7P, q7Ph]; exact a3) w1 w2 (by rw [q7D]; exact w3) hzR
+  refine (IRS.seq (K₂ := 8) (recS_irs hI₇ hK hA.hP (hA.ctxW hI₇) hzt (by rwa [q7D])
+    rfl (by rwa [q7D, q7P, q7Ph]) w1 w2 (by rwa [q7D]) hzR
     (h := q.2.1 - 1) hvz (by unfold recK; omega)) ?_).mono (by simp [recK]) (fun _ h => h)
   rintro c₈ hI₈ hA₈ hA₈' ⟨hRD, x1, x2, x3⟩
   rw [q7D, q7P] at hRD
@@ -492,7 +487,7 @@ theorem qry_run {c0 c1 : Stmt} {X : MemCtx} {Ok : Polygon → Model → Prop}
   have hR9 : c₉.nreg pR = c.nreg pR := fr.1 pR (not_oracle_sw (by rne) (by rne))
     (by unfold QW; rne) (by rne)
   -- 11. the store
-  refine (store4_irs hI₉ hK (by rne) (by rne) (by rne) (by rw [hR9]; exact hslotA)
+  refine (store4_irs hI₉ hK (by rne) (by rne) (by rne) (by rwa [hR9])
     (by rw [hR9]; omega)).mono le_rfl ?_
   rintro c' ⟨w1, w2⟩
   rw [hR9, (hK.fix hI₉).2.1, t9, v9 rL (by rne), v9 rR (by rne)] at w1
@@ -531,7 +526,6 @@ theorem candK_le (κ0 κ1 F : ℕ → ℕ) (c₀ : Config) (J : Merge.Junction) 
   generalize hG : F (c₀.nreg (sw 5)) + 1 = G
   generalize ha : κ0 (c₀.nreg (sw 6)) = a
   generalize hb : κ1 (c₀.nreg (sw 6)) = b
-  have hX1 : 1 ≤ X := by omega
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hi with rfl | rfl
   · simp only [↓reduceIte, ite_eq_right (show ¬ ((0 : ℕ) = 1 ∧ BruteQ J N₂ j (qPt J P 0 L j)) from
       fun h => absurd h.1 (by norm_num))]

@@ -40,8 +40,7 @@ theorem tciS_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} {
     ∃ c' k, Exec P W tciS c c' k ∧ k ≤ 9 ∧ c'.nreg 120181 = tci C (c.nreg 120180 - 6) ∧
       (∀ r, r ≠ 120181 → r ≠ 120182 → c'.nreg r = c.nreg r) := by
   have hmn : C.m < P.n := by
-    have := C.m_lt; rw [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this; exact this
-  have hm1 := C.one_le
+    have := C.m_lt; rwa [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this
   have hsS : V.sS ≤ 2 * C.m := by rw [hv.sS]; exact C.sideS_lt C.sideBeta
   obtain ⟨w, hwdef⟩ : ∃ w, c.nreg 120180 = w := ⟨_, rfl⟩
   rw [hwdef] at h6 hE ⊢
@@ -59,10 +58,9 @@ theorem tciS_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} {
   have htj : c₂.nreg 120182 = tj C (w - 6) := by
     rw [v₂]; unfold tj; rw [← hv.sS, Nat.add_comm]
   have R₂ : ∀ r, r ≠ 120182 → c₂.nreg r = c.nreg r := fun r h => (r₂ r h).trans (r₁ r h)
-  have hu := tj_lt C (w - 6)
   have hm2 : c₂.nreg 120016 = C.m := by rw [R₂ _ (by decide), hq.m, hv.m]
   by_cases hlt : tj C (w - 6) < C.m
-  · refine ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_true (by rw [htj, hm2]; exact hlt)
+  · refine ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_true (by rwa [htj, hm2])
       (Exec.copyN e₂.wb_right _ _))), by omega, ?_, fun r h1 h2 => ?_⟩
     · config_simp; rw [htj]; unfold tci; rw [ite_eq_left hlt]
     · config_simp; rw [Machine.upd_other _ _ _ h1]; exact R₂ r h2
@@ -76,7 +74,7 @@ theorem tciS_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} {
       · config_simp
         rw [R₂ _ (by decide), R₂ _ (by decide), hq.twoM, hq.one, htj, hv.m]
       · config_simp; upd_solve
-    refine ⟨c₃, _, .seq e₁ (.seq e₂ (.ifLtN_false (by rw [htj, hm2]; exact hlt) e₃)), by omega,
+    refine ⟨c₃, _, .seq e₁ (.seq e₂ (.ifLtN_false (by rwa [htj, hm2]) e₃)), by omega,
       ?_, fun r h1 h2 => by rw [r₃ r h1]; exact R₂ r h2⟩
     rw [v₃]; unfold tci; rw [ite_eq_right hlt]
 
@@ -160,7 +158,7 @@ theorem useCh_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} 
   rw [hwdef]
   unfold useCh
   by_cases h6 : w < 6
-  · refine ⟨_, _, .ifLtN_true (by rw [hwdef, hq.six]; exact h6) (Exec.copyN hw _ _), by omega,
+  · refine ⟨_, _, .ifLtN_true (by rwa [hwdef, hq.six]) (Exec.copyN hw _ _), by omega,
       ⟨?_, ?_, ?_⟩, fun r h1 h2 => ?_⟩
     · config_simp; rw [h150]; unfold chordSel; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
     · intro h; unfold chordSel at h; rw [ite_eq_right (by omega), ite_eq_right (by omega)] at h
@@ -174,8 +172,8 @@ theorem useCh_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} 
         k ≤ 11 ∧ d'.nreg 120150 = 0 ∧ d'.nreg 120151 = tci C (w' - 6) ∧
         (∀ r, r ≠ 120150 → r ≠ 120151 → r ≠ 120181 → r ≠ 120182 → d'.nreg r = d.nreg r) := by
     intro w' h1 h2 d hd hqd h180
-    obtain ⟨d₁, k₁, e₁, hk₁, v₁, r₁⟩ := tciS_exec (P := P) hW hv d hd hqd (by rw [h180]; exact h1)
-      (by rw [h180]; exact h2)
+    obtain ⟨d₁, k₁, e₁, hk₁, v₁, r₁⟩ := tciS_exec (P := P) hW hv d hd hqd (by rwa [h180])
+      (by rwa [h180])
     rw [h180] at v₁
     have w₁ := e₁.wb_right
     obtain ⟨d₂, k₂, e₂, hk₂, v₂⟩ : ∃ d₂ k₂, Exec P W (block [.constN 120150 0, .copyN 120151 120181])
@@ -192,16 +190,15 @@ theorem useCh_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} 
     rw [hwdef] at v₁
     obtain ⟨d', k, ex, hk, a1, a2, a3⟩ := mid w (by omega) hE c₁ e₁.wb_right
       (hq.congr fun r h1 h2 => r₁ r (by omega)) v₁
-    refine ⟨d', _, .ifLtN_false (by rw [hwdef, hq.six]; exact h6)
-      (.ifLtN_true (by rw [hwdef, hq.tEnd]; exact hE) (.seq e₁ ex)), by omega, ⟨?_, ?_, ?_⟩,
+    refine ⟨d', _, .ifLtN_false (by rwa [hwdef, hq.six])
+      (.ifLtN_true (by rwa [hwdef, hq.tEnd]) (.seq e₁ ex)), by omega, ⟨?_, ?_, ?_⟩,
       fun r h1 h2 => ?_⟩
     · rw [a1]; unfold chordSel; rw [ite_eq_left ⟨by omega, hE⟩]
     · intro _; rw [a2]; unfold chordSel; rw [ite_eq_left ⟨by omega, hE⟩]
     · intro h; unfold chordSel at h; rw [ite_eq_left ⟨by omega, hE⟩] at h; exact absurd h (by norm_num)
     · rw [a3 r (by omega) (by omega) (by omega) (by omega), r₁ r (by omega)]
   by_cases hT : w = 2 * V.m + 6
-  · have w₀ := hw
-    obtain ⟨c₁, e₁, v₁⟩ : ∃ c₁, Exec P W (.instr (.subN 120180 120029 120011)) c c₁ 1 ∧
+  · obtain ⟨c₁, e₁, v₁⟩ : ∃ c₁, Exec P W (.instr (.subN 120180 120029 120011)) c c₁ 1 ∧
         c₁.nreg 120180 = 2 * V.m + 5 ∧ ∀ r, r ≠ 120180 → c₁.nreg r = c.nreg r :=
       ⟨_, Exec.subN hw _ _ _, by config_simp; rw [hq.tEnd, hq.one]; omega, fun r hr => by
         config_simp; upd_solve⟩
@@ -209,8 +206,8 @@ theorem useCh_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} 
       e₁.wb_right
       (hq.congr fun r h1 h2 => v₁.2 r (by omega)) v₁.1
     have hq12 : c.nreg 120141 = c.nreg 120029 := by rw [hwdef, hq.tEnd, hT]
-    refine ⟨d', _, .ifLtN_false (by rw [hwdef, hq.six]; exact h6)
-      (.ifLtN_false (by rw [hwdef, hq.tEnd]; exact hE) (ifEq_eq_exec hq12 (.seq e₁ ex))), by omega,
+    refine ⟨d', _, .ifLtN_false (by rwa [hwdef, hq.six])
+      (.ifLtN_false (by rwa [hwdef, hq.tEnd]) (ifEq_eq_exec hq12 (.seq e₁ ex))), by omega,
       ⟨?_, ?_, ?_⟩, fun r h1 h2 => ?_⟩
     · rw [a1]; unfold chordSel; rw [ite_eq_right (by omega), ite_eq_left (by rw [hv.m] at hT ⊢; exact hT)]
     · intro _; rw [a2]; unfold chordSel
@@ -220,12 +217,12 @@ theorem useCh_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} 
       rw [ite_eq_right (by omega), ite_eq_left (by rw [hv.m] at hT ⊢; exact hT)] at h
       exact absurd h (by norm_num)
     · rw [a3 r (by omega) (by omega) (by omega) (by omega), v₁.2 r (by omega)]
-  · have hq12 : c.nreg 120141 ≠ c.nreg 120029 := by rw [hwdef, hq.tEnd]; exact hT
+  · have hq12 : c.nreg 120141 ≠ c.nreg 120029 := by rwa [hwdef, hq.tEnd]
     obtain ⟨k', ex', hk'⟩ := ifEq_ne_exec (a := 120141) (b := 120029)
       (S := .seq (.instr (.subN 120180 120029 120011)) (.seq tciS (block [.constN 120150 0,
         .copyN 120151 120181]))) hq12 (Exec.copyN hw 120152 120141 (P := P))
-    refine ⟨_, _, .ifLtN_false (by rw [hwdef, hq.six]; exact h6)
-      (.ifLtN_false (by rw [hwdef, hq.tEnd]; exact hE) ex'), by omega, ⟨?_, ?_, ?_⟩,
+    refine ⟨_, _, .ifLtN_false (by rwa [hwdef, hq.six])
+      (.ifLtN_false (by rwa [hwdef, hq.tEnd]) ex'), by omega, ⟨?_, ?_, ?_⟩,
       fun r h1 h2 => ?_⟩
     · config_simp; rw [h150]; unfold chordSel
       rw [ite_eq_right (by omega), ite_eq_right (by rw [hv.m] at hT ⊢; exact hT)]
@@ -261,12 +258,12 @@ theorem tchS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
     have x11 : c₁.nreg 120011 = 1 := (r₁ _ (by decide)).trans hq.one
     by_cases hσ : V.σb < 1
     · obtain ⟨c₂, e₂, v₂, r₂⟩ := const_exec (P := P) e₁.wb_right 120152 1 (by omega)
-      refine ⟨c₂, _, .ifLtN_true (by rw [x24, x11]; exact hσ) e₂, by omega, ?_, ?_, ?_⟩
+      refine ⟨c₂, _, .ifLtN_true (by rwa [x24, x11]) e₂, by omega, ?_, ?_, ?_⟩
       · rw [v₂]; unfold boxSel; rw [ite_eq_right (by omega)]
       · rw [r₂ _ (by decide), v₁]
       · intro r h1 h2; rw [r₂ r h1, r₁ r h2]
     · obtain ⟨c₂, e₂, v₂, r₂⟩ := const_exec (P := P) e₁.wb_right 120152 3 (by omega)
-      refine ⟨c₂, _, .ifLtN_false (by rw [x24, x11]; exact hσ) e₂, by omega, ?_, ?_, ?_⟩
+      refine ⟨c₂, _, .ifLtN_false (by rwa [x24, x11]) e₂, by omega, ?_, ?_, ?_⟩
       · rw [v₂]; unfold boxSel; rw [ite_eq_left (by have := hv.σb_le; omega)]
       · rw [r₂ _ (by decide), v₁]
       · intro r h1 h2; rw [r₂ r h1, r₁ r h2]
@@ -302,12 +299,12 @@ theorem tchS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
         · obtain ⟨c₄, k₄, e₄, hk₄, f₄, b₄, g₄⟩ := gtDS_exec (P := P) hG (by omega) hv htv c₃
             e₃.wb_right hq₃ (by rw [x121]; exact hv.hz_lt) heD
           rw [x51, x120, x121] at g₄
-          refine ⟨c₄, _, .ifLtN_true (by rw [hq₃.σb, hq₃.one]; exact hσ) e₄, by omega, f₄, b₄, ?_⟩
+          refine ⟨c₄, _, .ifLtN_true (by rwa [hq₃.σb, hq₃.one]) e₄, by omega, f₄, b₄, ?_⟩
           rw [g₄, hCB, ite_eq_right (by omega)]
         · obtain ⟨c₄, k₄, e₄, hk₄, f₄, b₄, g₄⟩ := ltDS_exec (P := P) hG (by omega) hv htv c₃
             e₃.wb_right hq₃ (by rw [x121]; exact hv.hz_lt) heD
           rw [x51, x120, x121] at g₄
-          refine ⟨c₄, _, .ifLtN_false (by rw [hq₃.σb, hq₃.one]; exact hσ) e₄, by omega, f₄, b₄, ?_⟩
+          refine ⟨c₄, _, .ifLtN_false (by rwa [hq₃.σb, hq₃.one]) e₄, by omega, f₄, b₄, ?_⟩
           rw [g₄, hCB, ite_eq_left (by have := hv.σb_le; omega)]
       have hq₄ : QConst P V c₄ := hq₃.frame f₄ fun r h1 h2 => by
         simp only [BX2, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
@@ -320,7 +317,7 @@ theorem tchS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
         refine ⟨c₅, _, .seq e₁ (.seq e₂ (.ifLtN_true (by rw [hq₂.zero, x140]; omega)
           (.ifLtN_true (by rw [hq₂.zero, x50]; omega) (.seq e₃ (.seq e₄
             (.ifLtN_true (by rw [hq₄.zero]; omega) e₅)))))), by omega, ?_⟩
-        unfold selOf; rw [ite_eq_left ⟨hF, Or.inr (g₄.1 hc)⟩]; exact s₅
+        unfold selOf; rwa [ite_eq_left ⟨hF, Or.inr (g₄.1 hc)⟩]
       · have hdc : ¬ CB := fun h => hc (g₄.2 h)
         obtain ⟨c₅, k₅, e₅, hk₅, s₅, -⟩ := useD_exec (P := P) c₄ e₄.wb_right (by omega)
         rw [R₄ _ (by decide) (by decide) (by decide), x52] at s₅
@@ -344,7 +341,7 @@ theorem tchS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
       rw [x52] at s₅
       refine ⟨c₅, _, .seq e₁ (.seq e₂ (.ifLtN_false (by rw [hq₂.zero, x140]; omega)
         (.ifLtN_true (by rw [hq₂.zero, x50]; omega) e₅))), by omega, ?_⟩
-      unfold selOf; rw [ite_eq_right (fun h => hF h.1), hbo, ite_eq_left hD]; exact s₅
+      unfold selOf; rwa [ite_eq_right (fun h => hF h.1), hbo, ite_eq_left hD]
     · refine ⟨c₂, _, .seq e₁ (.seq e₂ (.ifLtN_false (by rw [hq₂.zero, x140]; omega)
         (.ifLtN_false (by rw [hq₂.zero, x50]; omega) (.skip w₂)))), by omega, ?_⟩
       unfold selOf; rw [ite_eq_right (fun h => hF h.1), hbo, ite_eq_right hD]
@@ -405,13 +402,13 @@ theorem endS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
       c'.nreg rd = x % (2 * V.m) + 6 + (if V.hz = (V.s + cc + (if δ then 1 else 0)) % P.n then 1 else 0) ∧
       (∀ r, r ≠ rd → r ≠ 120184 → r ≠ 120185 → c'.nreg r = c.nreg r) := by
   have hmn : V.m < P.n := by
-    rw [hv.m]; have := C.m_lt; rw [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this; exact this
+    rw [hv.m]; have := C.m_lt; rwa [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this
   have hm1 : 1 ≤ V.m := by rw [hv.m]; exact C.one_le
   have hs := hv.s_lt
   have hn : 0 < P.n := by omega
   unfold endS
   obtain ⟨c₁, k₁, e₁, hk₁, v₁, r₁, -⟩ := modSub_exec (P := P) (r := 120184) (nr := 120019)
-    (by decide) c hw (by rw [hx, hq.twoM]; exact hx4)
+    (by decide) c hw (by rwa [hx, hq.twoM])
   rw [hx, hq.twoM] at v₁
   have hq₁ : QConst P V c₁ := hq.congr fun r h1 h2 => r₁ r (by omega)
   have hr1 : rd ≠ 120184 ∧ rd ≠ 120185 ∧ rd ≠ 120015 ∧ rd ≠ 120151 ∧ rd ≠ 120011 ∧
@@ -462,7 +459,7 @@ theorem endS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
       fun r h1 h2 h3 => ?_⟩
     · rw [v₄, xrd, (r₃ _ (by decide)).trans hq₂.one, ite_eq_left heq]
     · rw [r₄ r h1, r₃ r h3, r₂ r h1 h3, r₁ r h2]
-  · have hq12 : c₃.nreg 120023 ≠ c₃.nreg 120185 := by rw [x23, v₃]; exact heq
+  · have hq12 : c₃.nreg 120023 ≠ c₃.nreg 120185 := by rwa [x23, v₃]
     obtain ⟨k', ex', hk'⟩ := ifEq_ne_exec (S := .instr (.addN rd rd 120011)) hq12
       (.skip e₃.wb_right)
     refine ⟨c₃, _, .seq e₁ (.seq e₂ (.seq e₃ ex')), by omega, ?_, fun r h1 h2 h3 => ?_⟩
@@ -480,9 +477,8 @@ theorem posS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
     obtain ⟨c', k, ex, hk, h⟩ := H
     exact ⟨c', k, ex, hk, exec_frameB ex wr_posS, h⟩
   have hsS : V.sS ≤ 2 * V.m := by rw [hv.sS, hv.m]; exact C.sideS_lt C.sideBeta
-  have hm1 : 1 ≤ V.m := by rw [hv.m]; exact C.one_le
   have hmn : V.m < P.n := by
-    rw [hv.m]; have := C.m_lt; rw [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this; exact this
+    rw [hv.m]; have := C.m_lt; rwa [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this
   rcases hsel with h0 | h1
   · obtain ⟨cc, hcc⟩ : ∃ cc, sel.2 = cc := ⟨_, rfl⟩
     have hccm := hcm h0
@@ -525,10 +521,6 @@ theorem posS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
     have x160 : c₄.nreg 120160 = wAOf V P.n cc := by
       rw [r₄ _ (by decide) (by decide) (by decide), r₃ _ (by decide), v₂]; unfold wAOf; simp
     have x161 : c₄.nreg 120161 = wBOf V P.n cc := by rw [v₄]; unfold wBOf; simp
-    have ex₀ : Exec P W (.seq (block [.addN 120184 120151 120019, .subN 120184 120184 120021])
-        (.seq (endS 120160 true) (.seq (block [.subN 120184 120019 120011, .subN 120184 120184 120151,
-          .addN 120184 120184 120019, .subN 120184 120184 120021]) (endS 120161 false)))) c c₄
-        (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
     have w₄ := e₄.wb_right
     by_cases htv : V.hz = V.tv
     · have hq12 : c₄.nreg 120023 = c₄.nreg 120022 := by rw [hq₄.hz, hq₄.tv, htv]
@@ -544,7 +536,7 @@ theorem posS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
         (ifEq_eq_exec hq12 e₅))))), by omega, ?_⟩
       unfold posOf; rw [ite_eq_left h0, hcc, a0, a1, a2, a3, x160, x161, ite_eq_left htv,
         ite_eq_left htv]
-    · have hq12 : c₄.nreg 120023 ≠ c₄.nreg 120022 := by rw [hq₄.hz, hq₄.tv]; exact htv
+    · have hq12 : c₄.nreg 120023 ≠ c₄.nreg 120022 := by rwa [hq₄.hz, hq₄.tv]
       obtain ⟨c₅, k₅, e₅, hk₅, v₅⟩ : ∃ c₅ k₅, Exec P W (block [.copyN 120162 120160,
           .copyN 120163 120161]) c₄ c₅ k₅ ∧ k₅ = 2 ∧ (c₅.nreg 120160 = c₄.nreg 120160 ∧
             c₅.nreg 120161 = c₄.nreg 120161 ∧ c₅.nreg 120162 = c₄.nreg 120160 ∧

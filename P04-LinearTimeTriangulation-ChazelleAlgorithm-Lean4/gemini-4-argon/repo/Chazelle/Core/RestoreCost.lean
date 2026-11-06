@@ -194,13 +194,13 @@ theorem shooter_cost_pos {sh : Stmt} {B : Finset ℕ} {F : ℕ → ℕ} {X : Mem
       exact ⟨hG, hWh, hX, hcap, hwf, hreg, M, hM, hOk, hp1, hp2, he1, he2, hi1, hi2, hwt, o, hoLt,
         hoIn, hoK, hoA⟩
     obtain ⟨c', k, ex, hk, hpost, -⟩ := h P W (withFlag c v) hwv pre'
-      (by beta_reduce; rw [withFlag_alloc, r v 9 (by decide) (by decide)]; exact hroom)
+      (by beta_reduce; rwa [withFlag_alloc, r v 9 (by decide) (by decide)])
     beta_reduce at hk
     rw [r v 9 (by decide) (by decide), hF0] at hk
     have hc' := exec_zero ex (by omega)
     refine ⟨c', hc', fun M' o' hM' ho' => ?_⟩
     have hM'' : ModelDescAt (withFlag c v).nmem (rd (withFlag c v) bShoot 0) (Qof P) M' := by
-      rw [r v 0 (by decide) (by decide)]; exact hM'
+      rwa [r v 0 (by decide) (by decide)]
     have ho'' : OriginIn (withFlag c v) (bandReg bShoot 5) o' := (withFlag_originIn c v o').2 ho'
     have := hpost M' o' hM'' ho''
     simp only [r v 1 (by decide) (by decide), r v 2 (by decide) (by decide),

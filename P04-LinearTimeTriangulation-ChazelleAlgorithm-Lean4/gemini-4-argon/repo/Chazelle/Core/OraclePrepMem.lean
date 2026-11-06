@@ -51,8 +51,8 @@ theorem chainDescAt_agree {m m' : ℕ → ℕ} {D X : ℕ} {Q : Polygon} {H : Ho
     (h : ChainDescAt m D Q H C) (hD : D + 5 ≤ X) (hH : m D + 3 * H.length + 4 ≤ X)
     (hm : ∀ a, a < X → m' a = m a) : ChainDescAt m' D Q H C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := h
-  refine ⟨?_, h1, by rw [hm _ (by omega)]; exact h2, by rw [hm _ (by omega)]; exact h3,
-    by rw [hm _ (by omega)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
+  refine ⟨?_, h1, by rwa [hm _ (by omega)], by rwa [hm _ (by omega)],
+    by rwa [hm _ (by omega)], by rwa [hm _ (by omega)]⟩
   rw [hm _ (by omega)]
   exact hostAt_agree h0 hH hm
 
@@ -64,8 +64,8 @@ theorem chainDescAt_copy {m : ℕ → ℕ} {D D' : ℕ} {Q : Polygon} {H : Host}
   have e0 := hc 0 (by omega); have e1 := hc 1 (by omega); have e2 := hc 2 (by omega)
   have e3 := hc 3 (by omega); have e4 := hc 4 (by omega)
   simp only [Nat.add_zero] at e0
-  exact ⟨by rw [e0]; exact h0, h1, by rw [e1]; exact h2, by rw [e2]; exact h3, by rw [e3]; exact h4,
-    by rw [e4]; exact h5⟩
+  exact ⟨by rwa [e0], h1, by rwa [e1], by rwa [e2], by rwa [e3],
+    by rwa [e4]⟩
 
 /-- A well-formed chain descriptor stays well formed under a change above the bound. -/
 theorem chainWF_agree {P : Polygon} {m m' : ℕ → ℕ} {D X : ℕ} {H : Host} {C : Chain}
@@ -93,14 +93,14 @@ theorem modelDesc_of {P : Polygon} {m : ℕ → ℕ} {D MD X : ℕ} {H : Host} {
   subst hH hC
   have e0 : m (MD + 1) = m D := by have := hc 0 (by omega); simpa using this
   obtain ⟨h1, h2, h3, h4⟩ := hwf.2 H' C' hD
-  exact ⟨h1, h2, by rw [e0]; exact h3, h4⟩
+  exact ⟨h1, h2, by rwa [e0], h4⟩
 
 /-- The region table of the star chords from the normal form. -/
 theorem rgMem_of {m : ℕ → ℕ} {B : ℕ} {M : Model} {Q : Polygon} {N : NF} (hNF : NFAt m B N)
     (hN : IsNF M Q N) :
     RgMem m (m (B + 4)) (m (B + 6)) N.arcs.length (fun p => N.seq.getD p 0)
       (fun j => (N.arc j).reg) :=
-  ⟨fun p hp => hNF.2.2.2.2.2.2.2.2.1 p (by rw [NFLoc.seq_length hN]; exact hp),
+  ⟨fun p hp => hNF.2.2.2.2.2.2.2.2.1 p (by rwa [NFLoc.seq_length hN]),
     fun p hp => NFLoc.seq_lt hN hp, fun j hj => (hNF.2.2.2.2.2.2.1 j hj).1⟩
 
 /-- **The locator facts of the zipper** from the descriptors and tables of phase A. -/
@@ -135,12 +135,12 @@ theorem zloc_of {P : Polygon} {W : ℕ} {m₀ m : ℕ → ℕ} {D NB MD TB L A�
   obtain ⟨hMDW, hlwf⟩ := NFLoc.locChainWF_of hmdwf hXW hHW
   have e4 : m' (NB + 4) = m₀ (NB + 4) := agree0 _ (by omega)
   have e6 : m' (NB + 6) = m₀ (NB + 6) := agree0 _ (by omega)
-  refine ⟨⟨by rw [hVMD]; exact hmd, Or.inl ⟨C, hsimp, rfl⟩, by rw [hVMD]; exact hMDW,
-    by rw [hVMD]; exact hlwf, by rw [hVNB]; exact hNF', hN, hVA, fun j hj => ?_,
+  refine ⟨⟨by rwa [hVMD], Or.inl ⟨C, hsimp, rfl⟩, by rwa [hVMD],
+    by rwa [hVMD], by rwa [hVNB], hN, hVA, fun j hj => ?_,
     fun j hj => by rw [hVTB, hm' _ (by omega)]; rw [hVL] at hj; exact htab j hj,
-    by rw [hVA, hVL]; exact hAlt, by rw [hVNB, hVTB]; omega,
+    by rwa [hVA, hVL], by rw [hVNB, hVTB]; omega,
     by rw [hVNB, hVTB, hVA, e4]; omega, by rw [hVNB, hVTB, hVA, e6]; omega,
-    by rw [hVTB, hVL]; omega, by rw [hVA]; exact hVμ⟩, by rw [hVNB, hVAB, e4],
+    by rw [hVTB, hVL]; omega, by rwa [hVA]⟩, by rw [hVNB, hVAB, e4],
     by rw [hVNB, hVSB, e6]⟩
   obtain ⟨-, -, -, reg, -, -, -, -, -, -, hpp⟩ := hN
   have := (hpp j hj).1

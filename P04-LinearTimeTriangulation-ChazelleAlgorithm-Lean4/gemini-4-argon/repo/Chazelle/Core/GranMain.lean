@@ -56,13 +56,12 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   obtain ⟨c₈, k₈, e₈, hk₈, hMS, hI, hE, hDim, r52, r00, -, r02, -, r10, r13, r28, hal, G₈⟩ :=
     init_exec (P := P) hw h0 h1 h2 h3 hG hWh hwf hMD hGM hNW hNF hRC hCS hRO hne hdeg hsemi
       (by unfold costMain at hroom; omega)
-  set E := envOf M P N reg γ D (c.nmem MD) (c.nmem (MD + 3)) with hEd
+  set E := envOf M P N reg γ D (c.nmem MD) (c.nmem (MD + 3))
   set d := dmOf N.nChords N.arcs.length N.nRegions D (c.nreg ALLOC) with hd
-  set K := N.nChords with hKd
+  set K := N.nChords
   -- the worklist
   obtain ⟨c₉, k₉, st', e₉, hk₉, hMS', hI', htop, hR₉⟩ := loop_exec (P := P) hE hMS hI hDim
     le_rfl r52
-  have FS₉ := exec_frameS e₉ wrS_loop
   have G₉ : GF (c.nreg ALLOC) c₈ c₉ k₉ := GF.of_nat e₉ natOnly_loop wrS_loop
     (fun r hr => by
       simp only [Bbody, Bool.or_eq_true, decide_eq_true_eq] at hr
@@ -70,7 +69,7 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (fun a ha => by rw [hMS'.low a ha, hMS.low a ha])
   -- the output
   have hNA := nf_areas hNW
-  set CB := c.nmem (NFH + 3) with hCBd
+  set CB := c.nmem (NFH + 3)
   have hCB : CB + 5 * K ≤ c.nreg ALLOC := by
     have := hNA.2.1 (K - 1) (by omega)
     have e5 : 5 * (K - 1) + 5 = 5 * K := by omega
@@ -117,10 +116,9 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hlset : lset M (Qof P) (outList N st'.live K) = st'.F E := hFeq
   have hlen := outList_length_le N st'.live K
   refine ⟨c₁₀, _, outList N st'.live K, .seq e₈ (.seq e₉ e₁₀), ?_, ?_, ?_, r95, hlen,
-    by rw [q28]; exact hlist, by rw [q28, qA]; omega, hok, ?_, ?_, ?_,
+    by rwa [q28], by rw [q28, qA]; omega, hok, ?_, ?_, ?_,
     (G₈.trans (G₉.trans G₁₀)).mono le_rfl⟩
-  · have hm : st0 E d c₈.nmem = initSt E _ _ _ _ := rfl
-    have hmeas : (st0 E d c₈.nmem).meas E = K + (D + 1) * K := by
+  · have hmeas : (st0 E d c₈.nmem).meas E = K + (D + 1) * K := by
       simp only [St.meas, st0, initSt]; rfl
     have hED : E.D = D := rfl
     rw [hmeas, hED] at hk₉
@@ -129,8 +127,8 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   · rw [FS₁₀.1 _ (by decide), hR₉ _ (by decide), r00]
   · rw [FS₁₀.1 _ (by decide), hR₉ _ (by decide), r02]
   · rw [hlset]; exact St.F_sub
-  · rw [hlset]; exact hdg
-  · rw [hlset]; exact hgran
+  · rwa [hlset]
+  · rwa [hlset]
 
 end
 

@@ -104,9 +104,9 @@ theorem setupS_exec (d : Config) (hw : WordsBounded W d)
   have hAL : ALLOC = 9999 := rfl
   rw [hAL] at hA ⊢
   have mR0' : d.nmem (RB + (r + r + (r + r) + r)) = nRA := by
-    rw [show RB + (r + r + (r + r) + r) = RB + 5 * r by ring]; exact mR0
+    rwa [show RB + (r + r + (r + r) + r) = RB + 5 * r by ring]
   have mR1' : d.nmem (RB + (r + r + (r + r) + r) + 1) = off := by
-    rw [show RB + (r + r + (r + r) + r) = RB + 5 * r by ring]; exact mR1
+    rwa [show RB + (r + r + (r + r) + r) = RB + 5 * r by ring]
   obtain ⟨d1, k1, e1, hk1, a20, a21, a22, a23, a24, a26, a27, a28, a30, a31, a32, a33, a34, a35,
       a36, a37, a41, a42, a44, a38, a39, a40, a43, a45, a46, a47, a99, m1⟩ :
       ∃ d1 k1, Exec P W setupB d d1 k1 ∧ k1 ≤ 51 ∧
@@ -181,7 +181,7 @@ theorem padS_exec (d : Config) (hw : WordsBounded W d) {N j : ℕ} (h43 : d.nreg
         217043 = j + 1 := by simp [h43, h27]
     obtain ⟨d', k', e', hk', n'⟩ := ih _ e1.wb_right b43 (by simp [h47]) (by simp [h27]) (by omega)
       (by omega)
-    refine ⟨d', 0 + 1 + 2 + k', .whileLtN_true (by rw [h43, h47]; exact hlt) e1 e', by omega, ?_⟩
+    refine ⟨d', 0 + 1 + 2 + k', .whileLtN_true (by rwa [h43, h47]) e1 e', by omega, ?_⟩
     obtain ⟨n1, n2, n3, n4, n5⟩ := n'
     refine ⟨?_, n2, n3, n4, n5⟩
     rw [n1]; simp

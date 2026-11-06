@@ -42,9 +42,6 @@ theorem block_grade {g Λ : ℕ} (hg : 1 ≤ g) (hγ : 2 ^ g ≤ γ) (hcap : γ 
   have h1 : g ≤ Λ - 1 := by
     have := (Nat.pow_le_pow_iff_right (by norm_num : 1 < 2)).1 (hγ.trans hcap)
     exact this
-  have h2 : 2 ≤ 2 ^ g := by
-    calc 2 = 2 ^ 1 := by norm_num
-      _ ≤ 2 ^ g := Nat.pow_le_pow_right (by norm_num) hg
   refine ⟨by
     rcases Nat.eq_zero_or_pos Λ with h0 | h0
     · subst h0; simp at hcap; omega

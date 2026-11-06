@@ -51,7 +51,6 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
         B2F g C R preE slot c'.nmem := by
   have hU := g.U_ge
   have hE := g.END_eq
-  have hLU := g.L_le_U
   have hLN : g.L * g.N ≤ g.L * g.U := Nat.mul_le_mul_left _ (by omega)
   have b17 := g.base_eq 17; have b20 := g.base_eq 20; have b24 := g.base_eq 24
   have b26 := g.base_eq 26; have b27 := g.base_eq 27; have b28 := g.base_eq 28
@@ -68,7 +67,7 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     (by unfold FillRG; omega) (by omega) (by omega)
   have f1 : PFr StBRG Wr c c1 := hf1.mono (fun r h => by unfold FillRG at h; unfold StBRG; omega)
     (fun a h => by simp only [hWr]; omega)
-  have b3 := g.base_eq 3; have b5 := g.base_eq 5; have b6 := g.base_eq 6; have b7 := g.base_eq 7
+  have b5 := g.base_eq 5; have b7 := g.base_eq 7
   have hA1 : AF g M T c1.nmem := hA.congr ⟨hO, hR, hV⟩
     (fun x hx => hf1.2.2.2.2 x (by unfold KeepA at hx; omega))
   have hB1 : B1F g M T a ha c1.nmem := hB.congr (fun x h1 h2 => hf1.2.2.2.2 x (by omega))
@@ -87,7 +86,7 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   obtain ⟨c4, k4, x4, hk4, hw4, hf4, hp0, hp4⟩ := pfP_exec (P := P) hw3 (hGR f3) hN hlt3 hW
   have f4 : PFr StBRG Wr c c4 := f3.trans (hf4.mono (fun r h => h) (fun a h => by
     simp only [hWr]; omega))
-  set R := dtree g c2.nmem with hRdef
+  set R := dtree g c2.nmem
   have hRn : R.n = g.N := rfl
   have hRroot : R.root = 0 := hq0
   have hupN : ∀ y, y < g.N → R.up y < g.N := fun y hy => by
@@ -100,7 +99,7 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
       unfold BTree.up; rw [ite_eq_left hRroot.symm]
     · rw [hp4 y (by omega) hy]
       unfold BTree.up
-      rw [ite_eq_right (by rw [hRroot]; exact h0)]
+      rw [ite_eq_right (by rwa [hRroot])]
       show _ = c2.nmem (g.base 17 + c2.nmem (g.base 26 + y))
       have := hlt2 y hy
       rw [hf3.2.2.2.2 (g.base 26 + y) (by omega), hf3.2.2.2.2 _ (by omega)]

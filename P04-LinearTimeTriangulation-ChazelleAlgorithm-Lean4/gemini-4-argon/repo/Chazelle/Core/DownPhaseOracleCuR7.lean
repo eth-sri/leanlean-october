@@ -89,9 +89,9 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
   -- the normalized query
   obtain ⟨c₁, k₁, e₁, hk₁, a30, a31, a32, F₁⟩ := normI_exec c hw hS he1 he2 hh1 hh2 q.hs.1
   obtain ⟨hpS, hxy, hmod, heen, hee, hL1, hwtL, hwtn⟩ := qplan q
-  set x := (interiorModel (Qof P)).param (Qof P) ⟨s.e₁, s.h₁⟩ with hx
+  set x := (interiorModel (Qof P)).param (Qof P) ⟨s.e₁, s.h₁⟩
   set ee := eeOf (Qof P) s.e₁ s.h₁ s.e₂ (nh (Qof P) s.e₂ s.h₂) with heed
-  set t₂ := (interiorModel (Qof P)).param (Qof P) ⟨s.e₂, s.h₂⟩ with ht₂
+  set t₂ := (interiorModel (Qof P)).param (Qof P) ⟨s.e₂, s.h₂⟩
   set V0 : ℝ := (s.e₁ : ℝ) + ((0 : ℕ) : ℝ) + x with hV0
   set V1 : ℝ := (s.e₁ : ℝ) + ee + t₂ with hV1
   have w₁ := e₁.wb_right
@@ -151,7 +151,6 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
       have hcond : ¬ c₁.nreg 170032 < c₁.nreg 170010 := by rw [a32, S₁.r10, ← hQ]; omega
       obtain ⟨hsubA, hsubB, hset, hwn⟩ := plan_two q (by rw [← heed]; omega)
       rw [← heed] at hsubB
-      have hnγ : P.n ≤ s.γ := by rw [← hQ]; exact hwn ▸ hwt
       have hee2 : 2 ≤ ee := by rcases hee with ⟨-, h'⟩ | ⟨-, h', -⟩ <;> omega
       have hmod2 : ((s.e₁ + 2) % (Qof P).n + (ee - 2)) % (Qof P).n = s.e₂ := by
         rw [Nat.mod_add_mod, show s.e₁ + 2 + (ee - 2) = s.e₁ + ee by omega, hmod]
@@ -169,11 +168,11 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
         (by norm_num) T₂ (by rw [hA₂]; exact roomC_one hroom hlogA)
       -- the second sub-query
       have c31 : c₃.nreg 170031 = ee := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a31
+        rwa [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]
       have c30 : c₃.nreg 170030 = nh (Qof P) s.e₂ s.h₂ := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a30
+        rwa [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]
       have c32 : c₃.nreg 170032 = spanL ee (nh (Qof P) s.e₂ s.h₂) := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a32
+        rwa [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]
       obtain ⟨c₄, k₄, e₄, hk₄, d33, d34, d35, d36, d37, Ft⟩ := setTwoB_exec (P := P) c₃
         e₃.wb_right S₃ he1
       have S₄ := keepSet Ft S₃
@@ -213,7 +212,7 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
   obtain ⟨c₃, k₃, e₃, hk₃, d10, dO, dout, dA, F₃⟩ := asmC_exec (P := P) c₂ e₂.wb_right
     (n := (Qof P).n) (by rw [S₂.r10, hQ]) S₂.r11 rfl (by rw [hQ]; omega) T₂.ok T₂.bit
     (by have := roomC_asm hroom hk₁ hk₂ hlen; omega)
-  set ps := (slotsOf c₂ 4).flatMap (slotPcs c₂.nmem (Qof P).n) with hps
+  set ps := (slotsOf c₂ 4).flatMap (slotPcs c₂.nmem (Qof P).n)
   obtain ⟨hkp, hv, hne⟩ := slotsOK_out T₂.ok
   have hlt : V0 < V1 := by
     rw [param_nh q.he₂] at hxy
@@ -234,8 +233,7 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
     obtain ⟨h1, h2⟩ := slotPcs_fields (List.getElem_mem hj)
     exact rdPc_of_words (fun f hf => dout j hj f hf) h1 h2
   · have e0 : V0 = (s.e₁ : ℝ) + x := by rw [hV0]; push_cast; ring
-    rw [← e0]
-    exact hkp
+    rwa [← e0]
 
 end exec
 

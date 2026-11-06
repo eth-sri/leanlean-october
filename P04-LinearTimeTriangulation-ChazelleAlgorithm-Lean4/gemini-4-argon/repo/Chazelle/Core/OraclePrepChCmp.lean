@@ -172,7 +172,7 @@ theorem chWA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, v⟩
   unfold chWA
   exec_block
-  · rw [ht, h1]; exact hb
+  · rwa [ht, h1]
   · exact ⟨rfl, by config_simp; rw [ht, h1]⟩
 
 /-- The walk edge of the left end of the record at `116013`. -/
@@ -188,7 +188,7 @@ theorem chWB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, v⟩
   unfold chWB
   exec_block
-  · rw [ht, h1]; exact hb
+  · rwa [ht, h1]
   · exact ⟨rfl, by config_simp; rw [ht, h1]⟩
 
 /-- The class and the symbolic point of the left end of `a`, saved in `116016 … 116019`. -/
@@ -324,7 +324,7 @@ theorem chCJ_stable (c₀ : Config) (m₀ : ℕ → ℕ) (A₀ K : ℕ) :
   intro c c' ⟨h0, h1, h2, h3⟩ hr _ hm _ _
   have hb : ∀ r, (116000 ≤ r ∧ r < 130000) → c'.nreg r = c.nreg r := fun r h =>
     hr r (by unfold bandOf bSort; omega) (by unfold ALLOC; omega)
-  exact ⟨by rw [hb _ (by norm_num)]; exact h0, by rw [hb _ (by norm_num)]; exact h1,
+  exact ⟨by rwa [hb _ (by norm_num)], by rwa [hb _ (by norm_num)],
     fun r a b => by rw [hb r (by omega)]; exact h2 r a b, fun a ha => (hm a ha).trans (h3 a ha)⟩
 
 set_option maxHeartbeats 8000000 in
@@ -341,17 +341,17 @@ theorem chBoth_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
   obtain ⟨j0, j1, j2, j3⟩ := hJ
   have hra := hrec _ hA
   have hrb := hrec _ hB
-  set V := qvOf c₀ with hV
+  set V := qvOf c₀
   have hq' : QConst P V c := hq.congr fun r a b => j2 r a b
   have hW1 : 1 ≤ W := by omega
   have hW4 : 4 * P.n + 8 ≤ W := by omega
-  set a := c.nreg 30000 with ha
-  set b := c.nreg 30001 with hb
+  set a := c.nreg 30000
+  set b := c.nreg 30001
   -- the heights
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, t12, h10⟩ := chRecA_exec (P := P) (CB := V.CB) (x := a) hw j0 rfl
     (by omega)
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, t13, h11⟩ := chRecB_exec (P := P) (CB := V.CB) (x := b) e₁.wb_right
-    (by rw [F₁.1 _ (by decide)]; exact j0) (by rw [F₁.1 _ (by decide)]) (by omega)
+    (by rwa [F₁.1 _ (by decide)]) (by rw [F₁.1 _ (by decide)]) (by omega)
   have hHa : c₂.nreg 116010 = chH m₀ V a := by
     rw [F₂.1 _ (by decide), h10, j3 _ (by omega)]; rfl
   have hHb : c₂.nreg 116011 = chH m₀ V b := by
@@ -363,7 +363,7 @@ theorem chBoth_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
   have hm₂ : c₂.nmem = c.nmem := F₂.2.2.1.trans F₁.2.2.1
   have w₂ := e₂.wb_right
   rcases lt_trichotomy (chH m₀ V a) (chH m₀ V b) with hlt | heq | hgt
-  · refine ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_true (by rw [hHa, hHb]; exact hlt)
+  · refine ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_true (by rwa [hHa, hHb])
       (Exec.constN w₂ 30002 1 hW1))), by omega, fun _ => by config_simp, fun hc => ?_⟩
     exact absurd (Or.inl hlt) hc
   · -- equal heights
@@ -413,10 +413,8 @@ theorem chBoth_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
       intro c' k ex
       exact ⟨_, .seq e₁ (.seq e₂ (.ifLtN_false nlt (.ifLtN_false nlt2
         (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ ex))))))), by omega⟩
-    have hcl := xpClass_cases (chL m₀ V a)
-    have hclb := xpClass_cases (chL m₀ V b)
     rcases lt_trichotomy (xpClass (chL m₀ V a)) (xpClass (chL m₀ V b)) with g | g | g
-    · obtain ⟨k', ex', hk'⟩ := hTie _ _ (.ifLtN_true (by rw [x16', x22]; exact g)
+    · obtain ⟨k', ex', hk'⟩ := hTie _ _ (.ifLtN_true (by rwa [x16', x22])
         (Exec.constN w₆ 30002 1 hW1))
       exact ⟨_, k', ex', by omega, fun _ => by config_simp,
         fun hc => absurd (Or.inr ⟨heq, Or.inl g⟩) hc⟩
@@ -456,20 +454,20 @@ theorem chBoth_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
         have hok : ChLe P C V m₀ a b := Or.inr ⟨heq, Or.inr ⟨g, fun h => absurd h g1⟩⟩
         rcases hc1 with hc1 | hc1
         · obtain ⟨k', ex', hk'⟩ := hTie _ _ (.ifLtN_false (by rw [x16', x22]; omega)
-            (.ifLtN_false (by rw [x16', x22]; omega) (.ifLtN_true (by rw [x16', one₆]; exact hc1)
+            (.ifLtN_false (by rw [x16', x22]; omega) (.ifLtN_true (by rwa [x16', one₆])
               (Exec.constN w₆ 30002 1 hW1))))
           exact ⟨_, k', ex', by omega, fun _ => by config_simp, fun hc => absurd hok hc⟩
         · obtain ⟨k', ex', hk'⟩ := hTie _ _ (.ifLtN_false (by rw [x16', x22]; omega)
             (.ifLtN_false (by rw [x16', x22]; omega) (.ifLtN_false (by rw [x16', one₆]; omega)
-              (.ifLtN_true (by rw [x16', one₆]; exact hc1) (Exec.constN w₆ 30002 1 hW1)))))
+              (.ifLtN_true (by rwa [x16', one₆]) (Exec.constN w₆ 30002 1 hW1)))))
           exact ⟨_, k', ex', by omega, fun _ => by config_simp, fun hc => absurd hok hc⟩
     · obtain ⟨k', ex', hk'⟩ := hTie _ _ (.ifLtN_false (by rw [x16', x22]; omega)
-        (.ifLtN_true (by rw [x16', x22]; exact g) (Exec.constN w₆ 30002 0 (Nat.zero_le _))))
+        (.ifLtN_true (by rwa [x16', x22]) (Exec.constN w₆ 30002 0 (Nat.zero_le _))))
       refine ⟨_, k', ex', by omega, fun hc => ?_, fun _ => by config_simp⟩
       exfalso
       rcases hc with hc | ⟨-, hc | ⟨hc, -⟩⟩ <;> omega
   · refine ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_false (by rw [hHa, hHb]; omega)
-      (.ifLtN_true (by rw [hHa, hHb]; exact hgt) (Exec.constN w₂ 30002 0 (Nat.zero_le _))))),
+      (.ifLtN_true (by rwa [hHa, hHb]) (Exec.constN w₂ 30002 0 (Nat.zero_le _))))),
       by omega, fun hc => ?_, fun _ => by config_simp⟩
     exfalso
     rcases hc with hc | ⟨hc, -⟩ <;> omega
@@ -488,8 +486,7 @@ theorem chCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
   have hBc : ∀ r, (bandOf r = 1 ∨ bandOf r = 11 ∨ bandOf r = 12) →
       bandOf r ∈ ({bSign, bOPrep, bOQuery} : Finset ℕ) := by
     intro r h; simp only [Finset.mem_insert, Finset.mem_singleton, bSign, bOPrep, bOQuery]; omega
-  set V := qvOf c₀ with hV
-  have hq' : QConst P V c := hq.congr fun r a b => j2 r a b
+  set V := qvOf c₀
   suffices H : ∃ c' k, Exec P W chCmp c c' k ∧ k ≤ 500 ∧
       c'.nreg 30002 = (if chLeB P C V m₀ K (c.nreg 30000) (c.nreg 30001) then 1 else 0) by
     obtain ⟨c', k, ex, hk, hbit⟩ := H
@@ -497,8 +494,8 @@ theorem chCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
     have fr := WalkKey.exec_rframe ex wrR_chCmp
     refine ⟨c', k, ex, hk, ⟨?_, ?_, fun r a b => ?_, fun a ha => by rw [f.2.2.1]; exact j3 a ha⟩,
       hbit, fun r h0 h1 h2 hb => f.1 r ?_, fun r hb => fr r ?_, f.2.2.1, f.2.2.2.1, f.2.2.2.2⟩
-    · rw [f.1 _ (by decide)]; exact j0
-    · rw [f.1 _ (by decide)]; exact j1
+    · rwa [f.1 _ (by decide)]
+    · rwa [f.1 _ (by decide)]
     · rw [f.1 r (by simp only [BCmp, BCh, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)]
       exact j2 r a b
     · by_contra hc
@@ -519,25 +516,25 @@ theorem chCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
     · rw [ite_eq_left hB]
       obtain ⟨c', k, ex, hk, v1, v0⟩ := chBoth_exec hG hW hv hq hrec hAW hh htv hn hw
         ⟨j0, j1, j2, j3⟩ hA hB
-      refine ⟨c', _, .ifLtN_true (by rw [j1]; exact hA) (.ifLtN_true (by rw [j1]; exact hB) ex),
+      refine ⟨c', _, .ifLtN_true (by rwa [j1]) (.ifLtN_true (by rwa [j1]) ex),
         by omega, ?_⟩
       by_cases hc : ChLe P C V m₀ a b
       · rw [v1 hc]; simp [hc]
       · rw [v0 hc]; simp [hc]
     · rw [ite_eq_right hB]
-      exact ⟨_, _, .ifLtN_true (by rw [j1]; exact hA) (.ifLtN_false (by rw [j1]; exact hB)
+      exact ⟨_, _, .ifLtN_true (by rwa [j1]) (.ifLtN_false (by rwa [j1])
         (Exec.constN hw 30002 1 hW1)), by omega, by config_simp; simp⟩
   · rw [ite_eq_right hA]
     by_cases hB : b < K
     · rw [ite_eq_left hB]
-      exact ⟨_, _, .ifLtN_false (by rw [j1]; exact hA) (.ifLtN_true (by rw [j1]; exact hB)
+      exact ⟨_, _, .ifLtN_false (by rwa [j1]) (.ifLtN_true (by rwa [j1])
         (Exec.constN hw 30002 0 (Nat.zero_le _))), by omega, by config_simp; simp⟩
     · rw [ite_eq_right hB]
       by_cases hba : b < a
-      · exact ⟨_, _, .ifLtN_false (by rw [j1]; exact hA) (.ifLtN_false (by rw [j1]; exact hB)
+      · exact ⟨_, _, .ifLtN_false (by rwa [j1]) (.ifLtN_false (by rwa [j1])
           (.ifLtN_true hba (Exec.constN hw 30002 0 (Nat.zero_le _)))), by omega,
           by config_simp; simp; omega⟩
-      · exact ⟨_, _, .ifLtN_false (by rw [j1]; exact hA) (.ifLtN_false (by rw [j1]; exact hB)
+      · exact ⟨_, _, .ifLtN_false (by rwa [j1]) (.ifLtN_false (by rwa [j1])
           (.ifLtN_false hba (Exec.constN hw 30002 1 hW1))), by omega,
           by config_simp; simp; omega⟩
 

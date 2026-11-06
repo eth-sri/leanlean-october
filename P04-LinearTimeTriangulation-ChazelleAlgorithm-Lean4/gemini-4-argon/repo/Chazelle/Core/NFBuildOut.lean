@@ -103,15 +103,14 @@ theorem hdrB_exec (d : Config) (hw : WordsBounded W d) {K A R CT AT RT QT LT H :
     (hR : d.nreg 43200 = R) (hCT : d.nreg 44001 = CT) (hAT : d.nreg 44002 = AT)
     (hRT : d.nreg 44003 = RT) (hQT : d.nreg 44004 = QT) (hLT : d.nreg 44005 = LT)
     (h0 : d.nreg 43010 = 0) (h1 : d.nreg 43011 = 1) (hHW : H + 12 ≤ W) :
-    ∃ d' k, Exec P W hdrB d d' k ∧ k = 25 ∧ WordsBounded W d' ∧
-      FrameM (fun r => decide (r = 43231 ∨ r = 40003)) d d' ∧ d'.nreg 40003 = H ∧
+    ∃ d' k, Exec P W hdrB d d' k ∧ k = 25 ∧ WordsBounded W d' ∧ d'.nreg 40003 = H ∧
       (∀ f, f < 12 → d'.nmem (H + f) = hdrW K A R CT AT RT QT LT H f) ∧
       (∀ a, (a < H ∨ H + 12 ≤ a) → d'.nmem a = d.nmem a) := by
   suffices X : ∃ d' k, Exec P W hdrB d d' k ∧ k = 25 ∧ d'.nreg 40003 = H ∧
       (∀ f, f < 12 → d'.nmem (H + f) = hdrW K A R CT AT RT QT LT H f) ∧
       (∀ a, (a < H ∨ H + 12 ≤ a) → d'.nmem a = d.nmem a) by
     obtain ⟨d', k, x, hk, a1, a2, a3⟩ := X
-    exact ⟨d', k, x, hk, x.wb_right, exec_frameM x wr_hdrB, a1, a2, a3⟩
+    exact ⟨d', k, x, hk, x.wb_right, a1, a2, a3⟩
   unfold hdrB
   exec_block
   all_goals first

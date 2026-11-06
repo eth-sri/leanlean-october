@@ -134,7 +134,6 @@ theorem splitTail_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c
   have := hL.hNU; have := hL.hVERT; have := hL.hOPP; have := hL.hATT; have := hL.hW
   have := hL.hFIRST; have := hL.hLEV; have := hL.hPV; have := hL.hFP; have := hL.hSTK
   have := hL.hμN
-  have hLU0 : 0 ≤ S.L * U := Nat.zero_le _
   -- the marks
   obtain ⟨c1, k1, x1, hk1, hw1, hm1, hr1, h1f, h1lo, h1hi, hrr1, hrm1, ho1⟩ :=
     marksS_exec (P := P) hw hR hlo hhi hbot htop hf hM rfl rfl rfl (hvert f (by omega))
@@ -170,11 +169,11 @@ theorem splitTail_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c
   -- the passes
   have hfp2 : c2.nmem (S.bFP + f) = c.nmem (S.bFP + f) := hst2 _ (by omega)
   obtain ⟨c3, k3, x3, hk3, hw3, hm3, h3e0, h3e1, h3e2, h3e3, hr3, h3f, h3lo, h3hi, hrr3, hrm3,
-    ho3⟩ := passesS_exec (P := P) hw2 hR2 hL (by rw [hg2 _ (by omega)]; exact h1lo)
-    (by rw [hg2 _ (by omega)]; exact h1hi) (by rw [hg2 _ (by omega)]; exact h1f) hfN
-    (by rw [hfp2]; exact hfp) (CpMem.of_static hL hst2 hCp) hlh hhiμ
+    ho3⟩ := passesS_exec (P := P) hw2 hR2 hL (by rwa [hg2 _ (by omega)])
+    (by rwa [hg2 _ (by omega)]) (by rwa [hg2 _ (by omega)]) hfN
+    (by rwa [hfp2]) (CpMem.of_static hL hst2 hCp) hlh hhiμ
     (fun i h1 h2 => by rw [htmp2 i h1 h2]; exact hact i h1 h2)
-    (fun v hv => by rw [hst2 _ (by omega)]; exact hfirst v hv) (by rw [hm2']; exact hsum)
+    (fun v hv => by rw [hst2 _ (by omega)]; exact hfirst v hv) (by rwa [hm2'])
   rw [hm2'] at hm3 h3e1 h3e2 h3e3
   have hR3 := hR2.of_frame hr3
   -- the pass pointers
@@ -200,11 +199,11 @@ theorem splitTail_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c
   have g4 : ∀ r, r = 130670 ∨ r = 130671 ∨ r = 130672 ∨ r = 130673 ∨ r = 130701 ∨ r = 130704 →
       c4.nreg r = c3.nreg r := fun r hr => hr4 r (by unfold SepRG; omega)
   have htp3 : c3.nreg 130701 = tp := by
-    rw [hr3 _ (by unfold SplitRG; omega), hr2 _ (by unfold SplitRG; omega),
-      hr1 _ (by unfold SplitRG; omega)]; exact htp
+    rwa [hr3 _ (by unfold SplitRG; omega), hr2 _ (by unfold SplitRG; omega),
+      hr1 _ (by unfold SplitRG; omega)]
   have hnsp3 : c3.nreg 130704 = nsp := by
-    rw [hr3 _ (by unfold SplitRG; omega), hr2 _ (by unfold SplitRG; omega),
-      hr1 _ (by unfold SplitRG; omega)]; exact hnsp
+    rwa [hr3 _ (by unfold SplitRG; omega), hr2 _ (by unfold SplitRG; omega),
+      hr1 _ (by unfold SplitRG; omega)]
   have hR4 := hR3.of_frame (fun r hr => hr4 r (by unfold SepRG; unfold SplitRG at hr; omega))
   obtain ⟨c5, k5, x5, hk5, hw5, hq5, hr5, hrr5, hrm5, ho5⟩ := pushS_exec (P := P) hw4 hR4
     ((g4 _ (by omega)).trans h3e0) ((g4 _ (by omega)).trans h3e1)
@@ -212,7 +211,7 @@ theorem splitTail_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c
     ((g4 _ (by omega)).trans htp3) hwS
   -- the counter
   have h5n : c5.nreg 130704 = nsp := by
-    rw [hr5 _ (by omega) (by omega) (by omega), g4 _ (by omega)]; exact hnsp3
+    rwa [hr5 _ (by omega) (by omega) (by omega), g4 _ (by omega)]
   have h51 : c5.nreg 130001 = 1 := (hr5 _ (by omega) (by omega) (by omega)).trans hR4.one
   have x6 := Exec.addN (P := P) hw5 130704 130704 130001 (by rw [h5n, h51]; omega)
   have hm4' : c4.nmem = sepMem (passC m2 S lo hi f).1 S.bTMP S.bPOS S.bDF S.μ lo (hi - lo) := by

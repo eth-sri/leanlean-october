@@ -129,8 +129,8 @@ theorem qHit_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
   have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
   refine ⟨c₂, _, ex, by omega, ⟨by rw [v20], fun h' => absurd v20 h', fun _ => ⟨X.1, ⟨C.radius_pos,
     Or.inr (Or.inr ⟨v21, ho5, .onEdge e' h, ⟨v22, v23, v24⟩, ⟨he', hh⟩, ho4.symm⟩)⟩, hF,
-    by rw [g₂ _ (by omega), g₂ _ (by omega), v25, v26]; exact ho2,
-    by rw [g₂ _ (by omega), v25, hnW]; exact ho1,
+    by rwa [g₂ _ (by omega), g₂ _ (by omega), v25, v26],
+    by rwa [g₂ _ (by omega), v25, hnW],
     by rw [g₂ _ (by omega), g₂ _ (by omega), v25, v26, ho3]; ext <;> simp [hXz]⟩⟩,
     exec_frameB ex wr_qHit⟩
 
@@ -165,7 +165,7 @@ theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBo
       Frame oracleBands c c' k ∧
       (∀ r, 140000 ≤ r → r < 160000 → Wk1 r = false → c'.nreg r = c.nreg r) ∧
       ShEnv P W H C z σ c' := by
-  set S := (chainModel C).arcSet (p₀ : ℝ) ((p₀ + w : ℕ) : ℝ) with hSdef
+  set S := (chainModel C).arcSet (p₀ : ℝ) ((p₀ + w : ℕ) : ℝ)
   have hW' : P.n + 3 ≤ W := by have := E.hW; unfold hostWords at this; omega
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hD := distinct_Qof E.hG
@@ -188,7 +188,7 @@ theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBo
       c.nreg (140234 + 1) = 0 ∧ c.nreg (140234 + 2) < P.n ∧
       z.2 = ((Qof P).vtx (c.nreg (140234 + 2))).2 := by
     rcases E.oy with ⟨h', _⟩ | ⟨h', _⟩ | h' <;> [omega; omega; exact h']
-  set h := c.nreg (140234 + 2) with hhdef
+  set h := c.nreg (140234 + 2)
   -- the query inputs
   obtain ⟨c₁, k₁, e₁, hk₁, v0, v1, v2, v3, v4, f₁⟩ := qSet_exec (P := P) c hw k1 h55 hWen
   have kq₁ : ∀ r, r ≠ 140350 → ¬ (120000 ≤ r ∧ r < 120005) → c₁.nreg r = c.nreg r :=
@@ -199,20 +199,20 @@ theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBo
   have hq0' : rd c₁ bOQuery 0 = c.nmem (en + 2) := v0
   -- the query
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, F₂⟩ := hV.2.2 P W c₁ e₁.wb_right
-    ⟨E.hG, E.hW, by rw [hm₁, hq0']; exact hAt, o, hoLt, hoIn₁⟩ (by
+    ⟨E.hG, E.hW, by rwa [hm₁, hq0'], o, hoLt, hoIn₁⟩ (by
       dsimp only
       rw [hA₁]
       have : ⌈(O.κ : ℝ) * ((c₁.nmem (rd c₁ bOQuery 0 + 2) : ℝ) ^ ((1 : ℝ) / 3) *
           ((c₁.nmem (c₁.nmem (rd c₁ bOQuery 0) + 2) : ℝ) + 1) ^ ((2 : ℝ) / 3) + 1)⌉₊ ≤ Kq := by
-        rw [hm₁, hq0']; exact hcost
+        rwa [hm₁, hq0']
       omega)
   replace hk₂ : k₂ ≤ Kq := by
     refine le_trans hk₂ ?_
     show ⌈(O.κ : ℝ) * ((c₁.nmem (rd c₁ bOQuery 0 + 2) : ℝ) ^ ((1 : ℝ) / 3) *
       ((c₁.nmem (c₁.nmem (rd c₁ bOQuery 0) + 2) : ℝ) + 1) ^ ((2 : ℝ) / 3) + 1)⌉₊ ≤ Kq
-    rw [hm₁, hq0']; exact hcost
+    rwa [hm₁, hq0']
   obtain ⟨Hs, Cα, hCd, hCs⟩ := hCα
-  have hpost := post₂ Hs Cα o (by rw [hm₁, hq0']; exact hCd) hoIn₁
+  have hpost := post₂ Hs Cα o (by rwa [hm₁, hq0']) hoIn₁
   have hdir₁ : dirOf (rd c₁ bOQuery 4) = σ := by show dirOf (c₁.nreg 120004) = σ; rw [v4, h08]
   rw [hdir₁] at hpost
   -- the frame of the query
@@ -225,10 +225,10 @@ theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBo
   have k₂' : ∀ r, 140000 ≤ r → r < 160000 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
     kq₂ r (band14 r h1 h2) (by unfold ALLOC; omega)
   have hE₂ : ShEnv P W H C z σ c₂ := by
-    refine ShEnv.of_agree E (fun r hr hra => ?_) (fun a ha => ?_) (by rw [← hA₁]; exact Fa1)
+    refine ShEnv.of_agree E (fun r hr hra => ?_) (fun a ha => ?_) (by rwa [← hA₁])
     · have h14 : 140000 ≤ r ∧ r < 160000 := by unfold envR K1 ALLOC at hr; unfold ALLOC at hra; omega
       rw [k₂' r h14.1 h14.2, kq₁ r (by unfold envR K1 ALLOC at hr; omega) (by omega)]
-    · rw [Fm a (by rw [hA₁]; exact ha), hm₁]
+    · rw [Fm a (by rwa [hA₁]), hm₁]
   have hSC : ∀ x ∈ S, InC C x := fun x hx => block_inC hw1 hp6 hp hx
   have htr := query_transfer (S := S) (z := z) E.hσ hrel (by rw [hCs]) hSC
   rw [hCs] at hpost
@@ -260,11 +260,11 @@ theorem pieceK1_exec {O : OracleIface} (hV : O.Valid) (c : Config) (hw : WordsBo
     have hf : c₂.nreg 120005 = 1 := by rw [k1₂] at t1 t2; omega
     obtain ⟨t', hF', he'n, hXe⟩ := hpost.1 hf
     obtain ⟨hFz, hXz⟩ := htr.1 t' hF'
-    set X := rayPt (o.eval (Qof P) Cα σ) σ t' with hX
+    set X := rayPt (o.eval (Qof P) Cα σ) σ t'
     have hXS : X ∈ S := by rw [← hXz]; exact hFz.2.1
     have hXy : X.2 = z.2 := by rw [← hXz, rayPt_snd]
-    set e' := rd c₂ bOQuery 6 with he'def
-    have hout := k1_hit (C := C) hD hQs hblk hw1 (by rw [hQn]; exact hxw) hp6 hp hdir hXS hXe
+    set e' := rd c₂ bOQuery 6
+    have hout := k1_hit (C := C) hD hQs hblk hw1 (by rwa [hQn]) hp6 hp hdir hXS hXe
       (by rw [hQn]; exact he'n) (by rw [hQn]; exact hhi) (by rw [hXy, hzh])
     rw [hQn] at hout
     obtain ⟨c₃, k, ex, hk, ca, f⟩ := qHit_exec (P := P) (C := C) (S := S) (X := X) c₂ w₂ k1₂ r50 r56

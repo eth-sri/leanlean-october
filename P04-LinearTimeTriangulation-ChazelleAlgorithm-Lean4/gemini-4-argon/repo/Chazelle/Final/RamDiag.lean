@@ -369,7 +369,7 @@ theorem scanBody_inv {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {lo hi : ℕ} {c
       · refine spec_ifLtN_true h2 (spec_skip hw₁ ?_)
         exact ⟨by omega, by rw [ite_eq_right (by omega)], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
       · refine spec_ifLtN_false h2 (spec_instr (Exec.constN hw₁ 215 1 (by
-          have := hw₁.1 205; have := hw.1 205; rw [e205] at this; exact this)) fun _ => ?_)
+          have := hw₁.1 205; have := hw.1 205; rwa [e205] at this)) fun _ => ?_)
         refine ⟨by omega, by rw [ite_eq_left (by omega)]; simp, fun r hr => by simp [hr], rfl, rfl,
           rfl, rfl⟩
   refine spec_seq (spec_use (hcmp _ ‹_›) ?_)
@@ -393,7 +393,7 @@ theorem scanBody_inv {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {lo hi : ℕ} {c
   · config_simp; rw [hmem₂, hnm]
   · config_simp; rw [hrm₂, hrm]
   · config_simp; rw [hout₂, hout]
-  · config_simp; rw [hmem₂, e202₂, e217₂]; exact hchain'
+  · config_simp; rwa [hmem₂, e202₂, e217₂]
   · config_simp
     rw [h215₂]
     split_ifs
@@ -414,7 +414,7 @@ theorem scanBody_inv {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {lo hi : ℕ} {c
   · config_simp
     rw [hmem₂, e202₂, e217₂]
     have e1 : chainLen c₀.nmem SB (c.nmem (SB + z)) = rest'.length :=
-      chainLen_eq (by rw [← hnm]; exact hchain')
+      chainLen_eq (by rwa [← hnm])
     have e2 : chainLen c₀.nmem SB (c.nreg 216) = rest'.length + 1 := by
       rw [chainLen_eq (l := z :: rest') (by rw [← hnm]; exact ⟨he, hchain'⟩)]; simp
     rw [e1, e2]; omega
@@ -463,8 +463,7 @@ theorem dRel_emit {mem : ℕ → ℕ} {DB HB SB n : ℕ} {E : List (ℕ × ℕ)}
       have e : upd (upd (upd (upd mem (DB + L + L) lo) (DB + L + L + 1) hi) (SB + L)
           (mem (HB + lo))) (HB + lo) (L + 1) (HB + v) = mem (HB + v) := by
         simp only [Machine.upd_apply]; split_ifs <;> first | omega
-      rw [e]
-      exact hc
+      rwa [e]
 
 /-- **Spec of the append block.** -/
 theorem emitBlock_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {lo hi : ℕ} (c : Config)
@@ -530,12 +529,12 @@ theorem insStmt_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {a b : ℕ} (c :
       (∀ r, r ≠ 213 → r ≠ 214 → c₂.nreg r = c.nreg r) ∧ c₂.rreg = c.rreg ∧ c₂.nmem = c.nmem ∧
       c₂.rmem = c.rmem ∧ c₂.output = c.output := by
     by_cases hab : b < a
-    · refine spec_ifLtN_true (by config_simp; rw [h211, h212]; exact hab) ?_
+    · refine spec_ifLtN_true (by config_simp; rwa [h211, h212]) ?_
       exec_block
       refine ⟨by omega, ?_, ?_, fun r h1 h2 => by simp [h1, h2], rfl, rfl, rfl, rfl⟩
       · config_simp; rw [h212]; omega
       · config_simp; rw [h211]; omega
-    · refine spec_ifLtN_false (by config_simp; rw [h211, h212]; exact hab) (spec_skip
+    · refine spec_ifLtN_false (by config_simp; rwa [h211, h212]) (spec_skip
         (by assumption) ?_)
       refine ⟨by omega, ?_, ?_, fun r h1 h2 => by simp [h1, h2], rfl, rfl, rfl, rfl⟩
       · config_simp; rw [h211]; omega
@@ -543,7 +542,7 @@ theorem insStmt_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {a b : ℕ} (c :
   refine spec_seq (spec_use hsort ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨h213₂, h214₂, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩
   set lo := min a b with hlo
-  set hi := max a b with hhi
+  set hi := max a b
   have hlon : lo < n := by rw [hlo]; omega
   have g : ∀ r, r ≠ 213 → r ≠ 214 → c₂.nreg r = c.nreg r := hfn₂
   refine spec_seq ?_
@@ -607,7 +606,7 @@ theorem insStmt_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {a b : ℕ} (c :
     refine spec_ifLtN_false (by rw [hf, hreg₄ 205 (by omega), h205]; omega) (spec_skip hw₄ ?_)
     have hins : ins E (a, b) = E := by unfold ins; rw [hsp, ite_eq_left hin]
     rw [hins]
-    refine ⟨?_, by rw [hmem₄]; exact hD, by rw [hreg₄ 206 (by omega), h206], fun r _ hr => hreg₄ r hr,
+    refine ⟨?_, by rwa [hmem₄], by rw [hreg₄ 206 (by omega), h206], fun r _ hr => hreg₄ r hr,
       by rw [hfr₄, hc₃]; config_simp; exact hfr₂, fun t _ => by rw [hmem₄],
       by rw [hrm₄, hc₃]; config_simp; exact hrm₂, by rw [hout₄, hc₃]; config_simp; exact hout₂⟩
     rw [hμ] at hk₄
@@ -621,7 +620,7 @@ theorem insStmt_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {a b : ℕ} (c :
       (by rw [hreg₄ 200 (by omega), h200]) (by rw [hreg₄ 201 (by omega), h201])
       (by rw [hreg₄ 202 (by omega), h202]) (by rw [hreg₄ 205 (by omega), h205])
       (by rw [hreg₄ 206 (by omega), h206]) (by rw [hfn₄ 213 (by omega), e213])
-      (by rw [hfn₄ 214 (by omega), e214]) hlon (by rw [hmem₄]; exact hD) hl1 hl2 hW) ?_
+      (by rw [hfn₄ 214 (by omega), e214]) hlon (by rwa [hmem₄]) hl1 hl2 hW) ?_
     rintro c₅ k₅ hk₅ hw₅ ⟨hD₅, h206₅, hfn₅, hfr₅, hnm₅, hrm₅, hout₅⟩
     have hins : ins E (a, b) = E ++ [(lo, hi)] := by unfold ins; rw [hsp, ite_eq_right hin]
     rw [hins]
@@ -739,8 +738,8 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
     hnm, hrm, hout⟩ := hI
   have e9991 : c.nreg 9991 = T.length := by rw [hfn 9991 (by omega), h9991]
   rw [e9991] at ht
-  set j := c.nreg 207 with hjdef
-  set TB := c₀.nreg 9990 with hTBdef
+  set j := c.nreg 207
+  set TB := c₀.nreg 9990
   set r := T[j] with hr
   have hgetD : T.getD j ⟨0, 0, 0, 0⟩ = r := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
@@ -751,8 +750,8 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
   rw [hgetD] at hrd
   have m2 : c.nmem (TB + 4 * j + 2) = r.top := by rw [hnm _ (by omega)]; exact hrd.2.2.1
   have m3 : c.nmem (TB + 4 * j + 3) = r.bot := by rw [hnm _ (by omega)]; exact hrd.2.2.2
-  set L := trapPairs Q (T.take j) with hL
-  set E := L.foldl ins [] with hE
+  set L := trapPairs Q (T.take j)
+  set E := L.foldl ins []
   have hELen : E.length ≤ j := (length_foldl_ins_le L []).trans (by
     simpa using length_trapPairs_take_le Q T j)
   have hW1 : 1 ≤ W := by omega
@@ -839,7 +838,7 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
     by_cases hnaj : TrapRec.nonAdj Q.n r = true
     · obtain ⟨p1, p2⟩ := hna.1 hnaj
       rw [ite_eq_left hnaj]
-      refine spec_ifLtN_true (by rw [e204₅]; exact p1) (spec_ifLtN_true (by rw [e204₅]; exact p2) ?_)
+      refine spec_ifLtN_true (by rwa [e204₅]) (spec_ifLtN_true (by rwa [e204₅]) ?_)
       refine spec_seq ?_
       exec_block
       refine spec_use (insStmt_exec (P := P) (DB := DB) (HB := HB) (SB := SB) (n := P.n) (E := E)
@@ -853,7 +852,7 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
       · config_simp; rw [hstate 206 (by simp), h206]
       · config_simp; rw [R 209 (by decide) (by decide) (by decide) (by decide), e209]
       · config_simp; rw [R 210 (by decide) (by decide) (by decide) (by decide), e210]
-      · config_simp; rw [hmem₅]; exact hD
+      · config_simp; rwa [hmem₅]
       rintro c₆ k₆ hk₆ hw₆ ⟨hD₆, h206₆, hfn₆, hfr₆, hnm₆, hrm₆, hout₆⟩
       have hcnt : E.countP (fun e => decide (e.1 = min r.top r.bot)) ≤ 10 :=
         countP_foldl_ins_le hQ hT hC (L := L)
@@ -869,14 +868,14 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
     · have hz : ¬ (0 < c₅.nreg 222 ∧ 0 < c₅.nreg 227) := fun h => hnaj (hna.2 h)
       rw [ite_eq_right hnaj]
       have hDs : DState DB HB SB P.n L c₅ := by
-        refine ⟨by rw [hmem₅]; exact hD, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+        refine ⟨by rwa [hmem₅], ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
           (rw [hstate _ (by simp)]; assumption)
       by_cases p1 : 0 < c₅.nreg 222
       · have p2 : ¬ 0 < c₅.nreg 227 := fun h => hz ⟨p1, h⟩
-        refine spec_ifLtN_true (by rw [e204₅]; exact p1)
-          (spec_ifLtN_false (by rw [e204₅]; exact p2) (spec_skip hw₅ ?_))
+        refine spec_ifLtN_true (by rwa [e204₅])
+          (spec_ifLtN_false (by rwa [e204₅]) (spec_skip hw₅ ?_))
         exact ⟨by omega, hDs, fun _ _ _ => rfl, rfl, fun _ _ => rfl, rfl, rfl⟩
-      · refine spec_ifLtN_false (by rw [e204₅]; exact p1) (spec_skip hw₅ ?_)
+      · refine spec_ifLtN_false (by rwa [e204₅]) (spec_skip hw₅ ?_)
         exact ⟨by omega, hDs, fun _ _ _ => rfl, rfl, fun _ _ => rfl, rfl, rfl⟩
   refine spec_seq (spec_use hcond ?_)
   rintro c₆ k₆ hk₆ hw₆ ⟨hDs₆, hfn₆, hfr₆, hnm₆, hrm₆, hout₆⟩
@@ -928,8 +927,8 @@ theorem chordBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
     hnm, hrm, hout⟩ := hI
   have e9993 : c.nreg 9993 = C.length := by rw [hfn 9993 (by omega), h9993]
   rw [e9993] at ht
-  set j := c.nreg 207 with hjdef
-  set CB := c₀.nreg 9992 with hCBdef
+  set j := c.nreg 207
+  set CB := c₀.nreg 9992
   set r := C[j] with hr
   have hgetD : C.getD j ⟨0, false, 0⟩ = r := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
@@ -941,7 +940,7 @@ theorem chordBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
   have m0 : c.nmem (CB + 3 * j) = r.src := by rw [hnm _ (by omega)]; exact hrd.1
   have m2 : c.nmem (CB + 3 * j + 2) = r.dst := by rw [hnm _ (by omega)]; exact hrd.2.2
   set L := trapPairs Q T ++ chordPairs (C.take j) with hL
-  set E := L.foldl ins [] with hE
+  set E := L.foldl ins []
   have hELen : E.length ≤ T.length + j := (length_foldl_ins_le L []).trans (by
     simp only [hL, List.length_nil, Nat.zero_add, List.length_append]
     have := length_chordPairs_take_le C j
@@ -1141,7 +1140,7 @@ theorem diagStmt_exec (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
   have hD₀ : DRel c₂.nmem DB HB SB P.n [] := by
     refine ⟨fun j hj => absurd hj (by simp), fun v hv => ?_⟩
     show c₂.nmem (HB + v) = 0
-    exact hz₂ v (by rw [e207₂]; exact hv)
+    exact hz₂ v (by rwa [e207₂])
   have hmem₂ : ∀ t, (t < DB ∨ SB + M ≤ t) → c₂.nmem t = c.nmem t := by
     intro t ht
     rw [hnm₂ t (by omega), hc₁]
@@ -1168,7 +1167,7 @@ theorem diagStmt_exec (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
     · have e : c₃.nreg 207 = 0 := by rw [hc₃]; config_simp
       rw [e, List.take_zero]
       show DRel c₃.nmem DB HB SB P.n []
-      rw [hc₃]; exact hD₀
+      rwa [hc₃]
     · have e : c₃.nreg 207 = 0 := by rw [hc₃]; config_simp
       rw [e, List.take_zero, g' 206 (by simp), c206]; rfl
     · rw [g 200 (by omega), h200]
@@ -1190,7 +1189,7 @@ theorem diagStmt_exec (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
     Exec.whileLtN_bounded (P := P) (TrapInvD P Q T W DB HB SB M c₃)
       (fun d => T.length - d.nreg 207) 200 (fun _ h => h.1)
       (fun d hd ht => trapBody_inv hQ hQn hT hC hTab₃ (by rw [g 9991 (by omega), h9991])
-        (by rw [g 9990 (by omega)]; exact hTB) hl1 hl2 hW hM d hd ht) hTI
+        (by rwa [g 9990 (by omega)]) hl1 hl2 hW hM d hd ht) hTI
   unfold trapLoop
   refine spec_seq ⟨c₄, k₄, ex₄, ?_⟩
   have e207₄ : c₄.nreg 207 = T.length := by
@@ -1217,20 +1216,20 @@ theorem diagStmt_exec (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
     · have e : c₅.nreg 207 = 0 := by rw [hc₅]; config_simp
       rw [e, List.take_zero]
       simp only [chordPairs, List.map_nil, List.append_nil]
-      rw [hc₅]; exact d1
+      rwa [hc₅]
     · have e : c₅.nreg 207 = 0 := by rw [hc₅]; config_simp
       rw [e, List.take_zero]
       simp only [chordPairs, List.map_nil, List.append_nil]
-      rw [R5 206 (by decide) (by decide)]; exact d2
-    · rw [R5 200 (by decide) (by decide)]; exact d3
-    · rw [R5 201 (by decide) (by decide)]; exact d4
-    · rw [R5 202 (by decide) (by decide)]; exact d5
-    · rw [R5 203 (by decide) (by decide)]; exact d6
-    · rw [R5 204 (by decide) (by decide)]; exact d7
-    · rw [R5 205 (by decide) (by decide)]; exact d8
-    · rw [R5 224 (by decide) (by decide)]; exact d9
-    · rw [R5 225 (by decide) (by decide)]; exact d10
-    · rw [R5 226 (by decide) (by decide)]; exact d11
+      rwa [R5 206 (by decide) (by decide)]
+    · rwa [R5 200 (by decide) (by decide)]
+    · rwa [R5 201 (by decide) (by decide)]
+    · rwa [R5 202 (by decide) (by decide)]
+    · rwa [R5 203 (by decide) (by decide)]
+    · rwa [R5 204 (by decide) (by decide)]
+    · rwa [R5 205 (by decide) (by decide)]
+    · rwa [R5 224 (by decide) (by decide)]
+    · rwa [R5 225 (by decide) (by decide)]
+    · rwa [R5 226 (by decide) (by decide)]
   have hmem₅ : ∀ t, (t < DB ∨ SB + M ≤ t) → c₅.nmem t = c.nmem t := by
     intro t ht
     have e : c₅.nmem = c₄.nmem := by rw [hc₅]
@@ -1244,7 +1243,7 @@ theorem diagStmt_exec (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
     Exec.whileLtN_bounded (P := P) (ChordInvD P Q T C W DB HB SB M c₅)
       (fun d => C.length - d.nreg 207) 172 (fun _ h => h.1)
       (fun d hd ht => chordBody_inv hQ hQn hT hC hCab₅ (by rw [g5 9993 (by omega), h9993])
-        (by rw [g5 9992 (by omega)]; exact hCB) hl1 hl2 hW hM d hd ht) hCI
+        (by rwa [g5 9992 (by omega)]) hl1 hl2 hW hM d hd ht) hCI
   unfold chordLoop
   refine ⟨c₆, k₆, ex₆, ?_⟩
   have e207₆ : c₆.nreg 207 = C.length := by

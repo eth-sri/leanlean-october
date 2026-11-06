@@ -50,7 +50,6 @@ structure CRec where
   up : ℕ
   /-- The region below the chord. -/
   dn : ℕ
-  deriving DecidableEq
 
 /-- An arc record. -/
 structure ARec where
@@ -60,7 +59,6 @@ structure ARec where
   s : WPos
   /-- Its end (a cut; equal to `s` for the arc of the empty submap). -/
   e : WPos
-  deriving DecidableEq
 
 /-- A region record (a node of the tree of the submap). -/
 structure RRec where
@@ -70,7 +68,6 @@ structure RRec where
   chords : List ℕ
   /-- Its weight. -/
   wt : ℕ
-  deriving DecidableEq
 
 /-- A node of the tree decomposition: an exit chord and its two children.  Children are coded as
 `2 k` (the node of chord `k`) or `2 r + 1` (the leaf of region `r`); `par` is the code of the
@@ -82,7 +79,6 @@ structure DNode where
   lo : ℕ
   /-- The child on the upper side of the chord. -/
   hi : ℕ
-  deriving DecidableEq
 
 /-- A submap in normal form.  `dec` is indexed like `chords` (node `k` belongs to chord `k`); it
 is empty when no decomposition is stored. -/

@@ -233,8 +233,8 @@ theorem cross_of_graphOK (hP : C.P.Simple) (hN : IsNF (chainModel C) Q N) {reg :
   obtain ⟨p, q, hp, hq, hpU, hqV, hz⟩ := cross_zip C hP hN hR hA hU hV hUV hcr
   have hpN : p < B.N := lt_of_lt_of_le hp hB.arcs_le
   have hqN : q < B.N := lt_of_lt_of_le hq hB.arcs_le
-  refine ⟨⟨p, hpN⟩, ⟨q, hqN⟩, by unfold rgNode; rw [BookData.ite_t hp]; exact hpU,
-    by unfold rgNode; rw [BookData.ite_t hq]; exact hqV, ?_⟩
+  refine ⟨⟨p, hpN⟩, ⟨q, hqN⟩, by unfold rgNode; rwa [BookData.ite_t hp],
+    by unfold rgNode; rwa [BookData.ite_t hq], ?_⟩
   have hpq : p ≠ q := fun h => hUV (by rw [← hpU, ← hqV, h])
   rcases lt_or_gt_of_ne hpq with hlt | hlt
   · rcases hB.O_complete p q hlt hq hz with h | h

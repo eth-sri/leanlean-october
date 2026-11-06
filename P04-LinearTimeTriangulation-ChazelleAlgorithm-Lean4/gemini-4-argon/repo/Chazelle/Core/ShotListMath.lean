@@ -215,7 +215,7 @@ theorem p1R (a b x y k : ℝ) (hxy : x ≠ y) :
     (¬ sideInArc x y a → ¬ sideInArc a b x → x = a → sideInArc a b y → CIn y b k →
         CIn a b k ∧ ¬ sideInArc x y k) ∧
     (¬ sideInArc x y a → ¬ sideInArc a b x → x ≠ a → CIn a b k → ¬ sideInArc x y k) := by
-  set L : List ℝ := [a, b, x, y, k] with hL
+  set L : List ℝ := [a, b, x, y, k]
   have ma : a ∈ L := by simp [L]
   have mb : b ∈ L := by simp [L]
   have mx : x ∈ L := by simp [L]

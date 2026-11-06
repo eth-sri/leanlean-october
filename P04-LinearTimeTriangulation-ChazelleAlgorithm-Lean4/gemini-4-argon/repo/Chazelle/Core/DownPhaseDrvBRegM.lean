@@ -48,7 +48,7 @@ theorem far_found {Q : Polygon} (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : 
   obtain ⟨a1, a2, -, a4, a5⟩ := hf2 hf
   have ho := scan_min hQ hDH hi (sgnD_cases d) hdir hfw hES hfo a2 (by
     obtain ⟨a3⟩ : bq = qE li Q.n bw ∧ True := ⟨(hf2 hf).2.2.1, trivial⟩
-    rw [← a3]; exact a4) (fun w hw hwn hc => by
+    rwa [← a3]) (fun w hw hwn hc => by
       have := a5 w hw hwn hc
       rwa [← (hf2 hf).2.2.1])
   exact ⟨hf, farW_eq hQ hDH li hi hdir a1 ho⟩
@@ -82,20 +82,20 @@ theorem getD_mem (_hE : BGood E) {l : List ℕ} {t : ℕ} (ht : t < l.length) : 
 /-- **An emitted index**: a vertex `i`, an interior direction, and the far walk edge in one of
 the ranges of the region. -/
 theorem far_ok {r : ℕ} (hr : r < E.K + 1) {k d : ℕ} (hkd : (k, d) ∈ emIdx E.Q (E.pts r)) :
-    ∃ i, qvx E.Q ((E.pts r).getD k (.vtx 0)) = some i ∧ i < E.P.n ∧ d ≤ 1 ∧
+    ∃ i, qvx E.Q ((E.pts r).getD k (.vtx 0)) = some i ∧ i < E.P.n ∧
       DirInterior E.Q i (sgnD d) ∧
       ESr E.P.n (E.stF r) (E.cntF r) (E.nRg r) 0 (farW E.li E.Q i d) := by
   obtain ⟨S, R, hFam, hR⟩ := hE.regOK hr
   obtain ⟨i, hi, hin, hk, hd, -, -, hdir, -⟩ := emIdx_facts hE.hQ hFam hR (hE.pts_lt hr) hkd
   obtain ⟨hfw, hfo⟩ := farW_spec hE.hQ hE.hDH E.li hin hdir
   have hQn := hE.hQn
-  refine ⟨i, hi, by rw [← hQn]; exact hin, hd, hdir, ?_⟩
+  refine ⟨i, hi, by rwa [← hQn], hdir, ?_⟩
   rcases Nat.eq_zero_or_pos E.K with hK | hK
   · refine Or.inl ⟨0, by unfold BEnv.nRg; rw [ite_eq_left hK]; omega, farW E.li E.Q i d, ?_, ?_⟩
-    · unfold BEnv.cntF; rw [ite_eq_left hK, ← hQn]; exact hfw
-    · unfold BEnv.stF; rw [ite_eq_left hK, Nat.zero_add, Nat.mod_eq_of_lt (by rw [← hQn]; exact hfw)]
+    · unfold BEnv.cntF; rwa [ite_eq_left hK, ← hQn]
+    · unfold BEnv.stF; rw [ite_eq_left hK, Nat.zero_add, Nat.mod_eq_of_lt (by rwa [← hQn])]
   · have B := hE.ctx hK
-    have hr' : r < E.N.nRegions := by rw [hE.nRegions]; exact hr
+    have hr' : r < E.N.nRegions := by rwa [hE.nRegions]
     -- the record
     set x := recAt E.li E.Q (E.pts r) (k, d) with hx
     have hxm : x ∈ regList E.li E.Q (regPts E.li E.Q.n E.N r) := by
@@ -118,8 +118,8 @@ theorem far_ok {r : ℕ} (hr : r < E.K + 1) {k d : ℕ} (hkd : (k, d) ∈ emIdx 
     obtain ⟨t, ht, htj⟩ := List.mem_iff_getElem.1 hjm
     have hg : (E.N.region r).arcs.getD t 0 = j := by
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some, htj]
-    refine Or.inl ⟨t, by unfold BEnv.nRg; rw [ite_eq_right (by omega)]; exact ht, u, ?_, ?_⟩
-    · unfold BEnv.cntF BEnv.arcR; rw [ite_eq_right (by omega), hg, ← hQn]; exact hu
+    refine Or.inl ⟨t, by unfold BEnv.nRg; rwa [ite_eq_right (by omega)], u, ?_, ?_⟩
+    · unfold BEnv.cntF BEnv.arcR; rwa [ite_eq_right (by omega), hg, ← hQn]
     · unfold BEnv.stF BEnv.arcR; rw [ite_eq_right (by omega), hg, ← hQn]; exact hsu.symm
 
 /-- The words of the descriptor agree. -/
@@ -130,14 +130,14 @@ theorem desc_m {m : ℕ → ℕ} (hm : ∀ a, a < E.B₂ → m a = E.m₀ a) :
   refine ⟨?_, ⟨by omega, fun h0 => ?_⟩⟩
   · rcases hE.hMD with ⟨h0, -⟩ | ⟨-, h2, h3⟩
     · omega
-    · exact Or.inr ⟨by rw [hm _ (by omega)]; exact h1, by rw [hm _ (by omega)]; exact h2, h3⟩
+    · exact Or.inr ⟨by rwa [hm _ (by omega)], by rwa [hm _ (by omega)], h3⟩
   · rw [hm _ (by omega)] at h0; omega
 
 /-- The handle words and the region records lie below `B₂`. -/
 theorem areas {r : ℕ} (hr : r < E.K + 1) :
     E.H + 7 < E.B₂ ∧ E.m₀ (E.H + 5) + 5 * r + 4 < E.B₂ := by
   have h := Gran.nf_areas hE.hNF
-  exact ⟨h.1, h.2.2.1 r (by rw [hE.nRegions]; exact hr)⟩
+  exact ⟨h.1, h.2.2.1 r (by rwa [hE.nRegions])⟩
 
 /-- **The arc scans of the ends of a record are well posed** (`K > 0`). -/
 theorem scan_ok (hK : 0 < E.K) {r : ℕ} (hr : r < E.K + 1) {x : ℕ × ℕ × ℕ} (hx : x ∈ E.recs r)
@@ -145,7 +145,7 @@ theorem scan_ok (hK : 0 < E.K) {r : ℕ} (hr : r < E.K + 1) {x : ℕ × ℕ × �
     (hs : s < 2) :
     DrvD.ScanGood E.P E.W E.I E.N r (DrvD.endPos x s) m E.MD (E.m₀ (E.H + 4)) (E.LP r) := by
   have B := hE.ctx hK
-  have hr' : r < E.N.nRegions := by rw [hE.nRegions]; exact hr
+  have hr' : r < E.N.nRegions := by rwa [hE.nRegions]
   have hGM : GoodModel E.I := Or.inr ⟨E.Q, hE.hQ, rfl⟩
   obtain ⟨hRo, hl⟩ := region_facts (B.rc hr') hE.hli
   have hxm : x ∈ regList E.li E.Q (regPts E.li E.Q.n E.N r) := by
@@ -162,9 +162,8 @@ theorem scan_ok (hK : 0 < E.K) {r : ℕ} (hr : r < E.K + 1) {x : ℕ × ℕ × �
     (hE.hNF.transport hm) hBW hwfm hMDm hr hp.2 (by
       rcases (by omega : s = 0 ∨ s = 1) with rfl | rfl <;> simp [DrvD.endPos]) hp.1
   obtain ⟨a1, a2⟩ := hE.areas hr
-  rw [hm (E.H + 4) (by omega), hm (E.H + 7) (by omega), hm (E.H + 5) (by omega),
+  rwa [hm (E.H + 4) (by omega), hm (E.H + 7) (by omega), hm (E.H + 5) (by omega),
     hm (E.m₀ (E.H + 5) + 5 * r + 1) (by omega)] at h
-  exact h
 
 /-- **The arc scans of the ends of a record find a match** (`K > 0`). -/
 theorem hex_ok (hK : 0 < E.K) {r : ℕ} (hr : r < E.K + 1) {x : ℕ × ℕ × ℕ} (hx : x ∈ E.recs r)
@@ -173,7 +172,7 @@ theorem hex_ok (hK : 0 < E.K) {r : ℕ} (hr : r < E.K + 1) {x : ℕ × ℕ × �
       (DrvD.tA E.I E.Q E.N (DrvD.endPos x s) j) (DrvD.tB E.I E.Q E.N (DrvD.endPos x s) j) =
         true := by
   have B := hE.ctx hK
-  have hr' : r < E.N.nRegions := by rw [hE.nRegions]; exact hr
+  have hr' : r < E.N.nRegions := by rwa [hE.nRegions]
   have hxm : x ∈ regList E.li E.Q (regPts E.li E.Q.n E.N r) := by
     unfold BEnv.recs at hx; rwa [pts_pos hK] at hx
   refine scan_hex B hr' hxm ?_
@@ -198,7 +197,7 @@ theorem arcs_le5 {r : ℕ} (hr : r < E.K + 1) : (E.N.region r).arcs.length ≤ 5
     have hK' : E.L.length = 0 := hK
     omega
   · have B := hE.ctx hK
-    have hr' : r < E.N.nRegions := by rw [hE.nRegions]; exact hr
+    have hr' : r < E.N.nRegions := by rwa [hE.nRegions]
     have h1 := arcs_length_le B hr'
     have h2 := hE.hdeg (E.reg r) (hE.hregs.1.1 r hr')
     exact le_trans h1 (Nat.add_le_add_right h2 1)
@@ -221,13 +220,13 @@ theorem arcs_pos {r : ℕ} (hr : r < E.K + 1) : 0 < (E.N.region r).arcs.length :
     have hNF : IsNF E.I E.Q E.N := DownMath.isNF_build hE.hQ hE.hok hE.hperm hE.hsort
     have hnc : E.N.nChords = E.L.length := DownMath.nChords_build hE.hQ hE.hok hE.hperm hE.hsort
     have hne : (E.N.F E.I E.Q).Nonempty :=
-      ⟨_, (DownMath.chordPos_attach hNF (show 0 < E.N.nChords by rw [hnc]; exact hK)
+      ⟨_, (DownMath.chordPos_attach hNF (show 0 < E.N.nChords by rwa [hnc])
         (Or.inl rfl)).1⟩
-    exact (Restore.region_arc hM hNF hE.hregs hne (by rw [hE.nRegions]; exact hr)).1
+    exact (Restore.region_arc hM hNF hE.hregs hne (by rwa [hE.nRegions])).1
 
 /-- The arc list of a region lies below `B₂`. -/
 theorem LP_lt {r : ℕ} (hr : r < E.K + 1) : E.LP r < E.B₂ := by
-  have := DrvD.arcList_lt hE.hNF (r := r) (by rw [hE.nRegions]; exact hr) (t := 0)
+  have := DrvD.arcList_lt hE.hNF (r := r) (by rwa [hE.nRegions]) (t := 0)
     (hE.arcs_pos hr)
   unfold BEnv.LP; omega
 
@@ -250,14 +249,14 @@ theorem ld_ok {r : ℕ} (hr : r < E.K + 1) (c : Config)
   · refine ⟨Or.inl ⟨h12.trans hK, by unfold BEnv.stF; rw [ite_eq_left hK],
       by unfold BEnv.cntF; rw [ite_eq_left hK]⟩, fun h => by omega, fun h => by omega⟩
   · have B := hE.ctx hK
-    have hr' : r < E.N.nRegions := by rw [hE.nRegions]; exact hr
+    have hr' : r < E.N.nRegions := by rwa [hE.nRegions]
     have hR : r < E.N.regions.length := by
       have := hE.nRegions; unfold NF.nRegions at this; omega
     have htn : t < (E.N.region r).arcs.length := by
       unfold BEnv.nRg at ht; rwa [ite_eq_right (by omega)] at ht
     have hNAt := hE.hNF.nfAt
     have hBW : E.B₂ ≤ E.W := by have := hE.hBW; omega
-    set j := (E.N.region r).arcs.getD t 0 with hjd
+    set j := (E.N.region r).arcs.getD t 0
     have hjm : j ∈ (E.N.region r).arcs := getD_mem hE htn
     have hjA : j < E.N.arcs.length := ((hE.hregs.2.2.1.2.2.2 r hr' j).1 hjm).1
     have hlp : E.LP r + t < E.B₂ := DrvD.arcList_lt hE.hNF hr' htn
@@ -274,8 +273,8 @@ theorem ld_ok {r : ℕ} (hr : r < E.K + 1) (c : Config)
       unfold BEnv.nRg; rw [ite_eq_right (by omega)]; unfold BEnv.LP; omega
     refine ⟨Or.inr ⟨by omega, ?_, ?_, ?_, ?_⟩, fun _ => by omega, fun _ => by omega⟩
     · unfold BEnv.stF BEnv.arcR; rw [ite_eq_right (by omega), hm _ (by omega), a1]
-    · unfold BEnv.stF BEnv.arcR; rw [ite_eq_right (by omega), ← hQn]; exact sn
-    · rw [hm _ (by omega), a3, ← hQn]; exact en
+    · unfold BEnv.stF BEnv.arcR; rwa [ite_eq_right (by omega), ← hQn]
+    · rwa [hm _ (by omega), a3, ← hQn]
     · unfold BEnv.cntF BEnv.stF BEnv.arcR arcCnt
       rw [ite_eq_right (by omega), ite_eq_right (by omega), hm _ (by omega), a3]
 

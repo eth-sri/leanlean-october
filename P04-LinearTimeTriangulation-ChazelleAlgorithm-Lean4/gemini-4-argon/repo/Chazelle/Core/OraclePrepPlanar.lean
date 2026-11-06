@@ -80,8 +80,7 @@ theorem memGraph_eq {m : ℕ → ℕ} {Bh : ℕ}
     constructor
     · rintro ⟨d, hd, h1, h2⟩
       refine ⟨d, hd, by rw [← h1, hvt d hd], ?_⟩
-      rw [hopp d hd, hvt _ (oppN_lt hd), view_oppN, View.tail_rev] at h2
-      exact h2
+      rwa [hopp d hd, hvt _ (oppN_lt hd), view_oppN, View.tail_rev] at h2
     · rintro ⟨d, hd, h1, h2⟩
       refine ⟨d, hd, by rw [hvt d hd, h1], ?_⟩
       rw [hopp d hd, hvt _ (oppN_lt hd), view_oppN, View.tail_rev, h2]

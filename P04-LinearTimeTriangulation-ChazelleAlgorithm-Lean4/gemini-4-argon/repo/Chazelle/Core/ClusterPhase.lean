@@ -43,11 +43,6 @@ theorem nreg {c0 c : Config} (h : PFr Rg Am c0 c) {f : ℕ → ℕ}
     (hf : ∀ r, ¬ Rg r → f r = c.nreg r) : PFr Rg Am c0 { c with nreg := f } :=
   ⟨fun r hr => (hf r hr).trans (h.1 r hr), h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
 
-theorem nmem {c0 c : Config} (h : PFr Rg Am c0 c) {a x : ℕ} (ha : Am a) :
-    PFr Rg Am c0 { c with nmem := upd c.nmem a x } :=
-  ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1, fun b hb => by
-    show upd c.nmem a x b = c0.nmem b
-    rw [Machine.upd_other _ _ _ (fun e => hb (by rw [e]; exact ha))]; exact h.2.2.2.2 b hb⟩
 
 theorem nreg_nmem {c0 c : Config} (h : PFr Rg Am c0 c) {f : ℕ → ℕ}
     (hf : ∀ r, ¬ Rg r → f r = c.nreg r) {a x : ℕ} (ha : Am a) :
@@ -109,8 +104,7 @@ theorem fillStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001
           · simp only [Machine.upd_apply]; unfold FillScr at hr; split_ifs <;> omega
           · rw [r1, hi2]; omega
         · config_simp
-          rw [r1, hi2, r2]
-          rw [Machine.upd_apply]
+          rw [r1, hi2, r2, Machine.upd_apply]
           split_ifs with h
           · rfl
           · exact hm2 i (by omega))

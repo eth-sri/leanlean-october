@@ -41,7 +41,7 @@ theorem chord_eq_shoot_of_end (C : Chain) {h : Set Point} (hh : h ∈ Merge.augC
       · exact absurd (by rw [hw']; exact hH.open_mem _ h1 h2) hwD
       · exact Or.inr h2
     · exact Or.inl h1.symm
-  have hwy' : w.2 ≤ C.top.2 := by rw [hwy]; exact hy
+  have hwy' : w.2 ≤ C.top.2 := by rwa [hwy]
   rcases hend with hl | hr
   · -- from the left end, to the right
     have hfree : FreeAt C w 1 := by

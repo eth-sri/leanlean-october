@@ -100,9 +100,9 @@ theorem FPre.keep {P : Polygon} {X : MemCtx} {Ok : Polygon → Model → Prop} {
   have e5 := hr 70005 (by norm_num) (by norm_num)
   have e6 := hr 70006 (by norm_num) (by norm_num)
   have e8 := hr 70008 (by norm_num) (by norm_num)
-  refine ⟨o1, o2, o3, by rw [e6]; exact d1, by rw [e6]; exact d2, by rw [e5]; exact s1,
-    by rw [e5]; exact s2, by rw [e8]; exact holds_frameF hh hf, ?_⟩
-  rw [e5, e8, cap_frameF hloc hh hf]; exact hc
+  refine ⟨o1, o2, o3, by rwa [e6], by rwa [e6], by rwa [e5],
+    by rwa [e5], by rw [e8]; exact holds_frameF hh hf, ?_⟩
+  rwa [e5, e8, cap_frameF hloc hh hf]
 
 theorem junctionWF_mono {P : Polygon} {E E' : ℕ} {m : ℕ → ℕ} {bl br bw : ℕ}
     (h : JunctionWF P E m bl br bw) (hE : E ≤ E') : JunctionWF P E' m bl br bw :=
@@ -194,7 +194,7 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
   have r6 : rd c₁ bSweep 6 = c.nreg 70006 := q0 6 (by norm_num)
   have r7 : rd c₁ bSweep 7 = i := q7
   have r8 : rd c₁ bSweep 8 = c.nreg S := q8
-  have r9 : rd c₁ bSweep 9 = L.length := by rw [← hLl]; exact q9
+  have r9 : rd c₁ bSweep 9 = L.length := by rwa [← hLl]
   have r10 : rd c₁ bSweep 10 = c.nreg 70008 := q10
   have hK1 : c.nmem (c.nreg 70003) = N₁.nChords := (Robust.holds hF.nf₁).1
   have hK2 : c.nmem (c.nreg 70004) = N₂.nChords := (Robust.holds hF.nf₂).1
@@ -210,7 +210,7 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
   obtain ⟨c₂, k₂, e₂, hk₂, post, F₂⟩ := hM P W c₁ w₁ hpre (by rw [hcost, a₁]; omega)
   rw [hcost] at hk₂
   obtain ⟨R, hR1, hR2, hRl, hRL, hsees⟩ := post H J L (by rw [qm, r0, r1, r2]; exact hF.jat)
-    r9 (by rw [qm, r8]; exact hL)
+    r9 (by rwa [qm, r8])
   rw [r7] at hsees
   have w₂ := e₂.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, t0, tr, tm, trr, trm, tou⟩ : ∃ c₃ k₃, Exec P W
@@ -231,9 +231,9 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
   have hband : ∀ r, bandOf r = bFuse → bandOf r ∉ sweepBands ∪ oracleBands := fun r h => by
     rw [h]; decide
   refine ⟨c₃, _, R, ex, by omega, hRl, ?_, ?_, ?_, ?_, Ft, fun r h1 h2 h3 => ?_, ?_⟩
-  · rw [t0]; rw [a₁] at hR1; exact hR1
-  · rw [t0, tr _ hRBA.symm]; exact hR2
-  · rw [tm, t0]; exact hRL
+  · rw [t0]; rwa [a₁] at hR1
+  · rwa [t0, tr _ hRBA.symm]
+  · rwa [tm, t0]
   · exact hsees
   · have hA : r ≠ ALLOC := by intro h; rw [h] at h1; exact absurd h1 (by decide)
     rw [tr r h2, F₂.1 r (hband r h1) hA, qr r (by rw [h1]; decide) h3]

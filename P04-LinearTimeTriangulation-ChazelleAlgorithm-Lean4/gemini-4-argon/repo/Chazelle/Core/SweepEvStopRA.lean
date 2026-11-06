@@ -28,17 +28,13 @@ variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
 /-- **The fixed facts** at a configuration of the run steps. -/
 structure Fx (P : Polygon) (W : ℕ) (J : Merge.Junction) (c : Config) : Prop where
-  k : Consts c
   r40 : ∀ k, k < 5 → c.nreg (sw (40 + k)) = cstR J k
   r45 : ∀ k, k < 5 → c.nreg (sw (45 + k)) = cstL J k
   n1 : c.nreg (sw 33) = 2 * J.left.m + 7
   n2 : c.nreg (sw 34) = 2 * J.right.m + 7
   nw : c.nreg (sw 35) = 2 * J.whole.m + 7
   gw : c.nreg cGW = gW J
-  mpk : MapK J c
   ctxW : ChainCtx P W c (sw 2) J.whole
-  ctx2 : ChainCtx P W c (sw 21) J.right
-  ctx1 : ChainCtx P W c CD₁ J.left
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {J : Merge.Junction} {N₁ N₂ : NF}
@@ -48,10 +44,10 @@ theorem EvEnv.fx (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, h40, h45, h33, h34, h35, -⟩ := hst
   have fix : ∀ i, i < 700 → c.nreg (sw i) = c₀.nreg (sw i) := fun i hi =>
     hI.hin _ (by unfold IFix sw; omega)
-  refine ⟨E.hK.fix hI, fun k hk => by rw [fix _ (by omega)]; exact h40 k hk,
-    fun k hk => by rw [fix _ (by omega)]; exact h45 k hk, by rw [fix _ (by omega)]; exact h33,
-    by rw [fix _ (by omega)]; exact h34, by rw [fix _ (by omega)]; exact h35, E.gw' hI,
-    E.hM.fix hI, E.ctxW' hI, E.ctx2' hI, E.ctx1' hI⟩
+  refine ⟨fun k hk => by rw [fix _ (by omega)]; exact h40 k hk,
+    fun k hk => by rw [fix _ (by omega)]; exact h45 k hk, by rwa [fix _ (by omega)],
+    by rwa [fix _ (by omega)], by rwa [fix _ (by omega)], E.gw' hI,
+    E.ctxW' hI⟩
 
 /-! ## Conversions -/
 
@@ -179,7 +175,7 @@ theorem stA_irs (hP : J.P.Simple) (hNF : IsNF (chainModel J.right) (Qof P) N₂)
           ((chainModel J.whole).param (Qof P) ⟨c'.nreg (oF0 + 1), c'.nreg (oF0 + 2)⟩)) ∧
       EFr StAW c c') := by
   obtain ⟨-, -, hay, hset, hwall⟩ := stOrig_facts hP hNF hok
-  set a := stOrig J (Qof P) N₂ kind k b with ha
+  set a := stOrig J (Qof P) N₂ kind k b
   unfold stA
   refine IRS.seq (K₁ := 22) (K₂ := 35007) (convR_irs hP hI hK hfx
     ⟨by unfold oPE cX sw; omega, by unfold oPE cT sw; omega, by unfold oPE cDd sw; omega,
@@ -200,13 +196,12 @@ theorem stA_irs (hP : J.P.Simple) (hNF : IsNF (chainModel J.right) (Qof P) N₂)
       (by unfold cDd sw; omega)) (fun x _ => by rw [hm1]) (by rw [hA1])
   have hposM : (chainModel J.whole).pos (Qof P) ⟨c₁.nreg oXE, c₁.nreg oPH⟩ = a := by
     rw [hH1, hxpos, hpos]
-  have hR : J.right.radius = J.whole.radius := rfl
   refine (callArr_irs (o := oF0) hI₁ hctx
     ⟨by unfold sw; omega, by unfold sw; omega, by unfold oXE sw; omega, by unfold oXE sw; omega,
       by unfold oPH sw; omega, by unfold oPH sw; omega, by unfold oB sw; omega,
       by unfold oB sw; omega⟩ ⟨by unfold oF0 sw; omega, by unfold oF0 sw; omega⟩ hxn
     ⟨by rw [hH1, hxpar]; exact hpp.1, by rw [hH1, hxpar]; exact hpp.2.1,
-      by rw [hH1]; exact hpp.2.2⟩ (by rw [hposM]; exact hay) (by rw [hA1]; omega)).mono le_rfl ?_
+      by rw [hH1]; exact hpp.2.2⟩ (by rwa [hposM]) (by rw [hA1]; omega)).mono le_rfl ?_
   rintro c' ⟨⟨hf1, hf2, hf3⟩, hr2, hA2, hm2⟩
   rw [hposM, hB1, hb] at hf2 hf3
   have hσ := SweepStop.dirOf_cases' b
@@ -219,8 +214,8 @@ theorem stA_irs (hP : J.P.Simple) (hNF : IsNF (chainModel J.right) (Qof P) N₂)
   · by_contra hne
     obtain ⟨p, t, harr⟩ := hiff.1 h
     exact hf3 hne p t harr
-  · refine ⟨fun r h1 h2 h3 => ?_, by rw [← hA1]; exact hA2, fun x hx => by
-      rw [hm2 x (by rw [hA1]; exact hx), hm1]⟩
+  · refine ⟨fun r h1 h2 h3 => ?_, by rwa [← hA1], fun x hx => by
+      rw [hm2 x (by rwa [hA1]), hm1]⟩
     have h2' : ¬ (CvSet oXE r ∨ (oF0 ≤ r ∧ r ≤ oF0 + 2)) := h2
     rw [hr2 r h1 (fun h => h2' (Or.inr (by omega))) (fun h => h2' (Or.inr (by omega)))
       (fun h => h2' (Or.inr (by omega))) h3]

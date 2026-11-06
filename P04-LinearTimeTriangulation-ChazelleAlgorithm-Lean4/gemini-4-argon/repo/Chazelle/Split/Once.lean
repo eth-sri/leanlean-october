@@ -137,7 +137,7 @@ theorem vtx_mem_boundary_subPoly {l : List ℕ} {x : ℕ} (hx : x ∈ l) :
     P.vtx x ∈ (subPoly P l).boundary := by
   obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hx
   rw [← vtx_subPoly P l hi]
-  exact Chazelle.Existence.vtx_mem_boundary _ (by rw [n_subPoly]; exact hi)
+  exact Chazelle.Existence.vtx_mem_boundary _ (by rwa [n_subPoly])
 
 /-- In a simple sub-polygon, `P.vtx` is injective on the entries of `l`. -/
 theorem eq_of_vtx_eq {l : List ℕ} (hQ : (subPoly P l).Simple) {x y : ℕ} (hx : x ∈ l)
@@ -145,7 +145,7 @@ theorem eq_of_vtx_eq {l : List ℕ} (hQ : (subPoly P l).Simple) {x y : ℕ} (hx 
   obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hx
   obtain ⟨j, hj, rfl⟩ := List.mem_iff_getElem.1 hy
   rw [← vtx_subPoly P l hi, ← vtx_subPoly P l hj] at h
-  have := hQ.2.1 i j (by rw [n_subPoly]; exact hi) (by rw [n_subPoly]; exact hj) h
+  have := hQ.2.1 i j (by rwa [n_subPoly]) (by rwa [n_subPoly]) h
   subst this
   rfl
 
@@ -212,7 +212,7 @@ theorem subPoly_arcList (l : List ℕ) (s : ℕ) {L : ℕ} (hL : L < l.length) :
   · intro k h1 h2
     have hk : k < L + 1 := by simpa using h2
     simp only [List.getElem_map, List.getElem_range, n_subPoly]
-    rw [← getD_eq_getElem_of_lt _ 0 (by rw [length_arcList hL]; exact hk),
+    rw [← getD_eq_getElem_of_lt _ 0 (by rwa [length_arcList hL]),
       getD_arcList hL (by omega), vtx_subPoly_getD P l (Nat.mod_lt _ (by omega))]
 
 /-- A cyclic edge of an arc of `l` is a cyclic edge of `l`, or the closing edge from `l[s + L]`
@@ -276,7 +276,7 @@ theorem IsDiag.not_subset_edge {l : List ℕ} (hQ : (subPoly P l).Simple) {d : �
     False := by
   obtain ⟨p, hp, hp1, hp2⟩ := exists_inner_point (hd.vtx_ne P hQ)
   exact hd.2.2.2.1 p hp hp1 hp2
-    (Chazelle.Existence.edge_subset_boundary _ (by rw [n_subPoly]; exact hk) (h hp))
+    (Chazelle.Existence.edge_subset_boundary _ (by rwa [n_subPoly]) (h hp))
 
 /-- **An `IsDiag` pair is a diagonal in the sense of `Chazelle.Existence.IsDiagonal`**, at the
 position `s` of its first endpoint with arc length `L` (the positions of the endpoints are given
@@ -377,11 +377,11 @@ theorem splitPair_arcs {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × �
     rw [hQn]; exact subPoly_arcList P l _ (by omega)
   have hchord' : Chazelle.segment ((subPoly P l).vtx ((s + L) % (subPoly P l).n))
       ((subPoly P l).vtx (s % (subPoly P l).n)) = pairSeg P d := by
-    rw [Chazelle.Geometry.segment_comm]; exact hchord
+    rwa [Chazelle.Geometry.segment_comm]
   have hchord2 : Chazelle.segment
       ((subPoly P l).vtx (((s + L) % (subPoly P l).n + ((subPoly P l).n - L)) % (subPoly P l).n))
       ((subPoly P l).vtx ((s + L) % (subPoly P l).n % (subPoly P l).n)) = pairSeg P d := by
-    rw [Chazelle.Existence.compl_arc_last_index _ s L hLQ, Nat.mod_mod]; exact hchord
+    rwa [Chazelle.Existence.compl_arc_last_index _ s L hLQ, Nat.mod_mod]
   have hmeet := Chazelle.Existence.filled_arcs_meet_on_chord _ s L hQ hdiag hin
   have hl1 := length_arcList (l := l) (s := s) hLn
   have hl2 := length_arcList (l := l) (s := (s + L) % l.length) (L := l.length - L) (by omega)
@@ -404,26 +404,24 @@ theorem splitPair_arcs {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × �
     have hxv := vtx_idxOf P hx
     rw [e1, ← hxv] at hxf
     obtain ⟨k, hk, hkv⟩ := Chazelle.Existence.exists_arc_vertex_of_mem_filled _ s L hdiag hmeet
-      (by rw [hQn]; exact hi) hxf
+      (by rwa [hQn]) hxf
     rw [← e1, hxv, vtx_subPoly_getD P _ (by rw [hl1]; omega)] at hkv
     have hmem : (arcList l s L).getD k 0 ∈ arcList l s L := by
       rw [getD_eq_getElem_of_lt _ _ (by rw [hl1]; omega)]; exact List.getElem_mem _
-    rw [← eq_of_vtx_eq P hQ (mem_of_mem_arcList hmem) hx hkv]
-    exact hmem
+    rwa [← eq_of_vtx_eq P hQ (mem_of_mem_arcList hmem) hx hkv]
   · -- vertices of `subPoly P l` filled in the second arc
     intro x hx hxf
     have hi := List.idxOf_lt_length_of_mem hx
     have hxv := vtx_idxOf P hx
     rw [e2, ← hxv] at hxf
     obtain ⟨k, hk, hkv⟩ := Chazelle.Existence.exists_arc_compl_vertex_of_mem_filled _ s L hdiag
-      hmeet (by rw [hQn]; exact hi) hxf
+      hmeet (by rwa [hQn]) hxf
     rw [← e2, hxv, vtx_subPoly_getD P _ (by rw [hl2]; rw [hQn] at hk; omega)] at hkv
     have hmem : (arcList l ((s + L) % l.length) (l.length - L)).getD k 0 ∈
         arcList l ((s + L) % l.length) (l.length - L) := by
       rw [getD_eq_getElem_of_lt _ _ (by rw [hl2]; rw [hQn] at hk; omega)]
       exact List.getElem_mem _
-    rw [← eq_of_vtx_eq P hQ (mem_of_mem_arcList hmem) hx hkv]
-    exact hmem
+    rwa [← eq_of_vtx_eq P hQ (mem_of_mem_arcList hmem) hx hkv]
   · -- edges of the first arc
     rintro x y ⟨k, hk, rfl, rfl⟩
     rcases arcList_edge hLn hk with h | ⟨h1, h2⟩

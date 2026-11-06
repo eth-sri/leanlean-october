@@ -82,8 +82,7 @@ theorem chords_eq_of_nfAt {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B 
   have e := hext _ _ (a0.symm.trans b0) (a1.symm.trans b1) (a2.symm.trans b2)
     (a3.symm.trans b3) (a4.symm.trans b4)
   unfold NF.chord at e
-  rw [getD_lt hi, getD_lt hi'] at e
-  exact e
+  rwa [getD_lt hi, getD_lt hi'] at e
 
 theorem tlist_eq {m : ℕ → ℕ} {T : ℕ} {C : List (ℕ × ℕ × ℕ)} (h : ChordListAt m T C) :
     tlist m T C.length = C := by

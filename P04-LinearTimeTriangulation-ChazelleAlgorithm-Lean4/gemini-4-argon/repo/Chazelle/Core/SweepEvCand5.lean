@@ -52,7 +52,7 @@ theorem cand_prep {J : Merge.Junction} (hP : J.P.Simple) {S₂ : Set (Set Point)
   obtain ⟨hfr, -, -, hR, -, -⟩ := right_hit_end (hS₂ hch) ha
   have hfree := whole_free_end hP haR hav hfr
   obtain ⟨hg, d, hd⟩ := map_complete hP ha₁ hσ hfree h1 h2 h3 h4
-  exact ⟨hg, by rw [← hR]; exact h5, d, hd⟩
+  exact ⟨hg, by rwa [← hR], d, hd⟩
 
 theorem mod_back {n b d : ℕ} (hb : b < n) (hd : d < n) : ((b + d) % n + n - b) % n = d := by
   rcases Nat.lt_or_ge (b + d) n with h | h
@@ -141,12 +141,12 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hP := E.hP
   have hS₂ : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := E.hNF₂.1.2.1
   have hS₂f : (N₂.F (chainModel J.right) (Qof P)).Finite := E.hNF₂.1.1
-  set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
+  set S₂ := N₂.F (chainModel J.right) (Qof P)
   set σ := dirOf (c.nreg oD) with hσd
   have hσ : σ = 1 ∨ σ = -1 := by rw [hσd]; unfold dirOf; split_ifs <;> simp
   obtain ⟨hmd, hmwf, hm0, hcd⟩ := E.md hI
   subst hse
-  set lo := ShotList.loSet (chainModel J.left) (Qof P) c.nmem (c.nreg wGB) L.length [] with hlo
+  set lo := ShotList.loSet (chainModel J.left) (Qof P) c.nmem (c.nreg wGB) L.length []
   -- the rejection
   have rejQ : ∀ c' : Config,
       (∀ r, bandOf r ∉ oracleBands → ¬ CandR r → r ≠ ALLOC → c'.nreg r = c.nreg r) →
@@ -196,13 +196,13 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   · rw [k01] at hF
     have hF1 : c₁.nreg eF = 1 := by omega
     obtain ⟨τ, hτ, huq, hAle, hA1, hA0⟩ := f3 hF1
-    refine IRS.mono (K := KG + 56498 + 2) (IRS.ifT (by rw [k01]; exact hF) ?_) (by omega)
+    refine IRS.mono (K := KG + 56498 + 2) (IRS.ifT (by rwa [k01]) ?_) (by omega)
       (fun _ h => h)
     by_cases hAr : c₁.nreg K0 < c₁.nreg eA
     · rw [k01] at hAr
       have hA11 : c₁.nreg eA = 1 := by omega
       obtain ⟨hpe, hppA, hArr, hnorm⟩ := hA1 hA11
-      refine IRS.mono (K := KG + 56496 + 2) (IRS.ifT (by rw [k01]; exact hAr) ?_) (by omega)
+      refine IRS.mono (K := KG + 56496 + 2) (IRS.ifT (by rwa [k01]) ?_) (by omega)
         (fun _ h => h)
       -- 2. the genuineness check
       have eD1 : c₁.nreg oD = c.nreg oD := keep1 _ (by unfold oD sw; norm_num) (by unfold oD sw; norm_num)
@@ -218,7 +218,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
           (by unfold ShW RS oAbsA eF eNo sw; omega))
       have hroomG : c₁.nreg ALLOC + KG ≤ W := by unfold evCandK at hroom; omega
       refine IRS.seq (K₁ := KG) (K₂ := 56496) (hgen c₁ (s.eval (Qof P)) σ τ hI₁ hroomG
-        (by rw [eD1]; exact hD) (by rw [eD1]) habs1 haR hav ha₁ hτ hpe hppA hArr) ?_
+        (by rwa [eD1]) (by rw [eD1]) habs1 haR hav ha₁ hτ hpe hppA hArr) ?_
       rintro c₂ hI₂ hA₂ hA₂' ⟨hbG, frG⟩
       have k02 : c₂.nreg K0 = 0 := (E.hK.fix hI₂).1
       have keep2 : ∀ r, 240000 ≤ r → r < 250000 → ¬ ShW r → ¬ GR r → c₂.nreg r = c.nreg r :=
@@ -246,7 +246,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       by_cases hGb : c₂.nreg K0 < c₂.nreg cG
       · rw [k02] at hGb
         have hgen1 : Genuine J.left (s.eval (Qof P)) σ τ := hbG.2.1 (by have := hbG.1; omega)
-        refine IRS.mono (K := 56494 + 2) (IRS.ifT (by rw [k02]; exact hGb) ?_) (by omega) (fun _ h => h)
+        refine IRS.mono (K := 56494 + 2) (IRS.ifT (by rwa [k02]) ?_) (by omega) (fun _ h => h)
         -- 3. the far-end test
         have eE1 := keepA2 (eA + 1) (by omega) (by omega)
         have eE2 := keepA2 (eA + 2) (by omega) (by omega)
@@ -275,9 +275,9 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         have hroomF : c₂.nreg ALLOC + 34000 ≤ W := by
           have := frG.2.1; unfold evCandK at hroom; omega
         refine IRS.seq (K₁ := 34000) (K₂ := 22494) (farChk_irs hI₂ E.hK (E.ctx1' hI₂) (E.ctx2' hI₂)
-          (by rw [eE1]; exact hpe) (by rw [eE1, eE2]; exact hppA) (by rw [eE1, eE2]; exact hy1)
-          (by rw [eFE]; exact hfe) (by rw [eFE, eFC]; exact hfp) (by rw [eFE, eFC]; exact hy2)
-          (by rw [eD2]; exact hD) hroomF) ?_
+          (by rwa [eE1]) (by rwa [eE1, eE2]) (by rwa [eE1, eE2])
+          (by rwa [eFE]) (by rwa [eFE, eFC]) (by rwa [eFE, eFC])
+          (by rwa [eD2]) hroomF) ?_
         rintro c₃ hI₃ hA₃ hA₃' ⟨hbF', frF⟩
         rw [eE1, eE2, eFE, eFC, eD2, hw, hfar] at hbF'
         -- the bit is the far-end condition
@@ -314,7 +314,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         by_cases hFr : c₃.nreg K0 < c₃.nreg cFr
         · rw [k03] at hFr
           have hlt : τ < (Merge.rend ch).1 - (Merge.lend ch).1 := hbFr.2.1 (by have := hbFr.1; omega)
-          refine IRS.mono (K := 22300 + 2) (IRS.ifT (by rw [k03]; exact hFr) ?_) (by omega)
+          refine IRS.mono (K := 22300 + 2) (IRS.ifT (by rwa [k03]) ?_) (by omega)
             (fun _ h => h)
           -- 4. the accepting tail
           have kc3 : ∀ r, (sw 2200 ≤ r ∧ r < sw 2240) ∨ (sw 2283 < r ∧ r < sw 3000) →
@@ -342,12 +342,12 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
           have hroomA : c₃.nreg ALLOC + 22300 ≤ W := by
             have := frF.2.1; have := frG.2.1; unfold evCandK at hroom; omega
           refine (evAccT_irs (S₂ := S₂) hI₃ E.hK E.hM hP hS₂ hS₂f hch ha haR hav ha₁ hgen1 hlt
-            (by rw [e31]; exact hpe) (by rw [e31, e32]; exact hppA) (by rw [e31, e32]; exact hnorm)
-            (by rw [e31, e32]; exact hArr) E.ctxW E.hgw (by rw [hs3.1, hs3.2.1]; exact hk)
-            (by rw [hs3.2.2 _ (Or.inl rfl), hs3.2.2 _ (Or.inr (Or.inl rfl)),
-              hs3.2.2 _ (Or.inr (Or.inr (Or.inl rfl)))]; exact hb)
-            (by rw [hs3.2.2 _ (Or.inl rfl)]; exact hbF)
-            (by rw [hs3.2.2 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))]; exact hbN)
+            (by rwa [e31]) (by rwa [e31, e32]) (by rwa [e31, e32])
+            (by rwa [e31, e32]) E.ctxW E.hgw (by rwa [hs3.1, hs3.2.1])
+            (by rwa [hs3.2.2 _ (Or.inl rfl), hs3.2.2 _ (Or.inr (Or.inl rfl)),
+              hs3.2.2 _ (Or.inr (Or.inr (Or.inl rfl)))])
+            (by rwa [hs3.2.2 _ (Or.inl rfl)])
+            (by rwa [hs3.2.2 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))])
             (by rw [E.tb' hI₃]; exact E.hT) hTW3 E.hWn hroomA).mono le_rfl ?_
           rintro c' ⟨hacc, hrej, hfr4, hA4⟩
           rw [e31, e32, eT3, eK3, eS3, eU3, eN3] at hacc
@@ -372,7 +372,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
                 (chainModel J.left).W.n) (c₁.nreg (eA + 2)) := by
               rw [hdd]
               refine ⟨hv₀.1, hv₀.2.1, fun h => hv₀.2.2.1 ⟨h.1, h.2.1, fun ht0 => h.2.2 ?_⟩⟩
-              exact hnorm.2 (by rw [htq]; exact ht0)
+              exact hnorm.2 (by rwa [htq])
             have hacc' := accAt_lift hs3 hA3c hm3c (hacc hMV)
             rw [hdd, hpd] at hacc'
             refine ⟨_, ?_, hacc'⟩
@@ -382,7 +382,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         · rw [k03] at hFr
           have hnlt : ¬ τ < (Merge.rend ch).1 - (Merge.lend ch).1 := fun h => by
             have := hbFr.2.2 h; omega
-          refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k03]; exact hFr) (IRS.skip hI₃ rfl)) (by omega) ?_
+          refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k03]) (IRS.skip hI₃ rfl)) (by omega) ?_
           rintro c' rfl
           refine rejQ c₃ frR3 hA3c hm3c best3 ?_
           intro p t h1 h2 h3 h4 h5 h6
@@ -392,7 +392,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
           exact hnlt hlt'
       · rw [k02] at hGb
         have hng : ¬ Genuine J.left (s.eval (Qof P)) σ τ := fun h => by have := hbG.2.2 h; omega
-        refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k02]; exact hGb) (IRS.skip hI₂ rfl)) (by omega) ?_
+        refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k02]) (IRS.skip hI₂ rfl)) (by omega) ?_
         rintro c' rfl
         refine rejQ c₂ frR2 hA2c hm2c best2 ?_
         intro p t h1 h2 h3 h4 h5 h6
@@ -402,7 +402,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         exact hng hg
     · rw [k01] at hAr
       have hA0' : c₁.nreg eA ≠ 1 := by omega
-      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k01]; exact hAr) (IRS.skip hI₁ rfl)) (by omega) ?_
+      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k01]) (IRS.skip hI₁ rfl)) (by omega) ?_
       rintro c' rfl
       refine rejQ c₁ frR1 hA₁ (fun x hx => fr1.2.2 x hx) best1 ?_
       intro p t h1 h2 h3 h4 h5 h6
@@ -412,7 +412,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       exact hA0 hA0' _ _ harr
   · rw [k01] at hF
     have hF0 : c₁.nreg eF ≠ 1 := by omega
-    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k01]; exact hF) (IRS.skip hI₁ rfl)) (by omega) ?_
+    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k01]) (IRS.skip hI₁ rfl)) (by omega) ?_
     rintro c' rfl
     refine rejQ c₁ frR1 hA₁ (fun x hx => fr1.2.2 x hx) best1 ?_
     intro p t h1 h2 h3 h4 h5 h6

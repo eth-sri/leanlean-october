@@ -80,12 +80,12 @@ theorem countedIv {m : ℕ → ℕ} {D : ℕ} {P : Polygon} {M : Model}
   · have hm : m (D + 1 + 2) = C.m := hC.2.2.2.1
     unfold loOf hiOf
     rw [ite_eq_left h0, ite_eq_left h0, show D + 3 = D + 1 + 2 by omega, hm, chainModel_n]
-    exact ⟨fun p hp => chainModel_counted_iff C p (by rw [chainModel_n]; exact hp), by omega⟩
+    exact ⟨fun p hp => chainModel_counted_iff C p (by rwa [chainModel_n]), by omega⟩
   · have hn : (Qof P).n = P.n := shear_n _ _
     unfold loOf hiOf
     rw [ite_eq_right (by omega), ite_eq_right (by omega), interiorModel_n, hn]
     refine ⟨fun p hp => ?_, le_rfl⟩
-    rw [interiorModel_counted_iff _ p (by rw [interiorModel_n, hn]; exact hp), hn]
+    rw [interiorModel_counted_iff _ p (by rwa [interiorModel_n, hn]), hn]
 
 /-! ## The counted interval on the machine -/
 
@@ -231,10 +231,10 @@ theorem wtS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
   refine spec_seq ?_
   exec_block
   · config_simp; exact hs
-  set t := d.nreg 42113 - d.nreg 44020 + d.nreg 41112 with ht
-  set u := d.nreg 42110 - d.nreg 44020 with hu
+  set t := d.nreg 42113 - d.nreg 44020 + d.nreg 41112
+  set u := d.nreg 42110 - d.nreg 44020
   by_cases hl : d.nreg 43120 < 1
-  · refine spec_ifLtN_true (by config_simp; rw [h1]; exact hl) ?_
+  · refine spec_ifLtN_true (by config_simp; rwa [h1]) ?_
     rw [ite_eq_right (by omega)]
     refine spec_seq ?_
     by_cases a1 : u < d.nreg 44021
@@ -250,7 +250,7 @@ theorem wtS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
       refine ⟨by omega, ?_⟩
       config_simp
       rw [min_eq_right (not_lt.1 a1)]
-  · refine spec_ifLtN_false (by config_simp; rw [h1]; exact hl) ?_
+  · refine spec_ifLtN_false (by config_simp; rwa [h1]) ?_
     rw [ite_eq_left (by omega)]
     refine spec_seq ?_
     by_cases a1 : t < d.nreg 44021

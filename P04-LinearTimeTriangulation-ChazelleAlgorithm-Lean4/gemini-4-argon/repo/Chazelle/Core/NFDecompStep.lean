@@ -82,7 +82,7 @@ theorem cut_chosen {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ
   have hch' := chOf_pch h hch hT hB hI b1 hnt.1
   have htop' := top_of h hch hT hB hI b1 htop b2
   refine ⟨b1, b2, hnt.1, h.pch_lt _ b1 hnt.1, hch', htop', ⟨hnt.2, ?_, ?_⟩, hnt.2⟩
-  · rw [hch', htop']; exact hact
+  · rwa [hch', htop']
   · rw [hch', htop']
 
 /-- A chosen chord is the parent chord of the best candidate of its component. -/
@@ -246,8 +246,7 @@ theorem sz_cut {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.act
   obtain ⟨b1, b2, -, -, -, -, -, -⟩ := cut_chosen h hch hT hB hI ht htop hact hbt
   refine ⟨by unfold sz; rw [sub_cut_c h hch hT hB hI ht htop hact hbt], ?_⟩
   unfold sz
-  rw [sub_cut_t h hch hT hB hI ht htop hact hbt, sub_member h hch hT hB hI b2]
-  rw [Nat.add_comm]
+  rw [sub_cut_t h hch hT hB hI ht htop hact hbt, sub_member h hch hT hB hI b2, Nat.add_comm]
   exact Finset.card_filter_add_card_filter_not (fun v => AncX R prg pch rem0 (best t) v)
 
 end step

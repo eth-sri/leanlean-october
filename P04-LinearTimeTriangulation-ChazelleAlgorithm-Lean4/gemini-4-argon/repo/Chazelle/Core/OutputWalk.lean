@@ -187,7 +187,7 @@ theorem left_mid (hQ : Q.Simple) (D : TrapData Q) :
     intro k hk hkz
     have e1 : (Q.vtx k).1 = edgeX Q D.i ym := by rw [hkz]
     have e2 : (Q.vtx k).2 = ym := by rw [hkz]
-    exact D.isTrap.no_vertex k hk (by rw [e2]; exact hy1) (by rw [e2]; exact hy2)
+    exact D.isTrap.no_vertex k hk (by rwa [e2]) (by rwa [e2])
       (by rw [e1, e2]) (by rw [e1, e2]; exact hlt.le)
   refine ⟨t, ⟨?_, ?_⟩, hzt.symm⟩
   · rcases ht0.lt_or_eq with h | h
@@ -215,7 +215,7 @@ theorem right_mid (hQ : Q.Simple) (D : TrapData Q) :
     intro k hk hkz
     have e1 : (Q.vtx k).1 = edgeX Q D.j ym := by rw [hkz]
     have e2 : (Q.vtx k).2 = ym := by rw [hkz]
-    exact D.isTrap.no_vertex k hk (by rw [e2]; exact hy1) (by rw [e2]; exact hy2)
+    exact D.isTrap.no_vertex k hk (by rwa [e2]) (by rwa [e2])
       (by rw [e1, e2]; exact hlt.le) (by rw [e1, e2])
   refine ⟨t, ⟨?_, ?_⟩, hzt.symm⟩
   · rcases ht0.lt_or_eq with h | h
@@ -250,7 +250,7 @@ theorem walk_left (hQ : Q.Simple) (D : TrapData Q) :
   have hp := inp_lt (b := revOf Q) hi
   obtain ⟨t, ht, hzt⟩ := left_mid hQ D
   obtain ⟨t', ht', hz'⟩ := walk_pt hQ hi ht
-  have hpW : inp (revOf Q) Q.n D.i < (interiorWalk Q).n := by rw [walk_n]; exact hp
+  have hpW : inp (revOf Q) Q.n D.i < (interiorWalk Q).n := by rwa [walk_n]
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by linarith
   have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by linarith
@@ -270,7 +270,7 @@ theorem walk_right (hQ : Q.Simple) (D : TrapData Q) :
   have hp := inp_lt (b := revOf Q) hj
   obtain ⟨t, ht, hzt⟩ := right_mid hQ D
   obtain ⟨t', ht', hz'⟩ := walk_pt hQ hj ht
-  have hpW : inp (revOf Q) Q.n D.j < (interiorWalk Q).n := by rw [walk_n]; exact hp
+  have hpW : inp (revOf Q) Q.n D.j < (interiorWalk Q).n := by rwa [walk_n]
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by linarith
   have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by linarith

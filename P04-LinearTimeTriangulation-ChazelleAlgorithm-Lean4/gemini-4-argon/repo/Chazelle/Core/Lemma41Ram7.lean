@@ -106,10 +106,10 @@ theorem pairS_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
   have c1r : ∀ r, 160000 ≤ r → r < 160035 → c1.nreg r = c.nreg r := fun r a b =>
     fr1 r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by rw [hAl]; omega)
   -- 2. the descriptor of the union
-  have hd1c : ChainDescAt c1.nmem d1 (Qof P) (Host.whole P.n) C1 := by rw [hm1]; exact d1a
-  have hd2c : ChainDescAt c1.nmem d2 (Qof P) (Host.whole P.n) C2 := by rw [hm1]; exact d2a
+  have hd1c : ChainDescAt c1.nmem d1 (Qof P) (Host.whole P.n) C1 := by rwa [hm1]
+  have hd2c : ChainDescAt c1.nmem d2 (Qof P) (Host.whole P.n) C2 := by rwa [hm1]
   obtain ⟨c2, k2, e2, hk2, hw2, -, t0, t1, t2, t3, t4, hm2, fr2, frr2, hrm2, ho2⟩ :=
-    descS_exec hG hWn hw1 l35 l36 l37 (by rw [c1r _ (by omega) (by omega)]; exact h24)
+    descS_exec hG hWn hw1 l35 l36 l37 (by rwa [c1r _ (by omega) (by omega)])
       hd1c hd2c d1P d2P hcons (by omega) (by omega) (by omega) hAW
   have c21 : ∀ r, bandOf r ∉ mergeBands ∪ oracleBands → ¬ PairRG r → c2.nreg r = c1.nreg r :=
     fun r h1 h2 => fr2 r (fun h => h2 (Or.inl h)) (bk_false_of h1)
@@ -118,15 +118,15 @@ theorem pairS_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
   have c2A : c2.nreg ALLOC = A + 5 := by
     rw [fr2 _ (by rw [hAl]; unfold DescRG; omega) (by rw [hAl]; decide)]; exact lA
   have c2_37 : c2.nreg 160037 = A := by
-    rw [fr2 _ (by unfold DescRG; omega) (by unfold Bk; simp)]; exact l37
+    rwa [fr2 _ (by unfold DescRG; omega) (by unfold Bk; simp)]
   have c2_35 : c2.nreg 160035 = d1 := by
-    rw [fr2 _ (by unfold DescRG; omega) (by unfold Bk; simp)]; exact l35
+    rwa [fr2 _ (by unfold DescRG; omega) (by unfold Bk; simp)]
   have c2_36 : c2.nreg 160036 = d2 := by
-    rw [fr2 _ (by unfold DescRG; omega) (by unfold Bk; simp)]; exact l36
+    rwa [fr2 _ (by unfold DescRG; omega) (by unfold Bk; simp)]
   have c2_90 : c2.nreg 160090 = f1 := by
-    rw [fr2 _ (by unfold DescRG; omega) (by unfold Bk; simp)]; exact l90
+    rwa [fr2 _ (by unfold DescRG; omega) (by unfold Bk; simp)]
   have c2_91 : c2.nreg 160091 = f2 := by
-    rw [fr2 _ (by unfold DescRG; omega) (by unfold Bk; simp)]; exact l91
+    rwa [fr2 _ (by unfold DescRG; omega) (by unfold Bk; simp)]
   have c2_84 : c2.nreg 160084 = 4 := by
     rw [fr2 _ (by unfold DescRG; omega) (by unfold Bk; simp)]
     rw [fr1 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
@@ -162,11 +162,11 @@ theorem pairS_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
     rw [c3A]; exact (NodeOK.agree ⟨d2a, d2P, d2h, d2A, by omega, d2n, N2, hN2, hc2⟩ mem3).mono
       (by omega)
   have hTD3 : ChainDescAt c3.nmem A (Qof P) (Host.whole P.n) (jOf C1 C2 hlen).whole := by
-    rw [hm3]; exact hTD
+    rwa [hm3]
   have hpre : MergePre X Ok P W c3 :=
-    mergePre_of hG hWh hX3 (by rw [r9, r5, hcap3]; exact hcap) r7 (by rw [r5, r6]; exact htg)
-      hn1' hn2' (by rw [r5]; exact hγ1) (by rw [r5]; exact hγ2) hcons hlen r0 r1 r2 r3 r4 hTD3
-      (by rw [hm3]; exact hTDm) (by rw [c3A])
+    mergePre_of hG hWh hX3 (by rwa [r9, r5, hcap3]) r7 (by rwa [r5, r6])
+      hn1' hn2' (by rwa [r5]) (by rwa [r5]) hcons hlen r0 r1 r2 r3 r4 hTD3
+      (by rwa [hm3]) (by rw [c3A])
       hOk
   -- the chord counts
   have hf1 : c3.nmem f1 = c.nmem f1 := by
@@ -192,7 +192,7 @@ theorem pairS_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
     (by rw [r4]; exact (hN2.transport mem3).holds)
   rw [r6, r7] at hNc
   set E := c4.nreg ALLOC with hE
-  have hE5 : A + 5 ≤ E := by rw [hE, ← c3A]; exact fr4a
+  have hE5 : A + 5 ≤ E := by rwa [hE, ← c3A]
   have hE6 : E ≤ A + 5 + mergeCostV κ F G H (c.nmem f1) (c.nmem f2) γ₀ (C1.m + C2.m) := by
     rw [hE]; have := fr4b; rw [c3A] at this; omega
   have c43 : ∀ r, bandOf r ∉ mergeBands ∪ oracleBands → r ≠ ALLOC → c4.nreg r = c3.nreg r :=
@@ -228,17 +228,16 @@ theorem pairS_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
   -- memory
   have mem54 : ∀ a, a < E → c5.nmem a = c4.nmem a := fun a ha => hm5 a (Or.inl ha)
   have mem53 : ∀ a, a < A + 5 → c5.nmem a = c3.nmem a := fun a ha => by
-    rw [mem54 a (by omega), fr4m a (by rw [c3A]; exact ha)]
+    rw [mem54 a (by omega), fr4m a (by rwa [c3A])]
   have mem5 : ∀ a, a < A → c5.nmem a = c.nmem a := fun a ha => by
     rw [mem53 a (by omega)]; exact mem3 a ha
-  have mem5' : ∀ a, a < E + 3 → c5.nmem a = c5.nmem a := fun _ _ => rfl
   refine ⟨c5, k1 + (k2 + (k3 + (k4 + k5))), .seq e1 (.seq e2 (.seq e3 (.seq e4 e5))),
     by omega, hw5, by rw [a5]; have := fr4b; rw [c3A] at this; omega, E, A, c4.nreg 100008, (jOf C1 C2 hlen).whole, hE5, hE6, a5, w0, w1, w2,
     rfl, rfl, ⟨?_, ?_, ?_, by omega, by omega, ?_, N, ?_, hNc⟩, q63, q65, q62, q64, mem5,
     fun a ha => ?_, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, fun r h1 h2 => ?_⟩
   · exact chainDescAt_agree hTD3 (by omega) (by rw [hm3]; try exact hTDm) (by omega) mem53
-  · rw [jOf_whole_P]; exact d1P
-  · rw [mem53 _ (by omega), hm3]; exact hTDm
+  · rwa [jOf_whole_P]
+  · rwa [mem53 _ (by omega), hm3]
   · show C1.s + (C1.m + C2.m) + 1 ≤ P.n; omega
   · exact (hNW.transport mem54).mono (by omega)
   · rw [hrm5, fr4rm a (by rw [c3A]; omega), hrm3, hrm2, hrm1]

@@ -136,14 +136,14 @@ theorem leafCmpG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
   have q := fun i (hi : i < 300) (hne : i ≠ 246) => keep2 (R + i) (by omega) (by omega) (by omega)
   obtain ⟨c₃, k₃, e₃, hk₃, b₃, f₃⟩ := hx (R + 21) (R + 22) (R + 244) (R + 245) (iB _ (by omega))
     (iB _ (by omega)) (iB _ (by omega)) (iB _ (by omega)) c₂ w₂ ctx₂
-    (by rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega)]; exact hpb)
-    (by rw [q 21 (by omega) (by omega)]; exact heb)
-    (by rw [q 244 (by omega) (by omega), q 245 (by omega) (by omega)]; exact hpc)
-    (by rw [q 244 (by omega) (by omega)]; exact hec)
+    (by rwa [q 21 (by omega) (by omega), q 22 (by omega) (by omega)])
+    (by rwa [q 21 (by omega) (by omega)])
+    (by rwa [q 244 (by omega) (by omega), q 245 (by omega) (by omega)])
+    (by rwa [q 244 (by omega) (by omega)])
     (by rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega), q 244 (by omega) (by omega),
       q 245 (by omega) (by omega)]; exact hy.symm)
-    (by rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega), ← hy]; exact hY)
-    (by rw [hA2]; exact hroom)
+    (by rwa [q 21 (by omega) (by omega), q 22 (by omega) (by omega), ← hy])
+    (by rwa [hA2])
   rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega), q 244 (by omega) (by omega),
     q 245 (by omega) (by omega)] at b₃
   have e₄ := Exec.copyN (P := P) e₃.wb_right (R + 247) 50210
@@ -230,9 +230,9 @@ theorem leafHitG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
     · rcases hS' with hS' | ⟨tb, htb, hle⟩
       · exact firstHit_union_right hS' hA
       · exact firstHit_union_le' htb hA hle
-    · rw [a1, a2, h44, h45]; exact hp
-    · rw [a1, h44]; exact he
-    · rw [a1, a2, h44, h45]; exact hpos
+    · rwa [a1, a2, h44, h45]
+    · rwa [a1, h44]
+    · rwa [a1, a2, h44, h45]
   have c31 : c₁.nreg (R + 31) = 1 := by rw [k1 _ (by omega) (by omega), h31]
   by_cases hf : c₁.nreg (R + 20) < c₁.nreg (R + 31)
   · -- no minimum yet
@@ -247,8 +247,8 @@ theorem leafHitG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
   have hyb : (M.pos (Qof P) ⟨c₁.nreg (R + 21), c₁.nreg (R + 22)⟩).2 = z.2 := by
     rw [hposb]; simp
   obtain ⟨c₂, k₂, e₂, hk₂, b46, b47, f₂⟩ := leafCmpG_exec (P := P) hR hBo hS hx hBx c₁ w₁ ctx₁
-    (by rw [p44, p45]; exact hp) (by rw [p44]; exact he) hpb heb (by rw [hyc, hyb])
-    (by rw [hyc]; exact hz) (by rw [hA1]; exact hroom)
+    (by rwa [p44, p45]) (by rwa [p44]) hpb heb (by rw [hyc, hyb])
+    (by rwa [hyc]) (by rwa [hA1])
   rw [p44, p45, hpos, hposb] at b46 b47
   have k2 : ∀ r, R ≤ r → r < R + 246 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
     f₂.1 r (by simp only [BcmpG, opW_R hBx hR h1 (by omega), Bool.or_false,
@@ -261,11 +261,11 @@ theorem leafHitG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
   -- keeping the minimum
   have keep : tb ≤ t → BestG P M R c₂ (S ∪ A) z σ := fun hle => by
     refine ⟨by rw [k2 _ (by omega) (by omega)]; exact best₁.1, fun _ => ⟨tb, ?_, ?_, ?_, ?_⟩,
-      fun h' => absurd (by rw [k2 _ (by omega) (by omega)]; exact hf1) h'⟩
+      fun h' => absurd (by rwa [k2 _ (by omega) (by omega)]) h'⟩
     · exact firstHit_union_le htb hA hle
-    · rw [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]; exact hpb
-    · rw [k2 _ (by omega) (by omega)]; exact heb
-    · rw [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]; exact hposb
+    · rwa [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]
+    · rwa [k2 _ (by omega) (by omega)]
+    · rwa [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]
   have r35 : c₂.nreg (R + 35) = c.nreg (R + 35) := by
     rw [k2 _ (by omega) (by omega), k1 _ (by omega) (by omega)]
   have r30 : c₂.nreg (R + 30) = 0 := by
@@ -361,18 +361,18 @@ theorem leafG_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, fr₂⟩ := hsh P W c₁ e₁.wb_right
     ⟨hG, hHW, by rw [rd_shoot, s13, hM1, hA1]; exact hX,
       by rw [rd_shoot, rd_shoot, s9, s13, hM1]; exact hcap,
-      by rw [rd_shoot, s0, hM1, hA1]; exact hmwf, by rw [rd_shoot, s0, hM1]; exact hreg, M,
-      by rw [rd_shoot, s0, hM1]; exact hMD, hOk,
-      by rw [rd_shoot, rd_shoot, s1, s2]; exact hp1, by rw [rd_shoot, rd_shoot, s3, s4]; exact hp2,
-      by rw [rd_shoot, s1]; exact he1, by rw [rd_shoot, s3]; exact he2,
-      by rw [rd_shoot, rd_shoot, s1, s2]; exact hi1, by rw [rd_shoot, rd_shoot, s3, s4]; exact hi2,
-      by rw [rd_shoot, rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4, s9]; exact hwt,
-      o, hol, hO1, hof, by rw [rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4]; exact hon⟩
+      by rwa [rd_shoot, s0, hM1, hA1], by rw [rd_shoot, s0, hM1]; exact hreg, M,
+      by rwa [rd_shoot, s0, hM1], hOk,
+      by rwa [rd_shoot, rd_shoot, s1, s2], by rwa [rd_shoot, rd_shoot, s3, s4],
+      by rwa [rd_shoot, s1], by rwa [rd_shoot, s3],
+      by rwa [rd_shoot, rd_shoot, s1, s2], by rwa [rd_shoot, rd_shoot, s3, s4],
+      by rwa [rd_shoot, rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4, s9],
+      o, hol, hO1, hof, by rwa [rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4]⟩
     (by rw [hA1]; show _ + F (rd c₁ bShoot 9) ≤ W; rw [rd_shoot, s9]; omega)
   replace hk₂ : k₂ ≤ F (c.nreg (R + 7)) := by
     have h2 : k₂ ≤ F (rd c₁ bShoot 9) := hk₂
-    rw [rd_shoot, s9] at h2; exact h2
-  have post := post₂ M o (by rw [rd_shoot, s0, hM1]; exact hMD) hO1
+    rwa [rd_shoot, s9] at h2
+  have post := post₂ M o (by rwa [rd_shoot, s0, hM1]) hO1
   simp only [rd_shoot, Nat.reduceAdd, s1, s2, s3, s4, s8] at post
   obtain ⟨hhit, hnoh⟩ := post
   -- registers of the caller's block survive the shot

@@ -1,6 +1,11 @@
 module
 
-public import Chazelle.Separator.LiptonTarjan
+public import Chazelle.Separator.CycleSeparator
+public import Chazelle.Separator.Maps
+public import Mathlib.Data.Fintype.BigOperators
+public import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
+public import Mathlib.Data.Nat.Sqrt
+public import Mathlib.Order.Interval.Finset.Nat
 
 /-!
 # Recursive separation into clusters (planar separators, part 5)

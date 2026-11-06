@@ -95,7 +95,6 @@ theorem endpoints_lt {M : Model} (hM : WalkAx M) {Q : Polygon} {r : CRec}
   obtain ⟨a, b, hab, hcab, hy, -⟩ := hM.ends _ hadm
   have hpA : sidePt M.W r.lp (M.param Q r.lpos) = M.pos Q r.lpos := rfl
   rw [hpA] at h1
-  obtain ⟨-, h1a, h1b⟩ := h1
   by_contra hle
   push Not at hle
   have hsub : ∀ z ∈ r.toSet M Q, z.1 = (M.pos Q r.lpos).1 := by

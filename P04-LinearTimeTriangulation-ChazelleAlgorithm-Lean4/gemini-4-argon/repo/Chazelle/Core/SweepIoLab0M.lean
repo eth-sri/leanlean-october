@@ -70,7 +70,7 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
     {V : Set Point} (hV : V ∈ (chainModel C).regions (N.F (chainModel C) Q))
     (hW : AfterFaces (chainModel C) p 0 V ∨ BeforeFaces (chainModel C) p 0 V) :
     ∃ r ∈ nbrRegs N j, regOf (chainModel C) Q N r = V := by
-  set M := chainModel C with hMdef
+  set M := chainModel C
   set F := N.F M Q with hFdef
   have hGM : GoodModel M := Or.inl ⟨C, hP, rfl⟩
   have hM : WalkAx M := walkAx_of_goodModel hGM
@@ -83,7 +83,7 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
   · obtain ⟨c, hc, -⟩ := id hcut
     have hne : F.Nonempty := ⟨c, hc⟩
     obtain ⟨hfa, hfb⟩ := faced_arcs hM hF hfin hp (le_refl (0 : ℝ)) zero_lt_one (fun _ => hp1)
-      (by rw [hp']; exact hcut) hV
+      (by rwa [hp']) hV
     obtain ⟨r, hr, rfl⟩ := regOf_surj hN hV
     refine ⟨r, ?_, rfl⟩
     rcases hW with hW | hW
@@ -156,8 +156,7 @@ theorem gap_pos (J : Merge.Junction) {S₂ : Set (Set Point)} {V : Set Point}
   have e2 : (6 + tpos J.right 0 + rL1 J + rδ J) % (chainModel J.right).W.n = 6 := by
     rw [hn, k1, k2, show 6 + tpos J.right 0 + (2 * J.right.m - tpos J.right 0) + 7 =
       6 + (2 * J.right.m + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-  rw [e1, e2] at hW
-  exact hW
+  rwa [e1, e2] at hW
 
 /-! ## The log entry of the query key -/
 
@@ -215,8 +214,8 @@ theorem exit_mem_gather {P : Polygon} {C : Chain} (hP : C.P.Simple) {N : NF}
     (hray : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt z σ s ∈ regOf (chainModel C) (Qof P) N r) :
     FreeAt C z σ ∧ rayPt z σ (C.hitParam z σ) ∈
       ShotList.loSet (chainModel C) (Qof P) m A (regArcs N rs).length [] := by
-  set M := chainModel C with hMdef
-  set F := N.F M (Qof P) with hFdef
+  set M := chainModel C
+  set F := N.F M (Qof P)
   have hFam : M.ChordFamily (Qof P) F := hN.1
   obtain ⟨hRC, -, hArcs, -⟩ := regOf_spec hN
   have hU : regOf M (Qof P) N r ∈ M.regions F := hRC.1 r hr
@@ -224,9 +223,9 @@ theorem exit_mem_gather {P : Polygon} {C : Chain} (hP : C.P.Simple) {N : NF}
     hray.mono fun t ht => (Chazelle.Chain.regionsIn_subset (show regOf M (Qof P) N r ∈
       Chazelle.Chain.regionsIn C.dom F from hU) ht).1
   refine ⟨hfree, ?_⟩
-  set K := (regArcs N rs).length with hK
+  set K := (regArcs N rs).length
   set L := (List.range K).map (fun i => (M.key (Qof P) (ShotList.arcAt m A i).1,
-    M.key (Qof P) (ShotList.arcAt m A i).2)) with hLdef
+    M.key (Qof P) (ShotList.arcAt m A i).2))
   have hL : ∀ a b, M.IsArc F (regOf M (Qof P) N r) a b → (a, b) ∈ L := by
     intro a b harc
     obtain ⟨i₀, hi₀, hir, his, hie⟩ := hArcs.2.2.1 r hr a b harc

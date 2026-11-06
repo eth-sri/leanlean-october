@@ -34,7 +34,7 @@ theorem stable_tinv {W : ℕ} {c₀ : Config} {Bo : Finset ℕ} (hB8 : bRestore 
   intro c c' k hI hw' hf
   obtain ⟨r₁, -, m₁, -, -, a₁, -⟩ := hf
   have keep : ∀ q, 80000 ≤ q → q < 84000 → c'.nreg q = c.nreg q := fun q h1 h2 =>
-    r₁ q (by rw [band8 h1 (by omega)]; exact hB8) (by unfold ALLOC; omega)
+    r₁ q (by rwa [band8 h1 (by omega)]) (by unfold ALLOC; omega)
       (by unfold RS0; omega)
   refine ⟨hw', fun q h1 h2 => by rw [keep q h1 (by omega)]; exact hI.hin q h1 h2,
     le_trans hI.hA a₁, fun a ha => by rw [m₁ a (by have := hI.hA; omega)]; exact hI.hm a ha,

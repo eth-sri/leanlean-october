@@ -114,7 +114,6 @@ theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4
   have hts0 : 0 ≤ (chainModel C).param Q (N.arc (sj N p)).s := hs0
   have hts1 : (chainModel C).param Q (N.arc (sj N p)).s < 1 := hs1
   have hte0 : 0 ≤ (chainModel C).param Q (N.arc (sj N p)).e := he0
-  have hte1 : (chainModel C).param Q (N.arc (sj N p)).e < 1 := he1
   have ha1 := harc.2.1
   have hb1 := harc.2.2.2.1
   rw [hnW] at ha1 hb1
@@ -195,7 +194,7 @@ theorem region_arcs_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N 
     rintro _ ⟨j, hj, rfl⟩
     obtain ⟨h1, h2⟩ := hmem j hj
     have := (hA.1 j h1).2
-    rw [h2] at this; exact this
+    rwa [h2] at this
   obtain ⟨hfin, hcard⟩ := hM.arcs_bound hF.2.1 hF.1 hU
   have hdeg := hC.2.1 _ hU
   have hL : L.length = ({j | j ∈ L} : Set ℕ).ncard := by

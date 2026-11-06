@@ -128,7 +128,7 @@ theorem lpLoad_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p
       c'.nreg 140258 = c.nmem (p + 8) ∧ FrameB Blpl c c' := by
   obtain ⟨c₁, k₁, e₁, hk₁, q10, q0, q1, q2, q3, q4⟩ := lpLoadA_exec (P := P) c hw h1 h10 hp
   have f₁ := exec_frameB (B := Blpl) e₁ (by decide)
-  have g1 : c₁.nreg K1 = 1 := by rw [f₁.1 _ (by decide)]; exact h1
+  have g1 : c₁.nreg K1 = 1 := by rwa [f₁.1 _ (by decide)]
   obtain ⟨c₂, k₂, e₂, hk₂, u10, u5, u6, u7, u8⟩ := lpLoadB_exec (P := P) c₁ e₁.wb_right g1 q10
     (by omega)
   have f₂ := exec_frameB (B := fun r => decide (140255 ≤ r ∧ r < 140259) || r == 140110) e₂

@@ -40,9 +40,8 @@ theorem attached_congr (M : Model) (Q : Polygon) {r r' : CRec}
     (hh : (Q.vtx r.h).2 = (Q.vtx r'.h).2) (hl : r.lp = r'.lp) (hr : r.rp = r'.rp)
     (hA : r.Attached M Q) : r'.Attached M Q := by
   unfold CRec.Attached CRec.lpos CRec.rpos at *
-  rw [← toSet_congr M Q hh hl hr, ← hl, ← hr, ← param_congr M Q r.lp hh,
+  rwa [← toSet_congr M Q hh hl hr, ← hl, ← hr, ← param_congr M Q r.lp hh,
     ← param_congr M Q r.rp hh]
-  exact hA
 
 /-- The height of a query agrees with its height code. -/
 def HeightOK (J : Merge.Junction) (Q : Polygon) (i : ℕ) (q : ℕ × ℕ × ℕ) : Prop :=
@@ -81,7 +80,7 @@ theorem qtrip_eq (J : Merge.Junction) (Q : Polygon) (i : ℕ) {q : ℕ × ℕ ×
   rw [← hset] at hz
   have hy : ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩).2 = (Q.vtx (recOf r.2).h).2 := hz.1
   have hh : (Q.vtx (recOf r.2).h).2 = (Q.vtx (recOf (qtrip (q, r))).h).2 := by
-    rw [← hy]; exact hH
+    rwa [← hy]
   exact ⟨(toSet_congr _ Q hh rfl rfl).symm, attached_congr _ Q hh rfl rfl hatt⟩
 
 /-- **The chords reported by the sweep**, with the height indices of the queries. -/
@@ -111,7 +110,7 @@ theorem collectQ_spec (J : Merge.Junction) (Q : Polygon) (i : ℕ) (L : List (�
     refine ⟨(L[j], R[j]), ⟨?_, ?_⟩, ?_⟩
     · have : (L.zip R)[j]'(by rw [List.length_zip]; omega) = (L[j], R[j]) := by simp
       rw [← this]; exact List.getElem_mem _
-    · rw [getD_lt hjR] at h1; exact h1
+    · rwa [getD_lt hjR] at h1
     · rw [getD_lt hj, getD_lt hjR]
   refine ⟨?_, fun t ht => ?_⟩
   · ext d

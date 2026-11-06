@@ -181,8 +181,6 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
   have hj := D.isTrap.hj
   have hpi := inp_lt (b := revOf Q) hi
   have hpj := inp_lt (b := revOf Q) hj
-  have htn := D.top_lt hQ
-  have hbn := D.bot_lt hQ
   have hy1 := D.bot_snd hQ
   have hy2 := D.top_snd hQ
   set L := (N.region ri).chords.map N.chord with hL
@@ -316,7 +314,7 @@ theorem table_ok (H : RegCtx Q N reg) :
   have hregQ : ∀ s, s < N.nRegions → reg s ∈ regions Q := fun s hs => by
     rw [← model_regions H.full]; exact H.corr.1 s hs
   set Dof : ∀ s, s ∈ List.range N.nRegions → TrapData Q := fun s hs =>
-    Classical.choose (exists_trapData hQ (hregQ s (List.mem_range.1 hs))) with hDof
+    Classical.choose (exists_trapData hQ (hregQ s (List.mem_range.1 hs)))
   have hDspec : ∀ s hs, (Dof s hs).region = reg s := fun s hs =>
     Classical.choose_spec (exists_trapData hQ (hregQ s (List.mem_range.1 hs)))
   refine ⟨(List.range N.nRegions).pmap Dof (fun _ h => h), ?_, ?_, fun R => ⟨fun hR => ?_, ?_⟩⟩

@@ -42,10 +42,6 @@ theorem setL_val (m f : ℕ → ℕ) {md nf nr e t : ℕ} (hmd : OutL md) (hnf :
     (∀ q, OutL q → regB m (setL md nf nr e t) f q = f q) := by
   have ne : ∀ r, OutL r → r ≠ 241100 ∧ r ≠ 241101 ∧ r ≠ 241102 ∧ r ≠ 241103 ∧ r ≠ 241104 ∧
       r ≠ 241105 ∧ r ≠ 241106 ∧ r ≠ 241107 := fun r h => by unfold OutL sw at h; omega
-  obtain ⟨a0, a1, a2, a3, a4, a5, a6, a7⟩ := ne _ hmd
-  obtain ⟨b0, b1, b2, b3, b4, b5, b6, b7⟩ := ne _ hnf
-  obtain ⟨c0, c1, c2, c3, c4, c5, c6, c7⟩ := ne _ hnr
-  obtain ⟨d0, d1, d2, d3, d4, d5, d6, d7⟩ := ne _ he
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun q hq => ?_⟩ <;>
     simp [setL, regB, regI, upd, lMD, lCD, lNF, lE, lH, lD, lN, lT, sw, K1, qH, qD, *]
 
@@ -61,7 +57,7 @@ theorem setL_ok (m f : ℕ → ℕ) {md nf nr e t : ℕ} (_hmd : OutL md) (hW : 
     s 1106 (by norm_num) (by norm_num), ⟨s 1107 (by norm_num) le_rfl, ht⟩, trivial⟩
   have e1 : upd f lMD (f md) lMD = f md := upd_same _ _ _
   have e2 : upd f lMD (f md) K1 = f K1 := upd_other _ _ _ (by unfold K1 lMD sw; omega)
-  rw [e1, e2, hk]; exact hW
+  rwa [e1, e2, hk]
 
 /-- **A local hit with its inputs.** -/
 def lhs (md nf nr e t : ℕ) (sh : Stmt) : Stmt := .seq (block (setL md nf nr e t)) (localHit sh)
@@ -125,7 +121,7 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
   rintro c₁ hI₁ hA₁ hA₁' hc₁
   subst hc₁
   simp only at *
-  set c₁ : Config := { c with nreg := regB c.nmem (setL md nf nr e t) c.nreg } with hc₁d
+  set c₁ : Config := { c with nreg := regB c.nmem (setL md nf nr e t) c.nreg }
   have r1 : ∀ r, OutL r → c₁.nreg r = c.nreg r := fun r hr => vo r hr
   have hL : LCtx P W C N E c₁ := hctx c₁ hI₁
     (by show regB _ _ _ lMD = _; rw [v1, hI.hin _ hfm])
@@ -143,13 +139,13 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
   have h := localHit_irs (x := ⟨c₁.nreg lE, c₁.nreg lH⟩) (d := c₁.nreg lD)
     (Da := c₀.nreg (sw 6) + 1) (Dc := c₀.nreg (sw 6)) hsh hBs hXl hI₁ hA.hK hL hA.hX hA.hcap
     hOk hsg hAr hCh rfl rfl rfl
-    (by show c₁.nreg lE < _; rw [a1]; exact he)
-    (by show ProperPos _ _ _ ⟨c₁.nreg lE, c₁.nreg lH⟩; rw [a1, a2]; exact hpp)
-    (by rw [a1, a2, hz]; exact hy)
-    (by rw [a1, a2, hz]; exact hloc)
-    hacc₁ (by rw [show c₁.nreg lT = t from v8]; exact ht)
-    (by rw [show c₁.nreg lT = t from v8]; exact hMod) hR
-    (by rw [show c₁.nreg lN = c.nreg nr from v7, hI.hin _ hfr]; exact hnr)
+    (by show c₁.nreg lE < _; rwa [a1])
+    (by show ProperPos _ _ _ ⟨c₁.nreg lE, c₁.nreg lH⟩; rwa [a1, a2])
+    (by rwa [a1, a2, hz])
+    (by rwa [a1, a2, hz])
+    hacc₁ (by rwa [show c₁.nreg lT = t from v8])
+    (by rwa [show c₁.nreg lT = t from v8]) hR
+    (by rwa [show c₁.nreg lN = c.nreg nr from v7, hI.hin _ hfr])
     (by
       have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := r1 _ (by unfold OutL ALLOC sw; omega)
       rw [eTL, hA1]; unfold lhsK at hroom; omega)

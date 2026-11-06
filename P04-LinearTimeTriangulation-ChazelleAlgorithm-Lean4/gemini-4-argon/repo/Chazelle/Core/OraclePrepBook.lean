@@ -41,8 +41,8 @@ theorem ClFacts.mono {m m' : ℕ → ℕ} {B : BookData} {FL LAB k X : ℕ} (h :
     congr 1; ext v
     simp only [Finset.mem_filter, Finset.mem_range]
     constructor
-    · rintro ⟨hv, e⟩; exact ⟨hv, by rw [← hX _ (by omega)]; exact e⟩
-    · rintro ⟨hv, e⟩; exact ⟨hv, by rw [hX _ (by omega)]; exact e⟩
+    · rintro ⟨hv, e⟩; exact ⟨hv, by rwa [← hX _ (by omega)]⟩
+    · rintro ⟨hv, e⟩; exact ⟨hv, by rwa [hX _ (by omega)]⟩
   hlab u v w hw := by
     rw [hX _ (by have := u.2; omega), hX _ (by have := v.2; omega)]
     exact h.hlab u v w fun x hx => by
@@ -53,9 +53,9 @@ theorem ClFacts.mono {m m' : ℕ → ℕ} {B : BookData} {FL LAB k X : ℕ} (h :
     simp only [Finset.mem_filter, Finset.mem_range]
     constructor
     · rintro ⟨hv, e1, e2⟩
-      exact ⟨hv, by rw [← hX _ (by omega)]; exact e1, by rw [← hX _ (by omega)]; exact e2⟩
+      exact ⟨hv, by rwa [← hX _ (by omega)], by rwa [← hX _ (by omega)]⟩
     · rintro ⟨hv, e1, e2⟩
-      exact ⟨hv, by rw [hX _ (by omega)]; exact e1, by rw [hX _ (by omega)]; exact e2⟩
+      exact ⟨hv, by rwa [hX _ (by omega)], by rwa [hX _ (by omega)]⟩
 
 /-- The trivial cluster facts: every node in `D*`, `k = 2` (at most `8` nodes, at least `2`). -/
 theorem ClFacts.triv {m : ℕ → ℕ} {B : BookData} {FL LAB : ℕ} (h2 : 2 ≤ B.N) (h8 : B.N ≤ 8)
@@ -94,7 +94,7 @@ theorem fill_exec {P : Polygon} {W : ℕ} {rb rv0 : ℕ} (hrb : rb = 130004 ∨ 
       k ≤ μ * 6 + 3 ∧ (∀ r, r ≠ 60093 → r ≠ 60094 → r ≠ 60095 → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.nmem = scat c.nmem (fun i => b + i) (fun _ => v0) μ ∧
       c'.rmem = c.rmem ∧ c'.output = c.output := by
-  obtain ⟨c', k, ex, hk, r', rr', mm, rm, o, -, -⟩ := scatS_exec (P := P) (W := W)
+  obtain ⟨c', k, ex, hk, r', rr', mm, rm, o, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 60093) (rn := 60034) (r1 := 120011) (ra := 60094) (rv := 60095) (body := fillBody rb rv0)
     (B := fun r => decide (r = 60094 ∨ r = 60095)) (by decide) (by decide) (by decide) (by decide)
     (by decide) (fun d => d.nreg rb = b ∧ d.nreg rv0 = v0) 0
@@ -220,7 +220,7 @@ theorem bookS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
         pclus⟩ := clStage_exec (P := P) e₁.wb_right (B := B) rfl (by rw [MP _ (mp _ (by omega)), hμ])
       (by rw [MP _ (mp _ (by omega)), hE]) (by rw [MP _ (mp _ (by omega)), hone]) rfl hR hPW hNW
       (by omega)
-    refine ⟨c₂, _, .ifLtN_true (by rw [hzero, hK]; exact hK0) (.seq e₁ e₂), ?_, ?_, ?_, ?_, ?_, ?_,
+    refine ⟨c₂, _, .ifLtN_true (by rwa [hzero, hK]) (.seq e₁ e₂), ?_, ?_, ?_, ?_, ?_, ?_,
       by omega, by omega, p4', p5', ⟨kpos, kcube, kmin, pcard, pwalk, pclus⟩⟩
     · rw [hAL] at al1b; omega
     · refine (FrameN.gf (FrameN.mono F₁ (by decide)) (by rw [hAL, hAl])).trans
@@ -242,7 +242,7 @@ theorem bookS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
     have hB8 : B.N ≤ 8 := by omega
     refine ⟨c₁, _, .ifLtN_false (by rw [hzero, hK]; omega) e₁, by omega, ?_, ?_, ?_, ?_, ?_,
       by rw [v4], by rw [v5]; omega, by rw [v4, hAL, v9]; omega, by rw [v5, hAL, v9]; omega, ?_⟩
-    · refine ⟨fun r hr hra => R₁ r ?_ ?_ (by rw [hAL] at hra; exact hra) ?_ ?_ ?_ ?_,
+    · refine ⟨fun r hr hra => R₁ r ?_ ?_ (by rwa [hAL] at hra) ?_ ?_ ?_ ?_,
         fun r _ => by rw [rr₁], fun a ha => mem₁ a ha, fun a _ => by rw [rm₁], o₁⟩ <;>
       · intro h; subst h; apply hr; simp [kBands, bDecomp, bCluster, bandOf]
     · intro r a b; exact R₁ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)

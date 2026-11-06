@@ -60,14 +60,14 @@ theorem midF_irs (hI : IInv W c₀ c) {m T : ℕ} (hm : c.nreg ipTm = m) (hT : c
       (∀ r, r ≠ ipTM → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   unfold ipMidF
   by_cases h : T < m
-  · refine (IRS.ifT (by rw [hm, hT]; exact h) (IRS.instr1 (i := .addN ipTM ipTt ipTt) hI
-      ⟨iscr_sw (by unfold ipTM sw; omega) (by unfold ipTM sw; omega), by rw [hT]; exact h2⟩)).mono
+  · refine (IRS.ifT (by rwa [hm, hT]) (IRS.instr1 (i := .addN ipTM ipTt ipTt) hI
+      ⟨iscr_sw (by unfold ipTM sw; omega) (by unfold ipTM sw; omega), by rwa [hT]⟩)).mono
       (by norm_num) ?_
     rintro c' rfl
     refine ⟨?_, fun r hr => ?_, rfl⟩
     · simp only [regI, upd_same, hT, ite_eq_left h]; ring
     · simp only [regI]; exact upd_other _ _ _ hr
-  · refine (IRS.ifF (by rw [hm, hT]; exact h) (IRS.instr1 (i := .constN ipTM 0) hI
+  · refine (IRS.ifF (by rwa [hm, hT]) (IRS.instr1 (i := .constN ipTM 0) hI
       ⟨iscr_sw (by unfold ipTM sw; omega) (by unfold ipTM sw; omega), Nat.zero_le _⟩)).mono
       (by norm_num) ?_
     rintro c' rfl
@@ -89,13 +89,13 @@ theorem midS_irs (hI : IInv W c₀ c) (hK : Consts c) {m T b : ℕ} (hm : c.nreg
     (midF_irs hI hm hT (by omega)).mono (by norm_num) (fun c' ⟨h1, h2, h3⟩ =>
       ⟨by rw [h1, ite_eq_right hb1], fun r hr _ => h2 r hr, h3⟩)
   by_cases h0 : b < 1
-  · exact (IRS.ifT (K := 4) (by rw [hb, k1]; exact h0) (hF (by omega))).mono (by norm_num)
+  · exact (IRS.ifT (K := 4) (by rwa [hb, k1]) (hF (by omega))).mono (by norm_num)
       (fun _ h => h)
-  · refine (IRS.ifF (K := 6) (by rw [hb, k1]; exact h0) ?_).mono le_rfl (fun _ h => h)
+  · refine (IRS.ifF (K := 6) (by rwa [hb, k1]) ?_).mono le_rfl (fun _ h => h)
     by_cases h1 : 1 < b
-    · exact IRS.ifT (K := 4) (by rw [hb, k1]; exact h1) (hF (by omega))
+    · exact IRS.ifT (K := 4) (by rwa [hb, k1]) (hF (by omega))
     · have hb1 : b = 1 := by omega
-      refine (IRS.ifF (K := 4) (by rw [hb, k1]; exact h1) ((IRS.block ipMidB hI ?_).mono
+      refine (IRS.ifF (K := 4) (by rwa [hb, k1]) ((IRS.block ipMidB hI ?_).mono
         (K' := 4) (by simp [ipMidB]) (fun _ h => h))).mono le_rfl ?_
       · simp [ipMidB, okB, okI, ipT2, ipTM, ipTm, ipTt, sw, IScr]
         simp only [ipTm, sw, Nat.reduceAdd] at hm
@@ -282,7 +282,6 @@ theorem tbLd_irs (hI : IInv W c₀ c) {sr AT k s : ℕ} (hsr : sr < sw 4100 ∨ 
     simp only [tbLd, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
       first | exact Ne.symm h1 | exact Ne.symm h2 | exact Ne.symm h3 | exact Ne.symm h4
-  have hsr' : sr ≠ 244108 ∧ sr ≠ 244104 ∧ sr ≠ 244111 := by unfold sw at hsr; omega
   refine (IRS.block (tbLd sr) hI ?_).mono (by simp [tbLd]) ?_
   · simp [tbLd, okB, okI, regI, upd, ipS, ipA, ipT, ipF, ipJ, sw, IScr, hAT, hk, hs]
     omega
@@ -357,7 +356,7 @@ theorem cls_irs (hI : IInv W c₀ c) (hK : Consts c) :
           c.nreg oE ≠ c.nreg ipM6)))) ∧ c'.nreg ipV ≤ 1 ∧
       (∀ r, r ≠ ipV → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) :=
     fun v hv hiff K hK => (setV_irs hI hK' hv).mono hK (fun c' ⟨h1, h2, h3⟩ =>
-      ⟨by rw [h1]; exact hiff, by rw [h1]; exact hv, h2, h3⟩)
+      ⟨by rwa [h1], by rwa [h1], h2, h3⟩)
   unfold cls
   by_cases a1 : c.nreg oE < c.nreg K6
   · exact (IRS.ifT a1 (sv 0 (by norm_num) (by rw [k6] at a1; omega) 1 le_rfl)).mono (by norm_num)

@@ -61,7 +61,6 @@ theorem descU_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) (hn : 2 ≤ P.n) {c : 
       (∀ r, Kept r → c'.nreg r = c.nreg r) ∧
       (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r) ∧ c'.rmem = c.rmem ∧
       c'.output = c.output := by
-  have hAl : ALLOC = 9999 := rfl
   obtain ⟨-, -, -, hH, hhp, -, -, hrow, hE⟩ := hT
   rcases Nat.eq_zero_or_pos g with hg0 | hg1
   · subst hg0
@@ -72,7 +71,7 @@ theorem descU_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) (hn : 2 ≤ P.n) {c : 
     obtain ⟨c', k, e, hk, hw', hA', o30, w0, hdesc, hm, fr, frr, hrm, ho⟩ :=
       descU_exec0 (P := P) hG hWn hw hu.r07 hu.r20 hA hu.r04 h16 hu.r01 hu.r23 (by omega)
         hH (by omega) hW hW8
-    refine ⟨c', k, e, hk, hw', by omega, by omega, by omega, by rw [o30]; exact w0,
+    refine ⟨c', k, e, hk, hw', by omega, by omega, by omega, by rwa [o30],
       fun C h1 h2 h3 => by rw [o30]; exact hdesc C h1 h2 h3,
       fun a ha => hm a (Or.inl ha), fun r hr => fr r hr.not_d0 (by
         rintro rfl; have := hr.range; omega) hr.not_brute hr.bk hr.ne_alloc,

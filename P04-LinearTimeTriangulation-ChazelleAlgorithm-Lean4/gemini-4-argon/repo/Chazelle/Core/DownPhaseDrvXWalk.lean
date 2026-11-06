@@ -132,7 +132,7 @@ theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) 
       (C.P.vtx (tK C.m C.topIdx C.sideBeta p))
       (C.P.vtx (kNext (decide (tU C.m C.topIdx C.sideBeta p < C.m)) (tK C.m C.topIdx C.sideBeta p)))
       x := by
-  set β := C.sideBeta with hβ
+  set β := C.sideBeta
   have hm1 := C.one_le
   rcases lt_or_eq_of_le h6 with h7 | h6'
   · rcases lt_or_eq_of_le hp with hp' | hp'
@@ -145,7 +145,7 @@ theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) 
       rw [C.sideWalk_prev_tour β (by omega) (by omega), C.sideWalk_vtx_tour β (by omega)] at e1
       rw [C.sideWalk_next_tour β (by omega), C.sideWalk_vtx_tour β (by omega)] at e2
       rw [C.sideWalk_vtx_tour β (by omega)] at e3
-      rw [← e1, ← e2, ← e3]; exact h
+      rwa [← e1, ← e2, ← e3]
     · -- the last position, up the slit
       subst hp'
       rw [C.sideLeft_tour_last] at h
@@ -171,8 +171,7 @@ theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) 
       rw [hK6, ← hU] at e2
       have hTop : C.top = C.P.vtx (tK C.m C.topIdx β (2 * C.m + 6)) := by
         rw [hT]; unfold Chain.top; exact chain_vertex_eq hs (by have := C.topIdx_le; omega)
-      rw [← e1, ← hTop]
-      rw [← e2]
+      rw [← e1, ← hTop, ← e2]
       unfold sideLeftOf at h ⊢
       exact Chazelle.Chain.sideCcw_sub_right (sub_ne_zero.2 (C.sideTour_one_ne_top hP β))
         (sub_ne_zero.2 C.sideSlitTop_ne_top)
@@ -195,7 +194,7 @@ theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) 
     have hU : tU C.m C.topIdx β (2 * C.m + 6) = tU C.m C.topIdx β 6 := tU_last _ _ _
     have hK6 : tK C.m C.topIdx β (2 * C.m + 6) = tK C.m C.topIdx β 6 := tK_last _ _ _
     have e1 := walk_prev hs hm β (show 7 ≤ 2 * C.m + 6 by omega) le_rfl
-      (by rw [hU]; exact hu0) (by rw [hU]; exact hum)
+      (by rwa [hU]) (by rwa [hU])
     rw [C.sideWalk_prev_tour β (by omega) le_rfl, C.sideWalk_vtx_tour β (by omega), hU,
       hK6] at e1
     have e2 := walk_next hs hm β (show 6 ≤ 6 by omega) (show 6 < 2 * C.m + 6 by omega)
@@ -224,11 +223,11 @@ theorem walk_box (β : Bool) {p : ℕ} {t : ℝ} (_ht0 : 0 ≤ t) (ht1 : t < 1)
   have htr := C.top_snd_lt_radius
   rcases hp with hp | ⟨rfl, ht⟩
   · interval_cases p
-    · right; left; rw [b0]; simp only; rw [abs_of_pos hr0]; exact hr
-    · left; rw [b1]; simp only; rw [abs_neg, abs_of_pos hr0]; exact hr
-    · right; left; rw [b2]; simp only; rw [abs_neg, abs_of_pos hr0]; exact hr
-    · left; rw [b3]; simp only; rw [abs_of_pos hr0]; exact hr
-    · right; left; rw [b4]; simp only; rw [abs_of_pos hr0]; exact hr
+    · right; left; rw [b0]; simp only; rwa [abs_of_pos hr0]
+    · left; rw [b1]; simp only; rwa [abs_neg, abs_of_pos hr0]
+    · right; left; rw [b2]; simp only; rwa [abs_neg, abs_of_pos hr0]
+    · left; rw [b3]; simp only; rwa [abs_of_pos hr0]
+    · right; left; rw [b4]; simp only; rwa [abs_of_pos hr0]
     · right; right; rw [b5]; simp only; nlinarith
   · right; right; rw [b6]; simp only; nlinarith
 

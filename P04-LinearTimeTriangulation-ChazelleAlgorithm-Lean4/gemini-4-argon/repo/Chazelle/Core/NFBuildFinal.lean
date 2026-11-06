@@ -213,10 +213,10 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
   · -- seq
     have hj' : j < (gapStarts M Q L E).length := by
       have : (buildNF M Q L E).seq = range (arcList M Q L E).length := rfl
-      rw [this, length_range, arcList_pos hK, length_map] at hj; exact hj
+      rwa [this, length_range, arcList_pos hK, length_map] at hj
     rw [h6, hQ j hj']
     show j = (range (arcList M Q L E).length).getD j 0
-    rw [getD_eq_getElem?_getD, getElem?_range (by rw [arcList_pos hK, length_map]; exact hj'),
+    rw [getD_eq_getElem?_getD, getElem?_range (by rwa [arcList_pos hK, length_map]),
       Option.getD_some]
   · simp [buildNF] at hk
   · simp [buildNF] at hr

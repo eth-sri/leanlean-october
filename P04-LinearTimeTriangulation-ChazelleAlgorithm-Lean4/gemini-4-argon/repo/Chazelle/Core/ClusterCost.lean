@@ -80,8 +80,6 @@ theorem q_bounds {μ k k' s L : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : μ �
         rw [e, hkk]
         calc 2 * μ ≤ 2 * k ^ 3 := by omega
           _ = k * k * (2 * k) := by ring
-      have hkL : k ≤ L + 2 := by
-        rw [e, hkk] at h3; nlinarith
       calc 2 * μ / s * (L + 2) ≤ 2 * k * (L + 2) := Nat.mul_le_mul_right _ hq
         _ ≤ 2 * (L + 2) * (L + 2) := by nlinarith
         _ ≤ 2 * μ + 2 * (L + 2) ^ 2 := by nlinarith
@@ -97,7 +95,7 @@ theorem totalCost_le (g : GV) (hμ : 0 < g.μ) (hE : 0 < g.E) (hk : 1 ≤ g.k)
     totalCost g ≤ clusterK * ((g.μ + g.E) * (Nat.clog 2 (g.μ + g.E) + 1) + 1) := by
   unfold totalCost cost1 cost2a clusterK
   set Λ := Nat.clog 2 (g.μ + g.E) + 1 with hΛ
-  set X := g.μ + g.E with hX
+  set X := g.μ + g.E
   have hΛ1 : 1 ≤ Λ := by omega
   set Pp := X * Λ with hPp
   have hXP : X ≤ Pp := Nat.le_mul_of_pos_right _ hΛ1
@@ -120,7 +118,7 @@ theorem totalCost_le (g : GV) (hμ : 0 < g.μ) (hE : 0 < g.E) (hk : 1 ≤ g.k)
     calc g.L * g.U ≤ (3 * Λ) * (8 * X) := Nat.mul_le_mul hL3 hU8
       _ = 24 * Pp := by rw [hPp]; ring
   obtain ⟨hq1, hq2, hq3⟩ := q_bounds (L := g.L) (k' := g.k') (s := g.s) hk hμ hμk rfl rfl
-  set q := 2 * g.μ / g.s with hq
+  set q := 2 * g.μ / g.s
   have C3 : (g.L + 2) ^ 3 ≤ 384 * X := by
     have := cube_le g.L; omega
   have C2 : (g.L + 2) ^ 2 ≤ (g.L + 2) ^ 3 := Nat.pow_le_pow_right (by omega) (by omega)

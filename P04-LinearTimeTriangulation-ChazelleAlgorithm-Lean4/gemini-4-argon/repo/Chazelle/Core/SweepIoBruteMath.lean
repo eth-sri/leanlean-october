@@ -43,8 +43,8 @@ theorem key_in_arc (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     (hN : IsNF (chainModel C) Q N) {p : ℕ} {t : ℝ} (hkey : 0 < (p : ℝ) + t) :
     ∃ j < N.arcs.length, ShotList.CIn ((chainModel C).key Q (N.arc j).s)
       ((chainModel C).key Q (N.arc j).e) (p + t) := by
-  set M := chainModel C with hMd
-  set F := N.F M Q with hFd
+  set M := chainModel C
+  set F := N.F M Q
   have hGM : GoodModel M := Or.inl ⟨C, hP, rfl⟩
   have hM : WalkAx M := walkAx_of_goodModel hGM
   have hFam : M.ChordFamily Q F := hN.1
@@ -64,7 +64,7 @@ theorem key_in_arc (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     rw [hs, hk]
   · obtain ⟨U, hU, l, r, harc, hin⟩ := exists_arc_around hGM hFam hkey hcut
     obtain ⟨j, hj, hs, he⟩ := ofArc U hU _ _ harc
-    exact ⟨j, hj, Or.inl (by rw [hs, he]; exact hin)⟩
+    exact ⟨j, hj, Or.inl (by rwa [hs, he])⟩
 
 /-- **The exit point of a free ray** (at a height not above the top) is a walk point whose key
 lies in the closed arc of an arc record. -/

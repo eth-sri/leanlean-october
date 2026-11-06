@@ -42,9 +42,9 @@ theorem OutSt.congr {E : BEnv} {c c' : Config} {T : List (ℕ × (ℕ × ℕ × 
   obtain ⟨a1, a2, a3, a4, a5, a6, a7⟩ := h
   have hBK : E.BK = E.B₂ + 6 * E.P.n := rfl
   refine ⟨?_, ?_, ?_, ?_, fun hK => ?_, fun hK q hq => ?_, fun a ha => ?_⟩
-  · rw [hr _ le_rfl (by norm_num)]; exact a1
-  · rw [hr _ (by norm_num) (by norm_num)]; exact a2
-  · rw [hr _ (by norm_num) le_rfl]; exact a3
+  · rwa [hr _ le_rfl (by norm_num)]
+  · rwa [hr _ (by norm_num) (by norm_num)]
+  · rwa [hr _ (by norm_num) le_rfl]
   · refine Gran.ChordListAt.congr a4 fun a h1 h2 => hm a ?_
     rw [List.length_map] at h2; omega
   · exact bktOK_congr (a5 hK) fun q hq => hm _ (by rw [hBK]; omega)
@@ -151,7 +151,6 @@ theorem regB_exec {sH sE : Stmt} {κH κE : ℕ} (hH : HostOK sH κH) (hX : ExpO
     · exact keep₂ q hb h1 a b d e f
     · exact F₂.1 q (by simpa using hb) g
   have A₂ : c₂.nreg ALLOC ≤ c₁.nreg ALLOC + k₂ := F₂.2.2.2.2.2.2
-  have A₂' : c₁.nreg ALLOC ≤ c₂.nreg ALLOC := F₂.2.2.2.2.2.1
   -- 3. `MX`
   obtain ⟨c₃, k₃, e₃, hk₃, v18, f₃⟩ := mxS_exec (P := E.P) c₂ e₂.wb_right
   have g₃ : ∀ q, q ≠ 212018 → c₃.nreg q = c₂.nreg q := fun q h => f₃.1 q (by simpa using h)
@@ -163,7 +162,7 @@ theorem regB_exec {sH sE : Stmt} {κH κE : ℕ} (hH : HostOK sH κH) (hX : ExpO
     (by rw [g₃ _ (by unfold ALLOC; norm_num)]; omega)
   have g₄ : ∀ q, q ≠ 212015 → q ≠ 212035 → q ≠ 9999 → c₄.nreg q = c₃.nreg q := fun q a b d =>
     f₄.1 q (by simp [a, b, d])
-  set PA := c₃.nreg ALLOC with hPAd
+  set PA := c₃.nreg ALLOC
   have hPA2 : PA = c₂.nreg ALLOC := g₃ _ (by unfold ALLOC; norm_num)
   -- the registers kept from `c₁` to `c₄`
   have K4 : ∀ q, (q < 215000 ∨ 216000 ≤ q) → q ≠ 212015 → q ≠ 212016 → q ≠ 212018 →
@@ -172,8 +171,8 @@ theorem regB_exec {sH sE : Stmt} {κH κE : ℕ} (hH : HostOK sH κH) (hX : ExpO
     rw [g₄ q a i j, g₃ q d, K2 q h1 b e f g i (by unfold ALLOC; exact j)]
   -- 5. the expansion
   obtain ⟨c₅, k₅, e₅, hk₅, harr, hm₅, FM₅⟩ := hX E.P E.W c₄ H E.li e₄.wb_right
-    (by rw [g₄ _ (by norm_num) (by norm_num) (by norm_num), g₃ _ (by norm_num), f₄.2.2.1,
-      f₃.2.2.1]; exact hHA) hwf
+    (by rwa [g₄ _ (by norm_num) (by norm_num) (by norm_num), g₃ _ (by norm_num), f₄.2.2.1,
+      f₃.2.2.1]) hwf
     (by rw [g₄ _ (by norm_num) (by norm_num) (by norm_num), g₃ _ (by norm_num), h21])
     (by rw [g₄ _ (by norm_num) (by norm_num) (by norm_num), g₃ _ (by norm_num), h16])
     (by rw [K4 _ (by omega) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
@@ -199,27 +198,27 @@ theorem regB_exec {sH sE : Stmt} {κH κE : ℕ} (hH : HostOK sH κH) (hX : ExpO
   have A₄ : c₄.nreg ALLOC = PA + 3 * (H.pts E.P.n).length := vA₄
   have A₅ : c₅.nreg ALLOC = c₄.nreg ALLOC := g₅ _ (by unfold ALLOC; omega)
   have hmem5 : ∀ a, a < c.nreg ALLOC → c₅.nmem a = c.nmem a := fun a ha => by
-    rw [hm₅ a (Or.inl (by rw [v15]; omega)), f₄.2.2.1, f₃.2.2.1, F₂.2.2.1 a (by rw [A₁]; exact ha),
+    rw [hm₅ a (Or.inl (by rw [v15]; omega)), f₄.2.2.1, f₃.2.2.1, F₂.2.2.1 a (by rwa [A₁]),
       f₁.2.2.1]
   have S₅ : PtSt E r PA c₅ (E.TL r) := by
     refine ⟨e₅.wb_right, R₁.congr fun q hq => K5 q (Or.inl hq), ?_, fun hK => ?_, ?_, ?_, ?_,
       ?_, by omega, by rw [hNPl]; omega, ?_⟩
     · rw [K5 _ (by simp), g₁ _ (by omega)]; exact S.p31
-    · rw [K5 _ (by simp)]; exact hlp
-    · rw [K5 _ (by simp)]; exact hnR
-    · rw [g₅ _ (by omega)]; exact v15
+    · rwa [K5 _ (by simp)]
+    · rwa [K5 _ (by simp)]
+    · rwa [g₅ _ (by omega)]
     · rw [g₅ _ (by omega), g₄ _ (by norm_num) (by norm_num) (by norm_num), g₃ _ (by norm_num),
         h16, hNPl]
     · intro k hk
       rw [hNPl] at hk
-      have := harr k (by rw [wlist_length]; exact hk)
+      have := harr k (by rwa [wlist_length])
       rw [v15, ← hpts] at this
       cases hs : (E.pts r).getD k (.vtx 0) <;> rw [hs] at this <;> exact this
     · exact O.congr hTr (fun q h1 h2 => by rw [K5 _ (by omega), g₁ _ (by omega)])
         (fun a ha => hmem5 a (by omega))
   -- 6. the points
   have hT : (E.TL r).length + (E.recs r).length ≤ 2 * E.P.n := by
-    rw [BEnv.TL_succ, List.length_append, List.length_map] at hTr1; exact hTr1
+    rwa [BEnv.TL_succ, List.length_append, List.length_map] at hTr1
   obtain ⟨c₆, k₆, e₆, hk₆, S₆, FM₆, hm₆⟩ := ptLoop_exec hE hr c₅ S₅ hT
   rw [← BEnv.TL_succ] at S₆
   have g₆ : ∀ q, Bpt q = false → c₆.nreg q = c₅.nreg q := FM₆.1
@@ -239,7 +238,7 @@ theorem regB_exec {sH sE : Stmt} {κH κE : ℕ} (hH : HostOK sH κH) (hX : ExpO
   have A₆ : c₆.nreg ALLOC = c₅.nreg ALLOC := g₆ _ (by decide)
   have A₇ : c₇.nreg ALLOC = c₆.nreg ALLOC := g₇ _ (by unfold ALLOC; omega) (by unfold ALLOC; omega)
   -- the cost
-  have hNS : (H.pts E.P.n).length ≤ E.S₀ := by rw [← hNPl]; exact hS₀
+  have hNS : (H.pts E.P.n).length ≤ E.S₀ := by rwa [← hNPl]
   have hk₅' : k₅ ≤ κE * (2 * E.S₀ + 1) := hk₅.trans (Nat.mul_le_mul_left _ (by omega))
   have hk₆' : k₆ ≤ (ptK E.Cm + 2) * E.S₀ + 3 :=
     hk₆.trans (by have := Nat.mul_le_mul_left (ptK E.Cm + 2) hS₀; omega)
@@ -277,7 +276,7 @@ theorem regB_exec {sH sE : Stmt} {κH κE : ℕ} (hH : HostOK sH κH) (hX : ExpO
       K2 _ (by omega) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
         (by unfold ALLOC; norm_num), g₁ _ (by omega)]
   refine ⟨e₇.wb_right, S₆.regs.congr fun q hq => g₇ q (by unfold FixB at hq; omega)
-      (by unfold FixB at hq; omega), by rw [g₇ _ (by norm_num) (by norm_num)]; exact r06, u14,
+      (by unfold FixB at hq; omega), by rwa [g₇ _ (by norm_num) (by norm_num)], u14,
     by rw [u31]; unfold BEnv.RP; ring, fun r' hr' => ?_, ?_, ?_, ?_⟩
   · rw [v18]
     rcases Nat.lt_succ_iff_lt_or_eq.1 hr' with h | h
@@ -306,7 +305,7 @@ theorem regK_le (E : BEnv) (κH κE : ℕ) :
   have h1 := ptK_le E.Cm
   have h2 : (ptK E.Cm + 8) * E.S₀ ≤ ptA * (E.Cm + 1) * E.S₀ := Nat.mul_le_mul_right _ h1
   set X := E.S₀ + 1 with hXd
-  set Y := E.Cm + 1 with hYd
+  set Y := E.Cm + 1
   have hY : 1 ≤ Y := by omega
   have e1 : κH ≤ κH * X * Y := by
     calc κH = κH * 1 * 1 := by ring

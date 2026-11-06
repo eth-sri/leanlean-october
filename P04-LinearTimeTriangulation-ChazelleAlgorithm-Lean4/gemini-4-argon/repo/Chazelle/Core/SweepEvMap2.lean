@@ -111,7 +111,7 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
     rw [hE, hshoot]
     refine ⟨hS, ?_⟩
     rw [oW_def, show ((gW J : ℕ) : ℝ) = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) from rfl,
-      off_left_gen J (by rw [← lL1_add_lL2 J]; exact hlt) le_rfl one_pos]
+      off_left_gen J (by rwa [← lL1_add_lL2 J]) le_rfl one_pos]
     have : ((lOff J + lL1 J : ℕ) : ℝ) = ((Lst J + ψ J d : ℕ) : ℝ) := by rw [hoff]
     push_cast at this
     linarith
@@ -160,7 +160,7 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
         · have ht : t = 0 := by by_contra h; exact hsplit ⟨by omega, hd1, h⟩
           refine viaSplit (by omega) ht (Or.inr ?_) ?_
           · rw [hd1, hl1, hn₁, hm1, Nat.mod_eq_of_lt (by omega)]; omega
-          · have hψ : ψ J d = lL1 J := by unfold ψ; rw [ite_eq_right (by omega)]; exact hd1
+          · have hψ : ψ J d = lL1 J := by unfold ψ; rwa [ite_eq_right (by omega)]
             rw [hψ, hlOff]
         · have hd2 : lL1 J + 7 ≤ d := by
             by_contra h; exact hgap ⟨by omega, by omega, by omega⟩
@@ -190,14 +190,12 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
           (by rw [hψ]; omega)
         by_contra h0
         apply hnv ht
-        rw [show d = 0 by omega, add_zero, Nat.mod_eq_of_lt (by omega)]
-        exact hp26
+        rwa [show d = 0 by omega, add_zero, Nat.mod_eq_of_lt (by omega)]
       · refine viaGen (d - 7) (by omega) (fun ht => ⟨fun h0 => ?_, by omega⟩) ?_
           (by rw [hψ]; omega)
         · apply hnv ht
-          rw [hn₁, show 2 * J.left.m + 6 + d = 6 + (2 * J.left.m + 7) by omega, Nat.add_mod_right,
+          rwa [hn₁, show 2 * J.left.m + 6 + d = 6 + (2 * J.left.m + 7) by omega, Nat.add_mod_right,
             Nat.mod_eq_of_lt (by omega)]
-          exact hp6
         · unfold dq; rw [ite_eq_left (by omega), hτ0, hn₁]
           rw [show 2 * J.left.m + 6 + d = (6 + 0 + (d - 7)) + (2 * J.left.m + 7) by omega,
             Nat.add_mod_right]
@@ -209,14 +207,12 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
       by_cases hd2 : d < 2 * J.m₁
       · refine viaGen d (by omega) (fun ht => ⟨fun h0 => ?_, by omega⟩) ?_ (by rw [hψ, hlo])
         · apply hnv ht
-          rw [h0, Nat.mod_eq_of_lt (by omega)]
-          exact hp6
+          rwa [h0, Nat.mod_eq_of_lt (by omega)]
         · unfold dq; rw [ite_eq_left (by omega)]
       · refine viaBox (d - 2 * J.m₁) hVNT (by omega) (fun ht => ?_) ?_ ?_ ?_
         · by_contra h0
           apply hnv ht
-          rw [show 6 + 0 + d = 2 * J.left.m + 6 by omega, Nat.mod_eq_of_lt (by omega)]
-          exact hp26
+          rwa [show 6 + 0 + d = 2 * J.left.m + 6 by omega, Nat.mod_eq_of_lt (by omega)]
         · rw [hb, hτ0]
           congr 1
           omega

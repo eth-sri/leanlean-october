@@ -88,7 +88,7 @@ theorem keptS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : B
   have hw1 := e1.wb_right
   have q1 : ∀ r, r < 217070 ∨ (217072 < r ∧ r < 217080) ∨ 217082 < r → d1.nreg r = d.nreg r :=
     fun r hr => f1.1 r (by simp only [decide_eq_false_iff_not]; omega)
-  have enc1 : Enc d1 sL := by rw [enc_iff, a70, a71, a72]; exact encL
+  have enc1 : Enc d1 sL := by rwa [enc_iff, a70, a71, a72]
   -- step 2: left interior edge
   obtain ⟨d2, k2, e2, hk2, v2, f2⟩ := peS_exec (P := P) d1 hw1 hsL enc1 hnW
     (by rw [q1 _ (by omega), h20]) (by rw [q1 _ (by omega), h26]) (by rw [q1 _ (by omega), h27])
@@ -142,7 +142,7 @@ theorem keptS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : B
   -- step 6: left bucket
   obtain ⟨d6, k6, e6, hk6, ⟨tL, htL, honL, v6⟩, f6⟩ := bktS_exec (P := P) d5 hw5 hG (li := li)
     (N := N) (x := ⟨pEdge li (Qof P).n sL, h + 1⟩) (AB := AB) (RA := RA) (nRA := nRA) (ras := ras)
-    hxL hgood (by rw [m5]; exact hAm) (by rw [m5]; exact hRm) hAW hRW h2A hnW
+    hxL hgood (by rwa [m5]) (by rwa [m5]) hAW hRW h2A hnW
     (by rw [q5 _ (by omega), h20]) (by rw [q5 _ (by omega), h26]) (by rw [q5 _ (by omega), h27])
     (by rw [q5 _ (by omega), h30]) (by rw [q5 _ (by omega), h31]) (by rw [q5 _ (by omega), h32])
     (by rw [q5 _ (by omega), h33]) (by rw [q5 _ (by omega), h44])
@@ -169,7 +169,7 @@ theorem keptS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : B
   -- step 8: right bucket
   obtain ⟨d8, k8, e8, hk8, ⟨tR, htR, honR, v8⟩, f8⟩ := bktS_exec (P := P) d7 hw7 hG (li := li)
     (N := N) (x := ⟨pEdge li (Qof P).n sR, h + 1⟩) (AB := AB) (RA := RA) (nRA := nRA) (ras := ras)
-    hxR hgood (by rw [m7]; exact hAm) (by rw [m7]; exact hRm) hAW hRW h2A hnW
+    hxR hgood (by rwa [m7]) (by rwa [m7]) hAW hRW h2A hnW
     (by rw [q7 _ (by omega), h20]) (by rw [q7 _ (by omega), h26]) (by rw [q7 _ (by omega), h27])
     (by rw [q7 _ (by omega), h30]) (by rw [q7 _ (by omega), h31]) (by rw [q7 _ (by omega), h32])
     (by rw [q7 _ (by omega), h33]) (by rw [q7 _ (by omega), h44])

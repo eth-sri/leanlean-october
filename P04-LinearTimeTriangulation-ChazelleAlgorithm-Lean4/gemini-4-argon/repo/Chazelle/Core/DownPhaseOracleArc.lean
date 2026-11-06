@@ -184,7 +184,6 @@ theorem param_end_two {e h₂ : ℕ} (hs : L < tau Q u L h1 h2)
   · have hA := agree_post hu h1 h2 hs
     have := param_agree (M := interiorModel Q) (M' := MC Q u L h1 h2) hA Q
       (d := e - (2 * L - tau Q u L h1 h2)) (by omega) h₂
-    have ht : tau Q u L h1 h2 < 2 * L := tau_lt
     rw [mi_n, cm_n', Nat.mod_eq_of_lt (show 6 + (e - (2 * L - tau Q u L h1 h2)) < 2 * L + 7 by
       omega), show u + (2 * L - tau Q u L h1 h2) + (e - (2 * L - tau Q u L h1 h2)) = u + e by
       omega] at this
@@ -203,9 +202,9 @@ theorem chain_arcSet_one {e h₁ h₂ : ℕ} (hs : tau Q u L h1 h2 ≤ L)
       ((MC Q u L h1 h2).key Q ⟨6 + tau Q u L h1 h2 + e, h₂⟩) =
       oset (interiorWalk Q) u ((interiorModel Q).param Q ⟨u, h₁⟩)
         (e + (interiorModel Q).param Q ⟨(u + e) % Q.n, h₂⟩) := by
-  set x := (interiorModel Q).param Q ⟨u, h₁⟩ with hxd
+  set x := (interiorModel Q).param Q ⟨u, h₁⟩
   set t₂ := (interiorModel Q).param Q ⟨(u + e) % Q.n, h₂⟩ with ht₂
-  set g := 6 + tau Q u L h1 h2 with hg
+  set g := 6 + tau Q u L h1 h2
   have ht : tau Q u L h1 h2 < 2 * L := tau_lt
   have hn : (MC Q u L h1 h2).W.n = 2 * L + 7 := cm_n'
   have hge : e ≤ L := by omega
@@ -253,10 +252,10 @@ theorem chain_arcSet_two {e h₁ h₂ : ℕ} (hs : L < tau Q u L h1 h2)
       ((MC Q u L h1 h2).key Q ⟨6 + (e - (2 * L - tau Q u L h1 h2)), h₂⟩) =
       oset (interiorWalk Q) u ((2 * L - tau Q u L h1 h2 : ℕ) : ℝ)
         (e + (interiorModel Q).param Q ⟨(u + e) % Q.n, h₂⟩) := by
-  set x := (interiorModel Q).param Q ⟨u, h₁⟩ with hxd
+  set x := (interiorModel Q).param Q ⟨u, h₁⟩
   set t₂ := (interiorModel Q).param Q ⟨(u + e) % Q.n, h₂⟩ with ht₂
-  set g := 6 + tau Q u L h1 h2 with hg
-  set L₁ := 2 * L - tau Q u L h1 h2 with hL₁
+  set g := 6 + tau Q u L h1 h2
+  set L₁ := 2 * L - tau Q u L h1 h2
   have ht : tau Q u L h1 h2 < 2 * L := tau_lt
   have hn : (MC Q u L h1 h2).W.n = 2 * L + 7 := cm_n'
   have hge : e ≤ L := by omega

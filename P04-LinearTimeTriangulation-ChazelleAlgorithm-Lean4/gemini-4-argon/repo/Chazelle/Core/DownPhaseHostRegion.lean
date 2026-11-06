@@ -151,7 +151,7 @@ theorem host_side (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
     obtain ⟨e, he, -, hce, hopen, heD, -⟩ := hM.attach_other_end (hF hc') hA'
     obtain ⟨r, hr, hsec⟩ := hK p hA'.1 t hA'.2.1 hA'.2.2.1 hxin
     obtain ⟨s, hs0, hs1, hsd, hsl⟩ := WalkAx.exists_left_on_chord hA' hce he hr
-    have hyK : lerp (sidePt M.W p t) e s ∈ K := hsec _ (by rw [mem_ball]; exact hsd) hsl
+    have hyK : lerp (sidePt M.W p t) e s ∈ K := hsec _ (by rwa [mem_ball]) hsl
     -- the open part of `c'` lies in `K`
     have hopenK : ∀ s' ∈ Ioo (0 : ℝ) 1, lerp (sidePt M.W p t) e s' ∈ K := by
       have hpre : IsPreconnected ((lerp (sidePt M.W p t) e) '' Ioo (0 : ℝ) 1) :=

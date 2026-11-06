@@ -52,7 +52,7 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   rw [hI.rK] at ht
   set i := d.nreg 200110 with hi
   set x := L.getD i (0, 0, 0) with hx
-  set j := rankF (keepX li n) L i with hj
+  set j := rankF (keepX li n) L i
   have hle := rankF_le (keepX li n) L i
   obtain ⟨l1, l2, l3⟩ := hL i ht
   have hmL : ∀ q, q < 3 → d.nmem (B + 3 * i + q) = m₀ (B + 3 * i + q) := fun q hq => by
@@ -93,8 +93,7 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
     rw [r₃ _ (by norm_num) (by norm_num), r₂ _ (by norm_num) (by norm_num), v14]
   have hflag : d₃.nreg 200115 = if keepX li n x = true then 1 else 0 := by
     rw [v₃, v₂, v15, r₂ _ (by norm_num) (by norm_num), v12, v13,
-      r₂ _ (by norm_num) (by norm_num), v14]
-    rw [← hx]
+      r₂ _ (by norm_num) (by norm_num), v14, ← hx]
     have hk := keepX_iff li n x
     by_cases h1 : x.1 = wStart li n x.2.1 <;> by_cases h2 : x.1 = wStart li n x.2.2 <;>
       simp [hk, h1, h2]

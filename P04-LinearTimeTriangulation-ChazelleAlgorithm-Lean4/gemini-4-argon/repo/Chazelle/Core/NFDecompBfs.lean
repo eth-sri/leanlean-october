@@ -107,7 +107,7 @@ theorem bstep_inv {h : ℕ} {done : List ℕ} {st : BS} (hI : BInv R K up dn lst
     (hh : h < st.tl) {i : ℕ} (hi : i ∈ lst (st.ord h)) :
     BInv R K up dn lst h (i :: done) (bstep up dn (st.ord h) st i) := by
   obtain ⟨hrR, hrv⟩ := hI.ord_lt h hh
-  set r := st.ord h with hrdef
+  set r := st.ord h
   obtain ⟨hiK, hir⟩ := (hlists r hrR i).1 hi
   obtain ⟨hu, hd, hne⟩ := hends i hiK
   set s := (if up i = r then dn i else up i) with hsdef
@@ -149,7 +149,6 @@ theorem bstep_inv {h : ℕ} {done : List ℕ} {st : BS} (hI : BInv R K up dn lst
       rw [Finset.card_image_of_injOn (fun a ha b hb e => hI.ord_inj a b
         (Finset.mem_range.1 ha) (Finset.mem_range.1 hb) e), Finset.card_range,
         Finset.card_erase_of_mem (Finset.mem_range.2 hsR), Finset.card_range] at hc
-      have := hI.tl_pos
       omega
     -- the chord `i` is no parent chord yet
     have hinew : ∀ q, 0 < q → q < st.tl → st.pch (st.ord q) ≠ i := by
@@ -161,10 +160,10 @@ theorem bstep_inv {h : ℕ} {done : List ℕ} {st : BS} (hI : BInv R K up dn lst
       have hv2 : st.vis (st.prg (st.ord q)) = 1 := by rw [hpq]; exact (hI.ord_lt q' (by omega)).2
       apply hvs
       rcases hends' with ⟨a1, a2⟩ | ⟨a1, a2⟩ <;> rcases hpair with ⟨b1, b2⟩ | ⟨b1, b2⟩
-      · rw [← b2, a2]; exact hv1
-      · rw [← b1, a1]; exact hv2
-      · rw [← b2, a2]; exact hv2
-      · rw [← b1, a1]; exact hv1
+      · rwa [← b2, a2]
+      · rwa [← b1, a1]
+      · rwa [← b2, a2]
+      · rwa [← b1, a1]
     have hord_old : ∀ q, q < st.tl → Function.update st.ord st.tl s q = st.ord q :=
       fun q hq => Function.update_of_ne (by omega) _ _
     constructor
@@ -235,17 +234,17 @@ theorem bstep_inv {h : ℕ} {done : List ℕ} {st : BS} (hI : BInv R K up dn lst
       constructor
       · by_cases e : up i' = s
         · rw [e, Function.update_self]
-        · rw [Function.update_of_ne e]; exact c1
+        · rwa [Function.update_of_ne e]
       · by_cases e : dn i' = s
         · rw [e, Function.update_self]
-        · rw [Function.update_of_ne e]; exact c2
+        · rwa [Function.update_of_ne e]
     · intro i' hi'
       dsimp only
       have hvis : ∀ v, st.vis v = 1 → Function.update st.vis s 1 v = 1 := by
         intro v hv
         by_cases e : v = s
         · rw [e, Function.update_self]
-        · rw [Function.update_of_ne e]; exact hv
+        · rwa [Function.update_of_ne e]
       rcases List.mem_cons.1 hi' with rfl | hi'
       · rcases hpair with ⟨a1, a2⟩ | ⟨a1, a2⟩
         · rw [a1, a2, Function.update_self]; exact ⟨hvis r hrv, rfl⟩
@@ -338,8 +337,8 @@ theorem bfs_all {st : BS} (hI : BInv R K up dn lst st.tl [] st) : st.tl = R := b
         · exact ⟨hi, Or.inr e⟩
       obtain ⟨c1, c2⟩ := hI.closed q hq i hmem
       rcases hh with ⟨-, e⟩ | ⟨e, -⟩
-      · rw [← e]; exact c2
-      · rw [← e]; exact c1
+      · rwa [← e]
+      · rwa [← e]
   -- so the queue holds all regions
   have himg : range R ⊆ (range st.tl).image st.ord := by
     intro r hr
@@ -373,8 +372,8 @@ theorem bfs_cover {st : BS} (hI : BInv R K up dn lst st.tl [] st) :
         · exact ⟨hi, Or.inr e⟩
       obtain ⟨c1, c2⟩ := hI.closed q hq i hmem
       rcases hh with ⟨-, e⟩ | ⟨e, -⟩
-      · rw [← e]; exact c2
-      · rw [← e]; exact c1
+      · rwa [← e]
+      · rwa [← e]
   exact fun r hr => hI.vis_ord r hr (hvis r hr)
 
 open Classical in
@@ -416,7 +415,7 @@ theorem bfs_rooted {st : BS} (hI : BInv R K up dn lst st.tl [] st) :
     rw [(hposs s hs).2] at hpq
     have hq'R : q' < R := by have := (hposs s hs).1; omega
     refine ⟨by rw [hpq]; exact (hI.ord_lt q' (by omega)).1, ?_⟩
-    rw [hpq, hpos_ord q' hq'R]; exact hq'
+    rwa [hpq, hpos_ord q' hq'R]
   have hdisc' : ∀ s, s < R → s ≠ 0 → st.pch s < K ∧
       ((up (st.pch s) = st.prg s ∧ dn (st.pch s) = s) ∨ (up (st.pch s) = s ∧ dn (st.pch s) = st.prg s)) ∧
       (st.isdn s = 1 ↔ dn (st.pch s) = s) ∧ st.chOf (st.pch s) = s := by

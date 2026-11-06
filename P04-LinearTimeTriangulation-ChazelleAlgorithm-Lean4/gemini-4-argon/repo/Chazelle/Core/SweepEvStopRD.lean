@@ -155,7 +155,7 @@ theorem ldRd_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) (hb : f (s
   have hh' : m (m (f 240004 + 3) + f 244011 + f 244011 + f 244011 + f 244011 + f 244011) + 1 ≤ W := by
     have : m (f 240004 + 3) + f 244011 + f 244011 + f 244011 + f 244011 + f 244011 =
       m (f 240004 + 3) + 5 * f 244011 := by ring
-    rw [this]; exact hh
+    rwa [this]
   simp only [ldRd, okB, okI, regI, upd, tX, oKk, tH, tL, tR, oPH, K1, K3, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e3]
   refine ⟨⟨s 4092 (by norm_num) (by norm_num), by omega⟩, s 4092 (by norm_num) (by norm_num),
@@ -229,7 +229,7 @@ theorem ldT_irs (hI : IInv W c₀ c) (hO : OrgK P J c) (hK : Consts c) {k b : �
     rintro v hv hiff c' ⟨a1, a2, a3⟩
     have e1 : c'.nreg oPE = 6 := by rw [a2 _ (by unfold oPE oAd sw; omega), vE]
     have e2 : c'.nreg oPH = 0 := by rw [a2 _ (by unfold oPH oAd sw; omega), vH]
-    refine ⟨fun q hq => ?_, a3, by rw [a1]; exact hv, ?_, fun _ => by
+    refine ⟨fun q hq => ?_, a3, by rwa [a1], ?_, fun _ => by
       rw [e1, e2]; exact orgPos_t P N₂ k b⟩
     · unfold LdW₀ at hq
       rw [a2 q (fun h => hq ((Or.inr (Or.inr (Or.inl h))))),
@@ -265,19 +265,19 @@ theorem ldW_irs (hI : IInv W c₀ c) (hK : Consts c) (hP : J.P.Simple)
       rw [hkk]; unfold NF.nChords at hk; rw [r0]; omega))) ?_
   rintro c₁ hI₁ - - rfl
   obtain ⟨vH, vL, vR, vPH⟩ := ldRd_val c.nmem c.nreg k1 k3
-  set c₁ : Config := { c with nreg := regB c.nmem ldRd c.nreg } with hc₁
+  set c₁ : Config := { c with nreg := regB c.nmem ldRd c.nreg }
   rw [hkk] at vH vL vR vPH
   have ko : ∀ q, q ≠ tX → q ≠ tH → q ≠ tL → q ≠ tR → q ≠ oPH → c₁.nreg q = c.nreg q :=
     fun q a1 a2 a3 a4 a5 => ldRd_other _ _ ⟨a1, a2, a3, a4, a5⟩
   have c1NB : c₁.nreg oNB = 1 - b := by
-    rw [ko _ (by unfold oNB tX sw; omega) (by unfold oNB tH sw; omega) (by unfold oNB tL sw; omega)
-      (by unfold oNB tR sw; omega) (by unfold oNB oPH sw; omega)]; exact hNB
+    rwa [ko _ (by unfold oNB tX sw; omega) (by unfold oNB tH sw; omega) (by unfold oNB tL sw; omega)
+      (by unfold oNB tR sw; omega) (by unfold oNB oPH sw; omega)]
   have c1K1 : c₁.nreg K1 = 1 := by
-    rw [ko _ (by unfold K1 tX sw; omega) (by unfold K1 tH sw; omega) (by unfold K1 tL sw; omega)
-      (by unfold K1 tR sw; omega) (by unfold K1 oPH sw; omega)]; exact k1
+    rwa [ko _ (by unfold K1 tX sw; omega) (by unfold K1 tH sw; omega) (by unfold K1 tL sw; omega)
+      (by unfold K1 tR sw; omega) (by unfold K1 oPH sw; omega)]
   have c1K6 : c₁.nreg K6 = 6 := by
-    rw [ko _ (by unfold K6 tX sw; omega) (by unfold K6 tH sw; omega) (by unfold K6 tL sw; omega)
-      (by unfold K6 tR sw; omega) (by unfold K6 oPH sw; omega)]; exact k6
+    rwa [ko _ (by unfold K6 tX sw; omega) (by unfold K6 tH sw; omega) (by unfold K6 tL sw; omega)
+      (by unfold K6 tR sw; omega) (by unfold K6 oPH sw; omega)]
   have c1PH : c₁.nreg oPH = (endPos N₂ k (1 - b)).hgt := by
     show regB c.nmem ldRd c.nreg oPH = _
     rw [vPH, r0]; unfold endPos; split_ifs <;> rfl
@@ -309,8 +309,8 @@ theorem ldW_irs (hI : IInv W c₀ c) (hK : Consts c) (hP : J.P.Simple)
       rw [a2 _ (by unfold oPE oAd sw; omega), e2]
     have eH : c'.nreg oPH = (endPos N₂ k (1 - b)).hgt := by
       rw [a2 _ (by unfold oPH oAd sw; omega), k2 _ (by unfold oPH oPE sw; omega), c1PH]
-    refine ⟨fun q hq => ?_, by rw [a3, m2], by rw [a1]; exact hv, ?_, fun _ => by
-      rw [eE, eH]; exact hwp⟩
+    refine ⟨fun q hq => ?_, by rw [a3, m2], by rwa [a1], ?_, fun _ => by
+      rwa [eE, eH]⟩
     · unfold LdW₀ at hq
       rw [a2 q (fun h => hq ((Or.inr (Or.inr (Or.inl h))))),
         k2 q (fun h => hq ((Or.inl h))),
@@ -327,7 +327,7 @@ theorem ldW_irs (hI : IInv W c₀ c) (hK : Consts c) (hP : J.P.Simple)
       (by omega)).mono le_rfl (post 1 le_rfl ⟨fun _ => by rw [← e2]; omega, fun _ => rfl⟩)
   · refine (set1_irs (v := 0) hI₂ ⟨by unfold oAd sw; omega, by unfold oAd sw; omega⟩
       (by omega)).mono le_rfl (post 0 (by norm_num) ⟨fun h => absurd h (by norm_num),
-        fun h' => absurd (by rw [c2K6, e2]; exact h') h⟩)
+        fun h' => absurd (by rwa [c2K6, e2]) h⟩)
 
 /-- **The origin of a code** as a run step. -/
 theorem stLoad_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
@@ -347,7 +347,6 @@ theorem stLoad_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have kKd : c₁.nreg oKd = c.nreg oKd := ko _ (by unfold oKd oNB sw; omega)
   have kKk : c₁.nreg oKk = c.nreg oKk := ko _ (by unfold oKk oNB sw; omega)
   have kK1 : c₁.nreg K1 = 1 := (ko _ (by unfold K1 oNB sw; omega)).trans k1
-  have hW : c.nreg ALLOC + 30 ≤ W := hroom
   have post : ∀ kind, kind = c.nreg oKd → ∀ c', LdBr P J N₂ kind (c.nreg oKk) (c.nreg oB) c₁ c' →
       LdOK P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB) c' ∧ EFr LdW c c' := by
     rintro kind rfl c' ⟨a1, a2, a3, a4, a5⟩

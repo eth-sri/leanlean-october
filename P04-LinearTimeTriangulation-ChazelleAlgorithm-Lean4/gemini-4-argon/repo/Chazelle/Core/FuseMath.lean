@@ -67,8 +67,7 @@ theorem agree_bound (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) {Q : Poly
     rw [counted_iff_box _ (Nat.mod_lt _ (by omega))]
     rw [mod_succ_mod] at hc ⊢
     rw [hA d hd.le, hA (d + 1) hd] at hc
-    rw [hR]
-    exact hc
+    rwa [hR]
   · intro d hd t ht ht1 hdt hc
     exact cut_transfer J hP hP' hSi.2.1 hend hshared hA hd ht ht1 hdt hc
 
@@ -104,25 +103,25 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
     ∃ g L, PieceOK (chainModel J.whole) (J.fusion S₁ S₂ ∪ glueChords J)
       (bdryK J (J.fusion S₁ S₂ ∪ glueChords J)) γ g L ∧
       0 < off (chainModel J.whole).W.n g (p + t) ∧ off (chainModel J.whole).W.n g (p + t) < L := by
-  set C := J.whole with hC
-  set W := (chainModel C).W with hW
-  set W' := (chainModel C').W with hW'
-  set S' := J.fusion S₁ S₂ ∪ glueChords J with hS'
+  set C := J.whole
+  set W := (chainModel C).W
+  set W' := (chainModel C').W
+  set S' := J.fusion S₁ S₂ ∪ glueChords J
   have hP' : C'.P.Simple := hC'P ▸ hP
   have hR := radius_of_P J hC'P
   have hn := cm_n C
   have hn' := cm_n C'
   have hshared : J.sharedChords ⊆ S' := fun c hc => Or.inl (Or.inr hc)
-  set τ := tpos C J₀ with hτ
-  set τ' := tpos C' J₀' with hτ'
+  set τ := tpos C J₀
+  set τ' := tpos C' J₀'
   have hτlt := tpos_lt C J₀
   have hτ'lt := tpos_lt C' J₀'
-  set g := 6 + τ with hg_def
-  set g' := 6 + τ' with hg'_def
+  set g := 6 + τ
+  set g' := 6 + τ'
   have hg : g < W.n := by rw [hn]; omega
   have hg' : g' < W'.n := by rw [hn']; omega
-  set s := 2 * C.m - τ with hs_def
-  set s' := 2 * C'.m - τ' with hs'_def
+  set s := 2 * C.m - τ
+  set s' := 2 * C'.m - τ'
   -- keys at the shared vertex are end keys
   have hK_v : ∀ k : ℕ, k < W.n → W.vtx k = sharedV J → (k : ℝ) ∈ bdryK J S' :=
     fun k hk hv => ⟨k, hk, rfl, Or.inl hv⟩
@@ -177,8 +176,7 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
   have hpt : W.vtx k₀ = C'.top := by
     rw [hA1 s' le_rfl]
     have := walk_box C' J₀' 0 (by omega)
-    rw [add_zero] at this
-    exact this
+    rwa [add_zero] at this
   have hprev : sidePrev W k₀ 0 = C'.sideTour C'.sideBeta (2 * C'.m - 1) := by
     unfold sidePrev
     rw [ite_eq_left rfl, hk₀, mod_pred_mod (by omega) g hs'1, hA1 (s' - 1) (by omega),
@@ -204,7 +202,7 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
       linarith
   · push Not at hD
     refine ⟨k₀, ℓ - s', ⟨hk₀n, by rw [hn]; omega, hk₀K, ?_, ?_⟩, ?_, ?_⟩
-    · rw [hk₀, Nat.mod_add_mod, show g + s' + (ℓ - s') = g + ℓ by omega]; exact hend_key
+    · rwa [hk₀, Nat.mod_add_mod, show g + s' + (ℓ - s') = g + ℓ by omega]
     · exact agree_bound J hP hC'P hSi hsg hend hshared hk₀n (Nat.mod_lt _ (by omega)) (by rw [hn]; omega) (by rw [hn']; omega) hA2
     · rw [hk₀, off_shift hg hp hD ht.le ht1]; positivity
     · rw [hk₀, off_shift hg hp hD ht.le ht1]
@@ -286,7 +284,7 @@ theorem cover (hP : J.P.Simple) {Q : Polygon} {S₁ S₂ : Set (Set Point)}
       rfl hS₁ hsg₁ (fun c hc => hend c (Or.inl hc)) hp ht ht1 ?_
     · rw [tourV_left J (by omega), tourV_left_zero]; rfl
     · rw [tourV_left J le_rfl, tourV_left_end]; rfl
-    · rw [hn, hwm]; exact hin
+    · rwa [hn, hwm]
   · refine side_pieces J hP S₁ S₂ (C' := J.right) rfl (J₀ := J.m₁) (J₀' := 0)
       (ℓ := 2 * J.m₂) (fun e he => tourV_right J he) ?_ ?_ (by simp) (by rw [hwm]; omega)
       (right_box_eq J) (kt := J.m₁ + J.right.topIdx) (by simp [topIdxs])
@@ -294,7 +292,7 @@ theorem cover (hP : J.P.Simple) {Q : Polygon} {S₁ S₂ : Set (Set Point)}
       (Merge.Junction.whole_vertex_add J _) hS₂ hsg₂ (fun c hc => hend c (Or.inr hc)) hp ht ht1 ?_
     · rw [tourV_right J (by omega), tourV_right_zero]; rfl
     · rw [tourV_right J le_rfl, tourV_right_end]; rfl
-    · rw [hn, hwm]; exact hin
+    · rwa [hn, hwm]
 
 /-! ## The weight bound -/
 
@@ -320,8 +318,8 @@ theorem arc_bound (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
     (hsg₂ : (chainModel J.right).Semigranular S₂ γ) {a b : ℝ}
     (hfree : ∀ x, sideInArc a b x → ¬ (chainModel J.whole).IsCut (J.fusion S₁ S₂ ∪ glueChords J) x) :
     (chainModel J.whole).arcWt a b ≤ γ + 1 := by
-  set M := chainModel J.whole with hM
-  set S' := J.fusion S₁ S₂ ∪ glueChords J with hS'
+  set M := chainModel J.whole
+  set S' := J.fusion S₁ S₂ ∪ glueChords J
   have hcov := cover J hP hS₁ hS₂ hsg₁ hsg₂
   -- an interval free of cuts and of inner copies avoids all end keys
   have hsub : ∀ a' b', (∀ x, sideInArc a' b' x → ¬ M.IsCut S' x) →

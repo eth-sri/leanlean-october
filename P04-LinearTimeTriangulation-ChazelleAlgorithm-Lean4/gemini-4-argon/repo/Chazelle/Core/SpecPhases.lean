@@ -327,7 +327,6 @@ theorem gradeGran_succ_le_two_mul {g : ℕ} (hg : 2 ≤ g) :
   have h2 := clog_succ_le (g := g) (by omega)
   have hc : 1 ≤ Nat.clog 2 g := Nat.clog_pos (by norm_num) (by omega)
   have h3 : (g + 1) * (Nat.clog 2 (g + 1) + 2) ≤ 2 * (g * (Nat.clog 2 g + 2)) := by
-    have := Nat.mul_le_mul_left (g + 1) (Nat.add_le_add_right h2 2)
     nlinarith
   omega
 
@@ -376,7 +375,6 @@ theorem gradeGran_le_real (g : ℕ) :
     linarith
   have hpolyR : ((g * (Nat.clog 2 g + 2) : ℕ) : ℝ) ≤ 3 * (g : ℝ) ^ 2 := by exact_mod_cast hpoly
   push_cast at hsq hpolyR ⊢
-  have h2 : (0 : ℝ) ≤ (2 : ℝ) ^ Cost.ceilBeta g := by positivity
   nlinarith
 
 /-- The oracle grade of a merge at grade `λ`: `⌈log₂ (γ'_λ + 1)⌉ ≤ ⌈βλ⌉ + 11`. -/

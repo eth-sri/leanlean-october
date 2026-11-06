@@ -32,10 +32,8 @@ open WalkEmbed Sweep
 theorem start_key_ge_six (J : Merge.Junction) :
     6 ≤ (gW J + Lst J) % (chainModel J.whole).W.n := by
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
-  have hτ' := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
   by_cases hlt : Lst J < lOff J
   · obtain ⟨-, -, hτ, hL⟩ := caseB_facts J hlt
-    have hτw := tpos_lt J.whole J.m₁
     have e : (gW J + Lst J) % (chainModel J.whole).W.n = 2 * J.whole.m + 6 := by
       unfold gW
       rw [hL, hn, Nat.mod_eq_of_lt (by omega)]

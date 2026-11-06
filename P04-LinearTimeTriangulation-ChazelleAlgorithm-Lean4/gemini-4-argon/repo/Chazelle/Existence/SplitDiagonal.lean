@@ -91,7 +91,7 @@ theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤
       · exact key (i + 1) (L + j) (by omega) (by omega) (by omega) h₁ h₂
       · exact key (i + 1) (L + (j + 1)) (by omega) (by omega) (by omega) h₁ h₂
     · exact hpc
-  · rw [segment_comm]; exact hpc
+  · rwa [segment_comm]
 
 /-! ### The hypotheses of the splitting lemma -/
 

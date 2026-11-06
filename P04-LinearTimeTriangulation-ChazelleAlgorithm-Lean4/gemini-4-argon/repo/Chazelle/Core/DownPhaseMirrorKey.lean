@@ -38,7 +38,6 @@ theorem rk_bounds (hc : c < n) {x : ℝ} (hx0 : 0 ≤ x) (hxn : x < n) : 0 ≤ r
   unfold rk; split_ifs with h <;> constructor <;> linarith
 
 theorem rk_rk (hc : c < n) {x : ℝ} (hx0 : 0 ≤ x) (hxn : x < n) : rk n c (rk n c x) = x := by
-  have hc' : (c : ℝ) < n := by exact_mod_cast hc
   unfold rk
   split_ifs with h1 h2 h2 <;> linarith
 
@@ -85,7 +84,6 @@ theorem rk_edge (hc : c < n) {p : ℕ} (hp : p < n) {t : ℝ} (ht0 : 0 < t) (ht1
 theorem sideInArc_rk (hc : c < n) {a b x : ℝ} (ha0 : 0 ≤ a) (han : a < n) (hb0 : 0 ≤ b)
     (hbn : b < n) (hx0 : 0 ≤ x) (hxn : x < n) :
     sideInArc a b x ↔ sideInArc (rk n c b) (rk n c a) (rk n c x) := by
-  have hc' : (c : ℝ) < n := by exact_mod_cast hc
   unfold rk sideInArc
   split_ifs <;> constructor <;> intro h <;> mcyc
 

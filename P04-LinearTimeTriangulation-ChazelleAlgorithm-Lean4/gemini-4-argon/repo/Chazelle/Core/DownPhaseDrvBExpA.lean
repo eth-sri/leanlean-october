@@ -172,8 +172,7 @@ theorem wrV_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config} {K 
 theorem wrE_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config} {K : ℕ}
     (hS : ESt W n PA li L c₀ c K) (hK : K < L.length)
     (hx : L.getD K (.vtx 0) = .onEdge (c.nreg 212027) (c.nreg 212028)) :
-    ∃ c' k, Exec P W wrE c c' k ∧ k ≤ 8 ∧ ESt W n PA li L c₀ c' (K + 1) ∧
-      FrameM (fun r => decide (r = 212025)) c c' := by
+    ∃ c' k, Exec P W wrE c c' k ∧ k ≤ 8 ∧ ESt W n PA li L c₀ c' (K + 1) := by
   have hwb := hS.wb
   have hW := hS.hW
   obtain ⟨c', k, ex, hk, hm, hp, hptr⟩ : ∃ c' k, Exec P W wrE c c' k ∧ k ≤ 8 ∧
@@ -205,8 +204,7 @@ theorem wrE_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config} {K 
       refine ⟨by omega, fun a ha => ?_, ?_, by omega⟩
       · simp only [upd]; split_ifs <;> omega
       · refine ⟨?_, ?_, ?_⟩ <;> simp only [upd] <;> (try split_ifs) <;> omega
-  exact ⟨c', k, ex, hk, hS.step hK ex.wb_right (exec_frameM ex wr_wrE) hm hp hptr,
-    exec_frameM ex wr_wrE⟩
+  exact ⟨c', k, ex, hk, hS.step hK ex.wb_right (exec_frameM ex wr_wrE) hm hp hptr⟩
 
 end exec
 

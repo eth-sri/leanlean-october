@@ -59,8 +59,7 @@ theorem pair_le_sum (ns : List Shp) {q : ℕ} (hq : q < ns.length / 2) :
     intro x hx; simp only [Finset.mem_insert, Finset.mem_singleton] at hx
     simp only [Finset.mem_range]; omega
   have := Finset.sum_le_sum_of_subset (f := fun k => (nd ns k).2.1) hsub
-  rw [Finset.sum_pair (by omega)] at this
-  exact this
+  rwa [Finset.sum_pair (by omega)] at this
 
 /-- **One merge.** -/
 theorem pairCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) (hH : Monotone H)
@@ -194,8 +193,7 @@ theorem totCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) 
       have hcl2 := clog_half hj2
       have hfl : fuseLoss = 1 := rfl
       have htγ : γ₀ + 1 ≤ t := by rw [ht]; unfold lvTgt; split_ifs <;> omega
-      rw [totCost, ite_eq_right hlen]
-      rw [← ht]
+      rw [totCost, ite_eq_right hlen, ← ht]
       -- this level
       have hlv := lvCost_le κ F G H hF hG hH ns (γ₀ := γ₀) (Gl := Gl) (by omega)
       rw [hL] at hlv
@@ -215,7 +213,7 @@ theorem totCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) 
       -- the next level
       have hlen' : (pairUp ns t).length = (ns.length + 1) / 2 := pairUp_length ns t
       have hinv : PInv G0 Gl J L LS0 (pairUp ns t) t := by
-        refine ⟨by omega, by omega, by rw [pairUp_sum]; exact hL, ?_, by omega,
+        refine ⟨by omega, by omega, by rwa [pairUp_sum], ?_, by omega,
           le_trans (sublist_sum_le ((leaves_pairUp_sublist (by omega) ns).map kb)) hLS,
           fun x hx hxl => ?_⟩
         · rw [hlen', ht]; unfold lvTgt; split_ifs with h3

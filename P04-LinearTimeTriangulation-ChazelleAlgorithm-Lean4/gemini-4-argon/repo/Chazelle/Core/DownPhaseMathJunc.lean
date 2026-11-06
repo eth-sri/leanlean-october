@@ -133,8 +133,8 @@ theorem sharedGeneric_run {Q : Polygon} (hn : 3 ≤ Q.n) (hdh : DistinctHeights 
     {H₁ H₂ : Host} {a ℓ k : ℕ} {J : Junction} (hP : J.P = (H₁ ++ HostItem.run a ℓ :: H₂).poly Q)
     (hk1 : 1 ≤ k) (hkl : k < ℓ)
     (hj : (J.s + J.m₁) % J.P.n = (H₁.pts Q.n).length + k) : SharedGeneric J := by
-  set H := H₁ ++ HostItem.run a ℓ :: H₂ with hH
-  set N := (H.pts Q.n).length with hN
+  set H := H₁ ++ HostItem.run a ℓ :: H₂
+  set N := (H.pts Q.n).length
   have hPn : J.P.n = N := by rw [hP, host_poly_n]
   rw [hPn] at hj
   have hlen : (H₁.pts Q.n).length + ℓ + 1 ≤ N := pts_append_run_length Q.n H₁ H₂ a ℓ

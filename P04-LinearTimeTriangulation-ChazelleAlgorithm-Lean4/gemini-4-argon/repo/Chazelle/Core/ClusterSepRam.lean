@@ -196,14 +196,14 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
       refine ⟨_, k3 + (k4 + 1), .seq e3 (.seq e4 e6), by omega, e6.wb_right, by simp [h4i, h41],
         ?_, h4m, fun x hx => ?_, hrr4.trans (hrr3.trans hrr2), hrm4.trans (hrm3.trans hrm2),
         ho4.trans (ho3.trans ho2), by omega⟩
-      · simp only [Machine.upd_apply]; rw [ite_eq_right (by omega), h4r _ (by omega),
-          r3 _ (by omega) (by omega) (by omega)]; exact hn2
+      · simp only [Machine.upd_apply]; rwa [ite_eq_right (by omega), h4r _ (by omega),
+          r3 _ (by omega) (by omega) (by omega)]
       · simp only [Machine.upd_apply]
         unfold SepRG at hx
         rw [ite_eq_right (by omega), h4r _ (by omega), r3 _ (by omega) (by omega) (by omega)]
         exact hr2 x (by unfold SepRG; omega))
     (j₀ := lo) ⟨e0.wb_right, by simp [hlo], by
-      simp only [Machine.upd_apply]; rw [ite_eq_right (by omega)]; exact hhi,
+      simp only [Machine.upd_apply]; rwa [ite_eq_right (by omega)],
       by simp [m0, sepMem], fun r hr => by
         simp only [Machine.upd_apply]; rw [ite_eq_right (by unfold SepRG at hr; omega)],
       rfl, rfl, rfl, le_rfl⟩ hlh
@@ -265,11 +265,11 @@ theorem pushOne_exec {c : Config} (hw : WordsBounded W c) (t : ℕ) (ht : t < 3)
         simp only [q1, q2, q3, q4, q5, hm1]
       · config_simp; simp only [q2, q3]
       · simp only [Machine.upd_apply, h1, h3, ite_false]; exact r1 r h2
-    refine ⟨c2, 1 + (k2 + 1), .seq e0 (.ifLtN_true (by rw [r1 _ (by omega), hs, h1d]; exact hbig)
-      e2), by omega, hw2, by rw [ite_eq_left hbig]; exact h2m, by rw [ite_eq_left hbig]; exact h2t, h2r,
+    refine ⟨c2, 1 + (k2 + 1), .seq e0 (.ifLtN_true (by rwa [r1 _ (by omega), hs, h1d])
+      e2), by omega, hw2, by rwa [ite_eq_left hbig], by rwa [ite_eq_left hbig], h2r,
       by rw [hrr2, hrr1], by rw [hrm2, hrm1], by rw [ho2, ho1]⟩
   · rw [r1 _ (by omega), hs, h1d] at hbig
-    refine ⟨c1, 1 + (0 + 2), .seq e0 (.ifLtN_false (by rw [r1 _ (by omega), hs, h1d]; exact hbig)
+    refine ⟨c1, 1 + (0 + 2), .seq e0 (.ifLtN_false (by rwa [r1 _ (by omega), hs, h1d])
       (.skip hw1)), by omega, hw1, by rw [ite_eq_right hbig, hm1],
       by rw [ite_eq_right hbig, r1 _ (by omega), htp], fun r _ h2 _ => r1 r h2, hrr1, hrm1, ho1⟩
 

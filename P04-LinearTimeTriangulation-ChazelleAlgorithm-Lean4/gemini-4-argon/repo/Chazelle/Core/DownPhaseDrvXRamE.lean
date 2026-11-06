@@ -78,7 +78,6 @@ theorem bktBody_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li :
           (PosLt (Qof P) li (N.arc j).s x) else d.nreg 217112) ∧
       FrameB Bbkt d d' := by
   have hW1 : 1 ≤ W := by omega
-  have hn : 1 ≤ (Qof P).n := by have := hx.2.2; omega
   -- read the arc
   obtain ⟨d1, k1, e1, hk1, a16, a18, a19, a20, a21, f1⟩ := arcRd_exec (P := P) d hw h14 h27 h31 hAW
     m1 m2 m3 m4
@@ -203,7 +202,7 @@ theorem bktBody_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li :
         have ex : Exec P W (.ifLtN 217115 217027
             (.ifLtN 217127 217027 .skip (.seq bktFS (block [.constN 217115 1]))) .skip) d7 d9
             (k8 + k9 + 2 + 1) :=
-          .ifLtN_true (by rw [p15, c27]; exact c1)
+          .ifLtN_true (by rwa [p15, c27])
             (.ifLtN_false (by rw [b27, c27, ite_eq_left c2]; omega) (.seq e8 e9))
         refine ⟨d9, _, ex, by omega, ?_, ?_, ?_⟩
         · rw [n9.same, ite_eq_left ⟨c1, c2⟩]
@@ -216,7 +215,7 @@ theorem bktBody_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li :
       · have ex : Exec P W (.ifLtN 217115 217027
             (.ifLtN 217127 217027 .skip (.seq bktFS (block [.constN 217115 1]))) .skip) d7 d7
             (0 + 1 + 1) :=
-          .ifLtN_true (by rw [p15, c27]; exact c1)
+          .ifLtN_true (by rwa [p15, c27])
             (.ifLtN_true (by rw [b27, c27, ite_eq_right c2]; omega) (.skip hw7))
         refine ⟨d7, _, ex, by omega, ?_, ?_, FrameB.refl _ _⟩
         · rw [p15, ite_eq_right (show ¬ (d.nreg 217115 < 1 ∧ OnArcP (Qof P) li N j x) from
@@ -225,7 +224,7 @@ theorem bktBody_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li :
             fun h => c2 h.2)]
     · have ex : Exec P W (.ifLtN 217115 217027
           (.ifLtN 217127 217027 .skip (.seq bktFS (block [.constN 217115 1]))) .skip) d7 d7
-          (0 + 2) := .ifLtN_false (by rw [p15, c27]; exact c1) (.skip hw7)
+          (0 + 2) := .ifLtN_false (by rwa [p15, c27]) (.skip hw7)
       refine ⟨d7, _, ex, by omega, ?_, ?_, FrameB.refl _ _⟩
       · rw [p15, ite_eq_right (show ¬ (d.nreg 217115 < 1 ∧ OnArcP (Qof P) li N j x) from
           fun h => c1 h.1)]
@@ -310,9 +309,9 @@ theorem bktS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : Bo
       obtain ⟨hgs, hge⟩ := hgood _ hR2
       obtain ⟨m1, m2, m3, m4⟩ := hAm _ hR2
       obtain ⟨c', kb, eb, hkb, b13, b14, b15, b12, bf⟩ := bktBody_exec (P := P) c hwc hG (li := li)
-        (N := N) (x := x) (AB := AB) hR2 hx hgs hge (by rw [c14, cm]; exact hR1)
-        (by rw [cm]; exact m1) (by rw [cm]; exact m2) (by rw [cm]; exact m3)
-        (by rw [cm]; exact m4) (hAW _ hR2) h2A hnW (by omega) (by omega)
+        (N := N) (x := x) (AB := AB) hR2 hx hgs hge (by rwa [c14, cm])
+        (by rwa [cm]) (by rwa [cm]) (by rwa [cm])
+        (by rwa [cm]) (hAW _ hR2) h2A hnW (by omega) (by omega)
         (by rw [g _ (by decide), h20]) (by rw [g _ (by decide), h26])
         (by rw [g _ (by decide), h27]) (by rw [g _ (by decide), h30])
         (by rw [g _ (by decide), h31]) (by rw [g _ (by decide), h44])

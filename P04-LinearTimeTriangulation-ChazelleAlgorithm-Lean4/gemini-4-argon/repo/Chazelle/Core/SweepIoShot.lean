@@ -34,7 +34,7 @@ theorem shotList_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemC
   obtain ⟨hG, hHW, hX, hcap, hmwf, h0, hAB, hH3, H, C, hC, hreg, hOk, hm, harcs, hholes, o, ho,
     hol, hof, hoy, havoid⟩ := pre
   have hR' := hR; unfold RegsOK at hR'
-  set M := chainModel C with hM
+  set M := chainModel C
   set Q := Qof P
   set D := c.nreg R
   set AB := c.nreg (R + 1)
@@ -44,9 +44,6 @@ theorem shotList_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemC
   set z := o.eval M Q
   set σ := dirOf (c.nreg (R + 6))
   set Bi := levCost Fg 3 + 20 with hBi
-  have eD : D = c.nreg R := rfl
-  have eAB : AB = c.nreg (R + 1) := rfl
-  have eK : K = c.nreg (R + 2) := rfl
   have hlc : levCost Fg 3 = 15 * (Fg + 30000) := by simp [levCost]
   have hLB : levCost (F (c.nreg (R + 7))) 3 + 20 = Bi := rfl
   have hW8 : 8 ≤ W := by unfold hostWords at hHW; omega
@@ -84,14 +81,14 @@ theorem shotList_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemC
         exact Nat.mul_le_mul (by omega) (by omega)
       omega
     · refine ⟨hG, hHW, ?_, ?_, ?_, ?_, ?_, ?_, ?_, hOk, hm, i30, i31, ?_⟩
-      · rw [hM1, hA1, k1 _ (by omega)]; exact hX
-      · rw [hM1, k1 _ (by omega), k1 _ (by omega)]; exact hcap
-      · rw [hM1, hA1, k1 _ (by omega)]; exact hmwf
-      · rw [hM1, k1 R (by omega)]; exact h0
-      · rw [hM1, k1 R (by omega)]; exact hC
+      · rwa [hM1, hA1, k1 _ (by omega)]
+      · rwa [hM1, k1 _ (by omega), k1 _ (by omega)]
+      · rwa [hM1, hA1, k1 _ (by omega)]
+      · rwa [hM1, k1 R (by omega)]
+      · rwa [hM1, k1 R (by omega)]
       · rw [i34, k1 R (by omega)]
-      · rw [hM1, k1 R (by omega)]; exact hreg
-      · rw [k1 _ (by omega)]; exact i35
+      · rwa [hM1, k1 R (by omega)]
+      · rwa [k1 _ (by omega)]
     · exact originIn_copy ho (k1 _ (by omega)) (k1 _ (by omega)) (k1 _ (by omega))
     · rw [i28, sofJ_zero]
       refine ⟨by rw [i20]; omega, fun h => by rw [i20] at h; omega, fun _ => fun t _ h => ?_⟩
@@ -105,7 +102,6 @@ theorem shotList_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemC
     set j := cc.nreg (R + 28) with hj
     have hK2 : cc.nreg (R + 2) = K := hin 2 (by omega)
     rw [hK2] at hlt
-    have hWA : c.nreg ALLOC ≤ W := by have := hw.1 ALLOC; exact this
     -- load the arc
     obtain ⟨c₂, k₂, e₂, hk₂, pc₂, f₂⟩ := loadArc_exec (P := P) (R := R) cc hwc c31 (by
       rw [hptr]; have := hctx.2.2.2.2.1.1; have hWc := hwc.1 ALLOC; omega)
@@ -127,10 +123,10 @@ theorem shotList_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemC
     have hk : ∀ ℓ, ℓ ≤ 3 → c₂.nreg (R + 30 + ℓ) = ℓ := by
       intro ℓ hℓ
       interval_cases ℓ
-      · rw [k2 _ (by omega)]; exact c30
-      · rw [k2 _ (by omega)]; exact c31
-      · rw [k2 _ (by omega)]; exact c32
-      · rw [k2 _ (by omega)]; exact c33
+      · rwa [k2 _ (by omega)]
+      · rwa [k2 _ (by omega)]
+      · rwa [k2 _ (by omega)]
+      · rwa [k2 _ (by omega)]
     have hhl2 : holeList c₂ R = hl := by
       simp only [hhl, holeList]
       rw [k2 _ (by omega), hin 9 (by omega)]
@@ -151,10 +147,9 @@ theorem shotList_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemC
         (k2 (R + 24 + 2) (by omega)) (k2 (R + 24 + 3) (by omega))
     obtain ⟨hpok, hwt⟩ := harcs j hjK'
     have hA2 : c₂.nreg ALLOC = cc.nreg ALLOC := k2 _ (by unfold ALLOC; omega)
-    have hroomj : cc.nreg ALLOC + (K - j) * Bi ≤ W := hrm
     have hKj : Bi ≤ (K - j) * Bi := Nat.le_mul_of_pos_left _ (by omega)
     obtain ⟨c₃, k₃, e₃, hk₃, b₃, fr₃⟩ := lev_exec hsh hBs hXl hR (H := H) (C := C) hol hof hoy
-      3 0 c₂ (sofJ M Q hl c.nmem AB j) (by omega) e₂.wb_right ctx₂ ho₂ (by rw [harc]; exact hpok)
+      3 0 c₂ (sofJ M Q hl c.nmem AB j) (by omega) e₂.wb_right ctx₂ ho₂ (by rwa [harc])
       (fun j' _ hj' hj'' => by
         rw [hk j' (by omega), k2 _ (by omega), hin 9 (by omega)] at hj''
         have := hholes j' (by omega)
@@ -235,14 +230,6 @@ theorem shotList_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemC
   have fL : FrameR oracleBands (fun r => R ≤ r ∧ r < R + 300) c₁ c' kL :=
     frL.mono le_rfl (fun r h => by obtain ⟨h1, h2⟩ := h; exact ⟨by omega, h2⟩) le_rfl
   have fT := f₁'.trans fL
-  have toF : Frame (insert (bandOf R) oracleBands) c c' (k₁ + kL) := by
-    obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := fT
-    have hb : ∀ r, bandOf r ∉ insert (bandOf R) oracleBands →
-        bandOf r ∉ oracleBands ∧ ¬ (R ≤ r ∧ r < R + 300) := fun r hr =>
-      ⟨fun h => hr (Finset.mem_insert_of_mem h), fun h => hr (by
-        rw [band_block hR h.1 h.2]; exact Finset.mem_insert_self _ _)⟩
-    exact ⟨fun r hr ha => r₁ r (hb r hr).1 ha (hb r hr).2,
-      fun r hr => rr₁ r (hb r hr).1 (hb r hr).2, m₁, rm₁, o₁, a₁, b₁⟩
   -- the cost
   have hcost : k₁ + kL ≤ shotCost Fg K := by
     unfold shotCost

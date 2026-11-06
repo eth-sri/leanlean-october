@@ -88,7 +88,7 @@ theorem arcLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   have m₁ : c₁.nmem = c.nmem := by rw [h₁]
   have v02 : c₁.nreg 81102 = (N.region (c.nreg 81121)).arcs.getD (c.nreg 81100) 0 := by
     rw [e₁]; simp [arcL1, regB, regI, upd, k5, k7, k1]
-    rw [e5]; rw [List.getD_eq_getElem?_getD] at rj; exact rj
+    rw [e5]; rwa [List.getD_eq_getElem?_getD] at rj
   have f₁ : ∀ q, q ≠ 81102 → q ≠ 81114 → q ≠ 81115 → c₁.nreg q = c.nreg q := fun q h1 h2 h3 => by
     rw [e₁]; refine regB_other _ _ _ (fun i hi => ?_)
     simp only [arcL1, List.mem_cons, List.not_mem_nil, or_false] at hi
@@ -193,7 +193,6 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
         (c.nreg 81108) ∧
       c'.nreg 81100 = c.nreg 81100 + 1 ∧
       ∀ q, 80000 ≤ q → q < 90000 → ¬ CsW q → c'.nreg q = c.nreg q) := by
-  have k0 := k0_of hE hI
   have k1 : c.nreg 81012 = 1 := by rw [hI.hin _ (by unfold FFix; omega), hE.k1]
   have hN' : NFWithin c.nmem (c.nreg 81134) (c₀.nreg ALLOC) N :=
     Robust.transport hN (fun a ha => hI.hm a ha)
@@ -226,7 +225,7 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
         (by omega) (fun _ h => h)
       rw [v10]; unfold wBit; rw [ite_eq_right (fun h => a1 (by rw [k0₁, v11]; exact h.1))]
     refine (FRS.ifT a1 ?_).mono (K := 11017) (by omega) (fun _ h => h)
-    have hpos' := hpos (by rw [v11, k0₁] at a1; exact a1)
+    have hpos' := hpos (by rwa [v11, k0₁] at a1)
     by_cases e : c₁.nreg 81103 = c₁.nreg 81107
     swap
     · refine FRS.ifEq_ne hI₁ e ⟨?_, fun _ _ _ _ _ _ _ => rfl⟩
@@ -236,8 +235,8 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
     refine FRS.ifEq_eq e ((FRS.seq (K₂ := 1) (cmpA_fs₀ hE hB hI₁ (r := 81112) (a := 81103) (b := 81106) (d := 81107) (e := 81108) ⟨by norm_num, by norm_num⟩
       ⟨by norm_num, by norm_num⟩ ⟨by norm_num, by norm_num⟩ ⟨by norm_num, by norm_num⟩
       ⟨by norm_num, by norm_num⟩ (by unfold KeyW; omega) (by unfold KeyW; omega)
-      (by unfold KeyW; omega) (by unfold KeyW; omega) (by rw [w33]; exact hwf)
-      (by rw [w33]; exact hC) hWm
+      (by unfold KeyW; omega) (by unfold KeyW; omega) (by rwa [w33])
+      (by rwa [w33]) hWm
       (by rw [r 81103 ⟨by norm_num, by norm_num⟩, r 81106 ⟨by norm_num, by norm_num⟩]; exact hpos'.1)
       (by rw [r 81107 ⟨by norm_num, by norm_num⟩, r 81108 ⟨by norm_num, by norm_num⟩]; exact hpos'.2)
       (by rw [hA₁']; unfold csK at hroom; omega)) (fun c' hI' _ ⟨b12, _, f'⟩ => ?_)).mono (by norm_num) (fun _ h => h))
@@ -250,9 +249,9 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
       have hb := b12
       rw [r 81103 ⟨by norm_num, by norm_num⟩, r 81106 ⟨by norm_num, by norm_num⟩,
         r 81107 ⟨by norm_num, by norm_num⟩, r 81108 ⟨by norm_num, by norm_num⟩] at hb
-      have hpc : 0 < N.nChords := by rw [v11, k0₁] at a1; exact a1
+      have hpc : 0 < N.nChords := by rwa [v11, k0₁] at a1
       have he : c.nreg 81103 = c.nreg 81107 := by
-        rw [r 81103 ⟨by norm_num, by norm_num⟩, r 81107 ⟨by norm_num, by norm_num⟩] at e; exact e
+        rwa [r 81103 ⟨by norm_num, by norm_num⟩, r 81107 ⟨by norm_num, by norm_num⟩] at e
       unfold wBit
       by_cases hk : (chainModel Cα).key (Qof E.P) ⟨c.nreg 81103, c.nreg 81106⟩ <
           (chainModel Cα).key (Qof E.P) ⟨c.nreg 81107, c.nreg 81108⟩
@@ -264,8 +263,6 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have r₂ : ∀ q, 81100 ≤ q → q ≤ 81109 → c₂.nreg q = c.nreg q := fun q a b => by
     rw [f₂ q (by omega) (by omega) (by unfold KeyW; omega) (by omega) (by omega) (by omega),
       f₁ q (by omega) (by omega)]
-  have k1₂ : c₂.nreg 81012 = 1 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k1]
-  have k0₂ := k0_of hE hI₂
   have x03 := r₂ 81103 (by norm_num) (by norm_num)
   have x05 := r₂ 81105 (by norm_num) (by norm_num)
   have x07 := r₂ 81107 (by norm_num) (by norm_num)
@@ -353,7 +350,7 @@ theorem cntS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
     rw [e']; simp [regB, regI, upd, hq]
   have w' : c'.nreg 81110 = c₂.nreg 81110 := by
     rw [f' _ (by norm_num), f₆ _ (by norm_num), y10]
-  refine ⟨by rw [f' _ (by norm_num), v₆, w'], by rw [w']; exact hw₂, ?_, fun q a b hq => ?_⟩
+  refine ⟨by rw [f' _ (by norm_num), v₆, w'], by rwa [w'], ?_, fun q a b hq => ?_⟩
   · rw [e']; simp [regB, regI, upd, k1₆, z00]
   · unfold CsW at hq
     rw [f' q (by omega), f₆ q (by omega), f₅ q (by omega),
@@ -443,7 +440,7 @@ theorem vStep_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have hw₂ : FWin E c₂ := hw.congr' (fun q a b => f₂ q (by omega))
     refine (vTest_fs hE hB hBT hI₂ hw₂ hv2 (by unfold vsK at hroom; omega)).mono le_rfl
       (fun c' ⟨w', fr', m', g'⟩ => ⟨w', fun q a b h1 h2 => by rw [fr' q a b h1, f₂ q h2],
-        fun h => m' (by rw [f₂ _ (by norm_num)]; exact h), fun _ _ reg hr hch hs σb hσb hg => ?_⟩)
+        fun h => m' (by rwa [f₂ _ (by norm_num)]), fun _ _ reg hr hch hs σb hσb hg => ?_⟩)
     rw [v₂] at g'
     exact g' reg hr hch hs σb hσb hg
   -- the step
@@ -594,11 +591,11 @@ theorem leafInit_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI
   refine (FRS.block hB _ hI ok).mono (by simp [leafInitL]) (fun c' h' => ?_)
   have e' : ∀ q, c'.nreg q = regB c.nmem leafInitL c.nreg q := fun q => by rw [h']
   refine ⟨?_, ?_, ?_, ?_, ?_, fun q h1 h2 h3 h4 h5 h6 h7 => ?_⟩
-  · rw [e']; simp [leafInitL, regB, regI, upd, k5]; rw [e5]; exact hna
+  · rw [e']; simp [leafInitL, regB, regI, upd, k5]; rwa [e5]
   · rw [e']; simp [leafInitL, regB, regI, upd]
   · rw [e']; simp [leafInitL, regB, regI, upd]
   · rw [e']; simp [leafInitL, regB, regI, upd, k2, k7, hm]; ring
-  · rw [e']; simp [leafInitL, regB, regI, upd, k5]; rw [e5]; exact hna
+  · rw [e']; simp [leafInitL, regB, regI, upd, k5]; rwa [e5]
   · rw [e', regB_other _ _ _ (fun i hi => ?_)]
     simp only [leafInitL, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
@@ -656,9 +653,9 @@ theorem LInv0.congr {cs d d' : Config} {Cα : Chain} {Nα : NF} {r g g' L : ℕ}
   have e07 := he 81007 (by norm_num)
   refine ⟨hw.congr' (fun q a b => he q (by omega)), fun q a b hq => by
     rw [he q (fun e => hq (Or.inr (Or.inr (Or.inr (by omega))))), fr q a b hq],
-    fun h => by rw [e07]; exact mo h, by rw [e01]; exact l01, by rw [e05]; exact l05,
-    by rw [e00]; exact l00, by rw [e00, e04]; exact l0, by rw [e00, e04, e03]; exact lc,
-    by rw [e00, e04, e07]; exact ldone, by rw [e00, e04, e07]; exact lcur⟩
+    fun h => by rw [e07]; exact mo h, by rwa [e01], by rwa [e05],
+    by rwa [e00], by rwa [e00, e04], by rwa [e00, e04, e03],
+    by rwa [e00, e04, e07], by rwa [e00, e04, e07]⟩
 
 /-- The guard keeps the invariant. -/
 theorem guard_fs {B : Finset ℕ} (hB : dBands ⊆ B) {cs : Config} {Cα : Chain} {Nα : NF}
@@ -730,13 +727,13 @@ theorem leaf_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       (fun d' ⟨h1, h2⟩ => ⟨h1, h2 ▸ hμ⟩)) |>.mono (by unfold lbK; omega) (fun _ h => h)
   by_cases hcnt : c.nreg 81011 < c.nreg 81104
   · -- a vertex step
-    have hc0 : 0 < c.nreg 81104 := by rw [k0] at hcnt; exact hcnt
+    have hc0 : 0 < c.nreg 81104 := by rwa [k0] at hcnt
     have ht0 : 0 < c.nreg 81100 := by
       by_contra h; have := l0 (by omega); omega
     obtain ⟨lcle, lv⟩ := lc ht0
     have hnα0 : 0 < 2 * Cα.m + 7 := by omega
     have hv : c.nreg 81103 < c.nreg 81105 := by rw [lv, l05]; exact Nat.mod_lt _ hnα0
-    refine (FRS.ifT hcnt (vStep_fs hE hB hBT hI hw hv (by rw [l05]; exact h2α)
+    refine (FRS.ifT hcnt (vStep_fs hE hB hBT hI hw hv (by rwa [l05])
       (by rw [x30]; exact hS.hg) (by rw [x35, x31]; have := hS.hLn; omega) hnW
       (by unfold lbK at hroom; omega))).mono (by omega)
       (fun c₂ ⟨w₂, v₂, n₂, f₂, m₂, g₂⟩ => ?_)
@@ -767,8 +764,8 @@ theorem leaf_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
         rw [x30, x31, x35] at g₂
         exact g₂ a b reg hreg hch hvs σb hσb hgd
     refine ⟨⟨w₂, fun q a b hq => by rw [fq q a b hq, fr q a b hq], fun h => m₂ (mo h),
-      by rw [y01, l01], by rw [y05, l05], by rw [y00]; exact l00, fun h => by omega,
-      fun _ => ⟨by rw [n₂, y00]; omega, ?_⟩, ?_, fun _ => by rw [y00]; exact cur'⟩, ?_, ?_⟩
+      by rw [y01, l01], by rw [y05, l05], by rwa [y00], fun h => by omega,
+      fun _ => ⟨by rw [n₂, y00]; omega, ?_⟩, ?_, fun _ => by rwa [y00]⟩, ?_, ?_⟩
     · rw [v₂, lv, y00, n₂, Nat.mod_add_mod]
       congr 1; omega
     · intro t' ht' x₀ hx hcov
@@ -777,7 +774,7 @@ theorem leaf_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       · exact m₂ (ldone t' (Or.inl h) x₀ hx hcov)
       · obtain ⟨i, hi, he⟩ := hcov _ wBit_spec
         rw [show t' = c.nreg 81100 - 1 by omega] at hi he
-        exact cur' x₀ hx i (by rw [h0]; exact hi) he
+        exact cur' x₀ hx i (by rwa [h0]) he
     · rw [n₂]; have := arcCnt_le (N := 2 * Cα.m + 7) (se := (Nα.arc (lj Nα r (c.nreg 81100 - 1))).s.edge)
         (ee := (Nα.arc (lj Nα r (c.nreg 81100 - 1))).e.edge)
         (w := wBit Cα (Qof E.P) Nα.nChords (Nα.arc (lj Nα r (c.nreg 81100 - 1))).s.edge
@@ -793,8 +790,8 @@ theorem leaf_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     obtain ⟨ese, eee⟩ := arc_edges hNα hjt
     rw [hnα] at ese eee
     refine (FRS.ifF hcnt (FRS.seq (K₂ := csK) (arcLoad_fs hE hB hI (N := Nα)
-      (by rw [x34]; exact hP.hNW) (by rw [x21]; exact hrn) (by rw [x21]; exact htn)
-      (by rw [x21]; exact hjt)) (fun c₂ hI₂ hA₂ ⟨a02, a03, a06, a07, a08, af⟩ => ?_))).mono
+      (by rw [x34]; exact hP.hNW) (by rwa [x21]) (by rwa [x21])
+      (by rwa [x21])) (fun c₂ hI₂ hA₂ ⟨a02, a03, a06, a07, a08, af⟩ => ?_))).mono
       (by unfold vsK; omega) (fun _ h => h)
     rw [x21] at a02 a03 a06 a07 a08
     have af' : ∀ q, 81116 ≤ q → c₂.nreg q = c.nreg q := fun q a => af q (by omega) (by omega)
@@ -808,8 +805,8 @@ theorem leaf_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       ⟨_, _, Dec.chord_mem h, rfl⟩
     refine (cntS_fs hE hB hI₂ (N := Nα) (by rw [af' _ (by norm_num), x34]; exact hP.hNW)
       (by rw [af' _ (by norm_num), x33]; exact hP.hwf)
-      (by rw [af' _ (by norm_num), x33]; exact hP.hD) hP.hWm (by rw [a03, z05]; exact ese) (by rw [a07, z05]; exact eee)
-      (by rw [z05]; exact h2α)
+      (by rw [af' _ (by norm_num), x33]; exact hP.hD) hP.hWm (by rwa [a03, z05]) (by rwa [a07, z05])
+      (by rwa [z05])
       (fun h => by rw [a03, a06, a07, a08]; exact arc_posOK hsimp hNα (hne h) hjt)
       (by rw [z00]; omega) (by unfold lbK at hroom; omega)).mono le_rfl
       (fun c₃ ⟨b04, b10, b00, bf⟩ => ?_)
@@ -882,7 +879,7 @@ theorem leaf_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have hR' := hR
   obtain ⟨r30, r31, r32, r33, r34, r35⟩ := hR
   refine FRS.seq (K₁ := 15) (leafInit_fs hE hB hI (N := Nα) (by rw [r34]; exact hP.hNW)
-    (by rw [hr]; exact hrn) (by rw [r33]; exact hP.hwf) (by rw [r33]; exact hP.hD) hP.hWm)
+    (by rwa [hr]) (by rw [r33]; exact hP.hwf) (by rw [r33]; exact hP.hD) hP.hWm)
     (fun c₁ hI₁ hA₁ ⟨i01, i00, i04, i05, i09, fi⟩ => ?_)
   rw [hr] at i01 i09
   have fr₁ : ∀ q, 81011 ≤ q → q < 83000 → ¬ LeafW q → c₁.nreg q = c.nreg q := fun q a b hq =>
@@ -897,12 +894,11 @@ theorem leaf_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     (by norm_num) (by norm_num) (by norm_num) (by norm_num)
   have hL₁ : LInv E c Cα Nα r g g' L c₁ := by
     refine ⟨⟨hw.congr' (fun q a b => fi q (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega) (by omega)), fr₁, fun h => by rw [e07]; exact h, i01, i05,
+      (by omega) (by omega)), fr₁, fun h => by rwa [e07], i01, i05,
       by rw [i00]; omega, fun _ => i04, fun h => by omega, fun t' h => by omega,
       fun h => by omega⟩, by rw [i09, i04, i00]; simp⟩
   have hμ₁ : lmuAt Cα (Qof E.P) Nα r (2 * Cα.m + 7) c₁ = lmu Cα (Qof E.P) Nα r (2 * Cα.m + 7) := by
     unfold lmuAt lmu; rw [i04, i00, Finset.range_eq_Ico]; simp
-  have k0 := k0_of hE hI₁
   refine (FRS.while (a := 81011) (b := 81109) (body := leafBody E.sT) (LInv E c Cα Nα r g g' L)
     (lmuAt Cα (Qof E.P) Nα r (2 * Cα.m + 7)) (lbK E) (fun d hd hgd => ?_)
     (fun d hId hd hgd hroomd => leaf_body hE hB hBT hP hR' hr hrn hnW h2α hWa hId hd hgd hroomd)

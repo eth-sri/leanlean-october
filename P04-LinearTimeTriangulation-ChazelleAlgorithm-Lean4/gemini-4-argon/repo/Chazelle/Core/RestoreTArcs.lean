@@ -80,8 +80,7 @@ theorem storeRec_exec (c : Config) (hw : WordsBounded W c) {a : ℕ} (hA : c.nre
   · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hA', h23,
       ALLOC]
   · simp (disch := omega) only [Machine.upd_other, hA', h23, ALLOC]
-  · have hr' : r ≠ 9999 := hr
-    simp (disch := omega) only [Machine.upd_other]
+  · simp (disch := omega) only [Machine.upd_other]
 
 /-- **Storing a record** as a run step. -/
 theorem storeRec_rs (hI : TInv W c₀ c) (hroom : c.nreg ALLOC + 8 ≤ W) :
@@ -178,7 +177,6 @@ theorem arcAt_upd4 {m : ℕ → ℕ} {base t j : ℕ} {v0 v1 v2 v3 : ℕ} (hj : 
     ShotList.arcAt (upd (upd (upd (upd m (base + 4 * t) v0) (base + 4 * t + 1) v1)
       (base + 4 * t + 2) v2) (base + 4 * t + 3) v3) base j = ShotList.arcAt m base j := by
   simp only [ShotList.arcAt, upd]
-  have h1 : ∀ i, i < 4 → base + 4 * j + i ≠ base + 4 * t := fun i hi => by omega
   rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega),
     ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega),
     ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega),
@@ -200,11 +198,11 @@ theorem buildBody_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) 
     RS P W c₀ buildBody c bodyK (fun c' => BuildI M (Qof P) N (c₀.nreg 83002) K base cB c' ∧
       c'.nreg 83030 = c.nreg 83030 + 1) := by
   obtain ⟨h31, h81, htK, hA, hrec, hag⟩ := hB
-  set t := c.nreg 83030 with ht
+  set t := c.nreg 83030
   set r := c₀.nreg 83002
   have htl : t < (N.region r).arcs.length := by rw [← hK]; omega
   obtain ⟨hjl, -⟩ := arcAt_lt hE htl
-  set j := arcAt N r t with hj
+  set j := arcAt N r t
   have hQn : (Qof P).n = P.n := shear_n _ _
   obtain ⟨hps, hpe⟩ : ProperPos M (Qof P) (Qof P).n (N.arc j).s ∧
       ProperPos M (Qof P) (Qof P).n (N.arc j).e := by
@@ -250,8 +248,8 @@ theorem buildBody_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) 
   have ps : (⟨c₅.nreg 83060, c₅.nreg 83061⟩ : WPos) = (N.arc j).s := by rw [v60, v61]
   refine RS.seq (RS.keepA (wr_notA_tNorm (by unfold ALLOC; omega)) (tNorm_rs (s := 83060)
     ⟨sc _ (by simp [buildL]), sc _ (by simp [buildL]), sc _ (by simp [buildL]),
-      sc _ (by simp [buildL]), sc _ (by simp [buildL])⟩ hE hI₅ (by rw [ps]; exact hps)
-    (by rw [v60]; exact gs.1) (by rw [ps]; exact ys) (by rw [A15]; omega)))
+      sc _ (by simp [buildL]), sc _ (by simp [buildL])⟩ hE hI₅ (by rwa [ps])
+    (by rw [v60]; exact gs.1) (by rwa [ps]) (by rw [A15]; omega)))
     fun c₆ hI₆ hA₆ ⟨⟨n60, n6, a₆⟩, m₆, al₆⟩ => ?_
   have k6 : ∀ q, 80000 ≤ q → q < 90000 → q ≠ 83061 → q ≠ 83062 → q ≠ 83063 → q ≠ 83064 →
       c₆.nreg q = c₅.nreg q := fun q h1 h2 h3 h4 h5 h6 => a₆ q h1 h2 (by simp; omega)
@@ -260,9 +258,9 @@ theorem buildBody_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) 
       k6 83071 (by norm_num) (by norm_num) (by omega) (by omega) (by omega) (by omega), v70, v71]
   refine RS.seq (RS.keepA (wr_notA_tNorm (by unfold ALLOC; omega)) (tNorm_rs (s := 83070)
     ⟨sc _ (by simp [buildL]), sc _ (by simp [buildL]), sc _ (by simp [buildL]),
-      sc _ (by simp [buildL]), sc _ (by simp [buildL])⟩ hE hI₆ (by rw [pe]; exact hpe)
+      sc _ (by simp [buildL]), sc _ (by simp [buildL])⟩ hE hI₆ (by rwa [pe])
     (by rw [k6 83070 (by norm_num) (by norm_num) (by omega) (by omega) (by omega) (by omega),
-      v70]; exact ge.1) (by rw [pe]; exact ye)
+      v70]; exact ge.1) (by rwa [pe])
       (by rw [al₆, A15]; omega)))
     fun c₇ hI₇ hA₇ ⟨⟨n70, n7, a₇⟩, m₇, al₇⟩ => ?_
   have k7 : ∀ q, 80000 ≤ q → q < 90000 → q ≠ 83071 → q ≠ 83072 → q ≠ 83073 → q ≠ 83074 →
@@ -329,7 +327,7 @@ theorem arcBuild_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) (
         ShotList.arcAt c'.nmem (c.nreg ALLOC) j = nArc M (Qof P) N (c₀.nreg 83002) j) ∧
       Agr c c' (83031 :: 83081 :: 50210 :: buildL)) := by
   set K := (N.region (c₀.nreg 83002)).arcs.length with hKd
-  set base := c.nreg ALLOC with hbase
+  set base := c.nreg ALLOC
   have sc : ∀ q, q ∈ buildL → Scr q := by
     intro q hq; simp only [buildL, List.mem_cons, List.not_mem_nil, or_false] at hq
     unfold Scr; omega

@@ -137,7 +137,7 @@ theorem restR_exec (c : Config) (hw : WordsBounded W c) :
 
 theorem bitO_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) :
     ∃ c' k, Exec P W bitO c c' k ∧ k ≤ 4 ∧ c'.nreg 190001 ≤ 1 ∧
-      (c'.nreg 190001 = 1 ↔ 0 < c.rreg 100) ∧ c'.rreg 100 = c.rreg 100 ∧
+      (c'.nreg 190001 = 1 ↔ 0 < c.rreg 100) ∧
       FrameM Bbit c c' ∧ c'.nmem = c.nmem := by
   obtain ⟨c', k, e, hk, h1, h2, h3, hm⟩ : ∃ c' k, Exec P W bitO c c' k ∧ k ≤ 4 ∧
       c'.nreg 190001 ≤ 1 ∧ (c'.nreg 190001 = 1 ↔ 0 < c.rreg 100) ∧ c'.rreg 100 = c.rreg 100 ∧
@@ -155,7 +155,7 @@ theorem bitO_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) :
       refine spec_skip ‹WordsBounded _ _› ?_
       refine ⟨by omega, by config_simp; omega, by config_simp; simp [h],
         by config_simp, rfl⟩
-  exact ⟨c', k, e, hk, h1, h2, h3, exec_frameM e wrM_bitO, hm⟩
+  exact ⟨c', k, e, hk, h1, h2, exec_frameM e wrM_bitO, hm⟩
 
 /-- **The `LeftInside` bit.** -/
 theorem orientT_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : WordsBounded W c) :
@@ -167,13 +167,13 @@ theorem orientT_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wo
   obtain ⟨c₁, k₁, e₁, hk₁, s2, F₁, nr₁, m₁⟩ := saveR_exec (P := P) c₀ e₀.wb_right
   obtain ⟨c₂, k₂, e₂, hk₂, ho, f2n, f2r, m₂, rm₂, o₂⟩ :=
     Final.orientStmt_exec (shearRel_Qof hG.2) hQ c₁ e₁.wb_right (by omega)
-  obtain ⟨c₃, k₃, e₃, hk₃, b1, b2, b3, F₃, m₃⟩ := bitO_exec (P := P) c₂ e₂.wb_right (by omega)
+  obtain ⟨c₃, k₃, e₃, hk₃, b1, b2, F₃, m₃⟩ := bitO_exec (P := P) c₂ e₂.wb_right (by omega)
   obtain ⟨c₄, k₄, e₄, hk₄, r1, F₄, rr₄, m₄⟩ := restN_exec (P := P) c₃ e₃.wb_right
   obtain ⟨c₅, k₅, e₅, hk₅, r2, F₅, nr₅, m₅⟩ := restR_exec (P := P) c₄ e₄.wb_right
   refine ⟨c₅, k₀ + (k₁ + (k₂ + (k₃ + (k₄ + k₅)))),
     .seq e₀ (.seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))), by omega, ?_, ?_,
     ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_⟩, by rw [m₅, m₄, m₃, m₂, m₁, m₀]⟩
-  · rw [nr₅, F₄.1 _ (by decide)]; exact b1
+  · rwa [nr₅, F₄.1 _ (by decide)]
   · rw [nr₅, F₄.1 _ (by decide), b2, ho]
     unfold Mountain.orient
     split_ifs with h <;> simp [h]

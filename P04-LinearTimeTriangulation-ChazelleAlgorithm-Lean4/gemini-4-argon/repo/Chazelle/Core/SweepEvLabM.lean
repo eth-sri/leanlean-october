@@ -52,8 +52,8 @@ theorem evSideLab_fused (hP : J.P.Simple) {Q : Polygon} {N : NF}
     (hfree : FreeAt J.whole a σ) :
     EvSideLab J (N.F (chainModel J.right) Q)
       (labSet J Q N 2 (N.chord k).up (N.chord k).dn 0 0) (Merge.shoot J.whole a σ) := by
-  set S₂ := N.F (chainModel J.right) Q with hS₂d
-  set ch := (N.chord k).toSet (chainModel J.right) Q with hch
+  set S₂ := N.F (chainModel J.right) Q
+  set ch := (N.chord k).toSet (chainModel J.right) Q
   have hS₂ : (chainModel J.right).ChordFamily Q S₂ := hN.1
   have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
   have hS₂f : S₂.Finite := hS₂.1
@@ -69,10 +69,10 @@ theorem evSideLab_fused (hP : J.P.Simple) {Q : Polygon} {N : NF}
   have haD : a ∉ J.whole.dom := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.right_set_subset haR)
   obtain ⟨pB, tB, hB, hpt⟩ := endpoint_attach hM hadm (origin_mem J) haD
-  have hoff := off_right_pt J hP hS₂a hS₂f hB.1 hB.2.1 hB.2.2.1 (by rw [hpt]; exact haR)
-    (by rw [hpt]; exact hav)
+  have hoff := off_right_pt J hP hS₂a hS₂f hB.1 hB.2.1 hB.2.2.1 (by rwa [hpt])
+    (by rwa [hpt])
   have hns : tB = 0 → sidePt (chainModel J.whole).W pB tB ≠ J.right.top := fun _ => by
-    rw [hpt]; exact hat
+    rwa [hpt]
   obtain ⟨hup, hdn⟩ := sideOf_rec hN hk
   obtain ⟨hreg, -⟩ := regOf_spec hN
   obtain ⟨hup', hdn', -⟩ := (regOf_spec hN).2.1 k hk

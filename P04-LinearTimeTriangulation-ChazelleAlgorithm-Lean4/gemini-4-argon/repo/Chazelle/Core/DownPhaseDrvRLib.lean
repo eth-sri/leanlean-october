@@ -42,7 +42,7 @@ theorem forLoop {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (Kb 
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_⟩
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwa [h1, h2]) e₁ e₂, hI', ?_⟩
     rw [Nat.mul_succ]
     omega
 
@@ -65,7 +65,7 @@ theorem forLoopSum {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_⟩
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwa [h1, h2]) e₁ e₂, hI', ?_⟩
     rw [Finset.sum_eq_sum_Ico_succ_bot hlt]
     omega
 

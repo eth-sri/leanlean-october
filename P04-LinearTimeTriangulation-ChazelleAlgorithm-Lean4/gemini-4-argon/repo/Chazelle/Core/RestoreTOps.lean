@@ -83,7 +83,7 @@ theorem TGood.arcPosG (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty)
     have : ((N.arc j).e.edge : ℝ) < M.W.n := by
       have := he.1; unfold Model.key at hn'; linarith
     exact_mod_cast this
-  refine ⟨⟨e1, by rw [← hQ]; exact hs, fun C hM => ?_⟩, ⟨e2, by rw [← hQ]; exact he, fun C hM => ?_⟩⟩
+  refine ⟨⟨e1, by rwa [← hQ], fun C hM => ?_⟩, ⟨e2, by rwa [← hQ], fun C hM => ?_⟩⟩
   all_goals
     obtain ⟨C', hsC, hM'⟩ := hE.chain_simple hM
     have hNF := hE.hNF

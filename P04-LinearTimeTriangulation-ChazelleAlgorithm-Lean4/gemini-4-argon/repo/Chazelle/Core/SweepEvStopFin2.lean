@@ -93,7 +93,6 @@ def slfEmit (pe ph dc : ℕ) : Stmt :=
 
 theorem slfAddrL_val (m f : ℕ → ℕ) :
     regB m slfAddrL f slfX = f gRB + 11 * f gRC ∧ ∀ q, q ≠ slfX → regB m slfAddrL f q = f q := by
-  have hB : gRB ≠ slfX := by unfold gRB slfX sw; omega
   have hC : gRC ≠ slfX := by unfold gRC slfX sw; omega
   refine ⟨?_, fun q hq => regB_other _ _ _ (fun i hi => by
     simp only [slfAddrL, List.mem_cons, List.not_mem_nil, or_false] at hi
@@ -115,10 +114,8 @@ theorem slfEmit_irs {pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slfX) (hd
       c'.nreg gRC = c.nreg gRC + 1 ∧ (∀ r, r ≠ slfX → r ≠ gRC → c'.nreg r = c.nreg r)) := by
   have hsX : IScr slfX := iscr_sw' (by norm_num) (by norm_num)
   have hsC : IScr gRC := iscr_sw' (by norm_num) (by norm_num)
-  have hB : gRB ≠ slfX := by unfold gRB slfX sw; omega
   have hC : gRC ≠ slfX := by unfold gRC slfX sw; omega
   have hK1X : K1 ≠ slfX := by unfold K1 slfX sw; omega
-  have hK1C : K1 ≠ gRC := by unfold K1 gRC sw; omega
   have hok : okB W c.nmem slfAddrL c.nreg := by
     simp only [slfAddrL, okB, okI, regI, upd_same, upd_other _ _ _ hC]
     refine ⟨hsX, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩,
@@ -127,7 +124,7 @@ theorem slfEmit_irs {pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slfX) (hd
   obtain ⟨va, vo⟩ := slfAddrL_val c.nmem c.nreg
   refine IRS.seq (K₁ := 12) (K₂ := 2 * 11 + 1) (IRS.block slfAddrL hI hok) ?_
   rintro c₁ hI₁ - - hc1
-  have a1 : c₁.nreg slfX = c.nreg gRB + 11 * c.nreg gRC := by rw [hc1]; exact va
+  have a1 : c₁.nreg slfX = c.nreg gRB + 11 * c.nreg gRC := by rwa [hc1]
   have o1 : ∀ q, q ≠ slfX → c₁.nreg q = c.nreg q := fun q hq => by rw [hc1]; exact vo q hq
   have m1 : c₁.nmem = c.nmem := by rw [hc1]
   have hws : ∀ v ∈ slfWords pe ph dc, v ≠ slfX := by
@@ -136,11 +133,11 @@ theorem slfEmit_irs {pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slfX) (hd
     rcases hv with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
     all_goals first | assumption | (simp only [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfX, sw]; omega)
   refine IRS.seq (K₁ := 2 * 11) (K₂ := 1) (slfStSeq_irs hsX hK1X (slfWords pe ph dc) hI₁
-    (by rw [o1 _ hK1X]; exact hk1) hws (by rw [a1]; omega)
+    (by rwa [o1 _ hK1X]) hws (by rw [a1]; omega)
     (by rw [a1]; simp only [slfWords, List.length_cons, List.length_nil]; omega)) ?_
   rintro c₂ hI₂ - - ⟨s1, s2, s3, s4⟩
   have c2C : c₂.nreg gRC = c.nreg gRC := by rw [s3 _ hC, o1 _ hC]
-  have c2K : c₂.nreg K1 = 1 := by rw [s3 _ hK1X, o1 _ hK1X]; exact hk1
+  have c2K : c₂.nreg K1 = 1 := by rwa [s3 _ hK1X, o1 _ hK1X]
   refine (IRS.block [.addN gRC gRC K1] hI₂ ⟨⟨hsC, by rw [c2C, c2K]; omega⟩, trivial⟩).mono
     (by simp) ?_
   rintro c₃ hc3

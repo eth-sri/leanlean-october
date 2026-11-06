@@ -89,10 +89,7 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
       (c₁.nreg 50000 = V.MD ∧ c₁.nreg 50001 = V.NB ∧ c₁.nreg 50002 = c.nreg rP ∧
         c₁.nreg 50003 = V.hz + 1 ∧ (∀ r, r < 50000 ∨ 50003 < r → c₁.nreg r = c.nreg r) ∧
         c₁.nmem = c.nmem) := by
-    have q40 := hq.MD
-    have q14 := hq.NB
     have q23 := hq.hz
-    have q11 := hq.one
     exec_block
     · config_simp; rw [hq.hz, hq.one]; omega
     · refine ⟨rfl, by config_simp; exact hq.MD, by config_simp; exact hq.NB, ?_, ?_,
@@ -105,9 +102,9 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   -- 2. double identification
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hp₂, hloc1, hloc2⟩ := myLoc_exec hcov (P := P) (W := W) (c := c₁)
     e₁.wb_right ⟨hG, by omega, by rw [x50000]; exact hL.md_le, by rw [x50000, hm₁]; exact hL.chwf,
-      M, by rw [x50000, hm₁]; exact hL.md, by rw [x50002]; exact hwn⟩ hG (by omega)
+      M, by rw [x50000, hm₁]; exact hL.md, by rwa [x50002]⟩ hG (by omega)
     (by rw [x50000, hm₁]; exact hL.md) hL.good (by rw [x50001, hm₁]; exact hL.nf) hL.isNF
-    (by rw [x50002, x50003]; exact hx) hL.st hq₁.TB hq₁.L hq₁.zero hq₁.one
+    (by rwa [x50002, x50003]) hL.st hq₁.TB hq₁.L hq₁.zero hq₁.one
     (fun j hj => by rw [hm₁]; exact hL.tab j hj) (by rw [← hL.A]; exact hL.A_lt)
     (by rw [x50001]; exact hL.NB_le) (by rw [x50001, hm₁, ← hL.A]; exact hL.AB_le)
     (by rw [x50001, hm₁, ← hL.A]; exact hL.SB_le) hL.TB_le
@@ -118,15 +115,14 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   have m₂ : c₂.nmem = c.nmem := f₂.2.2.1.trans hm₁
   obtain ⟨p, hp⟩ : ∃ p, c₂.nreg 120170 = p := ⟨_, rfl⟩
   rw [hp] at hp₂ hloc1 hloc2
-  have hpA : p < V.A := by rw [hL.A]; exact hp₂
+  have hpA : p < V.A := by rwa [hL.A]
   have hpμ : p < V.μ := by have := hL.A_le; omega
   have hBL5 : ∀ r, (r = 120050 ∨ r = 120051 ∨ r = 120052) → BL r = false := fun r hr => by
     rcases hr with rfl | rfl | rfl <;> decide
   have hb₂ : BestOK P.n V.s V.m c₂ := by
     unfold BestOK
-    rw [f₂.1 _ (hBL5 _ (by simp)), f₂.1 _ (hBL5 _ (by simp)), f₂.1 _ (hBL5 _ (by simp)),
+    rwa [f₂.1 _ (hBL5 _ (by simp)), f₂.1 _ (hBL5 _ (by simp)), f₂.1 _ (hBL5 _ (by simp)),
       r₁ _ (by omega), r₁ _ (by omega), r₁ _ (by omega)]
-    exact hb
   have hbo₂ : bestOf c₂ = bestOf c := by
     unfold bestOf
     rw [f₂.1 _ (hBL5 _ (by simp)), f₂.1 _ (hBL5 _ (by simp)), r₁ _ (by omega), r₁ _ (by omega)]
@@ -137,12 +133,12 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   have hm₃ : c₃.nmem = c.nmem := by
     rw [← m₂]; exact (exec_frameB e₃ (B := fun r => decide (r = 120110)) (by decide)).2.2.1
   have hb₃ : BestOK P.n V.s V.m c₃ := by
-    unfold BestOK; rw [r₃ 120050 (by decide), r₃ 120051 (by decide), r₃ 120052 (by decide)]; exact hb₂
+    unfold BestOK; rwa [r₃ 120050 (by decide), r₃ 120051 (by decide), r₃ 120052 (by decide)]
   have hbo₃ : bestOf c₃ = bestOf c := by
-    unfold bestOf; rw [r₃ 120050 (by decide), r₃ 120052 (by decide)]; exact hbo₂
+    unfold bestOf; rwa [r₃ 120050 (by decide), r₃ 120052 (by decide)]
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, hb₄, hit₄⟩ := clusS_exec (P := P) hG hW hs c₃ e₃.wb_right hq₃ hb₃
-    (by rw [hm₃]; exact hm) (by rw [hm₃]; exact hO) (by rw [v₃]; exact hpμ) (NC := NC)
-    (fun u hu => by rw [hm₃]; exact hNC u hu) (S := S) (by rw [hbo₃]; exact hS)
+    (by rwa [hm₃]) (by rwa [hm₃]) (by rwa [v₃]) (NC := NC)
+    (fun u hu => by rw [hm₃]; exact hNC u hu) (S := S) (by rwa [hbo₃])
   rw [v₃, hm₃] at hk₄ hit₄
   have hq₄ : QConst P V c₄ := hq₃.frame f₄ BC_const
   have hm₄ : c₄.nmem = c.nmem := f₄.2.2.1.trans hm₃
@@ -166,15 +162,15 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     obtain ⟨q110, q186, qr, qm, qrr, qrm, qo⟩ := q
     have hqA : d₁.nreg 120030 = V.A := (qr _ (by decide) (by decide)).trans hq₄.A
     by_cases hs1 : p + 1 < V.A
-    · refine ⟨d₁, _, .seq e₁' (.ifLtN_true (by rw [q110, hqA]; exact hs1) (.skip e₁'.wb_right)),
+    · refine ⟨d₁, _, .seq e₁' (.ifLtN_true (by rwa [q110, hqA]) (.skip e₁'.wb_right)),
         by omega, ?_, q186, qr, qm, qrr, qrm, qo⟩
       rw [q110]; unfold succP; rw [ite_eq_left hs1]
     · obtain ⟨d₂, e₂', v₂', r₂'⟩ := const_exec (P := P) e₁'.wb_right 120110 0 (by omega)
       have f₂' := exec_frameB e₂' (B := fun r => decide (r = 120110)) (by decide)
-      refine ⟨d₂, _, .seq e₁' (.ifLtN_false (by rw [q110, hqA]; exact hs1) e₂'), by omega, ?_,
-        by rw [r₂' _ (by decide)]; exact q186, fun r h1 h2 => by rw [r₂' r h1]; exact qr r h1 h2,
-        f₂'.2.2.1.trans qm, by rw [show d₂.rreg = d₁.rreg from funext fun r =>
-          exec_rframe e₂' (B := fun _ => false) (by decide) r rfl]; exact qrr,
+      refine ⟨d₂, _, .seq e₁' (.ifLtN_false (by rwa [q110, hqA]) e₂'), by omega, ?_,
+        by rwa [r₂' _ (by decide)], fun r h1 h2 => by rw [r₂' r h1]; exact qr r h1 h2,
+        f₂'.2.2.1.trans qm, by rwa [show d₂.rreg = d₁.rreg from funext fun r =>
+          exec_rframe e₂' (B := fun _ => false) (by decide) r rfl],
         f₂'.2.2.2.1.trans qrm, f₂'.2.2.2.2.trans qo⟩
       rw [v₂']; unfold succP; rw [ite_eq_right hs1]
   obtain ⟨v110, v186, r₅, m₅, rr₅, rm₅, o₅⟩ := v₅
@@ -182,16 +178,15 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   have hm₅ : c₅.nmem = c.nmem := m₅.trans hm₄
   have hb₅ : BestOK P.n V.s V.m c₅ := by
     unfold BestOK
-    rw [r₅ 120050 (by decide) (by decide), r₅ 120051 (by decide) (by decide),
+    rwa [r₅ 120050 (by decide) (by decide), r₅ 120051 (by decide) (by decide),
       r₅ 120052 (by decide) (by decide)]
-    exact hb₄
   have hbo₅ : bestOf c₅ = bestOf c₄ := by
     unfold bestOf; rw [r₅ 120050 (by decide) (by decide), r₅ 120052 (by decide) (by decide)]
   have hsμ : succP V.A p < V.μ := by have := succP_lt hpA; have := hL.A_le; omega
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, hb₆, hit₆⟩ := clusS_exec (P := P) hG hW hs c₅ e₅.wb_right hq₅ hb₅
-    (by rw [hm₅]; exact hm) (by rw [hm₅]; exact hO) (by rw [v110]; exact hsμ) (NC := NC)
+    (by rwa [hm₅]) (by rwa [hm₅]) (by rwa [v110]) (NC := NC)
     (fun u hu => by rw [hm₅]; exact hNC u hu)
-    (S := S ∪ clusPts c.nmem V C (lab c.nmem V p)) (by rw [hbo₅]; exact hit₄)
+    (S := S ∪ clusPts c.nmem V C (lab c.nmem V p)) (by rwa [hbo₅])
   rw [v110, hm₅] at hk₆ hit₆
   have hq₆ : QConst P V c₆ := hq₅.frame f₆ BC_const
   have hm₆ : c₆.nmem = c.nmem := f₆.2.2.1.trans hm₅
@@ -203,26 +198,25 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
       c₇.nmem = c₆.nmem := by
     have w₆ := e₆.wb_right
     by_cases h0 : 0 < p
-    · refine ⟨_, _, .ifLtN_true (by rw [hq₆.zero, x186]; exact h0) (Exec.subN w₆ _ _ _), by omega,
+    · refine ⟨_, _, .ifLtN_true (by rwa [hq₆.zero, x186]) (Exec.subN w₆ _ _ _), by omega,
         ?_, fun r hr => by config_simp; upd_solve, rfl⟩
       config_simp; rw [x186, hq₆.one]; unfold predP; rw [ite_eq_right (by omega)]
-    · refine ⟨_, _, .ifLtN_false (by rw [hq₆.zero, x186]; exact h0) (Exec.subN w₆ _ _ _), by omega,
+    · refine ⟨_, _, .ifLtN_false (by rwa [hq₆.zero, x186]) (Exec.subN w₆ _ _ _), by omega,
         ?_, fun r hr => by config_simp; upd_solve, rfl⟩
       config_simp; rw [hq₆.A, hq₆.one]; unfold predP; rw [ite_eq_left (by omega)]
   have hq₇ : QConst P V c₇ := hq₆.congr fun r h1 h2 => r₇ r (by omega)
   have hm₇ : c₇.nmem = c.nmem := m₇.trans hm₆
   have hb₇ : BestOK P.n V.s V.m c₇ := by
     unfold BestOK
-    rw [r₇ 120050 (by decide), r₇ 120051 (by decide), r₇ 120052 (by decide)]
-    exact hb₆
+    rwa [r₇ 120050 (by decide), r₇ 120051 (by decide), r₇ 120052 (by decide)]
   have hbo₇ : bestOf c₇ = bestOf c₆ := by
     unfold bestOf; rw [r₇ 120050 (by decide), r₇ 120052 (by decide)]
   have hpμ' : predP V.A p < V.μ := by have := predP_lt hpA; have := hL.A_le; omega
   obtain ⟨c₈, k₈, e₈, hk₈, f₈, hb₈, hit₈⟩ := clusS_exec (P := P) hG hW hs c₇ e₇.wb_right hq₇ hb₇
-    (by rw [hm₇]; exact hm) (by rw [hm₇]; exact hO) (by rw [v₇]; exact hpμ') (NC := NC)
+    (by rwa [hm₇]) (by rwa [hm₇]) (by rwa [v₇]) (NC := NC)
     (fun u hu => by rw [hm₇]; exact hNC u hu)
     (S := S ∪ clusPts c.nmem V C (lab c.nmem V p) ∪ clusPts c.nmem V C (lab c.nmem V (succP V.A p)))
-    (by rw [hbo₇]; exact hit₆)
+    (by rwa [hbo₇])
   rw [v₇, hm₇] at hk₈ hit₈
   -- the frame
   have ex : Exec P W (candS rP) c c₈ (k₁ + (k₂ + (1 + (k₄ + (k₅ + (k₆ + (k₇ + k₈))))))) :=
@@ -259,8 +253,7 @@ theorem candS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
         (CS + 2) * (NC + 80) := Nat.mul_le_mul_right _ (by omega)
     omega
   · unfold clusPts3
-    rw [← Set.union_assoc, ← Set.union_assoc]
-    exact hit₈
+    rwa [← Set.union_assoc, ← Set.union_assoc]
 
 end
 

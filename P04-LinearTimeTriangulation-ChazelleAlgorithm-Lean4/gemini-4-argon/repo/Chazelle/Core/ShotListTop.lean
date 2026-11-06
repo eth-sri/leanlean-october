@@ -102,8 +102,7 @@ theorem holesFrom_eq (c : Config) (R : ℕ) (hk : ∀ ℓ, ℓ ≤ 3 → c.nreg 
   have h1 := hk 1 (by omega)
   have h2 := hk 2 (by omega)
   simp only [holesFrom, holeList, Nat.add_zero] at h0 ⊢
-  rw [show R + 30 + (0 + 1) = R + 30 + 1 by omega, show R + 30 + (0 + 1 + 1) = R + 30 + 2 by omega]
-  rw [h0, h1, h2]
+  rw [show R + 30 + (0 + 1) = R + 30 + 1 by omega, show R + 30 + (0 + 1 + 1) = R + 30 + 2 by omega, h0, h1, h2]
   rcases Nat.lt_or_ge (c.nreg (R + 9)) 1 with hH | hH
   · rw [ite_no _ _ (by omega), show min (c.nreg (R + 9)) 3 = 0 by omega]; rfl
   rcases Nat.lt_or_ge (c.nreg (R + 9)) 2 with hH2 | hH2

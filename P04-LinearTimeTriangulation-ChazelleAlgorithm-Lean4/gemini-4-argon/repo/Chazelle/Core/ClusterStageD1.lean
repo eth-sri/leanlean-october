@@ -94,7 +94,7 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (hG.rbase 42 (by omega)) hG.rμ hG.zero (by unfold FillRG; omega) (by unfold FillRG; omega)
     (by unfold FillRG; omega) (by omega) (by omega)
   have e2 := Exec.constN (P := P) hw1 130850 0 (by omega)
-  set c2 := { c1 with nreg := upd c1.nreg 130850 0 } with hc2
+  set c2 := { c1 with nreg := upd c1.nreg 130850 0 }
   have f2 : PFr StDRG (fun a => g.base 42 ≤ a ∧ a < g.base 42 + g.μ) c c2 :=
     (hf1.mono (fun r h => by unfold FillRG at h; unfold StDRG; omega) (fun a h => h)).trans
       ⟨fun r hr => by simp only [c2, Machine.upd_other _ _ _ (show r ≠ 130850 by
@@ -138,7 +138,7 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
           · config_simp; exact hi3
           · simp only; unfold BCRG at hr
             repeat (rw [Machine.upd_other _ _ _ (by omega)])
-      have r1' : c4.nreg 130001 = 1 := by rw [h4r _ (by unfold BCRG; omega)]; exact r1
+      have r1' : c4.nreg 130001 = 1 := by rwa [h4r _ (by unfold BCRG; omega)]
       obtain ⟨c5, k5, e5, hk5, hw5, hf5, hm5, h50'⟩ : ∃ c5 k5, Exec P W
           (.ifLtN 130853 130001 (block [.addN 130851 130065 130852, .loadN 130854 130851,
             .addN 130851 130072 130854, .loadN 130855 130851, .addN 130855 130855 130001,
@@ -151,9 +151,9 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
           have hh : hl (lev j) ≠ 1 := by omega
           have hbj : blk (lev j) < g.μ := hblt _ hlj hh
           have hbo : blkOf g.μ lev hl blk j = blk (lev j) := by unfold blkOf; rw [ite_eq_right hh]
-          have r65' : c4.nreg 130065 = g.base 35 := by rw [h4r _ (by unfold BCRG; omega)]; exact r65
-          have r72' : c4.nreg 130072 = g.base 42 := by rw [h4r _ (by unfold BCRG; omega)]; exact r72
-          have mb' : c4.nmem (g.base 35 + lev j) = blk (lev j) := by rw [hf4.2.2.2.2 _ id]; exact mb
+          have r65' : c4.nreg 130065 = g.base 35 := by rwa [h4r _ (by unfold BCRG; omega)]
+          have r72' : c4.nreg 130072 = g.base 42 := by rwa [h4r _ (by unfold BCRG; omega)]
+          have mb' : c4.nmem (g.base 35 + lev j) = blk (lev j) := by rwa [hf4.2.2.2.2 _ id]
           have mc : c4.nmem (g.base 42 + blk (lev j)) =
               cntBelow (blkOf g.μ lev hl blk) j (blk (lev j)) := by
             rw [hf4.2.2.2.2 _ id]; exact hm3 _ hbj
@@ -177,7 +177,7 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
                   simp only [hAm] at ha; omega)]
               · config_simp; rw [r72', r65', h52, mb', mc, r1']
               · config_simp; exact h50
-          refine ⟨c6, k6 + 1, .ifLtN_true (by rw [h53, r1']; exact hp) e6, by omega, hw6, hf6,
+          refine ⟨c6, k6 + 1, .ifLtN_true (by rwa [h53, r1']) e6, by omega, hw6, hf6,
             fun b hb => ?_, h50''⟩
           rw [hm6, Machine.upd_apply, cntBelow_succ, hbo]
           split_ifs with h1 h2 h2
@@ -188,7 +188,7 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
         · rw [h53, r1'] at hp
           have hh : hl (lev j) = 1 := by have := hhl1 _ hlj; omega
           have hbo : blkOf g.μ lev hl blk j = g.μ := by unfold blkOf; rw [ite_eq_left hh]
-          refine ⟨c4, 0 + 2, .ifLtN_false (by rw [h53, r1']; exact hp) (.skip hw4), by omega,
+          refine ⟨c4, 0 + 2, .ifLtN_false (by rwa [h53, r1']) (.skip hw4), by omega,
             hw4, PFr.refl c4, fun b hb => ?_, h50⟩
           rw [cntBelow_succ, hbo, ite_eq_right (by omega), Nat.add_zero, hf4.2.2.2.2 _ id]
           exact hm3 b hb
@@ -205,7 +205,7 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       · simp only [Machine.upd_same]
         rw [h50', hf5.1 _ (by unfold BCRG; omega), r1']
       · simp only [Machine.upd_other _ _ _ (show (130011 : ℕ) ≠ 130850 by omega)]
-        rw [hf5.1 _ (by unfold BCRG; omega), hf4.1 _ (by unfold BCRG; omega)]; exact hn3)
+        rwa [hf5.1 _ (by unfold BCRG; omega), hf4.1 _ (by unfold BCRG; omega)])
     (j₀ := 0) ⟨e2.wb_right, by simp [c2], hG2.rμ, f2, fun b hb => by
       rw [show c2.nmem = c1.nmem from rfl, hz1 b hb]; simp [cntBelow]⟩ (Nat.zero_le _)
   exact ⟨c', k1 + (1 + k), .seq x1 (.seq e2 e), by omega, hw', hf', hm'⟩

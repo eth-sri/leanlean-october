@@ -53,12 +53,12 @@ theorem MCtx.transport {C : Chain} {N : NF} {E md cd nf : ℕ} {c c' : Config}
   swap
   · rw [hm0] at h1; omega
   obtain ⟨w1, w2, w3⟩ := ShotList.modelDesc_keep hmwf hm0 hC' hm hA
-  refine ⟨hctx.transport rCD hm hA, by rw [rCD, rMD]; exact hcd,
-    by rw [rMD]; exact Or.inl ⟨w2, H, C', w3, hMC⟩, by rw [rMD]; exact w1, by rw [rMD]; exact w2,
+  refine ⟨hctx.transport rCD hm hA, by rwa [rCD, rMD],
+    by rw [rMD]; exact Or.inl ⟨w2, H, C', w3, hMC⟩, by rwa [rMD], by rwa [rMD],
     by rw [rNF]; exact hNW.transport fun b hb => hm b (by omega), le_trans hE hA,
     fun j hj => by
       rw [rTL] at hj; rw [rTB, hm _ (by omega)]; exact htab j hj,
-    by rw [rTL]; exact hbig, by rw [rTB]; exact hTB, by rw [rTB, rTL]; omega⟩
+    by rwa [rTL], by rwa [rTB], by rw [rTB, rTL]; omega⟩
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {J : Merge.Junction} {N₁ N₂ : NF}
@@ -169,12 +169,12 @@ theorem md2Init_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
       by_contra h'; exact hr (by
         unfold ioBands sweepBands; rw [band_sw h.1 h.2]; decide)) h.2))
     exact hreg' r hra (by omega) (by omega) (by omega) (by omega)
-  · refine ⟨⟨hG, hWh, ?_, ⟨H, ?_, hreg⟩, hPs, hWm⟩, by rw [a3', a2'], by rw [a2']; exact hMD,
-      by rw [a2']; exact hMWF, by rw [a2']; exact m0', by rw [h4]; exact E.hNT₂.transport (fun b hb =>
+  · refine ⟨⟨hG, hWh, ?_, ⟨H, ?_, hreg⟩, hPs, hWm⟩, by rw [a3', a2'], by rwa [a2'],
+      by rwa [a2'], by rwa [a2'], by rw [h4]; exact E.hNT₂.transport (fun b hb =>
         hmem b (by omega)), by have := hI.hA; omega, fun j hj => ?_, by rw [hTLR]; exact E.hbig₂,
       by rw [hTBR], by rw [hTBR, hTLR]; have := hI.hA; omega⟩
     · rw [a3']; exact hMWF.2 m0'
-    · rw [a3']; exact hCD
+    · rwa [a3']
     · rw [hTLR] at hj; rw [hTBR, hmem _ (by omega)]; exact E.htab j hj
   · unfold MD2W gMD2 gCD2 gTP gTV sw at hr
     exact hreg' r hra (by omega) (by omega) (by omega) (by omega)

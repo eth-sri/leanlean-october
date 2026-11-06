@@ -76,7 +76,7 @@ theorem oSym_spec (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) {o : Origin}
     · exact hbd hin
   | walk x =>
     obtain ⟨e, h⟩ := x
-    have he : e < Q.n := by have := hol.1; rw [mi_n] at this; exact this
+    have he : e < Q.n := by have := hol.1; rwa [mi_n] at this
     cases h with
     | zero =>
       have hv : Origin.eval (interiorModel Q) Q (.walk ⟨e, 0⟩) = Q.vtx (iv Q e) := by
@@ -109,7 +109,7 @@ theorem oSym_spec (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) {o : Origin}
         · left; rfl
         · right
           rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h3 | h3
-          · rw [Nat.mod_eq_of_lt h3]; rw [Nat.mod_eq_of_lt (by omega)]; omega
+          · rw [Nat.mod_eq_of_lt h3, Nat.mod_eq_of_lt (by omega)]; omega
           · rw [h3, Nat.mod_self, show Q.n - 1 - 0 + 1 = Q.n by omega, Nat.mod_self]; omega
       have hpos := ShootCut.pos_eq_onEdge (interiorModel Q) hD (by omega) (p := e) (h := h)
         (sp₁ := .vtx (iv Q e)) (sp₂ := .vtx (iv Q ((e + 1) % Q.n))) (mi_wa he) (mi_wb he)
@@ -353,7 +353,7 @@ theorem originI_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
     have k7' : c.nreg 170007 = hh := k7
     have hk : ¬ c.nreg 170005 < c.nreg 170018 := by rw [k2, h18]; omega
     refine spec_ifLtN_false hk ?_
-    have he : e < P.n := by have := hol.1; rw [mi_n, hQ] at this; exact this
+    have he : e < P.n := by have := hol.1; rwa [mi_n, hQ] at this
     have hhn : hh ≤ P.n := hol.2
     cases hh with
     | zero =>

@@ -265,13 +265,13 @@ theorem pHead_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : hostWords P.n 
     config_simp
     rw [hX]
     refine ⟨rfl, hs', ?_, ?_, ?_⟩
-    · rw [show X + 1 + 1 = X + 2 by ring]; exact hm'
-    · rw [show X + 1 + 1 + 1 = X + 3 by ring]; exact hT'
+    · rwa [show X + 1 + 1 = X + 2 by ring]
+    · rwa [show X + 1 + 1 + 1 = X + 3 by ring]
     · rw [show X + 1 + 1 + 1 + 1 = X + 4 by ring]
   obtain ⟨q32, q60, q52, q53, q54, q55, q81, q82, q83, q84, q85, qm⟩ := q
   have w₁ := e₁.wb_right
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, n63, E₂⟩ := cnt_exec (P := P) (n := P.n) c₁ w₁
-    (by rw [qm]; exact hHost) q60 haW (by omega)
+    (by rwa [qm]) q60 haW (by omega)
   have w₂ := e₂.wb_right
   have e₃ := Exec.copyN (P := P) w₂ 50087 50063
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50087 (c₂.nreg 50063) } with hc₃
@@ -287,14 +287,14 @@ theorem pHead_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : hostWords P.n 
     by rw [r3 _ (by decide)]; exact E₂.h67, by rw [r3 _ (by decide)]; exact E₂.h68,
     by rw [r3 _ (by decide)]; exact E₂.h69, rfl⟩, ?_, hwf, ?_, hNW, hP,
     ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, by rw [hc₃]; simp [n63],
-    by rw [← hNlen]; exact hs, hG, hn, hlen⟩
-  · rw [h60, m₃]; exact hHost
-  · rw [h60]; exact haW
+    by rwa [← hNlen], hG, hn, hlen⟩
+  · rwa [h60, m₃]
+  · rwa [h60]
   · rw [r3' _ (by decide) (by decide), q32]
   · rw [r3' _ (by decide) (by decide), q52]
   · rw [r3' _ (by decide) (by decide), q53]
   · rw [r3' _ (by decide) (by decide), q54]
-  · rw [r3' _ (by decide) (by decide), q55]; exact hb'
+  · rwa [r3' _ (by decide) (by decide), q55]
   · rw [r3' _ (by decide) (by decide), q81]
   · rw [r3' _ (by decide) (by decide), q82]
   · rw [r3' _ (by decide) (by decide), q83]
@@ -342,7 +342,6 @@ theorem tvIdx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have hw := hE.wb
   have hm1 := C.one_le
   have hmN : C.m < (H.pts P.n).length := by rw [← hE.n_eq]; exact C.m_lt
-  have hT := C.topIdx_le
   set m := C.m
   set T := C.topIdx
   set S := C.sideS C.sideBeta with hSdef
@@ -368,20 +367,20 @@ theorem tvIdx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
         cases hβ : C.sideBeta
         · rfl
         · exact absurd (hb.2 hβ) (by omega)
-      refine spec_ifLtN_true (by rw [b55, b32]; exact h0)
+      refine spec_ifLtN_true (by rwa [b55, b32])
         (spec_instr (Exec.subN w₁ _ _ _) fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [q58, b54, hSdef]; unfold Chain.sideS; rw [hβ]; rfl
-    · refine spec_ifLtN_false (by rw [b55, b32]; exact h0) ?_
+    · refine spec_ifLtN_false (by rwa [b55, b32]) ?_
       by_cases h2 : 1 < c.nreg 50055
       · have hβ : C.sideBeta = false := by
           cases hβ : C.sideBeta
           · rfl
           · exact absurd (hb.2 hβ) (by omega)
-        refine spec_ifLtN_true (by rw [b55, b32]; exact h2)
+        refine spec_ifLtN_true (by rwa [b55, b32])
           (spec_instr (Exec.subN w₁ _ _ _) fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
         config_simp; rw [q58, b54, hSdef]; unfold Chain.sideS; rw [hβ]; rfl
       · have hβ : C.sideBeta = true := hb.1 (by omega)
-        refine spec_ifLtN_false (by rw [b55, b32]; exact h2)
+        refine spec_ifLtN_false (by rwa [b55, b32])
           (spec_instr (Exec.copyN w₁ _ _) fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
         config_simp; rw [b54, hSdef]; unfold Chain.sideS; rw [hβ]; rfl
   have w₂ := e₂.wb_right
@@ -400,11 +399,11 @@ theorem tvIdx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       k₄ ≤ 3 ∧ c₄.nreg 50077 = (if i < 2 * m - S then S + i else i - (2 * m - S)) ∧
       ∀ r, r ≠ 50077 → c₄.nreg r = c₃.nreg r := by
     by_cases hc : i < 2 * m - S
-    · refine spec_ifLtN_true (by rw [t120, t89]; exact hc) (spec_instr (Exec.addN w₃ _ _ _
+    · refine spec_ifLtN_true (by rwa [t120, t89]) (spec_instr (Exec.addN w₃ _ _ _
         (by rw [t59, t120]; have := hE.NW; omega)) fun _ =>
           ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [t59, t120, ite_eq_left hc]
-    · refine spec_ifLtN_false (by rw [t120, t89]; exact hc) (spec_instr (Exec.subN w₃ _ _ _)
+    · refine spec_ifLtN_false (by rwa [t120, t89]) (spec_instr (Exec.subN w₃ _ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [t89, t120, ite_eq_right hc]
   have w₄ := e₄.wb_right
@@ -418,10 +417,10 @@ theorem tvIdx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       k₅ ≤ 3 ∧ c₅.nreg 50091 = sideE m j ∧ ∀ r, r ≠ 50091 → c₅.nreg r = c₄.nreg r := by
     rw [sideE_eq]
     by_cases hc : m < j
-    · refine spec_ifLtN_true (by rw [u53, j4]; exact hc) (spec_instr (Exec.subN w₄ _ _ _)
+    · refine spec_ifLtN_true (by rwa [u53, j4]) (spec_instr (Exec.subN w₄ _ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [u58, j4, ite_eq_left hc]
-    · refine spec_ifLtN_false (by rw [u53, j4]; exact hc) (spec_instr (Exec.copyN w₄ _ _)
+    · refine spec_ifLtN_false (by rwa [u53, j4]) (spec_instr (Exec.copyN w₄ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [j4, ite_eq_right hc]
   have ex : Exec P W tvIdx c c₅ (1 + (k₂ + (1 + (k₄ + k₅)))) :=
@@ -482,8 +481,7 @@ theorem tvLoad_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       (h3 (dst + 2, 50048) (by simp))
   · exact hostWF_pts hE.wf (by have := hE.hG.1.1; omega) _ (List.mem_of_getElem? hsp)
   · rw [walk_vtx_tour C hi, chain_vertex_host C hE.hP _ (sp := sp)]
-    rw [show (Qof P).n = P.n from shear_n _ _, hE.n_eq]
-    exact hsp
+    rwa [show (Qof P).n = P.n from shear_n _ _, hE.n_eq]
   · exact hsp
 
 end

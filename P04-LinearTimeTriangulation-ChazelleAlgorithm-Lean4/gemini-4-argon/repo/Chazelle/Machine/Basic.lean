@@ -80,7 +80,6 @@ end step
 section run
 variable {prog : Program} {P : Polygon}
 
-@[simp] theorem run_zero (c : Config) : run prog P 0 c = some c := rfl
 
 theorem run_succ (k : ℕ) (c : Config) :
     run prog P (k + 1) c = (step prog P c).bind (run prog P k) := rfl
@@ -93,7 +92,7 @@ theorem run_succ_of_step {k : ℕ} {c c₁ : Config} (h : step prog P c = some c
 theorem run_add (a b : ℕ) (c : Config) :
     run prog P (a + b) c = (run prog P a c).bind (run prog P b) := by
   induction a generalizing c with
-  | zero => simp
+  | zero => simp [run]
   | succ a ih =>
     rw [Nat.succ_add, run_succ, run_succ, Option.bind_assoc]
     cases step prog P c with
@@ -150,8 +149,7 @@ variable {prog : Program} {P : Polygon} {W : ℕ}
 theorem BoundedRun.wb_start {k : ℕ} {c : Config} (h : BoundedRun prog P W k c) :
     WordsBounded W c := by
   obtain ⟨c', hc, hw⟩ := h 0 (Nat.zero_le _)
-  simp only [run_zero, Option.some.injEq] at hc
-  exact hc ▸ hw
+  cases hc; exact hw
 
 theorem BoundedRun.zero {c : Config} (h : WordsBounded W c) : BoundedRun prog P W 0 c := by
   intro i hi

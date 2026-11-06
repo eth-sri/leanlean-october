@@ -314,7 +314,6 @@ theorem pos_of_vertex (hP : C.P.Simple) {p : ℕ} {t : ℝ}
   have hn := walk_n (C := C)
   rw [hn] at hp
   have hbox := (Chain.mem_box_iff.1 (C.set_subset_box (C.vertex_mem_set hk)))
-  have hR := C.radius_pos
   have htop := C.top_snd_lt_radius
   have hvt := C.vertex_snd_le_top hk
   have habs1 := abs_lt.1 hbox.1
@@ -362,11 +361,10 @@ theorem pos_of_vertex (hP : C.P.Simple) {p : ℕ} {t : ℝ}
       simpa [Geometry.lerp] using this
     rw [C.sideIdx_two_m]
     exact C.sideVertex_inj hP C.topIdx_le hk e
-  · set i := p - 6 with hi
+  · set i := p - 6
     have hpi : p = i + 6 := by omega
     have hi2 : i < 2 * C.m := by omega
-    rw [hpi] at h
-    rw [Nat.mod_eq_of_lt (by omega), show i + 6 + 1 = (i + 1) + 6 by ring,
+    rw [hpi, Nat.mod_eq_of_lt (by omega), show i + 6 + 1 = (i + 1) + 6 by ring,
       C.sideWalk_vtx_tour _ (by omega), C.sideWalk_vtx_tour _ (by omega)] at h
     unfold Chain.sideTour at h
     set k₁ := C.sideIdx C.sideBeta i
@@ -400,7 +398,6 @@ theorem pos_of_vertex (hP : C.P.Simple) {p : ℕ} {t : ℝ}
 /-- The top index is the index of any topmost vertex (distinct heights). -/
 theorem topIdx_eq_of_max (hDH : DistinctHeights C.P) {j : ℕ} (hj : j ≤ C.m)
     (htop : ∀ i, i ≤ C.m → (C.vertex i).2 ≤ (C.vertex j).2) : C.topIdx = j := by
-  have h1 := C.topIdx_min hj htop
   have h2 := C.vertex_snd_le_top hj
   have h3 := htop C.topIdx C.topIdx_le
   by_contra hne
@@ -432,7 +429,7 @@ theorem sideCcw_up {a v b : Point} {h : ℝ} (hh : 0 < h) (ha : a.2 < v.2) (hb :
   have hdot : det a v b = 0 → (sideDot (b - v) (a - v) < 0 ↔ v.2 < b.2) ∧
       (0 < sideDot (b - v) (a - v) ↔ b.2 < v.2) := by
     intro hd
-    have hk := sideDot_key (A := a - v) (B := b - v) (by rw [e1]; exact hd)
+    have hk := sideDot_key (A := a - v) (B := b - v) (by rwa [e1])
     have hpos : 0 < (a - v).1 ^ 2 + (a - v).2 ^ 2 := by nlinarith
     have hB : (b - v).2 = b.2 - v.2 := rfl
     rw [hB] at hk

@@ -25,7 +25,7 @@ theorem robust_addr3 {E : ℕ} {m : ℕ → ℕ} {b₁ p₂ t v : ℕ} (hp₂ : 
     (h : Robust E m fun m' => m' (m' b₁ + m' p₂ + t) = v) : m b₁ + m p₂ + t < E := by
   have hb₁ : b₁ < E := by
     by_contra hge
-    set Z := E + b₁ + m p₂ + t + 1 with hZ
+    set Z := E + b₁ + m p₂ + t + 1
     have := h (Function.update (Function.update m b₁ Z) (Z + m p₂ + t) (v + 1))
       (fun a ha => by rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega)])
     simp only at this
@@ -73,8 +73,7 @@ theorem nf_areas {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) :
       (v := (N.region r).chords.getD t 0) hp (fun m' hm' => by
         have e5 : m' (B + 5) = m (B + 5) := hm' _ (by omega)
         have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.2 t ht
-        rw [e5] at this
-        exact this)
+        rwa [e5] at this)
     exact this
   · have := robust_addr2 (b := B + 4) (o := 5 * j + 4) (v := (N.arc j).e.hgt)
       (fun m' hm' => by

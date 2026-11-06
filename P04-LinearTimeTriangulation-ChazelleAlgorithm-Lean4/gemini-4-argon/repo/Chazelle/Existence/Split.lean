@@ -57,10 +57,9 @@ theorem filled_inter_subset_of_interior_disjoint {Q₁ Q₂ : Polygon} (h₁ : Q
     have hcl : z ∈ closure (B.filled \ B.boundary) := filled_subset_closure_interior hB hzB
     obtain ⟨y, hy⟩ := mem_closure_iff_nhds.1 hcl _ hnhds
     have : y ∈ (A.filled \ A.boundary) ∩ (B.filled \ B.boundary) := hy
-    rw [hAB] at this
-    exact this
+    rwa [hAB] at this
   refine ⟨key Q₁ Q₂ h₁ h₂ hI hz₁ hz₂, key Q₂ Q₁ h₂ h₁ ?_ hz₂ hz₁⟩
-  rw [inter_comm]; exact hI
+  rwa [inter_comm]
 
 /-- The exterior of a simple polygon is not contained in the filled region of any polygon. -/
 theorem filled_compl_not_subset_filled (P Q : Polygon) : ¬ P.filledᶜ ⊆ Q.filled := by
@@ -80,7 +79,7 @@ theorem common_interior_empty {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q�
     (hxor : ∀ z, z ∉ P.boundary → z ∉ Q₁.boundary → z ∉ Q₂.boundary →
       (z ∈ P.filled ↔ (z ∈ Q₁.filled ↔ z ∉ Q₂.filled))) :
     (Q₁.filled \ Q₁.boundary) ∩ (Q₂.filled \ Q₂.boundary) = ∅ := by
-  set I := (Q₁.filled \ Q₁.boundary) ∩ (Q₂.filled \ Q₂.boundary) with hIdef
+  set I := (Q₁.filled \ Q₁.boundary) ∩ (Q₂.filled \ Q₂.boundary)
   -- `I` lies in the exterior of `P`
   have hIP : I ⊆ P.filledᶜ := by
     rintro z ⟨⟨hz₁, hz₁b⟩, ⟨hz₂, hz₂b⟩⟩

@@ -70,8 +70,7 @@ theorem kids_deg (h : Rooted R K up dn ord pos prg pch) {lst : ℕ → List ℕ}
     have hsub : insert (pch v) ((kids R prg pch rem0 v).image pch) ⊆ (lst v).toFinset :=
       Finset.insert_subset hpv himg
     have := Finset.card_le_card hsub
-    rw [Finset.card_insert_of_notMem hnot, hcard1, hlen] at this
-    exact this
+    rwa [Finset.card_insert_of_notMem hnot, hcard1, hlen] at this
 
 /-- `Rooted` only reads its functions below `R`. -/
 theorem Rooted.congr (h : Rooted R K up dn ord pos prg pch) {ord' prg' pch' : ℕ → ℕ}
@@ -89,7 +88,7 @@ theorem Rooted.congr (h : Rooted R K up dn ord pos prg pch) {ord' prg' pch' : �
   ends s hs hs0 := by rw [hc s hs, hp s hs]; exact h.ends s hs hs0
   pch_surj i hi := by
     obtain ⟨s, s1, s2, s3⟩ := h.pch_surj i hi
-    exact ⟨s, s1, s2, by rw [hc s s1]; exact s3⟩
+    exact ⟨s, s1, s2, by rwa [hc s s1]⟩
   ends_lt := h.ends_lt
 
 end kids
@@ -245,9 +244,9 @@ theorem nfAt_regions_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N
   rw [← a1, ← a2]
   refine rRec_ext' ?_ ?_ (e'.2.2.1.symm.trans e.2.2.1)
   · exact list_ext_getD (e'.1.symm.trans e.1) fun t ht => by
-      rw [← e.2.2.2.1 t ht, ← e'.2.2.2.1 t (by rw [← e'.1, e.1]; exact ht)]
+      rw [← e.2.2.2.1 t ht, ← e'.2.2.2.1 t (by rwa [← e'.1, e.1])]
   · exact list_ext_getD (e'.2.1.symm.trans e.2.1) fun t ht => by
-      rw [← e.2.2.2.2 t ht, ← e'.2.2.2.2 t (by rw [← e'.2.1, e.2.1]; exact ht)]
+      rw [← e.2.2.2.2 t ht, ← e'.2.2.2.2 t (by rwa [← e'.2.1, e.2.1])]
 
 end env
 

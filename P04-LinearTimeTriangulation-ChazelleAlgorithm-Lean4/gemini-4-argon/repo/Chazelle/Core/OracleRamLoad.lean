@@ -150,7 +150,7 @@ theorem qLoadC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       exact ⟨c₁, _, ifEq_eq_exec (by rw [hβ, h11, hb]) e₁, by omega,
         by rw [v₁, ht, ite_eq_left hb], r₁⟩
     · obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (S := .instr (.copyN 120021 120017))
-        (show c.nreg 120018 ≠ c.nreg 120011 by rw [hβ, h11]; exact hb)
+        (show c.nreg 120018 ≠ c.nreg 120011 by rwa [hβ, h11])
         (Exec.subN (P := P) hw 120021 120019 120017)
       refine ⟨_, _, e', by omega, ?_, fun r hr => ?_⟩
       · config_simp; rw [h19, ht, ite_eq_right hb]
@@ -158,10 +158,10 @@ theorem qLoadC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   have w₁ := e₁.wb_right
   -- 2. the top vertex
   obtain ⟨c₂, e₂, v₂, r₂, -⟩ := add_exec (P := P) w₁ 120022 120015 120017 (by
-    rw [r₁ _ (by decide), r₁ _ (by decide), hs, ht]; exact hsW)
+    rwa [r₁ _ (by decide), r₁ _ (by decide), hs, ht])
   rw [r₁ _ (by decide), r₁ _ (by decide), hs, ht] at v₂
   obtain ⟨c₃, k₃, e₃, hk₃, v₃, r₃, -⟩ := modSub_exec (P := P) (r := 120022) (nr := 120010)
-    (by decide) c₂ e₂.wb_right (by rw [v₂, r₂ _ (by decide), r₁ _ (by decide), hn]; exact hst)
+    (by decide) c₂ e₂.wb_right (by rwa [v₂, r₂ _ (by decide), r₁ _ (by decide), hn])
   rw [v₂, r₂ _ (by decide), r₁ _ (by decide), hn] at v₃
   have R₃ : ∀ r, r ≠ 120021 → r ≠ 120022 → c₃.nreg r = c.nreg r := fun r a b =>
     (r₃ r b).trans ((r₂ r b).trans (r₁ r a))
@@ -182,18 +182,18 @@ theorem qLoadC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
         (show c₃.nreg 120001 ≠ c₃.nreg 120011 by
           rw [g1, g _ (by norm_num) (by norm_num)];  omega) eB
       refine ⟨cB, k', e', by omega, ?_, rB⟩
-      rw [vB, g _ (by norm_num) (by norm_num)]; exact o2
+      rwa [vB, g _ (by norm_num) (by norm_num)]
     · obtain ⟨o1, o2, o3⟩ := ho
       refine ⟨cA, _, ifEq_eq_exec (by
-        rw [g1, g _ (by norm_num) (by norm_num)]; exact o1) eA,
+        rwa [g1, g _ (by norm_num) (by norm_num)]) eA,
         by omega, ?_, rA⟩
-      rw [vA, g _ (by norm_num) (by norm_num)]; exact o3
+      rwa [vA, g _ (by norm_num) (by norm_num)]
     · obtain ⟨o1, o2⟩ := ho
       obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (S := .instr (.copyN 120023 120003))
         (show c₃.nreg 120001 ≠ c₃.nreg 120011 by
           rw [g1, g _ (by norm_num) (by norm_num)];  omega) eB
       refine ⟨cB, k', e', by omega, ?_, rB⟩
-      rw [vB, g _ (by norm_num) (by norm_num)]; exact o2
+      rwa [vB, g _ (by norm_num) (by norm_num)]
   have w₄ := e₄.wb_right
   -- 4. the direction bit
   obtain ⟨c₅, k₅, e₅, hk₅, v₅, r₅⟩ : ∃ c₅ k₅, Exec P W (ifEq 120004 120011
@@ -208,7 +208,7 @@ theorem qLoadC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
         by rw [vA]; unfold σbOf; rw [ite_eq_left hd], rA⟩
     · obtain ⟨cB, eB, vB, rB⟩ := const_exec (P := P) w₄ 120024 0 (by omega)
       obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (S := .instr (.constN 120024 1))
-        (show c₄.nreg 120004 ≠ c₄.nreg 120011 by rw [g1, g4]; exact hd) eB
+        (show c₄.nreg 120004 ≠ c₄.nreg 120011 by rwa [g1, g4]) eB
       exact ⟨cB, k', e', by omega, by rw [vB]; unfold σbOf; rw [ite_eq_right hd], rB⟩
   have w₅ := e₅.wb_right
   -- 5. the origin
@@ -224,11 +224,11 @@ theorem qLoadC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   have G : ∀ r, 120001 ≤ r → r ≤ 120004 → c₅.nreg r = c.nreg r := fun r a b => by
     rw [r₅ r (by omega), r₄ r (by omega), R₃ r (by omega) (by omega)]
   refine ⟨c₆, _, ex, by omega, exec_frameB ex wr_qLoadC, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [r₆ _ (by omega), r₅ _ (by decide), r₄ _ (by decide), r₃ _ (by decide),
-      r₂ _ (by decide)]; exact v₁
-  · rw [r₆ _ (by omega), r₅ _ (by decide), r₄ _ (by decide)]; exact v₃
-  · rw [r₆ _ (by omega), r₅ _ (by decide)]; exact v₄
-  · rw [r₆ _ (by omega)]; exact v₅
+  · rwa [r₆ _ (by omega), r₅ _ (by decide), r₄ _ (by decide), r₃ _ (by decide),
+      r₂ _ (by decide)]
+  · rwa [r₆ _ (by omega), r₅ _ (by decide), r₄ _ (by decide)]
+  · rwa [r₆ _ (by omega), r₅ _ (by decide)]
+  · rwa [r₆ _ (by omega)]
   · rw [v25, G _ (by norm_num) (by norm_num)]
   · rw [v26, G _ (by norm_num) (by norm_num)]
   · rw [v27, G _ (by norm_num) (by norm_num)]
@@ -252,8 +252,8 @@ theorem qLoad_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV
   have hVm : V.m = C.m := by rw [← hA.dm, hd2]
   have hVs : V.s = C.s := by rw [← hA.ds, hd1]
   have hVt : V.tIdx = C.topIdx := by rw [← hA.dt, hd3]
-  have hmn : C.m < P.n := by have := C.m_lt; rw [hA.CQ, hQn] at this; exact this
-  have hsn : C.s < P.n := by have := hA.s_lt; rw [hA.CQ, hQn] at this; exact this
+  have hmn : C.m < P.n := by have := C.m_lt; rwa [hA.CQ, hQn] at this
+  have hsn : C.s < P.n := by have := hA.s_lt; rwa [hA.CQ, hQn] at this
   have htl := C.topIdx_le
   obtain ⟨c₁, k₁, e₁, hk₁, a10, a11, a12, a48, a28, a13, a14, a30, a31, a32, a33, a34, a35, a36,
     a37, a38, a39, a40, a41, a42, a49⟩ := qLoadA_exec hA hEW c hw hm hO (by omega)
@@ -270,7 +270,7 @@ theorem qLoad_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV
       norm_num at ho ⊢ <;> simp only [hr 120001 (by norm_num) (by norm_num), hr 120002 (by norm_num) (by norm_num), hr 120003 (by norm_num) (by norm_num)] <;> exact ho
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, v21, v22, v23, v24, v25, v26, v27⟩ := qLoadC_exec (P := P) c₂
     e₂.wb_right (n := P.n) (s := V.s) (m := V.m) (t := V.tIdx) (β := V.β)
-    (by rw [g₂ _ (by decide)]; exact a10) (by rw [g₂ _ (by decide)]; exact a11) b15 b17 b18 b19
+    (by rwa [g₂ _ (by decide)]) (by rwa [g₂ _ (by decide)]) b15 b17 b18 b19
     (by omega) (by omega) (by omega) ho₂
   have ex : Exec P W qLoad c c₃ _ := .seq e₁ (.seq e₂ e₃)
   have f : FrameB BLd c c₃ := exec_frameB ex wr_qLoad
@@ -313,9 +313,9 @@ theorem QAt.qvok {P : Polygon} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host}
     (hol : o.Lt P.n) (d : ℕ) : QVOK P C (qV V P o d) := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   obtain ⟨-, -, hd1, hd2, hd3, hd4⟩ := hA.desc
-  have hsn : C.s < P.n := by have := hA.s_lt; rw [hA.CQ, hQn] at this; exact this
+  have hsn : C.s < P.n := by have := hA.s_lt; rwa [hA.CQ, hQn] at this
   refine ⟨hA.CQ, by show V.s = C.s; rw [← hA.ds, hd1], by show V.m = C.m; rw [← hA.dm, hd2],
-    ?_, ?_, ?_, by show V.s < P.n; rw [← hA.ds, hd1]; exact hsn⟩
+    ?_, ?_, ?_, by show V.s < P.n; rwa [← hA.ds, hd1]⟩
   · show V.sS = C.sideS C.sideBeta
     rw [hA.sS, ← hA.dβ, ← hA.dt, hd3, ← hA.dm, hd2]
     unfold Chain.sideS

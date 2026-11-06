@@ -124,9 +124,9 @@ theorem orMinBody_inv {c₀ c : Config} (hI : OrInv P W c₀ c) (ht : c.nreg 232
     rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
       Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
     exact hfr r hr
-  · config_simp; rw [hnm₂, hc₁]; exact hnm
-  · config_simp; rw [hrm₂, hc₁]; exact hrm
-  · config_simp; rw [hout₂, hc₁]; exact hout
+  · config_simp; rwa [hnm₂, hc₁]
+  · config_simp; rwa [hrm₂, hc₁]
+  · config_simp; rwa [hout₂, hc₁]
   · config_simp; rw [e232, e233]; omega
 
 /-- **Spec of the orientation program**: with `Q` simple and related to `P` by a shear, cost
@@ -141,7 +141,6 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
   obtain ⟨ε, -, hQe, hag⟩ := hPQ
   have hn3 : 3 ≤ Q.n := hQ.1
   have hQn : Q.n = P.n := by rw [hQe]; exact Chazelle.Core.shear_n ε P
-  have hn : 3 ≤ P.n := by omega
   unfold orientStmt
   refine spec_seq ?_
   exec_block
@@ -168,7 +167,6 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
   unfold orMinLoop
   refine spec_seq ⟨c₂, k₂, ex₂, ?_⟩
   rw [h230₂] at hexit₂
-  have e232 : c₂.nreg 232 = P.n := by omega
   set k := c₂.nreg 231 with hk
   have hkn : k < P.n := by omega
   have hminP : ∀ i < P.n, ¬ ylexLT (P.vtx i) (P.vtx k) := fun i hi => hmin₂ i (by omega)
@@ -187,13 +185,13 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
       c₄.rreg = c₃.rreg ∧ c₄.nmem = c₃.nmem ∧ c₄.rmem = c₃.rmem ∧ c₄.output = c₃.output := by
     have e235 : c₃.nreg 235 = 0 := by rw [hc₃]; config_simp
     by_cases hk0 : 0 < k
-    · refine spec_ifLtN_true (by rw [e235, r3 231 (by decide)]; exact hk0)
+    · refine spec_ifLtN_true (by rwa [e235, r3 231 (by decide)])
         (spec_instr (Exec.subN hw₃ 234 231 233) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
       config_simp
       rw [r3 231 (by decide), r3 233 (by decide), h233₂, ← hk,
         show k + P.n - 1 = (k - 1) + P.n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-    · refine spec_ifLtN_false (by rw [e235, r3 231 (by decide)]; exact hk0)
+    · refine spec_ifLtN_false (by rwa [e235, r3 231 (by decide)])
         (spec_instr (Exec.subN hw₃ 234 230 233) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
       config_simp
@@ -217,9 +215,9 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
     have e230 : c₅.nreg 230 = P.n := by
       rw [hc₅]; config_simp; rw [r4 230 (by decide) (by decide), h230₂]
     by_cases hk1 : k + 1 < P.n
-    · refine spec_ifLtN_true (by rw [e236, e230]; exact hk1) (spec_skip hw₅ ?_)
+    · refine spec_ifLtN_true (by rwa [e236, e230]) (spec_skip hw₅ ?_)
       exact ⟨by omega, by rw [e236, Nat.mod_eq_of_lt hk1], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
-    · refine spec_ifLtN_false (by rw [e236, e230]; exact hk1)
+    · refine spec_ifLtN_false (by rwa [e236, e230])
         (spec_instr (Exec.constN hw₅ 236 0 (Nat.zero_le _)) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
       config_simp
@@ -298,7 +296,7 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
     have : 14 * (P.n - 1) + 2 ≤ 14 * P.n := by omega
     omega
   by_cases hpos : 0 < det (P.vtx ((k + P.n - 1) % P.n)) (P.vtx k) (P.vtx ((k + 1) % P.n))
-  · refine spec_ifLtR_true (by rw [e243, e240, hdetv]; exact hpos)
+  · refine spec_ifLtR_true (by rwa [e243, e240, hdetv])
       (spec_instr (Exec.constR hw₉ 100 1) fun _ => ?_)
     refine ⟨by omega, ?_, fun r hr => ?_, fun r h1 hr => ?_, ?_, ?_, ?_⟩
     · config_simp; rw [hor, ite_eq_left hpos]; simp
@@ -307,7 +305,7 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
     · exact hmem9
     · exact hrm9
     · exact hout9
-  · refine spec_ifLtR_false (by rw [e243, e240, hdetv]; exact hpos) (spec_skip hw₉ ?_)
+  · refine spec_ifLtR_false (by rwa [e243, e240, hdetv]) (spec_skip hw₉ ?_)
     refine ⟨by omega, ?_, hfn_all, hfr_all, hmem9, hrm9, hout9⟩
     rw [hor, ite_eq_right hpos, hc₉]; config_simp; simp
 

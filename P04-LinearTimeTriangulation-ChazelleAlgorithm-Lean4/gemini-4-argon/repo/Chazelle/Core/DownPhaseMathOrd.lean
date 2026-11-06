@@ -136,8 +136,8 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
       (∀ t, t < k → i t = i 0 + grpOff d J t) ∧
       grpOff d J k = nk (interiorModel Q) S R := by
   classical
-  set I := interiorModel Q with hI
-  set N := nk I S R with hN
+  set I := interiorModel Q
+  set N := nk I S R
   have hM : WalkAx I := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
@@ -222,7 +222,7 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
         have := hJ1 t
         by_contra h
         exact hA₁ (hq₁e ▸ (hJ0 t).1 (by omega))
-      have hCp : ChordGap I S R (prevIdx N q₁) := by rw [hq₁, prevIdx_succ hmN]; exact hCm
+      have hCp : ChordGap I S R (prevIdx N q₁) := by rwa [hq₁, prevIdx_succ hmN]
       obtain ⟨-, hA₂⟩ := junction hQ hFam hne hR hdh hq₁N hCp hA₁
       have hC₁ : ChordGap I S R q₁ :=
         (gap_cases hM hF hfin hne hR (by omega) hq₁N).resolve_left hA₁

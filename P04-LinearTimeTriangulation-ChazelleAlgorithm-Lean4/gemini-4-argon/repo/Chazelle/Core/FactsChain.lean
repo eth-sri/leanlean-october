@@ -39,7 +39,7 @@ theorem exists_first_exit {D : Set Point} (hD : IsOpen D) {z : Point} (hz : z �
     (hR : ∀ x ∈ D, x.1 < R) :
     ∃ s > (0 : ℝ), (∀ s' ∈ Ico (0 : ℝ) s, ((z.1 + s', z.2) : Point) ∈ D) ∧
       ((z.1 + s, z.2) : Point) ∉ D := by
-  set T := {s : ℝ | 0 ≤ s ∧ ((z.1 + s, z.2) : Point) ∉ D} with hT
+  set T := {s : ℝ | 0 ≤ s ∧ ((z.1 + s, z.2) : Point) ∉ D}
   have hcont : Continuous fun s : ℝ => ((z.1 + s, z.2) : Point) := by fun_prop
   have hTc : IsClosed T :=
     (isClosed_le continuous_const continuous_id).inter (hD.isClosed_compl.preimage hcont)
@@ -51,7 +51,7 @@ theorem exists_first_exit {D : Set Point} (hD : IsOpen D) {z : Point} (hz : z �
   refine ⟨sInf T, ?_, fun s' hs' => ?_, hmem.2⟩
   · rcases hmem.1.lt_or_eq with h | h
     · exact h
-    · exfalso; apply hmem.2; rw [← h, add_zero]; exact hz
+    · exfalso; apply hmem.2; rwa [← h, add_zero]
   · by_contra hs
     exact absurd (csInf_le hbdd ⟨hs'.1, hs⟩) (not_le.2 hs'.2)
 
@@ -136,11 +136,10 @@ theorem reach {z : Point} (hz : z ∈ C.dom)
   have hz1 := abs_lt.1 (hbox z hz).1
   have hz2 := abs_lt.1 (hbox z hz).2
   -- `z.2` is not the height of the top of the box, nor of a chain vertex
-  have hzR : z.2 ≠ C.radius := fun h => hzv 0 (by omega) (by rw [C.sideWalk_vtx_zero]; exact h)
   have hzv' : ∀ k ≤ C.m, z.2 ≠ (C.vertex k).2 := by
     intro k hk h
     obtain ⟨i, hi, hvi⟩ := vertex_mem_walk C hk
-    exact hzv i hi (by rw [hvi]; exact h)
+    exact hzv i hi (by rwa [hvi])
   -- the exit point is at abscissa at most `R`
   have hqR : z.1 + s ≤ C.radius := by
     by_contra hgt
@@ -177,10 +176,10 @@ theorem reach {z : Point} (hz : z ∈ C.dom)
       have hvi1' : W.vtx ((i' + 6 + 1) % W.n) = C.vertex k := by
         rw [hW, C.sideWalk_next_tour _ hi', C.sideWalk_vtx_tour _ (by omega), sideTour, hi2']
       rcases lt_or_gt_of_ne hne with hup | hdn
-      · refine ⟨i + 6, by omega, s₀, ⟨hs₀0', hs₀1'⟩, ?_, by rw [hvi, hvi1]; exact hup⟩
+      · refine ⟨i + 6, by omega, s₀, ⟨hs₀0', hs₀1'⟩, ?_, by rwa [hvi, hvi1]⟩
         unfold sidePt; rw [hvi, hvi1, he]
       · refine ⟨i' + 6, by omega, 1 - s₀, ⟨by linarith, by linarith⟩, ?_,
-          by rw [hvi', hvi1']; exact hdn⟩
+          by rwa [hvi', hvi1']⟩
         unfold sidePt; rw [hvi', hvi1', he]
         apply point_ext <;> simp only [lerp_fst, lerp_snd] <;> ring
     · -- on the slit, above the top vertex
@@ -192,7 +191,6 @@ theorem reach {z : Point} (hz : z ∈ C.dom)
         rcases e2.lt_or_eq with h | h
         · exact h
         · exact absurd h.symm (hzv' C.topIdx C.topIdx_le)
-      have hzR' : z.2 < C.radius := lt_of_le_of_ne e3 hzR
       have hv0 : W.vtx (2 * C.m + 6) = C.top := by
         rw [hW, C.sideWalk_vtx_tour _ le_rfl, C.sideTour_two_m]
       have hv1 : W.vtx ((2 * C.m + 6 + 1) % W.n) = C.slitTop := by

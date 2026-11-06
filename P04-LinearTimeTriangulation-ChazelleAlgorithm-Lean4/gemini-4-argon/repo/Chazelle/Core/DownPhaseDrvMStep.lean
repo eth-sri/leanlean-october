@@ -44,8 +44,8 @@ theorem downStepG (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       (interiorModel Q).DegLe (stepFam Q S F) (D + d₀) ∧
       (interiorModel Q).Semigranular (stepFam Q S F) γ ∧
       stepFam Q S F \ S ⊆ ⋃ R ∈ (interiorModel Q).regions S, F R := by
-  set I := interiorModel Q with hI
-  set T := stepFam Q S F with hT
+  set I := interiorModel Q
+  set T := stepFam Q S F
   have hM : WalkAx I := walkAx_interiorModel hQ
   have hRfin : (I.regions S).Finite :=
     (hM.sys S hFam.2.1 hFam.1).regionsIn_finite hM.preconn hM.nonempty subset_rfl
@@ -80,11 +80,11 @@ theorem downStepG (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     obtain ⟨v, hv⟩ := Chazelle.Chain.regionsIn_nonempty hV
     have hVS : V ⊆ freeIn I.D S :=
       (Chazelle.Chain.regionsIn_subset hV).trans (Chazelle.Chain.freeIn_anti I.D hST)
-    set R := connectedComponentIn (freeIn I.D S) v with hRdef
+    set R := connectedComponentIn (freeIn I.D S) v
     have hR : R ∈ I.regions S := ⟨v, hVS hv, rfl⟩
     have hVR : V ⊆ R :=
       (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hVS
-    set G := S ∪ Extract.kept R (F R) with hG
+    set G := S ∪ Extract.kept R (F R)
     have hSG : S ⊆ G := subset_union_left
     have hGT : G ⊆ T := union_subset hST (hkT R hR)
     have hK : OutOther I.D S G T R := by

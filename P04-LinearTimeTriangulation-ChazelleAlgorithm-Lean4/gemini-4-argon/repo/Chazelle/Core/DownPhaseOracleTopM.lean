@@ -60,15 +60,14 @@ theorem block_top {m : ℕ → ℕ} {h A : ℕ} (hR : Robust A m fun m' => Grade
     omega
   refine ⟨h2, hr, by unfold ShootCut.entryAddr at hE; omega, by omega, ?_, fun k hk => ?_⟩
   · rw [hT, ← hlen]; exact C.topIdx_le
-  · have hk' : k ≤ C.m := by rw [hlen]; exact hk
+  · have hk' : k ≤ C.m := by rwa [hlen]
     have h1 := C.vertex_snd_le_top hk'
     rw [ShootCut.grade_vertex hP hx hk', hsC] at h1
     rw [hT]
     show _ ≤ ((Qof P).vtx (b * 2 ^ g + C.topIdx)).2
     have := ShootCut.grade_vertex hP hx C.topIdx_le
     rw [hsC] at this
-    rw [← this]
-    exact h1
+    rwa [← this]
 
 /-- **The top of a chain is its unique highest vertex** (distinct heights): a chain vertex at
 least as high as all chain vertices is the top. -/

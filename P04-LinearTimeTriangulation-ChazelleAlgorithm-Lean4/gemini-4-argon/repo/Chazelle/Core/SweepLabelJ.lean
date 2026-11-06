@@ -48,7 +48,6 @@ theorem pos_eq_vertex (hP : C.P.Simple) (β : Bool) {p : ℕ} (hp : p < (C.sideW
     (ht : 0 ≤ t) (ht1 : t < 1) {k : ℕ} (hk : k ≤ C.m)
     (h : sidePt (C.sideWalk β) p t = C.vertex k) :
     t = 0 ∧ ∃ i, i ≤ 2 * C.m ∧ p = i + 6 ∧ C.sideIdx β i = k := by
-  have hR := C.radius_pos
   have hvk := C.vertex_mem_set hk
   have hb := C.abs_le_coordBound_of_mem_set hvk
   have hcb := C.coordBound_lt_radius
@@ -245,8 +244,6 @@ noncomputable def rδ : ℕ :=
   else 7
 
 theorem rL1_add_rL2 : rL1 J + rL2 J = rlen J := by
-  have := tpos_lt J.right 0
-  have hm2 : J.right.m = J.m₂ := rfl
   unfold rL1 rL2 rlen
   split_ifs <;> omega
 

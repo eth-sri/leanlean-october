@@ -51,7 +51,7 @@ theorem dirInterior_iff_corner {W : Polygon} (hW : W.Simple) (hL : Mountain.orie
         (rayPt (W.vtx p) σ 1) := by
   obtain ⟨r, hr, hloc⟩ := FactsInterior.vertex_local hW hL hp
   have hball : ∀ s, 0 ≤ s → s < r → rayPt (W.vtx p) σ s ∈ ball (W.vtx p) r := fun s hs0 hsr => by
-    rw [mem_ball, FuseMath.dist_rayPt _ hσ hs0]; exact hsr
+    rwa [mem_ball, FuseMath.dist_rayPt _ hσ hs0]
   constructor
   · intro h
     obtain ⟨s, hs, ⟨hs0, hsr⟩⟩ := (h.and (Ioo_mem_nhdsGT hr)).exists
@@ -95,9 +95,6 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
   have eBA : sideCross (b - v) (a - v) =
       (b.1 - v.1) * (a.2 - v.2) - (b.2 - v.2) * (a.1 - v.1) := by
     unfold sideCross; simp only [Prod.snd_sub, Prod.fst_sub]
-  have eDBA : sideDot (b - v) (a - v) =
-      (b.1 - v.1) * (a.1 - v.1) + (b.2 - v.2) * (a.2 - v.2) := by
-    unfold sideDot; simp only [Prod.snd_sub, Prod.fst_sub]
   unfold sideLeftOf
   rw [FuseMath.rayPt_sub_one, sideCcw_iff_raw]
   unfold emitG
@@ -225,8 +222,7 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
     · rw [ite_eq_right hb]
       have h := Brute.sideLeftOf_horiz ha hb hσ
       unfold sideLeftOf at h
-      rw [FuseMath.rayPt_sub_one, sideCcw_iff_raw] at h
-      exact h
+      rwa [FuseMath.rayPt_sub_one, sideCcw_iff_raw] at h
 
 /-- **The corner test by the decision.**  For a simple polygon with the interior on its left,
 direction `σ = ±1` at vertex `p` is locally interior iff the corner decision holds. -/

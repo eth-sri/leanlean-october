@@ -64,8 +64,8 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
         r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       (∀ r, bandOf r ∉ ({bSign, bBuild} : Finset ℕ) → c'.rreg r = c.rreg r) ∧
       c'.rmem = c.rmem ∧ c'.output = c.output := by
-  set A₃ := c.nreg ALLOC with hA₃
-  set h := 2 * (K + K₂) with hh
+  set A₃ := c.nreg ALLOC
+  set h := 2 * (K + K₂)
   -- the arrays and the arguments of the first copy
   obtain ⟨c₁, k₁, e₁, hk₁, v30, v71, vA, v70, v72, v73, v61, v62, v63, hm₁⟩ : ∃ c₁ k₁,
       Exec P W spl5 c c₁ k₁ ∧ k₁ = 9 ∧ c₁.nreg 210030 = A₃ ∧ c₁.nreg 210071 = A₃ + h ∧
@@ -119,10 +119,10 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   obtain ⟨hM₄, hwf₄⟩ := desc_agree hwf hM (m' := c₄.nmem) fun a ha => hlow4 a ha
   have hrec4 : RecsAt c₄.nmem T L' := fun q hq => by
     obtain ⟨r1, r2, r3, r4⟩ := hrec q hq
-    exact ⟨by rw [hlow4 _ (by omega)]; exact r1, by rw [hlow4 _ (by omega)]; exact r2,
-      by rw [hlow4 _ (by omega)]; exact r3, by rw [hlow4 _ (by omega)]; exact r4⟩
+    exact ⟨by rwa [hlow4 _ (by omega)], by rwa [hlow4 _ (by omega)],
+      by rwa [hlow4 _ (by omega)], by rwa [hlow4 _ (by omega)]⟩
   -- the merge
-  obtain ⟨c₅, k₅, e₅, hk₅, w₅, hseg5, hm₅, fr₅, hA₅, rr₅, rm₅, o₅, -, -, -, -⟩ :=
+  obtain ⟨c₅, k₅, e₅, hk₅, w₅, hseg5, hm₅, fr₅, hA₅, rr₅, rm₅, o₅⟩ :=
     mergeE_exec (P := P) (W := W) hG hWn c₄ w₄ (S := A₃) (Dst := A₃ + h) (mid := 2 * K) (hi := h)
       (D := D) (T := T) (M := M) (L := L') (E := E) (E₂ := E₂)
       (by rw [k5 _ (by decide) (by decide), v70]) (by rw [k5 _ (by decide) (by decide), v71])

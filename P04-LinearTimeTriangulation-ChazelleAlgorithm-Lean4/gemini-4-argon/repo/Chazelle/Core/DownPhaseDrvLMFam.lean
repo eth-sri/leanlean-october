@@ -98,7 +98,7 @@ theorem lx_size {Q : Polygon} {C : Chain} (hP : C.P.Simple) {F₁ : Set (Set Poi
     Set.ncard_le_ncard (fun c hc => hc.1) hcan.1.1
   have h3 := DownMath.lemma23_chain hP hcan.1 hcan.2.1 hcan.2.2
   calc l.length * (γ₀ + 1) ≤ F₁.ncard * (γR + 1) :=
-        Nat.mul_le_mul (by rw [h1]; exact h2) (by omega)
+        Nat.mul_le_mul (by rwa [h1]) (by omega)
     _ ≤ _ := h3
 
 /-! ## The abstract level -/
@@ -177,8 +177,7 @@ theorem down (X : LvlCtx Q L R reg C F Lx D γ) :
     intro U hU
     obtain ⟨hr, hrU⟩ := rOf_spec (X.hsurj U hU)
     have := X.hEx _ hr
-    rw [hrU] at this
-    exact this
+    rwa [hrU] at this
   have hF : ∀ U ∈ (interiorModel Q).regions (Gran.lset (interiorModel Q) Q L),
       (chainModel (C (rOf R reg U))).ChordFamily Q (F (rOf R reg U)) ∧
         (chainModel (C (rOf R reg U))).DegLe (F (rOf R reg U)) D ∧

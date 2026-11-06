@@ -171,19 +171,19 @@ theorem holeS_int (hE : TGood P W (interiorModel (Qof P)) N c₀) (hI : TInv W c
       · exact succ_ne (by omega) he
   · have hmem := hole_mem (c := c') (j := 0) (by omega) (by omega)
     rw [a0] at hmem
-    exact cover_unique hWs (by rw [hn]; exact he) hp.1 hp.2.1 (by rw [hn]; exact hn3)
+    exact cover_unique hWs (by rwa [hn]) hp.1 hp.2.1 (by rwa [hn])
       (fun h0 => by
         have hg : c₀.nreg 83006 = 0 := by
           rcases hE.hxc with h | h
           · exact h
           · exact absurd h0 h.ne'
-        rw [v10, v11, ite_eq_left hg] at hmem; rw [hn]; exact hmem)
+        rw [v10, v11, ite_eq_left hg] at hmem; rwa [hn])
       (fun hpos => by
         have hg : c₀.nreg 83006 ≠ 0 := fun hg => by
           have : (interiorModel (Qof P)).param (Qof P) ⟨e, c₀.nreg 83006⟩ = 0 := by
             rw [hg]; rfl
           exact absurd this hpos.ne'
-        rw [v10, v11, ite_eq_right hg] at hmem; rw [hn]; exact hmem) (Qof P)
+        rw [v10, v11, ite_eq_right hg] at hmem; rwa [hn]) (Qof P)
   · intro g hg p' τ hp' h0 h1 hkk
     simp only [ShotList.holeList, List.mem_map, List.mem_range] at hg
     obtain ⟨q, hq, rfl⟩ := hg
@@ -193,14 +193,14 @@ theorem holeS_int (hE : TGood P W (interiorModel (Qof P)) N c₀) (hI : TInv W c
     · rw [ite_eq_left hg0] at hkk
       have hv : vHole (interiorModel (Qof P)).W.n e = (⟨prevV P.n e, 0⟩, ⟨(e + 1) % P.n, 0⟩) := by
         rw [hn]; rfl
-      refine near_vHole _ (Qof P) (by rw [hn]; exact hn3) (by rw [hn]; exact he) ?_ hp' h0 h1
-        (by rw [hv]; exact hkk)
+      refine near_vHole _ (Qof P) (by rwa [hn]) (by rwa [hn]) ?_ hp' h0 h1
+        (by rwa [hv])
       rw [hg0, ← Chazelle.Chain.sidePt_zero]; rfl
     · rw [ite_eq_right hg0] at hkk
       have hv : eHole (interiorModel (Qof P)).W.n e = (⟨e, 0⟩, ⟨(e + 1) % P.n, 0⟩) := by
         rw [hn]; rfl
-      exact near_eHole _ (Qof P) (by rw [hn]; exact he) ⟨_, hp.1, hp.2.1.le, rfl⟩ hp' h0 h1
-        (by rw [hv]; exact hkk)
+      exact near_eHole _ (Qof P) (by rwa [hn]) ⟨_, hp.1, hp.2.1.le, rfl⟩ hp' h0 h1
+        (by rwa [hv])
 
 theorem sOf_sideS {C : Chain} {b : ℕ} (hb : b = 1 ↔ C.sideBeta = true) :
     sOf C.m C.topIdx b = C.sideS C.sideBeta := by
@@ -231,11 +231,11 @@ theorem holeS_chain (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C₀ : Chain
   have hz0 : c₀.nmem (c₀.nreg 83000) = 0 := (chainDesc_of hE.hMD rfl).1
   have g21 : c.nreg 83021 < c.nreg 83023 := by rw [hI.h21, hI.h23, hz0]; omega
   -- the candidate
-  set x : WPos := ⟨c₀.nreg 83005, c₀.nreg 83006⟩ with hxdef
+  set x : WPos := ⟨c₀.nreg 83005, c₀.nreg 83006⟩
   obtain ⟨he6, hvtx, hedge⟩ := chain_x_cases hE.hxp hE.hxe hE.hxc (hE.hxC C rfl)
   have hxe : c₀.nreg 83005 < 2 * C.m + 7 := by rw [← hn]; exact hE.hxe
   -- the descriptor words
-  set B := c.nreg 83020 with hBdef
+  set B := c.nreg 83020
   obtain ⟨-, -, hs1, hs2, hs3, hs4⟩ := hC
   have hBW : B + 4 ≤ W := by
     have := hwf.1; have := hI.hw.1 ALLOC; omega
@@ -246,12 +246,12 @@ theorem holeS_chain (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C₀ : Chain
   have hS : sOf C.m C.topIdx (c.nmem (B + 4)) = C.sideS C.sideBeta := sOf_sideS hs4
   rw [hS] at v102
   have hSle := C.sideS_lt C.sideBeta
-  set S := C.sideS C.sideBeta with hSdef
+  set S := C.sideS C.sideBeta
   have hi : c₀.nreg 83005 - 6 ≤ 2 * C.m := by omega
   obtain ⟨c₃, k₃, hk₃, e₃, v106, o₃⟩ := jS_exec (P := P) e₂.wb_right (m := C.m) (i := c₀.nreg 83005 - 6) (by omega) v102
     (by rw [o₂.1 _ (by decide), v104, h05]) (by rw [o₂.1 _ (by decide), v100]) hSle hi
     (by omega)
-  set j := (S + (c₀.nreg 83005 - 6)) % (2 * C.m) with hjdef
+  set j := (S + (c₀.nreg 83005 - 6)) % (2 * C.m)
   have hj : j < 2 * C.m := Nat.mod_lt _ (by omega)
   -- registers carried to the branch
   have o₁₃ := (o₁.trans o₂).trans o₃
@@ -267,9 +267,6 @@ theorem holeS_chain (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C₀ : Chain
   have r101 : c₃.nreg 83101 = 7 := by rw [o₃.1 _ (by decide), o₂.1 _ (by decide), v101]
   have r96 : c₃.nreg 83096 = 2 := by rw [o₃.1 _ (by decide), o₂.1 _ (by decide), v96]
   have r90 : c₃.nreg 83090 = 2 * C.m + 7 := by rw [o₃.1 _ (by decide), o₂.1 _ (by decide), v90]
-  have hL₁₃ : ∀ r ∈ chainHL ++ [83102] ++ [83105, 83106], r ∈ holeL := by
-    intro r hr; simp only [holeL, chainHL, List.mem_append, List.mem_cons, List.not_mem_nil,
-      or_false] at hr ⊢; omega
   have hpos : (chainModel C).pos (Qof P) x =
       Chazelle.Chain.sidePt (chainModel C).W x.edge ((chainModel C).param (Qof P) x) := rfl
   by_cases hh : c₀.nreg 83006 = 0
@@ -283,7 +280,7 @@ theorem holeS_chain (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C₀ : Chain
       simp only [holeL, chainHL, List.mem_append, List.mem_cons, List.not_mem_nil,
         or_false] at hr ⊢; omega)
     refine RS.out hI holeL_scr ex (by omega) ho ⟨?_, ho⟩
-    set k := Chazelle.Chain.sideE C.m j with hkdef
+    set k := Chazelle.Chain.sideE C.m j
     have hk : k ≤ C.m := Chazelle.Chain.sideE_le hj.le
     have ha := candIdx_le (m := C.m) (j := k) hSle (by omega)
     have hb := candIdx_le (m := C.m) (j := 2 * C.m - k) hSle (by omega)
@@ -316,7 +313,7 @@ theorem holeS_chain (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C₀ : Chain
       have hsi : C.sideIdx C.sideBeta (x.edge - 6) = k := by rw [C.sideIdx_eq]
       rw [hsi] at hv
       rw [hv]
-      refine cover_chain_vertex hsimp hk (by rw [va]; exact m0) (by rw [vb]; exact m1)
+      refine cover_chain_vertex hsimp hk (by rwa [va]) (by rwa [vb])
         (fun ht => ?_) (Qof P)
       obtain ⟨t14, t15⟩ := wtop ht
       have h93 : c₄.nreg 84009 = 3 := by rw [w9, ite_eq_left ht]
@@ -324,8 +321,7 @@ theorem holeS_chain (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C₀ : Chain
         hole_mem (c := c₄) (j := 2) (by omega) (by omega)
       rw [hn, show 2 * C.m + 6 = 2 * C.m + 6 from rfl, vHole_six (by omega), t14, t15,
         Nat.mod_self] at *
-      rw [← t14, ← t15]
-      exact m2
+      rwa [← t14, ← t15]
     · intro g hg p' τ hp' h0 h1 hkk
       have hn3 : 3 ≤ (chainModel C).W.n := by rw [hn]; omega
       have hv := (hvtx hh).2
@@ -367,7 +363,7 @@ theorem holeS_chain (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C₀ : Chain
         exact near_vHole _ _ hn3 (by rw [hn]; omega) ztop hp' h0 h1 hkk
   · -- inside a tour edge
     have hh0 : 0 < c₀.nreg 83006 := Nat.pos_of_ne_zero hh
-    have g06 : c₃.nreg 83022 < c₃.nreg 83006 := by rw [r22, r06]; exact hh0
+    have g06 : c₃.nreg 83022 < c₃.nreg 83006 := by rwa [r22, r06]
     obtain ⟨hi2, hτ, hτ1⟩ := hedge hh0
     have hi2' : c₀.nreg 83005 - 6 < 2 * C.m := hi2
     have he6' : 6 ≤ c₀.nreg 83005 := he6
@@ -401,16 +397,14 @@ theorem holeS_chain (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C₀ : Chain
           (⟨c₄.nreg 84012, 0⟩, ⟨c₄.nreg 84013, 0⟩) := by
         unfold eHole
         rw [htt, hn, w12, w13, Nat.mod_eq_of_lt (by omega)]
-      have hcov := cover_chain_edge hsimp hi2 hτ hτ1 (by rw [e1]; exact m0)
-        (by rw [e2]; exact m1) (Qof P)
+      have hcov := cover_chain_edge hsimp hi2 hτ hτ1 (by rwa [e1])
+        (by rwa [e2]) (Qof P)
       rw [show c₀.nreg 83005 - 6 + 6 = c₀.nreg 83005 by omega] at hcov
-      rw [hpos]
-      exact hcov
+      rwa [hpos]
     · intro g hg p' τ' hp' h0 h1 hkk
       simp only [ShotList.holeList, List.mem_map, List.mem_range] at hg
       obtain ⟨q, hq, rfl⟩ := hg
       have hq' : q < min (c₄.nreg 84009) 3 := hq
-      have htw2 : tourTwin C (c₀.nreg 83005 - 6) < 2 * C.m := (tour_twin C hi2').1
       rcases (by omega : q = 0 ∨ q = 1) with rfl | rfl
       · have e : ShotList.holeAt c₄ 84000 0 = eHole (chainModel C).W.n (c₀.nreg 83005) := by
           rw [holeAt_eq]; unfold eHole

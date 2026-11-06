@@ -156,7 +156,6 @@ theorem kltB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
 /-- The four ends of an arc and a hole. -/
 inductive End where
   | A | B | X | Y
-  deriving DecidableEq
 
 /-- **The pieces selected by the bits**: `hp` the hole is present, `c1 … c6` the tests of
 `cutK` (`(x, y) ∋ a`, `(a, b) ∋ y`, `(y, b) ∋ x`, `(a, b) ∋ x`, `(x, b) ∋ y`, `x = a`). -/
@@ -403,17 +402,17 @@ theorem selB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
           obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .X)] (by simp)
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_true ((t b1).2 q1) (.ifLtN_true ((t b2).2 q2)
             (.ifLtN_true ((t b3).2 q3) ex))), by omega, ?_⟩
-          rw [d1, d2, d3]; exact h
+          rwa [d1, d2, d3]
         · have d3 : decide (c.nreg c3 = 1) = false := by simp [q3]
           obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .B)] (by simp)
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_true ((t b1).2 q1) (.ifLtN_true ((t b2).2 q2)
             (.ifLtN_false (fun h' => q3 ((t b3).1 h')) ex))), by omega, ?_⟩
-          rw [d1, d2, d3]; exact h
+          rwa [d1, d2, d3]
       · have d2 : decide (c.nreg c2 = 1) = false := by simp [q2]
         obtain ⟨c', k, ex, hk, h⟩ := leaf [] (by simp)
         refine ⟨c', _, .ifLtN_true hp (.ifLtN_true ((t b1).2 q1)
           (.ifLtN_false (fun h' => q2 ((t b2).1 h')) ex)), by omega, ?_⟩
-        rw [d1, d2]; exact h
+        rwa [d1, d2]
     · have d1 : decide (c.nreg c1 = 1) = false := by simp [q1]
       have n1 : ¬ c.nreg z < c.nreg c1 := fun h' => q1 ((t b1).1 h')
       by_cases q4 : c.nreg c4 = 1
@@ -423,12 +422,12 @@ theorem selB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
           obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .X), (.Y, .B)] (by simp)
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_true ((t b4).2 q4)
             (.ifLtN_true ((t b5).2 q5) ex))), by omega, ?_⟩
-          rw [d1, d4, d5]; exact h
+          rwa [d1, d4, d5]
         · have d5 : decide (c.nreg c5 = 1) = false := by simp [q5]
           obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .X)] (by simp)
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_true ((t b4).2 q4)
             (.ifLtN_false (fun h' => q5 ((t b5).1 h')) ex))), by omega, ?_⟩
-          rw [d1, d4, d5]; exact h
+          rwa [d1, d4, d5]
       · have d4 : decide (c.nreg c4 = 1) = false := by simp [q4]
         have n4 : ¬ c.nreg z < c.nreg c4 := fun h' => q4 ((t b4).1 h')
         by_cases q6 : c.nreg c6 = 1
@@ -438,18 +437,18 @@ theorem selB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
             obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .B)] (by simp)
             refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_false n4
               (.ifLtN_true ((t b6).2 q6) (.ifLtN_true ((t b2).2 q2) ex)))), by omega, ?_⟩
-            rw [d1, d4, d6, d2]; exact h
+            rwa [d1, d4, d6, d2]
           · have d2 : decide (c.nreg c2 = 1) = false := by simp [q2]
             obtain ⟨c', k, ex, hk, h⟩ := leaf [] (by simp)
             refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_false n4
               (.ifLtN_true ((t b6).2 q6) (.ifLtN_false (fun h' => q2 ((t b2).1 h')) ex)))),
               by omega, ?_⟩
-            rw [d1, d4, d6, d2]; exact h
+            rwa [d1, d4, d6, d2]
         · have d6 : decide (c.nreg c6 = 1) = false := by simp [q6]
           obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .B)] (by simp)
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_false n4
             (.ifLtN_false (fun h' => q6 ((t b6).1 h')) ex))), by omega, ?_⟩
-          rw [d1, d4, d6]; exact h
+          rwa [d1, d4, d6]
   · have hpd : decide (c.nreg hpA < c.nreg hpB) = false := by simp [hp]
     rw [hpd]
     obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .B)] (by simp)

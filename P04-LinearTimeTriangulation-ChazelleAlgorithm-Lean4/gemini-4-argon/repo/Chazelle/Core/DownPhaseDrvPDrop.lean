@@ -344,7 +344,6 @@ theorem dBody_exec {m₀ : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {CB B'
       have hp : d₂.nreg 218077 < d₂.nreg 218021 := by rw [h21, v₂]; omega
       have hjK : j + 1 ≤ L₀.length := by
         have := DownBase.rankF_lt_length keepW (0, 0, 0) ht (by rw [← hx]; exact hk)
-        have h2 := (List.length_filter_le keepW L₀)
         omega
       obtain ⟨d₆, k₆, e₆', hk₆, w75, w76, r₆, mm₆, rr₆, rm₆, o₆⟩ :=
         dKeep_exec (P := P) d₂ e₂.wb_right h75 h76 h21 (by omega) (by omega)
@@ -474,11 +473,11 @@ theorem dropS_exec (c : Config) (hw : WordsBounded W c) {N : NF}
       (∀ r, r ≠ 218016 → r ≠ 218017 → (r < 218070 ∨ 218080 < r) → r ≠ ALLOC →
         c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  set A := c.nreg ALLOC with hA
-  set B₀ := c.nreg 218015 with hB₀
+  set A := c.nreg ALLOC
+  set B₀ := c.nreg 218015
   have hNA := hN.holds
   obtain ⟨hBA, -⟩ := DrvT.nfAt_robust_bound hN
-  set K₀ := N.chords.length with hK₀
+  set K₀ := N.chords.length
   have hlen₀ : (DrvT.triplesOf N).length = K₀ := by unfold DrvT.triplesOf; rw [List.length_map]
   obtain ⟨c₁, k₁, e₁, hk₁, v79, v80, v78, v71, v75, v16, v76, v70, g₁, mm₁, rr₁, rm₁, o₁⟩ :=
     dSetup_exec (P := P) c hw (A := A) (B₀ := B₀) (K₀ := K₀) (CB := c.nmem (B₀ + 3)) rfl rfl

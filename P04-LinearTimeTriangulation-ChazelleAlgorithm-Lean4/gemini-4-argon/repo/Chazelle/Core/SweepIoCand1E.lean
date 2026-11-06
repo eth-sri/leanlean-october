@@ -73,14 +73,14 @@ theorem lctxR (h1 : c.nreg lMD = c₀.nreg (sw 31)) (h2 : c.nreg lCD = c₀.nreg
   refine
     { hG := hA.hG
       hWh := hA.hWh
-      hctx := ⟨hA.hG, hA.hWh, by rw [h2]; exact hw, ⟨H, by rw [h2]; exact hC, hA.hreg⟩,
+      hctx := ⟨hA.hG, hA.hWh, by rwa [h2], ⟨H, by rwa [h2], hA.hreg⟩,
         hA.hP, by have := hA.hWm; have : J.right.m ≤ J.whole.m := by
                     show J.m₂ ≤ J.m₁ + J.m₂; omega
                   omega⟩
       hcd := by rw [h1, h2]
       hmd := by rw [h1]; exact Or.inl ⟨m0c, H, J.right, mdc, rfl⟩
-      hmwf := by rw [h1]; exact mwfc
-      hm0 := by rw [h1]; exact m0c
+      hmwf := by rwa [h1]
+      hm0 := by rwa [h1]
       hP := hA.hP
       hNW := by rw [h3]; exact hA.hN₂.transport (fun a ha => hm a (by have := hA.hE; omega))
       hE := by have := hA.hE; have := hI.hA; omega
@@ -115,14 +115,14 @@ theorem lctxL (h1 : c.nreg lMD = c₀.nreg (sw 30)) (h2 : c.nreg lCD = c₀.nreg
   refine
     { hG := hA.hG
       hWh := hA.hWh
-      hctx := ⟨hA.hG, hA.hWh, by rw [h2]; exact hw, ⟨H, by rw [h2]; exact hC, hA.hreg⟩,
+      hctx := ⟨hA.hG, hA.hWh, by rwa [h2], ⟨H, by rwa [h2], hA.hreg⟩,
         hA.hP, by have := hA.hWm; have : J.left.m ≤ J.whole.m := by
                     show J.m₁ ≤ J.m₁ + J.m₂; omega
                   omega⟩
       hcd := by rw [h1, h2]
       hmd := by rw [h1]; exact Or.inl ⟨m0c, H, J.left, mdc, rfl⟩
-      hmwf := by rw [h1]; exact mwfc
-      hm0 := by rw [h1]; exact m0c
+      hmwf := by rwa [h1]
+      hm0 := by rwa [h1]
       hP := hA.hP
       hNW := by rw [h3]; exact hA.hN₁.transport (fun a ha => hm a (by have := hA.hE; omega))
       hE := by have := hA.hE; have := hI.hA; omega
@@ -159,13 +159,13 @@ theorem q1_facts {z : Point} (hq : QState P J 1 z c) :
         (((chainModel J.right).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).1 + dirOf (c.nreg qD),
           ((chainModel J.right).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).2) := by
       simp [Chazelle.Visibility.rayPt]
-    rw [e]; exact h7
+    rwa [e]
   have habs : |((chainModel J.right).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).2| < J.right.radius :=
     query_abs h1 h4 h5 h6 hσ hsec
   have hpc := posClass_of h1 h4 h5 habs (Or.inl h6)
   rw [hz] at habs h6 hht
-  refine ⟨hz, h1, ⟨h4, h5, by rw [← hQn]; exact h3⟩, habs, h6, hpc,
-    ⟨c.nreg qH - 1, by show c.nreg qH = _; omega, by omega, by rw [hz, hht], hsec, by rw [hz]; exact h6⟩,
+  refine ⟨hz, h1, ⟨h4, h5, by rwa [← hQn]⟩, habs, h6, hpc,
+    ⟨c.nreg qH - 1, by show c.nreg qH = _; omega, by omega, by rw [hz, hht], hsec, by rwa [hz]⟩,
     hσ, h2, by omega, hht.symm⟩
 
 end

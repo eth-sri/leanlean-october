@@ -238,7 +238,7 @@ theorem FillInv.step {R FC LT : ℕ} {b c cap : ℕ → ℕ} {ls : ℕ → List 
     exact I.rest a ha fun r hr t ht => hna r hr t (by
       by_cases h : r = r₀
       · subst h; rw [Function.update_self]; omega
-      · rw [Function.update_of_ne h]; exact ht)
+      · rwa [Function.update_of_ne h])
   · intro r
     by_cases h : r = r₀
     · subst h; rw [Function.update_self, Function.update_self, List.length_append, I.len]; rfl
@@ -294,9 +294,9 @@ theorem fillV_exec (e : Config) (hw : WordsBounded W e) {FC LT v p : ℕ}
       (∀ r, (r < 43222 ∨ 43224 < r) → e'.nreg r = e.nreg r) := by
   unfold fillV
   exec_block
-  · rw [hFC, hv]; exact hW1
-  · config_simp; rw [hFC, hv, hLT, hp]; exact hW2
-  · config_simp; rw [hFC, hv, hp, h1]; exact hW3
+  · rwa [hFC, hv]
+  · config_simp; rwa [hFC, hv, hLT, hp]
+  · config_simp; rwa [hFC, hv, hp, h1]
   · refine ⟨rfl, ?_, fun r hr => ?_⟩ <;> config_simp
     · rw [hFC, hv, hLT, hp, h1]
     · simp (disch := omega) only [upd_other]
@@ -415,19 +415,17 @@ theorem chFillLoop_exec (d : Config) (hw : WordsBounded W d) {m₃ : ℕ → ℕ
           have q2 : Function.update (lst2F u v i) (u i) (lst2F u v i (u i) ++ [i]) (v i) =
               lst2F u v i (v i) := Function.update_of_ne (Ne.symm hne) _ _
           rw [m₂, v01, q1]
-          rw [q1, q2, cnt2_update_ne u v i hne, lst2_update_ne u v i hne] at J₂
-          exact J₂
+          rwa [q1, q2, cnt2_update_ne u v i hne, lst2_update_ne u v i hne] at J₂
         by_cases a1 : u i < v i
         · obtain ⟨e₂, k₂, x₂, hk₂, g₂, J₂⟩ := fv (by omega)
-          exact ⟨e₂, _, .ifLtN_true (by rw [v21, v25]; exact a1) x₂, by omega, g₂, J₂⟩
+          exact ⟨e₂, _, .ifLtN_true (by rwa [v21, v25]) x₂, by omega, g₂, J₂⟩
         by_cases a2 : v i < u i
         · obtain ⟨e₂, k₂, x₂, hk₂, g₂, J₂⟩ := fv (by omega)
-          exact ⟨e₂, _, .ifLtN_false (by rw [v21, v25]; exact a1)
-            (.ifLtN_true (by rw [v21, v25]; exact a2) x₂), by omega, g₂, J₂⟩
-        · refine ⟨e₁, _, .ifLtN_false (by rw [v21, v25]; exact a1)
-            (.ifLtN_false (by rw [v21, v25]; exact a2) (.skip w₁)), by omega, fun _ _ => rfl, ?_⟩
-          rw [← cnt2_update_eq u v i (by omega), ← lst2_update_eq u v i (by omega)]
-          exact J₁
+          exact ⟨e₂, _, .ifLtN_false (by rwa [v21, v25])
+            (.ifLtN_true (by rwa [v21, v25]) x₂), by omega, g₂, J₂⟩
+        · refine ⟨e₁, _, .ifLtN_false (by rwa [v21, v25])
+            (.ifLtN_false (by rwa [v21, v25]) (.skip w₁)), by omega, fun _ _ => rfl, ?_⟩
+          rwa [← cnt2_update_eq u v i (by omega), ← lst2_update_eq u v i (by omega)]
       have w₂ := x₂.wb_right
       have e1011 : e₂.nreg 43011 = 1 := by rw [g₂ _ (by omega), g₁ _ (by omega), r4]
       have e1201 : e₂.nreg 43201 = i := by rw [g₂ _ (by omega), v01]

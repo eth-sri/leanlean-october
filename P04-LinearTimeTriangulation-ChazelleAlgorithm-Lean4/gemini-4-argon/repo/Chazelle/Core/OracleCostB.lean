@@ -31,9 +31,9 @@ theorem QAt.nodeNa_eq (h : QAt P m O E V H C N B k) {u : ℕ} (hu : u < V.A) :
   have hN := h.isNF
   have hm := h.nodeMem
   obtain ⟨reg, -, hA, -⟩ := NFLoc.isNF_arcs hN
-  have huA : u < N.arcs.length := by rw [← h.hA]; exact hu
+  have huA : u < N.arcs.length := by rwa [← h.hA]
   have hj0 : nodeArc0 m V u = sj N u := by
-    have := hm.nf.2.2.2.2.2.2.2.2.1 u (by rw [NFLoc.seq_length hN]; exact huA)
+    have := hm.nf.2.2.2.2.2.2.2.2.1 u (by rwa [NFLoc.seq_length hN])
     unfold nodeArc0 sj; rw [← hm.SB]; exact this
   have hj0A : sj N u < N.arcs.length := NFLoc.seq_lt hN huA
   have hr : nodeReg m V u = rgi N u := by
@@ -42,7 +42,7 @@ theorem QAt.nodeNa_eq (h : QAt P m O E V H C N B k) {u : ℕ} (hu : u < V.A) :
   have hrR : rgi N u < N.regions.length := (hA.1 _ hj0A).1
   obtain ⟨hna, -, -, hlist, -⟩ := hm.nf.2.2.2.2.2.2.2.1 _ hrR
   have hna' : nodeNa m V u = (N.region (rgi N u)).arcs.length := by
-    unfold nodeNa; rw [hr, ← hm.RB]; exact hna
+    unfold nodeNa; rwa [hr, ← hm.RB]
   refine ⟨hna', hrR, fun t ht => ?_⟩
   rw [hna'] at ht
   unfold nodeArc nodeLs; rw [hr, ← hm.RB, ← hm.LB]; exact hlist t ht
@@ -54,7 +54,7 @@ theorem QAt.arcLen_eq (h : QAt P m O E V H C N B k) {j : ℕ} (hj : j < V.A) :
   have hm := h.nodeMem
   obtain ⟨hpA, hpj⟩ := hm.pos j hj
   have hsj : sj N (arcPos m V j) = j := hpj
-  refine ⟨?_, by rw [← h.hA]; exact hpA⟩
+  refine ⟨?_, by rwa [← h.hA]⟩
   unfold scanLenR arcLenM lenOf
   rw [hsj, ← h.hA, arcSe_eq hm hj, arcEe_eq hm hj]
 
@@ -87,7 +87,7 @@ theorem QAt.nodeCost_le (h : QAt P m O E V H C N B k) (hP : C.P.Simple) {u : ℕ
   unfold nodeCostFrom
   have := Finset.sum_le_card_nsmul _ _ _ hterm
   rw [Nat.card_Ico, Nat.sub_zero, smul_eq_mul] at this
-  have h5' : nodeNa m V u ≤ 5 := by rw [hna]; exact h5
+  have h5' : nodeNa m V u ≤ 5 := by rwa [hna]
   have := Nat.mul_le_mul_right (1132 * (min (m (O + 2)) (2 * V.m + 7) + 11) + 40) h5'
   omega
 

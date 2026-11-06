@@ -147,7 +147,6 @@ theorem gather_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Co
   rw [← hD.D] at hdX hdY hroom
   have eX : c.nmem (d.b0 + d.oExb + X) = d.b0 + d.oEx + d.D * X := henc.exb X hX
   have eY : c.nmem (d.b0 + d.oExb + Y) = d.b0 + d.oEx + d.D * Y := henc.exb Y hY
-  have sX := slot_le (R := d.R) (D := d.D) hX (le_refl _)
   have sY := slot_le (R := d.R) (D := d.D) hY (le_refl _)
   have sX' := slot_le (R := d.R) (D := d.D) hX hdX
   have sY' := slot_le (R := d.R) (D := d.D) hY hdY
@@ -257,14 +256,14 @@ theorem Enc.cond_s0 {m : ℕ → ℕ} {d : Dm} {S : St} (h : Enc m d S) {e : ℕ
       { S with s0 := Function.update S.s0 e (if S.s0 e = Y then X else S.s0 e) } := by
   split_ifs
   · exact h.set_s0 he X
-  · rw [Function.update_eq_self]; exact h
+  · rwa [Function.update_eq_self]
 
 theorem Enc.cond_s1 {m : ℕ → ℕ} {d : Dm} {S : St} (h : Enc m d S) {e : ℕ} (he : e < d.K)
     (X Y : ℕ) : Enc (if S.s1 e = Y then upd m (d.b0 + d.oS1 + e) X else m) d
       { S with s1 := Function.update S.s1 e (if S.s1 e = Y then X else S.s1 e) } := by
   split_ifs
   · exact h.set_s1 he X
-  · rw [Function.update_eq_self]; exact h
+  · rwa [Function.update_eq_self]
 
 /-- Relabel the chord `e` from class `Y` to `X` on either side. -/
 def St.relab (S : St) (e X Y : ℕ) : St :=
@@ -343,8 +342,6 @@ def relBody : Stmt :=
 /-- The relabelling loop. -/
 def relStmt : Stmt := .seq (.instr (.constN 90101 0)) (.whileLtN 90101 90067 relBody)
 
-theorem wrS_rel : wrS Brm relStmt = true := by decide
-
 /-- The facts the relabelling loop keeps. -/
 structure RelI (W : ℕ) (d : Dm) (st : St) (cc : ℕ) (c₀ c : Config) : Prop where
   wb : WordsBounded W c
@@ -363,14 +360,7 @@ theorem relStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : C
     ∃ c' k, Exec P W relStmt c c' k ∧ k ≤ 22 * E.D + 3 ∧
       Enc c'.nmem d (st.rel cc (st.exl (st.s1 cc))) ∧
       (∀ r, r ≠ 90101 → r ≠ 90102 → r ≠ 90105 → r ≠ 90106 → c'.nreg r = c.nreg r) ∧
-      (∀ a, (a < d.b0 + d.oS0 ∨ d.b0 + d.oNd0 ≤ a) → c'.nmem a = c.nmem a) ∧
-      FrameS Brm c c' := by
-  suffices hh : ∃ c' k, Exec P W relStmt c c' k ∧ k ≤ 22 * E.D + 3 ∧
-      Enc c'.nmem d (st.rel cc (st.exl (st.s1 cc))) ∧
-      (∀ r, r ≠ 90101 → r ≠ 90102 → r ≠ 90105 → r ≠ 90106 → c'.nreg r = c.nreg r) ∧
-      (∀ a, (a < d.b0 + d.oS0 ∨ d.b0 + d.oNd0 ≤ a) → c'.nmem a = c.nmem a) by
-    obtain ⟨c', k, e, h1, h2, h3, h4⟩ := hh
-    exact ⟨c', k, e, h1, h2, h3, h4, exec_frameS e wrS_rel⟩
+      (∀ a, (a < d.b0 + d.oS0 ∨ d.b0 + d.oNd0 ≤ a) → c'.nmem a = c.nmem a) := by
   have hb := hD.base
   have hW3 := hD.W1
   obtain ⟨y1, y2, y3, -⟩ := d.lay
@@ -392,9 +382,9 @@ theorem relStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : C
     (fun c₁ I ht => by
       obtain ⟨hw₁, ht₁, henc₁, hr₁, hm₁⟩ := I
       rw [hr₁ 90067 (by decide) (by decide) (by decide) (by decide), h67] at ht
-      set t := c₁.nreg 90101 with htdef
-      set l := st.exl (st.s1 cc) with hldef
-      have htl : t < l.length := by rw [exl_length]; exact ht
+      set t := c₁.nreg 90101
+      set l := st.exl (st.s1 cc)
+      have htl : t < l.length := by rwa [exl_length]
       set e₀ := l.getD t 0 with he₀
       have he₀K : e₀ < d.K := hKd _ (by
         rw [he₀, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem htl, Option.getD_some]
@@ -446,7 +436,7 @@ theorem relStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : C
             rw [qr _ (by decide) (by decide), hr₁ _ (by decide) (by decide) (by decide) (by decide),
               h65]
           obtain ⟨c₃, k₃, ex₃, hk₃, enc₃, r₃, m₃⟩ := relOne_exec (P := P) hw₂ hC₂
-            (by rw [qm]; exact henc₁) hD he₀K q102 c64 c65
+            (by rwa [qm]) hD he₀K q102 c64 c65
           have fin : Enc c₃.nmem d (st.rel cc (l.take (t + 1))) := by
             refine enc₃.st_congr (fun _ _ => rfl) (fun i _ => ?_) (fun i _ => ?_)
               (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
@@ -459,8 +449,8 @@ theorem relStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : C
               · rw [Function.update_of_ne hi]
                 simp [hi]
           by_cases hlt : e₀ < cc
-          · exact ⟨c₃, _, .ifLtN_true (by rw [q102, c62]; exact hlt) ex₃, by omega, fin, r₃, m₃⟩
-          · exact ⟨c₃, _, .ifLtN_false (by rw [q102, c62]; exact hlt)
+          · exact ⟨c₃, _, .ifLtN_true (by rwa [q102, c62]) ex₃, by omega, fin, r₃, m₃⟩
+          · exact ⟨c₃, _, .ifLtN_false (by rwa [q102, c62])
               (.ifLtN_true (by rw [q102, c62]; omega) ex₃), by omega, fin, r₃, m₃⟩
       have hw₃ := ex₃.wb_right
       have c101 : c₃.nreg 90101 = t := by rw [r₃ _ (by decide) (by decide), qr _ (by decide) (by decide)]
@@ -470,21 +460,19 @@ theorem relStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : C
       have ex₄ := Exec.addN (P := P) hw₃ 90101 90101 90019 (by rw [c101, c19]; omega)
       refine ⟨_, _, .seq ex₂ (.seq ex₃ ex₄), ⟨ex₄.wb_right, ?_, ?_, ?_, ?_⟩, by omega, ?_⟩
       · config_simp; rw [c101, c19]; omega
-      · config_simp; rw [c101, c19]; exact enc₃
+      · config_simp; rwa [c101, c19]
       · intro r a1 a2 a3 a4
         config_simp
         rw [upd_other _ _ _ a1, r₃ r a3 a4, qr r a3 a2, hr₁ r a1 a2 a3 a4]
       · intro a ha; config_simp; rw [m₃ a ha, qm, hm₁ a ha]
       · config_simp; rw [c101, c19]; omega) I0
   obtain ⟨hw', ht', henc', hr', hm'⟩ := I'
-  rw [hr' 90067 (by decide) (by decide) (by decide) (by decide)] at hx
-  rw [h67] at hx
+  rw [hr' 90067 (by decide) (by decide) (by decide) (by decide), h67] at hx
   have hfull : c'.nreg 90101 = st.deg (st.s1 cc) := by omega
   rw [hfull, ← exl_length, List.take_length] at henc'
   refine ⟨c', _, .seq e₀ e, ?_, henc', fun r a1 a2 a3 a4 => ?_, fun a ha => ?_⟩
   · simp only [upd, ite_true, Nat.sub_zero] at hk
     rw [← hD.D]
-    have : 22 * st.deg (st.s1 cc) ≤ 22 * d.D := Nat.mul_le_mul_left _ hdY
     omega
   · rw [hr' r a1 a2 a3 a4]
   · rw [hm' a ha]

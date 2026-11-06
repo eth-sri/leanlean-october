@@ -121,7 +121,7 @@ theorem IE.search {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     (fun j hj => by rw [f300]; rw [f301] at hj; exact od.logW hj)
     hx
     (by rw [f300, f301, f40, g40]; exact od.down rfl _)
-    (by rw [fTL]; exact hroom)
+    (by rwa [fTL])
   rw [fTL, f300, f301, f40, g40] at h
   exact h.mono le_rfl (fun c' h' => h'.2)
 
@@ -168,7 +168,7 @@ theorem stOrg_irs (e : IE P W X Ok J H N₁ N₂ Eb c₀ rs ls) (hI : IInv W c�
     have vS : regB c.nmem [.copyN oK ipKk, .copyN oS ipS] c.nreg oS = sOf b := by
       simp only [regB, regI]; rw [upd_same, upd_other _ _ _ (by unfold oK ipS sw; omega), hb]
     refine IRS.seq (K₁ := 11100) (K₂ := 2) (orgHead_irs hI₁ e.hA.hK (e.hA.ctxR hI₁)
-      e.hA.hNF₂ (e.nw hI₁) le_rfl (by simp only; rw [vK]; exact hko)
+      e.hA.hNF₂ (e.nw hI₁) le_rfl (by simp only; rwa [vK])
       (by simp only; rw [vS]; exact ini_sOf_le b) (by omega)) ?_
     rintro c₂ hI₂ hA₂ hA₂' ⟨-, -, -, -, vE, vC, -, -, fr₂, hAl₂, hm₂⟩
     simp only at vE vC fr₂ hAl₂ hm₂
@@ -189,9 +189,8 @@ theorem stOrg_irs (e : IE P W X Ok J H N₁ N₂ Eb c₀ rs ls) (hI : IInv W c�
       rw [upd_other _ _ _ h3, upd_other _ _ _ h2, fr₂ r hr (by unfold sw at *; omega) h4,
         v1 r (by unfold oK sw at *; omega) (by unfold oS sw at *; omega)]
     · simp only [regB, regI]
-      rw [upd_other _ _ _ (show ALLOC ≠ ipH by unfold ALLOC ipH sw; omega),
+      rwa [upd_other _ _ _ (show ALLOC ≠ ipH by unfold ALLOC ipH sw; omega),
         upd_other _ _ _ (show ALLOC ≠ ipE by unfold ALLOC ipE sw; omega)]
-      exact hAl₂
     · simp only; exact hm₂ a ha
   · have c2 : kind = 2 := by omega
     refine (IRS.ifF (K := 2) (by rw [hk1, k2]; omega) (IRS.block _ hI ?_)).mono

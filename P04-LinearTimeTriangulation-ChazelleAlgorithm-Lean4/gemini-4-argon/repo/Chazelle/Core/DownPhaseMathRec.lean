@@ -124,7 +124,7 @@ theorem arc_pos (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L)
         (E.getD u 0 / 2) := by
       unfold NF.chord
       show ((List.range L.length).map (BuildNF.chordRec (interiorModel Q) Q L E)).getD _ _ = _
-      rw [List.getD_eq_getElem _ _ (by rw [List.length_map, List.length_range]; exact hc'),
+      rw [List.getD_eq_getElem _ _ (by rwa [List.length_map, List.length_range]),
         List.getElem_map, List.getElem_range]
     rw [hchord]
     unfold wposOf

@@ -137,8 +137,7 @@ theorem arcs_le_deg {Q : Polygon} (hGM : GoodModel M) (hNF : IsNF M Q N) {reg : 
     exact hArcs.2.1 a b haN hbN (har.trans hbr.symm) (Prod.mk.inj h).1
   · obtain ⟨haN, har⟩ := (hArcs.2.2.2 r hr a).1 ha
     have := (hArcs.1 a haN).2
-    rw [har] at this
-    exact this
+    rwa [har] at this
 
 
 /-! ## The run of the test -/
@@ -247,7 +246,7 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
           C.coordBound_lt_radius
       have hex : ∀ C : Chain, M = chainModel C → ∃ p t, Sweep.Arrival M.W
           (M.pos (Qof P) ⟨c₄.nreg 83012, c₄.nreg 83013⟩) (dirOf (c₀.nreg 83008)) p t :=
-        fun _ _ => ⟨p', t', by rw [hpos]; exact harrival⟩
+        fun _ _ => ⟨p', t', by rwa [hpos]⟩
       refine RSB.ifT g' (RSB.of_RS Finset.subset_union_left
         (postHit_rs hE hI₄ hpp hpe hy hex (by omega))) |>.mono le_rfl (fun c₅ h₅ => ?_)
       obtain ⟨q1, q2, q3, q4, q5, q6, q7, q8, q9, q10⟩ := h₅

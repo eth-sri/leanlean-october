@@ -170,18 +170,18 @@ theorem orgDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   -- 1. the head
   refine IRS.mono (K := 11100 + (31410 + (4 + (16707 + evCandK (F (c₀.nreg (sw 5))) L.length KG))))
     (IRS.seq (K₁ := 11100) (K₂ := 31410 + (4 + (16707 + evCandK (F (c₀.nreg (sw 5))) L.length KG)))
-      (orgHead_irs hI E.hK (E.ctx2' hI) hNF (E.nw₂' hI) le_rfl (by rw [hkd]; exact hk)
-        (by rw [hsd]; exact hs) (by unfold orgDoK at hroom; omega)) ?_)
+      (orgHead_irs hI E.hK (E.ctx2' hI) hNF (E.nw₂' hI) le_rfl (by rwa [hkd])
+        (by rwa [hsd]) (by unfold orgDoK at hroom; omega)) ?_)
     (by unfold orgDoK; omega) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' ⟨-, vUp, vDn, vD, vE, vC, vFE, vFC, fr₁, -, hm₁⟩
   simp only [hkd, hsd] at vUp vDn vD vE vC vFE vFC
   obtain ⟨hpp', -, hpos', hnorm'⟩ := nhgt_facts hEp
   have hE1 : c₁.nreg oE < 2 * J.right.m + 7 := by rw [vE]; have := cm_n J.right; omega
   have hpp1 : ProperPos (chainModel J.right) (Qof P) P.n ⟨c₁.nreg oE, c₁.nreg oC⟩ := by
-    rw [vE, vC]; exact hpp'
+    rwa [vE, vC]
   have hnorm1 : c₁.nreg oC = 0 ↔
       (chainModel J.right).param (Qof P) ⟨c₁.nreg oE, c₁.nreg oC⟩ = 0 := by
-    rw [vE, vC]; exact hnorm'
+    rwa [vE, vC]
   have hpos1 : (chainModel J.right).pos (Qof P) ⟨c₁.nreg oE, c₁.nreg oC⟩ =
       endOrigin J (Qof P) N₂ (2 * k + s) := by
     rw [vE, vC, hpos', hO]
@@ -203,11 +203,6 @@ theorem orgDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     (band_sw_not (by unfold BestR LblR bF bE bH bN bL sw at hr; omega))
     (by unfold BestR LblR bF bE bH bN bL sw at hr; unfold sw; omega)
     (by unfold BestR LblR bF bE bH bN bL sw at hr; unfold ALLOC; omega)
-  have kE2 : c₂.nreg kE = c.nreg kE := keep2 _ (band_sw_not (by unfold kE sw; omega))
-    (by unfold kE sw; omega) (by unfold kE ALLOC sw; omega)
-  have kH2 : c₂.nreg kH = c.nreg kH := keep2 _ (band_sw_not (by unfold kH sw; omega))
-    (by unfold kH sw; omega) (by unfold kH ALLOC sw; omega)
-  have same2 : SameKB c c₂ := ⟨kE2, kH2, best2⟩
   have k1 : c₂.nreg K1 = 1 := (E.hK.fix hI₂).2.1
   -- the rejection (class `0` or `2`)
   have rejQ : c₂.nreg oCl ≠ 1 →
@@ -260,11 +255,11 @@ theorem orgDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hpos2 : (chainModel J.right).pos (Qof P) ⟨c₂.nreg oE, c₂.nreg oC⟩ =
       endOrigin J (Qof P) N₂ (2 * k + s) := by rw [eE2, eC2, hpos1]
   have hy2 : |((chainModel J.right).pos (Qof P) ⟨c₂.nreg oE, c₂.nreg oC⟩).2| < J.right.radius := by
-    rw [hpos2, hO]; exact hband
+    rwa [hpos2, hO]
   refine IRS.seq (K₁ := 16707) (K₂ := evCandK (F (c₀.nreg (sw 5))) L.length KG)
     (callAbs_irs hI₂ (E.ctx2' hI₂)
       (by unfold oE oC sw; omega) (by unfold oAbsA sw; omega)
-      (by rw [eE2, vE]; exact hEe) (by rw [eE2, eC2]; exact hpp1) hy2
+      (by rwa [eE2, vE]) (by rwa [eE2, eC2]) hy2
       (by unfold orgDoK at hroom; omega)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨habs3, fr₃, -, hm₃⟩
   rw [hpos2] at habs3
@@ -320,7 +315,7 @@ theorem orgDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hfar3 : (chainModel J.right).pos (Qof P) ⟨c₃.nreg oFE, c₃.nreg oFC⟩ =
       if c₃.nreg oD = 1 then Merge.rend ((N₂.chord k).toSet (chainModel J.right) (Qof P))
       else Merge.lend ((N₂.chord k).toSet (chainModel J.right) (Qof P)) := by
-    rw [eFE, eFC, eD]; exact hFar
+    rwa [eFE, eFC, eD]
   have hch : (N₂.chord k).toSet (chainModel J.right) (Qof P) ∈ N₂.F (chainModel J.right) (Qof P) := by
     refine ⟨N₂.chord k, ?_, rfl⟩
     unfold NF.chord
@@ -333,13 +328,13 @@ theorem orgDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hev := evCand_irs E hI₃ hgen hL (by rw [eGK, hgK]) (by rw [eGB]; omega)
     (fun i hi => by rw [eGB, ← harcs i hi]; unfold ShotList.arcAt
                     rw [hm3 _ (by omega), hm3 _ (by omega), hm3 _ (by omega), hm3 _ (by omega)])
-    hch (by rw [eD]; split_ifs <;> omega) (by rw [eD]; exact hLR) hsym3 hsl hse habs3 haR hav ha₁
-    (by rw [eFE]; exact hFe) (by rw [eFE, eFC]; exact hFp) hfar3 (by rw [eK, eS]; omega)
-    (by rw [same3.1, same3.2.1]; exact hkey)
-    (by rw [best3 _ (Or.inl rfl), best3 _ (Or.inr (Or.inl rfl)),
-      best3 _ (Or.inr (Or.inr (Or.inl rfl)))]; exact hb)
-    (by rw [best3 _ (Or.inl rfl)]; exact hbF)
-    (by rw [best3 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))]; exact hbN)
+    hch (by rw [eD]; split_ifs <;> omega) (by rwa [eD]) hsym3 hsl hse habs3 haR hav ha₁
+    (by rwa [eFE]) (by rwa [eFE, eFC]) hfar3 (by rw [eK, eS]; omega)
+    (by rwa [same3.1, same3.2.1])
+    (by rwa [best3 _ (Or.inl rfl), best3 _ (Or.inr (Or.inl rfl)),
+      best3 _ (Or.inr (Or.inr (Or.inl rfl)))])
+    (by rwa [best3 _ (Or.inl rfl)])
+    (by rwa [best3 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))])
     (by unfold orgDoK at hroom; omega)
   refine hev.mono le_rfl ?_
   rintro c' ⟨hres, hcomp, hfr, hA'⟩

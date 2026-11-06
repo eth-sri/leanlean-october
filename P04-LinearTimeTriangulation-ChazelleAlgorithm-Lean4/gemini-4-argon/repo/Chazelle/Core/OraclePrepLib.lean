@@ -131,15 +131,15 @@ theorem scatS_exec {P : Polygon} {W : ℕ} {ri rn r1 ra rv : ℕ} {body : Stmt} 
     ∃ c' k, Exec P W (scatS ri rn r1 ra rv body) c c' k ∧ k ≤ n * (κ + 4) + 3 ∧
       (∀ r, B r = false → r ≠ ri → c'.nreg r = c.nreg r) ∧
       (∀ r, B r = false → c'.rreg r = c.rreg r) ∧ c'.nmem = scat c.nmem g f n ∧
-      c'.rmem = c.rmem ∧ c'.output = c.output ∧ J c' ∧ c'.nreg ri = n := by
+      c'.rmem = c.rmem ∧ c'.output = c.output ∧ J c' := by
   let I : ℕ → Config → Prop := fun i d => WordsBounded W d ∧
     (∀ r, B r = false → r ≠ ri → d.nreg r = c.nreg r) ∧
     (∀ r, B r = false → d.rreg r = c.rreg r) ∧ d.nmem = scat c.nmem g f i ∧
     d.rmem = c.rmem ∧ d.output = c.output ∧ J d
   obtain ⟨c', k, ex, hk, ⟨_, h2, h3, h4, h5, h6, h7⟩, hi, -⟩ := forS_exec (P := P) (W := W)
     (body := .seq body (.instr (.storeN ra rv))) hir hi1 (n := n) (κ := κ + 1) I
-    (fun i d ⟨hw, hr, _⟩ => ⟨hw, by rw [hr rn hBn (Ne.symm hir)]; exact hn,
-      by rw [hr r1 hB1 (Ne.symm hi1)]; exact h1⟩)
+    (fun i d ⟨hw, hr, _⟩ => ⟨hw, by rwa [hr rn hBn (Ne.symm hir)],
+      by rwa [hr r1 hB1 (Ne.symm hi1)]⟩)
     (fun i d v ⟨_, hr, hrr, hm, hrm, ho, hJd⟩ hw' => ⟨hw', fun r hB hri => by
         simp only; rw [upd_other _ _ _ hri]; exact hr r hB hri, hrr, hm, hrm, ho,
       hJ d _ hJd (fun r _ hri => by simp only; rw [upd_other _ _ _ hri])
@@ -147,7 +147,7 @@ theorem scatS_exec {P : Polygon} {W : ℕ} {ri rn r1 ra rv : ℕ} {body : Stmt} 
     (fun i d hin ⟨hwd, hr, hrr, hm, hrm, ho, hJd⟩ hri => by
       obtain ⟨d₁, k₁, e₁, hk₁, f₁, ha₁, hv₁⟩ := hbody i d hin hJd hwd hri
       have e₂ := Exec.storeN (P := P) e₁.wb_right ra rv
-      refine ⟨_, _, .seq e₁ e₂, by omega, by rw [f₁.1 _ hBi]; exact hri, e₂.wb_right, ?_, ?_, ?_,
+      refine ⟨_, _, .seq e₁ e₂, by omega, by rwa [f₁.1 _ hBi], e₂.wb_right, ?_, ?_, ?_,
         ?_, ?_, ?_⟩
       · intro r hB hr'; exact (f₁.1 r hB).trans (hr r hB hr')
       · intro r hB; exact (f₁.2.1 r hB).trans (hrr r hB)
@@ -160,7 +160,7 @@ theorem scatS_exec {P : Polygon} {W : ℕ} {ri rn r1 ra rv : ℕ} {body : Stmt} 
     hw hnW (fun d hwd h0 hr hm hrr hrm ho => ⟨hwd, fun r _ hri => hr r hri,
       fun r _ => by rw [hrr], by rw [hm]; rfl, hrm, ho,
       hJ c d hJc (fun r _ hri => hr r hri) (fun a _ => by rw [hm])⟩)
-  refine ⟨c', k, ex, by nlinarith, h2, h3, h4, h5, h6, h7, hi⟩
+  refine ⟨c', k, ex, by nlinarith, h2, h3, h4, h5, h6, h7⟩
 
 /-! ## Emitting pairs into two arrays -/
 
@@ -237,25 +237,25 @@ theorem emitS_exec {P : Polygon} {W : ℕ} {ri rn r1 rf rv1 rv2 rR1 rR2 rc rt : 
     (body := .seq body (.ifLtN rf r1 .skip
       (block [.addN rt rR1 rc, .storeN rt rv1, .addN rt rR2 rc, .storeN rt rv2, .addN rc rc r1])))
     hin hi1 (n := n) (κ := κ + 7) I
-    (fun i d ⟨hw, hr, _⟩ => ⟨hw, by rw [hr rn hBn (Ne.symm hin) hnc hnt]; exact hn,
-      by rw [hr r1 hB1 (Ne.symm hi1) h1c h1t]; exact h1⟩)
+    (fun i d ⟨hw, hr, _⟩ => ⟨hw, by rwa [hr rn hBn (Ne.symm hin) hnc hnt],
+      by rwa [hr r1 hB1 (Ne.symm hi1) h1c h1t]⟩)
     (fun i d v ⟨_, hr, hrr, hc, hp, hm, hrm, ho, hJd⟩ hw' => ⟨hw', fun r hB hri hrc hrt => by
         simp only; rw [upd_other _ _ _ hri]; exact hr r hB hri hrc hrt, hrr,
-      by simp only; rw [upd_other _ _ _ (Ne.symm hic)]; exact hc, hp, hm, hrm,
+      by simp only; rwa [upd_other _ _ _ (Ne.symm hic)], hp, hm, hrm,
       ho, hJ d _ hJd (fun r _ hri _ _ => by simp only; rw [upd_other _ _ _ hri])
         (fun _ _ => rfl)⟩)
     (fun i d hin' ⟨hwd, hr, hrr, hc, hp, hm, hrm, ho, hJd⟩ hri => by
       obtain ⟨d₁, k₁, e₁, hk₁, f₁, hn₁, hs₁⟩ := hbody i d hin' hJd hwd hri
       have w₁ := e₁.wb_right
       have hlen := emitted_length_le φ i
-      have hc₁ : d₁.nreg rc = c₀ + (emitted φ i).length := by rw [f₁.1 _ hBc]; exact hc
+      have hc₁ : d₁.nreg rc = c₀ + (emitted φ i).length := by rwa [f₁.1 _ hBc]
       have hR1₁ : d₁.nreg rR1 = R1 := by
-        rw [f₁.1 _ hBR1, hr _ hBR1 (Ne.symm hiR1) (Ne.symm hcR1) hR1t]; exact hR1
+        rwa [f₁.1 _ hBR1, hr _ hBR1 (Ne.symm hiR1) (Ne.symm hcR1) hR1t]
       have hR2₁ : d₁.nreg rR2 = R2 := by
-        rw [f₁.1 _ hBR2, hr _ hBR2 (Ne.symm hiR2) (Ne.symm hcR2) hR2t]; exact hR2
+        rwa [f₁.1 _ hBR2, hr _ hBR2 (Ne.symm hiR2) (Ne.symm hcR2) hR2t]
       have h1₁ : d₁.nreg r1 = 1 := by
-        rw [f₁.1 _ hB1, hr _ hB1 (Ne.symm hi1) h1c h1t]; exact h1
-      have hri₁ : d₁.nreg ri = i := by rw [f₁.1 _ hBi]; exact hri
+        rwa [f₁.1 _ hB1, hr _ hB1 (Ne.symm hi1) h1c h1t]
+      have hri₁ : d₁.nreg ri = i := by rwa [f₁.1 _ hBi]
       cases hφ : φ i with
       | none =>
         have hf0 := hn₁ hφ
@@ -295,7 +295,7 @@ theorem emitS_exec {P : Polygon} {W : ℕ} {ri rn r1 rf rv1 rv2 rR1 rR2 rc rt : 
         refine ⟨d₂, k₁ + (k₂ + 2), .seq e₁ (.ifLtN_false (by rw [hf1, h1₁]; exact Nat.lt_irrefl 1)
           e₂), by omega, ?_, e₂.wb_right, ?_, ?_, ?_, ?_, ?_, by rw [rm₂]; exact f₁.2.2.2.1.trans hrm,
           by rw [o₂]; exact f₁.2.2.2.2.trans ho, ?_⟩
-        · rw [n₂, upd_other _ _ _ hic, upd_other _ _ _ hit]; exact hri₁
+        · rwa [n₂, upd_other _ _ _ hic, upd_other _ _ _ hit]
         · intro r hB a b c'
           rw [n₂, upd_other _ _ _ b, upd_other _ _ _ c']; exact (f₁.1 r hB).trans (hr r hB a b c')
         · intro r hB; rw [rr₂]; exact (f₁.2.1 r hB).trans (hrr r hB)
@@ -421,7 +421,7 @@ theorem PF.frameN {B : ℕ → Bool} {S : Finset ℕ} {c c' : Config} (h : PF B 
     · exact hr h''
     · exact hra h''
   · by_cases hra : r = ALLOC
-    · rw [hra]; exact hrA
+    · rwa [hra]
     refine h.2.1 r ?_
     by_contra h'; simp only [Bool.not_eq_false] at h'
     rcases hB r h' with h'' | h''

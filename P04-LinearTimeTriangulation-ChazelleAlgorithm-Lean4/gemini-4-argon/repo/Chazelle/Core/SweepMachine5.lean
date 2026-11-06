@@ -43,14 +43,12 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
     (hev : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt (chainModel C).W p t) τ' s ∈ e) :
     SideAttach (chainModel C).W e p t := by
   have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
-  set z := sidePt (chainModel C).W p t with hz
+  set z := sidePt (chainModel C).W p t
   have hzD : z ∉ C.dom := hM.trace p hp t ht ht1.le
   have hsec' : ∀ s > 0, sideLeft (chainModel C).W p t (rayPt z τ' s) :=
     fun s hs => (sideLeft_rayPt_iff _ p t τ' one_pos hs).1 hsec
   obtain ⟨y, l, r, hH, -, rfl, -, -⟩ := Merge.augChords_spec he
-  have hlr := hH.lt
   obtain ⟨s₁, hs₁, hs₁0⟩ := (hev.and self_mem_nhdsWithin).exists
-  have hs₁0' : (0 : ℝ) < s₁ := hs₁0
   have hzy : z.2 = y := by simpa [rayPt] using hs₁.1
   have hzpt : ((z.1, y) : Point) = z := Prod.ext rfl hzy.symm
   refine ⟨hp, ht, ht1, ?_, 1, one_pos, fun x hx hxz _ => ?_⟩

@@ -50,8 +50,8 @@ theorem no_label_of_pocket (hP : J.P.Simple) {S₂ : Set (Set Point)}
   rintro V ⟨d, hd, t, ht, hc, hf, -⟩
   have hC := corr_right0 J hP hS₂ hS₂f
   have hn := hC.n_pos
-  set n := (chainModel J.whole).W.n with hndef
-  set g := 6 + tpos J.whole J.m₁ with hgdef
+  set n := (chainModel J.whole).W.n
+  set g := 6 + tpos J.whole J.m₁
   have hg : g < n := hC.hg
   have hg0 : (0 : ℝ) ≤ (g : ℝ) := Nat.cast_nonneg _
   have hgn : (g : ℝ) < n := by exact_mod_cast hg

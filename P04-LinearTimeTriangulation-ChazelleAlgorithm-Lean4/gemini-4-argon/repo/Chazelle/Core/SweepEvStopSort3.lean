@@ -142,8 +142,7 @@ theorem ssWr_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
     fun t ht => by
       rw [hmem']; unfold ssWM
       rw [ite_eq_right (by omega), ite_eq_left (by omega),
-        show B1 + 5 * S + 5 * O.length + t - (B1 + 5 * S + 5 * O.length) = t by omega]
-      rw [show RB + 11 * x + 6 + t = RB + 11 * x + (6 + t) by omega]
+        show B1 + 5 * S + 5 * O.length + t - (B1 + 5 * S + 5 * O.length) = t by omega, show RB + 11 * x + 6 + t = RB + 11 * x + (6 + t) by omega]
       exact src _ (by omega)
   have kD : ∀ a, a < B1 + 5 * O.length → d'.nmem a = d.nmem a := fun a ha => by
     rw [hmem']; unfold ssWM; rw [ite_eq_right (by omega), ite_eq_right (by omega)]

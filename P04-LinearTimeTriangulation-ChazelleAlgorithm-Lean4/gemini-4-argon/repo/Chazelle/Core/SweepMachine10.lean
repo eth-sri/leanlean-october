@@ -80,7 +80,7 @@ theorem leave_region (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   have hF : F ⊆ (chainModel C).Adm := hFam.2.1
   have hfin : F.Finite := hFam.1
   have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-    rw [hpt]; exact hsec
+    rwa [hpt]
   by_cases hcut : (chainModel C).IsCut F (p + t)
   · rcases leave_cases C hP hFam hσ hp ht ht1 hpt hsec hzR with ⟨e, he, -, hev⟩ | hnc |
         ⟨rfl, hp1, hnot, hcr⟩

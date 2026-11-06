@@ -64,7 +64,7 @@ theorem phaseB_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     (hBH : B + 3 * L.length ≤ H) (hSE : ∀ j, j < E.length → c.nmem (SE + j) = E.getD j 0)
     (hSEH : SE + E.length ≤ H) (hroom : H + sizeB L.length ≤ W) :
     ∃ c' k, Exec P W phaseB c c' k ∧ k ≤ 23604 * L.length + 200 ∧
-      sizeB L.length ≤ k ∧ WordsBounded W c' ∧ FrameM BphaseB c c' ∧
+      sizeB L.length ≤ k ∧ FrameM BphaseB c c' ∧
       c'.nreg 40003 = H ∧ c'.nreg 9999 = H + sizeB L.length ∧
       (∀ a, a < H → c'.nmem a = c.nmem a) ∧
       NFWithin c'.nmem H (c'.nreg 9999) (BuildNF.buildNF M (Qof P) L E) := by
@@ -80,14 +80,14 @@ theorem phaseB_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     rw [List.take_of_length_le (by simp [cw])]
   -- the tables of the pass
   have hkey : ∀ j, j < A → c₃.nmem (H + 12 + 5 * K + 5 * j) = keyA M (Qof P) L E j := fun j hj => by
-    have := (I.arcs j (by rw [hgs]; exact hj)).1 0 (by norm_num)
+    have := (I.arcs j (by rwa [hgs])).1 0 (by norm_num)
     rw [Nat.add_zero, hgs] at this
     rw [this]; rfl
   have hkR : ∀ j, j < A → keyA M (Qof P) L E j < K + 1 := fun j _ => by
     unfold keyA; rw [BuildNF.arcRec_eq]; have := BuildNF.topR_le hI ((gapStarts M (Qof P) L E).getD j 0 + 1)
     simp only; omega
   have hwt : ∀ j, j < A → c₃.nmem (H + 17 + 28 * K + j) = wA M (Qof P) L E j := fun j hj => by
-    have := (I.arcs j (by rw [hgs]; exact hj)).2
+    have := (I.arcs j (by rwa [hgs])).2
     rw [hgs] at this
     rw [this]; rfl
   have hch : ∀ i, i < K → ∀ f, f < 5 → c₃.nmem (H + 12 + 5 * i + f) = cf (chordRec M (Qof P) L E i) f :=
@@ -102,11 +102,11 @@ theorem phaseB_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     have := (BuildNF.chordRec_up_le hI hi).2; unfold dnC; omega
   have hA₃ : c₃.nreg 43102 = A := by rw [I.r102, hgs]
   -- the region phase
-  obtain ⟨c', k, x, hk, hk', w', f', h40003, T1, T2, T3, T4, T5, T6⟩ := regPhase_exec (P := P) c₃ w₃
+  obtain ⟨c', k, x, hk, hk', f', h40003, T1, T2, T3, T4, T5, T6⟩ := regPhase_exec (P := P) c₃ w₃
     C₃ hA₃ hAle hkey hkR hwt hu hv huR hvR hroom
   have C' := C₃.frame f' (by decide)
   have X : Exec P W phaseB c c' (k₃ + k) := .seq x₃ x
-  refine ⟨c', _, X, by omega, by unfold sizeB; omega, w', exec_frameM X wr_phaseB, h40003, C'.rA,
+  refine ⟨c', _, X, by omega, by unfold sizeB; omega, exec_frameM X wr_phaseB, h40003, C'.rA,
     fun a ha => by rw [T2 a (Or.inl ha), I.low a ha], ?_⟩
   -- the normal form
   intro m' hm'
@@ -121,7 +121,7 @@ theorem phaseB_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       rw [hm' _ (by unfold sizeB; omega), T2 _ (Or.inr (by omega)), hch i hi f hf])
     (fun j hj f hf => by
       rw [hm' _ (by unfold sizeB; omega), T2 _ (Or.inr (by omega))]
-      have := (I.arcs j (by rw [hgs]; exact hj)).1 f hf
+      have := (I.arcs j (by rwa [hgs])).1 f hf
       rw [hgs] at this
       rw [show H + 12 + 5 * K + 5 * j + f = H + 12 + 5 * K + 5 * j + f from rfl, this])
     (fun r hr f hf => by rw [hm' _ (by unfold sizeB; omega), T3 r hr f hf])

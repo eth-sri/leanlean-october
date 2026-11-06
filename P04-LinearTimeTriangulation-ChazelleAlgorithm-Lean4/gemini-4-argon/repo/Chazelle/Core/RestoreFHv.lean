@@ -67,7 +67,6 @@ theorem fHv_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
   have hA := hI.allocA hE
   obtain ⟨hMD, hwf⟩ := Gran.desc_agree' hE.hwf hE.hMD hag
   have hwfc := hwf.mono hA
-  have hn3 : 3 ≤ E.P.n := hE.hG.1.1
   have fx : ∀ c', FInv E.W c₀ c' → c'.nreg 81000 = E.MD ∧ c'.nreg 81011 = 0 ∧
       c'.nreg 81012 = 1 ∧ c'.nreg 81020 = E.P.n := fun c' hI' =>
     ⟨by rw [hI'.hin _ (by unfold FFix; omega), hE.i0],
@@ -103,7 +102,7 @@ theorem fHv_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
         ⟨Or.inl (fscr_5 (by norm_num) (by norm_num)), by omega⟩, trivial⟩
     refine FRS.seq (K₂ := 15814) (FRS.block hB _ hI₁ ok) (fun c₂ hI₂ _ h₂ => ?_)
     have e₂ : ∀ q, c₂.nreg q = regB c₁.nmem (hvChainL a) c₁.nreg q := fun q => by rw [h₂]
-    have m₂ : c₂.nmem = c.nmem := by rw [h₂]; exact m₁
+    have m₂ : c₂.nmem = c.nmem := by rwa [h₂]
     have s00 : c₂.nreg 50200 = E.MD + 1 := by
       rw [e₂]; simp [hvChainL, regB, regI, upd, j0, j12]
     have s01 : c₂.nreg 50201 = c.nreg a := by
@@ -120,10 +119,10 @@ theorem fHv_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
       simp only [hvChainL, List.mem_cons, List.not_mem_nil, or_false] at hi
       rcases hi with rfl | rfl | rfl <;> simp only [dstI] <;> unfold ALLOC <;> omega
     -- the preconditions of `ptKey`
-    have hC₂ : ChainDescAt c₂.nmem (c₂.nreg 50200) (Qof E.P) H C := by rw [m₂, s00]; exact hC
+    have hC₂ : ChainDescAt c₂.nmem (c₂.nreg 50200) (Qof E.P) H C := by rwa [m₂, s00]
     have hwf₂ : ChainWF E.P (c₂.nreg ALLOC) c₂.nmem (c₂.nreg 50200) := by
       rw [m₂, s00, hA₂]; exact hwfc.2 h0
-    have h0' : E.m₀ E.MD = 0 := by rw [← hag _ (by have := hE.hwf.1; omega)]; exact h0
+    have h0' : E.m₀ E.MD = 0 := by rwa [← hag _ (by have := hE.hwf.1; omega)]
     obtain ⟨H₀, C₀, hC₀, -⟩ : ∃ H₀ C₀, ChainDescAt E.m₀ (E.MD + 1) (Qof E.P) H₀ C₀ ∧
         E.M = chainModel C₀ := by
       rcases hE.hMD with ⟨-, H₀, C₀, hC₀, hM₀⟩ | ⟨h1, -, -⟩
@@ -138,13 +137,12 @@ theorem fHv_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
       rw [m₂, s00, e1] at hH'
       have : H₀ = H' := NFLoc.hostAt_unique hH₀ hH'
       subst this
-      rw [show (Qof E.P).n = E.P.n from shear_n _ _] at hreg₀
-      exact hreg₀
+      rwa [show (Qof E.P).n = E.P.n from shear_n _ _] at hreg₀
     have hWn : (chainModel C).W.n = E.M.W.n := by rw [hM]
     have hpos : (chainModel C).pos (Qof E.P) ⟨c.nreg a, 0⟩ ∈ C.set := by
       rw [← hM]; exact hset C hM
     have hpre : PrimPre PtIn E.P E.W c₂ := ⟨hE.hG, hE.hWh, hwf₂, H, C, hC₂,
-      by rw [s01, hWn]; exact hea,
+      by rwa [s01, hWn],
       by rw [s01, s02]; exact ⟨le_of_eq rfl, by show (0 : ℝ) < 1; norm_num, Nat.zero_le _⟩,
       Or.inl s02, hregH⟩
     obtain ⟨c₃, k₃, ex₃, hk₃, post₃, hfr₃⟩ := ptKey_meets E.P E.W c₂ hI₂.hw hpre
@@ -173,7 +171,7 @@ theorem fHv_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
     have e₅ : ∀ q, c₅.nreg q = regB c₄.nmem [.copyN 81062 50215] c₄.nreg q := fun q => by
       rw [h₅]
     have v62 : c₅.nreg 81062 = c₄.nreg 50215 := by rw [e₅]; simp [regB, regI, upd]
-    refine ⟨by rw [v62]; exact t15, by rw [v62, ← t15e, hM], hfin c₅ fun q h1 h2 h3 _ => ?_⟩
+    refine ⟨by rwa [v62], by rw [v62, ← t15e, hM], hfin c₅ fun q h1 h2 h3 _ => ?_⟩
     rw [e₅, show regB c₄.nmem [.copyN 81062 50215] c₄.nreg q = c₄.nreg q by
       simp [regB, regI, upd, h3], h8 q h1 h2, f₂ q h1]
   · -- the interior model: `iIdx bit n e`
@@ -191,7 +189,7 @@ theorem fHv_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
     have f₂ : ∀ q, q ≠ 81064 → c₂.nreg q = c₁.nreg q := fun q hq => by
       rw [e₂]; simp [regB, regI, upd, hq]
     obtain ⟨-, l11, l12, l20⟩ := fx c₂ hI₂
-    have he : c.nreg a < E.P.n := by rw [hM, interior_n] at hea; exact hea
+    have he : c.nreg a < E.P.n := by rwa [hM, interior_n] at hea
     have ha' : c₂.nreg a = c.nreg a := by rw [f₂ a ha64, ea]
     -- the reversed index
     have hrev : ∀ c' : Config, FInv E.W c₀ c' → (∀ q, q ≠ 81064 → c'.nreg q = c₂.nreg q) →
@@ -218,14 +216,13 @@ theorem fHv_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
       · rw [v62, hM, pos_vtx0, interior_wa (P := E.P) hbit he]
       · rw [e'', show regB c'.nmem [.subN 81062 81020 81012, .subN 81062 81062 a] c'.nreg q =
           c'.nreg q by simp [regB, regI, upd, h3], hc' q h4, f₂ q h4, f₁ q h4]
-    have hI₂' := hI₂
     by_cases hb : 1 < bit
-    · exact (FRS.ifT (show c₂.nreg 81012 < c₂.nreg 81064 by rw [l12, b64]; exact hb) (hrev c₂ hI₂ (fun _ _ => rfl) b64
+    · exact (FRS.ifT (show c₂.nreg 81012 < c₂.nreg 81064 by rwa [l12, b64]) (hrev c₂ hI₂ (fun _ _ => rfl) b64
         (by omega))).mono (by omega) (fun _ h => h)
-    refine FRS.ifF (show ¬ c₂.nreg 81012 < c₂.nreg 81064 by rw [l12, b64]; exact hb) ?_ |>.mono (K := 8) (by omega) (fun _ h => h)
+    refine FRS.ifF (show ¬ c₂.nreg 81012 < c₂.nreg 81064 by rwa [l12, b64]) ?_ |>.mono (K := 8) (by omega) (fun _ h => h)
     by_cases hb0 : 0 < bit
     · have hb1 : bit = 1 := by omega
-      refine FRS.ifT (show c₂.nreg 81011 < c₂.nreg 81064 by rw [l11, b64]; exact hb0) ?_ |>.mono (K := 6) (by omega) (fun _ h => h)
+      refine FRS.ifT (show c₂.nreg 81011 < c₂.nreg 81064 by rwa [l11, b64]) ?_ |>.mono (K := 6) (by omega) (fun _ h => h)
       have okc : okB E.W c₂.nmem [.copyN 81062 a] c₂.nreg := by
         simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), trivial⟩
       refine (FRS.block hB _ hI₂ okc).mono (by simp) (fun c'' h'' => ?_)
@@ -238,7 +235,7 @@ theorem fHv_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
       · rw [v62, hM, pos_vtx0, interior_wa (P := E.P) hbit he]
       · rw [e'', show regB c₂.nmem [.copyN 81062 a] c₂.nreg q = c₂.nreg q by
           simp [regB, regI, upd, h3], f₂ q h4, f₁ q h4]
-    · exact (FRS.ifF (show ¬ c₂.nreg 81011 < c₂.nreg 81064 by rw [l11, b64]; exact hb0) (hrev c₂ hI₂ (fun _ _ => rfl) b64
+    · exact (FRS.ifF (show ¬ c₂.nreg 81011 < c₂.nreg 81064 by rwa [l11, b64]) (hrev c₂ hI₂ (fun _ _ => rfl) b64
         (by omega))).mono (by omega) (fun _ h => h)
 end
 

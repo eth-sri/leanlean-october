@@ -2,7 +2,9 @@ module
 
 public import Chazelle.Core.SpecRam
 public import Chazelle.Core.SpecFacts
-public import Chazelle.Separator.Graph
+public import Chazelle.Separator.Clusters
+public import Chazelle.Separator.Cotree
+public import Mathlib.Data.Set.Card
 public import Chazelle.Cost.Oracle
 
 /-!
@@ -409,7 +411,6 @@ inductive QOrigin where
   | sym (p : SymPt)
   /-- The box point at the height of vertex `h`, on the side opposite to the ray direction. -/
   | box (h : ℕ)
-  deriving DecidableEq
 
 /-- A query origin in registers from `r` on: kinds `0, 1` as `SymPtIn`, kind `2` a box point. -/
 def QOriginIn (c : Config) (r : ℕ) : QOrigin → Prop

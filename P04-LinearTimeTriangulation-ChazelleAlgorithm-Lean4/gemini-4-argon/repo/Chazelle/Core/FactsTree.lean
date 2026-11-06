@@ -27,7 +27,7 @@ theorem chordSides_of_system {D : Set Point} {F : Set (Set Point)} (hF : ChordSy
     ∃ U V, U ∈ regionsIn D F ∧ V ∈ regionsIn D F ∧ U ≠ V ∧
       (∀ z ∈ c, z ∈ D → ∀ᶠ δ in 𝓝[>] (0 : ℝ), (z.1, z.2 + δ) ∈ U ∧ (z.1, z.2 - δ) ∈ V) ∧
       (∀ W ∈ regionsIn D F, TouchesIn D c W ↔ W = U ∨ W = V) := by
-  set S := F \ {c} with hSdef
+  set S := F \ {c}
   have hS : S ⊆ F := fun d hd => hd.1
   have hcS : c ∉ S := fun h => h.2 rfl
   have hins : insert c S = F := insert_sdiff_singleton.trans (insert_eq_of_mem hc)
@@ -43,12 +43,12 @@ theorem chordSides_of_system {D : Set Point} {F : Set (Set Point)} (hF : ChordSy
   have hεr : ε < r := by rw [hε]; have := min_le_left r ε₀; linarith
   have hεε : ε < ε₀ := by rw [hε]; have := min_le_right r ε₀; linarith
   obtain ⟨hp, hm, hpm⟩ := hsep ε hε0 hεε
-  set U := connectedComponentIn (freeIn D F) (z₀.1, z₀.2 + ε) with hU
-  set V := connectedComponentIn (freeIn D F) (z₀.1, z₀.2 - ε) with hV
+  set U := connectedComponentIn (freeIn D F) (z₀.1, z₀.2 + ε)
+  set V := connectedComponentIn (freeIn D F) (z₀.1, z₀.2 - ε)
   have hUr : U ∈ regionsIn D F := ⟨_, hp, rfl⟩
   have hVr : V ∈ regionsIn D F := ⟨_, hm, rfl⟩
-  have hUr' : U ∈ regionsIn D (insert c S) := by rw [hins]; exact hUr
-  have hVr' : V ∈ regionsIn D (insert c S) := by rw [hins]; exact hVr
+  have hUr' : U ∈ regionsIn D (insert c S) := by rwa [hins]
+  have hVr' : V ∈ regionsIn D (insert c S) := by rwa [hins]
   -- the half-disks at `z₀`
   have hhalf : ∀ τ : ℝ, (τ = 1 ∨ τ = -1) → ∀ X ∈ regionsIn D (insert c S),
       ((z₀.1, z₀.2 + τ * ε) : Point) ∈ X → halfDisk z₀ r τ ⊆ X := by

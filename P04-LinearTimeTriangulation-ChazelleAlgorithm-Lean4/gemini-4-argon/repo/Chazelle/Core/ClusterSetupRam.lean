@@ -173,7 +173,7 @@ theorem sBody_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 
       (∀ r, r ≠ 130016 → r ≠ 130091 → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
       c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hm : min (j * a) mu + a ≤ W := by have := min_le_right (j * a) mu; omega
-  have e1 := Exec.addN (P := P) hw 130016 130016 130015 (by rw [hacc, ha]; exact hm)
+  have e1 := Exec.addN (P := P) hw 130016 130016 130015 (by rwa [hacc, ha])
   set c1 := { c with nreg := upd c.nreg 130016 (c.nreg 130016 + c.nreg 130015) }
   have hsa : (j + 1) * a = j * a + a := by ring
   by_cases h : c1.nreg 130011 < c1.nreg 130016
@@ -190,7 +190,6 @@ theorem sBody_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 
         (show (130011 : ℕ) ≠ 130016 by omega)] at h ⊢
       rw [hmu] at h ⊢; rw [hacc, ha] at h
       rw [hsa]
-      have := min_le_right (j * a) mu
       rcases le_total (j * a) mu with h' | h'
       · rw [min_eq_left h'] at h; omega
       · rw [min_eq_right h'] at h; omega
@@ -239,10 +238,10 @@ theorem sS_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1) 
       obtain ⟨c3, k3, e3, hk3, hw3, hm3, hi3, hacc3, hfr3, hrr3, hrm3, ho3⟩ :=
         sBody_exec (P := P) hw2 ((hfr2 _ (by omega) (by omega)).trans hone) hi2 hacc2 ha2
           ((hfr2 _ (by omega) (by omega)).trans hmu) (by omega) (by omega)
-      refine ⟨c3, k3, e3, hk3, hw3, hi3, by rw [hfr3 _ (by omega) (by omega)]; exact ha2, hacc3,
+      refine ⟨c3, k3, e3, hk3, hw3, hi3, by rwa [hfr3 _ (by omega) (by omega)], hacc3,
         fun r h1 h2 => (hfr3 r h1 h2).trans (hfr2 r h1 h2), hm3.trans hm2, hrr3.trans hrr2,
         hrm3.trans hrm2, ho3.trans ho2⟩)
-    (j₀ := 0) ⟨hw1, h91, by rw [hr1 _ (by omega) (by omega)]; exact ha, by rw [h16]; simp,
+    (j₀ := 0) ⟨hw1, h91, by rwa [hr1 _ (by omega) (by omega)], by rw [h16]; simp,
       hr1, hm1, hrr1, hrm1, ho1⟩ (Nat.zero_le _)
   exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hm', h16', hfr', hrr', hrm', ho'⟩
 
@@ -350,7 +349,7 @@ theorem LUS_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
           by config_simp; rw [hacc2, hU2]; ring, fun r h1 h2 => ?_, hm2, hrr2, hrm2, ho2⟩
         simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
         exact hfr2 r h1 h2)
-    (j₀ := 0) ⟨hw1, h94, by rw [hr1 _ (by omega) (by omega)]; exact hL, by rw [h26]; simp,
+    (j₀ := 0) ⟨hw1, h94, by rwa [hr1 _ (by omega) (by omega)], by rw [h26]; simp,
       hr1, hm1, hrr1, hrm1, ho1⟩ (Nat.zero_le _)
   exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hm', h26', hfr', hrr', hrm', ho'⟩
 
@@ -414,21 +413,18 @@ theorem setupStmt_exec {c : Config} (hw : WordsBounded W c) (hB2 : c.nreg 130000
       WordsBounded W c' ∧ c'.nmem = c.nmem ∧ GR (gOf c) c' ∧
       (∀ r, ¬ SetRG r → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧
       c'.output = c.output := by
-  set g := gOf c with hg
+  set g := gOf c
   have hP := g.two_pow_L
   have hLU := g.L_le_U
-  have hLUm : g.L * g.U ≥ g.L := Nat.le_mul_of_pos_right _ (by unfold GV.U; omega)
   have hEND' : g.A0 + 54 * g.U + 2 * (g.L * g.U) ≤ W := hEND
   have hUdef : g.U = g.N + g.μ + 2 ^ g.L + 3 := rfl
   have hNdef : g.N = 2 * g.E := rfl
   have hk' : g.k' ≤ g.μ := min_le_right _ _
   have hk'def : g.k' = min g.k g.μ := rfl
-  have hsdef : g.s = min (g.k' * g.k') g.μ := rfl
   have hLdef : g.L = Nat.clog 2 (g.N + g.μ + 1) := rfl
   have e0 : g.B = c.nreg 130000 := rfl
   have e1 : g.μ = c.nreg 130001 := rfl
   have e2 : g.E = c.nreg 130002 := rfl
-  have e3 : g.k = c.nreg 130003 := rfl
   have e4 : g.A0 = c.nreg 9999 := rfl
   -- inputs
   obtain ⟨c1, k1, x1, hk1, hw1, hm1, r10, r11, r12, r13, r01, r09, r14, r20, r21, r22, r23, hf1,
@@ -438,11 +434,11 @@ theorem setupStmt_exec {c : Config} (hw : WordsBounded W c) (hB2 : c.nreg 130000
   have q2 : ∀ r, r ≠ 130015 → c2.nreg r = c1.nreg r := hf2
   -- s
   obtain ⟨c3, k3, x3, hk3, hw3, hm3, r16, hf3, hrr3, hrm3, ho3⟩ := sS_exec (P := P) hw2
-    (by rw [q2 _ (by omega)]; exact r01) (a := g.k') (mu := g.μ)
+    (by rwa [q2 _ (by omega)]) (a := g.k') (mu := g.μ)
     (by rw [r15, r13, r11]; rfl) (by rw [q2 _ (by omega), r11]; rfl) (by omega)
   -- L
   obtain ⟨c4, k4, x4, hk4, hw4, hm4, r17, r18, hf4, hrr4, hrm4, ho4⟩ := LS_exec (P := P) hw3
-    (by rw [hf3 _ (by omega) (by omega), q2 _ (by omega)]; exact r01) (x := g.N + g.μ + 1)
+    (by rwa [hf3 _ (by omega) (by omega), q2 _ (by omega)]) (x := g.N + g.μ + 1)
     (by rw [hf3 _ (by omega) (by omega), hf3 _ (by omega) (by omega), q2 _ (by omega),
       q2 _ (by omega), r14, r11]; rfl) (by omega)
   rw [← hLdef] at r17 r18 hk4
@@ -464,70 +460,46 @@ theorem setupStmt_exec {c : Config} (hw : WordsBounded W c) (hB2 : c.nreg 130000
   -- L U
   obtain ⟨c7, k7, x7, hk7, hw7, hm7, r26, hf7, hrr7, hrm7, ho7⟩ := LUS_exec (P := P) hw6
     (L := g.L) (U := g.U)
-    (by rw [hf6 _ (by omega), hf5 _ (by omega) (by omega), hf4 _ (by omega) (by omega) (by omega),
-      hf3 _ (by omega) (by omega), q2 _ (by omega)]; exact r01)
-    (by rw [hf6 _ (by omega), hf5 _ (by omega) (by omega)]; exact r17)
-    (by rw [hf6 _ (by omega)]; exact hU5) (by omega)
+    (by rwa [hf6 _ (by omega), hf5 _ (by omega) (by omega), hf4 _ (by omega) (by omega) (by omega),
+      hf3 _ (by omega) (by omega), q2 _ (by omega)])
+    (by rwa [hf6 _ (by omega), hf5 _ (by omega) (by omega)])
+    (by rwa [hf6 _ (by omega)]) (by omega)
   obtain ⟨c8, k8, x8, hk8, hw8, hm8, r85, r86, hf8, hrr8, hrm8, ho8⟩ := endB_exec (P := P) hw7
     (by rw [hf7 _ (by omega) (by omega), rb6 54 le_rfl, r26]; omega)
   -- the registers at the end
-  have back : ∀ r, r ≠ 130085 → r ≠ 130086 → r ≠ 130026 → r ≠ 130094 →
-      ¬ (130030 ≤ r ∧ r ≤ 130084) → r ≠ 130019 → r ≠ 130093 → r ≠ 130017 → r ≠ 130018 →
-      r ≠ 130092 → r ≠ 130016 → r ≠ 130091 → r ≠ 130015 → c8.nreg r = c1.nreg r := by
-    intro r a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13
-    rw [hf8 r a1 a2, hf7 r a3 a4, hf6 r a5, hf5 r a6 a7, hf4 r a8 a9 a10, hf3 r a11 a12, q2 r a13]
+  have back (r) (a : r ≠ 130085 ∧ r ≠ 130086 ∧ r ≠ 130026 ∧ r ≠ 130094 ∧
+      ¬ (130030 ≤ r ∧ r ≤ 130084) ∧ r ≠ 130019 ∧ r ≠ 130093 ∧ r ≠ 130017 ∧ r ≠ 130018 ∧
+      r ≠ 130092 ∧ r ≠ 130016 ∧ r ≠ 130091 ∧ r ≠ 130015 := by omega) :
+      c8.nreg r = c1.nreg r := by
+    rw [hf8 r a.1 a.2.1, hf7 r a.2.2.1 a.2.2.2.1, hf6 r a.2.2.2.2.1,
+      hf5 r a.2.2.2.2.2.1 a.2.2.2.2.2.2.1,
+      hf4 r a.2.2.2.2.2.2.2.1 a.2.2.2.2.2.2.2.2.1 a.2.2.2.2.2.2.2.2.2.1,
+      hf3 r a.2.2.2.2.2.2.2.2.2.2.1 a.2.2.2.2.2.2.2.2.2.2.2.1,
+      q2 r a.2.2.2.2.2.2.2.2.2.2.2.2]
+  have b6 (r) (a : r ≠ 130085 ∧ r ≠ 130086 ∧ r ≠ 130026 ∧ r ≠ 130094 ∧
+      ¬ (130030 ≤ r ∧ r ≤ 130084) := by omega) : c8.nreg r = c5.nreg r := by
+    rw [hf8 r a.1 a.2.1, hf7 r a.2.2.1 a.2.2.2.1, hf6 r a.2.2.2.2]
   refine ⟨c8, k1 + (k2 + (k3 + (k4 + (k5 + (k6 + (k7 + k8)))))),
-    .seq x1 (.seq x2 (.seq x3 (.seq x4 (.seq x5 (.seq x6 (.seq x7 x8)))))), ?_, hw8, ?_, ?_,
-    fun r hr => ?_, ?_, ?_, ?_⟩
-  · have : g.k' ≤ g.μ := hk'
-    omega
-  · rw [hm8, hm7, hm6, hm5, hm4, hm3, hm2, hm1]
-  · refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun j hj => ?_,
-      ?_, ?_⟩
-    · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r01
-    · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r09
-    · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r10
-    · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r11
-    · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r12
-    · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r13
-    · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r14
-    · rw [hf8 _ (by omega) (by omega), hf7 _ (by omega) (by omega), hf6 _ (by omega),
-        hf5 _ (by omega) (by omega), hf4 _ (by omega) (by omega) (by omega),
-        hf3 _ (by omega) (by omega), r15, r13, r11]; rfl
-    · rw [hf8 _ (by omega) (by omega), hf7 _ (by omega) (by omega), hf6 _ (by omega),
-        hf5 _ (by omega) (by omega), hf4 _ (by omega) (by omega) (by omega), r16]; rfl
-    · rw [hf8 _ (by omega) (by omega), hf7 _ (by omega) (by omega), hf6 _ (by omega),
-        hf5 _ (by omega) (by omega), r17]
-    · rw [hf8 _ (by omega) (by omega), hf7 _ (by omega) (by omega), hf6 _ (by omega),
-        hf5 _ (by omega) (by omega), r18]
-    · rw [hf8 _ (by omega) (by omega), hf7 _ (by omega) (by omega), hf6 _ (by omega)]
-      exact hU5
-    · rw [hf8 _ (by omega) (by omega), hf7 _ (by omega) (by omega), hf6 _ (by omega)]
-      exact hA5
-    · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r21
-    · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r22
-    · rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]; exact r23
-    · rw [hf8 _ (by omega) (by omega), r26]
-    · rw [hf8 _ (by omega) (by omega), hf7 _ (by omega) (by omega), rb6 j hj]; rfl
-    · rw [r85, hf7 _ (by omega) (by omega), rb6 54 le_rfl, r26]
-    · rw [r86, hf7 _ (by omega) (by omega), rb6 54 le_rfl, r26]; unfold GV.END; ring
-  · unfold SetRG at hr
-    rw [back _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]
-    exact hf1 r (by unfold SetRG; omega)
-  · rw [hrr8, hrr7, hrr6, hrr5, hrr4, hrr3, hrr2, hrr1]
-  · rw [hrm8, hrm7, hrm6, hrm5, hrm4, hrm3, hrm2, hrm1]
-  · rw [ho8, ho7, ho6, ho5, ho4, ho3, ho2, ho1]
+    .seq x1 (.seq x2 (.seq x3 (.seq x4 (.seq x5 (.seq x6 (.seq x7 x8)))))),
+    by have : g.k' ≤ g.μ := hk'; omega, hw8,
+    by rw [hm8, hm7, hm6, hm5, hm4, hm3, hm2, hm1],
+    ⟨(back _).trans r01, (back _).trans r09, (back _).trans r10, (back _).trans r11,
+     (back _).trans r12, (back _).trans r13, (back _).trans r14,
+     by rw [b6 _, hf5 _ (by omega) (by omega), hf4 _ (by omega) (by omega) (by omega),
+          hf3 _ (by omega) (by omega), r15, r13, r11]; rfl,
+     by rw [b6 _, hf5 _ (by omega) (by omega), hf4 _ (by omega) (by omega) (by omega), r16]; rfl,
+     by rw [b6 _, hf5 _ (by omega) (by omega), r17],
+     by rw [b6 _, hf5 _ (by omega) (by omega), r18],
+     (b6 _).trans hU5, (b6 _).trans hA5,
+     (back _).trans r21, (back _).trans r22, (back _).trans r23,
+     (hf8 _ (by omega) (by omega)).trans r26,
+     fun j hj => by rw [hf8 _ (by omega) (by omega), hf7 _ (by omega) (by omega), rb6 j hj]; rfl,
+     by rw [r85, hf7 _ (by omega) (by omega), rb6 54 le_rfl, r26],
+     by rw [r86, hf7 _ (by omega) (by omega), rb6 54 le_rfl, r26]; unfold GV.END; ring⟩,
+    fun r hr => by unfold SetRG at hr; exact (back _).trans (hf1 r (by unfold SetRG; omega)),
+    by rw [hrr8, hrr7, hrr6, hrr5, hrr4, hrr3, hrr2, hrr1],
+    by rw [hrm8, hrm7, hrm6, hrm5, hrm4, hrm3, hrm2, hrm1],
+    by rw [ho8, ho7, ho6, ho5, ho4, ho3, ho2, ho1]⟩
 
 end proofs
 

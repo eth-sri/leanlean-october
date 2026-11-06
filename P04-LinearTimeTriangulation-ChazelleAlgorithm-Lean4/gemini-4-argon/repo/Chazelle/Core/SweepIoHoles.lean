@@ -115,33 +115,33 @@ theorem chainH_exec {c : Config} (hw : WordsBounded W c) {H : Host} {C : Chain}
     (hxC : (chainModel C).pos (Qof P) ⟨c.nreg 243005, c.nreg 243006⟩ ∈ C.set) :
     ∃ c' k, Exec P W chainH c c' k ∧ k ≤ 100 ∧ HoleOut (chainModel C) (Qof P) c'
       ((chainModel C).pos (Qof P) ⟨c.nreg 243005, c.nreg 243006⟩) ∧ Out c c' holeL := by
-  set c₀ := c with hc₀
+  set c₀ := c
   have h05 : c.nreg 243005 = c₀.nreg 243005 := rfl
   have h06 : c.nreg 243006 = c₀.nreg 243006 := rfl
   have hm1 := C.one_le
   have hn : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
   -- the candidate
-  set x : WPos := ⟨c₀.nreg 243005, c₀.nreg 243006⟩ with hxdef
+  set x : WPos := ⟨c₀.nreg 243005, c₀.nreg 243006⟩
   obtain ⟨he6, hvtx, hedge⟩ := chain_x_cases hxp hxe hxc hxC
-  have hxe' : c₀.nreg 243005 < 2 * C.m + 7 := by rw [← hn]; exact hxe
+  have hxe' : c₀.nreg 243005 < 2 * C.m + 7 := by rwa [← hn]
   -- the descriptor words
-  set B := c.nreg 243020 with hBdef
+  set B := c.nreg 243020
   obtain ⟨-, -, hs1, hs2, hs3, hs4⟩ := hC
   have hBW : B + 4 ≤ W := by
     have := hw.1 ALLOC; omega
   obtain ⟨c₁, k₁, hk₁, e₁, v97, v98, v99, v100, v101, v90, v96, v103, v104, o₁⟩ :=
     chainPre_exec (P := P) hw (B := B) rfl h23 hs2 hs3 rfl hBW hWm
   obtain ⟨c₂, k₂, hk₂, e₂, v102, o₂⟩ := sS_exec (P := P) e₁.wb_right v99 v100 v98
-    (by rw [o₁.1 _ (by decide)]; exact h23)
+    (by rwa [o₁.1 _ (by decide)])
   have hS : sOf C.m C.topIdx (c.nmem (B + 4)) = C.sideS C.sideBeta := sOf_sideS hs4
   rw [hS] at v102
   have hSle := C.sideS_lt C.sideBeta
-  set S := C.sideS C.sideBeta with hSdef
+  set S := C.sideS C.sideBeta
   have hi : c₀.nreg 243005 - 6 ≤ 2 * C.m := by omega
   obtain ⟨c₃, k₃, hk₃, e₃, v106, o₃⟩ := jS_exec (P := P) e₂.wb_right (m := C.m) (i := c₀.nreg 243005 - 6) (by omega) v102
     (by rw [o₂.1 _ (by decide), v104, h05]) (by rw [o₂.1 _ (by decide), v100]) hSle hi
     (by omega)
-  set j := (S + (c₀.nreg 243005 - 6)) % (2 * C.m) with hjdef
+  set j := (S + (c₀.nreg 243005 - 6)) % (2 * C.m)
   have hj : j < 2 * C.m := Nat.mod_lt _ (by omega)
   -- registers carried to the branch
   have o₁₃ := (o₁.trans o₂).trans o₃
@@ -157,9 +157,6 @@ theorem chainH_exec {c : Config} (hw : WordsBounded W c) {H : Host} {C : Chain}
   have r101 : c₃.nreg 243101 = 7 := by rw [o₃.1 _ (by decide), o₂.1 _ (by decide), v101]
   have r96 : c₃.nreg 243096 = 2 := by rw [o₃.1 _ (by decide), o₂.1 _ (by decide), v96]
   have r90 : c₃.nreg 243090 = 2 * C.m + 7 := by rw [o₃.1 _ (by decide), o₂.1 _ (by decide), v90]
-  have hL₁₃ : ∀ r ∈ chainHL ++ [243102] ++ [243105, 243106], r ∈ holeL := by
-    intro r hr; simp only [holeL, chainHL, List.mem_append, List.mem_cons, List.not_mem_nil,
-      or_false] at hr ⊢; omega
   have hpos : (chainModel C).pos (Qof P) x =
       Chazelle.Chain.sidePt (chainModel C).W x.edge ((chainModel C).param (Qof P) x) := rfl
   by_cases hh : c₀.nreg 243006 = 0
@@ -173,7 +170,7 @@ theorem chainH_exec {c : Config} (hw : WordsBounded W c) {H : Host} {C : Chain}
       simp only [holeL, chainHL, List.mem_append, List.mem_cons, List.not_mem_nil,
         or_false] at hr ⊢; omega)
     refine ⟨c₄, _, ex, by omega, ?_, ho⟩
-    set k := Chazelle.Chain.sideE C.m j with hkdef
+    set k := Chazelle.Chain.sideE C.m j
     have hk : k ≤ C.m := Chazelle.Chain.sideE_le hj.le
     have ha := candIdx_le (m := C.m) (j := k) hSle (by omega)
     have hb := candIdx_le (m := C.m) (j := 2 * C.m - k) hSle (by omega)
@@ -206,7 +203,7 @@ theorem chainH_exec {c : Config} (hw : WordsBounded W c) {H : Host} {C : Chain}
       have hsi : C.sideIdx C.sideBeta (x.edge - 6) = k := by rw [C.sideIdx_eq]
       rw [hsi] at hv
       rw [hv]
-      refine cover_chain_vertex hsimp hk (by rw [va]; exact m0) (by rw [vb]; exact m1)
+      refine cover_chain_vertex hsimp hk (by rwa [va]) (by rwa [vb])
         (fun ht => ?_) (Qof P)
       obtain ⟨t14, t15⟩ := wtop ht
       have h93 : c₄.nreg 241309 = 3 := by rw [w9, ite_eq_left ht]
@@ -214,8 +211,7 @@ theorem chainH_exec {c : Config} (hw : WordsBounded W c) {H : Host} {C : Chain}
         hole_mem (c := c₄) (j := 2) (by omega) (by omega)
       rw [hn, show 2 * C.m + 6 = 2 * C.m + 6 from rfl, vHole_six (by omega), t14, t15,
         Nat.mod_self] at *
-      rw [← t14, ← t15]
-      exact m2
+      rwa [← t14, ← t15]
     · intro g hg p' τ hp' h0 h1 hkk
       have hn3 : 3 ≤ (chainModel C).W.n := by rw [hn]; omega
       have hv := (hvtx hh).2
@@ -257,7 +253,7 @@ theorem chainH_exec {c : Config} (hw : WordsBounded W c) {H : Host} {C : Chain}
         exact near_vHole _ _ hn3 (by rw [hn]; omega) ztop hp' h0 h1 hkk
   · -- inside a tour edge
     have hh0 : 0 < c₀.nreg 243006 := Nat.pos_of_ne_zero hh
-    have g06 : c₃.nreg 243022 < c₃.nreg 243006 := by rw [r22, r06]; exact hh0
+    have g06 : c₃.nreg 243022 < c₃.nreg 243006 := by rwa [r22, r06]
     obtain ⟨hi2, hτ, hτ1⟩ := hedge hh0
     have hi2' : c₀.nreg 243005 - 6 < 2 * C.m := hi2
     have he6' : 6 ≤ c₀.nreg 243005 := he6
@@ -291,16 +287,14 @@ theorem chainH_exec {c : Config} (hw : WordsBounded W c) {H : Host} {C : Chain}
           (⟨c₄.nreg 241312, 0⟩, ⟨c₄.nreg 241313, 0⟩) := by
         unfold eHole
         rw [htt, hn, w12, w13, Nat.mod_eq_of_lt (by omega)]
-      have hcov := cover_chain_edge hsimp hi2 hτ hτ1 (by rw [e1]; exact m0)
-        (by rw [e2]; exact m1) (Qof P)
+      have hcov := cover_chain_edge hsimp hi2 hτ hτ1 (by rwa [e1])
+        (by rwa [e2]) (Qof P)
       rw [show c₀.nreg 243005 - 6 + 6 = c₀.nreg 243005 by omega] at hcov
-      rw [hpos]
-      exact hcov
+      rwa [hpos]
     · intro g hg p' τ' hp' h0 h1 hkk
       simp only [ShotList.holeList, List.mem_map, List.mem_range] at hg
       obtain ⟨q, hq, rfl⟩ := hg
       have hq' : q < min (c₄.nreg 241309) 3 := hq
-      have htw2 : tourTwin C (c₀.nreg 243005 - 6) < 2 * C.m := (tour_twin C hi2').1
       rcases (by omega : q = 0 ∨ q = 1) with rfl | rfl
       · have e : ShotList.holeAt c₄ 241300 0 = eHole (chainModel C).W.n (c₀.nreg 243005) := by
           rw [holeAt_eq]; unfold eHole

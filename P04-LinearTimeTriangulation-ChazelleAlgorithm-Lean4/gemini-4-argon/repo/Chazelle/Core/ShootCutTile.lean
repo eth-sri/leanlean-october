@@ -155,7 +155,6 @@ theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ 
         · right; left; exact h.symm
     · -- `j = 1`: `y = X + n`, so `X = 0 = a` and `y = n`: the alias
       push_cast at hj
-      have hX0 : X = 0 := by linarith
       have ha0 : a = 0 := by linarith
       rw [halias (by linarith)]
       refine ⟨0, 0, hn', le_rfl, zero_le_one, Or.inr (Or.inl (by simp [ha0])), rfl⟩

@@ -162,7 +162,6 @@ theorem l0S_exec {c : Config} (hw : WordsBounded W c) {R0 j : ℕ}
   subst hij'
   have hk' : k ≤ 11 * i + 2 := by
     have := hk; simp only [h70, Nat.sub_zero] at this; exact this
-  have hψ' : c'.nreg ALLOC ≤ c1.nreg ALLOC + k := hψ
   have hA1 : c1.nreg ALLOC = R0 := by rw [r1 _ (by unfold L0RG; rw [hAl]; omega)]; exact hA
   exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hA', by omega, hent,
     fun a ha => hout a (by omega), fr', hrr', hrm', ho'⟩

@@ -58,8 +58,7 @@ theorem side_regions_ne (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hS1 : SideOf M 1 c U' := fun z hz hzD => (hside z hz hzD).mono fun δ h => by simpa using h.1
   have hS2 : SideOf M (-1) c V' := fun z hz hzD => (hside z hz hzD).mono fun δ h => by
     simpa [sub_eq_add_neg] using h.2
-  rw [sideOf_eq hU hU' hSU hS1 hz hzD, sideOf_eq hV hV' hSV hS2 hz hzD]
-  exact hne
+  rwa [sideOf_eq hU hU' hSU hS1 hz hzD, sideOf_eq hV hV' hSV hS2 hz hzD]
 
 /-- **The local structure at a key.** -/
 theorem keyStruct {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M)
@@ -172,7 +171,7 @@ theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
           x < (chainModel J.whole).W.n → ¬ (oW J (q + u) < oW J x ∧ oW J x < oW J (p + t)) := by
   have hC := corr_right0 J hP hS₂ hS₂f
   have hM := hC.hM
-  set n := (chainModel J.whole).W.n with hndef
+  set n := (chainModel J.whole).W.n
   have hg : 6 + tpos J.whole J.m₁ < n := hC.hg
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < n := by exact_mod_cast hg

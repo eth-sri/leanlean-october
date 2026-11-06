@@ -163,7 +163,7 @@ theorem mdLoop_exec {P : Polygon} {W : ℕ} {R base Cap : ℕ} {L : ℕ → ℕ}
         · exact (hle r h).trans (le_max_left _ _)
         · have : r = c.nreg 100030 := by omega
           subst this; exact le_max_right _ _)
-    refine ⟨c', _, .whileLtN_true (by rw [h34]; exact hi) e₁ e₂, by omega, hall, hcap,
+    refine ⟨c', _, .whileLtN_true (by rwa [h34]) e₁ e₂, by omega, hall, hcap,
       by rw [m₂, m₁], fun r a b d f => by rw [q₂ r a b d f, q₁ r a b d f]⟩
 
 end

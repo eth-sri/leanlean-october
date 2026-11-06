@@ -103,7 +103,7 @@ theorem vtx_rotate_subPoly {P : Polygon} {l : List ℕ} (hl : ∀ x ∈ l, x < P
     ∀ i < ((subPoly P l).rotate s).n, ∃ j < P.n, ((subPoly P l).rotate s).vtx i = P.vtx j := by
   intro i hi
   rw [Chazelle.Existence.n_rotate, n_subPoly] at hi
-  rw [Chazelle.Existence.vtx_rotate _ _ (by rw [n_subPoly]; exact hi), n_subPoly,
+  rw [Chazelle.Existence.vtx_rotate _ _ (by rwa [n_subPoly]), n_subPoly,
     Chazelle.EarClip.vtx_subPoly_getD P l (Nat.mod_lt _ (by omega))]
   exact ⟨_, hl _ (getD_mem_of_lt (Nat.mod_lt _ (by omega))), rfl⟩
 
@@ -127,7 +127,7 @@ theorem weakTriangulates_shear (ε : ℝ) {R : Polygon} {T : List Polygon.Triang
     (h : WeakTriangulates R T) : WeakTriangulates (shear ε R) T := by
   obtain ⟨h1, h2, h3, h4, h5⟩ := h
   refine ⟨fun t ht => (Chazelle.Core.shear_validTriangle_iff ε R t).2 (h1 t ht),
-    by rw [shear_n]; exact h2, ?_, ?_, ?_⟩
+    by rwa [shear_n], ?_, ?_, ?_⟩
   · rw [Chazelle.Core.shear_union_triSet, Chazelle.Core.shear_filled, h3]
   · refine h4.imp fun {s t} hd => ?_
     rw [Chazelle.Core.shear_triSet, Chazelle.Core.shear_triSet,
@@ -179,12 +179,11 @@ theorem sector_ylexMin_subset_interior {P : Polygon} (hP : P.Simple)
     linarith
   obtain ⟨r, hr, hsec⟩ := sector_subset_interior hT (lexMin_transpose hmin) hσ' hposT
   refine ⟨r, hr, fun y hy h1 h2 => ?_⟩
-  have := hsec y.swap (by rw [hTdef, transpose_vtx, swap_mem_ball_swap_iff]; exact hy)
+  have := hsec y.swap (by rwa [hTdef, transpose_vtx, swap_mem_ball_swap_iff])
     (by rw [hTn, hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap]; linarith)
     (by rw [hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap]; linarith)
-  rw [Set.mem_sdiff, mem_transpose_filled_iff, Chazelle.Visibility.mem_transpose_boundary_iff,
+  rwa [Set.mem_sdiff, mem_transpose_filled_iff, Chazelle.Visibility.mem_transpose_boundary_iff,
     Prod.swap_swap] at this
-  exact this
 
 /-- **The orientation is the sign of the corner at a `(y, x)`-smallest vertex `0`**
 (generalises `Chazelle.Mountain.mountain_orient_det`). -/
@@ -204,7 +203,7 @@ theorem orient_det_pos_of_ylexMin0 {P : Polygon} (hP : P.Simple)
   obtain ⟨r, hr, hsec⟩ := sector_ylexMin_subset_interior hP hmin hσ hpos
   set u := P.vtx (P.n - 1) with hu
   set v := P.vtx 0 with hv
-  set w := P.vtx 1 with hw
+  set w := P.vtx 1
   have huv : u ≠ v := simple_vtx_ne hP (by omega) (by omega) (by omega)
   have hsq := sqLen_pos huv
   have hσ2 : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
@@ -229,8 +228,7 @@ theorem orient_det_pos_of_ylexMin0 {P : Polygon} (hP : P.Simple)
     show 0 < σ * det u v (offset u v (1 - s) (σ * δ))
     rw [det_offset, show σ * (σ * δ * sqLen u v) = (σ * σ) * (δ * sqLen u v) by ring, hσ2, one_mul]
     exact mul_pos hδ0' hsq
-  rw [hor]
-  exact hpos
+  rwa [hor]
 
 /-- **The orientation from any `(y, x)`-smallest vertex `k`**:
 `0 < orient P * det v_{k-1} v_k v_{k+1}` (indices modulo `n`). -/
@@ -258,8 +256,7 @@ theorem orient_det_pos_of_ylexMin {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : 
     refine Chazelle.Mountain.orient_eq_of_filled_subset hRs hP (i := 0) (j := k) (by omega) hk
       hv0 ?_ (by rw [hR, Chazelle.Existence.filled_rotate])
     rw [hRn, Nat.zero_add, Nat.mod_eq_of_lt (by omega : 1 < P.n), hv1]
-  rw [hor, ← hv0, ← hv1, ← hvl]
-  exact h
+  rwa [hor, ← hv0, ← hv1, ← hvl]
 
 /-- **The orientation as a computable sign.**  If `k` is a `(y, x)`-smallest vertex and `σ`
 is `1` when the corner determinant at `k` is positive and `-1` otherwise, then

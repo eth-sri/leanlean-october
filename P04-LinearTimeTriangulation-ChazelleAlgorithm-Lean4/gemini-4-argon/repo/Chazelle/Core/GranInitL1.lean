@@ -73,8 +73,7 @@ theorem chBody_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
     rw [Machine.upd_other _ _ _ (by omega), mup]
   have v2 : upd (upd c.nmem (d.b0 + c.nreg 90070) 1) (d.b0 + d.oS0 + c.nreg 90070)
       (chords (c.nreg 90070)).up (CB + 5 * c.nreg 90070 + 3 + 1) = (chords (c.nreg 90070)).dn := by
-    rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
-    exact mdn
+    rwa [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
   unfold chBody
   exec_block
   all_goals try (have : d.oNd0 ≤ d.oEnd := hEnd; omega)
@@ -154,7 +153,7 @@ theorem chLoop_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90070) (b := 90010)
     (body := chBody) (ChI W K CB d chords c₀) (fun c => K - c.nreg 90070) 13 (fun _ h => h.wb)
     (fun c I ht => by
-      have t : c.nreg 90070 < K := by rw [I.regs 90010 (by decide), h10] at ht; exact ht
+      have t : c.nreg 90070 < K := by rwa [I.regs 90010 (by decide), h10] at ht
       obtain ⟨c', k, e, I', hk, hi⟩ := chBody_exec (P := P) I hB hK h10 h19 h20 hrec hCB hW t
       exact ⟨c', k, e, I', hk, by omega⟩) q
   have hK' : c'.nreg 90070 = K := by

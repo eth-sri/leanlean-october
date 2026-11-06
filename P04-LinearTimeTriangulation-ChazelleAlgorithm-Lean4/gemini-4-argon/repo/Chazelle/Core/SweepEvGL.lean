@@ -59,7 +59,7 @@ theorem side_meets_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hball : ∀ᶠ s in 𝓝[>] (0 : ℝ), Geometry.lerp e f s ∈ ball e (min r r') :=
     hcont (ball_mem_nhds e (lt_min hr hr'))
   obtain ⟨s, hsb, hs1⟩ := (hball.and (Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num))).exists
-  set z := Geometry.lerp e f s with hz
+  set z := Geometry.lerp e f s
   have hzZ : z ∈ Z := by
     rw [hZef]; exact Geometry.mem_segment_iff_lerp.2 ⟨s, hs1.1.le, hs1.2.le, rfl⟩
   have hzD : z ∈ M.D := hopen' s hs1
@@ -70,7 +70,7 @@ theorem side_meets_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     exact hM.trace pz (by have := hPZ.1; exact this) tz hPZ.2.1 hPZ.2.2.1.le (hPe ▸ hzD')
   have hdist : dist z e < min r r' := hsb
   have hzL : Chazelle.Chain.sideLeft M.W pz tz z :=
-    hleft z hzZ (by rw [hPe]; exact hze) (by rw [hPe]; exact lt_of_lt_of_le hdist (min_le_right _ _))
+    hleft z hzZ (by rwa [hPe]) (by rw [hPe]; exact lt_of_lt_of_le hdist (min_le_right _ _))
   have hzK : z ∈ connectedComponentIn (M.D \ c) k :=
     hs z (by rw [mem_ball, hPe]; exact lt_of_lt_of_le hdist (min_le_left _ _)) hzL
   -- the component is open, so the points just beside `z` are in it

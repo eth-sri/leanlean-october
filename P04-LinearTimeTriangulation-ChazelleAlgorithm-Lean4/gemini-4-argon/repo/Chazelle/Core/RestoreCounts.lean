@@ -140,7 +140,7 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
     2 ≤ (sideExits M S R (pa + ta) (pb + tb)).ncard ∧
       2 ≤ (sideExits M S R (pb + tb) (pa + ta)).ncard := by
   obtain ⟨heS, heR, hP⟩ := hsw
-  set F := insert e S with hFdef
+  set F := insert e S
   have hF : ChordSystem M.D F := hM.sys F (insert_subset he hS) (hfin.insert e)
   have hSF : S ⊆ F := subset_insert e S
   have heF : e ∈ F := mem_insert e S
@@ -219,7 +219,7 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
     obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.1 hRo z (heR ⟨hze, hzD⟩)
     have hsys : ({e} : Set (Set Point)) ⊆ F := singleton_subset_iff.2 heF
     obtain ⟨ε₀, hε₀, hsep⟩ := hF.chord_separates_in hsys (mem_singleton e) hze hzD
-    set ε := min (ε₀ / 2) (ρ / 2) with hε
+    set ε := min (ε₀ / 2) (ρ / 2)
     have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
     obtain ⟨hu, hd, hne⟩ := hsep ε hε0 (lt_of_le_of_lt (min_le_left _ _) (by linarith))
     have hfe : freeIn M.D {e} = M.D \ e := by

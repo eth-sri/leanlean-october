@@ -52,14 +52,13 @@ theorem genuine_along_chord {e : Set Point} (he : e ∈ Merge.augChords C) {z : 
       · exact absurd (hH.open_mem x h1 h2) hx
       · exact Or.inr h2
     · exact Or.inl h1.symm
-  have hz := hend z.1 hzl hzr (by rw [show ((z.1, y) : Point) = z from Prod.ext rfl hzy.symm]; exact hzD)
+  have hz := hend z.1 hzl hzr (by rwa [show ((z.1, y) : Point) = z from Prod.ext rfl hzy.symm])
   have hw := hend (z.1 + σ * τ) hwl hwr (by
     rw [show ((z.1 + σ * τ, y) : Point) = rayPt z σ τ from
       point_ext (by simp [rayPt]) (by simp [rayPt, hzy])]; exact hwD)
   refine ⟨hτ, fun s h0 h1 => ?_, hwD⟩
   rw [show rayPt z σ s = ((z.1 + σ * s, y) : Point) from
     point_ext (by simp [rayPt]) (by simp [rayPt, hzy])]
-  have hlr := hH.lt
   apply hH.open_mem <;> rcases hσ with rfl | rfl <;> rcases hz with hz | hz <;>
     rcases hw with hw | hw <;> nlinarith
 

@@ -61,8 +61,8 @@ theorem clAt_congr {m m' : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ × ℕ)}
     (hm : ∀ x, A ≤ x → x < A + 3 * L.length → m' x = m x) : ChordListAt m' A L := by
   intro i hi
   obtain ⟨a1, a2, a3⟩ := h i hi
-  exact ⟨by rw [hm _ (by omega) (by omega)]; exact a1, by rw [hm _ (by omega) (by omega)]; exact a2,
-    by rw [hm _ (by omega) (by omega)]; exact a3⟩
+  exact ⟨by rwa [hm _ (by omega) (by omega)], by rwa [hm _ (by omega) (by omega)],
+    by rwa [hm _ (by omega) (by omega)]⟩
 
 /-- The wrap-around case: two chunk loops around the edge `v_{n-1} v_0`. -/
 def plRunW : Stmt :=
@@ -130,14 +130,14 @@ theorem plRun_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw : 
   by_cases h3 : ℓ < 3
   · have hrl : runLeaves n C p a ℓ = [] := by unfold runLeaves; rw [ite_eq_left h3]
     rw [hrl]
-    refine ⟨d, 0 + 1, .ifLtN_true (by rw [h11, hK.r20]; exact h3) (.skip hw), by simp,
+    refine ⟨d, 0 + 1, .ifLtN_true (by rwa [h11, hK.r20]) (.skip hw), by simp,
       by simp [h16], by simp [h04], fun i hi => by simp at hi, fun _ _ => rfl, FrameM.refl _ _⟩
   -- `u = (a + 1) % n`, `L = ℓ - 2`
   have hu : (a + 1) % n = if a + 1 < n then a + 1 else 0 := by
     split_ifs with h
     · exact Nat.mod_eq_of_lt h
     · rw [show a + 1 = n by omega, Nat.mod_self]
-  set u := (a + 1) % n with hud
+  set u := (a + 1) % n
   have hun : u < n := Nat.mod_lt _ (by omega)
   obtain ⟨d₁, j₁, e₁, hj₁, v22, v23, v24, v12, v13, g₁, m₁⟩ : ∃ d₁ j₁, Exec P W
       plRunPre d d₁ j₁ ∧ j₁ ≤ 8 ∧
@@ -154,9 +154,9 @@ theorem plRun_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw : 
         (.ifLtN 219022 219001 .skip (.instr (.constN 219022 0))) c₁ c₂ j₂ ∧ j₂ ≤ 3 ∧
         c₂.nreg 219022 = u ∧ (∀ r, r ≠ 219022 → c₂.nreg r = c₁.nreg r) ∧ c₂.nmem = c₁.nmem := by
       by_cases hlt : a + 1 < n
-      · refine ⟨c₁, 0 + 1, .ifLtN_true (by rw [q22, q _ (by decide), hK.r01]; exact hlt)
+      · refine ⟨c₁, 0 + 1, .ifLtN_true (by rwa [q22, q _ (by decide), hK.r01])
           (.skip e₁.wb_right), by omega, by rw [q22, hu, ite_eq_left hlt], fun _ _ => rfl, rfl⟩
-      · refine ⟨_, 1 + 2, .ifLtN_false (by rw [q22, q _ (by decide), hK.r01]; exact hlt)
+      · refine ⟨_, 1 + 2, .ifLtN_false (by rwa [q22, q _ (by decide), hK.r01])
           (Exec.constN (P := P) e₁.wb_right 219022 0 (by omega)), by omega, ?_,
           fun r hr => by simp [hr], rfl⟩
         simp only [Machine.upd_same]; rw [hu, ite_eq_right hlt]
@@ -181,7 +181,7 @@ theorem plRun_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw : 
         Machine.upd_other _ _ _ h3, Machine.upd_other _ _ _ h2]
     refine ⟨c₃, (1 + 0) + (j₂ + j₃), .seq (.seq e₁ (.skip e₁.wb_right)) (.seq e₂ e₃), by omega, ?_,
       w23, w24, w12, w13, ?_, ?_⟩
-    · rw [g₃ _ (by omega) (by omega) (by omega)]; exact q22'
+    · rwa [g₃ _ (by omega) (by omega) (by omega)]
     · intro r h1 h2
       rw [g₃ r h1 (by omega) (by omega), q' r (by omega), q r (by omega)]
     · rw [m₃, qm]
@@ -210,10 +210,10 @@ theorem plRun_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw : 
       (by rw [g₂ _ (by decide), v13]) (by rw [g₂ _ (by decide), k16])
       (by rw [g₂ _ (by decide), k04]) kK₂.r17 kK₂.r18 kK₂.r20 (by omega) (by omega) hWt hWk
     have ex : Exec P W plRun d d' (j₁ + (1 + j₃ + 1) + 2) :=
-      .ifLtN_false (by rw [h11, hK.r20]; exact h3)
-        (.seq e₁ (.ifLtN_true (by rw [v24, kK.r01]; exact hnw) (.seq e₂ e₃)))
+      .ifLtN_false (by rwa [h11, hK.r20])
+        (.seq e₁ (.ifLtN_true (by rwa [v24, kK.r01]) (.seq e₂ e₃)))
     refine ⟨d', _, ex, by omega, c16, c04,
-      cL, fun x hx => by rw [cm x hx]; rw [hd₂]; exact congrFun m₁ x, ?_⟩
+      cL, fun x hx => by rw [cm x hx, hd₂]; exact congrFun m₁ x, ?_⟩
     exact hf₁.trans ((exec_frameM e₂ (by decide : wrM Brun (.instr (.copyN 219014 219023)) = true)).trans
       ⟨fun r hr => cf.1 r (by simp only [Brun, Bool.or_eq_false_iff] at hr; exact hr.1),
         fun r hr => cf.2.1 r (by simp only [Brun, Bool.or_eq_false_iff] at hr; exact hr.1),
@@ -270,8 +270,8 @@ theorem plRun_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw : 
     have exW : Exec P W plRunW d₁ d' ((1 + 0) + (j₃ + (j₄ + j₅))) :=
       .seq (.seq e₂ (.skip e₂.wb_right)) (.seq e₃ (.seq e₄ e₅))
     have ex : Exec P W plRun d d' (j₁ + ((1 + 0) + (j₃ + (j₄ + j₅)) + 2) + 2) :=
-      .ifLtN_false (by rw [h11, hK.r20]; exact h3)
-        (.seq e₁ (.ifLtN_false (by rw [v24, kK.r01]; exact hnw) exW))
+      .ifLtN_false (by rwa [h11, hK.r20])
+        (.seq e₁ (.ifLtN_false (by rwa [v24, kK.r01]) exW))
     refine ⟨d', _, ex, by omega, by rw [c16']; ring, by rw [c04']; ring, ?_, ?_, ?_⟩
     · refine clAt_append (clAt_congr cL fun x h1 h2 => ?_) ?_
       · rw [cm' x (Or.inl h2), ms]

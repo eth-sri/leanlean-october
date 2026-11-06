@@ -96,19 +96,19 @@ theorem FrameR.of_frame {B : Finset ℕ} {Wr : ℕ → Prop} {c c' : Config} {k 
 theorem hostAt_agree {m m' : ℕ → ℕ} {h E : ℕ} {H : Host} (hH : HostAt m h H)
     (hE : h + 3 * H.length + 4 ≤ E) (he : ∀ a, a < E → m' a = m a) : HostAt m' h H := by
   obtain ⟨h0, h1⟩ := hH
-  refine ⟨by rw [he _ (by omega)]; exact h0, fun i hi => ?_⟩
+  refine ⟨by rwa [he _ (by omega)], fun i hi => ?_⟩
   have := h1 i hi
   revert this
   cases H.getD i (.run 0 0) with
   | run a l =>
     intro h; simp only at h ⊢
-    rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
+    rwa [he _ (by omega), he _ (by omega), he _ (by omega)]
   | pt x =>
     cases x with
-    | vtx j => intro h; simp only at h ⊢; rw [he _ (by omega), he _ (by omega)]; exact h
+    | vtx j => intro h; simp only at h ⊢; rwa [he _ (by omega), he _ (by omega)]
     | onEdge e j =>
       intro h; simp only at h ⊢
-      rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
+      rwa [he _ (by omega), he _ (by omega), he _ (by omega)]
 
 /-- **A copied chain descriptor** (host layout below `E`, the five words copied to `d`). -/
 theorem chainDescAt_copy {m m' : ℕ → ℕ} {bw d E : ℕ} {Q : Polygon} {H : Host} {C : Chain}
@@ -122,8 +122,8 @@ theorem chainDescAt_copy {m m' : ℕ → ℕ} {bw d E : ℕ} {Q : Polygon} {H : 
   have c3 := hc 3 (by omega)
   have c4 := hc 4 (by omega)
   simp only [add_zero] at c0
-  refine ⟨?_, h1, by rw [c1]; exact h2, by rw [c2]; exact h3, by rw [c3]; exact h4,
-    by rw [c4]; exact h5⟩
+  refine ⟨?_, h1, by rwa [c1], by rwa [c2], by rwa [c3],
+    by rwa [c4]⟩
   rw [c0]
   exact hostAt_agree h0 hE he
 
@@ -141,7 +141,7 @@ theorem chainWF_copy {P : Polygon} {m m' : ℕ → ℕ} {bw d E E' : ℕ} {H : H
   refine ⟨hl, hHW, by rw [c0]; omega, ?_⟩
   have e1 : C'.s = C.s := by rw [← hC'.2.2.1, ← hC.2.2.1, hc 1 (by omega)]
   have e2 : C'.P = C.P := by rw [hC'.2.1, hC.2.1]
-  rw [e1, e2]; exact hs
+  rwa [e1, e2]
 
 
 end

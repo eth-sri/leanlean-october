@@ -52,7 +52,6 @@ theorem ncard_counted {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
     rw [e, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
     rfl
   | true =>
-    have hm := hD.1 rfl
     have e : {p : ℕ | p < M.W.n ∧ M.counted p ∧ l ≤ p ∧ p < r} =
         Ico (max l 6) (min r (2 * m + 6)) := by
       ext p
@@ -162,11 +161,6 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
         have : hi ≤ (eb : ℝ) + tb := min_le_left _ _
         constructor <;> linarith
   · -- `b < a`: the wrap-around
-    have hlt : (eb : ℝ) + tb < ea + ta := lt_of_le_of_ne (not_lt.1 h2) (Ne.symm h1)
-    have hle : eb ≤ ea := by
-      by_contra h'
-      have : (ea : ℝ) + 1 ≤ eb := by exact_mod_cast (show ea + 1 ≤ eb by omega)
-      linarith
     have hr : min (eb + bump tb) ea ≤ M.W.n := (min_le_right _ _).trans ha.le
     have hdisj : Disjoint {p : ℕ | p < M.W.n ∧ M.counted p ∧ 0 ≤ p ∧ p < min (eb + bump tb) ea}
         {p : ℕ | p < M.W.n ∧ M.counted p ∧ ea ≤ p ∧ p < M.W.n} := by

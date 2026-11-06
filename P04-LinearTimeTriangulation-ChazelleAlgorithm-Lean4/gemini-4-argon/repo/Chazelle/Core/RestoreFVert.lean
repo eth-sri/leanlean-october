@@ -49,7 +49,7 @@ theorem TOut.good (hE : FGood E c₀) {c' : Config} (h : TOut E c c') {reg : ℕ
   have hxeq : (⟨c.nreg 81060, c.nreg 81061⟩ : WPos) = ⟨c.nreg 81060, 0⟩ := by rw [hx1]
   rw [hxeq] at hex hcomp
   have hp0 : E.M.param (Qof E.P) ⟨c.nreg 81060, 0⟩ = 0 := rfl
-  obtain ⟨h10, h11⟩ := hcomp (by rw [hp0]; exact hsec) hch T hT hdom hout hadm hsw.1 hsw.2.1
+  obtain ⟨h10, h11⟩ := hcomp (by rwa [hp0]) hch T hT hdom hout hadm hsw.1 hsw.2.1
   obtain ⟨T', hT', hstr, hposf, hfe, hfp, hadm', hA, hB, hiff⟩ := hex h10 h11
   have hM := walkAx_of_goodModel hE.hGM
   have hout' : rayPt (E.M.pos (Qof E.P) ⟨c.nreg 81060, 0⟩) (dirOf (c.nreg 81063)) T' ∉ E.M.D := by
@@ -111,7 +111,6 @@ theorem tVert_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       (∀ reg, NFRegs E.M (Qof E.P) E.N reg → (E.N.region E.r).chords ≠ [] →
         ∀ σb, σb ≤ 1 → GoodAt E reg (c.nreg a) σb → c'.nreg 81007 = 1)) := by
   have hW1 : 1 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
-  have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
   -- the candidate vertex
   have ok1 : okB E.W c.nmem [.copyN 81060 a, .constN 81061 0] c.nreg := by
     simp only [okB, okI]
@@ -130,7 +129,7 @@ theorem tVert_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     (by unfold ALLOC; omega)
   -- the height vertex
   refine (FRS.seq (K₂ := 2 * tK E + 2) (fHv_fs hE hB hI₁ (a := 81060) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) (by rw [v60]; exact hv) (by rw [v60]; exact hset)
+    (by norm_num) (by norm_num) (by norm_num) (by rwa [v60]) (by rwa [v60])
     (by rw [hA₁']; unfold tvK at hroom; omega)) (fun c₂ hI₂ hA₂ ⟨hv2, hy2, fr2⟩ => ?_)).mono
     (by omega) (fun _ h => h)
   have g₂ : ∀ q, 80000 ≤ q → q < 90000 → q ≠ 81060 → q ≠ 81061 → q ≠ 81062 → q ≠ 81064 →
@@ -142,13 +141,11 @@ theorem tVert_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     rw [fr2 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), v61]
   have hw₂ : FWin E c₂ := by
     unfold FWin
-    rw [g₂ 81007 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+    rwa [g₂ 81007 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
       (by norm_num), g₂ 81008 (by norm_num) (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num), g₂ 81009 (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num) (by norm_num), g₂ 81010 (by norm_num) (by norm_num)
       (by norm_num) (by norm_num) (by norm_num) (by norm_num)]
-    exact hw
-  have hA₂' : c₂.nreg ALLOC ≤ c.nreg ALLOC + hvK := by rw [← hA₁']; exact hA₂
   rw [v60] at hy2
   -- a direction bit and a test
   have dir : ∀ (b : ℕ) (cx : Config), b ≤ 1 → FInv E.W c₀ cx → FWin E cx →
@@ -170,9 +167,8 @@ theorem tVert_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       rw [ey]; simp [regB, regI, upd, hq]
     have hwy : FWin E cy := by
       unfold FWin
-      rw [fy 81007 (by norm_num), fy 81008 (by norm_num), fy 81009 (by norm_num),
+      rwa [fy 81007 (by norm_num), fy 81008 (by norm_num), fy 81009 (by norm_num),
         fy 81010 (by norm_num)]
-      exact hwx
     have hcand : CandOK E ⟨cy.nreg 81060, cy.nreg 81061⟩ (cy.nreg 81062) (cy.nreg 81063) := by
       rw [fy _ (by norm_num), fy _ (by norm_num), fy _ (by norm_num), y63, x60, x61, x62]
       exact ⟨hv, ⟨le_of_eq rfl, by show (0 : ℝ) < 1; norm_num, Nat.zero_le _⟩, Or.inl rfl,
@@ -180,8 +176,8 @@ theorem tVert_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     refine (tcall_win hE hB hBT hIy hwy (fun _ => hcand) (by
       rw [fy _ (by unfold ALLOC; omega)]; omega)).mono le_rfl
       (fun c' ⟨hk, hw', hm, hg⟩ => ⟨hw', fun q h1 h2 h3 => by rw [hk q h1 h2, fy q h3], fun h => hm
-        (by rw [fy _ (by norm_num)]; exact h), fun reg hregs hch hgd => hg reg hregs hch
-          (by rw [fy _ (by norm_num), x61]) (by rw [fy _ (by norm_num), y63, x60]; exact hgd)⟩)
+        (by rwa [fy _ (by norm_num)]), fun reg hregs hch hgd => hg reg hregs hch
+          (by rw [fy _ (by norm_num), x61]) (by rwa [fy _ (by norm_num), y63, x60])⟩)
   refine (FRS.seq (K₂ := tK E + 1)
     (dir 0 c₂ (by norm_num) hI₂ hw₂ w60 w61 rfl (by unfold tvK at hroom; omega))
     (fun c₄ hI₄ hA₄ ⟨hw₄, fr₄, hm₄, hg₄⟩ => ?_)).mono (by omega) (fun _ h => h)
@@ -194,8 +190,8 @@ theorem tVert_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   · unfold VertW at hq
     rw [fr₆ q h1 h2 (by omega), fr₄ q h1 h2 (by omega)]
     exact g₂ q (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  · rw [g₂ 81007 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num)]; exact h
+  · rwa [g₂ 81007 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+      (by norm_num)]
   · rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hσb with rfl | rfl
     · exact hm₆ (hg₄ reg hregs hch hgd)
     · exact hg₆ reg hregs hch hgd

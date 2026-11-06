@@ -49,11 +49,10 @@ theorem kind1_pw_le {P : Polygon} {C : Chain} {m₀ : ℕ → ℕ} {h γ : ℕ} 
       ((chainModel C).key (Qof P) e) := by
   obtain ⟨g, b, -, -, -, -, hpw, -, -, -, hs0, he0, h6, hee, hem, -, -⟩ :=
     hok.2.2.2.2.2.2 hk
-  set n := 2 * C.m + 7 with hn
-  set a := (chainModel C).key (Qof P) s with ha
-  set b' := (chainModel C).key (Qof P) e with hb'
-  have hn0 : (0 : ℝ) < (n : ℝ) := by rw [hn]; positivity
-  set T := a + len (n : ℝ) a b' with hT
+  set n := 2 * C.m + 7
+  set a := (chainModel C).key (Qof P) s
+  set b' := (chainModel C).key (Qof P) e
+  set T := a + len (n : ℝ) a b'
   have hTA : T ≤ a + n := by have := len_le (n : ℝ) a b' hs.1 he.2; linarith
   obtain ⟨U, U₁, hAU, hUU, hUT, ⟨i, hi⟩, ⟨j, hj⟩⟩ := KPath.mem arc.kp pc hpc
   have ks : (chainModel C).key (Qof P) pc.s = (pc.s.edge : ℝ) := by
@@ -66,14 +65,12 @@ theorem kind1_pw_le {P : Polygon} {C : Chain} {m₀ : ℕ → ℕ} {h γ : ℕ} 
   replace hj : U₁ = (pc.s.edge : ℝ) + ((2 ^ g : ℕ) : ℝ) + j * (n : ℝ) := hj
   replace hAU : a ≤ U := hAU
   replace hUT : U₁ ≤ T := hUT
-  set p₀ := pc.s.edge with hp₀
+  set p₀ := pc.s.edge
   have hpn : (p₀ : ℝ) + ((2 ^ g : ℕ) : ℝ) + 1 ≤ n := by
     exact_mod_cast (show p₀ + 2 ^ g + 1 ≤ n by omega)
   have hg0 : (0 : ℝ) < ((2 ^ g : ℕ) : ℝ) := by positivity
   -- the two unwrappings agree
   have hji : j = i := by
-    have d1 : (0 : ℝ) < ((2 ^ g : ℕ) : ℝ) + ((j : ℝ) - i) * n := by linarith
-    have d2 : ((2 ^ g : ℕ) : ℝ) + ((j : ℝ) - i) * n ≤ n := by linarith
     have ec : ((j - i : ℤ) : ℝ) = (j : ℝ) - i := by push_cast; ring
     have a1 : ((j - i : ℤ) : ℝ) > -1 := by
       rw [ec]; by_contra hc; push Not at hc; nlinarith
@@ -88,7 +85,6 @@ theorem kind1_pw_le {P : Polygon} {C : Chain} {m₀ : ℕ → ℕ} {h γ : ℕ} 
     have : (-1 : ℝ) < i := by
       by_contra hc; push Not at hc
       have : (i : ℝ) * n ≤ -n := by nlinarith
-      have hp0 : (p₀ : ℝ) + 1 ≤ n := by linarith
       linarith [hs.1]
     have : (-1 : ℤ) < i := by exact_mod_cast this
     omega
@@ -98,10 +94,10 @@ theorem kind1_pw_le {P : Polygon} {C : Chain} {m₀ : ℕ → ℕ} {h γ : ℕ} 
   rw [hpw]
   obtain ⟨k, hk'⟩ := T_unw a b' (n : ℝ)
   refine arcWt_ge C (A := a) (T := T) hs he ⟨0, by simp⟩ ⟨k, hk'⟩ hTA
-    (v := p₀ + i' * n) (L := 2 ^ g) ?_ ?_ (by rw [hv]; exact hAU) ?_
+    (v := p₀ + i' * n) (L := 2 ^ g) ?_ ?_ (by rwa [hv]) ?_
   · rw [Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt (by omega)]; omega
   · rw [Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt (by omega)]; omega
-  · rw [hv2]; exact hUT
+  · rwa [hv2]
 
 /-- **A kind-1 piece of a subarc of weight `≤ γ`** has at most `γ` edges. -/
 theorem kind1_pw_le_γ {P : Polygon} {C : Chain} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPos}
@@ -155,7 +151,7 @@ theorem kind1_query {O : OracleIface} {P : Polygon} {C : Chain} {m m' : ℕ → 
   have hR' : Robust A m' fun m'' => GradeRaw O P m'' h A := hR.transport hm'
   have hΛ : g < m' h := by
     have := (grade_low hR).1
-    rw [hm' h (by omega)]; exact hgΛ
+    rwa [hm' h (by omega)]
   obtain ⟨Hs, Cα, N, hC, -, -, -, -, -, hmC, -, -, hAt, hS0, -, hS2⟩ := hR'.holds.2.2.2 g b hΛ hb
   obtain ⟨h2, hr, hlt⟩ := grade_entry hR hgΛ hb
   have hent : m' (m' (h + 2) + g) + 3 * b = pc.entry := by
@@ -164,8 +160,8 @@ theorem kind1_query {O : OracleIface} {P : Polygon} {C : Chain} {m m' : ℕ → 
     rw [e1, e2, hE]; rfl
   rw [hent] at hC hAt hS0 hS2
   have hlen : Cα.m = 2 ^ g := by rw [hmC]; exact gradeLen_full hbn
-  refine ⟨by rw [hE]; exact hlt, hAt, ⟨Hs', Cα', by rw [hS0]; exact hC', ?_⟩,
-    by rw [hS2]; exact hgran, ?_⟩
+  refine ⟨by rwa [hE], hAt, ⟨Hs', Cα', by rwa [hS0], ?_⟩,
+    by rwa [hS2], ?_⟩
   · rw [← hset, show pc.s = ⟨pc.s.edge, 0⟩ by rw [← hs0], show pc.e = ⟨pc.e.edge, 0⟩ by rw [← he0],
       key_hgt0, key_hgt0, hee, hpw]
   · rw [hS0, hC.2.2.2.1, hlen, hpw]

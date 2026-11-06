@@ -118,17 +118,17 @@ theorem sqC_exec {cu : Stmt} {G H : ℕ → ℕ}
   have hG := hS.good
   have hD : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
   have hn3 : 3 ≤ (Qof P).n := by rw [hQ]; exact Chazelle.Jordan.simple_three_le hG.1
-  set x := (interiorModel (Qof P)).param (Qof P) ⟨u, sh₀⟩ with hx
-  set t := (interiorModel (Qof P)).param (Qof P) ⟨(u + ee) % (Qof P).n, eh⟩ with ht
+  set x := (interiorModel (Qof P)).param (Qof P) ⟨u, sh₀⟩
+  set t := (interiorModel (Qof P)).param (Qof P) ⟨(u + ee) % (Qof P).n, eh⟩
   have hyL : (ee : ℝ) + t ≤ L := sub_y_le hsub
   have hx0 : 0 ≤ x := hsub.hs.1
   have hx1 : x < 1 := hsub.hs.2.1
   have ht0 : 0 ≤ t := hsub.he.1
   have hxy : x < ee + t := hsub.hxy
-  set C := ch (Qof P) u L h1 h2 with hCd
+  set C := ch (Qof P) u L h1 h2
   -- the chain
   obtain ⟨c₁, k₁, e₁, hk₁, hk₁', C₁, d78, dA, dm, dr, drr, drm, dout⟩ := chainI_exec c hw hS h33 h37
-    (by rw [← hQ]; exact hu) h1 h2 hcap (by omega)
+    (by rwa [← hQ]) h1 h2 hcap (by omega)
   have F₁ : Frame ioBands c c₁ k₁ := frame_chainI hk₁' dA dm dr drr drm dout
   have w₁ := e₁.wb_right
   have g₁ : ∀ r, 170000 ≤ r → r < 180000 → BSQC r = false → c₁.nreg r = c.nreg r :=
@@ -140,9 +140,9 @@ theorem sqC_exec {cu : Stmt} {G H : ℕ → ℕ}
     hT.keep (fun r r1 r2 => dr r (by
       simp only [Bchain, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
       (by unfold ALLOC; omega)) dm (by omega)
-  have b34 : c₁.nreg 170034 = sh₀ := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h34
-  have b35 : c₁.nreg 170035 = ee := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h35
-  have b36 : c₁.nreg 170036 = eh := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h36
+  have b34 : c₁.nreg 170034 = sh₀ := by rwa [g₁ _ (by norm_num) (by norm_num) (by decide)]
+  have b35 : c₁.nreg 170035 = ee := by rwa [g₁ _ (by norm_num) (by norm_num) (by decide)]
+  have b36 : c₁.nreg 170036 = eh := by rwa [g₁ _ (by norm_num) (by norm_num) (by decide)]
   have hτ : tau (Qof P) u L h1 h2 < 2 * L := tau_lt
   -- the arc blocks keep the chain state and the slot state
   have keepArc : ∀ {d d' : Config}, FrameB BarcC d d' → CEnv P W O s u L h1 h2 d →
@@ -168,7 +168,7 @@ theorem sqC_exec {cu : Stmt} {G H : ℕ → ℕ}
       ((6 + tau (Qof P) u L h1 h2 : ℕ) : ℝ) + x := by rw [key_eq, hps]
   by_cases hs : tau (Qof P) u L h1 h2 ≤ L
   · -- one chain arc
-    set τ := tau (Qof P) u L h1 h2 with hτd
+    set τ := tau (Qof P) u L h1 h2
     have hb' : ¬ c₁.nreg 170037 < c₁.nreg 170077 := by rw [C₁.r37, C₁.r77]; omega
     obtain ⟨c₂, k₂, e₂, hk₂, a1, a2, a3, a4, a45, a46, Fa⟩ := arcOneC_exec (P := P) c₁ w₁
       C₁.r77 b34 b35 b36 C₁.r33 (by omega)
@@ -198,8 +198,8 @@ theorem sqC_exec {cu : Stmt} {G H : ℕ → ℕ}
     rw [bandCut g₃ (by omega) r r1 r2 hr, bandArc Fa r r1 r2 hr, g₁ r r1 r2 hr]
   · -- two chain arcs meeting at the top
     push Not at hs
-    set τ := tau (Qof P) u L h1 h2 with hτd
-    have hb' : c₁.nreg 170037 < c₁.nreg 170077 := by rw [C₁.r37, C₁.r77]; exact hs
+    set τ := tau (Qof P) u L h1 h2
+    have hb' : c₁.nreg 170037 < c₁.nreg 170077 := by rwa [C₁.r37, C₁.r77]
     obtain ⟨harcA, harcB⟩ := chainArcs_two hsub hs hLγ
     set L₁ := 2 * L - τ with hL₁
     have hle : L₁ ≤ ee := by rcases hsub.hee with ⟨-, h'⟩ | ⟨-, h', -⟩ <;> omega
@@ -233,11 +233,11 @@ theorem sqC_exec {cu : Stmt} {G H : ℕ → ℕ}
     rw [hVA'] at T₃
     -- the second arc
     have c35 : c₃.nreg 170035 = ee := by
-      rw [g₃ _ (by norm_num) (by norm_num) (Or.inl (by omega)),
-        bandArc Fa _ (by norm_num) (by norm_num) (by decide)]; exact b35
+      rwa [g₃ _ (by norm_num) (by norm_num) (Or.inl (by omega)),
+        bandArc Fa _ (by norm_num) (by norm_num) (by decide)]
     have c36 : c₃.nreg 170036 = eh := by
-      rw [g₃ _ (by norm_num) (by norm_num) (Or.inl (by omega)),
-        bandArc Fa _ (by norm_num) (by norm_num) (by decide)]; exact b36
+      rwa [g₃ _ (by norm_num) (by norm_num) (Or.inl (by omega)),
+        bandArc Fa _ (by norm_num) (by norm_num) (by decide)]
     have c10 : c₃.nreg 170010 = (Qof P).n := by rw [C₃.env.r10, hQ]
     obtain ⟨c₄, k₄, e₄, hk₄, a1', a2', a3', a4', a45', a46', Fb⟩ := arcTwoBC_exec (P := P) c₃
       e₃.wb_right C₃.r77 c35 c36 C₃.r89 C₃.r33 c10 hu (by omega) (by omega) (by omega)

@@ -58,7 +58,7 @@ theorem attach_far (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ
   rcases hM.attach_endpoint hopen hA with h | h
   · exfalso
     have := off_right_pt J hP (S₂ := ∅) (empty_subset _) finite_empty hA.1 hA.2.1 hA.2.2.1
-      (by rw [h]; exact haR) (by rw [h]; exact hav)
+      (by rwa [h]) (by rwa [h])
     rw [← oW_eq, ← Lst_eq] at this
     linarith [this.2]
   · exact h
@@ -97,19 +97,19 @@ theorem whole_lt_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
       · rw [rayPt_snd, hl2]
   have hbmem : b ∈ Merge.shoot J.whole a σ := by
     rw [← hwb]; exact Chazelle.Geometry.right_mem_segment _ _
-  have hbD : b ∉ J.whole.dom := by rw [← hwb]; exact hwD
+  have hbD : b ∉ J.whole.dom := by rwa [← hwb]
   by_cases hbR : b ∈ J.right.set
   · by_cases hbv : b = J.shared
     · rw [hbv] at hbmem hbD
       obtain ⟨σ'', hσ'', hfr, he⟩ := chord_eq_shoot_of_end J.whole hAdm hbmem hbD
       exact hns (Or.inl (Or.inl ⟨σ'', hσ'', hfr, he⟩))
     · have := off_right_pt J hP (S₂ := ∅) (empty_subset _) finite_empty hA.1 hA.2.1 hA.2.2.1
-        (by rw [hpt, hwb]; exact hbR) (by rw [hpt, hwb]; exact hbv)
+        (by rwa [hpt, hwb]) (by rwa [hpt, hwb])
       rw [← oW_eq, ← Lst_eq] at this
       linarith [this.2]
   · obtain ⟨σ'', hσ'', hfr, he⟩ := chord_eq_shoot_of_end J.whole hAdm hbmem hbD
     -- the direction from `b` is back towards `a`
-    have hb2 : b.2 ≤ J.whole.top.2 := by rw [← hwb, rayPt_snd]; exact ha2
+    have hb2 : b.2 ≤ J.whole.top.2 := by rwa [← hwb, rayPt_snd]
     obtain ⟨hτ'', -, -⟩ := Merge.hit_of_freeAt J.whole hb2 hσ'' hfr
     have haIn : a ∈ Merge.shoot J.whole b σ'' := he ▸ origin_mem J
     unfold Merge.shoot at haIn
@@ -173,7 +173,7 @@ theorem no_cut_core (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
     (co.nreg bF = 1 ∧ offK P J (co.nreg bE) (co.nreg bH) ≤ oW J (p + t)) ∨
     (cw.nreg wX = 0 ∧ offK P J (cw.nreg wE) (cw.nreg wH) < oW J (p + t)) := by
   classical
-  set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
+  set S₂ := N₂.F (chainModel J.right) (Qof P)
   have hP := E.hP
   have hS₂ : (chainModel J.right).ChordFamily (Qof P) S₂ := E.hNF₂.1
   have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
@@ -263,7 +263,7 @@ theorem no_cut_core (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
       j ∈ regO N₂ l := by
     intro l hl hlV
     refine ⟨i, ((hRO l hl).1 i).2 ⟨hi, ?_⟩, hji⟩
-    rw [← hci, hlV]; exact hT
+    rwa [← hci, hlV]
   have hjO' : j ∈ iterO N₂ cs := by
     rcases hVΛ with ⟨l, hl, hlV⟩ | hg
     · obtain ⟨u, hu, hu4, rfl⟩ : ∃ u, u < c.nreg kN ∧ u < 4 ∧ l = c.nreg (kL + u) := by
@@ -288,19 +288,18 @@ theorem no_cut_core (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
     push_cast; ring
   have hlo : rayPt a σ (J.whole.hitParam a σ) ∈
       ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB) (cs.nreg wGK) [] := by
-    have hin := hcov d t hMV hA.2.1 hA.2.2.1 (by rw [hoffd]; exact hlt) (fun h0 => by
+    have hin := hcov d t hMV hA.2.1 hA.2.2.1 (by rwa [hoffd]) (fun h0 => by
       rw [hoffd]; by_contra hc; exact hwin ⟨h0, not_le.1 hc⟩)
     rw [hArr.2.2.2.1, ← hgk] at hin
-    rw [hR.1, eGB, eGK]
-    exact hin
+    rwa [hR.1, eGB, eGK]
   -- accepted, so the best candidate is at or before it
-  obtain ⟨h, hh, hmA⟩ := hBA.comp j hjO' hj ⟨by rw [hjO]; exact haR, by rw [hjO]; exact hav,
-    by rw [hjO]; exact hat⟩ p t (by rw [hjO, hjD]; exact hA) (by rw [hjO, hjD]; exact hpt) hLst
-    hnv (by rw [hjO, hjD]; exact hlt') (by rw [hjO, hjD]; exact hlo)
+  obtain ⟨h, hh, hmA⟩ := hBA.comp j hjO' hj ⟨by rwa [hjO], by rwa [hjO],
+    by rwa [hjO]⟩ p t (by rwa [hjO, hjD]) (by rwa [hjO, hjD]) hLst
+    hnv (by rwa [hjO, hjD]) (by rwa [hjO, hjD])
   have hoT : offT P J (j, p, h) = oW J (p + t) := by
     show oW J (p + (chainModel J.whole).param (Qof P) ⟨p, h⟩) = _
     rw [hh]
-  obtain ⟨hbF, hle⟩ := hBA.bMin _ hmA (by rw [hoT, ekE, ekH]; exact hlt)
+  obtain ⟨hbF, hle⟩ := hBA.bMin _ hmA (by rwa [hoT, ekE, ekH])
   exact ⟨hbF, hle.trans hoT.le⟩
 
 /-- **No cut before the candidates**: every chord of `F₂⁺` attached beyond the key of `c` is
@@ -317,10 +316,10 @@ theorem no_cut_between (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopIn
     (co.nreg bF = 1 ∧ offK P J (co.nreg bE) (co.nreg bH) ≤ oW J (p + t)) ∨
     (cw.nreg wX = 0 ∧ offK P J (cw.nreg wE) (cw.nreg wH) < oW J (p + t)) := by
   classical
-  set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
+  set S₂ := N₂.F (chainModel J.right) (Qof P)
   have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole E.hP
   have hF := F₂plus_chordFamily E
-  set K := {x : ℝ | (chainModel J.whole).IsCut (F₂plus J S₂) x ∧ keyOff P J c < oW J x} with hK
+  set K := {x : ℝ | (chainModel J.whole).IsCut (F₂plus J S₂) x ∧ keyOff P J c < oW J x}
   have hKf : K.Finite := (hM.finite_cuts hF.2.1 hF.1).subset fun x hx => hx.1
   have hKm : ((p : ℝ) + t) ∈ K := ⟨⟨e, he, p, t, hA, rfl⟩, hlt⟩
   obtain ⟨x, ⟨⟨e', he', p', t', hA', rfl⟩, hx⟩, hmin⟩ := Set.exists_min_image K (oW J) hKf ⟨_, hKm⟩
@@ -380,8 +379,8 @@ theorem no_cut_iter (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
     exact absurd (h3.trans (h4.trans hi3)) (not_le.2 h2)
   · obtain ⟨-, -, hKb, -⟩ := hK4 (Or.inl hbF)
     exact absurd ((hKb hbF).trans hb) (not_le.2 h2)
-  · obtain ⟨-, -, -, -, hKw, -⟩ := hK4 (Or.inr (Or.inr (by rw [ewX]; exact hwX)))
-    have h3 := hKw (by rw [ewX]; exact hwX)
+  · obtain ⟨-, -, -, -, hKw, -⟩ := hK4 (Or.inr (Or.inr (by rwa [ewX])))
+    have h3 := hKw (by rwa [ewX])
     rw [ewE, ewH] at h3
     exact absurd (h3.trans hw.le) (not_le.2 h2)
 
@@ -399,7 +398,7 @@ theorem no_cut_done (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
   rcases no_cut_between E L hW hR hB he hA h1 with ⟨i, hi1, hi2, -⟩ | ⟨hbF, -⟩ | ⟨hwX, -⟩
   · exact hnone (Or.inr (Or.inl (by rw [esP, esC]; omega)))
   · exact hnone (Or.inl hbF)
-  · exact hnone (Or.inr (Or.inr (by rw [ewX]; exact hwX)))
+  · exact hnone (Or.inr (Or.inr (by rwa [ewX])))
 
 end Iter
 

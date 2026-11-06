@@ -60,8 +60,8 @@ theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
   have hw := wrapK_bounds hyb.1 hyb.2
   have huw : unwrapK n a (wrapK n y) = y := unwrapK_wrapK ha hy1.le (by linarith)
   have hin : sideInArc a b (wrapK n y) :=
-    (cyc_unwrap ha ha hb hw (by rw [unwrapK_self]; exact hab)).2
-      ⟨by rw [unwrapK_self, huw]; exact hy1, by rw [huw]; linarith⟩
+    (cyc_unwrap ha ha hb hw (by rwa [unwrapK_self])).2
+      ⟨by rwa [unwrapK_self, huw], by rw [huw]; linarith⟩
   refine ⟨Nat.mod_lt _ hnN, y - j, by linarith, by linarith, ?_⟩
   have e : ((j % n : ℕ) : ℝ) + (y - j) = wrapK n y := by
     unfold wrapK
@@ -80,7 +80,7 @@ theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
         have : (n : ℝ) ≤ j := by exact_mod_cast (by omega : n ≤ j)
         linarith
       rw [ite_eq_right this, Nat.cast_sub (by omega)]; ring
-  rw [e]; exact hin
+  rwa [e]
 
 /-- **The walk vertices of a light closed key interval** are within `9` steps of its start edge. -/
 theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
@@ -90,10 +90,10 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
     (hp : p < M.W.n) (hx : ClosedArc (M.key Q s) (M.key Q e) p) :
     ∃ t, t < 10 ∧ (s.edge + t) % M.W.n = p := by
   classical
-  set n := M.W.n with hndef
+  set n := M.W.n
   have hnN : 0 < n := by omega
-  set a := M.key Q s with hadef
-  set b := M.key Q e with hbdef
+  set a := M.key Q s
+  set b := M.key Q e
   have hkey : a = s.edge + M.param Q s := rfl
   have ha : 0 ≤ a ∧ a < n := by
     have : (s.edge : ℝ) + 1 ≤ n := by exact_mod_cast hse
@@ -109,7 +109,7 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
   set P := unwrapK n a p with hPdef
   have hPb : a ≤ P ∧ P ≤ unwrapK n a b := by
     rcases hx with hx | hx | hx
-    · have := (cyc_unwrap ha ha hke hpn (by rw [unwrapK_self]; exact hab)).1 hx
+    · have := (cyc_unwrap ha ha hke hpn (by rwa [unwrapK_self])).1 hx
       rw [unwrapK_self] at this; exact ⟨this.1.le, this.2.le⟩
     · rw [hPdef, hx, unwrapK_self]; exact ⟨le_rfl, hab.le⟩
     · rw [hPdef, hx]; exact ⟨hab.le, le_rfl⟩
@@ -181,13 +181,13 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
     (hs : ProperPos M Q n0 s) (hse : s.edge < M.W.n) (hke : 0 ≤ M.key Q e ∧ M.key Q e < M.W.n)
     (hne : M.key Q s ≠ M.key Q e) (hwt : M.arcWt (M.key Q s) (M.key Q e) ≤ w) {p : ℕ}
     (hp : p < M.W.n) (hx : ClosedArc (M.key Q s) (M.key Q e) p) :
-    ∃ t, t ≤ w + u ∧ (s.edge + t) % M.W.n = p ∧
+    ∃ t, t ≤ w + u ∧
       ((s.edge + t : ℕ) : ℝ) = unwrapK M.W.n (M.key Q s) p := by
   classical
-  set n := M.W.n with hndef
+  set n := M.W.n
   have hnN : 0 < n := by omega
-  set a := M.key Q s with hadef
-  set b := M.key Q e with hbdef
+  set a := M.key Q s
+  set b := M.key Q e
   have hkey : a = s.edge + M.param Q s := rfl
   have ha : 0 ≤ a ∧ a < n := by
     have : (s.edge : ℝ) + 1 ≤ n := by exact_mod_cast hse
@@ -203,7 +203,7 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
   set P := unwrapK n a p with hPdef
   have hPb : a ≤ P ∧ P ≤ unwrapK n a b := by
     rcases hx with hx | hx | hx
-    · have := (cyc_unwrap ha ha hke hpn (by rw [unwrapK_self]; exact hab)).1 hx
+    · have := (cyc_unwrap ha ha hke hpn (by rwa [unwrapK_self])).1 hx
       rw [unwrapK_self] at this; exact ⟨this.1.le, this.2.le⟩
     · rw [hPdef, hx, unwrapK_self]; exact ⟨le_rfl, hab.le⟩
     · rw [hPdef, hx]; exact ⟨hab.le, le_rfl⟩
@@ -265,8 +265,7 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
       exact ⟨Nat.mod_lt _ hnN, hc⟩
     · exact (Set.finite_Iio n).subset (fun x hx => hx.1)
   have h3 := Set.ncard_inter_add_ncard_sdiff_eq_ncard S {p | M.counted p} hSf
-  refine ⟨t, by omega, ?_, ?_⟩
-  · rw [htdef, show s.edge + (Pn - s.edge) = Pn by omega, hPmod]
+  refine ⟨t, by omega, ?_⟩
   · rw [htdef, show s.edge + (Pn - s.edge) = Pn by omega, hPn]
 
 end

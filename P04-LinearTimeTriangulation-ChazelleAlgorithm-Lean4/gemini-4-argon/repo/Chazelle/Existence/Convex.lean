@@ -103,7 +103,7 @@ theorem edges_at_zero_meet {P : Polygon} (hP : P.Simple) :
   have hn := simple_three_le hP
   intro p hp
   have hmem : p ∈ P.edge (P.n - 1) ∩ P.edge 0 := by
-    rw [edge_last P (by omega), edge_zero P (by omega)]; exact hp
+    rwa [edge_last P (by omega), edge_zero P (by omega)]
   rw [simple_edge_inter hP (by omega) (by omega) (by omega)] at hmem
   obtain ⟨h1, h2⟩ := hmem
   rw [succ_last_mod P (by omega)] at h1
@@ -181,8 +181,7 @@ theorem det_ne_zero_of_lexMin {P : Polygon} (hP : P.Simple)
   · -- all three on a vertical line
     have hu2 : v.2 ≤ u.2 := snd_le_of_lexLE_of_fst_eq hu hu1
     have hw2 : v.2 ≤ w.2 := snd_le_of_lexLE_of_fst_eq hw hw1
-    rw [hu1] at hdir
-    rw [← hw1] at hdir
+    rw [hu1, ← hw1] at hdir
     nlinarith [mul_nonneg (sub_nonneg.2 hu2) (sub_nonneg.2 hw2)]
 
 /-! ### The boundary near a vertex -/
@@ -208,8 +207,7 @@ theorem boundary_near_vtx {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n)
   · by_cases hkj : k = j
     · subst hkj
       left
-      rw [← edge_prevIdx P hi]
-      exact hxk
+      rwa [← edge_prevIdx P hi]
     · exact absurd hxk (hball x hx k (by simp [Finset.mem_erase, hki, hkj, hk]))
 
 /-! ### The convex sector at the smallest vertex is interior -/
@@ -232,9 +230,9 @@ theorem sector_subset_interior {P : Polygon} (hP : P.Simple)
   have hσ2 : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
   obtain ⟨r, hr, hball⟩ := boundary_near_vtx hP h0
   rw [hprev, h1n] at hball
-  set u := P.vtx (P.n - 1) with hu
-  set v := P.vtx 0 with hv
-  set w := P.vtx 1 with hw
+  set u := P.vtx (P.n - 1)
+  set v := P.vtx 0
+  set w := P.vtx 1
   have hdet : det u v w ≠ 0 := by
     intro h; rw [h, mul_zero] at hpos; exact lt_irrefl _ hpos
   have hvw : v ≠ w := (ne_of_det_ne_zero hdet).2.1

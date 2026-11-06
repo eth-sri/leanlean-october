@@ -116,11 +116,11 @@ theorem single_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have kk : ∀ r, 150089 ≤ r → r < 150100 → d'.nreg r = e.nreg r := fun r h1 h2 =>
     kp r (Or.inr ⟨by omega, h2⟩) (by omega)
   refine ⟨d', k, ex, hk', ⟨hI', ⟨rfl, rfl⟩, fun p hp => by
-      simp only [List.mem_singleton] at hp; rw [hp]; exact hpv, by simp, le_rfl, hlim,
+      simp only [List.mem_singleton] at hp; rwa [hp], by simp, le_rfl, hlim,
     Or.inr (Or.inr ⟨rfl, hb⟩), o40, fun r h1 h2 h3 => (kp r (Or.inl ⟨h1, h2⟩) h3).trans
-      (hk r h1 h2 h3), by rw [kk _ (by omega) (by omega)]; exact h90,
-    by rw [kk _ (by omega) (by omega)]; exact h91, by rw [kk _ (by omega) (by omega)]; exact h92,
-    by rw [kk _ (by omega) (by omega)]; exact h93, by rw [kk _ (by omega) (by omega)]; exact h96,
+      (hk r h1 h2 h3), by rwa [kk _ (by omega) (by omega)],
+    by rwa [kk _ (by omega) (by omega)], by rwa [kk _ (by omega) (by omega)],
+    by rwa [kk _ (by omega) (by omega)], by rwa [kk _ (by omega) (by omega)],
     ex.wb_right, fun a ha => by rw [mem' a ha]; exact hm a ha⟩⟩
 
 /-- `(a + t + L) mod n` from `q = (a + t) mod n` without wrap. -/
@@ -158,7 +158,7 @@ theorem up_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       k ≤ (2 * K + 90) * (Nat.log 2 γ + 1) + 40 ∧
       StepPost (VPc P C m₀ h γ) I ps A₀ W m₀ (Brk C (Qof P).n H) c lim d d' ps' L := by
   have hQn := S.hQn
-  set L := min (min (min (C.m - J) (ℓ - t)) (P.n - q - 1)) lim with hL
+  set L := min (min (min (C.m - J) (ℓ - t)) (P.n - q - 1)) lim
   have hL1 : 1 ≤ L := by omega
   have hLl : L ≤ lim := by omega
   have hi : c - 6 + L ≤ 2 * C.m := by omega
@@ -166,8 +166,7 @@ theorem up_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     intro d hd
     have := run_up C S.hP (i := c - 6) (d := d) (by omega) (by omega) hr hrun hu (by omega)
       (by rw [hq, hQn]; omega)
-    rw [show c - 6 + d + 6 = c + d by omega, hq] at this
-    exact this
+    rwa [show c - 6 + d + 6 = c + d by omega, hq] at this
   have hblk := upBlocks_of (O := O) S.hR S.hAW (W := W) hwalk hc6 (by omega) (by omega)
     (by omega) S.hcap
   have hW' : 5 * P.n + 6 ≤ W := by have := S.hW; unfold hostWords at this; omega
@@ -220,15 +219,14 @@ theorem dn_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have hn : 0 < (Qof P).n := by rw [hQn]; have := S.hn; omega
   have hqn : q < P.n := by rw [← hQn, ← hq]; exact Nat.mod_lt _ hn
   have hJlt : J < 2 * C.m := by rw [← hJ]; exact tJ_lt C _
-  set L := min (min (min (2 * C.m - J) t) q) lim with hL
+  set L := min (min (min (2 * C.m - J) t) q) lim
   have hL1 : 1 ≤ L := by omega
   have hLl : L ≤ lim := by omega
   have hwalk : ∀ d, d ≤ L → (chainModel C).W.vtx (c + d) = (Qof P).vtx (q - d) := by
     intro d hd
     have := run_down C S.hP (i := c - 6) (d := d) (by omega) (by omega) (by omega) hr hrun hu
       ht (by omega) (by rw [hq]; omega) hn
-    rw [show c - 6 + d + 6 = c + d by omega, hq] at this
-    exact this
+    rwa [show c - 6 + d + 6 = c + d by omega, hq] at this
   have hblk := dnBlocks_of (O := O) S.hR S.hAW (W := W) hwalk hc6 (by omega) hqn (by omega)
     (by omega) S.hcap
   have hW' : 5 * P.n + 6 ≤ W := by have := S.hW; unfold hostWords at this; omega

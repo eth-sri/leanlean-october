@@ -30,7 +30,7 @@ theorem stopData_transport' {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c'
       (c.nreg aB ≤ a ∧ a < c.nreg aB + 5 * c.nreg sC)) → c'.nmem a = c.nmem a) :
     StopData P J N₂ c' rs ax := by
   obtain ⟨hl, hlax, hSR, hAR, h5, h6, h7, h8⟩ := h
-  refine ⟨by rw [hsC]; exact hl, hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
+  refine ⟨by rwa [hsC], hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
   · rw [hsB, hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega)),
       hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega))]
     exact hSR i hi
@@ -76,7 +76,7 @@ theorem loopStartTask : LoopStartTask := by
   have hSD : StopData P J N₂ c rs ax := ⟨hl, hlax, hSR, hAR, hst, hw, haux, hlen⟩
   have hP := E.hP
   have hNF := E.hNF₂
-  set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
+  set S₂ := N₂.F (chainModel J.right) (Qof P)
   have hS₂ : S₂ ⊆ Merge.augChords J.right := hNF.1.2.1
   have hS₂f : S₂.Finite := hNF.1.1
   -- registers of `c`
@@ -115,7 +115,6 @@ theorem loopStartTask : LoopStartTask := by
   have hSD' : StopData P J N₂ c' rs ax := stopData_transport' hSD sC' sB' aB' (fun a ha =>
     mem a (by omega) (Or.inr (by omega)))
   have hSR' : StopRecsAt c'.nmem (c'.nreg sB) rs := hSD'.2.2.1
-  have hlen' : rs.length = c'.nreg sC := hSD'.1
   -- the start key
   obtain ⟨hpw, hoK, -⟩ := startMathTask P J N₂ hP hNF
   have hkey : keyOff P J c' = Lst J := by
@@ -130,8 +129,7 @@ theorem loopStartTask : LoopStartTask := by
   have hinv : EvInv J S₂ (Lst J) (curLab P J N₂ c') := by
     refine evInv_start hP hNF hlax hst (fun i hi => ?_) (fun i hi hik hia => ?_) (fun hall => ?_)
     · have := haux i hi
-      rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ (by omega)] at this
-      exact this
+      rwa [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ (by omega)] at this
     · rintro _ ⟨l, hl', rfl⟩
       have hx := haux i hi
       rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ (by omega)] at hx
@@ -145,7 +143,7 @@ theorem loopStartTask : LoopStartTask := by
         · simp [h1]
         · omega
         · omega
-      exact mem_curLab (hΛ i hi hik (by rw [List.getD_eq_getElem _ _ (by omega)]; exact hia) l hl'')
+      exact mem_curLab (hΛ i hi hik (by rwa [List.getD_eq_getElem _ _ (by omega)]) l hl'')
     · obtain ⟨h1, h2, h3⟩ := hB (fun i hi hik => by
         rw [List.getD_eq_getElem _ _ (by omega)]; exact hall i hi hik)
       refine ⟨regOf (chainModel J.right) (Qof P) N₂ (c'.nreg kL), hRC.1 _ h2, h3, ?_⟩
@@ -157,7 +155,7 @@ theorem loopStartTask : LoopStartTask := by
         · rfl
         all_goals omega
       · rintro rfl; exact ⟨c'.nreg kL, Or.inl ⟨by omega, rfl⟩, rfl⟩
-  have hinv' : EvInv J S₂ (keyOff P J c') (curLab P J N₂ c') := by rw [hkey]; exact hinv
+  have hinv' : EvInv J S₂ (keyOff P J c') (curLab P J N₂ c') := by rwa [hkey]
   -- the labels are region indices
   have hlabR : ∀ i, i < c'.nreg kN → c'.nreg (kL + i) < N₂.nRegions := fun i hi =>
     lreg _ (List.mem_map.2 ⟨i, List.mem_range.2 (by omega), rfl⟩)
@@ -168,9 +166,9 @@ theorem loopStartTask : LoopStartTask := by
   have hoW : oW J (((pK0 J : ℕ) : ℝ) + (chainModel J.whole).param (Qof P) ⟨pK0 J, 0⟩) = Lst J := by
     rw [hpar0]; unfold pK0; exact_mod_cast hoK
   refine ⟨⟨⟨rs, ax, hSD'⟩, fun i i' hii hi' => ?_, fun i hi => ?_, by rw [TB', hTB, hTB₀],
-    by rw [TB', lB', hTB, hlBc]; exact hlay1, ?_, ?_, ?_, ?_,
-    by rw [kE', kH']; exact hpw, by rw [hkey], kN4, hlabR, hinv', gN2, gR', gap,
-    by rw [sC', ← hl]; exact sPl, fun i hi => ?_, ⟨[rec], by rw [lC']; rfl,
+    by rwa [TB', lB', hTB, hlBc], ?_, ?_, ?_, ?_,
+    by rwa [kE', kH'], by rw [hkey], kN4, hlabR, hinv', gN2, gR', gap,
+    by rwa [sC', ← hl], fun i hi => ?_, ⟨[rec], by rw [lC']; rfl,
       ?_, ?_, ?_, rfl⟩, ?_, ?_, dF'⟩, fr, fun x hx hx' => mem x hx hx'⟩
   · rw [stopOff_eq hSR' (by omega), stopOff_eq hSR' (by omega)]
     exact stops_sorted hst hii (by omega)
@@ -205,7 +203,7 @@ theorem loopStartTask : LoopStartTask := by
     simp only [List.mem_singleton] at hr
     subst hr
     simp only [hrec]
-    refine ⟨by rw [kE', kH']; exact hpw, kN4, fun h => ?_, fun h => ?_, fun h => ?_, fun h => ?_⟩
+    refine ⟨by rwa [kE', kH'], kN4, fun h => ?_, fun h => ?_, fun h => ?_, fun h => ?_⟩
     · simpa using hlabR 0 h
     · exact hlabR 1 h
     · exact hlabR 2 h
@@ -230,7 +228,7 @@ theorem loopStartTask : LoopStartTask := by
     · intro x hx
       simp only [List.mem_singleton] at hx
       subst hx
-      exact labIn_of_evInv hP hS₂ hS₂f hpw.1 hpw.2.1.1 hpw.2.1.2.1 (by rw [hoW]; exact hinv)
+      exact labIn_of_evInv hP hS₂ hS₂f hpw.1 hpw.2.1.1 hpw.2.1.2.1 (by rwa [hoW])
   · -- the measure
     rw [lC']
     have hfin := (countTask P J N₁ N₂ hP E.hNF₁ hNF).1

@@ -88,8 +88,7 @@ theorem prim_meets {core : Stmt} {B : ℕ → Bool} {K : ℕ}
   have ex : Exec P W (.seq pHead core) c c₂ (k₁ + k₂) := .seq e₁ e₂
   refine ⟨c₂, _, ex, by simp only; omega, fun H' C' hC' => ?_, frame_of_frameB (exec_frameB ex hwr)
     (fun r hr => Bprim_band r (hB r hr)) _⟩
-  rw [← chain_eq_of_desc hC hC']
-  exact hout
+  rwa [← chain_eq_of_desc hC hC']
 
 /-! ## The direction of a walk edge -/
 
@@ -132,8 +131,8 @@ theorem dirAt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       c₁.nreg 10502 = dirCode (chainModel C) e := by
     by_cases hsm : e < 6
     · obtain ⟨c₂, k₂, e₂, hk₂, d₂⟩ := smallDir_exec (P := P) c hw (by omega) hE.r32 hE.r82
-        hE.r83 hE.r84 hE.r85 (by rw [h02]; exact hsm)
-      refine ⟨c₂, _, .ifLtN_true (by rw [h02, hE.r81]; exact hsm) e₂, by omega, ?_⟩
+        hE.r83 hE.r84 hE.r85 (by rwa [h02])
+      refine ⟨c₂, _, .ifLtN_true (by rwa [h02, hE.r81]) e₂, by omega, ?_⟩
       rw [d₂, h02, chain_dirCode_small C hsm]
     obtain ⟨c₂, k₂, e₂, hk₂, q56, q57, r₂⟩ : ∃ c₂ k₂, Exec P W
         (block [.subN 50056 50002 50081, .subN 50057 50056 50053]) c c₂ k₂ ∧ k₂ = 2 ∧
@@ -150,12 +149,12 @@ theorem dirAt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
         have f₂ := exec_frameB e₂ (B := Bl [50056, 50057]) (by decide)
         rw [f₂.2.2.1]; exact hE.hH
       obtain ⟨c₃, k₃, e₃, hk₃, sp₁, sp₂, hsp₁, hsp₂, d₃⟩ := chGeneral_exec (P := P) hG hW c₂ w₂
-        hH₂ hE.wf hE.aW hE.NW hE.hs (by rw [← hNlen]; exact hmN) hT hi
+        hH₂ hE.wf hE.aW hE.NW hE.hs (by rwa [← hNlen]) hT hi
         (by rw [r₂ _ (by omega) (by omega), hE.r32]) (by rw [r₂ _ (by omega) (by omega)])
         (by rw [r₂ _ (by omega) (by omega), hE.r52]) p53
         (by rw [r₂ _ (by omega) (by omega), hE.r54]) rfl q56
-      refine ⟨c₃, _, .ifLtN_false (by rw [h02, hE.r81]; exact hsm)
-        (.seq e₂ (.ifLtN_true (by rw [q57, p53]; exact hg) e₃)), by omega, ?_⟩
+      refine ⟨c₃, _, .ifLtN_false (by rwa [h02, hE.r81])
+        (.seq e₂ (.ifLtN_true (by rwa [q57, p53]) e₃)), by omega, ?_⟩
       rw [d₃, show e = (e - 6) + 6 by omega, chain_dirCode_tour C hi]
       obtain ⟨i1, i2⟩ := sideIdx_pair C (e - 6)
       have hS : (if c₂.nreg 50055 = 1 then C.topIdx else 2 * C.m - C.topIdx) =
@@ -167,11 +166,11 @@ theorem dirAt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
         · rw [ite_eq_right (mt hE.r55.1 hb), ite_eq_right hb]
       rw [hS, ← hNlen, ← i1] at hsp₁
       rw [hS, ← hNlen, ← i2] at hsp₂
-      rw [chain_vertex_host C hE.hP _ (by rw [hQn]; exact hsp₁),
-        chain_vertex_host C hE.hP _ (by rw [hQn]; exact hsp₂)]
+      rw [chain_vertex_host C hE.hP _ (by rwa [hQn]),
+        chain_vertex_host C hE.hP _ (by rwa [hQn])]
     · have hlast : e = 2 * C.m + 6 := by omega
-      have hsm' : ¬ c.nreg 50002 < c.nreg 50081 := by rw [h02, hE.r81]; exact hsm
-      have hg' : ¬ c₂.nreg 50057 < c₂.nreg 50053 := by rw [q57, p53]; exact hg
+      have hsm' : ¬ c.nreg 50002 < c.nreg 50081 := by rwa [h02, hE.r81]
+      have hg' : ¬ c₂.nreg 50057 < c₂.nreg 50053 := by rwa [q57, p53]
       refine ⟨{ c₂ with nreg := upd c₂.nreg 10502 1 }, _, .ifLtN_false hsm'
         (.seq e₂ (.ifLtN_false hg' (Exec.constN w₂ _ _ (by omega)))), by omega, ?_⟩
       simp only [upd_same]
@@ -251,38 +250,38 @@ theorem turnOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   · obtain ⟨c', k, e, hk, h1, h2⟩ := fin 0 (by omega) (by rw [h32] at h0; simp [show c.nreg 10502 = 0 by omega])
     exact ⟨c', _, .ifLtN_true h0 e, by omega, h1, h2⟩
   rw [h32] at h0
-  have g0 : ¬ c.nreg 10502 < c.nreg 50032 := by rw [h32]; exact h0
+  have g0 : ¬ c.nreg 10502 < c.nreg 50032 := by rwa [h32]
   by_cases hs : c.nreg 50203 < c.nreg 50032
   · rw [h32] at hs
-    have gs : c.nreg 50203 < c.nreg 50032 := by rw [h32]; exact hs
+    have gs : c.nreg 50203 < c.nreg 50032 := by rwa [h32]
     by_cases h2 : c.nreg 50032 < c.nreg 10502
     · rw [h32] at h2
       obtain ⟨c', k, e, hk, h1, h3⟩ := fin 2 le_rfl (by split_ifs <;> omega)
-      exact ⟨c', _, .ifLtN_false g0 (.ifLtN_true gs (.ifLtN_true (by rw [h32]; exact h2) e)),
+      exact ⟨c', _, .ifLtN_false g0 (.ifLtN_true gs (.ifLtN_true (by rwa [h32]) e)),
         by omega, h1, h3⟩
     · rw [h32] at h2
       obtain ⟨c', k, e, hk, h1, h3⟩ := fin 1 (by omega) (by split_ifs <;> omega)
-      exact ⟨c', _, .ifLtN_false g0 (.ifLtN_true gs (.ifLtN_false (by rw [h32]; exact h2) e)),
+      exact ⟨c', _, .ifLtN_false g0 (.ifLtN_true gs (.ifLtN_false (by rwa [h32]) e)),
         by omega, h1, h3⟩
   rw [h32] at hs
-  have gs : ¬ c.nreg 50203 < c.nreg 50032 := by rw [h32]; exact hs
+  have gs : ¬ c.nreg 50203 < c.nreg 50032 := by rwa [h32]
   by_cases hs2 : 1 < c.nreg 50203
-  · have gs2 : c.nreg 50032 < c.nreg 50203 := by rw [h32]; exact hs2
+  · have gs2 : c.nreg 50032 < c.nreg 50203 := by rwa [h32]
     by_cases h2 : 1 < c.nreg 10502
     · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 2 le_rfl (by split_ifs <;> omega)
       exact ⟨c', _, .ifLtN_false g0 (.ifLtN_false gs (.ifLtN_true gs2
-        (.ifLtN_true (by rw [h32]; exact h2) e))), by omega, h1, h3⟩
+        (.ifLtN_true (by rwa [h32]) e))), by omega, h1, h3⟩
     · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 1 (by omega) (by split_ifs <;> omega)
       exact ⟨c', _, .ifLtN_false g0 (.ifLtN_false gs (.ifLtN_true gs2
-        (.ifLtN_false (by rw [h32]; exact h2) e))), by omega, h1, h3⟩
-  · have gs2 : ¬ c.nreg 50032 < c.nreg 50203 := by rw [h32]; exact hs2
+        (.ifLtN_false (by rwa [h32]) e))), by omega, h1, h3⟩
+  · have gs2 : ¬ c.nreg 50032 < c.nreg 50203 := by rwa [h32]
     by_cases h2 : 1 < c.nreg 10502
     · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 1 (by omega) (by split_ifs <;> omega)
       exact ⟨c', _, .ifLtN_false g0 (.ifLtN_false gs (.ifLtN_false gs2
-        (.ifLtN_true (by rw [h32]; exact h2) e))), by omega, h1, h3⟩
+        (.ifLtN_true (by rwa [h32]) e))), by omega, h1, h3⟩
     · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 2 le_rfl (by split_ifs <;> omega)
       exact ⟨c', _, .ifLtN_false g0 (.ifLtN_false gs (.ifLtN_false gs2
-        (.ifLtN_false (by rw [h32]; exact h2) e))), by omega, h1, h3⟩
+        (.ifLtN_false (by rwa [h32]) e))), by omega, h1, h3⟩
 
 theorem dirCode_le_two (M : Model) (e : ℕ) : dirCode M e ≤ 2 := by
   unfold dirCode; split_ifs <;> omega

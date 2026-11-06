@@ -307,14 +307,13 @@ theorem split_math (hM : M.Planar) {first : Fin μ → Fin N} (hfirst : ∀ v, M
   · have hvμ := hlt v hv
     have hm' : ¬ markN T a f (⟨v, hvμ⟩ : Fin μ) := hm
     obtain ⟨t, ht, hvt⟩ := hcov (.inl ⟨v, hvμ⟩) (mem_liftP.mpr ⟨_, rfl, hv⟩)
-      (by rw [← markN_iff (ha := ha)]; exact hm')
+      (by rwa [← markN_iff (ha := ha)])
     exact ⟨t, ht, ((hmemcls ⟨v, hvμ⟩ t ht).mp hvt).2.2⟩
   · have hvμ := hlt v hv
     exact huniq t t' ht ht' (.inl ⟨v, hvμ⟩) ((hmemcls ⟨v, hvμ⟩ t ht).mpr ⟨hv, hm, h1⟩)
       ((hmemcls ⟨v, hvμ⟩ t' ht').mpr ⟨hv, hm, h2⟩)
   · have hh := cls_half (C := C) hSM hgood hch hx ht
-    rw [card_liftP hlt] at hh
-    rw [items_card hinj] at hh
+    rw [card_liftP hlt, items_card hinj] at hh
     have hc : (cls (starTree T a ha) δ P' f (starDarts (M := M) f) t).card =
         ((items act (lo, hi)).filter (fun v => ¬ markN T a f v ∧
           inClass sopp sface fparN pre sz r0 (enc N (starDarts (M := M) f t)) f
@@ -359,7 +358,7 @@ theorem card_mark_le (f : Fin N) (S : Finset ℕ) (hSμ : ∀ v ∈ S, v < μ) (
   constructor
   · rintro ⟨hv, hm⟩
     refine ⟨⟨v, hSμ v hv⟩, ⟨hv, ?_⟩, rfl⟩
-    rw [← markN_iff (ha := ha)]; exact hm
+    rwa [← markN_iff (ha := ha)]
   · rintro ⟨w, ⟨hw, hm⟩, rfl⟩
     exact ⟨hw, (markN_iff (ha := ha) f w).mpr hm⟩
 

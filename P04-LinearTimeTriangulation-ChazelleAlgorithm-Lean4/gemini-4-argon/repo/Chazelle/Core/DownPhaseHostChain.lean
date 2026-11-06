@@ -93,7 +93,7 @@ theorem arc_chain (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       nk (interiorModel Q) S R + d ≤ nk (interiorModel Q) S R - 1 := by
   set M := interiorModel Q
   set N := nk M S R
-  set s := (g + 1) % N with hs
+  set s := (g + 1) % N
   have hsN : s < N := Nat.mod_lt _ (by omega)
   set kl := (i_l + N - s) % N with hkl
   have hklN : kl < N := Nat.mod_lt _ (by omega)
@@ -112,9 +112,8 @@ theorem arc_chain (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       subst hjd
       have hg' : (i_l + (j - 1)) % N = g := by
         have e1 : ((i_l + (j - 1)) % N + 1) % N = s := by
-          rw [Nat.add_mod ((i_l + (j - 1)) % N) 1, Nat.mod_mod, ← Nat.add_mod,
+          rwa [Nat.add_mod ((i_l + (j - 1)) % N) 1, Nat.mod_mod, ← Nat.add_mod,
             show i_l + (j - 1) + 1 = i_l + j by omega]
-          exact he
         have e2 : (g + 1) % N = s := rfl
         have hgl : (i_l + (j - 1)) % N < N := Nat.mod_lt _ (by omega)
         -- `x ↦ (x + 1) % N` is injective on `[0, N)`

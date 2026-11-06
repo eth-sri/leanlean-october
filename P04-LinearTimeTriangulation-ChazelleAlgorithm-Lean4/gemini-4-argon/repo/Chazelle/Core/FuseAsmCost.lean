@@ -64,8 +64,6 @@ theorem fuse_total {κs : ℕ → ℕ} {κB D K₁ K₂ L₀ L₁ Kc Kd Fg k₁ 
   have e7 : κB * (Kd * (Nat.clog 2 Kd + 1) + 1) ≤ κB * (32 * SY + 1) :=
     Nat.mul_le_mul le_rfl (by omega)
   have e7' : κB * (32 * SY + 1) ≤ 33 * (κB * SY) := by nlinarith
-  have e6 : (40 + 30) * (Kc * (Nat.clog 2 Kc + 1) + 1) ≤ 70 * (32 * SY + 1) :=
-    Nat.mul_le_mul le_rfl (by omega)
   obtain ⟨A, hA⟩ : ∃ x, x = κs D * SY := ⟨_, rfl⟩
   obtain ⟨B, hB⟩ : ∃ x, x = κB * SY := ⟨_, rfl⟩
   have eA : 32 * κs D * SY = 32 * A := by rw [hA]; ring

@@ -114,8 +114,7 @@ theorem driver_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W cf)
   subst hnil
   refine ⟨cf', K, e, ?_, hw', hR', ⟨fin', D', nsp', hD'⟩, by rw [htp']; rfl, hst', hfr', hrr',
     hrm', ho'⟩
-  rw [hΦ cf _ _ _ _ hD htp hnsp] at hK
-  exact hK
+  rwa [hΦ cf _ _ _ _ hD htp hnsp] at hK
 
 end body
 

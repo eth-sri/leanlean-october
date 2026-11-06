@@ -67,13 +67,12 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
       c'.nreg 219003 = c.nreg ALLOC ∧ c'.nreg 219004 = (hostLeaves P.n C 0 H).length ∧
       c'.nreg ALLOC = c.nreg ALLOC + 3 * (hostLeaves P.n C 0 H).length ∧
       ChordListAt c'.nmem (c.nreg ALLOC) (hostLeaves P.n C 0 H) ∧
-      (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧ PlConst P.n C c' ∧
+      (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
       (∀ r, Bpl r = false → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧
       c'.output = c.output := by
-  set T := c.nreg ALLOC with hT
-  set K := (hostLeaves P.n C 0 H).length with hK
+  set T := c.nreg ALLOC
+  set K := (hostLeaves P.n C 0 H).length
   set len := H.length with hlen
-  have hTW : T ≤ W := by omega
   -- initialization
   obtain ⟨c₁, k₁, e₁, hk₁, w₁, x01, x02, x17, x18, x19, x20, x26, x05, x06, x08, x07, x16, x04,
       x03, xA, xm⟩ : ∃ c₁ k₁, Exec P W plInit c c₁ k₁ ∧ k₁ = 13 ∧ WordsBounded W c₁ ∧
@@ -121,9 +120,9 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
       cases it with
       | run a ℓ =>
         obtain ⟨x1, x2, x3⟩ := hHi
-        exact ⟨by rw [l0]; exact x1,
-          by rw [l1, show HB + 1 + 3 * i + 1 = HB + 2 + 3 * i by omega]; exact x2,
-          by rw [l2, show HB + 1 + 3 * i + 2 = HB + 3 + 3 * i by omega]; exact x3⟩
+        exact ⟨by rwa [l0],
+          by rwa [l1, show HB + 1 + 3 * i + 1 = HB + 2 + 3 * i by omega],
+          by rwa [l2, show HB + 1 + 3 * i + 2 = HB + 3 + 3 * i by omega]⟩
       | pt x =>
         cases x with
         | vtx j => show c₂.nmem _ = 1; rw [l0]; exact hHi.1
@@ -177,17 +176,15 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
   have e₃ := Exec.copyN (P := P) e₂.wb_right 9999 219016
   have ex : Exec P W plS c _ (k₁ + (k₂ + 1)) := .seq e₁ (.seq e₂ e₃)
   have h0 : (hostLeaves P.n C 0 (H.take 0)).length = 0 := by simp [hostLeaves]
-  refine ⟨_, k₁ + (k₂ + 1), ex, ?_, e₃.wb_right, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨_, k₁ + (k₂ + 1), ex, ?_, e₃.wb_right, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rw [I₁.r05, I₁.r04, h0] at hk₂
     omega
   · simp only; rw [Machine.upd_other _ _ _ (by decide)]; exact I₂.r03
-  · simp only; rw [Machine.upd_other _ _ _ (by decide)]; exact r04₂
+  · simp only; rwa [Machine.upd_other _ _ _ (by decide)]
   · show upd c₂.nreg 9999 (c₂.nreg 219016) 9999 = T + 3 * K
     rw [Machine.upd_same, r16₂]
   · exact tab₂
   · exact I₂.low
-  · exact I₂.kc.keep fun r hr => by
-      simp only; rw [Machine.upd_other _ _ _ (by omega)]
   · intro r hr
     simp only
     rw [Machine.upd_other _ _ _ (by

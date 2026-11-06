@@ -326,8 +326,7 @@ theorem walkPoly_boundary_subset {a : Point} {path : ℕ → Point} {M : ℕ}
   rw [walkPoly_n] at hk
   rcases Nat.eq_zero_or_pos k with rfl | hk0
   · right
-    rw [walkPoly_edge_zero a path hM] at hp
-    exact hp
+    rwa [walkPoly_edge_zero a path hM] at hp
   · left
     exact C.walkPoly_edge_subset hpath hend hk0 hk hp
 
@@ -363,7 +362,7 @@ theorem exists_walk_parity_flip {a b : Point} (ha : C.Anchorable a) (hb : C.Anch
     exact C.walkPoly_boundary_subset hpath hend hM
   · have h0n : 0 < (walkPoly a path (Lb + La)).n := by rw [walkPoly_n]; omega
     have hzΓ : z ∈ (walkPoly a path (Lb + La)).edge 0 := by
-      rw [walkPoly_edge_zero a path hM, hp0]; exact hz
+      rwa [walkPoly_edge_zero a path hM, hp0]
     have hv0 : (walkPoly a path (Lb + La)).vtx 0 = a := by
       rw [walkPoly, funPoly_vtx _ (by omega), walkFun_zero]
     have hv1 : (walkPoly a path (Lb + La)).vtx ((0 + 1) % (walkPoly a path (Lb + La)).n) = b := by
@@ -371,7 +370,7 @@ theorem exists_walk_parity_flip {a b : Point} (ha : C.Anchorable a) (hb : C.Anch
         walkFun_succ, hp0]
     have hne : ((walkPoly a path (Lb + La)).vtx 0).1 ≠
         ((walkPoly a path (Lb + La)).vtx ((0 + 1) % (walkPoly a path (Lb + La)).n)).1 := by
-      rw [hv0, hv1]; exact hab
+      rwa [hv0, hv1]
     have hzu : z ≠ (walkPoly a path (Lb + La)).vtx 0 := by
       rw [hv0]; rintro rfl; exact Anchorable.not_mem_dom C ha hzd
     have hzv : z ≠ (walkPoly a path (Lb + La)).vtx ((0 + 1) % (walkPoly a path (Lb + La)).n) := by
@@ -385,12 +384,7 @@ theorem exists_walk_parity_flip {a b : Point} (ha : C.Anchorable a) (hb : C.Anch
 
 /-! ### Submaps and chord separation -/
 
-/-- The free set of the submap `S`: the domain minus the chords of `S`. -/
-def freeOf (S : Set (Set Point)) : Set Point := C.dom \ ⋃₀ S
 
-/-- The regions of the submap `S`: the connected components of its free set. -/
-def regionsOf (S : Set (Set Point)) : Set (Set Point) :=
-  {U | ∃ z ∈ C.freeOf S, U = connectedComponentIn (C.freeOf S) z}
 
 end Chain
 

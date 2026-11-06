@@ -107,7 +107,7 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
   have hWh := hW
   unfold hostWords at hWh
   set a := c.nreg 218004 with ha
-  set m := c.nreg 218002 with hm
+  set m := c.nreg 218002
   have hmn : m ≤ P.n := by omega
   have hhalf := (hgr.holds).2.2.1 m hmn
   have e2 : c.nmem (s.h + 2) = s.m₀ (s.h + 2) := hmem _ (by omega)
@@ -132,7 +132,7 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
   have a₁ : c₁.nreg 218004 = a := r₁ _ (by norm_num)
   have m₁' : c₁.nreg 218002 = m := r₁ _ (by norm_num)
   have hm2 : c₁.nmem (s.m₀ (s.h + 3) + m) = m / 2 := by
-    rw [m₁, hmem _ (hlow.2.2 _ hmn)]; exact hhalf
+    rwa [m₁, hmem _ (hlow.2.2 _ hmn)]
   -- 2. the ends and the middle
   obtain ⟨c₂, k₂, e₂, hk₂, S₂, v46, v70, v72, r₂, m₂⟩ : ∃ c₂ k₂, Exec P W gEnds c₁ c₂ k₂ ∧
       k₂ = 5 ∧ TEnv P W O s c₂ ∧ c₂.nreg 170046 = a ∧ c₂.nreg 170070 = a + m ∧
@@ -175,7 +175,7 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
     rw [f₄ _ (by decide) (by decide) (by decide), r₃]; simp only [upd]; exact v70
   have c472 : c₄.nreg 170072 = a + m / 2 := by
     rw [f₄ _ (by decide) (by decide) (by decide), r₃]; simp only [upd]; exact v72
-  set v₄ := c₄.nreg 170046 with hv₄
+  set v₄ := c₄.nreg 170046
   have hv₄G : a ≤ v₄ ∧ v₄ ≤ a + m := by rw [u46]; split_ifs <;> omega
   have hv₄Y := IOrc.Y_max_le (P := P) (a := a) (b := a + m / 2)
   rw [← u46] at hv₄Y
@@ -200,11 +200,10 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
     rw [f₆ _ (by decide) (by decide) (by decide), hc₅]; simp only [upd]; exact c470
   have c672 : c₆.nreg 170072 = a + m / 2 := by
     rw [f₆ _ (by decide) (by decide) (by decide), hc₅]; simp only [upd]; exact c472
-  set v₆ := c₆.nreg 170046 with hv₆
+  set v₆ := c₆.nreg 170046
   have hv₆G : a ≤ v₆ ∧ v₆ ≤ a + m := by rw [u46']; split_ifs <;> omega
   have hv₆Y := IOrc.Y_max_le (P := P) (a := v₄) (b := a + m)
   rw [← u46'] at hv₆Y
-  have hm₆ : c₆.nmem = c.nmem := by rw [m₆, hc₅, m₄, r₃, m₂]
   -- 5. the cover of `[a, mid]`
   obtain ⟨c₇, k₇, e₇, hk₇, x₇, y₇, r₇⟩ : ∃ c₇ k₇, Exec P W
       (block [.copyN 170050 218004, .copyN 170051 170072]) c₆ c₇ k₇ ∧ k₇ = 2 ∧
@@ -223,7 +222,7 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
   have hhl := half_le hμ1 hμ
   obtain ⟨c₈, k₈, e₈, hk₈, S₈, g₈, n₈, cov₈, f₈, y₈, m₈⟩ := topLoop_exec
     (G := fun v => a ≤ v ∧ v ≤ a + m) c₇ w₇ S₇ x₇ y₇ (by omega) (by omega)
-    (hcap _ (by omega)) (by rw [c746]; exact hv₆G) (by rw [c746]; omega)
+    (hcap _ (by omega)) (by rwa [c746]) (by rw [c746]; omega)
     (by rw [c746]; exact hv₄Y.1.trans hv₆Y.1) (by rw [c746]; exact hv₄Y.2.trans hv₆Y.1)
     (fun v h1 h2 => ⟨h1, by omega⟩)
   have w₈ := e₈.wb_right
@@ -239,7 +238,7 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
     rw [f₈ _ (by decide) (by decide), r₇]; simp only [upd]; exact c670
   have c872 : c₈.nreg 170072 = a + m / 2 := by
     rw [f₈ _ (by decide) (by decide), r₇]; simp only [upd]; exact c672
-  set v₈ := c₈.nreg 170046 with hv₈
+  set v₈ := c₈.nreg 170046
   -- 6. the cover of `[mid, a + m]`
   obtain ⟨c₉, k₉, e₉, hk₉, x₉, y₉, r₉⟩ : ∃ c₉ k₉, Exec P W
       (block [.copyN 170050 170072, .copyN 170051 170070]) c₈ c₉ k₉ ∧ k₉ = 2 ∧
@@ -252,10 +251,10 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
   have S₉ : TEnv P W O s c₉ := by
     rw [r₉]; exact tenv_upd (tenv_upd S₈ _ (by norm_num) (by decide)) _ (by norm_num) (by decide)
   have c946 : c₉.nreg 170046 = v₈ := by rw [r₉]; simp [upd]; rfl
-  have yv₆ : IOrc.Y P v₆ ≤ IOrc.Y P v₈ := by rw [← c746]; exact y₈
+  have yv₆ : IOrc.Y P v₆ ≤ IOrc.Y P v₈ := by rwa [← c746]
   obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, S₁₀, g₁₀, n₁₀, cov₁₀, f₁₀, y₁₀, m₁₀⟩ := topLoop_exec
     (G := fun v => a ≤ v ∧ v ≤ a + m) c₉ w₉ S₉ x₉ y₉ (by omega) (by omega)
-    (hcap _ (by omega)) (by rw [c946]; exact g₈) (by rw [c946]; exact n₈)
+    (hcap _ (by omega)) (by rwa [c946]) (by rwa [c946])
     (by rw [c946]; exact cov₈ _ (by omega) le_rfl)
     (by rw [c946]; exact hv₆Y.2.trans yv₆)
     (fun v h1 h2 => ⟨by omega, h2⟩)
@@ -268,8 +267,8 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
     rw [f₁₀ r (by omega) h2, r₉]
     simp only [upd, ite_eq_right (show r ≠ 170051 by omega), ite_eq_right (show r ≠ 170050 by omega)]
     exact k₈' r h1 h2
-  set v₁₀ := c₁₀.nreg 170046 with hv₁₀
-  have yv₈ : IOrc.Y P v₈ ≤ IOrc.Y P v₁₀ := by rw [← c946]; exact y₁₀
+  set v₁₀ := c₁₀.nreg 170046
+  have yv₈ : IOrc.Y P v₈ ≤ IOrc.Y P v₁₀ := by rwa [← c946]
   -- 7. the offset
   obtain ⟨c₁₁, k₁₁, e₁₁, hk₁₁, v13⟩ : ∃ c₁₁ k₁₁, Exec P W (block [.subN 218013 170046 218004])
       c₁₀ c₁₁ k₁₁ ∧ k₁₁ = 1 ∧ c₁₁.nreg 218013 = c₁₀.nreg 170046 - c₁₀.nreg 218004 := by

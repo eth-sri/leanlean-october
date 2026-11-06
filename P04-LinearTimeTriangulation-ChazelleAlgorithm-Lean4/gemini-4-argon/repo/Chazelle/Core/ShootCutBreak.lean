@@ -71,7 +71,6 @@ theorem card_brkSet (n : ℕ) (H : Host) : (brkSet n H).card ≤ 4 * H.length :=
 /-- The unique offset in `[0, n)` with a given residue. -/
 theorem off_of_mod {n a t c : ℕ} (hn : 0 < n) (ht : t < n) (_hc : c < n) (h : (a + t) % n = c) :
     t = (n + c - a % n) % n := by
-  have e := Nat.div_add_mod a n
   have e2 := Nat.div_add_mod (a + t) n
   have ha := Nat.mod_lt a hn
   rw [h] at e2
@@ -196,8 +195,8 @@ theorem card_fiber_le (u : ℕ) :
   have hlt := tJ_lt C i
   unfold sideE at hki
   split_ifs at hki with h1 h2 h2
-  · left; exact ⟨hi.1, by unfold sideE; rw [ite_eq_left h2]; exact hki⟩
-  · left; exact ⟨hi.1, by unfold sideE; rw [ite_eq_right h2]; exact hki⟩
+  · left; exact ⟨hi.1, by unfold sideE; rwa [ite_eq_left h2]⟩
+  · left; exact ⟨hi.1, by unfold sideE; rwa [ite_eq_right h2]⟩
   · right; refine ⟨hi.1, ?_⟩; unfold sideE; rw [ite_eq_left h2]; omega
   · right; refine ⟨hi.1, ?_⟩; unfold sideE; rw [ite_eq_right h2]; omega
 

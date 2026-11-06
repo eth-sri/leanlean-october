@@ -43,10 +43,9 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       ∃ (F : PassFix P W M L E D H T SE B (H + 12) (H + 12 + 5 * L.length)
           (H + 17 + 26 * L.length) (H + 17 + 28 * L.length) (loOf c.nmem D)
           (hdOf c.nmem D P.n) c.nmem) (c₂ : Config), PassInv F c₂ c₃ E.length := by
-  set K := L.length with hKdef
+  set K := L.length
   have hHW : H ≤ W := by unfold sizeB at hroom; omega
   obtain ⟨hDW, hCW⟩ := locChainWF_of hwf hHW hWn
-  have hD6 := hwf.1
   -- 1. setup
   obtain ⟨c₁, k₁, x₁, hk₁, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
     s16, s17, s18, s19, s20⟩ := setupB_exec (P := P) c hw hK hN h1 hH hSEr hroom

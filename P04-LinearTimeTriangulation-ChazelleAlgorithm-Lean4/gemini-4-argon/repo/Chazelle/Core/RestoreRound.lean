@@ -220,13 +220,13 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
           exact hUR this
         · exact hno e'' he''
       · right
-        exact ⟨R', hR', e', mem_insert_of_mem e he', hw', hUR', by rw [hex]; exact h3,
-          by rw [hex]; exact hlt⟩
+        exact ⟨R', hR', e', mem_insert_of_mem e he', hw', hUR', by rwa [hex],
+          by rwa [hex]⟩
     · -- a half of `R`
       right
       have hUsub : U ⊆ R := by rcases hU12 with rfl | rfl; exacts [hs.sub₁, hs.sub₂]
       obtain ⟨h3, hlt⟩ := splitsWell_degrees hM hT hTfin hRT he hwT U hU hUsub
-      exact ⟨R, hR, e, mem_insert e E₀, hw, hUsub, h3, by rw [← hexR]; exact hlt⟩
+      exact ⟨R, hR, e, mem_insert e E₀, hw, hUsub, h3, by rwa [← hexR]⟩
 
 /-- **The degree after a round.**  If `S` has degree `≤ d` and every region of `S` with more
 than `D` exit chords received a chord of `E`, then `S ∪ E` has degree `≤ max D (d - 1)`. -/

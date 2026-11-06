@@ -19,9 +19,6 @@ open Machine Machine.Stmt Programs Chazelle Chazelle.Merge
 
 @[expose] public section
 
-/-- `decide` for literal goals (fast, no context scan), `omega` otherwise. -/
-macro "l41dec" : tactic => `(tactic| first | decide | omega)
-
 /-- `160066 := 160015` (the base of the leaves' level array). -/
 def baseB : Stmt := block [.copyN 160066 160015]
 
@@ -84,14 +81,14 @@ theorem baseB_exec {c : Config} (hw : WordsBounded W c) :
 set_option maxHeartbeats 4000000 in
 theorem epiB_exec {c : Config} (hw : WordsBounded W c) {B : ℕ} (h66 : c.nreg 160066 = B)
     (h24 : c.nreg 160024 = 1) (hW : B + 1 ≤ W) :
-    ∃ c' k, Exec P W epiB c c' k ∧ k = 2 ∧ WordsBounded W c' ∧
+    ∃ c' k, Exec P W epiB c c' k ∧ k = 2 ∧
       c'.nreg 160004 = c.nmem (B + 1) ∧
       (∀ r, r ≠ 160004 → r ≠ 160031 → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold epiB
   exec_block
   all_goals try (config_simp; (try simp only [h66, h24]); omega)
-  refine ⟨rfl, ‹_›, by config_simp; simp only [h66, h24], fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
+  refine ⟨rfl, by config_simp; simp only [h66, h24], fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
   simp only
   repeat (rw [Machine.upd_other _ _ _ (by omega)])
 

@@ -160,7 +160,6 @@ theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)
   replace rest : ∀ r, ¬ BinitR r → c₁.nreg r = c.nreg r := fun r hr =>
     fM.1 r (by unfold BinitB; unfold BinitR at hr; simpa using hr)
   have w₁ := e₁.wb_right
-  have hb : c₁.nreg 170011 = 1 := q11
   -- the orientation bit
   obtain ⟨c₂, k₂, e₂, hk₂, b14, bl, r₂⟩ : ∃ c₂ k₂, Exec P W bitI c₁ c₂ k₂ ∧ k₂ ≤ 5 ∧
       (c₂.nreg 170014 = 1 ↔ c₁.nreg 170093 = 1) ∧ c₂.nreg 170014 ≤ 1 ∧
@@ -184,20 +183,20 @@ theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)
       · simp only [upd_same]
   have k : ∀ r, r ≠ 170014 → c₂.nreg r = c₁.nreg r := fun r hr => by
     rw [r₂]; simp [upd, hr]
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, by omega, by rw [k _ (by omega)]; exact q10,
-    by rw [k _ (by omega)]; exact q11, by rw [k _ (by omega)]; exact q12,
-    by rw [k _ (by omega)]; exact q18, by rw [k _ (by omega)]; exact q19,
-    by rw [k _ (by omega)]; exact q16, by rw [k _ (by omega)]; exact q17,
-    by rw [b14, q93], bl, by rw [k _ (by omega)]; exact q15, by rw [k _ (by omega)]; exact qA,
-    by rw [k _ (by omega)]; exact q70, ?_, ?_, ?_, ?_, fun a ha => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
+  refine ⟨c₂, _, .seq e₁ e₂, by omega, by omega, by rwa [k _ (by omega)],
+    by rwa [k _ (by omega)], by rwa [k _ (by omega)],
+    by rwa [k _ (by omega)], by rwa [k _ (by omega)],
+    by rwa [k _ (by omega)], by rwa [k _ (by omega)],
+    by rw [b14, q93], bl, by rwa [k _ (by omega)], by rwa [k _ (by omega)],
+    by rwa [k _ (by omega)], ?_, ?_, ?_, ?_, fun a ha => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
   all_goals first
     | (rw [r₂]; simp only [Config.nmem_mk]; first | exact m0 | exact m1 | exact m2 | exact m3)
     | skip
   · rw [r₂]; exact mlo a ha
   · rw [k r (by unfold BinitR at hr; omega)]; exact rest r hr
-  · rw [r₂]; exact rr
-  · rw [r₂]; exact rm
-  · rw [r₂]; exact ro
+  · rwa [r₂]
+  · rwa [r₂]
+  · rwa [r₂]
 
 end
 

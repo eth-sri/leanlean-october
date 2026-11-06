@@ -173,12 +173,12 @@ theorem win_uniq (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ} {t t' : ℝ
     (hx : (((b₁ J + d) % (chainModel J.left).W.n : ℕ) : ℝ) + t =
       (((b₁ J + d') % (chainModel J.left).W.n : ℕ) : ℝ) + t') :
     (ψ J d : ℝ) + t = ψ J d' + t' := by
-  set n₁ := (chainModel J.left).W.n with hn₁
+  set n₁ := (chainModel J.left).W.n
   have hE := E₁_le (J := J) hP
   have hd : d < n₁ := lt_of_lt_of_le hv.1 hE
   have hd' : d' < n₁ := lt_of_lt_of_le hv'.1 hE
-  set k := (b₁ J + d) % n₁ with hkdef
-  set k' := (b₁ J + d') % n₁ with hk'def
+  set k := (b₁ J + d) % n₁
+  set k' := (b₁ J + d') % n₁
   have hlo : (k : ℝ) < k' + 2 := by linarith
   have hhi : (k' : ℝ) < k + 2 := by linarith
   have hlo' : k < k' + 2 := by exact_mod_cast hlo

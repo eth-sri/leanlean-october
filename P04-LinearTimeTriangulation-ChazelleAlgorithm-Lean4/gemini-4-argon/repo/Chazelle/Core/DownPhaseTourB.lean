@@ -58,7 +58,7 @@ theorem tourB_succ {k : ℕ} (hk : k + 1 < C.m) (hne : 2 * C.m - (k + 1) ≠ sA 
     tourB C β k = tourB C β (k + 1) + 1 := by
   unfold tourB
   have := TourA.tourA_succ (C := C) (β := β) (k := 2 * C.m - (k + 2)) (by omega)
-    (by rw [show 2 * C.m - (k + 2) + 1 = 2 * C.m - (k + 1) by omega]; exact hne)
+    (by rwa [show 2 * C.m - (k + 2) + 1 = 2 * C.m - (k + 1) by omega])
   rw [show 2 * C.m - (k + 2) + 1 = 2 * C.m - (k + 1) by omega] at this
   rw [this, show 2 * C.m - (k + 1 + 1) = 2 * C.m - (k + 2) by omega]
 

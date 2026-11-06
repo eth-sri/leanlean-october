@@ -53,9 +53,7 @@ theorem gT_le (κB κL : ℕ) (κG : ℕ → ℕ) (κO n g : ℕ) :
     linarith
   have hK := K1_nonneg κB κL κG κO
   have hY := Yg_le g
-  have hY0 := Yg_pos g
   have hS0 : (0 : ℝ) ≤ (S : ℝ) + 19 := by positivity
-  have hc0 : (0 : ℝ) ≤ (cnt : ℝ) + 1 := by positivity
   have e : ((n : ℝ) / (2 : ℝ) ^ g + 2) * Yg g =
       (n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * Yg g := by
     unfold Yg; field_simp
@@ -73,7 +71,7 @@ theorem gT_le (κB κL : ℕ) (κG : ℕ → ℕ) (κO n g : ℕ) :
 theorem upT_le_real (κB κL : ℕ) (κG : ℕ → ℕ) (κO n : ℕ) (hn : 2 ≤ n) :
     (upT κB κL κG κO n : ℝ) ≤ (312 * K1 κB κL κG κO + 3200) * n := by
   set p := topGrade n with hp
-  set K := K1 κB κL κG κO with hK
+  set K := K1 κB κL κG κO
   have hK0 : 0 ≤ K := K1_nonneg κB κL κG κO
   unfold upT
   rw [← hp]
@@ -87,8 +85,6 @@ theorem upT_le_real (κB κL : ℕ) (κG : ℕ → ℕ) (κO n : ℕ) (hn : 2 �
             K * 2 * (2 : ℝ) ^ g + (17 * (g : ℝ) + 100)) :=
           Finset.sum_le_sum fun g _ => by
             have := gT_le κB κL κG κO n g
-            have e : K * ((n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * (2 : ℝ) ^ g) =
-              K * n * (2 : ℝ) ^ (-(g : ℝ) / 76) + K * 2 * (2 : ℝ) ^ g := by ring
             linarith
       _ = _ := by rw [Finset.sum_add_distrib, Finset.sum_add_distrib, Finset.mul_sum,
             Finset.mul_sum]
@@ -115,13 +111,10 @@ theorem upT_le_real (κB κL : ℕ) (κG : ℕ → ℕ) (κO n : ℕ) (hn : 2 �
     have h7 : ((p + 1 : ℕ) : ℝ) * (17 * (p : ℝ) + 100) ≤ 3200 * n := by exact_mod_cast h6
     push_cast at h7 h2
     linarith
-  have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
   have i1 := mul_le_mul_of_nonneg_left hA (show 0 ≤ K * (n : ℝ) by positivity)
   have i2 : K * 2 * ∑ g ∈ Finset.range (p + 1), (2 : ℝ) ^ g ≤ 8 * (K * n) := by
     have := mul_le_mul_of_nonneg_left hB (show 0 ≤ K * 2 by positivity)
-    have e : K * 2 * (4 * (n : ℝ)) = 8 * (K * n) := by ring
     linarith
-  have e3 : (312 * K + 3200) * (n : ℝ) = 312 * (K * n) + 3200 * n := by ring
   linarith
 
 /-- **All grades cost `O(n)`** (natural-number form). -/

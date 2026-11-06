@@ -118,7 +118,6 @@ theorem c0Calc_exec (c : Config) (hw : WordsBounded W c) {m tS : ℕ} {li : Bool
     -- `sA`
     refine spec_seq ?_
     set sA := if tS < 2 * m then tS else 0 with hsA
-    have hsA2 : sA < 2 * m ∨ (sA = 0) := by rw [hsA]; split_ifs <;> omega
     obtain ⟨c₁, k₁, e₁, hk₁, v12, g₁, m₁⟩ : ∃ c₁ k₁, Exec P W
         (.ifLtN 180015 180012 (.instr (.copyN 190012 180015)) .skip)
         { pc := c.pc, nreg := upd (upd (upd (upd c.nreg 190005 0) 190006 6) 190012 0) 190010
@@ -127,11 +126,11 @@ theorem c0Calc_exec (c : Config) (hw : WordsBounded W c) {m tS : ℕ} {li : Bool
         (∀ r, r ≠ 190012 → c₁.nreg r = (upd (upd (upd (upd c.nreg 190005 0) 190006 6) 190012 0)
           190010 (c.nreg 180001)) r) ∧ c₁.nmem = c.nmem := by
       by_cases h : tS < 2 * m
-      · refine spec_ifLtN_true (by config_simp; rw [h15, h12]; exact h) ?_
+      · refine spec_ifLtN_true (by config_simp; rwa [h15, h12]) ?_
         refine spec_instr (Exec.copyN ‹WordsBounded _ _› _ _) fun _ => ?_
         refine ⟨by omega, by config_simp; rw [h15, hsA, ite_eq_left h], fun r hr => ?_, rfl⟩
         simp only; rw [Machine.upd_other _ _ _ hr]
-      · refine spec_ifLtN_false (by config_simp; rw [h15, h12]; exact h) ?_
+      · refine spec_ifLtN_false (by config_simp; rwa [h15, h12]) ?_
         refine spec_skip ‹WordsBounded _ _› ?_
         refine ⟨by omega, by config_simp; rw [hsA, ite_eq_right h], fun r _ => rfl, rfl⟩
     refine ⟨c₁, k₁, e₁, ?_⟩
@@ -162,14 +161,14 @@ theorem c0Calc_exec (c : Config) (hw : WordsBounded W c) {m tS : ℕ} {li : Bool
       · -- not `LeftInside`
         refine spec_ifLtN_false (by rw [v05, vb]; simp) ?_
         by_cases h : m < sA
-        · refine spec_ifLtN_true (by rw [v01, v12]; exact h) ?_
+        · refine spec_ifLtN_true (by rwa [v01, v12]) ?_
           exec_block
           · rw [v12', v01]; omega
           refine ⟨by omega, ?_, fun r a1 a2 => by config_simp; simp [a1, a2], rfl⟩
           config_simp
           rw [v12', v01, v12]
           unfold i0F; rw [← hsA]; simp [h]
-        · refine spec_ifLtN_false (by rw [v01, v12]; exact h) ?_
+        · refine spec_ifLtN_false (by rwa [v01, v12]) ?_
           refine spec_instr (Exec.subN ‹WordsBounded _ _› _ _ _) fun _ => ?_
           refine ⟨by omega, ?_, fun r a1 a2 => by config_simp; simp [a1], rfl⟩
           config_simp
@@ -180,13 +179,13 @@ theorem c0Calc_exec (c : Config) (hw : WordsBounded W c) {m tS : ℕ} {li : Bool
         refine spec_seq ?_
         refine spec_instr (Exec.constN ‹WordsBounded _ _› _ _ (by omega)) fun _ => ?_
         by_cases h : 0 < sA
-        · refine spec_ifLtN_true (by config_simp; rw [v05, v12]; exact h) ?_
+        · refine spec_ifLtN_true (by config_simp; rwa [v05, v12]) ?_
           refine spec_instr (Exec.subN ‹WordsBounded _ _› _ _ _) fun _ => ?_
           refine ⟨by omega, ?_, fun r a1 a2 => by config_simp; simp [a1], rfl⟩
           config_simp
           rw [v12', v12]
           unfold i0F; rw [← hsA]; simp [h]
-        · refine spec_ifLtN_false (by config_simp; rw [v05, v12]; exact h) ?_
+        · refine spec_ifLtN_false (by config_simp; rwa [v05, v12]) ?_
           refine spec_skip ‹WordsBounded _ _› ?_
           refine ⟨by omega, ?_, fun r a1 a2 => by config_simp; simp [a1], rfl⟩
           config_simp
@@ -277,7 +276,7 @@ theorem c0S_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) {C : Chain} (hC : 
     · rw [F₃.2.2.1, rm₂, F₁.2.2.1]
     · rw [F₃.2.2.2, o₂, F₁.2.2.2]
   · intro a ha
-    rw [m₃, hlow a (by rw [hA₁]; exact ha), m₁]
+    rw [m₃, hlow a (by rwa [hA₁]), m₁]
 
 end exec
 

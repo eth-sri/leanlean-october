@@ -92,7 +92,6 @@ theorem oset_shift (W : Polygon) (g k : ℕ) {x y : ℝ} (hx : 0 ≤ x) :
         have : (k : ℝ) ≤ d + 1 := by linarith
         have : k ≤ d + 1 := by exact_mod_cast this
         omega
-      have hk' : (k : ℝ) = d + 1 := by exact_mod_cast hdk1.symm
       refine ⟨0, 0, le_rfl, zero_le_one, by simp [hx0], by push_cast; linarith, ?_⟩
       rw [ht, lerp_one, lerp_zero, Nat.add_assoc, hdk1, Nat.add_zero]
   · rintro ⟨d, t, h0, h1, h2, h3, rfl⟩
@@ -223,7 +222,6 @@ theorem arcWt_off (M : Model) {lo hi : ℕ}
     (ht21 : t₂ < 1) (hlt : t₁ < e + t₂)
     (hwrap : (lo = 0 ∧ hi = M.W.n ∧ keyCeil e t₂ ≤ M.W.n) ∨ (u + keyCeil e t₂ ≤ hi ∧ hi < M.W.n)) :
     M.arcWt ((u : ℝ) + t₁) (((u + e) % M.W.n : ℕ) + t₂) = keyCeil e t₂ := by
-  have hn : 0 < M.W.n := by omega
   rw [M.arcWt_closed hc hhi ⟨ht0, ht1⟩ ⟨ht2, ht21⟩]
   have hke : keyCeil ((u + e) % M.W.n) t₂ = (u + e) % M.W.n + (keyCeil e t₂ - e) := by
     unfold keyCeil; split_ifs <;> omega
@@ -249,7 +247,6 @@ theorem arcWt_off (M : Model) {lo hi : ℕ}
         intro hlt'
         -- then `n < e + t₂ - t₁ + …`: the key would lie beyond one lap
         have : (M.W.n : ℝ) + t₁ < e + t₂ := by linarith
-        have hkr : (keyCeil e t₂ : ℝ) ≤ M.W.n := by exact_mod_cast hkn
         rcases Nat.lt_or_ge e (keyCeil e t₂) with h2 | h2
         · have : (e : ℝ) + 1 ≤ M.W.n := by
             have : e + 1 ≤ M.W.n := by omega

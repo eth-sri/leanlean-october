@@ -56,10 +56,9 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
           rayPt z (dirOf (c.nreg qD)) τ → τ ∈ L') ∧
       FrQ c c') := by
   have hK := hA.hK
-  have hKc := hK.fix hI
-  set t := c.nreg lsI with htdef
-  set d := c.nreg qD with hddef
-  set B := c₀.nreg sB with hBdef
+  set t := c.nreg lsI
+  set d := c.nreg qD
+  set B := c₀.nreg sB
   set s := qS d with hsdef
   set S := slotA B t s with hSdef
   set σ := dirOf d with hσdef
@@ -81,7 +80,7 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   rintro c₁ hI₁ hA₁ hA₁' rfl
   obtain ⟨v1S, k1⟩ := cSlot_val c.nmem c.nreg
   rw [hBc] at v1S
-  set c₁ : Config := { c with nreg := regB c.nmem cSlot c.nreg } with hc₁
+  set c₁ : Config := { c with nreg := regB c.nmem cSlot c.nreg }
   have hK₁ : Consts c₁ := hK.fix hI₁
   have hAc₁ : c₁.nreg ALLOC = c.nreg ALLOC := k1 ALLOC (by unfold ALLOC kS sw; omega)
   have hd₁ : c₁.nreg qD = d := k1 qD (by unfold qD kS sw; omega)
@@ -98,7 +97,7 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   refine IRS.seq (K₁ := cRead.length) (IRS.block cRead hI₂ hok3) ?_
   rintro c₃ hI₃ hA₃ hA₃' rfl
   obtain ⟨v3F, v3E, v3H, k3⟩ := cRead_val c₂.nmem c₂.nreg hK₂.2.1
-  set c₃ : Config := { c₂ with nreg := regB c₂.nmem cRead c₂.nreg } with hc₃
+  set c₃ : Config := { c₂ with nreg := regB c₂.nmem cRead c₂.nreg }
   rw [v2S'] at v3F v3E v3H
   have hm₂ : ∀ a, a < c₀.nreg ALLOC → c₂.nmem a = c₀.nmem a := hI₂.hm
   have hF : c₃.nreg kF = c₀.nmem S := by
@@ -138,7 +137,7 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
     obtain ⟨hτ, hpos⟩ := cand_ray (dS_eq s) hc (z_mem_right_dom hA.hP hz hzs hz2)
       (z_not_mem_whole_dom hz)
     set τs := J.whole.hitParam ((chainModel J.right).pos (Qof P) ⟨c₀.nmem (S + 1), c₀.nmem (S + 2)⟩)
-      (dS s) with hτs
+      (dS s)
     have hds : -dS s = σ := by rw [hsdef, dS_qS, neg_neg]
     rw [hds] at hpos
     have hMod : ModB J 1 1 (c₃.nreg K1) = J.right := by rw [hk1₃]; simp [ModB]
@@ -167,13 +166,13 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
       ⟨by unfold accA sw; norm_num, by unfold kPe accA sw; norm_num,
         by unfold kPh accA sw; norm_num, by unfold K1 accA sw; norm_num,
         by unfold qD accA sw; norm_num, by unfold kPo accA sw; norm_num⟩
-      (by rw [hd₃]; exact hacc₃) (by rw [hk1₃]; norm_num) hctx₃ (by rw [hMod]; rfl) hn₃
-      (by rw [hMod, hPe]; exact he) (by rw [hMod, hPe, hPh]; exact hpp)
-      (by rw [hMod, hPe, hPh, hd₃]; exact hpos) hy
+      (by rwa [hd₃]) (by rw [hk1₃]; norm_num) hctx₃ (by rw [hMod]; rfl) hn₃
+      (by rwa [hMod, hPe]) (by rwa [hMod, hPe, hPh])
+      (by rwa [hMod, hPe, hPh, hd₃]) hy
       (by rw [hAc₃]; unfold hitK at hroom; omega))).mono (by omega) ?_
     rintro c' ⟨⟨L', hacc', hL', hins⟩, hk', hal', hm'⟩
     rw [hd₃] at hacc'
-    have hL'eq : L' = insert τs L := hins (by rw [hMod]; exact hz2)
+    have hL'eq : L' = insert τs L := hins (by rwa [hMod])
     refine ⟨L', hacc', by rw [hL'eq]; exact Set.subset_insert _ _, fun τ hτ' => ?_,
       fun _ τ hτ0 hτe => ?_, ?_⟩
     · rcases hL' with rfl | ⟨-, hon⟩

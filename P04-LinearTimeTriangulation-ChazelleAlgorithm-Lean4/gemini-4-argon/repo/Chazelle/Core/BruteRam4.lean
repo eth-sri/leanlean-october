@@ -27,7 +27,7 @@ open Machine Machine.Stmt Programs SignK WalkKey
 theorem vtxQ {P : Polygon} {C : Chain} (hC : C.P = Qof P) (_hsn : C.s + C.m + 1 ≤ P.n) {j : ℕ}
     (_hj : j ≤ C.m + 1) (hjn : C.s + j < P.n) : (Qof P).vtx (C.s + j) = C.vertex j := by
   have hn : C.P.n = P.n := by rw [hC]; exact shear_n _ _
-  rw [vertex_eq (by rw [hn]; exact hjn), hC]
+  rw [vertex_eq (by rwa [hn]), hC]
 
 theorem edgeXQ {P : Polygon} {C : Chain} (hC : C.P = Qof P) (hsn : C.s + C.m + 1 ≤ P.n) {j k : ℕ}
     (hj : j < C.m) (hk : k ≤ C.m) :
@@ -144,7 +144,7 @@ theorem sideS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
       (by simp only [Src.pt, SymPt.Lt]; omega)
     simp only [Src.pt, SymPt.eval, SignTest, h35, h53] at hb
     rw [edgeXQ hC hsn hj hk, vtxQ hC hsn (by omega) lk] at hb
-    refine ⟨c', k', by unfold sideS; rw [ite_eq_right hd]; exact e, hk', F, b, ?_⟩
+    refine ⟨c', k', by unfold sideS; rwa [ite_eq_right hd], hk', F, b, ?_⟩
     rw [hb, sig_one hd]
     constructor <;> intro h <;> linarith
 
@@ -175,7 +175,7 @@ theorem nearS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
       (by simp only [Src.pt, SymPt.Lt]; omega)
     simp only [Src.pt, SymPt.eval, SignTest, h35, h53, h55] at hb'
     rw [edgeXQ hC hsn hj hk, edgeXQ hC hsn hb hk] at hb'
-    refine ⟨c', k', by unfold nearS; rw [ite_eq_right hd]; exact e, hk', F, b', ?_⟩
+    refine ⟨c', k', by unfold nearS; rwa [ite_eq_right hd], hk', F, b', ?_⟩
     rw [hb', sig_one hd]
     constructor <;> intro h <;> linarith
 
@@ -341,10 +341,10 @@ theorem scanBody_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤
   rw [← v₆, t56, t57] at A₆
   have S₆ := S₅.keep (sc_of_one (by omega) F₆)
   obtain ⟨c₇, k₇, e₇, hk₇, v₇, F₇⟩ := andS_exec (P := P) W2 c₆ e₆.wb_right (d := 180058)
-    (x := 180058) (y := 180059) (by decide) S₆.2.2.1 (by rw [fr1 F₆ (by decide)]; exact b58)
-    (by rw [fr1 F₆ (by decide)]; exact b59)
-  have A₇ := and_bit (show c₆.nreg 180058 ≤ 1 by rw [fr1 F₆ (by decide)]; exact b58)
-    (show c₆.nreg 180059 ≤ 1 by rw [fr1 F₆ (by decide)]; exact b59)
+    (x := 180058) (y := 180059) (by decide) S₆.2.2.1 (by rwa [fr1 F₆ (by decide)])
+    (by rwa [fr1 F₆ (by decide)])
+  have A₇ := and_bit (show c₆.nreg 180058 ≤ 1 by rwa [fr1 F₆ (by decide)])
+    (show c₆.nreg 180059 ≤ 1 by rwa [fr1 F₆ (by decide)])
   rw [← v₇, fr1 F₆ (by decide), fr1 F₆ (by decide), t58, t59] at A₇
   have S₇ := S₆.keep (sc_of_one (by omega) F₇)
   have x56 : c₇.nreg 180056 = c₆.nreg 180056 := fr1 F₇ (by decide)
@@ -395,14 +395,14 @@ theorem scanBody_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤
       Enc (c₁₁.nreg 180051) (c₁₁.nreg 180052) (scan C k (sig d) (j + 1)) := by
     by_cases hc : Cand C k (sig d) j
     · obtain ⟨c', k', e', hk', F', q50', hE''⟩ := candS_exec (P := P) (d := d) hG (by omega) hC
-        hsn hj hk c₁₀ w₁₀ S₁₀ p50 p53 (by rw [p51, p52]; exact hE) hsc
+        hsn hj hk c₁₀ w₁₀ S₁₀ p50 p53 (by rwa [p51, p52]) hsc
       refine ⟨c', _, .ifLtN_false (by rw [hcand.2 hc, S₁₀.2.2.1]; omega) e', by omega, F', q50',
         ?_⟩
-      rw [scan_succ_cand hc]; exact hE''
+      rwa [scan_succ_cand hc]
     · have h0' : c₁₀.nreg 180076 = 0 := by have := mt hcand.1 hc; have := A₁₀.1; omega
       refine ⟨c₁₀, _, .ifLtN_true (by rw [h0', S₁₀.2.2.1]; omega) (.skip w₁₀), by omega,
         FrameB.refl _ _, p50, ?_⟩
-      rw [scan_succ_not hc, p51, p52]; exact hE
+      rwa [scan_succ_not hc, p51, p52]
   have S₁₁ := S₁₀.keep F₁₁
   have e₁₂ := Exec.addN (P := P) e₁₁.wb_right 180050 180050 180011 (by
     rw [p50', S₁₁.2.2.1]; have := S₁₁.2.1; omega)
@@ -414,8 +414,7 @@ theorem scanBody_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤
     simp [this]
   · simp only [Config.nreg_mk, Machine.upd_same]; rw [p50', S₁₁.2.2.1]
   · simp only [Config.nreg_mk]
-    rw [upd_other _ _ _ (by decide), upd_other _ _ _ (by decide)]
-    exact hE'
+    rwa [upd_other _ _ _ (by decide), upd_other _ _ _ (by decide)]
 
 /-- **The scan**: registers `180051, 180052` encode `scan C k σ m` (at most `1602 m + 5`
 steps). -/
@@ -447,7 +446,7 @@ theorem scanS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W)
         obtain ⟨e', k', ex, hk', F', q50', E'⟩ := scanBody_exec (P := P) (d := d) hG hW hC hsn
           hlt hk e we Se rfl Ee (fun b hb => by
             have := (scan_some hb).1; omega)
-        refine ⟨e', k', ex, ⟨ex.wb_right, Fe.trans F', Se.keep F', by omega, by rw [q50']; exact E'⟩,
+        refine ⟨e', k', ex, ⟨ex.wb_right, Fe.trans F', Se.keep F', by omega, by rwa [q50']⟩,
           hk', by omega⟩)
       hI
   rw [S₂.2.1] at hex

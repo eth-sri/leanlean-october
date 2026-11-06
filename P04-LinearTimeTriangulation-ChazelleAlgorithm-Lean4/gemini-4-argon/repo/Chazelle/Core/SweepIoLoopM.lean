@@ -30,7 +30,7 @@ theorem qPt_end {J : Merge.Junction} {P : Polygon} {N₂ : NF} (hN : IsNF (chain
   have hget : (sweepEndQ N₂.chords ++ L₁).getD j (0, 0, 0) =
       (let r := N₂.chords.getD (j / 2) ⟨0, 0, 0, 0, 0⟩
        if j % 2 = 0 then (r.lp, r.h + 1, 1) else (r.rp, r.h + 1, 0)) := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_append_left (by rw [hlen]; exact hj)]
+    rw [List.getD_eq_getElem?_getD, List.getElem?_append_left (by rwa [hlen])]
     simp only [sweepEndQ, List.getElem?_map, List.getElem?_range (show j < 2 * N₂.chords.length
       from hj), Option.map_some, Option.getD_some]
   unfold qPt
@@ -55,7 +55,7 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
   subst hi
   have hlen : (sweepEndQ N₂.chords ++ L₁).length = 2 * N₂.nChords + L₁.length := by
     simp [sweepEndQ, NF.nChords]
-  set K := 2 * N₂.nChords with hK
+  set K := 2 * N₂.nChords
   have hsub : (Finset.range (sweepEndQ N₂.chords ++ L₁).length).filter
       (fun j => 1 = 1 ∧ BruteQ J N₂ j (qPt J P 1 (sweepEndQ N₂.chords ++ L₁) j)) ⊆
       Finset.Ico K (K + L₁.length) ∪
@@ -70,7 +70,7 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
       · exact Or.inl ⟨hjK, hjL⟩
       · push Not at hjK
         refine Or.inr ⟨hjK, ?_⟩
-        rw [← qPt_end hN L₁ hjK]; exact hb
+        rwa [← qPt_end hN L₁ hjK]
   have h2 : ((Finset.range K).filter (fun j => endOrigin J (Qof P) N₂ j = J.right.top)).card ≤ 2 := by
     have := hT P J N₂ hG hP hN
     refine le_trans (le_of_eq ?_) this

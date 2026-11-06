@@ -38,7 +38,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
   obtain ⟨hNF, -, -⟩ := BuildNF.isNF_goodModel hGM hok hperm hsort
   obtain ⟨reg, hRC, hCS, hAO, hRO, -⟩ := hNF.2.2.2
   have hregs : Restore.NFRegs E.M E.Q (BuildNF.buildNF E.M E.Q L Ev) reg := ⟨hRC, hCS, hAO, hRO⟩
-  set B₀ := c.nreg ALLOC with hB₀
+  set B₀ := c.nreg ALLOC
   set R := L.length + 1 with hR
   have hElen : Ev.length = 2 * L.length := by rw [hperm.length_eq, List.length_range]
   have hRKc : R ≤ E.Kc := by
@@ -52,7 +52,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
     omega
   -- 1. header, reservation, set-up
   obtain ⟨c₃, k₃, e₃, hgood, RF₃, hk₃, A₃, K3, m₃⟩ := round_A hE hI ht hSt hdeg hsg hcnt hregs
-  set E' := renvOf E L Ev reg B₀ (c.nreg 210005) with hE'
+  set E' := renvOf E L Ev reg B₀ (c.nreg 210005)
   have hBK : E'.BK = B₀ + 3 * R := rfl
   have hR' : E'.R = R := rfl
   -- 2. the region loop
@@ -60,8 +60,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
   have hnew : Restore.NewOK E.M E.Q (BuildNF.buildNF E.M E.Q L Ev) reg 4 newL := by
     refine ⟨?_, I₄.hgood⟩
     have := I₄.hfst
-    rw [h30, ← E'.nRegions_N] at this
-    exact this
+    rwa [h30, ← E'.nRegions_N] at this
   have hnewR : newL.length ≤ R := by
     have := congrArg List.length hnew.fst
     rw [List.length_map] at this
@@ -135,7 +134,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
       rw [r1]; exact hwf₅.mono (by omega),
       E.M, L, newL.map Prod.snd, Ev, by
       show ModelDescAt c₅.nmem (c₅.nreg 210001) E.Q E.M
-      rw [r1]; exact hMD₅, hGM, by show c₅.nreg 210003 = _; exact r3, by
+      rwa [r1], hGM, by show c₅.nreg 210003 = _; exact r3, by
       show c₅.nreg 210002 + 3 * L.length ≤ c₅.nreg ALLOC
       rw [r2]; omega, by
       show ChordListAt c₅.nmem (c₅.nreg 210002) L
@@ -159,7 +158,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
         show c₅.nmem (c₅.nreg 210022 + q) = _; rw [r22, m₅, hBK]
       have e2 : DrvR.bkOf c₅ q' = c₄.nmem (E'.BK + q') := by
         show c₅.nmem (c₅.nreg 210022 + q') = _; rw [r22, m₅, hBK]
-      rw [e1, e2] at hb; exact hb, fun b => by
+      rwa [e1, e2] at hb, fun b => by
       show DrvR.bcnt (DrvR.bkOf c₅) (2 * (newL.map Prod.snd).length) b ≤ c₅.nreg 210024
       rw [r24, List.length_map]
       have e : DrvR.bkOf c₅ = fun q => c₄.nmem (E'.BK + q) := by
@@ -167,7 +166,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
       rw [e]; exact hbcnt b⟩ hroomS
   have w₆ := e₆.wb_right
   obtain ⟨p3, p2l, p2b, p2, p4l, p4b, pperm, psort, p5l, pNW⟩ := postS E.M L (newL.map Prod.snd)
-    (by show ModelDescAt c₅.nmem (c₅.nreg 210001) E.Q E.M; rw [r1]; exact hMD₅)
+    (by show ModelDescAt c₅.nmem (c₅.nreg 210001) E.Q E.M; rwa [r1])
     (by show c₅.nreg 210003 = _; exact r3)
     (by show ChordListAt c₅.nmem (c₅.nreg 210002) L; rw [r2]; exact hLa c₅.nmem low5)
     (by show c₅.nreg 210021 = _; rw [r21, List.length_map])
@@ -184,9 +183,6 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
   have t10 : c₆.nreg 216010 = t := by rw [K6 _ (by norm_num) (by norm_num), hI.r10]
   have t02 : c₆.nreg 216002 = 1 := by rw [K6 _ (by norm_num) (by norm_num), hI.r02]
   have hk6 : k₆ ≤ 8 * DrvR.κSpl E.κB * R := le_trans hk₆ hspl
-  have hA6 : c₆.nreg ALLOC ≤ c₅.nreg ALLOC + k₆ := F₆.2.2.2.2.2.2
-  have hk5 : k₅ = 5 := hk₅
-  have hA3 : c₃.nreg ALLOC = B₀ + 5 * R := A₃
   obtain ⟨c₇, k₇, e₇, hk₇, v10, f₇⟩ := incr_exec (P := E.P) c₆ w₆ t10 t02
     (by have h1 := w₆.1 216000; rw [K6 _ (by norm_num) (by norm_num), hI.r00] at h1; omega)
   have g₇ : ∀ q, q ≠ 216010 → c₇.nreg q = c₆.nreg q := fun q hq => f₇.1 q (by simpa using hq)
@@ -209,7 +205,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
     rw [m₇, mem₆ a (by omega), agree5 a ha]
   -- the new state
   have hperm' : (seg c₆.nmem (c₆.nreg 210004) (2 * (L.length + (newL.map Prod.snd).length))).Perm
-      (List.range (2 * (L ++ newL.map Prod.snd).length)) := by rw [hL'len]; exact pperm
+      (List.range (2 * (L ++ newL.map Prod.snd).length)) := by rwa [hL'len]
   have hsort' : (seg c₆.nmem (c₆.nreg 210004) (2 * (L.length + (newL.map Prod.snd).length))).Pairwise
       (BuildNF.codeLe E.M E.Q (L ++ newL.map Prod.snd)) := psort
   obtain ⟨hsub', hdeg', hsg', hcnt'⟩ := round_family hGM hok hperm hsort hregs hnew hdeg hsg
@@ -248,11 +244,11 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
       · rw [r71]; have := hE.hwf.1; omega
       · rw [r71]; exact desc_robust hE.hwf hE.hMD agree7 hA07
       · rw [r73, p3, hL'len]
-      · rw [r72, A₇, hL'len]; exact p2b
-      · rw [r72, A₇, m₇]; exact chordListAt_robust p2 (by rw [hL'len]; exact p2b)
-      · rw [r74, A₇, hL'len]; exact p4b
+      · rwa [r72, A₇, hL'len]
+      · rw [r72, A₇, m₇]; exact chordListAt_robust p2 (by rwa [hL'len])
+      · rwa [r74, A₇, hL'len]
       · rw [r74, A₇, m₇, hL'len]; exact seg_robust (by omega)
-      · rw [r75, A₇, m₇]; exact pNW
+      · rwa [r75, A₇, m₇]
     · exact Model.DegLe.mono _ hdeg' (by omega)
     · rw [pow_succ]
       have := hcnt'

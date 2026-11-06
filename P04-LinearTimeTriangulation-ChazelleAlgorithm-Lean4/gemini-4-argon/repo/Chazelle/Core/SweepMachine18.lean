@@ -170,7 +170,7 @@ theorem attach_of_sector {W W' : Polygon} {c : Set Point} {p p' : ℕ}
     (hA : SideAttach W c p 0) (hp' : p' < W'.n) (hpt : sidePt W' p' 0 = sidePt W p 0)
     (hsec : ∀ x, sideLeft W p 0 x → sideLeft W' p' 0 x) : SideAttach W' c p' 0 := by
   obtain ⟨-, -, -, hw, r, hr, hl⟩ := hA
-  refine ⟨hp', le_rfl, zero_lt_one, by rw [hpt]; exact hw, r, hr, fun x hx hxw hxd => ?_⟩
+  refine ⟨hp', le_rfl, zero_lt_one, by rwa [hpt], r, hr, fun x hx hxw hxd => ?_⟩
   exact hsec x (hl x hx (by rwa [hpt] at hxw) (by rwa [hpt] at hxd))
 
 /-- **An attachment at either copy of the top of `C₁` gives an attachment at the split vertex.** -/
@@ -248,7 +248,7 @@ theorem genuine_of_split (hP : J.P.Simple) {a : Point}
   have hPw : σ = 1 → ¬ ((J.left.sideTour J.left.sideBeta (2 * J.left.m - 1)).2 = J.left.top.2 ∧
       (J.left.sideTour J.left.sideBeta (2 * J.left.m - 1)).1 ≤ J.left.top.1) := by
     rintro rfl ⟨h1, h2⟩
-    set P := J.left.sideTour J.left.sideBeta (2 * J.left.m - 1) with hPdef
+    set P := J.left.sideTour J.left.sideBeta (2 * J.left.m - 1)
     have hlt : P.1 < J.left.top.1 := lt_of_le_of_ne h2 (fun h => hPne (Prod.ext h h1))
     set d := J.left.top.1 - P.1 with hd
     have hd0 : 0 < d := by rw [hd]; linarith
@@ -273,7 +273,7 @@ theorem genuine_of_split (hP : J.P.Simple) {a : Point}
   have hNe : σ = -1 → ¬ ((J.left.sideTour J.left.sideBeta 1).2 = J.left.top.2 ∧
       J.left.top.1 ≤ (J.left.sideTour J.left.sideBeta 1).1) := by
     rintro rfl ⟨h1, h2⟩
-    set N := J.left.sideTour J.left.sideBeta 1 with hNdef
+    set N := J.left.sideTour J.left.sideBeta 1
     have hlt : J.left.top.1 < N.1 := lt_of_le_of_ne h2 (fun h => hNne (Prod.ext h.symm h1))
     set d := N.1 - J.left.top.1 with hd
     have hd0 : 0 < d := by rw [hd]; linarith
@@ -283,7 +283,7 @@ theorem genuine_of_split (hP : J.P.Simple) {a : Point}
     have hεd : ε < d := by rw [hε]; linarith [min_le_right T d]
     have hin := hdom (T - ε) (by linarith) (by linarith)
     have hu0 : 0 ≤ ε / d := (div_pos hε0 hd0).le
-    have hu1 : ε / d < 1 := by rw [div_lt_one hd0]; exact hεd
+    have hu1 : ε / d < 1 := by rwa [div_lt_one hd0]
     have hm := J.left.sideWalk_tour_pt_mem J.left.sideBeta (i := 0) (by omega)
       (fun h => by omega) hu0 hu1
     unfold sidePt at hm
@@ -307,7 +307,7 @@ theorem genuine_of_split (hP : J.P.Simple) {a : Point}
   · rw [hend, ← h6]
     exact hM₁.trace 6 (by omega) 0 le_rfl zero_le_one
   · rintro rfl
-    refine ⟨by omega, le_rfl, zero_lt_one, by rw [hend]; exact h2m, ?_⟩
+    refine ⟨by omega, le_rfl, zero_lt_one, by rwa [hend], ?_⟩
     rw [hend, sideLeft_top_last, ← ht]
     unfold sideLeftOf
     rw [hsub]
@@ -317,7 +317,7 @@ theorem genuine_of_split (hP : J.P.Simple) {a : Point}
     unfold sideCross sideDot; simp only [Prod.fst_sub, Prod.snd_sub]; rintro ⟨h1, h2⟩
     exact hPw rfl ⟨by linarith, by linarith⟩
   · rintro rfl
-    refine ⟨by omega, le_rfl, zero_lt_one, by rw [hend]; exact h6, ?_⟩
+    refine ⟨by omega, le_rfl, zero_lt_one, by rwa [hend], ?_⟩
     rw [hend, sideLeft_top_first, ← ht]
     unfold sideLeftOf
     rw [show -(-1 : ℝ) = 1 by norm_num, hsub]

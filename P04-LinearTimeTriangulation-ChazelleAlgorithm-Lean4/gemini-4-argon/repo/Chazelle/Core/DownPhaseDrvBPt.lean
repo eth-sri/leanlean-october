@@ -171,7 +171,6 @@ theorem PtSt.step {E : BEnv} {r PA : ℕ} {c c' : Config} {T T' : List (ℕ × (
     h.hPA, h.hPAW, hout⟩
   have := h.arr k hk
   have hp := h.hPA
-  have hk3 : 3 * k + 2 < 3 * (E.pts r).length := by omega
   cases hs : (E.pts r).getD k (.vtx 0) with
   | vtx i =>
     rw [hs] at this
@@ -191,9 +190,9 @@ theorem PtSt.regStep {E : BEnv} {r PA : ℕ} {c c' : Config} {T : List (ℕ × (
     (hm : c'.nmem = c.nmem) : PtSt E r PA c' T := by
   refine h.step hw (fun q hq => hr q (Or.inl hq)) (fun a _ => by rw [hm]) ?_
   obtain ⟨a1, a2, a3, a4, a5, a6, a7⟩ := h.out
-  refine ⟨by rw [hr _ (Or.inr ⟨le_rfl, by norm_num⟩)]; exact a1,
-    by rw [hr _ (Or.inr ⟨by norm_num, by norm_num⟩)]; exact a2,
-    by rw [hr _ (Or.inr ⟨by norm_num, le_rfl⟩)]; exact a3, by rw [hm]; exact a4,
+  refine ⟨by rwa [hr _ (Or.inr ⟨le_rfl, by norm_num⟩)],
+    by rwa [hr _ (Or.inr ⟨by norm_num, by norm_num⟩)],
+    by rwa [hr _ (Or.inr ⟨by norm_num, le_rfl⟩)], by rwa [hm],
     fun hK => by rw [hm]; exact a5 hK, fun hK => by rw [hm]; exact a6 hK,
     fun a ha => by rw [hm]; exact a7 a ha⟩
 
@@ -241,11 +240,11 @@ theorem nbS_exec (c : Config) (hw : WordsBounded W c) {k NP : ℕ} (hk : c.nreg 
       k₁ ≤ 3 ∧ c₁.nreg 212040 = (k + NP - 1) % NP ∧ ∀ r, r ≠ 212040 → c₁.nreg r = c.nreg r := by
     by_cases h0 : 0 < k
     · have e := Exec.subN (P := P) hw 212040 212017 212000
-      refine ⟨_, _, .ifLtN_true (by rw [c1, hk]; exact h0) e, by omega, ?_, fun r h => by simp [h]⟩
+      refine ⟨_, _, .ifLtN_true (by rwa [c1, hk]) e, by omega, ?_, fun r h => by simp [h]⟩
       simp only [Machine.upd_same, hk, c0]
       rw [show k + NP - 1 = (k - 1) + NP by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
     · have e := Exec.subN (P := P) hw 212040 212016 212000
-      refine ⟨_, _, .ifLtN_false (by rw [c1, hk]; exact h0) e, by omega, ?_, fun r h => by simp [h]⟩
+      refine ⟨_, _, .ifLtN_false (by rwa [c1, hk]) e, by omega, ?_, fun r h => by simp [h]⟩
       simp only [Machine.upd_same, hNP, c0]
       rw [show k = 0 by omega, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]
   have w₁ := e₁.wb_right
@@ -260,12 +259,12 @@ theorem nbS_exec (c : Config) (hw : WordsBounded W c) {k NP : ℕ} (hk : c.nreg 
   have n2 : c₂.nreg 212016 = NP := by simp [hc₂, n1]
   by_cases h1 : k + 1 < NP
   · have ex : Exec P W nbS c c₂ (k₁ + (1 + (0 + 1))) :=
-      .seq e₁ (.seq e₂ (.ifLtN_true (by rw [v41, n2]; exact h1) (.skip w₂)))
+      .seq e₁ (.seq e₂ (.ifLtN_true (by rwa [v41, n2]) (.skip w₂)))
     refine ⟨c₂, _, ex, by omega, by simp [hc₂, v40], by rw [v41, Nat.mod_eq_of_lt h1],
       exec_frameB ex (by decide)⟩
   · have e₃ := Exec.constN (P := P) w₂ 212041 0 (Nat.zero_le _)
     have ex : Exec P W nbS c _ (k₁ + (1 + (1 + 2))) :=
-      .seq e₁ (.seq e₂ (.ifLtN_false (by rw [v41, n2]; exact h1) e₃))
+      .seq e₁ (.seq e₂ (.ifLtN_false (by rwa [v41, n2]) e₃))
     refine ⟨_, _, ex, by omega, by simp [hc₂, v40], ?_, exec_frameB ex (by decide)⟩
     simp only [Machine.upd_same]
     rw [show k + 1 = NP by omega, Nat.mod_self]
@@ -397,7 +396,6 @@ theorem vtxS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Words
       rw [v44, t₂]; simp [SignTest, SymPt.eval]
     have hx2 : c₃.nreg 212045 = 1 ↔ ((Qof P).vtx h).1 < edgeXAt (Qof P) e h := by
       rw [t₃]; simp [SignTest, SymPt.eval]
-    have b44 : c₃.nreg 212044 ≤ 1 := v44 ▸ b₂
     have hq : (c₄.nreg 212043 = 1) ↔ edgeXAt (Qof P) e h = ((Qof P).vtx h).1 := by
       rw [v43]
       constructor
@@ -431,14 +429,14 @@ theorem dirS_far {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
   have hW3 : E.P.n + 3 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
   have hn3 := hE.hn3
   have hBW := hE.hBW
-  obtain ⟨i', hi', hin, -, hdir, hES⟩ := hE.far_ok hr hkd
+  obtain ⟨i', hi', hin, hdir, hES⟩ := hE.far_ok hr hkd
   rw [hqi, Option.some.injEq] at hi'
   subst hi'
   have e₁ := Exec.constN (P := E.P) hS.wb 212086 d (by omega)
   have g₁ : ∀ q, q ≠ 212086 → (upd c.nreg 212086 d) q = c.nreg q := fun q h =>
     Machine.upd_other _ _ _ h
   have v₁ : (upd c.nreg 212086 d) 212086 = d := Machine.upd_same _ _ _
-  set c₁ : Config := { c with nreg := upd c.nreg 212086 d } with hc₁
+  set c₁ : Config := { c with nreg := upd c.nreg 212086 d }
   have R₁ : BRegs E c₁ := R.congr fun q hq => g₁ q (by unfold FixB at hq; omega)
   have hld : ∀ t, t < E.nRg r → LdOK c₁ E.P.n t (E.stF r t) (E.cntF r t) ∧
       (0 < c₁.nreg 212012 → c₁.nreg 216014 + 5 * c₁.nmem (c₁.nreg 212033 + t) + 3 ≤ E.W) ∧
@@ -455,17 +453,17 @@ theorem dirS_far {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
       rcases Nat.eq_zero_or_pos (E.nRg r) with h0 | h0
       · rw [h0, Nat.add_zero]; exact e₁.wb_right.1 _
       · exact (hld 0 h0).2.2 hK) R₁.li
-    (by show (upd c.nreg 212086 d) 212070 = _; rw [g₁ _ (by norm_num)]; exact hi) hin v₁ hd
+    (by show (upd c.nreg 212086 d) 212070 = _; rwa [g₁ _ (by norm_num)]) hin v₁ hd
     R₁.c0 R₁.c1 R₁.c2
   have hQn := hE.hQn
   have hb₂' : BestOK E.Q E.Q.n i (sgnD d) E.li (ESr E.P.n (E.stF r) (E.cntF r) (E.nRg r) 0)
-      (c₂.nreg 212099) (c₂.nreg 212097) (c₂.nreg 212098) := by rw [hQn]; exact hb₂
-  obtain ⟨-, hbw⟩ := far_found hE.hQ hE.hDH (by rw [hQn]; exact hin) hdir hES hb₂'
+      (c₂.nreg 212099) (c₂.nreg 212097) (c₂.nreg 212098) := by rwa [hQn]
+  obtain ⟨-, hbw⟩ := far_found hE.hQ hE.hDH (by rwa [hQn]) hdir hES hb₂'
   have f₁ : FrameB (fun q => decide (q = 212086)) c c₁ :=
     ⟨fun q hq => g₁ q (by simpa using hq), fun _ _ => rfl, rfl, rfl, rfl⟩
   refine ⟨c₁, c₂, k₂, e₁, e₂, hk₂, ?_, hbw, ?_, hin⟩
   · exact fbTrans (fbMono f₁ fun q h => by simp [h]) (fbMono f₂ fun q h => by simp [h])
-  · rw [f₂.1 _ (by unfold Bfar Bk; simp)]; exact v₁
+  · rwa [f₂.1 _ (by unfold Bfar Bk; simp)]
 
 set_option maxHeartbeats 8000000 in
 /-- **One direction of a vertex point**: if the corner bit `b` is set, the far end is `farW`
@@ -482,7 +480,6 @@ theorem dirS_on {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : C
       FrameM Bdir c c' ∧ (∀ a, (a < E.B₂ ∨ E.B₂ + 10 * E.P.n ≤ a) → c'.nmem a = c.nmem a) := by
   have R := hS.regs
   have O := hS.out
-  have hW3 : E.P.n + 3 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
   have hn3 := hE.hn3
   have hBW := hE.hBW
   · have hkd := hem h1
@@ -506,7 +503,7 @@ theorem dirS_on {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : C
       hE.hG hE.hWh c₂ e₂.wb_right (li := E.li) (i := i) (d := d) (w := farW E.li E.Q i d) (r := r)
       (K := E.K) (MD := E.MD) (H := E.H) (A₀ := E.B₂) (B₂ := E.B₂) (Kmax := 2 * E.P.n)
       (m₀ := E.m₀) (N := E.N) (T := T)
-      (by rw [k₂' _ (by norm_num) (by decide)]; exact hi) hin
+      (by rwa [k₂' _ (by norm_num) (by decide)]) hin
       h86 hd hbw R₂.li R₂.n R₂.K R₂.c0 R₂.c1 R₂.d02 R₂.d03
       R₂.d05 R₂.d14 R₂.d16 R₂.d17
       (by rw [k₂' _ (by norm_num) (by decide), hS.p31]; rfl) R₂.md
@@ -524,7 +521,7 @@ theorem dirS_on {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : C
         (t := .seq (.instr (.constN 212086 d)) (.seq farS emitS)) (e := .skip)
         (by rw [R.c1, h1]; omega) (.seq e₁ (.seq e₂ e₃))
       have e : 1 + (k₂ + k₃) + 1 = k₂ + k₃ + 2 := by ring
-      rw [e] at this; exact this
+      rwa [e] at this
     have hn5 := hE.nRg_le5 hr
     have ha5 := hE.arcs_le5 hr
     have FM : FrameM Bdir c c₃ :=
@@ -541,7 +538,7 @@ theorem dirS_on {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : C
       · rw [d20, List.length_append, List.length_singleton]
       · rw [d21, List.length_append, List.length_singleton]
       · rw [d22, List.length_append, List.length_singleton, hBK]
-      · rw [hrec]; exact hL₃
+      · rwa [hrec]
       · rw [hrec, hBK]; exact hbk₃ hK
       · intro q hq; rw [hBK]; exact hbk0₃ hK q (by simpa using hq)
       · rw [hmem a (Or.inl ha)]; exact O.low a ha
@@ -582,7 +579,7 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
   have R := hS.regs
   have hW3 : E.P.n + 3 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
   have hQn := hE.hQn
-  set l := E.pts r with hl
+  set l := E.pts r
   have hlt : ∀ s ∈ l, s.Lt E.P.n := by rw [← hQn]; exact hE.pts_lt hr
   have hgetD : ∀ j, j < l.length → (l.getD j (.vtx 0)).Lt E.P.n := fun j hj => by
     apply hlt
@@ -620,7 +617,6 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
     · rw [ite_eq_left (h0.1 g0), ite_eq_right (h1.not.1 g1), ite_eq_left g0, ite_eq_right g1]; rfl
     · rw [ite_eq_right (h0.not.1 g0), ite_eq_left (h1.1 g1), ite_eq_right g0, ite_eq_left g1]; rfl
     · rw [ite_eq_right (h0.not.1 g0), ite_eq_right (h1.not.1 g1), ite_eq_right g0, ite_eq_right g1]; rfl
-  have hw₁ : WordsBounded E.W c₁ := e₁.wb_right
   have hw₂ : WordsBounded E.W c₂ := e₂.wb_right
   have FM₁ : FrameM Bpt c c₁ := (FrameB.toM f₁).mono fun q hq => bpt_of_range (by
     simp only [Bld, Bool.or_eq_true, decide_eq_true_eq] at hq; omega)
@@ -643,7 +639,7 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
     split_ifs <;> rfl
   by_cases hf : c₂.nreg 212043 = 1
   · have hqv := hq₂ hf
-    set i := c₂.nreg 212070 with hi
+    set i := c₂.nreg 212070
     have hCt : C := by rw [hC, hqv]; rfl
     -- the corner
     have i1 : (k + l.length - 1) % l.length < l.length := Nat.mod_lt _ hpos
@@ -683,7 +679,7 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
     have i₄ : c₄.nreg 212070 = i := by rw [F₄.1 _ (by decide), i₃]
     -- direction `-1`
     obtain ⟨c₅, k₅, e₅, hk₅, S₅, F₅, M₅⟩ := dirS_exec hE hr c₄ S₄ (k := k) (d := 1) (b := 212085)
-      (i := i) (by rw [b85']; exact b85) (by norm_num) i₄
+      (i := i) (by rwa [b85']) (by norm_num) i₄
       (fun h => mem_emIdx.2 ⟨hkn, by norm_num, hCt, e1.2 (b85' ▸ h)⟩)
       (fun _ => hqv) (fun h => by
         rw [b85'] at h
@@ -696,7 +692,7 @@ theorem ptS_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : 
     have c0₅ : c₅.nreg 212000 = 1 := S₅.regs.c0
     have hkW : k + 1 ≤ E.W := by
       have h1 : PA + 3 * l.length ≤ E.W := hS.hPAW; omega
-    have e₆ := Exec.addN (P := E.P) S₅.wb 212017 212017 212000 (by rw [k₅', c0₅]; exact hkW)
+    have e₆ := Exec.addN (P := E.P) S₅.wb 212017 212017 212000 (by rwa [k₅', c0₅])
     have f₆ : FrameB (fun q => decide (q = 212017)) c₅ _ := exec_frameB e₆ (by decide)
     have ex : Exec E.P E.W ptS c _ (k₁ + (k₂ + ((k₃ + (k₄ + k₅) + 1) + 1))) :=
       .seq e₁ (.seq e₂ (.seq (.ifLtN_true (by rw [c1₂, hf]; omega) (.seq e₃ (.seq e₄ e₅))) e₆))

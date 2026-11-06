@@ -33,7 +33,7 @@ theorem arcWt_ge (C : Chain) {a b A T : ℝ}
     L ≤ (chainModel C).arcWt a b := by
   set n := 2 * C.m + 7 with hn
   have hn0 : (0 : ℝ) < (n : ℝ) := by rw [hn]; positivity
-  set c := v % n with hc
+  set c := v % n
   unfold Model.arcWt
   have hW : (chainModel C).W.n = n := chainModel_n C
   have hsub : ((Finset.Ico c (c + L) : Finset ℕ) : Set ℕ) ⊆
@@ -113,20 +113,19 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
         (F : ℝ) = (chainModel C).key Q s + len ((2 * C.m + 7 : ℕ) : ℝ)
           ((chainModel C).key Q s) ((chainModel C).key Q e)) := by
   set M := chainModel C
-  set ks := M.key Q s with hks
-  set ke := M.key Q e with hke
+  set ks := M.key Q s
+  set ke := M.key Q e
   set n := 2 * C.m + 7 with hn
   have hm1 := C.one_le
   have bs := key_bounds hs
   have be := key_bounds he
   have hkeq : ke = e.edge + M.param Q e := rfl
   have hp0 := he.1
-  have hp1 := he.2.1
   have hT1 : ks < ke → ks + len (n : ℝ) ks ke = ke := fun h => by unfold len; rw [ite_eq_left h]; ring
   have hT2 : ¬ ks < ke → ks + len (n : ℝ) ks ke = ke + n := fun h => by
     unfold len; rw [ite_eq_right h]; ring
-  set e₁ := s.edge with he₁
-  set e₂ := e.edge with he₂
+  set e₁ := s.edge
+  set e₂ := e.edge
   have cn : ((n : ℕ) : ℝ) = 2 * (C.m : ℝ) + 7 := by rw [hn]; push_cast; ring
   unfold c0Of fOf
   unfold Done InUB uIx at hdone

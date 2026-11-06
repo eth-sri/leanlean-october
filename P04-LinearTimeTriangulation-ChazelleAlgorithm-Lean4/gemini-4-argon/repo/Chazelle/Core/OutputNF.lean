@@ -121,8 +121,7 @@ theorem rec_chords (hfull : N.F (interiorModel Q) Q = (interiorModel Q).Full) {k
     (hk : k < N.nChords) : (N.chord k).toSet (interiorModel Q) Q ∈ chords Q := by
   have : (N.chord k).toSet (interiorModel Q) Q ∈ N.F (interiorModel Q) Q :=
     ⟨N.chord k, chord_mem hk, rfl⟩
-  rw [hfull] at this
-  exact this
+  rwa [hfull] at this
 
 /-- The walk edges of a record are walk edges and its parameters are in `[0, 1)`. -/
 theorem rec_attach (hN : IsNF (interiorModel Q) Q N) {k : ℕ} (hk : k < N.nChords) :
@@ -148,8 +147,7 @@ theorem rec_hchord (hQ : Q.Simple) (hfull : N.F (interiorModel Q) Q = (interiorM
         ((interiorModel Q).pos Q (N.chord k).rpos).1 := by
     rw [← chordSet_eq_hseg, ← hS]; rfl
   obtain ⟨e1, e2, e3⟩ := Merge.hseg_inj hch.lt.le e
-  rw [← e1, ← e2, ← e3]
-  exact hch
+  rwa [← e1, ← e2, ← e3]
 
 /-- The chord of a record as a horizontal segment. -/
 theorem rec_toSet (k : ℕ) : (N.chord k).toSet (interiorModel Q) Q =
@@ -241,8 +239,8 @@ theorem chord_facts (hQ : Q.Simple) (hdh : DistinctHeights Q) (hN : IsNF (interi
     rw [hhy] at hch
     have hzs : z ∈ hseg D.y₂ ((interiorModel Q).pos Q (N.chord k).lpos).1
         ((interiorModel Q).pos Q (N.chord k).rpos).1 := by
-      rw [← hhy]; exact hzc'
-    obtain ⟨-, hl, -, hr'⟩ := OutGeom.top_chord_ends hQ hdh D hch hzs hzD hz1 hz3
+      rwa [← hhy]
+    obtain ⟨hl, hr'⟩ := OutGeom.top_chord_ends hQ hdh D hch hzs hzD hz1 hz3
     refine ⟨fun _ => htop, fun h' => absurd hdnr h', fun hne => ?_, fun hne => ?_⟩
     · obtain ⟨t, ht, hpt⟩ := rec_end_open hQ hdh hlp hhk hne hl0 hl1
       have he := inp_lt (b := revOf Q) hlp
@@ -250,7 +248,7 @@ theorem chord_facts (hQ : Q.Simple) (hdh : DistinctHeights Q) (hN : IsNF (interi
       · refine edge_eq_of_open hQ he D.isTrap.hi ht ?_
         rw [← hpt]
         change (interiorModel Q).pos Q (N.chord k).lpos ∈ _
-        exact D.isTrap.mem_edgeL (by rw [hposl, hhy]; exact hy12) (by rw [hposl, hhy])
+        exact D.isTrap.mem_edgeL (by rwa [hposl, hhy]) (by rw [hposl, hhy])
           (by rw [hposl, hhy, hl])
       · exfalso
         refine Chazelle.Jordan.simple_openEdge_ne_vtx hQ he ht (D.top_lt hQ) ?_
@@ -263,7 +261,7 @@ theorem chord_facts (hQ : Q.Simple) (hdh : DistinctHeights Q) (hN : IsNF (interi
       · refine edge_eq_of_open hQ he D.isTrap.hj ht ?_
         rw [← hpt]
         change (interiorModel Q).pos Q (N.chord k).rpos ∈ _
-        exact D.isTrap.mem_edgeR (by rw [hposr, hhy]; exact hy12) (by rw [hposr, hhy])
+        exact D.isTrap.mem_edgeR (by rwa [hposr, hhy]) (by rw [hposr, hhy])
           (by rw [hposr, hhy, hr'])
       · exfalso
         refine Chazelle.Jordan.simple_openEdge_ne_vtx hQ he ht (D.top_lt hQ) ?_
@@ -284,8 +282,8 @@ theorem chord_facts (hQ : Q.Simple) (hdh : DistinctHeights Q) (hN : IsNF (interi
     rw [hhy] at hch
     have hzs : z ∈ hseg D.y₁ ((interiorModel Q).pos Q (N.chord k).lpos).1
         ((interiorModel Q).pos Q (N.chord k).rpos).1 := by
-      rw [← hhy]; exact hzc'
-    obtain ⟨-, hl, -, hr'⟩ := OutGeom.bot_chord_ends hQ hdh D hch hzs hzD hz1 hz3
+      rwa [← hhy]
+    obtain ⟨hl, hr'⟩ := OutGeom.bot_chord_ends hQ hdh D hch hzs hzD hz1 hz3
     refine ⟨fun h' => absurd h' hdnr, fun _ => hbot, fun hne => ?_, fun hne => ?_⟩
     · obtain ⟨t, ht, hpt⟩ := rec_end_open hQ hdh hlp hhk hne hl0 hl1
       have he := inp_lt (b := revOf Q) hlp
@@ -293,7 +291,7 @@ theorem chord_facts (hQ : Q.Simple) (hdh : DistinctHeights Q) (hN : IsNF (interi
       · refine edge_eq_of_open hQ he D.isTrap.hi ht ?_
         rw [← hpt]
         change (interiorModel Q).pos Q (N.chord k).lpos ∈ _
-        exact D.isTrap.mem_edgeL (by rw [hposl, hhy]) (by rw [hposl, hhy]; exact hy12)
+        exact D.isTrap.mem_edgeL (by rw [hposl, hhy]) (by rwa [hposl, hhy])
           (by rw [hposl, hhy, hl])
       · exfalso
         refine Chazelle.Jordan.simple_openEdge_ne_vtx hQ he ht (D.bot_lt hQ) ?_
@@ -306,7 +304,7 @@ theorem chord_facts (hQ : Q.Simple) (hdh : DistinctHeights Q) (hN : IsNF (interi
       · refine edge_eq_of_open hQ he D.isTrap.hj ht ?_
         rw [← hpt]
         change (interiorModel Q).pos Q (N.chord k).rpos ∈ _
-        exact D.isTrap.mem_edgeR (by rw [hposr, hhy]) (by rw [hposr, hhy]; exact hy12)
+        exact D.isTrap.mem_edgeR (by rw [hposr, hhy]) (by rwa [hposr, hhy])
           (by rw [hposr, hhy, hr'])
       · exfalso
         refine Chazelle.Jordan.simple_openEdge_ne_vtx hQ he ht (D.bot_lt hQ) ?_
@@ -320,13 +318,13 @@ theorem exists_rec (hfull : N.F (interiorModel Q) Q = (interiorModel Q).Full) {r
     {c : Set Point} (hc : c ∈ chords Q) {z : Point} (hzc : z ∈ c)
     (hzD : z ∈ Q.filled \ Q.boundary) (hzU : z ∈ closure (reg r)) :
     ∃ k ∈ (N.region r).chords, (N.chord k).toSet (interiorModel Q) Q = c := by
-  have hcF : c ∈ N.F (interiorModel Q) Q := by rw [hfull]; exact hc
+  have hcF : c ∈ N.F (interiorModel Q) Q := by rwa [hfull]
   obtain ⟨rc, hrc, rfl⟩ := hcF
   obtain ⟨k, hk, rfl⟩ := List.mem_iff_getElem.1 hrc
   have hck : N.chord k = N.chords[k] := by
     unfold NF.chord; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some]
   refine ⟨k, ((hregs r hr).1 k).2 ⟨hk, z, ⟨?_, hzD⟩, hzU⟩, by rw [hck]⟩
-  rw [hck]; exact hzc
+  rwa [hck]
 
 /-- A chord at the top height touching the region is the chord of a top record of it. -/
 theorem top_chord_rec (hQ : Q.Simple) (hdh : DistinctHeights Q) (hN : IsNF (interiorModel Q) Q N)
@@ -344,7 +342,6 @@ theorem top_chord_rec (hQ : Q.Simple) (hdh : DistinctHeights Q) (hN : IsNF (inte
   rw [hD] at hzU
   obtain ⟨k, hk, hkc⟩ := exists_rec hfull hregs hr hc hzc hzD hzU
   obtain ⟨h1, h2, -, -⟩ := chord_facts hQ hdh hN hfull hh hcorr hsides hregs hr D hD hk
-  have hkN : k < N.nChords := (((hregs r hr).1 k).1 hk).1
   rw [hcab, rec_toSet] at hkc
   obtain ⟨e1, e2, e3⟩ := Merge.hseg_inj hab.lt.le hkc.symm
   by_cases hdn : (N.chord k).dn = r

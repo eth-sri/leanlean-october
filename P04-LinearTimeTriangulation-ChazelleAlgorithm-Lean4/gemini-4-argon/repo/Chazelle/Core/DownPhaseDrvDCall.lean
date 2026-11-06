@@ -109,7 +109,6 @@ structure RGood (E : REnv) (c₀ : Config) : Prop where
   r12 : c₀.nreg 216012 = E.H
   r13 : c₀.nreg 216013 = E.R
   r14 : c₀.nreg 216014 = c₀.nmem (E.H + 4)
-  r15 : c₀.nreg 216015 = c₀.nmem (E.H + 5)
   r16 : c₀.nreg 216016 = c₀.nmem (E.H + 7)
   r17 : c₀.nreg 216017 = E.A
   r18 : c₀.nreg 216018 = E.B₀
@@ -199,7 +198,7 @@ theorem appT_exec (c : Config) (hw : WordsBounded W c) {d n p LB : ℕ}
     all_goals try (config_simp; simp only [h21, h20, h02, h05, h31, h16]; omega)
     · config_simp
       simp only [h21, h02, h05, h31, h16, Machine.upd_apply]
-      split_ifs <;> first | omega | (rw [show p - 2 + 1 = p - 1 by omega]; exact hLB)
+      split_ifs <;> first | omega | (rwa [show p - 2 + 1 = p - 1 by omega])
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     all_goals config_simp
     all_goals try simp only [h21, h20, h02, h05, h31, h16]
@@ -220,7 +219,7 @@ theorem stB_exec (c : Config) (hw : WordsBounded W c) {d : ℕ} (h22 : c.nreg 21
       (c'.nmem = upd c.nmem d (c.nreg 216053) ∧ c'.nreg 216022 = d + 1) := by
     unfold stB
     exec_block
-    · config_simp; rw [h22, h02]; exact hd
+    · config_simp; rwa [h22, h02]
     · refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp only [h22, h02]
   exact ⟨c', k, ex, hk, q.1, q.2, exec_frameM ex wrM_stB⟩
 

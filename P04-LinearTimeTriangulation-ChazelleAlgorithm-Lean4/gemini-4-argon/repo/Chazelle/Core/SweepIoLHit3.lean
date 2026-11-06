@@ -133,9 +133,9 @@ theorem scanReadL_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f sCl + f sT ≤
   have hb2' : f 241144 + 5 * m (f 241133 + f 241134) + 2 ≤ W := hb2
   have hb3' : m (f 241144 + (m (f 241133 + f 241134) + m (f 241133 + f 241134) +
       (m (f 241133 + f 241134) + m (f 241133 + f 241134)) + m (f 241133 + f 241134))) + 1 ≤ W := by
-    rw [show f 241144 + (m (f 241133 + f 241134) + m (f 241133 + f 241134) +
+    rwa [show f 241144 + (m (f 241133 + f 241134) + m (f 241133 + f 241134) +
       (m (f 241133 + f 241134) + m (f 241133 + f 241134)) + m (f 241133 + f 241134)) =
-      f 241144 + 5 * m (f 241133 + f 241134) by ring]; exact hb3
+      f 241144 + 5 * m (f 241133 + f 241134) by ring]
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
     iscr_sw (by omega) (by omega)
   simp only [scanReadL, okB, okI, regI, upd, sX, sY, sCl, sT, sK, sC3, sCh, sLp, sRp, sH1, K1, sw]
@@ -183,8 +183,6 @@ theorem offerFar_irs {src : ℕ} (hsrc : src = sLp ∨ src = sRp) {C : Chain} {M
       (∀ r, bandOf r ∉ oracleBands → r ≠ sFe → r ≠ sFh → (r < accA ∨ accA + 12 < r) → r ≠ lO →
         r ≠ lO + 1 → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
-  have hs : src ≠ sFe ∧ src ≠ sFh ∧ 240700 ≤ src ∧ src < 250000 := by
-    rcases hsrc with rfl | rfl <;> refine ⟨?_, ?_, ?_, ?_⟩ <;> simp [sLp, sRp, sFe, sFh, sw]
   have hok : okB W c.nmem [.copyN sFe src, .copyN sFh sH1] c.nreg :=
     ⟨iscr_sw (by unfold sFe sw; norm_num) (by unfold sFe sw; norm_num),
       iscr_sw (by unfold sFh sw; norm_num) (by unfold sFh sw; norm_num), trivial⟩
@@ -227,14 +225,14 @@ theorem offerFar_irs {src : ℕ} (hsrc : src = sLp ∨ src = sRp) {C : Chain} {M
       by unfold lO lN sw; norm_num, by unfold lO lCD sw; norm_num⟩
     ⟨by unfold lCD accA sw; omega, by unfold sFe accA sw; omega, by unfold sFh accA sw; omega,
       by unfold lT accA sw; omega, by unfold lD accA sw; omega, by unfold lO accA sw; omega⟩
-    (by rw [d1]; exact hacc.transport a1) (by rw [t1]; exact htag)
+    (by rw [d1]; exact hacc.transport a1) (by rwa [t1])
     (by rw [t1, hMod]; exact hctx.transport cd1 (fun a _ => by rw [hm1]) hA1.ge)
-    (by rw [t1, hMod]; exact hR) (by rw [n1, hn, t1, hMod]) (by rw [t1, hMod, vFe]; exact he)
-    (by rw [t1, hMod, vFe, vFh]; exact hpp) (by rw [t1, hMod, vFe, vFh, d1]; exact hpos) hy
+    (by rwa [t1, hMod]) (by rw [n1, hn, t1, hMod]) (by rwa [t1, hMod, vFe])
+    (by rwa [t1, hMod, vFe, vFh]) (by rwa [t1, hMod, vFe, vFh, d1]) hy
     (by rw [hA1]; omega)).mono le_rfl ?_
   rintro c' ⟨⟨L', hacc', hL', hc'⟩, k2, hA2, hm2⟩
   simp only [d1, t1, hMod] at hacc' hL' hc'
-  refine ⟨⟨L', hacc', hL', hc'⟩, fun r hr hs1 hs2 hra hro hro1 hrA => ?_, by rw [← hA1]; exact hA2,
+  refine ⟨⟨L', hacc', hL', hc'⟩, fun r hr hs1 hs2 hra hro hro1 hrA => ?_, by rwa [← hA1],
     fun a ha => by rw [hm2 a (by omega), hm1]⟩
   rw [k2 r hr hra hs2 hro hro1 hrA]
   exact k1 r hs1 hs2
@@ -318,7 +316,7 @@ theorem eqOffer_irs {a src : ℕ} (_ha : a = sLp ∨ a = sRp) (hsrc : src = sLp 
   · simp only [List.mem_singleton] at hk''
     subst hk''
     refine ⟨τ, by rw [hc' hzt]; exact Set.mem_insert _ _, ?_⟩
-    rw [hfar, ← hz]; exact hpos
+    rwa [hfar, ← hz]
 
 end
 

@@ -110,11 +110,11 @@ theorem frSideA_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     ⟨by simp [fpE, sw], by simp [fpE, sw]⟩ ⟨by simp [fpH, sw], by simp [fpH, sw]⟩
     (Or.inl rfl) ⟨by simp [fEE, sw], by simp [fEE, sw]⟩
     ⟨by simp [fEH, sw], by simp [fEH, sw]⟩ (by simp [fEE, fEH, sw]) (Or.inr rfl)
-    vEE vEH ppe hee hey (by rw [k1e]; exact hfe) (by rw [k1e, k1h]; exact hpp)
+    vEE vEH ppe hee hey (by rwa [k1e]) (by rwa [k1e, k1h])
     (by rw [hAl1]; exact fr_le2 hroom)).mono le_rfl ?_
   rintro c₂ ⟨vd, fr2, hA2, hm2⟩
   rw [k1e, k1h, r1, r2] at vd
-  set x : WPos := ⟨c.nreg fpE, c.nreg fpH⟩ with hx
+  set x : WPos := ⟨c.nreg fpE, c.nreg fpH⟩
   have ht0 := hpp.1
   have ht1 := hpp.2.1
   have hR : ∀ p, p < N₂.arcs.length → (N₂.arc (sj N₂ p)).reg < N₂.nRegions := fun p hp =>
@@ -138,7 +138,7 @@ theorem frSideA_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     · have hc := fr_noncut hP₂ hNF hpre hv
       rw [vd, ite_eq_right (fun h => hv ⟨h.1, h.2.1⟩)]
       exact frc_after hNF hj hfe ht0 ht1 (hl1 hc)
-  · rw [hm2 a (by rw [hAl1]; exact ha), hm1]
+  · rw [hm2 a (by rwa [hAl1]), hm1]
   · rw [fr2 r h1 h2 (fr_rA h3) h4]
     exact hk1 r h1 (fr_rB h3)
 
@@ -174,11 +174,11 @@ theorem frSideB_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     ⟨by simp [fqE, sw], by simp [fqE, sw]⟩ ⟨by simp [fqH, sw], by simp [fqH, sw]⟩
     (Or.inr rfl) ⟨by simp [fSE, sw], by simp [fSE, sw]⟩
     ⟨by simp [fSH, sw], by simp [fSH, sw]⟩ (by simp [fSE, fSH, sw]) (Or.inl rfl)
-    vSE vSH pps hse hsy (by rw [k1e]; exact hfe) (by rw [k1e, k1h]; exact hpp)
+    vSE vSH pps hse hsy (by rwa [k1e]) (by rwa [k1e, k1h])
     (by rw [hAl1]; exact fr_le2 hroom)).mono le_rfl ?_
   rintro c₂ ⟨vd, fr2, hA2, hm2⟩
   rw [k1e, k1h, r1, r0] at vd
-  set x : WPos := ⟨c.nreg fqE, c.nreg fqH⟩ with hx
+  set x : WPos := ⟨c.nreg fqE, c.nreg fqH⟩
   have ht0 := hpp.1
   have ht1 := hpp.2.1
   have hR : ∀ p, p < N₂.arcs.length → (N₂.arc (sj N₂ p)).reg < N₂.nRegions := fun p hp =>
@@ -202,7 +202,7 @@ theorem frSideB_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     · have hc := fr_noncut hP₂ hNF hpre hv
       rw [vd, ite_eq_right (fun h => hv ⟨h.1, h.2.1⟩)]
       exact frc_before hNF hj hfe ht0 ht1 (hl1 hc)
-  · rw [hm2 a (by rw [hAl1]; exact ha), hm1]
+  · rw [hm2 a (by rwa [hAl1]), hm1]
   · rw [fr2 r h1 h2 (fr_rA h3) h4]
     exact hk1 r h1 (fr_rB h3)
 
@@ -244,15 +244,15 @@ theorem faceRTask : FaceRTask := by
     exact hk1 q a b d e
   have e1 := keep fqE ⟨by simp [fqE, sw], by simp [fqE, sw]⟩
   have e2 := keep fqH ⟨by simp [fqH, sw], by simp [fqH, sw]⟩
-  refine (frSideB_irs E hI₁ (by rw [e1]; exact hqe) (by rw [e1, e2]; exact hppq)
-    (by rw [e1, e2]; exact hpreq) (le_trans (Nat.add_le_add_right hA₁' _) hr)).mono
+  refine (frSideB_irs E hI₁ (by rwa [e1]) (by rwa [e1, e2])
+    (by rwa [e1, e2]) (le_trans (Nat.add_le_add_right hA₁' _) hr)).mono
     le_rfl ?_
   rintro c₂ ⟨vB, hBf, hm2, hAl2, hk2⟩
   rw [e1, e2] at hBf
   have hAA : c₂.nreg frA = c₁.nreg frA := hk2 _ (not_oracle_sw (by simp [frA, sw])
     (by simp [frA, sw])) (by simp [frA, frB, sw])
     (Or.inr (by simp [frA, sw])) (by simp [frA, ALLOC, sw])
-  refine ⟨by rw [hAA]; exact vA, vB, by rw [hAA]; exact hAf, hBf, fun a ha => ?_,
+  refine ⟨by rwa [hAA], vB, by rwa [hAA], hBf, fun a ha => ?_,
     le_trans hAl1 hAl2, fun r h1 h2 h3 => ?_⟩
   · rw [hm2 a (lt_of_lt_of_le ha hAl1), hm1 a ha]
   · have hFR : ¬ (sw 700 ≤ r ∧ r < sw 2200) := fun h => h2 (Or.inl h)

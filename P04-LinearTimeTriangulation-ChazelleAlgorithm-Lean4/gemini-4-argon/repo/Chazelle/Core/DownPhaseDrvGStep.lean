@@ -91,7 +91,7 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
   obtain ⟨d₁, k₁, e₁, hk₁, q1, q2, q3, q4, q5, fr₁⟩ := pcCall_exec (P := P) hsp hF.hG hF.hWn d hw
     (H := R.H) hE.r200 h40 h41 h42 h43 hE.r202 hE.r204 hE.r205 (hE.holds hF) (hE.hostAt hF)
     (by have := hF.hHB; have := hE.alloc; omega) (by have := hF.hHl; omega) hF.hwf hF.hreg
-    hF.hsimp (by rw [← hF.hNP]; exact hsm) hm1 hk
+    hF.hsimp (by rwa [← hF.hNP]) hm1 hk
     (fun h1 => by
       obtain ⟨b1, b2, b3⟩ := hleaf h1
       exact ⟨b1, by rw [hE.grades hF]; exact hF.hμg, b2, hF.hg0, b3⟩)
@@ -175,7 +175,7 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
     let C1 : Chain := ⟨R.H.poly (Qof P), 0, s, hs, by rw [hNPn]; omega⟩
     let C2 : Chain := ⟨R.H.poly (Qof P), s, m, hm1, by rw [hNPn]; omega⟩
     have hlen : C1.m + C2.m + 1 ≤ C1.P.n := by
-      show s + m + 1 ≤ (R.H.poly (Qof P)).n; rw [hNPn]; exact hsm
+      show s + m + 1 ≤ (R.H.poly (Qof P)).n; rwa [hNPn]
     obtain ⟨hd1R, N1, hN1, hc1⟩ := A₂.desc C1 rfl rfl rfl
     obtain ⟨hd2R, N2, hN2, hc2⟩ := q5 C2 rfl rfl rfl
     -- the junction and the degree
@@ -212,7 +212,7 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
         exact hy.trans h2)
     have hmc' : mgCostV κ (L41.scF κs) (L41.scG κs) cutGran 130 N1.chords.length
         N2.chords.length γ (s + m) ≤ mcK (κ 130) κs * lemma41Nat R.μ := hmc
-    have hγW : R.γ₀ ≤ W := by have := hw.1 219204; rw [hE.r204] at this; exact this
+    have hγW : R.γ₀ ≤ W := by have := hw.1 219204; rwa [hE.r204] at this
     -- the merge step
     obtain ⟨d₃, k₃, e₃, hk₃, w10, w11, w12, w13, wA, wR, -, ⟨N, wN, wc⟩, wq, fr₃⟩ :=
       mgStep_exec (P := P) (W := W) hM (gradeCtx_capLocal O) hF.hG hF.hWn d₂ e₂.wb_right E₂.mg
@@ -224,7 +224,7 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
         (Robust.imp hd1R fun _ h => ⟨h.2.1, h.2.2⟩)
         (by rw [v14, hA₂, m₂]; exact Robust.imp hd2R fun _ h => ⟨h.2.2, h.2.1⟩)
         A₂.dA (by rw [v14, hA₂]; exact q4.1) rfl rfl rfl rfl hlen hN1
-        (by rw [v15, hA₂, m₂]; exact hN2) hc1 hc2 (le_refl _) hγ hgen hfd (by norm_num)
+        (by rwa [v15, hA₂, m₂]) hc1 hc2 (le_refl _) hγ hgen hfd (by norm_num)
         (E₂.holds hF) (by rw [E₂.cap hF]; have := hF.hcap; unfold fuseLoss; omega)
         (by have := hF.hγW; omega)
         (by
@@ -237,7 +237,7 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
           have := E₂.alloc; omega)) fr₃.2.2.2.2.2.1, ?_, fun q hq hq' => ?_, ?_⟩
     · rw [ite_eq_right (by omega)]
       refine ⟨by rw [wq _ (by simp [bandOf, bDownDrv]) (by omega), A₂.r22], w12, w13,
-        by rw [w10]; exact wA, by rw [w10]; have := E₂.alloc; omega,
+        by rwa [w10], by rw [w10]; have := E₂.alloc; omega,
         by have := E₂.alloc; omega, fun C hP hs' hm' => ?_⟩
       have hC : C = (L41.jOf C1 C2 hlen).whole := L41.chain_eq hP hs' hm'
       subst hC

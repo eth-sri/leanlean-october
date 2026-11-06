@@ -83,15 +83,15 @@ theorem left_hit_of {z : Point} (hz₁ : z.2 ≤ J.left.top.2) {σ : ℝ} (hσ :
     J.left.hitParam z σ = J.whole.hitParam z σ := by
   have hz' : z.2 ≤ J.whole.top.2 := hz₁.trans J.left_top_le
   obtain ⟨hT, hwD, hdom⟩ := Merge.hit_of_freeAt J.whole hz' hσ hfree
-  set T := J.whole.hitParam z σ with hTdef
+  set T := J.whole.hitParam z σ
   have hy : ∀ t, (rayPt z σ t).2 = z.2 := fun t => rfl
   have hfree₁ : Merge.FreeAt J.left z σ := by
     filter_upwards [hfree] with t ht
-    exact dom_left J ht (by rw [hy]; exact hz₁)
+    exact dom_left J ht (by rwa [hy])
   obtain ⟨hT₁, hw₁D, hdom₁⟩ := Merge.hit_of_freeAt J.left hz₁ hσ hfree₁
   have hwD₁ : rayPt z σ T ∉ J.left.dom := by
     intro hmem
-    rcases (Merge.not_mem_dom_iff J.whole (p := rayPt z σ T) (by rw [hy]; exact hz')).1 hwD
+    rcases (Merge.not_mem_dom_iff J.whole (p := rayPt z σ T) (by rwa [hy])).1 hwD
       with h | h
     · apply h
       rw [← FuseMath.radius_of_P J (C' := J.left) rfl]
@@ -101,7 +101,7 @@ theorem left_hit_of {z : Point} (hz₁ : z.2 ≤ J.left.top.2) {σ : ℝ} (hσ :
       · exact J.left.not_mem_set_of_mem_dom hmem h
       · exact hc ⟨h, fun h' => J.left.not_mem_set_of_mem_dom hmem h'⟩
   rcases lt_trichotomy (J.left.hitParam z σ) T with h | h | h
-  · exact absurd (dom_left J (hdom _ hT₁ h) (by rw [hy]; exact hz₁)) hw₁D
+  · exact absurd (dom_left J (hdom _ hT₁ h) (by rwa [hy])) hw₁D
   · exact h
   · exact absurd (hdom₁ T hT h) hwD₁
 
@@ -112,14 +112,14 @@ theorem right_hit_of {z : Point} (hz₂ : z.2 ≤ J.right.top.2) {σ : ℝ} (hσ
     J.right.hitParam z σ = J.whole.hitParam z σ := by
   have hz' : z.2 ≤ J.whole.top.2 := hz₂.trans J.right_top_le
   obtain ⟨hT, -, hdom⟩ := Merge.hit_of_freeAt J.whole hz' hσ hfree
-  set T := J.whole.hitParam z σ with hTdef
+  set T := J.whole.hitParam z σ
   have hy : ∀ t, (rayPt z σ t).2 = z.2 := fun t => rfl
   have hfree₂ : Merge.FreeAt J.right z σ := by
     filter_upwards [hfree] with t ht
-    exact dom_right J ht (by rw [hy]; exact hz₂)
+    exact dom_right J ht (by rwa [hy])
   obtain ⟨hT₂, hw₂D, hdom₂⟩ := Merge.hit_of_freeAt J.right hz₂ hσ hfree₂
   rcases lt_trichotomy (J.right.hitParam z σ) T with h | h | h
-  · exact absurd (dom_right J (hdom _ hT₂ h) (by rw [hy]; exact hz₂)) hw₂D
+  · exact absurd (dom_right J (hdom _ hT₂ h) (by rwa [hy])) hw₂D
   · exact h
   · exact absurd hw (J.right.not_mem_set_of_mem_dom (hdom₂ T hT h))
 
@@ -144,7 +144,7 @@ theorem after_of_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (
   obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_after hM hF hfin ((pa : ℝ) + ta))
   have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
-  set D := off M.W.n g ((q : ℝ) + u) - off M.W.n g ((pa : ℝ) + ta) with hD
+  set D := off M.W.n g ((q : ℝ) + u) - off M.W.n g ((pa : ℝ) + ta)
   have hD0 : 0 < D := by linarith
   refine ⟨min δ₁ D, lt_min hδ₁' hD0, fun s hs0 hs1 hs2 => ?_⟩
   have hsD : s < D := lt_of_lt_of_le hs1 (min_le_right _ _)
@@ -159,8 +159,7 @@ theorem after_of_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (
     off_add_small hg hpa hta hs0.le hs2
   have heq := same_region_of_gap hM hF hfin hg0 hgn hU' hU hpa hq hts hu hnc hqc hf' hqf
     (by rw [hoff]; linarith) (fun x hx hx0 hxn ⟨h1, h2⟩ => hgap x hx hx0 hxn ⟨by linarith, h2⟩)
-  rw [← heq]
-  exact hf'
+  rwa [← heq]
 
 /-- **A region faced just after a position** is faced at a non-cut position of the same edge, at an
 offset just after it. -/

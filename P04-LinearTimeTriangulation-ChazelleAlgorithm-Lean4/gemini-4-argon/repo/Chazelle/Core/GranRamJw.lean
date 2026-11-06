@@ -68,8 +68,6 @@ def gwStmt : Stmt :=
 /-- Registers in `[a, b)`. -/
 def Bin (a b : ℕ) (r : ℕ) : Bool := decide (a ≤ r ∧ r < b)
 
-theorem wr_gwStmt : wr (Bin 90092 90100) gwStmt = true := by decide
-
 /-- **The weight of a gap between two positions.** -/
 theorem gwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Config)
     (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d st)
@@ -77,12 +75,7 @@ theorem gwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
     (hbx : st.eg (c.nreg 90091) + st.pz (c.nreg 90091) ≤ E.sz) (hszW : E.sz ≤ W)
     (hbase : d.b0 + d.oEnd ≤ W) :
     ∃ c' k, Exec P W gwStmt c c' k ∧ k ≤ 20 ∧
-      c'.nreg 90092 = gwt E.sz st.eg st.pz (c.nreg 90090) (c.nreg 90091) ∧
-      FrameB (Bin 90092 90100) c c' := by
-  suffices h : ∃ c' k, Exec P W gwStmt c c' k ∧ k ≤ 20 ∧
-      c'.nreg 90092 = gwt E.sz st.eg st.pz (c.nreg 90090) (c.nreg 90091) by
-    obtain ⟨c', k, e, hk, hr⟩ := h
-    exact ⟨c', k, e, hk, hr, exec_frameB e wr_gwStmt⟩
+      c'.nreg 90092 = gwt E.sz st.eg st.pz (c.nreg 90090) (c.nreg 90091) := by
   set a := c.nreg 90090
   set b := c.nreg 90091
   have ra := henc.eg a ha
@@ -99,7 +92,6 @@ theorem gwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
   · config_simp; rw [hPz]; dm_simp; omega
   · config_simp; rw [hEg, hPz, rb, rx]; omega
   -- after the loads
-  have la : c.nmem (d.b0 + d.oEg + a) = st.eg a := ra
   unfold gwt
   by_cases hab : a < b
   · refine spec_ifLtN_true (by config_simp; exact hab)
@@ -122,14 +114,14 @@ theorem gwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
         obtain ⟨c', k₂, e2, hk₂, hr⟩ := hmin _ e1.wb_right
           (by config_simp; rw [hEg, hPz, rb, rx, min_eq_left hm.le])
           (by config_simp; rw [hsz, hEg, ra])
-        refine ⟨c', _, .seq (Exec.ifLtN_true (by config_simp; rw [hEg, hPz, rb, rx, ra]; exact hm)
+        refine ⟨c', _, .seq (Exec.ifLtN_true (by config_simp; rwa [hEg, hPz, rb, rx, ra])
           e1) e2, by omega, ?_⟩
         rw [hr, ite_eq_right (by omega), ite_eq_right hab]
       · have e1 := Exec.copyN (P := P) hw₁ 90099 90094
         obtain ⟨c', k₂, e2, hk₂, hr⟩ := hmin _ e1.wb_right
           (by config_simp; rw [hEg, ra, min_eq_right (by omega)])
           (by config_simp; rw [hsz, hEg, ra])
-        refine ⟨c', _, .seq (Exec.ifLtN_false (by config_simp; rw [hEg, hPz, rb, rx, ra]; exact hm)
+        refine ⟨c', _, .seq (Exec.ifLtN_false (by config_simp; rwa [hEg, hPz, rb, rx, ra])
           e1) e2, by omega, ?_⟩
         rw [hr, ite_eq_right (by omega), ite_eq_right hab]
     · refine spec_ifLtN_false (by config_simp; exact hba)
@@ -383,9 +375,9 @@ theorem jwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
     rw [r₇ r (by omega) (by omega), c6r r (by omega)]
   have henc₇ : Enc c₇.nmem d st := by
     have : c₇.nmem = c₆.nmem := (exec_frameB e₇ (B := Bin 90090 90092) (by decide)).2.2.1
-    rw [this, m6]; exact henc
-  obtain ⟨c₈, k₈, e₈, hk₈, g₈, -⟩ := gwStmt_exec (P := P) c₇ e₇.wb_right hC₇ henc₇
-    (by rw [q90]; exact hpD) (by rw [q91]; exact hsD) (by rw [q91]; exact hbx _ hsD) hszW hbase
+    rwa [this, m6]
+  obtain ⟨c₈, k₈, e₈, hk₈, g₈⟩ := gwStmt_exec (P := P) c₇ e₇.wb_right hC₇ henc₇
+    (by rwa [q90]) (by rwa [q91]) (by rw [q91]; exact hbx _ hsD) hszW hbase
   refine ⟨_, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈
     (Exec.copyN e₈.wb_right 90085 90092)))))))), by omega, ?_⟩
   config_simp

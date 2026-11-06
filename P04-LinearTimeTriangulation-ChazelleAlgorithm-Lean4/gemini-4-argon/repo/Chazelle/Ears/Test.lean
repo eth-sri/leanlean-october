@@ -51,8 +51,7 @@ theorem open_chord_not_mem_boundary_of_isEar (hi : i < P.n) (he : IsEar P i) :
     ∀ p ∈ Chazelle.segment (P.vtx (prevIdx P i)) (P.vtx ((i + 1) % P.n)),
       p ≠ P.vtx (prevIdx P i) → p ≠ P.vtx ((i + 1) % P.n) → p ∉ P.boundary := by
   have h := he.1.2.2
-  rw [prevIdx_mod P hi, prevIdx_add_two_mod P hi] at h
-  exact h
+  rwa [prevIdx_mod P hi, prevIdx_add_two_mod P hi] at h
 
 /-! ### The forward direction -/
 
@@ -117,13 +116,13 @@ theorem open_chord_not_mem_boundary_of_test (hP : P.Simple) (h4 : 4 ≤ P.n) (hi
     ∀ p ∈ Chazelle.segment (P.vtx (prevIdx P i)) (P.vtx ((i + 1) % P.n)),
       p ≠ P.vtx (prevIdx P i) → p ≠ P.vtx ((i + 1) % P.n) → p ∉ P.boundary := by
   have hn : 0 < P.n := by omega
-  set Q := P.rotate i with hQdef
+  set Q := P.rotate i
   have hQ : Q.Simple := simple_rotate P i hP
   have hQn : Q.n = P.n := n_rotate P i
   obtain ⟨ea, ev, eb⟩ := vtx_rotate_fan P i (by omega) hi
-  have hQ4 : 4 ≤ Q.n := by rw [hQn]; exact h4
+  have hQ4 : 4 ≤ Q.n := by rwa [hQn]
   have hdetQ : det (Q.vtx (Q.n - 1)) (Q.vtx 0) (Q.vtx 1) ≠ 0 := by
-    rw [ea, ev, eb]; exact hdet
+    rwa [ea, ev, eb]
   have hnoneQ : ∀ j, j < Q.n →
       Q.vtx j ∈ convexHull ℝ ({Q.vtx (Q.n - 1), Q.vtx 0, Q.vtx 1} : Set Point) →
         j = 0 ∨ j = 1 ∨ j = Q.n - 1 := by

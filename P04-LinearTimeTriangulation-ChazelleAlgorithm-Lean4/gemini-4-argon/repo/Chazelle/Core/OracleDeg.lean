@@ -77,7 +77,7 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
     rw [hσ1]
     by_cases hp : C.radius ≤ z.1
     · -- past the box
-      have hnh := noHit_past hcs (Or.inl rfl) (by rw [one_mul]; exact hp) (A := C.set) (z := z)
+      have hnh := noHit_past hcs (Or.inl rfl) (by rwa [one_mul]) (A := C.set) (z := z)
       have hc2 : xpClass (chR m V i) ≠ 1 := by
         intro hc1
         rcases hgt with h2 | ⟨-, hz⟩
@@ -114,8 +114,8 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
       rw [hpos] at hmem hedge
       have hpt : rayPt z 1 (b - z.1) = ((b, ((Qof P).vtx V.hz).2) : Point) := by
         rw [rayPt_right, hy]; ring_nf
-      refine ⟨b - z.1, ⟨by linarith, by rw [hpt]; exact hmem, fun s hs0 hsl => hfree s hs0 (by
-        linarith)⟩, by rw [he]; exact hlt, by rw [hpt, he]; exact hedge⟩
+      refine ⟨b - z.1, ⟨by linarith, by rwa [hpt], fun s hs0 hsl => hfree s hs0 (by
+        linarith)⟩, by rwa [he], by rwa [hpt, he]⟩
     · have hc : xpClass (chR m V i) ≠ 1 := fun hc1 => hf1 (h1 hc1).1
       have hbR : b = C.radius := by
         have hb2 : xpClass (chR m V i) = 2 := by
@@ -187,8 +187,8 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
       rw [hpos] at hmem hedge
       have hpt : rayPt z (-1) (z.1 - a) = ((a, ((Qof P).vtx V.hz).2) : Point) := by
         rw [rayPt_left, hy]; ring_nf
-      refine ⟨z.1 - a, ⟨by linarith, by rw [hpt]; exact hmem, fun s hs0 hsl => hfree s hs0 (by
-        linarith)⟩, by rw [he]; exact hlt, by rw [hpt, he]; exact hedge⟩
+      refine ⟨z.1 - a, ⟨by linarith, by rwa [hpt], fun s hs0 hsl => hfree s hs0 (by
+        linarith)⟩, by rwa [he], by rwa [hpt, he]⟩
     · have hc : xpClass (chL m V i) ≠ 1 := fun hc1 => hf1 (h1 hc1).1
       have haR : a = -C.radius := by
         have hb0 : xpClass (chL m V i) = 0 := by

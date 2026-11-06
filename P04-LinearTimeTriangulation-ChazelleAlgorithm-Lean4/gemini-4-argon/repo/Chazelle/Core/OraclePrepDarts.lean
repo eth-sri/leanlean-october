@@ -56,7 +56,6 @@ theorem view_even (B : BookData) (_hV : B.Valid) {e : ℕ} (_he : e < B.E) :
   by_cases a : e < B.N
   · rw [ite_eq_left a, ite_eq_left h3]; simp [View.tail, View.key, eU, eKind, dKey0, a]
   · rw [ite_eq_right a]
-    have hL : B.I.length ≤ e - B.N ∨ e - B.N < B.I.length := by omega
     by_cases b : e < B.N + B.I.length
     · rw [ite_eq_left b, ite_eq_left h3, getD_I (by omega)]
       simp [View.tail, View.key, eU, eV, eKind, dKey0, a, show e - B.N < B.I.length by omega]
@@ -129,20 +128,20 @@ theorem edgeS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, a, b, d⟩
   unfold edgeS eU eV eKind
   by_cases hs : e < N
-  · refine spec_ifLtN_true (by rw [he, hN]; exact hs) ?_
+  · refine spec_ifLtN_true (by rwa [he, hN]) ?_
     refine spec_seq ?_
     exec_block
     · config_simp; rw [he, hone]; omega
     · refine spec_seq ?_
       by_cases h' : e + 1 < N
-      · refine spec_ifLtN_true (by config_simp; rw [he, hone, hN]; exact h') (spec_skip ‹_› ?_)
+      · refine spec_ifLtN_true (by config_simp; rwa [he, hone, hN]) (spec_skip ‹_› ?_)
         refine spec_instr (Exec.constN ‹_› _ _ (by omega)) fun _ => ⟨by omega, ?_, ?_, ?_⟩ <;>
           config_simp <;> simp [hs, h', he, hone]
-      · refine spec_ifLtN_false (by config_simp; rw [he, hone, hN]; exact h')
+      · refine spec_ifLtN_false (by config_simp; rwa [he, hone, hN])
           (spec_instr (Exec.constN ‹_› _ 0 (Nat.zero_le _)) fun _ => ?_)
         refine spec_instr (Exec.constN ‹_› _ _ (by omega)) fun _ => ⟨by omega, ?_, ?_, ?_⟩ <;>
           config_simp <;> simp [hs, h', he]
-  · refine spec_ifLtN_false (by rw [he, hN]; exact hs) ?_
+  · refine spec_ifLtN_false (by rwa [he, hN]) ?_
     have hj : e - N < L.length := by omega
     obtain ⟨p1, p2⟩ := hP (e - N) hj
     refine spec_seq ?_
@@ -150,10 +149,10 @@ theorem edgeS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
     · config_simp; rw [he, hN, h1]; omega
     · config_simp; rw [he, hN, h2]; omega
     · by_cases h' : e - N < nI
-      · refine spec_ifLtN_true (by config_simp; rw [he, hN, hI]; exact h')
+      · refine spec_ifLtN_true (by config_simp; rwa [he, hN, hI])
           (spec_instr (Exec.constN ‹_› _ _ (by omega)) fun _ => ⟨by omega, ?_, ?_, ?_⟩) <;>
           config_simp <;> simp only [he, hN, h1, h2, p1, p2, ite_eq_right hs, ite_eq_left h']
-      · refine spec_ifLtN_false (by config_simp; rw [he, hN, hI]; exact h')
+      · refine spec_ifLtN_false (by config_simp; rwa [he, hN, hI])
           (spec_instr (Exec.constN ‹_› _ _ (by omega)) fun _ => ⟨by omega, ?_, ?_, ?_⟩) <;>
           config_simp <;> simp only [he, hN, h1, h2, p1, p2, ite_eq_right hs, ite_eq_right h']
 
@@ -342,9 +341,7 @@ theorem passS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
       c'.nmem = scat c.nmem (fun e => dBaseV VT E k + 2 * e + k % 2)
         (fun e => dVal k N e (eU N L e) (eV N L e) (eKind N nI e)) E ∧
       c'.rmem = c.rmem ∧ c'.output = c.output ∧ DartEnv N nI CH1 CH2 VT E lo L c' := by
-  have hB : ∀ r, (BEd r || BDV r) = false → BEd r = false ∧ BDV r = false := fun r hr => by
-    simpa using hr
-  obtain ⟨c', kk, ex, hkk, r', rr', mm, rm, o, J', -⟩ := scatS_exec (P := P) (W := W)
+  obtain ⟨c', kk, ex, hkk, r', rr', mm, rm, o, J'⟩ := scatS_exec (P := P) (W := W)
     (ri := 60030) (rn := 60037) (r1 := 120011) (ra := 60040) (rv := 60041)
     (body := .seq edgeS (dvS k)) (B := fun r => BEd r || BDV r) (by decide) (by decide)
     (by decide) (by decide) (by decide) (DartEnv N nI CH1 CH2 VT E lo L) lo
@@ -356,7 +353,7 @@ theorem passS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
       have := h.hlo; unfold dBaseV; split_ifs <;> omega)
     (fun i d hi hJ hwd hri => by
       obtain ⟨d₁, k₁, e₁, hk₁, f₁, v1, v2, v3⟩ := edgeS_exec (P := P) hwd hJ.rN hJ.rI hJ.r1 hJ.r2 hJ.one hri
-        (by rw [← hJ.hE]; exact hi) hJ.pairs (by have := hJ.hC1; have := hJ.hlo; omega)
+        (by rwa [← hJ.hE]) hJ.pairs (by have := hJ.hC1; have := hJ.hlo; omega)
         (by have := hJ.hC2; have := hJ.hlo; omega) (by omega)
       have K : ∀ r, DKeep r = true → d₁.nreg r = d.nreg r := fun r hr => f₁.1 r (by
         have := (DKeep_B hr).1; simp only [Bool.or_eq_false_iff] at this; exact this.1)
@@ -378,7 +375,7 @@ theorem passS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
         · exact hJ₁.rK
         · exact hJ₁.rO
       obtain ⟨d₂, k₂, e₂, hk₂, f₂, a2, b2⟩ := dvS_exec (P := P) (e := i) e₁.wb_right hk hb
-        (by rw [f₁.1 _ (by decide)]; exact hri) v1 v2 v3 hkd hJ₁.rN hJ₁.one hJ₁.two huN hvN hNW
+        (by rwa [f₁.1 _ (by decide)]) v1 v2 v3 hkd hJ₁.rN hJ₁.one hJ₁.two huN hvN hNW
         (by unfold dBaseV; split_ifs <;> omega)
       have ex : Exec P W (.seq edgeS (dvS k)) d d₂ _ := .seq e₁ e₂
       refine ⟨d₂, _, ex, by omega, (FrameB.mono f₁ fun r hr => by simp [hr]).trans

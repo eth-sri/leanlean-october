@@ -262,7 +262,7 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
   obtain ⟨xs, ⟨hxsL, hxsw⟩, hxsmax⟩ := Set.exists_max_image {x | x ∈ L ∧ WallRec x}
     (fun x => (Q.vtx x.1).2) ((List.finite_toSet L).subset fun x hx => hx.1)
     (by obtain ⟨x, hx, hw⟩ := hwall; exact ⟨x, hx, hw⟩)
-  set ys := (Q.vtx xs.1).2 with hysdef
+  set ys := (Q.vtx xs.1).2
   obtain ⟨-, hysR, hyst, -⟩ := rec_facts hL hxsL
   have hbelow : ∀ z ∈ C.set, ys < z.2 := wall_below (wall_shape hL hxsL hxsw).2 hyst
   -- heights of the kept chords
@@ -287,10 +287,10 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
       exact hthird hl hlw.1 hlw.2
   -- the level `yp`
   set Hs : Finset ℝ := (Finset.range (C.m + 1)).image (fun k => (C.vertex k).2) ∪
-    ((dropWalls L).map fun x => (Q.vtx x.1).2).toFinset with hHs
+    ((dropWalls L).map fun x => (Q.vtx x.1).2).toFinset
   have hHne : Hs.Nonempty := ⟨(C.vertex 0).2, Finset.mem_union_left _
     (Finset.mem_image.2 ⟨0, Finset.mem_range.2 (by omega), rfl⟩)⟩
-  set yp := Hs.min' hHne with hyp
+  set yp := Hs.min' hHne
   have hyp_v : ∀ k, k ≤ C.m → yp ≤ (C.vertex k).2 := fun k hk =>
     Hs.min'_le _ (Finset.mem_union_left _ (Finset.mem_image.2
       ⟨k, Finset.mem_range.2 (by omega), rfl⟩))
@@ -399,20 +399,18 @@ theorem chordTriplesOK_of_isNF {M : Model} {N : NF} (hN : IsNF M Q N) :
     simp only [List.get_eq_getElem, getElem_map, Function.comp_apply] at e
     have hi := i.2; have hj := j.2
     simp only [length_map] at hi hj
-    have := hinj i j hi hj (by rw [hget i hi, hget j hj]; exact e)
+    have := hinj i j hi hj (by rwa [hget i hi, hget j hj])
     exact Fin.ext this
   · intro x hx
     obtain ⟨r, hr, rfl⟩ := mem_map.1 hx
     obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
     have := hatt i hi
-    rw [hget i hi] at this
-    exact this
+    rwa [hget i hi] at this
   · intro x hx
     obtain ⟨r, hr, rfl⟩ := mem_map.1 hx
     obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
     have := hh i hi
-    rw [hget i hi] at this
-    exact this
+    rwa [hget i hi] at this
 
 /-- **Box transport of a normal form** (B3′, record form): the chord triples of a valid normal
 form of `C` of degree `≤ d` that is `γ`-semigranular, without the wall-to-wall chords, are a

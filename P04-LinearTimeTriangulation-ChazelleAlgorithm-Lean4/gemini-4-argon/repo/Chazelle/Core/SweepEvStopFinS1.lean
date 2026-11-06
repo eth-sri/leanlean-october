@@ -153,8 +153,8 @@ theorem slAr_irs (hI : IInv W c₀ c) {n g g' n₂ : ℕ} (hE : c.nreg slfSE < n
         (g' + dq (c.nreg (sw 42)) (c.nreg (sw 44)) (dOf n g (c.nreg slfSE))) % n₂) ∧
       c'.nreg fqH = (if c.nreg slfSH = 0 then 0 else c.nreg slfSH) ∧ SlKp c c') := by
   set d := dOf n g (c.nreg slfSE) with hd
-  set L1 := c.nreg (sw 42) with hL1
-  set δ := c.nreg (sw 44) with hδd
+  set L1 := c.nreg (sw 42)
+  set δ := c.nreg (sw 44)
   have hdn : d < n := dOf_lt (by omega) _ _
   unfold slAr
   -- 1. the offset
@@ -167,11 +167,11 @@ theorem slAr_irs (hI : IInv W c₀ c) {n g g' n₂ : ℕ} (hE : c.nreg slfSE < n
       refine (slfSub_irs hI₁ (by rne)).mono le_rfl ?_
       rintro c' ⟨b1, b2, b3⟩
       refine ⟨?_, fun q hq => by rw [b2 q hq, a2 q hq], by rw [b3, a3]⟩
-      rw [b1, a1, a2 _ (by rne), hn, hg, hd, ← strD_eq hgn hE, ite_eq_left (by rw [← hg]; exact h)]
+      rw [b1, a1, a2 _ (by rne), hn, hg, hd, ← strD_eq hgn hE, ite_eq_left (by rwa [← hg])]
     · refine (slfSub_irs hI (by rne)).mono (by norm_num) ?_
       rintro c' ⟨b1, b2, b3⟩
       refine ⟨?_, b2, b3⟩
-      rw [b1, hg, hd, ← strD_eq hgn hE, ite_eq_right (by rw [← hg]; exact h)]
+      rw [b1, hg, hd, ← strD_eq hgn hE, ite_eq_right (by rwa [← hg])]
   refine IRS.seq (K₁ := 4) (K₂ := 22) s1 ?_
   rintro c₁ hI₁ - - ⟨v1, k1, m1⟩
   have e1 : ∀ q, ¬ SlArW q → c₁.nreg q = c.nreg q := fun q hq => k1 q (by rne)

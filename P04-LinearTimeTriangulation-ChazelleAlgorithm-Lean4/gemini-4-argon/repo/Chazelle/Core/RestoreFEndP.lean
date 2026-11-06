@@ -122,14 +122,14 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     exact ⟨hpe.1, ⟨le_of_eq rfl, by show (0 : ℝ) < 1; norm_num, Nat.zero_le _⟩,
       fun _ => by show 6 ≤ pE; omega⟩
   have hph : PosOK Cα (Qof E.P) E.P.n ⟨c₁.nreg p, c₁.nreg 81155⟩ := by
-    rw [rp, r 81155 (by omega)]; exact hpe
+    rwa [rp, r 81155 (by omega)]
   have ir : ∀ q, 80000 ≤ q → q < 90000 → InR q := fun q a b => ⟨a, b⟩
   have nk : ∀ q, 81000 ≤ q → q < 82000 → ¬ KeyW q := fun q a b h => by unfold KeyW at h; omega
   refine FRS.seq (K₂ := 21) (cmpA_fs hE hB hI₁ (r := s + 7) ⟨by omega, by omega⟩
     (ir p (by omega) (by omega)) (ir 81011 (by norm_num) (by norm_num)) (ir p (by omega) (by omega))
     (ir 81155 (by norm_num) (by norm_num)) (nk p (by omega) (by omega)) (nk _ (by norm_num)
     (by norm_num)) (nk p (by omega) (by omega)) (nk _ (by norm_num) (by norm_num))
-    (by rw [m₁, r 81133 (by omega), hA₁']; exact hwf) (by rw [m₁, r 81133 (by omega)]; exact hC)
+    (by rwa [m₁, r 81133 (by omega), hA₁']) (by rwa [m₁, r 81133 (by omega)])
     hWm hpz hph (by rw [hA₁']; unfold ehK at hroom; omega))
     (fun c₂ hI₂ hA₂ ⟨b7, _, f₂⟩ => ?_)
   rw [rp, r 81011 (by omega), hI.hin 81011 (by unfold FFix; omega), hE.k0,
@@ -150,7 +150,7 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
         BitIs c' s (g' < pE ∨ kz < kh) ∧ ∀ q, q ≠ s → c'.nreg q = c₂.nreg q) := by
     by_cases a3 : c₂.nreg 81131 < c₂.nreg p
     · exact (FRS.ifT a3 ((setR_fs hB hI₂ (r := s) ⟨by omega, by omega⟩ hW1).mono le_rfl
-        (fun c' ⟨v, f⟩ => ⟨BitIs.const_one v (Or.inl (by rw [w31, w7] at a3; exact a3)), f⟩))).mono
+        (fun c' ⟨v, f⟩ => ⟨BitIs.const_one v (Or.inl (by rwa [w31, w7] at a3)), f⟩))).mono
         (by omega) (fun _ h => h)
     refine (FRS.ifF a3 ?_).mono (K := 5) le_rfl (fun _ h => h)
     by_cases a4 : c₂.nreg 81011 < c₂.nreg (s + 7)
@@ -184,8 +184,8 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
       (fun q hq => by unfold FFix at hq; omega) (by omega) (by omega) (by omega) (by omega)
       (by omega) ⟨by omega, by omega, by omega⟩
       (by rw [f₃ _ (by omega), f₃ _ (by omega), w31, w7]; omega)
-      (by rw [f₃ _ (by omega), g₂ _ (by norm_num) (by norm_num) (nk _ (by norm_num) (by norm_num))
-        (by omega) (by omega), r 81130 (by omega)]; exact hg)
+      (by rwa [f₃ _ (by omega), g₂ _ (by norm_num) (by norm_num) (nk _ (by norm_num) (by norm_num))
+        (by omega) (by omega), r 81130 (by omega)])
       (by rw [f₃ _ (by omega), f₃ _ (by omega), w31, w7]; omega) b7').mono le_rfl
       (fun c' ⟨u1, u2, u3, uf⟩ => ?_))).mono (by omega) (fun _ h => h)
     have e30 : c₃.nreg 81130 = c.nreg 81130 := by
@@ -206,8 +206,7 @@ theorem endHead_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     · rw [u2 (by rw [e77]; exact b7.2.2 hk), e55]
     · exact u3 (by
         rw [e77]; have h1 := b7.1; by_contra hne; exact hk (b7.2.1 (by omega)))
-  · have z : c₃.nreg s = 0 := by rw [k0₃] at a5; omega
-    exact (FRS.ifF a5 (FRS.skip (K := 0) hI₃ ⟨(b0.congr ⟨fun h => ⟨not_lt.1 a1, a2, h⟩, fun h => h.2.2⟩),
+  · exact (FRS.ifF a5 (FRS.skip (K := 0) hI₃ ⟨(b0.congr ⟨fun h => ⟨not_lt.1 a1, a2, h⟩, fun h => h.2.2⟩),
       fun h => by omega, (s5 c₃ (fun _ _ _ _ => rfl)).1, (s5 c₃ (fun _ _ _ _ => rfl)).2,
       fin c₃ (fun _ _ _ _ => rfl)⟩)).mono (by omega) (fun _ h => h)
 
@@ -226,9 +225,8 @@ def TailW (s q : ℕ) : Prop := RunW s q ∨ SdW s q
 theorem FWin.congr' {c c' : Config} (h : FWin E c)
     (hq : ∀ q, 81007 ≤ q → q ≤ 81010 → c'.nreg q = c.nreg q) : FWin E c' := by
   unfold FWin
-  rw [hq 81007 (by norm_num) (by norm_num), hq 81008 (by norm_num) (by norm_num),
+  rwa [hq 81007 (by norm_num) (by norm_num), hq 81008 (by norm_num) (by norm_num),
     hq 81009 (by norm_num) (by norm_num), hq 81010 (by norm_num) (by norm_num)]
-  exact h
 
 /-- The edge range of the candidates. -/
 def InRange (c₀ : Config) (e : ℕ) : Prop := c₀.nreg 81021 ≤ e ∧ e < c₀.nreg 81025
@@ -327,11 +325,11 @@ theorem endTail_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     · exact (FRS.ifF r2 (out (fun h => by have := h.2; rw [i25 c hI] at r2; omega))).mono
         (by omega) (fun _ h => h)
     have hr : InRange c₀ (c.nreg (s + 1)) :=
-      ⟨by rw [i21 c hI] at r1; omega, by rw [i25 c hI] at r2; exact r2⟩
+      ⟨by rw [i21 c hI] at r1; omega, by rwa [i25 c hI] at r2⟩
     refine (FRS.ifT r2 ((endRun_fs hE hB hBT hI hw ⟨by omega, by omega⟩ hσ h5 (hcand o hr)
       (by omega) (by unfold etK at hroom; omega)).mono le_rfl
       (fun c' ⟨w', f', m', g', v', v1', t'⟩ => ⟨w', f', m', fun _ => g', v',
-        fun h => ⟨hr, v1' h⟩, fun _ hz => by have := t' hz; rw [i21 c hI] at this; exact this⟩))).mono
+        fun h => ⟨hr, v1' h⟩, fun _ hz => by have := t' hz; rwa [i21 c hI] at this⟩))).mono
       (by omega) (fun _ h => h)
   refine (FRS.seq (K₂ := 33087) part1 (fun c₁ hI₁ hA₁ ⟨w₁, f₁, m₁, g₁, v₁, vv₁, t₁⟩ => ?_)).mono
     (by omega) (fun _ h => h)
@@ -358,11 +356,11 @@ theorem endTail_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       obtain ⟨-, hex, -⟩ := hT.2.2 reg₀ hreg₀
       obtain ⟨T, -, -, -, hfe, hfp, -⟩ := hex b10 b11
       rw [h3, h4]
-      exact posG_of_vlo hE hI₁ hfe hfp (by rw [i21 c₁ hI₁]; exact b12)
+      exact posG_of_vlo hE hI₁ hfe hfp (by rwa [i21 c₁ hI₁])
   have hr1 : c₁.nreg ALLOC + 33087 ≤ E.W := by
     have h' : c.nreg ALLOC + (erK E + 33095) ≤ E.W := hroom
     linarith
-  refine (endSd_fs hE hB hI₁ ⟨by omega, by omega⟩ v₁ hxE hxF (by rw [e40, e41]; exact hJ)
+  refine (endSd_fs hE hB hI₁ ⟨by omega, by omega⟩ v₁ hxE hxF (by rwa [e40, e41])
     hr1).mono le_rfl (fun c' ⟨u6, us, uf⟩ => ?_)
   have back : ∀ q, 81011 ≤ q → q < 83000 → ¬ SdW s q → c'.nreg q = c₁.nreg q := fun q a b h =>
     uf q (by omega) (by omega) h
@@ -377,18 +375,17 @@ theorem endTail_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have bf7 : c'.nreg 81007 = c₁.nreg 81007 := bflag _ (by norm_num) (by norm_num)
   refine ⟨w₁.congr' bflag, fun q a b h => ?_, fun h => bf7 ▸ m₁ h,
     fun _ hr reg hr' hch h2 σb hσb hg => bf7 ▸ g₁ hr reg hr' hch h2 σb hσb hg,
-    by rw [b5]; exact v₁, fun h => by rw [b5] at h; exact ⟨o, vv₁ h⟩, fun _ hr hz => ?_, u6,
+    by rwa [b5], fun h => by rw [b5] at h; exact ⟨o, vv₁ h⟩, fun _ hr hz => ?_, u6,
     fun h hj => ?_⟩
   · unfold TailW at h
     rw [back q (by omega) (by omega) (fun h' => h (Or.inr h')),
       f₁ q a b (fun h' => h (Or.inl h'))]
   · obtain ⟨ct, ct', hT, a1, a2, a3, h3, h4, hv, hm⟩ := t₁ hr hz
-    refine ⟨ct, ct', hT, a1, a2, a3, by rw [b3, h3], by rw [b4, h4], by rw [b5]; exact hv,
+    refine ⟨ct, ct', hT, a1, a2, a3, by rw [b3, h3], by rw [b4, h4], by rwa [b5],
       fun h => bf7 ▸ hm h⟩
   · rw [b5] at h
-    have := us h (by rw [e40, e41, i21 c₁ hI₁]; exact hj)
-    rw [e1, e2, e40, e41, ← b3, ← b4] at this
-    exact this
+    have := us h (by rwa [e40, e41, i21 c₁ hI₁])
+    rwa [e1, e2, e40, e41, ← b3, ← b4] at this
 
 end
 

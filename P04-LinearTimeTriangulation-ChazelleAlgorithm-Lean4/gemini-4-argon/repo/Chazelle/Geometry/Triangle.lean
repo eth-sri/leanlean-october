@@ -228,7 +228,6 @@ theorem not_mem_interior_of_affine_zero {T : Set Point} {v x : Point} {f : Point
   obtain ⟨s, hs, hs1⟩ := (h1.and self_mem_nhdsWithin).exists
   have := hT _ hs
   rw [hf, hv, hx] at this
-  have hs1' : (1 : ℝ) < s := hs1
   linarith
 
 /-- The interior of a nondegenerate triangle: all barycentric coordinates positive. -/

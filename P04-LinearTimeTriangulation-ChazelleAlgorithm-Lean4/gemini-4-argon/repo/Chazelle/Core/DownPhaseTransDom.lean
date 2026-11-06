@@ -112,7 +112,7 @@ theorem Top.boundary_dom (T : Top Q C) {z : Point} (hz : z ∈ Q.boundary) (hzD 
   obtain ⟨i, hi, hzi⟩ := hz
   have him : i = C.m := by
     by_contra h
-    exact hzs ⟨i, by have := T.hm; omega, by rw [T.chainEdge_eq' (by have := T.hm; omega)]; exact hzi⟩
+    exact hzs ⟨i, by have := T.hm; omega, by rwa [T.chainEdge_eq' (by have := T.hm; omega)]⟩
   subst him
   rw [T.last_edge] at hzi
   obtain ⟨s, hs0, hs1, rfl⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 hzi

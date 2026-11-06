@@ -324,7 +324,7 @@ theorem exits_eq {reg : ℕ → Set Point} (hN : ∀ i i', i < N.nChords → i' 
       have hc : N.chord i = N.chords[i] := by
         unfold NF.chord; rw [getD_eq_getElem _ _ hi]
       refine ⟨i, (hmem i).2 ⟨hi, ?_⟩, ?_⟩
-      · rw [hc]; exact ht
+      · rwa [hc]
       · simp only [hc]
     · rintro ⟨i, hi, rfl⟩
       obtain ⟨hi', ht⟩ := (hmem i).1 hi

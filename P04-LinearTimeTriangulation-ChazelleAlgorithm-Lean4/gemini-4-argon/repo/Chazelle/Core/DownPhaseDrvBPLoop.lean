@@ -45,8 +45,8 @@ theorem ptLoop_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c
     ∃ c' k, Exec E.P E.W ptLoop c c' k ∧ k ≤ (ptK E.Cm + 2) * (E.pts r).length + 3 ∧
       PtSt E r PA c' (T ++ (E.recs r).map fun x => (r, x)) ∧ FrameM Bpt c c' ∧
       (∀ a, (a < E.B₂ ∨ E.B₂ + 10 * E.P.n ≤ a) → c'.nmem a = c.nmem a) := by
-  set l := E.pts r with hl
-  set f := ptRecs E.li E.Q l with hf
+  set l := E.pts r
+  set f := ptRecs E.li E.Q l
   have hrecs : E.recs r = (List.range l.length).flatMap f := regList_eq_flatMap _ _ _
   -- the counter
   have e₀ := Exec.constN (P := E.P) hS.wb 212017 0 (Nat.zero_le _)
@@ -84,7 +84,7 @@ theorem ptLoop_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c
     I0 (Nat.zero_le _)
   rw [Nat.sub_zero] at hk
   refine ⟨c', _, .seq e₀ ex, by omega, ?_, FM', M'⟩
-  rw [hrecs]; exact S'
+  rwa [hrecs]
 
 end exec
 

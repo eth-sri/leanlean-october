@@ -53,9 +53,9 @@ theorem startTask : StartTask := by
   intro J Q S₂ hP hS₂ _hF hbrk V hV hW₂
   have hS₂a := hS₂.2.1
   have hS₂f := hS₂.1
-  set n := (chainModel J.whole).W.n with hndef
+  set n := (chainModel J.whole).W.n
   have hn0 : 0 < n := by have := Lst_lt_n J; omega
-  set pK := (gW J + Lst J) % n with hpKdef
+  set pK := (gW J + Lst J) % n
   have hpK : pK < n := Nat.mod_lt _ hn0
   have hoK : oW J ((pK : ℝ) + 0) = (Lst J : ℝ) := oW_start J hP hS₂a hS₂f
   have hL0 := Lst_pos J
@@ -65,7 +65,7 @@ theorem startTask : StartTask := by
   right
   intro G hG hf
   obtain ⟨R, hR, hWR, q, u, hq, hu, hncq, hfq, h1, h2, hgap⟩ :=
-    before_region_exists' hP hS₂a hS₂f hpK le_rfl one_pos (by rw [hoK]; exact hL0) hL0
+    before_region_exists' hP hS₂a hS₂f hpK le_rfl one_pos (by rwa [hoK]) hL0
   rw [hoK] at h1 h2 hgap
   -- the position before the start is not enclosed
   have hEq : ¬ EvEncl J S₂ (oW J (q + u)) := by

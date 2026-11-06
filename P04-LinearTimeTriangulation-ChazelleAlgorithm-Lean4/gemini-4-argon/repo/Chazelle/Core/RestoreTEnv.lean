@@ -51,8 +51,8 @@ theorem chainDesc_agree {m m' : ℕ → ℕ} {bw E : ℕ} {Q : Polygon} {H : Hos
     (hC : ChainDescAt m bw Q H C) (hb : bw + 5 ≤ E) (hE : m bw + 3 * H.length + 4 ≤ E)
     (he : ∀ a, a < E → m' a = m a) : ChainDescAt m' bw Q H C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := hC
-  refine ⟨?_, h1, by rw [he _ (by omega)]; exact h2, by rw [he _ (by omega)]; exact h3,
-    by rw [he _ (by omega)]; exact h4, by rw [he _ (by omega)]; exact h5⟩
+  refine ⟨?_, h1, by rwa [he _ (by omega)], by rwa [he _ (by omega)],
+    by rwa [he _ (by omega)], by rwa [he _ (by omega)]⟩
   rw [he _ (by omega)]
   exact hostAt_agree_r h0 hE he
 
@@ -69,7 +69,7 @@ theorem chainWF_agree {P : Polygon} {m m' : ℕ → ℕ} {bw E E' : ℕ} {H : Ho
   refine ⟨hl, hHW, by rw [c0]; omega, ?_⟩
   have e1 : C'.s = C.s := by rw [← hC'.2.2.1, ← hC.2.2.1, he _ (by omega)]
   have e2 : C'.P = C.P := by rw [hC'.2.1, hC.2.1]
-  rw [e1, e2]; exact hs
+  rwa [e1, e2]
 
 /-! ## The fixed data of a run -/
 
@@ -126,14 +126,14 @@ theorem TInv.modelDesc (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
   · have hcw : ChainWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg 83000 + 1) := hE.hwfMD.2 hz
     obtain ⟨-, -, hEb, -⟩ := hcw.2 H C hC
     have hC' := chainDesc_agree hC hcw.1 hEb hI.hm
-    have hz' : c.nmem (c₀.nreg 83000) = 0 := by rw [hI.hm _ (by omega)]; exact hz
+    have hz' : c.nmem (c₀.nreg 83000) = 0 := by rwa [hI.hm _ (by omega)]
     rw [h0]
     exact ⟨Or.inl ⟨hz', H, C, hC', hM⟩, by have := hI.hA; omega,
       fun _ => chainWF_agree hcw hC hI.hm hI.hA⟩
-  · have h1' : c.nmem (c₀.nreg 83000) = 1 := by rw [hI.hm _ (by omega)]; exact h1
+  · have h1' : c.nmem (c₀.nreg 83000) = 1 := by rwa [hI.hm _ (by omega)]
     have hb' : c.nmem (c₀.nreg 83000 + 1) = c₀.nmem (c₀.nreg 83000 + 1) := hI.hm _ (by omega)
     rw [h0]
-    exact ⟨Or.inr ⟨h1', by rw [hb']; exact hbit, hM⟩, by have := hI.hA; omega,
+    exact ⟨Or.inr ⟨h1', by rwa [hb'], hM⟩, by have := hI.hA; omega,
       fun h => by omega⟩
 
 /-- **The chain descriptor of a chain model**, at any configuration of the run. -/

@@ -146,8 +146,7 @@ theorem arcSet_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hJ : J = 0 ∨ J =
     · rintro ⟨k, hk, hx⟩
       rw [Cα.chainEdge_eq] at hx
       refine ⟨k, hk, ?_⟩
-      rw [hV' k hk.le, show p₀ + k + 1 = p₀ + (k + 1) by ring, hV' (k + 1) hk]
-      exact hx
+      rwa [hV' k hk.le, show p₀ + k + 1 = p₀ + (k + 1) by ring, hV' (k + 1) hk]
   · have hV' : ∀ d, d ≤ Cα.m → M.W.vtx (p₀ + d) = Cα.vertex (Cα.m - d) := fun d hd => by
       rw [hV d hd, tourV_down Cα hd]
     constructor
@@ -159,17 +158,15 @@ theorem arcSet_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hJ : J = 0 ∨ J =
     · rintro ⟨k, hk, hx⟩
       rw [Cα.chainEdge_eq] at hx
       refine ⟨Cα.m - (k + 1), by omega, ?_⟩
-      rw [hV' _ (by omega), show p₀ + (Cα.m - (k + 1)) + 1 = p₀ + (Cα.m - k) by omega,
+      rwa [hV' _ (by omega), show p₀ + (Cα.m - (k + 1)) + 1 = p₀ + (Cα.m - k) by omega,
         hV' _ (by omega), show Cα.m - (Cα.m - (k + 1)) = k + 1 by omega,
         show Cα.m - (Cα.m - k) = k by omega, Chazelle.Geometry.segment_comm]
-      exact hx
 
 /-- **The walk of a kind-1 piece** (`PieceWalk`, finding E5): a stretch of `Cα.m` walk edges of
 `M` agreeing with the tour of `Cα` read from any tour position `J`. -/
 theorem pieceWalk_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hp₀ : p₀ < M.W.n)
     (hV : ∀ d, d ≤ Cα.m → M.W.vtx ((p₀ + d) % M.W.n) = WalkEmbed.tourV Cα J d) :
     PieceWalk M Cα ⟨p₀, 0⟩ ⟨(p₀ + Cα.m) % M.W.n, 0⟩ := by
-  have h1 := Cα.one_le
   have ht := WalkEmbed.tpos_lt Cα J
   have hn' := WalkEmbed.cm_n Cα
   refine ⟨rfl, rfl, hp₀, rfl, ?_⟩
@@ -177,7 +174,7 @@ theorem pieceWalk_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hp₀ : p₀ < 
   · refine ⟨6 + WalkEmbed.tpos Cα J, by omega, Or.inl ?_⟩
     intro d hd
     rw [hV d hd, WalkEmbed.walk_tour Cα J d (by omega)]
-  · set L₁ := 2 * Cα.m - WalkEmbed.tpos Cα J with hL₁
+  · set L₁ := 2 * Cα.m - WalkEmbed.tpos Cα J
     refine ⟨6 + WalkEmbed.tpos Cα J, by omega, Or.inr ⟨L₁, by omega, by omega, by omega, ?_, ?_⟩⟩
     · intro d hd
       rw [hV d (by omega), WalkEmbed.walk_tour Cα J d (by omega)]

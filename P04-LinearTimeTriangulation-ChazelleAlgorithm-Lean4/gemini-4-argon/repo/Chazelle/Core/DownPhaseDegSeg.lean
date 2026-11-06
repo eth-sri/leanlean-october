@@ -132,11 +132,10 @@ theorem hit_mem_obsH (hS : GoodH R S t) {q : Point} (hq : q ∈ dom R S) {a : �
         by_contra hne
         have hlt : a < -R := lt_of_le_of_ne ha hne
         have := box_of_dom (hin (-R) (by
-          rw [min_eq_left (by linarith)]; exact hlt) (by
+          rwa [min_eq_left (by linarith)]) (by
           rw [max_eq_right (by linarith)]; linarith))
         simp only [abs_neg] at this
         exact lt_irrefl _ (this.1.trans_le (le_abs_self R))
-      have hR0 : 0 < R := by linarith
       refine seg_subset_obs hS.sideL ((mem_seg_iff (by simp only; linarith)).2
         ⟨by simp only; linarith, by simp only; linarith, ?_⟩)
       simp [xAt, haR]
@@ -145,9 +144,8 @@ theorem hit_mem_obsH (hS : GoodH R S t) {q : Point} (hq : q ∈ dom R S) {a : �
         have hlt : R < a := lt_of_le_of_ne ha (Ne.symm hne)
         have := box_of_dom (hin R (by
           rw [min_eq_right (by linarith)]; linarith) (by
-          rw [max_eq_left (by linarith)]; exact hlt))
+          rwa [max_eq_left (by linarith)]))
         exact lt_irrefl _ (this.1.trans_le (le_abs_self R))
-      have hR0 : 0 < R := by linarith
       refine seg_subset_obs hS.sideR ((mem_seg_iff (by simp only; linarith)).2
         ⟨by simp only; linarith, by simp only; linarith, ?_⟩)
       simp [xAt, haR]
@@ -178,15 +176,15 @@ theorem hit_wall (hS : GoodH R S t) {q : Point} {a : ℝ} (hobs : ((a, q.2) : Po
       · exact hne1 e
       · exact hne2 e
     rcases lt_or_gt_of_ne haq with hlt | hgt
-    · set x := min (max s.1.1 s.2.1) ((a + q.1) / 2) with hx
+    · set x := min (max s.1.1 s.2.1) ((a + q.1) / 2)
       have hx1 : a < x := lt_min hmax' (by linarith)
       have hx2 : x < q.1 := lt_of_le_of_lt (min_le_right _ _) (by linarith)
-      have hxD := hin x (by rw [min_eq_left hlt.le]; exact hx1) (by rw [max_eq_right hlt.le]; exact hx2)
+      have hxD := hin x (by rwa [min_eq_left hlt.le]) (by rwa [max_eq_right hlt.le])
       exact hxD.2 (seg_subset_obs hs ((mem_seg_flat hf).2 ⟨hy, by linarith, min_le_left _ _⟩))
-    · set x := max (min s.1.1 s.2.1) ((a + q.1) / 2) with hx
+    · set x := max (min s.1.1 s.2.1) ((a + q.1) / 2)
       have hx1 : x < a := max_lt hmin' (by linarith)
       have hx2 : q.1 < x := lt_of_lt_of_le (by linarith) (le_max_right _ _)
-      have hxD := hin x (by rw [min_eq_right hgt.le]; exact hx2) (by rw [max_eq_left hgt.le]; exact hx1)
+      have hxD := hin x (by rwa [min_eq_right hgt.le]) (by rwa [max_eq_left hgt.le])
       exact hxD.2 (seg_subset_obs hs ((mem_seg_flat hf).2 ⟨hy, le_max_left _ _, by linarith⟩))
 
 end HSegObs

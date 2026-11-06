@@ -94,7 +94,7 @@ theorem stopData_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' 
     (hlay : c.nreg sB + 5 * c.nreg sC ≤ c.nreg ALLOC ∧ c.nreg aB + 5 * c.nreg sC ≤ c.nreg ALLOC)
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) : StopData P J N₂ c' rs ax := by
   obtain ⟨hl, hlax, hSR, hAR, h5, h6, h7, h8⟩ := h
-  refine ⟨by rw [hsC]; exact hl, hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
+  refine ⟨by rwa [hsC], hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
   · rw [hsB, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega)]
     exact hSR i hi
   · rw [haB, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega)]

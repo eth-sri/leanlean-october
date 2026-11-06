@@ -48,12 +48,12 @@ theorem descWhole {m : ℕ → ℕ} {Q : Polygon} {H : Host} {C₁ C₂ : Chain}
     (e3 : m (B + 3) = if (C₂.top).2 ≤ (C₁.top).2 then C₁.topIdx else C₁.m + C₂.topIdx)
     (e4 : m (B + 4) = if (C₂.top).2 ≤ (C₁.top).2 then m (B₁ + 4) else m (B₂ + 4)) :
     ChainDescAt m B Q H (jOf C₁ C₂ h).whole := by
-  set J := jOf C₁ C₂ h with hJ
+  set J := jOf C₁ C₂ h
   have hl : J.left = C₁ := jOf_left C₁ C₂ h
   have hr : J.right = C₂ := jOf_right h hP hs
   obtain ⟨a0, a1, -, -, -, a5⟩ := h1
   obtain ⟨-, -, -, -, -, b5⟩ := h2
-  refine ⟨by rw [e0]; exact a0, by rw [jOf_whole_P]; exact a1, e1, e2, ?_, ?_⟩
+  refine ⟨by rwa [e0], by rwa [jOf_whole_P], e1, e2, ?_, ?_⟩
   · rw [e3, whole_topIdx J, hl, hr]; rfl
   · rw [e4, whole_sideBeta J, hl, hr]
     split_ifs

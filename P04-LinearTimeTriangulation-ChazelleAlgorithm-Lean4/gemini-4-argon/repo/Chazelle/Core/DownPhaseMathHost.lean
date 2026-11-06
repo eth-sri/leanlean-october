@@ -203,7 +203,7 @@ walk edge of the first one, after it, or it is the next walk vertex. -/
 theorem noInt_cases {n : ℕ} {x y : ℝ} (hx0 : 0 ≤ x) (hxn : x < n) (hy0 : 0 ≤ y) (hyn : y < n)
     (hxy : x ≠ y) (h : ∀ k : ℕ, k < n → ¬ sideInArc x y k) :
     (x < y ∧ ⌊y⌋₊ = ⌊x⌋₊) ∨ y = (((⌊x⌋₊ + 1) % n : ℕ) : ℝ) := by
-  set p := ⌊x⌋₊ with hp
+  set p := ⌊x⌋₊
   have hpx : (p : ℝ) ≤ x := Nat.floor_le hx0
   have hxp : x < p + 1 := Nat.lt_floor_add_one x
   have hpn : p < n := by
@@ -344,8 +344,8 @@ theorem rep_eval (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) (_hn
 theorem rep_edgeOK {li : Bool} (hdh : DistinctHeights Q) {i : ℕ}
     (hi : i < nk (interiorModel Q) S R) {s s' : SymPt} (hs : RepPt li Q S R i s)
     (hs' : RepPt li Q S R ((i + 1) % nk (interiorModel Q) S R) s') : HostEdgeOK Q.n s s' := by
-  set I := interiorModel Q with hI
-  set N := nk I S R with hN
+  set I := interiorModel Q
+  set N := nk I S R
   have hM : WalkAx I := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
@@ -362,9 +362,9 @@ theorem rep_edgeOK {li : Bool} (hdh : DistinctHeights Q) {i : ℕ}
   rcases gap_cases hM hF hfin hne hR (by omega) hi with hA | hC
   · -- an arc gap: the two keys are on one walk edge, or the second is the next walk vertex
     have hnoint : ∀ k : ℕ, k < Q.n → ¬ sideInArc x y k := fun k hk =>
-      arcGap_noInt hQ hFam hne hR hi hA k (by rw [hWn]; exact hk)
+      arcGap_noInt hQ hFam hne hR hi hA k (by rwa [hWn])
     have hxy : x ≠ y := hk_succ_ne hM hF hfin (by omega) hi
-    set p := ⌊x⌋₊ with hpdef
+    set p := ⌊x⌋₊
     have hp : p < Q.n := by
       have : (p : ℝ) < Q.n := lt_of_le_of_lt (Nat.floor_le hbx.1) hbx.2
       exact_mod_cast this
@@ -394,7 +394,7 @@ theorem rep_edgeOK {li : Bool} (hdh : DistinctHeights Q) {i : ℕ}
       · exact Or.inr rfl
     · -- `y` is the next walk vertex
       have hyfl : ⌊y⌋₊ = (p + 1) % Q.n := by rw [hyv, Nat.floor_natCast]
-      have hyint : y = ⌊y⌋₊ := by rw [hyfl]; exact hyv
+      have hyint : y = ⌊y⌋₊ := by rwa [hyfl]
       have hpm : ((p + 1) % Q.n + Q.n - 1) % Q.n = p := by
         have := prevIdx_succ (N := Q.n) hp
         unfold prevIdx at this; exact this
@@ -402,7 +402,7 @@ theorem rep_edgeOK {li : Bool} (hdh : DistinctHeights Q) {i : ℕ}
         rcases hs' with ⟨-, rfl⟩ | ⟨-, h', -, -, (⟨-, -, rfl⟩ | ⟨hn', -⟩)⟩
         · left; rw [hyfl]
         · right; exact ⟨h', by rw [hyfl, hpm]⟩
-        · exact absurd ⟨hyint, by rw [hprev]; exact hA⟩ hn'
+        · exact absurd ⟨hyint, by rwa [hprev]⟩ hn'
       rcases hs1 with rfl | ⟨h, rfl⟩ <;> rcases hs2 with rfl | ⟨h', rfl⟩
       · show ivB li Q.n ((p + 1) % Q.n) = (ivB li Q.n p + 1) % Q.n ∨
           ivB li Q.n p = (ivB li Q.n ((p + 1) % Q.n) + 1) % Q.n
@@ -442,7 +442,7 @@ theorem rep_edgeOK {li : Bool} (hdh : DistinctHeights Q) {i : ℕ}
     obtain ⟨e', h', rfl, hh', hyh'⟩ := key _ s' hs' hcuty
     left
     by_contra hne'
-    exact hdh h h' hh hh' hne' (by rw [hyh, hyh']; exact hY)
+    exact hdh h h' hh hh' hne' (by rwa [hyh, hyh'])
 
 end
 

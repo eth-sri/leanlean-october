@@ -229,8 +229,8 @@ theorem holeOut_congr {Q : Polygon} {z : Point} {c c' : Config}
     HoleOut M Q c' z := by
   obtain ⟨h9, hb, hcov, hnear⟩ := ho
   have hl := holeList_congr h
-  refine ⟨by rw [h _ (by norm_num) (by norm_num)]; exact h9, fun j hj => ?_, by rw [hl]; exact hcov,
-    by rw [hl]; exact hnear⟩
+  refine ⟨by rwa [h _ (by norm_num) (by norm_num)], fun j hj => ?_, by rwa [hl],
+    by rwa [hl]⟩
   have hj' : j < c.nreg 84009 := by rwa [h _ (by norm_num) (by norm_num)] at hj
   have h3 : j < 3 := by omega
   rw [h (84000 + 10 + 2 * j) (by omega) (by omega), h (84000 + 11 + 2 * j) (by omega) (by omega)]
@@ -348,16 +348,16 @@ theorem shotA_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
   rw [hdir] at hyes hno
   have hl3 : ShotList.holeList c₃ RS0 = ShotList.holeList c₂ 84000 :=
     holeList_congr (fun r h1 h2 => o₃.1 r (by simp [shW]; omega))
-  refine ⟨⟨by rw [v11]; exact hfl, c₃.nmem, c.nreg ALLOC, ShotList.holeList c₃ RS0, A, harr, ?_,
+  refine ⟨⟨by rwa [v11], c₃.nmem, c.nreg ALLOC, ShotList.holeList c₃ RS0, A, harr, ?_,
     ?_, ?_, fun h => ?_, fun h => ?_⟩, ?_, ?_⟩
   · rw [hl3]; exact hho.2.2.2
-  · have := hlo; rw [show c₃.nreg (RS0 + 1) = c.nreg ALLOC from h01,
-      show c₃.nreg (RS0 + 2) = K from h02] at this; exact this
-  · have := hhi; rw [show c₃.nreg (RS0 + 1) = c.nreg ALLOC from h01,
-      show c₃.nreg (RS0 + 2) = K from h02] at this; exact this
-  · obtain ⟨t, hfh, hpp, hpe, hpos⟩ := hyes (by show c₄.nreg 84020 = 1; rw [← v11]; exact h)
-    exact ⟨t, hfh, by rw [v12, v13]; exact hpp, by rw [v12]; exact hpe, by rw [v12, v13]; exact hpos⟩
-  · exact hno (by show c₄.nreg 84020 ≠ 1; rw [← v11]; exact h)
+  · have := hlo; rwa [show c₃.nreg (RS0 + 1) = c.nreg ALLOC from h01,
+      show c₃.nreg (RS0 + 2) = K from h02] at this
+  · have := hhi; rwa [show c₃.nreg (RS0 + 1) = c.nreg ALLOC from h01,
+      show c₃.nreg (RS0 + 2) = K from h02] at this
+  · obtain ⟨t, hfh, hpp, hpe, hpos⟩ := hyes (by show c₄.nreg 84020 = 1; rwa [← v11])
+    exact ⟨t, hfh, by rwa [v12, v13], by rwa [v12], by rwa [v12, v13]⟩
+  · exact hno (by show c₄.nreg 84020 ≠ 1; rwa [← v11])
   · rw [o₅.1 _ (by simp [hitW]), keep _ (by norm_num) (by norm_num), o₃.1 _ (by simp [shW]),
       k12 _ (by simp [holeL, chainHL]), ag₁ _ (by norm_num) (by norm_num) (by simp [buildL])]
   · rw [o₅.1 _ (by simp [hitW]), keep _ (by norm_num) (by norm_num), o₃.1 _ (by simp [shW]),

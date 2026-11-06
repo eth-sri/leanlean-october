@@ -69,10 +69,9 @@ theorem cut_out {P : Polygon} {ps : List Pc} {V0 V1 : ℝ} {m : ℕ → ℕ} {E 
         (interiorModel (Qof P)).key (Qof P) (ps[i + 1]'hi).s) ∧
       (∀ i (hi : i + 1 < ps.length), sideInArc ((interiorModel (Qof P)).key (Qof P) (ps[i]'(by omega)).s)
         ((interiorModel (Qof P)).key (Qof P) e) ((interiorModel (Qof P)).key (Qof P) (ps[i]'(by omega)).e)) := by
-  set M := interiorModel (Qof P) with hM
-  set Q := Qof P with hQd
+  set M := interiorModel (Qof P)
+  set Q := Qof P
   have hmi : M.W.n = Q.n := mi_n
-  have hQ : Q.n = P.n := qn'
   have hlen := List.length_pos_iff.2 hne
   have hn0 : (0 : ℝ) < Q.n := lt_of_le_of_lt hsb.1 hsb.2
   have hb : ∀ pc ∈ ps, (0 ≤ M.key Q pc.s ∧ M.key Q pc.s < Q.n) ∧
@@ -105,8 +104,7 @@ theorem cut_out {P : Polygon} {ps : List Pc} {V0 V1 : ℝ} {m : ℕ → ℕ} {E 
       obtain ⟨j', hj'⟩ := he
       exact ShootCut.key_eq_of_unw hn0 (hb _ (List.getLast_mem hne)).2 heb (i := j) (j := j')
         (by rw [← hj, ← hj'])
-    rw [hl] at this
-    exact this
+    rwa [hl] at this
 
 /-! ## The edges of the pieces of a slot -/
 
@@ -127,10 +125,10 @@ theorem slotOK_edges {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb :
   have hget : ∀ i (hi : i < ps.length), ps[i]'hi = rdPc m sl.L i := fun i hi => by
     simp [hps]
   have h0' : (chainModel C).key (Qof P) (ps[0]'(List.length_pos_iff.2 hne)).s =
-      (chainModel C).key (Qof P) sa := by rw [hget]; exact h0
+      (chainModel C).key (Qof P) sa := by rwa [hget]
   have hl' : (chainModel C).key (Qof P) (ps[ps.length - 1]'(by
       have := List.length_pos_iff.2 hne; omega)).e = (chainModel C).key (Qof P) ea := by
-    rw [hget, hlen]; exact hl
+    rwa [hget, hlen]
   have hc' : ∀ i (hi : i + 1 < ps.length), (chainModel C).key (Qof P) (ps[i]'(by omega)).e =
       (chainModel C).key (Qof P) (ps[i + 1]'hi).s := fun i hi => by
     rw [hget, hget]; exact hc i (by omega)
@@ -217,7 +215,7 @@ theorem SlotSt.keep {P : Polygon} {Hγ Gγ e₁ : ℕ} {V0 V : ℝ} {k : ℕ} {c
     SlotSt P Hγ Gγ e₁ V0 V k c' := by
   have hs : slotsOf c' 4 = slotsOf c 4 := slotsOf_congr (fun j f hj hf => hr _ (by omega)
     (by omega))
-  refine ⟨?_, fun j h1 h2 => ?_, fun j hj => ?_, fun sl hsl => h.qG sl (by rw [← hs]; exact hsl)⟩
+  refine ⟨?_, fun j h1 h2 => ?_, fun j hj => ?_, fun sl hsl => h.qG sl (by rwa [← hs])⟩
   · rw [hs]; exact h.ok.keep hm ha
   · rw [hr _ (by omega) (by omega)]; exact h.free j h1 h2
   · rw [hr _ (by omega) (by omega)]; exact h.bit j hj

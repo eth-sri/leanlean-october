@@ -154,16 +154,16 @@ theorem pcV_tr {P : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch (Qof
     PcV P (interiorModel (Qof P)) m E Hγ (trPc (Qof P).n u₀ g₀ pc) := by
   have hQ : (Qof P).n = P.n := qn'
   obtain ⟨sP, eP, sE, eE, hk, h0, h1⟩ := hv
-  have sP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.s := by rw [hQ]; exact sP
-  have eP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.e := by rw [hQ]; exact eP
+  have sP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.s := by rwa [hQ]
+  have eP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.e := by rwa [hQ]
   have hs1 : (chainModel C).key (Qof P) pc.s ≤ g₀ + ℓ := hse.le.trans he1
   have he0 : (g₀ : ℝ) ≤ (chainModel C).key (Qof P) pc.e := hs0.trans hse.le
   obtain ⟨-, sPI, sEI, -⟩ := trP_spec S sP' hs0 hs1
   obtain ⟨-, ePI, eEI, -⟩ := trP_spec S eP' he0 he1
   obtain ⟨hset, hwt⟩ := trP_arc S sP' eP' hs0 he1 hse
   have hmi : (interiorModel (Qof P)).W.n = (Qof P).n := mi_n
-  refine ⟨by rw [← hQ]; exact sPI, by rw [← hQ]; exact ePI, by rw [hmi]; exact sEI,
-    by rw [hmi]; exact eEI, hk, fun hk0 => ?_, fun hk1 => ?_⟩
+  refine ⟨by rwa [← hQ], by rwa [← hQ], by rwa [hmi],
+    by rwa [hmi], hk, fun hk0 => ?_, fun hk1 => ?_⟩
   · show (interiorModel (Qof P)).arcWt _ _ ≤ 1
     rw [show (trPc (Qof P).n u₀ g₀ pc).s = trP (Qof P).n u₀ g₀ pc.s from rfl,
       show (trPc (Qof P).n u₀ g₀ pc).e = trP (Qof P).n u₀ g₀ pc.e from rfl, hwt]

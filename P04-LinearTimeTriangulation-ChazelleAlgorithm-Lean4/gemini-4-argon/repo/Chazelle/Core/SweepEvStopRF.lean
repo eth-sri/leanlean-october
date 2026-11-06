@@ -137,10 +137,10 @@ theorem orgMain_irs {m2 m1 : Stmt → Stmt} {fin : Stmt} {κ2 κ1 κF : ℕ → 
         (if c.nreg oKd = 1 then 1 else N₁.nChords + N₂.nChords + 1) *
         (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1))))
       (OrgOut P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB) c) := by
-  set kind := c.nreg oKd with hkind
-  set k := c.nreg oKk with hk
-  set b := c.nreg oB with hb
-  set a := stOrig J (Qof P) N₂ kind k b with ha
+  set kind := c.nreg oKd
+  set k := c.nreg oKk
+  set b := c.nreg oB
+  set a := stOrig J (Qof P) N₂ kind k b
   obtain ⟨-, ha2, -, -, -⟩ := stOrig_facts E.hP E.hNF₂ hD.ok
   -- 1. the candidate of `C₂`
   refine IRS.seq (H2 sh Bs F X Ok P W c₀ c J N₁ N₂ E hI hM hD hpos (by omega)) ?_
@@ -156,9 +156,9 @@ theorem orgMain_irs {m2 m1 : Stmt → Stmt} {fin : Stmt} {κ2 κ1 κF : ℕ → 
   have c2PE : c₂.nreg oPE = c.nreg oPE := n2 _ (by unfold oPE sw; omega) (by unfold oPE sw; omega)
   have c2PH : c₂.nreg oPH = c.nreg oPH := n2 _ (by unfold oPH sw; omega) (by unfold oPH sw; omega)
   have hD₂ : OrgD P J N₂ (c₂.nreg oKd) (c₂.nreg oKk) (c₂.nreg oB) := by
-    rw [c2Kd, c2Kk, c2B]; exact hD
+    rwa [c2Kd, c2Kk, c2B]
   have hpos₂ : OrgPos P J N₂ (c₂.nreg oKd) (c₂.nreg oKk) (c₂.nreg oB) (c₂.nreg oPE)
-      (c₂.nreg oPH) := by rw [c2Kd, c2Kk, c2B, c2PE, c2PH]; exact hpos
+      (c₂.nreg oPH) := by rwa [c2Kd, c2Kk, c2B, c2PE, c2PH]
   -- 2. the candidate of `C₁`
   refine IRS.seq ((H1 sh Bs F X Ok P W c₀ c₂ J N₁ N₂ E hI₂ hD₂ hpos₂ (by rw [c2Kd]; omega)).mono
     (by rw [c2Kd]) (fun _ h => h)) ?_
@@ -195,7 +195,7 @@ theorem orgMain_irs {m2 m1 : Stmt → Stmt} {fin : Stmt} {κ2 κ1 κF : ℕ → 
   have c4RB : c₄.nreg gRB = c.nreg gRB := n4 _ (by unfold gRB; omega) (by unfold gRB sw; omega)
   have c4RC : c₄.nreg gRC = c.nreg gRC := n4 _ (by unfold gRC sw; omega) (by unfold gRC sw; omega)
   have hD₄ : OrgD P J N₂ (c₄.nreg oKd) (c₄.nreg oKk) (c₄.nreg oB) := by
-    rw [c4Kd, c4Kk, c4B]; exact hD
+    rwa [c4Kd, c4Kk, c4B]
   have hpre : FinPre P J N₂ (c₄.nreg oKd) (c₄.nreg oKk) (c₄.nreg oB) c₄ := by
     rw [c4Kd, c4Kk, c4B]
     have f1 : c₄.nreg (oF0 + 1) = c.nreg (oF0 + 1) :=
@@ -217,7 +217,7 @@ theorem orgMain_irs {m2 m1 : Stmt → Stmt} {fin : Stmt} {κ2 κ1 κF : ℕ → 
     rw [p1, p2]
     exact par2 hk1 (free_right hD.free ha2)
   have hAl : c.nreg ALLOC ≤ c₄.nreg ALLOC := by omega
-  refine (HF sh Bs F X Ok P W c₀ c₄ J N₁ N₂ E hI₄ hD₄ hpre (by rw [c4RB]; exact hR0)
+  refine (HF sh Bs F X Ok P W c₀ c₄ J N₁ N₂ E hI₄ hD₄ hpre (by rwa [c4RB])
     (by rw [c4RB, c4RC]; omega) (by rw [c4Kd]; omega)).mono (by rw [c4Kd]) ?_
   intro c' hout
   rw [c4Kd, c4Kk, c4B] at hout
@@ -243,7 +243,6 @@ theorem org_cost_le (κ2 κ1 κF : ℕ → ℕ) (D M G : ℕ) (hM : 1 ≤ M) (hG
     unfold κOrg; ring
   have h2 : κ2 D * G ≤ κ2 D * (M * G) :=
     Nat.mul_le_mul_left _ (by nlinarith)
-  have h0 : 70663 ≤ 70663 * (M * G) := by omega
   omega
 
 set_option maxHeartbeats 2000000 in
@@ -254,16 +253,16 @@ theorem orgTask_of' (h2 : M2Task) (h1 : M1Task) (hF : FinTask) : OrgTask := by
   obtain ⟨fin, κF, HF⟩ := hF
   refine ⟨orgProg m2 m1 fin, κOrg κ2 κ1 κF, ?_⟩
   intro sh Bs F X Ok P W c₀ c J N₁ N₂ E hI hM hkd hb hk hR0 hR1 hroom
-  set D := c₀.nreg (sw 6) with hD
-  set G := F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1 with hG
+  set D := c₀.nreg (sw 6)
+  set G := F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1
   set M := (if c.nreg oKd = 1 then 1 else N₁.nChords + N₂.nChords + 1) with hMdef
   have hM1 : 1 ≤ M := by rw [hMdef]; split_ifs <;> omega
   have hG1 : 1 ≤ G := by omega
   have hcost := org_cost_le κ2 κ1 κF D M G hM1 hG1
-  set Km := κ2 D * G + (κ1 D * M * G + (35600 + κF D * M * G)) with hKm
-  set kind := c.nreg oKd with hkind
-  set k := c.nreg oKk with hkk
-  set b := c.nreg oB with hbb
+  set Km := κ2 D * G + (κ1 D * M * G + (35600 + κF D * M * G))
+  set kind := c.nreg oKd
+  set k := c.nreg oKk
+  set b := c.nreg oB
   have hK := E.hK.fix hI
   unfold orgProg
   refine (IRS.seq (K₁ := 30) (K₂ := 35029 + (Km + 2) + 2) (stLoad_irs E hI hkd hb hk (by
@@ -330,12 +329,12 @@ theorem orgTask_of' (h2 : M2Task) (h1 : M1Task) (hF : FinTask) : OrgTask := by
               (by simp only [StAW, CvSet, oXE, cX, cT, cDd, oF0, gMD2, gCD2, TBR, TLR, sw]; omega)
               (by simp only [ALLOC, gMD2, gCD2, TBR, TLR, sw]; omega)
       have hD₂ : OrgD P J N₂ (c₂.nreg oKd) (c₂.nreg oKk) (c₂.nreg oB) := by
-        rw [c2Kd, c2Kk, c2B]; exact hDo
+        rwa [c2Kd, c2Kk, c2B]
       have hpos₂ : OrgPos P J N₂ (c₂.nreg oKd) (c₂.nreg oKk) (c₂.nreg oB) (c₂.nreg oPE)
-          (c₂.nreg oPH) := by rw [c2Kd, c2Kk, c2B, c2PE, c2PH]; exact hpos
+          (c₂.nreg oPH) := by rwa [c2Kd, c2Kk, c2B, c2PE, c2PH]
       have hA0 := f3 hF1
       have hmain := orgMain_irs (sh := sh) H2 H1 HF E hI₂ hM₂ hD₂ hpos₂ (by rw [c2NB, c2B])
-        (by rw [c2Kd, c2Kk, c2B]; exact hA0) (by rw [c2RB]; exact hR0) (by rw [c2RB, c2RC]; omega)
+        (by rwa [c2Kd, c2Kk, c2B]) (by rwa [c2RB]) (by rw [c2RB, c2RC]; omega)
         (by rw [c2Kd]; show c₂.nreg ALLOC + Km ≤ W; omega)
       rw [c2Kd, c2Kk, c2B] at hmain
       refine hmain.mono le_rfl (fun c' hout => OrgOut.lift hout c2RC c2RB (by omega) hmem2 fr2S)

@@ -40,7 +40,7 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
   obtain ⟨rX, rO⟩ := ssRd_val d.nmem d.nreg
   have e₁ := exec_regB (P := P) ssRd hw (by
     simp only [ssRd, okW, okWI]; exact ⟨by rw [hsb, hqj]; omega, trivial, trivial⟩)
-  set d₁ : Config := { d with nreg := regB d.nmem ssRd d.nreg } with hd₁
+  set d₁ : Config := { d with nreg := regB d.nmem ssRd d.nreg }
   set x := L.getD j 0 with hxd
   have hxL : L[j]? = some x := by
     rw [hxd, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]; rfl
@@ -81,14 +81,14 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
       rw [upd_other _ _ _ (by ssoSrt), upd_other _ _ _ (by ssoSrt), j₃, k₃]; omega)
     have ko : ∀ r, r ≠ srP → r ≠ srJ → regB d₃.nmem ssAdv d₃.nreg r = d₃.nreg r := vo
     refine ⟨_, e, e.wb_right, by show regB _ _ _ srJ = _; rw [vJ, j₃, k₃], ?_, ?_, ?_, ?_, m₃,
-      ⟨O', D₃, by show regB _ _ _ sC = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact C₃, l₃,
+      ⟨O', D₃, by show regB _ _ _ sC = _; rwa [ko _ (by ssoSrt) (by ssoSrt)], l₃,
         fun _ => ⟨x, by simpa using hxL, by show regB _ _ _ srP = _; rw [vP, x₃]⟩, st₃, ax₃⟩,
       fun r h1 h2 h3 => ?_, rr₃, rm₃, o₃⟩
     · exact ssCtx_keep c₃ (fun r _ _ h _ => ko r (by rintro rfl; simp only [srP, sw] at h; omega)
         (by rintro rfl; simp only [srJ, sw] at h; omega)) (fun _ _ => rfl)
-    · show regB _ _ _ srSB = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact sb₃
-    · show regB _ _ _ sB = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact b1₃
-    · show regB _ _ _ aB = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact b2₃
+    · show regB _ _ _ srSB = _; rwa [ko _ (by ssoSrt) (by ssoSrt)]
+    · show regB _ _ _ sB = _; rwa [ko _ (by ssoSrt) (by ssoSrt)]
+    · show regB _ _ _ aB = _; rwa [ko _ (by ssoSrt) (by ssoSrt)]
     · show regB _ _ _ r = _
       rw [ko r (by rintro rfl; simp only [srP, sw] at h2; omega) (by rintro rfl; simp only [srJ, sw] at h2; omega)]
       exact g₃ r h1 h2 h3
@@ -109,14 +109,14 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
     have kb : ∀ q, 240000 ≤ q → q < 250000 → (q < sw 3003 ∨ sw 3016 < q) → q ≠ sC →
         d₂.nreg q = d.nreg q := fun q a b h hs => k₂ q (not_oracle_sw a b) h hs
     obtain ⟨d', ex', hI'⟩ := adv d₂ ([] ++ [x]) e₂.wb_right
-      (by rw [r₂ srX (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)
-        (by ssoSrt)]; exact q1X)
+      (by rwa [r₂ srX (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)
+        (by ssoSrt)])
       (by rw [r₂ srJ (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt), qJ₁])
-      (by rw [kb K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact j1)
+      (by rwa [kb K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)])
       (ssCtx_keep hctx kb (fun a ha => by rw [m₂ a (by omega)]))
-      (by rw [r₂ srSB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt), q1o srSB (by ssoSrt) (by ssoSrt)]; exact hsb)
-      (by rw [kb sB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hb1)
-      (by rw [kb aB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hb2)
+      (by rwa [r₂ srSB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt), q1o srSB (by ssoSrt) (by ssoSrt)])
+      (by rwa [kb sB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)])
+      (by rwa [kb aB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)])
       (fun a ha => by rw [m₂ a ha]; exact hmem a ha)
       ((hD.step hLs hxL).1 (Or.inl rfl)) sC₂ (by simp) st₂ ax₂
       (fun r ho h hs => (k₂ r ho h hs).trans (hregs r ho h hs))
@@ -140,7 +140,7 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
     have e₂ := exec_regB (P := P) [.copyN 30000 srX, .copyN 30001 srP] hw₁ (by
       simp only [okW, okWI]; exact ⟨trivial, trivial, trivial⟩)
     set d₂ : Config := { d₁ with
-      nreg := regB d₁.nmem [.copyN 30000 srX, .copyN 30001 srP] d₁.nreg } with hd₂
+      nreg := regB d₁.nmem [.copyN 30000 srX, .copyN 30001 srP] d₁.nreg }
     have k₂ : ∀ r, r ≠ 30000 → r ≠ 30001 → d₂.nreg r = d₁.nreg r := co
     have hw₂ := e₂.wb_right
     have hctx₂ : SsCtx J d2 RB S A₀ m₀ d₂ := ssCtx_keep hctx₁ (fun r a _ _ _ =>
@@ -172,14 +172,14 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
       obtain ⟨d', ex', hI'⟩ := adv d₃ O e₃.wb_right qX₃
         (by rw [k₃ srJ (kb _ (by ssoSrt) (by ssoSrt)), k₂ srJ (by ssoSrt) (by ssoSrt), qJ₁])
         hctx₃.2.2.2.2.2.1 hctx₃
-        (by rw [k₃ srSB (kb _ (by ssoSrt) (by ssoSrt)), k₂ srSB (by ssoSrt) (by ssoSrt), q1o srSB (by ssoSrt) (by ssoSrt)]; exact hsb)
-        (by rw [k31 sB (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hb1)
-        (by rw [k31 aB (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hb2)
+        (by rwa [k₃ srSB (kb _ (by ssoSrt) (by ssoSrt)), k₂ srSB (by ssoSrt) (by ssoSrt), q1o srSB (by ssoSrt) (by ssoSrt)])
+        (by rwa [k31 sB (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)])
+        (by rwa [k31 aB (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)])
         (fun a ha => by rw [hm₃' a]; exact hmem a ha)
         ((hD.step hLs hxL).2 ⟨by omega, fun y hy => by
           rw [hx'] at hy; cases hy; exact heq⟩)
-        (by rw [k31 sC (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hC) (by omega)
-        (by rw [hm₃]; exact hst) (by rw [hm₃]; exact hax)
+        (by rwa [k31 sC (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]) (by omega)
+        (by rwa [hm₃]) (by rwa [hm₃])
         (fun r ho h _ => (k31 r ho h).trans (hregs r ho h (by
           rintro rfl; exact absurd h (by unfold sC sw; omega))))
         (fun r ho => by
@@ -195,13 +195,13 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
         rw [hx'] at hy; cases hy
         exact hle (by rw [← h]; exact Or.inr ⟨rfl, le_rfl⟩)
       have sC₃ : d₃.nreg sC = O.length := by
-        rw [k31 sC (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hC
+        rwa [k31 sC (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]
       obtain ⟨d₄, k₄, e₄, hk₄, sC₄, st₄, ax₄, m₄, r₄, rr₄, rm₄, o₄⟩ := ssWr_step (P := P) (O := O)
         e₃.wb_right hS hAB hroom hctx₃
-        (by rw [k31 sB (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hb1)
-        (by rw [k31 aB (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hb2)
+        (by rwa [k31 sB (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)])
+        (by rwa [k31 aB (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)])
         (fun a ha => (hm₃' a).trans (hmem a ha)) qX₃ hxS sC₃ hOS
-        (by rw [hm₃]; exact hst) (by rw [hm₃]; exact hax)
+        (by rwa [hm₃]) (by rwa [hm₃])
       have k₄ : ∀ r, bandOf r ∉ oracleBands → (r < sw 3003 ∨ sw 3016 < r) → r ≠ sC →
           d₄.nreg r = d.nreg r := fun r ho h hs => by
         rw [r₄ r (by rintro rfl; simp only [sr1, sw] at h; omega) (by rintro rfl; simp only [sr2, sw] at h; omega)
@@ -212,15 +212,15 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
       have kb4 : ∀ q, 240000 ≤ q → q < 250000 → (q < sw 3003 ∨ sw 3016 < q) → q ≠ sC →
           d₄.nreg q = d.nreg q := fun q a b h hs => k₄ q (not_oracle_sw a b) h hs
       obtain ⟨d', ex', hI'⟩ := adv d₄ (O ++ [x]) e₄.wb_right
-        (by rw [r₄ srX (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)
-          (by ssoSrt)]; exact qX₃)
+        (by rwa [r₄ srX (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)
+          (by ssoSrt)])
         (by rw [r₄ srJ (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt), k₃ srJ (kb _ (by ssoSrt) (by ssoSrt)), k₂ srJ (by ssoSrt) (by ssoSrt), qJ₁])
-        (by rw [kb4 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact j1)
+        (by rwa [kb4 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)])
         (ssCtx_keep hctx kb4 (fun a ha => by rw [m₄ a (by omega), hm₃' a]))
-        (by rw [r₄ srSB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt), k₃ srSB (kb _ (by ssoSrt) (by ssoSrt)), k₂ srSB (by ssoSrt) (by ssoSrt),
-          q1o srSB (by ssoSrt) (by ssoSrt)]; exact hsb)
-        (by rw [kb4 sB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hb1)
-        (by rw [kb4 aB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hb2)
+        (by rwa [r₄ srSB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt), k₃ srSB (kb _ (by ssoSrt) (by ssoSrt)), k₂ srSB (by ssoSrt) (by ssoSrt),
+          q1o srSB (by ssoSrt) (by ssoSrt)])
+        (by rwa [kb4 sB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)])
+        (by rwa [kb4 aB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)])
         (fun a ha => by rw [m₄ a ha, hm₃' a]; exact hmem a ha)
         ((hD.step hLs hxL).1 (Or.inr hne)) sC₄ (by simp; omega) st₄ ax₄
         (fun r ho h hs => (k₄ r ho h hs).trans (hregs r ho h hs))

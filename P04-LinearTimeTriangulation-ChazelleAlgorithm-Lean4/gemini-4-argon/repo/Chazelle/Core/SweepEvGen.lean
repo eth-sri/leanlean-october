@@ -62,9 +62,6 @@ theorem genK_le (Fg D T : ℕ) : genK Fg D T ≤ κGen D * (Fg + T + 1) := by
   have e2 : (A + B + 50000) * (Fg + T + 1) =
       A * Fg + A * T + A + B * Fg + B * T + B + 50000 * Fg + 50000 * T + 50000 := by ring
   rw [e1, e2]
-  have := Nat.zero_le (A * Fg)
-  have := Nat.zero_le (A * T)
-  have := Nat.zero_le (B * T)
   omega
 
 theorem dirOf_pm (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := by
@@ -83,9 +80,9 @@ set_option maxRecDepth 40000 in
 theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
     GenOK P W c₀ J (mkG sh) (κGen (c₀.nreg (sw 6)) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1)) := by
   intro c₁ a σ τ hI₁ hroom hD hσ habs haR hav ha₁ hτ he hpp harr
-  set Fg := F (c₀.nreg (sw 5)) with hFg
-  set D := c₀.nreg (sw 6) with hDd
-  set T := c₀.nreg TLR with hTd
+  set Fg := F (c₀.nreg (sw 5))
+  set D := c₀.nreg (sw 6)
+  set T := c₀.nreg TLR
   have hgk : 9 + (42030 + (localK T Fg (D + 1) D + (269 + 2))) ≤ κGen D * (Fg + T + 1) :=
     genK_le Fg D T
   have hσ' : σ = 1 ∨ σ = -1 := by rw [hσ]; exact dirOf_pm _
@@ -95,11 +92,11 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
   have hay : |a.2| < J.left.radius := by
     rw [hR]
     exact lt_of_le_of_lt (J.right.abs_le_coordBound_of_mem_set haR).2 J.right.coordBound_lt_radius
-  set x : WPos := ⟨c₁.nreg (eA + 1), c₁.nreg (eA + 2)⟩ with hxd
-  set w := rayPt a σ τ with hwd
+  set x : WPos := ⟨c₁.nreg (eA + 1), c₁.nreg (eA + 2)⟩
+  set w := rayPt a σ τ
   have hw2 : w.2 = a.2 := rfl
   obtain ⟨hposx, hcl, hloc, hwD⟩ := arr_facts (N := P.n) (x := x) he hpp harr
-    (by rw [hw2]; exact hay) (by rw [hw2]; exact ha₁)
+    (by rwa [hw2]) (by rwa [hw2])
   have haD : a ∈ J.left.dom := origin_mem_left_dom E.hP haR hav ha₁
   have hrev : dirOf (1 - c₁.nreg oD) = -σ := by
     rw [hσ, ← dirOf_rev hD, neg_neg]
@@ -113,7 +110,7 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
     rw [hc₂]; exact vo q h h'
   have m₂ : c₂.nmem = c₁.nmem := by rw [hc₂]
   have r2 : ∀ r, ∀ v, regB c₁.nmem gSetL c₁.nreg r = v → c₂.nreg r = v := fun r v h => by
-    rw [hc₂]; exact h
+    rwa [hc₂]
   have hK₁ := E.hK.fix hI₁
   have s2E : c₂.nreg lE = x.edge := r2 _ _ v4
   have s2H : c₂.nreg lH = x.hgt := r2 _ _ v5
@@ -131,24 +128,24 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
     rw [(E.hM.fix hI₂).n1, WalkEmbed.cm_n]
   refine IRS.seq (K₁ := 42030) (K₂ := localK T Fg (D + 1) D + (269 + 2))
     (gHgt_irs hI₂ E.hK hctx₂ hn₂ (x := x) s2E s2H he hpp hcl
-      (by rw [hposx, hw2]; exact hay) (by omega) (by omega)) ?_
+      (by rwa [hposx, hw2]) (by omega) (by omega)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨k, s3E, s3H, hkl, hkh, hkpar, hkpos, hkpp, k3, hA₃'', m₃⟩
-  set xs : WPos := ⟨x.edge, k + 1⟩ with hxs
+  set xs : WPos := ⟨x.edge, k + 1⟩
   have k3' : ∀ r, r ≠ lH → 241000 ≤ r → r < 242200 → (r < sw 720 ∨ sw 726 < r) →
       c₃.nreg r = c₂.nreg r := fun r h1 h2 h3 h4 =>
     k3 r (not_oracle_sw (by omega) (by omega)) h1 h4 (by unfold ALLOC; omega)
   have s3D : c₃.nreg lD = 1 - c₁.nreg oD := by
-    rw [k3' lD (by unfold lD lH sw; omega) (by unfold lD sw; omega) (by unfold lD sw; omega)
-      (Or.inr (by unfold lD sw; omega))]; exact s2D
+    rwa [k3' lD (by unfold lD lH sw; omega) (by unfold lD sw; omega) (by unfold lD sw; omega)
+      (Or.inr (by unfold lD sw; omega))]
   have s3N : c₃.nreg lN = 2 * J.left.m + 7 := by
-    rw [k3' lN (by unfold lN lH sw; omega) (by unfold lN sw; omega) (by unfold lN sw; omega)
-      (Or.inr (by unfold lN sw; omega))]; exact s2N
+    rwa [k3' lN (by unfold lN lH sw; omega) (by unfold lN sw; omega) (by unfold lN sw; omega)
+      (Or.inr (by unfold lN sw; omega))]
   have s3T : c₃.nreg lT = 0 := by
-    rw [k3' lT (by unfold lT lH sw; omega) (by unfold lT sw; omega) (by unfold lT sw; omega)
-      (Or.inr (by unfold lT sw; omega))]; exact s2T
+    rwa [k3' lT (by unfold lT lH sw; omega) (by unfold lT sw; omega) (by unfold lT sw; omega)
+      (Or.inr (by unfold lT sw; omega))]
   have s3A : c₃.nreg accA = 0 := by
-    rw [k3' accA (by unfold accA lH sw; omega) (by unfold accA sw; omega)
-      (by unfold accA sw; omega) (Or.inr (by unfold accA sw; omega))]; exact s2A
+    rwa [k3' accA (by unfold accA lH sw; omega) (by unfold accA sw; omega)
+      (by unfold accA sw; omega) (Or.inr (by unfold accA sw; omega))]
   have s3MD : c₃.nreg lMD = c₃.nreg MD₁ := by
     rw [k3' lMD (by unfold lMD lH sw; omega) (by unfold lMD sw; omega) (by unfold lMD sw; omega)
       (Or.inr (by unfold lMD sw; omega)), s2MD, hI₁.hin _ (by unfold IFix MD₁ sw; omega),
@@ -169,10 +166,10 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
     { hG := E.hG
       hWh := E.hWh
       hctx := (E.ctx1' hI₃).transport s3CD (fun _ _ => rfl) le_rfl
-      hcd := by rw [s3CD, s3MD]; exact md4
-      hmd := by rw [s3MD]; exact md1
-      hmwf := by rw [s3MD]; exact md2
-      hm0 := by rw [s3MD]; exact md3
+      hcd := by rwa [s3CD, s3MD]
+      hmd := by rwa [s3MD]
+      hmwf := by rwa [s3MD]
+      hm0 := by rwa [s3MD]
       hP := E.hP
       hNW := by
         rw [s3NF]
@@ -190,7 +187,7 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
   have hposxs : (chainModel J.left).pos (Qof P) xs = w := hkpos.trans hposx
   have hlocs : (xs.edge = 1 ∨ xs.edge = 3) ∨
       (6 ≤ xs.edge ∧ (chainModel J.left).pos (Qof P) xs ∈ J.left.set) := by
-    rw [hkpos]; exact hloc
+    rwa [hkpos]
   have hacc : AccOK P accA (fun _ => J.left) J.left.radius
       ((chainModel J.left).pos (Qof P) xs) (dirOf (1 - c₁.nreg oD)) ∅ c₃ :=
     accOK_init accA _ _ _ _ s3A
@@ -198,13 +195,13 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
     ((localHit_irs (C := J.left) (N := N₁) (Mod := fun _ => J.left) (R₀ := J.left.radius)
       (L := ∅) (Da := D + 1) (Dc := D) (x := xs) (d := 1 - c₁.nreg oD)
       E.hsh E.hBs E.hXl hI₃ E.hK hL₃ E.hX E.hcap E.hOk₁ E.hsg₁ hAr hCh s3E s3H s3D he hkpp
-      (by rw [hposxs, hw2]; exact hay) hlocs hacc (by rw [s3T]; omega) rfl rfl s3N
+      (by rwa [hposxs, hw2]) hlocs hacc (by rw [s3T]; omega) rfl rfl s3N
       (by rw [hTLR₃]; show c₃.nreg ALLOC + localK T Fg (D + 1) D ≤ W; omega)).mono
         (by rw [hTLR₃]) (fun _ h => h)) ?_
   rintro c₄ hI₄ hA₄ hA₄' ⟨⟨L', hacc', -, hL', hgeo⟩, k4, hA₄'', m₄⟩
   -- the reverse hit
   have hgeo' : LHGeo P J.left xs (1 - c₁.nreg oD) := by
-    refine ⟨k, rfl, hkl, by rw [hkpos]; exact hkh, ?_, by rw [hposxs, hw2]; exact ha₁⟩
+    refine ⟨k, rfl, hkl, by rwa [hkpos], ?_, by rwa [hposxs, hw2]⟩
     rw [hposxs, hrev]
     show sideLeft (chainModel J.left).W x.edge ((chainModel J.left).param (Qof P) xs) _
     rw [hkpar]
@@ -215,12 +212,11 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
   have hflag : c₄.nreg accA = 1 := by
     by_contra hne
     have h0 : c₄.nreg accA = 0 := by omega
-    rw [hf0 h0] at hmem
-    exact hmem
+    rwa [hf0 h0] at hmem
   obtain ⟨τm, hτm, hmin, -, -, -, -, habsH⟩ := hf hflag
   have hσ'' : -σ = 1 ∨ -σ = -1 := by rcases hσ' with h | h <;> rw [h] <;> norm_num
   have hτeq : τm = J.left.hitParam w (-σ) :=
-    lh_min hσ'' (by rw [hw2]; exact ha₁) (fun t ht => by
+    lh_min hσ'' (by rwa [hw2]) (fun t ht => by
       rcases hL' t ht with h | h
       · exact absurd h (Set.notMem_empty t)
       · exact h) hfree hmem hτm hmin

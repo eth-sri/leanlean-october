@@ -116,8 +116,7 @@ theorem log_sorted (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {i j : ℕ} (hij : 
   rw [aenv_gW hA]
   unfold logPos Model.key
   simp only
-  rw [m1, m2, n1, n2]
-  exact hp
+  rwa [m1, m2, n1, n2]
 
 /-- The PosW facts of the log records. -/
 theorem log_posW (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {i : ℕ} (hi : i < rd c₀ bSweep 301) :
@@ -234,7 +233,7 @@ theorem stop_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N
   obtain ⟨hc, -⟩ := stop_cand J hA.hNF₂ hS hr hk hk1
   refine ⟨i, hi, ?_, e2.trans hr2, e3, ?_⟩
   · unfold logPos; simp only; rw [e1]
-  · rw [hr2, hr1, harr.2.2.2.1] at hc; exact hc
+  · rwa [hr2, hr1, harr.2.2.2.1] at hc
 
 /-- **A regular table entry at the query position** is attached at a log record with that
 position, whose slot (of its direction) is flagged; its origin is a candidate origin of `z`. -/
@@ -267,7 +266,7 @@ theorem tab_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   obtain ⟨hc, -⟩ := tab_cand J hTab hj hv.1 hv.2.1 hv.2.2 hT
   refine ⟨i, hi, ?_, e2, e3, ?_⟩
   · unfold logPos; simp only; rw [e1]
-  · rw [harr.2.2.2.1] at hc; exact hc
+  · rwa [harr.2.2.2.1] at hc
 
 end
 

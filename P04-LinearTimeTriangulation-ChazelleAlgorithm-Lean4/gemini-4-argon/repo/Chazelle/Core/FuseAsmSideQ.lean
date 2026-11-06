@@ -74,7 +74,7 @@ theorem sideQ₀_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
       (∀ r, Bside 70150 r = false → c'.nreg r = c.nreg r) ∧
       (∀ r, BR r = false → c'.rreg r = c.rreg r) ∧ c'.rmem = c.rmem ∧
-      c'.output = c.output ∧ c'.nreg 70105 = 1 ∧ c'.nreg 70108 = 0 ∧ CapRegs P J c' ∧
+      c'.output = c.output ∧ CapRegs P J c' ∧
       PtAns J (Qof P) 0 (J.whole.vertex J.m₁) 1 v₁ ∧
       PtAns J (Qof P) 0 (J.whole.vertex J.m₁) (-1) v₀ ∧
       PtAns J (Qof P) 0 (J.whole.vertex J.left.topIdx) 1 t₁ ∧
@@ -102,7 +102,7 @@ theorem sideQ₀_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   obtain ⟨c₂, k₂, v₁, v₀, e₂, hk₂, hk₂', hv₁, hv₀, a₂, n₂, L₂, m₂, r₂, rr₂, rm₂, ou₂, pv₁, pv₀⟩ :=
     vtxPts_exec (P := P) c₁ w₁ hG hHW (D := 70000) (off := 2) (by norm_num) (by norm_num) sw0 J 0
       sd0 hF.simple (kk := J.m₁) sd0.2.2.2.1 (by show J.m₁ ≤ J.m₁; exact le_rfl) o05 o08
-      (LB := A₀) (pre := pre) (by rw [a₁, hA₀]) n₁ (by rw [← hA₀]; exact L₁)
+      (LB := A₀) (pre := pre) (by rw [a₁, hA₀]) n₁ (by rwa [← hA₀])
       (by rw [a₁, show vtxCost = 74000 from rfl]; clear * - hroom hlenpre; omega)
       (by clear * - hroom hlenpre hnW hHW; unfold hostWords at hHW; omega)
   have w₂ := e₂.wb_right
@@ -140,7 +140,7 @@ theorem sideQ₀_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       (by rw [r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), o05])
       (by rw [r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), o08])
       (LB := A₀) (pre := pre ++ v₁ ++ v₀ ++ t₁ ++ t₀) (by rw [a₄, a₃])
-      (by rw [r₄ _ (by decide), n₃]) (by rw [m₄]; exact L₃)
+      (by rw [r₄ _ (by decide), n₃]) (by rwa [m₄])
       (by rw [a₄, a₃, show capBCost = 35100 from rfl]; simp only [List.length_append]
           clear * - hroom hlenpre hv₁ hv₀ ht₁ ht₀ hA₀; omega)
       (by simp only [List.length_append]; clear * - hroom hlenpre hv₁ hv₀ ht₁ ht₀ hHW
@@ -153,14 +153,14 @@ theorem sideQ₀_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       2 * N₁.nChords + v₁.length + v₀.length + t₁.length + t₀.length + k₀.length := by
     simp only [List.length_append, hlenpre]; ring
   refine ⟨c₅, _, v₁, v₀, t₁, t₀, k₀, ex, ?_, ?_, hv₁, hv₀, ht₁, ht₀, hk₀, ?_, ?_, ?_, ?_,
-    fun a ha => ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_, ?_, ?_, pv₁, pv₀, pt₁, pt₀,
+    fun a ha => ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_, pv₁, pv₀, pt₁, pt₀,
     pk₀, nk₀⟩
   · unfold sq0Cost; unfold vtxCost at hk₂ hk₃; unfold capBCost at hk₅; omega
   · rw [hlen]; omega
   · rw [r₅ _ (by decide), r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), s₁]
   · rw [a₅, ← hL, hA₀]
   · rw [n₅, hL]
-  · rw [← hL, hA₀]; exact L₅
+  · rwa [← hL, hA₀]
   · rw [m₅ a (by rw [a₄, a₃]; simp only [List.length_append]; omega), m₄,
       m₃ a (by rw [a₂]; simp only [List.length_append]; omega),
       m₂ a (by rw [a₁]; omega), m₁ a ha]
@@ -169,8 +169,6 @@ theorem sideQ₀_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   · rw [rr₅ r hr, rr₄ r hr, rr₃ r hr, rr₂ r hr, rr₁]
   · rw [rm₅, rm₄, rm₃, rm₂, rm₁]
   · rw [ou₅, ou₄, ou₃, ou₂, ou₁]
-  · rw [r₅ _ (by decide), r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), o05]
-  · rw [r₅ _ (by decide), r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), o08]
   · exact R₄.keep fun r h1 => r₅ r (bpt_cap h1)
 
 set_option maxHeartbeats 16000000 in
@@ -215,7 +213,7 @@ theorem sideQ₁_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   obtain ⟨c₂, k₂, t₁, t₀, e₂, hk₂, hk₂', ht₁, ht₀, a₂, n₂, L₂, m₂, r₂, rr₂, rm₂, ou₂, pt₁, pt₀⟩ :=
     vtxPts_exec (P := P) c₁ w₁ hG hHW (D := 70001) (off := 3) (by norm_num) (by norm_num) sw1 J 1
       sd1 hF.simple (kk := J.right.topIdx) sd1.2.2.2.2.1 J.right.topIdx_le o05 o08
-      (LB := A₀) (pre := pre) (by rw [a₁, hA₀]) n₁ (by rw [← hA₀]; exact L₁)
+      (LB := A₀) (pre := pre) (by rw [a₁, hA₀]) n₁ (by rwa [← hA₀])
       (by rw [a₁, show vtxCost = 74000 from rfl]; clear * - hroom hlenpre; omega)
       (by clear * - hroom hlenpre hnW hHW; unfold hostWords at hHW; omega)
   have w₂ := e₂.wb_right
@@ -242,14 +240,14 @@ theorem sideQ₁_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = (sideChain J 1).vertex J.right.topIdx :=
     Merge.Junction.whole_vertex_add J _
   refine ⟨c₃, _, t₁, t₀, k₁', ex, ?_, ?_, ht₁, ht₀, hk₀, ?_, ?_, ?_, ?_,
-    fun a ha => ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_, ?_, by rw [hv]; exact pt₁,
-    by rw [hv]; exact pt₀, pk₁, nk₁⟩
+    fun a ha => ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_, ?_, by rwa [hv],
+    by rwa [hv], pk₁, nk₁⟩
   · unfold sq1Cost; unfold vtxCost at hk₂; unfold capBCost at hk₃; omega
   · rw [hlen]; omega
   · rw [r₃ _ (by decide), r₂ _ (by decide), s₁]
   · rw [a₃, ← hL, hA₀]
   · rw [n₃, hL]
-  · rw [← hL, hA₀]; exact L₃
+  · rwa [← hL, hA₀]
   · rw [m₃ a (by rw [a₂]; simp only [List.length_append]; omega),
       m₂ a (by rw [a₁]; omega), m₁ a ha]
   · rw [r₃ r (bpt_of_side hr), r₂ r (bpt_of_side hr), r₁ r (bend_of hr)]

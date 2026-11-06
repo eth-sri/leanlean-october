@@ -49,8 +49,7 @@ theorem memα (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d < L) {t : ℝ} (ht0 
     (ht1 : t < 1) : sidePt (chainModel Cα).W (g' + d) t ∈ Cα.set := by
   have h := Cα.sideWalk_tour_pt_mem Cα.sideBeta (i := g' + d - 6) (t := t)
     (by have := hS.hgL; omega) (fun h => by exfalso; have := hS.hgL; have := hS.h6; omega) ht0 ht1
-  rw [show g' + d - 6 + 6 = g' + d by have := hS.h6; omega] at h
-  exact h
+  rwa [show g' + d - 6 + 6 = g' + d by have := hS.h6; omega] at h
 
 /-- The points of `M`'s walk inside the stretch lie on `Cα`. -/
 theorem memM (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d < L) {t : ℝ} (ht0 : 0 ≤ t)

@@ -81,7 +81,7 @@ theorem arrB_exec {c : Config} (hw : WordsBounded W c) {rOut rOff rIn rA o f i a
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold arrB
   exec_block
-  · rw [hO, hf]; exact hwo
+  · rwa [hO, hf]
   · refine ⟨rfl, ‹_›, rfl, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl⟩
     all_goals simp only [Machine.upd_apply]
     all_goals split_ifs <;> omega
@@ -97,7 +97,7 @@ theorem affP_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1
   obtain ⟨c1, k1, e1, hk1, hw1, hm1, r0, r1, r2, r3, hr1, hrr1, hrm1, ho1⟩ :=
     arrB_exec (P := P) hw (rIn := 130009) hO hf hzero ha hN (by omega) (by omega) h2
   obtain ⟨c', k, e, hk, hw', hf', hv⟩ := affStmt_exec (P := P) hw1
-    (by rw [hr1 _ (by omega)]; exact hone) r0 r2 r3 (by omega) hwa
+    (by rwa [hr1 _ (by omega)]) r0 r2 r3 (by omega) hwa
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw', ?_, hv⟩
   refine PFr.trans ⟨fun r hr => hr1 r (fun h => hr (by unfold ArrPRG; omega)), hrr1, hrm1, ho1,
     fun a _ => by rw [hm1]⟩ (hf'.mono (fun r h => by unfold ArrRG at h; unfold ArrPRG; omega)
@@ -116,7 +116,7 @@ theorem shP_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
   obtain ⟨c1, k1, e1, hk1, hw1, hm1, r0, r1, r2, r3, hr1, hrr1, hrm1, ho1⟩ :=
     arrB_exec (P := P) hw hO hf hi ha hN (by omega) h1 h2
   obtain ⟨c', k, e, hk, hw', hf', hv⟩ := shStmt_exec (P := P) hw1
-    (by rw [hr1 _ (by omega)]; exact hone) r0 r1 r2 r3 (by omega) hwi hd
+    (by rwa [hr1 _ (by omega)]) r0 r1 r2 r3 (by omega) hwi hd
     (fun j hj => by rw [hm1]; exact hwa j hj)
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw', ?_, fun j hj => by rw [hv j hj, hm1]⟩
   refine PFr.trans ⟨fun r hr => hr1 r (fun h => hr (by unfold ArrPRG; omega)), hrr1, hrm1, ho1,
@@ -135,7 +135,7 @@ theorem eqP_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
   obtain ⟨c1, k1, e1, hk1, hw1, hm1, r0, r1, r2, r3, hr1, hrr1, hrm1, ho1⟩ :=
     arrB_exec (P := P) hw hO hf hi hzero hN (by omega) h1 (by omega)
   obtain ⟨c', k, e, hk, hw', hf', hv⟩ := eqStmt_exec (P := P) hw1
-    (by rw [hr1 _ (by omega)]; exact hone) (by rw [hr1 _ (by omega)]; exact hzero) r0 r1 r2
+    (by rwa [hr1 _ (by omega)]) (by rwa [hr1 _ (by omega)]) r0 r1 r2
     (by omega) hwi hd
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw', ?_, fun j hj => by rw [hv j hj, hm1]⟩
   refine PFr.trans ⟨fun r hr => hr1 r (fun h => hr (by unfold ArrPRG; omega)), hrr1, hrm1, ho1,
@@ -171,7 +171,7 @@ theorem starP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have b20 := g.base_eq 20; have b21 := g.base_eq 21; have b24 := g.base_eq 24
   unfold starP
   have e0 := Exec.addN (P := P) hw 130811 130014 130014 (by rw [hG.rN]; omega)
-  set c0 := { c with nreg := upd c.nreg 130811 (c.nreg 130014 + c.nreg 130014) } with hc0
+  set c0 := { c with nreg := upd c.nreg 130811 (c.nreg 130014 + c.nreg 130014) }
   have hw0 : WordsBounded W c0 := e0.wb_right
   have h811 : c0.nreg 130811 = 2 * g.N := by simp [c0, hG.rN]; ring
   have hG0 : GR g c0 := hG.frame (fun r hr => by
@@ -268,7 +268,6 @@ theorem starP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have kp10 : ∀ j, j < g.N → c13.nmem (g.base 20 + 0 + j) = c10.nmem (g.base 20 + 0 + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 20 + 0 + j) (by omega), hf12.2.2.2.2 (g.base 20 + 0 + j) (by omega), hf11.2.2.2.2 (g.base 20 + 0 + j) (by omega)]
   have kp11 : ∀ j, j < g.N → c13.nmem (g.base 21 + 0 + j) = c11.nmem (g.base 21 + 0 + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 21 + 0 + j) (by omega), hf12.2.2.2.2 (g.base 21 + 0 + j) (by omega)]
   have kp12 : ∀ j, j < g.N → c13.nmem (g.base 21 + g.N + j) = c12.nmem (g.base 21 + g.N + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 21 + g.N + j) (by omega)]
-  have kp13 : ∀ j, j < g.N → c13.nmem (g.base 21 + 2 * g.N + j) = c13.nmem (g.base 21 + 2 * g.N + j) := fun j hj => rfl
 
   refine ⟨c13, 1 + (k1 + (k2 + (k3 + (k4 + (k5 + (k6 + (k7 + (k8 + (k9 + (k10 + (k11 + (k12 +
     k13)))))))))))), .seq e0 (.seq x1 (.seq x2 (.seq x3 (.seq x4 (.seq x5 (.seq x6 (.seq x7
@@ -420,8 +419,8 @@ theorem teSet_iff {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {T : 
     have hv : (⟨v, h2⟩ : Fin g.μ) ≠ T.root := (hr ⟨v, h2⟩).mpr h1
     refine ⟨⟨v, h2⟩, hv, ?_⟩
     rcases h3 with h3 | h3
-    · right; apply Fin.ext; rw [hopp _ hv]; exact h3
-    · left; apply Fin.ext; rw [hA.par_eq _ hv]; exact h3
+    · right; apply Fin.ext; rwa [hopp _ hv]
+    · left; apply Fin.ext; rwa [hA.par_eq _ hv]
   · rintro ⟨v, hv, h3⟩
     refine ⟨v, (hr v).mp hv, v.2, ?_⟩
     rcases h3 with h3 | h3
@@ -525,7 +524,7 @@ theorem stageB1_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have hU := g.U_ge; have hE := g.END_eq
   have b7 := g.base_eq 7; have b8 := g.base_eq 8; have b9 := g.base_eq 9; have b10 := g.base_eq 10
   have b11 := g.base_eq 11; have b24 := g.base_eq 24
-  have b3 := g.base_eq 3; have b5 := g.base_eq 5; have b6 := g.base_eq 6
+  have b5 := g.base_eq 5
   have hGR : ∀ {c1 : Config} {Am : ℕ → Prop}, PFr StBRG Am c c1 → GR g c1 := fun hf =>
     hG.frame (fun r hr => hf.1 r (by unfold GRReg at hr; unfold StBRG; omega))
   have hmono : ∀ {c0 c1 : Config} {Am : ℕ → Prop}, PFr StBRG Am c0 c1 →
@@ -544,7 +543,7 @@ theorem stageB1_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   obtain ⟨c3, k3, x3, hk3, hw3, hf3, hatt3⟩ := attP_exec (P := P) hw2 (hGR f2) hfp2 hW
   have f3 := f2.trans (hmono hf3 (fun a h => by omega))
   -- the representatives
-  set fpf : ℕ → ℕ := fun y => c2.nmem (g.base 7 + y) with hfpf
+  set fpf : ℕ → ℕ := fun y => c2.nmem (g.base 7 + y)
   have hinj : InjOn fpf g.N := fp_injOn (fun d => hfp2 d)
   obtain ⟨a, ha, hatt⟩ := att_fun (M := M) (att := fun d => c3.nmem (g.base 9 + d))
     (fun d => by

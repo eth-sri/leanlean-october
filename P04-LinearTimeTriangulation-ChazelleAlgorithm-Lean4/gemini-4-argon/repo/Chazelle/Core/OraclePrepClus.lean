@@ -47,9 +47,7 @@ theorem kBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
       c'.nreg 60091 = (j + 1) ^ 2 ∧ c'.nreg 60092 = (j + 1) ^ 3 by
     obtain ⟨c', k, ex, hk, a, b, d⟩ := H
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, a, b, d⟩
-  have e3 : (j + 1) ^ 3 = j ^ 3 + 3 * j ^ 2 + 3 * j + 1 := by ring
   have hb : (j + 1) ^ 3 ≤ 8 * j ^ 3 := by nlinarith [sq_nonneg j, pow_pos (by omega : 0 < j) 2]
-  have hsq : 0 ≤ j ^ 2 := Nat.zero_le _
   unfold kBody
   exec_block
   all_goals (try config_simp)
@@ -89,13 +87,13 @@ theorem kS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ
         refine ⟨d', k, ex, ⟨ex.wb_right, by rw [F.1 _ (by decide), dμ], by rw [F.1 _ (by decide), d1],
           j + 1, by omega, v0, v1, v2, Or.inr (by simpa using ht)⟩, ?_, Nat.zero_le _⟩
         rw [v0, d0]; omega) hI₁
-  refine ⟨c₂, _, .seq e₁ e₂, ?_, exec_frameB (.seq e₁ e₂) hwr, by rw [b0]; exact hj1, ?_, ?_⟩
+  refine ⟨c₂, _, .seq e₁ e₂, ?_, exec_frameB (.seq e₁ e₂) hwr, by rwa [b0], ?_, ?_⟩
   · rw [a0] at hk₂; omega
   · rw [b0]; rw [b2] at hn
     have : c₂.nreg 60034 = μ := by
       rw [(exec_frameB e₂ (B := BK3) (by decide)).1 _ (by decide), R₁ _ (by decide), hμ]
     rw [this] at hn; omega
-  · rw [b0]; exact hjm
+  · rwa [b0]
 
 /-! ## The call -/
 
@@ -145,7 +143,7 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
         c'.nmem (c'.nreg 130005 + v) = l)).card ≤ c'.nreg 60090 ^ 2) := by
   have hAL : ALLOC = 9999 := rfl
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, kpos, kcube, kmin⟩ := kS_exec (P := P) hw hμ hone (by omega)
-  set kk := c₁.nreg 60090 with hkk
+  set kk := c₁.nreg 60090
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, s0, s1, s2, s3⟩ : ∃ c₂ k₂, Exec P W clSet c₁ c₂ k₂ ∧ k₂ = 4 ∧
       FrameB (fun r => decide (130000 ≤ r ∧ r ≤ 130003)) c₁ c₂ ∧ c₂.nreg 130000 = Bh ∧
       c₂.nreg 130001 = B.N ∧ c₂.nreg 130002 = B.E ∧ c₂.nreg 130003 = kk := by
@@ -162,18 +160,18 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
       by config_simp; rfl⟩
   have m₂ : c₂.nmem = c.nmem := F₂.2.2.1.trans F₁.2.2.1
   have A₂ : c₂.nreg ALLOC = A := by
-    rw [hAL, F₂.1 _ (by decide), F₁.1 _ (by decide)]; exact hA
+    rwa [hAL, F₂.1 _ (by decide), F₁.1 _ (by decide)]
   have r0 : rd c₂ bCluster 0 = Bh := s0
   have r1 : rd c₂ bCluster 1 = B.N := s1
   have r2 : rd c₂ bCluster 2 = B.E := s2
   have r3 : rd c₂ bCluster 3 = kk := s3
   have hcost : c₂.nreg ALLOC + Cluster.clusterK * ((rd c₂ bCluster 1 + rd c₂ bCluster 2) *
       (Nat.clog 2 (rd c₂ bCluster 1 + rd c₂ bCluster 2) + 1) + 1) ≤ W := by
-    rw [A₂, r1, r2]; exact hroom
+    rwa [A₂, r1, r2]
   obtain ⟨c₃, k₃, e₃, hk₃, post, F₃⟩ := clusterProg_meets P W c₂ e₂.wb_right
-    ⟨hPW, by rw [r3]; exact kpos, by rw [r1, r3]; exact kcube, fun m' hm' => by
+    ⟨hPW, by rwa [r3], by rwa [r1, r3], fun m' hm' => by
       rw [r0, r1, r2]
-      exact (hR m' (fun a ha => by rw [hm' a (by rw [A₂]; exact ha), m₂])).1⟩ hcost
+      exact (hR m' (fun a ha => by rw [hm' a (by rwa [A₂]), m₂])).1⟩ hcost
   beta_reduce at hk₃
   rw [r1, r2] at hk₃
   obtain ⟨p4, p5, p4', p5', pcard, pwalk, pclus⟩ := post
@@ -189,8 +187,8 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
   have A₃a : A ≤ c₃.nreg ALLOC := by have := F₃.2.2.2.2.2.1; omega
   have A₃b : c₃.nreg ALLOC ≤ A + k₃ := by have := F₃.2.2.2.2.2.2; omega
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by unfold clCost; omega, ?_, A₃a, by omega, ?_,
-    by rw [k3]; exact kpos, by rw [k3]; exact kcube, by rw [k3]; exact kmin,
-    by rw [← A₂]; exact p4, by rw [← A₂]; exact p5, p4', p5', ?_, pwalk, ?_⟩
+    by rwa [k3], by rwa [k3], by rwa [k3],
+    by rwa [← A₂], by rwa [← A₂], p4', p5', ?_, pwalk, ?_⟩
   · have FA : FrameN {bDecomp, bCluster} c c₂ :=
       PF.frameN (B := fun r => BK3 r || decide (130000 ≤ r ∧ r ≤ 130003))
         ⟨fun r hr => by

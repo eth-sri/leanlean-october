@@ -152,7 +152,7 @@ theorem phi_mem_set_iff (p : Point) : phi C C' p ∈ C'.set ↔ p ∈ C.set := b
   · intro hp
     rw [← h.set_eq] at hp
     rwa [h.eq_of_phi_mem hp] at hp
-  · intro hp; rw [h.phi_fix hp, ← h.set_eq]; exact hp
+  · intro hp; rwa [h.phi_fix hp, ← h.set_eq]
 
 theorem phi_mem_slit_iff (p : Point) : phi C C' p ∈ C'.slit ↔ p ∈ C.slit := by
   rw [Chain.mem_slit_iff, Chain.mem_slit_iff, ← h.top_eq]

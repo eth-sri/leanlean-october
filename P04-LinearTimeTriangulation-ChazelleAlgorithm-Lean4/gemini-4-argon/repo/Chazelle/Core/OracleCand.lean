@@ -118,15 +118,12 @@ theorem end_start_adj {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.leng
       rcases le_or_gt q p with hqp | hqp
       · have := sk_mono hN hqp hp; linarith
       · have := sk_mono hN (show r ≤ q by omega) hq; linarith
-  · have hpA : p + 1 = A := by omega
-    rcases Nat.eq_zero_or_pos p with hp0 | hp0
+  · rcases Nat.eq_zero_or_pos p with hp0 | hp0
     · omega
     · have h0 : 0 < A := by omega
       have hcr := (arc_facts hN hne h0).1
-      have h0p := starts_lt hN hGM hne hp0 hp
       have hqp := sk_mono hN (show q ≤ p by omega) hp
       have hwr : ¬ sk M Q N p < ek M Q N p := by intro hc; linarith
-      have hlt : ek M Q N p < sk M Q N p := lt_of_le_of_ne (not_lt.1 hwr) (Ne.symm hne')
       have hle : ek M Q N p ≤ sk M Q N 0 := by
         by_contra hc
         push Not at hc
@@ -222,12 +219,12 @@ theorem mem_scan {p : ℕ}
     {x : Point} (hxC : x ∈ C.set)
     (hx : x ∈ (chainModel C).arcSet (sk (chainModel C) Q N p) (ek (chainModel C) Q N p)) :
     x ∈ scanSet C Q N p := by
-  set n := (chainModel C).W.n with hn
+  set n := (chainModel C).W.n
   have hn7 : n = 2 * C.m + 7 := walk_n C
   set se := (N.arc (sj N p)).s.edge
   set ee := (N.arc (sj N p)).e.edge
-  set a := sk (chainModel C) Q N p with ha
-  set b := ek (chainModel C) Q N p with hb
+  set a := sk (chainModel C) Q N p
+  set b := ek (chainModel C) Q N p
   have hak : a = se + (chainModel C).param Q (N.arc (sj N p)).s := rfl
   have hbk : b = ee + (chainModel C).param Q (N.arc (sj N p)).e := rfl
   obtain ⟨hs0, hs1, -⟩ := hs
@@ -272,7 +269,6 @@ theorem mem_scan {p : ℕ}
   obtain ⟨k, hk1, hkl, hidx⟩ : ∃ k, 1 ≤ k ∧ k + 1 ≤ scanLen C Q N p ∧
       scanIdx n N p k = q' := by
     unfold scanLen scanIdx
-    have hscan : ∀ k, (se + n - 1 + k) % n = q' ↔ (se + n - 1 + k) % n = q' := fun _ => Iff.rfl
     by_cases hab : a < b
     · rw [ite_eq_left hab]
       have hk' : a ≤ q' + t' ∧ (q' : ℝ) + t' ≤ b := by
@@ -345,9 +341,9 @@ theorem arcs_le_one_of_empty {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N
   have h0 := hA.1 0 (by omega)
   have h1 := hA.1 1 (by omega)
   have hr0 : reg (N.arc 0).reg = U := by
-    have := hR.1 _ h0.1; rw [hF, hU] at this; exact this
+    have := hR.1 _ h0.1; rwa [hF, hU] at this
   have hr1 : reg (N.arc 1).reg = U := by
-    have := hR.1 _ h1.1; rw [hF, hU] at this; exact this
+    have := hR.1 _ h1.1; rwa [hF, hU] at this
   have hreg := hR.2.1 _ _ h0.1 h1.1 (hr0.trans hr1.symm)
   have hk : ∀ j, j < N.arcs.length → M.key Q (N.arc j).s = 0 := by
     intro j hj

@@ -60,11 +60,9 @@ theorem classify_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {boxK vtxK 
       k ≤ 110 * H.length + 1200 + Kb + Kv + Ki ∧ R c' := by
   have i01 := hinp 50201 (by norm_num) (by norm_num)
   have i02 := hinp 50202 (by norm_num) (by norm_num)
-  have i03 := hinp 50203 (by norm_num) (by norm_num)
-  set e := c₀.nreg 50201 with he_def
-  set hc := c₀.nreg 50202 with hc_def
-  set σ := c₀.nreg 50203 with hσ_def
-  set M := chainModel C with hM
+  set e := c₀.nreg 50201
+  set hc := c₀.nreg 50202
+  set M := chainModel C
   set x : WPos := ⟨e, hc⟩ with hx
   have hn : M.W.n = 2 * C.m + 7 := C.sideWalk_n _
   have hlen := hE.hlen
@@ -84,21 +82,20 @@ theorem classify_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {boxK vtxK 
     rw [upd_other _ _ _ (by omega), hinp r h1 h2]
   have q01 := g₂ 50201 (by norm_num) (by norm_num)
   have q02 := g₂ 50202 (by norm_num) (by norm_num)
-  have q03 := g₂ 50203 (by norm_num) (by norm_num)
   have hd2 : c₂.nreg 10502 ≤ 2 := by rw [d₂]; exact dirCode_le_two _ _
   by_cases hsm : e < 6
   · -- the box block
     have hpos : 0 < M.param (Qof P) x := box_param_pos C hsm hp0 hy
     obtain ⟨c', k, ex, hk, b⟩ := hbox c₂ hE₂ g₂ d₂ hsm hpos
-    exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_true (by rw [q01, hE₂.r81]; exact hsm) ex)),
+    exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_true (by rwa [q01, hE₂.r81]) ex)),
       by omega, b⟩
-  have t1 : ¬ c₂.nreg 50201 < c₂.nreg 50081 := by rw [q01, hE₂.r81]; exact hsm
+  have t1 : ¬ c₂.nreg 50201 < c₂.nreg 50081 := by rwa [q01, hE₂.r81]
   by_cases hh0 : hc < 1
   · obtain ⟨c', k, ex, hk, b⟩ := hvtx c₂ hE₂ g₂ (by omega)
       ((param_eq_zero_iff _ _ _).2 (Or.inl (by simp [hx]; omega)))
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_true
-      (by rw [q02, hE₂.r32]; exact hh0) ex))), by omega, b⟩
-  have t2 : ¬ c₂.nreg 50202 < c₂.nreg 50032 := by rw [q02, hE₂.r32]; exact hh0
+      (by rwa [q02, hE₂.r32]) ex))), by omega, b⟩
+  have t2 : ¬ c₂.nreg 50202 < c₂.nreg 50032 := by rwa [q02, hE₂.r32]
   by_cases hd0 : c₂.nreg 10502 < 1
   · have hdir : dirCode M e = 0 := by rw [← d₂]; omega
     have hhor : (M.wa x.edge).2 = (M.wb x.edge).2 := by
@@ -108,8 +105,8 @@ theorem classify_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {boxK vtxK 
     obtain ⟨c', k, ex, hk, b⟩ := hvtx c₂ hE₂ g₂ (by omega)
       ((param_eq_zero_iff _ _ _).2 (Or.inr (Or.inl hhor)))
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_true
-      (by rw [hE₂.r32]; exact hd0) ex)))), by omega, b⟩
-  have t3 : ¬ c₂.nreg 10502 < c₂.nreg 50032 := by rw [hE₂.r32]; exact hd0
+      (by rwa [hE₂.r32]) ex)))), by omega, b⟩
+  have t3 : ¬ c₂.nreg 10502 < c₂.nreg 50032 := by rwa [hE₂.r32]
   -- the start vertex of the edge and the height vertex
   have e₃ := Exec.subN (P := P) w₂ 50120 50201 50081
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50120 (c₂.nreg 50201 - c₂.nreg 50081) }
@@ -133,7 +130,6 @@ theorem classify_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {boxK vtxK 
   obtain ⟨q60, q61, r₅⟩ := q
   have w₅ := e₅.wb_right
   have ih : SymPtIn c₅ 50160 (.vtx (hc - 1)) := ⟨q60, q61⟩
-  have hhn' : hc ≤ P.n := hhn
   have lh : (SymPt.vtx (hc - 1)).Lt P.n := by show hc - 1 < P.n; omega
   have ia₅ : SymPtIn c₅ 50133 sa := symPtIn_of_eq ia fun j h1 h2 => r₅ j (by omega) (by omega)
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, b₆, t₆⟩ := kbit_exec (op := 1) (dst := 50170) hE.hG hW c₅ w₅
@@ -183,8 +179,8 @@ theorem classify_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {boxK vtxK 
       obtain ⟨c', k, ex, hk, b⟩ := hvtx c₇ hE₇ g₇' (by omega)
         ((param_eq_zero_iff _ _ _).2 (Or.inr (Or.inr heq)))
       exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
-        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rw [hE₇.r32]; exact hlt)
-          (.ifLtN_true (by rw [hE₇.r32]; exact hlt2) ex))))))))))), by omega, b⟩
+        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rwa [hE₇.r32])
+          (.ifLtN_true (by rwa [hE₇.r32]) ex))))))))))), by omega, b⟩
     · have p71 : ((Qof P).vtx (x.hgt - 1)).2 < (M.W.vtx e).2 := b71.2.1 (by
         have := b71.1; rw [hE₇.r32] at hlt2; omega)
       have hpos : 0 < M.param (Qof P) x := lt_of_le_of_ne hp0 (fun h => by
@@ -196,7 +192,7 @@ theorem classify_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {boxK vtxK 
       obtain ⟨c', k, ex, hk, b⟩ := hint c₇ hE₇ g₇' (by rw [g₇ _ (Or.inr rfl), d₂]) (by omega)
         hpos
       exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
-        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rw [hE₇.r32]; exact hlt)
+        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rwa [hE₇.r32])
           (.ifLtN_false hlt2 ex))))))))))), by omega, b⟩
   · have p70 : (M.W.vtx e).2 < ((Qof P).vtx (x.hgt - 1)).2 := b70.2.1 (by
       have := b70.1; rw [hE₇.r32] at hlt; omega)

@@ -125,7 +125,7 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
     (hW : 4 * n + 4 ≤ W) :
     ∃ d' k, Exec P W partS d d' k ∧ k ≤ 150 ∧ d'.nreg 215052 = (partner N r x).edge ∧
       d'.nreg 215053 = (partner N r x).hgt ∧ d'.nmem = d.nmem ∧ FrameM Bpart d d' := by
-  set cs := (N.region r).chords with hcs
+  set cs := (N.region r).chords
   have hKc : cs.length ≤ 4 := hF.hK
   -- initialisation
   obtain ⟨d₀, k₀, e₀, hk₀, a52, a53, a54, a55, m₀, f₀⟩ : ∃ d₀ k₀, Exec P W
@@ -185,7 +185,7 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
           rw [hfound] at e52 e53 e54
           simp only [Option.isSome_none, Bool.false_eq_true, ↓reduceIte, resOf] at e52 e53 e54
           refine spec_ifLtN_true (by omega) ?_
-          set i := cs.getD v 0 with hidef
+          set i := cs.getD v 0
           obtain ⟨r1, r2, r3, r4⟩ := hrec i hi1
           obtain ⟨c1, c2⟩ := hch v hv
           have t46 : e.nreg 215046 = x.edge := by rw [g _ (by decide), h46]
@@ -194,11 +194,11 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
           have t29 : e.nreg 215029 = d.nreg 215029 := g _ (by decide)
           have t25 : e.nreg 215025 = d.nreg 215025 := g _ (by decide)
           have ti : e.nmem (e.nreg 215027 + (e.nreg 215029 + v)) = i := by rw [me, t27, t29, c1]
-          have tiW : e.nreg 215027 + (e.nreg 215029 + v) ≤ W := by rw [t27, t29]; exact c2
+          have tiW : e.nreg 215027 + (e.nreg 215029 + v) ≤ W := by rwa [t27, t29]
           have th : e.nmem (e.nreg 215025 + 5 * i) = (N.chord i).h := by rw [me, t25, r1]
           have tl : e.nmem (e.nreg 215025 + 5 * i + 1) = (N.chord i).lp := by rw [me, t25, r2]
           have tr : e.nmem (e.nreg 215025 + 5 * i + 2) = (N.chord i).rp := by rw [me, t25, r3]
-          have tW : e.nreg 215025 + 5 * i + 2 ≤ W := by rw [t25]; exact r4
+          have tW : e.nreg 215025 + 5 * i + 2 ≤ W := by rwa [t25]
           refine spec_use (chTest_exec (P := P) e hwe Ke t46 t47 e55 ti tiW th tl tr tW hxe hxh
             hil hir hih hW) ?_
           intro c₁ k₁ hk₁ hw₁ ⟨hpost, hm₁, hf₁⟩

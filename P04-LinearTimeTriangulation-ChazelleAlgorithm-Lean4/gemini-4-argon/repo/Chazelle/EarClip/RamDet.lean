@@ -38,8 +38,6 @@ open Machine Machine.Stmt Programs
 
 /-! ### The cyclic list and the successor table -/
 
-/-- The element of `l` at cyclic position `q`: `l[q % l.length]` (`0` for the empty list). -/
-def cyc (l : List ℕ) (q : ℕ) : ℕ := l.getD (q % l.length) 0
 
 /-! ### The determinant kernel -/
 

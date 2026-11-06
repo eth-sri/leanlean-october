@@ -44,7 +44,7 @@ theorem StepOK.seq {ci : Config} {Inv : Set ℕ → Config → Prop} {s t : Stmt
   rintro c₁ hI₁ - hA1 ⟨inv1, he1, ha1⟩
   refine (h₂ (O ∪ S) c₁ hI₁ he1 ha1 inv1 (by omega)).mono le_rfl ?_
   rintro c' ⟨inv', he', ha'⟩
-  exact ⟨by rw [← Set.union_assoc]; exact inv', he', ha'⟩
+  exact ⟨by rwa [← Set.union_assoc], he', ha'⟩
 
 /-- Chaining the read registers and the auxiliary array. -/
 theorem keep_chain {ci c c' : Config} (he : ∀ q, ER q → c.nreg q = ci.nreg q) (ha : AuxKeep ci c)
@@ -92,14 +92,14 @@ theorem rStep_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod 
     rintro c' ⟨inv', he', ha'⟩
     have hS : {j | i < ci.nreg cnt ∧ j ∈ regO N₂ (ci.nreg src)} = regO N₂ (ci.nreg src) := by
       ext j; simp [hlt]
-    refine ⟨by rw [hS]; exact inv', keep_chain he ha (fun q h => (he' q h).trans (he1 q h))
-      (fun x h1 h2 => by rw [ha' x (by rw [he1 _ (by unfold ER; simp)]; exact h1)
-        (by rw [he1 _ (by unfold ER; simp), he1 _ (by unfold ER; simp)]; exact h2), m1])⟩
+    refine ⟨by rwa [hS], keep_chain he ha (fun q h => (he' q h).trans (he1 q h))
+      (fun x h1 h2 => by rw [ha' x (by rwa [he1 _ (by unfold ER; simp)])
+        (by rwa [he1 _ (by unfold ER; simp), he1 _ (by unfold ER; simp)]), m1])⟩
   · intro hlt
     rw [hk, he _ hcnt] at hlt
     have hS : {j | i < ci.nreg cnt ∧ j ∈ regO N₂ (ci.nreg src)} = ∅ := by
       ext j; simp [hlt]
-    exact IRS.skip hI ⟨by rw [hS, Set.union_empty]; exact hinv, he, ha⟩
+    exact IRS.skip hI ⟨by rwa [hS, Set.union_empty], he, ha⟩
 
 /-! ## A parent step -/
 
@@ -161,7 +161,7 @@ theorem parDo_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod 
   · intro hlt
     rw [hi, esC] at hlt
     have hS : parS ci i = ∅ := by ext j; simp [parS]; omega
-    exact IRS.skip hI ⟨by rw [hS, Set.union_empty]; exact hinv, he, ha⟩
+    exact IRS.skip hI ⟨by rwa [hS, Set.union_empty], he, ha⟩
   intro hlt
   rw [hi, esC] at hlt
   have hadr : ci.nreg aB + 5 * i + 4 < ci.nreg aB + 5 * ci.nreg sC := by omega
@@ -179,14 +179,13 @@ theorem parDo_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod 
   have nA : ALLOC ≠ uA ∧ ALLOC ≠ uK := by unfold ALLOC uA uK sw; omega
   have eA1 : c₁.nreg ALLOC = c.nreg ALLOC := by rw [r1]; exact parBody_other _ _ nA.1 nA.2
   have hK1 := E.hK.fix hI₁
-  have hl : parBody.length = 8 := rfl
   refine IRS.ite ?_ ?_
   swap
   · intro hn
     rw [hK1.1, vK] at hn
     have hS : parS ci i = ∅ := by ext j; simp [parS]; omega
     obtain ⟨he', ha'⟩ := keep_chain he ha he1 ha1
-    exact IRS.skip hI₁ ⟨by rw [hS, Set.union_empty]; exact inv1, he', ha'⟩
+    exact IRS.skip hI₁ ⟨by rwa [hS, Set.union_empty], he', ha'⟩
   intro hp
   rw [hK1.1, vK] at hp
   refine IRS.seq (K₁ := 1) (IRS.block uDec hI₁ ⟨iscr_sw (by unfold uK sw; omega)
@@ -212,7 +211,7 @@ theorem parDo_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod 
   obtain ⟨k1e, k1a⟩ := keep_chain he ha he1 ha1
   obtain ⟨k2e, k2a⟩ := keep_chain k1e k1a he2 (fun x _ _ => by rw [m2])
   obtain ⟨k3e, k3a⟩ := keep_chain k2e k2a (fun q h => he' q (Or.inl h)) ha'
-  exact ⟨by rw [hS]; exact inv', k3e, k3a⟩
+  exact ⟨by rwa [hS], k3e, k3a⟩
 
 /-- The parent of the stop `sP`. -/
 def pStep0 (od : Stmt) : Stmt := .seq (block [.copyN uI sP]) (parDo od)
@@ -253,7 +252,7 @@ theorem pStep1_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
   · intro hn
     rw [eP, eC] at hn
     have hS : parS ci (ci.nreg sP + 1) = ∅ := by ext j; simp [parS]; omega
-    exact IRS.skip hI ⟨by rw [hS, Set.union_empty]; exact hinv, he, ha⟩
+    exact IRS.skip hI ⟨by rwa [hS, Set.union_empty], he, ha⟩
   intro hlt
   have hK := E.hK.fix hI
   have hlr : ∀ i ∈ [Instr.addN uI sP K1], LR (dstI i) := by simp [dstI, LR, uI, oK, oS, sw]
@@ -291,11 +290,11 @@ theorem iter_eq (N : NF) (c : Config) :
   constructor
   · rintro (⟨h, hj⟩ | ⟨h, hj⟩ | ⟨h, hj⟩ | ⟨h, hj⟩ | ⟨h, hj⟩ | ⟨h, hj⟩ | ⟨h1, h2, hj⟩ |
       ⟨h1, h2, hj⟩)
-    · exact Or.inl (Or.inl ⟨0, by omega, by rw [Nat.add_zero]; exact hj⟩)
+    · exact Or.inl (Or.inl ⟨0, by omega, by rwa [Nat.add_zero]⟩)
     · exact Or.inl (Or.inl ⟨1, by omega, hj⟩)
     · exact Or.inl (Or.inl ⟨2, by omega, hj⟩)
     · exact Or.inl (Or.inl ⟨3, by omega, hj⟩)
-    · exact Or.inl (Or.inr ⟨0, by omega, by rw [Nat.add_zero]; exact hj⟩)
+    · exact Or.inl (Or.inr ⟨0, by omega, by rwa [Nat.add_zero]⟩)
     · exact Or.inl (Or.inr ⟨1, by omega, hj⟩)
     · exact Or.inr ⟨_, Or.inl rfl, h1, h2, hj⟩
     · exact Or.inr ⟨_, Or.inr rfl, h1, h2, hj⟩
@@ -354,7 +353,7 @@ theorem orgsTask : OrgsTask := by
       (er_of (Or.inr (Or.inr (Or.inr (Or.inr rfl))))) (fun h => hgR 1 (by omega))).seq
     ((pStep0_ok E hod' hst' hpar haux hA).seq (pStep1_ok E hod' hst' hpar haux hA)))))))
   rw [iter_eq] at h
-  set D := c₀.nreg (sw 6) with hD
+  set D := c₀.nreg (sw 6)
   have e1 : (12 * D + 8) * (Kod + 200) + 200 = 12 * (D * Kod) + 2400 * D + 8 * Kod + 1800 := by
     ring
   have e2 : regK Kod D = 2 * (D * Kod) + 10 * D + 17 := by unfold regK; ring

@@ -69,8 +69,7 @@ theorem chained_upath {n : ℕ} : ∀ {ps : List Pc} {c c' : ℕ}, Chained ⟨c,
     have hm := mod_shift hU hlt.le (show pc.e.edge < n by omega)
     have hp := chained_upath h2 hv' hc' (U + (pc.e.edge - c)) hm
     refine ⟨by rw [h1, hU], U + (pc.e.edge - c), by omega, by rw [hpe, hm], ?_⟩
-    rw [show U + (c' - c) = U + (pc.e.edge - c) + (c' - pc.e.edge) by omega]
-    exact hp
+    rwa [show U + (c' - c) = U + (pc.e.edge - c) + (c' - pc.e.edge) by omega]
 
 /-! ## Breakpoints and the potential -/
 
@@ -110,8 +109,7 @@ theorem card_Ico_succ {U U' F : ℕ} (h : U < U') (hU : U < F) (hb : BrkU C nQ H
   have hnot : U ∉ (Finset.Ico U' F).filter (BrkU C nQ H) := by
     simp only [Finset.mem_filter, Finset.mem_Ico]; omega
   have := Finset.card_le_card hsub
-  rw [Finset.card_insert_of_notMem hnot] at this
-  exact this
+  rwa [Finset.card_insert_of_notMem hnot] at this
 
 /-- **The potential decreases** along a step `U → U'` that starts or stops at a breakpoint or
 stops at `F`. -/
@@ -152,7 +150,6 @@ theorem card_brkU_le (hn : 0 < nQ) (hwf : HostWF nQ H) {U F : ℕ}
     intro x hx y hy hxy
     simp only [Finset.coe_filter, Finset.mem_Ico, Set.mem_ofPred_eq] at hx hy
     simp only at hxy
-    have hN : 0 < 2 * C.m + 7 := by omega
     rcases Nat.lt_or_ge x y with h | h
     · exfalso
       have : (2 * C.m + 7) ∣ y - x := (Nat.modEq_iff_dvd' h.le).1 hxy

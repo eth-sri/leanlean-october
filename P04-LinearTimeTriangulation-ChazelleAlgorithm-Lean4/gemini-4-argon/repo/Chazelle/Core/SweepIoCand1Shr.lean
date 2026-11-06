@@ -57,7 +57,7 @@ theorem shrStep : ShrStepSpec := by
   -- the arrival position of the shared vertex
   refine (IRS.seq (K₁ := 35007) (callArr_irs (dsc := sw 20) (re := sw 46) (rh := K0) (rd := qD)
     (o := shO) hI hctx (by unfold K0 qD sw; omega) (by unfold shO sw; omega)
-    (by rw [h46]; exact hlt) (by rw [h46, k0]; exact hpp0) (by rw [h46, k0, hpos0]; exact hyR)
+    (by rwa [h46]) (by rwa [h46, k0]) (by rwa [h46, k0, hpos0])
     (by omega)) ?_).mono le_rfl (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' ⟨hArr, fr1, hal1, hm1⟩
   rw [h46, k0] at hArr
@@ -88,23 +88,23 @@ theorem shrStep : ShrStepSpec := by
     exact hacc.transport (fun i hi => fr1' _ (by unfold accA sw; omega)
       (by unfold accA sw; omega) (by unfold accA shO sw; omega))
   have hpp : ProperPos (chainModel J.left) (Qof P) P.n ⟨c₁.nreg (shO + 1), c₁.nreg qH⟩ := by
-    rw [qH1]; exact ⟨by rw [hparx]; exact ht0, by rw [hparx]; exact ht1, hqn⟩
+    rw [qH1]; exact ⟨by rwa [hparx], by rwa [hparx], hqn⟩
   have hloc : (c₁.nreg (shO + 1) = 1 ∨ c₁.nreg (shO + 1) = 3) ∨
       (6 ≤ c₁.nreg (shO + 1) ∧ J.shared ∈ J.left.set) := by
     have hc := posClass_of (C := J.left) (Q := Qof P) (x := ⟨c₁.nreg (shO + 1), c.nreg qH⟩) hpn
-      (by rw [hparx]; exact ht0) (by rw [hparx]; exact ht1) (by rw [hposx]; exact hyR)
-      (Or.inl (by rw [hposx]; exact hsT))
+      (by rwa [hparx]) (by rwa [hparx]) (by rwa [hposx])
+      (Or.inl (by rwa [hposx]))
     rcases hc with h | h | h
     · exact Or.inl h
     · exact Or.inr ⟨h.1, hsL⟩
     · exact Or.inr ⟨by have := h.1; simp only at this; omega, hsL⟩
   have hMod : ModB J (c.nreg bL) (c.nreg bR) 0 = J.left := by simp [ModB, hbL]
   refine (Cand1.lhsL_irs (e := shO + 1) (t := 0) hsh hBs hXl hA (by unfold Cand1.OutL shO sw; omega)
-    hI₁ hpn hpp (by rw [qH1]; exact hposx) hyR hloc hacc₁ (by norm_num) hMod (radius_left J)
+    hI₁ hpn hpp (by rwa [qH1]) hyR hloc hacc₁ (by norm_num) hMod (radius_left J)
     (by omega)).mono le_rfl ?_
   rintro c' ⟨⟨L', a', s', g', geo'⟩, fr, hal, hm⟩
   rw [qD1] at a' g' geo'
-  refine ⟨⟨L', a', s', g', geo' (by rw [qH1]; exact hgeo)⟩,
+  refine ⟨⟨L', a', s', g', geo' (by rwa [qH1])⟩,
     fun r hr0 hr1 hr2 hr3 hr4 => ?_, hal1.trans hal, fun a ha => ?_⟩
   · rw [fr r hr0 (by unfold LHW sw at *; omega) hr4]
     exact fr1 r hr0 (by unfold shO sw at *; omega) (by unfold shO sw at *; omega)

@@ -28,13 +28,10 @@ noncomputable def K1 (κB κL : ℕ) (κG : ℕ → ℕ) (κO : ℕ) : ℝ :=
 
 section proofs
 
-theorem Yg_pos (g : ℕ) : 0 < Yg g := by unfold Yg; have := two_rpow_pos (-(g : ℝ) / 76); positivity
-
 theorem one_le_Yg (g : ℕ) : 1 ≤ Yg g := by
   unfold Yg
   rw [← Real.rpow_natCast, two_rpow_mul_two_rpow]
   apply Real.one_le_rpow (by norm_num)
-  have : (0 : ℝ) ≤ g := Nat.cast_nonneg g
   linarith
 
 theorem Yg_le (g : ℕ) : Yg g ≤ (2 : ℝ) ^ g := by
@@ -75,8 +72,6 @@ theorem lemma41Nat_le (g : ℕ) : (lemma41Nat g : ℝ) ≤ (2 * 34200 ^ 3 + 1) *
   have hsplit : (2 : ℝ) ^ ((74 : ℝ) / 75 * g) = (2 : ℝ) ^ g * (2 : ℝ) ^ (-(g : ℝ) / 75) := by
     rw [← Real.rpow_natCast, two_rpow_mul_two_rpow]; congr 1; ring
   have hc := slack76_cubic g
-  have hq : 0 ≤ (2 : ℝ) ^ (-(g : ℝ) / 75) := (two_rpow_pos _).le
-  have h2g : (0 : ℝ) < (2 : ℝ) ^ g := by positivity
   have hxle : x ≤ 2 * 34200 ^ 3 * Yg g := by
     unfold Yg
     calc x ≤ 2 * (g : ℝ) ^ 3 * (2 : ℝ) ^ ((74 : ℝ) / 75 * g) := by
@@ -121,19 +116,13 @@ theorem NB_le (g : ℕ) : (NB g : ℝ) ≤ 10 * l23c 4 * ((2 : ℝ) ^ g * (2 : �
 theorem NB_term_le (g : ℕ) :
     ((NB g * (g + 1) + 1 : ℕ) : ℝ) ≤ (130 * l23c 4 + 1) * Yg g := by
   have h := NB_le g
-  have hl : (0 : ℝ) ≤ l23c 4 := Nat.cast_nonneg _
   have hY := one_le_Yg g
   have hA := pow_mul_div5_le g
   have hB := pow_mul_lin_le g
-  have hg0 : (0 : ℝ) ≤ g := Nat.cast_nonneg g
-  have hNB0 : (0 : ℝ) ≤ NB g := Nat.cast_nonneg _
   push_cast
   have e1 : (NB g : ℝ) * ((g : ℝ) + 1) ≤
       10 * l23c 4 * ((2 : ℝ) ^ g * (2 : ℝ) ^ (-(g : ℝ) / 5)) * ((g : ℝ) + 1) :=
     mul_le_mul_of_nonneg_right h (by linarith)
-  have e2 : 10 * (l23c 4 : ℝ) * ((2 : ℝ) ^ g * (2 : ℝ) ^ (-(g : ℝ) / 5)) * ((g : ℝ) + 1) =
-      10 * l23c 4 * ((2 : ℝ) ^ g * ((g : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 5)) +
-        (2 : ℝ) ^ g * (2 : ℝ) ^ (-(g : ℝ) / 5)) := by ring
   have e3 : (2 : ℝ) ^ g * ((g : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 5)) +
       (2 : ℝ) ^ g * (2 : ℝ) ^ (-(g : ℝ) / 5) ≤ 13 * Yg g := by linarith
   have e4 := mul_le_mul_of_nonneg_left e3 (show (0 : ℝ) ≤ 10 * l23c 4 by positivity)
@@ -176,14 +165,11 @@ theorem FB_term_le (g : ℕ) : ((FB g * (Nat.clog 2 (FB g) + 1) + 1 : ℕ) : ℝ
     (18 * l23c 4 * (Nat.clog 2 (l23c 4) + 17) + 1) * Yg g := by
   have h := FB_le g
   have hc := FB_clog g
-  have hl : (0 : ℝ) ≤ l23c 4 := Nat.cast_nonneg _
   have hY := one_le_Yg g
   have hA := pow_mul_div5_le g
   have hB := pow_mul_lin_le g
-  have hg0 : (0 : ℝ) ≤ g := Nat.cast_nonneg g
   have hF0 : (0 : ℝ) ≤ FB g := Nat.cast_nonneg _
-  set a : ℝ := (Nat.clog 2 (l23c 4) : ℝ) with ha
-  have ha0 : 0 ≤ a := Nat.cast_nonneg _
+  set a : ℝ := (Nat.clog 2 (l23c 4) : ℝ)
   have hc' : ((Nat.clog 2 (FB g) : ℕ) : ℝ) + 1 ≤ a + g + 5 := by
     have : ((Nat.clog 2 (FB g) : ℕ) : ℝ) ≤ ((Nat.clog 2 (l23c 4) + g + 4 : ℕ) : ℝ) := by
       exact_mod_cast hc
@@ -193,13 +179,10 @@ theorem FB_term_le (g : ℕ) : ((FB g * (Nat.clog 2 (FB g) + 1) + 1 : ℕ) : ℝ
     mul_le_mul_of_nonneg_left hc' hF0
   have e2 : (FB g : ℝ) * (a + g + 5) ≤
       18 * l23c 4 * ((2 : ℝ) ^ g * (2 : ℝ) ^ (-(g : ℝ) / 5)) * (a + g + 5) :=
-    mul_le_mul_of_nonneg_right h (by linarith)
-  have e3 : 18 * (l23c 4 : ℝ) * ((2 : ℝ) ^ g * (2 : ℝ) ^ (-(g : ℝ) / 5)) * (a + g + 5) =
-      18 * l23c 4 * ((2 : ℝ) ^ g * ((g : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 5)) +
-        (a + 5) * ((2 : ℝ) ^ g * (2 : ℝ) ^ (-(g : ℝ) / 5))) := by ring
+    mul_le_mul_of_nonneg_right h (by positivity)
   have e4 : (2 : ℝ) ^ g * ((g : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 5)) +
       (a + 5) * ((2 : ℝ) ^ g * (2 : ℝ) ^ (-(g : ℝ) / 5)) ≤ (a + 17) * Yg g := by
-    have := mul_le_mul_of_nonneg_left hA (show (0 : ℝ) ≤ a + 5 by linarith)
+    have := mul_le_mul_of_nonneg_left hA (show (0 : ℝ) ≤ a + 5 by positivity)
     linarith
   have e5 := mul_le_mul_of_nonneg_left e4 (show (0 : ℝ) ≤ 18 * l23c 4 by positivity)
   nlinarith
@@ -227,7 +210,6 @@ theorem stepB_le (κB κL : ℕ) (κG : ℕ → ℕ) (κO g : ℕ) :
   have hL := lemma41Nat_le g
   have hF := FB_term_le g
   have hN := NB_term_le g
-  have hB0 : (0 : ℝ) ≤ κB := Nat.cast_nonneg _
   have hL0 : (0 : ℝ) ≤ κL := Nat.cast_nonneg _
   have hG0 : (0 : ℝ) ≤ κG 4 := Nat.cast_nonneg _
   have hO0 : (0 : ℝ) ≤ κO := Nat.cast_nonneg _
@@ -243,7 +225,6 @@ theorem stepB_le (κB κL : ℕ) (κG : ℕ → ℕ) (κO g : ℕ) :
     rw [mul_assoc]; exact mul_le_mul_of_nonneg_left hF hG0
   have i4 : (κO : ℝ) * ((NB g * (g + 1) + 1 : ℕ) : ℝ) ≤ κO * (130 * l23c 4 + 1) * Yg g := by
     rw [mul_assoc]; exact mul_le_mul_of_nonneg_left hN hO0
-  have i5 : (1993 : ℝ) ≤ 2000 * Yg g := by linarith
   have hK : K1 κB κL κG κO * Yg g = κB * 129 ^ 3 * Yg g + κL * (2 * Cc + 2) * Yg g +
       κG 4 * (18 * l23c 4 * (Nat.clog 2 (l23c 4) + 17) + 1) * Yg g +
       κO * (130 * l23c 4 + 1) * Yg g + 2000 * Yg g := by unfold K1; rw [hCc]; ring

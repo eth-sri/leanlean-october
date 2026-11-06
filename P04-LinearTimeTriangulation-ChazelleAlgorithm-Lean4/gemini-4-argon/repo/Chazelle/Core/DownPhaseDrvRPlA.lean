@@ -67,10 +67,10 @@ theorem plChBody_exec (d : Config) (hw : WordsBounded W d) {C L s a k ptr : ℕ}
       d d₁ j₁ ∧ j₁ ≤ 3 ∧ d₁.nreg 219015 = min C L ∧ (∀ r, r ≠ 219015 → d₁.nreg r = d.nreg r) ∧
       d₁.nmem = d.nmem := by
     by_cases h : C < L
-    · refine ⟨_, _, .ifLtN_true (by rw [h02, h14]; exact h) (Exec.copyN (P := P) hw 219015 219002),
+    · refine ⟨_, _, .ifLtN_true (by rwa [h02, h14]) (Exec.copyN (P := P) hw 219015 219002),
         by omega, ?_, fun r hr => by simp [hr], rfl⟩
       simp only [Machine.upd_same, h02]; rw [min_eq_left h.le]
-    · refine ⟨_, _, .ifLtN_false (by rw [h02, h14]; exact h) (Exec.copyN (P := P) hw 219015 219014),
+    · refine ⟨_, _, .ifLtN_false (by rwa [h02, h14]) (Exec.copyN (P := P) hw 219015 219014),
         by omega, ?_, fun r hr => by simp [hr], rfl⟩
       simp only [Machine.upd_same, h14]; rw [min_eq_right (by omega)]
   have w₁ := e₁.wb_right
@@ -119,7 +119,7 @@ theorem plCh_exec {C : ℕ} (hC : 1 ≤ C) : ∀ (L : ℕ) (d : Config) (s a k p
       refine ⟨d, 2, .whileLtN_false (by rw [h17, h14]; omega) hw, by simp, by simp [h16],
         by simp [h04], fun i hi => by simp at hi, fun _ _ => rfl, FrameM.refl _ _⟩
     · have hcons := chunks_cons (s := s) (a := a) hC (by omega : 1 ≤ L)
-      set len := min C L with hlen
+      set len := min C L
       have hlen1 : 1 ≤ len := le_min hC (by omega)
       have hlenL : len ≤ L := min_le_right _ _
       rw [hcons] at hWp hWk
@@ -150,9 +150,9 @@ theorem plCh_exec {C : ℕ} (hC : 1 ≤ C) : ∀ (L : ℕ) (d : Config) (s a k p
           obtain ⟨x1, x2, x3⟩ := cL i (by omega)
           simp only [List.getD_cons_succ]
           refine ⟨?_, ?_, ?_⟩
-          · rw [show ptr + 3 * (i + 1) = ptr + 3 + 3 * i by ring]; exact x1
-          · rw [show ptr + 3 * (i + 1) + 1 = ptr + 3 + 3 * i + 1 by ring]; exact x2
-          · rw [show ptr + 3 * (i + 1) + 2 = ptr + 3 + 3 * i + 2 by ring]; exact x3
+          · rwa [show ptr + 3 * (i + 1) = ptr + 3 + 3 * i by ring]
+          · rwa [show ptr + 3 * (i + 1) + 1 = ptr + 3 + 3 * i + 1 by ring]
+          · rwa [show ptr + 3 * (i + 1) + 2 = ptr + 3 + 3 * i + 2 by ring]
       · intro x hx
         rw [hcons, List.length_cons] at hx
         rw [cm x (by omega), bm, Machine.upd_other _ _ _ (by omega),

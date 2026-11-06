@@ -55,7 +55,7 @@ theorem genuine_iff_rev {C : Chain} {a : Point} {σ τ : ℝ} (hσ : σ = 1 ∨ 
     Genuine C a σ τ ↔ τ < C.hitParam (rayPt a σ τ) (-σ) := by
   have hσ' : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   obtain ⟨hT, hTD, hin⟩ := Merge.hit_of_freeAt C (p := rayPt a σ τ) (by simpa using htop) hσ' hfree
-  set T := C.hitParam (rayPt a σ τ) (-σ) with hTd
+  set T := C.hitParam (rayPt a σ τ) (-σ)
   constructor
   · rintro ⟨-, hin', -⟩
     by_contra hle
@@ -111,8 +111,8 @@ theorem arr_facts {C : Chain} {Q : Polygon} {N : ℕ} {x : WPos} {w : Point} {σ
       w ∉ C.dom := by
   have hpos : (chainModel C).pos Q x = w := by
     rw [pos_eq_sidePt']; exact harr.2.2.2.1
-  have hcl : PosClass C Q x := posClass_of he hpp.1 hpp.2.1 (by rw [hpos]; exact hy)
-    (Or.inl (by rw [hpos]; exact htop))
+  have hcl : PosClass C Q x := posClass_of he hpp.1 hpp.2.1 (by rwa [hpos])
+    (Or.inl (by rwa [hpos]))
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
   have hloc : (x.edge = 1 ∨ x.edge = 3) ∨ (6 ≤ x.edge ∧ (chainModel C).pos Q x ∈ C.set) := by
     rcases hcl with h | ⟨h6, hlt⟩ | ⟨hend, hz⟩
@@ -128,7 +128,7 @@ theorem arr_facts {C : Chain} {Q : Polygon} {N : ℕ} {x : WPos} {w : Point} {σ
         le_rfl one_pos
   refine ⟨hpos, hcl, hloc, ?_⟩
   rw [← hpos]
-  rcases posClass_pt hcl hpp.1 hpp.2.1 (by rw [hpos]; exact hy) with h | ⟨h, -⟩
+  rcases posClass_pt hcl hpp.1 hpp.2.1 (by rwa [hpos]) with h | ⟨h, -⟩
   · exact not_dom_of_onCB (Or.inl h)
   · exact not_dom_of_onCB (Or.inr (Or.inl h))
 

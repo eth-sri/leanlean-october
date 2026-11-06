@@ -114,19 +114,13 @@ theorem chord_data {i : ℕ} (hi : i < NR.nChords) :
       rfl⟩
   have hadm := hFam.2.1 hmemF
   obtain ⟨y, a, b, hIC, -, hceq⟩ := hFam.2.1 hmemF
-  set A := ((chainModel C).pos (Qof P) (NR.chord i).lpos).1 with hAdef
-  set B := ((chainModel C).pos (Qof P) (NR.chord i).rpos).1 with hBdef
+  set A := ((chainModel C).pos (Qof P) (NR.chord i).lpos).1
+  set B := ((chainModel C).pos (Qof P) (NR.chord i).rpos).1
   have hc : (NR.chord i).toSet (chainModel C) (Qof P) = hseg ((Qof P).vtx (NR.chord i).h).2 A B := rfl
   obtain ⟨e1, e2, e3⟩ := Merge.hseg_inj hIC.lt.le (hceq.symm.trans hc)
   have hAB : A < B := by rw [← e2, ← e3]; exact hIC.lt
   obtain ⟨hl, hr⟩ := hatt i hi
   rw [hc] at hl hr
-  have hpl : sidePt (C.sideWalk C.sideBeta) (NR.chord i).lp
-      ((chainModel C).param (Qof P) (NR.chord i).lpos) = (chainModel C).pos (Qof P) (NR.chord i).lpos :=
-    rfl
-  have hpr : sidePt (C.sideWalk C.sideBeta) (NR.chord i).rp
-      ((chainModel C).param (Qof P) (NR.chord i).rpos) = (chainModel C).pos (Qof P) (NR.chord i).rpos :=
-    rfl
   refine ⟨A, B, hAB, hc, hh i hi, hadm, hl, hr, ?_, ?_⟩
   · have hm : sidePt (C.sideWalk C.sideBeta) (NR.chord i).lp
         ((chainModel C).param (Qof P) (NR.chord i).lpos) ∈ hseg ((Qof P).vtx (NR.chord i).h).2 A B :=

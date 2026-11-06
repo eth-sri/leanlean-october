@@ -45,11 +45,7 @@ namespace CombMap
 
 variable {V F D : Type*} (M : CombMap V F D)
 
-/-- A chosen dart at each vertex. -/
-noncomputable def vdart (v : V) : D := Classical.choose (M.vert_surj v)
 
-/-- The face receiving the weight of a vertex. -/
-noncomputable def fv (v : V) : F := M.face (M.vdart v)
 
 namespace SpanTree
 
@@ -80,7 +76,7 @@ omit [Fintype D] [DecidableEq D] [Fintype F] [DecidableEq F] in
 theorem not_isAnc_head_of_notMem_sepSet {f : F} {v : V} (hv : v ∉ T.sepSet f) {e : D}
     (he : M.face e = f) : ¬ T.IsAnc v (M.head e) := by
   rw [← M.vert_fperm]
-  exact T.not_isAnc_of_notMem_sepSet hv (by rw [M.face_fperm_apply]; exact he)
+  exact T.not_isAnc_of_notMem_sepSet hv (by rwa [M.face_fperm_apply])
 
 omit [DecidableEq F] in
 /-- The far sides of distinct non-tree darts of one face are disjoint. -/
@@ -88,7 +84,7 @@ theorem label_unique (hM : M.Planar) {d d' : D} (hd : d ∈ T.coDarts) (hd' : d'
     (hf : M.face d' = M.face d) {g : F} (hg : g ∈ T.cross d) (hg' : g ∈ T.cross d') :
     d = d' := by
   by_contra hne
-  have hsub := T.cross_subset hM (T.opp_mem_coDarts hd) hd' (by rw [M.opp_opp]; exact hf)
+  have hsub := T.cross_subset hM (T.opp_mem_coDarts hd) hd' (by rwa [M.opp_opp])
     (by rw [M.opp_opp]; exact Ne.symm hne)
   exact T.notMem_cross_opp hM hd hg (hsub hg')
 

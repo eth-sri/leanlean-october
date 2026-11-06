@@ -88,7 +88,7 @@ theorem sideExits_ncard (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ 
       cntP (fun t => SideHit M P N k₁ k₂ (chordAt N r t)) (N.region r).chords.length := by
   obtain ⟨-, -, -, hRok⟩ := hregs
   obtain ⟨hlist, hnd, -, -⟩ := hRok r hr
-  set L := (N.region r).chords with hL
+  set L := (N.region r).chords
   -- the chords of the side are the images of the places
   have himg : sideExits M (N.F M (Qof P)) (reg r) k₁ k₂ =
       (fun t => (N.chord (chordAt N r t)).toSet M (Qof P)) ''
@@ -101,8 +101,7 @@ theorem sideExits_ncard (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ 
       obtain ⟨t', ht', hti⟩ := List.getElem_of_mem hmem
       have hat : chordAt N r t' = i := by
         unfold chordAt
-        rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht', Option.getD_some]
-        exact hti
+        rwa [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht', Option.getD_some]
       refine ⟨t', ⟨ht', ?_⟩, by simp only [hat]⟩
       rw [hat]
       exact (attach_side_iff hGM hNF hi k₁ k₂).1 ⟨p, t, hA, hin⟩

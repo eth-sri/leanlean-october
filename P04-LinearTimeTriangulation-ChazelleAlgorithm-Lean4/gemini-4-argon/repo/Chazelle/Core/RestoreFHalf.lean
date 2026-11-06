@@ -130,7 +130,7 @@ theorem halfS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
     have e'' : ∀ q, c''.nreg q = regB c'.nmem halfBodyL c'.nreg q := fun q => by rw [h'']
     rw [g22] at b0
     rw [g23] at b1
-    refine ⟨⟨by rw [e'', bfr _ (by omega) (by omega)]; exact i1, ?_, fun q h1 h2 h3 h4 h5 => ?_⟩,
+    refine ⟨⟨by rwa [e'', bfr _ (by omega) (by omega)], ?_, fun q h1 h2 h3 h4 h5 => ?_⟩,
       ?_⟩
     · rw [e'', e'', b0, b1]; omega
     · rw [e'', bfr q h1 h2]; exact i3 q h1 h2 h3 h4 h5

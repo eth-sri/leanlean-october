@@ -78,15 +78,15 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
       c'.nreg ALLOC ≤ c.nreg ALLOC + k := by
   obtain ⟨hw, E, Og, h08, h34, h100, hrec, hm0, hEA, fr, hbud, j, hj, h110, hB⟩ := hI
   have hjq : j < ps.length := by rw [h110, h100] at hlt; omega
-  set pc := ps[j]'hjq with hpc
+  set pc := ps[j]'hjq
   have hpcm : pc ∈ ps := List.getElem_mem hjq
   have hok := X.ok pc hpcm
   obtain ⟨r0, r1, r2, r3, r4, r58⟩ := hrec j hjq
-  set p := A₀ + 1 + 9 * j with hp
-  set L := A₀ + 1 + 9 * ps.length with hL
+  set p := A₀ + 1 + 9 * j
+  set L := A₀ + 1 + 9 * ps.length
   have hLp : L - p = (L - (p + 9)) + 9 := by omega
   have hbud' : c.nreg ALLOC + ((L - (p + 9)) * (K + 2) + 9 * (K + 2)) ≤ W := by
-    rw [h110, hLp, Nat.add_mul] at hbud; exact hbud
+    rwa [h110, hLp, Nat.add_mul] at hbud
   have hAW : c.nreg ALLOC + 9 * (K + 2) ≤ W := by
     have : 0 ≤ (L - (p + 9)) * (K + 2) := Nat.zero_le _
     omega
@@ -151,9 +151,9 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
         (by unfold ALLOC; omega)
     refine ⟨c₂, _, ex, ⟨w₂, E₂, Og₂, ?_, ?_, ?_, ?_, ?_, ?_, FrameNK.step fr (F₁.trans F₂ |>.mono
       (by simp) le_rfl), ?_, j + 1, by omega, by rw [n10]; ring, ?_⟩, ?_, by omega⟩
-    · rw [k2 _ (by unfold LoopR; simp) (by decide) (by decide)]; exact h08
-    · rw [k2 _ (by unfold LoopR; simp) (by decide) (by decide)]; exact h34
-    · rw [k2 _ (by unfold LoopR; simp) (by decide) (by decide)]; exact h100
+    · rwa [k2 _ (by unfold LoopR; simp) (by decide) (by decide)]
+    · rwa [k2 _ (by unfold LoopR; simp) (by decide) (by decide)]
+    · rwa [k2 _ (by unfold LoopR; simp) (by decide) (by decide)]
     · intro i hi
       have := hrec i hi
       have hlt' : ∀ f, f < 9 → A₀ + 1 + 9 * i + f < c.nreg ALLOC := fun f hf => by
@@ -166,10 +166,10 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
         by rw [fm _ (hlt' 3 (by norm_num))]; exact this.2.2.2.1,
         by rw [fm _ (hlt' 4 (by norm_num))]; exact this.2.2.2.2.1, fun hk => ?_⟩
       obtain ⟨b5, b6, b7, b8⟩ := this.2.2.2.2.2 hk
-      exact ⟨by rw [fm _ (hlt' 5 (by norm_num))]; exact b5,
-        by rw [fm _ (hlt' 6 (by norm_num))]; exact b6,
-        by rw [fm _ (hlt' 7 (by norm_num))]; exact b7,
-        by rw [fm _ (hlt' 8 (by norm_num))]; exact b8⟩
+      exact ⟨by rwa [fm _ (hlt' 5 (by norm_num))],
+        by rwa [fm _ (hlt' 6 (by norm_num))],
+        by rwa [fm _ (hlt' 7 (by norm_num))],
+        by rwa [fm _ (hlt' 8 (by norm_num))]⟩
     · intro a ha
       rw [fm a (by omega)]; exact hm0 a ha
     · omega
@@ -177,7 +177,7 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
       show c₂.nreg ALLOC + (L - (p + 9)) * (K + 2) ≤ W
       have : c₂.nreg ALLOC ≤ c.nreg ALLOC + (k₁ + k₂) := fk
       omega
-    · rw [htk, psSet_append]; exact hB₂
+    · rwa [htk, psSet_append]
     · rw [n10, h110]
       show (L - (p + 9)) * (K + 2) + (k₁ + k₂) + 2 ≤ (L - p) * (K + 2)
       rw [hLp, Nat.add_mul]
@@ -189,7 +189,7 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
     obtain ⟨c₂, k₂, e₂, hk₂, hB₂, f₂⟩ := pieceK0_exec (P := P) (W := W) (H := H) (C := C)
       (z := z) (σ := σ) c₁ w₁ E₁ (x := pc.s) (y := pc.e) (by rw [v50, r0]) (by rw [v51, r1])
       (by rw [v52, r2]) (by rw [v53, r3])
-      (by rw [kl _ (by unfold LoopR; simp) (by decide)]; exact h34) hok.1 hok.2.1 hok.2.2.1
+      (by rwa [kl _ (by unfold LoopR; simp) (by decide)]) hok.1 hok.2.1 hok.2.2.1
       hok.2.2.2.1 (hok.2.2.2.2.2.1 hk0) hxe hye hzpc hB₁ X.hnW (by rw [hA₁]; omega)
     exact finish c₂ _ (.ifLtN_true t e₂) (by omega) e₂.wb_right (E₁.frame f₂ Bk0_env)
       (frame_of_frameB f₂ (fun r hr => ⟨oracleBands_mem r (by have := (Bk0_ob r hr).1; omega),
@@ -203,17 +203,17 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
     obtain ⟨hen, hAt, hCα, hgg, hMpw⟩ := kind1_query hok hk1 X.hR hmA
     have hpwγ : pc.pw ≤ γ := kind1_pw_le_γ X.arc X.hsP X.heP X.hs1 X.he1 X.hwt hpcm hok hk1
     have hcost := query_cost_le (κ := O.κ) hgg (show c₁.nmem (c₁.nmem (c₁.nmem (pc.entry + 2)) + 2)
-      ≤ γ by rw [hMpw]; exact hpwγ)
+      ≤ γ by rwa [hMpw])
     have hw1 : 1 ≤ pc.pw := by rw [hpw]; exact Nat.one_le_two_pow
     have hpp : pc.s.edge + pc.pw ≤ 2 * C.m + 6 := by rw [hpw]; omega
     have hQn : (Qof P).n = P.n := shear_n _ _
     have hPW : P.n ≤ W := by unfold hostWords at hW₀; omega
     have hnW := X.hnW
     obtain ⟨c₂, k₂, e₂, hk₂, hB₂, F₂, keep₂, E₂⟩ := pieceK1_exec (O := O) X.hV c₁ w₁ E₁
-      (by rw [kl _ (by unfold LoopR; simp) (by decide)]; exact h08) hB₁
+      (by rwa [kl _ (by unfold LoopR; simp) (by decide)]) hB₁
       (p₀ := pc.s.edge) (en := pc.entry) (x0 := pc.x0) (dir := pc.dir) (w := pc.pw)
       (by rw [v50, r0]) (by rw [v55, r5]) (by rw [v56, r6]) (by rw [v57, r7]) (by rw [v58, r8])
-      (by rw [hx0, hpw]; exact hWk) hw1 (by rw [hx0, hpw]; exact hbn) h6 hpp hdir hAt hCα
+      (by rwa [hx0, hpw]) hw1 (by rwa [hx0, hpw]) h6 hpp hdir hAt hCα
       Og₁.qk (fun h0 => Og₁.q0 h0 _ fun x hx => block_inC hw1 h6 hpp hx) Og₁.q1 X.hQs hcost
       (by rw [hA₁]; omega) (by omega) (by omega) (by rw [hx0, hpw]; omega)
     have hset : pcSetOf C (Qof P) pc =
@@ -225,7 +225,7 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
       (by omega))
       (fun r hr ha => keep₂ r (by unfold LoopR ALLOC at hr; unfold ALLOC at ha; omega)
         (by unfold LoopR ALLOC at hr; unfold ALLOC at ha; omega) (Wk1_loop r hr))
-      (by rw [hset]; exact hB₂)
+      (by rwa [hset])
 
 /-! ## The loop -/
 
@@ -266,9 +266,9 @@ theorem shLoop_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
   have I₁ : LpI P W H C z σ m₀ A₀ ps c K c₁ := by
     refine ⟨e₁.wb_right, E₁, Og.keep fun r a b => k₁' r (by simp only [Blpi,
       Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]; omega),
-      by rw [k₁' _ (by decide)]; exact h08, v34, by rw [k₁' _ (by decide)]; exact h100,
-      by rw [f₁.2.2.1]; exact hrec, fun a ha => by rw [f₁.2.2.1]; exact hm0 a ha,
-      by rw [hA₁]; exact hEA, FrameNK.step (FrameNK.refl c) F₁, ?_, 0, Nat.zero_le _,
+      by rwa [k₁' _ (by decide)], v34, by rwa [k₁' _ (by decide)],
+      by rwa [f₁.2.2.1], fun a ha => by rw [f₁.2.2.1]; exact hm0 a ha,
+      by rwa [hA₁], FrameNK.step (FrameNK.refl c) F₁, ?_, 0, Nat.zero_le _,
       by rw [v10], ?_⟩
     · rw [hA₁, v10, show A₀ + 1 + 9 * ps.length - (A₀ + 1) = 9 * ps.length by omega]
       exact hbud

@@ -42,7 +42,7 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       ∃ (H D : Finset ℕ) (fin : Finset (ℕ × ℕ)) (nsp : ℕ),
         (∃ act, SInv g.μ g.k' g.s H (slabN T (g.k' - 1 - ρ) g.k') (AdjN M) act [] fin D nsp) ∧
         ∀ v, v < g.μ → (c'.nmem (g.base 48 + v) = 1 ↔ v ∈ D ∨ v ∈ H) := by
-  have hU := g.U_ge; have hE := g.END_eq
+  have hU := g.U_ge
   have b43 := g.base_eq 43; have b46 := g.base_eq 46; have b48 := g.base_eq 48
   have b49 := g.base_eq 49; have b3 := g.base_eq 3; have b36 := g.base_eq 36
   have b0 := g.base_eq 0; have b29 := g.base_eq 29; have b35 := g.base_eq 35
@@ -52,7 +52,7 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have hs : 0 < g.s := by
     show 0 < min (g.k' * g.k') g.μ; have := Nat.mul_pos hk' hk'; omega
   have hP := g.two_pow_L
-  set cs := g.k' - 1 - ρ with hcs
+  set cs := g.k' - 1 - ρ
   unfold phase2a
   -- registers
   obtain ⟨c1, k1, e1, hk1, hw1, hR1, h704, hr1, hm1, hrr1, hrm1, ho1⟩ :=
@@ -86,14 +86,14 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     rw [k2m (g.base 0 + w) (by omega), k2m (g.base 29 + c.nmem (g.base 0 + w)) (by omega)]
   have hstk' : segL g.s g.μ (boOf g c2.nmem) g.μ = stkList c2.nmem (g.base 46)
       (segL g.s g.μ (boOf g c2.nmem) g.μ).length := by
-    rw [segL_congr hbo2]; exact hstk2
+    rwa [segL_congr hbo2]
   have hlv2 : ∀ l, l < g.μ → LvOK g c2.nmem cs l := fun l hl => by
     obtain ⟨h1, h2, h3, h4⟩ := hD.lv l hl
     refine ⟨?_, ?_, ?_, ?_⟩
-    · rw [k2m _ (by omega)]; exact h1
-    · rw [k2m _ (by omega)]; exact h2
-    · rw [k2m _ (by omega)]; exact h3
-    · rw [k2m _ (by omega)]; exact h4
+    · rwa [k2m _ (by omega)]
+    · rwa [k2m _ (by omega)]
+    · rwa [k2m _ (by omega)]
+    · rwa [k2m _ (by omega)]
   have hpc : ∀ v, v < g.μ → plPos g.μ (boOf g c2.nmem) (keyOf' g c2.nmem) v =
       plPos g.μ (boOf g c.nmem) (keyOf' g c.nmem) v := fun v hv => plPos_congr hbo2 hkey2 hv
   have hI := dinv_init (W := W) hSF2 hD.head hk' (by omega) hkμ hlv2
@@ -109,8 +109,8 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       rw [hpc v hv, k2m _ (by omega)]; exact hD.act v hv hb)
     (fun v hv => by rw [k2m _ (by omega)]; exact hD.df v hv) hstk'
   have htp2' : c2.nreg 130701 = 2 * (segL g.s g.μ (boOf g c2.nmem) g.μ).length := by
-    rw [segL_congr hbo2]; exact htp2
-  have hnsp2 : c2.nreg 130704 = 0 := by rw [hf2.1 _ (by unfold StkRG; omega)]; exact h704
+    rwa [segL_congr hbo2]
+  have hnsp2 : c2.nreg 130704 = 0 := by rwa [hf2.1 _ (by unfold StkRG; omega)]
   -- the driver
   obtain ⟨c3, K, e3, hK, hw3, hR3, ⟨fin, D, nsp, hI3⟩, htp3, hst3, hr3, hrr3, hrm3, ho3⟩ :=
     driver_exec (P := P) hw2 hR2 hSF2 hI htp2' hnsp2 hk' hs

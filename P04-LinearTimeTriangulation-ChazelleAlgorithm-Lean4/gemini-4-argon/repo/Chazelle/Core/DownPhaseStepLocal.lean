@@ -41,7 +41,7 @@ theorem region_restrict (hSG : S ⊆ G) (hGT : G ⊆ T) (hR : R ∈ regionsIn D 
   obtain ⟨v, hv⟩ := Chazelle.Chain.regionsIn_nonempty hV
   have hVG : V ⊆ freeIn D G :=
     (Chazelle.Chain.regionsIn_subset hV).trans (Chazelle.Chain.freeIn_anti D hGT)
-  set W := connectedComponentIn (freeIn D G) v with hW
+  set W := connectedComponentIn (freeIn D G) v
   have hvW : v ∈ W := mem_connectedComponentIn (hVG hv)
   have hWS : W ⊆ freeIn D S :=
     (connectedComponentIn_subset _ _).trans (Chazelle.Chain.freeIn_anti D hSG)

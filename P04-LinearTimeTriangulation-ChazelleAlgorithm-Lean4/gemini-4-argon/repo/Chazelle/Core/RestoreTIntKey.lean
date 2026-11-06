@@ -63,7 +63,7 @@ theorem interior_wa {bit : ℕ} (hbit : bit = 1 ↔ Mountain.LeftInside (Qof P))
   have hn : (Qof P).n = P.n := shear_n _ _
   unfold Model.wa
   simp only [interiorModel]
-  rw [interiorWalk_vtx _ (by rw [hn]; exact he), hn]
+  rw [interiorWalk_vtx _ (by rwa [hn]), hn]
   unfold iIdx
   by_cases h : bit = 1
   · rw [ite_eq_left (hbit.1 h), ite_eq_left h]
@@ -174,7 +174,7 @@ theorem iEdge_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Word
     config_simp
     rw [upd_ne (by omega)]
   obtain ⟨c₂, k₂, e₂, hk₂, r41, r44⟩ := intIdx_exec (P := P) hW c₁ e₁.wb_right
-    (by rw [q02]; exact ha) (by rw [q01]; exact hD)
+    (by rwa [q02]) (by rwa [q01])
   rw [q01, q02, hm₁, hmd] at r41 r44
   obtain ⟨c₃, k₃, e₃, hk₃, s40, s41, s43, s44, s121⟩ : ∃ c₃ k₃, Exec P W
       (block [.copyN 50121 50041, .constN 50040 0, .constN 50043 0]) c₂ c₃ k₃ ∧ k₃ = 3 ∧
@@ -277,7 +277,7 @@ theorem iSame_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Word
   obtain ⟨c₂, k₂, e₂, hk₂, v122, o₂⟩ := hSel_exec (P := P) e₁.wb_right (src := b) (dst := 50122)
     d32 (by omega)
   obtain ⟨c₃, k₃, e₃, hk₃, v123, o₃⟩ := hSel_exec (P := P) e₂.wb_right (src := e) (dst := 50123)
-    (by rw [o₂ _ (by decide)]; exact d32) (by omega)
+    (by rwa [o₂ _ (by decide)]) (by omega)
   -- the height indices
   have hIx : c₃.nreg 50122 = hIdx bit P.n ⟨c.nreg a, c.nreg b⟩ := by
     rw [o₃ _ (by decide), v122, g₁ b hb8.1 hb8.2, d121]
@@ -297,9 +297,8 @@ theorem iSame_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Word
     · refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, ?_⟩
       intro r h1 h2 h3 h4
       simp [upd, h1, h2, h3, h4]
-  have hn := hxe
   have hhx : hIdx bit P.n ⟨c.nreg a, c.nreg b⟩ < P.n := hIdx_lt hxe hx.2.2
-  have hhy : hIdx bit P.n ⟨c.nreg d, c.nreg e⟩ < P.n := hIdx_lt (by rw [← hsame]; exact hxe) hy.2.2
+  have hhy : hIdx bit P.n ⟨c.nreg d, c.nreg e⟩ < P.n := hIdx_lt (by rwa [← hsame]) hy.2.2
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, d₅⟩ := dirTail_exec (P := P) hG hW c₄ e₄.wb_right
     (sa := .vtx (hIdx bit P.n ⟨c.nreg a, c.nreg b⟩))
     (sb := .vtx (hIdx bit P.n ⟨c.nreg d, c.nreg e⟩)) hhx hhy
@@ -331,7 +330,7 @@ theorem iSame_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Word
   · rw [i1, p120, p02, dirOf_one, dirOf_two, key_lt_lex hx hy]
     have hbase := param_lt_iff_same_edge M (Qof P) (x := ⟨c.nreg a, c.nreg b⟩)
       (y := ⟨c.nreg d, c.nreg e⟩) hsame
-    rw [interior_hgtY hbit hxe, interior_hgtY hbit (by rw [← hsame]; exact hxe)] at hbase
+    rw [interior_hgtY hbit hxe, interior_hgtY hbit (by rwa [← hsame])] at hbase
     simp only at hbase ⊢
     rw [← hbase]
     constructor
@@ -342,7 +341,7 @@ theorem iSame_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Word
   · rw [i2, p120, p02, dirOf_one, dirOf_two, key_lt_lex hy hx]
     have hbase := param_lt_iff_same_edge M (Qof P) (x := ⟨c.nreg d, c.nreg e⟩)
       (y := ⟨c.nreg a, c.nreg b⟩) hsame.symm
-    rw [interior_hgtY hbit (by rw [← hsame]; exact hxe), interior_hgtY hbit hxe] at hbase
+    rw [interior_hgtY hbit (by rwa [← hsame]), interior_hgtY hbit hxe] at hbase
     simp only at hbase ⊢
     rw [hsame] at hbase ⊢
     rw [← hbase]
@@ -386,8 +385,8 @@ theorem iKey_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Words
   have ee := (g₁ e he8.1 he8.2).symm
   simp only [ea, eb, ed, ee] at hx hy hxe _hye ⊢
   have hmd' : c₁.nmem (c₁.nreg 83000 + 1) = bit := by
-    rw [hm₁, g₁ 83000 (by norm_num) (by norm_num)]; exact hmd
-  have hD' : c₁.nreg 83000 + 1 ≤ W := by rw [g₁ 83000 (by norm_num) (by norm_num)]; exact hD
+    rwa [hm₁, g₁ 83000 (by norm_num) (by norm_num)]
+  have hD' : c₁.nreg 83000 + 1 ≤ W := by rwa [g₁ 83000 (by norm_num) (by norm_num)]
   unfold iKey
   refine spec_seq ⟨c₁, k₁, e₁, ?_⟩
   by_cases t1 : c₁.nreg a < c₁.nreg d

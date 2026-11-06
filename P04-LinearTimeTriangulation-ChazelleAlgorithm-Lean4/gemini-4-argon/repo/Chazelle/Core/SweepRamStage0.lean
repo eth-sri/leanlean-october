@@ -192,20 +192,20 @@ theorem initSide_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       sideT_exec (P := P) c hw
     refine ⟨c', k + 1, .ifLtN_true (by rw [h0, h91]; omega) ex, by omega, ?_, ?_, ?_, ?_,
       fun k hk => ?_, fun k hk => ?_⟩
-    · rw [h0]; exact a20
-    · rw [h0]; exact a21
-    · rw [h0]; exact a23
-    · rw [h0]; exact a24
+    · rwa [h0]
+    · rwa [h0]
+    · rwa [h0]
+    · rwa [h0]
     · rw [h0]; simp only [↓reduceIte]; interval_cases k <;> assumption
     · rw [h0]; simp only [↓reduceIte]; interval_cases k <;> assumption
   · obtain ⟨c', k, ex, hk, a20, a21, a23, a24, a40, a41, a42, a43, a44, a45, a46, a47, a48, a49⟩ :=
       sideF_exec (P := P) c hw
     refine ⟨c', k + 2, .ifLtN_false (by rw [h1, h91]; omega) ex, by omega, ?_, ?_, ?_, ?_,
       fun k hk => ?_, fun k hk => ?_⟩
-    · rw [h1]; exact a20
-    · rw [h1]; exact a21
-    · rw [h1]; exact a23
-    · rw [h1]; exact a24
+    · rwa [h1]
+    · rwa [h1]
+    · rwa [h1]
+    · rwa [h1]
     · rw [h1]; simp only [one_ne_zero, ↓reduceIte]; interval_cases k <;> assumption
     · rw [h1]; simp only [one_ne_zero, ↓reduceIte]; interval_cases k <;> assumption
 
@@ -283,7 +283,6 @@ theorem mdBlk_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
         c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   set A := c.nreg ALLOC with hAd
-  have n96 : sw 96 ≠ ALLOC := by unfold sw ALLOC; omega
   have n90 : sw 90 ≠ sw 96 ∧ sw 90 ≠ sw 97 ∧ sw 90 ≠ sw 30 ∧ sw 90 ≠ sw 31 ∧ sw 90 ≠ sw 98 := by
     unfold sw; omega
   have n91 : sw 91 ≠ sw 96 ∧ sw 91 ≠ sw 97 ∧ sw 91 ≠ sw 30 ∧ sw 91 ≠ sw 31 ∧ sw 91 ≠ sw 98 := by
@@ -292,8 +291,8 @@ theorem mdBlk_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   rw [← hAd] at a96 a30
   have b90 : c₁.nreg (sw 90) = 0 := by rw [ar _ n90.1 n90.2.2.1 n90.2.1, h90]
   have b91 : c₁.nreg (sw 91) = 1 := by rw [ar _ n91.1 n91.2.2.1 n91.2.1, h91]
-  obtain ⟨c₂, k₂, e₂, hk₂, d96, d0, dv, dlo, dhi, dr, drr, drm, dout⟩ :=
-    copyDesc_exec (P := P) c₁ e₁.wb_right b90 b91 (by rw [a96, a97]; exact s20)
+  obtain ⟨c₂, k₂, e₂, hk₂, d96, d0, dv, dlo, dr, drr, drm, dout⟩ :=
+    copyDesc_exec (P := P) c₁ e₁.wb_right b90 b91 (by rwa [a96, a97])
       (by rw [a96]; omega)
   have c90 : c₂.nreg (sw 90) = 0 := by rw [dr _ n90.1 n90.2.1 n90.2.2.2.2, b90]
   have c91 : c₂.nreg (sw 91) = 1 := by rw [dr _ n91.1 n91.2.1 n91.2.2.2.2, b91]
@@ -305,7 +304,7 @@ theorem mdBlk_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   have g97 : c₃.nreg (sw 97) = c.nreg (sw 21) := by
     rw [b97, dr _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega),
       ar _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega)]
-  obtain ⟨c₄, k₄, e₄, hk₄, f96, f0, fv, flo, fhi, fr, frr, frm, fout⟩ :=
+  obtain ⟨c₄, k₄, e₄, hk₄, f96, f0, fv, flo, fr, frr, frm, fout⟩ :=
     copyDesc_exec (P := P) c₃ e₃.wb_right g90 g91 (by rw [g96, g97]; omega) (by rw [g96]; omega)
   obtain ⟨c₅, k₅, e₅, hk₅, hA5, hr5, hm5, hrr5, hrm5, ho5⟩ := mdC_exec (P := P) c₄ e₄.wb_right
   have ex : Exec P W mdBlk c c₅ (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) :=
@@ -313,9 +312,9 @@ theorem mdBlk_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   -- memory of the final configuration
   have mem : ∀ a, c₅.nmem a = c₄.nmem a := fun a => by rw [hm5]
   have m4 : ∀ a, a < A + 6 → c₄.nmem a = c₂.nmem a := fun a ha => by
-    rw [flo a (by rw [g96]; exact ha), bm]
+    rw [flo a (by rwa [g96]), bm]
   have m2 : ∀ a, a < A → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [dlo a (by rw [a96]; exact ha), am]
+    rw [dlo a (by rwa [a96]), am]
   refine ⟨c₅, _, ex, by omega, ?_, ?_, ?_, ?_, fun j hj => ?_, ?_, fun j hj => ?_,
     fun a ha => ?_, fun r h1 h2 h3 h4 h5 h6 => ?_, ?_, ?_, ?_⟩
   · rw [hA5, f96, g96]
@@ -415,8 +414,8 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     (hWm : 2 * J.whole.m + 7 ≤ W) (hroom : c.nreg ALLOC + 220 ≤ W) :
     ∃ c' k, Exec P W initS c c' k ∧ k ≤ 220 ∧ St0 P c c' H J ∧
       Frame {bSweep, bLocate} c c' k := by
-  set i := c.nreg (sw 7) with hi_def
-  set A := c.nreg ALLOC with hA_def
+  set i := c.nreg (sw 7)
+  set A := c.nreg ALLOC
   obtain ⟨wl, wr', ww, hreg⟩ := hwf
   have hl5 := wl.1
   have hr5 := wr'.1
@@ -434,7 +433,7 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   have A1 : c₁.nreg ALLOC = A := F₁.1 ALLOC (by unfold ALLOC; decide)
   have M1 : c₁.nmem = c.nmem := F₁.2.2.1
   have hJ1 : JunctionAt c₁.nmem (c₁.nreg 50200) (c₁.nreg 50201) (c₁.nreg 50202) (Qof P) H J := by
-    rw [M1, u200, u201, u202]; exact hJ
+    rwa [M1, u200, u201, u202]
   -- 0.2: `junConst`
   obtain ⟨c₂, k₂, e₂, hk₂, p₂, -⟩ := junConst_meets P W c₁ e₁.wb_right
     ⟨by rw [u200]; omega, by rw [u201]; omega, by rw [u202]; omega, H, J, hJ1, hWm⟩
@@ -455,7 +454,7 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   have i2 : c₂.nreg (sw 7) = i := by rw [k₂s, ulo _ (by omega)]
   have o91 : c₂.nreg (sw 91) = 1 := by rw [k₂s, u91]
   obtain ⟨c₃, k₃, e₃, hk₃, t20, t21, t23, t24, t40, t45⟩ :=
-    initSide_exec (P := P) c₂ e₂.wb_right o91 (by rw [i2]; exact hi)
+    initSide_exec (P := P) c₂ e₂.wb_right o91 (by rwa [i2])
   have G₃ := exec_frameB e₃ wr_initSide'
   have tlo : ∀ r, (r < sw 20 ∨ sw 50 ≤ r) → c₃.nreg r = c₂.nreg r := fun r hr => G₃.1 r (by
     unfold sw at hr; simp only [Bside, decide_eq_false_iff_not]; omega)
@@ -513,8 +512,8 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   have y21 : c₄.nreg (sw 21) = if 1 - i = 0 then c.nreg (sw 0) else c.nreg (sw 1) := by
     rw [k4 _ (by omega) (by omega) (by omega) (by omega) (by omega), q21]
   obtain ⟨c₅, k₅, e₅, hk₅, zA, z30, z31, z0, zq, z6, zl, zlo, zr, zrr, zrm, zo⟩ :=
-    mdBlk_exec (P := P) c₄ e₄.wb_right y90 y91 (by rw [y20, A4]; exact bq)
-      (by rw [y21, A4]; exact bl) (by rw [A4]; omega)
+    mdBlk_exec (P := P) c₄ e₄.wb_right y90 y91 (by rwa [y20, A4])
+      (by rwa [y21, A4]) (by rw [A4]; omega)
   rw [A4] at zA z30 z31 z0 zq z6 zl zlo
   rw [y20, M4] at zq
   rw [y21, M4] at zl
@@ -551,9 +550,9 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     · rw [r45 _ (Or.inr (by omega)), x92]
     · rw [r45 _ (Or.inr (by omega)), x93]
     · rw [lo5 0 (by omega), lo5 1 (by omega), lo5 2 (by omega)]; exact ⟨j0, j1, j2⟩
-    · rw [lo5 0 (by omega), zA]; exact w0
-    · rw [lo5 1 (by omega), zA]; exact w1
-    · rw [lo5 2 (by omega), zA]; exact w2
+    · rwa [lo5 0 (by omega), zA]
+    · rwa [lo5 1 (by omega), zA]
+    · rwa [lo5 2 (by omega), zA]
     · intro H' hH'
       rw [lo5 2 (by omega)] at hH'
       have hb : c₅.nmem (c.nreg (sw 2)) = c.nmem (c.nreg (sw 2)) := zlo _ (by omega)
@@ -562,10 +561,10 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       have hH : HostAt c₅.nmem (c.nmem (c.nreg (sw 2))) H := hostAt_agree hJ.2.2.1 hEb zlo
       rw [NFLoc.hostAt_unique hH' hH]
       exact hreg H hJ.2.2.1
-    · rw [r45 _ (Or.inl (by omega)), q20]; exact jq
-    · rw [r45 _ (Or.inl (by omega)), q20, zA]; exact wq5
-    · rw [r45 _ (Or.inl (by omega)), q21]; exact jl
-    · rw [r45 _ (Or.inl (by omega)), q21, zA]; exact wl5
+    · rwa [r45 _ (Or.inl (by omega)), q20]
+    · rwa [r45 _ (Or.inl (by omega)), q20, zA]
+    · rwa [r45 _ (Or.inl (by omega)), q21]
+    · rwa [r45 _ (Or.inl (by omega)), q21, zA]
     · rw [r45 _ (Or.inl (by omega)), t23, k₂s, ulo _ (by omega)]
     · rw [r45 _ (Or.inl (by omega)), t24, k₂s, ulo _ (by omega)]
     · rw [r45 _ (Or.inr (by omega)), t40 k hk]
@@ -576,10 +575,10 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     · rw [k5 _ (by omega) (by omega) (by omega) (by omega) (by omega), n34, M3, q21, ml]
     · rw [k5 _ (by omega) (by omega) (by omega) (by omega) (by omega), n35, M3,
         lo3 _ (by omega), mw]
-    · rw [z30]; exact mdq
-    · rw [z30, zA]; exact mwq
-    · rw [z31]; exact mdl
-    · rw [z31, zA]; exact mwl
+    · rwa [z30]
+    · rwa [z30, zA]
+    · rwa [z31]
+    · rwa [z31, zA]
   · -- the frame
     have F4 : FrameB Bs0 c c₄ := F₁.trans (F₂.trans (F₃.trans F₄))
     have hB : ∀ r, bandOf r ∉ ({bSweep, bLocate} : Finset ℕ) → Bs0 r = false := by

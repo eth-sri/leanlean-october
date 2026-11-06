@@ -54,10 +54,10 @@ theorem flBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       c₁.nreg 60107 = c.nmem (FL + v) ∧ (∀ r, r ≠ 60107 → c₁.nreg r = c.nreg r) ∧
       c₁.nmem = c.nmem := by
     exec_block
-    · rw [hFL, hv]; exact hW
+    · rwa [hFL, hv]
     · refine ⟨rfl, by config_simp; rw [hFL, hv], fun r hr => ?_, rfl⟩
       config_simp; simp only [upd_apply, ite_eq_right hr]
-  have hW1 : 1 ≤ W := by have := hw.1 120011; rw [h1] at this; exact this
+  have hW1 : 1 ≤ W := by have := hw.1 120011; rwa [h1] at this
   have w₁ := e₁.wb_right
   have g1 : c₁.nreg 120011 = 1 := by rw [R₁ _ (by decide), h1]
   have gv : c₁.nreg 60103 = v := by rw [R₁ _ (by decide), hv]
@@ -75,11 +75,11 @@ theorem flBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   · simp only [hf, ite_false, forall_const, reduceCtorEq, false_imp_iff, and_true]
     rcases Nat.lt_or_gt_of_ne hf with h | h
     · have e₂ := Exec.constN (P := P) w₁ 60104 0 (Nat.zero_le _)
-      exact ⟨_, _, .seq e₁ (.ifLtN_true (by rw [v7, g1]; exact h) e₂), by omega,
+      exact ⟨_, _, .seq e₁ (.ifLtN_true (by rwa [v7, g1]) e₂), by omega,
         by config_simp⟩
     · have e₂ := Exec.constN (P := P) w₁ 60104 0 (Nat.zero_le _)
       exact ⟨_, _, .seq e₁ (.ifLtN_false (by rw [v7, g1]; omega)
-        (.ifLtN_true (by rw [v7, g1]; exact h) e₂)), by omega, by config_simp⟩
+        (.ifLtN_true (by rwa [v7, g1]) e₂)), by omega, by config_simp⟩
 
 /-- **The list of `D*`.** -/
 def dlS : Stmt :=
@@ -126,7 +126,7 @@ theorem dlS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {�
       obtain ⟨d', k, ex, hk, F, a, b⟩ := flBody_exec (P := P) hwd hJd.1 hri hJd.2.1 (by omega)
       have e : flφ d.nmem FL i = flφ c.nmem FL i := by
         unfold flφ; rw [hJd.2.2 _ (by omega)]
-      exact ⟨d', k, ex, hk, F, by rw [← e]; exact a, by rw [← e]; exact b⟩)
+      exact ⟨d', k, ex, hk, F, by rwa [← e], by rwa [← e]⟩)
     e₁.wb_right ⟨by rw [K₁ _ (by decide) (by decide) (by decide) (by decide), hFL],
       by rw [K₁ _ (by decide) (by decide) (by decide) (by decide), h1], fun a _ => by rw [m₁]⟩
     (by rw [K₁ _ (by decide) (by decide) (by decide) (by decide), hμ])
@@ -148,7 +148,7 @@ theorem dl_facts (m : ℕ → ℕ) (FL μ : ℕ) :
     (∀ v, v < μ → m (FL + v) = 1 → ∃ i, i < (emitted (flφ m FL) μ).length ∧
       ((emitted (flφ m FL) μ).getD i (0, 0)).1 = v) ∧
     (emitted (flφ m FL) μ).length = ((Finset.range μ).filter fun v => m (FL + v) = 1).card := by
-  set L := emitted (flφ m FL) μ with hL
+  set L := emitted (flφ m FL) μ
   have hφ : ∀ j x, flφ m FL j = some x → x = (j, j) ∧ m (FL + j) = 1 := fun j x h => by
     unfold flφ at h; split_ifs at h with h'
     · exact ⟨(Option.some.inj h).symm, h'⟩
@@ -209,13 +209,13 @@ theorem OrdFacts.mono {m m' : ℕ → ℕ} {μ FL LAB DL nD ORD RK X : ℕ}
   dl_all v hv hf := by
     rw [hX _ (by omega)] at hf
     obtain ⟨i, hi, e⟩ := h.dl_all v hv hf
-    exact ⟨i, hi, by rw [hX _ (by omega)]; exact e⟩
+    exact ⟨i, hi, by rwa [hX _ (by omega)]⟩
   nD_eq := by
     rw [h.nD_eq]; congr 1; ext v
     simp only [Finset.mem_filter, Finset.mem_range]
     constructor
-    · rintro ⟨hv, e⟩; exact ⟨hv, by rw [hX _ (by omega)]; exact e⟩
-    · rintro ⟨hv, e⟩; exact ⟨hv, by rw [← hX _ (by omega)]; exact e⟩
+    · rintro ⟨hv, e⟩; exact ⟨hv, by rwa [hX _ (by omega)]⟩
+    · rintro ⟨hv, e⟩; exact ⟨hv, by rwa [← hX _ (by omega)]⟩
   ord_lt i hi := by rw [hX _ (by omega)]; exact h.ord_lt i hi
   ord_inj i j hi hj e := by
     rw [hX _ (by omega), hX _ (by omega)] at e; exact h.ord_inj i j hi hj e
@@ -241,8 +241,8 @@ theorem rkBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, a, b⟩
   unfold rkBody
   exec_block
-  · rw [h7, hi]; exact hb1
-  · config_simp; rw [h7, hi, h10]; exact hb2
+  · rwa [h7, hi]
+  · config_simp; rwa [h7, hi, h10]
   · exact ⟨by omega, by config_simp; rw [h7, hi, h10], by config_simp; exact hi⟩
 
 theorem rkS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ ORD A : ℕ}
@@ -257,7 +257,7 @@ theorem rkS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {�
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, rr₁, a10, a99⟩ := allocS_exec (P := P) hw (rb := 60110) (rn := 60034)
     (A := A) (n := μ) (by decide) hAl hμ (by decide) hW
   have hm₁ : c₁.nmem = c.nmem := F₁.2.2.1
-  obtain ⟨c', k, ex, hk, r', rr', mm, rm, o, -, -⟩ := scatS_exec (P := P) (W := W)
+  obtain ⟨c', k, ex, hk, r', rr', mm, rm, o, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 60112) (rn := 60034) (r1 := 120011) (ra := 60113) (rv := 60114) (body := rkBody)
     (B := fun r => decide (r = 60111 ∨ r = 60113 ∨ r = 60114)) (by decide) (by decide)
     (by decide) (by decide) (by decide)
@@ -304,7 +304,7 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
   -- 1. the list of `D*`
   obtain ⟨c₁, k₁, e₁, hk₁, r₁, rr₁, mem₁, rm₁, o₁, a99, a100, cnt, pairs⟩ :=
     dlS_exec (P := P) hw hμ hFL h1 hAl' hFA (by have := SortR.sortCost_ge 20 μ; omega)
-  set L := emitted (flφ c.nmem FL) μ with hL
+  set L := emitted (flφ c.nmem FL) μ
   have hLlen : L.length ≤ μ := emitted_length_le _ _
   -- 2. the inputs of the sort
   have b130005 : c₁.nreg 130005 = LAB := by rw [r₁ _ (by omega) (by omega), hLAB]
@@ -330,10 +330,10 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
     sortCore_exec (P := P) e₂.wb_right (Z1 := LAB) (Z2 := LAB) (n := μ) (A₀ := A₀ + 2 * μ)
       w4 w5 w6 c1 c99 (by omega) (by omega) (by omega)
   rw [hAL] at al3a al3b
-  set ORD := c₃.nreg 60007 with hORD
-  set A₃ := c₃.nreg 9999 with hA₃
+  set ORD := c₃.nreg 60007
+  set A₃ := c₃.nreg 9999
   have mem₃ : ∀ a, a < A₀ + 2 * μ → c₃.nmem a = c₁.nmem a := fun a ha => by
-    rw [F₃.2.2.1 a (by rw [hAL, c99]; exact ha), hm₂]
+    rw [F₃.2.2.1 a (by rwa [hAL, c99]), hm₂]
   -- 4. the ranks
   have d34 : c₃.nreg 60034 = μ := by
     rw [R₃ _ (by unfold bandOf; norm_num) (by decide) (by decide) (by decide) (by decide),
@@ -415,8 +415,8 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
           rw [D3]; congr 1; ext v
           simp only [Finset.mem_filter, Finset.mem_range]
           constructor
-          · rintro ⟨hv, e⟩; exact ⟨hv, by rw [hFLm v hv]; exact e⟩
-          · rintro ⟨hv, e⟩; exact ⟨hv, by rw [← hFLm v hv]; exact e⟩
+          · rintro ⟨hv, e⟩; exact ⟨hv, by rwa [hFLm v hv]⟩
+          · rintro ⟨hv, e⟩; exact ⟨hv, by rwa [← hFLm v hv]⟩
         ord_lt := fun i hi => by rw [hORDm i hi]; exact hlt i hi
         ord_inj := fun i j hi hj e => by
           rw [hORDm i hi, hORDm j hj] at e; exact hinj i j hi hj e

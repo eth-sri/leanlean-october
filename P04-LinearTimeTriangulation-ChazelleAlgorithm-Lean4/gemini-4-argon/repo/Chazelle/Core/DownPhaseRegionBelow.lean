@@ -36,7 +36,7 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     (hY : ∀ i, i < nk (interiorModel Q) S R →
       (hostPt (interiorModel Q).W (hk (interiorModel Q) S R i)).2 ≤ Y) :
     ∀ z ∈ R, z.2 ≤ Y := by
-  set M := interiorModel Q with hMdef
+  set M := interiorModel Q
   have hM : WalkAx M := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
@@ -63,7 +63,6 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     simp only [z', Real.dist_eq, sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hη0]
     exact max_lt hρ hηρ)
   have hz'free := Chazelle.Chain.regionsIn_subset hR hz'R
-  have hz'Y : Y < z'.2 := by show Y < z.2 + η; linarith
   have hvW : ∀ i, i < M.W.n → z'.2 ≠ (M.W.vtx i).2 := fun i hi =>
     hVy _ (Finset.mem_union_right _ (Finset.mem_image.2 ⟨i, Finset.mem_range.2 hi, rfl⟩))
   have hvQ : ∀ i, i < Q.n → z'.2 ≠ (Q.vtx i).2 := fun i hi =>
@@ -97,7 +96,7 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     filter_upwards [h1, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)] with s h1 hs1
     have hs0 : 0 < s := hs1.1
     refine harc.2.2.2.2.2.2 p _ hp (by nlinarith [ht.1, ht.2]) (by nlinarith [ht.1, ht.2, hs1.2]) ?_
-    rw [← add_assoc]; exact h1
+    rwa [← add_assoc]
   obtain ⟨r0, hr0, hnear⟩ := Loc.near_sub_region hQ hF hfin hp ht.1.le ht.2 hncut hX hfX
   have hXR : X = R := by
     set s' := s - min s r0 / 2 with hs'd
@@ -122,7 +121,6 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   set n : ℝ := (M.W.n : ℝ)
   have hb : ∀ i, i < N → 0 ≤ hk M S X i ∧ hk M S X i < n := fun i hi =>
     hostKeys_bounds (hk_mem hM hF hfin hi)
-  have hab := (WalkAx.arc_cuts hne harc).2.2
   have hlb : 0 ≤ a ∧ a < n := hA.hl ▸ hb _ hA.hil
   have hrb : 0 ≤ b ∧ b < n := hA.hr ▸ hb _ (Nat.mod_lt _ (by have := hA.hdN; omega))
   have hxb : 0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < n := by
@@ -136,20 +134,20 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     exact ukey_mono hM hF hfin hA.hil hA.hd0 hA.hdN
   have hxu := (cyc_unwrap hlb hlb hrb hxb hab').1 hin
   rw [unwrapK_self] at hxu
-  set xx := unwrapK n a ((p : ℝ) + t) with hxx
+  set xx := unwrapK n a ((p : ℝ) + t)
   have hxa : ukey M S X i_l 0 < xx := by rw [hu0]; exact hxu.1
   have hxd : xx < ukey M S X i_l d := by rw [hA.hud]; exact hxu.2
   have hd0 := hA.hd0
   -- the piece containing `xx`
   have hex : ∃ j, xx < ukey M S X i_l (j + 1) := ⟨d - 1, by
-    rw [Nat.sub_add_cancel hA.hd0]; exact hxd⟩
+    rwa [Nat.sub_add_cancel hA.hd0]⟩
   classical
   set j := Nat.find hex
   have hj1 : xx < ukey M S X i_l (j + 1) := Nat.find_spec hex
   have hjd : j < d := by
     by_contra h; push Not at h
     have := Nat.find_min' hex (show xx < ukey M S X i_l (d - 1 + 1) by
-      rw [Nat.sub_add_cancel hA.hd0]; exact hxd)
+      rwa [Nat.sub_add_cancel hA.hd0])
     omega
   have hj0 : ukey M S X i_l j ≤ xx := by
     rcases Nat.eq_zero_or_pos j with h0 | h0
@@ -177,7 +175,6 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   simp only [Chazelle.Geometry.lerp_snd] at hy hY1 hY2
   set u := (M.W.vtx (q % M.W.n)).2
   set v := (M.W.vtx ((q % M.W.n + 1) % M.W.n)).2
-  have hj1' := hj1.le
   rcases le_total u v with huv | huv
   · have : (xx - q) * (v - u) ≤ (ukey M S X i_l (j + 1) - q) * (v - u) :=
       mul_le_mul_of_nonneg_right (by linarith) (by linarith)

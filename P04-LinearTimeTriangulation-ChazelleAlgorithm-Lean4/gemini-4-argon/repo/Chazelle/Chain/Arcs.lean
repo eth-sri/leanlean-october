@@ -89,18 +89,10 @@ open Chazelle.Geometry (lerp)
 
 /-! ### Sides -/
 
-/-- The sign of a side: `true` (left side) `↦ 1`, `false` (right side) `↦ -1`. -/
-def boolSgn (b : Bool) : ℝ := if b then 1 else -1
 
 variable (C : Chain)
 
-/-- The point of the chain edge `k` at parameter `t`. -/
-def edgeLerp (k : ℕ) (t : ℝ) : Point := lerp (C.vertex k) (C.vertex (k + 1)) t
 
-/-- The *side point* of the chain edge `k` at parameter `t`, pushed by `δ` to the side `b`
-(`true`: left of the direction `vertex k → vertex (k+1)`, `false`: right). -/
-def edgeOffset (k : ℕ) (b : Bool) (t δ : ℝ) : Point :=
-  offset (C.vertex k) (C.vertex (k + 1)) t (boolSgn b * δ)
 
 theorem vertex_succ_eq (k : ℕ) : C.vertex (k + 1) = C.P.vtx ((C.edgeIdx k + 1) % C.P.n) := by
   unfold vertex
@@ -116,19 +108,11 @@ theorem edgeIdx_inj {j k : ℕ} (hj : j < C.m) (hk : k < C.m) (h : C.edgeIdx j =
 
 /-! ### Cut parameters -/
 
-/-- The *cut parameters* of the chain edge `k` for the submap `S`: the parameters `t ∈ (0, 1)`
-of the points of the open edge lying on a chord of `S` (necessarily chord endpoints). -/
-def cutSet (S : Set (Set Point)) (k : ℕ) : Set ℝ :=
-  {t | t ∈ Ioo (0 : ℝ) 1 ∧ C.edgeLerp k t ∈ ⋃₀ S}
 
 /-! ### Side points near an open edge are free -/
 
 /-! ### Facing a region -/
 
-/-- The side `b` of the chain edge `k` *faces* the set `R` at the parameter `t`: the side points
-`edgeOffset k b t δ` lie in `R` for all small `δ > 0`. -/
-def FacesAt (k : ℕ) (b : Bool) (t : ℝ) (R : Set Point) : Prop :=
-  ∀ᶠ δ in 𝓝[>] (0 : ℝ), C.edgeOffset k b t δ ∈ R
 
 /-! ### Chord endpoints on the chain -/
 
@@ -144,9 +128,6 @@ theorem ncard_biUnion_finset_le {ι α : Type*} (T : Finset ι) (s : ι → Set 
 
 /-! ### Pieces -/
 
-/-- The next cut parameter after `a` on the chain edge `k` (or `1` if there is none). -/
-noncomputable def nextCut (S : Set (Set Point)) (k : ℕ) (a : ℝ) : ℝ :=
-  sInf (insert 1 {c | c ∈ C.cutSet S k ∧ a < c})
 
 section NextCut
 
@@ -154,15 +135,7 @@ variable {S : Set (Set Point)} {k : ℕ}
 
 end NextCut
 
-/-- The *pieces* of the sides of the chain edges cut by the chord endpoints of `S`: a piece is
-a triple `(k, b, a)` (edge `k < m`, side `b`, start parameter `a`) where `a = 0` or `a` is a cut
-parameter; it covers the parameters `Ioo a (nextCut S k a)`. -/
-def pieces (S : Set (Set Point)) : Set (ℕ × Bool × ℝ) :=
-  {x | x.1 < C.m ∧ (x.2.2 = 0 ∨ x.2.2 ∈ C.cutSet S x.1)}
 
-/-- The open parameter interval covered by a piece. -/
-noncomputable def pieceSet (S : Set (Set Point)) (x : ℕ × Bool × ℝ) : Set ℝ :=
-  Ioo x.2.2 (C.nextCut S x.1 x.2.2)
 
 section PieceFacts
 
@@ -170,10 +143,6 @@ variable {S : Set (Set Point)} {x : ℕ × Bool × ℝ}
 
 end PieceFacts
 
-/-- The piece `x` faces the region `R`: at every parameter of the piece, the side of the piece
-faces `R`. -/
-def PieceFaces (S : Set (Set Point)) (x : ℕ × Bool × ℝ) (R : Set Point) : Prop :=
-  ∀ t ∈ C.pieceSet S x, C.FacesAt x.1 x.2.1 t R
 
 /-! ### Chords arriving at a cut parameter -/
 

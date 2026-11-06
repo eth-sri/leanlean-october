@@ -56,10 +56,10 @@ theorem hdr_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {M
       c'.nreg 90012 = c.nmem (B + 2) ∧ c'.nreg 90013 = c.nmem (B + 3) ∧
       c'.nreg 90015 = c.nmem (B + 4) ∧ c'.nreg 90016 = c.nmem (B + 5) ∧
       c'.nreg 90017 = c.nmem (B + 6) ∧ c'.nreg 90022 = c.nmem (B + 7) ∧
-      c'.nreg 90023 = c.nmem MD ∧ c'.nreg 90024 = c.nmem (MD + 3) ∧
+      c'.nreg 90023 = c.nmem MD ∧
       c'.nreg 90018 = szOf P (c.nmem MD) (c.nmem (MD + 3)) ∧
       c'.nreg 90014 = c.nreg 90003 ∧ c'.nreg 90019 = 1 ∧ c'.nreg 90020 = 3 ∧
-      c'.nreg 90021 = 2 ∧ c'.nreg 50000 = MD ∧ c'.nreg 50001 = B ∧ FrameB Bhdr c c' := by
+      c'.nreg 90021 = 2 ∧ c'.nreg 50000 = MD ∧ FrameB Bhdr c c' := by
   suffices hh : ∃ c' k, Exec P W hdrStmt c c' k ∧ k ≤ 30 ∧
       c'.nreg 90010 = c.nmem B ∧ c'.nreg 90011 = c.nmem (B + 1) ∧
       c'.nreg 90012 = c.nmem (B + 2) ∧ c'.nreg 90013 = c.nmem (B + 3) ∧
@@ -71,10 +71,10 @@ theorem hdr_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {M
       c'.nreg 90021 = 2 ∧ c'.nreg 50000 = MD ∧ c'.nreg 50001 = B by
     obtain ⟨c', k, e, hk, q⟩ := hh
     exact ⟨c', k, e, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
-      q.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.2.1,
+      q.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.1,
       q.2.2.2.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.2.2.2.2.1,
       q.2.2.2.2.2.2.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1,
-      q.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2,
+      q.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1,
       exec_frameB e wr_hdrStmt⟩
   have hW3 : 3 ≤ W := by omega
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W hdrBlock c c₁ k₁ ∧ k₁ = 24 ∧
@@ -124,14 +124,13 @@ theorem mul_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {d
     (hW : c.nreg a * c.nreg b ≤ W) (ha : c.nreg a ≤ W) :
     ∃ c' k, Exec P W (mulS dst a b cnt) c c' k ∧ k ≤ 4 * c.nreg a + 4 ∧
       c'.nreg dst = c.nreg a * c.nreg b ∧
-      (∀ r, r ≠ dst → r ≠ cnt → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
-      FrameB (fun r => decide (r = dst) || decide (r = cnt)) c c' := by
+      (∀ r, r ≠ dst → r ≠ cnt → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   suffices hh : ∃ c' k, Exec P W (mulS dst a b cnt) c c' k ∧ k ≤ 4 * c.nreg a + 4 ∧
       c'.nreg dst = c.nreg a * c.nreg b by
     obtain ⟨c', k, e, hk, hd⟩ := hh
     have F := exec_frameB e (B := fun r => decide (r = dst) || decide (r = cnt))
       (by simp [mulS, wr, block, wrOK])
-    exact ⟨c', k, e, hk, hd, fun r a1 a2 => F.1 r (by simp [a1, a2]), F.2.2.1, F⟩
+    exact ⟨c', k, e, hk, hd, fun r a1 a2 => F.1 r (by simp [a1, a2]), F.2.2.1⟩
   have hW0 : 0 ≤ W := Nat.zero_le _
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W (block [.constN dst 0, .constN cnt 0]) c c₁ k₁ ∧
       k₁ = 2 ∧ (c₁.nreg dst = 0 ∧ c₁.nreg cnt = 0 ∧
@@ -286,21 +285,21 @@ theorem base_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
       c'.nreg 90026 = D * K ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k ∧
       (∀ r, (r < 90025 ∨ 90045 ≤ r) → r ≠ 90061 → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ FrameS Bbase c c' := by
-  set b0 := c.nreg ALLOC with hb0
+  set b0 := c.nreg ALLOC
   have hE := dmOf_oEnd K A R D b0
   rw [hE] at hroom ⊢
   have hRD : R * D ≤ W := by omega
   have hDK : D * K ≤ W := by omega
   -- the products
-  obtain ⟨c₁, k₁, e₁, hk₁, d₁, r₁, m₁, F₁⟩ := mul_exec (P := P) (dst := 90025) (a := 90012)
+  obtain ⟨c₁, k₁, e₁, hk₁, d₁, r₁, m₁⟩ := mul_exec (P := P) (dst := 90025) (a := 90012)
     (b := 90002) (cnt := 90061) c hw (by decide) (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) h19 (by rw [h12, h02]; exact hRD) (by rw [h12]; omega)
+    (by decide) (by decide) h19 (by rwa [h12, h02]) (by rw [h12]; omega)
   rw [h12, h02] at d₁
   rw [h12] at hk₁
-  obtain ⟨c₂, k₂, e₂, hk₂, d₂, r₂, m₂, F₂⟩ := mul_exec (P := P) (dst := 90026) (a := 90002)
+  obtain ⟨c₂, k₂, e₂, hk₂, d₂, r₂, m₂⟩ := mul_exec (P := P) (dst := 90026) (a := 90002)
     (b := 90010) (cnt := 90061) c₁ e₁.wb_right (by decide) (by decide) (by decide) (by decide)
     (by decide) (by decide) (by decide) (by rw [r₁ _ (by decide) (by decide), h19])
-    (by rw [r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), h02, h10]; exact hDK)
+    (by rwa [r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), h02, h10])
     (by rw [r₁ _ (by decide) (by decide), h02]; omega)
   rw [r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), h02, h10] at d₂
   rw [r₁ _ (by decide) (by decide), h02] at hk₂

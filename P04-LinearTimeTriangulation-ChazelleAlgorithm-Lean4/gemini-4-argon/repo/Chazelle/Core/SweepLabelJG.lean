@@ -196,23 +196,22 @@ theorem corr_right0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
     Corr0 (chainModel J.whole) (chainModel J.right) (F₂plus J S₂) S₂
       (6 + tpos J.whole J.m₁) (6 + tpos J.right 0) (rL1 J) (rL2 J) (rδ J) := by
   unfold rL1 rL2 rδ
-  set C := J.whole with hC
-  set C₂ := J.right with hC₂
-  set W := (chainModel C).W with hW
-  set W₂ := (chainModel C₂).W with hW₂
+  set C := J.whole
+  set C₂ := J.right
+  set W := (chainModel C).W
+  set W₂ := (chainModel C₂).W
   have hn : W.n = 2 * C.m + 7 := cm_n C
   have hn₂ : W₂.n = 2 * C₂.m + 7 := cm_n C₂
   have hwm : C.m = J.m₁ + J.m₂ := rfl
   have hm2 : C₂.m = J.m₂ := rfl
   have h1 := J.one_le_m₁
-  have h2 := J.one_le_m₂
-  set τ := tpos C J.m₁ with hτ_def
-  set τ' := tpos C₂ 0 with hτ'_def
+  set τ := tpos C J.m₁
+  set τ' := tpos C₂ 0
   have hτ : τ < 2 * C.m := tpos_lt C J.m₁
   have hτ' : τ' < 2 * C₂.m := tpos_lt C₂ 0
-  set ℓ := 2 * J.m₂ with hℓ_def
-  set s := 2 * C.m - τ with hs_def
-  set s' := 2 * C₂.m - τ' with hs'_def
+  set ℓ := 2 * J.m₂
+  set s := 2 * C.m - τ
+  set s' := 2 * C₂.m - τ'
   have hT : ∀ e, e ≤ ℓ → tourV C J.m₁ e = tourV C₂ 0 e := fun e he => tourV_right J he
   have hM := walkAx_chainModel (C := C) hP
   have hM₂ := walkAx_chainModel (C := C₂) hP
@@ -221,8 +220,7 @@ theorem corr_right0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hg' : 6 + τ' < W₂.n := by rw [hn₂]; omega
   have hv0 : W₂.vtx (6 + τ') = J.shared := by
     have := walk_tour C₂ 0 0 (by omega)
-    rw [add_zero, Nat.mod_eq_of_lt hg', tourV_right_zero] at this
-    exact this
+    rwa [add_zero, Nat.mod_eq_of_lt hg', tourV_right_zero] at this
   have hnoV : ∀ L : ℝ, (τ' = 0 → L ≤ 2 * C₂.m) → ∀ p < W₂.n, ∀ t : ℝ, 0 ≤ t → t < 1 →
       0 < off W₂.n ((6 + τ' : ℕ) : ℝ) (p + t) → off W₂.n ((6 + τ' : ℕ) : ℝ) (p + t) < L →
       sidePt W₂ p t ≠ W₂.vtx (6 + τ') := by
@@ -270,7 +268,6 @@ theorem corr_right0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   push Not at hsl'
   have hA1 := agree_G1 hT hsl hsl'
   have hA2 := agree_G2 hT hℓ' hsl hsl'
-  have hs'1 : 1 ≤ s' := by omega
   rw [ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ s < ℓ by omega),
     ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega),
     ite_eq_right (show ¬ ℓ ≤ s' by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega)]
@@ -328,13 +325,13 @@ theorem gap_not_mem (hδ : 0 < rδ J) {pa : ℕ} {ta : ℝ} (hpa : pa < (chainMo
     (h2 : off (chainModel J.right).W.n (6 + tpos J.right 0 : ℕ) (pa + ta) < rL1 J + rδ J) :
     sidePt (chainModel J.right).W pa ta ∉ J.right.set := by
   obtain ⟨hL1, hδ7, -, -, -⟩ := caseG_consts J hδ
-  set C₂ := J.right with hC₂
+  set C₂ := J.right
   have hn₂ : (chainModel C₂).W.n = 2 * C₂.m + 7 := cm_n C₂
   have hτ' := tpos_lt C₂ 0
   have hg' : 6 + tpos C₂ 0 < (chainModel C₂).W.n := by omega
   rw [off_key' hg' hpa hta0 hta1, hL1] at h1 h2
   rw [hδ7] at h2
-  set e := dOf (chainModel C₂).W.n (6 + tpos C₂ 0) pa with he
+  set e := dOf (chainModel C₂).W.n (6 + tpos C₂ 0) pa
   have hpae : (6 + tpos C₂ 0 + e) % (chainModel C₂).W.n = pa := add_dOf hg' hpa
   have hge : 2 * C₂.m - tpos C₂ 0 ≤ e := by
     by_contra hc; push Not at hc
@@ -394,22 +391,20 @@ theorem split_facts (hδ : 0 < rδ J) :
           (J.right.sideTour J.right.sideBeta 1) x := by
   obtain ⟨hL1, -, -, hsl0, hsl0'⟩ := caseG_consts J hδ
   rw [hL1]
-  set C := J.whole with hC
-  set C₂ := J.right with hC₂
-  set W := (chainModel C).W with hW
-  set W₂ := (chainModel C₂).W with hW₂
+  set C := J.whole
+  set C₂ := J.right
+  set W := (chainModel C).W
+  set W₂ := (chainModel C₂).W
   have hn : W.n = 2 * C.m + 7 := cm_n C
   have hn₂ : W₂.n = 2 * C₂.m + 7 := cm_n C₂
   have hwm : C.m = J.m₁ + J.m₂ := rfl
   have hm2 : C₂.m = J.m₂ := rfl
-  have h1 := J.one_le_m₁
   have h2 := J.one_le_m₂
-  set τ := tpos C J.m₁ with hτ_def
-  set τ' := tpos C₂ 0 with hτ'_def
-  have hτ : τ < 2 * C.m := tpos_lt C J.m₁
+  set τ := tpos C J.m₁
+  set τ' := tpos C₂ 0
   have hτ' : τ' < 2 * C₂.m := tpos_lt C₂ 0
-  set ℓ := 2 * J.m₂ with hℓ_def
-  set s' := 2 * C₂.m - τ' with hs'_def
+  set ℓ := 2 * J.m₂
+  set s' := 2 * C₂.m - τ'
   have hT : ∀ e, e ≤ ℓ → tourV C J.m₁ e = tourV C₂ 0 e := fun e he => tourV_right J he
   have hℓ' : ℓ ≤ 2 * C₂.m := by omega
   have hsl : ℓ ≤ 2 * C.m - τ := hsl0
@@ -421,8 +416,7 @@ theorem split_facts (hδ : 0 < rδ J) :
   have hpt : W.vtx k₀ = C₂.top := by
     rw [hA1 s' le_rfl]
     have := walk_box C₂ 0 0 (by omega)
-    rw [add_zero] at this
-    exact this
+    rwa [add_zero] at this
   have hprev : Chazelle.Chain.sidePrev W k₀ 0 = C₂.sideTour C₂.sideBeta (2 * C₂.m - 1) := by
     unfold Chazelle.Chain.sidePrev
     rw [ite_eq_left rfl, hk₀, mod_pred_mod (by omega) _ hs'1, hA1 (s' - 1) (by omega),
@@ -582,7 +576,7 @@ theorem splitAttach_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hRt := J.right.top_snd_lt_radius
   have hM := walkAx_chainModel (C := J.whole) hP
   have heA : e ∈ (chainModel J.whole).Adm := F₂plus_subset J hS₂ he
-  set u := J.right.top with hu_def
+  set u := J.right.top
   rw [hpt] at hue
   have huD : u ∉ (chainModel J.whole).D := by
     rw [← hpt]; exact hM.trace _ (Nat.mod_lt _ (by omega)) 0 le_rfl zero_le_one
@@ -596,7 +590,7 @@ theorem splitAttach_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
     · rcases hs1.lt_or_eq with hs1 | hs1
       · exact absurd (hs ▸ hopen s ⟨hs0, hs1⟩) huD
       · rw [hs1, Geometry.lerp_one] at hs
-        exact ⟨a, fun h => hab (h.trans hs), by rw [hs]; exact hy, by
+        exact ⟨a, fun h => hab (h.trans hs), by rwa [hs], by
           rw [heq, hs, Geometry.segment_comm]⟩
     · rw [← hs0, Geometry.lerp_zero] at hs
       exact ⟨b, fun h => hab (hs.symm.trans h.symm), by rw [hs]; exact hy.symm, by rw [heq, hs]⟩
@@ -610,7 +604,7 @@ theorem splitAttach_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
     · rw [hP_def, g2, v6]
   obtain ⟨-, -, -, -, r, hr, hl⟩ := hAc
   have hsl₂ : sideLeft (chainModel J.right).W P 0 (rayPt u σ 1) := by
-    set ε := min (r / 2) T with hε
+    set ε := min (r / 2) T
     have hε0 : 0 < ε := lt_min (by linarith) hT
     have hz := hl (rayPt u σ ε) (hec (hray ε hε0.le (min_le_right _ _)))
       (by rw [Chazelle.Chain.sidePt_zero, hvP]; intro h
@@ -686,9 +680,9 @@ theorem corrGap_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
     first
     | exact h1.trans h2.symm
     | exact absurd (show sidePt (chainModel J.right).W pa ta ∈ J.right.set by
-        rw [h3, ← h1]; exact hxs) hw
+        rwa [h3, ← h1]) hw
     | exact absurd (show sidePt (chainModel J.right).W pa ta ∈ J.right.set by
-        rw [h3, ← h2]; exact hys) hw
+        rwa [h3, ← h2]) hw
 
 /-- **The regions of `S₂` at the two sides of the slit of `C₂`** (case G): faced just after the
 copy of the top before the slit, or just before the copy after it. -/

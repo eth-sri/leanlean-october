@@ -43,7 +43,7 @@ theorem m1c_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k
   obtain ⟨hk, hlt⟩ := hw rfl
   obtain ⟨he, hpp, hcl, hz, -, hend⟩ := hpos
   have hx : (⟨e, h⟩ : WPos) = endPos N k (1 - b) := hend rfl
-  have he6 : e < 6 := by have := congrArg WPos.edge hx; simp only at this; rw [this]; exact hlt
+  have he6 : e < 6 := by have := congrArg WPos.edge hx; simp only at this; rwa [this]
   have hbox : e = 1 ∨ e = 3 := by
     rcases hcl with h' | h' | h'
     · exact h'
@@ -89,7 +89,7 @@ theorem m1c_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k
     · rw [J.right.sideWalk_vtx_one] at hy; simp [show J.right.radius = J.whole.radius from rfl, abs_of_pos hR] at hy
     · rw [J.right.sideWalk_vtx_three] at hy; simp [show J.right.radius = J.whole.radius from rfl, abs_of_pos hR] at hy
   refine ⟨hbox, by rw [cm_n]; rcases hbox with h' | h' <;> omega,
-    by unfold ProperPos; rw [← hpar]; exact hpp, by rw [← hposT, hz], hy, hx1 rfl, ?_⟩
+    by unfold ProperPos; rwa [← hpar], by rw [← hposT, hz], hy, hx1 rfl, ?_⟩
   rw [← hpar]
   exact (Cand1.sideLeft_congr ht ha hbw _).1 hsl₂
 

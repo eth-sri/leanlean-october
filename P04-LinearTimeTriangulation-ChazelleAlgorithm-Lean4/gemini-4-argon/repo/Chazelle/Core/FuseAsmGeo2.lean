@@ -26,7 +26,6 @@ theorem walk_vtx_tpos (C : Chain) {k : ℕ} (hk : k ≤ C.m) :
     (chainModel C).W.vtx (6 + tpos C k) = C.vertex k := by
   have hn := cm_n C
   have hτ := tpos_lt C k
-  have h1 := C.one_le
   have := walk_tour C k 0 (by omega)
   rw [Nat.add_zero, Nat.mod_eq_of_lt (by rw [hn]; omega)] at this
   rw [this]

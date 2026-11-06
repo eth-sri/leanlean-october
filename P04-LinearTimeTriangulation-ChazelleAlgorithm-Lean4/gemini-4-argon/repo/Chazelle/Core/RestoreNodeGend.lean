@@ -84,9 +84,6 @@ theorem end_gend (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα)) (h
     (hgood : CountOK M S R (((g + x) % M.W.n : ℕ) + 0) (px' + tx'))
     (hxa : (((g + x) % M.W.n : ℕ) : ℝ) + 0 ≠ ((g + d) % M.W.n : ℕ) + t)
     (hxa' : (((g + x) % M.W.n : ℕ) : ℝ) + 0 ≠ pF + tF) :
-    0 ≤ off M.W.n g (pF + tF) ∧
-      (0 < off M.W.n g (pF + tF) → off M.W.n g (pF + tF) < L →
-        off M.W.n g (pF + tF) = off (chainModel Cα).W.n g' (pO + tO)) ∧
       (sideInArc ((d : ℝ) + t) (off M.W.n g (pF + tF)) (x : ℝ) ↔
         (aj = ((g + d) % M.W.n : ℕ) + t ∨
           sideInArc ((((g + d) % M.W.n : ℕ) : ℝ) + t) (pF + tF) aj)) ∧
@@ -100,15 +97,13 @@ theorem end_gend (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα)) (h
   obtain ⟨hkE0, hkEn⟩ := key_range hEA
   obtain ⟨hkF0, hkFn⟩ := key_range hFA
   have hoE : off M.W.n g ((((g + d) % M.W.n : ℕ) : ℝ) + t) = d + t := endM_off hS hd ht0 ht1
-  refine ⟨h0, harr, ?_, fun u hu => ?_⟩
+  refine ⟨ ?_, fun u hu => ?_⟩
   · have hr := rot_u hS hkE0 hkEn hkF0 hkFn hx
     rw [hoE] at hr
     rw [← hr]
-    rw [add_zero] at hpr
-    exact hpr
+    rwa [add_zero] at hpr
   · have hr := rot_u hS hkE0 hkEn hkF0 hkFn hu
-    rw [hoE] at hr
-    exact hr
+    rwa [hoE] at hr
 
 end
 

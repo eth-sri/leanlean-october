@@ -1,6 +1,9 @@
 module
 
-public import Chazelle.Core.Reduction
+public import Chazelle.Core.SpecPhases
+public import Chazelle.Core.ShearInv
+public import Chazelle.Core.ShearGood
+public import Chazelle.Final.Driver
 public import Chazelle.Core.Output
 public import Chazelle.Core.Setup
 public import Chazelle.Core.RestoreSpecMain

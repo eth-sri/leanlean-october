@@ -103,7 +103,7 @@ theorem orgLoad_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) (hb : f
   have hh' : m (m (f 240004 + 3) + f 242200 + f 242200 + f 242200 + f 242200 + f 242200) + 1 ≤ W := by
     have : m (f 240004 + 3) + f 242200 + f 242200 + f 242200 + f 242200 + f 242200 =
       m (f 240004 + 3) + 5 * f 242200 := by ring
-    rw [this]; exact hh
+    rwa [this]
   simp only [orgLoad, okB, okI, regI, upd, oX, oK, oH, oL, oR, oUp, oDn, oC, oFC, K1, K3, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e3]
   refine ⟨⟨s 2202 (by norm_num) (by norm_num), by omega⟩, s 2202 (by norm_num) (by norm_num),
@@ -185,7 +185,7 @@ theorem orgPick_irs (hI : IInv W c₀ c) (hk1 : c.nreg K1 = 1) (hs : c.nreg oS �
     · simp only [okB, okI, oE, oFE, oD, sw]
       simp only [Nat.reduceAdd]
       exact ⟨iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-        ⟨iscr_sw (by norm_num) (by norm_num), by have := hW.1 K1; rw [hk1] at this; exact this⟩, trivial⟩
+        ⟨iscr_sw (by norm_num) (by norm_num), by have := hW.1 K1; rwa [hk1] at this⟩, trivial⟩
     · rintro c' rfl
       refine ⟨rfl, ?_, ?_, ?_, fun q h1 h2 h3 => ?_⟩
       · simp [regB, regI, upd, oE, oFE, oD, oL, oR, sw, ite_eq_left hs0]
@@ -229,12 +229,11 @@ theorem orgHead_irs {J : Merge.Junction} {N₂ : NF} {E : ℕ} (hI : IInv W c₀
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
   have hK := hK₀.fix hI
   obtain ⟨k0, k1, k6, k4, k5, k2, k3⟩ := hK
-  set k := c.nreg oK with hkdef
-  set s := c.nreg oS with hsdef
+  set k := c.nreg oK
+  set s := c.nreg oS
   have hNA : NFAt c.nmem (c.nreg (sw 4)) N₂ := hNW.holds
   obtain ⟨hch, -⟩ := hNA.2.2.2.2.2
   obtain ⟨b1, hb2, -⟩ := Restore.nf_bounds hNW
-  have hW := hI.hw.1 ALLOC
   have hb : c.nreg (sw 4) + 3 ≤ W := by omega
   have hb2 : c.nmem (c.nreg (sw 4) + 3) + 5 * k + 4 ≤ W := by have := hb2 k hk; omega
   obtain ⟨r0, r1, r2, r3, r4⟩ := hch k hk
@@ -249,11 +248,10 @@ theorem orgHead_irs {J : Merge.Junction} {N₂ : NF} {E : ℕ} (hI : IInv W c₀
     (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
   obtain ⟨vH, vL, vR, vUp, vDn, vC, vFC⟩ := orgLoad_val c.nmem c.nreg k1 k3
-  set c₁ : Config := { c with nreg := regB c.nmem orgLoad c.nreg } with hc₁
+  set c₁ : Config := { c with nreg := regB c.nmem orgLoad c.nreg }
   have ko : ∀ q, (q < sw 2202 ∨ sw 2213 < q) → c₁.nreg q = c.nreg q :=
     fun q hq => orgLoad_other _ _ hq
   have c1S : c₁.nreg oS = s := ko oS (by unfold oS sw; omega)
-  have c1K1 : c₁.nreg K1 = 1 := (ko K1 (by unfold K1 sw; omega)).trans k1
   -- the end position
   have hA := hNF.2.2.1 k hk
   have hlp : (N₂.chord k).lp < (chainModel J.right).W.n := hA.1.1
@@ -266,7 +264,7 @@ theorem orgHead_irs {J : Merge.Junction} {N₂ : NF} {E : ℕ} (hI : IInv W c₀
   -- the selection
   have hc1 := ko K1 (by unfold K1 sw; omega)
   refine IRS.seq (K₁ := 5) (K₂ := 11100 - orgLoad.length - 5)
-    (orgPick_irs hI₁ (by rw [hc1]; exact k1) (by rw [c1S]; exact hs)) ?_ |>.mono
+    (orgPick_irs hI₁ (by rwa [hc1]) (by rwa [c1S])) ?_ |>.mono
     (by simp [orgLoad]) (fun _ h => h)
   rintro c₂ hI₂ hA₂ hA₂' ⟨hm₂, vE, vFE, vD, k₂⟩
   have hl : orgLoad.length = 18 := rfl
@@ -305,7 +303,7 @@ theorem orgHead_irs {J : Merge.Junction} {N₂ : NF} {E : ℕ} (hI : IInv W c₀
     · exact hrp
   refine (normS_irs (P := P) (C := J.right) hI₂ (hK₀.fix hI₂) hctx₂
     (by unfold oE oC sw; omega) (by unfold oNo oE oC sw; omega) he hpp
-    (fun _ _ _ _ => by rw [hpos]; exact hbandE) (by rw [hl] at hA₁'; omega)).mono
+    (fun _ _ _ _ => by rwa [hpos]) (by rw [hl] at hA₁'; omega)).mono
     (by rw [hl]; norm_num) ?_
   rintro c₃ ⟨vE₃, vC₃, k₃, hA₃, hm₃⟩
   refine ⟨?_, ?_, ?_, ?_, by rw [vE₃, hE₂], by rw [vC₃, hpos], ?_, ?_, ?_, by omega, ?_⟩
@@ -330,8 +328,7 @@ theorem orgHead_irs {J : Merge.Junction} {N₂ : NF} {E : ℕ} (hI : IInv W c₀
     unfold farEnd; split_ifs <;> rfl
   · intro r hr hr2 hra
     rw [k₃ r hr (by unfold oC sw at *; omega) (by unfold oNo sw at *; omega)
-      (by unfold oNo sw at *; omega) hra]
-    rw [k₂ r (by unfold oE sw at *; omega) (by unfold oFE sw at *; omega) (by unfold oD sw at *; omega)]
+      (by unfold oNo sw at *; omega) hra, k₂ r (by unfold oE sw at *; omega) (by unfold oFE sw at *; omega) (by unfold oD sw at *; omega)]
     exact ko r (by unfold sw at *; omega)
   · intro a ha
     rw [hm₃ a (by omega), hm₂]

@@ -38,7 +38,7 @@ theorem asm_modelDesc {m m' : ℕ → ℕ} {D E E' : ℕ} {M : Model}
   · have hD6 := hwf.1
     have e0 : m' D = m D := he _ (by omega)
     have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
-    refine ⟨Or.inr ⟨by rw [e0, h1], by rw [e1]; exact hL, hM⟩, by omega, fun h => ?_⟩
+    refine ⟨Or.inr ⟨by rw [e0, h1], by rwa [e1], hM⟩, by omega, fun h => ?_⟩
     rw [e0, h1] at h; exact absurd h one_ne_zero
 
 /-- A junction survives a change of the memory above its bound. -/
@@ -86,14 +86,14 @@ theorem st0S_md {c c' : Config} {H : Host} {J : Merge.Junction} (h : SweepEv.St0
     by rw [r 33 (by omega) (by omega) (by omega) (by omega), h33],
     by rw [r 34 (by omega) (by omega) (by omega) (by omega), h34],
     by rw [r 35 (by omega) (by omega) (by omega) (by omega), h35], md30, w30, md31, w31⟩
-  · rw [r 0 (by omega) (by omega) (by omega) (by omega), r 1 (by omega) (by omega) (by omega) (by omega),
-      r 2 (by omega) (by omega) (by omega) (by omega)]; exact hJ'
-  · rw [r 0 (by omega) (by omega) (by omega) (by omega), r 1 (by omega) (by omega) (by omega) (by omega),
-      r 2 (by omega) (by omega) (by omega) (by omega)]; exact hwf'
-  · rw [r 20 (by omega) (by omega) (by omega) (by omega)]; exact d20'
-  · rw [r 20 (by omega) (by omega) (by omega) (by omega)]; exact w20'
-  · rw [r 21 (by omega) (by omega) (by omega) (by omega)]; exact d21'
-  · rw [r 21 (by omega) (by omega) (by omega) (by omega)]; exact w21'
+  · rwa [r 0 (by omega) (by omega) (by omega) (by omega), r 1 (by omega) (by omega) (by omega) (by omega),
+      r 2 (by omega) (by omega) (by omega) (by omega)]
+  · rwa [r 0 (by omega) (by omega) (by omega) (by omega), r 1 (by omega) (by omega) (by omega) (by omega),
+      r 2 (by omega) (by omega) (by omega) (by omega)]
+  · rwa [r 20 (by omega) (by omega) (by omega) (by omega)]
+  · rwa [r 20 (by omega) (by omega) (by omega) (by omega)]
+  · rwa [r 21 (by omega) (by omega) (by omega) (by omega)]
+  · rwa [r 21 (by omega) (by omega) (by omega) (by omega)]
 
 /-- **`St0S` survives** a step keeping `sw 0 … 99`, the memory below the allocator, and growing
 the allocator. -/
@@ -137,13 +137,11 @@ theorem out_transport {c c' : Config} {J : Merge.Junction} {N₂ : NF}
     rw [hm _ (by omega), hm (rd c bSweep 302 + 3 * j + 1) (by omega),
       hm (rd c bSweep 302 + 3 * j + 2) (by omega)]
   refine ⟨rs, ls, hrl, fun i hi => ?_, hsok, hrw, hll, fun i hi => ?_, hlok, hlw, ?_, fun j hj => ?_⟩
-  · have hi' : i < rd c bSweep 201 := by rw [← hrl]; exact hi
-    rw [hm _ (by omega), hm (rd c bSweep 200 + 5 * i + 1) (by omega),
+  · rw [hm _ (by omega), hm (rd c bSweep 200 + 5 * i + 1) (by omega),
       hm (rd c bSweep 200 + 5 * i + 2) (by omega), hm (rd c bSweep 200 + 5 * i + 3) (by omega),
       hm (rd c bSweep 200 + 5 * i + 4) (by omega)]
     exact hrs i hi
-  · have hi' : i < rd c bSweep 301 := by rw [← hll]; exact hi
-    rw [hm _ (by omega), hm (rd c bSweep 300 + 7 * i + 1) (by omega),
+  · rw [hm _ (by omega), hm (rd c bSweep 300 + 7 * i + 1) (by omega),
       hm (rd c bSweep 300 + 7 * i + 2) (by omega), hm (rd c bSweep 300 + 7 * i + 3) (by omega),
       hm (rd c bSweep 300 + 7 * i + 4) (by omega), hm (rd c bSweep 300 + 7 * i + 5) (by omega),
       hm (rd c bSweep 300 + 7 * i + 6) (by omega)]

@@ -71,11 +71,6 @@ def stk (f : ℕ → ℕ) : ℕ → List ℕ
 /-- Unfolding the stack by one entry: the top is `f t`. -/
 @[simp] theorem stk_succ (f : ℕ → ℕ) (t : ℕ) : stk f (t + 1) = f t :: stk f t := rfl
 
-/-- The stack `stk f t` has `t` entries. -/
-@[simp] theorem length_stk (f : ℕ → ℕ) (t : ℕ) : (stk f t).length = t := by
-  induction t with
-  | zero => rfl
-  | succ t ih => simp [ih]
 
 /-- The stack `stk f t` only depends on the entries of `f` below `t`. -/
 theorem stk_congr {f g : ℕ → ℕ} {t : ℕ} (h : ∀ i, i < t → f i = g i) : stk f t = stk g t := by

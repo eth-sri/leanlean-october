@@ -150,7 +150,6 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       PLoaded P (c.nreg 110000) (c.nreg 110001) C.s C.m C.topIdx (c.nmem (c.nreg 110000 + 4))
         N.arcs.length N.chords.length (c.nmem (c.nreg 110001 + 3)) (c.nmem (c.nreg 110001 + 4))
         (c.nmem (c.nreg 110001 + 5)) (c.nmem (c.nreg 110001 + 6)) (c.nmem (c.nreg 110001 + 7)) cA ∧
-      cA.nreg 120025 = 2 ∧ cA.nreg 120023 = 0 ∧ cA.nreg 120024 = 0 ∧
       cA.nreg 120049 = c.nreg 110002 ∧ cA.nreg 110205 = 3 ∧ cA.nreg 120026 = A₀ ∧
       cA.nmem (cA.nreg 120040) = 0 ∧
       (∀ i, i < 5 → cA.nmem (cA.nreg 120040 + 1 + i) = c.nmem (c.nreg 110000 + i)) ∧
@@ -178,9 +177,8 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   have hLle : Nat.clog 2 (N.arcs.length + N.chords.length + 1) ≤
       N.arcs.length + N.chords.length + 1 := by
     rw [Nat.clog_le_iff_le_pow (by norm_num)]; exact (Nat.lt_two_pow_self).le
-  have hmn : C.m < P.n := by have := C.m_lt; rw [hCQ, hQn] at this; exact this
+  have hmn : C.m < P.n := by have := C.m_lt; rwa [hCQ, hQn] at this
   have hm1 := C.one_le
-  have hsc := SortR.sortCost_ge 500 N.chords.length
   -- 1. the constants
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, PL₁⟩ := pLoad_exec (P := P) c hw hD hCQ hsl hNF (by omega)
     (by omega) hW
@@ -215,7 +213,7 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   have hv₂ : QVOK P C (qvOf c₂) :=
     ⟨hCQ, PL₂.rs, PL₂.rm, by show c₂.nreg 120021 = _; rw [PL₂.sS]; exact sS_of_desc hD,
       by show c₂.nreg 120023 < P.n; rw [s23]; omega, by show c₂.nreg 120024 ≤ 1; rw [s24]; omega,
-      by show c₂.nreg 120015 < P.n; rw [PL₂.rs]; rw [hCQ, hQn] at hsl; exact hsl⟩
+      by show c₂.nreg 120015 < P.n; rw [PL₂.rs]; rwa [hCQ, hQn] at hsl⟩
   have hK₂ : (qvOf c₂).K = N.chords.length := PL₂.rK
   have hCB₂ : (qvOf c₂).CB = c.nmem (c.nreg 110001 + 3) := PL₂.rCB
   have hrec : ∀ i, i < (qvOf c₂).K → (qvOf c₂).CB + 5 * i + 2 ≤ A₀ := fun i hi => by
@@ -233,12 +231,12 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     have := hhh i hi; rwa [hQn] at this
   have htv : (qvOf c₂).tv < P.n := by
     show c₂.nreg 120022 < P.n; rw [PL₂.tv]; exact Nat.mod_lt _ (by omega)
-  obtain ⟨c₃, k₃, e₃, hk₃, F₃, al3a, al3b, R6₃, R12₃, ch1, ch2, chlt, chinj, chsort⟩ :=
+  obtain ⟨c₃, k₃, e₃, hk₃, F₃, al3a, al3b, R12₃, ch1, ch2, chlt, chinj, chsort⟩ :=
     chSort_exec (P := P) hG hW e₂.wb_right hv₂ hq₂ a9₂ hrec hh htv (by omega)
       (by rw [hK₂]; omega)
   rw [hK₂] at hk₃ al3a al3b ch1 ch2 chlt chinj chsort
   rw [hAL] at al3a al3b ch2
-  set A₁ := c₃.nreg 9999 with hA₁
+  set A₁ := c₃.nreg 9999
   have PL₃ := PL₂.congr fun r hr => R12₃ r (by unfold PLReg at hr; omega)
     (by unfold PLReg at hr; omega)
   -- 4. the zipper constant and the chord table
@@ -271,11 +269,11 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   -- 7. the inverse table
   have mem₆ : ∀ a, a < A₀ → c₆.nmem a = c.nmem a := fun a ha => by
     rw [F₆.2.2.1 _ (by omega), F₅.2.2.1 _ (by omega), F₄.2.2.1,
-      F₃.2.2.1 a (by rw [hAL, a9₂]; exact ha), hm₂]
+      F₃.2.2.1 a (by rwa [hAL, a9₂]), hm₂]
   have hseq : ∀ p, p < N.arcs.length →
       c₆.nmem (c.nmem (c.nreg 110001 + 6) + p) = N.seq.getD p 0 := fun p hp => by
     rw [mem₆ _ (by omega)]
-    exact hNF.2.2.2.2.2.2.2.2.1 p (by rw [NFLoc.seq_length hN]; exact hp)
+    exact hNF.2.2.2.2.2.2.2.2.1 p (by rwa [NFLoc.seq_length hN])
   obtain ⟨c₇, k₇, e₇, hk₇, F₇, a9₇, pos₇, pf₇⟩ := posTS_exec (P := P) e₆.wb_right PL₆.rSB PL₆.rA
     PL₆.one a9₆ hseq (by omega) (by omega) (fun p hp => NFLoc.seq_lt hN hp)
     (fun p q hp hq e => by
@@ -311,8 +309,8 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       (by show c₂.nreg 120016 = c₈.nreg 120016; rw [PL₂.rm, PL₈.rm])
       (by show c₂.nreg 120015 = c₈.nreg 120015; rw [PL₂.rs, PL₈.rs])
       (by show c₂.nreg 120022 = c₈.nreg 120022; rw [PL₂.tv, PL₈.tv])
-  refine ⟨c₈, _, ex, by omega, ?_, by rw [hCH]; exact ch1, by rw [hCH, hMD]; exact ch2,
-    by rw [hMD]; exact al3b, ?_, PL₈, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, Alt, Klt, ?_, ?_,
+  refine ⟨c₈, _, ex, by omega, ?_, by rwa [hCH], by rwa [hCH, hMD],
+    by rwa [hMD], ?_, PL₈, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, Alt, Klt, ?_, ?_,
     ?_, ?_, ?_, ?_⟩
   · -- the frame
     have hband : ∀ r, (110000 ≤ r ∧ r < 130000) → bandOf r ∈ aBands := by
@@ -352,14 +350,8 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     exact (FA.trans FB hA₂).trans FC (by rw [hAL, hAl]; show A₀ ≤ A₁; omega)
   · rw [F₈.1 _ (by decide), a9₇, hMD]
   · rw [K58 _ (by decide) (by decide) (by decide) (by decide), F₄.1 _ (by decide),
-      R12₃ _ (by omega) (by omega), s25]
-  · rw [K58 _ (by decide) (by decide) (by decide) (by decide), F₄.1 _ (by decide),
-      R12₃ _ (by omega) (by omega), s23]
-  · rw [K58 _ (by decide) (by decide) (by decide) (by decide), F₄.1 _ (by decide),
-      R12₃ _ (by omega) (by omega), s24]
-  · rw [K58 _ (by decide) (by decide) (by decide) (by decide), F₄.1 _ (by decide),
       R12₃ _ (by omega) (by omega), s49]
-  · rw [K58 _ (by decide) (by decide) (by decide) (by decide)]; exact z205
+  · rwa [K58 _ (by decide) (by decide) (by decide) (by decide)]
   · rw [K58 _ (by decide) (by decide) (by decide) (by decide), F₄.1 _ (by decide),
       R12₃ _ (by omega) (by omega), s26]
   · rw [hMD, F₈.2.2.1, F₇.2.2.1 _ (by omega), F₆.2.2.1 _ (by omega), m0₅]

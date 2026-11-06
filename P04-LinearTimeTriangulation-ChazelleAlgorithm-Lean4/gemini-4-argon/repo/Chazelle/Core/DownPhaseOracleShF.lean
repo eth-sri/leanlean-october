@@ -64,7 +64,7 @@ theorem frontI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', b10, b11, b12, b18, b19, b16, b17, b14, b14', b15, bA, b70, bm0,
       bm1, bm2, bm3, bmlo, br, brr, brm, bo⟩ := initI_exec (P := P) c₁ w₁
     (by rw [a0]; have := hw.1 ALLOC; omega) (by rw [a13']; have := hlow.1; have := hw.1 ALLOC; omega)
-    (by rw [aA]; exact hroom) (by omega) (by omega)
+    (by rwa [aA]) (by omega) (by omega)
   have w₂ := e₂.wb_right
   have F₂ : Frame ioBands c₁ c₂ k₂ := by
     refine ⟨fun r hr ha => br r ?_, fun r _ => by rw [brr], fun a ha => bmlo a ha,
@@ -84,7 +84,7 @@ theorem frontI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
     have e7 : c₂.nreg 170007 = c.nreg 140007 := by rw [hcopy _ (by norm_num) (by norm_num)]; exact a10 7 (by norm_num)
     exact ShotList.originIn_copy ho e5 e6 e7
   obtain ⟨c₃, k₃, e₃, hk₃, s₃, r₃, m₃, rr₃, rm₃, o₃⟩ := originI_exec (P := P) c₂ w₂ hn3 b11 b10 b12
-    b18 b19 (by rw [b14, a0, am]; exact hbit) b14' ho₂ hol (by omega)
+    b18 b19 (by rwa [b14, a0, am]) b14' ho₂ hol (by omega)
   have F₃ : Frame ioBands c₂ c₃ k₃ := frameIO_of_frameB
     (B := fun r => decide (r = 170020 ∨ r = 170021 ∨ r = 170022 ∨ r = 170092 ∨ r = 170095 ∨
       r = 170096))
@@ -101,22 +101,22 @@ theorem frontI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
     rw [q _ (by unfold BorgR ALLOC; omega), bA, aA]
   refine ⟨c₃, _, ex, by omega, ⟨hG, hHW, gs 1 (by norm_num), gs 2 (by norm_num),
     gs 3 (by norm_num), gs 4 (by norm_num), gs 8 (by norm_num), gs 9 (by norm_num),
-    by rw [g _ (by unfold BorgR; omega) (by unfold BinitR; omega)]; exact a13',
-    by rw [q _ (by unfold BorgR; omega)]; exact b10, by rw [q _ (by unfold BorgR; omega)]; exact b11,
-    by rw [q _ (by unfold BorgR; omega)]; exact b12, by rw [q _ (by unfold BorgR; omega)]; exact b18,
-    by rw [q _ (by unfold BorgR; omega)]; exact b19,
-    by rw [q _ (by unfold BorgR; omega), b14, a0, am]; exact hbit,
-    by rw [q _ (by unfold BorgR; omega)]; exact b14',
+    by rwa [g _ (by unfold BorgR; omega) (by unfold BinitR; omega)],
+    by rwa [q _ (by unfold BorgR; omega)], by rwa [q _ (by unfold BorgR; omega)],
+    by rwa [q _ (by unfold BorgR; omega)], by rwa [q _ (by unfold BorgR; omega)],
+    by rwa [q _ (by unfold BorgR; omega)],
+    by rwa [q _ (by unfold BorgR; omega), b14, a0, am],
+    by rwa [q _ (by unfold BorgR; omega)],
     by rw [q _ (by unfold BorgR; omega), b15, aA]; rfl,
     by rw [q _ (by unfold BorgR; omega), b16, a13', am]; rfl,
     by rw [q _ (by unfold BorgR; omega), b17, a13', am]; rfl, s₃,
-    fun a ha => by rw [m₃, bmlo a (by rw [aA]; exact ha), am]; rfl,
-    by rw [m₃]; show c₂.nmem (c.nreg ALLOC) = 1; rw [← aA]; exact bm0,
-    by rw [m₃]; show c₂.nmem (c.nreg ALLOC + 1) = 0; rw [← aA]; exact bm1,
-    by rw [m₃]; show c₂.nmem (c.nreg ALLOC + 2) = 0; rw [← aA]; exact bm2,
-    by rw [m₃]; show c₂.nmem (c.nreg ALLOC + 3) = P.n - 1; rw [← aA]; exact bm3,
+    fun a ha => by rw [m₃, bmlo a (by rwa [aA]), am]; rfl,
+    by rw [m₃]; show c₂.nmem (c.nreg ALLOC) = 1; rwa [← aA],
+    by rw [m₃]; show c₂.nmem (c.nreg ALLOC + 1) = 0; rwa [← aA],
+    by rw [m₃]; show c₂.nmem (c.nreg ALLOC + 2) = 0; rwa [← aA],
+    by rw [m₃]; show c₂.nmem (c.nreg ALLOC + 3) = P.n - 1; rwa [← aA],
     by rw [cA]; show c.nreg ALLOC + 8 ≤ c.nreg ALLOC + 8; exact le_rfl, hX, hcap⟩,
-    by rw [q _ (by unfold BorgR; omega)]; exact b70, cA,
+    by rwa [q _ (by unfold BorgR; omega)], cA,
     ((F₁.trans F₂).trans F₃).mono (by simp) (by omega)⟩
 
 end exec

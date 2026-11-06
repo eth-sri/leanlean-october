@@ -44,7 +44,7 @@ theorem fuseSpec_of (hS : SweepSpecH) (hBd : BuildNFSpec) : FuseSpec := by
   rw [hK1, hK2] at hroom
   obtain ⟨c', k, N, ex, hk, Fr, hle, hNW, hIs, hNF, hNk⟩ :=
     fuseRun_exec (hSw sh Bs F X Ok hloc hBs hsh) hBM hloc c hw hF hP hroom
-  refine ⟨c', k, ex, by beta_reduce; rw [hK1, hK2]; exact hk, ?_, Fr⟩
+  refine ⟨c', k, ex, by beta_reduce; rwa [hK1, hK2], ?_, Fr⟩
   intro H' J' N₁' N₂' hJ' hA1 hA2
   have eJ : J = J' := junction_eq hJ hJ'
   subst eJ

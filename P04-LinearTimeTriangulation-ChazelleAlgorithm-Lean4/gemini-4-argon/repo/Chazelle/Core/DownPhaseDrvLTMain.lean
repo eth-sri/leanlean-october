@@ -95,10 +95,10 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
     (κS := DrvR.κSpl κB) (κr := κRd 134) rfl hK₂ hMν (by omega) hc1 hc2 hc3'
   obtain ⟨hW134, hWK, hWM⟩ := room_small (R := L.length + 1) (K := L.length)
     (M := c.nreg 211013) (κc := κc) (κS := DrvR.κSpl κB) (κr := κRd 134) rfl hMν (by omega) hc1
-  set κ := 300 + 48 * κc + 5 * DrvR.κSpl κB * κc + κRd 134 * κc with hκ
-  set B := κ * (L.length + 1) * (lemma41Nat (DrvR.nextLvl lam) + 1) with hBd
+  set κ := 300 + 48 * κc + 5 * DrvR.κSpl κB * κc + κRd 134 * κc
+  set B := κ * (L.length + 1) * (lemma41Nat (DrvR.nextLvl lam) + 1)
   set K₂ := ((List.range (L.length + 1)).flatMap Lx).length with hK₂d
-  set L₂ := (List.range (L.length + 1)).flatMap Lx with hL₂d
+  set L₂ := (List.range (L.length + 1)).flatMap Lx
   -- 1. the gather
   let G : GEnv := ⟨P, W, c.nreg ALLOC, c.nmem, c.nreg, c₁.nreg 211009, c₁.nreg ALLOC,
     L.length + 1, c.nreg 211013, Qof P, BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E, Lx⟩
@@ -161,7 +161,7 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
       exact ⟨by rw [Ag]; omega, fun h0 => absurd (hone.symm.trans h0) (by norm_num)⟩,
       interiorModel (Qof P), L, L₂, E, by
       show ModelDescAt cg.nmem (cg.nreg 210001) (Qof P) (interiorModel (Qof P))
-      rw [g01]; exact hMD, hGM, by show cg.nreg 210003 = _; exact g03, by
+      rwa [g01], hGM, by show cg.nreg 210003 = _; exact g03, by
       show cg.nreg 210002 + 3 * L.length ≤ cg.nreg ALLOC
       rw [g02, Ag]; omega, by
       show ChordListAt cg.nmem (cg.nreg 210002) L
@@ -170,7 +170,7 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
       show cg.nreg 210020 + 3 * L₂.length ≤ cg.nreg ALLOC
       rw [v20, Ag]; omega, by
       show ChordListAt cg.nmem (cg.nreg 210020) L₂
-      rw [v20]; exact CLg, hok', by
+      rwa [v20], hok', by
       show cg.nreg 210004 + 2 * L.length ≤ cg.nreg ALLOC
       rw [g04, Ag]; omega, by
       show seg cg.nmem (cg.nreg 210004) (2 * L.length) = E
@@ -196,20 +196,19 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
   have hks' : ks ≤ DrvR.κSpl κB * (L.length + K₂ + (4 * L.length + 3) + 1) *
       (Nat.clog 2 (4 * c.nreg 211013) + 1) := by
     have h : ks ≤ DrvR.splCost κB cg := hks
-    rw [hsplCost] at h; exact h
+    rwa [hsplCost] at h
   obtain ⟨p3, p2l, p2b, p2, p4l, p4b, pperm, psort, p5l, pNW⟩ := postS (interiorModel (Qof P)) L L₂
-    (by show ModelDescAt cg.nmem (cg.nreg 210001) (Qof P) (interiorModel (Qof P)); rw [g01]; exact hMD)
+    (by show ModelDescAt cg.nmem (cg.nreg 210001) (Qof P) (interiorModel (Qof P)); rwa [g01])
     (by show cg.nreg 210003 = _; exact g03)
     (by show ChordListAt cg.nmem (cg.nreg 210002) L; rw [g02]; exact X.lmem cg.nmem memg)
     (by show cg.nreg 210021 = _; rw [v21])
-    (by show ChordListAt cg.nmem (cg.nreg 210020) L₂; rw [v20]; exact CLg)
+    (by show ChordListAt cg.nmem (cg.nreg 210020) L₂; rwa [v20])
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at p3 p2l p2b p2 p4l p4b
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at pperm psort p5l pNW
   have hLL : (L ++ L₂).length = L.length + L₂.length := List.length_append
-  have As : cg.nreg ALLOC ≤ cs.nreg ALLOC := Fs.2.2.2.2.2.1
   have As' : cs.nreg ALLOC ≤ cg.nreg ALLOC + ks := Fs.2.2.2.2.2.2
-  set E' := seg cs.nmem (cs.nreg 210004) (2 * (L.length + L₂.length)) with hE'
-  have hperm' : E'.Perm (List.range (2 * (L ++ L₂).length)) := by rw [hLL]; exact pperm
+  set E' := seg cs.nmem (cs.nreg 210004) (2 * (L.length + L₂.length))
+  have hperm' : E'.Perm (List.range (2 * (L ++ L₂).length)) := by rwa [hLL]
   have hsort' : E'.Pairwise (BuildNF.codeLe (interiorModel (Qof P)) (Qof P) (L ++ L₂)) := psort
   obtain ⟨fsub, fdeg, fsg, fcnt⟩ := hfam E' hperm' hsort'
   -- 3. the arguments of the rounds
@@ -248,11 +247,11 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
     · rw [r1]; omega
     · rw [r1]; exact (X.md.transport memr).mono (by omega)
     · rw [r3, p3, hLL]
-    · rw [r2, Ar, hLL]; exact p2b
-    · rw [r2, Ar, mr]; exact DrvD.chordListAt_robust p2 (by rw [hLL]; exact p2b)
-    · rw [r4, Ar, hLL]; exact p4b
+    · rwa [r2, Ar, hLL]
+    · rw [r2, Ar, mr]; exact DrvD.chordListAt_robust p2 (by rwa [hLL])
+    · rwa [r4, Ar, hLL]
     · rw [r4, Ar, mr, hLL]; exact DrvD.seg_robust (by omega)
-    · rw [r5, Ar, mr]; exact pNW
+    · rwa [r5, Ar, mr]
   -- 4. the rounds
   have hcostR : κRd (cr.nreg 216000) * (rd cr bDownDrv 3 + 1) *
       DrvR.shCost κo (cr.nreg 216001) * DrvR.cuCost κo (cr.nreg 216001) *
@@ -271,7 +270,7 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
   obtain ⟨c', k₄, x₄, hk₄, ⟨keepR, postR⟩, F₄⟩ := hRd P W cr wr
     ⟨X.envD (hcore 0 (by norm_num)) (hcore 1 (by norm_num)) memr (by omega), by rw [u00]; norm_num,
       by rw [rγ]; exact Nat.one_le_two_pow, by rw [rγ]; exact X.big2, L ++ L₂, E', hst,
-      by rw [u00]; exact fdeg, by rw [rγ]; exact fsg⟩
+      by rwa [u00], by rwa [rγ]⟩
     (by
       show cr.nreg ALLOC + κRd (cr.nreg 216000) * (rd cr bDownDrv 3 + 1) *
         DrvR.shCost κo (cr.nreg 216001) * DrvR.cuCost κo (cr.nreg 216001) *
@@ -294,10 +293,10 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
       keepS _ (Or.inl ⟨by norm_num, by norm_num⟩), g00]
   · -- `Inv(μ)`
     obtain ⟨s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11⟩ := st'
-    refine ⟨s1, s2, L', E'', s3, s4, s5, s6, s7, s8, s9, s10, s11, deg', by rw [← rγ]; exact sg',
+    refine ⟨s1, s2, L', E'', s3, s4, s5, s6, s7, s8, s9, s10, s11, deg', by rwa [← rγ],
       ?_⟩
     have h2 : L'.length + 1 ≤ 2 ^ (DrvR.regCap + 4) * ((L ++ L₂).length + 1) := by
-      rw [u00] at cnt'; exact cnt'
+      rwa [u00] at cnt'
     exact i3_step X.h16 X.hlp hI3 (n_le_top P) X.r06 fcnt h2
 
 end

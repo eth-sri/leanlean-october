@@ -76,7 +76,6 @@ theorem cost_total {κB κD K A R D ℓ : ℕ} (hA : A ≤ 2 * K) (hR : R = K + 
     calc ((60 * D + 402) * (D + 2)) * K ≤ (402 * T) * X := Nat.mul_le_mul h1 (by omega)
       _ = 402 * (T * X) := by ring
   have hX1 : X ≤ T * X := Nat.le_mul_of_pos_left X (by omega)
-  have hTX : 4 ≤ T * X := by nlinarith
   have hB : costBD κB κD D ℓ ≤ 7 + (κB + κD * (D + 1)) * X := by
     unfold costBD
     have := Nat.mul_le_mul_left κB hℓX

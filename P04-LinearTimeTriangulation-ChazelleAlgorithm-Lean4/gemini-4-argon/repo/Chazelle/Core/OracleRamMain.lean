@@ -118,7 +118,7 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   have hb₁ : BestOK P.n V.s V.m c₁ := ⟨by rw [v₁]; omega, fun h => by rw [v₁] at h; omega⟩
   -- 2. the nodes of `D*`
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hb₂, hit₂⟩ := dstarS_exec (P := P) hG hW hs c₁ e₁.wb_right hq₁ hb₁
-    (by rw [m₁]; exact hm) hDL (S := ∅) (by rw [hbo₁]; intro t _ h; exact h)
+    (by rwa [m₁]) hDL (S := ∅) (by rw [hbo₁]; intro t _ h; exact h)
   rw [m₁, Set.empty_union] at hit₂
   rw [m₁] at hk₂
   have hq₂ : QConst P V c₂ := hq₁.frame f₂ BD_const
@@ -136,7 +136,7 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     rw [f₂.1 _ (by decide), r₁ _ (by decide)]
   -- 3. the stopping point
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, s₃⟩ := tchS_exec (P := P) hG hW hv htv c₂ e₂.wb_right hq₂
-    (by rw [x140]; exact hf) hb₂
+    (by rwa [x140]) hb₂
   rw [selOf_cb hb₂, x140, x141, ← hbD] at s₃
   set sel := selOf C V bD (c.nreg 120140 = 1) (c.nreg 120141) (CBof P C V bD (c.nreg 120141))
     with hsel
@@ -164,7 +164,7 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   have m₄ : c₄.nmem = c.nmem := f₄.2.2.1.trans m₃
   have hvd := hvalid bD hit₂ hbDm
   rw [← hsel] at hvd
-  set q := posOf V P.n sel with hqdef
+  set q := posOf V P.n sel
   have xq : ∀ k, k < 4 → c₄.nreg (120160 + k) = posK q k := by
     intro k hk
     interval_cases k
@@ -177,9 +177,8 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     (f₄.1 r h2).trans (f₃.1 r h1)
   have hb₄ : BestOK P.n V.s V.m c₄ := by
     unfold BestOK
-    rw [hBDbest 120050 (by decide) (by decide), hBDbest 120051 (by decide) (by decide),
+    rwa [hBDbest 120050 (by decide) (by decide), hBDbest 120051 (by decide) (by decide),
       hBDbest 120052 (by decide) (by decide)]
-    exact hb₂
   have hbo₄ : bestOf c₄ = bD := by
     unfold bestOf; rw [hBDbest 120050 (by decide) (by decide), hBDbest 120052 (by decide) (by decide)]
     rfl
@@ -196,10 +195,10 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     intro k hk d hd hqd hbd hmd hpos S hS
     obtain ⟨hwn, hx⟩ := hvd k hk
     obtain ⟨d', k', p, ex, hk', fr, hb', hp, hl1, hl2, hit⟩ := candS_exec hcov (P := P) hG hW hs d hd
-      hqd hbd (by rw [hmd]; exact hm) (by rw [hmd]; exact hO) (by rw [hmd]; exact hL)
+      hqd hbd (by rwa [hmd]) (by rwa [hmd]) (by rwa [hmd])
       (NC := NC) (CS := CS) (fun u hu => by rw [hmd]; exact hNC u hu)
       (fun u hu => by rw [hmd]; exact hCS u hu) (rP := 120160 + k) (by omega)
-      (by rw [hpos]; exact hwn) (by rw [hpos]; exact hx) hS
+      (by rwa [hpos]) (by rwa [hpos]) hS
     rw [hpos] at hl1 hl2
     rw [hmd] at hit
     exact ⟨d', k', p, ex, hk', fr, hb', hp, ⟨hl1, hl2⟩, hit⟩
@@ -211,7 +210,7 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     simp only [BCa, BL, BC, BN, BA, BW, BE, Bdir, Bloc, Bcmp, Bk, Bool.or_eq_false_iff,
       decide_eq_false_iff_not]; omega
   obtain ⟨c₅, k₅, p₀, e₅, hk₅, f₅, hb₅, hp₀, hl₀, hit₅⟩ := candStep 0 (by norm_num) c₄ e₄.wb_right hq₄
-    hb₄ m₄ (xq 0 (by norm_num)) (dstarPts c.nmem V C V.nD) (by rw [hbo₄]; exact hit₂)
+    hb₄ m₄ (xq 0 (by norm_num)) (dstarPts c.nmem V C V.nD) (by rwa [hbo₄])
   have hq₅ := hq₄.frame f₅ hBCac
   have m₅ : c₅.nmem = c.nmem := f₅.2.2.1.trans m₄
   obtain ⟨c₆, k₆, p₁, e₆, hk₆, f₆, hb₆, hp₁, hl₁, hit₆⟩ := candStep 1 (by norm_num) c₅ e₅.wb_right hq₅
@@ -237,9 +236,8 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     unfold bestOf; rw [r₉ 120050 (by decide) (by decide), r₉ 120052 (by decide) (by decide)]
   have hb₉ : BestOK P.n V.s V.m c₉ := by
     unfold BestOK
-    rw [r₉ 120050 (by decide) (by decide), r₉ 120051 (by decide) (by decide),
+    rwa [r₉ 120050 (by decide) (by decide), r₉ 120051 (by decide) (by decide),
       r₉ 120052 (by decide) (by decide)]
-    exact hb₈
   -- frames
   have ex : Exec P W mainS c c₉ (1 + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + (k₈ + k₉)))))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉)))))))

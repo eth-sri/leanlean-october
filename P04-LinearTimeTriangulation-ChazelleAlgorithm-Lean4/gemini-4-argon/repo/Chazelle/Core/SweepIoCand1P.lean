@@ -258,11 +258,10 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
   refine IRS.seq (K₁ := 8) (K₂ := 12) ((IRS.block midL hI ok).mono (by simp [midL])
     (fun _ h => h)) ?_
   rintro c₁ hI₁ - - rfl
-  have hb6 : c.nreg K6 = 6 := k6
   have e6 : regB c.nmem midL c.nreg K6 = 6 := by
-    rw [vo _ (by unfold OutM K6 sw; omega)]; exact k6
+    rwa [vo _ (by unfold OutM K6 sw; omega)]
   have e1 : regB c.nmem midL c.nreg K1 = 1 := by
-    rw [vo _ (by unfold OutM K1 sw; omega)]; exact k1
+    rwa [vo _ (by unfold OutM K1 sw; omega)]
   have fin : ∀ (l : List Instr) (c₂ : Config), c₂ = { c with nreg := regB c.nmem midL c.nreg } →
       IInv W c₀ c₂ → l.length ≤ 2 → okB W c₂.nmem l c₂.nreg →
       (∀ i ∈ l, dstI i = tgt) →
@@ -280,7 +279,7 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
   have st : IScr tgt := s 4807 le_rfl (by norm_num)
   refine irs_ifEq (K := 8) (fun hb => ?_) (fun hb => ?_)
   · simp only at hb
-    have hβ : J.right.sideBeta = true := vb.1 (by rw [hb]; exact e1)
+    have hβ : J.right.sideBeta = true := vb.1 (by rwa [hb])
     have hmid : midT J.right = 2 * J.right.m - 2 * J.right.topIdx := by unfold midT; rw [ite_eq_left hβ]
     refine (fin [.subN tgt m2x dd, .addN tgt tgt K6] _ rfl hI₁ (by simp) ?_ ?_ ?_).mono
       (by norm_num) (fun _ h => h)

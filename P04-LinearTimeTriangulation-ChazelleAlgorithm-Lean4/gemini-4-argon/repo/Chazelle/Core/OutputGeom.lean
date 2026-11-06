@@ -81,8 +81,8 @@ theorem side_bdry_vtx {z : Point} {ε : ℝ} (hε : ε = 1 ∨ ε = -1) (hz : z 
   by_contra hv
   push Not at hv
   obtain ⟨e, he, t, ht, hzt⟩ := exists_openEdge_of_mem_boundary Q hz (fun m hm h => hv m hm h.symm)
-  set a := Q.vtx e with ha
-  set b := Q.vtx ((e + 1) % Q.n) with hb
+  set a := Q.vtx e
+  set b := Q.vtx ((e + 1) % Q.n)
   have hn3 : 3 ≤ Q.n := hQ.1
   have hab : a.2 ≠ b.2 :=
     hdh e _ he (succIdx_lt Q he) (Chazelle.Jordan.succIdx_ne Q hn3 he).symm
@@ -184,9 +184,7 @@ include hQ hdh in
 top vertex, its right end the top vertex or the right corner. -/
 theorem top_chord_ends {a b : ℝ} (hch : IsHChord Q D.y₂ a b) {z : Point}
     (hz : z ∈ hseg D.y₂ a b) (hzD : z ∈ Q.filled \ Q.boundary)
-    (hz1 : edgeX Q D.i D.y₂ < z.1) (hz2 : z.1 < edgeX Q D.j D.y₂) :
-    edgeX Q D.i D.y₂ ≤ a ∧ (a = edgeX Q D.i D.y₂ ∨ a = (Q.vtx D.top).1) ∧
-      b ≤ edgeX Q D.j D.y₂ ∧ (b = edgeX Q D.j D.y₂ ∨ b = (Q.vtx D.top).1) := by
+    (hz1 : edgeX Q D.i D.y₂ < z.1) (hz2 : z.1 < edgeX Q D.j D.y₂) : (a = edgeX Q D.i D.y₂ ∨ a = (Q.vtx D.top).1) ∧ (b = edgeX Q D.j D.y₂ ∨ b = (Q.vtx D.top).1) := by
   obtain ⟨hzy, hza, hzb⟩ := hz
   have hy12 : D.y₁ ≤ D.y₂ := (D.isTrap.bot_lt.trans D.isTrap.lt_top).le
   have hLb : ((edgeX Q D.i D.y₂, D.y₂) : Point) ∈ Q.boundary :=
@@ -211,7 +209,7 @@ theorem top_chord_ends {a b : ℝ} (hch : IsHChord Q D.y₂ a b) {z : Point}
   have hb1 : b ≤ edgeX Q D.j D.y₂ := by
     by_contra hlt; push Not at hlt
     exact (hch.open_int _ (by linarith) hlt).2 hRb
-  refine ⟨ha1, ?_, hb1, ?_⟩
+  refine ⟨ ?_, ?_⟩
   · rcases ha1.lt_or_eq with h | h
     · right
       have := top_bdry hQ hdh D h (by linarith) hch.left_mem
@@ -227,9 +225,7 @@ include hQ hdh in
 /-- **The ends of a chord through the open bottom side.** -/
 theorem bot_chord_ends {a b : ℝ} (hch : IsHChord Q D.y₁ a b) {z : Point}
     (hz : z ∈ hseg D.y₁ a b) (hzD : z ∈ Q.filled \ Q.boundary)
-    (hz1 : edgeX Q D.i D.y₁ < z.1) (hz2 : z.1 < edgeX Q D.j D.y₁) :
-    edgeX Q D.i D.y₁ ≤ a ∧ (a = edgeX Q D.i D.y₁ ∨ a = (Q.vtx D.bot).1) ∧
-      b ≤ edgeX Q D.j D.y₁ ∧ (b = edgeX Q D.j D.y₁ ∨ b = (Q.vtx D.bot).1) := by
+    (hz1 : edgeX Q D.i D.y₁ < z.1) (hz2 : z.1 < edgeX Q D.j D.y₁) : (a = edgeX Q D.i D.y₁ ∨ a = (Q.vtx D.bot).1) ∧ (b = edgeX Q D.j D.y₁ ∨ b = (Q.vtx D.bot).1) := by
   obtain ⟨hzy, hza, hzb⟩ := hz
   have hy12 : D.y₁ ≤ D.y₂ := (D.isTrap.bot_lt.trans D.isTrap.lt_top).le
   have hLb : ((edgeX Q D.i D.y₁, D.y₁) : Point) ∈ Q.boundary :=
@@ -254,7 +250,7 @@ theorem bot_chord_ends {a b : ℝ} (hch : IsHChord Q D.y₁ a b) {z : Point}
   have hb1 : b ≤ edgeX Q D.j D.y₁ := by
     by_contra hlt; push Not at hlt
     exact (hch.open_int _ (by linarith) hlt).2 hRb
-  refine ⟨ha1, ?_, hb1, ?_⟩
+  refine ⟨ ?_, ?_⟩
   · rcases ha1.lt_or_eq with h | h
     · right
       have := bot_bdry hQ hdh D h (by linarith) hch.left_mem
@@ -319,13 +315,12 @@ theorem exists_top_chord_left (hne : (Q.vtx D.top).1 ≠ edgeX Q D.i D.y₂) :
   have hlt : edgeX Q D.i D.y₂ < (Q.vtx D.top).1 := lt_of_le_of_ne hx1 (Ne.symm hne)
   set x := (edgeX Q D.i D.y₂ + (Q.vtx D.top).1) / 2 with hx
   have hxa : edgeX Q D.i D.y₂ < x := by rw [hx]; linarith
-  have hxb : x < (Q.vtx D.top).1 := by rw [hx]; linarith
   have hxne : ((x, D.y₂) : Point) ≠ Q.vtx D.top := fun h => by
     have := congrArg Prod.fst h; simp only at this; linarith
   obtain ⟨c, hc, hzc, hzD, hzU⟩ := top_chord_pt hQ hdh D hxa (by linarith) hxne
   obtain ⟨a, b, hch, rfl⟩ := chord_hseg hQ hc hzc
   simp only at hch hzc ⊢
-  obtain ⟨-, ha, -, -⟩ := top_chord_ends hQ hdh D hch hzc hzD hxa (by linarith)
+  obtain ⟨ha, -⟩ := top_chord_ends hQ hdh D hch hzc hzD hxa (by linarith)
   have hax : a ≤ x := hzc.2.1
   have ha' : a = edgeX Q D.i D.y₂ := by
     rcases ha with ha | ha
@@ -351,7 +346,7 @@ theorem exists_top_chord_right (hne : (Q.vtx D.top).1 ≠ edgeX Q D.j D.y₂) :
   obtain ⟨c, hc, hzc, hzD, hzU⟩ := top_chord_pt hQ hdh D (by linarith) hxb hxne
   obtain ⟨a, b, hch, rfl⟩ := chord_hseg hQ hc hzc
   simp only at hch hzc hc ⊢
-  obtain ⟨-, -, -, hb⟩ := top_chord_ends hQ hdh D hch hzc hzD (by linarith) hxb
+  obtain ⟨-, hb⟩ := top_chord_ends hQ hdh D hch hzc hzD (by linarith) hxb
   have hbx : x ≤ b := hzc.2.2
   have hb' : b = edgeX Q D.j D.y₂ := by
     rcases hb with hb | hb
@@ -370,13 +365,12 @@ theorem exists_bot_chord_left (hne : (Q.vtx D.bot).1 ≠ edgeX Q D.i D.y₁) :
   have hlt : edgeX Q D.i D.y₁ < (Q.vtx D.bot).1 := lt_of_le_of_ne hx1 (Ne.symm hne)
   set x := (edgeX Q D.i D.y₁ + (Q.vtx D.bot).1) / 2 with hx
   have hxa : edgeX Q D.i D.y₁ < x := by rw [hx]; linarith
-  have hxb : x < (Q.vtx D.bot).1 := by rw [hx]; linarith
   have hxne : ((x, D.y₁) : Point) ≠ Q.vtx D.bot := fun h => by
     have := congrArg Prod.fst h; simp only at this; linarith
   obtain ⟨c, hc, hzc, hzD, hzU⟩ := bot_chord_pt hQ hdh D hxa (by linarith) hxne
   obtain ⟨a, b, hch, rfl⟩ := chord_hseg hQ hc hzc
   simp only at hch hzc hc ⊢
-  obtain ⟨-, ha, -, -⟩ := bot_chord_ends hQ hdh D hch hzc hzD hxa (by linarith)
+  obtain ⟨ha, -⟩ := bot_chord_ends hQ hdh D hch hzc hzD hxa (by linarith)
   have hax : a ≤ x := hzc.2.1
   have ha' : a = edgeX Q D.i D.y₁ := by
     rcases ha with ha | ha
@@ -401,7 +395,7 @@ theorem exists_bot_chord_right (hne : (Q.vtx D.bot).1 ≠ edgeX Q D.j D.y₁) :
   obtain ⟨c, hc, hzc, hzD, hzU⟩ := bot_chord_pt hQ hdh D (by linarith) hxb hxne
   obtain ⟨a, b, hch, rfl⟩ := chord_hseg hQ hc hzc
   simp only at hch hzc hc ⊢
-  obtain ⟨-, -, -, hb⟩ := bot_chord_ends hQ hdh D hch hzc hzD (by linarith) hxb
+  obtain ⟨-, hb⟩ := bot_chord_ends hQ hdh D hch hzc hzD (by linarith) hxb
   have hbx : x ≤ b := hzc.2.2
   have hb' : b = edgeX Q D.j D.y₁ := by
     rcases hb with hb | hb

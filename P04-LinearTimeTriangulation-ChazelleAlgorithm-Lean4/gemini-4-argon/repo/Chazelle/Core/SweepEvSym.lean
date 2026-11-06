@@ -100,7 +100,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have hNn := hE.n_eq
   have hNW := hE.NW
   have hmN := C.m_lt
-  set i := e - 6 with hi
+  set i := e - 6
   have hlt : i < 2 * C.m := by omega
   have e₁ := Exec.subN (P := P) hE.wb 50120 50201 50081
   set c₁ : Config := { c with nreg := upd c.nreg 50120 (c.nreg 50201 - c.nreg 50081) } with hc₁
@@ -133,7 +133,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have q32 : c₅.nreg 50032 = 1 := by
     rw [r₅ _ (by decide) (by decide) (by decide), hE₄.r32]
   have ht' : 0 < (chainModel C).param (Qof P) ⟨i + 6, hc⟩ := by
-    rw [show i + 6 = e by omega]; exact ht
+    rwa [show i + 6 = e by omega]
   obtain ⟨hEi, hpt⟩ := tour_pt hE.hG hE.hP hreg hNn hlt x₁ x₂ l₁ l₂ v₁ v₂ ht'
   have hc1 : 1 ≤ hc := by
     rcases Nat.eq_zero_or_pos hc with rfl | h
@@ -240,10 +240,10 @@ theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
       obtain ⟨g0, g1, g2⟩ := e1
       have hctx₁ := hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])
       refine primPre_of hctx₁ ⟨?_, ?_, ?_, ?_, ?_⟩
-      · rw [g1]; exact h6
-      · rw [g1]; exact hen
-      · rw [g1, g2]; exact hpp
-      · rw [g1, g2]; exact hnorm
+      · rwa [g1]
+      · rwa [g1]
+      · rwa [g1, g2]
+      · rwa [g1, g2]
       · rw [hm, g0]; exact hctx.hostReg)
     (by simp only [List.length_cons, List.length_nil]; omega)
   refine h.mono (by simp) ?_
@@ -252,7 +252,7 @@ theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
   obtain ⟨g0, g1, g2⟩ := e1
   obtain ⟨k0, k1, k2⟩ := f1
   obtain ⟨H, hC, -⟩ := hctx.2.2.2.1
-  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hm, g0]; exact hC
+  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwa [hm, g0]
   obtain ⟨s, hs, hsl, hse⟩ := hpost H C hC₁
   rw [g1, g2] at hse
   refine ⟨⟨s, symPtIn_transport hs k0 k1 k2, hsl, hse⟩, fun r hr h0 hra => hk r hr

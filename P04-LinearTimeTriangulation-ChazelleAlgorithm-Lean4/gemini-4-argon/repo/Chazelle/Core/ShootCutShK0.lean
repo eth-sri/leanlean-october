@@ -66,8 +66,8 @@ theorem CandAt.keep {c c' : Config} {b : ℕ} {S : Set Point} (h : CandAt P C c 
   have h0 := hk 0 (by norm_num)
   simp only [Nat.add_zero] at h0
   obtain ⟨hb, hn, hy⟩ := h
-  refine ⟨by rw [h0]; exact hb, fun hne => hn (by rw [← h0]; exact hne), fun h1 => ?_⟩
-  obtain ⟨x, a, f, p, n, q⟩ := hy (by rw [← h0]; exact h1)
+  refine ⟨by rwa [h0], fun hne => hn (by rwa [← h0]), fun h1 => ?_⟩
+  obtain ⟨x, a, f, p, n, q⟩ := hy (by rwa [← h0])
   rw [hk 5 (by norm_num), hk 6 (by norm_num)]
   exact ⟨x, absRec_copy' a (hk 1 (by norm_num)) (hk 2 (by norm_num)) (hk 3 (by norm_num))
     (hk 4 (by norm_num)), f, p, n, q⟩
@@ -96,9 +96,9 @@ theorem k0Init_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n
         exec_block
         all_goals first | omega | (config_simp; rw [h34, h50, h52]; omega) | skip
         refine ⟨rfl, by config_simp; rw [h34, h50, h52], fun r hr => by simp [hr], rfl⟩
-      refine ⟨c₁, _, .ifLtN_true (by rw [h52, h50]; exact hl) e₁, by omega, ?_, r₁, m₁⟩
+      refine ⟨c₁, _, .ifLtN_true (by rwa [h52, h50]) e₁, by omega, ?_, r₁, m₁⟩
       rw [q31, Nat.mod_eq_of_lt (by omega)]; omega
-    · refine ⟨_, _, .ifLtN_false (by rw [h52, h50]; exact hl) (Exec.subN hw _ _ _), by norm_num,
+    · refine ⟨_, _, .ifLtN_false (by rwa [h52, h50]) (Exec.subN hw _ _ _), by norm_num,
         ?_, fun r hr => by simp [hr], rfl⟩
       simp only [upd_same]
       rw [h52, h50, show eE + n - sE = (eE - sE) + n by omega, Nat.add_mod_right,
@@ -196,15 +196,15 @@ theorem setUV_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n 
           cb.nreg 140265 = (pcEdge n x.edge d + 1) % n ∧
           ∀ r, r ≠ 140265 → cb.nreg r = ca.nreg r := by
         by_cases hl : pcEdge n x.edge d + 1 < n
-        · exact ⟨ca, _, .ifLtN_true (by rw [a65, a34]; exact hl) (.skip ea.wb_right),
+        · exact ⟨ca, _, .ifLtN_true (by rwa [a65, a34]) (.skip ea.wb_right),
             by norm_num, by rw [a65, Nat.mod_eq_of_lt hl], fun _ _ => rfl⟩
-        · refine ⟨_, _, .ifLtN_false (by rw [a65, a34]; exact hl)
+        · refine ⟨_, _, .ifLtN_false (by rwa [a65, a34])
             (Exec.constN ea.wb_right _ _ (Nat.zero_le _)), by norm_num, ?_,
             fun r hr => by simp [hr]⟩
           simp only [Config.nreg_mk, upd_same]
           rw [show pcEdge n x.edge d + 1 = n by omega, Nat.mod_self]
       have ec := Exec.constN (P := P) eb.wb_right 140266 0 (Nat.zero_le _)
-      refine ⟨_, _, .ifLtN_true (by rw [q30, q31]; exact hD) (.seq ea (.seq eb ec)), by omega,
+      refine ⟨_, _, .ifLtN_true (by rwa [q30, q31]) (.seq ea (.seq eb ec)), by omega,
         ?_, ?_, fun r h1 h2 => ?_⟩
       · simp only [Config.nreg_mk, upd_other _ _ _ (by decide : (140265 : ℕ) ≠ 140266)]
         rw [b65]; simp [pcV, hne, pcEdge_succ]
@@ -213,7 +213,7 @@ theorem setUV_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n 
     · have hD' : d = D := by omega
       have ea := Exec.copyN (P := P) w₂ 140265 140252
       have eb := Exec.copyN (P := P) ea.wb_right 140266 140253
-      refine ⟨_, _, .ifLtN_false (by rw [q30, q31]; exact hD)
+      refine ⟨_, _, .ifLtN_false (by rwa [q30, q31])
         (Exec.block_cons ea (Exec.block_cons eb (Exec.block_nil eb.wb_right))), by norm_num,
         ?_, ?_, fun r h1 h2 => by simp [h1, h2]⟩
       · simp [pcV, hD', gg _ (by decide : (140252 : ℕ) ≠ 140262) (by decide) (by decide), h52]
@@ -251,9 +251,9 @@ theorem adv_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n j 
       (.instr (.constN 140333 0))) c₁ c₂ k₂ ∧ k₂ ≤ 3 ∧ c₂.nreg 140333 = (j + 1) % n ∧
       c₂.nreg 140330 = d + 1 := by
     by_cases hl : j + 1 < n
-    · exact ⟨c₁, _, .ifLtN_true (by rw [q33, q34]; exact hl) (.skip w₁), by norm_num,
+    · exact ⟨c₁, _, .ifLtN_true (by rwa [q33, q34]) (.skip w₁), by norm_num,
         by rw [q33, Nat.mod_eq_of_lt hl], q30⟩
-    · refine ⟨_, _, .ifLtN_false (by rw [q33, q34]; exact hl) (Exec.constN w₁ _ _
+    · refine ⟨_, _, .ifLtN_false (by rwa [q33, q34]) (Exec.constN w₁ _ _
         (Nat.zero_le _)), by norm_num, ?_, by simp [q30]⟩
       simp only [Config.nreg_mk, upd_same]
       rw [show j + 1 = n by omega, Nat.mod_self]
@@ -296,8 +296,8 @@ theorem pieceK0_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
       CandAt P C c' 140210 (S₀ ∪ (chainModel C).arcSet ((chainModel C).key (Qof P) x)
         ((chainModel C).key (Qof P) y)) z σ ∧ FrameB Bk0 c c' := by
   have hnWn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
-  set n := 2 * C.m + 7 with hn
-  set D := pcD n x.edge y.edge with hDdef
+  set n := 2 * C.m + 7
+  set D := pcD n x.edge y.edge
   have hD9 : D ≤ 9 := piece0_D_le hx hy hxn hyn hwt
   have hDn : D < n := Nat.mod_lt _ (by omega)
   have hfull := segSet_full (Q := Qof P) hx hy hxn hyn hwt
@@ -411,7 +411,6 @@ theorem pieceK0_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
       rw [segSet_succ, Set.union_assoc]) I₁
   obtain ⟨-, E₂, d, hd, i30, -, i32, -, -, -, -, -, -, iB, -, iF⟩ := I₂
   have i32' : c₂.nreg 140332 = D + 1 := i32
-  have hd' : d ≤ D + 1 := hd
   rw [i30, i32'] at hx₂
   have hdD : d = D + 1 := by omega
   rw [hdD, hfull] at iB

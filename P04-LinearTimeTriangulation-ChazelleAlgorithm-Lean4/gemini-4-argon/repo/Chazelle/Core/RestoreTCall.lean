@@ -62,7 +62,6 @@ theorem callPrim {p : Stmt} {K : ℕ} {Inp : Polygon → ℕ → Chain → Confi
       (∀ r, r ∉ l.map Prod.fst → c₁.nreg r = c.nreg r) → c₁.nmem = c.nmem → Inp P W C c₁)
     (hroom : c.nreg ALLOC + K ≤ W) :
     ∃ c₁ c' k, (∀ q ∈ l, c₁.nreg q.1 = c.nreg q.2) ∧
-      (∀ r, r ∉ l.map Prod.fst → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem ∧
       Exec P W (.seq (block (copies l)) p) c c' k ∧ k ≤ l.length + K ∧ Out P C c₁ c' ∧
       Frame primBands c c' k := by
   obtain ⟨c₁, e₁, h1, h2, h3, h4, h5, h6⟩ := copies_exec (P := P) l c hw hd hnd
@@ -75,11 +74,11 @@ theorem callPrim {p : Stmt} {K : ℕ} {Inp : Polygon → ℕ → Chain → Confi
   have h00 : c₁.nreg 50200 = c.nreg src := h1 _ hsrc
   have hpre : PrimPre Inp P W c₁ := by
     refine ⟨hG, hW, ?_, H, C, ?_, hInp c₁ h1 h2 h4⟩
-    · rw [h00, hA₁, h4]; exact hwf
-    · rw [h00, h4]; exact hC
-  obtain ⟨c', k, e, hk, hpost, hf⟩ := hp P W c₁ e₁.wb_right hpre (by rw [hA₁]; exact hroom)
-  refine ⟨c₁, c', l.length + k, h1, h2, h4, .seq e₁ e, by simp only at hk; omega, hpost H C ?_, ?_⟩
-  · rw [h00, h4]; exact hC
+    · rwa [h00, hA₁, h4]
+    · rwa [h00, h4]
+  obtain ⟨c', k, e, hk, hpost, hf⟩ := hp P W c₁ e₁.wb_right hpre (by rwa [hA₁])
+  refine ⟨c₁, c', l.length + k, h1, .seq e₁ e, by simp only at hk; omega, hpost H C ?_, ?_⟩
+  · rwa [h00, h4]
   · have := hf₁.trans hf
     exact this.mono (by
       intro b hb

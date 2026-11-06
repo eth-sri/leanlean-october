@@ -63,8 +63,7 @@ theorem sg_sep {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hM.isOpen z hzD
   obtain ⟨δ, ⟨hGd, hUd⟩, hδr⟩ := (((hGe' z hz hzD).and (hUe' z hz hzD)).and
     (Ioo_mem_nhdsGT hr)).exists
-  have hδ0 : 0 < δ := hδr.1
-  set S := (fun s : ℝ => ((z.1, z.2 + s) : Point)) '' Icc (-δ) δ with hSdef
+  set S := (fun s : ℝ => ((z.1, z.2 + s) : Point)) '' Icc (-δ) δ
   have hSc : IsPreconnected S :=
     isPreconnected_Icc.image _ (by fun_prop : Continuous fun s : ℝ => ((z.1, z.2 + s) : Point)).continuousOn
   have hSf : S ⊆ freeIn M.D {e} := by
@@ -109,7 +108,6 @@ theorem sg_top_not_mem {J : Merge.Junction} (hP : J.P.Simple) {S₂ : Set (Set P
   have hf'Ad := F₂plus_subset J hS₂ hf'
   obtain ⟨y, a, b, hH, -, he'd, -, -⟩ := Merge.augChords_spec he'A
   obtain ⟨y', a', b', -, -, hf'd, -, -⟩ := Merge.augChords_spec hf'Ad
-  have hab := hH.lt
   have hend : ∀ w ∈ e', w ∉ (chainModel J.whole).D → w.1 = a ∨ w.1 = b := by
     intro w hw hwD
     rw [he'd] at hw
@@ -162,9 +160,9 @@ theorem splitGapTask : SplitGapTask := by
   have hL1pos : 1 ≤ rL1 J := by omega
   have hd : rL1 J < rL1 J + rL2 J := by omega
   obtain ⟨hpt, -⟩ := split_facts J hδ
-  set W := (chainModel J.whole).W with hWdef
-  set W₂ := (chainModel J.right).W with hW₂def
-  set Pu := (6 + tpos J.whole J.m₁ + rL1 J) % W.n with hPudef
+  set W := (chainModel J.whole).W
+  set W₂ := (chainModel J.right).W
+  set Pu := (6 + tpos J.whole J.m₁ + rL1 J) % W.n
   have heA' : SideAttach W e Pu 0 := heA
   have he'A' : SideAttach W e' Pu 0 := he'A
   have hinPu : 0 < off W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) ((Pu : ℝ) + 0) ∧
@@ -212,7 +210,7 @@ theorem splitGapTask : SplitGapTask := by
           Or.inl ⟨rfl, fun z hz => by rw [hp2]; exact hcE z hz⟩
         have hFV := (faced_or_middle hGM₂ hSx hc hAk (Or.inl rfl) hU₂ hU₂s hdirC).1
           (fun c'' hc'' hA'' => oneAt_right J hP (S₂x_subset J hS₂a) hδ (rL1 J + rδ J)
-            (Or.inr rfl) c'' hc'' e' hc (by rw [hk₂']; exact hA'') (by rw [hk₂']; exact hAk))
+            (Or.inr rfl) c'' hc'' e' hc (by rwa [hk₂']) (by rwa [hk₂']))
         exact ⟨hδ, hV, Or.inr (beforeFaces_mono (hFV.2 (by norm_num)) hU₂V)⟩
     refine ⟨V, hgap, ?_⟩
     -- at the far end `Y`
@@ -246,8 +244,7 @@ theorem splitGapTask : SplitGapTask := by
         rw [hf'd] at hv hYf
         have hsh : J.shared = J.right.top := shared_eq_top_of_snd J (by
           rw [← hpt, huy, hYf.1, hv.1])
-        rw [← hsh, hf'd]
-        exact hv
+        rwa [← hsh, hf'd]
       have vlab : ∀ c ∈ S₂, f' ⊆ c → SideOf (chainModel J.right) 1 c V →
           VLabel J S₂ G V := fun c hcS hfc hcV =>
         ⟨f', c, 1, dY, 0, hf', hcS, hfc, Or.inl rfl, hdY, le_rfl, zero_lt_one, hsecY, hf'A,
@@ -281,7 +278,7 @@ theorem splitGapTask : SplitGapTask := by
       obtain ⟨-, g2, -, -, -, -, -, v7⟩ := gap_walk J hδ
       rw [edq, g2] at e0
       have e7 : Chazelle.Chain.sideNext W₂ 6 = J.right.sideTour J.right.sideBeta 1 := by
-        unfold Chazelle.Chain.sideNext; rw [hn₂, Nat.mod_eq_of_lt (by omega)]; exact v7
+        unfold Chazelle.Chain.sideNext; rwa [hn₂, Nat.mod_eq_of_lt (by omega)]
       show (Chazelle.Chain.sideNext W Pu).2 ≤ J.right.top.2
       rw [e0, e7]
       have := sideTour_sub_top_snd J.right J.right.sideBeta 1
@@ -306,7 +303,7 @@ theorem splitGapTask : SplitGapTask := by
       exact h2.1.trans h1.1.symm
     have hzu : z.1 ≠ (sidePt W Pu 0).1 := fun h =>
       huD (show sidePt W Pu 0 ∈ (chainModel J.whole).D by
-        rw [show sidePt W Pu 0 = z from Prod.ext h.symm hzy.symm]; exact hzD)
+        rwa [show sidePt W Pu 0 = z from Prod.ext h.symm hzy.symm])
     have hze : ∀ w ∈ e, w.1 ≠ z.1 := by
       rcases hM.tie_pair hFs he he' hne.symm heA' he'A' with ⟨h1, h2⟩ | ⟨h1, h2⟩
       · intro w hw hwz

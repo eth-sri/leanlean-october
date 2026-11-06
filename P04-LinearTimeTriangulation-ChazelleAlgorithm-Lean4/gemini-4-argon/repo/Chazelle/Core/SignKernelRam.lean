@@ -167,11 +167,11 @@ theorem succIdx_spec {P : Polygon} {W : ℕ} (a : ℕ) (c : Config) (hc : WordsB
   exec_block
   · rw [h1]; omega
   · by_cases hlt : c.nreg a + 1 < P.n
-    · refine spec_ifLtN_true (by config_simp; rw [h1, hn]; exact hlt) ?_
+    · refine spec_ifLtN_true (by config_simp; rwa [h1, hn]) ?_
       refine spec_skip ‹_› ?_
       refine ⟨by omega, by config_simp; rw [h1, Nat.mod_eq_of_lt hlt], rfl,
         fun r hr => by config_simp; simp [hr]⟩
-    · refine spec_ifLtN_false (by config_simp; rw [h1, hn]; exact hlt) ?_
+    · refine spec_ifLtN_false (by config_simp; rwa [h1, hn]) ?_
       have he : c.nreg a + 1 = P.n := by omega
       exec_block
       · omega
@@ -222,40 +222,39 @@ theorem normR_spec {P : Polygon} {W : ℕ} (ob : ℕ) (hob : ob = 10100 ∨ ob =
     simp only [Nat.reduceAdd] at r0 r1 r2 r3 r4 r5
     simp only [normR, negR, degR, Nat.reduceAdd]
     by_cases h1 : dy < 0
-    · refine spec_ifLtR_true (by rw [hdy, hZ]; exact h1) ?_
+    · refine spec_ifLtR_true (by rwa [hdy, hZ]) ?_
       exec_block
       refine ⟨by omega, ?_⟩
       simp only [normRep, h1, ↓reduceIte, RepAt, Rep.neg, Nat.reduceAdd]
       config_simp
       simp only [hZ, r0, r1, r2, r3, r4, r5, and_self]
     by_cases h2 : 0 < dy
-    · refine spec_ifLtR_false (by rw [hdy, hZ]; exact h1) ?_
-      refine spec_ifLtR_true (by rw [hdy, hZ]; exact h2) ?_
+    · refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_true (by rwa [hdy, hZ]) ?_
       refine spec_skip hc ⟨by omega, ?_⟩
       simp only [normRep, h1, h2, ↓reduceIte, RepAt, Nat.reduceAdd]
       exact ⟨r0, r1, r2, r3, r4, r5⟩
-    have h0 : dy = 0 := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
     by_cases h3 : dx < 0
-    · refine spec_ifLtR_false (by rw [hdy, hZ]; exact h1) ?_
-      refine spec_ifLtR_false (by rw [hdy, hZ]; exact h2) ?_
-      refine spec_ifLtR_true (by rw [hdx, hZ]; exact h3) ?_
+    · refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_true (by rwa [hdx, hZ]) ?_
       exec_block
       refine ⟨by omega, ?_⟩
       simp only [normRep, h1, h2, h3, ↓reduceIte, RepAt, Rep.neg, Nat.reduceAdd]
       config_simp
       simp only [hZ, r0, r1, r2, r3, r4, r5, and_self]
     by_cases h4 : 0 < dx
-    · refine spec_ifLtR_false (by rw [hdy, hZ]; exact h1) ?_
-      refine spec_ifLtR_false (by rw [hdy, hZ]; exact h2) ?_
-      refine spec_ifLtR_false (by rw [hdx, hZ]; exact h3) ?_
-      refine spec_ifLtR_true (by rw [hdx, hZ]; exact h4) ?_
+    · refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdx, hZ]) ?_
+      refine spec_ifLtR_true (by rwa [hdx, hZ]) ?_
       refine spec_skip hc ⟨by omega, ?_⟩
       simp only [normRep, h1, h2, h3, h4, ↓reduceIte, RepAt, Nat.reduceAdd]
       exact ⟨r0, r1, r2, r3, r4, r5⟩
-    · refine spec_ifLtR_false (by rw [hdy, hZ]; exact h1) ?_
-      refine spec_ifLtR_false (by rw [hdy, hZ]; exact h2) ?_
-      refine spec_ifLtR_false (by rw [hdx, hZ]; exact h3) ?_
-      refine spec_ifLtR_false (by rw [hdx, hZ]; exact h4) ?_
+    · refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdx, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdx, hZ]) ?_
       exec_block
       refine ⟨by omega, ?_⟩
       simp only [normRep, h1, h2, h3, h4, ↓reduceIte, RepAt, Nat.reduceAdd]
@@ -329,8 +328,7 @@ theorem loadPt_spec {P : Polygon} {W : ℕ} (nb ob : ℕ)
         ?_
       intro c' k2 hk2 _ hrep
       refine ⟨by omega, ?_⟩
-      rw [symRep, edgeRep_eq]
-      exact hrep
+      rwa [symRep, edgeRep_eq]
 
 
 /-! ## The prelude, the coefficient lists, the selection and the final bit -/
@@ -429,23 +427,23 @@ theorem selStmt_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c
       [10400, 10401, 10402, 10403, 10404].map c'.rreg = testPoly (c.nreg 10009) ra rb rc := by
   unfold selStmt
   by_cases hA : c.nreg 10009 < 1
-  · refine spec_ifLtN_true (by rw [h1]; exact hA) ?_
+  · refine spec_ifLtN_true (by rwa [h1]) ?_
     have hop : c.nreg 10009 = 0 := by omega
     exec_block
     refine ⟨by omega, ?_⟩
     rw [hop, testPoly, ← hx]
     config_simp
     simp
-  · refine spec_ifLtN_false (by rw [h1]; exact hA) ?_
+  · refine spec_ifLtN_false (by rwa [h1]) ?_
     by_cases hB : c.nreg 10009 < 2
-    · refine spec_ifLtN_true (by rw [h2]; exact hB) ?_
+    · refine spec_ifLtN_true (by rwa [h2]) ?_
       have hop : c.nreg 10009 = 1 := by omega
       exec_block
       refine ⟨by omega, ?_⟩
       rw [hop, testPoly, ← hy]
       config_simp
       simp
-    · refine spec_ifLtN_false (by rw [h2]; exact hB) ?_
+    · refine spec_ifLtN_false (by rwa [h2]) ?_
       exec_block
       refine ⟨by omega, ?_⟩
       rw [testPoly_of_two_le (by omega), ← hd]
@@ -464,10 +462,10 @@ theorem finStmt_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c
       (¬ c.nreg 10009 < 3 → c'.nreg 10010 = c.nreg 10411) := by
   unfold finStmt
   by_cases h : c.nreg 10009 < 3
-  · refine spec_ifLtN_true (by rw [h3]; exact h) ?_
+  · refine spec_ifLtN_true (by rwa [h3]) ?_
     refine spec_instr (Exec.copyN hc _ _) fun _ => ⟨by omega, fun _ => by config_simp, fun h' =>
       (h' h).elim⟩
-  · refine spec_ifLtN_false (by rw [h3]; exact h) ?_
+  · refine spec_ifLtN_false (by rwa [h3]) ?_
     refine spec_instr (Exec.copyN hc _ _) fun _ => ⟨by omega, fun h' => (h h').elim,
       fun _ => by config_simp⟩
 

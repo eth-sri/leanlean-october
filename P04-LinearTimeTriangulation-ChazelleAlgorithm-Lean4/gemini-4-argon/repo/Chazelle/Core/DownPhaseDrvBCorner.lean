@@ -238,19 +238,19 @@ theorem testsS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wor
       (hh (by norm_num) f₉)
   refine ⟨c₉, k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + (k₈ + k₉))))))),
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉))))))),
-    by omega, hf, ?_, by rw [v1]; exact t₁, by rw [v2]; exact t₂, by rw [v3]; exact t₃,
-    by rw [v4]; exact t₄, by rw [v5]; exact t₅, by rw [v6]; exact t₆, by rw [v7]; exact t₇,
-    by rw [v8]; exact t₈, t₉⟩
+    by omega, hf, ?_, by rwa [v1], by rwa [v2], by rwa [v3],
+    by rwa [v4], by rwa [v5], by rwa [v6], by rwa [v7],
+    by rwa [v8], t₉⟩
   intro r h1 h2
   interval_cases r
-  · rw [v1]; exact b₁
-  · rw [v2]; exact b₂
-  · rw [v3]; exact b₃
-  · rw [v4]; exact b₄
-  · rw [v5]; exact b₅
-  · rw [v6]; exact b₆
-  · rw [v7]; exact b₇
-  · rw [v8]; exact b₈
+  · rwa [v1]
+  · rwa [v2]
+  · rwa [v3]
+  · rwa [v4]
+  · rwa [v5]
+  · rwa [v6]
+  · rwa [v7]
+  · rwa [v8]
   · exact b₉
 
 /-- The value of a bit. -/
@@ -328,15 +328,15 @@ theorem cornerS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wo
     (D := decide (c₁.nreg 212075 = 1)) (X1 := decide (c₁.nreg 212076 = 1))
     (X2 := decide (c₁.nreg 212077 = 1)) (X3 := decide (c₁.nreg 212078 = 1))
     (X4 := decide (c₁.nreg 212079 = 1))
-    (by rw [decide_eq_true_iff]; exact t1) (by rw [decide_eq_true_iff]; exact t2)
-    (by rw [decide_eq_true_iff]; exact t3) (by rw [decide_eq_true_iff]; exact t4)
-    (by rw [decide_eq_true_iff]; exact t5) (by rw [decide_eq_true_iff]; exact t6)
-    (by rw [decide_eq_true_iff]; exact t7) (by rw [decide_eq_true_iff]; exact t8)
-    (by rw [decide_eq_true_iff]; exact t9)
+    (by rwa [decide_eq_true_iff]) (by rwa [decide_eq_true_iff])
+    (by rwa [decide_eq_true_iff]) (by rwa [decide_eq_true_iff])
+    (by rwa [decide_eq_true_iff]) (by rwa [decide_eq_true_iff])
+    (by rwa [decide_eq_true_iff]) (by rwa [decide_eq_true_iff])
+    (by rwa [decide_eq_true_iff])
   refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, fbTrans f₁ (fbMono f₂ bcor_dec),
     by rw [q1]; exact bv_le _, by rw [q2]; exact bv_le _, ?_, ?_⟩
-  · rw [q1, bv_eq_one]; exact m1
-  · rw [q2, bv_eq_one]; exact m2
+  · rwa [q1, bv_eq_one]
+  · rwa [q2, bv_eq_one]
 
 end exec
 

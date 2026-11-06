@@ -44,7 +44,7 @@ theorem arcLoop_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
       exact ⟨e', k, ex, ⟨ex.wb_right, v41, by rw [f'.1 _ (by decide), e30], Ee.keep f' m', B',
         fun a ha => by rw [m' a ha, me a ha], fe.trans f'⟩, hk⟩)
     (j := 0) ⟨hw, h41, hE.aR, hE, hB, fun _ _ => rfl, FrameM.refl _ _⟩ (Nat.zero_le _)
-  exact ⟨d', k, ex, by omega, by rw [← pre_full]; exact B', E', m', f'⟩
+  exact ⟨d', k, ex, by omega, by rwa [← pre_full], E', m', f'⟩
 
 /-- One item of the copy. -/
 theorem cpyBody_exec (e : Config) (hw : WordsBounded W e) {li : Bool} {n S D u w i : ℕ}
@@ -128,15 +128,13 @@ theorem cpyLoop_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ
         have s2 : e.nmem (T + 3 * si + 2) = encB (H.getD i (.run 0 0)) := by
           rw [me _ (by omega), a3, hHget i hi]
         have := Ie.snoc (H.getD i (.run 0 0))
-        rw [hlen, ← s0, ← s1, ← s2] at this
-        exact this)
+        rwa [hlen, ← s0, ← s1, ← s2] at this)
     (j := 0) ⟨hw, h80, h11, by omega, fun h0 => by rw [h81]; split_ifs <;> omega,
       h83, h84, hK, fun _ _ => rfl, by simp only [List.take_zero]; exact ItemsAt.nil _ _,
       FrameM.refl _ _⟩ (Nat.zero_le _)
   refine ⟨d', k, ex, by omega, ?_, by rw [v82]; ring, m', f'⟩
   have htk : H.take K = H := by rw [← hHl, List.take_length]
-  rw [htk] at I'
-  exact I'
+  rwa [htk] at I'
 
 /-- **The end of the host**: the host handle after the buffer, the count word, the copy
 arguments. -/

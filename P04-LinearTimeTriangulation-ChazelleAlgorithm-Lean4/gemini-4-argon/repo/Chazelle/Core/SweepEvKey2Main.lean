@@ -112,8 +112,8 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     refine IRS.mono (K := 33459 + 2) (IRS.ifT hc ?_) (by norm_num) (fun _ h => h)
     unfold keyMain
     refine IRS.seq (K₁ := 11030) (K₂ := 22429) (pre_irs E hI₁ hpk
-      (by rw [e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)]; exact hb)
-      (by rw [e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)]; exact hm1) (by omega)) ?_
+      (by rwa [e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)])
+      (by rwa [e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)]) (by omega)) ?_
     rintro d₀ hI₀ hA₀ hA₀' ⟨frP, eKE, eKH, eDF, eKA, hB1, hBiff, hBlab, hBlab0⟩
     have nP : ∀ r, (r = bF ∨ r = bE ∨ r = bH ∨ r = bN ∨ r = sP ∨ r = sC ∨ r = sB ∨ r = aB ∨
         r = lB ∨ r = lC ∨ r = kN) → ¬ PreR r := by
@@ -127,13 +127,13 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
         (e1 r (by rcases hr with h|h|h|h|h|h|h|h|h|h|h <;> simp [h]))
     have hN0 : d₀.nreg kqN ≤ 4 := by
       by_cases h : d₀.nreg kqB = 1
-      · rw [(hBlab h).1, e1 bN (by simp)]; exact hbN
+      · rwa [(hBlab h).1, e1 bN (by simp)]
       · rw [(hBlab0 h).2]; omega
     have hS : SkCtx P J c d₀ :=
       { hsP := e0 sP (by simp), hsC := e0 sC (by simp), hsB := e0 sB (by simp),
         haB := e0 aB (by simp), hA := frS.2.1.trans frP.2.1,
         hm := fun x hx => (frP.2.2 x (lt_of_lt_of_le hx frS.2.1)).trans (frS.2.2 x hx),
-        hpk := by rw [eKE, eKH]; exact hpk,
+        hpk := by rwa [eKE, eKH],
         hmin := fun h => by rw [eKE, eKH]; exact hm2 trivial h,
         hps := hst, hsort := hsort, htwo := htwo, hsBA := hsB, haBA := haB }
     refine IRS.seq (K₁ := 22400) (K₂ := 29) (skip2_irs E hS hI₀ (skInv_zero hS hsPC hN0 eKA)
@@ -147,7 +147,7 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
       omega
     have e5 : ∀ r, (r = kE ∨ r = kH ∨ r = dF ∨ r = kqB ∨ r = lB ∨ r = lC ∨ r = kN) →
         d₅.nreg r = d₀.nreg r := fun r hr => frK.kkeep (nK r hr).1 (nK r hr).2
-    have hB5 : d₅.nreg kqB ≤ 1 := by rw [e5 kqB (by simp)]; exact hB1
+    have hB5 : d₅.nreg kqB ≤ 1 := by rwa [e5 kqB (by simp)]
     refine IRS.seq (K₁ := 9) (K₂ := 20) (fin_irs hI₅ E.hK hB5 hA5) ?_
     rintro d₆ hI₆ hA₆ hA₆' ⟨f1, f2, f3, f4⟩
     have e6 : ∀ r, ¬ LblR kN kL r → d₆.nreg r = d₅.nreg r := f1
@@ -158,7 +158,7 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     have hc'A : c.nreg ALLOC ≤ d₆.nreg ALLOC := by
       rw [e6 ALLOC (by simp only [LblR, ALLOC, kN, kL, sw]; omega)]
       exact frS.2.1.trans (frP.2.1.trans frK.2.1)
-    refine (writeLog_irs hI₆ E.hK (by rw [eLB6]; exact hlB) (by rw [eLB6, eLC6]; omega)).mono
+    refine (writeLog_irs hI₆ E.hK (by rwa [eLB6]) (by rw [eLB6, eLC6]; omega)).mono
       le_rfl ?_
     rintro c' ⟨w1, w2, w3, w4, w5, w6, w7⟩
     rw [eLB6, eLC6] at w3 w4 w5 w6 w7
@@ -188,7 +188,7 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
         offK P J (c.nreg bE) (c.nreg bH) = offK P J (c'.nreg kE) (c'.nreg kH)) := by
       rw [cKB, hBiff, ok, e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)]
     have hCa : (d₅.nreg kqA = 1) ↔ ∃ i, c.nreg sP ≤ i ∧ i < c'.nreg sP ∧
-        c.nmem (c.nreg aB + 5 * i) = 1 := by rw [cSP]; exact hAiff5
+        c.nmem (c.nreg aB + 5 * i) = 1 := by rwa [cSP]
     have lab0 : lblOf d₀ kqN kqL = if c.nreg bF = 1 ∧
         offK P J (c.nreg bE) (c.nreg bH) = offK P J (c'.nreg kE) (c'.nreg kH)
         then lblOf c bN bL else [] := by
@@ -210,7 +210,7 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
       · exact absurd h1 h.2.2, fun _ => ?_⟩
     · obtain ⟨n1, n2, n3, n4, n5, n6, n7⟩ := nKR r hr
       rw [g6 r n1 n2 n3 n4, frK.1 r hb n5 hra, frP.1 r hb n6 hra, frS.1 r hb n7 hra]
-    · rw [w2 ALLOC (by kqr) (by kqr) (by kqr)]; exact hc'A
+    · rwa [w2 ALLOC (by kqr) (by kqr) (by kqr)]
     -- the candidate case
     have hlbK : ∀ r, LblR kN kL r → d₅.nreg r = c.nreg r := fun r hr => by
       obtain ⟨n1, n2, n3, -, -, -, n7, n8⟩ := lbl_not hr
@@ -224,11 +224,11 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     have hkN' : c'.nreg kN ≤ 4 := by
       rw [hlbC kN (Or.inl rfl)]
       by_cases hC : d₅.nreg kqB = 1 ∨ d₅.nreg kqA = 1
-      · rw [(f3 hC).2]; exact hN5
-      · rw [f4 hC kN, hlbK kN (Or.inl rfl)]; exact hkN
-    refine ⟨cDF, by rw [cKE, cKH, eKE, eKH]; exact hCK, fun h => by rw [ok]; exact hm1 h,
+      · rwa [(f3 hC).2]
+      · rwa [f4 hC kN, hlbK kN (Or.inl rfl)]
+    refine ⟨cDF, by rwa [cKE, cKH, eKE, eKH], fun h => by rw [ok]; exact hm1 h,
       fun h => by rw [ok]; exact hm2 trivial h, fun h => by rw [ok]; exact hm3 trivial h,
-      by rw [cSP]; omega, by rw [cSP]; exact hjC, fun i h1 h2 => ?_, fun h => ?_, hkN',
+      by rw [cSP]; omega, by rwa [cSP], fun i h1 h2 => ?_, fun h => ?_, hkN',
       fun hC => ?_, fun hC => ?_, by rw [w1, eLC6], ?_, ?_, ?_, ?_, ?_⟩
     · rw [cSP] at h2; rw [hoff i h1 h2, cKE, cKH]
     · rw [g sP (by simp)] at h ⊢; rw [cKE, cKH]; exact hnext h

@@ -35,7 +35,7 @@ theorem uFlag_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
       (∀ x, x ≠ dst → x ≠ idx → d'.nreg x = d.nreg x) ∧ d'.nmem = d.nmem := by
   unfold uFlag uIx
   by_cases hp6 : p < 6
-  · refine spec_ifLtN_true (by rw [hs, h96]; exact hp6) ?_
+  · refine spec_ifLtN_true (by rwa [hs, h96]) ?_
     refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
     refine spec_step (Exec.addN w₁ _ _ _ (by
       simp only [upd, h1, Ne.symm h3, ite_false]; rw [hs, h91]; omega))
@@ -45,16 +45,16 @@ theorem uFlag_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
       rw [hs, h91, ite_eq_left (by omega)]
     · simp only [upd, hx1, hx2, ite_false]
   · by_cases hpm : p < 2 * m + 6
-    · refine spec_ifLtN_false (by rw [hs, h96]; exact hp6)
-        (spec_ifLtN_true (by rw [hs, h32]; exact hpm) ?_)
+    · refine spec_ifLtN_false (by rwa [hs, h96])
+        (spec_ifLtN_true (by rwa [hs, h32]) ?_)
       refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
       refine spec_step (Exec.constN w₁ _ _ (by omega))
         fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
       · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_right (by omega)]
       · simp only [upd, ite_true]; rw [ite_eq_right (by omega)]
       · simp only [upd, hx1, hx2, ite_false]
-    · refine spec_ifLtN_false (by rw [hs, h96]; exact hp6)
-        (spec_ifLtN_false (by rw [hs, h32]; exact hpm)
+    · refine spec_ifLtN_false (by rwa [hs, h96])
+        (spec_ifLtN_false (by rwa [hs, h32])
           (spec_ifLtN_false (by rw [hs, h32]; omega) ?_))
       refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
       refine spec_step (Exec.constN w₁ _ _ (by omega))
@@ -179,8 +179,7 @@ theorem pcSV_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
 
 theorem pcVE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) {e : WPos} {v : ℕ}
     (h75 : d.nreg 150075 = v) (h03 : d.nreg 150003 = e.edge) (h04 : d.nreg 150004 = e.hgt) :
-    ∃ d₁ k₁, Exec P W pcVE d d₁ k₁ ∧ k₁ ≤ 5 ∧ PcRegs d₁ (pVE v e) ∧ FrameB Scr d d₁ ∧
-      (∀ r, Keep r → d₁.nreg r = d.nreg r) := by
+    ∃ d₁ k₁, Exec P W pcVE d d₁ k₁ ∧ k₁ ≤ 5 ∧ PcRegs d₁ (pVE v e) ∧ FrameB Scr d d₁ := by
   obtain ⟨d₁, k₁, e₁, hk₁, v50, v51, v52, v53, v54, r₁⟩ : ∃ d₁ k₁, Exec P W pcVE d d₁ k₁ ∧
       k₁ = 5 ∧ d₁.nreg 150050 = v ∧ d₁.nreg 150051 = 0 ∧ d₁.nreg 150052 = e.edge ∧
       d₁.nreg 150053 = e.hgt ∧ d₁.nreg 150054 = 0 ∧
@@ -193,7 +192,7 @@ theorem pcVE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
       (config_simp; done) | skip
     simp only [upd]; split_ifs <;> first | rfl | omega
   exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pVE] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+    exec_frameB e₁ (by decide)⟩
 
 end
 

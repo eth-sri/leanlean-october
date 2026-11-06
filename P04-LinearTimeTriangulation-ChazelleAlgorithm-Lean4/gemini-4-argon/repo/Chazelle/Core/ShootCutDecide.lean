@@ -93,7 +93,7 @@ theorem decVtx_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
   by_cases hp6 : p < 6
   · obtain ⟨d', k, ex, hk, h1, h2, -, -⟩ := decBox_exec (P := P) d hw h01 hp6 h48 R.h91 h92 R.h93
       (by omega)
-    refine ⟨d', _, .ifLtN_true (by rw [h01, R.h96]; exact hp6) ex, by omega, ?_, h2⟩
+    refine ⟨d', _, .ifLtN_true (by rwa [h01, R.h96]) ex, by omega, ?_, h2⟩
     rw [h1]
     constructor
     · intro hb; exact box_param_pos C (Qof P) hb hx hin
@@ -119,7 +119,7 @@ theorem decVtx_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
       (by rw [r₁ _ (by omega) (by omega), h92]) o49 o76 (by omega) (by omega) (by omega)
     have e₃ := Exec.copyN (P := P) e₂.wb_right 150048 150089
     refine ⟨_, _, .ifLtN_false
-      (show ¬ d.nreg 150001 < d.nreg 150096 by rw [h01, R.h96]; exact hp6)
+      (show ¬ d.nreg 150001 < d.nreg 150096 by rwa [h01, R.h96])
       (.seq e₁ (.seq e₂ e₃)), by omega, ?_, ?_⟩
     · config_simp
       exact i₂.trans (param_pos_iff _ _ hx).symm
@@ -197,7 +197,6 @@ theorem decideS_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e
   have r04 : d₀.nreg 150004 = e.hgt := by rw [g₀ _ (by omega), R.h04]
   have r90 : d₀.nreg 150090 = 0 := by rw [g₀ _ (by omega), R.h90]
   have hks := key_bounds hs
-  have hke := key_bounds he
   have zero : ∀ (d' : Config) (k : ℕ), Exec P W decideS d d' k → k ≤ 100 * H.length + 2110 →
       d'.nreg 150048 = 0 → ¬ (s.edge = e.edge ∧
         (chainModel C).key (Qof P) s < (chainModel C).key (Qof P) e) →
@@ -229,7 +228,7 @@ theorem decideS_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e
         simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega))
       (by rw [g₀ _ (by omega), R.h00]) (by rw [g₀ _ (by omega), R.h27]) z₀ r90
       (by rw [g₀ _ (by omega), R.h92]) r01 r02 r04 hs1 hh₂ hs.2.2 he.2.2
-      (by rw [← he']; exact he) (by rw [← he']; exact hin')
+      (by rwa [← he']) (by rwa [← he'])
     refine ⟨d', _, by unfold decideS; exact .seq e₀ (.ifLtN_false hlt (.ifLtN_false hgt
       (.ifLtN_true h4 ex))), by omega, ?_, h2⟩
     rw [h1, ← hs', ← he']

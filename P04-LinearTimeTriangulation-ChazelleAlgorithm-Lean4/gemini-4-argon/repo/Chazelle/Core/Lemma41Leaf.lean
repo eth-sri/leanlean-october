@@ -111,10 +111,10 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
     (h86 : ∀ x, x < A + 7 + 6 * (cover lam b a).length → m8 x = m6 x) :
     LevelAt P m8 (A + 7 + 8 * (cover lam b a).length) (A + 7 + 6 * (cover lam b a).length) A
       (leafShp lam b a) := by
-  set j := (cover lam b a).length with hj
+  set j := (cover lam b a).length
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hΛ : 1 ≤ m0 h := by omega
-  obtain ⟨-, -, h2, -, -, -, -, -, -, hent⟩ := tab_lt hR hn hΛ
+  obtain ⟨-, -, -, -, -, -, hent⟩ := tab_lt hR hn hΛ
   have hG := hR.holds
   intro k hk
   rw [leafShp_length] at hk
@@ -125,8 +125,8 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
   set q := (cover lam b a).getD k (0, 0) with hq
   have hmem := mem_cover (lam := lam) (b := b) a q hmem0
   obtain ⟨hg, hdvd, hax, hxb⟩ := hmem
-  set g := q.1 with hgdef
-  set x := q.2 with hxdef
+  set g := q.1
+  set x := q.2
   obtain ⟨i, hi⟩ := hdvd
   have hpos : 0 < 2 ^ g := by positivity
   have hxi : x / 2 ^ g = i := by rw [hi, Nat.mul_div_cancel_left _ hpos]
@@ -145,8 +145,8 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
     have : x + 2 ^ g ≤ P.n - 1 := by omega
     rw [hi] at this
     apply min_eq_left; rw [mul_comm]; omega
-  set R := m0 (m0 (h + 2) + g) with hRdef
-  set B := m0 (R + 3 * i) with hBdef
+  set R := m0 (m0 (h + 2) + g)
+  set B := m0 (R + 3 * i)
   have hB5 : B + 5 ≤ A := hwf.1
   have hR3 : R + 3 * i + 1 < A := by omega
   -- the record, read in `m0`
@@ -171,10 +171,10 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
     exact hostAt_agree (A := A + 7) hhost rfl (by omega) fun y hy => by
       rw [h86 _ (by omega), h65 _ (by omega)]
   · rw [hCP]; have := poly_whole (Qof P) (by omega); rw [hQn] at this; exact this.symm
-  · rw [hwords 1 le_rfl (by norm_num)]; exact d1
-  · rw [hwords 2 (by norm_num) (by norm_num)]; exact d2
-  · rw [hwords 3 (by norm_num) (by norm_num)]; exact d3
-  · rw [hwords 4 (by norm_num) le_rfl]; exact d4
+  · rwa [hwords 1 le_rfl (by norm_num)]
+  · rwa [hwords 2 (by norm_num) (by norm_num)]
+  · rwa [hwords 3 (by norm_num) (by norm_num)]
+  · rwa [hwords 4 (by norm_num) le_rfl]
 
 end
 

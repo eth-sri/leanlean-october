@@ -68,9 +68,7 @@ theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       (∀ r, bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.nreg ALLOC = c.nreg ALLOC ∧
       (∀ r, bandOf r ∉ ({bSign, bBuild} : Finset ℕ) → c'.rreg r = c.rreg r) ∧
-      c'.rmem = c.rmem ∧ c'.output = c.output ∧
-      c'.nreg 40000 = D ∧ c'.nreg 42000 = T ∧ c'.nreg 42001 = 2 * L.length ∧
-      (∀ r, 43000 ≤ r → r < 44000 → c'.nreg r = c.nreg r) := by
+      c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hW1 : 1 ≤ W := by unfold hostWords at hWn; omega
   -- the registers
   obtain ⟨c₁, k₁, e₁, hk₁, v6, v7, v8, v11, v12, v13, v14, v15, g₁, m₁, rr₁, rm₁, o₁⟩ :
@@ -88,8 +86,8 @@ theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have w₁ := e₁.wb_right
   -- the comparator
   have hcmp := evCmp_ok (P := P) (W := W) hG hWn (m₀ := c₁.nmem) (A₀ := Dst) (D := D) (T := T)
-    (M := M) (L := L) (by omega) (by rw [m₁]; exact hwf) (by rw [m₁]; exact hM) hL
-    (by rw [m₁]; exact hR) hTA c₁.nreg
+    (M := M) (L := L) (by omega) (by rwa [m₁]) (by rwa [m₁]) hL
+    (by rwa [m₁]) hTA c₁.nreg
   have hJ₁ : EvJ c₁.nmem Dst D T (2 * L.length) c₁.nreg c₁ :=
     ⟨by rw [g₁ _ (by omega), h40], by rw [g₁ _ (by omega), h42], by rw [g₁ _ (by omega), h42'],
       fun _ _ => rfl, fun _ _ _ => rfl⟩
@@ -98,20 +96,19 @@ theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     { wb := w₁, hJ := hJ₁, loc := SortR.Loc.refl _ _ _, one := v6, rsrc := v7, rdst := v8,
       rmid := v11, rhi := v12, keep := fun _ _ _ _ _ _ _ _ _ _ => rfl,
       lo_i := by rw [v13], i_mid := by rw [v13]; omega, mid_j := by rw [v14],
-      j_hi := by rw [v14]; exact hmh, rk := by rw [v15, v13, v14],
+      j_hi := by rwa [v14], rk := by rw [v15, v13, v14],
       bsrc := by omega, bdst := by omega, disj := Or.inl (by omega), dA := le_rfl,
-      ma := by rw [m₁, Nat.add_zero, Nat.sub_zero]; exact hE,
-      mb := by rw [m₁]; exact hE₂,
+      ma := by rwa [m₁, Nat.add_zero, Nat.sub_zero],
+      mb := by rwa [m₁],
       out := by rw [v15, v13, v14]; simp,
       mem := fun _ _ => rfl }
   obtain ⟨c₂, k₂, e₂, I₂, hk₂, hseg⟩ := SortR.mergeLoop_inv (P := P) hcmp
     (evJ_stable _ _ _ _ _ _) (by decide) hI
   rw [v15, Nat.sub_zero] at hk₂
   rw [Nat.add_zero, Nat.sub_zero] at hseg
-  obtain ⟨j1, j2, j3, j4, j5⟩ := I₂.hJ
   obtain ⟨l1, l2, l3, l4, l5⟩ := I₂.loc
   refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, I₂.wb, ?_, fun a ha => ?_, fun r hr hra => ?_, ?_,
-    fun r hr => ?_, by rw [l4, rm₁], by rw [l5, o₁], j1, j2, j3, fun r h1 h2 => ?_⟩
+    fun r hr => ?_, by rw [l4, rm₁], by rw [l5, o₁]⟩
   · rw [hseg]
     refine merge_congr E E₂ fun x hx y hy => ?_
     have hx' := hcodes x (List.mem_append_left _ hx)
@@ -128,8 +125,6 @@ theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   · rw [I₂.keep ALLOC (Or.inr rfl) (by decide) (by decide) (by decide) (by decide) (by decide)
       (by decide) (by decide) (by decide), g₁ _ (by decide)]
   · rw [l2 r (by simpa [Finset.mem_insert, Finset.mem_singleton] using hr), rr₁]
-  · rw [j5 r h1 h2, g₁ r (by omega)]
-
 end exec
 
 end

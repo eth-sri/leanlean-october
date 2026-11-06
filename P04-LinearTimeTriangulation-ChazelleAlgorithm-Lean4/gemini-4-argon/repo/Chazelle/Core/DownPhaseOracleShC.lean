@@ -146,11 +146,11 @@ theorem shotI_exec {sh : Stmt} {F : ℕ → ℕ}
     show SymPtIn c₁ 140005 s.o
     exact NFLoc.symPtIn_copy hS.org i5 i6 i7
   have hinner : (chainModel C).InnerPt (s.o.eval (Qof P)) :=
-    innerPt_chain C (by rw [hCd, ch_P]; exact ho1) (by rw [hCd, ch_P]; exact ho2)
-  have b1 : c₁.nreg 140001 = sa.edge := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha1
-  have b2 : c₁.nreg 140002 = sa.hgt := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha2
-  have b3 : c₁.nreg 140003 = ea.edge := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha3
-  have b4 : c₁.nreg 140004 = ea.hgt := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha4
+    innerPt_chain C (by rwa [hCd, ch_P]) (by rwa [hCd, ch_P])
+  have b1 : c₁.nreg 140001 = sa.edge := by rwa [r₁ _ (by decide) (by decide) (by decide)]
+  have b2 : c₁.nreg 140002 = sa.hgt := by rwa [r₁ _ (by decide) (by decide) (by decide)]
+  have b3 : c₁.nreg 140003 = ea.edge := by rwa [r₁ _ (by decide) (by decide) (by decide)]
+  have b4 : c₁.nreg 140004 = ea.hgt := by rwa [r₁ _ (by decide) (by decide) (by decide)]
   have e1 : rd c₁ bShoot 1 = sa.edge := b1
   have e2 : rd c₁ bShoot 2 = sa.hgt := b2
   have e3 : rd c₁ bShoot 3 = ea.edge := b3
@@ -162,22 +162,22 @@ theorem shotI_exec {sh : Stmt} {F : ℕ → ℕ}
   have h8 : c₁.nreg 140008 = s.dir := by rw [i8]; exact hS.r8
   -- the chain shooter
   obtain ⟨c₂, k₂, e₂, hk₂, hpost, F₂⟩ := hsh P W c₁ w₁ ⟨hG, hW,
-    by show (gradeCtx O).holds P c₁.nmem (c₁.nreg 140013) (c₁.nreg ALLOC); rw [h13]; exact hctx,
-    by show c₁.nreg 140009 ≤ (gradeCtx O).cap P c₁.nmem (c₁.nreg 140013); rw [h9, h13]; exact hcap,
+    by show (gradeCtx O).holds P c₁.nmem (c₁.nreg 140013) (c₁.nreg ALLOC); rwa [h13],
+    by show c₁.nreg 140009 ≤ (gradeCtx O).cap P c₁.nmem (c₁.nreg 140013); rwa [h9, h13],
     hMWF, hReg, chainModel C, hMD, okModel_sub hG,
-    by show ProperPos _ _ _ ⟨c₁.nreg 140001, c₁.nreg 140002⟩; rw [hsa, ← hQ]; exact sP,
-    by show ProperPos _ _ _ ⟨c₁.nreg 140003, c₁.nreg 140004⟩; rw [hea, ← hQ]; exact eP,
-    by show c₁.nreg 140001 < _; rw [b1]; exact sE,
-    by show c₁.nreg 140003 < _; rw [b3]; exact eE,
+    by show ProperPos _ _ _ ⟨c₁.nreg 140001, c₁.nreg 140002⟩; rwa [hsa, ← hQ],
+    by show ProperPos _ _ _ ⟨c₁.nreg 140003, c₁.nreg 140004⟩; rwa [hea, ← hQ],
+    by show c₁.nreg 140001 < _; rwa [b1],
+    by show c₁.nreg 140003 < _; rwa [b3],
     by show c₁.nreg 140002 = 0 ∨ (chainModel C).InnerPt ((chainModel C).pos (Qof P)
           ⟨c₁.nreg 140001, c₁.nreg 140002⟩)
-       rw [hsa, b2]; exact sI',
+       rwa [hsa, b2],
     by show c₁.nreg 140004 = 0 ∨ (chainModel C).InnerPt ((chainModel C).pos (Qof P)
           ⟨c₁.nreg 140003, c₁.nreg 140004⟩)
-       rw [hea, b4]; exact eI,
-    by show _ ≤ c₁.nreg 140009; rw [e1, e2, e3, e4, h9]; exact hwt,
+       rwa [hea, b4],
+    by show _ ≤ c₁.nreg 140009; rwa [e1, e2, e3, e4, h9],
     .sym s.o, hol, horg, Or.inr ⟨hinner, fun x hx => by cases hx⟩,
-    by show s.o.eval (Qof P) ∉ _; rw [e1, e2, e3, e4, hset]; exact hoA⟩
+    by show s.o.eval (Qof P) ∉ _; rwa [e1, e2, e3, e4, hset]⟩
     (by show c₁.nreg ALLOC + F (c₁.nreg 140009) ≤ W
         rw [h9, r₁ _ (by decide) (by decide) (by decide)]; omega)
   have hp := hpost (chainModel C) (.sym s.o) hMD horg
@@ -199,8 +199,8 @@ theorem shotI_exec {sh : Stmt} {F : ℕ → ℕ}
   have hR₂ : HRegs P W c₂ (cStart (Qof P) u L) L (C.sideS C.sideBeta)
       ((cStart (Qof P) u L + C.topIdx) % (Qof P).n) := ⟨S₂.r10, S₂.r11, S₂.r12, C₂.r37,
     C₂.r38, C₂.r76, C₂.r79, C₂.r89, by rw [← qn']; exact cStart_lt (by rw [qn']; exact C₂.hu),
-    by have := C.sideS_lt C.sideBeta; rw [hCd, ch_m] at this; exact this, h1,
-    by rw [← qn']; exact h2, by unfold hostWords at hW; exact hW⟩
+    by have := C.sideS_lt C.sideBeta; rwa [hCd, ch_m] at this, h1,
+    by rwa [← qn'], by unfold hostWords at hW; exact hW⟩
   have hB₂ : BestI P c₂ Sp (s.o.eval (Qof P)) (dirOf s.dir) := (hB.keep (fun r h1 h2 =>
     k₁ r (by omega))).keep (fun r h1 h2 => g₂ r (by omega) (by omega))
   have d8 : c₂.nreg 170008 = s.dir := S₂.r8
@@ -208,7 +208,7 @@ theorem shotI_exec {sh : Stmt} {F : ℕ → ℕ}
   have hcm : (chainModel C).W.n = 2 * L + 7 := cm_n'
   obtain ⟨c₃, k₃, e₃, hk₃, hB₃, F₃⟩ := updI_exec (P := P) c₂ w₂ hG hR₂ (C := C) ch_P rfl ch_m rfl
     rfl (e := c₂.nreg 140011) (h := c₂.nreg 140012) rfl rfl
-    (fun hf => by obtain ⟨_, _, _, hlt, _⟩ := hhit hf; rw [hcm] at hlt; exact hlt)
+    (fun hf => by obtain ⟨_, _, _, hlt, _⟩ := hhit hf; rwa [hcm] at hlt)
     (A := Ap) (Sp := Sp) (z := s.o.eval (Qof P)) (by rw [d8]) hAC
     (fun hf => by
       obtain ⟨t, hft, hpp, hlt, hpos⟩ := hhit hf

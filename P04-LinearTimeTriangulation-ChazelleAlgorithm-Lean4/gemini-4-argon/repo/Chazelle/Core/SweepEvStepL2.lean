@@ -49,8 +49,7 @@ theorem stp_stop_at (L : LoopInv P J N₁ N₂ c₀ c) {s : Set Point}
     (hs : s ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)))
     (hss : StopChord2 J (N₂.F (chainModel J.right) (Qof P)) s) {p : ℕ} {t : ℝ}
     (hsA : SideAttach (chainModel J.whole).W s p t) (hL : (Lst J : ℝ) ≤ oW J (p + t)) :
-    ∃ rs ax, StopData P J N₂ c rs ax ∧ ∃ i, ∃ hi : i < rs.length, rs[i].1 = p ∧
-      (chainModel J.whole).param (Qof P) ⟨rs[i].1, rs[i].2.1⟩ = t ∧
+    ∃ rs ax, StopData P J N₂ c rs ax ∧ ∃ i, ∃ _ : i < rs.length,
       stopSet J (Qof P) N₂ rs[i].2.2.1 rs[i].2.2.2.1 rs[i].2.2.2.2 = s ∧
       i < c.nreg sC ∧ stopOff P J c i = oW J (p + t) := by
   obtain ⟨rs, ax, hD⟩ := L.stops
@@ -67,7 +66,7 @@ theorem stp_stop_at (L : LoopInv P J N₁ N₂ c₀ c) {s : Set Point}
     rw [e0, e1]
     show oW J ((rs[i].1 : ℝ) + (chainModel J.whole).param (Qof P) ⟨rs[i].1, rs[i].2.1⟩) = _
     rw [h2, h1]
-  exact ⟨rs, ax, hD, i, hi, h1, h2, h3, hlen ▸ hi, hoff⟩
+  exact ⟨rs, ax, hD, i, hi, h3, hlen ▸ hi, hoff⟩
 
 /-- **Every stop record is a cut** of `F₂⁺` on the `C₁` part. -/
 theorem stp_stop_cut (L : LoopInv P J N₁ N₂ c₀ c) {i : ℕ} (hi : i < c.nreg sC) :
@@ -152,7 +151,7 @@ theorem stp_query_tried (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopI
         2 * k + s ∈ regO N₂ l := by
       intro l hl hlV
       refine ⟨k, ((hRO l hl).1 k).2 ⟨hk, ?_⟩, s, hs, rfl⟩
-      rw [← hci, hlV]; exact hT
+      rwa [← hci, hlV]
     rcases hVΛ with ⟨l, hl, hlV⟩ | hg
     · obtain ⟨u, hu, hu4, rfl⟩ : ∃ u, u < c.nreg kN ∧ u < 4 ∧ l = c.nreg (kL + u) := by
         rcases hl with h | h | h | h
@@ -170,7 +169,7 @@ theorem stp_query_tried (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopI
       exact hreg _ (L.gapR u hu) hlV
   · -- the parent of a stop at the cut
     have hL : (Lst J : ℝ) ≤ oW J (pK + tK) := by rw [hoK]; linarith [L.keyL]
-    obtain ⟨rs, ax, hD, i, hi, -, -, hset, hic, hio⟩ := stp_stop_at L hs₀ hss hsA hL
+    obtain ⟨rs, ax, hD, i, hi, hset, hic, hio⟩ := stp_stop_at L hs₀ hss hsA hL
     have hnear := stp_stop_near L ho hgap hic (hio.trans hoK)
     obtain ⟨-, hax, -, hrecA, -, -, hauxOK, -⟩ := hD
     have hiA : i < ax.length := hax ▸ hi
@@ -187,8 +186,8 @@ theorem stp_query_tried (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopI
     have hpo : parOf cs i = ax[i].2.2.2.2 := by
       unfold parOf
       rw [eaB, hmem _ (by omega), e4]
-    refine ⟨ax[i].2.2.2.2 - 1, by omega, hpch, fun s hs => Or.inr ⟨i, by rw [esP]; exact hnear,
-      by rw [esC]; exact hic, by rw [hpo]; exact hpar0, s, hs, by rw [hpo]⟩⟩
+    refine ⟨ax[i].2.2.2.2 - 1, by omega, hpch, fun s hs => Or.inr ⟨i, by rwa [esP],
+      by rwa [esC], by rwa [hpo], s, hs, by rw [hpo]⟩⟩
 
 /-- **A non-stop chord at the first cut beyond the key, not beyond the window end, is accepted**
 by the batch of origins (at its far end, from a valid origin). -/
@@ -204,15 +203,10 @@ theorem stp_accepted_of_found (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L :
         ¬ (keyOff P J c < oW J (q + s) ∧ oW J (q + s) < oW J (p + t)))
     (hst : ¬ StopChord2 J (N₂.F (chainModel J.right) (Qof P)) e)
     (hwin : cw.nreg wX = 0 → oW J (p + t) ≤ offK P J (cw.nreg wE) (cw.nreg wH)) :
-    ∃ k, k < N₂.nChords ∧ ∃ (a : Point) (σ : ℝ),
-      ((σ = 1 ∧ a = Merge.lend ((N₂.chord k).toSet (chainModel J.right) (Qof P))) ∨
-        (σ = -1 ∧ a = Merge.rend ((N₂.chord k).toSet (chainModel J.right) (Qof P)))) ∧
-      a ∈ J.right.set ∧ a ≠ J.shared ∧ a ≠ J.right.top ∧ FreeAt J.whole a σ ∧
-      e = Merge.shoot J.whole a σ ∧ J.whole.hitParam a σ < J.right.hitParam a σ ∧
-      ∃ j, j < 2 * N₂.nChords ∧ j / 2 = k ∧ endOrigin J (Qof P) N₂ j = a ∧ endDir j = σ ∧
-        ∃ h, (chainModel J.whole).param (Qof P) ⟨p, h⟩ = t ∧ (j, p, h) ∈ A := by
+    ∃ j h, Merge.shoot J.whole (endOrigin J (Qof P) N₂ j) (endDir j) = e ∧
+      (chainModel J.whole).param (Qof P) ⟨p, h⟩ = t ∧ (j, p, h) ∈ A := by
   classical
-  set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
+  set S₂ := N₂.F (chainModel J.right) (Qof P)
   have hP := E.hP
   have hS₂ : (chainModel J.right).ChordFamily (Qof P) S₂ := E.hNF₂.1
   have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
@@ -238,14 +232,14 @@ theorem stp_accepted_of_found (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L :
   obtain ⟨-, -, d, hMV, hmE, hArr⟩ := cand_prep hP hS₂a hch ha haR hav ha₁ hA hpt hLst hnv hlt'
   rw [← hkch] at ha
   -- the endpoint query
-  obtain ⟨j, hj, hjk, hji, hjO, hjD⟩ : ∃ j, j < 2 * N₂.nChords ∧ j / 2 = k ∧
+  obtain ⟨j, hj, hji, hjO, hjD⟩ : ∃ j, j < 2 * N₂.nChords ∧
       (∃ s, s ≤ 1 ∧ j = 2 * k + s) ∧ endOrigin J (Qof P) N₂ j = a ∧ endDir j = σ := by
     unfold endOrigin endDir
     rcases ha with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-    · refine ⟨2 * k, by omega, by omega, ⟨0, by omega, by omega⟩, ?_, ?_⟩
+    · refine ⟨2 * k, by omega, ⟨0, by omega, by omega⟩, ?_, ?_⟩
       · rw [ite_eq_left (by omega), show 2 * k / 2 = k by omega]
       · rw [ite_eq_left (by omega)]
-    · refine ⟨2 * k + 1, by omega, by omega, ⟨1, le_rfl, rfl⟩, ?_, ?_⟩
+    · refine ⟨2 * k + 1, by omega, ⟨1, le_rfl, rfl⟩, ?_, ?_⟩
       · rw [ite_eq_right (by omega), show (2 * k + 1) / 2 = k by omega]
       · rw [ite_eq_right (by omega)]
   have hjO' : j ∈ iterO N₂ cs := by
@@ -261,15 +255,14 @@ theorem stp_accepted_of_found (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L :
     push_cast; ring
   have hlo : rayPt a σ (J.whole.hitParam a σ) ∈
       ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB) (cs.nreg wGK) [] := by
-    have hin := hcov d t hMV hA.2.1 hA.2.2.1 (by rw [hoffd]; exact hlt) (fun h0 => by
+    have hin := hcov d t hMV hA.2.1 hA.2.2.1 (by rwa [hoffd]) (fun h0 => by
       rw [hoffd]; exact hwin h0)
     rw [hArr.2.2.2.1, ← hgk] at hin
-    rw [hR.1, eGB, eGK]
-    exact hin
-  obtain ⟨h, hh, hmA⟩ := hBA.comp j hjO' hj ⟨by rw [hjO]; exact haR, by rw [hjO]; exact hav,
-    by rw [hjO]; exact hat⟩ p t (by rw [hjO, hjD]; exact hA) (by rw [hjO, hjD]; exact hpt) hLst
-    hnv (by rw [hjO, hjD]; exact hlt') (by rw [hjO, hjD]; exact hlo)
-  exact ⟨k, hk, a, σ, ha, haR, hav, hat, hfree, rfl, hlt', j, hj, hjk, hjO, hjD, h, hh, hmA⟩
+    rwa [hR.1, eGB, eGK]
+  obtain ⟨h, hh, hmA⟩ := hBA.comp j hjO' hj ⟨by rwa [hjO], by rwa [hjO],
+    by rwa [hjO]⟩ p t (by rwa [hjO, hjD]) (by rwa [hjO, hjD]) hLst
+    hnv (by rwa [hjO, hjD]) (by rwa [hjO, hjD])
+  exact ⟨j, h, by rw [hjO, hjD], hh, hmA⟩
 
 end
 

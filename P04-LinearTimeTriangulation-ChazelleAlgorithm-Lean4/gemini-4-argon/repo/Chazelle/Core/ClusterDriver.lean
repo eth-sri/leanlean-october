@@ -67,8 +67,7 @@ theorem centroid_typed (hR : R.OK) (hRn : R.n = N) (hup : ∀ g : Fin N, R.up g 
   have hpar' : R.par g = f := by
     have := hup g
     unfold BTree.up at this
-    rw [ite_eq_right hgr, hpar] at this
-    exact this
+    rwa [ite_eq_right hgr, hpar] at this
   exact hch g (by rw [hRn]; exact g.2) hgr hpar' ((hgood g).mp hgg)
 
 end centroid
@@ -288,7 +287,6 @@ theorem SFacts.cpMem {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
   have hL := h.lay
   have := hL.hSO; have := hL.hSF; have := hL.hFPAR; have := hL.hFPRE; have := hL.hFSZ
   have := hL.hNU; have := hL.hW; have := h.hN
-  have hLU0 : 0 ≤ S.L * U := Nat.zero_le _
   refine ⟨by omega, by omega, by omega, by omega, by omega, fun x hx => ?_, fun x hx => ?_,
     fun g hg => ?_, fun g hg => ?_⟩
   · obtain ⟨y, rfl⟩ := enc_surj (N := N) (x := x) (by omega)

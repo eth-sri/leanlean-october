@@ -94,7 +94,7 @@ theorem orgDo_batch (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {g : Stmt} {KG
     obtain ⟨⟨j, hj⟩, -⟩ := hB.bAcc h
     exact (hB.acc _ hj).2.2.2.2.2.2.2.1
   refine (orgDo_irs E hI hgen hL (by rw [eGK, hgK]) (by rw [eGB]; omega) harcs' rfl rfl hk hs
-    (by rw [eKE, eKH]; exact hkey) hb hB.fF hB.fN hroom).mono le_rfl ?_
+    (by rwa [eKE, eKH]) hb hB.fF hB.fN hroom).mono le_rfl ?_
   rintro c' ⟨hres, hcomp, hrej, hfr, hA'⟩
   refine ⟨batch_step hInv' (by omega) hs (up_ne_dn E hk) hT hres
     (fun hv => hlo ▸ hcomp hv.1 hv.2.1 hv.2.2) hrej hfr hA', fun r hr => ?_, fun x h1 h2 => ?_⟩

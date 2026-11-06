@@ -98,14 +98,13 @@ theorem tstR_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {op : ℕ} (hop : op ≤
       fr.2.2.2.1, fr.2.2.2.2⟩⟩
     · have : r < 10000 ∨ 10500 ≤ r := by unfold Bk at hr; simp at hr; omega
       exact fr.1 r (by omega)
-  have i₁' := i₁
   -- the kernel
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, b₂, s₂'⟩ := sig_exec (P := P) c₁ e₁.wb_right hG hW
-    (by rw [q₉]; exact hop) l₁ l₂ l₃ q₁ q₂ q₃
+    (by rwa [q₉]) l₁ l₂ l₃ q₁ q₂ q₃
   rw [q₉] at s₂'
   -- the answer
   have e₃ := Exec.copyN (P := P) e₂.wb_right d 10010
-  set c₃ : Config := { c₂ with nreg := upd c₂.nreg d (c₂.nreg 10010) } with hc₃
+  set c₃ : Config := { c₂ with nreg := upd c₂.nreg d (c₂.nreg 10010) }
   refine ⟨c₃, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by omega, ?_, by simp [c₃, b₂],
     by simp [c₃]; exact s₂'⟩
   refine ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩

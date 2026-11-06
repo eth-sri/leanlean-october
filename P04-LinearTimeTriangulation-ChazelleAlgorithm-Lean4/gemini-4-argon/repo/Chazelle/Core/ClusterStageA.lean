@@ -48,7 +48,7 @@ theorem fillWith_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001
     refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩⟩
     all_goals (simp only [Machine.upd_apply]; (try unfold FillRG at hr); split_ifs <;> omega)
   obtain ⟨c', k, e, hk, hf', hv⟩ := fillStmt_exec (P := P) hw3 hone3
-    (by rw [r150, r151]; exact hwb) (by rw [r151]; exact hwn)
+    (by rwa [r150, r151]) (by rwa [r151])
   rw [r150, r151] at hf'
   rw [r150, r151, r152] at hv
   rw [r151] at hk
@@ -80,7 +80,7 @@ theorem primalEnv_enc {m : ℕ → ℕ} {bO bR bV bF bDB bVB : ℕ}
   · obtain ⟨h1, h2⟩ := hF v v.2
     refine ⟨⟨m (bF + v), h1⟩, by show view m bF μ v = _; rw [view_lt v.2], ?_⟩
     apply Fin.ext
-    rw [← h.vert h1]; exact h2
+    rwa [← h.vert h1]
 
 end enc
 
@@ -149,14 +149,13 @@ theorem firstP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (nv := g.μ) (fun d hd => by rw [hf1.2.2.2.2 _ (by omega)]; exact hvlt d hd)
     (fun u hu => by
       obtain ⟨d, hd, hdu⟩ := hsurj u hu
-      exact ⟨d, hd, by rw [hf1.2.2.2.2 _ (by omega)]; exact hdu⟩)
+      exact ⟨d, hd, by rwa [hf1.2.2.2.2 _ (by omega)]⟩)
     (by right; omega) (by omega) (by omega) (by omega)
   refine ⟨c', k1 + k, .seq e1 e, by omega, e.wb_right,
     hf1.trans (hf'.mono (fun r h => by unfold FirstRG at h; unfold StARG; omega) (fun a h => h)),
     fun u hu => ⟨(hI u hu).1, ?_⟩⟩
   have := (hI u hu).2
-  rw [hf1.2.2.2.2 _ (by have := (hI u hu).1; omega)] at this
-  exact this
+  rwa [hf1.2.2.2.2 _ (by have := (hI u hu).1; omega)] at this
 
 /-- The layout of the primal search. -/
 def primalLay (g : GV) : Lay := ⟨g.bO, g.bR, g.bV, g.base 0, g.base 1, g.base 1, g.base 2,
@@ -228,11 +227,11 @@ theorem bfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
                    | exact hG.rbase 3 (by omega)
                    | exact hG.rbase 4 (by omega)
                    | exact hG.rbase 5 (by omega))
-  have hm1' : MapArrays c1.nmem g.bO g.bR g.bV g.μ g.N M := by rw [hm1]; exact hmap
+  have hm1' : MapArrays c1.nmem g.bO g.bR g.bV g.μ g.N M := by rwa [hm1]
   have henv : Y.env c1.nmem = primalEnv c1.nmem g.bO g.bR g.bV (g.base 0) (g.base 1) (g.base 1)
       g.μ g.N := rfl
   have hF1 : ∀ u, u < g.μ → c1.nmem (g.base 0 + u) < g.N ∧
-      c1.nmem (g.bV + c1.nmem (g.base 0 + u)) = u := by rw [hm1]; exact hfirst
+      c1.nmem (g.bV + c1.nmem (g.base 0 + u)) = u := by rwa [hm1]
   have hok : (Y.env c1.nmem).OK := by rw [henv]; exact primalEnv_ok hm1' hF1
   have hpre : (Y.env c1.nmem).Pre 0 0 (labV Y c1.nmem) := by
     refine ⟨hok, hμ, ?_, hμ, fun w hw' _ => ?_⟩
@@ -393,7 +392,7 @@ theorem AF.congr {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {T : S
   have hLμ : ∀ j, j < g.L → j * g.μ + g.μ ≤ g.L * g.U := by
     intro j hj
     have : (j + 1) * g.μ ≤ g.L * g.U := Nat.mul_le_mul (by omega) (by omega)
-    rw [Nat.succ_mul] at this; exact this
+    rwa [Nat.succ_mul] at this
   refine ⟨fun d => ?_, fun d hd => ?_, fun u hu => ?_, fun u hu => ?_, h.root, fun v => ?_,
     h.lev_lt, fun v hv => ?_, fun v hv => ?_, fun v => ?_, fun j hj x hx => ?_, h.head_le⟩
   · have hd := d.2
@@ -428,7 +427,6 @@ theorem stageA_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
       WordsBounded W c' ∧ GR g c' ∧ PFr StARG (WrA g) c c' ∧ ∃ T, AF g M T c'.nmem := by
   have hU := g.U_ge
   have hE := g.END_eq
-  have hLU := g.L_le_U
   have hLμ : g.L * g.μ ≤ g.L * g.U := Nat.mul_le_mul_left _ (by omega)
   have b0 := g.base_eq 0; have b1 := g.base_eq 1; have b2 := g.base_eq 2; have b3 := g.base_eq 3
   have b4 := g.base_eq 4; have b5 := g.base_eq 5; have b6 := g.base_eq 6; have b7 := g.base_eq 7
@@ -473,7 +471,7 @@ theorem stageA_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     intro u hu
     obtain ⟨a1, a2⟩ := hF3 u hu
     refine ⟨a1, ?_⟩
-    rw [m3 _ (by omega)]; rw [m2 _ (by omega)] at a2; exact a2
+    rw [m3 _ (by omega)]; rwa [m2 _ (by omega)] at a2
   have hz3 : ∀ d, d < g.N → c3.nmem (g.base 1 + d) = 0 := fun d hd => by
     rw [hf3.2.2.2.2 _ (by omega), hf2.2.2.2.2 _ (by omega)]; exact hz1 d hd
   have hl3 : ∀ v, v < g.μ → c3.nmem (g.base 2 + v) = g.μ := fun v hv => by

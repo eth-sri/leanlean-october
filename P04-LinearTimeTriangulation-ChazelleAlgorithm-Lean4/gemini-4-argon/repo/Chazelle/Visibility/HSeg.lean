@@ -301,8 +301,7 @@ theorem rightEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ fr
   have hmem := rayPt_mem_chordUnion hP hk (Or.inr rfl) hR (fun t ht1 ht2 => by
     rw [e]
     exact open_ray_subset_interior hP hq' _ (by linarith) (by linarith))
-  rw [e, sub_self, add_zero] at hmem
-  exact hmem
+  rwa [e, sub_self, add_zero] at hmem
 
 /-- **The left endpoint of the horizontal segment of a free point is not a vertex.** -/
 theorem leftEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ freeRegion P) {k : ℕ}
@@ -318,8 +317,7 @@ theorem leftEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ fre
   have hmem := rayPt_mem_chordUnion hP hk (Or.inl rfl) hL (fun t ht1 ht2 => by
     rw [e]
     exact open_left_ray_subset_interior hP hq' _ (by linarith) (by linarith))
-  rw [e, sub_self, sub_zero] at hmem
-  exact hmem
+  rwa [e, sub_self, sub_zero] at hmem
 
 /-- **No vertex on the closed horizontal segment of a free point.** -/
 theorem not_vtx_mem_closedHSeg {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ freeRegion P)
@@ -339,8 +337,8 @@ theorem nonHoriz_of_openEdgePt_end {P : Polygon} (hP : P.Simple) {q : Point}
     (hpy : p.2 = q.2) (h1 : (leftEnd P q).1 ≤ p.1) (h2 : p.1 ≤ (rightEnd P q).1) :
     NonHoriz P j := by
   intro hh
-  set u := P.vtx j with hu
-  set w := P.vtx ((j + 1) % P.n) with hw
+  set u := P.vtx j
+  set w := P.vtx ((j + 1) % P.n)
   obtain ⟨t, ht, hpt⟩ := hp
   have huw : u ≠ w := simple_vtx_succ_ne hP hj
   have huw1 : u.1 ≠ w.1 := fun h => huw (point_ext h hh)

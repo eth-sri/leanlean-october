@@ -132,7 +132,7 @@ theorem bktMath : BktMathSpec := by
           E.I.key E.Q (wposOf (E.L ++ newLB E.li E.Q E.L E.E) (2 * E.L.length + q)) =
             E.I.key E.Q (DrvD.endPos (TLk.getD (q / 2) DrvD.dflt).2 (q % 2)) := by
         intro q hq
-        rw [DrvD.wposOf_new (by rw [hlen]; exact hq), hnew, DrvD.getD_map_snd]
+        rw [DrvD.wposOf_new (by rwa [hlen]), hnew, DrvD.getD_map_snd]
       have hlen' : (E.L ++ newLB E.li E.Q E.L E.E).length = E.L.length + TLk.length := by
         rw [List.length_append, hlen]
       refine DrvD.codeLe_of_bkt hM hok' hK hE.hperm hE.hsort (by omega) (by rw [hlen']; omega)
@@ -156,7 +156,7 @@ theorem bktMath : BktMathSpec := by
       rw [bcnt_eq]
       by_cases hex : ∃ q, q < 2 * TLk.length ∧ bk q = b
       · obtain ⟨q₀, hq₀, hb₀⟩ := hex
-        set r₀ := (TLk.getD (q₀ / 2) DrvD.dflt).1 with hr₀
+        set r₀ := (TLk.getD (q₀ / 2) DrvD.dflt).1
         have hmem : ∀ i, i < TLk.length → (TLk.getD i DrvD.dflt).1 < E.K + 1 := fun i hi =>
           TL_mem_lt E (s := E.K + 1) (DrvD.getD_mem' hi)
         have hreg : ∀ q, q < 2 * TLk.length → (TLk.getD (q / 2) DrvD.dflt).1 < E.N.nRegions := by
@@ -172,7 +172,7 @@ theorem bktMath : BktMathSpec := by
           rw [hb₀] at ha₀
           have e1 := ((hE.hregs.2.2.1.2.2.2 _ (hreg q hq) _).1 ha).2
           have e2 := ((hE.hregs.2.2.1.2.2.2 _ (hreg q₀ hq₀) _).1 ha₀).2
-          rw [← e1]; exact e2
+          rwa [← e1]
         have hr₀K : r₀ < E.K + 1 := hmem _ (by omega)
         calc (List.range (2 * TLk.length)).countP (fun q => decide (bk q = b))
             ≤ (List.range (2 * TLk.length)).countP

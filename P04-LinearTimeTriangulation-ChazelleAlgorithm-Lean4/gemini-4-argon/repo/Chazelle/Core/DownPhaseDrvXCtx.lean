@@ -53,8 +53,6 @@ structure XCtx (P : Polygon) (li : Bool) (L : List (ℕ × ℕ × ℕ)) (E : Lis
   X : XHyp P li L E reg r C NR
   hg : g < nk (interiorModel (Qof P))
     ((buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) (reg r)
-  hgc : ChordGap (interiorModel (Qof P))
-    ((buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) (reg r) g
   hgi : (g + 1) % nk (interiorModel (Qof P))
     ((buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) (reg r) =
       i0 % nk (interiorModel (Qof P))
@@ -78,8 +76,7 @@ structure XCtx (P : Polygon) (li : Bool) (L : List (ℕ × ℕ × ℕ)) (E : Lis
         ((buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) (reg r))
           k) % nk (interiorModel (Qof P))
         ((buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) (reg r))
-  hfacts : PolyFacts (Qof P)
-    ((buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) (reg r) C.P
+  hfacts : C.P.Simple
   hext : DownDrv.ExtractOK (Qof P)
     ((buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) (reg r) C
   hbd : C.P.boundary = (hostPoly (Qof P)
@@ -130,9 +127,9 @@ theorem ectx (X : XHyp P li L E reg r C NR) :
 /-- **The context exists.** -/
 theorem ctx (X : XHyp P li L E reg r C NR) : ∃ i0 g, XCtx P li L E reg r C NR i0 g := by
   classical
-  set Q := Qof P with hQdef
-  set N := buildNF (interiorModel Q) Q L E with hNdef
-  set S := N.F (interiorModel Q) Q with hSdef
+  set Q := Qof P
+  set N := buildNF (interiorModel Q) Q L E
+  set S := N.F (interiorModel Q) Q
   have hQ := X.hQ
   have hdh := X.hdh
   have hli := X.hli
@@ -142,12 +139,10 @@ theorem ctx (X : XHyp P li L E reg r C NR) : ∃ i0 g, XCtx P li L E reg r C NR 
   have hne := X.hne
   have hR := X.hR
   have Xc := X.ectx
-  set K := nk (interiorModel Q) S (reg r) with hKdef
+  set K := nk (interiorModel Q) S (reg r)
   have h3 : 3 ≤ K := three_le_nk hQ hFam hne hR
   have hrep' : ∀ j, j < K → RepPt li Q S (reg r) ((i0 + j) % K) (WP.getD j (.vtx 0)) :=
-    fun j hj => hrep j (by rw [hlen]; exact hj)
-  have hrot : (⟨WP.map (SymPt.eval Q)⟩ : Polygon) = (hostPoly Q S (reg r)).rotate i0 :=
-    poly_of_rep hQ hFam hne hR hli hdh hlen hrep'
+    fun j hj => hrep j (by rwa [hlen])
   have hpts := regHost_pts li Q.n N r
   -- the host points in walk order
   have hHp : ∀ k, k < K → hpt Q.n (regHost li Q.n N r) k = WP.getD (rho li K k) (.vtx 0) := by
@@ -156,7 +151,7 @@ theorem ctx (X : XHyp P li L E reg r C NR) : ∃ i0 g, XCtx P li L E reg r C NR 
     by_cases hl : li = true
     · rw [ite_eq_left hl] at hpts ⊢; rw [hpts]
     · rw [ite_eq_right hl] at hpts ⊢
-      rw [hpts, List.getD_eq_getElem _ _ (by rw [List.length_reverse, ← hWP, hlen]; exact hk),
+      rw [hpts, List.getD_eq_getElem _ _ (by rwa [List.length_reverse, ← hWP, hlen]),
         List.getElem_reverse, List.getD_eq_getElem _ _ (by rw [hlen]; omega)]
       simp only [← hWP, hlen]
   have hHlen : ((regHost li Q.n N r).pts Q.n).length = K := by
@@ -176,9 +171,9 @@ theorem ctx (X : XHyp P li L E reg r C NR) : ∃ i0 g, XCtx P li L E reg r C NR 
     have hι : (i0 + rho li K k) % K < K := Nat.mod_lt _ (by omega)
     rw [hostPoly_vtx hι, ← rep_eval hQ hFam hne hR hli hdh hι (hrepH k hk), X.hCP]
     show (((regHost li Q.n N r).pts Q.n).map (SymPt.eval Q)).getD k (0, 0) = _
-    rw [List.getD_eq_getElem _ _ (by rw [List.length_map, hHlen]; exact hk), List.getElem_map]
+    rw [List.getD_eq_getElem _ _ (by rwa [List.length_map, hHlen]), List.getElem_map]
     unfold hpt
-    rw [List.getD_eq_getElem _ _ (by rw [hHlen]; exact hk)]
+    rw [List.getD_eq_getElem _ _ (by rwa [hHlen])]
   -- polygon facts and extraction facts
   have hrn : ((hostPoly Q S (reg r)).rotate i0).n = K := by
     rw [Existence.n_rotate, hostPoly_n]
@@ -188,10 +183,10 @@ theorem ctx (X : XHyp P li L E reg r C NR) : ∃ i0 g, XCtx P li L E reg r C NR 
       apply poly_eq_of_vtx (by rw [hn, hrn])
       intro k hk
       rw [hn] at hk
-      rw [hvtx k hk, Existence.vtx_rotate _ _ (by rw [hostPoly_n]; exact hk), hostPoly_n]
+      rw [hvtx k hk, Existence.vtx_rotate _ _ (by rwa [hostPoly_n]), hostPoly_n]
       unfold rho; rw [ite_eq_left hl]
-    refine ⟨i0, g, ⟨X, hgK, hgc, hgi, hn, hrepH, hvtx, ?_, ?_, ?_⟩⟩
-    · rw [hpoly]; exact polyFacts_rotate hQ hFam hne hR i0
+    refine ⟨i0, g, ⟨X, hgK, hgi, hn, hrepH, hvtx, ?_, ?_, ?_⟩⟩
+    · rw [hpoly]; exact Existence.simple_rotate _ i0 (hostPts_simple hQ hFam hne hR)
     · exact extractOK_rot Xc hgK hgc hgi hpoly X.hCs X.hCm
     · rw [hpoly, Existence.boundary_rotate]
   · have hl : li = false := by
@@ -203,15 +198,14 @@ theorem ctx (X : XHyp P li L E reg r C NR) : ∃ i0 g, XCtx P li L E reg r C NR 
       intro k hk
       rw [hvtx k hk, hrn, Existence.vtx_rotate _ _ (by rw [hostPoly_n]; omega), hostPoly_n]
       unfold rho; rw [hl]; rfl
-    refine ⟨i0, g, ⟨X, hgK, hgc, hgi, hn, hrepH, hvtx, ?_, ?_, ?_⟩⟩
-    · exact polyFacts_rev hQ hFam hne hR i0 (by rw [hn, hrn])
-        (fun k hk => hPv k (by rw [hrn] at hk; exact hk))
-    · refine extractOK_rev Xc hgK hgc hgi hn (fun k hk => ?_)
-        (polyFacts_rev hQ hFam hne hR i0 (by rw [hn, hrn])
-          (fun k hk => hPv k (by rw [hrn] at hk; exact hk))).1 X.hCs X.hCm
+    have hs : C.P.Simple := Mountain.rev_simple (by rw [hn, hrn])
+      (fun k hk => hPv k (by rwa [hrn] at hk))
+      (Existence.simple_rotate _ i0 (hostPts_simple hQ hFam hne hR))
+    refine ⟨i0, g, ⟨X, hgK, hgi, hn, hrepH, hvtx, hs, ?_, ?_⟩⟩
+    · refine extractOK_rev Xc hgK hgc hgi hn (fun k hk => ?_) hs X.hCs X.hCm
       rw [hvtx k hk]
       unfold rho; rw [hl]; rfl
-    · rw [Mountain.rev_boundary (by rw [hn, hrn]) (fun k hk => hPv k (by rw [hrn] at hk; exact hk)),
+    · rw [Mountain.rev_boundary (by rw [hn, hrn]) (fun k hk => hPv k (by rwa [hrn] at hk)),
         Existence.boundary_rotate]
 
 end XHyp

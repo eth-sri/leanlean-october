@@ -61,11 +61,11 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
             M.key (Qof P) ⟨c.nreg 50002, c.nreg 50003⟩ ∨
           M.key (Qof P) (N.arc (N.seq.getD (c'.nreg 120170) 0)).e =
             M.key (Qof P) ⟨c.nreg 50002, c.nreg 50003⟩) := by
-  set B := c.nreg 50001 with hBdef
-  set A := N.arcs.length with hAdef
-  set AB := c.nmem (B + 4) with hABdef
-  set SB := c.nmem (B + 6) with hSBdef
-  set x : WPos := ⟨c.nreg 50002, c.nreg 50003⟩ with hxdef
+  set B := c.nreg 50001
+  set A := N.arcs.length
+  set AB := c.nmem (B + 4)
+  set SB := c.nmem (B + 6)
+  set x : WPos := ⟨c.nreg 50002, c.nreg 50003⟩
   have hA1 : c.nmem (B + 1) = A := hN.2.1
   have hsl : N.seq.length = A := seq_length hNF
   have hseq : ∀ i, i < A → c.nmem (SB + i) = N.seq.getD i 0 := fun i hi =>
@@ -108,7 +108,7 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
   have R₂ : ∀ r, Bloc r = false → Bdir r = false → c₂.nreg r = c.nreg r := fun r h1 h2 =>
     (f₂.1 r h1).trans (f₁.1 r h2)
   -- 3. the search
-  set d := dirCode M x.edge with hd
+  set d := dirCode M x.edge
   have hJ₂ : CmpJ x d AB A SB TB c.nmem c₂ :=
     ⟨q500, q501, by rw [q502, d₁], q503, q504, q505, fun a _ => by rw [m₂]⟩
   have hcmp := keyCmp_predOK hG hW x hx.2.2 d AB A SB TB c.nmem hAB (by omega)
@@ -119,9 +119,9 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
   obtain ⟨c₃, k₃, e₃, hk₃, hJ₃, hL₃, m₃, a₃, ht₃, hpre₃, hpost₃⟩ := tsearch_exec (P := P) hcmp
     (by decide) (rT := 120041) (rL := 120042) (T := TB) (L := L) (by unfold bandOf bLocate; omega)
     (by unfold bandOf bLocate; omega) w₂ hJ₂ (cmpJ_stable x d AB A SB TB c.nmem)
-    (by rw [R₂ _ (by decide) (by decide)]; exact hTBr) (by rw [R₂ _ (by decide) (by decide)]; exact hLr)
-    (fun j hj => by rw [m₂]; exact htab j hj) (by rw [q104]; exact hbig)
-    (by rw [q103, q104]; exact hSB) hTW
+    (by rwa [R₂ _ (by decide) (by decide)]) (by rwa [R₂ _ (by decide) (by decide)])
+    (fun j hj => by rw [m₂]; exact htab j hj) (by rwa [q104])
+    (by rwa [q103, q104]) hTW
     (fun i j hij hj hprj => by
       rw [q103, m₂] at hprj ⊢
       rw [q104] at hj
@@ -131,7 +131,7 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
   rw [q103, m₂] at hpre₃ hpost₃
   obtain ⟨-, -, -, -, h504, -, -⟩ := hJ₃
   -- 4. the spine position
-  set t := c₃.nreg 50105 with htdef
+  set t := c₃.nreg 50105
   have hpick := locate_pick (fun y hy => hcov2 y hy) hNF x hA0 ht₃
     (fun i hi => (hpr i (by omega)).1 (hpre₃ i hi))
     (fun hi hk => by
@@ -149,9 +149,9 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
       c₄.nreg 120170 = (if 0 < t then t - 1 else A - 1) := by
     unfold myFinish
     by_cases h0 : 0 < t
-    · exact ⟨_, _, .ifLtN_true (by rw [c12]; exact h0) (Exec.subN w₃ _ _ _), by omega,
+    · exact ⟨_, _, .ifLtN_true (by rwa [c12]) (Exec.subN w₃ _ _ _), by omega,
         by config_simp; rw [c11, ite_eq_left h0]⟩
-    · exact ⟨_, _, .ifLtN_false (by rw [c12]; exact h0) (Exec.subN w₃ _ _ _), by omega,
+    · exact ⟨_, _, .ifLtN_false (by rwa [c12]) (Exec.subN w₃ _ _ _), by omega,
         by config_simp; rw [c11, h504, ite_eq_right h0]⟩
   have ex : Exec P W myLoc c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have f₃ := exec_frameB e₃ (B := fun r => Bcmp r || decide (50100 ≤ r ∧ r ≤ 50116)) (by decide)

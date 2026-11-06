@@ -127,7 +127,7 @@ theorem clsS_exec (d : Config) (hw : WordsBounded W d) {n m T HB h p : ℕ} {β 
   have hw6 := e6.wb_right
   have f6 : FrameB Bcls d d6 := f5.trans (exec_frameB e6 (by decide))
   have m6 : d6.nmem = d.nmem := f6.2.2.1
-  obtain ⟨d7, k7, e7, hk7, enc7, f7'⟩ := lookS_exec (P := P) d6 hw6 (by rw [m6]; exact hH) hwf hlen
+  obtain ⟨d7, k7, e7, hk7, enc7, f7'⟩ := lookS_exec (P := P) d6 hw6 (by rwa [m6]) hwf hlen
     hHB (by omega) (by omega) ((f6.1 _ (by decide)).trans h20)
     ((f6.1 _ (by decide)).trans h27) ((f6.1 _ (by decide)).trans h34)
     ((f6.1 _ (by decide)).trans h35)
@@ -326,7 +326,7 @@ theorem peS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool} {s :
       rw [henc.2.1] at a1
       obtain ⟨d2, k2, e2, hk2, n2, -⟩ := succS_exec (P := P) d1 e1.wb_right (src := 217101)
         (dst := 217102) (n := n) (by rw [o1 _ (by decide) (by decide), h20])
-        (by rw [o1 _ (by decide) (by decide), h27]) (by rw [a1]; exact hq) hnW (by decide)
+        (by rw [o1 _ (by decide) (by decide), h27]) (by rwa [a1]) hnW (by decide)
       have b2 : d2.nreg 217102 = (DrvR.qE li n e + 1) % n := by rw [n2, Machine.upd_same, a1]
       have o2 : ∀ r, r ≠ 217102 → d2.nreg r = d1.nreg r := fun r hr => by
         rw [n2, Machine.upd_other _ _ _ hr]

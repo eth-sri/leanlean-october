@@ -117,7 +117,7 @@ theorem bfsRead_exec {A R K CB RB LB : ℕ} {up dn : ℕ → ℕ} {c : Config} (
       Same [60030, 60032, 60033, 60034, 60035] c c' ∧ c'.nreg 60032 = i ∧
       c'.nreg 60034 = up i ∧ c'.nreg 60035 = dn i := by
   have o := hR.one; have tw := hR.two; have hcb := hR.rCB; have hlb := hR.rLB
-  have hi' : c.nmem (LB + (L + t)) = i := by rw [← Nat.add_assoc]; exact hi
+  have hi' : c.nmem (LB + (L + t)) = i := by rwa [← Nat.add_assoc]
   unfold bfsRead
   exec_block
   all_goals first
@@ -204,7 +204,7 @@ theorem bfsSel_exec {c : Config} (hw : WordsBounded W c) {u d r : ℕ} (h34 : c.
     exec_block
     exact ⟨by omega, rfl, hsame _ _, by config_simp; rw [h35, ite_eq_left hu],
       by config_simp; rw [o, ite_eq_left hu]⟩
-  · refine ifEqN_ne (by rw [h34, h29]; exact hu) ?_
+  · refine ifEqN_ne (by rwa [h34, h29]) ?_
     exec_block
     intro k' hk'
     exact ⟨by omega, rfl, hsame _ _, by config_simp; rw [h34, ite_eq_right hu],
@@ -260,7 +260,7 @@ theorem bfsInner_exec {A R K CB RB LB : ℕ} {up dn : ℕ → ℕ} {c : Config} 
         { c3 with nreg := upd c3.nreg 60021 (c3.nreg 60021 + c3.nreg 60011) } :=
       (s13.mono (by simp)).trans (Same.upd1 (by simp))
     refine ⟨by omega, DFr.of_same s4 (by simp [Prot]) (fun a _ => by config_simp; rw [m13]),
-      by config_simp; rw [m13]; exact hE, fun f _ _ j _ => by config_simp; rw [m13],
+      by config_simp; rwa [m13], fun f _ _ j _ => by config_simp; rw [m13],
       by config_simp; rw [s13.1 _ (by simp), h26], ?_, fun x hx => ?_⟩
     · config_simp; rw [s13.1 _ (by simp), h21, hR3.one]
     · config_simp
@@ -268,7 +268,7 @@ theorem bfsInner_exec {A R K CB RB LB : ℕ} {up dn : ℕ → ℕ} {c : Config} 
       exact s13.1 x (by simp; omega)
   · -- `s` is new
     have htlR := htl hv
-    refine spec_seq (ifEqN_ne (by rw [hvis, hR3.one]; exact hv) ?_)
+    refine spec_seq (ifEqN_ne (by rwa [hvis, hR3.one]) ?_)
     obtain ⟨c4, k4, e4, rfl, hf4, s4, r26, hv4⟩ := bfsNew_exec (P := P) hw3 hR3 hAW (sv := s)
       (tl := st.tl) (r := r) (i := i) (v := if up i = r then 1 else 0)
       (by rw [s3.1 _ (by simp), r36]) (by rw [s13.1 _ (by simp), h26])
@@ -348,7 +348,7 @@ theorem bfsInnerLoop_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K
     (fun d ⟨hwd, hfd, htd, hEd, hFd, h26d, hxd⟩ htest => by
       have hRd := hR.frame hfd
       rw [hxd 60027 (by simp), h27] at htest
-      set t := d.nreg 60021 with htdef
+      set t := d.nreg 60021
       have hEnvd := hEnv.transport (m' := d.nmem) fun a ha => hfd.2.2.2.2 a (Or.inl (by omega))
       obtain ⟨hlen, hRB⟩ := hEnvd.hlen r hr
       obtain ⟨hent, hLt⟩ := hEnvd.hent r hr t htest
@@ -364,23 +364,22 @@ theorem bfsInnerLoop_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K
       have hordt : (F t).ord h = r := mo h hh
       have hht : h < (F t).tl := lt_of_lt_of_le hh (fold_mono hends hlists r (l.take t) st).1
       have hIt' : BInv R K up dn lst h (l.take t).reverse (F t) := by simpa using hIt
-      have hstep := bstep_inv hends hlists hIt' hht (i := i) (by rw [hordt]; exact hil)
+      have hstep := bstep_inv hends hlists hIt' hht (i := i) (by rwa [hordt])
       rw [hordt] at hstep
       have htl : (F t).vis (if up i = r then dn i else up i) ≠ 1 → (F t).tl < R := by
         intro hv
         have := hstep.tl_le
         unfold bstep at this
-        rw [ite_eq_right hv] at this
-        exact this
+        rwa [ite_eq_right hv] at this
       obtain ⟨d', k', e', hk', hf'', hE'', hF'', h26'', h21'', hx''⟩ :=
         bfsInner_exec (P := P) hwd hRd hAW hEd (r := r) (L := c.nmem (RB + 5 * r + 3))
           (t := t) (i := i) (by rw [hxd 60029 (by simp), h29])
-          (by rw [hxd 60028 (by simp), h28]) rfl (by rw [← hRBd]; exact hLt) (by rw [← hRBd]; exact hent)
+          (by rw [hxd 60028 (by simp), h28]) rfl (by rwa [← hRBd]) (by rwa [← hRBd])
           hiK u1 u2 u3 ⟨(hends i hiK).1, (hends i hiK).2.1⟩ h26d htl hKR
       have hFs : F (t + 1) = bstep up dn r (F t) i := take_succ_foldl l _ st htest
       refine ⟨d', k', e', ⟨e'.wb_right, hfd.trans hf'', by rw [h21'']; omega, ?_, ?_, ?_,
         fun x hx => (hx'' x hx).trans (hxd x hx)⟩, by rw [h21'']; omega⟩
-      · rw [h21'', hFs]; exact hE''
+      · rwa [h21'', hFs]
       · intro f hf hnf j hj; rw [hF'' f hf hnf j hj, hFd f hf hnf j hj]
       · rw [h26'', h21'', hFs])
     ⟨hw, DFr.refl _ _ c, by rw [h21]; omega, by rw [h21]; simpa [F] using hE,
@@ -458,7 +457,7 @@ theorem bfsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
     (fun d => (42 * D + 16) * (R - d.nreg 60025)) (fun d hd => hd.1)
     (fun d ⟨hwd, hfd, st, hId, hEd, h26d, hFd⟩ htest => by
       have hRd := hR.frame hfd
-      set h := d.nreg 60025 with hhdef
+      set h := d.nreg 60025
       rw [h26d] at htest
       have htlR := hId.tl_le
       obtain ⟨hr, -⟩ := hId.ord_lt h htest
@@ -469,16 +468,15 @@ theorem bfsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
           hlen hRB
       have hRd1 : DRegs A R K CB RB LB d1 := hRd.of_same s1 (by simp [Prot])
       obtain ⟨d2, k2, e2, hk2, hw2, hf2, hE2, hF2, h262, h252⟩ :=
-        bfsInnerLoop_exec (P := P) e1.wb_right hRd1 hAW (by rw [m1]; exact hEnvd) hends hlists hKR
-          hId htest (by rw [m1]; exact hEd) r29 (by rw [r28, m1]) r27 r21
-          (by rw [s1.1 _ (by simp)]; exact h26d)
+        bfsInnerLoop_exec (P := P) e1.wb_right hRd1 hAW (by rwa [m1]) hends hlists hKR
+          hId htest (by rwa [m1]) r29 (by rw [r28, m1]) r27 r21
+          (by rwa [s1.1 _ (by simp)])
       have hdg := hdeg _ hr
       refine ⟨d2, 12 + k2, .seq e1 e2, ⟨hw2, ?_, bouter up dn lst st h, ?_, hE2, h262, ?_⟩, ?_⟩
       · exact hfd.trans ((DFr.of_same s1 (by simp [Prot]) (fun a _ => by rw [m1])).trans hf2)
       · rw [h252, r25]; exact bouter_inv hends hlists hId htest
       · intro f hf hnf j hj; rw [hF2 f hf hnf j hj, m1, hFd f hf hnf j hj]
       · rw [h252, r25]
-        have : 42 * (lst (st.ord h)).length ≤ 42 * D := Nat.mul_le_mul_left _ hdg
         have h1 : (42 * D + 16) * (R - (h + 1)) + (42 * D + 16) = (42 * D + 16) * (R - h) := by
           rw [← Nat.mul_succ]; congr 1; omega
         omega)

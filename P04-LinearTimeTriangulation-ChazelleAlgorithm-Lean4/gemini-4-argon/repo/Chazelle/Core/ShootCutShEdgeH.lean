@@ -67,7 +67,7 @@ theorem PtRecB.keep {c c' : Config} {B : ℕ} {q : Point} {R : ℝ} (h : PtRecB 
     (hk _ (by omega) (by omega)) (hk _ (by omega) (by omega)),
     hy.copy (hk _ (by omega) (by omega)) (by rw [hk _ (by omega) (by omega)])
       (by rw [hk _ (by omega) (by omega)]), fun h7 => ?_⟩
-  obtain ⟨s, hs, hl, hv⟩ := fr (by rw [← hk _ (by omega) (by omega)]; exact h7)
+  obtain ⟨s, hs, hl, hv⟩ := fr (by rwa [← hk _ (by omega) (by omega)])
   exact ⟨s, NFLoc.symPtIn_copy hs (hk _ (by omega) (by omega)) (by rw [hk _ (by omega) (by omega)])
     (by rw [hk _ (by omega) (by omega)]), hl, hv⟩
 
@@ -96,7 +96,7 @@ def PosAt (P : Polygon) (C : Chain) (c : Config) (e h : ℕ) (q : Point) : Prop 
 
 theorem PosAt.keep {c c' : Config} {e h : ℕ} {q : Point} (hp : PosAt P C c e h q)
     (he : c'.nreg e = c.nreg e) (hh : c'.nreg h = c.nreg h) : PosAt P C c' e h q := by
-  unfold PosAt at *; rw [he, hh]; exact hp
+  unfold PosAt at *; rwa [he, hh]
 
 theorem ne_of_seg {U V z X : Point} (hz : z ∉ seg U V) (hX : X ∈ seg U V) (hy : z.2 = X.2) :
     X.1 ≠ z.1 := fun h => hz (by
@@ -217,8 +217,8 @@ theorem xTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
   have q62 : c₁.nreg 140262 = p := by rw [g₁ _ (by decide), h62]
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by decide)
   obtain ⟨c₂, k₂, e₂, hk₂, r₂, f₂⟩ := ptLoad_exec (P := P) c₁ e₁.wb_right E₁ (e := 140262)
-    (h := 140304) (B := 140292) (by norm_num) (by norm_num) (by norm_num) (by rw [q62]; exact hpn)
-    (by rw [q62, q04]; exact hpp) (Or.inr (by rw [q62, q04]; exact hqR)) (by rw [hA₁]; exact hroom)
+    (h := 140304) (B := 140292) (by norm_num) (by norm_num) (by norm_num) (by rwa [q62])
+    (by rwa [q62, q04]) (Or.inr (by rwa [q62, q04])) (by rwa [hA₁])
   rw [q62, q04] at r₂
   have fe₂ : FrameB Bedge c₁ c₂ := FrameB.wk f₂ (Bld_bedge (by norm_num))
   have E₂ := E₁.frame fe₂ Bedge_env
@@ -248,9 +248,9 @@ theorem xTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
     obtain ⟨c', k, ex, hk, ca, f⟩ := candFrom_exec (P := P) (C := C) (S := seg pU pV) c₃ w₃
       (by omega) (A := 140292) (e := 140262) (h := 140304) (by norm_num) (by norm_num)
       (by norm_num) r₃.1 (hc.1 rfl)
-      (by rw [kp _ (by norm_num) (by norm_num), kp _ (by norm_num) (by norm_num),
-        k₂' _ (Or.inl rfl), k₂' _ (Or.inr rfl), q62, q04]; exact hpp)
-      (by rw [kp _ (by norm_num) (by norm_num), k₂' _ (Or.inl rfl), q62]; exact hpn)
+      (by rwa [kp _ (by norm_num) (by norm_num), kp _ (by norm_num) (by norm_num),
+        k₂' _ (Or.inl rfl), k₂' _ (Or.inr rfl), q62, q04])
+      (by rwa [kp _ (by norm_num) (by norm_num), k₂' _ (Or.inl rfl), q62])
       (by rw [kp _ (by norm_num) (by norm_num), kp _ (by norm_num) (by norm_num),
         k₂' _ (Or.inl rfl), k₂' _ (Or.inr rfl), q62, q04, ← hqy])
     exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.ifLtN_false t ex))), by omega, ca,
@@ -337,14 +337,14 @@ theorem midTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
       · exfalso; rw [h] at hmid; rcases hmid with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> linarith
       · exfalso; rw [h] at hmid; rcases hmid with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> linarith
       · exact h
-    set i := c₄.nreg (140234 + 2) with hi_def
+    set i := c₄.nreg (140234 + 2)
     have hm := mid_pos (chainModel C) (Qof P) (p := p) (h := i) hα hαβ hβ (by
-      rw [← hpU, ← hpV, ← hzi]; exact hmid)
+      rwa [← hpU, ← hpV, ← hzi])
     rw [← hpU, ← hpV] at hm
     obtain ⟨hmem, hy, hp0, hp1⟩ := hm
     exact xTree_exec c₄ w₄ E₄ (p := p) (i := i) q₄ rfl hmem (by rw [hy, ← hzi])
-      ⟨hp0.le, hp1, show i + 1 ≤ P.n by omega⟩ hpn (by rw [hy, ← hzi]; exact hzR) hUV hz
-      (by rw [a₄]; exact hroom)
+      ⟨hp0.le, hp1, show i + 1 ≤ P.n by omega⟩ hpn (by rwa [hy, ← hzi]) hUV hz
+      (by rwa [a₄])
   have ocase : ¬ ((pU.2 < z.2 ∧ z.2 < pV.2) ∨ (pV.2 < z.2 ∧ z.2 < pU.2)) →
       ∃ c' k, Exec P W cand0 c₄ c' k ∧ k = 1 ∧ CandAt P C c' 140220 (seg pU pV) z σ ∧
         FrameB Bedge c₄ c' := fun hmid => by
@@ -476,8 +476,8 @@ theorem edgeH_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
   obtain ⟨⟨pVe, pVp, pVn⟩, pVy⟩ := iV
   obtain ⟨c₂, k₂, e₂, hk₂, rV₂, f₂⟩ := ptLoad_exec (P := P) c₁ e₁.wb_right E₁ (e := 140265)
     (h := 140266) (B := 140281) (by norm_num) (by norm_num) (by norm_num)
-    (by rw [kp₁ _ (by norm_num) (by norm_num)]; exact pVn)
-    (by rw [kp₁ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)]; exact pVp)
+    (by rwa [kp₁ _ (by norm_num) (by norm_num)])
+    (by rwa [kp₁ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)])
     (by rw [kp₁ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num), pVe]; exact pVy)
     (by rw [hA₁]; omega)
   rw [kp₁ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num), pVe] at rV₂

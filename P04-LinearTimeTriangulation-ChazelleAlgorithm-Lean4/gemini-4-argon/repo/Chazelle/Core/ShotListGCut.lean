@@ -68,8 +68,8 @@ theorem KCtx.of_frameB {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsO
   have r0 : c'.nreg R = c.nreg R := by simpa using k 0 (by omega)
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hf.1 _ (hB.alloc hR)
   have hm : c'.nmem = c.nmem := hf.2.2.1
-  exact ⟨hS c c' 0 hE hw' (hB.frameR hR hBo hf 0), hG, hHW, by rw [hm, r0]; exact hMD,
-    by rw [hm, r0, hA]; exact hmwf, by rw [k 30 (by omega), h30], by rw [k 31 (by omega), h31],
+  exact ⟨hS c c' 0 hE hw' (hB.frameR hR hBo hf 0), hG, hHW, by rwa [hm, r0],
+    by rwa [hm, r0, hA], by rw [k 30 (by omega), h30], by rw [k 31 (by omega), h31],
     by rw [k 34 (by omega), r0, h34]⟩
 
 /-! ## The correction of `a < b` -/
@@ -239,9 +239,9 @@ theorem cutBG_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} (hR : RegsO
   have ctx₁ : KCtx P W M R E c₁ := KCtx.of_frameB hR hBo hS hctx e₁.wb_right f₁ (fun r hr => by
     have := bouts_range hr; exact Or.inr (Or.inl ⟨by omega, by omega⟩))
   obtain ⟨c₂, k₂, e₂, hk₂, kab, f₂⟩ := offBG_exec (P := P) hk hℓ c₁ e₁.wb_right ctx₁
-    (by rw [hA1]; exact hroom) (by rw [pa]; exact ha) (by rw [pb]; exact hb)
-    (by rw [gL0]; exact hae) (by rw [gL2]; exact hbe)
-    (by rw [gL0, gL1, gL2, gL3]; exact bab)
+    (by rwa [hA1]) (by rwa [pa]) (by rwa [pb])
+    (by rwa [gL0]) (by rwa [gL2])
+    (by rwa [gL0, gL1, gL2, gL3])
   rw [pa, pb] at kab
   have o₂ : ∀ r, (R + 100 < r ∧ r < R + 300) → BoffG R Bk r = false := fun r hr => by
     simp only [BoffG, opW_R hBk hR (by omega) hr.2, Bool.or_false, beq_eq_false_iff_ne]
@@ -309,8 +309,7 @@ theorem cutBG_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} (hR : RegsO
     · have hd : decide (c₃.nreg (R + 30 + ℓ) < c₃.nreg (R + 9)) = false := by
         simp only [decide_eq_false_iff_not]; exact fun h => hp (hp3.1 h)
       rw [hd] at pc₄
-      rw [ite_no _ _ hp]
-      exact pc₄
+      rwa [ite_no _ _ hp]
   · -- the frame
     have f₄ : FrameB (fun r => decide (L + 4 ≤ r ∧ r < L + 14)) c₃ c₄ :=
       ⟨fun r hr => r₄ r (by simp only [decide_eq_false_iff_not] at hr; omega)

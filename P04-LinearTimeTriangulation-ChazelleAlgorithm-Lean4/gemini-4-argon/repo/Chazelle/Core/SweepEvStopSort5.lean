@@ -58,8 +58,8 @@ theorem ssIdx_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
       (∀ r, r ≠ ALLOC → r ≠ srA0 → r ≠ srIB → r ≠ srI → r ≠ srA → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  set A := c.nreg ALLOC with hA
-  set S := c.nreg gRC with hS
+  set A := c.nreg ALLOC
+  set S := c.nreg gRC
   have e₀ := exec_regB (P := P) ssIdxHead hw (by
     simp only [ssIdxHead, okW, okWI]; exact ⟨trivial, trivial, by omega, trivial⟩)
   set c₁ : Config := { c with nreg := regB c.nmem ssIdxHead c.nreg } with hc₁

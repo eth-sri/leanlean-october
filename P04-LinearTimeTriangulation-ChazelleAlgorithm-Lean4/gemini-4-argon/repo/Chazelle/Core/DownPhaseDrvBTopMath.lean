@@ -110,8 +110,7 @@ theorem reg_sizes (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P))
           (reg r) + 1) * γ ≤ 5 * γ := Nat.mul_le_mul_right _ (by omega)
       omega
     · have := arcCnt_le B (hR r hr) hwt hj
-      rw [hn] at this
-      exact this
+      rwa [hn] at this
 
 /-- **The completed chord list**: valid, and containing every vertex chord of `Q`. -/
 theorem newLB_facts (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P)) (Qof P) L)

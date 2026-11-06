@@ -51,7 +51,7 @@ theorem frame_regs {c c' : Config} (k : ℕ) (hr : ∀ r, bandOf r ∉ ioBands �
 
 theorem frame_ioB {B : Finset ℕ} {c c' : Config} {k : ℕ} (h : Frame (B ∪ B) c c' k) :
     Frame B c c' k := by
-  rw [Finset.union_self] at h; exact h
+  rwa [Finset.union_self] at h
 
 /-- Registers of the sweep's band are in `ioBands`. -/
 theorem sw_io {r : ℕ} (h1 : 240000 ≤ r) (h2 : r < 250000) : bandOf r ∈ ioBands := by
@@ -99,7 +99,7 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
       (by swoInit2) (by swoInit2) (by rw [qE])
       (by rw [qE]; omega) (by rw [qE, qH]; exact ⟨by rw [hpar], by rw [hpar]; norm_num,
         Nat.zero_le _⟩)
-      (by rw [qE, qH]; exact ⟨fun _ => hpar, fun _ => rfl⟩) (by rw [hA₁]; exact hroom)
+      (by rw [qE, qH]; exact ⟨fun _ => hpar, fun _ => rfl⟩) (by rwa [hA₁])
   rw [qE, qH] at hse
   have hpos : (chainModel J.left).pos (Qof P) ⟨6, 0⟩ = J.left.top := by
     show Chazelle.Chain.sidePt _ _ _ = _
@@ -225,8 +225,8 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
       (∀ r, r ≠ ALLOC → r ≠ MD₁ → r ≠ CD₁ → r ≠ iA → r ≠ iV → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   obtain ⟨k0, k1, k6, k4, k5, k2, k3⟩ := hK
-  set A := c.nreg ALLOC with hA
-  set S := c.nreg (sw 20) with hSd
+  set A := c.nreg ALLOC
+  set S := c.nreg (sw 20)
   obtain ⟨c₁, kH, eH, hkH, I₁⟩ := mdHead_exec (P := P) hw k0 k1 hW
   have hSA : S + 5 ≤ A := hS
   have nk : ∀ q, (q = K0 ∨ q = K1 ∨ q = K2 ∨ q = K3 ∨ q = K4) →

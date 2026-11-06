@@ -60,18 +60,17 @@ theorem itBody_exec {P : Polygon} {W Hh u : ℕ} {H : Host} {m : ℕ → ℕ} {d
   obtain ⟨E, hil, hs⟩ := hI
   have hw := E.wb
   rw [E.h77] at ht
-  set i := d.nreg 150065 with hi
+  set i := d.nreg 150065
   rcases hs with ⟨hacc, hpi, ha⟩ | ⟨hdone, -⟩
   swap
   · omega
-  have hitem := hostAt_item hH ht
   have hcnt := machineCnt_eq hH ht
   have hpre := preLen_succ P.n H ht
   have hle := preLen_mono P.n H (show i + 1 ≤ H.length by omega)
   rw [preLen_length] at hle
-  set k := m (Hh + 1 + 3 * i) with hk
-  set a := m (Hh + 2 + 3 * i) with hak
-  set b := m (Hh + 3 + 3 * i) with hbk
+  set k := m (Hh + 1 + 3 * i)
+  set a := m (Hh + 2 + 3 * i)
+  set b := m (Hh + 3 + 3 * i)
   obtain ⟨d₁, k₁, e₁, hk₁, l67, l68, l69⟩ : ∃ d₁ k₁, Exec P W (block [.loadN 150067 150074,
       .addN 150075 150074 150091, .loadN 150068 150075, .addN 150075 150075 150091,
       .loadN 150069 150075]) d d₁ k₁ ∧ k₁ = 5 ∧ d₁.nreg 150067 = k ∧ d₁.nreg 150068 = a ∧
@@ -102,14 +101,14 @@ theorem itBody_exec {P : Polygon} {W Hh u : ℕ} {H : Host} {m : ℕ → ℕ} {d
     rw [hpre, ← hcnt]
     by_cases hkind : k < 1
     · rw [ite_eq_left hkind]
-      refine spec_ifLtN_true (by rw [l67, g91]; exact hkind) ?_
+      refine spec_ifLtN_true (by rwa [l67, g91]) ?_
       exec_block
       · rw [g73, l69]; have := hpre; rw [← hcnt, ite_eq_left hkind] at this; omega
       · config_simp; rw [g73, l69, g91]; have := hpre; rw [← hcnt, ite_eq_left hkind] at this
         omega
       · exact ⟨by omega, by config_simp; rw [g73, l69, g91]; ring⟩
     · rw [ite_eq_right hkind]
-      refine spec_ifLtN_false (by rw [l67, g91]; exact hkind)
+      refine spec_ifLtN_false (by rwa [l67, g91])
         (spec_instr (Exec.addN e₁.wb_right _ _ _ (by
           rw [g73, g91]; have := hpre; rw [← hcnt, ite_eq_right hkind] at this; omega))
           fun _ => ⟨by omega, by config_simp; rw [g73, g91]⟩)
@@ -130,7 +129,7 @@ theorem itBody_exec {P : Polygon} {W Hh u : ℕ} {H : Host} {m : ℕ → ℕ} {d
     have f₃ := exec_frameB e₃ (B := Bl [150065, 150066, 150079]) (by decide)
     have h3 : ∀ r, r ≠ 150065 → r ≠ 150066 → r ≠ 150079 → d₃.nreg r = d₂.nreg r :=
       fun r h1 h2' h3' => f₃.1 r (by simp [Bl, h1, h2', h3'])
-    have t1 : d₂.nreg 150064 < d₂.nreg 150078 := by rw [h2 _ (by omega), g64, l78]; exact hf
+    have t1 : d₂.nreg 150064 < d₂.nreg 150078 := by rwa [h2 _ (by omega), g64, l78]
     refine ⟨d₃, k₁ + (k₂ + (k₃ + 1)), .seq e₁ (.seq e₂ (.ifLtN_true t1 e₃)),
       ⟨⟨e₃.wb_right, f₃.2.2.1.trans (f₂.2.2.1.trans gm), ?_, ?_, ?_, ?_, ?_⟩, by omega,
         Or.inr ⟨o65, ?_⟩⟩, by omega, by omega⟩
@@ -158,7 +157,7 @@ theorem itBody_exec {P : Polygon} {W Hh u : ℕ} {H : Host} {m : ℕ → ℕ} {d
     have f₃ := exec_frameB e₃ (B := Bl [150065, 150073, 150074]) (by decide)
     have h3 : ∀ r, r ≠ 150065 → r ≠ 150073 → r ≠ 150074 → d₃.nreg r = d₂.nreg r :=
       fun r h1 h2' h3' => f₃.1 r (by simp [Bl, h1, h2', h3'])
-    have t1 : ¬ d₂.nreg 150064 < d₂.nreg 150078 := by rw [h2 _ (by omega), g64, l78]; exact hf
+    have t1 : ¬ d₂.nreg 150064 < d₂.nreg 150078 := by rwa [h2 _ (by omega), g64, l78]
     refine ⟨d₃, k₁ + (k₂ + (k₃ + 2)), .seq e₁ (.seq e₂ (.ifLtN_false t1 e₃)),
       ⟨⟨e₃.wb_right, f₃.2.2.1.trans (f₂.2.2.1.trans gm), ?_, ?_, ?_, ?_, ?_⟩, by omega,
         Or.inl ⟨by rw [o73, o65], by rw [o65]; omega, by rw [o74, o65]⟩⟩, by omega, by omega⟩
@@ -216,8 +215,8 @@ theorem itLook_exec {P : Polygon} {W Hh u : ℕ} {H : Host} {m : ℕ → ℕ} (c
     omega
   · rw [o65]
     obtain ⟨h1, h2, h3, h4, h5, h6, h7⟩ := hfound
-    exact ⟨h1, h2, h3, by rw [hr₃ _ (by omega)]; exact h4, by rw [hr₃ _ (by omega)]; exact h5,
-      by rw [hr₃ _ (by omega)]; exact h6, by rw [hr₃ _ (by omega)]; exact h7⟩
+    exact ⟨h1, h2, h3, by rwa [hr₃ _ (by omega)], by rwa [hr₃ _ (by omega)],
+      by rwa [hr₃ _ (by omega)], by rwa [hr₃ _ (by omega)]⟩
 
 /-! ## A walk vertex -/
 
@@ -277,9 +276,7 @@ theorem locV_exec {P : Polygon} {W : ℕ} {C : Chain} {H : Host} {Hh v : ℕ} {m
     (R : ChainRegs C (H.pts P.n).length Hh c) (h44 : c.nreg 150044 = v) (hv6 : 6 ≤ v)
     (hv : v ≤ 2 * C.m + 6) (hs : C.s < (H.pts P.n).length) (hmN : C.m < (H.pts P.n).length)
     (haW : Hh + 3 * H.length + 4 ≤ W) (hNW : 2 * (H.pts P.n).length ≤ W) :
-    ∃ c' k, Exec P W locV c c' k ∧ k ≤ 22 * H.length + 30 ∧ FrameB Bloc c c' ∧
-      c'.nreg 150060 = v - 6 ∧ c'.nreg 150061 = jOf (C.sideS C.sideBeta) (v - 6) (2 * C.m) ∧
-      c'.nreg 150062 = Chazelle.Chain.sideE C.m ((C.sideS C.sideBeta + (v - 6)) % (2 * C.m)) ∧
+    ∃ c' k, Exec P W locV c c' k ∧ k ≤ 22 * H.length + 30 ∧ FrameB Bloc c c' ∧ c'.nreg 150061 = jOf (C.sideS C.sideBeta) (v - 6) (2 * C.m) ∧
       (c'.nreg 150063 = 1 ↔ jOf (C.sideS C.sideBeta) (v - 6) (2 * C.m) < C.m) ∧
       c'.nreg 150063 ≤ 1 ∧
       c'.nreg 150064 = (C.s + Chazelle.Chain.sideE C.m
@@ -287,15 +284,15 @@ theorem locV_exec {P : Polygon} {W : ℕ} {C : Chain} {H : Host} {Hh v : ℕ} {m
       ItFound P.n Hh (c'.nreg 150064) H m c' (c'.nreg 150065) := by
   have hS := C.sideS_lt C.sideBeta
   have hm1 := C.one_le
-  set S := C.sideS C.sideBeta with hSdef
-  set i := v - 6 with hi
+  set S := C.sideS C.sideBeta
+  set i := v - 6
   set J := jOf S i (2 * C.m) with hJ
   have hJle : J ≤ 2 * C.m := by rw [hJ]; unfold jOf; split_ifs <;> omega
   have hk := sideE_jOf hS (show i ≤ 2 * C.m by omega) hm1
   rw [← hJ] at hk
-  set k := Chazelle.Chain.sideE C.m ((S + i) % (2 * C.m)) with hkdef
+  set k := Chazelle.Chain.sideE C.m ((S + i) % (2 * C.m))
   have hkm : k ≤ C.m := by rw [← hk]; exact Chazelle.Chain.sideE_le hJle
-  set N := (H.pts P.n).length with hN
+  set N := (H.pts P.n).length
   -- straight part
   obtain ⟨c₁, k₁, e₁, hk₁, o60, o75⟩ : ∃ c₁ k₁, Exec P W (block [.subN 150060 150044 150096,
       .subN 150075 150029 150028]) c c₁ k₁ ∧ k₁ = 2 ∧ c₁.nreg 150060 = i ∧
@@ -314,10 +311,10 @@ theorem locV_exec {P : Polygon} {W : ℕ} {C : Chain} {H : Host} {Hh v : ℕ} {m
       (.instr (.addN 150061 150028 150060)) (.instr (.subN 150061 150060 150075))) c₁ c₂ k₂ ∧
       k₂ ≤ 3 ∧ c₂.nreg 150061 = J ∧ ∀ r, r ≠ 150061 → c₂.nreg r = c₁.nreg r := by
     by_cases h : i < 2 * C.m - S
-    · refine spec_ifLtN_true (by rw [o60, o75]; exact h) (spec_instr (Exec.addN w₁ _ _ _
+    · refine spec_ifLtN_true (by rwa [o60, o75]) (spec_instr (Exec.addN w₁ _ _ _
         (by rw [R₁.h28, o60]; omega)) fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [R₁.h28, o60, hJ]; unfold jOf; rw [ite_eq_left (by omega)]
-    · refine spec_ifLtN_false (by rw [o60, o75]; exact h) (spec_instr (Exec.subN w₁ _ _ _)
+    · refine spec_ifLtN_false (by rwa [o60, o75]) (spec_instr (Exec.subN w₁ _ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [o60, o75, hJ]; unfold jOf; rw [ite_eq_right (by omega)]; omega
   have w₂ := e₂.wb_right
@@ -330,12 +327,12 @@ theorem locV_exec {P : Polygon} {W : ℕ} {C : Chain} {H : Host} {Hh v : ℕ} {m
     have e23 : c₂.nreg 150023 = C.m := by rw [r₂ _ (by omega), R₁.h23]
     have e29 : c₂.nreg 150029 = 2 * C.m := by rw [r₂ _ (by omega), R₁.h29]
     by_cases h : J < C.m
-    · refine spec_ifLtN_true (by rw [o61, e23]; exact h) ?_
+    · refine spec_ifLtN_true (by rwa [o61, e23]) ?_
       exec_block
       · omega
       · refine ⟨by omega, ?_, by simp [h], by simp, fun r h1 h2 => by simp [h1, h2]⟩
         config_simp; rw [o61, ← hk, ← kOf_eq, ite_eq_left h]
-    · refine spec_ifLtN_false (by rw [o61, e23]; exact h) ?_
+    · refine spec_ifLtN_false (by rwa [o61, e23]) ?_
       exec_block
       · omega
       · refine ⟨by omega, ?_, by simp [h], by simp, fun r h1 h2 => by simp [h1, h2]⟩
@@ -353,10 +350,10 @@ theorem locV_exec {P : Polygon} {W : ℕ} {C : Chain} {H : Host} {Hh v : ℕ} {m
       ∀ r, r ≠ 150064 → r ≠ 150075 → c₄.nreg r = c₃.nreg r := by
     refine spec_seq (spec_instr (Exec.addN w₃ _ _ _ (by rw [e22, o62]; omega)) fun w' => ?_)
     by_cases h : C.s + k < N
-    · refine spec_ifLtN_true (by config_simp; rw [e22, o62, e26]; exact h)
+    · refine spec_ifLtN_true (by config_simp; rwa [e22, o62, e26])
         (spec_instr (Exec.copyN w' _ _) fun _ => ⟨by omega, ?_, fun r h1 h2 => by simp [h1, h2]⟩)
       config_simp; rw [e22, o62, Nat.mod_eq_of_lt h]
-    · refine spec_ifLtN_false (by config_simp; rw [e22, o62, e26]; exact h)
+    · refine spec_ifLtN_false (by config_simp; rwa [e22, o62, e26])
         (spec_instr (Exec.subN w' _ _ _) fun _ => ⟨by omega, ?_, fun r h1 h2 => by simp [h1, h2]⟩)
       config_simp; rw [e22, o62, e26, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
   have w₄ := e₄.wb_right
@@ -378,12 +375,10 @@ theorem locV_exec {P : Polygon} {W : ℕ} {C : Chain} {H : Host} {Hh v : ℕ} {m
   have ex : Exec P W locV c c₅ (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) := by
     unfold locV
     exact .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
-  refine ⟨c₅, _, ex, by omega, exec_frameB ex wr_locV, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [f₅.1 _ (by decide), f₄₃ _ (by decide), o60]
+  refine ⟨c₅, _, ex, by omega, exec_frameB ex wr_locV, ?_, ?_, ?_, ?_, ?_⟩
   · rw [f₅.1 _ (by decide), r₄ _ (by omega) (by omega), r₃ _ (by omega) (by omega), o61]
-  · rw [f₅.1 _ (by decide), r₄ _ (by omega) (by omega), o62]
   · rw [f₅.1 _ (by decide), r₄ _ (by omega) (by omega), o63]
-  · rw [f₅.1 _ (by decide), r₄ _ (by omega) (by omega)]; exact o63'
+  · rwa [f₅.1 _ (by decide), r₄ _ (by omega) (by omega)]
   · rw [f₅.1 _ (by decide), o64]
   · rw [show c₅.nreg 150064 = (C.s + k) % N by rw [f₅.1 _ (by decide), o64]]
     exact found

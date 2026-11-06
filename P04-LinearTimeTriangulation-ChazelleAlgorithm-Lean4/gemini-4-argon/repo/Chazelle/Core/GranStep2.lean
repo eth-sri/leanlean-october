@@ -120,9 +120,7 @@ theorem deg_list (hE : E.Good) {L' : Set ℕ} (hL' : ∀ i ∈ L', i < E.K) {Z :
   have hinj : Set.InjOn (fun i => cs E.M E.Q E.N i) {i | i ∈ l} := by
     intro i hi i' hi' he
     exact cs_inj hE.hNF (hL' i ((hl i).1 hi).1) (hL' i' ((hl i').1 hi').1) he
-  rw [e, hinj.ncard_image]
-  rw [show {i | i ∈ l} = (l.toFinset : Set ℕ) by ext; simp]
-  rw [Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd]
+  rw [e, hinj.ncard_image, show {i | i ∈ l} = (l.toFinset : Set ℕ) by ext; simp, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd]
 
 /-- The exit list of a class is its list of exits. -/
 theorem exl_of_list (st : St) (x : ℕ) {l : List ℕ} (hd : st.deg x = l.length)
@@ -131,8 +129,7 @@ theorem exl_of_list (st : St) (x : ℕ) {l : List ℕ} (hd : st.deg x = l.length
   apply List.ext_getElem
   · rw [List.length_ofFn, hd]
   · intro t h1 h2
-    rw [List.getElem_ofFn]
-    rw [he t h2, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h2]
+    rw [List.getElem_ofFn, he t h2, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h2]
     rfl
 
 section Rm
@@ -184,7 +181,7 @@ theorem touch_P {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) :
   have e := hs.exits_eq_union (hsys_F hE h hc hs) sdiff_subset (St.cs_mem_F hc)
     not_mem_sdiff_self (W := st.F E \ {cs E.M E.Q E.N c}) subset_rfl
   have hiS : cs E.M E.Q E.N i ∈ st.F E \ {cs E.M E.Q E.N c} := by
-    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rw [mem_singleton_iff]; exact hic⟩, hi.1, rfl⟩
+    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rwa [mem_singleton_iff]⟩, hi.1, rfl⟩
   constructor
   · intro ht
     have : cs E.M E.Q E.N i ∈ Merge.exitsIn E.M.D (st.F E \ {cs E.M E.Q E.N c}) P := ⟨hiS, ht⟩
@@ -207,7 +204,7 @@ theorem not_both {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c)
   have hd := hs.exits_disjoint (hsys_F hE h hc hs) sdiff_subset (St.cs_mem_F hc)
     (W := st.F E \ {cs E.M E.Q E.N c}) subset_rfl
   have hiS : cs E.M E.Q E.N i ∈ st.F E \ {cs E.M E.Q E.N c} := by
-    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rw [mem_singleton_iff]; exact hic⟩, hi.1, rfl⟩
+    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rwa [mem_singleton_iff]⟩, hi.1, rfl⟩
   exact Set.disjoint_left.1 hd ⟨hiS, h1⟩ ⟨hiS, h2⟩
 
 theorem mem_newEx (i : ℕ) :

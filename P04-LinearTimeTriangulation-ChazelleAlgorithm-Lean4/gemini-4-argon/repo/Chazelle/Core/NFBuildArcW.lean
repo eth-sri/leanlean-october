@@ -35,9 +35,9 @@ theorem Input.key_first_le (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.lengt
   rcases Nat.eq_zero_or_pos m with rfl | hpos
   · exact le_rfl
   rw [h.key_s (by omega), h.key_s hm, BuildSort.kap_eq (by rw [h.length_evs]; omega),
-    BuildSort.kap_eq (by rw [h.length_evs]; exact hm)]
+    BuildSort.kap_eq (by rwa [h.length_evs])]
   exact BuildSort.key_le_of_evLe (List.pairwise_iff_getElem.1 h.sorted 0 m (by
-    rw [length_map]; omega) (by rw [length_map]; exact hm) hpos)
+    rw [length_map]; omega) (by rwa [length_map]) hpos)
 
 /-- **The weight of an arc record** by the machine formula. -/
 theorem Input.arcW_eq (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.length)

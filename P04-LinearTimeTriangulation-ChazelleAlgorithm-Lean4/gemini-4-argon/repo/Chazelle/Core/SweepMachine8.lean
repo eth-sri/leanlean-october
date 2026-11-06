@@ -91,13 +91,13 @@ theorem stretch_end (hP : J.P.Simple)
         exact seg_end hxe hxD hopen hxa
     rcases hxab with rfl | rfl
     · refine ⟨pa, ta, hAa, ?_⟩
-      have := off_right_pt J hP hS₂ hS₂f hAa.1 hAa.2.1 hAa.2.2.1 (by rw [hAa']; exact hx)
-        (by rw [hAa']; exact hxv)
-      exact ⟨this.1, this.2, by rw [hAa']; exact hx, by rw [hAa']; exact hxv⟩
+      have := off_right_pt J hP hS₂ hS₂f hAa.1 hAa.2.1 hAa.2.2.1 (by rwa [hAa'])
+        (by rwa [hAa'])
+      exact ⟨this.1, this.2, by rwa [hAa'], by rwa [hAa']⟩
     · refine ⟨pb, tb, hBb, ?_⟩
-      have := off_right_pt J hP hS₂ hS₂f hBb.1 hBb.2.1 hBb.2.2.1 (by rw [hBb']; exact hx)
-        (by rw [hBb']; exact hxv)
-      exact ⟨this.1, this.2, by rw [hBb']; exact hx, by rw [hBb']; exact hxv⟩
+      have := off_right_pt J hP hS₂ hS₂f hBb.1 hBb.2.1 hBb.2.2.1 (by rwa [hBb'])
+        (by rwa [hBb'])
+      exact ⟨this.1, this.2, by rwa [hBb'], by rwa [hBb']⟩
   -- a chord through the shared vertex is a shared chord, a stop chord
   have hshared : J.shared ∉ e := by
     intro hv'
@@ -154,19 +154,13 @@ theorem next_event_origin (hP : J.P.Simple)
         ((∃ c ∈ S₂, (∃ V, LabS J S₂ L V ∧ Chazelle.Chain.TouchesIn (chainModel J.right).D c V) ∧
           ((σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c)) ∧
           a ∈ J.right.set ∧ a ≠ J.shared) ∨ a = J.right.top) := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hF.2.1
-  have hvD : J.shared ∉ J.whole.dom := fun hd =>
-    J.whole.not_mem_set_of_mem_dom hd (J.left_set_subset J.shared_mem_left)
   -- the stretch attachment of `e`
   obtain ⟨pB, tB, heB, hB0, hBL, hBr, hBv⟩ :=
     stretch_end J hP hS₂.2.1 hS₂.1 he (hstop e he heK)
-  have hLK : ((rL1 J + rL2 J : ℕ) : ℝ) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK) := by linarith
   have heKB : sidePt (chainModel J.whole).W pK tK ≠ sidePt (chainModel J.whole).W pB tB := by
     intro h
-    have := off_right_pt J hP hS₂.2.1 hS₂.1 hpK htK0 htK1 (by rw [h]; exact hBr)
-      (by rw [h]; exact hBv)
+    have := off_right_pt J hP hS₂.2.1 hS₂.1 hpK htK0 htK1 (by rwa [h])
+      (by rwa [h])
     linarith [this.2]
   have hnobr : ∀ e' ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e' pK tK →
       ∃ (pb : ℕ) (tb : ℝ), SideAttach (chainModel J.whole).W e' pb tb ∧
@@ -188,12 +182,12 @@ theorem next_event_origin (hP : J.P.Simple)
       · by_contra hr
         exact hns (Or.inr ⟨c, hc, _, 1, Or.inl ⟨rfl, rfl⟩, hr, hfree, rfl⟩)
       · intro hlv
-        exact hns (Or.inl ⟨1, Or.inl rfl, by rw [← hlv]; exact hfree, by rw [hlv]⟩)
+        exact hns (Or.inl ⟨1, Or.inl rfl, by rwa [← hlv], by rw [hlv]⟩)
     · refine ⟨_, -1, Or.inr rfl, hfree, rfl, Or.inl ⟨c, hc, htouch, Or.inr ⟨rfl, rfl⟩, ?_, ?_⟩⟩
       · by_contra hr
         exact hns (Or.inr ⟨c, hc, _, -1, Or.inr ⟨rfl, rfl⟩, hr, hfree, rfl⟩)
       · intro hlv
-        exact hns (Or.inl ⟨-1, Or.inr rfl, by rw [← hlv]; exact hfree, by rw [hlv]⟩)
+        exact hns (Or.inl ⟨-1, Or.inr rfl, by rwa [← hlv], by rw [hlv]⟩)
   · exact absurd (Or.inl ⟨σ, hσ, hfree, rfl⟩) hns
   · exact ⟨_, σ, hσ, hfree, rfl, Or.inr rfl⟩
 

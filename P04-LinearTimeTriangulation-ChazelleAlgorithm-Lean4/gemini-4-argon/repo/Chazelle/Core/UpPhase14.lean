@@ -76,8 +76,8 @@ theorem chainsL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
       (∀ r, Kept r → r ≠ 170015 → r ≠ 170016 → r ≠ 170017 → r ≠ 170018 → r ≠ 170035 →
         r ≠ 170036 → c'.nreg r = c.nreg r) ∧
       (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r) := by
-  set cnt := gradeCount P.n g with hcnt
-  set K := stepB κB κL κG O.κ g with hK
+  set cnt := gradeCount P.n g
+  set K := stepB κB κL κG O.κ g
   let I : Config → Prop := fun c' => ∃ i, i ≤ cnt ∧ WordsBounded W c' ∧
     URegs c' P.n hp h g cnt (gradeGran g) (gradeCount P.n (g - 1)) R ∧
     c'.nreg 170015 = i ∧ c'.nreg 170016 = gradeStart g i ∧ c'.nreg 170035 = 6 * i ∧
@@ -90,7 +90,7 @@ theorem chainsL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
       r ≠ 170036 → c'.nreg r = c.nreg r) ∧
     (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r)
   have hI0 : I c := ⟨0, by omega, hw, hu, h15, by rw [h16]; unfold gradeStart; ring,
-    by rw [h35], by rw [h36], by omega, by omega, by rw [h18, hA]; exact hM,
+    by rw [h35], by rw [h36], by omega, by omega, by rwa [h18, hA],
     fun _ _ => rfl, fun _ _ => rfl, rfl, fun _ _ _ _ _ _ _ _ => rfl, fun _ _ => rfl⟩
   obtain ⟨c', k, e, ⟨i, hic, hw', hu', i15, i16, i35, i36, a1, a2, hM', mm, mr, mo, fr, frr⟩,
       htest, hk, hψ⟩ :=

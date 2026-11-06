@@ -76,7 +76,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
     obtain ⟨q32, q60, q52, q53, q54, q55, q81, q02, q111, q19, qm⟩ := q
     have w₁ := e₁.wb_right
     by_cases hsm : e < 6
-    · refine ⟨_, _, .seq e₀ (.ifLtN_true t0 (.seq e₁ (.ifLtN_true (by rw [q02, q81]; exact hsm)
+    · refine ⟨_, _, .seq e₀ (.ifLtN_true t0 (.seq e₁ (.ifLtN_true (by rwa [q02, q81])
         (Exec.constN w₁ 90112 0 (by omega))))), by omega, by simp [upd], ?_⟩
       simp only [upd, ite_true, chainModel]
       constructor
@@ -91,13 +91,13 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
         fun r h1 h2 => by simp [h1, h2]⟩
     have w₂ := e₂.wb_right
     have p53 : c₂.nreg 50053 = C.m := by rw [r₂ _ (by omega) (by omega), q53]
-    have ns : ¬ c₁.nreg 50002 < c₁.nreg 50081 := by rw [q02, q81]; exact hsm
+    have ns : ¬ c₁.nreg 50002 < c₁.nreg 50081 := by rwa [q02, q81]
     by_cases hg : e - 6 - C.m < C.m
     · have hi : e - 6 < 2 * C.m := by omega
       have f₂ := exec_frameB e₂ (B := Bl [50056, 50057]) (by decide)
-      have hH₂ : HostAt c₂.nmem (c.nmem (MD + 1)) H := by rw [f₂.2.2.1, qm]; exact hHost
+      have hH₂ : HostAt c₂.nmem (c.nmem (MD + 1)) H := by rwa [f₂.2.2.1, qm]
       obtain ⟨c₃, k₃, e₃, hk₃, -, sp₁, sp₂, hsp₁, hsp₂, a₃, b₃, l₁, l₂⟩ := chPts_exec (P := P) hG
-        hW c₂ w₂ hH₂ hwf hHW (by rw [← hNlen]; exact hNW) (by rw [← hNlen]; exact hs)
+        hW c₂ w₂ hH₂ hwf hHW (by rwa [← hNlen]) (by rw [← hNlen]; exact hs)
         (by rw [← hNlen]; exact hmN) hT hi (by rw [r₂ _ (by omega) (by omega), q32])
         (by rw [r₂ _ (by omega) (by omega), q60]) (by rw [r₂ _ (by omega) (by omega), q52]) p53
         (by rw [r₂ _ (by omega) (by omega), q54]) (by rw [r₂ _ (by omega) (by omega), q55]) q56
@@ -133,7 +133,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
       obtain ⟨c₇, k₇, e₇, hk₇, b₇, i₇, -, -⟩ := tail3_exec (P := P) c₆ e₆.wb_right hW1
         90113 90114 90115 90113 q19' q112
       refine ⟨c₇, _, .seq e₀ (.ifLtN_true t0 (.seq e₁ (.ifLtN_false ns (.seq e₂
-        (.ifLtN_true (by rw [q57, p53]; exact hg)
+        (.ifLtN_true (by rwa [q57, p53])
           (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))))))), ?_, b₇, ?_⟩
       · have : H.length ≤ 64 := hlen
         omega
@@ -150,7 +150,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
       rw [hS, ← hNlen, ← i2] at hsp₂
       have v1 := chain_vertex_host C hP _ (by rw [hQn]; exact hsp₁)
       have v2 := chain_vertex_host C hP _ (by rw [hQn]; exact hsp₂)
-      have key := pz_chain C hdh hi (h := h) (by rw [hQn]; exact hh) v1 v2
+      have key := pz_chain C hdh hi (h := h) (by rwa [hQn]) v1 v2
         (by rw [hQn]; exact l₁) (by rw [hQn]; exact l₂)
       rw [show e - 6 + 6 = e by omega] at key
       rw [key]
@@ -160,7 +160,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
       · intro h'; exact h'.2
     · have hlast : e = 2 * C.m + 6 := by omega
       refine ⟨_, _, .seq e₀ (.ifLtN_true t0 (.seq e₁ (.ifLtN_false ns (.seq e₂
-        (.ifLtN_false (by rw [q57, p53]; exact hg) (Exec.constN w₂ 90112 0 (by omega))))))),
+        (.ifLtN_false (by rwa [q57, p53]) (Exec.constN w₂ 90112 0 (by omega))))))),
         by omega, by simp [upd], ?_⟩
       simp only [upd, ite_true, chainModel]
       constructor
@@ -171,11 +171,10 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
     have hen : e < P.n := by
       have := interiorWalk_n (Qof P)
       simp only [interiorModel] at he
-      rw [this, hQn] at he
-      exact he
+      rwa [this, hQn] at he
     have t0 : ¬ c₀.nreg 90023 < c₀.nreg 90019 := by
       rw [r₀ _ (by omega), r₀ _ (by omega), h23, h19, hk1]; omega
-    obtain ⟨c₁, k₁, e₁, hk₁, i41, -⟩ := intIdx_exec (P := P) hW c₀ w₀ (by rw [x₀]; exact hen)
+    obtain ⟨c₁, k₁, e₁, hk₁, i41, -⟩ := intIdx_exec (P := P) hW c₀ w₀ (by rwa [x₀])
       (by rw [d₀]; omega)
     have F₁ := exec_frameB e₁ wr_intIdx
     obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W (block [.constN 90112 0,
@@ -197,7 +196,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
       90115 50041 90115 50041 q19' q112
     refine ⟨c₃, _, .seq e₀ (.ifLtN_false t0 (.seq e₁ (.seq e₂ e₃))), by omega, b₃, ?_⟩
     rw [i₃, q111', q115, q41, i41, x₀, d₀, m₀]
-    have key := pz_int hQ hdh (e := e) (h := h) (by rw [hQn]; exact hen) (by rw [hQn]; exact hh)
+    have key := pz_int hQ hdh (e := e) (h := h) (by rwa [hQn]) (by rwa [hQn])
     have hwv : OutWalk.wv (OutWalk.revOf (Qof P)) (Qof P).n e =
         (if c.nmem (MD + 1) = 1 then e else P.n - 1 - e) := by
       unfold OutWalk.wv OutWalk.revOf

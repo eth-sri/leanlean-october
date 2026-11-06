@@ -45,7 +45,6 @@ theorem Uof_lt {U₀ n c : ℕ} (hn : 0 < n) : Uof U₀ n c < U₀ + n := by
 than a lap apart, the final vertex lies on the double boundary below the top, and every stretch
 of the double boundary between them is at most `γ` long. -/
 structure LStat (C : Chain) (U₀ F γ : ℕ) : Prop where
-  hU₀F : U₀ ≤ F
   hUF : F < U₀ + (2 * C.m + 7)
   hF6 : 6 ≤ F % (2 * C.m + 7)
   hF5 : F % (2 * C.m + 7) ≤ 2 * C.m + 5
@@ -108,12 +107,12 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have hf41 : d.nreg 150041 = F % n := by rw [hkI _ (by omega) (by omega) (by omega) (by omega), h41]
   have hF6 := L.hF6
   have hF5 := L.hF5
-  set f := F % n with hfdef
+  set f := F % n
   have hG : 1 ≤ Nat.log 2 γ + 1 := by omega
   have hW1 : 1 ≤ W := by have := S.hW; unfold hostWords at this; omega
   by_cases hc2 : d.nreg 150040 < d.nreg 150032
   · -- a step on the double boundary
-    have hc' : c < 2 * C.m + 6 := by rw [R.h32] at hc2; exact hc2
+    have hc' : c < 2 * C.m + 6 := by rwa [R.h32] at hc2
     have hlimF : U + limOf C c f ≤ F := by
       unfold limOf; split_ifs at hgap ⊢ <;> omega
     have hlimγ : limOf C c f ≤ γ := L.hΓ U _ hU0 hlimF (by rw [← hn, hmod]; omega)
@@ -150,7 +149,7 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
         rcases (show c + Lc = 2 * C.m + 6 ∨ c + Lc < 2 * C.m + 6 by omega) with h' | h'
         · left; exact h'
         · right; refine ⟨by omega, h', ?_⟩
-          rw [show c + Lc - 6 = c - 6 + Lc by omega]; exact hb
+          rwa [show c + Lc - 6 = c - 6 + Lc by omega]
       · left
         unfold BrkU BrkRes; rw [hmod]
         right; exact ⟨h6, hc', hb⟩
@@ -165,12 +164,12 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       fun a ha => by rw [m₂]; exact post.mem a ha,
       fun r h1 h2 h3 h4 => (hkeep r h1 h2 h3 h4).trans (hkI r h1 h2 h3 h4),
       by rw [a40]; omega, by rw [a40]; omega, by rw [hU']; omega, ?_,
-      ps' ++ ps'', by rw [hU']; exact hpath',
+      ps' ++ ps'', by rwa [hU'],
       hE.stable _ _ _ (by rw [← List.append_assoc]; exact post.hI) (exec_frameB ex₂ (by decide)),
       fun pc hp => by
         rcases List.mem_append.1 hp with hp | hp
         · exact hok pc hp
-        · exact (post.pv pc hp).1, ?_⟩, by omega, by rw [hU']; exact hμ⟩
+        · exact (post.pv pc hp).1, ?_⟩, by omega, by rwa [hU']⟩
     · rw [o42, hU', post.r40, post.keep _ (by omega) (by omega) (by omega), hf41, ← hmod']
       exact flag_of hn0 (by omega) (by omega)
     · rw [hU', List.length_append]
@@ -180,7 +179,7 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
           2 * (Nat.log 2 γ + 1) * mu C (Qof P).n H F U := by
         have := Nat.mul_le_mul_left (2 * (Nat.log 2 γ + 1)) (show
           mu C (Qof P).n H F (U + Lc) + 1 ≤ mu C (Qof P).n H F U by omega)
-        rw [Nat.mul_add, mul_one] at this; exact this
+        rwa [Nat.mul_add, mul_one] at this
       omega
   · -- through the uncounted block
     have hc' : c = 2 * C.m + 6 := by rw [R.h32] at hc2; omega
@@ -216,13 +215,13 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       fun a ha => by rw [m₂, mem₁ a ha]; exact hm a ha,
       fun r h1 h2 h3 h4 => (hkeep r h1 h2 h3 h4).trans (hkI r h1 h2 h3 h4),
       by rw [a40], by rw [a40]; omega, by rw [hU']; omega, ?_,
-      ps' ++ [uPc C.m], by rw [hU']; exact hpath',
-      hE.stable _ _ _ (by rw [← List.append_assoc]; exact hI₁) (exec_frameB ex₂ (by decide)),
+      ps' ++ [uPc C.m], by rwa [hU'],
+      hE.stable _ _ _ (by rwa [← List.append_assoc]) (exec_frameB ex₂ (by decide)),
       fun pc hp => by
         rcases List.mem_append.1 hp with hp | hp
         · exact hok pc hp
         · simp only [List.mem_singleton] at hp; rw [hp]; exact uPc_ok P C m₀ h γ, ?_⟩,
-      by omega, by rw [hU']; exact hμ⟩
+      by omega, by rwa [hU']⟩
     · rw [o42, hU', o40, kp _ (Or.inl ⟨by omega, by omega⟩) (by omega), hf41, ← hmod']
       exact flag_of hn0 hF7 (by omega)
     · rw [hU', List.length_append]
@@ -230,7 +229,7 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
           2 * (Nat.log 2 γ + 1) * mu C (Qof P).n H F U := by
         have := Nat.mul_le_mul_left (2 * (Nat.log 2 γ + 1)) (show
           mu C (Qof P).n H F (U + 7) + 1 ≤ mu C (Qof P).n H F U by omega)
-        rw [Nat.mul_add, mul_one] at this; exact this
+        rwa [Nat.mul_add, mul_one] at this
       simp only [List.length_singleton]
       omega
 

@@ -122,8 +122,7 @@ theorem star_mem_sepSet_inl (f : D) (v : V) :
     · left; simpa [starDarts, starTree_isAnc_inl] using hanc
     · right; left
       simp only [starDarts, star_vert, starVert_inr_inr] at hanc
-      rw [starTree_isAnc_inl, M.vert_fperm] at hanc
-      exact hanc
+      rwa [starTree_isAnc_inl, M.vert_fperm] at hanc
     · right; right
       simp only [starDarts, star_vert, starVert_inl_inr] at hanc
       exact (starTree_isAnc_inr T a ha v _).mp hanc
@@ -132,7 +131,7 @@ theorem star_mem_sepSet_inl (f : D) (v : V) :
     · refine ⟨.inr (.inr (M.fperm f)), ?_, ?_⟩
       · simp
       · simp only [star_vert, starVert_inr_inr]
-        rw [starTree_isAnc_inl, M.vert_fperm]; exact h
+        rwa [starTree_isAnc_inl, M.vert_fperm]
     · exact ⟨.inr (.inl f), rfl, (starTree_isAnc_inr T a ha v _).mpr h⟩
 
 /-- **The separator in a slab**: at most `3 k` real vertices whose levels (shifted by `c`) lie in

@@ -70,7 +70,6 @@ theorem lerp_eq_smul_add_smul (a b : Point) (t : ℝ) : lerp a b t = (1 - t) •
 
 @[simp] theorem lerp_one (a b : Point) : lerp a b 1 = b := by ext <;> simp [lerp]
 
-@[simp] theorem lerp_self (a : Point) (t : ℝ) : lerp a a t = a := by ext <;> simp [lerp]
 
 /-- Reversing the segment: `lerp b a t = lerp a b (1 - t)`. -/
 theorem lerp_symm (a b : Point) (t : ℝ) : lerp b a t = lerp a b (1 - t) := by

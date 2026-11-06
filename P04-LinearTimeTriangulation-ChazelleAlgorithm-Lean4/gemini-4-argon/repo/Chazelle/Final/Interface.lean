@@ -54,7 +54,6 @@ structure TrapRec where
   top : ℕ
   /-- The bottom vertex (rightmost vertex of the closed bottom side). -/
   bot : ℕ
-  deriving DecidableEq
 
 /-- The trapezoid table handed over by the visibility-map stage. -/
 abbrev TrapTable : Type := List TrapRec
@@ -89,8 +88,8 @@ theorem not_vtx_on_side {P : Polygon} (D : TrapData P) {y : ℝ}
     {m : ℕ} (hm : m < P.n) (hmp : P.vtx m = (x, y)) : False := by
   have e1 : (P.vtx m).1 = x := by rw [hmp]
   have e2 : (P.vtx m).2 = y := by rw [hmp]
-  exact D.isTrap.no_vertex m hm (by rw [e2]; exact h1) (by rw [e2]; exact h2)
-    (by rw [e1, e2]; exact hx1) (by rw [e1, e2]; exact hx2)
+  exact D.isTrap.no_vertex m hm (by rwa [e2]) (by rwa [e2])
+    (by rwa [e1, e2]) (by rwa [e1, e2])
 
 /-- A point of two distinct edges of a simple polygon is a vertex. -/
 theorem exists_vtx_of_mem_two_edges {P : Polygon} (hP : P.Simple) {a b : ℕ} (ha : a < P.n)
@@ -111,7 +110,7 @@ theorem left_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
   have hyl : D.y₁ < y := by rw [hydef]; linarith
   have hyr : y < D.y₂ := by rw [hydef]; linarith
   have hy : y ∈ Icc D.y₁ D.y₂ := ⟨hyl.le, hyr.le⟩
-  have hy' : y ∈ Icc D'.y₁ D'.y₂ := by rw [← hy1, ← hy2]; exact hy
+  have hy' : y ∈ Icc D'.y₁ D'.y₂ := by rwa [← hy1, ← hy2]
   have e1 := D.isTrap.left_le_of_subset hP D.free D'.isTrap h.subset y hy
   have e2 := D'.isTrap.left_le_of_subset hP D'.free D.isTrap h.symm.subset y hy'
   have heq : edgeX P D.i y = edgeX P D'.i y := le_antisymm e2 e1
@@ -132,7 +131,7 @@ theorem right_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
   have hyl : D.y₁ < y := by rw [hydef]; linarith
   have hyr : y < D.y₂ := by rw [hydef]; linarith
   have hy : y ∈ Icc D.y₁ D.y₂ := ⟨hyl.le, hyr.le⟩
-  have hy' : y ∈ Icc D'.y₁ D'.y₂ := by rw [← hy1, ← hy2]; exact hy
+  have hy' : y ∈ Icc D'.y₁ D'.y₂ := by rwa [← hy1, ← hy2]
   have e1 := D.isTrap.right_le_of_subset hP D.free D'.isTrap h.subset y hy
   have e2 := D'.isTrap.right_le_of_subset hP D'.free D.isTrap h.symm.subset y hy'
   have heq : edgeX P D.j y = edgeX P D'.j y := le_antisymm e1 e2
@@ -206,7 +205,6 @@ structure ChordRec where
   dir : Bool
   /-- The vertex where the chord ends. -/
   dst : ℕ
-  deriving DecidableEq
 
 /-- The record describes a vertex-to-vertex chord: the direction is locally interior at `src`
 and the chord ends at vertex `dst`. -/
@@ -261,9 +259,9 @@ theorem sortPair_eq_iff {e d : ℕ × ℕ} (he : e.1 ≠ e.2) :
   constructor
   · rintro ⟨rfl, rfl⟩
     rcases lt_or_gt_of_ne he with h | h
-    · refine ⟨by rw [min_eq_left h.le, max_eq_right h.le]; exact h, Or.inl ?_⟩
+    · refine ⟨by rwa [min_eq_left h.le, max_eq_right h.le], Or.inl ?_⟩
       rw [min_eq_left h.le, max_eq_right h.le]; exact ⟨rfl, rfl⟩
-    · refine ⟨by rw [min_eq_right h.le, max_eq_left h.le]; exact h, Or.inr ?_⟩
+    · refine ⟨by rwa [min_eq_right h.le, max_eq_left h.le], Or.inr ?_⟩
       rw [min_eq_right h.le, max_eq_left h.le]; exact ⟨rfl, rfl⟩
   · rintro ⟨hxy, ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩⟩
     · exact ⟨min_eq_left hxy.le, max_eq_right hxy.le⟩

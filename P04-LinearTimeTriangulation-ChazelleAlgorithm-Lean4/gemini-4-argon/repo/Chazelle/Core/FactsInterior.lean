@@ -79,15 +79,14 @@ theorem edge_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) 
       (0 < det (W.vtx p) (W.vtx ((p + 1) % W.n)) x → x ∈ W.filled \ W.boundary) ∧
       (det (W.vtx p) (W.vtx ((p + 1) % W.n)) x < 0 → x ∉ W.filled) ∧
       (det (W.vtx p) (W.vtx ((p + 1) % W.n)) x = 0 → x ∈ W.boundary) := by
-  set u := W.vtx p with hu
-  set v := W.vtx ((p + 1) % W.n) with hv
+  set u := W.vtx p
+  set v := W.vtx ((p + 1) % W.n)
   have huv : u ≠ v := simple_vtx_succ_ne hW hp
   have hsq := sqLen_pos huv
   obtain ⟨r, hr, hstrip⟩ := strip hW hp ht
-  have hq : sidePt W p t = lerp u v t := rfl
   refine ⟨r, hr, fun x hx => ⟨fun hdet => ?_, fun hdet => ?_, fun hdet => ?_⟩⟩
   · -- the left half-ball
-    set H := ball (sidePt W p t) r ∩ {y | 0 < 1 * det u v y} with hH
+    set H := ball (sidePt W p t) r ∩ {y | 0 < 1 * det u v y}
     have hHc : IsPreconnected H := ((convex_ball _ _).inter (convex_det_pos _ _ 1)).isPreconnected
     have hHb : H ⊆ W.boundaryᶜ := fun y hy hyb => by
       have := (hstrip y hy.1).1 hyb
@@ -105,7 +104,7 @@ theorem edge_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) 
       rw [one_mul, det_offset]; exact mul_pos hδ hsq⟩
     exact subset_interior hW hHc hHb hmem hδ1.1.1 ⟨hx, by simpa using hdet⟩
   · -- the right half-ball
-    set H := ball (sidePt W p t) r ∩ {y | 0 < (-1) * det u v y} with hH
+    set H := ball (sidePt W p t) r ∩ {y | 0 < (-1) * det u v y}
     have hHc : IsPreconnected H :=
       ((convex_ball _ _).inter (convex_det_pos _ _ (-1))).isPreconnected
     have hHb : H ⊆ W.boundaryᶜ := fun y hy hyb => by
@@ -133,7 +132,7 @@ theorem corner_meet (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
     Chazelle.segment (W.vtx (prevIdx W p)) (W.vtx p) ∩
       Chazelle.segment (W.vtx p) (W.vtx ((p + 1) % W.n)) ⊆ {W.vtx p} := by
   have hn := simple_three_le hW
-  set j := prevIdx W p with hj
+  set j := prevIdx W p
   have hjn : j < W.n := prevIdx_lt W hp
   have hji : j ≠ p := prevIdx_ne W hn hp
   have hsucc : (j + 1) % W.n = p := prevIdx_succ W hp
@@ -141,7 +140,7 @@ theorem corner_meet (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
   have hab : W.vtx j ≠ W.vtx ((p + 1) % W.n) := simple_vtx_ne hW hjn (succIdx_lt W hp) hjs
   intro x hx
   have : x ∈ W.edge j ∩ W.edge p := by
-    rw [edge_prevIdx W hp]; exact hx
+    rwa [edge_prevIdx W hp]
   rw [simple_edge_inter hW hjn hp hji] at this
   obtain ⟨h1, h2⟩ := this
   rw [hsucc] at h1
@@ -216,11 +215,11 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
     · by_cases hkj : k = j
       · subst hkj
         left
-        rw [← edge_prevIdx W hp]; exact hxk
+        rwa [← edge_prevIdx W hp]
       · exfalso
         exact hball x hx k (by simp [Finset.mem_erase, Finset.mem_range, hkp, hkj, hk]) hxk
   -- radius also below the edge lengths (for the coverage)
-  set r := min r₀ (min ‖b - v‖ ‖a - v‖) with hr
+  set r := min r₀ (min ‖b - v‖ ‖a - v‖)
   have hbv0 : 0 < ‖b - v‖ := norm_pos_iff.2 (sub_ne_zero.2 hbv)
   have hav0 : 0 < ‖a - v‖ := norm_pos_iff.2 (sub_ne_zero.2 hav)
   have hr0 : 0 < r := lt_min hr₀ (lt_min hbv0 hav0)
@@ -244,7 +243,6 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
   obtain ⟨hLb, hLc, hLoff⟩ := sideSector hav hbv hr0 hSL
   obtain ⟨hRb, hRc, hRoff⟩ := (sideSector hbv hav hr0 hSR).reverse
   -- a point of the left sector is interior, one of the right sector exterior
-  have hp1 : W.vtx ((p + 1) % W.n) = b := rfl
   have hs01 : ∀ᶠ s in 𝓝[>] (0 : ℝ), s ∈ Ioo (0 : ℝ) 1 := by
     filter_upwards [Ioo_mem_nhdsGT (zero_lt_one' ℝ)] with s hs; exact hs
   obtain ⟨s, ⟨hsL, hsR⟩, hs⟩ := ((hLoff.and hRoff).and hs01).exists
@@ -271,7 +269,7 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
       nlinarith
     have e : lerp v w μ - v = μ • (w - v) := by
       apply point_ext <;> simp [lerp]
-    have hdist : ‖lerp v w μ - v‖ < r := by rw [← dist_eq_norm]; exact hx
+    have hdist : ‖lerp v w μ - v‖ < r := by rwa [← dist_eq_norm]
     rw [e, norm_smul, Real.norm_eq_abs, abs_of_nonneg hμ0] at hdist
     have hμ1 : μ ≤ 1 := by
       by_contra h
@@ -488,13 +486,12 @@ theorem chord_parity_flip (hW : W.Simple) {e₁ e₂ : Point} (h12 : e₁.1 ≠ 
     by_cases hkm : k = m
     · subst hkm
       right
-      rw [hΓ, chordPoly_edge_m, Geometry.segment_comm] at hxk
-      exact hxk
+      rwa [hΓ, chordPoly_edge_m, Geometry.segment_comm] at hxk
     · exact Or.inl (hedge k hk hkm hxk)
   · have hmn : m < Γ.n := by rw [hΓn]; omega
     have hsucc : (m + 1) % Γ.n = m + 1 := by rw [hΓn]; exact Nat.mod_eq_of_lt (by omega)
     have hzΓ : z ∈ Γ.edge m := by
-      rw [hΓ, chordPoly_edge_m, Geometry.segment_comm]; exact hz
+      rwa [hΓ, chordPoly_edge_m, Geometry.segment_comm]
     have hne : (Γ.vtx m).1 ≠ (Γ.vtx ((m + 1) % Γ.n)).1 := by
       rw [hsucc, hΓ, chordPoly_vtx_m, chordPoly_vtx_m1]; exact Ne.symm h12
     have hzu : z ≠ Γ.vtx m := by
@@ -638,7 +635,7 @@ theorem rev_n (Q : Polygon) : (⟨Q.vertices.reverse⟩ : Polygon).n = Q.n := by
 theorem rev_vtx (Q : Polygon) : ∀ k < Q.n, (⟨Q.vertices.reverse⟩ : Polygon).vtx k =
     Q.vtx (Q.n - 1 - k) := by
   intro k hk
-  have hk' : k < Q.vertices.reverse.length := by rw [List.length_reverse]; exact hk
+  have hk' : k < Q.vertices.reverse.length := by rwa [List.length_reverse]
   have hk2 : Q.n - 1 - k < Q.vertices.length := by
     have : Q.n = Q.vertices.length := rfl
     omega
@@ -656,7 +653,7 @@ theorem interiorWalk_spec {Q : Polygon} (hQ : Q.Simple) :
   split_ifs with h
   · refine ⟨hQ, rfl, rfl, ?_⟩
     unfold orient; simp [h]
-  · set R : Polygon := ⟨Q.vertices.reverse⟩ with hR
+  · set R : Polygon := ⟨Q.vertices.reverse⟩
     have hn := rev_n Q
     have hv := rev_vtx Q
     have hRs : R.Simple := Mountain.rev_simple hn hv hQ
@@ -667,7 +664,7 @@ theorem interiorWalk_spec {Q : Polygon} (hQ : Q.Simple) :
     obtain ⟨e1, e2⟩ := Mountain.rev_endpoints hn hv (k := 0) (by omega)
     apply Mountain.orient_eq_of_eventually hRs (i := 0) (by rw [hn]; omega)
       (t := 1 / 2) ⟨by norm_num, by norm_num⟩ (Or.inl rfl)
-    set e := Mountain.revEdge Q.n 0 with he
+    set e := Mountain.revEdge Q.n 0
     have hel : e < Q.n := Mountain.revEdge_lt (by omega)
     filter_upwards [eventually_offset_orient hQ hel (t := 1 / 2) ⟨by norm_num, by norm_num⟩]
       with δ hδ

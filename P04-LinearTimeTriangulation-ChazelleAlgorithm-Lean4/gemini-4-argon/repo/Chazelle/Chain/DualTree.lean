@@ -174,7 +174,7 @@ theorem ChordSystem.dualGraph_reachable_insert (hF : ChordSystem D F) {S : Set (
       (dualGraphIn D (insert c S)).Reachable U V := by
   obtain ⟨R, hR, hcR, R₁, R₂, hne, hunion, hR₁, hR₂, heq⟩ := hF.regionsIn_insert hS hc hcS
   have htouch := hF.touches_iff_of_split hS hc hcS hR hcR hunion hR₁ hR₂ heq
-  set G' := dualGraphIn D (insert c S) with hG'
+  set G' := dualGraphIn D (insert c S)
   have hR₁R : R₁ ⊆ R := fun p hp => by
     have : p ∈ R₁ ∪ R₂ := Or.inl hp
     rw [hunion] at this
@@ -369,7 +369,6 @@ theorem ChordSystem.dual_isTree (hF : ChordSystem D F) (hD : IsPreconnected D)
 /-- The dual tree has exactly `S.ncard` edges. -/
 theorem ChordSystem.dualTree_card_edgeSet (hF : ChordSystem D F) (hD : IsPreconnected D)
     (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F) : Nat.card (dualTreeIn D S).edgeSet = S.ncard := by
-  have : Finite (regionsIn D S) := (hF.regionsIn_finite hD hne hS).to_subtype
   have h1 := (hF.dualTree_connected hD hne hS).card_vert_le_card_edgeSet_add_one
   have h2 := hF.dualTree_card_edgeSet_le hS
   have h3 : Nat.card (regionsIn D S) = S.ncard + 1 := by

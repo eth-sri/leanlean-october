@@ -167,7 +167,7 @@ theorem pts_lt {r : ℕ} (hr : r < E.K + 1) : ∀ s ∈ E.pts r, s.Lt E.Q.n := b
   rcases Nat.eq_zero_or_pos E.K with hK | hK
   · rw [pts_zero hK]; exact run_pts_lt hE.hQ
   · rw [pts_pos hK]
-    exact (region_facts ((hE.ctx hK).rc (by rw [hE.nRegions]; exact hr)) hE.hli).2
+    exact (region_facts ((hE.ctx hK).rc (by rwa [hE.nRegions])) hE.hli).2
 
 /-- **The shooting polygon of a region.** -/
 theorem regOK {r : ℕ} (hr : r < E.K + 1) :
@@ -179,7 +179,7 @@ theorem regOK {r : ℕ} (hr : r < E.K + 1) :
     rw [pts_zero hK]; exact regOK0 hE.hQ hE.hli
   · refine ⟨_, E.reg r, (hE.ctx hK).fam, ?_⟩
     rw [pts_pos hK]
-    exact (region_facts ((hE.ctx hK).rc (by rw [hE.nRegions]; exact hr)) hE.hli).1
+    exact (region_facts ((hE.ctx hK).rc (by rwa [hE.nRegions])) hE.hli).1
 
 end BGood
 

@@ -113,8 +113,8 @@ theorem q0_of (hQ : QState P J 0 z c) : Q0 P J z c := by
   have hht := hQ.hht
   simp only [sideChain_zero'] at hht
   rw [hpos] at hht
-  exact ⟨hσ, htop, (hQ.hbL.2).2 htop, hy, hgeo, hpos, hcls, he, ⟨h0, h1, by rw [← hQn]; exact hh2⟩,
-    hh1, by rw [← hQn]; exact hh2, hht.symm, hQ.hfree, h0, h1⟩
+  exact ⟨hσ, htop, (hQ.hbL.2).2 htop, hy, hgeo, hpos, hcls, he, ⟨h0, h1, by rwa [← hQn]⟩,
+    hh1, by rwa [← hQn], hht.symm, hQ.hfree, h0, h1⟩
 
 end Q
 
@@ -174,16 +174,16 @@ theorem box_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hXl :
     · have h6' : c.nreg qE = 2 * J.left.m + 6 := h6; omega
   have hz2 : z.2 ≤ J.right.top.2 := (hQ.hbR.2).1 hbR
   obtain ⟨hg₂, hpos₂⟩ := lhGeo_box h13 q.hgeo (by rw [q.hpos]; exact q.hy)
-    (by rw [q.hpos]; exact hz2)
+    (by rwa [q.hpos])
   rw [q.hpos] at hpos₂
   obtain ⟨-, -, hpar, -⟩ := boxTwin_pos (C₁ := J.left) (C₂ := J.right) rfl h13 (Qof P) (c.nreg qH)
   have hn₂ : c.nreg qE < (chainModel J.right).W.n := by rw [cm_n]; omega
   refine (lhs_irs hsh hBs hXl hA (sideD₂ hA) ⟨by unfold IFix sw; omega, by unfold IFix sw; omega,
     by unfold IFix sw; omega⟩ (by unfold OutL qE sw; omega) hI (L := L)
     (Mod := ModB J (c.nreg bL) (c.nreg bR)) (R₀ := J.whole.radius) (t := 1) (z := z)
-    (by rw [eE]; exact hn₂)
+    (by rwa [eE])
     (by rw [eE, eH]; exact ⟨hpar ▸ q.hpp.1, hpar ▸ q.hpp.2.1, q.hpp.2.2⟩)
-    (by rw [eE, eH]; exact hpos₂) q.hy (by rw [eE]; exact Or.inl h13)
+    (by rwa [eE, eH]) q.hy (by rw [eE]; exact Or.inl h13)
     (by rw [eD]; exact hst.1) (by norm_num) (by rw [q.hbL, hbR]; exact modB_right J) rfl
     hroom).mono le_rfl ?_
   rintro c'' ⟨⟨L', a', s', g', geo'⟩, fr, hA', hm'⟩
@@ -205,7 +205,7 @@ theorem above_out (hQ : QState P J 0 z c) {c' : Config} (hfr : CandFr c c') {L :
   have hz2 : J.right.top.2 < z.2 := by
     by_contra h; exact hbR ((hQ.hbR.2).2 (not_lt.1 h))
   refine ⟨⟨L, hst.1, hst.2, ?_⟩, hfr⟩
-  rw [whole_eq_left q.hz1 hz2 q.hσ]; exact hl
+  rwa [whole_eq_left q.hz1 hz2 q.hσ]
 
 end Steps
 

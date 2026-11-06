@@ -120,7 +120,7 @@ theorem locDir_ok : DirOK locDir 5100 LocDPre := by
     have he' : c₁.nreg 50002 < 2 * C.m + 7 := by
       rw [x₁]; simpa [chainModel, C.sideWalk_n] using he
     obtain ⟨c₂, k₂, e₂, hk₂, -, d₂⟩ := chainDir_exec (P := P) hG hW c₁ w₁ (H := H) (C := C)
-      (by rw [d₁, m₁]; exact hC) (by rw [d₁]; exact hDW) (by rw [d₁, m₁]; exact hHW) hwf hs hNW
+      (by rwa [d₁, m₁]) (by rwa [d₁]) (by rwa [d₁, m₁]) hwf hs hNW
       he'
     refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [q33, q32, h0]; omega) e₂), by omega, ?_⟩
     rw [d₂, x₁]
@@ -131,8 +131,8 @@ theorem locDir_ok : DirOK locDir 5100 LocDPre := by
       rw [this] at he
       have hn : (Qof P).n = P.n := shear_n _ _
       omega
-    obtain ⟨c₂, k₂, e₂, hk₂, -, d₂⟩ := intDir_exec (P := P) hG hW c₁ w₁ he'
-      (by rw [d₁]; omega) (by rw [d₁, m₁]; exact hbit)
+    obtain ⟨c₂, k₂, e₂, hk₂, d₂⟩ := intDir_exec (P := P) hG hW c₁ w₁ he'
+      (by rw [d₁]; omega) (by rwa [d₁, m₁])
     refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [q33, q32, h1]; omega) e₂), by omega, ?_⟩
     rw [d₂, x₁]
 

@@ -133,7 +133,7 @@ variable {E : FEnv} {c₀ c : Config}
 /-- The memory below the initial allocator is the initial memory. -/
 theorem FInv.agree (hE : FGood E c₀) (hI : FInv E.W c₀ c) :
     ∀ a, a < E.A₀ → c.nmem a = E.m₀ a := fun a ha => by
-  rw [hI.hm a (by rw [hE.a0]; exact ha), hE.m0]
+  rw [hI.hm a (by rwa [hE.a0]), hE.m0]
 
 theorem FInv.allocA (hE : FGood E c₀) (hI : FInv E.W c₀ c) : E.A₀ ≤ c.nreg ALLOC := by
   rw [← hE.a0]; exact hI.hA
@@ -298,16 +298,16 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have r2 : c₁.nreg 83002 = E.r := by rw [hc₁]; exact a2.trans i2
     have r3 : c₁.nreg 83003 = E.γ := by rw [hc₁]; exact a3.trans i3
     have r4 : c₁.nreg 83004 = E.g := by rw [hc₁]; exact a4.trans i4
-    have r5 : c₁.nreg 83005 = c.nreg 81060 := by rw [hc₁]; exact a5
-    have r6 : c₁.nreg 83006 = c.nreg 81061 := by rw [hc₁]; exact a6
-    have r7 : c₁.nreg 83007 = c.nreg 81062 := by rw [hc₁]; exact a7
-    have r8 : c₁.nreg 83008 = c.nreg 81063 := by rw [hc₁]; exact a8
+    have r5 : c₁.nreg 83005 = c.nreg 81060 := by rwa [hc₁]
+    have r6 : c₁.nreg 83006 = c.nreg 81061 := by rwa [hc₁]
+    have r7 : c₁.nreg 83007 = c.nreg 81062 := by rwa [hc₁]
+    have r8 : c₁.nreg 83008 = c.nreg 81063 := by rwa [hc₁]
     have r9 : c₁.nreg 83009 = E.d := by rw [hc₁]; exact a9.trans i5
     have rfr : ∀ q, (q < 83000 ∨ 83009 < q) → c₁.nreg q = c.nreg q := fun q hq => by
       rw [hc₁]; exact afr q hq
     have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := rfr _ (by unfold ALLOC; omega)
     have hc' : CandOK E ⟨c₁.nreg 83005, c₁.nreg 83006⟩ (c₁.nreg 83007) (c₁.nreg 83008) := by
-      rw [r5, r6, r7, r8]; exact hc
+      rwa [r5, r6, r7, r8]
     have pre := test_pre hE hI₁ r0 r1 r2 r3 r4 r9 hc'
     have hcost : E.κt (c₁.nreg 83009) * (E.F (c₁.nreg 83003) + 1) =
         E.κt E.d * (E.F E.γ + 1) := by rw [r9, r3]
@@ -350,10 +350,10 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have e11 : c₃.nreg 83011 = c₂.nreg 83011 := h3fr _ (by omega)
     have e12 : c₃.nreg 83012 = c₂.nreg 83012 := h3fr _ (by omega)
     have e13 : c₃.nreg 83013 = c₂.nreg 83013 := h3fr _ (by omega)
-    refine ⟨by rw [e10]; exact b10, by rw [e11]; exact b11, fun reg hregs => ?_⟩
+    refine ⟨by rwa [e10], by rwa [e11], fun reg hregs => ?_⟩
     have hag := hI.agree hE
     obtain ⟨hMD', -⟩ := Gran.desc_agree' hE.hwf hE.hMD hag
-    have hMD₁ : ModelDescAt c₁.nmem (c₁.nreg 83000) (Qof E.P) E.M := by rw [r0]; exact hMD'
+    have hMD₁ : ModelDescAt c₁.nmem (c₁.nreg 83000) (Qof E.P) E.M := by rwa [r0]
     have hNA₁ : NFAt c₁.nmem (c₁.nreg 83001) E.N := by
       rw [r1]; exact NFWithin.nfAt (hE.hNW.transport hag)
     have hres' := hres E.M E.N reg hMD₁ hNA₁ hE.hNF hregs

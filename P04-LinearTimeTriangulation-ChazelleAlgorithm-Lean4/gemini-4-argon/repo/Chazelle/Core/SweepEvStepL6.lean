@@ -109,8 +109,8 @@ theorem stop_unique {i i' : ℕ} (hi : i < rs.length) (hi' : i' < rs.length)
   obtain ⟨hi₀', -, -, -, e1', e2'⟩ := S.skip_at h1' h2'
   have hnd := S.hD.2.2.2.2.1.2.2.2
   have hl : (stopsOf J (Qof P) N₂ rs).length = rs.length := by simp [stopsOf]
-  exact (List.Nodup.getElem_inj_iff hnd (hi := by rw [hl]; exact hi)
-    (hj := by rw [hl]; exact hi')).1 (by
+  exact (List.Nodup.getElem_inj_iff hnd (hi := by rwa [hl])
+    (hj := by rwa [hl])).1 (by
       rw [stopsOf_getElem hi, stopsOf_getElem hi', e2, e2', e1, e1', heq])
 
 /-- **A chord determines the query of its accepted triples.** -/

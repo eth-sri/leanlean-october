@@ -86,8 +86,7 @@ theorem topCount : TopCountSpec := by
   rw [← List.toFinset_card_of_nodup hnd]
   have hmem : ∀ j ∈ l.toFinset, j < 2 * N₂.nChords ∧ endOrigin J (Qof P) N₂ j = J.right.top := by
     intro j hj
-    rw [List.mem_toFinset, hl, List.mem_filter, List.mem_range, decide_eq_true_eq] at hj
-    exact hj
+    rwa [List.mem_toFinset, hl, List.mem_filter, List.mem_range, decide_eq_true_eq] at hj
   calc l.toFinset.card ≤ (Finset.range 2).card :=
         Finset.card_le_card_of_injOn (fun j => j % 2)
           (fun j _ => by simp only [Finset.coe_range, Set.mem_Iio]; omega)

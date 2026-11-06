@@ -35,7 +35,7 @@ theorem done_out (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hL : LoopInv P J
     (hnc : NoCutIn J (N₂.F (chainModel J.right) (Qof P)) (keyOff P J c)
       (chainModel J.whole).W.n) :
     Out P J N₂ (finCfg c') ∧ c'.nreg lC ≤ logCap N₁ N₂ := by
-  set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂def
+  set S₂ := N₂.F (chainModel J.right) (Qof P)
   have hIt' := hIt
   obtain ⟨⟨rs₀, -, -, -, -, -, -, -, -, -, hWm, hWr⟩, hAw, ⟨hRm, -, -, hRr⟩,
     ⟨hBfr, hBA, A, hB⟩, hK⟩ := hIt'
@@ -100,7 +100,7 @@ theorem done_out (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hL : LoopInv P J
     have : (keyS P J N₁ N₂).ncard ≤ 4 * N₂.nChords + 2 * N₁.nChords + 9 := hcnt
     unfold logCap; omega
   -- the table
-  set T := c.nreg cTB with hTdef
+  set T := c.nreg cTB
   have tabF : ∀ j, j < 2 * N₂.nChords →
       c'.nmem (T + 3 * j) ≤ 1 ∧
       (c'.nmem (T + 3 * j) = 1 → CandOK P J S₂ (endOrigin J (Qof P) N₂ j) (endDir j)
@@ -124,32 +124,30 @@ theorem done_out (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hL : LoopInv P J
   obtain ⟨rs, ax, hrl, -, hsr, -, hsok, hsw, -, -⟩ := hL.stops
   obtain ⟨ls, hll, hlr, hlw, hlp, hlast⟩ := hL.log
   obtain ⟨f200, f201, f300, f301, f302, fm⟩ := fin_rd c'
-  refine ⟨⟨rs, ls, ?_, ?_, hsok, hsw, ?_, ?_, ?_, hlw, ?_, ?_⟩, by rw [eLC]; exact hcap⟩
-  · rw [f201, eSC]; exact hrl
+  refine ⟨⟨rs, ls, ?_, ?_, hsok, hsw, ?_, ?_, ?_, hlw, ?_, ?_⟩, by rwa [eLC]⟩
+  · rwa [f201, eSC]
   · rw [fm, f200, eSB]
     intro i hi
-    have hiS : i < c.nreg sC := by rw [← hrl]; exact hi
     obtain ⟨a0, a1, a2, a3, a4⟩ := hsr i hi
     refine ⟨?_, ?_, ?_, ?_, ?_⟩
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a0
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a1
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a2
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a3
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a4
-  · rw [f301, eLC]; exact hll
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
+  · rwa [f301, eLC]
   · rw [fm, f300, eLB]
     intro i hi
-    have hiL : i < c.nreg lC := by rw [← hll]; exact hi
     have hlog : c.nreg lB + 7 * c.nreg lC ≤ c.nreg ALLOC := by unfold logCap at l2 hcap; omega
     obtain ⟨a0, a1, a2, a3, a4, a5, a6⟩ := hlr i hi
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a0
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a1
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a2
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a3
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a4
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a5
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a6
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
+    · rwa [memC _ (by omega) (Or.inr (by omega))]
   · -- the log
     obtain ⟨p1, p2, p3, p4, p5, p6⟩ := hlp
     refine ⟨p1, p2, p3, p4, p5, fun x hx => ?_, p6⟩

@@ -100,7 +100,6 @@ theorem touch_sep (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {c : Set 
   have hδ2 : δ * |d| < ε₁ := by
     have h1 : δ < ε₁ / |d| := by
       have := min_le_right ε₀ (ε₁ / |d|)
-      have h2 : 0 < ε₁ / |d| := div_pos hε₁ hdpos
       rw [hδ]; linarith
     rwa [lt_div_iff₀ hdpos] at h1
   have hneq := hs' ⟨hδ0, hδ1⟩

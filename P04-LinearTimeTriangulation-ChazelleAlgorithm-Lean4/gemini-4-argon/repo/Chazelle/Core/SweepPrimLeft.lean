@@ -130,14 +130,14 @@ theorem intOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       fun r hr => by simp [hr, r₁ r hr]⟩
   by_cases h0 : t < 1
   · obtain ⟨c', k, e, hk, h1, h2⟩ := fin 0 (by omega) (by omega)
-    exact ⟨c', _, .seq e₁ (.ifLtN_true (by rw [o₁, p₁]; exact h0) e), by omega, h1, h2⟩
+    exact ⟨c', _, .seq e₁ (.ifLtN_true (by rwa [o₁, p₁]) e), by omega, h1, h2⟩
   by_cases h2 : 1 < t
   · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 0 (by omega) (by omega)
-    exact ⟨c', _, .seq e₁ (.ifLtN_false (by rw [o₁, p₁]; exact h0)
-      (.ifLtN_true (by rw [o₁, p₁]; exact h2) e)), by omega, h1, h3⟩
+    exact ⟨c', _, .seq e₁ (.ifLtN_false (by rwa [o₁, p₁])
+      (.ifLtN_true (by rwa [o₁, p₁]) e)), by omega, h1, h3⟩
   · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 1 le_rfl (by omega)
-    exact ⟨c', _, .seq e₁ (.ifLtN_false (by rw [o₁, p₁]; exact h0)
-      (.ifLtN_false (by rw [o₁, p₁]; exact h2) e)), by omega, h1, h3⟩
+    exact ⟨c', _, .seq e₁ (.ifLtN_false (by rwa [o₁, p₁])
+      (.ifLtN_false (by rwa [o₁, p₁]) e)), by omega, h1, h3⟩
 
 /-- The vertex case: the sector procedure at the tour vertex `e - 6`, answer copied. -/
 def vtxOut : Stmt :=
@@ -201,12 +201,11 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
   intro P W H C c₀ c _hC hE ⟨hen, ⟨hp0, hp1, hhn⟩, hy⟩ hinp
   have i01 := hinp 50201 (by norm_num) (by norm_num)
   have i02 := hinp 50202 (by norm_num) (by norm_num)
-  have i03 := hinp 50203 (by norm_num) (by norm_num)
   unfold LeftOut
-  set e := c₀.nreg 50201 with he_def
-  set hc := c₀.nreg 50202 with hc_def
-  set σ := c₀.nreg 50203 with hσ_def
-  set M := chainModel C with hM
+  set e := c₀.nreg 50201
+  set hc := c₀.nreg 50202
+  set σ := c₀.nreg 50203
+  set M := chainModel C
   set x : WPos := ⟨e, hc⟩ with hx
   have hn : M.W.n = 2 * C.m + 7 := C.sideWalk_n _
   have hlen := hE.hlen
@@ -249,21 +248,20 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
     intro c₃ hE₃ e₃ s₃ h6 h0
     obtain ⟨c', k, ex, hk, b⟩ := vtxOut_exec c₃ hE₃ e₃ h6 (by omega)
     refine ⟨c', k, ex, hk, ?_⟩
-    rw [h0, pos_eq_sidePt, h0, Chazelle.Chain.sidePt_zero, ← s₃]
-    exact b
+    rwa [h0, pos_eq_sidePt, h0, Chazelle.Chain.sidePt_zero, ← s₃]
   by_cases hsm : e < 6
   · -- the box block
     have hpos : 0 < M.param (Qof P) x := box_param_pos C hsm hp0 hy
     obtain ⟨c', k, ex, hk, b⟩ := interior c₂ hE₂ d₂ q03 hpos
-    exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_true (by rw [q01, hE₂.r81]; exact hsm) ex)),
+    exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_true (by rwa [q01, hE₂.r81]) ex)),
       by omega, b⟩
-  have t1 : ¬ c₂.nreg 50201 < c₂.nreg 50081 := by rw [q01, hE₂.r81]; exact hsm
+  have t1 : ¬ c₂.nreg 50201 < c₂.nreg 50081 := by rwa [q01, hE₂.r81]
   by_cases hh0 : hc < 1
   · obtain ⟨c', k, ex, hk, b⟩ := vertex c₂ hE₂ q01 q03 (by omega)
       ((param_eq_zero_iff _ _ _).2 (Or.inl (by simp [hx]; omega)))
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_true
-      (by rw [q02, hE₂.r32]; exact hh0) ex))), by omega, b⟩
-  have t2 : ¬ c₂.nreg 50202 < c₂.nreg 50032 := by rw [q02, hE₂.r32]; exact hh0
+      (by rwa [q02, hE₂.r32]) ex))), by omega, b⟩
+  have t2 : ¬ c₂.nreg 50202 < c₂.nreg 50032 := by rwa [q02, hE₂.r32]
   by_cases hd0 : c₂.nreg 10502 < 1
   · have hdir : dirCode M e = 0 := by rw [← d₂]; omega
     have hhor : (M.wa x.edge).2 = (M.wb x.edge).2 := by
@@ -273,8 +271,8 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
     obtain ⟨c', k, ex, hk, b⟩ := vertex c₂ hE₂ q01 q03 (by omega)
       ((param_eq_zero_iff _ _ _).2 (Or.inr (Or.inl hhor)))
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_true
-      (by rw [hE₂.r32]; exact hd0) ex)))), by omega, b⟩
-  have t3 : ¬ c₂.nreg 10502 < c₂.nreg 50032 := by rw [hE₂.r32]; exact hd0
+      (by rwa [hE₂.r32]) ex)))), by omega, b⟩
+  have t3 : ¬ c₂.nreg 10502 < c₂.nreg 50032 := by rwa [hE₂.r32]
   -- the start vertex of the edge and the height vertex
   have e₃ := Exec.subN (P := P) w₂ 50120 50201 50081
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50120 (c₂.nreg 50201 - c₂.nreg 50081) }
@@ -344,8 +342,8 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
         (by rw [g₇ _ (Or.inr (Or.inl rfl)), q03]) (by omega)
         ((param_eq_zero_iff _ _ _).2 (Or.inr (Or.inr heq)))
       exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
-        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rw [hE₇.r32]; exact hlt)
-          (.ifLtN_true (by rw [hE₇.r32]; exact hlt2) ex))))))))))), by omega, b⟩
+        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rwa [hE₇.r32])
+          (.ifLtN_true (by rwa [hE₇.r32]) ex))))))))))), by omega, b⟩
     · have p71 : ((Qof P).vtx (x.hgt - 1)).2 < (M.W.vtx e).2 := b71.2.1 (by
         have := b71.1; rw [hE₇.r32] at hlt2; omega)
       have hpos : 0 < M.param (Qof P) x := lt_of_le_of_ne hp0 (fun h => by
@@ -357,7 +355,7 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
       obtain ⟨c', k, ex, hk, b⟩ := interior c₇ hE₇ (by rw [g₇ _ (Or.inr (Or.inr rfl)), d₂])
         (by rw [g₇ _ (Or.inr (Or.inl rfl)), q03]) hpos
       exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
-        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rw [hE₇.r32]; exact hlt)
+        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rwa [hE₇.r32])
           (.ifLtN_false hlt2 ex))))))))))), by omega, b⟩
   · have p70 : (M.W.vtx e).2 < ((Qof P).vtx (x.hgt - 1)).2 := b70.2.1 (by
       have := b70.1; rw [hE₇.r32] at hlt; omega)

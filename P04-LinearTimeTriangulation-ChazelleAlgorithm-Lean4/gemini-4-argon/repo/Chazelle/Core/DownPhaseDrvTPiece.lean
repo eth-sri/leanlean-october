@@ -122,7 +122,7 @@ theorem attach_int {Q : Polygon} (hQ : Q.Simple) {y a b : ℝ}
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec hQ
   have hIn : (interiorWalk Q).n = Q.n := Trans.iw_n
   have h' : IsHChordIn ((interiorWalk Q).filled \ (interiorWalk Q).boundary) y a b := by
-    rw [hWf, hWb]; exact h
+    rwa [hWf, hWb]
   obtain ⟨ha, hb⟩ := FactsInterior.hchord_end_mem_boundary h'
   have hopen := FactsInterior.hchord_open h'
   have hab : ((a, y) : Point) ≠ (b, y) := fun e => h.lt.ne (congrArg Prod.fst e)
@@ -132,7 +132,7 @@ theorem attach_int {Q : Polygon} (hQ : Q.Simple) {y a b : ℝ}
     intro e e' hE hqe
     obtain ⟨p, t, hAt, hpt'⟩ := hE.1
     obtain ⟨hp, ht0, ht1, -⟩ := id hAt
-    obtain ⟨rfl, rfl⟩ := FactsInterior.pos_unique hWs hp (by rw [hIn]; exact hq) ht0 ht1 hu0 hu1
+    obtain ⟨rfl, rfl⟩ := FactsInterior.pos_unique hWs hp (by rwa [hIn]) ht0 ht1 hu0 hu1
       (hpt'.trans hqe.symm)
     exact hAt
   rcases hpt with hpt | hpt
@@ -253,9 +253,8 @@ theorem piece_at_inner {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : ℕ}
   have hMC := walkAx_chainModel hP
   have hmn := T.hm
   have H := shift_c0 hQ T hD hli
-  have hle := i0_le hQ T hD hli
   have hIn : (interiorWalk Q).n = Q.n := Trans.iw_n
-  set j := p - c0 C li with hj
+  set j := p - c0 C li
   have hjm : j < C.m := by omega
   have hpj : p = j + c0 C li := by omega
   obtain ⟨hp, ht0, ht1, -⟩ := id hA
@@ -270,7 +269,7 @@ theorem piece_at_inner {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : ℕ}
   have hnD : sidePt (interiorWalk Q) j t ∉ C.dom := by
     rw [hpt]; exact hMC.trace p hp t ht0 ht1.le
   obtain ⟨d, ⟨⟨y, a, b, hch, rfl⟩, c', hc', hdc⟩, hAd⟩ :=
-    Trans.piece_of_attach hQ T (F₀ := {c}) (fun _ h => by rw [mem_singleton_iff.1 h]; exact hc)
+    Trans.piece_of_attach hQ T (F₀ := {c}) (fun _ h => by rwa [mem_singleton_iff.1 h])
       (mem_singleton c) hAI hnD
   rw [mem_singleton_iff.1 hc'] at hdc
   refine ⟨y, a, b, hch, hdc, ?_⟩
@@ -323,7 +322,7 @@ theorem last_edge_pt {h : ℕ} {s : ℝ} (hs : s ∈ Ioo (0 : ℝ) 1)
       refine param_of_lerp (interiorModel Q) Q hne ?_
       show (lerp ((interiorWalk Q).vtx C.m) ((interiorWalk Q).vtx ((C.m + 1) %
         (interiorWalk Q).n)) s).2 = _
-      rw [hwrap, hvm, hv0]; exact hy
+      rwa [hwrap, hvm, hv0]
     rw [hpar]
     refine ⟨hs.1.le, hs.2, ?_⟩
     unfold sidePt; rw [hwrap, hvm, hv0]
@@ -335,7 +334,7 @@ theorem last_edge_pt {h : ℕ} {s : ℝ} (hs : s ∈ Ioo (0 : ℝ) 1)
       refine param_of_lerp (interiorModel Q) Q hne ?_
       show (lerp ((interiorWalk Q).vtx C.m) ((interiorWalk Q).vtx ((C.m + 1) %
         (interiorWalk Q).n)) (1 - s)).2 = _
-      rw [hwrap, hvm, hv0, ← hrev]; exact hy
+      rwa [hwrap, hvm, hv0, ← hrev]
     rw [hpar]
     refine ⟨by linarith [hs.2], by linarith [hs.1], ?_⟩
     unfold sidePt; rw [hwrap, hvm, hv0, hrev]
@@ -370,7 +369,6 @@ theorem other_end {y a b : ℝ} (hc : hseg y a b ∈ (chainModel C).Adm) {h : �
       rw [e1]
       exact ⟨ht0, ht1, e2⟩
     · rw [ite_eq_right (by omega)]
-      have hwrap : (C.m + 1) % (interiorWalk Q).n = 0 := by rw [hIn, ← hmn, Nat.mod_self]
       have hpar : (interiorModel Q).param Q ⟨C.m, h + 1⟩ = 0 := by
         refine param_of_lerp (interiorModel Q) Q (iw_edge_ne hQ T hD hli (by omega)) ?_
         show (lerp ((interiorWalk Q).vtx C.m) ((interiorWalk Q).vtx ((C.m + 1) %
@@ -437,7 +435,7 @@ theorem mapped_end {y a b : ℝ} (hc : hseg y a b ∈ (chainModel C).Adm)
   obtain ⟨-, ha', hb'⟩ := piece_bounds hQ T hD hli hch' hsub
   have hlt' := hch'.lt
   obtain ⟨hzbA, hzbB⟩ := piece_ends_bd hQ T hD hch'
-  set t := (chainModel C).param Q ⟨p, h + 1⟩ with ht
+  set t := (chainModel C).param Q ⟨p, h + 1⟩
   have hA' := hA
   obtain ⟨hp, ht0, ht1, -⟩ := hA'
   by_cases hI : c0 C li ≤ p ∧ p < c0 C li + C.m ∧ ¬ (p = c0 C li ∧ t = 0)
@@ -560,7 +558,7 @@ theorem rec_kept {x : ℕ × ℕ × ℕ} (hx : x.1 < Q.n)
   have hmapLt : ∀ p, mapE Q.n (c0 C li) p < Q.n := fun p => by
     have := T.hm
     unfold mapE; split_ifs <;> omega
-  refine ⟨by rw [hset]; exact ⟨y, a', b', hch', rfl⟩, by rw [hset, hcab]; exact hsub, ?_, ?_⟩
+  refine ⟨by rw [hset]; exact ⟨y, a', b', hch', rfl⟩, by rwa [hset, hcab], ?_, ?_⟩
   · show SideAttach (interiorWalk Q) _ _ _
     rw [hset]
     exact attach_int hQ hch' (hmapLt _) hl0 hl1 (Or.inl hlpt)
@@ -661,7 +659,7 @@ theorem rec_dropped {x : ℕ × ℕ × ℕ} (hx : x.1 < Q.n)
     obtain ⟨s, hs, hes⟩ := hlast e h1 h2 hb
     obtain ⟨hn1, hn2, -⟩ := lerp_snd_ne hh' hs
     have hy' : y = (lerp (Q.vtx C.m) (Q.vtx 0) s).2 := by rw [← hes]
-    exact ⟨by rw [hy']; exact hn2, by rw [hy']; exact hn1⟩
+    exact ⟨by rwa [hy'], by rwa [hy']⟩
   rcases ha'.lt_or_eq with haL | haL <;> rcases hb'.lt_or_eq with hbR | hbR
   · -- both ends of the piece on the open last edge: the same point
     obtain ⟨s, hs, hes⟩ := hlast a' haL (by linarith) hzbA

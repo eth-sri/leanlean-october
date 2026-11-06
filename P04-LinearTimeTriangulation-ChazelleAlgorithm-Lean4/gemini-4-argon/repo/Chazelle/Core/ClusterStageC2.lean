@@ -73,7 +73,7 @@ theorem rcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hk
   have f1 : PFr StCRG (fun a => g.base 34 ≤ a ∧ a < g.base 34 + g.k') c c1 :=
     hf1.mono (fun r h => by unfold FillRG at h; unfold StCRG; omega) (fun a h => h)
   have e2 := Exec.constN (P := P) hw1 130831 0 (by omega)
-  set c2 := { c1 with nreg := upd c1.nreg 130831 0 } with hc2
+  set c2 := { c1 with nreg := upd c1.nreg 130831 0 }
   have f2 : PFr StCRG (fun a => g.base 34 ≤ a ∧ a < g.base 34 + g.k') c c2 :=
     f1.trans ⟨fun r hr => by simp only [c2, Machine.upd_other _ _ _ (show r ≠ 130831 by
       unfold StCRG at hr; omega)], rfl, rfl, rfl, fun a _ => rfl⟩
@@ -187,8 +187,8 @@ theorem argS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
             · simp only; unfold ARG at hr
               repeat (rw [Machine.upd_other _ _ _ (by omega)])
             · config_simp; exact h37
-            · config_simp; rw [h3 _ (by omega)]; exact hi2
-            · config_simp; rw [h3 _ (by omega)]; exact hi2
+            · config_simp; rwa [h3 _ (by omega)]
+            · config_simp; rwa [h3 _ (by omega)]
           refine ⟨c5, k5 + 1, .ifLtN_true hp e5, by omega, hw5, hf5, h5c, ⟨by omega, by omega,
             by rw [h5a, h5b]⟩, fun r hr => ?_⟩
           rw [h5a]
@@ -197,7 +197,7 @@ theorem argS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
           · exact le_trans (le_of_lt hp) (hmin2 r h)
           · rw [show r = j by omega]
         · refine ⟨c3, 0 + 2, .ifLtN_false hp (.skip hw3), by omega, hw3, PFr.refl c3,
-            by rw [h3 _ (by omega)]; exact hi2, ?_, fun r hr => ?_⟩
+            by rwa [h3 _ (by omega)], ?_, fun r hr => ?_⟩
           · rw [h37, h3 _ (by omega)] at hp
             rw [h3 _ (by omega), h3 _ (by omega)]
             rcases hst2 with ⟨h0, hb, -⟩ | ⟨h0, hl, hb⟩
@@ -221,7 +221,7 @@ theorem argS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
       · simp only [Machine.upd_same]
         rw [h4.1, hf4.1 _ (by unfold ARG; omega), h3 _ (by omega), r1]
       · simp only [Machine.upd_other _ _ _ (show (130015 : ℕ) ≠ 130834 by omega)]
-        rw [hf4.1 _ (by unfold ARG; omega), h3 _ (by omega)]; exact hn2
+        rwa [hf4.1 _ (by unfold ARG; omega), h3 _ (by omega)]
       · simp only [Machine.upd_other _ _ _ (show (130836 : ℕ) ≠ 130834 by omega),
           Machine.upd_other _ _ _ (show (130835 : ℕ) ≠ 130834 by omega)]
         exact h4.2.1

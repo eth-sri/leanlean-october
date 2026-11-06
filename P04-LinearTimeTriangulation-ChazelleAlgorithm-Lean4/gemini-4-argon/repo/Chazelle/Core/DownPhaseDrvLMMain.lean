@@ -53,17 +53,16 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
     intro r hr
     obtain ⟨hP, hs, hm, -⟩ := hreg r hr
     have h := DownMath.hostR1Spec P L E reg r hG hLne hL hperm hsort hdeg hregs hr
-    obtain ⟨-, -, hsimp, -, -, -, hex⟩ := h
-    refine ⟨by rw [hP]; exact hsimp, ?_⟩
+    obtain ⟨-, -, hsimp, hex⟩ := h
+    refine ⟨by rwa [hP], ?_⟩
     have := hex (C r) hP hs hm
-    rw [hS] at this
-    exact this
+    rwa [hS] at this
   -- the abstract level
   have X : LvlCtx (Qof P) L (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions reg C
       (fun r => (NR r).F (chainModel (C r)) (Qof P)) Lx DrvR.regCap
       (2 ^ (Cost.ceilBeta (DrvR.nextLvl lam) + 12)) := by
-    refine ⟨hQ, hL, by rw [← hS]; exact hdeg, fun r hr => by rw [← hS]; exact hregs.1.1 r hr,
-      hregs.1.2.1, fun U hU => hregs.1.2.2 U (by rw [hS]; exact hU), fun r hr => (hH r hr).2,
+    refine ⟨hQ, hL, by rwa [← hS], fun r hr => by rw [← hS]; exact hregs.1.1 r hr,
+      hregs.1.2.1, fun U hU => hregs.1.2.2 U (by rwa [hS]), fun r hr => (hH r hr).2,
       fun r hr => ?_, fun r hr => ?_, fun r hr => ?_, fun r hr => ?_⟩
     · obtain ⟨-, -, -, hcan, -, hhi, -⟩ := hreg r hr
       exact ⟨hcan.1.1, hcan.2.1, fun U hU => (hcan.2.2.1.1 U hU).trans (by omega)⟩

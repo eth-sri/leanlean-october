@@ -59,7 +59,7 @@ theorem split_mem₂ (hc : c ∈ S) (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R
 theorem split_cases (hc : c ∈ S) (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {X : Set Point}
     (hX : X ∈ M.regions S) : X = R₁ ∨ X = R₂ ∨ (X ∈ M.regions (S \ {c}) ∧ X ≠ P) := by
   have hX' : X ∈ regionsIn M.D (insert c (S \ {c})) := by
-    rw [Merge.insert_sdiff_self hc]; exact hX
+    rwa [Merge.insert_sdiff_self hc]
   rcases hs.mem_cases hX' with h | h | h
   · exact Or.inr (Or.inr h)
   · exact Or.inl h
@@ -77,7 +77,7 @@ theorem split_touches_iff (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (
     TouchesIn M.D c X ↔ X = R₁ ∨ X = R₂ := by
   have hF := hM.sys S hS hfin
   have hX' : X ∈ regionsIn M.D (insert c (S \ {c})) := by
-    rw [Merge.insert_sdiff_self hc]; exact hX
+    rwa [Merge.insert_sdiff_self hc]
   exact hs.touches_iff hF sdiff_sub hc not_mem_sdiff_self X hX'
 
 /-- If `S'` is empty, `S = {c}` and the two regions of `S` are `R₁` and `R₂`. -/
@@ -93,9 +93,9 @@ theorem split_sdiff_nonempty (hc : c ∈ S) (hM : WalkAx M)
     have hP : P ∈ regionsIn M.D (S \ {c}) := hs.mem
     have hX'' : X ∈ regionsIn M.D (S \ {c}) := hX'
     have e1 : X = M.D := by
-      rw [he, hD] at hX''; exact hX''
+      rwa [he, hD] at hX''
     have e2 : P = M.D := by
-      rw [he, hD] at hP; exact hP
+      rwa [he, hD] at hP
     exact hXP (e1.trans e2.symm)
 
 /-! ## Lost keys -/

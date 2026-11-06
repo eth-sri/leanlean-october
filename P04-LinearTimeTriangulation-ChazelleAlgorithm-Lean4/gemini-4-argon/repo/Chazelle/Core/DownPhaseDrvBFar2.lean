@@ -236,8 +236,8 @@ theorem ldRange_exec (c : Config) (hw : WordsBounded W c) {n t st cnt : ℕ}
     by_cases hlt : e + n - st < n
     · have e₂ := Exec.addN (P := P) w₁ 212092 212092 212000 (by rw [v2, c0']; omega)
       have ex : Exec P W ldArcR c _ (k₁ + ((0 + 1) + 1)) :=
-        .seq e₁ (.seq (.ifLtN_true (by rw [v2, v38]; exact hlt) (.skip w₁)) e₂)
-      have ex' : Exec P W ldRange c _ _ := .ifLtN_true (by rw [c1]; exact hK) ex
+        .seq e₁ (.seq (.ifLtN_true (by rwa [v2, v38]) (.skip w₁)) e₂)
+      have ex' : Exec P W ldRange c _ _ := .ifLtN_true (by rwa [c1]) ex
       refine ⟨_, _, ex', by omega, ?_, ?_, exec_frameB ex' wr_ldRange⟩
       · dsimp only; rw [Machine.upd_other _ _ _ (by norm_num), v1]
       · simp only [Machine.upd_same]; rw [v2, c0', hc, Nat.mod_eq_of_lt hlt]
@@ -247,8 +247,8 @@ theorem ldRange_exec (c : Config) (hw : WordsBounded W c) {n t st cnt : ℕ}
         simp only [Machine.upd_same]
         rw [Machine.upd_other _ _ _ (by norm_num), v2, v38, c0']; omega)
       have ex : Exec P W ldArcR c _ (k₁ + ((1 + 2) + 1)) :=
-        .seq e₁ (.seq (.ifLtN_false (by rw [v2, v38]; exact hlt) e₂) e₃)
-      have ex' : Exec P W ldRange c _ _ := .ifLtN_true (by rw [c1]; exact hK) ex
+        .seq e₁ (.seq (.ifLtN_false (by rwa [v2, v38]) e₂) e₃)
+      have ex' : Exec P W ldRange c _ _ := .ifLtN_true (by rwa [c1]) ex
       refine ⟨_, _, ex', by omega, ?_, ?_, exec_frameB ex' wr_ldRange⟩
       · dsimp only
         rw [Machine.upd_other _ _ _ (by norm_num), Machine.upd_other _ _ _ (by norm_num), v1]
@@ -302,7 +302,7 @@ theorem visLoop_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 �
 theorem LdOK.congr {c e : Config} {n t st cnt : ℕ} (h : LdOK c n t st cnt)
     (h12 : e.nreg 212012 = c.nreg 212012) (h14 : e.nreg 216014 = c.nreg 216014)
     (h33 : e.nreg 212033 = c.nreg 212033) (hm : e.nmem = c.nmem) : LdOK e n t st cnt := by
-  unfold LdOK; rw [h12, h14, h33, hm]; exact h
+  unfold LdOK; rwa [h12, h14, h33, hm]
 
 set_option maxHeartbeats 4000000 in
 /-- **The far-end scan**: the σ-nearest candidate over the walk edges of all ranges. -/
@@ -373,16 +373,16 @@ theorem farS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤ W
         (by rw [G _ (by decide), hli]) (by rw [G _ (by decide), hi]) hin
         (by rw [G _ (by decide), hd]) hd1 (by rw [G _ (by decide), c0])
         (by rw [G _ (by decide), c1]) (by rw [G _ (by decide), c2])
-        (by rw [g₂ _ (by decide), g₂ _ (by decide), g₂ _ (by decide),
+        (by rwa [g₂ _ (by decide), g₂ _ (by decide), g₂ _ (by decide),
           g₁ _ (by decide) (by decide) (by decide) (by decide),
           g₁ _ (by decide) (by decide) (by decide) (by decide),
-          g₁ _ (by decide) (by decide) (by decide) (by decide)]; exact hbe)
+          g₁ _ (by decide) (by decide) (by decide) (by decide)])
       -- the range counter
       have v36 : e₃.nreg 212036 = t := by
         rw [f₃.1 _ (by decide), g₂ _ (by decide),
           g₁ _ (by decide) (by decide) (by decide) (by decide), h1]
       have v00 : e₃.nreg 212000 = 1 := by rw [f₃.1 _ (by decide), G _ (by decide), c0]
-      have hnRW : nR ≤ W := by have := hw.1 212034; rw [h2] at this; exact this
+      have hnRW : nR ≤ W := by have := hw.1 212034; rwa [h2] at this
       have x₄ := Exec.addN (P := P) x₃.wb_right 212036 212036 212000 (by rw [v36, v00]; omega)
       have f₄ : FrameB (fun r => decide (r = 212036)) e₃ _ := exec_frameB x₄ (by decide)
       have ex : Exec P W rangeB e _ (k₁ + (1 + (k₃ + 1))) := .seq x₁ (.seq x₂ (.seq x₃ x₄))
@@ -400,8 +400,7 @@ theorem farS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤ W
       · have e99 : ∀ r, r ≠ 212036 → (upd e₃.nreg 212036 (e₃.nreg 212036 + e₃.nreg 212000)) r =
             e₃.nreg r := fun r h => Machine.upd_other _ _ _ h
         dsimp only
-        rw [e99 _ (by norm_num), e99 _ (by norm_num), e99 _ (by norm_num)]
-        exact hb₃)
+        rwa [e99 _ (by norm_num), e99 _ (by norm_num), e99 _ (by norm_num)])
     I0 (Nat.zero_le _)
   have e : ((visK + 2) * Cm + 22 + 2) * (nR - 0) = ((visK + 2) * Cm + 24) * nR := by
     rw [Nat.sub_zero]

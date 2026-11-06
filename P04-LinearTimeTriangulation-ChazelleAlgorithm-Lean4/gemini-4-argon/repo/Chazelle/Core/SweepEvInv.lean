@@ -146,8 +146,7 @@ theorem after_pos_exists (hP : J.P.Simple) {S₂ : Set (Set Point)}
       show oW J x - oW J (p + t) < δ₁ by linarith⟩
     rw [Set.mem_ofPred_eq] at this
     apply this
-    rw [hx'] at hx
-    exact hx
+    rwa [hx'] at hx
 
 /-- **The label facts of the event log from the invariant.** -/
 theorem labIn_of_evInv (hP : J.P.Simple) {S₂ : Set (Set Point)}

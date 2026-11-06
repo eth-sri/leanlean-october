@@ -177,13 +177,13 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
   refine IRS.mono (K := bRead.length + (11015 + (11015 + (8 + 1)))) (IRS.seq
     (IRS.block bRead hI hok) ?_) (by simp [bRead, bArcK]) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
-  set c₁ : Config := { c with nreg := regB c.nmem bRead c.nreg } with hc₁
+  set c₁ : Config := { c with nreg := regB c.nmem bRead c.nreg }
   obtain ⟨r1s, r1s1, r1e, r1e1⟩ := bRead_val c.nmem c.nreg hK₀.2.1
   rw [vA4, w2] at r1s r1s1 r1e r1e1
-  have v1s : c₁.nreg gS = (N.arc i).s.edge := by rw [← harec.2.1]; exact r1s
-  have v1s1 : c₁.nreg gS1 = (N.arc i).s.hgt := by rw [← harec.2.2.1]; exact r1s1
-  have v1e : c₁.nreg gE = (N.arc i).e.edge := by rw [← harec.2.2.2.1]; exact r1e
-  have v1e1 : c₁.nreg gE1 = (N.arc i).e.hgt := by rw [← harec.2.2.2.2]; exact r1e1
+  have v1s : c₁.nreg gS = (N.arc i).s.edge := by rwa [← harec.2.1]
+  have v1s1 : c₁.nreg gS1 = (N.arc i).s.hgt := by rwa [← harec.2.2.1]
+  have v1e : c₁.nreg gE = (N.arc i).e.edge := by rwa [← harec.2.2.2.1]
+  have v1e1 : c₁.nreg gE1 = (N.arc i).e.hgt := by rwa [← harec.2.2.2.2]
   have k1 : ∀ q, ¬ BSet q → c₁.nreg q = c.nreg q := fun q hq => bRead_other _ _ hq
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold BSet ALLOC sw; omega)
   have hctx₁ : ChainCtx P W c₁ (sw 20) C :=
@@ -191,7 +191,7 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
   -- normalise the start
   have hy1 : c₁.nreg gS < 6 → c₁.nreg gS ≠ 0 → c₁.nreg gS ≠ 2 → c₁.nreg gS ≠ 4 →
       |((chainModel C).pos (Qof P) ⟨c₁.nreg gS, c₁.nreg gS1⟩).2| < C.radius := by
-    rw [v1s, v1s1]; exact hsy
+    rwa [v1s, v1s1]
   refine IRS.seq (normS_exact (normS_irs (dsc := sw 20) (pe := gS) (ph := gS1) (o := gO) hI₁
     (hK.fix hI₁) hctx₁ ⟨by unfold sw; norm_num, by unfold sw; norm_num,
       by unfold gS sw; norm_num, by unfold gS sw; norm_num,
@@ -199,7 +199,7 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
     ⟨by unfold gO sw; norm_num, by unfold gO sw; norm_num, by unfold gO gS sw; norm_num,
       by unfold gO gS1 sw; norm_num, by unfold gO gS sw; norm_num, by unfold gO gS1 sw; norm_num,
       by unfold gS gS1 sw; norm_num⟩
-    (by rw [v1s]; exact hse) (by rw [v1s, v1s1]; exact hps) hy1
+    (by rwa [v1s]) (by rwa [v1s, v1s1]) hy1
     (by rw [hA1]; unfold bArcK at hroom; omega)) ⟨by unfold gS1 sw; norm_num,
       by unfold gO sw; norm_num⟩) ?_
   rintro c₂ hI₂ - - ⟨⟨n2s, n2s1, k2, -, -⟩, hA2, hm2⟩
@@ -357,7 +357,7 @@ theorem bLoop_irs {C : Chain} {N : NF} {B E : ℕ}
     N.arcs.length + 2)) (by simp [bHead, bLoopK]) (fun _ h => h)
   rintro c₁ hI₁ - - rfl
   obtain ⟨vN, vA4, vB, vT⟩ := bHead_val c.nmem c.nreg hK₀.2.1 hK₀.2.2.2.1
-  set A := N.arcs.length with hAd
+  set A := N.arcs.length
   have hBW1 : BW (chainModel C) (Qof P) N c { c with nreg := regB c.nmem bHead c.nreg } 0 := by
     refine ⟨vB, vT, Nat.zero_le _, ?_, vA4, ?_, fun k hk => absurd hk (by omega), fun _ _ => rfl,
       fun q _ hq _ => bHead_other _ _ hq⟩
@@ -372,7 +372,7 @@ theorem bLoop_irs {C : Chain} {N : NF} {B E : ℕ}
     rw [hw.2.1, hw.2.2.2.1] at hlt
     rw [hw.2.1]; omega
   · rintro c' hI' ⟨i, hw⟩ hlt hroom'
-    have hi : i < A := by rw [hw.2.1, hw.2.2.2.1] at hlt; exact hlt
+    have hi : i < A := by rwa [hw.2.1, hw.2.2.2.1] at hlt
     refine (bArc_irs hI' hK hctx hP hNF hNW hB hE hw hi hroom').mono le_rfl
       (fun c'' h => ⟨⟨i + 1, h⟩, ?_⟩)
     rw [h.2.1, hw.2.1]; omega

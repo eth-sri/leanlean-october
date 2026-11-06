@@ -190,11 +190,8 @@ theorem loopA_spec {P : Polygon} {W : ℕ} (c0 c : Config) (hI : InvA W P.n c0 c
       have hlt : c.nreg 20004 < topGrade P.n := by
         unfold topGrade
         rw [Nat.lt_clog_iff_pow_lt (by norm_num)]
-        rw [h3, h2] at htest
-        exact htest
+        rwa [h3, h2] at htest
       have hpow : 2 ^ (c.nreg 20004 + 1) ≤ 2 ^ topGrade P.n := Nat.pow_le_pow_right (by norm_num) hlt
-      have hpow' : 2 ^ (c.nreg 20004 + 1) = 2 ^ c.nreg 20004 + 2 ^ c.nreg 20004 := by
-        rw [pow_succ]; ring
       have hq : c.nreg 20004 < 2 ^ c.nreg 20004 := Nat.lt_two_pow_self
       exec_block
       · rw [h3]; omega
@@ -329,14 +326,12 @@ theorem bodyB_spec {P : Polygon} {W S : ℕ} (c0 c : Config) (hI : InvB W P.n S 
       c'.nreg 9999 ≤ c.nreg 9999 + k := by
   have hI0 := hI
   obtain ⟨hw, -, -, g0, g1, g9, g13, g4, g12, g6, gi, g3, g10, g11, g7, g8, gA, -, -, -⟩ := hI
-  have hlt : c.nreg 20005 < topGrade P.n + 2 := by rw [g6] at ht; exact ht
+  have hlt : c.nreg 20005 < topGrade P.n + 2 := by rwa [g6] at ht
   have hp2 := pow_topGrade_le hn
   have hpl := topGrade_lt hn
   have hpow : 2 ^ (c.nreg 20005 + 1) ≤ 2 ^ (topGrade P.n + 2) :=
     Nat.pow_le_pow_right (by norm_num) (by omega)
   have hpow2 : 2 ^ (topGrade P.n + 2) = 4 * 2 ^ topGrade P.n := by rw [pow_add]; ring
-  have hpow' : 2 ^ (c.nreg 20005 + 1) = 2 ^ c.nreg 20005 + 2 ^ c.nreg 20005 := by
-    rw [pow_succ]; ring
   unfold bodyB
   refine spec_seq ?_
   exec_block
@@ -347,7 +342,7 @@ theorem bodyB_spec {P : Polygon} {W S : ℕ} (c0 c : Config) (hI : InvB W P.n S 
   · config_simp; rw [g1]; omega
   · by_cases hT : c.nreg 20008 < 1
     · refine spec_seq ?_
-      refine spec_ifLtN_true (by config_simp; rw [g1]; exact hT) ?_
+      refine spec_ifLtN_true (by config_simp; rwa [g1]) ?_
       exec_block
       · config_simp; rw [g7, g1]; omega
       · config_simp; rw [g9]; omega
@@ -361,7 +356,7 @@ theorem bodyB_spec {P : Polygon} {W S : ℕ} (c0 c : Config) (hI : InvB W P.n S 
         · config_simp; rw [g1]; omega
         · config_simp; rw [g13]; omega
     · refine spec_seq ?_
-      refine spec_ifLtN_false (by config_simp; rw [g1]; exact hT) ?_
+      refine spec_ifLtN_false (by config_simp; rwa [g1]) ?_
       refine spec_skip ‹_› ?_
       exec_block
       refine ⟨bodyB_post hI0 ‹_› (fun r a b c d e f g => ?_) rfl rfl rfl ?_ hlt

@@ -71,7 +71,7 @@ theorem vertex_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   have hsec' : ∀ s > 0, sideLeft (chainModel C).W p 0 (rayPt w (-σ) s) := by
     intro s hs
     have h1 : sideLeft (chainModel C).W p 0 (rayPt (sidePt (chainModel C).W p 0) (-σ) 1) := by
-      rw [hpt]; exact hsec
+      rwa [hpt]
     have := (sideLeft_rayPt_iff _ p 0 (-σ) one_pos hs).1 h1
     rwa [hpt] at this
   have hall : ∀ᶠ s in 𝓝[>] (0 : ℝ), ∀ c ∈ F, rayPt w (-σ) s ∉ c :=
@@ -87,9 +87,9 @@ theorem vertex_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     refine ⟨(hsf _ hball (hsec' s hs.1)).1, ?_⟩
     rintro ⟨c, hcF, hxc⟩
     exact hc c hcF hxc
-  set z := rayPt w (-σ) (δ / 2) with hz
+  set z := rayPt w (-σ) (δ / 2)
   have hzfree : z ∈ freeIn C.dom F := hfree _ ⟨by linarith, by linarith⟩
-  set U := connectedComponentIn (freeIn C.dom F) z with hU
+  set U := connectedComponentIn (freeIn C.dom F) z
   have hUreg : U ∈ (chainModel C).regions F := Chazelle.Chain.mem_regionsIn hzfree
   have hconn : IsPreconnected ((fun s => rayPt w (-σ) s) '' Ioo (0 : ℝ) δ) :=
     isPreconnected_Ioo.image _ (by unfold rayPt; fun_prop)
@@ -116,7 +116,7 @@ theorem freeAt_of_leave (hP : C.P.Simple) {z : Point} {σ : ℝ} (hσ : σ = 1 �
   have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ s) := by
     rw [hpt]
     have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-      rw [hpt]; exact hsec
+      rwa [hpt]
     have := (sideLeft_rayPt_iff _ p t σ one_pos hs.1).1 h1
     rwa [hpt] at this
   have hball : rayPt (sidePt (chainModel C).W p t) σ s ∈ ball (sidePt (chainModel C).W p t) r := by
@@ -144,11 +144,11 @@ theorem leave_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
   have hF : F ⊆ (chainModel C).Adm := hFam.2.1
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
-  have hA : Arrival (chainModel C).W z (-σ) p t := ⟨hp, ht, ht1, hpt, by rw [neg_neg]; exact hsec⟩
+  have hA : Arrival (chainModel C).W z (-σ) p t := ⟨hp, ht, ht1, hpt, by rwa [neg_neg]⟩
   have hsec' : ∀ s > 0, sideLeft (chainModel C).W p t (rayPt z σ s) := by
     intro s hs
     have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-      rw [hpt]; exact hsec
+      rwa [hpt]
     have := (sideLeft_rayPt_iff _ p t σ one_pos hs).1 h1
     rwa [hpt] at this
   have hzD : z ∉ C.dom := by rw [← hpt]; exact hM.trace p hp t ht ht1.le
@@ -158,7 +158,6 @@ theorem leave_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     refine ⟨e, he, ?_, hev⟩
     have heA : e ∈ Merge.augChords C := hF he
     obtain ⟨y, l, r, hH, -, rfl, -, -⟩ := Merge.augChords_spec heA
-    have hlr := hH.lt
     obtain ⟨s₁, hs₁, hs₁0⟩ := (hev.and self_mem_nhdsWithin).exists
     have hzy : z.2 = y := by simpa [rayPt] using hs₁.1
     have hzpt : ∀ x : ℝ, x = z.1 → ((x, y) : Point) = z := fun x hx => Prod.ext hx hzy.symm

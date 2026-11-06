@@ -71,18 +71,18 @@ theorem wr_load (t : ℕ) (ht : 10000 ≤ t ∧ t + 2 < 10500) (s : SymSrc) :
 theorem holds_congr {c c' : Config} {s : SymSrc} {p : SymPt} (hs : s.Out)
     (hc : ∀ r, Bk r = false → c'.nreg r = c.nreg r) (h : s.Holds c p) : s.Holds c' p := by
   cases s with
-  | vtx r => simp only [SymSrc.Holds] at h ⊢; rw [hc r hs]; exact h
+  | vtx r => simp only [SymSrc.Holds] at h ⊢; rwa [hc r hs]
   | edge re rh =>
-    simp only [SymSrc.Holds] at h ⊢; rw [hc re hs.1, hc rh hs.2]; exact h
+    simp only [SymSrc.Holds] at h ⊢; rwa [hc re hs.1, hc rh hs.2]
   | regs r =>
     simp only [SymSrc.Holds] at h ⊢
     cases p with
     | vtx i =>
       simp only [SymPtIn] at h ⊢
-      rw [hc r hs.1, hc (r + 1) hs.2.1]; exact h
+      rwa [hc r hs.1, hc (r + 1) hs.2.1]
     | onEdge e h' =>
       simp only [SymPtIn] at h ⊢
-      rw [hc r hs.1, hc (r + 1) hs.2.1, hc (r + 2) hs.2.2]; exact h
+      rwa [hc r hs.1, hc (r + 1) hs.2.1, hc (r + 2) hs.2.2]
 
 /-- Close a goal about explicit register updates by case analysis. -/
 macro "upd_solve" : tactic =>
@@ -178,11 +178,10 @@ theorem sgnS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
     cases q with
     | vtx i =>
       simp only [SymPtIn] at hq ⊢
-      rw [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl))]; exact hq
+      rwa [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl))]
     | onEdge e h =>
       simp only [SymPtIn] at hq ⊢
-      rw [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl)), hd (t + 2) (Or.inr (Or.inr rfl))]
-      exact hq
+      rwa [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl)), hd (t + 2) (Or.inr (Or.inr rfl))]
   have j₁ : SymPtIn c₄ 10000 p₁ := keep c₁ 10000 p₁ i₁ c₄ fun r hr => by
     rw [hc₄]; config_simp
     rw [Machine.upd_other _ _ _ (by omega), r₃ r (by omega) (by omega) (by omega),

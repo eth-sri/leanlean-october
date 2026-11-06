@@ -65,7 +65,7 @@ theorem locZ_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
       by rw [n₁, mm₁]; config_simp; exact hL.chwf, chainModel C,
       by rw [n₁, mm₁]; config_simp; exact hL.md, by rw [g2, hnW]; omega⟩
     h.good (by omega) (by rw [n₁, mm₁]; config_simp; exact hL.md) hL.good
-    (by rw [n₁, mm₁]; config_simp; exact hL.nf) h.isNF (by rw [g2, g3]; exact hp) hL.st
+    (by rw [n₁, mm₁]; config_simp; exact hL.nf) h.isNF (by rwa [g2, g3]) hL.st
     h₁.rTB h₁.rL h₁.pk.zero h₁.pk.one
     (by rw [mm₁]; exact hL.tab) (by rw [← hA]; exact hL.A_lt)
     (by rw [n₁]; config_simp; exact hL.NB_le) (by rw [n₁, mm₁]; config_simp; rw [← hA]; exact hL.AB_le)
@@ -73,7 +73,7 @@ theorem locZ_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
   rw [g2, g3] at loc1 loc2
   have fr₁ : FrameB BLZ c c₁ := exec_frameB e₁ (by decide)
   exact ⟨c₂, _, .seq e₁ e₂, by omega, fr₁.trans (FrameB.mono f₂ fun r hr => by simp [BLZ, hr]),
-    by rw [hA]; exact hq₂, loc1, loc2⟩
+    by rwa [hA], loc1, loc2⟩
 
 /-- Test the end of the located arc against the reference position, adjust. -/
 def tstS (d : Bool) : Stmt :=
@@ -104,7 +104,7 @@ theorem tstS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
   obtain ⟨hsq', hjl', hwv', hhv'⟩ := h.endPos_mem hq0A d
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, v₄, v₄'⟩ := arcPosS_exec (P := P) hw (AB := V.AB)
     (SB := V.SB) (A := V.A) (p := q0) (o := if d then 1 else 3) h.rAB h.rSB h.pk.one
-    h03 hq0A ho (by split_ifs <;> omega) (by rw [hsq']; exact hjl')
+    h03 hq0A ho (by split_ifs <;> omega) (by rwa [hsq'])
     (by have := hL.SB_le; have := hL.TB_le; rw [h.mem.2.2] at *; omega)
     (by have := hL.AB_le; have := hL.TB_le; rw [h.mem.2.1] at *; omega)
   rw [hwv'] at v₄
@@ -163,12 +163,12 @@ theorem tstS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
     · rw [h0, pow_zero] at c'; omega
     · omega
   obtain ⟨c₈, k₈, e₈, hk₈, f₈, v₈⟩ := adjS_exec (P := P) e₇.wb_right d h₇.pk.one h₇.pk.zero h₇.rA
-    (by rw [g170]; exact hq0A) hAW
+    (by rwa [g170]) hAW
   rw [g170] at v₈
   -- the key test
   have hkeq : (chainModel C).key (Qof P) (endPos N d q0) = (chainModel C).key (Qof P) ⟨Yw, Yz⟩ ↔
       (w2 = Yw ∧ nz C Yw hc2 = Yz) := by
-    obtain ⟨hw72, hh2, hp02, hp12⟩ := h.arcEnd (j := sj N q0) (by rw [← hA]; exact hjl') d
+    obtain ⟨hw72, hh2, hp02, hp12⟩ := h.arcEnd (j := sj N q0) (by rwa [← hA]) d
     have hwe2 : (if d then (N.arc (sj N q0)).s else (N.arc (sj N q0)).e) = endPos N d q0 := by
       unfold endPos; rfl
     rw [hwe2] at hw72 hh2 hp02 hp12
@@ -343,14 +343,14 @@ theorem kiS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : C
     · exact hq0A
   have v228b : c₇.nreg 110228 ≤ 2 := by
     rw [v228, s₄, s₆]; split_ifs <;> omega
-  refine ⟨c₇, _, ex, by omega, ?_, by rw [v227]; exact hq0A, by rw [v223]; exact hadjlt _ _,
+  refine ⟨c₇, _, ex, by omega, ?_, by rwa [v227], by rw [v223]; exact hadjlt _ _,
     by rw [v224]; exact hadjlt _ _, v228b, fun hne => ?_⟩
   · refine fr₁.trans ((FrameB.mono f₂ fun r hr => by simp [BKI, hr]).trans (fr₃.trans
       ((FrameB.mono f₄ fun r hr => by simp [BKI, hr]).trans (fr₅.trans
       ((FrameB.mono f₆ fun r hr => by simp [BKI, hr]).trans fr₇)))))
   · have hN := h.isNF
     have hP := h.simple
-    have hq0N : q0 < N.arcs.length := by rw [← hA]; exact hq0A
+    have hq0N : q0 < N.arcs.length := by rwa [← hA]
     have hl1 : ¬ (chainModel C).IsCut (N.F (chainModel C) (Qof P)) (X : ℝ) →
         sideInArc (sk (chainModel C) (Qof P) N q0) (ek (chainModel C) (Qof P) N q0) X :=
       fun hc' => by
@@ -389,7 +389,7 @@ theorem kiS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : C
       · intro hin
         obtain ⟨a, b⟩ := sideInArc_ne hin
         rw [ite_eq_right (fun e => a e.symm), ite_eq_right (fun e => b e.symm)]
-    · have hqN : q < N.arcs.length := by rw [← hA]; exact hq
+    · have hqN : q < N.arcs.length := by rwa [← hA]
       have hnc := not_cut_of_int hN hne hqN hin
       rw [v227]
       exact interior_unique hN (Or.inl ⟨C, hP, rfl⟩) hne hqN hq0N hin (hl1 hnc)

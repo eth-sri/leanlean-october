@@ -1,6 +1,6 @@
 module
 
-public import Chazelle.Core.SweepMachine21L
+public import Chazelle.Core.SweepMachine0L
 
 /-!
 # The sweep RAM (WP-D), part 1: the chords at an event key
@@ -50,11 +50,11 @@ theorem sub_of_mem_dom (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hl : l < K.1 := by
     rcases hKl.lt_or_eq with h | h
     · exact h
-    · exfalso; apply hH.left_not; rw [h, ← hKpt]; exact hKD
+    · exfalso; apply hH.left_not; rwa [h, ← hKpt]
   have hr : K.1 < r := by
     rcases hKr.lt_or_eq with h | h
     · exact h
-    · exfalso; apply hH.right_not; rw [← h, ← hKpt]; exact hKD
+    · exfalso; apply hH.right_not; rwa [← h, ← hKpt]
   have hya : a.2 = y := by
     have := hKe; rw [heab] at this
     obtain ⟨v, -, -, hv⟩ := Geometry.mem_segment_iff_lerp.1 this
@@ -102,11 +102,11 @@ theorem sub_of_mem_dom (hP : J.P.Simple) {S₂ : Set (Set Point)}
   refine ⟨hzy, ?_, ?_⟩
   · by_contra hc
     push Not at hc
-    have := inner u₂ u₁ ⟨hu₂0, hu₂1⟩ ⟨hu₁0, hu₁1⟩ l hc (by rw [← hKu]; exact hl)
+    have := inner u₂ u₁ ⟨hu₂0, hu₂1⟩ ⟨hu₁0, hu₁1⟩ l hc (by rwa [← hKu])
     exact hH.left_not (dom_right J this (by simpa using hy))
   · by_contra hc
     push Not at hc
-    have := inner u₁ u₂ ⟨hu₁0, hu₁1⟩ ⟨hu₂0, hu₂1⟩ r (by rw [← hKu]; exact hr) hc
+    have := inner u₁ u₂ ⟨hu₁0, hu₁1⟩ ⟨hu₂0, hu₂1⟩ r (by rwa [← hKu]) hc
     exact hH.right_not (dom_right J this (by simpa using hy))
 
 /-- **The two chords of a tie lie in one chord of `S₂`**: two chords of `F₂⁺` attached at one
@@ -119,7 +119,7 @@ theorem tie_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
     ∃ c ∈ S₂, e ⊆ c ∧ e' ⊆ c := by
   have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
   have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := F₂plus_subset J hS₂
-  set K := sidePt (chainModel J.whole).W p t with hK
+  set K := sidePt (chainModel J.whole).W p t
   have hKe : K ∈ e := hA.2.2.2.1
   have hKe' : K ∈ e' := hA'.2.2.2.1
   rcases F₂plus_cases J hS₂ he with ⟨c, hc, hec⟩ | ⟨hv, hvy⟩ | ⟨ht, hty⟩
@@ -205,7 +205,7 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
             · exact hH.left_not (h ▸ hKD)
             · exact hH.right_not (h ▸ hKD)
         subst hsame
-        left; rw [← hl]; exact ho
+        left; rwa [← hl]
       · have hc₁S : c₁ ∈ S₂ := by simpa using hc₁
         have ho : Merge.rend c₁ ∈ Merge.shoot J.whole (Merge.rend c₁) (-1) := origin_mem J
         have hsub : Merge.shoot J.whole (Merge.rend c₁) (-1) ⊆ c₁ :=
@@ -222,7 +222,7 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
             · exact hH.left_not (h ▸ hKD)
             · exact hH.right_not (h ▸ hKD)
         subst hsame
-        right; rw [← hr]; exact ho
+        right; rwa [← hr]
       · obtain ⟨σ, -, -, rfl⟩ := hsh
         have hv : J.shared ∈ J.whole.chordSet J.m₁ σ := by
           have : J.whole.vertex J.m₁ = J.shared := rfl
@@ -236,8 +236,8 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
         rcases hvl.lt_or_eq with h1 | h1
         · rcases hvr.lt_or_eq with h2 | h2
           · exact absurd (by rw [hvpt]; exact hH.open_mem _ h1 h2) hvD
-          · right; rw [← h2, ← hvpt]; exact hv
-        · left; rw [h1, ← hvpt]; exact hv
+          · right; rwa [← h2, ← hvpt]
+        · left; rwa [h1, ← hvpt]
       · obtain ⟨σ, -, -, rfl⟩ := htop
         have hv' : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
           rw [Merge.Junction.whole_vertex_add]; rfl
@@ -252,8 +252,8 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
         rcases hvl.lt_or_eq with h1 | h1
         · rcases hvr.lt_or_eq with h2 | h2
           · exact absurd (by rw [hvpt]; exact hH.open_mem _ h1 h2) hvD
-          · right; rw [← h2, ← hvpt]; exact hv
-        · left; rw [h1, ← hvpt]; exact hv
+          · right; rwa [← h2, ← hvpt]
+        · left; rwa [h1, ← hvpt]
     · have hvc := hec hv
       rw [hceq] at hvc
       obtain ⟨hvy, hvl, hvr⟩ := hvc
@@ -263,8 +263,8 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
       rcases hvl.lt_or_eq with h1 | h1
       · rcases hvr.lt_or_eq with h2 | h2
         · exact absurd (by rw [hvpt]; exact hH.open_mem _ h1 h2) hvD
-        · right; rw [← h2, ← hvpt]; exact hv
-      · left; rw [h1, ← hvpt]; exact hv
+        · right; rwa [← h2, ← hvpt]
+      · left; rwa [h1, ← hvpt]
     · have hvc := hec ht
       rw [hceq] at hvc
       obtain ⟨hvy, hvl, hvr⟩ := hvc
@@ -274,8 +274,8 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
       rcases hvl.lt_or_eq with h1 | h1
       · rcases hvr.lt_or_eq with h2 | h2
         · exact absurd (by rw [hvpt]; exact hH.open_mem _ h1 h2) hvD
-        · right; rw [← h2, ← hvpt]; exact ht
-      · left; rw [h1, ← hvpt]; exact ht
+        · right; rwa [← h2, ← hvpt]
+      · left; rwa [h1, ← hvpt]
   -- the chord seen from that end
   rcases hend with hle | hre
   · obtain ⟨σ, hσ, hfree, heq⟩ := chord_eq_shoot_of_end J.whole (hFs he) hle hlD

@@ -143,8 +143,7 @@ theorem reach_of_walk (h : MapArrays m bO bR bV μ N M) (hdb : ∀ d, d < N → 
         · simp only [primalEnv, view_lt ho]; exact hdb _ ho
         · simp only [primalEnv, view_lt ho]; exact h2
         · show view m bV N (view m bO N (m (bO + d))) = _
-          rw [view_lt ho, hoo, view_lt hd]
-          exact h1
+          rwa [view_lt ho, hoo, view_lt hd]
         · simp only [primalEnv, view_lt a.2]; exact ha
         · simp only [primalEnv, view_lt b.2]; exact hb
     exact Relation.ReflTransGen.head hstep hrest

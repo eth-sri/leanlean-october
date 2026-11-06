@@ -84,7 +84,7 @@ theorem tgtS_exec {c : Config} (hw : WordsBounded W c) :
       refine ⟨rfl, ‹_›, by config_simp, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
       simp only
       repeat (rw [Machine.upd_other _ _ _ (by omega)])
-    exact ⟨c', k + 1, .ifLtN_true h e, by omega, hw', by rw [ite_eq_left h]; exact h34, fr, hm, hrr,
+    exact ⟨c', k + 1, .ifLtN_true h e, by omega, hw', by rwa [ite_eq_left h], fr, hm, hrr,
       hrm, ho⟩
   · exact ⟨c, 2, .ifLtN_false h (.skip hw), le_rfl, hw, by rw [ite_eq_right h], fun _ _ => rfl, rfl,
       rfl, rfl, rfl⟩
@@ -168,14 +168,14 @@ theorem level_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
     (hp := hp) (hX := hX) (γ₀ := γ₀) (tgt := t) (ns := ns) (by omega) hA2
     ((fr2 _ (by omega)).trans i62) ((fr2 _ (by omega)).trans i65)
     ((fr2 _ (by omega)).trans i64) ((fr2 _ (by omega)).trans i67)
-    (by rw [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact h33) t34'
-    (by rw [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact h00)
-    (by rw [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact h24)
-    (by rw [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact h80)
-    (by rw [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact h81)
-    (by rw [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact h83)
-    (by rw [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact h84)
-    (by rw [m2]; exact hL) hc hB hγ hγ1 (by rw [m2]; exact hXh) (by rw [m2]; exact hcap) htg
+    (by rwa [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)]) t34'
+    (by rwa [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)])
+    (by rwa [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)])
+    (by rwa [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)])
+    (by rwa [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)])
+    (by rwa [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)])
+    (by rwa [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)])
+    (by rwa [m2]) hc hB hγ hγ1 (by rwa [m2]) (by rwa [m2]) htg
     hbud'
   have hst' := hst
   obtain ⟨-, -, -, -, s3A0, s3A1, s3m, s3rm, s3o, s3r, s3rr, s3X, s3cap, -⟩ := hst'
@@ -183,16 +183,16 @@ theorem level_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
   obtain ⟨c4, k4, e4, hk4, hw4, a41, a42, a43, m43, rm43, o43, rr43, fr43, c64, ee, hcell, h63,
       hee0⟩ :=
     carryS_exec (hj := by omega) hst
-      (by rw [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact h14)
-      (by rw [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact h24)
-      (by rw [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact h83)
-      (by rw [m2]; exact hL) hB (by
+      (by rwa [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)])
+      (by rwa [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)])
+      (by rwa [r2 _ (by omega) (by omega) (by omega) (by omega) (by omega)])
+      (by rwa [m2]) hB (by
         have : ∑ q ∈ range (ns.length / 2), (pairCost κ F G H ns γ₀ q + 8) ≤
             ∑ q ∈ range (ns.length / 2), (pairCost κ F G H ns γ₀ q + 331) :=
           Finset.sum_le_sum fun _ _ => by omega
         omega)
   -- 5. the rebuild
-  set B' := c4.nreg ALLOC with hB'
+  set B' := c4.nreg ALLOC
   have c4_24 : c4.nreg 160024 = 1 := by
     rw [fr43 _ (not_pairRG (by omega)) (by rw [hAl]; omega),
       s3r _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega),
@@ -220,7 +220,6 @@ theorem level_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
     rw [fr65 _ (by rw [hAl]; omega) (by rw [hAl]; omega) (by rw [hAl]; omega)]; exact a5
   have mem64 : ∀ a, a < B' → c6.nmem a = c4.nmem a := fun a ha => by
     rw [hm65]; exact hout a (Or.inl ha)
-  have hA3 : A0 ≤ c3.nreg ALLOC := s3A0
   have f33' : c6.nreg 160033 = t := by
     rw [f33, fr54 _ (by unfold RbRG; omega) (by rw [hAl]; omega),
       fr43 _ (not_pairRG (by omega)) (by rw [hAl]; omega),
@@ -230,7 +229,7 @@ theorem level_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
     .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 e6)))), ?_, hw6, by omega, by omega,
     by rw [f14, fr54 _ (by unfold RbRG; omega) (by rw [hAl]; omega), c64],
     f33',
-    ⟨B', by rw [f66, b94], by rw [hA6], by rw [hA6, hm65]; exact hLv⟩,
+    ⟨B', by rw [f66, b94], by rw [hA6], by rwa [hA6, hm65]⟩,
     fun a ha => ?_, fun a ha => ?_, by rw [ho65, ho54, o43, s3o, ho2, ho1],
     fun r h1 h2 h3 => ?_, fun r h1 h2 => ?_, ?_, ?_⟩
   · rw [hk1, hk6]; omega

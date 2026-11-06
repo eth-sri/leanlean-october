@@ -188,8 +188,6 @@ def intIdx : Stmt :=
 def intDir : Stmt :=
   .seq intIdx (.seq (block [.constN 50040 0, .constN 50043 0]) dirTail)
 
-theorem wr_intDir : wr Bdir intDir = true := by decide
-
 /-- The indices computed by `intIdx`. -/
 theorem intIdx_exec {P : Polygon} {W : ℕ} (hW : P.n + 3 ≤ W) (c : Config) (hw : WordsBounded W c)
     (he : c.nreg 50002 < P.n) (hD : c.nreg 50000 + 1 ≤ W) :
@@ -215,10 +213,10 @@ theorem intIdx_exec {P : Polygon} {W : ℕ} (hW : P.n + 3 ≤ W) (c : Config) (h
       c₂.nreg 50031 = (c.nreg 50002 + 1) % P.n ∧ c₂.nreg 50030 = P.n ∧ c₂.nreg 50032 = 1 ∧
       c₂.nreg 50033 = c.nmem (c.nreg 50000 + 1) ∧ c₂.nreg 50002 = c.nreg 50002 := by
     by_cases h : c.nreg 50002 + 1 < P.n
-    · refine spec_ifLtN_true (by rw [q31, q30]; exact h) (spec_skip w₁ ⟨by omega, ?_⟩)
+    · refine spec_ifLtN_true (by rwa [q31, q30]) (spec_skip w₁ ⟨by omega, ?_⟩)
       rw [q31, Nat.mod_eq_of_lt h]
       exact ⟨rfl, q30, q32, q33, q02⟩
-    · refine spec_ifLtN_false (by rw [q31, q30]; exact h)
+    · refine spec_ifLtN_false (by rwa [q31, q30])
         (spec_instr (Exec.constN w₁ _ _ (by omega)) fun _ => ⟨by omega, ?_⟩)
       have : c.nreg 50002 + 1 = P.n := by omega
       config_simp
@@ -245,18 +243,18 @@ theorem intIdx_exec {P : Polygon} {W : ℕ} (hW : P.n + 3 ≤ W) (c : Config) (h
       c₃.nreg 50044 = (if b = 1 then e1 else P.n - 1 - e1) := by
     by_cases h0 : b < 1
     · obtain ⟨c', k, ex, hk, a, a'⟩ := hrev c₂ w₂ s30 s32 s02 s31
-      refine ⟨c', k + 1, .ifLtN_true (by rw [s33, s32]; exact h0) ex, by omega, ?_, ?_⟩
+      refine ⟨c', k + 1, .ifLtN_true (by rwa [s33, s32]) ex, by omega, ?_, ?_⟩
       · rw [a, ite_eq_right (by omega)]
       · rw [a', ite_eq_right (by omega)]
     · by_cases h2 : 1 < b
       · obtain ⟨c', k, ex, hk, a, a'⟩ := hrev c₂ w₂ s30 s32 s02 s31
-        refine ⟨c', k + 1 + 2, .ifLtN_false (by rw [s33, s32]; exact h0)
-          (.ifLtN_true (by rw [s33, s32]; exact h2) ex), by omega, ?_, ?_⟩
+        refine ⟨c', k + 1 + 2, .ifLtN_false (by rwa [s33, s32])
+          (.ifLtN_true (by rwa [s33, s32]) ex), by omega, ?_, ?_⟩
         · rw [a, ite_eq_right (by omega)]
         · rw [a', ite_eq_right (by omega)]
       · have hb1 : b = 1 := by omega
-        refine spec_ifLtN_false (by rw [s33, s32]; exact h0)
-          (spec_ifLtN_false (by rw [s33, s32]; exact h2) ?_)
+        refine spec_ifLtN_false (by rwa [s33, s32])
+          (spec_ifLtN_false (by rwa [s33, s32]) ?_)
         exec_block
         refine ⟨by omega, ?_, ?_⟩ <;> config_simp <;> rw [ite_eq_left hb1]
         · exact s02
@@ -267,7 +265,7 @@ theorem intIdx_exec {P : Polygon} {W : ℕ} (hW : P.n + 3 ≤ W) (c : Config) (h
 theorem intDir_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config)
     (hw : WordsBounded W c) (he : c.nreg 50002 < P.n) (hD : c.nreg 50000 + 1 ≤ W)
     (hbit : c.nmem (c.nreg 50000 + 1) = 1 ↔ Mountain.LeftInside (Qof P)) :
-    ∃ c' k, Exec P W intDir c c' k ∧ k ≤ 510 ∧ FrameB Bdir c c' ∧
+    ∃ c' k, Exec P W intDir c c' k ∧ k ≤ 510 ∧
       c'.nreg 10502 = dirCode (interiorModel (Qof P)) (c.nreg 50002) := by
   obtain ⟨c₁, k₁, e₁, hk₁, r41, r44⟩ := intIdx_exec (P := P) hW c hw he hD
   have w₁ := e₁.wb_right
@@ -290,10 +288,10 @@ theorem intDir_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, d₃⟩ := dirTail_exec (P := P) hG hW c₂ e₂.wb_right
     (sa := .vtx ia) (sb := .vtx ib) hia hib ⟨a, by rw [x41, r41]⟩ ⟨b, by rw [x44, r44]⟩
   have ex : Exec P W intDir c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
-  refine ⟨c₃, _, ex, by omega, exec_frameB ex wr_intDir, ?_⟩
+  refine ⟨c₃, _, ex, by omega, ?_⟩
   rw [d₃, dirCode_eq]
   simp only [SymPt.eval, Model.wa, Model.wb, interiorModel]
-  rw [interiorWalk_n, hn, interiorWalk_vtx _ (by rw [hn]; exact he),
+  rw [interiorWalk_n, hn, interiorWalk_vtx _ (by rwa [hn]),
     interiorWalk_vtx _ (by rw [hn]; exact Nat.mod_lt _ hn0), hn]
   simp only [ia, ib]
   by_cases hL : Mountain.LeftInside (Qof P)

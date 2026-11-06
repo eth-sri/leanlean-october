@@ -129,7 +129,6 @@ theorem capLoad_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       ∃ su sv sw : SymPt, SymPtIn c' 50130 su ∧ SymPtIn c' 50133 sv ∧ SymPtIn c' 50136 sw ∧
         su.Lt P.n ∧ sv.Lt P.n ∧ sw.Lt P.n ∧ su.eval (Qof P) = C.vertex (k - 1) ∧
         sv.eval (Qof P) = C.vertex k ∧ sw.eval (Qof P) = C.vertex (k + 1) := by
-  have hBcv : ∀ (d : ℕ) (r : ℕ), 50200 ≤ r → Bcv d r = false → True := fun _ _ _ _ => trivial
   have keep200 : ∀ {c₁ c₂ : Config} {d : ℕ}, FrameB (Bcv d) c₁ c₂ → d < 50200 → d + 3 ≤ 50200 →
       ∀ r, 50200 ≤ r → c₂.nreg r = c₁.nreg r := fun hf _ hd r hr => hf.1 r (by
     simp only [Bcv, Bhost, Bool.or_eq_false_iff, beq_eq_false_iff_ne, decide_eq_false_iff_not]
@@ -262,7 +261,7 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     simp only [Bool.decide_and, Bool.decide_or]
   have ext_bit : BitIs c₅ 50162 (0 < (U.2 - V.2) * (X.2 - V.2)) := by
     refine BitIs.of_bf (f := fExt) (v := fun r => decide (c₃.nreg r = 1))
-      (by rw [k45 _ (by norm_num)]; exact v₄) ?_
+      (by rwa [k45 _ (by norm_num)]) ?_
     rw [extE, decide_eq_true_iff, ext_iff']
   have near_bit : BitIs c₅ 50170
       (((V.2 < U.2 ∧ V.2 < X.2) ∧ U.2 < X.2) ∨ ((U.2 < V.2 ∧ X.2 < V.2) ∧ X.2 < U.2)) := by
@@ -277,7 +276,6 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have iw₅ : SymPtIn c₅ 50136 sw := symPtIn_of_eq iw₃ fun j h1 h2 => k35 j (by omega)
   -- the selection
   set sel : Prop := ((V.2 < U.2 ∧ V.2 < X.2) ∧ U.2 < X.2) ∨ ((U.2 < V.2 ∧ X.2 < V.2) ∧ X.2 < U.2)
-    with hsel
   obtain ⟨c₆, k₆, e₆, hk₆, sn, sf, isn, isf, hsn, r₆, m₆, rr₆, rm₆, o₆⟩ : ∃ c₆ k₆,
       Exec P W capSel c₅ c₆ k₆ ∧ k₆ ≤ 8 ∧ ∃ sn sf : SymPt, SymPtIn c₆ 50153 sn ∧
         SymPtIn c₆ 50156 sf ∧ (sn, sf) = (if sel then (su, sw) else (sw, su)) ∧
@@ -341,8 +339,6 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
         fun r hr => by simp [upd_other _ _ _ hr], rfl, rfl, rfl, rfl⟩
       simp only [upd_same, upd_other _ _ _ (show (50032 : ℕ) ≠ 50159 by decide)]
       rw [i2, h32]; rfl
-  have hE₇ : CEnv P W H C c₇ := hE₆.keep e₇.wb_right m₇ fun r hr => r₇ r (by
-    simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr; omega)
   have isn₇ : SymPtIn c₇ 50153 sn := symPtIn_of_eq isn fun j h1 h2 => r₇ j (by omega)
   have isf₇ : SymPtIn c₇ 50156 sf := symPtIn_of_eq isf fun j h1 h2 => r₇ j (by omega)
   have iv₇ : SymPtIn c₇ 50133 sv := symPtIn_of_eq iv₅ fun j h1 h2 => by

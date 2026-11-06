@@ -33,7 +33,7 @@ theorem FRS.callF {B : Finset ℕ} {P : Polygon} {W : ℕ} {s : Stmt} {B' : Fins
   obtain ⟨c', k, ex, hk, hpost, hfr⟩ := hs P W c hI.hw hpre hroom
   have hp : ∀ q, FFix q → c'.nreg q = c.nreg q := fun q hq => hfr.1 q (by
       have : bandOf q = bRestore := by unfold bandOf bRestore; unfold FFix at hq; omega
-      rw [this]; exact h8) (by unfold ALLOC; unfold FFix at hq; omega)
+      rwa [this]) (by unfold ALLOC; unfold FFix at hq; omega)
   exact ⟨c', k, ex, hk, ⟨ex.wb_right, fun q hq => (hp q hq).trans (hI.hin q hq),
     le_trans hI.hA hfr.2.2.2.2.2.1,
     fun a ha => (hfr.2.2.1 a (lt_of_lt_of_le ha hI.hA)).trans (hI.hm a ha)⟩,
@@ -95,7 +95,7 @@ theorem prReads_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   have v00 : c₁.nreg 81100 = i := by rw [e₁]; simp [prL1, regB, regI, upd, hi]
   have f₁ : ∀ q, q ≠ 81134 → q ≠ 81121 → q ≠ 81100 → c₁.nreg q = c.nreg q := fun q a b d => by
     rw [e₁]; simp [prL1, regB, regI, upd, a, b, d]
-  refine FRS.seq (K₁ := 30) (K₂ := 37) (arcLoad_fs hE hB hI₁ (N := E.N) (by rw [v34]; exact hN)
+  refine FRS.seq (K₁ := 30) (K₂ := 37) (arcLoad_fs hE hB hI₁ (N := E.N) (by rwa [v34])
     (by rw [v21]; exact hE.hr) (by rw [v21, v00]; exact hAi.ht) (by rw [v21, v00]; exact hAi.hj))
     (fun c₂ hI₂ _ h₂ => ?_)
   obtain ⟨-, a03, a06, a07, a08, f₂⟩ := h₂
@@ -125,7 +125,7 @@ theorem prReads_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   have w21 : c₃.nreg 81121 = E.r := by
     rw [f₃ _ (by omega) (by norm_num), f₂ _ (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num) (by norm_num) (by norm_num), v21]
-  refine FRS.seq (K₁ := 30) (K₂ := 2) (arcLoad_fs hE hB hI₃ (N := E.N) (by rw [w34]; exact hN)
+  refine FRS.seq (K₁ := 30) (K₂ := 2) (arcLoad_fs hE hB hI₃ (N := E.N) (by rwa [w34])
     (by rw [w21]; exact hE.hr) (by rw [w21, w00]; exact hAj.ht) (by rw [w21, w00]; exact hAj.hj))
     (fun c₄ hI₄ _ h₄ => ?_)
   obtain ⟨-, b03, b06, -, -, f₄⟩ := h₄
@@ -369,7 +369,7 @@ theorem pairBody_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   obtain ⟨w₇, f₇, m₇, d₇⟩ := h₇
   have nPW : ∀ q, ¬ PairW q → ¬ PW q := fun q h h' => h (Or.inl h')
   refine ⟨w₇, fun q a b hq => (f₇ q a b (nPW q hq)).trans (g6 q (by omega) b hq),
-    fun h => m₇ (by rw [g6 _ (by norm_num) (by norm_num) (nP _ le_rfl (by norm_num))]; exact h),
+    fun h => m₇ (by rwa [g6 _ (by norm_num) (by norm_num) (nP _ le_rfl (by norm_num))]),
     c₆, hI₆, hcp, t40, t41, d₇⟩
 
 end

@@ -42,7 +42,7 @@ variable {P : Polygon} {C : Chain} {V : QV}
 
 theorem vtx_snd_lt_radius (hCQ : C.P = Qof P) {h : ℕ} (hh : h < P.n) :
     |((Qof P).vtx h).2| < C.radius := by
-  have hn : h < C.P.n := by rw [hCQ, show (Qof P).n = P.n from shear_n _ _]; exact hh
+  have hn : h < C.P.n := by rwa [hCQ, show (Qof P).n = P.n from shear_n _ _]
   have := Chazelle.Jordan.abs_snd_vtx_le_coordBound C.P hn
   rw [hCQ] at this
   have := C.coordBound_lt_radius
@@ -62,7 +62,7 @@ theorem chainEdge_eq_edge (hv : QVOK P C V) (ci : ℕ) :
 theorem edge_nonhoriz (hD : DistinctHeights (Qof P)) {e : ℕ} (he : e < P.n) (hn : 2 ≤ P.n) :
     ((Qof P).vtx e).2 ≠ ((Qof P).vtx ((e + 1) % (Qof P).n)).2 := by
   have hQn : (Qof P).n = P.n := shear_n _ _
-  refine hD _ _ (by rw [hQn]; exact he) (Nat.mod_lt _ (by rw [hQn]; omega)) ?_
+  refine hD _ _ (by rwa [hQn]) (Nat.mod_lt _ (by rw [hQn]; omega)) ?_
   rw [hQn]
   intro h
   rcases Nat.lt_or_ge (e + 1) P.n with h' | h'
@@ -96,7 +96,7 @@ theorem end_class (hT : TopOK P C V) {w h : ℕ} (hw : w < 2 * C.m + 7) (hh : h 
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hn2 : 2 ≤ P.n := by
     have := C.add_one_le; rw [hv.CQ, hQn] at this; omega
-  set y := ((Qof P).vtx h).2 with hydef
+  set y := ((Qof P).vtx h).2
   -- the box and slit edges
   have hW : ∀ i, (chainModel C).W.vtx i = (C.sideWalk C.sideBeta).vtx i := fun _ => rfl
   rw [hnW] at hy ⊢
@@ -143,7 +143,7 @@ theorem end_class (hT : TopOK P C V) {w h : ℕ} (hw : w < 2 * C.m + 7) (hh : h 
     have hsym : xpSym C V P.n (i + 6) h = .onEdge (eIdx P.n V.s (tci C i)) h := by
       unfold xpSym; rw [ite_eq_left (by rw [hv.m]; omega), show i + 6 - 6 = i by omega]
     have hci := tci_lt C i
-    set e := eIdx P.n V.s (tci C i) with he
+    set e := eIdx P.n V.s (tci C i)
     have hen : e < P.n := Nat.mod_lt _ (by omega)
     have hedge := hseg
     rw [chainEdge_eq_edge hv] at hedge
@@ -152,7 +152,7 @@ theorem end_class (hT : TopOK P C V) {w h : ℕ} (hw : w < 2 * C.m + 7) (hh : h 
       have := (rayPt_mem_edge_iff (Qof P) (edge_nonhoriz hT.hD hen hn2) (z := p) hy (Or.inl rfl)
         0).1 (by simpa [rayPt] using hedge)
       linarith [this.2]
-    refine ⟨?_, fun _ => ⟨⟨_, hci, hseg⟩, by rw [hsym]; exact hen, by rw [hsym]; exact hedge⟩,
+    refine ⟨?_, fun _ => ⟨⟨_, hci, hseg⟩, by rwa [hsym], by rwa [hsym]⟩,
       fun h' => absurd hcls h'⟩
     ext
     · show p.1 = xv P C V (i + 6) h
@@ -226,17 +226,17 @@ theorem chord_facts (hT : TopOK P C V) {N : NF} (hN : IsNF (chainModel C) (Qof P
   have hle : ((chainModel C).pos (Qof P) ch.lpos).1 ≤ ((chainModel C).pos (Qof P) ch.rpos).1 :=
     hl.2.2
   obtain ⟨ey, ea, eb⟩ := hseg_inj hH.lt hle hset.symm
-  have hyt' : ((Qof P).vtx ch.h).2 ≤ C.top.2 := by rw [← ey]; exact hyt
+  have hyt' : ((Qof P).vtx ch.h).2 ≤ C.top.2 := by rwa [← ey]
   have hnW := walk_n C
-  have EL := end_class hT (w := ch.lp) (h := ch.h) (by rw [← hnW]; exact hl1) hhn hl2 hl3 hl.1 hyt'
+  have EL := end_class hT (w := ch.lp) (h := ch.h) (by rwa [← hnW]) hhn hl2 hl3 hl.1 hyt'
   have ER := end_class hT (w := ch.rp) (h := ch.h) (by rw [← hnW]; exact hr1) hhn hr2 hr3 hr.1 hyt'
   have xl : ((chainModel C).pos (Qof P) ch.lpos).1 = xv P C V ch.lp ch.h := by
     have := congrArg Prod.fst EL.1; exact this
   have xr : ((chainModel C).pos (Qof P) ch.rpos).1 = xv P C V ch.rp ch.h := by
     have := congrArg Prod.fst ER.1; exact this
-  refine ⟨hhn, hyt', ?_, ?_, ⟨EL.1, EL.2.1, EL.2.2, by rw [← hnW]; exact hl1, hl2, hl3⟩,
+  refine ⟨hhn, hyt', ?_, ?_, ⟨EL.1, EL.2.1, EL.2.2, by rwa [← hnW], hl2, hl3⟩,
     ⟨ER.1, ER.2.1, ER.2.2, by rw [← hnW]; exact hr1, hr2, hr3⟩⟩
-  · rw [← xl, ← xr, ← ey, ← ea, ← eb]; exact hH
+  · rwa [← xl, ← xr, ← ey, ← ea, ← eb]
   · show hseg _ _ _ = _
     rw [xl, xr]
 

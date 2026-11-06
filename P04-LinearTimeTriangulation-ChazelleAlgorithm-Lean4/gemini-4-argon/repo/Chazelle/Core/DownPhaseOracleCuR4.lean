@@ -88,7 +88,7 @@ theorem AsmSt.step {m₀ : ℕ → ℕ} {n O : ℕ} {sls : List Slot} {sl : Slot
   · have hj' := hj
     rw [hl] at hj'
     have hget : ((sls ++ [sl]).flatMap (slotPcs m₀ n))[j]'hj =
-        (sls.flatMap (slotPcs m₀ n) ++ slotPcs m₀ n sl)[j]'(by rw [← e]; exact hj) := by
+        (sls.flatMap (slotPcs m₀ n) ++ slotPcs m₀ n sl)[j]'(by rwa [← e]) := by
       simp only [e]
     rw [hget]
     by_cases hjl : j < (sls.flatMap (slotPcs m₀ n)).length
@@ -167,7 +167,7 @@ theorem asmK_exec (k : ℕ) (hk : k < 4) (c : Config) (hw : WordsBounded W c) {c
     have hlt : ¬ c.nreg (170200 + 5 * k) < c.nreg 170011 := by rw [h0, hf, h11]; omega
     obtain ⟨Va, Vb, hs⟩ := hok hf
     obtain ⟨hu, hLE, hq, hq1, hed⟩ := slotOK_edges hs
-    set sl := slotAt c₀ k with hsld
+    set sl := slotAt c₀ k
     have e : slotsOf c₀ (k + 1) = slotsOf c₀ k ++ [sl] := by rw [hsucc, ite_eq_left hf]
     have hlen : ((slotsOf c₀ (k + 1)).flatMap (slotPcs c₀.nmem n)).length =
         ((slotsOf c₀ k).flatMap (slotPcs c₀.nmem n)).length + sl.q := by
@@ -203,7 +203,7 @@ theorem asmK_exec (k : ℕ) (hk : k < 4) (c : Config) (hw : WordsBounded W c) {c
       (n := n) (L := sl.L) (q := sl.q) (g₀ := sl.g₀) (u₀ := sl.u₀) (O := O)
       ((ar _ (by omega)).trans h10) ((ar _ (by omega)).trans h11) a31 a32 a33 a34 a35 hLE
       (by rw [ar _ (by omega), h22]; omega) (by rw [ar _ (by omega), h22]; omega)
-      (by rw [ar _ (by omega), h23]; omega) (by rw [hn]; exact hu) hnW
+      (by rw [ar _ (by omega), h23]; omega) (by rwa [hn]) hnW
       (fun i hi => by
         obtain ⟨b1, b2⟩ := hed i hi
         rw [am, hA.lo _ (by omega), hA.lo _ (by omega), hn]
@@ -215,18 +215,18 @@ theorem asmK_exec (k : ℕ) (hk : k < 4) (c : Config) (hw : WordsBounded W c) {c
     have q23 : c₁.nreg 170223 = c.nreg 170223 := ar _ (by omega)
     have hA' : AsmSt c₀.nmem n O (slotsOf c₀ k ++ [sl]) c₂ := hA.step q21
       (by rw [d22, q22]) (by rw [d23, q23])
-      (fun a ha => by rw [dlo a (by rw [q22]; exact ha), am])
+      (fun a ha => by rw [dlo a (by rwa [q22]), am])
       (fun j hj f hf => by
         rw [← q22, dout j hj f hf, rdPc_congr (m := c₀.nmem) (m' := c₁.nmem) (E := O + 1)
           (fun a ha => by rw [am]; exact hA.lo a ha) (by omega)])
     refine ⟨c₂, _, .ifLtN_false hlt (.seq e₁ e₂), by rw [hlen]; omega, by rw [hlen]; omega,
-      by rw [e]; exact hA', (frameM_mono F₁ (fun r hr => hr)).trans F₂'⟩
+      by rwa [e], (frameM_mono F₁ (fun r hr => hr)).trans F₂'⟩
   · -- the slot is free
     have hf0 : c₀.nreg (170200 + 5 * k) = 0 := by omega
     have hlt : c.nreg (170200 + 5 * k) < c.nreg 170011 := by rw [h0, hf0, h11]; omega
     have e : slotsOf c₀ (k + 1) = slotsOf c₀ k := by rw [hsucc, ite_eq_right hf, List.append_nil]
     refine ⟨c, _, .ifLtN_true hlt (.skip hw), by rw [e]; omega, by rw [e]; omega,
-      by rw [e]; exact hA, BuildRam.FrameM.refl _ _⟩
+      by rwa [e], BuildRam.FrameM.refl _ _⟩
 
 end exec
 

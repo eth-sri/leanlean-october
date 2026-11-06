@@ -74,7 +74,7 @@ theorem freeAt_right_of_whole {z : Point} (h₂ : z.2 ≤ J.right.top.2) {σ : �
     (h : FreeAt J.whole z σ) : FreeAt J.right z σ := by
   unfold FreeAt at h ⊢
   filter_upwards [h] with t ht
-  exact dom_right J ht (by rw [Chazelle.Visibility.rayPt_snd]; exact h₂)
+  exact dom_right J ht (by rwa [Chazelle.Visibility.rayPt_snd])
 
 /-! ## The log entry -/
 
@@ -94,7 +94,7 @@ theorem logIdx_exists {Q : Polygon} {N : NF} {S₂ : Set (Set Point)}
         forall_eq'] at hhead
       unfold logKey
       simp only [logOf, List.map_cons, List.getD_cons_zero]
-      rw [hhead]; exact hx
+      rwa [hhead]
   classical
   set p : ℕ → Prop := fun i => oW J (logKey J Q N ls i) ≤ oW J x
   refine ⟨Nat.findGreatest p (ls.length - 1), by
@@ -145,7 +145,7 @@ theorem lhGeo_query {P : Polygon} {q : ℕ × ℕ × ℕ} (hq : QueryOK J (Qof P
       (((chainModel J.left).pos (Qof P) ⟨q.1, q.2.1⟩).1 + dirOf q.2.2,
         ((chainModel J.left).pos (Qof P) ⟨q.1, q.2.1⟩).2) := by
     simp [rayPt]
-  rw [e]; exact hsec
+  rwa [e]
 
 /-- `sideLeft` at a position depends only on the edge ends when the parameter is positive. -/
 theorem sideLeft_congr {W W' : Polygon} {p p' : ℕ} {t : ℝ} (ht : t ≠ 0)
@@ -179,11 +179,11 @@ theorem lhGeo_box {P : Polygon} {x : WPos} {d : ℕ} (he : x.edge = 1 ∨ x.edge
   have hx : (chainModel J.right).pos (Qof P) ⟨x.edge, x.hgt⟩ =
       (chainModel J.left).pos (Qof P) ⟨x.edge, x.hgt⟩ := hpos.symm
   refine ⟨⟨h, hxh, hhn, ?_, ?_, ?_⟩, hx⟩
-  · rw [hx]; exact hyz
+  · rwa [hx]
   · rw [hx, show (chainModel J.right).param (Qof P) x = (chainModel J.left).param (Qof P) x
       from hpar.symm]
     exact (sideLeft_congr ht ha hb _).1 hsec
-  · rw [hx]; exact h₂
+  · rwa [hx]
 
 /-- **An arrival position** at a point with a height code naming its height satisfies `LHGeo`
 with that code. -/
@@ -195,14 +195,14 @@ theorem lhGeo_arr {P : Polygon} {C : Chain} {z : Point} {σ : ℝ} {p : ℕ} {t 
   obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := harr
   rw [neg_neg] at hsec
   have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-    rw [hpt]; exact hsec
-  have hy : ((Qof P).vtx h).2 = (sidePt (chainModel C).W p t).2 := by rw [hpt]; exact hhz
+    rwa [hpt]
+  have hy : ((Qof P).vtx h).2 = (sidePt (chainModel C).W p t).2 := by rwa [hpt]
   have epar := param_of_arrival (Qof P) ht0 ht1 hy hsec'
   have epos := pos_of_arrival (Qof P) ht0 ht1 hy hsec'
   rw [hpt] at epos
-  refine ⟨⟨h, rfl, hh, by rw [epos]; exact hhz, ?_, by rw [epos]; exact htop⟩, epos, epar⟩
+  refine ⟨⟨h, rfl, hh, by rwa [epos], ?_, by rwa [epos]⟩, epos, epar⟩
   simp only
-  rw [epos, epar, hd]; exact hsec
+  rwa [epos, epar, hd]
 
 
 /-! ## Positions -/

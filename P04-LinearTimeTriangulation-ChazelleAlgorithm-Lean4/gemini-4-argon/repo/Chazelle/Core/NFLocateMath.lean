@@ -219,7 +219,7 @@ theorem locate_pick {M : Model} {Q : Polygon} {N : NF} (hcov : ∀ y : ℝ, M.Is
     have hin := sideInArc_swap hab haq hcon.2.1 hcon.1
     obtain ⟨V, hV, b', hb'⟩ := hcov b hcb
     obtain ⟨j', hj', hs', -⟩ := listed_of_isArc h hV hb'
-    exact hgap' j' hj' (by rw [hs']; exact hin)
+    exact hgap' j' hj' (by rwa [hs'])
   refine ⟨fun hq => ?_, fun hq => ?_⟩
   · rcases claim with c1 | c1 | c1
     · exact Or.inr c1

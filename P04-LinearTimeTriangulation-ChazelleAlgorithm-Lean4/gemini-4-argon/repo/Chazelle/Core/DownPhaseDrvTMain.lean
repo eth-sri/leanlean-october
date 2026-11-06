@@ -86,16 +86,16 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
   have hn : (Qof P).n = P.n := shear_n _ _
   have hn3 : 3 ≤ P.n := by have := hQ.1; rwa [hn] at this
   have hCm : C.m = P.n - 1 := by have := hC.2.2; omega
-  set li := decide (Mountain.LeftInside (Qof P)) with hli_def
+  set li := decide (Mountain.LeftInside (Qof P))
   have hli : li = true ↔ Mountain.LeftInside (Qof P) := decide_eq_true_iff
   -- the math
   obtain ⟨hok, hdeg, hwt, hlen, hcount⟩ := trans_math hG hC hN hli
-  set L := transL li P.n (c0 C li) (triplesOf N) with hL
-  set K₀ := N.chords.length with hK₀
+  set L := transL li P.n (c0 C li) (triplesOf N)
+  set K₀ := N.chords.length
   have hFK : (N.F (chainModel C) (Qof P)).ncard = K₀ := ncard_F hN.1.2.1
   rw [hFK] at hlen hcount
   have hcost := trans_cost_le hn3 hlen hcount
-  set A := c.nreg ALLOC with hA
+  set A := c.nreg ALLOC
   -- 1. the bit
   obtain ⟨c₁, k₁, e₁, hk₁, b1, b2, F₁, m₁⟩ := orientT_exec hG hW3 c hw
   have hb₁ : c₁.nreg 190001 = if li then 1 else 0 := bit_eq b1 b2
@@ -107,7 +107,7 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
   have hcore₂ : c₂.nreg 230002 = c.nreg (coreReg 2) := by
     rw [F₂.1 _ (by decide), F₁.1 _ (by decide)]; rfl
   have hlow₂ : ∀ a, a < A → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [m₂ a (by rw [hA₁]; exact ha), m₁]
+    rw [m₂ a (by rwa [hA₁]), m₁]
   have hNr₂ : Robust (c₂.nreg ALLOC) c₂.nmem (fun m => NFAt m (c₂.nreg 230002) N) := by
     rw [hA₂, hcore₂]; exact hNr.transport hlow₂
   -- 3. the filter
@@ -120,7 +120,7 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
   have hA₄ : c₄.nreg ALLOC = A + 6 + 3 * K₀ := by rw [F₄.1 _ (by decide), f99]
   have hlenK : L.length ≤ K₀ := by
     have := transL_length_le li P.n (c0 C li) (triplesOf N)
-    unfold triplesOf at this; rw [List.length_map] at this; exact this
+    unfold triplesOf at this; rwa [List.length_map] at this
   -- 5. the build
   have hdesc : ModelDescAt c₄.nmem A (Qof P) (interiorModel (Qof P)) := by
     right
@@ -135,7 +135,7 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
   obtain ⟨c₅, k₅, e₅, hk₅, ⟨E, hperm, hsort, hE1, hE2, hNB, hNF⟩, g₅, F₅⟩ :=
     buildT_exec hG hWh c₄ e₄.wb_right (M := interiorModel (Qof P)) (L := L) (D := A)
       (B := A + 6) (by rw [hA₄]; exact ⟨by omega, fun h => by rw [m₄, fD0] at h; omega⟩)
-      hdesc (Or.inr ⟨_, hQ, rfl⟩) hok (by rw [m₄]; exact fCL) (by rw [hA₄]; omega)
+      hdesc (Or.inr ⟨_, hQ, rfl⟩) hok (by rwa [m₄]) (by rw [hA₄]; omega)
       (by rw [s0, f21]) (by rw [s1, f22]) (by rw [s2, f36])
       (by rw [hA₄]; unfold κT at hcost hroom; omega)
   -- 6. the registers of the driver
@@ -172,7 +172,7 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
         rw [hm' (A + 1) (by rw [hA₆]; omega), hlow₅ (A + 1) (by rw [hA₄]; omega), m₄]
       rcases hdesc with ⟨h0, -⟩ | ⟨h0, h1, h2⟩
       · rw [m₄, fD0] at h0; omega
-      · exact Or.inr ⟨by rw [e0]; exact h0, by rw [e1]; exact h1, h2⟩
+      · exact Or.inr ⟨by rwa [e0], by rwa [e1], h2⟩
     · show c₆.nreg 210003 = L.length; exact r3
     · show c₆.nreg 210002 + 3 * L.length ≤ c₆.nreg ALLOC
       rw [r2, hA₆]; omega
@@ -183,11 +183,11 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
       have hq : ∀ q, q < 3 → m' (A + 6 + 3 * i + q) = c₃.nmem (A + 6 + 3 * i + q) := fun q hq => by
         rw [hm' _ (by rw [hA₆]; omega), hlow₅ _ (by rw [hA₄]; omega)]
       refine ⟨?_, ?_, ?_⟩
-      · have := hq 0 (by norm_num); rw [Nat.add_zero] at this; rw [this]; exact a1
-      · rw [hq 1 (by norm_num)]; exact a2
-      · rw [hq 2 (by norm_num)]; exact a3
+      · have := hq 0 (by norm_num); rw [Nat.add_zero] at this; rwa [this]
+      · rwa [hq 1 (by norm_num)]
+      · rwa [hq 2 (by norm_num)]
     · show c₆.nreg 210004 + 2 * L.length ≤ c₆.nreg ALLOC
-      rw [w4, hA₆]; exact hE1
+      rwa [w4, hA₆]
     · show Robust (c₆.nreg ALLOC) c₆.nmem (fun m => seg m (c₆.nreg 210004) (2 * L.length) = E)
       rw [w4]
       intro m' hm'
@@ -198,9 +198,9 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
       rw [List.mem_range] at hj
       rw [hm' _ (by rw [hA₆]; omega), m₆]
     · show NFWithin c₆.nmem (c₆.nreg 210005) (c₆.nreg ALLOC) _
-      rw [w5, hA₆, m₆]; exact hNF
-    · rw [F_buildNF]; exact hdeg
-    · rw [F_buildNF]; exact hwt
+      rwa [w5, hA₆, m₆]
+    · rwa [F_buildNF]
+    · rwa [F_buildNF]
     · exact hcnt P.n L.length K₀ (Nat.le_pow_clog (by norm_num) _) hcount hlenK
   · -- the frame
     have G₁ : Frame DrvR.drvBands c c₁ k₁ := frame_drv F₁ (fun r hr => by
@@ -214,7 +214,7 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
       (by decide) m₂
     have G₃ : Frame DrvR.drvBands c₂ c₃ k₃ := by
       refine ⟨fun r hr hra => fg r ?_ hra, fun r _ => by rw [frr], fun a ha => fmem a
-        (by rw [hA₂] at ha; exact ha), fun a _ => by rw [frm], fo, by rw [f99, hA₂]; omega,
+        (by rwa [hA₂] at ha), fun a _ => by rw [frm], fo, by rw [f99, hA₂]; omega,
         by rw [f99, hA₂]; omega⟩
       by_contra hc
       push Not at hc

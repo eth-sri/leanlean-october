@@ -58,11 +58,11 @@ theorem stopRecs_congr {m m' : ℕ → ℕ} {A : ℕ} {rs : List (ℕ × ℕ × 
   intro i hi
   obtain ⟨a1, a2, a3, a4, a5⟩ := h i hi
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · rw [hm _ (by omega)]; exact a1
-  · rw [hm _ (by omega)]; exact a2
-  · rw [hm _ (by omega)]; exact a3
-  · rw [hm _ (by omega)]; exact a4
-  · rw [hm _ (by omega)]; exact a5
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
 
 theorem logRecs_congr {m m' : ℕ → ℕ} {A : ℕ} {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)}
     (h : LogRecsAt m A ls) (hm : ∀ a, a < A + 7 * ls.length → m' a = m a) :
@@ -70,13 +70,13 @@ theorem logRecs_congr {m m' : ℕ → ℕ} {A : ℕ} {ls : List (ℕ × ℕ × �
   intro i hi
   obtain ⟨a1, a2, a3, a4, a5, a6, a7⟩ := h i hi
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [hm _ (by omega)]; exact a1
-  · rw [hm _ (by omega)]; exact a2
-  · rw [hm _ (by omega)]; exact a3
-  · rw [hm _ (by omega)]; exact a4
-  · rw [hm _ (by omega)]; exact a5
-  · rw [hm _ (by omega)]; exact a6
-  · rw [hm _ (by omega)]; exact a7
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
+  · rwa [hm _ (by omega)]
 
 /-- **`OD` is local.** -/
 theorem OD.congr {P : Polygon} {J : Merge.Junction} {N : NF} {m m' : ℕ → ℕ}
@@ -102,7 +102,7 @@ variable {P : Polygon} {J : Merge.Junction} {N : NF} {m : ℕ → ℕ} {AS S AL 
 
 theorem OD.logW (h : OD P J N m AS S AL E AT rs ls) {j : ℕ} (hj : j < E) :
     PosW P J (m (AL + 7 * j)) (m (AL + 7 * j + 1)) := by
-  have hj' : j < ls.length := by rw [h.ll]; exact hj
+  have hj' : j < ls.length := by rwa [h.ll]
   obtain ⟨a1, a2, -⟩ := h.lr j hj'
   rw [a1, a2, List.getD_eq_getElem _ _ hj']
   exact h.lw _ (List.getElem_mem _)
@@ -110,7 +110,7 @@ theorem OD.logW (h : OD P J N m AS S AL E AT rs ls) {j : ℕ} (hj : j < E) :
 theorem OD.stopR (h : OD P J N m AS S AL E AT rs ls) {x : ℕ} (hx : x < S) :
     PosW P J (m (AS + 5 * x)) (m (AS + 5 * x + 1)) ∧ m (AS + 5 * x + 2) ≤ 2 ∧
       m (AS + 5 * x + 4) ≤ 1 ∧ (m (AS + 5 * x + 2) = 1 → m (AS + 5 * x + 3) < N.nChords) := by
-  have hx' : x < rs.length := by rw [h.rl]; exact hx
+  have hx' : x < rs.length := by rwa [h.rl]
   obtain ⟨a1, a2, a3, a4, a5⟩ := h.rr x hx'
   rw [a1, a2, a3, a4, a5, List.getD_eq_getElem _ _ hx']
   exact h.rw _ (List.getElem_mem _)
@@ -130,8 +130,8 @@ theorem stop_step (h : OD P J N m AS S AL E AT rs ls) (hP : J.P.Simple)
         (chainModel J.whole).param (Qof P) ⟨m (AS + 5 * x), m (AS + 5 * x + 1)⟩ ∧
       SlotVal P J (stopPos P J N (m (AS + 5 * x + 2)) (m (AS + 5 * x + 3)) (m (AS + 5 * x + 4)))
         (sOf (m (AS + 5 * x + 4))) (logPt P J m AL t) := by
-  have hx' : x < rs.length := by rw [h.rl]; exact hx
-  set r := rs[x] with hr
+  have hx' : x < rs.length := by rwa [h.rl]
+  set r := rs[x]
   have hmem : r ∈ rs := List.getElem_mem _
   obtain ⟨a1, a2, a3, a4, a5⟩ := h.rr x hx'
   rw [List.getD_eq_getElem _ _ hx'] at a1 a2 a3 a4 a5
@@ -139,7 +139,7 @@ theorem stop_step (h : OD P J N m AS S AL E AT rs ls) (hP : J.P.Simple)
   obtain ⟨hc, hF, hA, hL⟩ := stop_cand J hN h.rok hmem hkind hk
   obtain ⟨i, hi, e1, e2⟩ := attach_idx (x := ⟨r.1, r.2.1⟩) h.lr h.lok hF hA hL
   rw [← a1, ← a2] at e1 e2
-  have hti : t = i := (search_exact hG h.lr h.lok _).2 i hi e1 e2 t h1 (by rw [h.ll]; exact h2)
+  have hti : t = i := (search_exact hG h.lr h.lok _).2 i hi e1 e2 t h1 (by rwa [h.ll])
   subst hti
   rw [h.ll] at hi
   refine ⟨hi, e1, e2, ?_⟩
@@ -153,8 +153,7 @@ theorem stop_step (h : OD P J N m AS S AL E AT rs ls) (hP : J.P.Simple)
     rw [e2, ← a1, ← a2]
     show sidePt _ (m (AL + 7 * t)) _ = _
     rw [e1]
-  rw [hpt]
-  exact hc
+  rwa [hpt]
 
 /-- **The regular endpoint queries** by an index test on the normalised end position. -/
 theorem valid_test (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k s : ℕ}
@@ -168,8 +167,7 @@ theorem valid_test (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) 
   have hv := valid_iff J hP (Qof P)
     (x := ⟨(endPos N k s).edge, nhgt (chainModel J.right) (Qof P) (endPos N k s)⟩) f1 f2.1 f2.2.1 f4
   unfold ValidO
-  rw [← f3]
-  exact hv
+  rwa [← f3]
 
 /-- **A regular table entry with flag `1`**: the answer `t` of the search for its position is a
 log record with that key, and the normalised end position is a good slot content for it. -/
@@ -196,7 +194,7 @@ theorem tab_step (h : OD P J N m AS S AL E AT rs ls) (hN : IsNF (chainModel J.ri
   obtain ⟨hc, hF, hA, hL⟩ := tab_cand J h.tok hj hon hsh htop hTj
   obtain ⟨i, hi, e1, e2⟩ := attach_idx (x := ⟨m (AT + 3 * j + 1), m (AT + 3 * j + 2)⟩)
     h.lr h.lok hF hA hL
-  have hti : t = i := (search_exact hG h.lr h.lok _).2 i hi e1 e2 t h1 (by rw [h.ll]; exact h2)
+  have hti : t = i := (search_exact hG h.lr h.lok _).2 i hi e1 e2 t h1 (by rwa [h.ll])
   subst hti
   rw [h.ll] at hi
   refine ⟨hi, e1, e2, ?_⟩
@@ -216,8 +214,7 @@ theorem tab_step (h : OD P J N m AS S AL E AT rs ls) (hN : IsNF (chainModel J.ri
     rw [e2]
     show sidePt _ (m (AL + 7 * t)) _ = _
     rw [e1]
-  rw [hpt]
-  exact hc
+  rwa [hpt]
 
 end steps
 
@@ -269,7 +266,7 @@ theorem SInv.congr {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : �
     · rw [hL0 i hi, hm (AS + 5 * y) (by omega), e1]
     · rw [hL i hi, hm (AS + 5 * y) (by omega), hm (AS + 5 * y + 1) (by omega), e2]
     · rw [hm (AS + 5 * y + 4) (by omega), hB0 i hi _ (ini_sOf_le _), e3]
-  · have hf' : m (AT + 3 * j) = 1 := by rw [← hm _ (by omega)]; exact hf
+  · have hf' : m (AT + 3 * j) = 1 := by rwa [← hm _ (by omega)]
     obtain ⟨i, hi, e1, e2, e3⟩ := h3 j hj hv hf'
     refine ⟨i, hi, ?_, ?_, ?_⟩
     · rw [hL0 i hi, hm (AT + 3 * j + 1) (by omega), e1]
@@ -290,7 +287,7 @@ theorem SInv.store {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : �
     intro i hi s' hs' hf
     by_cases hit : i = t ∧ s' = s
     · obtain ⟨rfl, rfl⟩ := hit; exact slotW_flag
-    · rw [slotW_other (by simpa using slot_sep (d := 0) hs' hs (by norm_num) hit)]; exact hf
+    · rwa [slotW_other (by simpa using slot_sep (d := 0) hs' hs (by norm_num) hit)]
   have hL : ∀ i, i < E → logPos (slotW m B t s e h) AL i = logPos m AL i := fun i hi => by
     unfold logPos; rw [hlow _ (by omega), hlow (AL + 7 * i + 1) (by omega)]
   have hL0 : ∀ i, i < E → slotW m B t s e h (AL + 7 * i) = m (AL + 7 * i) :=
@@ -301,7 +298,7 @@ theorem SInv.store {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : �
     · rw [hL0 i hi, hlow (AS + 5 * y) (by omega), e1]
     · rw [hL i hi, hlow (AS + 5 * y) (by omega), hlow (AS + 5 * y + 1) (by omega), e2]
     · rw [hlow (AS + 5 * y + 4) (by omega)]; exact hfl i hi _ (ini_sOf_le _) e3
-  · have hf' : m (AT + 3 * j) = 1 := by rw [← hlow _ (by omega)]; exact hf
+  · have hf' : m (AT + 3 * j) = 1 := by rwa [← hlow _ (by omega)]
     obtain ⟨i, hi, e1, e2, e3⟩ := h3 j hj hv' hf'
     refine ⟨i, hi, ?_, ?_, ?_⟩
     · rw [hL0 i hi, hlow (AT + 3 * j + 1) (by omega), e1]
@@ -351,8 +348,7 @@ theorem SInv.stopStep {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B 
       (chainModel J.whole).param (Qof P) ⟨m₂ (AS + 5 * x), m₂ (AS + 5 * x + 1)⟩)
     (hv : SlotVal P J ⟨eV, hV⟩ (sOf (m₂ (AS + 5 * x + 4))) (logPt P J m₂ AL t)) :
     SInv P J N AS AL E AT B (slotW m B t (sOf (m (AS + 5 * x + 4))) eV hV) (x + 1) kk := by
-  rw [hm _ (by omega)] at hv
-  rw [logPt_congr hm (by omega)] at hv
+  rw [hm _ (by omega), logPt_congr hm (by omega)] at hv
   obtain ⟨h1, h2⟩ := hI.store (by omega) hE hT ht (ini_sOf_le _) hv
   refine h1.extS ⟨t, ht, ?_, ?_, ?_⟩
   · rw [slotW_other (Or.inl (by unfold slotA; omega)),
@@ -366,7 +362,7 @@ theorem SInv.stopStep {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B 
       slotW_other (Or.inl (by unfold slotA; omega)), hm _ (by omega), hm (AS + 5 * x + 1) (by omega)]
   · have h4 : slotW m B t (sOf (m (AS + 5 * x + 4))) eV hV (AS + 5 * x + 4) = m (AS + 5 * x + 4) :=
       slotW_other (Or.inl (by unfold slotA; omega))
-    rw [h4]; exact h2
+    rwa [h4]
 
 /-- **The step of a regular table entry with flag `1`.** -/
 theorem SInv.tabStep {P : Polygon} {J : Merge.Junction} {N : NF} {AS AL E AT B : ℕ}

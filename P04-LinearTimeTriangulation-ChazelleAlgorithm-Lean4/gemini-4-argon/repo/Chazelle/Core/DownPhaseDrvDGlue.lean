@@ -40,8 +40,7 @@ theorem arcList_lt {m : ℕ → ℕ} {B E' : ℕ} {N : NF} (h : NFWithin m B E' 
     (v := (N.region r).arcs.getD t 0) hp (fun m' hm' => by
       have e5 : m' (B + 5) = m (B + 5) := hm' _ (by omega)
       have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.1 t ht
-      rw [e5] at this
-      exact this)
+      rwa [e5] at this)
 
 /-- The ends of a found chord are proper positions of the walk at a vertex height. -/
 theorem endPos_props (_hGM : GoodModel M) {N : NF} {reg : ℕ → Set Point} {r : ℕ}
@@ -77,7 +76,7 @@ theorem scanGood_of (hGM : GoodModel M) {W : ℕ} (hG : GoodEnv P) (hWh : hostWo
   obtain ⟨hNF, -, -⟩ := BuildNF.isNF_goodModel hGM hok hperm hsort
   set N := BuildNF.buildNF M (Qof P) L E with hN
   have hR : N.nRegions = L.length + 1 := by simp [hN, NF.nRegions, BuildNF.buildNF]
-  have hr' : r < N.nRegions := by rw [hR]; exact hr
+  have hr' : r < N.nRegions := by rwa [hR]
   have hNAt := hNW.nfAt
   have hne : (N.F M (Qof P)).Nonempty := by
     refine ⟨(N.chord 0).toSet M (Qof P), N.chord 0, ?_, rfl⟩
@@ -108,7 +107,7 @@ theorem scanGood_of (hGM : GoodModel M) {W : ℕ} (hG : GoodEnv P) (hWh : hostWo
     rw [hQn] at hps hpe
     have hA' := arcs_length (M := M) (Q := Qof P) (E := E) hK
     have hElen : E.length = 2 * L.length := by rw [hperm.length_eq, List.length_range]
-    have hjg : j < (BuildNF.gapStarts M (Qof P) L E).length := by rw [← hA']; exact hjA
+    have hjg : j < (BuildNF.gapStarts M (Qof P) L E).length := by rwa [← hA']
     -- the end of arc `j` is an event position
     have hev : (E.getD ((gs M (Qof P) L E j + 1) % E.length) 0) < 2 * L.length := by
       have hi : (gs M (Qof P) L E j + 1) % E.length < E.length := Nat.mod_lt _ (by omega)

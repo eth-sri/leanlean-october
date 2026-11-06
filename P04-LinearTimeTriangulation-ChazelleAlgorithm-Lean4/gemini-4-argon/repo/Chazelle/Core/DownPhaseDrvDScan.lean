@@ -73,8 +73,7 @@ theorem ldArc_exec (d : Config) (hw : WordsBounded W d) {lp t AB j xe xh : ℕ}
     ∃ d' k, Exec P W ldArc d d' k ∧ k = 17 ∧
       d'.nreg 42100 = xe ∧ d'.nreg 42101 = xh ∧
       d'.nreg 42102 = d.nmem (AB + 5 * j + 1) ∧ d'.nreg 42103 = d.nmem (AB + 5 * j + 2) ∧
-      d'.nreg 42104 = d.nmem (AB + 5 * j + 3) ∧ d'.nreg 42105 = d.nmem (AB + 5 * j + 4) ∧
-      d'.nreg 216045 = j ∧ d'.nreg 216054 = j + 1 ∧ FrameB BldArc d d' := by
+      d'.nreg 42104 = d.nmem (AB + 5 * j + 3) ∧ d'.nreg 42105 = d.nmem (AB + 5 * j + 4) ∧ d'.nreg 216054 = j + 1 ∧ FrameB BldArc d d' := by
   obtain ⟨d', k, ex, hk, q⟩ : ∃ d' k, Exec P W ldArc d d' k ∧ k = 17 ∧
       (d'.nreg 42100 = xe ∧ d'.nreg 42101 = xh ∧
       d'.nreg 42102 = d.nmem (AB + 5 * j + 1) ∧ d'.nreg 42103 = d.nmem (AB + 5 * j + 2) ∧
@@ -85,8 +84,7 @@ theorem ldArc_exec (d : Config) (hw : WordsBounded W d) {lp t AB j xe xh : ℕ}
     all_goals try (config_simp; simp only [h43, h44, h14, h02, h40, h41, hj]; omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
       simp only [h43, h44, h14, h02, h40, h41, hj] <;> (congr 1; ring)
-  exact ⟨d', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
-    q.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2, exec_frameB ex wr_ldArc⟩
+  exact ⟨d', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1, q.2.2.2.2.2.2.2, exec_frameB ex wr_ldArc⟩
 
 /-- The decision on arc `j`. -/
 theorem decS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} {t₁ t₂ : Bool}
@@ -98,9 +96,8 @@ theorem decS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} {t₁ t₂ : 
   obtain ⟨d', k, ex, hk, q⟩ : ∃ d' k, Exec P W decS d d' k ∧ k ≤ 7 ∧
       d'.nreg 216053 = (if matchB A j t₁ t₂ then bktB A j t₂ else d.nreg 216053) := by
     unfold decS matchB bktB
-    have hA : A ≤ W := h17 ▸ hw.1 216017
     by_cases hjA : j + 1 < A
-    · refine spec_ifLtN_true (by rw [h54, h17]; exact hjA) ?_
+    · refine spec_ifLtN_true (by rwa [h54, h17]) ?_
       rw [ite_eq_left hjA, ite_eq_left hjA]
       cases t₁
       · refine spec_ifLtN_false (by rw [h03, h07]; simp) (spec_skip hw ⟨by omega, by simp⟩)
@@ -110,7 +107,7 @@ theorem decS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} {t₁ t₂ : 
         · refine spec_ifLtN_true (by rw [h03, h09]; simp)
             (spec_instr (Exec.copyN hw _ _) fun _ => ⟨by omega, ?_⟩)
           config_simp; simp [h54]
-    · refine spec_ifLtN_false (by rw [h54, h17]; exact hjA) ?_
+    · refine spec_ifLtN_false (by rwa [h54, h17]) ?_
       rw [ite_eq_right hjA, ite_eq_right hjA]
       cases t₂
       · refine spec_ifLtN_false (by rw [h03, h09]; simp) ?_
@@ -158,7 +155,7 @@ theorem scanBody_exec {M : Model} {N : NF} {r : ℕ} {x : WPos} {m : ℕ → ℕ
   obtain ⟨hjA, ms1, ms2, me1, me2, hps, hpe, he1, hee⟩ := hS.arcs j hjm
   have hW3 : P.n + 3 ≤ W := by have := hS.hW; unfold hostWords at this; omega
   -- load
-  obtain ⟨d₁, k₁, e₁, hk₁, a00, a01, a02, a03, a04, a05, a45, a54, f₁⟩ := ldArc_exec (P := P) d hw
+  obtain ⟨d₁, k₁, e₁, hk₁, a00, a01, a02, a03, a04, a05, a54, f₁⟩ := ldArc_exec (P := P) d hw
     h43 h44 h14 h02 h40 h41 (by rw [hm, hS.list t ht]) (by have := hS.ABW; omega)
     (by have := hS.lpW; omega)
   rw [hm, ms1] at a02
@@ -175,8 +172,7 @@ theorem scanBody_exec {M : Model} {N : NF} {r : ℕ} {x : WPos} {m : ℕ → ℕ
     (by rw [g₁ _ (by decide), h4, hm₁]; exact hS.hCW) (M := M)
     (by rw [g₁ _ (by decide), h4, hm₁]; exact hS.hM) (by rw [a00]; exact hS.xe)
     (by rw [a01]; exact hS.xp.2.2)
-  rw [a00, a01, a02, a03] at b07
-  rw [keyBit hS.xp hps hS.xh] at b07
+  rw [a00, a01, a02, a03, keyBit hS.xp hps hS.xh] at b07
   have w₂ := e₂.wb_right
   have g₂ : ∀ q, BuildRam.BhalfS 42106 42107 q = false → d₂.nreg q = d₁.nreg q := f₂.1
   -- the second decision
@@ -186,11 +182,10 @@ theorem scanBody_exec {M : Model} {N : NF} {r : ℕ} {x : WPos} {m : ℕ → ℕ
     (by rw [g₂ _ (by decide), g₁ _ (by decide), h4]; exact hS.hDW)
     (by rw [g₂ _ (by decide), g₁ _ (by decide), h4, f₂.2.2.1, hm₁]; exact hS.hCW) (M := M)
     (by rw [g₂ _ (by decide), g₁ _ (by decide), h4, f₂.2.2.1, hm₁]; exact hS.hM)
-    (by rw [g₂ _ (by decide), a04]; exact hee)
+    (by rwa [g₂ _ (by decide), a04])
     (by rw [g₂ _ (by decide), a05]; exact hpe.2.2)
   rw [g₂ _ (by decide), g₂ _ (by decide), g₂ _ (by decide), g₂ _ (by decide), a04, a05, a00,
-    a01] at b09
-  rw [keyBit hpe hS.xp he1] at b09
+    a01, keyBit hpe hS.xp he1] at b09
   have w₃ := e₃.wb_right
   have g₃ : ∀ q, BuildRam.BhalfS 42108 42109 q = false → d₃.nreg q = d₂.nreg q := f₃.1
   -- the decision
@@ -255,7 +250,7 @@ theorem scanS_exec {M : Model} {N : NF} {r : ℕ} {x : WPos} {m : ℕ → ℕ} {
   have e₀ := Exec.constN (P := P) hw 216044 0 (Nat.zero_le _)
   set d₀ : Config := { d with nreg := upd d.nreg 216044 0 } with hd₀
   have f₀ : FrameB Bscan d d₀ := exec_frameB e₀ (by decide)
-  set nA := (N.region r).arcs.length with hnA
+  set nA := (N.region r).arcs.length
   set lst : ℕ → ℕ := fun t => (N.region r).arcs.getD t 0 with hlst
   let Inv : ℕ → Config → Prop := fun t e => WordsBounded W e ∧ e.nreg 216044 = t ∧
     e.nreg 216042 = nA ∧ FrameB Bscan d e ∧
@@ -298,7 +293,7 @@ theorem scanS_exec {M : Model} {N : NF} {r : ℕ} {x : WPos} {m : ℕ → ℕ} {
     have : lst t' = j := by
       simp only [hlst]
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht', Option.getD_some, hjt]
-    rw [this]; exact hmj
+    rwa [this]
 
 end exec
 

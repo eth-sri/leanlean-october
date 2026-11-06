@@ -167,8 +167,8 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
       (K = 0 → ∀ q, q < 2 * (T.length + 1) → c'.nmem (B₂ + 3 * Kmax + q) = 0) := by
   set x := vtrip li P.n i d w with hx
   set t := T.length with ht
-  set BK := B₂ + 3 * Kmax with hBK
-  set p := m₀ (H + 5) + 2 + 5 * r with hpd
+  set BK := B₂ + 3 * Kmax
+  set p := m₀ (H + 5) + 2 + 5 * r
   have hW3 : P.n + 3 ≤ W := by have := hWh; unfold hostWords at this; omega
   -- 1. the record
   obtain ⟨c₁, k₁, e₁, hk₁, r1, r2, r3, f₁⟩ := recS_exec (P := P) c hw hn hi hin hd hd1 hw97 hli c0 c1
@@ -180,8 +180,8 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
     (by rw [g₁ _ (by decide), d21]) (by rw [g₁ _ (by decide), d20])
     (by rw [g₁ _ (by decide), d02]) (by rw [g₁ _ (by decide), d05])
     (by rw [g₁ _ (by decide), d31]) (by rw [g₁ _ (by decide), d16]) (by omega) (by omega)
-    (by omega) (by rw [f₁.2.2.1, show p - 1 = m₀ (H + 5) + 5 * r + 1 by omega,
-      hlow _ (by omega)]; exact hLB)
+    (by omega) (by rwa [f₁.2.2.1, show p - 1 = m₀ (H + 5) + 5 * r + 1 by omega,
+      hlow _ (by omega)])
     (by rw [r1, vtrip_fst]; omega) (by omega)
   have w₂ := e₂.wb_right
   rw [f₁.2.2.1, show p - 2 = m₀ (H + 5) + 5 * r by omega, hlow _ (by omega), ← hnA] at d42
@@ -301,7 +301,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
       (by rw [f₆.1 _ (by decide), K3 _ (by decide) (by norm_num) (by norm_num), d02₂])
       (by omega)
     have ex : Exec P W emitS c c₇ (k₁ + (k₂ + ((k₃ + (k₄ + (1 + (k₆ + k₇)))) + 1))) :=
-      .seq e₁ (.seq e₂ (.ifLtN_true (by rw [c1₂, hK₂]; exact hKp)
+      .seq e₁ (.seq e₂ (.ifLtN_true (by rwa [c1₂, hK₂])
         (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))))
     have m₇' : c₇.nmem = upd (upd c₂.nmem (BK + 2 * t) (c₃.nreg 216053)) (BK + 2 * t + 1)
         (c₆.nreg 216053) := by
@@ -316,7 +316,6 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
       (f₇.mono fun q h => bemit_app q (DrvD.bapp_of_22 q h))))))
     have G7 : ∀ q, DrvD.Bscan q = false → q ≠ 216022 → q ≠ 216040 → c₇.nreg q = c₂.nreg q :=
       fun q h1 h2 h3 => by rw [f₇.1 q (by simpa using h2), f₆.1 q h1, K3 q h1 h2 h3]
-    have hnA' : (N.region r).arcs.length = (N.region r).arcs.length := rfl
     refine ⟨c₇, _, ex, ?_, FM₁.trans (FM₂.trans FM₃), e₇.wb_right, fun a ha => ?_, ?_, ?_, ?_,
       ?_, fun _ => ?_, fun h => absurd h (by omega)⟩
     · have : 2 * (DrvD.scanK + 2) * (N.region r).arcs.length =
@@ -336,11 +335,9 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
         rw [m₇', Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
           m₂' _ (by omega)]
       · show DrvD.ScanFound _ _ N r _ (c₇.nmem (BK + 2 * t))
-        rw [m₇', Machine.upd_other _ _ _ (by omega), Machine.upd_same]
-        exact fd₀
+        rwa [m₇', Machine.upd_other _ _ _ (by omega), Machine.upd_same]
       · show DrvD.ScanFound _ _ N r _ (c₇.nmem (BK + (2 * t + 1)))
-        rw [m₇', show BK + (2 * t + 1) = BK + 2 * t + 1 by ring, Machine.upd_same]
-        exact fd₁
+        rwa [m₇', show BK + (2 * t + 1) = BK + 2 * t + 1 by ring, Machine.upd_same]
 
 end exec
 

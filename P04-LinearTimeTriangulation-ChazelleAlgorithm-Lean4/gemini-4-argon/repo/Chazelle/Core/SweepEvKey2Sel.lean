@@ -142,14 +142,13 @@ theorem selS_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
   obtain ⟨fr, hF, hiff, hmin⟩ := hS
   have eSP : d.nreg sP = c.nreg sP := fr.kkeep (by unfold SelR; kqr) (by kqr)
   have eSC : d.nreg sC = c.nreg sC := fr.kkeep (by unfold SelR; kqr) (by kqr)
-  have eBF : d.nreg bF = c.nreg bF := fr.kkeep (by unfold SelR; kqr) (by kqr)
   have eSB : d.nreg sB = c.nreg sB := fr.kkeep (by unfold SelR; kqr) (by kqr)
   have hKd := hK₀.fix hId
   unfold selS
   by_cases hs : d.nreg sP < d.nreg sC
   · rw [eSP, eSC] at hs
     obtain ⟨l1, l2⟩ := kqStop_keep fr (by unfold SelR; kqr) hH.2.2.2 hs
-    refine IRS.mono (K := 11027 + 2) (IRS.ifT (by rw [eSP, eSC]; exact hs) ?_) le_rfl (fun _ h => h)
+    refine IRS.mono (K := 11027 + 2) (IRS.ifT (by rwa [eSP, eSC]) ?_) le_rfl (fun _ h => h)
     refine IRS.seq (K₁ := 7) (K₂ := 11020) (ldStop_irs hId hKd.2.1 (by
       rw [eSP, eSB]
       have := hH.2.2.2; have := fr.2.1; omega)) ?_
@@ -160,9 +159,9 @@ theorem selS_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
       (s3 ALLOC (by kqr) (by kqr) (by kqr)).ge, fun a _ => by rw [s4]⟩
     have k1 : ∀ r, r = kqF ∨ r = kqE ∨ r = kqH → d₁.nreg r = d.nreg r := fun r hr => by
       rcases hr with rfl | rfl | rfl <;> exact s3 _ (by kqr) (by kqr) (by kqr)
-    have hF1 : d₁.nreg kqF ≤ 1 := by rw [k1 _ (Or.inl rfl)]; exact hF
+    have hF1 : d₁.nreg kqF ≤ 1 := by rwa [k1 _ (Or.inl rfl)]
     refine (offerQ_irs hI₁ (hK₀.fix hI₁) (hctx.transport (fr1.kkeep (by unfold SelR; kqr) (by kqr))
-      (fun a ha => fr1.2.2 a ha) fr1.2.1) (by rw [fr1.kkeep (by unfold SelR; kqr) (by kqr)]; exact hgw)
+      (fun a ha => fr1.2.2 a ha) fr1.2.1) (by rwa [fr1.kkeep (by unfold SelR; kqr) (by kqr)])
       hgn hF1 (fun h => ?_) (by rw [s1, s2]; exact hH.2.2.1 _ hs) (by omega)).mono le_rfl ?_
     · rw [k1 _ (Or.inl rfl)] at h
       rw [k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))]
@@ -175,14 +174,14 @@ theorem selS_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
     rcases o2 with ⟨hF', e1, e2⟩ | ⟨e1, e2⟩
     · obtain ⟨m1, m2, -, -⟩ := hmin hF'
       rw [e1, e2]
-      refine ⟨m1, m2, fun _ _ => by rw [← e1, ← e2]; exact o3, fun h => h.elim⟩
+      refine ⟨m1, m2, fun _ _ => by rwa [← e1, ← e2], fun h => h.elim⟩
     · rw [e1, e2]
       refine ⟨Or.inr (Or.inl ⟨hs, rfl, rfl⟩), fun hb => ?_, fun _ _ => le_rfl, fun h => h.elim⟩
       have hF' : d.nreg kqF = 1 := hiff.2 (Or.inl hb)
       rw [← e1, ← e2]
       exact (o4 hF').trans ((hmin hF').2.1 hb)
   · rw [eSP, eSC] at hs
-    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [eSP, eSC]; exact hs) (IRS.skip hId rfl))
+    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [eSP, eSC]) (IRS.skip hId rfl))
       (by norm_num) ?_
     rintro d' rfl
     refine ⟨fr, hF, ?_, fun h => ?_⟩
@@ -241,9 +240,9 @@ theorem selW_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
     have k1 : ∀ r, r = kqF ∨ r = kqE ∨ r = kqH → d₁.nreg r = d.nreg r := fun r hr => by
       rw [hd₁]
       rcases hr with rfl | rfl | rfl <;> simp [regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw]
-    have hF1 : d₁.nreg kqF ≤ 1 := by rw [k1 _ (Or.inl rfl)]; exact hF
+    have hF1 : d₁.nreg kqF ≤ 1 := by rwa [k1 _ (Or.inl rfl)]
     refine (offerQ_irs hI₁ (hK₀.fix hI₁) (hctx.transport (fr1.kkeep (by unfold SelR; kqr) (by kqr))
-      (fun a ha => fr1.2.2 a ha) fr1.2.1) (by rw [fr1.kkeep (by unfold SelR; kqr) (by kqr)]; exact hgw)
+      (fun a ha => fr1.2.2 a ha) fr1.2.1) (by rwa [fr1.kkeep (by unfold SelR; kqr) (by kqr)])
       hgn hF1 (fun h => ?_) (by rw [s1, s2]; exact hH.2.1 hw) (by omega)).mono le_rfl ?_
     · rw [k1 _ (Or.inl rfl)] at h
       rw [k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))]
@@ -256,7 +255,7 @@ theorem selW_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
     rcases o2 with ⟨hF', e1, e2⟩ | ⟨e1, e2⟩
     · obtain ⟨m1, m2, m3, -⟩ := hmin hF'
       rw [e1, e2]
-      exact ⟨m1, m2, m3, fun _ _ => by rw [← e1, ← e2]; exact o3⟩
+      exact ⟨m1, m2, m3, fun _ _ => by rwa [← e1, ← e2]⟩
     · rw [e1, e2]
       have hle : ∀ x : ℝ, d.nreg kqF = 1 → offK P J (d.nreg kqE) (d.nreg kqH) ≤ x →
           offK P J (c.nreg wE) (c.nreg wH) ≤ x := fun x hF' hx => by

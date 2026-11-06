@@ -133,13 +133,13 @@ theorem dBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
           (Exec.constN w₂ 60011 0 (Nat.zero_le _))))), by omega, by config_simp; exact y12,
           by config_simp; exact y13, by
             config_simp; rw [ite_eq_right (by rw [e1, e2]; simp [hz])]⟩
-      · have q2 : c₂.nreg 60013 ≠ c₂.nreg 60019 := by rw [y13, y19]; exact e2
+      · have q2 : c₂.nreg 60013 ≠ c₂.nreg 60019 := by rwa [y13, y19]
         obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (P := P) (W := W) (S := .instr (.constN 60011 0)) q2
           (Exec.constN w₂ 60011 1 hW)
         exact ⟨_, _, .ifLtN_true ht' (.seq e₂ (ifEq_eq_exec q1 e')), by omega,
           by config_simp; exact y12, by config_simp; exact y13, by
             config_simp; rw [ite_eq_left (Or.inr (fun h' => e2 (Prod.mk.inj h').2))]⟩
-    · have q1 : c₂.nreg 60012 ≠ c₂.nreg 60018 := by rw [y12, y18]; exact e1
+    · have q1 : c₂.nreg 60012 ≠ c₂.nreg 60018 := by rwa [y12, y18]
       obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (P := P) (W := W)
         (S := ifEq 60013 60019 (.instr (.constN 60011 0)) (.instr (.constN 60011 1))) q1
         (Exec.constN w₂ 60011 1 hW)
@@ -208,7 +208,7 @@ theorem dSort_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have a30 : c₂.nreg 30003 = A₀ := by rw [n₂]; config_simp
   have a6 : c₂.nreg 60006 = n := by rw [n₂]; config_simp; rw [n₁]; config_simp
   have a11 : c₂.nreg 120011 = 1 := by rw [n₂]; config_simp; rw [n₁]; config_simp; exact h1
-  obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, mm₃, rm₃, o₃, -, -⟩ := scatS_exec (P := P) (W := W)
+  obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, mm₃, rm₃, o₃, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 60020) (rn := 60006) (r1 := 120011) (ra := 60016) (rv := 60017)
     (body := block [.addN 60016 30003 60020, .copyN 60017 60020])
     (B := fun r => decide (r = 60016 ∨ r = 60017)) (by decide) (by decide) (by decide) (by decide)
@@ -289,7 +289,6 @@ theorem dSort_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hmemL : ∀ t, t < n → L'.getD t 0 < n := fun t ht => by
     have : L'.getD t 0 ∈ L' := by rw [NFLoc.getD_of_lt 0 (by omega)]; exact List.getElem_mem _
     exact List.mem_range.1 (hperm.subset this)
-  have hc5 : ∀ a, a < A₀ + n → c₅.nmem a = c₄.nmem a := fun a ha => F₅.2.2.1 a (by rw [show ALLOC = 9999 from rfl, g9]; exact ha)
   have g9' : c₄.nreg ALLOC = A₀ + n := g9
   have hAl' : c.nreg ALLOC = A₀ := hAl
   refine ⟨c₆, _, ex, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
@@ -306,7 +305,7 @@ theorem dSort_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
           (by decide)).2.1 r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega)
         rw [this, rr₃ r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega),
           rr₂, rr₁]
-      · rw [hmem₄ a (by rw [hAl'] at ha; exact ha)]
+      · rw [hmem₄ a (by rwa [hAl'] at ha)]
       · rw [(exec_frameB e₄ (B := fun r => decide (r = 30004 ∨ 115000 ≤ r ∧ r ≤ 115005))
           (by decide)).2.2.2.1, rm₃, rm₂, rm₁]
       · rw [(exec_frameB e₄ (B := fun r => decide (r = 30004 ∨ 115000 ≤ r ∧ r ≤ 115005))
@@ -337,7 +336,7 @@ theorem dSort_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   · rw [v _ (by norm_num) (by norm_num), n₁]; config_simp
   · rw [v _ (by norm_num) (by norm_num), n₁]; config_simp
   · rw [v _ (by norm_num) (by norm_num), n₁]; config_simp
-  · rw [v7]; exact s₁
+  · rwa [v7]
   · rw [v7, hc₆]; config_simp; exact s₂
   · -- sorted
     intro t t' htt ht'
@@ -354,8 +353,7 @@ theorem dSort_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       unfold lexLe at this
       rw [ite_eq_left hA, ite_eq_left hB] at this
       simp only [decide_eq_true_eq] at this
-      rw [(hc4 _ hA).1, (hc4 _ hB).1, (hc4 _ hA).2, (hc4 _ hB).2] at this
-      exact this
+      rwa [(hc4 _ hA).1, (hc4 _ hB).1, (hc4 _ hA).2, (hc4 _ hB).2] at this
   · intro i hi
     have : i ∈ L' := hperm.symm.subset (List.mem_range.2 hi)
     obtain ⟨t, ht, e⟩ := List.getElem_of_mem this

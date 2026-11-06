@@ -89,7 +89,7 @@ theorem try_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ :
     (h72 : c.nreg 90072 = bit (decide (st.cnt (st.nd0 st.cur) = 1)))
     (h73 : c.nreg 90073 = bit (decide (st.cnt (st.nd1 st.cur) = 1))) :
     ∃ c' k, Exec P W tryStmt c c' k ∧ k ≤ 60 * E.D + 330 ∧ MS W E d A₀ m₀ c' (st.step E) := by
-  obtain ⟨c₁, k₁, e₁, hk₁, m78, -⟩ := mu_exec (P := P) hE hM.wb hM.cst hM.enc hI hD hc h64 h65
+  obtain ⟨c₁, k₁, e₁, hk₁, m78⟩ := mu_exec (P := P) hE hM.wb hM.cst hM.enc hI hD hc h64 h65
     h68 h69 h72 h73 hM.nlive
   have F₁ := exec_frameB e₁ wr_mu_fine
   have g : ∀ r, r < 90100 → r ≠ 90061 → (r < 90074) → c₁.nreg r = c.nreg r := fun r a1 a2 a3 =>
@@ -98,12 +98,12 @@ theorem try_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ :
     (by omega)) F₁.2.2.1
   by_cases hm : E.γ < st.mu E st.cur
   · obtain ⟨c₂, k₂, e₂, hk₂, hM₂, -, -⟩ := hM₁.pop (P := P)
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [hM₁.cst.γ, m78]; exact hm) e₂), by omega, ?_⟩
-    rw [step_heavy hc.2 hlow hm]; exact hM₂
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rwa [hM₁.cst.γ, m78]) e₂), by omega, ?_⟩
+    rwa [step_heavy hc.2 hlow hm]
   · have hlow' : st.deg (st.s0 st.cur) < 3 ∨ st.deg (st.s1 st.cur) < 3 := by omega
     have hI' := hI.step hE htop
     rw [step_rm hc.2 hlow hm] at hI' ⊢
-    obtain ⟨c₂, k₂, e₂, hk₂, hM₂, -⟩ := rm_exec (P := P) (μ := st.mu E st.cur) hE hM₁ hI hD hA hc
+    obtain ⟨c₂, k₂, e₂, hk₂, hM₂⟩ := rm_exec (P := P) (μ := st.mu E st.cur) hE hM₁ hI hD hA hc
       htop hlow' hI'
       (by rw [g _ (by decide) (by decide) (by decide), h62])
       (by rw [g _ (by decide) (by decide) (by decide), h64])
@@ -114,7 +114,7 @@ theorem try_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ :
       (by rw [g _ (by decide) (by decide) (by decide), h69])
       (by rw [g _ (by decide) (by decide) (by decide), h72])
       (by rw [g _ (by decide) (by decide) (by decide), h73]) m78
-    exact ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [hM₁.cst.γ, m78]; exact hm) e₂), by omega, hM₂⟩
+    exact ⟨c₂, _, .seq e₁ (.ifLtN_false (by rwa [hM₁.cst.γ, m78]) e₂), by omega, hM₂⟩
 
 /-- **One step of the worklist on the RAM.** -/
 theorem body_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : ℕ → ℕ} {c : Config}
@@ -134,7 +134,7 @@ theorem body_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ 
   swap
   · obtain ⟨c₂, k₂, e₂, hk₂, hM₂, -, -⟩ := hM₁.pop (P := P)
     refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [f63, hM₁.cst.one]; omega) e₂), by omega, ?_⟩
-    rw [step_dead hl]; exact hM₂
+    rwa [step_dead hl]
   have hc : st.cur ∈ st.L E := ⟨hcK, hl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, x64, x65, x66, x67, xr, xm⟩ := xy_exec (P := P) hM₁.wb hM₁.cst
     hM₁.enc hI hD hc f62
@@ -163,7 +163,7 @@ theorem body_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ 
       refine ⟨c₄, _, .seq e₁ (.ifLtN_false hnl (.seq e₂ (.seq e₃ (.ifLtN_false
         (by rw [t66, hM₃.cst.three]; omega) (.ifLtN_false (by rw [t67, hM₃.cst.three]; omega)
           e₄))))), by omega, ?_⟩
-      rw [step_keep hl ⟨h3X, h3Y⟩]; exact hM₄
+      rwa [step_keep hl ⟨h3X, h3Y⟩]
     · obtain ⟨c₄, k₄, e₄, hk₄, hM₄⟩ := tryE (by omega)
       exact ⟨c₄, _, .seq e₁ (.ifLtN_false hnl (.seq e₂ (.seq e₃ (.ifLtN_false
         (by rw [t66, hM₃.cst.three]; omega) (.ifLtN_true (by rw [t67, hM₃.cst.three]; omega)
@@ -190,15 +190,14 @@ theorem loop_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ 
     (fun c₁ => c₁.nreg 90050 + (E.D + 1) * c₁.nreg 90051) (60 * E.D + 400)
     (fun _ ⟨_, h, _⟩ => h.wb)
     (fun c₁ ⟨st₁, hM₁, hI₁, h52₁, hr₁⟩ ht => by
-      have htop : 0 < st₁.top := by rw [h52₁, hM₁.top] at ht; exact ht
+      have htop : 0 < st₁.top := by rwa [h52₁, hM₁.top] at ht
       obtain ⟨c₂, k₂, e₂, hk₂, hM₂, F₂⟩ := body_exec (P := P) hE hM₁ hI₁ hD hA htop
       have hI₂ := hI₁.step hE htop
       have hms := measure_step hE hI₁ htop
       refine ⟨c₂, k₂, e₂, ⟨_, hM₂, hI₂, by rw [F₂.1 _ (by decide), h52₁],
         fun r hr => by rw [F₂.1 r hr, hr₁ r hr]⟩, hk₂, ?_⟩
       unfold St.meas at hms
-      rw [hM₂.top, hM₂.nlive, hM₁.top, hM₁.nlive]
-      exact hms) ⟨st, hM, hI, h52, fun _ _ => rfl⟩
+      rwa [hM₂.top, hM₂.nlive, hM₁.top, hM₁.nlive]) ⟨st, hM, hI, h52, fun _ _ => rfl⟩
   refine ⟨c', k, st', e, ?_, hM', hI', ?_, hr'⟩
   · rw [hM.top, hM.nlive] at hk
     unfold St.meas

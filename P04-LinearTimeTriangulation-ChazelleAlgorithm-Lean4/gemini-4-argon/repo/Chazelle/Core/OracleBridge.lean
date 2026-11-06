@@ -106,9 +106,9 @@ theorem arcHit_of_crossAdj (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set 
   obtain ⟨εA, hεA, hsubA⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hAe
   obtain ⟨εB, hεB, hsubB⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hBe
   have h1 := arcHit_right C hP hFam hA hz hnσ (s := 0) (b := εA) hεA
-    (fun t h0 h1 => hsubA ⟨h0, h1⟩) (by rw [e0]; exact hxd)
+    (fun t h0 h1 => hsubA ⟨h0, h1⟩) (by rwa [e0])
   have h2 := arcHit_right C hP hFam hB hz hσ (s := 0) (b := εB) hεB
-    (fun t h0 h1 => hsubB ⟨h0, h1⟩) (by rw [e0]; exact hxd)
+    (fun t h0 h1 => hsubB ⟨h0, h1⟩) (by rwa [e0])
   rw [e0] at h1 h2
   exact ⟨h1, h2⟩
 
@@ -189,8 +189,8 @@ theorem cross_zip (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     obtain ⟨hfin, hcard, -⟩ := regionTree _ Q F hGM hFam
     rw [hF, Set.ncard_empty, zero_add] at hcard
     obtain ⟨U, hU⟩ := Set.ncard_eq_one.1 hcard
-    have h1 : A = U := by rw [hF, hU] at hAr; exact hAr
-    have h2 : B = U := by rw [hF, hU] at hBr; exact hBr
+    have h1 : A = U := by rwa [hF, hU] at hAr
+    have h2 : B = U := by rwa [hF, hU] at hBr
     exact hAB (h1.trans h2.symm)
   have hxF := not_mem_chord_of_crossAdj C hFam.2.1 hAr hBr hσ hAe hBe
   obtain ⟨hitA, hitB⟩ := arcHit_of_crossAdj C hP hFam hAr hBr hx hσ hAe hBe
@@ -209,7 +209,7 @@ theorem cross_zip (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
       rw [hpj, hjr]
     · show sideInArc ((chainModel C).key Q (N.arc (N.seq.getD p 0)).s)
         ((chainModel C).key Q (N.arc (N.seq.getD p 0)).e) (p₁ + t₁)
-      rw [hpj, hja, hjb]; exact hin
+      rwa [hpj, hja, hjb]
   obtain ⟨p, hp, hpA, p₁, t₁, hp₁, h10, h11, hpt₁, hin₁⟩ := locate A hAr hitA
   obtain ⟨q, hq, hqB, p₂, t₂, hp₂, h20, h21, hpt₂, hin₂⟩ := locate B hBr hitB
   exact ⟨p, q, hp, hq, hpA, hqB, p₁, p₂, t₁, t₂, hp₁, hp₂, h10, h11, h20, h21,

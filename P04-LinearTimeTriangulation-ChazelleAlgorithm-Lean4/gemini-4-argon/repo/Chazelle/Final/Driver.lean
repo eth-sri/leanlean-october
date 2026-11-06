@@ -80,7 +80,7 @@ theorem finalStage : Core.FinalStageSpec := by
   have hn3 : 3 ≤ P.n := hQn ▸ hQ.1
   have hTL : T.length ≤ 2 * P.n + 1 := hQn ▸ hT.length_le hQ
   have hCL : Cs.length ≤ 2 * P.n := hQn ▸ hC.length_le
-  set A := c.nreg Core.ALLOC with hA
+  set A := c.nreg Core.ALLOC
   set M := T.length + Cs.length with hM
   change c.nreg 9991 = T.length at h9991
   change c.nreg 9993 = Cs.length at h9993
@@ -89,7 +89,6 @@ theorem finalStage : Core.FinalStageSpec := by
   change c.nreg 9990 + 4 * T.length ≤ c.nreg 9999 at hTB
   change c.nreg 9992 + 3 * Cs.length ≤ c.nreg 9999 at hCB
   have hA' : c.nreg 9999 = A := rfl
-  have hW : A + 100 * (P.n + 1) ≤ W := hroom
   have hML : M ≤ 4 * P.n + 1 := by omega
   -- 1. the layout
   unfold finalStmt
@@ -118,8 +117,8 @@ theorem finalStage : Core.FinalStageSpec := by
     (DB := A) (HB := A + 2 * M) (SB := A + 2 * M + P.n) (M := M) c₁ hw₁ c200 c201 c202
     (by rw [r1 9991 (by decide) (by decide) (by decide) (by decide) (by decide), h9991])
     (by rw [r1 9993 (by decide) (by decide) (by decide) (by decide) (by decide), h9993])
-    (by rw [m1, r1 9990 (by decide) (by decide) (by decide) (by decide) (by decide)]; exact hTab)
-    (by rw [m1, r1 9992 (by decide) (by decide) (by decide) (by decide) (by decide)]; exact hCab)
+    (by rwa [m1, r1 9990 (by decide) (by decide) (by decide) (by decide) (by decide)])
+    (by rwa [m1, r1 9992 (by decide) (by decide) (by decide) (by decide) (by decide)])
     (by rw [r1 9990 (by decide) (by decide) (by decide) (by decide) (by decide)]; omega)
     (by rw [r1 9992 (by decide) (by decide) (by decide) (by decide) (by decide)]; omega)
     le_rfl le_rfl (by omega) le_rfl (by omega)) ?_)
@@ -132,9 +131,9 @@ theorem finalStage : Core.FinalStageSpec := by
     have := diagList_lt hQ hT hC (hE.mem_iff.1 hd)
     rw [hQn] at this
     exact ⟨by omega, this.2, by omega⟩
-  set ND := E.length with hND
+  set ND := E.length
   set NN := P.n + 2 * ND with hNN
-  set B := A + 2 * M + P.n + M with hB
+  set B := A + 2 * M + P.n + M
   -- 3. the orientation
   refine spec_seq (spec_use (orientStmt_exec (P := P) (W := W) hPQ hQ c₂ hw₂ (by omega)) ?_)
   rintro c₃ k₃ hk₃ hw₃ ⟨hσ₃, hfn₃, hfr₃, hnm₃, hrm₃, hout₃⟩
@@ -211,7 +210,6 @@ theorem finalStage : Core.FinalStageSpec := by
       have h2 := countP_diagList_le hQ hT hC v
       rw [← hE.countP_eq] at h2
       omega
-    have hk₂' : k₂ ≤ 202 * T.length + 174 * Cs.length + 5 * P.n + 20 := hk₂
     nlinarith
   · rw [hout₇, hc₆]
     config_simp
@@ -219,8 +217,7 @@ theorem finalStage : Core.FinalStageSpec := by
     config_simp
     rw [hout₃, hout₂, hc₁]
     config_simp
-    rw [hout0, List.nil_append]
-    exact hX7
+    rwa [hout0, List.nil_append]
 
 end
 

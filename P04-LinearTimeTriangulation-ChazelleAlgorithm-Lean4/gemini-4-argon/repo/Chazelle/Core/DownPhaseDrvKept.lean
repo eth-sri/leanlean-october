@@ -61,8 +61,6 @@ theorem left_end_of_segment {a' b' : Point} {y a b : ℝ} (hab : a < b) (hy : a'
   · left; rw [min_eq_left hl] at h2; exact Prod.ext h2 h1
   · right; rw [min_eq_right hl] at h2; exact Prod.ext h2 (h1.trans hy)
 
-/-- The horizontal direction to the right. -/
-def eX : Point := (1, 0)
 
 end
 

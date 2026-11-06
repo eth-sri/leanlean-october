@@ -68,7 +68,7 @@ theorem tposS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   set c₁ : Config := { c with nreg := upd c.nreg 50100 (c.nreg 50200) } with hc₁
   have w₁ : WordsBounded W c₁ := e₁.wb_right
   obtain ⟨c₂, k₂, e₂, hk₂, r01, r02, r08, rr₂, rm₂⟩ := readS_exec (P := P) c₁ w₁
-    (X := c.nreg 50200) (by rw [hc₁]; simp) (by rw [hc₁]; exact hC) hXW (by omega)
+    (X := c.nreg 50200) (by rw [hc₁]; simp) (by rwa [hc₁]) hXW (by omega)
   have w₂ := e₂.wb_right
   have hS := C.sideS_lt C.sideBeta
   have e₃ := Exec.subN (P := P) w₂ 50103 50108 50102
@@ -77,7 +77,7 @@ theorem tposS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   have w₃ : WordsBounded W c₃ := e₃.wb_right
   have v10 : c₃.nreg 50110 = k := by
     rw [hc₃]; simp only [upd_other _ _ _ (show (50110 : ℕ) ≠ 50103 by decide)]
-    rw [rr₂ _ (by omega)]; rw [hc₁]; simp [hk]
+    rw [rr₂ _ (by omega), hc₁]; simp [hk]
   have v02 : c₃.nreg 50102 = C.sideS C.sideBeta := by
     rw [hc₃]; simp only [upd_other _ _ _ (show (50102 : ℕ) ≠ 50103 by decide)]; exact r02
   have v03 : c₃.nreg 50103 = 2 * C.m - C.sideS C.sideBeta := by
@@ -146,7 +146,7 @@ theorem ptQ_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (h
   by_cases hf : c₁.nreg 50210 = 1
   · obtain ⟨-, hpp, harr⟩ := hyes hf
     have hlt : c₁.nreg 70108 < c₁.nreg 50210 := by rw [g _ (by omega), h08, hf]; omega
-    set a := LB + 3 * pre.length with ha
+    set a := LB + 3 * pre.length
     have hA₁ : c₁.nreg 9999 = a := by rw [show (9999 : ℕ) = ALLOC from rfl, a₁, hA]
     have r05 : c₁.nreg 70105 = 1 := by rw [g _ (by omega), h05]
     have r24 : c₁.nreg 70124 = c.nreg 70124 := g _ (by omega)
@@ -176,9 +176,9 @@ theorem ptQ_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (h
     · refine chordListAt_append (fun i hi => ?_) ?_ ?_ ?_
       · obtain ⟨b0, b1, b2⟩ := hL i hi
         refine ⟨?_, ?_, ?_⟩
-        · rw [qm _ (Or.inl (by omega)), m₁]; exact b0
-        · rw [qm _ (Or.inl (by omega)), m₁]; exact b1
-        · rw [qm _ (Or.inl (by omega)), m₁]; exact b2
+        · rwa [qm _ (Or.inl (by omega)), m₁]
+        · rwa [qm _ (Or.inl (by omega)), m₁]
+        · rwa [qm _ (Or.inl (by omega)), m₁]
       · exact qa
       · exact qb
       · exact qc

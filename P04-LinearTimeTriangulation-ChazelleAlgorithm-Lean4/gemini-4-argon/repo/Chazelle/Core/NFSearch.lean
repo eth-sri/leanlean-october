@@ -32,8 +32,6 @@ open Machine Machine.Stmt Programs SortL SortR
 
 /-! ## The program -/
 
-/-- Register `i` of the band of double identification. -/
-def lr (i : ℕ) : ℕ := 50000 + i
 
 /-- Constants: `one`, `p := 1`, `L := 0`, table base `T := ALLOC`, `pos := 0`, `n + 1`, `0`. -/
 def srchInit : Stmt := block [.constN 50106 1, .constN 50107 1, .constN 50108 0, .copyN 50109 9999,
@@ -222,12 +220,12 @@ theorem tabLoop_inv (hJs : JStableL J A₀) {c : Config} (h : TabInv W J Bc A₀
           d₂.rmem = d₁.rmem ∧ d₂.output = d₁.output := by
         by_cases hc : n - d.nreg 50107 < d.nreg 50107
         · obtain ⟨d₂, e₂, n₂, m₂, rr₂, rm₂, o₂⟩ := copyN_char (P := P) w₁ 50107 50114
-          refine ⟨d₂, _, .ifLtN_true (by rw [s₁, p₁]; exact hc) e₂, by omega, ?_,
+          refine ⟨d₂, _, .ifLtN_true (by rwa [s₁, p₁]) e₂, by omega, ?_,
             fun r hr => by rw [n₂, Machine.upd_other _ _ _ hr], m₂, rr₂, rm₂, o₂⟩
           rw [n₂, Machine.upd_same, n1₁, ite_eq_left hc]
         · obtain ⟨d₂, e₂, n₂, m₂, rr₂, rm₂, o₂⟩ := addN_char (P := P) w₁ 50107 50107 50107
             (by rw [p₁]; omega)
-          refine ⟨d₂, _, .ifLtN_false (by rw [s₁, p₁]; exact hc) e₂, by omega, ?_,
+          refine ⟨d₂, _, .ifLtN_false (by rwa [s₁, p₁]) e₂, by omega, ?_,
             fun r hr => by rw [n₂, Machine.upd_other _ _ _ hr], m₂, rr₂, rm₂, o₂⟩
           rw [n₂, Machine.upd_same, p₁, ite_eq_right hc]
       have R : ∀ r, r ≠ 50107 → r ≠ 50110 → r ≠ 50108 → r ≠ 9999 → r ≠ 50116 →
@@ -278,7 +276,6 @@ theorem tabLoop_inv (hJs : JStableL J A₀) {c : Config} (h : TabInv W J Bc A₀
           · rw [ite_eq_right hc]; omega,
         lb := Or.inr (by rw [L₂, Nat.add_sub_cancel, ← hp]; omega),
         bW := hbW, bn := hbn }) h
-  have hL := tab_len_le I'.lb
   have hn1 := I'.rn1
   rw [hn1] at hex
   refine ⟨c', k, e, I', I'.big (by omega), by rw [hL0] at hk; omega, hψ⟩
@@ -328,8 +325,8 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
   have hbT := h.bT
   have hbA := h.bA
   have hpn := h.posn
-  set i := c.nreg 50112 with hi
-  set pos := c.nreg 50105 with hpos
+  set i := c.nreg 50112
+  set pos := c.nreg 50105
   have hstep : c.nmem (A₀ + (i - 1)) = 2 ^ (i - 1) := by rw [h.mem]; exact h.tab _ (by omega)
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W (block [.subN 50112 50112 50106,
       .addN 50110 50109 50112, .loadN 50111 50110, .subN 50116 50104 50105]) c c₁ k₁ ∧ k₁ = 4 ∧
@@ -339,7 +336,7 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
     have hw := h.wb
     exec_block
     · config_simp; rw [h.rT, h.one]; omega
-    · refine ⟨rfl, by config_simp; rw [h.one], by config_simp; rw [h.rT, h.one]; exact hstep,
+    · refine ⟨rfl, by config_simp; rw [h.one], by config_simp; rwa [h.rT, h.one],
         by config_simp; rw [h.rn], fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, rfl⟩
       simp [h1, h2, h3, h4]
   obtain ⟨i₁, s₁, m₁, r₁, mm₁, rr₁, rm₁, o₁⟩ := q
@@ -355,7 +352,7 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
     rw [← two_mul, ← pow_succ']; congr 1; omega
   by_cases hc : n - pos < 2 ^ (i - 1)
   · -- no probe
-    refine ⟨c₁, _, .seq e₁ (.ifLtN_true (by rw [m₁, s₁]; exact hc) (.skip w₁)), ?_, by omega,
+    refine ⟨c₁, _, .seq e₁ (.ifLtN_true (by rwa [m₁, s₁]) (.skip w₁)), ?_, by omega,
       by rw [i₁]; omega⟩
     exact
     { wb := w₁, hJ := hJ₁, loc := h.loc.sl sl₁,
@@ -399,7 +396,7 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
     obtain ⟨c₃, k₃, e₃, hk₃, hJ₃, bit₃, r₃, rr₃, m₃, rm₃, o₃⟩ := hcmp c₂ w₂ hJ₂
     rw [x₂, hx] at bit₃
     have R₃ : ∀ r, bandOf r = bLocate → r ≠ 50100 → r ≠ 50101 → r ≠ 50102 →
-        c₃.nreg r = c₂.nreg r := fun r hr h0 h1 h2 => r₃ r h0 h1 h2 (Or.inl (by rw [hr]; exact hB))
+        c₃.nreg r = c₂.nreg r := fun r hr h0 h1 h2 => r₃ r h0 h1 h2 (Or.inl (by rwa [hr]))
     have bl : ∀ r, 50000 ≤ r → r < 60000 → bandOf r = bLocate := fun r h1 h2 => by
       unfold bandOf bLocate; omega
     have loc₃ : LocL Bc A₀ c₀ c₃ := ((h.loc.sl sl₁).sl sl₂).cmp r₃ rr₃ m₃ rm₃ o₃
@@ -453,14 +450,14 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
       have p₄ : c₄.nreg 50105 = pos + 2 ^ (i - 1) := by rw [n₄, Machine.upd_same, t₃]
       have sl₄ : SLL A₀ c₃ c₄ := ⟨fun r hb _ => by
           have := bandOf_loc hb; exact R₄ r (by omega), rr₄, fun x _ => by rw [m₄], rm₄, o₄⟩
-      refine ⟨c₄, _, .seq e₁ (.ifLtN_false (by rw [m₁, s₁]; exact hc) (.seq e₂ (.seq e₃
+      refine ⟨c₄, _, .seq e₁ (.ifLtN_false (by rwa [m₁, s₁]) (.seq e₂ (.seq e₃
         (.ifLtN_false (by rw [bit₃, one₃]; decide) e₄)))), ?_, by omega,
         by rw [R₄ _ (by omega), i₃]; omega⟩
       refine base c₄ e₄.wb_right (hJs c₃ c₄ hJ₃ sl₄.1 sl₄.2.1 sl₄.2.2.1 sl₄.2.2.2.1 sl₄.2.2.2.2)
         (loc₃.sl sl₄) (by rw [m₄, mem₃]) (by rw [R₄ _ (by decide), al₃])
         (fun r h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 => (R₄ r h6).trans
           (K₃ r h1 h2 h3 h4 h5 h7 h8 h9 h10 h11))
-        (by rw [R₄ _ (by omega), i₃]) (by rw [p₄]; exact hle) ?_ ?_
+        (by rw [R₄ _ (by omega), i₃]) (by rwa [p₄]) ?_ ?_
       · rw [p₄]
         intro j hj
         by_cases hj' : j < pos
@@ -472,7 +469,7 @@ theorem liftBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
         rwa [show pos + 2 ^ (i - 1) + 2 ^ (i - 1) - 1 = pos + 2 ^ i - 1 by omega]
     · -- stay
       rw [ite_eq_right hp] at bit₃
-      refine ⟨c₃, _, .seq e₁ (.ifLtN_false (by rw [m₁, s₁]; exact hc) (.seq e₂ (.seq e₃
+      refine ⟨c₃, _, .seq e₁ (.ifLtN_false (by rwa [m₁, s₁]) (.seq e₂ (.seq e₃
         (.ifLtN_true (by rw [bit₃, one₃]; decide) (.skip e₃.wb_right))))), ?_, by omega,
         by rw [i₃]; omega⟩
       have p₃ : c₃.nreg 50105 = pos :=
@@ -528,13 +525,13 @@ theorem searchStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {
     (hmono : ∀ i j, i ≤ j → j < c.nreg 50104 → pr (c.nmem (c.nreg 50103 + j)) = true →
       pr (c.nmem (c.nreg 50103 + i)) = true)
     (hroom : c.nreg ALLOC + searchCost κ (c.nreg 50104) ≤ W) :
-    ∃ c' k, Exec P W (searchStmt cmp) c c' k ∧ k ≤ searchCost κ (c.nreg 50104) ∧ J c' ∧
+    ∃ c' k, Exec P W (searchStmt cmp) c c' k ∧ k ≤ searchCost κ (c.nreg 50104) ∧
       Frame (insert bLocate Bc) c c' k ∧ c'.nreg 50105 ≤ c.nreg 50104 ∧
       (∀ j, j < c'.nreg 50105 → pr (c.nmem (c.nreg 50103 + j)) = true) ∧
       (c'.nreg 50105 < c.nreg 50104 → pr (c.nmem (c.nreg 50103 + c'.nreg 50105)) = false) := by
   set A₀ := c.nreg ALLOC with hA₀
-  set A := c.nreg 50103 with hAdef
-  set n := c.nreg 50104 with hndef
+  set A := c.nreg 50103
+  set n := c.nreg 50104
   have hc0 : 37 * (Nat.clog 2 n + 1) ≤ searchCost κ n := by
     unfold searchCost; exact Nat.mul_le_mul_right _ (by omega)
   have hcost := searchCost_ge κ n
@@ -601,7 +598,7 @@ theorem searchStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {
   have al₄ : c₄.nreg ALLOC = c₂.nreg ALLOC := by rw [I₄.alloc, R₃ _ (by decide)]
   have al₂ := T₂.alloc
   have al₁ := T₁.alloc
-  refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), ?_, I₄.hJ, ?_, I₄.posn, I₄.pre, hfin⟩
+  refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), ?_, ?_, I₄.posn, I₄.pre, hfin⟩
   · have : (κ + 15) * c₂.nreg 50108 ≤ (κ + 15) * (Nat.clog 2 n + 1) :=
       Nat.mul_le_mul_left _ hL
     omega

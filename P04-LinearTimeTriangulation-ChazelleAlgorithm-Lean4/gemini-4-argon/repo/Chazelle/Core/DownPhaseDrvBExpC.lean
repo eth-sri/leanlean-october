@@ -152,7 +152,7 @@ theorem dispS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : �
       obtain ⟨k0, ke, kh⟩ := hh
       have hl1 : ((HostItem.pt (.onEdge ee hh')).pts P.n).length = 1 := rfl
       rw [hl1] at hlen ⊢
-      obtain ⟨e', k, x, hk, hS', -⟩ := wrE_exec (P := P) hS (by omega)
+      obtain ⟨e', k, x, hk, hS'⟩ := wrE_exec (P := P) hS (by omega)
         (by have := hmid 0 (by simp [HostItem.pts]); rw [Nat.add_zero] at this
             rw [h27, h28, ke, kh, this]; rfl)
       refine ⟨e', k + 2 + 2, .ifLtN_false (by rw [h26, k0, h0]; omega)

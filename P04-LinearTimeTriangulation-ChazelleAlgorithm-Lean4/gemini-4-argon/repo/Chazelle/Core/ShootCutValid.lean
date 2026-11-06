@@ -87,7 +87,7 @@ theorem kind1_facts {O : OracleIface} {P : Polygon} {C : Chain} {m m' : ℕ → 
   have hR' : Robust A m' fun m'' => GradeRaw O P m'' h A := hR.transport hm'
   have hΛ : g < m' h := by
     have := (grade_low hR).1
-    rw [hm' h (by omega)]; exact hgΛ
+    rwa [hm' h (by omega)]
   obtain ⟨Hs, Cα, N, hC, hwf, hP, -, -, hsC, hmC, hN, hcan, -⟩ := hR'.holds.2.2.2 g b hΛ hb
   have hPQ : Cα.P = Qof P := hP
   have hent : m' (m' (h + 2) + g) + 3 * b = pc.entry := by
@@ -99,7 +99,7 @@ theorem kind1_facts {O : OracleIface} {P : Polygon} {C : Chain} {m m' : ℕ → 
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hlen : Cα.m = 2 ^ g := by rw [hmC]; exact gradeLen_full hbn
   have hsα : Cα.s = b * 2 ^ g := by rw [hsC]; rfl
-  have hx : Cα.s + Cα.m < (Qof P).n := by rw [hlen, hsα, hQn]; exact hbn
+  have hx : Cα.s + Cα.m < (Qof P).n := by rwa [hlen, hsα, hQn]
   -- the walk agrees with the tour of `Cα`
   have hV : ∀ d, d ≤ Cα.m → (chainModel C).W.vtx (pc.s.edge + d) =
       WalkEmbed.tourV Cα (if pc.dir = 1 then 0 else Cα.m) d := by

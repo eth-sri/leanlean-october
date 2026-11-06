@@ -230,7 +230,7 @@ theorem mem_full_iff {x : ℕ × ℕ × ℕ} (hx : (recOf x).Attached (interiorM
     (recOf x).toSet (interiorModel Q) Q ∈ (interiorModel Q).Full ↔ keepX li Q.n x = true := by
   obtain ⟨h, lp, rp⟩ := x
   simp only at hh
-  set I := interiorModel Q with hI
+  set I := interiorModel Q
   set y := (Q.vtx h).2 with hy
   set a := (I.pos Q ⟨lp, h + 1⟩).1 with ha
   set b := (I.pos Q ⟨rp, h + 1⟩).1 with hb
@@ -286,7 +286,7 @@ theorem mem_full_iff {x : ℕ × ℕ × ℕ} (hx : (recOf x).Attached (interiorM
       have hdir : Visibility.DirInterior Q h σ := e1.mono fun t ht => hin t ht.1 ht.2
       have hmem : chordSet Q h σ ∈ chords Q := ⟨h, σ, hh, hσ, hdir, rfl⟩
       have hpar := Visibility.chordParam_pos hQ hh hdir
-      set s := min (Visibility.chordParam Q h σ / 2) ((b - a) / 2) with hs
+      set s := min (Visibility.chordParam Q h σ / 2) ((b - a) / 2)
       have hs0 : 0 < s := lt_min (by linarith) (by linarith)
       have hs1 : s < Visibility.chordParam Q h σ := (min_le_left _ _).trans_lt (by linarith)
       have hs2 : s < b - a := (min_le_right _ _).trans_lt (by linarith)
@@ -295,8 +295,7 @@ theorem mem_full_iff {x : ℕ × ℕ × ℕ} (hx : (recOf x).Attached (interiorM
         exact Or.inl ⟨s, ⟨hs0, hs1⟩, rfl⟩
       have heq := FullDegInt.eq_of_common (FullDegInt.hc_full hQ hmem) hHC hzC
         (hon s hs0 hs2) (hin s hs0 hs2)
-      rw [← heq]
-      exact hmem
+      rwa [← heq]
     rintro (e | e)
     · -- left end at the vertex
       have hv : Q.vtx h = (a, y) := by rw [← hL]; exact (pos_start hQ hDH hli hlp e).symm

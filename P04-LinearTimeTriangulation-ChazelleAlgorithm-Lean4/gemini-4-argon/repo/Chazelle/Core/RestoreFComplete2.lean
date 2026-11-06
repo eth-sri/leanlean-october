@@ -89,13 +89,9 @@ theorem off_sideInArc {n s m k : ℕ} {t : ℝ} (hs : s < n) (hmn : m < n) (ht0 
   have hb : 0 ≤ (((s + m) % n : ℕ) : ℝ) ∧ (((s + m) % n : ℕ) : ℝ) < n :=
     ⟨Nat.cast_nonneg _, by exact_mod_cast Nat.mod_lt _ (by omega)⟩
   have hyb : 0 ≤ (((s + k) % n : ℕ) : ℝ) + t ∧ (((s + k) % n : ℕ) : ℝ) + t < n := by
-    have hkn : k < n := by
-      have : (k : ℝ) < n := by linarith
-      exact_mod_cast this
     have h1 : ((s + k) % n : ℕ) + 1 ≤ n := Nat.mod_lt _ (by omega)
     have h1' : (((s + k) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast h1
     exact ⟨by positivity, by linarith⟩
-  have hm0 : (0 : ℝ) < m := by linarith
   exact (cyc_unwrap hs0 hs0 hb hyb (by rw [unwrapK_self, he]; linarith)).2
     ⟨by rw [unwrapK_self, hy]; linarith, by rw [hy, he]; linarith⟩
 
@@ -163,15 +159,15 @@ theorem descGood_mk (hE : FGood E c₀) {reg : ℕ → Set Point}
   have hGα : GoodModel (chainModel Cα) :=
     Or.inl ⟨Cα, by rw [hK.hQ]; exact qof_simple hE, rfl⟩
   have hn7 : (chainModel Cα).W.n = 2 * Cα.m + 7 := chainModel_n Cα
-  obtain ⟨U, hU, hfU⟩ := faced_after hGα hcan.1.1 (p := g' + dX) (by rw [hn7]; exact hg')
+  obtain ⟨U, hU, hfU⟩ := faced_after hGα hcan.1.1 (p := g' + dX) (by rwa [hn7])
   obtain ⟨Tα, hTα, hTU⟩ := hRC.2.2 U hU
   have hsn : ∀ d', (g + d') % E.M.W.n = (s + (d0 + d')) % E.M.W.n := fun d' => by
     rw [hg, Nat.mod_add_mod, Nat.add_assoc]
   refine ⟨regα, Tα, ⟨hregs, hch, hAi, hAj, hij, fun d' hd' t ht0 ht1 hpos => ?_,
-    fun d' hd' => ?_, hsetD, hinB, hX0, hXL, ⟨σb, hσb, T, by rw [hdσ]; exact hgc⟩,
+    fun d' hd' => ?_, hsetD, hinB, hX0, hXL, ⟨σb, hσb, T, by rwa [hdσ]⟩,
     ⟨_, po, tq, hgc.2.2.2.2.2.2.2.1, hXA, hOA, hne, hXi, hXj, hcount⟩,
     ⟨hRC, hCS, hArcs, hRg⟩, ⟨4, Dec.recTree_of hGα hcan.1 hcan.2.1⟩, hTα,
-    by rw [hTU]; exact hfU⟩⟩
+    by rwa [hTU]⟩⟩
   · rw [hsn]
     exact hin _ t ht0 ht1 (by push_cast; linarith [(Nat.cast_nonneg d0 : (0 : ℝ) ≤ d0)])
       (by have : ((d0 + d' : ℕ) : ℝ) + 1 ≤ Cα.m := by exact_mod_cast (by omega)

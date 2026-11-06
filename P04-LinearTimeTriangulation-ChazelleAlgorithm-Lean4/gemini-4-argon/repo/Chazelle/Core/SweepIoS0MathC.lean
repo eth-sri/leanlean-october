@@ -46,7 +46,7 @@ theorem F₂plus_origin {S₂ : Set (Set Point)} {e : Set Point} (he : e ∈ F�
   · have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
       rw [Merge.Junction.whole_vertex_add]; rfl
     refine ⟨J.right.top, σ, hσ, ?_, ?_, Or.inr (Or.inl rfl)⟩
-    · rw [← hv]; exact hfr
+    · rwa [← hv]
     · rw [← hv]; rfl
 
 /-- **A ray along a shot chord from its far end.** -/
@@ -84,7 +84,7 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
       constructor
       · by_contra h
         push Not at h
-        set s := min (δ / 2) ((l - z.1) / 2) with hs
+        set s := min (δ / 2) ((l - z.1) / 2)
         have hs0 : 0 < s := lt_min (by linarith) (by linarith)
         have hs1 := min_le_left (δ / 2) ((l - z.1) / 2)
         have hs2 := min_le_right (δ / 2) ((l - z.1) / 2)
@@ -92,7 +92,7 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
         rcases hσ with rfl | rfl <;> nlinarith
       · by_contra h
         push Not at h
-        set s := min (δ / 2) ((z.1 - r) / 2) with hs
+        set s := min (δ / 2) ((z.1 - r) / 2)
         have hs0 : 0 < s := lt_min (by linarith) (by linarith)
         have hs1 := min_le_left (δ / 2) ((z.1 - r) / 2)
         have hs2 := min_le_right (δ / 2) ((z.1 - r) / 2)
@@ -114,7 +114,7 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
   obtain ⟨hoy, -, -⟩ := (hmem o).1 hoe
   have hoz1 : o.1 ≠ z.1 := fun h => hzo (Prod.ext h.symm (by rw [hoy, hzy]))
   have hoend := hends o hoe hoD
-  set τ := r - l with hτ
+  set τ := r - l
   have hτ0 : 0 < τ := by linarith
   have hwo : rayPt z σ τ = o := by
     apply point_ext
@@ -123,11 +123,11 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
         first | (exfalso; exact hoz1 (by linarith)) | linarith
     · rw [rayPt_snd, hzy, hoy]
   have hg : Genuine J.whole z σ τ :=
-    genuine_along_chord J.whole he hze hzD hσ hτ0 (by rw [hwo]; exact hoe) (by rw [hwo]; exact hoD)
+    genuine_along_chord J.whole he hze hzD hσ hτ0 (by rwa [hwo]) (by rwa [hwo])
   have hT : J.whole.hitParam z σ = τ :=
-    ((genuine_iff J.whole (by rw [hzy]; exact hy) hσ).1 hg).2
+    ((genuine_iff J.whole (by rwa [hzy]) hσ).1 hg).2
   -- the shot from the origin ends at `z`
-  have ho2 : o.2 ≤ J.whole.top.2 := by rw [hoy]; exact hy
+  have ho2 : o.2 ≤ J.whole.top.2 := by rwa [hoy]
   obtain ⟨hτo, hhD, -⟩ := Merge.hit_of_freeAt J.whole ho2 hd hfo
   have hhe : rayPt o d (J.whole.hitParam o d) ∈ e := by
     rw [heo]; exact Geometry.right_mem_segment _ _
@@ -146,7 +146,7 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
     rw [rayPt_fst] at h1 h2
     rcases hd with rfl | rfl <;> rcases hσ with rfl | rfl <;>
       first | rfl | (exfalso; nlinarith) | norm_num
-  refine ⟨by rw [hT, hwo], hdσ, hhz, by rw [hT]; exact hτ0, fun p hp hpD => ?_,
+  refine ⟨by rw [hT, hwo], hdσ, hhz, by rwa [hT], fun p hp hpD => ?_,
     fun p hp => by rw [((hmem p).1 hp).1, hzy]⟩
   have hpy := ((hmem p).1 hp).1
   rcases hends p hp hpD with h | h <;> rcases hzlr with ⟨-, h'⟩ | ⟨-, h'⟩

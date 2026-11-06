@@ -103,16 +103,16 @@ theorem kindRad_run (hE : TGood P W M N c₀) (hI : TInv W c₀ c) : ∃ Rd, Kin
     refine ⟨C'.radius, Or.inl ⟨by rw [h21, h0], H, C', hC, hM', hwf, ?_, rfl⟩⟩
     have hr : HReg P c.nmem (c₀.nreg 83000) :=
       hreg_keep hE.hwfMD hE.hMD hE.hreg (fun a ha => hI.hm a ha)
-    exact hr (by rw [hI.hm _ (by omega)]; exact h0) H C' (by rw [← h20]; exact hC)
+    exact hr (by rwa [hI.hm _ (by omega)]) H C' (by rwa [← h20])
   · refine ⟨_, Or.inr ⟨by rw [h21, h1], hMi, ?_, rfl⟩⟩
-    rw [h20, hI.hm _ (by omega)]; exact hbit
+    rwa [h20, hI.hm _ (by omega)]
 
 /-- The radius survives a frame that keeps the memory and the registers `83020`, `83021` and the
 allocator. -/
 theorem KindRad.frame {Rd : ℝ} {c' : Config} (h : KindRad P M c Rd) (hm : c'.nmem = c.nmem)
     (h20 : c'.nreg 83020 = c.nreg 83020) (h21 : c'.nreg 83021 = c.nreg 83021)
     (hA : c'.nreg ALLOC = c.nreg ALLOC) : KindRad P M c' Rd := by
-  unfold KindRad; rw [hm, h20, h21, hA]; exact h
+  unfold KindRad; rwa [hm, h20, h21, hA]
 
 /-! ## One record -/
 
@@ -130,7 +130,7 @@ theorem gRec_exec (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {Rd : ℝ} (hK 
   have hHW := hE.hW
   rcases hK with ⟨h21, H, C, hC, hMC, hwf, hreg, rfl⟩ | ⟨h21, hMi, hbit, rfl⟩
   · -- a chain model: `absKey`
-    obtain ⟨c₁, c', k, h1, -, -, ex, hk, hout, -⟩ := callPrim absKey_meets (cRecL a b)
+    obtain ⟨c₁, c', k, h1, ex, hk, hout, -⟩ := callPrim absKey_meets (cRecL a b)
       (by simp only [cRecL, List.mem_cons, List.not_mem_nil, or_false]
           rintro q (rfl | rfl | rfl) r (rfl | rfl | rfl) <;> simp only <;> omega)
       (by simp [cRecL]) (by simp [cRecL]) (src := 83020) (by simp [cRecL]) hI.hw hG hHW hwf hC
@@ -139,13 +139,13 @@ theorem gRec_exec (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {Rd : ℝ} (hK 
         have q1 := h1 (50201, a) (by simp [cRecL])
         have q2 := h1 (50202, b) (by simp [cRecL])
         simp only at q0 q1 q2
-        refine ⟨⟨by rw [q1, ← hMC]; exact he, by rw [q1, q2, ← hMC]; exact hp,
+        refine ⟨⟨by rwa [q1, ← hMC], by rwa [q1, q2, ← hMC],
           by rw [q1, q2, ← hMC]; exact hy C hMC⟩, fun H' hH' => ?_⟩
         rw [hm, q0] at hH'
         have := NFLoc.hostAt_unique hH' hC.1
         subst this
         have hn : (Qof P).n = P.n := shear_n _ _
-        rw [← hn]; exact hreg)
+        rwa [← hn])
       (by omega)
     have q1 := h1 (50201, a) (by simp [cRecL])
     have q2 := h1 (50202, b) (by simp [cRecL])
@@ -160,7 +160,7 @@ theorem gRec_exec (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {Rd : ℝ} (hK 
     have hn := interior_n (P := P)
     obtain ⟨c', k, ex, hk, hr, -⟩ := iRec_exec (P := P) (W := W) hG
       (by unfold hostWords at hHW; omega) hI.hw (a := a) (b := b) hbit rfl hI.h22 ha hb hp
-      (by rw [← hn]; exact he)
+      (by rwa [← hn])
     have ex' : Exec P W (gRec a b) c c' (k + 2) := .ifLtN_false (by rw [h21, h23]; omega) ex
     exact ⟨c', _, ex', by omega, hr, exec_frameB ex' (wr_gRec a b)⟩
 
@@ -212,8 +212,8 @@ theorem xcR_xG (hE : TGood P W M N c₀) :
     (g₂ _ (by norm_num) (by norm_num)) hA2
   -- the second record
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, f₃⟩ := gRec_exec hE hI2 hK2 (inR d hd) (inR e he)
-    (by rw [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2]; exact hp2)
-    (by rw [g₂ d hd'.1 hd'.2]; exact he2)
+    (by rwa [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2])
+    (by rwa [g₂ d hd'.1 hd'.2])
     (fun C hC => by rw [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2, ← hyy]; exact hY C hC)
     (by rw [hA2]; omega)
   rw [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2] at r₃

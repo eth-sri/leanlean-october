@@ -266,7 +266,7 @@ theorem kind_of_S₂x (hP : J.P.Simple) {S₂ : Set (Set Point)}
   · left
     have := s2_eq_of_sub J (S₂ := Merge.augChords J.right) subset_rfl hcA (hS₂ hc₀)
       (F₂plus_subset J hS₂ hf) subset_rfl hfc₀
-    rw [this]; exact hc₀
+    rwa [this]
   · exact Or.inr h
 
 /-- The kind of the last chord from the tracked data. -/
@@ -336,9 +336,9 @@ theorem chain_gen2 (hP : J.P.Simple) {Q : Polygon}
   induction N using Nat.strong_induction_on with
   | _ N ih =>
   intro f pn tn pf tf V hV hrel hN hf hfA hfF hNF hS hori htrack hn0 hnL hΦf
-  set W := (chainModel J.whole).W with hWdef
-  set g := 6 + tpos J.whole J.m₁ with hgdef
-  set L := rL1 J + rL2 J with hLdef
+  set W := (chainModel J.whole).W
+  set g := 6 + tpos J.whole J.m₁
+  set L := rL1 J + rL2 J
   by_cases hin : 0 < off W.n (g : ℝ) (pf + tf) ∧ off W.n (g : ℝ) (pf + tf) < ((L : ℕ) : ℝ)
   swap
   · refine ⟨f, hf, pn, tn, pf, tf, hfA, hfF, hNF, hS, hori, ?_, hn0, hnL, hin, hΦf⟩
@@ -366,9 +366,9 @@ theorem chain_gen2 (hP : J.P.Simple) {Q : Polygon}
     intro f' V' htf0 hf' hne hA' hS' hV' hrel' hpart
     subst htf0
     obtain ⟨pb, tb, hB, hBne⟩ := hM.other_attach (hFs hf') hA'
-    set Pf := sidePt W ((g + d') % W.n) 0 with hPfdef
-    set Pn := sidePt W pn tn with hPndef
-    set Bp := sidePt W pb tb with hBpdef
+    set Pf := sidePt W ((g + d') % W.n) 0
+    set Pn := sidePt W pn tn
+    set Bp := sidePt W pb tb
     obtain ⟨-, hyf, -⟩ := hM.attach_seg (hFs hf) hfA hfF hNF
     obtain ⟨-, hyf', -⟩ := hM.attach_seg (hFs hf') hA' hB (Ne.symm hBne)
     have hPn1 : Pn.1 ≠ Pf.1 := fun h => hNF (Geometry.point_ext h hyf)
@@ -511,9 +511,9 @@ theorem bracket_core2 (hP : J.P.Simple) {Q : Polygon}
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
-  set o := off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) with hodef
-  set L : ℝ := ((rL1 J + rL2 J : ℕ) : ℝ) with hLdef
-  set o₀ := o (p₀ + t₀) with ho₀def
+  set o := off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ)
+  set L : ℝ := ((rL1 J + rL2 J : ℕ) : ℝ)
+  set o₀ := o (p₀ + t₀)
   set oA := o (pa + 0) with hoAdef
   -- the backward run
   obtain ⟨hb, hhb, pP, tP, pZ, tZ, hPa, hZa, hPZ, hSb, horib, -, hP0, hPL, hZout, hΦb⟩ :=
@@ -575,7 +575,7 @@ theorem bracket_core2 (hP : J.P.Simple) {Q : Polygon}
   rcases hfe with hz | ⟨hLz, hz⟩
   · have hB0' : 0 < o (pb + tb) := lt_of_le_of_ne (off_nonneg kB0 hgn) (Ne.symm hB0)
     have := no_cross_off hM hFs hF.1 hhf he (Ne.symm hehf) hZa' hQa (Ne.symm hQZ) hB hW hg0 hgn
-      (by rw [hz]; exact hQ0) (by rw [hz]; exact hB0') h1
+      (by rwa [hz]) (by rwa [hz]) h1
     linarith [this.2]
   · rcases hoZ with h | h
     · linarith
@@ -614,9 +614,9 @@ theorem bracket2 (hP : J.P.Simple) {Q : Polygon}
     hRL | ⟨rfl, f', hf', hne, hA', hS', hpart⟩
   · exact absurd hRL (hU V)
   have hd0 : d ≠ 0 := (hsec rfl).1
-  set W := (chainModel J.whole).W with hWdef
-  set g := 6 + tpos J.whole J.m₁ with hgdef
-  set A := (g + d) % W.n with hAdef
+  set W := (chainModel J.whole).W
+  set g := 6 + tpos J.whole J.m₁
+  set A := (g + d) % W.n
   obtain ⟨pb, tb, hB, hBne⟩ := hM.other_attach (hFs he) heA
   obtain ⟨pb', tb', hB', hBne'⟩ := hM.other_attach (hFs hf') hA'
   obtain ⟨-, hy, -⟩ := hM.attach_seg (hFs he) heA hB (Ne.symm hBne)

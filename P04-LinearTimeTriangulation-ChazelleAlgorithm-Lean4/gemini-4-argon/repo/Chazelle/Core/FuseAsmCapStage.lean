@@ -87,7 +87,7 @@ theorem capB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
       hX, hk]
   obtain ⟨q00, q10, qr₁, qm₁, qrr₁, qrm₁, qo₁⟩ := q
   have w₁ := e₁.wb_right
-  obtain ⟨c₂, k₂, e₂, hk₂, q21, F₂⟩ := tposS_exec (P := P) c₁ w₁ (by rw [q00, qm₁]; exact hC)
+  obtain ⟨c₂, k₂, e₂, hk₂, q21, F₂⟩ := tposS_exec (P := P) c₁ w₁ (by rwa [q00, qm₁])
     q10 hkk (by rw [q00]; omega) hmW
   have w₂ := e₂.wb_right
   have r42 : c₂.nreg 70142 = code := by
@@ -127,24 +127,23 @@ theorem capB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
     rw [qr₃ _ (by decide) (by decide) (by decide), F₂.1 _ (by decide),
       qr₁ _ (by decide) (by decide), h28]
   obtain ⟨hpos, hp0, hp1, hzs⟩ := hgeo
-  have hPC : C.P.Simple := by rw [hCdef, sideChain_P]; exact hP
+  have hPC : C.P.Simple := by rwa [hCdef, sideChain_P]
   obtain ⟨c₄, k₄, l, e₄, hk₄, hk₄', hl, a₄, n₄, L₄, m₄, r₄, rr₄, rm₄, o₄, res⟩ :=
     ptQ_exec (P := P) c₃ w₃ hG (by unfold hostWords; omega)
-      (by rw [r300, a₃, m₃]; exact ⟨hB5, hwf'⟩) (by rw [r300, m₃]; exact hC)
-      ⟨⟨by rw [r301]; exact vpos_edge C kk, ⟨by rw [r301, q32]; exact hp0,
-        by rw [r301, q32]; exact hp1, by rw [q32]; show code ≤ P.n; exact hcn⟩,
+      (by rw [r300, a₃, m₃]; exact ⟨hB5, hwf'⟩) (by rwa [r300, m₃])
+      ⟨⟨by rw [r301]; exact vpos_edge C kk, ⟨by rwa [r301, q32],
+        by rwa [r301, q32], by rw [q32]; show code ≤ P.n; exact hcn⟩,
         by rw [r301, q32, hpos]; exact abs_snd_lt_radius C hzs⟩, hPC, hmW⟩
       (by rw [k₃r _ (by decide), h05]) (by rw [k₃r _ (by decide), h08])
-      (by rw [a₃, hA]) r328 (by rw [m₃]; exact hL)
+      (by rw [a₃, hA]) r328 (by rwa [m₃])
       (by rw [a₃]; unfold capBCost at hroom; omega) (by rw [q24]; omega) (by omega)
   rw [r301, q32, q33, q24] at res
   have ex : Exec P W (capB D K) c c₄ (k₁ + (k₂ + (k₃ + k₄))) :=
     .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have hvn : code - 1 < (Qof P).n := by rw [hn]; omega
-  have hcode : code = code - 1 + 1 := by omega
   refine ⟨c₄, _, l, ex, by unfold capBCost; omega, by omega, hl, a₄, n₄, L₄,
     fun a ha => ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
-  · rw [m₄ a (by rw [a₃]; exact ha), m₃]
+  · rw [m₄ a (by rwa [a₃]), m₃]
   · have hr' := hr
     simp only [Bpt, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
       at hr'
@@ -227,7 +226,7 @@ theorem capS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
   have hm1 := J.one_le_m₁
   have hm2' := J.one_le_m₂
   obtain ⟨c₂, k₂, e₂, hk₂, hout, F₂⟩ := primRun capPrim_meets wr_capPrim c₁ w₁ hG hHW
-    (by rw [q00, a₁, qm₁]; exact hwf) (by rw [q00, qm₁]; exact hCw)
+    (by rwa [q00, a₁, qm₁]) (by rwa [q00, qm₁])
     (show 1 ≤ c₁.nreg 50201 ∧ c₁.nreg 50201 + 1 ≤ J.whole.m by
       rw [q01]; exact ⟨hm1, by show J.m₁ + 1 ≤ J.m₁ + J.m₂; omega⟩)
     (by rw [a₁]; omega)
@@ -247,7 +246,7 @@ theorem capS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
   obtain ⟨t40, t41, t42, t43, qr₃, qm₃, qrr₃, qrm₃, qo₃⟩ := q
   have ex : Exec P W capS c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   refine ⟨c₃, _, ex, by omega, ⟨?_, o1.of_eq t40, fun hx => (o2 hx).of_eq t41,
-    by rw [t42]; exact o3, by rw [t42]; exact o4, fun hx => by rw [t42]; exact o5 hx,
+    by rwa [t42], by rwa [t42], fun hx => by rw [t42]; exact o5 hx,
     fun hx => (o6 hx hgen.2.2).of_eq t43⟩, by rw [qm₃, F₂.2.2.1, qm₁], fun r hr => ?_,
     fun r hr => ?_, by rw [qrm₃, F₂.2.2.2.1, qrm₁], by rw [qo₃, F₂.2.2.2.2, qo₁]⟩
   · rw [qr₃ _ (by decide) (by decide) (by decide) (by decide), frameB_reg F₂ (by omega), q26]
@@ -304,7 +303,7 @@ theorem capQ₀_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
         capB_exec (P := P) c hw hG hHW (D := 70000) (K := 70126) (by norm_num) (by norm_num)
           hwf J 0 hC hP (kk := J.m₁) hR.m1 (by show J.m₁ ≤ J.m₁; exact le_rfl) rfl h1c hcn rfl
           (z := capOrigin J) hgeo
-          (by rw [capOrigin_snd J hgen]; exact hh) h05 h08 hA h28 hL hroom hcW
+          (by rwa [capOrigin_snd J hgen]) h05 h08 hA h28 hL hroom hcW
       rw [capDir_eq J (hR.dir hX)] at hans
       exact ⟨c', _, l, .ifLtN_true hlt1 (.ifLtN_true hlt2 e), by omega, by omega, hl, a', n', L', m',
         r', rr',
@@ -348,7 +347,7 @@ theorem capQ₁_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
         capB_exec (P := P) c hw hG hHW (D := 70001) (K := 70108) (by norm_num) (by norm_num)
           hwf J 1 hC hP (kk := 0) h08 (Nat.zero_le _) rfl h1c hcn rfl
           (z := capOrigin J) hgeo
-          (by rw [capOrigin_snd J hgen]; exact hh) h05 h08 hA h28 hL hroom hcW
+          (by rwa [capOrigin_snd J hgen]) h05 h08 hA h28 hL hroom hcW
       rw [capDir_eq J (hR.dir hX)] at hans
       exact ⟨c', _, l, .ifLtN_true hlt1 (.ifLtN_true hlt2 e), by omega, by omega, hl, a', n', L', m',
         r', rr',

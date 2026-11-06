@@ -39,7 +39,7 @@ theorem stageC_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       ∃ ρ, ρ < g.k' ∧ (∀ l, l < g.μ → LvOK g c'.nmem (g.k' - 1 - ρ) l) ∧
         ∀ r, r < g.k' → cntBelow (fun v => lev v % g.k') g.μ ρ ≤
           cntBelow (fun v => lev v % g.k') g.μ r := by
-  have hU := g.U_ge; have hE := g.END_eq; have hLU := g.L_le_U
+  have hU := g.U_ge; have hLU := g.L_le_U
   have b3 := g.base_eq 3; have b33 := g.base_eq 33; have b34 := g.base_eq 34
   have b35 := g.base_eq 35; have b39 := g.base_eq 39; have b40 := g.base_eq 40
   have b41 := g.base_eq 41
@@ -61,7 +61,7 @@ theorem stageC_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   obtain ⟨c5, k5, e5, hk5, hw5, hf5, hρ5, hmin5⟩ := argS_exec (P := P) hw4 (gr f4) hk hkμ hc4
     (fun r hr => cntBelow_le _ _ _) hW
   have f5 : PFr StCRG (CMem g) c c5 := f4.trans (fr hf5 (fun a h => h.elim))
-  obtain ⟨c6, k6, e6, hk6, hw6, hf6, -, hlv6⟩ := lvS_exec (P := P) hw5 (gr f5) hk hkμ rfl hρ5 hW
+  obtain ⟨c6, k6, e6, hk6, hw6, hf6, hlv6⟩ := lvS_exec (P := P) hw5 (gr f5) hk hkμ rfl hρ5 hW
   have f6 : PFr StCRG (CMem g) c c6 := f5.trans (fr hf6 (fun a h => by
     unfold LvMem at h; unfold CMem; omega))
   have k16 : ∀ a, ¬ LvMem g a → ¬ (g.base 33 ≤ a ∧ a < g.base 33 + g.μ) →

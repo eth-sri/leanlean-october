@@ -212,7 +212,7 @@ theorem dLoop2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
     (hperm : E.Perm (List.range (2 * L.length))) (hW : SE' + E.length + 1 ≤ W)
     {c₁ d : Config} (hw : WordsBounded W d) (hI : Inv2 m₁ li n L E SE X SE' c₁ d)
     (h0 : d.nreg 200130 = 0) :
-    ∃ d' k, Exec P W dLoop2 d d' k ∧ WordsBounded W d' ∧ Inv2 m₁ li n L E SE X SE' c₁ d' ∧
+    ∃ d' k, Exec P W dLoop2 d d' k ∧ Inv2 m₁ li n L E SE X SE' c₁ d' ∧
       d'.nreg 200130 = E.length ∧ 7 * E.length ≤ k ∧ k ≤ 13 * E.length + 2 := by
   obtain ⟨d', k, e, ⟨hw', hI'⟩, htest, hk, hψ⟩ := SortR.whileLtN_potential_lb (P := P) (W := W)
     (a := 200130) (b := 200136) (body := dBody2)
@@ -229,7 +229,7 @@ theorem dLoop2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have hi := hI'.t_le
   rw [hI'.r136] at htest
   have hend : d'.nreg 200130 = E.length := by omega
-  refine ⟨d', k, e, hw', hI', hend, ?_, ?_⟩
+  refine ⟨d', k, e, hI', hend, ?_, ?_⟩
   · rw [h0, hend] at hψ; omega
   · rw [h0] at hk; omega
 

@@ -155,7 +155,7 @@ theorem qES_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ} {li : Bo
     have g27 : f 217027 = 1 := by rw [g 217027 (by decide), h27]
     have gs : f src = d.nreg src := g src hs04
     by_cases h : d.nreg src + 1 < n
-    · refine spec_ifLtN_true (by show f 217104 < f 217020; rw [g04, g20]; exact h) ?_
+    · refine spec_ifLtN_true (by show f 217104 < f 217020; rwa [g04, g20]) ?_
       refine spec_step (Machine.Exec.subN hw₁ _ _ _) (fun hw₂ => ?_)
       refine spec_step (Machine.Exec.subN hw₂ _ _ _) (fun hw₃ => ?_)
       refine spec_step (Machine.Exec.subN hw₃ _ _ _) (fun hw₄ => ?_)
@@ -165,7 +165,7 @@ theorem qES_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ} {li : Bo
           ite_eq_left h]
         omega
       · simp only [Machine.upd_other _ _ _ h1, g _ h2]
-    · refine spec_ifLtN_false (by show ¬ f 217104 < f 217020; rw [g04, g20]; exact h) ?_
+    · refine spec_ifLtN_false (by show ¬ f 217104 < f 217020; rwa [g04, g20]) ?_
       refine spec_step (Machine.Exec.subN hw₁ _ _ _) (fun hw₂ => ?_)
       refine spec_nil hw₂ ⟨by omega, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
       · simp only [Machine.upd_same, g20, g27, DrvR.qE, Bool.false_eq_true,
@@ -184,12 +184,6 @@ noncomputable def posLtF (P : Polygon) (li : Bool) (n ae ah be bh : ℕ) : ℕ :
     if hltF P (DrvR.ivB li n ae) (DrvR.ivB li n ((ae + 1) % n)) = hltF P (ah - 1) (bh - 1) then 1
     else 0
 
-/-- The registers `posLtS` writes. -/
-def BposLt (r : ℕ) : Bool :=
-  decide (r = 217154 ∨ r = 217155 ∨ r = 217156 ∨ r = 217160 ∨ r = 217161 ∨ r = 217162)
-
-theorem wr_posLt : wr BposLt posLtS = true := by decide
-
 set_option maxHeartbeats 2000000 in
 /-- The core of `posLtS`. -/
 theorem posLtCore_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool}
@@ -206,7 +200,7 @@ theorem posLtCore_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool
   -- `q1 := (ae + 1) mod n`
   obtain ⟨d2, k2, e2, hk2, n2, -, -, -, -⟩ := succS_exec (P := P) d1 e1.wb_right (src := 217150)
     (dst := 217155) (by rw [v1 _ (by decide), h20]) (by rw [v1 _ (by decide), h27])
-    (by rw [v1 _ (by decide)]; exact hae) hnW (by decide)
+    (by rwa [v1 _ (by decide)]) hnW (by decide)
   have v2 : ∀ r, r ≠ 217155 → d2.nreg r = d1.nreg r := fun r hr => by rw [n2, Machine.upd_other _ _ _ hr]
   -- `u2 := ivB q1`
   obtain ⟨d3, k3, e3, hk3, n3, -, -, -, -⟩ := ivBS_exec (P := P) d2 e2.wb_right (src := 217155)
@@ -273,7 +267,7 @@ theorem posLtS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool}
     (hae : d.nreg 217150 < n) (hnW : n ≤ W) (hW : 1 ≤ W) :
     ∃ d' k, Exec P W posLtS d d' k ∧ k ≤ 52 ∧
       d'.nreg 217154 = posLtF P li n (d.nreg 217150) (d.nreg 217151) (d.nreg 217152)
-        (d.nreg 217153) ∧ FrameB BposLt d d' := by
+        (d.nreg 217153) := by
   obtain ⟨d', k, ex, hk, hv⟩ : ∃ d' k, Exec P W posLtS d d' k ∧ k ≤ 52 ∧
       d'.nreg 217154 = posLtF P li n (d.nreg 217150) (d.nreg 217151) (d.nreg 217152)
         (d.nreg 217153) := by
@@ -307,7 +301,7 @@ theorem posLtS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool}
             exec_block
             · omega
             · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right c1, ite_eq_right c2, ite_eq_left (show d.nreg 217151 = d.nreg 217153 by omega)]
-  exact ⟨d', k, ex, hk, hv, exec_frameB ex wr_posLt⟩
+  exact ⟨d', k, ex, hk, hv⟩
 
 end exec
 

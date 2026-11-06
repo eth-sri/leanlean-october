@@ -46,7 +46,7 @@ namespace Restore
 
 open Set
 open Chazelle.Chain (ChordSystem regionsIn TouchesIn)
-open Chazelle.Merge (exitsIn potential ConfStep IsSplit)
+open Chazelle.Merge (exitsIn potential IsSplit)
 
 variable {M : Model}
 
@@ -66,7 +66,7 @@ theorem semigranular_insert (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.
   have hsd : insert e S \ {e} = S := insert_sdiff_self_of_notMem heS
   obtain ⟨P, hP, heP⟩ := Merge.exists_region_of_chord hsys (subset_insert e S) heT heS
   obtain ⟨R₁, R₂, hs⟩ := Merge.exists_split hsys (subset_insert e S) heT heS hP heP
-  have hs' : IsSplit M.D (insert e S \ {e}) e P R₁ R₂ := by rw [hsd]; exact hs
+  have hs' : IsSplit M.D (insert e S \ {e}) e P R₁ R₂ := by rwa [hsd]
   have hPγ : M.weight (insert e S \ {e}) P ≤ γ := by rw [hsd]; exact h P hP
   intro U hU
   rcases Gran.split_cases heT hs' hU with rfl | rfl | ⟨hU', hUP⟩
@@ -91,7 +91,7 @@ theorem semigranular_mono (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T
     have he : T \ S = ∅ :=
       (ncard_eq_zero (hTfin.subset sdiff_subset)).1 (Nat.le_zero.1 hk)
     have : T = S := Subset.antisymm (sdiff_eq_empty.1 he) hST
-    rw [this]; exact hS
+    rwa [this]
   | succ k ih =>
     intro S hST hk hS
     by_cases he : (T \ S).Nonempty
@@ -108,7 +108,7 @@ theorem semigranular_mono (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T
       · exact semigranular_insert hM (hST.trans hT) (hTfin.subset hST) (hT heT) heS hS
     · rw [not_nonempty_iff_eq_empty] at he
       have : T = S := Subset.antisymm (sdiff_eq_empty.1 he) hST
-      rw [this]; exact hS
+      rwa [this]
 
 /-! ## The full map of a good model -/
 

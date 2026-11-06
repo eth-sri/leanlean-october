@@ -195,7 +195,6 @@ theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop
   have hj2 : c₂.nreg pJ = n := by omega
   have hA2e : c₂.nreg ALLOC = c₀.nreg ALLOC + 4 * n := by rw [ha, hj2]
   -- 2. the loop registers
-  have hK₂ := hK₀.fix hI₂
   refine IRS.seq (K₁ := 3) (K₂ := ∑ j ∈ Finset.range n, (f j + 5) + 2)
     ((IRS.block [.constN pJ 0, .copyN pA (sw 8), .copyN pR (sw 11)] hI₂
       ⟨⟨iscr_sw (by unfold pJ sw; omega) (by unfold pJ sw; omega), Nat.zero_le _⟩,
@@ -245,7 +244,6 @@ theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop
       (kreg pA (by unfold pA sw; omega) (by unfold pA sw; omega)).trans hpA
     have cR : c'.nreg pR = c₀.nreg (sw 11) + 4 * j :=
       (kreg pR (by unfold pR sw; omega) (by unfold pR sw; omega)).trans hpR
-    have hW' : c'.nreg ALLOC ≤ W := hI'.hw.1 _
     refine (incB_irs hI' (hK₀.fix hI') (by rw [cJ]; omega) (by rw [cA]; omega)
       (by rw [cR]; omega)).mono le_rfl ?_
     rintro c'' ⟨e1, e2, e3, e4, e5⟩
@@ -265,10 +263,10 @@ theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop
         have hb : c₀.nreg (sw 11) + 4 * k + 3 < c.nreg pR := by rw [hpR]; omega
         have hb' : c₀.nreg (sw 11) + 4 * k + 3 < c.nreg ALLOC := by omega
         refine ⟨?_, ?_, ?_, ?_⟩
-        · rw [hmem _ (by omega) (Or.inl (by omega))]; exact b0
-        · rw [hmem _ (by omega) (Or.inl (by omega))]; exact b1
-        · rw [hmem _ (by omega) (Or.inl (by omega))]; exact b2
-        · rw [hmem _ (by omega) (Or.inl (by omega))]; exact b3
+        · rwa [hmem _ (by omega) (Or.inl (by omega))]
+        · rwa [hmem _ (by omega) (Or.inl (by omega))]
+        · rwa [hmem _ (by omega) (Or.inl (by omega))]
+        · rwa [hmem _ (by omega) (Or.inl (by omega))]
       · subst hk'
         rw [getD_snoc_eq]
         have hpos : c₀.nreg (sw 11) + 4 * R.length = c.nreg pR := by rw [hpR, hRl]
@@ -277,7 +275,7 @@ theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop
     · rcases (show k < j ∨ k = j by omega) with hk' | hk'
       · rw [getD_snoc_lt (by omega)]; exact hRs k hk'
       · subst hk'
-        rw [← hRl, getD_snoc_eq]; rw [hRl]; exact hsee
+        rwa [← hRl, getD_snoc_eq, hRl]
     · rw [e1, cJ, hsplit]; omega
   · -- the end
     rintro c' ⟨⟨j, hj, hjn, h9, -, -, hAl, R, hRl, hRat, hRs⟩, hex⟩

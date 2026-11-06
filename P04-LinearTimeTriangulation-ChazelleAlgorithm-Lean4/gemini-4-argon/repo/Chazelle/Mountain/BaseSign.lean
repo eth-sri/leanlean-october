@@ -78,12 +78,11 @@ theorem sector_lowest_subset_interior (hM : IsMountain P) {σ : ℝ} (hσ : σ =
     linarith
   obtain ⟨r, hr, hsec⟩ := sector_subset_interior hT hmin hσ' hposT
   refine ⟨r, hr, fun y hy h1 h2 => ?_⟩
-  have := hsec y.swap (by rw [hTdef, transpose_vtx, swap_mem_ball_swap_iff]; exact hy)
+  have := hsec y.swap (by rwa [hTdef, transpose_vtx, swap_mem_ball_swap_iff])
     (by rw [hTn, hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap]; linarith)
     (by rw [hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap]; linarith)
-  rw [Set.mem_sdiff, mem_transpose_filled_iff, Chazelle.Visibility.mem_transpose_boundary_iff,
+  rwa [Set.mem_sdiff, mem_transpose_filled_iff, Chazelle.Visibility.mem_transpose_boundary_iff,
     Prod.swap_swap] at this
-  exact this
 
 /-- **The orientation of a mountain is the sign of its lowest corner**:
 `0 < orient P * det v_{n-1} v₀ v₁`. -/
@@ -109,7 +108,7 @@ theorem mountain_orient_det (hM : IsMountain P) :
   obtain ⟨r, hr, hsec⟩ := sector_lowest_subset_interior P hM hσ hpos
   set u := P.vtx (P.n - 1) with hu
   set v := P.vtx 0 with hv
-  set w := P.vtx 1 with hw
+  set w := P.vtx 1
   have huv : u ≠ v := simple_vtx_ne hP (by omega) (by omega) (by omega)
   have hsq := sqLen_pos huv
   have hσ2 : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
@@ -135,8 +134,7 @@ theorem mountain_orient_det (hM : IsMountain P) :
     show 0 < σ * det u v (offset u v (1 - s) (σ * δ))
     rw [det_offset, show σ * (σ * δ * sqLen u v) = (σ * σ) * (δ * sqLen u v) by ring, hσ2, one_mul]
     exact mul_pos hδ0' hsq
-  rw [hor]
-  exact hpos
+  rwa [hor]
 
 /-- **Correctness with the computable sign.**  For a mountain `P` and any `σ = ±1` with
 `0 < σ * det v_{n-1} v₀ v₁`, the stack walk with sign `σ` triangulates `P` and performs at most

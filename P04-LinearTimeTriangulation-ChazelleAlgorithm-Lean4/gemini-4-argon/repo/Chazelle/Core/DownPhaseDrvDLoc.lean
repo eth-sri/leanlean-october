@@ -89,7 +89,7 @@ theorem exists_closedArc (hM : WalkAx M) {N : NF} {reg : ℕ → Set Point} (hNF
     he hw.1 hw.2.1 hA
   obtain ⟨j, hj, hjr, hs, he'⟩ := hregs.2.2.1.2.2.1 r hr a b harc
   refine ⟨j, (hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩, hj, ?_⟩
-  rw [hs, he']; exact hcl
+  rwa [hs, he']
 
 variable {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
 
@@ -104,7 +104,7 @@ theorem match_of_closedArc (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
   unfold matchB
   by_cases h : j + 1 < (buildNF M Q L E).arcs.length
   · rw [ite_eq_left h]
-    have hlt := key_s_lt_e (M := M) (Q := Q) hK hE (j := j) (by rw [← arcs_length hK]; exact h)
+    have hlt := key_s_lt_e (M := M) (Q := Q) hK hE (j := j) (by rwa [← arcs_length hK])
     simp only [Bool.and_eq_true]
     rcases hc with hc | hc | hc
     · unfold sideInArc at hc
@@ -133,7 +133,7 @@ theorem bcnt_le_two {bk : ℕ → ℕ} {n b : ℕ}
   unfold DrvR.bcnt
   by_contra hcon
   push Not at hcon
-  set l := DrvR.bfilt bk n b with hl
+  set l := DrvR.bfilt bk n b
   have hpw : l.Pairwise (· < ·) := List.Pairwise.filter _ List.pairwise_lt_range
   have m0 := (DrvR.mem_bfilt (bk := bk)).1 (List.getElem_mem (l := l) (n := 0) (by omega))
   have m2 := (DrvR.mem_bfilt (bk := bk)).1 (List.getElem_mem (l := l) (n := 2) (by omega))

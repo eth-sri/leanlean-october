@@ -62,7 +62,7 @@ theorem arcCover : NFLoc.ArcCoverSpec := by
       rw [hfree] at hz' ⊢
       exact hW.preconn.connectedComponentIn hz'
     have hU : connectedComponentIn M.D z ∈ M.regions (∅ : Set (Set Point)) :=
-      ⟨z, by rw [hfree]; exact hz, by rw [hfree]⟩
+      ⟨z, by rwa [hfree], by rw [hfree]⟩
     have hnocut : ∀ x, ¬ M.IsCut ∅ x := fun x ⟨c, hc, _⟩ => hc
     obtain ⟨p₀, t₀, hp₀, -, -, -⟩ := hW.exists_faces (empty_subset _) finite_empty hU
     have hn : (0 : ℝ) < M.W.n := by exact_mod_cast (Nat.zero_lt_of_lt hp₀)
@@ -70,8 +70,7 @@ theorem arcCover : NFLoc.ArcCoverSpec := by
       fun x _ => hnocut x, fun p t hp ht0 ht1 _ => ?_⟩
     obtain ⟨U', hU', hf⟩ :=
       hW.exists_faces_of_not_cut (empty_subset _) finite_empty hp ⟨ht0, ht1⟩ (hnocut _)
-    rw [hall _ hU, ← hall _ hU']
-    exact hf
+    rwa [hall _ hU, ← hall _ hU']
   · obtain ⟨c, hc⟩ := hne
     obtain ⟨-, -, -, -, -, -, ⟨⟨p, t, hA, -⟩, -⟩, -⟩ := hW.ends c (hAdm hc)
     obtain ⟨U, hU, b, harc⟩ := hstart _ ⟨c, hc, p, t, hA, rfl⟩
@@ -154,13 +153,13 @@ theorem upSide : UpSideSpec := by
   -- a position just after `A`, facing `U`
   obtain ⟨ε, hε1, hε2, hε3⟩ := ((WalkAx.exists_pos_after hA.2.1 hA.2.2.1).and
     ((WalkAx.eventually_after_start hkne).and (Ioo_mem_nhdsGT hδ))).exists
-  have hin : sideInArc (p + t) (pb + tb) (p + (t + ε)) := by rw [← add_assoc]; exact hε2
+  have hin : sideInArc (p + t) (pb + tb) (p + (t + ε)) := by rwa [← add_assoc]
   have hfU : M.Faces p (t + ε) U := (hfac p (t + ε) hA.1 hε1.1 hε1.2).1
     (Or.inl ⟨by linarith [hε3.1], by linarith [hε3.2]⟩)
   have hnot := hW.not_left_of_after hAdm hc hA hB hAB hU hA.1 hε1 hin hfU
   -- the midpoint of the chord
-  set a := sidePt M.W p t with ha
-  set b := sidePt M.W pb tb with hb
+  set a := sidePt M.W p t
+  set b := sidePt M.W pb tb
   have hmid : lerp a b (1 / 2) ∈ c := by
     rw [hcab]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
   have hmidD : lerp a b (1 / 2) ∈ M.D := hopen _ ⟨by norm_num, by norm_num⟩
@@ -180,8 +179,7 @@ theorem upSide : UpSideSpec := by
         have := eventually_mul_pos (hsm.mono fun _ h => h.1) (sub_pos.2 hlt)
         rw [h]
         refine this.mono fun δ' h' => ?_
-        rw [offset_mid_ab hy]
-        exact h'
+        rwa [offset_mid_ab hy]
       · exact h
     have hVUp : V = Up := by
       rcases hV2 with h | h

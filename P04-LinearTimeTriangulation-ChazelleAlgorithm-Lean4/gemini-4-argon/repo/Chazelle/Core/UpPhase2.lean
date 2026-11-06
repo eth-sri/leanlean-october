@@ -177,9 +177,9 @@ theorem desc0S_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
     · have : t ≠ 1 := fun h' => h (hiff.mp h')
       omega
   have c3_00 : c3.nreg 180000 = s := by
-    rw [b00, k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold D0RG; omega)]; exact h16
+    rwa [b00, k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold D0RG; omega)]
   have c3_10 : c3.nreg 180010 = P.n := by
-    rw [b10, k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold D0RG; omega)]; exact h01
+    rwa [b10, k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold D0RG; omega)]
   have c3_13 : c3.nreg 180013 = t := by rw [b13]
   obtain ⟨C0, hC0P, hC0s, hC0m⟩ : ∃ C0 : Chain, C0.P = Qof P ∧ C0.s = s ∧ C0.m = 1 :=
     ⟨⟨Qof P, s, 1, le_rfl, by rw [hQn]; omega⟩, rfl, rfl, rfl⟩
@@ -204,11 +204,11 @@ theorem desc0S_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
     d0StoreB_exec (P := P) hw4 (TD := TD) (hp := hp) (s := s) (t := t)
       (b := c4.nreg 180014)
       c4A
-      (by rw [c4r _ (by omega) (by omega)]; exact h04) (by rw [c4r _ (by omega) (by omega)]; exact h16)
+      (by rwa [c4r _ (by omega) (by omega)]) (by rwa [c4r _ (by omega) (by omega)])
       (by rw [k4r _ (bb _ (by omega) (by omega)), fr3 _ (by omega) (by omega) (by omega) (by omega)
         (by omega)])
-      rfl (by rw [c4r _ (by omega) (by omega)]; exact h20)
-      (by rw [c4r _ (by omega) (by omega)]; exact h23) hW
+      rfl (by rwa [c4r _ (by omega) (by omega)])
+      (by rwa [c4r _ (by omega) (by omega)]) hW
   have hm5c : ∀ a, (a < TD ∨ TD + 5 ≤ a) → c5.nmem a = c.nmem a := fun a ha => by
     rw [hm5 a ha, hm4, hm3, hm2, hm1]
   refine ⟨c5, k1 + (k2 + (k3 + (k4 + k5))), .seq e1 (.seq e2 (.seq e3 (.seq e4 e5))),
@@ -217,8 +217,8 @@ theorem desc0S_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
     by rw [ho5, ho4, ho3, ho2, ho1]⟩
   · have hC : C = C0 := chain_eq (by rw [hCP, hC0P]) (by rw [hCs, hC0s]) (by rw [hCm, hC0m])
     subst hC
-    refine ⟨by rw [w0]; exact hH, ?_, by rw [w1, hCs], by rw [w2, hCm],
-      by rw [w3, hsn _ hCP hCs hCm], by rw [w4]; exact hiff4⟩
+    refine ⟨by rwa [w0], ?_, by rw [w1, hCs], by rw [w2, hCm],
+      by rw [w3, hsn _ hCP hCs hCm], by rwa [w4]⟩
     rw [hCP]; have := L41.poly_whole (Qof P) (by omega); rw [hQn] at this; exact this.symm
   · have hb' : bandOf r ≠ 18 := h2
     unfold bandOf at hb'

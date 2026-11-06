@@ -165,17 +165,13 @@ theorem shared_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hX
   unfold sharedS
   refine IRS.seq (K₁ := 35007) (K₂ := Klh c₀ F + 2)
     (callArr_irs (dsc := sw 21) (re := sw 41) (rh := qH) (rd := qD) (o := aO) hI hctx
-      (by unfold qH qD sw; omega) (by unfold aO sw; omega) (by rw [e41]; exact hlt)
+      (by unfold qH qD sw; omega) (by unfold aO sw; omega) (by rwa [e41])
       (by rw [e41, eH]; exact ⟨by rw [hpar0], by rw [hpar0]; exact one_pos, q.hhn⟩)
-      (by rw [e41, eH, hpos0]; exact hyS) (by omega)) ?_
+      (by rwa [e41, eH, hpos0]) (by omega)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨harr, fr2, hA2, hm2⟩
   rw [e41, eH, eD] at harr
   unfold ArrAt at harr
   rw [hpos0] at harr
-  have k2 : ∀ r, sw 3200 ≤ r → r < sw 3230 → c₂.nreg r = c'.nreg r := fun r h1 h2 =>
-    fr2 r (not_oracle_sw (by unfold sw at *; omega) (by unfold sw at *; omega))
-      (by unfold aO sw at *; omega) (by unfold aO sw at *; omega) (by unfold aO sw at *; omega)
-      (by unfold ALLOC sw at *; omega)
   have hfr₂ : CandFr c c₂ := hfr.trans (candFr_of_set (S := fun r => r = aO ∨ r = aO + 1 ∨
       r = aO + 2) (fun r hr => Or.inr (by rcases hr with rfl | rfl | rfl <;> unfold aO sw <;> omega))
     (fun r h1 h2 h3 => fr2 r h1 (fun h => h2 (Or.inl h)) (fun h => h2 (Or.inr (Or.inl h)))
@@ -202,7 +198,7 @@ theorem shared_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hX
     rw [hqh] at hgeo hposA hparA
     have hcls := posClass_of (C := J.right) (Q := Qof P) (x := ⟨c₂.nreg (aO + 1), c.nreg qH⟩) hp
       (by rw [hparA]; exact hpp.1) (by rw [hparA]; exact hpp.2.1) (by rw [hposA]; exact q.hy)
-      (Or.inl (by rw [hposA]; exact hz2))
+      (Or.inl (by rwa [hposA]))
     have hloc : (c₂.nreg (aO + 1) = 1 ∨ c₂.nreg (aO + 1) = 3) ∨
         (6 ≤ c₂.nreg (aO + 1) ∧ z ∈ J.right.set) := by
       have hzr : z ∈ J.right.set := hzs ▸ J.shared_mem_right
@@ -222,7 +218,7 @@ theorem shared_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hX
       by unfold IFix sw; omega⟩ (by unfold OutL aO sw; omega) hI₂ (L := L)
       (Mod := ModB J (c.nreg bL) (c.nreg bR)) (R₀ := J.whole.radius) (t := 1) (z := z)
       hp (by rw [eH2]; exact ⟨by rw [hparA]; exact hpp.1, by rw [hparA]; exact hpp.2.1, q.hhn⟩)
-      (by rw [eH2]; exact hposA) q.hy hloc hacc₂ (by norm_num)
+      (by rwa [eH2]) q.hy hloc hacc₂ (by norm_num)
       (by rw [q.hbL, hbR]; exact modB_right J) rfl
       (by show c₂.nreg ALLOC + Klh c₀ F ≤ W; omega)).mono le_rfl ?_
     rintro c'' ⟨⟨L', a', s', g', geo'⟩, fr, hA', hm'⟩

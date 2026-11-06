@@ -31,7 +31,6 @@ open DrvR
 
 /-- **The facts about region `r` of `N`** used by the host RAM. -/
 structure HFacts (n : ℕ) (N : NF) (r : ℕ) : Prop where
-  hr : r < N.nRegions
   hA : (N.region r).arcs.length ≤ 5
   hK : (N.region r).chords.length ≤ 4
   harc : ∀ j ∈ (N.region r).arcs, j < N.arcs.length ∧ (N.arc j).s.edge < n ∧
@@ -59,7 +58,7 @@ theorem region_arcs_le_of {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hN
     rintro _ ⟨j, hj, rfl⟩
     obtain ⟨h1, h2⟩ := hmem j hj
     have := (hA.1 j h1).2
-    rw [h2] at this; exact this
+    rwa [h2] at this
   obtain ⟨hfin, hcard⟩ := hM.arcs_bound hF.2.1 hF.1 hU
   have hdg := hdeg _ hU
   have hL : L.length = ({j | j ∈ L} : Set ℕ).ncard := by
@@ -79,7 +78,7 @@ theorem hfacts_of {Q : Polygon} (hQ : Q.Simple) {L : List (ℕ × ℕ × ℕ)} {
       ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) 4) {r : ℕ}
     (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) :
     HFacts Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r := by
-  set N := BuildNF.buildNF (interiorModel Q) Q L E with hNdef
+  set N := BuildNF.buildNF (interiorModel Q) Q L E
   have hK : 0 < L.length := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
   have hN : IsNF (interiorModel Q) Q N := DownMath.isNF_build hQ hL hperm hsort
   have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
@@ -89,7 +88,7 @@ theorem hfacts_of {Q : Polygon} (hQ : Q.Simple) {L : List (ℕ × ℕ × ℕ)} {
     obtain ⟨-, hA, -, eh, hh, -⟩ := DownMath.chordPos_attach hN hi hxi
     exact ⟨DownMath.walk_n Q ▸ hA.1, by omega⟩
   obtain ⟨-, -, -, reg, hRC, -, hAO, hRO, -, hh, -⟩ := id hN
-  refine ⟨hr, region_arcs_le_of hM hN hdeg hr, ?_, fun j hj => ?_, fun i hi => ?_⟩
+  refine ⟨region_arcs_le_of hM hN hdeg hr, ?_, fun j hj => ?_, fun i hi => ?_⟩
   · rw [← Gran.deg_region hN hRC hRO hr]
     exact hdeg _ (hRC.1 r hr)
   · have hj' := ((hAO.2.2.2 r hr j).1 hj).1

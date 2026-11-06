@@ -79,7 +79,7 @@ theorem entry_ok (hP : C.P.Simple) (hDH : DistinctHeights C.P) {i d : ℕ} (hi :
     (recOf (trip C i d)).toSet (chainModel C) C.P = C.chordSet (C.sideIdx C.sideBeta i) (sig d) ∧
       (recOf (trip C i d)).Attached (chainModel C) C.P ∧ (trip C i d).1 < C.P.n ∧
       C.DirFree (C.sideIdx C.sideBeta i) (sig d) := by
-  set k := C.sideIdx C.sideBeta i with hkd
+  set k := C.sideIdx C.sideBeta i
   have hk : k ≤ C.m := C.sideIdx_le _ _
   obtain ⟨hf, hvpos, hvA⟩ := vert_attach hP hDH hi (sig_cases d) he
   obtain ⟨-, hfpos, hfA⟩ := far_attach hDH hk (sig_cases d) hf
@@ -267,7 +267,7 @@ theorem bruteList_set (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
     have hdist : dist (rayPt (C.vertex k) σ ε) (C.vertex k) < r := by
       rw [FuseMath.dist_rayPt _ hσ hε0.le]
       exact lt_of_le_of_lt (min_le_left _ _) (by linarith)
-    have hl := hloc _ hmem (by rw [hpt]; exact hne) (by rw [hpt]; exact hdist)
+    have hl := hloc _ hmem (by rwa [hpt]) (by rwa [hpt])
     rw [← hpt, FuseMath.sideLeft_rayPt hε0, hpt] at hl
     have hvi : C.vertex k = vPt C i := by unfold vPt; rw [hik]
     rw [hvi] at hl
@@ -277,7 +277,7 @@ theorem bruteList_set (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
       rcases hσ with rfl | rfl
       · exact ⟨0, by omega, rfl⟩
       · exact ⟨1, le_rfl, rfl⟩
-    have he : Emit C i d := by unfold Emit; rw [hsd]; exact hemit
+    have he : Emit C i d := by unfold Emit; rwa [hsd]
     refine ⟨trip C i d, mem_bruteList.2 ⟨i, d, hi, hd, he, rfl⟩, ?_⟩
     rw [(entry_ok hP hDH hi he).1, hsd, hik]
 

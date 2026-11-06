@@ -26,10 +26,10 @@ theorem arcCnt_le_wt {M : Model} {Q : Polygon} {n0 : ℕ}
     arcCnt M.W.n s.edge e.edge
       (if s.edge = e.edge ∧ M.key Q s < M.key Q e then 1 else 0) ≤
         M.arcWt (M.key Q s) (M.key Q e) + 8 := by
-  set n := M.W.n with hndef
+  set n := M.W.n
   have hn : 0 < n := by omega
-  set a := M.key Q s with hadef
-  set b := M.key Q e with hbdef
+  set a := M.key Q s
+  set b := M.key Q e
   have hka : a = s.edge + M.param Q s := rfl
   have hkb : b = e.edge + M.param Q e := rfl
   have hsR : (s.edge : ℝ) + 1 ≤ n := by exact_mod_cast hse
@@ -67,7 +67,7 @@ theorem arcCnt_le_wt {M : Model} {Q : Polygon} {n0 : ℕ}
         unfold unwrapK; rw [ite_eq_right (by linarith [hs.1, he.2.1])]
       exact (closedArc_unwrap ha hb hpe hne).2 ⟨by rw [hu1]; linarith [hs.2.1], by
         rw [hu1, hu2]; linarith [he.1]⟩
-  obtain ⟨t, ht, -, htu⟩ := steps_le (w := M.arcWt a b) hunc hs hse hb hne le_rfl hee hcl
+  obtain ⟨t, ht, htu⟩ := steps_le (w := M.arcWt a b) hunc hs hse hb hne le_rfl hee hcl
   -- the vertex count is `t + 1`
   have hcnt : arcCnt n s.edge e.edge 0 = t + 1 := by
     unfold arcCnt
@@ -168,7 +168,7 @@ theorem lcnt_le {Cα : Chain} {Q : Polygon} {N : NF} {γ' : ℕ}
         obtain ⟨c, hcF, -⟩ := hca
         have h1 := Gran.ncard_F hnf
         rw [h0, Set.ncard_eq_zero (hs := hFam.1)] at h1
-        rw [h1] at hcF; exact hcF
+        rwa [h1] at hcF
       · exact h0
     have hw : wBit Cα Q N.nChords (N.arc j).s.edge (N.arc j).s.hgt (N.arc j).e.edge (N.arc j).e.hgt =
         if (N.arc j).s.edge = (N.arc j).e.edge ∧
@@ -273,7 +273,7 @@ theorem k1K_le (hE : FGood E c₀) {Cα : Chain} {N : NF} {γ' : ℕ} (hQ : Cα.
   have hT : 20 ≤ T := by rw [hTdef]; unfold tK; omega
   have hm1 := Cα.one_le
   have hQn : (Qof E.P).n = E.P.n := shear_n _ _
-  have hmP : Cα.m < E.P.n := by have := Cα.m_lt; rw [hQ, hQn] at this; exact this
+  have hmP : Cα.m < E.P.n := by have := Cα.m_lt; rwa [hQ, hQn] at this
   have hn3 : 3 ≤ E.P.n := hE.hG.1.1
   -- the chords
   have hnc : N.nChords ≤ 140 * (4 + 2) * (2 * Cα.m + 8) :=

@@ -38,7 +38,7 @@ def BitIs (c : Config) (r : ℕ) (p : Prop) : Prop := c.nreg r ≤ 1 ∧ (c.nreg
 
 theorem BitIs.of_eq {c c' : Config} {r r' : ℕ} {p : Prop} (h : BitIs c r p)
     (he : c'.nreg r' = c.nreg r) : BitIs c' r' p := by
-  unfold BitIs at *; rw [he]; exact h
+  unfold BitIs at *; rwa [he]
 
 theorem BitIs.congr {c : Config} {r : ℕ} {p q : Prop} (h : BitIs c r p) (hpq : p ↔ q) :
     BitIs c r q := ⟨h.1, h.2.trans hpq⟩
@@ -554,20 +554,20 @@ theorem secAt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     · subst h0
       obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, hb⟩ := secFirst_exec c₁ hE₁ q121
       refine ⟨c₂, _, .ifLtN_true (by rw [q121, q32]; omega) e₂, by omega, f₂, hE₂, C.slitTop,
-        (chainModel C).W.vtx (1 + 6), fun x => ?_, by rw [walk_vtx_six]; exact hb⟩
+        (chainModel C).W.vtx (1 + 6), fun x => ?_, by rwa [walk_vtx_six]⟩
       rw [sideLeft_tour_iff C (by omega), ite_eq_left rfl, ite_eq_right (by omega)]
     · by_cases h2 : i < 2 * C.m
       · obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, hb⟩ := secGen_exec c₁ hE₁ q121 (by omega) h2
         refine ⟨c₂, _, .ifLtN_false (by rw [q121, q32]; omega)
-          (.ifLtN_true (by rw [q121, q123]; exact h2) e₂), by omega, f₂, hE₂, _, _,
+          (.ifLtN_true (by rwa [q121, q123]) e₂), by omega, f₂, hE₂, _, _,
           fun x => ?_, hb⟩
         rw [sideLeft_tour_iff C hi, ite_eq_right h0, ite_eq_right (by omega)]
       · have hi2 : i = 2 * C.m := by omega
         obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, hb⟩ := secLast_exec c₁ hE₁ (by rw [q121, hi2])
         refine ⟨c₂, _, .ifLtN_false (by rw [q121, q32]; omega)
-          (.ifLtN_false (by rw [q121, q123]; exact h2) e₂), by omega, f₂, hE₂,
+          (.ifLtN_false (by rwa [q121, q123]) e₂), by omega, f₂, hE₂,
           (chainModel C).W.vtx ((2 * C.m - 1) + 6), C.slitTop, fun x => ?_,
-          by rw [hi2, walk_vtx_last]; exact hb⟩
+          by rwa [hi2, walk_vtx_last]⟩
         rw [sideLeft_tour_iff C hi, ite_eq_right h0, ite_eq_left hi2]
         subst hi2; rfl
   have w₂ := e₂.wb_right

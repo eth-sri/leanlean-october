@@ -97,8 +97,8 @@ theorem initE_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Ju
     ∃ c₀ k, Exec P W initE c c₀ k ∧
       k ≤ 31100 + 6 * Nat.clog 2 (c.nmem (c.nreg (sw 3) + 1) + c.nmem (c.nreg (sw 4) + 1) + 1) ∧
       Frame ioBands c c₀ k ∧ InitRes P J c c₀ := by
-  set a₁ := c.nmem (c.nreg (sw 3) + 1) with ha₁
-  set a₂ := c.nmem (c.nreg (sw 4) + 1) with ha₂
+  set a₁ := c.nmem (c.nreg (sw 3) + 1)
+  set a₂ := c.nmem (c.nreg (sw 4) + 1)
   have h0' := h0
   obtain ⟨h90, h91, h92, h93, hJ, hJW, d20, w20, d21, w21, -⟩ := h0'
   have hWn : 2 * (chainModel J.whole).W.n ≤ W := walk_two_le hJW.2.2.1 hJ.2.2 hWh

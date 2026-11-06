@@ -98,7 +98,7 @@ theorem skip_at {i : ℕ} (h1 : c.nreg sP ≤ i) (h2 : i < c'.nreg sP) :
         ((chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩) ∧
       rs[i].1 = c'.nreg kE ∧ (chainModel J.whole).param (Qof P) ⟨rs[i].1, rs[i].2.1⟩ =
         (chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩ := by
-  obtain ⟨-, hle, -, hk3⟩ := stp_ptr_c' S.E S.L S.hI S.hd
+  obtain ⟨hle, -, hk3⟩ := stp_ptr_c' S.E S.L S.hI S.hd
   obtain ⟨-, -, esC', -, -⟩ := stp_arrays_c' S.E S.L S.hI S.hd
   have hlen := S.hD.1
   have hi : i < rs.length := by omega
@@ -108,8 +108,7 @@ theorem skip_at {i : ℕ} (h1 : c.nreg sP ≤ i) (h2 : i < c'.nreg sP) :
   rw [S.stopOff_rs hi] at ho
   obtain ⟨e1, e2⟩ := S.posEq a0.1 a0.2.1 a0.2.2.1 ho
   refine ⟨f0, f1, ?_, e1, e2⟩
-  rw [← e2, ← e1]
-  exact a0
+  rwa [← e2, ← e1]
 
 /-- **A stop chord at the next key is a skipped stop.** -/
 theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)))
@@ -136,7 +135,7 @@ theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.ri
     rw [h2, h1]
     rfl
   have hic : i < c.nreg sC := hlen ▸ hi
-  obtain ⟨-, -, hptr, -⟩ := stp_ptr_c' S.E S.L S.hI S.hd
+  obtain ⟨-, hptr, -⟩ := stp_ptr_c' S.E S.L S.hI S.hd
   obtain ⟨-, -, esC', -, -⟩ := stp_arrays_c' S.E S.L S.hI S.hd
   have hso := (stp_stops_c' S.E S.L S.hI S.hd).2 i hic
   refine ⟨i, hi, ?_, ?_, h3⟩
@@ -162,18 +161,17 @@ theorem nonstop_acc {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J
   have ekE : cs.nreg kE = c.nreg kE := hkp 2400 (by omega)
   have ekH : cs.nreg kH = c.nreg kH := hkp 2401 (by omega)
   obtain ⟨-, -, hKb, -, hKw, -⟩ := hK.2.2.2 hsome
-  obtain ⟨k, hk, a, σ, ha, haR, hav, hat, hfree, rfl, hlt', j, hj, hjk, hjO, hjD, h, hh, hmA⟩ :=
+  obtain ⟨j, h, hsh, hh, hmA⟩ :=
     stp_accepted_of_found S.E S.L hW hR S.hBA he hA hlt S.gapK hs (fun h0 => by
-      have := hKw (by rw [ewX]; exact h0)
-      rw [ewE, ewH] at this
-      exact this)
+      have := hKw (by rwa [ewX])
+      rwa [ewE, ewH] at this)
   have hoT : offT P J (j, c'.nreg kE, h) = keyOff P J c' := by
     show oW J (_ + (chainModel J.whole).param (Qof P) ⟨_, h⟩) = _
     rw [hh]
     rfl
-  obtain ⟨hbF, hle⟩ := S.hBA.bMin _ hmA (by rw [hoT, ekE, ekH]; exact hlt)
+  obtain ⟨hbF, hle⟩ := S.hBA.bMin _ hmA (by rwa [hoT, ekE, ekH])
   have hge := hKb hbF
-  exact ⟨_, hmA, hoT, by rw [hjO, hjD], hbF, le_antisymm (hle.trans hoT.le) hge⟩
+  exact ⟨_, hmA, hoT, hsh, hbF, le_antisymm (hle.trans hoT.le) hge⟩
 
 /-- **The chord of an accepted triple at the offset of the next key** is attached there, is not
 a stop chord and is anchored. -/
@@ -192,14 +190,14 @@ theorem triple_at {t : ℕ × ℕ × ℕ} (ht : t ∈ A) (hto : offT P J t = key
   obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Qof P) hj
   have hS₂a : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := S.E.hNF₂.1.2.1
   obtain ⟨e1, e2⟩ := S.posEq hpw.1 hpw.2.1.1 hpw.2.1.2.1 hto
-  refine ⟨hmemF, by rw [← e2, ← e1]; exact hAt,
+  refine ⟨hmemF, by rwa [← e2, ← e1],
     origin_not_stop hP hS₂a (hS₂a hc) ha haR hav hat hlt', fun hbr => ?_⟩
   have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
   have haD : endOrigin J (Qof P) N₂ t.1 ∉ J.whole.dom := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.right_set_subset haR)
   obtain ⟨q, s, hq, hqpt⟩ := endpoint_attach hM (F₂plus_subset J hS₂a hmemF) (origin_mem J) haD
   have := off_right_pt J hP (S₂ := ∅) (empty_subset _) finite_empty hq.1 hq.2.1 hq.2.2.1
-    (by rw [hqpt]; exact haR) (by rw [hqpt]; exact hav)
+    (by rwa [hqpt]) (by rwa [hqpt])
   rw [← oW_eq, ← Lst_eq] at this
   have := hbr q s hq
   linarith

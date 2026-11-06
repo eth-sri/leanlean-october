@@ -79,7 +79,7 @@ theorem approach_edge (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (
     rw [← hpp, ← htt] at hA'
     obtain ⟨d, hd, -, -, hcmem⟩ := attached_opposite hM (hF hcF) hA' hτ (havoid c hcF)
     obtain ⟨r₃, hr₃, hcl⟩ := hA'.2.2.2.2
-    set s₂ := min (d / 2) (r₃ / 2) with hs₂
+    set s₂ := min (d / 2) (r₃ / 2)
     have hs₂0 : 0 < s₂ := lt_min (by linarith) (by linarith)
     have hs₂d : s₂ < d := lt_of_le_of_lt (min_le_left _ _) (by linarith)
     have hs₂r : s₂ < r₃ := lt_of_le_of_lt (min_le_right _ _) (by linarith)
@@ -89,7 +89,7 @@ theorem approach_edge (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (
         have := congrArg Prod.fst h
         simp only [rayPt_fst] at this
         rcases hτ with rfl | rfl <;> linarith
-      · rw [dist_rayPt _ (by rcases hτ with rfl | rfl <;> norm_num) hs₂0.le]; exact hs₂r
+      · rwa [dist_rayPt _ (by rcases hτ with rfl | rfl <;> norm_num) hs₂0.le]
     have h1 := (sideLeft_edge hne ht _).1 (hsec 1 one_pos)
     have h2 := (sideLeft_edge hne ht _).1 hx₂
     have hw0 : det (M.W.vtx p) (M.W.vtx ((p + 1) % M.W.n)) (sidePt M.W p t) = 0 :=
@@ -151,9 +151,9 @@ theorem approach_vertex (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     exact (hUfree hs).2 ⟨c, hc, hsc⟩
   have hn0 : 0 < M.W.n := by omega
   have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
-  set v := M.W.vtx p with hv
-  set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
-  set b := M.W.vtx ((p + 1) % M.W.n) with hb
+  set v := M.W.vtx p
+  set a := M.W.vtx ((p + M.W.n - 1) % M.W.n)
+  set b := M.W.vtx ((p + 1) % M.W.n)
   have hbv : b ≠ v := fun h => hne h.symm
   have hav : a ≠ v := by
     have := hM.nd _ (Nat.mod_lt (p + M.W.n - 1) hn0)
@@ -162,8 +162,8 @@ theorem approach_vertex (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hA0 : a - v ≠ 0 := sub_ne_zero.2 hav
   have hsecv : ∀ x, sideLeft M.W p 0 x ↔ sideCcw (b - v) (x - v) (a - v) :=
     fun x => sideLeft_zero _ _ _
-  have hs₁B' : rayPt v τ s₁ ∈ ball v r := by rw [← hwv]; exact hs₁B
-  have hs₁U' : rayPt v τ s₁ ∈ U := by rw [← hwv]; exact hs₁U
+  have hs₁B' : rayPt v τ s₁ ∈ ball v r := by rwa [← hwv]
+  have hs₁U' : rayPt v τ s₁ ∈ U := by rwa [← hwv]
   refine ⟨fun hcut => ?_, fun hcut => ?_⟩
   · -- no chord is attached at the vertex: the whole sector is free
     have hfreeS : ∀ x ∈ ball (sidePt M.W p 0) r, sideLeft M.W p 0 x → x ∈ freeIn M.D F := by
@@ -199,7 +199,7 @@ theorem approach_vertex (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   rw [← hpp, ← htt] at hA'
   obtain ⟨d, hd, -, hcD, hcmem⟩ := attached_opposite hM (hF hcF) hA' hτ (havoid c hcF)
   obtain ⟨r₃, hr₃, hcl⟩ := hA'.2.2.2.2
-  set s₂ := min (d / 2) (r₃ / 2) with hs₂
+  set s₂ := min (d / 2) (r₃ / 2)
   have hs₂0 : 0 < s₂ := lt_min (by linarith) (by linarith)
   have hs₂d : s₂ < d := lt_of_le_of_lt (min_le_left _ _) (by linarith)
   have hs₂r : s₂ < r₃ := lt_of_le_of_lt (min_le_right _ _) (by linarith)
@@ -209,7 +209,7 @@ theorem approach_vertex (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
       have := congrArg Prod.fst h
       simp only [rayPt_fst] at this
       rcases hτ with rfl | rfl <;> linarith
-    · rw [dist_rayPt _ (by rcases hτ with rfl | rfl <;> norm_num) hs₂0.le]; exact hs₂r
+    · rwa [dist_rayPt _ (by rcases hτ with rfl | rfl <;> norm_num) hs₂0.le]
   have hττ : τ * τ = 1 := by rcases hτ with rfl | rfl <;> norm_num
   have hdm0 : ((-τ, 0) : Point) ≠ 0 := by
     intro h; have := congrArg Prod.fst h; simp only [Prod.fst_zero] at this
@@ -251,7 +251,7 @@ theorem approach_vertex (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
         rw [← h3]
       · simp only [lerp_snd, rayPt_snd]
         rw [show (M.W.vtx ((p + 1) % M.W.n)).2 = b.2 from rfl, hb2]; ring
-    rw [e]; exact hmem
+    rwa [e]
   -- the ray is on one side of the chord
   have hdich : 0 < sideCross (b - v) ((τ, 0) : Point) ∨ 0 < sideCross ((τ, 0) : Point) (a - v) := by
     rcases hdp with ⟨-, h2, -⟩ | ⟨-, h2⟩ | ⟨-, -, h3⟩ | ⟨h1, h2, h3⟩
@@ -270,11 +270,11 @@ theorem approach_vertex (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hchord : ∀ x ∈ ball v r, sideLeft M.W p 0 x → x ∉ ⋃₀ F →
       x ∈ freeIn M.D F := by
     intro x hx hxl hxF
-    exact ⟨(hsf x (by rw [hwv]; exact hx) hxl).1, hxF⟩
+    exact ⟨(hsf x (by rwa [hwv]) hxl).1, hxF⟩
   have hray : ∀ x ∈ ball v r, sideLeft M.W p 0 x → x ∈ ⋃₀ F →
       ∃ s' : ℝ, 0 ≤ s' ∧ x - v = s' • ((-τ, 0) : Point) := by
     rintro x hx hxl ⟨c', hc', hxc'⟩
-    have hA'' := (hsf x (by rw [hwv]; exact hx) hxl).2 c' hc' hxc'
+    have hA'' := (hsf x (by rwa [hwv]) hxl).2 c' hc' hxc'
     obtain ⟨d', -, hpts, -, -⟩ := attached_opposite hM (hF hc') hA'' hτ (havoid c' hc')
     obtain ⟨s', hs'0, -, hxs'⟩ := hpts x hxc'
     refine ⟨s', hs'0, ?_⟩
@@ -482,7 +482,6 @@ theorem right_vtx0 : (chainModel J.right).W.vtx (6 + tpos J.right 0) = J.shared 
 theorem right_split_top (h : 0 < rδ J) :
     (chainModel J.right).W.vtx ((6 + tpos J.right 0 + (rL1 J + rδ J)) %
       (chainModel J.right).W.n) = J.right.top := by
-  have hτ := tpos_lt J.right 0
   have e : rL1 J + rδ J = 2 * J.right.m - tpos J.right 0 + 7 := by
     unfold rL1 rδ at *
     split_ifs at h ⊢ <;> omega
@@ -553,7 +552,7 @@ theorem query_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hbackD : ∀ s, 0 < s → s < T → rayPt w (-σ) s ∈ J.right.dom := fun s h0 h1 => by
     refine dom_right J ?_ ?_
     · rw [hback]; exact hdom _ (by linarith) (by linarith)
-    · simp only [rayPt_snd]; rw [hwy]; exact hz
+    · simp only [rayPt_snd]; rwa [hwy]
   -- the hit point is neither the shared vertex nor the top of `C₂`
   have hwv : w ≠ J.shared := fun h => hw1 (h ▸ J.shared_mem_left)
   have hwt : w ≠ J.right.top := by
@@ -601,11 +600,10 @@ theorem query_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨p₂, t₂, hp₂, ht₂, ht₂1, hpt₂, hl₂⟩ :=
     J.right.sideSees_chordEnd hP₂ J.right.sideBeta hee (by simp [rayPt]) hopen (Or.inl hw2)
   obtain ⟨i, hi, rfl⟩ := pos_tour_of_mem_set J.right J.right.sideBeta hp₂ ht₂ ht₂1
-    (by rw [hpt₂]; exact hw2) (by rw [hpt₂]; exact hwt)
+    (by rwa [hpt₂]) (by rwa [hpt₂])
   -- the corresponding position of the walk of `C`
   obtain ⟨d, hd, hdq⟩ := right_cover₂ J hi
   have hn₂ := cm_n J.right
-  have hn := cm_n J.whole
   have hg' : 6 + tpos J.right 0 < (chainModel J.right).W.n := hCorr.hg'
   have hpos₂ : (6 + tpos J.right 0 + dq (rL1 J) (rδ J) d) % (chainModel J.right).W.n = i + 6 := by
     rw [hdq, show i + 6 = 6 + i by ring]
@@ -614,7 +612,7 @@ theorem query_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
   set P := (6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n with hPdef
   have hPn : P < (chainModel J.whole).W.n := Nat.mod_lt _ hCorr.n_pos
   have hptW : sidePt (chainModel J.whole).W P t₂ = w := by
-    rw [hPdef, hCorr.sidePt_eq hd t₂, hpos₂]; exact hpt₂'
+    rwa [hPdef, hCorr.sidePt_eq hd t₂, hpos₂]
   have hL1pos : 0 < rL1 J := by
     have := tpos_lt J.right 0
     have hm2 : J.right.m = J.m₂ := rfl
@@ -642,7 +640,7 @@ theorem query_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
     intro s hs
     have hl' : sideLeft (chainModel J.right).W (i + 6) t₂
         (rayPt (sidePt (chainModel J.right).W (i + 6) t₂) (-σ) (T / 2)) := by
-      rw [hpt₂']; exact hl₂
+      rwa [hpt₂']
     exact (sideLeft_rayPt_iff _ _ t₂ (-σ) hT2' hs).1 hl'
   have hsecW : ∀ s > 0, sideLeft (chainModel J.whole).W P t₂
       (rayPt (sidePt (chainModel J.whole).W P t₂) (-σ) s) := by
@@ -651,7 +649,7 @@ theorem query_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
     exact hsec₂ s hs
   have happW : ∀ᶠ s in 𝓝[>] (0 : ℝ),
       rayPt (sidePt (chainModel J.whole).W P t₂) (-σ) s ∈ G := by
-    rw [hptW]; exact happG
+    rwa [hptW]
   -- the region of `S₂` of the backward ray
   have hnearS : ∀ c ∈ S₂, ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w (-σ) s ∉ c := by
     intro c hc
@@ -697,7 +695,7 @@ theorem query_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hε₀' : (0 : ℝ) < ε₀ := hε₀
   have hx₀ : rayPt w (-σ) (ε₀ / 2) ∈ freeIn J.right.dom S₂ :=
     hε₀sub ⟨by linarith, by linarith⟩
-  set V := connectedComponentIn (freeIn J.right.dom S₂) (rayPt w (-σ) (ε₀ / 2)) with hVdef
+  set V := connectedComponentIn (freeIn J.right.dom S₂) (rayPt w (-σ) (ε₀ / 2))
   have hV : V ∈ (chainModel J.right).regions S₂ := Chazelle.Chain.mem_regionsIn hx₀
   have hsubV : rayPt w (-σ) '' Ioo 0 ε₀ ⊆ V := by
     refine subset_region hV (isPreconnected_Ioo.image _
@@ -716,7 +714,7 @@ theorem query_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
   refine ⟨V, hV, hzV, ?_⟩
   have happV' : ∀ᶠ s in 𝓝[>] (0 : ℝ),
       rayPt (sidePt (chainModel J.right).W (i + 6) t₂) (-σ) s ∈ V := by
-    rw [hpt₂']; exact happV
+    rwa [hpt₂']
   have hFs' : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hFs
   have hS₂' : S₂ ⊆ (chainModel J.right).Adm := hS₂
   rcases ht₂.lt_or_eq with htpos | ht0
@@ -724,7 +722,7 @@ theorem query_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have ht' : t₂ ∈ Ioo (0 : ℝ) 1 := ⟨htpos, ht₂1⟩
     obtain ⟨hcutW, hfW⟩ := approach_edge hM hFs' hFf hG hPn ht' hnσ hsecW happW
     obtain ⟨-, hfV⟩ := approach_edge hM₂ hS₂' hS₂f hV hp₂ ht' hnσ hsec₂ happV'
-    exact ⟨d, hd, t₂, ht', hcutW, hfW, by rw [hpos₂]; exact hfV⟩
+    exact ⟨d, hd, t₂, ht', hcutW, hfW, by rwa [hpos₂]⟩
   -- at a walk vertex: a side where both walks face the regions
   subst ht0
   obtain ⟨hd0, hdL⟩ := hsecd rfl
@@ -745,16 +743,14 @@ theorem query_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hbb : (chainModel J.whole).W.vtx ((P + 1) % (chainModel J.whole).W.n) =
       (chainModel J.right).W.vtx ((i + 6 + 1) % (chainModel J.right).W.n) := by
     have := hCorr.sideNext_eq hd
-    rw [hpos₂] at this
-    exact this
+    rwa [hpos₂] at this
   have haa : (chainModel J.whole).W.vtx ((P + (chainModel J.whole).W.n - 1) %
       (chainModel J.whole).W.n) = (chainModel J.right).W.vtx ((i + 6 + (chainModel J.right).W.n - 1) %
       (chainModel J.right).W.n) := by
     have := hCorr.sidePrev_eq hd (t := 0) hsecd
     rw [hpos₂] at this
     unfold sidePrev at this
-    rw [ite_eq_left rfl, ite_eq_left rfl] at this
-    exact this
+    rwa [ite_eq_left rfl, ite_eq_left rfl] at this
   obtain ⟨hWnc, hWc⟩ := approach_vertex hM hFs' hFf hG hPn hP1 hnσ hsecW happW
   obtain ⟨hVnc, hVc⟩ := approach_vertex hM₂ hS₂' hS₂f hV hp₂ (by omega) hnσ hsec₂ happV'
   rw [hbb, haa, hvv] at hWc
@@ -786,7 +782,7 @@ theorem query_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
   rcases key with key | key
   · obtain ⟨s, ⟨⟨hfW, hfV⟩, hnc⟩, hs⟩ := ((key.and
       (eventually_not_cut_after hM hFs' hFf (P : ℝ))).and (Ioo_mem_nhdsGT one_pos)).exists
-    exact ⟨d, hd, s, hs, hnc, hfW, by rw [hpos₂]; exact hfV⟩
+    exact ⟨d, hd, s, hs, hnc, hfW, by rwa [hpos₂]⟩
   · obtain ⟨s, ⟨⟨hfW, hfV⟩, hnc⟩, hs⟩ := ((key.and
       (eventually_not_cut_before hM hFs' hFf (P : ℝ))).and (Ioo_mem_nhdsGT one_pos)).exists
     have hn0 : 0 < (chainModel J.whole).W.n := hCorr.n_pos
@@ -805,8 +801,8 @@ theorem query_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
       push_cast
       rw [show (P : ℝ) - 1 + (1 - s) = P - s by ring]
       exact hnc
-    · rw [hPm]; exact hfW
-    · rw [hPm₂]; exact hfV
+    · rwa [hPm]
+    · rwa [hPm₂]
 
 end Query
 

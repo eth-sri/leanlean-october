@@ -70,8 +70,7 @@ theorem right_hit_end {c : Set Point} (hc : c ∈ Merge.augChords J.right) {a : 
 theorem not_mem_left_of_right (hP : J.P.Simple) {a : Point} (ha : a ∈ J.right.set)
     (hv : a ≠ J.shared) : a ∉ J.left.set := fun h => hv (by
   have : a ∈ J.left.set ∩ J.right.set := ⟨h, ha⟩
-  rw [Merge.Junction.left_inter_right J hP] at this
-  exact this)
+  rwa [Merge.Junction.left_inter_right J hP] at this)
 
 /-- **The direction along a chord of `C₂` from an end on `C₂`** (not the shared vertex) is free for
 `C`. -/
@@ -99,7 +98,7 @@ theorem whole_free_end (hP : J.P.Simple) {a : Point} (ha : a ∈ J.right.set) (h
         rw [rayPt_snd] at this
         linarith
   filter_upwards [hfree, hleft] with t ht hl
-  have h2 : (rayPt a σ t).2 ≤ J.right.top.2 := by rw [rayPt_snd]; exact ha₂
+  have h2 : (rayPt a σ t).2 ≤ J.right.top.2 := by rwa [rayPt_snd]
   have hnd := (Merge.not_mem_dom_iff J.right h2)
   refine ⟨?_, hl, fun hs => hnd.2 (Or.inr hs) ht⟩
   by_contra hb
@@ -111,8 +110,7 @@ theorem whole_hit_lt {a : Point} (ha₁ : a.2 ≤ J.left.top.2) (ha₂ : a.2 ≤
     (hσ : σ = 1 ∨ σ = -1) {τ : ℝ} (hg : Genuine J.left a σ τ)
     (hlt : τ < J.right.hitParam a σ) : J.whole.hitParam a σ = τ := by
   have haw : a.2 ≤ J.whole.top.2 := le_trans ha₁ J.left_top_le
-  rw [whole_hitParam_eq_min J haw hσ, left_hitParam_eq J ha₁, right_hitParam_eq J ha₂]
-  rw [((genuine_iff J.left ha₁ hσ).1 hg).2]
+  rw [whole_hitParam_eq_min J haw hσ, left_hitParam_eq J ha₁, right_hitParam_eq J ha₂, ((genuine_iff J.left ha₁ hσ).1 hg).2]
   exact min_eq_left hlt.le
 
 /-- **The first hit of `C`** when that of `C₂` is not later than that of `C₁` (or `a` is above
@@ -127,8 +125,7 @@ theorem whole_hit_right {a : Point} (ha₂ : a.2 ≤ J.right.top.2) {σ : ℝ} (
   by_cases h₁ : a.2 ≤ J.left.top.2
   · rw [left_hitParam_eq J h₁]; exact h h₁
   · push Not at h₁
-    rw [rayHit_eq_empty_of_above J.left h₁]
-    exact hbox
+    rwa [rayHit_eq_empty_of_above J.left h₁]
 
 /-- **The chord seen from an end of a chord of `S₂`** belongs to `F₂⁺`. -/
 theorem shoot_end_mem {S₂ : Set (Set Point)} {c : Set Point} (hc : c ∈ S₂) {a : Point} {σ : ℝ}
@@ -163,17 +160,17 @@ theorem cand_sound (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ 
   obtain ⟨hfr, ha₂, hlen, hR, -, -⟩ := right_hit_end (hS₂ hc) ha
   have hfree := whole_free_end hP haR hv hfr
   have hτ : 0 < τ := hg.1
-  have hhit : J.whole.hitParam a σ = τ := whole_hit_lt ha₁ ha₂ hσ hg (by rw [hR]; exact hlt)
+  have hhit : J.whole.hitParam a σ = τ := whole_hit_lt ha₁ ha₂ hσ hg (by rwa [hR])
   -- the hit point is in the open chord `c`, hence not the shared vertex
   have hwD : rayPt a σ τ ∈ J.right.dom := by
     obtain ⟨-, -, hdom⟩ := Merge.hit_of_freeAt J.right ha₂ hσ hfr
-    exact hdom τ hτ (by rw [hR]; exact hlt)
+    exact hdom τ hτ (by rwa [hR])
   have hwv : rayPt a σ τ ≠ J.shared := fun h =>
     J.right.not_mem_set_of_mem_dom hwD (by rw [h]; exact J.shared_mem_right)
   have hMV' : MValid J d t := ⟨hMV.1, hMV.2.1, hMV.2.2, fun ht => by
     have hpt : sidePt (chainModel J.left).W ((b₁ J + d) % (chainModel J.left).W.n) t =
         rayPt a σ τ := hA.2.2.2.1
-    rw [ht] at hpt; rw [hpt]; exact hwv⟩
+    rw [ht] at hpt; rwa [hpt]⟩
   obtain ⟨hS, hO⟩ := map_sound hP hσ hτ hhit hMV' hA
   have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
   have hpt : sidePt (chainModel J.whole).W (mEdge J d) t = rayPt a σ τ := by
@@ -188,8 +185,8 @@ theorem cand_sound (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ 
       obtain ⟨-, -, hdom⟩ := Merge.hit_of_freeAt J.whole
         (le_trans ha₂ J.right_top_le) hσ hfree
       exact hdom _ (mul_pos hs.1 hτ) (by rw [hhit]; nlinarith [hs.2])
-    · have := off_right_pt J hP hS₂ hS₂f hS.1 hS.2.1 hS.2.2.1 (by rw [h]; exact haR)
-        (by rw [h]; exact hv)
+    · have := off_right_pt J hP hS₂ hS₂f hS.1 hS.2.1 hS.2.2.1 (by rwa [h])
+        (by rwa [h])
       have h2 : oW J ((mEdge J d : ℝ) + t) < Lst J := by
         unfold oW gW; exact_mod_cast this.2
       rw [hO] at h2

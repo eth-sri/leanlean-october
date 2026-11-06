@@ -103,8 +103,8 @@ theorem not_sideLeft_horizontal {W : Polygon} {p : ℕ} {t : ℝ} (ht0 : 0 < t) 
   unfold sideLeft sideLeftOf at hs
   have hprev : sidePrev W p t = W.vtx p := by unfold sidePrev; rw [ite_eq_right ht0.ne']
   rw [hprev] at hs
-  set a := W.vtx p with ha
-  set b := sideNext W p with hb
+  set a := W.vtx p
+  set b := sideNext W p
   have hb' : b = W.vtx ((p + 1) % W.n) := rfl
   set v := sidePt W p t with hv
   have hv1 : v.1 = a.1 + t * (b.1 - a.1) := by rw [hv, hb']; rfl
@@ -183,10 +183,10 @@ theorem recordData_of_arrival (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
   obtain ⟨hpz, htz0, htz1, hptz, hsecz⟩ := hAz
   obtain ⟨hpw, htw0, htw1, hptw, hsecw⟩ := hAw
   rw [neg_neg] at hsecz
-  have hsz : sideLeft M.W pz tz (rayPt (sidePt M.W pz tz) σ 1) := by rw [hptz]; exact hsecz
-  have hsw : sideLeft M.W pw tw (rayPt (sidePt M.W pw tw) (-σ) 1) := by rw [hptw]; exact hsecw
-  have hyz : (Q.vtx h).2 = (sidePt M.W pz tz).2 := by rw [hptz]; exact hh
-  have hyw : (Q.vtx h).2 = (sidePt M.W pw tw).2 := by rw [hptw]; exact hh
+  have hsz : sideLeft M.W pz tz (rayPt (sidePt M.W pz tz) σ 1) := by rwa [hptz]
+  have hsw : sideLeft M.W pw tw (rayPt (sidePt M.W pw tw) (-σ) 1) := by rwa [hptw]
+  have hyz : (Q.vtx h).2 = (sidePt M.W pz tz).2 := by rwa [hptz]
+  have hyw : (Q.vtx h).2 = (sidePt M.W pw tw).2 := by rwa [hptw]
   have ez := param_of_arrival Q htz0 htz1 hyz hsz
   have ew := param_of_arrival Q htw0 htw1 hyw hsw
   -- the attachments
@@ -195,15 +195,15 @@ theorem recordData_of_arrival (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
   have hAz' : Arrival M.W (rayPt (rayPt z σ T) (-σ) T) (-σ) pz tz := by
     rw [hw']
     refine ⟨hpz, htz0, htz1, hptz, ?_⟩
-    rw [neg_neg]; exact hsecz
+    rwa [neg_neg]
   have att_z := attach_left_of_arrival hnσ hT hAz'
   rw [hw', Geometry.segment_comm] at att_z
   have att_w := attach_left_of_arrival hσ hT ⟨hpw, htw0, htw1, hptw, hsecw⟩
   refine ⟨hh, ?_, ?_, ?_, ?_, fun h1 => ?_, fun h1 => ?_⟩
   · rw [pos_of_arrival Q htz0 htz1 hyz hsz, hptz]
   · rw [pos_of_arrival Q htw0 htw1 hyw hsw, hptw]
-  · rw [ez]; exact att_z
-  · rw [ew]; exact att_w
+  · rwa [ez]
+  · rwa [ew]
   · simp [h1]
   · have : σ ≠ 1 := by rw [h1]; norm_num
     simp [this]

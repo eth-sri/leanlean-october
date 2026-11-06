@@ -102,9 +102,9 @@ theorem interior_pos_sym (hG : GoodEnv P) {bit : ℕ} (hbit : bit = 1 ↔ Mounta
     have hj := iIdx_lt (bit := bit) (Nat.mod_lt (e + 1) (show 0 < P.n by omega))
     have := ShootCut.pos_eq_onEdge (interiorModel (Qof P)) hD (by rw [hn]; omega)
       (p := e) (h := k) (sp₁ := .vtx (iIdx bit P.n e)) (sp₂ := .vtx (iIdx bit P.n ((e + 1) % P.n)))
-      ha hb (by show _ < _; rw [hn]; exact hi) (by show _ < _; rw [hn]; exact hj)
+      ha hb (by show _ < _; rwa [hn]) (by show _ < _; rwa [hn])
       (by rw [hn]; exact iIdx_edgeOK hn3 he)
-      (by rw [ha, hb]; exact hD _ _ (by rw [hn]; exact hi) (by rw [hn]; exact hj) (iIdx_ne hn3 he))
+      (by rw [ha, hb]; exact hD _ _ (by rwa [hn]) (by rwa [hn]) (iIdx_ne hn3 he))
     rw [this, hn, edgeOf_iIdx hn3 he]
     simp [iSym]
 
@@ -118,9 +118,9 @@ theorem interior_abs_lt (hG : GoodEnv P) {bit : ℕ} (hbit : bit = 1 ↔ Mountai
   have hi := iIdx_lt (bit := bit) he
   have hj := iIdx_lt (bit := bit) (Nat.mod_lt (x.edge + 1) (show 0 < P.n by
     have := hG.1.1; omega))
-  have b1 := Jordan.abs_fst_vtx_le_coordBound (Qof P) (i := iIdx bit P.n x.edge) (by rw [hn]; exact hi)
+  have b1 := Jordan.abs_fst_vtx_le_coordBound (Qof P) (i := iIdx bit P.n x.edge) (by rwa [hn])
   have b2 := Jordan.abs_fst_vtx_le_coordBound (Qof P) (i := iIdx bit P.n ((x.edge + 1) % P.n))
-    (by rw [hn]; exact hj)
+    (by rwa [hn])
   obtain ⟨t0, t1, -⟩ := hp
   simp only [Model.pos, Geometry.lerp_fst]
   rw [ha, hb]
@@ -205,7 +205,7 @@ theorem iFix_exec {c : Config} (hw : WordsBounded W c) {a b : ℕ} (hW : P.n + 3
           .subN 50212 50212 a])) c c' _ := .ifLtN_true hb (.seq e₁ (.ifLtN_true hl e))
       refine ⟨c', _, ex, by omega, ?_, exec_frameB ex (by
         simp only [iNxt, wr, block, wrOK, Bfx]; decide)⟩
-      rw [v12, v15, v17, v16, ite_eq_right hb0, ite_eq_left (by rw [v17, v15] at hl; exact hl)]
+      rw [v12, v15, v17, v16, ite_eq_right hb0, ite_eq_left (by rwa [v17, v15] at hl)]
       omega
     · have e₂ := Exec.subN (P := P) w₁ 50212 50215 50216
       have ex : Exec P W (.ifLtN 83022 b (iNxt a) (block [.subN 50212 50215 50216,
@@ -213,7 +213,7 @@ theorem iFix_exec {c : Config} (hw : WordsBounded W c) {a b : ℕ} (hW : P.n + 3
       refine ⟨_, _, ex, by omega, ?_, exec_frameB ex (by
         simp only [iNxt, wr, block, wrOK, Bfx]; decide)⟩
       simp only [upd_same]
-      rw [v15, v16, ite_eq_right hb0, ite_eq_right (by rw [v17, v15] at hl; exact hl)]
+      rw [v15, v16, ite_eq_right hb0, ite_eq_right (by rwa [v17, v15] at hl)]
   · have hb0 : c.nreg b = 0 := by omega
     have ea := Exec.subN (P := P) hw 50212 50215 50216
     have eb := Exec.subN (P := P) ea.wb_right 50212 50212 a
@@ -259,7 +259,6 @@ theorem iRec_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Words
       · simp [upd, show r ≠ 50210 by omega, show r ≠ 50211 by omega, show r ≠ 50212 by omega,
           show r ≠ 50214 by omega, show r ≠ 50215 by omega, show r ≠ 50216 by omega]
   have w₁ := e₁.wb_right
-  have ga := g₁ a ha8.1 ha8.2
   have gb := g₁ b hb8.1 hb8.2
   have g22 := g₁ 83022 (by norm_num) (by norm_num)
   have F₁ : FrameB BiR c c₁ := exec_frameB e₁ (by simp only [wr, block, wrOK, BiR]; decide)
@@ -300,7 +299,7 @@ theorem iRec_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Words
       .skip)) c₂ c' k ∧ k ≤ 10 ∧ c'.nreg 50212 = (if h = 0 then iIdx bit P.n e
         else iEdgeIdx bit P.n e) ∧ FrameB Bfx c₂ c' := by
     have fix := iFix_exec (P := P) w₂ (a := a) (b := b) hW r15 r16 (by rw [g222, h22])
-      (by rw [ga2]; exact he) hn3 ⟨by omega, by omega⟩
+      (by rwa [ga2]) hn3 ⟨by omega, by omega⟩
     rw [ga2, gb2] at fix
     obtain ⟨c', k, ex, hk, v12, fr⟩ := fix
     have val : bit ≠ 1 → c'.nreg 50212 = (if h = 0 then iIdx bit P.n e

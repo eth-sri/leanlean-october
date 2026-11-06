@@ -196,8 +196,7 @@ theorem star_faceDeg [Fintype D] [DecidableEq D] (g : D) : (star M).faceDeg g = 
       show M.fperm⁻¹ d = g ↔ _
       rw [Perm.inv_eq_iff_eq]
       simp
-  rw [this]
-  rw [Finset.card_insert_of_notMem (by simp), Finset.card_insert_of_notMem (by simp),
+  rw [this, Finset.card_insert_of_notMem (by simp), Finset.card_insert_of_notMem (by simp),
     Finset.card_singleton]
 
 /-- **Connectivity is preserved.** -/

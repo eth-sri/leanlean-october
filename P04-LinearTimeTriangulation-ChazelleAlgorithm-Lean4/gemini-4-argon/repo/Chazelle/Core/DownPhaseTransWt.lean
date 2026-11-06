@@ -79,7 +79,7 @@ theorem Shift.sec_eq (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) {j : ℕ
       hM.nd j hjn
     have hne1 : (C.sideWalk C.sideBeta).vtx (j + c₀) ≠
         (C.sideWalk C.sideBeta).vtx ((j + c₀ + 1) % (C.sideWalk C.sideBeta).n) := by
-      rw [H.next_chain hj H.le, H.vtx j hj.le, H.vtx (j + 1) hj, ← next_W T hj]; exact hne2
+      rwa [H.next_chain hj H.le, H.vtx j hj.le, H.vtx (j + 1) hj, ← next_W T hj]
     rw [Chazelle.Chain.sideLeft_edge hne1 ⟨hs, hs1⟩, Chazelle.Chain.sideLeft_edge hne2 ⟨hs, hs1⟩,
       H.next_chain hj H.le, H.vtx j hj.le, H.vtx (j + 1) hj, next_W T hj]
   · subst hs
@@ -97,7 +97,7 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec hQ
   obtain ⟨hp, hs0, hs1, hmem, r, hr, hnear⟩ := hA
   obtain ⟨r', hr', hclean⟩ := FactsInterior.clean hWs hWo hp hs0 hs1
-  set P := sidePt (interiorWalk Q) j s with hPdef
+  set P := sidePt (interiorWalk Q) j s
   obtain ⟨y, a, b, hch, -, rfl⟩ := hF₀ hc
   have hdom := T.interior_sub_dom hQ
   -- points of the chord near `P` are interior
@@ -126,7 +126,7 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
   rcases hPab with hPa' | hPb'
   · -- `P` is the left end
     have hz := hin (a + δ, y) ⟨rfl, by linarith, by linarith⟩ (hPne _ (by linarith))
-      (by rw [hdist, hPa', show a + δ - a = δ by ring, abs_of_pos hδ0]; exact hδ1)
+      (by rwa [hdist, hPa', show a + δ - a = δ by ring, abs_of_pos hδ0])
     obtain ⟨a', b', ha', ha'x, hxb', hb', hch'⟩ := sub_chord ⟨by linarith, by linarith⟩
       (fun h => hch.left_not (hdom h)) (fun h => hch.right_not (hdom h)) hz hQ
     have ha'a : a' = a := by
@@ -141,7 +141,7 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
       hnear x ⟨hx.1, hx.2.1, by linarith [hx.2.2]⟩ hne hd⟩
   · -- `P` is the right end
     have hz := hin (b - δ, y) ⟨rfl, by linarith, by linarith⟩ (hPne _ (by linarith))
-      (by rw [hdist, hPb', show b - δ - b = -δ by ring, abs_neg, abs_of_pos hδ0]; exact hδ1)
+      (by rwa [hdist, hPb', show b - δ - b = -δ by ring, abs_neg, abs_of_pos hδ0])
     obtain ⟨a', b', ha', ha'x, hxb', hb', hch'⟩ := sub_chord ⟨by linarith, by linarith⟩
       (fun h => hch.left_not (hdom h)) (fun h => hch.right_not (hdom h)) hz hQ
     have hb'b : b' = b := by
@@ -201,7 +201,7 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
   · -- cuts
     rintro x hx ⟨c, hc, p₁, t₁, hA₁, he⟩
     obtain ⟨hjm, ht0, ht1, hfl, hfr⟩ := hpos x hx
-    set j := ⌊x⌋₊ with hj
+    set j := ⌊x⌋₊
     set s := x - j with hs
     have hkey : ((p₁ : ℕ) : ℝ) + t₁ = ((j + c₀ : ℕ) : ℝ) + s := by
       rw [← he, hs]; push_cast; ring
@@ -348,7 +348,7 @@ theorem arcWt_le_trans (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : 
   · -- the arc wraps around: keys above `a` or below `b`
     have hin : ∀ x, sideInArc a b x ↔ a < x ∨ x < b := fun x => by
       unfold sideInArc; rw [ite_eq_right hab]
-    set b' := min b (C.m : ℝ) with hb'
+    set b' := min b (C.m : ℝ)
     have hb'0 : 0 ≤ b' := le_min hb0 hm0
     have hb'm : b' ≤ C.m := min_le_right _ _
     have hK : ∀ x, sideInArc (C.m : ℝ) b' x ↔ (C.m : ℝ) < x ∨ x < b' := fun x => by
@@ -364,7 +364,6 @@ theorem arcWt_le_trans (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : 
             rcases hx with hx | hx
             · exact Or.inl (hlastI _ hx)
             · right
-              have hp0 : (0 : ℝ) ≤ p := Nat.cast_nonneg p
               unfold sideInArc; rw [ite_eq_left hpos]
               exact ⟨by linarith, hx⟩)
         omega

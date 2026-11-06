@@ -155,7 +155,7 @@ theorem cDir_irs (hI : IInv W c₀ c) (hK : Consts c) (hb : c.nreg kS + 3 ≤ W)
         (fun _ h => h)
       rw [k1] at h1; unfold qS; rw [ite_eq_right (by omega)]; ring
     · refine (IRS.ifF h1 (IRS.instr1 (i := .addN kS kS K3) hI
-        ⟨iscr_sw (by simp [kS, sw]) (by simp [kS, sw]), by rw [k3]; exact hb⟩)).mono
+        ⟨iscr_sw (by simp [kS, sw]) (by simp [kS, sw]), by rwa [k3]⟩)).mono
         (by norm_num) ?_
       rintro c' rfl
       rw [k1] at h0 h1

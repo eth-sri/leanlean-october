@@ -53,8 +53,6 @@ theorem gamma_le_gradeGran {μ γ₀ γ : ℕ} (hg1 : γ₀ ≤ 4096 * 2 ^ ceilB
 theorem M_le_pow {μ M : ℕ} (hM : M ≤ 20 * (2 * 2 ^ μ + 1)) : M ≤ 2 ^ (μ + 65) := by
   have h1 : 1 ≤ 2 ^ μ := Nat.one_le_two_pow
   have h2 : 2 ^ (μ + 65) = 2 ^ μ * 2 ^ 65 := pow_add 2 μ 65
-  have h3 : (64 : ℕ) ≤ 2 ^ 65 := by norm_num
-  have h4 : 2 ^ μ * 64 ≤ 2 ^ μ * 2 ^ 65 := Nat.mul_le_mul_left _ h3
   omega
 
 /-- The oracle factors of one merge are at most those of grade `μ + 65`. -/
@@ -155,7 +153,6 @@ theorem mcost_le (κM κ : ℕ) {μ γ₀ γ M x y : ℕ} (h7 : 7 ≤ μ) (hg0 :
       _ ≤ _ := Nat.le_ceil _
   -- assemble
   set K1 : ℝ := (κM * κ ^ 2 * 14704 * 3 * 19368 : ℝ) with hK1
-  have hK1p : 0 ≤ K1 := by positivity
   have hφ' : (phiL (fun _ => κM) (scF κ) (scG κ) cutGran (gradeGran (μ + 65)) M : ℝ) ≤
       K1 * (121 * (μ : ℝ) ^ 2) * (8192 * E ^ 14) := by
     calc _ ≤ K1 * (((μ + 65 : ℕ) : ℝ)) ^ 2 * ((2 : ℝ) ^ (((μ + 65 : ℕ) : ℝ) / 75)) ^ 14 := hφ

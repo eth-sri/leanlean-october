@@ -88,7 +88,7 @@ theorem lemma41Nat_add_one_le {g : ℕ} (hg : 2 ≤ g) :
     Real.one_le_rpow (by norm_num) (by positivity)
   have e : (74 : ℝ) / 75 * g = (74 / 75 : ℝ) * g := by norm_num
   rw [e]
-  set x : ℝ := (2 : ℝ) ^ ((74 / 75 : ℝ) * g) with hx
+  set x : ℝ := (2 : ℝ) ^ ((74 / 75 : ℝ) * g)
   have hx0 : 0 ≤ (g : ℝ) ^ 2 * ((Nat.clog 2 g : ℝ) + 1) * x := by positivity
   have hceil := Nat.ceil_lt_add_one hx0
   have hg2 : (4 : ℝ) ≤ (g : ℝ) ^ 2 := by nlinarith
@@ -97,7 +97,6 @@ theorem lemma41Nat_add_one_le {g : ℕ} (hg : 2 ≤ g) :
     have : (g : ℝ) ^ 2 * x ≥ 0 := by positivity
     nlinarith
   have h2 : (1 : ℝ) ≤ (g : ℝ) ^ 2 * (Nat.clog 2 g : ℝ) * x := by
-    have h3 : (1 : ℝ) ≤ (g : ℝ) ^ 2 * (Nat.clog 2 g : ℝ) := by nlinarith
     nlinarith
   linarith
 
@@ -106,7 +105,6 @@ theorem kBound_add_one_le {cnt : ℕ → ℕ} {C p lam : ℕ} (hc : cnt lam ≤ 
     (kBound cnt p lam : ℝ) + 1 ≤
       ((C : ℝ) + 1) * ((2 : ℝ) ^ p / (2 : ℝ) ^ Cost.ceilBeta lam + 1) := by
   unfold kBound
-  have h2 : (0 : ℝ) < (2 : ℝ) ^ Cost.ceilBeta lam := by positivity
   have hdiv := Nat.cast_div_le (α := ℝ) (m := cnt lam * (2 ^ p + 2 ^ Cost.ceilBeta lam))
     (n := 2 ^ Cost.ceilBeta lam)
   push_cast at hdiv
@@ -152,8 +150,6 @@ theorem lvlBudget_le {cnt : ℕ → ℕ} {C K₁ p lam : ℕ} (hc : cnt lam ≤ 
             (4 * Cost.lemma41Bound (Cost.ceilBeta lam + 11)) := this
       _ = ((kBound cnt p lam : ℝ) + 1) *
             (4 * (K₁ : ℝ) * Cost.lemma41Bound (Cost.ceilBeta lam + 11)) := by ring
-  have e : (4096 : ℝ) * ((C : ℝ) + 1) * (4 * (K₁ : ℝ)) * ((2 : ℝ) ^ p * Cost.downOverhead lam) =
-      4096 * ((C : ℝ) + 1) * (4 * (K₁ : ℝ)) * ((2 : ℝ) ^ p * Cost.downOverhead lam) := rfl
   linarith
 
 /-- The constant of the whole level loop: `4500³ · 3000 · lvlConst C K₁`. -/

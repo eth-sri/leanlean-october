@@ -63,7 +63,7 @@ theorem exit_lo (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
   refine ⟨T, hT, hTt, hTD, hdomU, hadm, hatt, ?_⟩
   obtain ⟨p, τ, hp, h0, h1, hk, hx⟩ := hmem
   obtain ⟨j, hj, hja, hjb⟩ := harr a b harc
-  refine ⟨p, τ, hp, h0, h1, ⟨j, hj, by rw [hja, hjb]; exact hk⟩, fun g hg hin => ?_, hx⟩
+  refine ⟨p, τ, hp, h0, h1, ⟨j, hj, by rwa [hja, hjb]⟩, fun g hg hin => ?_, hx⟩
   obtain ⟨p', hp', ⟨s₁, a1, a2, e1⟩, s₂, b1, b2, e2⟩ := hnear g hg p τ hp h0 h1 hin
   have hUfree : U ⊆ Chazelle.Chain.freeIn M.D F := Chazelle.Chain.regionsIn_subset hU
   have hdom : ∀ t, 0 < t → t < T → rayPt z σ t ∈ M.D := fun t h1 h2 => (hUfree (hdomU t h1 h2)).1
@@ -116,7 +116,7 @@ theorem arrival_of_attach {W : Polygon} {z : Point} {σ T : ℝ} (hσ : σ = 1 �
   obtain ⟨hp, h0, h1, -, r, hr, hsec⟩ := hA
   refine ⟨hp, h0, h1, hw, ?_⟩
   have hσ' : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
-  set s := min (r / 2) (T / 2) with hsdef
+  set s := min (r / 2) (T / 2)
   have hs : 0 < s := lt_min (half_pos hr) (half_pos hT)
   have hsr : s ≤ r / 2 := min_le_left _ _
   have hsT : s ≤ T / 2 := min_le_right _ _

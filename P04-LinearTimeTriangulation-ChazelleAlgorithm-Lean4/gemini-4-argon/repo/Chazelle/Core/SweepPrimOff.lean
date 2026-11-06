@@ -69,8 +69,7 @@ theorem param_lt_iff_same_edge (M : Model) (Q : Polygon) {x y : WPos} (he : x.ed
     rw [this]; simp
   · have hk := Model.key_lt_key_iff_of_same_edge (M := M) (Q := Q) he hh
     unfold Model.key at hk
-    rw [he, add_lt_add_iff_left] at hk
-    rw [← he] at hk
+    rw [he, add_lt_add_iff_left, ← he] at hk
     rw [hk]
     unfold dirCode
     constructor
@@ -117,14 +116,14 @@ theorem yLoadX_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
       (by simp [he, hE.r81]) (by omega) (dst := 50130) (by norm_num)
-    refine ⟨c₂, _, .ifLtN_true (by rw [hh, hE.r32]; exact hc) (e₁.seq e₂), by omega, hE₂,
+    refine ⟨c₂, _, .ifLtN_true (by rwa [hh, hE.r32]) (e₁.seq e₂), by omega, hE₂,
       fun r hr => ?_, fun r h1 h2 h3 => ?_, sp, isp, lsp, ?_⟩
     · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
       simp only; rw [upd_other _ _ _ (by omega)]
     · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
       simp only; rw [upd_other _ _ _ (by omega)]
     · rw [vsp, h00, show e - 6 + 6 = e by omega]; rfl
-  · refine spec_ifLtN_false (by rw [hh, hE.r32]; exact hc) ?_
+  · refine spec_ifLtN_false (by rwa [hh, hE.r32]) ?_
     exec_block
     all_goals try omega
     refine ⟨by omega, ?_, fun r hr => ?_, fun r h1 h2 h3 => ?_, .vtx (h - 1), ⟨by config_simp,
@@ -161,14 +160,14 @@ theorem yLoadY_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
       (by simp [he, hE.r81]) (by omega) (dst := 50136) (by norm_num)
-    refine ⟨c₂, _, .ifLtN_true (by rw [hh, hE.r32]; exact hc) (e₁.seq e₂), by omega, hE₂,
+    refine ⟨c₂, _, .ifLtN_true (by rwa [hh, hE.r32]) (e₁.seq e₂), by omega, hE₂,
       fun r hr => ?_, fun r h1 h2 h3 => ?_, sp, isp, lsp, ?_⟩
     · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
       simp only; rw [upd_other _ _ _ (by omega)]
     · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
       simp only; rw [upd_other _ _ _ (by omega)]
     · rw [vsp, h00, show e - 6 + 6 = e by omega]; rfl
-  · refine spec_ifLtN_false (by rw [hh, hE.r32]; exact hc) ?_
+  · refine spec_ifLtN_false (by rwa [hh, hE.r32]) ?_
     exec_block
     all_goals try omega
     refine ⟨by omega, ?_, fun r hr => ?_, fun r h1 h2 h3 => ?_, .vtx (h - 1), ⟨by config_simp,
@@ -256,9 +255,7 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
   unfold OffOut
   dsimp only
   have i01 := hinp 50201 (by norm_num) (by norm_num)
-  have i02 := hinp 50202 (by norm_num) (by norm_num)
   have i03 := hinp 50203 (by norm_num) (by norm_num)
-  have i04 := hinp 50204 (by norm_num) (by norm_num)
   have i05 := hinp 50205 (by norm_num) (by norm_num)
   set px := c₀.nreg 50201
   set qx := c₀.nreg 50202
@@ -326,7 +323,7 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
         · rintro (h | ⟨h, -⟩)
           · omega
           · rw [h] at hd1; omega)
-    exact ⟨c₄, _, .seq eH (.ifLtN_true (by rw [d42, d44]; exact hd1) e₄),
+    exact ⟨c₄, _, .seq eH (.ifLtN_true (by rwa [d42, d44]) e₄),
       by omega, b0, b1⟩
   have t1 : ¬ c₃.nreg 50142 < c₃.nreg 50144 := hd1
   rw [d42, d44] at hd1
@@ -343,7 +340,7 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
           · rw [h] at hd2; omega)
       (by rw [hgt]; simp [hd2])
     exact ⟨c₄, _, .seq eH (.ifLtN_false t1
-      (.ifLtN_true (by rw [d42, d44]; exact hd2) e₄)), by omega, b0, b1⟩
+      (.ifLtN_true (by rwa [d42, d44]) e₄)), by omega, b0, b1⟩
   have t2 : ¬ c₃.nreg 50144 < c₃.nreg 50142 := hd2
   rw [d42, d44] at hd2
   -- the same walk edge
@@ -364,8 +361,7 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     · intro h; exact Or.inr ⟨hpq.symm, h⟩
   have hpx := param_lt_iff_same_edge M (Qof P) (x := x) (y := y) hpq
   have hpy := param_lt_iff_same_edge M (Qof P) (x := y) (y := x) hpq.symm
-  rw [hlt', hpx]
-  rw [hgt', hpy]
+  rw [hlt', hpx, hgt', hpy]
   simp only [x, y] at hpq ⊢
   rw [← hpq]
   -- the direction of the edge
@@ -422,11 +418,11 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
   have B50 : BitIs c₉ 50150 (M.hgtY (Qof P) ⟨px, qx⟩ < M.hgtY (Qof P) ⟨px, qy⟩) := by
     have := BitIs.keep ⟨b₈, t₈⟩ f₉ (by decide)
     simp only [SignTest] at this
-    rw [vx, vy] at this; exact this
+    rwa [vx, vy] at this
   have B51 : BitIs c₉ 50151 (M.hgtY (Qof P) ⟨px, qy⟩ < M.hgtY (Qof P) ⟨px, qx⟩) := by
     have : BitIs c₉ 50151 _ := ⟨b₉, t₉⟩
     simp only [SignTest] at this
-    rw [vx, vy] at this; exact this
+    rwa [vx, vy] at this
   have w₉ := e₉.wb_right
   by_cases hd2' : c₉.nreg 50032 < c₉.nreg 10502
   · rw [p32, p10502] at hd2'

@@ -116,7 +116,6 @@ theorem nfAt_zero {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : 
   have e17 : m (H + 17) = 1 := v 17 (by norm_num)
   have e18 : m (H + 18) = 0 := v 18 (by norm_num)
   have e19 : m (H + 19) = 0 := v 19 (by norm_num)
-  have e20 : m (H + 20) = 1 := v 20 (by norm_num)
   have e21 : m (H + 21) = BuildNF.regWt M Q [] E 0 := v 21 (by norm_num)
   have e22 : m (H + 22) = 0 := v 22 (by norm_num)
   have e23 : m (H + 23) = 0 := v 23 (by norm_num)
@@ -240,7 +239,7 @@ theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounde
     {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {D H : ℕ} (hL : L.length = 0)
     (hD : c.nreg 40000 = D) (hH : c.nreg 9999 = H) (hwf : ModelDescWF P H c.nmem D)
     (hM : ModelDescAt c.nmem D (Qof P) M) (hroom : H + 24 ≤ W) :
-    ∃ c' k, Exec P W zeroCase c c' k ∧ k ≤ 110 ∧ 24 ≤ k ∧ WordsBounded W c' ∧
+    ∃ c' k, Exec P W zeroCase c c' k ∧ k ≤ 110 ∧ 24 ≤ k ∧
       FrameM BphaseB c c' ∧ c'.nreg 40003 = H ∧ c'.nreg 9999 = H + 24 ∧
       (∀ a, a < H → c'.nmem a = c.nmem a) ∧
       NFWithin c'.nmem H (c'.nreg 9999) (BuildNF.buildNF M (Qof P) L E) := by
@@ -270,7 +269,7 @@ theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounde
   have X : Exec P W zeroCase c c₃ (k₁ + (k₂ + k₃)) := by
     rw [zeroCase_eq]; exact .seq x₁ (.seq x₂ x₃)
   have h9999 : c₃.nreg 9999 = H + 24 := by rw [g₃ _ (by omega) (by omega), f₂.1 _ (by decide), v2]
-  refine ⟨c₃, _, X, by omega, by omega, x₃.wb_right, exec_frameM X wr_zeroCase, v40003, h9999,
+  refine ⟨c₃, _, X, by omega, by omega, exec_frameM X wr_zeroCase, v40003, h9999,
     fun a ha => by rw [T2 a (Or.inl ha), f₂.2.2.1, mm₁], ?_⟩
   intro m' hm'
   rw [h9999] at hm'

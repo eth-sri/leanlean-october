@@ -141,8 +141,8 @@ theorem descTopS_exec {c : Config} (hw : WordsBounded W c) {TD f tl bl ml tr br 
         split_ifs <;> first | omega
       · simp only
         repeat (rw [Machine.upd_other _ _ _ (by omega)])
-    refine ⟨c', k + 1, .ifLtN_true (by rw [h49, h24]; exact hf) e, by omega, hw',
-      by rw [ite_eq_left hf]; exact r1, by rw [ite_eq_left hf]; exact r2, r3, r4, r5, r6, r7⟩
+    refine ⟨c', k + 1, .ifLtN_true (by rwa [h49, h24]) e, by omega, hw',
+      by rwa [ite_eq_left hf], by rwa [ite_eq_left hf], r3, r4, r5, r6, r7⟩
   · rw [h49, h24] at hf
     obtain ⟨c', k, e, hk, hw', r1, r2, r3, r4, r5, r6, r7⟩ : ∃ c' k, Exec P W
         (block [.addN 160039 160051 160055, .addN 160038 160038 160024, .storeN 160038 160039,
@@ -162,8 +162,8 @@ theorem descTopS_exec {c : Config} (hw : WordsBounded W c) {TD f tl bl ml tr br 
         split_ifs <;> first | omega
       · simp only
         repeat (rw [Machine.upd_other _ _ _ (by omega)])
-    refine ⟨c', k + 2, .ifLtN_false (by rw [h49, h24]; exact hf) e, by omega, hw',
-      by rw [ite_eq_right hf]; exact r1, by rw [ite_eq_right hf]; exact r2, r3, r4, r5, r6, r7⟩
+    refine ⟨c', k + 2, .ifLtN_false (by rwa [h49, h24]) e, by omega, hw',
+      by rwa [ite_eq_right hf], by rwa [ite_eq_right hf], r3, r4, r5, r6, r7⟩
 
 theorem top_eq {P : Polygon} {C : Chain} (hC : C.P = Qof P) (hn : C.s + C.m < P.n) :
     C.top = (Qof P).vtx (C.s + C.topIdx) := by
@@ -220,23 +220,23 @@ theorem descS_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wor
   -- the head words
   obtain ⟨c3, k3, e3, hk3, hw3, m0, m1', m2', mout3, h38, fr3, hrr3, hrm3, ho3⟩ :=
     descHeadB_exec (P := P) hw2 (pl := pl) (TD := TD) (sl := C₁.s) (ml := C₁.m) (mr := C₂.m)
-    (by rw [k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold DescRG; omega)]; exact h35)
-    (by rw [k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold DescRG; omega)]; exact h37)
-    (by rw [k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold DescRG; omega)]; exact h24)
-    (by rw [k2r _ (bk _ (by omega)) (by omega)]; exact l50)
-    (by rw [k2r _ (bk _ (by omega)) (by omega)]; exact l51)
-    (by rw [k2r _ (bk _ (by omega)) (by omega)]; exact l54) hW (by omega)
+    (by rwa [k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold DescRG; omega)])
+    (by rwa [k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold DescRG; omega)])
+    (by rwa [k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold DescRG; omega)])
+    (by rwa [k2r _ (bk _ (by omega)) (by omega)])
+    (by rwa [k2r _ (bk _ (by omega)) (by omega)])
+    (by rwa [k2r _ (bk _ (by omega)) (by omega)]) hW (by omega)
   -- the top word and the bit
   obtain ⟨c4, k4, e4, hk4, hw4, m3', m4', mout4, fr4, hrr4, hrm4, ho4⟩ :=
     descTopS_exec (P := P) hw3 (TD := TD) (f := c2.nreg 160049) (tl := C₁.topIdx)
     (bl := c.nmem (pl + 4)) (ml := C₁.m) (tr := C₂.topIdx) (br := c.nmem (pr + 4)) h38
-    (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega),
-      fr1 _ (by unfold DescRG; omega)]; exact h24)
+    (by rwa [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega),
+      fr1 _ (by unfold DescRG; omega)])
     (by rw [fr3 _ (by omega) (by omega)])
-    (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega)]; exact l52)
+    (by rwa [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega)])
     (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega), l53])
-    (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega)]; exact l51)
-    (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega)]; exact l55)
+    (by rwa [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega)])
+    (by rwa [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega)])
     (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega), l56])
     hW (by omega)
   have hfle : c2.nreg 160049 < 1 ↔ (C₂.top).2 ≤ (C₁.top).2 := by

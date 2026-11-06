@@ -50,7 +50,6 @@ theorem fcBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
   simp only [Nat.reduceAdd] at b16 b17 b18 b19
   have o := hR.one
   have h16 : 16 * R + j < 19 * R := by omega
-  have hjR : 3 * j + 3 ≤ 3 * K := by omega
   unfold fcBody ldF fb
   simp only [Nat.reduceAdd]
   refine spec_seq ?_

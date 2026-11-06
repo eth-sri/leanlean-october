@@ -1,7 +1,7 @@
 module
 
 public import Chazelle.Core.RestoreFVert
-public import Chazelle.Core.RestoreKind0
+public import Chazelle.Core.RestorePrune
 
 /-!
 # WP-E, the search on the RAM (`FindOK`), part 7: a light piece
@@ -46,7 +46,7 @@ def VSet (E : FEnv) (v : ℕ) : Prop :=
 theorem FWin.congr {c' : Config} (h : FWin E c) (h7 : c'.nreg 81007 = c.nreg 81007)
     (h8 : c'.nreg 81008 = c.nreg 81008) (h9 : c'.nreg 81009 = c.nreg 81009)
     (h10 : c'.nreg 81010 = c.nreg 81010) : FWin E c' := by
-  unfold FWin; rw [h7, h8, h9, h10]; exact h
+  unfold FWin; rwa [h7, h8, h9, h10]
 
 /-- **Testing a vertex in the candidate range.** -/
 theorem vTest_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
@@ -96,7 +96,7 @@ theorem kind0_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       (∀ reg, NFRegs E.M (Qof E.P) E.N reg → (E.N.region E.r).chords ≠ [] →
         ∀ t, t < 10 → VSet E ((e₀ + t) % E.M.W.n) → ∀ σb, σb ≤ 1 →
           GoodAt E reg ((e₀ + t) % E.M.W.n) σb → c'.nreg 81007 = 1)) := by
-  set n := E.M.W.n with hn
+  set n := E.M.W.n
   have hn0 : 0 < n := by omega
   have hW10 : 10 ≤ E.W := by
     have := hE.hWh; have := hE.hG.1.1; unfold hostWords at *; omega
@@ -133,7 +133,7 @@ theorem kind0_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
         GoodAt E reg ((e₀ + t) % n) σb → c'.nreg 81007 = 1)
   have hI1 : I c₁ := by
     refine ⟨by omega, by rw [v71, v72, Nat.add_zero, Nat.mod_eq_of_lt he₀], ?_,
-      fun q _ _ _ h4 h5 => f₁ q h4 h5, fun h => by rw [f₁ _ (by norm_num) (by norm_num)]; exact h,
+      fun q _ _ _ h4 h5 => f₁ q h4 h5, fun h => by rwa [f₁ _ (by norm_num) (by norm_num)],
       fun _ _ _ t ht => by omega⟩
     exact hw.congr (f₁ _ (by norm_num) (by norm_num)) (f₁ _ (by norm_num) (by norm_num))
       (f₁ _ (by norm_num) (by norm_num)) (f₁ _ (by norm_num) (by norm_num))
@@ -189,7 +189,7 @@ theorem kind0_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     by_cases hc : c₃.nreg 81071 < c₃.nreg 81017
     · refine (FRS.ifT hc (FRS.skip (K := 0) hI₃ (fin c₃ u72 ?_ (fun _ _ => rfl)))).mono
         (by omega) (fun _ h => h)
-      rw [u71, i2, ← Nat.add_assoc, ← mod_step hn0, ite_eq_left (by rw [← i2, ← u71, ← h17]; exact hc)]
+      rw [u71, i2, ← Nat.add_assoc, ← mod_step hn0, ite_eq_left (by rwa [← i2, ← u71, ← h17])]
     · have okc : okB E.W c₃.nmem [.constN 81071 0] c₃.nreg := by
         simp only [okB, okI]
         exact ⟨⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by omega⟩, trivial⟩
@@ -199,7 +199,7 @@ theorem kind0_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       refine fin c₄ (by rw [e₄]; simp [regB, regI, upd, u72]) ?_
         (fun q hq => by rw [e₄]; simp [regB, regI, upd, hq])
       rw [e₄]; simp only [regB, regI, upd, ite_true]
-      rw [← Nat.add_assoc, ← mod_step hn0, ite_eq_right (by rw [← i2, ← u71, ← h17]; exact hc)]
+      rw [← Nat.add_assoc, ← mod_step hn0, ite_eq_right (by rwa [← i2, ← u71, ← h17])]
   have hroom₁ : c₁.nreg ALLOC + (tvK E + 9 + 2) * (10 - c₁.nreg 81072) ≤ E.W := by
     rw [hA₁', v72]; unfold k0K at hroom; omega
   have k24 : c.nreg 81024 = 10 := (fx c hI).2.1

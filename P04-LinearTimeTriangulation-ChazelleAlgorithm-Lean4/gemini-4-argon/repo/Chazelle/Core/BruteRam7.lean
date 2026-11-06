@@ -122,7 +122,7 @@ theorem emitB_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W)
     · rw [p24]; simp; ring
     · rw [p19]; simp
     · refine chordList_snoc hl _ ?_
-      rw [pm, trip_eq (by rw [hC, show (Qof P).n = P.n from shear_n _ _]; exact hsn)]
+      rw [pm, trip_eq (by rwa [hC, show (Qof P).n = P.n from shear_n _ _])]
     · intro x hx; rw [pm]; simp (disch := omega) only [Machine.upd_other]; exact hM x hx
   · simp only [hE, ite_false, List.append_nil]
     have h0 : c.nreg (180041 + d) = 0 := by have := mt he.1 hE; omega
@@ -147,9 +147,9 @@ theorem sideES_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     unfold Chain.sideE; split_ifs <;> omega
   rw [hse]
   by_cases h : m < c.nreg x
-  · exact ⟨_, _, .ifLtN_true (by rw [h1]; exact h) (Exec.subN hw d 180012 x), by omega,
+  · exact ⟨_, _, .ifLtN_true (by rwa [h1]) (Exec.subN hw d 180012 x), by omega,
       by simp [h, h12], fr _⟩
-  · exact ⟨_, _, .ifLtN_false (by rw [h1]; exact h) (Exec.copyN hw d x), by omega,
+  · exact ⟨_, _, .ifLtN_false (by rwa [h1]) (Exec.copyN hw d x), by omega,
       by simp [h], fr _⟩
 
 /-- The indices of tour position `i`. -/
@@ -281,10 +281,10 @@ theorem advS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBo
     · exact Nat.mod_eq_of_lt h
     · rw [show (tS C + i) % (2 * C.m) + 1 = 2 * C.m by omega, Nat.mod_self]
   by_cases hlt : (tS C + i) % (2 * C.m) + 1 < 2 * C.m
-  · refine ⟨c₁, _, .seq e₁ (.ifLtN_true (by rw [q31, k12]; exact hlt) (.skip w₁)), by omega, G₁,
+  · refine ⟨c₁, _, .seq e₁ (.ifLtN_true (by rwa [q31, k12]) (.skip w₁)), by omega, G₁,
       q33, q30, fun _ => by rw [q31, hnext, ite_eq_left hlt]⟩
   · have e₂ := Exec.constN (P := P) w₁ 180031 0 (by omega)
-    refine ⟨_, _, .seq e₁ (.ifLtN_false (by rw [q31, k12]; exact hlt) e₂), by omega,
+    refine ⟨_, _, .seq e₁ (.ifLtN_false (by rwa [q31, k12]) e₂), by omega,
       G₁.trans (lp_one (d := 180031) (by omega) ⟨fun q hq => by simp only [decide_eq_false_iff_not] at hq; simp [hq],
         fun _ _ => rfl, rfl, rfl, rfl⟩), by simp [q33], by simp [q30],
       fun _ => by simp only [Config.nreg_mk, upd_same]; rw [hnext, ite_eq_right hlt]⟩

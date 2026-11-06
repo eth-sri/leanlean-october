@@ -60,15 +60,15 @@ theorem case_C4 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF} {T : ℕ → Option 
         endOrigin J Q N₂ j ∈ J.right.set ∧ endOrigin J Q N₂ j ≠ J.shared ∧
         endOrigin J Q N₂ j ≠ J.right.top ∧ endOrigin J Q N₂ j = o := by
     intro j hj hoj hdj
-    obtain ⟨-, hm⟩ := hT j hj (by rw [hoj]; exact hoR) (by rw [hoj]; exact hov)
-      (by rw [hoj]; exact hot)
+    obtain ⟨-, hm⟩ := hT j hj (by rwa [hoj]) (by rwa [hoj])
+      (by rwa [hoj])
     rw [hoj, hdj] at hm
     rcases hTj : T j with _ | ⟨p, t⟩
     · rw [hTj] at hm
       exfalso
       have hfr₂ : FreeAt J.right o d := by
         filter_upwards [hfo] with s hs
-        exact dom_right J hs (by rw [rayPt_snd]; exact ho2)
+        exact dom_right J hs (by rwa [rayPt_snd])
       obtain ⟨-, hD₂, -⟩ := Merge.hit_of_freeAt J.right ho2 hd hfr₂
       have hm' : J.whole.hitParam o d = J.right.hitParam o d := hm
       rw [← hm', hoz] at hD₂
@@ -80,12 +80,12 @@ theorem case_C4 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF} {T : ℕ → Option 
       have hg : Genuine J.whole o d (J.whole.hitParam o d) :=
         (genuine_iff J.whole ho2' hd).2 ⟨hfo, rfl⟩
       have h1 : Arrival (chainModel J.whole).W (rayPt o d (J.whole.hitParam o d)) d p t := by
-        rw [hoz, hdσ]; exact harr
+        rwa [hoz, hdσ]
       have h2 : Arrival (chainModel J.whole).W (rayPt o d (J.whole.hitParam o d)) d pz tz := by
-        rw [hoz, hdσ]; exact hA
+        rwa [hoz, hdσ]
       obtain ⟨rfl, rfl⟩ := arrival_unique hP ho2' hd hg h1 h2
-      exact ⟨j, hj, hTj, by rw [hdj, hdσ], by rw [hoj]; exact hoR, by rw [hoj]; exact hov,
-        by rw [hoj]; exact hot, hoj⟩
+      exact ⟨j, hj, hTj, by rw [hdj, hdσ], by rwa [hoj], by rwa [hoj],
+        by rwa [hoj], hoj⟩
   obtain ⟨r, hr, rfl⟩ := hc
   obtain ⟨k, hk, hkr⟩ := List.mem_iff_getElem.1 hr
   have hck : N₂.chord k = r := by unfold NF.chord; rw [List.getD_eq_getElem _ _ hk, hkr]
@@ -122,14 +122,14 @@ theorem case_C3 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF}
     obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := hA
     rw [neg_neg] at hsec
     refine sideAttach_of_along J.whole hP (F₂plus_subset J hS₂ he) hp ht0 ht1 hσ ?_ ?_
-    · rw [hpt]; exact hsec
-    · rw [hpt]; exact hev
+    · rwa [hpt]
+    · rwa [hpt]
   obtain ⟨r, hr, hre⟩ := List.mem_map.1 (hS.2.1 e he hstop pz tz hatt hLst)
   simp only [Prod.mk.injEq] at hre
   obtain ⟨h1, h2, h3⟩ := hre
   refine ⟨r, hr, h1, h2, ?_⟩
   set o' := SweepIo.stopOrig J Q N₂ r.2.2.1 r.2.2.2.1 r.2.2.2.2 with ho'
-  set d' := dirOf r.2.2.2.2 with hd'
+  set d' := dirOf r.2.2.2.2
   have hsh : Merge.shoot J.whole o' d' = e := (stopSet_eq J Q N₂ _ _ _).symm.trans h3
   have ho'e : o' ∈ e := by rw [← hsh]; exact origin_mem J
   have htope : J.right.top ∈ e := by rw [heo]; exact origin_mem J
@@ -178,12 +178,12 @@ theorem case_C3 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF}
         · exact h
       · -- out of range: the slit top's vertical line
         push Not at hk
-        have h1' := endOrigin_big J Q N₂ (j := j) (by rw [hj2]; exact hk)
+        have h1' := endOrigin_big J Q N₂ (j := j) (by rwa [hj2])
         exact Prod.ext h1' (by rw [hey _ hme, hey _ htope])
   -- the direction
   have hd'c : d' = 1 ∨ d' = -1 := dirOf_cases _
   rw [ho'top] at hsh
-  have hzs : z ∈ Merge.shoot J.whole J.right.top d' := by rw [hsh]; exact hze
+  have hzs : z ∈ Merge.shoot J.whole J.right.top d' := by rwa [hsh]
   unfold Merge.shoot at hzs
   obtain ⟨lam, hlam0, hlam1, hzl⟩ := Geometry.mem_segment_iff_lerp.1 hzs
   have hz1 := congrArg Prod.fst hzl
@@ -218,7 +218,7 @@ theorem side0Math : Side0MathSpec := by
   have hzR := left_pt_right_dom J hP hzL hzv hz2
   obtain ⟨hpz, htz0, htz1, hpt, hsec⟩ := hA
   have hLst : (Lst J : ℝ) < oW J (pz + tz) :=
-    Lst_lt_of_dom hP hpz htz0 htz1 (by rw [hpt]; exact hzR)
+    Lst_lt_of_dom hP hpz htz0 htz1 (by rwa [hpt])
   refine ⟨hLst.le, fun i hi => ?_⟩
   have hz₁ : z.2 ≤ J.left.top.2 := J.left.snd_le_top_of_mem_set hzL
   have hzD : z ∉ J.whole.dom := fun h =>
@@ -252,7 +252,7 @@ theorem side0Math : Side0MathSpec := by
       subst hot
       right; right; left
       have heo' : e = Merge.shoot J.whole J.right.top (-σ) := by rw [heo, hdσ]
-      have hfo' : FreeAt J.whole J.right.top (-σ) := by rw [← hdσ]; exact hfo
+      have hfo' : FreeAt J.whole J.right.top (-σ) := by rwa [← hdσ]
       obtain ⟨r, hr, h1, h2, h3, h4⟩ := case_C3 J hP hN hstops hσ hzR he hfo' heo' hze
         (fun p hp hpD => hends p hp hpD) hey hc.2 hT0 hwo ⟨hpz, htz0, htz1, hpt, hsec⟩ hLst.le hev
       exact ⟨r, hr, h1, h2, h3, by rw [h4, hwo]⟩
@@ -263,7 +263,7 @@ theorem side0Math : Side0MathSpec := by
         right; right; right
         have hov : o ≠ J.shared := fun h => hc.2 (h ▸ J.shared_mem_left)
         obtain ⟨j, hj, hTj, hdj, h1, h2, h3, h4⟩ := case_C4 J hP htab hσ hzR hc' hco hfo hc.1
-          hov hot hdσ hoz ⟨hpz, htz0, htz1, hpt, hsec⟩ (by rw [← heo]; exact hev)
+          hov hot hdσ hoz ⟨hpz, htz0, htz1, hpt, hsec⟩ (by rwa [← heo])
         exact ⟨j, hj, hTj, hdj, h1, h2, h3, by rw [h4, hwo]⟩
   · -- the ray starts in a region of `F₂⁺`
     rw [neg_neg] at hsec
@@ -279,8 +279,8 @@ theorem side0Math : Side0MathSpec := by
     obtain ⟨V, hV, hVray, hlab⟩ := query_right J hP hS₂ hS₂f hU hz2 hσ hray hc.1 hc.2
     obtain ⟨hil, hlo, hhi⟩ := hi
     have hlen : (logOf J (Qof P) N₂ ls).length = ls.length := List.length_map _
-    have hres := labels_of_log J hP hS₂ hS₂f hlog (i := i) (by rw [hlen]; exact hil) hpz htz0
-      htz1 hLst hlo (fun h => hhi (by rw [hlen] at h; exact h)) hU hface' V hV hlab
+    have hres := labels_of_log J hP hS₂ hS₂f hlog (i := i) (by rwa [hlen]) hpz htz0
+      htz1 hLst hlo (fun h => hhi (by rwa [hlen] at h)) hU hface' V hV hlab
     right; left
     exact ⟨hR2, V, hV, hres, hVray⟩
 

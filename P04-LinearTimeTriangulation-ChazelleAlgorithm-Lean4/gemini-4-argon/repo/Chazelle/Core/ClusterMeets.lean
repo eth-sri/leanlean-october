@@ -40,13 +40,12 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
   beta_reduce at hbud
   have e0 : rd c bCluster 0 = c.nreg 130000 := rfl
   have e1 : rd c bCluster 1 = (gOf c).μ := rfl
-  have e2 : rd c bCluster 2 = (gOf c).E := rfl
   have e3 : rd c bCluster 3 = (gOf c).k := rfl
   have eA : c.nreg ALLOC = (gOf c).A0 := rfl
   obtain ⟨F, iF, dF, M, hpl, hmap, hμ, hE, hμN, hB2, hO, hR, hV⟩ := inputFacts hrob
   rw [e1, e3] at hμk; rw [e3] at hk
   have hcost := totalCost_le (gOf c) hμ hE hk hμk
-  set g := gOf c with hg
+  set g := gOf c
   have hcb : c.nreg ALLOC + totalCost g ≤ W := by
     have : clusterK * ((rd c bCluster 1 + rd c bCluster 2) *
       (Nat.clog 2 (rd c bCluster 1 + rd c bCluster 2) + 1) + 1) =
@@ -78,7 +77,7 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
   have hF2 : ∀ u, u < g.μ → c2.nmem (g.base 0 + u) < g.N ∧
       c2.nmem (g.bV + c2.nmem (g.base 0 + u)) = u := fun u hu => by
     have h := hD1.firstF u hu
-    rw [hm2 (g.base 0 + u) (by omega), hm2 (g.bV + c1.nmem (g.base 0 + u)) (by omega)]; exact h
+    rwa [hm2 (g.base 0 + u) (by omega), hm2 (g.bV + c1.nmem (g.base 0 + u)) (by omega)]
   have hz2 : ∀ d, d < g.N → c2.nmem (g.base 1 + d) = 0 := fun d hd => by
     rw [hm2 _ (by omega)]; exact hD1.zero d hd
   -- the labels
@@ -101,7 +100,7 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
     rw [hr4 _ (by rw [hAl]; omega) (by rw [hAl]; omega), hr3 _ (by unfold LabRG; rw [hAl]; omega),
       hr2 _ (by rw [hAl]; omega), hr1 _ (by rw [hAl]; omega)]
   -- the allocator
-  obtain ⟨c5, k5, x5, hk5, hw5, hA5, hA5k, hr5, hm5, hrr5, hrm5, ho5⟩ := bumpS_exec (P := P) hw4
+  obtain ⟨c5, k5, x5, hk5, hA5, hA5k, hr5, hm5, hrr5, hrm5, ho5⟩ := bumpS_exec (P := P) hw4
     (E := g.END) (by rw [hr4 _ (by omega) (by omega)]; exact hG3.one)
     (by rw [hr4 _ (by omega) (by omega)]; exact hG3.rEND)
     (by rw [hA4, eA]; omega) hEND
@@ -137,7 +136,7 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
   refine ⟨c5, k1 + (k2 + (k3 + (k4 + k5))),
     .seq x1 (.seq x2 (.seq x3 (.seq x4 x5))), ?_, ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_⟩
   · -- cost
-    have : k5 ≤ 3 * (g.END - g.A0) + 2 := by rw [hA4'] at hk5; exact hk5
+    have : k5 ≤ 3 * (g.END - g.A0) + 2 := by rwa [hA4'] at hk5
     have hT : k1 + (k2 + (k3 + (k4 + k5))) ≤ totalCost g := by unfold totalCost; omega
     exact le_trans hT hcost
   · rw [hrd4, eA]; omega
@@ -174,8 +173,8 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
       ext v
       simp only [Finset.mem_filter, Finset.mem_range]
       constructor
-      · rintro ⟨hv, h1, h2⟩; exact ⟨⟨hv, by rw [← hDF v hv]; exact h1⟩, by rw [← hLAB]; exact h2⟩
-      · rintro ⟨⟨hv, h1⟩, h2⟩; exact ⟨hv, by rw [hDF v hv]; exact h1, by rw [hLAB]; exact h2⟩
+      · rintro ⟨hv, h1, h2⟩; exact ⟨⟨hv, by rwa [← hDF v hv]⟩, by rwa [← hLAB]⟩
+      · rintro ⟨⟨hv, h1⟩, h2⟩; exact ⟨hv, by rwa [hDF v hv], by rwa [hLAB]⟩
     rw [heq]
     have hc := class_card hI2 hstep (lab := fun v => c3.nmem (g.base 2 + v))
       (X := (Finset.range g.μ).filter (fun v => c2.nmem (g.base 48 + v) ≠ 1))

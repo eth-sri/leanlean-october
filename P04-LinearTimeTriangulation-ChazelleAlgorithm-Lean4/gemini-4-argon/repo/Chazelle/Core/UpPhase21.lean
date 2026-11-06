@@ -101,7 +101,7 @@ theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg A
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
   refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, hw3,
-    by rw [fr3 _ (by rw [hAl]; omega)]; exact A2, by rw [j04, j27], by rw [hm3]; exact hH,
+    by rw [fr3 _ (by rw [hAl]; omega)]; exact A2, by rw [j04, j27], by rwa [hm3],
     fun a ha => by rw [hm3, hm2 a ha, hm1], fun r h1 h2 h3 => ?_, by rw [hrr3, hrr2, hrr1],
     by rw [hrm3, hrm2, hrm1], by rw [ho3, ho2, ho1]⟩
   have : r < 160000 ∨ 170000 ≤ r := by unfold bandOf bL41 at h1; omega

@@ -111,11 +111,11 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
   have hA1 : c1.nreg ALLOC = A := by rw [fr1 _ (by rw [hAl]; omega) (by rw [hAl]; omega)]; exact hA
   have g1 : ∀ r, r ≠ 170017 → r ≠ 170033 → c1.nreg r = c.nreg r := fr1
   -- `descU`
-  have hM1 : Robust A c1.nmem fun m => ChainMem O P m h hp g R x i A := by rw [hm1]; exact hM
+  have hM1 : Robust A c1.nmem fun m => ChainMem O P m h hp g R x i A := by rwa [hm1]
   obtain ⟨c2, k2, e2, hk2, hw2, a21, a22, d5, dh, hdesc, hm2, fr2, frr2, hrm2, ho2⟩ :=
-    descU_exec (O := O) hG hWn hn hw1 hu1 hA1 (by rw [g1 _ (by omega) (by omega)]; exact h16)
-      (by rw [g1 _ (by omega) (by omega)]; exact h35)
-      (by rw [g1 _ (by omega) (by omega)]; exact h36) hi hM1.holds.1 hM1.holds.2.1
+    descU_exec (O := O) hG hWn hn hw1 hu1 hA1 (by rwa [g1 _ (by omega) (by omega)])
+      (by rwa [g1 _ (by omega) (by omega)])
+      (by rwa [g1 _ (by omega) (by omega)]) hi hM1.holds.1 hM1.holds.2.1
       hM1.holds.2.2.1 (by omega) (by omega)
   obtain ⟨d, hd⟩ : ∃ d, c2.nreg 170030 = d := ⟨_, rfl⟩
   rw [hd] at d5 dh hdesc
@@ -132,9 +132,9 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
   have hWnf : c2.nreg ALLOC + nfB κB κL κG g + 6 ≤ W := by omega
   obtain ⟨c3, k3, e3, hk3, hw3, a31, a32, hnf, m31, m32, o3, fr3, frr3⟩ :=
     nfU_exec (O := O) (sB := sB) (sL := sL) (sG := sG) hB hL hGr hG hWh hn hw2 hu2 rfl
-      (by rw [kk2 _ (by omega), g1 _ (by omega) (by omega)]; exact h16)
-      (by rw [kk2 _ (by omega)]; exact h17)
-      (by rw [kk2 _ (by omega), g1 _ (by omega) (by omega)]; exact h35) hi hM2 hd d5 dh hdesc
+      (by rwa [kk2 _ (by omega), g1 _ (by omega) (by omega)])
+      (by rwa [kk2 _ (by omega)])
+      (by rwa [kk2 _ (by omega), g1 _ (by omega) (by omega)]) hi hM2 hd d5 dh hdesc
       hWnf
   obtain ⟨f, hf⟩ : ∃ f, c3.nreg 170031 = f := ⟨_, rfl⟩
   rw [hf] at hnf
@@ -148,7 +148,7 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
       rw [mc3 a (by omega), mc2 a (by omega)]
   have hd3 : ChainDescAt c3.nmem d (Qof P) (Host.whole P.n) C0 :=
     chainDescAt_agree (hdesc C0 rfl rfl rfl) d5 dh (by omega) mc3
-  have dh3 : c3.nmem d = hp := by rw [mc3 _ (by omega)]; exact dh
+  have dh3 : c3.nmem d = hp := by rwa [mc3 _ (by omega)]
   have hNo : NodeOK P c3.nmem (c3.nreg ALLOC) hp d f C0 (gradeGran g) :=
     ⟨hd3, rfl, dh3, by omega, by omega, hfit, N, hNW, hc⟩
   have hwf := chainWF_of_node (by omega) hNo hH3
@@ -187,11 +187,11 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
       ho5⟩ :=
     cellB_exec (P := P) (d := d) (f := f) (o := o) (x := x) (i := i) (s := gradeStart g i)
       (q := 6 * i) (t := 2 * i + 1) hw4 rfl
-      (by rw [fr4 170030 (by decide) (by decide) (by decide)]; exact h30')
-      (by rw [fr4 170031 (by decide) (by decide) (by decide)]; exact hf) hoo
-      (by rw [k4' _ (by omega)]; exact h18) (by rw [k4' _ (by omega)]; exact h15)
-      (by rw [k4' _ (by omega)]; exact h16) hu4.r10 (by rw [k4' _ (by omega)]; exact h35)
-      (by rw [k4' _ (by omega)]; exact h36) hu4.r20 hu4.r21 hu4.r25 hu4.r26
+      (by rwa [fr4 170030 (by decide) (by decide) (by decide)])
+      (by rwa [fr4 170031 (by decide) (by decide) (by decide)]) hoo
+      (by rwa [k4' _ (by omega)]) (by rwa [k4' _ (by omega)])
+      (by rwa [k4' _ (by omega)]) hu4.r10 (by rwa [k4' _ (by omega)])
+      (by rwa [k4' _ (by omega)]) hu4.r20 hu4.r21 hu4.r25 hu4.r26
       (by omega) (by omega) (by omega) (by omega) (by omega)
   have mc5 : ∀ a, a < A → c5.nmem a = c.nmem a := fun a ha => by
     rw [mw a (Or.inl (by omega)), m41 a (by omega), mc3 a (by omega), mc2 a ha]
@@ -228,7 +228,7 @@ theorem chainS_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
     have : C0 = C := chain_eq a.symm b.symm f'.symm
     subst this
     exact ⟨chainDescAt_agree hd3 (by omega) dh3 (by omega) hm3, rfl,
-      by rw [hm3 _ (by omega)]; exact dh3, by omega, by omega, hfit, N,
+      by rwa [hm3 _ (by omega)], by omega, by omega, hfit, N,
       fun m'' hm'' => hNW m'' fun a ha => (hm'' a (by omega)).trans (hm3 a ha), hc⟩
   · have ha5 : r ≠ 170034 := by have := hr.range; omega
     rw [fr5 r ha5 a4 a1 a2 a5 a6 hr.ne_alloc, kk4 r hr, fr3 r (Or.inl hr), fr2 r hr,

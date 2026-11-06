@@ -68,7 +68,6 @@ theorem chordLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (h
   have v20 : c₁.nreg 81120 = x := by rw [e₁]; simp [regB, regI, upd, hx]
   have f₁ : ∀ q, q ≠ 81120 → c₁.nreg q = c.nreg q := fun q hq => by
     rw [e₁]; simp [regB, regI, upd, hq]
-  have m₁ : c₁.nmem = c.nmem := by rw [h₁]
   have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega)
   refine (FRS.seq (K₂ := 15) (halfS_fs hE hB hI₁ v20 (by rw [hA₁']; unfold clK at hroom; omega))
     (fun c₂ hI₂ hA₂ ⟨k2, _, f₂⟩ => ?_)).mono (by omega) (fun _ h => h)
@@ -89,8 +88,8 @@ theorem chordLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (h
   set k := x / 2
   have hm5 : k + k + (k + k) + k + c₂.nmem (c₂.nreg 81134 + 3) + 4 < E.W := by omega
   have hh' : c₂.nmem (k + k + (k + k) + k + c₂.nmem (c₂.nreg 81134 + 3)) + 1 ≤ E.W := by
-    rw [show k + k + (k + k) + k + c₂.nmem (c₂.nreg 81134 + 3) =
-      c₂.nmem (c₂.nreg 81134 + 3) + 5 * k by ring, r1]; exact hh
+    rwa [show k + k + (k + k) + k + c₂.nmem (c₂.nreg 81134 + 3) =
+      c₂.nmem (c₂.nreg 81134 + 3) + 5 * k by ring, r1]
   have hb3 : c₂.nreg 81134 + 3 ≤ E.W := by omega
   have ok : okB E.W c₂.nmem chordL c₂.nreg := by
     simp only [chordL, okB, okI, regI, upd]

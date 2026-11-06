@@ -67,8 +67,8 @@ theorem evAccT_irs {J : Merge.Junction} {S₂ : Set (Set Point)} (hI : IInv W c�
   have hgn : gW J < (chainModel J.whole).W.n := by
     unfold gW; rw [cm_n]; have := tpos_lt J.whole J.m₁; omega
   set n₁ := (chainModel J.left).W.n with hn₁
-  set d := (c.nreg (eA + 1) + n₁ - b₁ J) % n₁ with hd
-  set hN := c.nreg (eA + 2) with hhN
+  set d := (c.nreg (eA + 1) + n₁ - b₁ J) % n₁
+  set hN := c.nreg (eA + 2)
   -- 1. the map
   refine IRS.seq (K₁ := 20) (K₂ := 22280) (mapC_irs hI hK₀ hM₀ hpA (by omega)) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨m1, m2, m3, m4, m5, m6⟩
@@ -76,19 +76,18 @@ theorem evAccT_irs {J : Merge.Junction} {S₂ : Set (Set Point)} (hI : IInv W c�
   have k01 : c₁.nreg K0 = 0 := (hK₀.fix hI₁).1
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := kk₁ _ (by unfold cD ALLOC sw; omega)
     (by unfold cV ALLOC sw; omega) (by unfold cPs ALLOC sw; omega)
-  have nCD : ∀ r, CandR r ∨ r = ALLOC ∨ True := fun _ => Or.inr (Or.inr trivial)
   by_cases hv : c₁.nreg K0 < c₁.nreg cV
   · rw [k01] at hv
     have hv1 : c₁.nreg cV = 1 := by omega
     have hMV : SweepEv.MVal J d hN := m3.1 hv1
     have hps : c₁.nreg cPs = ψ J d := m4 hv1
-    refine IRS.mono (K := 22278 + 2) (IRS.ifT (by rw [k01]; exact hv) ?_) le_rfl (fun _ h => h)
+    refine IRS.mono (K := 22278 + 2) (IRS.ifT (by rwa [k01]) ?_) le_rfl (fun _ h => h)
     have hψn : ψ J d < (chainModel J.whole).W.n := by
       have := ψ_le J d
       have : d < n₁ := Nat.mod_lt _ (by rw [hn₁, cm_n]; omega)
       omega
     -- 2. the walk edge
-    refine IRS.seq (K₁ := 4) (K₂ := 22274) (mapE_irs hI₁ hM₀ (by rw [hps]; exact hψn) hW) ?_
+    refine IRS.seq (K₁ := 4) (K₂ := 22274) (mapE_irs hI₁ hM₀ (by rwa [hps]) hW) ?_
     rintro c₂ hI₂ hA₂ hA₂' ⟨e2, k2, mm2⟩
     rw [hps, mEdge_eq] at e2
     have kk₂ : ∀ r, r ≠ cD → r ≠ cV → r ≠ cPs → r ≠ cME → c₂.nreg r = c.nreg r := fun r h1 h2 h3 h4 =>
@@ -102,8 +101,8 @@ theorem evAccT_irs {J : Merge.Junction} {S₂ : Set (Set Point)} (hI : IInv W c�
     have eH2 : c₂.nreg (eA + 2) = hN := kk₂ _ (by unfold eA cD sw; omega) (by unfold eA cV sw; omega)
       (by unfold eA cPs sw; omega) (by unfold eA cME sw; omega)
     -- 3. the table write
-    refine IRS.seq (K₁ := 16) (K₂ := 22258) (tabW_irs hI₂ hK₀ (by rw [eTB]; exact hT)
-      (by rw [eTB, eK, eS]; exact hTW)) ?_
+    refine IRS.seq (K₁ := 16) (K₂ := 22258) (tabW_irs hI₂ hK₀ (by rwa [eTB])
+      (by rwa [eTB, eK, eS])) ?_
     rintro c₃ hI₃ hA₃ hA₃' ⟨mm3, k3⟩
     have kk₃ : ∀ r, r ≠ cD → r ≠ cV → r ≠ cPs → r ≠ cME → r ≠ cTA → c₃.nreg r = c.nreg r :=
       fun r h1 h2 h3 h4 h5 => (k3 r h5).trans (kk₂ r h1 h2 h3 h4)
@@ -136,8 +135,8 @@ theorem evAccT_irs {J : Merge.Junction} {S₂ : Set (Set Point)} (hI : IInv W c�
     have bsame : ∀ c' : Config, BestSame c₃ c' → BestSame c c' := fun c' h =>
       ⟨h.1.trans eBF, h.2.1.trans eBE, h.2.2.1.trans eBH, h.2.2.2.1.trans eLb,
         h.2.2.2.2.trans eBN⟩
-    refine (offerC_irs hI₃ hK₀ hctx₃ hgw₃ hgn hposW (by rw [eKE, eKH]; exact hk)
-      (by rw [eBF, eBE, eBH]; exact hb) (by rw [eBF]; exact hbF) (by rw [eBN]; exact hbN)
+    refine (offerC_irs hI₃ hK₀ hctx₃ hgw₃ hgn hposW (by rwa [eKE, eKH])
+      (by rwa [eBF, eBE, eBH]) (by rwa [eBF]) (by rwa [eBN])
       (by omega)).mono (by norm_num) ?_
     rintro c' ⟨o1, o2, o3, o4, o5, o6, ofr⟩
     rw [eKE, eKH, eME3, eH3] at o3
@@ -161,7 +160,7 @@ theorem evAccT_irs {J : Merge.Junction} {S₂ : Set (Set Point)} (hI : IInv W c�
     · rw [← hA3]; exact ofr.2.1
   · rw [k01] at hv
     have hnv : ¬ SweepEv.MVal J d hN := fun h => by have := m3.2 h; omega
-    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k01]; exact hv) (IRS.skip hI₁ rfl)) (by norm_num) ?_
+    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k01]) (IRS.skip hI₁ rfl)) (by norm_num) ?_
     rintro c' rfl
     refine ⟨fun h => absurd h hnv, fun _ => ⟨fun x _ => by rw [m6], ?_⟩, fun r _ hr hra => ?_, hA1.ge⟩
     · have same : ∀ r, BestR r → c₁.nreg r = c.nreg r := fun r hr => kk₁ r

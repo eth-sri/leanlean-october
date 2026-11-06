@@ -83,7 +83,7 @@ theorem bodyS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
       c'.nreg 180030 = c.nreg 180030 + 1 := by
   obtain ⟨hX, -, h31, h33b, h33, h19, h24, hL, hM, hR, hRR, hRM, hO⟩ := hI
   obtain ⟨x0, x1, x2, x10, x11, x12, x13, x15, x16, x17, x18, x23, x25, x26, x27, x28⟩ := hX
-  set i := c.nreg 180030 with hid
+  set i := c.nreg 180030
   have hi : i ≤ 2 * C.m := by omega
   have hk := C.sideIdx_le C.sideBeta i
   -- indices
@@ -109,7 +109,7 @@ theorem bodyS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
   obtain ⟨c₃, k₃, e₃, hk₃, lb₃, p24, p19, pL, pM, R₃, RR₃, RM₃, O₃⟩ := emitB_exec (P := P) (d := 0) hG
     (by omega) hW4 hC hsn (by omega) hi c₂ e₂.wb_right
     ⟨X₂.1, X₂.2.1, X₂.2.2.2.2.1, c35⟩ ⟨X₂.2.2.2.2.2.1, X₂.2.2.2.2.2.2.2.1, X₂.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1⟩
-    b41 t41 c44 (L := A₀ + 10) (l := pre C i) (M := M) c24 c19 (by rw [m₂]; exact hL) (by intro x hx; rw [m₂]; exact hM x hx)
+    b41 t41 c44 (L := A₀ + 10) (l := pre C i) (M := M) c24 c19 (by rwa [m₂]) (by intro x hx; rw [m₂]; exact hM x hx)
     (by omega)
   have K₃ := bbd_of_em R₃
   have X₃ : Ctx P C γ A₀ c₃ := ctx_of_bbd X₂ K₃
@@ -125,7 +125,7 @@ theorem bodyS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
   obtain ⟨c₄, k₄, e₄, hk₄, lb₄, r24, r19, rL, rM, R₄, RR₄, RM₄, O₄⟩ := emitB_exec (P := P) (d := 1) hG
     (by omega) hW4 hC hsn (by omega) hi c₃ e₃.wb_right
     ⟨X₃.1, X₃.2.1, X₃.2.2.2.2.1, d35⟩ ⟨X₃.2.2.2.2.2.1, X₃.2.2.2.2.2.2.2.1, X₃.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1⟩
-    (by rw [d42]; exact b42) (by rw [d42]; exact t42) d44 (l := l₁) (L := A₀ + 10) (M := M) p24 p19
+    (by rwa [d42]) (by rwa [d42]) d44 (l := l₁) (L := A₀ + 10) (M := M) p24 p19
     pL pM (by omega)
   have K₄ := bbd_of_em R₄
   have X₄ : Ctx P C γ A₀ c₄ := ctx_of_bbd X₃ K₄
@@ -148,11 +148,11 @@ theorem bodyS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
   have hlb : 3 * (pre C (i + 1)).length ≤ 3 * (pre C i).length + (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) := by
     rw [hpre]; omega
   refine ⟨c₅, _, ex, by omega, hlb, ⟨X₅, by rw [s30]; omega, fun h => by rw [s30]; exact s31 (by omega),
-    by rw [s33, e32]; exact hk, fun _ => by rw [s33, e32, s30]; rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
+    by rwa [s33, e32], fun _ => by rw [s33, e32, s30]; rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
     s30⟩
   · rw [F₅.1 _ (by decide), r19, s30, hpre]
   · rw [F₅.1 _ (by decide), r24, s30, hpre]
-  · rw [F₅.2.2.1, s30, hpre]; exact rL
+  · rwa [F₅.2.2.1, s30, hpre]
   · intro x hx; rw [F₅.2.2.1]; exact rM x hx
   · intro r hr; rw [K₅ r hr, K₄ r hr, K₃ r hr, K₂ r hr, K₁ r hr, hR r hr]
   · intro r hr
@@ -225,9 +225,9 @@ theorem loopS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
       c₂.nreg 180031 = (tS C + 0) % (2 * C.m) ∧ FrameB (fun r => decide (r = 180031)) c₁ c₂ := by
     have hts : tS C ≤ 2 * C.m := hS
     by_cases hlt : tS C < 2 * C.m
-    · exact ⟨c₁, _, .ifLtN_true (by rw [q31, X₁.2.2.2.2.2.1]; exact hlt) (.skip w₁), by omega,
+    · exact ⟨c₁, _, .ifLtN_true (by rwa [q31, X₁.2.2.2.2.2.1]) (.skip w₁), by omega,
         by rw [q31, add_zero, Nat.mod_eq_of_lt hlt], FrameB.refl _ _⟩
-    · refine ⟨_, _, .ifLtN_false (by rw [q31, X₁.2.2.2.2.2.1]; exact hlt)
+    · refine ⟨_, _, .ifLtN_false (by rwa [q31, X₁.2.2.2.2.2.1])
         (Exec.constN w₁ 180031 0 (by omega)), le_refl _, ?_, ⟨fun r hr => ?_, fun _ _ => rfl,
         rfl, rfl, rfl⟩⟩
       · simp only [Config.nreg_mk, upd_same]
@@ -238,7 +238,7 @@ theorem loopS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
   have X₂ := ctx_of_bbd X₁ K₂
   have hI : LI P C γ A₀ c.nmem c c₂ := by
     have e30 : c₂.nreg 180030 = 0 := by rw [R₂.1 _ (by decide), q30]
-    refine ⟨X₂, by omega, fun _ => by rw [e30]; exact q31', by rw [R₂.1 _ (by decide), q33]; omega,
+    refine ⟨X₂, by omega, fun _ => by rwa [e30], by rw [R₂.1 _ (by decide), q33]; omega,
       fun h => by omega, ?_, ?_, ?_, ?_, fun r hr => by rw [K₂ r hr, K₁ r hr], fun r hr => ?_, ?_, ?_⟩
     · rw [e30, R₂.1 _ (by decide), R₁.1 _ (by decide), h19]; rfl
     · rw [e30, R₂.1 _ (by decide), R₁.1 _ (by decide), h24]; rfl
@@ -260,7 +260,7 @@ theorem loopS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
         intro d ⟨wd, Id⟩ hlt
         rw [Id.1.2.2.2.2.2.2.2.2.2.2.2.2.1] at hlt
         obtain ⟨d', k', e', hk', lb', I', q'⟩ := bodyS_exec hG hW hW4 hC hsn hroom d wd Id hlt
-        exact ⟨d', k', e', ⟨e'.wb_right, I'⟩, hk', by omega, by show 3 * (pre C (d'.nreg 180030)).length ≤ 3 * (pre C (d.nreg 180030)).length + k'; rw [q']; exact lb'⟩)
+        exact ⟨d', k', e', ⟨e'.wb_right, I'⟩, hk', by omega, by show 3 * (pre C (d'.nreg 180030)).length ≤ 3 * (pre C (d.nreg 180030)).length + k'; rwa [q']⟩)
       _ c₂ rfl ⟨e₂.wb_right, hI⟩
   obtain ⟨X₃, l30, -, -, -, s19, s24, sL, sM, sR, sRR, sRM, sO⟩ := hI₃
   rw [X₃.2.2.2.2.2.2.2.2.2.2.2.2.1] at hex

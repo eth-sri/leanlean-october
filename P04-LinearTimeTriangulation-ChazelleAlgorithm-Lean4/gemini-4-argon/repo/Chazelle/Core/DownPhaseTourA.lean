@@ -107,8 +107,8 @@ theorem sideLeft_tourA_vtx {k : ℕ} (h0 : 0 < k) (hk : k < C.m) (hne : k ≠ sA
       sideLeftOf (C.vertex (k - 1)) (C.vertex k) (C.vertex (k + 1)) x := by
   have hpos := tourA_pos (C := C) (β := β) (show k < 2 * C.m by omega) hne
   have hsucc : tourA C β k = tourA C β (k - 1) + 1 := by
-    have := tourA_succ (C := C) (β := β) (k := k - 1) (by omega) (by rw [Nat.sub_add_cancel h0]; exact hne)
-    rw [Nat.sub_add_cancel h0] at this; exact this
+    have := tourA_succ (C := C) (β := β) (k := k - 1) (by omega) (by rwa [Nat.sub_add_cancel h0])
+    rwa [Nat.sub_add_cancel h0] at this
   rw [C.sideLeft_tour_inner β hpos (tourA_lt k)]
   unfold Chain.sideTour
   rw [hsucc, Nat.add_sub_cancel, sideIdx_tourA (by omega), ← hsucc, sideIdx_tourA hk,

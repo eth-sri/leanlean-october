@@ -194,24 +194,22 @@ theorem weakTriangulates_combine {P : Polygon} {s L : ℕ} (hd : IsDiagonal P s 
     simp only [Set.mem_ofPred_eq, Set.mem_union, List.mem_append, List.mem_map]
     constructor
     · rintro ⟨t, (⟨t', ht', rfl⟩ | ⟨t', ht', rfl⟩), hp⟩
-      · exact Or.inl ⟨t', ht', by rw [← hts₁ t' ht']; exact hp⟩
-      · exact Or.inr ⟨t', ht', by rw [← hts₂ t' ht']; exact hp⟩
+      · exact Or.inl ⟨t', ht', by rwa [← hts₁ t' ht']⟩
+      · exact Or.inr ⟨t', ht', by rwa [← hts₂ t' ht']⟩
     · rintro (⟨t', ht', hp⟩ | ⟨t', ht', hp⟩)
-      · exact ⟨_, Or.inl ⟨t', ht', rfl⟩, by rw [hts₁ t' ht']; exact hp⟩
-      · exact ⟨_, Or.inr ⟨t', ht', rfl⟩, by rw [hts₂ t' ht']; exact hp⟩
+      · exact ⟨_, Or.inl ⟨t', ht', rfl⟩, by rwa [hts₁ t' ht']⟩
+      · exact ⟨_, Or.inr ⟨t', ht', rfl⟩, by rwa [hts₂ t' ht']⟩
   · -- disjoint interiors
     rw [List.pairwise_append]
     refine ⟨?_, ?_, ?_⟩
     · rw [List.pairwise_map]
       refine hp₁.imp_of_mem ?_
       intro a b ha hb h
-      rw [hts₁ a ha, hts₁ b hb]
-      exact h
+      rwa [hts₁ a ha, hts₁ b hb]
     · rw [List.pairwise_map]
       refine hp₂.imp_of_mem ?_
       intro a b ha hb h
-      rw [hts₂ a ha, hts₂ b hb]
-      exact h
+      rwa [hts₂ a ha, hts₂ b hb]
     · intro a ha b hb
       rw [List.mem_map] at ha hb
       obtain ⟨a', ha', rfl⟩ := ha

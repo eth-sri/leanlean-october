@@ -156,8 +156,8 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
     (hV : V ∈ (chainModel C').regions Si)
     (hzV : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z₁.1, z₁.2 + τ * δ) : Point) ∈ V) :
     Phi (chainModel J.whole) (chainModel C') Si R f = V := by
-  set M := chainModel J.whole with hMdef
-  set M' := chainModel C' with hM'def
+  set M := chainModel J.whole
+  set M' := chainModel C'
   have hM : WalkAx M := walkAx_chainModel hP
   have hso : sideOf M R f = τ := by
     unfold sideOf
@@ -171,7 +171,7 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
   have hex : ∃ z ∈ f, z ∈ M.D := ⟨z₁, hz₁, hz₁D⟩
   have hm : midOf M f ∈ f ∧ midOf M f ∈ M.D := by
     unfold midOf; rw [dite_eq_left hex]; exact Classical.choose_spec hex
-  set m := midOf M f with hmdef
+  set m := midOf M f
   have hm2 : m.2 = z₁.2 := snd_eq_of_mem hM (hF hf) hz₁ hm.1
   have hgood : ∀ x ∈ Icc (min z₁.1 m.1) (max z₁.1 m.1),
       HalfIn (freeIn C'.dom Si) τ ((x, z₁.2) : Point) := by
@@ -186,17 +186,17 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
       have : ((x, z₁.2) : Point) = C'.top := Prod.ext hx1 heq
       rw [this]; exact hset C'.top_mem_set
   obtain ⟨w, hw, h1, h2⟩ := strip_const hτ min_le_max hgood
-  set W₀ := connectedComponentIn (freeIn C'.dom Si) w with hW₀
+  set W₀ := connectedComponentIn (freeIn C'.dom Si) w
   have hW₀r : W₀ ∈ M'.regions Si := ⟨w, hw, rfl⟩
   have hz₁W : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z₁.1, z₁.2 + τ * δ) : Point) ∈ W₀ := by
     rcases le_total z₁.1 m.1 with h | h
-    · rw [min_eq_left h] at h1; exact h1
-    · rw [max_eq_left h] at h2; exact h2
+    · rwa [min_eq_left h] at h1
+    · rwa [max_eq_left h] at h2
   have hmW : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((m.1, m.2 + τ * δ) : Point) ∈ W₀ := by
     rw [hm2]
     rcases le_total z₁.1 m.1 with h | h
-    · rw [max_eq_right h] at h2; exact h2
-    · rw [min_eq_right h] at h1; exact h1
+    · rwa [max_eq_right h] at h2
+    · rwa [min_eq_right h] at h1
   have hmeet : ∀ {X Y : Set Point}, X ∈ M'.regions Si → Y ∈ M'.regions Si → ∀ {p : Point},
       (∀ᶠ δ in 𝓝[>] (0 : ℝ), ((p.1, p.2 + τ * δ) : Point) ∈ X) →
       (∀ᶠ δ in 𝓝[>] (0 : ℝ), ((p.1, p.2 + τ * δ) : Point) ∈ Y) → X = Y := by
@@ -229,10 +229,9 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       (∃ (p : ℕ) (t : ℝ), SideAttach (chainModel J.whole).W f p t ∧
         Adj (chainModel J.whole) F R p t) ∧
       c ∈ exits (chainModel C') Si (Phi (chainModel J.whole) (chainModel C') Si R f) := by
-  set M := chainModel J.whole with hMdef
-  set M' := chainModel C' with hM'def
+  set M := chainModel J.whole
+  set M' := chainModel C'
   have hM : WalkAx M := walkAx_chainModel hP
-  have hP' : C'.P.Simple := hC'P ▸ hP
   obtain ⟨y, a, b, hH, hy, hceq, hl, hr⟩ := Merge.augChords_spec (hSi.2.1 hc)
   -- the side of `R`
   obtain ⟨τ, hτ, hsideE⟩ : ∃ τ : ℝ, (τ = 1 ∨ τ = -1) ∧ SideIn M R e τ := by
@@ -300,8 +299,8 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       exact ⟨_, ⟨w, hw, rfl⟩, h2, h1⟩
   have hPhi : Phi M M' Si R f = V := by
     refine phi_eq J hP hC'P hset hSi.2.1 hSi.1 hF hfin hR hf hτ hsidef hz₁f hz₁D
-      (by rw [hz₁y, hz₀y]; exact hy) hV ?_
-    rw [hz₁y]; exact hV₁
+      (by rwa [hz₁y, hz₀y]) hV ?_
+    rwa [hz₁y]
   refine ⟨f, hf, hRf, hadjf, hc, z₀, ⟨hec hz₀e, ?_⟩, ?_⟩
   · show z₀ ∈ C'.dom
     have : z₀ = ((z₀.1, y) : Point) := Prod.ext rfl hz₀y
@@ -331,8 +330,8 @@ theorem parents_ncard_le (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     (hR : R ∈ (chainModel J.whole).regions F) {D : ℕ} (hdeg : (chainModel C').DegLe Si D) :
     {c | c ∈ Si ∧ ∃ e ∈ exits (chainModel J.whole) F R, e ⊆ c}.ncard ≤
       D * (adjExits (chainModel J.whole) F R).ncard := by
-  set M := chainModel J.whole with hMdef
-  set M' := chainModel C' with hM'def
+  set M := chainModel J.whole
+  set M' := chainModel C'
   have hsub : {c | c ∈ Si ∧ ∃ e ∈ exits M F R, e ⊆ c} ⊆
       ⋃ f ∈ adjExits M F R, exits M' Si (Phi M M' Si R f) := by
     rintro c ⟨hc, e, ⟨he, hRe⟩, hec⟩
@@ -353,8 +352,7 @@ theorem parents_ncard_le (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
         ext c
         simp only [exits, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
         rintro - ⟨z, -, hz⟩
-        rw [closure_empty] at hz
-        exact hz
+        rwa [closure_empty] at hz
       rw [this, Set.ncard_empty]; omega
 
 end FuseDeg

@@ -45,7 +45,6 @@ theorem capx_iff (v f p : Point) (hne : f.2 ≠ v.2) :
   set L := (Geometry.lerp v f ((p.2 - v.2) / (f.2 - v.2))).1
   rcases lt_or_gt_of_ne hne with h | h
   · -- `f` below `v`
-    have hn : f.2 - v.2 < 0 := by linarith
     constructor
     · intro hp; right
       refine ⟨h, ?_, ?_⟩
@@ -58,8 +57,7 @@ theorem capx_iff (v f p : Point) (hne : f.2 ≠ v.2) :
         rcases hc.lt_or_eq with hc | hc
         · exact h2 (by nlinarith)
         · exact h3 (by rw [hc]; ring)
-  · have hp' : 0 < f.2 - v.2 := by linarith
-    constructor
+  · constructor
     · intro hp; left; exact ⟨h, by nlinarith⟩
     · rintro (⟨-, h2⟩ | ⟨h1, -⟩)
       · by_contra hc; push Not at hc; nlinarith
@@ -118,8 +116,7 @@ theorem cvLoad_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       (h3 (dst + 2, 50048) (by simp))
   · exact hostWF_pts hE.wf (by have := hE.hG.1.1; omega) _ (List.mem_of_getElem? hsp)
   · rw [chain_vertex_host C hE.hP _ (sp := sp)]
-    rw [show (Qof P).n = P.n from shear_n _ _, hE.n_eq]
-    exact hsp
+    rwa [show (Qof P).n = P.n from shear_n _ _, hE.n_eq]
 
 end
 

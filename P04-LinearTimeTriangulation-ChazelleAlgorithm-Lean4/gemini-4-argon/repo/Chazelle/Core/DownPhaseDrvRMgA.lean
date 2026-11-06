@@ -31,12 +31,12 @@ theorem chainWF_host {P : Polygon} {E : ℕ} {m : ℕ → ℕ} {d HB : ℕ} {H :
     (hHB : HB + 3 * H.length + 4 ≤ E) (hd : ChainDescAt m d (Qof P) H C) (hdh : m d = HB)
     (hdA : d + 5 ≤ E) (hs : C.s < C.P.n) : ChainWF P E m d := by
   refine ⟨hdA, fun H' C' hC' => ?_⟩
-  have hH : H' = H := NFLoc.hostAt_unique hC'.1 (by rw [hdh]; exact hHA)
+  have hH : H' = H := NFLoc.hostAt_unique hC'.1 (by rwa [hdh])
   subst hH
   have hC : C' = C := L41.chain_eq (hC'.2.1.trans hd.2.1.symm)
     (hC'.2.2.1.symm.trans hd.2.2.1) (hC'.2.2.2.1.symm.trans hd.2.2.2.1)
   subst hC
-  exact ⟨hHok, hwf, by rw [hdh]; exact hHB, hs⟩
+  exact ⟨hHok, hwf, by rwa [hdh], hs⟩
 
 /-- **The precondition of a merge on a region host** (`L41.mergePre_of` for an arbitrary host). -/
 theorem mergePreR {P : Polygon} {W : ℕ} {c : Config} {X : MemCtx} (hG : GoodEnv P)
@@ -62,29 +62,29 @@ theorem mergePreR {P : Polygon} {W : ℕ} {c : Config} {X : MemCtx} (hG : GoodEn
     (hgen : SharedGeneric (jOf C1 C2 hlen))
     (hfd : (chainModel (jOf C1 C2 hlen).whole).FullDegLe (Qof P) (rd c bMerge 7)) :
     MergePre X OkModel P W c := by
-  set J := jOf C1 C2 hlen with hJ
+  set J := jOf C1 C2 hlen
   have hP1 : C1.P = H.poly (Qof P) := hd1.2.1
   have hP2 : C2.P = H.poly (Qof P) := hd2.2.1
   have hl : J.left = C1 := jOf_left C1 C2 hlen
   have hr : J.right = C2 := jOf_right hlen (by rw [hP2, hP1]) hcons
-  have hwP : J.whole.P = H.poly (Qof P) := by rw [jOf_whole_P]; exact hP1
+  have hwP : J.whole.P = H.poly (Qof P) := by rwa [jOf_whole_P]
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hsT : J.whole.s < J.whole.P.n := by rw [jOf_whole_s, jOf_whole_P]; exact hs1
+  have hsT : J.whole.s < J.whole.P.n := by rwa [jOf_whole_s, jOf_whole_P]
   refine ⟨hG, hWh, hX, hcap, h7, h56,
     ⟨?_, ?_, ?_, fun H' hH' => ?_⟩, H, J, N1, N2, ⟨?_, ?_, ?_⟩,
-    by show J.P.Simple; rw [show J.P = H.poly (Qof P) from hwP]; exact hsimp, hgen,
+    by show J.P.Simple; rwa [show J.P = H.poly (Qof P) from hwP], hgen,
     by rw [hl]; exact okModel_host hHok hreg hP1 hsimp,
     by rw [hr]; exact okModel_host hHok hreg hP2 hsimp, okModel_host hHok hreg hwP hsimp,
-    hfd, by rw [r3]; exact hN1, by rw [r4]; exact hN2, ⟨γ1, hγ1, by rw [hl]; exact hc1⟩,
-    ⟨γ2, hγ2, by rw [hr]; exact hc2⟩⟩
+    hfd, by rwa [r3], by rwa [r4], ⟨γ1, hγ1, by rwa [hl]⟩,
+    ⟨γ2, hγ2, by rwa [hr]⟩⟩
   · rw [r0]; exact chainWF_host hHA hHok hwf hHB hd1 hd1h hd1A hs1
   · rw [r1]; exact chainWF_host hHA hHok hwf hHB hd2 hd2h hd2A hs2
   · rw [r2]; exact chainWF_host hHA hHok hwf hHB hTD hTDh hTDA hsT
   · rw [r2, hTDh] at hH'
-    rw [NFLoc.hostAt_unique hH' hHA, ← hQn]; exact hreg
-  · rw [r0, hl]; exact hd1
-  · rw [r1, hr]; exact hd2
-  · rw [r2]; exact hTD
+    rwa [NFLoc.hostAt_unique hH' hHA, ← hQn]
+  · rwa [r0, hl]
+  · rwa [r1, hr]
+  · rwa [r2]
 
 end
 

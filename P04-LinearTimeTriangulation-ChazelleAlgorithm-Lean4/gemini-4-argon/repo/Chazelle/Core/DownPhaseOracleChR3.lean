@@ -81,11 +81,11 @@ theorem descOK_of {P : Polygon} (hG : GoodEnv P) {m : ℕ → ℕ} {A₀ B E : �
   have hQ : (Qof P).n = P.n := qn'
   have hn : 1 ≤ P.n := by have := hG.1.1; omega
   have hpoly : (Host.whole P.n).poly (Qof P) = Qof P := by
-    have := L41.poly_whole (Qof P) (by omega); rw [hQ] at this; exact this
+    have := L41.poly_whole (Qof P) (by omega); rwa [hQ] at this
   have hCD : ChainDescAt m (B + 1) (Qof P) (Host.whole P.n) (ch (Qof P) u L h1 h2) :=
-    ⟨by rw [m1]; exact hH, by rw [hpoly]; rfl, m2, m3, m4, m5⟩
+    ⟨by rwa [m1], by rw [hpoly]; rfl, m2, m3, m4, m5⟩
   have huniq : ∀ H C, ChainDescAt m (B + 1) (Qof P) H C → H = Host.whole P.n := fun H C hC =>
-    NFLoc.hostAt_unique hC.1 (by rw [m1]; exact hH)
+    NFLoc.hostAt_unique hC.1 (by rwa [m1])
   refine ⟨Or.inl ⟨m0, _, _, hCD, rfl⟩, ⟨by omega, fun _ => ⟨by omega, fun H C hC => ?_⟩⟩,
     fun _ H C hC => ?_⟩
   · have e := huniq H C hC
@@ -165,9 +165,9 @@ theorem tauI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {u 
       · simp only [Config.nreg_mk, upd, ite_eq_right hr]
   have hJ : jStart (Qof P) L ≤ L := by unfold jStart; split_ifs <;> omega
   have w₁ := e₁.wb_right
-  have b89 : c₁.nreg 170089 = 2 * L := by rw [r₁ _ (by decide)]; exact h89
+  have b89 : c₁.nreg 170089 = 2 * L := by rwa [r₁ _ (by decide)]
   have b76 : c₁.nreg 170076 = (ch (Qof P) u L h1 h2).sideS (ch (Qof P) u L h1 h2).sideBeta := by
-    rw [r₁ _ (by decide)]; exact h76
+    rwa [r₁ _ (by decide)]
   have htau : tau (Qof P) u L h1 h2 = (jStart (Qof P) L + 2 * L -
       (ch (Qof P) u L h1 h2).sideS (ch (Qof P) u L h1 h2).sideBeta) % (2 * L) := rfl
   obtain ⟨c₂, k₂, e₂, hk₂, hτ, r₂, m₂⟩ : ∃ c₂ k₂, Exec P W
@@ -180,11 +180,11 @@ theorem tauI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {u 
     · config_simp; rw [a77, b89]; omega
     by_cases h : jStart (Qof P) L + 2 * L -
         (ch (Qof P) u L h1 h2).sideS (ch (Qof P) u L h1 h2).sideBeta < 2 * L
-    · refine spec_ifLtN_true (by config_simp; rw [a77, b89, b76]; exact h) ?_
+    · refine spec_ifLtN_true (by config_simp; rwa [a77, b89, b76]) ?_
       refine spec_skip ‹_› ⟨by omega, ?_, fun r hr => ?_, rfl⟩
       · config_simp; rw [a77, b89, b76, htau, Nat.mod_eq_of_lt h]
       · simp only [Config.nreg_mk, upd, ite_eq_right hr]
-    · refine spec_ifLtN_false (by config_simp; rw [a77, b89, b76]; exact h) ?_
+    · refine spec_ifLtN_false (by config_simp; rwa [a77, b89, b76]) ?_
       exec_block
       refine ⟨by omega, ?_, fun r hr => ?_, rfl⟩
       · config_simp; rw [a77, b89, b76, htau, Nat.mod_eq_sub_mod (by omega),
@@ -288,9 +288,9 @@ theorem chainI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {
       (∀ r, Bchain r = false → c'.rreg r = c.rreg r) ∧ c'.rmem = c.rmem ∧
       c'.output = c.output := by
   have hQ : (Qof P).n = P.n := qn'
-  have h2' : L + 1 ≤ P.n := by rw [← hQ]; exact h2
-  set C := ch (Qof P) u L h1 h2 with hCd
-  obtain ⟨c₁, k₁, e₁, hk₁, S₁, a38, a79n, a74, a79, F₁⟩ := topCh_exec c hw hS hu hL hun h1 h2 hcap
+  have h2' : L + 1 ≤ P.n := by rwa [← hQ]
+  set C := ch (Qof P) u L h1 h2
+  obtain ⟨c₁, k₁, e₁, hk₁, S₁, a38, a74, a79, F₁⟩ := topCh_exec c hw hS hu hL hun h1 h2 hcap
   have f₁ : ∀ r, Bch r = false → c₁.nreg r = c.nreg r := F₁.1
   obtain ⟨c₂, k₂, e₂, hk₂, b75', b75, m₂, F₂⟩ := betaI_exec c₁ e₁.wb_right S₁ (C := C) rfl a74
     (by rw [← a79]; rfl)
@@ -299,14 +299,14 @@ theorem chainI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {
     unfold Bbeta Bk; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
     (fun a _ => by rw [m₂]) (by rw [f₂ _ (by decide)])
   have b37 : c₂.nreg 170037 = C.m := by
-    rw [f₂ _ (by decide), f₁ _ (by decide)]; exact hL
-  have b74 : c₂.nreg 170074 = C.topIdx := by rw [f₂ _ (by decide)]; exact a74
+    rwa [f₂ _ (by decide), f₁ _ (by decide)]
+  have b74 : c₂.nreg 170074 = C.topIdx := by rwa [f₂ _ (by decide)]
   obtain ⟨c₃, k₃, e₃, hk₃, d89, d76, m₃, r₃⟩ := sI_exec c₂ e₂.wb_right S₂ b37 b74 b75' b75
-    (by rw [ch_m]; exact h2')
+    (by rwa [ch_m])
   have S₃ : SEnv P W O s c₃ := S₂.keep (fun r r1 r2 => r₃ r (by omega) (by omega))
     (fun a _ => by rw [m₃]) (by rw [r₃ _ (by decide) (by decide)])
   obtain ⟨c₄, k₄, e₄, hk₄, d77, m₄, r₄⟩ := tauI_exec c₃ e₃.wb_right S₃ (h1 := h1) (h2 := h2)
-    (by rw [r₃ _ (by decide) (by decide)]; exact b37) (by rw [d89, ch_m]) d76
+    (by rwa [r₃ _ (by decide) (by decide)]) (by rw [d89, ch_m]) d76
   have S₄ : SEnv P W O s c₄ := S₃.keep (fun r r1 r2 => r₄ r (by omega))
     (fun a _ => by rw [m₄]) (by rw [r₄ _ (by decide)])
   have ex4 : Exec P W (.seq topCh (.seq betaI (.seq sI tauI))) c c₄ (k₁ + (k₂ + (k₃ + k₄))) :=
@@ -314,21 +314,21 @@ theorem chainI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {
   have F₄ := exec_frameB ex4 wr_chain4
   have hA4 : c₄.nreg ALLOC = c.nreg ALLOC := F₄.1 _ (by decide)
   obtain ⟨c₅, k₅, e₅, hk₅, g78, gA, g0, g1, g2, g3, g4, g5, gm, gr, grr, grm, go⟩ :=
-    descI_exec c₄ e₄.wb_right S₄ (by rw [hA4]; exact hAW)
+    descI_exec c₄ e₄.wb_right S₄ (by rwa [hA4])
   -- register values at `c₄`
   have v : ∀ r, Bchain r = false → c₄.nreg r = c.nreg r := F₄.1
   have q38 : c₄.nreg 170038 = cStart (Qof P) u L := by
-    rw [r₄ _ (by decide), r₃ _ (by decide) (by decide), f₂ _ (by decide)]; exact a38
-  have q37 : c₄.nreg 170037 = L := by rw [v _ (by decide)]; exact hL
-  have q33 : c₄.nreg 170033 = u := by rw [v _ (by decide)]; exact hu
+    rwa [r₄ _ (by decide), r₃ _ (by decide) (by decide), f₂ _ (by decide)]
+  have q37 : c₄.nreg 170037 = L := by rwa [v _ (by decide)]
+  have q33 : c₄.nreg 170033 = u := by rwa [v _ (by decide)]
   have q74 : c₄.nreg 170074 = C.topIdx := by
-    rw [r₄ _ (by decide), r₃ _ (by decide) (by decide)]; exact b74
+    rwa [r₄ _ (by decide), r₃ _ (by decide) (by decide)]
   have q75 : c₄.nreg 170075 = c₂.nreg 170075 := by
     rw [r₄ _ (by decide), r₃ _ (by decide) (by decide)]
   have q79 : c₄.nreg 170079 = c₁.nreg 170079 := by
     rw [r₄ _ (by decide), r₃ _ (by decide) (by decide), f₂ _ (by decide)]
   have q89 : c₄.nreg 170089 = 2 * L := by rw [r₄ _ (by decide), d89, ch_m]
-  have q76 : c₄.nreg 170076 = C.sideS C.sideBeta := by rw [r₄ _ (by decide)]; exact d76
+  have q76 : c₄.nreg 170076 = C.sideS C.sideBeta := by rwa [r₄ _ (by decide)]
   have hm4 : c₄.nmem = c.nmem := F₄.2.2.1
   have S₅ : SEnv P W O s c₅ := S₄.keep (fun r r1 r2 => gr r (by omega) (by omega) (by omega)
     (by unfold ALLOC; omega)) gm (by rw [gA]; omega)
@@ -337,29 +337,28 @@ theorem chainI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   have keep5 : ∀ r, r ≠ 170078 → r ≠ 170090 → r ≠ 170091 → r ≠ ALLOC →
       c₅.nreg r = c₄.nreg r := gr
-  have hlog : Nat.log 2 (2 * L) ≥ 0 := Nat.zero_le _
   refine ⟨c₅, _, ex, by omega, by omega, ⟨S₅, hun, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
     by rw [g78, hA4], by rw [gA, hA4], fun a ha => ?_, fun r hr hra => ?_, fun r hr => ?_,
     by rw [grm, F₄.2.2.2.1], by rw [go, F₄.2.2.2.2]⟩
-  · rw [keep5 _ (by decide) (by decide) (by decide) (by decide)]; exact q33
-  · rw [keep5 _ (by decide) (by decide) (by decide) (by decide)]; exact q37
-  · rw [keep5 _ (by decide) (by decide) (by decide) (by decide)]; exact q38
-  · rw [keep5 _ (by decide) (by decide) (by decide) (by decide)]; exact q74
-  · rw [keep5 _ (by decide) (by decide) (by decide) (by decide), q75]; exact b75
-  · rw [keep5 _ (by decide) (by decide) (by decide) (by decide), q75]; exact b75'
-  · rw [keep5 _ (by decide) (by decide) (by decide) (by decide)]; exact q76
-  · rw [keep5 _ (by decide) (by decide) (by decide) (by decide)]; exact d77
+  · rwa [keep5 _ (by decide) (by decide) (by decide) (by decide)]
+  · rwa [keep5 _ (by decide) (by decide) (by decide) (by decide)]
+  · rwa [keep5 _ (by decide) (by decide) (by decide) (by decide)]
+  · rwa [keep5 _ (by decide) (by decide) (by decide) (by decide)]
+  · rwa [keep5 _ (by decide) (by decide) (by decide) (by decide), q75]
+  · rwa [keep5 _ (by decide) (by decide) (by decide) (by decide), q75]
+  · rwa [keep5 _ (by decide) (by decide) (by decide) (by decide)]
+  · rwa [keep5 _ (by decide) (by decide) (by decide) (by decide)]
   · rw [keep5 _ (by decide) (by decide) (by decide) (by decide), q79]; exact a79.symm
-  · rw [keep5 _ (by decide) (by decide) (by decide) (by decide)]; exact q89
+  · rwa [keep5 _ (by decide) (by decide) (by decide) (by decide)]
   · rw [g78, gA]
-    refine descOK_of (u := u) (L := L) (h1 := h1) (h2 := h2) S₄.good (by rw [hQ]; exact hun)
+    refine descOK_of (u := u) (L := L) (h1 := h1) (h2 := h2) S₄.good (by rwa [hQ])
       (S₅.hostAt) hal (by omega) g0 g1 ?_ ?_ ?_ ?_
     · rw [g2, q38]
     · rw [g3, q37]
     · rw [g4, q74]
-    · rw [g5, q75]; exact b75
-  · rw [g78]; exact hal
-  · rw [gm a (by rw [hA4]; exact ha), hm4]
+    · rwa [g5, q75]
+  · rwa [g78]
+  · rw [gm a (by rwa [hA4]), hm4]
   · have h78 : r ≠ 170078 := fun h => by subst h; revert hr; decide
     have h90 : r ≠ 170090 := fun h => by subst h; revert hr; decide
     have h91 : r ≠ 170091 := fun h => by subst h; revert hr; decide

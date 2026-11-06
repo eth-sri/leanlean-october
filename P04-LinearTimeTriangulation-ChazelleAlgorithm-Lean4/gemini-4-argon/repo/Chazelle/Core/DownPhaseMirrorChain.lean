@@ -101,7 +101,7 @@ theorem sideE_sym {m : ℕ} (hm : 0 < m) {x y : ℕ} (h : (x + y) % (2 * m) = 0)
     sideE m (x % (2 * m)) = sideE m (y % (2 * m)) := by
   have hX := Nat.mod_lt x (show 0 < 2 * m by omega)
   have hY := Nat.mod_lt y (show 0 < 2 * m by omega)
-  have h' : (x % (2 * m) + y % (2 * m)) % (2 * m) = 0 := by rw [← Nat.add_mod]; exact h
+  have h' : (x % (2 * m) + y % (2 * m)) % (2 * m) = 0 := by rwa [← Nat.add_mod]
   have hs : x % (2 * m) + y % (2 * m) = 0 ∨ x % (2 * m) + y % (2 * m) = 2 * m := by
     by_cases hlt : x % (2 * m) + y % (2 * m) < 2 * m
     · rw [Nat.mod_eq_of_lt hlt] at h'; exact Or.inl h'
@@ -167,7 +167,7 @@ theorem walkMir_sideWalk_not (β : Bool) :
 /-- **The turn of the mirrored chain is flipped** (inner top vertex). -/
 theorem sideBeta_mir (hP : C.P.Simple) (h0 : 0 < C.topIdx) (hm : C.topIdx < C.m) :
     C.mir.sideBeta = !C.sideBeta := by
-  set T := C.topIdx with hT
+  set T := C.topIdx
   set A := C.vertex (T + 1) - C.top
   set B := C.vertex (T - 1) - C.top
   set X := C.slitTop - C.top
@@ -195,7 +195,7 @@ theorem sideBeta_mir (hP : C.P.Simple) (h0 : 0 < C.topIdx) (hm : C.topIdx < C.m)
 theorem walkMir_sideWalk (hP : C.P.Simple) :
     WalkMir (C.sideWalk C.sideBeta) (C.mir.sideWalk C.mir.sideBeta) 5 := by
   by_cases hT : C.topIdx = 0 ∨ C.topIdx = C.m
-  · have hT' : C.mir.topIdx = 0 ∨ C.mir.topIdx = C.mir.m := by rw [topIdx_mir]; exact hT
+  · have hT' : C.mir.topIdx = 0 ∨ C.mir.topIdx = C.mir.m := by rwa [topIdx_mir]
     rw [sideWalk_indep C.mir hT' C.mir.sideBeta (!C.sideBeta)]
     exact walkMir_sideWalk_not C _
   · push Not at hT
@@ -226,7 +226,7 @@ theorem chords_chain_mir : C.mir.chords = mirF C.chords := by
   constructor
   · rintro ⟨k, σ, hk, hσ, hD, rfl⟩
     refine ⟨k, -σ, hk, by rcases hσ with rfl | rfl <;> norm_num, ?_, ?_⟩
-    · rw [← dirFree_mir, neg_neg]; exact hD
+    · rwa [← dirFree_mir, neg_neg]
     · rw [← neg_neg σ, chordSet_chain_mir, image_mir_image_mir, neg_neg]
   · rintro ⟨k, σ, hk, hσ, hD, hc⟩
     refine ⟨k, -σ, hk, by rcases hσ with rfl | rfl <;> norm_num, (dirFree_mir C k σ).2 hD, ?_⟩
@@ -243,7 +243,7 @@ theorem augChords_mir : Merge.augChords C.mir = mirF (Merge.augChords C) := by
   constructor
   · rintro ⟨y, a, b, hch, hy, rfl⟩
     refine ⟨y, -b, -a, ?_, hy, hseg_mir y a b⟩
-    rw [← isHChordIn_mir, neg_neg, neg_neg]; exact hch
+    rwa [← isHChordIn_mir, neg_neg, neg_neg]
   · rintro ⟨y, a, b, hch, hy, hc⟩
     refine ⟨y, -b, -a, isHChordIn_mir.2 hch, hy, ?_⟩
     rw [← hseg_mir, ← hc, image_mir_image_mir]

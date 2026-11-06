@@ -63,9 +63,9 @@ theorem x_if {a b : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {f g : ℕ → ℕ}
       NRegs d d' (if d.nreg a < d.nreg b then f else g) := by
   by_cases h : d.nreg a < d.nreg b
   · obtain ⟨d', k, ex, hk, hn⟩ := ht h
-    exact ⟨d', k + 1, .ifLtN_true h ex, by omega, by rw [ite_eq_left h]; exact hn⟩
+    exact ⟨d', k + 1, .ifLtN_true h ex, by omega, by rwa [ite_eq_left h]⟩
   · obtain ⟨d', k, ex, hk, hn⟩ := he h
-    exact ⟨d', k + 2, .ifLtN_false h ex, by omega, by rw [ite_eq_right h]; exact hn⟩
+    exact ⟨d', k + 2, .ifLtN_false h ex, by omega, by rwa [ite_eq_right h]⟩
 
 theorem x_ifR {a b r : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {v₁ v₂ : ℕ}
     (ht : d.nreg a < d.nreg b → ∃ d' k, Exec P W t d d' k ∧ k ≤ K ∧ NRegs d d' (upd d.nreg r v₁))
@@ -359,10 +359,10 @@ theorem lookBody_exec (d : Config) (hw : WordsBounded W d) {n p cum : ℕ} {it :
         (by rw [a95, i1]) (by rw [a96, i2]) ha hℓ hnW (by omega)
       refine ⟨d2, k2 + 1, .ifLtN_true (by rw [a94, i0, b27]; omega) e2, by omega, r93,
         fun h => ?_, fun h h' => ?_, rf⟩
-      · obtain ⟨x, y, z⟩ := r1 (by rw [b90]; exact h)
+      · obtain ⟨x, y, z⟩ := r1 (by rwa [b90])
         exact ⟨x.trans b70, y.trans b71, z.trans b72⟩
       · rw [run_pts_getD n a ℓ (by omega)]
-        have := r2 (by rw [b90]; exact h) (by rw [b90]; omega)
+        have := r2 (by rwa [b90]) (by rw [b90]; omega)
         rwa [b90] at this
     · obtain ⟨i0, i1⟩ := hit
       obtain ⟨d2, k2, e2, hk2, r93, r1, r2, rf⟩ := lookPt_exec (P := P) d1 hw1 b27 b93
@@ -373,7 +373,7 @@ theorem lookBody_exec (d : Config) (hw : WordsBounded W d) {n p cum : ℕ} {it :
         exact ⟨x.trans b70, y.trans b71, z.trans b72⟩
       · simp only [HostItem.pts, List.length_singleton] at h'
         have hk : d.nreg 217090 = cum := by omega
-        obtain ⟨x, y, -⟩ := r2 (by rw [b90]; exact hk)
+        obtain ⟨x, y, -⟩ := r2 (by rwa [b90])
         rw [hk, Nat.sub_self]
         simp only [HostItem.pts, List.getD_cons_zero, Enc]
         exact ⟨by rw [x, a94, i0], by rw [y, a95, i1]⟩
@@ -386,7 +386,7 @@ theorem lookBody_exec (d : Config) (hw : WordsBounded W d) {n p cum : ℕ} {it :
         exact ⟨x.trans b70, y.trans b71, z.trans b72⟩
       · simp only [HostItem.pts, List.length_singleton] at h'
         have hk : d.nreg 217090 = cum := by omega
-        obtain ⟨x, y, z⟩ := r2 (by rw [b90]; exact hk)
+        obtain ⟨x, y, z⟩ := r2 (by rwa [b90])
         rw [hk, Nat.sub_self]
         simp only [HostItem.pts, List.getD_cons_zero, Enc]
         exact ⟨by rw [x, a94, i0], by rw [y, a95, i1], by rw [z, a96, i2]⟩
@@ -449,7 +449,7 @@ theorem lookS_exec (d : Config) (hw : WordsBounded W d) {n HB : ℕ} {H : Host}
         exact h35
     exact ⟨d0, k0, e0, hk0, a91, a92, a93, exec_frameB e0 (by decide)⟩
   -- the loop
-  set k := d.nreg 217090 with hkdef
+  set k := d.nreg 217090
   let Inv : ℕ → Config → Prop := fun j c => WordsBounded W c ∧ c.nreg 217091 = j ∧
     c.nreg 217034 = H.length ∧ c.nreg 217092 = HB + 1 + 3 * j ∧
     c.nreg 217093 = (Host.pts n (H.take j)).length ∧

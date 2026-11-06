@@ -80,8 +80,8 @@ theorem coverBody_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 
   -- the entry
   obtain ⟨c2, k2, e2, hk2, hw2, h17, h18, fr2, hm2, hrr2, hrm2, ho2⟩ := entB_exec (P := P) hw1
     (T := T) (g := g) (q := i)
-    (by rw [g1 _ (by unfold AscRG; omega)]; exact r22) h12 (by rw [h13, hq])
-    (by rw [g1 _ (by unfold AscRG; omega)]; exact r24)
+    (by rwa [g1 _ (by unfold AscRG; omega)]) h12 (by rw [h13, hq])
+    (by rwa [g1 _ (by unfold AscRG; omega)])
     (by have := hT.hT; have := hT.wR; omega)
     (by rw [hm1, hm _ (by have := hT.hT; omega)]; have := hT.wR; omega)
   have eT : c1.nmem (T + g) = m0 (T + g) := by rw [hm1]; exact hm _ (by have := hT.hT; omega)
@@ -94,23 +94,23 @@ theorem coverBody_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 
   obtain ⟨c3, k3, e3, hk3, hw3, s0, sj, s5, sout, h19, fr3, hrr3, hrm3, ho3⟩ := recB_exec (P := P)
     hw2 (rp := R0 + 6 * cnt) (d := m0 (m0 (T + g) + 3 * i))
     (nf := m0 (m0 (T + g) + 3 * i + 1)) (hp := hp)
-    (by rw [fr2 _ (by omega) (by omega) (by omega), g1 _ (by unfold AscRG; omega)]; exact h15) h17 h18
-    (by rw [fr2 _ (by omega) (by omega) (by omega), g1 _ (by unfold AscRG; omega)]; exact r27)
-    (by rw [fr2 _ (by omega) (by omega) (by omega), g1 _ (by unfold AscRG; omega)]; exact r24)
+    (by rwa [fr2 _ (by omega) (by omega) (by omega), g1 _ (by unfold AscRG; omega)]) h17 h18
+    (by rwa [fr2 _ (by omega) (by omega) (by omega), g1 _ (by unfold AscRG; omega)])
+    (by rwa [fr2 _ (by omega) (by omega) (by omega), g1 _ (by unfold AscRG; omega)])
     (by omega) (by have := hT.wR; omega)
   -- the advance
   obtain ⟨c4, k4, e4, hk4, hw4, a15, a14, a10, fr4, hm4, hrr4, hrm4, ho4⟩ := advB_exec (P := P)
     hw3 (rp := R0 + 6 * cnt + 5) (cnt := cnt) (PW := PW) (g := g) (x := x) h19
-    (by rw [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
-      g1 _ (by unfold AscRG; omega)]; exact h14)
-    (by rw [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
-      g1 _ (by unfold AscRG; omega)]; exact r21)
+    (by rwa [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
+      g1 _ (by unfold AscRG; omega)])
+    (by rwa [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
+      g1 _ (by unfold AscRG; omega)])
     (by rw [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega)]
         exact h12)
-    (by rw [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
-      g1 _ (by unfold AscRG; omega)]; exact h10)
-    (by rw [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
-      g1 _ (by unfold AscRG; omega)]; exact r24)
+    (by rwa [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
+      g1 _ (by unfold AscRG; omega)])
+    (by rwa [fr3 _ (by omega) (by omega) (by omega), fr2 _ (by omega) (by omega) (by omega),
+      g1 _ (by unfold AscRG; omega)])
     (by rw [sout _ (by have := hT.hP; omega), hm2, hm1, hm _ (by have := hT.hP; omega)]
         exact hT.pow g (by omega))
     (by have := hT.wR; omega) (by have := hT.wR; omega) (by have := hT.hP; have := hT.wR; omega)
@@ -119,9 +119,9 @@ theorem coverBody_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 
     by rw [a15]; ring, ⟨?_, fun j h1 h2 => ?_, ?_⟩, fun a ha => ?_, fun r hr => ?_,
     by rw [hrr4, hrr3, hrr2, hrr1], by rw [hrm4, hrm3, hrm2, hrm1],
     by rw [ho4, ho3, ho2, ho1]⟩
-  · rw [hm4]; exact s0
+  · rwa [hm4]
   · simp only; rw [hq, hm4, sj j h1 h2, hm2, hm1, hm _ (by omega)]
-  · simp only; rw [hq, hm4]; exact s5
+  · simp only; rwa [hq, hm4]
   · rw [hm4, sout a (by omega), hm2, hm1]
   · unfold CovRG at hr
     rw [fr4 r (by omega) (by omega) (by unfold AscRG at hr; omega) (by omega),
@@ -170,14 +170,14 @@ theorem coverS_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 a :
         by rw [hrm3, hrm2], by rw [ho3, ho2], x + 2 ^ nextG lam b x,
         Wd ++ [(nextG lam b x, x)], a10, ?_, by rw [a14]; simp, by rw [a15]; simp,
         fun k hk => ?_, fun y hy => ?_⟩, ?_⟩
-      · rw [List.append_assoc, List.singleton_append, ← cover_of_lt htest]; exact hWd
+      · rwa [List.append_assoc, List.singleton_append, ← cover_of_lt htest]
       · simp only [List.length_append, List.length_singleton] at hk
         rcases Nat.lt_or_ge k Wd.length with h | h
         · obtain ⟨b0, b1, b2⟩ := hrec k h
           rw [List.getD_append _ _ _ _ h]
-          refine ⟨by rw [hout3 _ (by omega)]; exact b0, fun j h1 h2 => ?_, ?_⟩
+          refine ⟨by rwa [hout3 _ (by omega)], fun j h1 h2 => ?_, ?_⟩
           · rw [hout3 _ (by omega)]; exact b1 j h1 h2
-          · rw [hout3 _ (by omega)]; exact b2
+          · rwa [hout3 _ (by omega)]
         · have hk' : k = Wd.length := by omega
           subst hk'
           rw [List.getD_append_right _ _ _ _ le_rfl, Nat.sub_self]

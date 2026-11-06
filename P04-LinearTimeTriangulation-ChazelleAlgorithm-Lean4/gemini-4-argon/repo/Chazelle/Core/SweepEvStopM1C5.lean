@@ -41,14 +41,13 @@ theorem m1Task : M1Task := by
   rw [← hMd] at hroom ⊢
   have hM1 : 1 ≤ M := by rw [hMd]; split_ifs <;> omega
   have hLK := m1c_lhRunK_le (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))
-  set Q := F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1 with hQ
-  set G := κGen (c₀.nreg (sw 6)) with hG
-  have hQ1 : 1 ≤ Q := by omega
+  set Q := F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1
+  set G := κGen (c₀.nreg (sw 6))
   have hMQ : 1 ≤ M * Q := Nat.one_le_iff_ne_zero.2 (by positivity)
   have e : (G + κB + 60000) * M * Q = G * M * Q + κB * M * Q + 60000 * (M * Q) := by ring
   have hp2 : G * Q ≤ G * M * Q := by
     rw [show G * M * Q = M * (G * Q) by ring]; exact Nat.le_mul_of_pos_left _ (by omega)
-  set B := (G + κB + 60000) * M * Q with hB
+  set B := (G + κB + 60000) * M * Q
   unfold m1cP
   refine (IRS.ite (K := B - 2) (fun h0 => ?_) (fun h0 => ?_)).mono (by omega) (fun _ h => h)
   · rw [hK.2.1] at h0

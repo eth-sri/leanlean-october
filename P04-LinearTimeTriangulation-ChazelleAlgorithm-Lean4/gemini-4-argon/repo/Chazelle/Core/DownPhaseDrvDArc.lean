@@ -107,12 +107,12 @@ theorem gs_last (hE : 0 < E.length) :
   obtain ⟨j₀, hj₀, hj₀e⟩ := List.mem_iff_getElem.1 hmem
   have hA : 0 < (gapStarts M Q L E).length := by omega
   refine ⟨hA, ?_⟩
-  have h0 : gs M Q L E j₀ = E.length - 1 := by rw [gs_eq hj₀]; exact hj₀e
+  have h0 : gs M Q L E j₀ = E.length - 1 := by rwa [gs_eq hj₀]
   by_contra hne
   have hlt : j₀ < (gapStarts M Q L E).length - 1 := by
     rcases Nat.lt_or_ge j₀ ((gapStarts M Q L E).length - 1) with h | h
     · exact h
-    · exact absurd (by rw [show (gapStarts M Q L E).length - 1 = j₀ by omega]; exact h0) hne
+    · exact absurd (by rwa [show (gapStarts M Q L E).length - 1 = j₀ by omega]) hne
   have h1 := gs_lt_gs (M := M) (Q := Q) (L := L) (E := E) hlt (by omega)
   have h2 := gs_lt_len (M := M) (Q := Q) (L := L) (E := E)
     (j := (gapStarts M Q L E).length - 1) (by omega)
@@ -200,7 +200,6 @@ theorem bktKey_le (hK : 0 < L.length) (hE : 0 < E.length) (hsort : E.Pairwise (c
     (hy : BktKey M Q (buildNF M Q L E) y b') (hbb : b < b') :
     ∃ i, i < E.length ∧ x ≤ kE M Q L E i ∧ kE M Q L E i ≤ y := by
   have hA := arcs_length (M := M) (Q := Q) (E := E) hK
-  obtain ⟨hA0, hlast⟩ := gs_last (M := M) (Q := Q) (L := L) hE
   -- the lower bound of `y`'s bucket
   have hlow : ∀ i, (b' < (gapStarts M Q L E).length → i ≤ gs M Q L E (b' - 1)) →
       i ≤ E.length - 1 → 1 ≤ b' → kE M Q L E i ≤ y := by

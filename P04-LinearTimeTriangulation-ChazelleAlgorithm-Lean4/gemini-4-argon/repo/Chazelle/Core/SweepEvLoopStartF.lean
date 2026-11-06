@@ -47,7 +47,6 @@ theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       (Or.inr (by unfold fA sw; norm_num))
   have hsj := NFLoc.seq_lt hNF hj
   obtain ⟨⟨pps, hse, hsy⟩, ⟨ppe, hee, hey⟩⟩ := arc_end_facts hP₂ hNF hsj
-  have hQn : (Qof P).n = P.n := shear_n _ _
   -- 2. normalise the start of the arc
   refine IRS.seq (normS_irs (dsc := sw 21) (pe := fSE) (ph := fSH) (o := fO) (C := J.right) hI₁ hK₁
     (E.ctx2' hI₁) ⟨by unfold sw; norm_num, by unfold sw; norm_num, by unfold fSE sw; norm_num,
@@ -55,7 +54,7 @@ theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     ⟨by unfold fO sw; norm_num, by unfold fO sw; norm_num, by unfold fO fSE sw; norm_num,
       by unfold fO fSH sw; norm_num, by unfold fO fSE sw; norm_num, by unfold fO fSH sw; norm_num,
       by unfold fSE fSH sw; norm_num⟩
-    (by rw [vSE]; exact hse) (by rw [vSE, vSH]; exact pps) (by rw [vSE, vSH]; exact hsy)
+    (by rwa [vSE]) (by rwa [vSE, vSH]) (by rwa [vSE, vSH])
     (by rw [hAl1]; exact face_room2 hroom)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨v2SE, v2SH, k2, hA2, hm2⟩
   have hK₂ := E.hK.fix hI₂
@@ -259,7 +258,7 @@ theorem fpos_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have hA3 : c₃.nreg ALLOC = c.nreg ALLOC := by
     rw [hc₃]; simp [regI, upd_other _ _ _ (show ALLOC ≠ fA by simp [ALLOC, fA, sw])]; exact hA2
   refine (face_irs E hI₃ (by rw [e3E]; exact Nat.mod_lt _ (by have := hv2; omega))
-    (by rw [e3A]; exact hs) (by
+    (by rwa [e3A]) (by
       rw [hA3]; generalize 30000 * (c₀.nreg TLR + 1) = Y at hroom ⊢; omega)).mono le_rfl ?_
   rintro c₄ ⟨r4, hb4, ha4, m4, A4, k4⟩
   rw [e3A, e3E] at hb4 ha4

@@ -117,7 +117,7 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
     refine ⟨hGE, hWh, hX, by omega, ?_, Hs, J, N₁, N₂, hJ, hPs, hSG, hOk1, hOk2, hOkw,
       hA0 ▸ hN1, hA0 ▸ hN2, hc1.1, hc2.1, hc1.2.1, hc2.2.1,
       hc1.2.2.1.semigranular_of_le _ hγ₁, hc2.2.2.1.semigranular_of_le _ hγ₂⟩
-    rw [← hA0]; exact hJWF
+    rwa [← hA0]
   have hcostF : κF (rd c1 bFuse 6) * (c1.nmem (rd c1 bFuse 3) + c1.nmem (rd c1 bFuse 4) + 1) *
       (F (rd c1 bFuse 5) + Nat.clog 2 (c1.nmem (rd c1 bFuse 3) + c1.nmem (rd c1 bFuse 4) + 1) + 1)
       ≤ PF := by
@@ -128,13 +128,13 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
   have hk2' : k2 ≤ PF := hk2.trans hcostF
   have F2 : Frame MB c1 c2 k2 := frF.mono (by decide) le_rfl
   obtain ⟨Nf, hNfA, hNfW, hNf, -, hNfK, hNfD, hNfS⟩ := postF Hs J N₁ N₂
-    (by rw [m1, f0, f1, f2, hbw]; exact hJ) (by rw [m1, f3]; exact hN1.nfAt)
+    (by rwa [m1, f0, f1, f2, hbw]) (by rw [m1, f3]; exact hN1.nfAt)
     (by rw [m1, f4]; exact hN2.nfAt)
   rw [f6, hD] at hNfD
   rw [f5, hγ₀] at hNfS
   simp only [fuseLoss] at hNfS
   have hKf : Nf.nChords + 1 ≤ 8 * S := by rw [hSdef]; omega
-  set Hf := rd c2 bFuse 7 with hHf
+  set Hf := rd c2 bFuse 7
   -- 3. the model descriptor
   have a2 : A0 ≤ c2.nreg ALLOC := by rw [← a1]; exact frF.2.2.2.2.2.1
   have a2' : c2.nreg ALLOC ≤ A0 + k2 := by rw [← a1]; exact frF.2.2.2.2.2.2
@@ -142,7 +142,7 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
     rw [keepF frF r (by rw [hr]; decide) (by intro h; rw [h] at hr; exact absurd hr (by decide)),
       fr1.1 r (by simp [inBand, hr]; decide)]
   have mem2 : ∀ a, a < A0 → c2.nmem a = c.nmem a := fun a ha => by
-    rw [frF.2.2.1 a (by rw [a1]; exact ha), m1]
+    rw [frF.2.2.1 a (by rwa [a1]), m1]
   obtain ⟨A, hA⟩ : ∃ x, c2.nreg ALLOC = x := ⟨_, rfl⟩
   obtain ⟨c3, k3, e3, hk3, v10, a3, v20, v21, h3A, h3c, m3, r3, rr3, rm3, o3⟩ :=
     descS_exec (P := P) c2 e2.wb_right hA (bw := bw) ((r2 _ (by decide)).trans hbw)
@@ -167,7 +167,7 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
   obtain ⟨c5, k5, e5, hk5, hall, hcap5, m5, r5⟩ := mdLoop_exec (P := P)
     (base := c3.nmem (Hf + 5) + 2) (R := Nf.nRegions) (Cap := capF D)
     (L := fun r => (Nf.region r).chords.length) (by omega) (by omega) hlens Nf.nRegions c4
-    e4.wb_right (by rw [r4 _ (by decide)]; exact v20) (by rw [r4 _ (by decide)]; exact v21)
+    e4.wb_right (by rwa [r4 _ (by decide)]) (by rwa [r4 _ (by decide)])
     (by rw [v34, hR]) (fun r hr => by
       rw [m4, show c3.nmem (Hf + 5) + 2 + 5 * r = c3.nmem (Hf + 5) + 5 * r + 2 by ring]
       exact (hNfA3.2.2.2.2.2.2.2.1 r hr).2.1) (by rw [v30]; omega) (by simp only [v31, v30, Nat.mul_zero, Nat.add_zero])
@@ -178,19 +178,17 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
   have hDeg0 : (chainModel J.whole).DegLe (Nf.F (chainModel J.whole) (Qof P)) d₀ :=
     degLe_of_lens hNf hall
   -- 5. `γ_R`
-  have r45 : ∀ r, bandOf r ≠ bMerge → c5.nreg r = c3.nreg r := fun r hr => by
-    rw [fr5.1 r (by simp [inBand, hr]), fr4.1 r (by simp [inBand, hr])]
   have r35 : ∀ r, r < 100030 → c5.nreg r = c3.nreg r := fun r hr => by
     rw [r5 r (by omega) (by omega) (by omega) (by omega), r4 r hr]
   have mem5 : c5.nmem = c3.nmem := by rw [m5, m4]
   have hmW : 2 * m ≤ W := by omega
   obtain ⟨c6, k6, e6, hk6, v45, fr6, r6⟩ := gamS_exec (P := P) c5 e5.wb_right
-    (by rw [r35 _ (by decide)]; exact v20)
-    (by show c5.nreg 100005 = γ₀; rw [r35 _ (by decide), r3 _ (Or.inl (by decide)) (by decide),
-      r2 _ (by decide)]; exact hγ₀)
+    (by rwa [r35 _ (by decide)])
+    (by show c5.nreg 100005 = γ₀; rwa [r35 _ (by decide), r3 _ (Or.inl (by decide)) (by decide),
+      r2 _ (by decide)])
     (by show c5.nmem (c5.nreg 100002 + 2) = m
-        rw [r35 _ (by decide), r3 _ (Or.inl (by decide)) (by decide), r2 _ (by decide), mem5,
-          show c.nreg 100002 = bw from hbw, mem3 _ (by omega)]; exact hm)
+        rwa [r35 _ (by decide), r3 _ (Or.inl (by decide)) (by decide), r2 _ (by decide), mem5,
+          show c.nreg 100002 = bw from hbw, mem3 _ (by omega)])
     (by omega) hmW
     (by show c5.nreg 100002 + 2 ≤ W
         rw [r35 _ (by decide), r3 _ (Or.inl (by decide)) (by decide), r2 _ (by decide),
@@ -221,13 +219,13 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
       fr4.1 ALLOC (by decide), a3]
   have Fc7 : Frame MB c c7 (k1 + (k2 + (k3 + (k4 + (k5 + (k6 + k7)))))) :=
     ftr F1 (ftr F2 (ftr F3 (ftr F4 (ftr F5 (ftr F6 F7)))))
-  have hX0 : X.holds P c.nmem g (c.nreg ALLOC) := by rw [hA0]; exact hX
+  have hX0 : X.holds P c.nmem g (c.nreg ALLOC) := by rwa [hA0]
   have hold7 := holds_frame hX0 Fc7
   have cap7 := cap_frame hloc hX0 Fc7
   have mem7c : ∀ a, a < A0 → c7.nmem a = c.nmem a := fun a ha => by rw [mem7]; exact mem3 a ha
   have hcopy7 : ∀ j, j < 5 → c7.nmem (A + 1 + j) = c.nmem (bw + j) := fun j hj => by
     rw [mem7, h3c j hj, mem2 _ (by omega)]
-  obtain ⟨hMD7, hMWF7⟩ := modelDesc_copy hwfw hJ.2.2 (by omega) mem7c (by rw [mem7]; exact h3A)
+  obtain ⟨hMD7, hMWF7⟩ := modelDesc_copy hwfw hJ.2.2 (by omega) mem7c (by rwa [mem7])
     hcopy7 (E' := c7.nreg ALLOC) (by omega)
   have hNf7 : NFWithin c7.nmem Hf (c7.nreg ALLOC) Nf := hNf3.frame (ftr F4 (ftr F5 (ftr F6 F7)))
   have hKf7 : c7.nmem Hf = Nf.nChords := hNf7.nfAt.1
@@ -254,10 +252,10 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
       semigranular_min_chain' hNfS⟩
     obtain ⟨-, -, hEb, -⟩ := hwfw.2 Hs J.whole hJ.2.2
     have hCd7 := chainDescAt_copy hJ.2.2 hEb mem7c hcopy7
-    · rw [NFLoc.hostAt_unique h'.1 hCd7.1]; exact hregW
+    · rwa [NFLoc.hostAt_unique h'.1 hCd7.1]
     · obtain ⟨-, -, hEb, -⟩ := hwfw.2 Hs J.whole hJ.2.2
       have hCd7 := chainDescAt_copy hJ.2.2 hEb mem7c hcopy7
-      rw [h'.2.1, NFLoc.hostAt_unique h'.1 hCd7.1, ← hCd7.2.1]; exact hPs
+      rwa [h'.2.1, NFLoc.hostAt_unique h'.1 hCd7.1, ← hCd7.2.1]
   have hcostR : κR (rd c7 bRestore 2) (rd c7 bRestore 3) * (c7.nmem (rd c7 bRestore 1) + 1) *
       F (rd c7 bRestore 4) * G (rd c7 bRestore 4) *
       (H (rd c7 bRestore 4) + Nat.clog 2 (rd c7 bRestore 4) +
@@ -272,7 +270,7 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
   have hk8' : k8 ≤ PR := hk8.trans hcostR
   have F8 : Frame MB c7 c8 k8 := frR.mono (by decide) le_rfl
   obtain ⟨Nr, -, hNrW, hNr, -, hNrD, hNrS, hNrK⟩ := postR (chainModel J.whole) Nf
-    (by rw [s0]; exact hMD7) (by rw [s1]; exact hNf7.nfAt)
+    (by rwa [s0]) (by rw [s1]; exact hNf7.nfAt)
   rw [s3] at hNrD
   rw [s4] at hNrS
   rw [s2, s3] at hNrK
@@ -295,12 +293,11 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
   have a8 : c8.nreg ALLOC ≤ c7.nreg ALLOC + k8 := frR.2.2.2.2.2.2
   have he79 : ∀ a, a < c7.nreg ALLOC → c9.nmem a = c7.nmem a := fun a ha => by
     rw [mem9]; exact frR.2.2.1 a ha
-  obtain ⟨-, hwhbound, -⟩ := hwfw.2 Hs J.whole hJ.2.2
   have hdesc7 : ∀ (H' : Host) (C' : Chain), ChainDescAt c.nmem bw (Qof P) H' C' →
       ChainDescAt c7.nmem (A + 1) (Qof P) H' C' := fun H' C' hC' => by
     obtain ⟨-, -, hb', -⟩ := hwfw.2 H' C' hC'
     exact chainDescAt_copy hC' (by omega) mem7c hcopy7
-  obtain ⟨hMD9, hMWF9, -, -⟩ := modelDesc_agree hMWF7 (by rw [mem7]; exact h3A)
+  obtain ⟨hMD9, hMWF9, -, -⟩ := modelDesc_agree hMWF7 (by rwa [mem7])
     (hdesc7 Hs J.whole hJ.2.2) he79
   have hNr9 : NFWithin c9.nmem (rd c8 bRestore 5) (c9.nreg ALLOC) Nr := hNrW.frame F9
   have hKr9 : c9.nmem (rd c8 bRestore 5) = Nr.nChords := hNr9.nfAt.1
@@ -347,33 +344,31 @@ theorem mergeSpec_of (hF : FuseSpec) (hR : RestoreSpec) (hG : GranularizeSpec) :
     rw [hD, hK1, hK2, hγ₀, hbw, hm]
     show _ ≤ κM κF capF κR cR κG c23 D * S * Fq * Gq * (Hq + L + 1)
     rw [hT]
-    have h5 : k5 ≤ 56 * S + 2 := by omega
     omega
   · -- the postcondition
     intro Hs' J' N₁' N₂' hJ' hN1' hN2'
     rw [hbw] at hJ'
     obtain ⟨Nf', -, hNfW', -, -, -, -, -⟩ := postF Hs' J' N₁' N₂'
-      (by rw [m1, f0, f1, f2, hbw]; exact hJ') (by rw [m1, f3]; exact hN1')
-      (by rw [m1, f4]; exact hN2')
+      (by rwa [m1, f0, f1, f2, hbw]) (by rwa [m1, f3])
+      (by rwa [m1, f4])
     have hNf7' : NFWithin c7.nmem Hf (c7.nreg ALLOC) Nf' :=
       hNfW'.frame (ftr F3 (ftr F4 (ftr F5 (ftr F6 F7))))
     obtain ⟨hMD7', -⟩ := modelDesc_copy hwfw hJ'.2.2 (by omega) mem7c
-      (by rw [mem7]; exact h3A) hcopy7 (E' := c7.nreg ALLOC) (by omega)
-    obtain ⟨Nr', -, hNrW', -⟩ := postR (chainModel J'.whole) Nf' (by rw [s0]; exact hMD7')
+      (by rwa [mem7]) hcopy7 (E' := c7.nreg ALLOC) (by omega)
+    obtain ⟨Nr', -, hNrW', -⟩ := postR (chainModel J'.whole) Nf' (by rwa [s0])
       (by rw [s1]; exact hNf7'.nfAt)
-    obtain ⟨hMD9', -, -, -⟩ := modelDesc_agree hMWF7 (by rw [mem7]; exact h3A)
+    obtain ⟨hMD9', -, -, -⟩ := modelDesc_agree hMWF7 (by rwa [mem7])
       (hdesc7 Hs' J'.whole hJ'.2.2) he79
-    obtain ⟨N'', hN''A, hN''W, -, hN''⟩ := postG (chainModel J'.whole) Nr' (by rw [g0]; exact hMD9')
+    obtain ⟨N'', hN''A, hN''W, -, hN''⟩ := postG (chainModel J'.whole) Nr' (by rwa [g0])
       (by rw [g1, mem9]; exact hNrW'.nfAt)
     rw [g2, g3] at hN''
-    have a10 : c9.nreg ALLOC ≤ c10.nreg ALLOC := frG.2.2.2.2.2.1
     have a11 : c11.nreg ALLOC = c10.nreg ALLOC := fr11.1 ALLOC (by decide)
     have c9A : c.nreg ALLOC ≤ c9.nreg ALLOC := by
       have := (ftr F1 (ftr F2 (ftr F3 (ftr F4 (ftr F5 (ftr F6 (ftr F7 (ftr F8 F9)))))))).2.2.2.2.2.1
       exact this
-    refine ⟨N'', ?_, ?_, by rw [hγt, hD]; exact hN''⟩
+    refine ⟨N'', ?_, ?_, by rwa [hγt, hD]⟩
     · rw [o8]; omega
-    · rw [o8, fr11.2.2.1, a11]; exact hN''W
+    · rwa [o8, fr11.2.2.1, a11]
 
 end
 

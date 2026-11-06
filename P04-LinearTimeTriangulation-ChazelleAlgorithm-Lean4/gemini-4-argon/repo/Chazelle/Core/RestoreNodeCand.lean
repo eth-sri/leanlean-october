@@ -59,12 +59,12 @@ theorem end_cand (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) {c : Set Poin
     unfold endCode; split_ifs <;> omega
   have hpp : ProperPos E.M (Qof E.P) E.P.n
       ⟨(g + d) % E.M.W.n, endCode Cα (Qof E.P) (g' + d) (h + 1)⟩ :=
-    ⟨by rw [hp]; exact ht0, by rw [hp]; exact ht1, hcode⟩
+    ⟨by rwa [hp], by rwa [hp], hcode⟩
   refine ⟨Nat.mod_lt _ hn, hpp, ?_, fun C hM => ?_, by simp only at hhn; omega, hy, hσb⟩
   · have hp' := hp
     unfold endCode at hp' ⊢
     split_ifs at hp' ⊢ with hk
-    · right; rw [hp']; rw [key_pz] at hk; exact hk
+    · right; rw [hp']; rwa [key_pz] at hk
     · left; rfl
   · exact hE.ehr _ _ (Nat.mod_lt _ hn) hr.1 hr.2 hpp C hM
 

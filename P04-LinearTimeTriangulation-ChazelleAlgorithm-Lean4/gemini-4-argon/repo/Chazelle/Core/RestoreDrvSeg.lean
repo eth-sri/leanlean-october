@@ -24,8 +24,7 @@ theorem head_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
     (h12 : c.nreg 80012 = H) (h21 : c.nreg 80021 = 2) (h22 : c.nreg 80022 = 3)
     (hH : H + 5 ≤ W) :
     ∃ c' k, Exec P W headS c c' k ∧ k = 10 ∧
-      c'.nreg 80013 = c.nmem H ∧ c'.nreg 80014 = c.nmem (H + 2) ∧
-      c'.nreg 80015 = c.nmem (H + 3) ∧ c'.nreg 80016 = c.nmem (H + 5) ∧
+      c'.nreg 80013 = c.nmem H ∧ c'.nreg 80014 = c.nmem (H + 2) ∧ c'.nreg 80016 = c.nmem (H + 5) ∧
       c'.nreg 80017 = c.nreg ALLOC ∧ c'.nreg 80031 = c.nmem (H + 3) ∧ c'.nreg 80030 = 0 ∧
       (∀ r, (r < 80013 ∨ (80017 < r ∧ r < 80030) ∨ (80031 < r ∧ r ≠ 80036)) →
         c'.nreg r = c.nreg r) ∧
@@ -35,7 +34,7 @@ theorem head_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
   all_goals try omega
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h12, h21, h22, ALLOC]; omega)
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩ <;>
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩ <;>
     (try simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, h12, h21, h22, ALLOC])
 

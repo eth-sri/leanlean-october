@@ -54,7 +54,7 @@ theorem query_meets {bands : Finset ℕ} (hb : bSign ∈ bands ∧ bLocate ∈ b
       (fun _ c => ⌈(κ : ℝ) * ((c.nmem (rd c bOQuery 0 + 2) : ℝ) ^ ((1 : ℝ) / 3) *
         ((c.nmem (c.nmem (rd c bOQuery 0) + 2) : ℝ) + 1) ^ ((2 : ℝ) / 3) + 1)⌉₊) := by
   intro P W c hw ⟨hG, hHW, ⟨E, hE, hOE, hrob⟩, o, hol, ho⟩ _
-  set O := rd c bOQuery 0 with hOdef
+  set O := rd c bOQuery 0
   obtain ⟨V, H, C, N, B, k, hA⟩ := hrob.holds
   have hEW : E ≤ W := by rw [← hE]; exact hw.2 _
   have hn : 1 ≤ P.n := by

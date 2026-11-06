@@ -51,7 +51,6 @@ theorem hseg_near {y a b : ℝ} (hab : a < b) {e : Point} (he : e ∈ hseg y a b
       ?_⟩
     rw [hdist, abs_of_pos hδ0]; linarith
   · set δ := min (r / 2) ((e.1 - a) / 2) with hδ
-    have hea : a < e.1 := by linarith
     have hδ0 : 0 < δ := lt_min (by linarith) (by linarith)
     have hδ1 : δ ≤ r / 2 := min_le_left _ _
     have hδ2 : δ ≤ (e.1 - a) / 2 := min_le_right _ _
@@ -72,7 +71,7 @@ theorem pos_eq_of_sector {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈
   obtain ⟨hp, ht0, ht1, hmem, rA, hrA, hsA⟩ := hA
   obtain ⟨rS, hrS, hS⟩ := hsec
   obtain ⟨a, b, hab, hcab, -, hopen, hEa, hEb⟩ := hM.ends c hc
-  set e := sidePt M.W p t with he
+  set e := sidePt M.W p t
   have heD : e ∉ M.D := hM.trace p hp t ht0 ht1.le
   have hend : WalkEnd M.W c e := by
     rw [hcab] at hmem
@@ -80,8 +79,8 @@ theorem pos_eq_of_sector {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈
     rcases hs0.lt_or_eq with h0 | h0
     · rcases hs1.lt_or_eq with h1 | h1
       · exact absurd (hs ▸ hopen s ⟨h0, h1⟩) heD
-      · rw [h1, Chazelle.Geometry.lerp_one] at hs; rw [hs]; exact hEb
-    · rw [← h0, Chazelle.Geometry.lerp_zero] at hs; rw [hs]; exact hEa
+      · rw [h1, Chazelle.Geometry.lerp_one] at hs; rwa [hs]
+    · rw [← h0, Chazelle.Geometry.lerp_zero] at hs; rwa [hs]
   by_contra hne
   have hne' : p = p' → t ≠ t' := fun h1 h2 => hne ⟨h1.symm, h2.symm⟩
   obtain ⟨r, hr, hdis⟩ := hend.2 p p' t t' hp ht0 ht1 hp' ht' ht1' hne' rfl hpt
@@ -149,7 +148,7 @@ theorem openLast_mem_dom {s : ℝ} (hs : s ∈ Ioo (0 : ℝ) 1) :
   have hm1 := C.one_le
   have hh : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 (by omega) (by omega) (by omega)
   obtain ⟨hne1, hne2, hlt⟩ := lerp_snd_ne hh hs
-  set e := lerp (Q.vtx C.m) (Q.vtx 0) s with he
+  set e := lerp (Q.vtx C.m) (Q.vtx 0) s
   have heE : e ∈ Q.edge C.m := by
     rw [T.last_edge]; exact Chazelle.Geometry.lerp_mem_segment _ _ hs.1.le hs.2.le
   have hefill : e ∈ Q.filled := Or.inl ⟨C.m, by omega, heE⟩
@@ -189,8 +188,8 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
   have hle := i0_le hQ T hD hli
   have hWn : (C.sideWalk C.sideBeta).n = 2 * C.m + 7 := Chain.sideWalk_n _ _
   have hIn : (interiorWalk Q).n = Q.n := Trans.iw_n
-  set W := C.sideWalk C.sideBeta with hW
-  set e := sidePt W p t with he
+  set W := C.sideWalk C.sideBeta
+  set e := sidePt W p t
   have hc' := hc
   obtain ⟨y, a, b, hch, -, rfl⟩ := hc'
   have hA' := hA
@@ -213,9 +212,9 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
     exact heD (T.interior_sub_dom hQ ⟨hefill, h⟩)
   -- its interior walk position
   obtain ⟨j, hj, s, hs0, hs1, hjs⟩ :=
-    FactsInterior.exists_pos_of_mem_boundary (W := interiorWalk Q) (by rw [hWb]; exact hebd)
+    FactsInterior.exists_pos_of_mem_boundary (W := interiorWalk Q) (by rwa [hWb])
   rw [hIn] at hj
-  obtain ⟨rI, hrI, hI⟩ := FactsInterior.interior_left hWs hWo (by rw [hIn]; exact hj) hs0 hs1
+  obtain ⟨rI, hrI, hI⟩ := FactsInterior.interior_left hWs hWo (by rwa [hIn]) hs0 hs1
   -- the points of the chord near the end are in the interior walk's sector
   have hsecI : ∃ r > 0, ∀ x ∈ hseg y a b, x ≠ e → dist x e < r →
       sideLeft (interiorWalk Q) j s x := by
@@ -239,7 +238,7 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
     · -- the first vertex of the run
       obtain ⟨rfl, rfl⟩ := hj0
       have hev : e = (interiorWalk Q).vtx 0 := by rw [← hjs, Chazelle.Chain.sidePt_zero]
-      obtain ⟨hi1, hprev⟩ := uturn_zero hQ T hD hli (by rw [← hev]; exact htopc)
+      obtain ⟨hi1, hprev⟩ := uturn_zero hQ T hD hli (by rwa [← hev])
       have hv0 : W.vtx (c0 C li) = (interiorWalk Q).vtx 0 := by
         have := vtx_c0 hQ T hD hli (j := 0) (by omega); rwa [zero_add] at this
       have hv1 : W.vtx (c0 C li + 1) = (interiorWalk Q).vtx 1 := by
@@ -249,11 +248,11 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
       have hpos := pos_eq_of_sector hMC hc hA (p' := c0 C li) (t' := 0) (by
           show c0 C li < W.n; rw [hWn]; unfold c0; omega) le_rfl one_pos hpt
         ⟨1, one_pos, fun x hx hxe _ => sideLeft_uturn (W := W) (a := (interiorWalk Q).vtx 1)
-          (by rw [hWn, show c0 C li + (2 * C.m + 7) - 1 = (c0 C li - 1) + (2 * C.m + 7) by omega,
-            Nat.add_mod_right, Nat.mod_eq_of_lt (by unfold c0; omega)]; exact hprev)
-          (by rw [hWn, Nat.mod_eq_of_lt (by unfold c0; omega)]; exact hv1)
+          (by rwa [hWn, show c0 C li + (2 * C.m + 7) - 1 = (c0 C li - 1) + (2 * C.m + 7) by omega,
+            Nat.add_mod_right, Nat.mod_eq_of_lt (by unfold c0; omega)])
+          (by rwa [hWn, Nat.mod_eq_of_lt (by unfold c0; omega)])
           (by rw [hv0]; exact iw_snd_ne hQ T hD hli (by omega) (by omega) (by omega))
-          (by rw [hv0, ← hev]; exact hxy x hx) (by rw [hv0, ← hev]; exact hxe)⟩ hnearc
+          (by rw [hv0, ← hev]; exact hxy x hx) (by rwa [hv0, ← hev])⟩ hnearc
       obtain ⟨hp', -⟩ := hpos
       refine ⟨by omega, by omega, fun h => ?_⟩
       omega
@@ -291,7 +290,7 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
     · -- the last vertex of the run
       subst hs
       have hev : e = (interiorWalk Q).vtx C.m := by rw [← hjs, Chazelle.Chain.sidePt_zero]
-      obtain ⟨hi1, hnext⟩ := uturn_last hQ T hD hli (by rw [← hev]; exact htopc)
+      obtain ⟨hi1, hnext⟩ := uturn_last hQ T hD hli (by rwa [← hev])
       have hvm : W.vtx (c0 C li + C.m) = (interiorWalk Q).vtx C.m := by
         have := vtx_c0 hQ T hD hli (j := C.m) le_rfl; rwa [add_comm] at this
       have hvm1 : W.vtx (c0 C li + C.m - 1) = (interiorWalk Q).vtx (C.m - 1) := by
@@ -301,12 +300,12 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
       have hpos := pos_eq_of_sector hMC hc hA (p' := c0 C li + C.m) (t' := 0) (by
           show c0 C li + C.m < W.n; rw [hWn]; unfold c0; omega) le_rfl one_pos hpt
         ⟨1, one_pos, fun x hx hxe _ => sideLeft_uturn (W := W) (a := (interiorWalk Q).vtx (C.m - 1))
-          (by rw [hWn, show c0 C li + C.m + (2 * C.m + 7) - 1 =
+          (by rwa [hWn, show c0 C li + C.m + (2 * C.m + 7) - 1 =
               (c0 C li + C.m - 1) + (2 * C.m + 7) by omega,
-            Nat.add_mod_right, Nat.mod_eq_of_lt (by unfold c0; omega)]; exact hvm1)
-          (by rw [hWn, Nat.mod_eq_of_lt (by unfold c0; omega)]; exact hnext)
+            Nat.add_mod_right, Nat.mod_eq_of_lt (by unfold c0; omega)])
+          (by rwa [hWn, Nat.mod_eq_of_lt (by unfold c0; omega)])
           (by rw [hvm]; exact iw_snd_ne hQ T hD hli (by omega) (by omega) (by omega))
-          (by rw [hvm, ← hev]; exact hxy x hx) (by rw [hvm, ← hev]; exact hxe)⟩ hnearc
+          (by rw [hvm, ← hev]; exact hxy x hx) (by rwa [hvm, ← hev])⟩ hnearc
       obtain ⟨hp', ht'⟩ := hpos
       exact ⟨by omega, by omega, fun _ => ht'.symm⟩
 

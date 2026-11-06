@@ -143,16 +143,16 @@ theorem nc_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainMode
     {f | f ∈ exits (chainModel J.whole) F R ∧ ∃ (p : ℕ) (t : ℝ),
       SideAttach (chainModel J.whole).W f p t ∧ ¬ (chainModel J.whole).counted p}.ncard ≤ 42 := by
   classical
-  set M := chainModel J.whole with hMdef
+  set M := chainModel J.whole
   have hM : WalkAx M := walkAx_chainModel hP
   have hn := cm_n J.whole
   set P0 : Finset ℕ := Finset.range 6 ∪ {2 * J.whole.m + 6} with hP0
   have hP0c : P0.card ≤ 7 := (Finset.card_union_le _ _).trans (by simp)
   set X : ℕ → Set (Set Point) := fun p =>
-    {f | f ∈ exits M F R ∧ ∃ t : ℝ, SideAttach M.W f p t} with hX
+    {f | f ∈ exits M F R ∧ ∃ t : ℝ, SideAttach M.W f p t}
   have hXp : ∀ p, (X p).ncard ≤ 6 := by
     intro p
-    set T := {t : ℝ | 0 < t ∧ ∃ c ∈ exits M F R, SideAttach M.W c p t} with hT
+    set T := {t : ℝ | 0 < t ∧ ∃ c ∈ exits M F R, SideAttach M.W c p t}
     have hT2 : T.ncard ≤ 2 := edge_two hM hFA hfin hR p
     have hTfin : T.Finite := by
       refine (Set.Finite.image (fun x : ℝ => x - (p : ℝ)) (hM.finite_cuts hFA hfin)).subset ?_
@@ -197,8 +197,7 @@ theorem glue_thr {f : Set Point}
     rcases hk with rfl | rfl
     · right; left; exact hmem
     · right; right
-      rw [Merge.Junction.whole_vertex_add] at hmem
-      exact hmem
+      rwa [Merge.Junction.whole_vertex_add] at hmem
   · exact Or.inr hcap
   · left; left
     exact Geometry.left_mem_segment _ _
@@ -260,10 +259,10 @@ theorem four_pieces (hP : J.P.Simple) :
   have hrel := tpos_rel J
   rw [hwm] at hrel
   rcases cover_arith h1 h2 hτlt hrel (show i < 2 * (J.m₁ + J.m₂) by omega) with hin | hin
-  · rcases hcovL _ hp (by rw [hn, hwm]; exact hin) with h | h
+  · rcases hcovL _ hp (by rwa [hn, hwm]) with h | h
     · exact Or.inl h
     · exact Or.inr (Or.inl h)
-  · rcases hcovR _ hp (by rw [hn, hwm]; exact hin) with h | h
+  · rcases hcovR _ hp (by rwa [hn, hwm]) with h | h
     · exact Or.inr (Or.inr (Or.inl h))
     · exact Or.inr (Or.inr (Or.inr h))
 
@@ -313,8 +312,8 @@ theorem adj_ncard (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
     (hD₁ : (chainModel J.left).DegLe S₁ D) (hD₂ : (chainModel J.right).DegLe S₂ D)
     {R : Set Point} (hR : R ∈ (chainModel J.whole).regions (J.fusion S₁ S₂ ∪ glueChords J)) :
     (adjExits (chainModel J.whole) (J.fusion S₁ S₂ ∪ glueChords J) R).ncard ≤ 16 * D + 65 := by
-  set M := chainModel J.whole with hMdef
-  set F := J.fusion S₁ S₂ ∪ glueChords J with hFdef
+  set M := chainModel J.whole
+  set F := J.fusion S₁ S₂ ∪ glueChords J
   have hM : WalkAx M := walkAx_chainModel hP
   have hFA := fuse_adm J hgen hS₁.2.1 hS₂.2.1
   have hfin := fuse_fin J hS₁.1 hS₂.1
@@ -329,8 +328,7 @@ theorem adj_ncard (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
   have hndR : ∀ c ∈ S₁, Merge.lend c ∉ J.whole.dom ∧ Merge.rend c ∉ J.whole.dom := fun c hc =>
     ⟨(J.ends_left (hS₁.2.1 hc)).2.1, (J.ends_left (hS₁.2.1 hc)).2.2.2⟩
   set NC := {f | f ∈ exits M F R ∧ ∃ (p : ℕ) (t : ℝ), SideAttach M.W f p t ∧ ¬ M.counted p}
-    with hNC
-  set E₀ := ({f | f ∈ F ∧ Thr J f} ∪ capChords J) ∪ NC with hE₀
+  set E₀ := ({f | f ∈ F ∧ Thr J f} ∪ capChords J) ∪ NC
   set PA := TypeI J J.left S₁ F R gA gA' LA ∪ CrossX M F R gA LA
   set PB := TypeI J J.left S₁ F R gB gB' LB ∪ CrossX M F R gB LB
   set PC := TypeI J J.right S₂ F R gC gC' LC ∪ CrossX M F R gC LC
@@ -409,8 +407,8 @@ fusion of two submaps of degree `≤ D` plus the glue chords has degree
 theorem fusionDegSpec : FusionDegSpec := by
   refine ⟨fun D => 7 + 4 * D * (16 * D + 65), ?_⟩
   intro J Q S₁ S₂ D hP hgen hS₁ hS₂ hD₁ hD₂ R hR
-  set M := chainModel J.whole with hMdef
-  set F := J.fusion S₁ S₂ ∪ glueChords J with hFdef
+  set M := chainModel J.whole
+  set F := J.fusion S₁ S₂ ∪ glueChords J
   have hFA := fuse_adm J hgen hS₁.2.1 hS₂.2.1
   have hfin := fuse_fin J hS₁.1 hS₂.1
   have hA : (adjExits M F R).ncard ≤ 16 * D + 65 := adj_ncard J hP hgen hS₁ hS₂ hD₁ hD₂ hR
@@ -418,13 +416,13 @@ theorem fusionDegSpec : FusionDegSpec := by
     ⟨(J.ends_left (hS₁.2.1 hc)).2.1, (J.ends_left (hS₁.2.1 hc)).2.2.2⟩
   have hendsR : ∀ c ∈ S₂, Merge.lend c ∉ J.whole.dom ∧ Merge.rend c ∉ J.whole.dom := fun c hc =>
     ⟨(J.ends_right (hS₂.2.1 hc)).2.1, (J.ends_right (hS₂.2.1 hc)).2.2.2⟩
-  set P₁ := {c | c ∈ S₁ ∧ ∃ e ∈ exits M F R, e ⊆ c} with hP₁
-  set P₂ := {c | c ∈ S₂ ∧ ∃ e ∈ exits M F R, e ⊆ c} with hP₂
+  set P₁ := {c | c ∈ S₁ ∧ ∃ e ∈ exits M F R, e ⊆ c}
+  set P₂ := {c | c ∈ S₂ ∧ ∃ e ∈ exits M F R, e ⊆ c}
   have h₁ : P₁.ncard ≤ D * (adjExits M F R).ncard :=
     parents_ncard_le J hP (C' := J.left) rfl J.left_set_subset hS₁ hFA hfin hendsL hR hD₁
   have h₂ : P₂.ncard ≤ D * (adjExits M F R).ncard :=
     parents_ncard_le J hP (C' := J.right) rfl J.right_set_subset hS₂ hFA hfin hendsR hR hD₂
-  set P := P₁ ∪ P₂ with hPdef
+  set P := P₁ ∪ P₂
   have hPfin : P.Finite := (hS₁.1.union hS₂.1).subset (by
     rintro c (⟨hc, -⟩ | ⟨hc, -⟩)
     · exact Or.inl hc

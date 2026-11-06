@@ -83,7 +83,7 @@ theorem tabStep : TabStepSpec := by
   intro P W X Ok J H N₁ N₂ E c₀ c L z hA hI hj hz hd hzR hzs hzt hacc hroom
   have hK := hA.hK.fix hI
   have k1 : c.nreg K1 = 1 := hK.2.1
-  set j := c.nreg qJ with hjdef
+  set j := c.nreg qJ
   set σ := dirOf (c.nreg qD) with hσdef
   have hσ : σ = 1 ∨ σ = -1 := by rw [hσdef]; unfold dirOf; split_ifs <;> simp
   have hB : c.nreg (sw 302) = rd c₀ bSweep 302 := hI.hin _ (by unfold IFix sw; omega)
@@ -99,10 +99,10 @@ theorem tabStep : TabStepSpec := by
     exact hI.hm _ (by omega)
   -- the facts of the table entry
   obtain ⟨-, -, -, -, -, -, -, -, -, -, hTab, hFl⟩ := hA.hout
-  have hT := hTab j hj (by rw [hz]; exact hzR) (by rw [hz]; exact hzs) (by rw [hz]; exact hzt)
+  have hT := hTab j hj (by rwa [hz]) (by rwa [hz]) (by rwa [hz])
   obtain ⟨hf1, hPW⟩ := hFl j hj
   have hfree : FreeAt J.whole z σ := by
-    have := hT.1; rw [hz, hd] at this; exact this
+    have := hT.1; rwa [hz, hd] at this
   have hz2 : z.2 ≤ J.whole.top.2 := J.whole.snd_le_top_of_mem_set (J.right_set_subset hzR)
   obtain ⟨hτ0, hon⟩ := hit_onCB J.whole hz2 hσ hfree
   -- the loads
@@ -132,8 +132,7 @@ theorem tabStep : TabStepSpec := by
     have hf0 : c₀.nmem (rd c₀ bSweep 302 + 3 * j) ≠ 1 := by rw [← f1]; omega
     have hT2 := hT.2
     unfold Sweep.tabOf at hT2
-    rw [ite_eq_right hf0] at hT2
-    rw [hz, hd] at hT2
+    rw [ite_eq_right hf0, hz, hd] at hT2
     refine IRS.skip hI₁ ⟨⟨L, acc1, subset_rfl, fun τ h => Or.inl h, Or.inr hT2⟩,
       fun r _ _ _ h3 _ => fr1 r h3, by rw [a1], fun a _ => by rw [m1]⟩
   · -- an entry: offer the first hit of `C`
@@ -147,24 +146,22 @@ theorem tabStep : TabStepSpec := by
     have hM2 : ModB J (c.nreg bL) (c.nreg bR) (c₁.nreg tbT) = J.whole := by
       rw [t1]; simp [ModB]
     have hW3 : P.n + 3 ≤ W := by have := hA.hWh; unfold hostWords at this; omega
-    have sw' : ∀ i, i < 10000 → 240000 ≤ sw i ∧ sw i < 250000 := fun i hi => by
-      unfold sw; omega
     refine (offer_irs (A := accA) (dsc := sw 2) (e := tbE) (h := tbH) (t := tbT) (dR := qD)
       (Mod := ModB J (c.nreg bL) (c.nreg bR)) (R₀ := J.whole.radius) (z := z) (L := L)
       (τ := J.whole.hitParam z σ) hI₁ hA.hK hA.hG hW3
       (by unfold accA sw; omega)
       (by unfold tbE tbH tbT qD sw; omega)
       (by unfold accA tbE tbH tbT qD sw; omega)
-      (by rw [qD1]; exact acc1) (by rw [t1])
+      (by rwa [qD1]) (by rw [t1])
       (by rw [hM2]; exact AEnv.ctxW hA hI₁) (by rw [hM2])
-      (by rw [hM2, e1]; exact hPe) (by rw [hM2, e1, h1]; exact hPp)
-      (by rw [hM2, e1, h1, qD1]; exact hpt) (Cand1.abs_lt_whole hzR).2
+      (by rwa [hM2, e1]) (by rwa [hM2, e1, h1])
+      (by rwa [hM2, e1, h1, qD1]) (Cand1.abs_lt_whole hzR).2
       (by rw [a1]; omega)).mono le_rfl ?_
     rintro c' ⟨hacc', hk, hal, hm⟩
     rw [qD1] at hacc'
     refine ⟨⟨insert (J.whole.hitParam z σ) L, hacc', Set.subset_insert _ _, fun τ hτ => ?_,
-      Or.inl (Set.mem_insert _ _)⟩, fun r hr0 hr1 hr2 hr3 hr4 => ?_, by rw [← a1]; exact hal,
-      fun a ha => by rw [hm a (by rw [a1]; exact ha), m1]⟩
+      Or.inl (Set.mem_insert _ _)⟩, fun r hr0 hr1 hr2 hr3 hr4 => ?_, by rwa [← a1],
+      fun a ha => by rw [hm a (by rwa [a1]), m1]⟩
     · rcases (Set.mem_insert_iff.1 hτ) with rfl | h
       · exact Or.inr ⟨hτ0, hon⟩
       · exact Or.inl h

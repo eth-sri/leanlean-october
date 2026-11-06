@@ -134,8 +134,7 @@ theorem forN {ri rn : ℕ} {body : Stmt} (I : ℕ → Config → Prop) (n B : �
   subst hj'n
   refine ⟨c', k, e, ?_, hIj⟩
   obtain ⟨-, hri0, -⟩ := hI j₀ c hc
-  rw [hri0] at hk
-  exact hk
+  rwa [hri0] at hk
 
 end gen
 
@@ -480,13 +479,13 @@ theorem visitB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).
       (qV Y c.nmem (c.nreg 130120))) = c.nreg 130124 := by rw [← hI.u, ← hI.d0, ← hI.d]
   have hjp' : c.nreg 130130 < per (Y.env c0.nmem).rot (Y.env c0.nmem).N
       ((Y.env c0.nmem).first (qV Y c.nmem (c.nreg 130120))) := by
-    rw [← hI.u, ← hI.d0]; exact hjp
+    rwa [← hI.u, ← hI.d0]
   have hfirst : (Y.env c0.nmem).first (c.nreg 130122) < Y.N := hp.ok.first_lt _ hun
   have heN : c.nreg 130124 < Y.N := by
     rw [hI.d, hI.d0]; exact hp.ok.injOn.iterate_lt _ hfirst
   have hve : (Y.env c0.nmem).vert (c.nreg 130124) = qV Y c.nmem (c.nreg 130120) := by
-    rw [← he, hp.ok.vert_iterate _ (by rw [← hI.u]; exact hfirst), hp.ok.vert_first _
-      (by rw [← hI.u]; exact hun)]
+    rw [← he, hp.ok.vert_iterate _ (by rwa [← hI.u]), hp.ok.vert_first _
+      (by rwa [← hI.u])]
   have hwn : (Y.env c0.nmem).head (c.nreg 130124) < Y.nv :=
     hp.ok.vert_lt _ (hp.ok.opp_lt _ heN)
   have hvis := hIn.visited_iff hp heN hdb hve hvb
@@ -534,7 +533,7 @@ theorem visitB_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nmem).
         hA2 hW2 (by rw [hr2 _ (by decide) (by decide) (by decide)])
         (by rw [hr2 _ (by decide) (by decide) (by decide)])
         (by rw [hr2 _ (by decide) (by decide) (by decide)]) hwn htn
-      refine ⟨c1, k1 + 2, .ifLtN_false (by rw [hX2, hR2.rn]; exact hv) e1, by omega,
+      refine ⟨c1, k1 + 2, .ifLtN_false (by rwa [hX2, hR2.rn]) e1, by omega,
         e1.wb_right, ?_, ?_, ?_, ?_, ?_, ?_⟩
       · refine ⟨fun r hr => ?_, hrr1.trans hf2.2.1, hrm1.trans hf2.2.2.1, ho1.trans hf2.2.2.2.1,
           fun a ha => ?_⟩
@@ -581,7 +580,7 @@ theorem dpost_skip (_hp : (Y.env c0.nmem).Pre s L lab0) {c c1 : Config}
       (qV Y c.nmem (c.nreg 130120))) = c.nreg 130124 := by rw [← hI.u, ← hI.d0, ← hI.d]
   have hjp' : c.nreg 130130 < per (Y.env c0.nmem).rot (Y.env c0.nmem).N
       ((Y.env c0.nmem).first (qV Y c.nmem (c.nreg 130120))) := by
-    rw [← hI.u, ← hI.d0]; exact hjp
+    rwa [← hI.u, ← hI.d0]
   refine ⟨hw1, hf1, ?_, fun r h1 h6 h7 h8 => hr r h6 h7 h8, fun i _ => by rw [hm],
     by rw [hr _ (by decide) (by decide) (by decide)], by rw [hm]⟩
   rw [hm, hr _ (by decide) (by decide) (by decide)]
@@ -699,7 +698,7 @@ theorem innerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
   have hht := hI.inv.hlt
   have hun : c.nreg 130122 < Y.nv := by rw [hI.u]; exact hI.inv.inv.qlt _ hht
   have hfirst : (Y.env c0.nmem).first (c.nreg 130122) < Y.N := hp.ok.first_lt _ hun
-  have hd0N : c.nreg 130123 < Y.N := by rw [hI.d0]; exact hfirst
+  have hd0N : c.nreg 130123 < Y.N := by rwa [hI.d0]
   have heN : c.nreg 130124 < Y.N := by
     rw [hI.d, hI.d0]; exact hp.ok.injOn.iterate_lt _ hfirst
   have hperN : per (Y.env c0.nmem).rot Y.N (c.nreg 130123) ≤ Y.N := per_le hp.ok.injOn hd0N
@@ -714,7 +713,6 @@ theorem innerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
     (by decide)
   have rd : c1.nmem (Y.bR + c.nreg 130124) = (Y.env c0.nmem).rot (c.nreg 130124) :=
     Fr.read hY hf1 (Or.inr (Or.inl ⟨rfl, rfl⟩)) heN
-  have hrotN : (Y.env c0.nmem).rot (c.nreg 130124) < Y.N := hp.ok.rot_lt _ heN
   refine seqX (K₁ := 3) (K₂ := 9) (R₁ := fun c2 => WordsBounded W c2 ∧ c2.nmem = c1.nmem ∧
       c2.nreg 130124 = (Y.env c0.nmem).rot (c.nreg 130124) ∧
       c2.nreg 130130 = c.nreg 130130 + 1 ∧
@@ -774,24 +772,23 @@ theorem innerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
         rw [hr3 r a2, hr2 r a1 a3 a6]; exact hf1.1 r hr
       have hqh : qV Y c1.nmem (c.nreg 130120) = qV Y c.nmem (c.nreg 130120) := hq1 _ hht
       refine ⟨⟨hw3, hf3, ?_, ?_, ?_, ?_, ?_, ?_⟩, e120, e122, e123, e129, e130, ?_, ?_, ?_⟩
-      · rw [hm3, hm2, e120, e121, e130]; exact hIn1
+      · rwa [hm3, hm2, e120, e121, e130]
       · rw [e122, hm3, hm2, e120, hqh]; exact hI.u
       · rw [e129, e122, hm3, hm2, hl1]; exact hI.lu
       · rw [e123, e122]; exact hI.d0
       · rw [hr3 _ (by decide), hD2, e130, e123, hiter]
-      · rw [e123]; rw [e130]
+      · rw [e123, e130]
         rcases hdn3 with h | h
         · exact Or.inl h
         · exact Or.inr h
       · intro i hi; rw [hm3, hm2]; exact hq1 i hi
-      · rw [e121]; exact ht1
+      · rwa [e121]
       · rcases hdn3 with h | h
         · exact Or.inl h.1
         · exact Or.inr (by rw [e130]; exact h.2)
     have hdn2 : c2.nreg 130125 = 0 := by
-      rw [hr2 _ (by decide) (by decide) (by decide), hr1 _ (by decide) (by decide) (by decide)
+      rwa [hr2 _ (by decide) (by decide) (by decide), hr1 _ (by decide) (by decide) (by decide)
         (by decide)]
-      exact hdn
     unfold testB
     by_cases hlt : c2.nreg 130124 < c2.nreg 130123
     · refine ⟨c2, 0 + 1, .ifLtN_true hlt (.skip hw2), by omega, key c2 hw2 rfl rfl rfl rfl
@@ -830,12 +827,10 @@ theorem innerLoop_exec (hY : Y.Good W) (hR0 : Regs Y s L c0)
     (hdn : c.nreg 130125 = 0) (hj : c.nreg 130130 = 0) :
     ∃ c' k, Exec P W innerLoop c c' k ∧
       k ≤ 50 * (per (Y.env c0.nmem).rot Y.N (c.nreg 130123) + 1) + 2 ∧
-      II Y W s L lab0 c0 c' ∧ c'.nreg 130125 = 1 ∧
+      II Y W s L lab0 c0 c' ∧
       c'.nreg 130130 = per (Y.env c0.nmem).rot Y.N (c.nreg 130123) ∧
       c'.nreg 130120 = c.nreg 130120 ∧ c'.nreg 130122 = c.nreg 130122 ∧
-      c'.nreg 130123 = c.nreg 130123 ∧
-      (∀ i, i < c.nreg 130121 → qV Y c'.nmem i = qV Y c.nmem i) ∧
-      c.nreg 130121 ≤ c'.nreg 130121 := by
+      (∀ i, i < c.nreg 130121 → qV Y c'.nmem i = qV Y c.nmem i) := by
   set pr := per (Y.env c0.nmem).rot Y.N (c.nreg 130123) with hpr
   obtain ⟨c', k, e, ⟨hI', h120, h122, h123, hq', ht'⟩, htest, hk⟩ :=
     Exec.whileLtN_potential (P := P) (W := W) (a := 130125) (b := 130001) (body := innerBody)
@@ -847,10 +842,6 @@ theorem innerLoop_exec (hY : Y.Good W) (hR0 : Regs Y s L c0)
     (fun c1 ⟨hI1, g120, g122, g123, gq, gt⟩ htest => by
       have hone : c1.nreg 130001 = 1 := (hR0.fr hI1.fr).one
       have hdn1 : c1.nreg 130125 = 0 := by omega
-      have hjp1 : c1.nreg 130130 < pr := by
-        rcases hI1.dn with h | h
-        · rw [hpr, ← g123]; exact h.2
-        · omega
       obtain ⟨c2, k2, e2, hk2, hI2, f120, f122, f123, f129, f130, fq, ft, fdn⟩ :=
         innerBody_exec hY hR0 hp hI1 hdn1
       refine ⟨c2, k2, e2, ⟨hI2, f120.trans g120, f122.trans g122, f123.trans g123,
@@ -876,8 +867,8 @@ theorem innerLoop_exec (hY : Y.Good W) (hR0 : Regs Y s L c0)
   have hdn' : c'.nreg 130125 = 1 ∧ c'.nreg 130130 = pr := by
     rcases hI'.dn with h | h
     · omega
-    · rw [hpr, ← h123]; exact h
-  refine ⟨c', k, e, by rw [hdn, hj] at hk; omega, hI', hdn'.1, hdn'.2, h120, h122, h123, hq', ht'⟩
+    · rwa [hpr, ← h123]
+  refine ⟨c', k, e, by rw [hdn, hj] at hk; omega, hI', hdn'.2, h120, h122, hq'⟩
 
 end inner
 
@@ -945,7 +936,7 @@ theorem outerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
       (∀ i, i < c.nreg 130121 → qV Y c'.nmem i = qV Y c.nmem i) := by
   obtain ⟨c1, k1, e1, hk1, hII1, hdn1, hj1, h120, h121, hm1, h123⟩ :=
     headB_exec (P := P) hY hR0 hp hI hht
-  obtain ⟨c2, k2, e2, hk2, hII2, hdn2, hj2, g120, g122, g123, gq, gt⟩ :=
+  obtain ⟨c2, k2, e2, hk2, hII2, hj2, g120, g122, gq⟩ :=
     innerLoop_exec (P := P) hY hR0 hp hII1 hdn1 hj1
   have hun : qV Y c.nmem (c.nreg 130120) < Y.nv := hI.inv.qlt _ hht
   have hper : per (Y.env c0.nmem).rot Y.N (c1.nreg 130123) =
@@ -968,10 +959,10 @@ theorem outerBody_exec (hY : Y.Good W) (hR0 : Regs Y s L c0) (hp : (Y.env c0.nme
   · exact Fr.nreg hII2.fr (fun r hr => by
       unfold Scr at hr; simp only [Machine.upd_apply]; split_ifs <;> omega)
   · simp only [Machine.upd_same, ne_eq, Nat.reduceEqDiff, not_false_eq_true, Machine.upd_other]
-    rw [hone]; exact hfin
+    rwa [hone]
   · simp only [Machine.upd_same]; rw [hone, g120, h120]
   · intro i hi
-    rw [gq i (by rw [h121]; exact hi), hm1]
+    rw [gq i (by rwa [h121]), hm1]
 
 /-- **The outer loop**: from the invariant, the loop ends with `h = t`; the cost plus
 `70 (nv - t) + 50 (N - Σ_{i<t} deg (q i))` at the end is at most the same quantity at the start

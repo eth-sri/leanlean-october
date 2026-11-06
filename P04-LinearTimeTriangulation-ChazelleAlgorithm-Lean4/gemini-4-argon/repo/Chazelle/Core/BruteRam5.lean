@@ -41,9 +41,9 @@ theorem modS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
       rfl, rfl⟩
   rw [mod_small hM hx]
   by_cases h : c.nreg 180083 < M
-  · exact ⟨_, _, .ifLtN_true (by rw [h12]; exact h) (Exec.copyN hw 180082 180083), by omega,
+  · exact ⟨_, _, .ifLtN_true (by rwa [h12]) (Exec.copyN hw 180082 180083), by omega,
       by simp [h], fr _⟩
-  · exact ⟨_, _, .ifLtN_false (by rw [h12]; exact h) (Exec.subN hw 180082 180083 180012),
+  · exact ⟨_, _, .ifLtN_false (by rwa [h12]) (Exec.subN hw 180082 180083 180012),
       by omega, by simp [h, h12], fr _⟩
 
 /-- The forward tour position of the chain edge `best`. -/
@@ -234,8 +234,8 @@ theorem writeS_exec {P : Polygon} {W : ℕ} {d : ℕ} (c : Config) (hw : WordsBo
     (p := 180024) (v := if d = 0 then 180082 else 180044) (by decide)
     (by rw [R₂ _ (by decide), R₁ _ (by decide), h11]) (by rw [p₂, p₁, h24]; omega)
   have e₄ := Exec.addN (P := P) e₃.wb_right 180019 180019 180011 (by
-    rw [R₃ _ (by decide), R₂ _ (by decide), R₁ _ (by decide), R₃ _ (by decide), R₂ _ (by decide),
-      R₁ _ (by decide), h19, h11]; exact hl)
+    rwa [R₃ _ (by decide), R₂ _ (by decide), R₁ _ (by decide), R₃ _ (by decide), R₂ _ (by decide),
+      R₁ _ (by decide), h19, h11])
   refine ⟨_, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, ?_, ?_, ?_, fun r h1 h2 => ?_,
     by simp only; rw [rr₃, rr₂, rr₁], by simp only; rw [rm₃, rm₂, rm₁],
     by simp only; rw [o₃, o₂, o₁]⟩

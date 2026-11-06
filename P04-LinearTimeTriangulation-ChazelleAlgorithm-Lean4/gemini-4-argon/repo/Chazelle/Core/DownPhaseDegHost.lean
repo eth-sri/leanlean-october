@@ -105,8 +105,8 @@ theorem goodH (hP : C.P.Simple) {t : ℕ}
       have hidx : C.edgeIdx k ≠ C.edgeIdx j := fun h => hkj (C.edgeIdx_inj hk hj h)
       have hmem : p ∈ C.P.edge (C.edgeIdx k) ∩ C.P.edge (C.edgeIdx j) := by
         refine ⟨?_, ?_⟩
-        · have := hp; rw [seg_ord, ← C.chainEdge_eq] at this; exact this
-        · have := hp'; rw [seg_ord, ← C.chainEdge_eq] at this; exact this
+        · have := hp; rwa [seg_ord, ← C.chainEdge_eq] at this
+        · have := hp'; rwa [seg_ord, ← C.chainEdge_eq] at this
       rw [hP.2.2 _ _ (C.edgeIdx_lt k) (C.edgeIdx_lt j) hidx] at hmem
       obtain ⟨h | h, -⟩ := hmem
       · rw [h]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).1⟩
@@ -129,7 +129,7 @@ theorem goodH (hP : C.P.Simple) {t : ℕ}
   · intro y hy
     have hsub : {v | IsVert (segs C) v ∧ v.2 = y} ⊆ {p | p ∈ C.P.vertices ∧ p.2 = y} := by
       rintro v ⟨hv, hvy⟩
-      obtain ⟨j, -, rfl⟩ := vert_eq_vertex hv (by rw [hvy]; exact hy)
+      obtain ⟨j, -, rfl⟩ := vert_eq_vertex hv (by rwa [hvy])
       exact ⟨vtx_mem_vertices (C.edgeIdx_lt j), hvy⟩
     exact (ncard_le_ncard hsub ((List.finite_toSet _).subset fun p hp => hp.1)).trans (ht y)
 
@@ -146,12 +146,12 @@ theorem fullDegLe_host {C : Chain} (hP : C.P.Simple) {t : ℕ}
   show {c | c ∈ C.chords ∪ F ∧ TouchesIn C.dom c U}.ncard ≤ 2 * (t + 1)
   rw [← hdom]
   refine HSegObs.deg_leH (ChainObs.goodH hP ht) (G := C.chords ∪ F) ?_
-    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rw [hdom]; exact hU)
+    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rwa [hdom])
   rintro c (hc | hc)
   · obtain ⟨k, σ, -, -, -, rfl, hh⟩ := C.chords_spec hc
-    exact ⟨_, _, _, by rw [hdom]; exact hh, C.chordSet_eq_hseg k σ⟩
+    exact ⟨_, _, _, by rwa [hdom], C.chordSet_eq_hseg k σ⟩
   · obtain ⟨y, a, b, hh, -, rfl⟩ := hF.2.1 hc
-    exact ⟨y, a, b, by rw [hdom]; exact hh, rfl⟩
+    exact ⟨y, a, b, by rwa [hdom], rfl⟩
 
 /-! ## Host vertices at one height -/
 

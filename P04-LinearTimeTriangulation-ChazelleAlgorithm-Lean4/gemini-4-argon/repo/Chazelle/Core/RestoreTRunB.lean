@@ -98,13 +98,13 @@ theorem shot_rsb {M : Model} {N : NF} {X : MemCtx} {Ok : Polygon → Model → P
     RSB (dBands ∪ Bo) P W c₀ (shotListG gKey xcR sh RS0) c
       (shotCostG (F (c.nreg 84007)) shK (c.nreg 84002))
       (fun c' => ShotPost RS0 P c c' ∧ ∀ q, 80000 ≤ q → q < 84000 → c'.nreg q = c.nreg q) := by
-  have hRB : bandOf RS0 ∉ Bo := by rw [band8 (by unfold RS0; omega) (by unfold RS0; omega)]; exact hB8
+  have hRB : bandOf RS0 ∉ Bo := by rwa [band8 (by unfold RS0; omega) (by unfold RS0; omega)]
   obtain ⟨c', k, ex, hk, hpost, fT⟩ := shotListG_execR hsh hBs hXl regsOK_RS0 hRB hBo
     (stable_tinv hB8) (KeyG.mono (gKey_keyG hE) (by unfold shK; omega)) opW_BgK
     (XG.mono (xcR_xG hE) (by unfold shK; omega)) opW_BxR c hI.hw hpre hroom
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := fT
   have keep : ∀ q, 80000 ≤ q → q < 84000 → c'.nreg q = c.nreg q := fun q h1 h2 =>
-    r₁ q (by rw [band8 h1 (by omega)]; exact hB8) (by unfold ALLOC; omega) (by unfold RS0; omega)
+    r₁ q (by rwa [band8 h1 (by omega)]) (by unfold ALLOC; omega) (by unfold RS0; omega)
   have hI' : TInv W c₀ c' := by
     refine ⟨ex.wb_right, fun q h1 h2 => by rw [keep q h1 (by omega)]; exact hI.hin q h1 h2,
       le_trans hI.hA a₁, fun a ha => by rw [m₁ a (by have := hI.hA; omega)]; exact hI.hm a ha,
@@ -117,8 +117,7 @@ theorem shot_rsb {M : Model} {N : NF} {X : MemCtx} {Ok : Polygon → Model → P
     intro r h
     unfold RS0 at h
     refine Finset.mem_union_left _ ?_
-    rw [band8 (by omega) (by omega)]
-    exact hb8
+    rwa [band8 (by omega) (by omega)]
   refine ⟨c', k, ex, hk, hI', ⟨fun r hr ha => r₁ r (fun h => hr (Finset.mem_union_right _ h)) ha
     (fun h => hr (hblk r h)),
     fun r hr => rr₁ r (fun h => hr (Finset.mem_union_right _ h)) (fun h => hr (hblk r h)),

@@ -1,6 +1,6 @@
 module
 
-public import Chazelle.Core.SweepMachine16
+public import Chazelle.Core.SweepMachine14
 
 /-!
 # The sweep (WP-D), part 33: the abstract machine, wall pieces

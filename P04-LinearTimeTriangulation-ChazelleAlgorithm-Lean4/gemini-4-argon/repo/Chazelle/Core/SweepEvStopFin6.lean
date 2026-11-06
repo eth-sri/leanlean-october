@@ -36,11 +36,10 @@ def slfLdL : List Instr :=
 theorem slfLdL_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) :
     regB m slfLdL f slfL0 = m (m (f (sw 4) + 3) + 5 * (f oPar - 1) + 3) ∧
     regB m slfLdL f slfL1 = m (m (f (sw 4) + 3) + 5 * (f oPar - 1) + 4) ∧
-    regB m slfLdL f slfN = 2 ∧
-    ∀ q, q ≠ slfP → q ≠ slfY → q ≠ slfL0 → q ≠ slfL1 → q ≠ slfN → regB m slfLdL f q = f q := by
+    regB m slfLdL f slfN = 2 := by
   have e1 : f 240611 = 1 := hk1
   have e3 : f 240616 = 3 := hk3
-  refine ⟨?_, ?_, ?_, fun q h1 h2 h3 h4 h5 => ?_⟩
+  refine ⟨?_, ?_, ?_⟩
   · simp only [slfLdL, regB, regI, upd, slfP, slfY, slfL0, slfL1, slfN, oPar, K1, K3, sw]
     simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e3]
     exact congrArg m (by ring)
@@ -49,10 +48,6 @@ theorem slfLdL_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) :
     exact congrArg m (by ring)
   · simp only [slfLdL, regB, regI, upd, slfP, slfY, slfL0, slfL1, slfN, oPar, K1, K3, sw]
     simp
-  · exact regB_other m slfLdL f (fun i hi => by
-      simp only [slfLdL, List.mem_cons, List.not_mem_nil, or_false] at hi
-      rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-        simp only [dstI] <;> intro he <;> subst he <;> simp_all)
 
 theorem slfLdL_ok {W : ℕ} (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) (hb : f (sw 4) + 3 ≤ W)
     (_hp : 0 < f oPar)
@@ -170,7 +165,7 @@ theorem slfCopy2_irs (hI : IInv W c₀ c) {r₁ a₁ r₂ a₂ : ℕ}
 
 theorem SlfAtt.congr {e : Set Point} {pe ph : ℕ} {c c' : Config} (h : SlfAtt P J e c pe ph)
     (he : c'.nreg pe = c.nreg pe) (hh : c'.nreg ph = c.nreg ph) : SlfAtt P J e c' pe ph := by
-  unfold SlfAtt SlfPos at *; rw [he, hh]; exact h
+  unfold SlfAtt SlfPos at *; rwa [he, hh]
 
 theorem slfOff_nonneg {e h : ℕ} (hp : SlfPos P J c e h) : 0 ≤ slfOff P J c e h := by
   have hgn : gW J < (chainModel J.whole).W.n := by
@@ -223,7 +218,7 @@ theorem slfStr_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   refine IRS.seq (K₁ := 4) (K₂ := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 3) hpick ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨e1, e2, fr1, m1, al1⟩
   have hat' : SlfAtt P J (stopSet J (Qof P) N₂ kind k b) c₁ slfSE slfSH := by
-    unfold SlfAtt SlfPos at *; rw [e1, e2]; exact hat
+    unfold SlfAtt SlfPos at *; rwa [e1, e2]
   have ho : slfOff P J c₁ slfSE slfSH = slfOff P J c pe ph := by unfold slfOff; rw [e1, e2]
   obtain ⟨hm, -⟩ := stop_mem E.hP E.hNF₂ hD.ok hD.free
   refine IRS.seq (K₁ := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1)) (K₂ := 3)
@@ -252,7 +247,7 @@ theorem slfStr_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       upd_other _ _ _ (by unfold frB slfL0 sw; omega)]
   have v2 : regB c₂.nmem [.copyN slfL0 frA, .copyN slfL1 frB, .constN slfN 2] c₂.nreg slfN = 2 := by
     simp only [regB, regI, upd_same]
-  refine ⟨v2, by simp only; rw [v0]; exact hfa, by simp only; rw [v1]; exact hfb,
+  refine ⟨v2, by simp only; rwa [v0], by simp only; rwa [v1],
     fun hnp hC1 => ?_, ?_⟩
   · simp only; rw [v0, v1]
     exact slf_lab_str E hD hat.2.2 hnp hC1 hnopar hd htd hpd hfa hfb hAf hB1 hB0
@@ -358,15 +353,15 @@ theorem slfLab_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     refine (IRS.ifT (K := 13) hq (IRS.block slfLdL hI₁ (slfLdL_ok c₁.nmem c₁.nreg k1 k3
       (by omega) (by omega) (by omega) (by omega)))).mono (by omega) ?_
     rintro c' rfl
-    obtain ⟨v0, v1, v2, -⟩ := slfLdL_val c₁.nmem c₁.nreg k1 k3
+    obtain ⟨v0, v1, v2⟩ := slfLdL_val c₁.nmem c₁.nreg k1 k3
     have hNA : NFAt c₁.nmem (c₁.nreg (sw 4)) N₂ := hNW.holds
     obtain ⟨-, -, -, r3, r4⟩ := hNA.2.2.2.2.2.1 _ hiK
     rw [r3] at v0
     rw [r4] at v1
     rw [eP] at v0 v1 hiK
     obtain ⟨hu, hdn, -⟩ := (regOf_spec hN).2.1 _ hiK
-    refine ⟨⟨by simp only; omega, fun _ => by simp only; rw [v0]; exact hu,
-      fun _ => by simp only; rw [v1]; exact hdn, fun _ hnp' hC1 => ?_⟩, ?_⟩
+    refine ⟨⟨by simp only; omega, fun _ => by simp only; rwa [v0],
+      fun _ => by simp only; rwa [v1], fun _ hnp' hC1 => ?_⟩, ?_⟩
     · simp only; rw [v0, v1, v2]
       rcases hanc with hl | hl
       · exact slf_lab_par E hD hat₀.2.2 hp₀ hl hnp' hC1 hiK (hpar.2.2 hpp)
@@ -379,7 +374,6 @@ theorem slfLab_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
           simp only [dstI, slfP, slfY, slfL0, slfL1, slfN, ALLOC, sw] <;> omega
   · -- the labels at the stretch
-    have hp0 : c.nreg oPar = 0 := by rw [eP] at hq; omega
     have hnopar : ∀ cc ∈ N₂.F (chainModel J.right) (Qof P),
         ¬ stopSet J (Qof P) N₂ kind k b ⊆ cc := fun cc hcc hsub => by
       have := (hpar.2.1 cc hcc hsub).1; omega
@@ -398,8 +392,8 @@ theorem slfLab_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     have hAl : c₁.nreg ALLOC = c.nreg ALLOC := q1 ALLOC (by unfold ALLOC slfN sw; omega)
     refine (IRS.ifF (K := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 7) hq
       ((slfStr_irs E hI₁ hsl hD (hat₀.congr r01 r02) (hat₁.congr r11 r12)
-        (by rw [o0]; exact b0.of_eq e0) (by rw [o0, o1]; exact hanc) (by rw [o0]; exact hp₀)
-        (by rw [o1]; exact hp₁) hnopar (by rw [hAl]; exact hroom)).mono (by omega)
+        (by rw [o0]; exact b0.of_eq e0) (by rwa [o0, o1]) (by rwa [o0])
+        (by rwa [o1]) hnopar (by rwa [hAl])).mono (by omega)
         (fun _ h => h))).mono (by omega) ?_
     rintro c' ⟨hn2, hl0, hl1, hlab, fr⟩
     exact ⟨⟨by omega, fun _ => hl0, fun _ => hl1, fun _ hnp' hC1 => by

@@ -123,7 +123,7 @@ theorem pFrame_trans {c₀ c₁ c₂ : Config} (h₁ : PFrame c₀ c₁) (h₂ :
   have e84 : c₁.nreg 84 = c₀.nreg 84 := n₁ 84 (by omega)
   refine ⟨fun r hr => by rw [n₂ r hr, n₁ r hr], fun r hr => by rw [r₂ r hr, r₁ r hr],
     fun a ha => ?_, by rw [q₂, q₁], by rw [o₂, o₁]⟩
-  rw [m₂ a (by rw [e83, e84]; exact ha), m₁ a ha]
+  rw [m₂ a (by rwa [e83, e84]), m₁ a ha]
 
 /-! ### The lexicographic test -/
 
@@ -268,15 +268,15 @@ theorem walkBody_inv {c₀ : Config} (hin : PieceInput W l c₀) (c : Config)
   have hW := hin.work
   rw [← hnode] at hvW hnW hvO hnO
   have hvmem : c.nmem (c.nreg 81 + c.nreg 85) = l.getD ((c.nreg 86 - c₀.nreg 84) % l.length) 0 := by
-    rw [e81, hFm _ (by rw [e83]; exact hvO), hnode]
+    rw [e81, hFm _ (by rwa [e83]), hnode]
     exact hin.vtx _ him
   have hne : c.nreg 80 + c.nreg 85 ≠ c.nreg 86 := by rw [e80]; omega
   have hnmem : c.nmem (c.nreg 80 + c.nreg 85) = c₀.nmem (c₀.nreg 80 + c.nreg 85) := by
-    rw [e80, hFm _ (by rw [e83]; exact hnO)]
+    rw [e80, hFm _ (by rwa [e83])]
   unfold walkBody
   exec_block
-  · rw [e81]; exact hvW
-  · config_simp; rw [e80]; exact hnW
+  · rwa [e81]
+  · config_simp; rwa [e80]
   · config_simp; rw [h88]; omega
   · refine ⟨⟨‹_›, pFrame_trans hF' ⟨fun r hr => ?_, fun r _ => rfl, fun a ha => ?_, rfl, rfl⟩,
       by config_simp; exact h88, by config_simp; exact h87, by config_simp; omega,
@@ -383,7 +383,7 @@ theorem minBody_exec (c : Config) (hc : WordsBounded W c) (hW : c.nreg 86 + c.nr
   simp only [Prod.mk.eta] at hlt hnlt
   have hn86 : c₁.nreg 86 = c.nreg 86 := by rw [hfr 86 (by omega)]; config_simp
   have hn88 : c₁.nreg 88 = c.nreg 88 := by rw [hfr 88 (by omega)]; config_simp
-  refine spec_instr (Exec.addN hw₁ 86 86 88 (by rw [hn86, hn88]; exact hW)) fun _ => ?_
+  refine spec_instr (Exec.addN hw₁ 86 86 88 (by rwa [hn86, hn88])) fun _ => ?_
   refine ⟨by omega, fun h => ?_, fun h => ?_, ?_, fun r h86 h89 h90 h91 => ?_, fun r hr => ?_,
     hnm, hrm, hout⟩
   · config_simp; exact hlt h
@@ -805,27 +805,27 @@ theorem pieceTri_exec {l : List ℕ}
   rw [← e84₁] at htab₁
   -- phase 2
   obtain ⟨c₂, k₂, ex₂, hk₂, hF₂, hnm₂, h88₂, hlo₂, hmin₂⟩ := minPhase_exec (P := P) c₁
-    ex₁.wb_right (by omega) e83₁ (by rw [e84₁]; exact hW) h88₁ htab₁
+    ex₁.wb_right (by omega) e83₁ (by rwa [e84₁]) h88₁ htab₁
   have e83₂ : c₂.nreg 83 = l.length := by rw [hF₂.1 83 (by omega), e83₁]
   have e84₂ : c₂.nreg 84 = c₁.nreg 84 := hF₂.1 84 (by omega)
   have htab₂ : ∀ i, i < 2 * l.length →
       c₂.nmem (c₂.nreg 84 + i) = l.getD (i % l.length) 0 := by
-    rw [hnm₂, e84₂]; exact htab₁
+    rwa [hnm₂, e84₂]
   -- phase 3
   obtain ⟨c₃, k₃, ex₃, hk₃, hF₃, hnm₃, h88₃, h90₃, hf₃, hb₃⟩ := dirPhase_exec (P := P) c₂
-    ex₂.wb_right (by omega) e83₂ (by rw [e84₂, e84₁]; exact hW) h88₂ htab₂
-    (by rw [e84₂]; exact hlo₂) (by rw [e84₂]; exact hmin₂.1)
+    ex₂.wb_right (by omega) e83₂ (by rwa [e84₂, e84₁]) h88₂ htab₂
+    (by rwa [e84₂]) (by rw [e84₂]; exact hmin₂.1)
   have e83₃ : c₃.nreg 83 = l.length := by rw [hF₃.1 83 (by omega), e83₂]
   have e84₃ : c₃.nreg 84 = c₁.nreg 84 := by rw [hF₃.1 84 (by omega), e84₂]
   have htab₃ : ∀ i, i < 2 * l.length →
       c₃.nmem (c₃.nreg 84 + i) = l.getD (i % l.length) 0 := by
-    rw [hnm₃, e84₃, ← e84₂]; exact htab₂
+    rwa [hnm₃, e84₃, ← e84₂]
   rw [e84₂] at hf₃ hb₃
   -- phase 4
   obtain ⟨c₄, k₄, ex₄, hk₄, hF₄, htab₄⟩ := copyPhase_exec (P := P) c₃ ex₃.wb_right e83₃
-    (by rw [e84₃, e84₁]; exact hW) h88₃ htab₃ (by rw [e84₃, h90₃]; exact hlo₂)
-    (by rw [e84₃, h90₃]; exact hmin₂.1) (by rw [e84₃, h90₃]; exact hf₃)
-    (by rw [e84₃, h90₃]; exact hb₃)
+    (by rwa [e84₃, e84₁]) h88₃ htab₃ (by rwa [e84₃, h90₃])
+    (by rw [e84₃, h90₃]; exact hmin₂.1) (by rwa [e84₃, h90₃])
+    (by rwa [e84₃, h90₃])
   rw [e84₃, h90₃] at htab₄
   have hF := pFrame_trans hF₁ (pFrame_trans hF₂ (pFrame_trans hF₃ hF₄))
   have e83₄ : c₄.nreg 83 = l.length := by rw [hF.1 83 (by omega), h83]
@@ -835,8 +835,8 @@ theorem pieceTri_exec {l : List ℕ}
   have hM := isMountain_reorient hmount hmin₂
   obtain ⟨c₅, k₅, ex₅, hk₅, ⟨T, hT, hout⟩, hn₅, hr₅, hnm₅, hrm₅⟩ :=
     fragPhase_exec (P := P) (W := W) (l' := reorient P l (c₂.nreg 90 - c₁.nreg 84)) c₄
-      ex₄.wb_right (by rw [e83₄, hlen]) (by rw [e84₄, hlen]; exact hW) hM
-      (fun j hj => by rw [e84₄, hlen, ← e84₁]; exact htab₄ j (by rw [hlen] at hj; exact hj))
+      ex₄.wb_right (by rw [e83₄, hlen]) (by rwa [e84₄, hlen]) hM
+      (fun j hj => by rw [e84₄, hlen, ← e84₁]; exact htab₄ j (by rwa [hlen] at hj))
   obtain ⟨T', hT', heq⟩ := goodTri_piece_of_mountain hmin₂ ⟨T, hT, rfl⟩
   rw [hlen] at hk₅
   rw [e84₄, hlen] at hnm₅
@@ -845,7 +845,7 @@ theorem pieceTri_exec {l : List ℕ}
     by rw [hrm₅, hF.2.2.2.1]⟩
   · rw [hn₅ r (by omega), hF.1 r (by omega)]
   · rw [hr₅ r (by omega), hF.2.1 r (by omega)]
-  · rw [hnm₅ a (by omega), hF.2.2.1 a (by rw [h83]; exact ha)]
+  · rw [hnm₅ a (by omega), hF.2.2.1 a (by rwa [h83])]
 
 end main
 

@@ -75,8 +75,7 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
     (hv : ∀ i, i < K → d.nmem (H + 12 + 5 * i + 4) = vF i)
     (huR : ∀ i, i < K → uF i < K + 1) (hvR : ∀ i, i < K → vF i < K + 1)
     (hroom : H + sizeB K ≤ W) :
-    ∃ d' k, Exec P W regPhase d d' k ∧ k ≤ 200 * K + 150 ∧ 26 * (K + 1) ≤ k ∧
-      WordsBounded W d' ∧ FrameM BregPhase d d' ∧ d'.nreg 40003 = H ∧
+    ∃ d' k, Exec P W regPhase d d' k ∧ k ≤ 200 * K + 150 ∧ 26 * (K + 1) ≤ k ∧ FrameM BregPhase d d' ∧ d'.nreg 40003 = H ∧
       (∀ f, f < 12 → d'.nmem (H + f) = hdrW K A (K + 1) (H + 12) (H + 12 + 5 * K)
         (H + 12 + 15 * K) (H + 17 + 20 * K) (H + 17 + 22 * K) H f) ∧
       (∀ a, (a < H ∨ (H + 12 ≤ a ∧ a < H + 12 + 15 * K)) → d'.nmem a = d.nmem a) ∧
@@ -89,7 +88,7 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
         d'.nmem (H + 17 + 22 * K + (offF (cntF keyF A) (cnt2F uF vF K) r + cntF keyF A r) + t) =
           (lst2F uF vF K r).getD t 0) ∧
       (∀ j, j < A → d'.nmem (H + 17 + 20 * K + j) = j) := by
-  set m₃ := d.nmem with hm₃
+  set m₃ := d.nmem
   have hS := hroom; unfold sizeB at hS
   have hW1 : 1 ≤ W := by omega
   -- the memory functions
@@ -122,7 +121,7 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
   obtain ⟨e₃, k₃, x₃, hk₃, w₃, f₃, m₃'⟩ := arcCntLoop_exec (P := P) e₂ z2.wb_right (m₀ := m₃)
     (CA := H + 17 + 30 * K) (R := K + 1) (A := A) (AT := H + 12 + 5 * K)
     (WT := H + 17 + 28 * K) (fC := fun _ => 0) C₂.rCA C₂.rR C₂.r1 (by rw [he₂]; simp) hA₂
-    C₂.rAT C₂.rWT (by omega) (by omega) (by omega) hkR' (by rw [he₂]; exact m₁)
+    C₂.rAT C₂.rWT (by omega) (by omega) (by omega) hkR' (by rwa [he₂])
   have C₃ := C₂.frame f₃ (by decide)
   -- 3. chord counts
   have z4 := Exec.constN (P := P) w₃ 43201 0 (Nat.zero_le _)
@@ -135,7 +134,7 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
     (fW := wmaxF (fun j => m₃ (H + 12 + 5 * K + 5 * j)) (fun j => m₃ (H + 17 + 28 * K + j)) A)
     C₄.rCA C₄.rR C₄.r1 C₄.r3 (by rw [he₄]; simp) C₄.rK C₄.rCT (by omega) (by omega)
     (fun i hi => by rw [hu i hi]; exact huR i hi) (fun i hi => by rw [hv i hi]; exact hvR i hi)
-    (by rw [he₄]; exact m₃')
+    (by rwa [he₄])
   have C₅ := C₄.frame f₅ (by decide)
   have hA₅ : e₅.nreg 43102 = A := by
     rw [f₅.1 43102 (by decide)]
@@ -164,7 +163,7 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
     (m₀ := m₃) (CA := H + 17 + 30 * K) (R := K + 1) (RT := H + 12 + 15 * K)
     (FA := H + 20 + 33 * K) (cA := cA) (cC := cC) (wR := wR) C₆.rCA C₆.rR C₆.r1
     (by rw [he₆]; simp) (by rw [he₆]; simp) C₆.rRT C₆.rFA (by omega) (by omega) (by omega)
-    ⟨by omega, by omega⟩ (by omega) (by omega) (by rw [he₆]; exact m₅)
+    ⟨by omega, by omega⟩ (by omega) (by omega) (by rwa [he₆])
   have C₇ := C₆.frame f₇ (by decide)
   have hA₇ : e₇.nreg 43102 = A := by
     rw [f₇.1 43102 (by decide), he₆]
@@ -206,7 +205,7 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
     (LT := H + 17 + 22 * K) (key := fun j => m₃ (H + 12 + 5 * K + 5 * j)) (cC := cC)
     hA₈ C₈.rR C₈.r1 (by rw [he₈]; simp) C₈.rAT C₈.rFA C₈.rLT
     (fun j hj => r₇ _ (by omega)) hkR' (fun r hr => by rw [rFA₇ r hr, hcA]) (by omega) (by omega)
-    (by omega) (by omega) (by omega) (by omega) (by rw [he₈]; exact m₇)
+    (by omega) (by omega) (by omega) (by omega) (by rwa [he₈])
   rw [← hcA] at a1 a2 a3
   have C₉ := C₈.frame f₉ (by decide)
   have hA₉ : e₉.nreg 43102 = A := by rw [f₉.1 43102 (by decide), hA₈]
@@ -272,7 +271,7 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
     show upd e₁₁.nreg 43201 0 43102 = A
     rw [upd_other _ _ _ (by norm_num), hA₁₁]
   -- 8. the header
-  obtain ⟨e₁₄, k₁₄, x₁₄, hk₁₄, w₁₄, f₁₄, h40003, hh1, hh2⟩ := hdrB_exec (P := P) e₁₃ w₁₃
+  obtain ⟨e₁₄, k₁₄, x₁₄, hk₁₄, w₁₄, h40003, hh1, hh2⟩ := hdrB_exec (P := P) e₁₃ w₁₃
     (K := K) (A := A) (R := K + 1) (CT := H + 12) (AT := H + 12 + 5 * K) (RT := H + 12 + 15 * K)
     (QT := H + 17 + 20 * K) (LT := H + 17 + 22 * K) (H := H) C₁₃.rH C₁₃.rK hA₁₃ C₁₃.rR C₁₃.rCT
     C₁₃.rAT C₁₃.rRT C₁₃.rQT C₁₃.rLT C₁₃.r0 C₁₃.r1 (by omega)
@@ -294,7 +293,7 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
   have ecA : cA = cntF keyF A := by rw [hcA, ckey]
   have ecC : cC = cnt2F uF vF K := by rw [hcC, cc2]
   have ewR : wR = wmaxF keyF wF A := by rw [hwR, cwmax]
-  refine ⟨e₁₄, _, X, by omega, by omega, w₁₄, exec_frameM X wr_regPhase, h40003, hh1,
+  refine ⟨e₁₄, _, X, by omega, by omega, exec_frameM X wr_regPhase, h40003, hh1,
     fun a ha => ?_, fun r hr f hf => ?_, fun r hr t ht => ?_, fun r hr t ht => ?_, fun j hj => ?_⟩
   · -- below `H` and the chord and arc tables
     rcases ha with ha | ha

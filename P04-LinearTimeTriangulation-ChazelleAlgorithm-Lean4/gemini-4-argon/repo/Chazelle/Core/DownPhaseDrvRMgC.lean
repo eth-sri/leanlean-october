@@ -87,8 +87,6 @@ theorem mgDesc_exec (c : Config) (hw : WordsBounded W c) {A HB ma mp : ℕ}
       c'.nmem (A + 3) = ma + mp ∧ c'.nmem (A + 4) = c.nreg 219138 ∧
       c'.nmem (A + 5) = c.nreg 219139 ∧ (∀ a, a < A → c'.nmem a = c.nmem a) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  have aT := hw.1 219138
-  have aB := hw.1 219139
   unfold mgDesc
   exec_block
   all_goals try (config_simp; (try simp only [a40, a41, a46, a00, a12, a16, aA]); omega)
@@ -181,15 +179,15 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hhw : hostWords P.n = 256 * P.n + 16 := rfl
   have hfl : fuseLoss = 1 := rfl
-  set A₀ := c.nreg ALLOC with hA₀
-  set D1 := c.nreg 219110 with hD1
-  set D2 := c.nreg 219114 with hD2
-  set f1 := c.nreg 219111 with hf1
-  set f2 := c.nreg 219115 with hf2
+  set A₀ := c.nreg ALLOC
+  set D1 := c.nreg 219110
+  set D2 := c.nreg 219114
+  set f1 := c.nreg 219111
+  set f2 := c.nreg 219115
   have hP1 : C1.P = H.poly (Qof P) := hd1.holds.2.2.1
   have hP2 : C2.P = H.poly (Qof P) := hd2.holds.2.2.1
   have hC1n : C1.P.n = NP := by rw [hP1, DownMath.host_poly_n, hQn, hNP]
-  have hlen' : ma + C2.m + 1 ≤ NP := by rw [← hC1n, ← hm1]; exact hlen
+  have hlen' : ma + C2.m + 1 ≤ NP := by rwa [← hC1n, ← hm1]
   have hNW : NP ≤ 64 * P.n := by
     have h1 := Host.pts_length_le hwf
     have h2 : H.length * P.n ≤ 64 * P.n := Nat.mul_le_mul_right _ hHok
@@ -227,7 +225,7 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
       (hm' a (by omega)).trans (hag a ha)
     obtain ⟨b1h, b1⟩ := hd1 m' ag
     obtain ⟨b2h, b2⟩ := hd2 m' ag
-    refine ⟨by rw [hm' _ (by omega)]; exact w0, by rw [hm' _ (by omega)]; exact w1, ?_⟩
+    refine ⟨by rwa [hm' _ (by omega)], by rwa [hm' _ (by omega)], ?_⟩
     refine descWhole hlen hP21 hcons b1 b2 ?_ ?_ ?_ ?_ ?_
     · rw [hm' _ (by omega), w1, b1h]
     · rw [show A₀ + 1 + 1 = A₀ + 2 by omega, hm' _ (by omega), w2, hs1]
@@ -236,7 +234,6 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
     · rw [show A₀ + 1 + 4 = A₀ + 5 by omega, hm' _ (by omega), w5, t39,
         show D1 + 1 + 4 = D1 + 5 by omega, show D2 + 1 + 4 = D2 + 5 by omega,
         ag _ (by omega), ag _ (by omega)]
-  have hTD := hΦ c₂.nmem (fun _ _ => rfl)
   -- the arguments
   have b10 : c₂.nreg 219110 = D1 := v _ (by decide) (by decide)
   have b14 : c₂.nreg 219114 = D2 := v _ (by decide) (by decide)
@@ -251,7 +248,7 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
       (by omega) hγW
   have hw₃ := e₃.wb_right
   have g₃ : FrameB Bargs c₂ c₃ := exec_frameB e₃ wr_mgArgs
-  have A3 : c₃.nreg ALLOC = A₀ + 6 := by rw [g₃.1 _ (by decide)]; exact dA
+  have A3 : c₃.nreg ALLOC = A₀ + 6 := by rwa [g₃.1 _ (by decide)]
   have ag₃ : ∀ a, a < A₀ → c₃.nmem a = c.nmem a := fun a ha => by rw [m₃]; exact hag a ha
   have hHA₃ : HostAt c₃.nmem HB H := hHA c₃.nmem ag₃
   obtain ⟨b1h, b1⟩ := hd1 c₃.nmem ag₃
@@ -266,22 +263,22 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
   have hcap₃ : X.cap P c₃.nmem g = X.cap P c.nmem g := hXc P c.nmem c₃.nmem g A₀ ag₃ hX
   have hTD₃ := hΦ c₃.nmem (fun a _ => by rw [m₃])
   have pre : MergePre X OkModel P W c₃ :=
-    mergePreR hG hWn hX₃ (by rw [show rd c₃ bMerge 9 = g from r9, hcap₃,
-      show rd c₃ bMerge 5 = γ from r5]; exact hcap) (by rw [show rd c₃ bMerge 7 = D from r7]; exact hD)
+    mergePreR hG hWn hX₃ (by rwa [show rd c₃ bMerge 9 = g from r9, hcap₃,
+      show rd c₃ bMerge 5 = γ from r5]) (by rwa [show rd c₃ bMerge 7 = D from r7])
       (by rw [show rd c₃ bMerge 5 = γ from r5, show rd c₃ bMerge 6 = γ + 1 from r6, hfl])
       hHA₃ hHok hwf hreg hsimp (by omega) b1 b1h (by omega) b2 b2h (by omega) hcons hlen
       (by rw [hs1]; omega) (by rw [hs2, hP21]; omega) hTD₃.2.2 hTD₃.2.1 (by omega)
-      r0 r1 r2 r3 r4 hN1₃ hN2₃ (by rw [show rd c₃ bMerge 7 = D from r7]; exact hc1)
-      (by rw [show rd c₃ bMerge 7 = D from r7]; exact hc2)
-      (by rw [show rd c₃ bMerge 5 = γ from r5]; exact hγ1)
-      (by rw [show rd c₃ bMerge 5 = γ from r5]; exact hγ2) hgen
-      (by rw [show rd c₃ bMerge 7 = D from r7]; exact hfd)
+      r0 r1 r2 r3 r4 hN1₃ hN2₃ (by rwa [show rd c₃ bMerge 7 = D from r7])
+      (by rwa [show rd c₃ bMerge 7 = D from r7])
+      (by rwa [show rd c₃ bMerge 5 = γ from r5])
+      (by rwa [show rd c₃ bMerge 5 = γ from r5]) hgen
+      (by rwa [show rd c₃ bMerge 7 = D from r7])
   have hmc : mergeCost κ F G Hf c₃ =
       mgCostV κ F G Hf D N1.chords.length N2.chords.length γ (ma + mp) := by
     have x1 : c₃.nmem f1 = N1.chords.length := hN1₃.nfAt.1
     have x2 : c₃.nmem f2 = N2.chords.length := hN2₃.nfAt.1
     have x3 : c₃.nmem (A₀ + 1 + 2) = ma + mp := by
-      rw [m₃, show A₀ + 1 + 2 = A₀ + 3 by omega]; exact w3
+      rwa [m₃, show A₀ + 1 + 2 = A₀ + 3 by omega]
     unfold mergeCost mgCostV
     rw [show rd c₃ bMerge 7 = D from r7, show rd c₃ bMerge 3 = f1 from r3,
       show rd c₃ bMerge 4 = f2 from r4, show rd c₃ bMerge 5 = γ from r5,
@@ -290,14 +287,14 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
     (by show c₃.nreg ALLOC + mergeCost κ F G Hf c₃ ≤ W; rw [A3, hmc]; omega)
   have hk₄' : k₄ ≤ mgCostV κ F G Hf D N1.chords.length N2.chords.length γ (ma + mp) := by
     have : k₄ ≤ mergeCost κ F G Hf c₃ := hk₄
-    rw [hmc] at this; exact this
+    rwa [hmc] at this
   have hw₄ := e₄.wb_right
   -- the new normal form
   have hJA : JunctionAt c₃.nmem (rd c₃ bMerge 0) (rd c₃ bMerge 1) (rd c₃ bMerge 2) (Qof P) H
       (jOf C1 C2 hlen) := by
     refine ⟨?_, ?_, ?_⟩
-    · rw [show rd c₃ bMerge 0 = D1 + 1 from r0, jOf_left]; exact b1
-    · rw [show rd c₃ bMerge 1 = D2 + 1 from r1, jOf_right hlen hP21 hcons]; exact b2
+    · rwa [show rd c₃ bMerge 0 = D1 + 1 from r0, jOf_left]
+    · rwa [show rd c₃ bMerge 1 = D2 + 1 from r1, jOf_right hlen hP21 hcons]
     · rw [show rd c₃ bMerge 2 = A₀ + 1 from r2]; exact hTD₃.2.2
   obtain ⟨N, hN8, hNW8, hNc⟩ := post H (jOf C1 C2 hlen) N1 N2 hJA
     (by rw [show rd c₃ bMerge 3 = f1 from r3]; exact hN1₃.nfAt)
@@ -308,15 +305,15 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
     refine fr₄.1 q (by rw [hq]; decide) ?_
     simp only [bandOf, bDownDrv] at hq; unfold ALLOC; omega
   have q37 : c₄.nreg 219137 = A₀ := by
-    rw [hmb _ (by decide), g₃.1 _ (by decide)]; exact d37
+    rwa [hmb _ (by decide), g₃.1 _ (by decide)]
   have q12 : c₄.nreg 219112 = ma := by
     rw [hmb _ (by decide), g₃.1 _ (by decide), v _ (by decide) (by decide), h12]
   have q16 : c₄.nreg 219116 = mp := by
     rw [hmb _ (by decide), g₃.1 _ (by decide), v _ (by decide) (by decide), h16]
   have q13 : c₄.nreg 219113 = γ := by
-    rw [hmb _ (by decide), g₃.1 _ (by decide)]; exact b13
+    rwa [hmb _ (by decide), g₃.1 _ (by decide)]
   have q41 : c₄.nreg 219141 = 1 := by
-    rw [hmb _ (by decide), g₃.1 _ (by decide)]; exact b41
+    rwa [hmb _ (by decide), g₃.1 _ (by decide)]
   obtain ⟨c₅, k₅, e₅, hk₅, o10, o11, o12, o13⟩ :=
     mgOut_exec (P := P) c₄ hw₄ q37 q12 q16 q13 q41 (by omega) hγW
   have g₅ : FrameB Bout c₄ c₅ := exec_frameB e₅ wr_mgOut
@@ -329,8 +326,6 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
     hΦ m' (fun a ha => (hm' a (by omega)).trans (m5 a ha))
   have ag₅ : ∀ a, a < A₀ → c₅.nmem a = c.nmem a := fun a ha => (m5 a (by omega)).trans (hag a ha)
   -- the frame
-  have hB21 : ∀ r, bandOf r = bDownDrv → r ≠ ALLOC := fun r hr => by
-    simp only [bandOf, bDownDrv] at hr; unfold ALLOC; omega
   have F1 : Frame mgBands c c₁ k₁ := NFLoc.frame_of_frameB g₁ (fun r hr => by
     simp only [Btop, Bool.or_eq_true, decide_eq_true_eq] at hr
     unfold mgBands
@@ -365,13 +360,13 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
   simp only [Finset.union_self] at FF
   refine ⟨c₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega,
     o10, ?_, o12, o13, by omega, hΦ5, ?_, ⟨N, ?_, hNc⟩, ?_, FF⟩
-  · rw [o11]; have : A₀ + 6 ≤ rd c₄ bMerge 8 := by rw [← A3]; exact hN8
+  · rw [o11]; have : A₀ + 6 ≤ rd c₄ bMerge 8 := by rwa [← A3]
     exact this
   · refine ⟨by omega, fun _ => ?_⟩
     obtain ⟨y0, y1, y2⟩ := hΦ5.holds
     exact chainWF_host (hHA c₅.nmem ag₅) hHok hwf (by omega) y2 y1 (by omega)
       (by rw [jOf_whole_s, jOf_whole_P, hs1]; omega)
-  · rw [o11, A5, g₅.2.2.1]; exact hNW8
+  · rwa [o11, A5, g₅.2.2.1]
   · intro q hq hr
     have hq' : 210000 ≤ q ∧ q < 220000 := by simp only [bandOf, bDownDrv] at hq; omega
     rw [g₅.1 q (by simp only [Bout, decide_eq_false_iff_not]; omega), hmb q hq,

@@ -134,7 +134,6 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
   have m3 : c3.nmem = c.nmem := rfl
   have r22 : c3.nreg 60022 = 0 := by simp only [hc3, hc2, hc1]; config_simp
   have r23 : c3.nreg 60023 = 0 := by simp only [hc3, hc2, hc1]; config_simp
-  have r24 : c3.nreg 60024 = 0 := by simp only [hc3, hc2, hc1]; config_simp
   have hI0 : RInv R K D (tv mB A R 3) (tv mB A R 4) (tv mB A R 5) (tv mB A R 6) 0
       (rsOf c3.nmem A R (c3.nreg 60024) (c3.nreg 60023)) (fun _ => ∅) (fun _ => 0) :=
     rinv_start h (fun e he => by
@@ -143,8 +142,8 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
       (fun e he => by
         show tv c3.nmem A R 12 e = 0
         rw [tv_lt (by omega), m3]; exact h12 e (by omega))
-      (by show tv c3.nmem A R 13 0 = 1; rw [tv_lt hR0, m3]; exact h13)
-      (by show tv c3.nmem A R 15 0 = 2; rw [tv_lt hR0, m3]; exact h15)
+      (by show tv c3.nmem A R 13 0 = 1; rwa [tv_lt hR0, m3])
+      (by show tv c3.nmem A R 15 0 = 2; rwa [tv_lt hR0, m3])
       (by show c3.nreg 60023 = 0; exact r23) _ _
   -- the loop
   obtain ⟨c', k, e, ⟨hw', hf', hst', h7', hjr, j, hjd, gc, cr, hI'⟩, htest, hk⟩ :=
@@ -167,7 +166,7 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
       have : rounds D K + 1 - j = (rounds D K + 1 - (j + 1)) + 1 := by omega
       rw [this, Nat.mul_add]
       omega)
-    ⟨e3.wb_right, hf3, by rw [m3]; exact hst, by rw [m3]; exact h7, by omega, 0, r22, _, _, hI0⟩
+    ⟨e3.wb_right, hf3, by rwa [m3], by rwa [m3], by omega, 0, r22, _, _, hI0⟩
   have hR' := hR.frame hf'
   rw [hR'.rR] at htest
   subst hjd

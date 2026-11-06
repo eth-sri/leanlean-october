@@ -76,7 +76,6 @@ structure InitMid (P : Polygon) (W MD NFH D γ : ℕ) (N : NF) (c₀ c : Config)
   r03 : c.nreg 90003 = γ
   r10 : c.nreg 90010 = N.nChords
   r11 : c.nreg 90011 = N.arcs.length
-  r12 : c.nreg 90012 = N.nRegions
   r13 : c.nreg 90013 = c₀.nmem (NFH + 3)
   r15 : c.nreg 90015 = c₀.nmem (NFH + 4)
   r17 : c.nreg 90017 = c₀.nmem (NFH + 6)
@@ -87,7 +86,6 @@ structure InitMid (P : Polygon) (W MD NFH D γ : ℕ) (N : NF) (c₀ c : Config)
   r20 : c.nreg 90020 = 3
   r21 : c.nreg 90021 = 2
   l00 : c.nreg 50000 = MD
-  r26 : c.nreg 90026 = D * N.nChords
   r28 : c.nreg 90028 =
     c₀.nreg ALLOC + (dmOf N.nChords N.arcs.length N.nRegions D (c₀.nreg ALLOC)).oList
   bases : Bases c (dmOf N.nChords N.arcs.length N.nRegions D (c₀.nreg ALLOC))
@@ -131,11 +129,11 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (hK1 : 1 ≤ N.nChords) (hR1 : 1 ≤ N.nRegions) :
     ∃ c' k, Exec P W initA c c' k ∧ k ≤ costA N.nChords N.arcs.length N.nRegions D ∧
       InitMid P W MD NFH D γ N c c' ∧ GF (c.nreg ALLOC) c c' k := by
-  set b0 := c.nreg ALLOC with hb0
-  set K := N.nChords with hKd
-  set A := N.arcs.length with hAd
-  set R := N.nRegions with hRd
-  set d := dmOf K A R D b0 with hd
+  set b0 := c.nreg ALLOC
+  set K := N.nChords
+  set A := N.arcs.length
+  set R := N.nRegions
+  set d := dmOf K A R D b0
   have hdb : d.b0 = b0 := rfl
   have hdK : d.K = K := rfl
   have hdA : d.A = A := rfl
@@ -149,8 +147,7 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   obtain ⟨y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15⟩ := d.lay
   have hdE := dmOf_oEnd K A R D b0
   -- 1. the header
-  obtain ⟨c₁, k₁, e₁, hk₁, q10, q11, q12, q13, q15, q16, q17, q22, q23, q24, q18, q14, q19, q20,
-    q21, q50, q51, F₁⟩ := hdr_exec (P := P) c hw h0 h1 (by omega) (by have := hwf.1; omega) hWn
+  obtain ⟨c₁, k₁, e₁, hk₁, q10, q11, q12, q13, q15, q16, q17, q22, q23, q18, q14, q19, q20, q21, q50, F₁⟩ := hdr_exec (P := P) c hw h0 h1 (by omega) (by have := hwf.1; omega) hWn
     (fun h0' => by have := chain_m_le hwf hMD h0'; unfold hostWords at hWh; omega)
   have w₁ := e₁.wb_right
   rw [hN.1] at q10; rw [hN.2.1] at q11; rw [hN.2.2.1] at q12
@@ -159,7 +156,7 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   -- 2. the layout
   obtain ⟨c₂, k₂, e₂, hk₂, B₂, a₂, x27, x28, x26, ab₂, r₂, m₂, F₂⟩ := base_exec (P := P) c₁ w₁
     (K := K) (A := A) (R := R) (by rw [q10]; rfl) (by rw [q11]) (by rw [q12]; rfl)
-    (by rw [g₁ _ (by decide), h2]) q19 (by rw [hA₁]; exact hroom)
+    (by rw [g₁ _ (by decide), h2]) q19 (by rwa [hA₁])
   rw [hA₁] at hk₂ B₂ a₂ x27 x28
   have w₂ := e₂.wb_right
   have g₂ : ∀ r, (r < 90025 ∨ 90045 ≤ r) → r ≠ 90061 → r ≠ ALLOC → c₂.nreg r = c₁.nreg r := r₂
@@ -172,10 +169,8 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     exact ⟨h3', h4'⟩
   have hCB : c.nmem (NFH + 3) + 5 * K ≤ b0 := by have := aCh (K - 1) (by omega); omega
   have hRB : c.nmem (NFH + 5) + 5 * R ≤ b0 := by have := aRg (R - 1) (by omega); omega
-  have hbW : d.b0 + d.oEnd ≤ W := by rw [hEnd]; exact hroom
+  have hbW : d.b0 + d.oEnd ≤ W := by rwa [hEnd]
   -- 3. the chords
-  have c2 : ∀ r, 90000 ≤ r → r < 90025 → r ≠ 90060 → Bhdr r = false → c₂.nreg r = c.nreg r :=
-    fun r a1 a2 a3 a4 => by rw [g₂ r (by omega) (by omega) (by unfold ALLOC; omega), g₁ r a4]
   have t10 : c₂.nreg 90010 = K := by
     rw [g₂ _ (by omega) (by omega) (by unfold ALLOC; omega), q10]; rfl
   have t13 : c₂.nreg 90013 = c.nmem (NFH + 3) := by
@@ -199,14 +194,12 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   -- 5. the classes
   have m4 : ∀ a, a < b0 → c₄.nmem a = c.nmem a := fun a ha => by
     rw [M₄ a (by left; omega), M₃ a (by left; omega), mem₂]
-  have u2 : ∀ r, Binit r = false → 90000 ≤ r → r < 90025 → r ≠ 90060 → Bhdr r = false →
-      c₄.nreg r = c.nreg r := fun r a0 a1 a2 a3 a4 => by rw [t4 r a0, c2 r a1 a2 a3 a4]
   have hrecR : ∀ r, r < R → RegRec c₄.nmem (c.nmem (NFH + 5)) (c.nmem (NFH + 7)) r
       (N.region r).chords.length (N.region r).wt (N.region r).chords := by
     intro r hr
     obtain ⟨-, a2, a4, -, a5⟩ := hN.2.2.2.2.2.2.2.1 r hr
     have hr4 := aRg r hr
-    refine ⟨by rw [m4 _ (by omega)]; exact a2, by rw [m4 _ (by omega)]; exact a4, fun t ht => ?_,
+    refine ⟨by rwa [m4 _ (by omega)], by rwa [m4 _ (by omega)], fun t ht => ?_,
       rfl⟩
     have := aLst r hr t ht
     rw [m4 (c.nmem (NFH + 5) + 5 * r + 3) (by omega), m4 _ (by omega)]
@@ -262,7 +255,7 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       exact band9_gran (by omega) (by omega))
     (fun a ha => M₅ a (by left; omega))
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), ?_, ⟨e₅.wb_right, ?_, ?_, ?_, ?_, ?_,
-    ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
+    ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
     (hGF1.trans (hGF2.trans (hGF3.trans (hGF4.trans hGF5)))).mono le_rfl⟩
   · have c0 : (dmOf K A R D 0).cap = K + D * K := rfl
     have c1 : d.cap = K + D * K := rfl
@@ -275,7 +268,6 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   · rw [v1 _ (by norm_num) (by norm_num) (by norm_num) (by decide), h3]
   · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q10]; rfl
   · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q11]
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q12]; rfl
   · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q13]
   · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q15]
   · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q17]
@@ -286,16 +278,15 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q20]
   · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q21]
   · rw [u5 _ (by decide), g₂ _ (by omega) (by omega) (by unfold ALLOC; omega), q50]
-  · rw [u5 _ (by decide), x26]
   · rw [u5 _ (by decide), x28]
   · exact B₄.frame fun r a1 a2 => F₅.1 r (by simp [Binit]; omega)
   · rw [u5 _ (by decide), a₂]
   · intro u hu
     obtain ⟨l1, l2, l3⟩ := L₃ u hu
     refine ⟨?_, ?_, ?_⟩
-    · rw [M₅ _ (by left; omega), M₄ _ (by left; omega)]; exact l1
-    · rw [M₅ _ (by left; omega), M₄ _ (by left; omega)]; exact l2
-    · rw [M₅ _ (by left; omega), M₄ _ (by left; omega)]; exact l3
+    · rwa [M₅ _ (by left; omega), M₄ _ (by left; omega)]
+    · rwa [M₅ _ (by left; omega), M₄ _ (by left; omega)]
+    · rwa [M₅ _ (by left; omega), M₄ _ (by left; omega)]
   · intro u hu
     change u < d.cap at hu
     change c₅.nmem (b0 + d.oStk + u) = u

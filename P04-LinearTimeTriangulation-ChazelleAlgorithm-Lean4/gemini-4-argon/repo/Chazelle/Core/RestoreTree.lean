@@ -74,7 +74,7 @@ theorem adj_same_comp (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N
     {w : Point} :
     reg (N.chord i).up ⊆ connectedComponentIn (M.D \ (N.chord k).toSet M Q) w ↔
       reg (N.chord i).dn ⊆ connectedComponentIn (M.D \ (N.chord k).toSet M Q) w := by
-  set c := (N.chord k).toSet M Q with hc
+  set c := (N.chord k).toSet M Q
   have hsys := hM.sys _ hN.1.2.1 hN.1.1
   have hci : (N.chord i).toSet M Q ∈ N.F M Q := ⟨N.chord i, Dec.chord_mem hi, rfl⟩
   have hck : c ∈ N.F M Q := ⟨N.chord k, Dec.chord_mem hk, rfl⟩
@@ -85,7 +85,7 @@ theorem adj_same_comp (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N
   obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.1 hopen z ⟨hzD, hzc'⟩
   obtain ⟨hup, hdn, hside⟩ := hS i hi
   obtain ⟨ε₀, hε₀, hε⟩ := hside z hzc hzD
-  set ε := min (ε₀ / 2) (ρ / 2) with hεdef
+  set ε := min (ε₀ / 2) (ρ / 2)
   have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
   obtain ⟨hu, hd⟩ := hε ε hε0 (lt_of_le_of_lt (min_le_left _ _) (by linarith))
   have hbu : ((z.1, z.2 + ε) : Point) ∈ ball z ρ := by
@@ -115,7 +115,7 @@ theorem comps_of (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
       reg (N.chord k).up ⊆ connectedComponentIn (M.D \ (N.chord k).toSet M Q) zu ∧
       Disjoint (connectedComponentIn (M.D \ (N.chord k).toSet M Q) zd)
         (connectedComponentIn (M.D \ (N.chord k).toSet M Q) zu) := by
-  set c := (N.chord k).toSet M Q with hc
+  set c := (N.chord k).toSet M Q
   have hsys := hM.sys _ hN.1.2.1 hN.1.1
   have hck : c ∈ N.F M Q := ⟨N.chord k, Dec.chord_mem hk, rfl⟩
   obtain ⟨z, hzc, hzD⟩ := exists_chord_pt hM hN hk
@@ -123,7 +123,7 @@ theorem comps_of (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
   obtain ⟨ε₀, hε₀, hε⟩ := hside z hzc hzD
   have hsub : ({c} : Set (Set Point)) ⊆ N.F M Q := singleton_subset_iff.2 hck
   obtain ⟨ε₁, hε₁, hsep⟩ := hsys.chord_separates_in hsub (mem_singleton c) hzc hzD
-  set ε := min (ε₀ / 2) (ε₁ / 2) with hεdef
+  set ε := min (ε₀ / 2) (ε₁ / 2)
   have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
   obtain ⟨hu, hd⟩ := hε ε hε0 (lt_of_le_of_lt (min_le_left _ _) (by linarith))
   obtain ⟨hu', hd', hne⟩ := hsep ε hε0 (lt_of_le_of_lt (min_le_right _ _) (by linarith))
@@ -178,7 +178,7 @@ theorem decide_side (hGM : GoodModel M) (hN : IsNF M Q N) {D : ℕ} (hT : Dec.Re
       r ∈ N.highSide k) := by
   have hM := walkAx_of_goodModel hGM
   have hR := hcorr.1
-  set c := (N.chord k).toSet M Q with hc
+  set c := (N.chord k).toSet M Q
   have hck : c ∈ N.F M Q := ⟨N.chord k, Dec.chord_mem hk, rfl⟩
   have hcA : c ∈ M.Adm := hN.1.2.1 hck
   obtain ⟨K₁, K₂, hK, ⟨c₁, hK₁⟩, ⟨c₂, hK₂⟩, hsec₁, hsec₂⟩ := hM.split hcA hA hB hAB

@@ -108,10 +108,9 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
   have hT := X.ch.hT
   have hv := hT.hv
   have hN := X.ch.hN
-  have hR := C.radius_pos
   have hσ := hs.σ
   set σ := sgnOf V.σb with hσdef
-  set y := ((Qof P).vtx V.hz).2 with hydef
+  set y := ((Qof P).vtx V.hz).2
   set S := dstarPts m V C V.nD ∪ clusPts3 m V C (pk 0) ∪ clusPts3 m V C (pk 1) ∪
     clusPts3 m V C (pk 2) ∪ clusPts3 m V C (pk 3) with hSdef
   have hSC : S ⊆ C.set := by
@@ -172,7 +171,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
     (fun i => m (V.FL + i) = 1) (fun i => m (V.LAB + i)) (fun u v w hw => X.hlab u v w hw)
     (z := z') hyt hσ hT0
     (fun s hs0 hsT => by
-      refine rayPt_mem_box C (by rw [hz'def]; exact hζ) (by rw [hz'def]; exact hyR) hσ hs0 ?_
+      refine rayPt_mem_box C (by rwa [hz'def]) (by rwa [hz'def]) hσ hs0 ?_
       rw [hz'def]; simp only
       have := hSel.le
       have : σ * Xp.1 ≤ C.radius := by
@@ -197,7 +196,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
       obtain ⟨k, hk, hki⟩ := X.dl_all i.1 hiμ hi
       have hin : rayPt z' σ s ∈ dstarPts m V C V.nD := by
         refine ⟨k, hk, ?_⟩
-        rw [hki, nodePts_eq hN X.hP X.mem hv.m]; exact hmem
+        rwa [hki, nodePts_eq hN X.hP X.mem hv.m]
       refine avoid_of_firstHitOpt hD' (T := T) ?_ s hs0 hsT hin
       intro v hv'
       cases bD with
@@ -207,8 +206,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
         rw [← hv']
         have hdh := hSel.dhit cD rfl
         have hpos : 0 < vOf (Qof P) V.s V.hz σ z cD := (show FirstHit _ _ _ _ from hD).1
-        rw [vOf_of_spans (spans_of_vOf_pos hpos), show (Qof P).n = P.n from shear_n _ _]
-        rw [hTdef, hddef]
+        rw [vOf_of_spans (spans_of_vOf_pos hpos), show (Qof P).n = P.n from shear_n _ _, hTdef, hddef]
         linarith)
     (by
       rw [hXpt]
@@ -230,7 +228,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
       intro x hx
       rcases hi with hd | ⟨c, ⟨k, hk, hc⟩, hl⟩
       · obtain ⟨j, hj, hji⟩ := X.dl_all i.1 hiμ hd
-        exact Or.inl (Or.inl (Or.inl (Or.inl ⟨j, hj, by rw [hji]; exact hx⟩)))
+        exact Or.inl (Or.inl (Or.inl (Or.inl ⟨j, hj, by rwa [hji]⟩)))
       · have hcl : x ∈ clusPts m V C (lab m V c) := ⟨i.1, hiμ, hl, hx⟩
         have h3 : x ∈ clusPts3 m V C (pk k) := by
           unfold clusPts3

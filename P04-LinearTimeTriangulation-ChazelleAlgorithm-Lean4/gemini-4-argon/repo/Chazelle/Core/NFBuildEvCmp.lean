@@ -104,7 +104,6 @@ theorem properPos_ev (hL : ChordTriplesOK M (Qof P) L) {c : ℕ} (hc : c < 2 * L
   have hn : (Qof P).n = P.n := shear_n _ _
   refine ⟨hA.2.1, hA.2.2.1, ?_⟩
   rw [wposOf_hgt]
-  have : (L.getD (c / 2) (0, 0, 0)).1 < (Qof P).n := hh
   omega
 
 theorem edge_lt (hL : ChordTriplesOK M (Qof P) L) {c : ℕ} (hc : c < 2 * L.length) :
@@ -184,11 +183,11 @@ theorem tbS_exec (d : Config) (hw : WordsBounded W d) {dd par dst : ℕ} (h1 : d
       d'.nreg dst = (if d.nreg dd = 2 then 1 - d.nreg par else d.nreg par) := by
   unfold tbS
   by_cases a1 : d.nreg dd < 2
-  · refine spec_ifLtN_true (by rw [h2]; exact a1)
+  · refine spec_ifLtN_true (by rwa [h2])
       (spec_instr (Exec.copyN hw _ _) fun _ => ⟨by omega, ?_⟩)
     simp only [upd_same]; rw [ite_eq_right (by omega)]
   · have : d.nreg dd = 2 := by omega
-    refine spec_ifLtN_false (by rw [h2]; exact a1)
+    refine spec_ifLtN_false (by rwa [h2])
       (spec_ifLtN_false (by rw [h2, this]; omega)
         (spec_instr (Exec.subN hw _ _ _) fun _ => ⟨by omega, ?_⟩))
     simp only [upd_same]; rw [ite_eq_left this, h1]
@@ -202,13 +201,13 @@ theorem final_exec (d : Config) (hw : WordsBounded W d) (h1 : d.nreg 42102 = 1) 
       k ≤ 7 ∧ d'.nreg 30002 = (if d.nreg 42117 < 1 then 0 else if d.nreg 42119 < 1 then 1 else
         if d.nreg 42121 < d.nreg 42120 then 0 else 1) := by
   by_cases a1 : d.nreg 42117 < 1
-  · exact spec_ifLtN_true (by rw [h1]; exact a1) (spec_instr (Exec.constN hw _ _ (by
+  · exact spec_ifLtN_true (by rwa [h1]) (spec_instr (Exec.constN hw _ _ (by
       have := hw.1 42102; omega)) fun _ => ⟨by omega, by rw [ite_eq_left a1]; simp⟩)
-  refine spec_ifLtN_false (by rw [h1]; exact a1) ?_
+  refine spec_ifLtN_false (by rwa [h1]) ?_
   by_cases a2 : d.nreg 42119 < 1
-  · exact spec_ifLtN_true (by rw [h1]; exact a2) (spec_instr (Exec.constN hw _ _ (by
+  · exact spec_ifLtN_true (by rwa [h1]) (spec_instr (Exec.constN hw _ _ (by
       have := hw.1 42102; omega)) fun _ => ⟨by omega, by rw [ite_eq_right a1, ite_eq_left a2]; simp⟩)
-  refine spec_ifLtN_false (by rw [h1]; exact a2) ?_
+  refine spec_ifLtN_false (by rwa [h1]) ?_
   by_cases a3 : d.nreg 42121 < d.nreg 42120
   · exact spec_ifLtN_true a3 (spec_instr (Exec.constN hw _ _ (by
       have := hw.1 42102; omega)) fun _ => ⟨by omega, by rw [ite_eq_right a1, ite_eq_right a2, ite_eq_left a3]; simp⟩)
@@ -270,10 +269,9 @@ theorem inCmp_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (d : Config) (hw : Word
     (hTW : T + 8 * L.length ≤ W) (ha : d.nreg 30000 < 2 * L.length)
     (hb : d.nreg 30001 < 2 * L.length) :
     ∃ d' k, Exec P W inCmp d d' k ∧ k ≤ 11000 ∧
-      d'.nreg 30002 = (if codeLe M (Qof P) L (d.nreg 30000) (d.nreg 30001) then 1 else 0) ∧
-      FrameB BinCmp d d' := by
-  set a := d.nreg 30000 with hadef
-  set b := d.nreg 30001 with hbdef
+      d'.nreg 30002 = (if codeLe M (Qof P) L (d.nreg 30000) (d.nreg 30001) then 1 else 0) := by
+  set a := d.nreg 30000
+  set b := d.nreg 30001
   have hW1 : 2 ≤ W := by omega
   -- constants
   obtain ⟨d₀, k₀, x₀, hk₀, r₀⟩ : ∃ d₀ k₀, Exec P W (block [.constN 42102 1, .constN 42104 2]) d
@@ -329,12 +327,11 @@ theorem inCmp_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (d : Config) (hw : Word
     rw [g₂₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), hD]
   have ppa := properPos_ev hL ha
   have ppb := properPos_ev hL hb
-  have hn : (Qof P).n = P.n := shear_n _ _
   -- first half: key a ≤ key b
   obtain ⟨d₃, k₃, x₃, hk₃, dd₃, dst₃, f₃⟩ := halfS_exec (P := P) hG hW d₂ w₂
     (qe := 42113) (qh := 42114) (se := 42110) (sh := 42111) (dd := 42116) (dst := 42117)
-    (by decide) (by decide) (by decide) (by rw [D₂]; exact hDW) (by rw [D₂, mm₂]; exact hCW)
-    (M := M) (by rw [D₂, mm₂]; exact hM) (by rw [v13]; exact edge_lt hL hb)
+    (by decide) (by decide) (by decide) (by rwa [D₂]) (by rwa [D₂, mm₂])
+    (M := M) (by rwa [D₂, mm₂]) (by rw [v13]; exact edge_lt hL hb)
     (by rw [v14]; exact ppb.2.2)
   have w₃ := x₃.wb_right
   have g₃ : ∀ r, BhalfS 42116 42117 r = false → d₃.nreg r = d₂.nreg r := f₃.1
@@ -343,8 +340,8 @@ theorem inCmp_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (d : Config) (hw : Word
   -- second half: key b ≤ key a
   obtain ⟨d₄, k₄, x₄, hk₄, dd₄, dst₄, f₄⟩ := halfS_exec (P := P) hG hW d₃ w₃
     (qe := 42110) (qh := 42111) (se := 42113) (sh := 42114) (dd := 42118) (dst := 42119)
-    (by decide) (by decide) (by decide) (by rw [D₃]; exact hDW) (by rw [D₃, mm₃]; exact hCW)
-    (M := M) (by rw [D₃, mm₃]; exact hM) (by rw [g₃ _ (by decide), v10]; exact edge_lt hL ha)
+    (by decide) (by decide) (by decide) (by rwa [D₃]) (by rwa [D₃, mm₃])
+    (M := M) (by rwa [D₃, mm₃]) (by rw [g₃ _ (by decide), v10]; exact edge_lt hL ha)
     (by rw [g₃ _ (by decide), v11]; exact ppa.2.2)
   have w₄ := x₄.wb_right
   have g₄ : ∀ r, BhalfS 42118 42119 r = false → d₄.nreg r = d₃.nreg r := f₄.1
@@ -365,7 +362,7 @@ theorem inCmp_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (d : Config) (hw : Word
   obtain ⟨d₇, k₇, x₇, hk₇, v₇⟩ := final_exec (P := P) d₆ w₆ o₆
   have X : Exec P W inCmp d d₇ (k₀ + (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + k₇))))))) :=
     .seq x₀ (.seq x₁ (.seq x₂ (.seq x₃ (.seq x₄ (.seq x₅ (.seq x₆ x₇))))))
-  refine ⟨d₇, _, X, by omega, ?_, exec_frameB X wr_inCmp⟩
+  refine ⟨d₇, _, X, by omega, ?_⟩
   rw [v₇]
   apply codeLe_bits (x := d₆.nreg 42117) (y := d₆.nreg 42119)
   · rw [f₆.1 _ (by decide), f₅.1 _ (by decide), g₄ _ (by decide), dst₃, v13, v14, v10, v11]
@@ -538,9 +535,9 @@ theorem evCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWn : hostWords P.n �
       · exact r2 h
   unfold evCmp evLeB
   by_cases ha : d.nreg 30000 < 2 * L.length
-  · refine spec_ifLtN_true (by rw [j3]; exact ha) ?_
+  · refine spec_ifLtN_true (by rwa [j3]) ?_
     by_cases hb : d.nreg 30001 < 2 * L.length
-    · refine spec_ifLtN_true (by rw [j3]; exact hb) ?_
+    · refine spec_ifLtN_true (by rwa [j3]) ?_
       have hm : ∀ a, a < A₀ → d.nmem a = m₀ a := j4
       obtain ⟨hM', hwf'⟩ := desc_agree hwf hM hm
       obtain ⟨hDW, hCW⟩ := locChainWF_of hwf' hAW hWn
@@ -548,20 +545,20 @@ theorem evCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWn : hostWords P.n �
         obtain ⟨e1, e2, e3, e4⟩ := hR c hc
         refine ⟨(hm _ (by omega)).trans e1, (hm _ (by omega)).trans e2, (hm _ (by omega)).trans e3,
           (hm _ (by omega)).trans e4⟩
-      obtain ⟨d', k, x, hk, hv, -⟩ := inCmp_exec hG hW d hw j1 hDW hCW hM' hL j2 hR'
+      obtain ⟨d', k, x, hk, hv⟩ := inCmp_exec hG hW d hw j1 hDW hCW hM' hL j2 hR'
         (by omega) ha hb
       refine ⟨d', k, x, by omega, ?_⟩
       rw [hv, ite_eq_left ha, ite_eq_left hb]
       by_cases hc : codeLe M (Qof P) L (d.nreg 30000) (d.nreg 30001) <;> simp [hc]
-    · refine spec_ifLtN_false (by rw [j3]; exact hb) (spec_instr (Exec.constN hw _ _ hW1)
+    · refine spec_ifLtN_false (by rwa [j3]) (spec_instr (Exec.constN hw _ _ hW1)
         fun _ => ⟨by omega, ?_⟩)
       simp [ha, hb]
-  · refine spec_ifLtN_false (by rw [j3]; exact ha) ?_
+  · refine spec_ifLtN_false (by rwa [j3]) ?_
     by_cases hb : d.nreg 30001 < 2 * L.length
-    · refine spec_ifLtN_true (by rw [j3]; exact hb) (spec_instr (Exec.constN hw _ _ (by omega))
+    · refine spec_ifLtN_true (by rwa [j3]) (spec_instr (Exec.constN hw _ _ (by omega))
         fun _ => ⟨by omega, ?_⟩)
       simp [ha, hb]
-    · refine spec_ifLtN_false (by rw [j3]; exact hb) ?_
+    · refine spec_ifLtN_false (by rwa [j3]) ?_
       by_cases hc : d.nreg 30001 < d.nreg 30000
       · refine spec_ifLtN_true hc (spec_instr (Exec.constN hw _ _ (by omega))
           fun _ => ⟨by omega, ?_⟩)

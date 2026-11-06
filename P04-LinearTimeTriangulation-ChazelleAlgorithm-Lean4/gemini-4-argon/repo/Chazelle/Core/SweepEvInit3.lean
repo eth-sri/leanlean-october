@@ -93,9 +93,8 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   set a₁ := c.nmem (c.nreg (sw 3) + 1) with ha₁
   set a₂ := c.nmem (c.nreg (sw 4) + 1) with ha₂
-  set A₀ := c.nreg ALLOC with hA₀
+  set A₀ := c.nreg ALLOC
   set Lf := Nat.clog 2 (a₁ + a₂ + 1) with hLf
-  have hLpow : a₁ + a₂ + 1 ≤ 2 ^ Lf := Nat.le_pow_clog (by norm_num) _
   have hLle : Lf ≤ a₁ + a₂ + 1 := by
     rw [hLf, Nat.clog_le_iff_le_pow (by norm_num)]
     exact (Nat.lt_two_pow_self).le
@@ -106,7 +105,7 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true, true_and, and_true]
     simp only [K1, sw, Nat.reduceAdd] at hK1 h3 h4 ha₁ ha₂
     rw [hK1]; refine ⟨by omega, by omega, by omega, by omega, by omega⟩)
-  set c₁ : Config := { c with nreg := regB c.nmem tabHead c.nreg } with hc₁
+  set c₁ : Config := { c with nreg := regB c.nmem tabHead c.nreg }
   have n₁ : ∀ r, r ≠ TBR → r ≠ TLR → r ≠ iX → r ≠ iA → r ≠ iN → r ≠ iV → c₁.nreg r = c.nreg r :=
     vo
   have g11 : c₁.nreg K1 = 1 := by rw [n₁ _ (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3), hK1]
@@ -133,8 +132,7 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         have dB : d.nreg TBR = A₀ := by rw [hr _ (by swoInit3) (by swoInit3) (by swoInit3), gB]
         have d11 : d.nreg K1 = 1 := by rw [hr _ (by swoInit3) (by swoInit3) (by swoInit3), g11]
         have ht : 2 ^ j < a₁ + a₂ + 1 := by
-          rw [← Nat.lt_clog_iff_pow_lt (by norm_num)]; exact hjl
-        have hjL : j ≤ Lf := hjl.le
+          rwa [← Nat.lt_clog_iff_pow_lt (by norm_num)]
         have e₁ := Exec.addN (P := P) hwd iP TBR TLR (by rw [dB, hj]; omega)
         have e₂ := Exec.storeN (P := P) e₁.wb_right iP iX
         have e₃ := Exec.addN (P := P) e₂.wb_right iX iX iX (by

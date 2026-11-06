@@ -295,7 +295,7 @@ theorem adj_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
     rcases hadj with ⟨r, h⟩ | ⟨l, h⟩
     · have := h.2.1; exact_mod_cast (h.1.trans_lt this)
     · have := h.2.2.2.1; exact_mod_cast (h.2.2.1.trans_lt this)
-  set p := (g + d) % M.W.n with hp
+  set p := (g + d) % M.W.n
   rcases hadj with ⟨r, harc⟩ | ⟨l, harc⟩
   · left
     intro b hb
@@ -303,11 +303,10 @@ theorem adj_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
     obtain ⟨s, ⟨⟨hs1, hs2⟩, hs3⟩, hs4⟩ := (((h1.and (eventually_not_cut_after hM hF hfin
       ((p : ℝ) + t))).and self_mem_nhdsWithin).and (Ioo_mem_nhdsGT (show (0 : ℝ) <
         min (1 - t) (b - (d + t)) from lt_min (by linarith) (by linarith)))).exists
-    have hs0 : (0 : ℝ) < s := hs3
     have hs5 : s < 1 - t := hs4.2.trans_le (min_le_left _ _)
     have hs6 : s < b - (d + t) := hs4.2.trans_le (min_le_right _ _)
     refine ⟨d, t + s, le_rfl, ⟨by linarith, by linarith⟩, by linarith, by linarith, ?_, hs1⟩
-    rw [← add_assoc]; exact hs2
+    rwa [← add_assoc]
   · right
     intro a ha
     rcases ht0.lt_or_eq with ht0' | ht0'
@@ -315,11 +314,10 @@ theorem adj_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
       obtain ⟨s, ⟨⟨hs1, hs2⟩, hs3⟩, hs4⟩ := (((h1.and (eventually_not_cut_before hM hF hfin
         ((p : ℝ) + t))).and self_mem_nhdsWithin).and (Ioo_mem_nhdsGT (show (0 : ℝ) <
           min t ((d + t) - a) from lt_min ht0' (by linarith)))).exists
-      have hs0 : (0 : ℝ) < s := hs3
       have hs5 : s < t := hs4.2.trans_le (min_le_left _ _)
       have hs6 : s < (d + t) - a := hs4.2.trans_le (min_le_right _ _)
       refine ⟨d, t - s, le_rfl, ⟨by linarith, by linarith⟩, by linarith, by linarith, ?_, hs1⟩
-      rw [show (p : ℝ) + (t - s) = p + t - s by ring]; exact hs2
+      rwa [show (p : ℝ) + (t - s) = p + t - s by ring]
     · subst ht0'
       have hd1 : 1 ≤ d := by
         have : (0 : ℝ) < d := by linarith
@@ -331,15 +329,13 @@ theorem adj_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
         ((((g + (d - 1)) % M.W.n : ℕ) : ℝ) + 1))).and self_mem_nhdsWithin).and
         (Ioo_mem_nhdsGT (show (0 : ℝ) < min 1 ((d + 0) - a) from
           lt_min one_pos (by linarith)))).exists
-      have hs0 : (0 : ℝ) < s := hs3
       have hs5 : s < 1 := hs4.2.trans_le (min_le_left _ _)
       have hs6 : s < (d + 0) - a := hs4.2.trans_le (min_le_right _ _)
       have hc : ((d - 1 : ℕ) : ℝ) = d - 1 := by rw [Nat.cast_sub hd1]; simp
       refine ⟨d - 1, 1 - s, by omega, ⟨by linarith, by linarith⟩, by rw [hc]; linarith,
         by rw [hc]; linarith, ?_, hs1⟩
-      rw [show (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + (1 - s) =
+      rwa [show (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + (1 - s) =
         (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + 1 - s by ring]
-      exact hs2
 
 
 /-- The exit chords of `R` attached at an offset in `(0, L)` from `g` next to which `R` is faced,
@@ -378,14 +374,14 @@ separation of the walk by a chord. -/
 theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
     {g L : ℕ} (hg : g < M.W.n) (hLn : L < M.W.n) {R : Set Point} (hR : R ∈ M.regions F) :
     (CrossX M F R g L).ncard ≤ 4 := by
-  set n := M.W.n with hn_def
+  set n := M.W.n
   have hn : 0 < n := by omega
   have hgR : (g : ℝ) < n := by exact_mod_cast hg
   set O : Set ℝ := {o | ∃ f ∈ exits M F R, ∃ (d : ℕ) (t : ℝ), d < L ∧ 0 ≤ t ∧ t < 1 ∧
     0 < (d : ℝ) + t ∧ SideAttach M.W f ((g + d) % n) t ∧ Adj M F R ((g + d) % n) t ∧
     (∃ (pb : ℕ) (tb : ℝ), SideAttach M.W f pb tb ∧
       sidePt M.W pb tb ≠ sidePt M.W ((g + d) % n) t ∧
-      (off n g (pb + tb) = 0 ∨ (L : ℝ) ≤ off n g (pb + tb))) ∧ o = d + t} with hO
+      (off n g (pb + tb) = 0 ∨ (L : ℝ) ≤ off n g (pb + tb))) ∧ o = d + t}
   have hkey : ∀ {p : ℕ}, p < n → ∀ {t : ℝ}, 0 ≤ t → t < 1 →
       0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < n := by
     intro p hp t ht ht1
@@ -418,10 +414,10 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
       have hs : M.Separates f₂ (((g + dx) % n : ℕ) + tx) (((g + dy) % n : ℕ) + ty) := by
         refine ⟨(g + d₂) % n, pb, t₂, tb, hA₂, hB, Ne.symm hBne, ?_⟩
         refine off_sep (Nat.cast_nonneg g) hgR hKA.1 hKA.2 hKB.1 hKB.2 hKx.1 hKx.2 hKy.1 hKy.2
-          ⟨by rw [hox, hoA]; exact h1, by rw [hoy, hoA]; exact h2⟩ ?_
+          ⟨by rwa [hox, hoA], by rwa [hoy, hoA]⟩ ?_
         rw [hox, hoy]
         rcases hBo with h | h
-        · left; rw [h]; exact h0
+        · left; rwa [h]
         · right; linarith
       exact ((hM.eq_iff_not_separates hF hfin hR hR (Nat.mod_lt _ hn) (Nat.mod_lt _ hn) htx hty
         hcx hcy hfx hfy).1 rfl) f₂ hf₂.1 hs

@@ -91,9 +91,6 @@ theorem addLab_irs {bN bL r : ℕ} (hI : IInv W c₀ c) (hK : Consts c) (hsN : I
       lblOf c' bN bL = addL (lblOf c bN bL) (c.nreg r) ∧
       (∀ q, ¬ LblR bN bL q → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
   obtain ⟨-, k1, -, k4, -, k2, k3⟩ := hK
-  have kK : ∀ k, k = K1 ∨ k = K2 ∨ k = K3 ∨ k = K4 → ∀ c' : Config,
-      (∀ q, ¬ LblR bN bL q → c'.nreg q = c.nreg q) → c'.nreg k = c.nreg k :=
-    fun k hk c' h => h k (hKN k hk)
   have lbl : ∀ c' : Config, lblOf c' bN bL =
       (List.range (min (c'.nreg bN) 4)).map fun i => c'.nreg (bL + i) := fun _ => rfl
   have hlen : (lblOf c bN bL).length = c.nreg bN := by rw [lblOf_length]; omega
@@ -169,7 +166,6 @@ theorem addLab_irs {bN bL r : ℕ} (hI : IInv W c₀ c) (hK : Consts c) (hsN : I
       · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
     · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
   · -- full
-    have hl4 : (lblOf c bN bL).length = 4 := hlen
     have hfull : ∀ v, addL (lblOf c bN bL) v = lblOf c bN bL := fun v => by
       unfold addL; rw [ite_eq_left (Or.inr (by omega))]
     have hun : ∀ (K : ℕ), IRS P W c₀ .skip c K (fun c' => c'.nreg bN ≤ 4 ∧

@@ -284,8 +284,8 @@ theorem arcWt_le_of_stretch {M M' : Model} (hM' : GoodModel M') {Q : Polygon}
     (hfree : ∀ x, sideInArc a b x → ¬ M.IsCut F x) :
     M.arcWt a b ≤ γ := by
   classical
-  set n := M.W.n with hn_def
-  set n' := M'.W.n with hn'_def
+  set n := M.W.n
+  set n' := M'.W.n
   have hn : 0 < n := by omega
   have hn' : 0 < n' := by omega
   have hgR : (g : ℝ) < n := by exact_mod_cast hg
@@ -342,13 +342,13 @@ theorem arcWt_le_of_stretch {M M' : Model} (hM' : GoodModel M') {Q : Polygon}
     have hqb := hkey q hq u hu.le hu1
     refine hfree _ ?_ hcut'
     exact sideInArc_convex (Nat.cast_nonneg g) hgR hpb.1 hpb.2 hqb.1 hqb.2 hyb.1 hyb.2 hga
-      hpin hqin (by rw [hoffp, hoffy]; exact h1) (by rw [hoffq, hoffy]; exact h2)
+      hpin hqin (by rwa [hoffp, hoffy]) (by rwa [hoffq, hoffy])
   rw [Model.arcWt_eq]
   rcases (M.arcEdges a b).eq_empty_or_nonempty with hE | ⟨p₀, hp₀n, -, t₀, ht₀, ht₀1, hx₀⟩
   · rw [hE, Set.ncard_empty]; exact Nat.zero_le _
   obtain ⟨hd₀L, hp₀, hoff₀⟩ := hin p₀ hp₀n t₀ ht₀ ht₀1 hx₀
   set d₀ := dOf n g p₀
-  set z' : ℝ := (((g' + d₀) % n' : ℕ) : ℝ) + t₀ with hz'
+  set z' : ℝ := (((g' + d₀) % n' : ℕ) : ℝ) + t₀
   have hd₀n' : d₀ < n' := by omega
   -- `z'` is not a cut of `F'`
   have hz'cut : ¬ M'.IsCut F' z' := by
@@ -389,19 +389,19 @@ theorem arcWt_le_of_stretch {M M' : Model} (hM' : GoodModel M') {Q : Polygon}
         have hrb := hkey' pr hA.1 tr hA.2.1 hA.2.2.1
         rw [← hr'eq] at hrb
         rw [sideInArc_iff_off hg'0 hg'R hz'b.1 hz'b.2 hx'b.1 hx'b.2 hrb.1 hrb.2
-          (by rw [hoffz, hoffx]; exact hlt), hoffz, hoffx] at hr
+          (by rwa [hoffz, hoffx]), hoffz, hoffx] at hr
         exact htransfer p₀ p t₀ t hp₀n hpn ht₀ ht₀1 ht ht1 hx₀ hx r' ⟨c, hc, pr, tr, hA, hr'eq⟩
           hr.1 hr.2
       · obtain ⟨e1, e2⟩ := sideKey_inj ht₀.le ht₀1 ht.le ht1 heq
         apply hnot
         rw [hx', show f p = (g' + d₀) % n' by simp only [f, d, e1]] at *
-        rw [← e2]; exact hz'in
+        rwa [← e2]
       · have hl := sideInArc_left hl'r' hz'in hnot hx'l
         obtain ⟨c, hc, pl, tl, hA, hl'eq⟩ := hl'c
         have hlb := hkey' pl hA.1 tl hA.2.1 hA.2.2.1
         rw [← hl'eq] at hlb
         rw [sideInArc_iff_off hg'0 hg'R hx'b.1 hx'b.2 hz'b.1 hz'b.2 hlb.1 hlb.2
-          (by rw [hoffz, hoffx]; exact hgt), hoffz, hoffx] at hl
+          (by rwa [hoffz, hoffx]), hoffz, hoffx] at hl
         exact htransfer p p₀ t t₀ hpn hp₀n ht ht1 ht₀ ht₀1 hx hx₀ l' ⟨c, hc, pl, tl, hA, hl'eq⟩
           hl.1 hl.2
     · apply hnot
@@ -441,7 +441,6 @@ theorem arcWt_le_of_pieces {M : Model} {F : Set (Set Point)} {K : Set ℝ} {γ :
     {a b : ℝ} (hK : ∀ x ∈ K, ¬ sideInArc a b x) (hfree : ∀ x, sideInArc a b x → ¬ M.IsCut F x) :
     M.arcWt a b ≤ γ := by
   classical
-  have hE := M.arcEdges_finite a b
   rcases (M.arcEdges a b).eq_empty_or_nonempty with hE0 | ⟨p₀, hp₀n, hp₀c, t₀, ht₀, ht₀1, hx₀⟩
   · rw [Model.arcWt_eq, hE0, Set.ncard_empty]; exact Nat.zero_le _
   obtain ⟨g, L, ⟨hg, hLn, hgK, heK, hbound⟩, hz0, hzL⟩ := hcover p₀ hp₀n hp₀c t₀ ht₀ ht₀1
@@ -470,7 +469,7 @@ theorem arcWt_le_of_pieces {M : Model} {F : Set (Set Point)} {K : Set ℝ} {γ :
   have hea : ¬ sideInArc a b e := hK _ heK
   rcases hge.lt_or_eq with hlt | heq
   · exact hea (sideInArc_convex (Nat.cast_nonneg g) hgR hz.1 hz.2 hx0 hxn (Nat.cast_nonneg e) heR
-      hga hx₀ hx (by rw [hoffe]; exact hzL) (by rw [hoffe]; exact hlt))
+      hga hx₀ hx (by rw [hoffe]; exact hzL) (by rwa [hoffe]))
   · have := off_inj (Nat.cast_nonneg g) hgR hx0 hxn (Nat.cast_nonneg e) heR (by rw [hoffe]; exact heq.symm)
     exact hea (this ▸ hx)
 

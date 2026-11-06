@@ -59,8 +59,8 @@ theorem EndOK.congr {c c' : Config} {s : ℕ} (h : EndOK E c s)
   obtain ⟨e1, e5, e6, ex⟩ := h
   have e0 := he 0 (by omega)
   simp only [Nat.add_zero] at e0
-  refine ⟨by rw [e0]; exact e1, by rw [he 5 (by omega)]; exact e5,
-    by rw [he 6 (by omega)]; exact e6, fun h0 h5 => ?_⟩
+  refine ⟨by rwa [e0], by rwa [he 5 (by omega)],
+    by rwa [he 6 (by omega)], fun h0 h5 => ?_⟩
   rw [e0] at h0; rw [he 5 (by omega)] at h5
   rw [he 1 (by omega), he 2 (by omega), he 3 (by omega), he 4 (by omega)]
   exact ex h0 h5
@@ -78,15 +78,15 @@ theorem wcand_inv (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) {c' :
   have sl : ∀ s, (s = 81160 ∨ s = 81170) → ∀ j, j ≤ 6 → c'.nreg (s + j) = c.nreg (s + j) :=
     fun s hs j hj => fr _ (by unfold WsW KeyW; omega) (by omega) (by omega)
   refine (wcand_fs hE hB hI ((hA.congr (sl 81160 (Or.inl rfl)))) (hBo.congr (sl 81170 (Or.inr rfl)))
-    (by rw [fr 81130 (by unfold WsW KeyW; omega) (by norm_num) (by norm_num)]; exact hg) hun
-    (by rw [fr 81131 (by unfold WsW KeyW; omega) (by norm_num) (by norm_num)]; exact hu')
+    (by rwa [fr 81130 (by unfold WsW KeyW; omega) (by norm_num) (by norm_num)]) hun
+    (by rwa [fr 81131 (by unfold WsW KeyW; omega) (by norm_num) (by norm_num)])
     hroom).mono le_rfl (fun c'' ⟨b, e83, f⟩ => ?_)
   have wc : WCand E c₀ c' (c'.nreg 81180) ↔ WCand E c₀ c (c'.nreg 81180) := WCand.congr fr
   have u80 : c''.nreg 81180 = c'.nreg 81180 := f _ (by norm_num) (by norm_num)
     (by unfold WcW KeyW; omega)
   refine ⟨⟨b.1, fun h => ⟨by rw [u80]; exact wc.1 (b.2.1 h), by
     rw [e83, u80, fr 81131 (by unfold WsW KeyW; omega) (by norm_num) (by norm_num)]⟩,
-    fun q a b' hq => ?_, by rw [u80]; exact hu1⟩, fun h => b.2.2 (wc.2 h), u80⟩
+    fun q a b' hq => ?_, by rwa [u80]⟩, fun h => b.2.2 (wc.2 h), u80⟩
   have hq' : ¬ WcW q := fun h => hq (h.elim Or.inl (fun h' => Or.inr ⟨by omega, h'.2⟩))
   rw [f q a b' hq', hfr q a b' hq]
 
@@ -101,7 +101,6 @@ theorem wTry_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) {c' : C
     FRS B E.P E.W c₀ (wTry s p) c' (wcK + 6) (fun c'' => WsInv E c₀ c c'' ∧
       (c'.nreg 81181 = 1 → c''.nreg 81181 = 1) ∧
       (c.nreg s = 1 → WCand E c₀ c (c.nreg p - c.nreg 81131 + 1) → c''.nreg 81181 = 1)) := by
-  have hW1 : 1 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
   have k0 := k0_of hE hI
   obtain ⟨v1, v2, v3, v4⟩ := hv
   have fr : ∀ q, ¬ WsW q → 81100 ≤ q → q < 81200 → c'.nreg q = c.nreg q := fun q h a b =>
@@ -116,7 +115,6 @@ theorem wTry_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) {c' : C
     exact (FRS.ifT a1 (FRS.skip (K := 0) hI ⟨⟨v1, v2, v3, v4⟩, id, fun _ _ => h1⟩)).mono (by omega)
       (fun _ h => h)
   refine (FRS.ifF a1 ?_).mono (K := wcK + 6) le_rfl (fun _ h => h)
-  have h0 : c'.nreg 81181 = 0 := by rw [k0] at a1; omega
   by_cases a2 : c'.nreg 81011 < c'.nreg s
   swap
   · exact (FRS.ifF a2 (FRS.skip (K := 0) hI ⟨⟨v1, v2, v3, v4⟩, fun h => by omega,
@@ -142,7 +140,7 @@ theorem wTry_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) {c' : C
     rw [f₁ q (fun e => h (Or.inr ⟨by omega, by omega⟩)), v3 q a b h]
   refine (wcand_inv hE hB hI₁ hA hBo hfr₁ hg (by rw [u80]; omega) (by rw [u80]; omega)
     (by rw [u80]; omega) (by omega)).mono le_rfl
-    (fun c₂ ⟨iv, hw, u2⟩ => ⟨iv, fun h => by omega, fun _ h => hw (by rw [u80]; exact h)⟩)
+    (fun c₂ ⟨iv, hw, u2⟩ => ⟨iv, fun h => by omega, fun _ h => hw (by rwa [u80])⟩)
 
 /-- The cost bound of `wsel`. -/
 def wsK : ℕ := 3 * wcK + 20
@@ -178,7 +176,7 @@ theorem wsel_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   obtain ⟨b1, b2, b3, b4⟩ := iv₄
   refine ⟨b1, fun h => ⟨(b2 h).1, (b2 h).2, b4⟩, fun h => ?_, b3⟩
   rcases h with h | ⟨h0, h⟩ | ⟨h0, h⟩
-  · exact m₄ (m₃ (hw₂ (by rw [v₁]; exact h)))
+  · exact m₄ (m₃ (hw₂ (by rwa [v₁])))
   · exact m₄ (t₃ h0 h)
   · exact t₄ h0 h
 

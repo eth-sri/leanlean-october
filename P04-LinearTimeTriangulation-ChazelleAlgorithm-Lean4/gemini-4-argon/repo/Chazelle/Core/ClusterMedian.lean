@@ -147,7 +147,7 @@ theorem anc_ch_unique (hR : R.OK) {y c c' : ℕ} (hy : y < R.n) (hc : R.Anc c y)
     intro a b i j hi hj hij ha har hbr hpar
     by_contra hne
     have hab : R.Anc b a := ⟨j - i, by
-      rw [← hi, ← Function.iterate_add_apply, show j - i + i = j by omega]; exact hj⟩
+      rwa [← hi, ← Function.iterate_add_apply, show j - i + i = j by omega]⟩
     have hba : b ≠ a := fun h => hne h.symm
     have h1 := (anc_iff_up hba).mp hab
     rw [show R.up a = R.par a by simp [up, har], hpar] at h1
@@ -178,11 +178,10 @@ theorem centroid_of_climb (hR : R.OK) {Gd : ℕ → Prop} {y f : ℕ} (hy : y < 
       intro h
       have : R.up x = x := by simp [up, h]
       rw [this] at hg; exact hng hg
-    have hxn : x < R.n := hx ▸ hR.iterate_up_lt n hy
     refine ⟨hg, fun c hc hcr hpc hgc => hng ?_⟩
     have hupx : R.up x = R.par x := by simp [up, hxr]
     have := anc_ch_unique hR hy (hanc c hc hgc) ⟨n, hx⟩ hcr hxr (by rw [hpc, hupx])
-    rw [← this]; exact hgc
+    rwa [← this]
 
 end
 

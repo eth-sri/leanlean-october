@@ -70,8 +70,8 @@ theorem QAt.qcost_le (h : QAt P m O E V H C N B k) :
   have hC := h.canon
   have hVm : V.m = C.m := by
     obtain ⟨-, -, -, hd2, -⟩ := h.desc; rw [← h.dm, hd2]
-  set γ := m (O + 2) with hγdef
-  set w := min γ (2 * V.m + 7) with hwdef
+  set γ := m (O + 2)
+  set w := min γ (2 * V.m + 7)
   have hγ1 : 1 ≤ γ := gamma_pos hP hC
   have hKγ : V.K * γ ≤ 60 * (2 * V.m + 7) := h.chords_le
   have hK : V.K ≤ 60 * (2 * V.m + 7) := le_trans (Nat.le_mul_of_pos_right _ hγ1) hKγ
@@ -138,7 +138,6 @@ theorem QAt.qcost_le (h : QAt P m O E V H C N B k) :
     exact_mod_cast hcost
   have hκ : (κq : ℝ) = 2 * 10 ^ 12 := by unfold κq; norm_num
   rw [hκ]
-  have hwX : (0 : ℝ) ≤ ((w : ℝ) + 1) * (X : ℝ) := by positivity
   linarith
 
 end

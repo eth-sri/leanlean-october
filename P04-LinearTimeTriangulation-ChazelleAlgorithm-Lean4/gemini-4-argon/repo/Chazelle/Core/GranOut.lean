@@ -202,7 +202,7 @@ theorem outBody_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ �
   have hW := hE.hW
   have hCB := hE.hCB
   have hb0 := hE.hb0
-  set i := c.nreg 90070 with hi_def
+  set i := c.nreg 90070
   set L := outList N live i with hL_def
   have hLi : L.length ≤ i := outList_length_le N live i
   have mlive : c.nmem (b0 + i) = live i := by rw [hm _ (by left; omega), hE.hlive i ht]
@@ -252,7 +252,7 @@ theorem outBody_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ �
       simp only [hl, ite_false, List.append_nil]
       refine ⟨c₁, _, .ifLtN_true (by rw [r73, h1, h0]; omega) (.skip w₁), by omega, w₁,
         by rw [R₁ _ (by decide) (by decide), hcnt], by rw [R₁ _ (by decide) (by decide), hdst],
-        by rw [m₁]; exact hlist, fun a ha => by rw [m₁, hm a ha],
+        by rwa [m₁], fun a ha => by rw [m₁, hm a ha],
         fun r a1 a2 _ _ _ _ => R₁ r a1 a2⟩
   have c71 : c₂.nreg 90071 = CB + 5 * i := by rw [R₂ _ (by decide) (by decide) (by decide)
     (by decide) (by decide) (by decide), hp]
@@ -268,7 +268,7 @@ theorem outBody_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ �
   rw [c70, d19] at r70
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, by omega, by rw [r71, r70]; ring, by
     rw [R₃ _ (by decide) (by decide), c76], by rw [R₃ _ (by decide) (by decide), r95, r70],
-    by rw [R₃ _ (by decide) (by decide), r96, r70], fun r hr' => ?_, by rw [m₃, r70]; exact lst,
+    by rw [R₃ _ (by decide) (by decide), r96, r70], fun r hr' => ?_, by rwa [m₃, r70],
     fun a ha => by rw [m₃, mm a ha]⟩, by omega, r70⟩
   have hb : ¬ (90070 ≤ r ∧ r < 90100) := by simpa [Binit] using hr'
   rw [R₃ r (by omega) (by omega), R₂ r (by omega) (by omega) (by omega) (by omega) (by omega)
@@ -309,7 +309,7 @@ theorem out_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ → �
     (body := outBody) (OutI W K CB LB0 N live c₀) (fun c => K - c.nreg 90070) 19
     (fun _ h => h.wb)
     (fun c I ht => by
-      have t : c.nreg 90070 < K := by rw [I.regs 90010 (by decide), hE.r10] at ht; exact ht
+      have t : c.nreg 90070 < K := by rwa [I.regs 90010 (by decide), hE.r10] at ht
       obtain ⟨c', k, e, I', hk, hi⟩ := outBody_exec (P := P) hE I t
       exact ⟨c', k, e, I', hk, by omega⟩) q
   have hK' : c'.nreg 90070 = K := by

@@ -198,7 +198,7 @@ theorem mapS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
       rK := v51
       rO := v52
       rE := by rw [K₁ _ (mp _ (by omega)), hE]
-      pairs := by rw [F₁.2.2.1]; exact hP
+      pairs := by rwa [F₁.2.2.1]
       hE := hLE
       hC1 := hC1
       hC2 := hC2
@@ -237,7 +237,7 @@ theorem mapS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
     · exact R₄ r (by unfold bandOf; omega) (by omega) (by omega) (by omega) (by omega)
     · exact F₄.1 r (by simp [dBands, bSort, bDecomp, bOPrep]; omega) (by rw [hAL]; exact h.2.2.2)
   have mem₄ : ∀ a, a < A₀ + 6 * E → c₄.nmem a = c₂.nmem a := fun a ha => by
-    rw [F₄.2.2.1 a (by rw [hAL, a99₃]; exact ha), hm₃]
+    rw [F₄.2.2.1 a (by rwa [hAL, a99₃]), hm₃]
   have k50 : c₄.nreg 60050 = A₀ := by
     rw [R₄ _ (by unfold bandOf; omega) (by omega) (by omega) (by omega) (by omega),
       F₃.1 _ (by decide), r₂ _ (by decide) (by decide) (by decide), v50]
@@ -250,8 +250,8 @@ theorem mapS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
     rw [K₄ _ (mp _ (by omega)), K₃ _ (mp _ (by omega)), K₂ _ (mp _ (by omega)),
       K₁ _ (mp _ (by omega)), hN]
   -- the sorted darts
-  set Sb := c₄.nreg 60007 with hSb
-  set F := c₄.nreg 9999 with hF
+  set Sb := c₄.nreg 60007
+  set F := c₄.nreg 9999
   -- 5. the first positions
   obtain ⟨c₅, k₅, e₅, hk₅, F₅, rr₅, f61, f99⟩ := allocS_exec (P := P) e₄.wb_right (rb := 60061)
     (rn := 60034) (A := F) (n := N) (by decide) rfl k34 (by decide) (by omega)

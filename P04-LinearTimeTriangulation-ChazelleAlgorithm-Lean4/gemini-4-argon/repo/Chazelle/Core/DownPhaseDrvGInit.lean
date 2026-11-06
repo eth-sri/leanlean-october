@@ -25,15 +25,13 @@ variable {P : Polygon} {W : ℕ}
 theorem rgInit0_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W rgInit0 c c' k ∧ k = 2 ∧ c'.nreg 219000 = c.nreg 219200 ∧
       c'.nreg 219002 = c.nreg 219203 ∧ c'.nmem = c.nmem ∧
-      FrameM (fun q => decide (q = 219000 ∨ q = 219002)) c c' ∧ c'.rreg = c.rreg := by
+      FrameM (fun q => decide (q = 219000 ∨ q = 219002)) c c' := by
   obtain ⟨c', k, ex, hk, h1, h2, hm⟩ : ∃ c' k, Exec P W rgInit0 c c' k ∧ k = 2 ∧
       c'.nreg 219000 = c.nreg 219200 ∧ c'.nreg 219002 = c.nreg 219203 ∧ c'.nmem = c.nmem := by
     unfold rgInit0
     exec_block
     refine ⟨rfl, ?_, ?_, rfl⟩ <;> config_simp
-  exact ⟨c', k, ex, hk, h1, h2, hm, exec_frameM ex (by decide),
-    funext fun r => exec_frameM2 ex (BN := fun q => decide (q = 219000 ∨ q = 219002))
-      (BR := fun _ => false) (by decide) r rfl⟩
+  exact ⟨c', k, ex, hk, h1, h2, hm, exec_frameM ex (by decide)⟩
 
 /-- **The padding loop** runs exactly `3 (r9999 - r219250) + 2` steps. -/
 theorem rgPadLoop_exec : ∀ (m : ℕ) (c : Config), WordsBounded W c → c.nreg 219251 = 1 →
@@ -71,7 +69,7 @@ theorem rgPad_exec (c : Config) (hw : WordsBounded W c) (hs : c.nreg 219003 ≤ 
   have a51 : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 219251 = 1 := upd_same _ _ _
   have aA : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 9999 = c.nreg 9999 := by
     rw [upd_other _ _ _ (by decide), upd_other _ _ _ (by decide)]
-  have e₃ := rgPadLoop_exec (P := P) _ _ e₂.wb_right a51 (by dsimp only; rw [a50, aA]; exact hs)
+  have e₃ := rgPadLoop_exec (P := P) _ _ e₂.wb_right a51 (by dsimp only; rwa [a50, aA])
     rfl
   refine ⟨_, (Exec.seq (Exec.seq e₁ (Exec.seq e₂ (.skip e₂.wb_right))) e₃).cast
     (by dsimp only; rw [a50, aA]; ring), fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩

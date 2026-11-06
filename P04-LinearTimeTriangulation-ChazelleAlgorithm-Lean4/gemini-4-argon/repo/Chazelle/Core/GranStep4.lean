@@ -76,7 +76,6 @@ theorem cnt_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
 /-- The live positions after the removal. -/
 theorem lv_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
     (st.remove c μ).Lv j ↔ st.Lv j ∧ st.dd c j = false := by
-  have hne := h.nd_ne hE hc
   unfold St.Lv
   show 0 < Function.update (Function.update st.cnt (st.nd0 c) (st.cnt (st.nd0 c) - 1))
       (st.nd1 c) (st.cnt (st.nd1 c) - 1) j ↔ _
@@ -209,10 +208,10 @@ theorem Inv.remove (hE : E.Good) (h : Inv E st) (htop : 0 < st.top)
     (hc : st.cur ∈ st.L E)
     (hrem : Merge.Removable E.M.D E.M.weight E.γ (st.F E) (cs E.M E.Q E.N st.cur)) :
     Inv E (st.remove st.cur (st.mu E st.cur)) := by
-  set c := st.cur with hcdef
+  set c := st.cur
   obtain ⟨P, hs⟩ := h.split hE hc
   obtain ⟨hlow, hw⟩ := (h.removable_iff hE hc hs).1 hrem
-  have hmu : st.mu E c ≤ E.γ := by rw [h.mu_eq hE hc hs]; exact hw
+  have hmu : st.mu E c ≤ E.γ := by rwa [h.mu_eq hE hc hs]
   set μ := st.mu E c
   set st' := st.remove c μ
   have hL' : st'.L E = st.L E \ {c} := rm_L hE h hc μ
@@ -235,14 +234,14 @@ theorem Inv.remove (hE : E.Good) (h : Inv E st) (htop : 0 < st.top)
     rw [hF']
     intro Z hZ
     by_cases hZP : Z = P
-    · subst hZP; rw [deg_P hE h hc hs]; exact hlen
+    · subst hZP; rwa [deg_P hE h hc hs]
     · rw [deg_other hE h hc hs hZ hZP]
       exact h.degLe Z (other_ne hE h hc hs hZ hZP).1
   · -- weights
     rw [hF']
     intro Z hZ
     by_cases hZP : Z = P
-    · subst hZP; rw [← h.mu_eq hE hc hs]; exact hmu
+    · subst hZP; rwa [← h.mu_eq hE hc hs]
     · rw [weight_other' hE h hc hs hZ hZP]
       exact h.semi Z (other_ne hE h hc hs hZ hZP).1
   · -- sides
@@ -288,9 +287,8 @@ theorem Inv.remove (hE : E.Good) (h : Inv E st) (htop : 0 < st.top)
       refine hno (st.top - 1 + k) (by show _ < st.top - 1 + (st.newEx c).length; omega) ?_
       show (if st.top - 1 ≤ st.top - 1 + k ∧ st.top - 1 + k < st.top - 1 + (st.newEx c).length
         then (st.newEx c).getD (st.top - 1 + k - (st.top - 1)) 0 else st.stk _) = i
-      rw [ite_eq_left ⟨by omega, by omega⟩, show st.top - 1 + k - (st.top - 1) = k by omega,
+      rwa [ite_eq_left ⟨by omega, by omega⟩, show st.top - 1 + k - (st.top - 1) = k by omega,
         List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk]
-      exact hki
     -- `i` was not on the old worklist
     have hold : ∀ t, t < st.top → st.stk t ≠ i := by
       intro t ht
@@ -301,7 +299,7 @@ theorem Inv.remove (hE : E.Good) (h : Inv E st) (htop : 0 < st.top)
         intro e
         apply this
         show (if st.top - 1 ≤ t ∧ t < st.top - 1 + (st.newEx c).length then _ else st.stk t) = i
-        rw [ite_eq_right (by omega)]; exact e
+        rwa [ite_eq_right (by omega)]
     have hnr := h.work i hiL hold
     rw [hF']
     intro hr

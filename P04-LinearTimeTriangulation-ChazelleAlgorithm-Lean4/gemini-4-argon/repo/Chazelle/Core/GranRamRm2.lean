@@ -39,8 +39,6 @@ def wbBody : Stmt := block [.addN 90105 90044 90101, .loadN 90102 90105, .addN 9
 def wbStmt : Stmt :=
   .seq (block [.constN 90101 0, .subN 90108 90050 90019]) (.whileLtN 90101 90100 wbBody)
 
-theorem wrS_wb : wrS Brm wbStmt = true := by decide
-
 /-- The facts the write-back loop keeps. -/
 structure WbI (W : ℕ) (d : Dm) (S : St) (X top1 : ℕ) (L : List ℕ) (c₀ c : Config) : Prop where
   wb : WordsBounded W c
@@ -59,14 +57,7 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
     ∃ c' k, Exec P W wbStmt c c' k ∧ k ≤ 10 * E.D + 5 ∧
       Enc c'.nmem d (S.wb X (top - 1) L L.length) ∧ c'.nreg 90108 = top - 1 ∧
       (∀ r, r ≠ 90101 → r ≠ 90102 → r ≠ 90105 → r ≠ 90108 → c'.nreg r = c.nreg r) ∧
-      (∀ a, (a < d.b0 + d.oEx ∨ d.b0 + d.oTmp ≤ a) → c'.nmem a = c.nmem a) ∧
-      FrameS Brm c c' := by
-  suffices hh : ∃ c' k, Exec P W wbStmt c c' k ∧ k ≤ 10 * E.D + 5 ∧
-      Enc c'.nmem d (S.wb X (top - 1) L L.length) ∧ c'.nreg 90108 = top - 1 ∧
-      (∀ r, r ≠ 90101 → r ≠ 90102 → r ≠ 90105 → r ≠ 90108 → c'.nreg r = c.nreg r) ∧
-      (∀ a, (a < d.b0 + d.oEx ∨ d.b0 + d.oTmp ≤ a) → c'.nmem a = c.nmem a) by
-    obtain ⟨c', k, e, h1, h2, h3, h4, h5⟩ := hh
-    exact ⟨c', k, e, h1, h2, h3, h4, h5, exec_frameS e wrS_wb⟩
+      (∀ a, (a < d.b0 + d.oEx ∨ d.b0 + d.oTmp ≤ a) → c'.nmem a = c.nmem a) := by
   have hb := hD.base
   have hW3 := hD.W1
   obtain ⟨y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15⟩ := d.lay
@@ -168,7 +159,6 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
   refine ⟨c', _, .seq e₁ e, ?_, henc', ?_, fun r a1 a2 a3 a4 => ?_, fun a ha => ?_⟩
   · rw [q101] at hk
     rw [← hD.D]
-    have : 10 * L.length ≤ 10 * d.D := Nat.mul_le_mul_left _ hL
     omega
   · rw [hr' _ (by decide) (by decide) (by decide), q108]
   · rw [hr' r a1 a2 a3, qr r a1 a4]

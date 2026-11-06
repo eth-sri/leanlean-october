@@ -152,7 +152,7 @@ theorem iPos_spec (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) {s : SymPt} (hs : BS
       intro hc
       -- `e = (e + 2) mod n` is impossible for `n ≥ 3`
       have : e = (e + 2) % Q.n := by
-        rw [Nat.mod_add_mod] at hc; exact hc
+        rwa [Nat.mod_add_mod] at hc
       rcases (show e + 2 < Q.n ∨ e + 2 = Q.n ∨ e + 2 = Q.n + 1 by omega) with h1 | h1 | h1
       · rw [Nat.mod_eq_of_lt h1] at this; omega
       · rw [h1, Nat.mod_self] at this; omega
@@ -373,7 +373,7 @@ theorem hitSym_spec (hD : DistinctHeights C.P) {e h : ℕ}
     simp only [ShootCut.edgeOf]
     split_ifs with hcase
     · refine ⟨cVtx_lt C e, hh', ?_⟩
-      rw [← hcase]; exact hbt
+      rwa [← hcase]
     · refine ⟨cVtx_lt C (e + 1), hh', ?_⟩
       have hc2 : cVtx C e = (cVtx C (e + 1) + 1) % C.P.n := by
         simp only [HostEdgeOK] at hcons

@@ -125,8 +125,8 @@ theorem m1cK2_irs {br : Stmt → Stmt} {κB : ℕ} (hBr : StbBody br κB)
     have hab := Cand1.abs_lt_whole (J := J) htopR
     have hbr := hBr sh Bs F X Ok P W c₀ c₃ J N₁ N₂ E hI₃ sp hsp3 hlt
       (by rw [hev]; exact top_not_left E.hP htop0) (by rw [hev]; exact hab.1)
-      (by rw [hev]; exact hab.2) (by rw [hev]; exact hle)
-      (by rw [v3]; exact hb)
+      (by rw [hev]; exact hab.2) (by rwa [hev])
+      (by rwa [v3])
       (by rw [hA3eq]; omega)
     rw [← hKBd] at hbr
     refine IRS.seq (K₁ := KB) (K₂ := 7) hbr ?_
@@ -147,7 +147,7 @@ theorem m1cK2_irs {br : Stmt → Stmt} {κB : ℕ} (hBr : StbBody br κB)
           c₄.nreg ALLOC from co ALLOC (by unfold r1F ALLOC sw; omega)]) (fun _ _ => rfl)
     have c0 : ({ c₄ with nreg := regB c₄.nmem m1cCp c₄.nreg } : Config).nreg r1F =
         c₄.nreg brF := by have := cv 0 (by norm_num); simpa using this
-    refine ⟨⟨by rw [c0]; exact g1, fun h1 => ?_, fun g => by rw [c0]; exact gf g.1⟩,
+    refine ⟨⟨by rwa [c0], fun h1 => ?_, fun g => by rw [c0]; exact gf g.1⟩,
       m1c_efr (m1c_efr (m1c_efr fr1 fr2 (fun r h => h) (fun r h => h)) (m1c_efr fr3 fr4
         (fun r h => h) (fun r h => h)) (fun r h => h) (fun r h => h)) fr5 (fun r h => h)
         (fun r h => h)⟩
@@ -157,7 +157,7 @@ theorem m1cK2_irs {br : Stmt → Stmt} {κB : ℕ} (hBr : StbBody br κB)
         c₄.nreg (brF + 1) := cv 1 (by norm_num)
     have c2 : ({ c₄ with nreg := regB c₄.nmem m1cCp c₄.nreg } : Config).nreg (r1F + 2) =
         c₄.nreg (brF + 2) := cv 2 (by norm_num)
-    refine ⟨τ, a1, a2, by rw [c1]; exact a3, by rw [c1, c2]; exact a4, by rw [c1, c2]; exact a5,
+    refine ⟨τ, a1, a2, by rwa [c1], by rwa [c1, c2], by rwa [c1, c2],
       absRec_transport a6 (cv 3 (by norm_num)) (cv 4 (by norm_num)) (cv 5 (by norm_num))
         (cv 6 (by norm_num)), fun g => a7 g.1⟩
 

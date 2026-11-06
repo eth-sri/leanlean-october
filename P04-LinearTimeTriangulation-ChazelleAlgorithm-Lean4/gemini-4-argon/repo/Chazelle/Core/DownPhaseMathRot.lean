@@ -25,8 +25,7 @@ open Chazelle.Chain (sideE)
 theorem coordBound_rotate (P : Polygon) (s : ℕ) :
     Chazelle.Jordan.coordBound (P.rotate s) = Chazelle.Jordan.coordBound P := by
   unfold Chazelle.Jordan.coordBound
-  rw [Existence.n_rotate]
-  rw [← Existence.sum_range_rot (fun i => |(P.vtx i).1| + |(P.vtx i).2|) s P.n]
+  rw [Existence.n_rotate, ← Existence.sum_range_rot (fun i => |(P.vtx i).1| + |(P.vtx i).2|) s P.n]
   refine Finset.sum_congr rfl fun i hi => ?_
   rw [Existence.vtx_rotate _ _ (Finset.mem_range.1 hi)]
 
@@ -46,10 +45,10 @@ theorem topIdx_congr : C.topIdx = C'.topIdx := by
   apply le_antisymm
   · apply C.topIdx_min (by rw [hm]; exact C'.topIdx_le)
     intro i hi
-    rw [hv, hv]; exact C'.topIdx_spec.2 i (by rw [← hm]; exact hi)
+    rw [hv, hv]; exact C'.topIdx_spec.2 i (by rwa [← hm])
   · apply C'.topIdx_min (by rw [← hm]; exact C.topIdx_le)
     intro i hi
-    rw [← hv, ← hv]; exact C.topIdx_spec.2 i (by rw [hm]; exact hi)
+    rw [← hv, ← hv]; exact C.topIdx_spec.2 i (by rwa [hm])
 
 omit hr in
 theorem top_congr : C.top = C'.top := by

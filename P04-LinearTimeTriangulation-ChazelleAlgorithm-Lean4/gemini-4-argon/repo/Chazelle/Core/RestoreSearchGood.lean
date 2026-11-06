@@ -78,7 +78,7 @@ theorem full_ray (hGM : GoodModel M) {e : Set Point} (he : e ∈ M.Full) :
     have hv : (interiorModel Q).W.vtx (IOrc.iv Q i) = Q.vtx i := by
       show (interiorWalk Q).vtx _ = _
       rw [IOrc.iw_vtx hp, iv_iv hi]
-    refine ⟨IOrc.iv Q i, by rw [hn]; exact hp, σ, Visibility.chordParam Q i σ, hσ,
+    refine ⟨IOrc.iv Q i, by rwa [hn], σ, Visibility.chordParam Q i σ, hσ,
       Visibility.chordParam_pos hQ hi hdir, fun t h0 h1 => ?_, ?_, ?_,
       fun p' t' hp' h0 h1 hpt => ?_, fun C hC => ?_⟩
     · rw [hv]; exact Visibility.openChordSet_subset_interior hQ hi hdir ⟨t, ⟨h0, h1⟩, rfl⟩
@@ -86,7 +86,7 @@ theorem full_ray (hGM : GoodModel M) {e : Set Point} (he : e ∈ M.Full) :
       exact fun h => h.2 (Visibility.chordEnd_mem_boundary hQ hi hdir)
     · rw [hv, Visibility.chordSet_eq_hseg, chordOf, Visibility.chordEnd, rayPt_fst]
     · have hWs : (interiorModel Q).W.Simple := (FactsInterior.interiorWalk_spec hQ).1
-      have := FactsInterior.pos_unique hWs hp' (by rw [hn]; exact hp) h0 h1 le_rfl zero_lt_one
+      have := FactsInterior.pos_unique hWs hp' (by rwa [hn]) h0 h1 le_rfl zero_lt_one
         (hpt.trans (Chazelle.Chain.sidePt_zero _ _).symm)
       exact this.2
     · have := congrArg (fun M : Model => M.counted 0) hC
@@ -101,12 +101,10 @@ theorem good_of_full' (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)} {R
       ∃ p, (∀ C : Chain, M = chainModel C → 6 ≤ p ∧ p ≤ 2 * C.m + 6) ∧ M.pos Q X = M.W.vtx p := by
   have hM := walkAx_of_goodModel hGM
   obtain ⟨p, hp, σ, T, hσ, hT, hdom, hout, rfl, hvtx, hrange⟩ := full_ray hGM he
-  set v := M.W.vtx p with hvdef
+  set v := M.W.vtx p
   have hadm : chordOf v σ T ∈ M.Adm := full_subset_adm hGM he
   obtain ⟨a, b, hab, hseg', hy, -, ⟨⟨pa, ta, hA, hpa⟩, -⟩, ⟨⟨pb, tb, hB, hpb⟩, -⟩⟩ := hM.ends _ hadm
   -- the vertex is an end of the segment
-  have hw1 : (rayPt v σ T).1 ≠ v.1 := by
-    rw [rayPt_fst]; rcases hσ with rfl | rfl <;> intro h <;> linarith
   have hvab : v = a ∨ v = b := by
     have e1 : chordOf v σ T = hseg a.2 (min a.1 b.1) (max a.1 b.1) := by
       rw [hseg', Visibility.segment_horizontal_eq_hseg hy]
@@ -129,20 +127,19 @@ theorem good_of_full' (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)} {R
         sidePt M.W po tq ≠ v := by
     rcases hvab with h | h
     · exact ⟨pa, ta, hA, hpa.trans h.symm, pb, tb, hB, by rw [hpb, h]; exact hab.symm⟩
-    · exact ⟨pb, tb, hB, hpb.trans h.symm, pa, ta, hA, by rw [hpa, h]; exact hab⟩
+    · exact ⟨pb, tb, hB, hpb.trans h.symm, pa, ta, hA, by rwa [hpa, h]⟩
   have htv : tv = 0 := hvtx pv tv hAv.1 hAv.2.1 hAv.2.2.1 hpv
   subst htv
   have hposX : M.pos Q ⟨pv, 0⟩ = v := by
     show Geometry.lerp (M.wa pv) (M.wb pv) (M.param Q ⟨pv, 0⟩) = v
-    rw [param_vtx]
-    exact hpv
-  refine ⟨⟨pv, 0⟩, σ, T, ⟨rfl, hAv.1, hσ, hT, ?_, by rw [hposX]; exact hdom,
-    by rw [hposX]; exact hout, by rw [hposX]; exact hadm, by rw [hposX]; exact hsw⟩,
-    by rw [hposX]; exact hAv, ⟨po, tq, by rw [hposX]; exact hAo, by rw [hpv]; exact hpo.symm⟩,
+    rwa [param_vtx]
+  refine ⟨⟨pv, 0⟩, σ, T, ⟨rfl, hAv.1, hσ, hT, ?_, by rwa [hposX],
+    by rwa [hposX], by rwa [hposX], by rwa [hposX]⟩,
+    by rwa [hposX], ⟨po, tq, by rwa [hposX], by rw [hpv]; exact hpo.symm⟩,
     p, hrange, hposX⟩
   -- the ray starts into the left sector
   obtain ⟨-, -, -, -, r, hr, hsec⟩ := hAv
-  set s := min (r / 2) (T / 2) with hsdef
+  set s := min (r / 2) (T / 2)
   have hs : 0 < s := lt_min (half_pos hr) (half_pos hT)
   have hsr : s ≤ r / 2 := min_le_left _ _
   have hsT : s ≤ T / 2 := min_le_right _ _

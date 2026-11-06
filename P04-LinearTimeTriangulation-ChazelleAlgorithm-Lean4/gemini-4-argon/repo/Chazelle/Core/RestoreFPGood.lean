@@ -45,8 +45,7 @@ theorem region_arcs_le {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hNF :
     have hj := List.mem_toFinset.1 hj
     obtain ⟨hjl, hjr⟩ := (hArcs.2.2.2 r hr j).1 hj
     have := (hArcs.1 j hjl).2
-    rw [hjr] at this
-    exact this
+    rwa [hjr] at this
   obtain ⟨hfin, hcard⟩ := hM.arcs_bound hFam.2.1 hFam.1 hU
   have hl : l.length = (↑l.toFinset : Set ℕ).ncard := by
     rw [Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd]
@@ -87,8 +86,7 @@ theorem arc_isArc (hE : FGood E c₀) {reg : ℕ → Set Point}
     exact List.getElem_mem ht
   obtain ⟨hj, hjr⟩ := (hArcs.2.2.2 E.r hr j).1 hjm
   have := (hArcs.1 j hj).2
-  rw [hjr] at this
-  exact this
+  rwa [hjr] at this
 
 /-- The ends of an arc of a region with an exit chord differ. -/
 theorem arc_ne (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : ℕ}
@@ -108,8 +106,7 @@ theorem arc_ne (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : �
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi', Option.getD_some]
       exact List.getElem_mem hi'
     have : (E.N.chord i).toSet E.M (Qof E.P) ∈ E.N.F E.M (Qof E.P) := ⟨E.N.chord i, hmem, rfl⟩
-    rw [hF] at this
-    exact this
+    rwa [hF] at this
 
 /-- **The pieces of the cut of arc `t` tile it.** -/
 theorem tile_of_cut (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : ℕ}
@@ -136,8 +133,7 @@ theorem tile_of_cut (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {
         (normOf E.M (Qof E.P) (arcOf E.N E.r t).e).hgt⟩ = E.M.key (Qof E.P) (arcOf E.N E.r t).e := kv
     have := hin i hi
     dsimp only at this
-    rw [e1] at this
-    exact this
+    rwa [e1] at this
 
 /-- **A piece weighs at most its arc.** -/
 theorem piece_wt_le {n a b : ℝ} {q : ℕ} {s e : ℕ → ℝ} {M : Model} (hn : n = M.W.n)
@@ -173,7 +169,7 @@ theorem k1hyp_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t :
   have hWh := hE.hWh
   unfold hostWords at hWh
   have hQn : (Qof E.P).n = E.P.n := shear_n _ _
-  have hmP : Cα.m < E.P.n := by have := Cα.m_lt; rw [hQ, hQn] at this; exact this
+  have hmP : Cα.m < E.P.n := by have := Cα.m_lt; rwa [hQ, hQn] at this
   set n := E.M.W.n
   set s := c'.nmem (L + 1 + 7 * i + 0)
   -- the weight of the piece
@@ -185,8 +181,7 @@ theorem k1hyp_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t :
       simp only at h3 he; rw [h3, he]; exact key_vtx' _ _ _
     have := hwt
     simp only at this
-    rw [e1, e2] at this
-    exact this
+    rwa [e1, e2] at this
   have hmn : Cα.m < n := by
     rcases hE.kind with ⟨C, -, hM⟩ | hM
     · have h1 := arcWt_le_size E.M (s : ℝ) (((s + Cα.m) % n : ℕ) : ℝ)

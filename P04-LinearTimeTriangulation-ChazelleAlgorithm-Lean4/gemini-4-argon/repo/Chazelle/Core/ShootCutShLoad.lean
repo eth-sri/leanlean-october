@@ -111,10 +111,9 @@ theorem ptLoad_exec' (c : Config) (hw : WordsBounded W c) (E : LdEnv P W H C c)
   have k₁' : ∀ r, ¬ (50200 ≤ r ∧ r < 50203) → c₁.nreg r = c.nreg r := fun r hr =>
     k₁ r (by first | (simp; done) | (simp; omega))
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := k₁' _ (by unfold ALLOC; omega)
-  have hW' := E.hW
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, -⟩ := ptKey_meets P W c₁ e₁.wb_right
     ⟨E.hG, E.hW, by rw [hA₁, m₁, v00]; exact E.hwf, H, C, by rw [m₁, v00]; exact E.hD,
-      ⟨by rw [v01]; exact hen, by rw [v01, v02]; exact hp, by rw [v01, v02]; exact hy,
+      ⟨by rwa [v01], by rwa [v01, v02], by rwa [v01, v02],
         by rw [m₁, v00]; exact E.hreg⟩⟩ (by rw [hA₁]; show _ + 15800 ≤ W; omega)
   replace hk₂ : k₂ ≤ 15800 := hk₂
   have pr' := post₂ H C (by rw [m₁, v00]; exact E.hD)
@@ -122,7 +121,7 @@ theorem ptLoad_exec' (c : Config) (hw : WordsBounded W c) (E : LdEnv P W H C c)
     pr'.1
   have fl : 6 ≤ c.nreg e → (c.nreg e < 2 * C.m + 6 ∨
       (chainModel C).param (Qof P) ⟨c.nreg e, c.nreg h⟩ = 0) → c₂.nreg 50216 = 1 := by
-    have := pr'.2; rw [v01, v02] at this; exact this
+    have := pr'.2; rwa [v01, v02] at this
   rw [v01, v02] at pr
   obtain ⟨ax, hy', fr⟩ := pr
   have F₂ := exec_frameB e₂ wr_ptKey
@@ -150,10 +149,10 @@ theorem ptLoad_exec' (c : Config) (hw : WordsBounded W c) (E : LdEnv P W H C c)
     rcases hy' with ⟨k, hv⟩ | ⟨k, hv⟩ | ⟨k, hv, hl, he'⟩
     · exact Or.inl ⟨n4.trans k, hv⟩
     · exact Or.inr (Or.inl ⟨n4.trans k, hv⟩)
-    · exact Or.inr (Or.inr ⟨n4.trans k, hv, n5, by rw [n6]; exact hl, by rw [n6]; exact he'⟩)
+    · exact Or.inr (Or.inr ⟨n4.trans k, hv, n5, by rwa [n6], by rwa [n6]⟩)
   · intro h7
     have n7 : c₄.nreg (B + 7) = c₂.nreg 50216 := by rw [g₄ _ (by omega), w7]
-    obtain ⟨s, hs, hl, hv⟩ := fr (by rw [← n7]; exact h7)
+    obtain ⟨s, hs, hl, hv⟩ := fr (by rwa [← n7])
     refine ⟨s, NFLoc.symPtIn_copy hs ?_ ?_ ?_, hl, hv⟩
     · rw [g₄ _ (by omega), w8]
     · rw [show B + 7 + 1 + 1 = B + 9 by omega, g₄ _ (by omega), w9]

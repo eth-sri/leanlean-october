@@ -263,22 +263,18 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
   have scX : IScr cX := iscr_sw (by rw [eX]; norm_num) (by rw [eX]; norm_num)
   have scT : IScr cT := iscr_sw (by rw [eT]; norm_num) (by rw [eT]; norm_num)
   have scD : IScr cDd := iscr_sw (by rw [eD]; norm_num) (by rw [eD]; norm_num)
-  have hpoX := hpo.2.1
-  have hpoT := hpo.2.2.1
-  have hpoD := hpo.2.2.2
   unfold convS
   by_cases hbox : c.nreg pe < c.nreg K6
   · refine (IRS.ifT hbox (IRS.instr1 (i := .copyN po pe) hI hpo.1)).mono (by norm_num) ?_
     rintro c' rfl
     refine ⟨?_, fun r hr => ?_, rfl⟩
     · show upd c.nreg po (c.nreg pe) po = _
-      rw [upd_same]; unfold convVal; rw [ite_eq_left (show c.nreg pe < 6 by rw [k6] at hbox; exact hbox)]
+      rw [upd_same]; unfold convVal; rw [ite_eq_left (show c.nreg pe < 6 by rwa [k6] at hbox)]
     · show upd c.nreg po (c.nreg pe) r = _
       exact upd_other _ _ _ (fun h => hr (Or.inl h))
   refine IRS.mono (K := 21) (IRS.ifF hbox ?_) (by norm_num) (fun _ h => h)
   -- the box test failed: `6 ≤ e`
-  set e := c.nreg pe with he
-  have he6 : 6 ≤ e := by omega
+  set e := c.nreg pe
   -- step 1
   have ok1 : okB W c.nmem [.copyN cX pe, .addN cT pe K1] c.nreg :=
     ⟨scX, ⟨scT, by
@@ -324,10 +320,9 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
       exact upd_other _ _ _ hr
   refine (IRS.seq (K₂ := 11) st2 ?_).mono (by norm_num) (fun _ h => h)
   rintro c₂ hI₂ - - ⟨v2X, k2r, hm2⟩
-  set x := (if e + 1 = c.nreg nr then 6 else e) with hx
+  set x := (if e + 1 = c.nreg nr then 6 else e)
   have fx2 : ∀ r, 240000 ≤ r → r < 240700 → c₂.nreg r = c.nreg r := fun r h1 h2 => by
     rw [k2r r (by rw [eX]; omega), fx r h1 h2]
-  have hxn : x < c.nreg nr := by rw [hx]; split_ifs <;> omega
   -- step 3: `d₂`
   have g2 : c₂.nreg (b + 1) = c.nreg (b + 1) := fx2 _ (by omega) (by omega)
   have n2 : c₂.nreg nr = c.nreg nr := fx2 _ (by omega) (by omega)
@@ -363,7 +358,6 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
   rintro c₃ hI₃ - - ⟨v3T, k3r, hm3⟩
   set d₂ := (if x < c.nreg (b + 1) then x + (c.nreg nr - c.nreg (b + 1)) else x - c.nreg (b + 1))
     with hd₂
-  have hd₂n : d₂ < c.nreg nr := by rw [hd₂]; split_ifs <;> omega
   have fx3 : ∀ r, 240000 ≤ r → r < 240700 → c₃.nreg r = c.nreg r := fun r h1 h2 => by
     rw [k3r r (by rw [eT]; omega), fx2 r h1 h2]
   -- step 4: `d`
@@ -390,7 +384,7 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
         exact upd_other _ _ _ hr
   refine (IRS.seq (K₂ := 4) st4 ?_).mono (by norm_num) (fun _ h => h)
   rintro c₄ hI₄ - - ⟨v4D, k4r, hm4⟩
-  set d := convD (c.nreg (b + 1)) (c.nreg (b + 2)) (c.nreg (b + 4)) (c.nreg nr) x with hd
+  set d := convD (c.nreg (b + 1)) (c.nreg (b + 2)) (c.nreg (b + 4)) (c.nreg nr) x
   have fx4 : ∀ r, 240000 ≤ r → r < 240700 → c₄.nreg r = c.nreg r := fun r h1 h2 => by
     rw [k4r r (by rw [eD]; omega), fx3 r h1 h2]
   -- step 5: `n - g`

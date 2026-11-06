@@ -68,10 +68,10 @@ theorem poly_of_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q)
     rw [Existence.n_rotate, hostPoly_n, List.length_map, hL]
   · intro j hj
     have hj' : j < nk (interiorModel Q) S R := by simpa [Polygon.n, hL] using hj
-    have hjL : j < L.length := by rw [hL]; exact hj'
+    have hjL : j < L.length := by rwa [hL]
     have hlt : (i0 + j) % nk (interiorModel Q) S R < nk (interiorModel Q) S R :=
       Nat.mod_lt _ (by omega)
-    rw [Existence.vtx_rotate _ _ (by rw [hostPoly_n]; exact hj'), hostPoly_n,
+    rw [Existence.vtx_rotate _ _ (by rwa [hostPoly_n]), hostPoly_n,
       hostPoly_vtx hlt, ← rep_eval hQ hFam hne hR hli hdh hlt (hrep j hj')]
     simp only [Polygon.vtx]
     rw [List.getD_eq_getElem _ _ (by simpa using hjL), List.getElem_map,
@@ -129,52 +129,6 @@ theorem regular_reverse {n : ℕ} {L : List SymPt}
   have := h k hkm
   rw [hk1] at this
   exact hostEdgeOK_symm this
-
-/-! ## Geometric facts of rotated and reversed host polygons -/
-
-/-- The facts the driver consumes about the polygon of its host description. -/
-def PolyFacts (Q : Polygon) (S : Set (Set Point)) (R : Set Point) (P : Polygon) : Prop :=
-  P.Simple ∧ P.filled \ P.boundary = R ∧ P.boundary ⊆ Q.boundary ∪ ⋃₀ S ∧
-    ∀ j, j < (hostPoly Q S R).n → ∃ j', j' < P.n ∧ P.vtx j' = (hostPoly Q S R).vtx j
-
-section
-
-variable (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) (hne : S.Nonempty)
-  (hR : R ∈ (interiorModel Q).regions S)
-include hQ hFam hne hR
-
-/-- The facts for a rotation of the host polygon. -/
-theorem polyFacts_rotate (i0 : ℕ) : PolyFacts Q S R ((hostPoly Q S R).rotate i0) := by
-  have hs := hostPts_simple hQ hFam hne hR
-  have hint := DownDrv.region_eq_intHost hQ hFam hne hR
-  have hbd := DownDrv.hostPoly_bd_sub hQ hFam hne hR
-  have h3 := three_le_nk hQ hFam hne hR
-  refine ⟨Existence.simple_rotate _ _ hs, ?_, ?_, ?_⟩
-  · rw [Existence.filled_rotate, Existence.boundary_rotate]; exact hint.symm
-  · rw [Existence.boundary_rotate]; exact hbd
-  · intro j hj
-    have hn : 0 < (hostPoly Q S R).n := by omega
-    obtain ⟨i, hi, hij⟩ := Existence.exists_rot_index hn i0 j hj
-    exact ⟨i, by rw [Existence.n_rotate]; exact hi, by rw [Existence.vtx_rotate _ _ hi, hij]⟩
-
-/-- The facts for a reversal of a rotation of the host polygon. -/
-theorem polyFacts_rev (i0 : ℕ) {P : Polygon} (hn : P.n = ((hostPoly Q S R).rotate i0).n)
-    (hv : ∀ k, k < ((hostPoly Q S R).rotate i0).n →
-      P.vtx k = ((hostPoly Q S R).rotate i0).vtx (((hostPoly Q S R).rotate i0).n - 1 - k)) :
-    PolyFacts Q S R P := by
-  obtain ⟨hs, hint, hbd, hvx⟩ := polyFacts_rotate hQ hFam hne hR i0
-  have hbd' := Mountain.rev_boundary hn hv
-  refine ⟨Mountain.rev_simple hn hv hs, ?_, ?_, ?_⟩
-  · rw [Mountain.rev_filled hn hv, hbd']; exact hint
-  · rw [hbd']; exact hbd
-  · intro j hj
-    obtain ⟨j', hj', e⟩ := hvx j hj
-    set m := ((hostPoly Q S R).rotate i0).n
-    refine ⟨m - 1 - j', by rw [hn]; omega, ?_⟩
-    rw [hv _ (by omega), show m - 1 - (m - 1 - j') = j' by omega]
-    exact e
-
-end
 
 end
 

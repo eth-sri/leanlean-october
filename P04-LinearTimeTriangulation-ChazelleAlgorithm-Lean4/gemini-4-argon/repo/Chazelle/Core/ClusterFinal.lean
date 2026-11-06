@@ -35,7 +35,7 @@ theorem reach_items {G : Env} (hI : SInv μ k s H slab Adj act [] fin D nsp)
     obtain ⟨hadj, h1, h2, h3, h4⟩ := hstep _ _ hst
     obtain ⟨q, hq, hbq, hcq⟩ := hI.edge _ _ hadj h1 h2 h3 h4
     by_cases hqp : q = p
-    · rw [← hqp]; exact hcq
+    · rwa [← hqp]
     · exact absurd (Finset.disjoint_left.mp (hI.disj q p hq (Or.inr hp) hqp) hbq) (not_not.mpr ih)
 
 /-- **A label class has at most `s` vertices.** -/

@@ -106,7 +106,6 @@ theorem cPre_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e : 
   obtain ⟨-, hpow, -⟩ := grade_low S.hR
   have hp0 := hpow 0 (by omega)
   obtain ⟨hHost, hP, hs', hm', hT', hb'⟩ := hD
-  have hT := C.topIdx_le
   -- the constants
   obtain ⟨d₁, k₁, e₁, hk₁, c90, c91, c92, c93, c96, r₁, m₁⟩ := cInit_exec (P := P) d hw (by omega)
   have g₁ : ∀ x, x < 150090 → d₁.nreg x = d.nreg x := fun x hx =>
@@ -115,9 +114,9 @@ theorem cPre_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e : 
   have a00 : d₁.nreg 150000 = MD := by rw [g₁ _ (by omega), h00]
   have a13 : d₁.nreg 150013 = h := by rw [g₁ _ (by omega), h13]
   have mA : d₁.nmem (MD + 1) = Hh := by rw [mm _ (by omega), hHh]
-  have mB : d₁.nmem (MD + 1 + 1) = C.s := by rw [mm _ (by omega)]; exact hs'
-  have mC : d₁.nmem (MD + 1 + 1 + 1) = C.m := by rw [mm _ (by omega)]; exact hm'
-  have mD : d₁.nmem (MD + 1 + 1 + 1 + 1) = C.topIdx := by rw [mm _ (by omega)]; exact hT'
+  have mB : d₁.nmem (MD + 1 + 1) = C.s := by rwa [mm _ (by omega)]
+  have mC : d₁.nmem (MD + 1 + 1 + 1) = C.m := by rwa [mm _ (by omega)]
+  have mD : d₁.nmem (MD + 1 + 1 + 1 + 1) = C.topIdx := by rwa [mm _ (by omega)]
   have mh : d₁.nmem h = m₀ h := mm _ (by omega)
   have mh1 : d₁.nmem (h + 1) = m₀ (h + 1) := mm _ (by omega)
   have mh2 : d₁.nmem (h + 2) = m₀ (h + 2) := mm _ (by omega)
@@ -126,7 +125,7 @@ theorem cPre_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e : 
   -- the descriptor and the handles
   obtain ⟨d₂, k₂, e₂, hk₂, o21, o22, o23, o75, r₂, m₂⟩ := cHead1_exec (P := P) d₁ w₁ a00 c91 mA mB mC
     (by omega)
-  have mD' : d₂.nmem (MD + 1 + 1 + 1 + 1) = C.topIdx := by rw [m₂]; exact mD
+  have mD' : d₂.nmem (MD + 1 + 1 + 1 + 1) = C.topIdx := by rwa [m₂]
   have mE' : d₂.nmem (MD + 1 + 1 + 1 + 1 + 1) = m₀ (MD + 1 + 4) := by
     rw [m₂, mm _ (by omega)]
   obtain ⟨d₃, k₃, e₃, hk₃, o24, o25, o29, o32, o31, r₃, m₃⟩ := cHead2_exec (P := P) d₂ e₂.wb_right
@@ -140,8 +139,8 @@ theorem cPre_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e : 
   obtain ⟨d₄, k₄, e₄, hk₄, o27, o33, o36, o34, o35, r₄, m₄⟩ := cHead3_exec (P := P) d₃
     e₃.wb_right (m₀ := m₀) (by rw [g₃ _ (by omega) (by omega), a13])
     (by rw [g₃ _ (by omega) (by omega), c91]) (by rw [g₃ _ (by omega) (by omega), c92])
-    (by rw [g₃ _ (by omega) (by omega), c93]) (by rw [m₃, m₂]; exact mh)
-    (by rw [m₃, m₂]; exact mh1) (by rw [m₃, m₂]; exact mh2) (by rw [m₃, m₂]; exact mh3)
+    (by rw [g₃ _ (by omega) (by omega), c93]) (by rwa [m₃, m₂])
+    (by rwa [m₃, m₂]) (by rwa [m₃, m₂]) (by rwa [m₃, m₂])
     (by omega) (by omega) (by omega)
   have w₄ := e₄.wb_right
   -- all the registers so far

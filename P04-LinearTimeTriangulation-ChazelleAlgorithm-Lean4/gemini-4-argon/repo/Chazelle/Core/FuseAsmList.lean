@@ -88,7 +88,6 @@ theorem qlBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
 /-- The invariant of the query loop. -/
 structure QLI (W K CB LB : ℕ) (c₀ c : Config) : Prop where
   wb : WordsBounded W c
-  i_le : c.nreg 70102 ≤ K
   cur : c.nreg 70101 = CB + 5 * c.nreg 70102
   alloc : c.nreg ALLOC = LB + 6 * c.nreg 70102
   regs : ∀ r, r ≠ 70101 → r ≠ 70102 → r ≠ 70103 → r ≠ 70104 → r ≠ 70107 → r ≠ ALLOC →
@@ -131,7 +130,7 @@ theorem qlLoop_exec {P : Polygon} {W K CB LB : ℕ} {c₀ : Config}
         (by omega) (by omega) (by omega) (by rw [hmem]; exact hh i hiK) (by omega)
     rw [hi] at v02
     have hI' : QLI W K CB LB c₀ c' := by
-      refine ⟨e.wb_right, by omega, by rw [v01, v02]; ring, by rw [vA, v02]; ring,
+      refine ⟨e.wb_right, by rw [v01, v02]; ring, by rw [vA, v02]; ring,
         fun r a1 a2 a3 a4 a5 a6 => by rw [R r a1 a2 a3 a4 a5 a6, hI.regs r a1 a2 a3 a4 a5 a6],
         fun a ha => by rw [mo a (Or.inl (by omega)), hI.low a ha], fun i' hi' => ?_,
         by rw [rr, hI.rr], by rw [rm, hI.rm], by rw [ro, hI.out]⟩
@@ -159,8 +158,8 @@ theorem qlLoop_exec {P : Polygon} {W K CB LB : ℕ} {c₀ : Config}
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := qlLoop_exec h05 h06 h08 h00 hCB hh hW hWK n c'
       hI' (by omega)
     exact ⟨c'', k + 2 + k₂, .whileLtN_true (by
-      rw [hi, hI.regs 70100 (by decide) (by decide) (by decide) (by decide) (by decide)
-        (by decide), h00]; exact hiK) e e₂, by omega, by omega, hI'', hK⟩
+      rwa [hi, hI.regs 70100 (by decide) (by decide) (by decide) (by decide) (by decide)
+        (by decide), h00]) e e₂, by omega, by omega, hI'', hK⟩
 
 /-- **The written query list.** -/
 theorem chordList_endQL {m m₀ : ℕ → ℕ} {LB CB : ℕ} {cs : List CRec}

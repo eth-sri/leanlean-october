@@ -77,7 +77,7 @@ theorem wall_of_faces (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {s : Poin
     (ht1 : t ≤ 1) (hnv : ∀ w, IsVert S w → w.2 ≠ (lerp u v t).2)
     (hev : ∀ᶠ δ in 𝓝[>] (0 : ℝ), Jordan.offset u v t δ ∈ tr sL sR y₁ y₂) :
     (v.2 < u.2 ∧ s = sL) ∨ (u.2 < v.2 ∧ s = sR) := by
-  set z := lerp u v t with hzdef
+  set z := lerp u v t
   have hz : z ∈ seg s := by rw [hseg]; exact Geometry.lerp_mem_segment u v ht0 ht1
   have hsu := hS.up s hs
   have huS : u ∈ seg s := by rw [hseg]; exact Geometry.left_mem_segment _ _
@@ -253,19 +253,18 @@ theorem arc_edge_class (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
         ChainObs.ord (C.vertex (C.sideIdx C.sideBeta i))
           (C.vertex (C.sideIdx C.sideBeta (i + 1))) = sR) := by
   have hS := ChainObs.good hP hDH
-  set u := C.vertex (C.sideIdx C.sideBeta i) with hu
-  set v := C.vertex (C.sideIdx C.sideBeta (i + 1)) with hv
+  set u := C.vertex (C.sideIdx C.sideBeta i)
+  set v := C.vertex (C.sideIdx C.sideBeta (i + 1))
   obtain ⟨huv, k, hk, hord⟩ := tour_edge hDH C.sideBeta i
   have hs : ChainObs.ord u v ∈ ChainObs.segs C := Or.inl ⟨k, hk, hord⟩
   have hseg : seg (ChainObs.ord u v) = Chazelle.segment u v := ChainObs.seg_ord u v
   -- the parameters of the edge inside the arc
-  set O : Set ℝ := {t' | 0 < t' ∧ t' < 1 ∧ sideInArc a b ((i + 6 : ℕ) + t')} with hO
+  set O : Set ℝ := {t' | 0 < t' ∧ t' < 1 ∧ sideInArc a b ((i + 6 : ℕ) + t')}
   have hOopen : IsOpen O := by
     refine (isOpen_lt continuous_const continuous_id).inter
       ((isOpen_lt continuous_id continuous_const).inter ?_)
     exact (isOpen_sideInArc a b).preimage (continuous_const.add continuous_id)
   set B : Set ℝ := (fun w : Point => (w.2 - u.2) / (v.2 - u.2)) '' {w | IsVert (ChainObs.segs C) w}
-    with hB
   have hBfin : B.Finite := (finite_verts hS).image _
   obtain ⟨t', ⟨ht'0, ht'1, ht'in⟩, ht'B⟩ := exists_avoid hOopen ⟨ht0, ht1, hin⟩ hBfin
   have hnv : ∀ w, IsVert (ChainObs.segs C) w → w.2 ≠ (lerp u v t').2 := by
@@ -370,8 +369,8 @@ theorem fullMap_arcWt_le_two (hP : C.P.Simple) (hDH : DistinctHeights C.P) {U : 
     intro p hp
     obtain ⟨i, -, rfl, hcl⟩ := arcEdge_class hP hDH hT hsub hab hp
     rcases hcl with ⟨h1, -⟩ | ⟨h1, -⟩
-    · exact Or.inl ⟨hp, fun i' e => by rw [show i' = i by omega]; exact h1⟩
-    · exact Or.inr ⟨hp, fun i' e => by rw [show i' = i by omega]; exact h1⟩
+    · exact Or.inl ⟨hp, fun i' e => by rwa [show i' = i by omega]⟩
+    · exact Or.inr ⟨hp, fun i' e => by rwa [show i' = i by omega]⟩
   have hDn : Dn.ncard ≤ 1 := by
     rw [Set.ncard_le_one_iff (hfinA.subset fun p hp => hp.1)]
     intro p p' hp hp'

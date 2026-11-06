@@ -91,8 +91,6 @@ theorem chainEdge_eq (k : ℕ) :
 /-- The point set of the chain: the union of its edges. -/
 def set : Set Point := {p | ∃ k, k < C.m ∧ p ∈ C.chainEdge k}
 
-/-- The vertices of the chain. -/
-def vertices : Set Point := {p | ∃ k, k ≤ C.m ∧ p = C.vertex k}
 
 theorem chainEdge_subset_boundary (k : ℕ) : C.chainEdge k ⊆ C.P.boundary :=
   Existence.edge_subset_boundary C.P (C.edgeIdx_lt k)
@@ -111,8 +109,6 @@ theorem isClosed_set : IsClosed C.set := by
   rw [set_eq_biUnion]
   exact isClosed_biUnion_finset fun k _ => isClosed_edge C.P _
 
-/-- The complement of the chain is open. -/
-theorem isOpen_compl : IsOpen C.setᶜ := C.isClosed_set.isOpen_compl
 
 theorem vertex_mem_chainEdge (k : ℕ) : C.vertex k ∈ C.chainEdge k := by
   rw [chainEdge_eq]; exact Geometry.left_mem_segment _ _
@@ -175,11 +171,11 @@ theorem missingMid_not_mem_set (hP : C.P.Simple) : C.missingMid ∉ C.set :=
 
 /-- **The complement of a simple open chain is connected.** -/
 theorem compl_connected (hP : C.P.Simple) : IsPreconnected C.setᶜ := by
-  set q := C.missingMid with hq
+  set q := C.missingMid
   have hqb : q ∈ C.P.boundary := C.missingMid_mem_boundary
   have hqC : q ∉ C.set := C.missingMid_not_mem_set hP
-  set I := C.P.filled \ C.P.boundary with hI
-  set E := C.P.filledᶜ with hE
+  set I := C.P.filled \ C.P.boundary
+  set E := C.P.filledᶜ
   have hIq : IsPreconnected (I ∪ {q}) :=
     (filled_sdiff_boundary_connected hP).subset_closure subset_union_left
       (union_subset subset_closure
@@ -307,7 +303,7 @@ bound: clamping maps the connected set `C.setᶜ` into `box r \ C.set`. -/
 theorem box_sdiff_set_connected (hP : C.P.Simple) {r : ℝ} (hr : coordBound C.P < r) :
     IsPreconnected (box r \ C.set) := by
   refine isPreconnected_of_forall_pair fun x hx y hy => ?_
-  set B := coordBound C.P with hB
+  set B := coordBound C.P
   set r' := (max (max |x.1| |x.2|) (max (max |y.1| |y.2|) B) + r) / 2 with hr'
   have hx1 : |x.1| < r := hx.1.1
   have hx2 : |x.2| < r := hx.1.2
@@ -601,8 +597,7 @@ theorem convex_side {u v D K : Set Point} (hu : IsOpen u) (hv : IsOpen v) (hK : 
     · exfalso
       obtain ⟨p, hpK, hpuv⟩ := hK.isPreconnected u v hu hv (hKD.trans hcov) hKu hKv
       have : p ∈ D ∩ (u ∩ v) := ⟨hKD hpK, hpuv⟩
-      rw [hempty] at this
-      exact this
+      rwa [hempty] at this
     · left
       intro p hp
       rcases hcov (hKD hp) with h | h
@@ -623,8 +618,7 @@ theorem convex_same_side {u v D K K' : Set Point} (hu : IsOpen u) (hv : IsOpen v
   · exfalso
     obtain ⟨p, hpK, hpK'⟩ := hmeet
     have : p ∈ D ∩ (u ∩ v) := ⟨hKD hpK, hKu hpK, h hpK'⟩
-    rw [hempty] at this
-    exact this
+    rwa [hempty] at this
 
 /-- The core of the connectedness argument: if both halves of the upper corridor lie in `u`,
 then `u, v` cannot separate the domain. -/
@@ -659,8 +653,7 @@ theorem dom_connected_aux (hP : C.P.Simple) {u v : Set Point} (hu : IsOpen u) (h
   by_cases hpD : p ∈ C.dom
   · rcases hpu with hpu | hpu
     · have : p ∈ C.dom ∩ (u ∩ v) := ⟨hpD, hpu, hpv⟩
-      rw [hempty] at this
-      exact this
+      rwa [hempty] at this
     · -- `p` is in the upper corridor and off the slit: in one of the two halves
       have hslit := C.not_mem_slit_of_mem_dom hpD
       have hy : C.top.2 < p.2 := hpu.2
@@ -672,8 +665,7 @@ theorem dom_connected_aux (hP : C.P.Simple) {u v : Set Point} (hu : IsOpen u) (h
         · exact hL ⟨hpu, h⟩
         · exact hR ⟨hpu, h⟩
       have : p ∈ C.dom ∩ (u ∩ v) := ⟨hpD, hpu', hpv⟩
-      rw [hempty] at this
-      exact this
+      rwa [hempty] at this
   · -- `p` is on the open slit: a nearby point of the upper-left corridor is in `v`
     have hpslit : p ∈ C.slit := by
       by_contra h
@@ -689,8 +681,7 @@ theorem dom_connected_aux (hP : C.P.Simple) {u v : Set Point} (hu : IsOpen u) (h
     have hcl := C.slit_mem_closure_upperL hp0.1 hp1 hp2'
     obtain ⟨q, hqv, hqU⟩ := mem_closure_iff.1 hcl v hv hpv
     have : q ∈ C.dom ∩ (u ∩ v) := ⟨C.upperL_subset_dom hqU, hL hqU, hqv⟩
-    rw [hempty] at this
-    exact this
+    rwa [hempty] at this
 
 /-- **The domain is connected.** -/
 theorem dom_connected (hP : C.P.Simple) : IsPreconnected C.dom := by
@@ -709,8 +700,8 @@ theorem dom_connected (hP : C.P.Simple) : IsPreconnected C.dom := by
       hempty' C.corrB_inter_corrR h2 C.corrB_subset_dom
     exact convex_same_side hw hw' C.convex_upperR C.upperR_subset_dom hcov' hempty'
       C.corrR_inter_upperR h3 C.corrR_subset_dom
-  have hempty_symm : C.dom ∩ (v ∩ u) = ∅ := by rw [inter_comm v u]; exact hempty
-  have hcov_symm : C.dom ⊆ v ∪ u := by rw [union_comm]; exact hcov
+  have hempty_symm : C.dom ∩ (v ∩ u) = ∅ := by rwa [inter_comm v u]
+  have hcov_symm : C.dom ⊆ v ∪ u := by rwa [union_comm]
   rcases convex_side hu hv C.convex_upperL C.upperL_subset_dom hcov hempty with hL | hL
   · exact C.dom_connected_aux hP hu hv hcov hnev hempty hL (hchain u v hu hv hcov hempty hL)
   · exact C.dom_connected_aux hP hv hu hcov_symm hneu hempty_symm hL

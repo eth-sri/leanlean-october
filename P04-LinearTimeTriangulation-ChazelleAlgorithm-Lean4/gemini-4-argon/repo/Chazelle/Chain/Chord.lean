@@ -216,7 +216,7 @@ theorem chordEnd_fst_eq_of_not_mem_box {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (h�
       rw [neg_one_mul, abs_lt] at this
       linarith [this.1]
   have hnot : ¬ |(C.chordEnd k σ).1| < C.radius := fun hlt => hbox ⟨hlt, by
-    rw [chordEnd_snd]; exact hv2⟩
+    rwa [chordEnd_snd]⟩
   have habs : |(C.chordEnd k σ).1| = C.radius := le_antisymm hle (not_lt.1 hnot)
   rcases hσ with rfl | rfl
   · simp only [chordEnd_fst, one_mul] at habs ⊢
@@ -340,15 +340,13 @@ theorem hchordIn_inter {D : Set Point} {y a b y' a' b' : ℝ} (h : IsHChordIn D 
       · exact h1
       · exfalso
         apply h'.left_not
-        rw [show p = (a', y) from Prod.ext h1.symm hpy] at hint
-        exact hint
+        rwa [show p = (a', y) from Prod.ext h1.symm hpy] at hint
     have hb' : p.1 < b' := by
       rcases hpb'.lt_or_eq with h1 | h1
       · exact h1
       · exfalso
         apply h'.right_not
-        rw [show p = (b', y) from Prod.ext h1 hpy] at hint
-        exact hint
+        rwa [show p = (b', y) from Prod.ext h1 hpy] at hint
     left
     refine ⟨rfl, ?_, ?_⟩
     · apply le_antisymm

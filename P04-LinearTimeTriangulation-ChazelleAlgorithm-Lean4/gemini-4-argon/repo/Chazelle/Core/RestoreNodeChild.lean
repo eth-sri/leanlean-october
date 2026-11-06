@@ -48,7 +48,6 @@ theorem child_side {M : Model} {Q : Polygon} {N : NF} {reg : ℕ → Set Point} 
     (¬ (sideInArc (pa + ta) (pb + tb) p ↔
         (M.key Q (N.arc j).s = pa + ta ∨ sideInArc (pa + ta) (pb + tb) (M.key Q (N.arc j).s))) →
       r ∈ N.highSide k) := by
-  have hM := walkAx_of_goodModel hGM
   set ka : ℝ := pa + ta
   set kb : ℝ := pb + tb
   have hab : ka ≠ kb := WalkAx.key_ne_of_pt_ne hA hB hAB
@@ -56,8 +55,8 @@ theorem child_side {M : Model} {Q : Polygon} {N : NF} {reg : ℕ → Set Point} 
   obtain ⟨hτ0, hτ1, -⟩ := (hprop j hj).1
   have harc := (hregs.2.2.1.1 j hj).2
   rw [hjr] at harc
-  set s := (N.arc j).s with hs
-  set τ := M.param Q s with hτ
+  set s := (N.arc j).s
+  set τ := M.param Q s
   have hks : M.key Q s = s.edge + τ := rfl
   set ks := M.key Q s
   set ke := M.key Q (N.arc j).e
@@ -69,14 +68,12 @@ theorem child_side {M : Model} {Q : Polygon} {N : NF} {reg : ℕ → Set Point} 
   have hε0' : (0 : ℝ) < ε := hε0
   have hsedge : s.edge < M.W.n := by
     obtain ⟨-, h, -⟩ := harc
-    have := hτ0
     have h' : (s.edge : ℝ) < M.W.n := by
-      have : ks = s.edge + τ := hks
       linarith
     exact_mod_cast h'
   have hf₀ : M.Faces s.edge (τ + ε) (reg (N.chord k).dn) :=
     harc.2.2.2.2.2.2 s.edge (τ + ε) hsedge (by linarith) (by linarith)
-      (by rw [← add_assoc, ← hks]; exact hst)
+      (by rwa [← add_assoc, ← hks])
   have hd := decide_side hGM hN hT hregs.1 hregs.2.1 hk hA hB hAB hr hp hε0' hε1 hfp hsedge
     (by linarith) (by linarith) hf₀
   have sw : ∀ v, v ≠ ka → v ≠ kb → (sideInArc kb ka v ↔ ¬ sideInArc ka kb v) := fun v h1 h2 =>
@@ -84,9 +81,9 @@ theorem child_side {M : Model} {Q : Polygon} {N : NF} {reg : ℕ → Set Point} 
   have ex : sideInArc ka kb (p + ε) ↔ sideInArc ka kb p := by
     rw [hsp]; exact ⟨fun h => h.resolve_left hpa, Or.inr⟩
   have er : sideInArc ka kb (s.edge + (τ + ε)) ↔ (ks = ka ∨ sideInArc ka kb ks) := by
-    rw [← add_assoc, ← hks]; exact hss
-  rw [sw _ n1 n2, sw _ (by rw [← add_assoc, ← hks]; exact n3)
-    (by rw [← add_assoc, ← hks]; exact n4), ex, er] at hd
+    rwa [← add_assoc, ← hks]
+  rw [sw _ n1 n2, sw _ (by rwa [← add_assoc, ← hks])
+    (by rwa [← add_assoc, ← hks]), ex, er] at hd
   refine ⟨fun h => hd.1 ?_, fun h => hd.2 ?_⟩
   · by_cases h' : sideInArc ka kb p
     · exact Or.inl ⟨h', h.1 h'⟩

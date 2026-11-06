@@ -67,17 +67,15 @@ theorem bruteTask : BruteTask := by
     · rw [show sO + 2 = sw 3233 from rfl, keep 3233 (by norm_num) (by unfold BSet sw; omega)]
       exact p3
   have d2 : c₂.nreg qD = c.nreg brOD := by
-    rw [show qD = sw 3212 from rfl, keep 3212 (by norm_num) (by unfold BSet sw; omega)]
-    exact p4
+    rwa [show qD = sw 3212 from rfl, keep 3212 (by norm_num) (by unfold BSet sw; omega)]
   have a2 : c₂.nreg accA = 0 := by
-    rw [show accA = sw 2000 from rfl, keep 2000 (by norm_num) (by unfold BSet sw; omega)]
-    exact p5
+    rwa [show accA = sw 2000 from rfl, keep 2000 (by norm_num) (by unfold BSet sw; omega)]
   have hacc : AccOK P accA (fun _ => J.left) J.left.radius (s.eval (Qof P))
       (dirOf (c₂.nreg qD)) ∅ c₂ := accOK_init _ _ _ _ _ a2
   have hK2 := E.hK.fix hI₂
   obtain ⟨md1, md2, md3, md4⟩ := E.md hI₂
   obtain ⟨-, -, -, ⟨H, hCD, hreg⟩, -, -⟩ := E.ctx1' hI₂
-  have hmd : MdFacts P c₂ (c₂.nreg MD₁) H J.left := ⟨md3, by rw [← md4]; exact hCD, md2, md1⟩
+  have hmd : MdFacts P c₂ (c₂.nreg MD₁) H J.left := ⟨md3, by rwa [← md4], md2, md1⟩
   have hzD : s.eval (Qof P) ∈ J.left.dom := mem_dom_of J.left hzt hz1 hz2 hzC
   have hN1 : c₂.nreg SweepIo.bN = N₁.arcs.length := w4
   have harcs : ∀ j, j < c₂.nreg SweepIo.bN →
@@ -110,8 +108,8 @@ theorem bruteTask : BruteTask := by
   obtain ⟨qv, q0, q1, q2, q3, qo⟩ := stbPost_val c₃.nmem c₃.nreg
   unfold BruteOut
   simp only
-  set σ := dirOf (c.nreg brOD) with hσ
-  set z := s.eval (Qof P) with hzd
+  set σ := dirOf (c.nreg brOD)
+  set z := s.eval (Qof P)
   -- the exit point lies on the arcs
   have hexit : FreeAt J.left z σ → rayPt z σ (J.left.hitParam z σ) ∈
       ShotList.loSet (chainModel J.left) (Qof P) c₂.nmem (c₂.nreg SweepIo.bBase) N₁.arcs.length [] := by
@@ -123,21 +121,20 @@ theorem bruteTask : BruteTask := by
     rw [w1, w7 j hj]
     obtain ⟨⟨hps, -, -⟩, ⟨hpe, -, -⟩⟩ := arc_end_facts hP hNF hj
     unfold nArc
-    rw [(Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1]
-    exact hin
+    rwa [(Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1]
   have hmem : FreeAt J.left z σ → J.left.hitParam z σ ∈ L' := fun hf => hcomp hf (hexit hf)
   obtain ⟨f1, f0, fs⟩ := hacc'
   have hA3' : regB c₃.nmem stbPost c₃.nreg ALLOC = c₃.nreg ALLOC :=
     qo _ (by unfold StbPostW ALLOC brF sw; omega)
-  refine ⟨by rw [q0]; exact f1, fun h1 => ?_, fun hf => ?_, fun a ha => ?_, ?_, ?_⟩
+  refine ⟨by rwa [q0], fun h1 => ?_, fun hf => ?_, fun a ha => ?_, ?_, ?_⟩
   · rw [q0] at h1
     obtain ⟨τ, hτ, hmin, -, hpp, he, hpos, hrec⟩ := fs h1
     rcases hL' with rfl | ⟨τ₀, rfl, hτ0, hon⟩
     · exact absurd hτ (Set.notMem_empty _)
     · have eτ : τ = τ₀ := by simpa using hτ
       subst eτ
-      refine ⟨τ, hτ0, hon, by rw [q1]; exact he, by rw [q1, q2]; exact hpp,
-        by rw [q1, q2]; exact hpos, ?_, fun hf => ?_⟩
+      refine ⟨τ, hτ0, hon, by rwa [q1], by rwa [q1, q2],
+        by rwa [q1, q2], ?_, fun hf => ?_⟩
       · refine absRec_transport hrec ?_ ?_ ?_ ?_
         · have := q3 0 (by norm_num); simpa using this
         · have := q3 1 (by norm_num); rw [show brF + 3 + 1 = brF + 3 + 1 from rfl] at this

@@ -34,7 +34,6 @@ theorem le_of_le_min {x g M : ℝ} (hg : 0 ≤ g) (hM : 0 ≤ M) (hxg : x ≤ 8 
       · rw [← Real.rpow_add hg']; norm_num
       · subst hg'; rw [Real.zero_rpow (by norm_num)]; ring
     have : g ^ ((2 : ℝ) / 3) ≤ M ^ ((2 : ℝ) / 3) := Real.rpow_le_rpow hg h (by norm_num)
-    have h13 : 0 ≤ g ^ ((1 : ℝ) / 3) := Real.rpow_nonneg hg _
     calc x ≤ 8 * g := hxg
       _ = 8 * (g ^ ((1 : ℝ) / 3) * g ^ ((2 : ℝ) / 3)) := by rw [← e]
       _ ≤ 8 * (g ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3)) := by gcongr
@@ -43,7 +42,6 @@ theorem le_of_le_min {x g M : ℝ} (hg : 0 ≤ g) (hM : 0 ≤ M) (hxg : x ≤ 8 
       · rw [← Real.rpow_add hM']; norm_num
       · subst hM'; rw [Real.zero_rpow (by norm_num)]; ring
     have : M ^ ((1 : ℝ) / 3) ≤ g ^ ((1 : ℝ) / 3) := Real.rpow_le_rpow hM h (by norm_num)
-    have h23 : 0 ≤ M ^ ((2 : ℝ) / 3) := Real.rpow_nonneg hM _
     calc x ≤ 8 * M := hxM
       _ = 8 * (M ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3)) := by rw [← e]
       _ ≤ 8 * (g ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3)) := by gcongr
@@ -70,7 +68,6 @@ theorem sq_le_of_min {μ k : ℕ} (hk : k = 1 ∨ (k - 1) ^ 3 < μ) :
           rw [e]
           exact Real.rpow_le_rpow (by positivity) hc.le (by norm_num)
         linarith
-  have hk0 : (0 : ℝ) ≤ k := Nat.cast_nonneg k
   calc ((k : ℝ)) ^ 2 ≤ ((μ : ℝ) ^ ((1 : ℝ) / 3) + 1) ^ 2 := by gcongr
     _ ≤ 2 * ((μ : ℝ) ^ ((1 : ℝ) / 3)) ^ 2 + 2 := by nlinarith [sq_nonneg ((μ : ℝ) ^ ((1 : ℝ) / 3) - 1)]
     _ = 2 * (μ : ℝ) ^ ((2 : ℝ) / 3) + 2 := by rw [hsq]
@@ -85,21 +82,16 @@ theorem scan_le_gen {c d γ m μ k w : ℕ} (hγ : 1 ≤ γ)
       (32 * (c : ℝ) + 32 * d + 32) * ((γ : ℝ) ^ ((1 : ℝ) / 3) * ((m : ℝ) + 1) ^ ((2 : ℝ) / 3)) := by
   set g : ℝ := (γ : ℝ) with hg
   set M : ℝ := (m : ℝ) + 1 with hM
-  set A : ℝ := g ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3) with hA
+  set A : ℝ := g ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3)
   have hg1 : (1 : ℝ) ≤ g := by rw [hg]; exact_mod_cast hγ
-  have hM1 : (1 : ℝ) ≤ M := by rw [hM]; have : (0 : ℝ) ≤ m := Nat.cast_nonneg m; linarith
   have hA0 : 0 ≤ A := by positivity
   have hwγR : (w : ℝ) ≤ g := by rw [hg]; exact_mod_cast hwγ
   have hwmR : (w : ℝ) ≤ 2 * (m : ℝ) + 7 := by exact_mod_cast hwm
-  have hw0 : (0 : ℝ) ≤ w := Nat.cast_nonneg w
-  have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   have hw1 : (w : ℝ) + 1 ≤ 8 * A :=
     le_of_le_min (by linarith) (by linarith) (by linarith) (by rw [hM]; linarith)
   have hμR : (μ : ℝ) * (g + 1) ≤ (c : ℝ) * (2 * (m : ℝ) + 1) + d * (g + 1) := by
     rw [hg]; exact_mod_cast hμ
   have hμ0 : (0 : ℝ) ≤ μ := Nat.cast_nonneg μ
-  have hc0 : (0 : ℝ) ≤ c := Nat.cast_nonneg c
-  have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d
   have hμ23 : 0 ≤ (μ : ℝ) ^ ((2 : ℝ) / 3) := Real.rpow_nonneg hμ0 _
   set e : ℝ := 2 * (c : ℝ) + 2 * d + 1 with he
   have he1 : 1 ≤ e := by rw [he]; linarith
@@ -121,7 +113,6 @@ theorem scan_le_gen {c d γ m μ k w : ℕ} (hγ : 1 ≤ γ)
       have hg23 : 0 < g ^ ((2 : ℝ) / 3) := Real.rpow_pos_of_pos hgpos _
       have hg13 : g / g ^ ((2 : ℝ) / 3) = g ^ ((1 : ℝ) / 3) := by
         rw [div_eq_iff hg23.ne', ← Real.rpow_add hgpos]; norm_num
-      have hM23 : 0 ≤ M ^ ((2 : ℝ) / 3) := Real.rpow_nonneg (by linarith) _
       have hw2 : (w : ℝ) + 1 ≤ 2 * g := by linarith
       calc ((w : ℝ) + 1) * (μ : ℝ) ^ ((2 : ℝ) / 3)
           ≤ (2 * g) * (e * (M ^ ((2 : ℝ) / 3) / g ^ ((2 : ℝ) / 3))) := by

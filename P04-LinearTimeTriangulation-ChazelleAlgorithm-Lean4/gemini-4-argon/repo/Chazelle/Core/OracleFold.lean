@@ -233,7 +233,7 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
   obtain ⟨i, e, hi, he, hk, hpt, he2⟩ := norm hp ht ht1 hx
   obtain ⟨i', e', hi', he', hk', hpt', he2'⟩ := norm hp' ht' ht1' hx'
   have heq' : sidePt (C.sideWalk C.sideBeta) (i + 6) t = sidePt (C.sideWalk C.sideBeta) (i' + 6) t' := by
-    rw [← hpt, ← hpt']; exact heq
+    rwa [← hpt, ← hpt']
   obtain ⟨q, hq⟩ := tu_eq C i t
   obtain ⟨q', hq'⟩ := tu_eq C i' t'
   rcases same_point C hP hi hi' ht ht1 ht' ht1' heq' with h | h
@@ -249,7 +249,6 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
       linarith
     have hi0 : (0 : ℝ) ≤ i := Nat.cast_nonneg i
     have hi0' : (0 : ℝ) ≤ i' := Nat.cast_nonneg i'
-    have hm0 : (0 : ℝ) < C.m := by exact_mod_cast hm
     have hqq : (q : ℤ) = q' := by
       have h1 : 2 * (C.m : ℝ) * ((q : ℝ) - q') < 2 * C.m := by linarith
       have h2 : -(2 * (C.m : ℝ)) < 2 * C.m * ((q : ℝ) - q') := by linarith
@@ -275,8 +274,6 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
     · exact absurd (by rw [hk, hk']; push_cast; linarith) hne
   · -- opposite tour coordinates
     left
-    have hsum : ((C.sideS C.sideBeta : ℝ) + i + t - 2 * C.m * q) + ((C.sideS C.sideBeta : ℝ) + i' + t' - 2 * C.m * q') = 2 * C.m := by
-      rw [← hq, ← hq']; exact h
     rcases he with rfl | rfl <;> rcases he' with rfl | rfl
     · refine ⟨1 + q + q', ?_⟩
       rw [hk, hk']; push_cast; linarith

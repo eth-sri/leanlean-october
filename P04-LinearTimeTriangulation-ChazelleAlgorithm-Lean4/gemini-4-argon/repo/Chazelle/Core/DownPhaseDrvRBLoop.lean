@@ -217,8 +217,8 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
     by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r37,
     by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r39,
     by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r48, ?_,
-    by rw [g₃ _ (by decide)]; exact v40, by rw [g₃ _ (by decide)]; exact v42,
-    by rw [g₃ _ (by decide)]; exact v42',
+    by rwa [g₃ _ (by decide)], by rwa [g₃ _ (by decide)],
+    by rwa [g₃ _ (by decide)],
     by rw [show d₃.nreg ALLOC = d₂.nreg ALLOC from g₃ _ (by decide)]; have := I.alloc; omega,
     fun a ha => ?_, fun b hb => ?_, fun b hb1 hb2 => ?_, fun r hr hb hra => ?_,
     fun r h1 h2 => ?_, fun r hr hb => ?_, fun a ha => ?_, ?_⟩
@@ -285,7 +285,7 @@ theorem bsLoop_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
       obtain ⟨e', k, ex, h', hk, hA'⟩ := bsBody_exec E (by omega) h (by omega)
       exact ⟨e', k, ex, ⟨h', by rw [Finset.sum_range_succ]; omega⟩, hk⟩)
     (j := 0) ⟨I, by simp⟩ (Nat.zero_le _)
-  refine ⟨d', k, ex, hI, by rw [Finset.range_eq_Ico]; exact hk, hA⟩
+  refine ⟨d', k, ex, hI, by rwa [Finset.range_eq_Ico], hA⟩
 
 /-- **The sorted new codes**: with the buckets ordered by the comparator, the array is a sorted
 permutation of the new codes. -/
@@ -341,7 +341,7 @@ theorem bs_result {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D T
     obtain ⟨q, hq, rfl⟩ := hx'
     obtain ⟨q', hq', rfl⟩ := hy'
     rw [mem_bfilt] at hq hq'
-    exact hmono q q' hq.1 hq'.1 (by rw [hq.2, hq'.2]; exact hbb)
+    exact hmono q q' hq.1 hq'.1 (by rwa [hq.2, hq'.2])
 
 end exec
 

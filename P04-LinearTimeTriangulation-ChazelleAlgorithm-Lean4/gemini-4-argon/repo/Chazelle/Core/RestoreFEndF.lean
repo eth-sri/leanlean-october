@@ -106,7 +106,7 @@ theorem endFull_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     rw [u1, u2, j52]; rw [u1] at hr
     exact hcand a b hr σb hσb
   refine (endTail_fs hE hB hBT hI₁ hw₁ (s := s) (σ := σ) ⟨hs1, hs2⟩ hσ z5 z6 hb0 hcand₁
-    (by rw [j40, j41]; exact hJ) (by unfold efK at hroom; omega)).mono le_rfl
+    (by rwa [j40, j41]) (by unfold efK at hroom; omega)).mono le_rfl
     (fun c₂ ⟨w₂, f₂, m₂, g₂, v5, v5', t₂, v6, s6⟩ => ?_)
   -- reading back
   have F2 : ∀ q, 81011 ≤ q → q < 83000 → ¬ TailW s q → c₂.nreg q = c₁.nreg q := f₂
@@ -123,7 +123,7 @@ theorem endFull_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     (by omega) (by omega))
   have flag₁ : c₁.nreg 81007 = c.nreg 81007 := F1 _ (by norm_num) (by norm_num) (by omega)
   obtain ⟨reg₀, hreg₀⟩ := nfregs_of hE
-  refine ⟨w₂, fun q h1 h2 hq => ?_, fun h => m₂ (by rw [flag₁]; exact h), ?_⟩
+  refine ⟨w₂, fun q h1 h2 hq => ?_, fun h => m₂ (by rwa [flag₁]), ?_⟩
   · have hk : ¬ KeyW q := fun h => hq (Or.inl h)
     have hv : ¬ VertW q := fun h => hq (Or.inr (Or.inl h))
     have hs' : ¬ (s ≤ q ∧ q ≤ s + 9) := fun h => hq (Or.inr (Or.inr (Or.inl h)))
@@ -149,23 +149,22 @@ theorem endFull_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   · rw [k0] at h1
     obtain ⟨u1, u2, -⟩ := bp h1
     intro reg hr' hch hc0 σb hσb hg
-    exact g₂ h1 (by rw [u1]; exact hr) reg hr' hch (by rw [u2]; exact hc0) σb hσb
-      (by rw [u1]; exact hg)
+    exact g₂ h1 (by rwa [u1]) reg hr' hch (by rwa [u2]) σb hσb
+      (by rwa [u1])
   · rw [k0] at h1
     obtain ⟨u1, u2, -⟩ := bp h1
-    obtain ⟨ct, ct', hT, a1, a2, a3, h3, h4, hv, hm⟩ := t₂ h1 (by rw [u1]; exact hr)
-      (by rw [flag₁]; exact hz)
+    obtain ⟨ct, ct', hT, a1, a2, a3, h3, h4, hv, hm⟩ := t₂ h1 (by rwa [u1])
+      (by rwa [flag₁])
     exact ⟨ct, ct', hT, by rw [a1, u1]; rfl, by rw [a2, u2], a3, h3, h4, hv, hm⟩
   · obtain ⟨a, b, d⟩ := v5' h5
     obtain ⟨u1, -, -⟩ := bp a
-    exact ⟨by rw [k0]; exact a, by rw [u1] at b; exact b, by rw [← flag₁]; exact d⟩
+    exact ⟨by rwa [k0], by rwa [u1] at b, by rwa [← flag₁]⟩
   · obtain ⟨a, -, -⟩ := v5' h5
     obtain ⟨u1, u2, -⟩ := bp a
-    have := s6 h5 (by rw [j40, j41]; exact hj)
-    rw [j40, j41, u1, u2] at this
-    exact this
+    have := s6 h5 (by rwa [j40, j41])
+    rwa [j40, j41, u1, u2] at this
   · -- `EndOK`
-    refine ⟨by rw [k0]; exact hb0, v5, v6, fun h1 h5 => ?_⟩
+    refine ⟨by rwa [k0], v5, v6, fun h1 h5 => ?_⟩
     obtain ⟨a, hr, hz⟩ := v5' h5
     obtain ⟨u1, u2, -⟩ := bp a
     have hc := hcand₁ a hr 0 (by omega)
@@ -178,7 +177,7 @@ theorem endFull_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       exact posG_of_vlo hE hI₁ hc.1 hc.2.1 (Or.inr (by
         rw [hI₁.hin _ (by unfold FFix; omega)]; exact hr.1))
     · rw [h3, h4]
-      exact posG_of_vlo hE hI₁ hfe hfp (by rw [hI₁.hin _ (by unfold FFix; omega)]; exact b12)
+      exact posG_of_vlo hE hI₁ hfe hfp (by rwa [hI₁.hin _ (by unfold FFix; omega)])
 
 end
 

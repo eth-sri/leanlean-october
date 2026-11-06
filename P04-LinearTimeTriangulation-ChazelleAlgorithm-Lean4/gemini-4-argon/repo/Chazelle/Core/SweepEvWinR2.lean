@@ -36,7 +36,7 @@ theorem win_tab (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
   have eB : c.nreg TBR = c₀.nreg TBR := hI.hin _ (by unfold IFix TBR sw; omega)
   have eL : c.nreg TLR = c₀.nreg TLR := hI.hin _ (by unfold IFix TLR sw; omega)
   have h := E.hTBR
-  refine ⟨fun j hj => ?_, by rw [eL]; exact E.hbig₁, by rw [eB, eL]; exact h, eL⟩
+  refine ⟨fun j hj => ?_, by rw [eL]; exact E.hbig₁, by rwa [eB, eL], eL⟩
   rw [eL] at hj
   rw [eB, hI.hm _ (by omega)]
   exact E.htab j hj
@@ -52,7 +52,7 @@ theorem chain_vtx_abs_snd_lt (C : Chain) {p : ℕ} (h6 : 6 ≤ p) (hp : p < (cha
 /-- The key position in the walk of `C₁` is a vertex only on the tour. -/
 theorem key6 (hP : J.P.Simple) {e h : ℕ} (hpw : PosW P J e h) (hL : (Lst J : ℝ) ≤ offK P J e h)
     (h0 : h = 0) : 6 ≤ ke₁ J e := by
-  obtain ⟨-, -, -, -, -, -, -, hpt⟩ := key_map hP hpw hL
+  obtain ⟨-, -, -, -, -, hpt⟩ := key_map hP hpw hL
   have h6 := hpw.2.2 h0
   have hv := hpt 0
   rw [Chazelle.Chain.sidePt_zero, Chazelle.Chain.sidePt_zero] at hv
@@ -120,11 +120,11 @@ theorem locS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
       by unfold kH sw; norm_num, by unfold kH sw; norm_num⟩
     ⟨by unfold wO sw; norm_num, by unfold wO sw; norm_num⟩ hmd hmwf hP₁ hNA E.hNF₁
     he hpp htab hbig (by omega) (by omega) (by omega) (by omega)
-    (by rw [eL]; exact hroom)).mono (by rw [eL]) ?_
+    (by rwa [eL])).mono (by rw [eL]) ?_
   rintro c' ⟨h1, h2, h3, h4, h5, h6⟩
   refine ⟨h1, h2, h3, fun r hr hro => ?_, h6⟩
   by_cases hra : r = ALLOC
-  · rw [hra]; exact h5
+  · rwa [hra]
   · exact h4 r hr hro hra
 
 
@@ -173,7 +173,7 @@ theorem cmpS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hf.1 _ (by unfold BcO Bprim ALLOC wC sw; simp)
   refine ⟨b1, b2, fun r hr h1 h2 => ?_, hf.2.2.1, hA⟩
   by_cases hra : r = ALLOC
-  · rw [hra]; exact hA
+  · rwa [hra]
   · exact k r hr h1 h2 hra
 
 
@@ -251,8 +251,8 @@ theorem eqS_irs {M : Model} {Q : Polygon} {N : NF} (hI : IInv W c₀ c) (hK₀ :
   have e3 : c₄.nreg (sw 3) = c.nreg (sw 3) := by
     rw [o4 _ (by rne), o3 _ (by rne), o2 _ (by rne), o1 _ (by rne)]
   have hs := OracleQ.succP_lt ho
-  refine (arcS_irs hI₄ (hK₀.fix hI₄) hNF (by rw [hm4, e3]; exact hNA) (by rw [e3]; exact hB1)
-    (by rw [hm4, e3]; exact hB2) (by rw [hm4, e3]; exact hB3) (by rw [v4]; exact hs)).mono
+  refine (arcS_irs hI₄ (hK₀.fix hI₄) hNF (by rwa [hm4, e3]) (by rwa [e3])
+    (by rwa [hm4, e3]) (by rwa [hm4, e3]) (by rwa [v4])).mono
     le_rfl ?_
   rintro c' ⟨a1, a2, a3, a4, a5, a6⟩
   have eo : c'.nreg wO = OracleQ.succP N.arcs.length (c.nreg wO) := by
@@ -324,7 +324,7 @@ theorem gatherS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   have sB : IScr wGB := iscr_sw' (by norm_num) (by norm_num)
   have sK : IScr wGK := iscr_sw' (by norm_num) (by norm_num)
   have hAW : c.nreg ALLOC ≤ W := hI.hw.1 _
-  set R := c.nreg wR with hRd
+  set R := c.nreg wR
   unfold gatherS
   refine IRS.seq (K₂ := gatherK N₁ [R] + 9) (win_irs_copy hI sL) ?_ |>.mono (by omega) (fun _ h => h)
   rintro c₁ hI₁ - - ⟨v1, o1, m1⟩
@@ -352,7 +352,7 @@ theorem gatherS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   have hP₁ : J.left.P.Simple := E.hP
   refine IRS.seq (K₂ := 2) (gather_irs (dsc := CD₁) (rs := [R]) hI₄ E.hK (E.ctx1' hI₄)
     ⟨by unfold CD₁ sw; norm_num, by unfold CD₁ sw; norm_num, by unfold GSet CD₁ sw; omega⟩
-    hP₁ E.hNF₁ hNW n4 hI₄.hA (fun r hr => by rw [List.mem_singleton.1 hr]; exact hR)
+    hP₁ E.hNF₁ hNW n4 hI₄.hA (fun r hr => by rwa [List.mem_singleton.1 hr])
     (fun j hj => by
       simp only [List.length_singleton] at hj
       have : j = 0 := by omega

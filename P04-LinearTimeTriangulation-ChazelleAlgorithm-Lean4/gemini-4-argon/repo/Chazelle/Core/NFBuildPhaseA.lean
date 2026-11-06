@@ -98,10 +98,9 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       ∃ E, seg c'.nmem (c'.nreg 30005) (2 * L.length) = E ∧
         E.Perm (List.range (2 * L.length)) ∧ E.Pairwise (codeLe M (Qof P) L) := by
   set A₀ := c.nreg ALLOC with hA₀
-  set K := L.length with hKdef
+  set K := L.length
   have hA : c.nreg 9999 = A₀ := rfl
   have hWn' : P.n + 3 ≤ W := by unfold hostWords at hWn; omega
-  have hsc := SortR.sortCost_room 11010 (2 * K)
   have hroom' : A₀ + 32 * K + 22 + SortR.sortCost 11010 (2 * K) ≤ W := by
     unfold costA at hroom; omega
   -- setup
@@ -167,7 +166,7 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     SortR.sortStmt_exec (P := P) (W := W) hcmp (by decide)
       (fun a b d h1 h2 => evLeB_trans M (Qof P) L _ a b d h1 h2)
       (fun a b => evLeB_total M (Qof P) L _ a b) w₃ hJ₃ hJs (List.range (2 * K))
-      (by rw [List.length_range, v30003]; exact hlist) (by rw [List.length_range, v30004])
+      (by rwa [List.length_range, v30003]) (by rw [List.length_range, v30004])
       (by rw [List.length_range, show ALLOC = 9999 from rfl, hA₃, v30003]; omega)
       (by rw [List.length_range, show ALLOC = 9999 from rfl, hA₃]; omega)
   rw [List.length_range] at hk₄ e₄' hE
@@ -175,9 +174,9 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have X : Exec P W phaseA c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq x₁ (.seq x₂ (.seq x₃ x₄))
   obtain ⟨F1, F2, F3, F4, F5, F6, F7⟩ := F₄
   have hA₄ : A₀ + 10 * K ≤ c₄.nreg 9999 := by
-    rw [show ALLOC = 9999 from rfl, hA₃] at F6; exact F6
+    rwa [show ALLOC = 9999 from rfl, hA₃] at F6
   have hA₄' : c₄.nreg 9999 ≤ A₀ + 10 * K + k₄ := by
-    rw [show ALLOC = 9999 from rfl, hA₃] at F7; exact F7
+    rwa [show ALLOC = 9999 from rfl, hA₃] at F7
   rw [show ALLOC = 9999 from rfl, hA₃] at F3 F4
   refine ⟨c₄, _, X, by unfold costA; omega, x₄.wb_right, ⟨fun r hr hra => ?_, fun r hr => ?_,
     fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩, j1, j2, j3, ?_, ?_, ?_, ?_,

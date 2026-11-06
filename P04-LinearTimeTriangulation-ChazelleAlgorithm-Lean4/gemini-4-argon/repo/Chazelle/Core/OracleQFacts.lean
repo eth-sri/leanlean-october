@@ -28,7 +28,7 @@ theorem QAt.topOK (h : QAt P m O E V H C N B k) (hG : GoodEnv P) (hv : QVOK P C 
   have hQn : (Qof P).n = P.n := shear_n _ _
   obtain ⟨-, -, -, -, hd3, -⟩ := h.desc
   have hn : 0 < P.n := by
-    have := C.n_pos; rw [h.CQ, hQn] at this; exact this
+    have := C.n_pos; rwa [h.CQ, hQn] at this
   refine ⟨hv, ?_, by rw [h.tv]; exact Nat.mod_lt _ hn, distinctHeights_of_goodEnv hG⟩
   rw [h.tv, ← h.dt, hd3]
   unfold Chain.top
@@ -51,7 +51,7 @@ theorem rest_answer {B : BookData} (X : MainCtx P C V N B m) {z : Point} (hs : S
   rcases tr with ⟨hab, h0⟩ | ⟨hab, t, hpart, hf, hdg, h1, h2⟩ |
       ⟨hab, t, hpart, hnd, bD, hD, hbD, pk, hloc, hbest, hb, o5, o6⟩
   · refine ⟨fun h => by rw [h0] at h; omega, fun _ => noHit_of_above C ?_ _⟩
-    rw [hs.zy, ← hT.top]; exact hab
+    rwa [hs.zy, ← hT.top]
   · exact deg_answer X.ch hs hpart hf hdg h1 h2
   · obtain ⟨q1, q2⟩ := main_answer X hs hab hpart hnd hD hbD hloc hbest
     obtain ⟨hb1, hb2⟩ := hb

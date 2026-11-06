@@ -62,7 +62,7 @@ theorem arrival_of_freeC (C : Chain) (hPC : C.P.Simple) {z : Point} {σ : ℝ}
   refine ⟨p, t, hp, ht0, ht1, hpt', ?_⟩
   rw [neg_neg]
   have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ T) := by
-    rw [hpt']; exact hl'
+    rwa [hpt']
   have := (Sweep.sideLeft_rayPt_iff _ p t σ hT one_pos).1 h1
   rwa [hpt'] at this
 
@@ -121,7 +121,7 @@ theorem flagS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hP : J.P.Simple)
   refine (callArr_irs hI hctx ⟨by unfold sw; norm_num, by unfold sw; norm_num, by unfold zE sw; norm_num,
     by unfold zE sw; norm_num, by unfold qH sw; norm_num, by unfold qH sw; norm_num,
     by unfold qD sw; norm_num, by unfold qD sw; norm_num⟩ ⟨by unfold zF sw; norm_num,
-    by unfold zF sw; norm_num⟩ he hpp (by rw [hz]; exact hzR) hroom).mono le_rfl ?_
+    by unfold zF sw; norm_num⟩ he hpp (by rwa [hz]) hroom).mono le_rfl ?_
   rintro c' ⟨⟨hf1, hf2, hf3⟩, hfr, hA, hm⟩
   rw [hz] at hf2 hf3
   have e1 : zF + 1 = zP := rfl
@@ -223,8 +223,8 @@ theorem recS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) (h
   refine (IRS.seq (K₂ := 17) (callArr_irs hI₂ hctx₂ ⟨by unfold sw; norm_num, by unfold sw; norm_num,
     by unfold yE sw; norm_num, by unfold yE sw; norm_num, by unfold yH sw; norm_num,
     by unfold yH sw; norm_num, by unfold rho sw; norm_num, by unfold rho sw; norm_num⟩
-    ⟨by unfold wF sw; norm_num, by unfold wF sw; norm_num⟩ (by rw [y2]; exact he)
-    (by rw [y2, h2']; exact hpp) hwR (by rw [hA2]; unfold recK at hroom; omega)) ?_).mono le_rfl
+    ⟨by unfold wF sw; norm_num, by unfold wF sw; norm_num⟩ (by rwa [y2])
+    (by rwa [y2, h2']) hwR (by rw [hA2]; unfold recK at hroom; omega)) ?_).mono le_rfl
     (fun _ h => h)
   rintro c₃ hI₃ hA₃ hA₃' ⟨⟨hf1, hf2, hf3⟩, fr3, hA3, hm3⟩
   rw [y2, h2', hw, r2] at hf2 hf3
@@ -247,7 +247,6 @@ theorem recS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) (h
   have q3 : c₃.nreg qD = c.nreg qD := k3 _ (not_oracle_sw (by unfold qD sw; norm_num)
     (by unfold qD sw; norm_num)) (by unfold qD rho sw; omega) (by unfold qD wF sw; omega)
     (by unfold qD wP sw; omega) (by unfold qD wPh sw; omega) (by unfold qD ALLOC sw; omega)
-  have kk3 : c₃.nreg K1 = 1 := (hK.fix hI₃).2.1
   -- the default order, then the swap for `σ = 1`
   refine (IRS.seq (K₂ := 15) (IRS.block [.copyN rL wP, .copyN rR zP] hI₃
     ⟨hsr _ (by unfold rL sw; norm_num) (by unfold rL sw; norm_num),
@@ -281,13 +280,11 @@ theorem recS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) (h
         r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) := by
     intro c' hl hr hwp hk hm hA
-    refine ⟨by rw [hl, hr, hwp]; exact hRD, fun r h0 h1 h2 h3 h4 h5 h6 h7 => ?_, ?_, fun a ha => ?_⟩
+    refine ⟨by rwa [hl, hr, hwp], fun r h0 h1 h2 h3 h4 h5 h6 h7 => ?_, ?_, fun a ha => ?_⟩
     · rw [hk r h5 h6, k4 r h5 h6]; exact k3 r h0 h1 h2 h3 h4 h7
     · rw [hA, k4 _ (by unfold rL ALLOC sw; omega) (by unfold rR ALLOC sw; omega)]
-      rw [← hA2]; exact hA3
+      rwa [← hA2]
     · rw [hm, hm4, hm3 a (by omega), hm2, hm1]
-  have hA4 : c₄.nreg ALLOC = c₃.nreg ALLOC := k4 _ (by unfold rL ALLOC sw; omega)
-    (by unfold rR ALLOC sw; omega)
   unfold eqT
   by_cases h1 : c₄.nreg qD < c₄.nreg K1
   · refine (IRS.ifT h1 (IRS.skip (K := 0) hI₄ ?_)).mono (by norm_num) (fun _ h => h)

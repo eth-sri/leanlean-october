@@ -29,23 +29,22 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
     Corr0 (chainModel J.whole) (chainModel J.left) (F₁plus J S₁) S₁
       (6 + tpos J.whole (J.m₁ + 2 * J.m₂)) (6 + tpos J.left J.m₁) (lL1 J) (lL2 J) (lδ J) := by
   unfold lL1 lL2 lδ
-  set C := J.whole with hC
-  set C₁ := J.left with hC₁
-  set W := (chainModel C).W with hW
+  set C := J.whole
+  set C₁ := J.left
+  set W := (chainModel C).W
   set W₁ := (chainModel C₁).W with hW₁
   have hn : W.n = 2 * C.m + 7 := cm_n C
   have hn₁ : W₁.n = 2 * C₁.m + 7 := cm_n C₁
   have hwm : C.m = J.m₁ + J.m₂ := rfl
   have hm1 : C₁.m = J.m₁ := rfl
-  have h1 := J.one_le_m₁
   have h2 := J.one_le_m₂
-  set τ := tpos C (J.m₁ + 2 * J.m₂) with hτ_def
+  set τ := tpos C (J.m₁ + 2 * J.m₂)
   set τ' := tpos C₁ J.m₁ with hτ'_def
   have hτ : τ < 2 * C.m := tpos_lt C _
   have hτ' : τ' < 2 * C₁.m := tpos_lt C₁ _
-  set ℓ := 2 * J.m₁ with hℓ_def
-  set s := 2 * C.m - τ with hs_def
-  set s' := 2 * C₁.m - τ' with hs'_def
+  set ℓ := 2 * J.m₁
+  set s := 2 * C.m - τ
+  set s' := 2 * C₁.m - τ'
   have hT : ∀ e, e ≤ ℓ → tourV C (J.m₁ + 2 * J.m₂) e = tourV C₁ J.m₁ e :=
     fun e he => tourV_left J he
   have hM := walkAx_chainModel (C := C) hP
@@ -55,8 +54,7 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
   have hg' : 6 + τ' < W₁.n := by rw [hn₁]; omega
   have hv0 : W₁.vtx (6 + τ') = J.shared := by
     have := walk_tour C₁ J.m₁ 0 (by omega)
-    rw [add_zero, Nat.mod_eq_of_lt hg', tourV_left_zero] at this
-    exact this
+    rwa [add_zero, Nat.mod_eq_of_lt hg', tourV_left_zero] at this
   have hnoV : ∀ L : ℝ, (τ' = 0 → L ≤ 2 * C₁.m) → ∀ p < W₁.n, ∀ t : ℝ, 0 ≤ t → t < 1 →
       0 < off W₁.n ((6 + τ' : ℕ) : ℝ) (p + t) → off W₁.n ((6 + τ' : ℕ) : ℝ) (p + t) < L →
       sidePt W₁ p t ≠ W₁.vtx (6 + τ') := by
@@ -107,7 +105,6 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
   push Not at hsl'
   have hA1 := agree_G1 hT hsl hsl'
   have hA2 := agree_G2 hT hℓ' hsl hsl'
-  have hs'1 : 1 ≤ s' := by omega
   rw [ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ s < ℓ by omega),
     ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega),
     ite_eq_right (show ¬ ℓ ≤ s' by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega)]

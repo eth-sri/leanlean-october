@@ -73,8 +73,8 @@ theorem gKey_ok : KeyOK gKey 11010 := by
     obtain ⟨hI', hrf, h8⟩ := hI.prim ex.wb_right hf
     refine ⟨c', k + 1, .ifLtN_true (by rw [h21, h23, h0]; omega) ex, by omega, ?_, ?_,
       hI', hrf.mono subset_rfl (by omega), h8⟩
-    · rw [hM']; exact b1
-    · rw [hM']; exact b2
+    · rwa [hM']
+    · rwa [hM']
   · -- the interior model
     subst hMi
     have hn := interior_n (P := P)

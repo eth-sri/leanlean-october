@@ -32,9 +32,7 @@ theorem edge_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp
   have hn₁ : (chainModel J.left).W.n = 2 * J.left.m + 7 := cm_n J.left
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   have hm1 : J.left.m = J.m₁ := rfl
-  have h1 := J.one_le_m₁
   have hτ₁ := tpos_lt J.left J.m₁
-  have hτw := tpos_lt J.whole J.m₁
   obtain ⟨hdE, hgap, hsplit, -⟩ := hv
   have ht0 : t ≠ 0 := htp.ne'
   have viaGen : ∀ d' : ℕ, d' < lL1 J + lL2 J →

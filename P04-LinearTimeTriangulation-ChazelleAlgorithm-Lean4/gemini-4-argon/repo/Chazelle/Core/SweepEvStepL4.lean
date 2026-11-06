@@ -49,14 +49,14 @@ theorem stp_addLs_all {U : Finset ℕ} (hc : U.card ≤ 4) :
     obtain ⟨h1, h2, h3, h4, h5⟩ := ih l hnd hl hU (fun x hx => hV x (List.mem_append_left _ hx))
     rw [addLs_append']
     have hvU : v ∈ U := hV v (List.mem_append_right _ (List.mem_singleton_self v))
-    set l' := addLs l vs with hl'
+    set l' := addLs l vs
     have hsame : addLs l' [v] = addL l' v := rfl
     rw [hsame]
     refine ⟨addL_nodup h1 v, addL_length_le h2 v, fun x hx => ?_, fun x hx => mem_addL_of_mem (h4 x hx),
       fun x hx => ?_⟩
     · rcases mem_addL hx with h | h
       · exact h3 x h
-      · rw [h]; exact hvU
+      · rwa [h]
     · rcases List.mem_append.1 hx with h | h
       · exact mem_addL_of_mem (h5 x h)
       · rw [List.mem_singleton] at h

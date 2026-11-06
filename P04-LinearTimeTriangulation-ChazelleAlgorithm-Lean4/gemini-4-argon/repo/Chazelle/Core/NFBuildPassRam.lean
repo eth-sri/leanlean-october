@@ -164,7 +164,7 @@ theorem curS_exec (d : Config) (hw : WordsBounded W d) {c T : ℕ} (hc : d.nmem 
       (∀ r, r ≠ 43111 → r ≠ 43113 → r ≠ 43114 → d₂.nreg r = d₁.nreg r) := by
     exec_block
     · rw [a₁, o₁]; omega
-    · config_simp; rw [a₁, o₁, o₁', mm₁]; exact hxW
+    · config_simp; rwa [a₁, o₁, o₁', mm₁]
     · refine ⟨rfl, ?_, ?_, fun r r1 r2 r3 => ?_⟩ <;> config_simp
       · rw [a₁, o₁, mm₁]
       · rw [a₁, o₁, o₁', mm₁]
@@ -232,7 +232,7 @@ theorem chordS_exec (d : Config) (hw : WordsBounded W d) {x B CT : ℕ} (hx : d.
     | (config_simp; simp (config := { failIfUnchanged := false }) only [hx, hB, hCT, h1]; omega)
     | skip
   by_cases hp : d.nreg 42112 < 1
-  · refine spec_ifLtN_true (by config_simp; rw [h1]; exact hp) ?_
+  · refine spec_ifLtN_true (by config_simp; rwa [h1]) ?_
     exec_block
     all_goals first
       | (config_simp; simp (config := { failIfUnchanged := false }) only [hx, hB, hCT, h1]; omega)
@@ -252,7 +252,7 @@ theorem chordS_exec (d : Config) (hw : WordsBounded W d) {x B CT : ℕ} (hx : d.
     by_cases e4 : a = CT + 5 * x + 4
     · subst e4; ifs_omega
     ifs_omega
-  · refine spec_ifLtN_false (by config_simp; rw [h1]; exact hp) ?_
+  · refine spec_ifLtN_false (by config_simp; rwa [h1]) ?_
     exec_block
     all_goals first
       | (config_simp; simp (config := { failIfUnchanged := false }) only [hx, hB, hCT, h1]; omega)
@@ -304,8 +304,8 @@ theorem stepS_exec (d : Config) (hw : WordsBounded W d) {x B CT ST : ℕ} (hx : 
     unfold pushS
     refine spec_seq ⟨d₁, k₁, x₁, ?_⟩
     exec_block
-    · rw [r₁ _ (by norm_num), r₁ _ (by norm_num), hST]; exact hSW
-    · config_simp; rw [r₁ _ (by norm_num), r₁ _ (by norm_num), h1]; exact hsW
+    · rwa [r₁ _ (by norm_num), r₁ _ (by norm_num), hST]
+    · config_simp; rwa [r₁ _ (by norm_num), r₁ _ (by norm_num), h1]
     · refine ⟨by omega, ?_, ?_⟩ <;> config_simp
       · rw [r₁ _ (by norm_num), r₁ _ (by norm_num), h1]
       · rw [r₁ _ (by norm_num), r₁ _ (by norm_num), r₁ _ (by norm_num), hST, m₁]; rfl

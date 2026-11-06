@@ -109,7 +109,7 @@ theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     obtain ⟨-, -, hy, -, -⟩ := stOrig_facts hP hN hD.ok
     have h6 : c.nreg pH2 = 0 → 6 ≤ c.nreg pE2 := fun h0 =>
       h6_of_abs J.right (Qof P) (x := ⟨c.nreg pE2, c.nreg pH2⟩) (by
-        rw [pos_eq_sidePt', hA.2.2.2.1, radius_right]; exact hy) h0
+        rwa [pos_eq_sidePt', hA.2.2.2.1, radius_right]) h0
     refine (hps c hI he hpp h6 hb (hroom h1)).mono le_rfl ?_
     rintro c' ⟨hle, hpos, hzero, hm, hA', fr⟩
     exact ⟨slfParOK_scan hP hN hD h1 hA hle hpos hzero, fr, hA', hm⟩

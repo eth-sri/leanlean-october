@@ -96,8 +96,7 @@ theorem chain_open_positions (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {t :
     have := Jordan.simple_openEdge_not_mem_other hP (C.edgeIdx_lt k') hs' (C.edgeIdx_lt k)
       (Ne.symm hlk)
     apply this
-    rw [show C.P.vtx (C.edgeIdx k') = C.vertex k' from rfl, ← e1 k', h2]
-    exact hmem
+    rwa [show C.P.vtx (C.edgeIdx k') = C.vertex k' from rfl, ← e1 k', h2]
   subst hkk
   -- the tour positions of the chain edge
   rw [C.sideIdx_eq, C.sideIdx_succ] at hcov hcov'
@@ -211,7 +210,7 @@ theorem avoid_of_cover {M : Model} {Q : Polygon} {hs : List (WPos × WPos)} {z :
     obtain ⟨g, hg, hin⟩ := hc _ 0 (Nat.mod_lt _ hn) le_rfl one_pos hz'
     refine ⟨g, hg, ?_⟩
     rcases Nat.lt_or_ge (p + 1) M.W.n with h | h
-    · rw [Nat.mod_eq_of_lt h] at hin; push_cast at hin ⊢; rw [add_zero] at hin; exact hin
+    · rw [Nat.mod_eq_of_lt h] at hin; push_cast at hin ⊢; rwa [add_zero] at hin
     · rw [show p + 1 = M.W.n by omega, Nat.mod_self] at hin
       obtain ⟨g1, g1e⟩ := hv g hg
       have hk : M.key Q g.1 = g.1.edge := by

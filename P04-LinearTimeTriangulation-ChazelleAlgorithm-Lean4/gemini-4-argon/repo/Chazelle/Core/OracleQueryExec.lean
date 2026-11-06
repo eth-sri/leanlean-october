@@ -62,7 +62,7 @@ theorem qry_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
       FrameB BQ c c' ∧
       Answer P C (o.eval (Qof P) C (dirOf (c.nreg 120004))) (dirOf (c.nreg 120004))
         (c'.nreg 120005) (c'.nreg 120006) := by
-  set V' := qV V P o (c.nreg 120004) with hV'
+  set V' := qV V P o (c.nreg 120004)
   have hA' : QAt P m O E V' H C N B k := hA.withQ o _
   have hv := hA.qvok hol (c.nreg 120004)
   have hT := hA'.topOK hG hv
@@ -74,14 +74,14 @@ theorem qry_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
     (by rw [m₁]; exact hA'.qmem hEW) (by rw [m₁]; exact hA'.ordOK hEW)
     (by rw [m₁]; exact hA'.chordMem hEW) (by rw [m₁]; exact hA'.chordTab hEW)
     (by rw [m₁]; exact hA'.locMem hEW hHW) hDL hT.tv_lt (NC := NC) (CS := CS)
-    (by rw [m₁]; exact hNC) (by rw [m₁]; exact hCS)
+    (by rwa [m₁]) (by rwa [m₁])
     (by rw [m₁]; exact chPr_mono (hA'.chordRec hT))
     (by
       rw [m₁]
       intro t hpart hnd bD hD hbD kk hkk
       obtain ⟨X, hX⟩ := sel_facts (hA'.chordRec hT) hs hA.simple hpart hnd hD hbD
       obtain ⟨h1, h2⟩ := hX.stop.1 kk hkk
-      exact ⟨by rw [walk_n]; exact h1, h2⟩)
+      exact ⟨by rwa [walk_n], h2⟩)
   rw [m₁] at hk₂ tr
   have hk₂' : k₂ ≤ 715 * V.L + 700 + dstarCost m V' + 4 * candCost V' NC CS + 500 := hk₂
   refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, ?_⟩

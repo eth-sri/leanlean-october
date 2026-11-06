@@ -45,7 +45,7 @@ theorem centroid_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f
   classical
   obtain ⟨g, hg, rfl | rfl⟩ := (C.mem_coDarts_iff hM).mp hd
   · -- `g` is a child of `f`
-    have hpar : C.parent g = f := by rw [C.parent_of_ne hg]; exact hdf
+    have hpar : C.parent g = f := by rwa [C.parent_of_ne hg]
     have hng := hch g hg hpar
     unfold Good cnt at hng
     push Not at hng
@@ -64,10 +64,6 @@ theorem centroid_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f
         P.filter (fun v => ¬ C.IsDesc (M.face (δ v)) g) := by
       ext v; simp only [Finset.mem_filter, C.cross_opp_fpar hM hg]
     rw [this]
-    have e : (P.filter (fun v => C.IsDesc (M.face (δ v)) g)).card =
-        (haveI := Classical.decPred (fun v => C.IsDesc (M.face (δ v)) g);
-          (P.filter (fun v => C.IsDesc (M.face (δ v)) g)).card) := by
-      congr 1
     omega
 
 /-- The class of the dart `x t` of the face `f`: the vertices of `P` off `sepSet f` whose face lies

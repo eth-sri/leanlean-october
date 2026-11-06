@@ -94,13 +94,12 @@ theorem cutStore_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
 theorem cutK0_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {p : ℕ}
     (h00 : c.nreg 140000 = p) (h03 : c.nreg 140003 = 1) (h06 : c.nreg 140006 = 0)
     (hp : p + 2 ≤ W) :
-    ∃ c' k, Exec P W cutK0 c c' k ∧ k = 4 ∧ c'.nreg 140000 = p + 2 ∧ c'.nmem p = 0 ∧
-      c'.nmem (p + 1) = 0 ∧ (∀ a, a < p → c'.nmem a = c.nmem a) ∧
+    ∃ c' k, Exec P W cutK0 c c' k ∧ k = 4 ∧ c'.nreg 140000 = p + 2 ∧ (∀ a, a < p → c'.nmem a = c.nmem a) ∧
       (∀ x, x ≠ 140000 → c'.nreg x = c.nreg x) := by
   unfold cutK0
   exec_block
   all_goals first | (config_simp; rw [h00, h03]; omega) | skip
-  refine ⟨rfl, ?_, ?_, ?_, fun a ha => ?_, fun x hx => ?_⟩
+  refine ⟨rfl, ?_, fun a ha => ?_, fun x hx => ?_⟩
   all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h00, h03, h06]
   all_goals first | (split_ifs <;> first | rfl | omega) | skip
 
@@ -146,11 +145,11 @@ theorem recOK_append {m₀ mem mem' : ℕ → ℕ} {L : ℕ} {ps : List Pc} {pc 
   rcases (show i < ps.length ∨ i = ps.length by omega) with hlt | rfl
   · rw [List.getElem_append_left hlt]
     obtain ⟨a0, a1, a2, a3, a4, a56⟩ := hold i hlt
-    refine ⟨by rw [hsame _ (by omega)]; exact a0, by rw [hsame _ (by omega)]; exact a1,
-      by rw [hsame _ (by omega)]; exact a2, by rw [hsame _ (by omega)]; exact a3,
-      by rw [hsame _ (by omega)]; exact a4, fun hk => ?_⟩
+    refine ⟨by rwa [hsame _ (by omega)], by rwa [hsame _ (by omega)],
+      by rwa [hsame _ (by omega)], by rwa [hsame _ (by omega)],
+      by rwa [hsame _ (by omega)], fun hk => ?_⟩
     obtain ⟨b5, b6⟩ := a56 hk
-    exact ⟨by rw [hsame _ (by omega)]; exact b5, by rw [hsame _ (by omega)]; exact b6⟩
+    exact ⟨by rwa [hsame _ (by omega)], by rwa [hsame _ (by omega)]⟩
   · rw [List.getElem_append_right (le_refl _)]
     simp only [Nat.sub_self, List.getElem_cons_zero]
     exact ⟨h0, h1, h2, h3, h4, h56⟩
@@ -174,7 +173,7 @@ theorem cutEmit_ok (S : SEnv O P C H Hh h γ m₀ A₀ W) (Nmax : ℕ) :
       rw [hmin] at hp hc
       have htake : ps.take Nmax = ps := List.take_of_length_le hlt.le
       rw [htake] at hrec
-      set p := A₀ + 1 + 7 * ps.length with hpdef
+      set p := A₀ + 1 + 7 * ps.length
       have t₀ : c.nreg 140000 < c.nreg 140007 := by rw [hp, hL]; omega
       obtain ⟨c₁, k₁, e₁, hk₁, q00, q0, q1, q2, q3, q4, qm, qr⟩ := cutStore_exec (P := P) c hw hp h1
         (by omega)
@@ -189,7 +188,7 @@ theorem cutEmit_ok (S : SEnv O P C H Hh h γ m₀ A₀ W) (Nmax : ℕ) :
         rcases hkind with hk0 | hk1
         · have t : c₁.nreg 150054 < c₁.nreg 140003 := by
             rw [qr _ (by omega), r54, hk0, b03]; omega
-          obtain ⟨c₂, k₂, e₂, hk₂, a0, -, -, am, ar⟩ := cutK0_exec (P := P) c₁ w₁ q00 b03
+          obtain ⟨c₂, k₂, e₂, hk₂, a0, am, ar⟩ := cutK0_exec (P := P) c₁ w₁ q00 b03
             (by rw [qr _ (by omega), h0]) (by omega)
           exact ⟨c₂, _, .ifLtN_true t e₂, by omega, by rw [a0],
             fun h => absurd (hk0.symm.trans h) (by decide), trivial, am, fun x h1 _ _ => ar x h1⟩
@@ -218,11 +217,11 @@ theorem cutEmit_ok (S : SEnv O P C H Hh h γ m₀ A₀ W) (Nmax : ℕ) :
       refine ⟨c₃, _, .ifLtN_true t₀ (.seq e₁ (.seq e₂ e₃)), by omega, ⟨?_, ?_, ?_, ?_, ?_, hLW,
         fun a ha => by rw [mem3 a (by omega)]; exact hm a ha, ?_, ?_, ?_⟩, fun r hr => ?_,
         fun a ha => mem3 a (by omega)⟩
-      · rw [g₃ _ (by decide) (by decide) (by decide) (by decide)]; exact hA
-      · rw [g₃ _ (by omega) (by omega) (by omega) (by omega)]; exact hB
-      · rw [g₃ _ (by omega) (by omega) (by omega) (by omega)]; exact h1
-      · rw [g₃ _ (by omega) (by omega) (by omega) (by omega)]; exact h0
-      · rw [g₃ _ (by omega) (by omega) (by omega) (by omega)]; exact hL
+      · rwa [g₃ _ (by decide) (by decide) (by decide) (by decide)]
+      · rwa [g₃ _ (by omega) (by omega) (by omega) (by omega)]
+      · rwa [g₃ _ (by omega) (by omega) (by omega) (by omega)]
+      · rwa [g₃ _ (by omega) (by omega) (by omega) (by omega)]
+      · rwa [g₃ _ (by omega) (by omega) (by omega) (by omega)]
       · simp only [hc₃, upd]
         rw [ite_eq_right (by omega), q20, List.length_append, List.length_singleton,
           min_eq_left (by omega)]
@@ -246,7 +245,7 @@ theorem cutEmit_ok (S : SEnv O P C H Hh h γ m₀ A₀ W) (Nmax : ℕ) :
         fun _ _ => rfl, fun _ _ => rfl⟩
       · rw [hp, List.length_append, List.length_singleton, min_eq_right (by omega)]
       · rw [hc, List.length_append, List.length_singleton, min_eq_right (by omega)]
-      · rw [List.take_append_of_le_length (by omega)]; exact hrec
+      · rwa [List.take_append_of_le_length (by omega)]
 
 end
 

@@ -98,10 +98,10 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
       c2 = { c1 with nreg := upd c1.nreg 220003 (decide (σ < 0)).toNat } := by
     unfold revS
     by_cases hneg : σ < 0
-    · refine spec_ifLtR_true (by rw [r1, r0]; exact hneg)
+    · refine spec_ifLtR_true (by rwa [r1, r0])
         (spec_instr (Exec.constN hw1 220003 1 (by omega)) fun _ => ?_)
       exact ⟨by omega, by simp [hneg]⟩
-    · refine spec_ifLtR_false (by rw [r1, r0]; exact hneg)
+    · refine spec_ifLtR_false (by rwa [r1, r0])
         (spec_instr (Exec.constN hw1 220003 0 (by omega)) fun _ => ?_)
       exact ⟨by omega, by simp [hneg]⟩
   obtain ⟨c2, k2, e2, hk2, rfl⟩ := hrev
@@ -185,8 +185,8 @@ theorem outputSpecH : OutputSpecH := by
   rw [hAL] at hroom hRob
   rw [hc3] at hRob
   simp only at hroom
-  set B := c.nreg 230003 with hBdef
-  set T0 := c.nreg 9999 with hT0def
+  set B := c.nreg 230003
+  set T0 := c.nreg 9999
   have hRd := nfReads_of_robust hRob
   have hB2 := hRd.nr
   -- stage 1: the orientation
@@ -232,7 +232,7 @@ theorem outputSpecH : OutputSpecH := by
       intro i hi
       rw [List.length_map, List.length_range] at hi
       rw [getD_trapTable hi, hQn]
-      obtain ⟨t1, t2, t3, t4⟩ := hrecs3 i (by rw [h10]; exact hi)
+      obtain ⟨t1, t2, t3, t4⟩ := hrecs3 i (by rwa [h10])
       exact ⟨t1, t2, t3, t4⟩
     · show c3.nreg 9993 = _
       rw [hfr3 _ (by unfold regFree; omega), v9993]; rfl
@@ -295,12 +295,12 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
   have ha0 : initConfig.nreg ALLOC = 0 := rfl
   obtain ⟨c₁, k₁, e₁, hk₁, hq₁, hf₁⟩ := hS P W initConfig hw0 ⟨hge, hn3⟩
     (show initConfig.nreg ALLOC + κS * (P.n + 1) ≤ W by rw [ha0, ← hbS]; omega)
-  replace hk₁ : k₁ ≤ bS := by rw [hbS]; exact hk₁
+  replace hk₁ : k₁ ≤ bS := by rwa [hbS]
   have ha₁ : c₁.nreg ALLOC ≤ k₁ := by have := hf₁.2.2.2.2.2.2; rw [ha0] at this; omega
   obtain ⟨c₂, k₂, e₂, hk₂, ⟨hkeep₂, hX₂, hcap₂, C, N, hC₂, hN₂, hcan₂⟩, hf₂⟩ :=
     hU P W c₁ e₁.wb_right ⟨hge, hn3, hq₁⟩
       (show c₁.nreg ALLOC + κU * (P.n + 1) ≤ W by rw [← hbU]; omega)
-  replace hk₂ : k₂ ≤ bU := by rw [hbU]; exact hk₂
+  replace hk₂ : k₂ ≤ bU := by rwa [hbU]
   have ha₂ : c₂.nreg ALLOC ≤ c₁.nreg ALLOC + k₂ := hf₂.2.2.2.2.2.2
   have hset₂ : Robust (c₂.nreg ALLOC) c₂.nmem
       (fun m => SetupAt m (c₂.nreg (coreReg 0)) P.n (c₂.nreg ALLOC)) := by
@@ -312,14 +312,14 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
   obtain ⟨c₃, k₃, e₃, hk₃, ⟨N', hN₃, hnf₃, hfull₃, hh₃⟩, hf₃⟩ :=
     hD P W c₂ e₂.wb_right ⟨hge, hn3, hset₂, hX₂, hcap₂, C, N, hC₂, hN₂, hcan₂⟩
       (show c₂.nreg ALLOC + κD * (P.n + 1) ≤ W by rw [← hbD]; omega)
-  replace hk₃ : k₃ ≤ bD := by rw [hbD]; exact hk₃
+  replace hk₃ : k₃ ≤ bD := by rwa [hbD]
   have ha₃ : c₃.nreg ALLOC ≤ c₂.nreg ALLOC + k₃ := hf₃.2.2.2.2.2.2
   have hout₃ : c₃.output = [] := by
     rw [hf₃.2.2.2.2.1, hf₂.2.2.2.2.1, hf₁.2.2.2.2.1]; rfl
   obtain ⟨c₄, k₄, e₄, hk₄, hq₄, hf₄⟩ :=
     hO P W c₃ e₃.wb_right ⟨hge, hn3, hout₃, N', hN₃, hnf₃, hfull₃, hh₃⟩
       (show c₃.nreg ALLOC + κO * (P.n + 1) ≤ W by rw [← hbO]; omega)
-  replace hk₄ : k₄ ≤ bO := by rw [hbO]; exact hk₄
+  replace hk₄ : k₄ ≤ bO := by rwa [hbO]
   have ha₄ : c₄.nreg ALLOC ≤ c₃.nreg ALLOC + k₄ := hf₄.2.2.2.2.2.2
   refine ⟨c₄, k₁ + (k₂ + (k₃ + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), ?_, ?_,
     Qof P, shearRel_Qof (hgood P hP), (hsh (epsOf P) P).1 hP, hq₄⟩

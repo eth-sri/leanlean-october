@@ -96,7 +96,7 @@ theorem rdS_exec (c : Config) (hw : WordsBounded W c) {p LB K : ℕ}
     simp only [Machine.upd_other _ _ _ (show (212033 : ℕ) ≠ 212034 by norm_num)]; exact v33
   · have ex : Exec P W rdS c c₁ (k₁ + (0 + 1)) :=
       .seq e₁ (.ifLtN_true (by show c₁.nreg 212001 < c₁.nreg 212012; have := g.1; have := g.2; omega) (.skip w₁))
-    exact ⟨c₁, _, ex, by omega, by rw [ite_eq_right h0]; exact v34, v33, exec_frameB ex (by decide)⟩
+    exact ⟨c₁, _, ex, by omega, by rwa [ite_eq_right h0], v33, exec_frameB ex (by decide)⟩
 
 
 /-- A frame of band `bDownDrv` from a register frame within the band and the allocator. -/
@@ -122,10 +122,9 @@ theorem host0_exec (c : Config) (hw : WordsBounded W c) {n : ℕ} (hn : c.nreg 2
       c'.nreg ALLOC = c.nreg ALLOC + 4 ∧
       HostAt c'.nmem (c.nreg ALLOC) [HostItem.run 0 (n - 1)] ∧
       c'.nreg 212016 = n ∧ c'.nreg 212021 = 1 ∧
-      (∀ a, (a < c.nreg ALLOC ∨ c.nreg ALLOC + 4 ≤ a) → c'.nmem a = c.nmem a) ∧
       FrameM (fun r => decide (r = 212016 ∨ r = 212021 ∨ r = 212022 ∨ r = 212032 ∨
         r = 212035 ∨ r = 9999)) c c' ∧ Frame {bDownDrv} c c' k := by
-  set A := c.nreg ALLOC with hAd
+  set A := c.nreg ALLOC
   have hA' : c.nreg 9999 = A := rfl
   obtain ⟨c', k, ex, hk, v22, vA, m0, m1, m2, m3, v16, v21, hm, hrr⟩ : ∃ c' k,
       Exec P W host0 c c' k ∧ k = 15 ∧ c'.nreg 212022 = A ∧ c'.nreg 9999 = A + 4 ∧
@@ -140,7 +139,7 @@ theorem host0_exec (c : Config) (hw : WordsBounded W c) {n : ℕ} (hn : c.nreg 2
       Machine.upd_other, hA', c0, c1, hn]
   have FM : FrameM (fun r => decide (r = 212016 ∨ r = 212021 ∨ r = 212022 ∨ r = 212032 ∨
       r = 212035 ∨ r = 9999)) c c' := BuildRam.exec_frameM ex (by decide)
-  refine ⟨c', k, ex, hk, v22, vA, ⟨by rw [m0]; rfl, fun i hi => ?_⟩, v16, v21, hm, FM,
+  refine ⟨c', k, ex, hk, v22, vA, ⟨by rw [m0]; rfl, fun i hi => ?_⟩, v16, v21, FM,
     frame21 (fun r h => ?_) FM (fun a ha => hm a (Or.inl ha)) hrr (by show A ≤ c'.nreg 9999; omega)
       (by show c'.nreg 9999 ≤ A + k; omega)⟩
   · simp only [List.length_singleton] at hi
@@ -177,7 +176,7 @@ theorem resPS_exec (c : Config) (hw : WordsBounded W c) {NP : ℕ} (h16 : c.nreg
       c'.nreg ALLOC = c.nreg ALLOC + 3 * NP ∧
       FrameB (fun r => decide (r = 212015 ∨ r = 212035 ∨ r = 9999)) c c' ∧
       Frame {bDownDrv} c c' k := by
-  set A := c.nreg ALLOC with hAd
+  set A := c.nreg ALLOC
   have hA' : c.nreg 9999 = A := rfl
   obtain ⟨c₁, k₁, e₁, hk₁, v15, v35, g₁⟩ : ∃ c₁ k₁, Exec P W (block [.copyN 212015 9999,
       .constN 212035 0]) c c₁ k₁ ∧ k₁ = 2 ∧ c₁.nreg 212015 = A ∧ c₁.nreg 212035 = 0 ∧

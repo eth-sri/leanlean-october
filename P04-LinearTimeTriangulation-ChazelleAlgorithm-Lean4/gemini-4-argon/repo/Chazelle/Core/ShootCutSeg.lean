@@ -59,8 +59,6 @@ theorem wset_edge (M : Model) {p : ℕ} (hp : p < M.W.n) {s₀ s₁ : ℝ} (h0 :
     rcases int_range hn hy0 (by linarith) (by linarith [(Nat.cast_nonneg p : (0:ℝ) ≤ p)]) (by linarith) hj with rfl | rfl | rfl
     · -- `j = -1`: `X = n`, so `p = n - 1`, `s₁ = 1`, and the position is the vertex `0`
       push_cast at hj
-      have hX : X = M.W.n := by linarith
-      have hpp : (p : ℝ) = M.W.n - 1 := by linarith
       have hs1 : s₁ = 1 := by linarith
       have hp'0 : (p' : ℝ) = 0 ∧ t = 0 := by constructor <;> linarith
       have hp'0' : p' = 0 := by exact_mod_cast hp'0.1
@@ -91,7 +89,6 @@ theorem wset_edge (M : Model) {p : ℕ} (hp : p < M.W.n) {s₀ s₁ : ℝ} (h0 :
         rw [ht, lerp_zero', lerp_one', ← h, wa_succ M (by omega)]
     · -- `j = 1`: `X = 0`, so `p = 0`, `s₀ = 0`, and the position is the end of the last edge
       push_cast at hj
-      have hX : X = 0 := by linarith
       have hp0 : (p : ℝ) = 0 := by linarith [(Nat.cast_nonneg p : (0 : ℝ) ≤ p)]
       have hp0' : p = 0 := by exact_mod_cast hp0
       have hs0 : s₀ = 0 := by linarith

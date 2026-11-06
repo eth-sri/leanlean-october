@@ -52,7 +52,6 @@ theorem lv_n0 : ∃ n₀ : ℕ, ∀ n, n₀ ≤ n → 2 ^ (Cost.ceilBeta (topGra
     Nat.pow_le_pow_right (by norm_num) (by omega)
   have h2 : 200 ≤ 2 ^ (p - 2) := by
     have : (2 : ℕ) ^ 8 ≤ 2 ^ (p - 2) := Nat.pow_le_pow_right (by norm_num) (by omega)
-    have h256 : (2 : ℕ) ^ 8 = 256 := by norm_num
     omega
   have h3 : 2 ^ (p - 1) = 2 * 2 ^ (p - 2) := by
     rw [← pow_succ']; congr 1; omega
@@ -76,9 +75,7 @@ theorem lemma41Nat_ge (μ : ℕ) : (μ : ℝ) ^ 2 * E μ ^ 74 ≤ (lemma41Nat μ
   have h := Nat.le_ceil ((μ : ℝ) ^ 2 * ((Nat.clog 2 μ : ℝ) + 1) * (2 : ℝ) ^ ((74 : ℝ) / 75 * μ))
   have hE : E μ ^ 74 = (2 : ℝ) ^ ((74 : ℝ) / 75 * μ) := by
     unfold E; rw [L41.E_pow]; congr 1; push_cast; ring
-  have hc : (0 : ℝ) ≤ (Nat.clog 2 μ : ℕ) := Nat.cast_nonneg _
   have hp : (0 : ℝ) ≤ (2 : ℝ) ^ ((74 : ℝ) / 75 * μ) := by positivity
-  have hm : (0 : ℝ) ≤ (μ : ℝ) ^ 2 := by positivity
   unfold lemma41Nat
   rw [hE]
   calc (μ : ℝ) ^ 2 * (2 : ℝ) ^ ((74 : ℝ) / 75 * μ)
@@ -112,7 +109,6 @@ theorem lvNch_le_pow (μ : ℕ) : DrvR.lvNch μ ≤ 223 * 2 ^ μ := by
   have h := lvNch_mul μ
   have h1 : 3072 ≤ 3 * 2 ^ (Cost.ceilBeta μ + 10) + 1 := by
     have : (2 : ℕ) ^ 10 ≤ 2 ^ (Cost.ceilBeta μ + 10) := Nat.pow_le_pow_right (by norm_num) (by omega)
-    have h10 : (2 : ℕ) ^ 10 = 1024 := by norm_num
     omega
   have h2 : DrvR.lvNch μ * 3072 ≤ DrvR.lvNch μ * (3 * 2 ^ (Cost.ceilBeta μ + 10) + 1) :=
     Nat.mul_le_mul_left _ h1
@@ -202,7 +198,6 @@ theorem rpow_lvGr_le (μ : ℕ) :
   rw [hX]
   have hG0 : (0 : ℝ) ≤ G + 1 := by
     rw [← hGG]; have := Nat.cast_nonneg (α := ℝ) (DrvR.lvGr μ); linarith
-  have hH0 : (0 : ℝ) ≤ Hc := by rw [← hHc]; exact Nat.cast_nonneg _
   have hXR : (X : ℝ) ≤ (11000 * E μ ^ 11) ^ 3 := by
     rw [hXc]
     calc Hc * (G + 1) ^ 2
@@ -258,7 +253,6 @@ theorem cuCost_lvGr_le (κo : ℕ) {μ : ℕ} (h : 15 ≤ μ) :
   unfold DrvR.cuCost
   have hc : ((Nat.clog 2 (DrvR.lvGr μ) + 1 : ℕ) : ℝ) ≤ 2 * μ := by
     exact_mod_cast lvGr_clog_le h
-  have hκ : (0 : ℝ) ≤ κo := Nat.cast_nonneg _
   push_cast at hc ⊢
   nlinarith
 
@@ -296,13 +290,11 @@ theorem lvCostSpec : DrvR.LvCostSpec := by
   have hL := lemma41Nat_ge μ
   have hE60 : E μ ^ 60 ≤ E μ ^ 74 := E_pow_ge (by norm_num)
   have hE0 : 0 ≤ E μ ^ 60 := E_pow_nonneg μ 60
-  have hE74 : 0 ≤ E μ ^ 74 := E_pow_nonneg μ 74
   have hμ2 : (1 : ℝ) ≤ (μ : ℝ) ^ 2 := by nlinarith
   have hN := lvNch_le_E μ
   have hN1 : ((DrvR.lvNch μ : ℝ) + 1) ≤ 224 * E μ ^ 60 := by
     have : (1 : ℝ) ≤ E μ ^ 60 := one_le_pow₀ (E_one_le μ)
     linarith
-  have hLn : (0 : ℝ) ≤ (lemma41Nat μ : ℝ) := Nat.cast_nonneg _
   -- the constant
   have hκ : ∀ c : ℕ, c ≤ 200000000000 → c * lemma41Nat μ ≤
       200000000000 * (κo ^ 2 + 1) * (lemma41Nat μ + 1) := fun c hc => by
@@ -344,10 +336,7 @@ theorem lvCostSpec : DrvR.LvCostSpec := by
     have hF := shCost_lvGr_le κo hμ
     have hG := cuCost_lvGr_le κo hμ
     have hH := hTerm_le hμ
-    have hκo : (0 : ℝ) ≤ κo := Nat.cast_nonneg _
-    have hμ0 : (0 : ℝ) ≤ μ := Nat.cast_nonneg _
     have hE11 := E_pow_nonneg μ 11
-    have hE3 := E_pow_nonneg μ 3
     have hF0 : (0 : ℝ) ≤ (DrvR.shCost κo (DrvR.lvGr μ) : ℝ) := Nat.cast_nonneg _
     have hG0 : (0 : ℝ) ≤ (DrvR.cuCost κo (DrvR.lvGr μ) : ℝ) := Nat.cast_nonneg _
     have hH0 : (0 : ℝ) ≤ ((cutGran (DrvR.lvGr μ) + Nat.clog 2 (DrvR.lvGr μ) + 1 : ℕ) : ℝ) :=
@@ -357,7 +346,6 @@ theorem lvCostSpec : DrvR.LvCostSpec := by
         (224 * E μ ^ 60) * (22003 * κo * μ * E μ ^ 11) * (2 * κo * μ) * (19516 * E μ ^ 3) := by
       rw [Nat.cast_mul, Nat.cast_mul, Nat.cast_mul]
       have hA : ((DrvR.lvNch μ + 1 : ℕ) : ℝ) ≤ 224 * E μ ^ 60 := by push_cast; exact hN1
-      have hA0 : (0 : ℝ) ≤ ((DrvR.lvNch μ + 1 : ℕ) : ℝ) := Nat.cast_nonneg _
       have p1 : (0 : ℝ) ≤ 224 * E μ ^ 60 := by linarith
       have p2 : (0 : ℝ) ≤ 22003 * κo * μ * E μ ^ 11 :=
         mul_nonneg (by positivity) hE11
@@ -378,7 +366,6 @@ theorem lvCostSpec : DrvR.LvCostSpec := by
       push_cast
       have : (κo : ℝ) ^ 2 * ((μ : ℝ) ^ 2 * E μ ^ 74) ≤ (κo : ℝ) ^ 2 * (lemma41Nat μ : ℝ) :=
         mul_le_mul_of_nonneg_left hL hk2
-      have h0 : (0 : ℝ) ≤ (κo : ℝ) ^ 2 * (lemma41Nat μ : ℝ) := by positivity
       nlinarith
     have := (Nat.cast_le (α := ℝ)).1 hR
     refine this.trans ?_

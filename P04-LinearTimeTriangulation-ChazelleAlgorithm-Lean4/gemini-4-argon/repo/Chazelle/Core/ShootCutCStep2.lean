@@ -40,13 +40,13 @@ theorem qOf_exec {P : Polygon} {W : ℕ} (e : Config) (hw : WordsBounded W e) {a
         (.instr (.subN 150070 150075 150027)))) e e' k ∧ k ≤ 4 ∧
       e'.nreg 150070 = (a + t) % n ∧
       (∀ x, x ≠ 150070 → x ≠ 150075 → e'.nreg x = e.nreg x) ∧ e'.nmem = e.nmem := by
-  refine spec_seq (spec_instr (Exec.addN hw _ _ _ (by rw [h68, h66]; exact hW)) fun w' => ?_)
+  refine spec_seq (spec_instr (Exec.addN hw _ _ _ (by rwa [h68, h66])) fun w' => ?_)
   by_cases hlt : a + t < n
-  · refine spec_ifLtN_true (by config_simp; rw [h68, h66, h27]; exact hlt)
+  · refine spec_ifLtN_true (by config_simp; rwa [h68, h66, h27])
       (spec_instr (Exec.copyN w' _ _) fun _ => ⟨by omega, ?_, fun x h1 h2 => by simp [h1, h2],
         rfl⟩)
     config_simp; rw [h68, h66, Nat.mod_eq_of_lt hlt]
-  · refine spec_ifLtN_false (by config_simp; rw [h68, h66, h27]; exact hlt)
+  · refine spec_ifLtN_false (by config_simp; rwa [h68, h66, h27])
       (spec_instr (Exec.subN w' _ _ _) fun _ => ⟨by omega, ?_, fun x h1 h2 => by simp [h1, h2],
         rfl⟩)
     config_simp; rw [h68, h66, h27, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
@@ -78,7 +78,7 @@ theorem runStep_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   unfold hostWords at hWn
   obtain ⟨e₂, k₂, ex₂, hk₂, o70, r₂, m₂⟩ := qOf_exec (P := P) e hw h68 h66 h27 (by omega)
     (by omega)
-  set q := (a + t) % P.n with hqdef
+  set q := (a + t) % P.n
   have hq : (a + t) % (Qof P).n = q := by rw [hQn]
   have hqn : q < P.n := Nat.mod_lt _ (by omega)
   have w₂ := ex₂.wb_right
@@ -118,7 +118,7 @@ theorem runStep_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
           (by rw [g _ (by omega) (by omega), h36]) (by rw [g _ (by omega) (by omega), h29])
           (by rw [g _ (by omega) (by omega), h61]) e66 o70
           (by rw [g _ (by omega) (by omega), h72]) hk₂' hc6 hlim1 hlim hlimγ hJ hJm hr hrun
-          hu ht (by rw [e90, e66] at ht0; exact ht0) hq (by rw [e90, o70] at hq0; exact hq0) hI₂
+          hu ht (by rwa [e90, e66] at ht0) hq (by rwa [e90, o70] at hq0) hI₂
         exact ⟨d', _, L, ps', .seq ex₂ (.ifLtN_true hb (.ifLtN_true ht0 (.ifLtN_true hq0 ex))),
           by omega, post⟩
       · obtain ⟨d', k, ex, hk', post⟩ := hC (K' := 0) (brk_run C hr hrun hu ht
@@ -157,8 +157,8 @@ theorem runStep_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
           (by rw [g' _ (by omega) (by omega), h66]) (by rw [g' _ (by omega) (by omega), h27])
           (by rw [g₃ _ (by omega), o70]) (by rw [g' _ (by omega) (by omega), h72]) hk₃ hc6
           hlim1 hlim hlimγ hJ hJm hr hrun hu htl hq
-          (by rw [o75, g' _ (by omega) (by omega), h27] at hq1; exact hq1) hI₃
-        exact ⟨d', _, L, ps', .seq ex₂ (.ifLtN_false hb (.ifLtN_true (by rw [e66, e69]; exact htl)
+          (by rwa [o75, g' _ (by omega) (by omega), h27] at hq1) hI₃
+        exact ⟨d', _, L, ps', .seq ex₂ (.ifLtN_false hb (.ifLtN_true (by rwa [e66, e69])
           (.seq e₃ (.ifLtN_true hq1 ex)))), by omega, post⟩
       · have hq1' : q + 1 = P.n := by
           rw [o75, g' _ (by omega) (by omega), h27] at hq1; omega
@@ -168,7 +168,7 @@ theorem runStep_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
           (by rw [g' _ (by omega) (by omega), h93]) (by rw [g' _ (by omega) (by omega), h96])
           hk₃ hc hlim1 (brk_run C hr hrun hu ht
             (Or.inr (Or.inr (Or.inr (by rw [hq, hQn]; omega))))) hI₃
-        exact ⟨d', _, 1, _, .seq ex₂ (.ifLtN_false hb (.ifLtN_true (by rw [e66, e69]; exact htl)
+        exact ⟨d', _, 1, _, .seq ex₂ (.ifLtN_false hb (.ifLtN_true (by rwa [e66, e69])
           (.seq e₃ (.ifLtN_false hq1 ex)))), by omega, post⟩
     · obtain ⟨d', k, ex, hk', post⟩ := hC (K' := 0) (brk_run C hr hrun hu ht
         (Or.inr (Or.inl (by rw [e66, e69] at htl; omega))))
@@ -222,7 +222,7 @@ theorem cStep_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have R₀ : ChainRegs C (H.pts P.n).length Hh d₀ := R.chain.of_frame fun r hr => g₀ r (by
     simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega)
   have hH₀ : HostAt d₀.nmem Hh H := hostAt_agree' S.hH hHA fun a ha => hm a (by omega)
-  obtain ⟨d₁, k₁, ex₁, hk₁, fr₁, o60, o61, o62, o63, o63', o64, found⟩ :=
+  obtain ⟨d₁, k₁, ex₁, hk₁, fr₁, o61, o63, o63', o64, found⟩ :=
     locV_exec (P := P) (W := W) (v := c) d₀ e₀.wb_right rfl hH₀ R₀
       (by simp [hd₀, upd, h40]) hc6 (by omega) hsN hmN (by omega) (by omega)
   have g₁ : ∀ x, (x < 150060 ∨ 150080 ≤ x) → d₁.nreg x = d₀.nreg x := fun x hx =>
@@ -239,10 +239,10 @@ theorem cStep_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     have w₁ := ex₁.wb_right
     unfold limOf
     by_cases hfc : f < c
-    · refine spec_ifLtN_true (by rw [a41, a40]; exact hfc) (spec_instr (Exec.subN w₁ _ _ _)
+    · refine spec_ifLtN_true (by rwa [a41, a40]) (spec_instr (Exec.subN w₁ _ _ _)
         fun _ => ⟨by omega, ?_, fun x hx => by simp [hx], rfl⟩)
       config_simp; rw [a32, a40, ite_eq_left hfc]
-    · refine spec_ifLtN_false (by rw [a41, a40]; exact hfc) (spec_instr (Exec.subN w₁ _ _ _)
+    · refine spec_ifLtN_false (by rwa [a41, a40]) (spec_instr (Exec.subN w₁ _ _ _)
         fun _ => ⟨by omega, ?_, fun x hx => by simp [hx], rfl⟩)
       config_simp; rw [a41, a40, ite_eq_right hfc]
   have w₂ := ex₂.wb_right
@@ -268,8 +268,8 @@ theorem cStep_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have hlim1 : 1 ≤ limOf C c f := by unfold limOf; split_ifs <;> omega
   have hlim : c + limOf C c f ≤ 2 * C.m + 6 := by unfold limOf; split_ifs <;> omega
   obtain ⟨hr, hp1, hp2, h66, h67, h68, h69⟩ := found
-  set r := d₁.nreg 150065 with hrdef
-  set u := d₁.nreg 150064 with hudef
+  set r := d₁.nreg 150065
+  set u := d₁.nreg 150064
   have huOf : uOf C (c - 6) = u := by
     unfold uOf tJ; rw [hN, o64]
   have hlo : Hh + 3 + 3 * r < A₀ := by omega
@@ -314,8 +314,8 @@ theorem cStep_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       (by rw [g _ (by omega) (by omega) (by omega), R.chain.h23])
       (by rw [g _ (by omega) (by omega) (by omega), R.h27])
       (by rw [g _ (by omega) (by omega) (by omega), R.chain.h29])
-      (by rw [g₂ _ (by omega), o61]) (by rw [g₂ _ (by omega)]; exact o63)
-      (by rw [g₂ _ (by omega)]; exact o63') (by rw [g₂ _ (by omega), h66]) e68 e69 o72 hk₂'
+      (by rw [g₂ _ (by omega), o61]) (by rwa [g₂ _ (by omega)])
+      (by rwa [g₂ _ (by omega)]) (by rw [g₂ _ (by omega), h66]) e68 e69 o72 hk₂'
       hc6 hc hlim1 hlim hlimγ hJ hr hrun (by rw [huOf, hQn]; omega) (by omega) ha hℓ hI₂
     exact hcore d' _ (k' + 1) L ps' (.ifLtN_true hcode ex) (by omega) rfl post
   · -- a point item: a breakpoint
@@ -325,8 +325,8 @@ theorem cStep_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       rw [ite_eq_right (by omega)]
       split_ifs <;> exact ⟨_, rfl⟩
     obtain ⟨x, hx⟩ := hpt
-    have hb : Brk C (Qof P).n H (c - 6) := brk_pt C hr hx (by rw [huOf, hQn]; exact hp1)
-      (by rw [huOf, hQn]; exact hp2)
+    have hb : Brk C (Qof P).n H (c - 6) := brk_pt C hr hx (by rwa [huOf, hQn])
+      (by rwa [huOf, hQn])
     obtain ⟨d', k', ex, hk', post⟩ := single_post (K := K) S hE (ps := ps) d d₂ w₂ hm₂ b40 b90
       b91 b92 b93 b96 hk₂' hc hlim1 hb hI₂
     exact hcore d' _ (k' + 2) 1 _ (.ifLtN_false hcode ex) (by omega) rfl post

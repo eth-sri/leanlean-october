@@ -159,7 +159,7 @@ theorem ancLoop_exec {c : Config} (hw : WordsBounded W c)
         all_goals try (config_simp; simp only [hC2.rPOW, hC2.one, hj2]; have := hM.wPOW; omega)
         refine ⟨rfl, ‹_›, by config_simp; rw [hj2, hC2.one]; omega, by
           config_simp; rw [hrow2, hC2.rμ, hrowj]; omega, by
-          config_simp; rw [hC2.rPOW, hj2, hC2.one, show j' + 1 - 1 = j' by omega]; exact hpow,
+          config_simp; rwa [hC2.rPOW, hj2, hC2.one, show j' + 1 - 1 = j' by omega],
           fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
         simp only [Machine.upd_apply, h1, h2, h3, ite_false]
       have h3w : c3.nreg 130616 = w := h3r _ (by omega) (by omega) (by omega)
@@ -172,9 +172,9 @@ theorem ancLoop_exec {c : Config} (hw : WordsBounded W c)
         refine ⟨c3, k3 + (0 + 1), .seq e3 (.ifLtN_true hlt (.skip hw3)), ⟨hw3, hm3.trans hm2,
           hframe3, hrr3.trans hrr2, hrm3.trans hrm2, ho3.trans ho2, j', by omega, h3j, h3row,
           ?_, ?_, ?_⟩, ?_⟩
-        · rw [h3d]; rw [h3d, h3p] at hlt; exact hlt
-        · rw [h3d, h3w]; exact hwj
-        · rw [h3w]; exact hwlt
+        · rw [h3d]; rwa [h3d, h3p] at hlt
+        · rwa [h3d, h3w]
+        · rwa [h3w]
         · rw [h3j, hj2]; subst hk3; omega
       · -- the jump
         have hwμ := hwlt
@@ -193,22 +193,22 @@ theorem ancLoop_exec {c : Config} (hw : WordsBounded W c)
               config_simp; rw [h3d, h3p], fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
             simp only [Machine.upd_apply, h1, h2, h3, ite_false]
         rw [h3d, h3p] at hlt
-        refine ⟨c4, k3 + (k4 + 2), .seq e3 (.ifLtN_false (by rw [h3d, h3p]; exact hlt) e4),
+        refine ⟨c4, k3 + (k4 + 2), .seq e3 (.ifLtN_false (by rwa [h3d, h3p]) e4),
           ⟨hw4, hm4.trans (hm3.trans hm2), fun r hr => ?_, hrr4.trans (hrr3.trans hrr2),
           hrm4.trans (hrm3.trans hrm2), ho4.trans (ho3.trans ho2), j', by omega, ?_, ?_, ?_, ?_,
           ?_⟩, ?_⟩
         · rw [h4r r (by unfold AncRG at hr; omega) (by unfold AncRG at hr; omega)
             (by unfold AncRG at hr; omega)]
           exact hframe3 r hr
-        · rw [h4r _ (by omega) (by omega) (by omega)]; exact h3j
-        · rw [h4r _ (by omega) (by omega) (by omega)]; exact h3row
+        · rwa [h4r _ (by omega) (by omega) (by omega)]
+        · rwa [h4r _ (by omega) (by omega) (by omega)]
         · rw [h4d]; rw [pow_succ] at hdj; omega
         · rw [h4d, h4w, ← Function.iterate_add_apply, show df - 2 ^ j' + 2 ^ j' = df by omega]
           exact hwj
         · rw [h4w]; exact iterate_lt_of hM.up_lt _ hwμ
         · rw [h4r _ (by omega) (by omega) (by omega), h3j, hj2]; subst hk3 hk4; omega)
-    ⟨hw, rfl, fun _ _ => rfl, rfl, rfl, rfl, L, le_rfl, hj, hrow, by rw [hd]; exact hd0,
-      by rw [hd, hwu], by rw [hwu]; exact hu⟩
+    ⟨hw, rfl, fun _ _ => rfl, rfl, rfl, rfl, L, le_rfl, hj, hrow, by rwa [hd],
+      by rw [hd, hwu], by rwa [hwu]⟩
   have hC' := hC.of_frame (fun r hr => hr' r (fun h => hr (by unfold AncRG at h; unfold MarkRG; omega)))
   rw [hC'.zero, hj'] at htest
   have hj0 : j = 0 := by omega
@@ -216,7 +216,7 @@ theorem ancLoop_exec {c : Config} (hw : WordsBounded W c)
   have : c'.nreg 130613 = 0 := by simp at hdj; omega
   refine ⟨c', k, e, ?_, hw', hm', hr', hrr', hrm', ho', ?_⟩
   · rw [hj] at hk; omega
-  · rw [this] at hwj; exact hwj
+  · rwa [this] at hwj
 
 open Classical in
 /-- The memory after marking the first `i` vertices `up^[i'] w0`, `i' < i`, found in `[lo, hi)`. -/
@@ -439,7 +439,7 @@ theorem markStmt_exec {c : Config} (hw : WordsBounded W c)
       simp only [Machine.upd_apply]; unfold MarkRG at hr; split_ifs <;> omega
     have hC3 := hC2.of_frame h3r
     have hM3 : MarkMem c3.nmem W bLEV bUPT bPOW L bPV bPOS bDF μ up := by
-      rw [hm3, hm21]; exact hM
+      rwa [hm3, hm21]
     obtain ⟨c4, k4, e4, hk4, hw4, hm4, h4r, hrr4, hrm4, ho4, h4w⟩ := ancLoop_exec (P := P) hw3 hC3
       hM3 huμ h3d (by omega) h3w h3j h3row
     have hA4 : ∀ r, ¬ MarkRG r → ¬ AncRG r := fun r hr h => hr (by
@@ -459,7 +459,7 @@ theorem markStmt_exec {c : Config} (hw : WordsBounded W c)
         simp only [Machine.upd_apply]; unfold MarkRG at hr; split_ifs <;> omega
     have hC5 := hC4.of_frame h5r
     have hM5 : MarkMem c5.nmem W bLEV bUPT bPOW L bPV bPOS bDF μ up := by
-      rw [hm5, hm4]; exact hM3
+      rwa [hm5, hm4]
     obtain ⟨c6, k6, e6, hk6, hw6, hm6, h6r, hrr6, hrm6, ho6⟩ := markLoop_exec (P := P) hw5 hC5 hM5
       (iterate_lt_of hM.up_lt _ huμ) h5w h5c
     refine ⟨c6, _, .seq e1 (.seq e2 (.ifLtN_false hbot (.seq e3 (.seq e4 (.seq e5 e6))))), ?_,

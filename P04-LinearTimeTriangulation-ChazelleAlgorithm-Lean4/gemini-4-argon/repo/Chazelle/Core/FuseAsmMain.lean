@@ -87,8 +87,7 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   rw [← hB₂, ← hB₄, ← hB₆, ← hB₇, ← hT] at hbud
   simp only [← Nat.add_assoc] at hbud
   -- 1. the query list of side `0`
-  obtain ⟨c₁, k₁, v₁, v₀, t₁, t₀, k₀, e₁, hk₁, hk₁', lv₁, lv₀, lt₁, lt₀, lk₀, s₁, a₁, n₁, L₁,
-      m₁, r₁, rr₁, rm₁, o₁, q05, q08, R₁, pv₁, pv₀, pt₁, pt₀, pk₀, nk₀⟩ :=
+  obtain ⟨c₁, k₁, v₁, v₀, t₁, t₀, k₀, e₁, hk₁, hk₁', lv₁, lv₀, lt₁, lt₀, lk₀, s₁, a₁, n₁, L₁, m₁, r₁, rr₁, rm₁, o₁, R₁, pv₁, pv₀, pt₁, pt₀, pk₀, nk₀⟩ :=
     sideQ₀_exec c hw hF (by rw [hK₁, hA]; unfold sq0Cost; rw [← Nat.add_assoc]; omega)
   rw [hK₁] at hk₁
   unfold sq0Cost at hk₁
@@ -113,7 +112,7 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   obtain ⟨c₂, k₂, R₀, e₂, hk₂, hR₀l, hRB₀, hRB₀', hR₀, sees₀, F₂, g₂, n₂⟩ :=
     swStage_exec hM c₁ w₁ hF₁ hP₁ (i := 0) (S := 70150) (Lr := 70128) (RB := 70153)
       (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by decide) (L := L₀) n₁
-      (by rw [s₁]; exact L₁) (by rw [s₁, a₁]) (fun q hq => (ok₀ q hq).1) (by norm_num)
+      (by rwa [s₁]) (by rw [s₁, a₁]) (fun q hq => (ok₀ q hq).1) (by norm_num)
       (fun q hq => (ok₀ q hq).2)
       (by rw [e06₁, e05₁, hK₁, hK₂, a₁, hA]; omega)
   rw [e06₁, e05₁, hK₁, hK₂] at hk₂
@@ -159,7 +158,7 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   obtain ⟨c₄, k₄, R₁', e₄, hk₄, hR₁l, hRB₁, hRB₁', hR₁, sees₁, F₄, g₄, n₄⟩ :=
     swStage_exec hM c₃ w₃ hF₃ hP₃ (i := 1) (S := 70151) (Lr := 70128) (RB := 70155)
       (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by decide) (L := L₁') n₃
-      (by rw [s₃]; exact L₃) (by rw [s₃, a₃]) (fun q hq => (ok₁ q hq).1)
+      (by rwa [s₃]) (by rw [s₃, a₃]) (fun q hq => (ok₁ q hq).1)
       (fun _ => ⟨_, by rw [hL₁', endQL_eq], by simp only [List.length_append]; omega⟩)
       (fun q hq => (ok₁ q hq).2)
       (by rw [e06₃, e05₃, hK₁, hK₂, a₃]; rw [a₁, hA] at al₂; omega)
@@ -178,7 +177,7 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
     rw [g₄' _ (by norm_num) (by norm_num), r₃ _ (by decide), g₂' _ (by norm_num) (by norm_num),
       s₁, hA]
   have x52 : c₄.nreg 70152 = L₀.length := by
-    rw [g₄' _ (by norm_num) (by norm_num), r₃ _ (by decide)]; exact n₂
+    rwa [g₄' _ (by norm_num) (by norm_num), r₃ _ (by decide)]
   have x53 : c₄.nreg 70153 = c₂.nreg 70153 := by
     rw [g₄' _ (by norm_num) (by norm_num), r₃ _ (by decide)]
   have x51 : c₄.nreg 70151 = c₂.nreg ALLOC := by rw [g₄' _ (by norm_num) (by norm_num), s₃]
@@ -248,8 +247,8 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   -- 8. the normal form
   have hbl := nlogc_mono κB (show Dl.length ≤ 2 * K₁ + 2 * K₂ + 8 by omega)
   rw [← hB₇] at hbl
-  obtain ⟨c₈, k₈, N, e₈, hk₈, h07, hNW, hIs, hNmap, F₈, -⟩ := bldStage_exec hB c₇ w₇ hG hHW
-    sww sdw hF.simple hDL hDc (by rw [hDc] at h42b; exact h42b) hok
+  obtain ⟨c₈, k₈, N, e₈, hk₈, h07, hNW, hIs, hNmap, F₈⟩ := bldStage_exec hB c₇ w₇ hG hHW
+    sww sdw hF.simple hDL hDc (by rwa [hDc] at h42b) hok
     (by rw [a₆, a₅] at al₇; rw [a₁, hA] at al₂; rw [a₃] at al₄; omega)
   have ex : Exec P W (fuseRun sw sB) c c₈ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + k₈))))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ e₈))))))

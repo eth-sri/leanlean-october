@@ -67,9 +67,9 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
   induction N using Nat.strong_induction_on with
   | _ N ih =>
   intro d t f pf tf V hV hN hd ht0 ht1 hd0 hf hfA hfF hNF hS hori htrack
-  set W := (chainModel J.whole).W with hWdef
-  set g := 6 + tpos J.whole J.m₁ with hgdef
-  set L := rL1 J + rL2 J with hLdef
+  set W := (chainModel J.whole).W
+  set g := 6 + tpos J.whole J.m₁
+  set L := rL1 J + rL2 J
   have hoN : off W.n (g : ℝ) ((((g + d) % W.n : ℕ) : ℝ) + t) = d + t := hC.off_M hd ht0 ht1
   have hN0 : 0 < off W.n (g : ℝ) ((((g + d) % W.n : ℕ) : ℝ) + t) := by
     rw [hoN]
@@ -123,9 +123,9 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
     intro f' V' htf0 hd'0 hf' hne hA' hS' hV' hpart
     subst htf0
     obtain ⟨pb, tb, hB, hBne⟩ := hM.other_attach (hFs hf') hA'
-    set Pf := sidePt W ((g + d') % W.n) 0 with hPfdef
-    set Pn := sidePt W ((g + d) % W.n) t with hPndef
-    set Bp := sidePt W pb tb with hBpdef
+    set Pf := sidePt W ((g + d') % W.n) 0
+    set Pn := sidePt W ((g + d) % W.n) t
+    set Bp := sidePt W pb tb
     obtain ⟨-, hyf, -⟩ := hM.attach_seg (hFs hf) hfA hfF hNF
     obtain ⟨-, hyf', -⟩ := hM.attach_seg (hFs hf') hA' hB (Ne.symm hBne)
     have hPn1 : Pn.1 ≠ Pf.1 := fun h => hNF (Geometry.point_ext h hyf)
@@ -303,15 +303,15 @@ theorem label_side_gen2 (hP : J.P.Simple) {Q : Polygon}
     hRL | ⟨rfl, f', hf', hne, hA', hS', hpart⟩
   · exact label_right3 J hP hS₂.2.1 hS₂.1 hG hV' hV hL hRL
   have hd0 : d ≠ 0 := (hsec rfl).1
-  set W := (chainModel J.whole).W with hWdef
-  set A := (6 + tpos J.whole J.m₁ + d) % W.n with hAdef
+  set W := (chainModel J.whole).W
+  set A := (6 + tpos J.whole J.m₁ + d) % W.n
   obtain ⟨pb, tb, hB, hBne⟩ := hM.other_attach (hFs he) heA
   obtain ⟨pb', tb', hB', hBne'⟩ := hM.other_attach (hFs hf') hA'
   obtain ⟨-, hy, -⟩ := hM.attach_seg (hFs he) heA hB (Ne.symm hBne)
   obtain ⟨-, hy', -⟩ := hM.attach_seg (hFs hf') hA' hB' (Ne.symm hBne')
-  set Pa := sidePt W A 0 with hPadef
-  set Bp := sidePt W pb tb with hBpdef
-  set Bq := sidePt W pb' tb' with hBqdef
+  set Pa := sidePt W A 0
+  set Bp := sidePt W pb tb
+  set Bq := sidePt W pb' tb'
   have h1 : Bp.1 ≠ Pa.1 := fun h => hBne (Geometry.point_ext h hy.symm)
   have h1' : Bq.1 ≠ Pa.1 := fun h => hBne' (Geometry.point_ext h hy'.symm)
   have hopp := tie_opposite hM hFs he hf' hne heA hA' hB.2.2.2.1 hB'.2.2.2.1 h1 h1'

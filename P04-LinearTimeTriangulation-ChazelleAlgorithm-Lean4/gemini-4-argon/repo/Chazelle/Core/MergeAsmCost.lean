@@ -44,7 +44,6 @@ theorem fuse_le {κ S β m F₀ F G H : ℕ} (hS : S ≤ β * (m + 1)) (hF : F�
   have hY2 : L + 1 ≤ F * G * (H + L + 1) := by
     calc L + 1 = 1 * 1 * (L + 1) := by ring
       _ ≤ F * G * (H + L + 1) := by gcongr; omega
-  have hY3 : 1 ≤ F * G * (H + L + 1) := by omega
   set Y := F * G * (H + L + 1)
   have : F₀ + Nat.clog 2 S + 1 ≤ (β + 2) * Y := by nlinarith
   calc κ * S * (F₀ + Nat.clog 2 S + 1) ≤ κ * S * ((β + 2) * Y) := Nat.mul_le_mul_left _ this

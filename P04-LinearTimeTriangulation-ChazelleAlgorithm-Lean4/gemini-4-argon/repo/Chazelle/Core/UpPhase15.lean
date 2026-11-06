@@ -128,7 +128,7 @@ theorem rowS_exec {c : Config} (hw : WordsBounded W c) {hp g x cnt R' : ℕ}
     (∀ r, ¬ RowRG r → r ≠ ALLOC → c'.nreg r = c1.nreg r) ∧
     c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output
   have hI1 : I c1 := ⟨cnt, le_rfl, hw1, i40, i41, by rw [c1A]; simp, i44,
-    by rw [i42]; exact hC, fun i h1 h2 => absurd h2 (by omega), fun a _ => by rw [hm1],
+    by rwa [i42], fun i h1 h2 => absurd h2 (by omega), fun a _ => by rw [hm1],
     fun _ _ _ => rfl, hrr1, hrm1, ho1⟩
   obtain ⟨c', k, e, ⟨j, hj, hw', j40, j41, jA, j44, hCj, hE, hmem, fr, hrr, hrm, ho⟩, htest, hk,
       hψ⟩ :=

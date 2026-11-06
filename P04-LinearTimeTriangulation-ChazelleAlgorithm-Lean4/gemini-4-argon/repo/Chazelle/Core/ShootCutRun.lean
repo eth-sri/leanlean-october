@@ -50,8 +50,7 @@ theorem uOf_up (hP : C.P = H.poly Q) {i d : ℕ} (hJ : tJ C i + d ≤ C.m) {r a 
   rw [NFLoc.preLen_length] at hlen
   rw [hrun] at hsucc
   simp only [NFLoc.itemCnt] at hsucc
-  rw [sideE_up C hJ, ← Nat.add_assoc, Nat.add_mod, hu, Nat.mod_eq_of_lt (show d < C.P.n by omega)]
-  rw [Nat.mod_eq_of_lt (by omega)]
+  rw [sideE_up C hJ, ← Nat.add_assoc, Nat.add_mod, hu, Nat.mod_eq_of_lt (show d < C.P.n by omega), Nat.mod_eq_of_lt (by omega)]
   omega
 
 /-- **The host point along a descending stretch.** -/
@@ -68,11 +67,9 @@ theorem uOf_down (hP : C.P = H.poly Q) {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : t
   simp only [NFLoc.itemCnt] at hsucc
   have hkd : d ≤ sideE C.m (tJ C i) := by
     have := sideE_down C (d := d) hm hJ
-    have hle := Chazelle.Chain.sideE_le (m := C.m) (j := tJ C i) (tJ_lt C i).le
     unfold sideE at *
     split_ifs at * <;> omega
   rw [sideE_down C hm hJ]
-  have hpos : 0 < C.P.n := C.n_pos
   have e := Nat.div_add_mod (C.s + sideE C.m (tJ C i)) C.P.n
   rw [hu] at e
   have e2 : C.s + (sideE C.m (tJ C i) - d) =
@@ -95,8 +92,7 @@ theorem brk_run {n : ℕ} {i r a ℓ t : ℕ} (hr : r < H.length) (hrun : H[r] =
   refine ⟨r, hr, by omega, by omega, ?_⟩
   rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hr, Option.getD_some, hrun]
   simp only
-  rw [hu, show NFLoc.preLen n H r + t - NFLoc.preLen n H r = t by omega]
-  exact hc
+  rwa [hu, show NFLoc.preLen n H r + t - NFLoc.preLen n H r = t by omega]
 
 /-- **A point item is a break.** -/
 theorem brk_pt {n : ℕ} {i r : ℕ} {x : SymPt} (hr : r < H.length) (hpt : H[r] = .pt x)

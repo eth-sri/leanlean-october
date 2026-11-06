@@ -159,7 +159,7 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
     (fun d hI ht => by
       obtain ⟨hwd, ht_le, hlen, htmp, hfr, hrs', hrn', h62', h44', h19'⟩ := hI
       rw [hrn'] at ht
-      set t := d.nreg 90101 with htdef
+      set t := d.nreg 90101
       have hflen : ((l.take t).filter (· != cc)).length ≤ t := by
         calc _ ≤ (l.take t).length := List.length_filter_le _ _
           _ ≤ t := List.length_take_le _ _
@@ -216,8 +216,8 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
           v101⟩
         · rw [v101]; omega
         · rw [v101, vr _ (by decide), l2]
-        · rw [v101, vr _ (by decide), vm]; exact t2
-        · rw [vm]; exact f2
+        · rwa [v101, vr _ (by decide), vm]
+        · rwa [vm]
         · rw [vr _ r2, r2' _ r4 r3 r1, hrs']
         · rw [vr _ n2, r2' _ n4 n3 n1, hrn']
         · rw [vr _ (by decide), r2' _ (by decide) (by decide) (by decide), h62']
@@ -270,10 +270,10 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
               rw [ite_eq_right (by rw [hlen]; rcases ha with ha | ha <;> omega)]
               exact hfr a ha
           by_cases hlt : l.getD t 0 < cc
-          · exact post 1 (by omega) (.ifLtN_true (by rw [q102, hv]; exact hlt) e₂)
+          · exact post 1 (by omega) (.ifLtN_true (by rwa [q102, hv]) e₂)
           · have hgt : cc < l.getD t 0 := by omega
             exact post 3 (by omega) ((Exec.ifLtN_false (by rw [q102, hv]; omega)
-              (.ifLtN_true (by rw [q102, hv]; exact hgt) e₂)).cast (by omega))
+              (.ifLtN_true (by rwa [q102, hv]) e₂)).cast (by omega))
       obtain ⟨d₄, k₄, e₄, hk₄, I₄, t₄⟩ := key
       exact ⟨d₄, k₁ + k₄, .seq e₁ e₄, I₄, by omega, by rw [t₄]; omega⟩) I0
   obtain ⟨hw', ht', hlen', htmp', hfr', -, hrn', -, -, -⟩ := I'

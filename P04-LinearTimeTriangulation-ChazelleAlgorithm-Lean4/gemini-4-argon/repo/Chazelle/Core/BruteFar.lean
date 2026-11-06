@@ -176,7 +176,7 @@ theorem far_end (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : ℝ
     rw [hX, he1]
     have : σ * (v.1 + σ * C.chordParam k σ - v.1) = C.chordParam k σ := by
       rw [add_sub_cancel_left, ← mul_assoc, hσσ, one_mul]
-    rw [this]; exact hpos
+    rwa [this]
   -- candidate points are inside the box
   have hbox : ∀ j, Cand C k σ j → σ * edgeXk C j k < C.radius := by
     rintro j ⟨hj, hs, -⟩
@@ -214,7 +214,7 @@ theorem far_end (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : ℝ
       have h1 := hbox b hcb
       have : σ * (edgeXk C b k - v.1) = σ * edgeXk C b k - σ * v.1 := by ring
       rw [this] at hA'
-      have hv1 : v.1 + σ * C.chordParam k σ = σ * C.radius := by rw [← he1]; exact hwall
+      have hv1 : v.1 + σ * C.chordParam k σ = σ * C.radius := by rwa [← he1]
       have : σ * (v.1 + σ * C.chordParam k σ) = σ * v.1 + C.chordParam k σ := by
         rw [mul_add, ← mul_assoc, hσσ, one_mul]
       rw [hv1, ← mul_assoc, hσσ, one_mul] at this

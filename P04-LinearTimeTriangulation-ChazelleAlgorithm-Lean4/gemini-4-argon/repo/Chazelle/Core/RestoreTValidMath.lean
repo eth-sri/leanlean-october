@@ -191,7 +191,7 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
     obtain ⟨a, b, hab, hin⟩ := valid_complete_int hGM hFam hne hU hadm hnF hsub hxe ht0 hx.2.1
       hτ hL hT rfl hdom
     obtain ⟨j, hj, ha, hb⟩ := listed a b hab
-    exact Or.inl ⟨j, hj, by rw [ha, hb]; exact hin⟩
+    exact Or.inl ⟨j, hj, by rwa [ha, hb]⟩
   · -- at a walk vertex
     have h0 : M.param Q x = 0 := ht0.symm
     have hkx : M.key Q x = (x.edge : ℝ) + 0 := by unfold Model.key; rw [h0]
@@ -224,7 +224,7 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
         exact exit_block hM hadmi hat hτ (Or.inr ⟨hm, e1, e2⟩) hav
     rcases hcase with ⟨a, b, hab, hin⟩ | ⟨b, hab, hcr⟩ | ⟨a, hab, hcr⟩
     · obtain ⟨j, hj, ha, hb⟩ := listed a b hab
-      exact Or.inl ⟨j, hj, by rw [ha, hb, hkx]; exact hin⟩
+      exact Or.inl ⟨j, hj, by rwa [ha, hb, hkx]⟩
     · obtain ⟨j, hj, ha, -⟩ := listed _ b hab
       exact Or.inr ⟨h0, Or.inl ⟨⟨j, hj, by rw [ha, hkx]⟩, hcr⟩, hcl⟩
     · obtain ⟨j, hj, -, hb⟩ := listed a _ hab

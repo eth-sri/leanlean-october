@@ -189,12 +189,12 @@ theorem hostPt_exec {P : Polygon} {W Hh s k : ℕ} {H : Host} {m : ℕ → ℕ} 
       { c with nreg := upd c.nreg 50071 (c.nreg 50052 + c.nreg 50091) } c₂ k₂ ∧ k₂ ≤ 3 ∧
       c₂.nreg 50071 = (s + k) % N ∧ HostEnv W Hh H.length m c₂ := by
     by_cases hlt : s + k < N
-    · refine spec_ifLtN_true (by config_simp; rw [h52, h91, h87]; exact hlt)
+    · refine spec_ifLtN_true (by config_simp; rwa [h52, h91, h87])
         (spec_skip w₁ ⟨by omega, by config_simp; rw [h52, h91, Nat.mod_eq_of_lt hlt], ?_⟩)
       exact ⟨w₁, by config_simp; exact E.h60, by config_simp; exact E.h61,
         by config_simp; exact E.h67, by config_simp; exact E.h68, by config_simp; exact E.h69,
         E.mem⟩
-    · refine spec_ifLtN_false (by config_simp; rw [h52, h91, h87]; exact hlt)
+    · refine spec_ifLtN_false (by config_simp; rwa [h52, h91, h87])
         (spec_instr (Exec.subN w₁ _ _ _) fun w₂ => ⟨by omega, ?_, ?_⟩)
       · config_simp
         rw [h52, h91, h87, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
@@ -233,15 +233,15 @@ theorem chIdx_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     have b55 : c₁.nreg 50055 = b := by rw [q _ (by omega), h55]
     have b54 : c₁.nreg 50054 = T := by rw [q _ (by omega), h54]
     by_cases h0 : b < 1
-    · refine spec_ifLtN_true (by rw [b55, b32]; exact h0)
+    · refine spec_ifLtN_true (by rwa [b55, b32])
         (spec_instr (Exec.subN w₁ _ _ _) fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [q58, b54, hS, ite_eq_right (by omega)]
-    · refine spec_ifLtN_false (by rw [b55, b32]; exact h0) ?_
+    · refine spec_ifLtN_false (by rwa [b55, b32]) ?_
       by_cases h2 : 1 < b
-      · refine spec_ifLtN_true (by rw [b55, b32]; exact h2)
+      · refine spec_ifLtN_true (by rwa [b55, b32])
           (spec_instr (Exec.subN w₁ _ _ _) fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
         config_simp; rw [q58, b54, hS, ite_eq_right (by omega)]
-      · refine spec_ifLtN_false (by rw [b55, b32]; exact h2)
+      · refine spec_ifLtN_false (by rwa [b55, b32])
           (spec_instr (Exec.copyN w₁ _ _) fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
         config_simp; rw [b54, hS, ite_eq_left (by omega)]
   have w₂ := e₂.wb_right
@@ -261,14 +261,14 @@ theorem chIdx_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       k₄ ≤ 3 ∧ c₄.nreg 50077 = (S + i) % (2 * m) ∧ ∀ r, r ≠ 50077 → c₄.nreg r = c₃.nreg r := by
     rw [tour_mod hS2 hi]
     by_cases hc : i < 2 * m - S
-    · refine spec_ifLtN_true (by rw [t56, t89]; exact hc) (spec_instr (Exec.addN w₃ _ _ _
+    · refine spec_ifLtN_true (by rwa [t56, t89]) (spec_instr (Exec.addN w₃ _ _ _
         (by rw [t59, t56]; omega)) fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [t59, t56, ite_eq_left hc]
-    · refine spec_ifLtN_false (by rw [t56, t89]; exact hc) (spec_instr (Exec.subN w₃ _ _ _)
+    · refine spec_ifLtN_false (by rwa [t56, t89]) (spec_instr (Exec.subN w₃ _ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [t89, t56, ite_eq_right hc]
   have w₄ := e₄.wb_right
-  set j := (S + i) % (2 * m) with hj
+  set j := (S + i) % (2 * m)
   have hjm : j < 2 * m := Nat.mod_lt _ (by omega)
   have u53 : c₄.nreg 50053 = m := by
     rw [r₄ _ (by omega), t _ (by omega), g _ (by omega) (by omega), h53]
@@ -282,10 +282,10 @@ theorem chIdx_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       k₅ ≤ 3 ∧ c₅.nreg 50078 = sideE m j ∧ ∀ r, r ≠ 50078 → c₅.nreg r = c₄.nreg r := by
     rw [sideE_eq]
     by_cases hc : m < j
-    · refine spec_ifLtN_true (by rw [u53, j4]; exact hc) (spec_instr (Exec.subN w₄ _ _ _)
+    · refine spec_ifLtN_true (by rwa [u53, j4]) (spec_instr (Exec.subN w₄ _ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [u58, j4, ite_eq_left hc]
-    · refine spec_ifLtN_false (by rw [u53, j4]; exact hc) (spec_instr (Exec.copyN w₄ _ _)
+    · refine spec_ifLtN_false (by rwa [u53, j4]) (spec_instr (Exec.copyN w₄ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [j4, ite_eq_right hc]
   have w₅ := e₅.wb_right
@@ -305,10 +305,10 @@ theorem chIdx_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       k₇ ≤ 3 ∧ c₇.nreg 50079 = sideE m (j + 1) ∧ ∀ r, r ≠ 50079 → c₇.nreg r = c₆.nreg r := by
     rw [sideE_eq]
     by_cases hc : m < j + 1
-    · refine spec_ifLtN_true (by rw [v53, v90]; exact hc) (spec_instr (Exec.subN w₆ _ _ _)
+    · refine spec_ifLtN_true (by rwa [v53, v90]) (spec_instr (Exec.subN w₆ _ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [v58, v90, ite_eq_left hc]
-    · refine spec_ifLtN_false (by rw [v53, v90]; exact hc) (spec_instr (Exec.copyN w₆ _ _)
+    · refine spec_ifLtN_false (by rwa [v53, v90]) (spec_instr (Exec.copyN w₆ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
       config_simp; rw [v90, ite_eq_right hc]
   have ex : Exec P W chIdx c c₇ ((1 + 0) + (k₂ + (1 + (k₄ + (k₅ + (1 + k₇)))))) :=
@@ -324,7 +324,7 @@ theorem smallDir_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       c'.nreg 10502 = (if c.nreg 50002 = 1 ∨ c.nreg 50002 = 5 then 2
         else if c.nreg 50002 = 3 then 1 else 0) := by
   unfold smallDir setDir
-  set e := c.nreg 50002 with he'
+  set e := c.nreg 50002
   have fin : ∀ v, v ≤ 2 → ∀ k : ℕ, k ≤ 10 → (if e = 1 ∨ e = 5 then 2 else if e = 3 then 1 else 0) = v →
       ∃ c' k', Exec P W (.instr (.constN 10502 v)) c c' k' ∧ k' + k ≤ 12 ∧
         c'.nreg 10502 = (if e = 1 ∨ e = 5 then 2 else if e = 3 then 1 else 0) :=
@@ -332,31 +332,31 @@ theorem smallDir_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       by config_simp; exact hval.symm⟩
   by_cases t0 : e < 1
   · obtain ⟨c', k', ex, hk, hr⟩ := fin 0 (by omega) 1 (by omega) (by split_ifs <;> omega)
-    exact ⟨c', k' + 1, .ifLtN_true (by rw [h32]; exact t0) ex, by omega, hr⟩
+    exact ⟨c', k' + 1, .ifLtN_true (by rwa [h32]) ex, by omega, hr⟩
   by_cases t1 : e < 2
   · obtain ⟨c', k', ex, hk, hr⟩ := fin 2 (by omega) 3 (by omega) (by split_ifs <;> omega)
-    exact ⟨c', k' + 1 + 2, .ifLtN_false (by rw [h32]; exact t0)
-      (.ifLtN_true (by rw [h82]; exact t1) ex), by omega, hr⟩
+    exact ⟨c', k' + 1 + 2, .ifLtN_false (by rwa [h32])
+      (.ifLtN_true (by rwa [h82]) ex), by omega, hr⟩
   by_cases t2 : e < 3
   · obtain ⟨c', k', ex, hk, hr⟩ := fin 0 (by omega) 5 (by omega) (by split_ifs <;> omega)
-    exact ⟨c', k' + 1 + 2 + 2, .ifLtN_false (by rw [h32]; exact t0)
-      (.ifLtN_false (by rw [h82]; exact t1) (.ifLtN_true (by rw [h83]; exact t2) ex)),
+    exact ⟨c', k' + 1 + 2 + 2, .ifLtN_false (by rwa [h32])
+      (.ifLtN_false (by rwa [h82]) (.ifLtN_true (by rwa [h83]) ex)),
       by omega, hr⟩
   by_cases t3 : e < 4
   · obtain ⟨c', k', ex, hk, hr⟩ := fin 1 (by omega) 7 (by omega) (by split_ifs <;> omega)
-    exact ⟨c', k' + 1 + 2 + 2 + 2, .ifLtN_false (by rw [h32]; exact t0)
-      (.ifLtN_false (by rw [h82]; exact t1) (.ifLtN_false (by rw [h83]; exact t2)
-        (.ifLtN_true (by rw [h84]; exact t3) ex))), by omega, hr⟩
+    exact ⟨c', k' + 1 + 2 + 2 + 2, .ifLtN_false (by rwa [h32])
+      (.ifLtN_false (by rwa [h82]) (.ifLtN_false (by rwa [h83])
+        (.ifLtN_true (by rwa [h84]) ex))), by omega, hr⟩
   by_cases t4 : e < 5
   · obtain ⟨c', k', ex, hk, hr⟩ := fin 0 (by omega) 9 (by omega) (by split_ifs <;> omega)
-    exact ⟨c', k' + 1 + 2 + 2 + 2 + 2, .ifLtN_false (by rw [h32]; exact t0)
-      (.ifLtN_false (by rw [h82]; exact t1) (.ifLtN_false (by rw [h83]; exact t2)
-        (.ifLtN_false (by rw [h84]; exact t3) (.ifLtN_true (by rw [h85]; exact t4) ex)))),
+    exact ⟨c', k' + 1 + 2 + 2 + 2 + 2, .ifLtN_false (by rwa [h32])
+      (.ifLtN_false (by rwa [h82]) (.ifLtN_false (by rwa [h83])
+        (.ifLtN_false (by rwa [h84]) (.ifLtN_true (by rwa [h85]) ex)))),
       by omega, hr⟩
   · obtain ⟨c', k', ex, hk, hr⟩ := fin 2 (by omega) 10 (by omega) (by split_ifs <;> omega)
-    exact ⟨c', k' + 2 + 2 + 2 + 2 + 2, .ifLtN_false (by rw [h32]; exact t0)
-      (.ifLtN_false (by rw [h82]; exact t1) (.ifLtN_false (by rw [h83]; exact t2)
-        (.ifLtN_false (by rw [h84]; exact t3) (.ifLtN_false (by rw [h85]; exact t4) ex)))),
+    exact ⟨c', k' + 2 + 2 + 2 + 2 + 2, .ifLtN_false (by rwa [h32])
+      (.ifLtN_false (by rwa [h82]) (.ifLtN_false (by rwa [h83])
+        (.ifLtN_false (by rwa [h84]) (.ifLtN_false (by rwa [h85]) ex)))),
       by omega, hr⟩
 
 /-- **A tour edge**: the two host points and their height comparison. -/
@@ -375,14 +375,14 @@ theorem chGeneral_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 �
         (H.pts P.n)[(s + sideE m (((if b = 1 then T else 2 * m - T) + i) % (2 * m) + 1)) %
           (H.pts P.n).length]? = some sp₂ ∧
         c'.nreg 10502 = dirOf (sp₁.eval (Qof P)).2 (sp₂.eval (Qof P)).2 := by
-  set N := (H.pts P.n).length with hNdef
+  set N := (H.pts P.n).length
   have hn0 : 0 < P.n := by have := hG.1.1; omega
   have hLt := hostWF_pts hwf hn0
   -- indices
   obtain ⟨c₁, k₁, e₁, hk₁, k78, k79, f₁⟩ := chIdx_exec (P := P) c hw h32 h53 h54 h55 h56 hi hT
     (by omega)
   have w₁ := e₁.wb_right
-  set j := ((if b = 1 then T else 2 * m - T) + i) % (2 * m) with hj
+  set j := ((if b = 1 then T else 2 * m - T) + i) % (2 * m)
   have hjm : j < 2 * m := Nat.mod_lt _ (by omega)
   have hk1 : sideE m j ≤ m := Chain.sideE_le (by omega)
   have hk2 : sideE m (j + 1) ≤ m := Chain.sideE_le (by omega)
@@ -390,7 +390,7 @@ theorem chGeneral_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 �
     f₁.1 r hr
   -- the count
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, n63, E₂⟩ := cnt_exec (P := P) (n := P.n) c₁ w₁
-    (by rw [f₁.2.2.1]; exact hH) ((g₁ _ (by decide)).trans h60) haW (by omega)
+    (by rwa [f₁.2.2.1]) ((g₁ _ (by decide)).trans h60) haW (by omega)
   have g₂ := fun r (hr : Bhost r = false) => f₂.1 r hr
   -- first point
   obtain ⟨c₃, k₃, e₃, hk₃, q87, q91, r₃⟩ : ∃ c₃ k₃, Exec P W
@@ -462,8 +462,8 @@ theorem chainDir_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤
     (he : c.nreg 50002 < 2 * C.m + 7) :
     ∃ c' k, Exec P W chainDir c c' k ∧ k ≤ 70 * H.length + 600 ∧ FrameB Bdir c c' ∧
       c'.nreg 10502 = dirCode (chainModel C) (c.nreg 50002) := by
-  set D := c.nreg 50000 with hD
-  set e := c.nreg 50002 with he'
+  set D := c.nreg 50000
+  set e := c.nreg 50002
   obtain ⟨hHost, hP, hs', hm', hT', hb'⟩ := hC
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hNlen : C.P.n = (H.pts P.n).length := by
@@ -490,9 +490,9 @@ theorem chainDir_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤
   have w₁ := e₁.wb_right
   by_cases hsm : e < 6
   · obtain ⟨c₂, k₂, e₂, hk₂, d₂⟩ := smallDir_exec (P := P) c₁ w₁ (by omega) q32 q82 q83 q84 q85
-      (by rw [q02]; exact hsm)
+      (by rwa [q02])
     have ex : Exec P W chainDir c c₂ (k₁ + (k₂ + 1)) :=
-      .seq e₁ (.ifLtN_true (by rw [q02, q81]; exact hsm) e₂)
+      .seq e₁ (.ifLtN_true (by rwa [q02, q81]) e₂)
     refine ⟨c₂, _, ex, by omega, exec_frameB ex wr_chainDir, ?_⟩
     rw [d₂, q02, chain_dirCode_small C hsm]
   -- the tour and the closing edge
@@ -509,15 +509,15 @@ theorem chainDir_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤
   · have hi : e - 6 < 2 * C.m := by omega
     have hH₂ : HostAt c₂.nmem (c.nmem (D + 1)) H := by
       have f₂ := exec_frameB e₂ (B := Bl [50056, 50057]) (by decide)
-      rw [f₂.2.2.1, qm]; exact hHost
+      rwa [f₂.2.2.1, qm]
     obtain ⟨c₃, k₃, e₃, hk₃, sp₁, sp₂, hsp₁, hsp₂, d₃⟩ := chGeneral_exec (P := P) hG hW c₂ w₂
-      hH₂ hwf hHW (by rw [← hNlen]; exact hNW) (by rw [← hNlen]; exact hs)
+      hH₂ hwf hHW (by rwa [← hNlen]) (by rw [← hNlen]; exact hs)
       (by rw [← hNlen]; exact hmN) hT hi (by rw [r₂ _ (by omega) (by omega), q32])
       (by rw [r₂ _ (by omega) (by omega), q60]) (by rw [r₂ _ (by omega) (by omega), q52]) p53
       (by rw [r₂ _ (by omega) (by omega), q54]) (by rw [r₂ _ (by omega) (by omega), q55]) q56
     have ex : Exec P W chainDir c c₃ (k₁ + (k₂ + (k₃ + 1) + 2)) :=
-      .seq e₁ (.ifLtN_false (by rw [q02, q81]; exact hsm)
-        (.seq e₂ (.ifLtN_true (by rw [q57, p53]; exact hg) e₃)))
+      .seq e₁ (.ifLtN_false (by rwa [q02, q81])
+        (.seq e₂ (.ifLtN_true (by rwa [q57, p53]) e₃)))
     refine ⟨c₃, _, ex, by omega, exec_frameB ex wr_chainDir, ?_⟩
     rw [d₃, show e = (e - 6) + 6 by omega, chain_dirCode_tour C hi]
     obtain ⟨i1, i2⟩ := sideIdx_pair C (e - 6)
@@ -533,8 +533,8 @@ theorem chainDir_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤
       chain_vertex_host C hP _ (by rw [hQn]; exact hsp₂)]
   · have hlast : e = 2 * C.m + 6 := by omega
     have ex : Exec P W chainDir c { c₂ with nreg := upd c₂.nreg 10502 1 } (k₁ + (k₂ + (1 + 2) + 2)) :=
-      .seq e₁ (.ifLtN_false (by rw [q02, q81]; exact hsm)
-        (.seq e₂ (.ifLtN_false (by rw [q57, p53]; exact hg) (Exec.constN w₂ _ _ (by omega)))))
+      .seq e₁ (.ifLtN_false (by rwa [q02, q81])
+        (.seq e₂ (.ifLtN_false (by rwa [q57, p53]) (Exec.constN w₂ _ _ (by omega)))))
     refine ⟨_, _, ex, by omega, exec_frameB ex wr_chainDir, ?_⟩
     config_simp
     rw [hlast, chain_dirCode_last]

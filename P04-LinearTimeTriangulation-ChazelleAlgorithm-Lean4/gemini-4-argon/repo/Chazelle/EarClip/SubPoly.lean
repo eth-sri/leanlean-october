@@ -165,7 +165,7 @@ theorem subPoly_clipList_rotate (l : List ℕ) (p : ℕ) (h3 : 3 ≤ l.length) (
   by_cases hk : k < l.length - 1
   · rw [List.getElem?_range (by omega), List.getElem?_rotate (by omega), hlen,
       getElem?_clipList l p (by omega) (Nat.mod_lt _ (by omega)), Option.map_some,
-      prevIdx_add_two_add_mod _ (by rw [hn]; exact hp), hn,
+      prevIdx_add_two_add_mod _ (by rwa [hn]), hn,
       vtx_subPoly P l (Nat.mod_lt _ (by omega))]
     by_cases hk1 : k + 1 < l.length - 1
     · rw [ite_eq_right (by rw [Nat.mod_eq_of_lt hk1]; omega), Nat.mod_eq_of_lt hk1,
@@ -245,20 +245,19 @@ theorem weakTriangulates_rotate (s : ℕ) {T : List Polygon.Triangle}
     rw [List.mem_map] at ht
     obtain ⟨t', ht', rfl⟩ := ht
     exact validTriangle_rotate P s (hvalid t' ht')
-  · rw [List.length_map, ← n_rotate P s]; exact hcount
+  · rwa [List.length_map, ← n_rotate P s]
   · rw [← filled_rotate P s, ← hunion]
     ext p
     simp only [Set.mem_ofPred_eq, List.mem_map]
     constructor
     · rintro ⟨_, ⟨t, ht, rfl⟩, hp⟩
-      exact ⟨t, ht, by rw [triSet_rotate P s (hidx t ht)]; exact hp⟩
+      exact ⟨t, ht, by rwa [triSet_rotate P s (hidx t ht)]⟩
     · rintro ⟨t, ht, hp⟩
-      exact ⟨_, ⟨t, ht, rfl⟩, by rw [← triSet_rotate P s (hidx t ht)]; exact hp⟩
+      exact ⟨_, ⟨t, ht, rfl⟩, by rwa [← triSet_rotate P s (hidx t ht)]⟩
   · rw [List.pairwise_map]
     refine hdisj.imp_of_mem ?_
     intro a b ha hb h
-    rw [triSet_rotate P s (hidx a ha), triSet_rotate P s (hidx b hb)] at h
-    exact h
+    rwa [triSet_rotate P s (hidx a ha), triSet_rotate P s (hidx b hb)] at h
   · intro t ht i hi hmem
     rw [List.mem_map] at ht
     obtain ⟨t', ht', rfl⟩ := ht
@@ -266,7 +265,7 @@ theorem weakTriangulates_rotate (s : ℕ) {T : List Polygon.Triangle}
     have e1 : P.vtx i = (P.rotate s).vtx j := by rw [vtx_rotate P s hj, hji]
     rw [e1, ← triSet_rotate P s (hidx t' ht')] at hmem
     rw [e1, ← triVertices_rotate P s (hidx t' ht')]
-    exact hvert t' ht' j (by rw [n_rotate]; exact hj) hmem
+    exact hvert t' ht' j (by rwa [n_rotate]) hmem
 
 /-! ### The clipping step for sub-polygons -/
 
@@ -280,13 +279,12 @@ theorem weakTriangulates_clipList (l : List ℕ) (p : ℕ) (h3 : 3 ≤ l.length)
     WeakTriangulates (subPoly P l)
       (earTriangle (subPoly P l) p :: T.map (clipRelabel l.length p)) := by
   have hn := n_subPoly P l
-  have hp' : p < (subPoly P l).n := by rw [hn]; exact hp
+  have hp' : p < (subPoly P l).n := by rwa [hn]
   rw [subPoly_clipList_eq P l p h3 hp] at hT
   have h1 := weakTriangulates_rotate _ _ hT
   rw [n_clip _ _ (by rw [hn]; omega), hn] at h1
   have h2 := weakTriangulates_clip _ _ hQ hp' he h1
-  rw [List.map_map, prevIdx_add_two_mod _ hp', hn] at h2
-  exact h2
+  rwa [List.map_map, prevIdx_add_two_mod _ hp', hn] at h2
 
 /-- Simplicity of the sub-polygon of the clipped list. -/
 theorem simple_subPoly_clipList (l : List ℕ) (p : ℕ) (h3 : 3 ≤ l.length) (hp : p < l.length)

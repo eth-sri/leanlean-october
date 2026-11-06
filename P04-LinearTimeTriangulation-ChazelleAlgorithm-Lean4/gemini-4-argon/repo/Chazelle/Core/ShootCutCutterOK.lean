@@ -105,13 +105,13 @@ theorem cutter_ok (O : OracleIface) :
   intro P W c hw hpre hcost
   obtain ⟨hG, hHW, hX, hcap, hMDWF, M, hMD, hOk, hsP, heP, hs1, he1, -, hin2, hwt⟩ := hpre
   -- the inputs
-  set MD := c.nreg 150000 with hMDd
-  set γ := c.nreg 150009 with hγd
-  set h := c.nreg 150013 with hhd
+  set MD := c.nreg 150000
+  set γ := c.nreg 150009
+  set h := c.nreg 150013
   set A₀ := c.nreg ALLOC with hA₀
-  set m₀ := c.nmem with hm₀
-  set s : WPos := ⟨c.nreg 150001, c.nreg 150002⟩ with hsd
-  set e : WPos := ⟨c.nreg 150003, c.nreg 150004⟩ with hed
+  set m₀ := c.nmem
+  set s : WPos := ⟨c.nreg 150001, c.nreg 150002⟩
+  set e : WPos := ⟨c.nreg 150003, c.nreg 150004⟩
   replace hX : Robust A₀ m₀ (fun m' => GradeRaw O P m' h A₀) := hX
   replace hcap : γ ≤ 2 ^ (m₀ h - 1) := hcap
   replace hMDWF : ModelDescWF P A₀ m₀ MD := hMDWF
@@ -163,7 +163,7 @@ theorem cutter_ok (O : OracleIface) :
   rw [List.nil_append] at hI₂
   have hq : ps.length ≤ Nmax := by linarith
   -- the finish
-  obtain ⟨c₃, k₃, e₃, hk₃, o10, om, omo, oA, oAk, or₃, orr, orm, oo⟩ :=
+  obtain ⟨c₃, k₃, e₃, hk₃, o10, om, omo, oA, oAk⟩ :=
     cutFin_exec (P := P) c₂ e₂.wb_right hI₂ hq
   have ex : Exec P W cutter c c₃ (k₁ + (k₂ + k₃)) := by
     unfold cutter; exact .seq e₁ (.seq e₂ e₃)
@@ -233,9 +233,9 @@ theorem cutter_ok (O : OracleIface) :
     · rw [kS i (by omega), kE i (by omega)]
       exact arc.e6 i hi
     · rw [kS i hi, kE i hi]
-      have hk' : (ps[i]'hi).kind = 0 := by rw [← w4 i hi]; exact hk
+      have hk' : (ps[i]'hi).kind = 0 := by rwa [← w4 i hi]
       exact (hok _ (List.getElem_mem hi)).2.2.2.2.2.1 hk'
-    · have hk' : (ps[i]'hi).kind = 1 := by rw [← w4 i hi]; exact hk
+    · have hk' : (ps[i]'hi).kind = 1 := by rwa [← w4 i hi]
       obtain ⟨b5, b6⟩ := w56 i hi hk'
       rw [kS i hi, kE i hi, b5, b6, w0 i hi, w1 i hi, w2 i hi, w3 i hi]
       have := kind1_facts (hok _ (List.getElem_mem hi)) hk' hX hm₃ (A' := c₃.nreg ALLOC)

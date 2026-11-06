@@ -72,8 +72,7 @@ theorem qplan :
     · exact Or.inl h0
     · exact Or.inr (param_pos_nh q.hD (by have := q.hn; omega) q.he₂ q.he.2.2 q.he.1 h0)
   have := plan_arc q.hn q.he₁ q.he₂ ⟨hx.1, hx.2.1⟩ hy hnz
-  rw [qkey_nh q] at this
-  exact this
+  rwa [qkey_nh q] at this
 
 include q in
 /-- **One sub-query** (`L ≤ n - 1`). -/
@@ -92,8 +91,8 @@ theorem plan_one (hL : spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (nh Q e₂
   have hpe : ProperPos (interiorModel Q) Q Q.n ⟨e₂, nh Q e₂ h₂⟩ :=
     ⟨by rw [param_nh q.he₂]; exact q.he.1, by rw [param_nh q.he₂]; exact q.he.2.1,
       le_trans nh_le q.he.2.2⟩
-  refine ⟨⟨q.he₁, h1, hL, q.hs, by rw [hmod]; exact hpe, by rw [hmod]; exact hee,
-    by rw [hmod]; exact hxy⟩, hS, hwt (by omega)⟩
+  refine ⟨⟨q.he₁, h1, hL, q.hs, by rwa [hmod], by rwa [hmod],
+    by rwa [hmod]⟩, hS, hwt (by omega)⟩
 
 include q in
 /-- **Two sub-queries** (`L ≥ n`): two edges to the vertex `(e₁ + 2) mod n`, then the rest. -/
@@ -111,8 +110,8 @@ theorem plan_two (hL : Q.n ≤ spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (n
     (interiorModel Q).arcWt ((interiorModel Q).key Q ⟨e₁, h₁⟩)
       ((interiorModel Q).key Q ⟨e₂, h₂⟩) = Q.n := by
   obtain ⟨hS, hxy, hmod, heen, hee, h1, hwt, hwt'⟩ := qplan q
-  set ee := eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂) with heed
-  set L := spanL ee (nh Q e₂ h₂) with hLd
+  set ee := eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)
+  set L := spanL ee (nh Q e₂ h₂)
   have hn := q.hn
   have hn0 : 0 < Q.n := by omega
   have hee2 : 2 ≤ ee := by rcases hee with ⟨-, h'⟩ | ⟨-, h', -⟩ <;> omega
@@ -126,10 +125,9 @@ theorem plan_two (hL : Q.n ≤ spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (n
     ⟨le_rfl, zero_lt_one, Nat.zero_le _⟩
   have hp0 : ∀ e, (interiorModel Q).param Q ⟨e, 0⟩ = 0 := fun e => rfl
   have hx1 := q.hs.2.1
-  have hx0 := q.hs.1
   refine ⟨⟨q.he₁, by norm_num, by omega, q.hs, hv0 _, Or.inl ⟨rfl, rfl⟩, by
       rw [hp0]; push_cast; linarith⟩,
-    ⟨Nat.mod_lt _ hn0, by omega, by omega, hv0 _, by rw [hmod2]; exact hpe, ?_, ?_⟩, ?_, ?_⟩
+    ⟨Nat.mod_lt _ hn0, by omega, by omega, hv0 _, by rwa [hmod2], ?_, ?_⟩, ?_, ?_⟩
   · rw [hmod2]
     rcases hee with ⟨h0, h'⟩ | ⟨h0, h', hp⟩
     · exact Or.inl ⟨h0, by omega⟩

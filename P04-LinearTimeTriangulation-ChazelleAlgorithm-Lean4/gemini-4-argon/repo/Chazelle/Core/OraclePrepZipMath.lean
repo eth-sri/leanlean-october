@@ -206,8 +206,7 @@ theorem zipRaw_sound (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {c : ℕ �
     obtain ⟨hI, hex⟩ := h
     obtain ⟨ha, hA'⟩ := aftArc_spec C Q N hex
     exact pair_of_gen hN hP hne ha hj (Or.inr (Or.inr (Or.inl ⟨hI, hA'⟩))) hφ
-  · have hT6 := κT_ge C
-    have hT7 := κT_lt C
+  · have hT7 := κT_lt C
     have hTdef := rT_def C
     rcases ho with rfl | rfl | rfl | rfl | rfl
     · unfold sp1 at ho'; split_ifs at ho' with h
@@ -264,11 +263,8 @@ theorem zipRaw_complete (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p q : 
     have := arcs_le_one_of_empty hN hGM (Set.not_nonempty_iff_eq_empty.1 hF)
     omega
   have hn : normP p q = some (p, q) := normP_of_lt h2
-  have hn' : normP q p = some (p, q) := by rw [normP_comm]; exact hn
-  have hT6 := κT_ge C
-  have hT7 := κT_lt C
+  have hn' : normP q p = some (p, q) := by rwa [normP_comm]
   have hTdef := rT_def C
-  have hm : (0 : ℝ) < C.m := by exact_mod_cast C.one_le
   have inIdx : ∀ {r : ℕ} {y : ℝ}, r < N.arcs.length →
       sideInArc (sk (chainModel C) Q N r) (ek (chainModel C) Q N r) y →
       InArc C Q N y ∧ inArcIdx C Q N y = r := fun {r y} hr h => by

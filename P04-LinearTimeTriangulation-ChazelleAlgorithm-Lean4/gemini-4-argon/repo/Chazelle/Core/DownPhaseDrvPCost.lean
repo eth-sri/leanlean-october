@@ -27,8 +27,6 @@ theorem lemma41Nat_mono {g g' : ℕ} (h : g ≤ g') : lemma41Nat g ≤ lemma41Na
     exact_mod_cast Nat.clog_mono_right 2 h
   have h3 : (2 : ℝ) ^ ((74 : ℝ) / 75 * g) ≤ (2 : ℝ) ^ ((74 : ℝ) / 75 * g') :=
     Real.rpow_le_rpow_of_exponent_le (by norm_num) (by nlinarith)
-  have h0 : (0 : ℝ) ≤ g := Nat.cast_nonneg g
-  have hc : (0 : ℝ) ≤ (Nat.clog 2 g : ℕ) := Nat.cast_nonneg _
   have hp : (0 : ℝ) < (2 : ℝ) ^ ((74 : ℝ) / 75 * g) := Real.rpow_pos_of_pos (by norm_num) _
   have hg2 : (g : ℝ) ^ 2 ≤ (g' : ℝ) ^ 2 := by nlinarith
   calc (g : ℝ) ^ 2 * ((Nat.clog 2 g : ℝ) + 1) * (2 : ℝ) ^ ((74 : ℝ) / 75 * g)
@@ -50,7 +48,6 @@ theorem le_lemma41Nat (g : ℕ) : g ≤ lemma41Nat g := by
   have h1 : (1 : ℝ) ≤ (g : ℝ) := by exact_mod_cast hg
   have h2 : (1 : ℝ) ≤ (2 : ℝ) ^ ((74 : ℝ) / 75 * g) :=
     Real.one_le_rpow (by norm_num) (by positivity)
-  have h3 : (0 : ℝ) ≤ (Nat.clog 2 g : ℕ) := Nat.cast_nonneg _
   have : (g : ℝ) ≤ (lemma41Nat g : ℝ) := by
     calc (g : ℝ) ≤ (g : ℝ) ^ 2 * ((Nat.clog 2 g : ℝ) + 1) * 1 := by nlinarith
       _ ≤ _ := by
@@ -92,17 +89,12 @@ theorem kcost_le {g K : ℕ} (hg : 1 ≤ g) (hK : K * 2 ^ Cost.ceilBeta g ≤ 25
     rw [Nat.cast_pow, Nat.cast_ofNat, ← Real.rpow_natCast]
     exact Real.rpow_le_rpow_of_exponent_le (by norm_num) her
   have hg1 : (1 : ℝ) ≤ g := by exact_mod_cast hg
-  have hge : (e : ℝ) ≤ g := by have := her; nlinarith
   have h13 : ((13 + e : ℕ) : ℝ) ≤ 14 * (g : ℝ) ^ 2 * ((Nat.clog 2 g : ℝ) + 1) := by
     push_cast
-    have hc : (0 : ℝ) ≤ (Nat.clog 2 g : ℕ) := Nat.cast_nonneg _
     nlinarith
   have hreal := real_le_lemma41Nat g
-  have hp : (0 : ℝ) ≤ ((2 ^ e : ℕ) : ℝ) := Nat.cast_nonneg _
   have key : ((2520 * 2 ^ e * (13 + e) : ℕ) : ℝ) ≤ ((35280 * lemma41Nat g : ℕ) : ℝ) := by
     push_cast
-    have hc : (0 : ℝ) ≤ (Nat.clog 2 g : ℕ) := Nat.cast_nonneg _
-    have hpos : (0 : ℝ) ≤ (2 : ℝ) ^ ((74 : ℝ) / 75 * g) := by positivity
     calc (2520 : ℝ) * 2 ^ e * (13 + e)
         = 2520 * ((2 ^ e : ℕ) : ℝ) * ((13 + e : ℕ) : ℝ) := by push_cast; ring
       _ ≤ 2520 * (2 : ℝ) ^ ((74 : ℝ) / 75 * g) *

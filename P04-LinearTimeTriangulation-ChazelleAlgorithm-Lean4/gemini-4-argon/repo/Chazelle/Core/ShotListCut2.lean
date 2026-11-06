@@ -152,11 +152,10 @@ theorem offLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
         .copyN 50204 (L + 3), .copyN 50205 z]) c c₁ k₁ ∧ k₁ = 6 ∧
       c₁.nreg 50200 = c.nreg cd ∧ c₁.nreg 50201 = c.nreg L ∧
       c₁.nreg 50202 = c.nreg (L + 1) ∧ c₁.nreg 50203 = c.nreg (L + 2) ∧
-      c₁.nreg 50204 = c.nreg (L + 3) ∧ c₁.nreg 50205 = c.nreg z ∧
-      (∀ r, ¬ (50200 ≤ r ∧ r < 50206) → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem ∧
+      c₁.nreg 50204 = c.nreg (L + 3) ∧ c₁.nreg 50205 = c.nreg z ∧ c₁.nmem = c.nmem ∧
       c₁.nreg ALLOC = c.nreg ALLOC := by
   exec_block
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, ?_⟩ <;> (try unfold ALLOC) <;> rsimp
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, rfl, ?_⟩ <;> (try unfold ALLOC) <;> rsimp
 
 /-- **The correction of `a < b`**: afterwards the bit `R + 100` is the key order of `a`, `b`. -/
 theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : ℓ ≤ 2) (c : Config)
@@ -173,7 +172,7 @@ theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
       BitIs c' (R + 100) ((chainModel C).key (Qof P) (posR c (rL R ℓ, rL R ℓ + 1)) <
         (chainModel C).key (Qof P) (posR c (rL R ℓ + 2, rL R ℓ + 3))) ∧
       FrameB (Boff R) c c' := by
-  set L := rL R ℓ with hL
+  set L := rL R ℓ
   set M := chainModel C with hM
   have hLd : L = R + 40 + 10 * ℓ := rfl
   have hne_of : ¬ (c.nreg L = c.nreg (L + 2) ∧ 0 < c.nreg (L + 1) ∧ 0 < c.nreg (L + 3)) →
@@ -203,7 +202,7 @@ theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
     exact ⟨c, _, ex, by omega, hne_of (by omega), exec_frameB ex wk⟩
   -- two interior positions of one edge: `offCmp`
   have hR' := hR; unfold RegsOK at hR'
-  obtain ⟨c₁, k₁, e₁, hk₁, p1, p2, p3, p4, p5, p6, pr, pm, pal⟩ :=
+  obtain ⟨c₁, k₁, e₁, hk₁, p1, p2, p3, p4, p5, p6, pm, pal⟩ :=
     offLoad_exec (P := P) c hw (R + 34) L (R + 30) (by omega) (by omega)
   rw [hz] at p6
   have w₁ := e₁.wb_right
@@ -211,14 +210,13 @@ theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
     have : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
     rw [hM, this]; omega
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, -⟩ := offCmp_meets P W c₁ w₁
-    ⟨hG, hHW, by rw [pal, pm, p1]; exact hwf, H, C, by rw [pm, p1]; exact hC,
-      by rw [p2]; exact hae, by rw [p4]; exact hbe, by rw [p6]; exact hn0,
+    ⟨hG, hHW, by rwa [pal, pm, p1], H, C, by rwa [pm, p1],
+      by rwa [p2], by rwa [p4], by rwa [p6],
       by rw [p2, p3]; exact ha.1, by rw [p4, p5]; exact hb.1,
       fun h => by rw [p3] at h; omega, fun h => by rw [p5] at h; omega, hm⟩
     (by rw [pal]; show _ + 11000 ≤ W; omega)
   replace hk₂ : k₂ ≤ 11000 := hk₂
-  obtain ⟨o1, -⟩ := post₂ H C (by rw [pm, p1]; exact hC)
-  have F₂ := exec_frameB e₂ wr_offCmp
+  obtain ⟨o1, -⟩ := post₂ H C (by rwa [pm, p1])
   have e₃ := Exec.copyN (P := P) e₂.wb_right (R + 100) 50210
   have ex : Exec P W (offB R ℓ) c _ _ :=
     .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 (.ifLtN_true h4
@@ -378,7 +376,7 @@ theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
       FrameB (Bcut R ℓ) c c' := by
   set L := rL R ℓ with hL
   have hLd : L = R + 40 + 10 * ℓ := rfl
-  set M := chainModel C with hM
+  set M := chainModel C
   set Q := Qof P
   set a := posR c (L, L + 1) with ha_def
   set b := posR c (L + 2, L + 3) with hb_def
@@ -432,12 +430,11 @@ theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
   have pb : posR c₁ (L + 2, L + 3) = b := by
     simp only [posR, hb_def, WPos.mk.injEq]; exact ⟨gL2, gL3⟩
   obtain ⟨c₂, k₂, e₂, hk₂, kab, f₂⟩ := offB_exec (P := P) hR hℓ c₁ e₁.wb_right hG hHW
-    (H := H) (C := C) (by rw [hA1, hM1, g34]; exact hwf) (by rw [hM1, g34]; exact hC) hm
-    (by rw [hA1]; exact hroom) (by rw [g30, hz]) (by rw [pa]; exact ha) (by rw [pb]; exact hb)
-    (by rw [gL0]; exact hae) (by rw [gL2]; exact hbe)
-    (by rw [gL0, gL1, gL2, gL3]; exact bab)
+    (H := H) (C := C) (by rwa [hA1, hM1, g34]) (by rwa [hM1, g34]) hm
+    (by rwa [hA1]) (by rw [g30, hz]) (by rwa [pa]) (by rwa [pb])
+    (by rwa [gL0]) (by rwa [gL2])
+    (by rwa [gL0, gL1, gL2, gL3])
   rw [pa, pb] at kab
-  have in₂ : ∀ r, Boff R r = false → c₂.nreg r = c₁.nreg r := f₂.1
   have o₂ : ∀ r, (R + 100 < r ∧ r < R + 300) → Boff R r = false := fun r hr => by
     have := bprim_R hR (i := r - R) (by omega)
     rw [show R + (r - R) = r by omega] at this
@@ -511,8 +508,7 @@ theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
     · have hd : decide (c₃.nreg (R + 30 + ℓ) < c₃.nreg (R + 9)) = false := by
         simp only [decide_eq_false_iff_not]; exact fun h => hp (hp3.1 h)
       rw [hd] at pc₄
-      rw [ite_no _ _ hp]
-      exact pc₄
+      rwa [ite_no _ _ hp]
   · -- the frame
     have f₄ : FrameB (fun r => decide (L + 4 ≤ r ∧ r < L + 14)) c₃ c₄ :=
       ⟨fun r hr => r₄ r (by simp only [decide_eq_false_iff_not] at hr; omega)

@@ -49,7 +49,7 @@ theorem valid_complete_int (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point
   have hM := walkAx_of_goodModel hGM
   have hS := hFam.2.1
   have hfin := hFam.1
-  set w := sidePt M.W p t with hw
+  set w := sidePt M.W p t
   have hnot : ∀ c ∈ S, ∀ s, 0 < s → s < T → rayPt w σ s ∉ c :=
     fun c hc => ray_not_mem_of_chord hM hS hfin he heS hσ hT heq hdom hc
   have hav : ∀ c ∈ S, ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w σ s ∉ c := by
@@ -80,7 +80,7 @@ theorem valid_complete_int (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point
       have := congrArg Prod.fst h
       simp only [Visibility.rayPt] at this
       rcases hσ with rfl | rfl <;> linarith
-    have h2 := hloc _ hxc hxne (by rw [dist_rayPt _ hσ' hs0.le]; exact hsr)
+    have h2 := hloc _ hxc hxne (by rwa [dist_rayPt _ hσ' hs0.le])
     have h1 := (sideLeft_rayPt_iff _ p t σ one_pos hs0).1 hsec
     exact interior_sides hM hp ht0 ht1 h1 h2
   · obtain ⟨X, hX, l, r, harc, hin⟩ := hM.arc_around hS hfin hne hcut

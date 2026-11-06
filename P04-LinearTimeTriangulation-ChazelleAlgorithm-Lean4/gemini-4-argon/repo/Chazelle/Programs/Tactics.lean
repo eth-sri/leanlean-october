@@ -272,10 +272,6 @@ macro "exec_block_step" : tactic =>
        config_flatten_at _hw; spec_flatten)
     | (refine spec_step (Machine.Exec.mulR ‹WordsBounded _ _› _ _ _) (fun _hw => ?_)
        config_flatten_at _hw; spec_flatten)
-    | (refine spec_step (Machine.Exec.loadR ‹WordsBounded _ _› _ _) (fun _hw => ?_)
-       config_flatten_at _hw; spec_flatten)
-    | (refine spec_step (Machine.Exec.storeR ‹WordsBounded _ _› _ _) (fun _hw => ?_)
-       config_flatten_at _hw; spec_flatten)
     | (refine spec_step (Machine.Exec.readX ‹WordsBounded _ _› _ _) (fun _hw => ?_)
        config_flatten_at _hw; spec_flatten)
     | (refine spec_step (Machine.Exec.readY ‹WordsBounded _ _› _ _) (fun _hw => ?_)
@@ -287,8 +283,6 @@ macro "exec_block_step" : tactic =>
     | (refine spec_step (Machine.Exec.inputSize ‹WordsBounded _ _› _ ?_) (fun _hw => ?_)
        rotate_left; config_flatten_at _hw; spec_flatten)
     | (refine spec_step (Machine.Exec.addN ‹WordsBounded _ _› _ _ _ ?_) (fun _hw => ?_)
-       rotate_left; config_flatten_at _hw; spec_flatten)
-    | (refine spec_step (Machine.Exec.divR ‹WordsBounded _ _› _ _ _ ?_) (fun _hw => ?_)
        rotate_left; config_flatten_at _hw; spec_flatten))
 
 /-- Symbolic execution of a straight-line block on a spec goal; see the module docstring.

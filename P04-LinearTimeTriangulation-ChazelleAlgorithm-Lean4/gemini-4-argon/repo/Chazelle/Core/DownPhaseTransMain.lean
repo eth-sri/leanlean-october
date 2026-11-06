@@ -24,7 +24,7 @@ theorem semigranular_pieces (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q)
     {F₀ : Set (Set Point)} (hF₀ : (chainModel C).ChordFamily C.P F₀) {γ : ℕ}
     (hγ : (chainModel C).Semigranular F₀ γ) :
     (interiorModel Q).Semigranular (pieces Q F₀) (2 * γ + 1) := by
-  have hP : C.P.Simple := by rw [T.hP]; exact hQ
+  have hP : C.P.Simple := by rwa [T.hP]
   obtain ⟨c₀, h6, hle, hvtx⟩ := exists_shift hQ T hD
   have H : Shift Q C c₀ := ⟨h6, hle, hvtx⟩
   intro V hV

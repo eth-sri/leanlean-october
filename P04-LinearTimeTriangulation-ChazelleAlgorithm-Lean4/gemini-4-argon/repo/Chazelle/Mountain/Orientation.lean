@@ -92,14 +92,12 @@ theorem eventually_offset_orient {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i
       have hb : offset (P.vtx 0) (P.vtx ((0 + 1) % P.n)) (1 / 2) δ ∉ P.boundary :=
         connectedComponentIn_subset _ _ h2.1
       rw [mem_filled_iff hP hb] at h1
-      rw [← parity_eq_of_mem_connectedComponentIn P h2.1]
-      exact h1
+      rwa [← parity_eq_of_mem_connectedComponentIn P h2.1]
     · intro h
       filter_upwards [h0] with δ hδ
       unfold leftPoint
-      rw [mem_filled_iff hP (connectedComponentIn_subset _ _ hδ.1),
+      rwa [mem_filled_iff hP (connectedComponentIn_subset _ _ hδ.1),
         parity_eq_of_mem_connectedComponentIn P hδ.1]
-      exact h
   filter_upwards [hi'] with δ hδ
   have hb1 : offset (P.vtx i) (P.vtx ((i + 1) % P.n)) t δ ∉ P.boundary :=
     connectedComponentIn_subset _ _ hδ.1
@@ -195,7 +193,7 @@ theorem interior_triangle_mem_filled_iff {P : Polygon} (hP : P.Simple) {i : ℕ}
     · exact ⟨-1, Or.inr rfl, by linarith⟩
     · exact ⟨1, Or.inl rfl, by linarith⟩
   -- the offset points of the edge at its midpoint, on the `σ` side, lie in the open triangle
-  set W : Set Point := {y | 0 < bary₁ a v b y} ∩ {y | 0 < bary₂ a v b y} with hW
+  set W : Set Point := {y | 0 < bary₁ a v b y} ∩ {y | 0 < bary₂ a v b y}
   have hWo : IsOpen W :=
     (isOpen_lt continuous_const (continuous_bary₁ a v b)).inter
       (isOpen_lt continuous_const (continuous_bary₂ a v b))
@@ -244,7 +242,7 @@ theorem orient_det_pos_of_three {P : Polygon} (hP : P.Simple) (h3 : P.n = 3) :
   have hdet := det_ne_zero_of_simple_three P hP h3
   have h1 : (0 + 1) % P.n = 1 := by rw [h3]
   have key := interior_triangle_mem_filled_iff hP (i := 0) (by omega) (b := P.vtx 2)
-    (by rw [h1]; exact hdet)
+    (by rwa [h1])
     (by rw [h1]; intro x hx; exact not_mem_boundary_of_mem_interior_triangle P h3 hdet hx)
     (x := Geometry.centroid (P.vtx 0) (P.vtx 1) (P.vtx 2))
     (by rw [h1]; exact centroid_mem_interior hdet)
@@ -266,12 +264,12 @@ theorem interior_earHull_not_mem_boundary {P : Polygon} (hP : P.Simple) {i : ℕ
     x ∉ P.boundary := by
   have h3 := simple_three_le hP
   have hn : 0 < P.n := by omega
-  set Q := P.rotate i with hQdef
+  set Q := P.rotate i
   have hQ : Q.Simple := simple_rotate P i hP
   have hQn : Q.n = P.n := n_rotate P i
   obtain ⟨ea, ev, eb⟩ := vtx_rotate_fan P i (by omega) hi
   have hdetQ : det (Q.vtx (Q.n - 1)) (Q.vtx 0) (Q.vtx 1) ≠ 0 := by
-    rw [ea, ev, eb]; exact hdet
+    rwa [ea, ev, eb]
   have hnoneQ : ∀ j, j < Q.n →
       Q.vtx j ∈ convexHull ℝ ({Q.vtx (Q.n - 1), Q.vtx 0, Q.vtx 1} : Set Point) →
         j = 0 ∨ j = 1 ∨ j = Q.n - 1 := by
@@ -311,9 +309,9 @@ theorem isEar_iff_convex_of_empty {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
   rw [isEar_iff P i hP h4 hi]
   simp only [hdet, ne_eq, not_false_eq_true, true_and]
   rw [and_iff_right hnone]
-  set a := P.vtx (prevIdx P i) with ha
-  set v := P.vtx i with hv
-  set b := P.vtx ((i + 1) % P.n) with hb
+  set a := P.vtx (prevIdx P i)
+  set v := P.vtx i
+  set b := P.vtx ((i + 1) % P.n)
   have hab : a ≠ b := vtx_prev_ne_vtx_succ P i hP hi
   set m := lerp a b (1 / 2) with hm
   have hmB : m ∉ P.boundary :=
@@ -343,7 +341,7 @@ theorem isEar_iff_convex_of_empty {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
     rintro _ ⟨s, hs, rfl⟩
     rcases hs.1.lt_or_eq with h0 | h0
     · exact hoff _ (hint s ⟨h0, by linarith [hs.2]⟩)
-    · rw [← h0, lerp_zero]; exact hmB
+    · rwa [← h0, lerp_zero]
   have hx1 : lerp m v (1 / 2) ∈ interior (convexHull ℝ ({a, v, b} : Set Point)) :=
     hint (1 / 2) ⟨by norm_num, by norm_num⟩
   have hpar := parity_eq_of_isPreconnected P hS hSb (x := lerp m v 0) (y := lerp m v (1 / 2))
@@ -352,8 +350,8 @@ theorem isEar_iff_convex_of_empty {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
   -- the edge `prev i` is the directed segment `a v`
   have hprev : prevIdx P i < P.n := prevIdx_lt P hi
   have hsucc : P.vtx ((prevIdx P i + 1) % P.n) = v := by rw [prevIdx_add_one_mod P hi]
-  have key := interior_triangle_mem_filled_iff hP hprev (b := b) (by rw [hsucc]; exact hdet)
-    (by rw [hsucc]; exact hoff) (x := lerp m v (1 / 2)) (by rw [hsucc]; exact hx1)
+  have key := interior_triangle_mem_filled_iff hP hprev (b := b) (by rwa [hsucc])
+    (by rwa [hsucc]) (x := lerp m v (1 / 2)) (by rwa [hsucc])
   rw [hsucc] at key
   rw [← key, hpar, ← mem_filled_iff hP (hoff _ hx1)]
 

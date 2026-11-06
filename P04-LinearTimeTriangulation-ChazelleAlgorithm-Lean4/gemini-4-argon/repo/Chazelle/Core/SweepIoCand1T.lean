@@ -138,7 +138,7 @@ theorem topT_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB) (
   rw [hzpos] at htop
   dsimp only at htop
   have k6 := h.hK.2.2.1
-  set KK := kD κT κS (lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB with hKK
+  set KK := kD κT κS (lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB
   unfold topT
   refine irs_ite' (K := KK + 12) (by omega) (fun hj => ?_) (fun hj => ?_)
   · rw [h.vj, h.vk] at hj
@@ -182,7 +182,7 @@ theorem dec_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB)
   have hsh' := shared_iffR h.hA.hP (Qof P) hx hp0 hp1
   rw [hzpos] at hsh'
   dsimp only at hsh'
-  set KK := kD κT κS (lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB with hKK
+  set KK := kD κT κS (lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB
   have k0 := h.hK.1
   have k6 := h.hK.2.2.1
   have hz0 := nhgt_eq_zero_iff (chainModel J.right) (Qof P) ⟨c.nreg qE, c.nreg qH⟩
@@ -193,7 +193,7 @@ theorem dec_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB)
       fun e => by rw [hz0.2 e] at hp; exact lt_irrefl _ hp
     have hns : z ≠ J.shared := fun e => hne (hsh'.1 e).1
     have hnt : z ≠ J.right.top := fun e => by
-      have := (top_iffR h.hA.hP (Qof P) hx hp0 hp1).1 (by rw [hzpos]; exact e)
+      have := (top_iffR h.hA.hP (Qof P) hx hp0 hp1).1 (by rwa [hzpos])
       exact hne this.1
     unfold genT
     refine irs_ite' (K := KK) (by omega) (fun hj => ?_) (fun hj => ?_)

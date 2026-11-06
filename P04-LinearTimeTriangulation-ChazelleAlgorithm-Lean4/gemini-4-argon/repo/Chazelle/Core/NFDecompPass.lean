@@ -84,7 +84,6 @@ theorem p1_fold {j : ℕ} (hj : j ≤ R) {u : ℕ} (hu : u < R) :
     rfl
   | succ j ih =>
     rw [List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
-    have hjR : j < R := by omega
     have hp : R - 1 - j < R := by omega
     have hr : ord (R - 1 - j) < R := h.ord_lt _ hp
     have hpr : pos (ord (R - 1 - j)) = R - (j + 1) := by rw [h.pos_ord _ hp]; omega

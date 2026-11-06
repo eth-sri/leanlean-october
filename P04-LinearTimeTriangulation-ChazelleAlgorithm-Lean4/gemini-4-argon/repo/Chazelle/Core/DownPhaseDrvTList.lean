@@ -66,7 +66,6 @@ theorem chord_eq_of_sub {D : Set Point} {y₁ a₁ b₁ y₂ a₂ b₂ y a b : �
     (s₁ : hseg y a b ⊆ hseg y₁ a₁ b₁) (s₂ : hseg y a b ⊆ hseg y₂ a₂ b₂) :
     hseg y₁ a₁ b₁ = hseg y₂ a₂ b₂ := by
   obtain ⟨ey₁, ha₁, hb₁⟩ := hseg_sub hab.le s₁
-  obtain ⟨ey₂, ha₂, hb₂⟩ := hseg_sub hab.le s₂
   have hm : (((a + b) / 2, y) : Point) ∈ hseg y a b := ⟨rfl, by linarith, by linarith⟩
   rcases Chazelle.Chain.hchordIn_inter h₁ h₂ (s₁ hm) (s₂ hm) with ⟨e1, e2, e3⟩ | ⟨hp, -⟩
   · rw [e1, e2, e3]
@@ -97,16 +96,15 @@ theorem triples_props {Q : Polygon} (hN : IsNF (chainModel C) Q N) {x : ℕ × �
   have hmem : N.chords[i].toSet (chainModel C) Q ∈ N.F (chainModel C) Q :=
     ⟨_, List.getElem_mem hi, rfl⟩
   refine ⟨?_, hFam.2.1 hmem, ?_, hmem⟩
-  · have := hh i hi; rw [hci] at this; exact this
-  · have := hatt i hi; rw [hci] at this; exact this
+  · have := hh i hi; rwa [hci] at this
+  · have := hatt i hi; rwa [hci] at this
 
 /-- The chain chords of the records are pairwise distinct. -/
 theorem nodup_triples_toSet {Q : Polygon} (hN : IsNF (chainModel C) Q N) :
     ((triplesOf N).map fun x => (recOf x).toSet (chainModel C) Q).Nodup := by
   obtain ⟨-, hdist, -⟩ := hN
   unfold triplesOf
-  rw [List.map_map]
-  rw [List.nodup_iff_injective_getElem]
+  rw [List.map_map, List.nodup_iff_injective_getElem]
   intro i j hij
   simp only [List.getElem_map, Function.comp] at hij
   have e1 : N.chord i.1 = N.chords[i.1]'(by simpa using i.2) := by
@@ -116,7 +114,7 @@ theorem nodup_triples_toSet {Q : Polygon} (hN : IsNF (chainModel C) Q N) :
     unfold NF.chord
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
   have := hdist i.1 j.1 (by unfold NF.nChords; simpa using i.2)
-    (by unfold NF.nChords; simpa using j.2) (by rw [e1, e2]; exact hij)
+    (by unfold NF.nChords; simpa using j.2) (by rwa [e1, e2])
   exact Fin.ext this
 
 /-- **The number of chords** of a valid normal form is its number of records. -/
@@ -141,7 +139,7 @@ theorem ncard_F {M : Model} {Q : Polygon} {N : NF}
       unfold NF.chord
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
     exact Fin.ext (hdist i.1 j.1 (by unfold NF.nChords; simpa using i.2)
-      (by unfold NF.nChords; simpa using j.2) (by rw [e1, e2]; exact hij))
+      (by unfold NF.nChords; simpa using j.2) (by rwa [e1, e2]))
   rw [hF, show {c | c ∈ N.chords.map fun r => r.toSet M Q} =
       ((N.chords.map fun r => r.toSet M Q).toFinset : Set (Set Point)) by
     ext c; simp, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd, List.length_map]
@@ -188,12 +186,10 @@ theorem famOf_transL (hN : IsNF (chainModel C) Q N) :
 theorem chordTriplesOK_transL (hN : IsNF (chainModel C) Q N)
     (hFam : (interiorModel Q).ChordFamily Q (Trans.pieces Q (N.F (chainModel C) Q))) :
     ChordTriplesOK (interiorModel Q) Q (transL li Q.n (c0 C li) (triplesOf N)) := by
-  have hmn := T.hm
-  have hm1 := C.one_le
   refine ⟨?_, ?_, ?_, ?_⟩
   · have := famOf_transL hQ T hD hli hN
     unfold famOf at this
-    rw [this]; exact hFam
+    rwa [this]
   · unfold transL
     rw [List.map_map]
     refine List.Nodup.map_on (fun x hx x' hx' hxx => ?_)
@@ -251,14 +247,14 @@ theorem trans_math (hG : GoodEnv P) (hC : TopChain P C)
   have hn : (Qof P).n = P.n := shear_n _ _
   have T : Trans.Top (Qof P) C := ⟨hC.1, hC.2.1, by rw [hn]; exact hC.2.2⟩
   have hD : Trans.DistinctH (Qof P) := (goodShear_epsOf hG.2).2.1
-  have hP : C.P.Simple := by rw [hC.1]; exact hQ
+  have hP : C.P.Simple := by rwa [hC.1]
   obtain ⟨hNF, hdeg, hgran, hdec⟩ := hN
   have hFam0 : (chainModel C).ChordFamily C.P (N.F (chainModel C) (Qof P)) := by
     rw [hC.1]; exact hNF.1
   obtain ⟨hFam, hdegP, hwtP, -⟩ := Trans.transition hQ T hD hFam0 hgran.1 hdeg
   have hfam := famOf_transL hQ T hD hli hNF
   rw [← hn]
-  refine ⟨chordTriplesOK_transL hQ T hD hli hNF hFam, by rw [hfam]; exact hdegP, ?_, ?_, ?_⟩
+  refine ⟨chordTriplesOK_transL hQ T hD hli hNF hFam, by rwa [hfam], ?_, ?_, ?_⟩
   · rw [hfam]
     intro U hU
     refine (hwtP U hU).trans ?_
@@ -275,8 +271,7 @@ theorem trans_math (hG : GoodEnv P) (hC : TopChain P C)
     rw [hn]
     unfold topGran at this
     have hm : C.m = P.n - 1 := by have := hC.2.2; omega
-    rw [hm] at this
-    exact this
+    rwa [hm] at this
 
 end
 

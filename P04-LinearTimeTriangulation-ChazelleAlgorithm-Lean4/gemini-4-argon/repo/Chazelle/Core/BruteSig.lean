@@ -117,15 +117,15 @@ theorem testS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
     exact symPtIn_of_eq s₃ fun j h1 h2 => by rw [q₄ j (by omega)]
   have hop₄ : c₄.nreg 10009 = op := by simp [c₄]
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, bit₅, sig₅⟩ := sig_exec (P := P) c₄ e₄.wb_right hG hW
-    (by rw [hop₄]; exact hop) hlx hly hlz S₁ S₂ S₃
+    (by rwa [hop₄]) hlx hly hlz S₁ S₂ S₃
   rw [hop₄] at sig₅
   have e₆ := Exec.copyN (P := P) e₅.wb_right d 10010
   set c₆ : Config := { c₅ with nreg := upd c₅.nreg d (c₅.nreg 10010) }
   have ex : Exec P W (testS op x y z d) c c₆ (k₁ + (k₂ + (k₃ + (1 + (k₅ + 1))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
   have hd : c₆.nreg d = c₅.nreg 10010 := by simp [c₆]
-  refine ⟨c₆, _, ex, by omega, ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩, by rw [hd]; exact bit₅,
-    by rw [hd]; exact sig₅⟩
+  refine ⟨c₆, _, ex, by omega, ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩, by rwa [hd],
+    by rwa [hd]⟩
   · have hr' : Bk r = false ∧ r ≠ d := by
       unfold Bt at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; exact hr
     have hnk : r < 10000 ∨ 10500 ≤ r := by

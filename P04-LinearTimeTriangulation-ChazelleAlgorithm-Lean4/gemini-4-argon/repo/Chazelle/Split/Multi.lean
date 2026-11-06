@@ -51,7 +51,7 @@ theorem IsDiag.swap {l : List ℕ} {d : ℕ × ℕ} (hd : IsDiag P l d) : IsDiag
   · intro p hp hp1 hp2
     rw [pairSeg_swap] at hp
     exact hch p hp hp2 hp1
-  · rw [pairSeg_swap]; exact hf
+  · rwa [pairSeg_swap]
 
 /-- Non-crossing is invariant under swapping the first pair. -/
 theorem NonCross.swap_left {d d' : ℕ × ℕ} (h : NonCross P d d') : NonCross P d.swap d' := by
@@ -82,8 +82,7 @@ theorem isDiag_range_of_mem_allDiagonals (hP : P.Simple) {d : ℕ × ℕ}
   rw [subPoly_range]
   refine ⟨List.mem_range.2 h1, List.mem_range.2 h2, hne, ?_, hsub⟩
   have hch := hdiag.2.2
-  rw [hs, hsL] at hch
-  exact hch
+  rwa [hs, hsL] at hch
 
 /-- A member of `allDiagonals P` up to orientation is an `IsDiag` of the whole polygon. -/
 theorem isDiag_range_of_mem_or_swap (hP : P.Simple) {d : ℕ × ℕ}
@@ -101,7 +100,7 @@ theorem eq_or_eq_swap_of_pairSeg_eq (hP : P.Simple) {d d' : ℕ × ℕ}
     d' = d ∨ d' = d.swap := by
   have hD := isDiag_range_of_mem_or_swap hP hd
   have hD' := isDiag_range_of_mem_or_swap hP hd'
-  have hQ : (subPoly P (List.range P.n)).Simple := by rw [subPoly_range]; exact hP
+  have hQ : (subPoly P (List.range P.n)).Simple := by rwa [subPoly_range]
   -- each endpoint of `d'` is an endpoint of `d`
   have key : ∀ x, x ∈ List.range P.n → P.vtx x ∈ pairSeg P d → x = d.1 ∨ x = d.2 := by
     intro x hxl hxs
@@ -135,8 +134,7 @@ theorem nonCross_of_mem_or_swap (hP : P.Simple) {d d' : ℕ × ℕ}
       pairSeg P e = pairSeg P d → pairSeg P e' = pairSeg P d' → NonCross P e e' := by
     intro e e' he he' h1 h2
     apply allDiagonals_inter hP he he'
-    rw [diagSeg_eq_pairSeg, diagSeg_eq_pairSeg, h1, h2]
-    exact hseg
+    rwa [diagSeg_eq_pairSeg, diagSeg_eq_pairSeg, h1, h2]
   rcases hd with h | h <;> rcases hd' with h' | h'
   · exact key _ _ h h' rfl rfl
   · have := (key _ _ h h' rfl (pairSeg_swap P d')).swap_right
@@ -159,7 +157,7 @@ structure EnumDiags (P : Polygon) (D : List (ℕ × ℕ)) : Prop where
 /-- **An enumeration of the inserted diagonals is a diagonal system for the whole polygon.** -/
 theorem EnumDiags.diagSystem (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiags P D) :
     DiagSystem P (List.range P.n) D where
-  simple := by rw [subPoly_range]; exact hP
+  simple := by rwa [subPoly_range]
   diag d hd := isDiag_range_of_mem_or_swap hP (hD.sound d hd)
   noncross := hD.distinct.imp_of_mem fun hd hd' hne =>
     nonCross_of_mem_or_swap hP (hD.sound _ hd) (hD.sound _ hd') hne
@@ -211,8 +209,7 @@ theorem EnumDiags.weakTriangulates (hP : P.Simple) {D : List (ℕ × ℕ)} (hD :
   have hsys := hD.diagSystem hP
   have hw := weakTriangulates_combineTri hsys hT
   rw [subPoly_range] at hw
-  rw [← map_relabelList_combineTri hsys hT, map_relabelList_range hw]
-  exact hw
+  rwa [← map_relabelList_combineTri hsys hT, map_relabelList_range hw]
 
 /-! ### A canonical enumeration -/
 

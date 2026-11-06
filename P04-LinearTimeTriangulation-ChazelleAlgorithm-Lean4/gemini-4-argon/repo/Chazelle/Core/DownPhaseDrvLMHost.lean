@@ -114,12 +114,12 @@ theorem runCnt_le (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
       ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).e ≠ 0) :
     runCnt li Q.n ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).s
       ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).e ≤ γ + 1 := by
-  set N := BuildNF.buildNF (interiorModel Q) Q L E with hN
+  set N := BuildNF.buildNF (interiorModel Q) Q L E
   have hac := DrvB.arcCnt_le B hr hwt hj
   obtain ⟨hjA, -⟩ := (B.hregs.2.2.1.2.2.2 r hr j).1 hj
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
   have hA := DrvD.arcs_length (M := interiorModel Q) (Q := Q) (E := E) B.hK
-  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rw [← hA]; exact hjA
+  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rwa [← hA]
   obtain ⟨sn, s0, s1⟩ := DrvB.evPos_ok B (DrvD.gs_lt_len hjA')
   obtain ⟨en, e0, e1⟩ := DrvB.evPos_ok B (Nat.mod_lt (DrvD.gs (interiorModel Q) Q L E j + 1) hE)
   rw [← DrvD.arc_s B.hK hjA'] at sn s0 s1
@@ -151,7 +151,7 @@ theorem runCnt_le (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
       have hk : (interiorModel Q).key Q e = (e.edge : ℝ) := by
         have h1 := hvtx.1 hv
         rw [kb, DownHost.floor_add e0 e1] at h1
-        rw [kb]; exact h1
+        rwa [kb]
       by_cases hlast : j + 1 < (gapStarts (interiorModel Q) Q L E).length
       · have hlt := DrvD.key_s_lt_e (M := interiorModel Q) (Q := Q) B.hK hE hlast
         rw [hsg, heg, hk, ka, hxe] at hlt
@@ -187,7 +187,7 @@ theorem pts_length (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
   rw [DownMath.regHost_pts]
   split_ifs
   · exact hlen
-  · rw [List.length_reverse]; exact hlen
+  · rwa [List.length_reverse]
 
 /-- **The sizes of a region host** (degree `≤ 4`, weight `≤ γ`). -/
 theorem host_facts (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}

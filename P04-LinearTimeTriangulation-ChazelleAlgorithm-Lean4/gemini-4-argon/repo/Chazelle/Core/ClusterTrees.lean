@@ -81,14 +81,13 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     obtain ⟨-, -, hh, -⟩ := hpar v (hne v hv)
     rw [hqv] at hh
     apply Fin.ext
-    rw [← hG.head (pd v), (hpd v (hne v hv)).2]
-    exact hh
+    rwa [← hG.head (pd v), (hpd v (hne v hv)).2]
   have hlev : ∀ v : Fin μ, v ≠ r → lev (M.vert (pd v)) + 1 = lev v := by
     intro v hv
     obtain ⟨-, -, -, j, -, hvj, hlj⟩ := hpar v (hne v hv)
     rw [hqv] at hvj hlj
     have : ((M.vert (pd v) : Fin μ) : ℕ) = q j := by
-      rw [← hG.vert (pd v), (hpd v (hne v hv)).2]; exact hvj
+      rwa [← hG.vert (pd v), (hpd v (hne v hv)).2]
     rw [this, hlj]
   refine ⟨⟨r, fun v => lev v, fun v => M.opp (pd v), hI.lev0, fun v hv => ?_,
     fun v hv => ?_⟩, rfl, fun v => rfl, fun v hv => ?_, fun d => ?_, fun v => ?_⟩
@@ -106,8 +105,7 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     obtain ⟨i, hi, hqi⟩ := hq (M.vert d)
     have := hI.lev_head_le hi (hGN ▸ d.2) (by rw [hG.vert, hqi]) (hdb _ d.2)
       (by rw [hG.head]; exact hvb _ (M.head d).2)
-    rw [hG.head, hqi] at this
-    exact this
+    rwa [hG.head, hqi] at this
   · show lev v < μ
     obtain ⟨i, hi, hqi⟩ := hq v
     have h1 := hI.lev_le i hi
@@ -167,7 +165,7 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
       (BTree.OK ⟨N, q, fun g => G.vert (par g)⟩) ∧
       (∀ g : Fin N, BTree.up ⟨N, q, fun g => G.vert (par g)⟩ g = (C.parent g : ℕ)) := by
   classical
-  set TS := starTree T a ha with hTS
+  set TS := starTree T a ha
   -- the steps of the search are the non-tree crossings
   have hstep : ∀ u w : Fin N, EnvEnc.TStep G (star M).dual (fun g => (g : ℕ)) (enc N) u w ↔
       (star M).faceRel TS.coDarts u w := by
@@ -248,7 +246,7 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
     fun g hg => ⟨?_, hfp g hg⟩, ⟨hN, fun i hi => ?_, fun i hi j hj hij => hI.qinj i hi j hj hij,
     fun i hi0 hi => ?_⟩, fun g => ?_⟩
   · rw [← hfp g hg]; exact enc_lt _
-  · have := hI.qlt i hi; rw [hGnv] at this; exact this
+  · have := hI.qlt i hi; rwa [hGnv] at this
   · obtain ⟨-, -, -, j, hj, hvj, -⟩ := hI.par i hi hi0
     exact ⟨j, hj, hvj.symm⟩
   · -- the parents agree

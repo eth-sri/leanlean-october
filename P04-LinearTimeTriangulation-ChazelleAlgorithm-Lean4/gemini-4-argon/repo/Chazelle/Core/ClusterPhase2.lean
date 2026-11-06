@@ -61,8 +61,8 @@ theorem memGraph_congr {m m' : ℕ → ℕ} {B μ E A : ℕ} (hA : ∀ a, a < A 
       exact ⟨d, hd, h1, h2⟩
     · rintro ⟨d, hd, h1, h2⟩
       have ho := hopp d hd
-      refine ⟨d, hd, by rw [hA (m (B + 2) + d) (by omega)]; exact h1, ?_⟩
-      rw [hA (m B + d) (by omega), hA (m (B + 2) + m (m B + d)) (by omega)]; exact h2
+      refine ⟨d, hd, by rwa [hA (m (B + 2) + d) (by omega)], ?_⟩
+      rwa [hA (m B + d) (by omega), hA (m (B + 2) + m (m B + d)) (by omega)]
   ext u v
   simp only [memGraph, hmd]
 

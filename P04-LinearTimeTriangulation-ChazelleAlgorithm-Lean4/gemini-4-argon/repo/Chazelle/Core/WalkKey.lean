@@ -109,8 +109,8 @@ theorem sig_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (h
   have fb := exec_frameB ex (B := Bk) (by decide)
   refine ⟨c8, _, ex, by simp only [List.length_cons, List.length_nil] at hk7; omega, fb, ?_, ?_⟩
   · by_cases h : c.nreg 10009 < 3
-    · rw [hf1 h]; exact hb1
-    · rw [hf2 h]; exact hb2
+    · rwa [hf1 h]
+    · rwa [hf2 h]
   · have hm := signTest_iff_lex P hG.2 s₁ s₂ s₃ hl₁ hl₂ hl₃ (c.nreg 10009)
     by_cases h : c.nreg 10009 < 3
     · rw [hf1 h, hpos, hm.1 h]
@@ -198,7 +198,7 @@ theorem keyDec_iff {M : Model} {Q : Polygon} {n : ℕ} {x s : WPos} (hx : Proper
       unfold dirCode at h4
       split_ifs at h4 with q1 q2 <;> first | omega | linarith [not_lt.1 q1, not_lt.1 q2]
     have e1 := Model.key_eq_of_horizontal (Q := Q) hh
-    have e2 := Model.key_eq_of_horizontal (Q := Q) (x := s) (by rw [he]; exact hh)
+    have e2 := Model.key_eq_of_horizontal (Q := Q) (x := s) (by rwa [he])
     rw [e1, e2, heR]
   rw [ite_eq_right h4]
   have hnh : (M.wa x.edge).2 ≠ (M.wb x.edge).2 := by
@@ -367,13 +367,13 @@ theorem kerPart_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ 
       c₂.nreg 10004 = (if c.nreg 10502 < 2 then c.nreg 10012 - 1 else c.nreg 10501 - 1) ∧
       (∀ r, r ≠ 10001 → r ≠ 10004 → c₂.nreg r = c₁.nreg r) := by
     by_cases hd : c.nreg 10502 < 2
-    · refine spec_ifLtN_true (by rw [q502, q13]; exact hd) ?_
+    · refine spec_ifLtN_true (by rwa [q502, q13]) ?_
       exec_block
       refine ⟨by omega, ?_, ?_, fun r h1 h2 => ?_⟩
       · config_simp; rw [ite_eq_left hd, q15]
       · config_simp; rw [ite_eq_left hd, q16]
       · simp [h1, h2]
-    · refine spec_ifLtN_false (by rw [q502, q13]; exact hd) ?_
+    · refine spec_ifLtN_false (by rwa [q502, q13]) ?_
       exec_block
       refine ⟨by omega, ?_, ?_, fun r h1 h2 => ?_⟩
       · config_simp; rw [ite_eq_right hd, q16]
@@ -435,21 +435,21 @@ theorem cmpPos_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
   refine spec_ifLtN_false t2 ?_
   by_cases t3 : c.nreg 10501 < 1
   · rw [ite_eq_left t3]
-    refine spec_ifLtN_true (by rw [h1]; exact t3)
+    refine spec_ifLtN_true (by rwa [h1])
       (spec_instr (Exec.constN hw _ _ (by omega)) fun _ => ?_)
     exact ⟨by omega, by config_simp; simp⟩
   rw [ite_eq_right t3]
-  refine spec_ifLtN_false (by rw [h1]; exact t3) ?_
+  refine spec_ifLtN_false (by rwa [h1]) ?_
   by_cases t4 : c.nreg 10502 < 1
   · rw [ite_eq_left t4]
-    exact spec_ifLtN_true (by rw [h1]; exact t4) (spec_skip hw ⟨by omega, by rw [h1]; rfl⟩)
+    exact spec_ifLtN_true (by rwa [h1]) (spec_skip hw ⟨by omega, by rw [h1]; rfl⟩)
   rw [ite_eq_right t4]
-  refine spec_ifLtN_false (by rw [h1]; exact t4) ?_
+  refine spec_ifLtN_false (by rwa [h1]) ?_
   by_cases t5 : c.nreg 10012 < 1
   · rw [ite_eq_left t5]
-    exact spec_ifLtN_true (by rw [h1]; exact t5) (spec_skip hw ⟨by omega, by rw [h1]; rfl⟩)
+    exact spec_ifLtN_true (by rwa [h1]) (spec_skip hw ⟨by omega, by rw [h1]; rfl⟩)
   rw [ite_eq_right t5]
-  refine spec_ifLtN_false (by rw [h1]; exact t5) ?_
+  refine spec_ifLtN_false (by rwa [h1]) ?_
   have hn : P.n ≤ W := by omega
   refine spec_seq ⟨_, _, Exec.inputSize hw 10014 hn, ?_⟩
   have w₁ := WordsBounded.upd_nreg hw hn c.pc (r := 10014)
@@ -501,7 +501,7 @@ theorem keyCmp_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
         refine ⟨?_, ?_⟩ <;> congr 1 <;> omega
     obtain ⟨q11, q12, q102, q500, q501, q502⟩ := q
     obtain ⟨c₂, k₂, e₂, hk₂, hr⟩ := cmpPos_exec (P := P) hG hW c₁ e₁.wb_right q102
-      (by rw [q501]; exact hxn)
+      (by rwa [q501])
     refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, ?_⟩
     rw [hr, q11, q12, q500, q501, q502]
   · rw [ite_eq_right hj]
@@ -542,7 +542,7 @@ theorem keyCmp_predOK {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤
     PredOK P W keyCmp {bSign} (CmpJ x d AB A SB A₀ m₀) (cmpPr P x d AB A m₀) 275 := by
   intro c hw hJ
   obtain ⟨h0, h1, h2, h3, h4, h6, h5⟩ := hJ
-  obtain ⟨c', k, e, hk, hr⟩ := keyCmp_exec (P := P) hG hW c hw (by rw [h1]; exact hx)
+  obtain ⟨c', k, e, hk, hr⟩ := keyCmp_exec (P := P) hG hW c hw (by rwa [h1])
     (by rw [h3, h4]; omega)
   have fb := exec_frameB e wr_keyCmp
   have hB : ∀ r, Bcmp r = false → c'.nreg r = c.nreg r := fb.1

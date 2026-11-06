@@ -112,7 +112,6 @@ theorem faces_of_empty {F : Set (Set Point)} {U : Set Point} {a b : ℝ} (harc :
   unfold sideInArc
   rw [ite_eq_right (lt_irrefl 0)]
   left
-  have : (0 : ℝ) ≤ p := Nat.cast_nonneg p
   linarith
 
 theorem afterFaces_of_empty {F : Set (Set Point)} {U : Set Point} {a b : ℝ}
@@ -277,7 +276,7 @@ theorem face_before_eq (hS : sk (chainModel C) (Qof P) N j = fe) :
   obtain ⟨-, harc⟩ := arc_regOf hN hq
   obtain ⟨-, -, hne', -⟩ := OracleQ.arc_facts hN hne hq
   rw [heq] at harc hne'
-  refine beforeFaces_of_arc_end hfe h1 (by rw [add_zero]; exact harc) (by rw [add_zero]; exact hne')
+  refine beforeFaces_of_arc_end hfe h1 (by rwa [add_zero]) (by rwa [add_zero])
 
 include hl1 hl2 in
 /-- **Just before, the arc at `j` does not start at the vertex**: the region of the arc at `j`. -/
@@ -293,8 +292,8 @@ theorem face_before_ne (hS : sk (chainModel C) (Qof P) N j ≠ fe) :
     · have h1 := one_le_of_arc_end hP hN hne hj (Or.inr he)
       obtain ⟨-, -, hne', -⟩ := OracleQ.arc_facts hN hne hj
       rw [he] at harc hne'
-      exact beforeFaces_of_arc_end hfe h1 (by rw [add_zero]; exact harc)
-        (by rw [add_zero]; exact hne')
+      exact beforeFaces_of_arc_end hfe h1 (by rwa [add_zero])
+        (by rwa [add_zero])
   · rcases hl1 hc with h | h
     · exact absurd h hF
     · exact beforeFaces_of_inArc harc hfe h

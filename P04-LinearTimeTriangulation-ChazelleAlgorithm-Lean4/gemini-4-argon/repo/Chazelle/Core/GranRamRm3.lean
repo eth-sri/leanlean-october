@@ -42,13 +42,12 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
     (h72 : c.nreg 90072 = bit (decide (st.cnt (st.nd0 cc) = 1)))
     (h73 : c.nreg 90073 = bit (decide (st.cnt (st.nd1 cc) = 1)))
     (h78 : c.nreg 90078 = μ) :
-    ∃ c' k, Exec P W rmStmt c c' k ∧ k ≤ 60 * E.D + 65 ∧ MS W E d A₀ m₀ c' (st.remove cc μ) ∧
-      FrameS Brm2 c c' := by
+    ∃ c' k, Exec P W rmStmt c c' k ∧ k ≤ 60 * E.D + 65 ∧ MS W E d A₀ m₀ c' (st.remove cc μ) := by
   suffices hh : ∃ c' k, Exec P W rmStmt c c' k ∧ k ≤ 60 * E.D + 65 ∧
       (WordsBounded W c' → FrameS Brm2 c c' → MS W E d A₀ m₀ c' (st.remove cc μ)) by
     obtain ⟨c', k, e, h1, h2⟩ := hh
     have F := exec_frameS e wrS_rm
-    exact ⟨c', k, e, h1, h2 e.wb_right F, F⟩
+    exact ⟨c', k, e, h1, h2 e.wb_right F⟩
   have hw := hM.wb
   have hC := hM.cst
   have henc := hM.enc
@@ -57,12 +56,10 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
   obtain ⟨P', hs⟩ := hI.split hE hc
   obtain ⟨hX, hY, -, htouch⟩ := hI.sides cc hc
   obtain ⟨hXr, hYr⟩ := hI.cl_mem hE hc
-  have hcX : cc ∈ st.exl (st.s0 cc) := (exl_X hE hI hc cc).2 ⟨hc, (htouch _ hXr).2 (Or.inl rfl)⟩
   have hcY : cc ∈ st.exl (st.s1 cc) := (exl_Y hE hI hc cc).2 ⟨hc, (htouch _ hYr).2 (Or.inr rfl)⟩
   have clX := hI.cls _ ⟨cc, hc, Or.inl rfl⟩
   have clY := hI.cls _ ⟨cc, hc, Or.inr rfl⟩
   have hlen := newEx_le hE hI hc hs hlow
-  have hlen2 := newEx_length hE hI hc hs
   have hfY : ((st.exl (st.s1 cc)).filter (· != cc)).length + 1 = st.deg (st.s1 cc) := by
     rw [← clY.2.2.1.erase_eq_filter, List.length_erase_of_mem hcY, exl_length]
     have := List.length_pos_of_mem hcY
@@ -86,7 +83,7 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
   have hC₁ : Cst c₁ E d := hC.frame fun r hr h' => g₁ r (by simp [Brm]; omega)
   have henc₁ : Enc c₁.nmem d st := henc.mem_congr fun a _ ha => gmem a (Or.inl ha)
   -- relabel
-  obtain ⟨c₂, k₂, e₂, hk₂, E₂, r₂, m₂, F₂⟩ := relStmt_exec (P := P) hw₁ hC₁ henc₁ hD hY
+  obtain ⟨c₂, k₂, e₂, hk₂, E₂, r₂, m₂⟩ := relStmt_exec (P := P) hw₁ hC₁ henc₁ hD hY
     clY.2.2.2.2 clY.2.2.1 (fun i hi => ((clY.2.2.2.1 i).1 hi).1.1)
     (by rw [g₁ _ (by decide), h62]) (by rw [g₁ _ (by decide), h64])
     (by rw [g₁ _ (by decide), h65]) (by rw [g₁ _ (by decide), h67]) g104
@@ -94,14 +91,14 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
   have hC₂ : Cst c₂ E d := hC₁.frame fun r hr h' => r₂ r (by omega) (by omega) (by omega)
     (by omega)
   -- write back
-  obtain ⟨c₃, k₃, e₃, hk₃, E₃, w108, r₃, m₃, F₃⟩ := wbStmt_exec (P := P) (top := st.top)
+  obtain ⟨c₃, k₃, e₃, hk₃, E₃, w108, r₃, m₃⟩ := wbStmt_exec (P := P) (top := st.top)
     (L := st.newEx cc) hw₂ hC₂ E₂ hD hX hlen hcap
     (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide), g100]; rfl)
     (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide), g103])
     (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide), g₁ _ (by decide), hM.top])
     (fun i hi => by
       rw [m₂ _ (by right; omega)]
-      exact gtmp i (by rw [g100]; exact hi))
+      exact gtmp i (by rwa [g100]))
   have hw₃ := e₃.wb_right
   have hC₃ : Cst c₃ E d := hC₂.frame fun r hr h' => r₃ r (by omega) (by omega) (by omega)
     (by omega)

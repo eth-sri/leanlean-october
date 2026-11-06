@@ -125,10 +125,9 @@ theorem arrival_exists (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C.top.2) {σ 
     C.sideSees_chordEnd hP C.sideBeta hee (by simp [rayPt]) hopen he
   refine ⟨p, t, hp, ht, ht1, hpt, ?_⟩
   have hl' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) (-σ) (T / 2)) := by
-    rw [show sidePt (chainModel C).W p t = w from hpt]; exact hl
+    rwa [show sidePt (chainModel C).W p t = w from hpt]
   have := (sideLeft_rayPt_iff _ p t (-σ) hT2 one_pos).1 hl'
-  rw [show sidePt (chainModel C).W p t = w from hpt] at this
-  exact this
+  rwa [show sidePt (chainModel C).W p t = w from hpt] at this
 
 /-! ## The arriving ray at a cut key -/
 
@@ -137,7 +136,6 @@ theorem ray_chord_dichotomy {e : Set Point} (he : e ∈ Merge.augChords C) (w : 
     (hτ : τ = 1 ∨ τ = -1) :
     (∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w τ s ∈ e) ∨ (∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w τ s ∉ e) := by
   obtain ⟨y, l, r, hH, -, rfl, -, -⟩ := Merge.augChords_spec he
-  have hlr := hH.lt
   by_cases hy : w.2 = y
   swap
   · right
@@ -197,8 +195,8 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   have hwD : w ∉ C.dom := by
     rw [← hpt]; exact hM.trace p hp t ht0.le ht1.le
   have hne := hM.nd p hp
-  set u := (chainModel C).W.vtx p with hu
-  set v := (chainModel C).W.vtx ((p + 1) % (chainModel C).W.n) with hv
+  set u := (chainModel C).W.vtx p
+  set v := (chainModel C).W.vtx ((p + 1) % (chainModel C).W.n)
   have hwlerp : w = lerp u v t := hpt.symm
   have hedge : ∀ x, sideLeft (chainModel C).W p t x ↔ 0 < det u v x :=
     fun x => Chazelle.Chain.sideLeft_edge hne ⟨ht0, ht1⟩ x
@@ -221,7 +219,7 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     intro α hα
     rw [Prod.dist_eq]
     simp only [dist_self, Real.dist_eq, add_sub_cancel_left]
-    rw [hα, max_eq_left hδ0.le]; exact hδr
+    rwa [hα, max_eq_left hδ0.le]
   have hno' := fun e he => hno e he
   -- `w` is an end of the chord
   rcases hwl.lt_or_eq with hl | hl

@@ -40,7 +40,7 @@ direction `d`, and `z ≠ o`, then `z` is the first hit from `o`, at a positive 
 theorem origin_ray (C : Chain) {o z : Point} {d : ℝ} (_hd : d = 1 ∨ d = -1)
     (hz : z ∈ Merge.shoot C o d) (hzd : z ∉ C.dom) (hne : z ≠ o) :
     0 < C.hitParam o d ∧ z = rayPt o d (C.hitParam o d) := by
-  set h := C.hitParam o d with hh
+  set h := C.hitParam o d
   have h0 : 0 ≤ h := Merge.hitParam_nonneg C o d
   obtain ⟨s, hs0, hs1, hzs⟩ := hz
   simp only [rayPt_fst, rayPt_snd, sub_self, mul_zero, add_zero] at hzs
@@ -50,7 +50,7 @@ theorem origin_ray (C : Chain) {o z : Point} {d : ℝ} (_hd : d = 1 ∨ d = -1)
     rcases (mul_nonneg hs0 h0).lt_or_eq with h1 | h1
     · exact h1
     · exfalso; apply hne; rw [hzs', ← h1]; ext <;> simp
-  have hle : h ≤ s * h := Chain.hitParam_le_of_not_mem_dom C o d hsh (by rw [← hzs']; exact hzd)
+  have hle : h ≤ s * h := Chain.hitParam_le_of_not_mem_dom C o d hsh (by rwa [← hzs'])
   have hpos : 0 < h := by
     rcases h0.lt_or_eq with h1 | h1
     · exact h1
@@ -94,7 +94,6 @@ theorem cand_unique {J : Merge.Junction} {o₁ o₂ z : Point} {d : ℝ} (hd : d
   have hx : o₁.1 + d * t₁ = o₂.1 + d * t₂ := by
     have a := congrArg Prod.fst e₁; have b := congrArg Prod.fst e₂
     simp only [rayPt_fst] at a b; rw [← a, ← b]
-  have hdd : d * d = 1 := by rcases hd with rfl | rfl <;> norm_num
   -- the nearer origin blocks the chord of the farther one
   have key : ∀ (a b : Point) (ta tb : ℝ), a.2 = b.2 → a.1 + d * ta = b.1 + d * tb →
       0 < ta → ta < tb → tb = J.whole.hitParam b d → a ∉ J.whole.dom → False := by
@@ -104,7 +103,7 @@ theorem cand_unique {J : Merge.Junction} {o₁ o₂ z : Point} {d : ℝ} (hd : d
       · simp only [rayPt_fst]; linear_combination hxab
       · simp only [rayPt_snd]; exact hab
     have := Chain.hitParam_le_of_not_mem_dom J.whole b d (t := tb - ta) (by linarith)
-      (by rw [← hpt]; exact ha)
+      (by rwa [← hpt])
     linarith
   rcases lt_trichotomy t₁ t₂ with hl | he | hl
   · exact (key o₁ o₂ t₁ t₂ hy hx p₁ hl rfl h₁.1).elim

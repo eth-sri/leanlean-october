@@ -242,8 +242,7 @@ theorem arcPoly_edge_subset_boundary (P : Polygon) (hn : 0 < P.n) (i : ℕ) {m :
     exact Existence.edge_subset_boundary P (Nat.mod_lt _ hn)
   · have : k = m - 1 := by omega
     subst this
-    rw [arcPoly_edge_pen P i e hm]
-    exact hpen
+    rwa [arcPoly_edge_pen P i e hm]
 
 /-- The boundary of the walk lies in the boundary of `P` together with the closing segment. -/
 theorem arcPoly_boundary_subset (P : Polygon) (hn : 0 < P.n) (i : ℕ) {m : ℕ} (e : Point)
@@ -290,8 +289,7 @@ theorem exists_walk_parity_flip {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i 
     rw [hii, Geometry.segment_comm]
     exact le_rfl
   · have hzΓ : z ∈ (arcPoly P i m e).edge m := by
-      rw [arcPoly_edge_last P i e hm0, hii, Geometry.segment_comm]
-      exact hz
+      rwa [arcPoly_edge_last P i e hm0, hii, Geometry.segment_comm]
     have hmn : m < (arcPoly P i m e).n := by rw [arcPoly_n]; omega
     have hsucc : (m + 1) % (arcPoly P i m e).n = 0 := by rw [arcPoly_n, Nat.mod_self]
     have hv0 : (arcPoly P i m e).vtx 0 = P.vtx i := by
@@ -406,8 +404,7 @@ theorem convex_halfDisk (w : Point) (r τ : ℝ) : Convex ℝ (halfDisk w r τ) 
   · exact add_pos_of_pos_of_nonneg (mul_pos ha' hp) (mul_nonneg hb hq.le)
   · rw [← ha', zero_add] at hab
     subst hab
-    rw [← ha', zero_mul, zero_add, one_mul]
-    exact hq
+    rwa [← ha', zero_mul, zero_add, one_mul]
 
 theorem isPreconnected_halfDisk (w : Point) (r τ : ℝ) : IsPreconnected (halfDisk w r τ) :=
   (convex_halfDisk w r τ).isPreconnected
@@ -419,9 +416,9 @@ theorem vert_mem_halfDisk {w : Point} {r τ s : ℝ} (hτ : τ = 1 ∨ τ = -1) 
   simp only [sub_self, abs_zero, add_sub_cancel_left]
   rcases hτ with rfl | rfl
   · simp only [one_mul]
-    exact ⟨⟨by linarith, by rw [abs_of_pos hs0]; exact hsr⟩, hs0⟩
+    exact ⟨⟨by linarith, by rwa [abs_of_pos hs0]⟩, hs0⟩
   · simp only [neg_one_mul, abs_neg, mul_neg, neg_neg]
-    exact ⟨⟨by linarith, by rw [abs_of_pos hs0]; exact hsr⟩, hs0⟩
+    exact ⟨⟨by linarith, by rwa [abs_of_pos hs0]⟩, hs0⟩
 
 /-- A half-disk around a point at the same height, inside the ball, is inside the half-disk. -/
 theorem halfDisk_mono {w w' : Point} {r r' τ : ℝ} (hh : w'.2 = w.2) (hb : ball w' r' ⊆ ball w r) :
@@ -449,7 +446,7 @@ theorem halfDisk_inter_nonempty {w w' : Point} {r r' τ : ℝ} (hτ : τ = 1 ∨
       rcases hτ with rfl | rfl <;> simp [hsr]
     refine ⟨⟨hx, habs⟩, ?_⟩
     have : τ * (τ * s) = s := by rcases hτ with rfl | rfl <;> ring
-    rw [this]; exact hs0
+    rwa [this]
   · rw [← hh]
     exact vert_mem_halfDisk hτ hs0 hsr'
 
@@ -529,7 +526,6 @@ theorem halfDisk_all {P : Polygon} (hP : P.Simple) {S : Set (Set Point)} {c : Se
   set v := P.vtx i
   set L := chordParam P i σ
   set T : Set ℝ := {t | ∃ r > (0 : ℝ), ball (rayPt v σ t) r ⊆ R ∧ halfDisk (rayPt v σ t) r τ ⊆ U}
-    with hT
   -- `T` is open
   have hTopen : IsOpen T := by
     rw [Metric.isOpen_iff]
@@ -597,10 +593,9 @@ theorem exists_halfDisk_subset {P : Polygon} (hP : P.Simple) {S : Set (Set Point
     ∃ w ∈ c \ P.boundary, ∃ r > (0 : ℝ), ∃ τ : ℝ, (τ = 1 ∨ τ = -1) ∧
       ball w r ⊆ connectedComponentIn (freeOf P S) z₀ ∧ halfDisk w r τ ⊆ U := by
   have hS' : insert c S ⊆ chords P := insert_subset hc hS
-  set A := freeOf P S with hA
-  set A' := freeOf P (insert c S) with hA'
-  set R := connectedComponentIn A z₀ with hR
-  have hA'A : A' ⊆ A := freeOf_anti P (subset_insert c S)
+  set A := freeOf P S
+  set A' := freeOf P (insert c S)
+  set R := connectedComponentIn A z₀
   have hA'eq : A' = A \ c := freeOf_insert P c S
   have hz₀A : z₀ ∈ A := chord_sdiff_subset_freeOf hP hS hc hcS hz₀
   have hcR : c \ P.boundary ⊆ R :=
@@ -636,7 +631,7 @@ theorem exists_halfDisk_subset {P : Polygon} (hP : P.Simple) {S : Set (Set Point
   obtain ⟨w, hw, hwc⟩ := hex
   obtain ⟨r, hr, hb, hline⟩ := exists_ball_chord hP hc hRopen hcR hw
   obtain ⟨q, hqU, hdq⟩ := Metric.mem_closure_iff.1 hwc r hr
-  have hqb : q ∈ ball w r := by rw [mem_ball, dist_comm]; exact hdq
+  have hqb : q ∈ ball w r := by rwa [mem_ball, dist_comm]
   have hqc : q ∉ c := by
     intro hqc
     have := hUA' hqU
@@ -645,9 +640,7 @@ theorem exists_halfDisk_subset {P : Polygon} (hP : P.Simple) {S : Set (Set Point
   have hq2 : q.2 ≠ w.2 := fun h => hqc (hline q hqb h)
   refine ⟨w, hw, r, hr, if w.2 < q.2 then 1 else -1, ?_, hb, ?_⟩
   · split_ifs <;> simp
-  · have hτ : (if w.2 < q.2 then (1 : ℝ) else -1) = 1 ∨ (if w.2 < q.2 then (1 : ℝ) else -1) = -1 := by
-      split_ifs <;> simp
-    refine subset_regionsOf_of_inter hU (isPreconnected_halfDisk _ _ _)
+  · refine subset_regionsOf_of_inter hU (isPreconnected_halfDisk _ _ _)
       (halfDisk_subset_freeOf_insert hc hw.1 (hb.trans hRA)) ⟨q, ⟨hqb, ?_⟩, hqU⟩
     simp only [mem_ofPred_eq]
     rcases lt_or_gt_of_ne hq2 with hlt | hlt
@@ -664,8 +657,8 @@ theorem regionsOf_insert {P : Polygon} (hP : P.Simple) {S : Set (Set Point)} (hS
       regionsOf P (insert c S) = (regionsOf P S \ {R}) ∪ {R₁, R₂} := by
   have hS' : insert c S ⊆ chords P := insert_subset hc hS
   obtain ⟨z₀, hz₀⟩ := (chord_sdiff_nonempty_isPreconnected hP hc).1
-  set A := freeOf P S with hA
-  set A' := freeOf P (insert c S) with hA'
+  set A := freeOf P S
+  set A' := freeOf P (insert c S)
   set R := connectedComponentIn A z₀ with hR
   have hA'A : A' ⊆ A := freeOf_anti P (subset_insert c S)
   have hA'eq : A' = A \ c := freeOf_insert P c S

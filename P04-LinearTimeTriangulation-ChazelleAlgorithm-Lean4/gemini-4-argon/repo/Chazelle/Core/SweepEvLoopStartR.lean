@@ -209,7 +209,7 @@ theorem condLab_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hN : c.nreg kN ≤ 
   refine IRS.ite (K := 30) (fun h => ?_) (fun h => ?_)
   · refine (addLab_irs hI (hK.fix hI) hsN hsL hNL hrN hrL hKN hN hW).mono le_rfl ?_
     rintro c' ⟨h1, h2, h3, h4⟩
-    exact ⟨h1, by rw [ite_eq_left h]; exact h2, h3, h4⟩
+    exact ⟨h1, by rwa [ite_eq_left h], h3, h4⟩
   · exact IRS.skip hI ⟨hN, by rw [ite_eq_right h], fun _ _ => rfl, rfl⟩
 
 set_option maxHeartbeats 4000000 in
@@ -253,7 +253,7 @@ theorem stLabs_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hN : c.nreg kN ≤ 4
     have k0₁ := (hK.fix hI₁).1
     -- the first label
     refine IRS.seq (K₁ := 32) (K₂ := 32 + 3) (condLab_irs (g := K0) (r := zL) hI₁ hK
-      (by rw [f1 _ nN]; exact hN) (by unfold zL kN sw; omega)
+      (by rwa [f1 _ nN]) (by unfold zL kN sw; omega)
       (fun i hi => by unfold zL kL sw; omega) hW) ?_ |>.mono (by omega) (fun _ h => h)
     rintro c₂ hI₂ - - ⟨n2, l2, f2, m2⟩
     have nL : ∀ q, (q = zN ∨ q = zM ∨ q = aF ∨ q = K1) → ¬ LblR kN kL q := by
@@ -314,10 +314,10 @@ theorem stI_congr {P : Polygon} {J : Merge.Junction} {N₂ : NF} {rs ax : List (
   have hA := hr aF (Or.inr (Or.inl rfl))
   have hP := hr sP (Or.inr (Or.inr rfl))
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9⟩ := h
-  refine ⟨by rw [hN]; exact h1, by rw [hP]; exact h2, by rw [hP]; exact h3,
-    fun i hi hi' => h4 i hi (by rw [hP] at hi'; exact hi'), by rw [hl, hP]; exact h5,
-    fun i hi v hv => by rw [hl]; exact h6 i (by rw [hP] at hi; exact hi) v hv,
-    fun v hv => h7 v (by rw [hl] at hv; exact hv), by rw [hA]; exact h8, by rw [hA, hP]; exact h9⟩
+  refine ⟨by rwa [hN], by rwa [hP], by rwa [hP],
+    fun i hi hi' => h4 i hi (by rwa [hP] at hi'), by rwa [hl, hP],
+    fun i hi v hv => by rw [hl]; exact h6 i (by rwa [hP] at hi) v hv,
+    fun v hv => h7 v (by rwa [hl] at hv), by rwa [hA], by rwa [hA, hP]⟩
 
 end
 

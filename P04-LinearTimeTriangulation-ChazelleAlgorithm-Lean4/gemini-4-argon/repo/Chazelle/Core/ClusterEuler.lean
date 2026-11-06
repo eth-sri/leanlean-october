@@ -171,9 +171,9 @@ theorem anc_iff_up {g h : ℕ} (hgh : g ≠ h) : R.Anc g h ↔ R.Anc g (R.up h) 
   · rintro ⟨m, hm⟩
     rcases m with _ | m
     · exact absurd hm.symm hgh
-    · exact ⟨m, by rw [Function.iterate_succ_apply] at hm; exact hm⟩
+    · exact ⟨m, by rwa [Function.iterate_succ_apply] at hm⟩
   · rintro ⟨m, hm⟩
-    exact ⟨m + 1, by rw [Function.iterate_succ_apply]; exact hm⟩
+    exact ⟨m + 1, by rwa [Function.iterate_succ_apply]⟩
 
 /-- **The descendants of `g`**: `g` and the descendants of its children, disjointly. -/
 theorem OK.sub_eq (hR : R.OK) {g : ℕ} (hg : g < R.n) :
@@ -206,7 +206,7 @@ theorem OK.sub_eq (hR : R.OK) {g : ℕ} (hg : g < R.n) :
           have hup : R.up h = R.par h := by simp [up, hr]
           by_cases hpg : R.par h = g
           · exact ⟨h, ⟨hh, hr, hpg⟩, hh, anc_refl h⟩
-          · obtain ⟨c, hc, -, hch⟩ := ih (R.up h) (hR.up_lt hh) hm (by rw [hup]; exact hpg)
+          · obtain ⟨c, hc, -, hch⟩ := ih (R.up h) (hR.up_lt hh) hm (by rwa [hup])
             exact ⟨c, hc, hh, hch.trans (anc_up h)⟩
       exact key m h hh hm heq
   · rintro (rfl | ⟨c, ⟨hc, hcr, hpc⟩, hh, hch⟩)
@@ -335,7 +335,7 @@ theorem SizeInv.step (hR : R.OK) {sz : ℕ → ℕ} {i : ℕ} (hS : R.SizeInv sz
       · right
         have := (hR.pos_spec hc).2
         rw [hci] at this
-        exact ⟨this.symm, by rw [this]; exact hpc⟩
+        exact ⟨this.symm, by rwa [this]⟩
       · exact Or.inl ⟨⟨hc, hcr, hpc⟩, by omega⟩
     · rintro (⟨⟨hc, hcr, hpc⟩, hic⟩ | ⟨rfl, hpg⟩)
       · exact ⟨⟨hc, hcr, hpc⟩, by omega⟩
@@ -540,7 +540,7 @@ theorem PreInv.step (hR : R.OK) {pre slot : ℕ → ℕ} {i : ℕ} (hP : R.PreIn
       rw [Function.update_of_ne hqp]
       by_cases hjp : R.par (R.q j) = p
       · rw [hjp, Function.update_self]; rw [hjp] at n2; omega
-      · rw [Function.update_of_ne hjp]; exact n2
+      · rwa [Function.update_of_ne hjp]
     · rw [hji, Function.update_self, Function.update_of_ne hpc, Function.update_of_ne hpc,
         Function.update_self]
       constructor
@@ -554,8 +554,7 @@ theorem PreInv.step (hR : R.OK) {pre slot : ℕ → ℕ} {i : ℕ} (hP : R.PreIn
       subst hj'
       rw [pre_old j hj, Function.update_self]
       have := (hP.nest j hj0 hj).2
-      rw [hpar] at this
-      exact this
+      rwa [hpar] at this
     rcases Nat.lt_succ_iff_lt_or_eq.mp hj with hj | hji <;>
       rcases Nat.lt_succ_iff_lt_or_eq.mp hj' with hj' | hji'
     · rw [pre_old j hj, pre_old j' hj']
@@ -595,8 +594,7 @@ theorem PreInv.nest_final (hR : R.OK) (hP : R.PreInv pre slot R.n) {c : ℕ} (hc
     · exact absurd (by rw [← hpq, h]; rfl) hcr
     · exact h
   have := hP.nest (R.pos c) h0 hpn
-  rw [hpq, hP.slot_final hR (hR.par_spec hc hcr).1] at this
-  exact this
+  rwa [hpq, hP.slot_final hR (hR.par_spec hc hcr).1] at this
 
 /-- Ancestors have enclosing intervals. -/
 theorem PreInv.anc_le (hR : R.OK) (hP : R.PreInv pre slot R.n) {g h : ℕ} (hh : h < R.n)
@@ -654,8 +652,6 @@ theorem PreInv.disj_step (hR : R.OK) (hP : R.PreInv pre slot R.n) {g h : ℕ} (h
   have hup : R.up h = R.par h := by simp [up, hr]
   have hph : R.Anc (R.par h) h := hup ▸ anc_up h
   obtain ⟨nh1, nh2⟩ := hP.nest_final hR hh hr
-  have hσh := one_le_card_sub (R := R) hh
-  have hσg := one_le_card_sub (R := R) hg
   by_cases hgp : R.Anc g (R.par h)
   · exact absurd (hgp.trans hph) hgh
   by_cases hpg : R.Anc (R.par h) g

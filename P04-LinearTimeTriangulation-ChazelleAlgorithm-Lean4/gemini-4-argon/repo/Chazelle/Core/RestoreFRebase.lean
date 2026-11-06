@@ -44,8 +44,8 @@ theorem FGood.rebase (hE : FGood E c₀) (hI : FInv E.W c₀ c₀') : FGood (E.r
       show E.γ ≤ E.X.cap E.P c₀'.nmem E.g
       rw [hE.hloc _ _ _ _ _ hag hE.hX]; exact hE.hcap
     hwf := hwf'.mono hA
-    hreg := fun h0 H C hC => hE.hreg (by rw [← hMD0]; exact h0) H C (hback h0 H C hC)
-    hsimp := fun h0 H C hC => hE.hsimp (by rw [← hMD0]; exact h0) H C (hback h0 H C hC)
+    hreg := fun h0 H C hC => hE.hreg (by rwa [← hMD0]) H C (hback h0 H C hC)
+    hsimp := fun h0 H C hC => hE.hsimp (by rwa [← hMD0]) H C (hback h0 H C hC)
     hMD := hMD', hGM := hE.hGM, hOk := hE.hOk,
     hNW := (Robust.transport hE.hNW hag).mono hA
     hNF := hE.hNF, hdeg := hE.hdeg, hsg := hE.hsg, hr := hE.hr, a0 := rfl, m0 := rfl,

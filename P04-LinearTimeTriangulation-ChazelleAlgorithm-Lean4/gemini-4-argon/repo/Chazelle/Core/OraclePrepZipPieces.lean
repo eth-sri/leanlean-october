@@ -122,12 +122,12 @@ theorem adjS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
       by_cases hs : q + 1 < A
       · have ht : ({ c with nreg := upd c.nreg 110214 (c.nreg 120170 + c.nreg 120011) } :
             Config).nreg 110214 < ({ c with nreg := upd c.nreg 110214 (c.nreg 120170 +
-            c.nreg 120011) } : Config).nreg 120030 := by config_simp; rw [hqd, h1, hA]; exact hs
+            c.nreg 120011) } : Config).nreg 120030 := by config_simp; rwa [hqd, h1, hA]
         exact ⟨_, _, ifEq_eq_exec he' (.seq e1 (.ifLtN_true ht (.skip w1))), by omega,
           by rw [ite_eq_left hs]; config_simp; rw [hqd, h1]⟩
       · have ht : ¬ ({ c with nreg := upd c.nreg 110214 (c.nreg 120170 + c.nreg 120011) } :
             Config).nreg 110214 < ({ c with nreg := upd c.nreg 110214 (c.nreg 120170 +
-            c.nreg 120011) } : Config).nreg 120030 := by config_simp; rw [hqd, h1, hA]; exact hs
+            c.nreg 120011) } : Config).nreg 120030 := by config_simp; rwa [hqd, h1, hA]
         exact ⟨_, _, ifEq_eq_exec he' (.seq e1 (.ifLtN_false ht
           (Exec.constN w1 110214 0 (Nat.zero_le _)))), by omega,
           by rw [ite_eq_right hs]; config_simp⟩
@@ -140,7 +140,7 @@ theorem adjS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
       · have ht : c.nreg 120012 < c.nreg 120170 := by rw [h0, hqd]; omega
         exact ⟨_, _, ifEq_eq_exec he' (.ifLtN_true ht (Exec.subN hw 110214 120170 120011)),
           by omega, by rw [ite_eq_right hz]; config_simp; rw [hqd, h1]⟩
-  · have he' : c.nreg 110213 ≠ c.nreg 120011 := by rw [h1]; exact he
+  · have he' : c.nreg 110213 ≠ c.nreg 120011 := by rwa [h1]
     rw [ite_eq_right he]
     cases d <;>
     · unfold adjS
@@ -174,14 +174,14 @@ theorem normS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       c₁.nreg 110291 = min a b ∧ c₁.nreg 110292 = max a b ∧
       (∀ r, r ≠ 110291 → r ≠ 110292 → c₁.nreg r = c.nreg r) := by
     by_cases h : a < b
-    · have ht : c.nreg 110299 < c.nreg 110214 := by rw [ha, hb]; exact h
+    · have ht : c.nreg 110299 < c.nreg 110214 := by rwa [ha, hb]
       refine spec_ifLtN_true ht ?_
       exec_block
       refine ⟨by omega, ?_, ?_, fun r h1 h2 => ?_⟩
       · config_simp; rw [ha, min_eq_left h.le]
       · config_simp; rw [hb, max_eq_right h.le]
       · config_simp; upd_solve
-    · have ht : ¬ c.nreg 110299 < c.nreg 110214 := by rw [ha, hb]; exact h
+    · have ht : ¬ c.nreg 110299 < c.nreg 110214 := by rwa [ha, hb]
       refine spec_ifLtN_false ht ?_
       exec_block
       refine ⟨by omega, ?_, ?_, fun r h1 h2 => ?_⟩

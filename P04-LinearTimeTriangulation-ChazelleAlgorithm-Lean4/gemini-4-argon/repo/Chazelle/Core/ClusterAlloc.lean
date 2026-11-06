@@ -28,7 +28,7 @@ variable {P : Polygon} {W : ℕ}
 
 theorem bumpS_exec {c : Config} (hw : WordsBounded W c) {E : ℕ} (h1 : c.nreg 130001 = 1)
     (hE : c.nreg 130086 = E) (hA : c.nreg ALLOC ≤ E) (hEW : E ≤ W) :
-    ∃ c' k, Exec P W bumpS c c' k ∧ k ≤ 3 * (E - c.nreg ALLOC) + 2 ∧ WordsBounded W c' ∧
+    ∃ c' k, Exec P W bumpS c c' k ∧ k ≤ 3 * (E - c.nreg ALLOC) + 2 ∧
       c'.nreg ALLOC = E ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k ∧
       (∀ r, r ≠ ALLOC → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧
       c'.rmem = c.rmem ∧ c'.output = c.output := by
@@ -52,7 +52,7 @@ theorem bumpS_exec {c : Config} (hw : WordsBounded W c) {E : ℕ} (h1 : c.nreg 1
     ⟨hw, hA, fun r _ => rfl, rfl, rfl, rfl, rfl⟩
   have e2 : c'.nreg 130086 = E := by rw [hr' _ (by rw [hAl]; omega)]; exact hE
   rw [e2] at htest
-  exact ⟨c', k, e, hk, hw', by omega, hψ, hr', hm', hrr', hrm', ho'⟩
+  exact ⟨c', k, e, hk, by omega, hψ, hr', hm', hrr', hrm', ho'⟩
 
 end proofs
 

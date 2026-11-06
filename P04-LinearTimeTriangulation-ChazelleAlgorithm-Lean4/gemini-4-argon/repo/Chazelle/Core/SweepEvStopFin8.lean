@@ -41,9 +41,6 @@ theorem slf_keep {R : ℕ → Prop} {c c' : Config} (h : SlfFr R c c')
 theorem slfOffR_safe : ∀ r, slfOffR r → ¬ SlfSafe r := by
   intro r h h'; unfold slfOffR SlfSafe sw at *; omega
 
-theorem parR_safe : ∀ r, ParR r → ¬ SlfSafe r := by
-  intro r h h'; unfold ParR oPar SlfSafe sw at *; omega
-
 /-- The registers of the finish before the emission. -/
 def SlfFinR (r : ℕ) : Prop := slfOffR r ∨ ParR r ∨ slfLabR r
 
@@ -95,12 +92,12 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
   obtain ⟨i1, i2, -⟩ := orig_attach hP hN hD
   have hat₀ : SlfAtt P J (stopSet J (Qof P) N₂ kind k b) c (oF0 + 1) (oF0 + 2) := by
     have hpos : |((chainModel J.whole).pos (Qof P) ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩).2| <
-        J.whole.radius := by rw [pos_eq_sidePt', hA0.2.2.2.1]; exact hy
+        J.whole.radius := by rwa [pos_eq_sidePt', hA0.2.2.2.1]
     exact ⟨⟨he0, hpp0, fun h0 => h6_of_abs J.whole (Qof P) hpos h0⟩, hpos, (i1 _ _ hA0).1⟩
   have hat₁ : SlfAtt P J (stopSet J (Qof P) N₂ kind k b) c (a1F + 1) (a1F + 2) := by
     have hpos : |((chainModel J.whole).pos (Qof P) ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩).2| <
         J.whole.radius := by
-      rw [pos_eq_sidePt', hA1.2.2.2.1]; unfold farPt; rw [rayPt_snd]; exact hy
+      rw [pos_eq_sidePt', hA1.2.2.2.1]; unfold farPt; rwa [rayPt_snd]
     exact ⟨⟨he1, hpp1, fun h0 => h6_of_abs J.whole (Qof P) hpos h0⟩, hpos, (i2 _ _ hA1).1⟩
   obtain ⟨hbrk, hpk⟩ := anc_pocket_iff hP hN hD hA0 hA1
   -- the cost
@@ -133,12 +130,11 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
   -- 2. the parent
   refine IRS.seq (K₁ := if kind = 1 then 5 else κp * (N₂.nChords + 1) + 4)
     ((slfPar_irs E hI₁ (fun c' hI' => hps sh Bs F X Ok P W c₀ c' J N₁ N₂ E hI')
-      (by rw [e1kd, e1kk, e1kb]; exact hD)
-      (by rw [e1kd, e1kk, e1kb, e1pe, e1ph]; exact hpre2)
+      (by rwa [e1kd, e1kk, e1kb])
+      (by rwa [e1kd, e1kk, e1kb, e1pe, e1ph])
       (fun _ => by split_ifs at hroom' <;> omega)).mono (by rw [e1kd]) (fun _ h => h)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨hpar, fr2⟩
   rw [e1kd, e1kk, e1kb] at hpar
-  have s2 : ∀ r, SlfSafe r → c₂.nreg r = c₁.nreg r := fun r hr => slf_keep fr2 parR_safe hr
   have fr12 : SlfFr SlfFinR c c₂ :=
     (fr1.mono fun r h => Or.inl h).trans (fr2.mono fun r h => Or.inr (Or.inl h))
   have g2 : ∀ r, 240000 ≤ r → r < 250000 → ¬ SlfFinR r → c₂.nreg r = c.nreg r :=
@@ -165,7 +161,7 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
       (by rw [o0]; exact b0.of_eq (eO 0 (by norm_num)))
       (by rw [o0]; exact b3.of_eq (eO 3 (by norm_num)))
       (by rw [o1]; exact b7.of_eq (eO 7 (by norm_num)))
-      (by rw [eA2]; exact ha1) (by rw [o0, o1, eA2]; exact ha)
+      (by rwa [eA2]) (by rwa [o0, o1, eA2])
       (fun h => by rw [o0, o1]; exact hpk.1 h) hpar (by omega)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨hlab, fr3⟩
   have fr13 : SlfFr SlfFinR c c₃ := fr12.trans (fr3.mono fun r h => Or.inr (Or.inr h))
@@ -207,16 +203,15 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
     intro hC1
     obtain ⟨n1, n2, n3, n4⟩ := hlab
     obtain ⟨p1, p2, p3⟩ := hpar
-    rw [eA3, eA2]
-    rw [eP3]
-    refine ⟨ha1, ?_, n1, n2, n3, fun h hnp => n4 (by rw [eA2]; exact h) hnp hC1, p1, p2, p3⟩
+    rw [eA3, eA2, eP3]
+    refine ⟨ha1, ?_, n1, n2, n3, fun h hnp => n4 (by rwa [eA2]) hnp hC1, p1, p2, p3⟩
     rw [ha, hbrk]; rfl
-  refine (hEm sh Bs F X Ok P W c₀ c₃ J N₁ N₂ E hI₃ (by rw [e3kd, e3kk, e3kb]; exact hD)
-    (by rw [e3kd, e3kk, e3kb, e3a, e3b]; exact hA0) (by rw [e3a, e3b]; exact hat₀.1)
-    (by rw [e3kd, e3kk, e3kb, e3c, e3d]; exact hA1) (by rw [e3c, e3d]; exact hat₁.1)
+  refine (hEm sh Bs F X Ok P W c₀ c₃ J N₁ N₂ E hI₃ (by rwa [e3kd, e3kk, e3kb])
+    (by rwa [e3kd, e3kk, e3kb, e3a, e3b]) (by rw [e3a, e3b]; exact hat₀.1)
+    (by rwa [e3kd, e3kk, e3kb, e3c, e3d]) (by rw [e3c, e3d]; exact hat₁.1)
     (by rw [q0]; exact b0.of_eq (eO3 0 (by norm_num)))
     (by rw [q1]; exact b4.of_eq (eO3 4 (by norm_num)))
-    (by rw [e3kd, e3kk, e3kb]; exact haux) (by rw [e3RB]; exact hgA)
+    (by rwa [e3kd, e3kk, e3kb]) (by rwa [e3RB])
     (by rw [e3RB, e3RC]; omega) (by omega)).mono le_rfl ?_
   intro c' h
   rw [e3kd, e3kk, e3kb] at h

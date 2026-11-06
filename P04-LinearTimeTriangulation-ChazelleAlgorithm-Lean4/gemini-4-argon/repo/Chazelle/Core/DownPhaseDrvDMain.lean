@@ -102,13 +102,12 @@ theorem Br_le (E : DEnv) (hA : 1 ≤ E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog
     E.Br + 2 ≤ (42 + C2 E.κf E.κB E.d0 * 2 ^ E.d0) * (E.K₀ + 1) *
       (E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog 2 E.γ + 1)) := by
   set A := E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog 2 E.γ + 1) with hAd
-  set T := 2 ^ E.d0 with hT
-  set K1 := E.K₀ + 1 with hK1
+  set T := 2 ^ E.d0
+  set K1 := E.K₀ + 1
   have hBr : E.Br = 40 + (E.Bf + 10) * (T * K1) + 8 * DrvR.κSpl E.κB * (T * K1) := rfl
   have hBf : E.Bf = E.κf E.d0 * A + 2 * ((scanK + 2) * (E.d0 + 1)) + 60 := by
     show Restore.costF E.κf E.F E.G E.Hc E.d0 E.γ + _ + 60 = _
     unfold Restore.costF; rw [hAd]; ring
-  have hTK : 1 ≤ T * K1 := Nat.one_le_iff_ne_zero.2 (by positivity)
   have h1 : E.Bf + 10 ≤ (E.κf E.d0 + 2 * ((scanK + 2) * (E.d0 + 1)) + 70) * A := by
     have e : (E.κf E.d0 + 2 * ((scanK + 2) * (E.d0 + 1)) + 70) * A =
         E.κf E.d0 * A + (2 * ((scanK + 2) * (E.d0 + 1)) + 70) * A := by ring
@@ -156,7 +155,7 @@ theorem roundsSpec_of {sF sB : Stmt} {κf : ℕ → ℕ} {κB : ℕ} {F G H : �
   set E : DEnv := ⟨P, W, c.nreg ALLOC, c.nmem, c.nreg, c.nreg 210001, c.nreg 216001,
     c.nreg 216000, c.nreg 230001, sF, sB, κf, κB, F, G, H, X,
     (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L₀ E₀).F (interiorModel (Qof P)) (Qof P),
-    L₀.length⟩ with hEd
+    L₀.length⟩
   have hMD : ModelDescAt c.nmem (c.nreg 210001) (Qof P) (interiorModel (Qof P)) := hDa.holds
   have hone : c.nmem (c.nreg 210001) = 1 := desc_one hMD
   have hE : DGood E := by

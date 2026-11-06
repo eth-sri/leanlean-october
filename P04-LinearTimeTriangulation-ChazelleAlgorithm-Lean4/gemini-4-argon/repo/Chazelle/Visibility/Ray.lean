@@ -1,7 +1,9 @@
 module
 
 public import Chazelle.Jordan.Jordan
-public import Chazelle.Programs.RayScanSpec
+public import Chazelle.Programs.Tactics
+public import Chazelle.Geometry.Basic
+public import Chazelle.Jordan.SegmentFacts
 public import Mathlib.Topology.Homeomorph.Lemmas
 public import Mathlib.Topology.Order.LeftRightNhds
 
@@ -55,8 +57,6 @@ def transpose (P : Polygon) : Polygon := ⟨P.vertices.map Prod.swap⟩
   simp only [transpose, Polygon.vtx, List.getD_eq_getElem?_getD, List.getElem?_map]
   rcases P.vertices[i]? with _ | p <;> rfl
 
-@[simp] theorem transpose_transpose (P : Polygon) : transpose (transpose P) = P := by
-  simp [transpose, List.map_map]
 
 /-- Swapping the coordinates of both endpoints transports a segment. -/
 theorem segment_swap (a b : Point) :
@@ -221,8 +221,7 @@ theorem hitSet_nonempty {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (h�
   have hIb : ∀ t ∈ Ioi (0 : ℝ), rayPt p σ t ∉ P.boundary := by
     intro t ht hmem
     have : t ∈ hitSet P p σ := ⟨ht, hmem⟩
-    rw [hempty] at this
-    exact this
+    rwa [hempty] at this
   have hall := rayPt_mem_interior_of_isPreconnected hP isPreconnected_Ioi hIb ht₀ hint
   obtain ⟨R, hR⟩ := filled_bounded P
   -- a far point of the ray, beyond `t₀`, leaves the square of radius `R`
@@ -295,8 +294,7 @@ theorem exists_initial_interior {P : Polygon} (hP : P.Simple) {q : Point}
   have := hcont.preimage_mem_nhds hmem
   obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.1 this
   refine ⟨ε, hε, fun t ht1 ht2 => hball ?_⟩
-  rw [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos ht1]
-  exact ht2
+  rwa [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos ht1]
 
 /-! ### The interior-point specialisations -/
 
@@ -323,7 +321,7 @@ theorem rightHit_spec {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.fi
   rcases ht0.lt_or_eq with h | h
   · have := h3 t h ht1
     rwa [rayPt_one] at this
-  · rw [← h, add_zero]; exact hq
+  · rwa [← h, add_zero]
 
 /-- The right ray from an interior point meets the boundary at a positive parameter. -/
 theorem rightHitParam_pos {P : Polygon} (hP : P.Simple) {q : Point}
@@ -352,7 +350,7 @@ theorem leftHit_spec {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.fil
   rcases ht0.lt_or_eq with h | h
   · have := h3 t h ht1
     rwa [rayPt_neg_one] at this
-  · rw [← h, sub_zero]; exact hq
+  · rwa [← h, sub_zero]
 
 theorem leftHitParam_pos {P : Polygon} (hP : P.Simple) {q : Point}
     (hq : q ∈ P.filled \ P.boundary) : 0 < leftHitParam P q :=

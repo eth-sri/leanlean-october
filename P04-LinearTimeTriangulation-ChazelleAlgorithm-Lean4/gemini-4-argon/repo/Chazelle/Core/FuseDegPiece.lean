@@ -81,7 +81,7 @@ theorem chord_transfer (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
     have hab := hH.lt
     obtain ⟨σ, hσ, hdir, hsubc⟩ : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧
         sideLeft W' p' t (rayPt q σ 1) ∧ Merge.shoot J.whole q σ ⊆ c := by
-      set ε := min (r / 2) ((b - a) / 2) with hε
+      set ε := min (r / 2) ((b - a) / 2)
       have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
       have hεr : ε < r := lt_of_le_of_lt (min_le_left _ _) (by linarith)
       have hεb : ε ≤ (b - a) / 2 := min_le_right _ _
@@ -90,18 +90,18 @@ theorem chord_transfer (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
         · show rayPt q 1 ε ∈ c
           rw [hceq, hqa]; refine ⟨rfl, ?_, ?_⟩ <;> simp only [rayPt] <;> linarith
         · intro e; have := congrArg Prod.fst e; simp only [rayPt] at this; linarith
-        · rw [dist_rayPt _ (Or.inl rfl) hε0.le]; exact hεr
+        · rwa [dist_rayPt _ (Or.inl rfl) hε0.le]
         · rw [hqa, hceq]
           exact Merge.shoot_subset_pos J.whole hab (by rw [← hr]; exact (hends c hcS).2)
       · refine ⟨-1, Or.inr rfl, (sideLeft_rayPt hε0).1 (hsec _ ?_ ?_ ?_), ?_⟩
         · show rayPt q (-1) ε ∈ c
           rw [hceq, hqb]; refine ⟨rfl, ?_, ?_⟩ <;> simp only [rayPt] <;> linarith
         · intro e; have := congrArg Prod.fst e; simp only [rayPt] at this; linarith
-        · rw [dist_rayPt _ (Or.inr rfl) hε0.le]; exact hεr
+        · rwa [dist_rayPt _ (Or.inr rfl) hε0.le]
         · rw [hqb, hceq]
           exact Merge.shoot_subset_neg J.whole hab (by rw [← hl]; exact (hends c hcS).1)
     have hl2 : sideLeft W ((g + d) % W.n) t (rayPt (sidePt W ((g + d) % W.n) t) σ 1) := by
-      rw [hleft, hpt]; exact hdir
+      rwa [hleft, hpt]
     have hm₁ : J.m₁ ≤ J.whole.m := by rw [Merge.Junction.whole_m]; omega
     have hvq : sidePt W ((g + d) % W.n) t = J.whole.vertex J.m₁ := hpt.trans hv
     obtain ⟨hfree, hAt⟩ := sideAttach_shoot hP (Nat.mod_lt _ hn) ht ht1 hσ
@@ -110,13 +110,13 @@ theorem chord_transfer (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
     refine ⟨_, hshared ⟨σ, hσ, hfree, rfl⟩, hAt, ?_⟩
     have e : J.whole.vertex J.m₁ = q := hv.symm
     show Merge.shoot J.whole (J.whole.vertex J.m₁) σ ⊆ c
-    rw [e]; exact hsubc
+    rwa [e]
   · obtain ⟨hL, hR⟩ := hend _ hcS
     rcases hqe with hqa | hqb
-    · obtain ⟨e, he, hqe, hec⟩ := hL (by rw [hl, ← hqa]; exact hv)
+    · obtain ⟨e, he, hqe, hec⟩ := hL (by rwa [hl, ← hqa])
       rw [hl, ← hqa] at hqe
       exact ⟨e, he, hA.sideAttach_subset hn hn' hd hdt' hc hec hqe, hec⟩
-    · obtain ⟨e, he, hqe, hec⟩ := hR (by rw [hr, ← hqb]; exact hv)
+    · obtain ⟨e, he, hqe, hec⟩ := hR (by rwa [hr, ← hqb])
       rw [hr, ← hqb] at hqe
       exact ⟨e, he, hA.sideAttach_subset hn hn' hd hdt' hc hec hqe, hec⟩
 
@@ -165,12 +165,12 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
     (hsep : (chainModel C').Separates c (((g' + d₁) % (chainModel C').W.n : ℕ) + t₁)
       (((g' + d₂) % (chainModel C').W.n : ℕ) + t₂)) : False := by
   obtain ⟨hg, hg', hLn, hLn', hA, -⟩ := hpc
-  set M := chainModel J.whole with hMdef
-  set M' := chainModel C' with hM'def
+  set M := chainModel J.whole
+  set M' := chainModel C'
   have hM : WalkAx M := walkAx_chainModel hP
   have hM' : WalkAx M' := walkAx_chainModel hP'
-  set n := M.W.n with hn_def
-  set n' := M'.W.n with hn'_def
+  set n := M.W.n
+  set n' := M'.W.n
   have hn : 0 < n := by omega
   have hn' : 0 < n' := by omega
   have hgR : (g : ℝ) < n := by exact_mod_cast hg
@@ -187,10 +187,10 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
     have h' := hLR hd₂ ht₂.2
     have : (d : ℝ) < L := by linarith
     exact_mod_cast this
-  set k₁ : ℝ := ((g + d₁) % n : ℕ) + t₁ with hk₁
-  set k₂ : ℝ := ((g + d₂) % n : ℕ) + t₂ with hk₂
-  set k₁' : ℝ := ((g' + d₁) % n' : ℕ) + t₁ with hk₁'
-  set k₂' : ℝ := ((g' + d₂) % n' : ℕ) + t₂ with hk₂'
+  set k₁ : ℝ := ((g + d₁) % n : ℕ) + t₁
+  set k₂ : ℝ := ((g + d₂) % n : ℕ) + t₂
+  set k₁' : ℝ := ((g' + d₁) % n' : ℕ) + t₁
+  set k₂' : ℝ := ((g' + d₂) % n' : ℕ) + t₂
   have ho₁ : off n g k₁ = d₁ + t₁ := off_key hg (by omega) ht₁.1.le ht₁.2
   have ho₂ : off n g k₂ = d₂ + t₂ := off_key hg (by omega) ht₂.1.le ht₂.2
   have ho₁' : off n' g' k₁' = d₁ + t₁ := off_key hg' (by omega) ht₁.1.le ht₁.2
@@ -216,12 +216,12 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
       (sideInArc (pa + ta) (pb + tb) k₁' ↔ ¬ sideInArc (pa + ta) (pb + tb) k₂') →
       (d₁ : ℝ) + t₁ < off n' g' (pa + ta) → off n' g' (pa + ta) < d₂ + t₂ → False := by
     intro pa pb ta tb hA' hB' hne hiff h1 h2
-    set dA := dOf n' g' pa with hdA
+    set dA := dOf n' g' pa
     have hpa : (g' + dA) % n' = pa := add_dOf hg' hA'.1
     have hoA : off n' g' (pa + ta) = dA + ta := off_key' hg' hA'.1 hA'.2.1 hA'.2.2.1
     rw [hoA] at h1 h2
     have hdAL : dA < L := hdL hA'.2.1 h2
-    have hA'' : SideAttach M'.W c ((g' + dA) % n') ta := by rw [hpa]; exact hA'
+    have hA'' : SideAttach M'.W c ((g' + dA) % n') ta := by rwa [hpa]
     have hdA0 : (0 : ℝ) < dA + ta := by linarith [ht₁.1, (Nat.cast_nonneg d₁ : (0 : ℝ) ≤ d₁)]
     obtain ⟨f, hf, hAf, hfc⟩ := chord_transfer J hP hP' hSi.2.1 hend hends hshared hA hdAL
       hA'.2.1 hA'.2.2.1 hdA0 hc hA''
@@ -241,12 +241,12 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
       have hlo' : d₁ + t₁ < off n g (pf + tf) := lt_of_le_of_ne hlo fun h =>
         hf1 (off_inj (Nat.cast_nonneg g) hgR hKF.1 hKF.2 hK₁.1 hK₁.2 (by rw [ho₁]; exact h.symm))
       have hhi' : off n g (pf + tf) < d₂ + t₂ := lt_of_le_of_ne hhi fun h =>
-        hf2 (off_inj (Nat.cast_nonneg g) hgR hKF.1 hKF.2 hK₂.1 hK₂.2 (by rw [ho₂]; exact h))
-      set dF := dOf n g pf with hdF
+        hf2 (off_inj (Nat.cast_nonneg g) hgR hKF.1 hKF.2 hK₂.1 hK₂.2 (by rwa [ho₂]))
+      set dF := dOf n g pf
       have hpf : (g + dF) % n = pf := add_dOf hg hBf.1
       rw [hofk] at hlo' hhi'
       have hdFL : dF < L := hdL hBf.2.1 hhi'
-      have hBf' : SideAttach M.W f ((g + dF) % n) tf := by rw [hpf]; exact hBf
+      have hBf' : SideAttach M.W f ((g + dF) % n) tf := by rwa [hpf]
       have hdF1 : tf = 0 → 1 ≤ dF := by
         intro h0
         rw [h0, add_zero] at hlo'
@@ -287,15 +287,15 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
       have hKB' := hkey hB'.1 hB'.2.1 hB'.2.2.1
       have hsame := off_same_side_in (Nat.cast_nonneg g') hg'R hKA'.1 hKA'.2 hKB'.1 hKB'.2
         hK₁'.1 hK₁'.2 hK₂'.1 hK₂'.2 (Chazelle.Core.WalkAx.key_ne_of_pt_ne hA' hB' hne)
-        ⟨by rw [ho₁', hoA]; exact h1, by rw [ho₂', hoA]; exact h2⟩
-        ⟨by rw [ho₁', hoB]; exact hlo', by rw [ho₂', hoB]; exact hhi'⟩
+        ⟨by rwa [ho₁', hoA], by rwa [ho₂', hoA]⟩
+        ⟨by rwa [ho₁', hoB], by rwa [ho₂', hoB]⟩
       exact iff_not_self (hsame.symm.trans hiff)
     -- so `f` separates the two positions in the walk of `C`
     have hsepf : M.Separates f k₁ k₂ := by
       refine ⟨(g + dA) % n, pf, ta, tf, hAf, hBf, Ne.symm hBfne, ?_⟩
       exact off_sep (Nat.cast_nonneg g) hgR hKA.1 hKA.2 hKF.1 hKF.2 hK₁.1 hK₁.2 hK₂.1 hK₂.2
-        ⟨by rw [ho₁, hoA_W]; exact h1, by rw [ho₂, hoA_W]; exact h2⟩
-        (by rw [ho₁, ho₂]; exact hof)
+        ⟨by rwa [ho₁, hoA_W], by rwa [ho₂, hoA_W]⟩
+        (by rwa [ho₁, ho₂])
     exact ((hM.eq_iff_not_separates hS'A hS' hR hR (Nat.mod_lt _ hn) (Nat.mod_lt _ hn) ht₁ ht₂
       hc₁ hc₂ hf₁ hf₂).1 rfl) f hf hsepf
   obtain ⟨pa, pb, ta, tb, hA', hB', hne, hiff⟩ := hsep
@@ -428,9 +428,8 @@ theorem faces_ref (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set
     hnc
   obtain ⟨U₁, hU₁, hg₁⟩ := (walkAx_chainModel hS.simple).exists_faces_of_not_cut hS.fam.2.1
     hS.fam.1 (Nat.mod_lt _ hn') ht hnc'
-  rw [one_piece J hP hS.simple hS.fam hS.adm hS.fin hS.endm hS.ends hS.shared hpc hR hd hd₀ ht ht₀
+  rwa [one_piece J hP hS.simple hS.fam hS.adm hS.fin hS.endm hS.ends hS.shared hpc hR hd hd₀ ht ht₀
     hnc hnc₀ hf hf₀ hU₁ hU hg₁ hg₀] at hg₁
-  exact hg₁
 
 /-- **The positions of type (I)**: at a position of a piece next to which `R` is faced and at
 whose side position a chord of `Sᵢ` is attached, some exit chord of the region `U` of `Sᵢ` faced
@@ -456,8 +455,8 @@ theorem piece_I (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set P
   have hM' : WalkAx M' := walkAx_chainModel hS.simple
   have hn : 0 < M.W.n := by rw [hMdef, WalkEmbed.cm_n]; omega
   have hn' : 0 < M'.W.n := by rw [hM'def, WalkEmbed.cm_n]; omega
-  set p := (g + d) % M.W.n with hp
-  set p' := (g' + d) % M'.W.n with hp'
+  set p := (g + d) % M.W.n
+  set p' := (g' + d) % M'.W.n
   have hfaced : ∀ {d₁ : ℕ} {t₁ : ℝ}, d₁ < L → t₁ ∈ Ioo (0 : ℝ) 1 →
       ¬ M.IsCut S' (((g + d₁) % M.W.n : ℕ) + t₁) → M.Faces ((g + d₁) % M.W.n) t₁ R →
       M'.Faces ((g' + d₁) % M'.W.n) t₁ U :=
@@ -536,11 +535,10 @@ theorem typeI_ncard_le (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set
     (hdeg : (chainModel C').DegLe Si D) : (TypeI J C' Si S' R g g' L).ncard ≤ 4 * D := by
   have hpc' := hpc
   obtain ⟨hg, hg', hLn, hLn', hA, -⟩ := hpc
-  set M := chainModel J.whole with hMdef
-  set M' := chainModel C' with hM'def
+  set M := chainModel J.whole
+  set M' := chainModel C'
   have hM : WalkAx M := walkAx_chainModel hP
   have hM' : WalkAx M' := walkAx_chainModel hS.simple
-  have hn : 0 < M.W.n := by omega
   have hn' : 0 < M'.W.n := by omega
   rcases (TypeI J C' Si S' R g g' L).eq_empty_or_nonempty with h0 | ⟨f₀, hf₀, d₀', t₀', hd₀',
     ht₀', ht₀'1, hdt₀', -, hadj₀, -⟩
@@ -561,7 +559,6 @@ theorem typeI_ncard_le (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set
   set K' : Set ℝ := {k | ∃ (d : ℕ) (t : ℝ), d < L ∧ 0 ≤ t ∧ t < 1 ∧ 0 < (d : ℝ) + t ∧
     Adj M S' R ((g + d) % M.W.n) t ∧
     (∃ c ∈ Si, SideAttach M'.W c ((g' + d) % M'.W.n) t) ∧ k = ((g' + d) % M'.W.n : ℕ) + t}
-    with hK'
   have hcutsfin := hM'.finite_cuts hS.fam.2.1 hS.fam.1
   have hUnion : (⋃ c ∈ exits M' Si U, attKeys M' c) ⊆ {x | M'.IsCut Si x} := by
     intro x hx

@@ -191,7 +191,7 @@ theorem round_all (hN : IsNF M Q N) (hregs : NFRegs M Q N reg) {D : ℕ}
   have hdeg : (exitsIn M.D (N.F M Q) (reg r)).ncard = degOf N r :=
     Gran.deg_region hN hRC hRO hr
   have : r ∈ newL.map Prod.fst := by
-    rw [h.fst, mem_highList]; exact ⟨hr, by rw [← hdeg]; exact hD⟩
+    rw [h.fst, mem_highList]; exact ⟨hr, by rwa [← hdeg]⟩
   obtain ⟨p, hp, rfl⟩ := List.mem_map.1 this
   exact ⟨_, ⟨p, hp, rfl⟩, (h.good p hp).2.2.2⟩
 

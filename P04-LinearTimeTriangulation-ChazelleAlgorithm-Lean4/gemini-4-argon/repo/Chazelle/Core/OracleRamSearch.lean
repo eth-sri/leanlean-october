@@ -45,8 +45,8 @@ theorem tsearch_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {J :
       c'.nreg 50105 ≤ c.nreg 50104 ∧
       (∀ j, j < c'.nreg 50105 → pr (c.nmem (c.nreg 50103 + j)) = true) ∧
       (c'.nreg 50105 < c.nreg 50104 → pr (c.nmem (c.nreg 50103 + c'.nreg 50105)) = false) := by
-  set A := c.nreg 50103 with hAdef
-  set n := c.nreg 50104 with hndef
+  set A := c.nreg 50103
+  set n := c.nreg 50104
   have hr5 := bandOf_loc hrT5
   have hl5 := bandOf_loc hrL5
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W (tsInit rT rL) c c₁ k₁ ∧ k₁ = 5 ∧
@@ -182,7 +182,7 @@ theorem chordPr_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
   by_cases hiK : i < V.K
   swap
   · obtain ⟨c₁, e₁, v₁, -⟩ := const_exec (P := P) hw 50102 0 (by omega)
-    refine ⟨c₁, _, .ifLtN_false (by rw [hi, hq.K]; exact hiK) e₁, by omega, ?_⟩
+    refine ⟨c₁, _, .ifLtN_false (by rwa [hi, hq.K]) e₁, by omega, ?_⟩
     rw [v₁]; unfold chPr; simp [hiK]
   have haddr := hKT i hiK
   -- read the record
@@ -206,9 +206,6 @@ theorem chordPr_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
       · config_simp; upd_solve
   obtain ⟨x131, x132, x133, r₂, m₂⟩ := v₂
   have hq₂ : QConst P V c₂ := hq.congr fun r h1 h2 => by rw [r₂ r (by omega), r₁ r (by omega)]
-  have ex₀ : Exec P W (.seq (t5 120130 50100 120043) (block [.loadN 120131 120130,
-      .addN 120130 120130 120011, .loadN 120132 120130, .addN 120130 120130 120011,
-      .loadN 120133 120130])) c c₂ (4 + k₂) := .seq e₁ e₂
   have hpr : chPr P C V m₀ i = decide (chH m₀ V i < V.hz ∨ (chH m₀ V i = V.hz ∧
       (if V.σb = 1 then ¬ EndGtZ P C V (chR m₀ V i) V.hz else EndLtZ P C V (chL m₀ V i) V.hz))) := by
     unfold chPr; simp [hiK]
@@ -216,13 +213,13 @@ theorem chordPr_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
   have w₂ := e₂.wb_right
   by_cases hlt : chH m₀ V i < V.hz
   · obtain ⟨c₃, e₃, v₃, -⟩ := const_exec (P := P) w₂ 50102 1 (by omega)
-    refine ⟨c₃, _, .ifLtN_true (by rw [hi, hq.K]; exact hiK) (.seq e₁ (.seq e₂
-      (.ifLtN_true (by rw [x131, hq₂.hz]; exact hlt) e₃))), by omega, ?_⟩
+    refine ⟨c₃, _, .ifLtN_true (by rwa [hi, hq.K]) (.seq e₁ (.seq e₂
+      (.ifLtN_true (by rwa [x131, hq₂.hz]) e₃))), by omega, ?_⟩
     rw [v₃]; simp [hlt]
   by_cases hgt : V.hz < chH m₀ V i
   · obtain ⟨c₃, e₃, v₃, -⟩ := const_exec (P := P) w₂ 50102 0 (by omega)
-    refine ⟨c₃, _, .ifLtN_true (by rw [hi, hq.K]; exact hiK) (.seq e₁ (.seq e₂
-      (.ifLtN_false (by rw [x131, hq₂.hz]; exact hlt) (.ifLtN_true (by rw [x131, hq₂.hz]; exact hgt)
+    refine ⟨c₃, _, .ifLtN_true (by rwa [hi, hq.K]) (.seq e₁ (.seq e₂
+      (.ifLtN_false (by rwa [x131, hq₂.hz]) (.ifLtN_true (by rwa [x131, hq₂.hz])
         e₃)))), by omega, ?_⟩
     rw [v₃]
     have : ¬ (chH m₀ V i < V.hz ∨ (chH m₀ V i = V.hz ∧
@@ -243,9 +240,9 @@ theorem chordPr_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
     obtain ⟨c₄, k₄, e₄, hk₄, f₄, b₄, g₄⟩ := ltZS_exec (P := P) hG (by omega) hv htv c₃ e₃.wb_right hq₃
       (by rw [x121]; exact hv.hz_lt)
     obtain ⟨c₅, e₅, v₅, -⟩ := copy_exec (P := P) e₄.wb_right 50102 120128
-    refine ⟨c₅, _, .ifLtN_true (by rw [hi, hq.K]; exact hiK) (.seq e₁ (.seq e₂
-      (.ifLtN_false (by rw [x131, hq₂.hz]; exact hlt) (.ifLtN_false (by rw [x131, hq₂.hz]; exact hgt)
-        (.ifLtN_true (by rw [hq₂.σb, hq₂.one]; exact hσ) (.seq e₃ (.seq e₄ e₅))))))), by omega, ?_⟩
+    refine ⟨c₅, _, .ifLtN_true (by rwa [hi, hq.K]) (.seq e₁ (.seq e₂
+      (.ifLtN_false (by rwa [x131, hq₂.hz]) (.ifLtN_false (by rwa [x131, hq₂.hz])
+        (.ifLtN_true (by rwa [hq₂.σb, hq₂.one]) (.seq e₃ (.seq e₄ e₅))))))), by omega, ?_⟩
     rw [v₅, x120, x121] at *
     have hσ' : V.σb ≠ 1 := by omega
     by_cases hE : EndLtZ P C V (chL m₀ V i) V.hz
@@ -269,9 +266,9 @@ theorem chordPr_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
     obtain ⟨c₅, e₅, v₅, -⟩ : ∃ c₅, Exec P W (.instr (.subN 50102 120011 120128)) c₄ c₅ 1 ∧
         c₅.nreg 50102 = c₄.nreg 120011 - c₄.nreg 120128 ∧ True :=
       ⟨_, Exec.subN w₄ _ _ _, by config_simp, trivial⟩
-    refine ⟨c₅, _, .ifLtN_true (by rw [hi, hq.K]; exact hiK) (.seq e₁ (.seq e₂
-      (.ifLtN_false (by rw [x131, hq₂.hz]; exact hlt) (.ifLtN_false (by rw [x131, hq₂.hz]; exact hgt)
-        (.ifLtN_false (by rw [hq₂.σb, hq₂.one]; exact hσ) (.seq e₃ (.seq e₄ e₅))))))), by omega, ?_⟩
+    refine ⟨c₅, _, .ifLtN_true (by rwa [hi, hq.K]) (.seq e₁ (.seq e₂
+      (.ifLtN_false (by rwa [x131, hq₂.hz]) (.ifLtN_false (by rwa [x131, hq₂.hz])
+        (.ifLtN_false (by rwa [hq₂.σb, hq₂.one]) (.seq e₃ (.seq e₄ e₅))))))), by omega, ?_⟩
     rw [v₅, one₄, x120, x121] at *
     have hσ' : V.σb = 1 := by have := hv.σb_le; omega
     by_cases hE : EndGtZ P C V (chR m₀ V i) V.hz

@@ -83,7 +83,7 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
     hostPoly_vtx hι
   have hb := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hι)
   rw [hW, hWn] at hb
-  set κ := hk (interiorModel (Qof P)) xS (reg r) ι with hκ
+  set κ := hk (interiorModel (Qof P)) xS (reg r) ι
   have hq0 : ⌊κ⌋₊ < (Qof P).n := by
     have : (⌊κ⌋₊ : ℝ) < (Qof P).n := lt_of_le_of_lt (Nat.floor_le hb.1) hb.2
     exact_mod_cast this
@@ -103,7 +103,7 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
     obtain ⟨hz, hsec⟩ := Y.inner_edge h6 hp' ⟨ht0', ht1⟩ hA
     rw [← hιdef] at hz hsec
     have hGat : SideAttach xG (hseg ((Qof P).vtx h).2 A B) ι t :=
-      ExtG.attach_of_sector hz.symm (fun x hx => (hsec x).1 hx) (by rw [hGn]; exact hι) ht0 ht1 hat
+      ExtG.attach_of_sector hz.symm (fun x hx => (hsec x).1 hx) (by rwa [hGn]) ht0 ht1 hat
     -- the gap after `ι` is an arc gap
     have hAg : ArcGap (interiorModel (Qof P)) xS (reg r) ι := by
       rcases gap_cases hM hFam.2.1 hFam.1 Y.X.hne Y.X.hR (by omega) hι with hAg | hCg
@@ -112,10 +112,10 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
     have hι1 : (ι + 1) % xK < xK := Nat.mod_lt _ (by omega)
     have hb' := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hι1)
     rw [hW, hWn] at hb'
-    set κ' := hk (interiorModel (Qof P)) xS (reg r) ((ι + 1) % xK) with hκ'
+    set κ' := hk (interiorModel (Qof P)) xS (reg r) ((ι + 1) % xK)
     have hne : κ ≠ κ' := hk_succ_ne hM hFam.2.1 hFam.1 (by omega) hι
     have hnoint : ∀ k : ℕ, k < (Qof P).n → ¬ sideInArc κ κ' k := fun k hk' =>
-      arcGap_noInt hQ hFam Y.X.hne Y.X.hR hι hAg k (by rw [hW, hWn]; exact hk')
+      arcGap_noInt hQ hFam Y.X.hne Y.X.hR hι hAg k (by rwa [hW, hWn])
     -- the next host point is on the same walk edge, at a larger parameter
     obtain ⟨f', hff', hf'1, hnext, hin⟩ : ∃ f' : ℝ, κ - ⌊κ⌋₊ < f' ∧ f' ≤ 1 ∧
         hostPt (interiorWalk (Qof P)) κ' = sidePt (interiorWalk (Qof P)) ⌊κ⌋₊ f' ∧
@@ -132,7 +132,6 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
           rw [Nat.floor_natCast, sub_self, Chazelle.Chain.sidePt_zero, sidePt_one, hWn]
         · by_cases hq1' : ⌊κ⌋₊ + 1 < (Qof P).n
           · rw [hyv, Nat.mod_eq_of_lt hq1']
-            have hκ1 : κ < (⌊κ⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one κ
             unfold sideInArc; rw [ite_eq_left (by push_cast; linarith)]
             push_cast; constructor <;> linarith
           · rw [hyv, show ⌊κ⌋₊ + 1 = (Qof P).n by omega, Nat.mod_self]
@@ -145,7 +144,7 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
     · rw [hz]
       have e1 : (xG).vtx ι = sidePt (interiorWalk (Qof P)) ⌊κ⌋₊ (κ - ⌊κ⌋₊) := by rw [hGv]; rfl
       have e2 : (xG).vtx ((ι + 1) % (xG).n) = sidePt (interiorWalk (Qof P)) ⌊κ⌋₊ f' := by
-        rw [hGn, hostPoly_vtx hι1]; exact hnext
+        rwa [hGn, hostPoly_vtx hι1]
       symm
       show lerp ((xG).vtx ι) ((xG).vtx ((ι + 1) % (xG).n)) t = _
       rw [e1, e2]
@@ -177,14 +176,14 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
               have := hk_succ_ne hM hFam.2.1 hFam.1 (by omega) hpv; rwa [hsp] at this
             have hbn : b' < (Qof P).n := by have := harc.2.2.2.1; rwa [hW, hWn] at this
             have e := cyc_end hne' hbp.1 hbp.2 hb.1 hb.2 harc.2.2.1 hbn
-              (fun z hz0 hzn hz => hsub z hz0 (by rw [hW, hWn]; exact hzn) hz)
+              (fun z hz0 hzn hz => hsub z hz0 (by rwa [hW, hWn]) hz)
               (fun hin => harc.2.2.2.2.2.1 _ hin hcut)
             exact ⟨a', b', harc, Or.inr (Or.inl e)⟩
           · exfalso
             have hGpos : sidePt xG q s = sidePt xG ι 0 := by
               rw [hpt, hz0, Chazelle.Chain.sidePt_zero]
             obtain ⟨hqι, hs0⟩ := FactsInterior.pos_unique Y.gSimple
-              hG.1 (by rw [hGn]; exact hι) hG.2.1 hG.2.2.1 le_rfl one_pos hGpos
+              hG.1 (by rwa [hGn]) hG.2.1 hG.2.2.1 le_rfl one_pos hGpos
             have h1 := Y.chordGap_flat hι hCg
             have h2 := Y.chordGap_flat hpv hCg'
             rw [hsp] at h2
@@ -192,7 +191,7 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
             exact Y.not_attach_junction hAB hι h1 h2 hG
       · obtain ⟨k, -, hkk, a, b, harc, hin⟩ := hvx
         have hkk' : κ = k := hkk
-        exact ⟨a, b, harc, Or.inr (Or.inr (by rw [hkk']; exact hin))⟩
+        exact ⟨a, b, harc, Or.inr (Or.inr (by rwa [hkk']))⟩
 
 /-- An arc of the region gives an arc record of region `r` of `N`. -/
 theorem onArc_of {x : WPos} {a b : ℝ}
@@ -205,7 +204,7 @@ theorem onArc_of {x : WPos} {a b : ℝ}
   obtain ⟨t, ht, hs, he⟩ := hcomp a b harc
   refine ⟨((buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs.getD t 0, ?_, ?_⟩
   · rw [List.getD_eq_getElem _ _ ht]; exact List.getElem_mem ht
-  · unfold OnArcKey; rw [hs, he]; exact hx
+  · unfold OnArcKey; rwa [hs, he]
 
 /-- **X-R2: the interior triple of a kept chord record.** -/
 theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
@@ -237,9 +236,9 @@ theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
     Y.end_xpos hAB hr hGR (hzGR.trans hzr.symm)
   rw [hzl] at hpL
   rw [hzr] at hpR
-  set y := ((Qof P).vtx (NR.chord i).h).2 with hydef
-  set xL := xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).lp with hxLdef
-  set xR := xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).rp with hxRdef
+  set y := ((Qof P).vtx (NR.chord i).h).2
+  set xL := xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).lp
+  set xR := xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).rp
   -- parameters and points
   have hparL : (interiorModel (Qof P)).param (Qof P) xL = τL :=
     iparam Y.X.hli Y.X.hdh (by omega) heL (by rw [hpL])
@@ -275,12 +274,12 @@ theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
       rcases hz with rfl | rfl
       · exact hEa.1
       · exact hEb.1
-    obtain ⟨rfl, rfl⟩ := FactsInterior.pos_unique hWs (by rw [hWn]; exact he) hA₁.1 hτ0 hτ1
+    obtain ⟨rfl, rfl⟩ := FactsInterior.pos_unique hWs (by rwa [hWn]) hA₁.1 hτ0 hτ1
       hA₁.2.1 hA₁.2.2.1 (hpt.trans hp₁.symm)
     exact hA₁
-  refine ⟨hset, ?_, hh, ⟨by rw [hparL]; exact hτL0, by rw [hparL]; exact hτL1, by
+  refine ⟨hset, ?_, hh, ⟨by rwa [hparL], by rwa [hparL], by
       show (NR.chord i).h + 1 ≤ (Qof P).n; omega⟩,
-    ⟨by rw [hparR]; exact hτR0, by rw [hparR]; exact hτR1, by
+    ⟨by rwa [hparR], by rwa [hparR], by
       show (NR.chord i).h + 1 ≤ (Qof P).n; omega⟩, ?_, ?_⟩
   · unfold CRec.Attached
     rw [hset, hlpos, hrpos, hparL, hparR]
@@ -289,11 +288,11 @@ theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
   · have hkey : (interiorModel (Qof P)).key (Qof P) xL = xL.edge + τL := by
       show xL.edge + (interiorModel (Qof P)).param (Qof P) xL = _; rw [hparL]
     refine Y.onArc_of harcL ?_
-    rw [hkey]; exact hxL
+    rwa [hkey]
   · have hkey : (interiorModel (Qof P)).key (Qof P) xR = xR.edge + τR := by
       show xR.edge + (interiorModel (Qof P)).param (Qof P) xR = _; rw [hparR]
     refine Y.onArc_of harcR ?_
-    rw [hkey]; exact hxR
+    rwa [hkey]
 
 end XCtx
 

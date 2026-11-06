@@ -151,7 +151,7 @@ theorem isMountainAt_iff {Q : Polygon} {a : ℕ} (ha : a < Q.n) :
     exact hc i hi
   · rintro ⟨hR, hc⟩
     refine ⟨simple_of_simple_rotate hR, ha, fun p hp => ?_⟩
-    have := hc p (by rw [n_rotate]; exact hp)
+    have := hc p (by rwa [n_rotate])
     rwa [key p (by omega), key (p + 1) hp] at this
 
 /-- The global `ylexLT`-minimum of a simple polygon is a strict local minimum. -/
@@ -283,15 +283,15 @@ theorem exists_ball_vtx_mem_closure {P : Polygon} (hP : P.Simple) {k : ℕ} (hk 
     ∃ r > 0, ∀ p ∈ ball (P.vtx k) r, p ∈ freeRegion P →
       P.vtx k ∈ closure (connectedComponentIn (freeRegion P) p) := by
   have hn := simple_three_le hP
-  set v := P.vtx k with hv
-  set a := P.vtx (prevIdx P k) with ha
-  set b := P.vtx ((k + 1) % P.n) with hb
+  set v := P.vtx k
+  set a := P.vtx (prevIdx P k)
+  set b := P.vtx ((k + 1) % P.n)
   obtain ⟨r₁, hr₁, hball⟩ := Chazelle.Existence.boundary_near_vtx hP hk
   have hav : 0 < dist a v :=
     dist_pos.2 (simple_vtx_ne hP (prevIdx_lt P hk) hk (prevIdx_ne P hn hk))
   have hbv : 0 < dist b v := dist_pos.2 (simple_vtx_succ_ne hP hk).symm
   obtain ⟨g, hg, hgle⟩ := exists_pos_le_of_pos (fun j => |(P.vtx j).2 - v.2|) P.n
-  set r := min (min r₁ (dist a v)) (min (dist b v) g) with hr
+  set r := min (min r₁ (dist a v)) (min (dist b v) g)
   have hr0 : 0 < r := lt_min (lt_min hr₁ hav) (lt_min hbv hg)
   have hrr₁ : r ≤ r₁ := (min_le_left _ _).trans (min_le_left _ _)
   have hra : r ≤ dist a v := (min_le_left _ _).trans (min_le_right _ _)
@@ -302,7 +302,7 @@ theorem exists_ball_vtx_mem_closure {P : Polygon} (hP : P.Simple) {k : ℕ} (hk 
       v ∈ closure (connectedComponentIn (freeRegion P) p) := by
     intro p hp hpf hpy
     have hpv : dist p v < r := hp
-    set S := Geometry.lerp p v '' Ico (0 : ℝ) 1 with hS
+    set S := Geometry.lerp p v '' Ico (0 : ℝ) 1
     have hSball : S ⊆ ball v r := by
       rintro _ ⟨t, ht, rfl⟩
       rw [Geometry.lerp_eq_smul_add_smul]
@@ -314,8 +314,7 @@ theorem exists_ball_vtx_mem_closure {P : Polygon} (hP : P.Simple) {k : ℕ} (hk 
         rcases mem_segment_or_far ht.2 hx with h | h
         · apply hpf.1.2
           refine ⟨prevIdx P k, prevIdx_lt P hk, ?_⟩
-          rw [edge_prevIdx P hk, Geometry.segment_comm]
-          exact h
+          rwa [edge_prevIdx P hk, Geometry.segment_comm]
         · linarith
       · rcases mem_segment_or_far ht.2 hx with h | h
         · exact hpf.1.2 ⟨k, hk, h⟩
@@ -340,7 +339,7 @@ theorem exists_ball_vtx_mem_closure {P : Polygon} (hP : P.Simple) {k : ℕ} (hk 
       have h1 := hgle j hj (by
         show 0 < |(P.vtx j).2 - v.2|
         rw [← hjy]; exact abs_pos.2 hne)
-      have h1' : g ≤ |(Geometry.lerp p v t).2 - v.2| := by rw [hjy]; exact h1
+      have h1' : g ≤ |(Geometry.lerp p v t).2 - v.2| := by rwa [hjy]
       linarith [hxv.2]
     have hsub : S ⊆ connectedComponentIn (freeRegion P) p :=
       hSc.subset_connectedComponentIn hpS hSf
@@ -438,15 +437,15 @@ theorem gap_adjacent_or_chord {P : Polygon} (hP : P.Simple) {y₀ ε : ℝ} (hε
       intro j hj h
       have h1 : (P.vtx j).1 = x := (congrArg Prod.fst h).symm
       have h2 : (P.vtx j).2 = y₀ := (congrArg Prod.snd h).symm
-      exact hgap j hj h2 (by rw [h1]; exact hx1) (by rw [h1]; exact hx2)
+      exact hgap j hj h2 (by rwa [h1]) (by rwa [h1])
     obtain ⟨g, hg, t, ht, hxe⟩ := exists_openEdge_of_mem_boundary P hxb hnv
     by_cases hh : NonHoriz P g
     · exact absurd (side_edge_false hε hU (e := (x, y₀)) rfl (hnear x hx1 hx2) hg hh
         ⟨t, ht, hxe⟩) not_false
     · unfold NonHoriz at hh
       push Not at hh
-      set e1 := P.vtx g with he1
-      set e2 := P.vtx ((g + 1) % P.n) with he2
+      set e1 := P.vtx g
+      set e2 := P.vtx ((g + 1) % P.n)
       have hx1e : x = e1.1 + t * (e2.1 - e1.1) := congrArg Prod.fst hxe
       have hy1e : y₀ = e1.2 + t * (e2.2 - e1.2) := congrArg Prod.snd hxe
       have he1y : e1.2 = y₀ := by rw [hy1e, ← hh]; ring
@@ -585,11 +584,11 @@ theorem TrapData.attached_top {P : Polygon} (hP : P.Simple) (D : TrapData P) {k 
       refine lt_of_le_of_ne (htmin k hk) (fun h => htop ?_)
       exact simple_vtx_inj hP hk.1 htmem.1
         (Geometry.point_ext h.symm (hk.2.1.trans htmem.2.1.symm))
-    set S : Set ℕ := {j | j ∈ sideVtxSet P D.i D.j D.y₂ ∧ (P.vtx j).1 < (P.vtx k).1} with hS
+    set S : Set ℕ := {j | j ∈ sideVtxSet P D.i D.j D.y₂ ∧ (P.vtx j).1 < (P.vtx k).1}
     have hSfin : S.Finite := (sideVtxSet_finite P D.i D.j D.y₂).subset fun _ h => h.1
     have hSne : S.Nonempty := ⟨D.top, htmem, hkt⟩
     obtain ⟨hmS, hmmax⟩ := rightmostVtx_spec P hSfin hSne
-    set m := rightmostVtx P S with hmdef
+    set m := rightmostVtx P S
     refine ⟨m, hmS.1.1, Or.inr ⟨hmS.1.2.1.trans hk.2.1.symm, hmS.2⟩, ?_⟩
     have hres := gap_adjacent_or_chord hP (Or.inr rfl) (D.region_subset_interior hP)
       hmS.1.1 hk.1 hmS.1.2.1 hk.2.1 hmS.2
@@ -670,8 +669,7 @@ theorem IsPiece.interior_subset {P : Polygon} {l : List ℕ} (hl : IsPiece P l) 
     (subPoly P l).filled \ (subPoly P l).boundary ⊆ P.filled \ P.boundary := by
   intro y hy
   refine ⟨hl.filled_subset hy.1, hl.not_boundary y ?_⟩
-  rw [interior_filled hl.simple]
-  exact hy
+  rwa [interior_filled hl.simple]
 
 /-- A point of the segment attached at a vertex of a piece that is interior to the piece yields
 a contradiction. -/
@@ -679,10 +677,10 @@ theorem IsPiece.not_mem_attached {P : Polygon} {l : List ℕ} (hl : IsPiece P l)
     (hK : K < P.n) (hm : m < P.n) (he : IsPieceEdge P K m) {y : Point}
     (hy : y ∈ Chazelle.segment (P.vtx K) (P.vtx m))
     (hyi : y ∈ (subPoly P l).filled \ (subPoly P l).boundary) : False := by
-  have hyi' : y ∈ interior (subPoly P l).filled := by rw [interior_filled hl.simple]; exact hyi
+  have hyi' : y ∈ interior (subPoly P l).filled := by rwa [interior_filled hl.simple]
   rcases he.segment_cases hK hm with h | ⟨d, hd, h⟩
   · exact hl.not_boundary y hyi' (h hy)
-  · exact hl.not_diag d hd y hyi' (by rw [← h]; exact hy)
+  · exact hl.not_diag d hd y hyi' (by rwa [← h])
 
 /-- **A piece has no reflex local minimum.**  If vertex `k` of a piece `Q = subPoly P l` is a
 strict `ylexLT`-local minimum, then near `Q.vtx k` no point strictly `ylexLT`-below it is
@@ -705,8 +703,8 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
   obtain ⟨r₁, hr₁, hr₁b⟩ := lower_halfBall_not_boundary hQ hk
   obtain ⟨r₂, hr₂, hr₂D⟩ := exists_ball_vtx_trapData hP hK
   refine ⟨min r₁ r₂, lt_min hr₁ hr₂, fun y₀ hy₀ hy₀lt hy₀i => ?_⟩
-  set x := Q.vtx k with hx
-  set r := min r₁ r₂ with hr
+  set x := Q.vtx k
+  set r := min r₁ r₂
   -- the lower half-ball is interior to `Q`
   have hB : ∀ y ∈ ball x r, ylexLT y x → y ∈ Q.filled \ Q.boundary := by
     have hconv : Convex ℝ (ball x r ∩ {y | ylexLT y x}) := (convex_ball x r).inter (convex_ylexLT_lower x)
@@ -730,7 +728,7 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
   obtain ⟨p, ⟨hpb, hpy⟩, hpf, -, -⟩ := exists_free_of_isOpen hP hWo hz hzi
   obtain ⟨D, -, hpD, hvD, -⟩ := hr₂D p (by rw [← hxK]; exact ball_subset_ball (min_le_right _ _) hpb) hpf
   have hKtop : K ∈ sideVtxSet P D.i D.j D.y₂ :=
-    D.mem_top_of_lt hK hvD hpD (by rw [← hxK]; exact hpy)
+    D.mem_top_of_lt hK hvD hpD (by rwa [← hxK])
   obtain ⟨m, hm, hmlt, hme⟩ := D.attached_top hP hKtop
   rw [← hxK] at hmlt
   -- a point of the attached segment close to `x`

@@ -131,7 +131,7 @@ theorem offerQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c)
         by unfold kqSH sw; norm_num, by unfold kqSH sw; norm_num, by unfold kqE sw; norm_num,
         by unfold kqE sw; norm_num, by unfold kqH sw; norm_num, by unfold kqH sw; norm_num,
         by unfold cGW sw; norm_num, by unfold cGW sw; norm_num⟩
-      ⟨by unfold kqO sw; norm_num, by unfold kqO sw; norm_num⟩ hq.1 htP.1 (by rw [hgw]; exact hgn)
+      ⟨by unfold kqO sw; norm_num, by unfold kqO sw; norm_num⟩ hq.1 htP.1 (by rwa [hgw])
       hq.2.1 htP.2.1 hq.2.2 htP.2.2 hroom) ?_
     rintro c₁ hI₁ hA₁ hA₁' ⟨b1, -, k₁, ha₁, hm₁⟩
     rw [hgw'] at b1
@@ -146,13 +146,12 @@ theorem offerQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c)
       exact k₁ r (not_oracle_sw (by omega) (by omega)) (by unfold kqO sw; omega)
         (by unfold kqO sw; omega) (by unfold ALLOC; omega)
     have k01 : c₁.nreg K0 = 0 := by
-      rw [k₁ K0 (not_oracle_sw (by unfold K0 sw; omega) (by unfold K0 sw; omega))
+      rwa [k₁ K0 (not_oracle_sw (by unfold K0 sw; omega) (by unfold K0 sw; omega))
         (by unfold K0 kqO sw; omega) (by unfold K0 kqO sw; omega) (by unfold K0 ALLOC sw; omega)]
-      exact k0
     by_cases h2 : c₁.nreg K0 < c₁.nreg kqO
     · rw [k01] at h2
       have hlt := b1.2.1 (by have := b1.1; omega)
-      refine IRS.mono (K := 3 + 2) (IRS.ifT (by rw [k01]; exact h2) (kqTake_irs hI₁ hW1))
+      refine IRS.mono (K := 3 + 2) (IRS.ifT (by rwa [k01]) (kqTake_irs hI₁ hW1))
         (by norm_num) ?_
       rintro c' ⟨e1, e2, e3, fr2⟩
       rw [keep _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))] at e2
@@ -162,7 +161,7 @@ theorem offerQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c)
     · rw [k01] at h2
       have hnlt : ¬ offK P J (c.nreg kqSE) (c.nreg kqSH) < offK P J (c.nreg kqE) (c.nreg kqH) :=
         fun h => by have := b1.2.2 h; omega
-      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k01]; exact h2) (IRS.skip hI₁ rfl))
+      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k01]) (IRS.skip hI₁ rfl))
         (by norm_num) ?_
       rintro c' rfl
       have eF := keep _ (Or.inl rfl)

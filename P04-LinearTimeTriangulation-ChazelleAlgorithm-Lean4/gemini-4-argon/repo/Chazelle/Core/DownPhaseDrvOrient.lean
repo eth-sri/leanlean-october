@@ -38,7 +38,7 @@ theorem arcEdge_pair (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a < W.n) (
     (hbn : b < W.n) (_hab : a ≠ b) (hnv : ∀ k : ℕ, k < W.n → ¬ sideInArc a b k) :
     ∃ p, p < W.n ∧ ∃ t'' : ℝ, a - p < t'' ∧ t'' ≤ 1 ∧ 0 ≤ a - p ∧
       hostPt W a = sidePt W p (a - p) ∧ hostPt W b = sidePt W p t'' := by
-  set p := ⌊a⌋₊ with hpdef
+  set p := ⌊a⌋₊
   have hp : (p : ℝ) ≤ a := Nat.floor_le ha0
   have hp1 : a < p + 1 := Nat.lt_floor_add_one a
   have hpn : p < W.n := by
@@ -86,7 +86,7 @@ variable {Q : Polygon} {S : Set (Set Point)} {R : Set Point}
 theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) :
     Mountain.orient (hostPoly Q S R) = 1 := by
-  set M := interiorModel Q with hMdef
+  set M := interiorModel Q
   have hM : WalkAx M := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
@@ -142,21 +142,20 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
       hkin
   obtain ⟨p, hp, t'', ht1, ht2, ht0, hAe, hBe⟩ := arcEdge_pair M.W hb1.1 hb1.2 hb2.1 hb2.2
     (hk_succ_ne hM hF hfin hN2 hi) hnv
-  set τ₀ := hk M S R i - p with hτ₀
+  set τ₀ := hk M S R i - p
   -- the host edge as a piece of the walk edge
   have hHn : (hostPoly Q S R).n = nk M S R := hostPoly_n
   have hvi : (hostPoly Q S R).vtx i = A := hostPoly_vtx hi
   have hvi' : (hostPoly Q S R).vtx ((i + 1) % (hostPoly Q S R).n) = B := by
     rw [hHn]; exact hostPoly_vtx hsi
-  have hiH : i < (hostPoly Q S R).n := by rw [hHn]; exact hi
+  have hiH : i < (hostPoly Q S R).n := by rwa [hHn]
   have hcpos : 0 < t'' - τ₀ := by linarith
-  set t' := τ₀ + lam * (t'' - τ₀) with ht'
+  set t' := τ₀ + lam * (t'' - τ₀)
   have ht'I : t' ∈ Ioo (0 : ℝ) 1 := by
     constructor
     · have : 0 < lam * (t'' - τ₀) := mul_pos hlam'.1 hcpos; linarith
     · have : lam * (t'' - τ₀) < 1 * (t'' - τ₀) := mul_lt_mul_of_pos_right hlam'.2 hcpos
       linarith
-  have hWn : (interiorWalk Q).n = M.W.n := rfl
   have hpW : p < (interiorWalk Q).n := hp
   have hoff : ∀ δ : ℝ, Chazelle.Jordan.offset ((hostPoly Q S R).vtx i)
       ((hostPoly Q S R).vtx ((i + 1) % (hostPoly Q S R).n)) lam δ =
@@ -191,8 +190,7 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
   have hD : Chazelle.Jordan.offset ((interiorWalk Q).vtx p)
       ((interiorWalk Q).vtx ((p + 1) % (interiorWalk Q).n)) t' (δ * (t'' - τ₀)) ∈ M.D := by
     have h1 := hδ.1
-    rw [one_mul, hWf, hWb] at h1
-    exact h1
+    rwa [one_mul, hWf, hWb] at h1
   rw [one_mul] at hball
   exact (region_sub_intHost hQ hFam hne hR (hnear _ hball hD)).1
 

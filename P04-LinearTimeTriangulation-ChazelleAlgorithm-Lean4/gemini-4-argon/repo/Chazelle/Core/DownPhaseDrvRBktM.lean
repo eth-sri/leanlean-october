@@ -60,7 +60,6 @@ theorem bfilt_succ (q b : ℕ) :
 theorem bcnt_succ (q b : ℕ) : bcnt bk (q + 1) b = bcnt bk q b + (if bk q = b then 1 else 0) := by
   unfold bcnt; rw [bfilt_succ]; split_ifs <;> simp
 
-theorem bcnt_zero (b : ℕ) : bcnt bk 0 b = 0 := rfl
 
 theorem bcnt_mono {q q' : ℕ} (h : q ≤ q') (b : ℕ) : bcnt bk q b ≤ bcnt bk q' b := by
   induction h with
@@ -82,7 +81,7 @@ theorem mem_bfilt {n b q : ℕ} : q ∈ bfilt bk n b ↔ q < n ∧ bk q = b := b
 /-- The sum of the bucket sizes is `n` when every bucket is at most `A`. -/
 theorem bstart_all {n A : ℕ} (hA : ∀ q, q < n → bk q ≤ A) : bstart bk n (A + 1) = n := by
   induction n with
-  | zero => unfold bstart; simp [bcnt_zero]
+  | zero => simp [bstart, bcnt, bfilt]
   | succ n ih =>
     have ih' := ih fun q hq => hA q (by omega)
     unfold bstart at ih' ⊢
@@ -157,8 +156,8 @@ theorem bktList_getD_slot {n A base q : ℕ} (hq : q < n) (hA : bk q ≤ A) :
     have h1 := bcnt_mono (bk := bk) (show q + 1 ≤ n by omega) (bk q)
     rw [bcnt_succ, ite_eq_left rfl] at h1
     unfold bcnt at h1 ⊢; omega
-  rw [List.getD_append _ _ _ _ (by rw [List.length_map]; exact hlt)]
-  rw [List.getD_eq_getElem _ _ (by rw [List.length_map]; exact hlt), List.getElem_map]
+  rw [List.getD_append _ _ _ _ (by rwa [List.length_map])]
+  rw [List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getElem_map]
   have := bfilt_getD (bk := bk) hq rfl
   rw [List.getD_eq_getElem _ _ hlt] at this
   rw [this]
@@ -211,10 +210,10 @@ theorem seg_eq_bktList {m : ℕ → ℕ} {R n A base : ℕ} (hA : ∀ q, q < n �
   intro p hp _
   rw [seg_length] at hp
   obtain ⟨q, hq, rfl⟩ := exists_slot hA hp
-  have e1 : (seg m R n)[slot bk n q]'(by rw [seg_length]; exact hp) = m (R + slot bk n q) := by
+  have e1 : (seg m R n)[slot bk n q]'(by rwa [seg_length]) = m (R + slot bk n q) := by
     simp [seg]
   have e2 := bktList_getD_slot (bk := bk) (base := base) hq (hA q hq)
-  rw [List.getD_eq_getElem _ _ (by rw [bktList_length hA]; exact hp)] at e2
+  rw [List.getD_eq_getElem _ _ (by rwa [bktList_length hA])] at e2
   rw [e1, e2, h q hq]
 
 end

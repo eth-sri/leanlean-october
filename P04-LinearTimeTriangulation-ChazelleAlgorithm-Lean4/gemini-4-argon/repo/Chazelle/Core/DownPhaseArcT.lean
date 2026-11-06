@@ -118,10 +118,9 @@ theorem floor_eq {x x' : ℝ} (hx : x ∈ Ioo lo hi) (hx' : x' ∈ Ioo lo hi) (h
     have m1 : κ z < κ k := h.mono (hIcc z hz) (hIcc _ hkI) hk1
     have m2 : κ k < κ z' := h.mono (hIcc _ hkI) (hIcc z' hz') hk2
     have hy0 : 0 ≤ κ z := (h.range z (hIcc z hz)).1
-    have hy0' : 0 ≤ κ z' := (h.range z' (hIcc z' hz')).1
     have f1 : (⌊κ z⌋₊ : ℝ) + 1 ≤ K := by
       have : ⌊κ z⌋₊ < K := by
-        rw [Nat.floor_lt hy0]; rw [← hK]; exact m1
+        rwa [Nat.floor_lt hy0, ← hK]
       exact_mod_cast this
     have f2 : (K : ℝ) ≤ ⌊κ z'⌋₊ := by
       have : K ≤ ⌊κ z'⌋₊ := Nat.le_floor (by rw [← hK]; exact m2.le)
@@ -276,7 +275,7 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
           exact_mod_cast this
         have ht0 : 0 < y₀ - ⌊y₀⌋₊ := by linarith [hy₀p.1]
         have ht1 : y₀ - ⌊y₀⌋₊ < 1 := by linarith [hy₀p.2]
-        have hfX := harcX.2.2.2.2.2.2 _ _ hpn ht0 ht1 (by rw [add_sub_cancel]; exact hin₀)
+        have hfX := harcX.2.2.2.2.2.2 _ _ hpn ht0 ht1 (by rwa [add_sub_cancel])
         exact WalkAx.faces_unique hX hU hfX (hfac₀ y₀ ⟨hya, hyb⟩ hy₀v)
       subst hXU
       refine ⟨l, r, harcX, ?_⟩
@@ -296,10 +295,10 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
       rw [Set.not_nonempty_iff_eq_empty] at hF
       have hn1 : (0 : ℝ) < M₁.W.n := lt_of_le_of_lt (h.range aa hIa).1 (h.range aa hIa).2
       refine ⟨0, 0, ⟨le_rfl, hn1, le_rfl, hn1, Or.inr ⟨hF, rfl, rfl⟩,
-        fun x _ hc => by obtain ⟨c, hc, -⟩ := hc; rw [hF] at hc; exact hc, ?_⟩, ?_⟩
+        fun x _ hc => by obtain ⟨c, hc, -⟩ := hc; rwa [hF] at hc, ?_⟩, ?_⟩
       · intro p t hp ht0 ht1 _
         obtain ⟨X, hX, hfX⟩ := hM₁.exists_faces_of_not_cut hF₁ hfin₁ hp ⟨ht0, ht1⟩
-          (fun hc => by obtain ⟨c, hc, -⟩ := hc; rw [hF] at hc; exact hc)
+          (fun hc => by obtain ⟨c, hc, -⟩ := hc; rwa [hF] at hc)
         -- a single region
         have hXU : X = U := by
           obtain ⟨x, hx, rfl⟩ := hX
@@ -310,7 +309,7 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
           rw [hfr] at hx hu ⊢
           rw [connectedComponentIn_eq (hpre.subset_connectedComponentIn hx subset_rfl
             (show u ∈ M₁.D from hu) |> fun h' => by exact h')]
-        rw [← hXU]; exact hfX
+        rwa [← hXU]
       · intro y hy
         unfold sideInArc
         rw [ite_eq_right (lt_irrefl _)]

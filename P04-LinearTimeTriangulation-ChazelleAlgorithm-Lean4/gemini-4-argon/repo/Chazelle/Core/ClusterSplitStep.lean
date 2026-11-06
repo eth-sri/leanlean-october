@@ -95,7 +95,7 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
     have hf : (f : ℕ) < N := f.2
     have hfU : (f : ℕ) + 1 ≤ U := by omega
     set y := m (S.bSO + X) with hy
-    set z := m (S.bSF + y) with hz
+    set z := m (S.bSF + y)
     have e1 : m2 (S.bSO + X) = m (S.bSO + X) := hm2 _ (by omega) (by omega)
     have e2 : m2 (S.bSF + y) = m (S.bSF + y) := hm2 _ (by omega) (by omega)
     have e3 : m2 (S.bFPAR + z) = m (S.bFPAR + z) := hm2 _ (by omega) (by omega)

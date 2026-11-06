@@ -52,7 +52,7 @@ theorem tie_dom (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Mer
       sidePt (chainModel J.whole).W p t = J.shared := by
   have hC := corr_right0 J hP hS₂ hS₂f
   have hM := hC.hM
-  set x := sidePt (chainModel J.whole).W p t with hx
+  set x := sidePt (chainModel J.whole).W p t
   have hpt : ∀ {f : Set Point}, f ∈ F₂plus J S₂ → SideAttach (chainModel J.whole).W f p t →
       ∃ z ∈ f, z ∈ J.whole.dom ∧ z.2 = x.2 := by
     intro f hf hAf

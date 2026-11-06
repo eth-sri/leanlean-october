@@ -59,7 +59,7 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
           pcW (((slotsOf c 4).flatMap (slotPcs c.nmem n))[j]'hj) f) ∧
       c'.nreg ALLOC = c.nreg ALLOC + 1 + 7 * ((slotsOf c 4).flatMap (slotPcs c.nmem n)).length ∧
       Frame ioBands c c' k := by
-  set O := c.nreg ALLOC with hO
+  set O := c.nreg ALLOC
   set Lf : ℕ → ℕ := fun j => ((slotsOf c j).flatMap (slotPcs c.nmem n)).length with hLf
   have hL0 : Lf 0 = 0 := by simp [hLf, slotsOf]
   have hLle : ∀ j, j ≤ 4 → Lf j ≤ Lf 4 := fun j hj => flat_le hj
@@ -126,7 +126,7 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
   have hk := asm_cost p2 p3 p4 p5
   have hl := asm_low q2 q3 q4 q5
   simp only [Nat.reduceAdd] at hl hk
-  refine ⟨c₆, _, ex, by rw [hk₁, hk₆]; exact hk, b10, by rw [bm, upd_same], fun j hj f hf => ?_,
+  refine ⟨c₆, _, ex, by rwa [hk₁, hk₆], b10, by rw [bm, upd_same], fun j hj f hf => ?_,
     bA, ⟨fun r hr ha => ?_, fun r hr => ?_, fun a ha => ?_, fun a _ => ?_, by rw [bo, F₅.2.2.2],
       by rw [bA]; omega, by rw [bA, hk₁, hk₆]; omega⟩⟩
   · rw [bm, upd_other _ _ _ (by omega)]

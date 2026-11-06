@@ -107,7 +107,7 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
   set K1 := E.K₀ + 1 with hK1
   set A := E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog 2 E.γ + Nat.clog 2 K1 + 1) with hA
   set A0 := E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog 2 E.γ + 1) with hA0
-  set L := Nat.clog 2 K1 with hL
+  set L := Nat.clog 2 K1
   have hFG : 1 ≤ E.F E.γ * E.G E.γ := Nat.one_le_iff_ne_zero.2 (by positivity)
   have hA1 : 1 ≤ A := by
     rw [hA]; nlinarith
@@ -125,8 +125,6 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
     rw [this]; exact clog_two_pow_mul _ _
   have hBr : E.Br = 40 + 21 * E.Kc + (E.Bf + 2) * E.Kc +
       E.κB * (2 * E.Kc * (Nat.clog 2 (2 * E.Kc) + 1) + 1) := rfl
-  have hK1p : 1 ≤ K1 := by omega
-  have hTp : 1 ≤ T := Nat.one_le_two_pow
   -- the four terms
   have t1 : 40 ≤ 40 * K1 * A := by nlinarith
   have t2 : 21 * E.Kc ≤ 21 * T * K1 * A := by rw [hKc]; nlinarith
@@ -176,12 +174,12 @@ theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpe
   rw [e4] at hsg hcap hroom
   rw [e6] at hX hcap
   rw [e0, e1, e2, e3, e4]
-  set MD := c.nreg 80000 with hMDd
-  set NFH := c.nreg 80001 with hNFHd
-  set d0 := c.nreg 80002 with hd0d
-  set D := c.nreg 80003 with hDd
-  set γ := c.nreg 80004 with hγd
-  set g := c.nreg 80006 with hgd
+  set MD := c.nreg 80000
+  set NFH := c.nreg 80001
+  set d0 := c.nreg 80002
+  set D := c.nreg 80003
+  set γ := c.nreg 80004
+  set g := c.nreg 80006
   have hK : c.nmem NFH = N.nChords := hNW.nfAt.1
   rw [hK] at hroom ⊢
   set K := N.nChords with hKd
@@ -190,18 +188,16 @@ theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpe
     (hw.1 _) (hw.1 _) (hw.1 _)
   -- the driver data
   set E : DrvEnv := ⟨P, W, M, c.nreg ALLOC, c.nmem, MD, d0, D, γ, g, mkF sh cu, sB, κf, κB, F, G,
-    H, X, Ok, N.F M (Qof P), K⟩ with hEd
+    H, X, Ok, N.F M (Qof P), K⟩
   have hE : DrvGood E := ⟨hmkF sh cu Bs Bc F G H X Ok oracleBands subset_rfl (by decide) hloc hhalf
     (fun P M h => Or.inl (hOkM P M h))
     hBs hBc hsh hcu, hsB, hGE, hWh, hX,
     fun m hm => by
       show γ ≤ X.cap P m g
-      rw [hloc P c.nmem m g (c.nreg ALLOC) hm hX]; exact hcap,
+      rwa [hloc P c.nmem m g (c.nreg ALLOC) hm hX],
     hwf, hMD, hreg, hsimp, hGM, hOk, hfull⟩
   -- cost bounds
   set A := F γ * G γ * (H γ + Nat.clog 2 γ + Nat.clog 2 (K + 1) + 1) with hAd
-  have hFG : 1 ≤ F γ * G γ := Nat.one_le_iff_ne_zero.2 (by positivity)
-  have hA1 : 1 ≤ A := by rw [hAd]; nlinarith
   have hBr : E.Br ≤ C1 κf κB d0 D * (K + 1) * A := Br_le E hF1 hG1
   have hcost : κRestore κf κB d0 D * (K + 1) * F γ * G γ *
       (H γ + Nat.clog 2 γ + Nat.clog 2 (K + 1) + 1) = κRestore κf κB d0 D * (K + 1) * A := by
@@ -222,7 +218,6 @@ theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpe
   -- initialisation
   have hn3 : 3 ≤ P.n := Jordan.simple_three_le hGE.1
   have hW5 : 5 ≤ W := le_trans (by unfold hostWords; omega) hWh
-  have hAW : c.nreg ALLOC ≤ W := hw.1 ALLOC
   obtain ⟨c₁, k₁, e₁, hk₁, i20, i21, i22, i23, i24, i12, i10, i11, i19, R₁, rr₁, m₁, rm₁, o₁⟩ :=
     init_exec (P := P) c hw hW5 (by omega) (by omega)
   have w₁ := e₁.wb_right
@@ -232,7 +227,7 @@ theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpe
       R₁ _ (by left; decide) (by decide), R₁ _ (by left; decide) (by decide),
       R₁ _ (by left; decide) (by decide), i10, i11, i19, i20, i21, i22, i23, i24, ⟨N, ?_⟩,
       fun a _ => by rw [m₁], by rw [A₁], by omega, ?_⟩
-    · refine ⟨by rw [i12, m₁, A₁]; exact hNW, hNF, subset_rfl, ?_, hsg, by show N.nChords + 1 ≤ 2 ^ 0 * (K + 1); simp [hKd], fun h => ?_⟩
+    · refine ⟨by rwa [i12, m₁, A₁], hNF, subset_rfl, ?_, hsg, by show N.nChords + 1 ≤ 2 ^ 0 * (K + 1); simp [hKd], fun h => ?_⟩
       · exact Model.DegLe.mono _ hdeg (by show d0 ≤ max D (d0 - 0); omega)
       · omega
     · rw [A₁]

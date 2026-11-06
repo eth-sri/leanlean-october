@@ -65,8 +65,8 @@ theorem locDPre_of (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {c₁ : Config
   obtain ⟨hMD, hwf⟩ := hI.modelDesc hE
   have hAW := hI.hw.1 ALLOC
   obtain ⟨h6, hloc⟩ := locChainWF_of hwf hAW hE.hW
-  refine ⟨hE.hG, by have := hE.hW; unfold hostWords at this; omega, by rw [h00]; exact h6,
-    by rw [h00, hm]; exact hloc, M, by rw [h00, hm]; exact hMD, he⟩
+  refine ⟨hE.hG, by have := hE.hW; unfold hostWords at this; omega, by rwa [h00],
+    by rwa [h00, hm], M, by rwa [h00, hm], he⟩
 
 /-- The turn code is `1` iff the turn is positive. -/
 theorem sgnCode_eq_one {x : ℝ} : sgnCode x = 1 ↔ 0 < x := by
@@ -162,7 +162,7 @@ theorem turn_ok : TurnOK tTurnN tTurnP 5200 := by
         rw [p32, p05, i5, hp1 (by rw [p05, i5, p23, h23] at h0; omega)]
     obtain ⟨q00, q02, qm, qA, q08⟩ := q
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, d₂⟩ := locDir_ok P W c₁ e₁.wb_right
-      (locDPre_of hE hI q00 qm qA (by rw [q02]; exact hpen))
+      (locDPre_of hE hI q00 qm qA (by rwa [q02]))
     have hMD : ModelDescAt c₁.nmem (c₁.nreg 50000) (Qof P) M := by
       rw [q00, qm]; exact (hI.modelDesc hE).1
     have hd := d₂ M hMD

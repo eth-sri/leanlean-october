@@ -34,7 +34,7 @@ def κW (D : ℕ) : ℕ := 30000 + 22062 * (D + 1)
 theorem DecOut.congr {J : Merge.Junction} {Pw : Prop} {d₀ eE hE : ℕ} {c c' : Config}
     (h : DecOut J Pw d₀ eE hE c) (hX : c'.nreg wX = c.nreg wX) (hE' : c'.nreg wE = c.nreg wE)
     (hH : c'.nreg wH = c.nreg wH) : DecOut J Pw d₀ eE hE c' := by
-  unfold DecOut at *; rw [hX, hE', hH]; exact h
+  unfold DecOut at *; rwa [hX, hE', hH]
 
 theorem gatherK_single_le {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hNF : IsNF M Q N)
     {D : ℕ} (hD : M.DegLe (N.F M Q) D) {r : ℕ} (hr : r < N.nRegions) :
@@ -81,8 +81,7 @@ theorem winTask : WinTask := by
   have hP : J.P.Simple := E.hP
   have hP₁ : J.left.P.Simple := E.hP
   have hNF := E.hNF₁
-  obtain ⟨hoff, hkdE, hgap0, hψ0, hm0, hv0, hpar, hpt⟩ := key_map hP hpw hL
-  have hQn : (Qof P).n = P.n := shear_n _ _
+  obtain ⟨hoff, hkdE, hgap0, hψ0, hpar, hpt⟩ := key_map hP hpw hL
   have hcost0 := win_cost (c₀.nreg TLR) (c₀.nreg (sw 6))
   generalize hKdef : κW (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) = K at hroom hcost0 ⊢
   have hcost : 12 + ((5500 * (c₀.nreg TLR + 1) + 9) + (16 + (1 + (22100 +
@@ -108,7 +107,6 @@ theorem winTask : WinTask := by
   have hA0 := arcs_pos hP₁ hNF
   obtain ⟨b7, b4A, b6A⟩ := NFLoc.nfWithin_bounds hNT hNF hA0
   obtain ⟨-, -, hTB, -⟩ := win_tab E hI₂
-  have hAW : c₂.nreg ALLOC ≤ W := hI₂.hw.1 _
   have hAc := hI₂.hA
   refine IRS.seq (arcS_irs hI₂ (E.hK.fix hI₂) hNF hNA (by omega) (by omega) (by omega) ho2) ?_
   rintro c₃ hI₃ - - ⟨r1, r2, r3, r4, k3, m3⟩
@@ -139,7 +137,7 @@ theorem winTask : WinTask := by
   have hm4 : c₄.nmem = c.nmem := by rw [m4, m3, m2, m1]
   -- the body
   have hpx4 : ProperPos (chainModel J.left) (Qof P) P.n ⟨c₄.nreg wE1, c₄.nreg kH⟩ := by
-    rw [hE4, hH4]; rw [v1E, k1H] at hpx1; exact hpx1
+    rw [hE4, hH4]; rwa [v1E, k1H] at hpx1
   have h6x : c₄.nreg kH = 0 → 6 ≤ c₄.nreg wE1 := by
     rw [hE4, hH4]; exact key6 hP hpw hL
   have hkey : (⟨c₄.nreg wE1, c₄.nreg kH⟩ : WPos) = ⟨c₁.nreg wE1, c₁.nreg kH⟩ := by
@@ -157,7 +155,7 @@ theorem winTask : WinTask := by
   have hnoA : bandOf ALLOC ∉ oracleBands := fun h => alloc_not_io (oracle_sub h)
   have hwA : ¬ WR ALLOC := by unfold WR ALLOC sw; omega
   refine IRS.seq (bodyS_irs E hI₄ (by rw [hE4]; exact Nat.mod_lt _ hn₁) hpx4 h6x
-    (by rw [hO4]; exact ho2) har4 hl1' hl2' hch (win_room_body hroom hcost a4)) ?_
+    (by rwa [hO4]) har4 hl1' hl2' hch (win_room_body hroom hcost a4)) ?_
   rintro c₅ hI₅ - - ⟨o', ho', ⟨w1, w2, w3, w4⟩, hne5, hemp5, k5, m5⟩
   have hR : c₅.nreg wR < N₁.nRegions := by
     rw [w2]; exact (arc_mem_region hNF (NFLoc.seq_lt hNF ho')).1
@@ -184,11 +182,11 @@ theorem winTask : WinTask := by
   obtain ⟨wm1, wm2, wm3⟩ := win_math E hpw hL ho' (c' := c₆)
     (fun hF => ⟨(hne5 hF).1, (hne5 hF).2.congr (kg _ (by simp)) (kg _ (by simp)) (kg _ (by simp))⟩)
     (fun hF => by rw [kg _ (by simp)]; exact hemp5 hF)
-    (by rw [w2] at g4; exact g4)
+    (by rwa [w2] at g4)
   rw [← w2] at wm3
-  refine ⟨[c₅.nreg wR], by simp, fun r hr => by rw [List.mem_singleton.1 hr]; exact hR, g2,
-    by rw [← a5]; exact g1, g3, g4, wm1, wm2, wm3, fun a ha => ?_, fun r hr hw hra => ?_⟩
-  · rw [g5 a (by rw [a5]; exact ha), m5, hm4]
+  refine ⟨[c₅.nreg wR], by simp, fun r hr => by rwa [List.mem_singleton.1 hr], g2,
+    by rwa [← a5], g3, g4, wm1, wm2, wm3, fun a ha => ?_, fun r hr hw hra => ?_⟩
+  · rw [g5 a (by rwa [a5]), m5, hm4]
   · rw [g6 r hr (fun h => hw (wr_of_gathW h)) hra, k5 r hr hw,
       k4 r (ne_of_wr hw (wr_sw (by norm_num) (by norm_num))),
       k3 r (ne_of_wr hw (wr_sw (by norm_num) (by norm_num))) (ne_of_wr hw (wr_sw (by norm_num) (by norm_num)))

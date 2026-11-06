@@ -42,8 +42,8 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
     (hA : SideAttach (chainModel J.whole).W e p t) (hst : (Lst J : ℝ) ≤ oW J (p + t)) :
     ∃ i, i < es.length ∧ (es.getD i (0, 0, ∅)).1 = p ∧ (es.getD i (0, 0, ∅)).2.1 = t := by
   obtain ⟨hne, hmem, hhead, hsort, hgap, hlast, -⟩ := hL
-  set n := (chainModel J.whole).W.n with hn
-  set x : ℝ := p + t with hx
+  set n := (chainModel J.whole).W.n
+  set x : ℝ := p + t
   have hpn := hA.1
   have ht0 := hA.2.1
   have ht1 := hA.2.2.1
@@ -63,7 +63,7 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
     have h := hhead (es.getD 0 (0, 0, ∅)) (by
       rw [hget 0 hlen, List.head?_eq_getElem?, List.getElem?_eq_getElem hlen]; rfl)
     show oW J (K 0) ≤ _
-    rw [show K 0 = _ from rfl, h]; exact hst
+    rwa [show K 0 = _ from rfl, h]
   -- the last key not after `x`
   set i := Nat.findGreatest (fun i => oW J (K i) ≤ oW J x) (es.length - 1) with hi
   have hiP : oW J (K i) ≤ oW J x := Nat.findGreatest_spec (P := fun i => oW J (K i) ≤ oW J x)
@@ -88,8 +88,7 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
             (n := es.length - 1) (k := i + 1) (by omega) (by omega)
         exact hgap i hnext x hcut hx0 hxn ⟨hlt, not_le.1 hnot⟩
       · have hlast' : es.getLast? = some (es.getD i (0, 0, ∅)) := by
-          rw [List.getLast?_eq_getElem?, hget i hil]
-          rw [show es.length - 1 = i by omega, List.getElem?_eq_getElem hil]
+          rw [List.getLast?_eq_getElem?, hget i hil, show es.length - 1 = i by omega, List.getElem?_eq_getElem hil]
         have := hlast _ (by rw [hlast']; rfl) x hcut hx0 hxn
         exact this ⟨hlt, off_lt hxn hgW0⟩
     · exact h

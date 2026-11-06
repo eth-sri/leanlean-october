@@ -267,7 +267,7 @@ theorem hit_of_freeAt (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2) {σ : ℝ}
     exact ⟨C.dom_subset_box hd, C.not_mem_set_of_mem_dom hd⟩
   have hpos := lt_of_lt_of_le hu hle
   obtain ⟨h1, h2⟩ := rayHit_spec (r := C.radius) C.isClosed_set p hσ
-  have hsnd : ∀ t, (rayPt p σ t).2 ≤ C.top.2 := fun t => by rw [rayPt_snd]; exact hp
+  have hsnd : ∀ t, (rayPt p σ t).2 ≤ C.top.2 := fun t => by rwa [rayPt_snd]
   refine ⟨hpos, (not_mem_dom_iff C (hsnd _)).2 (h2 hpos), fun t ht1 ht2 => ?_⟩
   by_contra hnd
   obtain ⟨hb, hs⟩ := h1 t ht1 ht2
@@ -284,7 +284,7 @@ theorem shoot_mem_augChords (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2) (hnd 
   · refine ⟨p.2, p.1, p.1 + T, ⟨by linarith, hnd, ?_, fun x hx1 hx2 => ?_⟩, hp,
       segment_rayPt_pos p hpos.le⟩
     · have : ((p.1 + T, p.2) : Point) = rayPt p 1 T := by simp [rayPt]
-      rw [this]; exact hend
+      rwa [this]
     · have := hint (x - p.1) (by linarith) (by linarith)
       have e : rayPt p 1 (x - p.1) = ((x, p.2) : Point) := by
         simp only [rayPt, one_mul, add_sub_cancel]
@@ -292,7 +292,7 @@ theorem shoot_mem_augChords (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2) (hnd 
   · refine ⟨p.2, p.1 - T, p.1, ⟨by linarith, ?_, hnd, fun x hx1 hx2 => ?_⟩, hp,
       segment_rayPt_neg p hpos.le⟩
     · have : ((p.1 - T, p.2) : Point) = rayPt p (-1) T := by simp [rayPt, sub_eq_add_neg]
-      rw [this]; exact hend
+      rwa [this]
     · have := hint (p.1 - x) (by linarith) (by linarith)
       have e : rayPt p (-1) (p.1 - x) = ((x, p.2) : Point) := by
         simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel]
@@ -306,14 +306,13 @@ theorem shoot_subset_pos (C : Chain) {y a b : ℝ} (hab : a < b)
     refine C.hitParam_le_of_not_mem_dom _ 1 (by linarith) ?_
     have : rayPt ((a, y) : Point) 1 (b - a) = ((b, y) : Point) := by
       simp only [rayPt, one_mul, add_sub_cancel]
-    rw [this]; exact hb
+    rwa [this]
   have h := segment_rayPt_subset ((a, y) : Point) 1 (hitParam_nonneg C _ 1) hle
   have e : Chazelle.segment ((a, y) : Point) (rayPt ((a, y) : Point) 1 (b - a)) = hseg y a b := by
     rw [segment_rayPt_pos _ (by linarith)]
     dsimp only
     rw [add_sub_cancel]
-  rw [e] at h
-  exact h
+  rwa [e] at h
 
 /-- Shooting leftwards from the right end of a segment whose left end is off the domain stays
 inside the segment. -/
@@ -323,15 +322,14 @@ theorem shoot_subset_neg (C : Chain) {y a b : ℝ} (hab : a < b)
     refine C.hitParam_le_of_not_mem_dom _ (-1) (by linarith) ?_
     have : rayPt ((b, y) : Point) (-1) (b - a) = ((a, y) : Point) := by
       simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel]
-    rw [this]; exact ha
+    rwa [this]
   have h := segment_rayPt_subset ((b, y) : Point) (-1) (hitParam_nonneg C _ (-1)) hle
   have e : Chazelle.segment ((b, y) : Point) (rayPt ((b, y) : Point) (-1) (b - a)) =
       hseg y a b := by
     rw [segment_rayPt_neg _ (by linarith)]
     dsimp only
     rw [sub_sub_cancel]
-  rw [e] at h
-  exact h
+  rwa [e] at h
 
 /-! ### Vertex chords as shots -/
 

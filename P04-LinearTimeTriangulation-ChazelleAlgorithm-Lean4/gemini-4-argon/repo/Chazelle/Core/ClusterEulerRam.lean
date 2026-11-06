@@ -152,12 +152,12 @@ theorem sizeBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
       c'.nreg 130210 = i ∧
       (L.tree c0.nmem).SizeInv (fun g => c'.nmem (L.bSz + g)) i := by
   have hRc := Regs_of_pfr hR0 hf
-  set R := L.tree c0.nmem with hRdef
+  set R := L.tree c0.nmem
   have hqn : R.q i < L.n := hR.q_lt i hin
   have hqr : R.q i ≠ R.root := by
     intro h; have := hR.q_inj i hin 0 hR.n_pos h; omega
   have hqr' : c0.nmem (L.bQ + i) ≠ c0.nmem L.bQ := by
-    rw [← L.tree_root c0.nmem]; exact hqr
+    rwa [← L.tree_root c0.nmem]
   have hpn : R.par (R.q i) < L.n := (hR.par_spec hqn hqr).1
   -- reads
   have r1 : c.nmem (L.bQ + i) = R.q i := hf.2.2.2.2 _ (hL.rq i hin)
@@ -166,7 +166,6 @@ theorem sizeBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
   have r3 : c.nmem (L.bVert + c0.nmem (L.bPar + R.q i)) = R.par (R.q i) :=
     hf.2.2.2.2 _ (hL.rvert _ hqn hqr').1
   have hvw := (hL.rvert _ hqn hqr').2
-  have hszp := hS.le hR hpn
   have := hL.wQ; have := hL.wPar; have := hL.wSz; have := hL.wn
   -- the new size of the parent is at most the true size
   have hstep := hS.step hR hi0 hin
@@ -184,8 +183,7 @@ theorem sizeBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
       unfold ELay.WR; omega
   · config_simp
     simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hi, hRc.one, Nat.add_sub_cancel, r1, r2, r3]
-    rw [fun_upd]
-    exact hstep
+    rwa [fun_upd]
 
 /-- **The size loop**: afterwards `SZ` holds the subtree sizes. -/
 theorem sizeLoop_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK)
@@ -232,16 +230,14 @@ theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
       c'.nreg 130210 = i + 1 ∧ (∀ g, g < L.n → c'.nmem (L.bSz + g) = ((L.tree c0.nmem).sub g).card) ∧
       (L.tree c0.nmem).PreInv (view c'.nmem L.bPre L.n) (view c'.nmem L.bSlot L.n) (i + 1) := by
   have hRc := Regs_of_pfr hR0 hf
-  set R := L.tree c0.nmem with hRdef
+  set R := L.tree c0.nmem
   have hi0 := hP.i_pos
   have hqn : R.q i < L.n := hR.q_lt i hin
   have hqr : R.q i ≠ R.root := by
     intro h; have := hR.q_inj i hin 0 hR.n_pos h; omega
   have hqr' : c0.nmem (L.bQ + i) ≠ c0.nmem L.bQ := by
-    rw [← L.tree_root c0.nmem]; exact hqr
+    rwa [← L.tree_root c0.nmem]
   have hpn : R.par (R.q i) < L.n := (hR.par_spec hqn hqr).1
-  have hpq : R.par (R.q i) ≠ R.q i := by
-    intro h; have := (hR.par_spec hqn hqr).2; rw [h] at this; omega
   -- reads
   have r1 : c.nmem (L.bQ + i) = R.q i := hf.2.2.2.2 _ (hL.rq i hin)
   have r2 : c.nmem (L.bPar + R.q i) = c0.nmem (L.bPar + R.q i) :=
@@ -293,8 +289,7 @@ theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
       intro X Y Z
       rw [view_upd_in _ _ _ _ _ hqn, view_upd_in _ _ _ _ _ hpn,
         view_upd_out _ L.bSlot L.n (L.bPre + R.q i) X (by omega)]
-    rw [hv1, hv2]
-    exact hstep
+    rwa [hv1, hv2]
 
 /-- The root of the preorder. -/
 theorem preInit_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK)
@@ -304,7 +299,7 @@ theorem preInit_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
       c'.nreg 130210 = 1 ∧ (∀ g, g < L.n → c'.nmem (L.bSz + g) = ((L.tree c0.nmem).sub g).card) ∧
       (L.tree c0.nmem).PreInv (view c'.nmem L.bPre L.n) (view c'.nmem L.bSlot L.n) 1 := by
   have hRc := Regs_of_pfr hR0 hf
-  set R := L.tree c0.nmem with hRdef
+  set R := L.tree c0.nmem
   have hrn : R.root < L.n := hR.root_lt
   have r1 : c.nmem (L.bQ + 0) = R.root := hf.2.2.2.2 _ (hL.rq 0 hR.n_pos)
   have := hL.wQ; have := hL.wPre; have := hL.wSlot; have := hL.wSz; have := hL.wn

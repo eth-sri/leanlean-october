@@ -65,8 +65,6 @@ noncomputable instance instDecidableStraddles (z u v : Point) : Decidable (strad
 noncomputable instance instDecidableCrosses (z u v : Point) : Decidable (crosses z u v) :=
   inferInstanceAs (Decidable (_ ∨ _))
 
-/-- The crossing bit of the edge `u v` at `z`. -/
-noncomputable def crossBit (z u v : Point) : Bool := decide (crosses z u v)
 
 /-- The crossing indicator of the edge `u v` at `z`, in `ZMod 2`. -/
 noncomputable def crossInd (z u v : Point) : ZMod 2 := if crosses z u v then 1 else 0
@@ -126,12 +124,7 @@ theorem not_crosses_of_below {z u v : Point} (hu : u.2 < z.2) (hv : v.2 < z.2) :
   · nlinarith [mul_pos (sub_pos.2 hu) (sub_pos.2 h2), mul_nonneg (sub_pos.2 hv).le (sub_nonneg.2 h1)]
   · nlinarith [mul_pos (sub_pos.2 hv) (sub_pos.2 h2), mul_nonneg (sub_pos.2 hu).le (sub_nonneg.2 h1)]
 
-@[simp] theorem crossBit_eq_true_iff {z u v : Point} : crossBit z u v = true ↔ crosses z u v := by
-  simp [crossBit]
 
-@[simp] theorem crossBit_eq_false_iff {z u v : Point} :
-    crossBit z u v = false ↔ ¬ crosses z u v := by
-  simp [crossBit]
 
 theorem crossInd_comm {z u v : Point} : crossInd z u v = crossInd z v u := by
   simp only [crossInd]
@@ -143,11 +136,7 @@ theorem crossInd_of_crosses {z u v : Point} (h : crosses z u v) : crossInd z u v
 theorem crossInd_of_not_crosses {z u v : Point} (h : ¬ crosses z u v) : crossInd z u v = 0 :=
   ite_eq_right h
 
-@[simp] theorem crossInd_eq_one_iff {z u v : Point} : crossInd z u v = 1 ↔ crosses z u v := by
-  unfold crossInd; split_ifs with h <;> simp [h]
 
-@[simp] theorem crossInd_eq_zero_iff {z u v : Point} : crossInd z u v = 0 ↔ ¬ crosses z u v := by
-  unfold crossInd; split_ifs with h <;> simp [h]
 
 theorem aboveInd_of_ne {z w : Point} (h : w.1 ≠ z.1) : aboveInd z w = 0 := by
   simp [aboveInd, h]
@@ -228,7 +217,7 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
       rw [this]; exact left_mem_segment u v
     have hLz : L z = (z.2 - u.2) * (v.1 - u.1) := by simp [hL, hB]
     have hd : 0 < v.1 - u.1 := sub_pos.2 huv
-    have hav : aboveInd z v = 0 := aboveInd_of_ne (by rw [hB]; exact hvz)
+    have hav : aboveInd z v = 0 := aboveInd_of_ne (by rwa [hB])
     rcases lt_or_gt_of_ne hzu2 with h1 | h1
     · -- u above z: the bit is 1 at and to the right of z, 0 to the left
       have hLneg : L z < 0 := by rw [hLz]; exact mul_neg_of_neg_of_pos (sub_neg.2 h1) hd
@@ -406,16 +395,6 @@ theorem crossInd_flip_edge {z u v : Point} (huv : u.1 ≠ v.1) (hz : z ∈ segme
   rw [mem_segment_iff_of_lt huv] at hz
   obtain ⟨h0, h1, hl⟩ := hz
   have hd : 0 < v.1 - u.1 := sub_pos.2 huv
-  have h0' : u.1 < z.1 := by
-    rcases h0.lt_or_eq with h | h
-    · exact h
-    · exfalso; apply hzu
-      have : z.2 = u.2 := by
-        have : (z.2 - u.2) * (v.1 - u.1) = 0 := by rw [hl, ← h]; ring
-        rcases mul_eq_zero.1 this with h' | h'
-        · linarith
-        · linarith
-      exact Prod.ext h.symm this
   have h1' : z.1 < v.1 := by
     rcases h1.lt_or_eq with h | h
     · exact h

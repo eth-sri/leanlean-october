@@ -75,7 +75,7 @@ theorem absRec_copy {P : Polygon} {c c' : Config} {r r' : ℕ} {x R : ℝ} (h : 
     have e2 : r + 1 + 1 = r + 2 := by omega
     have e3 : r' + 1 + 2 = r' + 3 := by omega
     have e4 : r + 1 + 2 = r + 3 := by omega
-    exact NFLoc.symPtIn_copy hs h1 (by rw [e1, e2]; exact h2) (by rw [e3, e4]; exact h3)
+    exact NFLoc.symPtIn_copy hs h1 (by rwa [e1, e2]) (by rwa [e3, e4])
 
 /-- An origin survives a copy of its three words. -/
 theorem originIn_copy {c c' : Config} {r r' : ℕ} {o : Origin} (h : OriginIn c r o)
@@ -256,11 +256,11 @@ theorem leafKey_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k₁ _ (by unfold ALLOC; omega)
     (by unfold ALLOC; omega) (by unfold ALLOC; omega)
   have hM1 : c₁.nmem = c.nmem := f₁.2.2.1
-  have hC1 : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hM1, v00]; exact hC
+  have hC1 : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwa [hM1, v00]
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, -⟩ := absKey_meets P W c₁ e₁.wb_right
-    ⟨hG, hHW, by rw [hA1, hM1, v00]; exact hwf, H, C, hC1,
-      ⟨by rw [v01]; exact he, by rw [v01, v02]; exact hp, by rw [v01, v02]; exact hy⟩,
-      by rw [hM1, v00]; exact hreg⟩ (by rw [hA1]; show _ + 16700 ≤ W; omega)
+    ⟨hG, hHW, by rwa [hA1, hM1, v00], H, C, hC1,
+      ⟨by rwa [v01], by rwa [v01, v02], by rwa [v01, v02]⟩,
+      by rwa [hM1, v00]⟩ (by rw [hA1]; show _ + 16700 ≤ W; omega)
   replace hk₂ : k₂ ≤ 16700 := hk₂
   have ar := post₂ H C hC1
   have F₂ := exec_frameB e₂ wr_absKey
@@ -443,9 +443,9 @@ theorem BestOK.congr {P : Polygon} {C : Chain} {R : ℕ} {c c' : Config} {S : Se
     (e6 : c'.nreg (R + 24 + 2) = c.nreg (R + 24 + 2))
     (e7 : c'.nreg (R + 24 + 3) = c.nreg (R + 24 + 3)) : BestOK P C R c' S z σ := by
   obtain ⟨h0, h1, h2⟩ := h
-  refine ⟨by rw [e0]; exact h0, fun hf => ?_, fun hf => h2 (by rw [← e0]; exact hf)⟩
-  obtain ⟨t, ht, hp, he, hpos, ha⟩ := h1 (by rw [← e0]; exact hf)
-  exact ⟨t, ht, by rw [e1, e2]; exact hp, by rw [e1]; exact he, by rw [e1, e2]; exact hpos,
+  refine ⟨by rwa [e0], fun hf => ?_, fun hf => h2 (by rwa [← e0])⟩
+  obtain ⟨t, ht, hp, he, hpos, ha⟩ := h1 (by rwa [← e0])
+  exact ⟨t, ht, by rwa [e1, e2], by rwa [e1], by rwa [e1, e2],
     absRec_copy ha e4 e5 e6 e7⟩
 
 theorem dirOf_eq_one {v : ℕ} (h : v = 1) : dirOf v = 1 := by simp [dirOf, h]
@@ -520,9 +520,9 @@ theorem leafHit_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
     · rcases hS with hS | ⟨tb, htb, hle⟩
       · exact firstHit_union_right hS hA
       · exact firstHit_union_le' htb hA hle
-    · rw [a1, a2, hr _ (by omega) (by omega), hr _ (by omega) (by omega), p44, p45]; exact hp
-    · rw [a1, hr _ (by omega) (by omega), p44]; exact he
-    · rw [a1, a2, hr _ (by omega) (by omega), hr _ (by omega) (by omega), p44, p45]; exact hpos
+    · rwa [a1, a2, hr _ (by omega) (by omega), hr _ (by omega) (by omega), p44, p45]
+    · rwa [a1, hr _ (by omega) (by omega), p44]
+    · rwa [a1, a2, hr _ (by omega) (by omega), hr _ (by omega) (by omega), p44, p45]
     · exact absRec_copy rc (by rw [a4, hr _ (by omega) (by omega)])
         (by rw [show R + 24 + 1 = R + 25 by omega, a5, hr _ (by omega) (by omega)])
         (by rw [show R + 24 + 2 = R + 26 by omega, a6, hr _ (by omega) (by omega)])
@@ -551,11 +551,11 @@ theorem leafHit_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
   -- keeping the minimum
   have keep : tb ≤ t → BestOK P C R c₂ (S ∪ A) z σ := fun hle => by
     refine ⟨by rw [k2 _ (by omega) (by omega)]; exact best₁.1, fun _ => ⟨tb, ?_, ?_, ?_, ?_, ?_⟩,
-      fun h' => absurd (by rw [k2 _ (by omega) (by omega)]; exact hf1) h'⟩
+      fun h' => absurd (by rwa [k2 _ (by omega) (by omega)]) h'⟩
     · exact firstHit_union_le htb hA hle
-    · rw [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]; exact hpb
-    · rw [k2 _ (by omega) (by omega)]; exact heb
-    · rw [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]; exact hposb
+    · rwa [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]
+    · rwa [k2 _ (by omega) (by omega)]
+    · rwa [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]
     · exact absRec_copy rb (k2 _ (by omega) (by omega)) (k2 _ (by omega) (by omega))
         (k2 _ (by omega) (by omega)) (k2 _ (by omega) (by omega))
   have r35 : c₂.nreg (R + 35) = c.nreg (R + 35) := by

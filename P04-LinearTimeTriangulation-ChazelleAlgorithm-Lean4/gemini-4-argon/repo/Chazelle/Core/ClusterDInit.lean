@@ -75,7 +75,6 @@ theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   set bo := blkOf g.μ (fun v => m (g.base 3 + v)) (fun l => m (g.base 36 + l))
     (fun l => m (g.base 35 + l)) with hbo
   set key : ℕ → ℕ := fun v => m (g.base 29 + m (g.base 0 + v)) with hkey
-  have hN : (ssOf g).N = g.N := rfl
   -- the key is the preorder of the first dart
   have hkeyv : ∀ v : Fin g.μ, key v = preE (first v) := fun v => by
     simp only [hkey]

@@ -136,9 +136,8 @@ theorem arc_of_target (hGα : GoodModel (chainModel Cα)) {Nα : NF}
   obtain ⟨t, ht, htj⟩ := List.mem_iff_getElem.1 hmem
   have hget : (Nα.region T).arcs.getD t 0 = j := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, htj]; rfl
-  refine ⟨t, ht, by rw [hget]; exact hj, ?_⟩
-  rw [hget, hjs, hje]
-  exact hcl
+  refine ⟨t, ht, by rwa [hget], ?_⟩
+  rwa [hget, hjs, hje]
 
 end
 

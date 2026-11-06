@@ -253,7 +253,7 @@ theorem bcnt_le (bk : ℕ → ℕ) (q b : ℕ) : bcnt bk q b ≤ q := by
 theorem bstart_le {bk : ℕ → ℕ} {n A b : ℕ} (hA : ∀ q, q < n → bk q ≤ A) (hb : b ≤ A + 1) :
     bstart bk n b ≤ n := by
   have := bstart_mono (bk := bk) n hb
-  rw [bstart_all hA] at this; exact this
+  rwa [bstart_all hA] at this
 
 /-! ## The loops -/
 
@@ -385,9 +385,7 @@ theorem loop4_exec {c₀ d : Config} {BB n A base A₀ : ℕ} {m₀ bk : ℕ →
           split_ifs with h1
           all_goals first | rfl | rw [bcnt_succ, ite_eq_right (by omega), Nat.add_zero]
       · have hqn : q < n := by omega
-        have hsq := slot_lt (bk := bk) hqn hbk
-        rw [hm', Machine.upd_apply, Machine.upd_apply]
-        rw [ite_eq_right (by omega)]
+        rw [hm', Machine.upd_apply, Machine.upd_apply, ite_eq_right (by omega)]
         by_cases hqj : q = j
         · subst hqj; rw [ite_eq_left rfl]
         · have hne : slot bk n q ≠ slot bk n j := fun h' => hqj (slot_inj hqn hj h')
@@ -419,7 +417,7 @@ theorem bktS_exec (c : Config) (hw : WordsBounded W c) {BB n A base : ℕ} {bk :
       (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
       (∀ r, Bbkt r = false → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  set A₀ := c.nreg ALLOC with hA₀
+  set A₀ := c.nreg ALLOC
   -- the initialisation
   obtain ⟨c₁, k₁, e₁, hk₁, v34, v35, v36, v39, v37, v48, vA, v38, hm₁⟩ : ∃ c₁ k₁,
       Exec P W bkInit c c₁ k₁ ∧ k₁ = 8 ∧ c₁.nreg 210034 = 1 ∧ c₁.nreg 210035 = 0 ∧

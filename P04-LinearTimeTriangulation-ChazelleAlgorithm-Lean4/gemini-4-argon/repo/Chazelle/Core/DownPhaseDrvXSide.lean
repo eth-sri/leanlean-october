@@ -90,7 +90,7 @@ theorem gSimple : (xG).Simple := hostPts_simple Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
 omit Y in
 theorem gn (_Y : XCtx P li L E reg r C NR i0 g) : (xG).n = xK := hostPoly_n
 
-theorem cpSimple : C.P.Simple := Y.hfacts.1
+theorem cpSimple : C.P.Simple := Y.hfacts
 
 /-- Host point `k` is the vertex `sig k` of the host polygon. -/
 theorem vtx_sig {k : ℕ} (hk : k < xK) : C.P.vtx k = (xG).vtx (sig li xK i0 k) := Y.hvtx k hk
@@ -162,8 +162,7 @@ theorem inner_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
   · rw [Chazelle.Chain.sidePt_zero, Chazelle.Chain.sidePt_zero, hv0, Y.vtx_sig (by omega)]
   · have h := hsv x hx
     rw [Y.vtx_sig (by omega), Y.vtx_sig (by omega), Y.vtx_sig (by omega), hsn, hsp] at h
-    rw [Chazelle.Chain.sideLeft_zero, Y.gn]
-    exact h
+    rwa [Chazelle.Chain.sideLeft_zero, Y.gn]
 
 /-- **Outer position inside a tour edge**: the reversed position of `G`, opposite half-plane. -/
 theorem outer_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
@@ -255,7 +254,7 @@ theorem g_bound {q : ℕ} (hq : q < xK) {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s ≤ 1
   have h3 := Y.three
   have hmem : sidePt xG q s ∈ C.P.boundary := by
     rw [Y.hbd]
-    exact ⟨q, by rw [Y.gn]; exact hq, Chazelle.Geometry.lerp_mem_segment _ _ hs0 hs1⟩
+    exact ⟨q, by rwa [Y.gn], Chazelle.Geometry.lerp_mem_segment _ _ hs0 hs1⟩
   obtain ⟨h1, h2⟩ := Chazelle.Jordan.abs_le_coordBound_of_mem_boundary C.P hmem
   refine ⟨h1, h2, ?_⟩
   obtain ⟨i, hi, hz⟩ := hmem
@@ -291,7 +290,7 @@ theorem meet_of_attach (Y : XCtx P li L E reg r C NR i0 g) {c : Set Point}
     DownDrv.interiorWalk_hostPoly Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
   have hReq := DownDrv.region_eq_intHost Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
   obtain ⟨hq, hs0, hs1, hmem, rA, hrA, hsec⟩ := hA
-  obtain ⟨r', hr', hcl⟩ := hMH.clean q (by rw [hW]; exact hq) s hs0 hs1
+  obtain ⟨r', hr', hcl⟩ := hMH.clean q (by rwa [hW]) s hs0 hs1
   rw [hW] at hcl
   obtain ⟨y₀, a, b, hab, rfl⟩ := hc
   obtain ⟨x, hxc, hne, hxd⟩ := Extract.exists_near_mem hab hmem (lt_min hrA hr')
@@ -300,7 +299,7 @@ theorem meet_of_attach (Y : XCtx P li L E reg r C NR i0 g) {c : Set Point}
     by_contra hxD
     exact hcl x (show dist x _ < r' from lt_of_lt_of_le hxd (min_le_right _ _)) hxD hxl
   refine ⟨x, hxc, ?_⟩
-  rw [hReq]; exact hxD
+  rwa [hReq]
 
 end
 

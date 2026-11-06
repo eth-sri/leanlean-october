@@ -154,8 +154,8 @@ theorem halfS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
   have w₁ : WordsBounded W d₁ := x₁.wb_right
   have r₁ : ∀ r, r ≠ 40002 → d₁.nreg r = d.nreg r := fun r hr => by rw [hd₁]; simp [hr]
   obtain ⟨d₂, k₂, x₂, hk₂, f₂, dir₂⟩ := dirR_exec (P := P) hG hW d₁ w₁
-    (by rw [r₁ _ (by omega)]; exact hDW) (by rw [r₁ _ (by omega)]; exact hCW)
-    (M := M) (by rw [r₁ _ (by omega)]; exact hM) (by rw [hd₁]; simp; exact he)
+    (by rwa [r₁ _ (by omega)]) (by rwa [r₁ _ (by omega)])
+    (M := M) (by rwa [r₁ _ (by omega)]) (by rw [hd₁]; simp; exact he)
   have r₂ : ∀ r, BdirR r = false → d₂.nreg r = d₁.nreg r := f₂.1
   have nb : ∀ r, 42100 ≤ r → BdirR r = false := fun r hr => by
     by_contra h; have := BdirR_true (Bool.not_eq_false _ ▸ h); omega
@@ -180,7 +180,7 @@ theorem halfS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
         | (rw [v _ (by omega) (by omega)])
   obtain ⟨q1, q2, q3, q4, q5, q6, q7, q8⟩ := q.1
   have w₃ := x₃.wb_right
-  obtain ⟨d₄, k₄, x₄, hk₄, f₄, bit₄⟩ := cmpR_exec (P := P) hG hW d₃ w₃ q6 (by rw [q3]; exact hqh)
+  obtain ⟨d₄, k₄, x₄, hk₄, f₄, bit₄⟩ := cmpR_exec (P := P) hG hW d₃ w₃ q6 (by rwa [q3])
   rw [q2, q3, q4, q5, q7] at bit₄
   have w₄ := x₄.wb_right
   have ex : Exec P W (halfS qe qh se sh dd dst) d
@@ -226,15 +226,15 @@ theorem desc_agree {P : Polygon} {E : ℕ} {m m' : ℕ → ℕ} {D : ℕ} {M : M
     have hH' : HostAt m' (m' (D + 1)) H := by
       rw [e1]; exact hostAt_agree hH (by omega) hm
     have hC' : ChainDescAt m' (D + 1) (Qof P) H C :=
-      ⟨hH', hP, by rw [hm _ (by omega)]; exact h2, by rw [hm _ (by omega)]; exact h3,
-        by rw [hm _ (by omega)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
-    refine ⟨Or.inl ⟨by rw [e0]; exact h0, H, C, hC', rfl⟩, hD, fun _ => ⟨hC6, fun H' C' hC'' => ?_⟩⟩
+      ⟨hH', hP, by rwa [hm _ (by omega)], by rwa [hm _ (by omega)],
+        by rwa [hm _ (by omega)], by rwa [hm _ (by omega)]⟩
+    refine ⟨Or.inl ⟨by rwa [e0], H, C, hC', rfl⟩, hD, fun _ => ⟨hC6, fun H' C' hC'' => ?_⟩⟩
     have hHH := hostAt_unique hC''.1 hC'.1
     subst hHH
     have hCC := chain_eq_of_desc hC'' hC'
     subst hCC
-    exact ⟨hl, hwfH, by rw [e1]; exact hHE, hs⟩
-  · refine ⟨Or.inr ⟨by rw [e0]; exact h1, by rw [hm _ (by omega)]; exact hbit, rfl⟩, hD,
+    exact ⟨hl, hwfH, by rwa [e1], hs⟩
+  · refine ⟨Or.inr ⟨by rwa [e0], by rwa [hm _ (by omega)], rfl⟩, hD,
       fun h0 => absurd (e0.symm.trans h0) (by omega)⟩
 
 

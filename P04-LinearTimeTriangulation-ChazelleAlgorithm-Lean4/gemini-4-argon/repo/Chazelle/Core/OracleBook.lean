@@ -1406,20 +1406,20 @@ theorem label_fperm (hV : B.Valid) (d : Fin (2 * B.E)) :
       unfold gN; rw [hev, View.tail_rev]
     have hke : kN e = View.key B.N (B.view d).rev := by unfold kN; rw [hev]
     obtain ⟨hg, hs⟩ := hspec
-    refine ⟨view_ok (csucc (gN (B := B)) (kN (B := B)) e).2, by rw [← hge]; exact hg, ?_⟩
+    refine ⟨view_ok (csucc (gN (B := B)) (kN (B := B)) e).2, by rwa [← hge], ?_⟩
     rw [← hke, ← hge]
     rcases hs with ⟨h1, h2⟩ | ⟨h1, h2⟩
     · refine Or.inl ⟨h1, fun w' hw' ht hk => ?_⟩
       obtain ⟨f, hf, hfv⟩ := exists_view hw'
-      have := h2 ⟨f, hf⟩ (by unfold gN; simp only; rw [hfv]; exact ht)
-        (by unfold kN; simp only; rw [hfv]; exact hk)
+      have := h2 ⟨f, hf⟩ (by unfold gN; simp only; rwa [hfv])
+        (by unfold kN; simp only; rwa [hfv])
       unfold kN at this; simp only at this; rwa [hfv] at this
     · refine Or.inr ⟨fun w' hw' ht => ?_, fun w' hw' ht => ?_⟩
       · obtain ⟨f, hf, hfv⟩ := exists_view hw'
-        have := h1 ⟨f, hf⟩ (by unfold gN; simp only; rw [hfv]; exact ht)
+        have := h1 ⟨f, hf⟩ (by unfold gN; simp only; rwa [hfv])
         unfold kN at this; simp only at this; rwa [hfv] at this
       · obtain ⟨f, hf, hfv⟩ := exists_view hw'
-        have := h2 ⟨f, hf⟩ (by unfold gN; simp only; rw [hfv]; exact ht)
+        have := h2 ⟨f, hf⟩ (by unfold gN; simp only; rwa [hfv])
         unfold kN at this; simp only at this; rwa [hfv] at this
   exact label_next hV (view_ok d.2) hnext
 
@@ -1502,7 +1502,7 @@ theorem connected (hV : B.Valid) : (B.map hV).Connected := by
     induction n with
     | zero => exact hx
     | succ n ih => rw [pow_succ', Perm.mul_apply]; exact hrot _ ih
-  set t := gN d with ht
+  set t := gN d
   have htN : t < B.N := tail_lt hV (view_ok d.2)
   have hstep : ∀ j : ℕ, ∀ y : Fin (2 * B.E), gN y = (t + j) % B.N → y ∈ S := by
     intro j

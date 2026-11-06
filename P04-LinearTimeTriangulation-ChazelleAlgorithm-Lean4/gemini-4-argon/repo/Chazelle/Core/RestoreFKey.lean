@@ -64,7 +64,6 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have hwfc := hwf.mono hA
   have i0 : c.nreg 81000 = E.MD := by rw [hI.hin _ (by unfold FFix; omega), hE.i0]
   have k1 : c.nreg 81012 = 1 := by rw [hI.hin _ (by unfold FFix; omega), hE.k1]
-  have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
   have hMD6 : E.MD + 6 ≤ c.nreg ALLOC := le_trans hwf.1 hA
   have ok : okB E.W c.nmem fKeySetL c.nreg := by
     simp only [fKeySetL, okB, okI, FScr, FOut]
@@ -88,8 +87,8 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have r22 : c₁.nreg 83022 = 0 := by rw [e₁, s22]
   have r23 : c₁.nreg 83023 = 1 := by rw [e₁, s23]
   have r00 : c₁.nreg 83000 = E.MD := by rw [e₁, s00, i0]
-  have hx₁ : PosG E.M (Qof E.P) E.P.n ⟨c₁.nreg a, c₁.nreg b⟩ := by rw [f₁ a hka, f₁ b hkb]; exact hx
-  have hy₁ : PosG E.M (Qof E.P) E.P.n ⟨c₁.nreg d, c₁.nreg e⟩ := by rw [f₁ d hkd, f₁ e hke]; exact hy
+  have hx₁ : PosG E.M (Qof E.P) E.P.n ⟨c₁.nreg a, c₁.nreg b⟩ := by rwa [f₁ a hka, f₁ b hkb]
+  have hy₁ : PosG E.M (Qof E.P) E.P.n ⟨c₁.nreg d, c₁.nreg e⟩ := by rwa [f₁ d hkd, f₁ e hke]
   rw [← f₁ a hka, ← f₁ b hkb, ← f₁ d hkd, ← f₁ e hke]
   have hfin : ∀ c' : Config, (∀ q, 80000 ≤ q → q < 90000 → c'.nreg q = c₁.nreg q) →
       ∀ q, 80000 ≤ q → q < 90000 → ¬ KeyW q → c'.nreg q = c.nreg q := fun c' h q h1 h2 hq =>
@@ -100,7 +99,7 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
       rw [hM] at hx₁; exact ⟨hx₁.1, hx₁.2.1, hx₁.2.2 C rfl⟩
     have hy' : PosOK C (Qof E.P) E.P.n ⟨c₁.nreg d, c₁.nreg e⟩ := by
       rw [hM] at hy₁; exact ⟨hy₁.1, hy₁.2.1, hy₁.2.2 C rfl⟩
-    have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 83020) (Qof E.P) H C := by rw [m₁, r20]; exact hC
+    have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 83020) (Qof E.P) H C := by rwa [m₁, r20]
     have hwf₁ : ChainWF E.P (c₁.nreg ALLOC) c₁.nmem (c₁.nreg 83020) := by
       rw [m₁, r20, hA₁]; exact hwfc.2 h0
     obtain ⟨c', k, ex, hk, b1, b2, hf⟩ := keyCmp_exec ha hb hd he hI₁.hw hE.hG hE.hWh hwf₁ hC₁
@@ -109,7 +108,7 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
       hf.1 q (by rw [band8 h1 h2]; simp [primBands, bRestore, bSign, bLocate])
         (by unfold ALLOC; omega)
     refine FRS.prim hB hI₁ (.ifLtN_true (by rw [r21, r23, h0]; omega) ex) hf (by omega) (by omega)
-      ⟨by rw [hM]; exact b1, by rw [hM]; exact b2, hfin c' h8⟩
+      ⟨by rwa [hM], by rwa [hM], hfin c' h8⟩
   · -- the interior model
     have hn := interior_n (P := E.P)
     have hD : c₁.nreg 83000 + 1 ≤ E.W := by rw [r00]; omega
@@ -127,7 +126,7 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
       hf.1 q (by rw [band8 h1 h2]; simp [primBands, bRestore, bSign, bLocate])
         (by unfold ALLOC; omega)
     refine FRS.prim hB hI₁ (.ifLtN_false (by rw [r21, r23, h1]; omega) ex) hf (by omega)
-      (by omega) ⟨by rw [hM]; exact b1, by rw [hM]; exact b2, hfin c' h8⟩
+      (by omega) ⟨by rwa [hM], by rwa [hM], hfin c' h8⟩
 
 end
 

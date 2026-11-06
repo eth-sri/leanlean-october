@@ -199,18 +199,18 @@ theorem faced_or_middle {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : G
       refine ⟨fun h => ?_, fun h => ?_⟩
       · have hρ' : ρ = -1 := by linarith
         subst hρ'
-        rw [sideOf_eq hU hU' hS (sideOf_neg_one_iff.2 hb) hz₀ hz₀D]; exact hafter
+        rwa [sideOf_eq hU hU' hS (sideOf_neg_one_iff.2 hb) hz₀ hz₀D]
       · have hρ' : ρ = 1 := by linarith
         subst hρ'
-        rw [sideOf_eq hU hV' hS (sideOf_one_iff.2 ha) hz₀ hz₀D]; exact hbefore
+        rwa [sideOf_eq hU hV' hS (sideOf_one_iff.2 ha) hz₀ hz₀D]
     · obtain ⟨ha, hb⟩ := hright hd
       refine ⟨fun h => ?_, fun h => ?_⟩
       · have hρ' : ρ = 1 := by linarith
         subst hρ'
-        rw [sideOf_eq hU hU' hS (sideOf_one_iff.2 ha) hz₀ hz₀D]; exact hafter
+        rwa [sideOf_eq hU hU' hS (sideOf_one_iff.2 ha) hz₀ hz₀D]
       · have hρ' : ρ = -1 := by linarith
         subst hρ'
-        rw [sideOf_eq hU hV' hS (sideOf_neg_one_iff.2 hb) hz₀ hz₀D]; exact hbefore
+        rwa [sideOf_eq hU hV' hS (sideOf_neg_one_iff.2 hb) hz₀ hz₀D]
   · -- a tie
     have hne' : e ≠ e' := Ne.symm hne
     have hnot2 : ∀ {c : Set Point}, c ∈ F → SideAttach M.W c p t →
@@ -322,7 +322,7 @@ theorem chord_bound {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
     (hpre p t hp ht hnc hfG h0 hL)
   · subst hθ1
     have hleft := left_of_side hρ hS (a := sidePt M.W pf tf) (b := sidePt M.W pn tn) hy.symm
-      (by rw [hsym]; exact hmid) (by rw [hsym]; exact hmidD) (by linarith)
+      (by rwa [hsym]) (by rwa [hsym]) (by linarith)
     have hnot : ¬ sideInArc (pf + tf) (pn + tn) (p + t) := fun hin =>
       hM.not_left_of_after hF hf hFr hN (Ne.symm hNF) hG hp ht hin hfG hleft
     have := off_not_arc hg0 hgn kF0 kFn kN0 kNn kx0 kxn (Ne.symm hkNF) hxF hxN hnot
@@ -360,7 +360,7 @@ theorem rlabel_after (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hs2 : s < δ₂ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_right _ _))
   have hs3 : t + s < 1 := by linarith [lt_of_lt_of_le hs.2 (min_le_right _ _)]
   refine ⟨d, hd, t + s, ⟨by linarith [hs.1], hs3⟩, ?_, h1 s hs.1 hs1 hs3, h2 s hs.1 hs2 hs3⟩
-  rw [← add_assoc]; exact hnc
+  rwa [← add_assoc]
 
 /-- **`RLabel` from the positions just before a position of the right stretch.** -/
 theorem rlabel_before (hP : J.P.Simple) {S₂ : Set (Set Point)}
@@ -384,9 +384,8 @@ theorem rlabel_before (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have hs3 : s < t := lt_of_lt_of_le hs.2 (min_le_right _ _)
     refine ⟨d, hd, t - s, ⟨by linarith, by linarith [hs.1]⟩, ?_, h1a htpos s hs.1 hs1 hs3,
       h2a htpos s hs.1 hs2 hs3⟩
-    rw [show ((((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n : ℕ) : ℝ) + (t - s)) =
+    rwa [show ((((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n : ℕ) : ℝ) + (t - s)) =
       (((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n : ℕ) : ℝ) + t - s by ring]
-    exact hnc
   · subst ht00
     obtain ⟨hd0, -⟩ := hsec rfl
     have hn0 : 0 < (chainModel J.whole).W.n := hC.n_pos
@@ -410,7 +409,7 @@ theorem rlabel_before (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have hs2 : s < δ₂ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_right _ _))
     have hs3 : s < 1 := lt_of_lt_of_le hs.2 (min_le_right _ _)
     refine ⟨d - 1, by omega, 1 - s, ⟨by linarith, by linarith [hs.1]⟩, ?_, ?_, ?_⟩
-    · rw [hPm, show ((P' : ℕ) : ℝ) + (1 - s) = ((P' : ℕ) : ℝ) + 1 - s by ring]; exact hnc
+    · rwa [hPm, show ((P' : ℕ) : ℝ) + (1 - s) = ((P' : ℕ) : ℝ) + 1 - s by ring]
     · rw [hPm]; exact h1b rfl s hs.1 hs1
     · rw [hPm₂]; exact h2b rfl s hs.1 hs2
 
@@ -425,7 +424,7 @@ theorem off_shared_out (hP : J.P.Simple) {S₂ : Set (Set Point)}
   rintro ⟨h0, hL⟩
   have hC := corr_right0 J hP hS₂ hS₂f
   obtain ⟨hpd, hoff⟩ := hC.decomp hp ht0 ht1
-  set d := dOf (chainModel J.whole).W.n (6 + tpos J.whole J.m₁) p with hddef
+  set d := dOf (chainModel J.whole).W.n (6 + tpos J.whole J.m₁) p
   rw [hoff] at h0 hL
   have hdL : d < rL1 J + rL2 J := by
     have : (d : ℝ) < ((rL1 J + rL2 J : ℕ) : ℝ) := by linarith

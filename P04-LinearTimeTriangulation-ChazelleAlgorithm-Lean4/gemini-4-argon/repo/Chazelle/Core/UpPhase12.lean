@@ -88,7 +88,7 @@ theorem single_child {n g i : ℕ} (hn : 2 ≤ n) (hg : 1 ≤ g) (hi : i < grade
     have := gradeLen_pos (g := g - 1) (i := 2 * i + 1) hn h
     omega
   · refine ⟨by omega, ?_⟩
-    have := gradeLen_succ_one (g := g - 1) (i := i) hn (by rw [hgg]; exact hi) (by omega)
+    have := gradeLen_succ_one (g := g - 1) (i := i) hn (by rwa [hgg]) (by omega)
     rw [hgg] at this; exact this.symm
 
 set_option maxHeartbeats 32000000 in
@@ -147,8 +147,6 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
       (∀ a, a < A → c'.rmem a = c.rmem a) ∧ c'.output = c.output ∧
       (∀ r, Kept r ∨ r = 170030 → c'.nreg r = c.nreg r) ∧
       (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r) := by
-  have hAl : ALLOC = 9999 := rfl
-  have hQn : (Qof P).n = P.n := shear_n _ _
   have hfit := gradeLen_fit hn hi
   have hl1 := gradeLen_pos hn hi
   have hl2 := gradeLen_le P.n g i
@@ -207,7 +205,7 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
         holds_of_upTab hn (robust_of hT le_rfl fun m' h' => h'.1)
       obtain ⟨c', k, e, hk, hw', a1, a2, ⟨C, N, hCP, hCs, hCm, hNW, hc⟩, m1, m2, o, fr, frr⟩ :=
         nfU_l41 (P := P) (sB := sB) (sG := sG) hL hG hWh hw hu.r07 hu.r37 hg7 hu.r19 hu.r05 h16
-          h17 (by rw [hA]; exact hX) (by omega) (by unfold gradeStart at hfit ⊢; omega) hlen hl2
+          h17 (by rwa [hA]) (by omega) (by unfold gradeStart at hfit ⊢; omega) hlen hl2
           (by rw [hA]; omega)
       refine ⟨c', k, e, by omega, hw', by omega, by omega, fun C' a b f => ?_,
       fun a ha => m1 a (by omega), fun a ha => m2 a (by omega), o,

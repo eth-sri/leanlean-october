@@ -155,7 +155,7 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
       by_cases h2 : d₂.nreg K0 < d₂.nreg kqO
       · rw [k02] at h2
         have hlt := b1.2.1 (by have := b1.1; omega)
-        refine IRS.mono (K := 0 + 2) (IRS.ifT (by rw [k02]; exact h2) (IRS.skip hI₂ rfl))
+        refine IRS.mono (K := 0 + 2) (IRS.ifT (by rwa [k02]) (IRS.skip hI₂ rfl))
           (by norm_num) ?_
         rintro d' rfl
         have eB : d₂.nreg kqB = 0 := (kp2 _ (by simp)).trans v4
@@ -166,7 +166,7 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
           fun h => by have := b1.2.2 h; omega
         have heq : offK P J (d.nreg bE) (d.nreg bH) = offK P J (d.nreg kqE) (d.nreg kqH) :=
           le_antisymm (not_lt.1 hnlt) (hmin h1)
-        refine IRS.mono (K := 1 + 2) (IRS.ifF (by rw [k02]; exact h2) (IRS.block _ hI₂
+        refine IRS.mono (K := 1 + 2) (IRS.ifF (by rwa [k02]) (IRS.block _ hI₂
           ⟨⟨iscr_sw' (by norm_num) (by norm_num), hW⟩, trivial⟩)) (by norm_num) ?_
         rintro d' hd'
         have w1 : d'.nreg kqB = 1 := by rw [hd']; simp [regB, regI]
@@ -194,7 +194,7 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
       (d'.nreg kqB = 1 ↔ (d.nreg bF = 1 ∧
         offK P J (d.nreg bE) (d.nreg bH) = offK P J (d.nreg kqE) (d.nreg kqH))) := by
     intro d' fr hB' hk
-    refine ⟨fr1.trans (fr2.trans fr), ?_, ?_, ?_, ?_, by omega, by rw [hB']; exact hbiff⟩
+    refine ⟨fr1.trans (fr2.trans fr), ?_, ?_, ?_, ?_, by omega, by rwa [hB']⟩
     · rw [hk _ (Or.inl rfl), kp2 _ (Or.inl rfl), v1]
     · rw [hk _ (Or.inr (Or.inl rfl)), kp2 _ (Or.inr (Or.inl rfl)), v2]
     · rw [hk _ (Or.inr (Or.inr (Or.inl rfl))), kp2 _ (Or.inr (Or.inr (Or.inl rfl))), v3]
@@ -203,7 +203,7 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
   by_cases h3 : d₂.nreg K0 < d₂.nreg kqB
   · rw [hK₂.1] at h3
     have hB1 : d₂.nreg kqB = 1 := by omega
-    refine IRS.mono (K := 5 + 2) (IRS.ifT (by rw [hK₂.1]; exact h3) (IRS.block cpBestL hI₂ (by
+    refine IRS.mono (K := 5 + 2) (IRS.ifT (by rwa [hK₂.1]) (IRS.block cpBestL hI₂ (by
       simp only [cpBestL, okB, okI]
       exact ⟨iscr_sw' (by norm_num) (by norm_num), iscr_sw' (by norm_num) (by norm_num),
         iscr_sw (by unfold kqL sw; norm_num) (by unfold kqL sw; norm_num),
@@ -229,7 +229,7 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
     rw [w0 _ (by simp)] at h; exact absurd hB1 h
   · rw [hK₂.1] at h3
     have hB0 : d₂.nreg kqB ≠ 1 := by omega
-    refine IRS.mono (K := 1 + 2) (IRS.ifF (by rw [hK₂.1]; exact h3) (IRS.block _ hI₂
+    refine IRS.mono (K := 1 + 2) (IRS.ifF (by rwa [hK₂.1]) (IRS.block _ hI₂
       ⟨⟨iscr_sw' (by norm_num) (by norm_num), by omega⟩, trivial⟩)) (by norm_num) ?_
     rintro d' hd'
     have fr3 : EFr PreR d₂ d' := by
@@ -301,8 +301,6 @@ theorem writeLog_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hA : c₀.nreg
       (∀ i, i < 4 → d'.nmem (d.nreg lB + 7 * d.nreg lC + 3 + i) = d.nreg (kL + i)) ∧
       (∀ y, (y < d.nreg lB + 7 * d.nreg lC ∨ d.nreg lB + 7 * d.nreg lC + 7 ≤ y) →
         d'.nmem y = d.nmem y)) := by
-  have hK := hK₀.fix hId
-  have hK1 := hK.2.1
   unfold writeLog
   refine IRS.seq (K₁ := 5) (K₂ := 15) (IRS.block logAddrL hId (by
     simp only [lC, lB, sw, Nat.reduceAdd] at hW

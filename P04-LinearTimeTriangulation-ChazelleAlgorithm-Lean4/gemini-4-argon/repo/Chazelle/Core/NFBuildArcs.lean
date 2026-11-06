@@ -251,8 +251,8 @@ theorem gap_of_arc (hK : 0 < L.length) {U : Set Point} {a b : ℝ}
   · left
     have hin : ∀ x, sideInArc a b x ↔ a < x ∧ x < b := by
       intro x; unfold sideInArc; rw [ite_eq_left hlt]
-    have hex : ∃ j, a < kap S j ∧ j < S.length := ⟨k₂, by rw [hk₂e]; exact hlt, hk₂⟩
-    set j₀ := Nat.find hex with hj₀
+    have hex : ∃ j, a < kap S j ∧ j < S.length := ⟨k₂, by rwa [hk₂e], hk₂⟩
+    set j₀ := Nat.find hex
     obtain ⟨hj₀a, hj₀l⟩ := Nat.find_spec hex
     have hmin : ∀ j < j₀, ¬ (a < kap S j ∧ j < S.length) := fun j hj => Nat.find_min hex hj
     have hj₀pos : j₀ ≠ 0 := by
@@ -270,7 +270,7 @@ theorem gap_of_arc (hK : 0 < L.length) {U : Set Point} {a b : ℝ}
     have hm2 : a ≤ kap S (j₀ - 1) := by
       have := BuildSort.kap_mono h.sorted hk₁m (by omega)
       rwa [hk₁e] at this
-    have hj₀k₂ : j₀ ≤ k₂ := Nat.find_min' hex ⟨by rw [hk₂e]; exact hlt, hk₂⟩
+    have hj₀k₂ : j₀ ≤ k₂ := Nat.find_min' hex ⟨by rwa [hk₂e], hk₂⟩
     have hb1 : kap S j₀ ≤ b := by
       have := BuildSort.kap_mono h.sorted hj₀k₂ hk₂; rwa [hk₂e] at this
     have hb2 : b ≤ kap S j₀ := by
@@ -312,7 +312,7 @@ theorem arc_of_empty (hK : L.length = 0) :
     intro e he
     have := (h.mem_cases he).1; omega
   have hnocut : ∀ x, ¬ M.IsCut (famOf M Q L) x := by
-    rintro x ⟨c, hc, -⟩; rw [hF] at hc; exact hc
+    rintro x ⟨c, hc, -⟩; rwa [hF] at hc
   -- the walk has an edge
   have hsys := h.walk.sys _ h.adm h.finite
   obtain ⟨-, hcard⟩ := hsys.regionsIn_finite_ncard h.walk.preconn h.walk.nonempty subset_rfl

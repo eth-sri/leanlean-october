@@ -70,7 +70,7 @@ theorem rlabel_before0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hs2 : s < δ₂ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_right _ _))
   have hs3 : s < 1 := lt_of_lt_of_le hs.2 (min_le_right _ _)
   refine ⟨d - 1, by omega, 1 - s, ⟨by linarith, by linarith [hs.1]⟩, ?_, ?_, ?_⟩
-  · rw [hPm, show ((P' : ℕ) : ℝ) + (1 - s) = ((P' : ℕ) : ℝ) + 1 - s by ring]; exact hnc
+  · rwa [hPm, show ((P' : ℕ) : ℝ) + (1 - s) = ((P' : ℕ) : ℝ) + 1 - s by ring]
   · rw [hPm]; exact h1b rfl s hs.1 hs1
   · rw [hPm₂]; exact h2b rfl s hs.1 hs2
 
@@ -133,9 +133,9 @@ theorem tie_unlabelled (hP : J.P.Simple) {Q : Polygon}
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
   have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
-  set W := (chainModel J.whole).W with hWdef
-  set g := 6 + tpos J.whole J.m₁ with hgdef
-  set A := (g + d) % W.n with hAdef
+  set W := (chainModel J.whole).W
+  set g := 6 + tpos J.whole J.m₁
+  set A := (g + d) % W.n
   have hg0 : (0 : ℝ) ≤ (g : ℝ) := Nat.cast_nonneg _
   have hgn : (g : ℝ) < W.n := by exact_mod_cast hC.hg
   obtain ⟨-, hy, -⟩ := hM.attach_seg (hFs he) heA hB (Ne.symm hBne)
@@ -310,7 +310,7 @@ theorem bracket_tie (hP : J.P.Simple) {Q : Polygon}
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
-  set o := off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) with hodef
+  set o := off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ)
   obtain ⟨hLb, hbo₀⟩ := back_end J hP hS₂ hρ hG hfb hbA hbB hbne hbS hbo hAL hbout hp₀ ht₀
     hnc₀ hfG₀ ho₀
   have hfe := fwd_end J hP hS₂ hρ hG hff hfA hfF hfne hfS hfo hAL hfout hp₀ ht₀ hnc₀ hfG₀
@@ -346,7 +346,7 @@ theorem bracket_tie (hP : J.P.Simple) {Q : Polygon}
   rcases hfe with hz | ⟨hLz, hz⟩
   · have hB0' : 0 < o (pb + tb) := lt_of_le_of_ne (off_nonneg kB0 hgn) (Ne.symm hB0)
     have := no_cross_off hM hFs hF.1 hff he (Ne.symm hef) hfF hfA (Ne.symm hfne) hB hW hg0 hgn
-      (by rw [hz]; linarith) (by rw [hz]; exact hB0') hBA
+      (by rw [hz]; linarith) (by rwa [hz]) hBA
     linarith [this.2]
   · rcases hoZ with h | h
     · linarith

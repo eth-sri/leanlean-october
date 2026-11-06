@@ -92,7 +92,7 @@ theorem sideLeft_of_attach {W : Polygon} {e : Set Point} {p : ℕ} {t : ℝ}
     (hin : ∀ s, 0 < s → s < ε → rayPt (sidePt W p t) δ s ∈ e) :
     sideLeft W p t (rayPt (sidePt W p t) δ 1) := by
   obtain ⟨-, -, -, -, r, hr, hsec⟩ := hA
-  set s := min (r / 2) (ε / 2) with hsdef
+  set s := min (r / 2) (ε / 2)
   have hs : 0 < s := lt_min (half_pos hr) (half_pos hε)
   have hsr : s ≤ r / 2 := min_le_left _ _
   have hsε : s ≤ ε / 2 := min_le_right _ _
@@ -114,7 +114,7 @@ theorem attach_of_origin {a : Point} (ha : a.2 ≤ C.top.2) (haD : a ∉ C.dom) 
   rw [neg_neg] at hsec
   have he := Merge.shoot_mem_augChords C ha haD hσ hf
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt C ha hσ hf
-  refine sideAttach_of_along C hP he hp ht0 ht1 hσ (by rw [hpt]; exact hsec) ?_
+  refine sideAttach_of_along C hP he hp ht0 ht1 hσ (by rwa [hpt]) ?_
   rw [hpt]
   filter_upwards [Ioo_mem_nhdsGT hT] with s hs
   exact rayPt_mem_shoot C a σ hs.1.le hs.2.le
@@ -127,7 +127,7 @@ theorem attach_of_far {a : Point} (ha : a.2 ≤ C.top.2) (haD : a ∉ C.dom) {σ
   obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := hA
   have he := Merge.shoot_mem_augChords C ha haD hσ hf
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt C ha hσ hf
-  refine sideAttach_of_along C hP he hp ht0 ht1 (neg_cases hσ) (by rw [hpt]; exact hsec) ?_
+  refine sideAttach_of_along C hP he hp ht0 ht1 (neg_cases hσ) (by rwa [hpt]) ?_
   rw [hpt]
   filter_upwards [Ioo_mem_nhdsGT hT] with s hs
   unfold farPt

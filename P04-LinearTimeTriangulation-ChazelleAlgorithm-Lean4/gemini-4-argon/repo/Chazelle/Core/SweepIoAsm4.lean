@@ -79,8 +79,8 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
     (r₄ : ∀ j, j < 700 → j ≠ 30 → j ≠ 31 → j ≠ 96 → j ≠ 97 → j ≠ 98 → j ≠ 600 → j ≠ 601 →
       (j < 610 ∨ 616 < j) → c₄.nreg (sw j) = c₃.nreg (sw j)) :
     AEnv P W X Ok J H N₁ N₂ (c.nreg ALLOC) c₄ := by
-  set A₀ := c.nreg ALLOC with hA₀
-  set A₃ := c₃.nreg ALLOC with hA₃d
+  set A₀ := c.nreg ALLOC
+  set A₃ := c₃.nreg ALLOC
   have hA₄ : A₃ + 12 ≤ c₄.nreg ALLOC := by omega
   have r : ∀ j, j < 30 → c₄.nreg (sw j) = c₃.nreg (sw j) := fun j hj =>
     r₄ j (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
@@ -102,7 +102,6 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
   -- the stage-0 state with the new model descriptors
   have hst₃' := hst₃
   obtain ⟨-, -, -, -, -, -, d20, w20, d21, w21, -⟩ := hst₃'
-  have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := WalkEmbed.cm_n J.right
   obtain ⟨md30, mw30, -⟩ := modelDesc_of_copy (P := P) (A := A₃) (E' := c₄.nreg ALLOC) w20 d20
     le_rfl m₄ z0 zq (by omega)
   obtain ⟨md31, mw31, -⟩ := modelDesc_of_copy (P := P) (A := A₃ + 6) (E' := c₄.nreg ALLOC) w21 d21
@@ -110,10 +109,10 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
   have hst₄ : SweepEv.St0S P c₄ H J := by
     refine st0S_md hst₃ (fun j hj h11 h30 h31 => r₄ j (by omega) h30 h31 (by omega) (by omega)
       (by omega) (by omega) (by omega) (Or.inl (by omega))) m₄ (by omega) ?_ ?_ ?_ ?_
-    · rw [z30]; exact md30
-    · rw [z30]; exact mw30
-    · rw [z31]; exact md31
-    · rw [z31]; exact mw31
+    · rwa [z30]
+    · rwa [z30]
+    · rwa [z31]
+    · rwa [z31]
   have h20 := w20.1
   have h21 := w21.1
   have hnar₁ := SweepEv.arcsTask J.left (Qof P) N₁ hP hNF₁
@@ -130,10 +129,10 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
       hN₂ := by rw [e4]; exact Robust.transport hNW₂ m
       hNF₁ := hNF₁
       hNF₂ := hNF₂
-      hdeg₁ := by rw [e6]; exact hdeg₁
-      hdeg₂ := by rw [e6]; exact hdeg₂
-      hsg₁ := by rw [e5]; exact hsg₁
-      hsg₂ := by rw [e5]; exact hsg₂
+      hdeg₁ := by rwa [e6]
+      hdeg₂ := by rwa [e6]
+      hsg₁ := by rwa [e5]
+      hsg₂ := by rwa [e5]
       hst := hst₄
       hE := by omega
       hWm := hWm
@@ -148,15 +147,15 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
       hstops := ?_
       hlog := ?_
       htabw := ?_
-      hK₁ := by rw [e3, m _ (by omega)]; exact hK₁
-      hK₂ := by rw [e4, m _ (by omega)]; exact hK₂
+      hK₁ := by rwa [e3, m _ (by omega)]
+      hK₂ := by rwa [e4, m _ (by omega)]
       hmd₁ := fun j hj => by
         rw [z30, zq j hj, r 20 (by omega), m₄ _ (by omega)]
       hmd₂ := fun j hj => by
         rw [z31, zl j hj, r 21 (by omega), m₄ _ (by omega)] }
   · rw [e10]
     exact X.mono _ _ _ _ _ (by omega) (X.local_ _ _ _ _ _ (fun a ha => (m a ha).symm) hX)
-  · rw [e5, e10, hXl _ _ _ _ _ m hX]; exact hcap
+  · rwa [e5, e10, hXl _ _ _ _ _ m hX]
   · show rd c₄ bSweep 201 + rd c₄ bSweep 301 + 2 * N₂.nChords < 2 ^ c₄.nreg TLR
     rw [show rd c₄ bSweep 201 = rd c₃ bSweep 201 from rr 201 (by simp),
       show rd c₄ bSweep 301 = rd c₃ bSweep 301 from rr 301 (by simp)]

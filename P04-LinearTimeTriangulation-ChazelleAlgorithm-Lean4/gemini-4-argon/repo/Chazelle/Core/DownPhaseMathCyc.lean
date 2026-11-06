@@ -37,7 +37,7 @@ theorem two_chords_vertex (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily 
     {c c' : Set Point} (hc : c ∈ S) (hc' : c' ∈ S) (hcc : c ≠ c') {p : ℕ} {t : ℝ}
     (hA : SideAttach (interiorModel Q).W c p t) (hA' : SideAttach (interiorModel Q).W c' p t) :
     t = 0 := by
-  set I := interiorModel Q with hI
+  set I := interiorModel Q
   have hM : WalkAx I := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
@@ -121,12 +121,12 @@ theorem two_chords_vertex (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily 
     apply hcommon zp ⟨rfl, by linarith, by linarith⟩ ⟨rfl, by linarith, by linarith⟩
     exact hch.open_mem _ (by linarith) (by linarith)
   · -- `c` to the right, `c'` to the left
-    have h1 := hleft (hsec zp ⟨rfl, by linarith, by linarith⟩ hzpy (by rw [hdp]; exact hεr))
-    have h2 := hleft (hsec' zm ⟨rfl, by linarith, by linarith⟩ hzmy (by rw [hdm]; exact hεr'))
+    have h1 := hleft (hsec zp ⟨rfl, by linarith, by linarith⟩ hzpy (by rwa [hdp]))
+    have h2 := hleft (hsec' zm ⟨rfl, by linarith, by linarith⟩ hzmy (by rwa [hdm]))
     linarith
   · -- `c` to the left, `c'` to the right
-    have h1 := hleft (hsec zm ⟨rfl, by linarith, by linarith⟩ hzmy (by rw [hdm]; exact hεr))
-    have h2 := hleft (hsec' zp ⟨rfl, by linarith, by linarith⟩ hzpy (by rw [hdp]; exact hεr'))
+    have h1 := hleft (hsec zm ⟨rfl, by linarith, by linarith⟩ hzmy (by rwa [hdm]))
+    have h2 := hleft (hsec' zp ⟨rfl, by linarith, by linarith⟩ hzpy (by rwa [hdp]))
     linarith
   · -- both to the left
     apply hcommon zm ⟨rfl, by linarith, by linarith⟩ ⟨rfl, by linarith, by linarith⟩
@@ -327,7 +327,7 @@ theorem junction (hdh : DistinctHeights Q) {i : ℕ} (hi : i < nk (interiorModel
   by_contra hnA2
   have hCi2 : ChordGap I S R ((i + 1) % N) :=
     (gap_cases hM hF hfin hne hR (by omega) hsi).resolve_left hnA2
-  have hv2 := vertex_of_two_gaps hQ hFam hne hR hsi (by rw [prevIdx_succ hi]; exact hCi) hCi2
+  have hv2 := vertex_of_two_gaps hQ hFam hne hR hsi (by rwa [prevIdx_succ hi]) hCi2
   obtain ⟨c, hc, q1, q2, s1, s2, hB1, hB2, f1, f2, -⟩ := hCi
   have hs1 : s1 = 0 := by
     have h1 := floor_add (p := q1) hB1.2.1 hB1.2.2.1
@@ -373,7 +373,7 @@ theorem arcGap_step {i : ℕ} (hi : i < nk (interiorModel Q) S R)
   have hby := hostKeys_bounds (hk_mem hM hF hfin hsi)
   rw [hWn] at hbx hby
   have hnoint : ∀ k : ℕ, k < Q.n → ¬ sideInArc (hk I S R i) (hk I S R ((i + 1) % N)) k :=
-    fun k hk => arcGap_noInt hQ hFam hne hR hi hA k (by rw [hWn]; exact hk)
+    fun k hk => arcGap_noInt hQ hFam hne hR hi hA k (by rwa [hWn])
   rcases noInt_cases hbx.1 hbx.2 hby.1 hby.2 (hk_succ_ne hM hF hfin (by omega) hi) hnoint with
     ⟨hlt, hfl⟩ | hyv
   · refine ⟨fun hint => ?_, fun _ => hfl⟩
@@ -415,7 +415,7 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
   have hdN := hD.hdN
   have hd0 := hD.hd0
   have hlb : 0 ≤ l ∧ l < Q.n := by
-    have := hostKeys_bounds (hk_mem hM hF hfin hil); rw [hD.hl, hWn] at this; exact this
+    have := hostKeys_bounds (hk_mem hM hF hfin hil); rwa [hD.hl, hWn] at this
   have hfl : ⌊l⌋₊ < Q.n := by
     have : (⌊l⌋₊ : ℝ) < Q.n := lt_of_le_of_lt (Nat.floor_le hlb.1) hlb.2
     exact_mod_cast this
@@ -478,7 +478,7 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
   have hlni : l ≠ ⌊l⌋₊ := by
     intro h
     have e : hk I S R ((i_l + 0) % N) = hk I S R ((i_l + Q.n) % N) := by
-      rw [add_zero, Nat.mod_eq_of_lt hil, hD.hl, hvn]; exact h
+      rwa [add_zero, Nat.mod_eq_of_lt hil, hD.hl, hvn]
     have := hinj 0 Q.n (by omega) (by omega) e
     omega
   rcases hend with ⟨hr, hrv⟩ | ⟨hrni, hrfl⟩
@@ -491,10 +491,10 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
     omega
   · -- `l` and `r` are on one walk edge: the chord after `r` returns to that edge
     rw [Nat.add_sub_cancel, Nat.add_mod_right, Nat.mod_eq_of_lt hfl] at hrfl
-    set p := ⌊l⌋₊ with hp
+    set p := ⌊l⌋₊
     have hrb : 0 ≤ r ∧ r < Q.n := by
       have := hostKeys_bounds (hk_mem hM hF hfin (hmod (Q.n + 1)))
-      rw [hD.hr, hWn] at this; exact this
+      rwa [hD.hr, hWn] at this
     have hlp : (p : ℝ) < l := lt_of_le_of_ne (Nat.floor_le hlb.1) (Ne.symm hlni)
     have hlp1 : l < p + 1 := Nat.lt_floor_add_one l
     have hrp : (p : ℝ) < r := by
@@ -527,7 +527,7 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
     obtain ⟨-, hnext⟩ := end_chord hQ hFam hne hR hiN hx hAprev
     obtain ⟨c, ⟨hc, ht⟩, pr, tr, hAr, her⟩ := hM.exists_exit_at_end hF hfin hne hR harc
     obtain ⟨pz, tz, hAz, hez⟩ := hnext c hc ht pr tr hAr (by rw [hD.hr]; exact her)
-    set z := hk I S R (((i_l + (Q.n + 1)) % N + 1) % N) with hz
+    set z := hk I S R (((i_l + (Q.n + 1)) % N + 1) % N)
     have hzr : r ≠ z := by
       rw [← hD.hr]; exact hk_succ_ne hM hF hfin (by omega) hiN
     -- `z` is a cut, so not inside the arc: `r < z ≤ l`
@@ -536,13 +536,12 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
     unfold sideInArc at hzin
     rw [ite_eq_right (not_lt.2 hrl.le)] at hzin
     push Not at hzin
-    have hrz : r < z := lt_of_le_of_ne hzin.2 hzr
     have hzfl : ⌊z⌋₊ = p := by
       rw [Nat.floor_eq_iff (by linarith)]
       exact ⟨by linarith, by linarith⟩
     have hpz : pz = p := by rw [← hzfl, hez, floor_add hAz.2.1 hAz.2.2.1]
     have hpr : pr = p := by rw [← hrfl, her, floor_add hAr.2.1 hAr.2.2.1]
-    exact attach_floor_ne hQ hFam hdh hc hAr hAz (by rw [← her, ← hez]; exact hzr)
+    exact attach_floor_ne hQ hFam hdh hc hAr hAz (by rwa [← her, ← hez])
       (by rw [hpr, hpz])
 
 end

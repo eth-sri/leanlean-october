@@ -90,13 +90,13 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     ∃ d' k, Exec P W passBody d d' k ∧ k ≤ 11700 ∧ 12 ≤ k ∧ WordsBounded W d' ∧
       PassInv F c₀ d' (m + 1) := by
   have hN := F.len
-  set K := L.length with hK
-  set N := E.length with hNdef
+  set K := L.length
+  set N := E.length
   have hl1 := F.l1; have hl2 := F.l2; have hl3 := F.l3; have hl4 := F.l4; have hl5 := F.l5
   have hTH := F.TH; have hBH := F.BH; have hSEH := F.SEH; have hHW := F.HW
-  set c := E.getD m 0 with hc
+  set c := E.getD m 0
   have hcN : c < N := by have := BuildNF.getD_lt_of_perm F.inp.perm hm; omega
-  set x := c / 2 with hx
+  set x := c / 2
   have hxK : x < K := by omega
   obtain ⟨re, rh, rpar, rch⟩ := F.recs c (by omega)
   have lowd : ∀ a, a < H → d.nmem a = mB a := I.low
@@ -158,7 +158,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
       obtain ⟨e1, e2⟩ := BuildNF.stk_pop hm hh
       refine ⟨by rw [p1, sp₂]; omega, by omega, fun k hk => ?_, fun a _ => by rw [p2, mm₂],
         fun x' hx' hin' f hf => ?_⟩
-      · rw [p2, mm₂, I.stack k (by omega), e1, getD_dropLast (by rw [← e1]; exact hk)]
+      · rw [p2, mm₂, I.stack k (by omega), e1, getD_dropLast (by rwa [← e1])]
       · rw [p2, mm₂]
         rw [htake, List.mem_append, List.mem_singleton] at hin'
         rcases hin' with h' | h'
@@ -287,7 +287,6 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
   have hhd : d₄.nreg 44021 = hd := by rw [G₄ 44021 (by omega), I.rhd]
   have oth₄ : ∀ a, (a < CT ∨ (CT + 5 * K ≤ a ∧ a < ST) ∨ ST + N ≤ a) → d₄.nmem a = d.nmem a :=
     fun a ha => by rw [mm₄, oth₃ a ha]
-  have ch₄ : ∀ a, a < AT → d₄.nmem a = d₃.nmem a := fun a _ => by rw [mm₄]
   -- the new memory and arc count
   have M₆ : d₆.nreg 43102 = (gapsB M (Qof P) L E (m + 1)).length ∧
       (∀ a, a < AT → d₆.nmem a = d₃.nmem a) ∧ (∀ a, ST ≤ a → a < WT → d₆.nmem a = d₃.nmem a) ∧
@@ -306,7 +305,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
       · rw [upd_other _ _ _ (by omega), wr5_out _ _ _ _ _ _ _ _ (by omega), mm₄]
       · rw [upd_other _ _ _ (by omega), wr5_out _ _ _ _ _ _ _ _ (by omega), mm₄]
       · by_cases hjA : j < A
-        · rw [List.getD_append _ _ _ _ (by rw [hAdef] at hjA; exact hjA)]
+        · rw [List.getD_append _ _ _ _ (by rwa [hAdef] at hjA)]
           obtain ⟨o1, o2⟩ := I.arcs j hjA
           refine ⟨fun f hf => ?_, ?_⟩
           · rw [upd_other _ _ _ (by omega), wr5_out _ _ _ _ _ _ _ _ (by omega),
@@ -332,8 +331,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     · have hng : ¬ (m + 1 = E.length ∨ M.key (Qof P) (wposOf L (E.getD m 0)) <
           M.key (Qof P) (wposOf L (E.getD ((m + 1) % E.length) 0))) := fun h => hg (hgP.2 h)
       obtain ⟨p1, p2⟩ := hnogap hng
-      rw [hsucc, ite_eq_right hg, List.append_nil]
-      rw [mm₆, p2]
+      rw [hsucc, ite_eq_right hg, List.append_nil, mm₆, p2]
       refine ⟨by rw [g₆ _ (by norm_num) (by norm_num), p1], fun a _ => by rw [mm₄],
         fun a _ _ => by rw [mm₄], fun j hj => ?_⟩
       obtain ⟨o1, o2⟩ := I.arcs j hj

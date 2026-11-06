@@ -95,9 +95,6 @@ section Finite
 
 variable [Finite D]
 
-/-- Faces are the cycles of the face permutation. -/
-theorem face_eq_iff_sameCycle {d e : D} : M.face d = M.face e ↔ M.fperm.SameCycle d e :=
-  ⟨M.sameCycle_of_face d e, fun h => eq_of_sameCycle M.fperm M.face M.face_fperm h⟩
 
 end Finite
 

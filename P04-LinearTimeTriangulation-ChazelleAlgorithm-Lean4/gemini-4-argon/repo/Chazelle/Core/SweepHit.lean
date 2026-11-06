@@ -148,7 +148,7 @@ theorem freeAt_whole_iff (J : Merge.Junction) {z : Point} (hz : z.2 ≤ J.whole.
   have key : ∀ t, rayPt z σ t ∈ J.whole.dom ↔ rayPt z σ t ∈ Chain.box J.whole.radius ∧
       rayPt z σ t ∉ J.left.set ∧ rayPt z σ t ∉ J.right.set := by
     intro t
-    have h := Merge.not_mem_dom_iff J.whole (p := rayPt z σ t) (by rw [rayPt_snd]; exact hz)
+    have h := Merge.not_mem_dom_iff J.whole (p := rayPt z σ t) (by rwa [rayPt_snd])
     rw [J.whole_set] at h
     constructor
     · intro hd

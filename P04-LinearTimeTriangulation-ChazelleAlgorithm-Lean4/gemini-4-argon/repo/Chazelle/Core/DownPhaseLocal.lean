@@ -50,14 +50,11 @@ theorem near_sub_region (hQ : Q.Simple) {F : Set (Set Point)}
     (hU : U ∈ (interiorModel Q).regions F)
     (hfU : ∀ᶠ s in 𝓝[>] (0 : ℝ), (interiorModel Q).Faces p (t + s * (1 - t)) U) :
     ∃ r > 0, ∀ x ∈ ball (sidePt (interiorModel Q).W p t) r, x ∈ (interiorModel Q).D → x ∈ U := by
-  set M := interiorModel Q with hMdef
+  set M := interiorModel Q
   set W := M.W
   set z := sidePt W p t with hz
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec hQ
   have hM : WalkAx M := walkAx_interiorModel hQ
-  have hD : M.D = W.filled \ W.boundary := by
-    show Q.filled \ Q.boundary = (interiorWalk Q).filled \ (interiorWalk Q).boundary
-    rw [hWb, hWf]
   obtain ⟨rL, hrL, hleft⟩ := FactsInterior.interior_left hWs hWo hp ht0 ht1
   obtain ⟨rC, hrC, hclean⟩ := FactsInterior.clean hWs hWo hp ht0 ht1
   -- the point is on no chord of `F`
@@ -81,8 +78,7 @@ theorem near_sub_region (hQ : Q.Simple) {F : Set (Set Point)}
       apply hzD
       have := hh.open_mem z.1 (lt_of_le_of_ne hzc.2.1 (Ne.symm hne.1))
         (lt_of_le_of_ne hzc.2.2 hne.2)
-      rw [← hzy] at this
-      exact this
+      rwa [← hzy] at this
     have hx1 : x.1 ≠ z.1 := fun e => hxz (Prod.ext e (hxy.trans hzy.symm))
     have hxD : x ∈ M.D := by
       have hxo : a < x.1 ∧ x.1 < b := by
@@ -92,9 +88,9 @@ theorem near_sub_region (hQ : Q.Simple) {F : Set (Set Point)}
         · linarith
         · exact lt_of_le_of_ne hx.2.2 (fun e => hx1 (by rw [he, e]))
       have := hh.open_mem x.1 hxo.1 hxo.2
-      rw [← hxy] at this; exact this
+      rwa [← hxy] at this
     refine hleft x (lt_of_lt_of_le hdist (min_le_right _ _)) ?_
-    rw [hWb, hWf]; exact hxD
+    rwa [hWb, hWf]
   -- a ball avoiding all chords
   have hev : ∀ᶠ x in 𝓝 z, ∀ c ∈ F, x ∉ c := by
     refine (hfin.eventually_all (p := fun c x => x ∉ c)).2 fun c hc => ?_
@@ -120,8 +116,7 @@ theorem near_sub_region (hQ : Q.Simple) {F : Set (Set Point)}
       rw [hz, Chazelle.Chain.sidePt_zero]
       have hn : 0 < W.n := by omega
       have hq := hM.nd ((p + W.n - 1) % W.n) (Nat.mod_lt _ hn)
-      rw [BoxT.prev_succ hp] at hq
-      exact hq
+      rwa [BoxT.prev_succ hp] at hq
     · rw [hz]; unfold sidePt
       exact (Chazelle.Jordan.lerp_ne_left hnd (lt_of_le_of_ne ht0 (Ne.symm ht))).symm
   have hsec := Chazelle.Chain.sideSector (S := (freeIn M.D F)ᶜ) hav hbv hr (by
@@ -129,7 +124,7 @@ theorem near_sub_region (hQ : Q.Simple) {F : Set (Set Point)}
     apply hxS
     refine ⟨?_, fun ⟨c, hc, hxc⟩ => hballF (lt_of_lt_of_le hx hrF') c hc hxc⟩
     by_contra hxD
-    exact hclean x (lt_of_lt_of_le hx hrC') (by rw [hWb, hWf]; exact hxD) hxl)
+    exact hclean x (lt_of_lt_of_le hx hrC') (by rwa [hWb, hWf]) hxl)
   obtain ⟨hsub, hpre, hoff⟩ := hsec
   set L := ball z r ∩ {x | sideLeftOf (sidePrev W p t) z (sideNext W p) x}
   have hLfree : L ⊆ freeIn M.D F := fun x hx => not_not.1 (hsub hx)
@@ -149,10 +144,10 @@ theorem near_sub_region (hQ : Q.Simple) {F : Set (Set Point)}
         offset (M.wa p) (M.wb p) (t + s * (1 - t)) (δ * (1 - t)) := by
       rw [hz]; unfold sidePt sideNext
       exact Chazelle.Chain.offset_lerp_left _ _ _ _ _
-    rw [e]; exact hδ2
+    rwa [e]
   have hLU : L ⊆ U := Chazelle.Chain.subset_regionsIn_of_inter hU hpre hLfree hmeet
   refine ⟨r, hr, fun x hx hxD => hLU ⟨hx, ?_⟩⟩
-  have := hleft x (lt_of_lt_of_le hx hrL') (by rw [hWb, hWf]; exact hxD)
+  have := hleft x (lt_of_lt_of_le hx hrL') (by rwa [hWb, hWf])
   exact this
 
 /-! ## Adding chords inside one region -/

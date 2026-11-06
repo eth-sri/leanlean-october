@@ -138,11 +138,8 @@ def Out (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c' : Config) : Prop :=
 /-- **The postcondition of stages 2 and 3.** -/
 def Post (P : Polygon) (c c' : Config) : Prop :=
   (∀ j, j < 200 → c'.nreg (sw j) = c.nreg (sw j)) ∧
-    c.nreg ALLOC ≤ rd c' bSweep 200 ∧
     rd c' bSweep 200 + 5 * rd c' bSweep 201 ≤ c'.nreg ALLOC ∧
-    c.nreg ALLOC ≤ rd c' bSweep 300 ∧
     rd c' bSweep 300 + 7 * rd c' bSweep 301 ≤ c'.nreg ALLOC ∧
-    c.nreg ALLOC ≤ rd c' bSweep 302 ∧
     rd c' bSweep 302 + 3 * (2 * c.nmem (rd c bSweep 4)) ≤ c'.nreg ALLOC ∧
     rd c' bSweep 201 ≤ 16 * (c.nmem (rd c bSweep 3) + c.nmem (rd c bSweep 4) + 1) ∧
     rd c' bSweep 301 ≤ 16 * (c.nmem (rd c bSweep 3) + c.nmem (rd c bSweep 4) + 1) ∧

@@ -115,7 +115,6 @@ theorem oracle_pos_merge {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → �
       c.nmem (bw + (a - A - 1)) else c.nmem a := fun a => by simp only [ĉ, withDesc, hAd]
   have he : ∀ a, a < A → ĉ.nmem a = c.nmem a := fun a ha => by
     rw [hmem, ite_eq_right (by omega), ite_eq_right (by omega)]
-  have hbA := hwf.1
   have hw' : WordsBounded (W + 6) ĉ := by
     refine ⟨fun r => ?_, fun a => ?_⟩
     · simp only [ĉ, withDesc]
@@ -136,13 +135,13 @@ theorem oracle_pos_merge {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → �
     exact chainDescAt_copy hC hEb he hc
   have hreg' : ĉ.nmem A = 0 → ∀ H' C', ChainDescAt ĉ.nmem (A + 1) (Qof P) H' C' →
       HostRegular (Qof P).n H' := fun _ H' C' h' => by
-    rw [NFLoc.hostAt_unique h'.1 hCd.1]; exact hreg
+    rwa [NFLoc.hostAt_unique h'.1 hCd.1]
   have hX' : X.holds P ĉ.nmem g (ĉ.nreg ALLOC) := by
     rw [hA]
     exact X.mono _ _ _ _ _ (by omega) (X.local_ _ _ _ _ _ (fun a ha => (he a ha).symm) hX)
   have hcap' : γ ≤ X.cap P ĉ.nmem g := by
-    rw [hloc P c.nmem ĉ.nmem g _ he hX]; exact hcap
-  exact Restore.oracle_pos hsh hcu hw' hG (by omega) hX' hcap' (by rw [hA]; exact hMWF) hreg' hMD
+    rwa [hloc P c.nmem ĉ.nmem g _ he hX]
+  exact Restore.oracle_pos hsh hcu hw' hG (by omega) hX' hcap' (by rwa [hA]) hreg' hMD
     (Or.inl ⟨C, hP, rfl⟩) hOk hγ (by omega) hγW (by omega)
 
 end

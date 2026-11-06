@@ -61,15 +61,15 @@ theorem splice_meets {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) :
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at hK hB0 hCL hK₂ hB₂ hCL₂ hSEb hSE hBBb hbk hmono hMb hM hwf
   set K := L.length with hKd
   set K₂ := L₂.length with hK₂d
-  set A := c.nreg 210023 with hAd
-  set Mb := c.nreg 210024 with hMbd
-  set A₀ := c.nreg ALLOC with hA₀
-  set BB := c.nreg 210022 with hBBd
-  set bk : ℕ → ℕ := fun q => c.nmem (BB + q) with hbkd
+  set A := c.nreg 210023
+  set Mb := c.nreg 210024
+  set A₀ := c.nreg ALLOC
+  set BB := c.nreg 210022
+  set bk : ℕ → ℕ := fun q => c.nmem (BB + q)
   have hcost : splCost κB c = κSpl κB * (K + K₂ + A + 1) * (Nat.clog 2 Mb + 1) := by
     unfold splCost; simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd]; rw [hK, hK₂]
   have hroom' : A₀ + κSpl κB * (K + K₂ + A + 1) * (Nat.clog 2 Mb + 1) ≤ W := by
-    rw [← hcost]; exact hroom
+    rwa [← hcost]
   have hcl : 1 ≤ Nat.clog 2 Mb + 1 := by omega
   have hbase : K + K₂ + A + 1 ≤ (K + K₂ + A + 1) * (Nat.clog 2 Mb + 1) :=
     Nat.le_mul_of_pos_right _ (by omega)
@@ -89,7 +89,7 @@ theorem splice_meets {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) :
     Nat.mul_le_mul_left _ (by omega)
   rw [hκ] at hroom'
   -- stage A: the new chord list
-  obtain ⟨c₁, k₁, e₁, hk₁, w₁, a25, a26, a27, a28, a29, a34, aA, aCL, alow, af, arr⟩ :=
+  obtain ⟨c₁, k₁, e₁, hk₁, w₁, a25, a26, a27, a28, a29, aA, aCL, alow, af, arr⟩ :=
     splA_exec (P := P) (W := W) c hw (B := c.nreg 210002) (K := K) (B₂ := c.nreg 210020)
       (K₂ := K₂) (L := L) (L₂ := L₂) rfl hK rfl hK₂ rfl rfl hCL hCL₂ hB0 hB₂ (by omega)
   have g₁ : ∀ r, BsA r = false → c₁.nreg r = c.nreg r := af.1
@@ -99,7 +99,7 @@ theorem splice_meets {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) :
   set L' := L ++ L₂ with hL'
   have hlen : L'.length = K + K₂ := by rw [hL', List.length_append]
   -- stage B1: the records
-  obtain ⟨c₂, k₂, e₂, hk₂, w₂, d40, d42, d421, d31, d32, d33, dA, drec, dlow, -, dfr, drr, drm, dout⟩ :=
+  obtain ⟨c₂, k₂, e₂, hk₂, w₂, d40, d42, d421, d31, d32, d33, dA, drec, dlow, dfr, drr, drm, dout⟩ :=
     splB1_exec (P := P) (W := W) hWn c₁ w₁ (D := c.nreg 210001) (B' := A₀) (K := K) (K₂ := K₂)
       (A := A) (M := M) (L' := L') (by rw [g₁ _ (by decide)]) a26 a25 a27 a28
       (by rw [g₁ _ (by decide)]) hlen hok aCL aA (by rw [aA]; omega)
@@ -156,16 +156,16 @@ theorem splice_meets {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) :
   have hCL₃ : ChordListAt c₃.nmem A₀ (L ++ L₂) := fun i hi => by
     obtain ⟨x1, x2, x3⟩ := aCL i hi
     rw [hlen] at hi
-    exact ⟨by rw [hlow3 _ (by omega), dlow _ (by omega)]; exact x1,
-      by rw [hlow3 _ (by omega), dlow _ (by omega)]; exact x2,
-      by rw [hlow3 _ (by omega), dlow _ (by omega)]; exact x3⟩
+    exact ⟨by rwa [hlow3 _ (by omega), dlow _ (by omega)],
+      by rwa [hlow3 _ (by omega), dlow _ (by omega)],
+      by rwa [hlow3 _ (by omega), dlow _ (by omega)]⟩
   have hrec₃ : RecsAt c₃.nmem (A₀ + 3 * (K + K₂)) L' := fun q hq => by
     obtain ⟨r1, r2, r3, r4⟩ := drec q hq
     rw [hlen] at hq
-    exact ⟨by rw [hlow3 _ (by omega)]; exact r1, by rw [hlow3 _ (by omega)]; exact r2,
-      by rw [hlow3 _ (by omega)]; exact r3, by rw [hlow3 _ (by omega)]; exact r4⟩
+    exact ⟨by rwa [hlow3 _ (by omega)], by rwa [hlow3 _ (by omega)],
+      by rwa [hlow3 _ (by omega)], by rwa [hlow3 _ (by omega)]⟩
   have hE₃ : seg c₃.nmem (c.nreg 210004) (2 * K) = E := by
-    rw [seg_congr (m' := c.nmem) fun i hi => hm3 _ (by omega)]; exact hSE
+    rwa [seg_congr (m' := c.nmem) fun i hi => hm3 _ (by omega)]
   -- the tail
   obtain ⟨c₄, k₄, e₄, hk₄, tAlo, tAhi, t2, t3, t4lo, t4hi, tseg, t5lo, tnf, tlow, tfr, trr, trm,
     tout⟩ := splT_exec (P := P) (W := W) hB hG hWn c₃ w₃ (D := c.nreg 210001)
@@ -197,8 +197,8 @@ theorem splice_meets {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) :
     refine ⟨rfl, le_refl _, by omega, fun i hi => ?_, by omega, t4hi, sP, sS, by omega, tnf⟩
     obtain ⟨x1, x2, x3⟩ := hCL₃ i hi
     rw [List.length_append] at hi
-    exact ⟨by rw [tlow _ (by omega)]; exact x1, by rw [tlow _ (by omega)]; exact x2,
-      by rw [tlow _ (by omega)]; exact x3⟩
+    exact ⟨by rwa [tlow _ (by omega)], by rwa [tlow _ (by omega)],
+      by rwa [tlow _ (by omega)]⟩
   · -- the frame: registers
     obtain ⟨x1, x2, x3, x4, x5, x6, x7, x8, x9⟩ := spl_out hr
     rw [tfr r x1 (x2 hra) x3 x4 x5 x6 hra, ffr r x1 x7 hra, dfr r x1 x8 hra, g₁ r (x9 hra)]

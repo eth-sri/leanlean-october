@@ -86,7 +86,7 @@ theorem recs_copied {c c' : Config} {x : ℝ}
   have h0 := hk 0 (by norm_num)
   simp only [Nat.add_zero] at h0
   intro h1
-  obtain ⟨a, p, n, q⟩ := r (by rw [← h0]; exact h1)
+  obtain ⟨a, p, n, q⟩ := r (by rwa [← h0])
   rw [hk 5 (by norm_num), hk 6 (by norm_num)]
   exact ⟨absRec_copy' a (hk 1 (by norm_num)) (hk 2 (by norm_num)) (hk 3 (by norm_num))
     (hk 4 (by norm_num)), p, n, q⟩
@@ -114,7 +114,7 @@ theorem mrg_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ c)
     obtain ⟨c', e, hk, f⟩ := copyC_exec (P := P) c hw
     have h0 : c'.nreg 140210 = c.nreg 140220 := hk 0 (by norm_num)
     refine ⟨c', _, .ifLtN_false t0 (.ifLtN_true t1 e), by norm_num,
-      CandAt.of_cand (by rw [h0, hf₂]) (by rw [h0, hf₂]; exact hu) (recs_copied hk r₂), f⟩
+      CandAt.of_cand (by rw [h0, hf₂]) (by rwa [h0, hf₂]) (recs_copied hk r₂), f⟩
   have hf₁ : c.nreg 140210 = 1 := by have := hB.1; rw [k1] at t1; omega
   obtain ⟨xr₁, -⟩ := r₁ hf₁
   obtain ⟨xr₂, -⟩ := r₂ hf₂
@@ -156,8 +156,8 @@ theorem mrg_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ c)
     simp only [hf₂, hf₁, ne_eq, not_true_eq_false, false_or, hn, and_false, ↓reduceIte] at hu
     refine ⟨c₁, _, .ifLtN_false t0' (.ifLtN_false t1' (.seq e₁ (.ifLtN_true t2 (.skip w₁)))),
       by omega, CandAt.of_cand (by rw [kp _ (by norm_num) (by norm_num), hf₁])
-        (by rw [kp _ (by norm_num) (by norm_num), hf₁]; exact hu) (fun h => ?_), fm₁⟩
-    obtain ⟨a, p, n, q⟩ := r₁ (by rw [← kp _ (by norm_num) (by norm_num)]; exact h)
+        (by rwa [kp _ (by norm_num) (by norm_num), hf₁]) (fun h => ?_), fm₁⟩
+    obtain ⟨a, p, n, q⟩ := r₁ (by rwa [← kp _ (by norm_num) (by norm_num)])
     rw [kp _ (by norm_num) (by norm_num), kp _ (by norm_num) (by norm_num)]
     exact ⟨absRec_copy' a (kp _ (by norm_num) (by norm_num)) (kp _ (by norm_num) (by norm_num))
       (kp _ (by norm_num) (by norm_num)) (kp _ (by norm_num) (by norm_num)), p, n, q⟩
@@ -168,7 +168,7 @@ theorem mrg_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ c)
       rw [hk j hj, kp _ (by omega) (by omega)]
     have h0 : c'.nreg 140210 = c.nreg 140220 := hk' 0 (by norm_num)
     refine ⟨c', _, .ifLtN_false t0' (.ifLtN_false t1' (.seq e₁ (.ifLtN_false t2 e))), by omega,
-      CandAt.of_cand (by rw [h0, hf₂]) (by rw [h0, hf₂]; exact hu) (recs_copied hk' r₂),
+      CandAt.of_cand (by rw [h0, hf₂]) (by rwa [h0, hf₂]) (recs_copied hk' r₂),
       fm₁.trans f⟩
 
 end

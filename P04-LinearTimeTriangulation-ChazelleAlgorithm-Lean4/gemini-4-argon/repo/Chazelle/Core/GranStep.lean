@@ -244,10 +244,10 @@ theorem Inv.cut_sdiff_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.
         rcases hj' with e | e
         · rcases h0 with h0 | h0
           · exact absurd e h0
-          · rw [e]; exact h0
+          · rwa [e]
         · rcases h1 with h1 | h1
           · exact absurd e h1
-          · rw [e]; exact h1
+          · rwa [e]
       have hnot' := mt (h.cnt_eq_one_iff hE hiL hj').2 hnot
       push Not at hnot'
       replace hnot := hnot'
@@ -256,8 +256,8 @@ theorem Inv.cut_sdiff_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.
         by_cases e : st.nd0 i' = j
         · exact Or.inl e
         · exact Or.inr (hi'j e)
-      exact ⟨i', ⟨hi', by rw [mem_singleton_iff]; exact hi'c⟩, hi'.1, hkey i' hi' hi'j'⟩
-    · exact ⟨i, ⟨hiL, by rw [mem_singleton_iff]; exact hic⟩, hiL.1, hkey i hiL hij⟩
+      exact ⟨i', ⟨hi', by rwa [mem_singleton_iff]⟩, hi'.1, hkey i' hi' hi'j'⟩
+    · exact ⟨i, ⟨hiL, by rwa [mem_singleton_iff]⟩, hiL.1, hkey i hiL hij⟩
 
 /-! ## The removal split of a live chord -/
 
@@ -302,15 +302,14 @@ theorem Inv.removable_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.
   · rintro ⟨-, U, hU, V, hV, hUV, hcU, hcV, hlow, hW⟩
     rcases (htouch U hU).1 hcU with rfl | rfl <;> rcases (htouch V hV).1 hcV with rfl | rfl
     · exact absurd rfl hUV
-    · exact ⟨by rw [dX, dY]; exact hlow, hW P hs.mem hs.sub₁⟩
+    · exact ⟨by rwa [dX, dY], hW P hs.mem hs.sub₁⟩
     · exact ⟨by rw [dX, dY]; exact hlow.symm, hW P hs.mem hs.sub₂⟩
     · exact absurd rfl hUV
   · rintro ⟨hlow, hw⟩
     refine ⟨St.cs_mem_F hc, _, hX, _, hY, hne, (htouch _ hX).2 (Or.inl rfl),
-      (htouch _ hY).2 (Or.inr rfl), by rw [← dX, ← dY]; exact hlow, fun W hW hsub => ?_⟩
-    rw [Chazelle.Chain.regionsIn_eq_of_subset hW hs.mem (Chazelle.Chain.regionsIn_nonempty hX)
+      (htouch _ hY).2 (Or.inr rfl), by rwa [← dX, ← dY], fun W hW hsub => ?_⟩
+    rwa [Chazelle.Chain.regionsIn_eq_of_subset hW hs.mem (Chazelle.Chain.regionsIn_nonempty hX)
       hsub hs.sub₁]
-    exact hw
 
 /-! ## The merged weight -/
 
@@ -460,7 +459,7 @@ theorem Inv.mu_eq (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {P 
         omega
       obtain ⟨a, ha, hac⟩ := Set.exists_ne_of_one_lt_ncard h2 c
       rw [← fam_diff hE hc]
-      exact ⟨cs E.M E.Q E.N a, a, ⟨ha, by rw [mem_singleton_iff]; exact hac⟩, ha.1, rfl⟩
+      exact ⟨cs E.M E.Q E.N a, a, ⟨ha, by rwa [mem_singleton_iff]⟩, ha.1, rfl⟩
     have wX : st.wt (st.s0 c) = E.M.weight (st.F E) (st.cl E (st.s0 c)) :=
       (h.cls _ ⟨c, hc, Or.inl rfl⟩).2.1
     have wY : st.wt (st.s1 c) = E.M.weight (st.F E) (st.cl E (st.s1 c)) :=

@@ -90,7 +90,6 @@ theorem endpoints {M : Model} (hM : WalkAx M) {Q : Polygon} {r : CRec}
   obtain ⟨a, b, hab, hcab, hy, -⟩ := hM.ends _ hadm
   have hpA : sidePt M.W r.lp (M.param Q r.lpos) = M.pos Q r.lpos := rfl
   rw [hpA] at h1
-  obtain ⟨-, h1a, h1b⟩ := h1
   by_contra hle
   push Not at hle
   have hsub : ∀ z ∈ r.toSet M Q, z.1 = (M.pos Q r.lpos).1 := by
@@ -110,8 +109,8 @@ theorem chordSet_inj {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} (h
     {i j : ℕ} (hi : i < L.length) (hj : j < L.length) (h : chordSet M Q L i = chordSet M Q L j) :
     i = j := by
   have hnd := hL.2.1
-  have hi' : i < (L.map fun x => (recOf x).toSet M Q).length := by rw [List.length_map]; exact hi
-  have hj' : j < (L.map fun x => (recOf x).toSet M Q).length := by rw [List.length_map]; exact hj
+  have hi' : i < (L.map fun x => (recOf x).toSet M Q).length := by rwa [List.length_map]
+  have hj' : j < (L.map fun x => (recOf x).toSet M Q).length := by rwa [List.length_map]
   refine (hnd.getElem_inj_iff (hi := hi') (hj := hj')).1 ?_
   rw [List.getElem_map, List.getElem_map]
   unfold chordSet at h

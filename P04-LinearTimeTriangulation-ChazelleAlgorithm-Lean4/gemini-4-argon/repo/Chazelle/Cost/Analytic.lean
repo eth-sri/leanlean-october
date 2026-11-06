@@ -50,7 +50,6 @@ theorem sub_one_ge_of_pow_eq_two {u : ℝ} {N : ℕ} (hN : N ≠ 0) (hu0 : 0 ≤
     linarith
   by_contra hlt'
   have hlt := not_le.mp hlt'
-  have h0 : 0 ≤ u - 1 := by linarith
   have hsmall : (N : ℝ) * (u - 1) < 1 / 2 := by
     calc (N : ℝ) * (u - 1) < N * (1 / (2 * N)) := by gcongr
       _ = 1 / 2 := by field_simp
@@ -69,13 +68,12 @@ theorem two_rpow_one_div_le_two (N : ℕ) (hN : N ≠ 0) : (2 : ℝ) ^ ((1 : ℝ
   have hN1 : (1 : ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN
   calc (2 : ℝ) ^ ((1 : ℝ) / N) ≤ (2 : ℝ) ^ (1 : ℝ) :=
         Real.rpow_le_rpow_of_exponent_le (by norm_num) (by
-          rw [div_le_one (by linarith)]; exact hN1)
+          rwa [div_le_one (by linarith)])
     _ = 2 := Real.rpow_one 2
 
 /-- `n ≤ 2M · 2^(n/M)` for every natural `n` and `M ≥ 1`. -/
 theorem nat_le_two_rpow (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
     (n : ℝ) ≤ 2 * M * (2 : ℝ) ^ ((n : ℝ) / M) := by
-  have hMpos : (0 : ℝ) < M := by exact_mod_cast Nat.pos_of_ne_zero hM
   set u := (2 : ℝ) ^ ((1 : ℝ) / M) with hu_def
   have hu0 : 0 ≤ u := Real.rpow_nonneg (by norm_num) _
   have hu1 : 1 ≤ u := Real.one_le_rpow (by norm_num) (by positivity)
@@ -119,7 +117,6 @@ theorem natPow_le_two_rpow (k M : ℕ) (hM : M ≠ 0) (n : ℕ) :
 /-- Finite geometric series with ratio `2^(-1/M)`: `Σ_{g<n} 2^(-g/M) ≤ 4M`. -/
 theorem sum_two_rpow_neg_le (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
     ∑ g ∈ range n, (2 : ℝ) ^ (-(g : ℝ) / M) ≤ 4 * M := by
-  have hMpos : (0 : ℝ) < M := by exact_mod_cast Nat.pos_of_ne_zero hM
   set u := (2 : ℝ) ^ ((1 : ℝ) / M) with hu_def
   have hu0 : 0 < u := Real.rpow_pos_of_pos (by norm_num) _
   have hsub := sub_one_ge_of_pow_eq_two hM hu0.le (two_rpow_one_div_pow M hM)

@@ -56,8 +56,7 @@ theorem copyBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       h20, h22, ALLOC]
   · simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, h31, hA', h20, ALLOC]
-  · have a4' : r ≠ 9999 := a4
-    simp (disch := omega) only [Machine.upd_other]
+  · simp (disch := omega) only [Machine.upd_other]
 
 set_option maxHeartbeats 2000000 in
 theorem copyBody_step {P : Polygon} {W K CB LB : ℕ} {c₀ c : Config}
@@ -124,7 +123,7 @@ theorem copy_exec {P : Polygon} {W K CB LB A₀ : ℕ} {c₀ : Config} (hw : Wor
     (fun _ h => h.wb)
     (fun c I ht => by
       have t : c.nreg 80030 < K := by
-        rw [I.regs 80013 (by decide) (by decide) (by decide) (by decide), h13] at ht; exact ht
+        rwa [I.regs 80013 (by decide) (by decide) (by decide) (by decide), h13] at ht
       obtain ⟨c', k, e, I', hk, hi⟩ := copyBody_step (P := P) I t h20 h22 hCB hW hWK
       refine ⟨c', k, e, I', ?_, by omega, by omega⟩
       -- the frame of one step
@@ -175,8 +174,7 @@ theorem resBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hA', h20,
       ALLOC]
   · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, h20, ALLOC]
-  · have a2' : r ≠ 9999 := a2
-    simp (disch := omega) only [Machine.upd_other]
+  · simp (disch := omega) only [Machine.upd_other]
 
 /-- **The reservation loop.** -/
 theorem res_exec {P : Polygon} {W R A A₀ : ℕ} {c₀ : Config} (hw : WordsBounded W c₀)
@@ -193,7 +191,7 @@ theorem res_exec {P : Polygon} {W R A A₀ : ℕ} {c₀ : Config} (hw : WordsBou
     (fun _ h => h.wb)
     (fun c I ht => by
       have t : c.nreg 80034 < R := by
-        rw [I.regs 80014 (by decide) (by decide), h14] at ht; exact ht
+        rwa [I.regs 80014 (by decide) (by decide), h14] at ht
       have c20 : c.nreg 80020 = 1 := by rw [I.regs _ (by decide) (by decide), h20]
       obtain ⟨c', k, e, hk, qa, qj, qr, qm, qrr, qrm, qo⟩ := resBody_exec (P := P) c I.wb
         I.alloc c20 (by omega) (by omega)

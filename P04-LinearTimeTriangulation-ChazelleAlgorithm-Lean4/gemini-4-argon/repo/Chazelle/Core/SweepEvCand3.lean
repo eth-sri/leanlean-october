@@ -39,7 +39,7 @@ theorem arrival_unique {C : Chain} (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C
   obtain ⟨hτ, hdom, hwD⟩ := hg
   set w := rayPt a σ τ with hw
   have hback : ∀ s, rayPt w (-σ) s = rayPt a σ (τ - s) := fun s => rayPt_back a σ τ s
-  have hw2 : w.2 ≤ C.top.2 := by rw [hw, rayPt_snd]; exact ha
+  have hw2 : w.2 ≤ C.top.2 := by rwa [hw, rayPt_snd]
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   have hfree : FreeAt C w (-σ) := by
     filter_upwards [Ioo_mem_nhdsGT hτ] with s hs
@@ -116,9 +116,9 @@ theorem candOK_of {P : Polygon} (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hMV : SweepEv.MVal J ((pA + (chainModel J.left).W.n - b₁ J) % (chainModel J.left).W.n) hN) :
     CandOK P J S₂ a σ (mEdge J ((pA + (chainModel J.left).W.n - b₁ J) % (chainModel J.left).W.n))
       hN := by
-  set n₁ := (chainModel J.left).W.n with hn₁
+  set n₁ := (chainModel J.left).W.n
   set d := (pA + n₁ - b₁ J) % n₁ with hd
-  set t := (chainModel J.left).param (Qof P) ⟨pA, hN⟩ with ht
+  set t := (chainModel J.left).param (Qof P) ⟨pA, hN⟩
   have hb := (b₁_lt (J := J))
   have hpd : (b₁ J + d) % n₁ = pA := by
     rw [hd, Nat.add_mod_mod, show b₁ J + (pA + n₁ - b₁ J) = pA + n₁ by omega, Nat.add_mod_right,
@@ -129,7 +129,6 @@ theorem candOK_of {P : Polygon} (hP : J.P.Simple) {S₂ : Set (Set Point)}
     ⟨h1, h2, fun h => h3 ⟨h.1, h.2.1, fun h0 => h.2.2 (hnorm.1 h0)⟩⟩
   rw [← hpd] at hA
   obtain ⟨hfree, hhit, hmem, hS, hpt, hO⟩ := cand_sound hP hS₂ hS₂f hc ha haR hav ha₁ hg hlt hMV' hA
-  have hσ : σ = 1 ∨ σ = -1 := by rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
   obtain ⟨-, ha₂, -, hR, -, -⟩ := right_hit_end (hS₂ hc) ha
   have hpar : (chainModel J.whole).param (Qof P) ⟨mEdge J d, hN⟩ = t := by
     rcases hpp.1.lt_or_eq with htp | ht0
@@ -155,7 +154,7 @@ theorem candOK_of {P : Polygon} (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have hRR : J.whole.radius = J.right.radius := rfl
     rw [hRR]
     exact lt_of_le_of_lt (J.right.abs_le_coordBound_of_mem_set haR).2 J.right.coordBound_lt_radius
-  · rw [hhit, hR]; exact hlt
+  · rwa [hhit, hR]
 
 /-- **The `C₁` part is read within one turn of the walk of `C₁`.** -/
 theorem E₁_le (hP : J.P.Simple) : E₁ J ≤ (chainModel J.left).W.n := by

@@ -206,8 +206,7 @@ theorem dropE_perm (hperm : E.Perm (List.range (2 * L.length))) :
     unfold dropE
     rw [List.length_map, (hperm.filter _).length_eq]
     have := count_codes (keepX li n) (L := L) (0, 0, 0) (le_refl L.length)
-    rw [rankF_length] at this
-    exact this
+    rwa [rankF_length] at this
   exact (hnd'.subperm hsub).perm_of_length_le (by rw [hlen, List.length_range])
 
 /-- **The kept triples are valid.** -/

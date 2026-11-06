@@ -43,7 +43,7 @@ theorem flagS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   set Am : ℕ → Prop := fun a => g.base 48 ≤ a ∧ a < g.base 48 + g.μ with hAm
   unfold flagS
   have e1 := Exec.constN (P := P) hw 130890 0 (by omega)
-  set c1 := { c with nreg := upd c.nreg 130890 0 } with hc1
+  set c1 := { c with nreg := upd c.nreg 130890 0 }
   have f1 : PFr FlRG Am c c1 :=
     ⟨fun r hr => by simp only [c1, Machine.upd_other _ _ _ (show r ≠ 130890 by
         unfold FlRG at hr; omega)], rfl, rfl, rfl, fun a _ => rfl⟩
@@ -77,8 +77,8 @@ theorem flagS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
             fun r hr => ?_, rfl, rfl, rfl, rfl⟩
           simp only; unfold FlRG at hr
           repeat (rw [Machine.upd_other _ _ _ (by omega)])
-      have r1' : c4.nreg 130001 = 1 := by rw [h4r _ (by unfold FlRG; omega)]; exact r1
-      have r78' : c4.nreg 130078 = g.base 48 := by rw [h4r _ (by unfold FlRG; omega)]; exact r78
+      have r1' : c4.nreg 130001 = 1 := by rwa [h4r _ (by unfold FlRG; omega)]
+      have r78' : c4.nreg 130078 = g.base 48 := by rwa [h4r _ (by unfold FlRG; omega)]
       obtain ⟨c5, k5, e5, hk5, hw5, h5r, h590, hm5, hrr5, hrm5, ho5⟩ : ∃ c5 k5, Exec P W
           (.ifLtN 130893 130001 .skip (block [.addN 130891 130078 130890, .storeN 130891 130001]))
           c4 c5 k5 ∧ k5 ≤ 4 ∧ WordsBounded W c5 ∧ (∀ r, ¬ FlRG r → c5.nreg r = c4.nreg r) ∧
@@ -109,7 +109,7 @@ theorem flagS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       · simp only [Machine.upd_same]
         rw [h590, h5r _ (by unfold FlRG; omega), r1']
       · simp only [Machine.upd_other _ _ _ (show (130011 : ℕ) ≠ 130890 by omega)]
-        rw [h5r _ (by unfold FlRG; omega), h4r _ (by unfold FlRG; omega)]; exact hn3
+        rwa [h5r _ (by unfold FlRG; omega), h4r _ (by unfold FlRG; omega)]
       · refine hf3.trans ⟨fun r hr => ?_, by simp only; rw [hrr5, hrr4],
           by simp only; rw [hrm5, hrm4], by simp only; rw [ho5, ho4], fun a ha => ?_⟩
         · simp only

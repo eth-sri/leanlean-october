@@ -44,7 +44,7 @@ theorem orgHt_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO 
   obtain ⟨-, k1, -, -, -, -, -⟩ := hK
   have hG := hctx.1
   have hPW : P.n + 3 ≤ W := by have := hctx.2.1; unfold hostWords at this; omega
-  set a := (chainModel J.right).pos (Qof P) ⟨c.nreg oE, c.nreg oC⟩ with ha
+  set a := (chainModel J.right).pos (Qof P) ⟨c.nreg oE, c.nreg oC⟩
   refine IRS.seq (K₁ := 31006) (K₂ := 294)
     (callSym_irs (P := P) (C := J.right) hI hctx (by unfold oE oC sw; omega)
       (by unfold oSym sw; omega) h6 he hpp hnorm (by omega)) ?_ |>.mono (by norm_num) (fun _ h => h)
@@ -105,7 +105,7 @@ theorem orgHt_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO 
       exact k₁ r hr h1 hra
     · have h3 : c₂.nreg ALLOC = c₁.nreg ALLOC := hfr ALLOC (by
         simp [Bkb, WalkKey.Bk, ALLOC, oHb])
-      rw [upd_other _ _ _ (by unfold ALLOC oCl sw; omega), h3]; exact hA₁''
+      rwa [upd_other _ _ _ (by unfold ALLOC oCl sw; omega), h3]
     · rw [f₂.2.2.1, hm₁ x hx]
   by_cases hb : c₂.nreg oHb < c₂.nreg K1
   · refine (IRS.ifT hb (hfinal 1 le_rfl ?_)).mono (by norm_num) (fun _ h => h)
@@ -223,11 +223,11 @@ theorem orgCls_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
   have m2 := hO.m2
   have mtop := hO.top
   have m26 := hO.m26
-  set e := c.nreg oE with hedef
-  set a := (chainModel J.right).pos (Qof P) ⟨c.nreg oE, c.nreg oC⟩ with ha
+  set e := c.nreg oE
+  set a := (chainModel J.right).pos (Qof P) ⟨c.nreg oE, c.nreg oC⟩
   have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
   have hmemiff := pos_mem_set_iff J.right hP (Q := Qof P) (x := ⟨c.nreg oE, c.nreg oC⟩)
-    (by show e < _; rw [hn₂]; exact he) hpp.1 hpp.2.1 hnorm
+    (by show e < _; rwa [hn₂]) hpp.1 hpp.2.1 hnorm
   simp only at hmemiff
   have hvzero : J.shared = J.right.vertex 0 := (Merge.Junction.right_vertex_zero J).symm
   have htop : J.right.top = J.right.vertex J.right.topIdx := rfl
@@ -274,32 +274,30 @@ theorem orgCls_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
       have hctx₁ : ChainCtx P W c₁ (sw 21) J.right :=
         hctx.transport (kk (sw 21) (by unfold oT oU sw; omega) (by unfold oJ sw; omega))
           (fun x _ => by rw [hm₁]) hA₁
-      refine (cls_ht hI₁ (hK₀.fix hI₁) (hO₀.fix hI₁) hctx₁ (by rw [kE₁]; exact h6)
-          (by rw [kE₁]; exact h2m hne) (by rw [kE₁, kC₁]; exact hpp) (by rw [kE₁, kC₁]; exact hnorm)
+      refine (cls_ht hI₁ (hK₀.fix hI₁) (hO₀.fix hI₁) hctx₁ (by rwa [kE₁])
+          (by rw [kE₁]; exact h2m hne) (by rwa [kE₁, kC₁]) (by rwa [kE₁, kC₁])
           (by rw [kE₁, kC₁]) hamem hav0 (fun h => hne (ht_iff.1 h)) (by omega) le_rfl).mono le_rfl
           (fun c' h => lift c' h)
     by_cases hj0 : c₁.nreg oJ < c₁.nreg K1
     · rw [vJ, k1₁] at hj0
-      refine IRS.ifT (K := 31384) (by rw [vJ, k1₁]; exact hj0) ?_ |>.mono (by norm_num)
+      refine IRS.ifT (K := 31384) (by rwa [vJ, k1₁]) ?_ |>.mono (by norm_num)
         (fun c' h => lift c' h)
       refine cls_const (v := 0) hI₁ hW2 (by norm_num) ⟨fun h => by norm_num at h, fun h => absurd hamem h⟩
         ⟨fun h => by norm_num at h, fun h => absurd (hv_iff.2 (by omega)) h.2.1⟩ (by norm_num)
         (by norm_num)
-    · have hj0' : ¬ idx < 1 := by rw [vJ, k1₁] at hj0; exact hj0
+    · have hj0' : ¬ idx < 1 := by rwa [vJ, k1₁] at hj0
       have hav0 : a ≠ J.shared := fun h => hj0' (by rw [hv_iff.1 h]; norm_num)
       refine IRS.ifF (K := 31384) hj0 ?_ |>.mono (by norm_num) (fun _ h => h)
       by_cases hlt : c₁.nreg oJ < c₁.nreg cTop
       · rw [vJ, kt₁] at hlt
-        exact (IRS.ifT (by rw [vJ, kt₁]; exact hlt) (hht (by omega) hav0)).mono (by norm_num)
+        exact (IRS.ifT (by rwa [vJ, kt₁]) (hht (by omega) hav0)).mono (by norm_num)
           (fun _ h => h)
-      · have hlt' : ¬ idx < J.right.topIdx := by rw [vJ, kt₁] at hlt; exact hlt
-        refine IRS.ifF (K := 31382) hlt ?_ |>.mono (by norm_num) (fun _ h => h)
+      · refine IRS.ifF (K := 31382) hlt ?_ |>.mono (by norm_num) (fun _ h => h)
         by_cases hgt : c₁.nreg cTop < c₁.nreg oJ
         · rw [vJ, kt₁] at hgt
-          exact (IRS.ifT (by rw [vJ, kt₁]; exact hgt) (hht (by omega) hav0)).mono (by norm_num)
+          exact (IRS.ifT (by rwa [vJ, kt₁]) (hht (by omega) hav0)).mono (by norm_num)
             (fun _ h => h)
-        · have hgt' : ¬ J.right.topIdx < idx := by rw [vJ, kt₁] at hgt; exact hgt
-          have heq : idx = J.right.topIdx := by omega
+        · have heq : idx = J.right.topIdx := by omega
           refine (IRS.ifF hgt (cls_const (v := 0) (K := 1) hI₁ hW2 (by norm_num)
             ⟨fun h => by norm_num at h, fun h => absurd hamem h⟩
             ⟨fun h => by norm_num at h, fun h => absurd (ht_iff.2 heq) h.2.2.1⟩ (by norm_num)
@@ -307,17 +305,17 @@ theorem orgCls_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
   by_cases h6 : c.nreg oE < c.nreg K6
   · rw [k6] at h6
     have hna : a ∉ J.right.set := by rw [hmemiff]; omega
-    exact (IRS.ifT (by rw [k6]; exact h6) (cls_const hI hW2 (v := 2) (K := 1) (by norm_num)
+    exact (IRS.ifT (by rwa [k6]) (cls_const hI hW2 (v := 2) (K := 1) (by norm_num)
       ⟨fun _ => hna, fun _ => rfl⟩ ⟨fun h => by norm_num at h, fun h => absurd h.1 hna⟩
       (by norm_num) (by norm_num))).mono (by norm_num) (fun _ h => h)
-  · have h6' : ¬ e < 6 := by rw [k6] at h6; exact h6
+  · have h6' : ¬ e < 6 := by rwa [k6] at h6
     refine IRS.ifF (K := 31408) h6 ?_ |>.mono (by norm_num) (fun _ h => h)
     by_cases h26 : c.nreg oE < c.nreg c2m6
-    · have h26' : e < 2 * J.right.m + 6 := by rw [m26] at h26; exact h26
+    · have h26' : e < 2 * J.right.m + 6 := by rwa [m26] at h26
       refine IRS.ifT (K := 31406) h26 ?_ |>.mono (by norm_num) (fun _ h => h)
       by_cases h0 : c.nreg oC < c.nreg K1
       · rw [k1] at h0
-        exact (IRS.ifT (by rw [k1]; exact h0) (hvtx (by omega) (by omega) (by omega))).mono
+        exact (IRS.ifT (by rwa [k1]) (hvtx (by omega) (by omega) (by omega))).mono
           (by norm_num) (fun _ h => h)
       · have h0' : c.nreg oC ≠ 0 := by rw [k1] at h0; omega
         have hpar : 0 < (chainModel J.right).param (Qof P) ⟨c.nreg oE, c.nreg oC⟩ :=
@@ -333,7 +331,7 @@ theorem orgCls_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
       by_cases hc : c.nreg K0 < c.nreg oC
       · rw [k0] at hc
         have hna : a ∉ J.right.set := by rw [hmemiff]; omega
-        exact (IRS.ifT (by rw [k0]; exact hc) (cls_const hI hW2 (v := 2) (K := 1) (by norm_num)
+        exact (IRS.ifT (by rwa [k0]) (cls_const hI hW2 (v := 2) (K := 1) (by norm_num)
           ⟨fun _ => hna, fun _ => rfl⟩ ⟨fun h => by norm_num at h, fun h => absurd h.1 hna⟩
           (by norm_num) (by norm_num))).mono (by norm_num) (fun _ h => h)
       · have hc' : c.nreg oC = 0 := by rw [k0] at hc; omega

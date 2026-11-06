@@ -29,11 +29,11 @@ theorem chordListAt_of_seg {m m' : ℕ → ℕ} {B A : ℕ} {L : List (ℕ × �
     exact this
   obtain ⟨h1, h2, h3⟩ := h i hi
   refine ⟨?_, ?_, ?_⟩
-  · rw [e (3 * i) (by omega)]; exact h1
-  · rw [show A + 3 * i + 1 = A + (3 * i + 1) by ring, e _ (by omega),
-      show B + (3 * i + 1) = B + 3 * i + 1 by ring]; exact h2
-  · rw [show A + 3 * i + 2 = A + (3 * i + 2) by ring, e _ (by omega),
-      show B + (3 * i + 2) = B + 3 * i + 2 by ring]; exact h3
+  · rwa [e (3 * i) (by omega)]
+  · rwa [show A + 3 * i + 1 = A + (3 * i + 1) by ring, e _ (by omega),
+      show B + (3 * i + 1) = B + 3 * i + 1 by ring]
+  · rwa [show A + 3 * i + 2 = A + (3 * i + 2) by ring, e _ (by omega),
+      show B + (3 * i + 2) = B + 3 * i + 2 by ring]
 
 /-- A chord list is the concatenation of its two parts. -/
 theorem chordListAt_append {m : ℕ → ℕ} {A : ℕ} {L L₂ : List (ℕ × ℕ × ℕ)}
@@ -87,11 +87,11 @@ theorem splA_exec (c : Config) (hw : WordsBounded W c) {B K B₂ K₂ : ℕ}
     ∃ c' k, Exec P W (.seq spl0 (.seq cpS (.seq spl1 cpS))) c c' k ∧
       k ≤ 21 * (K + K₂) + 30 ∧ WordsBounded W c' ∧
       c'.nreg 210025 = K + K₂ ∧ c'.nreg 210026 = c.nreg ALLOC ∧ c'.nreg 210027 = 2 * K ∧
-      c'.nreg 210028 = 2 * K₂ ∧ c'.nreg 210029 = 2 * (K + K₂) ∧ c'.nreg 210034 = 1 ∧
+      c'.nreg 210028 = 2 * K₂ ∧ c'.nreg 210029 = 2 * (K + K₂) ∧
       c'.nreg ALLOC = c.nreg ALLOC + 3 * (K + K₂) ∧
       ChordListAt c'.nmem (c.nreg ALLOC) (L ++ L₂) ∧
       (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧ FrameM BsA c c' ∧ c'.rreg = c.rreg := by
-  set A₀ := c.nreg ALLOC with hA₀
+  set A₀ := c.nreg ALLOC
   -- sizes and the first copy's arguments
   obtain ⟨c₁, k₁, e₁, hk₁, v25, v26, v27, v28, v29, v34, vA, v67, v61, v62, v63, hm₁⟩ :
       ∃ c₁ k₁, Exec P W spl0 c c₁ k₁ ∧ k₁ = 14 ∧ c₁.nreg 210025 = K + K₂ ∧ c₁.nreg 210026 = A₀ ∧
@@ -131,10 +131,10 @@ theorem splA_exec (c : Config) (hw : WordsBounded W c) {B K B₂ K₂ : ℕ}
   have k : ∀ r, Bcp r = false → Bs1 r = false → c₄.nreg r = c₁.nreg r := fun r h1 h2 => by
     rw [g₄ r h1, g₃ r h2, g₂ r h1]
   refine ⟨c₄, k₁ + (k₂ + (k₃ + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, w₄,
-    by rw [k _ (by decide) (by decide)]; exact v25, by rw [k _ (by decide) (by decide)]; exact v26,
-    by rw [k _ (by decide) (by decide)]; exact v27, by rw [k _ (by decide) (by decide)]; exact v28,
-    by rw [k _ (by decide) (by decide)]; exact v29, by rw [k _ (by decide) (by decide)]; exact v34,
-    by rw [k _ (by decide) (by decide)]; exact vA, ?_, fun a ha => ?_,
+    by rwa [k _ (by decide) (by decide)], by rwa [k _ (by decide) (by decide)],
+    by rwa [k _ (by decide) (by decide)], by rwa [k _ (by decide) (by decide)],
+    by rwa [k _ (by decide) (by decide)],
+    by rwa [k _ (by decide) (by decide)], ?_, fun a ha => ?_,
     ((f₁.trans (FrameM.of_cp f₂)).trans (FrameM.of_s1 f₃)).trans (FrameM.of_cp f₄), ?_⟩
   · refine chordListAt_append (chordListAt_of_seg hL ?_) (chordListAt_of_seg hL₂ ?_)
     · rw [← hK]

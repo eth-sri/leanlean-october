@@ -113,7 +113,7 @@ theorem seg_cases {s : Point × Point} (hs : s ∈ segs C) {p : Point} (hp : p �
   · left
     refine ⟨⟨k, hk, ?_⟩, k, hk, rfl⟩
     rw [seg_ord] at hp
-    rw [C.chainEdge_eq]; exact hp
+    rwa [C.chainEdge_eq]
   · simp only [mem_insert_iff, mem_singleton_iff] at hs
     rcases hs with rfl | rfl | rfl
     · exact Or.inr (Or.inl ⟨rfl, hp⟩)
@@ -138,7 +138,7 @@ theorem dom_eq : dom C.radius (segs C) = C.dom := by
     · have := hbox.1; rw [h, abs_of_pos C.radius_pos] at this; exact absurd this (lt_irrefl _)
   · rcases hp with ⟨k, hk, hpk⟩ | hp
     · refine seg_subset_obs (Or.inl ⟨k, hk, rfl⟩) ?_
-      rw [seg_ord, ← C.chainEdge_eq]; exact hpk
+      rwa [seg_ord, ← C.chainEdge_eq]
     · exact seg_subset_obs (s := slitSeg C) (Or.inr (by simp)) hp
 
 /-- The vertices within the height range of the box are chain vertices. -/
@@ -216,8 +216,8 @@ theorem good (hP : C.P.Simple) (hDH : DistinctHeights C.P) : Good C.radius (segs
       have hidx : C.edgeIdx k ≠ C.edgeIdx j := fun h => hkj (C.edgeIdx_inj hk hj h)
       have hmem : p ∈ C.P.edge (C.edgeIdx k) ∩ C.P.edge (C.edgeIdx j) := by
         refine ⟨?_, ?_⟩
-        · have := hp; rw [seg_ord, ← C.chainEdge_eq] at this; exact this
-        · have := hp'; rw [seg_ord, ← C.chainEdge_eq] at this; exact this
+        · have := hp; rwa [seg_ord, ← C.chainEdge_eq] at this
+        · have := hp'; rwa [seg_ord, ← C.chainEdge_eq] at this
       rw [hP.2.2 _ _ (C.edgeIdx_lt k) (C.edgeIdx_lt j) hidx] at hmem
       obtain ⟨h | h, -⟩ := hmem
       · rw [h]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).1⟩
@@ -249,7 +249,7 @@ theorem fullAt {G : Set (Set Point)} (hG : C.chords ⊆ G) : FullAt C.radius (se
   intro v hv hvR z hz hzv hbet
   obtain ⟨j, hj, rfl⟩ := vert_eq_vertex hv hvR
   rw [dom_eq] at hz hbet
-  set v := C.vertex j with hvdef
+  set v := C.vertex j
   have hvbox : v ∈ box C.radius := C.set_subset_box (C.vertex_mem_set hj)
   have hzv1 : z.1 ≠ v.1 := fun e => C.not_mem_set_of_mem_dom hz (by
     rw [show z = v from point_ext e hzv]; exact C.vertex_mem_set hj)
@@ -287,12 +287,12 @@ theorem fullDegLe_chain {C : Chain} (hP : C.P.Simple) (hDH : DistinctHeights C.P
   show {c | c ∈ C.chords ∪ F ∧ TouchesIn C.dom c U}.ncard ≤ 4
   rw [← hdom]
   refine SegObs.deg_le_four (ChainObs.good hP hDH) (G := C.chords ∪ F) ?_
-    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rw [hdom]; exact hU)
+    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rwa [hdom])
   rintro c (hc | hc)
   · obtain ⟨k, σ, -, -, -, rfl, hh⟩ := C.chords_spec hc
-    exact ⟨_, _, _, by rw [hdom]; exact hh, C.chordSet_eq_hseg k σ⟩
+    exact ⟨_, _, _, by rwa [hdom], C.chordSet_eq_hseg k σ⟩
   · obtain ⟨y, a, b, hh, -, rfl⟩ := hF.2.1 hc
-    exact ⟨y, a, b, by rw [hdom]; exact hh, rfl⟩
+    exact ⟨y, a, b, by rwa [hdom], rfl⟩
 
 /-- **WP-B: `FullDegSpec`** — the full augmented maps of every chain model of the geometry
 polygon and of its interior model have degree at most `4`. -/
@@ -301,7 +301,7 @@ theorem fullDegSpec : FullDegSpec := by
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hP
   have hDH : DistinctHeights (Qof P) := (goodShear_epsOf hε).2.1
   refine ⟨fun C hC => ?_, fullDeg_interior P hP hε⟩
-  exact fullDegLe_chain (by rw [hC]; exact hQ) (by rw [hC]; exact hDH) (Qof P)
+  exact fullDegLe_chain (by rwa [hC]) (by rwa [hC]) (Qof P)
 
 end
 

@@ -86,20 +86,6 @@ theorem wr_cntS : wr Bsc cntS = true := by
   simp only [cntS, wr, block, wrOK, h, Bool.and_true, Bool.true_and]
   decide
 
-theorem wr_scBody : wr Bsc scBody = true := by
-  have h : wr Bsc lookStmt = true := SweepPrim.wr_mono wr_lookStmt (fun r hr => by
-    simp only [Bhost, Bool.or_eq_true, decide_eq_true_eq] at hr
-    simp only [Bsc, Bool.or_eq_true, decide_eq_true_eq]; omega)
-  have hk : wr Bsc (SweepPrim.kbit 218040 218043 218040 1 218046) = true :=
-    SweepPrim.wr_mono (SweepPrim.wr_kbit _ _ _ _ _) (fun r hr => by
-      simp only [SweepPrim.Bkb, Bool.or_eq_true, beq_iff_eq] at hr
-      simp only [Bsc, Bool.or_eq_true, decide_eq_true_eq]
-      rcases hr with hr | hr
-      · exact Or.inl (Or.inr hr)
-      · subst hr; right; omega)
-  simp only [scBody, scTake, wr, block, wrOK, h, hk, Bool.and_true, Bool.true_and]
-  decide
-
 theorem wr_scanS' : wr Bscan scanS = true := by
   have hk : wr Bscan (SweepPrim.kbit 218040 218043 218040 1 218046) = true :=
     SweepPrim.wr_mono (SweepPrim.wr_kbit _ _ _ _ _) (fun r hr => by
@@ -132,7 +118,7 @@ theorem cntS_exec (c : Config) (hw : WordsBounded W c) {H : Host}
     exec_block
     exact ⟨rfl, by config_simp, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, n₂, E₂⟩ := cnt_exec (P := P) (n := P.n) c₁ e₁.wb_right
-    (by rw [m₁]; exact hH) h60 haW hN
+    (by rwa [m₁]) h60 haW hN
   have w₂ := e₂.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, v12, v20, v21, v22, E₃⟩ : ∃ c₃ k₃, Exec P W
       (block [.copyN 218012 50063, .constN 218020 0, .constN 218021 1, .constN 218022 65])
@@ -211,7 +197,7 @@ theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W 
     (hsm : s + m + 1 ≤ (H.pts P.n).length) (c : Config) (hI : ScI P W H m₀ HB s m c)
     (hlt : c.nreg 218031 < c.nreg 218032) :
     ∃ c' k, Exec P W scBody c c' k ∧ ScI P W H m₀ HB s m c' ∧ k ≤ 1990 ∧
-      m + 1 - c'.nreg 218031 < m + 1 - c.nreg 218031 ∧ FrameB Bsc c c' := by
+      m + 1 - c'.nreg 218031 < m + 1 - c.nreg 218031 := by
   have hw := hI.env.wb
   have hk := hI.km
   rw [hI.r32] at hlt
@@ -280,11 +266,11 @@ theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W 
     rw [k₄' _ (by norm_num) (by norm_num), k₃' _ (by norm_num) (by norm_num) (by norm_num)
       (by norm_num)]; exact hI.r21
   have c431 : c₄.nreg 218031 = k := by
-    rw [k₄' _ (by norm_num) (by norm_num), k₃' _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num)]; exact hkdef
+    rwa [k₄' _ (by norm_num) (by norm_num), k₃' _ (by norm_num) (by norm_num) (by norm_num)
+      (by norm_num)]
   have c430 : c₄.nreg 218030 = b := by
-    rw [k₄' _ (by norm_num) (by norm_num), k₃' _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num)]; exact hbdef
+    rwa [k₄' _ (by norm_num) (by norm_num), k₃' _ (by norm_num) (by norm_num) (by norm_num)
+      (by norm_num)]
   have sk₄ : SymPtIn c₄ 218043 (pt H P.n (s + k)) := symPtIn_copy s₃
     (k₄' _ (by norm_num) (by norm_num)) (k₄' _ (by norm_num) (by norm_num))
     (k₄' _ (by norm_num) (by norm_num))
@@ -384,7 +370,7 @@ theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W 
         · exact (hlt' j h).trans hy
         · exact lt_of_le_of_lt (hle j hj) hy
       · exact hlt' j hj
-  refine ⟨c₆, _, ex, I₆, by omega, by rw [v31, hkdef]; omega, exec_frameB ex wr_scBody⟩
+  refine ⟨c₆, _, ex, I₆, by omega, by rw [v31, hkdef]; omega⟩
 
 /-- **The scan**: `218013 := T ≤ m`, the least offset of a highest point among the host points
 `s, …, s + m`. -/
@@ -436,12 +422,11 @@ theorem scanS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
           (by config_simp))
       | (intro j hj; rw [show j = 0 by omega])
       | (intro j hj; omega)
-  have w₃ := e₃.wb_right
   -- the loop
   obtain ⟨c₄, k₄, e₄, I₄, hx₄, hk₄⟩ := Exec.whileLtN_bounded (P := P) (W := W) (a := 218031)
     (b := 218032) (body := scBody) (ScI P W H m₀ HB s m) (fun d => m + 1 - d.nreg 218031) 1990
     (fun d hd => hd.env.wb) (fun d hd ht => by
-      obtain ⟨d', k, e, I', hk, hμ, -⟩ := scBody_exec E hsm d hd ht
+      obtain ⟨d', k, e, I', hk, hμ⟩ := scBody_exec E hsm d hd ht
       exact ⟨d', k, e, I', hk, hμ⟩) I₃
   have hk₄' : k₄ ≤ 1992 * m + 2 := by
     have := I₃.k1

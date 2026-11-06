@@ -80,7 +80,7 @@ theorem sub_keyCeil : keyCeil ee ((interiorModel Q).param Q ⟨(u + ee) % Q.n, e
   unfold keyCeil
   rcases h.hee with ⟨h0, h1⟩ | ⟨h0, h1, h2⟩
   · rw [ite_eq_left (by rw [h0]; rfl)]; exact h1
-  · rw [ite_eq_right h2.ne']; exact h1
+  · rwa [ite_eq_right h2.ne']
 
 include h in
 /-- **The chain arc of a subarc, no split.** -/
@@ -92,7 +92,7 @@ theorem chainArcs_one (hs : tau Q u L h.h1 h.h2 ≤ L) {γ : ℕ} (hγ : L ≤ �
   have hu := h.hu
   have h1 := h.h1
   have h2 := h.h2
-  set τ := tau Q u L h.h1 h.h2 with hτ
+  set τ := tau Q u L h.h1 h.h2
   have ht : τ < 2 * L := tau_lt
   have hn : (MC Q u L h.h1 h.h2).W.n = 2 * L + 7 := cm_n'
   have hee := sub_ee_le h
@@ -138,8 +138,8 @@ theorem chainArcs_two (hs : L < tau Q u L h.h1 h.h2) {γ : ℕ} (hγ : L ≤ γ)
   have hu := h.hu
   have h1 := h.h1
   have h2 := h.h2
-  set τ := tau Q u L h.h1 h.h2 with hτ
-  set L₁ := 2 * L - τ with hL₁
+  set τ := tau Q u L h.h1 h.h2
+  set L₁ := 2 * L - τ
   have ht : τ < 2 * L := tau_lt
   have hn : (MC Q u L h.h1 h.h2).W.n = 2 * L + 7 := cm_n'
   have hee := sub_ee_le h
@@ -207,8 +207,7 @@ theorem chainArcs_two (hs : L < tau Q u L h.h1 h.h2) {γ : ℕ} (hγ : L ≤ γ)
                         (f := (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩)
                     omega, by rw [hn]; omega⟩)
       rw [hn, Nat.mod_eq_of_lt (show 6 + (ee - L₁) < 2 * L + 7 by omega)] at hw
-      rw [key_eq, key_eq, hpe, param_zero, show ((6 : ℕ) : ℝ) + 0 = ((6 : ℕ) : ℝ) + 0 from rfl]
-      rw [hw]
+      rw [key_eq, key_eq, hpe, param_zero, show ((6 : ℕ) : ℝ) + 0 = ((6 : ℕ) : ℝ) + 0 from rfl, hw]
       have := keyCeil_le_succ (e := ee - L₁) (f := (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩)
       have hk2 : keyCeil (ee - L₁) ((interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩) ≤ L := by
         unfold keyCeil at hk ⊢

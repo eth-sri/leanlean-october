@@ -63,7 +63,7 @@ theorem xeGlue : XEGlue := by
   have hn3 : 3 ≤ (Qof P).n := by have := hQ.1; omega
   have hWn : 256 * P.n + 16 ≤ W := hWh
   have hli : decide (c.nreg 217002 = 1) = true ↔ Mountain.LeftInside (Qof P) := by
-    rw [decide_eq_true_iff]; exact hbit
+    rwa [decide_eq_true_iff]
   obtain ⟨-, -, -, reg, hRC, hCS, hAO, hRO, -⟩ := DownMath.isNF_build hQ hok hperm hsort
   have X : XHyp P (decide (c.nreg 217002 = 1)) L E reg (c.nreg 217001) C NR :=
     ⟨hG, hli, hLne, hok, hperm, hsort, ⟨hRC, hCS, hAO, hRO⟩, hr, hCP, hCs, hCm, hNR⟩
@@ -115,7 +115,7 @@ theorem xeGlue : XEGlue := by
   have hA1 : 1 ≤ (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length := by
     have := hras 0 (by omega); omega
   have hAB := b3 _ (show (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length - 1 < _ by omega)
-  refine ⟨⟨hG, hli, hdh, by omega, by rw [hn]; exact hWn, rfl, by show _ + 5 * NR.chords.length ≤ W; omega,
+  refine ⟨⟨hG, hli, hdh, by omega, by rwa [hn], rfl, by show _ + 5 * NR.chords.length ≤ W; omega,
     fun mm hmm => hHost mm hmm, hwf, hlen64, hHB, hm1, hmp, C.topIdx_le, ?_, ?_, ?_, rfl,
     fun j hj => hgood j hj, hinc, hnext, hfree, ?_, ?_, fun t ht => hras t ht, ?_, ?_, ?_, ?_, ?_,
     rfl, rfl⟩, ?_⟩
@@ -139,9 +139,8 @@ theorem xeGlue : XEGlue := by
   · -- the arc list of the region
     intro mm hmm t ht
     have h := ((hNW mm hmm).2.2.2.2.2.2.2.1 _ hr').2.2.2.1 t ht
-    rw [hmm (c.nreg 217000 + 5) (by omega), hmm (c.nreg 217000 + 7) (by omega),
+    rwa [hmm (c.nreg 217000 + 5) (by omega), hmm (c.nreg 217000 + 7) (by omega),
       hmm (c.nmem (c.nreg 217000 + 5) + 5 * c.nreg 217001 + 1) (by omega)] at h
-    exact h
   · intro j hj; exact b3 j hj
   · show (c.nmem (c.nreg 217000 + 7) + c.nmem (c.nmem (c.nreg 217000 + 5) + 5 * c.nreg 217001 + 1)) + ((buildNF (interiorModel (Qof P)) (Qof P) L E).region (c.nreg 217001)).arcs.length ≤ c.nreg ALLOC; omega
   · show ((buildNF (interiorModel (Qof P)) (Qof P) L E).region (c.nreg 217001)).arcs.length ≤ 32; omega

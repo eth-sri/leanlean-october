@@ -73,7 +73,7 @@ theorem AbsRecW.copy {P : Polygon} {c c' : Config} {r r' : ℕ} {x R : ℝ} (h :
     have e2 : r + 1 + 1 = r + 2 := by omega
     have e3 : r' + 1 + 2 = r' + 3 := by omega
     have e4 : r + 1 + 2 = r + 3 := by omega
-    exact NFLoc.symPtIn_copy hs h1 (by rw [e1, e2]; exact h2) (by rw [e3, e4]; exact h3)
+    exact NFLoc.symPtIn_copy hs h1 (by rwa [e1, e2]) (by rwa [e3, e4])
 
 /-! ## Abscissae -/
 
@@ -190,8 +190,8 @@ theorem HRecS.copy {c c' : Config} {r r' : ℕ} {y R : ℝ} (h : HRecS P c r y R
   rcases h with ⟨k, hy⟩ | ⟨k, hy⟩ | ⟨k, hy, hz, hl, he⟩
   · exact Or.inl ⟨h0.trans k, hy⟩
   · exact Or.inr (Or.inl ⟨h0.trans k, hy⟩)
-  · exact Or.inr (Or.inr ⟨h0.trans k, hy, by rw [h1]; exact hz, by rw [h2]; exact hl,
-      by rw [h2]; exact he⟩)
+  · exact Or.inr (Or.inr ⟨h0.trans k, hy, by rwa [h1], by rwa [h2],
+      by rwa [h2]⟩)
 
 /-- **The bit `y_a < y_b`.** -/
 def hLess (a b dst : ℕ) : Stmt :=
@@ -279,7 +279,6 @@ theorem hEq_exec (hG : GoodEnv P) (hW : 1 ≤ W) (c : Config) (hw : WordsBounded
     (hB : HRecS P c b yb R) :
     ∃ c' k, Exec P W (hEq a b dst) c c' k ∧ k ≤ 20 ∧ BitIs c' dst (ya = yb) ∧
       c' = { c with nreg := upd c.nreg dst (c'.nreg dst) } := by
-  have kA := hA.kind
   have kB := hB.kind
   have hD := distinct_Qof hG
   have hQn : (Qof P).n = P.n := shear_n _ _
@@ -294,8 +293,8 @@ theorem hEq_exec (hG : GoodEnv P) (hW : 1 ≤ W) (c : Config) (hw : WordsBounded
       first | omega | skip
     all_goals first
       | (rw [hya, hyb] at he; linarith)
-      | (rw [hya] at he; rw [← he] at hyb; rw [abs_lt] at hyb; linarith [hyb.1, hyb.2])
-      | (rw [hyb] at he; rw [he] at hya; rw [abs_lt] at hya; linarith [hya.1, hya.2])
+      | (rw [hya] at he; rw [← he, abs_lt] at hyb; linarith [hyb.1, hyb.2])
+      | (rw [hyb] at he; rw [he, abs_lt] at hya; linarith [hya.1, hya.2])
   by_cases t1 : c.nreg a < c.nreg b
   · obtain ⟨c₂, e, bt, h⟩ := fin 0 (by norm_num) ⟨fun h => absurd h (by norm_num),
       fun h => absurd h (kdiff (by omega))⟩
@@ -331,7 +330,7 @@ theorem hEq_exec (hG : GoodEnv P) (hW : 1 ≤ W) (c : Config) (hw : WordsBounded
     constructor
     · intro he
       by_contra hne
-      exact hD _ _ (by rw [hQn]; exact la) (by rw [hQn]; exact lb) hne he
+      exact hD _ _ (by rwa [hQn]) (by rwa [hQn]) hne he
     · intro he; rw [he]
   by_cases t5 : c.nreg (a + 2) < c.nreg (b + 2)
   · obtain ⟨c₂, e, bt, h⟩ := fin 0 (by norm_num) ⟨fun h => absurd h (by norm_num),

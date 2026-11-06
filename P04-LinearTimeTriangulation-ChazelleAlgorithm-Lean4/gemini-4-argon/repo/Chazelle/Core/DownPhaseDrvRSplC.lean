@@ -49,7 +49,6 @@ theorem splB1_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounded W
       c'.nreg ALLOC = c.nreg ALLOC + 10 * (K + K₂) ∧
       RecsAt c'.nmem (c.nreg ALLOC) L' ∧
       (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
-      (∀ a, c.nreg ALLOC + 10 * (K + K₂) ≤ a → c'.nmem a = c.nmem a ∨ True) ∧
       (∀ r, bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) → (r < 210031 ∨ 210033 < r) →
         r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       (∀ r, bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) → c'.rreg r = c.rreg r) ∧
@@ -67,7 +66,7 @@ theorem splB1_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounded W
   -- the records
   obtain ⟨c₂, k₂, e₂, hk₂, w₂, F₂, d1, d2, d3, -, -, -, -, hrec, -, hA₂⟩ :=
     DownNF.phaseAS_exec (P := P) hWn c₁ e₁.wb_right (M := M) (L := L') (D := D) (B := B')
-      (SE := c₁.nreg 40004) hok (by rw [hm₁]; exact hCL) (by rw [hA₁', hA, hlen]) v0 v1
+      (SE := c₁.nreg 40004) hok (by rwa [hm₁]) (by rw [hA₁', hA, hlen]) v0 v1
       (by rw [v2, hlen]) rfl (by rw [hA₁', hlen]; omega)
   rw [hA₁'] at hrec hA₂ d2
   rw [hlen] at hA₂ hk₂ d3
@@ -94,17 +93,17 @@ theorem splB1_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounded W
   have g₃ : ∀ r, (r < 210031 ∨ 210033 < r) → c₃.nreg r = c₂.nreg r := fun r hr =>
     f₃.1 r (by simp only [decide_eq_false_iff_not]; omega)
   refine ⟨c₃, k₁ + (k₂ + k₃), .seq e₁ (.seq e₂ e₃), by omega, e₃.wb_right,
-    by rw [g₃ _ (by decide)]; exact d1, by rw [g₃ _ (by decide)]; exact d2,
-    by rw [g₃ _ (by decide)]; exact d3, u31, u32, u33, by rw [g₃ _ (by decide)]; exact hA₂,
-    by rw [hm₃]; exact hrec, fun a ha => ?_, fun _ _ => Or.inr trivial, fun r hr hr' hra => ?_,
+    by rwa [g₃ _ (by decide)], by rwa [g₃ _ (by decide)],
+    by rwa [g₃ _ (by decide)], u31, u32, u33, by rwa [g₃ _ (by decide)],
+    by rwa [hm₃], fun a ha => ?_, fun r hr hr' hra => ?_,
     fun r hr => ?_, fun a ha => ?_, ?_⟩
-  · rw [hm₃, F₂.2.2.1 a (by rw [hA₁']; exact ha), hm₁]
+  · rw [hm₃, F₂.2.2.1 a (by rwa [hA₁']), hm₁]
   · rw [g₃ r hr', F₂.1 r (notin_rot hr) hra]
     exact f₁.1 r (by simp only [decide_eq_false_iff_not]; have := band4_notin hr; omega)
   · rw [exec_frameM2 e₃ (BN := fun r => decide (210031 ≤ r ∧ r ≤ 210033)) (BR := fun _ => false)
       (by decide) r rfl, F₂.2.1 r (notin_rot hr)]
     exact f₁.2.1 r (by simp only [decide_eq_false_iff_not]; have := band4_notin hr; omega)
-  · rw [f₃.2.2.1, F₂.2.2.2.1 a (by rw [hA₁']; exact ha), f₁.2.2.1]
+  · rw [f₃.2.2.1, F₂.2.2.2.1 a (by rwa [hA₁']), f₁.2.2.1]
   · rw [f₃.2.2.2, F₂.2.2.2.2.1, f₁.2.2.2]
 
 /-- The cost of the buckets part. -/
@@ -141,7 +140,7 @@ theorem splB2_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       (∀ r, bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) → (r < 210034 ∨ 210059 < r) →
         c'.rreg r = c.rreg r) ∧
       (∀ a, a < c.nreg ALLOC → c'.rmem a = c.rmem a) ∧ c'.output = c.output := by
-  set A₂ := c.nreg ALLOC with hA₂
+  set A₂ := c.nreg ALLOC
   obtain ⟨c₄, k₄, e₄, hk₄, b36, b37, b48, bA, b34, b39, bseg, bst, bcn, blow, bfr, brr', brm, bout⟩ :=
     bktS_exec (P := P) c hw (BB := BB) (n := n) (A := A) (base := base) (bk := bk) h22 h31 h32 h33
       hBB hbkd hbk (by unfold splB2Cost at hroom; omega) (by omega)
@@ -160,8 +159,8 @@ theorem splB2_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       ok := hok,
       recs := fun q hq => by
         obtain ⟨r1, r2, r3, r4⟩ := hrec q hq
-        exact ⟨by rw [hlow5 _ (by omega)]; exact r1, by rw [hlow5 _ (by omega)]; exact r2,
-          by rw [hlow5 _ (by omega)]; exact r3, by rw [hlow5 _ (by omega)]; exact r4⟩
+        exact ⟨by rwa [hlow5 _ (by omega)], by rwa [hlow5 _ (by omega)],
+          by rwa [hlow5 _ (by omega)], by rwa [hlow5 _ (by omega)]⟩
       hT := hT, codes := hcodes }
   have Ibs : BsI P W c₅ c₅.nmem bk n A base A₂ (A₂ + (A + 1)) (A₂ + (A + 1) + (A + 1)) D T M L'
       0 c₅ :=
@@ -185,7 +184,7 @@ theorem splB2_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   obtain ⟨hperm, hsort⟩ := bs_result Ebs I₆ hmono
   have hc5A : c₅.nreg ALLOC = A₂ + (A + 1) + (A + 1) + n := by rw [g₅ _ (by decide), bA]
   refine ⟨c₆, k₄ + (1 + k₆), .seq e₄ (.seq e₅ e₆), by unfold splB2Cost; omega, I₆.wb,
-    I₆.r48, by rw [I₆.r48]; exact hperm, by rw [I₆.r48]; exact hsort,
+    I₆.r48, by rwa [I₆.r48], by rwa [I₆.r48],
     by rw [I₆.r48]; have := I₆.alloc; omega, by unfold splB2Cost; omega,
     fun a ha => by rw [I₆.low a (by omega), hlow5 a ha], I₆.r40, I₆.r42, I₆.r42', I₆.r34,
     fun r hr hr' hra => ?_, fun r hr hr' => ?_, fun a ha => ?_, ?_⟩

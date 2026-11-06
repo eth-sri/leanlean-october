@@ -146,11 +146,10 @@ theorem slb_tieOut (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     have : (rL1 J : ℝ) < (Lst J : ℝ) := by exact_mod_cast hlt
     linarith
   refine ⟨e, e', rL1 J, q, pb', s, tb', ρ, he, he', hne, hd0, hlt, hA, hA', hB, hB', hBne,
-    by first | (rw [hsplit']; exact hBne'), fun h => ?_, hOff pb' tb' hB' (by first | (rw [hsplit]; exact hBne')), hρ,
+    by first | (rwa [hsplit']), fun h => ?_, hOff pb' tb' hB' (by first | (rwa [hsplit])), hρ,
     hS, hS', hsplit ▸ hA.2.2.2.1, hsplit ▸ hA'.2.2.2.1⟩
   have : (Lst J : ℝ) ≤ off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (q + s) :=
     hBo
-  have h2 := h.2
   have : ((rL1 J + rL2 J : ℕ) : ℝ) = (Lst J : ℝ) := rfl
   linarith
 

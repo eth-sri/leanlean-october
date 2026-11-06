@@ -39,7 +39,7 @@ theorem copyBit_exec {r : ℕ} (hr : 50100 ≤ r ∧ r < 50200) {p : Prop} (hI :
   have w₁ := e₁.wb_right
   have q10 : c₁.nreg 50210 = c.nreg 50210 := upd_ne (by omega)
   have q23 : c₁.nreg 83023 = 1 := by
-    rw [show c₁.nreg 83023 = c.nreg 83023 from upd_ne (by omega)]; exact h23
+    rwa [show c₁.nreg 83023 = c.nreg 83023 from upd_ne (by omega)]
   have fin : ∀ c' k, Exec P W (copyBit r) c c' k → c'.nreg r ≤ 1 → (c'.nreg r = 1 ↔ p) →
       k ≤ 6 → ∃ c' k, Exec P W (copyBit r) c c' k ∧ k ≤ 6 ∧ c'.nreg r ≤ 1 ∧
         (c'.nreg r = 1 ↔ p) ∧ TStep W c₀ c c' k ∧ FrameB (fun q => q == r) c c' :=
@@ -140,7 +140,7 @@ theorem cornerS_exec (_hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : W
         Nat.mod_eq_of_lt (by omega)]
   obtain ⟨q00, q02, qm, q05⟩ := q1
   obtain ⟨c₂, k₂, e₂, hk₂, r41, r44⟩ := intIdx_exec (P := P) hW c₁ e₁.wb_right
-    (by rw [q02]; exact hpeL) (by rw [q00]; exact hD)
+    (by rwa [q02]) (by rwa [q00])
   rw [q00, q02, qm, hmd] at r41 r44
   have w₂ := e₂.wb_right
   have f₂ : FrameB Bdir c₁ c₂ := exec_frameB e₂ wr_intIdx
@@ -155,7 +155,7 @@ theorem cornerS_exec (_hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : W
     exec_block
     exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, rfl⟩
   obtain ⟨c₄, k₄, e₄, hk₄, t41, t44⟩ := intIdx_exec (P := P) hW c₃ e₃.wb_right
-    (by rw [s02, q05']; exact hp) (by rw [s00, q00']; exact hD)
+    (by rwa [s02, q05']) (by rwa [s00, q00'])
   rw [s00, q00', sm, qm', hmd, s02, q05'] at t41 t44
   have f₄ : FrameB Bdir c₃ c₄ := exec_frameB e₄ wr_intIdx
   obtain ⟨c₅, k₅, e₅, hk₅, u147, u140, u143, u146, u141, u144⟩ : ∃ c₅ k₅, Exec P W
@@ -262,7 +262,6 @@ theorem iLeft_ok_vertex (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
   have hbit' : bit = 1 ↔ Mountain.LeftInside (Qof P) := hbit
   -- the next turn
   obtain ⟨c₁, k₁, e₁, hk₁, t₁, s₁⟩ := turn_ok.1 P W M N c₀ c hE hI (by omega)
-  have f₁ : FrameB Bturn c c₁ := exec_frameB e₁ wr_tTurnN
   obtain ⟨c₂, k₂, e₂, hk₂, b₂0, b₂, s₂, f₂⟩ := copyBit_exec (P := P) (r := 50130) (by omega)
     s₁.1 t₁
   -- the previous turn
@@ -285,7 +284,7 @@ theorem iLeft_ok_vertex (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
   have hD : c₄.nreg 83000 + 1 ≤ W := by
     have := (hI₄.modelDesc hE).2.1; have := hI₄.hw.1 ALLOC; omega
   obtain ⟨c₅, k₅, e₅, hk₅, y40, y43, y46⟩ := cornerS_exec (P := P) hG hWn hI₄.hw hmd hD
-    (by rw [i5]; exact hp) hI₄.h23
+    (by rwa [i5]) hI₄.h23
   rw [i5] at y40 y43 y46
   have f₅ : FrameB Bcor c₄ c₅ := exec_frameB e₅ wr_cornerS
   have s₅ : TStep W c₀ c₄ c₅ k₅ := hI₄.stepB e₅.wb_right f₅ (fun r hr => primReg (by

@@ -42,9 +42,9 @@ theorem chordListAt_robust {m : ℕ → ℕ} {A B : ℕ} {L : List (ℕ × ℕ �
   intro m' hm' i hi
   obtain ⟨a1, a2, a3⟩ := h i hi
   refine ⟨?_, ?_, ?_⟩
-  · rw [hm' _ (by omega)]; exact a1
-  · rw [hm' _ (by omega)]; exact a2
-  · rw [hm' _ (by omega)]; exact a3
+  · rwa [hm' _ (by omega)]
+  · rwa [hm' _ (by omega)]
+  · rwa [hm' _ (by omega)]
 
 theorem seg_robust {m : ℕ → ℕ} {a n B : ℕ} (hB : a + n ≤ B) :
     Robust B m (fun m' => seg m' a n = seg m a n) :=
@@ -94,11 +94,10 @@ theorem round_A {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E t 
         c₃.nreg q = c.nreg q) ∧ c₃.nmem = c.nmem := by
   obtain ⟨hD6, hDa, hK, hLb, hLa, hEb, hEa, hok, hperm, hsort, hNW⟩ := hSt
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at hD6 hDa hK hLb hLa hEb hEa hNW
-  set B₀ := c.nreg ALLOC with hB₀
-  set H := c.nreg 210005 with hH
+  set B₀ := c.nreg ALLOC
+  set H := c.nreg 210005
   set N := BuildNF.buildNF E.M E.Q L Ev with hN
   set R := L.length + 1 with hR
-  have hGM : GoodModel E.M := Or.inr ⟨E.Q, (shearInvariance (epsOf E.P) E.P).1 hE.hG.1, rfl⟩
   have hareas := Gran.nf_areas hNW
   have hNAt := hNW.nfAt
   have hRN : N.regions.length = R := by simp [hN, BuildNF.buildNF, hR]
@@ -174,9 +173,8 @@ theorem round_A {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E t 
   have hk3 : ∀ q, q < 216012 → 210000 ≤ q → c₃.nreg q = c.nreg q := fun q h1 h2 =>
     K3 q (Or.inl ⟨h2, h1⟩)
   refine ⟨hE.hF, hE.hG, hE.hWh, hE.hX, hE.hcap, hA0B, hE.hwf, hE.hMD, hok, hperm, hsort, hregs,
-    Model.DegLe.mono _ hdeg (max_le hE.hd0 (Nat.sub_le _ _)), hsg, by rw [m₃]; exact hNW, hlow,
-    w₃, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-    ?_⟩
+    Model.DegLe.mono _ hdeg (max_le hE.hd0 (Nat.sub_le _ _)), hsg, by rwa [m₃], hlow,
+    w₃, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · show c₃.nreg 210001 = E.MD; rw [hk3 _ (by norm_num) (by norm_num), hI.r001]
   · show c₃.nreg 216000 = E.d0; rw [hk3 _ (by norm_num) (by norm_num), hI.r00]
   · show c₃.nreg 216001 = E.γ; rw [hk3 _ (by norm_num) (by norm_num), hI.r01]
@@ -194,9 +192,6 @@ theorem round_A {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E t 
   · show c₃.nreg 216014 = c₃.nmem (H + 4)
     rw [K3' _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num), a14, m₃]
-  · show c₃.nreg 216015 = c₃.nmem (H + 5)
-    rw [K3' _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num), a15, m₃]
   · show c₃.nreg 216016 = c₃.nmem (H + 7)
     rw [K3' _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num), a16, m₃]

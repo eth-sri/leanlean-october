@@ -174,11 +174,11 @@ theorem upStretch_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc →
       (∀ r, 150000 ≤ r → r < 150044 → r ≠ 150040 → d'.nreg r = d.nreg r) ∧
       d'.nreg 150090 = 0 ∧ d'.nreg 150091 = 1 ∧ d'.nreg 150092 = 2 ∧ d'.nreg 150093 = 3 ∧
       d'.nreg 150096 = 6 ∧ WordsBounded W d' ∧ (∀ a, a < A₀ → d'.nmem a = m₀ a) := by
-  set L := min (min (min (mC - J) (ℓ - t)) (P.n - q - 1)) lim with hL
+  set L := min (min (min (mC - J) (ℓ - t)) (P.n - q - 1)) lim
   obtain ⟨d₁, k₁, e₁, hk₁, o71, r₁, m₁⟩ := upLen_exec (P := P) d hw h23 h61 h69 h66 h27 h70 h72 h91
   have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
   have k₁' : ∀ r, r ≠ 150071 → r ≠ 150075 → d₁.nreg r = d.nreg r := r₁
-  obtain ⟨d₂, k₂, ps', e₂, hk₂, hI₂, hch, hv, hlen, o40, r₂, a90, a91, m₂⟩ :=
+  obtain ⟨d₂, k₂, ps', e₂, hk₂, hI₂, hch, hv, hlen, o40, r₂, m₂⟩ :=
     dyUp_exec hE (ps₀ := ps₀) (q₀ := q) (L := L) (c₀ := c) d₁ env hblk (by omega)
       (by have : L ≤ P.n := by omega
           omega) (by omega) (by omega) e₁.wb_right
@@ -220,11 +220,11 @@ theorem dnStretch_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc →
       (∀ r, 150000 ≤ r → r < 150044 → r ≠ 150040 → d'.nreg r = d.nreg r) ∧
       d'.nreg 150090 = 0 ∧ d'.nreg 150091 = 1 ∧ d'.nreg 150092 = 2 ∧ d'.nreg 150093 = 3 ∧
       d'.nreg 150096 = 6 ∧ WordsBounded W d' ∧ (∀ a, a < A₀ → d'.nmem a = m₀ a) := by
-  set L := min (min (min (m2 - J) t) q) lim with hL
+  set L := min (min (min (m2 - J) t) q) lim
   obtain ⟨d₁, k₁, e₁, hk₁, o71, r₁, m₁⟩ := dnLen_exec (P := P) d hw h29 h61 h66 h70 h72
   have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
   have k₁' : ∀ r, r ≠ 150071 → d₁.nreg r = d.nreg r := r₁
-  obtain ⟨d₂, k₂, ps', e₂, hk₂, hI₂, hch, hv, hlen, o40, r₂, a90, a91, m₂⟩ :=
+  obtain ⟨d₂, k₂, ps', e₂, hk₂, hI₂, hch, hv, hlen, o40, r₂, m₂⟩ :=
     dyDn_exec hE (ps₀ := ps₀) (q₀ := q) (L := L) (c₀ := c) d₁ env hblk (by omega)
       (by omega) (by omega) (by omega) (by omega) e₁.wb_right
       (fun a ha => by rw [m₁]; exact hm a ha)

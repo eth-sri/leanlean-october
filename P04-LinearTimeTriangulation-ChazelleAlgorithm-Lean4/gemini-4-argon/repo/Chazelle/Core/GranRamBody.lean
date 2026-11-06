@@ -107,7 +107,7 @@ theorem front_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀
       d.b0 + d.oStk + (st.top - 1) from rfl, h.enc.stk _ (by omega)]
     unfold St.cur at hcurK; dm_simp; rw [hD.K] at *; omega
   · have e1 : c.nmem (d.b0 + d.oStk + (st.top - 1)) = st.cur := h.enc.stk _ (by omega)
-    have e2 : c.nmem (d.b0 + st.cur) = st.live st.cur := h.enc.live _ (by rw [hD.K]; exact hcurK)
+    have e2 : c.nmem (d.b0 + st.cur) = st.live st.cur := h.enc.live _ (by rwa [hD.K])
     refine ⟨rfl, ?_, ?_, hcurK, fun r a1 a2 a3 a4 => by simp [upd, a1, a2, a3, a4], rfl⟩
     · config_simp; rw [hC.bStk, h.top, hC.one, e1]
     · config_simp; rw [hC.bStk, h.top, hC.one, e1, hC.bLive, e2]
@@ -130,9 +130,9 @@ theorem xy_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
   have e1 : c.nmem (d.b0 + d.oS0 + cc) = st.s0 cc := henc.s0 _ hcK
   have e2 : c.nmem (d.b0 + d.oS1 + cc) = st.s1 cc := henc.s1 _ hcK
   have e3 : c.nmem (d.b0 + d.oDeg + st.s0 cc) = st.deg (st.s0 cc) :=
-    henc.deg _ (by rw [hD.R]; exact hX)
+    henc.deg _ (by rwa [hD.R])
   have e4 : c.nmem (d.b0 + d.oDeg + st.s1 cc) = st.deg (st.s1 cc) :=
-    henc.deg _ (by rw [hD.R]; exact hY)
+    henc.deg _ (by rwa [hD.R])
   have hR : st.s0 cc < d.R ∧ st.s1 cc < d.R := by rw [hD.R]; exact ⟨hX, hY⟩
   have hb := hD.base
   unfold xyStmt
@@ -166,9 +166,9 @@ theorem bitSet_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       k ≤ 3 ∧ c'.nreg rd = bit (decide (c.nreg rk = 1)) ∧
       (∀ r, r ≠ rd → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   by_cases h : c.nreg rk < 2
-  · exact ⟨_, _, .ifLtN_true (by rw [h21]; exact h) (Exec.constN hw rd 1 hW), by omega,
+  · exact ⟨_, _, .ifLtN_true (by rwa [h21]) (Exec.constN hw rd 1 hW), by omega,
       by simp [upd, bit, show c.nreg rk = 1 by omega], fun r hr => by simp [upd, hr], rfl⟩
-  · exact ⟨_, _, .ifLtN_false (by rw [h21]; exact h) (Exec.constN hw rd 0 (by omega)),
+  · exact ⟨_, _, .ifLtN_false (by rwa [h21]) (Exec.constN hw rd 0 (by omega)),
       by omega, by simp [upd, bit, show c.nreg rk ≠ 1 by omega], fun r hr => by simp [upd, hr],
       rfl⟩
 
@@ -216,10 +216,10 @@ theorem nd_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
       · exact hC.two
   obtain ⟨q68, q69, q70, q71, q21⟩ := q
   obtain ⟨c₂, k₂, ex₂, hk₂, b₂, r₂, -⟩ := bitSet_exec (P := P) (rk := 90070) (rd := 90072) c₁
-    ex₁.wb_right (by have := hD.W1; omega) q21 (by rw [q70]; exact hL0)
+    ex₁.wb_right (by have := hD.W1; omega) q21 (by rwa [q70])
   obtain ⟨c₃, k₃, ex₃, hk₃, b₃, r₃, -⟩ := bitSet_exec (P := P) (rk := 90071) (rd := 90073) c₂
     ex₂.wb_right (by have := hD.W1; omega) (by rw [r₂ _ (by decide), q21])
-    (by rw [r₂ _ (by decide), q71]; exact hL1)
+    (by rwa [r₂ _ (by decide), q71])
   refine ⟨c₃, _, .seq ex₁ (.seq ex₂ ex₃), by omega, ?_, ?_, ?_, ?_⟩
   · rw [r₃ _ (by decide), r₂ _ (by decide), q68]
   · rw [r₃ _ (by decide), r₂ _ (by decide), q69]
@@ -247,19 +247,16 @@ def maxStmt : Stmt :=
 
 theorem maxStmt_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W maxStmt c c' k ∧ k ≤ 9 ∧
-      c'.nreg 90078 = max (max (c.nreg 90074) (c.nreg 90075)) (max (c.nreg 90076) (c.nreg 90077)) ∧
-      (∀ r, r ≠ 90078 → r ≠ 90079 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
+      c'.nreg 90078 = max (max (c.nreg 90074) (c.nreg 90075)) (max (c.nreg 90076) (c.nreg 90077)) := by
   obtain ⟨c₁, k₁, e₁, hk₁, m₁, r₁, n₁⟩ := maxSet_exec (P := P) (ra := 90074) (rb := 90075)
     (rd := 90079) c hw
   obtain ⟨c₂, k₂, e₂, hk₂, m₂, r₂, n₂⟩ := maxSet_exec (P := P) (ra := 90076) (rb := 90077)
     (rd := 90078) c₁ e₁.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, m₃, r₃, n₃⟩ := maxSet_exec (P := P) (ra := 90078) (rb := 90079)
     (rd := 90078) c₂ e₂.wb_right
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, ?_, fun r a1 a2 => ?_, by rw [n₃, n₂, n₁]⟩
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, ?_⟩
   · rw [m₃, m₂, r₂ _ (by decide), m₁, r₁ _ (by decide), r₁ _ (by decide)]
     exact max_comm _ _
-  · rw [r₃ r a1, r₂ r a1, r₁ r a2]
-
 /-- **The merged weight** `r78 := St.mu E c`. -/
 def muStmt : Stmt :=
   .ifLtN 90019 90051
@@ -270,8 +267,6 @@ def muStmt : Stmt :=
           (.seq jwStmt (.seq (.instr (.copyN 90077 90085)) maxStmt))))))
     (.instr (.copyN 90078 90018))
 
-theorem wr_muStmt : wr (Bin 90061 90100) muStmt = true := by decide
-
 theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config}
     (hE : E.Good) (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d st)
     (hI : Inv E st) (hD : DimOK E d W) {cc : ℕ} (hc : cc ∈ st.L E)
@@ -280,11 +275,7 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
     (h72 : c.nreg 90072 = bit (decide (st.cnt (st.nd0 cc) = 1)))
     (h73 : c.nreg 90073 = bit (decide (st.cnt (st.nd1 cc) = 1)))
     (h51 : c.nreg 90051 = st.nlive) :
-    ∃ c' k, Exec P W muStmt c c' k ∧ k ≤ 260 ∧ c'.nreg 90078 = st.mu E cc ∧
-      FrameB (Bin 90061 90100) c c' := by
-  suffices hh : ∃ c' k, Exec P W muStmt c c' k ∧ k ≤ 260 ∧ c'.nreg 90078 = st.mu E cc by
-    obtain ⟨c', k, e, hk, h1⟩ := hh
-    exact ⟨c', k, e, hk, h1, exec_frameB e wr_muStmt⟩
+    ∃ c' k, Exec P W muStmt c c' k ∧ k ≤ 260 ∧ c'.nreg 90078 = st.mu E cc := by
   have hb := hD.base
   have hW1 : 1 ≤ W := by have := hD.W1; omega
   have hfin : (st.L E).Finite := (Set.finite_lt_nat E.K).subset fun i hi => hi.1
@@ -325,7 +316,7 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
     obtain ⟨⟨a, b, -, -⟩, ⟨a', b', -, -⟩⟩ := hI.ring j hj hL
     exact ⟨a', b', a, b⟩
   have hbx : ∀ j, j < d.A → st.eg j + st.pz j ≤ E.sz := fun j hj =>
-    bx_le hE hI.stat (by rw [← hD.A]; exact hj)
+    bx_le hE hI.stat (by rwa [← hD.A])
   obtain ⟨hn0, -⟩ := hI.stat.nd0 cc hc.1
   obtain ⟨hn1, -⟩ := hI.stat.nd1 cc hc.1
   have hL0 := (hI.lv_iff hn0).2 ⟨cc, hc, Or.inl rfl⟩
@@ -334,7 +325,7 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
   have hC₁ : Cst c₁ E d := hC.frame fun r hr _ => qr r (by omega) (by omega) (by omega)
     (by omega) (by omega)
   obtain ⟨c₂, k₂, ex₂, hk₂, j₂, f₂⟩ := jwStmt_exec (P := P) c₁ ex₁.wb_right hW1 hC₁
-    (by rw [qm]; exact henc) (cc := cc) (k := st.nd0 cc) q86 q87
+    (by rwa [qm]) (cc := cc) (k := st.nd0 cc) q86 q87
     (by rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), h68])
     (by rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), h69])
     (by rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), h72])
@@ -367,19 +358,18 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
     (by omega) (by omega)
   have m4 : c₄.nmem = c.nmem := by rw [qm', q3m, f₂.2.2.1, qm]
   obtain ⟨c₅, k₅, ex₅, hk₅, j₅, f₅⟩ := jwStmt_exec (P := P) c₄ ex₄.wb_right hW1 hC₄
-    (by rw [m4]; exact henc) (cc := cc) (k := st.nd1 cc) q86' q87'
+    (by rwa [m4]) (cc := cc) (k := st.nd1 cc) q86' q87'
     (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h68])
     (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h69])
     (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h72])
     (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h73])
     hn1 hL1 hring hbx hD.sz hb
   have e₆ := Exec.copyN (P := P) ex₅.wb_right 90077 90085
-  obtain ⟨c₇, k₇, ex₇, hk₇, m₇, -, -⟩ := maxStmt_exec (P := P) _ e₆.wb_right
+  obtain ⟨c₇, k₇, ex₇, hk₇, m₇⟩ := maxStmt_exec (P := P) _ e₆.wb_right
   refine ⟨c₇, _, .seq ex₁ (.seq ex₂ (.seq e₃ (.seq ex₄ (.seq ex₅ (.seq e₆ ex₇))))), by omega, ?_⟩
   rw [m₇]
   have v76 : c₅.nreg 90076 = st.jw E cc (st.nd0 cc) := by
-    rw [f₅.1 _ (by decide), qr' _ (by decide) (by decide), q76]
-    exact j₂
+    rwa [f₅.1 _ (by decide), qr' _ (by decide) (by decide), q76]
   simp only [upd, ite_true, show (90074 : ℕ) ≠ 90077 by decide,
     show (90075 : ℕ) ≠ 90077 by decide, show (90076 : ℕ) ≠ 90077 by decide]
   have v74 : c₅.nreg 90074 = st.wt (st.s0 cc) := by

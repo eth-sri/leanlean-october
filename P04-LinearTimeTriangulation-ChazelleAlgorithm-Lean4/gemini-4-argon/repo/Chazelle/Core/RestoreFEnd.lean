@@ -64,7 +64,7 @@ theorem endMap_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
       (c.nreg (s + 7) = 0 → c'.nreg (s + 2) = 0) ∧
       ∀ q, q ≠ s + 1 → q ≠ s + 2 → q ≠ s + 9 → c'.nreg q = c.nreg q) := by
   unfold SReg at hs hs9
-  set n := E.M.W.n with hn
+  set n := E.M.W.n
   have fx : ∀ c', FInv E.W c₀ c' → c'.nreg 81017 = n ∧ c'.nreg 81011 = 0 :=
     fun c' hI' => ⟨by rw [hI'.hin _ (by unfold FFix; omega), hE.wn],
       by rw [hI'.hin _ (by unfold FFix; omega), hE.k0]⟩

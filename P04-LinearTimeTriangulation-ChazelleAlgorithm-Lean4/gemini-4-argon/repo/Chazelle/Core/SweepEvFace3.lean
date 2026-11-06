@@ -89,7 +89,7 @@ theorem faceSel_irs (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0) :
     apply o1
     rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
       simp [fR, fA, K1, K0, fSE, fSH, fEE, fEH, fE, lR0, lR1, lR2, sw]
-  have hk0' : c₁.nreg K0 = 0 := by rw [n K0 (by simp)]; exact hk0
+  have hk0' : c₁.nreg K0 = 0 := by rwa [n K0 (by simp)]
   by_cases hA : c₁.nreg fA < c₁.nreg K1
   · refine (IRS.ifT hA (faceChk_irs hI₁ hk0')).mono le_rfl ?_
     rintro c' ⟨h1, h2, h3⟩

@@ -44,7 +44,7 @@ theorem ends_on_arcs (B : BaseCtx Q L E reg li) {r : ℕ}
       Restore.ClosedArc ((interiorModel Q).key Q ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).s)
         ((interiorModel Q).key Q ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).e)
         ((interiorModel Q).key Q y) := by
-  set N := BuildNF.buildNF (interiorModel Q) Q L E with hN
+  set N := BuildNF.buildNF (interiorModel Q) Q L E
   obtain ⟨hR, hl⟩ := region_facts (B.rc hr) B.hli
   obtain ⟨hcQ, hcS, hcR, hatt, -⟩ := regList_sound B.hQ B.hdh B.hli B.fam hR hl hx
   have hFam := B.fam
@@ -63,7 +63,7 @@ theorem ends_on_arcs (B : BaseCtx Q L E reg li) {r : ℕ}
     (B.hregs.1.1 r hr) (chords_family B.hQ hcQ) hcS hcR hA
   obtain ⟨j, hj, hjr, hs, he⟩ := B.hregs.2.2.1.2.2.1 r hr a b harc
   refine ⟨j, (B.hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩, hj, ?_⟩
-  rw [hs, he]; exact hcl
+  rwa [hs, he]
 
 /-- **The arc scan of an end of an emitted record finds a match.** -/
 theorem scan_hex (B : BaseCtx Q L E reg li) {r : ℕ}
@@ -113,12 +113,12 @@ theorem last_arc_edges (B : BaseCtx Q L E reg li) :
         ((BuildNF.buildNF (interiorModel Q) Q L E).arcs.length - 1)).s.edge ≠
       ((BuildNF.buildNF (interiorModel Q) Q L E).arc
         ((BuildNF.buildNF (interiorModel Q) Q L E).arcs.length - 1)).e.edge := by
-  set I := interiorModel Q with hI
+  set I := interiorModel Q
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
   have hA := DrvD.arcs_length (M := I) (Q := Q) (E := E) B.hK
   obtain ⟨hA0, hlast⟩ := DrvD.gs_last (M := I) (Q := Q) (L := L) hE
   rw [hA]
-  set j := (gapStarts I Q L E).length - 1 with hj
+  set j := (gapStarts I Q L E).length - 1
   have hs := DrvD.arc_s (M := I) (Q := Q) (E := E) B.hK (j := j) (by omega)
   have he := DrvD.arc_e (M := I) (Q := Q) (E := E) B.hK (j := j) (by omega)
   rw [hlast, Nat.sub_add_cancel hE, Nat.mod_self] at he
@@ -176,12 +176,11 @@ theorem closedArc_range (B : BaseCtx Q L E reg li) {j : ℕ}
       ((interiorModel Q).key Q ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).e) (p + t)) :
     ∃ u, u < arcCnt Q.n ((BuildNF.buildNF (interiorModel Q) Q L E).arc j) ∧
       (((BuildNF.buildNF (interiorModel Q) Q L E).arc j).s.edge + u) % Q.n = p := by
-  set I := interiorModel Q with hI
+  set I := interiorModel Q
   set N := BuildNF.buildNF I Q L E with hN
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
   have hA := DrvD.arcs_length (M := I) (Q := Q) (E := E) B.hK
   rw [hN, hA] at hj
-  obtain ⟨hA0, hlast⟩ := DrvD.gs_last (M := I) (Q := Q) (L := L) hE
   have hs := DrvD.arc_s (M := I) (Q := Q) (E := E) B.hK hj
   have he := DrvD.arc_e (M := I) (Q := Q) (E := E) B.hK hj
   obtain ⟨sn, s0, s1⟩ := evPos_ok B (DrvD.gs_lt_len hj)
@@ -194,7 +193,6 @@ theorem closedArc_range (B : BaseCtx Q L E reg li) {j : ℕ}
   have ke : I.key Q e = e.edge + I.param Q e := rfl
   unfold arcCnt
   rw [← hsd, ← hed]
-  have hpt1 : (p : ℝ) + t < p + 1 := by linarith
   by_cases hlt : j + 1 < (gapStarts I Q L E).length
   · -- an arc that does not wrap
     have hk := DrvD.key_s_lt_e (M := I) (Q := Q) B.hK hE hlt

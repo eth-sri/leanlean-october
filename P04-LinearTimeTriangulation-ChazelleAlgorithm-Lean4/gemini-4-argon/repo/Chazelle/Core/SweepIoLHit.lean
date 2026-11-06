@@ -252,15 +252,15 @@ theorem nbrJ_irs (hI : IInv W c₀ c) (hK : Consts c) {A j : ℕ} (hA : c.nreg l
     rw [hc2]; show upd c₁.nreg lJN (c₁.nreg lJ + c₁.nreg K1) r = _
     rw [upd_other _ _ _ h2, c1r r h1]
   by_cases hn : j + 1 < A
-  · have hc : c₂.nreg lJN < c₂.nreg lA := by rw [v2N, v2A]; exact hn
+  · have hc : c₂.nreg lJN < c₂.nreg lA := by rwa [v2N, v2A]
     refine (IRS.ifT hc (IRS.skip (K := 1) hI₂ ?_)).mono (by omega) (fun _ h => h)
     refine ⟨v2P, by rw [v2N]; unfold succP; rw [ite_eq_left hn], v2r, by rw [hc2, hc1]⟩
-  · have hc : ¬ c₂.nreg lJN < c₂.nreg lA := by rw [v2N, v2A]; exact hn
+  · have hc : ¬ c₂.nreg lJN < c₂.nreg lA := by rwa [v2N, v2A]
     refine (IRS.ifF hc (IRS.reg hI₂ (iscr_sw (by unfold lJN sw; norm_num) (by unfold lJN sw; norm_num))
         (Exec.constN hI₂.hw lJN 0 (Nat.zero_le _)))).mono le_rfl ?_
     rintro c' rfl
     have w1 : upd c₂.nreg lJN 0 lJP = predP A j := by
-      rw [upd_other _ _ _ (by unfold lJP lJN sw; norm_num)]; exact v2P
+      rwa [upd_other _ _ _ (by unfold lJP lJN sw; norm_num)]
     have w2 : upd c₂.nreg lJN 0 lJN = succP A j := by
       rw [upd_same]; unfold succP; rw [ite_eq_right hn]
     have w3 : ∀ r, r ≠ lJP → r ≠ lJN → upd c₂.nreg lJN 0 r = c.nreg r := by
@@ -336,7 +336,6 @@ theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts
       c'.nreg lR0 = (N.arc (sj N (predP N.arcs.length (c'.nreg lJ)))).reg ∧
       c'.nreg lR1 = (N.arc (sj N (c'.nreg lJ))).reg ∧
       c'.nreg lR2 = (N.arc (sj N (succP N.arcs.length (c'.nreg lJ)))).reg) := by
-  have hK₀ := hK.fix hI
   have hNA : NFAt c.nmem (c.nreg lNF) N := hL.hNW.holds
   have hA0 := arcs_pos hL.hP hL.hNF
   obtain ⟨b7, b4A, b6A⟩ := NFLoc.nfWithin_bounds hL.hNW hL.hNF hA0
@@ -355,7 +354,7 @@ theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts
       he hpp hL.htab hL.hbig (by omega) (by omega) (by omega) (by omega)
       (by unfold lh1K at hroom; omega)) ?_) (by unfold lh1K; omega) (fun _ h => h)
   rintro c₁ hI₁ - - ⟨hj1, hl1, hl2, k1, hA1, hm1⟩
-  set j := c₁.nreg lJ with hjd
+  set j := c₁.nreg lJ
   have keep1 : ∀ r, 240000 ≤ r → r < 250000 → r ≠ lJ → c₁.nreg r = c.nreg r := fun r h1 h2 h3 =>
     k1 r (not_oracle_sw h1 h2) h3 (by unfold ALLOC; omega)
   have hNF1 : c₁.nreg lNF = c.nreg lNF := keep1 _ (by unfold lNF sw; norm_num) (by unfold lNF sw; norm_num)
@@ -367,7 +366,7 @@ theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts
   refine IRS.seq (IRS.block nbrHead hI₁ hok2) ?_
   rintro c₂ hI₂ - - hc2
   obtain ⟨v2A, v2SB, v2AB⟩ := nbrHead_val c₁.nmem c₁.nreg hK₁.2.1 hK₁.2.2.2.1 hK₁.2.2.1
-  have hm2 : c₂.nmem = c.nmem := by rw [hc2]; exact hm1
+  have hm2 : c₂.nmem = c.nmem := by rwa [hc2]
   have c2A : c₂.nreg lA = N.arcs.length := by
     rw [hc2]; show regB c₁.nmem nbrHead c₁.nreg lA = _
     rw [v2A, hNF1, hm1]; exact hNA.2.1
@@ -393,7 +392,7 @@ theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts
   have hm3 : c₃.nmem = c.nmem := by rw [hm3', hm2]
   -- the regions
   have hseqv : ∀ p, p < N.arcs.length → c.nmem (c.nmem (c.nreg lNF + 6) + p) = sj N p := fun p hp =>
-    hNA.2.2.2.2.2.2.2.2.1 p (by rw [NFLoc.seq_length hL.hNF]; exact hp)
+    hNA.2.2.2.2.2.2.2.2.1 p (by rwa [NFLoc.seq_length hL.hNF])
   have hsjl : ∀ p, p < N.arcs.length → sj N p < N.arcs.length := fun p hp => NFLoc.seq_lt hL.hNF hp
   have hregv : ∀ p, p < N.arcs.length →
       c.nmem (c.nmem (c.nreg lNF + 4) + 5 * c.nmem (c.nmem (c.nreg lNF + 6) + p)) = (N.arc (sj N p)).reg := by
@@ -427,7 +426,7 @@ theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts
     rw [v42, c3SB, c3AB, v3N, hm3, hregv _ hjN]
   have c4r : ∀ r, r ≠ lX → r ≠ lY → r ≠ lR0 → r ≠ lR1 → r ≠ lR2 → c₄.nreg r = c₃.nreg r := by
     intro r h1 h2 h3 h4 h5; rw [hc4]; exact nbrRegsL_other _ _ h1 h2 h3 h4 h5
-  have hm4 : c₄.nmem = c.nmem := by rw [hc4]; exact hm3
+  have hm4 : c₄.nmem = c.nmem := by rwa [hc4]
   have hA4 : c₄.nreg ALLOC = c.nreg ALLOC := by
     rw [c4r _ (by unfold ALLOC lX sw; omega) (by unfold ALLOC lY sw; omega)
       (by unfold ALLOC lR0 sw; omega) (by unfold ALLOC lR1 sw; omega) (by unfold ALLOC lR2 sw; omega),
@@ -448,7 +447,7 @@ theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts
   have hlist : c₅.nmem = mem3 c.nmem (c.nreg ALLOC) (N.arc (sj N (predP N.arcs.length j))).reg
       (N.arc (sj N j)).reg (N.arc (sj N (succP N.arcs.length j))).reg := by
     rw [hm5, hm4, hA4, c4R0, c4R1, c4R2]
-  refine ⟨by rw [c5J]; exact hj1, fun h => by rw [c5J]; exact hl1 h, fun h => by rw [c5J]; exact hl2 h,
+  refine ⟨by rwa [c5J], fun h => by rw [c5J]; exact hl1 h, fun h => by rw [c5J]; exact hl2 h,
     by rw [hL5, hA4], by rw [hA5, hA4], fun i hi => ?_, fun a ha => ?_, fun r hr hrl hra => ?_,
     by rw [c5J, k5 _ (by unfold lR0 ALLOC sw; omega) (by unfold lR0 lL sw; omega), c4R0],
     by rw [c5J, k5 _ (by unfold lR1 ALLOC sw; omega) (by unfold lR1 lL sw; omega), c4R1],

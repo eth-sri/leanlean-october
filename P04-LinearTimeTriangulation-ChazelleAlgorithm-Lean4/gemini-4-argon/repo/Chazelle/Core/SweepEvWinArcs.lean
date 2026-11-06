@@ -29,14 +29,14 @@ open Set
 theorem arcsTask : ArcsTask := by
   intro C Q N hP hN
   classical
-  set M := chainModel C with hMdef
+  set M := chainModel C
   have hGM : GoodModel M := Or.inl ⟨C, hP, rfl⟩
   have hM : WalkAx M := walkAx_of_goodModel hGM
-  set F := N.F M Q with hF
+  set F := N.F M Q
   have hN' := hN
   obtain ⟨hFam, -, -, reg, hRC, -, hAO, -, -⟩ := hN
-  set A := N.arcs.length with hA
-  set R := N.nRegions with hR
+  set A := N.arcs.length
+  set R := N.nRegions
   -- 1. the arcs by region
   have h1 : A = ∑ r ∈ Finset.range R, ((Finset.range A).filter fun j => (N.arc j).reg = r).card := by
     have := Finset.card_eq_sum_card_fiberwise (s := Finset.range A) (t := Finset.range R)
@@ -56,8 +56,7 @@ theorem arcsTask : ArcsTask := by
       (fun j hj => ?_) (fun j hj j' hj' h => ?_) hfin
     · simp only [Finset.coe_filter, Finset.mem_range, Set.mem_ofPred_eq] at hj ⊢
       have := (hAO.1 j hj.1).2
-      rw [hj.2] at this
-      exact this
+      rwa [hj.2] at this
     · simp only [Finset.coe_filter, Finset.mem_range, Set.mem_ofPred_eq] at hj hj'
       have hk : M.key Q (N.arc j).s = M.key Q (N.arc j').s := congrArg Prod.fst h
       exact hAO.2.1 j j' hj.1 hj'.1 (by rw [hj.2, hj'.2]) hk
@@ -78,7 +77,7 @@ theorem arcsTask : ArcsTask := by
       change ∑ᶠ U ∈ M.regions F, _ = _
       rw [himg, finsum_mem_image hinj, finsum_mem_coe_finset]
       rfl
-    rw [← e]; exact hpot
+    rwa [← e]
   -- 4. the count
   have hK : F.ncard = N.nChords := Gran.ncard_F hN'
   have hRK : R = N.nChords + 1 := Gran.nRegions_eq hN' hM

@@ -40,12 +40,11 @@ theorem lvBody_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
       k ≤ Kb ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k := by
   obtain ⟨hw, h10, h11, hfix, hmem, hrmem, hoth, hroth, hout, hA1, hA2, C, NR, γR, Lx, htot, hMx,
     hM0, hdat⟩ := hinv
-  set Q := Qof P with hQ
-  set N := BuildNF.buildNF (interiorModel Q) Q L E with hN
-  set T := c₁.nreg 211009 with hT
-  set A₁ := c₁.nreg ALLOC with hA₁
-  set μ := nextLvl lam with hμ
-  set γ₀ := 3 * 2 ^ (Cost.ceilBeta μ + 10) with hγ₀
+  set Q := Qof P
+  set N := BuildNF.buildNF (interiorModel Q) Q L E
+  set T := c₁.nreg 211009
+  set A₁ := c₁.nreg ALLOC
+  set μ := nextLvl lam
   have hT9 : T + 3 * (L.length + 1) = A₁ := ctx.r09
   have fx : ∀ q, LvFixed q → c.nreg q = c₁.nreg q := hfix
   have f05 := fx 210005 (by unfold LvFixed; omega)
@@ -57,11 +56,11 @@ theorem lvBody_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
   have f14 := fx 211014 (by unfold LvFixed; omega)
   have f31 := fx 230001 (by unfold LvFixed; omega)
   have f30 := fx 230000 (by unfold LvFixed; omega)
-  have hjr : j < N.nRegions := by rw [nRegions_bnf]; exact hj
+  have hjr : j < N.nRegions := by rwa [nRegions_bnf]
   have hjK : (j + 1) * Kb ≤ (L.length + 1) * Kb := Nat.mul_le_mul_right _ (by omega)
   have hjK' : (j + 1) * Kb = j * Kb + Kb := by ring
   -- the math of region `j`
-  obtain ⟨hHwf, hHreg, hHsimp, -, -, -, -⟩ :=
+  obtain ⟨hHwf, hHreg, hHsimp, -⟩ :=
     hR1 P L E reg j ctx.good ctx.hL ctx.ok ctx.perm ctx.sort ctx.deg ctx.regs hjr
   have hsz := (hLM P L E reg lam ctx.good ctx.hL ctx.ok ctx.perm ctx.sort ctx.deg ctx.wt
     ctx.regs).1
@@ -81,8 +80,7 @@ theorem lvBody_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
     (by rw [a02, f08]; exact ctx.r08') (by rw [a01, h10]) hj (by rw [AA]; omega)
   have hwH := eH.wb_right
   have AH : cH.nreg ALLOC ≤ cA.nreg ALLOC + kH := frH.2.2.2.2.2.2
-  have AH' : cA.nreg ALLOC ≤ cH.nreg ALLOC := frH.2.2.2.2.2.1
-  set HB := cH.nreg 215010 with hHB
+  set HB := cH.nreg 215010
   -- B: the arguments of the region procedure
   obtain ⟨cB, kB, eB, hkB, d00, d01, d02, d03, d04, d05⟩ := lvRegB_exec (P := P) cH hwH
   have gB : FrameB BregB cH cB := exec_frameB eB wr_lvRegB
@@ -104,7 +102,7 @@ theorem lvBody_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
         exact f31)
     (fun a ha => (mB a (by omega)).trans (hmem a ha)) (by omega)
   have g31 : cB.nreg 219205 = c₁.nreg (coreReg 1) := by
-    rw [d05, core _ (by decide) (by decide)]; exact f31
+    rwa [d05, core _ (by decide) (by decide)]
   have hXB : (gradeCtx O).holds P cB.nmem (c₁.nreg (coreReg 1)) (cB.nreg ALLOC) := by
     have := envB.2.2.2.2.1
     rwa [gB.1 _ (by decide), core _ (by decide) (by decide), show coreReg 1 = 230001 from rfl,
@@ -129,7 +127,7 @@ theorem lvBody_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
       (by rw [d04, kHq _ (by decide) (by decide), f06]; exact ctx.r06) g31 hXB
       (by have := nextLvl_lt ctx.h16; unfold nextLvl at this ⊢; omega)
       (mu_le_grades hcapB ctx.h16 ctx.hlp) (g0_facts μ).1 (g0_facts μ).2.1 (g0_facts μ).2.2
-      (le_trans ctx.big hcapB) hHrob (by rw [AB]; exact b10') hH20 hHwf hHreg hHsimp hpt3
+      (le_trans ctx.big hcapB) hHrob (by rwa [AB]) hH20 hHwf hHreg hHsimp hpt3
       hrun hroomR
   have hwR := eR.wb_right
   have hkR' : kR ≤ κR * (lemma41Nat μ + 1) := hkR
@@ -151,14 +149,13 @@ theorem lvBody_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
   have hHrobC : Robust (cC.nreg ALLOC) cC.nmem (fun m => HostAt m HB H) := by
     rw [AC, gC.2.2.1]; exact hHrob.frame frR
   have hpt : (hostChainOf Q H hpt3).m + 1 ≤ 10 * 2 ^ μ + 8 := by
-    rw [hostChainOf_m]; show (H.poly Q).n ≤ _; rw [DownMath.host_poly_n]; exact hpt10
+    rw [hostChainOf_m]; show (H.poly Q).n ≤ _; rwa [DownMath.host_poly_n]
   have hnch : NRj.chords.length ≤ lvNch μ := nch_le hHsimp hcj e12 hpt rfl
   have hroomX : cC.nreg ALLOC + κX * (NRj.chords.length + 1) ≤ W := by
     have e1 : cC.nreg ALLOC ≤ c.nreg ALLOC + κH + κR * (lemma41Nat μ + 1) := by
       have := hkR'; omega
     have e2 : κX * (NRj.chords.length + 1) ≤ κX * (lvNch μ + 1) :=
       Nat.mul_le_mul_left _ (by omega)
-    have e3 : 30 + κH + κR * (lemma41Nat μ + 1) + κX * (lvNch μ + 1) ≤ Kb := by omega
     omega
   -- X: the extraction
   obtain ⟨cX, kX, eX, hkX, frX, keepX, Lj, y1, y2, y3, y4, y5, y6, y7, y8, y9, y10⟩ :=
@@ -169,10 +166,10 @@ theorem lvBody_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
           exact ctx.r08')
       (by rw [x01, kRq _ (by decide) (by decide) (by decide), kHq _ (by decide) (by decide), h10])
       hj (by rw [x03, kRq _ (by decide) (by decide) (by decide)]) x05 hHrobC
-      (by rw [AC]; omega) (by rw [x04, kRq _ (by decide) (by decide) (by decide)]; exact b12)
+      (by rw [AC]; omega) (by rwa [x04, kRq _ (by decide) (by decide) (by decide)])
       (hostChainOf_P _ _ hpt3) (hostChainOf_s _ _ hpt3) (hostChainOf_m _ _ hpt3)
-      (by rw [AC, gC.2.2.1]; exact hmwf) (by rw [AC, gC.2.2.1]; exact hmd)
-      (by rw [x06, AC, gC.2.2.1]; exact hNRj) hcj.1 hroomX
+      (by rwa [AC, gC.2.2.1]) (by rwa [AC, gC.2.2.1])
+      (by rwa [x06, AC, gC.2.2.1]) hcj.1 hroomX
   have hwX := eX.wb_right
   have AX : cX.nreg ALLOC ≤ cC.nreg ALLOC + kX := frX.2.2.2.2.2.2
   have AX' : cC.nreg ALLOC ≤ cX.nreg ALLOC := frX.2.2.2.2.2.1
@@ -194,8 +191,8 @@ theorem lvBody_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
       hrr).2.2.1
     have sz := (hsz r hrr).2.2.2
     rw [ctx.r06] at hok_r
-    refine regOK_len (μ := μ) hok_r (by rw [hCP]; exact simp_r) ?_
-    rw [hCm, hCP, DownMath.host_poly_n]; exact sz
+    refine regOK_len (μ := μ) hok_r (by rwa [hCP]) ?_
+    rwa [hCm, hCP, DownMath.host_poly_n]
   have htot_le : ((List.range j).flatMap Lx).length ≤ j * lvNch μ := by
     rw [List.length_flatMap]
     have := List.sum_le_length_nsmul ((List.range j).map fun r => (Lx r).length) (lvNch μ)
@@ -215,11 +212,11 @@ theorem lvBody_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
   obtain ⟨cD, kD, eD, hkD, w12, w10, wp, wl, wb, wm, wrr, wrm, wout⟩ :=
     lvRegD_exec (P := P) cE hwE (T := T) (j := j) (ℓ := Lj.length)
       (tot := ((List.range j).flatMap Lx).length)
-      (by rw [kEq _ (by decide), kXq _ (by decide) (by decide)]; exact f09)
-      (by rw [kEq _ (by decide), kXq _ (by decide) (by decide)]; exact h10)
+      (by rwa [kEq _ (by decide), kXq _ (by decide) (by decide)])
+      (by rwa [kEq _ (by decide), kXq _ (by decide) (by decide)])
       (by rw [kEq _ (by decide), kXq _ (by decide) (by decide), f14]; exact ctx.r14)
-      (kEq _ (by decide)) (by rw [kEq _ (by decide)]; exact y5) (kEq _ (by decide))
-      (by rw [kEq _ (by decide), kXq _ (by decide) (by decide)]; exact htot)
+      (kEq _ (by decide)) (by rwa [kEq _ (by decide)]) (kEq _ (by decide))
+      (by rwa [kEq _ (by decide), kXq _ (by decide) (by decide)])
       (by omega) (by omega) (by omega)
   have gD : FrameM BregD cE cD := exec_frameM eD wrM_lvRegD
   have hwD := eD.wb_right
@@ -277,9 +274,9 @@ theorem lvBody_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
   refine ⟨hwD, w10, ?_, ?_, fun a ha => by rw [hmD a (by omega) (by omega)]; exact hmem a ha,
     fun a ha => by rw [hrm a (by omega)]; exact hrmem a ha,
     fun q hq hA => by rw [hob q hq hA]; exact hoth q hq hA,
-    fun q hq => by rw [hrob q hq]; exact hroth q hq, by rw [hoD]; exact hout, by omega,
+    fun q hq => by rw [hrob q hq]; exact hroth q hq, by rwa [hoD], by omega,
     by rw [hjK'] at hjK; omega, ?_⟩
-  · rw [kFix _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)]; exact h11
+  · rwa [kFix _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)]
   · intro q hq
     have hq' := hq
     unfold LvFixed at hq'
@@ -324,12 +321,12 @@ theorem lvBody_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
       · subst h
         simp only [↓reduceIte]
         refine ⟨⟨hostChainOf_P _ _ hpt3, hostChainOf_s _ _ hpt3, hostChainOf_m _ _ hpt3, hcj,
-          by rw [ctx.r06]; exact e12, by rw [ctx.r06]; exact e12', y7, y8, y9,
+          by rwa [ctx.r06], by rwa [ctx.r06], y7, y8, y9,
           fun q hq => (y10 q hq).2⟩, ?_⟩
         have pA : c.nreg ALLOC ≤ cX.nreg 217010 := by omega
         have bA : c.nreg ALLOC ≤ cX.nreg 217012 := by omega
-        refine ⟨wl, by rw [wp]; omega, by rw [wp, AD]; exact y2, ?_, by rw [wb]; omega,
-          by rw [wb, AD]; exact y4, fun q hq => ?_⟩
+        refine ⟨wl, by rw [wp]; omega, by rwa [wp, AD], ?_, by rw [wb]; omega,
+          by rwa [wb, AD], fun q hq => ?_⟩
         · rw [wp]
           exact clAt_congr y6 fun x hx1 hx2 => by rw [wm x (by right; omega), gE.2.2.1]
         · rw [wb, wm _ (by right; omega), gE.2.2.1]

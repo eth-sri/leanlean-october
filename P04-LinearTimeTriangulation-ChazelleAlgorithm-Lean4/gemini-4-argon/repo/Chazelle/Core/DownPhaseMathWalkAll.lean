@@ -39,8 +39,7 @@ theorem flatMap_rot {α : Type*} (A B : ℕ → List α) {k : ℕ} (hk : 0 < k) 
     | succ m ih =>
       rw [List.range_succ, List.flatMap_append, List.flatMap_append, List.flatMap_singleton,
         List.flatMap_singleton, List.append_assoc, List.append_assoc, ← List.append_assoc (f m),
-        ← List.append_assoc _ (f m ++ B m)]
-      rw [← List.append_assoc, ih]
+        ← List.append_assoc _ (f m ++ B m), ← List.append_assoc, ih]
       simp only [List.append_assoc]
   have h1 : (List.range k).flatMap (fun t => f t ++ B t) =
       (List.range k).flatMap (fun t => A t ++ B t) := by
@@ -107,10 +106,10 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
       (g + 1) % nk (interiorModel Q) ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r)
         = i0 % nk (interiorModel Q) ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r)
       ∧ HostWF Q.n (walkItems li Q.n (buildNF (interiorModel Q) Q L E) r) := by
-  set N := buildNF (interiorModel Q) Q L E with hNdef
-  set I := interiorModel Q with hI
-  set S := N.F I Q with hS
-  set R := reg r with hRdef
+  set N := buildNF (interiorModel Q) Q L E
+  set I := interiorModel Q
+  set S := N.F I Q
+  set R := reg r
   set K := nk I S R with hK
   have hQ := X.hQ
   have hdh := X.hdh
@@ -121,15 +120,14 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
     ⟨_, (chordPos_attach hN (show 0 < N.nChords by rw [hnc]; exact X.hK) (Or.inl rfl)).1⟩
   have hR : R ∈ I.regions S := X.hregs.1.1 r X.hr
   have hRC := (X.hregs.2.2.2 r X.hr).1
-  have hM : WalkAx I := walkAx_interiorModel hQ
   have h3 : 3 ≤ K := three_le_nk hQ hFam hne hR
   have hn3 : 3 ≤ Q.n := Chazelle.Jordan.simple_three_le hQ
   obtain ⟨hAarc, hAsort, hAcomp⟩ := regArcs_facts (E := E) X.hQ X.hL X.hperm X.hsort X.hK
     X.hregs X.hr
   set as := (N.region r).arcs with has
   set k := as.length with hkdef
-  set xs : ℕ → WPos := fun t => (N.arc (as.getD t 0)).s with hxs
-  set xe : ℕ → WPos := fun t => (N.arc (as.getD t 0)).e with hxe
+  set xs : ℕ → WPos := fun t => (N.arc (as.getD t 0)).s
+  set xe : ℕ → WPos := fun t => (N.arc (as.getD t 0)).e
   have hk1 : 0 < k := by
     obtain ⟨a, b, hab⟩ := exists_arc hQ hFam hne hR
     obtain ⟨t, ht, -⟩ := hAcomp a b hab
@@ -165,7 +163,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
   set A : ℕ → List SymPt := fun t => [ptSym li Q.n (xs t) false] ++
     (runItems li Q.n (xs t) (xe t)).flatMap (wpts li Q.n) ++ [ptSym li Q.n (xe t) true] with hA
   set B : ℕ → List SymPt := fun t => if partner N r (xe t) = xs ((t + 1) % k) then []
-    else [ptSym li Q.n (partner N r (xe t)) false] with hB
+    else [ptSym li Q.n (partner N r (xe t)) false]
   have hGAB : ∀ t, grpPts li Q.n N r (xs t) (xe t) (xs ((t + 1) % k)) = A t ++ B t :=
     fun t => rfl
   obtain ⟨hWrep, hWlen⟩ := repFrom_flatMap (li := li) (Q := Q) (S := S) (R := R)
@@ -199,7 +197,6 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
     rw [← has, ← hkdef] at hit
     obtain ⟨t, ht, hit⟩ := List.mem_flatMap.1 hit
     rw [List.mem_range] at ht
-    have hp0 := hpos t ht
     have hp1 := hpos _ (Nat.mod_lt (t + 1) hk1)
     have hpp := (hgrp t ht).2.2.2.2
     have hptI : ∀ (x : WPos) (b : Bool), ChordPos N x →

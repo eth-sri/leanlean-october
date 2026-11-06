@@ -52,8 +52,7 @@ theorem oset_sub_set {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q
   have tv : ∀ k, k ≤ L → (interiorWalk Q).vtx ((u + k) % (interiorWalk Q).n) =
       WalkEmbed.tourV (ch Q u L h1 h2) (jStart Q L) k := fun k hk => by
     have e1 := iw_tour (a := cStart Q u L) (m := L) (hm1 := h1) (hm := h2) hQ1 (d := k) hk
-    rw [uStart_cStart hu (by omega)] at e1
-    exact e1
+    rwa [uStart_cStart hu (by omega)] at e1
   rcases ht0.lt_or_eq with htp | rfl
   · have hd1 : d + 1 ≤ L := by
       have : (d : ℝ) < L := by linarith
@@ -187,7 +186,7 @@ theorem arcWt_around {e₁ : ℕ} (he₁ : e₁ < Q.n) {x t₂ : ℝ} (hx : x < 
     (htx : t₂ ≤ x) : (interiorModel Q).arcWt ((e₁ : ℝ) + x) ((e₁ : ℝ) + t₂) = Q.n := by
   have hc : ∀ p, p < (interiorModel Q).W.n →
       ((interiorModel Q).counted p ↔ 0 ≤ p ∧ p < (interiorModel Q).W.n) := fun p hp => by
-    rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by rw [mi_n]; exact hp)
+    rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by rwa [mi_n])
   rw [(interiorModel Q).arcWt_closed hc le_rfl ⟨by linarith, hx⟩ ⟨ht0.le, by linarith⟩, mi_n]
   unfold arcWtNat keyCeil
   rw [ite_eq_right (by linarith), ite_eq_right ht0.ne']
@@ -214,7 +213,7 @@ theorem plan_arc (hn : 3 ≤ Q.n) {e₁ h₁ e₂ h₂ : ℕ} (he₁ : e₁ < Q.
         spanL (eeOf Q e₁ h₁ e₂ h₂) h₂) ∧
     (Q.n < spanL (eeOf Q e₁ h₁ e₂ h₂) h₂ → (interiorModel Q).arcWt
       ((interiorModel Q).key Q ⟨e₁, h₁⟩) ((interiorModel Q).key Q ⟨e₂, h₂⟩) = Q.n) := by
-  set x := (interiorModel Q).param Q ⟨e₁, h₁⟩ with hxd
+  set x := (interiorModel Q).param Q ⟨e₁, h₁⟩
   set t₂ := (interiorModel Q).param Q ⟨e₂, h₂⟩ with ht₂
   set ee := eeOf Q e₁ h₁ e₂ h₂ with heed
   have hn0 : 0 < Q.n := by omega
@@ -255,11 +254,11 @@ theorem plan_arc (hn : 3 ≤ Q.n) {e₁ h₁ e₂ h₂ : ℕ} (he₁ : e₁ < Q.
     unfold keyCeil
     rcases hsp with ⟨h0, h1⟩ | ⟨h0, h1, h2⟩
     · have : t₂ = 0 := by rw [ht₂, h0]; rfl
-      rw [ite_eq_left this]; exact h1
-    · rw [ite_eq_right h2.ne']; exact h1
+      rwa [ite_eq_left this]
+    · rwa [ite_eq_right h2.ne']
   have hb : (interiorModel Q).key Q ⟨e₂, h₂⟩ = (((e₁ + ee) % Q.n : ℕ) : ℝ) + t₂ := by
     rw [hmod]; rfl
-  have hu' : e₁ < (interiorModel Q).W.n := by rw [mi_n]; exact he₁
+  have hu' : e₁ < (interiorModel Q).W.n := by rwa [mi_n]
   refine ⟨?_, hxy, hmod, heen, hsp, ?_, fun hle => ?_, fun hlt => ?_⟩
   · rw [key_eq, hb]
     have hb0 : (0 : ℝ) ≤ (((e₁ + ee) % Q.n : ℕ) : ℝ) + t₂ := by have := hy.1; positivity
@@ -275,12 +274,11 @@ theorem plan_arc (hn : 3 ≤ Q.n) {e₁ h₁ e₂ h₂ : ℕ} (he₁ : e₁ < Q.
     · omega
   · have hc : ∀ p, p < (interiorModel Q).W.n →
         ((interiorModel Q).counted p ↔ 0 ≤ p ∧ p < (interiorModel Q).W.n) := fun p hp => by
-      rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by rw [mi_n]; exact hp)
+      rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by rwa [mi_n])
     rw [key_eq, hb, ← hkc]
     have := arcWt_off (interiorModel Q) hc le_rfl hu' (Nat.zero_le _) hx.1 hx.2 hy.1 hy.2 hxy
-      (Or.inl ⟨rfl, rfl, by rw [hkc, mi_n]; exact hle⟩)
-    rw [mi_n] at this
-    exact this
+      (Or.inl ⟨rfl, rfl, by rwa [hkc, mi_n]⟩)
+    rwa [mi_n] at this
   · -- once around: `ee = n`, the end on the start edge, before the start
     rcases hsp with ⟨h0, h1⟩ | ⟨h0, h1, ht0⟩
     · omega

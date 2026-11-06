@@ -53,7 +53,7 @@ theorem condTurn_rs {f : ℕ} {t : Stmt} {Kt : ℕ} {turn : Prop}
   · refine RS.ifF (by omega) (RS.seq (RS.op (ht c hI hroom)) fun c₁ hI₁ _ ⟨v₁, h8₁⟩ =>
       (setIf1_rs (by unfold Scr; omega) hI₁).mono le_rfl fun c₂ ⟨u1, u2, a₂⟩ => ?_)
     have e52 : c₁.nreg 83052 = c.nreg 83052 := h8₁ _ (by norm_num) (by norm_num)
-    refine ⟨?_, fun h => u2 (by rw [e52]; exact h), (Agr.of_band h8₁ []).trans a₂⟩
+    refine ⟨?_, fun h => u2 (by rwa [e52]), (Agr.of_band h8₁ []).trans a₂⟩
     rw [u1, e52, v₁]
     constructor
     · rintro (h | h)
@@ -86,17 +86,17 @@ theorem vertexCase_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK
         (c'.nreg 83010 = 1 ↔ ((c.nreg 83043 = 1 ∧ TurnNB M (xOf c₀) (c₀.nreg 83008)) ∨
           (c.nreg 83044 = 1 ∧ TurnPB M (xOf c₀) (c₀.nreg 83008))) ∧
           Clear M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008)) ∧ Agr c c' validScr) := by
-  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rw [hI.h23] at this; exact this
+  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rwa [hI.h23] at this
   unfold vertexCase vertexK
   refine RS.seq (RS.const hI (r := 83052) (v := 0) (by unfold Scr; omega) (by omega))
     fun c₁ hI₁ hA₁ h₁ => ?_
   have q43 : c₁.nreg 83043 = c.nreg 83043 := by rw [h₁, upd_ne (by norm_num)]
   have q44 : c₁.nreg 83044 = c.nreg 83044 := by rw [h₁, upd_ne (by norm_num)]
-  refine RS.seq (condTurn_rs (fun c h1 h2 => hT.1 P W M N c₀ c hE h1 h2) hI₁ (by rw [q43]; exact h43)
+  refine RS.seq (condTurn_rs (fun c h1 h2 => hT.1 P W M N c₀ c hE h1 h2) hI₁ (by rwa [q43])
     (by unfold vertexK at hroom; omega)) fun c₂ hI₂ hA₂ ⟨u1, u2, a₂⟩ => ?_
   have q44' : c₂.nreg 83044 = c.nreg 83044 := by
     rw [a₂ _ (by norm_num) (by norm_num) (by simp), q44]
-  refine RS.seq (condTurn_rs (fun c h1 h2 => hT.2 P W M N c₀ c hE h1 hv h2) hI₂ (by rw [q44']; exact h44)
+  refine RS.seq (condTurn_rs (fun c h1 h2 => hT.2 P W M N c₀ c hE h1 hv h2) hI₂ (by rwa [q44'])
     (by unfold vertexK at hroom; omega)) fun c₃ hI₃ hA₃ ⟨v1, v2, a₃⟩ => ?_
   have e52 : c₁.nreg 83052 = 0 := by rw [h₁, upd_eq]
   have ok : c₃.nreg 83052 = 1 ↔ ((c.nreg 83043 = 1 ∧ TurnNB M (xOf c₀) (c₀.nreg 83008)) ∨
@@ -165,7 +165,7 @@ theorem valid_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : Ke
       (N.region (c₀.nreg 83002)).chords.length) (fun c' => c'.nreg 83010 ≤ 1 ∧
         (c'.nreg 83010 = 1 ↔ ValidB M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008)) ∧
         Agr c c' validScr) := by
-  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rw [hI.h23] at this; exact this
+  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rwa [hI.h23] at this
   unfold validS validK
   refine RS.seq (RS.const hI (r := 83010) (v := 0) (by unfold Scr; omega) (by omega))
     fun c₁ hI₁ hA₁ h₁ => ?_

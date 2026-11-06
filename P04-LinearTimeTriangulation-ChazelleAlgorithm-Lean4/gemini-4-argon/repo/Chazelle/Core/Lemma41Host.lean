@@ -42,7 +42,6 @@ theorem poly_whole (Q : Polygon) (hQ : 1 ≤ Q.n) : (Host.whole Q.n).poly Q = Q 
     simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.map_map, zero_add]
     congr 1
     have hn : (⟨l⟩ : Polygon).n = l.length := rfl
-    have hQ' : 1 ≤ l.length := hQ
     rw [hn]
     apply List.ext_getElem
     · simp; omega

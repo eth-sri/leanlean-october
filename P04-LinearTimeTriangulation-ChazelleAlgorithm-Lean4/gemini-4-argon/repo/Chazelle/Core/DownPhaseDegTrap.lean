@@ -63,14 +63,14 @@ theorem exists_trapH (hS : GoodH R S t) {G : Set (Set Point)} (hfull : FullAt R 
         rw [show ((v.1, q.2) : Point) = v from point_ext rfl hvq.symm] at this
         exact this.2 (vert_mem_obs hv)
       · exact hit_not_vert hfull hq hqG hinb
-          (by rw [show ((b, q.2) : Point) = v from point_ext h2.symm hvq.symm]; exact hv)
+          (by rwa [show ((b, q.2) : Point) = v from point_ext h2.symm hvq.symm])
     · exact hit_not_vert hfull hq hqG hina
-        (by rw [show ((a, q.2) : Point) = v from point_ext h1 hvq.symm]; exact hv)
+        (by rwa [show ((a, q.2) : Point) = v from point_ext h1 hvq.symm])
   have hV := finite_vertsH hS
   have hup : sL.1.2 < sL.2.2 := hL1.trans hL2
   have hupR : sR.1.2 < sR.2.2 := hR1.trans hR2
   set C₂ : Set ℝ := {y | ∃ v, IsVert S v ∧ v.2 = y ∧ q.2 < y ∧ xAt sL y ≤ v.1 ∧ v.1 ≤ xAt sR y} ∪
-    {sL.2.2, sR.2.2} with hC₂
+    {sL.2.2, sR.2.2}
   have hC₂f : C₂.Finite := by
     refine Set.Finite.union ?_ ((finite_singleton _).insert _)
     refine (hV.image fun v => v.2).subset ?_
@@ -85,7 +85,7 @@ theorem exists_trapH (hS : GoodH R S t) {G : Set (Set Point)} (hfull : FullAt R 
       · exact hL2
       · exact hR2
   set C₁ : Set ℝ := {y | ∃ v, IsVert S v ∧ v.2 = y ∧ y < q.2 ∧ xAt sL y ≤ v.1 ∧ v.1 ≤ xAt sR y} ∪
-    {sL.1.2, sR.1.2} with hC₁
+    {sL.1.2, sR.1.2}
   have hC₁f : C₁.Finite := by
     refine Set.Finite.union ?_ ((finite_singleton _).insert _)
     refine (hV.image fun v => v.2).subset ?_
@@ -99,8 +99,8 @@ theorem exists_trapH (hS : GoodH R S t) {G : Set (Set Point)} (hfull : FullAt R 
       rcases h with rfl | rfl
       · exact hL1
       · exact hR1
-  refine ⟨sL, sR, y₁, y₂, ⟨hsL, hsR, by rw [← hLx]; exact ha, by rw [← hRx]; exact hb,
-    by rw [← hLx, ← hRx]; exact hseg, hall₁ _ hy₁C, hall₂ _ hy₂C,
+  refine ⟨sL, sR, y₁, y₂, ⟨hsL, hsR, by rwa [← hLx], by rwa [← hRx],
+    by rwa [← hLx, ← hRx], hall₁ _ hy₁C, hall₂ _ hy₂C,
     hmax _ (Or.inr (Or.inl rfl)), hmax _ (Or.inr (Or.inr rfl)),
     hmin _ (Or.inr (Or.inl rfl)), hmin _ (Or.inr (Or.inr rfl)), ?_, ?_, ?_⟩⟩
   · intro v hv h1 h2 h3 h4
@@ -119,16 +119,16 @@ theorem exists_trapH (hS : GoodH R S t) {G : Set (Set Point)} (hfull : FullAt R 
     · simp only [mem_insert_iff, mem_singleton_iff] at h
       rcases h with rfl | rfl
       · exact ⟨sL.2, ⟨sL, hsL, Or.inr rfl⟩, rfl, fun hle => ⟨by rw [xAt_hi hup],
-          by rw [← xAt_hi hup]; exact hle⟩⟩
-      · exact ⟨sR.2, ⟨sR, hsR, Or.inr rfl⟩, rfl, fun hle => ⟨by rw [← xAt_hi hupR]; exact hle,
+          by rwa [← xAt_hi hup]⟩⟩
+      · exact ⟨sR.2, ⟨sR, hsR, Or.inr rfl⟩, rfl, fun hle => ⟨by rwa [← xAt_hi hupR],
           by rw [xAt_hi hupR]⟩⟩
   · rcases hy₁C with ⟨v, hv, hvy, -, h3, h4⟩ | h
     · exact ⟨v, hv, hvy, fun _ => ⟨hvy ▸ h3, hvy ▸ h4⟩⟩
     · simp only [mem_insert_iff, mem_singleton_iff] at h
       rcases h with rfl | rfl
       · exact ⟨sL.1, ⟨sL, hsL, Or.inl rfl⟩, rfl, fun hle => ⟨by rw [xAt_lo],
-          by rw [← xAt_lo sL]; exact hle⟩⟩
-      · exact ⟨sR.1, ⟨sR, hsR, Or.inl rfl⟩, rfl, fun hle => ⟨by rw [← xAt_lo sR]; exact hle,
+          by rwa [← xAt_lo sL]⟩⟩
+      · exact ⟨sR.1, ⟨sR, hsR, Or.inl rfl⟩, rfl, fun hle => ⟨by rwa [← xAt_lo sR],
           by rw [xAt_lo]⟩⟩
 
 end HSegObs
@@ -167,7 +167,6 @@ theorem walls_ltH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {y : ℝ} 
     ((continuous_xAt sR).sub (continuous_xAt sL)) (a := q.2) (b := y)
     (show (0 : ℝ) < xAt sR q.2 - xAt sL q.2 by have := h.lt_q; have := h.q_lt; linarith)
     (show xAt sR y - xAt sL y ≤ 0 by linarith)
-  have hc' : xAt sR c - xAt sL c = 0 := hc
   have hc1' : y₁ < c := lt_of_lt_of_le (lt_min h.bot_lt h1) hc1
   have hc2' : c < y₂ := lt_of_le_of_lt hc2 (max_lt h.lt_top h2)
   have hmL : ((xAt sL c, c) : Point) ∈ seg sL :=
@@ -203,7 +202,6 @@ theorem no_obsH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {p : Point} 
           ((continuous_xAt s).sub (continuous_xAt sL)) (a := p.2) (b := y')
           (show (0 : ℝ) < xAt s p.2 - xAt sL p.2 by linarith)
           (show xAt s y' - xAt sL y' ≤ 0 by linarith)
-        have hc' : xAt s c - xAt sL c = 0 := hc
         have hc1' : y₁ < c := lt_of_lt_of_le (lt_min h1 hy'in1) hc1
         have hc2' : c < y₂ := lt_of_le_of_lt hc2 (max_lt h2 hy'in2)
         have hcs1 : s.1.2 ≤ c := le_trans (le_min hp1 hy'1) hc1
@@ -221,7 +219,6 @@ theorem no_obsH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {p : Point} 
           ((continuous_xAt sR).sub (continuous_xAt s)) (a := p.2) (b := y')
           (show (0 : ℝ) < xAt sR p.2 - xAt s p.2 by linarith)
           (show xAt sR y' - xAt s y' ≤ 0 by linarith)
-        have hc' : xAt sR c - xAt s c = 0 := hc
         have hc1' : y₁ < c := lt_of_lt_of_le (lt_min h1 hy'in1) hc1
         have hc2' : c < y₂ := lt_of_le_of_lt hc2 (max_lt h2 hy'in2)
         have hcs1 : s.1.2 ≤ c := le_trans (le_min hp1 hy'1) hc1
@@ -298,9 +295,9 @@ theorem top_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {w : Point
     exfalso
     have hev : ∀ᶠ y in 𝓝 y₂, xAt sL y < xAt s y ∧ xAt s y < xAt sR y :=
       ((continuous_xAt sL).continuousAt.eventually_lt (continuous_xAt s).continuousAt
-        (by rw [← hsx]; exact h3)).and
+        (by rwa [← hsx])).and
       ((continuous_xAt s).continuousAt.eventually_lt (continuous_xAt sR).continuousAt
-        (by rw [← hsx]; exact h4))
+        (by rwa [← hsx]))
     have hlt : max y₁ s.1.2 < y₂ := max_lt h.y₁_lt_y₂ hs1'
     have e1 : ∀ᶠ y in 𝓝[<] y₂, y ∈ Ioo (max y₁ s.1.2) y₂ := Ioo_mem_nhdsLT hlt
     obtain ⟨y, ⟨hy1, hy2⟩, hy3, hy4⟩ := (e1.and (nhdsWithin_le_nhds hev)).exists
@@ -323,9 +320,9 @@ theorem bot_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {w : Point
     exfalso
     have hev : ∀ᶠ y in 𝓝 y₁, xAt sL y < xAt s y ∧ xAt s y < xAt sR y :=
       ((continuous_xAt sL).continuousAt.eventually_lt (continuous_xAt s).continuousAt
-        (by rw [← hsx]; exact h3)).and
+        (by rwa [← hsx])).and
       ((continuous_xAt s).continuousAt.eventually_lt (continuous_xAt sR).continuousAt
-        (by rw [← hsx]; exact h4))
+        (by rwa [← hsx]))
     have hlt : y₁ < min y₂ s.2.2 := lt_min h.y₁_lt_y₂ hs2'
     have e1 : ∀ᶠ y in 𝓝[>] y₁, y ∈ Ioo y₁ (min y₂ s.2.2) := Ioo_mem_nhdsGT hlt
     obtain ⟨y, ⟨hy1, hy2⟩, hy3, hy4⟩ := (e1.and (nhdsWithin_le_nhds hev)).exists

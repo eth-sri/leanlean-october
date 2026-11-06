@@ -99,7 +99,7 @@ theorem labS_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     refine primalEnv_sym hmap (fun d hd => ?_)
     have ho : c.nmem (g.bO + d) < g.N := by rw [(hmap ⟨d, hd⟩).1]; exact (M.opp ⟨d, hd⟩).2
     rw [hzero _ ho, hzero _ hd]
-  obtain ⟨c', k, e, hk, hw', hfr, hlt, hlab⟩ := labelStmt_exec (P := P) hYg hw1 hR0 hok hsym
+  obtain ⟨c', k, e, hk, hw', hfr, hlab⟩ := labelStmt_exec (P := P) hYg hw1 hR0 hok hsym
   have hnv : Y.nv = g.μ := rfl
   have hYN : Y.N = g.N := rfl
   refine ⟨c', labCopies.length + k, .seq e1 e, by rw [show labCopies.length = 11 from rfl]; omega, hw', fun r hr => ?_, by rw [hfr.2.1, hr1],
@@ -112,11 +112,11 @@ theorem labS_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
       omega), hm1]
   · have hx' : (Y.env c1.nmem).vb x ≠ 1 := by
       show view c1.nmem (g.base 48) g.μ x ≠ 1
-      rw [view_lt hx, hm1]; exact h1x
+      rwa [view_lt hx, hm1]
     have hy' : (Y.env c1.nmem).vb y ≠ 1 := by
       show view c1.nmem (g.base 48) g.μ y ≠ 1
-      rw [view_lt hy, hm1]; exact h1y
-    have := hlab x y (by rw [hnv]; exact hx) (by rw [hnv]; exact hy) hx' hy'
+      rwa [view_lt hy, hm1]
+    have := hlab x y (by rwa [hnv]) (by rwa [hnv]) hx' hy'
     rw [henv] at this
     simp only [labV, hY, labLay, view_lt hx, view_lt hy] at this
     exact this

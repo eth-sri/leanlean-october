@@ -86,8 +86,8 @@ theorem cmp3J_stable (m₀ : ℕ → ℕ) (A₀ T K : ℕ) (g : ℕ → ℕ) :
   intro c c' ⟨h1, h2, h3, h4⟩ hr _ hm _ _
   have hb : ∀ r, 70000 ≤ r → r < 80000 → c'.nreg r = c.nreg r := fun r a b =>
     hr r (by unfold bandOf bSort; omega) (by unfold ALLOC; omega)
-  exact ⟨by rw [hb _ (by norm_num) (by norm_num)]; exact h1,
-    by rw [hb _ (by norm_num) (by norm_num)]; exact h2, fun a ha => (hm a ha).trans (h3 a ha),
+  exact ⟨by rwa [hb _ (by norm_num) (by norm_num)],
+    by rwa [hb _ (by norm_num) (by norm_num)], fun a ha => (hm a ha).trans (h3 a ha),
     fun r a b => by rw [hb r a (by omega)]; exact h4 r a b⟩
 
 set_option maxHeartbeats 4000000 in
@@ -98,14 +98,13 @@ theorem ld3_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {T
       c'.nreg 70211 = c.nmem (T + 3 * a) ∧ c'.nreg 70212 = c.nmem (T + 3 * a + 1) ∧
       c'.nreg 70213 = c.nmem (T + 3 * a + 2) ∧ c'.nreg 70214 = c.nmem (T + 3 * b) ∧
       c'.nreg 70215 = c.nmem (T + 3 * b + 1) ∧
-      (∀ r, (r < 70210 ∨ 70215 < r) → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
-      c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      (∀ r, (r < 70210 ∨ 70215 < r) → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   unfold ld3
   exec_block
   all_goals try omega
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hT, ha, hb]; omega)
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hT, ha, hb]
   all_goals first | rfl | (congr 1; ring)
@@ -116,56 +115,48 @@ theorem cmpT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
     (hbW : T + 3 * b + 2 ≤ W) (h11 : c.nreg 70211 = x0) (h12 : c.nreg 70212 = x1)
     (h13 : c.nreg 70213 = x2) (h14 : c.nreg 70214 = y0) (h15 : c.nreg 70215 = y1) :
     ∃ c' k, Exec P W cmpT c c' k ∧ k ≤ 18 ∧
-      c'.nreg 30002 = (if tle (x0, x1, x2) (y0, y1, c.nmem (T + 3 * b + 2)) then 1 else 0) ∧
-      (∀ r, r ≠ 30002 → (r < 70210 ∨ 70215 < r) → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
-      c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      c'.nreg 30002 = (if tle (x0, x1, x2) (y0, y1, c.nmem (T + 3 * b + 2)) then 1 else 0) := by
   unfold cmpT tle
   by_cases c1 : x0 < y0
-  · refine spec_ifLtN_true (by rw [h11, h14]; exact c1) (spec_instr (Exec.constN hw _ _ hW)
-      fun _ => ⟨by omega, by simp [c1], fun r hr _ => by simp [hr], rfl, rfl, rfl, rfl⟩)
-  refine spec_ifLtN_false (by rw [h11, h14]; exact c1) ?_
+  · refine spec_ifLtN_true (by rwa [h11, h14]) (spec_instr (Exec.constN hw _ _ hW)
+      fun _ => ⟨by omega, by simp [c1]⟩)
+  refine spec_ifLtN_false (by rwa [h11, h14]) ?_
   by_cases c2 : y0 < x0
-  · refine spec_ifLtN_true (by rw [h11, h14]; exact c2) (spec_instr (Exec.constN hw _ _
-      (Nat.zero_le _)) fun _ => ⟨by omega, ?_, fun r hr _ => by simp [hr], rfl, rfl, rfl, rfl⟩)
+  · refine spec_ifLtN_true (by rwa [h11, h14]) (spec_instr (Exec.constN hw _ _
+      (Nat.zero_le _)) fun _ => ⟨by omega, ?_⟩)
     simp only [upd_same]; rw [ite_eq_right]; omega
-  refine spec_ifLtN_false (by rw [h11, h14]; exact c2) ?_
+  refine spec_ifLtN_false (by rwa [h11, h14]) ?_
   by_cases c3 : x1 < y1
-  · refine spec_ifLtN_true (by rw [h12, h15]; exact c3) (spec_instr (Exec.constN hw _ _ hW)
-      fun _ => ⟨by omega, ?_, fun r hr _ => by simp [hr], rfl, rfl, rfl, rfl⟩)
+  · refine spec_ifLtN_true (by rwa [h12, h15]) (spec_instr (Exec.constN hw _ _ hW)
+      fun _ => ⟨by omega, ?_⟩)
     simp only [upd_same]; rw [ite_eq_left]; omega
-  refine spec_ifLtN_false (by rw [h12, h15]; exact c3) ?_
+  refine spec_ifLtN_false (by rwa [h12, h15]) ?_
   by_cases c4 : y1 < x1
-  · refine spec_ifLtN_true (by rw [h12, h15]; exact c4) (spec_instr (Exec.constN hw _ _
-      (Nat.zero_le _)) fun _ => ⟨by omega, ?_, fun r hr _ => by simp [hr], rfl, rfl, rfl, rfl⟩)
+  · refine spec_ifLtN_true (by rwa [h12, h15]) (spec_instr (Exec.constN hw _ _
+      (Nat.zero_le _)) fun _ => ⟨by omega, ?_⟩)
     simp only [upd_same]; rw [ite_eq_right]; omega
-  refine spec_ifLtN_false (by rw [h12, h15]; exact c4) ?_
-  obtain ⟨c₁, k₁, e₁, hk₁, v14, v13, r₁, m₁, rr₁, rm₁, o₁⟩ : ∃ c₁ k₁, Exec P W
+  refine spec_ifLtN_false (by rwa [h12, h15]) ?_
+  obtain ⟨c₁, k₁, e₁, hk₁, v14, v13⟩ : ∃ c₁ k₁, Exec P W
       (block [.addN 70210 30001 30001, .addN 70210 70210 30001, .addN 70210 70210 70216,
         .constN 70214 2, .addN 70210 70210 70214, .loadN 70214 70210]) c c₁ k₁ ∧ k₁ = 6 ∧
-      c₁.nreg 70214 = c.nmem (T + 3 * b + 2) ∧ c₁.nreg 70213 = x2 ∧
-      (∀ r, (r < 70210 ∨ 70215 < r) → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem ∧
-      c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
+      c₁.nreg 70214 = c.nmem (T + 3 * b + 2) ∧ c₁.nreg 70213 = x2 := by
     exec_block
     all_goals try omega
     all_goals try (simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, hT, hb]; omega)
-    refine ⟨rfl, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
+    refine ⟨rfl, ?_, ?_⟩
     all_goals simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, hT, hb, h13]
     congr 1; ring
   have w₁ := e₁.wb_right
   refine spec_seq ⟨c₁, k₁, e₁, ?_⟩
   by_cases c5 : c.nmem (T + 3 * b + 2) < x2
-  · refine spec_ifLtN_true (by rw [v14, v13]; exact c5) (spec_instr (Exec.constN w₁ _ _
-      (Nat.zero_le _)) fun _ => ⟨by omega, ?_, fun r hr hr' => ?_, by rw [m₁], by rw [rr₁],
-        by rw [rm₁], by rw [o₁]⟩)
-    · simp only [upd_same]; rw [ite_eq_right]; omega
-    · simp only [upd_other _ _ _ hr]; exact r₁ r hr'
-  · refine spec_ifLtN_false (by rw [v14, v13]; exact c5) (spec_instr (Exec.constN w₁ _ _ hW)
-      fun _ => ⟨by omega, ?_, fun r hr hr' => ?_, by rw [m₁], by rw [rr₁], by rw [rm₁],
-        by rw [o₁]⟩)
-    · simp only [upd_same]; rw [ite_eq_left]; omega
-    · simp only [upd_other _ _ _ hr]; exact r₁ r hr'
+  · refine spec_ifLtN_true (by rwa [v14, v13]) (spec_instr (Exec.constN w₁ _ _
+      (Nat.zero_le _)) fun _ => ⟨by omega, ?_⟩)
+    simp only [upd_same]; rw [ite_eq_right]; omega
+  · refine spec_ifLtN_false (by rwa [v14, v13]) (spec_instr (Exec.constN w₁ _ _ hW)
+      fun _ => ⟨by omega, ?_⟩)
+    simp only [upd_same]; rw [ite_eq_left]; omega
 
 set_option maxHeartbeats 4000000 in
 /-- **The contract of the comparator.** -/
@@ -184,8 +175,8 @@ theorem cmp3_ok {P : Polygon} {W : ℕ} {m₀ : ℕ → ℕ} {A₀ T K : ℕ} {g
       fun r a b => by rw [f.1 r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)]
                       exact j4 r a b⟩, hbit,
       fun r h0 h1 h2 hb => f.1 r ?_, fun r _ => fr r rfl, f.2.2.1, f.2.2.2.1, f.2.2.2.2⟩
-    · rw [f.1 _ (by decide)]; exact j1
-    · rw [f.1 _ (by decide)]; exact j2
+    · rwa [f.1 _ (by decide)]
+    · rwa [f.1 _ (by decide)]
     · simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]
       refine ⟨h2, fun h => ?_⟩
       rcases hb with hb | hb
@@ -194,16 +185,16 @@ theorem cmp3_ok {P : Polygon} {W : ℕ} {m₀ : ℕ → ℕ} {A₀ T K : ℕ} {g
   have h1 : c.nreg 70217 = K := j2
   unfold cmp3 le3
   by_cases ha : c.nreg 30000 < K
-  · refine spec_ifLtN_true (by rw [h1]; exact ha) ?_
+  · refine spec_ifLtN_true (by rwa [h1]) ?_
     by_cases hb : c.nreg 30001 < K
-    · refine spec_ifLtN_true (by rw [h1]; exact hb) ?_
+    · refine spec_ifLtN_true (by rwa [h1]) ?_
       obtain ⟨a, ha'⟩ : ∃ a, c.nreg 30000 = a := ⟨_, rfl⟩
       obtain ⟨b, hb'⟩ : ∃ b, c.nreg 30001 = b := ⟨_, rfl⟩
       have haK : a < K := ha' ▸ ha
       have hbK : b < K := hb' ▸ hb
-      obtain ⟨c₁, k₁, e₁, hk₁, v11, v12, v13, v14, v15, r₁, m₁, -, -, -⟩ :=
+      obtain ⟨c₁, k₁, e₁, hk₁, v11, v12, v13, v14, v15, r₁, m₁⟩ :=
         ld3_exec (P := P) c hw j1 ha' hb' (by omega) (by omega)
-      obtain ⟨c₂, k₂, e₂, hk₂, v2, -⟩ := cmpT_exec (P := P) (T := T) (b := b) c₁ e₁.wb_right hW
+      obtain ⟨c₂, k₂, e₂, hk₂, v2⟩ := cmpT_exec (P := P) (T := T) (b := b) c₁ e₁.wb_right hW
         ((r₁ _ (by omega)).trans j1) ((r₁ _ (by omega)).trans hb') (by omega)
         v11 v12 v13 v14 v15
       refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_⟩
@@ -215,15 +206,15 @@ theorem cmp3_ok {P : Polygon} {W : ℕ} {m₀ : ℕ → ℕ} {A₀ T K : ℕ} {g
         simp [haK, hbK, ht, ht']
       · have ht' : ¬ tle (trip m₀ T a) (trip m₀ T b) := ht
         simp [haK, hbK, ht, ht']
-    · refine spec_ifLtN_false (by rw [h1]; exact hb) (spec_instr (Exec.constN hw _ _ hW)
+    · refine spec_ifLtN_false (by rwa [h1]) (spec_instr (Exec.constN hw _ _ hW)
         fun _ => ⟨by omega, ?_⟩)
       simp [ha, hb]
-  · refine spec_ifLtN_false (by rw [h1]; exact ha) ?_
+  · refine spec_ifLtN_false (by rwa [h1]) ?_
     by_cases hb : c.nreg 30001 < K
-    · refine spec_ifLtN_true (by rw [h1]; exact hb) (spec_instr (Exec.constN hw _ _ (by omega))
+    · refine spec_ifLtN_true (by rwa [h1]) (spec_instr (Exec.constN hw _ _ (by omega))
         fun _ => ⟨by omega, ?_⟩)
       simp [ha, hb]
-    · refine spec_ifLtN_false (by rw [h1]; exact hb) ?_
+    · refine spec_ifLtN_false (by rwa [h1]) ?_
       by_cases hc : c.nreg 30001 < c.nreg 30000
       · refine spec_ifLtN_true hc (spec_instr (Exec.constN hw _ _ (by omega)) fun _ =>
           ⟨by omega, ?_⟩)

@@ -145,7 +145,7 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
     ∃ c' k, Exec P W frS c c' k ∧ k ≤ 16 * A + 8 ∧ PF BFR A₀ c c' ∧ c'.nreg 9999 = A₀ + R ∧
       c'.nreg 110060 = A₀ ∧
       ∀ p, p < A → c'.nmem (A₀ + rg (σ p)) = fpos (fun q => rg (σ q)) p := by
-  set ρ : ℕ → ℕ := fun q => rg (σ q) with hρ
+  set ρ : ℕ → ℕ := fun q => rg (σ q)
   obtain ⟨c₁, k₁, e₁, hk₁, n₁, m₁, rr₁, rm₁, o₁⟩ : ∃ c₁ k₁, Exec P W (block [.addN 110062 120014 120048,
       .loadN 110061 110062, .copyN 110060 9999, .addN 9999 9999 110061]) c c₁ k₁ ∧ k₁ = 4 ∧
       c₁.nreg = upd (upd (upd (upd c.nreg 110062 (NB + 2)) 110061 R) 110060 A₀) 9999 (A₀ + R) ∧
@@ -166,7 +166,7 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
   let K : ℕ → Bool := fun r => decide (r = 110060) || decide (r = 120044) || decide (r = 120046) ||
     decide (r = 120030) || decide (r = 120011)
   let J : Config → Prop := JK c₁ K A₀
-  obtain ⟨c₂, k₂, e₂, hk₂, r₂, rr₂, mm₂, rm₂, o₂, -, -⟩ := scatS_exec (P := P) (W := W)
+  obtain ⟨c₂, k₂, e₂, hk₂, r₂, rr₂, mm₂, rm₂, o₂, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 110069) (rn := 120030) (r1 := 120011) (ra := 110067) (rv := 110066) (body := frBody)
     (B := fun r => decide (110063 ≤ r ∧ r ≤ 110067)) (by decide) (by decide) (by decide)
     (by decide) (by decide) J A₀
@@ -195,7 +195,7 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
       have hm₁' : d₁.nmem = d.nmem :=
         (exec_frameB e₁' (B := fun r => decide (r = 110063)) (by decide)).2.2.1
       obtain ⟨d₂, k₂', e₂', hk₂', f₂', v₂'⟩ := rgS_exec (P := P) e₁'.wb_right (p := A - 1 - i)
-        (by rw [hm₁']; exact hMd) (by rw [f₁' _ (by decide), g44])
+        (by rwa [hm₁']) (by rw [f₁' _ (by decide), g44])
         (by rw [f₁' _ (by decide), g46]) (by rw [n₁']; config_simp) (by omega) (by omega)
         (by omega)
       have hρl := hρR (A - 1 - i) (by omega)
@@ -268,10 +268,9 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
     (hW : A₀ + 2 * chCap A ≤ W) :
     ∃ c' k, Exec P W iS c c' k ∧ k ≤ 30 * A + 15 ∧ PF BIS A₀ c c' ∧
       c'.nreg 9999 = A₀ + 2 * chCap A ∧ c'.nreg 110072 = A₀ ∧ c'.nreg 110073 = A₀ + chCap A ∧
-      c'.nreg 110080 = chCap A ∧
       c'.nreg 110074 = (starList (fun q => rg (σ q)) A).length ∧
       PairsAt c'.nmem A₀ (A₀ + chCap A) (starList (fun q => rg (σ q)) A) := by
-  set ρ : ℕ → ℕ := fun q => rg (σ q) with hρ
+  set ρ : ℕ → ℕ := fun q => rg (σ q)
   obtain ⟨c₁, k₁, e₁, hk₁, n₁, m₁, rr₁, rm₁, o₁⟩ : ∃ c₁ k₁, Exec P W (block [.copyN 110072 9999,
       .addN 110073 120030 120030, .addN 110073 110073 120030, .constN 110071 5,
       .addN 110073 110073 110071, .copyN 110080 110073, .addN 110073 110073 110072,
@@ -384,7 +383,7 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
   rw [Nat.zero_add] at cnt₂
   simp only [Nat.add_zero] at pr₂
   refine ⟨c₂, _, .seq e₁ e₂, by nlinarith, ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_,
-    fun a ha => by rw [rm₂, rm₁], by rw [o₂, o₁]⟩, ?_, ?_, ?_, ?_, cnt₂, pr₂⟩
+    fun a ha => by rw [rm₂, rm₁], by rw [o₂, o₁]⟩, ?_, ?_, ?_, cnt₂, pr₂⟩
   · simp only [BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
     rw [r₂ r (by simp; omega) (by omega) (by omega) (by omega)]; exact hr₁ r (by simp [BIS]; omega)
   · rw [rr₂ r (by simp only [BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega),
@@ -393,8 +392,6 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
   · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v9]
   · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v72]
   · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v73]
-  · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v80]
-
 end
 
 end OracleR

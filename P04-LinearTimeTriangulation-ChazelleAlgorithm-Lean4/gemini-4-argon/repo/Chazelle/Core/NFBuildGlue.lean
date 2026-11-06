@@ -51,9 +51,9 @@ theorem first_e1 {i : ℕ} (hi : i < L.length) :
       (evs M Q L E)[(word M Q L E).idxOf i]? = some (e1 M Q L i) ∧
       (evs M Q L E).idxOf (e1 M Q L i) = (word M Q L E).idxOf i := by
   have hc := h.ctx
-  set S := evs M Q L E with hS
+  set S := evs M Q L E
   have hmem : e1 M Q L i ∈ S := hc.e1_mem hi
-  set k := S.idxOf (e1 M Q L i) with hk
+  set k := S.idxOf (e1 M Q L i)
   have hkl : k < S.length := idxOf_lt_length_of_mem hmem
   have hSk : S[k] = e1 M Q L i := getElem_idxOf hkl
   have hsplit : S = S.take k ++ e1 M Q L i :: S.drop (k + 1) := by
@@ -86,15 +86,13 @@ theorem first_code {i : ℕ} (hi : i < L.length) :
   obtain ⟨hlt, hget, -⟩ := h.first_e1 hi
   unfold evs at hget
   rw [getElem?_map, getElem?_eq_getElem hlt, Option.map_some, Option.some_inj] at hget
-  rw [List.getD_eq_getElem?_getD, getElem?_eq_getElem hlt, Option.getD_some]
-  exact hget
+  rwa [List.getD_eq_getElem?_getD, getElem?_eq_getElem hlt, Option.getD_some]
 
 /-- The first occurrence of chord `i` is an event of chord `i`. -/
 theorem first_div {i : ℕ} (hi : i < L.length) :
     E.getD ((word M Q L E).idxOf i) 0 / 2 = i := by
   have := congrArg Prod.fst (h.first_code hi)
-  rw [evOf_fst] at this
-  exact this
+  rwa [evOf_fst] at this
 
 /-- **The first event is the left endpoint iff `kl < kr`.** -/
 theorem first_parity {i : ℕ} (hi : i < L.length) :
@@ -191,12 +189,12 @@ theorem Input.gap_iff (h : Input M Q L E) {m : ℕ} (hm : m < E.length) :
     · exact Or.inl h1
     · by_cases hm1 : m + 1 = E.length
       · exact Or.inl hm1
-      · right; rw [h.key_s hm, h.key_s (by omega)]; exact h1
+      · right; rwa [h.key_s hm, h.key_s (by omega)]
   · rintro (h1 | h1)
     · exact Or.inl h1
     · by_cases hm1 : m + 1 = E.length
       · exact Or.inl hm1
-      · right; rw [← h.key_s hm, ← h.key_s (by omega)]; exact h1
+      · right; rwa [← h.key_s hm, ← h.key_s (by omega)]
 
 end
 

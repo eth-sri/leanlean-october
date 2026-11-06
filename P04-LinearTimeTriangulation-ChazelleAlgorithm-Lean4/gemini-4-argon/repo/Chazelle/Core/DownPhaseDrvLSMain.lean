@@ -166,22 +166,21 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
   obtain ⟨hD, hDa, L, E, hK, hLb, hLa, hEb, hEa, hok, hperm, hsort, hN, hdeg, hwt, hcnt⟩ := hInv
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   obtain ⟨-, -, -, reg, g1, g2, g3, g4, -⟩ := DownMath.isNF_build hQ hok hperm hsort
-  set X := lemma41Nat (nextLvl lam) + 1 with hX
-  set K := L.length with hKdef
+  set X := lemma41Nat (nextLvl lam) + 1
+  set K := L.length
   have hX1 : 1 ≤ X := by omega
   have hμ15 := nextLvl_ge h16
   have hNc : lvNch (nextLvl lam) ≤ κc * X := (hκc _ hμ15).1
-  set Kb := lvKb κH κR κX lam with hKb
+  set Kb := lvKb κH κR κX lam
   have hcost := lv_cost K X κH κR κX κc κT (lvNch (nextLvl lam)) Kb hX1 hNc rfl
   have hκ : κLv κH κR κX κc κT = 89 + κH + κR + κX + κX * κc + κc + κT := rfl
   rw [← hκ] at hcost
   have hK' : c.nreg 210003 = K := hK
   replace hroom : c.nreg ALLOC + κLv κH κR κX κc κT * ((K + 1) * X) ≤ W := by
-    rw [hK'] at hroom; exact hroom
+    rwa [hK'] at hroom
   have hW11 : 11 ≤ W := by unfold hostWords at hWh; omega
   -- 1. the parameters
-  obtain ⟨c₁, k₁, e₁, hk₁, a00, a01, a02, a03, a04, a06, a07, b08, b08', a14, a15, a16, a17, d09,
-    d11, d99, d10, d12, d13, w₁, hreg, hmm, F₁⟩ := lvPar_exec (P := P) c hw (S := c.nreg 230000)
+  obtain ⟨c₁, k₁, e₁, hk₁, a02, a04, a06, a07, b08, b08', a14, d09, d11, d99, d10, d12, d13, w₁, hreg, hmm, F₁⟩ := lvPar_exec (P := P) c hw (S := c.nreg 230000)
       (n := P.n) rfl hlam (MD := c.nreg 210001) rfl (K := K) hK' hS.holds h16 hlp hD
       (by generalize κLv κH κR κX κc κT * ((K + 1) * X) = u at hcost hroom
           generalize (Kb + 2) * (K + 1) = v at hcost
@@ -199,19 +198,19 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
       hperm, hsort, hdeg, hwt, ⟨g1, g2, g3, g4⟩, ?_, by rw [keep _ le_rfl (by norm_num), hlam],
       a02, a04, a06, a07, b08, ?_, ?_, a14, (big_of h16 hlp (hn₀ _ hn)).1,
       (big_of h16 hlp (hn₀ _ hn)).2, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-    · rw [d09, hmm, hc0]; exact hS
-    · rw [d09, hmm, hc1]; exact hXh
-    · rw [hmm, hc1]; exact hcap
-    · rw [d09, hmm, keep _ (by norm_num) le_rfl]; exact hN
+    · rwa [d09, hmm, hc0]
+    · rwa [d09, hmm, hc1]
+    · rwa [hmm, hc1]
+    · rwa [d09, hmm, keep _ (by norm_num) le_rfl]
     · rw [b08']; exact li_of_desc hDa.holds
     · rw [d09, d99]
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hDa
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hD
-    · rw [keep _ (by norm_num) (by norm_num)]; exact hK
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hLb
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hLa
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hEb
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hEa
+    · rwa [d09, hmm, keep _ (by norm_num) (by norm_num)]
+    · rwa [d09, keep _ (by norm_num) (by norm_num)]
+    · rwa [keep _ (by norm_num) (by norm_num)]
+    · rwa [d09, keep _ (by norm_num) (by norm_num)]
+    · rwa [d09, hmm, keep _ (by norm_num) (by norm_num)]
+    · rwa [d09, keep _ (by norm_num) (by norm_num)]
+    · rwa [d09, hmm, keep _ (by norm_num) (by norm_num)]
   -- 3. the loop invariant at the start
   have hn3 : 3 ≤ (Qof P).n := hQ.1
   have inv0 : LvInv O P W c₁ L E reg Kb 0 c₁ := by
@@ -251,14 +250,13 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
     generalize κT * (K + 1) * X = w at hcost hk₃
     omega
   · simp only [rd21, Nat.reduceAdd]; rw [h00, hlam]
-  · simp only [rd21, Nat.reduceAdd]; rw [hlam]; exact hInv₃
+  · simp only [rd21, Nat.reduceAdd]; rwa [hlam]
   · -- the frame
-    have hA9 : c₁.nreg 211009 = c.nreg ALLOC := d09
     refine ⟨fun r hr hrA => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
     · rw [F₃.1 r hr hrA, r₂ r hr hrA, F₁.1 r (fun h => hr (by
-        simp only [Finset.mem_singleton] at h; rw [h]; exact b21)) hrA]
+        simp only [Finset.mem_singleton] at h; rwa [h])) hrA]
     · rw [F₃.2.1 r hr, rr₂ r hr, F₁.2.1 r (fun h => hr (by
-        simp only [Finset.mem_singleton] at h; rw [h]; exact b21))]
+        simp only [Finset.mem_singleton] at h; rwa [h]))]
     · rw [F₃.2.2.1 a (by omega), m₂ a (by omega), hmm]
     · rw [F₃.2.2.2.1 a (by omega), rm₂ a (by omega), F₁.2.2.2.1 a ha]
     · rw [F₃.2.2.2.2.1, o₂, F₁.2.2.2.2.1]

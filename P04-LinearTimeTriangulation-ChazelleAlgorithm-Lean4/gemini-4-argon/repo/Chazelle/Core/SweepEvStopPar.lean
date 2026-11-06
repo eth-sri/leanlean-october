@@ -112,8 +112,7 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     IRS P W c₀ prBody d 11030 (fun d' => PrInv P J N₂ c d' ∧
       N₂.nChords - d'.nreg prI < N₂.nChords - d.nreg prI) := by
   obtain ⟨fr, hK, hB, hIK, hPI, hpos, hneg⟩ := hv
-  have hKd := E.hK.fix hId
-  set i := d.nreg prI with hi
+  set i := d.nreg prI
   rw [hK] at hlt
   have kp : ∀ r, ¬ ParR r → 240000 ≤ r ∧ r < 250000 → d.nreg r = c.nreg r :=
     fun r h1 h2 => fr.kkeep h1 h2
@@ -122,7 +121,6 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     simp only [oB, pE2, pH2, sw] at hr
     simp only [ParR, oPar, sw]
     omega
-  have e4 : d.nreg (sw 4) = c.nreg (sw 4) := kp _ (nPar _ (Or.inl rfl)).1 (nPar _ (Or.inl rfl)).2
   have eB : d.nreg oB = c.nreg oB := kp _ (nPar _ (by simp)).1 (nPar _ (by simp)).2
   have eE2 : d.nreg pE2 = c.nreg pE2 := kp _ (nPar _ (by simp)).1 (nPar _ (by simp)).2
   have eH2 : d.nreg pH2 = c.nreg pH2 := kp _ (nPar _ (by simp)).1 (nPar _ (by simp)).2
@@ -137,7 +135,7 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hPn : P.n ≤ W := by have := E.hWh; unfold hostWords at this; omega
   have hmem : ∀ x, x < c.nreg ALLOC → d.nmem x = c.nmem x := fr.2.2
-  set Xa := c.nmem (c.nreg (sw 4) + 3) + 5 * i with hXa
+  set Xa := c.nmem (c.nreg (sw 4) + 3) + 5 * i
   -- 1. the address
   refine IRS.seq (K₁ := 5) (K₂ := 11025) (prAdr_irs hId (by rw [hB]; omega)) ?_
   rintro d₁ hI₁ hA₁ hA₁' ⟨a1, a2, a3⟩
@@ -187,15 +185,15 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       by unfold prH sw; norm_num, by unfold prH sw; norm_num, by unfold pE2 sw; norm_num,
       by unfold pE2 sw; norm_num, by unfold pH2 sw; norm_num, by unfold pH2 sw; norm_num,
       by unfold K0 sw; norm_num, by unfold K0 sw; norm_num⟩
-    ⟨by unfold prO sw; norm_num, by unfold prO sw; norm_num⟩ heE (by rw [eE2₂]; exact hpe)
-    (by rw [hK₂.1]; exact hn0) hpE (by rw [eE2₂, eH2₂]; exact hpp) (fun h => absurd h hH0)
-    (by rw [eE2₂, eH2₂]; exact hp6) (by omega)) ?_
+    ⟨by unfold prO sw; norm_num, by unfold prO sw; norm_num⟩ heE (by rwa [eE2₂])
+    (by rwa [hK₂.1]) hpE (by rwa [eE2₂, eH2₂]) (fun h => absurd h hH0)
+    (by rwa [eE2₂, eH2₂]) (by omega)) ?_
   rintro d₃ hI₃ hA₃ hA₃' ⟨o1, o2, k₃, ha₃, hm₃⟩
   have hg0 : ((d₂.nreg K0 : ℕ) : ℝ) = 0 := by rw [hK₂.1]; simp
   rw [hg0, Restore.off_zero (Restore.key_nonneg hpE), Restore.off_zero (Restore.key_nonneg
-    (by rw [eE2₂, eH2₂]; exact hpp)), hs, eE2₂, eH2₂] at o1 o2
-  set kE' := (chainModel J.right).key (Qof P) (endPos N₂ i (1 - c.nreg oB)) with hkE'
-  set kP := (chainModel J.right).key (Qof P) ⟨c.nreg pE2, c.nreg pH2⟩ with hkP
+    (by rwa [eE2₂, eH2₂])), hs, eE2₂, eH2₂] at o1 o2
+  set kE' := (chainModel J.right).key (Qof P) (endPos N₂ i (1 - c.nreg oB))
+  set kP := (chainModel J.right).key (Qof P) ⟨c.nreg pE2, c.nreg pH2⟩
   have k3 : ∀ q, (q = oPar ∨ q = prI ∨ q = prK ∨ q = prB ∨ q = K0 ∨ q = K1) →
       d₃.nreg q = d.nreg q := by
     intro q hq
@@ -241,7 +239,7 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       by rw [w2 ALLOC (by unfold ALLOC prI sw; omega)], fun a _ => by rw [hd']⟩
     have eP : d'.nreg oPar = d₄.nreg oPar := w2 _ (by unfold oPar prI sw; omega)
     refine ⟨⟨fr.trans (fr4.trans fr'), by rw [w2 _ (by unfold prK prI sw; omega), eK],
-      by rw [w2 _ (by unfold prB prI sw; omega), eB4], by rw [w1]; omega, by rw [w1, eP]; exact hP1,
+      by rw [w2 _ (by unfold prB prI sw; omega), eB4], by rw [w1]; omega, by rwa [w1, eP],
       fun h => by rw [eP] at h ⊢; exact hP2 h, fun h => by rw [w1]; rw [eP] at h; exact hP3 h⟩,
       by rw [w1]; omega⟩
   have k01 : d₃.nreg K0 = 0 := hK₃.1
@@ -253,7 +251,7 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     refine (IRS.seq (K₁ := 0 + 2) (K₂ := 1) (IRS.ifT h1 (IRS.skip hI₃ rfl)) ?_).mono (by norm_num)
       (fun _ h => h)
     rintro d₄ hI₄ - - rfl
-    exact incr d₃ hI₃ frd3 eI3 hK₃.2.1 (by rw [k3 _ (by simp)]; exact hK) (by rw [k3 _ (by simp)]; exact hB)
+    exact incr d₃ hI₃ frd3 eI3 hK₃.2.1 (by rwa [k3 _ (by simp)]) (by rwa [k3 _ (by simp)])
       (by rw [eP3]; omega) (fun h => by rw [eP3] at h ⊢; exact hpos h)
       (fun h i' hi' => by
         rw [eP3] at h
@@ -270,8 +268,8 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       refine (IRS.seq (K₁ := 0 + 2 + 2) (K₂ := 1) (IRS.ifF h1
         (IRS.ifT h2 (IRS.skip hI₃ rfl))) ?_).mono (by norm_num) (fun _ h => h)
       rintro d₄ hI₄ - - rfl
-      exact incr d₃ hI₃ frd3 eI3 hK₃.2.1 (by rw [k3 _ (by simp)]; exact hK)
-        (by rw [k3 _ (by simp)]; exact hB) (by rw [eP3]; omega)
+      exact incr d₃ hI₃ frd3 eI3 hK₃.2.1 (by rwa [k3 _ (by simp)])
+        (by rwa [k3 _ (by simp)]) (by rw [eP3]; omega)
         (fun h => by rw [eP3] at h ⊢; exact hpos h)
         (fun h i' hi' => by
           rw [eP3] at h
@@ -295,9 +293,9 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         by rw [w2 ALLOC (by unfold ALLOC oPar sw; omega)], fun a _ => by rw [hd₄]⟩
       exact incr d₄ hI₄ (frd3.trans fr4) (by rw [w2 _ (by unfold prI oPar sw; omega), eI3])
         (by rw [w2 _ (by unfold K1 oPar sw; omega), hK₃.2.1])
-        (by rw [w2 _ (by unfold prK oPar sw; omega), k3 _ (by simp)]; exact hK)
-        (by rw [w2 _ (by unfold prB oPar sw; omega), k3 _ (by simp)]; exact hB)
-        (by rw [w1]) (fun _ => by rw [w1, Nat.add_sub_cancel]; exact heq)
+        (by rwa [w2 _ (by unfold prK oPar sw; omega), k3 _ (by simp)])
+        (by rwa [w2 _ (by unfold prB oPar sw; omega), k3 _ (by simp)])
+        (by rw [w1]) (fun _ => by rwa [w1, Nat.add_sub_cancel])
         (fun h => by rw [w1] at h; omega)
 
 /-! ## The scan -/

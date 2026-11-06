@@ -73,7 +73,6 @@ theorem walk_above {Q : Polygon} {N e hc : ℕ} (hp : ProperPos (chainModel C) Q
     (hno : ¬ (6 ≤ e ∧ (e < 2 * C.m + 6 ∨ (chainModel C).param Q ⟨e, hc⟩ = 0))) :
     C.top.2 < ((chainModel C).pos Q ⟨e, hc⟩).2 := by
   have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
-  have hR := C.radius_pos
   have htop := C.top_snd_lt_radius
   have t0 := hp.1
   have t1 := hp.2.1

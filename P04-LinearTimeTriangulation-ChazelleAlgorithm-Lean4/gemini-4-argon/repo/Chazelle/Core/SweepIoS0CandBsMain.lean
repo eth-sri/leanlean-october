@@ -84,7 +84,6 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
   have dxE : d.nreg 244020 = c.nreg 244020 := fix_keep hL (by norm_num) (by norm_num)
   have dxH : d.nreg 244021 = c.nreg 244021 := fix_keep hL (by norm_num) (by norm_num)
   have hKK : 0 < d.nreg 244001 := by omega
-  have hWA : d.nreg ALLOC ≤ W := hI.hw.1 ALLOC
   have hAd := hL.hA
   have hkTL := hL.hk
   -- 1. `k := k - 1`, the power, the room
@@ -102,7 +101,6 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
     (fun _ h => h)
   subst d1'
   have A1 : d1.nreg ALLOC = d.nreg ALLOC := f1 ALLOC (by decide)
-  have e101 : d1.nreg 244001 = d.nreg 244001 - 1 := a01
   by_cases hlt : d1.nreg 244016 < d1.nreg 244003
   · -- no room: no record `j < E` above
     refine IRS.ifT hlt (IRS.skip hI1 ⟨⟨fun r hr1 hr2 hr3 => (F1 r hr2).trans (hL.fr r hr1 hr2 hr3),
@@ -116,7 +114,6 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
   refine IRS.ifF hlt ?_
   -- 2. the test
   rw [a16, a03] at hlt
-  have hge := hlt
   have hle : d.nreg 244000 + 2 ^ (d.nreg 244001 - 1) ≤ c.nreg 240301 := by
     have := hL.hi; omega
   have hp1 : 1 ≤ 2 ^ (d.nreg 244001 - 1) := Nat.one_le_two_pow
@@ -132,7 +129,7 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
   subst d2'
   have A2 : d2.nreg ALLOC = d.nreg ALLOC := by rw [f2 ALLOC (by decide), A1]
   -- the record and its key
-  set j0 := d.nreg 244000 + 2 ^ (d.nreg 244001 - 1) - 1 with hj0
+  set j0 := d.nreg 244000 + 2 ^ (d.nreg 244001 - 1) - 1
   have hj0E : j0 < c.nreg 240301 := by omega
   have hmem : ∀ a, a < c.nreg ALLOC → d1.nmem a = c.nmem a := fun a ha => by
     rw [m1]; exact hL.hm a ha
@@ -149,12 +146,12 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
   have hmem2 : ∀ a, a < c.nreg ALLOC → d2.nmem a = c.nmem a := fun a ha => by
     rw [m2]; exact hmem a ha
   have hctx2 : ChainCtx P W d2 240002 J.whole :=
-    hctx.transport g02 hmem2 (by rw [A2]; exact hAd)
+    hctx.transport g02 hmem2 (by rwa [A2])
   have hcall := callOff_irs (P := P) (c₀ := c₀) (dsc := 240002) (ex := 244012) (hx := 244013)
     (ey := 244020) (hy := 244021) (g := 240040) (o := 244014) hI2 hctx2 (by norm_num)
-    (by norm_num) (by rw [g12]; exact hpe) (by rw [g20]; exact hxe) (by rw [g40]; exact hG)
-    (by rw [g12, g13]; exact hpp) (by rw [g20, g21]; exact hxp) (by rw [g12, g13]; exact hp6)
-    (by rw [g20, g21]; exact hx6) (by omega)
+    (by norm_num) (by rwa [g12]) (by rwa [g20]) (by rwa [g40])
+    (by rwa [g12, g13]) (by rwa [g20, g21]) (by rwa [g12, g13])
+    (by rwa [g20, g21]) (by omega)
   refine IRS.seq hcall (fun d3 hI3 _ _ h3 => ?_)
   obtain ⟨bit, -, fr3, A3, m3⟩ := h3
   have F3 : ∀ r, bandOf r ∉ oracleBands → ¬ LSet r → r ≠ ALLOC → d3.nreg r = d.nreg r :=
@@ -189,7 +186,7 @@ theorem lsBody_irs (hctx : ChainCtx P W c 240002 J.whole)
       rw [c01, e01]
     have e40 : d4.nreg 244000 = d.nreg 244000 + 2 ^ (d.nreg 244001 - 1) := by rw [c00, e04]
     refine ⟨⟨fun r hr1 hr2 hr3 => ((F4 r hr2).trans (F3 r hr1 hr2 hr3)).trans (hL.fr r hr1 hr2 hr3),
-      by rw [f4 ALLOC (by decide)]; exact hA3, fun a ha => by rw [m4]; exact hmem3 a ha,
+      by rwa [f4 ALLOC (by decide)], fun a ha => by rw [m4]; exact hmem3 a ha,
       by omega, by omega, fun j hj => ?_, fun j hj hjE => ?_⟩, by omega⟩
     · rw [e40] at hj
       by_cases hji : j < d.nreg 244000

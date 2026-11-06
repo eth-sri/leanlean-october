@@ -1,7 +1,13 @@
 module
 
 public import Chazelle.Core.SweepMachine3
-public import Chazelle.Core.SweepWalkL
+public import Chazelle.Core.SweepQueryL
+public import Chazelle.Core.SweepEvent
+public import Chazelle.Core.SweepChain
+public import Chazelle.Core.SweepBracket
+public import Chazelle.Core.SweepTop
+public import Chazelle.Core.SweepLoop
+public import Chazelle.Core.SweepWalk
 public import Chazelle.Core.SweepLabelJL0
 
 /-!
@@ -87,12 +93,10 @@ theorem base_left (hv : VNotTop J) :
   by_cases hc : tpos J.whole J.m₁ + 2 * J.m₂ < 2 * (J.m₁ + J.m₂)
   · rw [Nat.mod_eq_of_lt hc, ite_eq_right (by omega), Nat.mod_eq_of_lt (by omega)]; ring
   · have hc' : 2 * (J.m₁ + J.m₂) < tpos J.whole J.m₁ + 2 * J.m₂ := by omega
-    rw [ite_eq_left (by omega)]
-    rw [show tpos J.whole J.m₁ + 2 * J.m₂ = (tpos J.whole J.m₁ + 2 * J.m₂ -
+    rw [ite_eq_left (by omega), show tpos J.whole J.m₁ + 2 * J.m₂ = (tpos J.whole J.m₁ + 2 * J.m₂ -
       2 * (J.m₁ + J.m₂)) + 2 * (J.m₁ + J.m₂) by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt (show tpos J.whole J.m₁ + 2 * J.m₂ - 2 * (J.m₁ + J.m₂) < 2 * (J.m₁ + J.m₂)
-        by omega)]
-    rw [show 6 + tpos J.whole J.m₁ + (2 * J.m₂ + 7) = (6 + (tpos J.whole J.m₁ + 2 * J.m₂ -
+        by omega), show 6 + tpos J.whole J.m₁ + (2 * J.m₂ + 7) = (6 + (tpos J.whole J.m₁ + 2 * J.m₂ -
         2 * (J.m₁ + J.m₂))) + (2 * (J.m₁ + J.m₂) + 7) by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt (by omega)]
 
@@ -103,7 +107,6 @@ theorem attach_left_of_arrival {C : Chain} {a : Point} {σ : ℝ} (hσ : σ = 1 
     (hτ : 0 < τ) {p : ℕ} {t : ℝ} (hA : Arrival (chainModel C).W (rayPt a σ τ) σ p t) :
     SideAttach (chainModel C).W (Chazelle.segment a (rayPt a σ τ)) p t := by
   obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := hA
-  have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   refine ⟨hp, ht0, ht1, by rw [hpt]; exact Geometry.right_mem_segment _ _, τ, hτ,
     fun x hx hxw _ => ?_⟩
   rw [hpt] at hxw
@@ -116,7 +119,7 @@ theorem attach_left_of_arrival {C : Chain} {a : Point} {σ : ℝ} (hσ : σ = 1 
     apply point_ext <;> simp [rayPt, lerp]; ring
   rw [e]
   have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) (-σ) 1) := by
-    rw [hpt]; exact hsec
+    rwa [hpt]
   have := (sideLeft_rayPt_iff _ p t (-σ) one_pos (show 0 < τ * (1 - u) by nlinarith)).1 h1
   rwa [hpt] at this
 
@@ -159,7 +162,7 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
   have hpt : sidePt (chainModel J.left).W
       ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t =
         rayPt a σ T := by
-    rw [← hC.sidePt_eq hd t]; exact hend
+    rwa [← hC.sidePt_eq hd t]
   refine ⟨⟨hT0, fun s h0 h1 => dom_left J (hdom s h0 h1) (by simpa [rayPt] using ha₁), ?_⟩, ?_⟩
   · rw [← hpt]
     exact hM₁.trace _ hA₁.1 t hA₁.2.1 hA₁.2.2.1.le
@@ -185,13 +188,13 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
       rcases hσ with rfl | rfl <;> linarith
     have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
     have hdist : dist (rayPt (rayPt a σ T) (-σ) s) (rayPt a σ T) < r := by
-      rw [dist_rayPt _ hnσ hs0.le]; exact hsr
-    have hl := hnear _ hmem (by rw [hpt]; exact hne) (by rw [hpt]; exact hdist)
+      rwa [dist_rayPt _ hnσ hs0.le]
+    have hl := hnear _ hmem (by rwa [hpt]) (by rwa [hpt])
     have h1 : sideLeft (chainModel J.left).W
         ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t
         (rayPt (sidePt (chainModel J.left).W
           ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t) (-σ) s) := by
-      rw [hpt]; exact hl
+      rwa [hpt]
     have := (sideLeft_rayPt_iff _ _ t (-σ) hs0 one_pos).1 h1
     rwa [hpt] at this
 

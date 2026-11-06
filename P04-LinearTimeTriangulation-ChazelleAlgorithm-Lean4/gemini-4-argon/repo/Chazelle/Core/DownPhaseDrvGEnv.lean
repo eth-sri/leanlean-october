@@ -178,9 +178,9 @@ theorem REnv.table (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
   obtain ⟨a1, a2, a3⟩ := hF.hT i hi
   have := hF.hTA
   refine ⟨?_, ?_, ?_⟩
-  · rw [h.low _ (by omega)]; exact a1
-  · rw [h.low _ (by omega)]; exact a2
-  · rw [h.low _ (by omega)]; exact a3
+  · rwa [h.low _ (by omega)]
+  · rwa [h.low _ (by omega)]
+  · rwa [h.low _ (by omega)]
 
 end facts
 

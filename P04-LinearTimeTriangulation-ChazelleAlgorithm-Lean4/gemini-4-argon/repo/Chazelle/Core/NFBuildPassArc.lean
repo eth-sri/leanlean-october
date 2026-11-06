@@ -153,8 +153,8 @@ theorem arcS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
       omega
     · have := hw.1 42113
       omega
-  obtain ⟨d₃, k₃, x₃, hk₃, v₃, f₃⟩ := wtS_exec (P := P) d₂ w₂ e₁₁ (by rw [e₁₂₀]; exact hlt)
-    (by rw [e₁₁₃, e₂₀]; exact hbound)
+  obtain ⟨d₃, k₃, x₃, hk₃, v₃, f₃⟩ := wtS_exec (P := P) d₂ w₂ e₁₁ (by rwa [e₁₂₀])
+    (by rwa [e₁₁₃, e₂₀])
   have w₃ := x₃.wb_right
   have g₃ : ∀ r, (r < 43121 ∨ 43128 ≤ r) → d₃.nreg r = d₂.nreg r := fun r hr =>
     f₃.1 r (by simp only [decide_eq_false_iff_not]; omega)

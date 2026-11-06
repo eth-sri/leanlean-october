@@ -61,7 +61,7 @@ theorem exists_label' (hM : M.Planar) (δ : V → D) (hδ : ∀ v, M.vert (δ v)
     · by_cases h1 : e = d
       · subst h1; exact absurd hxd (T.face_notMem_cross hM hd)
       · by_cases h2 : e = M.opp d
-        · subst h2; left; rw [M.opp_opp]; exact hdf
+        · subst h2; left; rwa [M.opp_opp]
         · exact Or.inr ⟨d, hd, hdf, T.cross_closed (T.mem_Sd.mpr ⟨he, h1, h2⟩) hxd⟩
   have hmem : M.face (δ v) ∈ U :=
     mem_of_eqvGen (M.faceRel T.coDarts) U hstep
@@ -117,9 +117,9 @@ theorem isDesc_parent_iff {h g : F} (hh : h ≠ g) : C.IsDesc h g ↔ C.IsDesc (
   · rintro ⟨n, hn⟩
     rcases n with _ | n
     · exact absurd hn hh
-    · exact ⟨n, by rw [Function.iterate_succ_apply] at hn; exact hn⟩
+    · exact ⟨n, by rwa [Function.iterate_succ_apply] at hn⟩
   · rintro ⟨n, hn⟩
-    exact ⟨n + 1, by rw [Function.iterate_succ_apply]; exact hn⟩
+    exact ⟨n + 1, by rwa [Function.iterate_succ_apply]⟩
 
 /-- The parent darts and their opposites. -/
 noncomputable def treeDarts : Finset D :=
@@ -153,9 +153,9 @@ theorem coDarts_eq (hM : M.Planar) : T.coDarts = C.treeDarts := by
     have hg0' := Finset.ne_of_mem_erase hg'
     -- `g'` is the parent of `g` and `g` the parent of `g'`
     have a1 : M.face (C.fpar g') = g := by
-      have := C.head g hg0; rw [← heq, M.opp_opp] at this; exact this
+      have := C.head g hg0; rwa [← heq, M.opp_opp] at this
     have a2 : M.face (C.fpar g) = g' := by
-      have := C.head g' hg0'; rw [heq] at this; exact this
+      have := C.head g' hg0'; rwa [heq] at this
     have l1 := C.lev g hg0
     have l2 := C.lev g' hg0'
     rw [a2] at l1; rw [a1] at l2
@@ -167,7 +167,6 @@ theorem coDarts_eq (hM : M.Planar) : T.coDarts = C.treeDarts := by
       Finset.card_univ]
     omega
   have hco := T.card_coDarts hM
-  have hF : 0 < Fintype.card F := Fintype.card_pos_iff.mpr ⟨C.r0⟩
   exact (Finset.eq_of_subset_of_card_le hsub (by omega)).symm
 
 theorem mem_coDarts_iff (hM : M.Planar) {e : D} :
@@ -198,29 +197,25 @@ theorem cross_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
       · -- crossing down the parent dart of `x'`
         have hx'g : x' ≠ g := fun h => hne1 (by rw [h])
         show C.IsDesc _ g
-        rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0]
-        exact hx
+        rwa [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0]
       · -- crossing up to the parent
         have hx'g : x' ≠ g := fun h => hne2 (by rw [h])
         show C.IsDesc _ g
         simp only [Set.mem_ofPred_eq] at hx
         rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0] at hx
-        rw [M.opp_opp]
-        exact hx
+        rwa [M.opp_opp]
     · rintro x y ⟨e, he, rfl, rfl⟩ hy
       obtain ⟨he1, hne1, hne2⟩ := T.mem_Sd.mp he
       obtain ⟨x', hx'0, rfl | rfl⟩ := (C.mem_coDarts_iff hM).mp he1
       · have hx'g : x' ≠ g := fun h => hne1 (by rw [h])
         show C.IsDesc _ g
         simp only [Set.mem_ofPred_eq] at hy
-        rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0] at hy
-        exact hy
+        rwa [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0] at hy
       · have hx'g : x' ≠ g := fun h => hne2 (by rw [h])
         show C.IsDesc _ g
         simp only [Set.mem_ofPred_eq] at hy
         rw [M.opp_opp] at hy
-        rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0]
-        exact hy
+        rwa [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0]
   · -- every descendant reaches `g` along parent darts other than `fpar g`
     rintro ⟨n, hn⟩
     induction n generalizing h with

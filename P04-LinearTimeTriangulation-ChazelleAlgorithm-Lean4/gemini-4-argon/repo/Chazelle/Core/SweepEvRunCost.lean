@@ -61,7 +61,7 @@ theorem run_cost {D Fg L T K' n κWD κGD κO κK κP κSD κS0D Z KG : ℕ} (hZ
   have hit := iterK_le (Fg := Fg) (D := D) (T := T) (L := L) (KG := KG) (κWD := κWD) (κGD := κGD)
     (κO := κO) (κK := κK) (Z := Z) hZ hT hKG
   set A := iterA D κWD κGD κO κK with hA
-  set I := iterK (κWD * (T + 1)) κK κO Fg D KG with hI
+  set I := iterK (κWD * (T + 1)) κK κO Fg D KG
   have hKZ : 1 ≤ K' * Z := Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
   have h1 : (I + 2) * (n + 1) ≤ (A * Z + 2) * (10 * K') :=
     Nat.mul_le_mul (by omega) hn

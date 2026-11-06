@@ -65,8 +65,8 @@ theorem cp1_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold cp1 sw at *
   exec_block
-  · config_simp; rw [h1]; exact hP
-  · config_simp; rw [h1]; exact hS
+  · config_simp; rwa [h1]
+  · config_simp; rwa [h1]
   · refine ⟨rfl, ?_, ?_, ?_, ?_, rfl, rfl, rfl⟩
     · config_simp; rw [h1]
     · config_simp; rw [h1]
@@ -83,11 +83,10 @@ theorem copyDesc_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       c'.nmem (c.nreg (sw 96)) = 0 ∧
       (∀ j, j < 5 → c'.nmem (c.nreg (sw 96) + 1 + j) = c.nmem (c.nreg (sw 97) + j)) ∧
       (∀ a, a < c.nreg (sw 96) → c'.nmem a = c.nmem a) ∧
-      (∀ a, c.nreg (sw 96) + 6 ≤ a → c'.nmem a = c.nmem a) ∧
       (∀ r, r ≠ sw 96 → r ≠ sw 97 → r ≠ sw 98 → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   set D := c.nreg (sw 96) with hD
-  set S := c.nreg (sw 97) with hS
+  set S := c.nreg (sw 97)
   -- the head: `0` at `D`
   have e₁ := Exec.storeN (P := P) hw (sw 96) (sw 90)
   set c₁ : Config := { c with nmem := upd c.nmem (c.nreg (sw 96)) (c.nreg (sw 90)) } with hc₁
@@ -150,12 +149,10 @@ theorem copyDesc_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
     unfold copyDesc
     exact .seq (Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_nil w₂)))
       (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))
-  refine ⟨c₇, _, ex, by omega, by rw [d₇], ?_, fun j hj => v₇ j hj, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨c₇, _, ex, by omega, by rw [d₇], ?_, fun j hj => v₇ j hj, ?_, ?_, ?_, ?_, ?_⟩
   · rw [m₇ _ (Or.inl (by omega)), m₂, upd_same]
   · intro a ha
     rw [m₇ _ (Or.inl (by omega)), m₂, upd_other _ _ _ (by omega)]
-  · intro a ha
-    rw [m₇ _ (Or.inr (by omega)), m₂, upd_other _ _ _ (by omega)]
   · intro r h96 h97 h98
     rw [r₇ r h96 h97 h98, r₆ r h96 h97 h98, r₅ r h96 h97 h98, r₄ r h96 h97 h98,
       r₃ r h96 h97 h98, hr2 r h96]

@@ -160,7 +160,7 @@ theorem search_irs {ls : Stmt} {κL : ℕ} (hls : LSBody ls κL)
   rintro c' ⟨r1, r2, r3, r4, r5, r6⟩
   rw [e301] at r1
   refine ⟨r1, fun j hj => (hlsP j (by omega)).1 (r2 j hj),
-    fun j hj hjE => fun h' => r3 j hj (by rw [e301]; exact hjE) ((hlsP j hjE).2 h'),
+    fun j hj hjE => fun h' => r3 j hj (by rwa [e301]) ((hlsP j hjE).2 h'),
     fun r h1 h2 h3 => ?_, fun a ha => by rw [r6 a (by omega)]⟩
   rw [r4 r h1 (fun h => h2 (by unfold S0C.LSet at h; unfold sw at *; omega)) h3]
   exact vo r (by rintro rfl; exact h2 (by decide)) (by rintro rfl; exact h2 (by decide))

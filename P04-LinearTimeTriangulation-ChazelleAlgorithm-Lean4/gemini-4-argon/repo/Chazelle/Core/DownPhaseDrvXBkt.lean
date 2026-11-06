@@ -91,7 +91,7 @@ theorem gsX_lt {j j' : ℕ} (hjj : j < j') (hj' : j' < (gapStarts M Q L E).lengt
 theorem gsX_of_mem {m : ℕ} (hm : m ∈ gapStarts M Q L E) :
     ∃ k, k < (gapStarts M Q L E).length ∧ gsX M Q L E k = m := by
   obtain ⟨k, hk, hke⟩ := List.mem_iff_getElem.1 hm
-  exact ⟨k, hk, by rw [gsX_eq hk]; exact hke⟩
+  exact ⟨k, hk, by rwa [gsX_eq hk]⟩
 
 /-- **The keys are constant between consecutive gap starts.** -/
 theorem kE_const (hsort : E.Pairwise (codeLe M Q L)) {a b : ℕ} (hab : a ≤ b) (hb : b < E.length)
@@ -118,7 +118,7 @@ theorem gsX_last (hE : 0 < E.length) :
   have hlt : j₀ < (gapStarts M Q L E).length - 1 := by
     rcases Nat.lt_or_ge j₀ ((gapStarts M Q L E).length - 1) with h | h
     · exact h
-    · exact absurd (by rw [show (gapStarts M Q L E).length - 1 = j₀ by omega]; exact hj₀e) hne
+    · exact absurd (by rwa [show (gapStarts M Q L E).length - 1 = j₀ by omega]) hne
   have h1 := gsX_lt (M := M) (Q := Q) (L := L) (E := E) hlt (by omega)
   have h2 := gsX_lt_len (M := M) (Q := Q) (L := L) (E := E)
     (j := (gapStarts M Q L E).length - 1) (by omega)
@@ -155,7 +155,6 @@ theorem keyE (hK : 0 < L.length) (_hsort : E.Pairwise (codeLe M Q L))
 theorem key_s_strict {j j' : ℕ} (hjj : j < j') (hj' : j' < (buildNF M Q L E).arcs.length) :
     M.key Q ((buildNF M Q L E).arc j).s < M.key Q ((buildNF M Q L E).arc j').s := by
   rw [arcsLen hK hsort hE] at hj'
-  have hE0 : 0 < E.length := by omega
   rw [keyS hK hsort hE (by omega), keyS hK hsort hE hj']
   have hlt := gsX_lt (M := M) (Q := Q) (L := L) (E := E) hjj hj'
   have hj'len := gsX_lt_len (M := M) (Q := Q) (L := L) (E := E) hj'
@@ -235,15 +234,9 @@ theorem keyBkt_eq {N : NF} {A : ℕ} (hA : N.arcs.length = A)
       ((interiorModel Q).key Q x = (interiorModel Q).key Q (N.arc j).s)
       ((interiorModel Q).key Q x = (interiorModel Q).key Q (N.arc j).e)
       ((interiorModel Q).key Q (N.arc j).s < (interiorModel Q).key Q x) := by
-  set ks : ℕ → ℝ := fun j => (interiorModel Q).key Q (N.arc j).s with hks
-  set ke : ℕ → ℝ := fun j => (interiorModel Q).key Q (N.arc j).e with hke
-  set kx := (interiorModel Q).key Q x with hkx
-  have hinj : ∀ j j', j < A → j' < A → ks j = ks j' → j = j' := by
-    intro j j' hj hj' he
-    by_contra hne
-    rcases Nat.lt_or_gt_of_ne hne with h | h
-    · exact absurd he (hinc j j' h hj').ne
-    · exact absurd he.symm (hinc j' j h hj).ne
+  set ks : ℕ → ℝ := fun j => (interiorModel Q).key Q (N.arc j).s
+  set ke : ℕ → ℝ := fun j => (interiorModel Q).key Q (N.arc j).e
+  set kx := (interiorModel Q).key Q x
   -- the count of starts below `ks c`, for a start index `c`
   have hcount : ∀ c, c ≤ A → (∀ j', j' < A → (ks j' < kx ↔ j' < c)) →
       ((List.range N.arcs.length).filter fun j' =>
@@ -262,13 +255,13 @@ theorem keyBkt_eq {N : NF} {A : ℕ} (hA : N.arcs.length = A)
   unfold keyBkt bktF
   by_cases hS : kx = ks j
   · rw [ite_eq_left hS, hcount j hj.le (fun j' hj' => by rw [hS]; exact hbelow j hj j' hj'),
-      ite_eq_left ⟨j, by rw [hA]; exact hj, hS.symm⟩]
+      ite_eq_left ⟨j, by rwa [hA], hS.symm⟩]
   · rw [ite_eq_right hS]
     by_cases hE : kx = ke j
     · have hj2 : (j + 1) % A < A := Nat.mod_lt _ (by omega)
       have hE' : kx = ks ((j + 1) % A) := hE.trans (hnext j hj)
       rw [ite_eq_left hE, hcount _ hj2.le (fun j' hj' => by rw [hE']; exact hbelow _ hj2 j' hj'),
-        ite_eq_left ⟨_, by rw [hA]; exact hj2, hE'.symm⟩]
+        ite_eq_left ⟨_, by rwa [hA], hE'.symm⟩]
     · rw [ite_eq_right hE]
       have hin : sideInArc (ks j) (ke j) kx := by
         rcases hon with h | h | h
@@ -278,7 +271,7 @@ theorem keyBkt_eq {N : NF} {A : ℕ} (hA : N.arcs.length = A)
       have hnoeq : ¬ ∃ j', j' < N.arcs.length ∧ (interiorModel Q).key Q (N.arc j').s = kx := by
         rintro ⟨j', hj', he⟩
         rw [hA] at hj'
-        exact hfree j j' hj hj' (by rw [show (interiorModel Q).key Q (N.arc j').s = kx from he]; exact hin)
+        exact hfree j j' hj hj' (by rwa [show (interiorModel Q).key Q (N.arc j').s = kx from he])
       rw [ite_eq_right hnoeq]
       by_cases hG : ks j < kx
       · rw [ite_eq_left hG, hcount (j + 1) (by omega) fun j' hj' => ?_]

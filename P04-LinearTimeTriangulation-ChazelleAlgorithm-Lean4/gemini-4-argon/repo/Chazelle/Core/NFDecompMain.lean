@@ -37,7 +37,7 @@ theorem allocS_exec' {c : Config} (hw : WordsBounded W c) (h1 : c.nreg 60011 = 1
       d.rmem = c.rmem ∧ d.output = c.output)
     (fun d => 3 * (c.nreg 60086 - d.nreg 9999)) (fun d => d.nreg 9999) (fun d h => h.1)
     (fun d ⟨hwd, hled, hrd, hmd, hrrd, hrmd, hod⟩ ht => by
-      have h1d : d.nreg 60011 = 1 := by rw [hrd _ (by decide)]; exact h1
+      have h1d : d.nreg 60011 = 1 := by rwa [hrd _ (by decide)]
       have h86 : d.nreg 60086 = c.nreg 60086 := hrd _ (by decide)
       rw [h86] at ht
       refine spec_instr (Exec.addN hwd _ _ _ (by rw [h1d]; omega)) fun hw2 => ?_
@@ -135,9 +135,9 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
       NFWithin c'.nmem (c.nreg ALLOC) (c'.nreg ALLOC) (withDec N₀ N₀.nChords N₀.nRegions σ) ∧
       IsDecomp (withDec N₀ N₀.nChords N₀.nRegions σ) (decDepth D N₀.nChords) := by
   obtain ⟨w1, w2, w3, w4, w5, w6⟩ := noWr_stmts
-  set A := c.nreg ALLOC with hA
-  set K := N₀.nChords with hK
-  set R := N₀.nRegions with hRdef
+  set A := c.nreg ALLOC
+  set K := N₀.nChords
+  set R := N₀.nRegions
   have hN0 := hNW.nfAt
   have hcount : R = K + 1 := hRT.count
   have hKR : K < R := by omega
@@ -198,8 +198,8 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
       (fun u hu => by rw [fx 7 u (by norm_num) (by unfold BFields; omega) hu]; exact (hv3 u hu).2.1)
       (fun u hu => by rw [fx 11 u (by norm_num) (by unfold BFields; omega) hu]; exact (hv3 u hu).2.2.1)
       (fun u hu => by rw [fx 12 u (by norm_num) (by unfold BFields; omega) hu]; exact (hv3 u hu).2.2.2)
-      (by rw [fx 13 0 (by norm_num) (by unfold BFields; omega) (by omega)]; exact h13)
-      (by rw [fx 15 0 (by norm_num) (by unfold BFields; omega) (by omega)]; exact h15)
+      (by rwa [fx 13 0 (by norm_num) (by unfold BFields; omega) (by omega)])
+      (by rwa [fx 15 0 (by norm_num) (by unfold BFields; omega) (by omega)])
   have hR5 := hR4.frame hf5
   -- the node table and the header
   obtain ⟨c6, k6, e6, hk6, hw6, hf6, hv6⟩ := fcS_exec (P := P) hw5 hR5 (by omega) hKR
@@ -215,9 +215,8 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
   have hAl2 : c2.nreg ALLOC = A + 12 + 19 * R + 3 * K := by rw [hA2, h86']
   have hAl7 : c7.nreg ALLOC = A + 12 + 19 * R + 3 * K := by
     show c7.nreg 9999 = _
-    rw [nreg_of_noWr e7 w5, nreg_of_noWr e6 w4, nreg_of_noWr e5 w3, nreg_of_noWr e4 w2,
+    rwa [nreg_of_noWr e7 w5, nreg_of_noWr e6 w4, nreg_of_noWr e5 w3, nreg_of_noWr e4 w2,
       nreg_of_noWr e3 w1]
-    exact hAl2
   have h24 : c6.nreg 60024 = c5.nreg 60024 := nreg_of_noWr e6 w6
   have M1' : ∀ a, a < A → c6.nmem a = c.nmem a := fun a ha => by
     rw [hv6 a, ite_eq_right (by omega), hf5.2.2.2.2 a (Or.inl (by omega)),
@@ -232,7 +231,7 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
     unfold ntv
     rw [show A + 12 + 19 * R + 3 * k + t - (A + 12 + 19 * R) = 3 * k + t by omega,
       show (3 * k + t) % 3 = t by omega, show (3 * k + t) / 3 = k by omega]
-  set σ := rsOf c5.nmem A R (c5.nreg 60024) (c5.nreg 60023) with hσ
+  set σ := rsOf c5.nmem A R (c5.nreg 60024) (c5.nreg 60023)
   have hD : K = 0 ∨ 1 ≤ D := by
     rcases Nat.eq_zero_or_pos K with h0 | hpos
     · exact Or.inl h0
@@ -274,7 +273,6 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
     have e5 := eqB 5 (by norm_num) (by norm_num) (by rw [hm' _ (by omega), x5, M1' _ (by omega)])
     have e6 := eqB 6 (by norm_num) (by norm_num) (by rw [hm' _ (by omega), x6, M1' _ (by omega)])
     have e7 := eqB 7 (by norm_num) (by norm_num) (by rw [hm' _ (by omega), x7, M1' _ (by omega)])
-    have hR0 : 0 < R := by omega
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     · rw [hm' _ (by omega), x0]; rfl
     · rw [hm' _ (by omega), x1, M1' _ (by omega)]; exact hN0.2.1
@@ -355,8 +353,8 @@ theorem decomp : DecompSpec := by
       rw [seq_length' hNF, seq_length' hNF', har])
     have h3 : rd c' bDecomp 3 = c.nreg ALLOC := h03
     have hnc : N.nChords = N₀.nChords := by unfold NF.nChords; rw [hch]
-    refine ⟨withDec N₀ N₀.nChords N₀.nRegions σ, by rw [h3], by rw [h3]; exact hNW', hch, har,
-      hrg, hsq, by rw [hnc]; exact hdec⟩
+    refine ⟨withDec N₀ N₀.nChords N₀.nRegions σ, by rw [h3], by rwa [h3], hch, har,
+      hrg, hsq, by rwa [hnc]⟩
 
 end run
 

@@ -100,11 +100,11 @@ theorem cmpA_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have kf : ∀ q, ¬ KeyW q → c₁.nreg q = c.nreg q := fun q hq => by
     unfold KeyW at hq; exact f₁ q (by omega) (by omega)
   have hx₁ : PosOK Cα (Qof E.P) E.P.n ⟨c₁.nreg a, c₁.nreg b⟩ := by
-    rw [kf a hka, kf b hkb]; exact hx
+    rwa [kf a hka, kf b hkb]
   have hy₁ : PosOK Cα (Qof E.P) E.P.n ⟨c₁.nreg d, c₁.nreg e⟩ := by
-    rw [kf d hkd, kf e hke]; exact hy
+    rwa [kf d hkd, kf e hke]
   obtain ⟨c₂, k₂, ex, hk, b1, b2, hf⟩ := keyCmp_exec ha hb hd he hI₁.hw hE.hG hE.hWh
-    (by rw [m₁, r20, hA₁']; exact hwf) (by rw [m₁, r20]; exact hC) r22 hx₁ hy₁ hWm
+    (by rwa [m₁, r20, hA₁']) (by rwa [m₁, r20]) r22 hx₁ hy₁ hWm
     (by rw [hA₁']; omega)
   have h8 : ∀ q, 80000 ≤ q → q < 90000 → c₂.nreg q = c₁.nreg q := fun q h1 h2 =>
     hf.1 q (by rw [band8 h1 h2]; simp [primBands, bRestore, bSign, bLocate])

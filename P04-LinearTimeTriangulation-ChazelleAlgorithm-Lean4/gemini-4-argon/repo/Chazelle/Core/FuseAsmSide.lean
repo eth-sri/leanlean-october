@@ -57,7 +57,7 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   have hat := hN.nfAt
   obtain ⟨hK, -, -, -, -, hch, -⟩ := hat
   obtain ⟨hB7, hch', -⟩ := Gran.nf_areas hN
-  set K := N.nChords with hKdef
+  set K := N.nChords
   have hKc : c.nmem Hd = K := hK
   obtain ⟨CB, hCB⟩ : ∃ x, c.nmem (Hd + 3) = x := ⟨_, rfl⟩
   rw [hCB] at hch hch'
@@ -83,7 +83,7 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   have hIs' := hIs
   obtain ⟨-, -, -, -, -, -, -, -, -, hhQ, -⟩ := hIs'
   have hn : (Qof P).n = P.n := shear_n _ _
-  have I0 : QLI W K CB A₀ c₁ c₁ := ⟨w₁, by omega, by rw [q01, q02]; ring, by rw [qA, q02]; ring,
+  have I0 : QLI W K CB A₀ c₁ c₁ := ⟨w₁, by rw [q01, q02]; ring, by rw [qA, q02]; ring,
     fun _ _ _ _ _ _ _ => rfl, fun _ _ => rfl, fun i hi => by omega, rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', I₂, h₂⟩ := qlLoop_exec (P := P) q05 q06 q08 q00
     (fun i hi => by have := hch' i hi; omega)

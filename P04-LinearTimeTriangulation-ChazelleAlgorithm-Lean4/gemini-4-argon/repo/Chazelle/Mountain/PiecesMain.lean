@@ -94,18 +94,18 @@ theorem exists_ball_lerp_interior {Q : Polygon} (hQ : Q.Simple) {k : ℕ} (hk : 
     ∃ r > 0, ∀ p ∈ ball (Q.vtx k) r, p ∈ Q.filled \ Q.boundary →
       ∀ s ∈ Ico (0 : ℝ) 1, lerp p (Q.vtx k) s ∈ Q.filled \ Q.boundary := by
   have hn := simple_three_le hQ
-  set v := Q.vtx k with hv
-  set a := Q.vtx (prevIdx Q k) with ha
-  set b := Q.vtx ((k + 1) % Q.n) with hb
+  set v := Q.vtx k
+  set a := Q.vtx (prevIdx Q k)
+  set b := Q.vtx ((k + 1) % Q.n)
   obtain ⟨r₁, hr₁, hball⟩ := Chazelle.Existence.boundary_near_vtx hQ hk
   have hav : 0 < dist a v :=
     dist_pos.2 (simple_vtx_ne hQ (prevIdx_lt Q hk) hk (prevIdx_ne Q hn hk))
   have hbv : 0 < dist b v := dist_pos.2 (simple_vtx_succ_ne hQ hk).symm
-  set r := min r₁ (min (dist a v) (dist b v)) with hr
+  set r := min r₁ (min (dist a v) (dist b v))
   have hr0 : 0 < r := lt_min hr₁ (lt_min hav hbv)
   refine ⟨r, hr0, fun p hp hpi => ?_⟩
   have hpv : dist p v < r := hp
-  set S := lerp p v '' Ico (0 : ℝ) 1 with hS
+  set S := lerp p v '' Ico (0 : ℝ) 1
   have hSball : S ⊆ ball v r := by
     rintro _ ⟨t, ht, rfl⟩
     rw [Geometry.lerp_eq_smul_add_smul]
@@ -118,8 +118,7 @@ theorem exists_ball_lerp_interior {Q : Polygon} (hQ : Q.Simple) {k : ℕ} (hk : 
       rcases mem_segment_or_far ht.2 h with h' | h'
       · apply hpi.2
         refine ⟨prevIdx Q k, prevIdx_lt Q hk, ?_⟩
-        rw [edge_prevIdx Q hk, Geometry.segment_comm]
-        exact h'
+        rwa [edge_prevIdx Q hk, Geometry.segment_comm]
       · have : r ≤ dist a v := (min_le_right _ _).trans (min_le_left _ _)
         linarith
     · rcases mem_segment_or_far ht.2 h with h' | h'
@@ -161,7 +160,7 @@ theorem edge_pts_eventually {g c u : ℕ} (hNH : NonHoriz P g)
     ∀ᶠ s in 𝓝[>] (0 : ℝ), ∃ h, y₁ < h ∧ h < y₂ ∧
       lerp (P.vtx c) (P.vtx u) s = ((edgeX P g h, h) : Point) := by
   have hd : 0 < (P.vtx u).2 - y₁ := by linarith
-  set s₀ := (y₂ - y₁) / ((P.vtx u).2 - y₁) with hs₀def
+  set s₀ := (y₂ - y₁) / ((P.vtx u).2 - y₁)
   have hs₀ : 0 < s₀ := div_pos (by linarith) hd
   have hs₀1 : s₀ ≤ 1 := (div_le_one hd).2 (by linarith)
   filter_upwards [Ioo_mem_nhdsGT hs₀] with s hs
@@ -196,13 +195,13 @@ theorem corner_edge (hP : P.Simple) (D : TrapData P) {c g : ℕ} (hc : c < P.n)
     · exact ⟨D.isTrap.hj, D.isTrap.nhR, D.isTrap.botR, D.isTrap.topR⟩
   have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have hmem : P.vtx c ∈ P.edge g :=
-    (mem_edge_iff_edgeX hNH).2 ⟨⟨by rw [hcy]; exact hbot, by rw [hcy]; linarith⟩,
-      by rw [hcy]; exact hcx⟩
+    (mem_edge_iff_edgeX hNH).2 ⟨⟨by rwa [hcy], by rw [hcy]; linarith⟩,
+      by rwa [hcy]⟩
   -- the height of the other endpoint
   have hu2of : ∀ u : ℕ, edgeTop P g = max (P.vtx c).2 (P.vtx u).2 → D.y₂ ≤ (P.vtx u).2 := by
     intro u hmax
     rcases le_total (P.vtx c).2 (P.vtx u).2 with h | h
-    · rw [max_eq_right h] at hmax; rw [← hmax]; exact htop
+    · rw [max_eq_right h] at hmax; rwa [← hmax]
     · rw [max_eq_left h, hcy] at hmax; linarith
   rcases (simple_vtx_mem_edge_iff hP hc hgn).1 hmem with hgc | hgc
   · -- `g = c`
@@ -274,8 +273,8 @@ theorem piece_initial (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ
   have hmQ : m < Q.n := hm.1
   have hml : m < l.length := hQn ▸ hmQ
   have hmP : l.getD m 0 < P.n := hl.getD_lt hml
-  set mP := l.getD m 0 with hmPdef
-  set v := P.vtx mP with hvdef
+  set mP := l.getD m 0
+  set v := P.vtx mP
   have hvm : Q.vtx m = v := IsPiece.vtx_eq hml
   have hn3 : 3 ≤ Q.n := simple_three_le hQ
   have hQn' : (m + 1) % Q.n = (m + 1) % l.length := by rw [hQn]
@@ -309,11 +308,11 @@ theorem piece_initial (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ
     have hzL : ((v.1 - ε, v.2) : Point) ∈ ball v rL := by
       rw [mem_ball_iff_abs]
       simp only [sub_self, abs_zero, sub_sub_cancel_left, abs_neg]
-      exact ⟨by rw [abs_of_pos hε]; exact h1, hrL⟩
+      exact ⟨by rwa [abs_of_pos hε], hrL⟩
     have hzB : ((v.1 - ε, v.2) : Point) ∈ ball v rB := by
       rw [mem_ball_iff_abs]
       simp only [sub_self, abs_zero, sub_sub_cancel_left, abs_neg]
-      exact ⟨by rw [abs_of_pos hε]; exact h2, hrB⟩
+      exact ⟨by rwa [abs_of_pos hε], hrB⟩
     have hlt : ylexLT ((v.1 - ε, v.2) : Point) v := Or.inr ⟨rfl, by simp only; linarith⟩
     have hzb : ((v.1 - ε, v.2) : Point) ∈ Q.boundary := by
       by_contra h
@@ -323,7 +322,7 @@ theorem piece_initial (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ
       simp only [sub_sub_cancel_left] at hj1; nlinarith
     exact ylexLT_asymm (hnb j hj) (Or.inr ⟨hj2, hjlt⟩)
   -- an interior point near `v`, above `v`
-  set r := min (min rL rB) (min rS rT) with hr
+  set r := min (min rL rB) (min rS rT)
   have hr0 : 0 < r := lt_min (lt_min hrL hrB) (lt_min hrS hrT)
   have hrL' : r ≤ rL := (min_le_left _ _).trans (min_le_left _ _)
   have hrS' : r ≤ rS := (min_le_right _ _).trans (min_le_left _ _)
@@ -331,7 +330,7 @@ theorem piece_initial (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ
   have hvb : v ∈ Q.boundary := by rw [← hvm]; exact vtx_mem_boundary Q hmQ
   obtain ⟨z, hzi, hzd⟩ :=
     Metric.mem_closure_iff.1 (boundary_subset_closure_interior hQ hvb) r hr0
-  have hzball : z ∈ ball v r := by rw [mem_ball, dist_comm]; exact hzd
+  have hzball : z ∈ ball v r := by rwa [mem_ball, dist_comm]
   have hvz : ylexLT v z := by
     rcases ylexLT_trichotomy z v with h | h | h
     · exact absurd hzi (hLE z (ball_subset_ball hrL' hzball) h)
@@ -378,11 +377,11 @@ theorem piece_initial (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ
     have hzL : ((v.1 + ε, D.y₁) : Point) ∈ ball v rL := by
       rw [mem_ball_iff_abs]
       simp only [add_sub_cancel_left, ← hvy, sub_self, abs_zero]
-      exact ⟨by rw [abs_of_pos hε0]; exact hεL, hrL⟩
+      exact ⟨by rwa [abs_of_pos hε0], hrL⟩
     have hzB : ((v.1 + ε, D.y₁) : Point) ∈ ball v rB := by
       rw [mem_ball_iff_abs]
       simp only [add_sub_cancel_left, ← hvy, sub_self, abs_zero]
-      exact ⟨by rw [abs_of_pos hε0]; exact hεB, hrB⟩
+      exact ⟨by rwa [abs_of_pos hε0], hrB⟩
     have hznot : ((v.1 + ε, D.y₁) : Point) ∉ Q.filled \ Q.boundary := by
       intro hzi'
       obtain ⟨ρ, hρ, hρs⟩ :=
@@ -394,12 +393,12 @@ theorem piece_initial (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ
       have h1 : ((v.1 + ε, D.y₁ - δ) : Point) ∈ ball ((v.1 + ε, D.y₁) : Point) ρ := by
         rw [mem_ball_iff_abs]
         simp only [sub_self, abs_zero, sub_sub_cancel_left, abs_neg]
-        exact ⟨hρ, by rw [abs_of_pos hδ0]; exact hδρ⟩
+        exact ⟨hρ, by rwa [abs_of_pos hδ0]⟩
       have h2 : ((v.1 + ε, D.y₁ - δ) : Point) ∈ ball v rL := by
         rw [mem_ball_iff_abs]
         simp only [add_sub_cancel_left, ← hvy]
-        refine ⟨by rw [abs_of_pos hε0]; exact hεL, ?_⟩
-        rw [show v.2 - δ - v.2 = -δ by ring, abs_neg, abs_of_pos hδ0]; exact hδL
+        refine ⟨by rwa [abs_of_pos hε0], ?_⟩
+        rwa [show v.2 - δ - v.2 = -δ by ring, abs_neg, abs_of_pos hδ0]
       exact hLE _ h2 (Or.inl (by simp only; linarith)) (hρs h1)
     have hzb : ((v.1 + ε, D.y₁) : Point) ∈ Q.boundary := by
       by_contra h
@@ -442,7 +441,7 @@ theorem piece_initial (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ
         rw [← h2, ← h1]; exact hj2.symm
       · apply D.isTrap.nhR
         show (P.vtx D.j).2 = (P.vtx ((D.j + 1) % P.n)).2
-        rw [← h2, ← h1]; exact hj2
+        rwa [← h2, ← h1]
     have haS : l.getD j 0 ∈ sideVtxSet P D.i D.j D.y₁ :=
       ⟨haP, hj2.trans hvy, by linarith, hax⟩
     have := hbmax _ haS
@@ -455,7 +454,7 @@ theorem piece_initial (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ
       · exact Or.inl ⟨hna, h⟩
       · exfalso
         exact hl.not_diag _ (Or.inl (D.diag_mem_trapDiagonals hna)) p
-          (by rw [interior_filled hQ]; exact hpi) (D.mem_diagSeg_of_det hP hpD h)
+          (by rwa [interior_filled hQ]) (D.mem_diagSeg_of_det hP hpD h)
       · exact Or.inr ⟨hpD, fun _ => h⟩
     · exact Or.inr ⟨hpD, fun h => absurd h hna⟩
   rcases hcase with ⟨hna, hneg⟩ | hpL
@@ -480,7 +479,7 @@ theorem piece_initial (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ
           _ = 0 := by rw [div_mul_cancel₀ dp hne, sub_self]
       obtain ⟨hz1, hz2⟩ := hseg _ ⟨hs0.le, hs1⟩
       exact hl.not_diag _ (Or.inl (D.diag_mem_trapDiagonals hna)) _
-        (by rw [interior_filled hQ]; exact hz1) (D.mem_diagSeg_of_det hP hz2 hdet0)
+        (by rwa [interior_filled hQ]) (D.mem_diagSeg_of_det hP hz2 hdet0)
     have hvcorner : v.1 = edgeX P D.j D.y₁ := by
       by_contra hne
       apply hright hmb (lt_of_le_of_ne hvj hne)
@@ -540,7 +539,7 @@ theorem piece_initial (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ
         obtain ⟨u₁, hu₁, hadj₁, hseg₁, hon₁, hev₁⟩ :=
           D.corner_edge hP hmP (Or.inr rfl) hvy hvj'
         have hSR : D.cellR ⊆ Q.filled \ Q.boundary := by
-          rw [← D.cellL_eq_cellR hna]; exact hSL
+          rwa [← D.cellL_eq_cellR hna]
         have hu₁nbr := hl.base_nbr hP hml hu₁ hadj₁ hSR (hev₁.mono fun s ⟨h, h1, h2, he⟩ => by
           rw [he]; exact D.right_side_mem_closure hP h1 h2)
         have hvu₀ : v ≠ P.vtx u₀ := by
@@ -585,7 +584,7 @@ theorem piece_initial (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ
           · exact absurd (h0.trans h1.symm) hu01
         rcases htop with h | h
         · refine ⟨D.j, u₁, D.top, D.isTrap.hj, hu₁, D.top_lt hP, hon₁, hu₁nbr, hwnbr,
-            by rw [h]; exact hu01, Or.inr ⟨D, rfl, hSR, Or.inr (D.isTrap.topVtx_mem hP D.free)⟩⟩
+            by rwa [h], Or.inr ⟨D, rfl, hSR, Or.inr (D.isTrap.topVtx_mem hP D.free)⟩⟩
         · refine ⟨D.i, u₀, D.top, D.isTrap.hi, hu₀, D.top_lt hP, hon₀, hu₀nbr, hwnbr,
             by rw [h]; exact hu01.symm, Or.inl ⟨D, rfl, hSL, Or.inr rfl⟩⟩
     · obtain ⟨w, hwS, hwx, hwnbr⟩ := D.bot_right_nbr hP hl hml rfl hmS hmb hSL
@@ -620,7 +619,7 @@ theorem walk_chain (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) (St : ℕ �
     (h01 : ylexLT ((subPoly P l).vtx (f 0)) ((subPoly P l).vtx (f 1))) :
     ∀ k, k + 1 < l.length →
       ylexLT ((subPoly P l).vtx (f k)) ((subPoly P l).vtx (f (k + 1))) := by
-  set Q := subPoly P l with hQdef
+  set Q := subPoly P l
   have main : ∀ k, 1 ≤ k → k < l.length →
       St (l.getD (f k) 0) ∧ ylexLT (Q.vtx (f (k - 1))) (Q.vtx (f k)) := by
     intro k
@@ -649,8 +648,8 @@ theorem walk_chain (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) (St : ℕ �
         refine ⟨?_, ?_⟩
         · have hwe : w = l.getD (f (k + 1)) 0 :=
             simple_vtx_inj hP hw (hl.getD_lt (hf _)) (hw'.trans (IsPiece.vtx_eq (hf _)))
-          rw [← hwe]; exact hStw
-        · rw [show k + 1 - 1 = k by omega, ← hw']; exact hcw
+          rwa [← hwe]
+        · rwa [show k + 1 - 1 = k by omega, ← hw']
   intro k hk
   have := (main (k + 1) (by omega) hk).2
   rwa [show k + 1 - 1 = k by omega] at this
@@ -680,7 +679,7 @@ theorem mono_of_walk (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ}
     (hwu : P.vtx w ≠ P.vtx uP) (hSt : St w) :
     ∃ a < l.length, IsMonoAt (subPoly P l) a := by
   set Q := subPoly P l with hQdef
-  set N := l.length with hNdef
+  set N := l.length
   have hQ : Q.Simple := hl.simple
   have hQn : Q.n = N := by rw [hQdef, n_subPoly]
   have hN3 : 3 ≤ N := hQn ▸ simple_three_le hQ
@@ -724,7 +723,7 @@ theorem mono_of_walk (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ}
             ((hl.getD_inj (hf k) (prevIdx_lt Q hmQ |>.trans_eq hQn) hu').trans hfN.symm)
           omega)
       (by
-        have := hidx (hf 1) hw (by rw [hwn']); rw [← this]; exact hSt)
+        have := hidx (hf 1) hw (by rw [hwn']); rwa [← this])
       (by
         rw [hf0]
         refine hmin _ (hf 1) (fun h => ?_)
@@ -736,7 +735,7 @@ theorem mono_of_walk (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ}
       intro q
       rw [← Nat.mod_add_mod, prevIdx_succ Q hmQ, hQn]
     rw [hpos, hpos]
-    exact chain p (by have := hp; rw [hQn] at this; exact this)
+    exact chain p (by have := hp; rwa [hQn] at this)
   · -- backward walk: the base is the edge from position `m` to position `m + 1`
     have hwn' : P.vtx w = Q.vtx (prevIdx Q m) := by
       rcases hwn with h | h
@@ -792,7 +791,7 @@ theorem mono_of_walk (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {m : ℕ}
       (by
         have h1 : f 1 = prevIdx Q m := by
           simp only [hfdef, mul_one]; rw [hprevN]
-        have := hidx (hf 1) hw (by rw [hwn', h1]); rw [← this]; exact hSt)
+        have := hidx (hf 1) hw (by rw [hwn', h1]); rwa [← this])
       (by
         rw [hf0]
         refine hmin _ (hf 1) (fun h => ?_)
@@ -887,11 +886,10 @@ theorem rev_boundary (hn : R.n = Q.n) (hv : ∀ k < Q.n, R.vtx k = Q.vtx (Q.n - 
   constructor
   · rintro ⟨k, hk, hp⟩
     rw [hn] at hk
-    exact ⟨_, revEdge_lt hk, by rw [← rev_edge hn hv hk]; exact hp⟩
+    exact ⟨_, revEdge_lt hk, by rwa [← rev_edge hn hv hk]⟩
   · rintro ⟨j, hj, hp⟩
     refine ⟨revEdge Q.n j, by rw [hn]; exact revEdge_lt hj, ?_⟩
-    rw [rev_edge hn hv (revEdge_lt hj), revEdge_revEdge hj]
-    exact hp
+    rwa [rev_edge hn hv (revEdge_lt hj), revEdge_revEdge hj]
 
 /-- **A reversed polygon has the same filled region.** -/
 theorem rev_filled (hn : R.n = Q.n) (hv : ∀ k < Q.n, R.vtx k = Q.vtx (Q.n - 1 - k)) :
@@ -933,7 +931,7 @@ theorem eq_sub_of_add_mod {N u v : ℕ} (hu : u < N) (hv : v < N)
 theorem rev_chainInc (hn : R.n = Q.n) (hv : ∀ k < Q.n, R.vtx k = Q.vtx (Q.n - 1 - k))
     (h3 : 3 ≤ Q.n) {a : ℕ} (ha : a < Q.n) (h : ChainDec Q a) :
     ChainInc R ((2 * Q.n - 2 - a) % Q.n) := by
-  set N := Q.n with hN
+  set N := Q.n
   intro p hp
   rw [hn] at hp ⊢
   have hN0 : 0 < N := by omega
@@ -962,7 +960,7 @@ end Reverse
 /-- The reversed piece: its vertices are those of the piece in the opposite order. -/
 theorem vtx_subPoly_reverse (P : Polygon) (l : List ℕ) {k : ℕ} (hk : k < l.length) :
     (subPoly P l.reverse).vtx k = (subPoly P l).vtx (l.length - 1 - k) := by
-  rw [vtx_subPoly_getD P l.reverse (by rw [List.length_reverse]; exact hk), getD_reverse l hk,
+  rw [vtx_subPoly_getD P l.reverse (by rwa [List.length_reverse]), getD_reverse l hk,
     vtx_subPoly_getD P l (by omega)]
 
 /-- The reversed piece has the same number of vertices. -/
@@ -998,8 +996,7 @@ theorem piece_isMountainAt (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) :
     refine ⟨(2 * l.length - 2 - a) % l.length, Nat.mod_lt _ (by omega), Or.inr
       ⟨simple_subPoly_reverse hQ, by rw [hn, hlen]; exact Nat.mod_lt _ (by omega), ?_⟩⟩
     have := rev_chainInc hn hv hQ.1 haQ hc
-    rw [hlen] at this
-    exact this
+    rwa [hlen] at this
 
 /-- **The mountain decomposition theorem, in the form used by the stack algorithm.**  Every piece
 of the subdivision of a simple polygon by `allDiagonals P` is, after rotation, a monotone
@@ -1010,10 +1007,10 @@ reversed piece has the same boundary and filled region (`boundary_subPoly_revers
 theorem piece_isMountain (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) :
     ∃ s, IsMountain ((subPoly P l).rotate s) ∨ IsMountain ((subPoly P l.reverse).rotate s) := by
   obtain ⟨a, ha, h | h⟩ := piece_isMountainAt hP hl
-  · have haQ : a < (subPoly P l).n := by rw [n_subPoly]; exact ha
+  · have haQ : a < (subPoly P l).n := by rwa [n_subPoly]
     exact ⟨(a + 1) % (subPoly P l).n, Or.inl ((isMountainAt_iff haQ).1 h)⟩
   · have haQ : a < (subPoly P l.reverse).n := by
-      rw [n_subPoly, List.length_reverse]; exact ha
+      rwa [n_subPoly, List.length_reverse]
     refine ⟨(a + 1) % (subPoly P l.reverse).n, Or.inr ((isMountainAt_iff haQ).1 h)⟩
 
 end

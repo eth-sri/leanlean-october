@@ -232,7 +232,7 @@ theorem incr_exec (c : Config) (hw : WordsBounded W c) {t : ℕ} (h10 : c.nreg 2
   obtain ⟨c', k, ex, hk, q⟩ : ∃ c' k, Exec P W (block [.addN 216010 216010 216002]) c c' k ∧
       k = 1 ∧ c'.nreg 216010 = t + 1 := by
     exec_block
-    · rw [h10, h02]; exact ht
+    · rwa [h10, h02]
     · refine ⟨rfl, ?_⟩; config_simp; rw [h10, h02]
   exact ⟨c', k, ex, hk, q, exec_frameB ex (by decide)⟩
 

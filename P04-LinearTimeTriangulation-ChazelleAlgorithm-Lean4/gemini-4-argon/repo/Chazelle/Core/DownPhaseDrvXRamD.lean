@@ -100,9 +100,9 @@ theorem posLtOn_exec (d : Config) (hw : WordsBounded W d) {a b c e dst n : ℕ} 
         Machine.upd_other _ _ _ (show r ≠ 217152 by omega),
         Machine.upd_other _ _ _ (show r ≠ 217151 by omega),
         Machine.upd_other _ _ _ (show r ≠ 217150 by omega)]
-  obtain ⟨d2, k2, e2, hk2, v2, -⟩ := posLtS_exec (P := P) d1 e1.wb_right
+  obtain ⟨d2, k2, e2, hk2, v2⟩ := posLtS_exec (P := P) d1 e1.wb_right
     (by rw [g1 _ (by omega), h20]) (by rw [g1 _ (by omega), h26]) (by rw [g1 _ (by omega), h27])
-    (by rw [a50]; exact hae) hnW hW
+    (by rwa [a50]) hnW hW
   obtain ⟨d3, k3, e3, hk3, n3⟩ := x_copy (P := P) d2 e2.wb_right dst 217154
   refine ⟨d3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, ?_⟩
   rw [n3.same, v2, a50, a51, a52, a53]
@@ -155,20 +155,20 @@ theorem bktFS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} (hj : j < A)
           else 2 * j + 1) := by
     unfold bktFS
     by_cases c1 : d.nreg 217122 < 1
-    · refine spec_ifLtN_true (by rw [h27]; exact c1) ?_
+    · refine spec_ifLtN_true (by rwa [h27]) ?_
       by_cases c2 : d.nreg 217123 < 1
-      · refine spec_ifLtN_true (by rw [h27]; exact c2) ?_
+      · refine spec_ifLtN_true (by rwa [h27]) ?_
         by_cases c3 : d.nreg 217125 < 1
-        · refine spec_ifLtN_true (by rw [h27]; exact c3) ?_
+        · refine spec_ifLtN_true (by rwa [h27]) ?_
           exec_block
           · omega
           · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_left c3]
-        · refine spec_ifLtN_false (by rw [h27]; exact c3) ?_
+        · refine spec_ifLtN_false (by rwa [h27]) ?_
           exec_block
           · omega
           · config_simp; omega
           · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_right c3]; omega
-      · refine spec_ifLtN_false (by rw [h27]; exact c2) ?_
+      · refine spec_ifLtN_false (by rwa [h27]) ?_
         refine spec_seq ?_
         exec_block
         · omega
@@ -185,7 +185,7 @@ theorem bktFS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} (hj : j < A)
           · refine ⟨by omega, ?_⟩; config_simp
             have h0 : (j + 1) % A = 0 := by rw [show j + 1 = A by omega, Nat.mod_self]
             rw [ite_eq_left c1, ite_eq_right c2, h0]
-    · refine spec_ifLtN_false (by rw [h27]; exact c1) ?_
+    · refine spec_ifLtN_false (by rwa [h27]) ?_
       exec_block
       · omega
       · config_simp; omega

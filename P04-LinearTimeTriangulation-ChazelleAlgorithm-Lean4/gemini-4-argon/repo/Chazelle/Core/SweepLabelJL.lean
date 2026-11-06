@@ -174,8 +174,6 @@ noncomputable def lδ : ℕ :=
   else 7
 
 theorem lL1_add_lL2 : lL1 J + lL2 J = llen J := by
-  have := tpos_lt J.left J.m₁
-  have hm1 : J.left.m = J.m₁ := rfl
   unfold lL1 lL2 llen
   split_ifs <;> omega
 

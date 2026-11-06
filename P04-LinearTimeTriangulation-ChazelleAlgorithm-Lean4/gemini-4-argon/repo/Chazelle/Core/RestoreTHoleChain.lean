@@ -92,7 +92,7 @@ theorem chainPre_exec (hw : WordsBounded W c) {B m top bit : ℕ} (hB : c.nreg 8
         (∀ r, r ∉ chainHL → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧
         c'.rmem = c.rmem ∧ c'.output = c.output := by
     have ht' : c.nmem (B + 3) = top := ht
-    have hb' : c.nmem (B + 3 + 1) = bit := by rw [show B + 3 + 1 = B + 4 by omega]; exact hb
+    have hb' : c.nmem (B + 3 + 1) = bit := by rwa [show B + 3 + 1 = B + 4 by omega]
     exec_block
     all_goals try (simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, hB', h23]; omega)
@@ -140,13 +140,13 @@ theorem jS_exec (hw : WordsBounded W c) {m S i : ℕ} (_hm : 0 < m) (h102 : c.nr
   · rw [g _ (by omega), h104, u] at hlt
     obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.addN e₁.wb_right 83106 83102 83104
       (by rw [g _ (by omega), g _ (by omega), h102, h104]; omega))
-    refine ⟨c₂, _, by omega, .seq e₁ (.ifLtN_true (by rw [g _ (by omega), h104, u]; exact hlt) e₂),
+    refine ⟨c₂, _, by omega, .seq e₁ (.ifLtN_true (by rwa [g _ (by omega), h104, u]) e₂),
       ?_, (o₁.trans o₂).mono (by simp)⟩
     rw [v₂, g _ (by omega), g _ (by omega), h102, h104, Nat.mod_eq_of_lt (by omega)]
   · rw [g _ (by omega), h104, u] at hlt
     obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.subN e₁.wb_right 83106 83104 83105)
     obtain ⟨c₃, k₃, hk₃, e₃, v₃, o₃⟩ := condSub_exec (P := P) e₂.wb_right 83106 83106 83100
-    refine ⟨c₃, _, by omega, .seq e₁ (.ifLtN_false (by rw [g _ (by omega), h104, u]; exact hlt)
+    refine ⟨c₃, _, by omega, .seq e₁ (.ifLtN_false (by rwa [g _ (by omega), h104, u])
       (.seq e₂ e₃)), ?_, ((o₁.trans o₂).trans o₃).mono (by simp)⟩
     have w6 : c₂.nreg 83106 = S + i - 2 * m := by
       rw [v₂, g _ (by omega), h104, u]; omega
@@ -179,8 +179,8 @@ theorem edgeH_exec (hw : WordsBounded W c) {m S j e : ℕ} (h100 : c.nreg 83100 
   obtain ⟨c₄, e₄, v₄, o₄⟩ := out_instr (P := P) (Exec.constN e₃.wb_right 84009 2 (by omega))
   obtain ⟨c₅, e₅, v₅, o₅⟩ := out_instr (P := P) (Exec.copyN e₄.wb_right 84010 83005)
   obtain ⟨c₆, e₆, v₆, o₆⟩ := out_instr (P := P) (Exec.addN e₅.wb_right 84011 83005 83023
-    (by rw [o₅.1 _ (by simp), o₄.1 _ (by simp), o₅.1 _ (by simp), o₄.1 _ (by simp),
-      g3 _ (by omega) (by omega), g3 _ (by omega) (by omega), h05, h23]; exact heW))
+    (by rwa [o₅.1 _ (by simp), o₄.1 _ (by simp), o₅.1 _ (by simp), o₄.1 _ (by simp),
+      g3 _ (by omega) (by omega), g3 _ (by omega) (by omega), h05, h23]))
   have c1 : ∀ r, r ≠ 84009 → r ≠ 84010 → r ≠ 84011 → c₆.nreg r = c₃.nreg r := fun r a b d => by
     rw [o₆.1 r (by simp [d]), o₅.1 r (by simp [b]), o₄.1 r (by simp [a])]
   have hc : candIdx m S (2 * m - 1 - j) ≤ 2 * m := by unfold candIdx; split_ifs <;> omega

@@ -71,8 +71,7 @@ theorem conn_list {P : Polygon} {CH : Chain} {γ : ℕ} (hP' : CH.P.Simple) (h2m
     unfold Model.deg
     simp
   · rw [he]; intro U hU
-    rw [Gran.weight_empty hM hU, DownMath.chainModel_size]
-    exact h2m
+    rwa [Gran.weight_empty hM hU, DownMath.chainModel_size]
 
 theorem isDecomp_mono {N : NF} {d d' : ℕ} (h : IsDecomp N d) (hd : d ≤ d') : IsDecomp N d' := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10⟩ := h

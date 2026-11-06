@@ -97,7 +97,7 @@ theorem clog_gradeGran_add_one_le (h6 : 6 ≤ lam) : Nat.clog 2 (gradeGran lam) 
 theorem cutGran_le_E (lam : ℕ) :
     (cutGran (gradeGran lam) : ℝ) ≤ 19216 * ((2 : ℝ) ^ ((lam : ℝ) / 75)) ^ 3 := by
   unfold cutGran
-  set CL := Nat.clog 2 (gradeGran lam) with hCL
+  set CL := Nat.clog 2 (gradeGran lam)
   have h1 := gradeGran_le_real CL
   have hcl : (CL : ℝ) ≤ (lam : ℝ) / 5 + 12 := by
     have a1 := clog_gradeGran_le lam
@@ -174,11 +174,8 @@ theorem phiL_le (κM κ : ℕ) {L : ℕ} (h7 : 7 ≤ lam) (hL : L ≤ 2 ^ lam) :
   push_cast
   push_cast at hCL
   have hκ : (0 : ℝ) ≤ κ := Nat.cast_nonneg _
-  have hκM : (0 : ℝ) ≤ κM := Nat.cast_nonneg _
-  set c := (Nat.clog 2 (gradeGran lam) : ℝ) + 1 with hc
+  set c := (Nat.clog 2 (gradeGran lam) : ℝ) + 1
   set r := (rpowCeil (cutGran (gradeGran lam) * (gradeGran lam + 1) ^ 2) ((1 : ℝ) / 3) : ℝ)
-    with hr
-  have hc0 : 0 ≤ c := by positivity
   have hr0 : 0 ≤ r := by positivity
   have hE11 : 1 ≤ E ^ 11 := one_le_pow₀ hE1
   have hE3 : 1 ≤ E ^ 3 := one_le_pow₀ hE1
@@ -194,8 +191,6 @@ theorem phiL_le (κM κ : ℕ) {L : ℕ} (h7 : 7 ≤ lam) (hL : L ≤ 2 ^ lam) :
   have hGb : (κ : ℝ) * c ≤ κ * (3 * lam) := mul_le_mul_of_nonneg_left hCL hκ
   have hHb : (cutGran (gradeGran lam) : ℝ) + (Nat.clog 2 (L + 1) : ℝ) + 1 ≤ 19368 * E ^ 3 := by
     nlinarith
-  have hF0 : 0 ≤ (κ : ℝ) * c * r + κ := by positivity
-  have hG0 : 0 ≤ (κ : ℝ) * c := by positivity
   calc (κM : ℝ) * ((κ : ℝ) * c * r + κ) * ((κ : ℝ) * c) *
         ((cutGran (gradeGran lam) : ℝ) + (Nat.clog 2 (L + 1) : ℝ) + 1)
       ≤ (κM : ℝ) * (κ * 14704 * lam * E ^ 11) * (κ * (3 * lam)) * (19368 * E ^ 3) := by
@@ -285,7 +280,6 @@ theorem mergedKb_le {L J : ℕ} (h1 : 1 ≤ lam) (hL : L ≤ 2 ^ lam) (hJ : J �
   have hEE : E ≤ E ^ 75 := by
     calc E = E ^ 1 := (pow_one E).symm
       _ ≤ E ^ 75 := pow_le_pow_right₀ hE1 (by norm_num)
-  have e75 : E ^ 75 = E ^ 60 * E ^ 15 := by ring
   nlinarith
 
 /-- The constant of one level. -/
@@ -315,10 +309,7 @@ theorem lvBound_le (κM κ : ℕ) {a L J : ℕ} (h7 : 7 ≤ lam) (hL : L ≤ 2 ^
     (J : ℝ) with hR
   have hRb : R ≤ 263340 * E ^ 60 := by linarith
   have hR0 : 0 ≤ R := by positivity
-  set K1 : ℝ := (κM * κ ^ 2 * 14704 * 3 * 19368 : ℝ) with hK1
-  have hK1 : 0 ≤ K1 := by positivity
-  have hφ0 : (0 : ℝ) ≤ phiL (fun _ => κM) (scF κ) (scG κ) cutGran (gradeGran lam) L :=
-    Nat.cast_nonneg _
+  set K1 : ℝ := (κM * κ ^ 2 * 14704 * 3 * 19368 : ℝ)
   have hprod : (phiL (fun _ => κM) (scF κ) (scG κ) cutGran (gradeGran lam) L : ℝ) * R ≤
       K1 * (lam : ℝ) ^ 2 * E ^ 14 * (263340 * E ^ 60) :=
     mul_le_mul hφ hRb hR0 (by positivity)
@@ -329,8 +320,6 @@ theorem lvBound_le (κM κ : ℕ) {a L J : ℕ} (h7 : 7 ≤ lam) (hL : L ≤ 2 ^
   push_cast
   rw [← hR] at *
   have hl2E : (lam : ℝ) ^ 2 ≤ (lam : ℝ) ^ 2 * E ^ 74 := by nlinarith
-  have e : K1 * (lam : ℝ) ^ 2 * E ^ 14 * (263340 * E ^ 60) =
-      K1 * 263340 * ((lam : ℝ) ^ 2 * E ^ 74) := by ring
   nlinarith
 
 /-- **Lemma 4.1's step bound is `O(lemma41Nat λ)`.** -/
@@ -356,7 +345,6 @@ theorem l41Big_le (κM κ : ℕ) {a L : ℕ} (h7 : 7 ≤ lam) (_hL1 : 2 ^ (lam -
     rw [hV, e]; exact Nat.le_ceil _
   have hl1 : (1 : ℝ) ≤ lam := by exact_mod_cast (show 1 ≤ lam by omega)
   have hE74 : 1 ≤ E ^ 74 := one_le_pow₀ hE1
-  have hcl0 : (0 : ℝ) ≤ Nat.clog 2 lam := Nat.cast_nonneg _
   have hsq : (lam : ℝ) ≤ (lam : ℝ) ^ 2 := by nlinarith
   have hV1 : (lam : ℝ) ^ 2 ≤ V := by
     have h1 : (1 : ℝ) ≤ ((Nat.clog 2 lam : ℝ) + 1) * E ^ 74 := by nlinarith

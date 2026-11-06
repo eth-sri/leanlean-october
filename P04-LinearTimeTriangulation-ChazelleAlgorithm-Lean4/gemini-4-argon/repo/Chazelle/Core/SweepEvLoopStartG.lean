@@ -103,7 +103,7 @@ theorem stLog_irs (hK : Consts c₀) (hI : IInv W c₀ c) (hlB : c₀.nreg ALLOC
   have hne : ∀ r ∈ lsLogRegs, r ≠ zX := by
     intro r hr; simp only [lsLogRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
     rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp [kE, kH, kN, kL, zX, sw]
-  refine IRS.seq (K₁ := 14) (K₂ := 1) (stores_irs hK hzX lsLogRegs _ hI₁ (by rw [v1]; exact hlB) hne
+  refine IRS.seq (K₁ := 14) (K₂ := 1) (stores_irs hK hzX lsLogRegs _ hI₁ (by rwa [v1]) hne
     (by rw [v1]; simp [lsLogRegs]; omega)) ?_
   rintro c₂ hI₂ - - ⟨e1, e2, e3⟩
   rw [v1] at e3
@@ -114,7 +114,7 @@ theorem stLog_irs (hK : Consts c₀) (hI : IInv W c₀ c) (hlB : c₀.nreg ALLOC
   have val : ∀ k, k < 7 → c₂.nmem (c.nreg lB + k) = c.nreg (lsLogRegs.getD k 0) := by
     intro k hk
     rw [e3, ite_eq_left (by rw [hlen]; omega), Nat.add_sub_cancel_left, o1 _ ?_]
-    rw [List.getD_eq_getElem _ _ (by rw [hlen]; exact hk)]
+    rw [List.getD_eq_getElem _ _ (by rwa [hlen])]
     exact hne _ (List.getElem_mem _)
   refine ⟨by simp [regI], fun q h1 h2 => ?_, fun x hx => ?_, ?_, ?_, ?_, fun i hi => ?_⟩
   · simp only [regI]

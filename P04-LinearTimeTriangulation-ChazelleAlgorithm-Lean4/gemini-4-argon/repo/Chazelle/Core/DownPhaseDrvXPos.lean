@@ -145,11 +145,9 @@ theorem pEdge_rep (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) {li
       by_contra hne; exact hdh _ _ hhn (ivB_lt li hp) hne hy
     rw [ite_eq_left hh]
   · simp only [pEdge]
-    rw [qE_qE li hp]
-    rw [ite_eq_right]
+    rw [qE_qE li hp, ite_eq_right]
     intro hh
     rw [hh] at hy
-    have hf0 : 0 ≤ κ - ⌊κ⌋₊ := by have := Nat.floor_le hb.1; linarith
     have hf1 : κ - ⌊κ⌋₊ < 1 := by have := Nat.lt_floor_add_one κ; linarith
     unfold hostPt sidePt at hy
     rw [hW, walk_n, DownMath.walk_vtx hli hp, DownMath.walk_vtx hli hp1, Chazelle.Geometry.lerp_snd] at hy
@@ -215,7 +213,7 @@ theorem not_attach_flat {y a b : ℝ} (hab : a < b) {q : ℕ} (hq : q < xK) {t :
     (hflat : ((xG).vtx q).2 = ((xG).vtx ((q + 1) % xK)).2)
     (hA : SideAttach xG (hseg y a b) q t) : False := by
   have hne : (xG).vtx q ≠ (xG).vtx ((q + 1) % (xG).n) :=
-    Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rw [Y.gn]; exact hq)
+    Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rwa [Y.gn])
   obtain ⟨-, -, -, hmem, rA, hrA, hsec⟩ := hA
   obtain ⟨x, hxc, hxne, hxd⟩ := Extract.exists_near_mem hab hmem hrA
   have hx := (Chazelle.Chain.sideLeft_edge hne ht x).1 (hsec x hxc hxne hxd)
@@ -245,7 +243,7 @@ theorem not_attach_junction {y a b : ℝ} (hab : a < b) {ι : ℕ} (hι : ι < x
     (h1 : ((xG).vtx ι).2 = ((xG).vtx ((ι + 1) % xK)).2)
     (h2 : ((xG).vtx (prevIdx xK ι)).2 = ((xG).vtx ι).2)
     (hA : SideAttach xG (hseg y a b) ι 0) : False := by
-  have hσ : ι < (xG).n := by rw [Y.gn]; exact hι
+  have hσ : ι < (xG).n := by rwa [Y.gn]
   obtain ⟨-, -, -, hmem, rA, hrA, hsec⟩ := hA
   obtain ⟨x, hxc, hxne, hxd⟩ := Extract.exists_near_mem hab hmem hrA
   have hx := hsec x hxc hxne hxd

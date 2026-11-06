@@ -56,7 +56,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     have : offK P J (pK0 J) 0 = oW J (((pK0 J : ℕ) : ℝ) + 0) := by
       unfold offK oW; rfl
     rw [this]; unfold pK0; exact_mod_cast hoK
-  set i := c.nreg sP with hid
+  set i := c.nreg sP
   have nob : ∀ j, j < 10000 → bandOf (sw j) ∉ oracleBands := fun j hj => not_oracle_sw (by unfold sw; omega) (by unfold sw; omega)
   unfold stStep
   refine (IRS.ite (K := 11990) (fun hlt => ?_) (fun hge => ?_)).mono
@@ -93,8 +93,8 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   refine IRS.seq (K₁ := 11008) (K₂ := 84) (callOff_irs (dsc := sw 2) (ex := kE) (hx := kH)
     (ey := zE) (hy := zH) (g := cGW) (o := zO) (C := J.whole) hI₁ (E.ctxW' hI₁)
     (by simp [kE, kH, zE, zH, cGW, sw]) (by simp [zO, sw])
-    (by rw [e1kE]; exact hpKn) (by rw [e1E]; exact hpw.1) (by rw [hgw]; exact hC.hg)
-    (by rw [e1kE, e1kH]; exact hpKp) (by rw [e1E, e1H]; exact hpw.2.1)
+    (by rwa [e1kE]) (by rw [e1E]; exact hpw.1) (by rw [hgw]; exact hC.hg)
+    (by rwa [e1kE, e1kH]) (by rw [e1E, e1H]; exact hpw.2.1)
     (by rw [e1kE, e1kH]; exact fun _ => hpK6 rfl) (by rw [e1E, e1H]; exact hpw.2.2)
     (by rw [hA1]; unfold stStepK at hroom; omega)) ?_
   rintro c₂ hI₂ hA₂ - ⟨b2, -, k2, hal2, hm2⟩
@@ -102,8 +102,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have hb2 : BitIs c₂ zO (Lst J < soff P J rs[i]) := by
     have e : off (chainModel J.whole).W.n (gW J : ℝ) ((chainModel J.whole).key (Qof P) ⟨pK0 J, 0⟩)
         = Lst J := hoK'
-    rw [e] at b2
-    exact b2
+    rwa [e] at b2
   have k12 : ∀ q, bandOf q ∉ oracleBands → q ≠ zX → q ≠ zE → q ≠ zH → q ≠ zO → q ≠ zO + 1 →
       q ≠ ALLOC → c₂.nreg q = c.nreg q := fun q hq h1 h2 h3 h4 h5 h6 => by
     rw [k2 q hq h4 h5 h6, k1 q h1 h2 h3]
@@ -144,7 +143,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       simp only [Nat.zero_add] at this
       have e2 : soff P J rs[2] = Lst J := by
         have : rs[i] = rs[2] := by simp [hi2]
-        rw [← this]; exact hat
+        rwa [← this]
       linarith
     have hax := hAR i (by omega)
     rw [getD_d5 (by omega)] at hax
@@ -190,8 +189,8 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
         (by simp [ALLOC, zL, sw]) (by simp [ALLOC, zM, sw])
     -- the labels
     have n3 : c₃.nreg kN ≤ 4 := by
-      rw [keep3 kN (Or.inl (Or.inl rfl)), keepS kN (Or.inl (Or.inl rfl))]; exact sN
-    refine IRS.seq (K₁ := 70) (K₂ := 1) (stLabs_irs hI₃ E.hK n3 (by rw [e3A]; exact ax1) hW4) ?_
+      rwa [keep3 kN (Or.inl (Or.inl rfl)), keepS kN (Or.inl (Or.inl rfl))]
+    refine IRS.seq (K₁ := 70) (K₂ := 1) (stLabs_irs hI₃ E.hK n3 (by rwa [e3A]) hW4) ?_
     rintro c₄ hI₄ hA₄ - ⟨n4, l4, a4, f4, m4⟩
     -- advance the pointer
     have sP4 : c₄.nreg sP = i := by
@@ -263,7 +262,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     · rw [f5 _ (by simp [aF, sP, sw]), a4]
       split_ifs
       · omega
-      · rw [aF3]; exact aF1
+      · rwa [aF3]
     · rw [f5 _ (by simp [aF, sP, sw]), a4, v5]
       by_cases ha : c₃.nreg zA = 1
       · rw [ite_eq_left ha]

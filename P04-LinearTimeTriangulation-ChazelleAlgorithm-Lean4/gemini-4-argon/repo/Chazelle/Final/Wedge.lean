@@ -110,11 +110,9 @@ theorem wedgeSign_cases {s D L₁ L₂ : ℝ} (hs : s = 1 ∨ s = -1) (h₁ : ¬
   simp only [neg_mul] at h₂
   rcases wedgeSign_cases_aux (s * D) (s * L₁) (s * L₂) h₁ h₂ with ⟨e, h⟩ | ⟨e, h⟩
   · refine Or.inl ⟨(mul_eq_zero.1 e).resolve_left hs0, ?_⟩
-    rw [show s * L₁ * (s * D) = (s * s) * (L₁ * D) by ring, hss, one_mul] at h
-    exact h
+    rwa [show s * L₁ * (s * D) = (s * s) * (L₁ * D) by ring, hss, one_mul] at h
   · refine Or.inr ⟨(mul_eq_zero.1 e).resolve_left hs0, ?_⟩
-    rw [show s * L₂ * (s * D) = (s * s) * (L₂ * D) by ring, hss, one_mul] at h
-    exact h
+    rwa [show s * L₂ * (s * D) = (s * s) * (L₂ * D) by ring, hss, one_mul] at h
 
 /-- The wedge test only depends on the direction from the apex: for `ε > 0` the point
 `lerp a b ε` passes iff `b` passes. -/
@@ -148,7 +146,6 @@ theorem not_wedgeTest_of_mem_edges {s : ℝ} {p a q x : Point}
       · exact lt_irrefl _ h''
       · nlinarith
     · intro h''
-      have : s * det p a q = 0 := by linarith [not_lt.1 h, not_lt.1 h']
       nlinarith
   · obtain ⟨t, ht0, ht1, rfl⟩ := mem_segment_iff_lerp.1 hx
     have e1 : det p a (lerp a q t) = t * det p a q := by
@@ -177,11 +174,10 @@ theorem sector_spec {s : ℝ} (hs : s = 1 ∨ s = -1) :
     ∃ r > 0, ∀ x ∈ ball (Q.vtx k) r,
       wedgeTest s (Q.vtx (prevIdx Q k)) (Q.vtx k) (Q.vtx ((k + 1) % Q.n)) x →
         x ∉ Q.boundary ∧ (x ∈ Q.filled ↔ s = orient Q) := by
-  have hn := simple_three_le hQ
   obtain ⟨r, hr, hball⟩ := Chazelle.Existence.boundary_near_vtx hQ hk
-  set p := Q.vtx (prevIdx Q k) with hp
-  set a := Q.vtx k with ha
-  set q := Q.vtx ((k + 1) % Q.n) with hq
+  set p := Q.vtx (prevIdx Q k)
+  set a := Q.vtx k
+  set q := Q.vtx ((k + 1) % Q.n)
   have hss : s * s = 1 := by rcases hs with rfl | rfl <;> norm_num
   have haq : a ≠ q := simple_vtx_succ_ne hQ hk
   set S : Set Point := ball a r ∩ {x | wedgeTest s p a q x} with hS
@@ -212,7 +208,6 @@ theorem sector_spec {s : ℝ} (hs : s = 1 ∨ s = -1) :
         obtain ⟨ε, hεb, hε0⟩ :=
           ((htq.eventually (isOpen_ball.mem_nhds (mem_ball_self hr))).and
             self_mem_nhdsWithin).exists
-        have hε0' : (0 : ℝ) < ε := hε0
         obtain ⟨e1, e2⟩ := det_reflex_point p a q ε
         refine IsPreconnected.union (a + ε • ((a - p) - (q - a))) ⟨hεb, ?_⟩ ⟨hεb, ?_⟩
           ((convex_ball a r).inter (convex_det_pos p a s)).isPreconnected
@@ -273,9 +268,8 @@ theorem sector_spec {s : ℝ} (hs : s = 1 ∨ s = -1) :
   have hxS : x ∈ S := ⟨hxb, hxw⟩
   have hxB : x ∉ Q.boundary := hSb hxS
   refine ⟨hxB, ?_⟩
-  rw [mem_filled_iff hQ hxB, parity_eq_of_isPreconnected Q hSc hSb hxS hyS,
+  rwa [mem_filled_iff hQ hxB, parity_eq_of_isPreconnected Q hSc hSb hxS hyS,
     ← mem_filled_iff hQ hyb]
-  exact hyf
 
 /-- Along a direction passing the `s`-test, the points `lerp a b ε` near `a` are off the boundary
 and filled exactly when `s = orient Q`. -/
@@ -314,7 +308,7 @@ theorem wedge_of_interior {b : Point} (hba : b ≠ Q.vtx k)
   have hn := simple_three_le hQ
   set p := Q.vtx (prevIdx Q k) with hp
   set a := Q.vtx k with ha
-  set q := Q.vtx ((k + 1) % Q.n) with hq
+  set q := Q.vtx ((k + 1) % Q.n)
   have hpa : p ≠ a := simple_vtx_ne hQ (prevIdx_lt Q hk) hk (prevIdx_ne Q hn hk)
   have haq : a ≠ q := simple_vtx_succ_ne hQ hk
   have hbd : ∀ ε ∈ Ioo (0 : ℝ) 1, lerp a b ε ∉ Q.boundary := fun ε hε => (hin ε hε).2
@@ -343,7 +337,7 @@ theorem wedge_of_interior {b : Point} (hba : b ≠ Q.vtx k)
     rcases lt_trichotomy μ 0 with h | h | h
     · have hDD : det p a q * det p a q ≤ 0 := by nlinarith
       have hD : det p a q = 0 := mul_self_eq_zero.1 (le_antisymm hDD (mul_self_nonneg _))
-      have hD' : det a q p = 0 := by rw [det_cyclic]; exact hD
+      have hD' : det a q p = 0 := by rwa [det_cyclic]
       obtain ⟨ν, hν⟩ := exists_lerp_of_det_eq_zero haq hD'
       rcases lt_trichotomy ν 0 with hν0 | hν0 | hν0
       · have hν' : ν ≠ 0 := hν0.ne
@@ -375,7 +369,7 @@ theorem wedge_of_interior {b : Point} (hba : b ≠ Q.vtx k)
         rcases hz1' with e | e
         · rw [← hp, hν] at e
           exact absurd (Chazelle.Geometry.lerp_injective haq e) htν.ne
-        · have e' : lerp a q t = lerp a q 0 := by rw [lerp_zero]; exact e
+        · have e' : lerp a q t = lerp a q 0 := by rwa [lerp_zero]
           exact absurd (Chazelle.Geometry.lerp_injective haq e') ht0.ne'
     · exact hba (by rw [hμ, h, lerp_zero])
     · exact ray q seg_aq μ h hμ
@@ -442,7 +436,7 @@ theorem wedge_of_isDiag {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × �
     {i : ℕ} (hi : i < l.length) (hx : l.getD i 0 = d.1) :
     wedgeTest (orient (subPoly P l)) ((subPoly P l).vtx (prevIdx (subPoly P l) i))
       ((subPoly P l).vtx i) ((subPoly P l).vtx ((i + 1) % (subPoly P l).n)) (P.vtx d.2) := by
-  have hi' : i < (subPoly P l).n := by rw [n_subPoly]; exact hi
+  have hi' : i < (subPoly P l).n := by rwa [n_subPoly]
   have ha : (subPoly P l).vtx i = P.vtx d.1 := by rw [vtx_subPoly_getD P l hi, hx]
   refine wedge_of_interior hQ hi' (by rw [ha]; exact (hd.vtx_ne P hQ).symm) ?_
   intro ε hε
@@ -460,7 +454,7 @@ theorem orient_arcList {l : List ℕ} (hQ : (subPoly P l).Simple) {s L : ℕ} (h
   have hn1 : ((0 + 1) % (subPoly P (arcList l s L)).n) = 1 := by
     rw [n_subPoly, hlen]; exact Nat.mod_eq_of_lt (by omega)
   refine (orient_eq_of_filled_subset hA hQ (i := 0) (j := s) (by rw [n_subPoly, hlen]; omega)
-    (by rw [n_subPoly]; exact hs) ?_ ?_ hsub).symm
+    (by rwa [n_subPoly]) ?_ ?_ hsub).symm
   · rw [vtx_subPoly_getD P _ (by rw [hlen]; omega), vtx_subPoly_getD P _ hs,
       getD_arcList hL (Nat.zero_le _), Nat.add_zero, Nat.mod_eq_of_lt hs]
   · rw [hn1, vtx_subPoly_getD P _ (by rw [hlen]; omega), n_subPoly,

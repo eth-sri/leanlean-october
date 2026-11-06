@@ -95,7 +95,7 @@ theorem pe_pos_of_lexPos {L : List ℝ} (h : lexPos L) :
     rcases h with h | ⟨h1, h2⟩
     · have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), (0 : ℝ) < pe (c :: L) ε :=
         continuous_const.continuousAt.eventually_lt (continuous_pe (c :: L)).continuousAt
-          (by rw [pe_cons_zero]; exact h)
+          (by rwa [pe_cons_zero])
       exact nhdsWithin_le_nhds hc
     · filter_upwards [ih h2, self_mem_nhdsWithin] with ε hε hε0
       simp only [pe, h1, zero_add]
@@ -110,7 +110,7 @@ theorem pe_neg_of_lexNeg {L : List ℝ} (h : lexNeg L) :
     rcases h with h | ⟨h1, h2⟩
     · have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), pe (c :: L) ε < (0 : ℝ) :=
         (continuous_pe (c :: L)).continuousAt.eventually_lt continuous_const.continuousAt
-          (by rw [pe_cons_zero]; exact h)
+          (by rwa [pe_cons_zero])
       exact nhdsWithin_le_nhds hc
     · filter_upwards [ih h2, self_mem_nhdsWithin] with ε hε hε0
       simp only [pe, h1, zero_add]
@@ -284,8 +284,7 @@ theorem symRep_spec (P : Polygon) (s : SymPt) :
               ((P.vtx e).2 + ε * (P.vtx e).1))), (P.vtx h).2 + ε * (P.vtx h).1) := by
       simp only [SymPt.eval, edgeXAt, Visibility.edgeX, Visibility.xAt, shear_vtx, shear_n,
         shearPt]
-    rw [hev]
-    exact hε
+    rwa [hev]
 
 /-! ## The coefficient lists of the tests -/
 

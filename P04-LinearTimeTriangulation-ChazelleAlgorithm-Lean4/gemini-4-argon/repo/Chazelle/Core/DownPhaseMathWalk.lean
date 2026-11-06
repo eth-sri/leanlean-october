@@ -66,7 +66,7 @@ theorem repFrom_flatMap {li : Bool} (G : ℕ → List SymPt) (d J : ℕ → ℕ)
     obtain ⟨h1, h2⟩ := ih fun t ht => hG t (by omega)
     obtain ⟨h3, h4⟩ := hG k (by omega)
     rw [List.range_succ, List.flatMap_append, List.flatMap_singleton]
-    refine ⟨repFrom_append h1 (by rw [h2]; exact h3), ?_⟩
+    refine ⟨repFrom_append h1 (by rwa [h2]), ?_⟩
     rw [List.length_append, h2, h4, grpOff_succ]
 
 theorem repFrom_rotate {li : Bool} {L : List SymPt} {i : ℕ}
@@ -76,7 +76,7 @@ theorem repFrom_rotate {li : Bool} {L : List SymPt} {i : ℕ}
   rw [List.length_rotate] at hj
   have hpos : 0 < L.length := by omega
   have hjm := h ((j + m) % L.length) (Nat.mod_lt _ hpos)
-  rw [List.getD_eq_getElem _ _ (by rw [List.length_rotate]; exact hj), List.getElem_rotate,
+  rw [List.getD_eq_getElem _ _ (by rwa [List.length_rotate]), List.getElem_rotate,
     ← List.getD_eq_getElem _ (.vtx 0) (Nat.mod_lt _ hpos)]
   have e : (i + (j + m) % L.length) % nk (interiorModel Q) S R =
       (i + m + j) % nk (interiorModel Q) S R := by

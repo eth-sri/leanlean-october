@@ -80,13 +80,13 @@ theorem slotLoop_exec {P : Polygon} {W D S L deg : ℕ} {ex : List ℕ} {c₀ : 
           (c₂.nmem = upd c.nmem (S + t) (ex.getD t 0) ∧
             ∀ r, r ≠ 90083 → r ≠ 90084 → c₂.nreg r = c₁.nreg r) := by
         by_cases hlt : t < deg
-        · refine spec_ifLtN_true (by rw [d81, d79]; exact hlt) ?_
+        · refine spec_ifLtN_true (by rwa [d81, d79]) ?_
           exec_block
           · rw [d80, d81]; omega
           · refine ⟨by omega, ?_, fun r a1 a2 => by simp [upd, a1, a2]⟩
             config_simp
             rw [d82, d80, d81, dm, hm _ (hdisj t hlt), hsrc t hlt]
-        · refine spec_ifLtN_false (by rw [d81, d79]; exact hlt) ?_
+        · refine spec_ifLtN_false (by rwa [d81, d79]) ?_
           exec_block
           · omega
           · refine ⟨by omega, ?_, fun r a1 a2 => by simp [upd, a2]⟩
@@ -208,7 +208,7 @@ theorem regBody_exec {P : Polygon} {W R D RB LB : ℕ} {d : Dm} {rg : ℕ → RR
   have hrc' : RegRec c.nmem RB LB r (rg r).chords.length (rg r).wt (rg r).chords := by
     obtain ⟨a1, a2, a3, a4⟩ := hrc
     have e3 : c.nmem (RB + 5 * r + 3) = c₀.nmem (RB + 5 * r + 3) := hm _ (by left; omega)
-    refine ⟨by rw [hm _ (by left; omega)]; exact a1, by rw [hm _ (by left; omega)]; exact a2,
+    refine ⟨by rwa [hm _ (by left; omega)], by rwa [hm _ (by left; omega)],
       fun t ht' => ?_, a4⟩
     rw [e3, hm _ (by left; omega)]; exact a3 t ht'
   have e3 : c.nmem (RB + 5 * r + 3) = c₀.nmem (RB + 5 * r + 3) := hm _ (by left; omega)
@@ -216,7 +216,7 @@ theorem regBody_exec {P : Polygon} {W R D RB LB : ℕ} {d : Dm} {rg : ℕ → RR
   obtain ⟨c₁, k₁, e₁, hk₁, q79, q80, q81, qm, qr⟩ := regHead_exec (P := P) (d := d) c hw
     (S := d.b0 + d.oEx + D * r) hBc hrr hp hsl (by rw [hr _ (by decide), h22])
     (by rw [hr _ (by decide), h19]) (by rw [hr _ (by decide), h20]) (by rw [hr _ (by decide), h21])
-    hrc' (by rw [hR]; exact ht) (by omega) hW
+    hrc' (by rwa [hR]) (by omega) hW
   have w₁ := e₁.wb_right
   -- the list base
   set L' := if (rg r).chords.length = 0 then 0 else LB + c.nmem (RB + 5 * r + 3) with hL'
@@ -378,7 +378,7 @@ theorem regLoop_exec {P : Polygon} {W R D RB LB : ℕ} {d : Dm} {rg : ℕ → RR
     (body := regBody) (RegI W R D RB d rg c₀) (fun c => R - c.nreg 90070) (9 * D + 22)
     (fun _ h => h.wb)
     (fun c I ht => by
-      have t : c.nreg 90070 < R := by rw [I.regs 90012 (by decide), h12] at ht; exact ht
+      have t : c.nreg 90070 < R := by rwa [I.regs 90012 (by decide), h12] at ht
       obtain ⟨c', k, e, I', hk, hi⟩ := regBody_exec (P := P) I hB hR hD h02 h12 h22 h19 h20 h21
         hrec hdeg hRB hL hW t
       exact ⟨c', k, e, I', hk, by omega⟩) q

@@ -138,11 +138,11 @@ theorem tLoop_exec (c : Config) (hw : WordsBounded W c) (hk1 : c.nreg K1 = 1) {n
       c'.nreg ALLOC ≤ c.nreg ALLOC + k := by
   have hI0 : IInv W c c := ⟨hw, fun _ _ => rfl, le_rfl, fun _ _ => rfl, fun _ _ => rfl⟩
   set A := c.nreg ALLOC with hA
-  set Λ := Nat.clog 2 n with hΛ
+  set Λ := Nat.clog 2 n
   have hI : tInv A Λ n c := ⟨by rw [htV, htT]; rfl, by rw [htT]; omega, fun i hi => by rw [htT] at hi; omega,
     by rw [htT]; omega, htN⟩
   have hiK : ∀ c', IInv W c c' → c'.nreg K1 = 1 := fun c' h' => by
-    rw [h'.hin _ (by unfold IFix K1 sw; omega)]; exact hk1
+    rwa [h'.hin _ (by unfold IFix K1 sw; omega)]
   have hw' := IRS.while (P := P) (c₀ := c) (a := tV) (b := tN) (body := block tBody) (tInv A Λ n)
     (fun c' => Λ + 6 - c'.nreg tT) 4
     (fun c' hc' hlt => by
@@ -152,7 +152,7 @@ theorem tLoop_exec (c : Config) (hw : WordsBounded W c) (hk1 : c.nreg K1 = 1) {n
       omega)
     (fun c' hI' hc' hlt hroom => by
       obtain ⟨h1, h2, h3, h4, h5⟩ := hc'
-      have hlt' : 2 ^ c'.nreg tT < 64 * n := by rw [← h1, ← h5]; exact hlt
+      have hlt' : 2 ^ c'.nreg tT < 64 * n := by rwa [← h1, ← h5]
       have htl := lt_of_pow_lt hlt'
       obtain ⟨c'', k, ex, hk, a1, aV, aT, ar, am, arr, arm, ao⟩ :=
         tBody_exec (P := P) c' hI'.hw (hiK c' hI') (by omega) (by rw [h1]; omega) (by omega)
@@ -170,8 +170,8 @@ theorem tLoop_exec (c : Config) (hw : WordsBounded W c) (hk1 : c.nreg K1 = 1) {n
         · rw [upd_other _ _ _ (by omega)]; exact h3 i hi
         · rw [h2, upd_same, h1]
       · rw [aT]; omega
-      · rw [ar _ (by unfold tN ALLOC sw; omega) (by unfold tN tV sw; omega)
-          (by unfold tN tT sw; omega)]; exact h5
+      · rwa [ar _ (by unfold tN ALLOC sw; omega) (by unfold tN tV sw; omega)
+          (by unfold tN tT sw; omega)]
       · show Λ + 6 - c''.nreg tT < Λ + 6 - c'.nreg tT
         rw [aT]; omega)
     hI0 hI (by show A + (4 + 2) * (Λ + 6 - c.nreg tT) ≤ W; rw [htT]; omega)
@@ -221,7 +221,7 @@ theorem ansInit_exec (c : Config) (hw : WordsBounded W c) (h90 : c.nreg (sw 90) 
       (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
       (∀ j, j < 700 → j ≠ 30 → j ≠ 31 → j ≠ 96 → j ≠ 97 → j ≠ 98 → j ≠ 600 → j ≠ 601 →
         (j < 610 ∨ 616 < j) → c'.nreg (sw j) = c.nreg (sw j)) := by
-  set A := c.nreg ALLOC with hA
+  set A := c.nreg ALLOC
   have nA : ∀ j, sw j ≠ ALLOC := fun j => by unfold sw ALLOC; omega
   -- 1. the constants
   obtain ⟨c₁, k₁, e₁, hk₁, hK₁, r₁, m₁, rr₁, rm₁, o₁⟩ := ksL_exec (P := P) c hw (by omega)
@@ -231,8 +231,8 @@ theorem ansInit_exec (c : Config) (hw : WordsBounded W c) (h90 : c.nreg (sw 90) 
   -- 2. the model descriptors
   obtain ⟨c₂, k₂, e₂, hk₂, zA, z30, z31, z0, zq, z6, zl, zlo, zr, zrr, zrm, zo⟩ :=
     mdBlk_exec (P := P) c₁ e₁.wb_right (by rw [q₁ 90 (by omega), h90])
-      (by rw [q₁ 91 (by omega), h91]) (by rw [q₁ 20 (by omega), A₁]; exact s20)
-      (by rw [q₁ 21 (by omega), A₁]; exact s21) (by rw [A₁]; omega)
+      (by rw [q₁ 91 (by omega), h91]) (by rwa [q₁ 20 (by omega), A₁])
+      (by rwa [q₁ 21 (by omega), A₁]) (by rw [A₁]; omega)
   rw [A₁] at zA z30 z31 z0 zq z6 zl zlo
   rw [q₁ 20 (by omega), m₁] at zq
   rw [q₁ 21 (by omega), m₁] at zl
@@ -247,9 +247,9 @@ theorem ansInit_exec (c : Config) (hw : WordsBounded W c) (h90 : c.nreg (sw 90) 
   -- 3. the head of the table
   obtain ⟨c₃, k₃, e₃, hk₃, t98, tN3, tB3, tT3, tV3, tr, tm, trr, trm, tout⟩ :=
     tHead_exec (P := P) c₂ e₂.wb_right hK₂ (n := n) (by
-      rw [q₂ 3 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
+      rwa [q₂ 3 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
         q₂ 4 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-        q₁ 3 (by omega), q₁ 4 (by omega), zlo _ b3, zlo _ b4]; exact hn) (by omega)
+        q₁ 3 (by omega), q₁ 4 (by omega), zlo _ b3, zlo _ b4]) (by omega)
   have q₃ : ∀ j, j < 10000 → j ≠ 98 → j ≠ 703 → j ≠ 704 → j ≠ 702 → j ≠ 600 → j ≠ 700 →
       j ≠ 701 → c₃.nreg (sw j) = c₂.nreg (sw j) := fun j hj h1 h2 h3 h4 h5 h6 h7 =>
     tr _ (by unfold sSide sw; omega) (by unfold tA sw; omega) (by unfold tB sw; omega)
@@ -260,8 +260,8 @@ theorem ansInit_exec (c : Config) (hw : WordsBounded W c) (h90 : c.nreg (sw 90) 
       (by unfold tB ALLOC sw; omega) (by unfold tN ALLOC sw; omega) (by unfold TBR ALLOC sw; omega)
       (by unfold tT ALLOC sw; omega) (by unfold tV ALLOC sw; omega), zA]
   have hK₃ : c₃.nreg K1 = 1 := by
-    rw [show K1 = sw 611 from rfl, q₃ 611 (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega) (by omega) (by omega)]; exact hK₂
+    rwa [show K1 = sw 611 from rfl, q₃ 611 (by omega) (by omega) (by omega) (by omega) (by omega)
+      (by omega) (by omega) (by omega)]
   -- 4. the loop
   obtain ⟨c₄, k₄, e₄, hk₄, l1, l2, l3, l4, lm, lrm, lsw, lr, lrr, lo, lA⟩ :=
     tLoop_exec (P := P) c₃ e₃.wb_right hK₃ tN3 tT3 tV3 (by rw [A₃]; omega) hW2 (by omega)
@@ -278,7 +278,7 @@ theorem ansInit_exec (c : Config) (hw : WordsBounded W c) (h90 : c.nreg (sw 90) 
   have TL₅ : c₅.nreg TLR = c₄.nreg tT := v5
   -- memory
   have mem5 : ∀ a, a < A + 12 → c₅.nmem a = c₂.nmem a := fun a ha => by
-    rw [m5, lm a (by rw [A₃]; exact ha), tm]
+    rw [m5, lm a (by rwa [A₃]), tm]
   refine ⟨c₅, _, ex, by omega, ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_,
     ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, fun j hj => ?_, ?_, fun j hj => ?_, TB₅, ?_, ?_, ?_,
     fun i hi => ?_, fun a ha => ?_, fun j hj h1 h2 h3 h4 h5 h6 h7 h8 => ?_⟩
@@ -322,13 +322,13 @@ theorem ansInit_exec (c : Config) (hw : WordsBounded W c) (h90 : c.nreg (sw 90) 
   · rw [q₅ 31 (by omega) (by omega), lsw 31 (by omega),
       q₃ 31 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
       z31]
-  · rw [mem5 _ (by omega)]; exact z0
+  · rwa [mem5 _ (by omega)]
   · rw [mem5 _ (by omega)]; exact zq j hj
-  · rw [mem5 _ (by omega)]; exact z6
+  · rwa [mem5 _ (by omega)]
   · rw [mem5 _ (by omega)]; exact zl j hj
   · rw [A₅, TB₅, TL₅, l1, A₃]
-  · rw [TL₅]; exact l2
-  · rw [TL₅]; exact l3
+  · rwa [TL₅]
+  · rwa [TL₅]
   · rw [TL₅] at hi
     rw [TB₅, m5, ← A₃]; exact l4 i hi
   · rw [mem5 a (by omega), zlo a ha]

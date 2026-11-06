@@ -199,7 +199,7 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     -- the cut
     obtain ⟨c₁, k₁, e₁, hk₁, pc₁, f₁⟩ := cutB_exec (P := P) hR hℓ c hw (by
       unfold hostWords at hHW; omega) hG hHW (H := H) (C := C) hctx.chainWF
-      (by rw [h34]; exact hC) hm (by omega) h30 na nb ea eb
+      (by rwa [h34]) hm (by omega) h30 na nb ea eb
     set ps := levPieces M Q (c.nreg (R + 30 + ℓ) < c.nreg (R + 9)) q.1 q.2
       (c.nreg (R + 10 + 2 * ℓ)) (c.nreg (R + 11 + 2 * ℓ)) with hps
     have k1 : ∀ r, R ≤ r → r < rL R ℓ + 4 → c₁.nreg r = c.nreg r := fun r h1 h2 => f₁.1 r (by
@@ -285,15 +285,14 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
           have a2 : R + 10 + 2 * j = R + (10 + 2 * j) := by omega
           have a3 : R + 11 + 2 * j = R + (11 + 2 * j) := by omega
           rw [a1, e30, e9] at hj3
-          have hh := hholes j (by omega) hj2 (by rw [a1]; exact hj3)
+          have hh := hholes j (by omega) hj2 (by rwa [a1])
           rw [a2, a3] at hh ⊢
-          rw [ex1, ex2]
-          exact hh)
+          rwa [ex1, ex2])
         (fun p' hp' => by
           rw [hpc', hl] at hp'
           have := hleaf p' (by rw [hleaves]; exact List.mem_flatMap.2 ⟨p, hp, hp'⟩)
           rw [e7]; exact this)
-        (by rw [e6]; exact hbc) (by rw [e7]; exact hrc)
+        (by rwa [e6]) (by rwa [e7])
       rw [e7] at hk
       rw [hpc', hl, e6] at hb
       exact ⟨c', k, ex, hk, hb, fr⟩
@@ -310,7 +309,7 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       · exact Or.inl hr
       · right; unfold rL at hr ⊢; omega
     rw [hleaves]
-    have best₁' : BestOK P C R c₁ S (o.eval M Q) (dirOf (c.nreg (R + 6))) := by rw [← r6]; exact best₁
+    have best₁' : BestOK P C R c₁ S (o.eval M Q) (dirOf (c.nreg (R + 6))) := by rwa [← r6]
     have hroom1 : c₁.nreg ALLOC + levCost Fg f ≤ W := by rw [hA1]; omega
     cases hcase : ps with
     | nil =>
@@ -332,7 +331,7 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
         rw [kp2 31 (by omega) (by unfold WrLev rL; omega), o₁]
       have cn₂ : c₂.nreg (rL R ℓ + 8) = c₁.nreg (rL R ℓ + 8) := by
         have := kp2 (40 + 10 * ℓ + 8) (by omega) (by unfold WrLev rL; omega)
-        rw [show R + (40 + 10 * ℓ + 8) = rL R ℓ + 8 by unfold rL; omega] at this; exact this
+        rwa [show R + (40 + 10 * ℓ + 8) = rL R ℓ + 8 by unfold rL; omega] at this
       have w₂ := e₂.wb_right
       cases ht : t with
       | nil =>
@@ -405,7 +404,7 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
           (k3 _ (by unfold rL; omega)) (k3 _ (by unfold rL; omega)) (k3 _ (by unfold rL; omega))
           (k3 _ (by unfold rL; omega))
         have hA3 : c₃.nreg ALLOC ≤ c.nreg ALLOC + (k₂ + 4) := by
-          have := F13.2.2.2.2.2.2; rw [hA1] at this; exact this
+          have := F13.2.2.2.2.2.2; rwa [hA1] at this
         obtain ⟨c₄, k₄, e₄, hk₄, b₄, fr₄⟩ := call c₃ _ p₁ hp1m e₃.wb_right ctx₃ ho₃ regs3 hpc₃
           best₃ (by omega)
         refine ⟨c₄, _, .seq e₁ (.ifLtN_true g0 (.seq e₂ (.ifLtN_true g1 (.seq e₃ e₄)))),
@@ -413,8 +412,7 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
           ((F01.trans F13).trans (fr₄.mono le_rfl wr1 le_rfl)).mono le_rfl (fun _ h => h)
             (by simp only [copy2List, List.length_cons, List.length_nil]; omega)⟩
         simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, pcSet_append]
-        rw [← Set.union_assoc]
-        exact b₄
+        rwa [← Set.union_assoc]
 
 end
 

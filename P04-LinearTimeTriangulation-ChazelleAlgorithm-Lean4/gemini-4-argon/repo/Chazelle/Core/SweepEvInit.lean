@@ -205,7 +205,7 @@ theorem initRA_exec_regs {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded
     (hok : okW W c.nmem regA c.nreg) :
     ∃ k, Exec P W initRA c { c with nreg := fIA c.nmem c.nreg } k ∧ k ≤ 41 := by
   have e₀ := exec_regB (P := P) regA hw hok
-  set c₁ : Config := { c with nreg := regB c.nmem regA c.nreg } with hc₁
+  set c₁ : Config := { c with nreg := regB c.nmem regA c.nreg }
   obtain ⟨k₁, e₁, hk₁⟩ := glS_exec (P := P) e₀.wb_right
   obtain ⟨k₂, e₂, hk₂⟩ := offS_exec (P := P) e₁.wb_right
   obtain ⟨k₃, e₃, hk₃⟩ := b1S_exec (P := P) e₂.wb_right
@@ -259,8 +259,6 @@ theorem rlen_le (J : Merge.Junction) : Lst J ≤ 2 * J.m₂ + 7 := by
   rw [Lst_rlen]; unfold rlen; split_ifs <;> omega
 
 theorem lL1_le (J : Merge.Junction) : lL1 J ≤ 2 * J.m₁ + 7 := by
-  have := tpos_lt J.left J.m₁
-  have hm : J.left.m = J.m₁ := rfl
   unfold lL1; split
   · omega
   · split <;> omega

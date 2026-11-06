@@ -271,13 +271,13 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
       FrameM Bdyn d d' := by
   have hmem : ∀ t', t' < (N.region r).arcs.length → (N.region r).arcs.getD t' 0 ∈ (N.region r).arcs :=
     fun t' h' => by rw [List.getD_eq_getElem _ _ h']; exact List.getElem_mem h'
-  set jp := (N.region r).arcs.getD t 0 with hjp
-  set j := (N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0 with hj
+  set jp := (N.region r).arcs.getD t 0
+  set j := (N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0
   obtain ⟨-, -, -, hxe, hxh⟩ := hE.F.harc jp (hmem t ht)
   obtain ⟨-, hse, hsh, hee, heh⟩ := hE.F.harc j (hmem _ (Nat.mod_lt _ (by omega)))
   have hn := hE.hn
   have hT := hE.hT
-  set xs := pre li n N r t with hxs
+  set xs := pre li n N r t
   have hxl : xs.length ≤ 4 * t := pre_length_le li n N r t
   have hxp : ptsLen n xs ≤ (n + 3) * t := ptsLen_pre_le li hE.hn0 N r t
   have hA5 := hE.F.hA
@@ -369,7 +369,7 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
       rw [pre_succ, hys]
       simp only [arcIt, arcItems, List.append_assoc]
       rfl
-    rw [e]; exact B₇
+    rwa [e]
   · show d₆.nmem a = d.nmem a
     rw [m₆ a (by simp only [List.length_append]; omega), m₅ a (by simp only [List.length_append]; omega),
       m₄ a (by omega), m₃ a (by omega), m₂, m₁]

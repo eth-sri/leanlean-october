@@ -53,7 +53,7 @@ theorem FGood.end_ok (hE : FGood E c₀) {x : WPos}
     have hn3 : 3 ≤ (Qof E.P).n := by rw [hQn]; exact hE.hG.1.1
     obtain ⟨e, h⟩ := x
     exact innerPt_mi_edge (ShootCut.goodEnv_distinct hE.hG) hn3
-      (by rw [IOrc.mi_n] at hxe; exact hxe) (by rw [hM] at hp'; exact hp') hx.2.1
+      (by rwa [IOrc.mi_n] at hxe) (by rwa [hM] at hp') hx.2.1
 
 theorem FGood.arc_abs (hE : FGood E c₀) (hne : (E.N.F E.M (Qof E.P)).Nonempty) {j : ℕ}
     (hj : j < E.N.arcs.length) :

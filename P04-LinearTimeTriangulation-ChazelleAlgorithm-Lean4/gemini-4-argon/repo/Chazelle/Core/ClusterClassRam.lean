@@ -175,14 +175,14 @@ theorem cpStmt_exec {c : Config} (hw : WordsBounded W c) (hzero : c.nreg 130009 
         (fun hne => by
           rw [h3p, h3x] at hne
           refine ⟨hw3, fun r hr => ?_, by rw [hm3, hm1], fun h => absurd h.2 hne, fun _ => by
-            rw [h3r _ (by omega)]; exact h1m, by rw [hrr3, hrr1], by rw [hrm3, hrm1],
+            rwa [h3r _ (by omega)], by rw [hrr3, hrr1], by rw [hrm3, hrm1],
             by rw [ho3, ho1]⟩
           rw [h3r r (by unfold CpRG at hr; omega)]; exact h1r r hr)
       obtain ⟨hw4, h4r, h4m, hd4, hnd4, hrr4, hrm4, ho4⟩ := hR4
-      refine ⟨c4, k3 + k4 + 1, .ifLtN_true (by rw [z1, h1g]; exact hg0) (.seq e3 e4), by omega,
+      refine ⟨c4, k3 + k4 + 1, .ifLtN_true (by rwa [z1, h1g]) (.seq e3 e4), by omega,
         hw4, h4r, h4m, hd4, hnd4, hrr4, hrm4, ho4⟩
     · rw [z1, h1g] at hg0
-      refine ⟨c1, 0 + 2, .ifLtN_false (by rw [z1, h1g]; exact hg0) (.skip hw1), by omega, hw1,
+      refine ⟨c1, 0 + 2, .ifLtN_false (by rwa [z1, h1g]) (.skip hw1), by omega, hw1,
         h1r, hm1, fun h => absurd h.1 (by omega), fun _ => h1m, hrr1, hrm1, ho1⟩
   obtain ⟨z2, x2, f2, so2, sf2, fp2, pr2, sz2⟩ := fr c2 h2r
   -- the up test
@@ -272,11 +272,11 @@ theorem cpStmt_exec {c : Config} (hw : WordsBounded W c) (hzero : c.nreg 130009 
               · rintro ⟨⟨-, h⟩, -⟩; exact absurd h hne)
         obtain ⟨hw4, h4r, h4m, h4t, hrr4, hrm4, ho4⟩ := hR4
         refine ⟨c4, _, .ifLtN_false (show ¬ c2.nreg 130009 < c2.nreg 130637 by rw [z2, m0]; omega)
-          (.ifLtN_true (show c2.nreg 130009 < c2.nreg 130631 by rw [z2, f2]; exact hf0) (.seq e3 e4)), by omega, hw4, h4r, h4m, h4t,
+          (.ifLtN_true (show c2.nreg 130009 < c2.nreg 130631 by rwa [z2, f2]) (.seq e3 e4)), by omega, hw4, h4r, h4m, h4t,
           hrr4, hrm4, ho4⟩
       · rw [z2, f2] at hf0
         refine ⟨c2, 0 + 2 + 2, .ifLtN_false (show ¬ c2.nreg 130009 < c2.nreg 130637 by rw [z2, m0]; omega)
-          (.ifLtN_false (show ¬ c2.nreg 130009 < c2.nreg 130631 by rw [z2, f2]; exact hf0)
+          (.ifLtN_false (show ¬ c2.nreg 130009 < c2.nreg 130631 by rwa [z2, f2])
             (.skip hw2)), by omega, hw2, h2r, h2m,
           fun κ => ?_, hrr2, hrm2, ho2⟩
         rw [hni, m0]

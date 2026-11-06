@@ -97,9 +97,9 @@ theorem arcRead_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
       c'.nreg 83036 = (N.arc (arcAt N (c₀.nreg 83002) (c.nreg 83030))).e.hgt ∧
       Agr c c' [83032, 83033, 83034, 83035, 83036]) := by
   have hjl := (arcAt_lt hE ht).1
-  set j := arcAt N (c₀.nreg 83002) (c.nreg 83030) with hjdef
+  set j := arcAt N (c₀.nreg 83002) (c.nreg 83030)
   have h1 := tRegItem_exec (f := 1) (tr := 83030) (Or.inl rfl) (by unfold InR; omega) hE hI
-    (by rw [ite_eq_left rfl]; exact ht) (by omega)
+    (by rwa [ite_eq_left rfl]) (by omega)
   rw [ite_eq_left rfl] at h1
   refine RS.mono (K := 20 + (1 + (14 + (14 + (14 + 14))))) ?_ (by norm_num) (fun _ h => h)
   refine RS.seq (RS.op h1) fun c₁ hI₁ hA₁ ⟨v₁, h8₁⟩ =>
@@ -108,16 +108,16 @@ theorem arcRead_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
   have q2 : c₂.nreg 83032 = j := by rw [hc₂, upd_eq, v₁]; rfl
   have a2 : Agr c c₂ [83032] := (Agr.of_band h8₁ []).trans (Agr.of_upd hc₂)
   refine RS.seq (arcF_rs (f := 1) (d := 83033) (by norm_num) (by unfold Scr; omega) hE hI₂
-    (by rw [q2]; exact hjl) (by omega)) fun c₃ hI₃ hA₃ ⟨v₃, a₃⟩ => ?_
+    (by rwa [q2]) (by omega)) fun c₃ hI₃ hA₃ ⟨v₃, a₃⟩ => ?_
   have q3 : c₃.nreg 83032 = j := by rw [a₃ _ (by norm_num) (by norm_num) (by simp), q2]
   refine RS.seq (arcF_rs (f := 2) (d := 83034) (by norm_num) (by unfold Scr; omega) hE hI₃
-    (by rw [q3]; exact hjl) (by omega)) fun c₄ hI₄ hA₄ ⟨v₄, a₄⟩ => ?_
+    (by rwa [q3]) (by omega)) fun c₄ hI₄ hA₄ ⟨v₄, a₄⟩ => ?_
   have q4 : c₄.nreg 83032 = j := by rw [a₄ _ (by norm_num) (by norm_num) (by simp), q3]
   refine RS.seq (arcF_rs (f := 3) (d := 83035) (by norm_num) (by unfold Scr; omega) hE hI₄
-    (by rw [q4]; exact hjl) (by omega)) fun c₅ hI₅ hA₅ ⟨v₅, a₅⟩ => ?_
+    (by rwa [q4]) (by omega)) fun c₅ hI₅ hA₅ ⟨v₅, a₅⟩ => ?_
   have q5 : c₅.nreg 83032 = j := by rw [a₅ _ (by norm_num) (by norm_num) (by simp), q4]
   refine (arcF_rs (f := 4) (d := 83036) (by norm_num) (by unfold Scr; omega) hE hI₅
-    (by rw [q5]; exact hjl) (by omega)).mono le_rfl fun c₆ ⟨v₆, a₆⟩ => ?_
+    (by rwa [q5]) (by omega)).mono le_rfl fun c₆ ⟨v₆, a₆⟩ => ?_
   have a26 := (((a2.trans a₃).trans a₄).trans a₅).trans a₆
   refine ⟨?_, ?_, ?_, ?_, a26.mono (by simp)⟩
   · rw [a₆ _ (by norm_num) (by norm_num) (by simp), a₅ _ (by norm_num) (by norm_num) (by simp),
@@ -199,8 +199,8 @@ theorem cmpArc_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : K
     exact a₁ q (by omega) (by omega) (by simp; omega)
   refine RS.seq (kcmp_rs hK (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
     (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (by omega) hE hI₁
-    (by rw [g 83005 (by simp), g 83006 (by simp)]; exact hx)
-    (by rw [g 83035 (by simp), g 83036 (by simp)]; exact he) (by omega))
+    (by rwa [g 83005 (by simp), g 83006 (by simp)])
+    (by rwa [g 83035 (by simp), g 83036 (by simp)]) (by omega))
     fun c₂ hI₂ hA₂ ⟨b39, b40, a₂⟩ => ?_
   have g2 : ∀ q, q ∈ [83033, 83034, 83035, 83036, 83005, 83006] → c₂.nreg q = c.nreg q := by
     intro q hq
@@ -209,8 +209,8 @@ theorem cmpArc_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : K
     exact a₂ q (by omega) (by omega) (by simp; omega)
   refine (kcmp_rs hK (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
     (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (by omega) hE hI₂
-    (by rw [g2 83033 (by simp), g2 83034 (by simp)]; exact hs)
-    (by rw [g2 83035 (by simp), g2 83036 (by simp)]; exact he) (by omega)).mono le_rfl
+    (by rwa [g2 83033 (by simp), g2 83034 (by simp)])
+    (by rwa [g2 83035 (by simp), g2 83036 (by simp)]) (by omega)).mono le_rfl
     fun c₃ ⟨b41, _, a₃⟩ => ?_
   unfold keyAt at *
   rw [g 83005 (by simp), g 83006 (by simp), g 83035 (by simp), g 83036 (by simp)] at b39 b40
@@ -236,7 +236,7 @@ def setF (r : ℕ) : Stmt := .instr (.constN r 1)
 
 theorem leaf_set {r K : ℕ} {cond : Prop} (hI : TInv W c₀ c) (hr : Scr r) (hK : 1 ≤ K)
     (hc : cond) : RS P W c₀ (setF r) c K (fun c' => FlagUpd c c' r cond) :=
-  (RS.const hI hr (by have := hI.hw.1 83023; rw [hI.h23] at this; exact this)).mono hK
+  (RS.const hI hr (by have := hI.hw.1 83023; rwa [hI.h23] at this)).mono hK
     fun c' h => ⟨by rw [h, upd_eq]; simp [hc], by rw [h, upd_eq]; omega, Agr.of_upd h⟩
 
 theorem leaf_skip {r K : ℕ} {cond : Prop} (hI : TInv W c₀ c) (hc : ¬ cond) :
@@ -355,8 +355,8 @@ theorem arcBody_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : 
       c'.nreg 83030 = c.nreg 83030 + 1) := by
   obtain ⟨hL, htL, f1, f2, f3, i1, i2, i3, aS⟩ := hA
   set r := c₀.nreg 83002
-  set t := c.nreg 83030 with htdef
-  have ht' : t < (N.region r).arcs.length := by rw [← hL]; exact ht
+  set t := c.nreg 83030
+  have ht' : t < (N.region r).arcs.length := by rwa [← hL]
   obtain ⟨hjl, -⟩ := arcAt_lt hE ht'
   have hpos := hE.arcPosG hne hjl
   unfold arcBody arcKB
@@ -415,11 +415,11 @@ theorem arcBody_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : 
     rw [a₄ _ (by norm_num) (by norm_num) (by simp), a₃ _ (by norm_num) (by norm_num) (by simp),
       a₂ _ (by norm_num) (by norm_num) (by simp), a₁ _ (by norm_num) (by norm_num) (by simp)]
   refine ⟨⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, e6⟩
-  · rw [g 83031 (by norm_num) (by norm_num) (by simp)]; exact hL
+  · rwa [g 83031 (by norm_num) (by norm_num) (by simp)]
   · rw [e6, g 83031 (by norm_num) (by norm_num) (by simp)]; omega
-  · rw [fl42]; exact u2 (by rw [o42]; exact f1)
-  · rw [fl43]; exact v2 (by rw [o43]; exact f2)
-  · rw [fl44]; exact w2 (by rw [o44]; exact f3)
+  · rw [fl42]; exact u2 (by rwa [o42])
+  · rw [fl43]; exact v2 (by rwa [o43])
+  · rw [fl44]; exact w2 (by rwa [o44])
   · rw [fl42, u1, o42, i1, e6, lt_succ_exists, sideInArc_bits]
   · rw [fl43, v1, o43, i2, e6, lt_succ_exists]
   · rw [fl44, w1, o44, i3, e6, lt_succ_exists]
@@ -452,8 +452,7 @@ theorem exists_place {N : NF} {r : ℕ} {p : ℕ → Prop} :
     obtain ⟨t, ht, rfl⟩ := List.getElem_of_mem hj
     refine ⟨t, ht, ?_⟩
     unfold arcAt
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-    exact hp
+    rwa [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
 
 /-- **Contract of the arc scan**: the three flags. -/
 theorem arcScan_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : KeyOK kc Kk)
@@ -466,7 +465,7 @@ theorem arcScan_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : 
       (c'.nreg 83044 = 1 ↔ FE M P N (c₀.nreg 83002) (xOf c₀)) ∧
       Agr c c' [83030, 83031, 83032, 83033, 83034, 83035, 83036, 83037, 83038, 83039, 83040,
         83041, 83042, 83043, 83044, 83051]) := by
-  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rw [hI.h23] at this; exact this
+  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rwa [hI.h23] at this
   unfold arcScan arcScanK
   refine RS.seq (RS.const hI (r := 83042) (v := 0) (by unfold Scr; omega) (by omega))
     fun c₁ hI₁ hA₁ h₁ => ?_
@@ -570,7 +569,7 @@ theorem endRead_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
       Agr c c' [83032, 83047, 83048]) := by
   have hil := (chordAt_lt hE ht).1
   have h1 := tRegItem_exec (f := 3) (tr := 83030) (Or.inr rfl) (by unfold InR; omega) hE hI
-    (by rw [ite_eq_right (by decide)]; exact ht) (by omega)
+    (by rwa [ite_eq_right (by decide)]) (by omega)
   rw [ite_eq_right (by decide)] at h1
   refine RS.mono (K := 20 + (1 + (14 + (1 + (14 + 2))))) ?_ (by norm_num) (fun _ h => h)
   refine RS.seq (RS.op h1) fun c₁ hI₁ hA₁ ⟨v₁, h8₁⟩ =>
@@ -580,7 +579,7 @@ theorem endRead_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     rw [hc₂, upd_eq, v₁]; rfl
   have a2 : Agr c c₂ [83032] := (Agr.of_band h8₁ []).trans (Agr.of_upd hc₂)
   refine RS.seq (chF_rs (f := 0) (d := 83047) (by norm_num) (by unfold Scr; omega) hE hI₂
-    (by rw [q2]; exact hil) (by omega)) fun c₃ hI₃ hA₃ ⟨v₃, a₃⟩ => ?_
+    (by rwa [q2]) (by omega)) fun c₃ hI₃ hA₃ ⟨v₃, a₃⟩ => ?_
   have q3 : c₃.nreg 83032 = chordAt N (c₀.nreg 83002) (c.nreg 83030) := by
     rw [a₃ _ (by norm_num) (by norm_num) (by simp), q2]
   have e23 : c₃.nreg 83023 = 1 := hI₃.h23
@@ -606,7 +605,7 @@ theorem endRead_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
       c'.nreg 83047 = (endPos (c₀.nreg 83008) (N.chord (chordAt N (c₀.nreg 83002)
         (c.nreg 83030)))).hgt ∧
       Agr c c' [83032, 83047, 83048]) := fun f hf h1 h2 =>
-    (chF_rs (f := f) (d := 83048) hf (by unfold Scr; omega) hE hI₄ (by rw [q4]; exact hil)
+    (chF_rs (f := f) (d := 83048) hf (by unfold Scr; omega) hE hI₄ (by rwa [q4])
       (by omega)).mono le_rfl fun c₅ ⟨v₅, a₅⟩ => by
       refine ⟨?_, ?_, (a4.trans a₅).mono (by simp)⟩
       · rw [v₅, q4]
@@ -658,13 +657,13 @@ theorem exitBody_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK :
     RS P W c₀ (exitBody kc) c (exitKB Kk) (fun c' => ExitI M P N c₀ cS c' ∧
       c'.nreg 83030 = c.nreg 83030 + 1) := by
   obtain ⟨hL, htL, f1, i1, aS⟩ := hA
-  have ht' : c.nreg 83030 < (N.region (c₀.nreg 83002)).chords.length := by rw [← hL]; exact ht
+  have ht' : c.nreg 83030 < (N.region (c₀.nreg 83002)).chords.length := by rwa [← hL]
   obtain ⟨hil, -⟩ := chordAt_lt hE ht'
   have hpos := endPos_posG hE hil (c₀.nreg 83008)
   unfold exitBody exitKB
   refine RS.seq (endRead_rs hE hI ht' (by unfold exitKB at hroom; omega))
     fun c₁ hI₁ hA₁ ⟨s1, s2, a₁⟩ => ?_
-  have hy : PosG M (Qof P) P.n ⟨c₁.nreg 83048, c₁.nreg 83047⟩ := by rw [s1, s2]; exact hpos
+  have hy : PosG M (Qof P) P.n ⟨c₁.nreg 83048, c₁.nreg 83047⟩ := by rwa [s1, s2]
   have i5 := hI₁.hin 83005 (by norm_num) (by norm_num)
   have i6 := hI₁.hin 83006 (by norm_num) (by norm_num)
   have hx : PosG M (Qof P) P.n ⟨c₁.nreg 83005, c₁.nreg 83006⟩ := by
@@ -693,9 +692,9 @@ theorem exitBody_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK :
       kendAt M P N (c₀.nreg 83002) (c₀.nreg 83008) (c.nreg 83030) := by
     rw [s1, s2]; rfl
   refine ⟨⟨?_, ?_, ?_, ?_, ?_⟩, e4⟩
-  · rw [g 83031 (by norm_num) (by norm_num) (by simp)]; exact hL
+  · rwa [g 83031 (by norm_num) (by norm_num) (by simp)]
   · rw [e4, g 83031 (by norm_num) (by norm_num) (by simp)]; omega
-  · rw [fl]; exact v2 (by rw [o46]; exact f1)
+  · rw [fl]; exact v2 (by rwa [o46])
   · rw [fl, v1, o46, i1, e4, lt_succ_exists, ky, kx]
   · intro q h1 h2 hq
     rw [g q h1 h2 hq, aS q h1 h2 hq]
@@ -721,8 +720,7 @@ theorem exists_cplace {N : NF} {r : ℕ} {p : ℕ → Prop} :
     obtain ⟨t, ht, rfl⟩ := List.getElem_of_mem hi
     refine ⟨t, ht, ?_⟩
     unfold chordAt
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-    exact hp
+    rwa [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
 
 theorem not_clear_iff {M : Model} {P : Polygon} {N : NF} {r : ℕ} {x : WPos} {σb : ℕ} :
     ¬ Clear M P N r x σb ↔ ∃ i ∈ (N.region r).chords,
@@ -753,7 +751,7 @@ theorem exitScan_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK :
       c'.nreg 83046 ≤ 1 ∧
       (c'.nreg 83046 = 1 ↔ ¬ Clear M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008)) ∧
       Agr c c' [83030, 83031, 83032, 83037, 83038, 83046, 83047, 83048]) := by
-  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rw [hI.h23] at this; exact this
+  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rwa [hI.h23] at this
   unfold exitScan exitScanK
   refine RS.seq (RS.const hI (r := 83046) (v := 0) (by unfold Scr; omega) (by omega))
     fun c₁ hI₁ hA₁ h₁ => ?_

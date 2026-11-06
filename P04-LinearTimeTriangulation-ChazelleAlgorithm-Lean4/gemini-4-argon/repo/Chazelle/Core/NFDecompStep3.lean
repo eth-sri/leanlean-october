@@ -73,8 +73,8 @@ theorem next_i1 : ∀ e, e < K → (σ').rem e = 1 →
     rcases g6 with ⟨a1, a2, a3, a4⟩ | ⟨p, hp, hrp, a1, a2, a3⟩
     · exact Or.inl ⟨a1, a2, a3, a4⟩
     · refine Or.inr ⟨p, hp, rem_mono h hch hT hB hI hrp, a1, ?_, ?_⟩
-      · rw [cr_old h hch hT hB hI hrp]; exact a2
-      · rw [gc_old h hch hT hB hI hrp]; exact a3
+      · rwa [cr_old h hch hT hB hI hrp]
+      · rwa [gc_old h hch hT hB hI hrp]
   · -- a chord cut now
     obtain ⟨t1, t2, t3, t4, t5, t6, t7, c1, c2, c3, c4⟩ := chosen_facts h hch hT hB hI he hc
     rw [gc_new h hch hT hB hI he hc, cr_new h hch hT hB hI he hc]
@@ -99,7 +99,7 @@ theorem next_i1 : ∀ e, e < K → (σ').rem e = 1 →
       rw [← s0, t4, ite_eq_right t5, c3]
     · right
       have hs2 : σ.side (top (chOf e)) ≠ 2 := by omega
-      set p := σ.cpar (top (chOf e)) with hpdef
+      set p := σ.cpar (top (chOf e))
       have hrp := hI.i0 p s2 s3
       refine ⟨p, s2, rem_mono h hch hT hB hI hrp, by rw [hdpar, ite_eq_right hs2], ?_, ?_⟩
       · rw [cr_old h hch hT hB hI hrp]; exact (hI.i3 p s2 s3).1
@@ -153,7 +153,7 @@ theorem next_i3 : ∀ e, e < K → (σ').pend e = 1 → cr' e + 1 = j + 1 ∧ �
   obtain ⟨sc, sp⟩ := sub_new_sides h hch hT hB hI (s := s) he hc
   obtain ⟨n1, n2, n3⟩ := new_top_facts h hch hT hB hI he hc
   by_cases hcond : (isdn (chOf e) = 1 ↔ s = 0)
-  · refine ⟨chOf e, c1, (istop_next h hch hT hB hI c1).2 (Or.inr ⟨c2, by rw [c3]; exact hc⟩),
+  · refine ⟨chOf e, c1, (istop_next h hch hT hB hI c1).2 (Or.inr ⟨c2, by rwa [c3]⟩),
       n1, n2, ?_, sc hcond⟩
     rw [n3]
     by_cases hd : isdn (chOf e) = 1
@@ -161,9 +161,9 @@ theorem next_i3 : ∀ e, e < K → (σ').pend e = 1 → cr' e + 1 = j + 1 ∧ �
     · rw [ite_eq_right hd]
       have : s ≠ 0 := fun h0 => hd (hcond.2 h0)
       omega
-  · have hbt : best (top (chOf e)) ≠ top (chOf e) := by rw [t4]; exact t5
+  · have hbt : best (top (chOf e)) ≠ top (chOf e) := by rwa [t4]
     refine ⟨top (chOf e), t1, (istop_next h hch hT hB hI t1).2 (Or.inl t2), ?_, ?_, ?_, sp hcond⟩
-    · rw [act_top h hch hT hB hI t1 t2, ite_eq_left t3, ite_eq_right hbt]; exact t3
+    · rwa [act_top h hch hT hB hI t1 t2, ite_eq_left t3, ite_eq_right hbt]
     · rw [cpar_top h hch hT hB hI t1 t2, ite_eq_left t3, ite_eq_right hbt, t4, c3]
     · rw [side_top h hch hT hB hI t1 t2, ite_eq_left t3, ite_eq_right hbt, t4]
       by_cases hd : isdn (chOf e) = 1
@@ -278,11 +278,11 @@ theorem next_i5 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t ≠ 1 �
           have hR := h.hR
           have ht0 : t = 0 := by omega
           rw [ht0] at hact; exact absurd this hact
-        · rw [root_next_pos h hch hT hB hI hj]; exact a2
+        · rwa [root_next_pos h hch hT hB hI hj]
       · right
         refine ⟨p, hp, rem_mono h hch hT hB hI hrp, a1, ?_, ?_⟩
-        · rw [cr_old h hch hT hB hI hrp]; exact a2
-        · rw [gc_old h hch hT hB hI hrp]; exact a3
+        · rwa [cr_old h hch hT hB hI hrp]
+        · rwa [gc_old h hch hT hB hI hrp]
   · obtain ⟨ht0, hc⟩ := ((istop_next h hch hT hB hI ht).1 htop').resolve_left htop
     have hpk := h.pch_lt t ht ht0
     have hco := chOf_pch h hch hT hB hI ht ht0
@@ -327,7 +327,7 @@ theorem next_i6 (hdeg : ∀ v, v < R → (kids R prg pch rem0 v).card + (if v = 
     have m2 := le_hstep hD s2
     have m3 := hstep_mono D (show sz R prg pch σ.rem t - 1 ≤ (hstep D)^[j] K by omega)
     have m4 : hstep D (sz R prg pch σ.rem t - 1) ≤ (hstep D)^[j + 1] K := by
-      rw [Function.iterate_succ_apply']; exact m3
+      rwa [Function.iterate_succ_apply']
     refine ⟨?_, ?_, by omega⟩
     · omega
     · omega
@@ -346,7 +346,7 @@ theorem next_i6 (hdeg : ∀ v, v < R → (kids R prg pch rem0 v).card + (if v = 
     have hco := chOf_pch h hch hT hB hI ht ht0
     obtain ⟨t1, t2, t3, t4, t5, -, -, -, -, -, -⟩ := chosen_facts h hch hT hB hI hpk hc
     rw [hco] at t1 t2 t3 t4 t5
-    have hbt : best (top t) ≠ top t := by rw [t4]; exact t5
+    have hbt : best (top t) ≠ top t := by rwa [t4]
     obtain ⟨-, k2, k3⟩ := key (top t) t1 t2 t3 hbt
     rw [t4] at k2
     exact ⟨k2, Or.inr (by simpa using k3)⟩
@@ -391,7 +391,7 @@ theorem next_i9 : (σ').fin =
         exact absurd n1 hact'
     · rintro (⟨ht, htop, hact⟩ | ⟨ht, htt, hact, hbt⟩)
       · refine ⟨ht, (istop_next h hch hT hB hI ht).2 (Or.inl htop), ?_⟩
-        rw [act_top h hch hT hB hI ht htop, ite_eq_right hact]; exact hact
+        rwa [act_top h hch hT hB hI ht htop, ite_eq_right hact]
       · have htop := (top_iff h hch hT hB hI ht).1 htt
         refine ⟨ht, (istop_next h hch hT hB hI ht).2 (Or.inl htop), ?_⟩
         rw [act_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_left hbt]; norm_num

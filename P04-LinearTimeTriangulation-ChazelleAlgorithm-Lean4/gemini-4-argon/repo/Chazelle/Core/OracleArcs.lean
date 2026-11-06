@@ -229,7 +229,6 @@ theorem last_interior (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q).Non
   obtain ⟨reg', -, -, harc'⟩ := isArc_sj hN (hpq.trans hq)
   have hfree := harc.2.2.2.2.2.1
   have hcp := (WalkAx.arc_cuts hne harc').1
-  have hlt := starts_lt hN hGM hne hpq hq
   unfold sideInArc at hκ
   split_ifs at hκ with h
   · exact Or.inl hκ.1

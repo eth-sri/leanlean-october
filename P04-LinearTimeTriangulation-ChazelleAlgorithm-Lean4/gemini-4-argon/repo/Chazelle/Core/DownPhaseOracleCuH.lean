@@ -107,7 +107,7 @@ theorem interiorCutter_of {cu : Stmt} {G H : ℕ → ℕ}
       rw [r9] at hk₂
       have : G (rd c bCut 9) + 3 ≤ GI G (rd c bCut 9) := by unfold GI; omega
       omega
-    · have hp := hpost M' (by rw [r0, hm₁]; exact hM')
+    · have hp := hpost M' (by rwa [r0, hm₁])
       simp only [r1, r2, r3, r4, r9, hA₁] at hp
       obtain ⟨p1, p2, p3, prest⟩ := hp
       have : G (rd c bCut 9) ≤ GI G (rd c bCut 9) := by unfold GI; omega
@@ -127,13 +127,13 @@ theorem interiorCutter_of {cu : Stmt} {G H : ℕ → ℕ}
     -- the set-up
     obtain ⟨c₂, k₂, e₂, hk₂, S₂, hfree, hA₂, F₂⟩ := frontC_exec (O := O) c₁ w₁ hG hHW
       (by show (gradeCtx O).holds P c₁.nmem (rd c₁ bCut 13) (c₁.nreg ALLOC)
-          rw [hm₁, hA₁, r13]; exact hX)
+          rwa [hm₁, hA₁, r13])
       (by show rd c₁ bCut 9 ≤ (gradeCtx O).cap P c₁.nmem (rd c₁ bCut 13)
-          rw [hm₁, r9, r13]; exact hcap)
+          rwa [hm₁, r9, r13])
       (by show rd c₁ bCut 0 + 6 ≤ c₁.nreg ALLOC
           rw [hA₁, r0]; exact hMDWF.1)
       (by show c₁.nmem (rd c₁ bCut 0 + 1) = 1 ↔ _
-          rw [hm₁, r0]; exact hbit) (by
+          rwa [hm₁, r0]) (by
         rw [hA₁]; have : 8 ≤ GI G (rd c bCut 9) := by unfold GI; omega
         omega)
     have w₂ := e₂.wb_right
@@ -144,10 +144,10 @@ theorem interiorCutter_of {cu : Stmt} {G H : ℕ → ℕ}
     have sγ : (statC c₁).γ = rd c bCut 9 := r9
     have q : QFacts (Qof P) (statC c₁).e₁ (statC c₁).h₁ (statC c₁).e₂ (statC c₁).h₂ := by
       rw [se1, sh1, se2, sh2]
-      exact ⟨hn3, hD, by rw [← hmn]; exact hs1, by rw [← hmn]; exact he1,
-        by rw [hQ]; exact hsP, by rw [hQ]; exact heP⟩
+      exact ⟨hn3, hD, by rwa [← hmn], by rwa [← hmn],
+        by rwa [hQ], by rwa [hQ]⟩
     obtain ⟨c₃, k₃, ps, e₃, hk₃, hne, hlen, hAL, hq, hLE, hr, hkp, hv, F₃⟩ :=
-      queryC_exec (H := H) hcu c₂ w₂ S₂ hfree q (by rw [se1, sh1, se2, sh2, sγ]; exact hwt) (by
+      queryC_exec (H := H) hcu c₂ w₂ S₂ hfree q (by rwa [se1, sh1, se2, sh2, sγ]) (by
         rw [hA₂, hA₁, sγ]
         unfold GI at hcost
         exact roomC_q hcost)
@@ -164,9 +164,8 @@ theorem interiorCutter_of {cu : Stmt} {G H : ℕ → ℕ}
         · rw [hk1] at h0; exact absurd h0 (by norm_num)
         · exact h
       subst hM'I
-      set K := (interiorModel (Qof P)).key (Qof P) with hK
-      set A := c₃.nreg 150010 with hAd
-      have hn0 : (0 : ℝ) < (Qof P).n := by exact_mod_cast (show 0 < (Qof P).n by omega)
+      set K := (interiorModel (Qof P)).key (Qof P)
+      set A := c₃.nreg 150010
       -- the order facts of the list
       have hsb := pkey_bd (N := P.n) hsP hs1
       have heb := pkey_bd (N := P.n) heP he1
@@ -176,8 +175,8 @@ theorem interiorCutter_of {cu : Stmt} {G H : ℕ → ℕ}
       have hy1 : (interiorModel (Qof P)).param (Qof P) ⟨rd c bCut 3, rd c bCut 4⟩ < 1 := heP.2.1
       have hle := ee_bound (Q := Qof P) (e₁ := rd c bCut 1) (h₁ := rd c bCut 2) (e₂ := rd c bCut 3)
         (h₂ := nh (Qof P) (rd c bCut 3) (rd c bCut 4)) (by omega) hsP.1
-        (by rw [param_nh (by rw [← hmn]; exact he1)]; exact hy1)
-      rw [param_nh (by rw [← hmn]; exact he1)] at hle
+        (by rw [param_nh (by rwa [← hmn])]; exact hy1)
+      rw [param_nh (by rwa [← hmn])] at hle
       obtain ⟨o1, o2, o3, o4⟩ := cut_out (s := ⟨rd c bCut 1, rd c bCut 2⟩)
         (e := ⟨rd c bCut 3, rd c bCut 4⟩) hkp hv hne (by rw [key_eq]) (by
           refine ⟨(((rd c bCut 1 + eeOf (Qof P) (rd c bCut 1) (rd c bCut 2) (rd c bCut 3)
@@ -202,13 +201,13 @@ theorem interiorCutter_of {cu : Stmt} {G H : ℕ → ℕ}
       have hri : ∀ i (hi : i < ps.length), rdPc c₃.nmem A i = ps[i]'hi := hr
       dsimp only
       refine ⟨by rw [hA₁] at hA₂; show c.nreg ALLOC ≤ A; omega,
-        by show A + 1 + 7 * c₃.nmem A ≤ c₃.nreg ALLOC; rw [hq]; exact hLE,
+        by show A + 1 + 7 * c₃.nmem A ≤ c₃.nreg ALLOC; rwa [hq],
         by show c₃.nmem A ≤ GI G (rd c bCut 9); rw [hq]; unfold GI; omega,
         by show 1 ≤ c₃.nmem A; rw [hq]; omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
       · show K (rdPc c₃.nmem A 0).s = K ⟨rd c bCut 1, rd c bCut 2⟩
-        rw [hri 0 hpne]; exact o1
+        rwa [hri 0 hpne]
       · show K (rdPc c₃.nmem A (c₃.nmem A - 1)).e = K ⟨rd c bCut 3, rd c bCut 4⟩
-        rw [show c₃.nmem A = ps.length from hq, hri _ (by omega)]; exact o2
+        rwa [show c₃.nmem A = ps.length from hq, hri _ (by omega)]
       · intro i hi
         rw [show c₃.nmem (rd c₃ bCut 10) = ps.length from hq] at hi
         show K (rdPc c₃.nmem A i).e = K (rdPc c₃.nmem A (i + 1)).s

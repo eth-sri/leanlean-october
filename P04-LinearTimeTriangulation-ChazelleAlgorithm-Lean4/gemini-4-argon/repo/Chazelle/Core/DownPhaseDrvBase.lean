@@ -28,7 +28,7 @@ theorem full_in_region (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S
     {c : Set Point} (hc : c ∈ chords Q) (hcS : c ∉ S) :
     ∃ R ∈ (interiorModel Q).regions S, c ∩ (interiorModel Q).D ⊆ R ∧
       (c ∩ (interiorModel Q).D).Nonempty := by
-  set D := (interiorModel Q).D with hD
+  set D := (interiorModel Q).D
   have hHC := FullDegInt.hc_full hQ hc
   obtain ⟨y, a, b, hch, rfl⟩ := hHC
   have hab := hch.lt

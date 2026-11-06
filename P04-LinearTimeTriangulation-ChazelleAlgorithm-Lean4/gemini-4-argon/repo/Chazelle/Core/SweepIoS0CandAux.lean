@@ -109,7 +109,7 @@ theorem aux_sw11 {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config} {v 
     (h : Aux P J N₂ c) : Aux P J N₂ { c with nreg := upd c.nreg (sw 11) v } := by
   obtain ⟨A₀, hA₀, h⟩ := h
   have hAl : upd c.nreg (sw 11) v ALLOC = c.nreg ALLOC := upd_other _ _ _ (by unfold ALLOC sw; omega)
-  refine ⟨A₀, by simp only; rw [hAl]; exact hA₀,
+  refine ⟨A₀, by simp only; rwa [hAl],
     fun c' hr hm hA => h c' (fun q hq hq11 => ?_) hm hA⟩
   rw [hr q hq hq11]
   exact upd_other _ _ _ hq11
@@ -172,7 +172,7 @@ theorem auxCore_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' :
     · rw [mL0 i hi, mS0 x hx, e1]
     · rw [hlogPos i hi, mS0 x hx, mS x hx 1 (by norm_num), e2]
     · rw [mS x hx 4 (by norm_num), mB0 i hi _ (by unfold sOf; split_ifs <;> omega), e3]
-  · obtain ⟨i, hi, e1, e2, e3⟩ := htb j hj hv (by rw [← mT0 j hj]; exact hf)
+  · obtain ⟨i, hi, e1, e2, e3⟩ := htb j hj hv (by rwa [← mT0 j hj])
     refine ⟨i, hi, ?_, ?_, ?_⟩
     · rw [mL0 i hi, mT j hj 1 (by norm_num), e1]
     · rw [hlogPos i hi, mT j hj 1 (by norm_num), mT j hj 2 (by norm_num), e2]

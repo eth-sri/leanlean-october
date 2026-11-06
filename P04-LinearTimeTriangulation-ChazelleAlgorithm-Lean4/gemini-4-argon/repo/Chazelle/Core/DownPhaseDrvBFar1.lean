@@ -128,11 +128,11 @@ theorem wS_exec (c : Config) (hw : WordsBounded W c) {n st u : ℕ} (hn : c.nreg
   have n₁ : c₁.nreg 212010 = n := by simp [c₁, hn]
   by_cases h : st + u < n
   · have ex : Exec P W wS c c₁ (1 + (0 + 1)) :=
-      .seq e₁ (.ifLtN_true (by rw [v₁, n₁]; exact h) (.skip w₁))
+      .seq e₁ (.ifLtN_true (by rwa [v₁, n₁]) (.skip w₁))
     exact ⟨c₁, _, ex, by omega, by rw [v₁, Nat.mod_eq_of_lt h], exec_frameB ex (by decide)⟩
   · have e₂ := Exec.subN (P := P) w₁ 212094 212094 212010
     have ex : Exec P W wS c _ (1 + (1 + 2)) :=
-      .seq e₁ (.ifLtN_false (by rw [v₁, n₁]; exact h) e₂)
+      .seq e₁ (.ifLtN_false (by rwa [v₁, n₁]) e₂)
     refine ⟨_, _, ex, by omega, ?_, exec_frameB ex (by decide)⟩
     simp only [Machine.upd_same]
     rw [v₁, n₁, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
@@ -163,12 +163,12 @@ theorem qS_exec (c : Config) (hw : WordsBounded W c) {n w : ℕ} {li : Bool}
         refine ⟨_, Exec.block_cons a₁ (Exec.block_cons a₂ (Exec.block_nil a₂.wb_right)), ?_⟩
         simp [c₁, hn, c2, hwr]
       have ex : Exec P W qS c c₂ _ :=
-        .ifLtN_false (by rw [c1, hli]; simp) (.seq e₁ (.ifLtN_true (by rw [v₁, n₁]; exact h) e₂))
+        .ifLtN_false (by rw [c1, hli]; simp) (.seq e₁ (.ifLtN_true (by rwa [v₁, n₁]) e₂))
       refine ⟨c₂, _, ex, by omega, ?_, exec_frameB ex (by decide)⟩
       rw [v₂]; simp [qE, h]
     · have e₂ := Exec.subN (P := P) w₁ 212095 212010 212000
       have ex : Exec P W qS c _ _ :=
-        .ifLtN_false (by rw [c1, hli]; simp) (.seq e₁ (.ifLtN_false (by rw [v₁, n₁]; exact h) e₂))
+        .ifLtN_false (by rw [c1, hli]; simp) (.seq e₁ (.ifLtN_false (by rwa [v₁, n₁]) e₂))
       refine ⟨_, _, ex, by omega, ?_, exec_frameB ex (by decide)⟩
       simp [c₁, hn, c0, qE, h]
 
@@ -183,11 +183,11 @@ theorem q1S_exec (c : Config) (hw : WordsBounded W c) {n q : ℕ} (hn : c.nreg 2
   have n₁ : c₁.nreg 212010 = n := by simp [c₁, hn]
   by_cases h : q + 1 < n
   · have ex : Exec P W q1S c c₁ (1 + (0 + 1)) :=
-      .seq e₁ (.ifLtN_true (by rw [v₁, n₁]; exact h) (.skip w₁))
+      .seq e₁ (.ifLtN_true (by rwa [v₁, n₁]) (.skip w₁))
     exact ⟨c₁, _, ex, by omega, by rw [v₁, Nat.mod_eq_of_lt h], exec_frameB ex (by decide)⟩
   · have e₂ := Exec.constN (P := P) w₁ 212096 0 (Nat.zero_le _)
     have ex : Exec P W q1S c _ (1 + (1 + 2)) :=
-      .seq e₁ (.ifLtN_false (by rw [v₁, n₁]; exact h) e₂)
+      .seq e₁ (.ifLtN_false (by rwa [v₁, n₁]) e₂)
     refine ⟨_, _, ex, by omega, ?_, exec_frameB ex (by decide)⟩
     simp only [Machine.upd_same]
     rw [show q + 1 = n by omega, Nat.mod_self]
@@ -345,10 +345,10 @@ theorem candS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
   refine ⟨c₅, _, ex, by omega, hf, ?_, ?_, ?_, ?_, ?_, t₅⟩
   · intro r h1 h2
     interval_cases r
-    · rw [v100]; exact b₁
-    · rw [v101]; exact b₂
-    · rw [v102]; exact b₃
-    · rw [v103]; exact b₄
+    · rwa [v100]
+    · rwa [v101]
+    · rwa [v102]
+    · rwa [v103]
     · exact b₅
   · rw [v100, t₁]; simp [SignTest, Src.pt, SymPt.eval, hq, hi]
   · rw [v101, t₂]
@@ -509,9 +509,9 @@ theorem visitS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤
         c'.nreg 212097 = c.nreg 212097 ∧ c'.nreg 212098 = c.nreg 212098 ∧
           c'.nreg 212099 = c.nreg 212099) := by
   have hn3 : 3 ≤ P.n := hG.1.1
-  set w := (st + u) % P.n with hwdef
+  set w := (st + u) % P.n
   have hwn : w < P.n := Nat.mod_lt _ (by omega)
-  set q := qE li P.n w with hqdef
+  set q := qE li P.n w
   have hqn : q < P.n := DownMath.qE_lt li hwn
   -- the edge
   obtain ⟨c₁, k₁, e₁, hk₁, v94, v95, v96, f₁⟩ := edgeS_exec (P := P) c hw hn (by omega) hst hu hsn
@@ -538,8 +538,8 @@ theorem visitS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤
   have hcand : c₃.nreg 212107 = 1 ↔ Cand (Qof P) i (sgnD d) q := by
     rw [t₃]
     have hQn : (Qof P).n = P.n := shear_n _ _
-    exact cand_iff_bits (Q := Qof P) (by rw [hQn]; exact hqn) hd1 t0 (by rw [hQn]; exact t1)
-      (by rw [hQn]; exact t2) t3 t4
+    exact cand_iff_bits (Q := Qof P) (by rwa [hQn]) hd1 t0 (by rwa [hQn])
+      (by rwa [hQn]) t3 t4
   -- registers kept from the start, and the edge registers
   have kc : ∀ r, (r < 10000 ∨ 10500 ≤ r) → (r < 212094 ∨ 212112 < r ∨ r = 212097 ∨ r = 212098 ∨
       r = 212099) → c₃.nreg r = c.nreg r := by
@@ -554,8 +554,8 @@ theorem visitS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤
     (q := q) (bq := c.nreg 212098) (by rw [kc _ (by norm_num) (by norm_num), hi])
     (by rw [kc _ (by norm_num) (by norm_num), hd]) hd1 k95
     (by rw [kc _ (by norm_num) (by norm_num)]) (by rw [kc _ (by norm_num) (by norm_num), c1])
-    hb₃ (by rw [kc _ (by norm_num) (by norm_num)]; exact hh) hin hqn
-    (by rw [kc _ (by norm_num) (by norm_num)]; exact hbqn)
+    hb₃ (by rwa [kc _ (by norm_num) (by norm_num)]) hin hqn
+    (by rwa [kc _ (by norm_num) (by norm_num)])
   have g₄ : ∀ r, Bup r = false → c₄.nreg r = c₃.nreg r := f₄.1
   -- the counter
   have u91 : c₄.nreg 212091 = u := by
@@ -579,14 +579,14 @@ theorem visitS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤
   · intro h
     have h' : c₃.nreg 212107 = 1 ∧ (c₃.nreg 212099 = 0 ∨
         sgnD d * edgeXAt (Qof P) q i < sgnD d * edgeXAt (Qof P) (c.nreg 212098) i) := by
-      rw [hcand, kc _ (by norm_num) (by norm_num)]; exact h
+      rwa [hcand, kc _ (by norm_num) (by norm_num)]
     obtain ⟨a1, a2, a3⟩ := u1 h'
     exact ⟨by dsimp only; rw [ec _ (by norm_num), a1, k94], by dsimp only; rw [ec _ (by norm_num), a2],
       by dsimp only; rw [ec _ (by norm_num), a3]⟩
   · intro h
     have h' : ¬ (c₃.nreg 212107 = 1 ∧ (c₃.nreg 212099 = 0 ∨
         sgnD d * edgeXAt (Qof P) q i < sgnD d * edgeXAt (Qof P) (c.nreg 212098) i)) := by
-      rw [hcand, kc _ (by norm_num) (by norm_num)]; exact h
+      rwa [hcand, kc _ (by norm_num) (by norm_num)]
     obtain ⟨a1, a2, a3⟩ := u2 h'
     exact ⟨by dsimp only; rw [ec _ (by norm_num), a1, kc _ (by norm_num) (by norm_num)],
       by dsimp only; rw [ec _ (by norm_num), a2, kc _ (by norm_num) (by norm_num)],

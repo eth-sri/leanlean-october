@@ -36,7 +36,7 @@ theorem modelDescAt_keep' {P : Polygon} {m m' : ℕ → ℕ} {D E E' : ℕ} {M :
   · have hD := hwf.1
     have e0 : m' D = m D := he _ (by omega)
     have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
-    exact ⟨Or.inr ⟨by rw [e0, h1], by rw [e1]; exact hbit, rfl⟩,
+    exact ⟨Or.inr ⟨by rw [e0, h1], by rwa [e1], rfl⟩,
       ⟨by omega, fun h => by rw [e0, h1] at h; exact absurd h (by norm_num)⟩⟩
 
 /-- Junction descriptors survive a change of the memory at or above the allocator. -/
@@ -66,20 +66,20 @@ theorem st0S_keep {P : Polygon} {c c' : Config} {H : Host} {J : Merge.Junction}
   obtain ⟨d21', w21'⟩ := chainDesc_keep w21 d21 hm hA
   obtain ⟨m30, mw30'⟩ := modelDescAt_keep' mw30 md30 hm hA
   obtain ⟨m31, mw31'⟩ := modelDescAt_keep' mw31 md31 hm hA
-  refine ⟨by rw [r 90 (by norm_num)]; exact h90, by rw [r 91 (by norm_num)]; exact h91,
-    by rw [r 92 (by norm_num)]; exact h92, by rw [r 93 (by norm_num)]; exact h93,
-    by rw [r 0 (by norm_num), r 1 (by norm_num), r 2 (by norm_num)]; exact hJ',
-    by rw [r 0 (by norm_num), r 1 (by norm_num), r 2 (by norm_num)]; exact hJW',
-    by rw [r 20 (by norm_num)]; exact d20', by rw [r 20 (by norm_num)]; exact w20',
-    by rw [r 21 (by norm_num)]; exact d21', by rw [r 21 (by norm_num)]; exact w21',
-    by rw [r 23 (by norm_num), r 3 (by norm_num)]; exact h23,
-    by rw [r 24 (by norm_num), r 4 (by norm_num)]; exact h24,
+  refine ⟨by rwa [r 90 (by norm_num)], by rwa [r 91 (by norm_num)],
+    by rwa [r 92 (by norm_num)], by rwa [r 93 (by norm_num)],
+    by rwa [r 0 (by norm_num), r 1 (by norm_num), r 2 (by norm_num)],
+    by rwa [r 0 (by norm_num), r 1 (by norm_num), r 2 (by norm_num)],
+    by rwa [r 20 (by norm_num)], by rwa [r 20 (by norm_num)],
+    by rwa [r 21 (by norm_num)], by rwa [r 21 (by norm_num)],
+    by rwa [r 23 (by norm_num), r 3 (by norm_num)],
+    by rwa [r 24 (by norm_num), r 4 (by norm_num)],
     fun k hk => by rw [r (40 + k) (by omega)]; exact hR k hk,
     fun k hk => by rw [r (45 + k) (by omega)]; exact hL k hk,
-    by rw [r 33 (by norm_num)]; exact h33, by rw [r 34 (by norm_num)]; exact h34,
-    by rw [r 35 (by norm_num)]; exact h35, by rw [r 30 (by norm_num)]; exact m30,
-    by rw [r 30 (by norm_num)]; exact mw30', by rw [r 31 (by norm_num)]; exact m31,
-    by rw [r 31 (by norm_num)]; exact mw31'⟩
+    by rwa [r 33 (by norm_num)], by rwa [r 34 (by norm_num)],
+    by rwa [r 35 (by norm_num)], by rwa [r 30 (by norm_num)],
+    by rwa [r 30 (by norm_num)], by rwa [r 31 (by norm_num)],
+    by rwa [r 31 (by norm_num)]⟩
 
 /-! ## Arithmetic -/
 
@@ -137,7 +137,6 @@ theorem evEnv_of_init {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCt
   have hTB := R.hTBR
   have hAl := R.hAl
   -- the descriptor of `C₁`
-  have k20 : c₀.nreg (sw 20) = c.nreg (sw 20) := kp 20 (by norm_num)
   obtain ⟨hmd, hmwf, hCD⟩ := modelDesc_of_copy (E' := c₀.nreg ALLOC) w20 d20 hMD hm R.md0
     (fun j hj => R.mdc j hj) (by omega)
   have ctx20 := chainCtx_of (W := W) hG hWh hP hJ hJW d20 w20
@@ -156,13 +155,13 @@ theorem evEnv_of_init {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCt
   · have hc := hXl P c.nmem c₀.nmem _ _ hm hX
     rw [e10, e5]
     exact hcap.trans_eq hc.symm
-  · rw [e5]; exact hsg1
+  · rwa [e5]
   · rw [e3]; exact (hNW1.transport hm).mono hA
   · rw [e4]; exact (hNW2.transport hm).mono hA
   · obtain ⟨g1, g2, -, ⟨H', hd', hreg⟩, g5, g6⟩ := ctx20
     refine ⟨g1, g2, ?_, ⟨H, ?_, ?_⟩, g5, g6⟩
     · rw [R.hcd]; exact hmwf.2 R.md0
-    · rw [R.hcd]; exact hCD
+    · rwa [R.hcd]
     · exact hJW.2.2.2 H hJ.2.2.1
   · exact ctx21.transport (kp 21 (by norm_num)) hm hA
   · exact ctxW.transport (kp 2 (by norm_num)) hm hA
@@ -174,9 +173,9 @@ theorem evEnv_of_init {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCt
     exact (junction_keep hJ hJW hm hA).1
   · rw [kp 0 (by norm_num), kp 1 (by norm_num), kp 2 (by norm_num)]
     exact (junction_keep hJ hJW hm hA).2
-  · rw [e5]; exact hsg2
-  · rw [e6]; exact hdeg1
-  · rw [e6]; exact hdeg2
+  · rwa [e5]
+  · rwa [e6]
+  · rwa [e6]
   · rw [e3]; exact (hNW1.transport hm).mono (by omega)
   · rw [e4]; exact (hNW2.transport hm).mono (by omega)
   · rw [hL]

@@ -50,7 +50,6 @@ theorem rootLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI
   have hN' : NFWithin c.nmem (c.nreg 81134) (c₀.nreg ALLOC) N :=
     Robust.transport hN (fun a ha => hI.hm a ha)
   have hNA := hN'.nfAt
-  obtain ⟨hB7, -⟩ := nf_bounds hN'
   have hB11 : c.nreg 81134 + 11 < c₀.nreg ALLOC :=
     robust_addr (v := N.dec.length) fun m' hm' => (hN m' hm').2.2.2.2.1
   have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
@@ -165,7 +164,7 @@ theorem desc_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     by rw [rg _ (by omega), r35]⟩
   have hJc : c.nreg 81140 < E.M.W.n ∧
       ProperPos E.M (Qof E.P) E.P.n ⟨c.nreg 81140, c.nreg 81141⟩ := by
-    rw [rg _ (by omega), rg 81141 (by omega)]; exact hJ
+    rwa [rg _ (by omega), rg 81141 (by omega)]
   have hx' : 2 * (c.nreg 81150 / 2) ≤ maxCode Nα := by unfold maxCode; omega
   refine FRS.seq (K₁ := ndK E (2 * (c.nreg 81150 / 2))) (K₂ := paK E (maxCode Nα) + 1)
     (node_fs hE hB hBT hI hw hP hRc hJc hx hk (by
@@ -173,7 +172,7 @@ theorem desc_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     (fun c₂ hI₂ hA₂ ⟨w₂, f₂, m₂, lh₂, raw₂⟩ => ?_) |>.mono
     (by unfold dbK; have := ndK_mono (E := E) hx'; omega) (fun _ h => h)
   -- the child
-  set k := c.nreg 81150 / 2 with hkdef
+  set k := c.nreg 81150 / 2
   have hchild : VCode Nα (c₂.nreg 81150) ∧ c₂.nreg 81150 ≠ Nα.root ∧
       Nα.parentCode (c₂.nreg 81150) = 2 * k := by
     have h9 := hDd.2.2.2.2.2.2.2.2.1 k hk (c₂.nreg 81150) lh₂
@@ -207,9 +206,9 @@ theorem desc_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have z07 : c₄.nreg 81007 = c₂.nreg 81007 := by
     rw [f₄ _ (by norm_num), f₃ _ (by omega) (by norm_num)]
   refine ⟨⟨w₂.congr' (fun q a b => by rw [f₄ q (by omega), f₃ q (by omega) (by omega)]),
-    fun q a b hq => ?_, fun h => by rw [z07]; exact m₂ (mo h), by rw [z50]; exact hv₂,
+    fun q a b hq => ?_, fun h => by rw [z07]; exact m₂ (mo h), by rwa [z50],
     by rw [f₄ _ (by norm_num), p51, z50], by rw [f₄ _ (by norm_num), p21, z50],
-    by rw [v42, z50, Function.iterate_succ_apply, hpar₂, ← hx]; exact hpath, fun t ht => ?_,
+    by rwa [v42, z50, Function.iterate_succ_apply, hpar₂, ← hx], fun t ht => ?_,
     fun reg ai bi aj bj dX regα T hD hJ' hJr' => ?_⟩, by rw [v42]; omega⟩
   · rw [f₄ q (fun h => hq (Or.inr (Or.inr (Or.inr h)))),
       f₃ q (fun h => hq (Or.inl (Or.inr (Or.inr (Or.inl ⟨by omega, by omega⟩)))))
@@ -229,8 +228,8 @@ theorem desc_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       · right
         have h0 : c₂.nreg 81007 = 0 := by have := w₂.1; omega
         rw [hx] at hb
-        exact node_dec hE hP hRc hD (by rw [rg 81140 (by omega), rg 81141 (by omega)]; exact hJ')
-          (by rw [rg 81140 (by omega), rg 81141 (by omega)]; exact hJr') hw hk hb raw₂ h0
+        exact node_dec hE hP hRc hD (by rwa [rg 81140 (by omega), rg 81141 (by omega)])
+          (by rwa [rg 81140 (by omega), rg 81141 (by omega)]) hw hk hb raw₂ h0
 
 /-- **The descent of a stretch.** -/
 def descS (sT : Stmt) : Stmt :=
@@ -287,8 +286,8 @@ theorem desc_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have e07 : ∀ q, 81007 ≤ q → q ≤ 81010 → c₂.nreg q = c.nreg q := fun q a b => by
     rw [f₂ q (by omega) (by omega), f₁ q (by omega) (by omega)]
   have hL₂ : DInv E c₀ c Cα Nα g g' L c₂ := by
-    refine ⟨hw.congr' e07, g₂, fun h => by rw [e07 _ le_rfl (by norm_num)]; exact h,
-      by rw [y50]; exact hv0, by rw [p51, v50, y50],
+    refine ⟨hw.congr' e07, g₂, fun h => by rwa [e07 _ le_rfl (by norm_num)],
+      by rwa [y50], by rw [p51, v50, y50],
       by rw [p21, v50, y50], by rw [y42, y50]; rfl, fun t ht => by rw [y42] at ht; omega,
       fun reg ai bi aj bj dX regα T hD _ _ => Or.inr (by rw [y50]; exact below_root hDd hD.hT)⟩
   -- the loop

@@ -48,7 +48,7 @@ theorem sortCore_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
   have a30 : c₂.nreg 30003 = A₀ := by rw [n₂]; config_simp
   have a6 : c₂.nreg 60006 = n := by rw [n₂]; config_simp; exact h6
   have a11 : c₂.nreg 120011 = 1 := by rw [n₂]; config_simp; exact h1
-  obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, mm₃, rm₃, o₃, -, -⟩ := scatS_exec (P := P) (W := W)
+  obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, mm₃, rm₃, o₃, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 60020) (rn := 60006) (r1 := 120011) (ra := 60016) (rv := 60017)
     (body := block [.addN 60016 30003 60020, .copyN 60017 60020])
     (B := fun r => decide (r = 60016 ∨ r = 60017)) (by decide) (by decide) (by decide) (by decide)
@@ -139,7 +139,7 @@ theorem sortCore_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
           (by decide)).2.1 r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega)
         rw [this, rr₃ r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega),
           rr₂]
-      · rw [hmem₄ a (by rw [hAl'] at ha; exact ha)]
+      · rw [hmem₄ a (by rwa [hAl'] at ha)]
       · rw [(exec_frameB e₄ (B := fun r => decide (r = 30004 ∨ 115000 ≤ r ∧ r ≤ 115005))
           (by decide)).2.2.2.1, rm₃, rm₂]
       · rw [(exec_frameB e₄ (B := fun r => decide (r = 30004 ∨ 115000 ≤ r ∧ r ≤ 115005))
@@ -167,10 +167,9 @@ theorem sortCore_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
   · intro r hr a b c' d
     rw [hc₆]; config_simp
     rw [upd_other _ _ _ a, hF5 r hr, R₄ r (by unfold bandOf at hr; omega)
-      (by unfold bandOf at hr; omega), R₃ r b c' d, n₂]
-    rw [upd_other _ _ _ (by unfold bandOf at hr; omega),
+      (by unfold bandOf at hr; omega), R₃ r b c' d, n₂, upd_other _ _ _ (by unfold bandOf at hr; omega),
       upd_other _ _ _ (by unfold bandOf at hr; omega)]
-  · rw [v7]; exact s₁
+  · rwa [v7]
   · rw [v7, hc₆]; config_simp; exact s₂
   · -- sorted
     intro t t' htt ht'
@@ -187,8 +186,7 @@ theorem sortCore_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
       unfold lexLe at this
       rw [ite_eq_left hA, ite_eq_left hB] at this
       simp only [decide_eq_true_eq] at this
-      rw [(hc4 _ hA).1, (hc4 _ hB).1, (hc4 _ hA).2, (hc4 _ hB).2] at this
-      exact this
+      rwa [(hc4 _ hA).1, (hc4 _ hB).1, (hc4 _ hA).2, (hc4 _ hB).2] at this
   · intro i hi
     have : i ∈ L' := hperm.symm.subset (List.mem_range.2 hi)
     obtain ⟨t, ht, e⟩ := List.getElem_of_mem this

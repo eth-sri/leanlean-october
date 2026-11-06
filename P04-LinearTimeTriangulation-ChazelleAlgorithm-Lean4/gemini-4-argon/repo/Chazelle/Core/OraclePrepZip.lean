@@ -40,7 +40,7 @@ theorem zipBody_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c
       (zipF C (Qof P) N d x = none → c'.nreg 110290 = 0) ∧
       ∀ z, zipF C (Qof P) N d x = some z →
         c'.nreg 110290 = 1 ∧ c'.nreg 110291 = z.1 ∧ c'.nreg 110292 = z.2 := by
-  obtain ⟨c₁, k₁, e₁, hk₁, f₁, o₁, -, fl₁, mir₁⟩ := prepS_exec hw h hx hxA d
+  obtain ⟨c₁, k₁, e₁, hk₁, f₁, o₁, fl₁, mir₁⟩ := prepS_exec hw h hx hxA d
   have h₁ : ZEnv P W lo C N V c₁ := h.stable (fun r hr => f₁.1 r (by
     simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr
     simp only [BPR, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
@@ -66,8 +66,7 @@ theorem zipBody_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c
     suffices H : zipF C (Qof P) N d x = normP x q by
       rw [H]; exact ⟨_, _, ex, by omega, fr, n₂, s₂⟩
     rw [hkx] at hI
-    have hqN : q < N.arcs.length := by rw [← hA]; exact hqA
-    have hxN : x < N.arcs.length := by rw [← hA]; exact hxA
+    have hqN : q < N.arcs.length := by rwa [← hA]
     by_cases hne : (N.F (chainModel C) (Qof P)).Nonempty
     · have hq' := hq hne
       rw [hkx'] at hq'

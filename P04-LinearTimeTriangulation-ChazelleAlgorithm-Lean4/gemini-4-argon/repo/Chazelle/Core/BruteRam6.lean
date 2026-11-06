@@ -76,7 +76,7 @@ theorem logicE_exec {P : Polygon} {W : ℕ} (hW : 8 ≤ W) (c : Config) (hw : Wo
   have a39 : c1.nreg 180039 = c.nreg 180039 := fr1 F1 (by decide)
   obtain ⟨c2, k2, e2, hk2, v2, F2⟩ := orS_exec (P := P) W2 c1 e1.wb_right (d := 180047)
     (x := 180038) (y := 180039) (t := 180048) (by decide) (by decide) (by decide) o1
-    (by rw [a38]; exact b38) (by rw [a39]; exact b39)
+    (by rwa [a38]) (by rwa [a39])
   have o2 : c2.nreg 180011 = 1 := by rw [fr2 F2 (by decide) (by decide), o1]
   obtain ⟨c3, k3, e3, hk3, v3, F3⟩ := notS_exec (P := P) c2 e2.wb_right (d := 180047)
     (x := 180047) (by decide) o2
@@ -98,7 +98,7 @@ theorem logicE_exec {P : Polygon} {W : ℕ} (hW : 8 ≤ W) (c : Config) (hw : Wo
     rw [fr1 F4 (by decide), fr1 F3 (by decide), fr2 F2 (by decide) (by decide), fr1 F1 (by decide)]
   obtain ⟨c5, k5, e5, hk5, v5, F5⟩ := notS_exec (P := P) c4 (by simpa [hc4] using e4.wb_right)
     (d := 180040) (x := 180040) (by decide) o4
-  have N5 := not_bit (show c4.nreg 180040 ≤ 1 by rw [y40]; exact b40)
+  have N5 := not_bit (show c4.nreg 180040 ≤ 1 by rwa [y40])
   rw [← v5, y40] at N5
   have o5 : c5.nreg 180011 = 1 := by rw [fr1 F5 (by decide), o4]
   have z43 : c5.nreg 180043 = c4.nreg 180043 := fr1 F5 (by decide)
@@ -118,7 +118,7 @@ theorem logicE_exec {P : Polygon} {W : ℕ} (hW : 8 ≤ W) (c : Config) (hw : Wo
       fr1 F3 (by decide), fr2 F2 (by decide) (by decide), a39]
   obtain ⟨c8, k8, e8, hk8, v8, F8⟩ := notS_exec (P := P) c7 e7.wb_right (d := 180048)
     (x := 180039) (by decide) o7
-  have N8 := not_bit (show c7.nreg 180039 ≤ 1 by rw [y39]; exact b39)
+  have N8 := not_bit (show c7.nreg 180039 ≤ 1 by rwa [y39])
   rw [← v8, y39] at N8
   have o8 : c8.nreg 180011 = 1 := by rw [fr1 F8 (by decide), o7]
   have z47 : c8.nreg 180047 = c7.nreg 180047 := fr1 F8 (by decide)
@@ -141,9 +141,9 @@ theorem logicE_exec {P : Polygon} {W : ℕ} (hW : 8 ≤ W) (c : Config) (hw : Wo
     rw [fr2 F10 (by decide) (by decide), fr1 F9 (by decide), fr1 F8 (by decide), y39]
   obtain ⟨c11, k11, e11, hk11, v11, F11⟩ := andS_exec (P := P) W2 c10 e10.wb_right (d := 180042)
     (x := 180047) (y := 180039) (by decide) o10 (by rw [z47']; exact N7.1)
-    (by rw [y39']; exact b39)
+    (by rwa [y39'])
   have A11 := and_bit (show c10.nreg 180047 ≤ 1 by rw [z47']; exact N7.1)
-    (show c10.nreg 180039 ≤ 1 by rw [y39']; exact b39)
+    (show c10.nreg 180039 ≤ 1 by rwa [y39'])
   rw [← v11, z47', y39', N7.2] at A11
   have o11 : c11.nreg 180011 = 1 := by rw [fr1 F11 (by decide), o10]
   have z49' : c11.nreg 180049 = c6.nreg 180049 := by
@@ -281,7 +281,7 @@ theorem cornerS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ 
   have r39 : c₃.nreg 180039 = c₂.nreg 180039 := F₃.1 _ (by decide)
   obtain ⟨c₄, k₄, e₄, hk₄, F₄, b41, b42, t41, t42⟩ := logicE_exec (P := P) (by omega) c₃
     e₃.wb_right (by rw [F₃.1 _ (by decide), F₂.1 _ (by decide), F₁.1 _ (by decide), h11])
-    (by rw [r38]; exact b38) (by rw [r39]; exact b39) b40
+    (by rwa [r38]) (by rwa [r39]) b40
   rw [r38, r39] at t41 t42
   simp only [SignTest] at t38 t39 t40
   -- geometric points

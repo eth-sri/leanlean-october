@@ -99,7 +99,7 @@ theorem side_full (hS : GoodH R S t) (_h : Trap R S q sL sR y₁ y₂) {G : Set 
     (h4 : p.1 < xAt sR Y) : p ∈ ⋃₀ G := by
   have hvD : v ∉ dom R S := fun hm => hm.2 (vert_mem_obs hv)
   have hpv : p.1 ≠ v.1 := fun e => hvD (by
-    rw [show v = p from point_ext e.symm (hvY.trans hpy.symm)]; exact hp)
+    rwa [show v = p from point_ext e.symm (hvY.trans hpy.symm)])
   have hYR : |Y| < R := hpy ▸ (box_of_dom hp).2
   rcases lt_or_gt_of_ne hpv with hlt | hgt
   · obtain ⟨b, hb, hbnot, hbin⟩ := exists_hit_eastH hS hp
@@ -124,10 +124,10 @@ theorem side_full (hS : GoodH R S t) (_h : Trap R S q sL sR y₁ y₂) {G : Set 
             have := hbin u.1 hu1.le hu2
             rw [show ((u.1, p.2) : Point) = u from point_ext rfl huy.symm] at this
             exact this.2 (vert_mem_obs hu)
-          · rw [show ((b, p.2) : Point) = u from point_ext hu2.symm huy.symm]; exact hu
+          · rwa [show ((b, p.2) : Point) = u from point_ext hu2.symm huy.symm]
       · have hbv' : b = v.1 := le_antisymm hbv (hbR ▸ hvR)
-        rw [show ((b, p.2) : Point) = v from point_ext hbv' (hpy.trans hvY.symm)]; exact hv
-    exact hfull _ hwv (by simp only; rw [hpy]; exact hYR) p hp rfl (fun x h1 h2 => by
+        rwa [show ((b, p.2) : Point) = v from point_ext hbv' (hpy.trans hvY.symm)]
+    exact hfull _ hwv (by simp only; rwa [hpy]) p hp rfl (fun x h1 h2 => by
       rw [min_eq_right hb.le] at h1; rw [max_eq_left hb.le] at h2
       exact hbin x h1.le h2)
   · obtain ⟨a, ha, hanot, hain⟩ := exists_hit_westH hS hp
@@ -152,10 +152,10 @@ theorem side_full (hS : GoodH R S t) (_h : Trap R S q sL sR y₁ y₂) {G : Set 
             have := hain u.1 hu1 hu2.le
             rw [show ((u.1, p.2) : Point) = u from point_ext rfl huy.symm] at this
             exact this.2 (vert_mem_obs hu)
-          · rw [show ((a, p.2) : Point) = u from point_ext hu1 huy.symm]; exact hu
+          · rwa [show ((a, p.2) : Point) = u from point_ext hu1 huy.symm]
       · have hav' : a = v.1 := le_antisymm (haL ▸ hvL) hav
-        rw [show ((a, p.2) : Point) = v from point_ext hav' (hpy.trans hvY.symm)]; exact hv
-    exact hfull _ hwv (by simp only; rw [hpy]; exact hYR) p hp rfl (fun x h1 h2 => by
+        rwa [show ((a, p.2) : Point) = v from point_ext hav' (hpy.trans hvY.symm)]
+    exact hfull _ hwv (by simp only; rwa [hpy]) p hp rfl (fun x h1 h2 => by
       rw [min_eq_left ha.le] at h1; rw [max_eq_right ha.le] at h2
       exact hain x h1 h2.le)
 
@@ -202,7 +202,7 @@ theorem ncard_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
     refine ⟨lt_of_le_of_ne h1 fun e => hw.2 (h.memLH (hwy ▸ hY1) (hwy ▸ hY2) ?_),
       lt_of_le_of_ne h2 fun e => hw.2 (h.memRH (hwy ▸ hY1) (hwy ▸ hY2) ?_)⟩
     · rw [hwy]; exact e.symm
-    · rw [hwy]; exact e
+    · rwa [hwy]
   -- the chosen point of each chord
   let zc : Set Point → Point := fun c =>
     if hc : c ∈ E then Classical.choose (hE c hc).2 else (0, 0)
@@ -210,7 +210,7 @@ theorem ncard_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
       xAt sL Y ≤ (zc c).1 ∧ (zc c).1 ≤ xAt sR Y := fun c hc => by
     simp only [zc, dite_eq_left hc]
     exact Classical.choose_spec (hE c hc).2
-  set V := {v | IsVert S v ∧ v.2 = Y} with hV
+  set V := {v | IsVert S v ∧ v.2 = Y}
   have hVf : V.Finite := (finite_vertsH hS).subset fun v hv => hv.1
   let g : Set Point → ℕ := fun c => {v | v ∈ V ∧ v.1 < (zc c).1}.ncard
   have hgle : ∀ c, g c ≤ t := fun c =>
@@ -235,9 +235,9 @@ theorem ncard_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
     · push Not at hall
       obtain ⟨s₀, h1, h2, hnot⟩ := hall
       have h1' : (zc c).1 < s₀ := lt_of_le_of_ne h1 fun e => hnot (by
-        rw [← e, show (((zc c).1, Y) : Point) = zc c from point_ext rfl hzy.symm]; exact hzD)
+        rwa [← e, show (((zc c).1, Y) : Point) = zc c from point_ext rfl hzy.symm])
       have h2' : s₀ < (zc c').1 := lt_of_le_of_ne h2 fun e => hnot (by
-        rw [e, show (((zc c').1, Y) : Point) = zc c' from point_ext rfl hz'y.symm]; exact hz'D)
+        rwa [e, show (((zc c').1, Y) : Point) = zc c' from point_ext rfl hz'y.symm])
       obtain ⟨v, hv, hvy, hv1, hv2⟩ := vert_between hS hside hzD hz'D hzy hz'y hs1.1 hs2.2 h1' h2'
         hnot
       have hsub : {v | v ∈ V ∧ v.1 < (zc c).1} ⊆ {v | v ∈ V ∧ v.1 < (zc c').1} :=

@@ -80,7 +80,7 @@ theorem prep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWh : hostWords P.n 
       ChordListAt c'.nmem (c.nreg ALLOC + 10) (bruteList C) ∧
       DescMem P C c'.nmem (c.nreg ALLOC) ∧ Frame bruteBands c c' k := by
   have hWn : P.n + 2 * C.m + 8 ≤ W := by unfold hostWords at hWh; omega
-  set A₀ := c.nreg ALLOC with hA₀
+  set A₀ := c.nreg ALLOC
   obtain ⟨c₁, k₁, e₁, hk₁, lb₁, X₁, D₁, low₁, s19, s24, R₁, RR₁, RM₁, O₁⟩ := setup_exec (P := P) hG
     (by omega) (by omega) hC hsn c hw h0 h1 (by omega)
   obtain ⟨c₂, k₂, e₂, hk₂, lb₂, X₂, t19, t24, tL, tM, R₂, RR₂, RM₂, O₂⟩ := loopS_exec (P := P) hG
@@ -106,7 +106,7 @@ theorem prep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWh : hostWords P.n 
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, q0, q1, q2, ?_, ?_, q9999, ?_, ?_, ?_⟩
   · rw [R₃ _ (by decide) (by decide) (by decide) (by decide), x17]
   · rw [R₃ _ (by decide) (by decide) (by decide) (by decide), X₂.2.2.1]
-  · rw [M₃]; exact tL
+  · rwa [M₃]
   · rw [M₃]; exact descMem_agree D₁ fun a ha => tM a ha
   · refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
     · have hb := bm_false_of_band hr
@@ -147,8 +147,6 @@ theorem cost_ok {m K κB κG : ℕ} (hm : 1 ≤ m) (hK : K ≤ 2 * (2 * m + 1)) 
     calc κG * (K * (Nat.clog 2 K + 1) + 1) ≤ κG * (30 * (m + 1) ^ 2) := Nat.mul_le_mul_left _ hf
       _ ≤ κG * (30 * (m + 1) ^ 3) := Nat.mul_le_mul_left _ (by omega)
       _ = 30 * κG * (m + 1) ^ 3 := by ring
-  have hsmall : 260 * m + 1900 + ((3300 * m + 1402) * (2 * m + 1) + 10) + 4 + 10 + 3 * K + 4 + 1 ≤
-      20000 * (m + 1) ^ 3 := by nlinarith
   nlinarith
 
 /-- The chord family of a normal form built from a list is the family of the list. -/
@@ -192,7 +190,7 @@ public theorem brute : BruteSpec := by
   set γ := c.nreg 180002 with hγd
   set K := (bruteList C).length with hKd
   have hK : K ≤ 2 * (2 * m + 1) := by
-    have := pre_length_le C (2 * C.m + 1); rw [pre_full] at this; exact this
+    have := pre_length_le C (2 * C.m + 1); rwa [pre_full] at this
   set f := K * (Nat.clog 2 K + 1) + 1 with hfd
   have hcost := cost_ok (κB := κB) (κG := κG 4) hm1 hK
   rw [← hfd] at hcost
@@ -206,15 +204,15 @@ public theorem brute : BruteSpec := by
   obtain ⟨hMD₃, hWF₃⟩ := descMem_model hC hn1 hsP qD (E := c₃.nreg ALLOC) (by rw [qA]; omega)
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   obtain ⟨c₄, k₄, e₄, hk₄, post₄, F₄⟩ := hB P W c₃ e₃.wb_right
-    ⟨hG, hWh, by show ModelDescWF P (c₃.nreg ALLOC) c₃.nmem (c₃.nreg 40000); rw [q0]; exact hWF₃,
-      chainModel C, bruteList C, by show ModelDescAt c₃.nmem (c₃.nreg 40000) _ _; rw [q0]; exact hMD₃,
+    ⟨hG, hWh, by show ModelDescWF P (c₃.nreg ALLOC) c₃.nmem (c₃.nreg 40000); rwa [q0],
+      chainModel C, bruteList C, by show ModelDescAt c₃.nmem (c₃.nreg 40000) _ _; rwa [q0],
       hGM, q2, by show c₃.nreg 40001 + 3 * K ≤ c₃.nreg ALLOC; rw [q1, qA],
-      by show ChordListAt c₃.nmem (c₃.nreg 40001) _; rw [q1]; exact qL, bruteList_ok hP hDH⟩
+      by show ChordListAt c₃.nmem (c₃.nreg 40001) _; rwa [q1], bruteList_ok hP hDH⟩
     (by show c₃.nreg ALLOC + κB * (c₃.nreg 40002 * (Nat.clog 2 (c₃.nreg 40002) + 1) + 1) ≤ W
         rw [q2, qA]; nlinarith)
   obtain ⟨N, hA₄, hNW₄, hNF, hmap, -⟩ := post₄ (chainModel C) (bruteList C)
-    (by show ModelDescAt c₃.nmem (c₃.nreg 40000) _ _; rw [q0]; exact hMD₃) q2
-    (by show ChordListAt c₃.nmem (c₃.nreg 40001) _; rw [q1]; exact qL)
+    (by show ModelDescAt c₃.nmem (c₃.nreg 40000) _ _; rwa [q0]) q2
+    (by show ChordListAt c₃.nmem (c₃.nreg 40001) _; rwa [q1])
   have hNlen : N.chords.length = K := by
     have := congrArg List.length hmap; rwa [List.length_map] at this
   -- the band-18 registers survive the construction
@@ -224,7 +222,7 @@ public theorem brute : BruteSpec := by
   have hk4 : k₄ ≤ κB * f := by
     beta_reduce at hk₄
     have : rd c₃ bBuild 2 = K := q2
-    rw [this] at hk₄; exact hk₄
+    rwa [this] at hk₄
   have hA4 : c₄.nreg ALLOC ≤ c₃.nreg ALLOC + κB * f := by have := F₄.2.2.2.2.2.2; omega
   -- 3. the arguments of granularity enforcement
   obtain ⟨c₅, k₅, e₅, hk₅, p0, p1, p2, p3, R₅, RR₅, M₅, RM₅, O₅⟩ : ∃ c₅ k₅, Exec P W midS c₄ c₅ k₅ ∧
@@ -248,7 +246,7 @@ public theorem brute : BruteSpec := by
   obtain ⟨hMD₅, hWF₅⟩ := descMem_model hC hn1 hsP qD₅ (E := c₅.nreg ALLOC)
     (by rw [A₅]; have := F₄.2.2.2.2.2.1; rw [qA] at this; omega)
   have hNW₅ : NFWithin c₅.nmem (c₅.nreg 90001) (c₅.nreg ALLOC) N := by
-    rw [p1, A₅, M₅]; exact hNW₄
+    rwa [p1, A₅, M₅]
   have hF : N.F (chainModel C) (Qof P) = C.chords := by rw [nfF_eq hmap]; exact bruteList_set hP hDH
   have hdeg : (chainModel C).DegLe (N.F (chainModel C) (Qof P)) 4 := by
     rw [hF]
@@ -262,20 +260,20 @@ public theorem brute : BruteSpec := by
   -- 4. granularity enforcement
   obtain ⟨c₆, k₆, e₆, hk₆, post₆, F₆⟩ := hGr P W c₅ e₅.wb_right
     ⟨hG, hWh, by show 1 ≤ c₅.nreg 90002; rw [p2]; omega,
-      by show ModelDescWF P (c₅.nreg ALLOC) c₅.nmem (c₅.nreg 90000); rw [p0]; exact hWF₅,
-      chainModel C, N, by show ModelDescAt c₅.nmem (c₅.nreg 90000) _ _; rw [p0]; exact hMD₅, hGM,
-      hNW₅, hNF, by show (chainModel C).DegLe _ (c₅.nreg 90002); rw [p2]; exact hdeg,
-      by show (chainModel C).Semigranular _ (c₅.nreg 90003); rw [p3]; exact hsemi⟩
+      by show ModelDescWF P (c₅.nreg ALLOC) c₅.nmem (c₅.nreg 90000); rwa [p0],
+      chainModel C, N, by show ModelDescAt c₅.nmem (c₅.nreg 90000) _ _; rwa [p0], hGM,
+      hNW₅, hNF, by show (chainModel C).DegLe _ (c₅.nreg 90002); rwa [p2],
+      by show (chainModel C).Semigranular _ (c₅.nreg 90003); rwa [p3]⟩
     (by show c₅.nreg ALLOC + κG (c₅.nreg 90002) * (c₅.nmem (c₅.nreg 90001) *
           (Nat.clog 2 (c₅.nmem (c₅.nreg 90001)) + 1) + 1) ≤ W
         rw [p2, hK₅, A₅, ← hfd]; rw [qA] at hA4; nlinarith)
   obtain ⟨N', hA₆, hNW₆, -, hcan⟩ := post₆ (chainModel C) N
-    (by show ModelDescAt c₅.nmem (c₅.nreg 90000) _ _; rw [p0]; exact hMD₅) hNW₅.nfAt
+    (by show ModelDescAt c₅.nmem (c₅.nreg 90000) _ _; rwa [p0]) hNW₅.nfAt
   have hk6 : k₆ ≤ κG 4 * f := by
     beta_reduce at hk₆
     have e : rd c₅ bGran 2 = 4 := p2
     have e' : c₅.nmem (rd c₅ bGran 1) = K := hK₅
-    rw [e, e', ← hfd] at hk₆; exact hk₆
+    rwa [e, e', ← hfd] at hk₆
   -- 5. the output
   have e₇ := Exec.copyN (P := P) e₆.wb_right 180003 90004
   set c₇ : Config := { c₆ with nreg := upd c₆.nreg 180003 (c₆.nreg 90004) } with hc₇
@@ -287,10 +285,10 @@ public theorem brute : BruteSpec := by
   · show Robust (c₇.nreg ALLOC) c₇.nmem fun m' => NFAt m' (c₇.nreg 180003) N'
     have e1 : c₇.nreg ALLOC = c₆.nreg ALLOC := by rw [hc₇]; simp [ALLOC]
     have e2 : c₇.nreg 180003 = c₆.nreg 90004 := by rw [hc₇]; simp
-    rw [e1, e2]; exact hNW₆
+    rwa [e1, e2]
   · have e3 : rd c₅ bGran 3 = γ := p3
     have e2 : rd c₅ bGran 2 = 4 := p2
-    rw [e3, e2] at hcan; rw [r2]; exact hcan
+    rw [e3, e2] at hcan; rwa [r2]
   · -- the frame
     have F₅ : Frame {bGran} c₄ c₅ k₅ := ⟨fun r hr _ => R₅ r (by rintro rfl; exact hr (by decide))
       (by rintro rfl; exact hr (by decide)) (by rintro rfl; exact hr (by decide))

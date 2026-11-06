@@ -111,7 +111,7 @@ theorem parStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
     (rn := 130503) (body := parBody) (Rg := ParRG) (by unfold ParRG; omega)
     (by unfold ParRG; omega) (bOut := bOut) (n := n) (j₀ := 1) (B := 7)
     (fun x => c.nmem (bVA + c.nmem (bPA + x))) hw1 h1c
-    (by rw [h1r _ (by omega)]; exact hn) hn1
+    (by rwa [h1r _ (by omega)]) hn1
     (fun j c2 hj1 hjn hw2 hi2 hf2 => by
       have r0 : ∀ r, ¬ ParRG r → c2.nreg r = c.nreg r := fun r hr =>
         (hf2.1 r hr).trans (h1r r (fun h => hr (by rw [h]; unfold ParRG; omega)))
@@ -128,7 +128,7 @@ theorem parStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
       unfold parBody
       exec_block
       · rw [rPA, hi2]; omega
-      · config_simp; rw [rVA, rPA, hi2, mP]; exact hwv
+      · config_simp; rwa [rVA, rPA, hi2, mP]
       · config_simp; rw [rO, hi2]; omega
       · config_simp; rw [hi2, r1]; omega
       · refine ⟨le_refl _, by config_simp; rw [hi2, r1], fun r hr => ?_, rfl, rfl, rfl, ?_⟩
@@ -282,7 +282,7 @@ theorem upStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
       PFr UpRG (fun a => bT ≤ a ∧ a < bT + L * n) c c' ∧
       ∀ j, j < L → ∀ x, x < n →
         c'.nmem (bT + j * n + x) = (fun y => c.nmem (bPa + y))^[2 ^ j] x := by
-  set up : ℕ → ℕ := fun y => c.nmem (bPa + y) with hupdef
+  set up : ℕ → ℕ := fun y => c.nmem (bPa + y)
   have hupl : ∀ m x, x < n → up^[m] x < n := by
     intro m; induction m with
     | zero => intro x hx; exact hx
@@ -298,7 +298,7 @@ theorem upStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
     (rn := 130512) (body := row0Body) (Rg := UpRG) (by unfold UpRG; omega)
     (by unfold UpRG; omega) (bOut := bT) (n := n) (j₀ := 0) (B := 5) up e0.wb_right
     (by simp only [c1, Machine.upd_same])
-    (by simp only [c1]; rw [Machine.upd_other _ _ _ (by omega)]; exact hn) (Nat.zero_le _)
+    (by simp only [c1]; rwa [Machine.upd_other _ _ _ (by omega)]) (Nat.zero_le _)
     (fun j c3 _ hjn hw3 hi3 hf3 => by
       have r0 : ∀ r, ¬ UpRG r → c3.nreg r = c.nreg r := fun r hr =>
         (hf3.1 r hr).trans (hf1.1 r hr)

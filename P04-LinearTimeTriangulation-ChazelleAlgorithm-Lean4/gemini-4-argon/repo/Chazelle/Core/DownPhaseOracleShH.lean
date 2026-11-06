@@ -131,7 +131,7 @@ theorem interiorShooter_of {sh : Stmt} {F : ℕ → ℕ}
       rw [r9] at hk₂
       have : F (rd c bShoot 9) + 3 ≤ FI F (rd c bShoot 9) := by unfold FI; omega
       omega
-    · have hp := hpost M' o' (by rw [r0, hm₁]; exact hM') (ShotList.originIn_copy ho'
+    · have hp := hpost M' o' (by rwa [r0, hm₁]) (ShotList.originIn_copy ho'
         (f₁ _ (by decide) (by decide)) (f₁ _ (by decide) (by decide))
         (f₁ _ (by decide) (by decide)))
       simp only [r1, r2, r3, r4, r8] at hp
@@ -148,18 +148,18 @@ theorem interiorShooter_of {sh : Stmt} {F : ℕ → ℕ}
     have hD : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
     have hn3 : 3 ≤ (Qof P).n := by rw [hQ]; exact Chazelle.Jordan.simple_three_le hG.1
     have hmn : (interiorModel (Qof P)).W.n = (Qof P).n := mi_n
-    have hol' : o.Lt (Qof P).n (interiorModel (Qof P)) := by rw [hQ]; exact hol
-    obtain ⟨hoL, hoE, hb1, hb2⟩ := oSym_spec hD hn3 hol' (by rw [hQ]; exact hof)
+    have hol' : o.Lt (Qof P).n (interiorModel (Qof P)) := by rwa [hQ]
+    obtain ⟨hoL, hoE, hb1, hb2⟩ := oSym_spec hD hn3 hol' (by rwa [hQ])
     -- the set-up
     obtain ⟨c₂, k₂, e₂, hk₂, S₂, h70, hA₂, F₂⟩ := frontI_exec (O := O) c₁ w₁ hG hHW
       (by show (gradeCtx O).holds P c₁.nmem (rd c₁ bShoot 13) (c₁.nreg ALLOC)
-          rw [hm₁, hA₁, r13]; exact hX)
+          rwa [hm₁, hA₁, r13])
       (by show rd c₁ bShoot 9 ≤ (gradeCtx O).cap P c₁.nmem (rd c₁ bShoot 13)
-          rw [hm₁, r9, r13]; exact hcap)
+          rwa [hm₁, r9, r13])
       (by show rd c₁ bShoot 0 + 6 ≤ c₁.nreg ALLOC
           rw [hA₁, r0]; exact hMDWF.1)
       (by show c₁.nmem (rd c₁ bShoot 0 + 1) = 1 ↔ _
-          rw [hm₁, r0]; exact hbit) ho₁ hol (by
+          rwa [hm₁, r0]) ho₁ hol (by
         rw [hA₁]; have : 8 ≤ FI F (rd c bShoot 9) := by unfold FI; omega
         omega)
     have w₂ := e₂.wb_right
@@ -173,12 +173,12 @@ theorem interiorShooter_of {sh : Stmt} {F : ℕ → ℕ}
     have q : QFacts (Qof P) (statOf P c₁ o).e₁ (statOf P c₁ o).h₁ (statOf P c₁ o).e₂
         (statOf P c₁ o).h₂ := by
       rw [se1, sh1, se2, sh2]
-      exact ⟨hn3, hD, by rw [← hmn]; exact hs1, by rw [← hmn]; exact he1,
-        by rw [hQ]; exact hsP, by rw [hQ]; exact heP⟩
+      exact ⟨hn3, hD, by rwa [← hmn], by rwa [← hmn],
+        by rwa [hQ], by rwa [hQ]⟩
     obtain ⟨c₃, k₃, e₃, hk₃, hhit, hno, F₃⟩ := queryI_exec hsh c₂ w₂ S₂ h70 q
-      (by rw [se1, sh1, se2, sh2, sγ]; exact hwt) (by rw [so, hoE]; exact hb1)
-      (by rw [so, hoE]; exact hb2) (by rw [so, ← hQ]; exact hoL)
-      (by rw [so, hoE, se1, sh1, se2, sh2]; exact hoA) (by
+      (by rwa [se1, sh1, se2, sh2, sγ]) (by rwa [so, hoE])
+      (by rwa [so, hoE]) (by rwa [so, ← hQ])
+      (by rwa [so, hoE, se1, sh1, se2, sh2]) (by
         rw [hA₂, hA₁, sγ]
         unfold FI at hcost
         exact room_q hcost)

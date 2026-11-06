@@ -89,9 +89,9 @@ theorem posClass_pt {C : Chain} {Q : Polygon} {x : WPos} (hx : PosClass C Q x)
   rw [hW] at hy ⊢
   rcases hx with (h | h) | ⟨h6, hlt⟩ | ⟨hend, hz⟩
   · right; rw [h, b1]; simp only; rw [abs_neg, abs_of_pos hR]
-    exact ⟨rfl, by rw [h, b1] at hy; exact hy⟩
+    exact ⟨rfl, by rwa [h, b1] at hy⟩
   · right; rw [h, b3]; simp only; rw [abs_of_pos hR]
-    exact ⟨rfl, by rw [h, b3] at hy; exact hy⟩
+    exact ⟨rfl, by rwa [h, b3] at hy⟩
   · left
     have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := t) (by omega)
       (fun h => by omega) h0 h1
@@ -140,7 +140,6 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
   have hR := C.radius_pos
   have htR := C.top_snd_lt_radius
   have htm : |C.top.2| < C.radius := absy_lt C C.top_mem_set
-  have htl := (abs_lt.1 htm).1
   set t := (chainModel C).param Q x with ht
   rw [pos_eq_sidePt' C Q x, ← ht] at htop hsec ⊢
   obtain ⟨b0, b1, b2, b3, b4, b5, b6⟩ := C.sidePt_box C.sideBeta t
@@ -158,7 +157,7 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
         rcases h0.lt_or_eq with h0 | h0
         · exfalso
           apply Sweep.not_sideLeft_horizontal h0 h1 (W := (chainModel C).W) (p := 2) _ σ
-          · rw [← h]; exact hsec
+          · rwa [← h]
           · rw [hW, C.sideWalk_vtx_two, show (2 + 1) % (C.sideWalk C.sideBeta).n = 3 by
               rw [C.sideWalk_n]; exact Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_three]
         · exact h0.symm
@@ -179,7 +178,7 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
   · rw [hW, hend, b6] at htop ⊢; simp only at htop ⊢
     have : t * (C.radius - C.top.2) ≤ 0 := by linarith
     have ht0 : t = 0 := by nlinarith
-    rw [ht0, zero_mul, add_zero]; exact htm
+    rwa [ht0, zero_mul, add_zero]
 
 end
 

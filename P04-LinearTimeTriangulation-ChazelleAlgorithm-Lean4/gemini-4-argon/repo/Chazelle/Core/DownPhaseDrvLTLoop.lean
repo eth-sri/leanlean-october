@@ -119,7 +119,7 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
   rw [hF] at r13 r14
   -- the table entry
   have t0 : e.nmem (G.T + 3 * j) = G.m₀ (G.T + 3 * j) := hI.low _ (by omega)
-  have t1 : e.nmem (G.T + 3 * j + 1) = ℓ := by rw [hI.low _ (by omega)]; exact g1
+  have t1 : e.nmem (G.T + 3 * j + 1) = ℓ := by rwa [hI.low _ (by omega)]
   have t2 : e.nmem (G.T + 3 * j + 1 + 1) = G.m₀ (G.T + 3 * j + 2) := hI.low _ (by omega)
   -- 1. the entry
   obtain ⟨e₁, k₁, x₁, hk₁, a40, a43, a44, a45, a61, a62, a63, m₁, f₁⟩ :=

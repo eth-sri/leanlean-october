@@ -35,12 +35,12 @@ theorem asmGoal : AsmGoal := by
   have hK₂ : c.nmem (rd c bSweep 4) = N₂.nChords := hNW₂.nfAt.1
   obtain ⟨b3, -⟩ := Restore.nf_bounds hNW₁
   obtain ⟨b4, -⟩ := Restore.nf_bounds hNW₂
-  set A₀ := c.nreg ALLOC with hA₀
-  set n₁ := N₁.nChords + N₂.nChords + 1 with hn₁
-  set nT := n₁ + L.length with hnT
-  set f := F (rd c bSweep 5) with hf
-  set D := rd c bSweep 6 with hD
-  set Λ := Nat.clog 2 nT with hΛ
+  set A₀ := c.nreg ALLOC
+  set n₁ := N₁.nChords + N₂.nChords + 1
+  set nT := n₁ + L.length
+  set f := F (rd c bSweep 5)
+  set D := rd c bSweep 6
+  set Λ := Nat.clog 2 nT
   have eT : c.nmem (rd c bSweep 3) + c.nmem (rd c bSweep 4) + rd c bSweep 9 + 1 = nT := by
     rw [hK₁, hK₂, hLn]; omega
   rw [eT] at hroom
@@ -70,8 +70,8 @@ theorem asmGoal : AsmGoal := by
     (by rw [p7]; omega)
     (by rw [pm, p 0 (by omega) (by omega), p 1 (by omega) (by omega), p 2 (by omega) (by omega)]
         exact hJ)
-    (by rw [pm, pA, p 0 (by omega) (by omega), p 1 (by omega) (by omega),
-        p 2 (by omega) (by omega)]; exact hJWF)
+    (by rwa [pm, pA, p 0 (by omega) (by omega), p 1 (by omega) (by omega),
+        p 2 (by omega) (by omega)])
     hWm (by rw [pA]; omega)
   have h99₂ : c₂.nreg (sw 99) = rd c bSweep 7 := (initS_keep99 e₂).trans p99
   have hSt0S₂ : SweepEv.St0S P c₂ H J := SweepEv.st0S_of_st0 hSt0 p7
@@ -80,7 +80,7 @@ theorem asmGoal : AsmGoal := by
     (slo j hj).trans (p j (by omega) h)
   have A2 : c₂.nreg ALLOC = A₀ + 12 := by rw [sA, pA]
   have m2 : ∀ a, a < A₀ → c₂.nmem a = c.nmem a := fun a ha =>
-    (hF₂.2.2.1 a (by rw [pA]; exact ha)).trans (by rw [pm])
+    (hF₂.2.2.1 a (by rwa [pA])).trans (by rw [pm])
   -- 3. stages 2/3
   have r2 : ∀ j, j = 3 ∨ j = 4 ∨ j = 5 ∨ j = 6 ∨ j = 10 → rd c₂ bSweep j = rd c bSweep j :=
     fun j hj => e2 j (by omega) (by omega)
@@ -89,13 +89,13 @@ theorem asmGoal : AsmGoal := by
       ?_, ?_, hSt0S₂⟩
     · rw [r2 10 (by simp)]
       exact X.mono _ _ _ _ _ (by omega) (X.local_ _ _ _ _ _ (fun a ha => (m2 a ha).symm) hX)
-    · rw [r2 5 (by simp), r2 10 (by simp), hXl _ _ _ _ _ m2 hX]; exact hcap
+    · rwa [r2 5 (by simp), r2 10 (by simp), hXl _ _ _ _ _ m2 hX]
     · rw [r2 3 (by simp)]; exact (Robust.transport hNW₁ m2).mono (by omega)
     · rw [r2 4 (by simp)]; exact (Robust.transport hNW₂ m2).mono (by omega)
-    · rw [r2 6 (by simp)]; exact hdeg₁
-    · rw [r2 6 (by simp)]; exact hdeg₂
-    · rw [r2 5 (by simp)]; exact hsg₁
-    · rw [r2 5 (by simp)]; exact hsg₂
+    · rwa [r2 6 (by simp)]
+    · rwa [r2 6 (by simp)]
+    · rwa [r2 5 (by simp)]
+    · rwa [r2 5 (by simp)]
   have eK2 : c₂.nmem (rd c₂ bSweep 3) + c₂.nmem (rd c₂ bSweep 4) + 1 = n₁ := by
     rw [r2 3 (by simp), r2 4 (by simp), m2 _ (by omega), m2 _ (by omega), hK₁, hK₂]
   have hc3 : SweepEv.cost κE F P c₂ = κE D * n₁ * (f + Nat.clog 2 n₁ + 1) := by
@@ -110,7 +110,7 @@ theorem asmGoal : AsmGoal := by
   obtain ⟨c₃, k₃, e₃, hk₃, hPost, hF₃⟩ := hEv sh Bs F X Ok hXl hBs hsh P W c₂ e₂.wb_right hPre₂
     (by rw [hc3, A2]; omega)
   rw [hc3] at hk₃
-  obtain ⟨keep, -, b200', -, b300', -, b302', hS16, hL16, hOut⟩ := hPost
+  obtain ⟨keep, b200', b300', b302', hS16, hL16, hOut⟩ := hPost
   rw [eK2] at hS16 hL16
   rw [show c₂.nmem (rd c₂ bSweep 4) = N₂.nChords by rw [r2 4 (by simp), m2 _ (by omega), hK₂]]
     at b302'
@@ -163,7 +163,6 @@ theorem asmGoal : AsmGoal := by
     (A₁ := 0) (k₂ := k₂) (k₃ := k₃) (k₄ := k₄)
     (k₅ := κ0 D * (rd c₃ bSweep 201 + rd c₃ bSweep 301 + 2 * N₂.nChords + 1) * (c₄.nreg TLR + 1))
     (k₇ := 0) rfl rfl hl₁ hS16 hL16 tle (by omega) hk₂ hk₃ hk₄ le_rfl (Nat.zero_le _)
-  have hF3A := hF₃.2.2.2.2.2.2
   have hF4A := hF₄.2.2.2.2.2.2
   obtain ⟨c₅, k₅, e₅, hk₅, hF₅, hr₅, hAux₅⟩ := hInit.1 P W X Ok J H N₁ N₂ A₀ c₄ e₄.wb_right hAE₄
     (by rw [hc5]; rw [pA] at hF2A; omega)
@@ -171,7 +170,7 @@ theorem asmGoal : AsmGoal := by
   have hAE₅ : AEnv P W X Ok J H N₁ N₂ A₀ c₅ :=
     aenv_transport hXl hAE₄ (fun j hj _ hj' => hr₅ j hj hj') hF₅.2.2.1 hF₅.2.2.2.2.2.1
   -- 6. the result base
-  set c₆ : Config := { c₅ with nreg := upd c₅.nreg (sw 11) (c₅.nreg ALLOC) } with hc₆
+  set c₆ : Config := { c₅ with nreg := upd c₅.nreg (sw 11) (c₅.nreg ALLOC) }
   have e₆ : Exec P W (.instr (.copyN (sw 11) ALLOC)) c₅ c₆ 1 := Exec.copyN e₅.wb_right (sw 11) ALLOC
   have r6 : ∀ r, r ≠ sw 11 → c₆.nreg r = c₅.nreg r := fun r hr => upd_other _ _ _ hr
   have A6 : c₆.nreg ALLOC = c₅.nreg ALLOC := r6 _ (by unfold sw ALLOC; omega)
@@ -194,15 +193,14 @@ theorem asmGoal : AsmGoal := by
         hi := h7
         hside := ?_
         hAux := fun _ => hInit.2 P J N₂ c₅ _ hAux₅
-        hLn := by rw [e6 9 (by omega) (by omega) (by omega)]; exact hLn
+        hLn := by rwa [e6 9 (by omega) (by omega) (by omega)]
         hLm := by rw [e6 8 (by omega) (by omega) (by omega), A6]; omega
         hLat := by
           rw [e6 8 (by omega) (by omega) (by omega)]; exact chordList_keep hLat hLm m6
         hq := hq
         hht := hht
         hend := hend
-        hres := by rw [A6]; simp [c₆, upd]
-        hTLR := by rw [hTL6]; omega }
+        hres := by rw [A6]; simp [c₆, upd] }
     rw [r6 _ (by unfold sSide sw; omega), show sSide = sw 98 from rfl,
       hr₅ 98 (by omega) (Or.inl (by omega)), show sw 98 = sSide from rfl, hside,
       keep 99 (by omega), h99₂]
@@ -247,9 +245,9 @@ theorem asmGoal : AsmGoal := by
     · show A₀ ≤ c₇.nreg (sw 11)
       rw [h11, v11]; omega
     · show c₇.nreg (sw 11) + 4 * L.length ≤ c₇.nreg ALLOC
-      rw [h11]; exact hR11
+      rwa [h11]
     · show ResultListAt c₇.nmem (c₇.nreg (sw 11)) R
-      rw [h11]; exact hRat
+      rwa [h11]
   · -- the frame
     refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
     · rw [hfr₇.1 r hr hra, r6 r (sw_band hr 11 (by omega)), hF₅.1 r hr hra, hF₄.1 r hr hra,
@@ -262,7 +260,7 @@ theorem asmGoal : AsmGoal := by
     · rw [hI₇.hrm a (by rw [A6]; omega)]
       show c₅.rmem a = c.rmem a
       rw [hF₅.2.2.2.1 a (by omega), hF₄.2.2.2.1 a (by omega), hF₃.2.2.2.1 a (by omega),
-        hF₂.2.2.2.1 a (by rw [pA]; exact ha), prm]
+        hF₂.2.2.2.1 a (by rwa [pA]), prm]
     · rw [hfr₇.2.2.1]
       show c₅.output = c.output
       rw [hF₅.2.2.2.2.1, hF₄.2.2.2.2.1, hF₃.2.2.2.2.1, hF₂.2.2.2.2.1, po]

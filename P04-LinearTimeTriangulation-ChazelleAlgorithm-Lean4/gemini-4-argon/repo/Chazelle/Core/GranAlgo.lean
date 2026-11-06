@@ -145,12 +145,7 @@ theorem Inv.init (hE : E.Good) {nd0 nd1 eg pz : ℕ → ℕ}
     rintro x ⟨i, hi, rfl | rfl⟩
     · exact (hupdn i hi.1).1
     · exact (hupdn i hi.1).2
-  have hK1 : 1 ≤ E.K := by
-    obtain ⟨d, hd⟩ := hE.hne
-    obtain ⟨i, hi, -⟩ := mem_F_iff.1 hd
-    show 1 ≤ E.N.nChords
-    omega
-  refine ⟨hstat, fun _ _ => le_rfl, ?_, by rw [hF]; exact hdeg, by rw [hF]; exact hsemi,
+  refine ⟨hstat, fun _ _ => le_rfl, ?_, by rwa [hF], by rwa [hF],
     fun i hi => ?_, fun x hx => ?_, fun x y hx hy he => ?_, fun j hj => rfl, ?_,
     fun t ht => ht, by simp [st, initSt], fun i hi hno => absurd rfl (hno i hi.1)⟩
   · show E.K = _

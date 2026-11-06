@@ -91,7 +91,7 @@ theorem emitAt_iff {l : List SymPt} (hW : (polyOf Q l).Simple)
     emitAt Q l k d ↔ DirInterior (polyOf Q l) k (sgnD d) := by
   have hn := Chazelle.Jordan.simple_three_le hW
   rw [polyOf_n] at hn
-  rw [dirInterior_iff_emitG hW hL (by rw [polyOf_n]; exact hk) (sgnD_cases d)]
+  rw [dirInterior_iff_emitG hW hL (by rwa [polyOf_n]) (sgnD_cases d)]
   unfold emitAt
   have hp : Chazelle.Jordan.prevIdx (polyOf Q l) k = (k + l.length - 1) % l.length := by
     unfold Chazelle.Jordan.prevIdx; rw [polyOf_n]
@@ -112,7 +112,7 @@ theorem farW_spec (hQ : Q.Simple) (hDH : DistinctHeights Q) (li : Bool) {i d : �
   have hn := Chazelle.Jordan.simple_three_le hQ
   have hex : ∃ w, w < Q.n ∧ OpenEdgePt Q (qE li Q.n w) (chordEnd Q i (sgnD d)) := by
     obtain ⟨q, hc, -, ho⟩ := far_cand hQ hDH hi (sgnD_cases d) hdir
-    exact ⟨qEi li Q.n q, qEi_lt li hc.1, by rw [qE_qEi li (by omega) hc.1]; exact ho⟩
+    exact ⟨qEi li Q.n q, qEi_lt li hc.1, by rwa [qE_qEi li (by omega) hc.1]⟩
   unfold farW
   rw [dite_eq_left hex]
   exact Classical.choose_spec hex
@@ -258,7 +258,7 @@ theorem regList_complete (hQ : Q.Simple) (hDH : DistinctHeights Q)
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some]
     exact List.getElem_mem hk
   have hq : qvx Q (l.getD k (.vtx 0)) = some i :=
-    qvx_of_eval hQ hDH (hl _ hmem) hi (by rw [← polyOf_vtx Q hk]; exact hv)
+    qvx_of_eval hQ hDH (hl _ hmem) hi (by rwa [← polyOf_vtx Q hk])
   have hkd : (k, d) ∈ emIdx Q l :=
     mem_emIdx.2 ⟨hk, by omega, by rw [hq]; rfl, (emitAt_iff hR.simple hR.orient hk d).2 hdirW⟩
   refine ⟨recAt li Q l (k, d), List.mem_map.2 ⟨(k, d), hkd, rfl⟩, ?_⟩
@@ -295,7 +295,7 @@ theorem regList_nodup (hQ : Q.Simple) (hDH : DistinctHeights Q)
     split_ifs at hσ with h1 h2 h2 <;> first | omega | norm_num at hσ
   have hk : a.1 = b.1 := by
     have := hva.trans hvb.symm
-    exact hR.simple.2.1 _ _ (by rw [polyOf_n]; exact hak) (by rw [polyOf_n]; exact hbk) this
+    exact hR.simple.2.1 _ _ (by rwa [polyOf_n]) (by rwa [polyOf_n]) this
   exact Prod.ext hk hd
 
 end

@@ -102,7 +102,6 @@ theorem atEnd_iff (C : Chain) (hP : C.P.Simple) {k : ℕ} (hk : k = 0 ∨ k = C.
       (x.edge = 6 + tpos C k ∨ (x.edge = 2 * C.m + 6 ∧ tpos C k = 0)) := by
   have hkm : k ≤ C.m := by rcases hk with rfl | rfl <;> omega
   rw [pos_eq_sidePt' C Q x, vtx_pos_iff C hP hkm hx h0 h1]
-  have hn := cm_n C
   constructor
   · rintro ⟨ht, i, hi, hp, hidx⟩
     refine ⟨ht, ?_⟩
@@ -121,7 +120,6 @@ theorem atTop_iff (C : Chain) (hP : C.P.Simple) (Q : Polygon) {x : WPos}
     (h1 : (chainModel C).param Q x < 1) :
     (chainModel C).pos Q x = C.top ↔ (chainModel C).param Q x = 0 ∧
       (x.edge = 6 ∨ x.edge = 2 * C.m + 6 ∨ x.edge = 6 + midT C) := by
-  have hn := cm_n C
   have hmid : midT C ≤ 2 * C.m := by
     unfold midT; have := C.topIdx_le; split_ifs <;> omega
   show _ = C.vertex C.topIdx ↔ _

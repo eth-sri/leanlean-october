@@ -135,7 +135,7 @@ theorem noCross_of_sorted {n : ℝ} {L : List Ev}
     rw [hf₂] at hff
     unfold EvLe at hef hfe hff
     simp only at hef hfe hff
-    have hij' : e₁.1 ≠ f₁.1 := by rw [← h1, ← h2]; exact hij
+    have hij' : e₁.1 ≠ f₁.1 := by rwa [← h1, ← h2]
     have hX := hcross e₁ (hmem e₁ (by simp)) f₁ (hmem f₁ (by simp)) hij'
     have hsame' : ¬ (a = c ∧ b = d) := fun ⟨h5, h6⟩ =>
       hij' (hsame e₁ (hmem e₁ (by simp)) f₁ (hmem f₁ (by simp)) (Prod.ext h5 h6))

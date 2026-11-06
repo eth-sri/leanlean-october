@@ -24,7 +24,7 @@ variable {A R K CB RB LB : ℕ}
 theorem incr_exec {c : Config} (hw : WordsBounded W c) (o : c.nreg 60011 = 1) (hW : c.nreg 60020 + 1 ≤ W) :
     ∃ c' k, Exec P W (.instr (.addN 60020 60020 60011)) c c' k ∧ k = 1 ∧ c'.nmem = c.nmem ∧
       Same [60020] c c' ∧ c'.nreg 60020 = c.nreg 60020 + 1 := by
-  refine spec_instr (Exec.addN hw _ _ _ (by rw [o]; exact hW)) fun _ => ⟨rfl, rfl, Same.upd1 (by simp), ?_⟩
+  refine spec_instr (Exec.addN hw _ _ _ (by rwa [o])) fun _ => ⟨rfl, rfl, Same.upd1 (by simp), ?_⟩
   config_simp; rw [o]
 
 /-- The addition of the size of `r` into its parent's. -/
@@ -69,7 +69,7 @@ theorem p1Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
   have b1 := hR.b 1 (by norm_num); have b4 := hR.b 4 (by norm_num)
   have b11 := hR.b 11 (by norm_num)
   simp only [Nat.reduceAdd] at b1 b4 b11
-  have z := hR.zero; have o := hR.one; have r1 := hR.rR1
+  have r1 := hR.rR1
   set r := fv c.nmem A R 1 (R - 1 - j) with hrdef
   have hr' : c.nmem (A + 12 + 1 * R + (R - 1 - j)) = r := rfl
   -- the first block
@@ -124,14 +124,14 @@ theorem p1Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       · have hp1 : p1 R (fv c.nmem A R 1) (fv c.nmem A R 3) (fv c.nmem A R 4) (fv c.nmem A R 11)
             (fv c.nmem A R 7) j = fv c.nmem A R 7 := by
           unfold p1; rw [← hrdef, ite_eq_right (fun hh => hh.2 hrem)]
-        refine ifEqN_eq (by rw [r42, hR3.one]; exact hrem) (spec_skip e3.wb_right ?_)
+        refine ifEqN_eq (by rwa [r42, hR3.one]) (spec_skip e3.wb_right ?_)
         refine ⟨by omega, s23, fun a _ => by rw [m3, m2, m1], fun f u _ _ => ?_⟩
         rw [hp1, m3, m2, m1]; split_ifs with hf <;> [rw [hf]; rfl]
       · have hp1 : p1 R (fv c.nmem A R 1) (fv c.nmem A R 3) (fv c.nmem A R 4) (fv c.nmem A R 11)
             (fv c.nmem A R 7) j = Function.update (fv c.nmem A R 7) (fv c.nmem A R 3 r)
               (fv c.nmem A R 7 (fv c.nmem A R 3 r) + fv c.nmem A R 7 r) := by
           unfold p1; rw [← hrdef, ite_eq_left ⟨h0, hrem⟩]
-        refine ifEqN_ne (by rw [r42, hR3.one]; exact hrem) ?_
+        refine ifEqN_ne (by rwa [r42, hR3.one]) ?_
         obtain ⟨c4, k4, e4, rfl, m4, s4⟩ := p1Add_exec (P := P) e3.wb_right hR3 hAW (r := r)
           (q := fv c.nmem A R 3 r) (by rw [s23.1 _ (by simp), r40]) hr hpg
           (by rw [m3, m2, m1]) (by rw [m3, m2, m1]; exact hsum h0)

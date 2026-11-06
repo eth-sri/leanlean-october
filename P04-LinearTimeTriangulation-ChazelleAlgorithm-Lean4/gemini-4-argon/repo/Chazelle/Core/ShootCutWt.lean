@@ -89,8 +89,6 @@ theorem wt_U_to_six (Q : Polygon) {n : ℕ} {x : WPos} (hx : ProperPos (chainMod
     (chainModel C).arcWt ((chainModel C).key Q x) (6 : ℕ) = 0 := by
   have e6 : ((6 : ℕ) : ℝ) = (chainModel C).key Q ⟨6, 0⟩ := by simp
   rw [e6, arcWt_chain C Q hx (proper_vtx _ Q n 6)]
-  have hc := le_keyCeil 6 ((chainModel C).param Q ⟨6, 0⟩)
-  have hc' := keyCeil_le 6 ((chainModel C).param Q ⟨6, 0⟩)
   have hk : keyCeil 6 ((chainModel C).param Q ⟨6, 0⟩) = 6 := by
     unfold keyCeil; rw [ite_eq_left (by simp)]
   unfold arcWtNat
